@@ -552,9 +552,11 @@ function ChoixDuCanal({
             className="rounded-full px-[13px] py-[7px] text-[12.5px] leading-none"
             style={{
               flex: "none",
-              backgroundColor: actif ? colors.rust : "transparent",
+              // Le vert des boutons depuis le 4 septembre 2026 : la pastille
+              // retenue est un aplat qu'on appuie, pas un liseré d'état.
+              backgroundColor: actif ? colors.plein : "transparent",
               color: actif ? colors.card : colors.inkSoft,
-              border: `1px solid ${actif ? colors.rust : colors.line}`,
+              border: `1px solid ${actif ? colors.plein : colors.line}`,
             }}
           >
             {c.mot}

@@ -77,9 +77,9 @@ async function main() {
   const nomClient = `Mme Bracquemont ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomClient);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
   const chantierId = chantierUrl.split("/").pop()!;
 
   await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
@@ -274,16 +274,23 @@ async function main() {
     await page.setViewportSize({ width: 390, height: 900 });
   });
 
-  await cas("depuis la fiche du chantier, une porte mène au client", async () => {
-    await page.goto(chantierUrl, { waitUntil: "networkidle" });
-    await page.waitForTimeout(700);
-    const porte = page.locator('a[href^="/clients/"]');
-    assert.ok(
-      (await porte.count()) >= 1,
-      "aucune porte vers le client : la fiche existe mais rien n'y mène"
-    );
-    await porte.first().click();
-    await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
+  // ─── LA PORTE A DISPARU AVEC L'ÉCRAN QUI LA PORTAIT ───────────────────────
+  //
+  // Ce cas ouvrait `/clients/[id]` depuis la fiche du chantier — une porte
+  // retenue le 16 août 2026 (arrangement B), qui vivait dans son tiroir. Cette
+  // fiche est retirée le 4 septembre (`ARCHITECTURE.md` §254), et **plus aucun
+  // écran n'ouvre la fiche du client depuis un chantier.** C'est le prix du
+  // retrait, écrit plutôt que découvert, et `TODO.md` porte la question.
+  //
+  // Ce que ce cas SERVAIT vraiment aux trois suivants — être sur la fiche du
+  // bon client — se tient désormais par l'IDENTIFIANT, que rien ne peut faire
+  // retirer (`CLAUDE.md` §5 bis). Les cas d'après, eux, ne bougent pas : c'est
+  // la fiche du client qu'ils éprouvent, et elle existe toujours.
+  await cas("la fiche de SON client s'ouvre, et c'est bien la sienne", async () => {
+    const { rows } = await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [chantierId]);
+    const clientId = rows[0]?.client_id;
+    assert.ok(clientId, "le chantier n'a pas de client rattaché : rien à ouvrir");
+    await page.goto(`${BASE}/clients/${clientId}`, { waitUntil: "networkidle" });
     // Les cas de la fin y reviennent : la retenir évite de la rechercher, et
     // surtout d'en ouvrir une autre sans s'en apercevoir.
     ficheDuClientMonte = page.url();
@@ -744,12 +751,9 @@ async function main() {
 
   await cas("un chantier SANS client n'ouvre aucune porte sur du vide", async () => {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-    await creerPuisFiche(page);
-    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
+    const neuf = await creerPuisFiche(page);
     await page.waitForTimeout(700);
-    const { rows } = await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [
-      page.url().split("/").pop(),
-    ]);
+    const { rows } = await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [neuf]);
     if (rows[0]?.client_id) {
       // Le formulaire a quand même créé un client : le cas ne se produit pas ici.
       console.log("    (ce chantier a reçu un client : rien à vérifier)");

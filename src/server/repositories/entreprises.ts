@@ -5,7 +5,12 @@ import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../d
 import type { Ctx } from "./context";
 import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
 import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
-import { estLAllureParDefaut, normaliserAllure, type Allure } from "@/lib/allure-documents";
+import {
+  allureDepuisColonnes,
+  estLAllureParDefaut,
+  normaliserAllure,
+  type Allure,
+} from "@/lib/allure-documents";
 import { FORMATS_NUMERO } from "@/lib/numero-documents";
 import { MAX_EQUIPES, MAX_SALARIES } from "@/lib/equipes";
 import { lireObjet } from "../storage";
@@ -327,20 +332,48 @@ export async function allureDesDocuments(
     .limit(1);
   if (!e) return { allure: null, logo: null };
 
-  // Rien de réglé : on rend `null` plutôt que le défaut, pour que la fabrique
-  // reprenne le chemin d'avant — celui qu'aucun contrôle d'apparence ne doit
-  // voir changer.
-  const allure =
-    !e.typographie && !e.fond && !e.accent
-      ? null
-      : normaliserAllure({
-          typographie: e.typographie ?? undefined,
-          fond: e.fond ?? undefined,
-          accent: e.accent ?? undefined,
-        });
-
-  return { allure, logo: await logoLu(e.logoStorageKey, e.logoMime) };
+  return { allure: allureLue(e), logo: await logoLu(e.logoStorageKey, e.logoMime) };
 }
+
+/**
+ * L'allure SANS le logo — pour la page web que le client ouvre.
+ *
+ * **Pourquoi une seconde porte plutôt que `allureDesDocuments`.** Celle-là va
+ * chercher le logo dans le stockage : un aller-retour réseau à chaque
+ * consultation, pour une image que la page n'affiche pas. Sur un téléphone au
+ * bord d'une route, cela se paie en secondes d'attente devant une facture.
+ *
+ * **La RÈGLE, elle, n'est pas dupliquée** : les deux passent par `allureLue`.
+ */
+export async function allureSeuleDesDocuments(
+  tx: { select: typeof db.select },
+  entrepriseId: string
+): Promise<Allure | null> {
+  const [e] = await tx
+    .select({
+      typographie: entreprises.docTypographie,
+      fond: entreprises.docFond,
+      accent: entreprises.docAccent,
+    })
+    .from(entreprises)
+    .where(eq(entreprises.id, entrepriseId))
+    .limit(1);
+  return e ? allureLue(e) : null;
+}
+
+/**
+ * Ce que les trois colonnes de l'ENTREPRISE valent, ou `null`.
+ *
+ * **Rien de réglé rend `null`, jamais le défaut.** La fabrique reprend alors le
+ * chemin d'avant — celui qu'aucun contrôle d'apparence ne doit voir changer, et
+ * c'est ce qui garantit que le réglage neuf ne repeint rien tant qu'il n'y a pas
+ * touché (`allure-documents.ts`, sa règle du 23 août 2026).
+ *
+ * **La lecture elle-même vit dans `src/lib`** : la facture porte les mêmes trois
+ * colonnes depuis la migration 0074, et deux lectures écrites séparément
+ * auraient fini par ne plus filtrer pareil.
+ */
+const allureLue = allureDepuisColonnes;
 
 /**
  * Le logo lu dans le stockage — ou `null`, quoi qu'il arrive.

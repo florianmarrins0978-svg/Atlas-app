@@ -971,9 +971,18 @@ export default function DocumentsClient({
           type="button"
           onClick={() => enregistrer({})}
           disabled={(!aEcrire && !enCours) || refusMessage !== null}
-          className="block w-full rounded-full py-[15px] text-center text-[16px]"
+          // **Passé au vert des boutons le 4 septembre 2026.** Il l'a relevé
+          // lui-même — *« j'avais demandé à changer tous les boutons en vert
+          // clair »* —, et ce bouton-ci avait échappé au balayage du 3 : il ne
+          // portait pas `atlas-plein`, et le contrôle ne regardait QUE ce qui la
+          // portait. Il la porte maintenant, et il est donc gardé.
+          //
+          // **Allumé seulement** : éteint, ce bouton est creux.
+          className={`block w-full rounded-full py-[15px] text-center text-[16px] ${
+            (!aEcrire && !enCours) || refusMessage ? "" : "atlas-plein"
+          }`}
           style={{
-            backgroundColor: (!aEcrire && !enCours) || refusMessage ? colors.card : colors.rust,
+            backgroundColor: (!aEcrire && !enCours) || refusMessage ? colors.card : colors.plein,
             color: (!aEcrire && !enCours) || refusMessage ? colors.muted : colors.cream,
             boxShadow:
               (!aEcrire && !enCours) || refusMessage ? `inset 0 0 0 1px ${colors.line}` : "none",

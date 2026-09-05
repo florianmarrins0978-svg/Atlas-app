@@ -179,6 +179,20 @@ body {
   padding-bottom: var(--atlas-barre);
 }
 
+/* **Et la réserve se retire quand la barre n'est pas là — 5 septembre 2026.**
+ * Sur une navigation de lien vers le devis seul, ce cadre reste en place — la
+ * mise en page racine n'est pas rejouée — alors que la barre, elle, se retire
+ * d'elle-même (`AtlasBottomNav`). Sans cette ligne, soixante-huit pixels de
+ * vide restaient sous le bouton d'envoi, qui ne touchait plus le bas de
+ * l'écran.
+ *
+ * Écrit dans CE sens — la réserve par défaut, son retrait sous condition — un
+ * navigateur qui ne connaît pas `:has()` réserve encore : il montre un bouton
+ * un peu haut, jamais un bouton caché. */
+body:not(:has(.atlas-nav-basse)) .atlas-contenu {
+  padding-bottom: 0;
+}
+
 /* --- L'écran des chantiers : une hauteur fixe, une liste qui défile dedans --
  *
  * C'est ce qui rend possible le fil et sa perle. L'en-tête ne bouge pas, la
@@ -1215,8 +1229,15 @@ body {
  * ne pas se confondre avec un nom déjà tapé.
  *
  * Ce réglage est ICI et pas dans l'écran : aucun style en ligne ne peut viser
- * `::placeholder`. */
-[data-atlas="chercher-client"]::placeholder {
+ * `::placeholder`.
+ *
+ * **La coordonnée saisie à l'envoi a rejoint la règle le 4 septembre 2026.**
+ * Elle porte l'exemple — « 06 12 34 56 78 » — sur le seul écran où le patron
+ * répare un client sans numéro, et le gris du navigateur y disparaissait
+ * pareillement. La mesure est la même, la raison est la même : deux règles
+ * séparées auraient fini par diverger. */
+[data-atlas="chercher-client"]::placeholder,
+[data-atlas="coordonnee-client"]::placeholder {
   color: var(--atlas-inkSoft, #4a4a44);
   opacity: 0.85;
 }
@@ -1722,75 +1743,48 @@ body {
   opacity: 0;
 }
 
-/* ═══ LE GALET — son choix du 2 septembre 2026 ═══════════════════════════════
+/* ═══ LE GALET A ÉTÉ RETIRÉ LE 4 SEPTEMBRE 2026 — ne pas le remettre ═════════
  *
- * Planche `appli/facturer-note-vocale.html`, déclinaison 4, retenue par lui :
- * *« code moi la A le calme avec la 4 le galet »*. Il voulait la capsule
- * « À facturer » dans la matière de sa note vocale ; celle-ci en garde le vert
- * et l'or, et abandonne le reste — voir pourquoi juste en dessous.
+ * Il l'avait demandé le 2 septembre (planche `appli/facturer-note-vocale.html`,
+ * déclinaison 4 : *« code moi la A le calme avec la 4 le galet »*), puis étendu
+ * aux deux onglets. Deux jours plus tard, en rouvrant « Terminés » :
+ * *« j'avais demandé à changer tous les boutons en vert clair, or si tu regardes
+ * la page terminé ils n'ont pas changé »* — et, la planche en main : **« oui,
+ * vert clair partout »**.
  *
- * POURQUOI UN DÉGRADÉ EN LONG, ET NON LE DÉGRADÉ RADIAL DU MICRO. La tasse
- * (`.atlas-micro`) rayonne d'un point placé à 34 % / 26 %. Sur un disque, cette
- * lumière est un rond ; sur une capsule de 127 × 44, elle devient une ellipse
- * qui déborde et coupe le mot en deux. Le galet suit donc le GRAND AXE : la
- * lumière entre par l'épaule gauche et s'éteint à droite, sans jamais traverser
- * les lettres en travers.
+ * **Ce que ça tranche, et qui vaut au-delà de cet écran.** Il n'y a plus qu'une
+ * matière pour ce qu'on appuie dans Atlas : l'aplat `colors.plein`. La note
+ * vocale (`.atlas-micro`) garde la sienne, et elle seule — c'est un OBJET, pas
+ * un bouton, et il l'a nommément mise à part le 3 septembre.
  *
- * UN SEUL FILET D'OR, ET NON TROIS ANNEAUX. Sur les 80 px du micro, les trois
- * anneaux or / porcelaine / or se lisent comme le bord d'une tasse. Posés sur
- * une capsule longue, ils dessinent un CADRE — un objet encadré, pas un galet.
- * Les deux lui ont été montrés côte à côte ; c'est celle-ci qu'il a prise.
+ * **Ce qui est parti avec :** le dégradé en long, le filet d'or, le blanc écrit
+ * en clair, et `scripts/test-galet.ts` qui les gardait. Un contrôle qui ne
+ * mesure plus rien est pire qu'absent (`CLAUDE.md` §5) : il rassure.
  *
- * LA MATIÈRE EST FIXE SUR LES HUIT CHARTES, ET C'EST DÉLIBÉRÉ. Elle ne dérive
- * PAS de `rust` : sur Nuit et Sylve, l'accent EST l'encre — clair —, et un
- * dégradé qui le suivrait finirait en blanc cassé avec du blanc écrit dessus
- * (`design-tokens.ts`, le défaut du 22 août 2026). C'est exactement l'arbitrage
- * déjà pris pour `sage` et pour la porcelaine du micro : ce qui fait une
- * matière, c'est de ne pas changer de visage. Les trois verts sont donc ceux
- * d'Origine, et le blanc du mot l'est aussi.
+ * Le dessin reste consultable sur la planche, si l'usage lui donne tort. */
+
+/* ─── LA PLAGE D'UNE LIGNE QUI ATTEND SON PRIX ────────────────────────────────
  *
- * CE QUE ÇA COÛTE, ET IL L'A VU AVANT DE CHOISIR. À l'entrée du dégradé, le
- * blanc tient 3,1 de contraste ; il en faudrait 4,5 pour un mot. Le chiffre
- * était écrit sous le bouton sur la planche. Deux choses le rendent tenable, et
- * il faut les garder : la pente est RAIDE — à 46 % on est déjà à 6,8 —, et le
- * mot est centré, donc aucune lettre ne se pose sur le premier quart. Déplacer
- * les arrêts ou allonger la capsule romprait ce compromis sans que rien ne
- * rougisse. La version prudente reste dessinée dans la planche (« le filet
- * doré », 10,9) si l'usage sur le chantier lui donne tort.
+ * **Son choix du 5 septembre 2026, sur planche** (`ligne-qui-attend-son-prix.html`,
+ * la B) : le mot « à chiffrer » dans la case, ET les deux plages de la ligne
+ * passées à l'or. Il a écarté la A, qui ne teintait rien : la B se retrouve
+ * **en défilant, sans lire**, et c'est ce qui compte sur un devis de dix lignes.
  *
- * IL SERT DEUX OBJETS SUR CET ÉCRAN, et c'est sa demande : la capsule d'une
- * rangée qui attend, et l'onglet actif au-dessus. */
-.atlas-galet {
-  position: relative;
-  overflow: hidden;
-  /* Le mot est blanc parce que la matière est fixe : voir `.atlas-micro`, même
-   * raisonnement, même conclusion. L'écrire ici plutôt qu'en style en ligne,
-   * c'est ce qu'exige `CLAUDE.md` §3 — aucune couleur en clair dans un écran. */
-  color: #ffffff;
-  /* `background-color` ET `background-image` séparés, jamais le raccourci :
-   * `.atlas-plein` pose déjà un `background-image`, et un raccourci placé plus
-   * haut dans le fichier ne l'écraserait que par accident d'ordre. */
-  background-color: #2f3b2f;
-  background-image: linear-gradient(103deg, #7d9a6d 0%, #4f5f4c 46%, #2f3b2f 100%);
-  /* Le filet d'or au bord ; la lumière rasante sous l'épaule haute ; l'ombre
-   * interne du bas qui donne l'épaisseur ; l'ombre portée verte, la même que
-   * celle du micro, qui décolle l'objet du papier. */
-  box-shadow:
-    inset 0 0 0 1px var(--atlas-or, #B98B47),
-    inset 0 7px 10px -7px rgba(255, 255, 255, 0.3),
-    inset 0 -7px 10px -7px rgba(47, 59, 47, 0.55),
-    0 6px 14px -5px rgba(79, 95, 76, 0.36);
-  transition:
-    transform 190ms cubic-bezier(0.22, 0.8, 0.3, 1),
-    box-shadow 220ms ease;
+ * **POURQUOI UNE CLASSE, ET NON UN STYLE EN LIGNE.** `color-mix` n'existe pas
+ * avant iOS 16.2. Une couleur inconnue posée en style en ligne est ignorée, et
+ * l'élément retombe alors sur *aucun fond* : la plage DISPARAÎTRAIT, sur un
+ * écran dont tout le dessin repose sur elle (`HANDOVER.md`, piège 18 — un champ
+ * sans plage se lit comme « pas cliquable »). Écrite ici, la déclaration
+ * ordinaire tient le repli et `@supports` ne pose la teinte que là où elle est
+ * comprise : au pire la ligne perd sa couleur et garde son mot.
+ *
+ * **C'est `or` et non `orTexte`** : cette teinte est du dessin, pas un mot. Le
+ * mot, lui, est écrit dans la couleur qui tient 4,5 (`design-tokens.ts`). */
+.atlas-plage-attente {
+  background-color: var(--atlas-card, #faf9f5);
 }
-/* Le même geste que la note vocale et que tous ses boutons pleins : l'objet
- * rentre, il ne clignote pas. `.atlas-plein` porte déjà le voile blanc quand
- * les deux classes sont posées ensemble ; seul, le galet garde son enfoncement. */
-.atlas-galet:active {
-  transform: scale(0.975);
-  transition-duration: 70ms, 90ms;
-}
-.atlas-galet > * {
-  position: relative;
+@supports (background-color: color-mix(in srgb, red 10%, blue)) {
+  .atlas-plage-attente {
+    background-color: color-mix(in srgb, var(--atlas-or, #B98B47) 13%, var(--atlas-card, #faf9f5));
+  }
 }

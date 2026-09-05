@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — L'écran des prix — ce qui a été fait, et ce qui a été refusé</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="lécran-des-prix--ce-qui-a-été-fait-et-ce-qui-a-été-refusé">L'écran des prix — ce qui a été fait, et ce qui a été refusé</h1>
+<p><em>5 septembre 2026 · <code>/chantiers/[id]/prix</code> · le seul écran où le patron engage de l'argent avant de l'annoncer.</em></p>
+<hr>
+<h2 id="en-cinq-lignes">En cinq lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La case où il tape son prix <strong>avalait sa virgule</strong> : « 1 400,50 » partait à <strong>0,00 € sans un mot</strong>. C'est corrigé, et une suite le rejoue. Les lignes qui attendent leur prix se <strong>voient</strong> maintenant — il a choisi la B sur planche — et le refus qui bloque le devis <strong>emmène le doigt sur la case</strong>, au lieu de le renvoyer aux réglages.</p>
+<p><strong>Rien n'a été touché en dehors de cet écran.</strong> La batterie complète et les captures restent dues : elles attendent qu'il arrête ses autres sessions.</p>
+<hr>
+<h2 id="le-brief-venait-de-chatgpt--deux-de-ses-points-étaient-faux">Le brief venait de ChatGPT — deux de ses points étaient faux</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>C'est la règle du dépôt : un texte collé est un avis, pas une spécification. Ces deux-là ont été corrigés avant d'écrire une ligne, et il les a confirmés.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que le brief affirmait</th>
+<th>Ce que le code dit</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-lecons-prix-e2e</code> rougit <strong>sur cet écran</strong></td>
+<td>Elle est sur le <strong>devis</strong> (<code>Prix unitaire 1</code>, <code>Total TTC</code>, colonne <code>prix_unitaire</code>). Pas ce lot. Et son propre commentaire avoue que l'écran du devis vide la valeur tapée : c'est un défaut produit habillé en contournement de suite, et il appartient à la session voisine</td>
+</tr>
+<tr>
+<td>« ce qui dépend de la proposition de prix par l'IA se dit <em>à jouer sur ton espace</em> »</td>
+<td><strong>Aucune IA sur cet écran.</strong> <code>preparerPropositionPrix</code> ne lit que les tarifs, la grille, la main-d'œuvre et les mesures. Tout ce lot s'éprouve ici, sans clé — l'excuse tombe</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="les-trois-défauts-un-par-un">Les trois défauts, un par un</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="1-la-case-avalait-la-virgule--et-écrivait-zéro">1. La case avalait la virgule — et écrivait zéro</h3>
+<p><strong>Le fichier qui le fonde :</strong> <code>src/app/chantiers/[id]/prix/PrixClient.tsx</code>.</p>
+<p>La case était un <code>&lt;input type="number"&gt;</code>, relue par <code>new Decimal(saisi || "0")</code>. Un champ numérique <strong>rejette la virgule</strong> : sur un clavier français, « 1 400,50 » rend une valeur <strong>vide</strong>, et <code>"" || "0"</code> vaut zéro. L'écran continuait d'afficher le bon chiffre.</p>
+<p>C'est la même famille que le défaut corrigé sur le devis le 30 août — <em>« Un prix tapé sur le devis pouvait partir à ZÉRO »</em>. Là, c'était un rendu en retard ; ici, c'est le champ lui-même. <strong>Le devis avait déjà la bonne réponse à côté :</strong> un champ de texte avec <code>inputMode="decimal"</code>.</p>
+<p><strong>Ce qui a été fait autrement que « écrire une règle de lecture ».</strong> Le dépôt en portait déjà <strong>deux</strong> — <code>montantEcrivable</code> (écrite le 29 août pour les montants venus du modèle) et <code>montantSaisi</code> (pour la TVA). En écrire une troisième aurait été exactement la faute que le dépôt interdit. L'écran consomme donc <code>montantEcrivable</code>, qui refuse le négatif, la troisième décimale et ce qu'une colonne ne peut pas contenir — <strong>et nomme le montant en cause</strong> au lieu de dire « modification impossible ».</p>
+<p><strong>Le piège trouvé en l'écrivant, et que rien n'aurait attrapé autrement.</strong> La case affiche désormais « 1 400,50 » à la française, avec l'espace <strong>insécable</strong> d'<code>Intl</code>. Quitter la case sans y toucher relance la lecture sur ce texte-là : si elle avait refusé cette espace, le patron aurait vu son propre montant rejeté sans avoir rien tapé. Deux fonctions justes séparément, et un aller-retour cassé entre les deux. C'est éprouvé (<code>test-case-du-prix.ts</code>).</p>
+<h3 id="2--à-chiffrer--nexistait-pas-à-lécran">2. « À chiffrer » n'existait pas à l'écran</h3>
+<p><strong>Le fichier qui le fonde :</strong> le drapeau <code>aChiffrer</code> entrait dans l'état de <code>PrixClient.tsx</code> depuis la migration 0070, était modifié — et <strong>n'était dessiné nulle part</strong>. Une ligne sans prix ressemblait trait pour trait à une ligne qu'on n'avait pas remplie.</p>
+<p><strong>Son choix, sur planche</strong> (<code>ligne-qui-attend-son-prix.html</code>) : <strong>la B</strong>. Le mot « à chiffrer » dans la case, <strong>et</strong> les deux plages de la ligne passées à l'or. Il a écarté la A, qui ne teintait rien : la B se retrouve <strong>en défilant, sans lire</strong>, et c'est ce qui compte sur un devis de dix lignes. Le compte des lignes en attente s'affiche à côté de « Détail ».</p>
+<p><strong>Le compte est calculé par la règle partagée</strong>, <code>ligneAttendSonPrix</code> — celle que le serveur, le PDF et l'envoi emploient déjà. Recompter ici « marquée et à zéro » aurait fait une <strong>quatrième</strong> lecture de la même question, et c'est exactement ce qui avait produit, le 31 août, un devis dont le total ne correspondait pas à ses lignes.</p>
+<h3 id="3-le-refus-nommait-la-bonne-raison-et-offrait-la-mauvaise-porte">3. Le refus nommait la bonne raison et offrait la mauvaise porte</h3>
+<p><code>peutPreparerDevis</code> rend trois refus distincts ; l'écran collait sous les trois le même « Ouvrir mes tarifs », vers <code>/reglages</code>. Quand le blocage était « 2 lignes attendent leur prix », le seul geste proposé <strong>quittait l'écran où se trouve la réparation</strong>.</p>
+<p>La porte suit désormais la raison : les réglages <strong>seulement</strong> s'il n'y a aucune ligne — c'est là qu'un tarif enregistré fera chiffrer tout seul la prochaine fois ; sinon « Poser les montants », qui fait défiler jusqu'à la première case en attente et y met le curseur.</p>
+<hr>
+<h2 id="une-décision-prise-seul-et-ce-quelle-coûte">Une décision prise seul, et ce qu'elle coûte</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>L'or d'un mot est désormais plus sombre que l'or d'un trait.</strong></p>
+<p>Mesuré : <code>or</code> posé sur la plage d'un champ donne <strong>2,62 à 3,07</strong> selon la charte, là où un texte demande 4,5. Il passe sur les deux chartes sombres (Nuit 5,55, Sylve 4,55), où les pôles s'inversent. Le mot « à chiffrer » se lit en plein soleil, d'une main : il ne pouvait pas rester à 2,91.</p>
+<p><strong>Ce que cela ne remet PAS en cause.</strong> Sa consigne du 31 août — <em>« tout ce qui est en doré sur Origine reste doré sur les autres apparences »</em> — interdit à la <strong>charte</strong> de repeindre l'or, et <code>or</code> ne bouge pas d'un caractère : filets, sceau, marqueur d'onglet, fonds pâles gardent <code>#B98B47</code> partout. Le nouveau jeton ne dépend pas de la charte mais du <strong>rôle</strong> : un mot qu'on lit, et non un trait qu'on regarde. Sur Nuit et Sylve il vaut l'or exactement.</p>
+<p><strong>Ce que ça change chez lui, et il faut le dire :</strong> sur Origine, « à chiffrer » et les deux intertitres « À compléter » / « À confirmer » passent d'un or clair à un or plus sombre. C'est visible sur l'écran qu'il regarde tous les jours. Si ça ne lui plaît pas, ça se défait en une ligne — mais le mot redevient alors difficile à lire au soleil.</p>
+<p>Le contrôle qui le tient : <code>test-chartes-lisibles.ts</code>, <strong>et il sait échouer</strong> — en ramenant le nouveau jeton à l'ancien or, les <strong>six chartes claires</strong> rougissent d'un coup et les deux sombres restent vertes. C'est exactement le diagnostic annoncé, vérifié en le provoquant.</p>
+<hr>
+<h2 id="ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">Ce qui a été refusé, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Refusé</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>La qualité des propositions</strong> — prestations mal organisées, unités mal lues, prix historiques incohérents</td>
+<td>Sans ses <strong>vraies dictées</strong> et le devis produit, on répare une qualité imaginée. C'est un lot à part entière ; il fournira les exemples</td>
+</tr>
+<tr>
+<td><strong>Une troisième règle de lecture des montants</strong></td>
+<td>Deux existent déjà. Une de plus finit toujours par diverger, et rien ne dit alors laquelle fait foi</td>
+</tr>
+<tr>
+<td><strong>Toucher au devis, à la facture, à la fiche du chantier, à « Mes prix »</strong></td>
+<td>D'autres sessions y travaillent ; deux sessions sur le même fichier, c'est du travail jeté</td>
+</tr>
+<tr>
+<td><strong>La suite <code>test-lecons-prix-e2e</code></strong></td>
+<td>Elle est sur le devis. Son défaut de fond est réel, et il appartient à la session voisine</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="trouvé-au-passage-signalé-pas-touché">Trouvé au passage, signalé, pas touché</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>src/components/atlas/Calendrier.tsx</code> l. 168-169 porte <code>rgba(181,80,47,0.14)</code> — <strong>l'ancienne terre cuite, qui n'est plus la couleur d'accent depuis le 31 août</strong> — et <code>rgba(0,0,0,0.035)</code>. Les deux sont écrits en clair, donc invisibles sur Nuit et sur Sylve. C'est la faute du 22 août revenue une troisième fois. Le calendrier appartient à l'écran de date, sur lequel une autre session travaille : elle a été prévenue.</p>
+<hr>
+<h2 id="les-chiffres">Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td><strong>0 erreur</strong></td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td><strong>0 erreur</strong>, 17 avertissements — tous antérieurs à ce lot</td>
+</tr>
+<tr>
+<td><code>scripts/test-case-du-prix.ts</code></td>
+<td><strong>10 contrôles, 0 échec</strong></td>
+</tr>
+<tr>
+<td><code>scripts/test-chartes-lisibles.ts</code></td>
+<td><strong>14 réussis, 0 échec</strong> — les huit chartes</td>
+</tr>
+<tr>
+<td>Les deux contrôles confrontés à l'état dégradé</td>
+<td><strong>rouges, et sur le bon coupable</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>LA BATTERIE COMPLÈTE N'A PAS ÉTÉ JOUÉE</strong>, et il ne faut pas la croire jouée : il a demandé qu'on le prévienne avant, parce que ses sessions partagent le même dossier et que le serveur tombe si une autre écrit pendant la mesure. Restent donc dues, dans la fenêtre qu'il donnera :</p>
+<ul>
+<li><code>npm run verifier:avant-livraison</code> ;</li>
+<li><code>scripts/test-case-du-prix-e2e.ts</code> — <strong>écrite, jamais exécutée</strong> : elle rejoue son geste dans un vrai navigateur, tape « 1 400,50 » et va vérifier <strong>en base</strong> que le montant y est arrivé. C'est le contrôle qui entre par sa porte à lui ;</li>
+<li>les <strong>captures</strong> de l'écran à 390 × 664, sur Origine <strong>et</strong> sur Nuit. Quatre défauts réels de ce projet ont été trouvés sur une image et par aucun test vert : tant qu'elles n'ont pas été regardées, ce lot n'est pas fini.</li>
+</ul>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>L'or plus sombre sur Origine lui convient-il ?</td>
+<td><strong>lui</strong>, sur capture</td>
+</tr>
+<tr>
+<td>La qualité des propositions de prix</td>
+<td><strong>lui</strong> — il donne ses dictées réelles, on en fait un lot</td>
+</tr>
+<tr>
+<td>Le calendrier aux couleurs écrites en dur</td>
+<td>la <strong>session du devis</strong>, prévenue</td>
+</tr>
+<tr>
+<td>La saisie qui s'efface sur l'écran du <strong>devis</strong> (les cinq tentatives de sa suite)</td>
+<td>la <strong>session du devis</strong></td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

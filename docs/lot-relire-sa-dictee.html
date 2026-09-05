@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Relire sa dictée — la transcription et les informations</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="relire-sa-dictée--la-transcription-et-les-informations">Relire sa dictée — la transcription et les informations</h1>
+<p><em>5 septembre 2026 · <code>/chantiers/[id]/transcription</code> et <code>/chantiers/[id]/informations</code> · le moment où le patron vérifie qu'on l'a compris, avant de poser ses prix.</em></p>
+<hr>
+<h2 id="en-cinq-lignes">En cinq lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Trois défauts, tous de FORME, aucun de calcul. <strong>Un échec de transcription avait l'allure d'une transcription réussie.</strong> Sur les informations, la proposition et vos vraies cases portaient <strong>les mêmes mots</strong> et <strong>les deux mêmes tons, échangés</strong>. Et l'or qui écrit un mot tenait <strong>2,77</strong> là où il en faut 4,5.</p>
+<p>Vous avez choisi <strong>« un seul à la fois »</strong> sur la planche, et c'est codé.</p>
+<blockquote>Planche : <strong>https://florianmarrins0978-svg.github.io/Atlas-app/relire-sa-dictee.html</strong></blockquote>
+<p><strong>La batterie a été jouée</strong> (une seule, pour vos deux sessions à la fois) et les <strong>captures sont prises</strong>. Elles ont attrapé trois défauts que rien d'autre ne voyait — c'est plus bas.</p>
+<hr>
+<h2 id="les-trois-défauts-et-ce-qui-a-été-fait">Les trois défauts, et ce qui a été fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="1-cinq-états-de-transcription-dans-le-même-paragraphe">1. Cinq états de transcription dans le même paragraphe</h3>
+<p><strong>Le fichier qui le fonde :</strong> <code>transcription/page.tsx</code>, l. 30-68 de la version d'avant.</p>
+<p>Le vrai texte de votre dictée, « Aucune note vocale », « Transcription en cours… », l'échec et l'excuse du texte non transcrit sortaient <strong>du même <code>&lt;p&gt;</code>, dans la même plage</strong> — seule la couleur changeait, encre ou gris.</p>
+<p>L'écran portait pourtant déjà le commentaire qui l'interdisait — <em>« un texte de remplacement n'est pas une transcription »</em> — mais il ne visait que le CONTENU. La forme, elle, disait l'inverse.</p>
+<p><strong>Ce qui a été fait :</strong> la plage ne porte plus que vos mots. Tout le reste se pose sur le fond de page, avec le geste qui débloque.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>État</th>
+<th>Ce que l'écran fait maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>écoutée</strong></td>
+<td>la plage, puis le devis d'un geste, puis « corriger le texte »</td>
+</tr>
+<tr>
+<td><strong>en cours</strong></td>
+<td>les trois points qui respirent — <strong>et l'écran se met à jour tout seul</strong></td>
+</tr>
+<tr>
+<td><strong>échouée</strong></td>
+<td>« Échec » en rouge, la cause, puis relancer ou écrire</td>
+</tr>
+<tr>
+<td><strong>non transcrite</strong></td>
+<td>la case d'écriture s'ouvre d'elle-même, sans renvoyer à la note vocale</td>
+</tr>
+<tr>
+<td><strong>aucune note</strong></td>
+<td>un seul geste, en bouton plein</td>
+</tr>
+</tbody></table></div>
+<p><strong>Trouvé au passage, et réparé :</strong> l'état « en cours » était un cul-de-sac — aucune sortie, aucun rafraîchissement. Il fallait savoir qu'il fallait revenir.</p>
+<p><strong>Fait autrement que sur la planche :</strong> l'attente n'est pas le filet d'or que je vous avais dessiné, mais les <strong>trois points</strong> déjà employés partout dans l'application. Deux raisons : un filet pleine largeur sous un titre EST le trait que vous avez fait retirer partout le 25 août — il le redevient dès que l'animation s'arrête —, et une seconde façon de dire « ça travaille » aurait divergé de la première.</p>
+<h3 id="2-la-proposition-et-la-donnée-acquise-se-ressemblaient">2. La proposition et la donnée acquise se ressemblaient</h3>
+<p><strong>Les fichiers qui le fondent :</strong> <code>BrouillonSection.tsx</code> l. 256-289 et <code>InformationsClient.tsx</code> l. 133-183, version d'avant.</p>
+<p>L'écran écrivait <strong>deux fois</strong> « Prestations », « Durée », « Équipe », « Matériel ». La seule différence était un fond — et c'était le pire cas possible : la case du brouillon était <strong>crème dans une plage claire</strong>, la vraie case <strong>claire sur fond crème</strong>. Les deux mêmes tons, échangés. À l'œil, sur un téléphone en plein soleil, cela ne distingue rien.</p>
+<p><strong>Votre choix, « un seul à la fois », est codé tel quel :</strong> vos cases n'apparaissent qu'une fois le brouillon confirmé, déjà remplies, et tant qu'il reste quelque chose à confirmer l'écran ne porte <strong>qu'un seul bouton</strong>.</p>
+<p>Trois garde-fous ont été ajoutés, sans lesquels la règle aurait nui :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>ce qui porte <strong>déjà</strong> quelque chose n'est jamais caché</td>
+<td>un chantier commencé à la main puis dicté aurait vu ses lignes disparaître, et vous les auriez crues perdues</td>
+</tr>
+<tr>
+<td>« Écrire les lignes à la main »</td>
+<td>ouvre les cases sans rien confirmer, et sans effacer la proposition</td>
+</tr>
+<tr>
+<td>« Valider et calculer le prix »</td>
+<td>ne s'affiche plus tant qu'un brouillon attend : il proposait de sauter par-dessus la confirmation, et ce qui avait été entendu ne rejoignait jamais le chantier</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et les trois notes sortent de l'encart</strong> — déchets, contraintes d'accès, remarques. Elles sont à vous, pas à la machine : aucune autre case ne les porte, et elles restent quand tout le reste a été recopié dans le chantier. Dans l'encart, elles avaient l'air de partir avec lui.</p>
+<p><strong>Puis vous les avez fait descendre</strong>, sur capture : elles se lisaient encore avant les prestations. Elles sont maintenant <strong>sous le matériel</strong>, au bout de la description du chantier — ce qu'on fait, combien de temps, avec qui, avec quoi, puis ce qu'il faut savoir en plus.</p>
+<p>Ce déplacement n'était pas cosmétique : entre l'encart et les notes il y a désormais quatre rubriques de l'écran, donc l'état du brouillon a dû <strong>sortir de l'encart</strong> pour vivre dans l'écran. Donner aux notes leur propre copie aurait été deux états pour la même proposition — chaque enregistrement envoie la proposition ENTIÈRE, et celle qui n'a pas vu la correction de l'autre l'efface en la réécrivant. Une ligne corrigée aurait disparu en modifiant une remarque, sans un mot.</p>
+<h3 id="3-lor-qui-porte-un-mot-ne-se-lisait-pas">3. L'or qui porte un mot ne se lisait pas</h3>
+<p><strong>Mesuré</strong>, sur Origine :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>or</code> sur le fond de page — « Écrire le devis »</td>
+<td><strong>2,77</strong></td>
+</tr>
+<tr>
+<td><code>or</code> sur une plage — « À confirmer »</td>
+<td><strong>2,91</strong></td>
+</tr>
+<tr>
+<td><code>orTexte</code>, le jeton posé le matin même par l'écran des prix</td>
+<td><strong>4,59</strong> et <strong>4,83</strong></td>
+</tr>
+</tbody></table></div>
+<p>Les trois passent à <code>orTexte</code>. <strong>L'or des traits ne bouge pas</strong> : le cheveu de l'avertissement, celui de l'encart. Ce n'est pas la charte qui repeint l'or — votre consigne du 31 août tient —, c'est le rôle qui change de jeton : un mot qu'on lit, et non un trait qu'on regarde.</p>
+<hr>
+<h2 id="aussi-trouvé-et-réparé-dans-le-même-lot">Aussi trouvé, et réparé dans le même lot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>rgba(20,18,14,0.35)</code> écrit en clair sur le voile du tiroir « Remplacer vos corrections ? »</td>
+<td><strong>quatrième retour</strong> de la faute du 22 août. Sur Nuit et Sylve, du sombre sur du sombre, au-dessus du seul geste irréversible de l'écran. Passé à <code>voile(colors.ink, 0.35)</code></td>
+</tr>
+<tr>
+<td>« aucun prestataire de transcription n'est encore raccordé », dans <strong>quatre</strong> paragraphes</td>
+<td>c'était vrai en juillet ; vos clés sont posées depuis le 6 août (<code>docs/A-FAIRE.md</code> §1). L'application vous disait qu'elle ne savait pas faire ce qu'elle fait tous les jours. <strong>La phrase est retirée, rien ne la remplace</strong></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-que-jai-décidé-seul-et-ce-que-ça-coûte">Ce que j'ai décidé seul, et ce que ça coûte</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>J'ai codé la transcription sans votre accord explicite.</strong> Vous avez répondu sur les informations ; la question de la plage est restée sans réponse. Ce n'était pas une affaire de goût — un échec qui a l'allure d'un succès est un défaut —, et la forme est exactement celle de la planche que vous avez ouverte. <strong>Si elle ne vous plaît pas, elle se défait sans toucher au reste.</strong></p>
+<p><strong>« Écrire le devis » reste affiché en toutes circonstances</strong>, brouillon en attente compris. Ma propre planche l'omettait : c'est la planche qui avait tort. C'est la sortie de secours que vous avez demandée le 3 août 2026, et elle ne se retire pas parce qu'un autre geste est proposé.</p>
+<p><strong>« Aucune note vocale pour ce chantier. » est gardée mot pour mot</strong>, alors que la planche la raccourcissait en « Aucune dictée sur ce chantier. » : c'est le terme de l'application, celui du bouton juste en dessous, et une suite l'éprouve.</p>
+<hr>
+<h2 id="ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">Ce qui a été refusé, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Refusé</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Découper <code>informations/actions.ts</code></strong> (1 083 l.)</td>
+<td>Ça ne change rien pour vous, et déplacer mille lignes pendant que d'autres sessions poussent sur <code>main</code>, c'est du travail jeté sur un conflit</td>
+</tr>
+<tr>
+<td><strong>Éclaircir <code>muted</code></strong> (3,49, sous le seuil)</td>
+<td>C'est VOTRE niveau, choisi sur planche, et <code>test-chartes-lisibles.ts</code> refuse délibérément de l'exiger</td>
+</tr>
+<tr>
+<td><strong>Une relance de transcription sur cet écran</strong></td>
+<td>Deux endroits pour lancer la même chose, c'est un de trop</td>
+</tr>
+<tr>
+<td><strong>Toucher aux 124 suites bout-en-bout</strong></td>
+<td>La session voisine les modifie toutes en ce moment. Leurs libellés ont donc été préservés au mot près, plutôt que corrigés après coup</td>
+</tr>
+<tr>
+<td><strong>Toucher à <code>prix/</code>, au devis, à la facture, à la note vocale</strong></td>
+<td>D'autres sessions y sont</td>
+</tr>
+</tbody></table></div>
+<p>Rien de ce que vous aviez tranché n'a été rouvert : les cases s'écrivent après confirmation, ce qui est recopié disparaît de l'encart, les trois phrases grises du 25 août ne reviennent pas, les réserves restent à cinq et annoncent le reste, le mot « équipe » ne s'écrit pas à une seule équipe.</p>
+<hr>
+<h2 id="ce-que-les-captures-ont-attrapé-et-quaucun-test-ne-voyait">Ce que les captures ont attrapé, et qu'aucun test ne voyait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Trois défauts, tous trouvés en REGARDANT les dix-huit images — pas un seul par une suite verte. C'est la cinquième fois dans ce dépôt.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>dans l'état « échec », <strong>« Écrire ce que j'ai dit » était centré</strong> sous « Relancer depuis la note vocale », aligné à gauche</td>
+<td>deux gestes de même rang, deux alignements</td>
+</tr>
+<tr>
+<td>les <strong>trois points d'attente partaient au milieu de l'écran</strong>, seuls, loin de leur phrase</td>
+<td><code>.atlas-souffle</code> est un conteneur flex qui centre : posé dans un bloc pleine largeur, il centre sur toute la largeur</td>
+</tr>
+<tr>
+<td><strong>« Entendu » s'écrivait avant que rien n'ait été entendu</strong> — au-dessus de « Générez un brouillon structuré »</td>
+<td>le mot annonçait une lecture qui n'avait pas eu lieu ; la rangée disparaît maintenant avec lui</td>
+</tr>
+</tbody></table></div>
+<p>Le script qui les a prises est dans le dépôt et se rejoue : <code>npx tsx --env-file=.env scripts/capture-relire-sa-dictee.mts</code>. Il POSE les six états de la dictée dans la base — ils ne s'atteignent pas en cliquant — puis photographie, sur Origine et sur Nuit. Il rend l'apparence comme il l'a trouvée.</p>
+<hr>
+<h2 id="les-chiffres">Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td><strong>0 erreur</strong></td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td><strong>0 erreur</strong>, 18 avertissements — <strong>aucun</strong> dans les fichiers de ce lot</td>
+</tr>
+<tr>
+<td><code>test-etat-transcription.ts</code> (neuve)</td>
+<td><strong>10 contrôles, 0 échec</strong></td>
+</tr>
+<tr>
+<td><code>test-aucune-couleur-en-clair.ts</code> (neuve)</td>
+<td><strong>6 écrans, 1 361 lignes, 0 faute</strong></td>
+</tr>
+<tr>
+<td><code>test-chartes-lisibles.ts</code></td>
+<td><strong>14 réussis, 0 échec</strong></td>
+</tr>
+<tr>
+<td><code>test-aucune-fleche.ts</code></td>
+<td><strong>116 574 lignes, aucune flèche décorative</strong></td>
+</tr>
+<tr>
+<td><code>test-brouillon-reserves.ts</code></td>
+<td><strong>6 réussis</strong></td>
+</tr>
+<tr>
+<td>Les deux suites neuves confrontées à l'état dégradé</td>
+<td><strong>rouges, et sur le bon coupable</strong></td>
+</tr>
+</tbody></table></div>
+<h2 id="la-batterie-complète--jouée-une-fois-pour-les-deux-sessions">La batterie complète — jouée une fois, pour les deux sessions</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Deux batteries en même temps se cassent l'une l'autre : même base, même port. Une seule les couvre toutes les deux, puisque nous travaillons dans le même dossier.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, mémoire</td>
+<td><strong>vertes</strong></td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td><strong>304 / 314</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>115 / 128</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>a refusé de mesurer</strong> — le serveur n'a pas répondu en dix minutes (construction comprise)</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les six suites qui couvrent ces deux écrans sont VERTES</strong>, et ce sont celles qui comptent ici :</p>
+<p>``<code> test-transcription-e2e   ✅      test-etat-transcription        ✅ 10/10 test-informations-e2e    ✅      test-aucune-couleur-en-clair   ✅ test-brouillon-e2e       ✅      test-ia-01-e2e                 ✅ </code>``</p>
+<p><strong>Les 23 suites rouges, et ce que j'en sais exactement.</strong> Aucune ne nomme un fichier de ce lot. Deux d'entre elles accusent le travail EN COURS de votre autre session, pas encore enregistré :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-mode-emploi</code></td>
+<td>« Par SMS » et « Par e-mail » ne sont plus dans <code>FormulaireNouveauChantier.tsx</code></td>
+</tr>
+<tr>
+<td><code>test-boutons-arrondis</code></td>
+<td>un bouton à angles droits dans <code>ChoixCanal.tsx</code></td>
+</tr>
+</tbody></table></div>
+<p>Quatre autres (<code>test-fiche-pendant-relance</code>, <code>test-verrou-construction</code>, <code>test-relance-construction</code>, <code>test-ouvrir-port</code>) sont <strong>écrites comme déjà rouges</strong> dans <code>TODO.md</code> depuis le 29 août. Les treize suites navigateur restantes tombent sur le devis, le planning, la page du client et le calendrier — aucune sur la transcription ni sur les informations.</p>
+<p><strong>Ce que je ne peux PAS affirmer :</strong> que les vingt-trois rougissaient déjà avant ce lot. Le prouver demanderait de rejouer la batterie sur le code d'avant, et l'arbre porte le travail non enregistré de votre autre session — on ne peut pas revenir en arrière sans le mettre en danger.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>La forme des cinq états de la transcription vous convient-elle ?</td>
+<td><strong>vous</strong>, sur les captures</td>
+</tr>
+<tr>
+<td>Les treize suites navigateur rouges sur le devis, le planning et le calendrier</td>
+<td>les <strong>sessions</strong> qui tiennent ces écrans</td>
+</tr>
+<tr>
+<td><code>Calendrier.tsx</code> et ses trois couleurs écrites en dur</td>
+<td>la <strong>session de l'écran de date</strong>, déjà prévenue</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

@@ -384,6 +384,37 @@ Concrètement, pour toute planche dont on attend un choix :
    `https://florianmarrins0978-svg.github.io/Atlas-app/<la-planche>.html`.
    C'est la quatrième fois qu'une adresse lui coûte un aller-retour, et les
    quatre fois le code était juste ;
+2 bis bis. **ON NE DONNE L'ADRESSE QU'UNE FOIS QU'ELLE RÉPOND — 4 septembre
+   2026, et il l'a payée deux fois dans la même journée.** Sa réponse :
+   *« Le liens erreur 404 »*.
+
+   La planche était poussée sur `main` et le flux de publication tournait —
+   mais il joue **toute la batterie avant de publier**, soit une dizaine de
+   minutes. L'adresse a été transmise dans l'intervalle, avec un « je te
+   confirme dès que c'est en ligne » qui ne l'a pas retenu : il a cliqué tout
+   de suite, et il a eu une erreur. C'est exactement ce que le dépôt s'était
+   promis d'arrêter — *« ne jamais transmettre une commande non vérifiée sans
+   le dire »* (`AGENTS.md`).
+
+   **Pire : deux poussées rapprochées s'annulent l'une l'autre.** Le flux
+   porte `concurrency: cancel-in-progress` — une nouvelle poussée tue le
+   déploiement en cours. Un lot livré en trois commits d'affilée peut donc
+   laisser l'adresse morte bien plus longtemps qu'on ne l'imagine.
+
+   **Donc, avant d'écrire une adresse dans un message :**
+
+   | | |
+   |---|---|
+   | on l'interroge | `curl -s -o /dev/null -w '%{http_code}' <adresse>` — et l'on attend le 200 |
+   | on regarde le flux | `gh run list --limit 1 --workflow=pages.yml` dit s'il tourne encore, ou s'il a été annulé |
+   | on la parcourt | l'ouvrir soi-même, à SON adresse et à la largeur de son téléphone (§5) |
+
+   **Et l'on groupe les poussées d'un même lot** plutôt que d'en enchaîner
+   trois : chacune annule le déploiement de la précédente.
+
+   « Je te confirme quand ce sera en ligne » n'est pas une précaution : c'est
+   une adresse morte qu'on lui met sous le doigt en promettant de s'excuser
+   après. On ne donne rien, ou on donne quelque chose qui répond ;
 2 ter. **ON NE LUI ENVOIE JAMAIS UNE CAPTURE DE LA MAQUETTE.** Sa consigne du
    26 août 2026, excédée : *« une maquette ! Pas de photo ! Comme d'habitude,
    enregistre une bonne fois pour toutes — certaines sessions le font très bien
@@ -956,6 +987,20 @@ Elle enchaîne, dans cet ordre — les contrôles rapides d'abord :
 Elle ne s'arrête pas à la première erreur : savoir que trois choses cassent, et
 lesquelles, vaut mieux que de les découvrir une par une.
 
+**LE PRÉVENIR AVANT DE LA LANCER — sa consigne du 4 septembre 2026 :**
+*« préviens-moi avant de lancer une batterie : mes sessions partagent le même
+dossier, et le serveur tombe si une autre écrit pendant que tu mesures. »*
+
+Ce n'est pas une politesse, c'est ce qui rend la mesure lisible. **Lui seul sait
+ce que ses autres sessions sont en train de faire** — le dépôt, lui, ne le dit
+nulle part. Une batterie jouée pendant qu'une session voisine enregistre un
+fichier rend des chiffres qui n'accusent personne et qu'il faut rejouer : dix
+minutes perdues, et l'envie d'y croire quand même.
+
+Une ligne suffit avant de la lancer, et l'on attend sa réponse. Vaut aussi pour
+tout ce qui prend le port 3000 ou vide la base — les suites navigateur, le seed,
+un serveur de développement.
+
 **NE RIEN JOUER À LA MAIN PENDANT QU'ELLE TOURNE — surtout pas une suite
 base.** Payé le 26 août 2026. Pendant une batterie, cinq suites navigateur ont
 rougi d'un coup et l'étape « Connexion derrière un proxy » avec elles. Aucune
@@ -1306,6 +1351,43 @@ Trois règles qui en découlent, et qui ne se négocient pas :
 **Après une fusion, rejouer la batterie SEULEMENT si le code arrivé touche ce
 qu'on vient de faire.** Sa décision du 13 août 2026 : *« seulement quand le code
 touche »*.
+
+#### LE TRAVAIL NON ENREGISTRÉ NE SE JETTE PLUS — un garde-fou, pas une consigne
+
+**Payé le 4 septembre 2026.** Trois sessions travaillaient dans le même dossier.
+Pendant qu'une quatrième livrait, ses modifications de `CHANGELOG.md` ont
+disparu de l'arbre : réécrites de mémoire, et personne n'a vu passer le geste
+qui les avait effacées.
+
+**Le patron l'a tranché le jour même**, devant deux propositions : le garde-fou
+automatique plutôt qu'une règle écrite. Il a raison, et §1 bis le dit déjà —
+*une consigne en prose se lit au début d'une conversation et s'oublie au bout de
+trois heures*, or c'est au bout de trois heures qu'une session nettoie son arbre.
+
+`scripts/garde-travail-non-enregistre.mjs` est branché sur chaque commande
+(`.claude/settings.json`, `PreToolUse`). **Dès que l'arbre porte du travail non
+enregistré**, il refuse les quatre gestes qui le jettent :
+
+    git reset --hard   ·   git checkout -- <fichier>
+    git restore <f>    ·   git clean -f
+
+**Ce qu'il ne fait PAS, et c'est le point.** Il ne dit rien sur un arbre propre,
+et il laisse passer les changements de branche : `git switch -c` **emporte** les
+modifications, il ne perd rien. La première version du garde-fou visait
+justement les branches — elle aurait gêné tout le monde tous les jours sans
+jamais éviter la panne qu'elle prétendait éviter. Un garde-fou qui parle à tort
+s'apprend à être ignoré, et l'on perd alors la protection sans s'en apercevoir.
+
+**Il ne ferme aucune porte** : ce qu'il propose à la place — `git stash push
+--include-untracked` — fait la même chose et se défait. Jeter son propre essai
+reste possible ; cela laisse simplement une trace.
+
+`scripts/test-garde-travail-non-enregistre.ts` lui montre autant de gestes à
+laisser passer qu'à refuser, joue le déclencheur avec son vrai contrat, et
+**refuse de conclure** sur un arbre propre. Il a servi tout de suite : il a
+attrapé deux défauts avant que le garde-fou ne serve — `git -C . reset --hard`
+n'était pas reconnu, et `git commit -m "… on ne fait jamais git reset --hard"`
+était refusé à tort.
 
 #### Ce que la soirée du 23 août a coûté, et qui n'était écrit nulle part
 

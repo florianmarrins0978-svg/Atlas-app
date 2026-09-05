@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La facture, rendue impeccable — verdict par point</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-facture-rendue-impeccable--verdict-par-point">La facture, rendue impeccable — verdict par point</h1>
+<p><em>4 septembre 2026. Lot joué depuis le prompt « Rends impeccable LA FACTURE ». Le code fait foi ; ce document dit ce qui a été fait, ce qui a été refusé, et ce qui reste ouvert.</em></p>
+<hr>
+<h2 id="ce-qui-était-faux-dans-le-brief-et-quil-faut-corriger-noir-sur-blanc">Ce qui était FAUX dans le brief, et qu'il faut corriger noir sur blanc</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>1. « La forme des travaux supplémentaires n'est pas tranchée. »</strong> Elle l'est. Le 1ᵉʳ septembre 2026 à 01 h 25, trois décisions ont été prises et sont écrites en tête de <code>appli/ts-sur-la-facture.html</code> : le bloc <strong>se déroule sous le bouton</strong> (l'écran à part est retiré, et l'interrupteur avec), <strong>les raccourcis de prestations sont retirés</strong>, <strong>tous les boutons s'alignent sur « Envoyer la facture »</strong>. Le taux se pose à la ligne, et les totaux le ventilent — sans quoi l'article 268 bis du CGI fait passer toute la facture au taux le plus élevé.</p>
+<p>Repartir de zéro sur cette question aurait fait rechoisir quelque chose de déjà choisi. Ce qui reste réellement ouvert est ailleurs, et se trouve plus bas.</p>
+<p><strong>2. « Le lien du PDF, le Total TTC, le paragraphe gris… »</strong> — les sept corrections du 24 août sont toutes en place, vérifiées ligne à ligne dans <code>FactureClient.tsx</code> et <code>TransmettreLaFacture.tsx</code>. Rien n'a été touché.</p>
+<p><strong>3. Un défaut du brief était SOUS-ESTIMÉ.</strong> Le brief dit que <code>terminerChantier</code> « ne regarde pas s'il existe un devis plus récent ». C'est vrai, et c'est pire : le cas courant n'est pas de rappuyer sur « Créer la facture », c'est d'ouvrir l'écran — et <code>getFacturePourChantier</code> servait alors le brouillon périmé <strong>sans un mot</strong>, sur un écran qui ne nommait même pas le devis dont il reprenait les lignes.</p>
+<hr>
+<h2 id="les-trois-défauts-corrigés">Les trois défauts corrigés</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="1-le-total-ne-se-recomposait-pas--et-le-papier-lui-le-décomposait">1. Le total ne se recomposait pas — et le papier, lui, le décomposait</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Ce qui n'allait pas</strong></td>
+<td>l'écran affichait les lignes, puis « Total HT », « TVA X % », « Total TTC ». Ni le <strong>prix accordé au client</strong>, ni les <strong>taux multiples</strong>. Dès qu'une remise existait, la somme des lignes affichées ne faisait pas le Total HT affiché, et rien ne disait pourquoi</td>
+</tr>
+<tr>
+<td><strong>Ce qui le prouve</strong></td>
+<td><code>src/server/repositories/factures.ts</code> recopie <code>reductionPourcent</code> du devis ; <code>src/server/pdf/document-commun.ts</code> imprime « Total HT », la remise et « Total HT après remise », et ventile par taux. L'écran, non</td>
+</tr>
+<tr>
+<td><strong>Corrigé</strong></td>
+<td>l'écran appelle <code>totauxAvecReduction(lignes, tauxTva, reductionPourcent)</code> — <strong>l'appel exact que fait <code>emettreFacture</code> juste avant de figer la pièce</strong>. Ce qu'il voit est ce qui partira</td>
+</tr>
+<tr>
+<td><strong>Mesuré</strong></td>
+<td>sur 800 € à 20 % + 400 € à 10 % avec 15 % accordés : 1 200,00 − 180,00 = 1 020,00 ; TVA 20 % 136,00 ; TVA 10 % 34,00 ; TTC 1 190,00. Chaque ligne se refait de tête</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les totaux ne sont plus transmis à l'écran du tout.</strong> Ils étaient lus dans les colonnes de la facture, qui pouvaient prendre du retard sur ses propres lignes. Une seule règle sert l'affichage et l'émission — <code>CLAUDE.md</code> §3.</p>
+<h3 id="2-ce-que-le-client-ouvre-nétait-pas-votre-document">2. Ce que le client ouvre n'était pas votre document</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Ce qui n'allait pas</strong></td>
+<td>la page par jeton écrivait <code>ui-serif, Georgia</code> en dur et prenait le crème et le vert d'Atlas, pendant que le PDF à un doigt de là portait votre typographie, votre fond, votre accent (migration 0063). Deux pièces pour la même facture, deux allures</td>
+</tr>
+<tr>
+<td><strong>Ce qui le prouve</strong></td>
+<td><code>src/app/factures/[jeton]/page.tsx</code> n'appelait jamais <code>allureDesDocuments</code></td>
+</tr>
+<tr>
+<td><strong>Corrigé</strong></td>
+<td>l'allure voyage jusqu'à la page (<code>factureParJeton</code>), et l'encre suit le fond par la <strong>même règle que le papier</strong> (<code>encreSurFond</code>)</td>
+</tr>
+<tr>
+<td><strong>L'invariant tenu</strong></td>
+<td><strong>sans réglage, la page est celle d'aujourd'hui au pixel près</strong> — <code>allure: null</code>, et rien ne change. C'est éprouvé</td>
+</tr>
+</tbody></table></div>
+<p><strong>Votre charte d'écran, elle, ne fuit toujours pas</strong> : la page en « Nuit » est identique à la page par défaut, et c'est photographié.</p>
+<p><strong>Et le soir même, vous l'avez fait figer.</strong> <em>« Au moment de l'envoi, comme les chiffres et l'identité. Mon client doit retrouver en ligne exactement ce qu'il a reçu en PDF, y compris six mois plus tard. »</em> Migration 0074 : l'émission écrit l'allure sur la facture, avec le reste.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Écrite au moment où le PDF est composé</strong></td>
+<td>la page et le papier montrent la même chose par construction, pas parce que deux lectures sont tombées d'accord</td>
+</tr>
+<tr>
+<td><strong>Le piège évité</strong></td>
+<td>le défaut s'écrit désormais EN CLAIR sur la facture, alors qu'il s'écrit VIDE sur l'entreprise. Sans ce départage, une facture partie sans allure aurait vu son bouton passer du vert à l'or — une migration censée figer les aspects en aurait changé un</td>
+</tr>
+<tr>
+<td><strong>Éprouvé sur l'IMAGE</strong></td>
+<td>deux factures photographiées, une avant réglage et une après ; l'allure changée ; rephotographiées ; <strong>octets comparés</strong>. Confronté au code d'avant, le contrôle rougit sur les deux</td>
+</tr>
+<tr>
+<td><strong>Ce qu'il a fallu corriger pour que ça veuille dire quelque chose</strong></td>
+<td>l'indicateur du serveur de développement affiche tantôt « N », tantôt « Compiling … » : il faisait conclure qu'une page avait bougé alors qu'elle était identique au pixel près</td>
+</tr>
+</tbody></table></div>
+<h3 id="3-le-devis-v2-natteignait-jamais-la-facture">3. Le devis v2 n'atteignait jamais la facture</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Ce qui n'allait pas</strong></td>
+<td>une facture bâtie à la fin du chantier garde les lignes du devis d'alors. Un devis corrigé et renvoyé ensuite ne l'atteignait jamais, et le second arrêt se franchissait sur l'ancien prix</td>
+</tr>
+<tr>
+<td><strong>Corrigé, en trois pièces</strong></td>
+<td>une règle pure (<code>src/lib/facture-face-au-devis.ts</code>) qui <strong>dit</strong> ; l'écran qui <strong>montre</strong>, en nommant le devis et sa version ; un geste — « Reprendre ce devis » — qui <strong>fait</strong></td>
+</tr>
+<tr>
+<td><strong>Refusé</strong></td>
+<td>reprendre automatiquement. Les montants changeraient entre le moment où vous ouvrez l'écran et celui où vous appuyez, sur le seul écran qui engage votre argent</td>
+</tr>
+</tbody></table></div>
+<p><strong>Un second défaut a été trouvé en chemin, et il refusait des chantiers facturables.</strong> <code>terminerChantier</code> prenait la <strong>dernière version</strong> du devis, puis refusait si elle n'était pas envoyée : un devis v1 parti chez le client et une v2 laissée en brouillon rendaient « Le devis de ce chantier n'a jamais été envoyé ». Phrase fausse, chantier bloqué, aucun geste pour en sortir. Il prend désormais la dernière version <strong>envoyée</strong> (<code>lireDevisQuiFaitFoi</code>), et les deux refus — aucun devis, aucun devis envoyé — sont distingués.</p>
+<hr>
+<h2 id="deux-défauts-trouvés-sur-la-capture-et-par-aucun-test">Deux défauts trouvés SUR LA CAPTURE, et par aucun test</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>CLAUDE.md</code> §5 : <em>« et surtout, regarder l'écran »</em>. Cinquième et sixième fois dans ce dépôt qu'un défaut sort d'une image.</p>
+<ol>
+<li><strong>Deux fois le même numéro de devis, l'un dit périmé et l'autre pas.</strong> Les versions d'un devis partagent leur numéro commercial : l'écran affichait « Reprise du devis 2026-000006 » juste au-dessus de « Le devis 2026-000006 v2 est parti depuis ». Illisible. La version s'écrit désormais <strong>toujours</strong>, même la première — trois caractères lèvent toute l'ambiguïté.</li>
+<li><strong>L'écran se contredisait.</strong> Le bandeau annonce qu'un devis plus récent est parti, et quatre blocs plus bas l'écran demandait « Rien n'a changé depuis le devis ? ». La question se tait quand la réponse est déjà écrite.</li>
+</ol>
+<hr>
+<h2 id="ce-qui-a-été-mesuré-et-non-corrigé--parce-que-ça-se-dessine-dabord">Ce qui a été MESURÉ et non corrigé — parce que ça se dessine d'abord</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>« Envoyer la facture » finit à 951 px, soit 287 px sous le pli</strong> sur votre écran de 390 × 664. <code>scripts/capture-facture-impeccable.mts</code> le mesure à chaque passage, et <strong>refuse de conclure sur une boîte de zéro pixel</strong> — une capture prise avant la mise en page mesurerait 0, et « 0 est au-dessus du pli » serait un vert qui ne prouve rien (<code>CLAUDE.md</code> §5).</p>
+<p><strong>CORRECTION : j'ai d'abord annoncé 309 px, et c'était faux.</strong> Le chiffre venait d'une capture où le nom du client d'essai passait à la ligne, ce qui ajoutait une vingtaine de pixels. La mesure refaite bloc par bloc donne 287.</p>
+<p><strong>VOTRE VERDICT DU 4 SEPTEMBRE : « on laisse et on descend comme aujourd'hui ».</strong> Le bouton ne bouge pas.</p>
+<p>Vous aviez d'abord demandé s'il n'était pas possible de <strong>resserrer la page</strong> pour gagner les pixels manquants. La mesure dit non, et voici pourquoi :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>px</th>
+</tr></thead><tbody>
+<tr>
+<td>en-tête (retour, « Facture », nom du chantier)</td>
+<td>151</td>
+</tr>
+<tr>
+<td>carte Facture + échéance</td>
+<td>123</td>
+</tr>
+<tr>
+<td>carte Reprise du devis</td>
+<td>120</td>
+</tr>
+<tr>
+<td><strong>carte des totaux</strong></td>
+<td><strong>297</strong></td>
+</tr>
+<tr>
+<td>« Rien n'a changé depuis le devis ? »</td>
+<td>21</td>
+</tr>
+<tr>
+<td>Par SMS / Par e-mail</td>
+<td>84</td>
+</tr>
+<tr>
+<td>les cinq espaces entre les blocs</td>
+<td>88</td>
+</tr>
+<tr>
+<td><strong>le bouton finit à</strong></td>
+<td><strong>951</strong> — pour 664 d'écran</td>
+</tr>
+</tbody></table></div>
+<p>Espaces à 12 px au lieu de 16, marges de carte à 14 au lieu de 20 : <strong>une soixantaine de pixels</strong>, contre 287 manquants. Et ces pixels-là ont déjà été pris — le 31 août, un lot en a récupéré <strong>53 dans les espacements sans retirer un mot</strong>. Ce qui reste n'est plus de l'air, c'est de la cible sous le doigt, en plein soleil et à une main.</p>
+<p><strong>La carte qui pèse est celle des totaux, et elle a grossi ce jour-là</strong> : elle décompose le total au lieu de l'affirmer, ce qui est très exactement la correction demandée. La resserrer déferait ce qu'on venait de réparer.</p>
+<hr>
+<h2 id="les-gestes-comptés">Les gestes, comptés</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>De « le chantier est fait » à « la facture est partie », depuis « Terminés » :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Geste</th>
+<th>Tombe ?</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>toucher la ligne « À facturer »</td>
+<td>non — c'est l'entrée</td>
+</tr>
+<tr>
+<td>2</td>
+<td>« Créer la facture »</td>
+<td>non — c'est la fin de chantier, un arrêt décidé</td>
+</tr>
+<tr>
+<td>3</td>
+<td><em>(vérifier les montants)</em></td>
+<td>rien à appuyer</td>
+</tr>
+<tr>
+<td>4</td>
+<td>« Envoyer la facture »</td>
+<td>non — arrête la facture, prépare le lien, ouvre la messagerie, en un seul appui</td>
+</tr>
+<tr>
+<td>5</td>
+<td>envoyer, depuis votre messagerie</td>
+<td>hors d'Atlas, et c'est votre règle</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun geste ne tombe : ils sont déjà quatre, et chacun décide de quelque chose.</strong> Ce qui coûte, ce n'est pas un appui de trop — c'est le défilement du point ci-dessus, et c'est ce que la planche propose de rendre.</p>
+<hr>
+<h2 id="ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">Ce qui a été REFUSÉ, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Refusé</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Un champ de coordonnée avant l'envoi</strong></td>
+<td>vous l'avez écarté le 22 août : <em>« refuse l'envoi »</em>. Le canal sans coordonnée reste inerte</td>
+</tr>
+<tr>
+<td><strong>Remettre une phrase sous « Facture arrêtée »</strong></td>
+<td>vous l'avez fait supprimer le 24 août. <code>CLAUDE.md</code> §5 bis : quand une suite réclame ce que vous avez fait enlever, on corrige la suite</td>
+</tr>
+<tr>
+<td><strong>Reprendre le devis automatiquement</strong></td>
+<td>vos montants changeraient sous vos yeux, entre l'ouverture et l'appui</td>
+</tr>
+<tr>
+<td><strong>Déplacer « Envoyer la facture »</strong></td>
+<td>apparence : ça se dessine d'abord</td>
+</tr>
+<tr>
+<td><strong>Figer l'allure sur la facture</strong></td>
+<td>trois colonnes et une migration, pendant que deux autres sessions écrivent dans le même dossier. À décider, pas à glisser</td>
+</tr>
+<tr>
+<td><strong>Toucher la flèche de retour de <code>facture/page.tsx</code></strong></td>
+<td>elle appartient au lot qui retire la fiche du chantier</td>
+</tr>
+<tr>
+<td><strong>Corriger <code>scripts/test-hub-repo.ts</code></strong></td>
+<td>il est rouge parce qu'un autre lot a retiré <code>getSecondarySteps</code>. Ce n'est pas à moi de le refermer</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="les-invariants-tenus">Les invariants, tenus</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Invariant</th>
+<th>Comment il est tenu</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Toute lecture par <code>withEntreprise</code></strong></td>
+<td><code>reprendreLeDevisSurLaFacture</code> et <code>devisQuiFaitFoi</code> n'en sortent jamais. Une facture d'une autre entreprise <strong>n'existe pas</strong> pour la requête — éprouvé</td>
+</tr>
+<tr>
+<td><strong>La page par jeton s'éprouve en base, sous <code>atlas_app</code></strong></td>
+<td><code>scripts/test-facture-reprend-le-devis-db.ts</code>. Les suites navigateur traversent la RLS et ne voient pas ces défauts — le 8 août 2026, le lien de facture était mort en production pendant que sa suite navigateur était verte</td>
+</tr>
+<tr>
+<td><strong>Une facture arrêtée ne se réécrit pas</strong></td>
+<td>la reprise la refuse, en nommant sa raison — éprouvé</td>
+</tr>
+<tr>
+<td><strong>Le français partout, les règles pures dans <code>src/lib/</code></strong></td>
+<td><code>facture-face-au-devis.ts</code> est pure et s'éprouve sans base</td>
+</tr>
+<tr>
+<td><strong>Jamais deux fois la même règle</strong></td>
+<td>les totaux de l'écran viennent de <code>totauxAvecReduction</code>, comme le papier et comme l'émission. L'instantané du devis est écrit une fois (<code>instantaneDuDevis</code>) et sert la création comme la reprise</td>
+</tr>
+<tr>
+<td><strong>Les huit chartes</strong></td>
+<td><code>npx tsx scripts/test-chartes-lisibles.ts</code> — <strong>14 réussis, 0 échec</strong>. Aucune couleur en clair ajoutée</td>
+</tr>
+<tr>
+<td><strong>Aucune flèche décorative</strong></td>
+<td><code>npx tsx scripts/test-aucune-fleche.ts</code> — <strong>115 339 lignes lues, 8 flèches fonctionnelles nommées, aucune décorative</strong></td>
+</tr>
+<tr>
+<td><strong>Un refus nomme sa raison ET son geste</strong></td>
+<td>« Le devis 2026-000006 v2 est parti depuis » + le bouton « Reprendre ce devis »</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui tranche</th>
+</tr></thead><tbody>
+<tr>
+<td>~~<strong>A ou B sur la planche</strong>~~ — <strong>TRANCHÉ le 4 sept. : « la A »</strong>, aucun champ de trace</td>
+<td><em>fermé</em></td>
+</tr>
+<tr>
+<td>~~<strong>Le geste au-dessus du pli</strong>~~ — <strong>TRANCHÉ le 4 sept. : « on laisse »</strong></td>
+<td><em>fermé</em></td>
+</tr>
+<tr>
+<td>~~<strong>Figer l'allure sur la facture émise</strong>~~ — <strong>FAIT le 4 sept.</strong>, migration 0074</td>
+<td><em>fermé</em></td>
+</tr>
+<tr>
+<td>~~<strong>L'immuabilité d'une facture émise sans contrôle</strong>~~ — <strong>ÉPROUVÉE le 4 sept.</strong>, et j'avais écrit le contraire de la vérité</td>
+<td><em>fermé</em></td>
+</tr>
+<tr>
+<td>~~<strong>Ce qu'une ligne muette autorise</strong>~~ — sans objet, A ne pose aucune réserve</td>
+<td><em>fermé</em></td>
+</tr>
+<tr>
+<td><strong>Les trois suites navigateur que le brief annonce rouges</strong></td>
+<td>mesurées à part, voir ci-dessous</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-que-ce-lot-ne-couvre-pas-et-pourquoi">Ce que ce lot NE couvre pas, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Trois sessions écrivent dans le même dossier en ce moment.</strong> Au moment de livrer, l'arbre porte, en plus de ce lot : le retrait de la fiche du chantier (<code>src/lib/chantier-etat.ts</code>, <code>src/app/chantiers/[id]/…</code>) et la feuille du planning (<code>src/app/planning/…</code>). Leur travail est <strong>en cours et rouge</strong> :</p>
+<ul>
+<li><code>npx tsc --noEmit</code> échoue sur <code>scripts/test-hub-repo.ts</code> (il importe <code>getSecondarySteps</code>, que l'autre lot vient de retirer) et sur <code>src/app/planning/page.tsx</code> (une propriété que son composant n'accepte pas encore) ;</li>
+<li><code>npm run lint</code> rend 19 erreurs, <strong>toutes dans <code>src/app/planning/</code></strong>.</li>
+</ul>
+<p><strong>Aucune ne vient de ce lot, et aucune n'a été corrigée</strong> : refermer le chantier d'une autre session dans le même commit rendrait les deux illisibles.</p>
+<p>Sur les fichiers de ce lot : <code>tsc</code> est propre, <code>eslint</code> ne dit rien.</p>
+<hr>
+<h2 id="sa-correction-du-4-septembre-et-elle-annule-ma-première-proposition">SA CORRECTION DU 4 SEPTEMBRE, ET ELLE ANNULE MA PREMIÈRE PROPOSITION</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La première version de la planche portait, sous une ligne de travaux en plus sans accord écrit : <strong>« Faire signer le bon, ou lui renvoyer le devis. »</strong></p>
+<p><strong>Il a relevé deux fautes dans cette seule phrase, et les deux sont justes.</strong></p>
+<ol>
+<li><em>« Depuis cette page, comment l'utilisateur fait pour renvoyer le devis ? »</em> — il ne le peut pas. La phrase désignait un geste qui n'existe nulle part sur cet écran. C'est exactement ce que ce lot reproche au reste de l'application : un refus qui ne porte pas son geste est un cul-de-sac.</li>
+<li><em>« Les travaux supplémentaires sont là parce que le client les a demandés sur le chantier ; il ne va pas lui renvoyer un devis, il doit seulement l'ajouter à la facture. »</em> — et celle-là est plus grave : <strong>le raisonnement était faux</strong>. Un devis se fait AVANT le travail. Le travail est fait. Un devis envoyé après coup est un papier que personne n'attend, et qui rouvrirait une négociation close.</li>
+</ol>
+<p><strong>Ce que cela change dans la façon de poser le problème.</strong> Il n'y a pas d'« accord manquant » à aller chercher : <strong>l'accord a eu lieu</strong>, de vive voix, au jardin. Ce qui manque est seulement sa <strong>trace</strong>, et elle ne compte que si la cliente conteste plus tard.</p>
+<p><strong>La planche est refaite autour de ça.</strong> Quand il ajoute une ligne, un champ dit qui l'a demandée et quand ; ce qu'il écrit <strong>s'imprime sur la facture</strong>, si bien que la pièce devient elle-même la trace — et la cliente qui la paie l'accepte. Une ligne laissée muette part quand même ; l'écran dit seulement ce que sa cliente lira, et porte le champ, sur cette page.</p>
+<p><strong>SON VERDICT, LE SOIR MÊME : « la A ».</strong> Aucun champ, aucune pastille, aucune réserve — le bloc des travaux en plus reste exactement celui du 1ᵉʳ septembre.</p>
+<p><strong>C'est la deuxième fois qu'il écarte cette question</strong> (« pas besoin de ça » le 1ᵉʳ septembre), et elle ne se repose pas une troisième. Le risque juridique reste réel, il le connaît, et <strong>sa réponse est le bon signé sur place</strong> (<code>appli/ts-bon-sur-place.html</code>) — pas un champ de plus sur l'écran de la facture. Le verdict est écrit en tête de la planche, pour qu'aucune session ne la rouvre.</p>
+<p>Les deux autres pistes, écartées avec elle :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que ça donne</th>
+<th>Ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Rien du tout</strong></td>
+<td>la réserve disparaît, l'écran se tait</td>
+<td>c'est le plus proche de son « pas besoin de ça » du 1ᵉʳ septembre — et la trace reste au bon signé sur place</td>
+</tr>
+<tr>
+<td><strong>Le client confirme depuis sa page</strong></td>
+<td>son écran par jeton porte le bloc des travaux en plus et un « Je confirme » daté</td>
+<td>la trace la plus solide, et la machinerie existe déjà (le devis s'accepte ainsi). <strong>Mais elle invite à ne PAS confirmer</strong> : elle attire l'œil sur un litige qui n'aurait peut-être jamais eu lieu</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="correction--jai-écrit-que-votre-facture-nétait-peut-être-pas-protégée-cétait-faux">CORRECTION : j'ai écrit que votre facture n'était peut-être pas protégée. C'était faux.</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce que j'avais écrit :</strong> un contrôle devait prouver que la base refuse de réécrire une facture émise ; il ne passait pas ; je l'ai retiré et j'ai mis le point en attente, en écrivant que la protection ne tenait peut-être que dans un sens.</p>
+<p><strong>Votre réponse :</strong> <em>« si la base refuse la réécriture mais que le même geste passe par le code, alors ma facture n'est pas figée — c'est justement ce que je promets à mon client. Va au fond. »</em> Vous aviez raison d'exiger ça.</p>
+<p><strong>Ce que la mesure dit, angle par angle :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le geste</th>
+<th>Ce que ça donne</th>
+</tr></thead><tbody>
+<tr>
+<td>réécrire l'<strong>aspect</strong> par le dépôt</td>
+<td><strong>refusé</strong> — « Une facture émise est immuable »</td>
+</tr>
+<tr>
+<td>réécrire l'aspect <strong>en SQL brut</strong>, dans le même contexte</td>
+<td><strong>refusé</strong></td>
+</tr>
+<tr>
+<td>réécrire le <strong>montant</strong></td>
+<td><strong>refusé</strong> — et c'est lui qui porte le relevé de TVA</td>
+</tr>
+<tr>
+<td>écrire <strong>hors contexte d'isolation</strong></td>
+<td>aucune ligne touchée : la facture n'existe pas pour cette requête</td>
+</tr>
+</tbody></table></div>
+<p><strong>La protection tient dans tous les sens.</strong> Ce n'était pas elle qui était en cause : c'était mon contrôle.</p>
+<p><strong>Pourquoi il se trompait, et ça vaut pour tout le dépôt.</strong> L'outil qui parle à la base <strong>enveloppe</strong> le message de PostgreSQL : le message visible ne dit que « Failed query: update … », et la phrase du garde-fou — « Une facture émise est immuable » — est rangée un cran plus bas, dans la <em>cause</em>. Mon contrôle cherchait le mot au mauvais endroit : il échouait <strong>sur une protection qui marche</strong>, et faisait conclure l'inverse de la vérité.</p>
+<p>Une autre suite du dépôt (<code>scripts/db-tests.ts</code>) n'a jamais eu ce problème : elle parle à la base sans cet outil. La leçon est écrite dans <code>HANDOVER.md</code>, parce qu'elle piégera la prochaine session exactement pareil.</p>
+<p><strong>Et j'avais tort sur un second point, que la batterie a montré :</strong> j'avais écrit qu'il n'existait « aucun contrôle automatique ». Il en existait un — <code>test-factures.ts</code>, « une facture émise est immuable jusque dans ses lignes » — et il passe <strong>parce qu'il ne cherche aucun mot</strong> : il se contente d'une erreur, quelle qu'elle soit. C'est le contraste qui rend le piège lisible.</p>
+<p>Ce qui manquait vraiment était plus étroit : ce contrôle-là couvre les <strong>lignes</strong> de la facture, pas la <strong>facture elle-même</strong> — donc ni son aspect, ni ses totaux, ni l'écriture SQL directe. C'est cette part-là que ce lot comble.</p>
+<p><strong>Et le contrôle sait échouer</strong> : garde-fou désactivé sur la base d'essai, il rougit ; réactivé, il repasse au vert. Sans cette confrontation, un test vert ne prouve rien.</p>
+<hr>
+<h2 id="les-chiffres-exacts">Les chiffres exacts</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Sur les fichiers de ce lot</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td>propre sur ce lot (deux erreurs subsistent, toutes deux à d'autres sessions : <code>scripts/test-hub-repo.ts</code>, <code>src/app/planning/page.tsx</code>)</td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td><strong>aucune remarque</strong> sur les neuf fichiers touchés (19 erreurs subsistent, toutes dans <code>src/app/planning/</code>)</td>
+</tr>
+<tr>
+<td><code>npm run verifier:memoire</code></td>
+<td>✅ 8 fichiers vérifiés, 3 rappels armés</td>
+</tr>
+<tr>
+<td><code>scripts/test-chartes-lisibles.ts</code></td>
+<td>✅ <strong>14 réussis, 0 échec</strong></td>
+</tr>
+<tr>
+<td><code>scripts/test-aucune-fleche.ts</code></td>
+<td>✅ 115 339 lignes lues, 8 flèches fonctionnelles nommées, <strong>aucune décorative</strong></td>
+</tr>
+<tr>
+<td><code>scripts/test-facture-face-au-devis.ts</code> <em>(neuf)</em></td>
+<td>✅ <strong>5 réussis, 0 échec</strong></td>
+</tr>
+<tr>
+<td><code>scripts/test-facture-reprend-le-devis-db.ts</code> <em>(neuf)</em></td>
+<td>✅ <strong>13 réussis, 0 échec</strong> — dont l'immuabilité, confrontée au garde-fou désactivé</td>
+</tr>
+<tr>
+<td><code>scripts/capture-facture-impeccable.mts</code> <em>(neuf)</em></td>
+<td>✅ 9 planches, la mesure du pli, et la comparaison d'octets qui prouve le figeage</td>
+</tr>
+</tbody></table></div>
+<h3 id="la-batterie-de-livraison-jouée-en-entier-le-5-septembre">La batterie de livraison, jouée en entier le 5 septembre</h3>
+<p><code>ATLAS_BASE_SUPER=… npm run verifier:avant-livraison</code>, sur <code>atlas_test</code> — jamais sur <code>atlas_dev</code> : toutes les étapes qui touchent la base y sont épinglées.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>Types (<code>tsc --noEmit</code>)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Lint</td>
+<td>✅ — 17 avertissements, <strong>0 erreur</strong></td>
+</tr>
+<tr>
+<td><strong>Construction</strong> (<code>next build</code>)</td>
+<td>✅ — c'est elle qui protège son banc du mode lent</td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td>✅ 8 fichiers vérifiés</td>
+</tr>
+<tr>
+<td>Fournisseurs d'IA</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Suites base de données</strong></td>
+<td>❌ <strong>300/310</strong> — les dix rouges d'infrastructure connus</td>
+</tr>
+<tr>
+<td>Données de démonstration</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td>❌ <strong>refusée</strong> — le port 3000 était pris</td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td>❌ <strong>refusée</strong> — même raison</td>
+</tr>
+</tbody></table></div>
+<p><strong>LES DEUX DERNIÈRES ÉTAPES N'ONT PAS PU ÊTRE JOUÉES, ET LE REFUS EST LE BON COMPORTEMENT.</strong> Elles ne sont pas tombées sur un défaut : elles ont refusé de mesurer. Le message est sans ambiguïté — <em>« Quelque chose écoute DÉJÀ sur le port 3000, et ce n'est pas cette batterie. Les suites travailleraient sur ce serveur-là — celui d'un autre code, peut-être d'une autre branche — et leur résultat ne voudrait rien dire. »</em></p>
+<p>Le port avait été libéré avant le lancement ; il a été repris pendant les neuf minutes qu'ont duré les étapes précédentes, par une <strong>session voisine</strong> qui prenait des captures (serveur démarré à 01:01). Je ne l'ai pas tué : elle travaillait.</p>
+<p><strong>C'est exactement le coût de plusieurs sessions dans un même dossier</strong> — et une batterie reste une machine à un seul occupant. Ces deux étapes se rejouent en une commande dès que le port est rendu, et je préviens avant (<code>CLAUDE.md</code> §5).</p>
+<p><strong>Ce que cela ne remet PAS en cause :</strong> les six étapes précédentes, dont la construction et les suites base, ont été jouées en entier sur un port libre.</p>
+<p><strong>La batterie base : 300/310.</strong> Les dix rouges sont ceux que le dépôt traîne depuis le 3 septembre — ports, verrous de construction, rôles, fiche du banc : <code>test-boutons-arrondis</code>, <code>test-fiche-pendant-relance</code>, <code>test-mise-a-jour-role-db</code>, <code>test-mode-emploi</code>, <code>test-ouvrir-port</code>, <code>test-relance-construction</code>, <code>test-roles-capacites-db</code>, <code>test-salarie-planning-lecture-seule-db</code>, <code>test-seed-conserve-identifiants</code>, <code>test-verrou-construction</code>. <strong>Aucun n'est de ce lot, et aucun ne touche la facture.</strong></p>
+<p>Une migration oblige à rejouer la batterie entière (<code>CLAUDE.md</code> §6) : c'est fait, et sur une base migrée — sans quoi elle rendrait des dizaines de rouges qui n'accuseraient que la base.</p>
+<h3 id="un-piège-de-mesure-payé-et-consigné">Un piège de mesure, payé et consigné</h3>
+<p><strong>La même batterie, sur le même code, a rendu 287/310 puis 299/310</strong> à quelques minutes d'intervalle. Les vingt-trois tombées disaient <em>« deadlock detected »</em> et <em>« Utilisateur X n'est pas membre de l'entreprise Y »</em> — la signature d'un <code>TRUNCATE</code> venu d'à côté. <code>nettoyerBase()</code> vide la base, et deux batteries concurrentes se détruisent l'une l'autre.</p>
+<p><strong>Une batterie est une machine à un seul occupant.</strong> Jouée pendant qu'une autre session travaille, son total ne veut rien dire. C'était déjà écrit dans <code>CLAUDE.md</code> §5 ; ce jour-là, avec trois sessions dans le même dossier, c'est arrivé pour de bon.</p>
+<h3 id="les-trois-suites-navigateur-du-brief--rouges-et-pas-dici">Les trois suites navigateur du brief : rouges, et pas d'ici</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Suite</th>
+<th>Ce qu'elle dit</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-facture-e2e</code></td>
+<td><strong>0 réussi, 5 échoués</strong></td>
+</tr>
+<tr>
+<td><code>test-tva-au-paiement-e2e</code></td>
+<td><strong>0 réussi, 7 échoués</strong></td>
+</tr>
+<tr>
+<td><code>test-facture-au-client-e2e</code></td>
+<td>non mesurée (délai dépassé)</td>
+</tr>
+</tbody></table></div>
+<p><strong>Une session voisine les a mesurées indépendamment le 4 septembre au soir</strong>, sur une batterie complète : elle a rejoué cinq suites tombées <strong>avec et sans son lot</strong> — 0/5 des deux côtés. Ces rouges sont donc <strong>antérieurs et collectifs</strong>, et les suites navigateur rendaient 70/127 ce soir-là. Deux mesures indépendantes qui concordent valent mieux qu'une.</p>
+<p><strong>Les cinq et les sept tombent au même endroit, et ce n'est pas la facture :</strong> <code>waiting for locator('text=+ Ajouter une ligne')</code> — l'écran du <strong>devis complet</strong>, qui ne rend pas son bouton. Aucune des deux n'atteint jamais l'écran de facture.</p>
+<p><strong>Ce lot ne les répare pas, et ne prétend pas le contraire.</strong> Le fichier en cause (<code>DevisCompletClient.tsx</code>) n'est pas touché ici, et l'arbre porte au même moment deux lots en cours qui réécrivent le chemin d'accès à cet écran. Les rejouer une fois ces lots posés est dans <code>TODO.md</code>.</p>
+<hr>
+<h2 id="les-fichiers">Les fichiers</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Neufs</strong> — <code>drizzle/0074_allure_figee_sur_la_facture.sql</code>, <code>src/lib/facture-face-au-devis.ts</code>, <code>scripts/test-facture-face-au-devis.ts</code>, <code>scripts/test-facture-reprend-le-devis-db.ts</code>, <code>scripts/capture-facture-impeccable.mts</code>, <code>appli/ts-la-trace-de-laccord.html</code>.</p>
+<p><strong>Touchés</strong> — <code>src/app/chantiers/[id]/facture/{FactureClient,page,actions}.tsx|ts</code>, <code>src/app/factures/[jeton]/page.tsx</code>, <code>src/lib/allure-documents.ts</code>, <code>src/server/db/schema.ts</code>, <code>src/server/repositories/{factures,devis,entreprises,envois-factures}.ts</code>, <code>appli/essais.html</code>.</p>
+<p><strong>La migration est appliquée sur <code>atlas_test</code> ET sur <code>atlas_dev</code></strong> — sans quoi l'écran de facture tomberait sur « column does not exist » dès la prochaine ouverture locale. Elle n'ajoute que trois colonnes et ne reprend aucune donnée : la base ne portait aucune facture.</p>
+<p><strong>Non touchés, volontairement</strong> — la flèche de retour de <code>facture/page.tsx</code> (elle est à l'autre lot), <code>TransmettreLaFacture.tsx</code> et les sept corrections du 24 août, <code>src/server/pdf/*</code> (le papier était déjà juste — c'est l'écran qui mentait).</p>
+</main>
+</body>
+</html>

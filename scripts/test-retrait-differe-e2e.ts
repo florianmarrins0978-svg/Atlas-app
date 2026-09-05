@@ -70,15 +70,15 @@ async function main() {
   const fileAvant = await compterEnFile();
   const photosAvant = await compterPhotosVives();
 
-  // Les photos vivent dans la pellicule du tiroir depuis le 11 août 2026 :
-  // l'écran `/photos` n'existe plus, et la pellicule ne se voit qu'une fois le
-  // tiroir ouvert.
-  await page.goto(`${BASE}/chantiers/${chantierId}`, { waitUntil: "networkidle" });
+  // **La pellicule est à découvert sur la FICHE CLIENT** — 4 septembre 2026.
+  // L'écran `/photos` n'existe plus depuis le 11 août ; la pellicule vivait
+  // alors dans le tiroir de la fiche du chantier, qu'il fallait ouvrir. Cette
+  // fiche est retirée (`ARCHITECTURE.md` §254) et la pellicule se voit dès
+  // l'arrivée : il n'y a plus de tiroir à ouvrir.
+  await page.goto(`${BASE}/chantiers/${chantierId}/coordonnees`, { waitUntil: "networkidle" });
   // Le marqueur n'apparaît qu'après le premier effet : le HTML rendu par le
   // serveur porte déjà les boutons, sans le moindre écouteur.
   await page.locator("[data-atlas-vivant='oui']").first().waitFor({ state: "attached", timeout: 30000 });
-  await page.click('button[aria-label="Ouvrir le détail du chantier"]');
-
   await page.getByRole("button", { name: "Voir la photo" }).first().click();
   await page.waitForSelector('button[aria-label="Retirer cette photo"]', { timeout: 10000 });
   await page.click('button[aria-label="Retirer cette photo"]');

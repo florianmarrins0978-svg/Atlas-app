@@ -6,6 +6,8 @@ import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getFacturePourChantier } from "@/server/repositories/factures";
+import { devisQuiFaitFoi } from "@/server/repositories/devis";
+import { repriseDuDevis } from "@/lib/facture-face-au-devis";
 import { getClient } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { exigibiliteDe } from "@/server/repositories/paiements-facture";
@@ -48,6 +50,27 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
   // écran doit le rattraper.
   const envoiDejaFait = existante ? await dernierEnvoiFacture(ctx, existante.facture.id) : null;
 
+  // **LE DEVIS QUI FAIT FOI, CONFRONTÉ À CELUI QUE LA FACTURE REPREND.**
+  //
+  // Une facture bâtie à la fin du chantier ne bouge plus : un devis corrigé et
+  // renvoyé ensuite ne l'atteignait jamais, et le second arrêt du parcours se
+  // franchissait sur l'ancien prix. La comparaison est une fonction pure
+  // (`src/lib/facture-face-au-devis.ts`), et elle ne fait que DIRE — c'est un
+  // geste du patron qui reprend.
+  const devisFoi = existante ? await devisQuiFaitFoi(ctx, id) : null;
+  const reprise = existante
+    ? repriseDuDevis(
+        { devisId: existante.facture.devisId, statut: existante.facture.statut },
+        devisFoi
+          ? {
+              id: devisFoi.id,
+              numeroCommercial: devisFoi.numeroCommercial,
+              numeroVersion: devisFoi.numeroVersion,
+            }
+          : null
+      )
+    : { aJour: true as const };
+
   const origine = originePublique(await headers());
 
   return (
@@ -62,6 +85,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
         <FactureClient
           chantierId={id}
           regimeTva={regimeTva}
+          reprise={reprise}
           origine={origine}
           entrepriseNom={entreprise?.nom ?? ""}
           modeleMessage={entreprise?.messageClient ?? null}
@@ -78,18 +102,28 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
                   id: existante.facture.id,
                   numeroCommercial: existante.facture.numeroCommercial,
                   statut: existante.facture.statut,
+                  // De quel devis viennent ces lignes. Le PDF l'écrit depuis
+                  // toujours ; l'écran du patron, non.
+                  numeroDevis: existante.numeroDevis,
+                  versionDevis: existante.versionDevis,
                   clientNom: existante.facture.clientNom,
                   clientCivilite: existante.facture.clientCivilite,
                   dateEmission: existante.facture.dateEmission,
                   dateEcheance: existante.facture.dateEcheance,
                   tauxTva: existante.facture.tauxTva,
-                  totalHt: existante.facture.totalHt,
-                  totalTva: existante.facture.totalTva,
-                  totalTtc: existante.facture.totalTtc,
+                  // **Le prix accordé au client voyage jusqu'à l'écran.** Sans
+                  // lui, la somme des lignes affichées ne faisait pas le Total
+                  // HT affiché, et rien ne disait pourquoi — au second arrêt,
+                  // sur le montant qu'il défend devant son client.
+                  reductionPourcent: existante.facture.reductionPourcent,
                   lignes: existante.lignes.map((l) => ({
                     id: l.id,
                     libelle: l.libelle,
                     montant: l.montant,
+                    // Le taux de sa catégorie, comme sur le papier
+                    // (migration 0073) : sans lui, l'écran ventilait tout sur
+                    // le taux du document.
+                    tauxTva: l.tauxTva,
                   })),
                 }
               : null

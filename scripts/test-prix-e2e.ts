@@ -23,14 +23,14 @@ async function main() {
   const nomUnique = `Chantier prix e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   // **Pas de délai écrit à la main ici.** Cinq secondes suffisent quand la
   // suite est jouée seule ; sous soixante suites enchaînées, la création d'un
   // chantier ne les tient pas, et le rouge accuse le produit au lieu de la
   // machine. Le délai commun — quarante-cinq secondes, posé par
   // `lancerNavigateur` — existe exactement pour cela (`e2e-browser.ts`).
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  const prixUrl = `${page.url()}/prix`;
+  const prixUrl = `http://localhost:3000/chantiers/${idChantier}/prix`;
 
   // --- État vide ---
   await page.goto(prixUrl, { waitUntil: "networkidle" });

@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La ligne qui attend son prix</title>
+<style>
+  /* Les couleurs ne sont pas approchées à l'oeil : elles sortent de
+     `variablesCharte()` (src/lib/chartes.ts), relevées le 4 septembre 2026.
+     Sur Nuit, l'accent est CLAIR et le fond est SOMBRE — les pôles s'inversent,
+     et c'est tout l'intérêt de pouvoir basculer ici. */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1; --or:#B98B47;
+    --plein:#7d9a6d; --surPlein:#faf9f5; --orTexte:#906c37;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --alerte:#9C3B2E;
+  }
+  html[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e; --or:#B98B47;
+    --plein:#e9e8de; --surPlein:#1a1d19; --orTexte:#B98B47;
+    --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07);
+    --alerte:#cd6456;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--cream); color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-text-size-adjust:100%; overflow-x:hidden;
+  }
+  .page{max-width:960px;margin:0 auto;padding:22px 16px 60px}
+  h1{font:600 22px/1.25 Georgia,"Times New Roman",serif;margin:0 0 6px}
+  .chapo{margin:0 0 20px;color:var(--inkSoft);font-size:14px;max-width:60ch}
+  .chapo b{color:var(--ink)}
+
+  .barres{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .onglets{display:flex;gap:6px;flex-wrap:wrap}
+  .onglets button, .chartes button{
+    padding:9px 14px;border:0;border-radius:999px;background:var(--rustTint);
+    color:var(--rust);font-size:13.5px;font-weight:600;cursor:pointer;
+    font-family:inherit;
+  }
+  .onglets button[aria-pressed="true"], .chartes button[aria-pressed="true"]{
+    background:var(--plein);color:var(--surPlein)
+  }
+  .chartes{display:flex;gap:6px}
+
+  .dit{margin:0 0 14px;font-size:13.5px;color:var(--inkSoft);max-width:60ch;min-height:42px}
+  .dit b{color:var(--ink)}
+
+  .scene{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+  .tel{
+    width:390px;height:664px;overflow:auto;position:relative;
+    background:var(--cream);border-radius:26px;
+    box-shadow:0 14px 44px rgba(0,0,0,.16), inset 0 0 0 1px var(--line);
+    scrollbar-width:thin;
+  }
+  .taille{font-size:12px;color:var(--muted);margin:8px 0 0}
+
+  /* ─── L'écran lui-même ─────────────────────────────────────────────────── */
+  .ecran{padding:0 0 28px}
+  .entete{display:flex;align-items:center;gap:12px;padding:16px 26px 0}
+  .entete svg{flex:0 0 auto}
+  .surtitre{font-size:11.5px;color:var(--muted);margin:0}
+  .titrecran{font:600 26px/1.1 Georgia,serif;margin:2px 0 0;letter-spacing:-.01em}
+
+  .caps{font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.28em}
+  .situation{font-size:11.5px;line-height:1.5}
+
+  .bloctotal{padding:26px 26px 0}
+  .montanttotal{font:36px/1.02 Georgia,serif;margin:12px 0 0;letter-spacing:-.018em;
+                font-variant-numeric:tabular-nums}
+  .sousttotal{margin:12px 0 0;color:var(--muted)}
+
+  .voir{margin:26px 26px 0;background:none;border:0;padding:0;color:var(--rust);
+        font-family:inherit;cursor:pointer}
+
+  .detail{margin-top:30px;padding:0 26px}
+  .entetedetail{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  /* L’or du dessin et l’or du TEXTE ne sont pas le même. Mesuré le 4 septembre :
+     #B98B47 sur une plage claire donne 2,62 à 3,07 — sous les 4,5 exigés, et sur les
+     SIX chartes claires. Il passe sur Nuit et Sylve (4,55 et 5,55), où les pôles
+     s’inversent. `--orTexte` est le même or assombri jusqu’à 4,5 sur la plage de sa
+     charte — et laissé intact sur les deux sombres. C’est la mécanique que
+     `chartes.ts` applique déjà à `alerte`. */
+  .attente{color:var(--orTexte)}
+
+  .lignes{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+  .lig{display:flex;align-items:center;gap:8px;border-radius:4px}
+  .lig .lib, .lig .mnt{
+    border:0;outline:0;background:var(--card);color:var(--ink);
+    font-family:inherit;font-size:16px;border-radius:4px;
+  }
+  .lig .lib{flex:1 1 auto;min-width:0;padding:12px 15px}
+  .lig .mnt{width:108px;flex:0 0 108px;padding:12px 15px 12px 8px;text-align:right;
+            font-variant-numeric:tabular-nums}
+  .lig .mnt::placeholder{color:var(--orTexte);opacity:1}
+  .lig .lib:focus, .lig .mnt:focus{box-shadow:inset 0 0 0 2px var(--rust)}
+
+  /* B — la ligne entière se marque. Le voile se pose sur les PLAGES, pas sur la
+     rangée : posé sur la rangée, il passait derrière les deux champs et ne
+     laissait qu’un trait d’or dans l’écart de 8 px — vu à la capture, et ça
+     ressemblait à un défaut. Sur un navigateur qui ignore color-mix, la ligne
+     retombe sur la plage ordinaire et garde le mot en or. */
+  .lig.marquee .lib, .lig.marquee .mnt{
+    background:color-mix(in srgb, var(--or) 13%, var(--card));
+  }
+  .lig.vise .mnt{box-shadow:inset 0 0 0 2px var(--or)}
+
+  .ajouter{margin:14px 0 0;background:none;border:0;padding:0;color:var(--rust);
+           font-family:inherit;cursor:pointer;align-self:flex-start}
+
+  .refus{margin:26px 0 0;padding:4px 0 4px 15px;border-left:1px solid var(--or)}
+  .refus p.quoi{font:19px/1.15 Georgia,serif;margin:0}
+  .refus p.faire{margin:8px 0 0;color:var(--muted)}
+  .refus a{display:inline-block;margin-top:12px;color:var(--rust);text-decoration:none;
+           cursor:pointer}
+  .refus a.faux{color:var(--alerte)}
+
+  .principal{display:block;width:100%;margin-top:20px;border:0;border-radius:999px;
+             background:var(--plein);color:var(--surPlein);padding:16px;
+             font-size:15.5px;font-weight:600;font-family:inherit;opacity:.4;
+             cursor:not-allowed}
+
+  /* ─── Le champ, à l'essai ──────────────────────────────────────────────── */
+  .banc{width:330px;flex:1 1 300px;min-width:280px}
+  .banc h2{font:600 17px/1.2 Georgia,serif;margin:0 0 6px}
+  .banc p.intro{font-size:13px;color:var(--inkSoft);margin:0 0 14px;line-height:1.5}
+  .essai{background:var(--card);border-radius:4px;padding:16px}
+  .essai label{display:block;margin-bottom:8px;color:var(--muted)}
+  .essai input{
+    width:100%;border:0;outline:0;background:var(--cream);color:var(--ink);
+    border-radius:4px;padding:12px 15px;font-size:16px;font-family:inherit;
+    text-align:right;font-variant-numeric:tabular-nums;
+  }
+  .essai input::placeholder{color:var(--orTexte);opacity:1}
+  .essai input:focus{box-shadow:inset 0 0 0 2px var(--rust)}
+  .verdict{margin:12px 0 0;font-size:13px;line-height:1.5}
+  .verdict.ok{color:var(--ink)}
+  .verdict.non{color:var(--alerte)}
+  .essais{margin:14px 0 0;display:flex;gap:6px;flex-wrap:wrap}
+  .essais button{border:0;border-radius:999px;background:var(--rustTint);color:var(--rust);
+                 padding:7px 12px;font-size:12.5px;font-family:inherit;cursor:pointer}
+
+  .note{margin:26px 0 0;font-size:12.5px;color:var(--muted);line-height:1.6;max-width:62ch}
+  .note b{color:var(--ink)}
+  .note code{font-size:12px}
+
+  @media (max-width:820px){
+    .page{padding:14px 12px 40px}
+    h1{font-size:20px}
+    .barres{position:sticky;top:0;z-index:5;background:var(--cream);padding:8px 0;margin:0 0 8px}
+    /* Sur son téléphone, la maquette EST l’écran : le cadre s’efface. Et la
+       scène cesse d’être une boîte flexible — mesuré : sa largeur minimale
+       imposait 379 px dans un écran qui en fait 366, soit 1 px de débordement
+       horizontal. Un pixel ne se voit pas, et suffit à faire glisser la page. */
+    .scene{display:block}
+    .scene > div{width:auto;min-width:0}
+    .tel{width:auto;height:auto;overflow:visible;background:none;box-shadow:none;
+         border-radius:0}
+    .banc{width:auto;margin-top:30px}
+    .taille{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>La ligne qui attend son prix</h1>
+  <p class="chapo">
+    Une ligne <b>« à chiffrer »</b> s’affiche aujourd’hui comme un <b>0</b> — la même case
+    qu’une ligne qu’on n’a pas encore remplie. Et le refus, qui nomme pourtant la bonne
+    raison, propose toujours d’ouvrir les tarifs.
+  </p>
+
+  <div class="barres">
+    <div class="onglets" id="onglets">
+      <button data-vue="avant" aria-pressed="true">Aujourd’hui</button>
+      <button data-vue="a" aria-pressed="false">A — dans la case</button>
+      <button data-vue="b" aria-pressed="false">B — la ligne se marque</button>
+      <button data-vue="champ" aria-pressed="false">La case du prix</button>
+    </div>
+    <div class="chartes" id="chartes">
+      <button data-charte="origine" aria-pressed="true">Origine</button>
+      <button data-charte="nuit" aria-pressed="false">Nuit</button>
+    </div>
+  </div>
+
+  <p class="dit" id="dit"></p>
+
+  <div class="scene">
+    <div>
+      <div class="tel">
+        <div class="ecran">
+
+          <div class="entete">
+            <svg width="9" height="16" viewBox="0 0 9 16" fill="none" aria-hidden="true">
+              <path d="M8 1 1 8l7 7" stroke="currentColor" stroke-width="1.4"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div>
+              <p class="surtitre">Jardin Roux</p>
+              <p class="titrecran">Prix</p>
+            </div>
+          </div>
+
+          <div class="bloctotal">
+            <p class="caps" style="color:var(--muted);margin:0">Total</p>
+            <p class="montanttotal">1 240,00 €</p>
+            <p class="situation sousttotal">
+              Somme des lignes du détail. C’est cette valeur qui sera reprise dans le devis.
+            </p>
+          </div>
+
+          <button class="voir caps">Voir la proposition de prix</button>
+
+          <div class="detail">
+            <div class="entetedetail">
+              <span class="caps" style="color:var(--muted)">Détail</span>
+              <span class="caps attente" id="compte" hidden>2 attendent leur prix</span>
+            </div>
+
+            <div class="lignes" id="lignes">
+              <div class="lig">
+                <input class="lib" value="Élagage d’un tilleul" aria-label="Description de la ligne 1">
+                <input class="mnt" value="1 240,00" inputmode="decimal" aria-label="Montant de la ligne 1">
+              </div>
+              <div class="lig" data-attend="1">
+                <input class="lib" value="Dessouchage" aria-label="Description de la ligne 2">
+                <input class="mnt" inputmode="decimal" aria-label="Montant de la ligne 2">
+              </div>
+              <div class="lig" data-attend="1">
+                <input class="lib" value="Évacuation des déchets verts" aria-label="Description de la ligne 3">
+                <input class="mnt" inputmode="decimal" aria-label="Montant de la ligne 3">
+              </div>
+            </div>
+
+            <button class="ajouter caps">+ Ajouter une ligne</button>
+
+            <div class="refus">
+              <p class="quoi">
+                2 lignes attendent leur prix : « Dessouchage », « Évacuation des déchets verts ».
+              </p>
+              <p class="situation faire">
+                Posez leur montant ci-dessus. Le devis sera prêt dès qu’aucune ligne n’attend plus rien.
+              </p>
+              <a class="caps" id="porte"></a>
+            </div>
+
+            <button class="principal" disabled>Préparer le devis</button>
+          </div>
+
+        </div>
+      </div>
+      <p class="taille">390 × 664 — son téléphone.</p>
+    </div>
+
+    <div class="banc" id="banc" hidden>
+      <h2>La case du prix</h2>
+      <p class="intro">
+        Écrivez un prix comme vous l’écrivez d’habitude — avec la <b>virgule</b>, un espace,
+        un « € ». La case garde ce que vous tapez, et dit dessous ce qu’elle enregistre.
+      </p>
+      <div class="essai">
+        <label class="caps" for="montant">Montant</label>
+        <input id="montant" inputmode="decimal" placeholder="à chiffrer">
+        <p class="verdict" id="verdict">La case est vide : cette ligne attend son prix.</p>
+        <div class="essais" id="essais">
+          <button data-v="1 400,50">1 400,50</button>
+          <button data-v="620">620</button>
+          <button data-v="1 240,00 €">1 240,00 €</button>
+          <button data-v="12,345">12,345</button>
+          <button data-v="mille">mille</button>
+        </div>
+      </div>
+      <p class="note">
+        La règle n’est pas écrite ici : c’est <b>montantEcrivable</b>
+        (<code>src/lib/montant-ecrivable.ts</code>), déjà dans l’application. Cette page ne fait
+        que l’imiter pour vous la montrer.
+      </p>
+    </div>
+  </div>
+
+  <p class="note" id="apres"></p>
+
+</div>
+
+<script>
+(function () {
+  var vue = "avant";
+  // L onglet du champ garde l allure choisie juste avant : vu a la capture, il
+  // ramenait l ecran a « Aujourd hui » et donnait a croire que le champ defaisait
+  // la correction du dessus.
+  var allure = "a";
+  var dit = document.getElementById("dit");
+  var apres = document.getElementById("apres");
+  var compte = document.getElementById("compte");
+  var porte = document.getElementById("porte");
+  var banc = document.getElementById("banc");
+  var lignes = document.getElementById("lignes");
+
+  var TEXTES = {
+    avant: {
+      dit: "Les deux lignes qui attendent leur prix ne se distinguent en rien. Et le seul geste proposé quitte l’écran.",
+      apres: "Aujourd’hui : le drapeau « à chiffrer » entre bien dans l’écran (PrixClient.tsx, ligne 27) et n’est jamais dessiné. La case affiche 0."
+    },
+    a: {
+      dit: "Le mot prend la place du chiffre, et le compte se lit en haut du détail. Rien d’autre ne bouge.",
+      apres: "A — discret. Se lit quand on regarde la ligne ; le compte en haut dit combien il en reste sans avoir à défiler."
+    },
+    b: {
+      dit: "En plus du mot, les deux plages de la ligne passent à l’or : elle se retrouve en défilant, sans lire.",
+      apres: "B — repérable. Les deux plages passent à l’or : ça se voit au soleil, du coin de l’oeil. Plus présent sur un devis qui compte dix lignes."
+    },
+    champ: {
+      dit: "La petite case où vous tapez le prix d’une ligne. Tapez 1 400,50 avec la virgule de votre clavier : aujourd’hui elle enregistre 0,00 € sans rien dire. Ce n’est pas un choix à faire, c’est un défaut à réparer.",
+      apres: "Aujourd’hui la case n’accepte que le point. Votre virgule y devient du vide, le vide part en 0,00 €, et le devis peut partir avec une ligne à zéro sans que rien ne l’ait dit."
+    }
+  };
+
+  function appliquer() {
+    dit.textContent = TEXTES[vue].dit;
+    apres.textContent = TEXTES[vue].apres;
+
+    var neuf = vue !== "avant";
+    compte.hidden = !neuf;
+    banc.hidden = vue !== "champ";
+
+    Array.prototype.forEach.call(lignes.children, function (lig) {
+      var attend = lig.getAttribute("data-attend") === "1";
+      var mnt = lig.querySelector(".mnt");
+      lig.classList.remove("marquee", "vise");
+      if (!attend) return;
+      if (neuf) {
+        mnt.value = "";
+        mnt.placeholder = "à chiffrer";
+        if (allure === "b") lig.classList.add("marquee");
+      } else {
+        mnt.value = "0";
+        mnt.placeholder = "";
+      }
+    });
+
+    if (neuf) {
+      porte.textContent = "Poser les montants";
+      porte.className = "caps";
+    } else {
+      porte.textContent = "Ouvrir mes tarifs";
+      porte.className = "caps faux";
+    }
+  }
+
+  document.getElementById("onglets").addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    vue = b.getAttribute("data-vue");
+    if (vue === "a" || vue === "b") allure = vue;
+    Array.prototype.forEach.call(this.children, function (x) {
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+    appliquer();
+  });
+
+  document.getElementById("chartes").addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    document.documentElement.setAttribute("data-charte", b.getAttribute("data-charte"));
+    Array.prototype.forEach.call(this.children, function (x) {
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+  });
+
+  // Le geste qui débloque : le doigt arrive sur la première ligne qui attend.
+  porte.addEventListener("click", function () {
+    if (porte.className.indexOf("faux") >= 0) return;
+    var premiere = lignes.querySelector('[data-attend="1"]');
+    if (!premiere) return;
+    premiere.classList.add("vise");
+    premiere.querySelector(".mnt").focus();
+    premiere.scrollIntoView({ block: "center", behavior: "smooth" });
+  });
+
+  // ─── L'imitation de montantEcrivable, pour la démonstration seule ────────
+  var MAX = 99999999.99;
+  function lire(brut) {
+    var texte = String(brut).trim();
+    if (texte === "") return { ok: false, raison: "La case est vide : cette ligne attend son prix." };
+    var propre = texte.replace(/[\s €]/g, "").replace(",", ".");
+    if (!/^\d{1,12}(\.\d{1,2})?$/.test(propre)) {
+      if (/^\d+([.,]\d{3,})$/.test(texte.replace(/[\s €]/g, ""))) {
+        return { ok: false, raison: "« " + texte + " » a plus de deux décimales : un euro n’en a que deux." };
+      }
+      return { ok: false, raison: "« " + texte + " » n’est pas un montant." };
+    }
+    var n = Number(propre);
+    if (n > MAX) return { ok: false, raison: n.toLocaleString("fr-FR") + " € dépasse ce qu’une ligne peut porter." };
+    return { ok: true, montant: n.toFixed(2) };
+  }
+
+  var champ = document.getElementById("montant");
+  var verdict = document.getElementById("verdict");
+  function juger() {
+    var r = lire(champ.value);
+    if (r.ok) {
+      verdict.className = "verdict ok";
+      verdict.textContent = "Enregistré : " + Number(r.montant).toLocaleString("fr-FR", {
+        minimumFractionDigits: 2, maximumFractionDigits: 2
+      }) + " €";
+    } else {
+      verdict.className = "verdict non";
+      verdict.textContent = r.raison;
+    }
+  }
+  champ.addEventListener("input", juger);
+  document.getElementById("essais").addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b) return;
+    champ.value = b.getAttribute("data-v");
+    juger();
+  });
+
+  appliquer();
+})();
+</script>
+</body>
+</html>

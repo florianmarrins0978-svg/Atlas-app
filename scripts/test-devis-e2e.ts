@@ -21,9 +21,9 @@ async function main() {
   // — à juste titre — de partir chez le client.
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `http://localhost:3000/chantiers/${idChantier}`;
 
   // Ajoute une ligne de prix réelle pour que le devis ait un contenu non nul.
   await page.goto(`${chantierUrl}/prix`, { waitUntil: "networkidle" });

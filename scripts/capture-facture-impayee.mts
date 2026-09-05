@@ -57,10 +57,9 @@ async function factureEmise(nomClient: string, prix: string): Promise<string> {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.locator('input[placeholder="Bernard"]').fill(nomClient);
   await page.locator('input[placeholder="06 12 34 56 78"]').fill("06 79 98 45 14");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const url = page.url().split("?")[0];
-  const chantierId = url.split("/").pop()!;
+  const chantierId = await creerPuisFiche(page);
+  // L'adresse se bâtit sur l'identifiant rendu (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${chantierId}`;
 
   await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
   await page.click("text=+ Ajouter une ligne");

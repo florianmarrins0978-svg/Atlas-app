@@ -93,8 +93,14 @@ export type ChantierRepris = {
    *
    * **La fiche client ne porte donc plus qu'un objet, celui de la DICTÉE** —
    * c'est ce qu'elle sert à faire, et c'est l'objet qu'il a laissé deux
-   * minutes plus tôt en envoyant sa note. Écouter et retirer restent sur la
-   * fiche du chantier, où vit le lecteur (`AnneauNoteVocale`, second rendu).
+   * minutes plus tôt en envoyant sa note. Écouter et retirer vivent sur
+   * l'écran **Note vocale** (`/chantiers/[id]/note-vocale`), qu'ouvrent la
+   * Transcription et le brouillon des Informations.
+   *
+   * **Ce point a été revérifié le 5 septembre au soir**, la fiche du CHANTIER
+   * ayant été retirée la veille (§254) : le second rendu d'`AnneauNoteVocale`
+   * n'a plus d'écran, et ce sont `NoteVocaleClient` et lui seul qui portent
+   * désormais la lecture et le retrait.
    *
    * Ce booléen ne sert plus qu'à taire l'invite : voir `preparationEnCours`.
    */
@@ -302,7 +308,13 @@ export default function FormulaireNouveauChantier({
       const id = chantierCree
         ? await enregistrerSurLeChantier(chantierCree)
         : await assurerChantier();
-      router.push(vers === "devis" ? `/chantiers/${id}/devis-complet` : `/chantiers/${id}`);
+      // **UN CHANTIER NEUF VA TOUJOURS AU DEVIS**, et le ternaire qui
+      // envoyait vers la fiche du chantier était déjà mort : depuis le
+      // 21 août 2026, la création ne porte plus qu'un bouton, et il vaut
+      // « devis » (`creerPuisAller("fiche")` ne s'appelle que sur un écran
+      // ROUVERT, qui repart plus haut). Le laisser aurait fait croire à un
+      // chemin vers un écran retiré le 4 septembre (`ARCHITECTURE.md` §254).
+      router.push(`/chantiers/${id}/devis-complet`);
     } catch {
       setErreur("Impossible de créer le chantier pour l'instant. Réessayez.");
       setEnCoursVers(null);
@@ -677,21 +689,47 @@ export default function FormulaireNouveauChantier({
               numéro. Les deux capsules restent inertes tant qu'il n'y a rien
               pour envoyer : proposer un canal sans coordonnée est sans objet,
               le masquer laisse chercher pourquoi le choix a disparu. */}
-          <fieldset aria-label="Comment lui envoyer son devis ?">
-              <div className="flex gap-2">
-                <ChoixCanal
-                  libelle="Par SMS"
-                  actif={canal === "sms"}
-                  disponible={aTelephone}
-                  onClick={() => setCanalChoisi("sms")}
-                />
-                <ChoixCanal
-                  libelle="Par e-mail"
-                  actif={canal === "email"}
-                  disponible={aEmail}
-                  onClick={() => setCanalChoisi("email")}
-                />
-              </div>
+          {/* ═══ L'ENVOI EST UN RÉGLAGE, PAS UNE ACTION — planche « A — Épurée »
+              ═══════════════════════════════════════════════════════════════
+              **Son choix du 2 septembre 2026, appliqué le 4.** La planche
+              l'écrit en une phrase : *« l'envoi n'est plus une action : c'est un
+              réglage. Il en prend la forme — une ligne, deux mots — et rend
+              40 px à l'anneau. »*
+
+              Deux capsules pleine largeur se lisaient comme des boutons
+              d'envoi ; elles ne disent que par où le devis partira. Le libellé
+              « ENVOI » les nomme, et le canal retenu porte un trait d'or sous
+              son mot.
+
+              **Le filet du dessus vient avec** : c'est lui qui sépare les
+              coordonnées de ce réglage, et il est dans la planche
+              (`.b-envoi{border-top}`). Il n'existe pas comme élément à part —
+              le poser séparément ferait deux séparateurs pour une couture. */}
+          <fieldset
+            aria-label="Comment lui envoyer son devis ?"
+            data-atlas="envoi-canal"
+            className="mt-2.5 flex min-h-[34px] items-center justify-between gap-3 pt-2"
+            style={{ borderTop: `1px solid ${colors.lineSoft}` }}
+          >
+            <span className={libelleCaps} style={{ color: colors.muted }}>
+              Envoi
+            </span>
+            <span className="flex gap-1">
+              <ChoixCanal
+                apparence="reglage"
+                libelle="SMS"
+                actif={canal === "sms"}
+                disponible={aTelephone}
+                onClick={() => setCanalChoisi("sms")}
+              />
+              <ChoixCanal
+                apparence="reglage"
+                libelle="E-mail"
+                actif={canal === "email"}
+                disponible={aEmail}
+                onClick={() => setCanalChoisi("email")}
+              />
+            </span>
           </fieldset>
 
           {/* **LES PHOTOS ET L'ANNEAU, sur la fiche client — 21 août 2026.**

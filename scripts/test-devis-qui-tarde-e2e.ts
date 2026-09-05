@@ -64,9 +64,9 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.locator('input[placeholder="Bernard"]').fill(CLIENT);
   await page.locator('input[placeholder="06 12 34 56 78"]').fill("0679984514");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = idChantier;
 
   const vieillir = await pool.query(
     `UPDATE chantiers SET created_at = now() - interval '14 days' WHERE id = $1`,
@@ -119,7 +119,7 @@ async function main() {
     if (fond === nu) throw new Error(`la carte a le fond nu (${fond}) : le ton B ne se voit pas`);
   });
 
-  await cas("son geste mène au chantier, là où le devis se fait", async () => {
+  await cas("son geste mène AU DEVIS, là où il se fait", async () => {
     // **Le geste de CETTE carte, pas du premier venu.** Le jeu de démonstration
     // porte lui aussi des chantiers ouverts sans devis — c'est d'ailleurs la
     // preuve que la règle vaut au-delà du montage —, et un `.first()` suivait
@@ -128,7 +128,14 @@ async function main() {
     const geste = carte.getByRole("link", { name: "Faire le devis" });
     if ((await geste.count()) === 0) throw new Error("« Faire le devis » manque sur la carte");
     await geste.click();
-    await page.waitForURL(new RegExp(`/chantiers/${chantierId}$`), { timeout: 30_000 });
+    // **Le devis, et plus la fiche du chantier** (4 septembre 2026,
+    // `ARCHITECTURE.md` §254). Le rappel menait à la fiche pour ne pas
+    // choisir entre dicter, chiffrer et rédiger à la main ; ces trois chemins
+    // partent tous du devis depuis que la chaîne va de la dictée au devis
+    // d'un seul tenant. Le libellé dit « Faire le devis » : il y mène.
+    await page.waitForURL(new RegExp(`/chantiers/${chantierId}/devis-complet`), {
+      timeout: 30_000,
+    });
   });
 
   await cas("une carte ne peut pas se reposer à moitié coupée", async () => {

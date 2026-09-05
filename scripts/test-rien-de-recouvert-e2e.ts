@@ -166,9 +166,11 @@ async function ecrans(): Promise<Array<[string, string]>> {
   ];
   if (chantier) {
     liste.push(
-      // Ses photos n'ont plus d'écran : elles vivent dans la pellicule du
-      // tiroir de la fiche, ci-dessus (11 août 2026).
-      ["la fiche d'un chantier", `/chantiers/${chantier}`],
+      // **La fiche du chantier est retirée le 4 septembre 2026**
+      // (`ARCHITECTURE.md` §254) : son adresse ne rend plus qu'une
+      // redirection, et rien ne recouvre rien sur une redirection. Les photos
+      // et l'anneau vivent sur la fiche client : c'est elle qu'on mesure.
+      ["sa fiche client", `/chantiers/${chantier}/coordonnees`],
       ["sa note vocale", `/chantiers/${chantier}/note-vocale`],
       ["ses informations", `/chantiers/${chantier}/informations`],
       ["son prix", `/chantiers/${chantier}/prix`],

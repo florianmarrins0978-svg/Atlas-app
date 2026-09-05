@@ -43,8 +43,8 @@ place.
 
 Pourquoi celui-là, et pas l'anneau :
 
-- cette page sert à **renseigner le client et à dire le chantier** ; écouter et
-  relire, c'est la fiche du chantier ;
+- cette page sert à **renseigner le client et à dire le chantier** ; réécouter
+  et effacer, c'est l'écran « Note vocale » ;
 - c'est l'objet que vous laissez deux minutes plus tôt : après l'envoi de la
   note, la fiche de création redevient le micro. Le retrouver au retour est la
   seule continuité lisible.
@@ -61,8 +61,11 @@ d'être refait.
 ## Ce que ça coûte, et il faut le savoir
 
 **Depuis la fiche client, on ne peut plus écouter ni retirer la note.** Ces deux
-gestes sont sur la **fiche du chantier**, où l'anneau et son « Retirer »
-existent toujours, inchangés.
+gestes sont sur l'écran **« Note vocale »**, qu'on ouvre depuis la Transcription
+et depuis le brouillon des Informations.
+
+*(Première rédaction fausse, corrigée : j'avais écrit « la fiche du chantier ».
+Elle a été supprimée le 4 septembre — je travaillais sur une version d'avant.)*
 
 Si vous voulez les deux sur la fiche client, c'est une décision d'apparence : on
 vous fera une maquette avant de coder quoi que ce soit. Dites-le.
@@ -77,7 +80,7 @@ et vérifie que l'objet est le même aux deux visites. Elle a été **vue rouge 
 la version d'avant**, avec les deux messages qui nomment les deux visages de
 trop : un contrôle qui n'a jamais échoué ne prouve rien.
 
-Le détail technique est dans `ARCHITECTURE.md` §249.
+Le détail technique est dans `ARCHITECTURE.md` §261.
 
 ---
 

@@ -71,10 +71,11 @@ async function chantierFacturable(page: Page): Promise<string> {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Impaye ${Date.now()}`);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const url = page.url().split("?")[0];
-  const chantierId = url.split("/").pop()!;
+  const chantierId = await creerPuisFiche(page);
+  // L'adresse se bâtit sur l'identifiant rendu : la relire dans le navigateur
+  // donnait « devis-complet » depuis que la fiche du chantier est retirée
+  // (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${chantierId}`;
 
   await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
   await page.click("text=+ Ajouter une ligne");

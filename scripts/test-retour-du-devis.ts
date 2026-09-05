@@ -81,11 +81,31 @@ cas("venu du devis, enregistrer la fiche RAMÈNE au devis", () => {
   assert.equal(retourDesCoordonnees(SON_DEVIS), SON_DEVIS);
 });
 
-cas("SANS provenance, rien ne bouge — le chemin du 17 août 2026 est intact", () => {
-  // « Adresse non renseignée » sur l'accueil entre par la même porte : sa
-  // flèche rend la liste, et son enregistrement la fiche du chantier.
+cas("SANS provenance, la flèche et l'enregistrement disent LA MÊME CHOSE", () => {
+  // « Adresse non renseignée » sur l'accueil entre par cette porte, depuis le
+  // 17 août 2026 : il vient de la liste, il y retourne.
+  //
+  // **L'ENREGISTREMENT RENDAIT LA FICHE DU CHANTIER, ET IL NE LE PEUT PLUS.**
+  // Cette fiche est retirée le 4 septembre (`ARCHITECTURE.md` §254) et son
+  // adresse ne rend qu'une redirection — laquelle, sur un chantier sans dictée,
+  // ramène ICI, sur le formulaire qu'il vient d'enregistrer. Le chemin tournait
+  // en rond.
+  //
+  // Les deux gestes s'accordent donc, ce qu'ils ne faisaient pas : la flèche
+  // rendait déjà la liste.
   assert.equal(retourDesCoordonnees(null), "/");
-  assert.equal(apresLesCoordonnees(CHANTIER, null), `/chantiers/${CHANTIER}`);
+  assert.equal(apresLesCoordonnees(CHANTIER, null), "/");
+});
+
+cas("l'enregistrement ne renvoie JAMAIS sur la fiche retirée", () => {
+  // Le contrôle qui empêche la boucle de renaître, dans les deux cas.
+  for (const provenance of [null, SON_DEVIS]) {
+    assert.notEqual(
+      apresLesCoordonnees(CHANTIER, provenance),
+      `/chantiers/${CHANTIER}`,
+      "enregistrer la fiche client la rouvre par redirection : le chemin tourne en rond"
+    );
+  }
 });
 
 cas("UNE PROVENANCE ÉTRANGÈRE NE FAIT PAS SORTIR D'ATLAS", () => {

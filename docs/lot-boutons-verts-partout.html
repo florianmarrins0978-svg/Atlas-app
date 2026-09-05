@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Les boutons verts — ce qui avait été manqué</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="les-boutons-verts--ce-qui-avait-été-manqué">Les boutons verts — ce qui avait été manqué</h1>
+<p><em>4 septembre 2026. Votre remarque : « j'avais demandé à changer tous les boutons en vert clair, or si tu regardes la page terminé ils n'ont pas changé — et vérifie s'il n'y a pas le problème ailleurs ».</em></p>
+<p><strong>Vous aviez raison, et il y en avait treize.</strong> Ce document dit lesquels, ce qui les avait fait rater, ce que j'ai trouvé en cherchant et que vous n'aviez pas demandé, et ce qui reste.</p>
+<hr>
+<h2 id="sommaire">Sommaire</h2>
+<ol>
+<li><a href="#1-ce-que-vous-voyez-sur-terminés">Ce que vous voyez sur « Terminés »</a></li>
+<li><a href="#2-les-douze-autres">Les douze autres</a></li>
+<li><a href="#3-pourquoi-ils-avaient-été-manqués">Pourquoi ils avaient été manqués</a></li>
+<li><a href="#4-ce-que-jai-trouvé-en-cherchant-et-que-vous-naviez-pas-demandé">Ce que j'ai trouvé en cherchant, et que vous n'aviez pas demandé</a></li>
+<li><a href="#5-ce-qui-ne-change-pas-et-pourquoi">Ce qui NE change pas, et pourquoi</a></li>
+<li><a href="#6-ce-qui-a-été-vérifié-et-ce-qui-ne-la-pas-été">Ce qui a été vérifié, et ce qui ne l'a pas été</a></li>
+<li><a href="#7-ce-qui-reste">Ce qui reste</a></li>
+</ol>
+<hr>
+<h2 id="1-ce-que-vous-voyez-sur-terminés">1. Ce que vous voyez sur Terminés</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Verdict : ce n'était pas un oubli, c'était votre propre choix — et vous l'avez changé.</strong></p>
+<p>Sur cet écran, les seuls boutons sont les deux onglets (Tout / À facturer) et les capsules « À FACTURER » des lignes. Ils étaient restés en vert foncé parce que vous les aviez demandés ainsi <strong>le 2 septembre</strong> : <em>« code l'idée du galet aussi pour le bouton Tout et À facturer »</em> — un dégradé vert foncé avec un filet d'or, dans la matière de votre note vocale.</p>
+<p>La session du 3 septembre les a donc laissés de côté délibérément, et l'a écrit. Deux jours plus tard, planche en main, vous avez tranché : <strong>« oui, vert clair partout »</strong>.</p>
+<p><strong>C'est fait.</strong> Le galet a disparu de l'application — le dégradé, le filet d'or, et le contrôle qui les gardait. Il n'y a plus qu'une seule matière pour ce qu'on appuie dans Atlas.</p>
+<p><strong>Ce qui garde la sienne, et c'est vous qui l'aviez dit :</strong> la note vocale. Vous aviez été clair le 3 septembre — <em>« ne touche pas à la note vocale »</em> — et elle n'a pas bougé.</p>
+<hr>
+<h2 id="2-les-douze-autres">2. Les douze autres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>L'écran</th>
+<th>Le bouton</th>
+</tr></thead><tbody>
+<tr>
+<td>Terminés → Ma TVA</td>
+<td>le pavé du mois, dans le calendrier des périodes</td>
+</tr>
+<tr>
+<td>Réglages → Mon entreprise</td>
+<td>la barre « Enregistrer »</td>
+</tr>
+<tr>
+<td>Réglages → Mon compte</td>
+<td>la barre « Enregistrer »</td>
+</tr>
+<tr>
+<td>Réglages → Devis &amp; factures</td>
+<td>la barre « Enregistrer »</td>
+</tr>
+<tr>
+<td>Réglages → Connexion</td>
+<td>« Changer mon mot de passe »</td>
+</tr>
+<tr>
+<td>Réglages → Mon entreprise</td>
+<td>« Tous les mois » / « Tous les trimestres »</td>
+</tr>
+<tr>
+<td>Réglages → Notifications</td>
+<td>le rythme des rappels</td>
+</tr>
+<tr>
+<td>Paysage → Diagnostic</td>
+<td>les deux boutons du bas</td>
+</tr>
+<tr>
+<td>Paysage → Arrosage</td>
+<td>le rond d'envoi de la discussion</td>
+</tr>
+<tr>
+<td>Paysage → Fiche de chantier</td>
+<td>le canal d'envoi (SMS / e-mail)</td>
+</tr>
+<tr>
+<td>Devis depuis une dictée</td>
+<td>les réponses proposées à une question</td>
+</tr>
+<tr>
+<td>Avant de commencer</td>
+<td>« Continuer »</td>
+</tr>
+</tbody></table></div>
+<p><strong>Le dernier n'était même pas vert</strong> : il portait la terre cuite de la page de vos clients, écrite en dur, sur un écran qui est le vôtre.</p>
+<hr>
+<h2 id="3-pourquoi-ils-avaient-été-manqués">3. Pourquoi ils avaient été manqués</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le trou était dans le CONTRÔLE, pas dans le travail du 3 septembre.</strong></p>
+<p>Le garde-fou posé ce jour-là dit une chose juste : <em>un bouton marqué comme « plein » ne doit jamais être peint en vert foncé</em>. Mais il ne regardait que les boutons <strong>portant déjà cette marque</strong> — c'est-à-dire exactement ceux que le balayage venait de trouver. Un bouton oublié l'était donc des deux côtés à la fois : pas de marque, donc pas de contrôle, donc pas de rouge.</p>
+<p><strong>Le garde-fou veillait là où il n'y avait plus rien à attraper.</strong></p>
+<p><strong>Ce qui a changé.</strong> La question est prise dans l'autre sens. Elle n'est plus « ce bouton est-il au bon vert ? » mais <strong>« ce vert foncé a-t-il le droit d'exister ici ? »</strong>. Douze endroits légitimes sont nommés un par un, avec leur raison ; <strong>tout le reste fait rougir</strong>. Et une raison qui ne correspond plus à rien fait rougir aussi — sinon la liste protégerait un défaut revenu.</p>
+<p><strong>Le contrôle a été confronté au défaut</strong> : en remettant le vert foncé sur le bouton du mois de « Ma TVA », il le nomme, avec son fichier et sa ligne.</p>
+<hr>
+<h2 id="4-ce-que-jai-trouvé-en-cherchant-et-que-vous-naviez-pas-demandé">4. Ce que j'ai trouvé en cherchant, et que vous n'aviez pas demandé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le rond d'envoi de la discussion d'arrosage</strong> écrivait sa flèche en blanc pur. C'est juste sur cinq de vos sept apparences, et <strong>illisible sur Nuit et Sylve</strong>, où le fond du bouton devient clair. Réparé.</p>
+<p><strong>L'écran « Avant de commencer »</strong> — le tout premier qu'un artisan voit, celui des documents à accepter — était entièrement hors de vos apparences : fond, cartes et bouton écrits en dur. Son <strong>texte</strong>, lui, suivait bien l'apparence choisie. Sur Nuit, l'encre passait au clair sur un fond resté crème : <strong>la page devenait illisible</strong>. C'est exactement le défaut que vous aviez signalé le 22 août. Réparé.</p>
+<p><strong>Pourquoi j'ai réparé tout l'écran et pas seulement son bouton :</strong> mettre le bouton vert sur un fond figé aurait créé un second problème du même genre. À moitié fait, c'était pire.</p>
+<hr>
+<h2 id="5-ce-qui-ne-change-pas-et-pourquoi">5. Ce qui NE change pas, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Les pages que reçoit votre client n'ont pas bougé d'un pixel.</strong> Vous avez tranché ce matin : <em>« garde les couleurs d'origine »</em>. Le devis, la facture et le compte rendu d'entretien gardent les leurs.</p>
+<p><strong>Les interrupteurs, les cases à cocher et les pastilles rondes gardent le vert foncé.</strong> Ils ne sont pas des boutons : ils disent un état — allumé, coché, choisi —, on ne les appuie pas pour faire quelque chose. Les passer au vert clair ferait un écran où tout se ressemble, et où l'on ne saurait plus ce qui agit. Chacun est nommé dans le contrôle avec cette raison.</p>
+<hr>
+<h2 id="6-ce-qui-a-été-vérifié-et-ce-qui-ne-la-pas-été">6. Ce qui a été vérifié, et ce qui ne l'a pas été</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>types, lint</td>
+<td><strong>verts</strong> — 0 erreur</td>
+</tr>
+<tr>
+<td>mémoire du dépôt</td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td>chartes, chartes lisibles, aucune flèche</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td>aplat des boutons</td>
+<td><strong>vert</strong> — 5 contrôles, dont 2 neufs</td>
+</tr>
+<tr>
+<td><strong>regardé à l'écran</strong></td>
+<td>Terminés, Ma TVA, le calendrier des périodes, et les cinq écrans de Réglages, sur un iPhone 13</td>
+</tr>
+<tr>
+<td><strong>mesuré au rendu</strong></td>
+<td>le bouton « Enregistrer » et le pavé du mois rendent bien <code>rgb(125, 154, 109)</code> — votre vert</td>
+</tr>
+</tbody></table></div>
+<p><strong>La batterie base : 295 suites sur 306.</strong> Les onze rouges ont été regardées une par une, et <strong>aucune n'est de ce lot</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>huit</td>
+<td>déjà rouges avant, mesuré : verrous de construction, rôles en base, ports d'essai — de la machine, pas du produit</td>
+</tr>
+<tr>
+<td><code>test-boutons-arrondis</code></td>
+<td>un bouton à coins carrés dans <code>ChoixCanal</code>, arrivé sur <code>main</code> avec le lot voisin de la journée</td>
+</tr>
+<tr>
+<td><code>test-mode-emploi</code></td>
+<td>le mode d'emploi cherche encore « Par SMS » là où ce même lot voisin a écrit « SMS »</td>
+</tr>
+<tr>
+<td><code>test-banc-lent-se-dit</code></td>
+<td>un port d'essai sous Windows</td>
+</tr>
+</tbody></table></div>
+<p>Les deux du milieu appartiennent à la session qui a travaillé en parallèle sur la fiche client : elles étaient rouges avant que je pousse, et je n'ai pas touché à ses fichiers.</p>
+<p><strong>Ce qui n'a PAS pu être joué ici, et il faut le dire.</strong> Les suites navigateur demandent le port 3000, que votre serveur de développement occupe : les arrêter aurait éteint votre application pendant dix minutes. Aucune d'elles ne regarde une couleur, et aucune ne citait le galet — vérifié une par une. La CI les jouera sous Linux.</p>
+<hr>
+<h2 id="7-ce-qui-reste">7. Ce qui reste</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Trois détails de forme sur « Avant de commencer »</strong> : les cartes ont des coins à 4 px et une ombre là où le reste de l'application n'en a pas, et le message d'erreur emploie un rouge qui n'est pas le vôtre. Rien ne casse ; c'est écrit dans <code>TODO.md</code>.</p>
+<p><strong>Rien d'autre n'attend de vous.</strong></p>
+</main>
+</body>
+</html>

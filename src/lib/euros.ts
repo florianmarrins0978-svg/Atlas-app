@@ -17,5 +17,31 @@ export function enEuros(montant: string | number): string {
   // premier montant à trois chiffres d'euros que ce formateur ait servi à un
   // PDF. La remplacer par l'espace insécable ORDINAIRE (U+00A0), que WinAnsi
   // connaît, rend ce formateur sûr partout, écran comme document.
-  return formate.replace(/\u202f/g, "\u00a0");
+  return sansEspaceFine(formate);
+}
+
+/**
+ * Le même montant, SANS le symbole — pour une case où il se tape.
+ *
+ * **Pourquoi il ne se dérive pas d'`enEuros` en retirant le « € ».** Le
+ * séparateur qui le précède est une espace insécable ; la retirer à coups de
+ * `replace` marcherait aujourd'hui et casserait le jour où `Intl` changerait
+ * d'avis. Deux formateurs, une seule règle d'écriture — celle du dessous.
+ *
+ * Il sert à l'écran des prix : la case porte « 1 240,00 », et le « € » est déjà
+ * dit par la colonne et par le total.
+ */
+const FORMAT_MONTANT = new Intl.NumberFormat("fr-FR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+export function enMontant(montant: string | number): string {
+  const valeur = typeof montant === "number" ? montant : Number(montant);
+  return sansEspaceFine(FORMAT_MONTANT.format(Number.isFinite(valeur) ? valeur : 0));
+}
+
+/** L'espace fine insécable d'`Intl`, remplacée par celle que WinAnsi connaît. */
+function sansEspaceFine(texte: string): string {
+  return texte.replace(/\u202f/g, "\u00a0");
 }

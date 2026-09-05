@@ -52,9 +52,31 @@ const SANS_CLES_IA = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "
 // explicite, qui garantit le mode déterministe quoi qu'il y ait sur le disque.
 const IA_COUPEE = { LLM_PROVIDER: "dev", TRANSCRIPTION_PROVIDER: "dev" };
 
-const APP = "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test";
-const OWNER = "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test";
-const SUPER = "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test";
+/**
+ * Les trois adresses de la base d'essai — celles de la CI par défaut, et
+ * SURCHARGEABLES par l'environnement.
+ *
+ * **Pourquoi elles ne sont plus écrites en dur — 4 septembre 2026.** Sur le
+ * poste du patron (Windows, base dans Docker), le rôle `postgres` répond à
+ * `postgres_dev_pw`, jamais à `postgres_ci_pw`. Les trois dernières étapes
+ * tombaient donc TOUJOURS, quel que soit le code — « Données de démonstration »
+ * sur un `auth_failed`, puis les suites navigateur et la connexion faute de jeu
+ * de démonstration. Et l'écran de connexion accusait alors le produit : *« un
+ * service d'Atlas ne répond pas »*.
+ *
+ * Une batterie qui ne peut pas être verte est pire qu'absente : on s'habitue à
+ * son rouge, et le jour où il dit vrai, personne ne le lit. Trois sessions ont
+ * rejoué ces étapes à la main ce jour-là.
+ *
+ * **Le défaut ne bouge pas d'un caractère** : la CI ne pose aucune de ces
+ * variables et retombe exactement sur ce qu'elle avait. Ce qui change, c'est
+ * qu'une machine dont les mots de passe diffèrent peut enfin les dire.
+ */
+const adresse = (nom: string, defaut: string) => process.env[nom]?.trim() || defaut;
+
+const APP = adresse("ATLAS_BASE_APP", "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test");
+const OWNER = adresse("ATLAS_BASE_OWNER", "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test");
+const SUPER = adresse("ATLAS_BASE_SUPER", "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test");
 
 const ETAPES: Etape[] = [
   {

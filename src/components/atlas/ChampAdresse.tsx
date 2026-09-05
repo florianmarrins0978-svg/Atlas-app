@@ -76,7 +76,33 @@ export default function ChampAdresse({
   // qui rouvre la liste sous son doigt — sur l'adresse qu'il vient de valider.
   const choisi = useRef<string | null>(null);
 
+  /**
+   * ─── LA VALEUR D'ARRIVÉE N'EST PAS UNE RECHERCHE ─────────────────────────
+   *
+   * **Le patron, le 4 septembre 2026 :** *« je suis arrivé sur la page de la
+   * fiche client […] ce n'est pas la même que lorsque j'ai cliqué sur nouveau
+   * chantier »*. Elle l'était pourtant — le même composant, la même règle. Ce
+   * qui différait, c'est que **la liste des suggestions s'était ouverte toute
+   * seule** : la fiche rouverte depuis le devis remplit l'adresse du chantier,
+   * cette valeur arrive par les propriétés, et l'effet ci-dessous la traitait
+   * comme une frappe. Six adresses recouvraient alors les photos, l'anneau de
+   * la note vocale et « Je rédige à la main » — mesuré : 672 px de haut à la
+   * création, **1099 px** à la reprise.
+   *
+   * **Le champ ne savait pas distinguer ce qu'il a REÇU de ce qu'il a LU sous
+   * les doigts.** C'est la racine, et c'est ici qu'elle se répare : une valeur
+   * posée au montage ne se cherche jamais. Ce qui bouge ENSUITE, si — une
+   * dictée qui remplit l'adresse est un geste qu'il vient de faire, et une
+   * adresse dictée mérite d'être confirmée.
+   *
+   * **Cette valeur ne se met jamais à jour.** La garder figée est le but : elle
+   * ne désigne pas « la dernière valeur vue » mais « celle qui n'a jamais été
+   * demandée ».
+   */
+  const valeurRecue = useRef(value);
+
   useEffect(() => {
+    if (value === valeurRecue.current) return;
     if (choisi.current === value) return;
     if (!meriteUneRecherche(value)) return;
 

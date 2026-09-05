@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-05 · branche `main`
-· dernière migration `drizzle/0073_tva_par_ligne.sql` (ce lot ne touche que
+· dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
 l’affichage)
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
@@ -26,15 +26,179 @@ chantier […] la note vocale a changé. »*
 
 | | |
 |---|---|
-| **fait** | la fiche client porte l'objet de la DICTÉE à la création comme au retour du devis (§249) |
+| **fait** | la fiche client porte l'objet de la DICTÉE à la création comme au retour du devis (§261) |
 | **fait** | elle ne disparaît plus quelques jours après, quand l'audio est purgé |
 | **fait** | devant une note déjà là, l'invite « Appuyez et décrivez le chantier » se tait |
 
 **Ce que cela coûte, et il le saura :** écouter et retirer la note se font
-désormais sur la fiche du CHANTIER, plus sur la fiche client.
+sur l'écran **Note vocale**, plus sur la fiche client.
 
 **Tenu par** `scripts/test-fiche-client-un-seul-visage-e2e.ts`, vu rouge sur la
 version d'avant.
+
+---
+
+## FAIT (code) : relire sa dictée — transcription et informations (5 septembre 2026)
+
+Les deux derniers écrans du trajet `chantier → terminé` qui n'avaient jamais été
+repris. Trois défauts de FORME, aucun de calcul : un échec de transcription
+avait l'allure d'une transcription réussie ; la proposition et les vraies cases
+portaient les mêmes mots avec les deux mêmes tons échangés ; l'or qui écrit un
+mot tenait 2,77 de contraste. Détail et verdicts :
+`docs/lot-relire-sa-dictee.md`. Planche retenue par le patron
+(`appli/relire-sa-dictee.html`) : **« un seul à la fois »**.
+
+**Le code est fait, la vérification ne l'est pas** : batterie complète, suites
+base, suites bout-en-bout et captures restent dues — une autre de ses sessions
+tenait le port 3000 et le même dossier (`TODO.md`).
+
+Le trajet `chantier → terminé` est désormais repris de bout en bout.
+
+## FAIT : l'audit de santé, et les cinq corrections qui en sortent (5 septembre 2026)
+
+Premier passage du skill `atlas-code-health` (lecture seule) sur 1 857 fichiers,
+puis le lot qui en découle. Sa réponse : *« oui espace le partout et fait les 4 »*.
+
+| | |
+|---|---|
+| **la visionneuse de photos se voit sur les 8 chartes** | elle était à **1,09 / 1,12** de contraste sur Nuit et Sylve — croix et « Retirer » invisibles. Jeton neuf `orSurEncre` : les six claires gardent `#b98b47` au caractère près |
+| **le numéro du client se lit espacé sur sa fiche** | `numeroLisible` n'avait qu'un appelant depuis le 12 août ; elle en a deux |
+| **deux migrations ne peuvent plus prendre le même numéro** | `scripts/test-numeros-migrations.ts`. Onze doublons existent déjà, inscrits, **non renommables** |
+| **cinq exports morts retirés** | dont `reservéAuPatron`, qui promettait une garde qu'elle n'assurait pas — aucun trou ouvert ni comblé, la garde est ailleurs |
+| **quatorze contrôles de maquettes rejoignent la chaîne** | joués un par un avant : 13 verts, 1 vert mais lent, 1 rouge laissé dehors |
+
+**Ce que j'ai dit et qui était faux, corrigé noir sur blanc :** `estPort` n'était
+pas un oubli de validation (Zod le couvre à l'entrée), et « quinze contrôles
+jamais joués » était à côté — **rien ne lance `verifier:maquette`**, ni la CI ni
+la batterie. Le vrai défaut est d'un cran au-dessus, et il reste ouvert.
+
+**Mesuré :** `tsc` 0, `lint` 0 erreur, neuf suites vertes dont la neuve.
+**La batterie complète n'est PAS jouée** — il demande à être prévenu avant, et
+une autre de ses sessions écrivait dans le même dossier.
+
+Détail : `ARCHITECTURE.md` §259 · retour au patron : `docs/lot-audit-de-sante.md`.
+Ce qui reste dû est dans `TODO.md`, en tête.
+
+
+## FAIT (à moitié) : l'écran des prix (5 septembre 2026)
+
+**Le code est écrit et les contrôles rapides sont verts ; la batterie complète,
+la suite navigateur et les captures ne sont PAS jouées.** Il a demandé à être
+prévenu avant toute batterie — ses sessions partagent le dossier —, et aucun
+serveur ne répondait sur le port 3000.
+
+| | |
+|---|---|
+| la case du montant garde la **virgule** française | `PrixClient.tsx` consomme `montantEcrivable` ; le `type="number"` qui écrivait zéro est parti |
+| « à chiffrer » se **voit** et se **compte** | son choix « la B » sur planche, avec `ligneAttendSonPrix` — pas de seconde règle |
+| le refus **emmène le doigt** sur la case | `/reglages` réservé au cas « aucune ligne » |
+| `orTexte` | un or lisible quand il porte un mot (`ARCHITECTURE.md` §257) |
+
+Détail et chiffres : `docs/lot-ecran-des-prix.md`. Ce qui reste dû est dans
+`TODO.md`, en tête.
+
+## FAIT : le devis, le premier arrêt (4 septembre 2026, soir)
+
+L'écran où il relit ce qu'il engage. `ARCHITECTURE.md` §256,
+`docs/lot-devis-le-premier-arret.md`.
+
+| | |
+|---|---|
+| **Fait** | le refus « à chiffrer » remonte **avant** la feuille des dates : il nomme la ligne et ouvre son champ, au lieu de laisser choisir une date pour refuser au bout (`DevisCompletClient.tsx`) |
+| **Fait** | les neuf couleurs écrites en clair suivent la charte — le voile de saisie était invisible sur Nuit et Sylve, et c'est le seul signe qu'on écrit dans ces champs sans cadre |
+| **Fait** | 299 lignes de champs sorties dans `ChampsDuDevis.tsx`, à comportement identique |
+| **Fait** | « Choisir la date » était au bout de **2,59 hauteurs d'écran** ; il a choisi **la B** sur `appli/devis-le-premier-arret.html`, et la barre collée est codée — 648 px d'une fenêtre de 664, à toute hauteur |
+| **Mesuré** | base **300/310** et navigateur **70/127** : aucun rouge n'est de ce lot, vérifié en rejouant cinq suites tombées avec ET sans le lot (0/5 des deux côtés) |
+| **Corrigé le 5 septembre** | la barre d'onglets couvrait bien son bouton — mais seulement quand on arrive sur le devis EN APPUYANT sur un lien : la mise en page racine n'est pas rejouée. À son adresse, aucune barre : sa mesure et la suite disaient vrai toutes les deux. Règle descendue dans `src/lib/ecrans-sans-navigation.ts`, appelée des deux côtés (`ARCHITECTURE.md` §258). Ce qui était faux dans mon annonce du 4 : « aussi sur les pages publiques du client », et surtout de l'avoir déduit sans regarder l'écran |
+
+## FAIT : la facture, le second arrêt (4 septembre 2026)
+
+Le dernier écran avant que l'argent parte n'était jamais passé par une revue.
+
+| | |
+|---|---|
+| **Fait** | un devis renvoyé après la fin de chantier atteint enfin la facture — l'écran le nomme, avec sa version, et porte le geste qui rattrape (`src/lib/facture-face-au-devis.ts`) |
+| | le devis qui fait foi est la dernière version **envoyée** : un chantier dont la v2 traînait en brouillon n'est plus refusé à tort |
+| | le total se recompose à la main — prix accordé au client et un taux par catégorie, comme sur le papier |
+| | la page que son client ouvre suit l'allure de SES documents ; sans réglage, elle est celle d'aujourd'hui au pixel près |
+| **Mesuré, puis tranché par lui** | « Envoyer la facture » finit **287 px sous le pli** à 390 × 664 — *« on laisse et on descend comme aujourd'hui »*. Le resserrage ne rendrait qu'une soixantaine de pixels |
+| **Tranché aussi** | les travaux en plus n'auront **aucun champ de trace** — « la A », sa deuxième réponse dans le même sens |
+| **Fait le soir même** | l'allure se **fige à l'émission** (migration 0074) : une facture partie ne change plus d'aspect, quoi qu'il règle ensuite |
+| **Éprouvé le soir même** | l'immuabilité d'une facture émise tient **dans tous les sens** (dépôt, SQL brut, aspect et montant) et a désormais son contrôle, qui sait échouer |
+
+Détail : `ARCHITECTURE.md` §255 et `docs/facture-impeccable.md`.
+
+---
+
+## FAIT : la fiche du chantier est retirée (4 septembre 2026)
+
+**Sa décision, prise deux fois** — 21 août : *« la fiche chantier, on la
+supprime pour de bon »* ; 1er septembre, avec sa raison : *« toutes ces infos
+sont déjà sur cette page — ça fait des doublons si on garde l'autre. »*
+
+L'adresse `/chantiers/[id]` existe encore et **ne montre plus rien** : elle
+redirige là où le travail s'est arrêté. Un signet, un lien profond, une
+notification déjà partie la portent — un 404 les punirait d'avoir eu raison.
+
+| Ce qui y menait | Mène à |
+|---|---|
+| photos, dictée | la fiche client, où la pellicule et l'anneau vivent |
+| une date à poser | le planning |
+| **la date est posée** | **le planning sur SA JOURNÉE**, portes levées — sa réponse du jour |
+| les cinq flèches de retour | la liste des chantiers, comme la fiche elle-même |
+
+**Ce que ce retrait a coûté, et qui est écrit :** « Sans date » et « En attente
+du client » n'avaient aucun lien vers le chantier — elles portent désormais le
+même chevron que les journées ; et plus aucun écran n'ouvre `/clients/[id]`
+depuis un chantier, question laissée à son arbitrage (`TODO.md`).
+
+Raisons : `ARCHITECTURE.md` §254. Retour au patron :
+`docs/retirer-la-fiche-du-chantier.md`.
+
+---
+
+## FAIT : la feuille « Envoyer à … », passée au peigne (4 septembre 2026)
+
+Sa demande : une passe complète sur la feuille du premier arrêt du parcours, dans
+tous ses états. Maquette d'abord (planche 102), puis sa réponse — *« 1 à 7
+fais-les, et le 8 je choisis la B »*.
+
+| | |
+|---|---|
+| **fait** | les sept défauts réparés, plus le repli de la durée : `ChoixCanal` au lieu des capsules recopiées, une porte au devis vide, le refus en `colors.alert`, l'encre douce sur les phrases qui portent du sens, le libellé d'attente de même largeur, le pied collé en bas, la fiche du jour allégée |
+| **outil** | `scripts/voir-envoi-au-client.mts` — onze états à 390 × 664, pour la charte qu'on lui donne |
+| **gardé par** | `scripts/test-feuille-envoi-lisible-e2e.ts` (vu rouge) et `scripts/verifier-maquette-feuille-qui-envoie.mts` (vu rouge) |
+| **le pourquoi** | `ARCHITECTURE.md` §252 · retour au patron : `docs/lot-feuille-qui-envoie.md` |
+| **reste ouvert, pour lui** | le jeton `colors.muted` sous 4,5 sur six chartes dans toute l'application ; le bouton principal éteint, illisible sur les dix-sept écrans de `PrimaryButton` |
+
+## FAIT : le vert des boutons, partout (4 septembre 2026)
+
+Sa remarque : *« j'avais demandé à changer tous les boutons en vert clair, or si
+tu regardes la page terminé ils n'ont pas changé — et vérifie s'il n'y a pas le
+problème ailleurs »*. Treize boutons manquaient (`ARCHITECTURE.md` §251).
+
+| | |
+|---|---|
+| **fait** | treize boutons passent à `colors.plein`, dont les deux onglets et la capsule de « Terminés » |
+| **fait** | le galet est retiré — *« oui, vert clair partout »*, sa décision du jour. Une seule matière pour ce qu'on appuie |
+| **fait** | `test-boutons-pleins` prend le sens inverse : tout aplat de `rust` doit être déclaré avec sa raison |
+| **fait** | le rond d'envoi de l'arrosage n'écrit plus son mot en `#FFFFFF` (illisible sur Nuit et Sylve) |
+| **fait** | « Avant de commencer », le premier écran d'un artisan, revient dans la charte — il était illisible sur Nuit |
+| **reste** | trois détails de forme sur ce même écran, sans conséquence (`TODO.md`) |
+
+---
+
+## FAIT : le calendrier du client monte du bas (4 septembre 2026)
+
+Sa réponse A, codée. La page du client garde ses 664 px quand la
+contre-proposition s'ouvre — elle en faisait 990 (`ARCHITECTURE.md` §249).
+
+| | |
+|---|---|
+| **fait** | le calendrier monte par-dessus, la page derrière ne bouge plus |
+| **fait** | le contrôle du pli ouvre enfin la feuille qu'il annonçait |
+| **reste** | avec une date à moins de 14 jours, la case de rétractation porte la page à 790 px — deux arbitrages, à lui |
+| **tranché** | non : la page du client garde ses couleurs, il l'a dit le 4 septembre (§248) |
 
 ---
 
@@ -194,6 +358,9 @@ d'abord par elle.
 
 ## FAIT : « Terminés » — le calme, et le galet (2 septembre 2026)
 
+> **Le galet a été retiré le 4 septembre 2026**, à sa demande : *« oui, vert
+> clair partout »*. Le **calme** reste ; la matière est de l'histoire.
+
 *Ses deux choix, faits sur planches : « code moi la A le calme avec la 4 le
 galet », puis « code l'idée du galet aussi pour le bouton Tout et À facturer ».*
 
@@ -201,8 +368,8 @@ galet », puis « code l'idée du galet aussi pour le bouton Tout et À facturer
 |---|---|
 | les planches | `appli/termines-elegance.html` · `appli/facturer-note-vocale.html` |
 | l'écran | `src/app/termines/ListeTermines.tsx` · `src/app/termines/page.tsx` |
-| la matière | `.atlas-galet`, dans `src/app/globals.css` — **après** `.atlas-plein` |
-| la garde | `scripts/test-galet.ts` (sans base, sans navigateur) |
+| la matière | `.atlas-galet` — **retirée le 4 septembre 2026** (`ARCHITECTURE.md` §251) |
+| la garde | `test-galet.ts` — supprimé avec elle ; `scripts/test-boutons-pleins.ts` a pris le relais |
 | le pourquoi | `ARCHITECTURE.md` §235 et §236 |
 
 **Le calme :** les montants se posent sur la ligne de base du nom au lieu d'être
@@ -390,9 +557,9 @@ fiche client ! Pas sur la page que je te mets en deuxième photo. »*
 | | |
 |---|---|
 | devis **sans client** | la flèche mène au formulaire « Fiche client » du chantier |
-| devis **avec client** | la flèche rend la fiche du chantier, comme avant |
+| devis **avec client** | la flèche rend la fiche client aussi — il y relit le nom et le canal avant d'envoyer (§229) |
 | fiche enregistrée, venu du devis | on **retourne au devis**, qui porte enfin le client |
-| fiche ouverte depuis l'accueil | inchangé : flèche vers la liste, enregistrement vers le chantier |
+| fiche ouverte depuis l'accueil | flèche ET enregistrement rendent la liste — accordés le 4 septembre, la fiche du chantier ayant disparu (§254) |
 
 La provenance voyage dans l'adresse (`?de=`) et n'est acceptée que si elle vaut
 **exactement** le devis de ce chantier — sans quoi la flèche « retour » pourrait

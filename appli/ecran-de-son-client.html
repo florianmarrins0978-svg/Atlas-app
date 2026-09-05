@@ -176,13 +176,18 @@
        border:1px solid var(--line);border-radius:14px;font-size:14.5px}
   .rep p{margin:0 0 8px} .rep p:last-child{margin:0}
   .rep b{font-weight:600}
+  /* La décision se lit avant la démonstration : sans elle, la planche paraît
+     encore attendre une réponse déjà donnée. */
+  .tranche{margin:0 0 30px;padding-left:12px;border-left:2px solid var(--or);
+           font-size:14px;color:var(--charcoal-soft)}
 </style>
 </head>
 <body>
 <div class="page">
 
   <h1>L'écran de son client</h1>
-  <p class="sous">Deux questions. Le cadre ci-dessous a la hauteur d'un vrai téléphone — 664 px, barre d'adresse déduite —, et le chiffre en dessous est mesuré à chaque geste, pas dessiné.</p>
+  <p class="sous"><b>Les deux questions sont tranchées</b> — cette planche reste comme relevé de ce qui a été mesuré et choisi. Le cadre a la hauteur d'un vrai téléphone, 664 px, barre d'adresse déduite ; le chiffre en dessous est mesuré à chaque geste.</p>
+  <p class="tranche"><b>A — La feuille</b>, retenue le 4 septembre 2026, et <b>les couleurs d'origine</b> conservées. Les deux sont codées et en ligne.</p>
 
   <p class="famille">Question 1 — quand il cherche une autre date</p>
   <p class="q">Aujourd'hui, ses trois boutons passent sous le pli</p>
@@ -217,8 +222,16 @@
   </div>
 
   <div class="rep">
-    <p><b>Ce qui vous est demandé :</b> une lettre pour la question 1 — A, B ou C —, et pour la question 2, si la page doit suivre son devis.</p>
-    <p>Rien n'est codé avant votre réponse : ce qui doit céder sur 664 px vous appartient.</p>
+    <p><b>Vos réponses, du 4 septembre 2026 :</b></p>
+    <p><b>Question 1 — « J'aime bien la À la feuille ».</b> Codée. Sur l'écran de votre
+      client, le calendrier monte du bas et la page derrière garde sa hauteur : 990 px
+      d'avant, 664 aujourd'hui. Vous avez ensuite fait replier la liste des dates une
+      fois la date retenue — 790 px devenus 717 quand la case de rétractation apparaît.</p>
+    <p><b>Question 2 — « Non, garde les couleurs d'origine ».</b> Rien n'a bougé, et
+      c'est écrit dans le dépôt pour qu'on ne vienne pas « faire propre » plus tard.</p>
+    <p><b>Ce qui reste :</b> 53 px de trop dans le seul cas d'une date à moins de
+      quatorze jours. Les fermer demanderait de descendre la case de rétractation
+      dans la feuille — l'option que vous n'avez pas retenue.</p>
   </div>
 </div>
 

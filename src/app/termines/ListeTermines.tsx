@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
 import {
   aFacturerPartout,
   bornesDuFeuilletage,
@@ -322,23 +322,26 @@ function Onglet({
       onClick={onClick}
       data-atlas={`onglet-${repere}`}
       aria-pressed={actif}
-      // **L'onglet actif est un galet — sa demande du 2 septembre 2026** :
-      // *« code l'idée du galet aussi pour le bouton Tout et À facturer »*.
+      // **L'onglet actif prend l'aplat des boutons — sa décision du
+      // 4 septembre 2026.** Il portait le galet depuis le 2 (*« code l'idée du
+      // galet aussi pour le bouton Tout et À facturer »*) ; en rouvrant cet
+      // écran deux jours plus tard, il a relevé qu'il n'avait pas suivi le vert
+      // clair, et tranché : **« oui, vert clair partout »**. Il n'y a plus
+      // qu'une matière pour ce qu'on appuie (`globals.css`, la pierre tombale
+      // du galet).
       //
-      // **Seul l'ACTIF le prend, et c'est ce qui garde l'écran lisible.** Deux
-      // galets côte à côte ne diraient plus lequel des deux on regarde : un
-      // onglet ne se distingue que de son voisin. L'éteint garde donc son
-      // cheveu et son gris.
-      //
-      // **Il perd son fond noir au passage.** Ce n'est pas une perte : le noir
-      // était le seul aplat d'encre de l'écran, et il ne se rattachait à rien —
-      // ni au vert des actions, ni à l'or de ce qu'on lit.
-      className={`min-h-11 rounded-full px-[18px] text-[13px] ${
-        actif ? "atlas-plein atlas-galet" : ""
-      }`}
+      // **Seul l'ACTIF est plein, et c'est ce qui garde l'écran lisible.** Deux
+      // aplats côte à côte ne diraient plus lequel des deux on regarde : un
+      // onglet ne se distingue que de son voisin. L'éteint garde son cheveu et
+      // son gris.
+      className={`min-h-11 rounded-full px-[18px] text-[13px] ${actif ? "atlas-plein" : ""}`}
       style={
         actif
-          ? { WebkitTapHighlightColor: "transparent" }
+          ? {
+              backgroundColor: colors.plein,
+              color: surPlein,
+              WebkitTapHighlightColor: "transparent",
+            }
           : {
               backgroundColor: "transparent",
               color: colors.muted,
@@ -464,18 +467,16 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
           // écartés : elle prend le vert des boutons pleins et leur geste. Elle
           // vit à l'intérieur du lien de la ligne — l'appuyer active donc bien
           // l'étiquette elle-même, et le geste se voit.
-          // **ELLE PREND LE GALET LE 2 SEPTEMBRE 2026 — sa déclinaison 4**
-          // (`appli/facturer-note-vocale.html`), après sa demande de la mettre
-          // « de la même couleur que la note vocale ».
+          // **ELLE A PORTÉ LE GALET DU 2 AU 4 SEPTEMBRE 2026**, puis il l'a
+          // ramenée au vert des boutons : *« oui, vert clair partout »*. Le
+          // dégradé et son filet d'or sont partis avec — voir la pierre tombale
+          // dans `globals.css`.
           //
-          // **Le fond et le mot ne s'écrivent plus ici**, et c'est la règle du
-          // dépôt : la matière du galet est FIXE sur les huit chartes — elle ne
-          // suit pas `rust`, qui devient clair sur Nuit et Sylve —, donc elle
-          // vit dans `globals.css` avec le blanc qui va dessus, comme celle du
-          // micro. Un `backgroundColor` laissé ici l'écraserait sur cinq
-          // chartes et la casserait sur deux.
-          className="atlas-plein atlas-galet flex min-h-11 flex-none items-center rounded-full px-[17px] text-[12.5px] font-semibold uppercase"
-          style={{ letterSpacing: "0.12em" }}
+          // **`surPlein` et jamais un blanc écrit en clair** (`CLAUDE.md` §3) :
+          // `plein` devient clair sur Nuit et Sylve, où du blanc dessus ne se
+          // lirait plus.
+          className="atlas-plein flex min-h-11 flex-none items-center rounded-full px-[17px] text-[12.5px] font-semibold uppercase"
+          style={{ letterSpacing: "0.12em", backgroundColor: colors.plein, color: surPlein }}
           // **Un repère plutôt que son texte** (`CLAUDE.md` §5 bis) : la capsule
           // s'appelait « Facturer » jusqu'au 31 août 2026, et les contrôles qui
           // la cherchaient par son libellé ont rougi sur du code juste le jour

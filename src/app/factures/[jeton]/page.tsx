@@ -2,6 +2,12 @@ import { factureParJeton } from "@/server/repositories/envois-factures";
 import { jourLisible } from "@/lib/jour";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { colors, surPlein } from "@/lib/design-tokens";
+import {
+  encreSurFond,
+  estLAllureParDefaut,
+  typographieDe,
+  type Allure,
+} from "@/lib/allure-documents";
 
 // **Aux couleurs de l'application — sa demande du 25 août 2026.** La page portait
 // des couleurs écrites en dur (une terre cuite abandonnée le 3 août pour le bouton)
@@ -10,6 +16,58 @@ import { colors, surPlein } from "@/lib/design-tokens";
 // de session — c'est exactement « la couleur de l'application » (`CLAUDE.md` §3,
 // aucune couleur en clair dans un écran).
 const SERIF = "ui-serif, Georgia, serif";
+
+/**
+ * L'ALLURE DE SES DOCUMENTS, PORTÉE JUSQU'À LA PAGE DE SON CLIENT.
+ *
+ * **Le défaut qu'elle referme.** Le client reçoit deux pièces pour une même
+ * facture : cette page, puis le PDF qu'elle ouvre. Le PDF porte depuis le
+ * 23 août 2026 la typographie, le fond et l'accent réglés dans « Devis &
+ * factures » ; la page, elle, ne portait rien de tout cela. Le même document
+ * arrivait donc en deux allures — et c'est celle de la page qu'il voit d'abord.
+ *
+ * **LE DÉFAUT REND EXACTEMENT LA PAGE D'AUJOURD'HUI, AU PIXEL PRÈS**, et c'est
+ * l'invariant de tout le réglage (`allure-documents.ts`) : tant qu'il n'y a pas
+ * touché, rien ne bouge chez son client.
+ *
+ * **Deux chemins y mènent, et il faut les deux.** `null` — une facture d'avant
+ * la migration 0074, dont l'aspect n'a jamais été relevé. Et une allure ÉCRITE
+ * qui vaut le défaut : depuis 0074, l'émission fige les trois valeurs en clair,
+ * défaut compris, pour distinguer « parti sans allure » de « jamais relevé ».
+ * Sans `estLAllureParDefaut` ici, toutes ces factures-là verraient leur bouton
+ * passer du vert à l'or — un changement d'aspect chez le client, provoqué par
+ * une migration qui prétend justement figer les aspects.
+ *
+ * **L'encre ne se choisit pas, elle suit le fond** (`encreSurFond`) — la même
+ * règle que le papier, appelée et non réécrite : il peut poser n'importe quelle
+ * couleur, et une encre noire sur un fond sombre ne se verrait qu'une fois chez
+ * le client.
+ */
+function habillage(allure: Allure | null) {
+  if (!allure || estLAllureParDefaut(allure)) {
+    return {
+      papier: colors.card,
+      encre: colors.ink,
+      encreDouce: colors.muted,
+      accent: colors.rust,
+      surAccent: surPlein,
+      pleinFond: colors.plein,
+      police: SERIF,
+    };
+  }
+  const { encre, encreDouce } = encreSurFond(allure.fond);
+  return {
+    papier: allure.fond,
+    encre,
+    encreDouce,
+    accent: allure.accent,
+    // Ce qu'on écrit SUR l'accent suit la même règle que l'encre sur le papier :
+    // un accent clair veut une encre sombre, et l'inverse.
+    surAccent: encreSurFond(allure.accent).encre,
+    pleinFond: allure.accent,
+    police: typographieDe(allure.typographie).pileCss ?? SERIF,
+  };
+}
 
 // La page que voit le client quand il touche le lien de sa facture.
 //
@@ -68,33 +126,35 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
     );
   }
 
+  const h = habillage(facture.allure);
+
   return (
     <div
       className="flex min-h-dvh items-center justify-center p-6"
-      style={{ backgroundColor: colors.cream, color: colors.ink }}
+      style={{ backgroundColor: colors.cream, color: h.encre }}
     >
       <div
         className="w-full max-w-sm rounded-2xl p-6 text-center shadow-sm"
-        style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}` }}
+        style={{ backgroundColor: h.papier, border: `1px solid ${colors.line}` }}
       >
         <p
           className="text-[12px] font-semibold uppercase tracking-[0.12em]"
-          style={{ color: colors.muted }}
+          style={{ color: h.encreDouce }}
         >
           Facture
         </p>
-        <h1 className="mt-1 text-[20px] font-semibold" style={{ fontFamily: SERIF }}>
+        <h1 className="mt-1 text-[20px] font-semibold" style={{ fontFamily: h.police }}>
           <NumeroDeDocument valeur={facture.numeroCommercial} />
         </h1>
-        <p className="mt-1 text-[14px]" style={{ color: colors.muted }}>
+        <p className="mt-1 text-[14px]" style={{ color: h.encreDouce }}>
           {facture.entrepriseNom}
         </p>
 
-        <p className="mt-6 text-[32px] font-semibold leading-none" style={{ fontFamily: SERIF }}>
+        <p className="mt-6 text-[32px] font-semibold leading-none" style={{ fontFamily: h.police }}>
           {euros(facture.totalTtc)}
         </p>
         {facture.echeanceLe && (
-          <p className="mt-2 text-[14px]" style={{ color: colors.muted }}>
+          <p className="mt-2 text-[14px]" style={{ color: h.encreDouce }}>
             À régler avant le {jourLisible(facture.echeanceLe)}
           </p>
         )}
@@ -108,7 +168,7 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
           target="_blank"
           rel="noopener"
           className="atlas-plein mt-6 block rounded-full px-5 py-3 text-[15px] font-medium"
-          style={{ backgroundColor: colors.plein, color: surPlein }}
+          style={{ backgroundColor: h.pleinFond, color: h.surAccent }}
         >
           Voir la facture en PDF
         </a>
@@ -116,7 +176,7 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
           href={`/factures/${encodeURIComponent(jeton)}/pdf?telecharger=1`}
           download
           className="mt-3 block rounded-full px-5 py-3 text-[15px] font-medium"
-          style={{ color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.rust}` }}
+          style={{ color: h.accent, boxShadow: `inset 0 0 0 1px ${h.accent}` }}
         >
           Télécharger ma facture
         </a>

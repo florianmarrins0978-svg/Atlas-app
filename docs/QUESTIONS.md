@@ -50,6 +50,7 @@ relues à chaque session) :
 25. [Peut-on ouvrir Atlas avec Face ID, au lieu d'un mot de passe ?](#25-peut-on-ouvrir-atlas-avec-face-id-au-lieu-dun-mot-de-passe-)
 26. [Combien d'heures avons-nous passé à créer Atlas ?](#26-combien-dheures-avons-nous-passé-à-créer-atlas-)
 27. [Le format de mes numéros de facture, c'est obligatoire ?](#27-le-format-de-mes-numéros-de-facture-cest-obligatoire-)
+28. [Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?](#28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-)
 
 ---
 
@@ -1834,3 +1835,44 @@ possible, et le dit là où ça ne l'est pas.
 **Changer de format ne renumérote rien.** Vos factures déjà émises gardent leur
 numéro. Les réécrire creuserait un trou dans la suite — exactement ce qu'on
 cherche à éviter.
+
+---
+
+## 28. Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?
+
+**Parce que vous l'avez décidé ainsi, le 4 septembre 2026** — *« non, garde les
+couleurs d'origine »*.
+
+### Ce qui vous avait été signalé
+
+Votre client reçoit deux choses, à une minute d'intervalle : **la page** qu'il
+ouvre depuis son SMS, puis **le PDF** qu'il télécharge depuis cette page.
+
+Le PDF suit le papier et la couleur d'accent que vous réglez dans « Devis &
+factures ». La page, non : ses couleurs sont fixées dans le code. Les deux ne se
+ressemblent donc pas tout à fait, et le fond que vous choisissez n'atteint pas
+cet écran-là.
+
+### Ce que vous avez répondu, et ce que ça veut dire
+
+On ne touche à rien. Les deux identités cohabitent, et c'est assumé.
+
+| | |
+|---|---|
+| votre **PDF** | suit l'allure que vous réglez |
+| la **page** de votre client | garde ses couleurs, quoi que vous régliez |
+
+### Ce qui n'a jamais été en cause
+
+**Votre charte de couleurs à vous ne part pas chez le client, et n'a jamais
+risqué de partir.** Si vous mettez Atlas en « Nuit », votre devis ne devient pas
+noir chez lui : l'application coupe délibérément la charte sur les deux pages
+que votre client reçoit. C'est vérifié, et ce n'est pas ce dont il s'agissait
+ici.
+
+### Si vous changez d'avis
+
+C'est une demi-journée, pas plus : la page passerait par le même endroit que le
+PDF. Mais tant que vous ne le demandez pas, **personne ne doit le faire « pour
+faire propre »** — c'est écrit dans le dépôt (`ARCHITECTURE.md` §248), pour
+qu'une session ne défasse pas votre choix en croyant bien faire.

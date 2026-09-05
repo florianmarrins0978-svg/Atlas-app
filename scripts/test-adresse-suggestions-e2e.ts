@@ -141,6 +141,62 @@ async function main() {
     "L'adresse libre n'a pas été conservée : la liste aurait alors enfermé le patron dans ce que la base connaît."
   );
 
+  // ─── LA FICHE ROUVERTE N'OUVRE AUCUNE LISTE ──────────────────────────────
+  //
+  // **Sa plainte du 4 septembre 2026 :** *« je suis arrivé sur la page de la
+  // fiche client […] ce n'est pas la même que lorsque j'ai cliqué sur nouveau
+  // chantier »*. C'était bien le même écran : ce qui différait, c'est que la
+  // liste des suggestions s'était ouverte TOUTE SEULE sur l'adresse que la
+  // reprise venait de remplir. Six adresses recouvraient les photos, l'anneau
+  // de la note vocale et « Je rédige à la main ».
+  //
+  // **Le contrôle mesure la HAUTEUR, et pas seulement la liste.** C'est elle
+  // qui dit ce qu'il voyait : 672 px à la création, 1099 px à la reprise. Une
+  // assertion sur le seul `combobox` resterait verte le jour où la liste
+  // s'ouvrirait sous une autre forme.
+  const appelsAvant = appels;
+
+  // On rouvre la fiche d'un chantier qui porte déjà une adresse — le chemin du
+  // retour depuis le devis (`src/lib/retour-du-devis.ts`).
+  //
+  // **L'identifiant se reconnaît à sa FORME, pas à sa place dans la liste.**
+  // Le premier lien vers `/chantiers/` de l'accueil est « nouveau chantier » :
+  // le prendre menait à `/chantiers/nouveau/coordonnees`, une adresse qui
+  // n'existe pas — et le contrôle accusait alors le champ d'avoir disparu.
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  const liens = await page.locator('a[href^="/chantiers/"]').evaluateAll((l) =>
+    l.map((a) => a.getAttribute("href") ?? "")
+  );
+  const UUID = /^\/chantiers\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
+  const id = liens.map((h) => h.match(UUID)?.[1]).find(Boolean);
+  assert.ok(id, "aucun chantier sur l'accueil : la reprise n'a rien à rouvrir");
+  await page.goto(`${BASE}/chantiers/${id}/coordonnees`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(900);
+
+  const champReprise = page.getByRole("combobox").first();
+  assert.equal(
+    await champReprise.count(),
+    1,
+    "La fiche rouverte n'a pas de champ d'adresse : ce n'est plus le même écran que la création."
+  );
+  const adresseReprise = await champReprise.inputValue();
+  if (adresseReprise.trim().length >= 5) {
+    assert.equal(
+      appels,
+      appelsAvant,
+      `La fiche rouverte a interrogé le service d'adresses ${appels - appelsAvant} fois sur une valeur ` +
+        "qu'elle venait elle-même de remplir : la liste s'ouvre sous les yeux du patron, sur un écran " +
+        "où il n'a rien tapé."
+    );
+    const listes = await page.locator('[role="listbox"], ul[id*="suggestion"]').count();
+    assert.equal(
+      listes,
+      0,
+      "Une liste de suggestions est ouverte à l'arrivée sur la fiche : elle recouvre les photos, " +
+        "l'anneau de la note vocale et « Je rédige à la main »."
+    );
+  }
+
   await navigateur.close();
   console.log("✅ L'adresse se propose, se choisit d'un doigt, et n'enferme personne.");
 }

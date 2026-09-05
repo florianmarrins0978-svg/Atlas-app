@@ -1033,10 +1033,13 @@ export async function preparerDevisDepuisDicteeAction(chantierId: string, rempla
   }
 
   if (resultat.statut === "prepare") {
-    // Les quatre écrans que l'enchaînement vient de modifier. Sans cela, le
+    // Les trois écrans que l'enchaînement vient de modifier. Sans cela, le
     // patron revient sur « Informations » et y trouve la page d'avant : il
     // croirait que rien ne s'est passé.
-    revalidatePath(`/chantiers/${chantierId}`);
+    //
+    // **La fiche du chantier a quitté cette liste le 4 septembre 2026**
+    // (`ARCHITECTURE.md` §254) : son adresse ne rend plus qu'une
+    // redirection, et revalider une redirection ne rafraîchit rien.
     revalidatePath(`/chantiers/${chantierId}/informations`);
     revalidatePath(`/chantiers/${chantierId}/prix`);
     revalidatePath(`/chantiers/${chantierId}/export`);
@@ -1067,7 +1070,6 @@ export async function repondreQuestionsChiffrageAction(
   const resultat = await enregistrerPrecisionsEtReprendre(ctx, chantierId, reponses);
 
   if (resultat.statut === "prepare") {
-    revalidatePath(`/chantiers/${chantierId}`);
     revalidatePath(`/chantiers/${chantierId}/informations`);
     revalidatePath(`/chantiers/${chantierId}/prix`);
     revalidatePath(`/chantiers/${chantierId}/export`);

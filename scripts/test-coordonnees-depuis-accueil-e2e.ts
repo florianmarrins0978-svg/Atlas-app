@@ -63,9 +63,9 @@ async function main() {
   // produit « Chantier du … ». Fabriquer la ligne à la main éprouverait une
   // forme de donnée que l'application ne produit pas.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = idChantier;
 
   // **La mention n'est PAS une ancre, et c'est voulu.** Une ligne de l'accueil
   // est un seul `<a>` — trois suites l'ont prouvé le 17 août en tombant d'un
@@ -100,16 +100,38 @@ async function main() {
   });
 
   await cas("le NOM du chantier, lui, garde sa reprise — « rien de plus »", async () => {
-    // S'il menait lui aussi aux coordonnées, la ligne changerait de destination
-    // et sa règle du 13 août — « que ça me renvoie à l'étape où je me suis
-    // arrêté » — cesserait de valoir. Il a dit « cliquer DESSUS ».
+    // Sa règle du 13 août : *« que ça me renvoie à l'étape où je me suis
+    // arrêté »*. Il a dit « cliquer DESSUS » — la mention est une seconde
+    // cible, elle ne remplace pas la première.
+    //
+    // ─── CE CONTRÔLE INTERDISAIT UNE DESTINATION ; IL EXIGE LA RÈGLE ────────
+    //
+    // Il refusait que le nom mène aux coordonnées, parce qu'à l'époque la
+    // reprise d'un chantier vide, c'était la fiche du chantier. Cette fiche est
+    // retirée le 4 septembre 2026 (`ARCHITECTURE.md` §254) : les photos et la
+    // dictée se reprennent désormais sur la fiche client, qui EST l'écran des
+    // coordonnées.
+    //
+    // **Sur un chantier où rien n'est fait, les deux cibles coïncident donc —
+    // et c'est juste dans les deux sens** : le nom mène là où le travail
+    // s'arrête, la mention mène là où l'adresse se remplit, et c'est le même
+    // écran parce que c'est le même geste. Interdire cette adresse ferait
+    // rougir un produit qui a raison.
+    //
+    // Ce qui reste à défendre, et qui est le fond : **le nom suit `lienDeReprise`**,
+    // il ne pointe pas sur une adresse écrite en dur. Dès qu'une dictée existe,
+    // les deux se séparent d'eux-mêmes.
     const cible = await page
       .locator(`a.atlas-brin:has-text("Chantier du")`)
       .first()
       .getAttribute("href");
     if (cible === null) throw new Error("le nom du chantier ne mène nulle part");
-    if (/\/coordonnees$/.test(cible)) {
-      throw new Error(`la ligne mène aux coordonnées (${cible}) : la mention n'est plus seule`);
+    const reprisesPossibles = /\/chantiers\/[0-9a-f-]{36}(\/coordonnees|\/devis-complet|\/prix|\/note-vocale)?$|^\/planning/;
+    if (!reprisesPossibles.test(cible)) {
+      throw new Error(`la ligne mène à « ${cible} » : ce n'est aucun écran de reprise`);
+    }
+    if (/\/chantiers\/[0-9a-f-]{36}$/.test(cible)) {
+      throw new Error(`la ligne mène à la fiche retirée (${cible}) : elle rebondirait`);
     }
   });
 
@@ -222,7 +244,12 @@ async function main() {
     await page.locator('input[placeholder="06 12 34 56 78"]').fill("0679984514");
     await page.locator('input[placeholder="12 rue des Lilas, Nantes"]').fill("10 rue des Lilas, Nantes");
     await page.getByRole("button", { name: /Enregistrer/ }).click();
-    await page.waitForURL(new RegExp(`/chantiers/${chantierId}$`), { timeout: 30_000 });
+    // **On repart À LA LISTE, et plus sur la fiche du chantier** (4 septembre
+    // 2026, `ARCHITECTURE.md` §254). Il est entré depuis l'accueil, par la
+    // mention « Adresse non renseignée » : il y retourne. L'y renvoyer sur
+    // l'adresse retirée l'aurait ramené ICI par redirection — sur le
+    // formulaire qu'il vient d'enregistrer.
+    await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
     // **Le nom recalculé est ce qui fait disparaître la ligne fautive.** Sans
     // lui, la base porterait le bon client et l'accueil dirait encore

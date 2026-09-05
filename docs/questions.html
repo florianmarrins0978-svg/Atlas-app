@@ -99,6 +99,7 @@
 <li><a href="#25-peut-on-ouvrir-atlas-avec-face-id-au-lieu-dun-mot-de-passe-">Peut-on ouvrir Atlas avec Face ID, au lieu d'un mot de passe ?</a></li>
 <li><a href="#26-combien-dheures-avons-nous-passé-à-créer-atlas-">Combien d'heures avons-nous passé à créer Atlas ?</a></li>
 <li><a href="#27-le-format-de-mes-numéros-de-facture-cest-obligatoire-">Le format de mes numéros de facture, c'est obligatoire ?</a></li>
+<li><a href="#28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-">Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -1406,6 +1407,32 @@
 <h3 id="deux-choses-qui-ne-se-règlent-pas-et-pourquoi">Deux choses qui ne se règlent pas, et pourquoi</h3>
 <p><strong>Le compteur repart à 1 le 1ᵉʳ janvier</strong> — votre décision. Mais seulement si l'année figure dans le numéro. Sur « une suite sans année », repartir à 1 donnerait deux factures numérotées <code>0001</code> à un an d'écart : un doublon, ce que la loi interdit précisément. L'application le fait donc toute seule là où c'est possible, et le dit là où ça ne l'est pas.</p>
 <p><strong>Changer de format ne renumérote rien.</strong> Vos factures déjà émises gardent leur numéro. Les réécrire creuserait un trou dans la suite — exactement ce qu'on cherche à éviter.</p>
+<hr>
+<h2 id="28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-">28. Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Parce que vous l'avez décidé ainsi, le 4 septembre 2026</strong> — <em>« non, garde les couleurs d'origine »</em>.</p>
+<h3 id="ce-qui-vous-avait-été-signalé">Ce qui vous avait été signalé</h3>
+<p>Votre client reçoit deux choses, à une minute d'intervalle : <strong>la page</strong> qu'il ouvre depuis son SMS, puis <strong>le PDF</strong> qu'il télécharge depuis cette page.</p>
+<p>Le PDF suit le papier et la couleur d'accent que vous réglez dans « Devis &amp; factures ». La page, non : ses couleurs sont fixées dans le code. Les deux ne se ressemblent donc pas tout à fait, et le fond que vous choisissez n'atteint pas cet écran-là.</p>
+<h3 id="ce-que-vous-avez-répondu-et-ce-que-ça-veut-dire">Ce que vous avez répondu, et ce que ça veut dire</h3>
+<p>On ne touche à rien. Les deux identités cohabitent, et c'est assumé.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>votre <strong>PDF</strong></td>
+<td>suit l'allure que vous réglez</td>
+</tr>
+<tr>
+<td>la <strong>page</strong> de votre client</td>
+<td>garde ses couleurs, quoi que vous régliez</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-qui-na-jamais-été-en-cause">Ce qui n'a jamais été en cause</h3>
+<p><strong>Votre charte de couleurs à vous ne part pas chez le client, et n'a jamais risqué de partir.</strong> Si vous mettez Atlas en « Nuit », votre devis ne devient pas noir chez lui : l'application coupe délibérément la charte sur les deux pages que votre client reçoit. C'est vérifié, et ce n'est pas ce dont il s'agissait ici.</p>
+<h3 id="si-vous-changez-davis">Si vous changez d'avis</h3>
+<p>C'est une demi-journée, pas plus : la page passerait par le même endroit que le PDF. Mais tant que vous ne le demandez pas, <strong>personne ne doit le faire « pour faire propre »</strong> — c'est écrit dans le dépôt (<code>ARCHITECTURE.md</code> §248), pour qu'une session ne défasse pas votre choix en croyant bien faire.</p>
 </main>
 </body>
 </html>

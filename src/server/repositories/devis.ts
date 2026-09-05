@@ -90,6 +90,41 @@ export async function getDevisPourChantier(ctx: Ctx, chantierId: string) {
 }
 
 /**
+ * LE DEVIS QUI FAIT FOI — la dernière version **ENVOYÉE**, jamais un brouillon.
+ *
+ * **Une seule fonction pour la seule question qui compte au moment de
+ * facturer :** quel prix le client a-t-il vu ? `getDevisPourChantier` rend la
+ * dernière version *quelle qu'elle soit*, brouillon commencé la veille compris,
+ * et c'est une autre question.
+ *
+ * **Le défaut qu'elle referme.** `terminerChantier` prenait la dernière
+ * version, puis refusait si elle n'était pas envoyée. Un devis v1 envoyé et une
+ * v2 laissée en brouillon rendaient donc « Le devis de ce chantier n'a jamais
+ * été envoyé » — une phrase FAUSSE, sur un chantier parfaitement facturable, et
+ * un refus qu'aucun geste ne pouvait lever (`AGENTS.md` : une erreur qui accuse
+ * à tort coûte plus cher que pas d'erreur du tout).
+ *
+ * **C'est déjà la règle ailleurs** — `listerChantiersTermines` annonce le
+ * montant « prévu au devis » d'après la dernière version envoyée. Les deux
+ * écrans disent enfin la même chose du même chantier.
+ */
+export function lireDevisQuiFaitFoi(tx: DbOrTx, chantierId: string) {
+  return tx
+    .select()
+    .from(devis)
+    .where(and(eq(devis.chantierId, chantierId), eq(devis.statut, "envoye")))
+    .orderBy(desc(devis.numeroVersion))
+    .limit(1);
+}
+
+export async function devisQuiFaitFoi(ctx: Ctx, chantierId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await lireDevisQuiFaitFoi(tx, chantierId);
+    return d ?? null;
+  });
+}
+
+/**
  * Les versions de devis d'un chantier, de la plus ancienne à la plus récente.
  *
  * **Née de sa question du 25 août 2026** : *« ressors-moi le PREMIER devis de

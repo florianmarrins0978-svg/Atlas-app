@@ -109,8 +109,13 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
      `scripts/test-devis-client-e2e.ts`, sur son écran de 390 × 664 — sans quoi
      la page regrossit au premier ajout, et personne ne le voit. */
   return (
-    <div className="min-h-dvh bg-[#F4EFE8] px-4 py-2">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-1">
+    /* **Les marges sont resserrées, et c'est mesuré — 4 septembre 2026.**
+       Sa demande : garder la case de rétractation dans la page, et prendre
+       ailleurs les 53 px qui manquaient. Ils viennent tous des espacements :
+       aucune phrase n'a été retirée. Le détail des gains est en
+       `ARCHITECTURE.md` §250. */
+    <div className="min-h-dvh bg-[#F4EFE8] px-4 pt-1 pb-0.5">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-0.5">
         <header className="rounded-2xl bg-white p-3 shadow-sm">
           {/* Le nom de l'entreprise sur la MÊME ligne que le numéro : il occupait
               la sienne, pour trois mots que l'œil lit de toute façon d'un bloc
@@ -167,7 +172,7 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
               qu'il ne reste rien à la fermeture de l'onglet. */}
           <a
             href={`/devis/${envoi.jeton}/pdf?telecharger=1`}
-            className="mt-2 block text-[13px] font-semibold text-ink/70 underline underline-offset-4"
+            className="mt-1.5 block text-[13px] font-semibold text-ink/70 underline underline-offset-4"
           >
             Télécharger mon devis (PDF)
           </a>

@@ -20999,7 +20999,7 @@ micro l'est : *ce qui fait une matière, c'est de ne pas changer de visage.*
 
 ### Deux pannes MUETTES, et la suite qui les garde
 
-`scripts/test-galet.ts` ne mesure pas un goût : il garde deux défauts qu'aucun
+`test-galet.ts` ne mesure pas un goût : il garde deux défauts qu'aucun
 type, aucun lint et aucune capture ne verrait.
 
 1. **L'ordre dans le fichier.** La capsule porte `atlas-plein` ET `atlas-galet`,
@@ -21298,7 +21298,7 @@ Le contournement était nécessaire à l'époque, et il avait un vrai coût :
 | | |
 |---|---|
 | deux sources pour une couleur | le style en ligne, et un calque qui le recouvre |
-| une collision réelle | `.atlas-galet` posait aussi un `background-image` : c'est le dernier écrit dans le fichier qui gagnait, et `scripts/test-galet.ts` existe pour ça |
+| une collision réelle | `.atlas-galet` posait aussi un `background-image` : c'est le dernier écrit dans le fichier qui gagnait, et `test-galet.ts` existe pour ça |
 | un jeton qui ne servait à rien | changer `colors.rust` ne changeait plus les boutons |
 
 ### Ce qui le remplace
@@ -22106,13 +22106,1228 @@ sur cette page. `layout.tsx` la coupe sur `estPageDuClient`, et le middleware
 couvre bien `/devis` — donc un artisan sur « Nuit » n'envoie pas un devis noir.
 La règle du patron est tenue ; c'est l'identité du document qui ne l'est pas.
 
-**Non corrigé** : changer les couleurs de ce que voit le client est une décision
-d'apparence, elle se dessine avant de se coder
-(`appli/ecran-de-son-client.html`, question 2).
+## IL A TRANCHÉ LE 4 SEPTEMBRE : ON NE TOUCHE À RIEN
+
+*« Non, garde les couleurs d'origine. »*
+
+**Ce paragraphe cesse donc d'être un point ouvert et devient une décision.**
+La page du client garde `#F4EFE8`, `#2F3B2F` et `#B5502F` écrits en clair, et
+elle ne suit pas l'allure que l'artisan règle pour ses documents.
+
+**Ce que cela veut dire, et qu'il faut savoir avant d'y revenir :**
+
+| | |
+|---|---|
+| ce qui est **acquis** | la page et le PDF n'ont pas la même identité, et c'est assumé |
+| ce qui **reste vrai** | l'allure qu'il règle n'atteint pas cet écran |
+| ce qui **ne change pas** | sa charte à lui ne fuit toujours pas sur cette page (`layout.tsx`, `estPageDuClient`) — un artisan sur « Nuit » n'envoie pas un devis noir |
+
+**Ce qui serait une faute maintenant :** brancher cette page sur
+`couleursDocument` « pour faire propre ». Ce serait défaire un arbitrage qu'il
+a rendu, planche en main, avec les deux versions sous les yeux.
+
+Les couleurs en clair de cette page ne sont donc plus un oubli à corriger : ce
+sont **les couleurs voulues**. Le seul travail qui reste possible ici serait de
+les nommer quelque part plutôt que de les répéter — et cela ne change rien à
+ce qui s'affiche.
+
+## §249. La feuille du client — sa réponse A, et ce qu'elle ne résout pas
+
+*4 septembre 2026. Le patron a choisi, sur planche, la forme que prend le
+calendrier de son client. Ce paragraphe dit ce qui a été codé, ce que cela
+mesure, et le cas qui reste.*
+
+### Ce qu'il a choisi
+
+Trois formes lui ont été soumises (`appli/ecran-de-son-client.html`), toutes
+mesurées comme tenant dans son écran de 390 × 664 : **A la feuille**, **B
+l'échange** — le haut se replie —, **C le second écran**. Sa réponse, en une
+ligne : *« J'aime bien la À la feuille »*.
+
+**A, c'est-à-dire :** le calendrier monte du bas, par-dessus, et la page
+derrière **garde exactement la hauteur qu'elle avait**. Rien ne se replie, rien
+ne disparaît, aucun écran ne s'intercale.
+
+### Ce que cela mesure
+
+| état | avant | après |
+|---|---|---|
+| replié | 664 px | 664 px |
+| **calendrier ouvert** | **990 px** | **664 px** |
+| dernier bouton | 963 px | 602 px |
+
+### Ce qui a demandé de l'attention, et qu'il ne faut pas défaire
+
+- **Le champ caché `dateAutre` vit HORS de la feuille.** C'est lui qui part au
+  serveur : posé dedans, il disparaîtrait du formulaire à la fermeture, et la
+  date choisie ne serait jamais envoyée.
+- **Refermer sans avoir choisi défait le choix.** Sinon le client reste sur
+  « Une autre date » sans date, et son acceptation est refusée par le serveur —
+  un refus qu'il ne comprendrait pas, puisque rien à l'écran ne dit ce qui
+  manque.
+- **La phrase de refus vit DANS la feuille.** Celle du formulaire est plus bas,
+  donc derrière elle : un refus posé là serait caché par ce qui vient de le
+  provoquer.
+- **C'est la feuille de la maison** (`BottomSheet`), pas une seconde. Elle ne
+  porte aucune couleur de l'artisan : cette page n'en reçoit aucune
+  (`layout.tsx`, `estPageDuClient`), et ses jetons retombent sur la charte
+  d'origine.
+
+### La règle du 26 août tient, par un autre geste — et le contrôle a suivi
+
+*« Si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
+désélectionner »* (26 août 2026). Le calendrier couvre maintenant le bouton
+radio : on ne peut plus le rappuyer pour le décocher.
+
+**La règle n'a pas bougé ; le geste, si.** Refermer la feuille sans avoir touché
+de jour défait le choix. `test-devis-client-e2e` a donc été adapté à la RÈGLE et
+non à la mise en page (`CLAUDE.md` §5 bis), et il a gagné un contrôle que
+personne n'avait : **une date retenue survit à la fermeture**. Sans lui, une
+feuille qui viderait tout en se refermant passerait le premier point en beauté
+et perdrait la date du client.
+
+### CE QUI RESTE, et le chiffre exact
+
+**Quand le client retient une date à moins de quatorze jours, la page fait
+790 px.** La case de rétractation — « je demande expressément que les travaux
+commencent avant la fin du délai » — pèse **125 px**, et elle vit dans la page,
+pas dans la feuille.
+
+Décomposition mesurée, à 390 × 664 :
+
+| bloc | hauteur |
+|---|---|
+| en-tête (devis, totaux, téléchargement) | 204 px |
+| carte des dates (titre, 2 dates, « autre », date retenue, message) | 252 px |
+| **case de rétractation** | **125 px** |
+| les trois issues + la mention de preuve | 146 px |
+| gouttières et marges | 63 px |
+
+**Il a tranché le 4 septembre : replier la liste.** Une fois une date retenue
+au calendrier, les deux dates proposées et la ligne « une autre date » n'ont
+plus rien à décider — elles cèdent la place à ce qu'il a choisi, sur une seule
+ligne, avec « changer » pour tout redéplier.
+
+**Deux pièges, et le second est celui qui perdrait sa date.** Repliés, les
+boutons radio quittent le document : un champ caché prend le relais, sans quoi
+le formulaire n'enverrait plus AUCUN choix. Et « changer » doit redéplier la
+liste ENTIÈRE — sans cette sortie, un appui ferait de la date retenue un choix
+définitif, et le client ne pourrait plus revenir à l'une des deux dates de son
+artisan.
+
+Le contrôle a suivi : il ne regarde plus une case cochée — elle n'existe plus —
+mais **ce qui part au serveur**, `choixDate` et `dateAutre`, plus le retour de
+la liste sur « changer ».
+
+**Mesuré après : 790 → 717 px.** Le gain est de 73 px, et il reste **53 px**
+de trop dans ce seul cas ; le dernier bouton finit à 690 px pour 664 d'écran.
+C'est ce que l'estimation annonçait — « 60 à 70 px : insuffisant seul » —, et
+cela lui a été dit avant qu'il choisisse.
+
+| bloc, après repli | hauteur |
+|---|---|
+| en-tête (devis, totaux, téléchargement) | 204 px |
+| carte des dates (titre, date retenue, message) | 180 px |
+| case de rétractation | 125 px |
+| les trois issues | 146 px |
+
+**La seule combinaison qui fermerait les 53 px restants** est celle qu'il n'a
+pas retenue : descendre la case de rétractation dans la feuille. Elle attend
+sa décision, et rien ne se code avant.
+
+**L'ancien état de ce paragraphe, pour mémoire :** les deux façons d'y arriver
+étaient
+des arbitrages, pas des évidences.
+
+1. **Descendre la case dans la feuille**, au moment où il touche la date
+   proche. Elle y serait mieux placée — c'est de CETTE date qu'elle parle — mais
+   elle sortirait du champ de vision à l'instant où il appuie sur « J'accepte ce
+   devis », et c'est un consentement légal qui doit être **exprès**.
+2. **Replier la liste des dates** une fois une date retenue. Gain estimé
+   60 à 70 px : insuffisant seul.
+
+À trancher par le patron. En attendant, le pire cas est passé de **1 148 px à
+790 px**, et le cas courant — sans date proche — tient dans l'écran.
+
+## §250. Les 53 px pris dans les espacements, sans retirer un mot
+
+*4 septembre 2026. Le patron : « il y a pas moyen de garder aujourd'hui mais de
+resserrer le texte pour gagner les px manquants ? » Ce paragraphe dit ce que
+chaque resserrement a rendu, et pourquoi il ne reste plus aucune marge.*
+
+### La question, et pourquoi elle était bonne
+
+Deux options lui avaient été soumises pour les 53 px qui débordaient encore sur
+l'écran de son client : descendre la case de rétractation dans la feuille, ou
+replier la liste des dates. La première sortait un consentement légal de sa vue
+au moment de signer ; la seconde ne rendait que 73 px sur les 126 nécessaires.
+
+**Il en a proposé une troisième, et elle était la bonne.** Personne ne l'avait
+regardée : prendre la place ailleurs que dans le contenu.
+
+### Ce que chaque piste rend, mesuré sur l'écran réel
+
+Aucune n'a été estimée. Chacune a été appliquée à la page servie, une par une, à
+390 × 664, la case de rétractation affichée :
+
+| piste | gain |
+|---|---|
+| zone de message à une ligne (63 → 40 px) | **23 px** |
+| gouttières du formulaire (12 → 8) | **8 px** |
+| marges haut/bas de la page (8 → 4) | **8 px** |
+| intérieur de la case (16 → 12) | **8 px** |
+| gouttière de la colonne (4 → 2), lien du PDF, marge du bas | le reste |
+| *(écartées)* phrase légale en 2 lignes au lieu de 4 | *45 px* |
+| *(écartée)* invitation au message retirée | *29 px* |
+| *(écartée)* mention de preuve retirée | *19 px* |
+
+**Les trois dernières n'ont pas été prises, et c'est délibéré.** La phrase de la
+case est une formule légale, dont `docs/AGENT.md` §2.2 ter dit qu'elle reste à
+faire valider ; l'invitation au message est ce qui évite qu'un client repère une
+faute et touche « Je ne donne pas suite » ; la mention de preuve est ce qui dit
+au client que son accord est conservé. **Trois informations, pas trois
+espacements.**
+
+### Le résultat
+
+| état | 3 septembre | 4 septembre |
+|---|---|---|
+| calendrier ouvert | 990 px | **664 px** |
+| + date à moins de quatorze jours | 1 148 px | **664 px** |
+
+Sa règle du 31 août est donc tenue **dans tous les états de cet écran**, y
+compris celui que personne n'éprouvait.
+
+### CE QU'IL FAUT SAVOIR AVANT D'AJOUTER QUOI QUE CE SOIT ICI
+
+**Il ne reste plus un pixel.** Le pire cas mesure exactement 664 px pour 664
+d'écran. Deux px ajoutés n'importe où — une ligne de texte, une marge, un
+bouton — rouvrent le défaut.
+
+C'est pourquoi `test-devis-client-e2e` éprouve désormais **le pire cas** :
+calendrier ouvert, date à moins de quatorze jours, case de rétractation
+affichée. Il ne se contente plus de charger la page. Si vous ajoutez quelque
+chose ici et qu'il rougit, il ne se trompe pas : il faudra prendre la place
+ailleurs, et les trois pistes écartées ci-dessus restent la réserve — chacune au
+prix d'une information en moins, à demander au patron.
+
+## §251. Le vert des boutons : ce qui l'avait manqué, et le contrôle qui le voit
+
+**Le 4 septembre 2026, il rouvre « Terminés » et écrit :** *« j'avais demandé à
+changer tous les boutons en vert clair, or si tu regardes la page terminé ils
+n'ont pas changé — et vérifie s'il n'y a pas le problème ailleurs »*. Il y en
+avait **douze ailleurs**, et le galet de « Terminés » en plus.
+
+### Ce que le contrôle du 3 septembre ne pouvait pas voir
+
+`test-boutons-pleins.ts` gardait une règle juste : *un élément qui porte
+`atlas-plein` ne peint jamais son fond avec `colors.rust`*. Elle ne pouvait
+rougir que sur les boutons **déjà trouvés** par le balayage du même jour — ceux
+qui portaient la classe. Un bouton oublié l'était donc **des deux côtés à la
+fois** : pas de classe, donc pas de contrôle, donc pas de rouge. Le garde-fou
+veillait exactement là où il n'y avait plus rien à attraper.
+
+**La leçon dépasse ce lot.** Un contrôle dont le périmètre est défini par le
+correctif qu'il accompagne ne prouve rien : il redit que ce qu'on a fait a été
+fait. Le périmètre doit venir du **produit**, pas du travail.
+
+### Le sens inverse : l'inventaire des aplats
+
+La question n'est plus « ce bouton est-il au bon vert ? » mais **« cet aplat de
+`rust` a-t-il le droit d'exister ? »**. Douze aplats légitimes sont nommés dans
+`APLATS_DECLARES`, chacun avec sa raison ; **tout aplat non déclaré fait
+rougir**. La liste ne s'allonge pas toute seule, et une entrée qui ne vise plus
+rien fait rougir aussi — une déclaration périmée donne l'illusion d'une
+couverture.
+
+| Ce qui garde `rust`, et pourquoi | |
+|---|---|
+| un **interrupteur** | il dit un état, on ne l'appuie pas pour agir |
+| une **coche**, une **pastille radio** | une marque de 18 px, pas une capsule |
+| une **barre d'avancement**, un **témoin qui bat** | ils montrent, ils ne se pressent pas |
+
+Tout le reste — ce qu'on appuie pour faire quelque chose, y compris une pastille
+de choix — est `colors.plein`.
+
+### LE GALET EST RETIRÉ, ET IL L'A TRANCHÉ LUI-MÊME
+
+Il l'avait demandé le 2 septembre, sur les deux onglets de « Terminés » et sur
+la capsule « À facturer ». Deux jours plus tard, planche en main : **« oui, vert
+clair partout »**.
+
+**Ce que ça pose, et qui vaut au-delà de cet écran :** il n'y a plus qu'**une**
+matière pour ce qu'on appuie dans Atlas, l'aplat `colors.plein`. La note vocale
+(`.atlas-micro`) garde la sienne, et elle seule — c'est un objet, pas un bouton,
+et il l'a nommément mise à part le 3 septembre.
+
+`test-galet.ts` est parti avec le dessin qu'il gardait. **Un contrôle
+qui ne mesure plus rien est pire qu'absent** (`CLAUDE.md` §5) : il rassure.
+
+### Deux trouvailles que sa question n'appelait pas
+
+**Le rond d'envoi de la discussion d'arrosage** (`DiscuterLePlan.tsx`) écrivait
+son mot en `#FFFFFF` — juste sur cinq chartes, illisible sur Nuit et Sylve, où
+l'aplat devient clair. Il passe à `surPlein`.
+
+**L'écran « Avant de commencer »** — celui des documents légaux, le tout premier
+que voit un artisan — était entièrement hors charte : fond `#F4EFE8` écrit en
+clair, cartes en blanc, bouton en terre cuite `#B5502F`. Son **texte**, lui,
+suivait `--atlas-ink`. Sur Nuit, l'encre passait au clair sur un fond resté
+crème : **la page devenait illisible**, et c'est le défaut qu'il a signalé le
+22 août. L'écran est ramené sur les jetons (`bg-paper`, `bg-card`,
+`text-accent`, `border-line`), et son bouton sur `colors.plein`.
+
+Cet écran n'est pas une page du client : `estPageDuClient` ne le compte pas
+(`CHEMINS_DU_CLIENT` = `/devis`, `/factures`, `/entretien`). **Les vraies pages
+du client, elles, n'ont pas bougé** — sa décision du 4 septembre au matin
+(§248) : *« garde les couleurs d'origine »*.
 
 ---
 
-## §249. La fiche client n'a qu'un visage, et c'est celui de la dictée
+## §252. La feuille d'envoi : cinq chartes où l'on ne voyait pas le canal choisi
+
+**4 septembre 2026, à sa demande** — une passe complète sur la feuille
+« Envoyer à … », *dans tous ses états*. Onze états photographiés à 390 × 664
+(`scripts/voir-envoi-au-client.mts`), en clair et en Nuit, et les paires de
+jetons recalculées sur les huit chartes.
+
+### Ce qui ne se voyait pas, et pourquoi aucun test ne pouvait le voir
+
+Les capsules « Par SMS » / « Par e-mail » du bloc de réparation étaient
+**redessinées à la main** dans `EnvoiAuClient`, alors que `ChoixCanal` existait
+depuis le 22 août et servait déjà au nouveau chantier et à la facture. La copie
+ne marquait l'actif que par **la couleur du texte** — `colors.rust` contre
+`colors.ink` — et son fond par `rustTint` contre `card`.
+
+**Mesuré, et c'est le cœur de l'affaire :**
+
+| | `rust` vs `ink` | fonds `rustTint` vs `card` |
+|---|---|---|
+| origine, brume, prune | différents | 1,15 à 1,27 |
+| **pierre, beurre, moka, sylve, nuit** | **identiques** | 1,04 à 1,29 |
+
+**Cinq chartes sur huit** — et non les deux sombres seulement, comme la première
+lecture l'avait écrit. Sur ces cinq-là les deux capsules étaient **rigoureusement
+indiscernables** : rien, dans la page, ne disait par où le devis allait partir.
+
+**Ce qu'aucune suite ne pouvait attraper.** Trois d'entre elles vérifiaient que
+« Par SMS » et « Par e-mail » sont *présents* et cliquables — ce qui était vrai.
+Aucune ne demandait qu'on puisse **distinguer** lequel est pris, parce que la
+question ne se pose pas tant qu'on regarde une seule charte.
+
+**La réparation est un doublon en moins**, pas un correctif de couleur :
+l'écran emploie `ChoixCanal`, dont la marque d'actif est un **liseré d'or** —
+elle ne dépend d'aucune clarté et tient donc sur les huit chartes.
+
+### Le gris qui porte le sens
+
+`colors.muted` tient **2,85 à 3,59** de contraste sur les six chartes claires,
+pour un seuil de 4,5. Sur cette feuille il portait « Préparation… », « 8 jours
+ouvrés d'affilée seront réservés », « Reste 1 équipe sur 2 » et le sous-titre de
+l'interrupteur — c'est-à-dire **tout ce que l'écran apprend et qui ne se devine
+pas**, lu debout, en plein soleil.
+
+Ce qui a été fait : ces phrases-là passent à `inkSoft` (6,6 à 10,4 partout).
+`muted` reste sur ce qui n'est qu'un repère — la légende du calendrier, les
+intitulés de rubrique. **Le jeton lui-même n'est pas touché** : il vit dans trois
+cents endroits, et le changer serait un changement d'identité, pas un correctif
+d'écran. Le sujet est ouvert dans `TODO.md`, et il lui revient.
+
+*(Le précédent existe : `[data-atlas="chercher-client"]::placeholder` a reçu le
+même traitement le 3 septembre, avec la même mesure. La règle CSS couvre
+désormais les deux champs plutôt que d'en avoir deux copies.)*
+
+### Le pied qui reste en bas
+
+Mesuré sur son écran : la feuille fait **882 px** sur une journée ordinaire et
+**1 407 px** sur une journée chargée, pour **584 px** de hauteur utile.
+« Envoyer le devis » n'était donc jamais visible en arrivant. Pire pendant
+« Préparation… » : la feuille fait 305 px, le bouton est sous ses yeux, puis le
+planning arrive et il **descend de six cents pixels** — le pouce tombe sur le
+calendrier.
+
+Le pied de la feuille — l'erreur, « Envoyer le devis », « Annuler » — est
+désormais `sticky`. Trois mesures, et aucune n'est décorative :
+
+| | pourquoi |
+|---|---|
+| `-mx-6 px-6` | l'aplat barre toute la largeur ; sinon le contenu défile dans les marges de `BottomSheet` |
+| `-mb-9 pb-9` | avale le retrait bas de la feuille, pour que la place de repos du pied soit déjà au ras |
+| `bottom: -36px` | **trouvé à la capture, pas au raisonnement** : `bottom: 0` colle la boîte de MARGE, et la marge négative laissait le pied 36 px trop haut — la liste des dates se voyait passer dessous |
+
+Le 36 est le `pb-9` de `BottomSheet`, recopié ici parce que c'est sa valeur, pas
+celle de cet écran. `scripts/test-feuille-envoi-lisible-e2e.ts` mesure l'écart
+entre le bas du pied et le bas de la feuille, et **refuse de conclure** si la
+feuille tient dans l'écran — un zéro n'est pas un succès.
+
+### Deux corrections à ce qui avait été annoncé
+
+**Un.** Le premier correctif du bouton d'envoi réservait la largeur avec un
+libellé en creux posé sous le vrai. Il a été **jeté après l'avoir essayé** : le
+texte se retrouvait deux fois dans la page, et `text=Envoyer le devis` — qu'emploient
+trois suites — ne désignait plus un élément mais deux. Le libellé d'attente est
+devenu « Envoi du devis… », qui fait la même largeur à huit pixels près et
+n'ajoute rien à la page. Le coupable n'était pas le bouton, c'était le mot.
+
+**Deux.** La planche montrait la phrase du devis vide raccourcie. Elle est
+gardée **mot pour mot** : elle vient de `MOTIF_DEVIS_VIDE`, celle-là même que le
+serveur oppose au refus. En écrire une version courte pour l'écran donnerait
+deux rédactions du même refus. La phrase nomme le geste ; le bouton
+`aller-aux-prix` le fait.
+
+---
+
+## §253. Les portes d'un chantier vivent au planning, pas sur sa fiche
+
+**Sa décision du 1er septembre 2026 :** la fiche du chantier disparaît, et ce
+qu'elle portait encore va sur les chantiers du planning. Sa raison, dite le même
+jour : *« toutes ces infos sont déjà sur cette page — on la garde, donc ça fait
+des doublons si on garde l'autre aussi. »* Ce qu'il refuse n'est pas un écran de
+trop : ce sont **deux écrans qui montrent la même chose**.
+
+**Son choix d'allure, le 4 septembre : la C.** Trois lui étaient posées sur
+`appli/facture-au-planning.html`, refaite ce jour-là sur le planning
+d'aujourd'hui — la version du 1er dessinait celui d'avant sa refonte, et c'est
+la raison qu'il a donnée de n'avoir jamais répondu.
+
+| | Ce qu'elle coûte, **mesuré sur la planche** |
+|---|---|
+| A · les trois portes dépliées | les deux journées passent de **374 à 794 px** ; le vendredi tombe sous un pli qui en fait 664 |
+| B · un bouton plein par ligne | trois aplats clairs, dont un sur une facture **déjà partie** — elle ne se fait pas, elle se consulte |
+| **C · la feuille** | rien au repos, un appui de plus, **le planning intact** |
+
+### Ce qui vit où, et pourquoi
+
+| | |
+|---|---|
+| `src/lib/portes-du-planning.ts` | la règle : quelles portes existent, laquelle attend un geste |
+| `src/app/planning/PortesDuChantier.tsx` | la feuille, montée par le chevron |
+| `src/components/atlas/BottomSheet.tsx` | la coquille, **partagée** — six écrans montent déjà une feuille avec elle |
+
+**La règle est pure et testée sans base** (`scripts/test-portes-du-planning.ts`),
+parce qu'un écran ne décide de rien (`CLAUDE.md` §3). Écrite dans le composant,
+elle aurait été recopiée le jour où la feuille et la liste des terminés auraient
+dû dire la même chose du même chantier.
+
+**Et elle ne réécrit rien de ce qui existait :**
+
+- « le chantier a-t-il eu lieu » vient de `ongletDepuisJalons` — la règle qui
+  range déjà un chantier entre planning et terminés. La recopier aurait fait
+  deux vérités sur la même journée, à un écran d'écart ;
+- « où mène le devis » vient de `getSecondarySteps` (20 août) : `/export` une
+  fois parti, `/devis-complet` avant. Le planning connaît l'envoi sous le nom
+  `envoiEnvoyeAt` ; c'est le même événement.
+
+### Le chevron a changé de geste, jamais d'objet
+
+Il menait à `/chantiers/[id]`, et ce n'était pas un caprice : un chantier POSÉ
+quitte l'onglet « Chantiers » (`onglet-chantier.ts`), si bien que le planning est
+le seul endroit d'où l'atteindre — c'est le cul-de-sac qu'il signalait le 8 août
+2026, *« comment moi je fais pour avoir accès au devis ? »*.
+
+**La feuille tient cette promesse mieux que le lien** : elle porte le devis, la
+facture et la fiche client, nommés et datés, au lieu d'un écran d'où il fallait
+repartir. Le NOM, lui, garde son geste : il déplie la journée.
+
+`test-planning-vers-facture-e2e.ts` a été **adapté, pas contourné** : il défend
+la règle — *depuis le planning, on atteint le devis* — par le chemin
+d'aujourd'hui. Une suite qui exigerait l'ancien lien rendrait l'écran impossible
+à changer (`CLAUDE.md` §5 bis).
+
+### Ce que ce paragraphe ne dit pas encore
+
+**La fiche `/chantiers/[id]` existe toujours.** Elle reste le point de reprise
+de `lienDeReprise` pour les photos, la dictée et un chantier planifié, et huit
+chemins y mènent. Son retrait est le lot suivant : ce lot-ci lui donne d'abord
+une maison, parce qu'un écran qu'on supprime avant d'avoir déménagé ce qu'il
+porte emporte ce qu'il portait.
+
+## §254. La fiche du chantier retirée : une adresse qui ne montre plus rien
+
+**Sa décision, prise deux fois.** Le 21 août 2026 : *« la fiche chantier, on la
+supprime pour de bon. »* Puis le 1er septembre, sa raison : *« toutes ces infos
+sont déjà sur cette page — on la garde, donc ça fait des doublons si on garde
+l'autre aussi. »* Ce qu'il refusait n'était pas un écran de trop : c'étaient
+**deux écrans qui montraient la même chose**. La fiche client porte les photos,
+l'anneau de dictée et les coordonnées depuis le 31 août (§226) ; la fiche du
+chantier les montrait une seconde fois.
+
+On lui avait répondu le 31 août qu'elle ne pouvait pas partir : elle portait
+encore la seule sortie vers la facture. **Cette réponse est morte le 4 septembre
+au matin**, quand la facture a pris sa maison au planning (§253). Ce paragraphe
+est le lot d'après.
+
+### L'ORDRE, et c'est là qu'on perd une heure
+
+`lienDeReprise` rendait `/chantiers/[id]` dans **quatre** cas — les photos, la
+dictée, un devis parti sans date, et un chantier planifié par son repli. Or la
+route qui remplace la fiche interroge cette fonction. Rediriger avant de la
+corriger, c'était **une boucle**, et sur un chantier posé : le cas du patron.
+
+Et un cinquième chemin bouclait, qu'aucun relevé n'avait vu :
+`apresLesCoordonnees()` rendait la fiche du chantier sans provenance.
+Enregistrer la fiche client y renvoyait, la redirection ramenait à la fiche
+client — sur le formulaire qu'il venait de quitter.
+
+### Où mène chaque chemin, désormais
+
+| D'où | Vers | Pourquoi celui-là |
+|---|---|---|
+| des photos, une dictée à faire | `/chantiers/[id]/coordonnees` | la pellicule et l'anneau y vivent : c'était le doublon |
+| une date à poser | `/planning` | ce que `getNextActionHref` rendait déjà — le chantier est dans « À planifier » |
+| **la date est posée** | `/planning?chantier=[id]` | **sa journée, portes levées** — sa réponse du 4 septembre : *« sa journée »* |
+| la fiche client enregistrée, sans provenance | `/` | la flèche du même écran y allait déjà : les deux gestes cessent de se contredire |
+| les cinq flèches — `informations`, `prix`, `note-vocale`, `transcription`, `export` | `/` | **elles héritent de celle de la fiche**, mot pour mot. Aucune règle neuve |
+| le rappel « Faire le devis » | `/devis-complet` | le libellé le dit |
+| le rappel « Ouvrir le chantier » | `/export` | la règle du 20 août : parti → export |
+
+**Le mois s'ouvre sur SA date, et dans l'état de départ — pas dans un effet.**
+Un effet aurait peint le mois courant puis sauté sur le bon : une cascade que
+l'œil voit et que le lint refuse. Le paramètre vient du serveur ; il est là au
+premier rendu. Refermer la feuille laisse donc le patron devant sa journée.
+
+**L'identifiant voyage, jamais la date.** Le planning connaît déjà la date de
+chaque chantier ; la répéter dans l'adresse ferait deux vérités sur la même
+journée, et la plus vieille serait celle du lien — un signet gardé une semaine
+ouvrirait le mois d'avant.
+
+### La route survit à l'écran, et c'est délibéré
+
+Un signet, un lien profond, **une notification déjà partie** portent encore
+`/chantiers/[id]`. Supprimer le dossier rendrait un 404 à quelqu'un qui avait
+raison de cliquer. Le fichier ne montre donc rien : il redirige. `notFound()` y
+reste — un chantier d'une autre entreprise rend `null` exactement comme un
+chantier inexistant, et les deux doivent rester indiscernables.
+
+### Ce que ce retrait a coûté, et qu'il faut savoir
+
+**Les deux listes du bas du planning n'avaient AUCUN lien vers le chantier** —
+ni chevron, ni nom cliquable. Tant que la fiche existait, cela ne se voyait
+pas : la liste des chantiers y menait. Un devis parti y serait devenu
+injoignable, c'est-à-dire le cul-de-sac du 8 août 2026 sous un autre nom. « Sans
+date » et « En attente du client » portent donc le même chevron et la même
+feuille que les journées — `portesDuPlanning` rend le devis et la fiche client
+sur un chantier sans date, et pas la facture. **Le chevron, jamais le nom** : sa
+consigne du 4 septembre.
+
+**AUCUN ÉCRAN N'OUVRE PLUS `/clients/[id]` DEPUIS UN CHANTIER**, et ce n'est pas
+un oubli. Cette porte vivait dans le tiroir de la fiche (arrangement B du
+16 août). La fiche du client reste à deux touches par la liste des clients ;
+faut-il lui rendre cette porte, et où ? C'est à lui de trancher — l'ajouter à la
+fiche client serait remettre sur un écran qu'il a fait vider le 20 août
+(`TODO.md`).
+
+**La flèche d'`/export` d'un chantier PLANIFIÉ mène à `/`, où ce chantier ne
+figure plus.** Il y arrive par le planning, dont la porte reste ; le retour du
+navigateur marche. Un `?de=` sur les cinq écrans aurait fermé ce trou — et
+ajouté une troisième règle de retour pour un cran de navigation. Refusé, et dit.
+
+### Ce qui a été SUPPRIMÉ avec l'écran, et non gardé « au cas où »
+
+`getSecondarySteps` et `SecondaryStep` construisaient le tiroir de la fiche, et
+n'avaient qu'un seul appelant. Une liste conservée au cas où se met à mentir en
+silence (§3 de `CLAUDE.md`). Ce qu'elle décidait n'est ni perdu ni recopié : la
+destination du devis vit dans `portes-du-planning.ts`, la reprise des photos et
+de la dictée dans `getNextActionHref`. `TiroirFiche.tsx` part avec.
+
+**Les cinq écrans d'étape restent tous** : la fiche n'en était que la liste.
+
+### Les suites : ce qui a été adapté, et ce qui a été retiré
+
+`_creer-chantier-e2e.ts` — le socle de quatre-vingt-deux fichiers — n'ouvre plus
+la fiche : elle réclamait un chantier, pas une page. Onze suites ont été visées
+plus profond, jamais restaurées (`CLAUDE.md` §5 bis) :
+
+| Suite | Ce qu'elle visait | Ce qu'elle vise |
+|---|---|---|
+| `test-rapprochement-client-e2e` | la porte du tiroir vers `/clients/[id]` | **le `client_id` en base**, que rien ne peut faire retirer |
+| `test-anneau-vers-devis-e2e` | « Mon devis » sous l'anneau, puis le tiroir | l'arrivée automatique du devis, et **le signet d'hier qui mène au planning** |
+| `test-anneau-dictee-e2e` | le corps vide et son tiroir | l'anneau sur la fiche client |
+| `test-photos-e2e`, `test-retrait-differe-e2e` | la pellicule dans le tiroir | la pellicule à découvert |
+| `test-devis-a-la-main-e2e`, `test-devis-complet-e2e` | la ligne « Devis à la main » du tiroir | l'arrivée sur le devis, sans détour |
+| `test-retour-fiche-client` | `versFicheClient(` dans l'écran retiré | **rien** — le cas est supprimé, et la perte écrite noir sur blanc |
+| `test-reprendre-ou-il-en-etait`, `test-retour-du-devis`, `test-hub-repo` | la fiche comme destination | **qu'elle ne le soit JAMAIS** — le contrôle qui empêche la boucle de renaître |
+
+---
+
+## §255. La facture face au devis qui fait foi, et le total qui se recompose
+
+**Le 4 septembre 2026, sur le second arrêt du parcours** — le dernier écran
+avant que l'argent parte, et le seul qui n'était jamais passé par une revue.
+
+### Ce qui coûtait de l'argent, et que rien ne disait
+
+Une facture naît en brouillon du devis, à la fin du chantier. Un devis corrigé
+et **renvoyé ensuite** ne l'atteignait jamais : `terminerChantier` est
+idempotente — et elle a raison de l'être, un double appui est le geste le plus
+banal sur un téléphone —, si bien que la facture gardait les lignes et les
+montants d'avant. Pire, le cas courant n'est pas de rappuyer sur « Créer la
+facture » mais d'ouvrir l'écran : `getFacturePourChantier` servait alors le
+brouillon périmé **sans un mot**, sur un écran qui ne nommait même pas le devis
+dont il reprenait les lignes — quand le PDF, lui, écrit « Établie à partir du
+devis n° … » depuis toujours.
+
+**La réponse est en trois pièces, et la séparation n'est pas décorative :**
+
+| | |
+|---|---|
+| `src/lib/facture-face-au-devis.ts` | la règle **dit** — pure, éprouvée sans base |
+| `FactureClient.tsx` | l'écran **montre**, en nommant le devis et sa version |
+| `reprendreLeDevisSurLaFacture` | le geste **fait**, et seulement sur demande |
+
+**Reprendre automatiquement a été refusé.** Les montants changeraient entre le
+moment où il ouvre l'écran et celui où il appuie, sur le seul écran qui engage
+son argent. C'est `CLAUDE.md` §4 : rien n'est validé sans un geste du patron.
+
+**Une facture ARRÊTÉE ne se compare à rien**, et c'est dans la règle pure : elle
+est partie chez le client et inscrite au relevé. Lui reprocher de ne pas suivre
+un devis postérieur serait un avertissement qu'aucun geste ne peut lever —
+c'est-à-dire du bruit qu'on apprend à ignorer.
+
+### Le devis qui fait foi est la dernière version ENVOYÉE
+
+`terminerChantier` prenait la dernière version, **puis** refusait si elle n'était
+pas envoyée. Un devis v1 parti chez le client et une v2 laissée en brouillon
+rendaient donc « Le devis de ce chantier n'a jamais été envoyé » : une phrase
+fausse, sur un chantier parfaitement facturable, et un refus qu'aucun geste ne
+pouvait lever. `lireDevisQuiFaitFoi` (`src/server/repositories/devis.ts`) porte la règle,
+et les deux refus — aucun devis, aucun devis envoyé — se distinguent enfin.
+
+C'était **déjà** la règle ailleurs : `listerChantiersTermines` annonce le montant
+« prévu au devis » d'après la dernière version envoyée. Les deux écrans disent
+désormais la même chose du même chantier.
+
+### Le total se recompose à la main, ligne à ligne
+
+L'écran de l'arrêt affichait les lignes, puis « Total HT », « TVA X % »,
+« Total TTC ». Deux choses manquaient, que le papier imprimait toutes les deux :
+
+- **le prix accordé au client** — la somme des lignes affichées ne faisait alors
+  pas le Total HT affiché, et rien ne disait pourquoi ;
+- **les taux multiples** — chaque ligne porte le sien depuis la migration 0073,
+  l'écran n'en annonçait qu'un.
+
+Un total qu'on ne peut pas refaire de tête est un total qu'on cesse de croire, et
+c'est le patron qui le défend devant son client.
+
+**Les totaux ne sont plus transmis à l'écran.** Ils étaient lus dans les colonnes
+de la facture, qui peuvent prendre du retard sur leurs propres lignes ; l'écran
+appelle désormais `totauxAvecReduction(lignes, tauxTva, reductionPourcent)` —
+**l'appel exact que fait `emettreFacture` juste avant de figer la pièce**. Ce
+qu'il voit est ce qui partira.
+
+### La page du client suit l'allure de ses DOCUMENTS, pas sa charte
+
+Le client reçoit deux pièces pour une même facture : la page par jeton, puis le
+PDF qu'elle ouvre. Le PDF porte depuis le 23 août la typographie, le fond et
+l'accent réglés dans « Devis & factures » ; la page écrivait `ui-serif, Georgia`
+en dur et prenait le crème et le vert d'Atlas. Le même document arrivait en deux
+allures — et c'est celle de la page qu'il voit d'abord.
+
+**L'invariant qui rend le changement sûr :** `allureDesDocuments` rend `null`
+quand rien n'est réglé, et `null` veut dire *la page d'aujourd'hui, au pixel
+près*. C'est le cas de tous tant qu'ils n'y ont pas touché.
+
+**Sa charte d'écran, elle, ne fuit toujours pas** : `estPageDuClient` la coupe
+dans le gabarit racine, et la page en « Nuit » est identique à la page par
+défaut — photographié, pas supposé.
+
+**Une seconde porte, pas une seconde règle.** `allureSeuleDesDocuments` évite
+d'aller chercher le logo dans le stockage à chaque consultation — un
+aller-retour réseau pour une image que la page n'affiche pas, payé en secondes
+d'attente sur un téléphone au bord d'une route. Les deux portes passent par
+`allureDepuisColonnes`.
+
+### Et l'allure se FIGE à l'émission — migration 0074, le soir même
+
+**Sa décision du 4 septembre 2026 :** *« fige l'allure sur la facture émise — au
+moment de l'envoi, comme les chiffres et l'identité. Une facture partie ne change
+plus d'aspect : mon client doit retrouver en ligne exactement ce qu'il a reçu en
+PDF, y compris six mois plus tard. Un changement de réglage ne rattrape pas les
+anciennes, c'est voulu. »*
+
+L'allure était encore lue sur l'ENTREPRISE, donc à l'instant de la consultation :
+changer son réglage repeignait toutes les pages déjà parties, pendant que les PDF
+archivés ne bougeaient pas. Le client ouvrait alors deux pièces d'aspects
+différents pour une même facture. C'était la dernière chose de la facture à ne
+pas être figée — les montants, l'identité (0039) et les mentions légales (0072)
+l'étaient déjà.
+
+**`emettreFacture` écrit l'allure qu'il vient d'employer pour composer le PDF**,
+pas une seconde lecture : la page et le papier montrent la même chose par
+construction, et non parce que deux lectures sont tombées d'accord.
+
+**Le défaut s'écrit EN CLAIR sur la facture, et VIDE sur l'entreprise. Ce n'est
+pas une contradiction.** Sur `entreprises`, les trois colonnes portent une
+préférence VIVANTE : vides, ses documents suivront la charte le jour où elle
+bougerait. Sur `factures`, elles portent un CONSTAT — voilà de quoi cette pièce
+avait l'air le jour où elle est partie. D'où la convention :
+
+| Les trois colonnes | Ce que ça veut dire |
+|---|---|
+| **nulles** | facture ANTÉRIEURE à 0074, son aspect n'a jamais été relevé — la page retombe sur l'allure vivante, comme avant ce lot |
+| **écrites** | l'aspect du jour de l'envoi, défaut compris |
+
+**Sans ce départage, une migration censée figer les aspects en aurait changé un.**
+Une facture partie sans allure verrait son bouton passer du vert à l'or, parce
+que le défaut écrit en clair emprunte le chemin « allure réglée ». C'est
+`estLAllureParDefaut` qui l'en empêche, à l'écran.
+
+**Ce que la capture prouve, et qu'aucune assertion ne verrait.**
+`scripts/capture-facture-impeccable.mts` photographie deux factures — l'une
+partie avant tout réglage, l'autre après —, change l'allure de l'entreprise, les
+rephotographie, et **compare les octets**. Confronté au code d'avant, il rougit
+sur les deux et nomme la bonne chose.
+
+**Il a fallu masquer l'indicateur du serveur de développement pour que la
+comparaison veuille dire quelque chose** : il affiche tantôt « N », tantôt
+« Compiling … », et faisait conclure qu'une page avait bougé alors qu'elle était
+identique au pixel près.
+
+### Le contrôle d'immuabilité : mon erreur, et le piège qu'elle a mis au jour
+
+**J'ai d'abord écrit que la protection ne tenait peut-être que dans un sens.**
+C'était faux, et il a eu raison d'exiger d'aller au fond : *« si la base refuse
+la réécriture mais que le même geste passe par le code, alors ma facture n'est
+pas figée — c'est justement ce que je promets à mon client. »*
+
+**Mesuré, angle par angle :** le refus tombe **par le dépôt comme en SQL brut**,
+dans le contexte d'isolation, sur l'aspect comme sur le montant. Hors contexte
+RLS, l'écriture ne touche simplement aucune ligne (`rowCount 0`) — la facture
+n'existe pas pour cette requête. **La protection tient dans tous les sens.**
+
+**LE PIÈGE, ET IL VAUT POUR TOUT LE DÉPÔT.** `drizzle` **enveloppe** l'erreur de
+PostgreSQL : `Error.message` ne porte que « Failed query: update "factures" … »,
+et le texte du trigger — « Une facture émise est immuable » — vit dans
+`error.cause`. Un `assert.rejects(fn, /immuable/i)` échoue donc **sur une
+protection qui marche**, et fait conclure l'inverse de la vérité. C'est ce qui a
+coûté une soirée de doute.
+
+`scripts/db-tests.ts` n'a jamais eu ce problème : il passe par `pg` directement,
+sans ORM, et son `/immuable/` marche depuis toujours. **Toute assertion sur un
+message de base venue du DÉPÔT doit lire la chaîne des causes** — c'est ce que
+fait `refusDe` dans `scripts/test-facture-reprend-le-devis-db.ts`.
+
+**ET LA SECONDE MOITIÉ DE MON ERREUR :** j'avais écrit que l'immuabilité d'une
+facture émise n'avait « aucun contrôle automatique ». Faux aussi. `test-factures.ts`
+en portait un depuis longtemps — « une facture émise est immuable jusque dans ses
+lignes » —, et il passe **parce qu'il n'emploie AUCUN motif** :
+`assert.rejects(fn)` tout court se contente d'une erreur, quelle qu'elle soit.
+C'est le contraste qui rend le piège lisible : sans motif ça passe, avec motif ça
+échoue sur la même protection.
+
+La part qui manquait vraiment était plus étroite, et c'est elle que ce lot
+comble : le contrôle existant couvre `lignes_facture`, **pas la ligne `factures`
+elle-même** — donc ni son aspect, ni ses totaux, ni le chemin SQL direct.
+
+**Et le contrôle sait échouer** : trigger désactivé sur `atlas_test`, il rougit ;
+réactivé, il repasse au vert. C'est le seul moyen de savoir qu'il mesure quelque
+chose (`CLAUDE.md` §5).
+
+### Deux défauts trouvés sur la capture, et par aucun test
+
+Cinquième et sixième fois dans ce dépôt (`CLAUDE.md` §5) :
+
+1. les deux versions d'un devis partagent leur numéro commercial — l'écran
+   affichait « Reprise du devis 2026-000006 » au-dessus de « Le devis
+   2026-000006 v2 est parti depuis ». La version s'écrit désormais **toujours** ;
+2. l'écran se contredisait : il annonçait un devis plus récent, puis demandait
+   quatre blocs plus bas « Rien n'a changé depuis le devis ? ».
+
+### Ce qui est MESURÉ et non corrigé
+
+`scripts/capture-facture-impeccable.mts` bâtit les états par les dépôts — il ne
+passe pas par la fiche du chantier, qu'un autre lot retire — puis photographie
+l'écran à 390 × 664, en Origine et en Nuit, et **mesure** où tombe le geste :
+« Envoyer la facture » finit à 951 px, soit **287 px sous le pli** — et non 309,
+chiffre d'une première mesure faussée par un nom de client d'essai qui passait à
+la ligne.
+
+**Il a tranché le soir même : le bouton ne bouge pas** — *« on laisse et on
+descend comme aujourd'hui »*. Sa question préalable vaut d'être gardée, parce
+qu'elle reviendra : *« on ne peut pas resserrer toute la page ? »*. Non — espaces
+à 12 px au lieu de 16 et marges de carte à 14 au lieu de 20 rendent **une
+soixantaine de pixels** contre 287 manquants, et 53 ont déjà été pris le 31 août
+dans ces mêmes espacements. Le bloc qui pèse est la carte des totaux (297 px),
+qui a grossi le jour même pour que le total se recompose : la resserrer déferait
+la correction. Il refuse de conclure sur une boîte de zéro pixel.
+
+Déplacer un bouton est une affaire d'apparence : elle se dessine avant de se
+coder (`CLAUDE.md` §3 bis). C'est sur `appli/ts-la-trace-de-laccord.html`, avec
+la seule question réellement ouverte sur les travaux supplémentaires, la forme
+ayant été tranchée le 1ᵉʳ septembre.
+
+**Cette planche a été refaite le soir même, sur SA correction, et elle vaut
+d'être écrite.** Sa première version proposait, sous une ligne sans accord
+écrit : « Faire signer le bon, ou lui renvoyer le devis ». Deux fautes dans une
+phrase — aucun de ces gestes n'existe sur cet écran, et surtout **on ne renvoie
+pas un devis après coup** : un devis se fait AVANT le travail, et le travail est
+fait. Il n'y a donc pas d'accord manquant à aller chercher : **l'accord a eu lieu
+au jardin**, c'est sa TRACE qui manque, et elle ne compte que si le client
+conteste. La planche propose désormais un champ à l'ajout d'une ligne — qui l'a
+demandée, et quand — qui **s'imprime sur la facture** : la pièce devient
+elle-même la trace, et le client qui la paie l'accepte.
+
+---
+
+## §256. Le refus « à chiffrer » vit sur l'écran, pas au bout du chemin
+
+**4 septembre 2026.** Sa règle du 27 août — *« le devis ne doit pas pouvoir être
+considéré comme prêt à envoyer tant qu'une ligne nécessitant un prix n'est pas
+chiffrée »* — était tenue, mais au dernier moment et au mauvais endroit.
+
+**Le chemin qu'il parcourait :**
+
+| | |
+|---|---|
+| l'écran du devis | écrit « à chiffrer » en or en face de la ligne |
+| le bouton « Choisir la date » | s'ouvrait **sans condition** |
+| la feuille des dates | ne connaît pas ce blocage : quatre seulement (`preparation-envoi.ts`) — `devis_absent`, `devis_vide`, `canal_absent`, `coordonnee_absente` |
+| le serveur | refusait **après** le choix de la date (`envoyerDevis`) |
+
+**Et la phrase du refus l'envoyait où il se tenait déjà** — « Posez leur montant
+sur l'écran du devis, puis revenez ici. » Elle datait du temps où la feuille
+d'envoi vivait sur `/export` ; elle s'ouvre depuis le devis depuis le 20 août
+2026 (§136). Une phrase juste devenue fausse par déménagement.
+
+**Ce qui a été décidé.** Le refus remonte dans `DevisCompletClient.tsx`, à la
+place du bouton : la raison, la ligne nommée, et « Poser le prix » qui amène le
+doigt sur le champ (`data-prix-ligne`, lu dans le DOM plutôt que tenu dans une
+table de références que les catégories de TVA, les retraits et les déplacements
+feraient vivre).
+
+**Trois choix qui ne se rouvrent pas :**
+
+1. **Aucune seconde règle.** C'est `lignesEnAttenteDePrix` — la fonction pure du
+   dépôt — qui répond, donc mot pour mot la phrase du serveur. Deux
+   formulations d'un même refus divergent toujours, et le 31 août l'a déjà payé
+   (le pluriel traité sur le seul verbe).
+2. **Le contrôle du serveur RESTE.** Cacher un bouton ne ferme rien : l'action
+   est appelable. Le refus tardif devient un filet, pas le chemin normal.
+3. **Le refus PREND LA PLACE du bouton, il ne le grise pas.** Un bouton éteint
+   sans un mot est un défaut ; un bouton éteint avec un mot laisse quand même
+   le doigt appuyer dans le vide.
+
+**Les lignes retirées ne comptent pas** — même règle que les totaux. Refuser
+l'envoi au nom d'une ligne qu'il vient de retirer, et qui n'est plus à l'écran,
+serait un refus impossible à comprendre.
+
+**Ce que la revue a corrigé de sa propre analyse.** Il avait d'abord été écrit
+que la phrase du serveur ne lui parvenait pas, `envoyerDevis` **lançant** une
+erreur — or `envoyerAuClientAction` l'attrape et la rend en valeur
+(`raisonLisible`). Le défaut n'était pas le silence : c'était le moment, et
+l'endroit où la phrase l'envoyait.
+
+**Le voile de saisie de cette feuille suit désormais la charte.** Ses champs
+n'ont volontairement aucun cadre — c'est un document, pas un formulaire —, si
+bien que le voile est le SEUL signe qu'on écrit dedans. Il valait
+`rgba(0,0,0,0.03)`, écrit en clair à huit endroits : sur Nuit (`#1a1d19`) et
+Sylve, du noir à 3 % sur un fond noir n'existe pas, et le champ actif devenait
+identique au champ au repos. Il vit dans `--voile-champ`, posé une fois sur la
+feuille avec `voile(colors.ink, …)` et hérité par `ChampsDuDevis.tsx`.
+`test-chartes-lisibles.ts` ne pouvait pas le voir : il mesure les chartes, pas
+les classes d'un écran.
+
+**Éprouvé par sa porte** (`scripts/test-devis-refus-a-chiffrer-e2e.ts`), et non
+par la fonction qu'on venait d'écrire : la suite ouvre l'écran avec une ligne
+qui attend son prix et regarde ce que l'écran propose. Elle rougit sur l'écran
+d'avant ce lot.
+
+**LE BOUTON RESTE SOUS LE POUCE — sa lettre du 4 septembre 2026 : « La B ».**
+Trois façons ont été dessinées (`appli/devis-le-premier-arret.html`) avant
+d'écrire une ligne, et il a choisi la barre collée. « Choisir la date » était le
+tout dernier élément de la page — après les conditions, l'IBAN et le cadre de
+signature —, à **2,59 hauteurs d'écran** de défilement à 390 × 664. Il l'est
+désormais à toute hauteur : mesuré sur l'écran réel, le bas du bouton tient à
+648 px d'une fenêtre de 664 en haut de page comme à mi-parcours, et se pose à
+604 px à la fin.
+
+`sticky` et non `fixed` : la barre appartient à la feuille, elle s'arrête d'elle-
+même au bas du document et ne flotte pas par-dessus la feuille des dates ni celle
+de l'appui long. Le dégradé fond vers `card` — le fond de la feuille, qui suit la
+charte —, jamais vers un crème écrit en clair qui serait faux sur les deux
+sombres. Et le bouton est en pleine largeur : une barre qu'on garde sous le pouce
+avec un bouton qui n'occupe que le milieu se contredit — vu à la capture.
+
+**La proposition A — replier le document derrière « Voir le document » — a été
+écartée PAR LUI**, et sa raison tient : c'est ici qu'il relit ce qu'il engage.
+Elle traînait dans `TODO.md` comme si elle était tranchée ; elle ne l'était pas
+(`docs/QUESTIONS.md` §23 se terminait sur la question). **Ne pas la rouvrir.**
+
+
+---
+
+## §257. L'or a deux valeurs : celle d'un trait, celle d'un mot
+
+**Décidé le 5 septembre 2026, sur l'écran des prix, et mesuré avant d'être
+décidé.**
+
+`or` (`#B98B47`) posé sur la plage d'un champ donne **2,62 à 3,07** selon la
+charte. Un texte demande 4,5. Il ne passait que sur les deux chartes sombres,
+où les pôles s'inversent — Nuit 5,55, Sylve 4,55. Tant que l'or ne servait qu'à
+dessiner — un filet, un sceau, le marqueur d'onglet —, personne n'avait de
+raison de le mesurer comme du texte. « À chiffrer » a changé cela : c'est le mot
+qui dit qu'une ligne de devis n'a pas de prix, et il se lit en plein soleil,
+d'une main.
+
+**Le jeton `orTexte`** est le même or descendu jusqu'au seuil par `detacher` —
+la mécanique posée le 22 août pour `alerte`, `bordeaux` et `vertPale`. Sur les
+six chartes claires il vaut un or plus sombre (Origine : `#8b6835`, 4,83 sur la
+plage) ; sur Nuit et Sylve il vaut `or` **au caractère près**, parce qu'il n'y
+manque rien.
+
+### Ce que cela ne remet PAS en cause
+
+Sa consigne du 31 août 2026 — *« tout ce qui est en doré sur la version
+originale apparaisse en doré sur les autres apparences »* — interdit à la
+**charte** de repeindre l'or. Elle tient : `or` ne bouge pas d'un caractère sur
+les huit. Le nouveau jeton ne dépend pas de la charte mais du **rôle** :
+
+| | |
+|---|---|
+| `or` | ce qu'on **regarde** — filets, sceau, marqueur d'onglet, teintes de fond |
+| `orTexte` | ce qu'on **lit** — un mot, un intertitre, un état écrit |
+
+Le chiffre de 2,77 cité au §160 pour justifier un or fixe vaut pour du dessin.
+Il ne vaut pas pour un mot, et c'est la distinction que ce paragraphe pose.
+
+### Une phrase du dépôt était fausse, et personne ne l'avait mesurée
+
+`design-tokens.ts` affirmait que « sur le fond crème, `or` tient le contraste du
+texte courant ». C'était faux depuis toujours. Le contrôle existait pourtant :
+**`test-chartes-lisibles.ts` regarde les CHARTES, jamais ce qu'un écran en
+fait** — un couple qu'on ne lui donne pas ne se mesure pas, et son silence se
+lit comme un accord. Les deux couples manquants y sont entrés, et le contrôle a
+été confronté à l'état dégradé : `orTexte` ramené à `or`, les six claires
+rougissent, les deux sombres restent vertes.
+
+**La leçon qui vaut au-delà de ce lot :** un jeton mesuré dans un rôle n'est pas
+mesuré dans tous. Quand une couleur change d'emploi — d'un trait vers un mot,
+d'un fond vers un texte —, c'est un couple neuf à donner au contrôle, pas une
+propriété acquise.
+
+### Où la teinte d'une ligne se pose, et pourquoi pas en ligne
+
+La plage d'une ligne qui attend son prix est teintée par `color-mix`, dans
+`globals.css` (`.atlas-plage-attente`) et non en style en ligne. `color-mix`
+n'existe pas avant iOS 16.2 : posée en ligne, la déclaration inconnue serait
+ignorée et l'élément retomberait sur **aucun fond** — la plage disparaîtrait, sur
+un écran dont tout le dessin repose sur elle. Écrite dans une classe, la
+déclaration ordinaire tient le repli et `@supports` n'ajoute la teinte que là où
+elle est comprise. Au pire la ligne perd sa couleur et garde son mot.
+
+## §258. Une règle de mise en page RACINE ne suit pas la navigation
+
+**Payé le 4 septembre 2026, et deux mesures justes s'y contredisaient.**
+
+Le patron, capture à l'appui : sur son iPhone, la barre d'onglets couvrait le
+bouton d'envoi du devis. Mesuré page par page sur le serveur, il n'y avait
+AUCUNE barre sur cette page — ni sur celle que reçoit son client — et le fichier
+qui décide n'avait pas bougé depuis le 31 août. Les deux constats étaient
+exacts, et c'est ce qui a fait chercher au mauvais endroit pendant une journée.
+
+**Ce qui les sépare, c'est la façon d'arriver sur la page :**
+
+| Il ouvre le devis… | La barre |
+|---|---|
+| à son adresse, ou en rechargeant | absente |
+| en appuyant sur « Je rédige à la main » | **celle de l'écran d'avant, restée là** |
+
+**Pourquoi.** La décision vivait dans `src/app/layout.tsx`, la mise en page
+RACINE, qui lit le chemin dans l'en-tête posé par le middleware. Next.js ne
+rejoue pas une mise en page partagée sur une navigation de lien : il ne redemande
+que le segment qui change. La racine était donc celle de la page précédente,
+avec sa barre — et son en-tête de chemin d'alors.
+
+**La règle : ce qui dépend du chemin courant ne se décide pas au seul niveau de
+la racine.** Elle est descendue dans une fonction pure,
+`src/lib/ecrans-sans-navigation.ts`, appelée des DEUX côtés :
+
+- au serveur, par `layout.tsx`, pour ne pas peindre la barre du tout — une
+  barre rendue puis retirée clignoterait à chaque ouverture directe ;
+- dans le navigateur, par `AtlasBottomNav`, qui lit `usePathname()` et se
+  retire lui-même. C'est le seul des deux qui suive une navigation de lien.
+
+La même fonction des deux côtés, jamais deux copies : c'est exactement le défaut
+du 12 août 2026, où deux listes d'écrans publics avaient divergé et où son client
+voyait les onglets de son outil de travail au bas de sa facture (`CLAUDE.md` §3).
+
+**Et la réserve de hauteur suit.** `.atlas-contenu` réserve `--atlas-barre` sous
+le contenu ; ce cadre-là appartient lui aussi à la racine et reste donc en place.
+`globals.css` retire la réserve quand la barre n'est pas dans la page
+(`body:not(:has(.atlas-nav-basse))`), écrit dans ce sens précis : un navigateur
+sans `:has()` réserve encore, et montre un bouton un peu haut plutôt qu'un
+bouton caché.
+
+**Ce qui l'a attrapé, et ce qui ne pouvait pas.** `test-devis-complet-e2e.ts`
+arrive sur le devis en APPUYANT sur le lien — comme lui — et comptait 1 barre là
+où il en attendait 0. Toute mesure faite en ouvrant l'adresse directement rendait
+vert, la capture comprise. **Un contrôle qui entre par une autre porte que la
+sienne ne dit rien de la sienne** (`CLAUDE.md` §5 quater).
+
+## §259. L'audit de santé : ce qu'il a trouvé, et les deux fois où je me suis trompé
+
+*5 septembre 2026. Premier passage du skill `atlas-code-health` (lecture seule),
+puis le lot qui en découle — sa réponse tenant en une ligne : « oui espace le
+partout et fait les 4 ».*
+
+### Ce que l'audit a réellement rendu
+
+Sur 1 857 fichiers suivis, **un seul défaut visible par le patron**, et le reste
+est du rangement. C'est le résultat qui compte, et il tient à une discipline
+mesurable : aucun `FIXME` ni `HACK` dans tout le dépôt, les treize accès directs
+à `db` portent chacun leur raison écrite, les maquettes `/design` sont coupées en
+production par un contrôle qui APPELLE la mise en page au lieu de lire le
+fichier, et les suites refusent de conclure sur une mesure nulle.
+
+### 1. La visionneuse de photos, invisible sur Nuit et Sylve
+
+`Pellicule.tsx` ouvre la photo en plein écran sur un fond `colors.ink`, et posait
+dessus trois choses écrites en clair : la croix en `#F6F1E6`, les deux pastilles
+en `rgba(255,255,255,0.12)`, le mot « Retirer » en `orClair`.
+
+**C'est la faute du 22 août 2026** — celle de la pastille d'équipe qui a fait
+naître `surPlein` (§160). Sur les six chartes claires l'encre est presque noire
+et tout se lit ; **sur Nuit et Sylve l'encre EST claire**, et l'on obtenait un
+crème sur un crème : **1,09 et 1,12**. On ne voyait plus comment sortir de la
+photo.
+
+| Pourquoi elle a survécu à la passe du 22 août | |
+|---|---|
+| écrite le **11 août** | onze jours avant la passe, donc déjà en place |
+| jamais photographiée | la visionneuse exige qu'une photo soit OUVERTE ; aucune capture, aucune suite ne l'ouvre |
+| jamais mesurée | `test-chartes-lisibles.ts` regarde les CHARTES, pas ce qu'un écran en fait — sa propre leçon, §257 |
+
+**Trouvée sans regarder l'écran**, par le calcul, sur les valeurs de
+`chartes.ts`. C'est la première fois dans ce dépôt qu'un défaut de lisibilité
+sort d'un contraste calculé plutôt que d'une capture.
+
+### 2. `orSurEncre` — un jeton neuf, et pourquoi ce n'est pas `orTexte`
+
+La croix et les pastilles prennent `surPlein` et `voile(surPlein, …)`, qui
+existaient. Le mot « Retirer », lui, n'avait pas de jeton : `or` posé sur l'encre
+tient 5,56 sur les claires et **2,49 sur Nuit**.
+
+**`orTexte` ne pouvait pas servir**, et la raison est géométrique :
+
+| | s'écarte de | donc sur une charte sombre |
+|---|---|---|
+| `orTexte` | le fond et la plage | **s'éclaircit** |
+| `orSurEncre` | l'encre | **s'assombrit** |
+
+Les deux vont en sens contraire ; le même jeton ne peut pas faire les deux.
+`orSurEncre` est donc `detacher(OR_ORIGINE, [encre], 4.5, -sens)`.
+
+**Ce qu'il rend, mesuré :**
+
+| | valeur | sur l'encre | avant |
+|---|---|---|---|
+| les six claires | `#b98b47` — **l'or d'Origine au caractère près** | 4,98 à 5,81 | inchangé |
+| Sylve | `#806031` | 4,59 | 2,44 |
+| Nuit | `#826231` | 4,56 | 2,49 |
+
+Sa consigne du 31 août — *« tout ce qui est en doré reste doré »* — est tenue :
+rien de ce qu'il voit aujourd'hui ne bouge. Le contrôle a gagné le couple, et
+**il sait échouer** : `orSurEncre` ramené à `or` fait rougir les deux sombres.
+
+**La leçon du §257, une seconde fois et sous un autre angle :** un jeton mesuré
+dans un rôle n'est pas mesuré dans tous. Ici ce n'est même pas le rôle qui a
+changé — c'est le FOND. Un écran qui prend l'encre pour fond retourne les pôles
+de la charte, et tout ce qu'on y pose change de règle.
+
+### 3. Le numéro du client se lit espacé, ici comme avant d'envoyer
+
+`numeroLisible` existe depuis le 12 août 2026, écrite pour une raison précise :
+*« dix chiffres collés ne se vérifient pas d'un coup d'œil »*, et un devis
+n'était pas parti à cause d'une coordonnée mal relue. Elle n'avait **qu'un seul
+appelant** — l'écran d'envoi.
+
+La fiche du client, elle, affichait la valeur rangée : `0679984514`. Or c'est là
+qu'on vérifie qu'on a le bon client.
+
+**Ce qui n'a PAS été touché, et il faut le savoir avant d'y revenir :**
+
+| | |
+|---|---|
+| les cases du devis (`ChampNu`) | on y **tape** le numéro ; l'espacer changerait ce qui s'enregistre, et le dépôt tient deux conventions de rangement délibérées |
+| l'écran de la facture | le destinataire y a été **retiré à sa demande** ; le réafficher pour l'espacer serait réclamer ce qu'il a fait enlever (`CLAUDE.md` §5 bis) |
+| `ChoixCanal` / `ChoixDuCanal` | ils ne montrent pas le numéro, seulement « SMS » et « · absent » |
+
+Le numéro ne se lit donc, en tout et pour tout, qu'à **deux** endroits — et les
+deux l'espacent désormais.
+
+### 4. Les numéros de migration : onze doublons, aucun garde-fou
+
+`TODO.md` portait depuis le 27 août *« Deux migrations portent le numéro
+0067 »*. Le compte réel est **onze numéros pris deux ou trois fois, soit
+vingt-quatre fichiers** — et `0067` en porte trois.
+
+**Rien ne casse aujourd'hui**, et c'est vérifié plutôt que supposé : chaque
+groupe a été relevé, tables créées contre tables touchées, et aucun couple de
+même numéro n'a de dépendance croisée. `run-migrations.ts` suit chaque fichier
+par SON NOM, donc les vingt-quatre s'appliquent.
+
+**Ce qui n'est pas garanti, c'est l'ORDRE** — il vient d'un tri alphabétique du
+nom complet. Une base reconstruite de zéro les applique dans un ordre que
+personne n'a choisi, et le jour où deux migrations de même numéro se toucheront,
+la panne ne se verra que là : en production, ou à la restauration d'une
+sauvegarde.
+
+**L'asymétrie que l'audit a mise au jour :** les paragraphes en double
+d'`ARCHITECTURE.md` ont reçu leur garde-fou le 26 août (`verifier-memoire.mjs`,
+`DOUBLONS_CONNUS`). Les migrations, non. **Le document était protégé, la base ne
+l'était pas.** `scripts/test-numeros-migrations.ts` reprend le même idiome, y
+compris la règle qui empêche la liste de pourrir : un numéro démêlé qu'on y
+laisserait fait rougir le contrôle.
+
+Il ne demande de renommer **rien** : un fichier déjà sur `main` qui changerait de
+nom se rejouerait sur toute base à jour. Il ne défend que le douzième.
+
+### 5. Ce qui est parti, et le morceau qu'il fallait suivre
+
+Cinq exports sans aucun appelant, cherchés par nom dans `src`, `scripts`,
+`drizzle` et `appli` : `enComposantes` (`allure-documents.ts`),
+`reservéAuPatron` (`rubriques-reglages.ts`), et trois de `mock-data.ts`.
+
+Deux méritent leur ligne :
+
+- **`enComposantes`** annonçait « ce qu'attend `pdf-lib` » et le PDF ne l'a
+  jamais appelée : `document-commun.ts` fait la conversion lui-même. Ce n'était
+  donc pas une aide mais **une seconde source de vérité endormie** — celle qu'on
+  aurait branchée un jour à côté de celle qui tourne.
+- **`reservéAuPatron`** promettait *« les pages qui doivent quand même refuser,
+  côté serveur »* et n'était appelée par personne. Elle **rejouait F8 à trois
+  lignes du paragraphe qui raconte F8** : une prose qui promet une protection
+  inexistante est pire qu'un silence. Aucun trou n'a été ouvert ni comblé — la
+  garde existe ailleurs (`estProprietaire` sur `/reglages/prix`, `cheminAutorise`
+  dans la mise en page racine), et c'est précisément le point.
+
+Et `mockChantiersTest` (69 lignes) est parti avec `getChantierById`, **qui seul
+l'atteignait** : retirer une fonction sans regarder ce qu'elle seule tenait
+laisse derrière elle une donnée que plus rien n'atteint et que personne n'ose
+toucher.
+
+### LES DEUX FOIS OÙ MON PROPRE AUDIT S'EST TROMPÉ
+
+**A. `estPort` n'était pas un oubli de validation.** L'audit l'avait signalé
+comme suspect — quatre gardes de vocabulaire employées, une cinquième jamais
+appelée, donc un champ peut-être non contrôlé. C'était faux : le `port` d'un hôte
+est validé **à l'entrée** par `TaxonSchema` (`z.enum(PORTS)`), donc plus tôt et
+mieux. La fonction était redondante, pas manquante.
+
+**B. « Quinze contrôles ne sont jamais joués » était vrai et à côté.** Les quinze
+n'étaient pas exclus d'un garde qui tourne : **rien ne lance
+`verifier:maquette`** — ni la CI, ni `verifier-avant-livraison`, ni aucun script.
+Les cinquante déjà dans la chaîne dorment exactement autant que les quinze qui
+n'y étaient pas. Le défaut est d'un cran au-dessus de ce que j'avais écrit, et il
+reste ouvert (`TODO.md`) : le brancher coûte des minutes de CI, et cela se
+décide.
+
+Ce qui a été fait quand même : les quinze ont été **joués un par un**, treize
+verts, un vert mais lent (74 s), un rouge. Les quatorze verts complètent la
+chaîne ; `verifier-maquette-logo.mjs` reste dehors avec son symptôme écrit —
+ajouter un rouge à une chaîne en `&&` barre tout ce qui suit, et le dépôt l'a
+déjà payé dix heures le 23 août 2026.
+
+## §260. La plage ne porte que ses mots, et l'écran ne montre qu'une chose à la fois
+
+**5 septembre 2026 — les deux écrans où le patron relit sa dictée.**
+
+### Ce qui n'allait pas, et ce qu'aucune suite ne voyait
+
+Deux défauts de FORME, sur les deux écrans du même moment. Aucun n'était un
+défaut de calcul : tout était juste, et tout se ressemblait.
+
+| | |
+|---|---|
+| **Transcription** | cinq états sortaient du même `<p>`, dans la même plage — son texte, l'absence de note, l'attente, l'échec, l'excuse. Seule la couleur changeait |
+| **Informations** | « Prestations », « Durée », « Équipe », « Matériel » écrits DEUX FOIS, et les deux ensembles distingués par les deux mêmes tons **échangés** — case crème dans une plage claire contre case claire sur fond crème |
+
+Le second est le pire des deux, et pour une raison qui vaut au-delà de cet
+écran : **inverser deux tons ne distingue rien**. À l'œil, sur un téléphone en
+plein soleil, deux surfaces qui portent les mêmes deux couleurs se lisent comme
+une seule famille. Il faut que quelque chose d'AUTRE change — la place, le
+nombre d'éléments à l'écran, ou un signe qui ne sert qu'à ça.
+
+### Les deux règles qui en sortent
+
+**1. Une plage réservée dit ce qu'elle porte.** Sur l'écran Transcription, le
+cadre n'accueille plus que ce que le patron a dit. Attente, échec, absence se
+posent sur le fond de page avec le geste qui débloque. Le cadre devient un
+signal : s'il est là, ce sont ses mots. Aucune phrase n'a été ajoutée pour le
+dire — c'est ce qui rend la règle tenable (`CLAUDE.md` §3, « le moins de mots »).
+
+**2. Un moment, une chose.** Sur l'écran Informations, tant qu'un brouillon
+attend d'être confirmé, les vraies cases ne se dessinent pas et l'écran ne porte
+qu'un seul bouton : confirmer. C'est le choix du patron sur planche
+(`appli/relire-sa-dictee.html`, « un seul à la fois »), contre deux autres
+propositions — dont une qui se contentait de renommer les libellés.
+
+Trois garde-fous, sans lesquels cette règle nuirait :
+
+- ce qui **porte déjà** quelque chose n'est jamais caché — un chantier commencé
+  à la main puis dicté garderait sinon ses lignes invisibles, et il les croirait
+  perdues ;
+- « Écrire les lignes à la main » ouvre les cases **sans rien confirmer** ;
+- « Écrire le devis », sa sortie de secours du 3 août 2026, **reste affichée en
+  toutes circonstances**. La planche l'avait omise : c'est la planche qui avait
+  tort, pas la règle.
+
+### Ce qui change aussi, et pourquoi c'est lié
+
+**Les trois notes sortent de l'encart** (déchets, contraintes d'accès,
+remarques). Elles sont au patron, pas à la machine : elles n'ont aucune autre
+case dans l'application et elles survivent à la confirmation, quand tout le
+reste a été recopié dans le chantier. Dans l'encart de la proposition, elles
+avaient l'air de partir avec lui.
+
+**Et elles descendent SOUS le matériel — sa décision du 5 septembre, sur
+capture.** Elles se lisaient encore avant les prestations ; elles se posent
+maintenant au bout de la description du chantier. Ce qui compte pour la suite
+n'est pas l'ordre mais ce qu'il a coûté : entre l'encart et les notes il y a
+désormais quatre rubriques de l'écran, donc **l'état du brouillon a dû quitter
+l'encart pour vivre dans l'écran** (`useBrouillon`, consommé par
+`BrouillonSection`, `NotesDuBrouillon` et `ConfirmerLeBrouillon`).
+
+**La solution facile aurait effacé son travail en silence.** Donner aux notes
+leur propre copie de la proposition, c'était deux états pour la même donnée :
+chaque enregistrement envoie la proposition ENTIÈRE, et la copie qui n'a pas vu
+la correction de l'autre l'écrase en la réécrivant. Une ligne de prestation
+corrigée aurait disparu en modifiant une remarque, sans un message. C'est la
+règle du §3 de `CLAUDE.md` appliquée à l'état et non plus au calcul : jamais
+deux fois la même chose, jamais deux endroits qui décident.
+
+**L'état de la dictée devient une fonction pure partagée**
+(`src/lib/etat-transcription.ts`). Les deux écrans décidaient chacun de leur
+côté si une dictée avait été comprise, avec leurs propres `if` enchaînés — et
+c'est ce que le patron croit de sa propre dictée qui en dépend. La règle
+critique y est écrite une fois : **le texte de remplacement porte le statut
+« réussie »**, et c'est précisément pour cela qu'il doit être écarté avant lui.
+
+### Ce que les contrôles ne pouvaient pas voir, et ce qui le voit maintenant
+
+`test-chartes-lisibles.ts` mesure les CHARTES entre elles ; il ne lit pas ce
+qu'un écran écrit de sa main. Le voile du tiroir « Remplacer vos corrections ? »
+portait donc `rgba(20,18,14,0.35)` en clair — du sombre sur du sombre sur Nuit
+et sur Sylve — sans faire rougir personne. Quatrième retour de la faute du
+22 août 2026.
+
+`scripts/test-aucune-couleur-en-clair.ts` lit le CODE des écrans repris et
+refuse toute couleur écrite. **Il surveille une liste, pas tout `src/`**, et
+c'est délibéré : six sessions travaillent en parallèle, et une suite qui
+rougirait sur le fichier d'une autre bloquerait un lot pour une faute qu'elle
+n'a pas commise. La liste s'allonge à chaque écran refait.
+
+### Ce qui reste dehors
+
+`src/components/atlas/Calendrier.tsx` porte encore trois couleurs écrites en
+clair, dont l'ancienne terre cuite qui n'est plus l'accent depuis le 31 août.
+Signalé par la session de l'écran des prix, laissé à la session de l'écran de
+date : deux sessions sur le même fichier, c'est du travail jeté.
+
+---
+
+## §261. La fiche client n'a qu'un visage, et c'est celui de la dictée
 
 *5 septembre 2026.*
 
@@ -22138,13 +23353,20 @@ note est purgé quelques jours après sa transcription (`audios_a_purger`,
 entier** de la fiche client. Trois écrans, donc, pour une seule fiche.
 
 **Pourquoi c'est la DICTÉE qui reste.** Cette fiche sert à deux choses :
-renseigner le client, et dire le chantier. Le lecteur — écouter, retirer — vit
-sur la fiche du chantier, qui est faite pour relire. Et c'est l'objet qu'il a
-laissé deux minutes plus tôt : après l'avion, la fiche de création redevient le
-micro. Revenir dessus et le retrouver est la seule continuité qu'il puisse lire.
+renseigner le client, et dire le chantier. Et c'est l'objet qu'il a laissé deux
+minutes plus tôt : après l'avion, la fiche de création redevient le micro.
+Revenir dessus et le retrouver est la seule continuité qu'il puisse lire.
 
 **Ce que cela coûte, et il faut le dire :** depuis la fiche client, on ne peut
-plus écouter ni retirer sa note. Les deux gestes sont sur la fiche du chantier.
+plus écouter ni retirer sa note. Les deux gestes vivent sur l'écran **Note
+vocale** (`/chantiers/[id]/note-vocale`, `NoteVocaleClient`), qu'ouvrent la
+Transcription et le brouillon des Informations.
+
+**CE POINT A ÉTÉ REVÉRIFIÉ, et la première rédaction était FAUSSE.** Elle
+renvoyait à « la fiche du chantier » — retirée la veille (§254). Le second
+rendu d'`AnneauNoteVocale`, le lecteur, n'a donc plus aucun écran qui
+l'appelle : il reste dans le fichier, et rien ne le montre. À la prochaine
+session qui y touchera de décider s'il vit encore.
 
 **Ce que cela ne coûte PAS.** La décision du 31 août — *« un anneau muet sur
 une dictée existante : il croirait avoir perdu ce qu'il avait posé »*, écrite
@@ -22161,8 +23383,7 @@ la main le dit avant d'être refait (`DevisDepuisDictee`, cas « conflit »).
 **Où ça vit :** `src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx`
 (`ChantierRepris.aUneNote`), `src/app/chantiers/[id]/coordonnees/page.tsx`.
 La fiche client ne passe plus jamais de `storageKey` à `AnneauNoteVocale` :
-celui-ci garde ses deux rendus, et c'est la fiche du CHANTIER qui appelle le
-second.
+celui-ci garde ses deux rendus, mais plus personne n'appelle le second.
 
 **Ce qui le tient :** `scripts/test-fiche-client-un-seul-visage-e2e.ts`, qui
 rejoue sa séquence — créer, dicter, envoyer, ouvrir le devis, faire retour — et

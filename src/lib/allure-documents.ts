@@ -216,6 +216,33 @@ export function normaliserAllure(brut: Partial<Allure> | null | undefined): Allu
   };
 }
 
+/**
+ * TROIS COLONNES → UNE ALLURE, OU RIEN.
+ *
+ * **Écrite une fois, appelée par les deux tables qui portent ces colonnes** :
+ * `entreprises` (le réglage vivant, migration 0063) et `factures` (l'aspect figé à
+ * l'envoi, migration 0074). La forme est la même ; ce que le `null` SIGNIFIE ne
+ * l'est pas, et c'est l'appelant qui le sait :
+ *
+ *   sur l'entreprise → « il n'a rien réglé » : les documents suivent la charte
+ *   sur la facture   → « antérieure à 0074 » : son aspect n'a jamais été relevé
+ *
+ * Deux lectures écrites séparément auraient fini par ne plus filtrer pareil, et
+ * l'écart se serait vu chez le client (`CLAUDE.md` §3).
+ */
+export function allureDepuisColonnes(e: {
+  typographie: string | null;
+  fond: string | null;
+  accent: string | null;
+}): Allure | null {
+  if (!e.typographie && !e.fond && !e.accent) return null;
+  return normaliserAllure({
+    typographie: e.typographie ?? undefined,
+    fond: e.fond ?? undefined,
+    accent: e.accent ?? undefined,
+  });
+}
+
 /** Vrai quand l'allure est exactement celle d'aujourd'hui — donc rien à écrire. */
 export function estLAllureParDefaut(a: Allure): boolean {
   return (
@@ -249,15 +276,19 @@ export function encreSurFond(fond: string): { encre: string; encreDouce: string 
     : { encre: "#f5f3ee", encreDouce: "#cfccc4" };
 }
 
-/** Les composantes 0→1, ce qu'attend `pdf-lib`. */
-export function enComposantes(couleur: string): { r: number; v: number; b: number } {
-  const c = couleurNettoyee(couleur) ?? "#000000";
-  return {
-    r: parseInt(c.slice(1, 3), 16) / 255,
-    v: parseInt(c.slice(3, 5), 16) / 255,
-    b: parseInt(c.slice(5, 7), 16) / 255,
-  };
-}
+// **`enComposantes` RETIRÉE LE 5 SEPTEMBRE 2026 — audit de santé.**
+//
+// Elle disait « les composantes 0→1, ce qu'attend `pdf-lib` », et **le PDF ne
+// l'a jamais appelée** : `git grep -w enComposantes` ne rendait que ce fichier.
+// `src/server/pdf/document-commun.ts` fait la conversion lui-même, par
+// décalages de bits, depuis toujours.
+//
+// **Ce qui restait n'était donc pas une aide, c'était une seconde source de
+// vérité endormie** — celle qu'on aurait fini par brancher un jour, à côté de
+// celle qui tourne. La règle du dépôt vaut aussi pour le code que personne
+// n'appelle : une même chose écrite deux fois finit par diverger (`CLAUDE.md`
+// §3). S'il faut un jour partager cette conversion, elle se prendra dans
+// `document-commun.ts`, qui est celle qui a servi.
 
 /**
  * SON LOGO — ce qui est accepté, et pourquoi si peu.

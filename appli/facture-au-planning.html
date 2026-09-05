@@ -6,267 +6,355 @@
 <title>Atlas — la facture au planning, trois allures</title>
 <style>
 /*
-  LA FACTURE AU PLANNING — 1er septembre 2026.
+  LA FACTURE AU PLANNING — refaite le 4 septembre 2026.
 
-  Sa décision : la fiche du chantier disparaît. Ce qu'elle portait encore
-  — « Créer la facture » et son tiroir — va sur les chantiers du planning.
+  Sa décision du 1er septembre : la fiche du chantier disparaît. Ce qu'elle
+  portait encore va sur les chantiers du planning.
 
-    « On va le mettre sur les clients au planning. Maintenant tu peux me
-      proposer des idées, j'attends tes visuels, ne code rien. »
+  ───────────────────────────────────────────────────────────────────────────
+  POURQUOI CETTE PLANCHE EST REFAITE, ET C'EST LUI QUI L'A DIT.
+
+    « On ne l'a pas corrigé avec /impeccable, c'est pour ça que je n'ai pas
+      répondu. »
+
+  La planche du 1er septembre dessinait le planning D'AVANT sa refonte du
+  4 septembre, en charte claire. On lui demandait de choisir une allure sur un
+  écran qui n'existait plus — il ne pouvait pas répondre, et il a eu raison de
+  se taire.
+
+  ───────────────────────────────────────────────────────────────────────────
+  LE PLANNING NE CHANGE PAS. Sa consigne, mot pour mot : « garde le planning
+  tel quel, il est fini. »
+
+  Tout ce qui est ici — la semaine, la capsule du jour, le nom en serif, la
+  durée dorée, le lieu, la pastille d'équipe, le chevron, le tiroir du bas —
+  est relevé sur SON écran du 4 septembre 2026, en charte Nuit (capture au
+  navigateur, 390 × 664). Ce n'est pas une réinterprétation : c'est le socle.
+
+  SEULE VARIE la façon dont la facture s'y pose. Changer deux choses à la fois
+  empêcherait de choisir.
 
   ───────────────────────────────────────────────────────────────────────────
   CE QUI DOIT DÉMÉNAGER, ET RIEN DE PLUS.
 
   Le tiroir de la fiche est bien plus mince qu'il n'en a l'air : photos,
-  informations et prix en avaient déjà été retirés le 11 août, et la fiche du
-  client porte tout cela depuis le 31. Ce qui reste vraiment à porter :
+  informations et prix en avaient été retirés le 11 août, et la fiche du client
+  porte tout cela depuis le 31. Ce qui reste vraiment à porter :
 
     · Créer la facture   (un chantier fait, pas encore facturé)
     · Le devis           (quand il existe)
-    · Le client          (photos, dictée, coordonnées)
+    · La fiche client    (photos, dictée, coordonnées)
 
   Trois portes, pas dix. C'est ce qui rend les trois allures possibles.
 
-  ───────────────────────────────────────────────────────────────────────────
-  CE QUI NE CHANGE PAS D'UNE ALLURE À L'AUTRE.
-
-  Le repos de la carte — nom, durée dorée, pastille d'équipe, chevron — est
-  celui de l'application d'aujourd'hui. Changer deux choses à la fois
-  empêcherait de choisir.
-
-  Le chevron « › » reste un vrai chevron de navigation : il PART quelque part.
-  Ce n'est pas une flèche décorative (`CLAUDE.md` §3).
-
-  ───────────────────────────────────────────────────────────────────────────
-  CE QUI A ÉTÉ DESSINÉ PUIS JETÉ : LE GLISSEMENT.
-
-  Une quatrième allure poussait la carte vers la gauche pour découvrir la
-  facture — le geste des messages sur iPhone. Elle a été dessinée, regardée,
-  et jetée : en poussant la ligne entière, **le nom du chantier sort de
-  l'écran**. On se retrouve à choisir une facture sans savoir de qui.
-
-  Et le reproche de fond tenait déjà sans cela : un geste caché ne s'apprend
-  pas tout seul, et se trouve mal avec des gants.
+  ET LES PORTES MÈNENT, ELLES NE RECOPIENT PAS. Sa raison du 1er septembre :
+  « toutes ces infos sont déjà sur cette page, ça fait des doublons si on garde
+  l'autre aussi ». Une porte qui réafficherait le contenu de la fiche client
+  ferait renaître ailleurs le doublon qu'on supprime.
 
   ───────────────────────────────────────────────────────────────────────────
   DEUX JOURNÉES, ET C'EST VOULU. Un chantier déjà facturé n'attend pas dans un
-  jour à venir : il a eu lieu. La planche montre donc un jour passé sous le
-  jour prochain — sans quoi le troisième cas serait un chantier impossible.
+  jour à venir : il a eu lieu. La planche montre donc le jeudi passé au-dessus
+  du vendredi — sans quoi le troisième cas serait un chantier impossible.
 
   ───────────────────────────────────────────────────────────────────────────
-  RIEN N'EST CODÉ. Trois chantiers d'exemple, aucune donnée réelle.
+  CE QUI A ÉTÉ DESSINÉ PUIS JETÉ : LE GLISSEMENT. Une quatrième allure poussait
+  la carte vers la gauche pour découvrir la facture, comme les messages sur
+  iPhone. Regardée, puis jetée : en poussant la ligne entière, le nom du
+  chantier sort de l'écran — on choisirait une facture sans savoir de qui.
+
+  ───────────────────────────────────────────────────────────────────────────
+  RIEN N'EST CODÉ (`CLAUDE.md` §3 bis). Trois chantiers d'exemple, aucune
+  donnée réelle.
 */
+
+/* ── La charte Nuit, aux valeurs de `src/lib/chartes.ts` ──────────────────
+   Aucune couleur inventée : fond, plage, encre, gris et accent sont ses cinq
+   jetons ; l'or ne suit pas la charte et vaut celui d'Origine sur les huit
+   (`OR_ORIGINE`). Sur Nuit, l'accent est CLAIR et le fond SOMBRE : ce qu'on
+   pose SUR un aplat plein prend `--sur-plein`, jamais un crème écrit en clair
+   — la faute du 22 août 2026. */
 :root{
-  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
-  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
-  --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
-  --sur-plein:#faf9f5;
-}
-@media (prefers-color-scheme: dark){
-  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
-         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
-         --pine:#8fae82; --line:rgba(233,229,220,.16); --sur-plein:#171613; }
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --accent:#e9e8de; --sur-plein:#1a1d19;
+  --or:#B98B47; --or-clair:#C9A15E; --teinte:#1f211e;
+  --line:rgba(233,232,222,.12); --line-douce:rgba(233,232,222,.07);
+  --chevron:rgba(233,232,222,.28);
+  --serif:ui-serif,Georgia,"Times New Roman",serif;
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bone);color:var(--charcoal);
-     font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
-     padding:26px 0 70px;-webkit-text-size-adjust:100%}
-.page{max-width:460px;margin:0 auto;padding:0 22px}
-.sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
-     text-transform:uppercase;color:var(--or)}
-h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
-   line-height:1.08;letter-spacing:-.018em}
-.chapo{margin:11px 0 0;font-size:14px;color:var(--charcoal-soft);line-height:1.6}
-.chapo b{color:var(--charcoal)}
+::selection{background:var(--or);color:var(--sur-plein)}
+html{scrollbar-color:var(--chevron) var(--fond)}
+body{margin:0;background:var(--fond);color:var(--encre);
+  font:16px/1.55 var(--sans);padding:26px 0 64px;-webkit-text-size-adjust:100%}
+.page{max-width:430px;margin:0 auto;padding:0 20px}
 
-.onglets{display:flex;gap:7px;margin:22px 0 0}
-.onglets button{flex:1;cursor:pointer;border:1px solid var(--line);
-  background:var(--cream);color:var(--charcoal-soft);border-radius:10px;
-  padding:11px 4px 10px;font:inherit;font-size:11px;letter-spacing:.09em;
-  text-transform:uppercase}
-.onglets button[aria-selected="true"]{background:var(--pine);color:var(--sur-plein);
-  border-color:var(--pine)}
+h1{margin:0;font-family:var(--serif);font-weight:400;font-size:23px;
+  line-height:1.15;letter-spacing:-.02em;text-wrap:balance}
+.chapo{margin:7px 0 0;font-size:13.5px;line-height:1.55;color:var(--encre-douce)}
 
-.quoi{margin:14px 0 0;font-size:13.5px;color:var(--charcoal-soft);line-height:1.6}
-.quoi b{color:var(--charcoal)}
-.cout{margin:8px 0 0;font-size:12.5px;color:var(--muted);line-height:1.55}
+/* ── Les onglets ─────────────────────────────────────────────────────────── */
+.onglets{display:flex;gap:6px;margin:14px 0 0}
+.onglets button{flex:1;cursor:pointer;font:inherit;font-size:11px;
+  letter-spacing:.1em;text-transform:uppercase;padding:11px 3px 10px;
+  border:1px solid var(--line);border-radius:10px;
+  background:transparent;color:var(--gris);
+  transition:background .18s cubic-bezier(.16,1,.3,1),color .18s,border-color .18s}
+.onglets button:hover{color:var(--encre-douce);border-color:var(--chevron)}
+.onglets button[aria-selected="true"]{background:var(--accent);
+  color:var(--sur-plein);border-color:var(--accent)}
+.onglets button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
 
-/* ── L'écran, tel qu'il est aujourd'hui ─────────────────────────────────── */
-.ecran{margin:20px 0 0;background:var(--bone);border-radius:16px;
-  box-shadow:inset 0 0 0 1px var(--line);padding:18px 0 20px}
-.jour{margin:0 18px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
-  text-transform:uppercase;color:var(--muted);
-  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
-  padding:9px 0;text-align:center}
-.jour.suivant{margin-top:16px}
-.ligne{margin:0 18px;padding:12px 0 10px;border-bottom:1px solid var(--line)}
+.quoi{margin:12px 0 0;font-size:13.5px;line-height:1.55;color:var(--encre-douce);
+  min-height:42px}
+.quoi b{color:var(--encre);font-weight:600}
+.mesure{margin:6px 0 0;font-size:12.5px;color:var(--gris)}
+.mesure b{color:var(--or);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ── L'ÉCRAN, relevé sur le sien ─────────────────────────────────────────
+   Le cadre fait 390 px de large : la largeur de son téléphone, pour que les
+   longueurs se jugent à l'échelle où il les verra. */
+/* Le cadre fait 390 × 664 : la place que laisse son téléphone, barre d'adresse
+   déduite. C'est la seule façon de juger ce qu'une allure COÛTE — sur un cadre
+   qui s'allonge à volonté, A ne dépasse jamais, et la feuille de C monterait
+   hors champ, c'est-à-dire nulle part. Le contenu défile DANS le cadre, comme
+   chez lui ; le tiroir du bas reste posé, comme chez lui. */
+.ecran{margin:18px auto 0;width:100%;max-width:390px;height:664px;
+  display:flex;flex-direction:column;background:var(--fond);
+  border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.dedans{flex:1;min-height:0;overflow-y:auto;padding:22px 0 10px;
+  scrollbar-width:thin;scrollbar-color:var(--chevron) transparent}
+.titre-section{margin:0;text-align:center;font-size:11px;font-weight:500;
+  letter-spacing:.26em;text-transform:uppercase;color:var(--encre)}
+.semaine{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:14px 20px 6px}
+.rond{width:44px;height:44px;flex-shrink:0;border-radius:999px;
+  border:1px solid var(--line);background:transparent;color:var(--encre-douce);
+  font-size:17px;line-height:1;cursor:pointer}
+.rond:hover{border-color:var(--chevron)}
+.semaine b{font-family:var(--serif);font-size:18px;font-weight:400;
+  letter-spacing:-.01em}
+
+.capsule{display:block;margin:14px auto 2px;width:max-content;
+  background:var(--teinte);border-radius:999px;padding:9px 20px;
+  font-size:11.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--encre)}
+.capsule.passe{color:var(--gris)}
+
+/* La ligne d'un chantier — au repos, exactement la sienne. */
+.ligne{padding:14px 20px 13px;border-bottom:1px solid var(--line-douce)}
+/* Le dernier filet fermait une bande vide au-dessus du tiroir, là où le cadre
+   n'a plus rien à porter : chez lui, ce bas d'écran est simplement du fond. */
 .ligne:last-child{border-bottom:0}
-.tete{display:flex;align-items:center;gap:10px}
-.nom{flex:1;min-width:0;font-family:Georgia,serif;font-size:19px;line-height:1.2}
-.nom span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.duree{margin-top:3px;font-size:12.5px;color:var(--or);font-family:inherit}
-.equipe{flex-shrink:0;white-space:nowrap;border-radius:999px;padding:6px 12px;
-  font-size:12.5px;background:var(--pine);color:var(--sur-plein)}
-.chevron{flex-shrink:0;font-size:19px;color:var(--muted);padding:0 2px}
+.tete{display:flex;align-items:center;gap:12px}
+.corps{flex:1;min-width:0}
+.nom{font-family:var(--serif);font-size:20px;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.duree{margin-top:2px;font-size:13px;color:var(--or)}
+.lieu{margin-top:1px;font-size:13px;color:var(--gris)}
+.equipe{flex-shrink:0;white-space:nowrap;border-radius:999px;padding:7px 15px;
+  font-size:13px;background:var(--accent);color:var(--sur-plein)}
+/* Un vrai chevron de navigation : il PART quelque part. Ce n'est pas une
+   flèche décorative (`CLAUDE.md` §3). */
+.chev{flex-shrink:0;width:26px;height:26px;padding:0;border:0;cursor:pointer;
+  background:transparent;color:var(--chevron);font-size:20px;line-height:1;
+  transition:color .18s,transform .28s cubic-bezier(.16,1,.3,1)}
+.chev:hover{color:var(--encre-douce)}
+.chev:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:6px}
 
-/* ── A · les trois portes ───────────────────────────────────────────────── */
-.portes{margin:10px 0 2px;display:flex;flex-direction:column;gap:1px;
-  background:var(--line);border-radius:10px;overflow:hidden}
-.porte{background:var(--cream);padding:11px 14px;display:flex;
-  align-items:center;justify-content:space-between;gap:12px}
-.porte .mot{font-size:14px}
-.porte .etat{font-size:12px;color:var(--muted);text-align:right}
-.porte.geste .mot{color:var(--or);font-size:11px;letter-spacing:.2em;
-  text-transform:uppercase}
+/* ── A · les trois portes, dépliées sous le chantier ──────────────────── */
+.portes{margin:12px 0 1px;border-top:1px solid var(--line-douce)}
+.porte{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;padding:12px 2px;border:0;border-bottom:1px solid var(--line-douce);
+  background:transparent;color:var(--encre);font:inherit;font-size:14.5px;
+  cursor:pointer;text-align:left}
+.porte:last-child{border-bottom:0}
+.porte:hover{color:var(--or-clair)}
+.porte .etat{font-size:12.5px;color:var(--gris)}
+.porte.geste{color:var(--or)}
 
-/* ── B · une seule porte ────────────────────────────────────────────────── */
-.seule{margin:11px 0 3px}
-.seule button{width:100%;cursor:pointer;border:0;border-radius:10px;
-  background:var(--pine);color:var(--sur-plein);padding:13px;font:inherit;
-  font-size:15px}
-.seule button.creux{background:transparent;color:var(--or);
-  box-shadow:inset 0 0 0 1px var(--or);font-size:11px;letter-spacing:.2em;
-  text-transform:uppercase;padding:12px}
+/* ── B · une seule porte, celle du moment ────────────────────────────── */
+.seule{margin:12px 0 1px}
+.seule button{width:100%;padding:13px;border:0;border-radius:12px;
+  background:var(--accent);color:var(--sur-plein);font:inherit;font-size:14.5px;
+  font-weight:600;cursor:pointer;
+  box-shadow:0 2px 10px rgba(0,0,0,.35);
+  transition:transform .18s cubic-bezier(.16,1,.3,1),box-shadow .18s}
+.seule button:active{transform:translateY(1px);box-shadow:0 1px 6px rgba(0,0,0,.3)}
 
 /* ── C · la feuille ──────────────────────────────────────────────────────
-   Le chevron fait monter une feuille : le tiroir de la fiche, mais attaché à
-   la ligne du planning. Rien au repos, et aucun geste à deviner.
+   Elle monte du bas, dans le cadre du téléphone et non par-dessus la page :
+   une feuille qui déborderait de l'écran mentirait sur ce qu'elle coûte. */
+.scene{position:relative}
+.voile{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;
+  pointer-events:none;transition:opacity .3s cubic-bezier(.16,1,.3,1);z-index:2}
+.scene.ouverte .voile{opacity:1;pointer-events:auto}
+.feuille{position:absolute;left:0;right:0;bottom:0;z-index:3;
+  background:var(--plage);border-top:1px solid var(--line);
+  border-radius:20px 20px 0 0;padding:10px 20px 22px;
+  transform:translateY(102%);transition:transform .42s cubic-bezier(.16,1,.3,1)}
+.scene.ouverte .feuille{transform:translateY(0)}
+.poignee{display:block;width:44px;height:4px;margin:0 auto 8px;border-radius:999px;
+  background:var(--chevron)}
+.feuille .qui{font-family:var(--serif);font-size:17px;padding:4px 0 6px}
+@media (prefers-reduced-motion:reduce){
+  .feuille{transition:none}.voile{transition:none}
+  .onglets button{transition:none}
+}
 
-   Elle est dessinée OUVERTE et posée sous l'écran plutôt qu'au-dessus : une
-   feuille qui recouvrirait le planning cacherait justement ce qu'on compare. */
-.chevron.actif{color:var(--or)}
-.feuille{margin:16px 18px 0;background:var(--cream);border-radius:14px 14px 0 0;
-  box-shadow:inset 0 0 0 1px var(--line);padding:0 0 4px;overflow:hidden}
-.prise{width:38px;height:4px;border-radius:99px;background:var(--line);
-  margin:10px auto 2px}
-.feuille .qui{margin:6px 18px 2px;font-family:Georgia,serif;font-size:16px}
-.feuille .portes{margin:8px 14px 14px}
+/* ── Le tiroir du bas, tel qu'il est ─────────────────────────────────── */
+.tiroir{display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px 18px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--encre-douce)}
+.tiroir span:last-child{color:var(--chevron);font-size:15px}
 
-.note{margin:20px 0 0;padding:15px 17px;background:var(--cream);
-  border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);
-  font-size:13px;color:var(--charcoal-soft);line-height:1.6}
-.note b{color:var(--charcoal)}
-.note + .note{margin-top:9px}
-.retour{display:block;margin:26px 0 0;text-align:center;font-size:12.5px;
-  color:var(--muted)}
+.note{margin:22px 0 0;font-size:13px;line-height:1.65;color:var(--gris)}
+.note b{color:var(--encre-douce);font-weight:600}
 </style>
 </head>
 <body>
-<div class="page">
-  <p class="sur">Le planning</p>
-  <h1>La facture, sur le chantier du planning</h1>
-  <p class="chapo">La fiche du chantier disparaît. Il lui restait
-    <b>trois portes</b> : la facture, le devis, le client. Trois façons de les
-    poser ici — <b>touchez les onglets</b>.</p>
+<main class="page">
+  <h1>La facture au planning</h1>
+  <p class="chapo">Le planning ne bouge pas. Seule change la façon dont la facture s'y pose.</p>
 
-  <div class="onglets" role="tablist">
+  <div class="onglets" role="tablist" aria-label="Trois allures">
     <button role="tab" aria-selected="true"  data-allure="a">A · Dépliées</button>
     <button role="tab" aria-selected="false" data-allure="b">B · Une seule</button>
     <button role="tab" aria-selected="false" data-allure="c">C · La feuille</button>
   </div>
 
+  <div class="ecran scene" id="scene">
+    <div class="dedans">
+      <p class="titre-section">Planifiés</p>
+      <div class="semaine">
+        <button class="rond" aria-label="Semaine précédente">‹</button>
+        <b>31 août – 6 septembre</b>
+        <button class="rond" aria-label="Semaine suivante">›</button>
+      </div>
+
+      <div id="journees"></div>
+    </div>
+
+    <div class="tiroir">
+      <span>3 chez le client</span>
+      <span aria-hidden="true">⌃</span>
+    </div>
+
+    <div class="voile" id="voile"></div>
+    <div class="feuille" id="feuille" role="dialog" aria-label="Le chantier">
+      <span class="poignee"></span>
+      <div class="qui" id="feuille-qui"></div>
+      <div id="feuille-portes"></div>
+    </div>
+  </div>
+
   <p class="quoi" id="quoi"></p>
-  <p class="cout" id="cout"></p>
+  <p class="mesure" id="mesure"></p>
 
-  <div class="ecran" id="ecran"></div>
-
-  <div class="note" id="note"></div>
-
-  <div class="note"><b>Ce qui ne bouge dans aucune des trois :</b> le nom
-    déplie la journée, le chevron mène au client. C'est ce que fait déjà
-    l'application.</div>
-
-  <a class="retour" href="essais.html">Les autres maquettes</a>
-</div>
+  <p class="note">Trois cas, et c'est le dernier qui départage&nbsp;: <b>fait, pas encore facturé</b> · <b>devis parti</b> · <b>déjà facturé</b>. Répondez A, B ou C.</p>
+</main>
 
 <script>
-/*
-  LE MÊME PLANNING DANS LES TROIS ALLURES, et les mêmes trois états : c'est la
-  seule façon de comparer. Les trois chantiers ne sont pas décoratifs — ce sont
-  les trois cas où la question se pose :
-
-    1. fait, pas encore facturé   → « Créer la facture »
-    2. devis parti, pas fait      → aucune facture à créer
-    3. déjà facturé               → la facture existe, on la relit
-
-  La ligne entière est rendue par l'allure, en-tête comprise : le glissement a
-  besoin d'envelopper le nom et l'équipe, pas seulement ce qui est dessous.
-*/
-const CHANTIERS = [
-  { jour: 'Mardi 2 septembre', nom: 'Mr. Luk',                duree: 'Une journée',      equipe: 'Karim, Théo', etat: 1, devis: 'Accepté' },
-  { jour: null,                nom: 'Mme Bracquemont',        duree: 'Une demi-journée', equipe: 'Karim',       etat: 2, devis: 'Parti le 30 août' },
-  { jour: 'Vendredi 29 août',  nom: 'Résidence des Tilleuls', duree: 'Deux journées',    equipe: 'Théo, Sami',  etat: 3, devis: 'Accepté' },
+/* Les trois chantiers d'exemple. `etat` porte le cas, pas l'apparence :
+   c'est lui qui décide quelles portes existent, dans les trois allures. */
+const JOURNEES = [
+  { jour:'Jeudi 3 septembre', passe:true, chantiers:[
+    { nom:'Taille de haies',    duree:'une journée',   lieu:'Vertou', equipe:'Malik', etat:'a-facturer' },
+    { nom:"Massif d'entrée",    duree:'une demi-journée', lieu:'Rezé', equipe:'Léa',  etat:'facture' },
+  ]},
+  { jour:'Vendredi 4 septembre', passe:false, chantiers:[
+    { nom:'Reprise de toiture', duree:'une journée',   lieu:'Rezé',   equipe:'Malik', etat:'devis-parti' },
+  ]},
 ];
 
-const tete = (c, actif = false) => `
+/* Les portes d'un chantier, dans l'ordre où elles se présentent. La première
+   est le geste du moment — celle que B garde seule. */
+function portesDe(c){
+  const p = [];
+  if (c.etat === 'a-facturer') p.push({ mot:'Créer la facture', etat:'', geste:true });
+  if (c.etat === 'facture')    p.push({ mot:'La facture',       etat:'envoyée' });
+  p.push({ mot:'Le devis', etat: c.etat === 'devis-parti' ? 'parti' : 'accepté' });
+  p.push({ mot:'La fiche client', etat:'' });
+  return p;
+}
+
+const echapper = (s) => s.replace(/[&<>"]/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const tete = (c) => `
   <div class="tete">
-    <div class="nom"><span>${c.nom}</span><span class="duree">${c.duree}</span></div>
-    <span class="equipe">${c.equipe}</span>
-    <span class="chevron${actif ? ' actif' : ''}">&rsaquo;</span>
+    <div class="corps">
+      <div class="nom">${echapper(c.nom)}</div>
+      <div class="duree">${echapper(c.duree)}</div>
+      <div class="lieu">${echapper(c.lieu)}</div>
+    </div>
+    <span class="equipe">${echapper(c.equipe)}</span>
+    <button class="chev" aria-label="Ouvrir ${echapper(c.nom)}">›</button>
   </div>`;
 
-const ALLURES = {
-  a: {
-    quoi: "<b>Tout se voit.</b> Les trois portes sous le chantier.",
-    cout: "Coûte trois lignes par chantier — un écran qui en porte six par jour s'allonge d'autant.",
-    note: "<b>À regarder :</b> Mme Bracquemont n'a pas de facture à créer, et la porte disparaît plutôt que de se griser — un bouton gris se touche quand même.",
-    ligne: (c) => {
-      const portes = [];
-      if (c.etat === 1) portes.push(['geste', 'Créer la facture', '']);
-      if (c.etat === 3) portes.push(['', 'La facture', 'Émise le 28 août']);
-      portes.push(['', 'Le devis', c.devis]);
-      portes.push(['', 'Le client', 'Photos, dictée, coordonnées']);
-      return tete(c) + '<div class="portes">' + portes.map(([k, mot, etat]) =>
-        `<div class="porte ${k}"><span class="mot">${mot}</span><span class="etat">${etat}</span></div>`
-      ).join('') + '</div>';
-    },
-  },
-  b: {
-    quoi: "<b>Une seule porte : celle du moment.</b> Le reste est derrière le chevron.",
-    cout: "Coûte deux choses : une facture déjà émise n'est plus à un doigt (elle se retrouve dans Terminés), et le plein vert revient sur un écran qui n'en portait aucun.",
-    note: "<b>À regarder :</b> la Résidence des Tilleuls est déjà facturée, donc sa carte ne propose plus rien. C'est ce cas-là qui décide entre A et B.",
-    ligne: (c) => {
-      if (c.etat === 1) return tete(c) + '<div class="seule"><button>Créer la facture</button></div>';
-      if (c.etat === 2) return tete(c) + '<div class="seule"><button class="creux">Le devis</button></div>';
-      return tete(c);
-    },
-  },
-  c: {
-    quoi: "<b>Rien au repos.</b> Le chevron fait monter une feuille, qui porte les trois portes.",
-    cout: "Coûte un appui de plus pour atteindre la facture — mais le planning ne s'allonge d'aucune ligne.",
-    note: "<b>À regarder :</b> le planning est intact, exactement comme aujourd'hui. La feuille est dessinée ouverte sur Mr. Luk ; en vrai elle monte du bas et se referme d'un doigt.",
-    ligne: (c) => tete(c, c.etat === 1),
-    apres: (c) => c.etat !== 1 ? '' : `
-      <div class="feuille">
-        <div class="prise"></div>
-        <p class="qui">${c.nom}</p>
-        <div class="portes">
-          <div class="porte geste"><span class="mot">Créer la facture</span><span class="etat"></span></div>
-          <div class="porte"><span class="mot">Le devis</span><span class="etat">${c.devis}</span></div>
-          <div class="porte"><span class="mot">Le client</span><span class="etat">Photos, dictée, coordonnées</span></div>
-        </div>
-      </div>`,
-  },
+const rendrePortes = (portes) => `<div class="portes">${portes.map((p) => `
+  <button class="porte${p.geste ? ' geste' : ''}">
+    <span>${p.mot}</span><span class="etat">${p.etat}</span>
+  </button>`).join('')}</div>`;
+
+function poser(allure){
+  const scene = document.getElementById('scene');
+  scene.classList.remove('ouverte');
+  document.getElementById('journees').innerHTML = JOURNEES.map((j) => `
+    <p class="capsule${j.passe ? ' passe' : ''}">${j.jour}</p>
+    ${j.chantiers.map((c) => {
+      const portes = portesDe(c);
+      let sous = '';
+      if (allure === 'a') sous = rendrePortes(portes);
+      // B ne pose un bouton QUE là où il y a un geste à faire. Les trois
+      // chantiers en portaient un, et l'écran devenait trois aplats clairs —
+      // dont un sur une facture déjà partie, qui ne se « fait » plus : c'est
+      // une consultation, et elle appartient au chevron.
+      if (allure === 'b' && portes[0].geste)
+        sous = `<div class="seule"><button>${portes[0].mot}</button></div>`;
+      return `<div class="ligne" data-nom="${echapper(c.nom)}">${tete(c)}${sous}</div>`;
+    }).join('')}
+  `).join('');
+
+  // La feuille de C, montée depuis le chevron de la ligne touchée.
+  document.querySelectorAll('.chev').forEach((b) => {
+    b.addEventListener('click', () => {
+      if (allure !== 'c') return;
+      const nom = b.closest('.ligne').dataset.nom;
+      const c = JOURNEES.flatMap((j) => j.chantiers).find((x) => x.nom === nom);
+      document.getElementById('feuille-qui').textContent = c.nom;
+      document.getElementById('feuille-portes').innerHTML = rendrePortes(portesDe(c));
+      scene.classList.add('ouverte');
+    });
+  });
+  document.getElementById('voile').addEventListener('click', () => scene.classList.remove('ouverte'));
+
+  // Ce que l'allure coûte en hauteur — MESURÉ sur le rendu, jamais estimé :
+  // c'est le seul chiffre qui départage A des deux autres.
+  requestAnimationFrame(() => {
+    const dedans = document.querySelector('.dedans');
+    const h = Math.round(document.getElementById('journees').getBoundingClientRect().height);
+    const deborde = dedans.scrollHeight > dedans.clientHeight + 2;
+    document.getElementById('mesure').innerHTML = deborde
+      ? `Les deux journées&nbsp;: <b>${h} px</b> — il faut faire défiler pour atteindre le vendredi.`
+      : `Les deux journées&nbsp;: <b>${h} px</b> — tout tient dans l'écran.`;
+  });
+}
+
+const TEXTES = {
+  a: "Les trois portes sous le chantier. <b>Rien ne se devine</b>, et rien ne s'apprend&nbsp;: tout est là. En échange l'écran s'allonge, et une journée à trois chantiers descend sous le pli.",
+  b: "Un bouton <b>uniquement là où il y a un geste</b>&nbsp;: « Créer la facture », sur le chantier fait. Les deux autres n'attendent rien&nbsp;; leur devis et leur fiche sont derrière le chevron.",
+  c: "Rien au repos&nbsp;: <b>le chevron fait monter une feuille</b>. Un appui de plus, et le planning ne bouge pas d'un pixel.",
 };
 
-function poser(cle) {
-  const a = ALLURES[cle];
-  document.getElementById('quoi').innerHTML = a.quoi;
-  document.getElementById('cout').textContent = a.cout;
-  document.getElementById('note').innerHTML = a.note;
-  document.getElementById('ecran').innerHTML = CHANTIERS.map((c, i) =>
-    (c.jour ? `<p class="jour${i > 0 ? ' suivant' : ''}">${c.jour}</p>` : '')
-    + `<div class="ligne">${a.ligne(c)}</div>`
-    + (a.apres ? a.apres(c) : '')
-  ).join('');
-  for (const b of document.querySelectorAll('.onglets button')) {
-    b.setAttribute('aria-selected', String(b.dataset.allure === cle));
-  }
-}
-
-for (const b of document.querySelectorAll('.onglets button')) {
-  b.addEventListener('click', () => poser(b.dataset.allure));
-}
+document.querySelectorAll('.onglets button').forEach((b) => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.onglets button').forEach((x) =>
+      x.setAttribute('aria-selected', String(x === b)));
+    document.getElementById('quoi').innerHTML = TEXTES[b.dataset.allure];
+    poser(b.dataset.allure);
+  });
+});
+document.getElementById('quoi').innerHTML = TEXTES.a;
 poser('a');
 </script>
 </body>

@@ -14,11 +14,14 @@ import {
   lignesFacture,
 } from "../db/schema";
 import type { Ctx } from "./context";
+import { lireDevisQuiFaitFoi } from "./devis";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
 import { echeanceFacture } from "../../lib/rappels";
 import { validerEcheance } from "../../lib/echeance-facture";
+import { ALLURE_PAR_DEFAUT } from "../../lib/allure-documents";
+import { repriseDuDevis } from "../../lib/facture-face-au-devis";
 import { totauxAvecReduction } from "../../lib/reduction-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
 import {
@@ -74,6 +77,80 @@ export async function attribuerNumeroFacture(tx: DbOrTx, entrepriseId: string): 
   return ecrireNumero(format, "facture", { annee, mois, numero });
 }
 
+/**
+ * CE QU'UNE FACTURE RECOPIE DE SON DEVIS — écrit une fois, appelé deux fois.
+ *
+ * Le tout premier instantané est celui du devis, pas celui de la base
+ * aujourd'hui : la facture doit porter les coordonnées auxquelles le client a
+ * répondu, et les montants qu'il a vus.
+ *
+ * **Pourquoi une fonction plutôt que deux listes de champs.** La création
+ * (`terminerChantier`) et la reprise (`reprendreLeDevisSurLaFacture`) recopient
+ * exactement les mêmes colonnes. Deux listes tenues à la main auraient divergé
+ * au premier champ ajouté — et le champ oublié, ce serait un prix, une adresse
+ * ou un prix accordé absent de la facture (`CLAUDE.md` §3).
+ *
+ * **Ce qui n'en fait PAS partie, et pourquoi :** le numéro commercial (consommé,
+ * il ne se rejoue pas), la date d'émission et l'échéance (celles de la facture,
+ * pas du devis), et le régime de TVA (lu sur l'entreprise — un devis n'imprime
+ * pas la mention de l'article 293 B).
+ */
+function instantaneDuDevis(d: typeof devis.$inferSelect) {
+  return {
+    devisId: d.id,
+    entrepriseNom: d.entrepriseNom,
+    entrepriseAdresse: d.entrepriseAdresse,
+    entrepriseSiret: d.entrepriseSiret,
+    entrepriseEmail: d.entrepriseEmail,
+    entrepriseTelephone: d.entrepriseTelephone,
+    entrepriseIban: d.entrepriseIban,
+    // Les trois mentions légales, et leur emplacement (migration 0072).
+    entrepriseFormeJuridique: d.entrepriseFormeJuridique,
+    entrepriseCapitalSocial: d.entrepriseCapitalSocial,
+    entrepriseVilleRcs: d.entrepriseVilleRcs,
+    entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
+    clientNom: d.clientNom,
+    clientCivilite: d.clientCivilite,
+    clientAdresse: d.clientAdresse,
+    clientTelephone: d.clientTelephone,
+    clientEmail: d.clientEmail,
+    adresseChantier: d.adresseChantier,
+    conditionsPaiement: d.conditionsPaiement,
+    devise: d.devise,
+    tauxTva: d.tauxTva,
+    totalHt: d.totalHt,
+    totalTva: d.totalTva,
+    totalTtc: d.totalTtc,
+    // **Le prix accordé suit le devis jusqu'ici, et c'est la moitié de la
+    // fonctionnalité.** Une remise consentie sur le devis puis absente de la
+    // facture ferait payer au client le prix qu'on venait de lui retirer — et
+    // c'est lui qui s'en apercevrait.
+    reductionPourcent: d.reductionPourcent,
+    reductionMontant: d.reductionMontant,
+  };
+}
+
+/** Les lignes de la facture, recopiées de celles du devis. */
+function lignesRecopiees(
+  entrepriseId: string,
+  factureId: string,
+  lignes: (typeof lignesDevis.$inferSelect)[]
+) {
+  return lignes.map((l) => ({
+    entrepriseId,
+    factureId,
+    libelle: l.libelle,
+    quantite: l.quantite,
+    prixUnitaire: l.prixUnitaire,
+    montant: l.montant,
+    // **Sans ce report, une facture née d'un devis à deux TVA se réglait sur un
+    // seul taux** — et l'écart partait dans une déclaration trimestrielle, là
+    // où il coûte à l'artisan (migration 0073).
+    tauxTva: l.tauxTva,
+    ordre: l.ordre,
+  }));
+}
+
 export class FinChantierImpossibleError extends Error {
   constructor(readonly motif: "devis_absent" | "devis_non_envoye" | "deja_facture") {
     super(motif);
@@ -111,16 +188,22 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
       .limit(1);
     if (!chantier) throw new FinChantierImpossibleError("devis_absent");
 
-    const [devisSource] = await tx
-      .select()
-      .from(devis)
-      .where(eq(devis.chantierId, chantierId))
-      .orderBy(sql`${devis.numeroVersion} DESC`)
-      .limit(1);
-    if (!devisSource) throw new FinChantierImpossibleError("devis_absent");
-    // Facturer sur un brouillon reviendrait à facturer un prix que le client
-    // n'a jamais vu.
-    if (devisSource.statut !== "envoye") throw new FinChantierImpossibleError("devis_non_envoye");
+    // **La dernière version ENVOYÉE, et non la dernière version.** Facturer sur
+    // un brouillon reviendrait à facturer un prix que le client n'a jamais vu ;
+    // mais prendre la dernière *quelle qu'elle soit* faisait refuser un chantier
+    // dont la v1 était bel et bien partie, au motif — faux — qu'aucun devis
+    // n'avait été envoyé. Voir `lireDevisQuiFaitFoi`.
+    const [devisSource] = await lireDevisQuiFaitFoi(tx, chantierId);
+    if (!devisSource) {
+      // **Les deux refus n'appellent pas le même geste**, et le patron doit
+      // savoir lequel : écrire le devis, ou l'envoyer.
+      const [unDevisQuelconque] = await tx
+        .select({ id: devis.id })
+        .from(devis)
+        .where(eq(devis.chantierId, chantierId))
+        .limit(1);
+      throw new FinChantierImpossibleError(unDevisQuelconque ? "devis_non_envoye" : "devis_absent");
+    }
 
     const lignes = await tx
       .select()
@@ -151,68 +234,21 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
       .values({
         entrepriseId: ctx.entrepriseId,
         chantierId,
-        devisId: devisSource.id,
         numeroCommercial,
-        // Le tout premier instantané est celui du devis, pas celui de la base
-        // aujourd'hui : la facture doit porter les coordonnées auxquelles le
-        // client a répondu.
-        entrepriseNom: devisSource.entrepriseNom,
-        entrepriseAdresse: devisSource.entrepriseAdresse,
-        entrepriseSiret: devisSource.entrepriseSiret,
+        ...instantaneDuDevis(devisSource),
         // Le régime au jour de l'émission, figé comme le reste de l'identité
         // (migration 0039). Lu sur l'entreprise et non sur le devis : un devis
         // n'imprime pas la mention de l'article 293 B, il n'avait donc aucune
         // raison de la porter.
         entrepriseRegimeTva: entrepriseCourante?.regimeTva ?? null,
-        entrepriseEmail: devisSource.entrepriseEmail,
-        entrepriseTelephone: devisSource.entrepriseTelephone,
-        entrepriseIban: devisSource.entrepriseIban,
-        // Les trois mentions légales, et leur emplacement (migration 0072) —
-        // recopiées du devis, comme le reste de l'identité.
-        entrepriseFormeJuridique: devisSource.entrepriseFormeJuridique,
-        entrepriseCapitalSocial: devisSource.entrepriseCapitalSocial,
-        entrepriseVilleRcs: devisSource.entrepriseVilleRcs,
-        entrepriseMentionsLegalesPosition: devisSource.entrepriseMentionsLegalesPosition,
-        clientNom: devisSource.clientNom,
-        clientCivilite: devisSource.clientCivilite,
-        clientAdresse: devisSource.clientAdresse,
-        clientTelephone: devisSource.clientTelephone,
-        clientEmail: devisSource.clientEmail,
-        adresseChantier: devisSource.adresseChantier,
         dateEmission: jourIso(maintenant),
         dateEcheance: jourIso(echeance),
-        conditionsPaiement: devisSource.conditionsPaiement,
-        devise: devisSource.devise,
-        tauxTva: devisSource.tauxTva,
-        totalHt: devisSource.totalHt,
-        totalTva: devisSource.totalTva,
-        totalTtc: devisSource.totalTtc,
-        // **Le prix accordé suit le devis jusqu'ici, et c'est la moitié de la
-        // fonctionnalité.** Une remise consentie sur le devis puis absente de
-        // la facture ferait payer au client le prix qu'on venait de lui
-        // retirer — et c'est lui qui s'en apercevrait.
-        reductionPourcent: devisSource.reductionPourcent,
-        reductionMontant: devisSource.reductionMontant,
         createdBy: ctx.utilisateurId,
       })
       .returning();
 
     if (lignes.length > 0) {
-      await tx.insert(lignesFacture).values(
-        lignes.map((l) => ({
-          entrepriseId: ctx.entrepriseId,
-          factureId: facture.id,
-          libelle: l.libelle,
-          quantite: l.quantite,
-          prixUnitaire: l.prixUnitaire,
-          montant: l.montant,
-          // **Sans ce report, une facture née d'un devis à deux TVA se réglait
-          // sur un seul taux** — et l'écart partait dans une déclaration
-          // trimestrielle, là où il coûte à l'artisan (migration 0073).
-          tauxTva: l.tauxTva,
-          ordre: l.ordre,
-        }))
-      );
+      await tx.insert(lignesFacture).values(lignesRecopiees(ctx.entrepriseId, facture.id, lignes));
     }
 
     await tx
@@ -241,7 +277,85 @@ export async function getFacturePourChantier(ctx: Ctx, chantierId: string) {
       .from(lignesFacture)
       .where(eq(lignesFacture.factureId, facture.id))
       .orderBy(asc(lignesFacture.ordre));
-    return { facture, lignes };
+    // **De QUEL devis ces lignes viennent, et l'écran doit le dire.** Le PDF
+    // l'écrit depuis toujours — « Établie à partir du devis n° … » —, l'écran du
+    // patron non : il montrait « Reprise du devis » sans jamais nommer lequel.
+    // C'est précisément l'information qui manquait pour voir qu'une v2 envoyée
+    // depuis n'avait pas atteint la facture.
+    const [devisRepris] = await tx
+      .select({ numero: devis.numeroCommercial, version: devis.numeroVersion })
+      .from(devis)
+      .where(eq(devis.id, facture.devisId))
+      .limit(1);
+    return {
+      facture,
+      lignes,
+      numeroDevis: devisRepris?.numero ?? null,
+      versionDevis: devisRepris?.version ?? null,
+    };
+  });
+}
+
+/**
+ * REPREND LE DEVIS QUI FAIT FOI SUR UNE FACTURE ENCORE EN BROUILLON.
+ *
+ * **Le défaut qu'elle referme, et c'était de l'argent perdu.** `terminerChantier`
+ * est idempotente : rappuyer sur « Créer la facture » redonne la facture déjà
+ * bâtie plutôt que d'en créer une seconde — c'est juste, un double appui est le
+ * geste le plus banal sur un téléphone. Mais cela voulait dire aussi qu'un devis
+ * corrigé et renvoyé APRÈS la fin de chantier n'atteignait **jamais** la
+ * facture : elle gardait les lignes et les montants d'avant, et le second arrêt
+ * du parcours se franchissait sur l'ancien prix, sans qu'un seul écran le dise.
+ *
+ * **Elle ne s'appelle JAMAIS toute seule**, et c'est le point. Réécrire ses
+ * montants dans son dos les ferait changer entre le moment où il ouvre l'écran
+ * et celui où il appuie — sur le seul écran qui engage son argent. La règle
+ * (`src/lib/facture-face-au-devis.ts`) dit, l'écran montre, il reprend
+ * (`CLAUDE.md` §4 : rien n'est validé sans un geste du patron).
+ *
+ * **Le refus se rend en valeur, jamais en exception** (`AGENTS.md`) : le message
+ * d'une exception d'action serveur n'arrive pas jusqu'à lui.
+ *
+ * **Le numéro, la date et l'échéance ne bougent pas.** Un numéro de facture est
+ * consommé, et sa date est celle de la facture — pas celle du devis.
+ */
+export async function reprendreLeDevisSurLaFacture(
+  ctx: Ctx,
+  factureId: string
+): Promise<{ ok: true; numeroDevis: string } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
+    // `withEntreprise` borne déjà à son entreprise : une facture d'à côté n'est
+    // pas « refusée », elle n'existe tout simplement pas pour cette requête.
+    if (!f) return { ok: false, raison: "Cette facture est introuvable." };
+    if (f.statut !== "brouillon") {
+      return { ok: false, raison: "La facture est déjà arrêtée : elle ne se réécrit plus." };
+    }
+
+    const [d] = await lireDevisQuiFaitFoi(tx, f.chantierId);
+    if (!d) return { ok: false, raison: "Ce chantier n'a aucun devis envoyé à reprendre." };
+
+    const etat = repriseDuDevis(
+      { devisId: f.devisId, statut: "brouillon" },
+      { id: d.id, numeroCommercial: d.numeroCommercial, numeroVersion: d.numeroVersion }
+    );
+    if (etat.aJour) return { ok: false, raison: "Cette facture reprend déjà le dernier devis envoyé." };
+
+    const lignes = await tx
+      .select()
+      .from(lignesDevis)
+      .where(eq(lignesDevis.devisId, d.id))
+      .orderBy(asc(lignesDevis.ordre));
+
+    // Les anciennes lignes partent d'abord : les garder ferait une facture qui
+    // additionne deux versions du même chantier.
+    await tx.delete(lignesFacture).where(eq(lignesFacture.factureId, f.id));
+    if (lignes.length > 0) {
+      await tx.insert(lignesFacture).values(lignesRecopiees(ctx.entrepriseId, f.id, lignes));
+    }
+    await tx.update(factures).set(instantaneDuDevis(d)).where(eq(factures.id, f.id));
+
+    return { ok: true, numeroDevis: d.numeroCommercial };
   });
 }
 
@@ -434,11 +548,25 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
       ".pdf"
     );
 
+    // **L'ALLURE PART AVEC LA PIÈCE, et c'est la même valeur que le PDF.**
+    // `habillage2` vient d'être lu pour composer le document archivé : l'écrire
+    // ici, c'est garantir que la page du client et son PDF montrent la même
+    // chose — pas deux lectures à deux instants, qui divergeraient au premier
+    // changement de réglage (migration 0074).
+    //
+    // **Le défaut s'écrit EN CLAIR**, jamais nul : les trois colonnes nulles
+    // signifient « facture antérieure à 0074 », et confondre les deux ferait
+    // repeindre après coup une facture partie sans allure.
+    const allureFigee = habillage2.allure ?? ALLURE_PAR_DEFAUT;
+
     const [facture] = await tx
       .update(factures)
       .set({
         statut: "emise",
         emiseLe: maintenant,
+        docTypographie: allureFigee.typographie,
+        docFond: allureFigee.fond,
+        docAccent: allureFigee.accent,
         totalHt: totalHt.toFixed(2),
         totalTva: totalTva.toFixed(2),
         totalTtc: totalTtc.toFixed(2),

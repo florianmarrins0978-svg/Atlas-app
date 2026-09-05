@@ -157,9 +157,18 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
           type="button"
           onClick={changer}
           disabled={!pret}
-          className="block w-full rounded-full py-[13px] text-center text-[16px]"
+          // **Passé au vert des boutons le 4 septembre 2026.** Il l'a relevé
+          // lui-même — *« j'avais demandé à changer tous les boutons en vert
+          // clair »* —, et ce bouton-ci avait échappé au balayage du 3 : il ne
+          // portait pas `atlas-plein`, et le contrôle ne regardait QUE ce qui la
+          // portait. Il la porte maintenant, et il est donc gardé.
+          //
+          // **Le voisin de trois rubriques plus bas, lui, était passé le
+          // 3 septembre.** Deux boutons du même écran, deux verts : c'est
+          // exactement le reste qu'un balayage à la main laisse derrière lui.
+          className={`block w-full rounded-full py-[13px] text-center text-[16px] ${pret ? "atlas-plein" : ""}`}
           style={{
-            backgroundColor: pret ? colors.rust : colors.card,
+            backgroundColor: pret ? colors.plein : colors.card,
             color: pret ? colors.cream : colors.muted,
             boxShadow: pret ? "none" : `inset 0 0 0 1px ${colors.line}`,
           }}

@@ -64,8 +64,9 @@ export default function PeriodiciteTvaReglage({ initiale }: { initiale: Periodic
               aria-pressed={actif}
               className="flex-1 rounded-full px-3 py-3 text-[15px]"
               style={{
-                backgroundColor: actif ? colors.rust : colors.card,
-                border: `1px solid ${actif ? colors.rust : colors.line}`,
+                // Le vert des boutons — 4 septembre 2026.
+                backgroundColor: actif ? colors.plein : colors.card,
+                border: `1px solid ${actif ? colors.plein : colors.line}`,
                 color: actif ? colors.cream : colors.ink,
                 fontFamily: font.display,
               }}

@@ -271,10 +271,23 @@ function rappelVersCarte(r: RappelAffiche): Carte {
         ? `Parti ${r.depuisTexte}, sans un mot du client. Vous pouvez le relancer vous-même.`
         : `Chantier terminé ${r.depuisTexte}, et aucune facture n'est partie.`,
     suite: {
-      // **Le chantier, pas le devis vierge.** De la fiche il dicte, il chiffre,
-      // ou il écrit le devis à la main — trois chemins, et c'est lui qui sait
-      // lequel. L'envoyer d'office sur `devis-complet` choisirait à sa place.
-      href: devis || sansDevis ? `/chantiers/${r.chantierId}` : `/chantiers/${r.chantierId}/facture`,
+      // **CHAQUE RAPPEL MÈNE OÙ SON LIBELLÉ LE DIT — 4 septembre 2026.**
+      //
+      // Les deux premiers menaient à la fiche du chantier, pour ne pas choisir
+      // entre dicter, chiffrer et rédiger à la main. Cette fiche est retirée
+      // (`ARCHITECTURE.md` §254), et les trois chemins n'y étaient plus depuis
+      // longtemps : la chaîne va de la dictée au devis d'un seul tenant.
+      //
+      //   · « Faire le devis » : le devis. Il s'y dicte ET s'y écrit à la main,
+      //     donc rien n'est choisi à sa place ;
+      //   · « Ouvrir le chantier » — un devis parti sans réponse : `/export`,
+      //     qui porte le lien du client et la relance. C'est la règle du
+      //     20 août 2026, parti → export, pas une nouvelle.
+      href: sansDevis
+        ? `/chantiers/${r.chantierId}/devis-complet`
+        : devis
+          ? `/chantiers/${r.chantierId}/export`
+          : `/chantiers/${r.chantierId}/facture`,
       libelle: sansDevis ? "Faire le devis" : devis ? "Ouvrir le chantier" : "Créer la facture",
       reprendreAvant: false,
     },

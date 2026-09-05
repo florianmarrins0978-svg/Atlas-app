@@ -109,7 +109,7 @@ export default function MoisCharge({
    * dit quel jour. Ce qu'on y écrit reste à l'écran qui l'emploie, sans quoi ce
    * composant partagé se mettrait à connaître les chantiers.
    */
-  volet?: (jour: JourIso) => ReactNode;
+  volet?: (jour: JourIso, colonne: string) => ReactNode;
   /** Préfixe des repères `data-atlas`, quand deux mois cohabitent sur un écran. */
   reperePrefixe?: string;
 }) {
@@ -206,26 +206,18 @@ export default function MoisCharge({
               >
                 {semaine.map(caseDuJour)}
               </div>
-              {/* L'encoche vise la case touchée : le volet n'est pas « en
-                  dessous », il appartient à ce jour-là. */}
-              {volet && rang >= 0 && jourTouche && (
-                <div className="relative">
-                  <span
-                    aria-hidden="true"
-                    data-atlas="encoche"
-                    className="absolute z-[1] h-[10px] w-[10px] rotate-45"
-                    style={{
-                      top: 4,
-                      left: `${((rang + 0.5) / 7) * 100}%`,
-                      transform: "translateX(-50%) rotate(45deg)",
-                      background: colors.card,
-                      borderLeft: `1px solid ${colors.lineSoft}`,
-                      borderTop: `1px solid ${colors.lineSoft}`,
-                    }}
-                  />
-                  {volet(jourTouche)}
-                </div>
-              )}
+                            {/* ─── LA FICHE SE RATTACHE À LA CASE ────────────────────────
+                  **Sa correction du 4 septembre 2026 :** *« lorsque je clique
+                  sur un jour, le client doit être rattaché ; or là, il est
+                  juste en dessous »*.
+
+                  **Le calendrier donne la COLONNE, il ne dessine pas la
+                  pointe.** Elle appartient à la fiche — qui se rattache aussi
+                  sous une ligne des planifiés, où ce composant n’existe pas.
+                  Deux pointes écrites à deux endroits auraient divergé au
+                  premier ajustement (`CLAUDE.md` §3). */}
+              {volet && rang >= 0 && jourTouche &&
+                volet(jourTouche, `${((rang + 0.5) / 7) * 100}%`)}
             </div>
           );
         })}

@@ -139,9 +139,76 @@
 <p>Cela arrive pour de bon : agenda plein ou chantier long — aucun jour n'est présélectionné —, ou quand vous décochez votre seule date.</p>
 <p>Le bouton répond désormais, et c'est sa réponse qui dit ce qui manque.</p>
 <hr>
-<h2 id="4-lécran-de-votre-client-déborde--mesuré-et-laissé-à-votre-arbitrage">4. L'écran de votre client déborde — mesuré, et laissé à votre arbitrage</h2>
+<h2 id="4-lécran-de-votre-client-débordait--vous-avez-tranché-cest-codé">4. L'écran de votre client débordait — vous avez tranché, c'est codé</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Verdict : défaut réel. NON corrigé, et c'est délibéré.</strong></p>
+<p><strong>Verdict : défaut réel, mesuré, puis corrigé par votre réponse — le 4 septembre.</strong></p>
+<p>Trois formes vous ont été soumises sur planche. Votre réponse : <em>« J'aime bien la À la feuille »</em>. Le calendrier monte du bas, par-dessus, et la page derrière garde exactement la hauteur qu'elle avait.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>état</th>
+<th>avant</th>
+<th>après</th>
+</tr></thead><tbody>
+<tr>
+<td>replié</td>
+<td>664 px</td>
+<td>664 px</td>
+</tr>
+<tr>
+<td><strong>calendrier ouvert</strong></td>
+<td><strong>990 px</strong></td>
+<td><strong>664 px</strong></td>
+</tr>
+<tr>
+<td>« Je ne donne pas suite » finit à</td>
+<td>963 px</td>
+<td>602 px</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et le contrôle ouvre enfin la feuille qu'il annonçait</strong> : il ne mesurait que l'état replié. Il a gagné au passage ce que personne ne vérifiait — qu'une date RETENUE survive à la fermeture. Sans lui, une feuille qui viderait tout en se refermant aurait passé le reste en beauté et perdu la date de votre client.</p>
+<p><strong>Votre règle du 26 août tient, par un autre geste.</strong> Le calendrier couvre le bouton : on ne le rappuie plus pour le décocher, on referme la feuille — et le choix se défait. Le contrôle a suivi la règle, pas la mise en page.</p>
+<h3 id="ce-qui-reste-avec-le-chiffre">Ce qui RESTE, avec le chiffre</h3>
+<p>Quand votre client retient une date à <strong>moins de quatorze jours</strong>, la case de rétractation apparaît — 125 px — et la page fait <strong>790 px</strong> pour 664 d'écran. Le pire cas est donc passé de 1 148 à 790, et le cas courant tient.</p>
+<p>Deux façons d'y arriver, et les deux sont des arbitrages, pas des évidences :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td>descendre la case DANS la feuille</td>
+<td>mieux placée — elle parle de cette date-là — mais hors de vue au moment où il appuie sur « J'accepte ce devis », et c'est un consentement légal qui doit être exprès</td>
+</tr>
+<tr>
+<td>replier la liste des dates une fois une date retenue</td>
+<td>60 à 70 px : insuffisant seul</td>
+</tr>
+</tbody></table></div>
+<p><strong>Vous avez tranché : replier la liste.</strong> C'est codé — une date retenue au calendrier ne laisse plus qu'une ligne, la vôtre, et « changer » redéplie tout.</p>
+<p><strong>Mesuré : 790 → 717 px.</strong> Soixante-treize px gagnés, et <strong>il en reste 53</strong> dans ce seul cas : « Je ne donne pas suite » finit à 690 px pour 664 d'écran. C'est ce que je vous avais annoncé avant votre choix — « 60 à 70 px : insuffisant seul ».</p>
+<p><strong>Vous avez trouvé la troisième voie</strong>, et elle était la bonne : <em>« il y a pas moyen de garder aujourd'hui mais de resserrer le texte ? »</em>. Personne ne l'avait regardée — prendre la place ailleurs que dans le contenu.</p>
+<p>Chaque piste a été appliquée à l'écran servi, une par une : zone de message à une ligne <strong>23 px</strong>, gouttières du formulaire <strong>8</strong>, marges de la page <strong>8</strong>, intérieur de la case <strong>8</strong>, le reste en ajustements de quelques pixels.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>état</th>
+<th>3 septembre</th>
+<th>aujourd'hui</th>
+</tr></thead><tbody>
+<tr>
+<td>calendrier ouvert</td>
+<td>990 px</td>
+<td><strong>664 px</strong></td>
+</tr>
+<tr>
+<td>+ date à moins de quatorze jours</td>
+<td>1 148 px</td>
+<td><strong>664 px</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucune phrase n'a été retirée, et la formule légale n'a pas été touchée.</strong> Trois pistes plus rentables ont été écartées pour cette raison : raccourcir la phrase de la case (45 px), retirer l'invitation à signaler une erreur (29 px), retirer la mention de preuve (19 px). Ce sont trois informations, pas trois espacements.</p>
+<p><strong>Un avertissement, et il compte :</strong> il ne reste plus un pixel. Le contrôle éprouve maintenant ce pire cas — calendrier ouvert, date proche, case affichée. S'il rougit après un ajout sur cet écran, il aura raison.</p>
+<hr>
+<h2 id="4-bis-ce-que-la-planche-elle-même-a-coûté--deux-fautes-à-moi">4 bis. Ce que la planche elle-même a coûté — deux fautes à moi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>« Rien ne change quand je clique sur A B C »</strong> — vous aviez raison. Mon gestionnaire refermait le calendrier à chaque changement de choix : refermés, les quatre états rendaient exactement le même écran, et la planche ne montrait rien de ce qu'elle demandait de comparer. Reproduit à son adresse, avec votre geste, puis corrigé.</p>
+<p><strong>Et le cadre annonçait « 390 × 664 pour de vrai »</strong> en faisant 346 px de large sur un écran de 390 : les marges le rognaient. Une phrase fausse à l'endroit exact où vous alliez la lire.</p>
 <p>Votre règle du 31 août tient tant que la contre-proposition reste repliée. Dès qu'elle s'ouvre, mesuré sur votre écran de 390 × 664 (<code>scripts/mesurer-pli-devis-client.mts</code>) :</p>
 <div class="tablewrap"><table><thead><tr>
 <th>état</th>
@@ -168,9 +235,12 @@
 <p><strong>Pourquoi ce n'est pas corrigé :</strong> ce qui doit céder sur 664 px est votre arbitrage, pas une décision de code. Trois façons vous sont proposées, toutes mesurées comme tenant dans l'écran, sur la planche ci-dessus.</p>
 <p><strong>Et la suite qui l'éprouvait annonçait cette mesure sans la faire.</strong> Son commentaire disait « et la contre-proposition ouverte » ; elle ne l'ouvrait jamais. Elle dit désormais exactement ce qu'elle mesure, et porte les trois chiffres ci-dessus pour que personne ne les redécouvre.</p>
 <hr>
-<h2 id="5-sa-page-et-son-pdf-ne-portent-pas-la-même-identité">5. Sa page et son PDF ne portent pas la même identité</h2>
+<h2 id="5-sa-page-et-son-pdf-ne-portent-pas-la-même-identité--vous-avez-dit-non">5. Sa page et son PDF ne portent pas la même identité — vous avez dit non</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Verdict : constat réel. NON corrigé — une question vous est posée.</strong></p>
+<p><strong>Verdict : constat réel. Vous avez tranché le 4 septembre : on ne touche à rien.</strong></p>
+<p><em>« Non, garde les couleurs d'origine. »</em> La page de votre client garde donc ses couleurs, et ne suit pas l'allure que vous réglez pour vos documents. Les deux identités cohabitent, et c'est assumé — écrit dans <code>ARCHITECTURE.md</code> §248 pour qu'aucune session ne vienne « faire propre » en défaisant votre choix.</p>
+<p><strong>Ce qui ne change pas :</strong> votre charte ne fuit toujours pas sur cette page. Un devis ne part pas en noir parce que vous avez choisi « Nuit ».</p>
+<p>Le constat d'origine, pour mémoire :</p>
 <p><code>couleursDocument</code> existe précisément pour ce qui part chez le client, et son commentaire dit son rôle : <em>« le jour où l'application passera au sombre, ce fichier sera l'endroit où l'on empêchera le devis de partir en noir chez le client »</em>. Le PDF y passe, et suit le papier et l'accent que vous réglez.</p>
 <p><strong>La page que votre client ouvre en premier ne passe pas par là.</strong> Elle code ses couleurs en dur — <code>#F4EFE8</code>, <code>#2F3B2F</code>, <code>#B5502F</code> —, qui ne sont ni celles du document (<code>#faf9f5</code>, or <code>#B98B47</code>), ni les vôtres. Le même devis, deux identités, à une minute d'intervalle. Et le fond que vous choisissez dans Réglages n'atteint pas cet écran.</p>
 <p>C'est un changement d'apparence sur ce que voit votre client : il se dessine avant de se coder. La planche porte la bascule.</p>

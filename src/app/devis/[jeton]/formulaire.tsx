@@ -6,6 +6,7 @@ import type { EnvoiPourClient } from "@/server/repositories/envois-devis";
 import { jourLisible, dansDelaiRetractation } from "@/lib/jour";
 import { libelleAutreDate } from "@/lib/libelle-dates";
 import Calendrier from "@/components/atlas/Calendrier";
+import BottomSheet from "@/components/atlas/BottomSheet";
 import BoutonTelechargerDevis from "./BoutonTelechargerDevis";
 
 export default function FormulaireReponse({
@@ -19,6 +20,56 @@ export default function FormulaireReponse({
   const [choixDate, setChoixDate] = useState<string>("");
   const [dateAutre, setDateAutre] = useState<string>("");
   const [precision, setPrecision] = useState<string>("");
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * **LE CALENDRIER MONTE DU BAS — sa réponse A, le 4 septembre 2026.**
+   *
+   * Sa règle du 31 août : *« je veux que le choix de la date qui arrive au
+   * client par SMS tienne sur une seule page ! Il ne doit pas avoir à scroll
+   * pour voir toutes les infos »*. Elle tenait — tant que la
+   * contre-proposition restait repliée. Ouverte, mesuré sur son écran de
+   * 390 × 664 : la page passait à **990 px**, et ses trois issues finissaient
+   * à 963 px, sous le pli. C'est-à-dire hors de vue à l'instant précis où le
+   * client cherche une autre date — le moment où ce parcours évite
+   * l'aller-retour téléphonique.
+   *
+   * Trois formes lui ont été soumises (`appli/ecran-de-son-client.html`), les
+   * trois mesurées comme tenant dans l'écran. Il a retenu **la feuille** : le
+   * calendrier monte par-dessus, et la page derrière garde exactement la
+   * hauteur qu'elle avait.
+   *
+   * **C'est la feuille de la maison** (`BottomSheet`), pas une seconde : en
+   * écrire une autre aurait donné deux tiroirs à tenir d'accord
+   * (`CLAUDE.md` §3). Elle ne porte aucune couleur de l'artisan — cette page
+   * n'en reçoit aucune (`layout.tsx`, `estPageDuClient`), et ses jetons
+   * retombent sur la charte d'origine.
+   * ═══════════════════════════════════════════════════════════════════════
+   */
+  const [feuilleOuverte, setFeuilleOuverte] = useState(false);
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * **LA LISTE SE REPLIE UNE FOIS LA DATE RETENUE — son choix du 4 septembre.**
+   *
+   * La feuille avait ramené la page de 990 à 664 px. Restait un cas : une date
+   * à moins de quatorze jours fait apparaître la case de rétractation — 125 px
+   * — et la page repassait à **790 px** pour 664 d'écran.
+   *
+   * Deux façons d'y arriver lui ont été soumises. Il a retenu celle-ci : une
+   * fois une date retenue au calendrier, les deux dates proposées et la ligne
+   * « une autre date » n'ont plus rien à décider — elles cèdent la place à ce
+   * qu'il a choisi.
+   *
+   * **Rien ne se perd : « changer » redéplie la liste entière**, d'où l'on peut
+   * reprendre une date proposée aussi bien que rouvrir le calendrier. Une liste
+   * repliée sans retour ferait d'un simple appui un choix définitif.
+   *
+   * **Et le choix continue de partir au serveur.** Repliés, les boutons radio
+   * quittent le document : un champ caché prend le relais, sans quoi le
+   * formulaire n'enverrait plus AUCUN choix de date.
+   * ═══════════════════════════════════════════════════════════════════════
+   */
+  const [listeDepliee, setListeDepliee] = useState(false);
+  const listeRepliee = choixDate === "autre" && dateAutre !== "" && !listeDepliee;
   /**
    * Ce que la page refuse d'elle-même, sans aller au serveur.
    *
@@ -75,14 +126,32 @@ export default function FormulaireReponse({
   }
 
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form action={action} className="flex flex-col gap-2">
       <input type="hidden" name="jeton" value={envoi.jeton} />
 
       <section className="rounded-2xl bg-white p-3 shadow-sm">
         <h2 className="text-[15px] font-semibold text-ink">Quelle date vous arrange&nbsp;?</h2>
 
         <div className="mt-1.5 flex flex-col gap-0.5">
-          {envoi.datesProposees.map((d) => (
+          {/* Repliée, la liste ne rend plus qu'une ligne : la date retenue, et
+              de quoi revenir. Voir `listeRepliee` pour le pourquoi. */}
+          {listeRepliee && (
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-[15px] text-ink">{jourLisible(dateAutre)}</span>
+              <button
+                type="button"
+                onClick={() => setListeDepliee(true)}
+                className="shrink-0 text-[13px] text-ink/70 underline underline-offset-4"
+              >
+                changer
+              </button>
+            </div>
+          )}
+          {/* Repliés, les boutons radio quittent le document — et avec eux le
+              choix que le formulaire envoie. Ce champ prend leur place. */}
+          {listeRepliee && <input type="hidden" name="choixDate" value="autre" />}
+
+          {!listeRepliee && envoi.datesProposees.map((d) => (
             <label key={d} className="flex items-center gap-3 text-[15px] text-ink">
               <input
                 type="radio"
@@ -107,7 +176,7 @@ export default function FormulaireReponse({
               formulaire se rejoue. Le serveur refuse la contre-proposition de
               son côté (`enregistrerReponse`, motif `autre_date_refusee`) — une
               règle tenue à un seul endroit, jamais deux. */}
-          {envoi.autreDateAutorisee && (
+          {envoi.autreDateAutorisee && !listeRepliee && (
             <label className="flex items-center gap-3 text-[15px] text-ink">
               <input
                 type="radio"
@@ -115,15 +184,47 @@ export default function FormulaireReponse({
                 value="autre"
                 checked={choixDate === "autre"}
                 onClick={() => devalider("autre")}
-                onChange={(e) => setChoixDate(e.target.value)}
+                // La feuille s'ouvre sur la SÉLECTION, jamais sur l'appui :
+                // `onChange` ne part pas quand la case est déjà cochée, donc
+                // le geste qui la décoche ne la rouvre pas dans la foulée.
+                onChange={(e) => {
+                  setChoixDate(e.target.value);
+                  setFeuilleOuverte(true);
+                }}
                 className="h-5 w-5"
               />
               <span>{libelleAutreDate(envoi.datesProposees.length)}</span>
             </label>
           )}
 
-          {envoi.autreDateAutorisee && choixDate === "autre" && (
-            <div className="mt-1.5 flex flex-col gap-0.5">
+          {/* **Le champ caché vit DEHORS.** Il est ce qui part au serveur : le
+              poser dans la feuille le ferait disparaître du formulaire dès
+              qu'elle se referme, et la date choisie ne serait jamais envoyée. */}
+          {envoi.autreDateAutorisee && <input type="hidden" name="dateAutre" value={dateAutre} />}
+
+          {envoi.autreDateAutorisee && !listeRepliee && choixDate === "autre" && dateAutre && (
+            <button
+              type="button"
+              onClick={() => setFeuilleOuverte(true)}
+              className="mt-0.5 self-start text-[13px] text-ink/70 underline underline-offset-4"
+            >
+              {jourLisible(dateAutre)} — changer
+            </button>
+          )}
+
+          <BottomSheet
+            open={envoi.autreDateAutorisee && feuilleOuverte}
+            /* **Refermer sans avoir choisi DÉFAIT le choix.** Sinon le client
+               reste sur « Une autre date » sans date, et son acceptation est
+               refusée par le serveur — un refus qu'il ne comprendrait pas,
+               puisque rien à l'écran ne dit qu'il manque quelque chose. */
+            onBackdropClick={() => {
+              setFeuilleOuverte(false);
+              setRefus(null);
+              if (!dateAutre) setChoixDate("");
+            }}
+          >
+            <div className="flex flex-col gap-0.5">
               {/* **Un calendrier, et non plus le sélecteur du téléphone.**
                   Sa demande du 8 août 2026 : « qu'il ait accès au calendrier
                   pour pouvoir proposer une date, avec un système pour qu'il
@@ -137,7 +238,7 @@ export default function FormulaireReponse({
                   Le champ caché reste : c'est lui qui part au serveur, et le
                   serveur revérifie de toute façon — l'affichage n'est qu'un
                   instantané, deux clients peuvent viser le même jour. */}
-              <input type="hidden" name="dateAutre" value={dateAutre} />
+              {/* Le champ caché a quitté la feuille — voir plus haut. */}
               {/* `dureeDemiJournees={null}` : le client n'apprend rien du
                   découpage du planning de son artisan — ni créneau, ni durée.
                   Consigne du patron, tenue par `test-creneaux-planning.ts`. Sa
@@ -151,13 +252,32 @@ export default function FormulaireReponse({
                 dureeDemiJournees={null}
                 onBasculer={(jour) => setDateAutre((actuel) => (actuel === jour ? "" : jour))}
               />
-              {dateAutre && (
-                <p className="text-[13px] text-ink/70">
-                  Vous avez choisi le {jourLisible(dateAutre)}.
+              {/* Le bouton ne s'éteint pas faute de date : il répond, et c'est
+                  sa réponse qui dit ce qui manque — la même règle que les trois
+                  issues plus bas, et que l'écran d'envoi du patron. */}
+              {/* **La phrase se lit DANS la feuille.** Celle du formulaire vit
+                  plus bas, donc derrière elle : un refus posé là serait caché
+                  par ce qui vient de le provoquer. */}
+              {refus && (
+                <p role="alert" className="mt-2 text-[14px] text-[#B5502F]">
+                  {refus}
                 </p>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!dateAutre) return setRefus("Touchez d'abord un jour dans le calendrier.");
+                  setRefus(null);
+                  setFeuilleOuverte(false);
+                  // Ce qu'il vient de retenir devient la ligne ; le reste se replie.
+                  setListeDepliee(false);
+                }}
+                className="mt-3 rounded-full bg-[#2F3B2F] py-3 text-[16px] font-medium text-white"
+              >
+                Retenir cette date
+              </button>
             </div>
-          )}
+          </BottomSheet>
         </div>
 
         {/* **Le message vit dans la MÊME carte que la date**, depuis le 31 août
@@ -185,7 +305,9 @@ export default function FormulaireReponse({
           id="precision"
           name="precision"
           ref={champMessage}
-          rows={2}
+          /* Une ligne, pas deux : 23 px des 53 qui manquaient. Le champ
+             continue d'accepter autant de texte — il défile. */
+          rows={1}
           maxLength={500}
           value={precision}
           onChange={(e) => {
@@ -198,7 +320,7 @@ export default function FormulaireReponse({
       </section>
 
       {montrerRetractation && (
-        <section className="rounded-2xl border border-[#B5502F]/25 bg-[#B5502F]/5 p-4">
+        <section className="rounded-2xl border border-[#B5502F]/25 bg-[#B5502F]/5 p-3">
           <label className="flex items-start gap-3 text-[14px] leading-relaxed text-ink">
             {/* Jamais pré-cochée : c'est cette demande, et elle seule, qui
                 autorise l'artisan à intervenir avant la fin du délai légal. */}
@@ -216,7 +338,9 @@ export default function FormulaireReponse({
         </section>
       )}
 
-      {(refus ?? (etat && "erreur" in etat ? etat.erreur : null)) && (
+      {/* Elle se tait pendant que la feuille est ouverte : celle-ci porte sa
+          propre phrase, et deux fois la même à deux endroits ne se lit pas. */}
+      {!feuilleOuverte && (refus ?? (etat && "erreur" in etat ? etat.erreur : null)) && (
         <p role="alert" className="text-[14px] text-[#B5502F]">
           {refus ?? (etat && "erreur" in etat ? etat.erreur : null)}
         </p>

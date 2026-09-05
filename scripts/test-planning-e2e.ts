@@ -76,9 +76,9 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
-  const chantierId = page.url().split("/").pop()!;
+  const chantierId = idChantier;
 
   const r = await pool.query(
     `UPDATE chantiers SET devis_envoye_at = now(), adresse_chantier = '4 rue des Ormes, Nantes'
