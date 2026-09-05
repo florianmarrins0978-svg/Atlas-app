@@ -202,7 +202,7 @@ par l'usage et par ses retours :
   | **un écran, un geste** | ce qu'on vient y faire se voit sans chercher, et se fait sans apprendre |
   | **rien de caché** | pas de geste à découvrir — un glissement, un appui long, un double appui ne s'apprennent pas tout seuls. Ce qui est important est **visible** |
   | **des cibles grandes** | on vise mal avec un doigt épais, sur un écran sale, à contre-jour |
-  | **des mots du métier** | jamais un mot d'informaticien. « Intégrations » a déjà été retiré pour ça |
+  | **des mots du métier** | jamais un mot d'informaticien — et il en reste : **« Intégrations » est toujours là** (`rubriques-reglages.ts`, `reglages/agenda/page.tsx`, `mode-emploi.ts`), il mène à un écran qui s'appelle « Mon agenda ». Une première version de cette ligne l'annonçait retiré : c'était faux, corrigé le 5 septembre 2026 |
   | **une erreur se rattrape** | on se trompe, et on doit pouvoir revenir — la réversibilité après, plutôt que la confirmation avant |
   | **rien qui presse** | aucun geste qui expire, aucune fenêtre qui se referme seule |
 
