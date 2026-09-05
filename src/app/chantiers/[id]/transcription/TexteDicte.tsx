@@ -24,9 +24,20 @@ type Props = {
   ouvrir: boolean;
   /** Ce que dit le bouton tant que la case est fermée. */
   libelleFerme?: string;
+  /**
+   * Où se pose ce bouton tant qu'il est fermé.
+   *
+   * **Vu en capture, et invisible autrement :** dans l'état « échec », il
+   * s'affichait CENTRÉ juste sous « Relancer depuis la note vocale », qui est
+   * aligné à gauche. Deux gestes de même rang, deux alignements — c'est
+   * exactement le genre de détail qu'aucun test ne voit et que l'œil accroche.
+   * Sous les actions centrées de l'état « écoutée », en revanche, le centre est
+   * le bon choix.
+   */
+  aligne?: "gauche" | "centre";
 };
 
-export default function TexteDicte({ chantierId, texteActuel, ouvrir, libelleFerme }: Props) {
+export default function TexteDicte({ chantierId, texteActuel, ouvrir, libelleFerme, aligne = "centre" }: Props) {
   const router = useRouter();
   const [texte, setTexte] = useState(texteActuel);
   const [ouvert, setOuvert] = useState(ouvrir);
@@ -57,7 +68,7 @@ export default function TexteDicte({ chantierId, texteActuel, ouvrir, libelleFer
       <button
         type="button"
         onClick={() => setOuvert(true)}
-        className={`mt-6 block w-full px-6 text-center ${libelleCaps}`}
+        className={`mt-6 block w-full px-6 ${aligne === "centre" ? "text-center" : "text-left"} ${libelleCaps}`}
         style={{ color: colors.rust }}
       >
         {libelleFerme ?? "Corriger le texte à la main"}

@@ -65,7 +65,7 @@
 <p>Trois défauts, tous de FORME, aucun de calcul. <strong>Un échec de transcription avait l'allure d'une transcription réussie.</strong> Sur les informations, la proposition et vos vraies cases portaient <strong>les mêmes mots</strong> et <strong>les deux mêmes tons, échangés</strong>. Et l'or qui écrit un mot tenait <strong>2,77</strong> là où il en faut 4,5.</p>
 <p>Vous avez choisi <strong>« un seul à la fois »</strong> sur la planche, et c'est codé.</p>
 <blockquote>Planche : <strong>https://florianmarrins0978-svg.github.io/Atlas-app/relire-sa-dictee.html</strong></blockquote>
-<p><strong>Ce qui n'est PAS vérifié :</strong> la batterie, les suites, et les captures des deux écrans. Une de vos sessions tenait le port 3000 et le même dossier — les lancer aurait vidé la base sous elle. Le détail est plus bas, et dans <code>TODO.md</code>.</p>
+<p><strong>La batterie a été jouée</strong> (une seule, pour vos deux sessions à la fois) et les <strong>captures sont prises</strong>. Elles ont attrapé trois défauts que rien d'autre ne voyait — c'est plus bas.</p>
 <hr>
 <h2 id="les-trois-défauts-et-ce-qui-a-été-fait">Les trois défauts, et ce qui a été fait</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -196,6 +196,28 @@
 </tbody></table></div>
 <p>Rien de ce que vous aviez tranché n'a été rouvert : les cases s'écrivent après confirmation, ce qui est recopié disparaît de l'encart, les trois phrases grises du 25 août ne reviennent pas, les réserves restent à cinq et annoncent le reste, le mot « équipe » ne s'écrit pas à une seule équipe.</p>
 <hr>
+<h2 id="ce-que-les-captures-ont-attrapé-et-quaucun-test-ne-voyait">Ce que les captures ont attrapé, et qu'aucun test ne voyait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Trois défauts, tous trouvés en REGARDANT les dix-huit images — pas un seul par une suite verte. C'est la cinquième fois dans ce dépôt.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>dans l'état « échec », <strong>« Écrire ce que j'ai dit » était centré</strong> sous « Relancer depuis la note vocale », aligné à gauche</td>
+<td>deux gestes de même rang, deux alignements</td>
+</tr>
+<tr>
+<td>les <strong>trois points d'attente partaient au milieu de l'écran</strong>, seuls, loin de leur phrase</td>
+<td><code>.atlas-souffle</code> est un conteneur flex qui centre : posé dans un bloc pleine largeur, il centre sur toute la largeur</td>
+</tr>
+<tr>
+<td><strong>« Entendu » s'écrivait avant que rien n'ait été entendu</strong> — au-dessus de « Générez un brouillon structuré »</td>
+<td>le mot annonçait une lecture qui n'avait pas eu lieu ; la rangée disparaît maintenant avec lui</td>
+</tr>
+</tbody></table></div>
+<p>Le script qui les a prises est dans le dépôt et se rejoue : <code>npx tsx --env-file=.env scripts/capture-relire-sa-dictee.mts</code>. Il POSE les six états de la dictée dans la base — ils ne s'atteignent pas en cliquant — puis photographie, sur Origine et sur Nuit. Il rend l'apparence comme il l'a trouvée.</p>
+<hr>
 <h2 id="les-chiffres">Les chiffres</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -212,7 +234,7 @@
 </tr>
 <tr>
 <td><code>test-etat-transcription.ts</code> (neuve)</td>
-<td><strong>9 contrôles, 0 échec</strong></td>
+<td><strong>10 contrôles, 0 échec</strong></td>
 </tr>
 <tr>
 <td><code>test-aucune-couleur-en-clair.ts</code> (neuve)</td>
@@ -235,13 +257,48 @@
 <td><strong>rouges, et sur le bon coupable</strong></td>
 </tr>
 </tbody></table></div>
-<p><strong>LA BATTERIE N'A PAS ÉTÉ JOUÉE, ET IL NE FAUT PAS LA CROIRE JOUÉE.</strong> Une de vos sessions travaillait dans le même dossier et tenait le port 3000. Les suites base vident la base (<code>TRUNCATE … CASCADE</code>) : les lancer aurait fait tomber son serveur et rendu des chiffres qui n'accusent personne.</p>
-<p>Restent donc dues, dans la fenêtre que vous donnerez :</p>
-<p>``<code>bash export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test" npm run verifier:avant-livraison </code>``</p>
-<ul>
-<li>les <strong>captures</strong> des deux écrans à 390 × 664, sur Origine <strong>et</strong> sur Nuit, dans les cinq états — quatre défauts réels de ce projet sont sortis d'une image et d'aucun test vert ;</li>
-<li>les suites <code>test-brouillon-e2e</code>, <code>test-ia-01-e2e</code>, <code>test-informations-e2e</code>, <code>test-transcription-e2e</code> : leurs assertions ont été relues une par une contre le nouvel écran, <strong>et relire n'est pas jouer</strong>.</li>
-</ul>
+<h2 id="la-batterie-complète--jouée-une-fois-pour-les-deux-sessions">La batterie complète — jouée une fois, pour les deux sessions</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Deux batteries en même temps se cassent l'une l'autre : même base, même port. Une seule les couvre toutes les deux, puisque nous travaillons dans le même dossier.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, mémoire</td>
+<td><strong>vertes</strong></td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td><strong>304 / 314</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>115 / 128</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>a refusé de mesurer</strong> — le serveur n'a pas répondu en dix minutes (construction comprise)</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les six suites qui couvrent ces deux écrans sont VERTES</strong>, et ce sont celles qui comptent ici :</p>
+<p>``<code> test-transcription-e2e   ✅      test-etat-transcription        ✅ 10/10 test-informations-e2e    ✅      test-aucune-couleur-en-clair   ✅ test-brouillon-e2e       ✅      test-ia-01-e2e                 ✅ </code>``</p>
+<p><strong>Les 23 suites rouges, et ce que j'en sais exactement.</strong> Aucune ne nomme un fichier de ce lot. Deux d'entre elles accusent le travail EN COURS de votre autre session, pas encore enregistré :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-mode-emploi</code></td>
+<td>« Par SMS » et « Par e-mail » ne sont plus dans <code>FormulaireNouveauChantier.tsx</code></td>
+</tr>
+<tr>
+<td><code>test-boutons-arrondis</code></td>
+<td>un bouton à angles droits dans <code>ChoixCanal.tsx</code></td>
+</tr>
+</tbody></table></div>
+<p>Quatre autres (<code>test-fiche-pendant-relance</code>, <code>test-verrou-construction</code>, <code>test-relance-construction</code>, <code>test-ouvrir-port</code>) sont <strong>écrites comme déjà rouges</strong> dans <code>TODO.md</code> depuis le 29 août. Les treize suites navigateur restantes tombent sur le devis, le planning, la page du client et le calendrier — aucune sur la transcription ni sur les informations.</p>
+<p><strong>Ce que je ne peux PAS affirmer :</strong> que les vingt-trois rougissaient déjà avant ce lot. Le prouver demanderait de rejouer la batterie sur le code d'avant, et l'arbre porte le travail non enregistré de votre autre session — on ne peut pas revenir en arrière sans le mettre en danger.</p>
 <hr>
 <h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -251,11 +308,15 @@
 </tr></thead><tbody>
 <tr>
 <td>La forme des cinq états de la transcription vous convient-elle ?</td>
-<td><strong>vous</strong>, sur la planche ou sur l'écran</td>
+<td><strong>vous</strong>, sur les captures</td>
 </tr>
 <tr>
-<td>La batterie et les captures</td>
-<td><strong>vous</strong> — dites quand vos autres sessions s'arrêtent</td>
+<td>Une fois confirmé, vos trois notes (déchets, accès, remarques) se lisent AVANT les prestations. Est-ce le bon ordre ?</td>
+<td><strong>vous</strong> — je les ai gardées près de l'encart, parce qu'elles viennent de la dictée</td>
+</tr>
+<tr>
+<td>Les treize suites navigateur rouges sur le devis, le planning et le calendrier</td>
+<td>les <strong>sessions</strong> qui tiennent ces écrans</td>
 </tr>
 <tr>
 <td><code>Calendrier.tsx</code> et ses trois couleurs écrites en dur</td>

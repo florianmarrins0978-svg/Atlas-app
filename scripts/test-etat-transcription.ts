@@ -41,7 +41,18 @@ verifier("le prestataire a rendu une erreur : échouée", () => {
   assert.equal(etatTranscription({ transcription: null, transcriptionStatut: "echouee" }, false), "echouee");
 });
 
-verifier("la note est là, la transcription jamais lancée", () => {
+// « non_demandee » est la valeur RÉELLE de la base, et son défaut
+// (`schema.ts` : la colonne est NOT NULL, l'énumération n'a que quatre
+// valeurs). Éprouver `null` ici aurait pinné un état que la base ne peut pas
+// produire — trouvé en posant les cinq états pour les photographier.
+verifier("la note est là, la transcription jamais demandée", () => {
+  assert.equal(
+    etatTranscription({ transcription: null, transcriptionStatut: "non_demandee" }, false),
+    "jamais_lancee"
+  );
+});
+
+verifier("et un statut absent ou inconnu retombe au même endroit", () => {
   assert.equal(etatTranscription({ transcription: null, transcriptionStatut: null }, false), "jamais_lancee");
 });
 

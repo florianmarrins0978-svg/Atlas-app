@@ -219,6 +219,12 @@ export default function BrouillonSection({
         patron — les vraies cases qui ne se dessinent pas tant qu'il reste
         quelque chose à confirmer (`InformationsClient.tsx`). */}
     <Carte teinte={enAttente}>
+      {/* **« Entendu » ne s'écrit QUE si quelque chose a été entendu.** Vu en
+          capture, sur Nuit : au-dessus de « Générez un brouillon structuré », le
+          mot annonçait une lecture qui n'avait pas encore eu lieu. La phrase,
+          elle, dit déjà où l'on en est — et la rangée entière disparaît avec le
+          mot, sinon elle laisse une bande vide en tête de l'encart. */}
+      {contenu && (
       <div className="flex items-baseline justify-between gap-3">
         <span className={libelleCaps} style={{ color: colors.muted }}>
           Entendu
@@ -232,6 +238,7 @@ export default function BrouillonSection({
           </span>
         )}
       </div>
+      )}
 
       {!contenu && (
         <>

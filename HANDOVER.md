@@ -21,19 +21,33 @@ avec leur geste) ; sur les Informations, ses vraies cases n'apparaissent qu'une
 fois le brouillon confirmé, et l'écran ne porte alors qu'un seul bouton ; l'or
 qui écrit un mot passe à `orTexte`, et le voile du tiroir suit enfin la charte.
 
-**CE QUI N'A PAS ÉTÉ VÉRIFIÉ, ET QU'IL NE FAUT PAS CROIRE VÉRIFIÉ :**
+**LA BATTERIE A ÉTÉ JOUÉE** — une seule, pour les deux sessions qui partagent le
+dossier : `types`, `lint` et `mémoire` verts, **304/314** suites base,
+**115/128** suites navigateur, et l'étape « Connexion derrière un proxy » qui a
+**refusé de mesurer** (serveur pas prêt en dix minutes — le défaut d'outillage
+nommé le 5 septembre au matin, commit 9204542a).
 
-| | |
-|---|---|
-| la batterie complète | **non jouée** — une autre de ses sessions travaillait dans le même dossier, et il a demandé le port 3000 |
-| les suites base et bout-en-bout | **non jouées** — `nettoyerBase()` vide la base sous la session voisine |
-| les captures des deux écrans à 390 × 664, Origine et Nuit | **dues** — aucun serveur ne pouvait être démarré |
+**Les six suites qui couvrent ces deux écrans sont vertes** :
+`test-transcription-e2e`, `test-informations-e2e`, `test-brouillon-e2e`,
+`test-ia-01-e2e`, plus les deux neuves `test-etat-transcription` (10/10) et
+`test-aucune-couleur-en-clair` — toutes deux **confrontées à l'état dégradé**,
+rouges sur le bon coupable.
 
-Ce qui A été joué : `tsc --noEmit` (0), `lint` (0 erreur), et quatre suites
-pures — `test-etat-transcription` (9/9, neuve), `test-aucune-couleur-en-clair`
-(neuve), `test-chartes-lisibles` (14/14), `test-aucune-fleche`,
-`test-brouillon-reserves`. Les deux neuves ont été **confrontées à l'état
-dégradé** et rougissent sur le bon coupable.
+**Les 23 rouges : aucune ne nomme un fichier de ce lot.** Deux accusent le
+travail non enregistré de la session voisine (`FormulaireNouveauChantier.tsx`,
+`ChoixCanal.tsx`), quatre sont écrites comme déjà rouges dans `TODO.md` depuis
+le 29 août, les treize autres tombent sur le devis, le planning, la page du
+client et le calendrier. **Ce qui n'a PAS pu être établi :** qu'elles
+rougissaient déjà avant ce lot — le prouver demanderait de rejouer la batterie
+sur le code d'avant, et l'arbre porte le travail non enregistré d'une autre
+session.
+
+**Les captures sont prises** (`scripts/capture-relire-sa-dictee.mts`, 18 images,
+390 × 664, Origine et Nuit, les six états). Elles ont attrapé **trois défauts
+qu'aucune suite ne voyait** : un geste centré à côté d'un geste aligné à gauche,
+les trois points d'attente partis au milieu de l'écran, et « Entendu » écrit
+avant que rien n'ait été entendu. Cinquième fois qu'une image trouve ce qu'un
+vert ne trouve pas.
 
 Les suites bout-en-bout n'ont pas été touchées **alors qu'une seule le méritait
 peut-être** : les 124 fichiers `scripts/test-*-e2e.ts` sont en cours de

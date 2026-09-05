@@ -110,7 +110,11 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
             <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
               L&apos;écran se met à jour tout seul.
             </p>
-            <p className="mt-4" style={{ color: colors.or }}>
+            {/* `w-fit` : `.atlas-souffle` est un conteneur FLEX qui centre ses
+                points — posé dans un bloc pleine largeur, il les envoyait au
+                milieu de l'écran, seuls, loin de la phrase qu'ils accompagnent.
+                Vu en capture, jamais par un test. */}
+            <p className="mt-4 w-fit" style={{ color: colors.or }}>
               <PointsQuiSoufflent />
             </p>
             <RafraichirPendantTranscription />
@@ -139,7 +143,7 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
           </div>
         )}
         {etat === "echouee" && (
-          <TexteDicte chantierId={id} texteActuel="" ouvrir={false} libelleFerme="Écrire ce que j'ai dit" />
+          <TexteDicte chantierId={id} texteActuel="" ouvrir={false} libelleFerme="Écrire ce que j'ai dit" aligne="gauche" />
         )}
 
         {/* ── LA DICTÉE EST LÀ, LA TRANSCRIPTION N'EST PAS VENUE ──────────
@@ -175,7 +179,7 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
                 Aller à la note vocale
               </a>
             </div>
-            <TexteDicte chantierId={id} texteActuel="" ouvrir={false} libelleFerme="Écrire ce que j'ai dit" />
+            <TexteDicte chantierId={id} texteActuel="" ouvrir={false} libelleFerme="Écrire ce que j'ai dit" aligne="gauche" />
           </>
         )}
 

@@ -9,23 +9,16 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## DÛ : la batterie et les captures des deux écrans de relecture (5 sept. 2026)
+## ~~DÛ : la batterie et les captures des deux écrans de relecture~~ — fait le 5 sept. 2026
 
-Le lot « relire sa dictée » (`docs/lot-relire-sa-dictee.md`) est livré sans sa
-batterie : une autre session du patron travaillait dans le même dossier et
-tenait le port 3000. Restent dues, dans la fenêtre qu'il donnera :
+Batterie jouée (304/314 base, 115/128 navigateur, les six suites du lot vertes)
+et dix-huit captures prises, qui ont trouvé trois défauts d'alignement et de
+mot. Détail : `docs/lot-relire-sa-dictee.md`.
 
-```bash
-export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test"
-npm run verifier:avant-livraison
-```
-
-- les **captures** des écrans Transcription et Informations à 390 × 664, sur
-  Origine **et** sur Nuit, dans les cinq états de la dictée — quatre défauts
-  réels de ce projet sont sortis d'une image et d'aucun test vert ;
-- les suites bout-en-bout `test-brouillon-e2e`, `test-ia-01-e2e`,
-  `test-informations-e2e`, `test-transcription-e2e` : leurs assertions ont été
-  relues une par une contre le nouvel écran, mais **relire n'est pas jouer**.
+**Ce qui reste, et qui n'appartient pas à ce lot :** treize suites navigateur
+rouges sur le devis, le planning, la page du client et le calendrier, et deux
+qui accusent du travail non enregistré (`FormulaireNouveauChantier.tsx`,
+`ChoixCanal.tsx`). Aux sessions qui tiennent ces écrans.
 
 ## À DÉCIDER : la chaîne `verifier:maquette` n'est jouée par PERSONNE (5 sept. 2026)
 

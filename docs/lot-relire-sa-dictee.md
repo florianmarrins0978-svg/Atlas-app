@@ -16,9 +16,9 @@ Vous avez choisi **« un seul à la fois »** sur la planche, et c'est codé.
 
 > Planche : **https://florianmarrins0978-svg.github.io/Atlas-app/relire-sa-dictee.html**
 
-**Ce qui n'est PAS vérifié :** la batterie, les suites, et les captures des deux
-écrans. Une de vos sessions tenait le port 3000 et le même dossier — les lancer
-aurait vidé la base sous elle. Le détail est plus bas, et dans `TODO.md`.
+**La batterie a été jouée** (une seule, pour vos deux sessions à la fois) et les
+**captures sont prises**. Elles ont attrapé trois défauts que rien d'autre ne
+voyait — c'est plus bas.
 
 ---
 
@@ -148,37 +148,78 @@ le mot « équipe » ne s'écrit pas à une seule équipe.
 
 ---
 
+## Ce que les captures ont attrapé, et qu'aucun test ne voyait
+
+Trois défauts, tous trouvés en REGARDANT les dix-huit images — pas un seul par
+une suite verte. C'est la cinquième fois dans ce dépôt.
+
+| | |
+|---|---|
+| dans l'état « échec », **« Écrire ce que j'ai dit » était centré** sous « Relancer depuis la note vocale », aligné à gauche | deux gestes de même rang, deux alignements |
+| les **trois points d'attente partaient au milieu de l'écran**, seuls, loin de leur phrase | `.atlas-souffle` est un conteneur flex qui centre : posé dans un bloc pleine largeur, il centre sur toute la largeur |
+| **« Entendu » s'écrivait avant que rien n'ait été entendu** — au-dessus de « Générez un brouillon structuré » | le mot annonçait une lecture qui n'avait pas eu lieu ; la rangée disparaît maintenant avec lui |
+
+Le script qui les a prises est dans le dépôt et se rejoue :
+`npx tsx --env-file=.env scripts/capture-relire-sa-dictee.mts`. Il POSE les six
+états de la dictée dans la base — ils ne s'atteignent pas en cliquant — puis
+photographie, sur Origine et sur Nuit. Il rend l'apparence comme il l'a trouvée.
+
+---
+
 ## Les chiffres
 
 | | |
 |---|---|
 | `npx tsc --noEmit` | **0 erreur** |
 | `npm run lint` | **0 erreur**, 18 avertissements — **aucun** dans les fichiers de ce lot |
-| `test-etat-transcription.ts` (neuve) | **9 contrôles, 0 échec** |
+| `test-etat-transcription.ts` (neuve) | **10 contrôles, 0 échec** |
 | `test-aucune-couleur-en-clair.ts` (neuve) | **6 écrans, 1 361 lignes, 0 faute** |
 | `test-chartes-lisibles.ts` | **14 réussis, 0 échec** |
 | `test-aucune-fleche.ts` | **116 574 lignes, aucune flèche décorative** |
 | `test-brouillon-reserves.ts` | **6 réussis** |
 | Les deux suites neuves confrontées à l'état dégradé | **rouges, et sur le bon coupable** |
 
-**LA BATTERIE N'A PAS ÉTÉ JOUÉE, ET IL NE FAUT PAS LA CROIRE JOUÉE.** Une de vos
-sessions travaillait dans le même dossier et tenait le port 3000. Les suites
-base vident la base (`TRUNCATE … CASCADE`) : les lancer aurait fait tomber son
-serveur et rendu des chiffres qui n'accusent personne.
+## La batterie complète — jouée une fois, pour les deux sessions
 
-Restent donc dues, dans la fenêtre que vous donnerez :
+Deux batteries en même temps se cassent l'une l'autre : même base, même port.
+Une seule les couvre toutes les deux, puisque nous travaillons dans le même
+dossier.
 
-```bash
-export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test"
-npm run verifier:avant-livraison
+| Étape | |
+|---|---|
+| Types, lint, mémoire | **vertes** |
+| Suites base de données | **304 / 314** |
+| Suites navigateur | **115 / 128** |
+| Connexion derrière un proxy | **a refusé de mesurer** — le serveur n'a pas répondu en dix minutes (construction comprise) |
+
+**Les six suites qui couvrent ces deux écrans sont VERTES**, et ce sont celles
+qui comptent ici :
+
+```
+test-transcription-e2e   ✅      test-etat-transcription        ✅ 10/10
+test-informations-e2e    ✅      test-aucune-couleur-en-clair   ✅
+test-brouillon-e2e       ✅      test-ia-01-e2e                 ✅
 ```
 
-- les **captures** des deux écrans à 390 × 664, sur Origine **et** sur Nuit,
-  dans les cinq états — quatre défauts réels de ce projet sont sortis d'une
-  image et d'aucun test vert ;
-- les suites `test-brouillon-e2e`, `test-ia-01-e2e`, `test-informations-e2e`,
-  `test-transcription-e2e` : leurs assertions ont été relues une par une contre
-  le nouvel écran, **et relire n'est pas jouer**.
+**Les 23 suites rouges, et ce que j'en sais exactement.** Aucune ne nomme un
+fichier de ce lot. Deux d'entre elles accusent le travail EN COURS de votre
+autre session, pas encore enregistré :
+
+| | |
+|---|---|
+| `test-mode-emploi` | « Par SMS » et « Par e-mail » ne sont plus dans `FormulaireNouveauChantier.tsx` |
+| `test-boutons-arrondis` | un bouton à angles droits dans `ChoixCanal.tsx` |
+
+Quatre autres (`test-fiche-pendant-relance`, `test-verrou-construction`,
+`test-relance-construction`, `test-ouvrir-port`) sont **écrites comme déjà
+rouges** dans `TODO.md` depuis le 29 août. Les treize suites navigateur
+restantes tombent sur le devis, le planning, la page du client et le calendrier
+— aucune sur la transcription ni sur les informations.
+
+**Ce que je ne peux PAS affirmer :** que les vingt-trois rougissaient déjà avant
+ce lot. Le prouver demanderait de rejouer la batterie sur le code d'avant, et
+l'arbre porte le travail non enregistré de votre autre session — on ne peut pas
+revenir en arrière sans le mettre en danger.
 
 ---
 
@@ -186,6 +227,7 @@ npm run verifier:avant-livraison
 
 | | Qui |
 |---|---|
-| La forme des cinq états de la transcription vous convient-elle ? | **vous**, sur la planche ou sur l'écran |
-| La batterie et les captures | **vous** — dites quand vos autres sessions s'arrêtent |
+| La forme des cinq états de la transcription vous convient-elle ? | **vous**, sur les captures |
+| Une fois confirmé, vos trois notes (déchets, accès, remarques) se lisent AVANT les prestations. Est-ce le bon ordre ? | **vous** — je les ai gardées près de l'encart, parce qu'elles viennent de la dictée |
+| Les treize suites navigateur rouges sur le devis, le planning et le calendrier | les **sessions** qui tiennent ces écrans |
 | `Calendrier.tsx` et ses trois couleurs écrites en dur | la **session de l'écran de date**, déjà prévenue |
