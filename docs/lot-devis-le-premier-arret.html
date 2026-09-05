@@ -290,6 +290,11 @@
 </tbody></table></div>
 <p>Elles tombent à l'identique. Et <code>test-devis-complet-e2e</code> échoue sur la <strong>même assertion, à la même ligne</strong>, avant comme après.</p>
 <p>Les suites qui ouvrent l'écran du devis et qui passent le disent aussi : <code>test-devis-refus-a-chiffrer-e2e</code> (neuve), <code>test-devis-sans-client-e2e</code>, <code>test-devis-a-la-main-e2e</code>.</p>
+<p><strong>LA CAUSE EST CONNUE DEPUIS, ET ELLE EST CORRIGÉE — 5 septembre 2026.</strong> Elle vient de la session qui a retiré la fiche du chantier, et elle referme ce point.</p>
+<p>L'écran <code>/chantiers/[id]</code> a été retiré (<code>ARCHITECTURE.md</code> §254). Or <strong>soixante-dix suites relisaient l'identifiant du chantier DANS L'ADRESSE</strong> — <code>page.url().split("/").pop()</code> et ses variantes. Le navigateur étant désormais déposé sur <code>/chantiers/&lt;id&gt;/devis-complet</code>, elles récupéraient la chaîne « devis-complet » et la passaient pour un identifiant.</p>
+<p><strong>C'est très exactement le message que j'avais relevé sans savoir l'expliquer</strong> : <code>invalid input syntax for type uuid: "devis-complet"</code>. Aucun typecheck ne peut le voir — l'expression reste valide, seule sa valeur change.</p>
+<p>Redressées par le commit <code>917616ff</code>. Mesure de cette session après correction : <strong>suites base 301/311, suites navigateur 104/128</strong> — contre 70/127 quand j'ai mesuré.</p>
+<p><strong>Ce que ça confirme de la méthode, et c'est le seul mérite à en tirer :</strong> rejouer cinq suites tombées <strong>avec</strong> et <strong>sans</strong> le lot (0/5 des deux côtés) disait déjà que ces rouges n'étaient pas les miens. La cause réelle était ailleurs, et il aurait été faux de la deviner.</p>
 <h3 id="ce-que-jai-annoncé-et-qui-est-faux--la-barre-donglets">CE QUE J'AI ANNONCÉ ET QUI EST FAUX : la barre d'onglets</h3>
 <p><strong>J'ai écrit que la barre d'onglets était revenue sur la page du devis et sur les pages publiques du client. C'est faux.</strong></p>
 <p>Je m'appuyais sur <code>test-devis-complet-e2e</code>, qui échoue sur cette assertion (1 au lieu de 0), à l'identique avant et après le lot. Le patron l'a mesuré <strong>page par page, sur le serveur</strong> : aucune barre sur la page que reçoit son client, aucune sur le devis seul, et <code>src/app/layout.tsx</code> n'a pas bougé depuis le 31 août. <strong>Non reproduit.</strong></p>
@@ -307,8 +312,12 @@
 <th>Qui peut trancher</th>
 </tr></thead><tbody>
 <tr>
-<td><strong>Les 57 suites navigateur rouges</strong> — mesurées comme antérieures au lot</td>
-<td>à reprendre par lot, avec la batterie qui va désormais au bout</td>
+<td>~~Les 57 suites navigateur rouges~~</td>
+<td><strong>RÉGLÉ</strong> — l'identifiant du chantier relu dans l'adresse, corrigé par <code>917616ff</code> (104/128 après)</td>
+</tr>
+<tr>
+<td><strong>Une dernière batterie</strong> — six suites corrigées après la dernière mesure ne sont pas confirmées</td>
+<td>à jouer quand le patron dit que le dossier est libre</td>
 </tr>
 <tr>
 <td>« Atlas prépare toujours votre devis… (96 s) » — jamais reproduit sur un poste de développement</td>

@@ -289,6 +289,28 @@ Les suites qui ouvrent l'écran du devis et qui passent le disent aussi :
 `test-devis-refus-a-chiffrer-e2e` (neuve), `test-devis-sans-client-e2e`,
 `test-devis-a-la-main-e2e`.
 
+**LA CAUSE EST CONNUE DEPUIS, ET ELLE EST CORRIGÉE — 5 septembre 2026.** Elle
+vient de la session qui a retiré la fiche du chantier, et elle referme ce point.
+
+L'écran `/chantiers/[id]` a été retiré (`ARCHITECTURE.md` §254). Or **soixante-dix
+suites relisaient l'identifiant du chantier DANS L'ADRESSE** —
+`page.url().split("/").pop()` et ses variantes. Le navigateur étant désormais
+déposé sur `/chantiers/<id>/devis-complet`, elles récupéraient la chaîne
+« devis-complet » et la passaient pour un identifiant.
+
+**C'est très exactement le message que j'avais relevé sans savoir l'expliquer** :
+`invalid input syntax for type uuid: "devis-complet"`. Aucun typecheck ne peut le
+voir — l'expression reste valide, seule sa valeur change.
+
+Redressées par le commit `917616ff`. Mesure de cette session après correction :
+**suites base 301/311, suites navigateur 104/128** — contre 70/127 quand j'ai
+mesuré.
+
+**Ce que ça confirme de la méthode, et c'est le seul mérite à en tirer :**
+rejouer cinq suites tombées **avec** et **sans** le lot (0/5 des deux côtés)
+disait déjà que ces rouges n'étaient pas les miens. La cause réelle était
+ailleurs, et il aurait été faux de la deviner.
+
 ### CE QUE J'AI ANNONCÉ ET QUI EST FAUX : la barre d'onglets
 
 **J'ai écrit que la barre d'onglets était revenue sur la page du devis et sur
@@ -334,7 +356,8 @@ confiance. **Il faut essayer depuis l'hôte pour voir l'échec.** Porté dans `T
 
 | Quoi | Qui peut trancher |
 |---|---|
-| **Les 57 suites navigateur rouges** — mesurées comme antérieures au lot | à reprendre par lot, avec la batterie qui va désormais au bout |
+| ~~Les 57 suites navigateur rouges~~ | **RÉGLÉ** — l'identifiant du chantier relu dans l'adresse, corrigé par `917616ff` (104/128 après) |
+| **Une dernière batterie** — six suites corrigées après la dernière mesure ne sont pas confirmées | à jouer quand le patron dit que le dossier est libre |
 | « Atlas prépare toujours votre devis… (96 s) » — jamais reproduit sur un poste de développement | à rendre bavard avant de corriger ; **pas touché ici** |
 | Un artisan qui arrive les mains vides n'a jamais été essayé (`docs/A-FAIRE.md`) | ouvert |
 | Le tableau et les totaux, encore dans l'écran | un lot suivant, si le besoin se présente |
