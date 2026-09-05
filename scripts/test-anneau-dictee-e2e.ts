@@ -177,8 +177,20 @@ async function main() {
     await Promise.any([
       page.locator('[data-atlas="preparation-automatique"]').waitFor({ timeout: 60_000 }),
       page.waitForURL(/\/devis-complet$/, { timeout: 60_000 }),
+      // **Le micro REVENU et l'invite TUE — les deux, et pas l'un des deux.**
+      // Écrite d'abord sur la seule absence d'invite, cette attente se
+      // dénouait dès le premier appui : pendant qu'on dicte, l'objet n'est
+      // plus le micro et l'invite n'est pas rendue non plus. Elle rendait donc
+      // un vert AVANT l'envoi, et les cas suivants trouvaient un chantier sans
+      // note — deux rouges qui accusaient l'écran. Un contrôle qui conclut
+      // trop tôt est pire qu'absent (`AGENTS.md`).
+      //
+      // Les deux ensemble ne se rencontrent qu'après un envoi RÉUSSI : le
+      // micro renaît (la dictée est finie) et l'invite reste tue
+      // (`preparationEnCours`). Un refus, lui, ramène le micro AVEC sa phrase.
       page.waitForFunction(
-        () => !document.querySelector(".atlas-indice"),
+        () =>
+          !!document.querySelector(".atlas-micro") && !document.querySelector(".atlas-indice"),
         undefined,
         { timeout: 60_000 }
       ),
