@@ -7,6 +7,50 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-09-06
+### Le sommaire des réglages : douze phrases grises retirées, quatre titres qui mentaient corrigés
+
+Sa consigne du 5 septembre — *« la plupart des patrons qui vont utiliser l'app
+sont des vieux qui ont du mal à se servir de leur téléphone »* — appliquée au
+premier écran des Réglages, celui qui ouvre les treize autres.
+
+**Ce que ça évite :** un écran où l'on cherche. Chaque rubrique portait une
+ligne d'explication en 11,5 px de gris ; « Intégrations » promettait
+« calendrier, comptabilité et services connectés » et menait à un écran nommé
+« Mon agenda », les deux autres n'ayant jamais existé. On appuyait sur un mot
+pour en trouver un autre.
+
+Quatre libellés corrigés parce qu'ils MENTAIENT, pas parce qu'ils sonnaient
+mal : Intégrations → **Mon agenda**, Sécurité & données → **Mes données**,
+Connexion → **Mot de passe**, Apparence → **Couleurs**. « Tarifs & catalogue »
+et « Devis & factures » n'ont pas bougé — ce sont ses mots, ils sont justes.
+
+Le nom d'une rubrique passe de 17 à 19 px sans allonger l'écran d'un pixel (la
+ligne est plafonnée par sa cible de 56 px). Les deux intertitres et la phrase
+que lit un salarié quittent `muted` pour `inkSoft` : ce gris tient 2,85 à 3,59
+de contraste sur les six chartes claires, là où la norme demande 4,5. **La
+charte n'a pas été touchée — c'est son emploi qui l'a été.**
+
+Mesuré au navigateur à 390 × 664 : 1 310 px → **1 145**, six rubriques
+atteintes sans défiler → **huit**, lignes de 56 à 84 px → **56 partout**.
+L'écran ne tient toujours pas en une fenêtre, et ne le tiendra pas.
+
+**Vu à la capture et par aucun test :** « Mon agenda » avait gardé la pièce de
+puzzle d'« Intégrations » — la métaphore d'informaticien qu'on venait de
+retirer du mot. C'est un calendrier depuis.
+
+**Deux contrôles retournés plutôt que réparés.**
+`scripts/test-rubriques-reglages.ts` exigeait qu'une rubrique porte une
+explication : il refuse désormais le retour des quatre mots retirés. Et ses
+listes sont passées du libellé à l'adresse — écrit sur les libellés, le contrôle
+qui protège un salarié des rubriques de l'entreprise **se serait désarmé tout
+seul** au premier renommage.
+
+Planche : `appli/sommaire-des-reglages.html`. Détail : `docs/lot-sommaire-des-reglages.md`.
+Décisions : `ARCHITECTURE.md` §261.
+
+---
+
 ## 2026-09-05
 ### Un échec de transcription avait la forme d'une transcription réussie
 

@@ -33,11 +33,23 @@ import { cheminAutorise, type Role } from "./acces-roles";
 export type RoleReglages = Role;
 
 export type Rubrique = {
-  /** Le libellé, tel qu'il est sur sa planche du 14 août 2026. */
+  /**
+   * Le libellé — et depuis le 5 septembre 2026, **il porte tout seul**.
+   *
+   * Il n'y a plus de ligne d'explication dessous. Le champ `dit` en portait
+   * une par rubrique, douze en tout, et sa prose disait : *« jamais vide : une
+   * rubrique sans explication oblige à l'ouvrir pour savoir si c'est la
+   * bonne »*. C'était l'aveu du défaut, pas sa réparation — `docs/QUESTIONS.md`
+   * §23 l'a écrit dès le 19 août : **une phrase d'explication ne répare jamais
+   * un mauvais titre, elle le cache.**
+   *
+   * **Donc, avant d'ajouter une rubrique ici : si son nom a besoin d'une
+   * glose, c'est le nom qu'il faut changer.** Quatre l'ont été le même jour —
+   * « Intégrations » menait à un écran nommé « Mon agenda », et promettait en
+   * plus une comptabilité et des « services connectés » qui n'existent nulle
+   * part.
+   */
   nom: string;
-  /** La ligne qui dit ce qu'on y trouve. Jamais vide : une rubrique sans
-   *  explication oblige à l'ouvrir pour savoir si c'est la bonne. */
-  dit: string;
   icone: NomIcone;
   /** Où elle mène. `null` tant qu'elle n'est pas codée. */
   href: string | null;
@@ -47,37 +59,24 @@ export type EnsembleRubriques = { titre: string; rubriques: Rubrique[] };
 
 /** Ce qui appartient à la personne : elle l'emporte d'une entreprise à l'autre. */
 const MOI: Rubrique[] = [
+  { nom: "Mon compte", icone: "compte", href: "/reglages/compte" },
+  { nom: "Notifications", icone: "cloche", href: "/reglages/notifications" },
   {
-    nom: "Mon compte",
-    // **« et téléphone » a été RETIRÉ le 14 août 2026, sur sa réponse « A ».**
-    // La table des comptes n'en porte pas, et rien ne l'appellerait : le numéro
-    // que ses clients voient est celui de l'entreprise. Un libellé qui promet
-    // un champ inexistant fait ouvrir la rubrique pour rien.
-    dit: "Nom et e-mail",
-    icone: "compte",
-    href: "/reglages/compte",
-  },
-  {
-    nom: "Notifications",
-    dit: "Alertes et rappels",
-    icone: "cloche",
-    href: "/reglages/notifications",
-  },
-  {
-    nom: "Connexion",
-    // **« et appareils » a été RETIRÉ le 14 août 2026, sur sa réponse « A ».**
-    // Atlas ne garde aucune session en base : il n'y avait rien à lister. Ce
-    // qui existe, et qui est le geste utile, c'est « me déconnecter partout ».
-    dit: "Mot de passe et sécurité",
+    // **« Connexion » le 14 août 2026, « Mot de passe » le 5 septembre.**
+    // « Connexion » est le mot d'un informaticien : il nomme un mécanisme, pas
+    // ce qu'on vient y faire. L'écran ne règle que trois choses, et les trois
+    // tournent autour du mot de passe — le changer, le remplacer par Face ID,
+    // et se déconnecter partout. C'est donc lui qui donne son nom à la porte.
+    nom: "Mot de passe",
     icone: "cadenas",
     href: "/reglages/connexion",
   },
   {
-    nom: "Apparence",
-    // **Le libellé ne promet plus un thème sombre qui n'existe pas.** L'écran
-    // dit ce qui viendra et pourquoi ce n'est pas là ; le sommaire, lui, ne
-    // doit pas laisser croire qu'on va le choisir aujourd'hui.
-    dit: "Les couleurs de l'application",
+    // **« Apparence » était abstrait — « Couleurs » est ce qu'on y choisit.**
+    // Huit chartes de couleurs, rien d'autre : ni police, ni densité, ni taille
+    // de texte. Un nom plus large que l'écran fait ouvrir la rubrique pour
+    // chercher ce qui n'y est pas.
+    nom: "Couleurs",
     icone: "contraste",
     href: "/reglages/apparence",
   },
@@ -92,12 +91,7 @@ const MOI: Rubrique[] = [
  * ce qu'on vient chercher neuf fois sur dix.
  */
 const ENTREPRISE: Rubrique[] = [
-  {
-    nom: "Mon entreprise",
-    dit: "Identité, coordonnées et informations légales",
-    icone: "immeuble",
-    href: "/reglages/identite",
-  },
+  { nom: "Mon entreprise", icone: "immeuble", href: "/reglages/identite" },
   {
     nom: "Équipe",
     // **Le libellé dit ce qu'on y trouve VRAIMENT.** « Utilisateurs, rôles et
@@ -116,21 +110,18 @@ const ENTREPRISE: Rubrique[] = [
     // **Ne pas la recréer pour y mettre les horaires le jour où ils viendront**
     // sans se poser la question : deux portes vers les mêmes équipes, c'est ce
     // qu'on vient de refermer.
-    dit: "Combien partent en même temps, leurs noms et leurs absences",
     icone: "personnes",
     href: "/reglages/equipe",
   },
-  {
-    nom: "Tarifs & catalogue",
-    dit: "Prestations, main-d'œuvre, matériel et marges",
-    icone: "etiquette",
-    href: "/reglages/tarifs",
-  },
+  // **« Tarifs & catalogue » et « Devis & factures » NE CHANGENT PAS, et c'est
+  // un refus assumé du 5 septembre 2026.** Ce sont des mots de son métier, ils
+  // sont justes, et onze suites les lisent : les retoucher aurait coûté une
+  // demi-journée pour un gain nul. Ce lot ne renomme que ce qui MENT.
+  { nom: "Tarifs & catalogue", icone: "etiquette", href: "/reglages/tarifs" },
   {
     nom: "Devis & factures",
     // Le libellé dit ce qui s'y règle vraiment : la numérotation, elle, est
     // continue et ne se touche pas — elle est scellée comme les mentions.
-    dit: "Validité, acompte, délai de paiement et mentions",
     icone: "feuille",
     href: "/reglages/documents",
   },
@@ -145,22 +136,40 @@ const ENTREPRISE: Rubrique[] = [
   // cette fiche » ; dix jours d'usage lui ont fait changer d'avis, et c'est
   // cette décision-là qui vaut. Le motif d'origine, laissé tel quel, aurait
   // suffi à l'y ramener de bonne foi.
-  { nom: "Atlas IA", dit: "Automatisations et suggestions", icone: "etincelle", href: "/reglages/ia" },
+  { nom: "Atlas IA", icone: "etincelle", href: "/reglages/ia" },
   {
-    nom: "Intégrations",
-    dit: "Calendrier, comptabilité et services connectés",
-    icone: "puzzle",
+    // **« Intégrations » A ÉTÉ RETIRÉ LE 5 SEPTEMBRE 2026, et le motif n'est
+    // pas seulement que c'est un mot d'informaticien.**
+    //
+    // Il ANNONÇAIT TROIS CHOSES POUR UNE SEULE. Sa glose promettait
+    // « calendrier, comptabilité et services connectés » ; derrière, il n'y a
+    // jamais eu que deux raccordements d'agenda — Google et iCloud —, sur un
+    // écran dont le titre est « Mon agenda » depuis le premier jour. On
+    // appuyait donc sur un mot pour en trouver un autre.
+    //
+    // **Le sommaire prend le nom de l'ÉCRAN, jamais l'inverse** : c'est celui
+    // qu'il lit en arrivant, et celui qu'emploie le mode d'emploi
+    // (`src/lib/mode-emploi.ts`, qui a été corrigé le même jour).
+    nom: "Mon agenda",
+    // **L'ICÔNE SUIVAIT LE MOT, ET ELLE A DÛ SUIVRE AUSSI — vue à la capture,
+    // par aucun test.** La pièce de puzzle allait avec « Intégrations » : elle
+    // dit « module qu'on emboîte », c'est-à-dire exactement la métaphore
+    // d'informaticien qu'on venait de retirer du libellé. Renommer sans la
+    // changer laissait le dessin contredire le mot — et sur cette liste, c'est
+    // le dessin qu'on repère avant de lire.
+    icone: "calendrier",
     href: "/reglages/agenda",
   },
+  { nom: "Abonnement", icone: "couronne", href: "/reglages/abonnement" },
   {
-    nom: "Abonnement",
-    dit: "Offre, paiement et factures Atlas",
-    icone: "couronne",
-    href: "/reglages/abonnement",
-  },
-  {
-    nom: "Sécurité & données",
-    dit: "Export, effacement et RGPD",
+    // **« Sécurité & données » promettait une sécurité qui n'est pas là.**
+    // Retiré le 5 septembre 2026 : cet écran ne règle RIEN de la sécurité — il
+    // télécharge un fichier, et dit lui-même que l'effacement du compte et le
+    // registre des traitements ne se font pas encore depuis l'application
+    // (`src/app/reglages/donnees/page.tsx`). Le mot ouvrait donc une porte
+    // vide, et « Export » et « RGPD » avec lui, deux mots qu'un artisan n'a pas
+    // à connaître pour garder une copie de son travail.
+    nom: "Mes données",
     icone: "bouclier",
     href: "/reglages/donnees",
   },

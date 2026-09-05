@@ -23324,3 +23324,121 @@ n'a pas commise. La liste s'allonge à chaque écran refait.
 clair, dont l'ancienne terre cuite qui n'est plus l'accent depuis le 31 août.
 Signalé par la session de l'écran des prix, laissé à la session de l'écran de
 date : deux sessions sur le même fichier, c'est du travail jeté.
+
+---
+
+## §261. Un titre qui a besoin d'une glose est un mauvais titre
+
+**6 septembre 2026.** Le sommaire des réglages portait douze rubriques, chacune
+suivie d'une ligne d'explication en 11,5 px de `muted`. Le champ qui la portait
+se décrivait lui-même ainsi : *« jamais vide : une rubrique sans explication
+oblige à l'ouvrir pour savoir si c'est la bonne »*.
+
+**C'était l'aveu du défaut, pas sa réparation.** Le patron l'avait écrit dès le
+19 août (`docs/QUESTIONS.md` §23) : *une phrase d'explication ne répare jamais
+un mauvais titre, elle le cache.* La question est restée sans réponse
+dix-sept jours ; le 5 septembre il a demandé qu'elle soit **tranchée** plutôt
+que reposée une troisième fois, avec la consigne qui commande désormais tout le
+produit — *« la plupart des patrons qui vont utiliser l'app sont des vieux qui
+ont du mal à se servir de leur téléphone »*.
+
+### La règle, et elle vaut au-delà de cet écran
+
+**Avant d'ajouter une entrée dans une liste : si son nom a besoin d'une glose,
+c'est le nom qu'il faut changer.** Le champ `dit` a donc été supprimé du type
+`Rubrique` — pas vidé, supprimé. Une donnée facultative qu'on peut remplir
+finit par se remplir.
+
+Quatre libellés ont été corrigés le même jour, et le motif n'est pas
+« c'est du jargon » mais **« ça ment »** :
+
+| Retiré | Posé | Ce qu'il promettait de faux |
+|---|---|---|
+| Intégrations | **Mon agenda** | « calendrier, comptabilité et services connectés » : deux des trois n'ont jamais existé, et l'écran derrière s'appelle « Mon agenda » depuis le premier jour |
+| Sécurité & données | **Mes données** | aucune sécurité ne s'y règle ; l'écran dit lui-même que l'effacement du compte n'existe pas encore |
+| Connexion | **Mot de passe** | nomme un mécanisme, pas ce qu'on vient y faire |
+| Apparence | **Couleurs** | plus large que l'écran : on n'y choisit que des couleurs |
+
+**« Tarifs & catalogue » et « Devis & factures » n'ont PAS bougé**, et c'est un
+refus assumé : ce sont des mots de son métier, ils sont justes, et neuf suites
+les lisent. Ce lot ne renomme que ce qui ment.
+
+### L'ICÔNE SUIT LE MOT — vu à la capture, par aucun test
+
+« Mon agenda » a gardé la **pièce de puzzle** d'« Intégrations » : le dessin
+disait « module qu'on emboîte », c'est-à-dire exactement la métaphore
+d'informaticien qu'on venait de retirer du libellé. Sur une liste, c'est le
+pictogramme qu'on repère avant de lire — le renommage était donc à moitié fait.
+
+C'est la cinquième fois dans ce dépôt qu'un défaut sort d'une image et d'aucune
+suite (`CLAUDE.md` §5). **Renommer une entrée, c'est regarder son icône.**
+
+### `muted` n'est pas une couleur de texte à lire
+
+Le gris `muted` de la charte tient, mesuré sur les huit :
+
+| Charte | Contraste sur le fond |
+|---|---|
+| moka | 2,85 |
+| pierre · beurre | 3,01 · 3,07 |
+| origine · prune · brume | 3,32 · 3,48 · 3,59 |
+| **sylve · nuit** | **5,80 · 5,19** |
+
+Six des huit sont sous 4,5, et **les deux qui passent sont les sombres** — les
+seules qu'il ait signalées, le 22 août. `scripts/test-chartes-lisibles.ts` §144
+connaît ces chiffres et refuse délibérément d'y poser un seuil : la palette est
+la sienne, relevée au navigateur sur le site d'Arborea, et un seuil écrit
+accuserait un choix qu'il a fait.
+
+**Donc la charte ne se touche pas — c'est l'EMPLOI qui se corrige.** Les deux
+intertitres du sommaire et la phrase que lit un salarié sont passés à
+`inkSoft` (8,0 sur Origine). `libelleCaps` reste 9,5 px : ce lot n'a pas changé
+la grammaire des écrans, il a cessé d'écrire en gris ce qu'il faut lire.
+
+**Ce qui reste à faire, et qui est un lot à soi seul :** tout le texte
+secondaire de l'application s'écrit encore en 9,5 et 11,5 px dans ce gris.
+
+### Ce que ça donne, et ce que ça ne donne pas
+
+Mesuré au navigateur à 390 × 664, sur les deux pôles
+(`scripts/capture-sommaire-reglages.mts`) :
+
+| | Avant | Après |
+|---|---|---|
+| hauteur | 1 310 px | 1 145 px |
+| en écrans de 664 | 1,97 | 1,72 |
+| rubriques sans défiler | 6 | 8 |
+| hauteur d'une ligne | 56 à 84 px | **56 px partout** |
+| mots à l'écran | 89 | 30 |
+
+**L'écran ne tient toujours pas en une fenêtre**, et il ne le tiendra pas :
+douze rubriques à 56 px plus la version en bas font davantage que 664. Serrer
+les lignes rendrait au pouce ce qu'on gagnerait à l'œil — la cible de 56 px
+passe délibérément au-dessus des 44 d'Apple, et c'est **toute la ligne** qui se
+touche.
+
+Le gain réel est ailleurs : **le pas de la liste est devenu régulier.** Avant,
+« Équipe » poussait à 84 px parce que sa glose tenait sur deux lignes.
+
+### Les contrôles ont été RETOURNÉS, pas réparés
+
+`scripts/test-rubriques-reglages.ts` exigeait qu'une rubrique porte une
+explication de plus de quatre lettres. Il a été remplacé par son contraire
+utile : **aucune rubrique ne reprend un des quatre mots retirés** — ils
+reviendraient de bonne foi, chacun ayant eu sa raison le jour où il a été
+écrit. Confronté au défaut qu'il prétend attraper, il rougit.
+
+**Et ses listes sont passées du LIBELLÉ à l'ADRESSE.** Ce n'est pas seulement
+plus robuste : le contrôle qui vérifie qu'un salarié ne reçoit aucune rubrique
+de l'entreprise **se serait désarmé tout seul** au premier renommage —
+« Intégrations » devenue « Mon agenda » ne figurait plus dans sa liste
+d'interdits, et la rubrique aurait pu sortir chez un salarié sans que rien ne
+rougisse. Une adresse ne se renomme pas pour faire joli.
+
+### La planche
+
+`appli/sommaire-des-reglages.html` montre les deux états côte à côte, sur les
+deux pôles. **Elle ne mesure pas elle-même** : elle l'a fait une heure, et
+rendait 1 076 px là où l'application en fait 1 145 — un dessin n'est pas
+l'écran. Deux chiffres qui se contredisent sur la même page, c'est toute la
+liste qu'on cesse de croire. Le dessin montre, la mesure chiffre.

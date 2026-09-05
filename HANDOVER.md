@@ -4,12 +4,53 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-05 · `main`
+**Point de reprise :** 2026-09-06 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
-## Dernier lot — RELIRE SA DICTÉE : TRANSCRIPTION ET INFORMATIONS (5 septembre 2026)
+## Dernier lot — LE SOMMAIRE DES RÉGLAGES (6 septembre 2026)
+
+**Document du lot :** `docs/lot-sommaire-des-reglages.md`.
+**Planche :** `appli/sommaire-des-reglages.html`.
+**Décisions :** `ARCHITECTURE.md` §261.
+
+**Premier des six lots de la reprise des Réglages**, ouverte par sa consigne du
+5 septembre 2026 — *« la plupart des patrons qui vont utiliser l'app sont des
+vieux qui ont du mal à se servir de leur téléphone »* (`PRODUCT.md`,
+Accessibility & Inclusion).
+
+**Ce qui a été fait :** les douze lignes d'explication du sommaire retirées (le
+champ `dit` a été SUPPRIMÉ du type `Rubrique`, pas vidé) ; quatre libellés
+corrigés parce qu'ils mentaient — Intégrations → **Mon agenda**, Sécurité &
+données → **Mes données**, Connexion → **Mot de passe**, Apparence →
+**Couleurs** ; le nom d'une rubrique passé de 17 à 19 px ; les deux intertitres
+et la phrase du salarié passés de `muted` à `inkSoft`.
+
+**Deux questions ont été TRANCHÉES à sa demande**, plutôt que reposées :
+« Moins de mots » (`docs/QUESTIONS.md` §23, 19 août) — oui, les douze partent,
+codé ; et la planche 96 sur l'écran Équipe (26 août) — **proposition C**, le
+titre pose la question. **La seconde n'est PAS codée** : elle vient au lot 6.
+
+**L'ordre des lots qui reste**, tel qu'il lui a été proposé et qu'il a accepté :
+
+| Lot | Quoi |
+|---|---|
+| 2 | l'en-tête unique : `agenda`, `prix`, `prix/mesures` et `vocabulaire` se dessinent le leur au lieu d'employer `EnTeteEcran` — d'où un titre à 32 px au lieu de 36, le surtitre doré AU-DESSUS du titre alors qu'il a demandé l'inverse le 26 août, et **pas de bouton d'assistant** |
+| 3 | « Devis & factures » : 1 267 lignes et six blocs sans rapport en un seul écran |
+| 4 | « Mon entreprise » : le régime de TVA et sa périodicité sont séparés par tout le bloc bancaire |
+| 5 | « Mon agenda » : le raccordement iCloud demande d'aller générer un mot de passe sur `account.apple.com` |
+| 6 | Équipe (proposition C), notifications, mot de passe, données, couleurs, IA, abonnement, compte |
+
+**⚠ CE LOT N'A PAS ÉTÉ FUSIONNÉ AVEC `main` — et ce n'est pas un oubli.** Au
+moment de le livrer, l'arbre partagé portait **124 fichiers non enregistrés**
+d'une autre session (le passage des suites navigateur à `scripts/_adresse.ts`),
+dont trois que `main` a modifiés de son côté. Fusionner aurait exigé de
+déplacer ou de remiser leur travail en cours. Voir `TODO.md`.
+
+---
+
+## Lot précédent — RELIRE SA DICTÉE : TRANSCRIPTION ET INFORMATIONS (5 septembre 2026)
 
 **Document du lot :** `docs/lot-relire-sa-dictee.md`.
 **Planche validée par le patron :** `appli/relire-sa-dictee.html` — il a retenu

@@ -68,7 +68,7 @@ export default async function ConnexionPage() {
     >
       <EnTeteEcran
         surtitre="Moi"
-        titre="Connexion"
+        titre="Mot de passe"
         retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
       />
       <div className="atlas-colonne-defile" style={{ overscrollBehavior: "contain" }}>

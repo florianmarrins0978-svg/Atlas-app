@@ -9,6 +9,82 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ À FUSIONNER : le lot du sommaire des réglages n'est pas sur `main`
+
+**6 septembre 2026.** Le lot est commité, vert et documenté
+(`docs/lot-sommaire-des-reglages.md`), mais il est resté sur le `main` LOCAL.
+
+**Pourquoi, et ce n'est pas un oubli.** L'arbre partagé portait au moment de la
+livraison **124 fichiers non enregistrés** d'une autre session — le passage des
+suites navigateur à `scripts/_adresse.ts`. Trois d'entre eux sont aussi
+modifiés sur `origin/main` :
+
+    scripts/_adresse.ts                    (non suivi ici, suivi sur main, et
+                                            la version locale est plus avancée)
+    scripts/test-adresse-suggestions-e2e.ts
+    scripts/test-anneau-dictee-e2e.ts
+
+`git merge` refuse tant qu'ils sont sales, et les remiser ou les déplacer,
+c'est mettre les mains dans le travail en cours de quelqu'un d'autre — la faute
+exacte que `scripts/garde-travail-non-enregistre.mjs` existe pour empêcher
+(`CLAUDE.md` §6). **Ne pas forcer.**
+
+**Ce qu'il faut, dans l'ordre :**
+
+1. que la session voisine commite (ou remise) ses trois fichiers ;
+2. `git fetch origin main` puis fusionner ;
+3. **batterie complète après la fusion** — `main` a touché `src/app/globals.css`,
+   une pièce partagée, et `src/lib/mode-emploi.ts`, que ce lot modifie aussi
+   (le conflit y est simple : deux fiches différentes) ;
+4. renuméroter `ARCHITECTURE.md` **§261** si une autre session l'a pris — et
+   relire chaque renvoi touché plutôt que de passer un `sed` (`CLAUDE.md` §B).
+
+**Un rouge de `main` disparaîtra à la fusion** : `test-mode-emploi` cherche
+« Par SMS » là où l'écran dit « SMS ». Le correctif est déjà sur `main`
+(`preuves: ["Nom du client", "Envoi", "E-mail", "Adresse du chantier"]`), pas
+encore ici.
+
+---
+
+## Les cinq lots qui restent sur les Réglages
+
+Ouverts par sa consigne du 5 septembre 2026 (`PRODUCT.md`). L'ordre est celui
+qu'il a accepté ; le premier est fait.
+
+| Lot | Quoi | Ce qui le fonde |
+|---|---|---|
+| 2 | **l'en-tête unique** | `agenda`, `prix`, `prix/mesures` et `vocabulaire` se dessinent leur propre en-tête au lieu d'employer `EnTeteEcran` : titre à 32 px au lieu de 36, surtitre doré AU-DESSUS du titre alors qu'il a demandé l'inverse le 26 août, et **aucun bouton d'assistant** — donc le recours manque sur les deux écrans les plus durs |
+| 3 | **« Devis & factures »** | `DocumentsClient.tsx`, 1 267 lignes, six blocs sans rapport en un seul écran ; le logo est à la ligne 772 |
+| 4 | **« Mon entreprise »** | le régime de TVA (bloc 2 d'`IdentiteClient`) et sa périodicité (`identite/page.tsx:79`) sont séparés par tout le bloc bancaire « Pour être payé » — la faute que le regroupement du 14 août voulait réparer, revenue à l'intérieur d'un écran |
+| 5 | **« Mon agenda »** | le raccordement iCloud demande d'aller sur `account.apple.com`, d'y générer un « mot de passe pour les apps » et de recopier seize lettres. **La tâche elle-même est hors de portée** : c'est à lui de dire ce qu'on fait |
+| 6 | **le reste** | Équipe (**proposition C** de la planche 96, décidée le 6 septembre, pas codée), notifications, mot de passe, données, couleurs, IA, abonnement, compte |
+
+---
+
+## Le texte secondaire de TOUTE l'application est écrit en gris trop pâle
+
+**Relevé le 6 septembre 2026, en reprenant le sommaire des réglages.** Le jeton
+`muted` tient de **2,85** (Moka) à **3,59** (Brume) de contraste sur les six
+chartes claires, là où la norme demande 4,5 — et il porte `libelleCaps`
+(9,5 px) et `texteSituation` (11,5 px), c'est-à-dire les intertitres et les
+lignes de situation de tous les écrans.
+
+**Les deux chartes qui passent sont les sombres** (Sylve 5,80, Nuit 5,19) :
+elles ont été corrigées après sa plainte du 22 août, les claires jamais.
+
+**Ce qui a été fait dans le lot du sommaire, et rien de plus :** les deux
+intertitres et la phrase du salarié sont passés à `inkSoft` (8,0). **La charte
+n'a pas été touchée** — c'est la sienne, relevée au navigateur sur le site
+d'Arborea, et `scripts/test-chartes-lisibles.ts` §144 refuse délibérément d'y
+poser un seuil pour ne pas accuser un choix qu'il a fait.
+
+**Ce qui reste : l'emploi, écran par écran.** C'est un lot à soi seul, pas une
+retouche à glisser dans un autre — il traverse tous les écrans, donc la
+batterie complète et des captures sur les deux pôles.
+
+---
+
+
 ## ~~DÛ : la batterie et les captures des deux écrans de relecture~~ — fait le 5 sept. 2026
 
 Batterie jouée (304/314 base, 115/128 navigateur, les six suites du lot vertes)
