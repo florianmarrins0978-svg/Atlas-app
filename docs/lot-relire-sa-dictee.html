@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Relire sa dictée — la transcription et les informations</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="relire-sa-dictée--la-transcription-et-les-informations">Relire sa dictée — la transcription et les informations</h1>
+<p><em>5 septembre 2026 · <code>/chantiers/[id]/transcription</code> et <code>/chantiers/[id]/informations</code> · le moment où le patron vérifie qu'on l'a compris, avant de poser ses prix.</em></p>
+<hr>
+<h2 id="en-cinq-lignes">En cinq lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Trois défauts, tous vus dans le code et mesurés. <strong>Un échec de transcription a aujourd'hui la forme d'une transcription réussie.</strong> Sur les informations, la proposition et vos vraies cases portent <strong>les mêmes mots</strong> et <strong>les deux mêmes tons, échangés</strong>. Et l'or qui écrit un mot tient <strong>2,77</strong> là où il en faut 4,5 — le jeton lisible existe depuis ce matin, ces deux écrans ne l'ont pas.</p>
+<p><strong>Rien n'est encore modifié dans l'application.</strong> Une planche attend son choix :</p>
+<blockquote><strong>https://florianmarrins0978-svg.github.io/Atlas-app/relire-sa-dictee.html</strong></blockquote>
+<hr>
+<h2 id="les-trois-un-par-un">Les trois, un par un</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="1-la-proposition-et-la-donnée-acquise-se-ressemblent">1. La proposition et la donnée acquise se ressemblent</h3>
+<p><strong>Les fichiers qui le fondent :</strong> <code>informations/BrouillonSection.tsx</code> l. 256-289 et <code>informations/InformationsClient.tsx</code> l. 133-183.</p>
+<p>Tant que le brouillon n'est pas confirmé, l'écran écrit <strong>deux fois</strong> « Prestations », « Durée », « Équipe », « Matériel » — même voix, même graisse, même gris. La seule différence est un fond, et c'est le pire cas possible : la case du brouillon est <strong>crème dans une plage claire</strong>, la vraie case est <strong>claire sur fond crème</strong>. Ce sont les deux mêmes tons, échangés.</p>
+<p>En plein soleil, d'une main, rien ne dit laquelle compte. C'est l'écran où il vérifie qu'on l'a compris : ce qui est SÛR et ce qui est SUPPOSÉ ne peuvent pas s'y ressembler.</p>
+<h3 id="2-cinq-états-de-transcription-dans-le-même-paragraphe">2. Cinq états de transcription dans le même paragraphe</h3>
+<p><strong>Le fichier qui le fonde :</strong> <code>transcription/page.tsx</code> l. 30-68.</p>
+<p>Le vrai texte de sa dictée, « Aucune note vocale », « Transcription en cours… », l'échec et l'excuse du texte non transcrit sortent <strong>du même <code>&lt;p&gt;</code>, dans la même plage</strong> — seule la couleur change, encre ou gris. Une transcription <strong>échouée</strong> a donc la forme d'une transcription réussie.</p>
+<p>Le commentaire de la ligne 24 dit vouloir éviter exactement cela — <em>« un texte de remplacement n'est pas une transcription »</em> — et l'écran le reproduit d'un cran plus loin, sur la forme au lieu du contenu.</p>
+<p><strong>Trouvé au passage :</strong> dans l'état « en cours », l'écran n'offre <strong>aucune sortie</strong> (le lien vers la note vocale est masqué, l. 93) et ne se rafraîchit pas tout seul. Il faut savoir qu'il faut revenir.</p>
+<h3 id="3-lor-qui-porte-un-mot-ne-se-lit-pas">3. L'or qui porte un mot ne se lit pas</h3>
+<p><strong>Mesuré</strong>, sur Origine :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>or</code> sur le fond de page</td>
+<td><strong>2,77</strong></td>
+</tr>
+<tr>
+<td><code>or</code> sur une plage</td>
+<td><strong>2,91</strong></td>
+</tr>
+<tr>
+<td><code>orTexte</code> (le jeton du 5 septembre)</td>
+<td><strong>4,59</strong> et <strong>4,83</strong></td>
+</tr>
+</tbody></table></div>
+<p>Trois endroits sur ces deux écrans : <strong>« Écrire le devis »</strong>, sa sortie de secours, en gras or (<code>InformationsClient.tsx</code> l. 230), et les deux <strong>« À confirmer »</strong> (<code>BrouillonSection.tsx</code> l. 317 et 592).</p>
+<p>La session de l'écran des prix a posé ce matin le jeton exact pour ce rôle. Le filet d'or de l'avertissement, lui, ne bouge pas : <strong>c'est un trait, pas un mot</strong>, et la règle du 31 août tient.</p>
+<hr>
+<h2 id="aussi-trouvé-réparable-dans-le-même-lot">Aussi trouvé, réparable dans le même lot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>rgba(20,18,14,0.35)</code> écrit en clair sur le voile du tiroir « Remplacer vos corrections ? » (<code>BrouillonSection.tsx</code> l. 361)</td>
+<td>la faute du 22 août, <strong>quatrième retour</strong>. Sur Nuit et Sylve, du sombre sur du sombre — au-dessus du seul geste irréversible de l'écran</td>
+</tr>
+<tr>
+<td>Quatre paragraphes disent « aucun prestataire de transcription n'est encore raccordé »</td>
+<td><code>docs/A-FAIRE.md</code> §1 dit l'inverse depuis le 6 août, et <code>CLAUDE.md</code> §1 ter l'interdit. <strong>C'est de la copie factuelle : elle ne se change pas sans son accord</strong></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-que-la-planche-demande">Ce que la planche demande</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Une seule planche pour les deux écrans, parce que c'est un seul moment. Origine et Nuit, 390 × 664, les cinq états de la transcription et trois façons de tenir la proposition à part.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Aujourd'hui</strong></td>
+<td>les mêmes mots deux fois, les deux tons échangés</td>
+</tr>
+<tr>
+<td><strong>Chaque mot une fois</strong></td>
+<td>la proposition dit « entendue ». Le plus petit changement</td>
+</tr>
+<tr>
+<td><strong>Un seul à la fois</strong></td>
+<td>vos cases n'apparaissent qu'une fois le brouillon confirmé, déjà remplies. Un seul bouton à l'écran</td>
+</tr>
+</tbody></table></div>
+<p>Et pour la transcription : <strong>la plage ne porte plus que ses mots</strong>. Un échec, une attente, une dictée non transcrite n'ont plus la forme d'une transcription — le cadre lui-même le dit, sans une phrase de plus.</p>
+<hr>
+<h2 id="ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">Ce qui a été refusé, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Refusé</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Découper <code>informations/actions.ts</code></strong> (1 083 l.)</td>
+<td>Ça ne change rien pour lui, et déplacer mille lignes pendant que d'autres sessions poussent sur <code>main</code>, c'est du travail jeté sur un conflit</td>
+</tr>
+<tr>
+<td><strong>Éclaircir <code>muted</code></strong> (3,49, sous le seuil)</td>
+<td>C'est SON niveau, choisi sur planche, et <code>test-chartes-lisibles.ts</code> refuse délibérément de l'exiger (<code>CLAUDE.md</code> §5 bis)</td>
+</tr>
+<tr>
+<td><strong>Une relance de transcription sur cet écran</strong></td>
+<td>Deux endroits pour lancer la même chose, c'est un de trop — sa règle</td>
+</tr>
+<tr>
+<td><strong>Toucher à <code>prix/</code>, au devis, à la facture, à la note vocale</strong></td>
+<td>D'autres sessions y sont</td>
+</tr>
+</tbody></table></div>
+<p>Et rien de ce qu'il a déjà tranché n'est rouvert : les cases s'écrivent après confirmation, ce qui est recopié disparaît de l'encart, « Écrire le devis » reste, les trois phrases grises du 25 août ne reviennent pas, les réserves restent à cinq, le mot « équipe » ne s'écrit pas à une seule équipe.</p>
+<hr>
+<h2 id="les-chiffres">Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Fichiers lus dans le périmètre</td>
+<td><strong>7</strong>, 2 546 lignes</td>
+</tr>
+<tr>
+<td>Planche regardée à 390 × 664</td>
+<td><strong>33 captures</strong>, Origine et Nuit, les cinq états et les trois variantes</td>
+</tr>
+<tr>
+<td>Débordement horizontal à 390 px</td>
+<td><strong>aucun</strong> — mesuré, <code>scrollWidth = clientWidth = 390</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>LA BATTERIE N'A PAS ÉTÉ JOUÉE</strong>, et il ne faut pas la croire jouée : aucune ligne de <code>src/</code> n'est modifiée à ce stade. Elle est due avec le code, dans la fenêtre qu'il donnera — ses sessions partagent le même dossier.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>Laquelle des trois façons pour les informations</td>
+<td><strong>lui</strong>, sur la planche</td>
+</tr>
+<tr>
+<td>La plage qui ne porte que ses mots</td>
+<td><strong>lui</strong>, sur la planche</td>
+</tr>
+<tr>
+<td>Changer la phrase « aucun prestataire raccordé », qui contredit <code>A-FAIRE</code> §1</td>
+<td><strong>lui</strong> — c'est une affirmation, pas une tournure</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

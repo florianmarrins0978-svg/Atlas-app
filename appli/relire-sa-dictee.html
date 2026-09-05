@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — relire sa dictée</title>
+<style>
+  /*
+    RELIRE SA DICTÉE — les deux écrans où le patron vérifie qu'on l'a compris.
+
+    Un seul moment, donc une seule planche : ce que la machine a ENTENDU
+    (Transcription) puis ce qu'elle en a COMPRIS (Informations), avant qu'il
+    pose ses prix.
+
+    ─── CE QUE LA PLANCHE MONTRE, ET POURQUOI ────────────────────────────────
+
+    1. La TRANSCRIPTION rend aujourd'hui CINQ états dans le même paragraphe
+       gris, dans la même plage : le vrai texte de sa dictée, « aucune note »,
+       « en cours », l'échec, et l'excuse du texte non transcrit. Une
+       transcription ÉCHOUÉE a donc la forme d'une transcription réussie
+       (`transcription/page.tsx`, l. 30-68).
+
+    2. Les INFORMATIONS écrivent DEUX FOIS les mêmes mots — « Prestations »,
+       « Durée », « Équipe », « Matériel » — une fois pour la proposition, une
+       fois pour la donnée acquise ; et les deux se distinguent par les deux
+       MÊMES tons, échangés (une case crème dans une plage claire contre une
+       case claire sur fond crème). En plein soleil, d'une main, rien ne dit
+       laquelle compte.
+
+    ─── LES COULEURS NE SONT PAS APPROCHÉES ──────────────────────────────────
+
+    Origine et Nuit sont extraites de `src/lib/chartes.ts` par le code lui-même,
+    jetons dérivés compris. Aucune valeur n'est retapée à l'œil : une couleur
+    inventée dans une maquette se recopie ensuite dans un écran.
+
+    `orTexte` (#8b6835 sur Origine) est le jeton posé le 5 septembre 2026 pour
+    l'or QUI PORTE UN MOT — l'or d'un TRAIT ne bouge pas. Mesuré : l'or
+    d'aujourd'hui tient 2,77 sur le fond de page, là où un mot demande 4,5.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+           --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+           --line:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:34px 0 70px;-webkit-text-size-adjust:100%}
+  .page{max-width:460px;margin:0 auto;padding:0 22px}
+  h1{font:600 25px/1.2 ui-serif,Georgia,serif;margin:0 0 6px;letter-spacing:-.01em}
+  .sous{color:var(--charcoal-soft);margin:0 0 26px;font-size:14.5px}
+  .famille{font:600 11px/1 -apple-system,sans-serif;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--muted);margin:42px 0 10px}
+  .q{font:600 17px/1.35 ui-serif,Georgia,serif;margin:0 0 4px}
+  .qd{color:var(--charcoal-soft);font-size:14px;margin:0 0 14px}
+  .cadre-titre{font:600 11px/1 -apple-system,sans-serif;letter-spacing:.13em;
+       text-transform:uppercase;color:var(--muted);margin:24px 0 8px;text-align:center}
+
+  .choix{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+  .choix button{flex:1 1 auto;min-width:72px;border:1px solid var(--line);
+    background:var(--cream);color:var(--charcoal);border-radius:999px;
+    padding:9px 12px;font:500 13px/1 inherit;cursor:pointer;
+    transition:background .22s cubic-bezier(.16,1,.3,1),color .22s,border-color .22s}
+  .choix button:hover{border-color:var(--or)}
+  .choix button[aria-pressed="true"]{background:var(--charcoal);color:var(--cream);
+    border-color:var(--charcoal)}
+  .choix button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  /* Le téléphone, à sa taille réelle : 390 × 664, la sienne. */
+  .tel{width:390px;max-width:100%;margin:0 auto;position:relative;
+       border-radius:22px;overflow:hidden;border:1px solid var(--line);
+       box-shadow:0 18px 46px rgba(28,28,26,.16)}
+  .tel.haut{height:664px}
+  .ecran{overflow-y:auto;overflow-x:hidden}
+  .tel.haut .ecran{position:absolute;inset:0}
+  @media (max-width:433px){
+    .tel{width:100vw;max-width:none;margin-left:calc(50% - 50vw);
+         border-radius:0;border-left:0;border-right:0}
+  }
+
+  /* ─── L'écran d'Atlas. Deux chartes, une structure. ────────────────────── */
+  .a{ min-height:100%;background:var(--c-cream);color:var(--c-ink);
+      font:15px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;
+      padding-bottom:66px;position:relative }
+  .tel[data-charte="origine"] .a{
+    --c-cream:#f5f3ee; --c-card:#faf9f5; --c-ink:#1c1c1a; --c-inkSoft:#4a4a44;
+    --c-muted:#8a8578; --c-rust:#2f3b2f; --c-rustTint:#ece9e1; --c-or:#B98B47;
+    --c-orTexte:#8b6835; --c-line:rgba(28,28,26,.12); --c-alerte:#9C3B2E;
+    --c-plein:#7d9a6d; --c-surPlein:#faf9f5 }
+  .tel[data-charte="nuit"] .a{
+    --c-cream:#101210; --c-card:#1a1d19; --c-ink:#e9e8de; --c-inkSoft:#c1c2b6;
+    --c-muted:#84887b; --c-rust:#e9e8de; --c-rustTint:#1f211e; --c-or:#B98B47;
+    --c-orTexte:#b98b47; --c-line:rgba(233,232,222,.12); --c-alerte:#cd6456;
+    --c-plein:#e9e8de; --c-surPlein:#1a1d19 }
+
+  /* L'en-tête commun : rond de retour, titre serif 36, surtitre d'or dessous. */
+  .tete{padding:28px 26px 0}
+  .rond{width:40px;height:40px;border-radius:999px;background:var(--c-rustTint);
+        display:flex;align-items:center;justify-content:center}
+  .rond svg{stroke:var(--c-rust)}
+  .titre{font:36px/1.02 ui-serif,Georgia,serif;letter-spacing:-.018em;margin:20px 0 0}
+  .surtitre{font-size:9.5px;font-weight:500;text-transform:uppercase;
+            letter-spacing:.28em;color:var(--c-or);margin:12px 0 0}
+  .lab{font-size:9.5px;font-weight:500;text-transform:uppercase;
+       letter-spacing:.28em;color:var(--c-muted)}
+  .sit{font-size:11.5px;line-height:1.5;color:var(--c-muted)}
+  .plage{background:var(--c-card);border-radius:4px}
+  .champ{background:var(--c-card);color:var(--c-ink);font-size:16px;
+         border-radius:4px;padding:12px 15px;border:0;width:100%;display:block}
+  .case{background:var(--c-cream);border-radius:4px;padding:12px;font-size:16px}
+  .corps{padding:24px 26px 0;display:flex;flex-direction:column;gap:22px}
+  .bouton{display:inline-flex;align-items:center;justify-content:center;
+     background:var(--c-plein);color:var(--c-surPlein);border:0;border-radius:999px;
+     padding:13px 36px;font:17px/1 inherit;margin:0 auto}
+  .or-mot{color:var(--c-orTexte)}
+  .or-vieux{color:var(--c-or)}
+  .geste{text-align:center;font-size:14px;font-weight:500;color:var(--c-rust);margin:0}
+
+  /* La barre du bas : elle EST sur ces deux écrans. */
+  .barre{position:absolute;left:0;right:0;bottom:0;background:var(--c-cream);
+     border-top:1px solid var(--c-line);display:grid;grid-template-columns:repeat(5,1fr);
+     padding:18px 14px 8px}
+  .barre span{text-align:center;font-size:8.5px;font-weight:500;text-transform:uppercase;
+     letter-spacing:.14em;color:var(--c-muted);padding-bottom:8px;position:relative}
+  .barre span.actif{color:var(--c-ink)}
+  .barre span.actif::after{content:"";position:absolute;left:0;right:0;bottom:0;
+     height:1px;background:var(--c-or)}
+
+  /* Le fil d'attente : ce qui dit « ça travaille » sans un mot de plus. */
+  /* **Court, et SOUS la phrase.** Pleine largeur juste sous le titre, il
+     redevient le trait qu'il a fait retirer partout le 25 août 2026 — dès que
+     l'animation s'arrête : une capture, un mouvement réduit. */
+  .fil{height:2px;width:88px;background:var(--c-rustTint);border-radius:2px;overflow:hidden}
+  .fil i{display:block;height:100%;width:38%;background:var(--c-or);
+         animation:va 1.5s cubic-bezier(.5,0,.5,1) infinite}
+  @keyframes va{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+  @media (prefers-reduced-motion:reduce){ .fil i{animation:none;width:100%;opacity:.45} }
+
+  .etat,.variante{display:none}
+  .etat.on,.variante.on{display:block}
+
+  .note{background:var(--cream);border:1px solid var(--line);border-radius:12px;
+        padding:15px 17px;font-size:14px;color:var(--charcoal-soft);margin:18px 0 0}
+  .note .t{display:block;font-weight:600;color:var(--charcoal);margin-bottom:5px;
+           font-size:13px}
+  .note b{color:var(--charcoal)}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+  td{padding:8px 0;border-top:1px solid var(--line);vertical-align:top}
+  td:first-child{color:var(--muted);padding-right:14px;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Relire sa dictée</h1>
+  <p class="sous">Ce que la machine a entendu, puis ce qu'elle en a compris. Deux écrans, un seul moment&nbsp;— avant les prix.</p>
+
+  <div class="choix" role="group" aria-label="Apparence" id="chartes">
+    <button type="button" data-charte="origine" aria-pressed="true">Origine</button>
+    <button type="button" data-charte="nuit" aria-pressed="false">Nuit</button>
+  </div>
+
+  <!-- ══════════════ 1. CE QU'ELLE A ENTENDU ══════════════ -->
+  <p class="famille">1 — Ce qu'elle a entendu</p>
+  <p class="q">Cinq états, un seul paragraphe</p>
+  <p class="qd">Aujourd'hui la plage porte aussi bien vos mots qu'un échec. Choisissez un état&nbsp;: les deux cadres le montrent.</p>
+
+  <div class="choix" role="group" aria-label="État de la transcription" id="etats">
+    <button type="button" data-etat="ok" aria-pressed="true">Écoutée</button>
+    <button type="button" data-etat="cours" aria-pressed="false">En cours</button>
+    <button type="button" data-etat="echec" aria-pressed="false">Échouée</button>
+    <button type="button" data-etat="non" aria-pressed="false">Non transcrite</button>
+    <button type="button" data-etat="rien" aria-pressed="false">Aucune note</button>
+  </div>
+
+  <p class="cadre-titre">Aujourd'hui</p>
+  <div class="tel" data-charte="origine">
+    <div class="ecran"><div class="a">
+      <div class="tete">
+        <div class="rond"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.4"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h2 class="titre">Transcription</h2>
+        <p class="surtitre">Jardin des Tilleuls</p>
+      </div>
+      <div class="corps">
+        <div class="plage" style="padding:20px">
+          <p class="etat on" data-etat="ok" style="margin:0;font-size:15px;line-height:1.6;color:var(--c-ink)">Élagage du grand chêne au fond du jardin, deux jours à deux, broyage sur place. Je reprends la haie de laurier côté voisin, environ douze mètres.</p>
+          <p class="etat" data-etat="cours" style="margin:0;font-size:15px;line-height:1.6;color:var(--c-muted)">Transcription en cours…</p>
+          <p class="etat" data-etat="echec" style="margin:0;font-size:15px;line-height:1.6;color:var(--c-muted)">La transcription a échoué : délai dépassé. Votre enregistrement est intact — vous pouvez relancer depuis l'écran Note vocale.</p>
+          <p class="etat" data-etat="non" style="margin:0;font-size:15px;line-height:1.6;color:var(--c-muted)">Votre dictée est enregistrée, mais elle n'a pas été transcrite : aucun prestataire de transcription n'est encore raccordé. Écrivez ci-dessous ce que vous avez dit.</p>
+          <p class="etat" data-etat="rien" style="margin:0;font-size:15px;line-height:1.6;color:var(--c-muted)">Aucune note vocale pour ce chantier.</p>
+        </div>
+
+        <div class="etat on" data-etat="ok">
+          <button type="button" class="bouton" style="display:flex;width:100%">Créer le devis à partir de ma dictée</button>
+          <p style="text-align:center;font-size:14px;font-weight:500;color:var(--c-muted);margin:16px 0 0">Ou vérifier les informations une par une</p>
+        </div>
+        <p class="etat on geste" data-etat="ok">Corriger le texte à la main</p>
+        <p class="etat geste" data-etat="cours">Corriger le texte à la main</p>
+        <p class="etat geste" data-etat="echec">Corriger le texte à la main</p>
+        <p class="etat geste" data-etat="echec">Aller à la note vocale</p>
+        <p class="etat geste" data-etat="rien">Aller à la note vocale</p>
+        <div class="etat" data-etat="non">
+          <div class="plage" style="padding:20px">
+            <p class="lab" style="color:var(--c-rust);margin:0 0 10px">Écrire ce que vous avez dit</p>
+            <p class="sit" style="margin:0 0 12px">Écrivez-le ici, avec vos mots : tout le reste du parcours s'enchaînera normalement.</p>
+            <div style="background:var(--c-cream);border:1px solid var(--c-rustTint);border-radius:4px;padding:12px;height:118px;color:var(--c-muted);font-size:15px">Exemple : élagage du grand chêne au fond du jardin, deux jours à deux, broyage sur place…</div>
+            <p class="sit" style="margin:8px 0 14px">Écrivez d'abord votre texte ci-dessus — le bouton s'activera.</p>
+            <div style="display:flex"><button type="button" class="bouton" style="opacity:.4">Enregistrer le texte</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="barre"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+    </div></div>
+  </div>
+
+  <p class="cadre-titre">Proposé — la plage ne porte que vos mots</p>
+  <div class="tel" data-charte="origine">
+    <div class="ecran"><div class="a">
+      <div class="tete">
+        <div class="rond"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.4"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h2 class="titre">Transcription</h2>
+        <p class="surtitre">Jardin des Tilleuls</p>
+      </div>
+      <div class="corps">
+
+        <!-- ÉCOUTÉE — seule une vraie dictée entre dans la plage. -->
+        <div class="etat on" data-etat="ok">
+          <div class="plage" style="padding:20px">
+            <p style="margin:0;font-size:15px;line-height:1.6;color:var(--c-ink)">Élagage du grand chêne au fond du jardin, deux jours à deux, broyage sur place. Je reprends la haie de laurier côté voisin, environ douze mètres.</p>
+          </div>
+          <button type="button" class="bouton" style="display:flex;width:100%;margin-top:22px">Créer le devis à partir de ma dictée</button>
+          <p style="text-align:center;font-size:14px;font-weight:500;color:var(--c-muted);margin:16px 0 0">Ou vérifier les informations une par une</p>
+          <p class="lab" style="color:var(--c-rust);text-align:center;margin:22px 0 0">Corriger le texte</p>
+        </div>
+
+        <!-- EN COURS — pas de plage : il n'y a rien à lire. Le fil dit que ça travaille. -->
+        <div class="etat" data-etat="cours">
+          <p style="margin:0;font-size:15px;line-height:1.55;color:var(--c-ink)">Transcription en cours.</p>
+          <p class="sit" style="margin:8px 0 14px">L'écran se met à jour tout seul.</p>
+          <div class="fil"><i></i></div>
+        </div>
+
+        <!-- ÉCHOUÉE — la raison, puis le geste qui débloque. -->
+        <div class="etat" data-etat="echec">
+          <p class="lab" style="color:var(--c-alerte);margin:0 0 8px">Échec</p>
+          <p style="margin:0;font-size:15px;line-height:1.55;color:var(--c-ink)">Délai dépassé. Votre enregistrement est intact.</p>
+          <p class="lab" style="color:var(--c-rust);margin:22px 0 0">Relancer depuis la note vocale</p>
+          <p class="lab" style="color:var(--c-rust);margin:16px 0 0">Écrire ce que j'ai dit</p>
+        </div>
+
+        <!-- NON TRANSCRITE — la case s'ouvre tout de suite, il n'a rien à chercher. -->
+        <div class="etat" data-etat="non">
+          <p style="margin:0;font-size:15px;line-height:1.55;color:var(--c-ink)">Votre dictée n'a pas été transcrite.</p>
+          <p class="sit" style="margin:8px 0 0">Elle est enregistrée : rien n'est perdu.</p>
+          <div class="plage" style="padding:20px;margin-top:20px">
+            <p class="lab" style="color:var(--c-rust);margin:0 0 10px">Écrire ce que vous avez dit</p>
+            <div style="background:var(--c-cream);border:1px solid var(--c-rustTint);border-radius:4px;padding:12px;height:118px;color:var(--c-muted);font-size:15px">Exemple : élagage du grand chêne au fond du jardin, deux jours à deux, broyage sur place…</div>
+            <p class="sit" style="margin:8px 0 14px">Le bouton s'active dès que vous écrivez.</p>
+            <div style="display:flex"><button type="button" class="bouton" style="opacity:.4">Enregistrer</button></div>
+          </div>
+        </div>
+
+        <!-- AUCUNE NOTE — un seul geste possible, il occupe la place. -->
+        <div class="etat" data-etat="rien">
+          <p style="margin:0;font-size:15px;line-height:1.55;color:var(--c-ink)">Aucune dictée sur ce chantier.</p>
+          <button type="button" class="bouton" style="display:flex;width:100%;margin-top:22px">Enregistrer une note vocale</button>
+        </div>
+
+      </div>
+      <div class="barre"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+    </div></div>
+  </div>
+
+  <div class="note"><span class="t">Ce que ça change</span>
+    La plage ne porte plus que <b>vos mots</b>. Un échec, une attente, une dictée
+    non transcrite n'ont plus la forme d'une transcription&nbsp;: <b>c'est le
+    cadre lui-même qui le dit</b>, sans une phrase de plus.
+  </div>
+
+  <!-- ══════════════ 2. CE QU'ELLE A COMPRIS ══════════════ -->
+  <p class="famille">2 — Ce qu'elle a compris</p>
+  <p class="q">La proposition et vos vraies cases</p>
+  <p class="qd">Trois façons. Le cadre fait 390 × 664&nbsp;: ce qui passe sous le pli y passe pour de vrai.</p>
+
+  <div class="choix" role="group" aria-label="Variante des informations" id="variantes">
+    <button type="button" data-var="today" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-var="mots" aria-pressed="false">Chaque mot une fois</button>
+    <button type="button" data-var="seul" aria-pressed="false">Un seul à la fois</button>
+  </div>
+
+  <div class="tel haut" data-charte="origine">
+    <div class="ecran"><div class="a">
+      <div class="tete">
+        <div class="rond"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.4"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h2 class="titre">Informations</h2>
+        <p class="surtitre">Jardin des Tilleuls</p>
+      </div>
+      <div style="padding:22px 26px 0">
+        <p class="sit" style="margin:0">Proposé à partir de votre dictée — à vérifier avant de continuer.</p>
+        <p class="lab" style="color:var(--c-rust);margin:12px 0 0">Voir la transcription</p>
+      </div>
+
+      <!-- ─── AUJOURD'HUI : les mêmes mots deux fois, les deux tons échangés ─── -->
+      <div class="variante on" data-var="today">
+        <div style="padding:26px 26px 40px;display:flex;flex-direction:column;gap:30px">
+          <div class="plage" style="padding:16px 15px;display:flex;flex-direction:column;gap:12px">
+            <p class="lab" style="margin:0">Brouillon issu de la dictée</p>
+            <p class="lab" style="margin:0">Prestations</p>
+            <div class="case">Élagage du grand chêne</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><p class="lab" style="margin:0 0 8px">Durée</p><div class="case">2 jours</div></div>
+              <div><p class="lab" style="margin:0 0 8px">Équipe</p><div class="case">2</div></div>
+            </div>
+            <p class="lab" style="margin:0">Matériel</p>
+            <div class="case">Broyeur</div>
+            <p class="lab or-vieux" style="margin:6px 0 0">À confirmer</p>
+            <p class="sit" style="margin:0">Hauteur du chêne non précisée</p>
+            <button type="button" style="background:var(--c-rustTint);color:var(--c-rust);border:0;border-radius:999px;padding:14px;font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.28em">Confirmer et ajouter au chantier</button>
+          </div>
+          <div><p class="lab" style="margin:0 0 8px">Prestations</p><p class="sit" style="margin:0">Aucune prestation pour l'instant.</p></div>
+          <div><p class="lab" style="margin:0 0 8px">Ce chantier prend</p><div class="champ">non précisé</div></div>
+          <div><p class="lab" style="margin:0 0 8px">Équipe</p><div class="champ">&nbsp;</div></div>
+          <div><p class="lab" style="margin:0 0 8px">Matériel</p><p class="sit" style="margin:0">Aucun matériel pour l'instant.</p></div>
+          <button type="button" class="bouton">Valider et calculer le prix</button>
+          <p class="or-vieux" style="text-align:center;font-size:15px;font-weight:700;margin:0">Écrire le devis</p>
+        </div>
+      </div>
+
+      <!-- ─── CHAQUE MOT UNE FOIS : aucun libellé ne se répète ─── -->
+      <div class="variante" data-var="mots">
+        <div style="padding:26px 26px 40px;display:flex;flex-direction:column;gap:30px">
+          <div class="plage" style="padding:16px 15px;display:flex;flex-direction:column;gap:12px;border-left:1px solid var(--c-or)">
+            <p class="lab" style="margin:0">Entendu</p>
+            <p class="lab" style="margin:0">Prestations entendues</p>
+            <div class="case">Élagage du grand chêne</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><p class="lab" style="margin:0 0 8px">Durée entendue</p><div class="case">2 jours</div></div>
+              <div><p class="lab" style="margin:0 0 8px">Équipe entendue</p><div class="case">2</div></div>
+            </div>
+            <p class="lab" style="margin:0">Matériel entendu</p>
+            <div class="case">Broyeur</div>
+            <p class="lab or-mot" style="margin:6px 0 0">À confirmer</p>
+            <p class="sit" style="margin:0">Hauteur du chêne non précisée</p>
+            <button type="button" style="background:var(--c-rustTint);color:var(--c-rust);border:0;border-radius:999px;padding:14px;font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.28em">Confirmer et ajouter au chantier</button>
+          </div>
+          <div><p class="lab" style="margin:0 0 8px">Prestations</p><p class="sit" style="margin:0">Aucune prestation pour l'instant.</p></div>
+          <div><p class="lab" style="margin:0 0 8px">Ce chantier prend</p><div class="champ">non précisé</div></div>
+          <div><p class="lab" style="margin:0 0 8px">Équipe</p><div class="champ">&nbsp;</div></div>
+          <div><p class="lab" style="margin:0 0 8px">Matériel</p><p class="sit" style="margin:0">Aucun matériel pour l'instant.</p></div>
+          <button type="button" class="bouton">Valider et calculer le prix</button>
+          <p class="or-mot" style="text-align:center;font-size:15px;font-weight:700;margin:0">Écrire le devis</p>
+        </div>
+      </div>
+
+      <!-- ─── UN SEUL À LA FOIS : tant que rien n'est confirmé, les cases vides ne
+              se dessinent pas. Elles arrivent remplies, à la confirmation. ─── -->
+      <div class="variante" data-var="seul">
+        <div style="padding:26px 26px 40px;display:flex;flex-direction:column;gap:26px">
+          <div class="plage" style="padding:16px 15px;display:flex;flex-direction:column;gap:12px;border-left:1px solid var(--c-or)">
+            <p class="lab" style="margin:0">Entendu</p>
+            <p class="lab" style="margin:0">Prestations</p>
+            <div class="case">Élagage du grand chêne</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><p class="lab" style="margin:0 0 8px">Durée</p><div class="case">2 jours</div></div>
+              <div><p class="lab" style="margin:0 0 8px">Équipe</p><div class="case">2</div></div>
+            </div>
+            <p class="lab" style="margin:0">Matériel</p>
+            <div class="case">Broyeur</div>
+            <p class="lab or-mot" style="margin:6px 0 0">À confirmer</p>
+            <p class="sit" style="margin:0">Hauteur du chêne non précisée</p>
+          </div>
+          <div><p class="lab" style="margin:0 0 8px">Déchets / branchages</p><div class="champ">Broyage sur place</div></div>
+          <div><p class="lab" style="margin:0 0 8px">Contraintes d'accès</p><div class="champ" style="color:var(--c-muted)">Non mentionné</div></div>
+          <div><p class="lab" style="margin:0 0 8px">Remarques</p><div class="champ" style="color:var(--c-muted)">Non mentionné</div></div>
+          <button type="button" class="bouton">Confirmer et ajouter au chantier</button>
+          <p class="lab" style="text-align:center;color:var(--c-muted);margin:0">Écrire les lignes à la main</p>
+        </div>
+      </div>
+
+      <div class="barre"><span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+    </div></div>
+  </div>
+
+  <table>
+    <tr><td>Aujourd'hui</td><td>« Prestations », « Durée », « Équipe », « Matériel » deux fois — et les deux mêmes tons, échangés.</td></tr>
+    <tr><td>Chaque mot une fois</td><td>La proposition dit « entendue ». Rien d'autre ne bouge : le plus petit changement.</td></tr>
+    <tr><td>Un seul à la fois</td><td>Vos cases n'apparaissent qu'une fois le brouillon confirmé, déjà remplies. Un seul bouton à l'écran.</td></tr>
+  </table>
+
+  <div class="note"><span class="t">Sans vous le demander</span>
+    L'or qui porte un <b>mot</b> passe au jeton lisible — mesuré <b>2,77</b>
+    aujourd'hui, il en faut 4,5. Comparez « À confirmer » et « Écrire le devis »
+    d'une variante à l'autre. L'or d'un <b>trait</b>, lui, ne bouge pas.
+  </div>
+
+  <div class="note"><span class="t">Ce que je ne touche pas</span>
+    Les cases s'écrivent après confirmation. Ce qui est recopié dans le chantier
+    disparaît de l'encart. « Écrire le devis » reste. Les trois phrases grises du
+    25 août ne reviennent pas. Les réserves restent à cinq, et le reste s'annonce.
+  </div>
+
+</div>
+
+<script>
+  // Les pastilles pilotent les cadres, rien d'autre. Une maquette qui simule
+  // plus qu'elle ne montre fait croire à un travail qui n'existe pas.
+  function groupe(id, attribut, applique){
+    var boite = document.getElementById(id);
+    boite.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if(!b) return;
+      boite.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      applique(b.getAttribute(attribut));
+    });
+  }
+  groupe('etats','data-etat', function(v){
+    document.querySelectorAll('.etat').forEach(function(el){
+      el.classList.toggle('on', el.getAttribute('data-etat')===v);
+    });
+  });
+  groupe('variantes','data-var', function(v){
+    document.querySelectorAll('.variante').forEach(function(el){
+      el.classList.toggle('on', el.getAttribute('data-var')===v);
+    });
+  });
+  groupe('chartes','data-charte', function(v){
+    document.querySelectorAll('.tel').forEach(function(t){ t.setAttribute('data-charte', v); });
+  });
+</script>
+</body>
+</html>
