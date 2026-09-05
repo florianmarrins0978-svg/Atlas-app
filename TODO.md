@@ -9,6 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## QUATRE ROUGES DE `main` REPRIS, PARCE QU'ILS TOMBAIENT SUR CET ÉCRAN (5 sept. 2026)
+
+`main` en portait vingt-trois au 5 septembre, et son propre `HANDOVER` les
+laissait « aux sessions qui tiennent ces écrans ». Quatre tenaient à la fiche
+client : ils sont réparés ici, les autres restent à leurs sessions.
+
+| Suite | Ce qui l'avait cassée | Ce qui a été fait |
+|---|---|---|
+| `test-boutons-arrondis` | l'envoi devenu un RÉGLAGE (planche « A — Épurée ») : deux mots soulignés d'or, plus une capsule | une exception BORNÉE au seul rendu `reglage` — la capsule pleine largeur du même fichier reste surveillée |
+| `test-mode-emploi` | la fiche citait « Par e-mail », un libellé retiré le 4 septembre | elle cite ce qu'il lit aujourd'hui — « Envoi », « E-mail » |
+| `test-adresse-suggestions-e2e` | elle attendait la fiche du CHANTIER, retirée le 4 (§254) | elle relit l'adresse là où elle vit : le champ de la fiche client |
+| `test-anneau-dictee-e2e` | elle EXIGEAIT le lecteur au retour — l'écran qu'il a fait corriger (§261) | elle exige le même objet aux deux visites, et vérifie que la note reste écoutable et retirable sur l'écran Note vocale |
+
+---
+
 ## `main` NE COMPILAIT PLUS : un module importé mais jamais poussé (5 sept. 2026)
 
 `scripts/capture-relire-sa-dictee.mts` est arrivé sur `main` en important
@@ -21,8 +36,10 @@ Le module a été **reconstitué** (`scripts/_adresse.ts`, une ligne, surchargea
 par `BASE_URL` comme les deux autres scripts de capture). **Si la session voisine
 pousse le sien, garder LE SIEN.**
 
-Dans le même geste, un renvoi mort de `CHANGELOG.md` vers `.impeccable/config.local.json`
-— un fichier qui vit sur sa machine, pas dans le dépôt — a été reformulé.
+Dans le même geste, un renvoi mort de `CHANGELOG.md` vers la configuration
+locale d'`impeccable` — un fichier qui vit sur sa machine, pas dans le dépôt —
+a été reformulé. (Et cette ligne-ci a dû l'être aussi : en le CITANT, elle
+refaisait exactement le renvoi mort qu'elle décrit.)
 
 ---
 

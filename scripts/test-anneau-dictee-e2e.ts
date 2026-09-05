@@ -24,8 +24,10 @@ const BASE = "http://localhost:3000";
 //   1. le geste de dictée est là **dès l'arrivée**, sur un chantier vide, sans
 //      qu'on ait touché quoi que ce soit ;
 //   2. un appui dicte, l'avion envoie — et la note existe vraiment ;
-//   3. l'objet redevient alors le lecteur, au même endroit ;
-//   4. **la bulle de l'assistant ne recouvre rien.**
+//   3. rouverte, la fiche montre LE MÊME objet — le micro, jamais le lecteur
+//      (sa remarque du 5 septembre 2026, `ARCHITECTURE.md` §261) ;
+//   4. la note reste écoutable et retirable, sur l'écran qui la porte ;
+//   5. **la bulle de l'assistant ne recouvre rien.**
 //
 // **Le DESSIN a changé le 30 août 2026, la règle non.** Le repos est le disque
 // plein qu'il a choisi (repos B) et non plus l'anneau creux ; l'arrêt n'envoie
@@ -165,16 +167,54 @@ async function main() {
     ]);
   });
 
-  await cas("l'anneau est redevenu le lecteur, au même endroit", async () => {
+  await cas("rouverte, la fiche montre LE MÊME objet — 5 septembre 2026", async () => {
+    // **Ce contrôle demandait l'inverse jusqu'au 5 septembre, et c'est LUI qui
+    // l'a fait changer** (`ARCHITECTURE.md` §261) : *« ce n'est pas la même que
+    // lorsque j'ai cliqué sur nouveau chantier. Tu verras par toi-même que la
+    // note vocale a changé. »*
+    //
+    // Il exigeait ici « Poussez l'anneau vers le haut » — le LECTEUR. C'est
+    // exactement l'écran qu'il ne reconnaissait pas : le micro vert de la
+    // création devenu un anneau creux dont le seul geste est de retirer. La
+    // règle défendue est donc retournée : le même objet aux deux visites.
     await page.goto(fiche, { waitUntil: "networkidle" });
     assert.equal(await anneau.count(), 1, "l'anneau a disparu après la dictée");
-    assert.match(
-      (await consigne.textContent())?.trim() ?? "",
-      /Poussez/,
-      "l'anneau propose encore de dicter alors qu'une note existe : la précédente serait écrasée"
+    assert.equal(
+      await page.locator('button[aria-label="Dicter une note vocale"]').count(),
+      1,
+      "la fiche rouverte ne porte plus le micro : elle a changé de visage entre deux visites"
     );
+    assert.equal(
+      await page.locator('button[aria-label="Écouter la note vocale"]').count(),
+      0,
+      "le lecteur est revenu sur la fiche client : c'est l'écran qu'il ne reconnaît pas"
+    );
+    // **Et l'écran n'invite plus à parler par-dessus** — sa règle du
+    // 1ᵉʳ septembre : une invitation devant une note déjà là proposerait de
+    // recouvrir ce qu'il vient de dicter.
+    assert.equal(
+      await consigne.count(),
+      0,
+      "l'écran invite encore à dicter alors qu'une note existe : la précédente serait écrasée"
+    );
+  });
+
+  await cas("ET LA NOTE RESTE RETIRABLE — sur l'écran qui la porte", async () => {
+    // **Ce que l'ancien contrôle défendait ne se perd pas, il change
+    // d'adresse.** Il exigeait « Retirer » sous l'anneau de la fiche client ;
+    // le geste vit sur l'écran Note vocale, avec l'écoute. Le vérifier ailleurs
+    // qu'où il vit, c'était réclamer un dessin ; le vérifier ici, c'est tenir
+    // la promesse — une note qu'on ne peut plus enlever resterait chez lui.
+    await page.goto(`${BASE}/chantiers/${chantierId}/note-vocale`, { waitUntil: "networkidle" });
     assert.ok(
-      await page.locator(".atlas-fosse").count(),
+      await page.locator('button[aria-label="Écouter la note"]').count(),
+      "on ne peut plus écouter sa dictée nulle part"
+    );
+    // Le geste est celui de partout : la ligne glisse et « Retirer » se
+    // découvre (`LigneRetirable`). On vise son nom accessible, pas sa classe :
+    // le dessin peut changer, la promesse non.
+    assert.ok(
+      await page.locator('button[aria-label="Retirer cette note vocale"]').count(),
       "le retrait a disparu : une note qu'on ne peut plus enlever"
     );
   });
