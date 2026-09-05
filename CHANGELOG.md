@@ -8,6 +8,57 @@ Format : le plus récent en tête.
 ---
 
 ## 2026-09-05
+
+### Les deux souffles dorés du micro sont retirés
+
+*« Supprime-moi les traits jaunes de chaque côté de la note vocale. »* Il les
+avait demandés le 30 août — *« le micro, mais avec des petites ondes de chaque
+côté, 1,5 cm max »* — et il les fait retirer six jours plus tard. Les deux
+décisions sont écrites, dans `AnneauNoteVocale.tsx` et ici.
+
+Le dessin part avec ses règles (`.atlas-frange`, `globals.css`) plutôt que de
+dormir dans la feuille de style : une règle que plus rien ne rend se recopie
+ensuite sans qu'on sache ce qu'elle décorait. Ce qui est GARDÉ de ce qui y était
+écrit : ce nom-là avait été choisi parce que `atlas-souffle` et `atlas-aile`
+étaient déjà pris, et les reprendre écrasait en silence deux autres écrans.
+
+**Ce qui ne bouge pas :** l'onde qui bat PENDANT qu'on parle est un autre
+dessin, et elle reste. Mesuré après coup : plus aucune frange dans la page, et
+le micro tient toujours au centre.
+
+### Le carré des photos reprend son liseré en tirets
+
+**Deux décisions contraires, à un jour d'écart, et les deux sont écrites.** Le
+4 septembre : *« seulement pour le carré photo, je le veux plein doré »* —
+l'aplat. Le 5, capture à l'appui : *« l'encadré pour les photos, je veux celui
+que je te joins en photo »*, et c'est le liseré en TIRETS de ses planches.
+
+Le dernier mot est le sien : les tirets reviennent. Ce que l'aplat disait et
+qu'ils ne disent pas — « posez ici » plutôt que « il n'y a rien encore » — est
+noté dans `Pellicule.tsx`, pour que personne ne le remette sans lui.
+
+### La fiche client changeait de visage entre deux visites
+
+**Sa remarque, capture à l'appui :** *« ce n'est pas la même que lorsque j'ai
+cliqué sur nouveau chantier. Tu verras par toi-même que la note vocale a
+changé. »*
+
+Mesuré en rejouant sa séquence : à la création, l'objet vocal est le micro vert
+de la dictée ; au retour du devis, le même écran rendait l'anneau creux du
+LECTEUR, dont le seul geste est « Poussez l'anneau vers le haut » — retirer. Et
+un troisième visage attendait : l'audio purgé quelques jours après sa
+transcription, l'anneau disparaissait entièrement de la fiche.
+
+La fiche client ne porte plus qu'un objet, celui de la **dictée**, dans tous les
+cas. Écouter et retirer vivent sur l'écran Note vocale. Devant une note déjà
+enregistrée, l'invite « Appuyez et décrivez le chantier » se tait — elle
+proposerait de recouvrir ce qu'il a dicté.
+
+**Ce que ça évite :** un écran qu'il ne reconnaît pas au moment où il revient y
+réparer un oubli, et une fiche qui maigrit toute seule au bout de quelques
+jours. `ARCHITECTURE.md` §261 · `scripts/test-fiche-client-un-seul-visage-e2e.ts`
+(vu rouge sur la version d'avant).
+
 ### Un échec de transcription avait la forme d'une transcription réussie
 
 Les cinq états de la dictée sortaient du **même paragraphe, dans la même
@@ -614,7 +665,8 @@ pas ? »*
 **Il avait raison sur les six, et la réponse était fausse.** Elle avait été
 bâtie sur `.impeccable/surfaces/`, qui ne porte que **deux** fiches
 (`cadran-des-chantiers`, `la-goutte-d-eau`). L'outillage tourne en **voie
-code-led** (`.impeccable/config.local.json` : `buildPath=code`) : il ne dépose
+code-led** (sa configuration locale porte `buildPath=code` — elle vit sur la
+machine, pas dans le dépôt) : il ne dépose
 pas de fiche par écran traité. Se fier à ce dossier revient à ne voir que les
 deux passages qui, par accident, en ont laissé une.
 

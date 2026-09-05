@@ -23324,3 +23324,68 @@ n'a pas commise. La liste s'allonge à chaque écran refait.
 clair, dont l'ancienne terre cuite qui n'est plus l'accent depuis le 31 août.
 Signalé par la session de l'écran des prix, laissé à la session de l'écran de
 date : deux sessions sur le même fichier, c'est du travail jeté.
+
+---
+
+## §261. La fiche client n'a qu'un visage, et c'est celui de la dictée
+
+*5 septembre 2026.*
+
+**Sa remarque, capture à l'appui :** *« J'ai fait nouveau chantier. Je suis
+arrivé sur la page de la fiche client, j'ai dicté mon chantier, mais j'ai oublié
+de remplir les informations de mes clients. Je suis ensuite allé sur la page du
+devis, j'ai rempli mon devis, j'ai fait retour, donc je suis arrivé sur la page
+de la fiche client que je te joins en photo. Le problème, c'est que ce n'est pas
+la même que lorsque j'ai cliqué sur nouveau chantier. Tu verras par toi-même que
+la note vocale a changé. »*
+
+**MESURÉ AVANT DE TOUCHER**, en rejouant sa séquence dans un navigateur : à la
+création, le conteneur de l'objet vocal porte `.atlas-dictee` — le micro vert,
+sous-titré « Appuyez et décrivez le chantier ». Au retour du devis, le MÊME
+écran rendait `.atlas-lecteur` — l'anneau creux, sous-titré « Poussez l'anneau
+vers le haut », dont le seul geste est de RETIRER. Sa capture et la nôtre se
+superposent.
+
+**Il y avait un troisième visage, et personne ne l'avait vu.** L'audio d'une
+note est purgé quelques jours après sa transcription (`audios_a_purger`,
+`docs/RGPD.md` §4) : sa `storage_key` passe alors à `null`, et la garde
+« un lecteur sans rien à lire est une promesse fausse » retirait **l'anneau
+entier** de la fiche client. Trois écrans, donc, pour une seule fiche.
+
+**Pourquoi c'est la DICTÉE qui reste.** Cette fiche sert à deux choses :
+renseigner le client, et dire le chantier. Et c'est l'objet qu'il a laissé deux
+minutes plus tôt : après l'avion, la fiche de création redevient le micro.
+Revenir dessus et le retrouver est la seule continuité qu'il puisse lire.
+
+**Ce que cela coûte, et il faut le dire :** depuis la fiche client, on ne peut
+plus écouter ni retirer sa note. Les deux gestes vivent sur l'écran **Note
+vocale** (`/chantiers/[id]/note-vocale`, `NoteVocaleClient`), qu'ouvrent la
+Transcription et le brouillon des Informations.
+
+**CE POINT A ÉTÉ REVÉRIFIÉ, et la première rédaction était FAUSSE.** Elle
+renvoyait à « la fiche du chantier » — retirée la veille (§254). Le second
+rendu d'`AnneauNoteVocale`, le lecteur, n'a donc plus aucun écran qui
+l'appelle : il reste dans le fichier, et rien ne le montre. À la prochaine
+session qui y touchera de décider s'il vit encore.
+
+**Ce que cela ne coûte PAS.** La décision du 31 août — *« un anneau muet sur
+une dictée existante : il croirait avoir perdu ce qu'il avait posé »*, écrite
+sur `ChantierRepris.photos` — visait l'anneau ABSENT, pas son visage : c'est ce
+troisième cas, celui de l'audio purgé, et il est corrigé ici, pas rouvert. Les
+photos, elles, continuent de venir de ce que le chantier porte.
+
+**Et l'écran n'invite plus à parler par-dessus.** Devant une note déjà
+enregistrée, « Appuyez et décrivez le chantier » disparaît — sa règle du
+1ᵉʳ septembre 2026, appliquée au même endroit pour la même raison. L'objet reste
+appuyable : une seconde dictée remplace la première, et le devis déjà corrigé à
+la main le dit avant d'être refait (`DevisDepuisDictee`, cas « conflit »).
+
+**Où ça vit :** `src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx`
+(`ChantierRepris.aUneNote`), `src/app/chantiers/[id]/coordonnees/page.tsx`.
+La fiche client ne passe plus jamais de `storageKey` à `AnneauNoteVocale` :
+celui-ci garde ses deux rendus, mais plus personne n'appelle le second.
+
+**Ce qui le tient :** `scripts/test-fiche-client-un-seul-visage-e2e.ts`, qui
+rejoue sa séquence — créer, dicter, envoyer, ouvrir le devis, faire retour — et
+qui a été vu ROUGE sur la version d'avant, avec les deux messages qui nomment
+les deux visages de trop.

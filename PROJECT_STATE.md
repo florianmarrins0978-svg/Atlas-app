@@ -19,6 +19,25 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : la fiche client n'a plus qu'un visage (5 septembre 2026)
+
+**Sa remarque :** *« ce n'est pas la même que lorsque j'ai cliqué sur nouveau
+chantier […] la note vocale a changé. »*
+
+| | |
+|---|---|
+| **fait** | la fiche client porte l'objet de la DICTÉE à la création comme au retour du devis (§261) |
+| **fait** | elle ne disparaît plus quelques jours après, quand l'audio est purgé |
+| **fait** | devant une note déjà là, l'invite « Appuyez et décrivez le chantier » se tait |
+
+**Ce que cela coûte, et il le saura :** écouter et retirer la note se font
+sur l'écran **Note vocale**, plus sur la fiche client.
+
+**Tenu par** `scripts/test-fiche-client-un-seul-visage-e2e.ts`, vu rouge sur la
+version d'avant.
+
+---
+
 ## FAIT (code) : relire sa dictée — transcription et informations (5 septembre 2026)
 
 Les deux derniers écrans du trajet `chantier → terminé` qui n'avaient jamais été

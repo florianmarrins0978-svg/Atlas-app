@@ -9,6 +9,73 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `test-garde-travail-non-enregistre` NE PEUT PAS ÊTRE VERTE EN BATTERIE (5 sept. 2026)
+
+Son dernier cas — *« arbre sale : le déclencheur REFUSE »* — exige une
+modification en cours pour mesurer quoi que ce soit, et refuse de conclure sur
+un arbre propre : *« ce cas ne peut rien mesurer »*. Or la batterie se joue
+justement sur un arbre propre, juste avant de pousser.
+
+**Le refus est juste** (`CLAUDE.md` §5 : un contrôle qui mesure zéro ne mesure
+rien) — c'est sa PLACE qui ne l'est pas : dans la batterie, il rend un rouge
+permanent que personne ne peut réparer, et un rouge permanent s'apprend à être
+ignoré. À la session qui tient cette garde de décider : salir l'arbre elle-même
+le temps du cas (un fichier temporaire), ou sortir cette suite de la batterie.
+
+---
+
+## QUATRE ROUGES DE `main` REPRIS, PARCE QU'ILS TOMBAIENT SUR CET ÉCRAN (5 sept. 2026)
+
+`main` en portait vingt-trois au 5 septembre, et son propre `HANDOVER` les
+laissait « aux sessions qui tiennent ces écrans ». Quatre tenaient à la fiche
+client : ils sont réparés ici, les autres restent à leurs sessions.
+
+| Suite | Ce qui l'avait cassée | Ce qui a été fait |
+|---|---|---|
+| `test-boutons-arrondis` | l'envoi devenu un RÉGLAGE (planche « A — Épurée ») : deux mots soulignés d'or, plus une capsule | une exception BORNÉE au seul rendu `reglage` — la capsule pleine largeur du même fichier reste surveillée |
+| `test-mode-emploi` | la fiche citait « Par e-mail », un libellé retiré le 4 septembre | elle cite ce qu'il lit aujourd'hui — « Envoi », « E-mail » |
+| `test-adresse-suggestions-e2e` | elle attendait la fiche du CHANTIER, retirée le 4 (§254) | elle relit l'adresse là où elle vit : le champ de la fiche client |
+| `test-anneau-dictee-e2e` | elle EXIGEAIT le lecteur au retour — l'écran qu'il a fait corriger (§261) | elle exige le même objet aux deux visites, et vérifie que la note reste écoutable et retirable sur l'écran Note vocale |
+
+---
+
+## `main` NE COMPILAIT PLUS : un module importé mais jamais poussé (5 sept. 2026)
+
+`scripts/capture-relire-sa-dictee.mts` est arrivé sur `main` en important
+`./_adresse` — un fichier resté dans l'arbre de la session qui menait le passage
+à `ADRESSE`. Conséquence pour toutes les sessions : `tsc` rendait `TS2307` et
+`verifier:memoire` un chemin mort. **La batterie ne pouvait donc plus être verte,
+quel que soit le code livré.**
+
+Le module a été **reconstitué** (`scripts/_adresse.ts`, une ligne, surchargeable
+par `BASE_URL` comme les deux autres scripts de capture). **Si la session voisine
+pousse le sien, garder LE SIEN.**
+
+Dans le même geste, un renvoi mort de `CHANGELOG.md` vers la configuration
+locale d'`impeccable` — un fichier qui vit sur sa machine, pas dans le dépôt —
+a été reformulé. (Et cette ligne-ci a dû l'être aussi : en le CITANT, elle
+refaisait exactement le renvoi mort qu'elle décrit.)
+
+---
+
+## À TRANCHER PAR LE PATRON : écouter sa note depuis la fiche client ? (5 sept. 2026)
+
+Depuis le §261, la fiche client ne porte que la DICTÉE — un seul visage, aux
+deux visites, comme il l'a demandé. Écouter et retirer la note se font sur
+l'écran **Note vocale** (`/chantiers/[id]/note-vocale`).
+
+**Conséquence à ne pas perdre :** le second rendu d'`AnneauNoteVocale` — le
+lecteur, l'anneau creux et son « Retirer » — n'a plus AUCUN appelant depuis que
+la fiche du chantier a été retirée (§254). Il reste dans le fichier. Le retirer
+ou le remettre quelque part se décide avec lui.
+
+**Ce qui reste à savoir :** veut-il aussi les réécouter sans quitter la fiche
+client ? C'est une décision d'apparence, donc une maquette d'abord
+(`CLAUDE.md` §3 bis) — et il n'a rien demandé de tel : cette ligne existe pour
+que la question ne se repose pas de mémoire.
+
+---
+
 ## ~~DÛ : la batterie et les captures des deux écrans de relecture~~ — fait le 5 sept. 2026
 
 Batterie jouée (304/314 base, 115/128 navigateur, les six suites du lot vertes)

@@ -113,10 +113,19 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     motsCles: ["nouveau", "chantier", "client", "nom", "telephone", "email", "adresse", "photos", "saisir"],
     geste:
       "Remplissez la fiche client (nom, téléphone ou e-mail, adresse du chantier), " +
-      "choisissez SMS ou e-mail, puis « Enregistrer ».",
+      "réglez l'envoi sur SMS ou E-mail, puis « Enregistrer ».",
     reserve: "Sans coordonnée, le devis ne pourra pas partir : mieux vaut la poser tout de suite.",
     source: "src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx",
-    preuves: ["Nom du client", "Par SMS", "Par e-mail", "Adresse du chantier"],
+    // **« Par SMS » et « Par e-mail » ne sont plus à l'écran** — planche
+    // « A — Épurée », codée le 4 septembre 2026 : l'envoi est devenu un
+    // RÉGLAGE, une ligne et deux mots, « SMS » et « E-mail ». La fiche suit le
+    // mot qu'il lit ; garder l'ancien libellé aurait fait chercher un bouton
+    // qui n'existe plus.
+    // **« Envoi » et non « ENVOI »** : la capitale vient de la feuille de
+    // style (`libelleCaps`), le mot écrit dans l'écran porte sa minuscule. Ce
+    // contrôle lit la SOURCE — viser la forme affichée l'aurait fait tomber
+    // sur le commentaire d'à côté, c'est-à-dire une preuve qui ne prouve rien.
+    preuves: ["Nom du client", "Envoi", "E-mail", "Adresse du chantier"],
   },
 
   // --- La fiche du chantier -------------------------------------------------

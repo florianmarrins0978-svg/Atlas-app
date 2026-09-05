@@ -9,7 +9,31 @@ sert.
 
 ---
 
-## Dernier lot — RELIRE SA DICTÉE : TRANSCRIPTION ET INFORMATIONS (5 septembre 2026)
+## Dernier lot — LA FICHE CLIENT N'A QU'UN VISAGE (5 septembre 2026)
+
+**Sa remarque, capture à l'appui :** *« J'ai fait nouveau chantier […] j'ai
+dicté mon chantier, mais j'ai oublié de remplir les informations de mes clients
+[…] j'ai fait retour […] ce n'est pas la même que lorsque j'ai cliqué sur
+nouveau chantier. Tu verras par toi-même que la note vocale a changé. »*
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+| | |
+|---|---|
+| la **fiche client** | `/chantiers/nouveau` et `/chantiers/[id]/coordonnees` sont le MÊME composant (`FormulaireNouveauChantier`) — elle ne passe plus jamais de `storageKey` à `AnneauNoteVocale` |
+| l'**objet vocal** | la dictée (`.atlas-dictee`) ici, TOUJOURS. Écouter et retirer vivent sur l'écran **Note vocale** (`/chantiers/[id]/note-vocale`) |
+| `aUneNote` | remplace l'ancien `note: {storageKey, dureeSecondes}` : il ne sert plus qu'à taire l'invite « Appuyez et décrivez le chantier » |
+| le **troisième visage** | l'audio purgé après transcription (`storage_key` à `null`) faisait disparaître l'anneau ENTIER de la fiche. Corrigé, et tenu par une suite |
+| ce que ça **coûte** | écouter et retirer ne se font plus depuis la fiche client — c'est l'écran Note vocale, qu'ouvrent la Transcription et le brouillon des Informations. Le lecteur d'`AnneauNoteVocale` n'a donc plus aucun appelant |
+
+**La suite qui le tient :** `scripts/test-fiche-client-un-seul-visage-e2e.ts` —
+elle rejoue sa séquence (créer, dicter, envoyer, ouvrir le devis, faire retour)
+avec le micro simulé de Chromium, et elle a été **vue rouge** sur la version
+d'avant. Paragraphe d'architecture : §261.
+
+---
+
+## Lot du même jour — RELIRE SA DICTÉE : TRANSCRIPTION ET INFORMATIONS (5 septembre 2026)
 
 **Document du lot :** `docs/lot-relire-sa-dictee.md`.
 **Planche validée par le patron :** `appli/relire-sa-dictee.html` — il a retenu
