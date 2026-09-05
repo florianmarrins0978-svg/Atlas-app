@@ -48,7 +48,10 @@ caché, et « Écrire les lignes à la main » ouvre les cases sans rien confirm
 
 Les trois notes — déchets, contraintes d'accès, remarques — **sortent de
 l'encart** : elles sont à lui, pas à la machine, et elles restent quand tout le
-reste a été recopié dans le chantier.
+reste a été recopié dans le chantier. Sur capture, il les a fait descendre
+**sous le matériel**, au bout de la description du chantier ; l'état du
+brouillon a suivi et vit désormais dans l'écran, parce que deux copies de la
+même proposition se seraient effacées l'une l'autre à chaque enregistrement.
 
 ### L'or qui porte un mot, et le voile qui ne suivait pas la charte
 

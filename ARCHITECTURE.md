@@ -23281,6 +23281,22 @@ case dans l'application et elles survivent à la confirmation, quand tout le
 reste a été recopié dans le chantier. Dans l'encart de la proposition, elles
 avaient l'air de partir avec lui.
 
+**Et elles descendent SOUS le matériel — sa décision du 5 septembre, sur
+capture.** Elles se lisaient encore avant les prestations ; elles se posent
+maintenant au bout de la description du chantier. Ce qui compte pour la suite
+n'est pas l'ordre mais ce qu'il a coûté : entre l'encart et les notes il y a
+désormais quatre rubriques de l'écran, donc **l'état du brouillon a dû quitter
+l'encart pour vivre dans l'écran** (`useBrouillon`, consommé par
+`BrouillonSection`, `NotesDuBrouillon` et `ConfirmerLeBrouillon`).
+
+**La solution facile aurait effacé son travail en silence.** Donner aux notes
+leur propre copie de la proposition, c'était deux états pour la même donnée :
+chaque enregistrement envoie la proposition ENTIÈRE, et la copie qui n'a pas vu
+la correction de l'autre l'écrase en la réécrivant. Une ligne de prestation
+corrigée aurait disparu en modifiant une remarque, sans un message. C'est la
+règle du §3 de `CLAUDE.md` appliquée à l'état et non plus au calcul : jamais
+deux fois la même chose, jamais deux endroits qui décident.
+
 **L'état de la dictée devient une fonction pure partagée**
 (`src/lib/etat-transcription.ts`). Les deux écrans décidaient chacun de leur
 côté si une dictée avait été comprise, avec leurs propres `if` enchaînés — et

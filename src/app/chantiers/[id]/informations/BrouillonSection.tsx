@@ -28,42 +28,37 @@ const MENTION_LITTERALE =
   "Votre dictée a été recopiée mot à mot : aucun modèle n'était disponible pour la comprendre. " +
   "Chaque phrase est donc reprise telle quelle — relisez-la de près avant de confirmer.";
 
-type Props = {
-  chantierId: string;
-  brouillonInitial: BrouillonInitial;
-  transcriptionDisponible: boolean;
-  /** Une note vocale existe, mais aucune transcription n'en est sortie. */
-  dicteeNonTranscrite: boolean;
-  onApplique: (prestations: { id: string; libelle: string }[], materiel: { id: string; libelle: string }[]) => void;
-  /**
-   * L'écran doit savoir si quelque chose attend d'être confirmé : tant que
-   * c'est le cas, il ne montre pas ses propres cases (choix du patron du
-   * 5 septembre 2026, planche `relire-sa-dictee.html` — « un seul à la fois »).
-   */
-  onStatut?: (statut: "brouillon" | "confirme" | null) => void;
-};
+/** Tout ce que l'écran sait du brouillon — une seule source pour ses morceaux. */
+export type Brouillon = ReturnType<typeof useBrouillon>;
 
-// Brouillon structuré issu de la dictée. Tout ce qui s'affiche ici est une
-// proposition : rien n'entre dans les données du chantier avant la
-// confirmation explicite du patron.
-export default function BrouillonSection({
+/**
+ * ─── L'ÉTAT DU BROUILLON VIT DANS L'ÉCRAN, PAS DANS L'ENCART ────────────────
+ *
+ * **Pourquoi il a fallu le sortir, le 5 septembre 2026.** Le patron a demandé
+ * que ses trois notes — déchets, contraintes d'accès, remarques — se lisent
+ * SOUS le matériel, juste avant le bouton. Elles se dessinaient dans l'encart,
+ * c'est-à-dire tout en haut : entre les deux, il y a maintenant les vraies
+ * cases du chantier, qui appartiennent à l'écran.
+ *
+ * **Ce qu'on ne pouvait pas faire à la place, et pourquoi.** Donner aux notes
+ * leur propre copie du brouillon aurait été deux états pour la même
+ * proposition : chaque enregistrement envoie la proposition ENTIÈRE, donc la
+ * copie qui n'a pas vu la correction de l'autre l'efface en la réécrivant. Une
+ * ligne de prestation corrigée disparaîtrait en modifiant une remarque, sans
+ * un mot. C'est exactement ce que `CLAUDE.md` §3 interdit — jamais deux fois la
+ * même règle, jamais deux fois le même état.
+ */
+export function useBrouillon({
   chantierId,
   brouillonInitial,
-  transcriptionDisponible,
-  dicteeNonTranscrite,
   onApplique,
-  onStatut,
-}: Props) {
+}: {
+  chantierId: string;
+  brouillonInitial: BrouillonInitial;
+  onApplique: (prestations: { id: string; libelle: string }[], materiel: { id: string; libelle: string }[]) => void;
+}) {
   const [contenu, setContenu] = useState<PropositionExtraction | null>(brouillonInitial?.contenu ?? null);
-  const [statut, setStatutInterne] = useState<"brouillon" | "confirme" | null>(brouillonInitial?.statut ?? null);
-
-  // Une seule fonction pose le statut, pour que l'écran ne puisse jamais le
-  // rater : deux `setStatut` dont un seul prévient, c'est la moitié des cases
-  // qui restent cachées après une confirmation.
-  function setStatut(nouveau: "brouillon" | "confirme" | null) {
-    setStatutInterne(nouveau);
-    onStatut?.(nouveau);
-  }
+  const [statut, setStatut] = useState<"brouillon" | "confirme" | null>(brouillonInitial?.statut ?? null);
   const [lecture, setLecture] = useState<LectureDictee>(brouillonInitial?.lecture ?? "modele");
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -162,6 +157,44 @@ export default function BrouillonSection({
     setContenu({ ...contenu, [champ]: valeur || null });
   }
 
+  return {
+    contenu,
+    statut,
+    lecture,
+    enCours,
+    erreur,
+    conflit,
+    setConflit,
+    /** Ce qui attend encore un geste de lui — l'écran s'y règle tout entier. */
+    enAttente: !!contenu && statut !== "confirme",
+    fraicheur: brouillonInitial?.fraicheur ?? null,
+    generer,
+    persister,
+    confirmer,
+    majLigne,
+    retirerLigne,
+    majChamp,
+  };
+}
+
+// Brouillon structuré issu de la dictée. Tout ce qui s'affiche ici est une
+// proposition : rien n'entre dans les données du chantier avant la
+// confirmation explicite du patron.
+export default function BrouillonSection({
+  chantierId,
+  brouillon,
+  transcriptionDisponible,
+  dicteeNonTranscrite,
+}: {
+  chantierId: string;
+  brouillon: Brouillon;
+  transcriptionDisponible: boolean;
+  /** Une note vocale existe, mais aucune transcription n'en est sortie. */
+  dicteeNonTranscrite: boolean;
+}) {
+  const { contenu, statut, lecture, enCours, erreur, conflit, setConflit, enAttente, fraicheur } = brouillon;
+  const { generer, persister, majLigne, retirerLigne, majChamp } = brouillon;
+
   if (!transcriptionDisponible && !contenu) {
     // Renvoyer vers la note vocale quand elle a DÉJÀ été enregistrée et
     // transcrite envoie le patron refaire ce qu'il vient de faire — et lui
@@ -199,8 +232,6 @@ export default function BrouillonSection({
       </Carte>
     );
   }
-
-  const enAttente = !!contenu && statut !== "confirme";
 
   return (
     <>
@@ -265,9 +296,7 @@ export default function BrouillonSection({
 
       {/* Brouillon issu d'une transcription qui n'est plus celle du chantier :
           signalé, jamais supprimé — il peut porter des corrections humaines. */}
-      {contenu && brouillonInitial?.fraicheur.obsolete && (
-        <Avertissement>{brouillonInitial.fraicheur.message}</Avertissement>
-      )}
+      {contenu && fraicheur?.obsolete && <Avertissement>{fraicheur.message}</Avertissement>}
 
       {contenu && (
         <div className="flex flex-col gap-4">
@@ -351,67 +380,6 @@ export default function BrouillonSection({
       )}
     </Carte>
 
-    {/* ── LES TROIS NOTES SORTENT DE L'ENCART ──────────────────────────────
-        Elles sont à LUI, pas à la machine : déchets, contraintes d'accès et
-        remarques n'ont aucune autre case dans toute l'application, et elles
-        restent après la confirmation quand tout le reste a été recopié dans le
-        chantier. Les laisser dans l'encart de la proposition faisait croire
-        qu'elles disparaîtraient avec lui. */}
-    {contenu && (
-      <div className="flex flex-col gap-6">
-        <ChampBrouillon
-          label="Déchets / branchages"
-          value={contenu.gestionDechets ?? ""}
-          lectureSeule={false}
-          surLaPage
-          onChange={(v) => majChamp("gestionDechets", v)}
-          onCommit={() => persister(contenu)}
-        />
-        <ChampBrouillon
-          label="Contraintes d'accès"
-          value={contenu.contraintesAcces ?? ""}
-          lectureSeule={false}
-          surLaPage
-          onChange={(v) => majChamp("contraintesAcces", v)}
-          onCommit={() => persister(contenu)}
-        />
-        <ChampBrouillon
-          label="Remarques"
-          value={contenu.remarques ?? ""}
-          lectureSeule={false}
-          surLaPage
-          onChange={(v) => majChamp("remarques", v)}
-          onCommit={() => persister(contenu)}
-        />
-      </div>
-    )}
-
-    {/* ── LE SEUL GESTE DE L'ÉCRAN TANT QUE RIEN N'EST CONFIRMÉ ────────────
-        Il était teinté, en petites capitales, sous une pile d'autres cases —
-        et le bouton PLEIN du bas de page, « Valider et calculer le prix »,
-        proposait de sauter par-dessus la confirmation. Deux actions
-        principales pour un seul moment : c'est l'une des deux qu'on appuie au
-        hasard. Confirmer devient donc l'action de l'écran, et l'autre ne
-        revient qu'une fois qu'il n'y a plus rien à confirmer. */}
-    {enAttente && (
-      <div className="flex flex-col gap-4">
-        <PrimaryButton onClick={confirmer} disabled={enCours}>
-          {enCours ? "Application…" : "Confirmer et ajouter au chantier"}
-        </PrimaryButton>
-        <button
-          type="button"
-          onClick={() => generer()}
-          disabled={enCours}
-          // Aligné à gauche comme toutes les actions en toutes lettres de ces
-          // deux écrans : seule une PLAGE occupe la largeur entière.
-          className={`self-start disabled:opacity-40 ${libelleCaps}`}
-          style={{ color: colors.muted }}
-        >
-          Régénérer depuis la dictée
-        </button>
-      </div>
-    )}
-
       {conflit && (
         <div
           className="fixed inset-0 z-[50] flex items-end"
@@ -458,6 +426,88 @@ export default function BrouillonSection({
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * ── SES TROIS NOTES, SOUS LE MATÉRIEL ──────────────────────────────────────
+ *
+ * **Sa décision du 5 septembre 2026**, sur capture : déchets, contraintes
+ * d'accès et remarques se lisaient AVANT les prestations, parce qu'elles
+ * vivaient dans l'encart de la proposition. Elles se posent maintenant là où on
+ * les cherche — au bout de la description du chantier, juste avant le bouton.
+ *
+ * **Elles sont à LUI, pas à la machine** : aucune autre case de l'application
+ * ne les porte, et elles restent après la confirmation, quand tout le reste a
+ * été recopié dans le chantier. Les laisser dans l'encart faisait croire
+ * qu'elles disparaîtraient avec lui.
+ */
+export function NotesDuBrouillon({ brouillon }: { brouillon: Brouillon }) {
+  const { contenu, majChamp, persister } = brouillon;
+  if (!contenu) return null;
+  return (
+    <div className="flex flex-col gap-6">
+      <ChampBrouillon
+        label="Déchets / branchages"
+        value={contenu.gestionDechets ?? ""}
+        lectureSeule={false}
+        surLaPage
+        onChange={(v) => majChamp("gestionDechets", v)}
+        onCommit={() => persister(contenu)}
+      />
+      <ChampBrouillon
+        label="Contraintes d'accès"
+        value={contenu.contraintesAcces ?? ""}
+        lectureSeule={false}
+        surLaPage
+        onChange={(v) => majChamp("contraintesAcces", v)}
+        onCommit={() => persister(contenu)}
+      />
+      <ChampBrouillon
+        label="Remarques"
+        value={contenu.remarques ?? ""}
+        lectureSeule={false}
+        surLaPage
+        onChange={(v) => majChamp("remarques", v)}
+        onCommit={() => persister(contenu)}
+      />
+    </div>
+  );
+}
+
+/**
+ * ── LE SEUL GESTE DE L'ÉCRAN TANT QUE RIEN N'EST CONFIRMÉ ──────────────────
+ *
+ * Il était teinté, en petites capitales, sous une pile d'autres cases — et le
+ * bouton PLEIN du bas de page, « Valider et calculer le prix », proposait de
+ * sauter par-dessus la confirmation. Deux actions principales pour un seul
+ * moment : c'est l'une des deux qu'on appuie au hasard. Confirmer est donc
+ * l'action de l'écran, et l'autre ne revient qu'une fois qu'il n'y a plus rien
+ * à confirmer.
+ *
+ * **Il vit au BAS de l'écran**, après les notes : un bouton principal qui
+ * n'est pas le dernier élément se fait doubler par ce qui le suit.
+ */
+export function ConfirmerLeBrouillon({ brouillon }: { brouillon: Brouillon }) {
+  const { enAttente, enCours, confirmer, generer } = brouillon;
+  if (!enAttente) return null;
+  return (
+    <div className="flex flex-col gap-4">
+      <PrimaryButton onClick={confirmer} disabled={enCours}>
+        {enCours ? "Application…" : "Confirmer et ajouter au chantier"}
+      </PrimaryButton>
+      <button
+        type="button"
+        onClick={() => generer()}
+        disabled={enCours}
+        // Aligné à gauche comme toutes les actions en toutes lettres de ces
+        // deux écrans : seule une PLAGE occupe la largeur entière.
+        className={`self-start disabled:opacity-40 ${libelleCaps}`}
+        style={{ color: colors.muted }}
+      >
+        Régénérer depuis la dictée
+      </button>
+    </div>
   );
 }
 

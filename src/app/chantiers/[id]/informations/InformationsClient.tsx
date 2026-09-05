@@ -17,7 +17,12 @@ import {
   mettreAJourDureeEquipeAction,
   validerInformationsAction,
 } from "./actions";
-import BrouillonSection, { type BrouillonInitial } from "./BrouillonSection";
+import BrouillonSection, {
+  ConfirmerLeBrouillon,
+  NotesDuBrouillon,
+  useBrouillon,
+  type BrouillonInitial,
+} from "./BrouillonSection";
 import BandeDuree from "../BandeDuree";
 import { dureeEnDemiJournees, libelleDuree } from "@/server/disponibilites";
 
@@ -71,7 +76,13 @@ export default function InformationsClient({
   // retenu celle-ci : **ses cases n'apparaissent qu'une fois le brouillon
   // confirmé, déjà remplies.** Un seul bouton à l'écran, et il fait la seule
   // chose qui compte à ce moment-là.
-  const [statutBrouillon, setStatutBrouillon] = useState(brouillonInitial?.statut ?? null);
+  //
+  // **L'état du brouillon vit ICI depuis le 5 septembre 2026**, et non plus
+  // dans l'encart : ses trois notes se posent sous le matériel, avec plusieurs
+  // rubriques de l'écran entre les deux. Une seconde copie de la proposition
+  // aurait effacé les corrections de la première à chaque enregistrement —
+  // chaque écriture envoie la proposition entière (`BrouillonSection.tsx`).
+  const brouillon = useBrouillon({ chantierId, brouillonInitial, onApplique: integrerBrouillonApplique });
   // La porte de service, pour qui veut écrire sans passer par la confirmation.
   const [casesDemandees, setCasesDemandees] = useState(false);
   // **On ne cache JAMAIS ce qui porte déjà quelque chose.** Un chantier commencé
@@ -79,7 +90,7 @@ export default function InformationsClient({
   // croirait perdues.
   const dejaEcrit =
     prestations.length > 0 || materiel.length > 0 || duree.trim() !== "" || equipe.trim() !== "";
-  const casesVisibles = statutBrouillon !== "brouillon" || dejaEcrit || casesDemandees;
+  const casesVisibles = !brouillon.enAttente || dejaEcrit || casesDemandees;
 
   // Un seul tiroir pour l'écran, alors qu'il porte DEUX listes : c'est ce que
   // le patron a retenu — un tiroir par écran, pas un par rubrique. Le crochet
@@ -147,26 +158,10 @@ export default function InformationsClient({
       >
         <BrouillonSection
           chantierId={chantierId}
-          brouillonInitial={brouillonInitial}
+          brouillon={brouillon}
           transcriptionDisponible={transcriptionDisponible}
           dicteeNonTranscrite={dicteeNonTranscrite}
-          onApplique={integrerBrouillonApplique}
-          onStatut={setStatutBrouillon}
         />
-
-        {/* Tant qu'un brouillon attend d'être confirmé, la seule sortie vers
-            l'écriture à la main est ce mot : il ouvre les cases sans rien
-            confirmer, et sans jamais effacer la proposition. */}
-        {!casesVisibles && (
-          <button
-            type="button"
-            onClick={() => setCasesDemandees(true)}
-            className={`self-start ${libelleCaps}`}
-            style={{ color: colors.muted }}
-          >
-            Écrire les lignes à la main
-          </button>
-        )}
 
         {casesVisibles && (
         <ListeTextes
@@ -228,7 +223,35 @@ export default function InformationsClient({
         />
         )}
 
+        {/* ── SES TROIS NOTES, ICI ET PAS PLUS HAUT ────────────────────────
+            **Sa décision du 5 septembre 2026, sur capture.** Déchets,
+            contraintes d'accès et remarques se lisaient AVANT les prestations,
+            parce qu'elles vivaient dans l'encart de la proposition. Elles se
+            posent au bout de la description du chantier, là où on les cherche :
+            ce qu'on fait, combien de temps, avec qui, avec quoi — puis ce qu'il
+            faut savoir en plus. */}
+        <NotesDuBrouillon brouillon={brouillon} />
+
         <div className="flex flex-col gap-4">
+          {/* Le geste du moment, tant que quelque chose attend d'être
+              confirmé. Il vient APRÈS les notes : un bouton principal qui n'est
+              pas le dernier élément se fait doubler par ce qui le suit. */}
+          <ConfirmerLeBrouillon brouillon={brouillon} />
+
+          {/* Tant qu'un brouillon attend, la seule sortie vers l'écriture à la
+              main est ce mot : il ouvre les cases sans rien confirmer, et sans
+              jamais effacer la proposition. */}
+          {!casesVisibles && (
+            <button
+              type="button"
+              onClick={() => setCasesDemandees(true)}
+              className={`self-start ${libelleCaps}`}
+              style={{ color: colors.muted }}
+            >
+              Écrire les lignes à la main
+            </button>
+          )}
+
           {/* **Il ne s'affiche pas tant qu'un brouillon attend — 5 septembre
               2026.** Deux boutons pleins pour un seul moment, c'est l'un des
               deux qu'on appuie au hasard : celui-ci sautait par-dessus la

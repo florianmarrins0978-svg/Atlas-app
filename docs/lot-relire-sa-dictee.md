@@ -86,6 +86,19 @@ remarques. Elles sont à vous, pas à la machine : aucune autre case ne les port
 et elles restent quand tout le reste a été recopié dans le chantier. Dans
 l'encart, elles avaient l'air de partir avec lui.
 
+**Puis vous les avez fait descendre**, sur capture : elles se lisaient encore
+avant les prestations. Elles sont maintenant **sous le matériel**, au bout de la
+description du chantier — ce qu'on fait, combien de temps, avec qui, avec quoi,
+puis ce qu'il faut savoir en plus.
+
+Ce déplacement n'était pas cosmétique : entre l'encart et les notes il y a
+désormais quatre rubriques de l'écran, donc l'état du brouillon a dû **sortir de
+l'encart** pour vivre dans l'écran. Donner aux notes leur propre copie aurait
+été deux états pour la même proposition — chaque enregistrement envoie la
+proposition ENTIÈRE, et celle qui n'a pas vu la correction de l'autre l'efface
+en la réécrivant. Une ligne corrigée aurait disparu en modifiant une remarque,
+sans un mot.
+
 ### 3. L'or qui porte un mot ne se lisait pas
 
 **Mesuré**, sur Origine :
@@ -228,6 +241,5 @@ revenir en arrière sans le mettre en danger.
 | | Qui |
 |---|---|
 | La forme des cinq états de la transcription vous convient-elle ? | **vous**, sur les captures |
-| Une fois confirmé, vos trois notes (déchets, accès, remarques) se lisent AVANT les prestations. Est-ce le bon ordre ? | **vous** — je les ai gardées près de l'encart, parce qu'elles viennent de la dictée |
 | Les treize suites navigateur rouges sur le devis, le planning et le calendrier | les **sessions** qui tiennent ces écrans |
 | `Calendrier.tsx` et ses trois couleurs écrites en dur | la **session de l'écran de date**, déjà prévenue |
