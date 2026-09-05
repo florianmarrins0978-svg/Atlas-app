@@ -19,6 +19,22 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT (code) : relire sa dictée — transcription et informations (5 septembre 2026)
+
+Les deux derniers écrans du trajet `chantier → terminé` qui n'avaient jamais été
+repris. Trois défauts de FORME, aucun de calcul : un échec de transcription
+avait l'allure d'une transcription réussie ; la proposition et les vraies cases
+portaient les mêmes mots avec les deux mêmes tons échangés ; l'or qui écrit un
+mot tenait 2,77 de contraste. Détail et verdicts :
+`docs/lot-relire-sa-dictee.md`. Planche retenue par le patron
+(`appli/relire-sa-dictee.html`) : **« un seul à la fois »**.
+
+**Le code est fait, la vérification ne l'est pas** : batterie complète, suites
+base, suites bout-en-bout et captures restent dues — une autre de ses sessions
+tenait le port 3000 et le même dossier (`TODO.md`).
+
+Le trajet `chantier → terminé` est désormais repris de bout en bout.
+
 ## FAIT : l'audit de santé, et les cinq corrections qui en sortent (5 septembre 2026)
 
 Premier passage du skill `atlas-code-health` (lecture seule) sur 1 857 fichiers,

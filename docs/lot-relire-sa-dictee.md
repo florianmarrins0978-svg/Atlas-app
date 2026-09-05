@@ -7,96 +7,127 @@
 
 ## En cinq lignes
 
-Trois défauts, tous vus dans le code et mesurés. **Un échec de transcription a
-aujourd'hui la forme d'une transcription réussie.** Sur les informations, la
-proposition et vos vraies cases portent **les mêmes mots** et **les deux mêmes
-tons, échangés**. Et l'or qui écrit un mot tient **2,77** là où il en faut 4,5 —
-le jeton lisible existe depuis ce matin, ces deux écrans ne l'ont pas.
+Trois défauts, tous de FORME, aucun de calcul. **Un échec de transcription avait
+l'allure d'une transcription réussie.** Sur les informations, la proposition et
+vos vraies cases portaient **les mêmes mots** et **les deux mêmes tons,
+échangés**. Et l'or qui écrit un mot tenait **2,77** là où il en faut 4,5.
 
-**Rien n'est encore modifié dans l'application.** Une planche attend son choix :
+Vous avez choisi **« un seul à la fois »** sur la planche, et c'est codé.
 
-> **https://florianmarrins0978-svg.github.io/Atlas-app/relire-sa-dictee.html**
+> Planche : **https://florianmarrins0978-svg.github.io/Atlas-app/relire-sa-dictee.html**
+
+**Ce qui n'est PAS vérifié :** la batterie, les suites, et les captures des deux
+écrans. Une de vos sessions tenait le port 3000 et le même dossier — les lancer
+aurait vidé la base sous elle. Le détail est plus bas, et dans `TODO.md`.
 
 ---
 
-## Les trois, un par un
+## Les trois défauts, et ce qui a été fait
 
-### 1. La proposition et la donnée acquise se ressemblent
+### 1. Cinq états de transcription dans le même paragraphe
 
-**Les fichiers qui le fondent :** `informations/BrouillonSection.tsx` l. 256-289
-et `informations/InformationsClient.tsx` l. 133-183.
+**Le fichier qui le fonde :** `transcription/page.tsx`, l. 30-68 de la version
+d'avant.
 
-Tant que le brouillon n'est pas confirmé, l'écran écrit **deux fois**
-« Prestations », « Durée », « Équipe », « Matériel » — même voix, même graisse,
-même gris. La seule différence est un fond, et c'est le pire cas possible : la
-case du brouillon est **crème dans une plage claire**, la vraie case est
-**claire sur fond crème**. Ce sont les deux mêmes tons, échangés.
+Le vrai texte de votre dictée, « Aucune note vocale », « Transcription en
+cours… », l'échec et l'excuse du texte non transcrit sortaient **du même `<p>`,
+dans la même plage** — seule la couleur changeait, encre ou gris.
 
-En plein soleil, d'une main, rien ne dit laquelle compte. C'est l'écran où il
-vérifie qu'on l'a compris : ce qui est SÛR et ce qui est SUPPOSÉ ne peuvent pas
-s'y ressembler.
+L'écran portait pourtant déjà le commentaire qui l'interdisait — *« un texte de
+remplacement n'est pas une transcription »* — mais il ne visait que le CONTENU.
+La forme, elle, disait l'inverse.
 
-### 2. Cinq états de transcription dans le même paragraphe
+**Ce qui a été fait :** la plage ne porte plus que vos mots. Tout le reste se
+pose sur le fond de page, avec le geste qui débloque.
 
-**Le fichier qui le fonde :** `transcription/page.tsx` l. 30-68.
+| État | Ce que l'écran fait maintenant |
+|---|---|
+| **écoutée** | la plage, puis le devis d'un geste, puis « corriger le texte » |
+| **en cours** | les trois points qui respirent — **et l'écran se met à jour tout seul** |
+| **échouée** | « Échec » en rouge, la cause, puis relancer ou écrire |
+| **non transcrite** | la case d'écriture s'ouvre d'elle-même, sans renvoyer à la note vocale |
+| **aucune note** | un seul geste, en bouton plein |
 
-Le vrai texte de sa dictée, « Aucune note vocale », « Transcription en cours… »,
-l'échec et l'excuse du texte non transcrit sortent **du même `<p>`, dans la même
-plage** — seule la couleur change, encre ou gris. Une transcription **échouée** a
-donc la forme d'une transcription réussie.
+**Trouvé au passage, et réparé :** l'état « en cours » était un cul-de-sac —
+aucune sortie, aucun rafraîchissement. Il fallait savoir qu'il fallait revenir.
 
-Le commentaire de la ligne 24 dit vouloir éviter exactement cela — *« un texte de
-remplacement n'est pas une transcription »* — et l'écran le reproduit d'un cran
-plus loin, sur la forme au lieu du contenu.
+**Fait autrement que sur la planche :** l'attente n'est pas le filet d'or que je
+vous avais dessiné, mais les **trois points** déjà employés partout dans
+l'application. Deux raisons : un filet pleine largeur sous un titre EST le trait
+que vous avez fait retirer partout le 25 août — il le redevient dès que
+l'animation s'arrête —, et une seconde façon de dire « ça travaille » aurait
+divergé de la première.
 
-**Trouvé au passage :** dans l'état « en cours », l'écran n'offre **aucune
-sortie** (le lien vers la note vocale est masqué, l. 93) et ne se rafraîchit pas
-tout seul. Il faut savoir qu'il faut revenir.
+### 2. La proposition et la donnée acquise se ressemblaient
 
-### 3. L'or qui porte un mot ne se lit pas
+**Les fichiers qui le fondent :** `BrouillonSection.tsx` l. 256-289 et
+`InformationsClient.tsx` l. 133-183, version d'avant.
+
+L'écran écrivait **deux fois** « Prestations », « Durée », « Équipe »,
+« Matériel ». La seule différence était un fond — et c'était le pire cas
+possible : la case du brouillon était **crème dans une plage claire**, la vraie
+case **claire sur fond crème**. Les deux mêmes tons, échangés. À l'œil, sur un
+téléphone en plein soleil, cela ne distingue rien.
+
+**Votre choix, « un seul à la fois », est codé tel quel :** vos cases
+n'apparaissent qu'une fois le brouillon confirmé, déjà remplies, et tant qu'il
+reste quelque chose à confirmer l'écran ne porte **qu'un seul bouton**.
+
+Trois garde-fous ont été ajoutés, sans lesquels la règle aurait nui :
+
+| | |
+|---|---|
+| ce qui porte **déjà** quelque chose n'est jamais caché | un chantier commencé à la main puis dicté aurait vu ses lignes disparaître, et vous les auriez crues perdues |
+| « Écrire les lignes à la main » | ouvre les cases sans rien confirmer, et sans effacer la proposition |
+| « Valider et calculer le prix » | ne s'affiche plus tant qu'un brouillon attend : il proposait de sauter par-dessus la confirmation, et ce qui avait été entendu ne rejoignait jamais le chantier |
+
+**Et les trois notes sortent de l'encart** — déchets, contraintes d'accès,
+remarques. Elles sont à vous, pas à la machine : aucune autre case ne les porte,
+et elles restent quand tout le reste a été recopié dans le chantier. Dans
+l'encart, elles avaient l'air de partir avec lui.
+
+### 3. L'or qui porte un mot ne se lisait pas
 
 **Mesuré**, sur Origine :
 
 | | |
 |---|---|
-| `or` sur le fond de page | **2,77** |
-| `or` sur une plage | **2,91** |
-| `orTexte` (le jeton du 5 septembre) | **4,59** et **4,83** |
+| `or` sur le fond de page — « Écrire le devis » | **2,77** |
+| `or` sur une plage — « À confirmer » | **2,91** |
+| `orTexte`, le jeton posé le matin même par l'écran des prix | **4,59** et **4,83** |
 
-Trois endroits sur ces deux écrans : **« Écrire le devis »**, sa sortie de
-secours, en gras or (`InformationsClient.tsx` l. 230), et les deux
-**« À confirmer »** (`BrouillonSection.tsx` l. 317 et 592).
-
-La session de l'écran des prix a posé ce matin le jeton exact pour ce rôle. Le
-filet d'or de l'avertissement, lui, ne bouge pas : **c'est un trait, pas un
-mot**, et la règle du 31 août tient.
+Les trois passent à `orTexte`. **L'or des traits ne bouge pas** : le cheveu de
+l'avertissement, celui de l'encart. Ce n'est pas la charte qui repeint l'or —
+votre consigne du 31 août tient —, c'est le rôle qui change de jeton : un mot
+qu'on lit, et non un trait qu'on regarde.
 
 ---
 
-## Aussi trouvé, réparable dans le même lot
+## Aussi trouvé, et réparé dans le même lot
 
 | | |
 |---|---|
-| `rgba(20,18,14,0.35)` écrit en clair sur le voile du tiroir « Remplacer vos corrections ? » (`BrouillonSection.tsx` l. 361) | la faute du 22 août, **quatrième retour**. Sur Nuit et Sylve, du sombre sur du sombre — au-dessus du seul geste irréversible de l'écran |
-| Quatre paragraphes disent « aucun prestataire de transcription n'est encore raccordé » | `docs/A-FAIRE.md` §1 dit l'inverse depuis le 6 août, et `CLAUDE.md` §1 ter l'interdit. **C'est de la copie factuelle : elle ne se change pas sans son accord** |
+| `rgba(20,18,14,0.35)` écrit en clair sur le voile du tiroir « Remplacer vos corrections ? » | **quatrième retour** de la faute du 22 août. Sur Nuit et Sylve, du sombre sur du sombre, au-dessus du seul geste irréversible de l'écran. Passé à `voile(colors.ink, 0.35)` |
+| « aucun prestataire de transcription n'est encore raccordé », dans **quatre** paragraphes | c'était vrai en juillet ; vos clés sont posées depuis le 6 août (`docs/A-FAIRE.md` §1). L'application vous disait qu'elle ne savait pas faire ce qu'elle fait tous les jours. **La phrase est retirée, rien ne la remplace** |
 
 ---
 
-## Ce que la planche demande
+## Ce que j'ai décidé seul, et ce que ça coûte
 
-Une seule planche pour les deux écrans, parce que c'est un seul moment. Origine
-et Nuit, 390 × 664, les cinq états de la transcription et trois façons de tenir
-la proposition à part.
+**J'ai codé la transcription sans votre accord explicite.** Vous avez répondu
+sur les informations ; la question de la plage est restée sans réponse. Ce
+n'était pas une affaire de goût — un échec qui a l'allure d'un succès est un
+défaut —, et la forme est exactement celle de la planche que vous avez ouverte.
+**Si elle ne vous plaît pas, elle se défait sans toucher au reste.**
 
-| | |
-|---|---|
-| **Aujourd'hui** | les mêmes mots deux fois, les deux tons échangés |
-| **Chaque mot une fois** | la proposition dit « entendue ». Le plus petit changement |
-| **Un seul à la fois** | vos cases n'apparaissent qu'une fois le brouillon confirmé, déjà remplies. Un seul bouton à l'écran |
+**« Écrire le devis » reste affiché en toutes circonstances**, brouillon en
+attente compris. Ma propre planche l'omettait : c'est la planche qui avait tort.
+C'est la sortie de secours que vous avez demandée le 3 août 2026, et elle ne se
+retire pas parce qu'un autre geste est proposé.
 
-Et pour la transcription : **la plage ne porte plus que ses mots**. Un échec, une
-attente, une dictée non transcrite n'ont plus la forme d'une transcription — le
-cadre lui-même le dit, sans une phrase de plus.
+**« Aucune note vocale pour ce chantier. » est gardée mot pour mot**, alors que
+la planche la raccourcissait en « Aucune dictée sur ce chantier. » : c'est le
+terme de l'application, celui du bouton juste en dessous, et une suite l'éprouve.
 
 ---
 
@@ -104,15 +135,16 @@ cadre lui-même le dit, sans une phrase de plus.
 
 | Refusé | Pourquoi |
 |---|---|
-| **Découper `informations/actions.ts`** (1 083 l.) | Ça ne change rien pour lui, et déplacer mille lignes pendant que d'autres sessions poussent sur `main`, c'est du travail jeté sur un conflit |
-| **Éclaircir `muted`** (3,49, sous le seuil) | C'est SON niveau, choisi sur planche, et `test-chartes-lisibles.ts` refuse délibérément de l'exiger (`CLAUDE.md` §5 bis) |
-| **Une relance de transcription sur cet écran** | Deux endroits pour lancer la même chose, c'est un de trop — sa règle |
+| **Découper `informations/actions.ts`** (1 083 l.) | Ça ne change rien pour vous, et déplacer mille lignes pendant que d'autres sessions poussent sur `main`, c'est du travail jeté sur un conflit |
+| **Éclaircir `muted`** (3,49, sous le seuil) | C'est VOTRE niveau, choisi sur planche, et `test-chartes-lisibles.ts` refuse délibérément de l'exiger |
+| **Une relance de transcription sur cet écran** | Deux endroits pour lancer la même chose, c'est un de trop |
+| **Toucher aux 124 suites bout-en-bout** | La session voisine les modifie toutes en ce moment. Leurs libellés ont donc été préservés au mot près, plutôt que corrigés après coup |
 | **Toucher à `prix/`, au devis, à la facture, à la note vocale** | D'autres sessions y sont |
 
-Et rien de ce qu'il a déjà tranché n'est rouvert : les cases s'écrivent après
-confirmation, ce qui est recopié disparaît de l'encart, « Écrire le devis »
-reste, les trois phrases grises du 25 août ne reviennent pas, les réserves
-restent à cinq, le mot « équipe » ne s'écrit pas à une seule équipe.
+Rien de ce que vous aviez tranché n'a été rouvert : les cases s'écrivent après
+confirmation, ce qui est recopié disparaît de l'encart, les trois phrases grises
+du 25 août ne reviennent pas, les réserves restent à cinq et annoncent le reste,
+le mot « équipe » ne s'écrit pas à une seule équipe.
 
 ---
 
@@ -120,13 +152,33 @@ restent à cinq, le mot « équipe » ne s'écrit pas à une seule équipe.
 
 | | |
 |---|---|
-| Fichiers lus dans le périmètre | **7**, 2 546 lignes |
-| Planche regardée à 390 × 664 | **33 captures**, Origine et Nuit, les cinq états et les trois variantes |
-| Débordement horizontal à 390 px | **aucun** — mesuré, `scrollWidth = clientWidth = 390` |
+| `npx tsc --noEmit` | **0 erreur** |
+| `npm run lint` | **0 erreur**, 18 avertissements — **aucun** dans les fichiers de ce lot |
+| `test-etat-transcription.ts` (neuve) | **9 contrôles, 0 échec** |
+| `test-aucune-couleur-en-clair.ts` (neuve) | **6 écrans, 1 361 lignes, 0 faute** |
+| `test-chartes-lisibles.ts` | **14 réussis, 0 échec** |
+| `test-aucune-fleche.ts` | **116 574 lignes, aucune flèche décorative** |
+| `test-brouillon-reserves.ts` | **6 réussis** |
+| Les deux suites neuves confrontées à l'état dégradé | **rouges, et sur le bon coupable** |
 
-**LA BATTERIE N'A PAS ÉTÉ JOUÉE**, et il ne faut pas la croire jouée : aucune
-ligne de `src/` n'est modifiée à ce stade. Elle est due avec le code, dans la
-fenêtre qu'il donnera — ses sessions partagent le même dossier.
+**LA BATTERIE N'A PAS ÉTÉ JOUÉE, ET IL NE FAUT PAS LA CROIRE JOUÉE.** Une de vos
+sessions travaillait dans le même dossier et tenait le port 3000. Les suites
+base vident la base (`TRUNCATE … CASCADE`) : les lancer aurait fait tomber son
+serveur et rendu des chiffres qui n'accusent personne.
+
+Restent donc dues, dans la fenêtre que vous donnerez :
+
+```bash
+export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test"
+npm run verifier:avant-livraison
+```
+
+- les **captures** des deux écrans à 390 × 664, sur Origine **et** sur Nuit,
+  dans les cinq états — quatre défauts réels de ce projet sont sortis d'une
+  image et d'aucun test vert ;
+- les suites `test-brouillon-e2e`, `test-ia-01-e2e`, `test-informations-e2e`,
+  `test-transcription-e2e` : leurs assertions ont été relues une par une contre
+  le nouvel écran, **et relire n'est pas jouer**.
 
 ---
 
@@ -134,6 +186,6 @@ fenêtre qu'il donnera — ses sessions partagent le même dossier.
 
 | | Qui |
 |---|---|
-| Laquelle des trois façons pour les informations | **lui**, sur la planche |
-| La plage qui ne porte que ses mots | **lui**, sur la planche |
-| Changer la phrase « aucun prestataire raccordé », qui contredit `A-FAIRE` §1 | **lui** — c'est une affirmation, pas une tournure |
+| La forme des cinq états de la transcription vous convient-elle ? | **vous**, sur la planche ou sur l'écran |
+| La batterie et les captures | **vous** — dites quand vos autres sessions s'arrêtent |
+| `Calendrier.tsx` et ses trois couleurs écrites en dur | la **session de l'écran de date**, déjà prévenue |

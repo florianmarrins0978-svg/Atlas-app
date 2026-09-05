@@ -9,7 +9,41 @@ sert.
 
 ---
 
-## Dernier lot — L'AUDIT DE SANTÉ, ET CE QU'IL A CORRIGÉ (5 septembre 2026)
+## Dernier lot — RELIRE SA DICTÉE : TRANSCRIPTION ET INFORMATIONS (5 septembre 2026)
+
+**Document du lot :** `docs/lot-relire-sa-dictee.md`.
+**Planche validée par le patron :** `appli/relire-sa-dictee.html` — il a retenu
+**« un seul à la fois »**.
+
+Ce qui a changé, en trois lignes : la plage de l'écran Transcription ne porte
+plus que SES mots (l'attente, l'échec et l'absence se posent sur le fond de page
+avec leur geste) ; sur les Informations, ses vraies cases n'apparaissent qu'une
+fois le brouillon confirmé, et l'écran ne porte alors qu'un seul bouton ; l'or
+qui écrit un mot passe à `orTexte`, et le voile du tiroir suit enfin la charte.
+
+**CE QUI N'A PAS ÉTÉ VÉRIFIÉ, ET QU'IL NE FAUT PAS CROIRE VÉRIFIÉ :**
+
+| | |
+|---|---|
+| la batterie complète | **non jouée** — une autre de ses sessions travaillait dans le même dossier, et il a demandé le port 3000 |
+| les suites base et bout-en-bout | **non jouées** — `nettoyerBase()` vide la base sous la session voisine |
+| les captures des deux écrans à 390 × 664, Origine et Nuit | **dues** — aucun serveur ne pouvait être démarré |
+
+Ce qui A été joué : `tsc --noEmit` (0), `lint` (0 erreur), et quatre suites
+pures — `test-etat-transcription` (9/9, neuve), `test-aucune-couleur-en-clair`
+(neuve), `test-chartes-lisibles` (14/14), `test-aucune-fleche`,
+`test-brouillon-reserves`. Les deux neuves ont été **confrontées à l'état
+dégradé** et rougissent sur le bon coupable.
+
+Les suites bout-en-bout n'ont pas été touchées **alors qu'une seule le méritait
+peut-être** : les 124 fichiers `scripts/test-*-e2e.ts` sont en cours de
+modification par la session voisine (passage à `ADRESSE`). Les libellés qu'elles
+épinglent ont donc été **préservés au mot près** — dont « Aucune note vocale pour
+ce chantier. », que la planche raccourcissait.
+
+---
+
+## Lot précédent — L'AUDIT DE SANTÉ, ET CE QU'IL A CORRIGÉ (5 septembre 2026)
 
 **Ce lot est vérifié à hauteur de ce qui pouvait l'être, et pas au-delà.**
 `tsc --noEmit` à zéro, `lint` à 0 erreur (18 avertissements, tous antérieurs).

@@ -8,6 +8,70 @@ Format : le plus récent en tête.
 ---
 
 ## 2026-09-05
+### Un échec de transcription avait la forme d'une transcription réussie
+
+Les cinq états de la dictée sortaient du **même paragraphe, dans la même
+plage** : son texte, « aucune note vocale », « transcription en cours… »,
+l'échec, et l'excuse du texte non transcrit. Seule la couleur changeait, encre
+ou gris. Sur l'écran où il vérifie qu'on l'a compris, une panne avait donc
+l'allure d'un succès.
+
+L'écran portait pourtant déjà le commentaire qui l'interdisait — *« un texte de
+remplacement n'est pas une transcription »* — mais il ne visait que le CONTENU ;
+la forme, elle, continuait de dire l'inverse.
+
+**La plage est maintenant réservée à ses mots.** Tout le reste se pose sur le
+fond de page avec le geste qui débloque : l'attente montre les trois points déjà
+employés partout (`PointsQuiSoufflent`) **et rafraîchit l'écran toute seule** —
+l'état « en cours » était un cul-de-sac sans sortie ni mise à jour ; l'échec
+nomme sa cause puis offre la relance ; la dictée non transcrite ouvre la case
+d'écriture sans renvoyer à la note vocale.
+
+La lecture de l'état vit désormais dans une fonction pure partagée par les deux
+écrans (`src/lib/etat-transcription.ts`, `test-etat-transcription.ts`) : chacun
+décidait de son côté si une dictée avait été comprise.
+
+### Sur les informations, la proposition et les vraies cases se ressemblaient
+
+L'écran écrivait **deux fois** « Prestations », « Durée », « Équipe »,
+« Matériel » — une fois la proposition, une fois la donnée acquise — et les deux
+se distinguaient par les deux MÊMES tons, échangés : une case crème dans une
+plage claire contre une case claire sur fond crème. En plein soleil, d'une main,
+rien ne disait laquelle comptait.
+
+Trois façons lui ont été montrées (`appli/relire-sa-dictee.html`) ; il a retenu
+**« un seul à la fois »** : ses cases n'apparaissent qu'une fois le brouillon
+confirmé, déjà remplies. Tant qu'il reste quelque chose à confirmer, l'écran
+porte **un seul bouton** — confirmer —, et « Valider et calculer le prix » ne
+propose plus de sauter par-dessus. Ce qui porte déjà quelque chose n'est jamais
+caché, et « Écrire les lignes à la main » ouvre les cases sans rien confirmer.
+
+Les trois notes — déchets, contraintes d'accès, remarques — **sortent de
+l'encart** : elles sont à lui, pas à la machine, et elles restent quand tout le
+reste a été recopié dans le chantier.
+
+### L'or qui porte un mot, et le voile qui ne suivait pas la charte
+
+« À confirmer » et « Écrire le devis » tenaient **2,91 et 2,77** de contraste,
+là où un mot en demande 4,5 : ils passent à `orTexte`, le jeton posé le matin
+même par l'écran des prix. L'or des TRAITS ne bouge pas — c'est le rôle qui
+change de jeton, jamais la charte.
+
+Le voile du tiroir « Remplacer vos corrections ? » portait
+`rgba(20,18,14,0.35)` **écrit en clair** : du sombre sur du sombre sur Nuit et
+sur Sylve, au-dessus du seul geste irréversible de l'écran. Quatrième retour de
+la faute du 22 août. `test-aucune-couleur-en-clair.ts` la refuse désormais sur
+les écrans repris — `test-chartes-lisibles.ts` ne pouvait pas la voir, il lit
+les chartes et non ce qu'un écran écrit de sa main.
+
+### « Aucun prestataire de transcription n'est encore raccordé » a disparu
+
+Quatre paragraphes l'affirmaient encore. C'était vrai en juillet ; les clés sont
+posées chez le patron depuis le 6 août (`docs/A-FAIRE.md` §1). L'application
+disait donc à son propriétaire qu'elle ne savait pas faire ce qu'elle fait tous
+les jours. Rien ne remplace la phrase : ce qui reste est ce qu'on sait — rien
+n'en est sorti, et rien ne s'invente.
+
 ### La visionneuse de photos était illisible sur Nuit et Sylve
 
 Photo ouverte en plein écran, la croix pour sortir et le mot « Retirer »

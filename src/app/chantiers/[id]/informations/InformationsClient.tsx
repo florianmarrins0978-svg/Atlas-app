@@ -58,6 +58,29 @@ export default function InformationsClient({
   const [equipe, setEquipe] = useState(initialEquipe);
   const [validationEnCours, setValidationEnCours] = useState(false);
 
+  // ─── UN SEUL À LA FOIS — son choix du 5 septembre 2026, sur planche ───────
+  //
+  // **Ce que ça répare.** Tant que le brouillon n'était pas confirmé, l'écran
+  // écrivait DEUX FOIS « Prestations », « Durée », « Équipe », « Matériel » :
+  // une fois la proposition, une fois les vraies cases. Et les deux se
+  // distinguaient par les deux MÊMES tons, échangés — une case crème dans une
+  // plage claire contre une case claire sur fond crème. Rien ne disait laquelle
+  // comptait, sur l'écran même où il vérifie qu'on l'a compris.
+  //
+  // Trois façons lui ont été montrées (`appli/relire-sa-dictee.html`) ; il a
+  // retenu celle-ci : **ses cases n'apparaissent qu'une fois le brouillon
+  // confirmé, déjà remplies.** Un seul bouton à l'écran, et il fait la seule
+  // chose qui compte à ce moment-là.
+  const [statutBrouillon, setStatutBrouillon] = useState(brouillonInitial?.statut ?? null);
+  // La porte de service, pour qui veut écrire sans passer par la confirmation.
+  const [casesDemandees, setCasesDemandees] = useState(false);
+  // **On ne cache JAMAIS ce qui porte déjà quelque chose.** Un chantier commencé
+  // à la main, puis dicté, garderait sinon ses lignes invisibles — et il les
+  // croirait perdues.
+  const dejaEcrit =
+    prestations.length > 0 || materiel.length > 0 || duree.trim() !== "" || equipe.trim() !== "";
+  const casesVisibles = statutBrouillon !== "brouillon" || dejaEcrit || casesDemandees;
+
   // Un seul tiroir pour l'écran, alors qu'il porte DEUX listes : c'est ce que
   // le patron a retenu — un tiroir par écran, pas un par rubrique. Le crochet
   // retrouve seul de quelle liste vient l'identifiant.
@@ -128,8 +151,24 @@ export default function InformationsClient({
           transcriptionDisponible={transcriptionDisponible}
           dicteeNonTranscrite={dicteeNonTranscrite}
           onApplique={integrerBrouillonApplique}
+          onStatut={setStatutBrouillon}
         />
 
+        {/* Tant qu'un brouillon attend d'être confirmé, la seule sortie vers
+            l'écriture à la main est ce mot : il ouvre les cases sans rien
+            confirmer, et sans jamais effacer la proposition. */}
+        {!casesVisibles && (
+          <button
+            type="button"
+            onClick={() => setCasesDemandees(true)}
+            className={`self-start ${libelleCaps}`}
+            style={{ color: colors.muted }}
+          >
+            Écrire les lignes à la main
+          </button>
+        )}
+
+        {casesVisibles && (
         <ListeTextes
           label="Prestations"
           emptyMessage="Aucune prestation pour l'instant."
@@ -141,6 +180,7 @@ export default function InformationsClient({
           onChange={(id, v) => modifier("prestations", id, v)}
           onBlurCommit={(id, v) => persisterModification("prestations", id, v)}
         />
+        )}
 
         {/* La durée se choisit à la molette, ici comme à l'envoi.
             Le patron, le 4 août : « la durée du chantier, ½ journée plus bande
@@ -153,6 +193,7 @@ export default function InformationsClient({
             donnée, seulement la façon de la saisir. Une durée écrite à la main
             par une version antérieure — ou dictée — continue donc d'être
             comprise, et se retrouve sélectionnée dans la bande. */}
+        {casesVisibles && (
         <BandeDuree
           label="Ce chantier prend"
           valeur={dureeDemiJournees}
@@ -162,14 +203,18 @@ export default function InformationsClient({
             void mettreAJourDureeEquipeAction(chantierId, { dureePrevue: texte });
           }}
         />
+        )}
 
+        {casesVisibles && (
         <Field
           label="Équipe"
           value={equipe}
           onChange={setEquipe}
           onBlurCommit={() => mettreAJourDureeEquipeAction(chantierId, { tailleEquipe: equipe })}
         />
+        )}
 
+        {casesVisibles && (
         <ListeTextes
           label="Matériel"
           emptyMessage="Aucun matériel pour l'instant."
@@ -181,13 +226,23 @@ export default function InformationsClient({
           onChange={(id, v) => modifier("materiel", id, v)}
           onBlurCommit={(id, v) => persisterModification("materiel", id, v)}
         />
+        )}
 
         <div className="flex flex-col gap-4">
+          {/* **Il ne s'affiche pas tant qu'un brouillon attend — 5 septembre
+              2026.** Deux boutons pleins pour un seul moment, c'est l'un des
+              deux qu'on appuie au hasard : celui-ci sautait par-dessus la
+              confirmation, et ce qui avait été entendu ne rejoignait jamais le
+              chantier. Le geste de ce moment-là, c'est confirmer
+              (`BrouillonSection.tsx`) ; celui-ci revient dès qu'il n'y a plus
+              rien à confirmer. */}
+          {casesVisibles && (
           <PrimaryButton onClick={valider} disabled={validationEnCours}>
             {/* **Sans flèche** — sa demande du 25 août 2026. Elle promettait un
                 écran de plus ; l'appui, lui, valide les informations. */}
             {validationEnCours ? "Validation…" : "Valider et calculer le prix"}
           </PrimaryButton>
+          )}
 
           {/* La sortie de secours, demandée par le patron le 3 août 2026 après
               qu'une dictée eut été mal découpée : « je dois pouvoir cliquer sur
@@ -223,11 +278,24 @@ export default function InformationsClient({
               25 août 2026, une fois qu'il a su que le bouton du dessus ouvre
               l'écran Prix et non le devis. Même allure que la seconde voie de
               l'écran de la facture : c'est le même geste, la sortie de secours
-              qui saute une étape. */}
+              qui saute une étape.
+
+              **L'or est passé à `orTexte` le 5 septembre 2026.** Mesuré sur
+              Origine : l'or du patron tient **2,77** sur le fond de page, et un
+              mot en demande 4,5 — sa sortie de secours se lisait mal en plein
+              soleil, précisément quand il en a besoin. Ce n'est pas la charte
+              qui repeint l'or (sa consigne du 31 août tient) : c'est le RÔLE
+              qui change de jeton, un mot au lieu d'un trait. Il reste doré, il
+              devient lisible.
+
+              **Et il reste affiché en toutes circonstances**, brouillon en
+              attente compris : c'est la sortie qu'il a demandée, elle ne se
+              retire pas parce qu'un autre geste est proposé. La planche du
+              5 septembre l'avait omis — c'est la planche qui avait tort. */}
           <a
             href={`/chantiers/${chantierId}/devis-complet`}
             className="block pb-10 text-center text-[15px] font-bold"
-            style={{ color: colors.or }}
+            style={{ color: colors.orTexte }}
           >
             Écrire le devis
           </a>

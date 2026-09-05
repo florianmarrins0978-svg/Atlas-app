@@ -23228,3 +23228,83 @@ verts, un vert mais lent (74 s), un rouge. Les quatorze verts complètent la
 chaîne ; `verifier-maquette-logo.mjs` reste dehors avec son symptôme écrit —
 ajouter un rouge à une chaîne en `&&` barre tout ce qui suit, et le dépôt l'a
 déjà payé dix heures le 23 août 2026.
+
+## §260. La plage ne porte que ses mots, et l'écran ne montre qu'une chose à la fois
+
+**5 septembre 2026 — les deux écrans où le patron relit sa dictée.**
+
+### Ce qui n'allait pas, et ce qu'aucune suite ne voyait
+
+Deux défauts de FORME, sur les deux écrans du même moment. Aucun n'était un
+défaut de calcul : tout était juste, et tout se ressemblait.
+
+| | |
+|---|---|
+| **Transcription** | cinq états sortaient du même `<p>`, dans la même plage — son texte, l'absence de note, l'attente, l'échec, l'excuse. Seule la couleur changeait |
+| **Informations** | « Prestations », « Durée », « Équipe », « Matériel » écrits DEUX FOIS, et les deux ensembles distingués par les deux mêmes tons **échangés** — case crème dans une plage claire contre case claire sur fond crème |
+
+Le second est le pire des deux, et pour une raison qui vaut au-delà de cet
+écran : **inverser deux tons ne distingue rien**. À l'œil, sur un téléphone en
+plein soleil, deux surfaces qui portent les mêmes deux couleurs se lisent comme
+une seule famille. Il faut que quelque chose d'AUTRE change — la place, le
+nombre d'éléments à l'écran, ou un signe qui ne sert qu'à ça.
+
+### Les deux règles qui en sortent
+
+**1. Une plage réservée dit ce qu'elle porte.** Sur l'écran Transcription, le
+cadre n'accueille plus que ce que le patron a dit. Attente, échec, absence se
+posent sur le fond de page avec le geste qui débloque. Le cadre devient un
+signal : s'il est là, ce sont ses mots. Aucune phrase n'a été ajoutée pour le
+dire — c'est ce qui rend la règle tenable (`CLAUDE.md` §3, « le moins de mots »).
+
+**2. Un moment, une chose.** Sur l'écran Informations, tant qu'un brouillon
+attend d'être confirmé, les vraies cases ne se dessinent pas et l'écran ne porte
+qu'un seul bouton : confirmer. C'est le choix du patron sur planche
+(`appli/relire-sa-dictee.html`, « un seul à la fois »), contre deux autres
+propositions — dont une qui se contentait de renommer les libellés.
+
+Trois garde-fous, sans lesquels cette règle nuirait :
+
+- ce qui **porte déjà** quelque chose n'est jamais caché — un chantier commencé
+  à la main puis dicté garderait sinon ses lignes invisibles, et il les croirait
+  perdues ;
+- « Écrire les lignes à la main » ouvre les cases **sans rien confirmer** ;
+- « Écrire le devis », sa sortie de secours du 3 août 2026, **reste affichée en
+  toutes circonstances**. La planche l'avait omise : c'est la planche qui avait
+  tort, pas la règle.
+
+### Ce qui change aussi, et pourquoi c'est lié
+
+**Les trois notes sortent de l'encart** (déchets, contraintes d'accès,
+remarques). Elles sont au patron, pas à la machine : elles n'ont aucune autre
+case dans l'application et elles survivent à la confirmation, quand tout le
+reste a été recopié dans le chantier. Dans l'encart de la proposition, elles
+avaient l'air de partir avec lui.
+
+**L'état de la dictée devient une fonction pure partagée**
+(`src/lib/etat-transcription.ts`). Les deux écrans décidaient chacun de leur
+côté si une dictée avait été comprise, avec leurs propres `if` enchaînés — et
+c'est ce que le patron croit de sa propre dictée qui en dépend. La règle
+critique y est écrite une fois : **le texte de remplacement porte le statut
+« réussie »**, et c'est précisément pour cela qu'il doit être écarté avant lui.
+
+### Ce que les contrôles ne pouvaient pas voir, et ce qui le voit maintenant
+
+`test-chartes-lisibles.ts` mesure les CHARTES entre elles ; il ne lit pas ce
+qu'un écran écrit de sa main. Le voile du tiroir « Remplacer vos corrections ? »
+portait donc `rgba(20,18,14,0.35)` en clair — du sombre sur du sombre sur Nuit
+et sur Sylve — sans faire rougir personne. Quatrième retour de la faute du
+22 août 2026.
+
+`scripts/test-aucune-couleur-en-clair.ts` lit le CODE des écrans repris et
+refuse toute couleur écrite. **Il surveille une liste, pas tout `src/`**, et
+c'est délibéré : six sessions travaillent en parallèle, et une suite qui
+rougirait sur le fichier d'une autre bloquerait un lot pour une faute qu'elle
+n'a pas commise. La liste s'allonge à chaque écran refait.
+
+### Ce qui reste dehors
+
+`src/components/atlas/Calendrier.tsx` porte encore trois couleurs écrites en
+clair, dont l'ancienne terre cuite qui n'est plus l'accent depuis le 31 août.
+Signalé par la session de l'écran des prix, laissé à la session de l'écran de
+date : deux sessions sur le même fichier, c'est du travail jeté.
