@@ -79,9 +79,9 @@ async function main() {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', `Feuille vide ${Date.now()}`);
     await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-    await creerPuisFiche(page);
+    const idChantier = await creerPuisFiche(page);
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-    const id = page.url().split("/").pop()!.split("?")[0];
+    const id = idChantier;
 
     await page.goto(`${BASE}/chantiers/${id}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
@@ -110,9 +110,7 @@ async function main() {
   // ─── Un chantier chiffré, pour tout le reste ────────────────────────────
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Feuille lisible ${Date.now()}`);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = await creerPuisFiche(page);
 
   await page.goto(`${BASE}/chantiers/${chantierId}/prix`, { waitUntil: "networkidle" });
   await page.click("text=+ Ajouter une ligne");

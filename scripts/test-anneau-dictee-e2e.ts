@@ -146,12 +146,23 @@ async function main() {
     // envoyer.
     await page.locator('[data-atlas="dictee-envoyer"]').click();
 
-    // La fiche se rafraîchit sur place : l'anneau devient le lecteur.
-    await page.waitForFunction(
-      () => document.querySelector(".atlas-indice")?.textContent?.includes("Poussez") ?? false,
-      undefined,
-      { timeout: 60_000 }
-    );
+    // **LA PAGE NE RESTE PLUS SOUS SES YEUX, ET C'EST SA DEMANDE DU 30 AOÛT.**
+    //
+    // Sur la fiche du chantier, l'écran se rafraîchissait sur place et l'anneau
+    // devenait le lecteur. Sur la fiche client — où l'anneau vit depuis que la
+    // fiche du chantier est retirée (`ARCHITECTURE.md` §254) —, l'avion fait
+    // tout : *« envoyer de suite la transcription et arriver sur la page du
+    // devis »*. La chaîne part seule et emmène le patron.
+    //
+    // On attend donc l'un OU l'autre : la chaîne s'annonce, ou elle a déjà
+    // emmené. Exiger le lecteur ici réclamerait un écran qu'il a fait quitter.
+    // **`any` et non `race` :** l'une des deux attentes n'aboutira JAMAIS —
+    // selon que la chaîne s'annonce ou qu'elle a déjà emmené. `race` échoue
+    // sur la première qui expire, `any` réussit sur la première qui aboutit.
+    await Promise.any([
+      page.locator('[data-atlas="preparation-automatique"]').waitFor({ timeout: 60_000 }),
+      page.waitForURL(/\/devis-complet$/, { timeout: 60_000 }),
+    ]);
   });
 
   await cas("l'anneau est redevenu le lecteur, au même endroit", async () => {

@@ -93,9 +93,9 @@ async function main() {
   await page.locator('[data-atlas="civilite-mme"]').click();
   await page.locator('input[placeholder="Bernard"]').fill(CLIENTE);
   await page.locator('input[placeholder="06 12 34 56 78"]').fill("0679984514");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = idChantier;
 
   await cas("le choix est ENREGISTRÉ, pas seulement affiché", async () => {
     const { rows } = await pool.query(`SELECT civilite FROM clients WHERE nom = $1`, [CLIENTE]);
@@ -215,9 +215,10 @@ async function main() {
     const sansChoix = `Martins ${Date.now()}`;
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.locator('input[placeholder="Bernard"]').fill(sansChoix);
-    await creerPuisFiche(page);
-    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-    const id = page.url().split("/").pop()!.split("?")[0];
+    // **CE chantier-ci, pas celui du début.** L'aide rend l'identifiant de
+    // celui qu'elle vient de créer ; reprendre le premier ferait lire le nom
+    // d'un chantier qui n'a rien à voir avec ce cas.
+    const id = await creerPuisFiche(page);
     const { rows } = await pool.query(`SELECT nom FROM chantiers WHERE id = $1`, [id]);
     if (rows[0]?.nom !== avecCivilite(sansChoix)) {
       throw new Error(`le chantier s'appelle « ${rows[0]?.nom} » au lieu de « ${avecCivilite(sansChoix)} »`);

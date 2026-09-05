@@ -45,9 +45,9 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15000 });
-  const chantierId = page.url().split("/").pop()!;
+  const chantierId = idChantier;
 
   // Un devis chiffré, envoyé, accepté : la facture ne naît que d'un chantier
   // réellement mené — c'est l'arrêt 3 de `docs/AGENT.md` §2.3.

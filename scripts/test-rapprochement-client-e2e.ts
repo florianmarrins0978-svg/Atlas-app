@@ -50,9 +50,9 @@ async function main() {
   async function creerChantier(nomSaisi: string): Promise<string> {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', nomSaisi);
-    await creerPuisFiche(page);
+    const idChantier = await creerPuisFiche(page);
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
-    return page.url().split("/").pop()!;
+    return idChantier;
   }
 
   const premier = await creerChantier(nom);

@@ -15,14 +15,18 @@ async function main() {
   await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
   await page.click("text=Rénovation salle de bain");
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  await page.goto(`${page.url()}/transcription`, { waitUntil: "networkidle" });
+  // **Ce chantier-ci vient de la LISTE, pas de l'aide de création** : son
+  // identifiant se lit dans l'adresse où la ligne vient de nous déposer, et
+  // celle-là mène bien au chantier lui-même.
+  const depuisLaListe = page.url().replace(/(\/chantiers\/[0-9a-f-]{36}).*$/, "$1");
+  await page.goto(`${depuisLaListe}/transcription`, { waitUntil: "networkidle" });
   await page.screenshot({ path: `${OUT}/01-avec-transcription.png`, fullPage: true });
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Chantier capture transcription ${Date.now()}`);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  await page.goto(`${page.url()}/transcription`, { waitUntil: "networkidle" });
+  await page.goto(`http://localhost:3000/chantiers/${idChantier}/transcription`, { waitUntil: "networkidle" });
   await page.screenshot({ path: `${OUT}/02-sans-note.png`, fullPage: true });
 
   await browser.close();

@@ -86,9 +86,9 @@ async function main() {
   const NOM = `Poser ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', NOM);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = idChantier;
   const marque = await pool.query(
     `UPDATE chantiers SET devis_envoye_at = now() WHERE id = $1`,
     [chantierId]

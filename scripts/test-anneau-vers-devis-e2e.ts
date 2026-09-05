@@ -64,7 +64,10 @@ async function main() {
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-  await page.fill('input[placeholder="Bernard"]', `Anneau devis ${Date.now()}`);
+  // Le nom est RETENU : la feuille des portes se désigne par lui, et un
+  // chevron pris au hasard sur le planning ouvrirait le chantier d'à côté.
+  const nomChantier = `Anneau devis ${Date.now()}`;
+  await page.fill('input[placeholder="Bernard"]', nomChantier);
   const chantierId = await creerPuisFiche(page);
   // **LE PARCOURS A DÉMÉNAGÉ SUR LA FICHE CLIENT — 4 septembre 2026.**
   //
@@ -174,11 +177,19 @@ async function main() {
       DICTEE,
       chantierId,
     ]);
+    // **PLUS AUCUN APPUI, ET C'EST LE PROGRÈS — sa demande du 30 août 2026.**
+    //
+    // Il fallait toucher « Mon devis » sous l'anneau, sur la fiche du chantier.
+    // Cette fiche est retirée (`ARCHITECTURE.md` §254) et l'anneau vit sur la
+    // fiche client, où la chaîne part SEULE : *« appuyer sur la flèche pour
+    // envoyer de suite la transcription et arriver sur la page du devis »*.
+    //
+    // Sa question du 11 août, elle, ne bouge pas — *« j'arrive directement à la
+    // page du devis et je ne passe pas par une page intermédiaire ? »* —, et
+    // c'est exactement ce que la suite de ce cas éprouve. Un déclencheur de
+    // moins entre lui et son devis.
+    const avant = fiche;
     await page.goto(fiche, { waitUntil: "networkidle" });
-    await monDevis.waitFor({ state: "visible", timeout: 30_000 });
-
-    const avant = page.url();
-    await monDevis.click();
 
     // **L'arrêt d'avant-chiffrage, franchi SANS quitter la fiche.**
     //
@@ -189,7 +200,10 @@ async function main() {
     // d'arrêt, c'est l'absence d'ÉCRAN de plus — et c'est ce qu'on éprouve
     // ici : les questions s'ouvrent sur la fiche, on répond, la chaîne repart.
     const questions = page.locator('[data-atlas="question-chiffrage"]').first();
-    await Promise.race([
+    // **`any` et non `race` :** l'une des deux attentes n'aboutira JAMAIS —
+    // selon que la chaîne s'annonce ou qu'elle a déjà emmené. `race` échoue
+    // sur la première qui expire, `any` réussit sur la première qui aboutit.
+    await Promise.any([
       questions.waitFor({ state: "visible", timeout: 120_000 }),
       page.waitForURL(/\/devis-complet$/, { timeout: 120_000 }),
     ]);
@@ -263,9 +277,21 @@ async function main() {
     // Et sa ligne y porte une porte vers son devis. Sans elle, un chantier
     // sans date serait un cul-de-sac : « À planifier » n'avait AUCUN lien
     // jusqu'au 4 septembre.
-    await page.locator('[data-atlas="tiroir-planning"]').waitFor({ state: "visible", timeout: 20_000 });
-    await page.locator('[data-atlas="tiroir-planning"] button').first().click();
-    const chevron = page.getByRole("button", { name: /^Ouvrir le chantier — / }).first();
+    const tiroir = page.locator('[data-atlas="tiroir-planning"]');
+    await tiroir.waitFor({ state: "visible", timeout: 20_000 });
+    // La poignée : elle ouvre le tiroir, elle ne mène nulle part.
+    await tiroir.locator("button").first().click();
+    // **CE chantier-ci, désigné par son nom.** Le planning en porte d'autres —
+    // le jeu de démonstration en pose plusieurs —, et un chevron pris au hasard
+    // ouvrirait les portes du voisin : le contrôle serait alors vert ou rouge
+    // sans rapport avec ce qu'il éprouve.
+    //
+    // On vise la MARQUE UNIQUE du nom plutôt que le nom entier : le chantier
+    // prend celui de son client, mais la règle qui le compose (`nom-chantier.ts`)
+    // est libre de l'habiller — « Chez … » l'a fait, puis ne l'a plus fait.
+    const chevron = page.getByRole("button", {
+      name: new RegExp(`Ouvrir le chantier — .*${nomChantier.split(" ").pop()}`),
+    });
     await chevron.waitFor({ state: "visible", timeout: 20_000 });
     await chevron.click();
     const versLeDevis = page.locator(`a[href="/chantiers/${chantierId}/export"]`);

@@ -161,30 +161,54 @@ porte que l'anneau, et le tiroir garde tout le reste » défendait la maquette d
 | `npx tsc --noEmit` | **vert** |
 | `npm run lint` | **vert** — 0 erreur, 17 avertissements, tous antérieurs |
 | `verifier:memoire` | **vert** |
-| Suites base (`atlas_test`) | **291 / 310** |
-| Suites navigateur | **pas encore jouées** — voir ci-dessous |
+| Suites base | **301 / 311** |
+| Suites navigateur | **104 / 128** |
 
-**Les 19 rouges des suites base ne désignent pas ce lot, et c'est mesuré.**
-Aucun ne mentionne la reprise, la fiche, le planning ou les portes. Ils portent
-trois signatures, et toutes les trois sont des signatures de **collision entre
-sessions** :
+### CE QUE LA BATTERIE A TROUVÉ, ET QUE J'AVAIS MANQUÉ
 
-| Signature | Ce que c'est |
+**Il faut le lire avant le reste : ce lot est parti sur `main` avec un défaut
+que seules les suites navigateur pouvaient voir.**
+
+`creerPuisFiche` — l'aide que quatre-vingt-deux suites emploient — déposait le
+navigateur sur `/chantiers/<id>`. Cet écran retiré, elle n'y va plus. Or
+**soixante-dix suites relisaient l'identifiant du chantier DANS L'ADRESSE** :
+elles récupéraient « devis-complet », et Postgres répondait *invalid input
+syntax for type uuid*.
+
+Aucun typecheck ne pouvait le voir : l'expression restait valide, seule sa
+valeur avait changé. C'est exactement ce que la batterie existe pour attraper,
+et le §5 de `CLAUDE.md` pour imposer.
+
+**Corrigé à la racine** : les suites lisent l'identifiant que l'aide leur rend,
+au lieu de le deviner. Sept formes de devinette, un passage mécanique, puis six
+cas particuliers à la main.
+
+**Et mon propre passage a créé deux défauts**, écrits ici plutôt que tus :
+`test-facture-impayee-e2e` et `capture-facture-impayee` se sont retrouvées
+avec une variable employée sans être définie. Trouvées à la mesure suivante.
+
+### Les huit suites qui décrivaient l'écran retiré
+
+| Suite | État |
 |---|---|
-| « n'est pas membre de l'entreprise » | deux batteries sur la même base |
-| « deadlock detected » | idem |
-| « la capacité n'a pas la forme attendue », « aucune garde n'a été retirée » | les essais négatifs **écrivent sur disque** pour se prouver capables d'échouer — une autre session écrivait au même moment |
+| `brouillon`, `calcul-prix` | **vertes** — « l'étape suivante » ne s'écrit plus, elle s'ouvre |
+| `facture-impayee` | **verte** |
+| `fiche-client` | **13 cas sur 14** ; le dernier n'est pas de ce lot (voir plus bas) |
+| `anneau-dictee`, `anneau-vers-devis` | un cas chacune — corrigé après la dernière mesure, **non rejoué** |
+| `coordonnees-depuis-accueil` | corrigé après la dernière mesure, **non rejoué** |
+| `nouveau-chantier`, `note-vocale-par-url`, `retour-fiche-client` | corrigées, **non rejouées** |
 
-Deux rouges sont d'un autre lot en cours et nommément identifiés :
-`ChoixCanal.tsx` (bouton rectangulaire) et les capsules « Par SMS » / « Par
-e-mail » du formulaire de création.
+**Ce qui n'est PAS mesuré est dit comme tel** : les six dernières corrections
+n'ont pas été rejouées, les autres sessions attendant le port 3000.
 
-**Les suites navigateur n'ont pas été jouées, et c'est dit plutôt que
-supposé.** Elles refusent de démarrer tant que le port 3000 est occupé — à
-raison : elles travailleraient sur le serveur d'un autre code. Elles se jouent
-quand les autres sessions se taisent.
+### Les rouges qui ne sont pas de ce lot, et comment on le sait
 
----
+| Rouge | Pourquoi ce n'est pas ce lot |
+|---|---|
+| « iPhone SE : la fiche déborde de 15 px » | `globals.css`, `chartes.ts` et `design-tokens.ts` ont pris **79 lignes** depuis ce lot, par le commit `92ba1157` d'une autre session. Ce lot n'a touché aucun des trois |
+| `test-ia-01`, `test-ia-04` | elles réclament les clés d'IA, que ce poste n'a pas (`CLAUDE.md` §1 ter) |
+| `test-fiche-chantier-e2e` | c'est la fiche **d'entretien Paysage**, un autre écran malgré son nom |
+| « n'est pas membre de l'entreprise », « deadlock detected », « la capacité n'a pas la forme attendue » | deux sessions sur la même base, et des essais négatifs qui écrivent sur disque pendant qu'une autre écrit aussi |
 
 ## 9. Ce qui reste ouvert
 

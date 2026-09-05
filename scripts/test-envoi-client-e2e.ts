@@ -77,12 +77,10 @@ async function creerChantierFacturable(
     // c'est le GESTE que ce montage rejoue, pas un libellé (`CLAUDE.md` §5 bis).
     await page.locator(`[data-atlas="canal-${client.canal}"]`).click();
   }
-  await creerPuisFiche(page);
-  // Sans délai explicite : celui du contexte s'applique (`e2e-browser.ts`).
-  // Dix secondes suffisaient seule et pas en batterie — l'échec accusait alors
-  // l'envoi au client, qui n'y était pour rien.
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  const url = page.url();
+  // L'adresse du chantier se BÂTIT sur l'identifiant rendu par l'aide : la
+  // relire dans le navigateur donnait « devis-complet » depuis que la fiche du
+  // chantier est retirée (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
 
   // Un devis à zéro euro n'a pas de sens : on lui donne une ligne de prix.
   await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
@@ -537,9 +535,10 @@ async function main() {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', `Prix tardifs ${Date.now()}`);
     await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-    await creerPuisFiche(page);
-    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-    const url = page.url();
+    // L'adresse du chantier se BÂTIT sur l'identifiant rendu par l'aide : la
+    // relire dans le navigateur donnait « devis-complet » depuis que la fiche
+    // du chantier est retirée (`ARCHITECTURE.md` §254).
+    const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
 
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.waitForSelector("text=Total TTC", { timeout: DELAI_ECRAN_MS });
@@ -611,9 +610,10 @@ async function main() {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', `Devis vide ${Date.now()}`);
     await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-    await creerPuisFiche(page);
-    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-    const url = page.url();
+    // L'adresse du chantier se BÂTIT sur l'identifiant rendu par l'aide : la
+    // relire dans le navigateur donnait « devis-complet » depuis que la fiche
+    // du chantier est retirée (`ARCHITECTURE.md` §254).
+    const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
 
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");

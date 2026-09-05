@@ -72,9 +72,9 @@ async function main() {
 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Mme Bracquemont ${Date.now()}`);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15_000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
   const chantierId = chantierUrl.split("/").pop()!;
 
   await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });

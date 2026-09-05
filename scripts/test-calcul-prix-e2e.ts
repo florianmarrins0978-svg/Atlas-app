@@ -43,9 +43,9 @@ async function main() {
   const nomUnique = `Chantier calcul prix e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `http://localhost:3000/chantiers/${idChantier}`;
   const chantierId = chantierUrl.split("/").pop()!;
 
   // --- Informations : une prestation sans tarif correspondant, durée et équipe ---
@@ -164,23 +164,20 @@ async function main() {
   // 2026 : le libellé dit désormais le GESTE qui reste, pas l'écran où il mène
   // (`ARCHITECTURE.md` §98). L'intention de ce contrôle — l'étape suivante doit
   // concerner le devis — n'a pas bougé d'un pouce.
-  const etapesDevisAcceptees = [
-    "Préparer le devis",
-    "Consulter le devis",
-    "Envoyer le devis au client",
-  ];
+  // **L'ÉTAPE SUIVANTE NE S'ÉCRIT PLUS, ELLE S'OUVRE — 4 septembre 2026.** Ce
+  // contrôle lisait le libellé annoncé sur la fiche du chantier ; cette fiche
+  // est retirée (`ARCHITECTURE.md` §254) et son adresse REDIRIGE désormais sur
+  // l'étape où le travail s'est arrêté.
+  //
+  // L'intention n'a pas bougé d'un pouce — l'étape suivante doit concerner le
+  // devis —, et elle se mesure mieux ainsi : une destination ne se reformule
+  // pas, là où trois libellés devaient être acceptés parce qu'ils avaient déjà
+  // changé deux fois.
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
-  // Lecture du texte réellement rendu : plus robuste que le moteur `text=` face
-  // au libellé découpé en deux nœuds (`{label} →`), et le contenu obtenu sert
-  // directement de diagnostic en cas d'écart.
-  const texteFiche = (await page.locator("body").innerText()).replace(/\s+/g, " ");
-  assert.ok(
-    etapesDevisAcceptees.some((label) => texteFiche.includes(label)),
-    `L'étape suivante doit concerner le devis. Contenu rendu : ${texteFiche.slice(0, 500)}`
-  );
-  assert.ok(
-    !texteFiche.includes("Calculer le prix"),
-    "Le prix étant validé, le chantier ne doit plus proposer de le calculer"
+  assert.match(
+    page.url(),
+    /\/devis-complet$/,
+    `Le prix étant validé, rouvrir le chantier doit mener au devis — il mène à « ${page.url()} »`
   );
   // **La ligne « Prix » a quitté le tiroir le 11 août 2026**, à la demande du
   // patron : *« informations, prix, devis peuvent disparaître »*. Elle
@@ -194,7 +191,7 @@ async function main() {
   const valide = await pool.query(`SELECT prix_valide_at FROM chantiers WHERE id = $1`, [chantierId]);
   assert.ok(
     valide.rows[0]?.prix_valide_at,
-    `Le prix n'est pas marqué validé en base. Contenu rendu : ${texteFiche.slice(0, 500)}`
+    `Le prix n'est pas marqué validé en base. Le chantier rouvre pourtant sur « ${page.url()} »`
   );
 
   await browser.close();

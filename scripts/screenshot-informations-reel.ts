@@ -14,9 +14,9 @@ async function main() {
 
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Chantier capture info ${Date.now()}`);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
-  const infoUrl = `${page.url()}/informations`;
+  const infoUrl = `http://localhost:3000/chantiers/${idChantier}/informations`;
 
   await page.goto(infoUrl, { waitUntil: "networkidle" });
   await page.screenshot({ path: `${OUT}/01-etat-vide.png`, fullPage: true });

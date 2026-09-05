@@ -62,9 +62,10 @@ async function main() {
   // moins souvent qu'un exemple, et elle dit ce que le champ EST.
   await page.getByLabel(/Nom du client/i).fill(client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30000 });
-  const fiche = page.url();
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const fiche = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
   const id = fiche.split("/").pop()!;
 
   await cas("un chantier neuf se rouvre LÀ OÙ IL EN EST", async () => {

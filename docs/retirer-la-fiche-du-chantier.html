@@ -292,35 +292,73 @@
 <td><strong>vert</strong></td>
 </tr>
 <tr>
-<td>Suites base (<code>atlas_test</code>)</td>
-<td><strong>291 / 310</strong></td>
+<td>Suites base</td>
+<td><strong>301 / 311</strong></td>
 </tr>
 <tr>
 <td>Suites navigateur</td>
-<td><strong>pas encore jouées</strong> — voir ci-dessous</td>
+<td><strong>104 / 128</strong></td>
 </tr>
 </tbody></table></div>
-<p><strong>Les 19 rouges des suites base ne désignent pas ce lot, et c'est mesuré.</strong> Aucun ne mentionne la reprise, la fiche, le planning ou les portes. Ils portent trois signatures, et toutes les trois sont des signatures de <strong>collision entre sessions</strong> :</p>
+<h3 id="ce-que-la-batterie-a-trouvé-et-que-javais-manqué">CE QUE LA BATTERIE A TROUVÉ, ET QUE J'AVAIS MANQUÉ</h3>
+<p><strong>Il faut le lire avant le reste : ce lot est parti sur <code>main</code> avec un défaut que seules les suites navigateur pouvaient voir.</strong></p>
+<p><code>creerPuisFiche</code> — l'aide que quatre-vingt-deux suites emploient — déposait le navigateur sur <code>/chantiers/&lt;id&gt;</code>. Cet écran retiré, elle n'y va plus. Or <strong>soixante-dix suites relisaient l'identifiant du chantier DANS L'ADRESSE</strong> : elles récupéraient « devis-complet », et Postgres répondait <em>invalid input syntax for type uuid</em>.</p>
+<p>Aucun typecheck ne pouvait le voir : l'expression restait valide, seule sa valeur avait changé. C'est exactement ce que la batterie existe pour attraper, et le §5 de <code>CLAUDE.md</code> pour imposer.</p>
+<p><strong>Corrigé à la racine</strong> : les suites lisent l'identifiant que l'aide leur rend, au lieu de le deviner. Sept formes de devinette, un passage mécanique, puis six cas particuliers à la main.</p>
+<p><strong>Et mon propre passage a créé deux défauts</strong>, écrits ici plutôt que tus : <code>test-facture-impayee-e2e</code> et <code>capture-facture-impayee</code> se sont retrouvées avec une variable employée sans être définie. Trouvées à la mesure suivante.</p>
+<h3 id="les-huit-suites-qui-décrivaient-lécran-retiré">Les huit suites qui décrivaient l'écran retiré</h3>
 <div class="tablewrap"><table><thead><tr>
-<th>Signature</th>
-<th>Ce que c'est</th>
+<th>Suite</th>
+<th>État</th>
 </tr></thead><tbody>
 <tr>
-<td>« n'est pas membre de l'entreprise »</td>
-<td>deux batteries sur la même base</td>
+<td><code>brouillon</code>, <code>calcul-prix</code></td>
+<td><strong>vertes</strong> — « l'étape suivante » ne s'écrit plus, elle s'ouvre</td>
 </tr>
 <tr>
-<td>« deadlock detected »</td>
-<td>idem</td>
+<td><code>facture-impayee</code></td>
+<td><strong>verte</strong></td>
 </tr>
 <tr>
-<td>« la capacité n'a pas la forme attendue », « aucune garde n'a été retirée »</td>
-<td>les essais négatifs <strong>écrivent sur disque</strong> pour se prouver capables d'échouer — une autre session écrivait au même moment</td>
+<td><code>fiche-client</code></td>
+<td><strong>13 cas sur 14</strong> ; le dernier n'est pas de ce lot (voir plus bas)</td>
+</tr>
+<tr>
+<td><code>anneau-dictee</code>, <code>anneau-vers-devis</code></td>
+<td>un cas chacune — corrigé après la dernière mesure, <strong>non rejoué</strong></td>
+</tr>
+<tr>
+<td><code>coordonnees-depuis-accueil</code></td>
+<td>corrigé après la dernière mesure, <strong>non rejoué</strong></td>
+</tr>
+<tr>
+<td><code>nouveau-chantier</code>, <code>note-vocale-par-url</code>, <code>retour-fiche-client</code></td>
+<td>corrigées, <strong>non rejouées</strong></td>
 </tr>
 </tbody></table></div>
-<p>Deux rouges sont d'un autre lot en cours et nommément identifiés : <code>ChoixCanal.tsx</code> (bouton rectangulaire) et les capsules « Par SMS » / « Par e-mail » du formulaire de création.</p>
-<p><strong>Les suites navigateur n'ont pas été jouées, et c'est dit plutôt que supposé.</strong> Elles refusent de démarrer tant que le port 3000 est occupé — à raison : elles travailleraient sur le serveur d'un autre code. Elles se jouent quand les autres sessions se taisent.</p>
-<hr>
+<p><strong>Ce qui n'est PAS mesuré est dit comme tel</strong> : les six dernières corrections n'ont pas été rejouées, les autres sessions attendant le port 3000.</p>
+<h3 id="les-rouges-qui-ne-sont-pas-de-ce-lot-et-comment-on-le-sait">Les rouges qui ne sont pas de ce lot, et comment on le sait</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Rouge</th>
+<th>Pourquoi ce n'est pas ce lot</th>
+</tr></thead><tbody>
+<tr>
+<td>« iPhone SE : la fiche déborde de 15 px »</td>
+<td><code>globals.css</code>, <code>chartes.ts</code> et <code>design-tokens.ts</code> ont pris <strong>79 lignes</strong> depuis ce lot, par le commit <code>92ba1157</code> d'une autre session. Ce lot n'a touché aucun des trois</td>
+</tr>
+<tr>
+<td><code>test-ia-01</code>, <code>test-ia-04</code></td>
+<td>elles réclament les clés d'IA, que ce poste n'a pas (<code>CLAUDE.md</code> §1 ter)</td>
+</tr>
+<tr>
+<td><code>test-fiche-chantier-e2e</code></td>
+<td>c'est la fiche <strong>d'entretien Paysage</strong>, un autre écran malgré son nom</td>
+</tr>
+<tr>
+<td>« n'est pas membre de l'entreprise », « deadlock detected », « la capacité n'a pas la forme attendue »</td>
+<td>deux sessions sur la même base, et des essais négatifs qui écrivent sur disque pendant qu'une autre écrit aussi</td>
+</tr>
+</tbody></table></div>
 <h2 id="9-ce-qui-reste-ouvert">9. Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>

@@ -63,9 +63,10 @@ async function main() {
   const nomUnique = `Chantier transcription e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const nouveauChantierUrl = page.url();
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const nouveauChantierUrl = `http://localhost:3000/chantiers/${await creerPuisFiche(page)}`;
 
   await page.goto(`${nouveauChantierUrl}/transcription`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Aucune note vocale pour ce chantier.").isVisible());
