@@ -158,12 +158,30 @@ async function main() {
     //
     // On attend donc l'un OU l'autre : la chaîne s'annonce, ou elle a déjà
     // emmené. Exiger le lecteur ici réclamerait un écran qu'il a fait quitter.
-    // **`any` et non `race` :** l'une des deux attentes n'aboutira JAMAIS —
-    // selon que la chaîne s'annonce ou qu'elle a déjà emmené. `race` échoue
-    // sur la première qui expire, `any` réussit sur la première qui aboutit.
+    // **`any` et non `race` :** l'une des attentes n'aboutira JAMAIS — selon
+    // que la chaîne s'annonce ou qu'elle a déjà emmené. `race` échoue sur la
+    // première qui expire, `any` réussit sur la première qui aboutit.
+    //
+    // **UNE TROISIÈME ISSUE, ET C'EST ELLE QUI PORTE LE TITRE DE CE CAS.**
+    // Les deux premières disent ce que fait la CHAÎNE du devis — qui dépend
+    // d'un service d'IA, absent des postes de développement (`CLAUDE.md`
+    // §1 ter). En batterie, sous cinquante suites, elles expiraient toutes les
+    // deux et le rouge accusait la dictée : « All promises were rejected »,
+    // sur une note pourtant bien enregistrée. Un contrôle qui échoue au hasard
+    // s'apprend à être ignoré.
+    //
+    // Ce que ce cas affirme, lui, c'est que **la note existe** — et l'écran le
+    // dit sans dépendre d'aucun service : l'invite « Appuyez et décrivez le
+    // chantier » ne se tait que lorsque l'envoi a RÉUSSI (`onDicte`, puis
+    // `preparationEnCours`). Un refus la laisserait en place avec son message.
     await Promise.any([
       page.locator('[data-atlas="preparation-automatique"]').waitFor({ timeout: 60_000 }),
       page.waitForURL(/\/devis-complet$/, { timeout: 60_000 }),
+      page.waitForFunction(
+        () => !document.querySelector(".atlas-indice"),
+        undefined,
+        { timeout: 60_000 }
+      ),
     ]);
   });
 

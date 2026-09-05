@@ -9,6 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `test-garde-travail-non-enregistre` NE PEUT PAS ÊTRE VERTE EN BATTERIE (5 sept. 2026)
+
+Son dernier cas — *« arbre sale : le déclencheur REFUSE »* — exige une
+modification en cours pour mesurer quoi que ce soit, et refuse de conclure sur
+un arbre propre : *« ce cas ne peut rien mesurer »*. Or la batterie se joue
+justement sur un arbre propre, juste avant de pousser.
+
+**Le refus est juste** (`CLAUDE.md` §5 : un contrôle qui mesure zéro ne mesure
+rien) — c'est sa PLACE qui ne l'est pas : dans la batterie, il rend un rouge
+permanent que personne ne peut réparer, et un rouge permanent s'apprend à être
+ignoré. À la session qui tient cette garde de décider : salir l'arbre elle-même
+le temps du cas (un fichier temporaire), ou sortir cette suite de la batterie.
+
+---
+
 ## QUATRE ROUGES DE `main` REPRIS, PARCE QU'ILS TOMBAIENT SUR CET ÉCRAN (5 sept. 2026)
 
 `main` en portait vingt-trois au 5 septembre, et son propre `HANDOVER` les
