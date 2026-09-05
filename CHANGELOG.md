@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-09-05
 
+### L'audit de santé du code entre dans le dépôt, et il lit la mémoire avant de chercher
+
+`/atlas-code-health` vivait seulement sur la machine du patron. Il est désormais
+dans le dépôt (`.claude/skills/atlas-code-health/SKILL.md`), donc lisible et
+corrigeable par toutes les sessions.
+
+**Quatre manques corrigés avant de l'y mettre**, tous propres à ce dépôt-ci :
+
+| | |
+|---|---|
+| il ne lisait pas la documentation | ce dépôt écrit **pourquoi** chaque garde existe. Sans `ARCHITECTURE.md` ni `CHANGELOG.md`, l'audit signale comme « rustines » des décisions du patron, prises et expliquées des semaines plus tôt |
+| il ignorait `appli/` | c'est le plus gros volume de fichiers sans usage — et surtout, un `href` mort dans `essais.html` devient une **erreur 404 chez lui**, puisque `pages.yml` en déduit sa liste de vérification |
+| il redécouvrait le connu | les rouges d'infrastructure et les points en attente de sa décision sont dans `TODO.md` depuis des jours : ils se citent une fois, ils ne remplissent pas un rapport |
+| il commençait par le détail | onze champs par élément avant la première conclusion. Le rapport s'ouvre maintenant sur **cinq lignes pour lui** (`CLAUDE.md` §3 ter) ; le détail suit, pour la session qui reprendra |
+
+**Et une réserve qui manquait :** plusieurs sessions écrivent dans le même
+dossier. Ce qui n'est pas commité peut être du travail en cours, pas de la dette
+— l'audit le dit désormais au lieu de l'accuser.
+
+Le skill reste **strictement en lecture seule** : il ne répare rien, et n'écrit
+même pas son propre rapport sur le disque.
+
 ### La case où il tape son prix AVALAIT sa virgule — et écrivait zéro sans un mot
 
 Sur l'écran des prix, le montant était un `<input type="number">`, relu par
