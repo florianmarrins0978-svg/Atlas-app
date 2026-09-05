@@ -204,11 +204,16 @@ case garde la virgule, `orTexte` est dérivé sur les huit chartes.
 prévienne avant toute batterie : ses sessions partagent le dossier, et le
 serveur tombe si une autre écrit pendant la mesure.
 
-| Ce qui est dû | Pourquoi ça n'a pas été fait |
+**LA BATTERIE A ÉTÉ JOUÉE LE 5 SEPTEMBRE AU SOIR** : base **304/314**,
+navigateur **115/128**, et `test-case-du-prix-e2e` **verte** — son geste rejoué
+dans un vrai navigateur, puis vérifié en base. Un seul rouge appartenait à ce
+lot (`test-prix-e2e`, qui comparait « 1120.50 » à « 1 120,50 ») : c’est **le
+contrôle** qui a été corrigé, pas l’écran, et il est vert rejoué seul.
+
+| Ce qui reste dû | Où ça en est |
 |---|---|
-| `npm run verifier:avant-livraison` | attend qu'il arrête ses autres sessions |
-| `scripts/test-case-du-prix-e2e.ts` | **écrite, jamais exécutée** — elle prend le port 3000 et la base |
-| les **captures** à 390 × 664, Origine **et** Nuit | aucun serveur ne répondait sur 3000 ; quatre défauts réels de ce projet sont sortis d'une image et d'aucun test vert |
+| **« Connexion derrière un proxy »** | **échoue DEUX fois sur ce PC** — « Le serveur n’a pas répondu en dix minutes (construction comprise) ». Elle n’atteint jamais la connexion elle-même : ce n’est donc **pas** un verdict sur le produit, c’est la construction qui dépasse le plafond de dix minutes sur cette machine, alors que l’étape « Construction » de la batterie est verte. **À trancher : relever le plafond, ou réutiliser la construction déjà faite** |
+| les **captures** à 390 × 664, Origine **et** Nuit | jamais prises : le port 3000 lui sert, et quatre défauts réels de ce projet sont sortis d’une image et d’aucun test vert |
 
 **Et une question lui revient**, sur capture : l'or d'un mot est passé plus
 sombre sur les six chartes claires (2,91 → 4,83 sur la plage d'Origine). Ça se

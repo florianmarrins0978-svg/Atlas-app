@@ -63,7 +63,7 @@
 <h2 id="en-cinq-lignes">En cinq lignes</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>La case où il tape son prix <strong>avalait sa virgule</strong> : « 1 400,50 » partait à <strong>0,00 € sans un mot</strong>. C'est corrigé, et une suite le rejoue. Les lignes qui attendent leur prix se <strong>voient</strong> maintenant — il a choisi la B sur planche — et le refus qui bloque le devis <strong>emmène le doigt sur la case</strong>, au lieu de le renvoyer aux réglages.</p>
-<p><strong>Rien n'a été touché en dehors de cet écran.</strong> La batterie complète et les captures restent dues : elles attendent qu'il arrête ses autres sessions.</p>
+<p><strong>Rien n’a été touché en dehors de cet écran.</strong> La batterie complète a été jouée le 5 septembre au soir, et ses chiffres sont plus bas. Restent dues les captures de l’écran, et la vérification « connexion derrière un proxy ».</p>
 <hr>
 <h2 id="le-brief-venait-de-chatgpt--deux-de-ses-points-étaient-faux">Le brief venait de ChatGPT — deux de ses points étaient faux</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -134,7 +134,62 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><code>src/components/atlas/Calendrier.tsx</code> l. 168-169 porte <code>rgba(181,80,47,0.14)</code> — <strong>l'ancienne terre cuite, qui n'est plus la couleur d'accent depuis le 31 août</strong> — et <code>rgba(0,0,0,0.035)</code>. Les deux sont écrits en clair, donc invisibles sur Nuit et sur Sylve. C'est la faute du 22 août revenue une troisième fois. Le calendrier appartient à l'écran de date, sur lequel une autre session travaille : elle a été prévenue.</p>
 <hr>
-<h2 id="les-chiffres">Les chiffres</h2>
+<h2 id="les-chiffres--batterie-jouée-le-5-septembre-2026-au-soir">Les chiffres — batterie jouée le 5 septembre 2026 au soir</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>types, lint, construction, mémoire du dépôt, fournisseurs d'IA</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td>suites base</td>
+<td><strong>304 / 314</strong></td>
+</tr>
+<tr>
+<td>suites navigateur</td>
+<td><strong>115 / 128</strong></td>
+</tr>
+<tr>
+<td><code>test-case-du-prix.ts</code> (pure)</td>
+<td><strong>10 / 10</strong></td>
+</tr>
+<tr>
+<td><code>test-case-du-prix-e2e.ts</code> (navigateur, en base)</td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td><code>test-chartes-lisibles.ts</code></td>
+<td><strong>14 / 14</strong>, les huit chartes</td>
+</tr>
+</tbody></table></div>
+<p><strong>LE GESTE DU PATRON EST ÉPROUVÉ POUR DE BON.</strong> La suite navigateur ouvre l'écran des prix, tape « 1 400,50 » comme son clavier français l'écrit, quitte la case, et va lire <strong>en base</strong> ce qui y est arrivé. C'était tout le défaut : un écran qui affichait le bon chiffre pendant que zéro partait.</p>
+<h3 id="un-rouge-était-de-moi-et-le-voici">UN ROUGE ÉTAIT DE MOI, et le voici</h3>
+<p><code>test-prix-e2e.ts</code> : <strong>« '1 120,50' == '1120.50' »</strong>. La case affiche désormais le montant comme il l'écrit ; la suite, elle, comparait la chaîne brute.</p>
+<p><strong>C'est le contrôle qui a été corrigé, pas l'écran.</strong> Ce que cette suite défend n'a jamais été la forme du texte, c'est que le montant SURVIVE au rechargement — et il y survit. Elle compare donc des montants, en employant <code>montantEcrivable</code>, la règle que l'écran lui-même emploie pour relire sa case. Écrire une assertion sur un texte d'écran, c'est rendre cet écran impossible à changer.</p>
+<p>Rejouée seule après correction : <strong>1/1, verte</strong>.</p>
+<h3 id="les-autres-rouges--aucun-nest-de-ce-lot">Les autres rouges — aucun n'est de ce lot</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>10 suites base</strong></td>
+<td>les mêmes qu'au 4 septembre : verrou et relance de construction, ports du banc, rôles, seed, fiche du banc — de l'outillage de banc d'essai qui ne tourne pas sur un PC Windows. Plus deux du lot voisin (<code>boutons-arrondis</code>, <code>mode-emploi</code>)</td>
+</tr>
+<tr>
+<td><strong>12 suites navigateur</strong></td>
+<td>des dates, des délais dépassés, l'anneau de dictée (qui demande une clé d'IA, coupée par la batterie), et <code>spawn npx ENOENT</code></td>
+</tr>
+</tbody></table></div>
+<p>Dans les deux suites de rôles, <strong>les vraies règles passent</strong> — le commercial est refusé à la facturation, le salarié bloqué en écriture. Ce qui rougit est l'étape où la suite se teste elle-même en modifiant un fichier sur le disque.</p>
+<h3 id="ce-qui-a-coûté-trois-tentatives-et-quil-faut-savoir">Ce qui a coûté trois tentatives, et qu'il faut savoir</h3>
+<p>La batterie a dû être jouée <strong>trois fois</strong> : une session coupée en cours de route, un lancement des suites navigateur sans Redis (ma faute — seule la batterie complète pose leurs variables), et <strong>Docker Desktop qui s'est éteint tout seul en cours de mesure</strong> — 114 suites sont alors tombées sur une base absente, et le total (200/314) n'accusait personne.</p>
+<p><strong>La leçon, pour la prochaine fois :</strong> vérifier que la base répond AVANT de conclure quoi que ce soit d'un total. Un chiffre mesuré sur une base morte ressemble à un chiffre.</p>
+<p>&lt;!-- ancien récapitulatif, conservé pour mémoire des contrôles rapides --&gt;</p>
+<h2 id="les-chiffres-davant-la-batterie">Les chiffres d'avant la batterie</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
