@@ -48,18 +48,6 @@ import { envoyerNoteVocale } from "@/lib/envoi-note-vocale";
  * lecteur. Même objet, deux états — jamais deux boutons.
  */
 /**
- * Les deux souffles de part et d'autre du micro — sa demande du 30 août 2026 :
- * *« le micro, mais avec des petites ondes de chaque côté, 1,5 cm max de chaque
- * côté »*.
- *
- * **Le dessin est fixe, et il ne bat pas.** Au repos rien ne se passe : une onde
- * qui remue avant qu'on ait parlé fait croire que le téléphone écoute déjà.
- * Les hauteurs décroissent vers l'extérieur — le souffle s'éteint en
- * s'éloignant, comme le son.
- */
-const SOUFFLE = [22, 10, 17, 7, 20, 12, 15, 6, 13, 9, 11, 5, 8, 4];
-
-/**
  * Combien de barreaux l'onde de la dictée porte à la fois.
  *
  * Un nombre fixe plutôt qu'une mesure de la largeur : le conteneur masque ce
@@ -505,28 +493,22 @@ export default function AnneauNoteVocale({
 
     return (
       <div className="atlas-dictee" data-etat={etat} data-atlas="anneau-note-vocale">
-        {/* ─── LE REPOS : le micro plein et ses deux souffles ───────────────
-            Son choix du 30 août 2026, et il n'y a rien touché le 31 : sa
-            correction ne portait que sur le moment où l'on parle. */}
+        {/* ─── LE REPOS : le micro, SEUL ─────────────────────────────────────
+            **Sa demande du 5 septembre 2026 :** *« supprime-moi les traits
+            jaunes de chaque côté de la note vocale. »*
+
+            Ce sont les deux « souffles » qu'il avait demandés le 30 août
+            (*« le micro, mais avec des petites ondes de chaque côté »*) : une
+            décision prise, puis défaite — les deux sont écrites, ici et dans
+            `CHANGELOG.md`, pour que personne ne les remette de mémoire.
+
+            **Ce qui part avec eux :** ils élargissaient l'objet et le posaient
+            au centre de l'écran. Le micro tient tout seul et reste centré (son
+            conteneur l'était déjà) ; les 1,5 cm de chaque côté sont rendus à
+            la page. Rien d'autre ne bouge — l'onde qui BAT pendant qu'on parle
+            est un autre dessin, et elle reste. */}
         {!magnetophone.enregistre && (
           <span className="atlas-objet">
-            {(["g", "d"] as const).map((cote) => (
-              <span key={cote} className={`atlas-frange atlas-frange-${cote}`} aria-hidden="true">
-                {SOUFFLE.map((hauteur, i) => (
-                  <i
-                    key={i}
-                    style={{
-                      height: hauteur,
-                      backgroundColor: colors.or,
-                      // Le souffle s'éteint en s'éloignant, comme le son : à
-                      // gauche l'ordre s'inverse pour que le creux soit dehors.
-                      order: cote === "g" ? SOUFFLE.length - i : i,
-                    }}
-                  />
-                ))}
-              </span>
-            ))}
-
             <button
               type="button"
               onClick={commencerLaDictee}

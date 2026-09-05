@@ -9,6 +9,23 @@ Format : le plus récent en tête.
 
 ## 2026-09-05
 
+### Les deux souffles dorés du micro sont retirés
+
+*« Supprime-moi les traits jaunes de chaque côté de la note vocale. »* Il les
+avait demandés le 30 août — *« le micro, mais avec des petites ondes de chaque
+côté, 1,5 cm max »* — et il les fait retirer six jours plus tard. Les deux
+décisions sont écrites, dans `AnneauNoteVocale.tsx` et ici.
+
+Le dessin part avec ses règles (`.atlas-frange`, `globals.css`) plutôt que de
+dormir dans la feuille de style : une règle que plus rien ne rend se recopie
+ensuite sans qu'on sache ce qu'elle décorait. Ce qui est GARDÉ de ce qui y était
+écrit : ce nom-là avait été choisi parce que `atlas-souffle` et `atlas-aile`
+étaient déjà pris, et les reprendre écrasait en silence deux autres écrans.
+
+**Ce qui ne bouge pas :** l'onde qui bat PENDANT qu'on parle est un autre
+dessin, et elle reste. Mesuré après coup : plus aucune frange dans la page, et
+le micro tient toujours au centre.
+
 ### Le carré des photos reprend son liseré en tirets
 
 **Deux décisions contraires, à un jour d'écart, et les deux sont écrites.** Le
