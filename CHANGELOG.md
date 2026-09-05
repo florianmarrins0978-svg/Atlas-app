@@ -9,6 +9,17 @@ Format : le plus récent en tête.
 
 ## 2026-09-05
 
+### Le carré des photos reprend son liseré en tirets
+
+**Deux décisions contraires, à un jour d'écart, et les deux sont écrites.** Le
+4 septembre : *« seulement pour le carré photo, je le veux plein doré »* —
+l'aplat. Le 5, capture à l'appui : *« l'encadré pour les photos, je veux celui
+que je te joins en photo »*, et c'est le liseré en TIRETS de ses planches.
+
+Le dernier mot est le sien : les tirets reviennent. Ce que l'aplat disait et
+qu'ils ne disent pas — « posez ici » plutôt que « il n'y a rien encore » — est
+noté dans `Pellicule.tsx`, pour que personne ne le remette sans lui.
+
 ### La fiche client changeait de visage entre deux visites
 
 **Sa remarque, capture à l'appui :** *« ce n'est pas la même que lorsque j'ai

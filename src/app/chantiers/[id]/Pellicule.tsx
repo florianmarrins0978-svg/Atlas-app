@@ -156,24 +156,25 @@ export default function Pellicule({
           // montre et ce qu'il annonce doivent raconter le même instant.
           aria-label={enCours ? "Envoi des photos en cours" : "Ajouter des photos"}
           className="atlas-ajouter"
-          // ─── PLEIN DORÉ — sa demande du 4 septembre 2026 ─────────────────
+          // ─── LE LISERÉ EN TIRETS — il y revient le 5 septembre 2026 ──────
           //
-          // *« Seulement pour le carré photo, je le veux plein doré. »* Il
-          // tranche entre deux dessins : le liseré en TIRETS d'avant, et le
-          // carré plein et sobre que proposait la planche « A — Épurée ». Ni
-          // l'un ni l'autre : l'aplat, mais en or.
+          // **Il a tranché deux fois, en sens contraire, et les deux sont
+          // écrites ici pour que personne ne rouvre la question de mémoire.**
           //
-          // **Ce qui disparaît avec les tirets**, et qu'il faut avoir en tête :
-          // ils disaient « il n'y a rien encore ». L'aplat, lui, dit « posez
-          // ici » — c'est une invitation plus qu'un vide, et c'est ce qu'il
-          // veut d'un bouton qu'il touche sur un chantier.
+          // | | |
+          // |---|---|
+          // | 4 septembre | *« Seulement pour le carré photo, je le veux plein doré. »* — l'aplat |
+          // | 5 septembre | capture à l'appui, il montre le liseré en TIRETS : *« l'encadré pour les photos, je veux celui que je te joins en photo »* |
           //
-          // **`surPlein` et jamais une couleur écrite en clair** (`CLAUDE.md`
-          // §3) : c'est le jeton de ce qu'on pose SUR un aplat. Il tient ici
-          // sans réserve, parce que l'or est le seul jeton FIXE des huit
-          // chartes (`chartes.ts`) — le fond de ce carré ne bouge donc jamais,
-          // et ce qu'on écrit dessus non plus.
-          style={{ border: `1px solid ${colors.or}`, background: colors.or, color: surPlein }}
+          // C'est donc le dessin d'origine qui revient — celui de ses planches
+          // (`.ajout-photo` dans `appli/note-vocale-choix.html`), et le dernier
+          // mot est le sien.
+          //
+          // **Ce que l'aplat disait et que les tirets ne disent pas** : « posez
+          // ici », une invitation plutôt qu'un vide. Les tirets, eux, disent
+          // « il n'y a rien encore ». Il a vu les deux à l'écran et il a
+          // choisi ; on ne remet pas l'aplat sans lui.
+          style={{ border: `1px dashed ${colors.or}`, color: colors.or }}
         >
           {/* **Le même souffle que la dictée**, sur sa demande du 13 août 2026 :
               *« oui souffle aussi pour la photo »*. C'était ici le même
