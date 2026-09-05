@@ -9,6 +9,32 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LES SUITES NAVIGATEUR EN PARALLÈLE — à faire LA NUIT, sa décision du 5 septembre 2026
+
+**Il l'a demandé, puis il a lui-même choisi le moment.** Après avoir attendu deux
+batteries de cinquante minutes dans la même journée : *« ça on le fera cette
+nuit »*. **Ne pas ouvrir ce chantier en journée** — il ne répare rien dans le
+produit, il ne fait que raccourcir SON attente, et le mener pendant qu'il
+travaille lui coûte plus qu'il ne lui rend.
+
+**Sa condition, textuelle :** *« faut pas que j'aie de manip à faire en plus. Je
+veux continuer de travailler comme on fait actuellement, je t'envoie un prompt
+et tu te débrouilles. »* Donc `npm run verifier:avant-livraison`, sans variable
+ni option nouvelle.
+
+**Ce que ça demande**, mesuré le 5 septembre :
+
+| | |
+|---|---|
+| **L'obstacle** | **123 suites** écrivent `http://localhost:3000` en dur |
+| **Le remède** | l'adresse vient de l'environnement, avec la valeur actuelle en repli — une suite jouée seule ne change pas d'un poil |
+| **Le lanceur** | `scripts/run-e2e-tests.ts` les joue en série par `spawnSync` (~ligne 588) : y mettre une file distribuée sur ~4 travailleurs |
+| **La vraie contrainte** | `nettoyerBase()` fait un `TRUNCATE … CASCADE` : chaque travailleur a besoin de **sa propre base** et de son propre port, sans quoi deux suites s'effacent mutuellement leurs données (payé le 26 août 2026, `CLAUDE.md` §5) |
+| **Le coût** | 1 h 30 à 2 h, plus une batterie complète pour prouver que rien n'a bougé |
+| **Le gain espéré** | 50 min → une quinzaine. À **mesurer**, pas à promettre |
+
+---
+
 ## L'ÉCRAN DES PRIX — codé le 5 septembre, la batterie et les captures restent dues
 
 **Il a répondu « la B » le 5 septembre 2026**, et les quatre points sont écrits :
