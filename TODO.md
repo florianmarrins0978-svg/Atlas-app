@@ -20,6 +20,79 @@ rouges sur le devis, le planning, la page du client et le calendrier, et deux
 qui accusent du travail non enregistré (`FormulaireNouveauChantier.tsx`,
 `ChoixCanal.tsx`). Aux sessions qui tiennent ces écrans.
 
+## LA COULEUR DU BANDEAU DU TÉLÉPHONE NE SUIT PAS LA CHARTE (5 sept. 2026)
+
+**Relevé par l'audit de santé et NON signalé dans son rapport — la faute est
+mienne, elle est écrite ici pour ne pas se reperdre.**
+
+`src/app/layout.tsx` ligne 85 :
+
+```ts
+export const viewport: Viewport = { themeColor: "#f5f3ee", … };
+```
+
+C'est le crème d'**Origine**, écrit en dur, et c'est la seule couleur de
+l'application qui ne passe par aucune charte. Elle ne peint pas la page : elle
+peint ce que le TÉLÉPHONE met autour — la barre d'état, la teinte de la barre
+d'adresse, l'écran de lancement quand l'application est posée sur l'accueil.
+
+**Ce que ça donne sur Nuit** (fond `#101210`) : une bande claire au-dessus d'une
+application noire. Sur Sylve (`#16241c`), pareil. C'est-à-dire précisément les
+deux apparences sur lesquelles il avait écrit *« le mode nuit est illisible »*.
+
+**Pourquoi ce n'est pas corrigé dans le lot du 5 septembre :** `viewport` est un
+export statique, et le rendre dépendant de la session demande de passer par
+`generateViewport()` — donc de toucher `layout.tsx`, qui est une **pièce
+partagée** au sens de `CLAUDE.md` §6 : cela impose la batterie complète. Elle
+n'a pas pu être jouée ce soir-là (une autre session écrivait dans l'arbre, et il
+demande à être prévenu avant).
+
+**Ce n'est pas mesuré non plus, et il faut le dire :** l'effet dépend du
+navigateur et du mode (onglet Safari, application posée sur l'accueil). Avant de
+coder, une capture de son téléphone sur Nuit dirait si la bande se voit
+vraiment — et si elle ne se voit pas, il n'y a rien à faire.
+
+**Qui peut le faire : n'importe quelle session**, avec la batterie complète et
+une capture de sa part.
+
+## GÉNÉRALISER LE CONTRÔLE DES COULEURS EN CLAIR (5 sept. 2026)
+
+**Deux sessions ont convergé le même jour sans se voir**, et c'est ce qui rend
+ce point mûr :
+
+- l'audit de santé a conclu que la racine du défaut de la visionneuse était
+  qu'**aucun contrôle n'interdit une couleur littérale dans un écran** — les
+  fautes se corrigeaient une par une, huit le 22 août, une neuvième le
+  5 septembre ;
+- le lot « relire sa dictée » a écrit `scripts/test-aucune-couleur-en-clair.ts`
+  le même jour. Il fait exactement ce qu'il faut — **sur une liste de six
+  fichiers écrite à la main**, ceux de son lot.
+
+**Ce qui manque est donc petit :** balayer `src/app/` et `src/components/`
+entiers au lieu des six, avec une liste d'exceptions DÉCLARÉES et justifiées.
+
+**Les exceptions sont connues, relevées par l'audit** — il y en a sept, toutes
+légitimes, et aucune n'est un oubli :
+
+| | pourquoi c'est voulu |
+|---|---|
+| `devis/[jeton]/*`, `entretien/[jeton]/*` | il a tranché le 4 septembre : *« garde les couleurs d'origine »* (`ARCHITECTURE.md` §248) |
+| `src/components/atlas/Calendrier.tsx` | employé UNIQUEMENT par la page du client ci-dessus |
+| `src/app/paysage/arrosage/PlanDessine.tsx` | un plan est un dessin technique, pas un écran ; ses couleurs sont documentées en tête |
+| `src/app/reglages/documents/DocumentsClient.tsx` | c'est le nuancier lui-même |
+| `src/components/atlas/BrancheEucalyptus.tsx` | une illustration |
+| `src/app/design/*` | maquettes gelées, absentes en production |
+| `layout.tsx` (`themeColor`) | **pas une exception, un défaut** — voir le point ci-dessus |
+
+**Le piège à ne pas reproduire, et le dépôt l'a déjà payé le 20 août :** un
+contrôle trop tolérant ne prouve rien. Celui-ci doit être confronté à l'état
+qu'il prétend détecter — en lui redonnant le `stroke="#F6F1E6"` de
+`Pellicule.tsx` d'avant le 5 septembre, il doit rougir.
+
+**Qui peut le faire : n'importe quelle session.** Étendre le fichier existant
+plutôt qu'en écrire un second — deux contrôles de la même règle divergeraient.
+
+---
 ## À DÉCIDER : la chaîne `verifier:maquette` n'est jouée par PERSONNE (5 sept. 2026)
 
 **Trouvé en réveillant quinze contrôles, et c'est plus grave que ce que l'audit
