@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le prompt `/impeccable` pour LA PAGE DU DEVIS</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-prompt-impeccable-pour-la-page-du-devis">Le prompt <code>/impeccable</code> pour LA PAGE DU DEVIS</h1>
+<p>À coller après <code>/impeccable</code> dans une session neuve. Il tient seul.</p>
+<p>Écrit le 4 septembre 2026, <strong>resserré le jour même à sa demande</strong> : <em>« le choix de la date à la fin du devis a déjà été fait, je pense qu'il faut faire seulement la page devis. »</em> Il a raison — la préparation, l'envoi et l'écran du client ont chacun leur histoire, et un lot qui les prend tous les quatre ne finit pas.</p>
+<p>Il remplace le prompt du 3 septembre (<code>docs/prompt-impeccable-devis.md</code>, jamais joué, resté sur la branche <code>claude/prompt-impeccable-devis-ipaftf</code>), dont le périmètre couvrait les quatre.</p>
+<p><strong>Trois sessions tournent à côté. Ce prompt ne les touche pas :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Elle fait</th>
+<th>N'y touche pas</th>
+</tr></thead><tbody>
+<tr>
+<td>retirer la fiche du chantier</td>
+<td><code>lienDeReprise</code>, <code>chantier-etat.ts</code>, <code>Notifications.tsx</code>, les cinq flèches de retour</td>
+</tr>
+<tr>
+<td>la facture</td>
+<td><code>chantiers/[id]/facture/</code>, <code>factures/[jeton]/</code>, <code>facture-pdf.ts</code>, <code>repositories/factures.ts</code></td>
+</tr>
+<tr>
+<td>—</td>
+<td>l'écran du client <code>/devis/[jeton]</code>, <strong>refait le 4 septembre</strong></td>
+</tr>
+</tbody></table></div>
+<hr>
+<p>``` Rends impeccable LA PAGE DU DEVIS d'Atlas — l'écran /chantiers/[id]/devis-complet, là où le patron relit, corrige et valide son devis avant qu'il parte. Un seul écran, et ce qu'il faut pour qu'il tienne.</p>
+<p>src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx   1 657 lignes src/app/chantiers/[id]/devis-complet/page.tsx et actions.ts les règles pures qu'il lit : src/lib/devis-envoyable.ts, src/lib/tva.ts et src/server/repositories/devis.ts, POUR LIRE ce qu'il affiche</p>
+<p>CE QUI EST HORS PÉRIMÈTRE, ET POURQUOI</p>
+<p>la dictée → le devis          un autre moment, un autre lot (DevisDepuisDictee, devis-depuis-dictee.ts, preparation-devis.ts)</p>
+<p>l'ENVOI                       il vit sur /export (EnvoiAuClient.tsx), et sa feuille a été dessinée dans ses onze états puis corrigée sur les huit chartes le 4 septembre</p>
+<p>l'écran du CLIENT             REFAIT le 4 septembre, et mesuré : le calendrier (/devis/[jeton])              monte en feuille (990 → 664 px), les dates se replient une fois l'une retenue (790 → 717), la case de rétractation reste dans la page à sa demande, et 53 px ont été pris dans les espacements sans retirer un mot. Trois pistes ÉCARTÉES par lui : raccourcir la formule légale, retirer l'invitation à signaler une erreur, retirer la mention de preuve. NE ROUVRE RIEN.</p>
+<p>la facture, la fiche du chantier   deux autres sessions y travaillent.</p>
+<p>Si tu trouves un défaut dans l'une de ces zones, DIS-LE et n'y touche pas.</p>
+<p>CE QUE « IMPECCABLE » VEUT DIRE ICI, ET ÇA SE MESURE</p>
+<ol>
+<li>C'est le PREMIER ARRÊT du parcours : le seul moment où il relit ce qu'il va engager. Il doit le franchir en quelques secondes quand tout est juste — et voir ce qu'il signe. Compte les gestes entre l'ouverture de la page et le moment où il peut envoyer, et dis-moi lesquels tombent.</li>
+<li>1 657 lignes dans un écran client : c'est le signal. Ce qui se découpe se découpe, mais AUCUN comportement ne change en passant.</li>
+<li>Aucun prix, aucune durée, aucune quantité affirmés sans source. Un champ sans source reste vide ET le dit. L'IA prépare, elle ne décide jamais.</li>
+<li>Il relit debout, une main, en plein soleil — puis le soir au calme. Les deux scènes, pas une.</li>
+<li>Huit chartes, dont deux sombres (Nuit, Sylve) où l'accent est CLAIR : aucune couleur écrite en clair, <code>surPlein</code> sur un aplat. Contrôle : npx tsx scripts/test-chartes-lisibles.ts</li>
+<li>Tout refus nomme sa raison ET le geste qui le débloque. Un bouton grisé sans phrase est un défaut, pas une protection.</li>
+<li>Le moins de mots possible. Aucune phrase qui explique le bouton d'à côté, aucune flèche décorative (scripts/test-aucune-fleche.ts).</li>
+</ol>
+<p>DÉJÀ TRANCHÉ PAR LE PATRON — ne pas rouvrir, même si ça paraît mieux</p>
+<ul>
+<li>Deux arrêts seulement dans tout le parcours : ici, avant l'envoi du devis, et avant le départ de la facture. Un troisième a été retiré parce qu'il ne pouvait mener qu'à « oui ».</li>
+<li>L'envoi n'est PAS bloqué quand SIRET, adresse ou IBAN manquent. Il l'a codé, vu, puis fait retirer le 14 août 2026 : « rien de plus, rien de moins ». Les informations se recopient toutes seules dans un devis pas encore envoyé.</li>
+<li>Un devis envoyé est FIGÉ, identité comprise : une pièce comptable ne se réécrit pas après coup. Ce qui manque, c'est la phrase qui l'explique.</li>
+<li>Le devis parti mène à /export, le devis en cours à /devis-complet (getSecondarySteps, 20 août). Ne fais pas une troisième règle.</li>
+<li>Une ligne se déplace d'une TVA à l'autre par un appui long (1er septembre).</li>
+</ul>
+<p>CE QUI EST PROPOSÉ MAIS PAS TRANCHÉ — à lui montrer, jamais à appliquer</p>
+<ul>
+<li><strong>« Le document entier passe derrière Voir le document »</strong> n'est PAS une décision : cela n'existe que dans la maquette <code>appli/moins-de-mots.html</code>, et <code>docs/QUESTIONS.md</code> §23 se termine sur une question restée sans réponse. Le défaut, lui, est réel et mesuré — 2,6 hauteurs d'écran avant d'atteindre le premier arrêt (TODO.md ligne 3943). Le remède lui appartient : dessine, montre, attends sa lettre.</li>
+</ul>
+<p>(Une première version de ce prompt le rangeait dans « déjà tranché ». C'était faux, et c'est la session du 4 septembre qui l'a relevé.)</p>
+<p>CE QUI EST DÉJÀ CONNU COMME BANCAL — pars de là plutôt que de le redécouvrir</p>
+<ul>
+<li><strong>« Atlas prépare toujours votre devis… (96 s) » et rien ne vient</strong> : signalé le 1er septembre 2026, JAMAIS reproduit sur un poste de développement. Les cinq issues de l'attente ont été traitées le 4 septembre. Vérifie ce qui reste muet AVANT de deviner une cause : un défaut qu'on ne peut pas reproduire se rend d'abord BAVARD, il ne se corrige pas à l'aveugle.</li>
+<li>Un artisan qui arrive les mains vides n'a jamais été essayé : le jeu de démonstration démarre avec une entreprise déjà remplie (docs/A-FAIRE.md).</li>
+</ul>
+<p>LES INVARIANTS — un point qui les casse se refuse, et le refus s'écrit</p>
+<ul>
+<li>Toute lecture passe par withEntreprise(utilisateurId, entrepriseId, fn). Hors de ce cadre, une requête ne renvoie rien, silencieusement.</li>
+<li>Français partout. Les règles métier vivent dans src/lib/, en fonctions pures, testables sans base. Jamais deux fois la même règle entre l'affichage et la vérification — un écran ne décide de rien.</li>
+</ul>
+<p>LA MÉTHODE</p>
+<ol>
+<li>Lis PRODUCT.md, CLAUDE.md, docs/AGENT.md, puis git log -20. Le code fait foi contre la documentation ; si les deux divergent, corrige la documentation.</li>
+<li>Dis-moi ce que tu as trouvé AVANT d'écrire une ligne : les trois choses qui font le plus mal sur cet écran, chacune avec le fichier qui la prouve, et ce que tu refuses de faire.</li>
+<li>Toute apparence ou tout geste nouveau se DESSINE d'abord : une maquette HTML dans appli/, un lien dans appli/essais.html, et l'adresse ENTIÈRE une fois qu'elle répond 200 — jamais une capture de la maquette.</li>
+<li>Regarde l'écran, en capture, à 390 × 664, Nuit comprise. Quatre défauts réels de ce dépôt sont sortis d'une image et d'aucun test.</li>
+<li>Aucune clé IA sur un poste de développement : ce qui dépend de la rédaction se dit « à jouer sur ton espace », avec la commande. Jamais « impossible » : l'IA est branchée chez lui.</li>
+</ol>
+<p>LA BATTERIE, SUR SON POSTE WINDOWS — trois pièges payés le 4 septembre</p>
+<ul>
+<li><strong>Préviens-le AVANT de la lancer.</strong> Toutes ses sessions travaillent dans le MÊME dossier : si une autre modifie les fichiers pendant qu'elle tourne, le serveur tombe en route et les chiffres ne veulent rien dire.</li>
+<li>Son <code>.env</code> pointe sur <code>atlas_dev</code>, que les suites videraient : dérive un fichier d'environnement sur <code>atlas_test</code> (npx tsx --env-file=…). Pour les suites NAVIGATEUR, <code>DATABASE_URL</code> doit porter le rôle <code>postgres</code> (mot de passe <code>postgres_dev_pw</code>) — le seul qui traverse la RLS.</li>
+<li>Sa base vit dans Docker : <code>docker start atlas-postgres atlas-redis</code>.</li>
+</ul>
+<p>LE RENDU</p>
+<p>Un document dans docs/, commité avec le code, plus sa page : node scripts/md-en-page.mjs docs/&lt;nom&gt;.md Il porte : un verdict par point, le fichier qui le fonde, ce qui a été fait autrement et pourquoi, ce qui a été refusé et ce que ça aurait coûté, les chiffres exacts de la batterie, et ce qui reste ouvert avec qui peut le trancher. ```</p>
+<hr>
+<h2 id="ce-qui-restera-après-celui-ci">Ce qui restera après celui-ci</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Écran</th>
+<th>État</th>
+</tr></thead><tbody>
+<tr>
+<td>La dictée → le devis (la préparation)</td>
+<td>jamais reprise en tant que telle</td>
+</tr>
+<tr>
+<td>Les prix (<code>/chantiers/[id]/prix</code>)</td>
+<td>jamais repris</td>
+</tr>
+<tr>
+<td>La transcription</td>
+<td>jamais reprise</td>
+</tr>
+<tr>
+<td>Les informations</td>
+<td>jamais reprises</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

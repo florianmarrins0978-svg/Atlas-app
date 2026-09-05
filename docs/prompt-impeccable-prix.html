@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le prompt `/impeccable` pour l'écran des prix</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-prompt-impeccable-pour-lécran-des-prix">Le prompt <code>/impeccable</code> pour l'écran des prix</h1>
+<p>À coller après <code>/impeccable</code> dans une session neuve. Il tient seul.</p>
+<p>Écrit le 4 septembre 2026. C'est <strong>le seul écran du parcours où le patron engage de l'argent avant de l'annoncer</strong>, et il n'a jamais été repris — seulement sa flèche de retour, la veille.</p>
+<p><strong>Deux sessions tournent à côté. Ce prompt ne les touche pas :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Elle fait</th>
+<th>N'y touche pas</th>
+</tr></thead><tbody>
+<tr>
+<td>la page du devis</td>
+<td><code>chantiers/[id]/devis-complet/</code>, et <strong>la règle « à chiffrer » côté devis</strong></td>
+</tr>
+<tr>
+<td>la facture</td>
+<td><code>chantiers/[id]/facture/</code>, <code>factures/[jeton]/</code>, <code>repositories/factures.ts</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Le point de friction à connaître :</strong> la session du devis travaille en ce moment sur le refus « une ligne attend son prix » (commit <em>Refuser la date avant qu'il la choisisse…</em>). La règle pure est partagée. <strong>Lis son code avant d'y toucher, et n'écris pas une seconde version de la même règle</strong> (<code>CLAUDE.md</code> §3).</p>
+<hr>
+<p>``` Rends impeccable L'ÉCRAN DES PRIX d'Atlas — /chantiers/[id]/prix, là où le patron pose ce que le chantier va coûter, ligne par ligne. Un seul écran, et les règles pures qui le nourrissent.</p>
+<p>src/app/chantiers/[id]/prix/PrixClient.tsx            284 lignes src/app/chantiers/[id]/prix/PropositionPrixSection.tsx 296 lignes src/app/chantiers/[id]/prix/page.tsx et actions.ts les règles pures : src/lib/lecons-prix.ts, prix-attribuable.ts, arrondi-prix.ts, comparabilite-prix.ts, grille-prix.ts, tarif-main-oeuvre.ts, unites-tarif.ts, mesures-prestation.ts</p>
+<p>CE QUI EST HORS PÉRIMÈTRE</p>
+<p>le devis, la facture       deux autres sessions y travaillent la fiche du chantier       retirée le 4 septembre : /chantiers/[id] n'est plus qu'une redirection, ne la ressuscite pas « Mes prix » (Réglages)    son registre de tarifs est un autre écran</p>
+<p>Si tu trouves un défaut dans l'une de ces zones, DIS-LE et n'y touche pas.</p>
+<p>CE QUE « IMPECCABLE » VEUT DIRE ICI, ET ÇA SE MESURE</p>
+<ol>
+<li>C'est de l'ARGENT, et c'est LUI qui le signe. Aucun prix affirmé sans source : une proposition dit d'où elle vient — un tarif de sa grille, un chantier passé, un calcul de main-d'œuvre — ou elle reste vide et le dit.</li>
+<li>« À chiffrer » est un état à part entière (migration 0070) : le travail est identifié, son prix ne l'est pas. Il doit se voir d'un regard, et l'écran doit dire combien de lignes l'attendent encore.</li>
+<li>Il pose ses prix debout, une main, en plein soleil — puis le soir au calme. Les deux scènes, pas une. Une case de montant qui ne se voit pas au soleil est un défaut, pas un détail de dessin.</li>
+<li>Huit chartes, dont deux sombres (Nuit, Sylve) où l'accent est CLAIR : aucune couleur écrite en clair, <code>surPlein</code> sur un aplat, <code>voile()</code> pour un voile. Attention : <code>test-chartes-lisibles.ts</code> lit les CHARTES, pas les classes d'un écran — un <code>focus:bg-[rgba(0,0,0,0.03)]</code> lui échappe et devient invisible sur Nuit. C'est la faute du 22 août, et elle est déjà revenue une fois.</li>
+<li>Tout refus nomme sa raison ET le geste qui le débloque.</li>
+<li>Le moins de mots possible. Aucune phrase qui explique le bouton d'à côté, aucune flèche décorative (scripts/test-aucune-fleche.ts).</li>
+</ol>
+<p>DÉJÀ TRANCHÉ PAR LE PATRON — ne pas rouvrir</p>
+<ul>
+<li>L'IA PROPOSE, elle ne décide jamais. Un prix proposé se relit et se corrige ; aucun n'entre en base sans son geste.</li>
+<li>Le retrait d'une ligne est RÉVERSIBLE : elle est masquée, un tiroir permet d'annuler, et rien n'est écrit tant qu'il est ouvert. Ne remets pas de fenêtre de confirmation avant l'action — c'est sa règle de produit (réversibilité après, plutôt que confirmation avant).</li>
+<li>Arrivé par « Écrire le devis », la proposition part REPLIÉE (<code>saisieManuelle</code>).</li>
+<li>Ses prix à lui priment sur tout barème : le registre de ses tarifs et ses chantiers passés sont la source, pas un prix public.</li>
+<li>Les étapes ont chacune leur écran ; celui-ci ne doit pas absorber le devis.</li>
+</ul>
+<p>CE QUI EST OUVERT, ET QU'IL FAUT LUI POSER PLUTÔT QUE TRANCHER</p>
+<p><strong>La qualité des propositions.</strong> Il a relevé trois choses, et elles ne sont pas corrigées (TODO.md) :</p>
+<p>· certaines prestations sont mal organisées ; · certaines quantités ou unités sont mal interprétées ; · certaines propositions de prix, ou reprises de prix historiques, sont incohérentes.</p>
+<p><strong>Ne corrige pas ça à l'aveugle.</strong> Le dépôt le dit lui-même : il faut des exemples RÉELS de ses dictées et du devis produit, sinon on répare une qualité imaginée. Si tu veux t'y attaquer, DEMANDE-LES — c'est lui qui les a. Et ce parcours-là (transcription → prestations → quantités → prix) est un lot à part entière : ne le mélange pas à la reprise de l'écran.</p>
+<p>CE QUI EST DÉJÀ CONNU COMME BANCAL — pars de là plutôt que de le redécouvrir</p>
+<ul>
+<li>Un prix tapé pouvait partir à ZÉRO en gardant l'air juste à l'écran (CHANGELOG, 2458). <strong>Corrigé sur le devis, jamais ici</strong> : regarde ce que <code>montantEcrivable</code> (montant-ecrivable.ts) et <code>montantSaisi</code> (achat-tva.ts) font déjà, et emploie-les — n'en écris pas une troisième version.</li>
+<li><code>test-lecons-prix-e2e</code> <strong>n'est PAS sur cet écran</strong> : elle saisit « Prix unitaire 1 » sur <code>/devis-complet</code>. Ne la compte pas dans ton lot. (Une première version de ce prompt l'attribuait à l'écran des prix : c'était faux, et c'est la session du 4 septembre qui l'a relevé.)</li>
+</ul>
+<p>LES INVARIANTS — un point qui les casse se refuse, et le refus s'écrit</p>
+<ul>
+<li>Toute lecture passe par withEntreprise(utilisateurId, entrepriseId, fn). Hors de ce cadre, une requête ne renvoie rien, silencieusement.</li>
+<li>Français partout. Les règles métier vivent dans src/lib/, en fonctions pures, testables sans base. Jamais deux fois la même règle entre l'affichage et la vérification — un écran ne décide de rien.</li>
+<li>Un montant ne se recalcule pas à deux endroits : deux additions divergent, et c'est celle qu'on lit qui ment.</li>
+</ul>
+<p>LA MÉTHODE</p>
+<ol>
+<li>Lis PRODUCT.md, CLAUDE.md, docs/AGENT.md, puis git log -20. Le code fait foi contre la documentation ; si les deux divergent, corrige la documentation.</li>
+<li>Dis-moi ce que tu as trouvé AVANT d'écrire une ligne : les trois choses qui font le plus mal sur cet écran, chacune avec le fichier qui la prouve, et ce que tu refuses de faire.</li>
+<li>Toute apparence ou tout geste nouveau se DESSINE d'abord : une maquette HTML dans appli/, un lien dans appli/essais.html, et l'adresse ENTIÈRE une fois qu'elle répond 200 — jamais une capture de la maquette.</li>
+<li>Regarde l'écran, en capture, à 390 × 664, Origine ET Nuit.</li>
+<li><strong>AUCUNE EXCUSE D'IA ICI, et c'est vérifiable :</strong> <code>preparerPropositionPrix</code> (server/chiffrage/proposition-prix.ts) ne lit que ses tarifs, ses prestations, son matériel et le chiffrage — aucun fournisseur, aucun modèle. Tout ce lot s'éprouve sur ce poste, avec la base. « À jouer sur ton espace » ne s'applique à rien de ce que tu touches. (Une première version de ce prompt recopiait cette clause à tort ; la session du 4 septembre l'a relevé, code à l'appui.)</li>
+</ol>
+<p>LA BATTERIE, SUR SON POSTE WINDOWS — quatre pièges payés le 4 septembre</p>
+<ul>
+<li><strong>Préviens-le AVANT de la lancer.</strong> Toutes ses sessions travaillent dans le MÊME dossier : si une autre modifie les fichiers pendant qu'elle tourne, le serveur tombe en route et les chiffres ne veulent rien dire.</li>
+<li>Sa base vit dans Docker : <code>docker start atlas-postgres atlas-redis</code>.</li>
+<li>Son <code>.env</code> pointe sur <code>atlas_dev</code>, que les suites videraient : joue sur <code>atlas_test</code>.</li>
+<li>Pour les suites NAVIGATEUR, <code>DATABASE_URL</code> doit porter le rôle <code>postgres</code> avec le mot de passe <strong><code>postgres_dev_pw</code></strong> — et non <code>postgres_ci_pw</code> que <code>verifier:avant-livraison</code> code en dur. Ses trois dernières étapes tombent donc toujours sur ce poste : rejoue-les à la main avec la bonne adresse plutôt que de toucher au script (sa valeur est celle de la CI).</li>
+</ul>
+<p>LE RENDU</p>
+<p>Un document dans docs/, commité avec le code, plus sa page : node scripts/md-en-page.mjs docs/&lt;nom&gt;.md Il porte : un verdict par point, le fichier qui le fonde, ce qui a été fait autrement et pourquoi, ce qui a été refusé et ce que ça aurait coûté, les chiffres exacts de la batterie, et ce qui reste ouvert avec qui peut le trancher. ```</p>
+<hr>
+<h2 id="ce-qui-restera-après-celui-ci-sur-le-trajet-chantier--terminé">Ce qui restera après celui-ci, sur le trajet <code>chantier → terminé</code></h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Écran</th>
+<th>État</th>
+</tr></thead><tbody>
+<tr>
+<td>La transcription</td>
+<td>jamais reprise</td>
+</tr>
+<tr>
+<td>Les informations</td>
+<td>jamais reprises</td>
+</tr>
+<tr>
+<td>La dictée → le devis (l'attente, la qualité des propositions)</td>
+<td>un lot à soi, qui demande ses exemples réels</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
