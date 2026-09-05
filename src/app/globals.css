@@ -179,6 +179,20 @@ body {
   padding-bottom: var(--atlas-barre);
 }
 
+/* **Et la réserve se retire quand la barre n'est pas là — 5 septembre 2026.**
+ * Sur une navigation de lien vers le devis seul, ce cadre reste en place — la
+ * mise en page racine n'est pas rejouée — alors que la barre, elle, se retire
+ * d'elle-même (`AtlasBottomNav`). Sans cette ligne, soixante-huit pixels de
+ * vide restaient sous le bouton d'envoi, qui ne touchait plus le bas de
+ * l'écran.
+ *
+ * Écrit dans CE sens — la réserve par défaut, son retrait sous condition — un
+ * navigateur qui ne connaît pas `:has()` réserve encore : il montre un bouton
+ * un peu haut, jamais un bouton caché. */
+body:not(:has(.atlas-nav-basse)) .atlas-contenu {
+  padding-bottom: 0;
+}
+
 /* --- L'écran des chantiers : une hauteur fixe, une liste qui défile dedans --
  *
  * C'est ce qui rend possible le fil et sa perle. L'en-tête ne bouge pas, la

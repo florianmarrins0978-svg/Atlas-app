@@ -95,30 +95,40 @@ Le refus « à chiffrer » remonte avant la feuille des dates, les neuf couleurs
   de 664, à toute hauteur de lecture. **⚠ « Voir le document » (la A) a été
   ÉCARTÉ par lui — ne pas le rouvrir.** Le brief du 4 septembre le rangeait dans
   « déjà tranché » : c'était inexact, et la réponse est venue, et c'est non.
-- ~~**LA BARRE D'ONGLETS EST REVENUE SUR LA PAGE DU DEVIS**~~ **— FAUX, et c'est
-  moi qui me suis trompé. Corrigé le 4 septembre 2026 au soir.**
+- ~~**LA BARRE D'ONGLETS COUVRAIT LE BOUTON DU DEVIS**~~ **— réparé le
+  5 septembre 2026. Et les deux mesures qui se contredisaient étaient justes
+  toutes les deux.**
 
-  **Ce que j'ai écrit :** que la barre d'onglets était revenue sur le devis
-  **et sur les pages publiques du client**, en m'appuyant sur l'assertion de
-  `test-devis-complet-e2e` (1 au lieu de 0), rouge à l'identique avant et après
-  le lot.
+  **L'histoire, en entier, parce qu'elle apprend quelque chose.** Le 4 septembre
+  j'ai annoncé que la barre était revenue sur le devis **et sur les pages
+  publiques du client**, en m'appuyant sur la seule assertion de
+  `test-devis-complet-e2e` (1 au lieu de 0). Le patron a mesuré page par page
+  sur le serveur : aucune barre nulle part. C'est allé au journal en
+  « non reproduit », et j'ai eu tort de conclure sans regarder le produit.
 
-  **Ce que le patron a mesuré, page par page, sur le serveur :** aucune barre
-  sur la page que reçoit son client, aucune sur le devis seul, et
-  `src/app/layout.tsx` n'a pas bougé depuis le 31 août. **Non reproduit.**
+  **Ce que ni lui ni moi ne voyions : la façon d'arriver sur la page.**
 
-  **La faute n'est pas d'avoir vu la suite rouge — c'est d'en avoir déduit un
-  défaut du produit sans regarder le produit.** J'avais l'image sous les yeux :
-  mes propres captures de l'écran du devis, prises le soir même à 390 × 664, ne
-  portent aucune barre d'onglets. Une suite rouge dit qu'une mesure a échoué,
-  jamais laquelle des deux — le produit ou la mesure. `AGENTS.md` le dit dans
-  l'autre sens (« ne pas annoncer une panne corrigée quand seul le silence l'a
-  été ») ; celui-ci en est le miroir : **ne pas annoncer une panne trouvée quand
-  seul un contrôle a parlé.**
+  | Le devis ouvert… | La barre |
+  |---|---|
+  | à son adresse, ou en rechargeant | absente — SA mesure, exacte |
+  | en appuyant sur « Je rédige à la main » | présente — LA suite, exacte |
 
-  **Ne pas rouvrir de ce côté** — ni `layout.tsx`, ni `middleware.ts`. Le rouge
-  de `test-devis-complet-e2e` appartient à la même famille que les 56 autres
-  suites navigateur tombées ce soir-là, et il se reprendra avec elles.
+  La décision vivait dans la mise en page RACINE, que Next.js ne rejoue pas sur
+  une navigation de lien. C'était bien ce qui couvrait son bouton d'envoi sur sa
+  capture iPhone du 4 septembre.
+
+  **Ce qui reste vrai de ma faute :** « et sur les pages publiques du client »
+  était faux, et surtout je l'avais déduit d'un contrôle rouge sans regarder
+  l'écran. **Une suite rouge dit qu'une mesure a échoué, jamais laquelle des deux
+  — le produit ou la mesure.** Ici c'était le produit, mais je ne le savais pas
+  en l'écrivant.
+
+  **Ce qui l'a réparé :** la règle est descendue dans `src/lib/ecrans-sans-navigation.ts`,
+  appelée au serveur par `layout.tsx` ET dans le navigateur par `AtlasBottomNav`,
+  qui suit le chemin courant. `ARCHITECTURE.md` §258. Mesuré : par le lien,
+  0 barre, bouton à 652 px d'une fenêtre de 664 — exactement l'écran qu'on
+  obtient à son adresse.
+
 - **Le tableau des lignes et le bloc des totaux sont encore dans l'écran**
   (1 479 lignes). Les sortir demanderait quinze à vingt paramètres chacun : à
   ne faire que si un besoin le justifie, pas pour le compte de lignes.

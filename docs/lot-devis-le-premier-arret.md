@@ -203,6 +203,43 @@ opaque (`AGENTS.md`).
 défaut n'était pas le silence — c'était **le moment** où le refus tombe, et
 **l'endroit** où sa phrase l'envoie.
 
+**Et une seconde, plus grave, parce qu'elle t'a fait perdre une journée —
+corrigée le 5 septembre 2026.**
+
+Le 4 septembre j'ai annoncé : *la barre d'onglets est revenue sur la page du
+devis et sur les pages publiques du client*. Je l'avais déduit d'une seule
+assertion rouge, **sans regarder l'écran** — alors que mes propres captures du
+soir même ne portaient aucune barre. Tu as mesuré page par page sur le serveur,
+tu n'as rien trouvé, et c'est allé au journal en « non reproduit ».
+
+**Les deux mesures étaient justes.** Ce qui les séparait, c'est la façon
+d'arriver sur la page :
+
+| Le devis ouvert… | La barre |
+|---|---|
+| à son adresse, ou en rechargeant | **absente** — ta mesure |
+| en appuyant sur « Je rédige à la main » | **présente** — la suite, et ta capture iPhone |
+
+La décision vivait dans la mise en page RACINE, que Next.js ne rejoue pas sur
+une navigation de lien : la page gardait la barre de l'écran précédent. C'est
+elle qui couvrait ton bouton d'envoi.
+
+**Réparé :** la règle est descendue dans `src/lib/ecrans-sans-navigation.ts`,
+appelée des deux côtés — au serveur pour ne pas peindre la barre, et par la
+barre elle-même, qui suit le chemin courant. La réserve de hauteur du contenu se
+retire avec elle. `ARCHITECTURE.md` §258.
+
+**Mesuré, à 390 × 664 :** par le lien, 0 barre, « Choisir la date » à 652 px
+d'une fenêtre de 664 — exactement l'écran qu'on obtient à son adresse. Les deux
+captures sont superposables.
+
+**Ce que ça apprend, et qui vaut pour la suite :** une suite rouge dit qu'une
+mesure a échoué, jamais laquelle des deux — le produit ou la mesure. Ici
+c'était le produit ; je n'avais aucun moyen de l'affirmer en l'écrivant, et
+« aussi sur les pages publiques du client » était faux. **Et deux mesures qui se
+contredisent ne sont pas une erreur à arbitrer : c'est une différence qu'on n'a
+pas encore vue.**
+
 ---
 
 ## Le contrôle qui tient tout ça

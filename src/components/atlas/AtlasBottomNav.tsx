@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { colors } from "@/lib/design-tokens";
 import { cheminAutorise, type Role } from "@/lib/acces-roles";
+import { estEcranSansNavigation } from "@/lib/ecrans-sans-navigation";
 
 // Le bandeau du bas, refait le 10 août 2026 d'après la version retenue.
 //
@@ -83,6 +84,17 @@ const ONGLETS = [
  */
 export default function AtlasBottomNav({ role = null }: { role?: Role | null }) {
   const pathname = usePathname();
+  // **Le second garde, et c'est le seul qui tienne quand on navigue en
+  // appuyant — 5 septembre 2026.** La mise en page racine décide déjà de ne pas
+  // rendre cette barre sur le devis seul (`estEcranSansNavigation`, appelée au
+  // serveur), mais Next.js ne rejoue pas cette mise en page sur une navigation
+  // de lien : il ne redemande que le segment qui change. Le devis ouvert à son
+  // adresse n'avait donc pas de barre, et le même devis atteint depuis la fiche
+  // client gardait celle de l'écran d'avant — qui couvrait son bouton d'envoi.
+  //
+  // La MÊME fonction sert des deux côtés : deux copies de cette liste ont déjà
+  // divergé une fois (`CLAUDE.md` §3, le 12 août 2026).
+  if (estEcranSansNavigation(pathname)) return null;
   const onglets = role === null ? ONGLETS : ONGLETS.filter((o) => cheminAutorise(role, o.href));
   const indexActif = onglets.reduce(
     (trouve, t, i) => (estActif(pathname, t.href) ? i : trouve),

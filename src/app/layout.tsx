@@ -4,7 +4,10 @@ import { charte, variablesCharte, type Charte } from "@/lib/chartes";
 import { lireCharte } from "@/server/repositories/charte-personne";
 import "./globals.css";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
-import { estCheminPublic, estPageDuClient } from "@/lib/chemins-publics";
+import { estPageDuClient } from "@/lib/chemins-publics";
+// La règle vit dans `src/lib` depuis le 5 septembre 2026 : la barre elle-même
+// s'en sert, la mise en page racine n'étant pas rejouée à chaque navigation.
+import { estEcranSansNavigation } from "@/lib/ecrans-sans-navigation";
 import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
 import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
@@ -89,50 +92,6 @@ export const viewport: Viewport = {
   // sécurité étant alors rendues par globals.css.
   viewportFit: "cover",
 };
-
-// Écrans qui ne portent pas la navigation.
-//
-// **Depuis le 30 août 2026, ce n'est plus « ni la navigation, ni l'assistant ».**
-// `…/devis-complet` reste sans onglets, mais garde son panneau — voir
-// `estDevisSeul` plus bas, qui fait l'exception. Le reste de cette liste, lui,
-// n'a droit ni à l'un ni à l'autre.
-//
-// **Les écrans PUBLICS ne sont plus listés ici : ils viennent du même endroit
-// que le contrôle d'accès** (`src/lib/chemins-publics.ts`).
-//
-// Le patron, le 12 août 2026, capture à l'appui : *« lorsque le client reçoit
-// le lien cliquable de la facture, s'il clique en dessous sur planning ou
-// chantier, il a accès à mon application. »* Il n'y avait pas de fuite — ces
-// liens mènent à la page de connexion — mais son client voyait les onglets de
-// son outil de travail au bas de sa facture.
-//
-// La cause n'était pas un oubli isolé : **deux listes tenaient la même vérité.**
-// Le middleware savait `/factures` public depuis le 6 août ; celle-ci ne
-// connaissait que `/devis`. Un écran public ajouté plus tard n'entrait que dans
-// l'une des deux. Une seule source, donc, et l'invariant tient désormais par
-// construction : ce qui s'atteint sans compte ne porte jamais la navigation.
-//
-// Restent ici les écrans du PATRON qui n'ont pas de navigation pour une raison
-// qui leur est propre — ils ne sont pas publics, et n'ont donc rien à faire
-// dans la liste partagée :
-//
-// - `/documents-legaux` précède l'entrée dans l'application : naviguer ailleurs
-//   n'y a pas de sens.
-// - `…/devis-complet` est le devis lui-même, seul sur sa page. Le patron l'a
-//   demandé ainsi : « une page où il n'y a que le devis ». Une barre d'onglets
-//   au bas d'une feuille de devis la fait ressembler à un écran d'application,
-//   et c'est précisément ce qu'elle ne doit pas être. **L'assistant, lui, y est
-//   revenu le 30 août** — sa propre demande, depuis cette page : un bouton de
-//   plus dans l'en-tête n'en fait pas un écran d'application, contrairement à
-//   une barre d'onglets entière.
-const ECRANS_DU_PATRON_SANS_NAVIGATION = ["/documents-legaux"];
-
-function estEcranSansNavigation(chemin: string | null): boolean {
-  if (!chemin) return false;
-  if (estCheminPublic(chemin)) return true;
-  if (chemin.endsWith("/devis-complet")) return true;
-  return ECRANS_DU_PATRON_SANS_NAVIGATION.some((p) => chemin === p || chemin.startsWith(`${p}/`));
-}
 
 /**
  * La charte choisie, sous forme de style en ligne.

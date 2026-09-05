@@ -48,7 +48,7 @@ L'écran où il relit ce qu'il engage. `ARCHITECTURE.md` §256,
 | **Fait** | 299 lignes de champs sorties dans `ChampsDuDevis.tsx`, à comportement identique |
 | **Fait** | « Choisir la date » était au bout de **2,59 hauteurs d'écran** ; il a choisi **la B** sur `appli/devis-le-premier-arret.html`, et la barre collée est codée — 648 px d'une fenêtre de 664, à toute hauteur |
 | **Mesuré** | base **300/310** et navigateur **70/127** : aucun rouge n'est de ce lot, vérifié en rejouant cinq suites tombées avec ET sans le lot (0/5 des deux côtés) |
-| **Annoncé à tort, puis corrigé** | j'ai déclaré la barre d'onglets revenue sur le devis et sur les pages du client. **Faux** : il l'a mesuré page par page sur le serveur, aucune barre nulle part. J'avais déduit un défaut du produit d'une suite rouge, sans regarder le produit (`docs/lot-devis-le-premier-arret.md`) |
+| **Corrigé le 5 septembre** | la barre d'onglets couvrait bien son bouton — mais seulement quand on arrive sur le devis EN APPUYANT sur un lien : la mise en page racine n'est pas rejouée. À son adresse, aucune barre : sa mesure et la suite disaient vrai toutes les deux. Règle descendue dans `src/lib/ecrans-sans-navigation.ts`, appelée des deux côtés (`ARCHITECTURE.md` §258). Ce qui était faux dans mon annonce du 4 : « aussi sur les pages publiques du client », et surtout de l'avoir déduit sans regarder l'écran |
 
 ## FAIT : la facture, le second arrêt (4 septembre 2026)
 

@@ -78,12 +78,16 @@ elles rendent **0/5 des deux côtés**.
    **depuis l'hôte**.
    **Et le prévenir AVANT de la lancer** : ses sessions partagent le dossier, et
    le serveur tombe si une autre écrit pendant la mesure.
-2. ~~La barre d'onglets est revenue sur la page du devis~~ — **FAUX, c'était
-   moi.** Il l'a mesuré page par page sur le serveur : aucune barre nulle part,
-   et `layout.tsx` n'a pas bougé depuis le 31 août. J'avais déduit un défaut du
-   produit d'une suite rouge, **sans regarder le produit** — alors que mes
-   propres captures du soir ne portaient aucune barre. Ne pas rouvrir de ce
-   côté.
+2. ~~La barre d'onglets est revenue sur la page du devis~~ — **réparé le
+   5 septembre 2026, et les deux mesures étaient justes.** Le devis ouvert à son
+   adresse n'a pas de barre (SA mesure) ; atteint en appuyant sur « Je rédige
+   à la main », il gardait celle de l'écran d'avant (la suite) — la mise en page
+   racine n'est pas rejouée sur une navigation de lien. C'est ce qui couvrait son
+   bouton d'envoi sur sa capture iPhone. La règle vit désormais dans
+   `src/lib/ecrans-sans-navigation.ts`, appelée des deux côtés
+   (`ARCHITECTURE.md` §258). **Ma faute reste entière sur un point :** j'avais
+   annoncé le défaut « aussi sur les pages publiques du client » — c'était faux —
+   et je l'avais déduit d'une suite rouge sans regarder l'écran.
 
 **Ne pas rouvrir « Voir le document » (la A)** : il l'a écartée.
 

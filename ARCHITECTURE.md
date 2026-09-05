@@ -23015,3 +23015,52 @@ ignorée et l'élément retomberait sur **aucun fond** — la plage disparaîtra
 un écran dont tout le dessin repose sur elle. Écrite dans une classe, la
 déclaration ordinaire tient le repli et `@supports` n'ajoute la teinte que là où
 elle est comprise. Au pire la ligne perd sa couleur et garde son mot.
+
+## §258. Une règle de mise en page RACINE ne suit pas la navigation
+
+**Payé le 4 septembre 2026, et deux mesures justes s'y contredisaient.**
+
+Le patron, capture à l'appui : sur son iPhone, la barre d'onglets couvrait le
+bouton d'envoi du devis. Mesuré page par page sur le serveur, il n'y avait
+AUCUNE barre sur cette page — ni sur celle que reçoit son client — et le fichier
+qui décide n'avait pas bougé depuis le 31 août. Les deux constats étaient
+exacts, et c'est ce qui a fait chercher au mauvais endroit pendant une journée.
+
+**Ce qui les sépare, c'est la façon d'arriver sur la page :**
+
+| Il ouvre le devis… | La barre |
+|---|---|
+| à son adresse, ou en rechargeant | absente |
+| en appuyant sur « Je rédige à la main » | **celle de l'écran d'avant, restée là** |
+
+**Pourquoi.** La décision vivait dans `src/app/layout.tsx`, la mise en page
+RACINE, qui lit le chemin dans l'en-tête posé par le middleware. Next.js ne
+rejoue pas une mise en page partagée sur une navigation de lien : il ne redemande
+que le segment qui change. La racine était donc celle de la page précédente,
+avec sa barre — et son en-tête de chemin d'alors.
+
+**La règle : ce qui dépend du chemin courant ne se décide pas au seul niveau de
+la racine.** Elle est descendue dans une fonction pure,
+`src/lib/ecrans-sans-navigation.ts`, appelée des DEUX côtés :
+
+- au serveur, par `layout.tsx`, pour ne pas peindre la barre du tout — une
+  barre rendue puis retirée clignoterait à chaque ouverture directe ;
+- dans le navigateur, par `AtlasBottomNav`, qui lit `usePathname()` et se
+  retire lui-même. C'est le seul des deux qui suive une navigation de lien.
+
+La même fonction des deux côtés, jamais deux copies : c'est exactement le défaut
+du 12 août 2026, où deux listes d'écrans publics avaient divergé et où son client
+voyait les onglets de son outil de travail au bas de sa facture (`CLAUDE.md` §3).
+
+**Et la réserve de hauteur suit.** `.atlas-contenu` réserve `--atlas-barre` sous
+le contenu ; ce cadre-là appartient lui aussi à la racine et reste donc en place.
+`globals.css` retire la réserve quand la barre n'est pas dans la page
+(`body:not(:has(.atlas-nav-basse))`), écrit dans ce sens précis : un navigateur
+sans `:has()` réserve encore, et montre un bouton un peu haut plutôt qu'un
+bouton caché.
+
+**Ce qui l'a attrapé, et ce qui ne pouvait pas.** `test-devis-complet-e2e.ts`
+arrive sur le devis en APPUYANT sur le lien — comme lui — et comptait 1 barre là
+où il en attendait 0. Toute mesure faite en ouvrant l'adresse directement rendait
+vert, la capture comprise. **Un contrôle qui entre par une autre porte que la
+sienne ne dit rien de la sienne** (`CLAUDE.md` §5 quater).

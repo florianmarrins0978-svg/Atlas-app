@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-09-05
 
+### La barre d'onglets ne survit plus à un appui sur un lien
+
+Le devis ouvert à son adresse n'avait pas de barre du bas ; le **même** devis
+atteint en appuyant sur « Je rédige à la main » gardait celle de l'écran
+précédent, et elle couvrait son bouton d'envoi — sa capture du 4 septembre 2026.
+
+Les deux mesures étaient exactes, et c'est ce qui a fait chercher au mauvais
+endroit : la règle vivait dans la mise en page RACINE, que Next.js ne rejoue pas
+sur une navigation de lien. Elle vit désormais dans une fonction pure
+(`src/lib/ecrans-sans-navigation.ts`), appelée des deux côtés — au serveur pour
+ne pas peindre la barre, et par la barre elle-même, qui connaît le chemin
+courant à chaque navigation. La réserve de hauteur du contenu se retire avec
+elle.
+
+Éprouvé par `scripts/test-devis-complet-e2e.ts`, qui arrive sur le devis en
+appuyant sur le lien — comme lui — et qui rougissait sur cette assertion.
+
+
 ### L'audit de santé du code entre dans le dépôt, et il lit la mémoire avant de chercher
 
 `/atlas-code-health` vivait seulement sur la machine du patron. Il est désormais
