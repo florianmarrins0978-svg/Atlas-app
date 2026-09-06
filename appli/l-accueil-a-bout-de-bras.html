@@ -769,9 +769,22 @@ function dessiner(){
         <button class="vu" type="button" data-vu="${b.id}">J'ai vu</button>
       </div>
     </div>`).join("")
+    /* **UNE PORTE QUI S'OUVRE DOIT SE REFERMER — trouvé par le patron le
+       6 septembre 2026 : « on peut cliquer dessus pour agrandir la fenêtre
+       mais on peut pas la refermer ».**
+
+       Le défaut est dans L'APPLICATION, pas seulement ici
+       (`src/app/Notifications.tsx:564`) : `setToutVoir(true)` n'a pas de
+       retour, et le bouton disparaît une fois déplié — il ne reste plus rien
+       à toucher. C'est sa règle du 5 septembre, « une erreur se rattrape » :
+       un geste sans retour en est une.
+
+       « Replier » : un verbe, un mot. */
     + (enPlus > 0
       ? `<button class="de-plus" type="button" id="de-plus">${enPlus === 1 ? "1 autre devis à regarder" : enPlus + " autres devis à regarder"}</button>`
-      : "");
+      : toutVoir && restantes.length > max
+        ? `<button class="de-plus" type="button" id="replier">Replier</button>`
+        : "");
   bandeauxHote.style.display = visibles.length || enPlus > 0 ? "" : "none";
 
   /* Les lignes.
@@ -992,6 +1005,7 @@ document.addEventListener("click", e => {
   const vu = e.target.closest("[data-vu]");
   if (vu) { acquittes = [...acquittes, vu.dataset.vu]; dessiner(); return; }
   if (e.target.id === "de-plus") { toutVoir = true; dessiner(); return; }
+  if (e.target.id === "replier") { toutVoir = false; dessiner(); return; }
   if (e.target.id === "annuler") { retires = retires.slice(0, -1); dessiner(); return; }
 
   const onglet = e.target.closest(".onglets a");

@@ -2,8 +2,29 @@
 
 **Le 6 septembre 2026. Rien n'est codé : aucun fichier de `src/` n'a été touché.**
 
-La planche à ouvrir :
-`https://florianmarrins0978-svg.github.io/Atlas-app/l-accueil-a-bout-de-bras.html`
+**Deux planches, et elles ne disent pas la même chose :**
+
+| | |
+|---|---|
+| **Ma journée** — repartie de zéro, comme vous l'avez demandé | `https://florianmarrins0978-svg.github.io/Atlas-app/ma-journee.html` |
+| **À bout de bras** — votre écran d'aujourd'hui, rendu lisible | `https://florianmarrins0978-svg.github.io/Atlas-app/l-accueil-a-bout-de-bras.html` |
+
+---
+
+## Le défaut que vous avez trouvé — et il est dans l'APPLICATION
+
+**Vos mots, le 6 septembre :** *« les autres devis à regarder, on peut cliquer
+dessus pour agrandir la fenêtre mais on peut pas la refermer »*.
+
+**Vous avez raison, et ce n'est pas un défaut de la maquette.** Dans
+l'application, `src/app/Notifications.tsx` ligne 564 : l'appui pose
+`setToutVoir(true)`, et il n'existe aucun retour. Pire, le bouton **disparaît**
+une fois déplié — il ne reste plus rien à toucher. La seule façon de replier est
+de quitter l'écran et d'y revenir.
+
+C'est votre propre règle du 5 septembre, « une erreur se rattrape » : un geste
+sans retour en est une. La planche porte maintenant **« Replier »** — un verbe,
+un mot. **À corriger dans l'application au même endroit**, et c'est deux lignes.
 
 ---
 
@@ -272,11 +293,99 @@ vous préviendrai avant de la lancer.
 
 ---
 
+## « Ma journée » — la page repartie de zéro
+
+**Votre demande, le 6 septembre :** *« oublie ma page, oublie ce qu'on m'a déjà
+proposé, repars à 0 et crée-moi une page d'accueil adaptée à mes besoins »*.
+
+`https://florianmarrins0978-svg.github.io/Atlas-app/ma-journee.html`
+
+### L'idée, en une phrase
+
+**L'accueil ne décrit plus des états, il donne du travail.**
+
+Aujourd'hui il écrit « Devis envoyé · sans réponse » : un état, qu'il faut
+traduire avant d'agir. Debout au soleil, à soixante-cinq ans, cette traduction
+est ce qui coûte.
+
+**Et votre application sait DÉJÀ dire le geste.** La fonction `getNextAction()`
+(`src/lib/chantier-etat.ts`) le calcule pour chaque chantier — « Envoyer le
+devis au client », « Préparer le devis », « Calculer le prix », « Ajouter des
+photos ». Elle ne sert qu'à décider où mène un appui. **Elle n'est écrite nulle
+part à l'écran.** Rien n'est donc inventé ici : ce sont vos mots, déjà calculés,
+enfin affichés.
+
+### Ce qu'il y a dessus, et rien d'autre
+
+| | |
+|---|---|
+| **le jour**, en grand | il situe, et il ne demande rien |
+| **Aujourd'hui** | où vous allez, avec l'adresse — celle que vous tapez dans votre GPS |
+| **À faire** | un geste par ligne, au verbe, rangé par ce qui attend depuis le plus longtemps |
+| **un seul bouton**, sous le pouce | « Nouveau chantier », avec son mot écrit |
+| **les cinq sections** | en bas, en bas de casse et lisibles |
+
+Ce que le client a **écrit** est là, mot pour mot, en serif — c'est la seule
+chose de cet écran que l'application n'a pas rédigée.
+
+### Ce qui a été mis de côté, et je le nomme
+
+Le **fil** et sa **perle**. Les **cartes** de notification. « **ATLAS** », le
+titre « **Vos chantiers** », le compteur « **En cours** », le lien « **Vos
+clients** ». Le mot et l'**anneau** de « Créer un devis », son battement et ses
+onze grains. Le **glissement** qui retire un chantier — pour retirer, on ouvre
+le chantier.
+
+Rien de tout cela n'est jugé mauvais. Vous avez demandé une page neuve.
+
+### Un vrai défaut trouvé sur le chemin, et il touche TOUS vos boutons
+
+Le mot écrit sur vos boutons verts tient **2,97** de contraste. Vous avez choisi
+ce vert le 3 septembre en connaissance de cause — le « 3,0 » était écrit en
+rouge sous chaque bouton de la planche —, **mais ce que vous avez choisi, c'est
+l'aplat, pas la couleur du mot**.
+
+| Sur votre vert #7d9a6d | Contraste |
+|---|---|
+| le mot en crème — ce que fait l'application | **2,97** |
+| le mot en encre — ce que fait la planche | **5,46** |
+
+**Votre vert ne bouge pas d'un cheveu.** C'est le mot qui change de couleur, et
+il devient lisible au soleil. Le contrôle qui devrait l'attraper regarde
+l'ancienne couleur des boutons (`test-chartes-lisibles.ts` mesure `card` contre
+`rust`, pas contre `plein`) : il ne peut pas voir le défaut.
+
+### Les chiffres, relevés par la planche elle-même
+
+| Matin chargé — deux chantiers aujourd'hui, cinq gestes | |
+|---|---|
+| gestes lisibles sans défiler | **3 sur 7** |
+| le plus petit texte | **11 px** (les cinq sections du bas) ; rien de ce qui se lit n'est sous 15 |
+| le pire contraste | **4,59** — passe 4,5 |
+| la plus petite cible | **44 px** |
+
+Sur **Nuit**, le pire contraste est 6,14. Les pôles s'inversent proprement : le
+bouton devient clair et son mot devient sombre.
+
+### Ce qu'il faut me dire
+
+| | |
+|---|---|
+| **« Aujourd'hui » montre des chantiers rangés au planning** | Votre règle du 6 août dit qu'un chantier ne figure que dans un seul onglet. Les trois onglets la gardent — c'est l'accueil qui cesse d'être l'un d'eux pour devenir la page qui répond à « et maintenant ? ». **Si vous refusez, cette rubrique tombe** et le reste tient sans elle |
+| **Le bouton vert en bas** | Vous aviez refusé « ce gros bouton en plein milieu, ça ne fait pas très luxe ». Celui-ci n'est pas au milieu et porte son mot — dites-moi s'il vous gêne quand même |
+| **« Ma journée » remplace « Chantiers »** dans la barre du bas | |
+| **L'écran du premier jour** est le jour, du vide, et un bouton | Aucune phrase, comme vous l'avez demandé le 25 août. Si ce vide vous gêne, c'est une ligne à ajouter |
+
+---
+
 ## Ce qui reste ouvert, et qui peut le trancher
 
 | Question | Qui tranche |
 |---|---|
-| **Les deux propositions d'accueil** — la mienne et celle du 3 septembre. On fait les deux, une seule, ou aucune ? | **vous** |
+| **Les trois propositions d'accueil** — « Ma journée » (repartie de zéro), « À bout de bras » (le vôtre rendu lisible) et celle du 3 septembre. Une, deux, ou aucune | **vous** |
+| **Le mot des boutons verts en encre plutôt qu'en crème** — 2,97 → 5,46, sur tous les écrans, sans toucher à votre vert | **vous**, mais je le recommande |
+| **Le dépliage sans repli** (`Notifications.tsx:564`) — deux lignes à corriger dans l'application | n'importe quelle session |
+| **`test-chartes-lisibles.ts` mesure `card` contre `rust`** alors que les boutons portent `plein` depuis le 3 septembre : le contrôle regarde une couleur que plus personne n'emploie | n'importe quelle session |
 | **Un chantier prévu hier passe tout seul dans « Terminés », sans rien dire.** Faut-il qu'il vous le signale sur l'accueil ? La question est dans `TODO.md` depuis le 8 août et ne vous a jamais été posée | **vous** |
 | **Deux bandeaux ou un seul** avant « N autres devis à regarder » | **vous** |
 | **Le compteur de mots qui empêche les écrans de regrossir** n'existe toujours pas. C'était la vraie réponse à « il y aura une quatrième fois » (`docs/QUESTIONS.md` §23) | n'importe quelle session |
