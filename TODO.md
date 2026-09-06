@@ -151,6 +151,26 @@ découpage renverse trois de ses propres réponses (allure B et message A du
 quitte « Devis & factures » — le sommaire des Réglages garde ses douze lignes —,
 mais tout descend d'un cran.
 
+### Ses trois remarques du 7 septembre, portées sur la planche
+
+| | |
+|---|---|
+| **le message** | tout modifiable, **le lien seul verrouillé** — il l'a demandé, et `refusDuMessage` le refuse déjà. Deux façons dessinées, **il doit choisir** : « un seul mot change » (une phrase à lui, et la facture hérite de « choisissez votre date ») ou **« deux phrases à vous »**, une par document — celle que je conseille |
+| **le doré** | **c'était MA planche, pas l'application** : `couleursDocument.accent` vaut `#B98B47`, c'est déjà le défaut de ses documents et la première pastille le porte. Corrigé, avec le papier (`#faf9f5`, pas `#f2efe7`) |
+| **la typographie** | **six au lieu de dix**, tranché par moi comme il l'a demandé. Partent : Source Sans et Work Sans (indistinctes d'Inter), Libre Baskerville (rallonge le devis), Playfair (déliés perdus à l'impression) |
+
+**UN DÉFAUT DU CODE TROUVÉ EN VÉRIFIANT ÇA, et il n'était écrit nulle part.**
+L'aide de la couleur d'accent annonce *« le trait sous le titre, les intitulés,
+et le total à payer »*. **Le total n'est pas coloré** : `document-commun.ts`
+l'écrit à l'encre, et `titrePartie` ne tient que les intitulés de parties et le
+trait. Une phrase d'écran qui promet ce que le PDF ne fait pas — à corriger dans
+le lot du découpage.
+
+**Et une conversion à ne pas oublier en codant les six polices :** un document
+réglé sur une des quatre retirées doit basculer sur la plus proche (Source Sans
+et Work Sans → Inter, Libre Baskerville → Merriweather, Playfair → EB Garamond).
+Sans elle, `typographieDe` retombe sur la police par défaut sans rien dire.
+
 **Ce que le lot coûtera, écrit sur la planche :** quatre adresses sous
 `/reglages/documents`, et **cinq suites** qui lisent ces blocs sur une seule
 page à faire viser la nouvelle adresse (`test-allure-de-mes-devis-e2e`,

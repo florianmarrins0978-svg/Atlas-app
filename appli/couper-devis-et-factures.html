@@ -26,7 +26,7 @@
     - les phrases du récapitulatif : lignesConditionsDevis (conditions-documents.ts)
     - le message : MESSAGE_PAR_DEFAUT et phraseDuDocument (message-client.ts)
     - les cinq formats : FORMATS_NUMERO (numero-documents.ts)
-    - les dix typographies : TYPOGRAPHIES (allure-documents.ts)
+    - les typographies retenues : TYPOGRAPHIES (allure-documents.ts)
 
   Les couleurs viennent de `src/lib/chartes.ts`, les deux pôles compris.
 */
@@ -128,6 +128,10 @@ h2.petit{font-size:29px}
 .cadre{background:var(--plage);border-radius:6px;padding:14px 15px;font-size:14px;
   line-height:1.6;white-space:pre-wrap}
 .jeton{color:var(--or);font-weight:600}
+/* Le seul mot qui ne se retire pas se VOIT comme tel : un mot doré parmi
+   d'autres mots dorés ne dirait plus rien, maintenant qu'ils sont tous
+   modifiables. */
+.jeton.verrou{box-shadow:inset 0 0 0 1px var(--or);border-radius:4px;padding:1px 6px}
 .apercus{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .apercu{border:1px solid var(--trait);border-radius:6px;overflow:hidden}
 .apercu .tt{font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding:7px 11px;
@@ -149,7 +153,7 @@ h2.petit{font-size:29px}
 .creux{display:block;width:100%;min-height:52px;border-radius:999px;border:0;margin-top:8px;
   background:none;color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait);
   font:inherit;font-size:15px;cursor:pointer}
-.feuille{border-radius:6px;padding:16px;background:#f2efe7;color:#1c1c1a;
+.feuille{border-radius:6px;padding:16px;background:#faf9f5;color:#1c1c1a;
   box-shadow:inset 0 0 0 1px var(--trait)}
 .feuille .ent{font-size:17px;line-height:1.2;margin:0}
 .feuille .coord{font-size:10px;color:#6b675e;margin:4px 0 0}
@@ -190,6 +194,11 @@ td b{color:var(--encre)}
   <button type="button" data-vue="coupe" aria-pressed="true">Coupé</button>
   <button type="button" data-vue="aujourdhui" aria-pressed="false">Aujourd'hui</button>
   <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+  <br>
+  <!-- Ces deux-là ouvrent l'écran du message : un bouton qui ne montre rien
+       quand on l'appuie s'apprend à être ignoré. -->
+  <button type="button" data-facon="C" aria-pressed="true">Message : deux phrases à vous</button>
+  <button type="button" data-facon="A" aria-pressed="false">Message : un seul mot change</button>
 </div>
 
 <div class="tete">
@@ -202,6 +211,12 @@ td b{color:var(--encre)}
   écran court. <b>Touchez-les</b>, et revenez par le chevron du haut. Puis
   basculez sur <b>« Aujourd'hui »</b> : c'est exactement le même contenu, d'une
   seule coulée.</p>
+  <p><b>Vos trois remarques du 7 septembre y sont</b> : le message est
+  entièrement modifiable et seul le lien reste verrouillé (les deux boutons du
+  haut comparent les deux façons de garder le mot juste), le <b>doré</b> est
+  revenu dans les couleurs d'accent — <b>c'était une erreur de ma planche, pas
+  de l'application</b> —, et la typographie passe de <b>dix choix à six</b>.
+  Le détail de chacune est sous l'écran.</p>
 </div>
 
 <div class="scene">
@@ -259,6 +274,77 @@ td b{color:var(--encre)}
   dira » se recalcule tout seul, « Ce qui ne se coupe pas » est obligatoire.
   Ils n'ouvrent donc aucune ligne : ils vivent dans le premier écran, juste
   sous les interrupteurs qu'ils commentent.</p>
+
+  <h3>Le message : tout se modifie, sauf le lien</h3>
+  <p>Votre demande du 7 septembre. Aujourd'hui <b>quatre mots sont verrouillés</b> ;
+  demain, <b>un seul</b> — le lien, encadré d'or dans l'écran. Sans lui, votre
+  client ne peut ni ouvrir son devis ni choisir sa date, et votre planning ne
+  reçoit rien : l'application refuse déjà d'enregistrer un message sans lui, et
+  ça ne change pas.</p>
+  <p><b>Mais « je modifie la phrase du milieu » a un prix</b>, et les deux
+  boutons du haut vous le montrent en vrai — regardez l'aperçu <b>de droite</b>,
+  celui de la facture :</p>
+  <table>
+    <tr><th>La façon</th><th>Ce que ça donne</th></tr>
+    <tr><td><b>Un seul mot change</b><br>vous écrivez une phrase, seul « devis »
+      devient « facture »</td>
+      <td>votre facture dit « choisissez votre date d'intervention », et le
+      numéro comme l'échéance <b>disparaissent</b>. C'est visible dans l'aperçu</td></tr>
+    <tr><td><b>Deux phrases à vous</b><br>une pour le devis, une pour la
+      facture — les deux modifiables</td>
+      <td>rien ne peut se contredire. Le numéro et l'échéance restent posés tout
+      seuls, là où ils ont un sens. <b>C'est celle que je vous conseille</b></td></tr>
+  </table>
+  <p><b>Le mot juste par construction :</b> dans la seconde façon, vous n'avez
+  même pas à y penser — la phrase du devis dit « devis », celle de la facture
+  dit « facture ». C'est exactement ce que vous demandiez.</p>
+  <p><b>Et l'échéance emporte ses mots avec elle :</b> sur un devis, le
+  « , à régler avant le … » disparaît en entier. Un trou qui laisserait
+  « Voici votre devis , . » serait pire que pas de trou du tout.</p>
+
+  <h3>Le doré : c'est ma planche qui l'avait perdu</h3>
+  <p><b>Vous avez raison sur ce que vous voyiez, et je me suis trompé sur la
+  cause.</b> Dans l'application, le doré n'est pas absent : c'est la couleur
+  d'accent <b>par défaut</b> de vos documents, et la première pastille la porte
+  sous le nom « Celui d'aujourd'hui ». C'est cette planche-ci qui l'avait perdue
+  en recopiant les pastilles à la main. Elle est corrigée, et les quatre
+  pastilles se touchent : le devis dessous change.</p>
+  <p><b>Deux autres erreurs de la même recopie</b>, et il vaut mieux qu'elles
+  soient écrites : le papier était dessiné en <span class="nb">#F2EFE7</span>
+  alors que vos documents sont sur <span class="nb">#FAF9F5</span>, et le
+  « Total TTC » y était doré.</p>
+  <p><b>Il ne l'est pas — et l'écran des réglages vous dit le contraire.</b> Il
+  annonce « le trait sous le titre, les intitulés, et le total à payer » ; le
+  total est écrit à l'encre, il n'a jamais changé de couleur. C'est une phrase à
+  corriger dans le code, pas dans cette planche.</p>
+  <p><b>Ce que votre doré coûte, mesuré :</b> <b class="nb">2,9</b> de contraste
+  sur votre papier, là où un texte à lire en demande 4,5. C'est peu, mais ces
+  intitulés se repèrent, ils ne se lisent pas — et c'est déjà ce que portent vos
+  devis aujourd'hui.</p>
+
+  <h3>La typographie : six au lieu de dix</h3>
+  <p>Vous m'avez laissé trancher. J'en enlève quatre, et chacune pour une raison
+  qui se voit sur un devis :</p>
+  <table>
+    <tr><th>Retirée</th><th>Pourquoi</th></tr>
+    <tr><td>Source Sans</td><td>à la taille d'un devis, on ne la distingue pas
+      d'Inter</td></tr>
+    <tr><td>Work Sans</td><td>idem — trois linéales neutres, c'est deux de
+      trop</td></tr>
+    <tr><td>Libre Baskerville</td><td>très large : le même devis prend une page
+      de plus</td></tr>
+    <tr><td>Playfair Display</td><td>ses déliés sont des cheveux ; à 9 px dans un
+      tableau, imprimés ou faxés, ils disparaissent</td></tr>
+  </table>
+  <p><b>Les six qui restent ne se ressemblent pas</b> : la vôtre, une neutre
+  (Inter), une ronde (Lato), une étroite qui tient plus de lignes (Archivo
+  Narrow), et deux à empattements (EB Garamond, Merriweather). Chacune a une
+  raison d'être là.</p>
+  <p><b>Ce qu'il faudra faire en codant :</b> si un devis portait une des quatre
+  retirées, il doit basculer sur la plus proche — Source Sans et Work Sans vers
+  Inter, Libre Baskerville vers Merriweather, Playfair vers EB Garamond. Sans
+  ça, un réglage disparu ferait retomber le document sur la police par défaut
+  sans prévenir personne.</p>
 
   <h3>Ce que ça coûte, dit avant de le faire</h3>
   <ul>
@@ -324,31 +410,103 @@ var FORMATS = [
   ["suite", "Une suite sans année", "Ne repart jamais à 1", "F0012"]
 ];
 
-/* Les dix typographies, depuis TYPOGRAPHIES. */
+/*
+  ── SIX AU LIEU DE DIX — sa consigne du 7 septembre 2026 ───────────────────
+  *« pour la typographie tu peux en enlever ou en changer si tu estimes que
+  certaines sont moches et ne servent à rien »*.
+
+  Quatre partent, et chacune pour une raison qui se voit sur un devis :
+
+  | Retirée | Pourquoi |
+  |---|---|
+  | Source Sans | à la taille d'un devis, on ne la distingue pas d'Inter |
+  | Work Sans   | idem — trois linéales neutres, c'est deux de trop |
+  | Libre Baskerville | très large : le même devis prend une page de plus |
+  | Playfair Display | ses déliés sont des cheveux ; à 9 px dans un tableau, imprimés ou faxés, ils disparaissent |
+
+  Les six qui restent ne se ressemblent pas : une neutre, une ronde, une
+  étroite, deux à empattements, et la sienne. Les noms sont ceux du catalogue
+  (`TYPOGRAPHIES`), à la lettre — on n'en invente aucun.
+*/
 var TYPOS = [
   ["Celle d'aujourd'hui", "Celle de l'appareil · par défaut"],
   ["Inter", "Linéale, neutre"],
   ["Lato", "Linéale, ronde"],
-  ["Source Sans", "Linéale, sobre"],
-  ["Work Sans", "Linéale, franche"],
   ["Archivo Narrow", "Étroite — tient plus de lignes"],
   ["EB Garamond", "Empattements, classique"],
-  ["Libre Baskerville", "Empattements, lisible"],
-  ["Merriweather", "Empattements, solide"],
-  ["Playfair Display", "Empattements, contrasté"]
+  ["Merriweather", "Empattements, solide"]
 ];
 
-var MESSAGE = [
-  "Bonjour [client],", "", "[document]", "", "[lien]", "", "Bien à vous,", "[entreprise]"
-].join("\n");
+/*
+  ── SON MESSAGE, ET CE QU'IL A LE DROIT D'Y TOUCHER — 7 septembre 2026 ──────
 
+  Sa demande : *« un message pré-rempli comme là par défaut, mais ils peuvent
+  tout modifier même le texte en doré, mis à part le lien sinon le planning ne
+  fonctionne plus ; et pour le devis laisser le mot devis, et pour la facture
+  le mot facture »*.
+
+  Le texte ne change pas d'une virgule : c'est MESSAGE_PAR_DEFAUT et
+  phraseDuDocument, mot pour mot. Ce qui change, c'est ce qui est VERROUILLÉ —
+  aujourd'hui les quatre mots dorés le sont ; demain, le lien seul.
+
+  DEUX FAÇONS, parce qu'elles ne coûtent pas la même chose :
+
+  A · un seul mot doré — il écrit UNE phrase, et seul le mot « devis » devient
+      « facture ». C'est le plus simple, et l'aperçu montre ce que ça casse :
+      sa phrase de devis parle de choisir une date, et sa facture la répète.
+
+  C · deux phrases à lui — le message est commun, et la phrase du milieu a sa
+      version devis et sa version facture, toutes deux modifiables. Rien ne peut
+      se contredire, et le numéro et l'échéance restent posés tout seuls là où
+      ils ont un sens.
+
+  (La façon B — cinq petits mots dorés à placer soi-même — a été écartée avant
+  d'être dessinée : elle demande de composer une phrase qui marche pour les deux
+  documents, ce que C donne sans y penser.)
+*/
+var COMMUN = ["Bonjour [prenom],", "", "[phrase]", "", "[lien]", "", "Bien à vous,",
+  "[entreprise]"].join("\n");
+
+/* Sa phrase d'aujourd'hui, telle qu'elle part — le tiret retiré le 25 août. */
 var PHRASE_DEVIS = "Voici votre devis. Vous pouvez le consulter et choisir votre date " +
   "d'intervention. Et si aucune des dates proposées ne vous convient, vous pouvez en " +
   "proposer une autre. Tout se fait sur cette page :";
-var PHRASE_FACTURE = "Voici votre facture F" + AN + "-0008, à régler avant le 21 septembre. " +
+var PHRASE_FACTURE = "Voici votre facture [numero], à régler avant le [echeance]. " +
   "Vous pouvez la consulter et la télécharger ici :";
+/* La phrase unique de la façon A : la même, avec le seul mot qui change. */
+var PHRASE_UNE = "Voici votre [document]. Vous pouvez le consulter et choisir votre date " +
+  "d'intervention. Et si aucune des dates proposées ne vous convient, vous pouvez en " +
+  "proposer une autre. Tout se fait sur cette page :";
 
+var facon = "C";              // "A" ou "C" — la façon montrée
 var formatChoisi = "annee-6";
+
+/*
+  ── « IL MANQUE LE DORÉ » — 7 septembre 2026, ET C'ÉTAIT MA PLANCHE ─────────
+
+  Il a raison sur ce qu'il voyait, et je me suis trompé sur la cause : dans
+  l'application, le doré N'EST PAS absent — c'est la couleur d'accent PAR
+  DÉFAUT de ses documents (`couleursDocument.accent`, #B98B47), et la première
+  pastille de l'écran la porte sous le nom « Celui d'aujourd'hui ». C'est cette
+  planche-ci qui l'avait perdue en recopiant les pastilles à la main.
+
+  Deux autres erreurs de la même recopie, corrigées ici :
+    - le papier était dessiné en #faf9f5 ; ses documents sont sur #faf9f5 ;
+    - le « Total TTC » y était doré. Il ne l'est pas : `document-commun.ts`
+      l'écrit à l'encre, et l'accent ne tient QUE les intitulés de parties et
+      le trait sous le titre.
+
+  Et cette dernière erreur n'est pas que la mienne : l'écran des réglages
+  annonce « le trait sous le titre, les intitulés, ET LE TOTAL À PAYER ». Le
+  total n'a jamais changé de couleur. À corriger dans le code, pas ici.
+*/
+var ACCENTS = [
+  ["#B98B47", "Celui d'aujourd'hui"],
+  ["#2f3b2f", "Vert pin"],
+  ["#6e2433", "Bordeaux"],
+  ["#1c1c1a", "Noir"]
+];
+var accent = "#B98B47";
 
 function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
@@ -419,29 +577,68 @@ function blocCoupe(){
     'de TVA. Les retirer rendrait la facture irrégulière.</p></div>';
 }
 
-function messageColore(phrase){
-  return ech(MESSAGE)
-    .replace("[client]", '<span class="jeton">Mme Larousse</span>')
-    .replace("[document]", '<span class="jeton">' + ech(phrase) + '</span>')
+/*
+  Ce que le client reçoit, pour de bon : on remplace les mots qui se remplissent
+  seuls par ce qu'Atlas y pose. Le doré ne fait que MONTRER ce qui bouge — c'est
+  le même texte, la même ponctuation.
+
+  L'échéance emporte SES MOTS avec elle : sur un devis, « , à régler avant le
+  … » disparaît en entier. Un trou qui laisserait « Voici votre devis , . »
+  serait pire que pas de trou du tout.
+*/
+function remplir(texte, doc){
+  var t = ech(texte)
+    .replace("[prenom]", '<span class="jeton">Mme Larousse</span>')
+    .replace("[document]", '<span class="jeton">' + (doc === "devis" ? "devis" : "facture") + '</span>')
+    .replace("[numero]", '<span class="jeton">' + (doc === "devis" ? "D" : "F") + AN + '-0008</span>')
     .replace("[lien]", '<span class="jeton">https://…</span>')
+    .replace("[entreprise]", "Eden Nature");
+  return doc === "devis"
+    ? t.replace(", à régler avant le [echeance]", "")
+    : t.replace("[echeance]", '<span class="jeton">21 septembre</span>');
+}
+
+function messageRecu(doc){
+  var phrase = facon === "A" ? PHRASE_UNE : (doc === "devis" ? PHRASE_DEVIS : PHRASE_FACTURE);
+  return remplir(COMMUN.replace("[phrase]", phrase), doc);
+}
+
+/* Ce qu'il VOIT dans le cadre : les mots qui se remplissent seuls sont nommés,
+   pas remplis — et ils se modifient tous, sauf le lien. */
+function cadreEcrit(texte){
+  return ech(texte)
+    /* La place de la phrase se dit comme les autres mots dorés : un « ‹ … › »
+       posé là se lisait comme un code, et ce n'est pas sa langue. */
+    .replace("[phrasedudoc]", '<span class="jeton">la phrase du devis, ou celle de la facture</span>')
+    .replace("[prenom]", '<span class="jeton">le prénom</span>')
+    .replace("[document]", '<span class="jeton">devis</span>')
+    .replace("[numero]", '<span class="jeton">le numéro</span>')
+    .replace("[echeance]", '<span class="jeton">l\'échéance</span>')
+    .replace("[lien]", '<span class="jeton verrou">le lien</span>')
     .replace("[entreprise]", "Eden Nature");
 }
 
 function blocMessage(){
-  return '<div class="bloc"><p class="inter">Mon message au client</p>' +
-    '<p class="note" style="margin:0 0 12px">Modifiez ce que vous voulez. Les mots en doré ' +
-    'se remplissent tout seuls et ne se modifient pas.</p>' +
-    '<div class="cadre">' + ech(MESSAGE)
-      .replace("[client]", '<span class="jeton">le prénom</span>')
-      .replace("[document]", '<span class="jeton">la phrase de votre devis / facture</span>')
-      .replace("[lien]", '<span class="jeton">le lien</span>')
-      .replace("[entreprise]", "Eden Nature") + '</div>' +
-    '<p class="inter" style="margin:16px 0 0">Ce que votre client recevra</p>' +
+  var h = '<div class="bloc"><p class="inter">Mon message au client</p>' +
+    '<p class="note" style="margin:0 0 12px">Modifiez tout ce que vous voulez, même les mots ' +
+    'en doré. <b style="color:var(--encre);font-weight:400">Seul le lien ne se retire pas</b> : ' +
+    'sans lui, votre client ne peut ni ouvrir son devis ni choisir sa date.</p>' +
+    '<div class="cadre">' + cadreEcrit(COMMUN.replace("[phrase]",
+      facon === "A" ? PHRASE_UNE : "[phrasedudoc]")) + '</div>';
+
+  if (facon === "C") {
+    h += '<p class="inter" style="margin:18px 0 8px">Quand c\'est un devis</p>' +
+      '<div class="cadre">' + cadreEcrit(PHRASE_DEVIS) + '</div>' +
+      '<p class="inter" style="margin:18px 0 8px">Quand c\'est une facture</p>' +
+      '<div class="cadre">' + cadreEcrit(PHRASE_FACTURE) + '</div>';
+  }
+
+  return h + '<p class="inter" style="margin:18px 0 0">Ce que votre client recevra</p>' +
     '<div class="apercus">' +
     '<div class="apercu"><div class="tt">Envoi d\'un devis</div>' +
-    '<div class="cp">' + messageColore(PHRASE_DEVIS) + '</div></div>' +
+    '<div class="cp">' + messageRecu("devis") + '</div></div>' +
     '<div class="apercu"><div class="tt">Envoi d\'une facture</div>' +
-    '<div class="cp">' + messageColore(PHRASE_FACTURE) + '</div></div>' +
+    '<div class="cp">' + messageRecu("facture") + '</div></div>' +
     '</div></div>';
 }
 
@@ -467,11 +664,16 @@ function blocAllure(){
     '<p class="note" style="margin-bottom:18px">Les couleurs, la police et les mentions. ' +
     'Ni les lignes, ni les prix.</p>' +
     '<p class="inter">L\'allure de la page</p>' +
+    /* L'accent se pose ICI, sur la feuille, et pas seulement dans la pastille :
+       une couleur ne se juge pas sur un rond de 34 px — elle se juge sur le
+       total que le client lit. */
     '<div class="feuille"><p class="ent">Eden Nature</p>' +
-    '<p class="coord">Adresse · SIRET · téléphone</p><div class="filet"></div>' +
-    '<p class="dv">DEVIS</p><p class="sec">ÉMETTEUR · CLIENT</p>' +
+    '<p class="coord">Adresse · SIRET · téléphone</p>' +
+    '<div class="filet" style="background:' + accent + '"></div>' +
+    '<p class="dv">DEVIS</p><p class="sec" style="color:' + accent + '">ÉMETTEUR · CLIENT</p>' +
     '<div class="lg"><span>Taille de haie</span><span>—</span></div>' +
     '<div class="lg"><span>Évacuation des déchets</span><span>—</span></div>' +
+    /* Le total reste à l'encre : c'est ce que le PDF fait vraiment. */
     '<p class="tot">Total TTC</p></div>' +
     '<p class="inter" style="margin:18px 0 8px">Mon logo</p>' +
     '<div style="display:flex;align-items:center;gap:12px"><span style="width:58px;height:58px;' +
@@ -488,19 +690,33 @@ function blocAllure(){
   }
   h += '</div><p class="inter" style="margin:18px 0 8px">Fond de page</p>' +
     '<div style="display:flex;align-items:center;gap:10px">' +
-    '<span style="width:54px;height:44px;border-radius:8px;background:#f2efe7;' +
+    '<span style="width:54px;height:44px;border-radius:8px;background:#faf9f5;' +
     'box-shadow:inset 0 0 0 1px var(--trait)"></span>' +
-    '<span style="font-size:13px;color:var(--encre-douce)">#F2EFE7</span>' +
-    '<span class="pastilles" style="margin-left:auto"><i style="background:#f2efe7"></i>' +
+    '<span style="font-size:13px;color:var(--encre-douce)">#FAF9F5</span>' +
+    '<span class="pastilles" style="margin-left:auto"><i style="background:#faf9f5"></i>' +
     '<i style="background:#ffffff"></i><i style="background:#ece9e1"></i>' +
     '<i style="background:#e8e8e6"></i></span></div>' +
+    /* LE DORÉ MANQUAIT — sa remarque du 7 septembre 2026. C'est la couleur de
+       son application ; ne pas l'offrir sur ses documents était un oubli, pas
+       une décision. Sa valeur vient de la charte, jamais d'un hexa retapé à
+       l'œil. */
     '<p class="inter" style="margin:18px 0 8px">Couleur d\'accent</p>' +
     '<div style="display:flex;align-items:center;gap:10px">' +
-    '<span style="width:54px;height:44px;border-radius:8px;background:#2f3b2f;' +
+    '<span style="width:54px;height:44px;border-radius:8px;background:' + accent + ';' +
     'box-shadow:inset 0 0 0 1px var(--trait)"></span>' +
-    '<span style="font-size:13px;color:var(--encre-douce)">#2F3B2F</span>' +
-    '<span class="pastilles" style="margin-left:auto"><i style="background:#2f3b2f"></i>' +
-    '<i style="background:#6e2433"></i><i style="background:#1c1c1a"></i></span></div>' +
+    '<span style="font-size:13px;color:var(--encre-douce)">' + accent.toUpperCase() + '</span>' +
+    '<span class="pastilles" style="margin-left:auto">' + ACCENTS.map(function(a){
+      return '<i data-accent="' + a[0] + '" title="' + a[1] + '" style="background:' + a[0] +
+        (accent === a[0] ? ';box-shadow:0 0 0 2px var(--fond),0 0 0 4px var(--or)' : "") +
+        '"></i>';
+    }).join("") + '</span></div>' +
+    '<p class="note">Le trait sous le titre et les intitulés « Émetteur » / ' +
+    '« Client ». Pas le total : il reste à l\'encre.</p>' +
+    (accent === "#B98B47"
+      ? '<p class="note">Votre doré tient <b style="color:var(--encre);font-weight:400">2,9 de ' +
+        'contraste</b> sur votre papier, là où un texte à lire en demande 4,5. C\'est peu — mais ' +
+        'ces intitulés se repèrent, ils ne se lisent pas.</p>'
+      : "") +
     '<p class="note">Enregistré au fur et à mesure.</p>';
   return h + '</div>';
 }
@@ -590,6 +806,11 @@ function brancher(){
     formatChoisi = this.getAttribute("data-format");
     var haut = defile.scrollTop; dessiner(); defile.scrollTop = haut;
   });
+  var ac = defile.querySelectorAll("[data-accent]");
+  for (var q = 0; q < ac.length; q++) ac[q].addEventListener("click", function(){
+    accent = this.getAttribute("data-accent");
+    var haut = defile.scrollTop; dessiner(); defile.scrollTop = haut;
+  });
 }
 
 /*
@@ -616,6 +837,23 @@ for (var b2 = 0; b2 < boutons.length; b2++) {
     for (var k2 = 0; k2 < boutons.length; k2++)
       boutons[k2].setAttribute("aria-pressed",
         String(boutons[k2].getAttribute("data-vue") === vue));
+    dessiner();
+  });
+}
+
+var faconsBoutons = document.querySelectorAll("[data-facon]");
+for (var b3 = 0; b3 < faconsBoutons.length; b3++) {
+  faconsBoutons[b3].addEventListener("click", function(){
+    facon = this.getAttribute("data-facon");
+    for (var k3 = 0; k3 < faconsBoutons.length; k3++)
+      faconsBoutons[k3].setAttribute("aria-pressed",
+        String(faconsBoutons[k3].getAttribute("data-facon") === facon));
+    /* On emmène à l'écran du message : sinon le bouton change quelque chose
+       qu'on ne voit pas. */
+    vue = "coupe"; ouvert = "message";
+    for (var k4 = 0; k4 < boutons.length; k4++)
+      boutons[k4].setAttribute("aria-pressed",
+        String(boutons[k4].getAttribute("data-vue") === "coupe"));
     dessiner();
   });
 }
