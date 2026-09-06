@@ -8,7 +8,7 @@ import { estAuCalendrier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
-import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
 import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
   cleCreneau,
@@ -17,6 +17,17 @@ import {
   type JourIso,
 } from "@/server/disponibilites";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
+import { noterAbsenceAction, retirerAbsenceAction } from "@/app/reglages/actions";
+
+/**
+ * Une absence, telle que le PLANNING en a besoin.
+ *
+ * `AbsenceEquipe` — ce que lit le calcul de disponibilité — ne porte que
+ * l'équipe et les dates. L'écran, lui, a besoin de deux choses de plus :
+ * l'`id` pour retirer la ligne d'un appui, et le `rang` pour écrire le NOM de
+ * la personne au lieu d'un numéro.
+ */
+export type AbsenceDuPlanning = AbsenceEquipe & { id: string; rang: number };
 import { communeDeLAdresse } from "@/lib/commune-adresse";
 import {
   jourLisibleCourt,
@@ -186,7 +197,12 @@ export default function PlanningClient({
    * calendrier montrerait un jour libre que l'écran d'envoi refuserait au
    * client — deux vérités sur la même capacité, sur deux écrans qui se suivent.
    */
-  absences?: AbsenceEquipe[];
+  /**
+   * Les absences de la fenêtre — avec leur `id` et le `rang` de la personne
+   * depuis le 6 septembre 2026, pour que le planning puisse fermer et rouvrir
+   * un jour sans quitter l'écran (`ARCHITECTURE.md` §267).
+   */
+  absences?: AbsenceDuPlanning[];
   /**
    * Le RÔLE de la personne, résolu au serveur (`src/app/planning/page.tsx`).
    *
@@ -367,9 +383,98 @@ export default function PlanningClient({
    * évite d'écrire une seconde fois la règle des bornes incluses, qui vit dans
    * `src/lib/absences-equipe.ts`.
    */
+  /**
+   * ─── FERMER UN JOUR DEPUIS LE PLANNING — 6 septembre 2026 ────────────────
+   *
+   * **Ce qui existait déjà, et qu'on ne refait pas.** Une absence retire une
+   * place ce jour-là, et les trois chemins la voient : l'écran d'envoi, l'envoi
+   * lui-même, et la revérification quand le client répond
+   * (`envois-devis.ts`, `fusionnerAbsences`). Ce lot ne touche PAS à ce
+   * calcul — il ne fait que rapprocher le geste.
+   *
+   * **Ce qui manquait :** pour dire « je ne suis pas là mardi », il fallait
+   * quitter le planning, ouvrir Réglages, puis Équipe, descendre jusqu'aux
+   * absences et taper deux dates. Le geste vit désormais là où il regarde ses
+   * jours.
+   *
+   * **La liste est tenue ICI, en état.** Sans cela, fermer un jour n'aurait
+   * rien changé à l'écran avant un rechargement — et il aurait appuyé deux
+   * fois, ce qui pose deux absences.
+   */
+  const [absencesVues, setAbsencesVues] = useState<AbsenceDuPlanning[]>(absences);
+
+  /**
+   * **Le serveur reste la source.** Une navigation qui rend des absences
+   * neuves doit les remplacer, pas les laisser périmées derrière un état local.
+   *
+   * **Ajusté PENDANT le rendu, pas dans un effet.** Écrit en `useEffect`, ce
+   * rattrapage repeint l'écran une seconde fois pour rien — et la règle de
+   * lint le refuse (« cascading renders »). Comparer la liste précédente ici
+   * est le geste que React documente pour ce cas précis : le rendu en cours est
+   * abandonné et repris avec la bonne valeur, sans passer par le navigateur.
+   */
+  const [absencesRendues, setAbsencesRendues] = useState(absences);
+  if (absencesRendues !== absences) {
+    setAbsencesRendues(absences);
+    setAbsencesVues(absences);
+  }
+
   const absentesParCreneau = useMemo(
-    () => fusionnerAbsences(new Map(), absences, nombreEquipes),
-    [absences, nombreEquipes]
+    () => fusionnerAbsences(new Map(), absencesVues, nombreEquipes),
+    [absencesVues, nombreEquipes]
+  );
+
+  /** Qui n'est pas là ce jour-là — par rang, avec l'`id` pour pouvoir défaire. */
+  const absencesDuJour = useCallback(
+    (jour: JourIso) =>
+      absencesVues.filter((a) => a.premierJour <= jour && jour <= a.dernierJour),
+    [absencesVues]
+  );
+
+  /**
+   * Fermer une journée pour une personne — une absence d'UN jour.
+   *
+   * **Optimiste, comme le reste du planning** : le doigt doit voir tout de
+   * suite. Si le serveur refuse, on retire la ligne posée d'avance plutôt que
+   * de laisser un jour barré qui ne l'est pas — un jour qu'il croit fermé et
+   * qui part chez un client est exactement ce qu'on cherche à éviter.
+   */
+  const fermerLeJour = useCallback(
+    async (jour: JourIso, rang: number) => {
+      const provisoire: AbsenceDuPlanning = {
+        id: `provisoire-${rang}-${jour}`,
+        equipeId: `provisoire-${rang}`,
+        rang,
+        premierJour: jour,
+        dernierJour: jour,
+      };
+      setAbsencesVues((v) => [...v, provisoire]);
+
+      const formulaire = new FormData();
+      formulaire.set("rang", String(rang));
+      formulaire.set("premierJour", jour);
+      formulaire.set("dernierJour", jour);
+      const r = await noterAbsenceAction(formulaire);
+
+      setAbsencesVues((v) =>
+        r.ok
+          ? v.map((a) => (a.id === provisoire.id ? { ...a, id: r.id } : a))
+          : v.filter((a) => a.id !== provisoire.id)
+      );
+    },
+    []
+  );
+
+  /** Rouvrir : on retire la ligne, et on la remet si le serveur n'a pas suivi. */
+  const rouvrirLeJour = useCallback(
+    async (id: string) => {
+      const retiree = absencesVues.find((a) => a.id === id);
+      if (!retiree) return;
+      setAbsencesVues((v) => v.filter((a) => a.id !== id));
+      const r = await retirerAbsenceAction(id);
+      if (!r.ok) setAbsencesVues((v) => [...v, retiree]);
+    },
+    [absencesVues]
   );
 
   const occupationDe = useCallback(
@@ -649,6 +754,9 @@ export default function PlanningClient({
   const gestesCarte = {
     ecriture: ouvertes.ecriture,
     nombreSalaries,
+    absencesDuJour,
+    fermerLeJour,
+    rouvrirLeJour,
     ouvert,
     setOuvert,
     feuille,
@@ -1470,6 +1578,140 @@ function AjoutAuJour({
 }
 
 /**
+ * « Je ne suis pas là ce jour-là » — le raccourci du 6 septembre 2026.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE QUE CE COMPOSANT NE FAIT PAS, ET C'EST L'ESSENTIEL.** Il ne décide RIEN
+ * de la disponibilité. Fermer un jour écrit une absence d'un jour — la même
+ * ligne que l'écran des Réglages —, et c'est `fusionnerAbsences` qui, comme
+ * depuis le 14 août, retire la place. Les trois chemins la voient déjà :
+ * l'écran d'envoi, l'envoi, et la revérification quand le client répond.
+ *
+ * **Une seconde façon de fermer un jour aurait divergé de la première**
+ * (`CLAUDE.md` §3), et c'est la disponibilité qui l'aurait payé : un jour
+ * fermé ici mais ouvert là-bas part chez un client.
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * **SANS SALARIÉ, UN SEUL APPUI.** Sa correction du 6 septembre : *« c'est pas
+ * les équipes, c'est le nom des salariés qu'il faut mettre »*. Quand il
+ * travaille seul, il n'y a personne à désigner : une ligne, un appui, le jour
+ * se ferme. La question « qui ? » ne s'ouvre que s'il a quelqu'un — la poser à
+ * un artisan seul serait un geste de plus pour rien.
+ *
+ * **RIEN DE CACHÉ** (`PRODUCT.md`) : pas d'appui long, pas de glissement. Une
+ * ligne visible dans la carte qu'il ouvre déjà en touchant un jour.
+ *
+ * **UN JOUR PASSÉ NE SE FERME PAS** : l'appelant ne rend ce bloc que sur un
+ * jour à venir, par le même drapeau `ecriture` que le reste de la carte.
+ */
+function PasLaCeJour({
+  jour,
+  absences,
+  lignesEquipes,
+  nombreSalaries,
+  nomEquipe,
+  fermer,
+  rouvrir,
+}: {
+  jour: JourIso;
+  absences: AbsenceDuPlanning[];
+  lignesEquipes: { rang: number; nom?: string | null }[];
+  nombreSalaries: number;
+  nomEquipe: (rang: number) => string;
+  fermer: (jour: JourIso, rang: number) => void;
+  rouvrir: (id: string) => void;
+}) {
+  const [demande, setDemande] = useState(false);
+
+  // **Le rang 1, c'est LUI.** Sans salarié, la seule ligne d'équipe qui existe
+  // est la sienne : fermer le jour revient à noter son absence à ce rang-là.
+  const rangs = nombreSalaries > 0 ? lignesEquipes.map((e) => e.rang) : [1];
+  const absentsParRang = new Map(absences.map((a) => [a.rang, a]));
+  const tousAbsents = rangs.every((r) => absentsParRang.has(r));
+
+  const ligne = "flex min-h-[48px] w-full items-center justify-between gap-3 py-[11px] text-left";
+
+  return (
+    <div className="mt-1 border-t pt-1" style={{ borderColor: colors.lineSoft }}>
+      {/* Ce qui est déjà fermé se DIT, et se défait du même geste. */}
+      {absences.map((a) => (
+        <button
+          key={a.id}
+          type="button"
+          data-atlas="rouvrir-le-jour"
+          onClick={() => rouvrir(a.id)}
+          className={ligne}
+        >
+          <span className="min-w-0 flex-1 text-[14.5px]" style={{ color: colors.ink }}>
+            {nombreSalaries > 0
+              ? `${nomEquipe(a.rang)} n\u2019est pas là`
+              : "Vous n\u2019êtes pas là"}
+          </span>
+          <span className={texteSituation} style={{ color: colors.muted, flex: "none" }}>
+            Annuler
+          </span>
+        </button>
+      ))}
+
+      {!tousAbsents &&
+        (nombreSalaries === 0 ? (
+          <button
+            type="button"
+            data-atlas="fermer-le-jour"
+            onClick={() => fermer(jour, 1)}
+            className={ligne}
+            style={{ color: colors.ink }}
+          >
+            <span className="text-[14.5px]">Je ne suis pas là</span>
+          </button>
+        ) : !demande ? (
+          <button
+            type="button"
+            data-atlas="fermer-le-jour"
+            onClick={() => setDemande(true)}
+            className={ligne}
+            style={{ color: colors.ink }}
+          >
+            <span className="text-[14.5px]">Quelqu&apos;un n&apos;est pas là</span>
+          </button>
+        ) : (
+          /* **La question ne s'ouvre QUE s'il a quelqu'un.** Fermer la journée
+             entière quand une seule personne manque lui coûterait un chantier
+             que l'autre pouvait faire. */
+          <div className="py-2">
+            <p className={`mb-2 ${texteSituation}`} style={{ color: colors.inkSoft }}>
+              Qui n&apos;est pas là&nbsp;?
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {rangs
+                .filter((r) => !absentsParRang.has(r))
+                .map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    data-atlas="qui-nest-pas-la"
+                    onClick={() => {
+                      fermer(jour, r);
+                      setDemande(false);
+                    }}
+                    className="min-h-[48px] rounded-full px-4 text-[14px]"
+                    style={{
+                      backgroundColor: colors.card,
+                      color: colors.ink,
+                      boxShadow: `inset 0 0 0 1px ${colors.line}`,
+                    }}
+                  >
+                    {nomEquipe(r)}
+                  </button>
+                ))}
+            </div>
+          </div>
+        ))}
+    </div>
+  );
+}
+
+/**
  * LA FICHE D'UNE JOURNÉE — écrite UNE fois, branchée à deux endroits.
  *
  * Sous le calendrier quand on touche un jour, et sous une ligne des planifiés.
@@ -1502,9 +1744,16 @@ function CarteDuJour({
   retirerDuJour,
   poser,
   taches,
+  absencesDuJour,
+  fermerLeJour,
+  rouvrirLeJour,
 }: {
   cle: string;
   jour: JourIso;
+  /** Qui n'est pas là ce jour-là — voir §267. */
+  absencesDuJour: (jour: JourIso) => AbsenceDuPlanning[];
+  fermerLeJour: (jour: JourIso, rang: number) => void;
+  rouvrirLeJour: (id: string) => void;
   /**
    * Le chantier SEUL qu'on déplie, quand la carte sort d'une ligne des
    * planifiés.
@@ -1645,6 +1894,35 @@ function CarteDuJour({
           >
             {jourLisibleCourt(jour)}
           </p>
+        )}
+
+        {/* ─── « JE NE SUIS PAS LÀ » — sa demande du 6 septembre 2026 ────────
+
+            **IL ÉTAIT EN BAS DE LA CARTE, ET C'EST LA CAPTURE QUI L'A
+            DÉPLACÉ.** Le raisonnement tenait : c'est le geste le moins fréquent
+            des trois, et le mettre en tête ferait lire « pas là » avant de lire
+            ce qui est posé.
+
+            Sur l'écran, il tombait **derrière le tiroir du bas** — `fixed`, à
+            `--atlas-barre`, z-19 — et les noms des salariés étaient coupés en
+            deux. Un geste qu'on ne peut pas viser ne vaut pas son rang dans une
+            liste de priorités.
+
+            **Et l'on n'a PAS ajouté de défilement forcé pour le rattraper** :
+            le dépôt en a retiré un le 3 septembre, précisément parce qu'il
+            soignait le symptôme et non la place. La carte naît sous le doigt,
+            donc son HAUT est visible par construction — c'est là que le geste
+            va. */}
+        {ecriture && !seulement && (
+          <PasLaCeJour
+            jour={jour}
+            absences={absencesDuJour(jour)}
+            lignesEquipes={lignesEquipes}
+            nombreSalaries={nombreSalaries}
+            nomEquipe={nomEquipe}
+            fermer={fermerLeJour}
+            rouvrir={rouvrirLeJour}
+          />
         )}
 
         {blocs.map((bloc, rang) => {
@@ -1889,6 +2167,7 @@ function CarteDuJour({
             poser={poser}
           />
         )}
+
       </div>
       </div>
 

@@ -7,6 +7,32 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-06
+### Fermer un jour depuis le planning, en un appui
+
+Pour dire « je ne suis pas là mardi », il fallait quitter le planning, ouvrir
+Réglages, puis Équipe, descendre jusqu'aux absences et taper deux dates. Le
+geste vit désormais là où il regarde ses jours : toucher le jour, toucher la
+ligne. Avec des salariés, Atlas demande **qui**, par son nom.
+
+**Ce que ça n'ajoute PAS, et c'est l'essentiel** (`ARCHITECTURE.md` §267) :
+aucune seconde façon de fermer un jour. Le geste écrit la MÊME ligne que
+l'écran des Réglages, et c'est le calcul existant qui retire la place. Aucune
+migration, aucune action serveur neuve.
+
+**Une affirmation fausse, corrigée avant d'écrire une ligne.** J'avais dit au
+patron que les absences ne bloquaient pas les dates proposées aux clients : elles
+les bloquent depuis le 14 août. La vérification était bâclée — j'avais cherché
+les appelants d'une fonction de lecture, alors que le calcul interroge la table
+directement. **Chercher les appelants d'une fonction ne dit rien de ce qui lit
+la table.** Le lot a été re-cadré en raccourci.
+
+**Vu à la capture, par aucun test :** posé en bas de la carte, le geste tombait
+derrière le tiroir du bas — `fixed`, z-19 — et les noms des salariés étaient
+coupés en deux. Un geste inatteignable ne vaut pas son rang dans une liste de
+priorités : il est passé sous la date du jour.
+
+Planche : `appli/pas-la-ce-jour.html`. Détail : `docs/lot-pas-la-ce-jour.md`.
+
 ### La barre d'enregistrement était écrite trois fois, et la TVA restait coupée en deux
 
 **Le correctif d'hier n'avait atteint qu'un écran sur trois.** « Mon

@@ -19,6 +19,19 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : fermer un jour depuis le planning (6 septembre 2026)
+
+| | |
+|---|---|
+| **Le geste** | toucher un jour, toucher « Je ne suis pas là ». Avec des salariés, Atlas demande **qui**, par son nom. Se défait du même geste. Un jour passé ne se ferme pas |
+| **Ce qui n'a PAS été ajouté** | aucune seconde façon de fermer un jour : la même ligne que l'écran des Réglages, le même calcul. **Aucune migration, aucune action serveur neuve** |
+| **Corrigé auprès du patron** | je lui avais dit que les absences ne bloquaient pas les dates de ses clients — **c'était faux**, elles les bloquent depuis le 14 août. Le lot a été re-cadré en raccourci |
+| **Vu à la capture** | le geste, posé en bas de la carte, tombait derrière le tiroir du bas et les noms étaient coupés. Remonté sous la date du jour |
+| **Le contrôle** | `test-pas-la-ce-jour-e2e` — mesure l'atteignabilité, pas la présence ; rougit sur quatre cas quand on retire le geste ; rend la base comme il l'a trouvée |
+
+---
+
+
 ## FAIT : « Mon entreprise », et la barre écrite trois fois (6 septembre 2026)
 
 **Quatrième des six lots de la reprise des Réglages.**

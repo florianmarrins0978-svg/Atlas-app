@@ -156,16 +156,18 @@ le contenu qui passe dessous, ce qui est le prix de sa réponse B.
 
 ---
 
-## Les deux lots qui restent sur les Réglages
+## Le lot qui reste sur les Réglages, et la décision Google
 
 Ouverts par sa consigne du 5 septembre 2026 (`PRODUCT.md`). L'ordre est celui
-qu'il a accepté ; **les quatre premiers sont faits** — le sommaire (§262),
-l'en-tête unique (§263), « Devis & factures » (§264) et « Mon entreprise »
-(§266). Le texte lisible au soleil (§265) s'y est ajouté en cours de route.
+qu'il a accepté ; **les cinq premiers sont faits** — le sommaire (§262),
+l'en-tête unique (§263), « Devis & factures » (§264), « Mon entreprise » (§266)
+et le raccourci du planning (§267). Le texte lisible au soleil (§265) s'y est
+ajouté en cours de route.
 
 | Lot | Quoi | Ce qui le fonde |
 |---|---|---|
-| 5 | **« Mon agenda »** | **les DEUX raccordements sont hors de portée**, vu à la capture le 6 septembre. Google : créer un identifiant OAuth sur `console.cloud.google.com`, y activer une API — et l'écran s'annonce lui-même « pas encore disponible » tant que ce n'est pas fait. iCloud : un « mot de passe pour les apps » chez Apple, seize lettres à recopier. **Ce qu'il faut changer, c'est ce qu'on demande, pas la façon de le demander** — donc c'est au patron de trancher |
+| **Google** | **une décision du patron, pas un lot de code.** Le formulaire d'identifiants Google est un DÉPANNAGE : chaque artisan devrait créer son projet chez Google, activer une API et coller un identifiant OAuth. Le code sait déjà employer des identifiants ATLAS posés une fois pour tous — `ATLAS_GOOGLE_CLIENT_ID`, `ATLAS_GOOGLE_CLIENT_SECRET`, `ATLAS_GOOGLE_REDIRECTION` dans `src/server/agenda/google.ts` —, et ils ne sont posés nulle part (vérifié le 6 septembre 2026 sur son `.env`). **C'est à lui de les créer**, avec son compte. ⚠ À vérifier avant de le lui promettre : Google fait valider les applications qui touchent aux agendas, et le délai n'est pas connu ici |
+| **iCloud** | rien de mieux n'existe : Apple n'offre que le mot de passe pour les apps. À laisser tel quel |
 | 6 | **le reste** | Équipe (**proposition C** de la planche 96, décidée le 6 septembre, pas codée), notifications, mot de passe, données, couleurs, IA, abonnement, compte |
 
 ---

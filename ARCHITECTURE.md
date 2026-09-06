@@ -23804,3 +23804,86 @@ rouges de machine qui vont et viennent :
 **On adapte le contrôle, on ne remet pas ce qui a été retiré** (`CLAUDE.md`
 §5 bis). Et l'on vise ce qui ne bouge pas — un repère, une adresse, une règle —
 plutôt qu'un mot que l'écran a le droit de changer demain.
+
+---
+
+## §267. Fermer un jour depuis le planning — un raccourci, pas un mécanisme
+
+**6 septembre 2026.** Pour dire « je ne suis pas là mardi », il fallait quitter
+le planning, ouvrir Réglages, puis Équipe, descendre jusqu'aux absences et taper
+deux dates. Le geste vit désormais là où il regarde ses jours.
+
+### CE QUE CE LOT N'AJOUTE PAS, ET C'EST L'ESSENTIEL
+
+**Aucune seconde façon de fermer un jour.** Le geste écrit **la même ligne** que
+l'écran des Réglages — une absence d'un jour, par `noterAbsenceAction` —, et
+c'est `fusionnerAbsences` qui retire la place, comme depuis le 14 août. Les
+trois chemins la voient déjà : l'écran d'envoi, l'envoi, la revérification de la
+réponse du client.
+
+Une seconde implémentation aurait divergé (`CLAUDE.md` §3), et c'est la
+disponibilité qui l'aurait payé : un jour fermé ici mais ouvert là-bas part chez
+un client. **Aucune migration, aucune action serveur neuve.**
+
+Ce qui a changé côté serveur tient en deux champs : `absencesSurLaFenetre` rend
+désormais l'`id` (pour défaire d'un appui) et le `rang` (pour écrire le NOM de
+la personne). Le calcul, lui, n'en lit toujours aucun des deux.
+
+### UNE AFFIRMATION FAUSSE, ET CE QU'ELLE A FAILLI COÛTER
+
+**J'ai dit au patron que les absences « ne bloquaient pas les dates proposées
+aux clients ».** C'était faux, et il a approuvé un lot sur cette base — un lot
+présenté comme « rendre le raccordement d'agenda inutile ».
+
+La vérification était bâclée : j'avais cherché les appelants de
+`listerAbsencesEquipe` — la fonction de LISTE, employée par l'écran des
+Réglages — et conclu que rien ne reliait les absences aux dates. Or
+`contrainteDuPlanning` interroge la **table** directement.
+
+**La leçon : chercher les appelants d'une fonction ne dit rien de ce qui lit la
+table.** Une donnée peut être lue par un chemin qui n'emprunte aucune des
+fonctions qu'on a en tête. Devant une question de ce genre, c'est la TABLE qu'il
+faut suivre.
+
+Corrigé auprès du patron avant d'écrire une ligne, et le lot a été re-cadré en
+raccourci.
+
+### LE GESTE EST EN TÊTE DE CARTE, ET C'EST LA CAPTURE QUI L'Y A MIS
+
+Il était en bas : c'est le geste le moins fréquent des trois, et le mettre en
+tête ferait lire « pas là » avant de lire ce qui est posé. Le raisonnement
+tenait — sur l'écran, il tombait **derrière `TiroirDuBas`**, `fixed` à
+`--atlas-barre`, z-19, et les noms des salariés étaient coupés en deux.
+
+**Un geste inatteignable ne vaut pas son rang dans une liste de priorités.** Il
+est passé sous la date du jour, dont le haut est visible par construction — la
+carte naît sous le doigt (§ du 3 septembre).
+
+**Et l'on n'a PAS ajouté de `scrollIntoView` pour rattraper la place** : le
+dépôt en a retiré un le 3 septembre, précisément parce qu'il soignait le
+symptôme.
+
+### DES NOMS, PAS DES « ÉQUIPES »
+
+Sa correction du 6 septembre : *« c'est pas les équipes, c'est le nom des
+salariés qu'il faut mettre »*. L'application lui donnait déjà raison —
+`libelleSalarie` rend le nom saisi, ou « Salarié 2 » à défaut, et l'écran des
+absences s'en sert depuis toujours. C'est la maquette qui avait inventé le mot.
+
+**La question « qui ? » ne s'ouvre que s'il a au moins un salarié.** Seul, il n'y
+a personne à désigner : un appui suffit. Fermer la journée entière quand une
+seule personne manque lui coûterait un chantier que l'autre pouvait faire.
+
+### LE CONTRÔLE MESURE L'ATTEIGNABILITÉ, PAS LA PRÉSENCE
+
+`scripts/test-pas-la-ce-jour-e2e.ts` part du planning et touche un jour comme
+lui (`CLAUDE.md` §5 quater). Son deuxième cas mesure le **recouvrement** par les
+bandes fixes : `count()` valait déjà 1 quand le geste était inutilisable.
+
+**Il sait échouer :** geste retiré, quatre de ses cinq cas rougissent.
+
+**Il a sali la base une fois.** Une première version a échoué en cours de route
+en laissant deux absences derrière elle ; le tour suivant trouvait un jour déjà
+fermé, ne voyait plus le geste et accusait le code. Il remet désormais le jour à
+l'état ouvert **avant** de commencer et **à la fin** — une suite qui salit la
+base accuse la suivante.

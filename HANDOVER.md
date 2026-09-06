@@ -8,7 +8,42 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — « MON ENTREPRISE », ET LA BARRE ÉCRITE TROIS FOIS (6 septembre 2026)
+## Dernier lot — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)
+
+**Document du lot :** `docs/lot-pas-la-ce-jour.md`.
+**Planche :** `appli/pas-la-ce-jour.html`.
+**Décisions :** `ARCHITECTURE.md` §267.
+
+**⚠ CE LOT N'AJOUTE AUCUN MÉCANISME, et il ne faut pas croire l'inverse.** Le
+geste écrit **la même ligne** que l'écran des Réglages — une absence d'un jour,
+par `noterAbsenceAction` —, et c'est `fusionnerAbsences` qui retire la place,
+comme depuis le 14 août. **Aucune migration, aucune action serveur neuve.**
+
+Côté serveur, deux champs seulement : `absencesSurLaFenetre` rend l'`id` (pour
+défaire d'un appui) et le `rang` (pour écrire le NOM). Le calcul n'en lit aucun.
+
+**UNE AFFIRMATION FAUSSE À CONNAÎTRE, parce qu'elle a failli coûter un lot
+entier.** J'ai dit au patron que les absences « ne bloquaient pas les dates
+proposées aux clients ». **Elles les bloquent depuis le 14 août.** J'avais
+cherché les appelants de `listerAbsencesEquipe` — la fonction de LISTE, employée
+par l'écran des Réglages — alors que `contrainteDuPlanning` interroge la TABLE
+directement.
+
+**Chercher les appelants d'une fonction ne dit rien de ce qui lit la table.**
+
+**Le geste est en TÊTE de carte, sous la date**, et pas en bas : en bas il
+tombait derrière `TiroirDuBas` (`fixed`, z-19) et les noms étaient coupés. Ne
+pas le redescendre « parce que c'est le geste le moins fréquent » — c'était mon
+raisonnement, et la capture l'a démenti.
+
+**`test-pas-la-ce-jour-e2e` mesure l'ATTEIGNABILITÉ**, pas la présence : le
+geste était bien là quand il était inutilisable. Il remet le jour à l'état
+ouvert avant ET après — une première version a sali la base et fait accuser du
+code juste.
+
+---
+
+## Lot précédent — « MON ENTREPRISE », ET LA BARRE ÉCRITE TROIS FOIS (6 septembre 2026)
 
 **Document du lot :** `docs/lot-mon-entreprise.md`.
 **Décisions :** `ARCHITECTURE.md` §266.
