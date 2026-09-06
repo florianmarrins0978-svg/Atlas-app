@@ -118,8 +118,8 @@ td b{color:var(--encre)}
 <body>
 
 <div class="commandes">
-  <button type="button" data-eq="1" aria-pressed="true">Une équipe</button>
-  <button type="button" data-eq="2" aria-pressed="false">Deux équipes</button>
+  <button type="button" data-eq="1" aria-pressed="true">Je suis seul</button>
+  <button type="button" data-eq="2" aria-pressed="false">Deux salariés</button>
   <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
 </div>
 
@@ -128,7 +128,7 @@ td b{color:var(--encre)}
   <h1>« Je ne suis pas là ce jour-là »</h1>
   <p><b>Touchez un jour du calendrier</b>, puis la ligne du bas. Le jour se
   ferme, et il ne part plus chez vos clients. Retouchez-le pour le rouvrir.</p>
-  <p>Le bouton <b>« Deux équipes »</b> en haut montre ce qui change quand vous
+  <p>Le bouton <b>« Deux salariés »</b> en haut montre ce qui change quand vous
   n'êtes pas seul — c'est le seul point sur lequel j'aimerais votre avis.</p>
 </div>
 
@@ -172,17 +172,17 @@ td b{color:var(--encre)}
   </ul>
 
   <h3>Le seul point sur lequel je veux votre avis</h3>
-  <p><b>Quand vous avez deux équipes, « je ne suis pas là » veut dire quoi ?</b>
-  Touchez « Deux équipes » en haut pour voir les deux écrans.</p>
+  <p><b>Quand quelqu'un travaille avec vous, « je ne suis pas là » veut dire
+  quoi ?</b> Touchez « Deux salariés » en haut pour voir les deux écrans.</p>
   <table>
     <tr><th></th><th>Ce que ça donne</th></tr>
-    <tr><td><b>Une équipe</b></td>
+    <tr><td><b>Vous seul</b></td>
       <td>une ligne, un appui, le jour se ferme. C'est le cas de la plupart de vos futurs clients</td></tr>
-    <tr><td><b>Deux équipes ou plus</b></td>
-      <td>Atlas demande <b>laquelle</b> n'est pas là — sinon fermer le jour entier alors qu'une équipe pouvait travailler vous coûterait un chantier</td></tr>
+    <tr><td><b>Un salarié ou plus</b></td>
+      <td>Atlas demande <b>qui</b> n'est pas là, <b>par son nom</b> — sinon fermer le jour entier alors que quelqu'un pouvait travailler vous coûterait un chantier</td></tr>
   </table>
-  <p><b>Ma proposition :</b> ne poser la question que si vous avez plus d'une
-  équipe. Un écran, un geste — et la question n'apparaît que là où elle a un
+  <p><b>Ma proposition :</b> ne poser la question que si vous avez au moins un
+  salarié. Un écran, un geste — et la question n'apparaît que là où elle a un
   sens.</p>
 
   <h3>Ce que ça ne fait pas</h3>
@@ -194,7 +194,7 @@ td b{color:var(--encre)}
 
 <script>
 /*
-  Un seul jeu de jours, deux réglages d'équipes. Le calendrier est faux — c'est
+  Un seul jeu de jours, deux cas : seul, ou avec des salariés. Le calendrier est faux — c'est
   un dessin — mais les gestes sont ceux qu'on coderait.
 */
 var JOURS = [
@@ -206,6 +206,18 @@ var JOURS = [
 ];
 var CHANTIERS = { 2: ["M. Bernard — taille de haie"], 9: ["Mme Larousse — abattage"] };
 
+/*
+  **LES NOMS DE SES SALARIÉS, PAS DES « ÉQUIPES » — sa correction du
+  6 septembre 2026 :** *« c'est pas les équipes, c'est le nom des salariés
+  qu'il faut mettre »*. Il a raison, et l'application lui donnait déjà raison :
+  l'écran des absences affiche déjà `libelleSalarie` (`src/lib/equipes.ts`),
+  c'est-à-dire le nom qu'il a tapé — ou « Salarié 1 » tant qu'il n'a rien tapé.
+  C'est moi qui avais inventé le mot « équipe » dans cette planche.
+
+  **Les deux prénoms ci-dessous sont un EXEMPLE de maquette**, pas des données :
+  chez lui, ce sont les noms qu'il a saisis dans Réglages → Équipe.
+*/
+var SALARIES = ["Kévin", "Thomas"];
 var equipes = 1;
 var touche = null;      // le jour ouvert
 var fermes = {};        // jour → "toutes" | "equipe-1" | "equipe-2"
@@ -249,7 +261,7 @@ function dessinerCarte() {
   h += '<p class="etat">' +
        (ferme
          ? (ferme === "toutes" ? "Personne ne travaille ce jour-là. Il ne part plus chez vos clients."
-                               : "Une équipe n'est pas là. Il reste de la place ce jour-là.")
+                               : (SALARIES[ferme === "equipe-1" ? 0 : 1] + " n'est pas là. Il reste de la place ce jour-là."))
          : chantiers.length
            ? "Un chantier posé."
            : "Rien de posé. Ce jour peut partir chez vos clients.") +
@@ -265,13 +277,13 @@ function dessinerCarte() {
     h += '<button type="button" class="action" data-geste="fermer">Je ne suis pas là</button>';
   } else {
     /*
-      **La question ne se pose QUE s'il a plus d'une équipe.** Fermer le jour
-      entier quand une seule équipe est absente lui coûterait un chantier ; la
+      **La question ne se pose QUE s'il a au moins un salarié.** Fermer le jour
+      entier quand une seule personne est absente lui coûterait un chantier ; la
       poser à un artisan seul serait un geste de plus pour rien.
     */
     h += '<p class="suite">Qui n\'est pas là&nbsp;?</p><div class="equipes">' +
-         '<button type="button" data-geste="equipe-1">Équipe 1</button>' +
-         '<button type="button" data-geste="equipe-2">Équipe 2</button>' +
+         '<button type="button" data-geste="equipe-1">' + SALARIES[0] + '</button>' +
+         '<button type="button" data-geste="equipe-2">' + SALARIES[1] + '</button>' +
          '<button type="button" data-geste="toutes">Les deux</button></div>';
   }
 
