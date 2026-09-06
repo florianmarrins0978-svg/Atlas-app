@@ -51,7 +51,7 @@ les vrais écrans, à 390 × 664 :
 | le sommaire des réglages | 1 145 px | 1 154 | +0,8 % |
 | Équipe | 1 317 px | 1 329 | +0,9 % |
 | Mon entreprise | 2 145 px | 2 201 | +2,6 % |
-| Devis & factures | 4 117 px | 4 352 | +5,7 % |
+| Devis & factures | 4 117 px | 4 350 | +5,7 % |
 
 **Si oui : écran par écran, jamais d'un coup.** 525 emplois en une fois seraient
 invérifiables et croiseraient le travail des autres sessions. Deux morceaux sont
@@ -133,10 +133,30 @@ seulement étaient les miens.
 
 ---
 
-## UNE RÉPONSE ATTENDUE — faut-il couper « Devis & factures » ?
+## IL A RÉPONDU — « on coupe » Devis & factures (7 septembre 2026)
 
-**Posée le 6 septembre 2026**, dans `docs/lot-devis-et-factures.md`. Sans
-réponse à ce jour.
+**Posée le 6 septembre 2026** dans `docs/lot-devis-et-factures.md`, répondue le
+7 : *« On coupe fait une maquette »*.
+
+**La planche est faite et publiée** — `appli/couper-devis-et-factures.html` :
+quatre lignes à l'entrée (Ce qui s'imprime · Mon message au client · Le numéro
+de mes documents · L'allure de mes devis), chacune ouvrant un écran court. Les
+quatre titres sont **ceux de ses six blocs, mot pour mot** ; les deux blocs
+qu'on ne touche pas — le récapitulatif et les mentions obligatoires — n'ouvrent
+aucune ligne et vivent dans le premier écran.
+
+**RIEN N'EST CODÉ, et rien ne se code avant qu'il ait vu la planche.** Ce
+découpage renverse trois de ses propres réponses (allure B et message A du
+23 août, aperçu collé B du 25) : elles restent valables au sens où rien ne
+quitte « Devis & factures » — le sommaire des Réglages garde ses douze lignes —,
+mais tout descend d'un cran.
+
+**Ce que le lot coûtera, écrit sur la planche :** quatre adresses sous
+`/reglages/documents`, et **cinq suites** qui lisent ces blocs sur une seule
+page à faire viser la nouvelle adresse (`test-allure-de-mes-devis-e2e`,
+`test-message-au-client-e2e`, `test-format-numero-e2e`, `test-apercu-colle-e2e`,
+`test-conditions-sur-le-devis`) — elles s'adaptent, elles ne se suppriment pas
+(`CLAUDE.md` §5 bis). Rien en base, rien dans les PDF.
 
 L'écran fait **6,2 écrans** de son téléphone, et il restera long : tout ce qui
 y vit y est parce qu'il l'a décidé, planche en main — l'allure (réponse B du

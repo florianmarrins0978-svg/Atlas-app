@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Couper « Devis &amp; factures » — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  COUPER « DEVIS & FACTURES » — la planche, 7 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Le patron a répondu « on coupe » le 7 septembre, après avoir demandé ce que
+  « couper » voulait dire. Cette planche montre le découpage AVANT tout code
+  (`CLAUDE.md` §3 bis).
+
+  CE QU'ELLE RENVERSE, ET IL FAUT QUE ÇA SE VOIE : trois de ses propres
+  réponses ont mis ces blocs sur UN écran — l'allure « ici et pas dans une
+  rubrique à part » (réponse B, 23 août), le message « ici » (réponse A,
+  23 août), l'aperçu collé (réponse B, 25 août). Elles ont été données quand
+  l'écran portait DEUX blocs ; il en porte SIX. Le découpage ne sort donc rien
+  de « Devis & factures » : il pose un sommaire de quatre lignes DEDANS.
+
+  Les libellés sont recopiés du code, jamais réécrits :
+    - les six interrupteurs et leurs sous-titres : DocumentsClient.tsx
+    - les phrases du récapitulatif : lignesConditionsDevis (conditions-documents.ts)
+    - le message : MESSAGE_PAR_DEFAUT et phraseDuDocument (message-client.ts)
+    - les cinq formats : FORMATS_NUMERO (numero-documents.ts)
+    - les dix typographies : TYPOGRAPHIES (allure-documents.ts)
+
+  Les couleurs viennent de `src/lib/chartes.ts`, les deux pôles compris.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f; --rouille:#9c5b3f;
+  --trait:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28); --scene:#e6e3dc;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de; --rouille:#c07a56;
+  --trait:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28); --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--rouille);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+.scene{display:flex;justify-content:center;padding:22px 16px 6px}
+.colonne{width:390px;max-width:100%}
+.etiquette{text-align:center;font-size:11px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--encre-douce);margin:0 0 10px;min-height:17px}
+.tel{position:relative;width:390px;max-width:100%;height:664px;overflow:hidden;
+  background:var(--fond);border:1px solid var(--trait);border-radius:10px}
+.defile{height:100%;overflow-y:auto;padding:26px 26px 74px}
+.regle{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:10px 0 0}
+
+/* ─── l'écran ───────────────────────────────────────────────────────────── */
+h2.titre{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:36px;
+  line-height:1.02;letter-spacing:-.018em;margin:20px 0 0}
+h2.petit{font-size:29px}
+.surtitre{margin:12px 0 0;font-size:11px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--or)}
+.inter{margin:0 0 10px;font-size:11px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--encre-douce)}
+.pastille{display:flex;align-items:center;justify-content:center;width:40px;height:40px;
+  border-radius:999px;box-shadow:inset 0 0 0 1px var(--trait);font-size:15px;color:var(--gris)}
+
+/* le sommaire : une ligne = un sujet */
+.rub{display:flex;align-items:center;gap:15px;min-height:60px;padding:15px 0;width:100%;
+  border:0;border-bottom:1px solid var(--trait);background:none;text-align:left;
+  color:inherit;font:inherit;cursor:pointer}
+/* 18 px et pas 19 : à 19, « Le numéro de mes documents » passait à la ligne et
+   la liste perdait son pas égal — vu à la capture, par aucun contrôle. */
+.rub .nom{flex:1;font-family:ui-serif,Georgia,serif;font-size:18px;line-height:1.25}
+/* Le dernier filet ferait double emploi avec celui du paragraphe de bas de page. */
+.rub:last-of-type{border-bottom:0}
+.ico{flex:none;width:22px;height:22px;border:1.6px solid var(--or);border-radius:50%;opacity:.55}
+/* Le chevron porte une VRAIE fonction — il montre où l'on va, il ne décore pas. */
+.chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+  border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+.retour{display:inline-flex;align-items:center;gap:10px;min-height:44px;border:0;
+  background:none;color:var(--encre-douce);font:inherit;font-size:14px;cursor:pointer;padding:0}
+.retour .c{width:8px;height:8px;transform:rotate(-135deg);
+  border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+
+.bloc{margin-top:30px;padding-top:18px;border-top:1px solid var(--trait)}
+.bloc:first-of-type{margin-top:26px;padding-top:0;border-top:0}
+.ligne{display:flex;align-items:flex-start;gap:14px;padding:14px 0;width:100%;
+  border:0;border-bottom:1px solid var(--trait);background:none;text-align:left;
+  color:inherit;font:inherit;cursor:pointer}
+.ligne .corps{flex:1;min-width:0}
+.ligne .nom{display:block;font-family:ui-serif,Georgia,serif;font-size:17px;line-height:1.25}
+.ligne .dit{display:block;margin-top:4px;font-size:13px;line-height:1.5;color:var(--encre-douce)}
+.bascule{flex:none;width:52px;height:32px;border-radius:999px;background:var(--trait);
+  position:relative;margin-top:2px;transition:background .15s}
+.bascule[data-on=oui]{background:var(--rouille)}
+.bascule::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;
+  border-radius:50%;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);
+  transition:transform .15s}
+.bascule[data-on=oui]::after{transform:translateX(20px);box-shadow:none}
+.valeur{margin:0 0 14px;background:var(--plage);border-radius:4px;padding:12px 15px;
+  display:flex;align-items:baseline;gap:10px;font-size:15px}
+.valeur .n{font-family:ui-serif,Georgia,serif;font-size:17px}
+.valeur .u{font-family:ui-serif,Georgia,serif;font-size:17px;color:var(--or)}
+.valeur .q{margin-left:auto;font-size:13px;color:var(--encre-douce)}
+.dira{margin:0;padding-left:18px}
+.dira li{font-size:13px;line-height:1.6;color:var(--encre-douce);margin-bottom:8px}
+.note{font-size:13px;line-height:1.5;color:var(--encre-douce);margin:10px 0 0}
+.obligatoire{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--or);
+  flex:none;padding-top:4px}
+.cadre{background:var(--plage);border-radius:6px;padding:14px 15px;font-size:14px;
+  line-height:1.6;white-space:pre-wrap}
+.jeton{color:var(--or);font-weight:600}
+.apercus{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.apercu{border:1px solid var(--trait);border-radius:6px;overflow:hidden}
+.apercu .tt{font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding:7px 11px;
+  color:var(--encre-douce);border-bottom:1px solid var(--trait)}
+.apercu .cp{padding:11px;font-size:12px;line-height:1.5;color:var(--encre-douce);
+  background:var(--plage);white-space:pre-wrap;word-break:break-word}
+.choix{display:flex;align-items:baseline;justify-content:space-between;gap:12px;width:100%;
+  min-height:62px;border-radius:999px;padding:10px 20px;margin-bottom:8px;text-align:left;
+  border:0;box-shadow:inset 0 0 0 1px var(--trait);background:none;color:inherit;
+  font:inherit;cursor:pointer}
+.choix[aria-pressed=true]{background:var(--plage);box-shadow:inset 0 0 0 1px var(--or)}
+.choix .n{display:block;font-size:15px}
+.choix .d{display:block;margin-top:2px;font-size:13px;color:var(--encre-douce)}
+.choix .ex{flex:none;font-size:15px;color:var(--or);font-variant-numeric:tabular-nums}
+.grille{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grille .choix{margin:0;display:block}
+.plein{display:block;width:100%;min-height:52px;border-radius:999px;border:0;
+  background:var(--encre);color:var(--fond);font:inherit;font-size:15px;cursor:pointer}
+.creux{display:block;width:100%;min-height:52px;border-radius:999px;border:0;margin-top:8px;
+  background:none;color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait);
+  font:inherit;font-size:15px;cursor:pointer}
+.feuille{border-radius:6px;padding:16px;background:#f2efe7;color:#1c1c1a;
+  box-shadow:inset 0 0 0 1px var(--trait)}
+.feuille .ent{font-size:17px;line-height:1.2;margin:0}
+.feuille .coord{font-size:10px;color:#6b675e;margin:4px 0 0}
+.feuille .filet{height:1px;background:#1c1c1a;margin:10px 0}
+.feuille .dv{text-align:center;font-size:13px;letter-spacing:.2em;margin:0}
+.feuille .sec{font-size:9px;letter-spacing:.14em;color:#2f3b2f;margin:10px 0 0}
+.feuille .lg{display:flex;justify-content:space-between;font-size:11px;
+  border-bottom:1px solid #cfcabd;padding:5px 0}
+.feuille .tot{text-align:right;font-size:13px;color:#2f3b2f;margin:8px 0 0}
+.pastilles{display:flex;gap:6px}
+.pastilles i{width:34px;height:34px;border-radius:50%;display:block;
+  box-shadow:inset 0 0 0 1px var(--trait)}
+.nav{position:absolute;left:0;right:0;bottom:0;height:48px;background:var(--fond);
+  border-top:1px solid var(--trait);display:flex;align-items:center;
+  justify-content:space-around;font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--gris)}
+.pied{margin-top:30px;padding-top:18px;border-top:1px solid var(--trait);
+  font-size:13px;line-height:1.5;color:var(--encre-douce)}
+
+/* ─── les notes ─────────────────────────────────────────────────────────── */
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes ul{margin:0 0 12px;padding-left:20px}
+.notes li{font-size:14px;line-height:1.7;color:var(--encre-douce);margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
+  vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+.nb{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" data-vue="coupe" aria-pressed="true">Coupé</button>
+  <button type="button" data-vue="aujourdhui" aria-pressed="false">Aujourd'hui</button>
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">Maquette — rien n'est codé</span>
+  <h1>Couper « Devis &amp; factures »</h1>
+  <p>Un seul écran y porte <b>six sujets</b> qui n'ont rien à voir entre eux, et
+  il mesure <b class="nb">4 350 pixels</b> — <b class="nb">6,5 écrans</b> de
+  votre téléphone. Pour changer votre logo, vous traversez tout.</p>
+  <p><b>Ce que je propose :</b> quatre lignes à l'entrée, chacune ouvrant un
+  écran court. <b>Touchez-les</b>, et revenez par le chevron du haut. Puis
+  basculez sur <b>« Aujourd'hui »</b> : c'est exactement le même contenu, d'une
+  seule coulée.</p>
+</div>
+
+<div class="scene">
+  <div class="colonne">
+    <p class="etiquette" id="etiquette">Coupé</p>
+    <div class="tel">
+      <div class="defile" id="defile"></div>
+      <div class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+    </div>
+    <p class="regle" id="regle"></p>
+  </div>
+</div>
+
+<div class="notes">
+
+  <h3>Ce que ça change, et rien d'autre</h3>
+  <table>
+    <tr><th></th><th>Aujourd'hui</th><th>Coupé</th></tr>
+    <tr><td>sujets sur un même écran</td><td class="nb">6</td><td class="nb"><b>1</b></td></tr>
+    <tr><td>pour changer votre logo</td>
+      <td>descendre jusqu'au <b>6<sup>e</sup> bloc sur 6</b></td>
+      <td><b>2 appuis</b></td></tr>
+    <tr><td>pour changer un délai de paiement</td>
+      <td>1 appui — c'est le 1<sup>er</sup> bloc</td>
+      <td><b>2 appuis</b></td></tr>
+    <tr><td>lignes dans le sommaire des Réglages</td><td class="nb">12</td><td class="nb"><b>12</b></td></tr>
+  </table>
+  <p><b>Les deux lignes du milieu se lisent ensemble</b>, et c'est le seul vrai
+  marché de cette planche : ce qui est en haut aujourd'hui perd un appui, ce qui
+  est en bas gagne quatre écrans de défilement. Cinq de vos six blocs sont en
+  bas.</p>
+
+  <h3>Ce que ça renverse — trois de vos réponses</h3>
+  <p>Tout ce qui vit sur cet écran y est parce que <b>vous l'avez demandé</b>,
+  planche en main :</p>
+  <table>
+    <tr><th>Quand</th><th>Votre réponse</th><th>Ce que le découpage en fait</th></tr>
+    <tr><td>23 août</td><td><b>B</b> — l'allure « ici et pas dans une rubrique à part »</td>
+      <td>elle <b>reste</b> dans Devis &amp; factures. Elle descend d'un cran, elle n'en sort pas</td></tr>
+    <tr><td>23 août</td><td><b>A</b> — le message au client ici</td>
+      <td>pareil : dedans, un cran plus bas</td></tr>
+    <tr><td>25 août</td><td><b>B</b> — l'aperçu du devis collé en haut</td>
+      <td>gardé tel quel, dans l'écran de l'allure</td></tr>
+  </table>
+  <p><b>Aucune de ces trois choses ne quitte « Devis &amp; factures ».</b> C'est
+  pourquoi je ne propose pas une nouvelle rubrique dans le sommaire des
+  Réglages : il garde ses douze lignes.</p>
+  <p><b>Mais un cran de plus reste un cran de plus</b>, et c'est ce qu'il faut
+  regarder en essayant la planche : vous aviez répondu « ici » quand l'écran
+  portait deux blocs. Il en porte six.</p>
+
+  <h3>Pourquoi quatre lignes, et pas trois ni six</h3>
+  <p><b>Les titres ne sont pas inventés :</b> ce sont ceux de vos six blocs,
+  mot pour mot. Deux d'entre eux ne se touchent pas — « Ce que votre devis
+  dira » se recalcule tout seul, « Ce qui ne se coupe pas » est obligatoire.
+  Ils n'ouvrent donc aucune ligne : ils vivent dans le premier écran, juste
+  sous les interrupteurs qu'ils commentent.</p>
+
+  <h3>Ce que ça coûte, dit avant de le faire</h3>
+  <ul>
+    <li><b>Quatre adresses neuves</b> sous <i>/reglages/documents</i>, et le
+    contenu qui s'y déplace tel quel — aucun réglage n'est réécrit.</li>
+    <li><b>Cinq suites lisent ces blocs sur une seule page</b> et devront viser
+    la nouvelle adresse : <i>test-allure-de-mes-devis-e2e</i>,
+    <i>test-message-au-client-e2e</i>, <i>test-format-numero-e2e</i>,
+    <i>test-apercu-colle-e2e</i>, <i>test-conditions-sur-le-devis</i>. Elles
+    s'adaptent, elles ne se suppriment pas.</li>
+    <li><b>Rien en base, rien dans les PDF.</b> Ce qui s'imprime sur vos devis
+    ne change pas d'une virgule.</li>
+  </ul>
+
+  <h3>Ce qui n'est PAS mesuré ici</h3>
+  <p><b>La hauteur des quatre écrans courts.</b> Ce téléphone est un dessin :
+  il montre, il ne mesure pas. Les <b class="nb">4 350 px</b> du haut de page,
+  eux, sont relevés dans un navigateur sur l'écran réel, à 390 × 664. Deux
+  chiffres qui se contredisent sur la même page, et c'est toute la liste qu'on
+  cesse de croire — je ne chiffrerai donc les quatre écrans qu'une fois codés.</p>
+  <p><b>Et une chose que le découpage ne répare pas :</b> cet écran enregistre
+  encore de deux façons — l'allure et le numéro s'écrivent tout seuls, les six
+  interrupteurs attendent le bouton du bas. Coupé, ce sera même plus visible :
+  deux écrans voisins ne se comporteront pas pareil. C'est à traiter, et ce
+  n'est pas dans cette planche.</p>
+
+</div>
+
+<script>
+/*
+  UN SEUL JEU DE BLOCS, DEUX RENDUS.
+
+  Le découpage ne doit rien ajouter ni retirer : les mêmes fonctions dessinent
+  l'écran d'aujourd'hui (les six à la suite) et les quatre écrans courts. Deux
+  dessins écrits à la main divergeraient au premier libellé changé, et la
+  planche montrerait alors une comparaison fausse.
+*/
+
+/* Les six interrupteurs, mot pour mot depuis DocumentsClient.tsx. */
+var REGLAGES = [
+  {clef:"validite", nom:"Durée de validité", dit:"En tête, sous le numéro du devis",
+   on:true, n:30, u:"jours", q:"à compter de l'envoi"},
+  {clef:"acompte", nom:"Acompte à la commande", dit:"Écrit sous le total du devis",
+   on:true, n:30, u:"%", q:"à la signature"},
+  {clef:"delai", nom:"Délai de paiement", dit:"Zéro veut dire comptant",
+   on:true, n:30, u:"jours", q:"après la facture"},
+  {clef:"moyens", nom:"Moyens de paiement acceptés", dit:"Listés sous vos coordonnées bancaires",
+   on:true, texte:"virement, chèque"},
+  {clef:"penalites", nom:"Rappeler les pénalités sur le devis",
+   dit:"Elles figurent de toute façon sur la facture", on:false},
+  {clef:"pied", nom:"Texte en bas de vos documents", dit:"Ajouté tel quel à chaque devis",
+   on:false, texte:""}
+];
+
+/* Les cinq formats, depuis FORMATS_NUMERO. L'année vient de l'horloge, jamais
+   d'un millésime écrit à la main. */
+var AN = new Date().getFullYear();
+var FORMATS = [
+  ["annee-4", "Année et 4 chiffres", "Ce que portaient vos documents jusqu'ici", "F" + AN + "-0012"],
+  ["annee-6", "Année et 6 chiffres", "Le format par défaut", "F" + AN + "-000012"],
+  ["court", "Année courte", "Plus court à dicter au téléphone", "F" + String(AN).slice(2) + "-0012"],
+  ["mois", "Année, mois, numéro", "Le mois se lit sans ouvrir le document", "F" + AN + "-09-0012"],
+  ["suite", "Une suite sans année", "Ne repart jamais à 1", "F0012"]
+];
+
+/* Les dix typographies, depuis TYPOGRAPHIES. */
+var TYPOS = [
+  ["Celle d'aujourd'hui", "Celle de l'appareil · par défaut"],
+  ["Inter", "Linéale, neutre"],
+  ["Lato", "Linéale, ronde"],
+  ["Source Sans", "Linéale, sobre"],
+  ["Work Sans", "Linéale, franche"],
+  ["Archivo Narrow", "Étroite — tient plus de lignes"],
+  ["EB Garamond", "Empattements, classique"],
+  ["Libre Baskerville", "Empattements, lisible"],
+  ["Merriweather", "Empattements, solide"],
+  ["Playfair Display", "Empattements, contrasté"]
+];
+
+var MESSAGE = [
+  "Bonjour [client],", "", "[document]", "", "[lien]", "", "Bien à vous,", "[entreprise]"
+].join("\n");
+
+var PHRASE_DEVIS = "Voici votre devis. Vous pouvez le consulter et choisir votre date " +
+  "d'intervention. Et si aucune des dates proposées ne vous convient, vous pouvez en " +
+  "proposer une autre. Tout se fait sur cette page :";
+var PHRASE_FACTURE = "Voici votre facture F" + AN + "-0008, à régler avant le 21 septembre. " +
+  "Vous pouvez la consulter et la télécharger ici :";
+
+var formatChoisi = "annee-6";
+
+function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ── les six blocs ──────────────────────────────────────────────────────── */
+
+function blocImprime(){
+  var h = '<div class="bloc"><p class="inter">Ce qui s\'imprime sur le devis</p>';
+  for (var i = 0; i < REGLAGES.length; i++) {
+    var r = REGLAGES[i];
+    h += '<button class="ligne" type="button" data-bascule="' + r.clef + '">' +
+      '<span class="corps"><span class="nom">' + ech(r.nom) + '</span>' +
+      '<span class="dit">' + ech(r.dit) + '</span></span>' +
+      '<span class="bascule" data-on="' + (r.on ? "oui" : "non") + '"></span></button>';
+    /* Éteint, rien ne se déplie — c'est la règle de l'écran réel : un champ
+       sous un réglage coupé invite à le remplir pour rien. */
+    if (r.on && r.n !== undefined) {
+      h += '<div class="valeur"><span class="n">' + r.n + '</span>' +
+           '<span class="u">' + ech(r.u) + '</span>' +
+           '<span class="q">' + ech(r.q) + '</span></div>';
+    } else if (r.on && r.texte !== undefined) {
+      h += '<div class="valeur"><span class="n" style="font-size:15px">' +
+           ech(r.texte || "…") + '</span></div>';
+    }
+  }
+  return h + '</div>';
+}
+
+/*
+  Le récapitulatif se RECALCULE depuis les interrupteurs, il ne se recopie pas :
+  un texte figé dirait le contraire de la bascule qu'on vient de toucher, dans
+  le même écran (`CLAUDE.md` §4 bis). Les phrases sont celles de
+  `lignesConditionsDevis`, mot pour mot.
+*/
+function blocDira(){
+  var l = [], r = {};
+  for (var i = 0; i < REGLAGES.length; i++) r[REGLAGES[i].clef] = REGLAGES[i];
+  if (r.acompte.on) l.push("Acompte de " + r.acompte.n + " % à la commande.");
+  if (r.delai.on) l.push(r.delai.n === 0 ? "Paiement comptant à la fin des travaux."
+    : "Paiement à " + r.delai.n + " jours à compter de la facture.");
+  if (r.moyens.on && r.moyens.texte) l.push("Moyens de paiement acceptés : " + r.moyens.texte + ".");
+  if (r.penalites.on) l.push("En cas de retard de paiement : pénalités au taux de trois fois le " +
+    "taux d'intérêt légal, et indemnité forfaitaire de 40 € pour frais de recouvrement.");
+  if (r.pied.on && r.pied.texte) l.push(r.pied.texte);
+
+  var h = '<div class="bloc"><p class="inter">Ce que votre devis dira</p>';
+  if (l.length === 0) {
+    h += '<p class="note" style="margin-top:0">Rien ne s\'ajoutera : votre devis portera ses ' +
+         'lignes, ses totaux et sa mention de signature, sans condition supplémentaire.</p>';
+  } else {
+    h += '<ul class="dira">';
+    for (var j = 0; j < l.length; j++) h += '<li>' + ech(l[j]) + '</li>';
+    h += '</ul>';
+  }
+  return h + '<p class="note">Le montant de l\'acompte se calcule sur chaque devis. ' +
+    'Il n\'est pas écrit ici : il dépend du total.</p></div>';
+}
+
+function blocCoupe(){
+  return '<div class="bloc"><p class="inter">Ce qui ne se coupe pas</p>' +
+    '<div style="display:flex;gap:12px;align-items:flex-start;padding:14px 0">' +
+    '<span style="flex:1"><span style="display:block;font-family:ui-serif,Georgia,serif;' +
+    'font-size:17px;line-height:1.25">Mentions légales de la facture</span>' +
+    '<span style="display:block;margin-top:4px;font-size:13px;line-height:1.5;' +
+    'color:var(--encre-douce)">Pénalités de retard, indemnité forfaitaire de 40 €, et la ' +
+    'franchise de l\'article 293 B quand vous n\'êtes pas assujetti.</span></span>' +
+    '<span class="obligatoire">Obligatoire</span></div>' +
+    '<p class="note" style="margin-top:0">Elles s\'écrivent seules et suivent votre régime ' +
+    'de TVA. Les retirer rendrait la facture irrégulière.</p></div>';
+}
+
+function messageColore(phrase){
+  return ech(MESSAGE)
+    .replace("[client]", '<span class="jeton">Mme Larousse</span>')
+    .replace("[document]", '<span class="jeton">' + ech(phrase) + '</span>')
+    .replace("[lien]", '<span class="jeton">https://…</span>')
+    .replace("[entreprise]", "Eden Nature");
+}
+
+function blocMessage(){
+  return '<div class="bloc"><p class="inter">Mon message au client</p>' +
+    '<p class="note" style="margin:0 0 12px">Modifiez ce que vous voulez. Les mots en doré ' +
+    'se remplissent tout seuls et ne se modifient pas.</p>' +
+    '<div class="cadre">' + ech(MESSAGE)
+      .replace("[client]", '<span class="jeton">le prénom</span>')
+      .replace("[document]", '<span class="jeton">la phrase de votre devis / facture</span>')
+      .replace("[lien]", '<span class="jeton">le lien</span>')
+      .replace("[entreprise]", "Eden Nature") + '</div>' +
+    '<p class="inter" style="margin:16px 0 0">Ce que votre client recevra</p>' +
+    '<div class="apercus">' +
+    '<div class="apercu"><div class="tt">Envoi d\'un devis</div>' +
+    '<div class="cp">' + messageColore(PHRASE_DEVIS) + '</div></div>' +
+    '<div class="apercu"><div class="tt">Envoi d\'une facture</div>' +
+    '<div class="cp">' + messageColore(PHRASE_FACTURE) + '</div></div>' +
+    '</div></div>';
+}
+
+function blocNumero(){
+  var h = '<div class="bloc"><p class="inter">Le numéro de mes documents</p>' +
+    '<p class="note" style="margin:0 0 12px">Vos documents déjà émis gardent leur numéro.</p>';
+  for (var i = 0; i < FORMATS.length; i++) {
+    var f = FORMATS[i];
+    h += '<button class="choix" type="button" data-format="' + f[0] + '" aria-pressed="' +
+      (formatChoisi === f[0]) + '"><span><span class="n">' + ech(f[1]) + '</span>' +
+      '<span class="d">' + ech(f[2]) + '</span></span>' +
+      '<span class="ex">' + ech(f[3]) + '</span></button>';
+  }
+  return h + '<p class="note">Enregistré au fur et à mesure.</p></div>';
+}
+
+function blocAllure(){
+  var h = '<div class="bloc"><p class="inter">L\'allure de mes devis</p>' +
+    '<p class="note" style="margin:0 0 12px">Elle habille votre devis et votre facture. ' +
+    'La feuille de chantier, elle, ne change pas.</p>' +
+    '<button class="plein" type="button">Photographier mon devis</button>' +
+    '<button class="creux" type="button">Photographier ma facture</button>' +
+    '<p class="note" style="margin-bottom:18px">Les couleurs, la police et les mentions. ' +
+    'Ni les lignes, ni les prix.</p>' +
+    '<p class="inter">L\'allure de la page</p>' +
+    '<div class="feuille"><p class="ent">Eden Nature</p>' +
+    '<p class="coord">Adresse · SIRET · téléphone</p><div class="filet"></div>' +
+    '<p class="dv">DEVIS</p><p class="sec">ÉMETTEUR · CLIENT</p>' +
+    '<div class="lg"><span>Taille de haie</span><span>—</span></div>' +
+    '<div class="lg"><span>Évacuation des déchets</span><span>—</span></div>' +
+    '<p class="tot">Total TTC</p></div>' +
+    '<p class="inter" style="margin:18px 0 8px">Mon logo</p>' +
+    '<div style="display:flex;align-items:center;gap:12px"><span style="width:58px;height:58px;' +
+    'border-radius:6px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);' +
+    'display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gris)">' +
+    'Aucun</span><button class="creux" type="button" style="margin:0;width:auto;padding:0 18px;' +
+    'min-height:44px;color:var(--or);box-shadow:inset 0 0 0 1px var(--or)">Choisir une image' +
+    '</button></div>' +
+    '<p class="inter" style="margin:18px 0 8px">Typographie</p><div class="grille">';
+  for (var i = 0; i < TYPOS.length; i++) {
+    h += '<button class="choix" type="button" aria-pressed="' + (i === 0) + '">' +
+      '<span class="n">' + ech(TYPOS[i][0]) + '</span>' +
+      '<span class="d">' + ech(TYPOS[i][1]) + '</span></button>';
+  }
+  h += '</div><p class="inter" style="margin:18px 0 8px">Fond de page</p>' +
+    '<div style="display:flex;align-items:center;gap:10px">' +
+    '<span style="width:54px;height:44px;border-radius:8px;background:#f2efe7;' +
+    'box-shadow:inset 0 0 0 1px var(--trait)"></span>' +
+    '<span style="font-size:13px;color:var(--encre-douce)">#F2EFE7</span>' +
+    '<span class="pastilles" style="margin-left:auto"><i style="background:#f2efe7"></i>' +
+    '<i style="background:#ffffff"></i><i style="background:#ece9e1"></i>' +
+    '<i style="background:#e8e8e6"></i></span></div>' +
+    '<p class="inter" style="margin:18px 0 8px">Couleur d\'accent</p>' +
+    '<div style="display:flex;align-items:center;gap:10px">' +
+    '<span style="width:54px;height:44px;border-radius:8px;background:#2f3b2f;' +
+    'box-shadow:inset 0 0 0 1px var(--trait)"></span>' +
+    '<span style="font-size:13px;color:var(--encre-douce)">#2F3B2F</span>' +
+    '<span class="pastilles" style="margin-left:auto"><i style="background:#2f3b2f"></i>' +
+    '<i style="background:#6e2433"></i><i style="background:#1c1c1a"></i></span></div>' +
+    '<p class="note">Enregistré au fur et à mesure.</p>';
+  return h + '</div>';
+}
+
+var PIED = '<p class="pied">Chaque devis garde <b style="color:var(--encre);font-weight:400">' +
+  'ce que ces réglages disaient le jour où il a été créé</b> : les corriger aujourd\'hui ' +
+  'ne change aucun document déjà fait.</p>';
+
+/* ── les quatre écrans courts ───────────────────────────────────────────── */
+var ECRANS = [
+  {clef:"imprime", nom:"Ce qui s'imprime sur le devis", blocs:[blocImprime, blocDira, blocCoupe]},
+  {clef:"message", nom:"Mon message au client", blocs:[blocMessage]},
+  {clef:"numero", nom:"Le numéro de mes documents", blocs:[blocNumero]},
+  {clef:"allure", nom:"L'allure de mes devis", blocs:[blocAllure]}
+];
+
+var vue = "coupe";      // "coupe" ou "aujourdhui"
+var ouvert = null;      // la clef de l'écran court ouvert, ou null pour l'entrée
+var defile = document.getElementById("defile");
+
+function ecranDe(clef){
+  for (var i = 0; i < ECRANS.length; i++) if (ECRANS[i].clef === clef) return ECRANS[i];
+  return null;
+}
+
+/* Le doré passe SOUS le titre, comme dans l'application depuis le 26 août. */
+function enTete(titre, petit){
+  return '<div><span class="pastille">≡</span>' +
+    '<h2 class="titre' + (petit ? " petit" : "") + '">' + ech(titre) + '</h2>' +
+    '<p class="surtitre">Réglages</p></div>';
+}
+
+function dessiner(){
+  var h = "", e = null;
+  if (vue === "aujourdhui") {
+    h = enTete("Devis & factures") + blocImprime() + blocDira() + blocCoupe() +
+        blocMessage() + blocNumero() + blocAllure() + PIED;
+  } else if (ouvert === null) {
+    h = enTete("Devis & factures");
+    for (var i = 0; i < ECRANS.length; i++) {
+      h += '<button class="rub" type="button" data-ouvrir="' + ECRANS[i].clef + '">' +
+        '<span class="ico"></span><span class="nom">' + ech(ECRANS[i].nom) + '</span>' +
+        '<span class="chev"></span></button>';
+    }
+    h += PIED;
+  } else {
+    e = ecranDe(ouvert);
+    h = '<button class="retour" type="button" data-fermer="1"><span class="c"></span>' +
+        'Devis &amp; factures</button>' + enTete(e.nom, true);
+    var corps = "";
+    for (var k = 0; k < e.blocs.length; k++) corps += e.blocs[k]();
+    /* Le titre de l'écran et l'intertitre du premier bloc portent les MÊMES
+       mots : « Ce qui s'imprime sur le devis » se lisait deux fois de suite,
+       vu à la capture. On retire l'intertitre, jamais le titre. */
+    corps = corps.replace('<p class="inter">' + ech(e.nom) + '</p>', "");
+    h += corps;
+  }
+  defile.innerHTML = h;
+  defile.scrollTop = 0;
+  document.getElementById("etiquette").textContent =
+    vue === "aujourdhui" ? "Aujourd'hui — les six d'une seule coulée"
+      : ouvert === null ? "Coupé — l'entrée" : "Coupé — " + e.nom;
+  brancher();
+  mesurer();
+}
+
+function brancher(){
+  var o = defile.querySelectorAll("[data-ouvrir]");
+  for (var i = 0; i < o.length; i++) o[i].addEventListener("click", function(){
+    ouvert = this.getAttribute("data-ouvrir"); dessiner();
+  });
+  var f = defile.querySelectorAll("[data-fermer]");
+  for (var j = 0; j < f.length; j++) f[j].addEventListener("click", function(){
+    ouvert = null; dessiner();
+  });
+  /* On garde la hauteur de défilement en touchant un réglage : sans ça, l'écran
+     remonte en haut sous le doigt, et l'on croit avoir changé d'écran. */
+  var b = defile.querySelectorAll("[data-bascule]");
+  for (var k = 0; k < b.length; k++) b[k].addEventListener("click", function(){
+    var clef = this.getAttribute("data-bascule");
+    for (var n = 0; n < REGLAGES.length; n++)
+      if (REGLAGES[n].clef === clef) REGLAGES[n].on = !REGLAGES[n].on;
+    var haut = defile.scrollTop; dessiner(); defile.scrollTop = haut;
+  });
+  var fm = defile.querySelectorAll("[data-format]");
+  for (var m = 0; m < fm.length; m++) fm[m].addEventListener("click", function(){
+    formatChoisi = this.getAttribute("data-format");
+    var haut = defile.scrollTop; dessiner(); defile.scrollTop = haut;
+  });
+}
+
+/*
+  LA PLANCHE NE CHIFFRE PAS SA PROPRE HAUTEUR, et c'est délibéré — la leçon du
+  sommaire des réglages, 5 septembre. Ce dessin n'est pas l'écran : il rendrait
+  un nombre voisin de celui qu'on a relevé dans l'application, et deux chiffres
+  qui se contredisent font douter des deux. Elle vérifie seulement qu'elle est
+  complète.
+*/
+function mesurer(){
+  var attendus = ECRANS.length;
+  var vus = (vue === "coupe" && ouvert === null)
+    ? defile.querySelectorAll(".rub").length : attendus;
+  document.getElementById("regle").textContent = vus === attendus
+    ? "Le dessin montre ; les mesures de l'écran réel sont plus bas."
+    : "dessin incomplet : " + vus + " lignes sur " + attendus;
+}
+
+var boutons = document.querySelectorAll("[data-vue]");
+for (var b2 = 0; b2 < boutons.length; b2++) {
+  boutons[b2].addEventListener("click", function(){
+    vue = this.getAttribute("data-vue");
+    ouvert = null;
+    for (var k2 = 0; k2 < boutons.length; k2++)
+      boutons[k2].setAttribute("aria-pressed",
+        String(boutons[k2].getAttribute("data-vue") === vue));
+    dessiner();
+  });
+}
+
+document.getElementById("pole").addEventListener("click", function(){
+  var nuit = document.body.classList.toggle("nuit");
+  this.setAttribute("aria-pressed", String(nuit));
+  this.textContent = nuit ? "Voir sur Origine" : "Voir sur Nuit";
+});
+
+dessiner();
+</script>
+</body>
+</html>
