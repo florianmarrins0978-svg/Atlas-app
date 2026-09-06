@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le prompt `/impeccable` pour les Réglages</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-prompt-impeccable-pour-les-réglages">Le prompt <code>/impeccable</code> pour les Réglages</h1>
+<p>À coller après <code>/impeccable</code> dans une session neuve. Il tient seul.</p>
+<p>Écrit le 5 septembre 2026, après que <strong>le trajet <code>chantier → terminé</code> a été entièrement repris</strong>. Les Réglages sont la plus grosse zone jamais retravaillée : un sommaire et quatorze rubriques, un peu plus de neuf mille lignes.</p>
+<p><strong>Il porte une consigne neuve du patron, du 5 septembre</strong>, qui vaut pour toute l'application et qui est désormais dans <code>PRODUCT.md</code> :</p>
+<blockquote><em>« Imagine que la plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de leur téléphone ; il faut que ce soit hyper intuitif et simple. »</em></blockquote>
+<hr>
+<p>``` Rends impeccable LES RÉGLAGES d'Atlas — /reglages et ses quatorze rubriques. C'est la plus grosse zone du produit qui n'a jamais été reprise.</p>
+<p>LA CONTRAINTE QUI PRIME SUR TOUTES LES AUTRES</p>
+<p>Sa consigne du 5 septembre 2026 : « la plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de leur téléphone ; il faut que ce soit hyper intuitif et simple ».</p>
+<p>Ce n'est pas une préférence de style. C'est la contrainte la plus forte du produit, et elle prime sur l'élégance, sur la densité, et sur le nombre d'écrans qu'on aurait pu économiser. Elle est écrite dans PRODUCT.md, section « Accessibility &amp; Inclusion ». Ce qu'elle impose ici :</p>
+<p>un écran, un geste     ce qu'on vient y faire se voit sans chercher, et se fait sans apprendre rien de caché          aucun geste à découvrir — pas de glissement, pas d'appui long, pas de double appui. Ce qui compte est VISIBLE des cibles grandes     on vise mal avec un doigt épais, sur un écran sale, à contre-jour des mots du métier     jamais un mot d'informaticien une erreur se rattrape on se trompe, et on doit pouvoir revenir rien qui presse        aucun geste qui expire, aucune fenêtre qui se referme</p>
+<p>LE TEST QUI TRANCHE, et il vaut pour chaque écran que tu touches : un homme de soixante-cinq ans, qui n'a jamais rien installé sur son téléphone, comprend-il cet écran SANS qu'on le lui explique ? S'il faut une phrase d'explication, l'écran n'est pas juste — et la phrase est du bruit (CLAUDE.md §3).</p>
+<p>LE PÉRIMÈTRE</p>
+<p>le sommaire      src/app/reglages/page.tsx, Sommaire.tsx, ReglagesClient.tsx les rubriques    identite (969 l.) · tarifs (131) · prix (1 473) · equipe (907) · documents (1 858) · apparence (307) · agenda (1 159) · ia (145) · donnees (194) · abonnement (104) · compte (269) · connexion (976) · notifications (460) · vocabulaire (404) les pièces       AbsencesEquipe, ImportTarifs, PeriodiciteTva, VosEquipes, VosSalaries, CompteurRond, RubriqueReservee, icones.tsx</p>
+<p>C'EST TROP GROS POUR UN SEUL LOT — DÉCOUPE-LE, ET DIS COMMENT</p>
+<p>Ne touche pas quatorze rubriques d'un coup : personne ne pourra relire ça, et une batterie rouge ne dira plus laquelle accuser. Propose-lui un ordre, en partant de ce qu'il ouvre le plus souvent et de ce qui coûte le plus cher quand c'est mal compris. Commence par le SOMMAIRE — c'est la porte, et c'est là que « hyper intuitif » se joue d'abord.</p>
+<p>CE QUI EST HORS PÉRIMÈTRE</p>
+<p>tout le trajet chantier → terminé   repris entre le 2 et le 5 septembre le pôle Paysage                     un lot à lui, plus tard « Mes prix » vu depuis un chantier  c'est l'écran des prix, refait le 5</p>
+<p>DÉJÀ TRANCHÉ PAR LE PATRON — ne pas rouvrir</p>
+<ul>
+<li><strong>Le sommaire vient de SA planche du 14 août 2026</strong>, qu'il a dessinée : icône, titre, ligne. Sa demande était de tout RANGER, pas de jeter — « soit tu crées les catégories qu'il y a besoin, soit s'il va y avoir des doublons, tu supprimes ».</li>
+<li><strong>Les regroupements sont les siens</strong>, et ils ont une raison : · tarifs, grilles de prix et catalogue sous « Tarifs &amp; catalogue » ; · le régime de TVA ET sa périodicité ensemble, dans « Mon entreprise » — ils vivaient à deux endroits séparés par tout le reste ; · les équipes du planning sous « Planning » : le mot y désigne une FILE DU PLANNING, pas un compte ; · le vocabulaire du métier sous « Atlas IA », puisque c'est ce qu'elle reconnaît d'une dictée ; · le téléchargement des données sous « Sécurité &amp; données ».</li>
+<li><strong>La version exécutée reste sur le sommaire.</strong> Ce n'est pas un réglage : c'est la réponse à « mes correctifs sont-ils arrivés ». Ne la range pas ailleurs.</li>
+<li>Le modèle de documents ne se remplace pas (lot 6 des Réglages, août 2026).</li>
+<li>Un commercial ne facture pas, un salarié ne voit ni prix ni facturation : le modèle des rôles est figé depuis le 30 août. Une rubrique fermée se DIT (<code>RubriqueReservee</code>), elle ne disparaît pas en silence.</li>
+</ul>
+<p>CE QUI EST PROPOSÉ MAIS PAS TRANCHÉ — à lui montrer, jamais à appliquer</p>
+<p>La maquette <code>appli/moins-de-mots.html</code> propose de retirer des Réglages : · les treize phrases d'explication sous les treize titres ; · le mot « Intégrations », qui est un mot d'informaticien — il existe encore (<code>reglages/agenda/page.tsx</code>, et <code>src/lib/mode-emploi.ts</code> qui le nomme deux fois). <code>docs/QUESTIONS.md</code> §23 se termine sur une question restée SANS RÉPONSE. Dessine, montre, attends sa lettre. (Deux prompts précédents ont rangé ce genre de proposition dans « déjà tranché » : c'était faux les deux fois.)</p>
+<p>CE QUE « IMPECCABLE » VEUT DIRE ICI, EN PLUS DE LA CONTRAINTE DU HAUT</p>
+<ol>
+<li>Un réglage se trouve en moins de dix secondes, sans savoir dans quelle catégorie on l'a rangé. Mesure le chemin : combien d'appuis pour changer son numéro de TVA, son logo, le prix de sa main-d'œuvre ?</li>
+<li>Ce qui est écrit doit être ce qui est appliqué. Un réglage enregistré qui ne change rien à l'écran suivant est pire qu'un réglage absent.</li>
+<li>Huit chartes, dont deux sombres (Nuit, Sylve) où l'accent est CLAIR : aucune couleur écrite en clair, <code>surPlein</code> sur un aplat, <code>voile()</code> pour un voile. Attention : <code>test-chartes-lisibles.ts</code> lit les CHARTES, pas les classes d'un écran — un <code>bg-[rgba(0,0,0,0.03)]</code> lui échappe et disparaît sur Nuit.</li>
+<li>Tout refus nomme sa raison ET le geste qui le débloque.</li>
+<li>Aucune flèche décorative (scripts/test-aucune-fleche.ts).</li>
+</ol>
+<p>LES INVARIANTS</p>
+<ul>
+<li>Toute lecture passe par withEntreprise(utilisateurId, entrepriseId, fn). Hors de ce cadre, une requête ne renvoie rien, silencieusement.</li>
+<li>Français partout. Les règles métier vivent dans src/lib/, en fonctions pures.</li>
+<li>Ce qui touche l'identité, les rôles, la connexion, les données et l'abonnement est une ZONE SENSIBLE : on n'y simplifie pas un refus en le supprimant.</li>
+</ul>
+<p>LA MÉTHODE</p>
+<ol>
+<li>Lis PRODUCT.md (surtout « Accessibility &amp; Inclusion »), CLAUDE.md, docs/QUESTIONS.md, puis git log -20.</li>
+<li>Dis-moi ce que tu as trouvé AVANT d'écrire une ligne : les trois écrans les moins compréhensibles pour quelqu'un qui n'aime pas les téléphones, chacun avec le fichier qui le prouve, et l'ordre que tu proposes pour le reste.</li>
+<li>Toute apparence ou tout geste nouveau se DESSINE d'abord : une maquette HTML dans appli/, un lien dans appli/essais.html, et l'adresse ENTIÈRE une fois qu'elle répond 200 — jamais une capture de la maquette.</li>
+<li>Regarde les écrans, en capture, à 390 × 664, Origine ET Nuit.</li>
+</ol>
+<p>LA BATTERIE, SUR SON POSTE WINDOWS</p>
+<ul>
+<li><strong>Préviens-le AVANT de la lancer</strong> ; son accord vaut ensuite pour toute la séquence, sans le relancer à chaque étape.</li>
+<li>Sa base vit dans Docker : <code>docker start atlas-postgres atlas-redis</code>.</li>
+<li>Elle se joue telle quelle, avec une variable :</li>
+</ul>
+<p>``<code>bash export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test" npm run verifier:avant-livraison </code>``</p>
+<p>LE RENDU</p>
+<p>Un document dans docs/, commité avec le code, plus sa page : node scripts/md-en-page.mjs docs/&lt;nom&gt;.md Il porte : un verdict par point, le fichier qui le fonde, ce qui a été fait autrement et pourquoi, ce qui a été refusé et ce que ça aurait coûté, les chiffres exacts de la batterie, et ce qui reste ouvert avec qui peut le trancher. ```</p>
+<hr>
+<h2 id="ce-qui-restera-après-les-réglages">Ce qui restera après les Réglages</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Paysage</strong> — arrosage, diagnostic, fiches d'entretien</td>
+<td>le pôle métier, jamais repris</td>
+</tr>
+<tr>
+<td>La note vocale et l'attente du devis</td>
+<td>le moment entre son micro et le devis</td>
+</tr>
+<tr>
+<td>Le catalogue (« Mes mots »)</td>
+<td>1 écran</td>
+</tr>
+<tr>
+<td>La connexion</td>
+<td>reprise en août, jamais depuis</td>
+</tr>
+<tr>
+<td>La fiche d'entretien du client</td>
+<td>rien depuis le 18 août</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

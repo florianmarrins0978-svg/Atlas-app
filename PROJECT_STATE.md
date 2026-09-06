@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-05 · branche `main`
+**Dernière mise à jour :** 2026-09-06 · branche `main`
 · dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
 l’affichage)
 
@@ -19,6 +19,28 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : le sommaire des réglages (6 septembre 2026)
+
+**Premier des six lots de la reprise des Réglages** — la plus grosse zone jamais
+retravaillée (11 810 lignes sous `src/app/reglages`, un sommaire et quatorze
+écrans). Ouverte par sa consigne du 5 septembre 2026, désormais dans
+`PRODUCT.md` : *« la plupart des patrons qui vont utiliser l'app sont des vieux
+qui ont du mal à se servir de leur téléphone »*.
+
+| | |
+|---|---|
+| **Fait** | les douze lignes d'explication retirées ; quatre libellés corrigés (Intégrations → **Mon agenda**, Sécurité & données → **Mes données**, Connexion → **Mot de passe**, Apparence → **Couleurs**) ; nom de rubrique 17 → 19 px ; intertitres et phrase du salarié passés de `muted` à `inkSoft` ; l'icône d'agenda a remplacé la pièce de puzzle |
+| **Mesuré** | 1 310 → **1 145 px** de haut · 6 → **8** rubriques sans défiler · lignes de 56-84 → **56 px partout** · 89 → **30** mots |
+| **Tranché à sa demande** | « Moins de mots » (§23, 19 août) : oui, les douze partent — codé. Planche 96, écran Équipe : **proposition C** — PAS codé, c'est le lot 6 |
+| **Refusé** | renommer « Tarifs & catalogue » et « Devis & factures » (ses mots, justes, onze suites les lisent) ; serrer les lignes sous 56 px |
+| **Pas obtenu, et dit** | l'écran ne tient toujours pas en une fenêtre de 664 px, et ne le tiendra pas |
+
+**Reste des Réglages :** cinq lots, listés dans `HANDOVER.md`.
+
+**Fusionné avec `main` après avoir remisé — non jeté — le travail en cours
+d'une session voisine.** Voir `HANDOVER.md` et `TODO.md`.
+---
+
 ## FAIT : la fiche client n'a plus qu'un visage (5 septembre 2026)
 
 **Sa remarque :** *« ce n'est pas la même que lorsque j'ai cliqué sur nouveau
@@ -35,6 +57,7 @@ sur l'écran **Note vocale**, plus sur la fiche client.
 
 **Tenu par** `scripts/test-fiche-client-un-seul-visage-e2e.ts`, vu rouge sur la
 version d'avant.
+
 
 ---
 

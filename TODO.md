@@ -9,6 +9,89 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## La fusion du 6 septembre, et ce qu'elle a demandé de faire au travail d'à côté
+
+**Réglé le 6 septembre 2026 — laissé écrit parce que la situation reviendra.**
+
+L'arbre partagé portait **124 fichiers non enregistrés** d'une session voisine
+— le passage des suites navigateur à `scripts/_adresse.ts` —, dont trois que
+`origin/main` avait modifiés de son côté :
+
+    scripts/_adresse.ts                    (non suivi ici, suivi sur main, et
+                                            la version locale est plus avancée)
+    scripts/test-adresse-suggestions-e2e.ts
+    scripts/test-anneau-dictee-e2e.ts
+
+`git merge` refuse tant qu'ils sont sales. **Attendre n'était pas une option** :
+sa consigne du 23 août — *« si vous savez qu'il y a plusieurs sessions qui
+tournent, organisez-vous »* — dit qu'une session qui attend les autres ne pousse
+jamais.
+
+**Ce qui a été fait, et l'ordre compte :**
+
+1. une **copie hors du dépôt** des trois fichiers, avec leurs empreintes ;
+2. `git stash push --include-untracked` **sur ces trois-là seulement** — c'est
+   ce que propose `scripts/garde-travail-non-enregistre.mjs` lui-même comme
+   solution de rechange à un geste destructeur ;
+3. la fusion, puis la remise.
+
+**Ce qu'il ne faut PAS faire à sa place :** `git checkout --`, `git restore`,
+`git clean` ou une poussée en force. Le garde-fou refuse les quatre, et il
+existe parce que ce travail-là a déjà été perdu une fois (4 septembre 2026).
+
+**Quatre conflits, tous dans les documents de mémoire**, et tous du même genre —
+deux sessions ont écrit en tête du même fichier le même jour :
+
+| Fichier | Résolution |
+|---|---|
+| `ARCHITECTURE.md` | **§261 était pris par la fiche client** ; le mien est devenu **§262**, et c'est la règle : on renumérote celui qui n'est pas encore sur `main` |
+| `HANDOVER.md`, `PROJECT_STATE.md` | les deux lots gardés, le plus récent en tête |
+| `TODO.md` | les deux listes gardées |
+
+**Et les renvois ont été relus un par un, pas remplacés au `sed`** : six
+« §261 » du dépôt désignent la fiche client et devaient rester tels quels ; deux
+seulement étaient les miens.
+
+---
+
+## Les cinq lots qui restent sur les Réglages
+
+Ouverts par sa consigne du 5 septembre 2026 (`PRODUCT.md`). L'ordre est celui
+qu'il a accepté ; le premier est fait.
+
+| Lot | Quoi | Ce qui le fonde |
+|---|---|---|
+| 2 | **l'en-tête unique** | `agenda`, `prix`, `prix/mesures` et `vocabulaire` se dessinent leur propre en-tête au lieu d'employer `EnTeteEcran` : titre à 32 px au lieu de 36, surtitre doré AU-DESSUS du titre alors qu'il a demandé l'inverse le 26 août, et **aucun bouton d'assistant** — donc le recours manque sur les deux écrans les plus durs |
+| 3 | **« Devis & factures »** | `DocumentsClient.tsx`, 1 267 lignes, six blocs sans rapport en un seul écran ; le logo est à la ligne 772 |
+| 4 | **« Mon entreprise »** | le régime de TVA (bloc 2 d'`IdentiteClient`) et sa périodicité (`identite/page.tsx:79`) sont séparés par tout le bloc bancaire « Pour être payé » — la faute que le regroupement du 14 août voulait réparer, revenue à l'intérieur d'un écran |
+| 5 | **« Mon agenda »** | le raccordement iCloud demande d'aller sur `account.apple.com`, d'y générer un « mot de passe pour les apps » et de recopier seize lettres. **La tâche elle-même est hors de portée** : c'est à lui de dire ce qu'on fait |
+| 6 | **le reste** | Équipe (**proposition C** de la planche 96, décidée le 6 septembre, pas codée), notifications, mot de passe, données, couleurs, IA, abonnement, compte |
+
+---
+
+## Le texte secondaire de TOUTE l'application est écrit en gris trop pâle
+
+**Relevé le 6 septembre 2026, en reprenant le sommaire des réglages.** Le jeton
+`muted` tient de **2,85** (Moka) à **3,59** (Brume) de contraste sur les six
+chartes claires, là où la norme demande 4,5 — et il porte `libelleCaps`
+(9,5 px) et `texteSituation` (11,5 px), c'est-à-dire les intertitres et les
+lignes de situation de tous les écrans.
+
+**Les deux chartes qui passent sont les sombres** (Sylve 5,80, Nuit 5,19) :
+elles ont été corrigées après sa plainte du 22 août, les claires jamais.
+
+**Ce qui a été fait dans le lot du sommaire, et rien de plus :** les deux
+intertitres et la phrase du salarié sont passés à `inkSoft` (8,0). **La charte
+n'a pas été touchée** — c'est la sienne, relevée au navigateur sur le site
+d'Arborea, et `scripts/test-chartes-lisibles.ts` §144 refuse délibérément d'y
+poser un seuil pour ne pas accuser un choix qu'il a fait.
+
+**Ce qui reste : l'emploi, écran par écran.** C'est un lot à soi seul, pas une
+retouche à glisser dans un autre — il traverse tous les écrans, donc la
+batterie complète et des captures sur les deux pôles.
+
+---
+
 ## `test-garde-travail-non-enregistre` NE PEUT PAS ÊTRE VERTE EN BATTERIE (5 sept. 2026)
 
 Son dernier cas — *« arbre sale : le déclencheur REFUSE »* — exige une
@@ -271,11 +354,16 @@ case garde la virgule, `orTexte` est dérivé sur les huit chartes.
 prévienne avant toute batterie : ses sessions partagent le dossier, et le
 serveur tombe si une autre écrit pendant la mesure.
 
-| Ce qui est dû | Pourquoi ça n'a pas été fait |
+**LA BATTERIE A ÉTÉ JOUÉE LE 5 SEPTEMBRE AU SOIR** : base **304/314**,
+navigateur **115/128**, et `test-case-du-prix-e2e` **verte** — son geste rejoué
+dans un vrai navigateur, puis vérifié en base. Un seul rouge appartenait à ce
+lot (`test-prix-e2e`, qui comparait « 1120.50 » à « 1 120,50 ») : c’est **le
+contrôle** qui a été corrigé, pas l’écran, et il est vert rejoué seul.
+
+| Ce qui reste dû | Où ça en est |
 |---|---|
-| `npm run verifier:avant-livraison` | attend qu'il arrête ses autres sessions |
-| `scripts/test-case-du-prix-e2e.ts` | **écrite, jamais exécutée** — elle prend le port 3000 et la base |
-| les **captures** à 390 × 664, Origine **et** Nuit | aucun serveur ne répondait sur 3000 ; quatre défauts réels de ce projet sont sortis d'une image et d'aucun test vert |
+| **« Connexion derrière un proxy »** | **échoue DEUX fois sur ce PC** — « Le serveur n’a pas répondu en dix minutes (construction comprise) ». Elle n’atteint jamais la connexion elle-même : ce n’est donc **pas** un verdict sur le produit, c’est la construction qui dépasse le plafond de dix minutes sur cette machine, alors que l’étape « Construction » de la batterie est verte. **À trancher : relever le plafond, ou réutiliser la construction déjà faite** |
+| les **captures** à 390 × 664, Origine **et** Nuit | jamais prises : le port 3000 lui sert, et quatre défauts réels de ce projet sont sortis d’une image et d’aucun test vert |
 
 **Et une question lui revient**, sur capture : l'or d'un mot est passé plus
 sombre sur les six chartes claires (2,91 → 4,83 sur la plage d'Origine). Ça se

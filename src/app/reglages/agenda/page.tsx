@@ -45,7 +45,7 @@ export default async function AgendaPage({
   if (!(await estProprietaire(ctx))) {
     return (
       <RubriqueReservee
-        titre="Intégrations"
+        titre="Mon agenda"
         quoi="Le calendrier relié appartient au compte du patron."
       />
     );

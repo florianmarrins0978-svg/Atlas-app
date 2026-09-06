@@ -32,7 +32,7 @@ export default async function ApparencePage() {
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran
         surtitre="Moi"
-        titre="Apparence"
+        titre="Couleurs"
         retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
       />
       <ApparenceClient initiale={choisie} />

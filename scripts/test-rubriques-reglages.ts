@@ -38,25 +38,38 @@ essai("le patron voit les deux ensembles, l'entreprise d'abord", () => {
   assert.deepEqual(titres, ["L'entreprise", "Moi"]);
 });
 
-essai("les rubriques de sa planche du 14 août sont toutes là", () => {
-  const noms = toutes("proprietaire").map((r) => r.nom);
+/**
+ * **PAR ADRESSE ET NON PAR LIBELLÉ — corrigé le 5 septembre 2026.**
+ *
+ * Ce contrôle listait les neuf NOMS de sa planche. Il a rougi le jour où quatre
+ * d'entre eux ont été renommés à sa demande, sur du code juste — et pour un
+ * retrait qu'il avait exigé. C'est la faute nommée au `CLAUDE.md` §5 bis : ce
+ * qu'une suite doit fixer, c'est la règle, pas la façon dont un écran l'écrit.
+ *
+ * **Et l'adresse est le meilleur contrôle des deux**, pas seulement le plus
+ * robuste : ce qui compte est qu'aucune PORTE ne se ferme par accident. Un
+ * libellé qui change se voit à la capture ; une rubrique qui disparaît du
+ * sommaire, non — elle laisse un écran vivant que plus rien n'ouvre.
+ */
+essai("les rubriques de sa planche du 14 août ouvrent toujours leur écran", () => {
+  const adresses = toutes("proprietaire").map((r) => r.href);
   for (const attendue of [
-    "Mon entreprise",
-    "Équipe",
-    "Tarifs & catalogue",
-    "Devis & factures",
-    "Atlas IA",
-    "Notifications",
-    "Intégrations",
-    "Abonnement",
-    "Sécurité & données",
+    "/reglages/identite",
+    "/reglages/equipe",
+    "/reglages/tarifs",
+    "/reglages/documents",
+    "/reglages/ia",
+    "/reglages/notifications",
+    "/reglages/agenda",
+    "/reglages/abonnement",
+    "/reglages/donnees",
   ]) {
-    assert.ok(noms.includes(attendue), `« ${attendue} » a disparu du sommaire`);
+    assert.ok(adresses.includes(attendue), `plus aucune rubrique ne mène à ${attendue}`);
   }
 });
 
 essai("ses quatre priorités ouvrent l'ensemble de l'entreprise", () => {
-  const entreprise = rubriquesReglages("proprietaire")[0].rubriques.map((r) => r.nom);
+  const entreprise = rubriquesReglages("proprietaire")[0].rubriques.map((r) => r.href);
   // **Ses QUATRE priorités, et elles n'ont pas bougé.** Le contrôle porte sur
   // les quatre premières — celles qu'il a nommées — et sur ce qui vient juste
   // après, pour qu'une rubrique nouvelle ne s'insère pas au milieu d'elles.
@@ -64,12 +77,15 @@ essai("ses quatre priorités ouvrent l'ensemble de l'entreprise", () => {
   // La cinquième ligne a changé deux fois : « Planning », supprimée le 16 août
   // faute d'avoir quoi que ce soit à elle ; puis « Fiche d'entretien », partie
   // dans Paysage le 26 août à sa demande.
+  //
+  // **Par adresse depuis le 5 septembre 2026**, pour la raison écrite plus haut :
+  // c'est l'ORDRE qu'il a fixé qu'on défend, pas l'orthographe des libellés.
   assert.deepEqual(entreprise.slice(0, 5), [
-    "Mon entreprise",
-    "Équipe",
-    "Tarifs & catalogue",
-    "Devis & factures",
-    "Atlas IA",
+    "/reglages/identite",
+    "/reglages/equipe",
+    "/reglages/tarifs",
+    "/reglages/documents",
+    "/reglages/ia",
   ]);
 });
 
@@ -94,19 +110,25 @@ essai("« Fiche d'entretien » a quitté les Réglages, et n'y revient pas", () 
 // LE CONTRÔLE QUI COMPTE. Il ne regarde pas si une rubrique est grisée : il
 // vérifie qu'elle n'est PAS DANS LA LISTE. Ajouter « Tarifs & catalogue » à
 // l'ensemble d'un membre le fait rougir, même si l'écran la cachait ensuite.
+//
+// **PAR ADRESSE depuis le 5 septembre 2026, et ici cela protège pour de bon.**
+// Écrit sur les libellés, ce contrôle se serait DÉSARMÉ TOUT SEUL au premier
+// renommage : « Intégrations » devenue « Mon agenda » ne figurait plus dans la
+// liste des interdits, et la rubrique aurait pu sortir chez un salarié sans
+// que rien ne rougisse. Une adresse, elle, ne se renomme pas pour faire joli.
 essai("un membre ne reçoit AUCUNE rubrique de l'entreprise", () => {
-  const noms = toutes("salarie").map((r) => r.nom);
+  const adresses = toutes("salarie").map((r) => r.href);
   for (const interdite of [
-    "Mon entreprise",
-    "Équipe",
-    "Tarifs & catalogue",
-    "Devis & factures",
-    "Atlas IA",
-    "Intégrations",
-    "Abonnement",
-    "Sécurité & données",
+    "/reglages/identite",
+    "/reglages/equipe",
+    "/reglages/tarifs",
+    "/reglages/documents",
+    "/reglages/ia",
+    "/reglages/agenda",
+    "/reglages/abonnement",
+    "/reglages/donnees",
   ]) {
-    assert.ok(!noms.includes(interdite), `« ${interdite} » est sortie du serveur pour un membre`);
+    assert.ok(!adresses.includes(interdite), `${interdite} est sortie du serveur pour un membre`);
   }
 });
 
@@ -162,8 +184,8 @@ essai("un membre reçoit ses quatre réglages personnels, et le même ensemble",
   assert.equal(ensembles.length, 1);
   assert.equal(ensembles[0].titre, "Moi");
   assert.deepEqual(
-    ensembles[0].rubriques.map((r) => r.nom),
-    ["Mon compte", "Notifications", "Connexion", "Apparence"]
+    ensembles[0].rubriques.map((r) => r.href),
+    ["/reglages/compte", "/reglages/notifications", "/reglages/connexion", "/reglages/apparence"]
   );
 });
 
@@ -182,12 +204,36 @@ essai("l'entreprise ne s'annonce pas à qui elle n'appartient pas", () => {
   assert.equal(surtitreReglages(null), "Mon compte");
 });
 
-// Une rubrique sans explication oblige à l'ouvrir pour savoir si c'est la
-// bonne : c'est un aller-retour par rubrique, sur un téléphone.
-essai("chaque rubrique dit ce qu'on y trouve, et porte une icône", () => {
+essai("chaque rubrique porte une icône", () => {
   for (const r of toutes("proprietaire")) {
-    assert.ok(r.dit.trim().length > 4, `« ${r.nom} » n'explique rien`);
     assert.ok(r.icone.trim().length > 0, `« ${r.nom} » n'a pas d'icône`);
+  }
+});
+
+/**
+ * **CE CONTRÔLE EXIGEAIT L'INVERSE, ET IL A ÉTÉ RETOURNÉ LE 5 SEPTEMBRE 2026.**
+ *
+ * Il s'appelait « chaque rubrique dit ce qu'on y trouve » et vérifiait que la
+ * ligne d'explication faisait plus de quatre lettres. C'était la règle d'avant.
+ * Le patron a fait retirer les douze — et **une suite qui réclame ce qu'il a
+ * fait enlever rend son écran impossible à changer** (`CLAUDE.md` §5 bis).
+ *
+ * **Ce qui le remplace défend la règle NEUVE : un titre se suffit.** On ne sait
+ * pas mesurer « ça se comprend ». On sait en revanche refuser les quatre mots
+ * dont on vient de payer le retrait — et c'est le vrai risque, parce qu'ils
+ * reviendraient de bonne foi : chacun avait sa raison le jour où il a été
+ * écrit, et « Intégrations » a tenu trois semaines en promettant une
+ * comptabilité qui n'existe pas.
+ */
+essai("aucune rubrique ne reprend un mot retiré le 5 septembre 2026", () => {
+  const retires = ["Intégrations", "Sécurité & données", "Connexion", "Apparence"];
+  const noms = toutes("proprietaire").map((r) => r.nom);
+  for (const mot of retires) {
+    assert.ok(
+      !noms.includes(mot),
+      `« ${mot} » est revenu dans le sommaire : il en a été retiré le 5 septembre 2026, ` +
+        `et son remplaçant est dans src/lib/rubriques-reglages.ts`
+    );
   }
 });
 

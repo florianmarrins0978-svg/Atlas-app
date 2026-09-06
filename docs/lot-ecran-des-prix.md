@@ -13,8 +13,9 @@ attendent leur prix se **voient** maintenant — il a choisi la B sur planche �
 le refus qui bloque le devis **emmène le doigt sur la case**, au lieu de le
 renvoyer aux réglages.
 
-**Rien n'a été touché en dehors de cet écran.** La batterie complète et les
-captures restent dues : elles attendent qu'il arrête ses autres sessions.
+**Rien n’a été touché en dehors de cet écran.** La batterie complète a été
+jouée le 5 septembre au soir, et ses chiffres sont plus bas. Restent dues les
+captures de l’écran, et la vérification « connexion derrière un proxy ».
 
 ---
 
@@ -145,7 +146,61 @@ session travaille : elle a été prévenue.
 
 ---
 
-## Les chiffres
+## Les chiffres — batterie jouée le 5 septembre 2026 au soir
+
+| | |
+|---|---|
+| types, lint, construction, mémoire du dépôt, fournisseurs d'IA | **verts** |
+| suites base | **304 / 314** |
+| suites navigateur | **115 / 128** |
+| `test-case-du-prix.ts` (pure) | **10 / 10** |
+| `test-case-du-prix-e2e.ts` (navigateur, en base) | **verte** |
+| `test-chartes-lisibles.ts` | **14 / 14**, les huit chartes |
+
+**LE GESTE DU PATRON EST ÉPROUVÉ POUR DE BON.** La suite navigateur ouvre
+l'écran des prix, tape « 1 400,50 » comme son clavier français l'écrit, quitte
+la case, et va lire **en base** ce qui y est arrivé. C'était tout le défaut : un
+écran qui affichait le bon chiffre pendant que zéro partait.
+
+### UN ROUGE ÉTAIT DE MOI, et le voici
+
+`test-prix-e2e.ts` : **« '1 120,50' == '1120.50' »**. La case affiche désormais
+le montant comme il l'écrit ; la suite, elle, comparait la chaîne brute.
+
+**C'est le contrôle qui a été corrigé, pas l'écran.** Ce que cette suite défend
+n'a jamais été la forme du texte, c'est que le montant SURVIVE au rechargement —
+et il y survit. Elle compare donc des montants, en employant `montantEcrivable`,
+la règle que l'écran lui-même emploie pour relire sa case. Écrire une assertion
+sur un texte d'écran, c'est rendre cet écran impossible à changer.
+
+Rejouée seule après correction : **1/1, verte**.
+
+### Les autres rouges — aucun n'est de ce lot
+
+| | |
+|---|---|
+| **10 suites base** | les mêmes qu'au 4 septembre : verrou et relance de construction, ports du banc, rôles, seed, fiche du banc — de l'outillage de banc d'essai qui ne tourne pas sur un PC Windows. Plus deux du lot voisin (`boutons-arrondis`, `mode-emploi`) |
+| **12 suites navigateur** | des dates, des délais dépassés, l'anneau de dictée (qui demande une clé d'IA, coupée par la batterie), et `spawn npx ENOENT` |
+
+Dans les deux suites de rôles, **les vraies règles passent** — le commercial est
+refusé à la facturation, le salarié bloqué en écriture. Ce qui rougit est
+l'étape où la suite se teste elle-même en modifiant un fichier sur le disque.
+
+### Ce qui a coûté trois tentatives, et qu'il faut savoir
+
+La batterie a dû être jouée **trois fois** : une session coupée en cours de
+route, un lancement des suites navigateur sans Redis (ma faute — seule la
+batterie complète pose leurs variables), et **Docker Desktop qui s'est éteint
+tout seul en cours de mesure** — 114 suites sont alors tombées sur une base
+absente, et le total (200/314) n'accusait personne.
+
+**La leçon, pour la prochaine fois :** vérifier que la base répond AVANT de
+conclure quoi que ce soit d'un total. Un chiffre mesuré sur une base morte
+ressemble à un chiffre.
+
+<!-- ancien récapitulatif, conservé pour mémoire des contrôles rapides -->
+
+## Les chiffres d'avant la batterie
 
 | | |
 |---|---|

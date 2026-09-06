@@ -63,11 +63,16 @@ export default async function ReglagesPage() {
             lui voit les clients, les devis et les factures, pas des chantiers
             au planning. Énumérer par rôle aurait fait une seconde liste des
             droits, qui vieillit (`CLAUDE.md` §3) ; ce qui reste est vrai des
-            trois, et plus court, ce qu'il demande. */}
+            trois, et plus court, ce qu'il demande.
+
+            **Elle est passée en `inkSoft` le 5 septembre 2026.** C'est la SEULE
+            phrase qu'un salarié lit sur cet écran, et elle lui évite justement
+            d'aller demander qu'on « lui ouvre les droits » : en `muted` elle
+            tenait 3,3 de contraste, donc elle se sautait. */}
         {role !== "proprietaire" && (
           <p
             className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.75]"
-            style={{ borderColor: colors.line, color: colors.muted }}
+            style={{ borderColor: colors.line, color: colors.inkSoft }}
           >
             Rien de l&apos;entreprise ici, et ce n&apos;est pas un écran amputé : les tarifs, les
             coordonnées bancaires et les documents appartiennent au patron.

@@ -1603,6 +1603,48 @@ depuis votre page habituelle, **« À essayer »** — c'est le premier lien.
 **La seule chose à me dire : ces trois écrans vous vont-ils ?** Si un seul vous
 va, on ne fait que celui-là.
 
+### Ce qui a été décidé — 6 septembre 2026
+
+**Cette question est restée sans réponse dix-sept jours**, et le 5 septembre
+vous avez demandé qu'elle soit tranchée plutôt que reposée une troisième fois,
+avec cette consigne : *« imagine que la plupart des patrons qui vont utiliser
+l'app sont des vieux qui ont du mal à se servir de leur téléphone »*.
+
+**Verdict : oui pour les réglages, et c'est codé.** Les douze phrases sous les
+titres sont parties. Le motif était déjà dans votre question du 19 août — une
+phrase d'explication ne répare jamais un mauvais titre, elle le cache : on a
+donc corrigé les titres, puis retiré les phrases.
+
+Quatre titres ont changé parce qu'ils **mentaient**, pas parce qu'ils sonnaient
+mal :
+
+| Avant | Après | Ce qu'il promettait de faux |
+|---|---|---|
+| Intégrations | **Mon agenda** | « calendrier, comptabilité et services connectés » — les deux derniers n'existent pas, et l'écran derrière s'appelle « Mon agenda » |
+| Sécurité & données | **Mes données** | aucune sécurité ne s'y règle : on y télécharge un fichier |
+| Connexion | **Mot de passe** | nomme un mécanisme, pas ce qu'on vient y faire |
+| Apparence | **Couleurs** | plus large que l'écran : on n'y choisit que des couleurs |
+
+**Ce qui n'a pas été touché :** « Tarifs & catalogue » et « Devis & factures ».
+Ce sont vos mots, ils sont justes, et neuf contrôles les lisent.
+
+**Mesuré sur votre écran**, à 390 × 664 : 1 310 px de haut → **1 145**, six
+rubriques atteintes sans défiler → **huit**, 89 mots → **30**. L'écran ne tient
+toujours pas en une seule fenêtre, et il ne le tiendra pas — douze rubriques à
+56 px de haut, plus la version en bas, font davantage que 664. Serrer les
+lignes rendrait au pouce ce qu'on gagnerait à l'œil.
+
+**Les deux autres écrans de la maquette « Moins de mots » — la fiche client et
+l'accueil — ne sont pas faits.** Ils appartiennent à des zones reprises entre
+le 2 et le 5 septembre par d'autres lots ; les refaire au jugé serait
+exactement l'erreur que cette question cherchait à arrêter.
+
+**Et le compteur de mots qui empêche de regrossir n'existe toujours pas.**
+C'était la vraie réponse à « il y aura une quatrième fois ». Il reste à écrire.
+
+Détail complet : `docs/lot-sommaire-des-reglages.md`.
+Planche : `https://florianmarrins0978-svg.github.io/Atlas-app/sommaire-des-reglages.html`
+
 ---
 
 ## 24. Faut-il une licence pour se servir des données de l'INRAE ?

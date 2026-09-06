@@ -4,12 +4,60 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-05 · `main`
+**Point de reprise :** 2026-09-06 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
-## Dernier lot — LA FICHE CLIENT N'A QU'UN VISAGE (5 septembre 2026)
+## Dernier lot — LE SOMMAIRE DES RÉGLAGES (6 septembre 2026)
+
+**Document du lot :** `docs/lot-sommaire-des-reglages.md`.
+**Planche :** `appli/sommaire-des-reglages.html`.
+**Décisions :** `ARCHITECTURE.md` §262.
+
+**Premier des six lots de la reprise des Réglages**, ouverte par sa consigne du
+5 septembre 2026 — *« la plupart des patrons qui vont utiliser l'app sont des
+vieux qui ont du mal à se servir de leur téléphone »* (`PRODUCT.md`,
+Accessibility & Inclusion).
+
+**Ce qui a été fait :** les douze lignes d'explication du sommaire retirées (le
+champ `dit` a été SUPPRIMÉ du type `Rubrique`, pas vidé) ; quatre libellés
+corrigés parce qu'ils mentaient — Intégrations → **Mon agenda**, Sécurité &
+données → **Mes données**, Connexion → **Mot de passe**, Apparence →
+**Couleurs** ; le nom d'une rubrique passé de 17 à 19 px ; les deux intertitres
+et la phrase du salarié passés de `muted` à `inkSoft`.
+
+**Deux questions ont été TRANCHÉES à sa demande**, plutôt que reposées :
+« Moins de mots » (`docs/QUESTIONS.md` §23, 19 août) — oui, les douze partent,
+codé ; et la planche 96 sur l'écran Équipe (26 août) — **proposition C**, le
+titre pose la question. **La seconde n'est PAS codée** : elle vient au lot 6.
+
+**L'ordre des lots qui reste**, tel qu'il lui a été proposé et qu'il a accepté :
+
+| Lot | Quoi |
+|---|---|
+| 2 | l'en-tête unique : `agenda`, `prix`, `prix/mesures` et `vocabulaire` se dessinent le leur au lieu d'employer `EnTeteEcran` — d'où un titre à 32 px au lieu de 36, le surtitre doré AU-DESSUS du titre alors qu'il a demandé l'inverse le 26 août, et **pas de bouton d'assistant** |
+| 3 | « Devis & factures » : 1 267 lignes et six blocs sans rapport en un seul écran |
+| 4 | « Mon entreprise » : le régime de TVA et sa périodicité sont séparés par tout le bloc bancaire |
+| 5 | « Mon agenda » : le raccordement iCloud demande d'aller générer un mot de passe sur `account.apple.com` |
+| 6 | Équipe (proposition C), notifications, mot de passe, données, couleurs, IA, abonnement, compte |
+
+**⚠ LA FUSION A DEMANDÉ DE METTRE DE CÔTÉ LE TRAVAIL D'UNE AUTRE SESSION.** Au
+moment de livrer, l'arbre partagé portait **124 fichiers non enregistrés** — le
+passage des suites navigateur à `scripts/_adresse.ts` —, dont trois que `main`
+avait modifiés de son côté, ce qui bloquait `git merge`.
+
+Ils ont été **remisés, pas jetés** : une copie hors du dépôt d'abord, puis
+`git stash push` sur ces trois fichiers seulement, puis la fusion, puis la
+remise. Si un jour la remise a échoué, le remisage porte le nom
+« travail en cours d'une session voisine » et la copie était dans le dossier
+temporaire de la session. **Ne pas forcer sur ce genre de situation** : le
+garde-fou `scripts/garde-travail-non-enregistre.mjs` existe parce que ce
+travail-là a déjà été perdu une fois (`CLAUDE.md` §6).
+
+---
+
+## Lot précédent — LA FICHE CLIENT N'A QU'UN VISAGE (5 septembre 2026)
 
 **Sa remarque, capture à l'appui :** *« J'ai fait nouveau chantier […] j'ai
 dicté mon chantier, mais j'ai oublié de remplir les informations de mes clients

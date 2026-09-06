@@ -185,8 +185,31 @@ public.
 
 ## Accessibility & Inclusion
 
-Aucun standard formel n'a été posé par le patron. Deux exigences sont établies
+Aucun standard formel n'a été posé par le patron. Trois exigences sont établies
 par l'usage et par ses retours :
+
+- **CEUX QUI S'EN SERVIRONT NE SONT PAS À L'AISE AVEC UN TÉLÉPHONE — sa consigne
+  du 5 septembre 2026 :** *« imagine que la plupart des patrons qui vont utiliser
+  l'app sont des vieux qui ont du mal à se servir de leur téléphone ; il faut que
+  ce soit hyper intuitif et simple. »*
+
+  Ce n'est pas une préférence de style, c'est la contrainte la plus forte du
+  produit — elle prime sur l'élégance, sur la densité, et sur le nombre d'écrans
+  qu'on aurait pu économiser. Ce qu'elle impose, concrètement :
+
+  | | |
+  |---|---|
+  | **un écran, un geste** | ce qu'on vient y faire se voit sans chercher, et se fait sans apprendre |
+  | **rien de caché** | pas de geste à découvrir — un glissement, un appui long, un double appui ne s'apprennent pas tout seuls. Ce qui est important est **visible** |
+  | **des cibles grandes** | on vise mal avec un doigt épais, sur un écran sale, à contre-jour |
+  | **des mots du métier** | jamais un mot d'informaticien — et il en reste : **« Intégrations » est toujours là** (`rubriques-reglages.ts`, `reglages/agenda/page.tsx`, `mode-emploi.ts`), il mène à un écran qui s'appelle « Mon agenda ». Une première version de cette ligne l'annonçait retiré : c'était faux, corrigé le 5 septembre 2026 |
+  | **une erreur se rattrape** | on se trompe, et on doit pouvoir revenir — la réversibilité après, plutôt que la confirmation avant |
+  | **rien qui presse** | aucun geste qui expire, aucune fenêtre qui se referme seule |
+
+  **Le test qui tranche :** est-ce qu'un homme de soixante-cinq ans, qui n'a
+  jamais rien installé sur son téléphone, comprend cet écran **sans qu'on le lui
+  explique** ? S'il faut une phrase d'explication, l'écran n'est pas encore
+  juste — et la phrase, elle, est du bruit (`CLAUDE.md` §3).
 
 - **Le plein soleil et la main unique** commandent les tailles de cible et les
   contrastes.
