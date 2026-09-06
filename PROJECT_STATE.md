@@ -18,6 +18,23 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## FAIT : « Devis & factures » (6 septembre 2026)
+
+**Troisième des six lots de la reprise des Réglages.** L'écran le plus long de
+l'application.
+
+| | |
+|---|---|
+| **Mesuré avant** | 4 237 px · 6,4 écrans · 589 mots · 39 choses à toucher · **272 px lisibles sur 664** pendant qu'on règle l'allure |
+| **Corrigé** | la barre d'enregistrement n'est plus permanente — elle coupait « Moyens de paiement acceptés » et son interrupteur dès la première fenêtre ; « Ce que votre devis dira » remonté sous les réglages qu'il résume (il était 3 000 px plus bas) |
+| **Mesuré après** | 4 117 px · 6,20 écrans · **357 px lisibles** · 5 réglages entiers sur la première fenêtre au lieu de 3 et demi |
+| **Ajouté** | `test-barre-enregistrer-e2e` — et un troisième cas RETIRÉ plutôt que livré vert, parce qu'il ne pouvait rien mesurer |
+| **NON touché, et c'est le point** | rien n'est sorti de l'écran : l'allure, le message, l'aperçu collé et le numéro y sont par ses décisions des 23, 25 et 26 août |
+| **Posé à lui, sans réponse** | faut-il couper cet écran ? Ses décisions datent d'un écran à deux blocs ; il en porte six |
+
+---
+
 ## FAIT : l'en-tête unique des Réglages (6 septembre 2026)
 
 **Deuxième des six lots de la reprise des Réglages.**

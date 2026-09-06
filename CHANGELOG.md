@@ -7,6 +7,35 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-06
+### La barre « Enregistré ✓ » ne mange plus l'écran de « Devis & factures »
+
+Elle était rendue **en permanence**, opaque, haute de 85 px, et le contenu
+passait dessous. Dès l'arrivée sur l'écran, elle coupait **« Moyens de paiement
+acceptés » en deux, son interrupteur compris**.
+
+**Ce que ça évite :** un réglage qu'on ne peut pas viser. Mesuré au navigateur à
+390 × 664 : pendant qu'on règle l'allure, trois bandes collées prenaient 392 px
+des 664 — il restait **272 px pour lire**. Il en reste **357**.
+
+Elle ne servait qu'au message : tout le reste de cet écran s'enregistre seul, et
+l'écran l'écrit lui-même (« Enregistré au fur et à mesure »). Elle apparaît
+désormais quand il y a quelque chose à enregistrer, montre « Enregistré ✓ » deux
+secondes et demie après l'envoi, puis rend la place.
+
+**« Ce que votre devis dira » est remonté sous les six interrupteurs qu'il
+résume** — il vivait 3 000 px plus bas, après le message, le numéro et l'allure.
+
+**Rien n'est sorti de l'écran**, et c'est le point : l'allure, le message,
+l'aperçu collé et le numéro y sont par ses décisions des 23, 25 et 26 août.
+L'écran reste donc long (6,2 écrans) et c'est dit — ces décisions ont été prises
+quand il portait deux blocs, il en porte six.
+
+**Un contrôle a été retiré plutôt que livré vert** : « aucun réglage n'est
+recouvert » rendait le même verdict avec et sans le défaut, puis n'avait plus
+rien à mesurer, puis aurait rougi sur sa décision. `ARCHITECTURE.md` §264.
+
+Planche : `appli/devis-et-factures.html`. Détail : `docs/lot-devis-et-factures.md`.
+
 ### Quatre écrans des Réglages désobéissaient depuis onze jours à une demande exaucée
 
 Le 26 août, il demande d'inverser le titre et le surtitre doré. La correction

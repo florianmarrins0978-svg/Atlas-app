@@ -23580,3 +23580,79 @@ C'est hors de portée de l'utilisateur que `PRODUCT.md` décrit, et **aucune mis
 en ordre d'en-tête n'y change quoi que ce soit** : ce qu'il faut changer, c'est
 ce qu'on demande, pas la façon de le demander. Cela appartient au lot 5, et la
 décision est au patron.
+
+---
+
+## §264. Une bande collée en permanence est un morceau d'écran qu'on ne rend jamais
+
+**6 septembre 2026.** « Devis & factures » rendait sa barre d'enregistrement
+**en permanence**, opaque, haute de 85 px — même quand elle ne disait que
+« Enregistré ✓ ». Mesuré au navigateur à 390 × 664 : pendant qu'on règle
+l'allure, trois bandes collées prenaient **392 px des 664** — l'aperçu du devis
+(259), cette barre (85), la navigation du bas (48). **Il restait 272 px pour
+lire, 41 % de l'écran.**
+
+Et dès l'arrivée, elle coupait **« Moyens de paiement acceptés » en deux, son
+interrupteur compris** : un réglage qu'on ne pouvait pas viser.
+
+**Elle ne servait qu'au message.** Tout le reste de cet écran s'enregistre seul :
+chaque interrupteur appelle `enregistrer` de lui-même, l'allure et le format
+aussi, et l'écran l'écrit noir sur blanc — « Enregistré au fur et à mesure ».
+Une barre permanente pour UN bloc, qui recouvrait les cinq autres.
+
+### La règle
+
+**Une bande collée se paie à chaque position de défilement, pas une fois.** Elle
+ne coûte pas sa hauteur : elle coûte sa hauteur × tout le temps où elle est là.
+Sur une page de 4 237 px, une barre de 85 px cache 85 px **partout**.
+
+Donc : une bande qui ne sert qu'à un état ne se rend que dans cet état. Ici, la
+barre apparaît quand il y a quelque chose à enregistrer, montre « Enregistré ✓ »
+deux secondes et demie après l'envoi — sans quoi elle disparaîtrait à l'instant
+où il appuie, et il ne saurait pas si c'est parti —, puis rend la place.
+
+**Ce n'est pas un geste caché** (`PRODUCT.md`) : rien ne se découvre, la barre
+revient d'elle-même dès qu'il touche au message.
+
+### Un récapitulatif se lit là où il récapitule
+
+« Ce que votre devis dira » résume les six premiers interrupteurs. Il vivait
+**3 000 px plus bas**, après le message, le numéro et l'allure : on le lisait
+sans savoir de quoi il parlait, ou on ne l'atteignait jamais. Il est remonté
+juste dessous.
+
+### CE QUI N'A PAS ÉTÉ TOUCHÉ, ET QUI NE DOIT PAS L'ÊTRE
+
+**Rien n'est sorti de cet écran.** Tout ce qui y vit y est par décision du
+patron, planche en main :
+
+| | |
+|---|---|
+| l'allure des devis | sa réponse **B** du 23 août — *« ici et pas dans une rubrique à part »* (`appli/allure-de-mes-devis.html`) |
+| le message au client | sa réponse **A** du 23 août (`appli/mon-message-au-client.html`) |
+| l'aperçu collé en haut | sa réponse **B** du 25 août, après trois rangements montrés (`appli/allure-mieux-rangee.html`) |
+| le format de numéro | sa demande du 26 août |
+
+Trois suites tiennent ces places (`test-allure-de-mes-devis-e2e`,
+`test-message-au-client-e2e`, `test-format-numero-e2e`). **L'écran reste donc
+long — 6,2 écrans — et c'est le prix de ses décisions, pas un défaut à corriger
+en douce.** Ce qui a été dit au patron, en revanche : ces décisions ont été
+prises quand l'écran portait deux blocs ; il en porte six.
+
+### UN CONTRÔLE RETIRÉ PLUTÔT QUE LIVRÉ VERT
+
+`scripts/test-barre-enregistrer-e2e.ts` tient la règle en deux cas, et il sait
+échouer. Un troisième a été écrit puis **retiré**, et le raisonnement vaut d'être
+gardé :
+
+1. écrit comme « la ligne descend-elle plus bas que 616 px ? », il rendait le
+   **même verdict avec et sans le défaut** — une bande posée par-dessus ne
+   déplace rien, elle recouvre ;
+2. réécrit sur le vrai recouvrement, il n'avait **plus rien à mesurer** en haut
+   de l'écran : la seule bande restante y est la navigation, qui est le cadre
+   des dix-sept écrans ;
+3. et plus bas, il aurait rougi sur l'aperçu collé — **c'est-à-dire sur la
+   décision du patron**.
+
+Un contrôle qui ne peut pas mesurer ne se livre pas vert (`CLAUDE.md` §5). Le
+recouvrement est mesuré à la main et écrit dans `docs/lot-devis-et-factures.md`.

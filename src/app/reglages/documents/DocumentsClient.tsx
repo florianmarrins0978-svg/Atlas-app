@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
 import {
   BORNES,
@@ -166,6 +166,19 @@ export default function DocumentsClient({
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
   const [aEcrire, setAEcrire] = useState(false);
+  /**
+   * **Le « Enregistré ✓ » qui s'attarde, et qui s'en va — 6 septembre 2026.**
+   *
+   * Sans lui, la barre disparaîtrait à l'instant même où il appuie, et il ne
+   * saurait pas si son message est parti ou si le bouton a raté. La
+   * confirmation reste donc le temps de se lire, puis rend la place.
+   */
+  const [vientDEnregistrer, setVientDEnregistrer] = useState(false);
+  useEffect(() => {
+    if (!vientDEnregistrer) return;
+    const t = setTimeout(() => setVientDEnregistrer(false), 2500);
+    return () => clearTimeout(t);
+  }, [vientDEnregistrer]);
   const [message, setMessage] = useState(messageInitial ?? MESSAGE_PAR_DEFAUT);
 
   // Ce que chaque pastille AFFICHE, en doré et verrouillé, dans le cadre. Le nom
@@ -278,14 +291,19 @@ export default function DocumentsClient({
         // qu'il croirait avoir effacé.
         setMessage(r.messageClient ?? MESSAGE_PAR_DEFAUT);
         setAEcrire(false);
+        setVientDEnregistrer(true);
       }
     });
   }
 
   const apercu = lignesConditionsDevis(c);
 
+  const barreVisible = aEcrire || enCours || refusMessage !== null || vientDEnregistrer;
+
   return (
-    <div className="pb-40">
+    // La réserve du bas suit la barre : sans elle, `pb-40` laissait 160 px de
+    // vide au bout d'un écran qui en fait déjà 4 237.
+    <div className={barreVisible ? "pb-40" : "pb-10"}>
       {refus && (
         <p
           role="alert"
@@ -380,6 +398,41 @@ export default function DocumentsClient({
             onFini={(t) => enregistrer({ textePied: t })}
           />
         </Reglage>
+      </Bloc>
+
+      {/* **CE RÉCAPITULATIF A REMONTÉ ICI LE 6 SEPTEMBRE 2026.**
+
+          Il résume les six interrupteurs juste au-dessus — et il vivait
+          **3 000 pixels plus bas**, tout en fin d'écran, après le message au
+          client, le numéro et l'allure. On le lisait donc sans savoir de quoi
+          il parlait, ou, quatre écrans plus loin, on ne le lisait jamais.
+
+          Il se RECALCULE (`lignesConditionsDevis`), il ne se recopie pas : deux
+          rédactions du même engagement finiraient par diverger, et c'est le
+          client qui lirait la mauvaise (`CLAUDE.md` §3).
+
+          **Rien n'est sorti de l'écran pour autant** — ni ici ni ailleurs dans
+          ce lot : l'allure, le message et le numéro y sont parce qu'il l'a
+          demandé, planches en main (ses réponses B, A et B des 23 et 25 août). */}
+      <Bloc titre="Ce que votre devis dira">
+        {apercu.length === 0 ? (
+          <p className={texteSituation} style={{ color: colors.muted }}>
+            Rien ne s&apos;ajoutera : votre devis portera ses lignes, ses totaux et sa
+            mention de signature, sans condition supplémentaire.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {apercu.map((l) => (
+              <li key={l} className="text-[13px] leading-[1.6]" style={{ color: colors.inkSoft }}>
+                {l}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.muted }}>
+          Le montant de l&apos;acompte se calcule sur chaque devis. Il n&apos;est pas
+          écrit ici : il dépend du total.
+        </p>
       </Bloc>
 
       {/* **CE QUI N'A PAS D'INTERRUPTEUR, dit à l'endroit exact où on le
@@ -935,26 +988,6 @@ export default function DocumentsClient({
 
       {/* L'aperçu vient APRÈS les réglages : lu avant, il décrirait un état
           qu'on n'a pas encore choisi. */}
-      <Bloc titre="Ce que votre devis dira">
-        {apercu.length === 0 ? (
-          <p className={texteSituation} style={{ color: colors.muted }}>
-            Rien ne s&apos;ajoutera : votre devis portera ses lignes, ses totaux et sa
-            mention de signature, sans condition supplémentaire.
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {apercu.map((l) => (
-              <li key={l} className="text-[13px] leading-[1.6]" style={{ color: colors.inkSoft }}>
-                {l}
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.muted }}>
-          Le montant de l&apos;acompte se calcule sur chaque devis. Il n&apos;est pas
-          écrit ici : il dépend du total.
-        </p>
-      </Bloc>
 
       <p className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
          style={{ borderColor: colors.line, color: colors.muted }}>
@@ -963,7 +996,30 @@ export default function DocumentsClient({
         ne change aucun document déjà fait.
       </p>
 
+      {/* ══════════════════════════════════════════════════════════════════
+          **LA BARRE N'EXISTE QUE S'IL Y A QUELQUE CHOSE À ENREGISTRER —
+          6 septembre 2026.**
+
+          Elle était là **en permanence**, opaque, haute de 85 px, et le contenu
+          passait dessous. Mesuré au navigateur à 390 × 664 : entre elle, la
+          barre du bas et l'aperçu collé de l'allure, **392 px des 664 étaient
+          pris — il restait 272 px pour lire**. Et sur le PREMIER écran, elle
+          coupait « Moyens de paiement acceptés » en deux, son interrupteur
+          compris : un réglage qu'on ne peut pas viser.
+
+          **Elle ne servait qu'au message.** Tout le reste de cet écran
+          s'enregistre seul — chaque interrupteur appelle `enregistrer` de
+          lui-même, l'allure et le format aussi, et l'écran l'écrit noir sur
+          blanc (« Enregistré au fur et à mesure »). Une barre permanente pour
+          UN bloc, qui recouvrait les cinq autres.
+
+          **Ce n'est pas un geste caché** (`PRODUCT.md`) : rien ne se découvre,
+          la barre revient d'elle-même dès qu'il touche au message, et repart
+          quand il n'y a plus rien à faire.
+          ══════════════════════════════════════════════════════════════════ */}
+      {barreVisible && (
       <div
+        data-atlas="barre-enregistrer"
         className="fixed inset-x-0 z-10 mx-auto max-w-md border-t px-[26px] pb-4 pt-3.5"
         style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
       >
@@ -997,6 +1053,7 @@ export default function DocumentsClient({
                 : "Enregistrer"}
         </button>
       </div>
+      )}
     </div>
   );
 }

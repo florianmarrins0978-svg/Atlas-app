@@ -79,15 +79,37 @@ seulement étaient les miens.
 
 ---
 
-## Les quatre lots qui restent sur les Réglages
+## UNE RÉPONSE ATTENDUE — faut-il couper « Devis & factures » ?
+
+**Posée le 6 septembre 2026**, dans `docs/lot-devis-et-factures.md`. Sans
+réponse à ce jour.
+
+L'écran fait **6,2 écrans** de son téléphone, et il restera long : tout ce qui
+y vit y est parce qu'il l'a décidé, planche en main — l'allure (réponse B du
+23 août), le message (A, 23 août), l'aperçu collé (B, 25 août), le format de
+numéro (26 août). Trois suites tiennent ces places.
+
+**Ce qui lui a été dit, et qui est neuf :** ces décisions ont été prises quand
+l'écran portait **deux** blocs. Il en porte **six**.
+
+**Ne pas trancher à sa place, et ne pas « ranger » cet écran en douce.** S'il
+dit oui, c'est un lot à part. S'il ne dit rien, on n'y touche plus.
+
+**Deux autres choses signalées le même jour, et volontairement non corrigées :**
+l'écran enregistre de deux façons (l'allure toute seule, le message par un
+bouton — les unifier demande de choisir laquelle), et l'aperçu collé recouvre
+le contenu qui passe dessous, ce qui est le prix de sa réponse B.
+
+---
+
+## Les trois lots qui restent sur les Réglages
 
 Ouverts par sa consigne du 5 septembre 2026 (`PRODUCT.md`). L'ordre est celui
-qu'il a accepté ; **les deux premiers sont faits** — le sommaire
-(`ARCHITECTURE.md` §262) et l'en-tête unique (§263).
+qu'il a accepté ; **les trois premiers sont faits** — le sommaire
+(`ARCHITECTURE.md` §262), l'en-tête unique (§263) et « Devis & factures » (§264).
 
 | Lot | Quoi | Ce qui le fonde |
 |---|---|---|
-| 3 | **« Devis & factures »** | `DocumentsClient.tsx`, 1 267 lignes, six blocs sans rapport en un seul écran ; le logo est à la ligne 772 |
 | 4 | **« Mon entreprise »** | le régime de TVA (bloc 2 d'`IdentiteClient`) et sa périodicité (`identite/page.tsx:79`) sont séparés par tout le bloc bancaire « Pour être payé » — la faute que le regroupement du 14 août voulait réparer, revenue à l'intérieur d'un écran |
 | 5 | **« Mon agenda »** | **les DEUX raccordements sont hors de portée**, vu à la capture le 6 septembre. Google : créer un identifiant OAuth sur `console.cloud.google.com`, y activer une API — et l'écran s'annonce lui-même « pas encore disponible » tant que ce n'est pas fait. iCloud : un « mot de passe pour les apps » chez Apple, seize lettres à recopier. **Ce qu'il faut changer, c'est ce qu'on demande, pas la façon de le demander** — donc c'est au patron de trancher |
 | 6 | **le reste** | Équipe (**proposition C** de la planche 96, décidée le 6 septembre, pas codée), notifications, mot de passe, données, couleurs, IA, abonnement, compte |

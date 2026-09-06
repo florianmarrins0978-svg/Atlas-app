@@ -8,7 +8,41 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — L'EN-TÊTE UNIQUE DES RÉGLAGES (6 septembre 2026)
+## Dernier lot — « DEVIS & FACTURES » (6 septembre 2026)
+
+**Document du lot :** `docs/lot-devis-et-factures.md`.
+**Planche :** `appli/devis-et-factures.html`.
+**Décisions :** `ARCHITECTURE.md` §264.
+
+**Troisième des six lots de la reprise des Réglages.** L'écran le plus long de
+l'application : 4 237 px, 6,4 écrans, 589 mots, 39 choses à toucher.
+
+**Corrigé :** la barre d'enregistrement était rendue en permanence, opaque, et
+coupait « Moyens de paiement acceptés » et son interrupteur dès la première
+fenêtre. Elle n'apparaît plus que s'il y a quelque chose à enregistrer. Et
+« Ce que votre devis dira » est remonté sous les interrupteurs qu'il résume, au
+lieu d'être 3 000 px plus bas.
+
+**⚠ CE QUI NE DOIT PAS ÊTRE « RANGÉ » PAR UNE SESSION SUIVANTE.** Cet écran est
+long parce que le patron a décidé, planche en main, que tout y reste :
+
+| | |
+|---|---|
+| l'allure des devis | réponse **B** du 23 août — « ici et pas dans une rubrique à part » |
+| le message au client | réponse **A** du 23 août |
+| l'aperçu collé en haut | réponse **B** du 25 août |
+| le format de numéro | sa demande du 26 août |
+
+Trois suites tiennent ces places. **Le découper est SA décision**, elle lui a été
+posée dans le document du lot, et elle n'a pas de réponse à ce jour.
+
+**Deux choses signalées et non corrigées, volontairement :** l'écran enregistre
+de deux façons (l'allure toute seule, le message par un bouton), et l'aperçu
+collé recouvre le contenu qui passe dessous — c'est le prix de sa réponse B.
+
+---
+
+## Lot précédent — L'EN-TÊTE UNIQUE DES RÉGLAGES (6 septembre 2026)
 
 **Document du lot :** `docs/lot-entete-unique-reglages.md`.
 **Décisions :** `ARCHITECTURE.md` §263.
