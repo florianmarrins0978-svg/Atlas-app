@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — l'accueil, deux registres</title>
+<style>
+/*
+  L'ACCUEIL — DEUX REGISTRES. Proposition pour « / ».
+
+  ══════════════════════════════════════════════════════════════════════════
+  SA DEMANDE, LE 6 SEPTEMBRE 2026, APRÈS AVOIR REFUSÉ « MA JOURNÉE » :
+
+  *« Sur la page neuve tu ne l'as pas mis mes clients ??? Et j'aime pas ce que
+  tu as fait. Propose-moi quelque chose d'élégant, minimaliste ; il faut qu'il y
+  ait un endroit pour les retours client et l'autre pour les devis en cours de
+  conception. Tu peux rajouter des choses si tu estimes que c'est utile, même
+  des éléments de décoration, vu que c'est la première page. »*
+
+  Quatre choses, et elles commandent tout le fichier :
+
+    1. SES CLIENTS SONT REVENUS. Ils manquaient, et c'était une faute : le lien
+       existait depuis le 17 août — « la catégorie client n'a pas été créée » —
+       et « Ma journée » l'avait fait disparaître sans le dire.
+    2. DEUX REGISTRES SÉPARÉS, et ce sont ses mots : « Retours clients » d'un
+       côté, « Devis en cours » de l'autre.
+    3. ÉLÉGANT, MINIMALISTE : aucune boîte, aucune carte, aucun fond. Des
+       filets, de l'air, deux voix de caractères.
+    4. LA DÉCORATION EST AUTORISÉE, et elle est SIENNE — le sceau, sa feuille
+       au trait dans son cercle d'or (`src/components/atlas/MarqueAtlas.tsx`,
+       le dessin recopié trait pour trait), et l'ornement qui sépare les deux
+       registres. Rien d'inventé, rien d'importé.
+
+  ══════════════════════════════════════════════════════════════════════════
+  CE QUI VIENT DU DÉPÔT, ET RIEN D'AUTRE
+
+  · Les couleurs sortent de `src/lib/chartes.ts`, relevées en EXÉCUTANT le
+    fichier. Origine et Nuit, jeton par jeton.
+  · Les polices sont celles de `globals.css` : la serif et la sans DU SYSTÈME.
+  · Les états d'un devis sont ceux de `statutLabel` (`chantier-etat.ts`), mot
+    pour mot : « Devis prêt à envoyer », « À vérifier », « Brouillon ».
+  · Les titres des retours sont ceux de `versCarte` (`Notifications.tsx`) :
+    « Correction demandée », « Devis retourné », « Autre date proposée ».
+  · Les gestes sortent de `suite-de-la-reponse.ts` : « Corriger le devis »,
+    « Reprendre le devis », « Ouvrir le devis validé ».
+  · Les délais sont les trois formes de `depuisCombien()` (`rappels.ts`) :
+    « aujourd'hui », « depuis hier », « depuis N jours ».
+  · Les cinq sections du bas viennent d'`AtlasBottomNav.tsx`.
+
+  Les noms, communes et messages sont des exemples de maquette.
+
+  ══════════════════════════════════════════════════════════════════════════
+  DEUX RÈGLES DE SA CHARTE QUI ONT DÉCIDÉ DU DESSIN
+
+  · **L'OR D'UN TRAIT N'EST PAS L'OR D'UN MOT.** `or` (#B98B47) tient 2,77 de
+    contraste sur le crème : bon pour un filet, un cercle, un ornement — pas
+    pour un mot. Les MOTS dorés prennent donc `orTexte` (#8b6835, 4,59), qui
+    existe déjà dans `design-tokens.ts` et que l'accueil n'emploie nulle part.
+  · **AUCUN TRAIT GRIS DANS L'EN-TÊTE.** Il l'a demandé le 11 août, il l'a fait
+    retirer le 24 : « une sans le trait gris ». Il n'y en a pas ici. L'ornement
+    du milieu n'est pas un trait d'en-tête : c'est ce qui SÉPARE les deux
+    registres, et c'est la décoration qu'il vient d'autoriser.
+
+  ══════════════════════════════════════════════════════════════════════════
+  ÇA SE SERT AU DOIGT : « J'ai vu » fait partir un retour et « Annuler » le
+  ramène ; « Créer un devis » fait monter la feuille ; « Et N autres » se
+  déplie ET SE REPLIE — le défaut qu'il a trouvé le 6 septembre ne se refait
+  pas ici ; les cinq sections répondent.
+*/
+
+/* ─── Les jetons, au caractère près ─────────────────────────────────────── */
+.origine{
+  --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+  --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+  --or:#B98B47; --orTexte:#8b6835; --alerte:#9C3B2E; --plein:#7d9a6d;
+  --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+  --presse:rgba(28,28,26,.045);
+  /* Le MOT écrit sur son vert : en encre, 5,46 — en crème il tiendrait 2,97.
+     Le vert, lui, ne bouge pas d'un cheveu (sa décision du 3 septembre). */
+  --surPlein:#1c1c1a;
+}
+.nuit{
+  --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+  --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+  --or:#B98B47; --orTexte:#b98b47; --alerte:#cd6456; --plein:#e9e8de;
+  --line:rgba(233,232,222,.12); --lineSoft:rgba(233,232,222,.07);
+  --presse:rgba(233,232,222,.055);
+  /* Sur Nuit l'aplat devient CLAIR : le mot qu'on y pose redevient sombre.
+     C'est la faute du 22 août 2026 — « le mode nuit est illisible ». */
+  --surPlein:#101210;
+}
+
+:root{
+  --serif: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --pilote-encre:#3a382f; --pilote-gris:#6f6a5e; --pilote-fond:#e7e4dc;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; line-height:1.5; }
+body{
+  font-family:var(--sans); background:var(--pilote-fond); color:#1c1c1a;
+  padding:0 0 44px; -webkit-text-size-adjust:100%;
+}
+::selection{ background:#B98B47; color:#f5f3ee; }
+
+/* ─── Le pilote — hors du téléphone ────────────────────────────────────── */
+.pilote{
+  position:sticky; top:0; z-index:60; background:var(--pilote-fond);
+  border-bottom:1px solid rgba(28,28,26,.14); padding:11px 12px 12px;
+}
+.pilote h1{ font:400 16px/1.2 var(--serif); margin:0 0 9px; letter-spacing:-.012em; }
+.pilote h1 small{
+  display:block; font:500 9.5px/1.5 var(--sans); letter-spacing:.24em;
+  text-transform:uppercase; color:var(--pilote-gris); margin-top:4px;
+}
+.rang{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:5px; align-items:center; }
+.rang b{
+  font:500 8.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase;
+  color:var(--pilote-gris); width:50px; flex:none;
+}
+.pilote button{
+  font:500 11px/1 var(--sans); letter-spacing:.04em;
+  border:1px solid rgba(28,28,26,.22); background:transparent;
+  color:var(--pilote-encre); border-radius:3px; padding:9px 10px;
+  cursor:pointer; min-height:34px;
+}
+.pilote button:focus-visible{ outline:2px solid #B98B47; outline-offset:2px; }
+.pilote button[aria-pressed="true"]{ background:#1c1c1a; color:#f5f3ee; border-color:#1c1c1a; }
+
+/* ─── Le téléphone : 390 × 664 (PRODUCT.md) ───────────────────────────── */
+.cadre{
+  width:390px; height:664px; margin:16px auto 0; position:relative;
+  overflow:hidden; outline:1px solid rgba(28,28,26,.18);
+  background:var(--cream); color:var(--ink); font-family:var(--sans);
+}
+@media (max-width:414px){ .cadre{ width:100%; outline:none; } }
+
+/* `--atlas-barre` = 4.25rem = 68 px (globals.css) : l'écran fait 664 − 68. */
+.ecran{
+  height:596px; display:flex; flex-direction:column; overflow:hidden;
+  transform-origin:50% 44%;
+  transition:transform .5s cubic-bezier(.22,.61,.36,1), filter .5s;
+}
+.cadre[data-feuille="oui"] .ecran{ transform:scale(.94) translateY(-8px); filter:brightness(.8); }
+
+/* ─── LE FRONTISPICE ────────────────────────────────────────────────────
+   Le sceau, puis une ligne qui porte la date à gauche et ses clients à
+   droite. Rien d'autre, et surtout aucun filet sous l'en-tête. */
+.sceau{
+  display:flex; align-items:center; justify-content:center;
+  width:42px; height:42px; margin:18px auto 0; border-radius:9999px;
+  border:1.5px solid var(--or);
+}
+.sceau svg{ display:block; }
+
+.colophon{
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap:12px; padding:12px 24px 0;
+}
+.date{ margin:0; font:400 17px/1.4 var(--serif); color:var(--inkSoft); letter-spacing:-.008em; }
+.clients{
+  display:inline-flex; align-items:center; gap:8px; min-height:44px; margin:-14px 0;
+  text-decoration:none; font:500 11px/1 var(--sans); letter-spacing:.24em;
+  text-transform:uppercase; color:var(--orTexte);
+  -webkit-tap-highlight-color:transparent;
+}
+.clients b{ font:400 17px/1 var(--serif); letter-spacing:0; color:var(--ink); }
+
+/* ─── Les registres ─────────────────────────────────────────────────────── */
+.registres{ flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; padding-bottom:96px; }
+.registres::-webkit-scrollbar{ display:none; }
+
+.enseigne{
+  display:flex; align-items:baseline; gap:10px; margin:20px 24px 4px;
+  font:500 11px/1.5 var(--sans); letter-spacing:.24em; text-transform:uppercase;
+  color:var(--orTexte);
+}
+.enseigne b{ font:400 17px/1 var(--serif); letter-spacing:0; color:var(--ink); }
+
+/* L'ORNEMENT — la décoration qu'il vient d'autoriser, et c'est SA feuille.
+   Deux filets d'or et la marque au milieu : il sépare les deux registres, il
+   ne ferme pas l'en-tête (le trait gris de l'en-tête reste retiré). */
+.ornement{
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  margin:18px 24px 0;
+}
+.ornement i{ display:block; height:1px; width:56px; background:var(--or); opacity:.55; }
+.ornement svg{ display:block; opacity:.75; }
+
+/* ─── Une entrée ────────────────────────────────────────────────────────
+   Aucune boîte, aucun fond, aucun trait : de l'air, et deux voix. Le nom du
+   client est en serif — c'est une personne. Ce qu'il faut faire est en sans —
+   c'est l'application qui parle. */
+.entree{
+  display:block; width:100%; text-align:left; background:none; border:0;
+  padding:12px 24px; cursor:pointer; color:inherit; font:inherit;
+  -webkit-tap-highlight-color:transparent; transition:background-color .16s;
+}
+.entree:active{ background:var(--presse); }
+.entree:focus-visible{ outline:2px solid var(--or); outline-offset:-3px; }
+
+.qui{ margin:0; font:400 21px/1.22 var(--serif); letter-spacing:-.012em; }
+.quoi{ margin:3px 0 0; font-size:15px; color:var(--inkSoft); }
+/* La seule chose colorée de l'écran : depuis combien de temps ça attend. */
+.depuis{ color:var(--orTexte); }
+
+/* Ce que le client a écrit, mot pour mot. En serif italique, derrière un filet
+   d'or : ces mots-là ne sont pas ceux de l'application. */
+.dit{
+  margin:9px 0 0; padding-left:13px; border-left:1px solid var(--or);
+  font:italic 400 16px/1.5 var(--serif); color:var(--ink); white-space:pre-wrap;
+}
+
+.gestes{
+  display:flex; align-items:center; gap:6px; padding:0 24px 4px; margin:-6px 0 0 -10px;
+}
+.gestes button{
+  padding:0 10px; min-height:44px; background:none; border:0; cursor:pointer;
+  font:600 15px/1 var(--sans); color:var(--ink);
+}
+.gestes .vu{ font-weight:500; color:var(--inkSoft); }
+.gestes button:focus-visible{ outline:2px solid var(--or); outline-offset:2px; border-radius:3px; }
+
+/* « Et trois autres » — et ça SE REPLIE. Le défaut qu'il a trouvé le
+   6 septembre : « on peut cliquer dessus pour agrandir mais on peut pas la
+   refermer ». */
+.et-autres{
+  display:block; margin:-8px 0 0; padding:12px 24px; min-height:44px;
+  background:none; border:0; cursor:pointer; text-align:left;
+  font:500 15px/1.4 var(--sans); color:var(--orTexte);
+}
+.et-autres:focus-visible{ outline:2px solid var(--or); outline-offset:-3px; }
+
+/* ─── Le socle ──────────────────────────────────────────────────────────
+   Une bande OPAQUE avec un fondu au-dessus, jamais un bouton flottant : posé
+   par-dessus, il tranche une ligne en deux et laisse dépasser la suivante. */
+.socle{
+  position:absolute; inset-inline:0; bottom:68px; z-index:30;
+  padding:0 24px 12px; background:var(--cream);
+}
+.socle::before{
+  content:""; position:absolute; inset-inline:0; bottom:100%; height:20px;
+  background:linear-gradient(to top, var(--cream), transparent);
+  pointer-events:none;
+}
+.action{
+  display:flex; width:100%; align-items:center; justify-content:center; gap:10px;
+  min-height:56px; border:0; border-radius:6px; cursor:pointer;
+  background:var(--plein); color:var(--surPlein);
+  font:600 16px/1 var(--sans); letter-spacing:.02em;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .14s cubic-bezier(.2,.7,.3,1);
+}
+.action:active{ transform:scale(.985); }
+.action:focus-visible{ outline:2px solid var(--or); outline-offset:3px; }
+.action svg{ width:20px; height:20px; }
+
+.tiroir{
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--card); border:1px solid var(--line); border-radius:6px;
+  padding:0 6px 0 14px; min-height:56px;
+}
+.cadre[data-tiroir="non"] .tiroir{ display:none; }
+.cadre[data-tiroir="oui"] .action{ display:none; }
+.tiroir span{ font-size:15px; color:var(--inkSoft); }
+.tiroir button{
+  padding:10px; min-height:44px; background:none; border:0; cursor:pointer;
+  font:600 15px/1 var(--sans); color:var(--orTexte);
+}
+
+/* ─── Les cinq sections ─────────────────────────────────────────────────── */
+.barre{
+  position:absolute; inset-inline:0; bottom:0; height:68px; z-index:40;
+  background:var(--cream); border-top:1px solid var(--line);
+  display:grid; grid-template-columns:repeat(5,1fr);
+}
+.barre a{
+  display:grid; place-items:center; text-decoration:none;
+  font:500 11px/1 var(--sans); color:var(--inkSoft);
+  border-top:2px solid transparent; margin-top:-1px;
+  -webkit-tap-highlight-color:transparent;
+}
+.barre a[aria-current="page"]{ color:var(--ink); font-weight:600; border-top-color:var(--or); }
+.barre a:focus-visible{ outline:2px solid var(--or); outline-offset:-4px; }
+
+/* ─── La feuille ────────────────────────────────────────────────────────── */
+.voile{
+  position:absolute; inset:0; z-index:45; border:0; padding:0; cursor:pointer;
+  background:rgba(20,18,14,.14); opacity:0; visibility:hidden;
+  transition:opacity .4s, visibility 0s .4s;
+}
+.cadre[data-feuille="oui"] .voile{ opacity:1; visibility:visible; transition:opacity .4s, visibility 0s 0s; }
+.feuille{
+  position:absolute; inset-inline:0; bottom:0; top:64px; z-index:50;
+  background:var(--cream); border-radius:22px 22px 0 0;
+  box-shadow:0 -20px 46px rgba(20,18,14,.2);
+  transform:translateY(100%); visibility:hidden; overflow-y:auto;
+  transition:transform .5s cubic-bezier(.22,.61,.36,1), visibility 0s .5s;
+  padding:16px 24px 24px;
+}
+.cadre[data-feuille="oui"] .feuille{ transform:translateY(0); visibility:visible; transition:transform .5s cubic-bezier(.22,.61,.36,1), visibility 0s 0s; }
+.feuille .fermer{
+  background:none; border:0; cursor:pointer; padding:10px 14px 10px 0;
+  min-height:48px; font:400 15px/1 var(--sans); color:var(--inkSoft);
+}
+.feuille h2{ margin:4px 0 20px; font:400 26px/1.15 var(--serif); letter-spacing:-.016em; }
+.feuille label{ display:block; font-size:15px; color:var(--inkSoft); margin:0 0 6px; }
+.feuille input{
+  width:100%; min-height:52px; padding:0 14px; margin-bottom:18px;
+  border:1px solid var(--line); border-radius:5px; background:var(--card);
+  font:400 17px/1 var(--sans); color:var(--ink);
+}
+.feuille input:focus-visible{ outline:2px solid var(--or); outline-offset:1px; }
+.feuille .plein{
+  width:100%; min-height:56px; border:0; border-radius:6px; cursor:pointer;
+  background:var(--plein); color:var(--surPlein); font:600 16px/1 var(--sans);
+}
+
+/* ─── La bande de mesure ────────────────────────────────────────────────── */
+.mesures{ max-width:390px; margin:14px auto 0; border-top:1px solid rgba(28,28,26,.16); }
+.mesures table{ width:100%; border-collapse:collapse; }
+.mesures th, .mesures td{
+  padding:7px 2px; text-align:left; vertical-align:baseline;
+  border-bottom:1px solid rgba(28,28,26,.07);
+}
+.mesures th{
+  font:500 8.5px/1.5 var(--sans); letter-spacing:.2em; text-transform:uppercase;
+  color:var(--pilote-gris); font-weight:500;
+}
+.mesures td{ font:400 13px/1.35 var(--sans); color:#26251f; }
+.mesures td b{ font-weight:600; font-variant-numeric:tabular-nums; }
+.mesures td em{ font-style:normal; color:#8a5a2a; }
+.mesures caption{
+  caption-side:bottom; padding-top:10px; text-align:left;
+  font:400 12px/1.5 var(--sans); color:var(--pilote-gris);
+}
+
+.note{ max-width:390px; margin:22px auto 0; font:400 13px/1.6 var(--sans); color:#3a382f; }
+.note h2{
+  font:500 8.5px/1.5 var(--sans); letter-spacing:.2em; text-transform:uppercase;
+  color:var(--pilote-gris); margin:20px 0 6px;
+}
+.note ul{ margin:0; padding-left:17px; }
+.note li{ margin-bottom:5px; }
+.note b{ font-weight:600; }
+
+@media (prefers-reduced-motion: reduce){
+  .ecran, .feuille, .voile, .action, .entree{ transition:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="pilote">
+  <h1>L'accueil — deux registres
+    <small>Élégant, minimaliste — rien n'est codé</small>
+  </h1>
+  <div class="rang"><b>Charte</b>
+    <button data-k="charte" data-v="origine">Origine</button>
+    <button data-k="charte" data-v="nuit">Nuit</button>
+  </div>
+  <div class="rang"><b>Matin</b>
+    <button data-k="cas" data-v="charge">Chargé</button>
+    <button data-k="cas" data-v="calme">Calme</button>
+    <button data-k="cas" data-v="sans-retour">Aucun retour</button>
+    <button data-k="cas" data-v="premier">Premier jour</button>
+  </div>
+</div>
+
+<div class="cadre origine" id="cadre" data-cas="charge" data-feuille="non" data-tiroir="non">
+  <div class="ecran">
+    <!-- LE SCEAU — sa marque, recopiée trait pour trait de `MarqueAtlas.tsx` :
+         une tige et trois paires de folioles, dans son cercle d'or d'1,5 px. -->
+    <div class="sceau">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#B98B47"
+           stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 21.5V8"/>
+        <path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/>
+        <path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/>
+        <path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/>
+        <path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+      </svg>
+    </div>
+
+    <div class="colophon">
+      <p class="date" id="date">Mardi 8 septembre</p>
+      <a class="clients" href="#clients">Vos clients <b>21</b></a>
+    </div>
+
+    <div class="registres" id="registres"></div>
+  </div>
+
+  <div class="socle">
+    <div class="tiroir" id="tiroir" aria-live="polite">
+      <span id="tiroir-mot">Retiré à l'instant</span>
+      <button type="button" id="annuler" tabindex="-1">Annuler</button>
+    </div>
+    <button class="action" type="button" id="action">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      Créer un devis
+    </button>
+  </div>
+
+  <button class="voile" id="voile" tabindex="-1" aria-hidden="true"></button>
+
+  <div class="feuille" role="dialog" aria-modal="true" aria-label="Créer un devis">
+    <button class="fermer" type="button" id="fermer">Fermer</button>
+    <h2>Votre client</h2>
+    <label for="nom-client">Son nom</label>
+    <input id="nom-client" type="text" placeholder="M. Martins">
+    <label for="tel-client">Son téléphone</label>
+    <input id="tel-client" type="tel" placeholder="06 12 34 56 78">
+    <button class="plein" type="button" id="creer">Créer et dicter</button>
+  </div>
+
+  <nav class="barre" aria-label="Navigation principale">
+    <a href="#accueil" aria-current="page">Accueil</a>
+    <a href="#planning">Planning</a>
+    <a href="#termines">Terminés</a>
+    <a href="#paysage">Paysage</a>
+    <a href="#reglages">Réglages</a>
+  </nav>
+</div>
+
+<div class="mesures">
+  <table>
+    <caption id="legende-mesures"></caption>
+    <thead><tr><th>Ce qu'on mesure</th><th>Sur l'écran affiché</th></tr></thead>
+    <tbody id="corps-mesures"></tbody>
+  </table>
+</div>
+
+<div class="note">
+  <h2>Les deux endroits que vous avez demandés</h2>
+  <ul>
+    <li><b>Retours clients</b> — ce que vos clients vous ont répondu. Leurs mots
+        y sont écrits <b>tels quels</b>, en italique derrière un filet d'or :
+        c'est la seule chose de cet écran que l'application n'a pas rédigée.
+        Sous chacun, le geste qu'il appelle.</li>
+    <li><b>Devis en cours</b> — ceux que vous êtes en train de faire, rangés par
+        celui qui attend depuis le plus longtemps.</li>
+    <li><b>Vos clients</b> sont revenus, en haut à droite, avec leur nombre.
+        Ils manquaient sur la page d'hier, et c'était une faute.</li>
+  </ul>
+
+  <h2>La décoration, et elle est à vous</h2>
+  <ul>
+    <li><b>Le sceau</b> en haut : votre feuille au trait dans son cercle d'or,
+        recopiée trait pour trait de l'application. Rien d'inventé.</li>
+    <li><b>L'ornement</b> qui sépare les deux registres : deux filets d'or et la
+        même feuille. Il sépare — il ne ferme pas l'en-tête. <b>Le trait gris de
+        l'en-tête que vous aviez fait retirer le 24 août n'est pas revenu.</b></li>
+    <li><b>Deux voix</b> : le nom d'un client est en serif — c'est une personne ;
+        ce qu'il faut faire est en sans — c'est l'application qui parle.</li>
+    <li><b>Une seule couleur</b> dans tout l'écran, et elle veut dire quelque
+        chose : depuis combien de temps ça attend.</li>
+  </ul>
+
+  <h2>Ce que j'ai ajouté sans que vous le demandiez</h2>
+  <ul>
+    <li><b>La date</b> en haut à gauche : elle situe tout ce qui est écrit en
+        dessous — « depuis 14 jours » n'a de sens que par rapport à un jour.</li>
+    <li><b>Le nombre à côté de chaque enseigne</b> : vous savez d'un coup d'œil
+        s'il en reste sous le pli.</li>
+    <li><b>« Et N autres » se replie</b>, contrairement à l'application
+        d'aujourd'hui. C'est le défaut que vous avez trouvé ce matin.</li>
+  </ul>
+</div>
+
+<script>
+/* ═══ LES DONNÉES — exemples de maquette, dans les mots du dépôt ═════════ */
+
+const DATE = "Mardi 8 septembre";
+/* Le premier jour, il n'a pas encore de client : le nombre disparaît plutôt
+   que d'afficher un zéro, qui se lit comme une panne. */
+const CLIENTS = { charge:21, calme:21, "sans-retour":21, premier:0 };
+
+/* Titres : `versCarte` (Notifications.tsx). Gestes : `suite-de-la-reponse.ts`. */
+const RETOURS = [
+  { id:"r1", qui:"Mme Lucie Grandet", quoi:"Correction demandée", depuis:"aujourd'hui",
+    dit:"Le portail est en 3,20 m et non 2,80. Le reste me va très bien.",
+    faire:"Corriger le devis" },
+  { id:"r2", qui:"M. Chauvet", quoi:"Devis retourné", depuis:"depuis 3 jours",
+    faire:"Reprendre le devis" },
+  { id:"r3", qui:"M. Martins", quoi:"Autre date proposée", depuis:"depuis 5 jours",
+    faire:"Ouvrir le devis validé" },
+];
+
+/* États : `statutLabel` (chantier-etat.ts), mot pour mot. */
+const DEVIS = [
+  { id:"d1", qui:"Résidence des Tilleuls", quoi:"À vérifier",           depuis:"depuis 14 jours" },
+  { id:"d2", qui:"Mme Rialland",           quoi:"Devis prêt à envoyer", depuis:"depuis hier" },
+  { id:"d3", qui:"M. Bourgeois",           quoi:"Brouillon",            depuis:"depuis 6 jours" },
+  { id:"d4", qui:"Jardins du Clos",        quoi:"Vérifié",              depuis:"depuis 4 jours" },
+  { id:"d5", qui:"Mme Perrin",             quoi:"Devis envoyé",         depuis:"depuis 2 jours" },
+];
+
+const CAS = {
+  charge:        { retours:[0,1,2], devis:[0,1,2,3,4] },
+  calme:         { retours:[0],     devis:[1,2] },
+  "sans-retour": { retours:[],      devis:[0,1,2] },
+  premier:       { retours:[],      devis:[] },
+};
+
+/* Combien d'entrées avant de proposer « Et N autres ». Deux : au-delà, un
+   registre mange l'autre, et l'écran ne montre plus qu'une seule chose. */
+const VISIBLES = { retours:1, devis:3 };
+
+let etat = { charte:"origine", cas:"charge" };
+let partis = [];
+let deplie = { retours:false, devis:false };
+
+const cadre = document.getElementById("cadre");
+const hote = document.getElementById("registres");
+
+function echapper(s){
+  return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+}
+
+const ORNEMENT = `
+  <div class="ornement" aria-hidden="true">
+    <i></i>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B98B47"
+         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 21.5V8"/>
+      <path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/>
+      <path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/>
+      <path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/>
+      <path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
+    </svg>
+    <i></i>
+  </div>`;
+
+/** « Et trois autres » — en toutes lettres jusqu'à dix, comme on parle. */
+const MOTS = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix"];
+function enLettres(n){ return n <= 10 ? MOTS[n] : String(n); }
+
+function registre(nom, cle, entrees, dessinerUne){
+  if (!entrees.length) return "";
+  const montrees = deplie[cle] ? entrees : entrees.slice(0, VISIBLES[cle]);
+  const reste = entrees.length - montrees.length;
+  return `
+    <div class="enseigne">${nom}<b>${entrees.length}</b></div>
+    ${montrees.map(dessinerUne).join("")}
+    ${reste > 0
+      ? `<button class="et-autres" type="button" data-deplier="${cle}">Et ${enLettres(reste)} autre${reste > 1 ? "s" : ""}</button>`
+      : deplie[cle] && entrees.length > VISIBLES[cle]
+        ? `<button class="et-autres" type="button" data-replier="${cle}">Replier</button>`
+        : ""}`;
+}
+
+function dessiner(){
+  cadre.className = "cadre " + etat.charte;
+  cadre.dataset.cas = etat.cas;
+  cadre.dataset.tiroir = partis.length ? "oui" : "non";
+  document.getElementById("date").textContent = DATE;
+  const combien = CLIENTS[etat.cas];
+  document.querySelector(".clients b").textContent = combien || "";
+  document.querySelector(".clients b").style.display = combien ? "" : "none";
+
+  const choix = CAS[etat.cas];
+  const retours = choix.retours.map(i => RETOURS[i]).filter(r => !partis.some(p => p.id === r.id));
+  const devis = choix.devis.map(i => DEVIS[i]);
+
+  const unRetour = r => `
+    <div>
+      <button class="entree" type="button" data-ouvrir="${r.id}">
+        <p class="qui">${echapper(r.qui)}</p>
+        <p class="quoi">${echapper(r.quoi)} · <span class="depuis">${echapper(r.depuis)}</span></p>
+        ${r.dit ? `<p class="dit">« ${echapper(r.dit)} »</p>` : ""}
+      </button>
+      <div class="gestes">
+        <button type="button" data-ouvrir="${r.id}">${echapper(r.faire)}</button>
+        <button class="vu" type="button" data-vu="${r.id}">J'ai vu</button>
+      </div>
+    </div>`;
+
+  const unDevis = d => `
+    <button class="entree" type="button" data-ouvrir="${d.id}">
+      <p class="qui">${echapper(d.qui)}</p>
+      <p class="quoi">${echapper(d.quoi)} · <span class="depuis">${echapper(d.depuis)}</span></p>
+    </button>`;
+
+  const bloc1 = registre("Retours clients", "retours", retours, unRetour);
+  const bloc2 = registre("Devis en cours", "devis", devis, unDevis);
+
+  /* **AUCUNE PHRASE QUAND IL N'Y A RIEN** — sa demande du 25 août 2026.
+     Le sceau, la date, ses clients et un seul bouton disent déjà tout.
+     Et l'ornement ne se pose QU'ENTRE deux registres : seul, il ne sépare
+     rien et devient une décoration qui ment. */
+  hote.innerHTML = bloc1 + (bloc1 && bloc2 ? ORNEMENT : "") + bloc2;
+
+  document.getElementById("tiroir-mot").textContent =
+    partis.length > 1 ? "Retirés à l'instant" : "Retiré à l'instant";
+  document.getElementById("annuler").tabIndex = partis.length ? 0 : -1;
+
+  mesurer();
+}
+
+/* ═══ LA MESURE — elle interroge la page, elle ne récite rien ════════════ */
+
+function luminance(c){
+  const [r,g,b] = c.map(v => { v /= 255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); });
+  return 0.2126*r + 0.7152*g + 0.0722*b;
+}
+function versRvb(s){
+  const m = s.match(/rgba?\(([^)]+)\)/);
+  if (!m) return [0,0,0];
+  return m[1].split(",").map(Number).slice(0, 3);
+}
+function contraste(devant, derriere){
+  const a = luminance(versRvb(devant)), b = luminance(versRvb(derriere));
+  return (Math.max(a,b) + 0.05) / (Math.min(a,b) + 0.05);
+}
+function dansLEcran(el){
+  const e = cadre.getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  return r.height > 0 && r.width > 0 && r.bottom > e.top + 1 && r.top < e.bottom - 1;
+}
+
+function mesurer(){
+  const boite = cadre.getBoundingClientRect();
+  const fondCadre = getComputedStyle(cadre).backgroundColor;
+
+  /* Ce qui se lit ENTIÈREMENT sans défiler, et sans passer sous le socle. */
+  const entiere = el => {
+    const r = el.getBoundingClientRect();
+    return r.height > 0 && r.top >= boite.top - 1 && r.bottom <= boite.bottom - 140;
+  };
+  const vues = [...hote.querySelectorAll(".entree")].filter(entiere).length;
+  const total = hote.querySelectorAll(".entree").length;
+  const enseignesVues = [...hote.querySelectorAll(".enseigne")].filter(entiere)
+    .map(e => e.childNodes[0].nodeValue.trim());
+
+  let mots = 0;
+  const marche = document.createTreeWalker(cadre, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = marche.nextNode())) {
+    const texte = n.nodeValue.trim();
+    if (!texte) continue;
+    const parent = n.parentElement;
+    if (!parent || !dansLEcran(parent)) continue;
+    if (getComputedStyle(parent).display === "none") continue;
+    if (parent.closest(".feuille")) continue;
+    mots += texte.split(/\s+/).filter(m => /[\p{L}\p{N}]/u.test(m)).length;
+  }
+
+  let plusPetit = null, pire = null;
+  cadre.querySelectorAll(".date, .clients, .clients b, .enseigne, .enseigne b, .qui, .quoi, .depuis, .dit, .gestes button, .et-autres, .barre a, .action, .tiroir span, .tiroir button")
+    .forEach(el => {
+      if (!dansLEcran(el)) return;
+      const st = getComputedStyle(el);
+      if (st.display === "none") return;
+      const taille = parseFloat(st.fontSize);
+      if (!plusPetit || taille < plusPetit) plusPetit = taille;
+      let fond = fondCadre, p = el;
+      while (p && p !== document.body) {
+        const c = getComputedStyle(p).backgroundColor;
+        if (c && !/rgba\(0, 0, 0, 0\)|transparent/.test(c)) { fond = c; break; }
+        p = p.parentElement;
+      }
+      const c = contraste(st.color, fond);
+      if (!pire || c < pire.c) pire = { c, quoi:(el.textContent || "").trim().slice(0, 22) };
+    });
+
+  let cible = null;
+  cadre.querySelectorAll("a, button").forEach(el => {
+    if (!dansLEcran(el)) return;
+    if (el.closest(".feuille") && cadre.dataset.feuille !== "oui") return;
+    const r = el.getBoundingClientRect();
+    if (r.height < 4) return;
+    const quoi = (el.textContent || "").trim() || (el.getAttribute("aria-label") || "").trim();
+    if (!cible || r.height < cible.h) cible = { h:Math.round(r.height), quoi:quoi.slice(0, 24) };
+  });
+
+  const rangs = [
+    ["Les deux registres se voient", enseignesVues.length === 0 ? "<em>rien à faire</em>"
+      : `<b>${enseignesVues.join(" · ")}</b>`],
+    ["Entrées lisibles sans défiler", total === 0 ? "<em>rien à faire</em>" : `<b>${vues}</b> sur ${total}`],
+    ["Mots affichés", `<b>${mots}</b>`],
+    ["Le plus petit texte", plusPetit ? `<b>${String(plusPetit).replace(".", ",")} px</b>` : "—"],
+    ["Le pire contraste", !pire ? "—" :
+      (pire.c >= 4.5 ? `<b>${pire.c.toFixed(2).replace(".", ",")}</b> — passe 4,5 · « ${echapper(pire.quoi)} »`
+                     : `<b>${pire.c.toFixed(2).replace(".", ",")}</b> — <em>il en faut 4,5 · « ${echapper(pire.quoi)} »</em>`)],
+    ["La plus petite cible", !cible ? "—" :
+      (cible.h >= 44 ? `<b>${cible.h} px</b> — « ${echapper(cible.quoi)} »`
+                     : `<b>${cible.h} px</b> — <em>« ${echapper(cible.quoi)} », il en faut 44</em>`)],
+  ];
+  document.getElementById("corps-mesures").innerHTML =
+    rangs.map(([a, b]) => `<tr><th>${a}</th><td>${b}</td></tr>`).join("");
+  document.getElementById("legende-mesures").textContent =
+    "Relevé sur l'écran ci-dessus, à l'instant, par la page elle-même — 390 × 596, la barre du bas déduite.";
+}
+
+/* ═══ Les gestes ════════════════════════════════════════════════════════ */
+
+document.querySelectorAll(".pilote button").forEach(b => {
+  b.addEventListener("click", () => {
+    etat[b.dataset.k] = b.dataset.v;
+    if (b.dataset.k === "cas") { partis = []; deplie = { retours:false, devis:false }; }
+    marquerPilote();
+    dessiner();
+  });
+});
+function marquerPilote(){
+  document.querySelectorAll(".pilote button").forEach(b =>
+    b.setAttribute("aria-pressed", String(etat[b.dataset.k] === b.dataset.v)));
+}
+
+document.addEventListener("click", e => {
+  const vu = e.target.closest("[data-vu]");
+  if (vu) {
+    const r = RETOURS.find(x => x.id === vu.dataset.vu);
+    partis = [...partis, { id:r.id, qui:r.qui }];
+    dessiner();
+    return;
+  }
+  if (e.target.id === "annuler") { partis = partis.slice(0, -1); dessiner(); return; }
+
+  const plus = e.target.closest("[data-deplier]");
+  if (plus) { deplie[plus.dataset.deplier] = true; dessiner(); return; }
+  const moins = e.target.closest("[data-replier]");
+  if (moins) { deplie[moins.dataset.replier] = false; dessiner(); return; }
+
+  const onglet = e.target.closest(".barre a");
+  if (onglet) {
+    e.preventDefault();
+    document.querySelectorAll(".barre a").forEach(a => a.removeAttribute("aria-current"));
+    onglet.setAttribute("aria-current", "page");
+    return;
+  }
+  const lien = e.target.closest(".clients");
+  if (lien) e.preventDefault();
+});
+
+const action = document.getElementById("action");
+action.addEventListener("click", () => ouvrir(true));
+document.getElementById("voile").addEventListener("click", () => ouvrir(false));
+document.getElementById("fermer").addEventListener("click", () => ouvrir(false));
+document.getElementById("creer").addEventListener("click", () => ouvrir(false));
+document.addEventListener("keydown", e => { if (e.key === "Escape") ouvrir(false); });
+function ouvrir(oui){ cadre.dataset.feuille = oui ? "oui" : "non"; mesurer(); }
+
+new ResizeObserver(() => mesurer()).observe(hote);
+marquerPilote();
+dessiner();
+</script>
+</body>
+</html>

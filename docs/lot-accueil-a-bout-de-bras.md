@@ -2,11 +2,12 @@
 
 **Le 6 septembre 2026. Rien n'est codé : aucun fichier de `src/` n'a été touché.**
 
-**Deux planches, et elles ne disent pas la même chose :**
+**Trois planches, et elles ne disent pas la même chose :**
 
 | | |
 |---|---|
-| **Ma journée** — repartie de zéro, comme vous l'avez demandé | `https://florianmarrins0978-svg.github.io/Atlas-app/ma-journee.html` |
+| **Vos deux registres** — élégante, minimaliste, avec vos clients | `https://florianmarrins0978-svg.github.io/Atlas-app/l-accueil-elegant.html` |
+| **Ma journée** — repartie de zéro · **vous l'avez refusée** | `https://florianmarrins0978-svg.github.io/Atlas-app/ma-journee.html` |
 | **À bout de bras** — votre écran d'aujourd'hui, rendu lisible | `https://florianmarrins0978-svg.github.io/Atlas-app/l-accueil-a-bout-de-bras.html` |
 
 ---
@@ -293,7 +294,80 @@ vous préviendrai avant de la lancer.
 
 ---
 
-## « Ma journée » — la page repartie de zéro
+## « Vos deux registres » — élégante, et vos clients y sont
+
+**Votre réponse à « Ma journée », le 6 septembre :** *« sur la page neuve tu ne
+l'as pas mis mes clients ??? Et j'aime pas ce que tu as fait. Propose-moi
+quelque chose d'élégant, minimaliste ; il faut qu'il y ait un endroit pour les
+retours client et l'autre pour les devis en cours de conception. Tu peux
+rajouter des choses si tu estimes que c'est utile, même des éléments de
+décoration, vu que c'est la première page. »*
+
+`https://florianmarrins0978-svg.github.io/Atlas-app/l-accueil-elegant.html`
+
+### D'abord, la faute
+
+**Vos clients avaient disparu, et je ne l'avais pas dit.** Le lien existe depuis
+le 17 août — c'est vous qui l'aviez réclamé, *« la catégorie client n'a pas été
+créée »* — et « Ma journée » l'avait supprimé en silence. C'est exactement ce
+que ce dépôt s'interdit : un retrait non dit se lit comme un oubli. Il l'était.
+
+Il est revenu **en haut à droite, avec le nombre de vos clients**, en face de la
+date. Le premier jour, le nombre disparaît plutôt que d'afficher un zéro qui se
+lirait comme une panne.
+
+### Les deux endroits que vous demandez
+
+| | |
+|---|---|
+| **Retours clients** | ce que vos clients vous ont répondu — leurs mots y sont **tels quels**, en italique derrière un filet d'or. Sous chacun, le geste qu'il appelle, et « J'ai vu » à côté |
+| **Devis en cours** | ceux que vous êtes en train de faire, rangés par celui qui attend depuis le plus longtemps |
+
+Chaque enseigne porte **son compte**, en serif : vous savez d'un coup d'œil s'il
+en reste sous le pli. **Un registre vide n'existe pas** — il ne s'affiche pas
+avec un zéro.
+
+### La décoration, et elle est à vous
+
+- **Le sceau** en haut : votre feuille au trait dans son cercle d'or, recopiée
+  trait pour trait de `src/components/atlas/MarqueAtlas.tsx`. Rien d'inventé,
+  rien d'importé.
+- **L'ornement** entre les deux registres : deux filets d'or et la même feuille.
+  Il **sépare** — il ne ferme pas l'en-tête. **Le trait gris de l'en-tête que
+  vous aviez fait retirer le 24 août n'est pas revenu**, et il ne reviendra pas
+  par cette porte.
+- **Deux voix de caractères** : le nom d'un client est en serif — c'est une
+  personne ; ce qu'il faut faire est en sans — c'est l'application qui parle.
+- **Une seule couleur** dans tout l'écran, et elle veut dire quelque chose :
+  depuis combien de temps ça attend.
+
+### Ce que j'ai ajouté sans que vous le demandiez
+
+- **La date**, en haut à gauche : sans elle, « depuis 14 jours » ne se rapporte
+  à rien.
+- **« Et deux autres » qui SE REPLIE.** C'est le défaut que vous avez trouvé ce
+  matin, et il ne se refait pas ici.
+- **Un seul retour est ouvert en entier** par défaut. C'est mesuré, pas choisi :
+  à deux, le second registre passait sous le pli — et ce sont justement les deux
+  endroits que vous demandez.
+
+### Les chiffres, relevés par la planche elle-même
+
+| Matin chargé — 3 retours, 5 devis | |
+|---|---|
+| les deux registres se voient | **oui**, sans défiler |
+| entrées lisibles sans défiler | **2 sur 4** |
+| le plus petit texte | **11 px** (les cinq mots du bas) |
+| le pire contraste | **4,59** — passe 4,5 · sur Nuit **6,14** |
+| la plus petite cible | **44 px** |
+
+---
+
+## « Ma journée » — la page repartie de zéro, que vous avez refusée
+
+**Gardée dans le dépôt, comme vous l'avez demandé** — *« ne supprime pas les
+maquettes déjà créées »*. Ce qui suit reste vrai, et le défaut de contraste
+qu'elle a fait apparaître vaut pour toute l'application.
 
 **Votre demande, le 6 septembre :** *« oublie ma page, oublie ce qu'on m'a déjà
 proposé, repars à 0 et crée-moi une page d'accueil adaptée à mes besoins »*.
@@ -382,7 +456,7 @@ bouton devient clair et son mot devient sombre.
 
 | Question | Qui tranche |
 |---|---|
-| **Les trois propositions d'accueil** — « Ma journée » (repartie de zéro), « À bout de bras » (le vôtre rendu lisible) et celle du 3 septembre. Une, deux, ou aucune | **vous** |
+| **Les trois propositions vivantes** — « Vos deux registres », « À bout de bras » (le vôtre rendu lisible) et celle du 3 septembre. « Ma journée » est refusée mais gardée | **vous** |
 | **Le mot des boutons verts en encre plutôt qu'en crème** — 2,97 → 5,46, sur tous les écrans, sans toucher à votre vert | **vous**, mais je le recommande |
 | **Le dépliage sans repli** (`Notifications.tsx:564`) — deux lignes à corriger dans l'application | n'importe quelle session |
 | **`test-chartes-lisibles.ts` mesure `card` contre `rust`** alors que les boutons portent `plein` depuis le 3 septembre : le contrôle regarde une couleur que plus personne n'emploie | n'importe quelle session |
