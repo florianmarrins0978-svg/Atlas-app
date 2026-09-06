@@ -6,6 +6,7 @@ import ChampAdresse from "@/components/atlas/ChampAdresse";
 import ChampTelephone from "./ChampTelephone";
 import ChampFormeJuridique from "./ChampFormeJuridique";
 import { majIdentiteAction } from "./actions";
+import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 import { sirenDepuisSiret } from "@/lib/siren";
 import { formeADuCapital } from "@/lib/formes-juridiques";
@@ -43,7 +44,18 @@ type Identite = {
   mentionsLegalesPosition: PositionMentionsLegales;
 };
 
-export default function IdentiteClient({ initial }: { initial: Identite }) {
+export default function IdentiteClient({
+  initial,
+  periodicite,
+}: {
+  initial: Identite;
+  /**
+   * Le réglage de périodicité de TVA, monté par la page — elle seule lit la
+   * base — et posé ICI, sous le régime de TVA, parce que les deux moitiés
+   * d'une même question se répondent ensemble ou pas du tout.
+   */
+  periodicite: React.ReactNode;
+}) {
   const [valeurs, setValeurs] = useState<Identite>(initial);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
@@ -249,6 +261,33 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
             onFini={() => enregistrer({ numeroTva: valeurs.numeroTva })}
           />
         )}
+
+        {/* ══════════════════════════════════════════════════════════════════
+            **LA PÉRIODICITÉ EST ENFIN À CÔTÉ DU RÉGIME — 6 septembre 2026.**
+
+            Le 14 août, elle a quitté l'écran d'ensemble des réglages pour
+            « rejoindre le régime de TVA », et le commentaire de
+            `identite/page.tsx` le dit encore mot pour mot. **Elle ne l'a jamais
+            rejoint.** Elle était rendue APRÈS tout le composant, donc après le
+            téléphone, l'e-mail et le bloc bancaire.
+
+            **Mesuré au navigateur à 390 × 664, avant et après** — le régime est
+            à 994 px dans les deux cas : la périodicité était à **1 734 px**,
+            elle est à **1 306**. L'écart entre les deux moitiés d'une même
+            question passe de **740 px à 312**, soit un écran de défilement en
+            moins.
+
+            C'est exactement la faute que le déplacement du 14 août voulait
+            réparer — deux réglages fiscaux à deux endroits —, revenue à
+            l'intérieur d'un seul écran. Une prose qui décrit un rangement qui
+            n'a pas eu lieu est pire qu'une absence de prose : on s'y fie.
+
+            **Elle arrive en ENFANT, pas en copie.** Le réglage est un composant
+            client à lui, monté par la page qui lit la base ; le recopier ici en
+            aurait fait deux (`CLAUDE.md` §3). La page le passe, cet écran le
+            pose au bon endroit.
+            ══════════════════════════════════════════════════════════════════ */}
+        {periodicite}
       </Bloc>
 
       <Bloc>
@@ -283,8 +322,14 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
         />
       </Bloc>
 
+      {/* **La pièce partagée attend un OUI ou NON, pas un compte.** Les trois
+          écrans qui portaient chacun leur copie de cette barre ne s'accordaient
+          même pas là-dessus : celui-ci comptait les champs modifiés, les deux
+          autres répondaient vrai ou faux. Ce que la barre en faisait était
+          identique — `> 0` — et la seule chose que le compte ajoutait, c'était
+          une façon de plus d'écrire la même question. */}
       <BarreEnregistrer
-        aEcrire={Object.keys(aEcrire).length}
+        aEcrire={Object.keys(aEcrire).length > 0}
         enCours={enCours}
         onEnregistrer={() => enregistrer(aEcrire)}
       />
@@ -301,68 +346,6 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           reprendre?.();
         }}
       />
-    </div>
-  );
-}
-
-/**
- * La barre d'enregistrement, posée au-dessus des onglets.
- *
- * *Demandée par le patron le 14 août 2026 : « il manque un petit bouton save en
- * bas pour pouvoir sauvegarder la page. »*
- *
- * **Elle DIT l'état, elle ne crée pas un second mécanisme** — son choix,
- * planche en main. Les champs s'écrivent déjà seuls en quittant la ligne :
- * c'est ce qui protège une saisie interrompue par un chantier. Le bouton
- * confirme ce qui est écrit, et se rallume dès qu'une frappe attend encore le
- * serveur — par exemple quand on quitte l'écran sans toucher ailleurs.
- *
- * **Elle est FIXE.** Sur une page de neuf champs, un bouton en pied de page ne
- * se voit qu'une fois tout parcouru — c'est-à-dire quand on n'a plus rien à
- * faire.
- *
- * **Elle se pose sur `--atlas-barre`, jamais sur un nombre écrit à la main.**
- * La hauteur de la barre du bas comprend `env(safe-area-inset-bottom)`, qui
- * vaut zéro sur un ordinateur et une vingtaine de pixels sur un iPhone à
- * encoche. Un `bottom-[76px]` aurait donc recouvert les onglets chez lui, et
- * nulle part chez moi — le pire des défauts : invisible là où on le cherche.
- */
-function BarreEnregistrer({
-  aEcrire,
-  enCours,
-  onEnregistrer,
-}: {
-  aEcrire: number;
-  enCours: boolean;
-  onEnregistrer: () => void;
-}) {
-  const rien = aEcrire === 0 && !enCours;
-  return (
-    <div
-      className="fixed inset-x-0 z-10 mx-auto max-w-md border-t px-[26px] pb-4 pt-3.5"
-      style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
-    >
-      <button
-        type="button"
-        onClick={onEnregistrer}
-        disabled={rien}
-        // **Passé au vert des boutons le 4 septembre 2026.** Il l'a relevé
-        // lui-même — *« j'avais demandé à changer tous les boutons en vert
-        // clair »* —, et ce bouton-ci avait échappé au balayage du 3 : il ne
-        // portait pas `atlas-plein`, et le contrôle ne regardait QUE ce qui la
-        // portait. Il la porte maintenant, et il est donc gardé.
-        //
-        // **La classe n'est posée que quand le bouton est ALLUMÉ** : éteint, il
-        // est creux et gris, et le voile de l'appui n'aurait rien à éclaircir.
-        className={`block w-full rounded-full py-[15px] text-center text-[16px] ${rien ? "" : "atlas-plein"}`}
-        style={{
-          backgroundColor: rien ? colors.card : colors.plein,
-          color: rien ? colors.muted : colors.cream,
-          boxShadow: rien ? `inset 0 0 0 1px ${colors.line}` : "none",
-        }}
-      >
-        {enCours ? "Enregistrement…" : rien ? "Enregistré ✓" : "Enregistrer"}
-      </button>
     </div>
   );
 }

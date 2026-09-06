@@ -8,7 +8,40 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — LIRE AU SOLEIL, premier morceau (6 septembre 2026)
+## Dernier lot — « MON ENTREPRISE », ET LA BARRE ÉCRITE TROIS FOIS (6 septembre 2026)
+
+**Document du lot :** `docs/lot-mon-entreprise.md`.
+**Décisions :** `ARCHITECTURE.md` §266.
+
+**Quatrième des six lots de la reprise des Réglages.** Pas de maquette : ce lot
+ne dessine rien, il remet une chose à sa place et supprime deux copies.
+
+**⚠ LA BARRE D'ENREGISTREMENT EST UNE PIÈCE PARTAGÉE DEPUIS CE LOT** —
+`src/components/atlas/BarreEnregistrer.tsx`. Elle était écrite **trois fois**
+(« Devis & factures », « Mon entreprise », « Mon compte »), si bien que le
+correctif du §264 n'avait atteint qu'un écran sur trois. **Ne pas en réécrire
+une quatrième** : elle porte aussi la règle du §264 — elle n'existe que s'il y a
+quelque chose à enregistrer, s'attarde 2,5 s sur « Enregistré ✓ », puis rend la
+place.
+
+**La périodicité de TVA arrive en ENFANT dans `IdentiteClient`** (`periodicite`),
+posée sous le régime de TVA. Elle reste montée par la page, qui seule lit la
+base. Elle a perdu son intertitre « VOTRE TVA », qui doublonnait avec « VOTRE
+RÉGIME DE TVA » une fois les deux collés. Mesuré : l'écart entre les deux
+moitiés passe de 740 px à 312, et l'écran raccourcit (2 199 → 2 177).
+
+**`scripts/test-barre-enregistrer-e2e.ts` parcourt les TROIS écrans.** Confronté
+au défaut, il rougit sur les trois — c'est ce qui prouve que la pièce est
+commune. Un seul rouge voudrait dire qu'il reste une jumelle.
+
+**Signalé et NON corrigé :** `CompteClient` et `IdentiteClient` gardent chacun
+leur façon de dire « ce qui reste à enregistrer » (oui/non contre liste de
+champs). Ce n'est plus un défaut d'affichage, c'est encore deux écritures d'une
+même question — et les unifier touche à la façon dont ces écrans enregistrent.
+
+---
+
+## Lot précédent — LIRE AU SOLEIL, premier morceau (6 septembre 2026)
 
 **Document du lot :** `docs/lot-lire-au-soleil.md`.
 **Planche :** `appli/lire-au-soleil.html`.

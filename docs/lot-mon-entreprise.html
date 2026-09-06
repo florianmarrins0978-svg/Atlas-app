@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « Mon entreprise » — lot 4</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="-mon-entreprise---lot-4">« Mon entreprise » — lot 4</h1>
+<p><strong>6 septembre 2026.</strong> Quatrième lot de la reprise des Réglages.</p>
+<p>Pas de maquette : ce lot ne dessine rien de neuf. Il remet une chose à sa place et en supprime deux copies. Les preuves sont des mesures et des captures de l'application.</p>
+<hr>
+<h2 id="1-votre-tva-était-coupée-en-deux-et-le-code-prétendait-le-contraire">1. Votre TVA était coupée en deux, et le code prétendait le contraire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le 14 août, la périodicité de TVA a quitté l'écran d'ensemble des réglages pour « rejoindre le régime de TVA ». Le commentaire du code le dit encore mot pour mot.</p>
+<p><strong>Elle ne l'a jamais rejoint.</strong> Elle était posée <em>après</em> tout l'écran d'identité — donc après le téléphone, l'e-mail et vos coordonnées bancaires.</p>
+<p>Mesuré au navigateur, à 390 × 664 :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td>« Votre régime de TVA »</td>
+<td>994 px</td>
+<td>994 px</td>
+</tr>
+<tr>
+<td>la périodicité</td>
+<td><strong>1 734 px</strong></td>
+<td><strong>1 306 px</strong></td>
+</tr>
+<tr>
+<td><strong>écart entre les deux moitiés</strong></td>
+<td><strong>740 px</strong></td>
+<td><strong>312 px</strong></td>
+</tr>
+<tr>
+<td>hauteur de l'écran</td>
+<td>2 199 px</td>
+<td><strong>2 177 px</strong></td>
+</tr>
+</tbody></table></div>
+<p>Un écran de défilement en moins entre « suis-je en franchise » et « à quel rythme je déclare » — deux questions qui se répondent ensemble ou pas du tout. Et l'écran est <strong>plus court qu'avant</strong>, pas plus long.</p>
+<p><strong>Un titre est parti avec le déplacement.</strong> La périodicité portait son propre intertitre, « VOTRE TVA ». Collé sous « VOTRE RÉGIME DE TVA », il donnait deux titres de TVA à trois centimètres l'un de l'autre. La phrase qui suit suffit, et elle dit mieux ce que le titre disait : <em>« à quel rythme vous la déclarez »</em>.</p>
+<hr>
+<h2 id="2-la-barre-denregistrement-était-écrite-trois-fois">2. La barre d'enregistrement était écrite TROIS fois</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Hier, le lot 3 a corrigé cette barre sur « Devis &amp; factures » : elle était rendue en permanence, opaque, et le contenu passait dessous.</p>
+<p><strong>Le correctif n'a atteint qu'un écran sur trois.</strong> « Mon entreprise » et « Mon compte » portaient <strong>leur propre copie</strong> de la même barre, à quelques lignes près, et rien dans le code ne le disait.</p>
+<p>C'est la faute du lot 2 en pire : là-bas, quatre écrans n'employaient pas la pièce commune ; ici, <strong>il n'y avait pas de pièce commune du tout — il y avait trois jumelles.</strong></p>
+<p><strong>Il n'y en a plus qu'une</strong>, dans <code>src/components/atlas/BarreEnregistrer.tsx</code>, et les trois écrans s'en servent. Les 85 pixels rendus hier sur un écran le sont maintenant sur les trois.</p>
+<p><strong>Un détail qui dit tout de l'état d'avant :</strong> les trois copies ne s'accordaient même pas sur la question posée. Deux répondaient « oui ou non », la troisième comptait les champs modifiés. La barre en faisait exactement la même chose.</p>
+<hr>
+<h2 id="deux-contrôles-ont-été-retournés-et-cest-moi-qui-les-ai-fait-rougir">Deux contrôles ont été RETOURNÉS, et c'est moi qui les ai fait rougir</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La première batterie de ce lot a rendu <strong>deux rouges qui étaient bien les miens</strong>. Je ne les ai pas mis sur le compte du hasard : ils disaient exactement ce que j'avais changé.</p>
+<p><strong>1. <code>test-periodicite-tva-e2e</code></strong> attendait le mot « Votre TVA » — l'intertitre que je venais de retirer. Il ne vise plus un mot mais un repère posé dans le code (<code>data-atlas="periodicite-tva"</code>), qui ne se renomme pas pour faire joli.</p>
+<p><strong>2. <code>test-compte-connexion-e2e</code></strong> exigeait <em>« le bouton du bas est là, et dit que tout est écrit »</em> — c'est-à-dire la barre permanente qu'on vient de retirer. Il défend désormais la règle : au repos, aucune barre ; et elle revient dès qu'on écrit dans un champ.</p>
+<p><strong>Dans les deux cas, on adapte le contrôle — on ne remet pas ce qui a été retiré.</strong> Une suite qui réclame l'ancien écran rend l'écran impossible à changer.</p>
+<hr>
+<h2 id="ce-que-le-contrôle-tient-maintenant">Ce que le contrôle tient maintenant</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>scripts/test-barre-enregistrer-e2e.ts</code> parcourt <strong>les trois écrans</strong>, pas le seul d'origine — sinon le défaut reviendrait par les deux autres.</p>
+<p><strong>Il sait échouer, et je l'ai vérifié :</strong> en retirant la condition dans la pièce partagée, <strong>les trois cas rougissent d'un coup</strong>. C'est la démonstration que la pièce est bien partagée.</p>
+<hr>
+<h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>npm run verifier:avant-livraison</code>, jouée <strong>deux fois</strong> : la première a trouvé mes deux rouges, la seconde après correction.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, construction</td>
+<td><strong>verts</strong> — 0 erreur</td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td><strong>verte après correction</strong> — mon propre document citait un chemin qui n'existe pas (<code>identite/page.tsx</code> au lieu de son chemin complet). Le contrôle a eu raison de m'arrêter</td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td><strong>306 / 314</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>117 / 130</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>n'a toujours pas mesuré</strong> — la panne d'outillage Windows</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les trois suites de ce lot sont vertes</strong>, et deux d'entre elles étaient rouges au premier tour, à cause de moi : <code>test-barre-enregistrer-e2e</code> (les trois écrans), <code>test-periodicite-tva-e2e</code>, <code>test-compte-connexion-e2e</code>.</p>
+<p><strong>Les treize rouges au navigateur</strong> sont ceux qui reviennent d'une batterie à l'autre sans qu'on touche à leur code — deux d'entre eux, rouges au lot précédent, sont verts aujourd'hui sans que personne ne les ait corrigés. Ce sont des suites qui se gênent entre elles, et c'est consigné depuis le 26 août.</p>
+<hr>
+<h2 id="une-chose-que-je-nai-pas-faite-et-que-je-vous-signale">Une chose que je n'ai pas faite, et que je vous signale</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>src/app/reglages/compte/CompteClient.tsx</code> et <code>IdentiteClient.tsx</code> gardent chacun leur propre logique de « ce qui reste à enregistrer » — l'un en oui/non, l'autre en liste de champs. Ce n'est plus un défaut d'affichage depuis que la barre est commune, mais c'est encore deux façons de dire la même chose.</p>
+<p>Les unifier demande de toucher à la façon dont ces deux écrans enregistrent, ce qui n'est pas une mise en ordre : c'est un lot.</p>
+<hr>
+<h2 id="ce-qui-reste-des-réglages">Ce qui reste des Réglages</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Lot</th>
+<th>Quoi</th>
+</tr></thead><tbody>
+<tr>
+<td>5</td>
+<td>« Mon agenda » — Google demande un identifiant OAuth, iCloud un mot de passe d'application. <strong>Les deux sont hors de portée, et c'est vous qui tranchez</strong></td>
+</tr>
+<tr>
+<td>6</td>
+<td>Équipe (proposition C), notifications, mot de passe, données, couleurs, IA, abonnement, compte</td>
+</tr>
+</tbody></table></div>
+<p><strong>Toujours sans réponse, et ce n'est pas un reproche :</strong> faut-il couper « Devis &amp; factures » ? Vos décisions des 23 et 25 août datent d'un écran à deux blocs ; il en porte six.</p>
+</main>
+</body>
+</html>

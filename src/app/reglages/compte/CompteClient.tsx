@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import { renommerCompteAction } from "./actions";
 
 /**
@@ -147,51 +148,4 @@ export function initialesDe(nom: string, email: string): string {
   if (mots.length === 1) return mots[0].slice(0, 2).toUpperCase();
   const avant = email.split("@")[0] ?? "";
   return (avant.slice(0, 2) || "?").toUpperCase();
-}
-
-/**
- * Le bouton du bas, posé SUR l'écran — sa réponse « À » du 14 août 2026.
- *
- * Il se pose sur `--atlas-barre`, jamais sur un nombre écrit à la main : la
- * hauteur de la barre du bas comprend `env(safe-area-inset-bottom)`, nulle sur
- * un ordinateur et d'une vingtaine de pixels sur un iPhone à encoche.
- */
-function BarreEnregistrer({
-  aEcrire,
-  enCours,
-  onEnregistrer,
-}: {
-  aEcrire: boolean;
-  enCours: boolean;
-  onEnregistrer: () => void;
-}) {
-  const rien = !aEcrire && !enCours;
-  return (
-    <div
-      className="fixed inset-x-0 z-10 mx-auto max-w-md border-t px-[26px] pb-4 pt-3.5"
-      style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
-    >
-      <button
-        type="button"
-        onClick={onEnregistrer}
-        disabled={rien}
-        // **Passé au vert des boutons le 4 septembre 2026.** Il l'a relevé
-        // lui-même — *« j'avais demandé à changer tous les boutons en vert
-        // clair »* —, et ce bouton-ci avait échappé au balayage du 3 : il ne
-        // portait pas `atlas-plein`, et le contrôle ne regardait QUE ce qui la
-        // portait. Il la porte maintenant, et il est donc gardé.
-        //
-        // **La classe n'est posée que quand le bouton est ALLUMÉ** : éteint, il
-        // est creux et gris, et le voile de l'appui n'aurait rien à éclaircir.
-        className={`block w-full rounded-full py-[15px] text-center text-[16px] ${rien ? "" : "atlas-plein"}`}
-        style={{
-          backgroundColor: rien ? colors.card : colors.plein,
-          color: rien ? colors.muted : colors.cream,
-          boxShadow: rien ? `inset 0 0 0 1px ${colors.line}` : "none",
-        }}
-      >
-        {enCours ? "Enregistrement…" : rien ? "Enregistré ✓" : "Enregistrer"}
-      </button>
-    </div>
-  );
 }

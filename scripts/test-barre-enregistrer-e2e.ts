@@ -51,17 +51,38 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
-  await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
-  // **Attendre la MISE EN PAGE, pas seulement le document.** Une boîte de zéro
-  // pixel n'est pas un succès, c'est une mesure impossible (`CLAUDE.md` §5).
-  await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });
-  await page.waitForTimeout(600);
-
   const barre = page.locator('[data-atlas="barre-enregistrer"]');
 
-  await cas("à l'arrivée, rien à enregistrer : aucune barre ne mange l'écran", async () => {
-    assert.equal(await barre.count(), 0, "la barre est là alors qu'il n'y a rien à enregistrer");
-  });
+  /**
+   * **LES TROIS ÉCRANS, ET NON PLUS UN SEUL — 6 septembre 2026.**
+   *
+   * Cette barre était écrite TROIS FOIS : ici, dans « Mon entreprise » et dans
+   * « Mon compte ». Le correctif du §264 n'avait donc atteint qu'un écran sur
+   * trois, et rien dans le code ne le disait — c'est la faute du §263, en pire :
+   * il n'y avait même pas de pièce partagée, il y avait trois jumelles.
+   *
+   * Éprouver le seul écran d'origine laisserait le défaut revenir par les deux
+   * autres. On les parcourt donc tous les trois.
+   */
+  for (const [nom, url, attendre] of [
+    ["Devis & factures", "/reglages/documents", '[data-atlas="typo-playfair"]'],
+    ["Mon entreprise", "/reglages/identite", "text=Votre régime de TVA"],
+    ["Mon compte", "/reglages/compte", "text=Mon compte"],
+  ] as const) {
+    await page.goto(`${BASE}${url}`, { waitUntil: "networkidle" });
+    // **Attendre la MISE EN PAGE, pas seulement le document.** Une boîte de zéro
+    // pixel n'est pas un succès, c'est une mesure impossible (`CLAUDE.md` §5).
+    await page.waitForSelector(attendre, { timeout: 30_000 });
+    await page.waitForTimeout(500);
+
+    await cas(`${nom} — rien à enregistrer, aucune barre ne mange l'écran`, async () => {
+      assert.equal(await barre.count(), 0, "la barre est là alors qu'il n'y a rien à enregistrer");
+    });
+  }
+
+  await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+  await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });
+  await page.waitForTimeout(600);
 
   /**
    * **UN TROISIÈME CAS A ÉTÉ ÉCRIT, PUIS RETIRÉ — 6 septembre 2026.**

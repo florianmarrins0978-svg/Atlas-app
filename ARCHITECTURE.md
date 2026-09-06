@@ -23719,3 +23719,88 @@ sessions.
 relevé au navigateur sur le site d'Arborea, et `scripts/test-chartes-lisibles.ts`
 §144 refuse délibérément d'y poser un seuil pour ne pas accuser un choix qu'il a
 fait. Ce lot ne change pas la couleur : il change l'endroit où elle sert.
+
+---
+
+## §266. Trois jumelles ne sont pas une pièce partagée
+
+**6 septembre 2026.** La veille, le §264 corrigeait la barre d'enregistrement de
+« Devis & factures » : rendue en permanence, opaque, 85 px, et le contenu
+passait dessous.
+
+**Le correctif n'a atteint qu'un écran sur trois.** « Mon entreprise » et « Mon
+compte » portaient chacun **leur propre copie** de cette barre, écrite à
+quelques lignes près, et rien dans le code ne le disait.
+
+C'est le §263 poussé d'un cran. Là-bas, quatre écrans n'employaient pas la pièce
+commune — au moins la pièce existait. Ici, **il n'y avait aucune pièce
+commune : il y avait trois jumelles.** Un défaut corrigé sur l'une reste sur les
+deux autres, et la seule façon de s'en apercevoir est de le chercher.
+
+**Le signe qui ne trompe pas, quand on veut les repérer :** les trois copies ne
+s'accordaient même pas sur la question posée. `IdentiteClient` comptait les
+champs modifiés (`aEcrire: number`), les deux autres répondaient vrai ou faux.
+Ce que la barre en faisait était identique — `> 0`. Trois écritures d'une même
+question, c'est la définition du doublon que `CLAUDE.md` §3 interdit.
+
+`src/components/atlas/BarreEnregistrer.tsx` est désormais la seule, et elle
+porte aussi la règle du §264 : elle n'existe que s'il y a quelque chose à
+enregistrer, s'attarde deux secondes et demie sur « Enregistré ✓ », puis rend
+la place. **Cet état-là vit dans la pièce**, sinon les trois écrans le
+réécriraient chacun à sa façon — ce qui est précisément d'où l'on vient.
+
+### Le contrôle parcourt les TROIS écrans, et il sait échouer sur les trois
+
+`scripts/test-barre-enregistrer-e2e.ts` visait le seul écran d'origine. Il visite
+les trois : sinon le défaut revient par ceux qu'on ne regarde pas.
+
+**Confronté au défaut — condition retirée de la pièce partagée — les trois cas
+rougissent d'un coup.** C'est la démonstration que la pièce est bien commune :
+un seul rouge aurait voulu dire qu'il restait une jumelle.
+
+### Et la périodicité de TVA, qui n'avait jamais rejoint son régime
+
+Le 14 août 2026, la périodicité a quitté l'écran d'ensemble des réglages pour
+« rejoindre le régime de TVA » (`ARCHITECTURE.md` §96). Le commentaire de
+`src/app/reglages/identite/page.tsx` le dit encore mot pour mot.
+
+**Elle ne l'a jamais rejoint.** Elle était rendue APRÈS tout `IdentiteClient` —
+donc après le téléphone, l'e-mail et le bloc bancaire. Mesuré à 390 × 664, le
+régime étant à 994 px dans les deux cas :
+
+| | Avant | Après |
+|---|---|---|
+| la périodicité | 1 734 px | **1 306 px** |
+| écart entre les deux moitiés | 740 px | **312 px** |
+| hauteur de l'écran | 2 199 px | **2 177 px** |
+
+**Une prose qui décrit un rangement qui n'a pas eu lieu est pire qu'une absence
+de prose : on s'y fie.** Le déplacement du 14 août visait à ne plus avoir deux
+réglages fiscaux à deux endroits ; la faute était revenue à l'intérieur d'un
+seul écran, où personne ne la cherchait.
+
+**Elle arrive en ENFANT, pas en copie.** Le réglage est un composant client
+monté par la page — elle seule lit la base ; l'écran le pose au bon endroit
+(`periodicite`). Le recopier dans l'écran en aurait fait deux.
+
+**Et son intertitre est parti avec le déplacement.** Il disait « VOTRE TVA », ce
+qui était juste tant que le réglage vivait à un écran du régime. Collé sous
+« VOTRE RÉGIME DE TVA », il donnait deux titres de TVA à trois centimètres l'un
+de l'autre — et deux titres pour une seule question, c'est la question qu'on
+croit double.
+
+### Deux contrôles retournés, et ils avaient RAISON de rougir
+
+La première batterie de ce lot a rendu deux rouges qui étaient bien les nôtres.
+Ils sont notés ici parce qu'ils montrent à quoi ressemble un rouge légitime —
+il dit exactement ce qu'on vient de changer, et il ne se confond pas avec les
+rouges de machine qui vont et viennent :
+
+| Suite | Ce qu'elle réclamait | Ce qu'elle défend maintenant |
+|---|---|---|
+| `test-periodicite-tva-e2e` | le mot « Votre TVA », l'intertitre retiré | le repère `data-atlas="periodicite-tva"`, qui ne se renomme pas |
+| `test-compte-connexion-e2e` | *« le bouton du bas est là »* — la barre permanente | au repos aucune barre, et elle revient dès qu'on écrit |
+
+**On adapte le contrôle, on ne remet pas ce qui a été retiré** (`CLAUDE.md`
+§5 bis). Et l'on vise ce qui ne bouge pas — un repère, une adresse, une règle —
+plutôt qu'un mot que l'écran a le droit de changer demain.

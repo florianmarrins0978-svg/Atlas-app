@@ -7,6 +7,31 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-06
+### La barre d'enregistrement était écrite trois fois, et la TVA restait coupée en deux
+
+**Le correctif d'hier n'avait atteint qu'un écran sur trois.** « Mon
+entreprise » et « Mon compte » portaient chacun leur propre copie de cette
+barre, à quelques lignes près. Il n'y avait pas de pièce commune : il y avait
+trois jumelles (`ARCHITECTURE.md` §266).
+
+**Ce que ça évite :** un correctif qu'on croit livré et qui ne l'est qu'au
+tiers. Les 85 pixels rendus hier sur un écran le sont maintenant sur les trois.
+Le signe qui les trahissait : les trois copies ne s'accordaient même pas sur la
+question posée — deux répondaient oui/non, la troisième comptait les champs.
+
+**Et la périodicité de TVA n'avait jamais rejoint son régime**, malgré le
+commentaire du 14 août qui l'affirme encore mot pour mot. Elle était rendue
+après le téléphone, l'e-mail et les coordonnées bancaires. Mesuré à 390 × 664 :
+l'écart entre les deux moitiés d'une même question passe de **740 px à 312**, et
+l'écran est **plus court qu'avant** (2 199 → 2 177). Son intertitre « VOTRE
+TVA » part avec le déplacement : collé sous « VOTRE RÉGIME DE TVA », il donnait
+deux titres pour une seule question.
+
+**Le contrôle parcourt les trois écrans**, et confronté au défaut il rougit sur
+les trois d'un coup — c'est la démonstration que la pièce est bien commune.
+
+Détail : `docs/lot-mon-entreprise.md`.
+
 ### Le texte secondaire se lit enfin au soleil — premier morceau
 
 Il s'écrivait en **9,5 et 11,5 px**, dans un gris qui tient de 2,85 (Moka) à

@@ -19,6 +19,21 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : « Mon entreprise », et la barre écrite trois fois (6 septembre 2026)
+
+**Quatrième des six lots de la reprise des Réglages.**
+
+| | |
+|---|---|
+| **Trouvé** | la barre d'enregistrement était écrite **trois fois** — le correctif du lot 3 n'avait atteint qu'un écran sur trois. Et la périodicité de TVA n'avait **jamais rejoint** son régime, malgré le commentaire du 14 août qui l'affirme |
+| **Fait** | une seule barre, `src/components/atlas/BarreEnregistrer.tsx`, employée par « Devis & factures », « Mon entreprise » et « Mon compte » ; la périodicité posée sous le régime, en enfant ; son intertitre en doublon retiré |
+| **Mesuré** | écart entre les deux moitiés de la TVA : **740 → 312 px** · hauteur de l'écran : **2 199 → 2 177 px** (plus court) |
+| **Le contrôle** | `test-barre-enregistrer-e2e` parcourt les trois écrans et rougit sur les trois quand on lui remet le défaut |
+| **Signalé, non corrigé** | `CompteClient` et `IdentiteClient` gardent deux façons de dire « ce qui reste à enregistrer » |
+
+---
+
+
 ## FAIT (à moitié, et c'est voulu) : lire au soleil (6 septembre 2026)
 
 Proposé et accepté le même jour, planche en main

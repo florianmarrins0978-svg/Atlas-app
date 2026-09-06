@@ -1,5 +1,6 @@
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 // « Mon compte » et « Connexion » — les deux dernières rubriques des réglages.
 //
@@ -26,7 +27,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // (`AGENTS.md`). Le chemin éprouvé ici est donc celui du REFUS, qui n'écrit
 // rien.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 function verifie(nom: string, condition: boolean, detail = "") {
@@ -103,8 +104,29 @@ async function main() {
       !/Ce compte\b/i.test(compte) && !/ne part pas chez le client/i.test(compte),
       compte.slice(0, 200));
 
-    verifie("le bouton du bas est là, et dit que tout est écrit",
-      /Enregistré/.test(await page.locator("button", { hasText: /Enregistr/ }).first().innerText()));
+    // ══════════════════════════════════════════════════════════════════════
+    // **CE CAS EXIGEAIT L'INVERSE, ET IL A ÉTÉ RETOURNÉ LE 6 SEPTEMBRE 2026.**
+    //
+    // Il lisait : *« le bouton du bas est là, et dit que tout est écrit »* — et
+    // il avait raison tant que cette barre était rendue en permanence. Elle ne
+    // l'est plus (`ARCHITECTURE.md` §264, puis §266 pour les trois écrans) :
+    // opaque et haute de 85 px, elle mangeait l'écran pour ne dire que
+    // « Enregistré ✓ ».
+    //
+    // Une suite qui réclame ce qu'on vient de retirer rend l'écran impossible à
+    // changer (`CLAUDE.md` §5 bis). Ce qu'on défend ici, c'est la RÈGLE : rien
+    // à enregistrer, pas de barre — et elle revient dès qu'on écrit.
+    // ══════════════════════════════════════════════════════════════════════
+    verifie("au repos, aucune barre ne mange l'écran",
+      (await page.locator('[data-atlas="barre-enregistrer"]').count()) === 0);
+
+    await page.getByLabel("Nom").fill("Atelier Démo bis");
+    await page.waitForTimeout(400);
+    verifie("mais elle revient dès qu'on écrit, et propose d'enregistrer",
+      (await page.locator('[data-atlas="barre-enregistrer"]').count()) === 1 &&
+      /Enregistrer/.test(
+        await page.locator('[data-atlas="barre-enregistrer"] button').innerText()
+      ));
 
     // ── 3. Connexion : trois champs, et l'œil ────────────────────────────
     await page.goto(`${BASE}/reglages/connexion`, { waitUntil: "networkidle" });

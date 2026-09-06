@@ -156,15 +156,15 @@ le contenu qui passe dessous, ce qui est le prix de sa réponse B.
 
 ---
 
-## Les trois lots qui restent sur les Réglages
+## Les deux lots qui restent sur les Réglages
 
 Ouverts par sa consigne du 5 septembre 2026 (`PRODUCT.md`). L'ordre est celui
-qu'il a accepté ; **les trois premiers sont faits** — le sommaire
-(`ARCHITECTURE.md` §262), l'en-tête unique (§263) et « Devis & factures » (§264).
+qu'il a accepté ; **les quatre premiers sont faits** — le sommaire (§262),
+l'en-tête unique (§263), « Devis & factures » (§264) et « Mon entreprise »
+(§266). Le texte lisible au soleil (§265) s'y est ajouté en cours de route.
 
 | Lot | Quoi | Ce qui le fonde |
 |---|---|---|
-| 4 | **« Mon entreprise »** | le régime de TVA (bloc 2 d'`IdentiteClient`) et sa périodicité (`identite/page.tsx:79`) sont séparés par tout le bloc bancaire « Pour être payé » — la faute que le regroupement du 14 août voulait réparer, revenue à l'intérieur d'un écran |
 | 5 | **« Mon agenda »** | **les DEUX raccordements sont hors de portée**, vu à la capture le 6 septembre. Google : créer un identifiant OAuth sur `console.cloud.google.com`, y activer une API — et l'écran s'annonce lui-même « pas encore disponible » tant que ce n'est pas fait. iCloud : un « mot de passe pour les apps » chez Apple, seize lettres à recopier. **Ce qu'il faut changer, c'est ce qu'on demande, pas la façon de le demander** — donc c'est au patron de trancher |
 | 6 | **le reste** | Équipe (**proposition C** de la planche 96, décidée le 6 septembre, pas codée), notifications, mot de passe, données, couleurs, IA, abonnement, compte |
 

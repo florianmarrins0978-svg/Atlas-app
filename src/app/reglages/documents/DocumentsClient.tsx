@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
 import {
   BORNES,
@@ -37,6 +37,7 @@ import {
   reprendreAllurePhotoAction,
   retirerLogoAction,
 } from "./actions";
+import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import EditeurMessage from "./EditeurMessage";
 
 /**
@@ -166,19 +167,6 @@ export default function DocumentsClient({
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
   const [aEcrire, setAEcrire] = useState(false);
-  /**
-   * **Le « Enregistré ✓ » qui s'attarde, et qui s'en va — 6 septembre 2026.**
-   *
-   * Sans lui, la barre disparaîtrait à l'instant même où il appuie, et il ne
-   * saurait pas si son message est parti ou si le bouton a raté. La
-   * confirmation reste donc le temps de se lire, puis rend la place.
-   */
-  const [vientDEnregistrer, setVientDEnregistrer] = useState(false);
-  useEffect(() => {
-    if (!vientDEnregistrer) return;
-    const t = setTimeout(() => setVientDEnregistrer(false), 2500);
-    return () => clearTimeout(t);
-  }, [vientDEnregistrer]);
   const [message, setMessage] = useState(messageInitial ?? MESSAGE_PAR_DEFAUT);
 
   // Ce que chaque pastille AFFICHE, en doré et verrouillé, dans le cadre. Le nom
@@ -291,14 +279,20 @@ export default function DocumentsClient({
         // qu'il croirait avoir effacé.
         setMessage(r.messageClient ?? MESSAGE_PAR_DEFAUT);
         setAEcrire(false);
-        setVientDEnregistrer(true);
       }
     });
   }
 
   const apercu = lignesConditionsDevis(c);
 
-  const barreVisible = aEcrire || enCours || refusMessage !== null || vientDEnregistrer;
+  // **La réserve du bas suit la barre**, sans quoi `pb-40` laissait 160 px de
+  // vide au bout d'un écran qui en fait déjà quatre mille.
+  //
+  // Elle ne compte PAS les deux secondes et demie où la barre s'attarde pour
+  // dire « Enregistré ✓ » : cet instant-là suit un appui, il ne suit pas une
+  // lecture du bas de page. Compter ce cas aurait demandé de sortir de la pièce
+  // partagée un état qui n'appartient qu'à elle.
+  const barreVisible = aEcrire || enCours || refusMessage !== null;
 
   return (
     // La réserve du bas suit la barre : sans elle, `pb-40` laissait 160 px de
@@ -996,64 +990,22 @@ export default function DocumentsClient({
         ne change aucun document déjà fait.
       </p>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          **LA BARRE N'EXISTE QUE S'IL Y A QUELQUE CHOSE À ENREGISTRER —
-          6 septembre 2026.**
+      {/* **La barre est une PIÈCE PARTAGÉE depuis le 6 septembre 2026.**
 
-          Elle était là **en permanence**, opaque, haute de 85 px, et le contenu
-          passait dessous. Mesuré au navigateur à 390 × 664 : entre elle, la
-          barre du bas et l'aperçu collé de l'allure, **392 px des 664 étaient
-          pris — il restait 272 px pour lire**. Et sur le PREMIER écran, elle
-          coupait « Moyens de paiement acceptés » en deux, son interrupteur
-          compris : un réglage qu'on ne peut pas viser.
+          Elle était écrite ici à même l'écran, et deux autres copies presque
+          identiques vivaient dans « Mon entreprise » et « Mon compte ». Le
+          correctif du §264 — la barre n'existe que s'il y a quelque chose à
+          enregistrer — n'avait donc atteint qu'un écran sur trois.
 
-          **Elle ne servait qu'au message.** Tout le reste de cet écran
-          s'enregistre seul — chaque interrupteur appelle `enregistrer` de
-          lui-même, l'allure et le format aussi, et l'écran l'écrit noir sur
-          blanc (« Enregistré au fur et à mesure »). Une barre permanente pour
-          UN bloc, qui recouvrait les cinq autres.
-
-          **Ce n'est pas un geste caché** (`PRODUCT.md`) : rien ne se découvre,
-          la barre revient d'elle-même dès qu'il touche au message, et repart
-          quand il n'y a plus rien à faire.
-          ══════════════════════════════════════════════════════════════════ */}
-      {barreVisible && (
-      <div
-        data-atlas="barre-enregistrer"
-        className="fixed inset-x-0 z-10 mx-auto max-w-md border-t px-[26px] pb-4 pt-3.5"
-        style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
-      >
-        <button
-          type="button"
-          onClick={() => enregistrer({})}
-          disabled={(!aEcrire && !enCours) || refusMessage !== null}
-          // **Passé au vert des boutons le 4 septembre 2026.** Il l'a relevé
-          // lui-même — *« j'avais demandé à changer tous les boutons en vert
-          // clair »* —, et ce bouton-ci avait échappé au balayage du 3 : il ne
-          // portait pas `atlas-plein`, et le contrôle ne regardait QUE ce qui la
-          // portait. Il la porte maintenant, et il est donc gardé.
-          //
-          // **Allumé seulement** : éteint, ce bouton est creux.
-          className={`block w-full rounded-full py-[15px] text-center text-[16px] ${
-            (!aEcrire && !enCours) || refusMessage ? "" : "atlas-plein"
-          }`}
-          style={{
-            backgroundColor: (!aEcrire && !enCours) || refusMessage ? colors.card : colors.plein,
-            color: (!aEcrire && !enCours) || refusMessage ? colors.muted : colors.cream,
-            boxShadow:
-              (!aEcrire && !enCours) || refusMessage ? `inset 0 0 0 1px ${colors.line}` : "none",
-          }}
-        >
-          {enCours
-            ? "Enregistrement…"
-            : refusMessage
-              ? "Message incomplet"
-              : !aEcrire
-                ? "Enregistré ✓"
-                : "Enregistrer"}
-        </button>
-      </div>
-      )}
+          Ce qu'elle porte de propre à cet écran, c'est le REFUS : tant que le
+          message est incomplet, le bouton le dit et refuse. Le reste est commun
+          (`src/components/atlas/BarreEnregistrer.tsx`). */}
+      <BarreEnregistrer
+        aEcrire={aEcrire}
+        enCours={enCours}
+        refus={refusMessage !== null ? "Message incomplet" : null}
+        onEnregistrer={() => enregistrer({})}
+      />
     </div>
   );
 }
