@@ -186,11 +186,34 @@ body{
    11 px ne s'attrape pas sous un pouce ganté, et sa cible ne doit pas pour
    autant décaler la ligne. Aujourd'hui elle fait 10 px. */
 .cadre[data-ecran="apres"] .clients{ min-height:44px; margin:-16px 0; }
-.chevron{
+/* AVANT : un carré de 5 px tourné à 45°, dessiné en CSS.
+   APRÈS : le caractère « › », comme dans le code. Voir juste en dessous. */
+.cadre[data-ecran="avant"] .chevron{
   width:5px; height:5px; margin-left:6px; transform:rotate(45deg);
   border-right:1.5px solid var(--or); border-top:1.5px solid var(--or);
 }
+.cadre[data-ecran="avant"] .chevron-mot{ display:none; }
 .cadre[data-ecran="apres"] .chevron{ display:none; }
+/* 16 px, et non les 11 du libelle : a la taille du mot, le chevron
+   faisait une virgule. Il porte une fonction, il doit se voir. */
+.chevron-mot{
+  margin-left:5px; letter-spacing:0; font-size:19px; font-weight:700;
+  line-height:1; position:relative; top:-1px;
+}
+/* **LE CHEVRON RESTE — sa demande du 6 septembre au soir :** *« il faut
+   rajouter un chevron après Vos clients, je pense, pour qu'on sache qu'on
+   puisse cliquer dessus »*.
+
+   Il avait été retiré le matin même, au nom de sa règle du 25 août. Cette
+   règle-là vise l'ORNEMENT — « Créer le devis → » —, pas ce qui porte une
+   fonction : « Vos clients » est le seul mot de cet en-tête qui mène ailleurs,
+   et rien d'autre ne le dit.
+
+   Dans le code il s'écrit avec le caractère « › », que
+   scripts/test-aucune-fleche.ts SAIT lire, et il y est DÉCLARÉ avec sa raison.
+   Il était dessiné en CSS jusqu'ici — un carré tourné à 45° —, donc invisible
+   pour ce contrôle : une exception qu'un contrôle ne peut pas voir n'est pas
+   une exception, c'est un trou. */
 
 .cadre[data-ecran="avant"] .ligne-tete{ display:block; margin-top:10px; }
 .cadre[data-ecran="avant"] .compte-bande{ margin:30px 26px 4px; }
@@ -628,7 +651,7 @@ body{
 
       <div class="ligne-tete">
         <span class="rubrique" data-atlas="compteur"><span>En cours</span><span class="nombre" id="compte-haut">0</span></span>
-        <a class="clients" href="#clients">Vos clients<span class="chevron" aria-hidden="true"></span></a>
+        <a class="clients" href="#clients">Vos clients<span class="chevron" aria-hidden="true"></span><span class="chevron-mot" aria-hidden="true">›</span></a>
       </div>
     </div>
 
