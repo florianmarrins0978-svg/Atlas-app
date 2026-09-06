@@ -57,7 +57,7 @@ export default function VosEquipes({
           **Les filets qui SÉPARENT les blocs restent** — *« ceux qui séparent
           les blocs, laisse-les »*. Ne pas les confondre : ceux-là disent que
           deux choses sont distinctes ; celui-ci n'ornait qu'un mot. */}
-      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Chantiers menés en même temps
       </p>
 

@@ -23656,3 +23656,66 @@ gardé :
 
 Un contrôle qui ne peut pas mesurer ne se livre pas vert (`CLAUDE.md` §5). Le
 recouvrement est mesuré à la main et écrit dans `docs/lot-devis-et-factures.md`.
+
+---
+
+## §265. Une taille est un jeton, une couleur est un jugement
+
+**6 septembre 2026.** Le texte secondaire de l'application s'écrivait en **9,5
+et 11,5 px**, dans un gris qui tient de **2,85** (Moka) à **3,59** (Brume) de
+contraste sur les six chartes claires — la norme demande 4,5. **Les deux seules
+qui passaient étaient Sylve et Nuit**, corrigées après sa plainte du 22 août ;
+les claires, jamais.
+
+Sa consigne du 5 septembre — *« la plupart des patrons qui vont utiliser l'app
+sont des vieux qui ont du mal à se servir de leur téléphone »* — rend cela
+central : c'est le plus gros obstacle du produit, et il ne vit dans aucun écran
+en particulier. Il a dit oui le 6, planche en main
+(`appli/lire-au-soleil.html`).
+
+### Le partage, et c'est la règle à retenir
+
+| | |
+|---|---|
+| **la taille** | un JETON : `libelleCaps` 9,5 → 11 px, `texteSituation` 11,5 → 13 px. Un seul endroit, tous les écrans d'un coup |
+| **la couleur** | un JUGEMENT, emploi par emploi : `muted` cède à `inkSoft` **pour ce qui doit se lire**, et reste pour ce qui n'a pas à l'être |
+
+**On ne peut pas faire de la couleur un jeton de plus.** `muted` est juste là où
+il dit « ceci n'est pas à lire » — l'exemple d'un champ vide, un réglage éteint,
+une rubrique « bientôt », les deux phrases de banc d'essai qui ne s'adressent
+pas au patron. Un balayage aveugle les aurait toutes rendues aussi présentes que
+le reste, ce qui est l'autre façon de rendre un écran illisible.
+
+**Le critère employé, et il vient des jetons eux-mêmes** : `texteSituation` se
+définit comme *« elle se LIT »*, `libelleCaps` comme *« tout ce qui NOMME »*.
+Les deux sont donc du texte à lire, et leurs emplois en `muted` sont passés à
+`inkSoft` — 82 dans les Réglages. Ailleurs, `muted` n'a pas été touché.
+
+### Ce que ça coûte, mesuré avant ET après
+
+La prévision a été faite en surchargeant les deux tailles dans un navigateur,
+sur les vrais écrans, avant d'écrire une ligne. La mesure après codage la
+confirme :
+
+| Écran | Avant | Après | Prévu |
+|---|---|---|---|
+| sommaire des réglages | 1 145 px | 1 152 | +0,8 % |
+| Mon entreprise | 2 145 px | 2 199 | +2,6 % |
+| Devis & factures | 4 117 px | 4 350 | +5,7 % |
+| l'accueil | 664 px | 664 | 0 |
+
+**Mesurer le coût AVANT de proposer est ce qui a permis de le proposer.** Il a
+dit trois fois que l'application était trop longue ; lui demander d'accepter un
+allongement sans chiffre aurait été lui demander de signer à l'aveugle.
+
+### Ce qui reste, et comment le faire
+
+**525 emplois du gris dans `src/`, 82 repris.** Le reste se fait **écran par
+écran, quand on touche l'écran** — jamais en un balayage : cinq cents décisions
+d'un coup ne se relisent pas, et elles croiseraient le travail des autres
+sessions.
+
+**La charte n'a pas été touchée, et ne doit pas l'être.** Le gris est le sien,
+relevé au navigateur sur le site d'Arborea, et `scripts/test-chartes-lisibles.ts`
+§144 refuse délibérément d'y poser un seuil pour ne pas accuser un choix qu'il a
+fait. Ce lot ne change pas la couleur : il change l'endroit où elle sert.

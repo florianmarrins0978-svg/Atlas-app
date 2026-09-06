@@ -19,6 +19,23 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT (à moitié, et c'est voulu) : lire au soleil (6 septembre 2026)
+
+Proposé et accepté le même jour, planche en main
+(`appli/lire-au-soleil.html`).
+
+| | |
+|---|---|
+| **Le constat** | le texte secondaire s'écrivait en 9,5 et 11,5 px dans un gris à **2,85–3,59** de contraste sur les six chartes claires (la norme demande 4,5). 525 emplois dans `src/` |
+| **Fait — la taille** | `libelleCaps` 9,5 → **11 px**, `texteSituation` 11,5 → **13 px**. C'est un jeton : **toute l'application** |
+| **Fait — la couleur** | `muted` → `inkSoft` pour ce qui se lit : **82 emplois, Réglages seulement** |
+| **Reste** | la couleur hors des Réglages — accueil, planning, terminés, devis, facture, fiche client, Paysage. **Écran par écran, quand on y touche**, jamais en balayage |
+| **Le coût, mesuré** | +0,6 % (sommaire) · +2,5 % (Mon entreprise) · +5,7 % (Devis & factures) · 0 (accueil) |
+| **NON touché** | sa palette, le texte principal, et les trois choses du lot 3 |
+
+---
+
+
 ## FAIT : « Devis & factures » (6 septembre 2026)
 
 **Troisième des six lots de la reprise des Réglages.** L'écran le plus long de

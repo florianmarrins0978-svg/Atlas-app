@@ -66,7 +66,7 @@ export default function QuiAAcces({
 
   return (
     <section className="mt-7 px-[26px]">
-      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Qui a accès
       </p>
 
@@ -85,11 +85,11 @@ export default function QuiAAcces({
                   <span className="block truncate text-[15px]" style={{ color: colors.ink }}>
                     {estMoi ? "Vous" : (p.nom ?? p.email)}
                   </span>
-                  <span className="block truncate text-[12px]" style={{ color: colors.muted }}>
+                  <span className="block truncate text-[12px]" style={{ color: colors.inkSoft }}>
                     {p.email}
                   </span>
                 </span>
-                <span className={libelleCaps} style={{ color: colors.muted }}>
+                <span className={libelleCaps} style={{ color: colors.inkSoft }}>
                   {libelleRole(p.role)}
                 </span>
               </button>
@@ -194,7 +194,7 @@ function ChoixPortee({
 
   return (
     <div className="mt-4">
-      <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Ce qu&apos;il voit du planning
       </p>
       <div className="flex gap-2">

@@ -416,7 +416,7 @@ export default function DocumentsClient({
           demandé, planches en main (ses réponses B, A et B des 23 et 25 août). */}
       <Bloc titre="Ce que votre devis dira">
         {apercu.length === 0 ? (
-          <p className={texteSituation} style={{ color: colors.muted }}>
+          <p className={texteSituation} style={{ color: colors.inkSoft }}>
             Rien ne s&apos;ajoutera : votre devis portera ses lignes, ses totaux et sa
             mention de signature, sans condition supplémentaire.
           </p>
@@ -429,7 +429,7 @@ export default function DocumentsClient({
             ))}
           </ul>
         )}
-        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           Le montant de l&apos;acompte se calcule sur chaque devis. Il n&apos;est pas
           écrit ici : il dépend du total.
         </p>
@@ -447,7 +447,7 @@ export default function DocumentsClient({
             <span className="block" style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25 }}>
               Mentions légales de la facture
             </span>
-            <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
+            <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
               Pénalités de retard, indemnité forfaitaire de 40 €, et la franchise de
               l&apos;article 293 B quand vous n&apos;êtes pas assujetti.
             </span>
@@ -456,7 +456,7 @@ export default function DocumentsClient({
             Obligatoire
           </span>
         </div>
-        <p className={texteSituation} style={{ color: colors.muted }}>
+        <p className={texteSituation} style={{ color: colors.inkSoft }}>
           Elles s&apos;écrivent seules et suivent votre régime de TVA. Les retirer rendrait
           la facture irrégulière.
         </p>
@@ -477,7 +477,7 @@ export default function DocumentsClient({
             peuvent être modifiés » — le prénom, la phrase du document (qui
             s'adapte au devis comme à la facture, sa « façon 1 »), le lien et son
             nom. C'est `EditeurMessage` qui les verrouille. */}
-        <p className={`mb-3 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`mb-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           Modifiez ce que vous voulez. Les mots en doré se remplissent tout seuls
           et ne se modifient pas.
         </p>
@@ -526,10 +526,10 @@ export default function DocumentsClient({
             prouvent que le mot change — « devis » ici, « facture » là — sans
             qu'il réécrive rien. */}
         <div className="mb-2 mt-5 flex items-baseline gap-2">
-          <span className={libelleCaps} style={{ color: colors.muted }}>
+          <span className={libelleCaps} style={{ color: colors.inkSoft }}>
             Ce que votre client recevra
           </span>
-          <span className={texteSituation} style={{ color: colors.muted }}>
+          <span className={texteSituation} style={{ color: colors.inkSoft }}>
             · <b style={{ color: colors.or, fontWeight: 600 }}>doré</b> = rempli tout seul
           </span>
         </div>
@@ -546,7 +546,7 @@ export default function DocumentsClient({
                 style={{
                   padding: "7px 11px",
                   backgroundColor: colors.rustTint,
-                  color: colors.muted,
+                  color: colors.inkSoft,
                   borderBottom: `1px solid ${colors.lineSoft}`,
                 }}
               >
@@ -588,7 +588,7 @@ export default function DocumentsClient({
           c'est que le millésime était écrit en dur : en janvier 2027, ses
           factures auraient encore dit 2026. */}
       <Bloc titre="Le numéro de mes documents">
-        <p className={`mb-3 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`mb-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           Vos documents déjà émis gardent leur numéro.
         </p>
 
@@ -617,7 +617,7 @@ export default function DocumentsClient({
                       ailleurs.** L'ajouter ici la faisait lire deux fois sur le
                       format concerné — « Le format par défaut · par défaut ».
                       Vu à la capture, par aucun test (`CLAUDE.md` §5). */}
-                  <span className={`mt-0.5 block ${texteSituation}`} style={{ color: colors.muted }}>
+                  <span className={`mt-0.5 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
                     {f.dit}
                   </span>
                 </span>
@@ -636,7 +636,7 @@ export default function DocumentsClient({
           })}
         </div>
 
-        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
           Ce que ça donne
         </p>
         <div className="rounded-[6px] px-[15px] py-3" style={{ backgroundColor: colors.card }}>
@@ -660,14 +660,14 @@ export default function DocumentsClient({
         <p
           data-atlas="consequence-format"
           className={`mt-3 ${texteSituation}`}
-          style={{ color: colors.muted }}
+          style={{ color: colors.inkSoft }}
         >
           {repartChaqueAnnee(formatNumero)
             ? "Le compteur repart à 1 le 1ᵉʳ janvier."
             : "Le compteur ne repart jamais : sans l'année, deux documents porteraient le même numéro."}
         </p>
 
-        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           {formatEnCours ? "Enregistrement…" : "Enregistré au fur et à mesure."}
         </p>
       </Bloc>
@@ -678,7 +678,7 @@ export default function DocumentsClient({
             des neuf, et « Playfair Display » s'afficherait en Georgia. Vu à la
             capture le 24 août 2026, jamais par un test. */}
         <style>{FACES}</style>
-        <p className={`mb-3 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`mb-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           Elle habille votre devis et votre facture. La feuille de chantier, elle,
           ne change pas : personne d&apos;autre que vous ne la lit.
         </p>
@@ -745,14 +745,14 @@ export default function DocumentsClient({
                 </p>
               )}
               {reprise.reserve && (
-                <p className={`mt-1 ${texteSituation}`} style={{ color: colors.muted }}>
+                <p className={`mt-1 ${texteSituation}`} style={{ color: colors.inkSoft }}>
                   {reprise.reserve}
                 </p>
               )}
             </div>
           )}
 
-          <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
+          <p className={`mt-2 ${texteSituation}`} style={{ color: colors.inkSoft }}>
             Les couleurs, la police et les mentions. Ni les lignes, ni les prix.
           </p>
         </div>
@@ -816,13 +816,13 @@ export default function DocumentsClient({
               (`CLAUDE.md` §3). Ce qu'il montre — le fond, l'accent, la
               typographie, la place du logo — est exactement ce que la fabrique
               de PDF pose, et rien de plus. */}
-          <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             L&apos;allure de la page
           </p>
           <Feuille allure={allure} logo={logo} nom={entrepriseNom} />
         </div>
 
-        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>Mon logo</p>
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>Mon logo</p>
         <div className="mb-1 flex items-center gap-3">
           <span
             data-atlas="logo-case"
@@ -895,11 +895,11 @@ export default function DocumentsClient({
             </button>
           )}
         </div>
-        <p className={`mb-5 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`mb-5 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           En haut à gauche, au-dessus de vos coordonnées. PNG ou JPEG, 1,5 Mo au plus.
         </p>
 
-        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>Typographie</p>
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>Typographie</p>
         <div className="mb-5 grid grid-cols-2 gap-2">
           {TYPOGRAPHIES.map((t) => {
             const choisie = allure.typographie === t.clef;
@@ -930,7 +930,7 @@ export default function DocumentsClient({
                 >
                   {t.nom}
                 </span>
-                <span className={`mt-0.5 block ${texteSituation}`} style={{ color: colors.muted }}>
+                <span className={`mt-0.5 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
                   {t.clef === ALLURE_PAR_DEFAUT.typographie ? `${t.dit} · par défaut` : t.dit}
                 </span>
               </button>
@@ -981,7 +981,7 @@ export default function DocumentsClient({
           </button>
         )}
 
-        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           {allureEnCours ? "Enregistrement…" : "Enregistré au fur et à mesure."}
         </p>
       </Bloc>
@@ -990,7 +990,7 @@ export default function DocumentsClient({
           qu'on n'a pas encore choisi. */}
 
       <p className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
-         style={{ borderColor: colors.line, color: colors.muted }}>
+         style={{ borderColor: colors.line, color: colors.inkSoft }}>
         Chaque devis garde <b style={{ color: colors.ink, fontWeight: 400 }}>ce que ces
         réglages disaient le jour où il a été créé</b> : les corriger aujourd&apos;hui
         ne change aucun document déjà fait.
@@ -1064,7 +1064,7 @@ function Bloc({ titre, children }: { titre: string; children: React.ReactNode })
       className="mx-[26px] mt-[30px] border-t pt-[18px] first-of-type:mt-[26px] first-of-type:border-t-0 first-of-type:pt-0 [&>*:last-child]:border-b-0"
       style={{ borderColor: colors.line }}
     >
-      <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         {titre}
       </p>
       {children}
@@ -1105,7 +1105,7 @@ function Reglage({
           <span className="block" style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25 }}>
             {nom}
           </span>
-          <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
+          <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
             {dit}
           </span>
         </span>
@@ -1164,7 +1164,7 @@ function Chiffre({
       <span style={{ fontFamily: font.display, fontSize: 17, color: colors.or }}>{unite}</span>
       {/* **Aucun montant ici.** Un « soit 1 044 € » se contredirait au premier
           chiffre changé — vu sur la planche le 13 août, jamais par un test. */}
-      <span className={`flex-1 text-right ${texteSituation}`} style={{ color: colors.muted }}>
+      <span className={`flex-1 text-right ${texteSituation}`} style={{ color: colors.inkSoft }}>
         {apres}
       </span>
     </span>
@@ -1225,7 +1225,7 @@ function Couleur({
 }) {
   return (
     <div className="mb-5">
-      <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         {titre}
       </p>
       <div className="flex items-center gap-2.5">
@@ -1266,7 +1266,7 @@ function Couleur({
           ))}
         </span>
       </div>
-      <p className={`mt-1.5 ${texteSituation}`} style={{ color: colors.muted }}>
+      <p className={`mt-1.5 ${texteSituation}`} style={{ color: colors.inkSoft }}>
         {aide}
       </p>
     </div>

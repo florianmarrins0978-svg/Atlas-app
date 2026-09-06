@@ -258,12 +258,27 @@ export const smallCaps = "text-[11px] font-semibold uppercase tracking-[0.18em]"
 // 0,28 em d'écartement : c'est ce qui distingue un repère d'une phrase, et
 // c'est ce qui manquait à « Ajouter un fichier audio » quand elle se lisait
 // comme du texte courant.
-export const libelleCaps = "text-[9.5px] font-medium uppercase tracking-[0.28em]";
+// **ONZE PIXELS DEPUIS LE 6 SEPTEMBRE 2026, ET NON PLUS 9,5.** Sa consigne du
+// 5 septembre — *« la plupart des patrons qui vont utiliser l'app sont des
+// vieux qui ont du mal à se servir de leur téléphone »* — puis son accord du 6,
+// planche en main (`appli/lire-au-soleil.html`).
+export const libelleCaps = "text-[11px] font-medium uppercase tracking-[0.28em]";
 
 // **La voix de la situation** : l'adresse sous un nom, ce que change une
 // durée, d'où viennent les informations affichées. Elle se lit, elle ne se
-// touche pas — et à 11,5 px elle ne dispute jamais la place au serif.
-export const texteSituation = "text-[11.5px] leading-[1.5]";
+// touche pas.
+//
+// **TREIZE PIXELS DEPUIS LE 6 SEPTEMBRE 2026, ET NON PLUS 11,5.** Sa prose
+// disait : *« à 11,5 px elle ne dispute jamais la place au serif »* — c'était
+// vrai du dessin, et faux de l'œil qui la lit. À 13 px elle ne la dispute
+// toujours pas : le serif des noms est à 17 ou 19 px, et le titre à 36.
+//
+// **CE QUE CE CHANGEMENT COÛTE, MESURÉ ET NON SUPPOSÉ** — relevé au navigateur
+// à 390 × 664 en surchargeant les deux tailles sur les vrais écrans : +0,8 %
+// de hauteur sur le sommaire des réglages, +0,9 % sur Équipe, +2,6 % sur Mon
+// entreprise, +5,7 % sur « Devis & factures ». C'est le marché qu'il a accepté :
+// entre un et six pour cent d'écran, contre du texte qui se lit.
+export const texteSituation = "text-[13px] leading-[1.5]";
 
 // La plage d'un champ de saisie : 15 px de retrait, 4 px de rayon, le fond des
 // plages, aucune bordure. Ce sont les mesures de la maquette retenue.

@@ -71,12 +71,12 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
         className="mx-[26px] mt-[30px] border-t pt-[18px] [&>*:last-child]:border-b-0"
         style={{ borderColor: colors.line }}
       >
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
           Qui vous êtes
         </p>
 
         <label className="block border-b py-[13px]" style={{ borderColor: colors.line }}>
-          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             Nom
           </span>
           <input
@@ -97,7 +97,7 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
         </label>
 
         <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
-          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             E-mail
           </span>
           <span
@@ -115,7 +115,7 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
               **Mais la ligne ne disparaît pas**, contrairement à celle du nom :
               un champ qui ne s'ouvre pas quand on le touche se lit comme une
               panne, et il chercherait ce qu'il a mal fait. */}
-          <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.muted }}>
+          <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
             Sert aussi à vous connecter. Pas encore modifiable.
           </span>
         </div>

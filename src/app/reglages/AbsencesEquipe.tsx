@@ -169,7 +169,7 @@ export default function AbsencesEquipe({
 
   return (
     <section className="mt-[30px]">
-      <p className={`mb-1.5 px-[26px] ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-1.5 px-[26px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Absences
       </p>
 

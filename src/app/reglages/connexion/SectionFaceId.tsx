@@ -142,7 +142,7 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
 
   return (
     <section className="mx-[26px] mt-[12px] border-t pt-[10px]" style={{ borderColor: colors.line }}>
-      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Ouvrir avec Face ID
       </p>
 
@@ -184,7 +184,7 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
                     écran — un téléphone vient d'être perdu. Deux téléphones du
                     même modèle portent le même nom deviné ; leur date
                     d'enregistrement, elle, les sépare. */}
-                <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
+                <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
                   {cle.dernierUsageLe
                     ? `Dernière ouverture le ${cle.dernierUsageLe.toLocaleDateString("fr-FR")}`
                     : `Enregistré le ${cle.creeLe.toLocaleDateString("fr-FR")}, jamais encore servi`}

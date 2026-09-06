@@ -64,7 +64,7 @@ export default async function IAPage() {
         />
 
         <section className="mx-[26px] mt-[26px]">
-          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             Ce que l&apos;application utilise
           </p>
 
@@ -115,7 +115,7 @@ export default async function IAPage() {
             tarifs et l'agenda le rendait introuvable. */}
         {editeur && (
           <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-            <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.muted }}>
+            <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
               Ce qu&apos;elle sait reconnaître
             </p>
             <Link href="/reglages/vocabulaire" className="flex min-h-[56px] w-full items-center gap-[15px] py-[13px]">

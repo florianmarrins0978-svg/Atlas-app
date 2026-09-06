@@ -45,11 +45,11 @@ export default function PeriodiciteTvaReglage({ initiale }: { initiale: Periodic
 
   return (
     <section className="mt-7 px-[26px]">
-      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Votre TVA
       </p>
 
-      <p className="pb-3 pt-1 text-[13px] leading-[1.6]" style={{ color: colors.muted }}>
+      <p className="pb-3 pt-1 text-[13px] leading-[1.6]" style={{ color: colors.inkSoft }}>
         À quel rythme vous la déclarez.
       </p>
 

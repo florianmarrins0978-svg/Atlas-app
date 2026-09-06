@@ -60,7 +60,7 @@ export default function ChoixRole({
         // bord. Il était revenu ici le 26, sur un écran neuf ;
         // `test-accueil-en-tete.ts` l'a repris. Les séparateurs de BLOCS, eux,
         // restent : *« ceux qui séparent les blocs, laisse-les »*.
-        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>Son rôle</p>
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.inkSoft }}>Son rôle</p>
       )}
 
       {/* **DEUX PAR LIGNE DEPUIS LE 30 AOÛT 2026, et c'est le rôle

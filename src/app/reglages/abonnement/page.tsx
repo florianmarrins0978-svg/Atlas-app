@@ -49,7 +49,7 @@ export default async function AbonnementPage() {
       />
 
       <div className="pb-24">
-        <p className={`mx-[26px] mt-[26px] ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`mx-[26px] mt-[26px] ${texteSituation}`} style={{ color: colors.inkSoft }}>
           <b style={{ color: colors.ink, fontWeight: 500 }}>Atlas ne vous facture rien aujourd&apos;hui.</b> Ni
           le prix ni le contenu de l&apos;offre ne sont arrêtés — et tant qu&apos;ils ne le sont pas, cet écran
           n&apos;affichera aucun montant : un chiffre inventé sur une page qui parle d&apos;argent finirait par
@@ -57,7 +57,7 @@ export default async function AbonnementPage() {
         </p>
 
         <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-          <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             Ce qu&apos;il y aura ici
           </p>
           <Ligne nom="Formule" dit="Ce qu'elle comprend, et jusqu'où" />
@@ -69,14 +69,14 @@ export default async function AbonnementPage() {
             se paierait par un appel affolé un soir de trimestre. */}
         <p
           className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
-          style={{ borderColor: colors.line, color: colors.muted }}
+          style={{ borderColor: colors.line, color: colors.inkSoft }}
         >
           <b style={{ color: colors.ink, fontWeight: 500 }}>Attention au mot.</b> Ici, « factures » désigne
           celles qu&apos;Atlas vous enverrait. Celles de vos clients sont dans « Terminés », et elles ne
           bougeront jamais d&apos;ici.
         </p>
 
-        <p className={`mx-[26px] mt-5 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`mx-[26px] mt-5 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           Ce qui bloque n&apos;est pas du code : il faut choisir une offre et un prestataire de paiement. Ces
           points sont dans votre document « à faire ».
         </p>
@@ -96,7 +96,7 @@ function Ligne({ nom, dit, derniere }: { nom: string; dit: string; derniere?: bo
           Bientôt
         </span>
       </div>
-      <p className={`mt-1 ${texteSituation}`} style={{ color: colors.muted }}>
+      <p className={`mt-1 ${texteSituation}`} style={{ color: colors.inkSoft }}>
         {dit}
       </p>
     </div>

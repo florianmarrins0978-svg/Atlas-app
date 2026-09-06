@@ -8,7 +8,40 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — « DEVIS & FACTURES » (6 septembre 2026)
+## Dernier lot — LIRE AU SOLEIL, premier morceau (6 septembre 2026)
+
+**Document du lot :** `docs/lot-lire-au-soleil.md`.
+**Planche :** `appli/lire-au-soleil.html`.
+**Décisions :** `ARCHITECTURE.md` §265.
+
+**Proposé puis accepté le même jour**, sur son invitation *« tu peux proposer
+autre chose si tu estimes que tu peux mieux faire »*.
+
+**⚠ CE LOT TOUCHE TOUS LES ÉCRANS, et il faut savoir comment.**
+
+| | |
+|---|---|
+| **la taille** | `libelleCaps` 9,5 → **11 px**, `texteSituation` 11,5 → **13 px**, dans `src/lib/design-tokens.ts`. **Un jeton : toute l'application d'un coup** |
+| **la couleur** | `muted` → `inkSoft` **pour ce qui doit se lire** — 82 emplois, **dans les Réglages seulement** |
+
+**Ne PAS faire de la couleur un balayage.** `muted` est juste là où il dit
+« ceci n'est pas à lire » : l'exemple d'un champ vide, un réglage éteint, une
+rubrique « bientôt », les deux phrases de banc d'essai. Le reste se fait écran
+par écran, quand on touche l'écran. **525 emplois dans `src/`, 82 repris.**
+
+**Le coût, mesuré avant de proposer puis vérifié après :** +0,6 % sur le
+sommaire, +2,5 % sur Mon entreprise, +5,7 % sur « Devis & factures », 0 sur
+l'accueil. C'est le marché qu'il a accepté, et il faut le connaître avant de
+défaire quoi que ce soit : il a dit trois fois que l'application était trop
+longue.
+
+**Sa charte n'a pas été touchée** — c'est l'emploi qui a changé. Ne pas y
+toucher : `test-chartes-lisibles.ts` §144 refuse délibérément d'y poser un seuil,
+pour ne pas accuser un choix qu'il a fait.
+
+---
+
+## Lot précédent — « DEVIS & FACTURES » (6 septembre 2026)
 
 **Document du lot :** `docs/lot-devis-et-factures.md`.
 **Planche :** `appli/devis-et-factures.html`.

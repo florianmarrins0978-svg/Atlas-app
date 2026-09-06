@@ -7,6 +7,31 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-06
+### Le texte secondaire se lit enfin au soleil — premier morceau
+
+Il s'écrivait en **9,5 et 11,5 px**, dans un gris qui tient de 2,85 (Moka) à
+3,59 (Brume) de contraste sur les six chartes claires, là où la norme demande
+4,5. Les deux seules qui passaient étaient Sylve et Nuit — corrigées après sa
+plainte du 22 août ; les claires, jamais.
+
+**Ce que ça évite :** un patron de soixante-cinq ans qui, debout au soleil, ne
+lit pas ce que son application lui dit. C'est le plus gros obstacle du produit,
+et il ne vivait dans aucun écran en particulier.
+
+**Deux portées différentes, et c'est le point** (`ARCHITECTURE.md` §265) : la
+TAILLE est un jeton — 9,5 → 11 px et 11,5 → 13 px, tous les écrans d'un coup ;
+la COULEUR est un jugement emploi par emploi — 82 repris dans les Réglages, le
+gris restant pour ce qui n'a pas à être lu (l'exemple d'un champ vide, un
+réglage éteint, une rubrique « bientôt »).
+
+**Le coût a été mesuré avant d'être proposé, puis vérifié après :** +0,6 % sur
+le sommaire des réglages, +2,5 % sur Mon entreprise, +5,7 % sur « Devis &
+factures », 0 sur l'accueil. Il a accepté ce marché planche en main.
+
+**Sa palette n'est pas touchée** — c'est l'endroit où on l'emploie qui change.
+
+Planche : `appli/lire-au-soleil.html`. Détail : `docs/lot-lire-au-soleil.md`.
+
 ### La barre « Enregistré ✓ » ne mange plus l'écran de « Devis & factures »
 
 Elle était rendue **en permanence**, opaque, haute de 85 px, et le contenu

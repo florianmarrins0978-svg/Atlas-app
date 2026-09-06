@@ -92,10 +92,10 @@ export default async function ReglagesPage() {
             date de la même heure — les deux avançaient en parallèle — et conclu
             qu'il avait tout. La date ne mentait pas ; elle ne suffisait pas. */}
         <div className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-          <p className={`mb-[6px] ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-[6px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             Version
           </p>
-          <p className="text-[13px]" style={{ color: colors.muted }}>
+          <p className="text-[13px]" style={{ color: colors.inkSoft }}>
             {version ?? "inconnue — cette installation n'annonce pas sa version."}
           </p>
 

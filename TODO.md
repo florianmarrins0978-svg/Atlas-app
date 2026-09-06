@@ -9,7 +9,20 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## UNE RÉPONSE ATTENDUE — le texte secondaire est-il assez gros ?
+## ✅ ~~UNE RÉPONSE ATTENDUE — le texte secondaire est-il assez gros ?~~ — **OUI, le 6 septembre 2026**
+
+**Sa réponse, le jour même : « Oui ça me va ».** La TAILLE est codée (jeton,
+toute l'application) ; la COULEUR est codée **dans les Réglages seulement** —
+82 emplois sur 525. `docs/lot-lire-au-soleil.md`, `ARCHITECTURE.md` §265.
+
+**Ce qui reste : la couleur hors des Réglages**, écran par écran quand on y
+touche — accueil, planning, terminés, devis, facture, fiche client, Paysage.
+**Jamais en balayage** : `muted` est juste là où il dit « ceci n'est pas à
+lire », et cinq cents décisions d'un coup ne se relisent pas.
+
+Ce qui suit est le constat d'origine, gardé parce qu'il porte les mesures.
+
+---
 
 **Proposé le 6 septembre 2026**, sur son invitation : *« tu ne touches pas les
 trois choses, mais tu peux proposer autre chose si tu estimes que tu peux mieux

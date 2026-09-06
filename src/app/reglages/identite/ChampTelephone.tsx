@@ -63,7 +63,7 @@ export default function ChampTelephone({
 
   return (
     <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
-      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Téléphone
       </span>
 

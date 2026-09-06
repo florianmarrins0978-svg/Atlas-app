@@ -46,7 +46,7 @@ export default async function DonneesPage() {
         />
 
         <section className="mx-[26px] mt-[26px]">
-          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             En garder une copie
           </p>
 

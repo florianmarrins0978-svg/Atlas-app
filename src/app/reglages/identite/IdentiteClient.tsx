@@ -397,7 +397,7 @@ function Bloc({ titre, children }: { titre?: string; children: React.ReactNode }
       style={{ borderColor: colors.line }}
     >
       {titre && (
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
           {titre}
         </p>
       )}
@@ -436,7 +436,7 @@ function Champ({
 
   return (
     <label className="block border-b py-[13px]" style={{ borderColor: teinte }}>
-      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: manquant ? colors.alert : colors.muted }}>
+      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: manquant ? colors.alert : colors.inkSoft }}>
         {etiquette}
         {manquant ? " — manquant" : ""}
       </span>
@@ -446,7 +446,7 @@ function Champ({
         <input {...commun} type="text" autoComplete="off" spellCheck={false} />
       )}
       {sous && (
-        <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.muted }}>
+        <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
           {sous}
         </span>
       )}
@@ -480,7 +480,7 @@ function Choix({
         <span className="block" style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25, color: colors.ink }}>
           {nom}
         </span>
-        <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
+        <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
           {detail}
         </span>
       </span>

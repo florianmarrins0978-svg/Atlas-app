@@ -57,7 +57,7 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
         </p>
       )}
 
-      <p className={`mx-[26px] mt-[26px] ${texteSituation}`} style={{ color: colors.muted }}>
+      <p className={`mx-[26px] mt-[26px] ${texteSituation}`} style={{ color: colors.inkSoft }}>
         Tout se passe <b style={{ color: colors.ink, fontWeight: 500 }}>dans l&apos;application</b>, sur
         l&apos;écran d&apos;accueil. Rien ne part sur votre téléphone ni par e-mail : Atlas n&apos;envoie ni SMS
         ni courriel.
@@ -72,7 +72,7 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
           nom="Lien de devis expiré"
           dit="Quand le client n'a pas pu l'ouvrir à temps"
         />
-        <p className={`pt-3 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`pt-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           Ces deux-là <b style={{ color: colors.ink, fontWeight: 500 }}>ne se coupent pas</b>. Les éteindre, ce
           serait accepter de ne plus savoir qu&apos;un client vous a refusé.
         </p>
@@ -141,7 +141,7 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
             onChange: (v) => ecrire({ factureImpayeeRythmeJours: v }),
           }}
         />
-        <p className={`pt-3 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`pt-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           Ceux-là se coupent sans rien perdre : le chantier reste dans votre liste, le devis reste sur sa fiche,
           et le chantier fini reste dans « Terminés ».
         </p>
@@ -153,7 +153,7 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
           existe, le rappel avec. Une documentation périmée est pire qu'absente
           — on s'y fie encore (`CLAUDE.md` §1). */}
       <Bloc titre="Où se solde une facture">
-        <p className={texteSituation} style={{ color: colors.muted }}>
+        <p className={texteSituation} style={{ color: colors.inkSoft }}>
           {/* **Les espaces sont écrits, pas laissés au retour à la ligne.** JSX
               mange le blanc qui suit une balise en fin de ligne : la capture du
               16 août 2026 montrait « tout seuldès que » et « reste dûqui ». */}
@@ -176,7 +176,7 @@ function Bloc({ titre, children }: { titre: string; children: React.ReactNode })
       className="mx-[26px] mt-[30px] border-t pt-[18px] first-of-type:mt-[26px] first-of-type:border-t-0 first-of-type:pt-0"
       style={{ borderColor: colors.line }}
     >
-      <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         {titre}
       </p>
       {children}
@@ -197,7 +197,7 @@ function Fixe({ nom, dit }: { nom: string; dit: string }) {
         <span className="block" style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25 }}>
           {nom}
         </span>
-        <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
+        <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
           {dit}
         </span>
       </span>
@@ -256,7 +256,7 @@ function Rappel({
           >
             {nom}
           </span>
-          <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
+          <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
             {dit}
           </span>
         </span>
@@ -286,7 +286,7 @@ function Rappel({
 
       {allume && (
         <label className="mt-2.5 flex items-center gap-2.5">
-          <span className={texteSituation} style={{ color: colors.muted }}>
+          <span className={texteSituation} style={{ color: colors.inkSoft }}>
             Au bout de
           </span>
           <input
@@ -310,7 +310,7 @@ function Rappel({
             // mesurait rien, et passait au vert sur l'écran fautif.
             data-atlas="rappel-unite"
             className={texteSituation}
-            style={{ color: colors.muted }}
+            style={{ color: colors.inkSoft }}
           >
             {/* **« 1 jour », pas « 1 jours ».** Le défaut du rappel d'impayé
                 vaut UN — c'est donc la première chose qu'il lit sur cette ligne,
@@ -325,7 +325,7 @@ function Rappel({
 
       {allume && rythme && (
         <div className="mt-2.5">
-          <span className={`block ${texteSituation}`} style={{ color: colors.muted }}>
+          <span className={`block ${texteSituation}`} style={{ color: colors.inkSoft }}>
             Puis me le redire
           </span>
           <div className="mt-1.5 flex flex-wrap gap-1.5">

@@ -104,7 +104,7 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
         className="mx-[26px] mt-[10px] [&>*:last-child]:border-b-0"
         style={{ borderColor: colors.line }}
       >
-        <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
           Changer de mot de passe
         </p>
 
@@ -187,7 +187,7 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
         className="mx-[26px] mt-[12px] border-t pt-[10px]"
         style={{ borderColor: colors.line }}
       >
-        <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
           Ailleurs
         </p>
 
@@ -234,7 +234,7 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
                 appareils d'office obligerait à tous les réenregistrer après une
                 simple déconnexion. On dit la vérité, et on montre le geste. */}
             {cles.length > 0 && (
-              <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
+              <p className={`mt-2 ${texteSituation}`} style={{ color: colors.inkSoft }}>
                 Vos appareils enregistrés pourront rouvrir Atlas avec Face ID. Si vous avez
                 perdu l&apos;un d&apos;eux, retirez-le d&apos;abord dans la liste ci-dessus.
               </p>
@@ -293,7 +293,7 @@ function ChampSecret({
 
   return (
     <div className="border-b py-[8px]" style={{ borderColor: colors.line }}>
-      <span className={`mb-[3px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+      <span className={`mb-[3px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         {etiquette}
       </span>
       <div className="flex items-center gap-3">
@@ -328,7 +328,7 @@ function ChampSecret({
         </button>
       </div>
       {sous && (
-        <span className={`mt-1 block ${texteSituation}`} style={{ color: sousTeinte ?? colors.muted }}>
+        <span className={`mt-1 block ${texteSituation}`} style={{ color: sousTeinte ?? colors.inkSoft }}>
           {sous}
         </span>
       )}
