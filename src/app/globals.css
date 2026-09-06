@@ -915,6 +915,11 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   text-decoration: none;
   color: var(--ink);
   -webkit-tap-highlight-color: transparent;
+  /* **Six pixels autour, pour que la CIBLE fasse 44 — 6 septembre 2026.**
+   * L'anneau est descendu de 42 à 32 px ce jour-là ; sans ce rembourrage, le
+   * geste qu'il fait vingt fois par jour se viserait sur 32 px. Les six pixels
+   * sont invisibles : rien de ce qu'il regarde ne bouge. */
+  padding: 6px 0;
 }
 .atlas-geste-nouveau .atlas-mot {
   font-size: 13px;
@@ -928,12 +933,24 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
    qu'avant sous le doigt, sans que le geste change de caractère. */
 [data-geste="part"] .atlas-mot { letter-spacing: 0.32em; }
 
+/* **L'ANNEAU RESSERRÉ — sa décision du 6 septembre 2026**, sur la planche
+ * `appli/l-accueil-a-bout-de-bras.html` où cinq formes se pressaient au doigt :
+ * ***« le 2, l'anneau resserré »***. Il l'avait demandé en ces termes :
+ * *« sur une, fais le rond plus petit en doré avec plus d'onde de choc »*.
+ *
+ * Trois choses changent, et rien d'autre : 42 px → **32**, le cerne passe du
+ * gris à **l'or**, et le battement porte **trois ondes** au lieu d'une, plus
+ * amples (1,9 fois le rond au lieu de 1,42).
+ *
+ * **Ce qui ne bouge pas :** le mot à 13 px graisse 800, les onze grains et
+ * leur portée de 46 px — qu'il a réglés lui-même en août —, la demi-seconde
+ * avant la feuille, et le tour du signe. */
 .atlas-rond {
   position: relative;
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
   border-radius: 9999px;
   transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
@@ -943,14 +960,18 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   inset: 0;
   z-index: 2;
   border-radius: 9999px;
-  border: 1px solid var(--line);
+  /* L'or, et non le gris du trait : c'est ce qui fait tenir un anneau plus
+   * petit. Sur les deux chartes sombres, l'or ne bouge pas — il y tient
+   * 6,14 de contraste, contre 2,77 sur le crème. Un CERNE n'est pas un mot :
+   * c'est le seuil d'un trait qui s'applique, pas celui d'un texte. */
+  border: 1px solid var(--or);
 }
 .atlas-rond .atlas-signe {
   position: relative;
   z-index: 4;
   display: block;
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
 }
 
 /* Le battement d'attente : une onde d'or qui naît du bord et se dissout, toutes
@@ -967,12 +988,26 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   opacity: 0;
   animation: atlas-battement 3.4s cubic-bezier(0.16, 0.7, 0.3, 1) infinite;
 }
+/* **TROIS ONDES, ET ELLES VONT PLUS LOIN — 6 septembre 2026.** Sa demande :
+ * *« plus d'onde de choc »*. Une seule onde sur un anneau de 32 px se voyait à
+ * peine ; trois, décalées d'un tiers de seconde, font un battement qui se
+ * remarque sans clignoter — et le clignotement reste ce qu'on refuse ici, un
+ * écran qui alerte dix fois par jour finit par être ignoré.
+ *
+ * 1,9 fois le rond au lieu de 1,42 : sur un anneau plus petit, la même
+ * proportion partait moins loin en pixels qu'avant. Mesuré : 32 × 1,9 = 61 px,
+ * contre 42 × 1,42 = 60 px. **L'onde occupe donc la même place à l'écran
+ * qu'avant** — c'est l'anneau qui a maigri, pas le geste. */
 @keyframes atlas-battement {
   0% { transform: scale(1); opacity: 0; }
-  8% { opacity: 0.5; }
-  46% { transform: scale(1.42); opacity: 0; }
-  100% { transform: scale(1.42); opacity: 0; }
+  6% { opacity: 0.62; }
+  52% { transform: scale(1.9); opacity: 0; }
+  100% { transform: scale(1.9); opacity: 0; }
 }
+/* Les deux ondes qui suivent la première. Elles portent la même animation —
+ * une seule règle à corriger le jour venu — et ne diffèrent que du retard. */
+.atlas-rond .atlas-pouls-2 { animation-delay: 0.42s; }
+.atlas-rond .atlas-pouls-3 { animation-delay: 0.84s; }
 [data-geste="part"] .atlas-pouls { animation: none; opacity: 0; }
 
 [data-geste="part"] .atlas-signe {

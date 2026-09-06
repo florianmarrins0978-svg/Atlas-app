@@ -135,7 +135,20 @@ type Carte = {
  * ouvre son application pour voir son travail, pas pour faire défiler des
  * alertes. Les autres ne sont pas cachées — elles sont annoncées et à un appui.
  */
-const VISIBLES_PAR_DEFAUT = 2;
+/**
+ * **UN SEUL depuis le 6 septembre 2026**, et non deux.
+ *
+ * Sur un matin à trois réponses, deux cartes repoussaient la liste des
+ * chantiers à 770 px dans une fenêtre qui en fait 596 : l'écran s'appelait
+ * « Vos chantiers » et n'en montrait aucun — pas même le nom du premier.
+ * Mesuré, pas estimé, sur la planche `appli/l-accueil-a-bout-de-bras.html`
+ * qu'il a retenue.
+ *
+ * Avec une seule, il lit le nom, le lieu et l'état du premier chantier. Les
+ * autres ne sont pas cachées : elles sont annoncées et à un appui — et
+ * **depuis ce même jour, elles se replient**, ce qui n'était pas le cas.
+ */
+const VISIBLES_PAR_DEFAUT = 1;
 
 function versCarte(n: NotificationPatron): Carte {
   const refus = n.reponse === "refusee";
@@ -487,7 +500,13 @@ export default function Notifications({
               </blockquote>
             )}
 
-            <div className="mt-3 flex items-center gap-4">
+            {/* **44 px de haut, et la rangée reprend ses marges — 6 septembre
+                2026.** Ces deux gestes n'avaient aucun rembourrage : mesurés à
+                21 px, sur un écran qu'il touche debout, d'une main, avec un
+                doigt épais. Le remboursement intérieur donne la cible, la marge
+                négative la reprend à l'affichage — les deux mots restent où ils
+                étaient, et l'écart entre eux ne bouge pas. */}
+            <div className="-mx-2 mt-2 flex items-center gap-2">
               {/* **Le lien mène là où est le geste**, et l'annonce. Voir
                   `suite-de-la-reponse.ts` : un devis accepté s'ouvre figé, tel
                   que le client l'a reçu ; un devis à corriger mène à l'écran
@@ -500,7 +519,7 @@ export default function Notifications({
                   type="button"
                   onClick={() => corriger(n)}
                   disabled={enCours !== null}
-                  className="text-[14px] font-medium disabled:opacity-60"
+                  className="min-h-[44px] px-2 text-[14px] font-medium disabled:opacity-60"
                   style={{ color: colors.rust }}
                 >
                   {enCours === n.chantierId ? "Ouverture…" : n.suite.libelle}
@@ -508,7 +527,7 @@ export default function Notifications({
               ) : (
                 <Link
                   href={n.suite.href}
-                  className="text-[14px] font-medium"
+                  className="inline-flex min-h-[44px] items-center px-2 text-[14px] font-medium"
                   style={{ color: colors.rust }}
                 >
                   {n.suite.libelle}
@@ -536,8 +555,8 @@ export default function Notifications({
                 data-atlas="j-ai-vu"
                 onClick={() => (n.repousser ? repousser(n) : n.vu ? marquerRappel(n) : marquerVue(n.envoiId))}
                 disabled={enCours !== null}
-                className="text-[14px] font-medium disabled:opacity-60"
-                style={{ color: colors.muted }}
+                className="min-h-[44px] px-2 text-[14px] font-medium disabled:opacity-60"
+                style={{ color: colors.inkSoft }}
               >
                 J&apos;ai vu
               </button>
@@ -558,15 +577,39 @@ export default function Notifications({
         );
       })}
 
-      {enPlus > 0 && (
+      {/* ── UNE PORTE QUI S'OUVRE DOIT SE REFERMER ────────────────────────
+          **Trouvé par le patron le 6 septembre 2026 :** *« les autres devis à
+          regarder, on peut cliquer dessus pour agrandir la fenêtre mais on
+          peut pas la refermer »*.
+
+          Il avait raison, et ce n'était pas un défaut de maquette : l'appui
+          posait `setToutVoir(true)` sans retour, et le bouton DISPARAISSAIT
+          une fois déplié — il ne restait plus rien à toucher, et la seule
+          façon de replier était de quitter l'écran et d'y revenir.
+
+          C'est sa règle du 5 septembre, « une erreur se rattrape » : un geste
+          sans retour en est une. « Replier » — un verbe, un mot. */}
+      {enPlus > 0 ? (
         <button
           type="button"
           onClick={() => setToutVoir(true)}
-          className="text-center text-[14px] font-medium"
+          className="min-h-[44px] text-center text-[14px] font-medium"
           style={{ color: colors.rust }}
         >
           {enPlus === 1 ? "1 autre devis à regarder" : `${enPlus} autres devis à regarder`}
         </button>
+      ) : (
+        toutVoir &&
+        restantes.length > VISIBLES_PAR_DEFAUT && (
+          <button
+            type="button"
+            onClick={() => setToutVoir(false)}
+            className="min-h-[44px] text-center text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            Replier
+          </button>
+        )
       )}
     </div>
   );

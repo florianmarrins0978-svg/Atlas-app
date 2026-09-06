@@ -101,6 +101,18 @@ export type LigneEtatChantier = {
 /** Un devis est parti, et le client n'a pas encore répondu. */
 const DEVIS_PARTI_SANS_REPONSE: ChantierStatut[] = ["devis_envoye", "en_attente_client", "a_relancer"];
 
+/**
+ * La première lettre en capitale — « lundi 10 août » devient « Lundi 10 août ».
+ *
+ * `toLocaleUpperCase("fr")` et non `toUpperCase()` : le second connaît l'ASCII
+ * et rien d'autre. Aucun jour ni aucun mois français ne commence par une
+ * lettre accentuée aujourd'hui, mais une chaîne vide ou une lettre hors ASCII
+ * ne doit pas rendre autre chose qu'elle-même.
+ */
+function enCapitale(texte: string): string {
+  return texte ? texte[0].toLocaleUpperCase("fr") + texte.slice(1) : texte;
+}
+
 export function ligneEtatChantier(params: {
   statut: ChantierStatut;
   photosCount: number;
@@ -136,7 +148,19 @@ export function ligneEtatChantier(params: {
   if (DEVIS_PARTI_SANS_REPONSE.includes(statut)) {
     return {
       etat: statut === "a_relancer" ? "Devis envoyé · à relancer" : "Devis envoyé · sans réponse",
-      precision: envoyeLe ? `Envoyé le ${jourLisible(envoyeLe, aujourdHui)}.` : null,
+      // **LA DATE SEULE, SANS LE MOT « ENVOYÉ » — 6 septembre 2026.**
+      //
+      // Elle s'écrivait « Envoyé le lundi 10 août. » sous une ligne qui dit
+      // déjà « DEVIS ENVOYÉ ». C'est sa plainte du 19 août 2026, mot pour
+      // mot : *« l'ancienneté du devis est écrite deux fois »*. Le mot part,
+      // la DATE reste entière — c'est elle qu'il avait demandée le 13 août,
+      // et elle ne bouge pas.
+      //
+      // La capitale initiale est posée ici plutôt que par une classe
+      // `capitalize` : c'est une phrase, et une règle d'affichage ne doit pas
+      // décider de ce qu'une fonction pure a écrit. Le point final part avec
+      // le verbe — ce n'est plus une phrase, c'est une date.
+      precision: envoyeLe ? enCapitale(jourLisible(envoyeLe, aujourdHui)) : null,
       enOr,
     };
   }

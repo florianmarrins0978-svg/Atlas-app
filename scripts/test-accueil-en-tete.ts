@@ -90,6 +90,27 @@ essai("« Bonjour … » ne s'affiche plus", () => {
   );
 });
 
+essai("« ATLAS » ne coiffe plus l'accueil", () => {
+  // **Sa décision du 6 septembre 2026**, sur la planche
+  // `appli/l-accueil-a-bout-de-bras.html` qu'il a retenue : le nom de
+  // l'application, écrit en haut de l'application qu'il vient d'ouvrir,
+  // coûtait 39 px sur les 596 de son écran — et l'accueil ne montrait aucun
+  // chantier sur un matin chargé.
+  //
+  // **Pourquoi lire la SOURCE plutôt que l'écran.** Un retrait ne se prouve
+  // que par une absence, et une absence se mesure à l'endroit où la chose
+  // s'écrirait. Même méthode que le salut et le filet, pour la même raison.
+  //
+  // La marque n'a pas disparu du produit : elle reste dans les Réglages et sur
+  // l'écran de lancement. C'est l'ACCUEIL qui ne la porte plus.
+  const trouve = vif.match(/^[^\n]*\bATLAS\b[^\n]*$/m);
+  assert.equal(
+    trouve,
+    null,
+    `« ATLAS » est revenu sur l'accueil : « ${trouve?.[0].trim()} ». Il l'a fait retirer le 6 septembre.`
+  );
+});
+
 essai("le prénom n'est plus lu du tout", () => {
   // Le garder sans l'employer laisserait croire, à la prochaine lecture, qu'il
   // sert encore quelque part — et invite à le réafficher.

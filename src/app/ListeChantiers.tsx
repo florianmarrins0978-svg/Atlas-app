@@ -25,9 +25,15 @@ export function JourDuBrin({ jour, mois }: { jour: string; mois: string }) {
         className="absolute bottom-0 top-0 w-px"
         style={{ left: 47, backgroundColor: colors.line }}
       />
+      {/* **11 px et l'encre douce, depuis le 6 septembre 2026.** Sa consigne du
+          5 — « des vieux qui ont du mal à se servir de leur téléphone » — a
+          grossi le petit texte de l'application le 6 au matin, mais cet écran
+          écrit ses tailles à la main : il n'avait pas suivi. Le gris `muted`
+          tenait 3,32 de contraste sur le crème, là où un mot en demande 4,5 ;
+          `inkSoft` en tient 8,04. */}
       <span
-        className="row-span-3 pr-[13px] text-right text-[9.5px] font-medium uppercase"
-        style={{ color: colors.muted, letterSpacing: "0.28em", fontVariantNumeric: "tabular-nums" }}
+        className="row-span-3 pr-[13px] text-right text-[11px] font-medium uppercase"
+        style={{ color: colors.inkSoft, letterSpacing: "0.28em", fontVariantNumeric: "tabular-nums" }}
       >
         <b className="block text-[19px] font-normal leading-none" style={{ color: colors.ink, fontFamily: font.display }}>
           {jour}
@@ -296,28 +302,49 @@ export default function ListeChantiers({
                   e.stopPropagation();
                   router.push(`/chantiers/${c.id}/coordonnees`);
                 }}
-                /* 34 px de haut : un texte de 11,5 px ne s'attrape pas sous un
-                   pouce ganté. Le trait pointillé, lui, est sur le MOT — porté
-                   par la cible, il se posait dix pixels plus bas et se lisait
-                   comme un trait perdu (vu en capture, le 17 août). */
-                className="inline-flex min-h-[34px] max-w-full items-center text-[11.5px]"
-                style={{ color: colors.alert }}
+                /* **44 px depuis le 6 septembre 2026**, et non 34. Les 34 px
+                   étaient déjà une correction du 17 août — ils ne suffisaient
+                   toujours pas : c'est une CIBLE, et elle mène ailleurs que le
+                   reste de la ligne.
+
+                   Le trait est sur le MOT — porté par la cible, il se posait
+                   dix pixels plus bas et se lisait comme un trait perdu (vu en
+                   capture, le 17 août). **Il est plein et non pointillé** : à
+                   14 px, un pointillé se lit comme une faute d'orthographe
+                   soulignée, pas comme un lien. */
+                className="inline-flex min-h-[44px] max-w-full items-center text-[14px]"
+                style={{ color: colors.alert, marginTop: -5, marginBottom: -5 }}
               >
                 <span
                   className="truncate"
-                  style={{ borderBottom: `1px dotted ${colors.alert}`, paddingBottom: 1 }}
+                  style={{ borderBottom: `1px solid ${colors.alert}`, paddingBottom: 1 }}
                 >
                   {c.lieu}
                 </span>
               </span>
             ) : (
-              <p className="mt-[3px] truncate text-[11.5px]" style={{ color: colors.muted }}>
+              /* 14 px et l'encre douce — 6 septembre 2026. C'est l'adresse
+                 qu'il tape dans son GPS : à 11,5 px dans un gris à 3,32 de
+                 contraste, elle ne se lisait pas au soleil. */
+              <p className="mt-[3px] truncate text-[14px]" style={{ color: colors.inkSoft }}>
                 {c.lieu}
               </p>
             )}
+            {/* **12 px, et l'interlettrage descendu de 0,28 à 0,14 em.**
+                Trouvé en CAPTURE, par aucun contrôle : à 12 px et 0,28 em,
+                « DEVIS PRÊT À ENVOYER · 3 PHOTOS » passait à la ligne et
+                laissait « PHOTOS » seul en dessous — un état qui se replie se
+                lit comme deux états. C'est l'espacement des onglets du bas.
+
+                **L'or ne change pas**, et c'est sa décision du 6 septembre :
+                *« tout ce qui est en doré foncé, mets-le en doré, celui de
+                l'appli »*. Il tient 2,77 de contraste sur le crème, là où un
+                mot en demande 4,5 ; il le sait, le chiffre lui a été donné, et
+                c'est son écran. `orTexte` (4,59) existe dans
+                `design-tokens.ts` le jour où il changera d'avis. */}
             <p
-              className="mt-[7px] text-[9.5px] font-medium uppercase"
-              style={{ color: c.attend ? colors.or : colors.muted, letterSpacing: "0.28em" }}
+              className="mt-[7px] text-[12px] font-medium uppercase"
+              style={{ color: c.attend ? colors.or : colors.inkSoft, letterSpacing: "0.14em" }}
             >
               {c.etat}
             </p>
@@ -325,7 +352,7 @@ export default function ListeChantiers({
               /* En clair, et non en petites capitales : deux lignes espacées
                  à 0.28em se liraient comme un pavé. L'œil doit accrocher
                  l'état, puis lire la date s'il la cherche. */
-              <p className="mt-[4px] truncate text-[11.5px]" style={{ color: colors.muted }}>
+              <p className="mt-[4px] truncate text-[13px]" style={{ color: colors.inkSoft }}>
                 {c.precision}
               </p>
             )}
