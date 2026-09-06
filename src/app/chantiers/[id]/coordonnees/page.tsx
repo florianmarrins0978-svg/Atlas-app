@@ -50,6 +50,12 @@ export default async function CoordonneesDuChantierPage({
   // client rouverte est la MÊME que celle de la création, photos et anneau
   // compris. Les lire ici, et non les inventer vides : une pellicule vide sur
   // un chantier photographié lui ferait croire ses photos perdues.
+  //
+  // **De la dictée, on ne retient que son EXISTENCE** — sa remarque du
+  // 5 septembre 2026 : l'anneau de cette fiche ne devient pas un lecteur parce
+  // qu'une note existe, sinon l'écran change de visage entre deux visites
+  // (`FormulaireNouveauChantier`, champ `aUneNote`). Elle sert seulement à ne
+  // pas l'inviter à dicter par-dessus.
   const [photos, note] = await Promise.all([listerPhotos(ctx, id), getNoteVocale(ctx, id)]);
 
   const adresseChantier = chantier.adresseChantier ?? "";
@@ -64,7 +70,7 @@ export default async function CoordonneesDuChantierPage({
         id: chantier.id,
         provenance,
         photos,
-        note: note ? { storageKey: note.storageKey, dureeSecondes: note.dureeSecondes } : null,
+        aUneNote: note !== null,
         nomClient: chantier.clientNom ?? "",
         civilite: chantier.clientCivilite ?? null,
         telephone: chantier.clientTelephone ?? "",

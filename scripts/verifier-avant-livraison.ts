@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { rmSync } from "node:fs";
 
 // La batterie complète, à jouer AVANT de demander au patron d'essayer quoi que
 // ce soit.
@@ -192,6 +193,28 @@ const ETAPES: Etape[] = [
 ];
 
 const echecs: Etape[] = [];
+
+/**
+ * Le dossier de la construction, effacé AVANT de commencer.
+ *
+ * **Payé le 5 septembre 2026, et c'est la deuxième fois que ce piège se
+ * referme.** L'étape « Types » passe la PREMIÈRE ; « Construction » écrit dans
+ * `.next-verification`. À la batterie suivante, `tsc` relit donc le validateur
+ * de routes laissé par la précédente — `tsconfig.json` l'inclut exprès — et
+ * rend quatre erreurs (`Type 'Route' does not satisfy the constraint 'never'`)
+ * sur du code que personne n'a touché.
+ *
+ * Le rouge accuse alors les types, c'est-à-dire le lot en cours, et il est
+ * INSOLUBLE : rien dans `src/` ne le fait bouger. Une batterie qui ne peut pas
+ * être verte s'apprend à être ignorée — la même phrase qu'au 4 septembre, pour
+ * la même raison.
+ *
+ * On l'efface plutôt que de l'exclure de `tsconfig.json` : Next réécrit cette
+ * liste tout seul (`test-tsconfig-sans-restes-dev.ts` le raconte), et une
+ * exclusion qui se remet d'elle-même n'en est pas une. La construction le
+ * recrée trois lignes plus bas.
+ */
+rmSync(".next-verification", { recursive: true, force: true });
 
 for (const etape of ETAPES) {
   console.log(`\n\x1b[1m→ ${etape.nom}\x1b[0m`);

@@ -37,8 +37,27 @@ qui ont du mal à se servir de leur téléphone »*.
 
 **Reste des Réglages :** cinq lots, listés dans `HANDOVER.md`.
 
-**⚠ Ce lot n'est PAS sur `main`** — l'arbre partagé portait le travail non
-enregistré d'une autre session. Voir `TODO.md`.
+**Fusionné avec `main` après avoir remisé — non jeté — le travail en cours
+d'une session voisine.** Voir `HANDOVER.md` et `TODO.md`.
+---
+
+## FAIT : la fiche client n'a plus qu'un visage (5 septembre 2026)
+
+**Sa remarque :** *« ce n'est pas la même que lorsque j'ai cliqué sur nouveau
+chantier […] la note vocale a changé. »*
+
+| | |
+|---|---|
+| **fait** | la fiche client porte l'objet de la DICTÉE à la création comme au retour du devis (§261) |
+| **fait** | elle ne disparaît plus quelques jours après, quand l'audio est purgé |
+| **fait** | devant une note déjà là, l'invite « Appuyez et décrivez le chantier » se tait |
+
+**Ce que cela coûte, et il le saura :** écouter et retirer la note se font
+sur l'écran **Note vocale**, plus sur la fiche client.
+
+**Tenu par** `scripts/test-fiche-client-un-seul-visage-e2e.ts`, vu rouge sur la
+version d'avant.
+
 
 ---
 

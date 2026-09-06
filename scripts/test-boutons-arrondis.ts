@@ -214,6 +214,32 @@ const HORS_CHARTE: Array<{
     seulement: /data-jour=/,
     pourquoi: "case du calendrier : une tuile de 44 px, ni geste ni champ",
   },
+  {
+    /**
+     * **L'ENVOI N'EST PLUS UN BOUTON, C'EST UN RÉGLAGE — sa planche
+     * « A — Épurée », retenue le 2 septembre 2026 et codée le 4.**
+     *
+     * *« L'envoi n'est plus une action : c'est un réglage. Il en prend la forme
+     * — une ligne, deux mots — et rend 40 px à l'anneau. »* Deux capsules
+     * pleine largeur se lisaient comme des boutons d'ENVOI alors qu'elles ne
+     * disent que par où le devis partira. Le canal retenu porte donc un trait
+     * d'or SOUS son mot, comme le marqueur d'onglet de la barre du bas — et
+     * plus aucun fond ni aucun contour.
+     *
+     * **Sa règle du 12 août ne s'applique pas à ce qu'on ne lit pas comme un
+     * bouton.** Ce rendu n'a ni fond, ni liseré, ni capsule : les 2 px sont ce
+     * qui reste d'une forme qu'on a retirée, pas un galet. Le dénoncer, c'est
+     * accuser une décision qu'il a prise lui-même, planche en main — le pire
+     * des rouges (`AGENTS.md`).
+     *
+     * **`seulement` la borne à ce rendu-là** : la capsule pleine largeur, qui
+     * vit dans le même fichier et sert la facture, reste surveillée, et elle
+     * est bien `rounded-full`.
+     */
+    motif: /^src[/\\]components[/\\]atlas[/\\]ChoixCanal\.tsx$/,
+    seulement: /rounded-\[2px\]/,
+    pourquoi: "l'envoi en réglage : un mot souligné d'or, ni fond ni contour",
+  },
 ];
 
 /**

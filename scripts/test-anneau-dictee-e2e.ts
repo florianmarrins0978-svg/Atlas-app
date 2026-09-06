@@ -24,8 +24,10 @@ const BASE = "http://localhost:3000";
 //   1. le geste de dictée est là **dès l'arrivée**, sur un chantier vide, sans
 //      qu'on ait touché quoi que ce soit ;
 //   2. un appui dicte, l'avion envoie — et la note existe vraiment ;
-//   3. l'objet redevient alors le lecteur, au même endroit ;
-//   4. **la bulle de l'assistant ne recouvre rien.**
+//   3. rouverte, la fiche montre LE MÊME objet — le micro, jamais le lecteur
+//      (sa remarque du 5 septembre 2026, `ARCHITECTURE.md` §261) ;
+//   4. la note reste écoutable et retirable, sur l'écran qui la porte ;
+//   5. **la bulle de l'assistant ne recouvre rien.**
 //
 // **Le DESSIN a changé le 30 août 2026, la règle non.** Le repos est le disque
 // plein qu'il a choisi (repos B) et non plus l'anneau creux ; l'arrêt n'envoie
@@ -156,25 +158,93 @@ async function main() {
     //
     // On attend donc l'un OU l'autre : la chaîne s'annonce, ou elle a déjà
     // emmené. Exiger le lecteur ici réclamerait un écran qu'il a fait quitter.
-    // **`any` et non `race` :** l'une des deux attentes n'aboutira JAMAIS —
-    // selon que la chaîne s'annonce ou qu'elle a déjà emmené. `race` échoue
-    // sur la première qui expire, `any` réussit sur la première qui aboutit.
+    // **`any` et non `race` :** l'une des attentes n'aboutira JAMAIS — selon
+    // que la chaîne s'annonce ou qu'elle a déjà emmené. `race` échoue sur la
+    // première qui expire, `any` réussit sur la première qui aboutit.
+    //
+    // **UNE TROISIÈME ISSUE, ET C'EST ELLE QUI PORTE LE TITRE DE CE CAS.**
+    // Les deux premières disent ce que fait la CHAÎNE du devis — qui dépend
+    // d'un service d'IA, absent des postes de développement (`CLAUDE.md`
+    // §1 ter). En batterie, sous cinquante suites, elles expiraient toutes les
+    // deux et le rouge accusait la dictée : « All promises were rejected »,
+    // sur une note pourtant bien enregistrée. Un contrôle qui échoue au hasard
+    // s'apprend à être ignoré.
+    //
+    // Ce que ce cas affirme, lui, c'est que **la note existe** — et l'écran le
+    // dit sans dépendre d'aucun service : l'invite « Appuyez et décrivez le
+    // chantier » ne se tait que lorsque l'envoi a RÉUSSI (`onDicte`, puis
+    // `preparationEnCours`). Un refus la laisserait en place avec son message.
     await Promise.any([
       page.locator('[data-atlas="preparation-automatique"]').waitFor({ timeout: 60_000 }),
       page.waitForURL(/\/devis-complet$/, { timeout: 60_000 }),
+      // **Le micro REVENU et l'invite TUE — les deux, et pas l'un des deux.**
+      // Écrite d'abord sur la seule absence d'invite, cette attente se
+      // dénouait dès le premier appui : pendant qu'on dicte, l'objet n'est
+      // plus le micro et l'invite n'est pas rendue non plus. Elle rendait donc
+      // un vert AVANT l'envoi, et les cas suivants trouvaient un chantier sans
+      // note — deux rouges qui accusaient l'écran. Un contrôle qui conclut
+      // trop tôt est pire qu'absent (`AGENTS.md`).
+      //
+      // Les deux ensemble ne se rencontrent qu'après un envoi RÉUSSI : le
+      // micro renaît (la dictée est finie) et l'invite reste tue
+      // (`preparationEnCours`). Un refus, lui, ramène le micro AVEC sa phrase.
+      page.waitForFunction(
+        () =>
+          !!document.querySelector(".atlas-micro") && !document.querySelector(".atlas-indice"),
+        undefined,
+        { timeout: 60_000 }
+      ),
     ]);
   });
 
-  await cas("l'anneau est redevenu le lecteur, au même endroit", async () => {
+  await cas("rouverte, la fiche montre LE MÊME objet — 5 septembre 2026", async () => {
+    // **Ce contrôle demandait l'inverse jusqu'au 5 septembre, et c'est LUI qui
+    // l'a fait changer** (`ARCHITECTURE.md` §261) : *« ce n'est pas la même que
+    // lorsque j'ai cliqué sur nouveau chantier. Tu verras par toi-même que la
+    // note vocale a changé. »*
+    //
+    // Il exigeait ici « Poussez l'anneau vers le haut » — le LECTEUR. C'est
+    // exactement l'écran qu'il ne reconnaissait pas : le micro vert de la
+    // création devenu un anneau creux dont le seul geste est de retirer. La
+    // règle défendue est donc retournée : le même objet aux deux visites.
     await page.goto(fiche, { waitUntil: "networkidle" });
     assert.equal(await anneau.count(), 1, "l'anneau a disparu après la dictée");
-    assert.match(
-      (await consigne.textContent())?.trim() ?? "",
-      /Poussez/,
-      "l'anneau propose encore de dicter alors qu'une note existe : la précédente serait écrasée"
+    assert.equal(
+      await page.locator('button[aria-label="Dicter une note vocale"]').count(),
+      1,
+      "la fiche rouverte ne porte plus le micro : elle a changé de visage entre deux visites"
     );
+    assert.equal(
+      await page.locator('button[aria-label="Écouter la note vocale"]').count(),
+      0,
+      "le lecteur est revenu sur la fiche client : c'est l'écran qu'il ne reconnaît pas"
+    );
+    // **Et l'écran n'invite plus à parler par-dessus** — sa règle du
+    // 1ᵉʳ septembre : une invitation devant une note déjà là proposerait de
+    // recouvrir ce qu'il vient de dicter.
+    assert.equal(
+      await consigne.count(),
+      0,
+      "l'écran invite encore à dicter alors qu'une note existe : la précédente serait écrasée"
+    );
+  });
+
+  await cas("ET LA NOTE RESTE RETIRABLE — sur l'écran qui la porte", async () => {
+    // **Ce que l'ancien contrôle défendait ne se perd pas, il change
+    // d'adresse.** Il exigeait « Retirer » sous l'anneau de la fiche client ;
+    // le geste vit sur l'écran Note vocale, avec l'écoute. Le vérifier ailleurs
+    // qu'où il vit, c'était réclamer un dessin ; le vérifier ici, c'est tenir
+    // la promesse — une note qu'on ne peut plus enlever resterait chez lui.
+    await page.goto(`${BASE}/chantiers/${chantierId}/note-vocale`, { waitUntil: "networkidle" });
     assert.ok(
-      await page.locator(".atlas-fosse").count(),
+      await page.locator('button[aria-label="Écouter la note"]').count(),
+      "on ne peut plus écouter sa dictée nulle part"
+    );
+    // Le geste est celui de partout : la ligne glisse et « Retirer » se
+    // découvre (`LigneRetirable`). On vise son nom accessible, pas sa classe :
+    // le dessin peut changer, la promesse non.
+    assert.ok(
+      await page.locator('button[aria-label="Retirer cette note vocale"]').count(),
       "le retrait a disparu : une note qu'on ne peut plus enlever"
     );
   });

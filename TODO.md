@@ -9,40 +9,48 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⚠ À FUSIONNER : le lot du sommaire des réglages n'est pas sur `main`
+## La fusion du 6 septembre, et ce qu'elle a demandé de faire au travail d'à côté
 
-**6 septembre 2026.** Le lot est commité, vert et documenté
-(`docs/lot-sommaire-des-reglages.md`), mais il est resté sur le `main` LOCAL.
+**Réglé le 6 septembre 2026 — laissé écrit parce que la situation reviendra.**
 
-**Pourquoi, et ce n'est pas un oubli.** L'arbre partagé portait au moment de la
-livraison **124 fichiers non enregistrés** d'une autre session — le passage des
-suites navigateur à `scripts/_adresse.ts`. Trois d'entre eux sont aussi
-modifiés sur `origin/main` :
+L'arbre partagé portait **124 fichiers non enregistrés** d'une session voisine
+— le passage des suites navigateur à `scripts/_adresse.ts` —, dont trois que
+`origin/main` avait modifiés de son côté :
 
     scripts/_adresse.ts                    (non suivi ici, suivi sur main, et
                                             la version locale est plus avancée)
     scripts/test-adresse-suggestions-e2e.ts
     scripts/test-anneau-dictee-e2e.ts
 
-`git merge` refuse tant qu'ils sont sales, et les remiser ou les déplacer,
-c'est mettre les mains dans le travail en cours de quelqu'un d'autre — la faute
-exacte que `scripts/garde-travail-non-enregistre.mjs` existe pour empêcher
-(`CLAUDE.md` §6). **Ne pas forcer.**
+`git merge` refuse tant qu'ils sont sales. **Attendre n'était pas une option** :
+sa consigne du 23 août — *« si vous savez qu'il y a plusieurs sessions qui
+tournent, organisez-vous »* — dit qu'une session qui attend les autres ne pousse
+jamais.
 
-**Ce qu'il faut, dans l'ordre :**
+**Ce qui a été fait, et l'ordre compte :**
 
-1. que la session voisine commite (ou remise) ses trois fichiers ;
-2. `git fetch origin main` puis fusionner ;
-3. **batterie complète après la fusion** — `main` a touché `src/app/globals.css`,
-   une pièce partagée, et `src/lib/mode-emploi.ts`, que ce lot modifie aussi
-   (le conflit y est simple : deux fiches différentes) ;
-4. renuméroter `ARCHITECTURE.md` **§261** si une autre session l'a pris — et
-   relire chaque renvoi touché plutôt que de passer un `sed` (`CLAUDE.md` §B).
+1. une **copie hors du dépôt** des trois fichiers, avec leurs empreintes ;
+2. `git stash push --include-untracked` **sur ces trois-là seulement** — c'est
+   ce que propose `scripts/garde-travail-non-enregistre.mjs` lui-même comme
+   solution de rechange à un geste destructeur ;
+3. la fusion, puis la remise.
 
-**Un rouge de `main` disparaîtra à la fusion** : `test-mode-emploi` cherche
-« Par SMS » là où l'écran dit « SMS ». Le correctif est déjà sur `main`
-(`preuves: ["Nom du client", "Envoi", "E-mail", "Adresse du chantier"]`), pas
-encore ici.
+**Ce qu'il ne faut PAS faire à sa place :** `git checkout --`, `git restore`,
+`git clean` ou une poussée en force. Le garde-fou refuse les quatre, et il
+existe parce que ce travail-là a déjà été perdu une fois (4 septembre 2026).
+
+**Quatre conflits, tous dans les documents de mémoire**, et tous du même genre —
+deux sessions ont écrit en tête du même fichier le même jour :
+
+| Fichier | Résolution |
+|---|---|
+| `ARCHITECTURE.md` | **§261 était pris par la fiche client** ; le mien est devenu **§262**, et c'est la règle : on renumérote celui qui n'est pas encore sur `main` |
+| `HANDOVER.md`, `PROJECT_STATE.md` | les deux lots gardés, le plus récent en tête |
+| `TODO.md` | les deux listes gardées |
+
+**Et les renvois ont été relus un par un, pas remplacés au `sed`** : six
+« §261 » du dépôt désignent la fiche client et devaient rester tels quels ; deux
+seulement étaient les miens.
 
 ---
 
@@ -84,6 +92,72 @@ batterie complète et des captures sur les deux pôles.
 
 ---
 
+## `test-garde-travail-non-enregistre` NE PEUT PAS ÊTRE VERTE EN BATTERIE (5 sept. 2026)
+
+Son dernier cas — *« arbre sale : le déclencheur REFUSE »* — exige une
+modification en cours pour mesurer quoi que ce soit, et refuse de conclure sur
+un arbre propre : *« ce cas ne peut rien mesurer »*. Or la batterie se joue
+justement sur un arbre propre, juste avant de pousser.
+
+**Le refus est juste** (`CLAUDE.md` §5 : un contrôle qui mesure zéro ne mesure
+rien) — c'est sa PLACE qui ne l'est pas : dans la batterie, il rend un rouge
+permanent que personne ne peut réparer, et un rouge permanent s'apprend à être
+ignoré. À la session qui tient cette garde de décider : salir l'arbre elle-même
+le temps du cas (un fichier temporaire), ou sortir cette suite de la batterie.
+
+---
+
+## QUATRE ROUGES DE `main` REPRIS, PARCE QU'ILS TOMBAIENT SUR CET ÉCRAN (5 sept. 2026)
+
+`main` en portait vingt-trois au 5 septembre, et son propre `HANDOVER` les
+laissait « aux sessions qui tiennent ces écrans ». Quatre tenaient à la fiche
+client : ils sont réparés ici, les autres restent à leurs sessions.
+
+| Suite | Ce qui l'avait cassée | Ce qui a été fait |
+|---|---|---|
+| `test-boutons-arrondis` | l'envoi devenu un RÉGLAGE (planche « A — Épurée ») : deux mots soulignés d'or, plus une capsule | une exception BORNÉE au seul rendu `reglage` — la capsule pleine largeur du même fichier reste surveillée |
+| `test-mode-emploi` | la fiche citait « Par e-mail », un libellé retiré le 4 septembre | elle cite ce qu'il lit aujourd'hui — « Envoi », « E-mail » |
+| `test-adresse-suggestions-e2e` | elle attendait la fiche du CHANTIER, retirée le 4 (§254) | elle relit l'adresse là où elle vit : le champ de la fiche client |
+| `test-anneau-dictee-e2e` | elle EXIGEAIT le lecteur au retour — l'écran qu'il a fait corriger (§261) | elle exige le même objet aux deux visites, et vérifie que la note reste écoutable et retirable sur l'écran Note vocale |
+
+---
+
+## `main` NE COMPILAIT PLUS : un module importé mais jamais poussé (5 sept. 2026)
+
+`scripts/capture-relire-sa-dictee.mts` est arrivé sur `main` en important
+`./_adresse` — un fichier resté dans l'arbre de la session qui menait le passage
+à `ADRESSE`. Conséquence pour toutes les sessions : `tsc` rendait `TS2307` et
+`verifier:memoire` un chemin mort. **La batterie ne pouvait donc plus être verte,
+quel que soit le code livré.**
+
+Le module a été **reconstitué** (`scripts/_adresse.ts`, une ligne, surchargeable
+par `BASE_URL` comme les deux autres scripts de capture). **Si la session voisine
+pousse le sien, garder LE SIEN.**
+
+Dans le même geste, un renvoi mort de `CHANGELOG.md` vers la configuration
+locale d'`impeccable` — un fichier qui vit sur sa machine, pas dans le dépôt —
+a été reformulé. (Et cette ligne-ci a dû l'être aussi : en le CITANT, elle
+refaisait exactement le renvoi mort qu'elle décrit.)
+
+---
+
+## À TRANCHER PAR LE PATRON : écouter sa note depuis la fiche client ? (5 sept. 2026)
+
+Depuis le §261, la fiche client ne porte que la DICTÉE — un seul visage, aux
+deux visites, comme il l'a demandé. Écouter et retirer la note se font sur
+l'écran **Note vocale** (`/chantiers/[id]/note-vocale`).
+
+**Conséquence à ne pas perdre :** le second rendu d'`AnneauNoteVocale` — le
+lecteur, l'anneau creux et son « Retirer » — n'a plus AUCUN appelant depuis que
+la fiche du chantier a été retirée (§254). Il reste dans le fichier. Le retirer
+ou le remettre quelque part se décide avec lui.
+
+**Ce qui reste à savoir :** veut-il aussi les réécouter sans quitter la fiche
+client ? C'est une décision d'apparence, donc une maquette d'abord
+(`CLAUDE.md` §3 bis) — et il n'a rien demandé de tel : cette ligne existe pour
+que la question ne se repose pas de mémoire.
+
+---
 
 ## ~~DÛ : la batterie et les captures des deux écrans de relecture~~ — fait le 5 sept. 2026
 

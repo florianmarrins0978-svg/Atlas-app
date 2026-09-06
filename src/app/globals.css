@@ -1518,69 +1518,20 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 @media (prefers-reduced-motion: reduce) {
   .atlas-micro::before { animation: none; }
 }
-/* LES DEUX SOUFFLES — « 1,5 cm max de chaque côté », sa mesure exacte, écrite
- * en centimètres plutôt que traduite en pixels : dans six mois, « 57 px » ne
- * dirait plus d'où il sort. Ils s'éteignent vers l'extérieur — une onde qui
- * s'arrête net donne un bord, et c'est un souffle qu'on veut. */
-/* **`atlas-frange`, et NI `atlas-souffle` NI `atlas-aile` — les deux étaient
- * déjà pris, et les deux ont été essayés avant celui-ci.**
+/* LES DEUX SOUFFLES SONT PARTIS — sa demande du 5 septembre 2026 : *« supprime
+ * moi les traits jaunes de chaque côté de la note vocale »*. Il les avait
+ * demandés le 30 août (« le micro, mais avec des petites ondes de chaque
+ * côté ») ; il les fait retirer six jours plus tard. Les règles s'en vont avec
+ * le dessin plutôt que de dormir ici : une feuille de style qui garde ce que
+ * plus rien ne rend se recopie ensuite sans qu'on sache ce qu'elle décorait.
  *
- * `atlas-souffle`, ce sont les trois points de l'attente (sa proposition C du
- * 12 août) ; `atlas-aile`, les barreaux du lecteur de note vocale. Écrites plus
- * bas dans le fichier, mes règles les écrasaient l'une puis l'autre : points
- * devenus des barreaux de 2 px invisibles, ailes du lecteur mises en absolu sur
- * 1,5 cm. **Aucun test ne l'aurait dit** — ces dessins vivent sur des écrans que
- * rien ne rapproche, et une feuille de style n'a pas de portée. Trouvé en
- * relisant mon propre diff, et confirmé en comparant la liste des `.atlas-*`
- * d'avant et d'après :
- *
- *     git show HEAD:src/app/globals.css | grep -o "\.atlas-[a-z0-9-]*" | sort -u
- *
- * **La règle qui en sort :** avant de baptiser une classe dans ce fichier,
- * vérifier qu'elle est libre. Un nom repris ne casse pas l'écran qu'on regarde,
- * il casse l'autre. */
-.atlas-frange {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1.5cm;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2px;
-  pointer-events: none;
-  overflow: hidden;
-  transition: opacity 0.2s;
-}
-.atlas-frange-g {
-  right: calc(100% + 9px);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000);
-  mask-image: linear-gradient(90deg, transparent, #000);
-}
-.atlas-frange-d {
-  left: calc(100% + 9px);
-  -webkit-mask-image: linear-gradient(270deg, transparent, #000);
-  mask-image: linear-gradient(270deg, transparent, #000);
-}
-.atlas-frange i {
-  display: block;
-  flex: 0 0 2px;
-  border-radius: 2px;
-  opacity: 0.7;
-}
-/* **Ils s'effacent dès qu'on appuie, et c'est de la géométrie.** Chaque souffle
- * occupe 1,5 cm plus 9 px de part et d'autre du disque, soit 66 px ; la poubelle
- * et l'avion ne peuvent se poser qu'à une vingtaine de pixels — la largeur d'un
- * téléphone ne laisse pas le choix. Les barreaux passaient donc PAR-DESSUS les
- * deux gestes, à l'endroit exact où il faut viser. Vu sur capture, jamais
- * autrement. Le mouvement n'est pas perdu : l'onde du dessous le porte. */
-/* **Les souffles n'existent qu'au repos.** Ils accompagnent le micro, et le
- * micro s'efface dès qu'on parle : depuis le 31 août 2026, la dictée est une
- * ligne, et il n'y a plus d'objet central à border. */
-.atlas-dictee[data-etat="dicte"] .atlas-frange,
-.atlas-dictee[data-etat="envoi"] .atlas-frange {
-  opacity: 0;
-}
+ * **Ce qu'il faut garder de ce qui était écrit là**, et qui vaut pour le
+ * prochain dessin posé dans ce fichier : `atlas-frange` avait été baptisée
+ * ainsi parce que `atlas-souffle` (les trois points de l'attente) et
+ * `atlas-aile` (les barreaux du lecteur) étaient DÉJÀ PRIS — et les avoir
+ * repris écrasait silencieusement deux écrans qu'aucun test ne rapprochait.
+ * Avant de baptiser une classe ici, vérifier qu'elle est libre ;
+ * `scripts/test-classes-atlas-uniques.ts` le tient désormais. */
 
 .atlas-compteur {
   display: flex;
