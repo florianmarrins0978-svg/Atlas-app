@@ -143,11 +143,11 @@
 <p>Ce n'est donc pas revenir sur votre décision : c'est la tenir.</p>
 <h3 id="3-le-gris-de-vos-lieux-ne-se-lit-pas-non-plus">3. Le gris de vos lieux ne se lit pas non plus</h3>
 <p>Le lieu d'un chantier et la date d'envoi sont en gris <code>muted</code> : <strong>3,32</strong> de contraste. En plein soleil, sur un écran sale, à bout de bras, ce n'est pas lu.</p>
-<h3 id="4-ce-quil-faut-viser-du-doigt-fait-10-pixels">4. Ce qu'il faut viser du doigt fait 10 pixels</h3>
-<p>Mesuré sur l'écran d'aujourd'hui, reproduit au pixel près : la plus petite chose qu'on doive toucher est <strong>« Vos clients », 10 px de haut</strong>. Il en faut 44.</p>
-<p>Deux autres sont dans le même cas, et elles sont sur chaque bandeau de notification : « Reprendre le devis » et « J'ai vu » n'ont aucun rembourrage (<code>src/app/Notifications.tsx:503</code> et <code>539</code>) — <strong>17 px de haut</strong>.</p>
+<h3 id="4-ce-quil-faut-viser-du-doigt-fait-14-pixels">4. Ce qu'il faut viser du doigt fait 14 pixels</h3>
+<p>Mesuré sur l'écran d'aujourd'hui, reproduit au pixel près : la plus petite chose qu'on doive toucher est <strong>« Vos clients », 14 px de haut</strong>. Il en faut 44.</p>
+<p>Deux autres sont dans le même cas, et elles sont sur chaque bandeau de notification : « Reprendre le devis » et « J'ai vu » n'ont aucun rembourrage (<code>src/app/Notifications.tsx:503</code> et <code>539</code>) — <strong>21 px de haut</strong>.</p>
 <h3 id="5-sur-un-matin-chargé--vos-chantiers--nen-montre-aucun">5. Sur un matin chargé, « Vos chantiers » n'en montre aucun</h3>
-<p>Mesuré à 390 × 664, la barre du bas déduite, sur un matin à trois notifications : <strong>la liste commence à 738 px</strong> dans une fenêtre qui en fait 596. Elle est hors de l'écran. On ne voit <strong>rien</strong> du premier chantier — ni son nom, ni son lieu.</p>
+<p>Mesuré à 390 × 664, la barre du bas déduite, sur un matin à trois notifications : <strong>la liste commence à 770 px</strong> dans une fenêtre qui en fait 596. Elle est hors de l'écran. On ne voit <strong>rien</strong> du premier chantier — ni son nom, ni son lieu.</p>
 <p><em>(Cette mesure recoupe celle de la session du 3 septembre, qui annonçait 300 px de départ sur un matin à deux notifications.)</em></p>
 <h3 id="6-une-flèche-décorative-échappe-à-votre-propre-contrôle">6. Une flèche décorative échappe à votre propre contrôle</h3>
 <p>Vous avez demandé le 25 août : <em>« arrête de mettre des flèches, c'est moche »</em>, et <code>scripts/test-aucune-fleche.ts</code> les refuse depuis. <strong>Il en reste une sur l'accueil</strong>, au bout de « Vos clients » (<code>src/app/EcranChantiers.tsx:236</code>).</p>
@@ -231,7 +231,7 @@
 </tr>
 </tbody></table></div>
 <h3 id="ce-qui-devient-une-cible-de-44-px">Ce qui devient une cible de 44 px</h3>
-<p>« Vos clients » (10 → 44), « Adresse non renseignée » (34 → 44), « J'ai vu » et « Reprendre le devis » (17 → 44), l'anneau de « Créer un devis » (42 → 44 — <strong>les deux pixels sont autour, l'anneau garde ses 42</strong>, c'est votre mesure).</p>
+<p>« Vos clients » (14 → 44), « Adresse non renseignée » (34 → 44), « J'ai vu » et « Reprendre le devis » (21 → 44), l'anneau de « Créer un devis » (42 → 44 — <strong>les deux pixels sont autour, l'anneau garde ses 42</strong>, c'est votre mesure).</p>
 <h3 id="ce-qui-ne-bouge-pas-dun-pixel">Ce qui ne bouge pas d'un pixel</h3>
 <p>Le fil et la perle. Les 44 px au-dessus du titre, le titre à 40 px, les 21 px entre deux chantiers. Le mot « Créer un devis » à 13 px graisse 800, l'anneau de 42 px, le battement, les onze grains, la demi-seconde avant la feuille. Les cinq onglets sans icônes à 8,5 px / 0,14 em et leur trait d'or. Le glissement qui retire une ligne et le tiroir qui annule. Aucun trait gris dans l'en-tête, aucun « Bonjour », aucune phrase sur la liste vide.</p>
 <hr>
@@ -245,13 +245,13 @@
 </tr></thead><tbody>
 <tr>
 <td>la liste commence à</td>
-<td><strong>738 px</strong> — hors de l'écran</td>
-<td><strong>479 px</strong> sur 596</td>
+<td><strong>770 px</strong> — hors de l'écran</td>
+<td><strong>487 px</strong> sur 596</td>
 </tr>
 <tr>
 <td>du premier chantier, on voit</td>
 <td><strong>rien</strong></td>
-<td><strong>le nom, le lieu, l'état, la date</strong></td>
+<td><strong>le nom, le lieu, l'état</strong></td>
 </tr>
 <tr>
 <td>le plus petit texte</td>
@@ -265,12 +265,12 @@
 </tr>
 <tr>
 <td>la plus petite cible</td>
-<td>10 px</td>
+<td>14 px</td>
 <td><strong>44 px</strong></td>
 </tr>
 <tr>
 <td>mots qui ne sont pas un chantier</td>
-<td>53</td>
+<td>51</td>
 <td><strong>44</strong></td>
 </tr>
 </tbody></table></div>
@@ -281,7 +281,7 @@
 </tr></thead><tbody>
 <tr>
 <td>la liste commence à</td>
-<td>323 px</td>
+<td>326 px</td>
 <td><strong>236 px</strong></td>
 </tr>
 <tr>
@@ -297,6 +297,32 @@
 </tbody></table></div>
 <p><strong>Sur Nuit</strong>, la ligne d'état passe de 6,14 à 6,14 : elle était déjà lisible — c'est la charte que vous aviez fait corriger le 22 août. Le reste suit.</p>
 <p><strong>Une franchise sur le compte de mots.</strong> Le total affiché <em>monte</em> de 53 à 60 sur un matin chargé. Ce n'est pas un échec : l'écran d'aujourd'hui en affiche moins <strong>parce qu'il n'affiche aucun chantier</strong>. C'est pour ça que la planche compte aussi les mots qui ne sont <strong>pas</strong> un chantier — le bruit — et celui-là baisse.</p>
+<hr>
+<h2 id="une-correction-parce-que-je-vous-ai-donné-quatre-faux-chiffres">Une correction, parce que je vous ai donné quatre faux chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La première version de cette planche inventait ses interlignes.</strong> Elle écrivait « 1,35 » ou « 1,4 » là où votre application n'écrit rien du tout — et quand elle n'écrit rien, la valeur héritée est <strong>1,5</strong>. Une reproduction ne vaut que si le « avant » est exact : quatre chiffres étaient donc faux, tous dans le sens qui me flattait.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que j'annonçais</th>
+<th>La vraie valeur</th>
+</tr></thead><tbody>
+<tr>
+<td>la liste commence à 738 px</td>
+<td><strong>770 px</strong></td>
+</tr>
+<tr>
+<td>la plus petite cible : 10 px</td>
+<td><strong>14 px</strong></td>
+</tr>
+<tr>
+<td>les deux gestes d'un bandeau : 17 px</td>
+<td><strong>21 px</strong></td>
+</tr>
+<tr>
+<td>sur un matin chargé, on lit « le nom, le lieu, l'état, la date »</td>
+<td><strong>« le nom, le lieu, l'état »</strong> — la date passe sous le bord</td>
+</tr>
+</tbody></table></div>
+<p>Les corrections vont <strong>dans les deux sens</strong> : l'écran d'aujourd'hui est un peu pire que je ne le disais, et le mien un peu moins bon. Les chiffres ci-dessus sont les corrigés.</p>
 <hr>
 <h2 id="ce-que-jai-refusé-et-ce-que-ça-aurait-coûté">Ce que j'ai refusé, et ce que ça aurait coûté</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>

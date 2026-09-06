@@ -79,19 +79,19 @@ Ce n'est donc pas revenir sur votre décision : c'est la tenir.
 Le lieu d'un chantier et la date d'envoi sont en gris `muted` : **3,32** de
 contraste. En plein soleil, sur un écran sale, à bout de bras, ce n'est pas lu.
 
-### 4. Ce qu'il faut viser du doigt fait 10 pixels
+### 4. Ce qu'il faut viser du doigt fait 14 pixels
 
 Mesuré sur l'écran d'aujourd'hui, reproduit au pixel près : la plus petite chose
-qu'on doive toucher est **« Vos clients », 10 px de haut**. Il en faut 44.
+qu'on doive toucher est **« Vos clients », 14 px de haut**. Il en faut 44.
 
 Deux autres sont dans le même cas, et elles sont sur chaque bandeau de
 notification : « Reprendre le devis » et « J'ai vu » n'ont aucun rembourrage
-(`src/app/Notifications.tsx:503` et `539`) — **17 px de haut**.
+(`src/app/Notifications.tsx:503` et `539`) — **21 px de haut**.
 
 ### 5. Sur un matin chargé, « Vos chantiers » n'en montre aucun
 
 Mesuré à 390 × 664, la barre du bas déduite, sur un matin à trois notifications :
-**la liste commence à 738 px** dans une fenêtre qui en fait 596. Elle est hors
+**la liste commence à 770 px** dans une fenêtre qui en fait 596. Elle est hors
 de l'écran. On ne voit **rien** du premier chantier — ni son nom, ni son lieu.
 
 *(Cette mesure recoupe celle de la session du 3 septembre, qui annonçait 300 px
@@ -139,8 +139,8 @@ autre idée, c'est d'être lu par quelqu'un qui n'aime pas les téléphones.
 
 ### Ce qui devient une cible de 44 px
 
-« Vos clients » (10 → 44), « Adresse non renseignée » (34 → 44), « J'ai vu » et
-« Reprendre le devis » (17 → 44), l'anneau de « Créer un devis » (42 → 44 — **les
+« Vos clients » (14 → 44), « Adresse non renseignée » (34 → 44), « J'ai vu » et
+« Reprendre le devis » (21 → 44), l'anneau de « Créer un devis » (42 → 44 — **les
 deux pixels sont autour, l'anneau garde ses 42**, c'est votre mesure).
 
 ### Ce qui ne bouge pas d'un pixel
@@ -161,16 +161,16 @@ n'affiche pas des chiffres recopiés : elle interroge l'écran affiché.
 
 | Matin chargé — trois notifications | aujourd'hui | à bout de bras |
 |---|---|---|
-| la liste commence à | **738 px** — hors de l'écran | **479 px** sur 596 |
-| du premier chantier, on voit | **rien** | **le nom, le lieu, l'état, la date** |
+| la liste commence à | **770 px** — hors de l'écran | **487 px** sur 596 |
+| du premier chantier, on voit | **rien** | **le nom, le lieu, l'état** |
 | le plus petit texte | 9,5 px | **11 px** |
 | contraste de la ligne d'état | 2,77 | **4,59** |
-| la plus petite cible | 10 px | **44 px** |
-| mots qui ne sont pas un chantier | 53 | **44** |
+| la plus petite cible | 14 px | **44 px** |
+| mots qui ne sont pas un chantier | 51 | **44** |
 
 | Matin calme | aujourd'hui | à bout de bras |
 |---|---|---|
-| la liste commence à | 323 px | **236 px** |
+| la liste commence à | 326 px | **236 px** |
 | chantiers entiers à l'écran | 1 | **2** |
 | mots qui ne sont pas un chantier | 15 | **14** |
 
@@ -181,6 +181,27 @@ c'est la charte que vous aviez fait corriger le 22 août. Le reste suit.
 un matin chargé. Ce n'est pas un échec : l'écran d'aujourd'hui en affiche moins
 **parce qu'il n'affiche aucun chantier**. C'est pour ça que la planche compte
 aussi les mots qui ne sont **pas** un chantier — le bruit — et celui-là baisse.
+
+---
+
+## Une correction, parce que je vous ai donné quatre faux chiffres
+
+**La première version de cette planche inventait ses interlignes.** Elle écrivait
+« 1,35 » ou « 1,4 » là où votre application n'écrit rien du tout — et quand elle
+n'écrit rien, la valeur héritée est **1,5**. Une reproduction ne vaut que si le
+« avant » est exact : quatre chiffres étaient donc faux, tous dans le sens qui
+me flattait.
+
+| Ce que j'annonçais | La vraie valeur |
+|---|---|
+| la liste commence à 738 px | **770 px** |
+| la plus petite cible : 10 px | **14 px** |
+| les deux gestes d'un bandeau : 17 px | **21 px** |
+| sur un matin chargé, on lit « le nom, le lieu, l'état, la date » | **« le nom, le lieu, l'état »** — la date passe sous le bord |
+
+Les corrections vont **dans les deux sens** : l'écran d'aujourd'hui est un peu
+pire que je ne le disais, et le mien un peu moins bon. Les chiffres ci-dessus
+sont les corrigés.
 
 ---
 

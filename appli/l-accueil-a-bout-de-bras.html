@@ -141,7 +141,7 @@ body{
 /* ─── L'en-tête ─────────────────────────────────────────────────────────── */
 .marque{
   padding-top:26px; text-align:center;
-  font:400 11px/1.2 var(--sans); letter-spacing:.52em; color:var(--ink);
+  font:400 11px/1.5 var(--sans); letter-spacing:.52em; color:var(--ink);
 }
 .cadre[data-ecran="apres"] .marque{ display:none; }
 
@@ -163,7 +163,7 @@ body{
    APRÈS : une seule ligne — ses deux éléments, ses mots, son ordre. */
 .rubrique{
   display:flex; align-items:baseline; gap:10px;
-  font:500 var(--t-caps)/1.6 var(--sans); letter-spacing:.28em;
+  font:500 var(--t-caps)/1.5 var(--sans); letter-spacing:.28em;
   text-transform:uppercase; color:var(--inkSoft);
 }
 .rubrique .nombre{
@@ -172,7 +172,7 @@ body{
 }
 .clients{
   display:inline-flex; align-items:center; text-decoration:none;
-  font:500 var(--t-caps)/1 var(--sans); letter-spacing:.28em;
+  font:500 var(--t-caps)/1.5 var(--sans); letter-spacing:.28em;
   text-transform:uppercase; color:var(--c-geste);
 }
 /* 44 px de haut, et la marge négative les reprend à l'affichage : un mot de
@@ -301,13 +301,13 @@ body{
 .decouvre{
   flex:0 0 120px; scroll-snap-align:end; display:flex; align-items:center;
   justify-content:flex-start; padding-left:14px; background:none; border:0;
-  cursor:pointer; font:500 11px/1 var(--sans); letter-spacing:.26em;
+  cursor:pointer; font:500 11px/1.5 var(--sans); letter-spacing:.26em;
   text-transform:uppercase; color:var(--c-geste);
 }
 .brin{ display:block; text-decoration:none; color:inherit; }
 .nom{ margin:0; font:400 19px/1.15 var(--serif); letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lieu{
-  margin:3px 0 0; font-size:var(--t-lieu); line-height:1.35; color:var(--c-lieu);
+  margin:3px 0 0; font-size:var(--t-lieu); line-height:1.5; color:var(--c-lieu);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .lieu-manquant{
@@ -323,7 +323,7 @@ body{
 .cadre[data-ecran="apres"] .lieu-manquant{ min-height:44px; margin:-5px 0; }
 .cadre[data-ecran="apres"] .lieu-manquant span{ border-bottom-style:solid; }
 .etat{
-  margin:7px 0 0; font:500 var(--t-etat)/1.4 var(--sans); letter-spacing:.28em;
+  margin:7px 0 0; font:500 var(--t-etat)/1.5 var(--sans); letter-spacing:.28em;
   text-transform:uppercase; color:var(--c-etat);
 }
 /* 0,14 em, l'espacement des onglets du bas — et non 0,28.
@@ -333,7 +333,7 @@ body{
    quelque part. */
 .cadre[data-ecran="apres"] .etat{ letter-spacing:.14em; }
 .precision{
-  margin:4px 0 0; font-size:var(--t-date); line-height:1.35; color:var(--c-date);
+  margin:4px 0 0; font-size:var(--t-date); line-height:1.5; color:var(--c-date);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 
@@ -342,12 +342,12 @@ body{
 .bandeau{ border-radius:18px; padding:16px 20px; background:var(--card); }
 .bandeau[data-ton="teinte"]{ background:var(--rustTint); }
 .bandeau .quoi{
-  margin:0 0 6px; font:600 11px/1.4 var(--sans); letter-spacing:.18em;
+  margin:0 0 6px; font:600 11px/1.5 var(--sans); letter-spacing:.18em;
   text-transform:uppercase; color:var(--muted);
 }
 .bandeau[data-ton="teinte"] .quoi{ color:var(--rust); }
-.bandeau .qui{ margin:0; font:400 16px/1.25 var(--serif); color:var(--ink); letter-spacing:-.01em; }
-.bandeau .phrase{ margin:4px 0 0; font-size:13px; line-height:1.45; color:var(--muted); }
+.bandeau .qui{ margin:0; font:400 16px/1.5 var(--serif); color:var(--ink); letter-spacing:-.01em; }
+.bandeau .phrase{ margin:4px 0 0; font-size:13px; line-height:1.5; color:var(--muted); }
 .cadre[data-ecran="apres"] .bandeau .phrase{ display:none; }
 /* Ce que ces douze pixels rendent : la première ligne de chantier remonte
    d'autant sur un matin chargé. Rien de ce qui se lit n'est touché. */
@@ -355,7 +355,7 @@ body{
 .cadre[data-ecran="apres"] .bandeau{ padding:14px 18px; }
 .bandeau blockquote{
   margin:12px 0 0; padding-left:12px; border-left:2px solid var(--rust);
-  font-size:14px; line-height:1.55; color:var(--ink); white-space:pre-wrap;
+  font-size:14px; line-height:1.625; color:var(--ink); white-space:pre-wrap;
 }
 /* `gap-4` = 16 px, comme `Notifications.tsx`. Écrit à 4 px, la reproduction
    collait les deux gestes l'un à l'autre et accusait l'écran d'aujourd'hui
@@ -366,7 +366,7 @@ body{
 .cadre[data-ecran="apres"] .bandeau blockquote{ margin-top:10px; }
 .bandeau .gestes button{
   background:none; border:0; cursor:pointer;
-  font:500 14px/1 var(--sans); padding:0;
+  font:500 14px/1.5 var(--sans); padding:0;
 }
 .cadre[data-ecran="apres"] .bandeau .gestes button{ min-height:44px; padding:0 10px; }
 .bandeau .faire{ color:var(--rust); }
@@ -378,7 +378,7 @@ body{
 }
 .de-plus{
   background:none; border:0; cursor:pointer; text-align:center;
-  font:500 14px/1 var(--sans); color:var(--rust); padding:12px 0; min-height:44px;
+  font:500 14px/1.5 var(--sans); color:var(--rust); padding:12px 0; min-height:44px;
 }
 
 /* ─── Le tiroir des retirés ─────────────────────────────────────────────── */
@@ -392,7 +392,7 @@ body{
 .tiroir span{ font-size:13px; line-height:1.5; color:var(--inkSoft); }
 .tiroir button{
   margin-right:-8px; padding:8px; background:none; border:0; cursor:pointer;
-  font:500 11px/1 var(--sans); letter-spacing:.24em; text-transform:uppercase;
+  font:500 11px/1.5 var(--sans); letter-spacing:.24em; text-transform:uppercase;
   color:var(--c-geste); min-height:44px;
 }
 
@@ -404,7 +404,7 @@ body{
 .onglets{ position:relative; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); padding:18px 14px 8px; }
 .onglets a{
   position:relative; z-index:1; padding-bottom:8px; text-align:center;
-  text-decoration:none; font:500 8.5px/1 var(--sans); letter-spacing:.14em;
+  text-decoration:none; font:500 8.5px/1.5 var(--sans); letter-spacing:.14em;
   text-transform:uppercase; color:var(--muted);
   transition:color .32s cubic-bezier(.22,.61,.36,1), transform .34s cubic-bezier(.34,1.4,.5,1);
 }
