@@ -373,26 +373,31 @@ prendrait la moitié de la ligne.
 aujourd'hui — la requête l'emploie pour **trier** mais ne le sélectionne pas.
 Une colonne de plus, rien d'autre.
 
-**2. « La rubrique retour ressemble trop à celle du dessous, on va les
-confondre. »**
+**2. « Les deux rubriques se ressemblent trop. » — et vous me l'avez dit DEUX
+fois**
 
-Vous aviez raison : les deux portaient la même enseigne dorée, le même nom en
-serif, la même seconde ligne. **Trois choses les séparent maintenant, et aucune
-n'ajoute un mot :**
+**La première fois, j'ai répondu par une couleur et un filet. C'était une
+mauvaise réponse, et vous avez eu raison de le redire :** la **forme** restait
+la même — une enseigne, puis des noms en serif avec une seconde ligne dessous.
+Repeindre deux choses bâties pareil ne les distingue pas.
+
+Ce sont deux natures différentes. Elles ont donc **deux formes** :
 
 | | Retours clients | Devis en cours |
 |---|---|---|
-| **l'enseigne** | dorée | encre douce |
-| **le filet d'or vertical** | chaque retour est porté par un trait et rentre dans la page | rien : le devis part de la marge |
-| **la seconde ligne** | un **délai** — « depuis 3 jours » | une **date** — « devis du 7 septembre » |
+| **ce que c'est** | une **correspondance** — quelqu'un vous a écrit | un **registre** — votre travail à vous |
+| **la forme** | un bloc aéré, porté par un filet d'or, qui rentre dans la page | une ligne par devis, un filet fin dessous, comme un carnet |
+| **les caractères** | serif — le nom d'une personne, et ses mots | droits — c'est l'application qui parle |
+| **la date** | à la suite : « depuis 3 jours » | **alignée à droite**, en chiffres qui s'alignent d'une ligne à l'autre |
+| **l'enseigne** | petites capitales dorées | un titre en serif |
 
-Le filet dit « ça vient de quelqu'un ». C'était déjà celui de la citation ; il
-porte maintenant le retour entier, et la citation s'en passe — deux traits à
-trois pixels l'un de l'autre se lisaient comme un défaut.
+L'un **se lit**, l'autre **se parcourt**. C'est ce qui les sépare, et ce n'est
+plus une question de teinte.
 
-*Trouvé en capture, par aucun test : posé sur la seule entrée, ce filet
-s'arrêtait au-dessus de « Corriger le devis » et se lisait comme un trait
-interrompu. Il porte maintenant l'entrée et son geste.*
+*Deux choses trouvées en capture, par aucun test : le filet d'or s'arrêtait
+au-dessus de « Corriger le devis » et se lisait comme un trait interrompu ; et
+les filets du registre allaient d'un bord à l'autre du téléphone, ce qui les
+faisait ressembler au cadre d'un tableau posé sur l'écran.*
 
 ### Votre question sur le bouton — ce que j'en pense
 
