@@ -203,7 +203,15 @@ body{
   display:flex; align-items:baseline; justify-content:flex-start;
   gap:14px; margin-top:12px; min-height:44px;
 }
-.cadre[data-ecran="apres"] .compte-bande{ display:flex; margin:16px 26px 0; }
+.cadre[data-ecran="apres"] .compte-bande{ display:none; }
+/* **AU-DESSUS DU « 04 SEPT. », ET PAS SEULEMENT PLUS HAUT DANS LA PAGE.**
+   Posé avant les bandeaux, il était bien au-dessus dans le marquage — et un
+   bandeau de trois cents pixels s'intercalait entre lui et la première ligne.
+   Ma mesure ne regardait que l'ORDRE ; lui regardait l'écran, et il avait
+   raison. Le compteur entre donc DANS le fil, après les bandeaux, collé à la
+   liste qu'il compte. */
+.compte-liste{ display:none; }
+.cadre[data-ecran="apres"] .compte-liste{ display:flex; margin:0 26px 6px; }
 .ligne-tete .rubrique{ display:none; }
 
 /* ═══ CINQ FAÇONS DE « CRÉER UN DEVIS » — sa demande du 6 septembre ═══════
@@ -644,6 +652,7 @@ body{
 
     <div class="fil" id="fil">
       <div class="bandeaux" id="bandeaux"></div>
+      <div class="rubrique compte-liste" data-atlas="compteur-liste"><span>En cours</span><span class="nombre" id="compte-liste">0</span></div>
       <div class="tige" id="tige">
         <span class="perle" aria-hidden="true" id="perle"><i></i></span>
       </div>
@@ -843,6 +852,7 @@ function dessiner(){
   const compte = lignes.length;
   document.getElementById("compte-haut").textContent = compte;
   document.getElementById("compte-bas").textContent = compte;
+  document.getElementById("compte-liste").textContent = compte;
 
   /* Les bandeaux */
   const restantes = choix.bandeaux.map(i => BANDEAUX[i]).filter(b => !acquittes.includes(b.id));
