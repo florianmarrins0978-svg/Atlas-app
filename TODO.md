@@ -9,6 +9,47 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## UNE RÉPONSE ATTENDUE — le texte secondaire est-il assez gros ?
+
+**Proposé le 6 septembre 2026**, sur son invitation : *« tu ne touches pas les
+trois choses, mais tu peux proposer autre chose si tu estimes que tu peux mieux
+faire que ce qui est déjà en place »*.
+
+**Planche :** `appli/lire-au-soleil.html` — bascule « Aujourd'hui » / « Proposé »
+sur un vrai bloc, et les deux pôles.
+
+**Le constat, mesuré :** le jeton `muted` tient de **2,85** (Moka) à **3,59**
+(Brume) de contraste sur les six chartes claires, là où la norme demande 4,5.
+Les deux seules qui passent sont **Sylve et Nuit** — corrigées après sa plainte
+du 22 août ; les claires, jamais. Ce gris sert **525 fois** dans `src/`, dont
+199 dans les Réglages. Il porte `libelleCaps` (9,5 px, 198 emplois) et
+`texteSituation` (11,5 px, 111 emplois).
+
+**Ce qui est proposé :** 9,5 → 11 px, 11,5 → 13 px, et surtout **ce qui doit se
+lire quitte `muted` pour `inkSoft`** (8,0 de contraste). La charte n'est pas
+touchée — c'est l'EMPLOI qui change. `muted` reste pour ce qui n'a pas à être
+lu : un exemple dans un champ vide, un réglage éteint.
+
+**Ce que ça coûte, relevé au navigateur** en surchargeant les deux tailles sur
+les vrais écrans, à 390 × 664 :
+
+| Écran | Aujourd'hui | Lisible | Coût |
+|---|---|---|---|
+| le sommaire des réglages | 1 145 px | 1 154 | +0,8 % |
+| Équipe | 1 317 px | 1 329 | +0,9 % |
+| Mon entreprise | 2 145 px | 2 201 | +2,6 % |
+| Devis & factures | 4 117 px | 4 352 | +5,7 % |
+
+**Si oui : écran par écran, jamais d'un coup.** 525 emplois en une fois seraient
+invérifiables et croiseraient le travail des autres sessions. Deux morceaux sont
+déjà faits, au lot 1 : les deux intertitres du sommaire et la phrase du salarié.
+
+**Ce qui n'est PAS proposé :** grossir le texte principal. Les titres, les noms
+de rubrique et les montants sont à la bonne taille ; les toucher rallongerait
+vraiment l'application.
+
+---
+
 ## Quatre rouges navigateur apparus à la batterie du 6 septembre (soir)
 
 Relevés en jouant la batterie du lot de l'en-tête unique, **après** la fusion

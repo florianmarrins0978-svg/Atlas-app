@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lire au soleil — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LIRE AU SOLEIL — une proposition, pas un lot codé
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa consigne du 5 septembre 2026 : « la plupart des patrons qui vont utiliser
+  l'app sont des vieux qui ont du mal à se servir de leur téléphone ».
+
+  Son invitation du 6 septembre, après le lot 3 : *« tu ne touches pas les trois
+  choses, mais tu peux proposer autre chose si tu estimes que tu peux mieux
+  faire que ce qui est déjà en place »*.
+
+  **LES TROIS CHOSES NE SONT PAS TOUCHÉES**, ni ici ni ailleurs : le découpage
+  de « Devis & factures », les deux façons d'enregistrer, et l'aperçu collé.
+  Cette planche parle d'autre chose — de la TAILLE et de la COULEUR du texte
+  secondaire, dans toute l'application.
+
+  **RIEN N'EST CODÉ.** Les chiffres viennent tous d'une mesure : le contraste de
+  `src/lib/chartes.ts` calculé sur les huit chartes, le nombre d'emplois compté
+  dans `src/`, et le coût en hauteur relevé dans un navigateur en surchargeant
+  les deux tailles sur les vrais écrans.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --scene:#e6e3dc;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+.scene{display:flex;justify-content:center;padding:22px 16px 6px}
+.colonne{width:390px;max-width:100%}
+.etiquette{text-align:center;font-size:11px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--encre-douce);margin:0 0 10px}
+.tel{width:390px;max-width:100%;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;padding:26px}
+
+/* ─── l'écran, aux mesures du code ─────────────────────────────────────── */
+.inter{margin:0 0 10px;font-size:9.5px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--gris)}
+.ligne{padding:14px 0;border-bottom:1px solid var(--trait)}
+.ligne:last-child{border-bottom:0}
+.nom{display:block;font-family:ui-serif,Georgia,serif;font-size:17px;line-height:1.25}
+.situ{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--gris)}
+
+/* la proposition : deux tailles, et l'encre douce là où l'on LIT */
+.lisible .inter{font-size:11px;color:var(--encre-douce)}
+.lisible .situ{font-size:13px;color:var(--encre-douce)}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes li{font-size:14px;line-height:1.7;color:var(--encre-douce);margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
+  vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+.nb{font-variant-numeric:tabular-nums}
+.ko{color:#8c2f2f;font-weight:600}
+body.nuit .ko{color:#e08585}
+.ok{color:var(--accent);font-weight:600}
+body.nuit .ok{color:#9dc49d}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" data-vue="lisible" aria-pressed="true">Proposé</button>
+  <button type="button" data-vue="aujourdhui" aria-pressed="false">Aujourd'hui</button>
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">Une proposition — rien n'est codé</span>
+  <h1>Lire au soleil</h1>
+  <p>Vous m'avez dit de ne pas toucher aux trois choses du lot 3, mais de
+  proposer si je pense pouvoir faire mieux. <b>Voilà où je pense pouvoir faire
+  beaucoup mieux</b>, et ce n'est pas dans un écran : c'est dans les vingt.</p>
+  <p><b>Le texte secondaire de l'application s'écrit en 9,5 et 11,5 pixels, dans
+  un gris qui tient 3 de contraste.</b> Debout, au soleil, à soixante-cinq ans,
+  il ne se lit pas. Basculez ci-dessous.</p>
+</div>
+
+<div class="scene">
+  <div class="colonne">
+    <p class="etiquette" id="etiquette">Proposé</p>
+    <div class="tel lisible" id="tel"></div>
+  </div>
+</div>
+
+<div class="notes">
+
+  <h3>Ce que dit la mesure</h3>
+  <p>Le gris <b>ne passe sur aucune de vos six chartes claires</b> — la norme
+  demande 4,5 pour du texte :</p>
+  <table>
+    <tr><th>Charte</th><th>Contraste du gris</th></tr>
+    <tr><td>Moka</td><td class="nb ko">2,85</td></tr>
+    <tr><td>Pierre · Beurre</td><td class="nb ko">3,01 · 3,07</td></tr>
+    <tr><td>Origine · Prune · Brume</td><td class="nb ko">3,32 · 3,48 · 3,59</td></tr>
+    <tr><td><b>Sylve · Nuit</b></td><td class="nb ok">5,80 · 5,19</td></tr>
+  </table>
+  <p><b>Les deux seules qui passent sont vos deux chartes sombres</b> — celles
+  dont vous vous étiez plaint le 22 août, et qui ont été corrigées ce jour-là.
+  Les six claires, jamais.</p>
+
+  <p>Et ce gris n'est pas un détail de coin d'écran :</p>
+  <table>
+    <tr><td>emplois du gris dans l'application</td><td class="nb"><b>525</b></td></tr>
+    <tr><td>dont dans les Réglages</td><td class="nb">199</td></tr>
+    <tr><td>textes en 9,5 px (intertitres)</td><td class="nb"><b>198</b></td></tr>
+    <tr><td>textes en 11,5 px (lignes de situation)</td><td class="nb"><b>111</b></td></tr>
+  </table>
+
+  <h3>Ce que je propose</h3>
+  <ul>
+    <li>les intertitres passent de <b>9,5 à 11 px</b> ;</li>
+    <li>les lignes de situation de <b>11,5 à 13 px</b> ;</li>
+    <li>et surtout : <b>ce qui doit se LIRE quitte le gris</b> pour l'encre
+    douce, qui tient <b class="nb">8,0</b> de contraste. Le gris reste pour ce
+    qui n'a pas à être lu — un exemple dans un champ vide, un réglage éteint.</li>
+  </ul>
+  <p><b>Votre palette n'est pas touchée</b>, et je n'y toucherai pas : c'est la
+  vôtre, relevée sur le site d'Arborea. Ce qui change, c'est <b>où</b> on
+  l'emploie.</p>
+
+  <h3>Ce que ça coûte — mesuré, pas estimé</h3>
+  <p>J'ai surchargé les deux tailles dans un navigateur, sur vos vrais écrans, à
+  la taille de votre téléphone :</p>
+  <table>
+    <tr><th>Écran</th><th>Aujourd'hui</th><th>Lisible</th><th>Coût</th></tr>
+    <tr><td>le sommaire des réglages</td><td class="nb">1 145 px</td><td class="nb">1 154</td><td class="nb ok">+0,8 %</td></tr>
+    <tr><td>Équipe</td><td class="nb">1 317 px</td><td class="nb">1 329</td><td class="nb ok">+0,9 %</td></tr>
+    <tr><td>Mon entreprise</td><td class="nb">2 145 px</td><td class="nb">2 201</td><td class="nb ok">+2,6 %</td></tr>
+    <tr><td>Devis &amp; factures</td><td class="nb">4 117 px</td><td class="nb">4 352</td><td class="nb">+5,7 %</td></tr>
+  </table>
+  <p><b>C'est le marché que je vous propose :</b> entre 1 % et 6 % d'écran en
+  plus, contre du texte qui se lit. Je le trouve très bon — et c'est vous qui
+  décidez, parce que vous m'avez dit trois fois que l'application était trop
+  longue.</p>
+
+  <h3>Comment je le ferais, si vous dites oui</h3>
+  <p><b>Pas d'un coup.</b> Cinq cent vingt-cinq emplois touchés en une fois, ce
+  serait invérifiable et ça croiserait le travail de vos autres sessions. Je le
+  ferais <b>écran par écran</b>, en finissant les Réglages d'abord — j'y suis
+  déjà, et j'en ai fait deux morceaux sans le dire : les deux intertitres du
+  sommaire et la phrase du salarié sont passés en encre douce au lot 1.</p>
+
+  <h3>Ce que je ne propose PAS</h3>
+  <p>Grossir le texte <b>principal</b>. Les titres, les noms de rubrique, les
+  montants sont déjà à la bonne taille, et les toucher rallongerait vraiment
+  l'application. Le problème n'est pas la taille du texte : c'est qu'on écrit en
+  tout petit et en gris pâle des choses qu'il faut lire.</p>
+
+</div>
+
+<script>
+/*
+  Un seul bloc, deux rendus : la classe `lisible` ne change QUE les deux tailles
+  et la couleur du texte secondaire. Écrire deux blocs à la main aurait laissé
+  la comparaison mentir au premier mot changé.
+*/
+var LIGNES = [
+  ["Durée de validité", "En tête, sous le numéro du devis"],
+  ["Acompte à la commande", "Écrit sous le total du devis"],
+  ["Délai de paiement", "Zéro veut dire comptant"],
+  ["Moyens de paiement acceptés", "Listés sous vos coordonnées bancaires"]
+];
+
+function echapper(t){
+  return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+var h = '<p class="inter">Ce qui s\'imprime sur le devis</p>';
+for (var i = 0; i < LIGNES.length; i++) {
+  h += '<div class="ligne"><span class="nom">' + echapper(LIGNES[i][0]) + '</span>' +
+       '<span class="situ">' + echapper(LIGNES[i][1]) + '</span></div>';
+}
+h += '<p class="inter" style="margin-top:30px">Ce qui ne se coupe pas</p>' +
+     '<div class="ligne"><span class="nom">Mentions légales de la facture</span>' +
+     '<span class="situ">Pénalités de retard, indemnité forfaitaire de 40 €, et la ' +
+     'franchise de l\'article 293 B quand vous n\'êtes pas assujetti.</span></div>';
+document.getElementById("tel").innerHTML = h;
+
+var tel = document.getElementById("tel");
+var vues = document.querySelectorAll("[data-vue]");
+for (var b = 0; b < vues.length; b++) {
+  vues[b].addEventListener("click", function () {
+    var vue = this.getAttribute("data-vue");
+    for (var k = 0; k < vues.length; k++) {
+      vues[k].setAttribute("aria-pressed", String(vues[k].getAttribute("data-vue") === vue));
+    }
+    tel.className = "tel" + (vue === "lisible" ? " lisible" : "");
+    document.getElementById("etiquette").textContent =
+      vue === "lisible" ? "Proposé" : "Aujourd'hui";
+  });
+}
+
+document.getElementById("pole").addEventListener("click", function () {
+  var nuit = document.body.classList.toggle("nuit");
+  this.setAttribute("aria-pressed", String(nuit));
+  this.textContent = nuit ? "Voir sur Origine" : "Voir sur Nuit";
+});
+</script>
+</body>
+</html>
