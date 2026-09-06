@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pas là ce jour-là — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  BLOQUER UN JOUR DEPUIS LE PLANNING
+  ═══════════════════════════════════════════════════════════════════════════
+
+  **CE QUI EXISTE DÉJÀ, ET QU'IL NE FAUT PAS REFAIRE.** Bloquer un jour
+  fonctionne : une absence notée dans Réglages → Équipe retire une place ce
+  jour-là, et les TROIS chemins la voient — l'écran d'envoi, l'envoi lui-même,
+  et la revérification quand le client répond
+  (`src/server/repositories/envois-devis.ts`, `fusionnerAbsences`). Le planning
+  l'affiche déjà.
+
+  **CE QUI MANQUE, ET C'EST TOUT CE QUE CETTE PLANCHE PROPOSE :** le faire
+  depuis le planning. Aujourd'hui il faut sortir du planning, ouvrir Réglages,
+  puis Équipe, descendre jusqu'aux absences et taper deux dates — pour dire
+  « je ne suis pas là mardi ».
+
+  **Une correction à laisser écrite :** j'ai dit au patron le 6 septembre que
+  les absences « ne bloquent pas les dates proposées ». C'était FAUX, et cette
+  planche a été refaite après vérification. Ce lot n'est donc pas « rendre le
+  raccordement d'agenda inutile », c'est un raccourci.
+
+  Les couleurs sont copiées de `src/lib/chartes.ts`, jeton par jeton.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --scene:#e6e3dc;
+  --plein:#6f8a5f; --papier:#ece9e1;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --scene:#070908;
+  --plein:#6f8a5f; --papier:#232722;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+.scene{display:flex;justify-content:center;padding:22px 16px 6px}
+.colonne{width:390px;max-width:100%}
+.tel{width:390px;max-width:100%;min-height:600px;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;padding:22px 18px 26px}
+.regle{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:10px 0 0}
+
+/* ─── le calendrier ─────────────────────────────────────────────────────── */
+.mois{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.mois b{font-size:15px}
+.jours{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.nom{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--encre-douce);text-align:center;padding-bottom:6px}
+.case{aspect-ratio:1;border-radius:6px;border:0;background:transparent;
+  font:inherit;font-size:14px;color:var(--encre);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.case .pastille{width:5px;height:5px;border-radius:50%;background:var(--plein)}
+.case.libre{background:var(--papier)}
+.case.pris{background:var(--plein);color:#fff}
+.case.ferme{background:var(--papier);color:var(--gris);
+  text-decoration:line-through;text-decoration-thickness:1px}
+.case[aria-pressed=true]{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ─── la carte du jour ──────────────────────────────────────────────────── */
+.carte{margin-top:12px;background:var(--plage);border:1px solid var(--trait);
+  border-radius:8px;padding:16px 16px 8px}
+.carte h3{margin:0 0 2px;font-family:ui-serif,Georgia,serif;font-size:19px;font-weight:400}
+.carte .etat{margin:0 0 12px;font-size:13px;color:var(--encre-douce)}
+.chantier{display:flex;align-items:baseline;gap:10px;padding:10px 0;
+  border-top:1px solid var(--trait);font-size:15px}
+.chantier .h{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--encre-douce)}
+.action{display:block;width:100%;margin-top:10px;padding:14px;border-radius:999px;
+  border:1px solid var(--trait);background:var(--fond);color:var(--encre);
+  font:inherit;font-size:15px;cursor:pointer;min-height:48px;text-align:center}
+.action.rendre{background:var(--plein);border-color:var(--plein);color:#fff}
+.equipes{margin-top:10px;display:flex;gap:8px}
+.equipes button{flex:1;padding:12px;border-radius:999px;border:1px solid var(--trait);
+  background:var(--fond);color:var(--encre);font:inherit;font-size:14px;cursor:pointer;min-height:48px}
+.equipes button[aria-pressed=true]{background:var(--plein);border-color:var(--plein);color:#fff}
+.suite{margin:10px 0 0;font-size:12.5px;line-height:1.6;color:var(--encre-douce)}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes li{font-size:14px;line-height:1.7;color:var(--encre-douce);margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
+  vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" data-eq="1" aria-pressed="true">Une équipe</button>
+  <button type="button" data-eq="2" aria-pressed="false">Deux équipes</button>
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">Maquette — rien n'est codé</span>
+  <h1>« Je ne suis pas là ce jour-là »</h1>
+  <p><b>Touchez un jour du calendrier</b>, puis la ligne du bas. Le jour se
+  ferme, et il ne part plus chez vos clients. Retouchez-le pour le rouvrir.</p>
+  <p>Le bouton <b>« Deux équipes »</b> en haut montre ce qui change quand vous
+  n'êtes pas seul — c'est le seul point sur lequel j'aimerais votre avis.</p>
+</div>
+
+<div class="scene">
+  <div class="colonne">
+    <div class="tel">
+      <div class="mois"><span>‹</span><b>Septembre 2026</b><span>›</span></div>
+      <div class="jours" id="grille"></div>
+      <div id="carte"></div>
+    </div>
+    <p class="regle" id="regle"></p>
+  </div>
+</div>
+
+<div class="notes">
+
+  <h3>Ce qui existe DÉJÀ, et qu'il ne faut pas refaire</h3>
+  <p><b>Bloquer un jour fonctionne, et ça enlève bien le jour à vos clients.</b>
+  Une absence notée dans Réglages → Équipe retire une place ce jour-là, et les
+  trois chemins la voient : l'écran d'envoi, l'envoi lui-même, et la
+  vérification quand votre client répond. Le planning vous le montre déjà.</p>
+  <p><b>Je vous ai dit le contraire le 6 septembre, et c'était faux.</b> Cette
+  planche a été refaite après vérification dans le code. Ce n'est donc pas
+  « remplacer l'agenda relié » : c'est un raccourci.</p>
+
+  <h3>Ce que la maquette propose, et rien de plus</h3>
+  <table>
+    <tr><th>Aujourd'hui</th><th>Proposé</th></tr>
+    <tr>
+      <td>quitter le planning, ouvrir Réglages, puis Équipe, descendre jusqu'aux absences, taper deux dates</td>
+      <td>toucher le jour, toucher <b>« Je ne suis pas là »</b></td>
+    </tr>
+  </table>
+  <ul>
+    <li><b>Rien de caché.</b> Pas d'appui long, pas de glissement : une ligne
+    visible dans la carte que vous ouvrez déjà en touchant un jour.</li>
+    <li><b>Ça se défait du même geste.</b> Le jour fermé propose
+    « Finalement je suis là ».</li>
+    <li><b>Un jour passé ne se ferme pas</b> — comme le reste du planning, qui
+    se lit mais ne s'écrit plus une fois la date passée.</li>
+  </ul>
+
+  <h3>Le seul point sur lequel je veux votre avis</h3>
+  <p><b>Quand vous avez deux équipes, « je ne suis pas là » veut dire quoi ?</b>
+  Touchez « Deux équipes » en haut pour voir les deux écrans.</p>
+  <table>
+    <tr><th></th><th>Ce que ça donne</th></tr>
+    <tr><td><b>Une équipe</b></td>
+      <td>une ligne, un appui, le jour se ferme. C'est le cas de la plupart de vos futurs clients</td></tr>
+    <tr><td><b>Deux équipes ou plus</b></td>
+      <td>Atlas demande <b>laquelle</b> n'est pas là — sinon fermer le jour entier alors qu'une équipe pouvait travailler vous coûterait un chantier</td></tr>
+  </table>
+  <p><b>Ma proposition :</b> ne poser la question que si vous avez plus d'une
+  équipe. Un écran, un geste — et la question n'apparaît que là où elle a un
+  sens.</p>
+
+  <h3>Ce que ça ne fait pas</h3>
+  <p>Ça ne remplace pas l'agenda relié : un rendez-vous chez le dentiste noté
+  dans votre téléphone reste invisible pour Atlas. Ça vous donne juste le moyen
+  de fermer un jour <b>sans rien relier du tout</b>.</p>
+
+</div>
+
+<script>
+/*
+  Un seul jeu de jours, deux réglages d'équipes. Le calendrier est faux — c'est
+  un dessin — mais les gestes sont ceux qu'on coderait.
+*/
+var JOURS = [
+  { n: 1, etat: "libre" }, { n: 2, etat: "pris" }, { n: 3, etat: "libre" },
+  { n: 4, etat: "libre" }, { n: 5, etat: "hors" }, { n: 6, etat: "hors" },
+  { n: 7, etat: "libre" }, { n: 8, etat: "libre" }, { n: 9, etat: "pris" },
+  { n: 10, etat: "libre" }, { n: 11, etat: "libre" }, { n: 12, etat: "hors" },
+  { n: 13, etat: "hors" }, { n: 14, etat: "libre" }
+];
+var CHANTIERS = { 2: ["M. Bernard — taille de haie"], 9: ["Mme Larousse — abattage"] };
+
+var equipes = 1;
+var touche = null;      // le jour ouvert
+var fermes = {};        // jour → "toutes" | "equipe-1" | "equipe-2"
+
+var grille = document.getElementById("grille");
+var carte = document.getElementById("carte");
+
+function dessinerGrille() {
+  var h = "";
+  var noms = ["L", "M", "M", "J", "V", "S", "D"];
+  for (var i = 0; i < 7; i++) h += '<div class="nom">' + noms[i] + "</div>";
+  for (var j = 0; j < JOURS.length; j++) {
+    var d = JOURS[j];
+    var ferme = fermes[d.n] !== undefined;
+    var classe = ferme ? "ferme" : d.etat === "pris" ? "pris" : d.etat === "hors" ? "" : "libre";
+    h += '<button type="button" class="case ' + classe + '" data-j="' + d.n + '" aria-pressed="' +
+         (touche === d.n ? "true" : "false") + '">' + d.n +
+         (CHANTIERS[d.n] && !ferme ? '<span class="pastille"></span>' : "") + "</button>";
+  }
+  grille.innerHTML = h;
+  var cases = grille.querySelectorAll(".case");
+  for (var k = 0; k < cases.length; k++) {
+    cases[k].addEventListener("click", function () {
+      var n = Number(this.getAttribute("data-j"));
+      touche = touche === n ? null : n;
+      dessiner();
+    });
+  }
+}
+
+function dessinerCarte() {
+  if (touche === null) {
+    carte.innerHTML = "";
+    document.getElementById("regle").textContent = "Touchez un jour.";
+    return;
+  }
+  var ferme = fermes[touche];
+  var chantiers = CHANTIERS[touche] || [];
+  var h = '<div class="carte"><h3>' + touche + " septembre</h3>";
+
+  h += '<p class="etat">' +
+       (ferme
+         ? (ferme === "toutes" ? "Personne ne travaille ce jour-là. Il ne part plus chez vos clients."
+                               : "Une équipe n'est pas là. Il reste de la place ce jour-là.")
+         : chantiers.length
+           ? "Un chantier posé."
+           : "Rien de posé. Ce jour peut partir chez vos clients.") +
+       "</p>";
+
+  for (var i = 0; i < chantiers.length; i++) {
+    h += '<div class="chantier"><span class="h">Matin</span><span>' + chantiers[i] + "</span></div>";
+  }
+
+  if (ferme) {
+    h += '<button type="button" class="action rendre" data-geste="rouvrir">Finalement je suis là</button>';
+  } else if (equipes === 1) {
+    h += '<button type="button" class="action" data-geste="fermer">Je ne suis pas là</button>';
+  } else {
+    /*
+      **La question ne se pose QUE s'il a plus d'une équipe.** Fermer le jour
+      entier quand une seule équipe est absente lui coûterait un chantier ; la
+      poser à un artisan seul serait un geste de plus pour rien.
+    */
+    h += '<p class="suite">Qui n\'est pas là&nbsp;?</p><div class="equipes">' +
+         '<button type="button" data-geste="equipe-1">Équipe 1</button>' +
+         '<button type="button" data-geste="equipe-2">Équipe 2</button>' +
+         '<button type="button" data-geste="toutes">Les deux</button></div>';
+  }
+
+  h += "</div>";
+  carte.innerHTML = h;
+
+  var boutons = carte.querySelectorAll("[data-geste]");
+  for (var b = 0; b < boutons.length; b++) {
+    boutons[b].addEventListener("click", function () {
+      var g = this.getAttribute("data-geste");
+      if (g === "rouvrir") delete fermes[touche];
+      else fermes[touche] = g;
+      dessiner();
+    });
+  }
+
+  var combien = Object.keys(fermes).length;
+  document.getElementById("regle").textContent =
+    combien === 0 ? "Aucun jour fermé." :
+    combien === 1 ? "1 jour fermé — il ne part plus chez vos clients." :
+    combien + " jours fermés — ils ne partent plus chez vos clients.";
+}
+
+function dessiner() { dessinerGrille(); dessinerCarte(); }
+
+var choix = document.querySelectorAll("[data-eq]");
+for (var c = 0; c < choix.length; c++) {
+  choix[c].addEventListener("click", function () {
+    equipes = Number(this.getAttribute("data-eq"));
+    for (var k = 0; k < choix.length; k++) {
+      choix[k].setAttribute("aria-pressed", String(Number(choix[k].getAttribute("data-eq")) === equipes));
+    }
+    fermes = {};
+    dessiner();
+  });
+}
+
+document.getElementById("pole").addEventListener("click", function () {
+  var nuit = document.body.classList.toggle("nuit");
+  this.setAttribute("aria-pressed", String(nuit));
+  this.textContent = nuit ? "Voir sur Origine" : "Voir sur Nuit";
+});
+
+dessiner();
+</script>
+</body>
+</html>
