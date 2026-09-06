@@ -256,14 +256,19 @@ export default function EcranChantiers({
               Il reste la rubrique, avec le chiffre collé au mot.
 
               Le repère `data-atlas="compteur"` a suivi le compte : il vit
-              maintenant sur la rubrique (`test-dashboard` le lit pour savoir
-              combien de chantiers sont en cours). Le laisser sur une ligne
-              supprimée aurait rendu la suite muette. */}
+              sur la rubrique (`test-dashboard` le lit pour savoir combien de
+              chantiers sont en cours). Le laisser sur une ligne supprimée
+              aurait rendu la suite muette.
+
+              **Et la rubrique n'est plus ici depuis le 6 septembre 2026** :
+              elle est descendue DANS le fil, après les bandeaux, collée à la
+              liste qu'elle compte — voir `rubriqueEnCours`, plus haut dans ce
+              fichier. */}
 
           {/* **« La catégorie client n'a pas été créée » — 17 août 2026, au
               soir.** La fiche d'un client existait depuis la veille, mais elle
               ne s'atteignait que depuis un chantier : rien ne menait à SES
-              clients. Le lien se pose ici, sous le compteur, plutôt que dans un
+              clients. Le lien se pose ici, sous le titre, plutôt que dans un
               cinquième onglet — la barre du bas en porte quatre et le cinquième
               est déjà décidé pour les outils métier (`ARCHITECTURE.md` §125).
 
