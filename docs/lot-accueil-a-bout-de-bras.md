@@ -327,19 +327,54 @@ Chaque enseigne porte **son compte**, en serif : vous savez d'un coup d'œil s'i
 en reste sous le pli. **Un registre vide n'existe pas** — il ne s'affiche pas
 avec un zéro.
 
-### La décoration, et elle est à vous
+### Vos quatre corrections du 6 septembre — toutes faites
 
-- **Le sceau** en haut : votre feuille au trait dans son cercle d'or, recopiée
-  trait pour trait de `src/components/atlas/MarqueAtlas.tsx`. Rien d'inventé,
-  rien d'importé.
-- **L'ornement** entre les deux registres : deux filets d'or et la même feuille.
-  Il **sépare** — il ne ferme pas l'en-tête. **Le trait gris de l'en-tête que
-  vous aviez fait retirer le 24 août n'est pas revenu**, et il ne reviendra pas
-  par cette porte.
+| Ce que vous avez demandé | Ce qui a été fait |
+|---|---|
+| *« tout ce qui est en doré foncé, mets-le en doré, celui de l'appli »* | les libellés portaient `orTexte` (#8b6835), ils portent votre `or` (#B98B47) |
+| *« retire ta déco en haut »* | le sceau est parti. C'est écrit dans le fichier pour qu'aucune session ne le remette en citant votre autorisation de la veille |
+| *« retire la déco qu'il y a entre les deux »* | la feuille du milieu est partie. **Les deux filets d'or restent** — c'est vous qui les avez gardés |
+| *« créer le chantier ne doit pas être tout en bas »* | remonté sous la date, et une bascule vous laisse comparer les deux places au doigt |
+
+**Ce que votre or coûte, et je ne le redirai pas.** Sur le crème, `or` tient
+**2,77** de contraste là où un mot en demande 4,5. La bande de mesure sous
+l'écran l'affiche en clair, à chaque bascule. **Sur Nuit il en tient 6,14** :
+les deux ors y sont identiques, rien n'y change. C'est votre écran et c'est
+votre couleur ; une seule ligne la défait le jour où vous voudrez.
+
+### Ce qui reste de la décoration
+
+- **Les deux filets d'or** qui séparent les deux registres, vidés de ce qu'il y
+  avait entre eux. Ils **séparent** — ils ne ferment pas l'en-tête. **Le trait
+  gris de l'en-tête que vous aviez fait retirer le 24 août n'est pas revenu**,
+  et il ne reviendra pas par cette porte.
 - **Deux voix de caractères** : le nom d'un client est en serif — c'est une
   personne ; ce qu'il faut faire est en sans — c'est l'application qui parle.
 - **Une seule couleur** dans tout l'écran, et elle veut dire quelque chose :
   depuis combien de temps ça attend.
+
+### Votre question sur le bouton — ce que j'en pense
+
+*« Je pense que créer le chantier ne doit pas être tout en bas, tu en penses
+quoi ? »*
+
+**Je pense comme vous, et pas pour la raison qu'on croit.** Ce n'est pas une
+question de place : mesuré, les deux positions montrent **exactement le même
+nombre d'entrées** — trois sur quatre. Ce qui les sépare est ailleurs.
+
+| | |
+|---|---|
+| **en bas** | il faut une bande OPAQUE de 76 px pour que le bouton ne tranche pas une ligne en deux. Cette bande est là **en permanence**, et la fin de la liste passe toujours dessous |
+| **en haut** | il est annoncé une fois et ne cache plus rien. La page redevient une page |
+
+**Ce que ça coûte, dit franchement : le pouce doit remonter.** Sur un téléphone
+tenu d'une main, le bas est plus facile à atteindre que le haut — et vous vous
+en servez debout, sur un chantier. C'est le seul argument contre, et il est
+sérieux.
+
+**La bascule « Le geste : en haut / en bas » est là pour ça** : essayez les deux
+au pouce, sur votre téléphone, et tranchez avec votre main plutôt qu'avec mon
+avis.
 
 ### Ce que j'ai ajouté sans que vous le demandiez
 
@@ -356,9 +391,9 @@ avec un zéro.
 | Matin chargé — 3 retours, 5 devis | |
 |---|---|
 | les deux registres se voient | **oui**, sans défiler |
-| entrées lisibles sans défiler | **2 sur 4** |
+| entrées lisibles sans défiler | **3 sur 4** — le bouton en haut ou en bas n'y change rien |
 | le plus petit texte | **11 px** (les cinq mots du bas) |
-| le pire contraste | **4,59** — passe 4,5 · sur Nuit **6,14** |
+| le pire contraste | **2,77** — c'est votre or, et il est sous 4,5 · sur Nuit **6,14** |
 | la plus petite cible | **44 px** |
 
 ---

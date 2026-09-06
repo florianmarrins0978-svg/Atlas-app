@@ -52,10 +52,16 @@
   ══════════════════════════════════════════════════════════════════════════
   DEUX RÈGLES DE SA CHARTE QUI ONT DÉCIDÉ DU DESSIN
 
-  · **L'OR D'UN TRAIT N'EST PAS L'OR D'UN MOT.** `or` (#B98B47) tient 2,77 de
-    contraste sur le crème : bon pour un filet, un cercle, un ornement — pas
-    pour un mot. Les MOTS dorés prennent donc `orTexte` (#8b6835, 4,59), qui
-    existe déjà dans `design-tokens.ts` et que l'accueil n'emploie nulle part.
+  · **SON OR, PARTOUT — sa demande du 6 septembre :** *« tout ce qui est en
+    doré foncé, mets-le en doré, celui de l'appli »*. Les libellés portaient
+    `orTexte` (#8b6835), le même or assombri jusqu'à 4,59 ; ils portent
+    désormais `or` (#B98B47), le sien, au caractère près.
+
+    **Ce que ça coûte, dit une fois :** sur le crème, cet or tient **2,77** de
+    contraste là où un mot en demande 4,5 — la bande de mesure sous l'écran
+    l'affiche en clair, et elle ne ment pas. **Sur Nuit il en tient 6,14** :
+    les deux ors y sont identiques, rien n'y change. C'est son écran et c'est
+    sa couleur ; la variable reste, et une seule ligne la défait.
   · **AUCUN TRAIT GRIS DANS L'EN-TÊTE.** Il l'a demandé le 11 août, il l'a fait
     retirer le 24 : « une sans le trait gris ». Il n'y en a pas ici. L'ornement
     du milieu n'est pas un trait d'en-tête : c'est ce qui SÉPARE les deux
@@ -72,7 +78,7 @@
 .origine{
   --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
   --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
-  --or:#B98B47; --orTexte:#8b6835; --alerte:#9C3B2E; --plein:#7d9a6d;
+  --or:#B98B47; --orTexte:#B98B47; --alerte:#9C3B2E; --plein:#7d9a6d;
   --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
   --presse:rgba(28,28,26,.045);
   /* Le MOT écrit sur son vert : en encre, 5,46 — en crème il tiendrait 2,97.
@@ -144,19 +150,17 @@ body{
 }
 .cadre[data-feuille="oui"] .ecran{ transform:scale(.94) translateY(-8px); filter:brightness(.8); }
 
-/* ─── LE FRONTISPICE ────────────────────────────────────────────────────
-   Le sceau, puis une ligne qui porte la date à gauche et ses clients à
-   droite. Rien d'autre, et surtout aucun filet sous l'en-tête. */
-.sceau{
-  display:flex; align-items:center; justify-content:center;
-  width:42px; height:42px; margin:18px auto 0; border-radius:9999px;
-  border:1.5px solid var(--or);
-}
-.sceau svg{ display:block; }
+/* ─── L'EN-TÊTE ─────────────────────────────────────────────────────────
+   **LE SCEAU DU HAUT A ÉTÉ RETIRÉ — sa demande du 6 septembre :** *« retire
+   ta déco en haut »*. Il l'avait autorisée la veille (« tu peux rajouter des
+   éléments de décoration ») ; il l'a vue, et il l'a refusée. Ne pas la
+   remettre en citant l'autorisation : elle est révoquée par son auteur.
 
+   Reste une ligne, et rien d'autre : la date à gauche, ses clients à droite.
+   Aucun filet ne ferme cet en-tête — il l'a fait retirer le 24 août. */
 .colophon{
   display:flex; align-items:baseline; justify-content:space-between;
-  gap:12px; padding:12px 24px 0;
+  gap:12px; padding:26px 24px 0;
 }
 .date{ margin:0; font:400 17px/1.4 var(--serif); color:var(--inkSoft); letter-spacing:-.008em; }
 .clients{
@@ -168,7 +172,15 @@ body{
 .clients b{ font:400 17px/1 var(--serif); letter-spacing:0; color:var(--ink); }
 
 /* ─── Les registres ─────────────────────────────────────────────────────── */
+.place-haut{ padding:18px 24px 0; }
+.cadre[data-bouton="bas"] .place-haut{ display:none; }
+.cadre[data-bouton="haut"] .socle .action{ display:none; }
+
 .registres{ flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; padding-bottom:96px; }
+/* En haut, le socle ne réserve plus que ce qu'il faut au tiroir. */
+.cadre[data-bouton="haut"][data-tiroir="non"] .registres{ padding-bottom:22px; }
+.cadre[data-bouton="haut"][data-tiroir="non"] .socle{ padding-bottom:0; }
+.cadre[data-bouton="haut"][data-tiroir="non"] .socle::before{ display:none; }
 .registres::-webkit-scrollbar{ display:none; }
 
 .enseigne{
@@ -178,15 +190,17 @@ body{
 }
 .enseigne b{ font:400 17px/1 var(--serif); letter-spacing:0; color:var(--ink); }
 
-/* L'ORNEMENT — la décoration qu'il vient d'autoriser, et c'est SA feuille.
-   Deux filets d'or et la marque au milieu : il sépare les deux registres, il
-   ne ferme pas l'en-tête (le trait gris de l'en-tête reste retiré). */
+/* LA SÉPARATION — deux filets d'or, et RIEN entre eux.
+   Sa demande du 6 septembre : *« tes deux traits doré pour séparer c'est bien
+   mais retire la déco qu'il y a entre les deux »*. La feuille est partie ; les
+   deux filets restent, et l'écart entre eux fait le travail.
+   Elle sépare les deux registres — elle ne ferme pas l'en-tête : le trait gris
+   de l'en-tête, retiré le 24 août, ne revient pas par cette porte. */
 .ornement{
-  display:flex; align-items:center; justify-content:center; gap:14px;
+  display:flex; align-items:center; justify-content:center; gap:26px;
   margin:18px 24px 0;
 }
-.ornement i{ display:block; height:1px; width:56px; background:var(--or); opacity:.55; }
-.ornement svg{ display:block; opacity:.75; }
+.ornement i{ display:block; height:1px; width:64px; background:var(--or); opacity:.55; }
 
 /* ─── Une entrée ────────────────────────────────────────────────────────
    Aucune boîte, aucun fond, aucun trait : de l'air, et deux voix. Le nom du
@@ -360,6 +374,10 @@ body{
     <button data-k="charte" data-v="origine">Origine</button>
     <button data-k="charte" data-v="nuit">Nuit</button>
   </div>
+  <div class="rang"><b>Le geste</b>
+    <button data-k="bouton" data-v="haut">En haut</button>
+    <button data-k="bouton" data-v="bas">En bas</button>
+  </div>
   <div class="rang"><b>Matin</b>
     <button data-k="cas" data-v="charge">Chargé</button>
     <button data-k="cas" data-v="calme">Calme</button>
@@ -368,24 +386,28 @@ body{
   </div>
 </div>
 
-<div class="cadre origine" id="cadre" data-cas="charge" data-feuille="non" data-tiroir="non">
+<div class="cadre origine" id="cadre" data-cas="charge" data-bouton="haut" data-feuille="non" data-tiroir="non">
   <div class="ecran">
-    <!-- LE SCEAU — sa marque, recopiée trait pour trait de `MarqueAtlas.tsx` :
-         une tige et trois paires de folioles, dans son cercle d'or d'1,5 px. -->
-    <div class="sceau">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#B98B47"
-           stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 21.5V8"/>
-        <path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/>
-        <path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/>
-        <path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/>
-        <path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
-      </svg>
-    </div>
-
     <div class="colophon">
       <p class="date" id="date">Mardi 8 septembre</p>
       <a class="clients" href="#clients">Vos clients <b>21</b></a>
+    </div>
+
+    <!-- **LE GESTE, EN HAUT — et sa question du 6 septembre :** *« je pense
+         que créer le chantier ne doit pas être tout en bas, tu en penses
+         quoi ? »*. Il a raison, et le pourquoi est mesuré : en bas, le socle
+         opaque coûte 76 px sur 596 — 13 % de l'écran — EN PERMANENCE, et il
+         ferme la liste alors que cette page sert d'abord à LIRE ce qui
+         attend. En haut il est annoncé une fois et ne cache rien.
+         Ce qu'il coûte, dit franchement : le pouce doit remonter. La bascule
+         du pilote laisse comparer les deux au doigt. -->
+    <div class="place-haut">
+      <button class="action" type="button" data-action>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        Créer un devis
+      </button>
     </div>
 
     <div class="registres" id="registres"></div>
@@ -396,7 +418,7 @@ body{
       <span id="tiroir-mot">Retiré à l'instant</span>
       <button type="button" id="annuler" tabindex="-1">Annuler</button>
     </div>
-    <button class="action" type="button" id="action">
+    <button class="action" type="button" data-action>
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
       </svg>
@@ -509,7 +531,7 @@ const CAS = {
    registre mange l'autre, et l'écran ne montre plus qu'une seule chose. */
 const VISIBLES = { retours:1, devis:3 };
 
-let etat = { charte:"origine", cas:"charge" };
+let etat = { charte:"origine", cas:"charge", bouton:"haut" };
 let partis = [];
 let deplie = { retours:false, devis:false };
 
@@ -521,18 +543,7 @@ function echapper(s){
 }
 
 const ORNEMENT = `
-  <div class="ornement" aria-hidden="true">
-    <i></i>
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B98B47"
-         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 21.5V8"/>
-      <path d="M12 11.6C8.5 11.6 6.2 9.5 6.2 6.4c3.5 0 5.8 2.1 5.8 5.2Z"/>
-      <path d="M12 11.6c3.5 0 5.8-2.1 5.8-5.2-3.5 0-5.8 2.1-5.8 5.2Z"/>
-      <path d="M12 16.6c-2.6 0-4.3-1.6-4.3-3.9 2.6 0 4.3 1.6 4.3 3.9Z"/>
-      <path d="M12 16.6c2.6 0 4.3-1.6 4.3-3.9-2.6 0-4.3 1.6-4.3 3.9Z"/>
-    </svg>
-    <i></i>
-  </div>`;
+  <div class="ornement" aria-hidden="true"><i></i><i></i></div>`;
 
 /** « Et trois autres » — en toutes lettres jusqu'à dix, comme on parle. */
 const MOTS = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix"];
@@ -555,6 +566,7 @@ function registre(nom, cle, entrees, dessinerUne){
 function dessiner(){
   cadre.className = "cadre " + etat.charte;
   cadre.dataset.cas = etat.cas;
+  cadre.dataset.bouton = etat.bouton;
   cadre.dataset.tiroir = partis.length ? "oui" : "non";
   document.getElementById("date").textContent = DATE;
   const combien = CLIENTS[etat.cas];
@@ -625,10 +637,18 @@ function mesurer(){
   const boite = cadre.getBoundingClientRect();
   const fondCadre = getComputedStyle(cadre).backgroundColor;
 
-  /* Ce qui se lit ENTIÈREMENT sans défiler, et sans passer sous le socle. */
+  /* Ce qui se lit ENTIÈREMENT sans défiler, et sans passer sous ce qui est
+     posé en bas. La bande réservée se MESURE — écrite à 140 px en dur, elle
+     comptait le socle même quand le bouton est remonté en haut, et rendait la
+     version haute plus mauvaise qu'elle n'est. Un contrôle qui fausse la
+     comparaison qu'il sert ne prouve rien (`CLAUDE.md` §5). */
+  const socle = cadre.querySelector(".socle");
+  const barre = cadre.querySelector(".barre");
+  const posesEnBas = [socle, barre].filter(el => el && el.getBoundingClientRect().height > 0);
+  const plancher = Math.min(...posesEnBas.map(el => el.getBoundingClientRect().top), boite.bottom);
   const entiere = el => {
     const r = el.getBoundingClientRect();
-    return r.height > 0 && r.top >= boite.top - 1 && r.bottom <= boite.bottom - 140;
+    return r.height > 0 && r.top >= boite.top - 1 && r.bottom <= plancher + 1;
   };
   const vues = [...hote.querySelectorAll(".entree")].filter(entiere).length;
   const total = hote.querySelectorAll(".entree").length;
@@ -736,8 +756,7 @@ document.addEventListener("click", e => {
   if (lien) e.preventDefault();
 });
 
-const action = document.getElementById("action");
-action.addEventListener("click", () => ouvrir(true));
+document.querySelectorAll("[data-action]").forEach(b => b.addEventListener("click", () => ouvrir(true)));
 document.getElementById("voile").addEventListener("click", () => ouvrir(false));
 document.getElementById("fermer").addEventListener("click", () => ouvrir(false));
 document.getElementById("creer").addEventListener("click", () => ouvrir(false));
