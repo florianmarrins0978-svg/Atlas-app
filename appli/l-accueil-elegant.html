@@ -533,7 +533,13 @@ body{
   <div class="ecran">
     <div class="colophon">
       <p class="date" id="date">Mardi 8 septembre</p>
-      <a class="clients" href="#clients">Vos clients <b>21</b></a>
+      <!-- **« VOS CLIENTS » MÈNE POUR DE VRAI — sa demande du 6 septembre :
+           « affiche-moi les clients cliquable ».**
+           Il ouvre la maquette de la liste des clients, faite le 5 septembre —
+           les mêmes vingt et un clients, la recherche qui marche. On n'en
+           dessine pas une seconde : deux listes des mêmes clients finiraient
+           par diverger (`CLAUDE.md` §3). -->
+      <a class="clients" href="vos-clients.html">Vos clients <b>21</b></a>
     </div>
 
     <!-- **LE GESTE, EN HAUT — et sa question du 6 septembre :** *« je pense
@@ -947,8 +953,7 @@ document.addEventListener("click", e => {
     onglet.setAttribute("aria-current", "page");
     return;
   }
-  const lien = e.target.closest(".clients");
-  if (lien) e.preventDefault();
+  /* « Vos clients » n'est plus retenu : il mène à la liste, pour de vrai. */
 });
 
 document.querySelectorAll("[data-action]").forEach(b => b.addEventListener("click", () => ouvrir(true)));
