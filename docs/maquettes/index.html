@@ -844,12 +844,20 @@
     <span class="quoi">Sa demande du 30 août 2026, depuis cette page : <b>« j’aimerais avoir accès à l’assistant sur cette page »</b>. Elle en était privée depuis le 5 août, volontairement — la page « …/devis-complet » exclut tout décor d’application (`src/app/layout.tsx`) pour rester une feuille et non un écran. La planche pose un rond de plus, à droite du micro : même taille et même vert que `BoutonAssistant` sur les autres écrans, ouvrant le même panneau. Rien n’est codé.</span>
   </a>
 
+  <a class="item" href="../../appli/l-accueil-a-bout-de-bras.html">
+    <span class="no">▶</span><span class="titre">L’accueil, à bout de bras — ESSAYABLE</span>
+    <span class="quoi">Sa consigne du 5 septembre 2026 — <b>« des vieux qui ont du mal à se servir de leur téléphone »</b> — appliquée le 6 aux Réglages et pas à l’accueil, qui écrit encore ses états en 9,5 px dans un or à 2,77 de contraste. Bascule « Aujourd’hui » / « À bout de bras », quatre matins, Nuit, et une bande de mesures relevée par la page elle-même. À lire avec <code>accueil-ce-qui-vous-attend.html</code> du 3 septembre, qui prend le même écran par l’autre bout. Rien n’est codé.</span>
+  </a>
+
   <p class="note">
     <b>Ce qui n’est pas ici.</b> La proposition « Le calme » en Nuit, Pierre et Brume a été écartée
     le soir même — elle n’a pas été conservée, pour que ce dossier reste un chemin et non un entrepôt.
     <br><br>
-    <b>Une réserve sur les polices.</b> Ces pages empruntent la serif de votre appareil.
-    L’application, elle, charge Playfair Display : le rendu final sera plus dessiné.
+    <b>Une réserve sur les polices — corrigée le 6 septembre 2026.</b> Ce paragraphe annonçait que
+    « l’application charge Playfair Display : le rendu final sera plus dessiné ». C’est faux depuis
+    que la serif du SYSTÈME a été retenue (<code>src/app/globals.css</code>, <code>--font-display</code>) :
+    c’est ce dessin-là qu’il a validé, sur sa propre capture. Ces pages et l’application empruntent
+    donc la même serif — celle de l’appareil qui les affiche.
   </p>
 </div>
 </body>
