@@ -132,12 +132,17 @@ h2.petit{font-size:29px}
    d'autres mots dorés ne dirait plus rien, maintenant qu'ils sont tous
    modifiables. */
 .jeton.verrou{box-shadow:inset 0 0 0 1px var(--or);border-radius:4px;padding:1px 6px}
-.apercus{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+/* Un aperçu par ligne, et non deux colonnes : à 390 px de large, un message
+   coupé en colonne de 160 px ne se lit plus — il se devine. */
+.apercus{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
 .apercu{border:1px solid var(--trait);border-radius:6px;overflow:hidden}
 .apercu .tt{font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding:7px 11px;
   color:var(--encre-douce);border-bottom:1px solid var(--trait)}
+/* L'aperçu NE DOIT PAS ressembler au cadre qu'on modifie : deux boîtes de
+   la même couleur l'une sous l'autre se lisent comme deux champs, et l'on
+   essaie de corriger celle qui ne se corrige pas. */
 .apercu .cp{padding:11px;font-size:12px;line-height:1.5;color:var(--encre-douce);
-  background:var(--plage);white-space:pre-wrap;word-break:break-word}
+  background:var(--fond);white-space:pre-wrap;word-break:break-word}
 .choix{display:flex;align-items:baseline;justify-content:space-between;gap:12px;width:100%;
   min-height:62px;border-radius:999px;padding:10px 20px;margin-bottom:8px;text-align:left;
   border:0;box-shadow:inset 0 0 0 1px var(--trait);background:none;color:inherit;
@@ -195,10 +200,9 @@ td b{color:var(--encre)}
   <button type="button" data-vue="aujourdhui" aria-pressed="false">Aujourd'hui</button>
   <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
   <br>
-  <!-- Ces deux-là ouvrent l'écran du message : un bouton qui ne montre rien
-       quand on l'appuie s'apprend à être ignoré. -->
-  <button type="button" data-facon="C" aria-pressed="true">Message : deux phrases à vous</button>
-  <button type="button" data-facon="A" aria-pressed="false">Message : un seul mot change</button>
+  <!-- Il a tranché le message le 7 septembre : il n'y a plus de façons à
+       comparer, seulement un raccourci vers l'écran concerné. -->
+  <button type="button" id="allerMessage">Voir mes trois messages</button>
 </div>
 
 <div class="tete">
@@ -211,12 +215,11 @@ td b{color:var(--encre)}
   écran court. <b>Touchez-les</b>, et revenez par le chevron du haut. Puis
   basculez sur <b>« Aujourd'hui »</b> : c'est exactement le même contenu, d'une
   seule coulée.</p>
-  <p><b>Vos trois remarques du 7 septembre y sont</b> : le message est
-  entièrement modifiable et seul le lien reste verrouillé (les deux boutons du
-  haut comparent les deux façons de garder le mot juste), le <b>doré</b> est
-  revenu dans les couleurs d'accent — <b>c'était une erreur de ma planche, pas
-  de l'application</b> —, et la typographie passe de <b>dix choix à six</b>.
-  Le détail de chacune est sous l'écran.</p>
+  <p><b>Vos remarques du 7 septembre y sont</b> : <b>trois messages</b> — un par
+  document, mots dorés gardés, seul le lien verrouillé —, le <b>doré</b> revenu
+  dans les couleurs d'accent (<b>c'était une erreur de ma planche, pas de
+  l'application</b>), et la typographie ramenée de <b>dix choix à six</b>. Le
+  détail de chacune est sous l'écran.</p>
 </div>
 
 <div class="scene">
@@ -275,32 +278,39 @@ td b{color:var(--encre)}
   Ils n'ouvrent donc aucune ligne : ils vivent dans le premier écran, juste
   sous les interrupteurs qu'ils commentent.</p>
 
-  <h3>Le message : tout se modifie, sauf le lien</h3>
-  <p>Votre demande du 7 septembre. Aujourd'hui <b>quatre mots sont verrouillés</b> ;
-  demain, <b>un seul</b> — le lien, encadré d'or dans l'écran. Sans lui, votre
-  client ne peut ni ouvrir son devis ni choisir sa date, et votre planning ne
-  reçoit rien : l'application refuse déjà d'enregistrer un message sans lui, et
-  ça ne change pas.</p>
-  <p><b>Mais « je modifie la phrase du milieu » a un prix</b>, et les deux
-  boutons du haut vous le montrent en vrai — regardez l'aperçu <b>de droite</b>,
-  celui de la facture :</p>
+  <h3>Le message : trois messages, et le lien seul verrouillé</h3>
+  <p><b>Votre décision du 7 septembre, et elle vaut mieux que ma proposition.</b>
+  Je vous proposais un message commun avec une « phrase du milieu » qui change —
+  une mécanique à comprendre. Un message entier par document ne demande rien à
+  comprendre : ce que vous lisez est ce que votre client reçoit.</p>
+  <p><b>Mais il y en a TROIS, pas deux</b>, et c'est la seule chose que vous ne
+  pouviez pas savoir : le <b>compte rendu de passage</b> part avec ce même
+  message (<i>composerMessageEntretien</i>). À deux, le troisième document
+  restait orphelin — votre client aurait entendu votre voix sur son devis et sa
+  facture, celle d'Atlas sur le compte rendu.</p>
   <table>
-    <tr><th>La façon</th><th>Ce que ça donne</th></tr>
-    <tr><td><b>Un seul mot change</b><br>vous écrivez une phrase, seul « devis »
-      devient « facture »</td>
-      <td>votre facture dit « choisissez votre date d'intervention », et le
-      numéro comme l'échéance <b>disparaissent</b>. C'est visible dans l'aperçu</td></tr>
-    <tr><td><b>Deux phrases à vous</b><br>une pour le devis, une pour la
-      facture — les deux modifiables</td>
-      <td>rien ne peut se contredire. Le numéro et l'échéance restent posés tout
-      seuls, là où ils ont un sens. <b>C'est celle que je vous conseille</b></td></tr>
+    <tr><th>Aujourd'hui</th><th>Décidé</th></tr>
+    <tr><td>un message pour les trois documents</td><td><b>trois messages</b>,
+      un par document, tous pré-remplis avec le texte d'aujourd'hui</td></tr>
+    <tr><td>quatre mots dorés verrouillés</td><td><b>un seul</b> : le lien,
+      encadré d'or dans l'écran</td></tr>
+    <tr><td>la phrase du milieu est posée par Atlas</td><td>elle est à vous, et
+      le mot juste vient tout seul : la phrase du devis dit « devis », celle de
+      la facture dit « facture »</td></tr>
   </table>
-  <p><b>Le mot juste par construction :</b> dans la seconde façon, vous n'avez
-  même pas à y penser — la phrase du devis dit « devis », celle de la facture
-  dit « facture ». C'est exactement ce que vous demandiez.</p>
+  <p><b>Les mots dorés restent</b>, comme vous l'avez demandé — le prénom, le
+  numéro, l'échéance, votre entreprise se remplissent tout seuls. Ils se
+  modifient et se retirent, à une exception : <b>le lien</b>. Sans lui, votre
+  client ne peut ni ouvrir son document ni choisir sa date, et votre planning ne
+  reçoit rien ; l'application refuse déjà d'enregistrer un message sans lui.</p>
   <p><b>Et l'échéance emporte ses mots avec elle :</b> sur un devis, le
   « , à régler avant le … » disparaît en entier. Un trou qui laisserait
-  « Voici votre devis , . » serait pire que pas de trou du tout.</p>
+  « Voici votre devis , . » serait pire que pas d'échéance du tout. Ça se voit
+  dans les aperçus.</p>
+  <p><b>Ce que ça coûtera en plus, dit tout de suite :</b> la base ne porte
+  qu'une colonne de message (<i>entreprises.message_client</i>). Il en faudra
+  trois — c'est une migration, et l'ancienne valeur doit devenir celle du devis,
+  pas se perdre.</p>
 
   <h3>Le doré : c'est ma planche qui l'avait perdu</h3>
   <p><b>Vous avez raison sur ce que vous voyiez, et je me suis trompé sur la
@@ -449,36 +459,55 @@ var TYPOS = [
   phraseDuDocument, mot pour mot. Ce qui change, c'est ce qui est VERROUILLÉ —
   aujourd'hui les quatre mots dorés le sont ; demain, le lien seul.
 
-  DEUX FAÇONS, parce qu'elles ne coûtent pas la même chose :
+  SA PROPOSITION DU 7 SEPTEMBRE, ET ELLE EST MEILLEURE QUE LA MIENNE :
+  *« en fait il faut faire deux messages par défaut, un pour devis et un pour
+  facture »*. Ma façon C posait un message commun avec une « phrase du milieu »
+  qui change — une mécanique à comprendre. Un message entier par document ne
+  demande rien à comprendre : ce qu'il lit est ce que son client reçoit.
 
-  A · un seul mot doré — il écrit UNE phrase, et seul le mot « devis » devient
-      « facture ». C'est le plus simple, et l'aperçu montre ce que ça casse :
-      sa phrase de devis parle de choisir une date, et sa facture la répète.
+  MAIS IL Y EN A TROIS, PAS DEUX, et c'est la seule chose qu'il ne pouvait pas
+  savoir : `composerMessageEntretien` envoie le COMPTE RENDU DE PASSAGE avec ce
+  même message. À deux messages, le troisième document reste orphelin — le
+  client entendrait sa voix sur son devis et sa facture, celle d'Atlas sur le
+  compte rendu.
 
-  C · deux phrases à lui — le message est commun, et la phrase du milieu a sa
-      version devis et sa version facture, toutes deux modifiables. Rien ne peut
-      se contredire, et le numéro et l'échéance restent posés tout seuls là où
-      ils ont un sens.
+  SA DÉCISION, PRISE DANS LA FOULÉE : *« dans ce cas faut faire 3 messages par
+  défaut et garder le système un seul mot change »*. Donc :
 
-  (La façon B — cinq petits mots dorés à placer soi-même — a été écartée avant
-  d'être dessinée : elle demande de composer une phrase qui marche pour les deux
-  documents, ce que C donne sans y penser.)
+    - TROIS messages entiers, un par document, tous pré-remplis avec le texte
+      d'aujourd'hui ;
+    - les mots dorés RESTENT dans chacun — ils se remplissent tout seuls (le
+      prénom, le numéro, l'échéance, son entreprise) ;
+    - tout se modifie, y compris ces mots-là ;
+    - SAUF LE LIEN, qui reste verrouillé dans les trois.
+
+  Il n'y a donc plus de façon à comparer : cette planche montre ce qui est
+  décidé. Le bouton « Aujourd'hui », lui, montre toujours l'existant — un seul
+  message, et quatre mots dorés qu'on ne peut pas toucher.
 */
-var COMMUN = ["Bonjour [prenom],", "", "[phrase]", "", "[lien]", "", "Bien à vous,",
-  "[entreprise]"].join("\n");
+function commun(phrase){
+  return "Bonjour [prenom],\n\n" + phrase + "\n\n[lien]\n\nBien à vous,\n[entreprise]";
+}
 
-/* Sa phrase d'aujourd'hui, telle qu'elle part — le tiret retiré le 25 août. */
+/* Ses trois phrases d'aujourd'hui, telles qu'elles partent — mot pour mot
+   depuis `phraseDuDocument`, le tiret retiré le 25 août compris. */
 var PHRASE_DEVIS = "Voici votre devis. Vous pouvez le consulter et choisir votre date " +
   "d'intervention. Et si aucune des dates proposées ne vous convient, vous pouvez en " +
   "proposer une autre. Tout se fait sur cette page :";
 var PHRASE_FACTURE = "Voici votre facture [numero], à régler avant le [echeance]. " +
   "Vous pouvez la consulter et la télécharger ici :";
-/* La phrase unique de la façon A : la même, avec le seul mot qui change. */
-var PHRASE_UNE = "Voici votre [document]. Vous pouvez le consulter et choisir votre date " +
-  "d'intervention. Et si aucune des dates proposées ne vous convient, vous pouvez en " +
-  "proposer une autre. Tout se fait sur cette page :";
+var PHRASE_PASSAGE = "Voici le compte rendu de mon passage chez vous :";
 
-var facon = "C";              // "A" ou "C" — la façon montrée
+var MESSAGES = [
+  {clef:"devis", titre:"Quand j'envoie un devis", corps: commun(PHRASE_DEVIS)},
+  {clef:"facture", titre:"Quand j'envoie une facture", corps: commun(PHRASE_FACTURE)},
+  {clef:"passage", titre:"Quand j'envoie un compte rendu", corps: commun(PHRASE_PASSAGE)}
+];
+
+/* L'existant : un seul message, et la phrase du document y est POSÉE par
+   Atlas — c'est elle que les quatre mots dorés verrouillent aujourd'hui. */
+var MESSAGE_AUJOURDHUI = commun("[document]");
+
 var formatChoisi = "annee-6";
 
 /*
@@ -491,7 +520,7 @@ var formatChoisi = "annee-6";
   planche-ci qui l'avait perdue en recopiant les pastilles à la main.
 
   Deux autres erreurs de la même recopie, corrigées ici :
-    - le papier était dessiné en #faf9f5 ; ses documents sont sur #faf9f5 ;
+    - le papier était dessiné en « F2EFE7 » ; ses documents sont sur #faf9f5 ;
     - le « Total TTC » y était doré. Il ne l'est pas : `document-commun.ts`
       l'écrit à l'encre, et l'accent ne tient QUE les intitulés de parties et
       le trait sous le titre.
@@ -587,59 +616,72 @@ function blocCoupe(){
   serait pire que pas de trou du tout.
 */
 function remplir(texte, doc){
+  var mot = doc === "devis" ? "devis" : doc === "facture" ? "facture" : "compte rendu";
   var t = ech(texte)
     .replace("[prenom]", '<span class="jeton">Mme Larousse</span>')
-    .replace("[document]", '<span class="jeton">' + (doc === "devis" ? "devis" : "facture") + '</span>')
+    .replace("[document]", '<span class="jeton">' + mot + '</span>')
     .replace("[numero]", '<span class="jeton">' + (doc === "devis" ? "D" : "F") + AN + '-0008</span>')
     .replace("[lien]", '<span class="jeton">https://…</span>')
     .replace("[entreprise]", "Eden Nature");
-  return doc === "devis"
-    ? t.replace(", à régler avant le [echeance]", "")
-    : t.replace("[echeance]", '<span class="jeton">21 septembre</span>');
-}
-
-function messageRecu(doc){
-  var phrase = facon === "A" ? PHRASE_UNE : (doc === "devis" ? PHRASE_DEVIS : PHRASE_FACTURE);
-  return remplir(COMMUN.replace("[phrase]", phrase), doc);
+  /* L'échéance n'existe que sur une facture, et elle emporte SES MOTS avec
+     elle : « Voici votre devis , . » serait pire que pas d'échéance du tout. */
+  return doc === "facture"
+    ? t.replace("[echeance]", '<span class="jeton">21 septembre</span>')
+    : t.replace(", à régler avant le [echeance]", "");
 }
 
 /* Ce qu'il VOIT dans le cadre : les mots qui se remplissent seuls sont nommés,
-   pas remplis — et ils se modifient tous, sauf le lien. */
-function cadreEcrit(texte){
+   pas remplis. Tout se modifie — sauf celui qui porte le cadre d'or. */
+function cadreEcrit(texte, lienVerrouille){
   return ech(texte)
-    /* La place de la phrase se dit comme les autres mots dorés : un « ‹ … › »
-       posé là se lisait comme un code, et ce n'est pas sa langue. */
-    .replace("[phrasedudoc]", '<span class="jeton">la phrase du devis, ou celle de la facture</span>')
     .replace("[prenom]", '<span class="jeton">le prénom</span>')
-    .replace("[document]", '<span class="jeton">devis</span>')
+    .replace("[document]", '<span class="jeton">la phrase de votre devis / facture</span>')
     .replace("[numero]", '<span class="jeton">le numéro</span>')
     .replace("[echeance]", '<span class="jeton">l\'échéance</span>')
-    .replace("[lien]", '<span class="jeton verrou">le lien</span>')
+    .replace("[lien]", '<span class="jeton' + (lienVerrouille ? " verrou" : "") + '">le lien</span>')
     .replace("[entreprise]", "Eden Nature");
 }
 
-function blocMessage(){
-  var h = '<div class="bloc"><p class="inter">Mon message au client</p>' +
-    '<p class="note" style="margin:0 0 12px">Modifiez tout ce que vous voulez, même les mots ' +
-    'en doré. <b style="color:var(--encre);font-weight:400">Seul le lien ne se retire pas</b> : ' +
-    'sans lui, votre client ne peut ni ouvrir son devis ni choisir sa date.</p>' +
-    '<div class="cadre">' + cadreEcrit(COMMUN.replace("[phrase]",
-      facon === "A" ? PHRASE_UNE : "[phrasedudoc]")) + '</div>';
+var APERCUS = [["devis", "Envoi d'un devis"], ["facture", "Envoi d'une facture"],
+  ["passage", "Envoi d'un compte rendu"]];
 
-  if (facon === "C") {
-    h += '<p class="inter" style="margin:18px 0 8px">Quand c\'est un devis</p>' +
-      '<div class="cadre">' + cadreEcrit(PHRASE_DEVIS) + '</div>' +
-      '<p class="inter" style="margin:18px 0 8px">Quand c\'est une facture</p>' +
-      '<div class="cadre">' + cadreEcrit(PHRASE_FACTURE) + '</div>';
+function blocMessage(){
+  /* L'EXISTANT, dans la vue « Aujourd'hui » : un seul message pour les trois
+     documents, et quatre mots dorés qu'on ne peut pas toucher. Le dessiner
+     autrement rendrait la comparaison fausse. */
+  if (vue === "aujourdhui") {
+    return '<div class="bloc"><p class="inter">Mon message au client</p>' +
+      '<p class="note" style="margin:0 0 12px">Modifiez ce que vous voulez. Les mots en doré ' +
+      'se remplissent tout seuls et ne se modifient pas.</p>' +
+      '<div class="cadre">' + cadreEcrit(MESSAGE_AUJOURDHUI, false) + '</div>' +
+      '<p class="inter" style="margin:18px 0 0">Ce que votre client recevra</p>' +
+      '<div class="apercus">' + APERCUS.map(function(a){
+        return '<div class="apercu"><div class="tt">' + ech(a[1]) + '</div><div class="cp">' +
+          remplir(MESSAGE_AUJOURDHUI.replace("[document]",
+            a[0] === "devis" ? PHRASE_DEVIS : a[0] === "facture" ? PHRASE_FACTURE : PHRASE_PASSAGE),
+            a[0]) + '</div></div>';
+      }).join("") + '</div></div>';
   }
 
-  return h + '<p class="inter" style="margin:18px 0 0">Ce que votre client recevra</p>' +
-    '<div class="apercus">' +
-    '<div class="apercu"><div class="tt">Envoi d\'un devis</div>' +
-    '<div class="cp">' + messageRecu("devis") + '</div></div>' +
-    '<div class="apercu"><div class="tt">Envoi d\'une facture</div>' +
-    '<div class="cp">' + messageRecu("facture") + '</div></div>' +
-    '</div></div>';
+  /* SA DÉCISION : trois messages entiers, les mots dorés gardés, le lien seul
+     verrouillé. Chacun porte SON aperçu — un aperçu posé loin de son message
+     oblige à faire l'aller-retour pour savoir lequel il montre. */
+  var h = '<div class="bloc"><p class="inter">Mon message au client</p>' +
+    /* Trois lignes suffisent : sa règle du 25 août, « le moins de mots
+       possible ». Ce qui reste explique le seul verrou — sans quoi il se
+       lirait comme une panne. */
+    '<p class="note" style="margin:0 0 14px">Un message par document, déjà écrit. Tout se ' +
+    'modifie, même les mots dorés. <b style="color:var(--encre);font-weight:400">Seul le lien ' +
+    'ne se retire pas</b> : sans lui, votre client ne peut rien ouvrir.</p>';
+
+  for (var i = 0; i < MESSAGES.length; i++) {
+    var m = MESSAGES[i];
+    h += '<p class="inter" style="margin:' + (i ? "22px" : "0") + ' 0 8px">' + ech(m.titre) + '</p>' +
+      '<div class="cadre">' + cadreEcrit(m.corps, true) + '</div>' +
+      '<div class="apercu" style="margin-top:8px"><div class="tt">Ce que votre client recevra' +
+      '</div><div class="cp">' + remplir(m.corps, m.clef) + '</div></div>';
+  }
+  return h + '</div>';
 }
 
 function blocNumero(){
@@ -841,22 +883,13 @@ for (var b2 = 0; b2 < boutons.length; b2++) {
   });
 }
 
-var faconsBoutons = document.querySelectorAll("[data-facon]");
-for (var b3 = 0; b3 < faconsBoutons.length; b3++) {
-  faconsBoutons[b3].addEventListener("click", function(){
-    facon = this.getAttribute("data-facon");
-    for (var k3 = 0; k3 < faconsBoutons.length; k3++)
-      faconsBoutons[k3].setAttribute("aria-pressed",
-        String(faconsBoutons[k3].getAttribute("data-facon") === facon));
-    /* On emmène à l'écran du message : sinon le bouton change quelque chose
-       qu'on ne voit pas. */
-    vue = "coupe"; ouvert = "message";
-    for (var k4 = 0; k4 < boutons.length; k4++)
-      boutons[k4].setAttribute("aria-pressed",
-        String(boutons[k4].getAttribute("data-vue") === "coupe"));
-    dessiner();
-  });
-}
+document.getElementById("allerMessage").addEventListener("click", function(){
+  vue = "coupe"; ouvert = "message";
+  for (var k4 = 0; k4 < boutons.length; k4++)
+    boutons[k4].setAttribute("aria-pressed",
+      String(boutons[k4].getAttribute("data-vue") === "coupe"));
+  dessiner();
+});
 
 document.getElementById("pole").addEventListener("click", function(){
   var nuit = document.body.classList.toggle("nuit");

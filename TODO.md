@@ -155,9 +155,20 @@ mais tout descend d'un cran.
 
 | | |
 |---|---|
-| **le message** | tout modifiable, **le lien seul verrouillé** — il l'a demandé, et `refusDuMessage` le refuse déjà. Deux façons dessinées, **il doit choisir** : « un seul mot change » (une phrase à lui, et la facture hérite de « choisissez votre date ») ou **« deux phrases à vous »**, une par document — celle que je conseille |
+| **le message** | **TRANCHÉ le 7 septembre : trois messages par défaut**, un par document, les mots dorés gardés, tout modifiable **sauf le lien** (`refusDuMessage` le refuse déjà). Sa formule : *« dans ce cas faut faire 3 messages par défaut et garder le système un seul mot change »* |
 | **le doré** | **c'était MA planche, pas l'application** : `couleursDocument.accent` vaut `#B98B47`, c'est déjà le défaut de ses documents et la première pastille le porte. Corrigé, avec le papier (`#faf9f5`, pas `#f2efe7`) |
 | **la typographie** | **six au lieu de dix**, tranché par moi comme il l'a demandé. Partent : Source Sans et Work Sans (indistinctes d'Inter), Libre Baskerville (rallonge le devis), Playfair (déliés perdus à l'impression) |
+
+**IL Y A TROIS DOCUMENTS, PAS DEUX — et c'est ce qui a complété sa demande.**
+Il proposait deux messages, devis et facture. `composerMessageEntretien` envoie
+le **compte rendu de passage** avec le même modèle : à deux, ce troisième
+document serait resté sur le message d'Atlas pendant que les deux autres
+portaient sa voix. La planche en montre donc trois, et il l'a validé.
+
+**Ce que ça coûte en base, à ne pas découvrir en codant :**
+`entreprises.message_client` est **une seule colonne**. Il en faut trois — donc
+une migration, et **l'ancienne valeur devient celle du devis** : la perdre
+effacerait le message qu'il a déjà écrit.
 
 **UN DÉFAUT DU CODE TROUVÉ EN VÉRIFIANT ÇA, et il n'était écrit nulle part.**
 L'aide de la couleur d'accent annonce *« le trait sous le titre, les intitulés,
