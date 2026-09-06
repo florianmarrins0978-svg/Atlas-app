@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import RubriqueReservee from "../RubriqueReservee";
@@ -66,37 +66,26 @@ export default async function GrillesPrixPage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
-        <div className="px-6 pt-8">
-          {/* **Le retour ramène d'où l'on vient, pas à la racine.** Le patron,
-              le 17 août 2026 : *« lorsque je vais dans mes prix et que je fais
-              un retour, je retourne directement dans l'application et pas dans
-              la catégorie tarif »*. Cet écran n'a qu'une porte —
-              `/reglages/tarifs` —, et la flèche renvoyait deux étages plus
-              haut : il fallait rouvrir Tarifs pour reprendre où il en était. */}
-          <Link
-            href="/reglages/tarifs"
-            aria-label="Retour aux tarifs"
-            className="flex h-10 w-10 items-center justify-center rounded-full"
-            style={{ backgroundColor: colors.rustTint }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-              <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
-        </div>
+        {/* **L'EN-TÊTE COMMUNE DEPUIS LE 6 SEPTEMBRE 2026** (`ARCHITECTURE.md`
+            §263). Deux choses qui vivaient ici sont conservées telles quelles,
+            et il ne faut pas les défaire en passant :
 
-        <div className="px-6 pt-5">
-          {/* **Le surtitre dit d'où l'on vient**, jamais où l'on est — c'est la
-              grammaire des écrans (« Mes mesures » porte « Mes prix »). Celui-ci
-              répétait son propre titre : « MES PRIX / Mes prix ». Vu à la
-              capture en corrigeant la flèche, le 17 août 2026. */}
-          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-            Tarifs &amp; catalogue
-          </p>
-          <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-            Mes prix
-          </h1>
-          <p className="mt-3 text-[14px] leading-snug" style={{ color: colors.muted }}>
+            **le retour ramène d'où l'on vient, pas à la racine** — le patron,
+            le 17 août 2026 : *« lorsque je vais dans mes prix et que je fais un
+            retour, je retourne directement dans l'application et pas dans la
+            catégorie tarif »*. Cet écran n'a qu'une porte, `/reglages/tarifs` ;
+
+            **le surtitre dit d'où l'on vient**, jamais où l'on est. Celui-ci a
+            déjà répété son propre titre — « MES PRIX / Mes prix » —, vu à la
+            capture le 17 août. */}
+        <EnTeteEcran
+          surtitre="Tarifs & catalogue"
+          titre="Mes prix"
+          retour={{ href: "/reglages/tarifs", libelle: "Retour aux tarifs" }}
+        />
+
+        <div className="px-[26px] pt-4">
+          <p className="text-[14px] leading-snug" style={{ color: colors.muted }}>
             Abattre, enlever les grumes, fendre, dessoucher, tailler une haie. Atlas y prend le montant au lieu de
             l&apos;inventer — et{" "}
             <strong>une case vide reste une question</strong>, jamais une estimation.

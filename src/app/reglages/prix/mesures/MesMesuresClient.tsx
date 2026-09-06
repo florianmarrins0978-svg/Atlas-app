@@ -59,7 +59,7 @@ export default function MesMesuresClient({
   ];
 
   return (
-    <div className="mt-6 flex flex-col gap-6 px-6">
+    <div className="mt-6 flex flex-col gap-6 px-[26px]">
       {erreur && (
         <p role="alert" className="text-[13px]" style={{ color: colors.alert }}>
           {erreur}

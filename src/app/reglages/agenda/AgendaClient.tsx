@@ -73,7 +73,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
   };
 
   return (
-    <div className="px-6 pt-6">
+    <div className="px-[26px] pt-6">
       {retour && (
         <p
           role="status"

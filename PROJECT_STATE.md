@@ -18,6 +18,20 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+## FAIT : l'en-tête unique des Réglages (6 septembre 2026)
+
+**Deuxième des six lots de la reprise des Réglages.**
+
+| | |
+|---|---|
+| **Fait** | `agenda`, `prix`, `prix/mesures` et `vocabulaire` passent à `EnTeteEcran` — titre 32 → **36 px**, surtitre doré remis SOUS le titre comme il l'a demandé le 26 août, **bouton de l'assistant rendu** ; les cinq blocs de contenu passent au rail de 26 px |
+| **Renommé** | `/reglages/vocabulaire` s'appelle **« Mon vocabulaire »** : à 36 px, l'ancien titre se cassait en deux lignes sous la pastille de l'assistant |
+| **Mesuré** | les quatre écrans **et deux témoins** : 36 px, une ligne, assistant présent, doré sous le titre — `scripts/capture-entetes-reglages.mts` |
+| **Retourné** | `test-vocabulaire-editeur-e2e` visait la phrase renommée ; il vise l'adresse du lien |
+| **Vu et NON corrigé** | « Mon agenda » demande un identifiant OAuth sur `console.cloud.google.com` — lot 5, et c'est le patron qui tranche |
+
+---
+
 
 ## FAIT : le sommaire des réglages (6 septembre 2026)
 

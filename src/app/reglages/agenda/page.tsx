@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import RubriqueReservee from "../RubriqueReservee";
@@ -60,27 +60,25 @@ export default async function AgendaPage({
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
-        <div className="px-6 pt-8">
-          <Link
-            href="/reglages"
-            aria-label="Retour aux réglages"
-            className="flex h-10 w-10 items-center justify-center rounded-full"
-            style={{ backgroundColor: colors.rustTint }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-              <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
-        </div>
+        {/* **L'EN-TÊTE COMMUNE DEPUIS LE 6 SEPTEMBRE 2026** (`ARCHITECTURE.md`
+            §263). Cet écran se dessinait le sien — titre à 32 px au lieu de 36,
+            surtitre doré AU-DESSUS du titre alors qu'il a demandé l'inverse le
+            26 août, et **aucun bouton d'assistant**. Le recours manquait donc
+            précisément sur l'écran le plus difficile des Réglages, celui qui
+            demande d'aller générer un mot de passe chez Apple.
 
-        <div className="px-6 pt-5">
-          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-            Mes disponibilités
-          </p>
-          <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-            Mon agenda
-          </h1>
-          <p className="mt-3 text-[14px] leading-snug" style={{ color: colors.muted }}>
+            **Le surtitre disait « Mes disponibilités ».** Il ne dit plus que
+            « Réglages », parce que la grammaire de ce mot est « d'où l'on
+            vient » et non « de quoi ça parle » — c'est ce qui permet de savoir
+            où la flèche ramène sans l'essayer. */}
+        <EnTeteEcran
+          surtitre="Réglages"
+          titre="Mon agenda"
+          retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
+        />
+
+        <div className="px-[26px] pt-4">
+          <p className="text-[14px] leading-snug" style={{ color: colors.muted }}>
             Atlas propose des dates à vos clients à partir de vos chantiers.{" "}
             <strong>Un rendez-vous noté ailleurs, il ne le voit pas</strong> — et il peut proposer ce jour-là.
           </p>
@@ -93,7 +91,7 @@ export default async function AgendaPage({
           chercher. iCloud vient donc dessous, avec son propre en-tête.
         */}
         <AgendaClient etat={etat} issue={params.issue ?? null} />
-        <div className="mt-8 px-6">
+        <div className="mt-8 px-[26px]">
           <div style={{ height: 1, backgroundColor: colors.line }} />
         </div>
         <AgendaAppleClient etat={etatApple} />

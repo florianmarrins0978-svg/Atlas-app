@@ -121,7 +121,7 @@ export default async function IAPage() {
             <Link href="/reglages/vocabulaire" className="flex min-h-[56px] w-full items-center gap-[15px] py-[13px]">
               <span className="min-w-0 flex-1">
                 <span className="block text-[17px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
-                  Le vocabulaire de mon métier
+                  Mon vocabulaire
                 </span>
                 <span className="mt-[3px] block text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
                   Les mots qu&apos;Atlas rattache à une prestation quand vous dictez.

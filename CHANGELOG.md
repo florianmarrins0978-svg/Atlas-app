@@ -6,8 +6,38 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
-
 ## 2026-09-06
+### Quatre écrans des Réglages désobéissaient depuis onze jours à une demande exaucée
+
+Le 26 août, il demande d'inverser le titre et le surtitre doré. La correction
+est faite dans la pièce commune `EnTeteEcran` — et n'atteint donc **pas** les
+quatre écrans qui se dessinaient leur propre en-tête : « Mon agenda »,
+« Mes prix », « Mes mesures » et le vocabulaire.
+
+**Ce que ça évite :** un écran qui a l'air d'appartenir à une autre application.
+Titre à 32 px au lieu de 36, surtitre doré du mauvais côté, et **aucun bouton
+d'assistant** — le recours manquait précisément sur les deux écrans les plus
+difficiles des Réglages. Les cinq blocs de contenu passent du même coup au rail
+de 26 px des autres écrans.
+
+**Une leçon qui dépasse cet écran :** corriger une pièce partagée ne corrige
+rien chez qui la recopie, et rien dans le code ne signale un écran qui s'en est
+passé (`ARCHITECTURE.md` §263).
+
+**Vu à la capture, pas par un test :** passé à 36 px, « Le vocabulaire de mon
+métier » se cassait en deux lignes sous la pastille de l'assistant. L'écran
+s'appelle **« Mon vocabulaire »** — la règle du §262 appliquée à elle-même. Et
+`test-vocabulaire-editeur-e2e` a dû être retourné : il cherchait cette phrase
+pour prouver qu'un compte ordinaire ne se la voit pas proposer, il serait resté
+vert en ne prouvant plus rien. Il vise l'adresse du lien.
+
+**Aussi vu à la capture, et ce n'est pas ce lot :** « Mon agenda » demande de
+créer un identifiant OAuth sur `console.cloud.google.com`, et s'annonce
+lui-même « pas encore disponible » tant que ce n'est pas fait.
+
+Détail : `docs/lot-entete-unique-reglages.md`. Décisions : `ARCHITECTURE.md` §263.
+
+
 ### Le sommaire des réglages : douze phrases grises retirées, quatre titres qui mentaient corrigés
 
 Sa consigne du 5 septembre — *« la plupart des patrons qui vont utiliser l'app

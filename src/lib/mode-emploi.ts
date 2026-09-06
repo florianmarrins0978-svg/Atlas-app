@@ -504,7 +504,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   },
   {
     id: "vocabulaire-regles",
-    ecran: "Le vocabulaire de mon métier",
+    ecran: "Mon vocabulaire",
     ou: "Réglages, puis Atlas IA",
     intitule: "Poser une règle que l'IA doit suivre",
     motsCles: ["regle", "regles", "ia", "consigne", "vocabulaire", "habitude", "toujours", "devis"],

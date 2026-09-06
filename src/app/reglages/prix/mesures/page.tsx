@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import RubriqueReservee from "../../RubriqueReservee";
@@ -47,27 +47,18 @@ export default async function MesMesuresPage() {
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-24">
-        <div className="px-6 pt-8">
-          <Link
-            href="/reglages/prix"
-            aria-label="Retour à mes prix"
-            className="flex h-10 w-10 items-center justify-center rounded-full"
-            style={{ backgroundColor: colors.rustTint }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-              <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Link>
-        </div>
+        {/* **L'EN-TÊTE COMMUNE DEPUIS LE 6 SEPTEMBRE 2026** (`ARCHITECTURE.md`
+            §263). Le retour ramène à « Mes prix », d'où l'on vient — pas à la
+            racine des réglages, faute déjà corrigée le 17 août sur l'écran du
+            dessus. */}
+        <EnTeteEcran
+          surtitre="Mes prix"
+          titre="Mes mesures"
+          retour={{ href: "/reglages/prix", libelle: "Retour à mes prix" }}
+        />
 
-        <div className="px-6 pt-5">
-          <p className={smallCaps} style={{ color: colors.rust, marginBottom: 8 }}>
-            Mes prix
-          </p>
-          <h1 className="text-[32px] leading-tight" style={{ fontFamily: font.display }}>
-            Mes mesures
-          </h1>
-          <p className="mt-3 text-[14px] leading-snug" style={{ color: colors.muted }}>
+        <div className="px-[26px] pt-4">
+          <p className="text-[14px] leading-snug" style={{ color: colors.muted }}>
             Les tranches se règlent ici, une fois. Toutes les grilles les suivent — c&apos;est le même diamètre qui
             sert à abattre, à fendre et à dessoucher.
           </p>

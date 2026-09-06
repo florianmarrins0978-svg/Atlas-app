@@ -108,7 +108,7 @@ export default function AgendaAppleClient({ etat }: { etat: EtatAgendaApple }) {
     });
 
   return (
-    <div className="px-6 pt-8">
+    <div className="px-[26px] pt-8">
       <p className="text-[11px] uppercase tracking-[0.28em]" style={{ color: colors.or, marginBottom: 10 }}>
         iCloud
       </p>

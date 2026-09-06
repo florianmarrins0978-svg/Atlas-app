@@ -9,6 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Quatre rouges navigateur apparus à la batterie du 6 septembre (soir)
+
+Relevés en jouant la batterie du lot de l'en-tête unique, **après** la fusion
+avec `main` :
+
+| Suite | Ce qu'elle dit |
+|---|---|
+| `test-anneau-dictee-e2e` | « un appui dicte, l'avion envoie » et « l'anneau est redevenu le lecteur » — délai dépassé |
+| `test-arrosage-e2e` | une erreur, sans message utile |
+| `test-brouillon-e2e` | « rouvrir le chantier ne mène pas au devis mais à `/chantiers/<id>` » |
+| `test-feuille-envoi-lisible-e2e` | « un devis vide offre la porte des prix » — délai dépassé au clic |
+
+**Ils ne sont pas du lot de l'en-tête** : vérifié fichier par fichier, aucune
+des quatre ne cite `/reglages/agenda`, `/reglages/prix`,
+`/reglages/vocabulaire`, ni aucun des titres touchés. Et les six suites qui
+parcourent ces écrans-là sont vertes.
+
+**Ce que je ne sais PAS, et qu'il ne faut pas supposer :** d'où ils viennent.
+Ils tombent dans les zones que la fusion a apportées — la fiche client, l'anneau
+de la note vocale, le devis —, et l'arbre portait au même moment le travail non
+enregistré d'une session voisine sur ces mêmes suites. **Trois causes possibles,
+aucune mesurée.** Les rejouer sur un arbre propre est la première chose à faire.
+
+---
+
 ## La fusion du 6 septembre, et ce qu'elle a demandé de faire au travail d'à côté
 
 **Réglé le 6 septembre 2026 — laissé écrit parce que la situation reviendra.**
@@ -54,17 +79,17 @@ seulement étaient les miens.
 
 ---
 
-## Les cinq lots qui restent sur les Réglages
+## Les quatre lots qui restent sur les Réglages
 
 Ouverts par sa consigne du 5 septembre 2026 (`PRODUCT.md`). L'ordre est celui
-qu'il a accepté ; le premier est fait.
+qu'il a accepté ; **les deux premiers sont faits** — le sommaire
+(`ARCHITECTURE.md` §262) et l'en-tête unique (§263).
 
 | Lot | Quoi | Ce qui le fonde |
 |---|---|---|
-| 2 | **l'en-tête unique** | `agenda`, `prix`, `prix/mesures` et `vocabulaire` se dessinent leur propre en-tête au lieu d'employer `EnTeteEcran` : titre à 32 px au lieu de 36, surtitre doré AU-DESSUS du titre alors qu'il a demandé l'inverse le 26 août, et **aucun bouton d'assistant** — donc le recours manque sur les deux écrans les plus durs |
 | 3 | **« Devis & factures »** | `DocumentsClient.tsx`, 1 267 lignes, six blocs sans rapport en un seul écran ; le logo est à la ligne 772 |
 | 4 | **« Mon entreprise »** | le régime de TVA (bloc 2 d'`IdentiteClient`) et sa périodicité (`identite/page.tsx:79`) sont séparés par tout le bloc bancaire « Pour être payé » — la faute que le regroupement du 14 août voulait réparer, revenue à l'intérieur d'un écran |
-| 5 | **« Mon agenda »** | le raccordement iCloud demande d'aller sur `account.apple.com`, d'y générer un « mot de passe pour les apps » et de recopier seize lettres. **La tâche elle-même est hors de portée** : c'est à lui de dire ce qu'on fait |
+| 5 | **« Mon agenda »** | **les DEUX raccordements sont hors de portée**, vu à la capture le 6 septembre. Google : créer un identifiant OAuth sur `console.cloud.google.com`, y activer une API — et l'écran s'annonce lui-même « pas encore disponible » tant que ce n'est pas fait. iCloud : un « mot de passe pour les apps » chez Apple, seize lettres à recopier. **Ce qu'il faut changer, c'est ce qu'on demande, pas la façon de le demander** — donc c'est au patron de trancher |
 | 6 | **le reste** | Équipe (**proposition C** de la planche 96, décidée le 6 septembre, pas codée), notifications, mot de passe, données, couleurs, IA, abonnement, compte |
 
 ---

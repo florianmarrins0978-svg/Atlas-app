@@ -8,8 +8,46 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — L'EN-TÊTE UNIQUE DES RÉGLAGES (6 septembre 2026)
 
-## Dernier lot — LE SOMMAIRE DES RÉGLAGES (6 septembre 2026)
+**Document du lot :** `docs/lot-entete-unique-reglages.md`.
+**Décisions :** `ARCHITECTURE.md` §263.
+**Captures :** `npx tsx --env-file=.env scripts/capture-entetes-reglages.mts <dossier>`
+
+**Deuxième des six lots de la reprise des Réglages.** Quatre écrans —
+`agenda`, `prix`, `prix/mesures`, `vocabulaire` — se dessinaient leur propre
+en-tête au lieu d'employer `EnTeteEcran` : titre à 32 px au lieu de 36,
+surtitre doré AU-DESSUS du titre alors qu'il a demandé l'inverse le 26 août, et
+**aucun bouton d'assistant**. Ils sont passés à la pièce commune, et les cinq
+blocs de contenu au rail de 26 px.
+
+**Pas de maquette, et c'est voulu :** ce lot n'invente aucune apparence, il
+fait entrer quatre écrans dans une grammaire déjà validée. La preuve est une
+capture de l'application, pas un dessin.
+
+**Deux conséquences qu'il faut connaître avant de toucher à ces écrans :**
+
+- **`/reglages/vocabulaire` s'appelle « Mon vocabulaire »**, plus « Le
+  vocabulaire de mon métier » : à 36 px, l'ancien titre se cassait en deux
+  lignes sous la pastille de l'assistant. `test-vocabulaire-editeur-e2e` vise
+  désormais l'ADRESSE du lien, pas la phrase — sinon il serait resté vert sans
+  plus rien prouver ;
+- **pour voir cet écran, il faut lancer le serveur avec la variable** :
+  `ATLAS_EDITEUR_EMAIL=demo@atlas.local npm run dev`. Sans elle, l'adresse rend
+  la page « introuvable » de Next — et le script de capture a d'abord MESURÉ
+  cette page-là en croyant mesurer l'écran. Il refuse maintenant de conclure
+  quand le titre lu n'est pas celui attendu.
+
+**Ce que la capture a montré, et qui appartient au lot 5 :** « Mon agenda »
+demande de créer un identifiant OAuth sur `console.cloud.google.com` et s'annonce
+« pas encore disponible » tant que ce n'est pas fait. Le côté iCloud demande un
+« mot de passe pour les apps ». Les deux sont hors de portée de l'utilisateur
+que décrit `PRODUCT.md`, et **c'est au patron de dire ce qu'on en fait**.
+
+---
+
+
+## Lot précédent — LE SOMMAIRE DES RÉGLAGES (6 septembre 2026)
 
 **Document du lot :** `docs/lot-sommaire-des-reglages.md`.
 **Planche :** `appli/sommaire-des-reglages.html`.

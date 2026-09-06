@@ -108,7 +108,7 @@ export default function GrillesPrixClient({
   const total = grilles.natures.reduce((n, g) => n + cellulesDeNature(g, grilles.axes).length, 0);
 
   return (
-    <div className="mt-6 flex flex-col gap-6 px-6">
+    <div className="mt-6 flex flex-col gap-6 px-[26px]">
       <p className="text-[13px]" style={{ color: colors.muted }}>
         {cases.size === 0
           ? `Aucune case remplie sur ${total}. Atlas posera la question à chaque chantier, et rangera ici ce que vous répondez.`

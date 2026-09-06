@@ -23507,3 +23507,76 @@ deux pôles. **Elle ne mesure pas elle-même** : elle l'a fait une heure, et
 rendait 1 076 px là où l'application en fait 1 145 — un dessin n'est pas
 l'écran. Deux chiffres qui se contredisent sur la même page, c'est toute la
 liste qu'on cesse de croire. Le dessin montre, la mesure chiffre.
+
+---
+
+## §263. Une pièce partagée ne corrige que ceux qui s'en servent
+
+**6 septembre 2026.** Le 26 août, le patron demande d'inverser deux éléments de
+l'en-tête : *« sur plusieurs catégories le titre était en dessous du sous-titre
+en doré, inversez-les »*. La correction est faite dans `EnTeteEcran`, la pièce
+commune — un seul endroit, et tous les écrans suivent.
+
+**Sauf ceux qui ne s'en servaient pas.** Quatre écrans des Réglages se
+dessinaient leur propre en-tête : `agenda`, `prix`, `prix/mesures`,
+`vocabulaire`. Ils ont donc désobéi onze jours à une demande exaucée, et rien ne
+pouvait le dire — chacun était juste pris isolément.
+
+| | Les quatre | Les treize autres |
+|---|---|---|
+| titre | 32 px | 36 px |
+| surtitre doré | **au-dessus** du titre | en dessous |
+| bouton de l'assistant | **absent** | présent |
+
+**La leçon, et elle ne vaut pas que pour cet écran : corriger une pièce
+partagée ne corrige rien chez qui la recopie.** Une pièce commune n'est
+commune que de ceux qui l'emploient, et rien dans le code ne signale un écran
+qui s'en est passé. C'est le même mécanisme que la §3 du `CLAUDE.md` — deux
+implémentations d'une même règle finissent toujours par diverger —, sauf qu'ici
+la seconde implémentation n'était pas une règle métier mais un dessin, donc
+invisible à toute assertion.
+
+### Ce qui le tient désormais
+
+`scripts/capture-entetes-reglages.mts` mesure les trois choses qui se
+chiffrent — taille du titre, nombre de lignes, présence de l'assistant, côté du
+doré — sur les quatre écrans **et sur deux témoins** qui employaient déjà la
+pièce commune. Sans témoin, le tableau ne dirait pas si les quatre ont rejoint
+la grammaire ou en ont inventé une nouvelle.
+
+**Il REFUSE de conclure sur un écran qu'il n'a pas atteint**, et cela s'est payé
+au premier tour : le serveur qui répondait n'avait pas `ATLAS_EDITEUR_EMAIL`,
+`/reglages/vocabulaire` rendait la page « introuvable » de Next — titre de
+24 px —, et le script a rapporté « titre 24 px · assistant NON » sur un écran
+qu'il n'avait jamais vu. Le contrôle du code HTTP ne l'a pas vu (la navigation
+était déjà faite côté client) ; le **titre attendu**, lui, ne se trompe pas de
+page.
+
+### Le titre qui ne tenait plus, et le renommage qui en découle
+
+Passé de 32 à 36 px, « Le vocabulaire de mon métier » se cassait en deux lignes
+sous la pastille de l'assistant — le défaut exact que
+`test-assistant-en-tete-e2e.ts` surveille depuis le 11 août 2026.
+
+**L'écran s'appelle « Mon vocabulaire ».** C'est la règle du §262 appliquée à
+elle-même : un titre qui ne tient pas est un titre trop long. Et il rejoint la
+famille des Réglages — Mon agenda, Mes prix, Mes mesures, Mes données, Mon
+compte, Mon entreprise.
+
+**Et le contrôle qui protège cet écran a dû être retourné**, comme au §262 :
+`test-vocabulaire-editeur-e2e.ts` cherchait la PHRASE « vocabulaire de mon
+métier » pour vérifier qu'un compte ordinaire ne se la voit pas proposer. Le
+renommage l'aurait laissé **vert sans plus rien prouver**. Il vise l'adresse du
+lien.
+
+### Ce que la capture a montré et qui n'est pas ce lot
+
+« Mon agenda » demande, pour Google, de créer un identifiant **OAuth** sur
+`console.cloud.google.com` et d'y activer une API — et le raccordement s'annonce
+lui-même « pas encore disponible » tant que ce n'est pas fait. Le côté iCloud
+demande un « mot de passe pour les apps » chez Apple.
+
+C'est hors de portée de l'utilisateur que `PRODUCT.md` décrit, et **aucune mise
+en ordre d'en-tête n'y change quoi que ce soit** : ce qu'il faut changer, c'est
+ce qu'on demande, pas la façon de le demander. Cela appartient au lot 5, et la
+décision est au patron.

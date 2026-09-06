@@ -78,7 +78,7 @@ export default function VocabulaireClient({ initiaux }: { initiaux: Terme[] }) {
   const mots = termes.filter((t) => t.nature === "mot");
 
   return (
-    <div className="px-6 pt-8">
+    <div className="px-[26px] pt-8">
       {/* --- Ajouter -------------------------------------------------------- */}
       <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
         <p className={smallCaps} style={{ color: colors.rust, marginBottom: 12 }}>
