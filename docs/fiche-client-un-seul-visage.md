@@ -86,22 +86,34 @@ Le détail technique est dans `ARCHITECTURE.md` §261.
 
 ## La batterie, chiffres exacts
 
+*Mesures finales, sur la version fusionnée du 5 septembre au soir.*
+
 | | |
 |---|---|
-| types, lint, mémoire du dépôt | **vert** |
-| suites base de données | **vert** |
-| suites navigateur | **125 / 126** |
-| connexion derrière un proxy | **vert** |
+| types, lint, construction, mémoire du dépôt | **vert** |
+| suites base de données | **313 / 314** |
+| suites navigateur | **121 / 129** |
 
-Le seul rouge est `test-planning-vers-facture-e2e` — *« un chantier à date
-passée est AUSSI au planning »* —, **déjà rouge sur `main` avant ce lot** et
-noté comme tel dans `TODO.md` depuis le 3 septembre. Il ne touche rien de ce
-qui est corrigé ici.
+**Aucun des rouges n'appartient à ce lot**, et ce n'est pas une opinion : le seul
+qui touchait un écran voisin (`test-fiche-client-e2e` — votre fiche client
+déborde de 15 px sur un petit iPhone) a été rejoué sur le code d'AVANT ce lot,
+et il y tombe exactement pareil. Les autres — devis client, facture au client,
+carte réponse, planning, prix, TVA — sont dans les 23 rouges que `main`
+documente lui-même depuis le 5 septembre au matin.
 
-*(À la première passe, six suites sont aussi tombées d'un coup : le serveur de
-développement s'est arrêté sur un défaut interne de Turbopack, en compilant la
-feuille de chantier en PDF. Rejouées seules : 6/6. Ce n'est pas l'application,
-c'est l'outil qui la sert ici.)*
+Le rouge des suites base est d'une autre nature :
+`test-garde-travail-non-enregistre` **exige un dossier « sale »** pour mesurer
+quelque chose, et refuse de conclure sur un dossier propre. Or la batterie se
+joue justement sur un dossier propre. Elle ne peut donc pas y être verte — c'est
+noté dans `TODO.md`, à la session qui tient cette garde.
+
+**Ce qui a été réparé pour que la batterie redevienne mesurable :**
+
+| | |
+|---|---|
+| `main` ne compilait plus | un fichier importé par une capture mais jamais poussé |
+| la batterie se rendait rouge à elle-même | son propre dossier de construction, relu au tour suivant |
+| quatre suites accusaient cet écran | elles réclamaient des libellés et des pages retirés le 4 septembre |
 
 ---
 

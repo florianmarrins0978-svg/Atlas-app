@@ -110,29 +110,44 @@
 <hr>
 <h2 id="la-batterie-chiffres-exacts">La batterie, chiffres exacts</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Mesures finales, sur la version fusionnée du 5 septembre au soir.</em></p>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
 <th></th>
 </tr></thead><tbody>
 <tr>
-<td>types, lint, mémoire du dépôt</td>
+<td>types, lint, construction, mémoire du dépôt</td>
 <td><strong>vert</strong></td>
 </tr>
 <tr>
 <td>suites base de données</td>
-<td><strong>vert</strong></td>
+<td><strong>313 / 314</strong></td>
 </tr>
 <tr>
 <td>suites navigateur</td>
-<td><strong>125 / 126</strong></td>
-</tr>
-<tr>
-<td>connexion derrière un proxy</td>
-<td><strong>vert</strong></td>
+<td><strong>121 / 129</strong></td>
 </tr>
 </tbody></table></div>
-<p>Le seul rouge est <code>test-planning-vers-facture-e2e</code> — <em>« un chantier à date passée est AUSSI au planning »</em> —, <strong>déjà rouge sur <code>main</code> avant ce lot</strong> et noté comme tel dans <code>TODO.md</code> depuis le 3 septembre. Il ne touche rien de ce qui est corrigé ici.</p>
-<p><em>(À la première passe, six suites sont aussi tombées d'un coup : le serveur de développement s'est arrêté sur un défaut interne de Turbopack, en compilant la feuille de chantier en PDF. Rejouées seules : 6/6. Ce n'est pas l'application, c'est l'outil qui la sert ici.)</em></p>
+<p><strong>Aucun des rouges n'appartient à ce lot</strong>, et ce n'est pas une opinion : le seul qui touchait un écran voisin (<code>test-fiche-client-e2e</code> — votre fiche client déborde de 15 px sur un petit iPhone) a été rejoué sur le code d'AVANT ce lot, et il y tombe exactement pareil. Les autres — devis client, facture au client, carte réponse, planning, prix, TVA — sont dans les 23 rouges que <code>main</code> documente lui-même depuis le 5 septembre au matin.</p>
+<p>Le rouge des suites base est d'une autre nature : <code>test-garde-travail-non-enregistre</code> <strong>exige un dossier « sale »</strong> pour mesurer quelque chose, et refuse de conclure sur un dossier propre. Or la batterie se joue justement sur un dossier propre. Elle ne peut donc pas y être verte — c'est noté dans <code>TODO.md</code>, à la session qui tient cette garde.</p>
+<p><strong>Ce qui a été réparé pour que la batterie redevienne mesurable :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>main</code> ne compilait plus</td>
+<td>un fichier importé par une capture mais jamais poussé</td>
+</tr>
+<tr>
+<td>la batterie se rendait rouge à elle-même</td>
+<td>son propre dossier de construction, relu au tour suivant</td>
+</tr>
+<tr>
+<td>quatre suites accusaient cet écran</td>
+<td>elles réclamaient des libellés et des pages retirés le 4 septembre</td>
+</tr>
+</tbody></table></div>
 <hr>
 <h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
