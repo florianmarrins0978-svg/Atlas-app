@@ -183,12 +183,40 @@ body{
 .cadre[data-bouton="haut"][data-tiroir="non"] .socle::before{ display:none; }
 .registres::-webkit-scrollbar{ display:none; }
 
+/* ─── LES DEUX REGISTRES NE DOIVENT PAS SE RESSEMBLER ────────────────────
+   **Sa remarque du 6 septembre : « la rubrique retour ressemble trop à celle
+   du dessous, on va les confondre ».** Il a raison — les deux portaient la
+   même enseigne dorée, le même nom en serif, la même seconde ligne. Seule la
+   citation les distinguait, et elle n'est pas toujours là.
+
+   TROIS choses les séparent maintenant, et aucune n'ajoute un mot :
+
+     1. **l'enseigne** : dorée pour les retours, en encre douce pour les devis ;
+     2. **le filet d'or vertical** : chaque retour est porté par un trait à sa
+        gauche et rentre dans la page ; un devis part de la marge, nu. Le trait
+        dit « ça vient de quelqu'un » — c'était déjà celui de la citation, il
+        porte maintenant l'entrée entière, et la citation s'en passe ;
+     3. **ce que dit la seconde ligne** : un retour porte un DÉLAI (« depuis
+        3 jours »), un devis porte une DATE (« devis du 7 septembre »). */
 .enseigne{
   display:flex; align-items:baseline; gap:10px; margin:20px 24px 4px;
   font:500 11px/1.5 var(--sans); letter-spacing:.24em; text-transform:uppercase;
   color:var(--orTexte);
 }
 .enseigne b{ font:400 17px/1 var(--serif); letter-spacing:0; color:var(--ink); }
+.registre-devis .enseigne{ color:var(--inkSoft); }
+
+/* Le filet reste à 1 px : au-delà, un liseré coloré sur une ligne de liste
+   devient un bandeau, et ce n'est plus la même page. */
+/* Le filet porte le retour ENTIER — l'entrée ET son geste. Posé sur la seule
+   entrée, il s'arrêtait au-dessus de « Corriger le devis » et se lisait comme
+   un trait interrompu ; vu en capture, par aucun test. */
+.retour{
+  margin-left:24px; padding-left:14px; border-left:1px solid var(--or);
+}
+.registre-retours .entree{ padding-left:0; padding-right:24px; }
+.registre-retours .gestes{ padding-left:0; }
+.registre-retours .et-autres{ padding-left:38px; }
 
 /* LA SÉPARATION — deux filets d'or, et RIEN entre eux.
    Sa demande du 6 septembre : *« tes deux traits doré pour séparer c'est bien
@@ -221,9 +249,11 @@ body{
 
 /* Ce que le client a écrit, mot pour mot. En serif italique, derrière un filet
    d'or : ces mots-là ne sont pas ceux de l'application. */
+/* La citation n'a plus son propre filet : l'entrée entière en porte un, et
+   deux traits à trois pixels l'un de l'autre se lisent comme un défaut. */
 .dit{
-  margin:9px 0 0; padding-left:13px; border-left:1px solid var(--or);
-  font:italic 400 16px/1.5 var(--serif); color:var(--ink); white-space:pre-wrap;
+  margin:9px 0 0; font:italic 400 16px/1.5 var(--serif); color:var(--ink);
+  white-space:pre-wrap;
 }
 
 .gestes{
@@ -511,13 +541,33 @@ const RETOURS = [
     faire:"Ouvrir le devis validé" },
 ];
 
-/* États : `statutLabel` (chantier-etat.ts), mot pour mot. */
+/* États : `statutLabel` (chantier-etat.ts), mot pour mot.
+
+   **LA DATE — sa demande du 6 septembre : « il manque les dates à laquelle on
+   a créé le devis pour les clients ».**
+
+   Elle est écrite avec `jourEtMois()` (`src/lib/jour.ts`) — « 25 août », le
+   format que le dépôt réserve aux listes, sans le jour de la semaine qui
+   prendrait la moitié de la largeur. Pas de seconde table de mois.
+
+   **DEUX DATES, ET ELLES NE DISENT PAS LA MÊME CHOSE.** Un chantier de ce
+   registre n'a pas toujours de devis : « Brouillon » et « À vérifier »
+   décrivent un chantier ouvert dont le devis n'existe pas encore. Écrire
+   « devis du 25 août » sur celui-là serait inventer une date — ce que ce dépôt
+   s'interdit (`CLAUDE.md` §4).
+
+     · le devis existe (`devisGenereAt`) → **« devis du 25 août »**
+     · il n'existe pas encore (`createdAt`) → **« ouvert le 25 août »**
+
+   **Ce que ça coûtera à coder :** `createdAt` n'est pas descendu à l'accueil
+   aujourd'hui — la requête l'emploie pour TRIER mais ne le sélectionne pas
+   (`listerChantiersPourAffichage`). Une colonne de plus, rien d'autre. */
 const DEVIS = [
-  { id:"d1", qui:"Résidence des Tilleuls", quoi:"À vérifier",           depuis:"depuis 14 jours" },
-  { id:"d2", qui:"Mme Rialland",           quoi:"Devis prêt à envoyer", depuis:"depuis hier" },
-  { id:"d3", qui:"M. Bourgeois",           quoi:"Brouillon",            depuis:"depuis 6 jours" },
-  { id:"d4", qui:"Jardins du Clos",        quoi:"Vérifié",              depuis:"depuis 4 jours" },
-  { id:"d5", qui:"Mme Perrin",             quoi:"Devis envoyé",         depuis:"depuis 2 jours" },
+  { id:"d1", qui:"Résidence des Tilleuls", quoi:"À vérifier",           date:"ouvert le 25 août" },
+  { id:"d2", qui:"Mme Rialland",           quoi:"Devis prêt à envoyer", date:"devis du 7 septembre" },
+  { id:"d3", qui:"M. Bourgeois",           quoi:"Brouillon",            date:"ouvert le 2 septembre" },
+  { id:"d4", qui:"Jardins du Clos",        quoi:"Vérifié",              date:"ouvert le 4 septembre" },
+  { id:"d5", qui:"Mme Perrin",             quoi:"Devis envoyé",         date:"devis du 6 septembre" },
 ];
 
 const CAS = {
@@ -578,7 +628,7 @@ function dessiner(){
   const devis = choix.devis.map(i => DEVIS[i]);
 
   const unRetour = r => `
-    <div>
+    <div class="retour">
       <button class="entree" type="button" data-ouvrir="${r.id}">
         <p class="qui">${echapper(r.qui)}</p>
         <p class="quoi">${echapper(r.quoi)} · <span class="depuis">${echapper(r.depuis)}</span></p>
@@ -593,17 +643,18 @@ function dessiner(){
   const unDevis = d => `
     <button class="entree" type="button" data-ouvrir="${d.id}">
       <p class="qui">${echapper(d.qui)}</p>
-      <p class="quoi">${echapper(d.quoi)} · <span class="depuis">${echapper(d.depuis)}</span></p>
+      <p class="quoi">${echapper(d.quoi)} · <span class="depuis">${echapper(d.date)}</span></p>
     </button>`;
 
   const bloc1 = registre("Retours clients", "retours", retours, unRetour);
   const bloc2 = registre("Devis en cours", "devis", devis, unDevis);
+  const enveloppe = (cle, dedans) => dedans ? `<div class="registre-${cle}">${dedans}</div>` : "";
 
   /* **AUCUNE PHRASE QUAND IL N'Y A RIEN** — sa demande du 25 août 2026.
      Le sceau, la date, ses clients et un seul bouton disent déjà tout.
      Et l'ornement ne se pose QU'ENTRE deux registres : seul, il ne sépare
      rien et devient une décoration qui ment. */
-  hote.innerHTML = bloc1 + (bloc1 && bloc2 ? ORNEMENT : "") + bloc2;
+  hote.innerHTML = enveloppe("retours", bloc1) + (bloc1 && bloc2 ? ORNEMENT : "") + enveloppe("devis", bloc2);
 
   document.getElementById("tiroir-mot").textContent =
     partis.length > 1 ? "Retirés à l'instant" : "Retiré à l'instant";

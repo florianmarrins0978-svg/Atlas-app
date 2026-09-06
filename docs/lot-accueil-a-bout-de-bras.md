@@ -353,6 +353,47 @@ votre couleur ; une seule ligne la défait le jour où vous voudrez.
 - **Une seule couleur** dans tout l'écran, et elle veut dire quelque chose :
   depuis combien de temps ça attend.
 
+### Vos deux remarques du soir — faites
+
+**1. « Il manque les dates à laquelle on a créé le devis pour les clients. »**
+
+Elles y sont, et **il y en a DEUX, parce que ce ne sont pas les mêmes faits** :
+
+| Ce que le chantier a | Ce qui s'écrit |
+|---|---|
+| un devis déjà rédigé (`devisGenereAt`) | **« devis du 7 septembre »** |
+| pas encore de devis — Brouillon, À vérifier (`createdAt`) | **« ouvert le 25 août »** |
+
+Écrire « devis du 25 août » sur un chantier qui n'a pas de devis serait inventer
+une date, et ce dépôt s'y refuse. Le format est celui que l'application réserve
+déjà aux listes — `jourEtMois()`, « 25 août », sans le jour de la semaine qui
+prendrait la moitié de la ligne.
+
+**Ce que ça coûtera à coder :** `createdAt` n'est pas descendu à l'accueil
+aujourd'hui — la requête l'emploie pour **trier** mais ne le sélectionne pas.
+Une colonne de plus, rien d'autre.
+
+**2. « La rubrique retour ressemble trop à celle du dessous, on va les
+confondre. »**
+
+Vous aviez raison : les deux portaient la même enseigne dorée, le même nom en
+serif, la même seconde ligne. **Trois choses les séparent maintenant, et aucune
+n'ajoute un mot :**
+
+| | Retours clients | Devis en cours |
+|---|---|---|
+| **l'enseigne** | dorée | encre douce |
+| **le filet d'or vertical** | chaque retour est porté par un trait et rentre dans la page | rien : le devis part de la marge |
+| **la seconde ligne** | un **délai** — « depuis 3 jours » | une **date** — « devis du 7 septembre » |
+
+Le filet dit « ça vient de quelqu'un ». C'était déjà celui de la citation ; il
+porte maintenant le retour entier, et la citation s'en passe — deux traits à
+trois pixels l'un de l'autre se lisaient comme un défaut.
+
+*Trouvé en capture, par aucun test : posé sur la seule entrée, ce filet
+s'arrêtait au-dessus de « Corriger le devis » et se lisait comme un trait
+interrompu. Il porte maintenant l'entrée et son geste.*
+
 ### Votre question sur le bouton — ce que j'en pense
 
 *« Je pense que créer le chantier ne doit pas être tout en bas, tu en penses

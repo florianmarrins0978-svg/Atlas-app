@@ -435,6 +435,49 @@
 <li><strong>Deux voix de caractères</strong> : le nom d'un client est en serif — c'est une personne ; ce qu'il faut faire est en sans — c'est l'application qui parle.</li>
 <li><strong>Une seule couleur</strong> dans tout l'écran, et elle veut dire quelque chose : depuis combien de temps ça attend.</li>
 </ul>
+<h3 id="vos-deux-remarques-du-soir--faites">Vos deux remarques du soir — faites</h3>
+<p><strong>1. « Il manque les dates à laquelle on a créé le devis pour les clients. »</strong></p>
+<p>Elles y sont, et <strong>il y en a DEUX, parce que ce ne sont pas les mêmes faits</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que le chantier a</th>
+<th>Ce qui s'écrit</th>
+</tr></thead><tbody>
+<tr>
+<td>un devis déjà rédigé (<code>devisGenereAt</code>)</td>
+<td><strong>« devis du 7 septembre »</strong></td>
+</tr>
+<tr>
+<td>pas encore de devis — Brouillon, À vérifier (<code>createdAt</code>)</td>
+<td><strong>« ouvert le 25 août »</strong></td>
+</tr>
+</tbody></table></div>
+<p>Écrire « devis du 25 août » sur un chantier qui n'a pas de devis serait inventer une date, et ce dépôt s'y refuse. Le format est celui que l'application réserve déjà aux listes — <code>jourEtMois()</code>, « 25 août », sans le jour de la semaine qui prendrait la moitié de la ligne.</p>
+<p><strong>Ce que ça coûtera à coder :</strong> <code>createdAt</code> n'est pas descendu à l'accueil aujourd'hui — la requête l'emploie pour <strong>trier</strong> mais ne le sélectionne pas. Une colonne de plus, rien d'autre.</p>
+<p><strong>2. « La rubrique retour ressemble trop à celle du dessous, on va les confondre. »</strong></p>
+<p>Vous aviez raison : les deux portaient la même enseigne dorée, le même nom en serif, la même seconde ligne. <strong>Trois choses les séparent maintenant, et aucune n'ajoute un mot :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Retours clients</th>
+<th>Devis en cours</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>l'enseigne</strong></td>
+<td>dorée</td>
+<td>encre douce</td>
+</tr>
+<tr>
+<td><strong>le filet d'or vertical</strong></td>
+<td>chaque retour est porté par un trait et rentre dans la page</td>
+<td>rien : le devis part de la marge</td>
+</tr>
+<tr>
+<td><strong>la seconde ligne</strong></td>
+<td>un <strong>délai</strong> — « depuis 3 jours »</td>
+<td>une <strong>date</strong> — « devis du 7 septembre »</td>
+</tr>
+</tbody></table></div>
+<p>Le filet dit « ça vient de quelqu'un ». C'était déjà celui de la citation ; il porte maintenant le retour entier, et la citation s'en passe — deux traits à trois pixels l'un de l'autre se lisaient comme un défaut.</p>
+<p><em>Trouvé en capture, par aucun test : posé sur la seule entrée, ce filet s'arrêtait au-dessus de « Corriger le devis » et se lisait comme un trait interrompu. Il porte maintenant l'entrée et son geste.</em></p>
 <h3 id="votre-question-sur-le-bouton--ce-que-jen-pense">Votre question sur le bouton — ce que j'en pense</h3>
 <p><em>« Je pense que créer le chantier ne doit pas être tout en bas, tu en penses quoi ? »</em></p>
 <p><strong>Je pense comme vous, et pas pour la raison qu'on croit.</strong> Ce n'est pas une question de place : mesuré, les deux positions montrent <strong>exactement le même nombre d'entrées</strong> — trois sur quatre. Ce qui les sépare est ailleurs.</p>
