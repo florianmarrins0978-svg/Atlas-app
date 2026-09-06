@@ -255,6 +255,66 @@ body{
 
 /* Le filet reste à 1 px : au-delà, un liseré coloré sur une ligne de liste
    devient un bandeau, et ce n'est plus la même page. */
+/* ═══ TROIS FAÇONS DE NE PAS LES CONFONDRE — 6 septembre 2026 ════════════
+   **Sa demande, après DEUX passages ratés :** *« propose-moi autre chose pour
+   qu'au premier coup d'œil on soit sûr que l'un c'est les retours et l'autre
+   les chantiers créés »*.
+
+   J'ai répondu deux fois par de la typographie — une couleur d'enseigne, un
+   filet, deux formes. C'est juste, et ça ne suffit pas : il faut REGARDER
+   pour s'en apercevoir. Ce qu'il demande se voit sans regarder.
+
+     · **A · L'APLAT** — les retours vivent sur une plage teintée, les
+       chantiers sur le fond nu. Deux fonds différents se voient de loin, et
+       c'est déjà la langue de l'application : ses notifications d'aujourd'hui
+       sont sur `rustTint`. Ce n'est donc pas un encadré neuf — c'est le fond
+       qu'elle emploie déjà pour « quelque chose est arrivé ».
+     · **B · LE DESSIN** — un pictogramme au trait devant chaque enseigne : la
+       bulle de dialogue de l'application (recopiée de `BoutonAssistant.tsx`)
+       pour ce qui vient d'un client, une feuille de devis pour ce qu'il a
+       créé. Un dessin se reconnaît avant qu'un mot se lise.
+     · **C · LES MOTS** — les enseignes disent tout : « 3 clients vous
+       répondent », « 5 chantiers en préparation ». Plus de titre à décoder,
+       une phrase qui nomme QUI et QUOI.
+
+   Les trois gardent les deux FORMES posées plus haut — un bloc qui se lit,
+   un registre qui se parcourt. Elles ajoutent le coup d'œil. ═══ */
+
+/* A · L'APLAT. Le filet d'or disparaît : sur une plage, il ferait double
+   emploi, et deux marques pour une idée se contredisent. */
+.cadre[data-distinction="aplat"] .registre-retours,
+.cadre[data-distinction="aplat-mots"] .registre-retours{
+  background:var(--rustTint); border-radius:14px;
+  margin:0 24px; padding:4px 14px 12px;
+}
+.cadre[data-distinction="aplat"] .registre-retours .enseigne,
+.cadre[data-distinction="aplat-mots"] .registre-retours .enseigne{ margin-left:0; margin-right:0; }
+.cadre[data-distinction="aplat"] .retour,
+.cadre[data-distinction="aplat-mots"] .retour{ margin-left:0; padding-left:0; border-left:0; }
+.cadre[data-distinction="aplat"] .registre-retours .entree,
+.cadre[data-distinction="aplat-mots"] .registre-retours .entree{ padding-right:0; }
+.cadre[data-distinction="aplat"] .registre-retours .et-autres,
+.cadre[data-distinction="aplat-mots"] .registre-retours .et-autres{ padding-left:0; }
+/* Sur la plage, la citation reprend son filet : c'est ce qui la détache. */
+.cadre[data-distinction="aplat"] .dit,
+.cadre[data-distinction="aplat-mots"] .dit{
+  padding-left:12px; border-left:1px solid var(--or);
+}
+
+/* B · LE DESSIN. */
+.marque-rubrique{ flex:none; display:block; margin-right:2px; }
+.cadre:not([data-distinction="dessin"]) .marque-rubrique{ display:none; }
+
+/* C · LES MOTS. La phrase porte la distinction : les deux enseignes prennent
+   alors la même voix, et ce sont les MOTS qui séparent. */
+.cadre[data-distinction="mots"] .enseigne,
+.cadre[data-distinction="mots"] .registre-devis .enseigne,
+.cadre[data-distinction="aplat-mots"] .enseigne,
+.cadre[data-distinction="aplat-mots"] .registre-devis .enseigne{
+  font:400 19px/1.3 var(--serif); letter-spacing:-.01em; text-transform:none;
+  color:var(--ink); gap:0;
+}
+
 /* Le filet porte le retour ENTIER — l'entrée ET son geste. Posé sur la seule
    entrée, il s'arrêtait au-dessus de « Corriger le devis » et se lisait comme
    un trait interrompu ; vu en capture, par aucun test. */
@@ -451,6 +511,12 @@ body{
     <button data-k="charte" data-v="origine">Origine</button>
     <button data-k="charte" data-v="nuit">Nuit</button>
   </div>
+  <div class="rang"><b>Les deux</b>
+    <button data-k="distinction" data-v="aplat">A · l'aplat</button>
+    <button data-k="distinction" data-v="dessin">B · le dessin</button>
+    <button data-k="distinction" data-v="mots">C · les mots</button>
+    <button data-k="distinction" data-v="aplat-mots">A + C</button>
+  </div>
   <div class="rang"><b>Le geste</b>
     <button data-k="bouton" data-v="haut">En haut</button>
     <button data-k="bouton" data-v="bas">En bas</button>
@@ -463,7 +529,7 @@ body{
   </div>
 </div>
 
-<div class="cadre origine" id="cadre" data-cas="charge" data-bouton="haut" data-feuille="non" data-tiroir="non">
+<div class="cadre origine" id="cadre" data-cas="charge" data-bouton="haut" data-distinction="aplat" data-feuille="non" data-tiroir="non">
   <div class="ecran">
     <div class="colophon">
       <p class="date" id="date">Mardi 8 septembre</p>
@@ -628,7 +694,7 @@ const CAS = {
    registre mange l'autre, et l'écran ne montre plus qu'une seule chose. */
 const VISIBLES = { retours:1, devis:3 };
 
-let etat = { charte:"origine", cas:"charge", bouton:"haut" };
+let etat = { charte:"origine", cas:"charge", bouton:"haut", distinction:"aplat" };
 let partis = [];
 let deplie = { retours:false, devis:false };
 
@@ -646,12 +712,39 @@ const ORNEMENT = `
 const MOTS = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix"];
 function enLettres(n){ return n <= 10 ? MOTS[n] : String(n); }
 
+/* Les deux dessins. La bulle est celle de l'application, recopiée telle
+   quelle de `src/components/atlas/BoutonAssistant.tsx` ; la feuille de devis
+   est dessinée pour cette planche, au même trait d'1,5 px. */
+const MARQUES = {
+  retours: `<svg class="marque-rubrique" width="17" height="17" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+    </svg>`,
+  devis: `<svg class="marque-rubrique" width="17" height="17" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+      <path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/>
+    </svg>`,
+};
+
+/** « 3 clients vous répondent », « 5 chantiers en préparation » — la façon C. */
+function phrase(cle, n){
+  if (cle === "retours") return n > 1 ? `${n} clients vous répondent` : "1 client vous répond";
+  return n > 1 ? `${n} chantiers en préparation` : "1 chantier en préparation";
+}
+
 function registre(nom, cle, entrees, dessinerUne){
   if (!entrees.length) return "";
   const montrees = deplie[cle] ? entrees : entrees.slice(0, VISIBLES[cle]);
   const reste = entrees.length - montrees.length;
+  /* `data-nom` porte le nom de la rubrique pour la mesure : lire le premier
+     nœud du titre marchait tant qu'il était du texte, et rendait `null` dès
+     que le dessin de la façon B est passé devant. */
+  const enseigne = etat.distinction.includes("mots")
+    ? `<div class="enseigne" data-nom="${nom}">${phrase(cle, entrees.length)}</div>`
+    : `<div class="enseigne" data-nom="${nom}">${etat.distinction === "dessin" ? MARQUES[cle] : ""}${nom}<b>${entrees.length}</b></div>`;
   return `
-    <div class="enseigne">${nom}<b>${entrees.length}</b></div>
+    ${enseigne}
     ${montrees.map(dessinerUne).join("")}
     ${reste > 0
       ? `<button class="et-autres" type="button" data-deplier="${cle}">Et ${enLettres(reste)} autre${reste > 1 ? "s" : ""}</button>`
@@ -664,6 +757,7 @@ function dessiner(){
   cadre.className = "cadre " + etat.charte;
   cadre.dataset.cas = etat.cas;
   cadre.dataset.bouton = etat.bouton;
+  cadre.dataset.distinction = etat.distinction;
   cadre.dataset.tiroir = partis.length ? "oui" : "non";
   document.getElementById("date").textContent = DATE;
   const combien = CLIENTS[etat.cas];
@@ -753,7 +847,7 @@ function mesurer(){
   const vues = [...hote.querySelectorAll(".entree")].filter(entiere).length;
   const total = hote.querySelectorAll(".entree").length;
   const enseignesVues = [...hote.querySelectorAll(".enseigne")].filter(entiere)
-    .map(e => e.childNodes[0].nodeValue.trim());
+    .map(e => e.dataset.nom);
 
   let mots = 0;
   const marche = document.createTreeWalker(cadre, NodeFilter.SHOW_TEXT);
@@ -783,7 +877,8 @@ function mesurer(){
         p = p.parentElement;
       }
       const c = contraste(st.color, fond);
-      if (!pire || c < pire.c) pire = { c, quoi:(el.textContent || "").trim().slice(0, 22) };
+      const quoi = (el.dataset.nom || el.textContent || "").trim().replace(/\s+/g, " ");
+      if (!pire || c < pire.c) pire = { c, quoi:quoi.slice(0, 22) };
     });
 
   let cible = null;

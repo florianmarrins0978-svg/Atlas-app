@@ -391,8 +391,38 @@ Ce sont deux natures différentes. Elles ont donc **deux formes** :
 | **la date** | à la suite : « depuis 3 jours » | **alignée à droite**, en chiffres qui s'alignent d'une ligne à l'autre |
 | **l'enseigne** | petites capitales dorées | un titre en serif |
 
-L'un **se lit**, l'autre **se parcourt**. C'est ce qui les sépare, et ce n'est
-plus une question de teinte.
+L'un **se lit**, l'autre **se parcourt**.
+
+**Et ça n'a toujours pas suffi — vous me l'avez dit une TROISIÈME fois :**
+*« propose-moi autre chose pour qu'au premier coup d'œil on soit sûr que l'un
+c'est les retours et l'autre les chantiers créés »*.
+
+Vous avez raison une troisième fois, et je vois pourquoi j'ai raté deux fois :
+**j'ai répondu par de la typographie.** Un caractère, une graisse, un filet — il
+faut REGARDER pour s'en apercevoir. Ce que vous demandez se voit **sans
+regarder**.
+
+**Quatre façons sont sur la planche, à essayer en haut :**
+
+| | Ce qui les sépare |
+|---|---|
+| **A · l'aplat** | les retours vivent sur une **plage teintée**, les chantiers sur le fond nu. Deux fonds se voient de loin — et c'est déjà la langue de votre application : ses notifications d'aujourd'hui sont sur ce fond-là. Ce n'est pas un encadré neuf |
+| **B · le dessin** | un **pictogramme au trait** devant chaque titre : la bulle de dialogue de votre appli pour ce qui vient d'un client, une feuille de devis pour ce que vous avez créé. Un dessin se reconnaît avant qu'un mot se lise |
+| **C · les mots** | les titres deviennent une phrase : **« 3 clients vous répondent »**, **« 5 chantiers en préparation »**. Plus rien à décoder |
+| **A + C** | les deux. **C'est celle que je vous conseille** |
+
+**Pourquoi A + C.** L'aplat répond au coup d'œil — on voit deux zones avant
+d'avoir lu quoi que ce soit. La phrase répond à la seconde d'après — elle dit
+QUI et QUOI, sans un titre à interpréter. Les deux ensemble ne laissent aucune
+place au doute, et n'ajoutent que trois mots à l'écran.
+
+**Un chiffre à connaître sur A :** sur la plage teintée, votre or tient **2,53**
+au lieu de 2,77 — un fond plus clair rapproche les deux tons. La bande de mesure
+l'affiche.
+
+**Et un mot sur le nom :** vous dites « les chantiers créés », la planche dit
+« chantiers en préparation ». Si c'est votre mot que vous voulez lire, dites-le
+et je le change — c'est une chaîne de caractères.
 
 *Deux choses trouvées en capture, par aucun test : le filet d'or s'arrêtait
 au-dessus de « Corriger le devis » et se lisait comme un trait interrompu ; et
