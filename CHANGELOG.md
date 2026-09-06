@@ -7,6 +7,29 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-06
+### Un prompt `/impeccable` pour l'accueil, qui dit ce qu'une refonte coûterait
+
+Sa demande du 6 septembre : *« repense entièrement la page chantier ; tu peux
+partir sur totalement autre chose »*. La *fiche* d'un chantier n'existant plus
+depuis le 4 septembre (§254), « la page chantier » désigne l'accueil — le fil
+des chantiers, à l'adresse « / ».
+
+**Ce que ça évite :** une refonte qui jette en silence ce qu'il a lui-même
+tranché. Quatorze de ses décisions sont listées avec leur date et leur raison —
+le fil plutôt que les cartes, la perle à mi-hauteur, le refus de l'aplat vert,
+les trois libellés retirés à sa demande —, non pour les interdire, mais pour que
+ce qui tombe se dise. Et les **dix-sept scripts** qui lisent cet écran par ses
+repères (`a.atlas-brin`, `data-atlas="compteur"`) y sont nommés : une refonte
+les fait tomber tous, et c'est un chiffre à porter dans la proposition, pas une
+surprise de fin de lot.
+
+Trois choses qu'il a demandées sans les obtenir y figurent aussi : l'accueil de
+la maquette « moins de mots » (`docs/QUESTIONS.md` §23, jamais fait), le
+compteur de mots qui empêche l'écran de regrossir, et le rappel d'un chantier
+prévu la veille.
+
+`docs/prompt-impeccable-accueil.md`.
+
 ### La barre « Enregistré ✓ » ne mange plus l'écran de « Devis & factures »
 
 Elle était rendue **en permanence**, opaque, haute de 85 px, et le contenu

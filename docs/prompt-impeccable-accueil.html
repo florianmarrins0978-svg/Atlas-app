@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le prompt `/impeccable` pour L'ACCUEIL — la liste des chantiers</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-prompt-impeccable-pour-laccueil--la-liste-des-chantiers">Le prompt <code>/impeccable</code> pour L'ACCUEIL — la liste des chantiers</h1>
+<p>À coller après <code>/impeccable</code> dans une session neuve. Il tient seul.</p>
+<p>Écrit le 6 septembre 2026, à sa demande : <em>« repense entièrement la page chantier ; tu peux partir sur totalement autre chose, il faut juste que ce soit facile d'utilisation et intuitif. »</em></p>
+<p><strong>Une précision qui change le périmètre.</strong> La <em>fiche</em> d'un chantier n'existe plus depuis le 4 septembre — elle faisait doublon avec la fiche client, et <code>/chantiers/[id]</code> ne fait plus que rediriger (<code>ARCHITECTURE.md</code> §254). « La page chantier » désigne donc <strong>l'accueil</strong> : l'écran qu'il ouvre vingt fois par jour, le fil de ses chantiers.</p>
+<p><strong>C'est le seul prompt <code>/impeccable</code> qui autorise une refonte.</strong> Les cinq précédents disaient « ne rouvre pas ce qui a été tranché ». Celui-ci porte son autorisation explicite d'aller ailleurs — et la contrepartie, qui est de ne rien abandonner en silence.</p>
+<hr>
+<p>``` Rends impeccable L'ACCUEIL d'Atlas — la liste des chantiers, à l'adresse « / ». C'est l'écran qu'il ouvre vingt fois par jour, et le premier que voit un utilisateur neuf.</p>
+<p>LE PÉRIMÈTRE</p>
+<p>src/app/page.tsx                          168 l.  lit et compte, rien d'autre src/app/EcranChantiers.tsx                471     l'écran, la feuille, le geste src/app/ListeChantiers.tsx                337     le fil, la perle, la ligne src/app/Notifications.tsx                 573     les bandeaux sous le titre src/components/atlas/AtlasBottomNav.tsx   188     les cinq onglets du bas src/components/atlas/LigneRetirable.tsx   130     le glissement src/components/atlas/TiroirDesRetires.tsx  86     l'annulation src/lib/chantier-etat.ts                  499     lienDeReprise, ligneEtatChantier src/lib/onglet-chantier.ts                191     dans quel onglet vit un chantier src/lib/perle-descente.ts                 106     la plongée de la perle</p>
+<p>LA CONTRAINTE QUI PRIME SUR TOUTES LES AUTRES</p>
+<p>Sa consigne du 5 septembre 2026, désormais dans PRODUCT.md : « la plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de leur téléphone ; il faut que ce soit hyper intuitif et simple ».</p>
+<p>un écran, un geste     ce qu'on vient y faire se voit sans chercher rien de caché          aucun geste à découvrir — pas de glissement, pas d'appui long, pas de double appui, pour ce qui COMPTE des cibles grandes     on vise mal avec un doigt épais, à contre-jour des mots du métier     jamais un mot d'informaticien une erreur se rattrape on se trompe, et on doit pouvoir revenir rien qui presse        aucun geste qui expire</p>
+<p>LE TEST QUI TRANCHE : un homme de soixante-cinq ans, qui n'a jamais rien installé sur son téléphone, ouvre cet écran pour la première fois. Sait-il, sans qu'on le lui dise, ce qu'il regarde et où appuyer ? S'il faut une phrase d'explication, l'écran n'est pas juste — et la phrase est du bruit (CLAUDE.md §3).</p>
+<p>CE QU'IL AUTORISE, ET CE QU'IL N'AUTORISE PAS</p>
+<p>Sa phrase du 6 septembre : « tu peux partir sur totalement autre chose ». C'est une autorisation rare, et elle est réelle : le fil, la perle, les cinq onglets, la feuille qui monte — tout cela peut tomber si tu proposes mieux.</p>
+<p>Ce qu'elle N'autorise pas :</p>
+<ol>
+<li><strong>Abandonner une de ses décisions en silence.</strong> Chacune de celles listées plus bas a été payée — en maquettes, en captures, en allers-retours. Ce que tu retires se NOMME, avec ce que ça lui coûte et pourquoi tu crois que ça vaut le coup. Un retrait non dit se lit comme un oubli, et il le redemandera.</li>
+<li><strong>Coder avant qu'il ait choisi.</strong> Une apparence ou un geste se DESSINE d'abord (CLAUDE.md §3 bis). Il n'a pas dit « code-moi ça », il a dit « repense ».</li>
+<li><strong>Une planche à regarder.</strong> Deux versions de la maquette « moins de mots » ont raté sa demande, et il l'a écrit noir sur blanc : « une maquette dynamique QUE JE PUISSE UTILISER ». Une maquette, ici, est un bout d'application qui marche au pouce — la barre du bas répond, on appuie sur le bouton, la feuille monte. Pas des écrans avant/après avec des flèches.</li>
+</ol>
+<p>CE QU'IL A TRANCHÉ LUI-MÊME — à connaître AVANT de le jeter</p>
+<p>Aucune de ces lignes n'est un interdit ; toutes sont des factures déjà payées.</p>
+<ul>
+<li><strong>Le fil, pas les cartes</strong> (10 août). Un trait vertical porte les jours ; plus aucune boîte autour d'un chantier. Sa raison : une liste de chantiers n'est pas un tableau de bord.</li>
+<li><strong>La perle à mi-hauteur</strong> (11 août). Elle suit le doigt et ne désigne PAS le chantier qui attend — il avait la version inverse, et elle apparaissait n'importe où. Elle plonge sur le dernier jour aux derniers pixels.</li>
+<li><strong>« Créer un devis », le mot et l'anneau</strong> (11, 16 et 31 août). L'aplat vert a été refusé — « ça ne fait pas très luxe ». Onze maquettes, onze grains d'or, 520 ms avant la feuille, le mot à 13 px graisse 800. Il a resserré ces nombres lui-même.</li>
+<li><strong>Aucun trait gris dans l'en-tête</strong> (24 août) — il l'avait demandé le 11, il l'a fait retirer le 24. Ne pas le remettre en citant l'ancienne consigne.</li>
+<li><strong>Pas de « Bonjour »</strong> (24 août) : il y lisait « Compte ».</li>
+<li><strong>Aucune phrase quand la liste est vide</strong> (25 août) : « supprime la phrase aucun chantier pour l'instant ».</li>
+<li><strong>« En cours » puis le chiffre, en gras, et plus rien à droite</strong> (19 août, variante C de sa planche). Le compte ne s'écrit plus qu'une fois.</li>
+<li><strong>« Vos clients » en or sous le compteur</strong> (17 août), plutôt qu'un sixième onglet.</li>
+<li><strong>44 px au-dessus du titre, titre à 40 px, 21 px entre deux chantiers</strong> (2 septembre) : « garde l'air, par contre ne touche à rien d'autre ».</li>
+<li><strong>Toucher une ligne, c'est REPRENDRE</strong> (13 août) — pas revenir au début. <code>lienDeReprise</code> mène à l'écran où le travail s'est arrêté.</li>
+<li><strong>« Adresse non renseignée » est cliquable</strong> (17 août) et mène aux coordonnées, alors que le reste de la ligne mène à la reprise.</li>
+<li><strong>Un chantier dans UN SEUL onglet</strong> (6 août) : au planning, ou dans les chantiers, ou dans les terminés. Jamais deux.</li>
+<li><strong>Cinq onglets, sans icônes, à 8,5 px / 0,14 em</strong> (17 août, sa variante C). Quatre pictogrammes sous quatre mots disaient la même chose deux fois.</li>
+<li><strong>L'or sur toutes les lignes d'état</strong> (16 août) : « pour tous les messages je veux que cette partie-là apparaisse en doré ».</li>
+</ul>
+<p>CE QUI EST OUVERT, ET QU'IL A DEMANDÉ SANS L'OBTENIR</p>
+<ol>
+<li><strong>L'accueil de la maquette « moins de mots » n'a JAMAIS été fait.</strong> docs/QUESTIONS.md §23, verdict du 6 septembre : les réglages sont faits, la fiche client et l'accueil ne le sont pas. Sa mesure du 19 août : 35 mots à l'écran, 21 possibles. ATTENTION — une partie de ce que la maquette proposait a déjà été corrigée depuis (le compte écrit deux fois est parti le 19 août). Confronte <code>appli/moins-de-mots.html</code> au code AVANT de le citer.</li>
+<li><strong>Le compteur de mots qui empêche l'écran de regrossir n'existe pas.</strong> C'était la vraie réponse à « il y aura une quatrième fois ». Trois fois un écran a été allégé, trois fois la gêne est revenue ailleurs.</li>
+<li><strong>Un chantier prévu hier bascule en silence dans « Terminés ».</strong> Faut-il un rappel sur l'accueil ? Question posée dans TODO.md, jamais soumise à lui. Ne tranche pas seul : demande.</li>
+</ol>
+<p>CE QUE « IMPECCABLE » VEUT DIRE ICI, ET ÇA SE MESURE</p>
+<ol>
+<li>Compte les MOTS à l'écran, avant et après, à 390 × 664. Sa plainte du 19 août portait là-dessus, pas sur le nombre de gestes.</li>
+<li>Compte les GESTES entre l'ouverture et le chantier qu'il cherche. Puis demande-toi lequel tombe.</li>
+<li>Ce qui attend un geste DE LUI doit se voir sans lire. Aujourd'hui l'or est sur toutes les lignes, donc il ne distingue plus rien — c'est SA décision, mais elle a un coût, et il ne l'a peut-être pas mesuré.</li>
+<li>Huit chartes, dont deux sombres (Nuit, Sylve) où l'accent est CLAIR : aucune couleur écrite en clair, <code>surPlein</code> sur un aplat, <code>voile()</code> pour un voile. Contrôle : npx tsx scripts/test-chartes-lisibles.ts Attention, il lit les CHARTES et pas les classes d'un écran : un <code>bg-[rgba(0,0,0,0.03)]</code> lui échappe et disparaît sur Nuit.</li>
+<li>Aucune flèche décorative (scripts/test-aucune-fleche.ts).</li>
+<li>Tout refus nomme sa raison ET le geste qui le débloque.</li>
+</ol>
+<p>CE QUE ÇA CASSE, ET IL FAUT LE SAVOIR AVANT DE PROMETTRE</p>
+<p>Dix-sept scripts lisent cet écran par ses repères — <code>a.atlas-brin</code>, <code>.atlas-ligne</code>, <code>data-atlas="compteur"</code>, <code>data-atlas="nouveau-chantier"</code> :</p>
+<p>test-dashboard-e2e · test-glisser-supprimer-e2e · test-transcription-e2e · test-coordonnees-depuis-accueil-e2e · test-bouton-nouveau-chantier-e2e · test-unite-tarif-e2e · test-vibration · test-classes-atlas-uniques · mesurer-fluidite-fil · verifier-barre-basse · et sept captures</p>
+<p>Une refonte qui change ces repères les fait tomber tous. Ce n'est pas une raison de ne rien changer : c'est une raison de le CHIFFRER dans ta proposition, et d'adapter les contrôles plutôt que de remettre le libellé (CLAUDE.md §5 bis). Vise le profond — une adresse, un identifiant, un compte en base — pas un texte d'écran.</p>
+<p>LES INVARIANTS, QUI NE BOUGENT PAS QUELLE QUE SOIT LA REFONTE</p>
+<ul>
+<li>Toute lecture passe par withEntreprise(utilisateurId, entrepriseId, fn). Hors de ce cadre, une requête ne renvoie rien, silencieusement.</li>
+<li><strong>Une ligne = un seul <code>&lt;a&gt;</code>.</strong> Trois suites tombent sinon, et aucune n'a tort : la ligne EST un lien, ce qu'on lit dedans doit rester dedans.</li>
+<li>Le statut se calcule UNE fois, au serveur. Deux calculs divergent toujours.</li>
+<li>La règle de rangement vit dans <code>onglet-chantier.ts</code> et nulle part ailleurs. Elle a déjà été recopiée dans un écran, et un chantier s'est retrouvé dans deux onglets.</li>
+<li>Français partout. Les règles métier en fonctions pures, dans src/lib/.</li>
+</ul>
+<p>LA MÉTHODE</p>
+<ol>
+<li>Lis PRODUCT.md (« Accessibility &amp; Inclusion »), CLAUDE.md, docs/QUESTIONS.md §23, TODO.md, puis git log -20 et git branch -r --sort=-committerdate.</li>
+<li>Dis-moi ce que tu as trouvé AVANT d'écrire une ligne : ce qui rend cet écran difficile pour quelqu'un qui n'aime pas les téléphones, chaque point avec le fichier qui le prouve, et ce que tu proposes de garder, de jeter, et de remplacer.</li>
+<li>DESSINE. Une maquette qui SE SERT, dans appli/, un lien dans appli/essais.html, et donne-lui l'adresse ENTIÈRE — jamais tronquée, jamais une capture de la maquette — une fois qu'elle répond 200 : curl -s -o /dev/null -w '%{http_code}' https://florianmarrins0978-svg.github.io/Atlas-app/&lt;la-planche&gt;.html Groupe les poussées : deux à la suite s'annulent (concurrency: cancel-in-progress).</li>
+<li>Ne code qu'après sa réponse.</li>
+<li>Regarde les écrans, en capture, à 390 × 664, Origine ET Nuit — liste pleine, liste vide, liste avec trois bandeaux de notification.</li>
+</ol>
+<p>LA BATTERIE, SUR SON POSTE WINDOWS</p>
+<ul>
+<li>Préviens-le AVANT de la lancer ; son accord vaut ensuite pour toute la séquence, sans le relancer à chaque étape.</li>
+<li>Sa base vit dans Docker : docker start atlas-postgres atlas-redis</li>
+<li>Puis :</li>
+</ul>
+<p>export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test" npm run verifier:avant-livraison</p>
+<p>LE RENDU</p>
+<p>Un document dans docs/, commité avec le code, plus sa page : node scripts/md-en-page.mjs docs/&lt;nom&gt;.md Il porte : un verdict par point, le fichier qui le fonde, ce qui a été fait autrement et pourquoi, ce qui a été refusé et ce que ça aurait coûté, les chiffres exacts de la batterie, et ce qui reste ouvert avec qui peut le trancher. ```</p>
+<hr>
+<h2 id="ce-que-ce-prompt-ne-couvre-pas">Ce que ce prompt ne couvre pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Planning</strong> et <strong>Terminés</strong></td>
+<td>deux onglets voisins, deux écrans à eux</td>
+</tr>
+<tr>
+<td>La feuille du chantier neuf</td>
+<td><code>FormulaireNouveauChantier</code>, 1 036 l., refaite le 21 août</td>
+</tr>
+<tr>
+<td>Le trajet <code>chantier → terminé</code></td>
+<td>repris du 2 au 5 septembre</td>
+</tr>
+<tr>
+<td>Les Réglages</td>
+<td><code>docs/prompt-impeccable-reglages.md</code>, sommaire fait le 6 septembre</td>
+</tr>
+<tr>
+<td>Le pôle <strong>Paysage</strong></td>
+<td>jamais repris</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
