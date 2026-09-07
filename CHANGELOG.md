@@ -8,6 +8,36 @@ Format : le plus récent en tête.
 ---
 
 ## 2026-09-07
+### « Monsieur » ne va plus dans la case du nom, il allume la pastille
+
+Il dictait « monsieur Ludovic » et la case du nom portait « Monsieur Ludovic ».
+Le mot part désormais **là où il est une donnée** : la pastille « Mr / Mme »
+au-dessus du nom se sélectionne toute seule, et le nom reste nu.
+
+**Ce que ça évite** (`ARCHITECTURE.md` §268) : « Monsieur Ludovic » repartait
+mot pour mot sur le devis, la facture et le SMS, alors qu'il écrit « Mr. » — et
+deux dictées, « monsieur Ludovic » et « Ludovic », faisaient deux fiches pour un
+seul client.
+
+**« Docteur » et « Maître » partent aussi — sa décision.** J'avais livré
+l'inverse, en écrivant ce que le retrait coûterait : aucune pastille ne les
+porte, donc le titre s'efface et le nom nu reçoit « Mr. » — « Mr. Rivière » pour
+une femme médecin. Il a tranché : *« seulement les noms de famille ! »*. Le prix
+tient, et il est borné — la pastille est à un appui au-dessus.
+
+**Un défaut attrapé par le contrôle, et par rien d'autre :** « Maître » était
+découpé à « Ma ». En JavaScript, `\w` reste l'alphabet anglais même sous le
+drapeau Unicode — le seul titre accentué de la liste passait au travers pendant
+que les trois autres marchaient.
+
+**La règle de remplissage a quitté l'écran.** Elle vivait en quatre `if` mêlés à
+des `setState`, donc éprouvable au navigateur seulement — c'est-à-dire nulle
+part, la dictée demandant une clé que cet environnement n'a pas. Elle est
+maintenant une fonction pure (`champsARemplir`), et deux suites la tiennent.
+
+**NON ÉPROUVÉ ICI :** le parcours micro compris. Sans clé de transcription, ce
+poste ne peut jouer que la chaîne sous le micro. À essayer sur son espace.
+
 ### « Devis & factures » coupé en quatre, et trois messages au lieu d'un
 
 L'écran le plus long de l'application — **4 350 px, six écrans et demi de son
@@ -35,6 +65,7 @@ retirée est traduite vers la plus proche plutôt que perdue.
 l'accent « sur le total à payer ». Le total est à l'encre, et l'a toujours été
 (`ARCHITECTURE.md` §272).
 
+---
 ## 2026-09-06
 ### Fermer un jour depuis le planning, en un appui
 

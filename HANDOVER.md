@@ -40,10 +40,44 @@ sert.
    les factures portent leur allure figée (0074) et peuvent encore nommer
    Playfair dans dix ans.
 
-**CE QUI RESTE À FAIRE, ET C'EST LA PREMIÈRE CHOSE :** la batterie complète
-n'a pas été jouée sur ce lot — migration 0075 à appliquer d'abord
-(`DATABASE_URL="$DATABASE_ADMIN_URL" npm run db:migrate`). Types, lint et les
-suites pures sont au vert ; les suites base et navigateur n'ont pas tourné.
+---
+## Dernier lot — « MONSIEUR » VA SUR LA PASTILLE (7 septembre 2026)
+
+**Document du lot :** `docs/lot-civilite-dictee.md`. **Décisions :**
+`ARCHITECTURE.md` §268. **Pas de maquette** : rien n'est dessiné, un mot change
+de champ.
+
+Il a dicté « monsieur Ludovic » ; la case du nom portait « Monsieur Ludovic ».
+`detacherCivilite` (`src/lib/civilite.ts`) retire le mot du nom et rend la
+pastille qu'il désigne.
+
+**⚠ DEUX FONCTIONS INVERSES, À NE JAMAIS SÉPARER.** `detacherCivilite` et
+`avecCivilite` vivent dans le même fichier sur la MÊME liste de graphies. Poser
+l'une ailleurs, ou recopier sa liste, et un nom dicté ressortira sans sa
+civilité sur le devis. `CIVILITES_CONNUES` se **déduit** des deux listes de
+travail — ne pas la réécrire à la main.
+
+**⚠ « DOCTEUR » ET « MAÎTRE » PARTENT AUSSI, SANS ALLUMER DE PASTILLE — et ce
+n'est pas un oubli.** J'avais livré l'inverse en disant le prix : le titre
+s'efface, le nom nu reçoit le défaut « Mr. », donc « Mr. Rivière » pour une femme
+médecin. Il a tranché le jour même : *« seulement les noms de famille ! »*. Dans
+`CIVILITES_A_RETIRER` ils portent la valeur `null`, et `detacherCivilite`
+interroge la liste avec `in` — tester la valeur les remettrait dans le nom.
+
+**⚠ LE PREMIER MOT SE DÉCOUPE AVEC `\p{L}`, JAMAIS `\w`.** « Maître »
+s'arrêtait à « Ma » : en JavaScript `\w` reste l'alphabet anglais même sous le
+drapeau `u`. Un seul mot accentué dans la liste, et il passait au travers.
+
+**La règle de remplissage a quitté l'écran** : `champsARemplir`
+(`src/lib/coordonnees-dictees.ts`) décide, `FormulaireNouveauChantier` ne fait
+que poser. Elle rend **uniquement ce qui change** — un champ absent est un champ
+auquel on ne touche pas.
+
+**NON ÉPROUVÉ ICI :** le parcours micro compris. Ce poste n'a pas de clé de
+transcription (le fournisseur y rend un texte de remplacement), donc aucune
+suite navigateur ne peut partir du micro. Les deux suites tiennent la chaîne
+SOUS le micro, et elles savent rougir.
+
 
 ---
 ## Dernier lot — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)
