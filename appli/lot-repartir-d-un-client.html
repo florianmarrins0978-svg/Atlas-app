@@ -257,15 +257,54 @@
 <h3 id="un-contrôle-qui-ne-mesurait-rien">Un contrôle qui ne mesurait rien</h3>
 <p>Le premier contrôle de débordement comparait <code>.ecran.scrollHeight</code> au cadre. Or <code>.ecran</code> est une colonne flexible dont la hauteur vaut <strong>toujours</strong> celle du cadre : il rendait 664 = 664 quoi qu'on y mette. Le débordement se voit sur <code>.corps</code>. Corrigé, puis confronté à un débordement forcé pour le voir rougir.</p>
 <hr>
-<h2 id="7-ce-qui-reste-ouvert-et-qui-peut-le-trancher">7. Ce qui reste ouvert, et qui peut le trancher</h2>
+<h2 id="7-son-choix-et-la-suite--8-septembre-2026">7. Son choix, et la suite — 8 septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Il a retenu E</strong> : <em>« il faut la E car si c'est un client déjà enregistré en tant que client on ne va pas recréer une fiche client ! »</em></p>
+<h3 id="sa-deuxième-option-est-écartée-et-cest-lui-qui-lavait-tranchée">Sa deuxième option est écartée, et c'est lui qui l'avait tranchée</h3>
+<p>Il proposait qu'« Autre chantier » ouvre <em>« une autre page que l'on rajoute avec la note vocale plus la possibilité d'ajouter des photos »</em>.</p>
+<p><strong>Cette page existe déjà, et c'est la fiche client.</strong> <code>FormulaireNouveauChantier.tsx</code> porte <code>AnneauNoteVocale</code> <strong>et</strong> <code>Pellicule</code> depuis le 31 août 2026. La fiche du chantier séparée, elle, a été supprimée le 4 septembre — sa décision prise deux fois, dont le 1er septembre : <em>« toutes ces infos sont déjà sur cette page, ça fait des doublons si on garde l'autre aussi. »</em> En ajouter une neuve, ce serait la recréer.</p>
+<p><strong>Sa crainte est infondée, et c'est une bonne nouvelle :</strong> « Autre chantier » ne recrée aucun client. <code>trouverOuCreerClient</code> réutilise la fiche existante ; ce qui naît, c'est un <strong>chantier</strong> de plus accroché à elle.</p>
+<h3 id="les-anciennes-photos-et-le-point-quil-navait-pas-dit">Les anciennes photos, et le point qu'il n'avait pas dit</h3>
+<p>Son idée est retenue telle quelle : les photos de la dernière fois s'affichent éteintes, non cochées elles ne partent nulle part, cochées elles sont reprises.</p>
+<p><strong>Ce qu'il faut ajouter, et qui n'est pas un détail :</strong> une photo cochée doit être <strong>RECOPIÉE</strong> sur le nouveau chantier, jamais partagée avec l'ancien. <code>photos.chantier_id</code> rattache une photo à un seul chantier (<code>src/server/db/schema.ts:809</code>) : partagée, elle disparaîtrait de la fiche d'intervention du salarié le jour où l'ancien chantier est effacé.</p>
+<h3 id="-refaire---la-seule-chose-qui-reste-à-trancher">« Refaire » : la seule chose qui reste à trancher</h3>
+<p><strong>Non, pas l'ancien devis tel quel</strong> — ce serait facturer aux prix de l'an dernier, et c'est son argent.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que ça donne</th>
+<th>Ce que ça coûte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>aux tarifs d'aujourd'hui</strong> <em>(défendu)</em></td>
+<td>les lignes reviennent, les prix se refont sur sa grille actuelle ; l'ancien prix apparaît barré quand il a bougé ; une ligne dont le tarif a disparu revient <strong>« à chiffrer »</strong></td>
+<td>une ligne à chiffrer avant d'envoyer</td>
+</tr>
+<tr>
+<td><strong>à l'identique</strong></td>
+<td>l'ancien devis revient tel quel</td>
+<td>sur l'exemple de la planche : <strong>28 € perdus sans les voir</strong> sur la haie, et 120 € facturés sur un tarif supprimé</td>
+</tr>
+</tbody></table></div>
+<p>La colonne <code>aChiffrer</code> existe déjà en base (<code>lignes_devis</code>, migration 0070) : une ligne sait dire qu'elle n'est pas chiffrée, et le devis ne part pas tant qu'elle attend.</p>
+<p><strong>Planche :</strong> <code>https://florianmarrins0978-svg.github.io/Atlas-app/repartir-de-son-chantier.html</code></p>
+<hr>
+<h2 id="8-ce-qui-reste-ouvert-et-qui-peut-le-trancher">8. Ce qui reste ouvert, et qui peut le trancher</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
 <th>Ce qui reste</th>
 <th>Qui</th>
 </tr></thead><tbody>
 <tr>
-<td><strong>quelle proposition pour le lot 1</strong> — A, B ou C ; D ou E</td>
-<td><strong>lui</strong>, sur la planche</td>
+<td>~~quelle proposition pour le lot 1~~</td>
+<td><strong>tranché le 8 septembre : E</strong></td>
+</tr>
+<tr>
+<td><strong>« Refaire » : tarifs d'aujourd'hui ou à l'identique</strong></td>
+<td><strong>lui</strong>, sur la planche du §7</td>
+</tr>
+<tr>
+<td>quelle proposition pour la partie 1 — A, B ou C</td>
+<td><strong>lui</strong>, sur la première planche</td>
 </tr>
 <tr>
 <td>le compte rendu du lot 3 : rattacher <code>passages_entretien</code> au chantier, ou page propre</td>

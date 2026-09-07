@@ -190,11 +190,64 @@ cadre : il rendait 664 = 664 quoi qu'on y mette. Le débordement se voit sur
 
 ---
 
-## 7. Ce qui reste ouvert, et qui peut le trancher
+## 7. Son choix, et la suite — 8 septembre 2026
+
+**Il a retenu E** : *« il faut la E car si c'est un client déjà enregistré en
+tant que client on ne va pas recréer une fiche client ! »*
+
+### Sa deuxième option est écartée, et c'est lui qui l'avait tranchée
+
+Il proposait qu'« Autre chantier » ouvre *« une autre page que l'on rajoute avec
+la note vocale plus la possibilité d'ajouter des photos »*.
+
+**Cette page existe déjà, et c'est la fiche client.** `FormulaireNouveauChantier.tsx`
+porte `AnneauNoteVocale` **et** `Pellicule` depuis le 31 août 2026. La fiche du
+chantier séparée, elle, a été supprimée le 4 septembre — sa décision prise deux
+fois, dont le 1er septembre : *« toutes ces infos sont déjà sur cette page, ça
+fait des doublons si on garde l'autre aussi. »* En ajouter une neuve, ce serait
+la recréer.
+
+**Sa crainte est infondée, et c'est une bonne nouvelle :** « Autre chantier » ne
+recrée aucun client. `trouverOuCreerClient` réutilise la fiche existante ; ce qui
+naît, c'est un **chantier** de plus accroché à elle.
+
+### Les anciennes photos, et le point qu'il n'avait pas dit
+
+Son idée est retenue telle quelle : les photos de la dernière fois s'affichent
+éteintes, non cochées elles ne partent nulle part, cochées elles sont reprises.
+
+**Ce qu'il faut ajouter, et qui n'est pas un détail :** une photo cochée doit
+être **RECOPIÉE** sur le nouveau chantier, jamais partagée avec l'ancien.
+`photos.chantier_id` rattache une photo à un seul chantier
+(`src/server/db/schema.ts:809`) : partagée, elle disparaîtrait de la fiche
+d'intervention du salarié le jour où l'ancien chantier est effacé.
+
+### « Refaire » : la seule chose qui reste à trancher
+
+**Non, pas l'ancien devis tel quel** — ce serait facturer aux prix de l'an
+dernier, et c'est son argent.
+
+| | Ce que ça donne | Ce que ça coûte |
+|---|---|---|
+| **aux tarifs d'aujourd'hui** *(défendu)* | les lignes reviennent, les prix se refont sur sa grille actuelle ; l'ancien prix apparaît barré quand il a bougé ; une ligne dont le tarif a disparu revient **« à chiffrer »** | une ligne à chiffrer avant d'envoyer |
+| **à l'identique** | l'ancien devis revient tel quel | sur l'exemple de la planche : **28 € perdus sans les voir** sur la haie, et 120 € facturés sur un tarif supprimé |
+
+La colonne `aChiffrer` existe déjà en base (`lignes_devis`, migration 0070) : une
+ligne sait dire qu'elle n'est pas chiffrée, et le devis ne part pas tant qu'elle
+attend.
+
+**Planche :**
+`https://florianmarrins0978-svg.github.io/Atlas-app/repartir-de-son-chantier.html`
+
+---
+
+## 8. Ce qui reste ouvert, et qui peut le trancher
 
 | Ce qui reste | Qui |
 |---|---|
-| **quelle proposition pour le lot 1** — A, B ou C ; D ou E | **lui**, sur la planche |
+| ~~quelle proposition pour le lot 1~~ | **tranché le 8 septembre : E** |
+| **« Refaire » : tarifs d'aujourd'hui ou à l'identique** | **lui**, sur la planche du §7 |
+| quelle proposition pour la partie 1 — A, B ou C | **lui**, sur la première planche |
 | le compte rendu du lot 3 : rattacher `passages_entretien` au chantier, ou page propre | **nous**, au lot 3, une fois le lot 2 posé |
 | le lot 2 (fiche d'intervention) et le lot 3 (ce que le client reçoit) | **nous**, dans cet ordre, après son choix |
 

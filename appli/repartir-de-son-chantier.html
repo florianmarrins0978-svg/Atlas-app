@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Repartir de son chantier — « Refaire » et « Autre chantier »</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    REPARTIR DE SON CHANTIER — suite du lot 1, 8 septembre 2026.
+
+    Il a retenu la proposition E. Restent deux gestes à dessiner, et une
+    question de prix à trancher. RIEN N'EST CODÉ dans `src/`.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUE SA DEUXIÈME OPTION AURAIT REFAIT, ET POURQUOI ELLE EST ÉCARTÉE.
+
+    Il proposait qu'« Autre chantier » ouvre « une autre page que l'on rajoute
+    avec la note vocale plus la possibilité d'ajouter des photos ».
+
+    **Cette page existe déjà, et c'est la fiche client.** Depuis le 31 août
+    2026, `FormulaireNouveauChantier.tsx` porte `AnneauNoteVocale` ET
+    `Pellicule`. La fiche du chantier séparée, elle, a été supprimée le
+    4 septembre — sa décision prise deux fois, dont le 1er septembre : *« toutes
+    ces infos sont déjà sur cette page, ça fait des doublons si on garde l'autre
+    aussi. »*
+
+    En ajouter une neuve avec dictée et photos, ce serait la recréer.
+
+    ─────────────────────────────────────────────────────────────────────────
+    ET « AUTRE CHANTIER » NE CRÉE AUCUN CLIENT.
+
+    Sa crainte, dans ses mots : *« si c'est un client déjà enregistré on ne va
+    pas recréer une fiche client ! »* Non — `trouverOuCreerClient`
+    (`src/server/repositories/clients.ts:46`) réutilise la fiche existante. Ce
+    qui naît, c'est un CHANTIER de plus accroché à cette fiche.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST VRAI DANS CETTE PLANCHE, ET CE QUI EST DESSINÉ.
+
+    · les couleurs sont celles du produit, lues en jouant `charte("origine")`
+      et `charte("nuit")` — jamais approchées à l'œil ;
+    · l'anneau de dictée reprend le vrai : deux cercles de 74 et 56 px, vert
+      pin et or, trois traits d'or (`AnneauNoteVocale.tsx`). Le gros disque de
+      76 px a été retiré le 31 août — « ça dénature l'appli » — et il ne
+      revient pas ici ;
+    · la colonne `aChiffrer` existe en base (`lignes_devis`, migration 0070) :
+      une ligne sait déjà dire qu'elle n'est pas chiffrée ;
+    · **les vignettes de photos sont des marques, pas des images.** Ce seront
+      ses photos ; aucune n'est inventée ici ;
+    · les prix, les prestations et les dates sont inventés pour la
+      démonstration.
+
+    ─────────────────────────────────────────────────────────────────────────
+    MESURÉ POUR SON TÉLÉPHONE : 390 × 664.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12); --alerte:#9C3B2E;
+  }
+  /* Sur Nuit les pôles s'inversent : l'accent plein devient CLAIR, donc ce
+     qu'on pose dessus devient sombre. C'est la faute du 22 août 2026 qu'on
+     évite en la regardant plutôt qu'en l'écrivant en dur. */
+  body.nuit{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47;
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12); --alerte:#e08b7d;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);
+       -webkit-text-size-adjust:100%;padding:0 0 70px}
+  ::selection{background:rgba(138,101,40,.22)}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+
+  .mot{max-width:560px;margin:30px auto 0;padding:17px 20px;background:var(--etabli-carte);
+       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
+       font-size:14px;line-height:1.62;color:var(--etabli-doux)}
+  .mot b{color:var(--etabli-encre)}
+  .mot + .mot{margin-top:11px}
+
+  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
+         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
+  .etats .quoi{max-width:1000px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+               letter-spacing:.2em;text-transform:uppercase;color:var(--etabli-gris)}
+  .etats .rangee{max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
+                color:var(--etabli-doux);border-radius:999px;padding:10px 15px;
+                font:400 13px/1 var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .etats button:hover{border-color:var(--etabli-gris)}
+  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+
+  .partie{max-width:1000px;margin:46px auto 0;padding:0 20px}
+  .partie h2{margin:0;font:400 28px/1.12 var(--serif);letter-spacing:-.012em}
+  .partie p{margin:10px 0 0;font-size:14.5px;line-height:1.62;color:var(--etabli-doux);max-width:64ch}
+  .partie p b{color:var(--etabli-encre)}
+
+  .planches{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;
+            max-width:1360px;margin:26px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.25 var(--serif)}
+  .planche .nom .tenu{display:inline-block;margin-left:8px;font:600 9px/1 var(--sans);
+                      letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);
+                      vertical-align:3px}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--etabli-doux);min-height:44px}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
+       background:var(--fond);color:var(--encre);box-shadow:0 16px 44px rgba(20,18,14,.22)}
+  .ecran{position:absolute;inset:0;display:flex;flex-direction:column;padding:22px 0 0}
+
+  .entete{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 24px}
+  .entete h1{margin:0;font:400 27px/1.05 var(--serif);white-space:nowrap}
+  .rond{width:38px;height:38px;border-radius:999px;display:grid;place-items:center;
+        background:var(--tuile);color:var(--doux);flex:0 0 auto}
+  .rond.vide{background:transparent}
+
+  .corps{flex:1;overflow:hidden;padding:18px 24px 0}
+  .etiq{display:block;font:600 10.5px/1.35 var(--sans);letter-spacing:.16em;
+        text-transform:uppercase;color:var(--gris)}
+  .duo{display:flex;align-items:flex-end;gap:9px}
+  .duo .col-nom{flex:1;min-width:0}
+  .duo .col-tel{width:152px;flex:0 0 auto}
+  .duo .col-tel .etiq{text-align:right}
+  .case{display:block;width:100%;border:0;border-radius:11px;background:var(--plage);
+        color:var(--encre);padding:12px 15px;font:400 16px/1.25 var(--sans);
+        box-shadow:inset 0 0 0 1px var(--trait);-webkit-tap-highlight-color:transparent}
+  .case.repris{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .pile{display:flex;flex-direction:column;gap:5px}
+  .pile + .pile, .duo + .pile{margin-top:11px}
+
+  /* ── L'anneau de dictée, tel qu'il est ───────────────────────────── */
+  .anneau{display:grid;place-items:center;margin:14px 0 0}
+  .anneau .cible{position:relative;width:74px;height:74px;display:grid;place-items:center;
+                 border-radius:999px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .anneau .c1{position:absolute;width:74px;height:74px;border-radius:999px;border:1.5px solid var(--accent)}
+  .anneau .c2{position:absolute;width:56px;height:56px;border-radius:999px;border:1px solid var(--or)}
+  .anneau .traits{display:flex;align-items:center;gap:4px;position:relative}
+  .anneau .traits i{display:block;width:2px;height:15px;border-radius:2px;background:var(--or)}
+  .anneau .traits i:nth-child(2){height:22px}
+  .anneau .dit{margin:9px 0 0;font-size:11px;color:var(--gris)}
+
+  /* ── La pellicule, et les photos de la dernière fois ─────────────── */
+  .pellicule{display:flex;gap:9px;margin-top:6px;flex-wrap:wrap}
+  .vignette{width:62px;height:62px;border-radius:11px;background:var(--tuile);
+            box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;
+            color:var(--gris);position:relative}
+  .vignette.plus{background:var(--plage);color:var(--orTexte)}
+
+  /* **Éteintes tant qu'elles ne sont pas cochées.** Ce ne sont pas les photos
+     de CE chantier : elles montrent ce qui a été fait la dernière fois, et
+     elles ne partent chez le salarié que si le patron les coche. */
+  .ancienne{opacity:.42;cursor:pointer;transition:opacity .18s cubic-bezier(.22,.9,.3,1)}
+  .ancienne[aria-pressed="true"]{opacity:1;box-shadow:inset 0 0 0 2px var(--or)}
+  .ancienne .coche{position:absolute;right:-4px;top:-4px;width:21px;height:21px;border-radius:999px;
+                   background:var(--fond);box-shadow:inset 0 0 0 1px var(--trait);
+                   display:grid;place-items:center;color:var(--gris)}
+  .ancienne[aria-pressed="true"] .coche{background:var(--or);color:var(--fond);box-shadow:none}
+  .reprises{margin:8px 0 0;font-size:12.5px;color:var(--orTexte)}
+
+  /* ── Le devis rechargé ───────────────────────────────────────────── */
+  .ligne{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+         padding:12px 0;border-bottom:1px solid var(--trait)}
+  .ligne .quoi{min-width:0;flex:1}
+  .ligne .titre{display:block;font-size:15px;line-height:1.35}
+  .ligne .detail{display:block;margin-top:2px;font-size:12.5px;color:var(--gris);
+                 font-variant-numeric:tabular-nums}
+  .ligne .somme{font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .avant{color:var(--gris);text-decoration:line-through;margin-right:7px}
+  .achiffrer{color:var(--alerte)}
+  .total{display:flex;align-items:baseline;justify-content:space-between;margin-top:14px}
+  .total .mot-total{font:600 10.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+  .total .somme{font:400 26px/1 var(--serif);font-variant-numeric:tabular-nums}
+
+  .valider{margin:auto 0 0;padding:14px 24px 22px}
+  .valider button{width:100%;border:0;border-radius:999px;background:var(--plein);
+                  color:var(--surplein);height:56px;font:400 17px/1 var(--serif);cursor:pointer}
+  .valider button:active{transform:scale(.99)}
+
+  @media (max-width:900px){ .planche{width:100%} .tel{width:100%} }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Maquette.</b> Rien n'est codé. <b>Touchez les photos grises</b> du premier
+  écran pour les cocher, et <b>« Nuit »</b> pour le fond noir.
+</div>
+
+<div class="mot">
+  <b>Votre deuxième option est écartée, et c'est vous qui l'aviez tranché.</b>
+  La page « avec la grosse note vocale », c'est déjà la fiche client — elle porte
+  la dictée et les photos depuis le 31 août. La fiche du chantier séparée a été
+  supprimée le 4 septembre : <b>« ça fait des doublons si on garde l'autre
+  aussi »</b>. En rajouter une neuve, ce serait la refaire.
+</div>
+<div class="mot">
+  <b>Et « Autre chantier » ne recrée aucun client.</b> Il ouvre cette page avec
+  ses coordonnées déjà posées, et le chantier s'accroche à sa fiche existante.
+</div>
+
+<div class="etats" role="group" aria-label="Ce qu'on peut jouer">
+  <p class="quoi">L'écran</p>
+  <div class="rangee">
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<!-- ══════════════════ « AUTRE CHANTIER » ════════════════════════════ -->
+<div class="partie">
+  <h2>« Autre chantier »</h2>
+  <p>La fiche client, ses coordonnées déjà posées, l'anneau prêt. <b>Les photos
+  de la dernière fois s'affichent éteintes</b> : elles montrent ce qui avait été
+  fait, et elles ne partent chez le salarié que si vous les cochez.</p>
+</div>
+
+<div class="planches">
+  <div class="planche">
+    <p class="nom">Ce que ça ouvre</p>
+    <p class="idee">Touchez les photos grises : elles s'allument et le compte
+      apparaît. Non cochées, elles ne sont copiées nulle part.</p>
+    <div class="tel"><div class="ecran">
+      <div class="entete">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h1>Fiche client</h1>
+        <span class="rond" aria-hidden="true">
+          <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><rect x="4" y="1" width="6" height="9.4" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M1.6 8.4a5.4 5.4 0 0 0 10.8 0M7 13.8V17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="corps">
+        <div class="duo">
+          <span class="col-nom"><span class="etiq">Nom du client</span>
+            <input class="case repris" style="margin-top:5px" value="Martins" aria-label="Nom du client"></span>
+          <span class="col-tel"><span class="etiq">Téléphone</span>
+            <input class="case repris" style="margin-top:5px" value="06 79 98 45 14" aria-label="Téléphone"></span>
+        </div>
+        <div class="pile"><span class="etiq">Adresse du chantier</span>
+          <input class="case repris" value="12 rue des Lilas, Saint-Marc" aria-label="Adresse du chantier"></div>
+
+        <div class="anneau">
+          <span class="cible" role="button" tabindex="0" aria-label="Appuyez et décrivez le chantier">
+            <span class="c1" aria-hidden="true"></span>
+            <span class="c2" aria-hidden="true"></span>
+            <span class="traits" aria-hidden="true"><i></i><i></i><i></i></span>
+          </span>
+          <p class="dit">Appuyez et décrivez le chantier</p>
+        </div>
+
+        <div style="margin-top:14px">
+          <span class="etiq">Photos</span>
+          <div class="pellicule">
+            <div class="vignette plus" role="button" tabindex="0" aria-label="Ajouter une photo">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <span class="etiq">La dernière fois &middot; 2 septembre</span>
+          <div class="pellicule" id="anciennes">
+            <button type="button" class="vignette ancienne" aria-pressed="false" aria-label="Reprendre la première photo du 2 septembre">
+              <svg width="21" height="21" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.5"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              <span class="coche" aria-hidden="true"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.4 6.3 4.8 8.7 9.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+            <button type="button" class="vignette ancienne" aria-pressed="false" aria-label="Reprendre la deuxième photo du 2 septembre">
+              <svg width="21" height="21" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.5"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              <span class="coche" aria-hidden="true"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.4 6.3 4.8 8.7 9.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+            <button type="button" class="vignette ancienne" aria-pressed="false" aria-label="Reprendre la troisième photo du 2 septembre">
+              <svg width="21" height="21" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.5"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              <span class="coche" aria-hidden="true"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2.4 6.3 4.8 8.7 9.6 3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+          </div>
+          <p class="reprises" id="compte" hidden></p>
+        </div>
+      </div>
+      <div class="valider"><button type="button">Enregistrer</button></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ══════════════════ « REFAIRE » ═══════════════════════════════════ -->
+<div class="partie">
+  <h2>« Refaire » : la seule chose à trancher</h2>
+  <p>Les prestations et les quantités reviennent dans les deux cas. La question
+  est <b>le prix</b> — et c'est votre argent, donc c'est vous qui tranchez.</p>
+</div>
+
+<div class="planches">
+
+  <div class="planche">
+    <p class="nom">1. Aux tarifs d'aujourd'hui<span class="tenu">Ce que je défends</span></p>
+    <p class="idee">Les prix sont refaits sur votre grille actuelle. Ce qui a
+      bougé se voit, ce qui ne se retrouve plus attend son prix.</p>
+    <div class="tel"><div class="ecran">
+      <div class="entete">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h1>Le devis</h1>
+        <span class="rond vide" aria-hidden="true"></span>
+      </div>
+      <div class="corps">
+        <span class="etiq">Repris du 2 septembre</span>
+        <div style="margin-top:8px">
+          <div class="ligne">
+            <span class="quoi"><span class="titre">Taille de haie</span>
+              <span class="detail">40 ml &times; 18,20 €</span></span>
+            <span class="somme"><span class="avant">700,00 €</span>728,00 €</span>
+          </div>
+          <div class="ligne">
+            <span class="quoi"><span class="titre">Évacuation des déchets verts</span>
+              <span class="detail">1 forfait &times; 90,00 €</span></span>
+            <span class="somme">90,00 €</span>
+          </div>
+          <div class="ligne">
+            <span class="quoi"><span class="titre">Traitement anti-mousse</span>
+              <span class="detail achiffrer">Ce tarif n'existe plus</span></span>
+            <span class="somme achiffrer">À chiffrer</span>
+          </div>
+        </div>
+        <div class="total">
+          <span class="mot-total">Total HT</span>
+          <span class="somme">818,00 €</span>
+        </div>
+      </div>
+      <div class="valider"><button type="button">Relire le devis</button></div>
+    </div></div>
+  </div>
+
+  <div class="planche">
+    <p class="nom">2. À l'identique</p>
+    <p class="idee">L'ancien devis revient tel quel, aux prix de la dernière
+      fois. C'est à vous de repérer ce qui a changé.</p>
+    <div class="tel"><div class="ecran">
+      <div class="entete">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h1>Le devis</h1>
+        <span class="rond vide" aria-hidden="true"></span>
+      </div>
+      <div class="corps">
+        <span class="etiq">Repris du 2 septembre</span>
+        <div style="margin-top:8px">
+          <div class="ligne">
+            <span class="quoi"><span class="titre">Taille de haie</span>
+              <span class="detail">40 ml &times; 17,50 €</span></span>
+            <span class="somme">700,00 €</span>
+          </div>
+          <div class="ligne">
+            <span class="quoi"><span class="titre">Évacuation des déchets verts</span>
+              <span class="detail">1 forfait &times; 90,00 €</span></span>
+            <span class="somme">90,00 €</span>
+          </div>
+          <div class="ligne">
+            <span class="quoi"><span class="titre">Traitement anti-mousse</span>
+              <span class="detail">1 forfait &times; 120,00 €</span></span>
+            <span class="somme">120,00 €</span>
+          </div>
+        </div>
+        <div class="total">
+          <span class="mot-total">Total HT</span>
+          <span class="somme">910,00 €</span>
+        </div>
+      </div>
+      <div class="valider"><button type="button">Relire le devis</button></div>
+    </div></div>
+  </div>
+</div>
+
+<div class="mot" style="margin-top:42px">
+  <b>Ce que la deuxième vous coûte, sur cet exemple :</b> la haie est repartie à
+  17,50 € alors que votre tarif est passé à 18,20 € — <b>28 € perdus sans les
+  voir</b> —, et l'anti-mousse a été facturé 120 € sur un tarif que vous avez
+  supprimé.
+</div>
+<div class="mot">
+  <b>Ce que la première vous coûte :</b> une ligne revient sans prix, et il faut
+  la chiffrer avant d'envoyer. Le devis ne part pas tant qu'elle attend.
+</div>
+
+<script>
+/*
+  LES ANCIENNES PHOTOS NE PARTENT QUE SI ELLES SONT COCHÉES.
+
+  C'est sa règle du 8 septembre 2026, et elle a une conséquence que la maquette
+  ne peut pas montrer mais que le code devra tenir : une photo cochée sera
+  RECOPIÉE sur le nouveau chantier, jamais partagée avec l'ancien. Partagée,
+  elle disparaîtrait de la fiche du salarié le jour où l'ancien chantier est
+  effacé (`photos.chantier_id`, `src/server/db/schema.ts`).
+*/
+const compte = document.getElementById("compte");
+const anciennes = Array.from(document.querySelectorAll(".ancienne"));
+
+function direCombien() {
+  const n = anciennes.filter((b) => b.getAttribute("aria-pressed") === "true").length;
+  // **Rien à dire quand rien n'est coché.** Une ligne « 0 photo reprise »
+  // serait du bruit : l'écran montre déjà des vignettes éteintes.
+  compte.hidden = n === 0;
+  compte.textContent = n === 1 ? "1 photo reprise" : n + " photos reprises";
+}
+
+anciennes.forEach((b) => {
+  b.addEventListener("click", () => {
+    b.setAttribute("aria-pressed", b.getAttribute("aria-pressed") === "true" ? "false" : "true");
+    direCombien();
+  });
+});
+
+const bouton = document.getElementById("charte");
+bouton.addEventListener("click", () => {
+  const nuit = document.body.classList.toggle("nuit");
+  bouton.setAttribute("aria-pressed", String(nuit));
+  bouton.textContent = nuit ? "Origine" : "Nuit";
+});
+
+direCombien();
+</script>
+</body>
+</html>
