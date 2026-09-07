@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le devis que voit son client — avant et après</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    LE DEVIS QUE VOIT SON CLIENT — 8 septembre 2026.
+
+    Sa demande : *« sors-moi le visuel que le client reçoit avec le lien pour
+    choisir sa date d'intervention et son devis, on va le modifier aussi comme
+    la facture »*.
+
+    `CLAUDE.md` §3 bis : la planche d'abord. RIEN N'EST CODÉ.
+
+    ─────────────────────────────────────────────────────────────────────────
+    DEUX DÉFAUTS TROUVÉS EN LISANT LE CODE, ET AUCUN NE SE VOIT À L'ŒIL NU.
+
+    1. **Le terre cuite abandonné le 3 août 2026 est encore là.** `#B5502F`
+       peint le refus et le cadre de rétractation (`formulaire.tsx`). Ce n'est
+       plus une couleur du produit depuis cinq semaines — l'alerte d'Atlas vaut
+       `#9C3B2E`, et elle s'adapte aux huit chartes.
+
+    2. **Le bouton « J'accepte ce devis » n'est pas du bon vert.** Il porte le
+       vert pin `#2F3B2F`, l'accent des TEXTES et des liserés. Sa décision du
+       3 septembre — planche `boutons-verts.html`, verdict la D — dit :
+       « tout ce qui est bouton cliquable tu remplaces par la D », soit
+       `#7d9a6d` à plat.
+
+    Et la cause commune des deux : **cette page écrit ses couleurs en dur**
+    (`bg-[#F4EFE8]`, `bg-white`, `#2F3B2F`, `#B5502F`), ce que `CLAUDE.md` §3
+    interdit — « aucune couleur écrite en clair dans un écran ». C'est pour ça
+    qu'elle n'a suivi aucun des changements d'identité depuis le 3 août.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QU'ON NE REPREND PAS DE LA FACTURE, ET IL FAUT LE DIRE.
+
+    Sur la facture, le montant a été retiré pour pousser le client à ouvrir le
+    PDF. **Ici, jamais** : il s'apprête à ACCEPTER. Un accord donné sans voir le
+    prix n'est pas un accord — c'est ce que le devis a de plus important, et
+    c'est aussi ce qu'un litige regarderait en premier.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LA PAGE TIENT EN 390 × 664 SANS DÉFILEMENT — sa règle du 31 août 2026 :
+    *« je veux que le choix de la date qui arrive au client par SMS tienne sur
+    une seule page ! Il ne doit pas avoir à scroll »*. Les deux colonnes sont
+    mesurées dans tous les états.
+  */
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --alerte:#9C3B2E;
+    /* Ce que la page porte AUJOURD'HUI, en dur, dans son code. */
+    --vieux-fond:#F4EFE8; --vieux-terre:#B5502F;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+
+  .note{max-width:470px;margin:32px auto 0;padding:16px 20px;background:var(--carte);
+        border-left:3px solid var(--or);font-size:14px;line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .note + .note{margin-top:12px}
+  .note code{font:400 13px/1 ui-monospace,monospace;background:var(--papier);padding:1px 4px;border-radius:3px}
+
+  .etats{position:sticky;top:0;z-index:20;background:#e6e3dc;
+         border-bottom:1px solid rgba(28,28,26,.14);padding:12px 16px 13px}
+  .etats .quoi{max-width:470px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+               letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+  .etats .rangee{max-width:470px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+  .etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+                border-radius:999px;padding:8px 13px;font:400 13px/1 var(--sans);cursor:pointer;
+                -webkit-tap-highlight-color:transparent}
+  .etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+
+  .planches{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;
+            max-width:1000px;margin:30px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;
+       box-shadow:0 16px 44px rgba(20,18,14,.22)}
+
+  /* ══ AUJOURD'HUI — reproduit de `src/app/devis/[jeton]/` ═══════════════ */
+  #avant{background:var(--vieux-fond);height:100%;padding:3px 15px 2px;
+         display:flex;flex-direction:column;gap:2px;
+         font:15px/1.45 var(--sans);color:#1c1c1a}
+  #avant .bloc{background:#fff;border-radius:16px;padding:9px;
+               box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  #avant .titre{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 12px}
+  #avant h1{margin:0;font:600 19px/1.2 ui-serif,Georgia,serif}
+  #avant .marque{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:rgba(28,28,26,.45)}
+  #avant .pour{margin:2px 0 0;font-size:14px;color:rgba(28,28,26,.7)}
+  #avant .adr{margin:0;font-size:13px;color:rgba(28,28,26,.5)}
+  #avant dl{margin:8px 0 0;padding:6px 0 0;border-top:1px solid rgba(0,0,0,.1);font-size:14px}
+  #avant dl div{display:flex;justify-content:space-between;color:rgba(28,28,26,.6)}
+  #avant dl .ttc{font-size:16px;font-weight:600;color:#1c1c1a}
+  #avant .pdf{display:block;margin:6px 0 0;font-size:13px;font-weight:600;
+              color:rgba(28,28,26,.7);text-decoration:underline;text-underline-offset:4px}
+  #avant h2{margin:0;font:600 15px/1.3 var(--sans)}
+  #avant .choix{margin:6px 0 0;display:flex;flex-direction:column;gap:2px}
+  #avant .choix label{display:flex;align-items:center;gap:12px;font-size:15px}
+  #avant .invite{display:block;margin:10px 0 0;font-size:13px;font-weight:500;color:rgba(28,28,26,.7)}
+  #avant textarea{margin:6px 0 0;width:100%;border:1px solid rgba(0,0,0,.1);border-radius:12px;
+                  padding:8px 12px;font:15px var(--sans);resize:none}
+  #avant .retract{border:1px solid rgba(181,80,47,.25);background:rgba(181,80,47,.05);
+                  border-radius:16px;padding:10px;font-size:14px;line-height:1.5;
+                  display:flex;gap:12px;align-items:flex-start}
+  #avant .gestes{display:flex;flex-direction:column;gap:4px}
+  #avant .oui{border:0;border-radius:999px;background:#2F3B2F;color:#fff;padding:9px;
+              font:500 16px var(--sans);cursor:pointer}
+  #avant .corr{border:1px solid rgba(47,59,47,.3);border-radius:999px;background:transparent;
+               color:#2F3B2F;padding:8px;font:500 14px var(--sans);cursor:pointer}
+  #avant .non{border:1px solid rgba(0,0,0,.15);border-radius:999px;background:transparent;
+              color:rgba(28,28,26,.7);padding:8px;font:400 14px var(--sans);cursor:pointer}
+  #avant .preuve{margin:0;text-align:center;font-size:11px;line-height:1.35;color:rgba(28,28,26,.4)}
+
+  /* ══ LA PROPOSITION — aux couleurs d'Atlas ════════════════════════════ */
+  #apres{background:var(--fond);height:100%;padding:4px 15px 2px;
+         display:flex;flex-direction:column;gap:3px;color:var(--encre)}
+  #apres .bloc{background:var(--carte);border:1px solid var(--trait);border-radius:16px;padding:9px;
+               box-shadow:0 4px 14px rgba(20,18,14,.06)}
+  #apres .eyebrow{margin:0 0 3px;font:600 9.5px/1 var(--sans);letter-spacing:.2em;
+                  text-transform:uppercase;color:var(--or)}
+  #apres .titre{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 12px}
+  #apres h1{margin:0;font:400 19px/1.15 var(--serif)}
+  #apres .marque{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--gris)}
+  #apres .pour{margin:2px 0 0;font-size:14px;color:var(--encre-douce)}
+  #apres .adr{margin:0;font-size:13px;color:var(--gris)}
+  #apres dl{margin:7px 0 0;padding:5px 0 0;border-top:1px solid var(--trait);font-size:14px}
+  #apres dl div{display:flex;justify-content:space-between;color:var(--gris)}
+  #apres dl .ttc{margin-top:2px;font:500 17px/1.15 var(--serif);color:var(--encre)}
+  #apres .pdf{display:block;margin:6px 0 0;font-size:13px;font-weight:500;color:var(--rust,#2f3b2f);
+              text-decoration:underline;text-underline-offset:4px}
+  #apres h2{margin:0;font:400 15px/1.25 var(--serif)}
+  #apres .choix{margin:4px 0 0;display:flex;flex-direction:column;gap:0}
+  #apres .choix label{display:flex;align-items:center;gap:12px;font-size:15px;min-height:26px}
+  #apres .invite{display:block;margin:6px 0 0;font-size:13px;font-weight:500;color:var(--encre-douce)}
+  #apres textarea{margin:4px 0 0;width:100%;border:1px solid var(--trait);border-radius:12px;
+                  padding:7px 12px;font:15px var(--sans);background:var(--carte);resize:none}
+  #apres .retract{border:1px solid rgba(156,59,46,.25);background:rgba(156,59,46,.05);
+                  border-radius:16px;padding:10px;font-size:14px;line-height:1.5;
+                  display:flex;gap:12px;align-items:flex-start}
+  #apres .gestes{display:flex;flex-direction:column;gap:3px}
+  #apres .oui{border:0;border-radius:999px;background:var(--plein);color:#faf9f5;padding:9px;
+              font:400 16px var(--serif);cursor:pointer}
+  #apres .corr{border:1px solid rgba(47,59,47,.3);border-radius:999px;background:transparent;
+               color:var(--pin);padding:7px;font:500 14px var(--sans);cursor:pointer}
+  #apres .non{border:1px solid var(--trait);border-radius:999px;background:transparent;
+              color:var(--gris);padding:7px;font:400 14px var(--sans);cursor:pointer}
+  #apres .preuve{margin:0;text-align:center;font-size:11px;line-height:1.35;color:var(--gris)}
+
+  /* ── Les écrans de retour ─────────────────────────────────────────── */
+  .seul{height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+  .seul .feuille{width:100%;border-radius:18px;padding:24px;text-align:center}
+  #avant .seul{background:var(--vieux-fond)}
+  #avant .seul .feuille{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  #avant .seul h1{font:600 18px ui-serif,Georgia,serif}
+  #apres .seul{background:var(--fond)}
+  #apres .seul .feuille{background:var(--carte);border:1px solid var(--trait);
+                        box-shadow:0 8px 24px rgba(20,18,14,.08)}
+  #apres .seul h1{font:400 21px/1.25 var(--serif)}
+  .seul p{margin:10px 0 0;font-size:14.5px;line-height:1.55;color:var(--gris)}
+  #avant .seul p{color:rgba(28,28,26,.7)}
+  .seul .emporter{display:inline-block;margin-top:16px;border-radius:999px;padding:12px 22px;
+                  font-size:15px;font-weight:500;cursor:pointer}
+  #avant .seul .emporter{background:#2F3B2F;color:#fff;border:0}
+  #apres .seul .emporter{background:var(--plein);color:#faf9f5;border:0;
+                         font:400 16px var(--serif)}
+
+  /* ── Les états ────────────────────────────────────────────────────── */
+  .vivante{display:flex;flex-direction:column;gap:inherit;flex:0 0 auto}
+  #avant .vivante{gap:2px}
+  #apres .vivante{gap:3px}
+  .seul{display:none}
+  body.accepte .vivante,body.perime .vivante{display:none}
+  body.accepte .seul-accepte,body.perime .seul-perime{display:flex}
+  #avant .retract,#apres .retract{display:none}
+  body.retractation #avant .retract,
+  body.retractation #apres .retract{display:flex}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Ce que votre client reçoit par SMS : son devis, et le choix de la date.</b>
+  À gauche ce qu'il voit aujourd'hui, à droite la proposition.
+  <b>Rien n'est codé</b> — dites-moi ce qui va et ce qui ne va pas.
+</div>
+
+<div class="etats">
+  <p class="quoi">Voir la page dans cet état</p>
+  <div class="rangee">
+    <button type="button" data-etat="" aria-pressed="true">Ordinaire</button>
+    <button type="button" data-etat="retractation" aria-pressed="false">Délai de rétractation</button>
+    <button type="button" data-etat="accepte" aria-pressed="false">Déjà accepté</button>
+    <button type="button" data-etat="perime" aria-pressed="false">Lien périmé</button>
+  </div>
+</div>
+
+<div class="planches">
+
+  <!-- ══ AUJOURD'HUI ═══════════════════════════════════════════════════ -->
+  <div class="planche">
+    <p class="nom">Aujourd'hui</p>
+    <p class="idee">Un beige, un blanc et un vert écrits en dur dans le code. Elle n'a suivi
+      aucun changement d'identité depuis le 3 août : le refus y est encore en terre cuite,
+      la couleur abandonnée ce jour-là.</p>
+    <div class="tel">
+      <div id="avant">
+        <div class="vivante">
+          <div class="bloc">
+            <div class="titre">
+              <h1>Devis n° D2026-000014</h1>
+              <span class="marque">Jardins du Val</span>
+            </div>
+            <p class="pour">Pour M. Martins</p>
+            <p class="adr">12 chemin des Vignes</p>
+            <dl>
+              <div><dt>Total HT</dt><dd>1 233,33 €</dd></div>
+              <div><dt>TVA (20 %)</dt><dd>246,67 €</dd></div>
+              <div class="ttc"><dt>Total TTC</dt><dd>1 480,00 €</dd></div>
+            </dl>
+            <a class="pdf" href="#">Télécharger mon devis (PDF)</a>
+          </div>
+
+          <div class="bloc">
+            <h2>Quelle date vous arrange&nbsp;?</h2>
+            <div class="choix">
+              <label><input type="radio" name="d1" checked><span>mardi 22 septembre</span></label>
+              <label><input type="radio" name="d1"><span>jeudi 24 septembre</span></label>
+              <label><input type="radio" name="d1"><span>lundi 28 septembre</span></label>
+              <label><input type="radio" name="d1"><span>Une autre date</span></label>
+            </div>
+            <span class="invite">Une erreur&nbsp;? Écrivez-la, votre artisan la lira.</span>
+            <textarea rows="1" placeholder="« Mon nom est mal écrit », « plutôt le matin »…"></textarea>
+          </div>
+
+          <div class="retract">
+            <input type="checkbox">
+            <span>Cette date se situe dans mon délai de rétractation de 14 jours.
+              <strong>Je demande expressément que les travaux commencent avant sa fin.</strong></span>
+          </div>
+
+          <div class="gestes">
+            <button class="oui" type="button">J'accepte ce devis</button>
+            <button class="corr" type="button">Une correction avant d'accepter</button>
+            <button class="non" type="button">Je ne donne pas suite</button>
+          </div>
+
+          <p class="preuve">Votre accord est horodaté et conservé avec le devis.</p>
+        </div>
+
+        <div class="seul seul-accepte">
+          <div class="feuille">
+            <h1>Devis accepté</h1>
+            <p>Intervention prévue le mardi 22 septembre. Votre artisan vous recontactera si besoin.</p>
+            <button class="emporter" type="button">Télécharger mon devis</button>
+          </div>
+        </div>
+
+        <div class="seul seul-perime">
+          <div class="feuille">
+            <h1>Ce lien n'est plus valable</h1>
+            <p>Contactez votre artisan pour en recevoir un nouveau.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LA PROPOSITION ════════════════════════════════════════════════ -->
+  <div class="planche">
+    <p class="nom">La proposition</p>
+    <p class="idee">Les couleurs d'Atlas, comme la facture : crème, encre, filet d'or, et le
+      vert des boutons que vous avez choisi le 3 septembre. Rien n'est retiré — surtout pas
+      le prix, qu'il doit voir pour accepter.</p>
+    <div class="tel">
+      <div id="apres">
+        <div class="vivante">
+          <div class="bloc">
+            <p class="eyebrow">Devis</p>
+            <div class="titre">
+              <h1>D2026-000014</h1>
+              <span class="marque">Jardins du Val</span>
+            </div>
+            <p class="pour">Pour M. Martins</p>
+            <p class="adr">12 chemin des Vignes</p>
+            <dl>
+              <div><dt>Total HT</dt><dd>1 233,33 €</dd></div>
+              <div><dt>TVA (20 %)</dt><dd>246,67 €</dd></div>
+              <div class="ttc"><dt>Total TTC</dt><dd>1 480,00 €</dd></div>
+            </dl>
+            <a class="pdf" href="#">Télécharger mon devis (PDF)</a>
+          </div>
+
+          <div class="bloc">
+            <h2>Quelle date vous arrange&nbsp;?</h2>
+            <div class="choix">
+              <label><input type="radio" name="d2" checked><span>mardi 22 septembre</span></label>
+              <label><input type="radio" name="d2"><span>jeudi 24 septembre</span></label>
+              <label><input type="radio" name="d2"><span>lundi 28 septembre</span></label>
+              <label><input type="radio" name="d2"><span>Une autre date</span></label>
+            </div>
+            <span class="invite">Une erreur&nbsp;? Écrivez-la, votre artisan la lira.</span>
+            <textarea rows="1" placeholder="« Mon nom est mal écrit », « plutôt le matin »…"></textarea>
+          </div>
+
+          <div class="retract">
+            <input type="checkbox">
+            <span>Cette date se situe dans mon délai de rétractation de 14 jours.
+              <strong>Je demande expressément que les travaux commencent avant sa fin.</strong></span>
+          </div>
+
+          <div class="gestes">
+            <button class="oui" type="button">J'accepte ce devis</button>
+            <button class="corr" type="button">Une correction avant d'accepter</button>
+            <button class="non" type="button">Je ne donne pas suite</button>
+          </div>
+
+          <p class="preuve">Votre accord est horodaté et conservé avec le devis.</p>
+        </div>
+
+        <div class="seul seul-accepte">
+          <div class="feuille">
+            <h1>Devis accepté</h1>
+            <p>Intervention prévue le mardi 22 septembre. Votre artisan vous recontactera si besoin.</p>
+            <button class="emporter" type="button">Télécharger mon devis</button>
+          </div>
+        </div>
+
+        <div class="seul seul-perime">
+          <div class="feuille">
+            <h1>Ce lien n'est plus valable</h1>
+            <p>Contactez votre artisan pour en recevoir un nouveau.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <b>Le prix reste, et ce n'est pas un oubli.</b> Sur la facture, vous l'avez fait retirer pour
+  pousser le client à ouvrir le PDF. Ici il s'apprête à <b>accepter</b> : un accord donné sans voir
+  le prix n'en est pas un, et c'est la première chose qu'on regarderait en cas de litige.
+</div>
+
+<div class="note">
+  <b>Deux défauts trouvés dans le code, que la capture ne montre pas.</b> Le refus et le cadre de
+  rétractation sont peints en <code>#B5502F</code> — <b>le terre cuite abandonné le 3 août</b>. Et
+  le bouton « J'accepte ce devis » porte <code>#2F3B2F</code>, le vert des textes, au lieu du vert
+  des boutons que vous avez choisi le 3 septembre.
+</div>
+
+<div class="note">
+  <b>La cause des deux est la même</b> : cette page écrit ses couleurs <b>en dur</b>. C'est pour
+  cela qu'elle n'a suivi aucun changement d'identité depuis cinq semaines — et qu'elle ne suivrait
+  pas non plus vos <b>huit chartes</b>. La proposition passe par les jetons, comme le reste de
+  l'application.
+</div>
+
+<div class="note">
+  <b>Elle tient toujours en une page</b>, votre règle du 31 août. Les quatre états ci-dessus sont
+  mesurés sur votre écran de 390 × 664, cadre de rétractation compris.
+</div>
+
+<script>
+  var etats = document.querySelectorAll('.etats button');
+  etats.forEach(function (b) {
+    b.addEventListener('click', function () {
+      etats.forEach(function (a) { a.setAttribute('aria-pressed', String(a === b)); });
+      document.body.className = b.dataset.etat || '';
+    });
+  });
+</script>
+
+</body>
+</html>
