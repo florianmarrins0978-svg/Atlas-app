@@ -87,4 +87,4 @@ ne faisait se rencontrer.
 
 ---
 
-**Le détail technique est dans `ARCHITECTURE.md` §268.**
+**Le détail technique est dans `ARCHITECTURE.md` §273.**

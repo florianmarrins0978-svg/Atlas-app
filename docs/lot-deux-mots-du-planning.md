@@ -90,4 +90,4 @@ choix, et pour une raison vue en regardant l'écran : elle ressemblait trop à
 
 ---
 
-**Le détail technique est dans `ARCHITECTURE.md` §269.**
+**Le détail technique est dans `ARCHITECTURE.md` §274.**

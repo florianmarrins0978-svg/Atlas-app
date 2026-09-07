@@ -12,7 +12,7 @@ langage, et rien n'y entre sans son accord.
 ## ⏳ UNE RÉPONSE ATTENDUE — le devis PAS ENCORE parti, depuis le planning
 
 **Né le 7 septembre 2026**, en corrigeant le retour au planning
-(`ARCHITECTURE.md` §268).
+(`ARCHITECTURE.md` §273).
 
 Depuis la feuille du planning, les trois autres portes ramènent maintenant au
 planning. Celle du **devis non parti** mène à `/devis-complet`, dont la flèche
