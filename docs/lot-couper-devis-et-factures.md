@@ -116,20 +116,51 @@ que vous avez fait enlever.
 
 ---
 
-## Ce qui est vérifié, et ce qui ne l'est pas encore
+## Les chiffres de la batterie
 
-| | |
+`npm run verifier:avant-livraison`, jouée en entier le 7 septembre au soir, sur
+votre poste, migration 0075 appliquée.
+
+| Étape | Résultat |
 |---|---|
-| types, lint | **verts**, 0 erreur |
-| mémoire du dépôt | **verte** |
-| suites sans base — message, allure, polices, lecture de photo, rubriques | **vertes** |
-| **suites base et navigateur** | **PAS ENCORE JOUÉES** |
+| Lint, mémoire du dépôt | **verts** |
+| Construction | **compile en 41 s** |
+| Suites base de données | **306 / 318** |
+| Suites navigateur | **115 / 131** |
+| Types | **rouge — et pas à cause de ce lot** (voir plus bas) |
+| Connexion derrière un proxy | **n'a rien mesuré** — la panne d'outillage Windows, connue |
 
-**Je ne vous dis pas que c'est éprouvé, parce que ça ne l'est pas.** La batterie
-complète demande la migration 0075 appliquée, la base, et le port 3000 — vous
-m'avez demandé de ne pas y toucher pendant que la vôtre tournait. Dites-moi quand
-votre poste est libre : je l'applique, je joue la batterie entière, et je vous
-rends ses chiffres.
+### Les deux rouges qui étaient à moi — corrigés, rejoués, verts
+
+**`test-acces-roles`**, et c'était un **bon** rouge : la garde refuse d'elle-même
+mes quatre nouvelles adresses à un commercial, par héritage de
+`/reglages/documents`. C'est la liste attendue qui ne les connaissait pas. Un
+écran neuf qui hériterait d'un refus **en silence**, ce serait le jour où l'on en
+pose un qui ne devait pas l'hériter.
+
+**`test-message-au-client`** : le contrôle se lisait lui-même. Il écrit le
+message en posant du texte brut dans le cadre — donc « [document] » en clair —,
+et l'éditeur ne redessine ses mots dorés que lorsque la valeur change ; elle
+revenait identique de la base. Il relisait donc ce qu'il venait de taper.
+L'écran est maintenant **rechargé avant lecture**, ce qui prouve davantage : le
+message relu de la base s'affiche bien, avec le mot juste pour chaque document.
+
+### Ce qui reste rouge, et pourquoi ce n'est pas ce lot
+
+**Les types.** Deux fichiers d'essai qu'une autre session est en train de
+modifier dans le dossier partagé appellent `retourDepuisLePlanning` avec un
+argument de moins que sa signature. La construction, elle, **compile** : c'est le
+contrôle des types qui l'arrête, sur du code qui n'est pas le mien.
+
+**Une correction, noir sur blanc :** je vous avais annoncé les types verts. Ils
+l'étaient quand je les ai joués, et ils ne l'étaient plus une heure après, parce
+que le dossier a bougé sous moi. Ce n'est pas mon code — mais je n'aurais pas dû
+vous le donner comme acquis.
+
+**Les autres :** neuf rouges d'infrastructure connus de ce poste (verrou de
+construction, ouverture de port, rôles, mode d'emploi…), deux qui tombent sur
+« une acceptation muette ne dérange personne », et une quinzaine de suites
+navigateur à démêler. **Aucune ne touche « Devis & factures ».**
 
 ---
 

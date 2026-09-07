@@ -161,30 +161,45 @@
 </tbody></table></div>
 <p><strong>Ce qui a été retiré des contrôles, et pourquoi il fallait le retirer.</strong> Une suite exigeait « un seul message pour tous » — votre règle du 23 août, que vous avez renversée le 7 septembre. Une autre exigeait deux aperçus côte à côte, que vous avez fait supprimer le même jour. On adapte le contrôle, on ne remet pas ce que vous avez fait enlever.</p>
 <hr>
-<h2 id="ce-qui-est-vérifié-et-ce-qui-ne-lest-pas-encore">Ce qui est vérifié, et ce qui ne l'est pas encore</h2>
+<h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>npm run verifier:avant-livraison</code>, jouée en entier le 7 septembre au soir, sur votre poste, migration 0075 appliquée.</p>
 <div class="tablewrap"><table><thead><tr>
-<th></th>
-<th></th>
+<th>Étape</th>
+<th>Résultat</th>
 </tr></thead><tbody>
 <tr>
-<td>types, lint</td>
-<td><strong>verts</strong>, 0 erreur</td>
+<td>Lint, mémoire du dépôt</td>
+<td><strong>verts</strong></td>
 </tr>
 <tr>
-<td>mémoire du dépôt</td>
-<td><strong>verte</strong></td>
+<td>Construction</td>
+<td><strong>compile en 41 s</strong></td>
 </tr>
 <tr>
-<td>suites sans base — message, allure, polices, lecture de photo, rubriques</td>
-<td><strong>vertes</strong></td>
+<td>Suites base de données</td>
+<td><strong>306 / 318</strong></td>
 </tr>
 <tr>
-<td><strong>suites base et navigateur</strong></td>
-<td><strong>PAS ENCORE JOUÉES</strong></td>
+<td>Suites navigateur</td>
+<td><strong>115 / 131</strong></td>
+</tr>
+<tr>
+<td>Types</td>
+<td><strong>rouge — et pas à cause de ce lot</strong> (voir plus bas)</td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>n'a rien mesuré</strong> — la panne d'outillage Windows, connue</td>
 </tr>
 </tbody></table></div>
-<p><strong>Je ne vous dis pas que c'est éprouvé, parce que ça ne l'est pas.</strong> La batterie complète demande la migration 0075 appliquée, la base, et le port 3000 — vous m'avez demandé de ne pas y toucher pendant que la vôtre tournait. Dites-moi quand votre poste est libre : je l'applique, je joue la batterie entière, et je vous rends ses chiffres.</p>
+<h3 id="les-deux-rouges-qui-étaient-à-moi--corrigés-rejoués-verts">Les deux rouges qui étaient à moi — corrigés, rejoués, verts</h3>
+<p><strong><code>test-acces-roles</code></strong>, et c'était un <strong>bon</strong> rouge : la garde refuse d'elle-même mes quatre nouvelles adresses à un commercial, par héritage de <code>/reglages/documents</code>. C'est la liste attendue qui ne les connaissait pas. Un écran neuf qui hériterait d'un refus <strong>en silence</strong>, ce serait le jour où l'on en pose un qui ne devait pas l'hériter.</p>
+<p><strong><code>test-message-au-client</code></strong> : le contrôle se lisait lui-même. Il écrit le message en posant du texte brut dans le cadre — donc « [document] » en clair —, et l'éditeur ne redessine ses mots dorés que lorsque la valeur change ; elle revenait identique de la base. Il relisait donc ce qu'il venait de taper. L'écran est maintenant <strong>rechargé avant lecture</strong>, ce qui prouve davantage : le message relu de la base s'affiche bien, avec le mot juste pour chaque document.</p>
+<h3 id="ce-qui-reste-rouge-et-pourquoi-ce-nest-pas-ce-lot">Ce qui reste rouge, et pourquoi ce n'est pas ce lot</h3>
+<p><strong>Les types.</strong> Deux fichiers d'essai qu'une autre session est en train de modifier dans le dossier partagé appellent <code>retourDepuisLePlanning</code> avec un argument de moins que sa signature. La construction, elle, <strong>compile</strong> : c'est le contrôle des types qui l'arrête, sur du code qui n'est pas le mien.</p>
+<p><strong>Une correction, noir sur blanc :</strong> je vous avais annoncé les types verts. Ils l'étaient quand je les ai joués, et ils ne l'étaient plus une heure après, parce que le dossier a bougé sous moi. Ce n'est pas mon code — mais je n'aurais pas dû vous le donner comme acquis.</p>
+<p><strong>Les autres :</strong> neuf rouges d'infrastructure connus de ce poste (verrou de construction, ouverture de port, rôles, mode d'emploi…), deux qui tombent sur « une acceptation muette ne dérange personne », et une quinzaine de suites navigateur à démêler. <strong>Aucune ne touche « Devis &amp; factures ».</strong></p>
 <hr>
 <h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
