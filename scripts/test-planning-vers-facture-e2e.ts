@@ -260,15 +260,44 @@ async function main() {
     // adresse : « Devis » apparaît à plusieurs endroits, et viser le premier
     // texte venu ferait passer le contrôle pour de mauvaises raisons.
     await page.waitForSelector('[data-atlas="porte-devis"]', { timeout: 15000 });
-    await page.locator(`a[data-atlas="porte-devis"][href="/chantiers/${chantierId}/export"]`).click();
+    await page
+      .locator(`a[data-atlas="porte-devis"][href^="/chantiers/${chantierId}/export"]`)
+      .click();
     // Le titre de l'écran, et non un bouton : « Envoyer au client » disparaît
     // une fois le devis parti — c'est-à-dire précisément dans le cas qui
     // intéresse le patron, celui d'un chantier planifié.
     await page.waitForSelector("h1:has-text('Devis')", { timeout: 15000 });
-    assert.ok(page.url().endsWith("/export"), `arrivé sur ${page.url()} au lieu du devis`);
+    assert.ok(
+      new URL(page.url()).pathname.endsWith("/export"),
+      `arrivé sur ${page.url()} au lieu du devis`
+    );
     assert.ok(
       (await page.locator(`text=${nom}`).count()) > 0,
       "le devis atteint n'est pas celui de ce chantier"
+    );
+
+    // ─────────────────────────────────────────────────────────────────────
+    // **ET LA FLÈCHE LE RAMÈNE OÙ IL ÉTAIT** — son signalement du 7 septembre
+    // 2026 : *« lorsque je fais retour j'arrive sur la page d'accueil, or je
+    // devrais arriver d'où je suis parti. »*
+    //
+    // **Le geste, pas la fonction.** Une suite qui aurait appelé
+    // `retourDepuisLePlanning` avec une adresse écrite à la main aurait été
+    // verte tout du long : ce qui manquait, c'était le paramètre que la PORTE
+    // pose et que l'ÉCRAN relit — deux moitiés qu'aucun contrôle ne faisait se
+    // rencontrer (`CLAUDE.md` §5 quater).
+    await page.getByRole("link", { name: "Retour au planning" }).click();
+    await page.waitForSelector('[data-atlas="porte-devis"]', { timeout: 15000 });
+    assert.equal(
+      new URL(page.url()).pathname,
+      "/planning",
+      `la flèche a déposé sur ${page.url()} au lieu du planning`
+    );
+    // La feuille est remontée sur SON chantier : il retrouve l'écran exact
+    // qu'il avait quitté, portes levées, et non le mois à refeuilleter.
+    assert.ok(
+      (await page.locator(`[data-atlas="feuille-chantier-nom"]:has-text("${nom}")`).count()) > 0,
+      "le planning s'est rouvert sans la feuille du chantier"
     );
   });
 

@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-06 · branche `main`
+**Dernière mise à jour :** 2026-09-07 · branche `main`
 · dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
 l’affichage)
 
@@ -16,6 +16,24 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## FAIT : revenir au planning quand on en vient (7 septembre 2026)
+
+Son signalement : depuis la feuille du planning, ouvrir le devis parti, la
+facture ou la fiche client puis toucher la flèche déposait sur **l'accueil**.
+Les trois écrans portaient une flèche écrite en dur — juste tant que seules les
+listes y menaient. La feuille du 4 septembre leur a ouvert une seconde entrée
+sans que la sortie l'apprenne.
+
+La provenance voyage dans `?de=`, validée par égalité contre le planning de CE
+chantier (`src/lib/retour-au-planning.ts`) — le motif de la fiche client depuis
+le 31 août, pas un second mécanisme. **Sans provenance reconnue, rien ne
+change :** chaque écran retrouve la destination qu'il avait.
+
+**Reste ouvert :** le devis PAS ENCORE parti garde sa flèche vers la fiche
+client (sa règle du 31 août). Décisions : `ARCHITECTURE.md` §268.
 
 ---
 

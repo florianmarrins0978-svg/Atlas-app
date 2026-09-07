@@ -11,7 +11,12 @@ import DicterCoordonnees from "./DicterCoordonnees";
 import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { creerChantierAction } from "./actions";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
-import { apresLesCoordonnees, retourDesCoordonnees, type Provenance } from "@/lib/retour-du-devis";
+import {
+  apresLesCoordonnees,
+  libelleRetourDesCoordonnees,
+  retourDesCoordonnees,
+  type Provenance,
+} from "@/lib/retour-du-devis";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import Pellicule, { type VignettePhoto } from "../[id]/Pellicule";
 import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
@@ -410,7 +415,7 @@ export default function FormulaireNouveauChantier({
             <Link
               href={retourDesCoordonnees(reprise?.provenance ?? null)}
               aria-label={
-                reprise?.provenance ? "Retour au devis" : "Retour à la liste des chantiers"
+                libelleRetourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
               }
               className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >

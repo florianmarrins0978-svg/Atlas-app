@@ -6,6 +6,28 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-07
+### Revenir au planning quand on en vient
+
+Depuis la feuille du planning (4 septembre), ouvrir le devis parti, la facture
+ou la fiche client d'un chantier puis toucher la flèche déposait sur l'accueil
+— jamais sur le planning. Les trois écrans portaient une flèche écrite en dur,
+juste le jour où elle a été écrite : ils ne s'atteignaient alors que depuis les
+listes. La feuille leur a ouvert une seconde entrée sans que la sortie
+l'apprenne.
+
+**Ce que ça évite :** perdre sa place dans le mois à chaque aller-retour, et
+refeuilleter le planning pour retrouver la journée qu'on venait de quitter.
+
+La provenance voyage dans l'adresse et se valide par égalité — le motif de la
+fiche client depuis le 31 août, pas un second mécanisme. Sans provenance
+reconnue, chaque écran retrouve exactement la destination qu'il avait.
+
+**Reste ouvert :** le devis PAS ENCORE parti garde sa flèche vers la fiche
+client (sa règle du 31 août) ; depuis le planning, ce chemin-là fait encore deux
+pas pour sortir. Voir `ARCHITECTURE.md` §268.
+
+---
 ## 2026-09-06
 ### Fermer un jour depuis le planning, en un appui
 

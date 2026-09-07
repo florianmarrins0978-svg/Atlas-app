@@ -9,6 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE RÉPONSE ATTENDUE — le devis PAS ENCORE parti, depuis le planning
+
+**Né le 7 septembre 2026**, en corrigeant le retour au planning
+(`ARCHITECTURE.md` §268).
+
+Depuis la feuille du planning, les trois autres portes ramènent maintenant au
+planning. Celle du **devis non parti** mène à `/devis-complet`, dont la flèche
+va toujours à la fiche client — **sa règle tranchée le 31 août** : *« je veux
+tout le temps revenir à cette page et seulement celle-là »*. Depuis le planning,
+ce chemin-là fait donc deux pas pour sortir.
+
+**Ce qui n'a PAS été fait, et pourquoi :** détourner cette flèche reviendrait sur
+une décision qu'il a prise lui-même, capture à l'appui. Ce n'est pas notre
+arbitrage.
+
+**Qui peut le trancher :** lui seul. La question à lui poser, quand l'occasion
+se présente : *depuis le planning, la flèche du devis doit-elle ramener au
+planning, ou rester sur la fiche client ?*
+
+---
+
 ## ✅ ~~UNE RÉPONSE ATTENDUE — le texte secondaire est-il assez gros ?~~ — **OUI, le 6 septembre 2026**
 
 **Sa réponse, le jour même : « Oui ça me va ».** La TAILLE est codée (jeton,

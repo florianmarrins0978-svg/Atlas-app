@@ -1,3 +1,9 @@
+import {
+  LIBELLE_RETOUR_PLANNING,
+  PARAM_PROVENANCE,
+  provenanceDuPlanning,
+} from "./retour-au-planning";
+
 /**
  * Où mène la flèche de retour du devis — la fiche client, toujours — et comment
  * on revient ensuite au devis.
@@ -57,7 +63,7 @@
  * erreur, jamais un vide.
  */
 
-/** Le devis d'un chantier — l'unique provenance que la fiche client accepte. */
+/** Le devis d'un chantier — la provenance que la fiche client accepte depuis le 31 août. */
 function devisDuChantier(chantierId: string): string {
   return `/chantiers/${chantierId}/devis-complet`;
 }
@@ -67,22 +73,39 @@ export type Provenance = string | null;
 
 /** L'adresse de la fiche client d'un chantier, telle qu'on y entre depuis le devis. */
 export function coordonneesDepuisLeDevis(chantierId: string): string {
-  return `/chantiers/${chantierId}/coordonnees?de=${encodeURIComponent(devisDuChantier(chantierId))}`;
+  return `/chantiers/${chantierId}/coordonnees?${PARAM_PROVENANCE}=${encodeURIComponent(
+    devisDuChantier(chantierId)
+  )}`;
 }
 
 /**
- * Ce que la fiche client relit dans son adresse.
+ * ─── LA FICHE CLIENT ACCEPTE DEUX PROVENANCES DEPUIS LE 7 SEPTEMBRE 2026 ────
  *
- * Le chantier est passé exprès : la provenance ne vaut que pour LUI. Sans cela,
- * un `?de=/chantiers/<un-autre>/devis-complet` renverrait sur le devis d'un
- * client qui n'a rien à voir.
+ * Le devis, comme depuis le 31 août — et le planning, depuis qu'une de ses
+ * portes y mène (`retour-au-planning.ts`). Son signalement du 7 septembre :
+ * *« lorsque je fais retour j'arrive sur la page d'accueil, or je devrais
+ * arriver d'où je suis parti »*.
+ *
+ * **Ce sont bien deux provenances, pas une liste ouverte.** Chacune se compare
+ * au seul chemin qu'elle a le droit de valoir, pour CE chantier : la validation
+ * par égalité (voir plus haut) ne se relâche pas parce qu'on en admet une
+ * seconde.
+ *
+ * Le chantier est passé exprès : une provenance ne vaut que pour LUI. Sans
+ * cela, un `?de=/chantiers/<un-autre>/devis-complet` renverrait sur le devis
+ * d'un client qui n'a rien à voir.
  */
 export function provenanceDesCoordonnees(
   chantierId: string,
   de: string | string[] | undefined
 ): Provenance {
   const lu = Array.isArray(de) ? de[0] : de;
-  return lu === devisDuChantier(chantierId) ? lu : null;
+  if (lu === devisDuChantier(chantierId)) return lu;
+  // Le planning ouvert sur ce chantier : sa feuille est la seconde porte
+  // d'entrée de cet écran, et la flèche doit y ramener. La reconnaissance vit
+  // dans `retour-au-planning.ts` — la recopier ici ferait deux vérités sur la
+  // même adresse (`CLAUDE.md` §3).
+  return provenanceDuPlanning(chantierId, lu);
 }
 
 /**
@@ -118,6 +141,26 @@ export function libelleRetourDuDevis(clientId: string | null): string {
  */
 export function retourDesCoordonnees(provenance: Provenance): string {
   return provenance ?? "/";
+}
+
+/**
+ * Ce que la flèche de la fiche client annonce à voix haute.
+ *
+ * **Elle vit ici depuis le 7 septembre 2026, et plus dans l'écran.** Le
+ * libellé y était un ternaire — « Retour au devis » dès qu'une provenance
+ * existait. Il disait vrai tant qu'il n'y en avait qu'une ; la porte du
+ * planning en a ajouté une seconde, et la flèche se serait mise à annoncer un
+ * devis en menant au planning. Un écran ne décide de rien (`CLAUDE.md` §3), et
+ * c'est exactement le genre de règle qui diverge quand on la laisse dedans.
+ */
+export function libelleRetourDesCoordonnees(
+  chantierId: string,
+  provenance: Provenance
+): string {
+  if (provenance === null) return "Retour à la liste des chantiers";
+  return provenance === devisDuChantier(chantierId)
+    ? "Retour au devis"
+    : LIBELLE_RETOUR_PLANNING;
 }
 
 /**

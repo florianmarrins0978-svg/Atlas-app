@@ -23887,3 +23887,65 @@ en laissant deux absences derrière elle ; le tour suivant trouvait un jour déj
 fermé, ne voyait plus le geste et accusait le code. Il remet désormais le jour à
 l'état ouvert **avant** de commencer et **à la fin** — une suite qui salit la
 base accuse la suivante.
+
+## §268. Une porte neuve n'apprend pas à la sortie qu'elle existe
+
+**Son signalement du 7 septembre 2026, capture à l'appui :** *« quand je clique
+sur un client dans le planning et que je vais sur un des modules, lorsque je
+fais retour j'arrive sur la page d'accueil, or je devrais arriver d'où je suis
+parti — donc de cette page ! »*
+
+**Ce qui s'était passé, et pourquoi personne ne l'a vu.** La feuille du planning
+est arrivée le 4 septembre (§254) et a ouvert trois portes vers des écrans qui
+existaient déjà. Chacun de ces écrans portait une flèche de retour **écrite en
+dur**, et aucune n'était fausse le jour où elle a été écrite :
+
+| L'écran | Sa flèche | Elle valait pour |
+|---|---|---|
+| `/chantiers/[id]/export` | `/` | la liste des chantiers, seule entrée jusqu'au 4 septembre |
+| `/chantiers/[id]/coordonnees` | `/` | l'accueil, « Adresse non renseignée » (17 août) |
+| `/chantiers/[id]/facture` | `/termines` | le fil des terminés (21 août) |
+
+**Le défaut n'est donc pas une flèche fausse : c'est une SORTIE qui ne connaît
+qu'une entrée.** Ajouter une porte vers un écran sans regarder d'où sa flèche
+repart laisse un chemin qui ne se referme pas — et c'est exactement le genre de
+trou qu'aucun test ne voit, parce que chaque moitié est juste séparément.
+
+**LA PROVENANCE VOYAGE DANS L'ADRESSE, ET C'EST LE MOTIF DÉJÀ EN PLACE.**
+`retour-du-devis.ts` le fait depuis le 31 août (§229) : un paramètre `?de=`,
+validé **par égalité** contre le seul chemin qu'il a le droit de valoir. La
+règle du planning (`src/lib/retour-au-planning.ts`) reprend le même nom, la même
+validation, et n'invente rien.
+
+**Pourquoi pas `history.back()`**, qui aurait tenu en une ligne : la flèche
+d'Atlas n'est pas le bouton du navigateur. Elle mène à un endroit **nommé**,
+elle est un `<Link>` qu'on peut ouvrir dans un onglet, et elle doit dire à voix
+haute où elle va. Un retour d'historique ne sait rien annoncer, ment dès qu'on
+arrive par un signet ou qu'on recharge, et après un enregistrement il
+redéposerait sur le formulaire qu'on vient de quitter.
+
+**Le repli ne bouge pas d'un pouce**, et c'est ce qui rend le changement sans
+risque : sans provenance reconnue, chaque écran retrouve la destination qu'il
+avait. La règle n'enlève aucun chemin, elle en reconnaît un de plus.
+
+**LE LIBELLÉ EST DESCENDU DE L'ÉCRAN VERS LA RÈGLE, ET C'ÉTAIT NÉCESSAIRE.** La
+fiche client annonçait sa flèche par un ternaire écrit dans le composant —
+« Retour au devis » dès qu'une provenance existait. Vrai tant qu'il n'y en avait
+qu'une ; la seconde l'aurait fait annoncer un devis en menant au planning.
+`libelleRetourDesCoordonnees` vit désormais dans `src/lib` (`CLAUDE.md` §3).
+
+**Ce qui reste ouvert, et c'est dit à dessein.** La porte « Le devis » d'un
+devis **non parti** mène à `/devis-complet`, dont la flèche va toujours à la
+fiche client — sa règle tranchée le 31 août : *« je veux tout le temps revenir à
+cette page et seulement celle-là »*. Elle n'emporte donc **aucune** provenance :
+un paramètre que personne ne relit écrirait dans l'adresse une promesse que
+l'écran ne tient pas, et la session suivante croirait le cas traité. Depuis le
+planning, ce chemin-là fait donc encore deux pas pour sortir. Le trancher
+demande son arbitrage, pas le nôtre.
+
+**Et le contrôle éprouve SON GESTE.** `test-planning-vers-facture-e2e.ts` touche
+la porte dans la feuille, puis la flèche, et vérifie que le planning se rouvre
+sur la feuille du même chantier. Une suite qui aurait appelé la règle avec une
+adresse écrite à la main serait restée verte : ce qui manquait, c'était le
+paramètre que la PORTE pose et que l'ÉCRAN relit — deux moitiés qu'aucun
+contrôle ne faisait se rencontrer (`CLAUDE.md` §5 quater).

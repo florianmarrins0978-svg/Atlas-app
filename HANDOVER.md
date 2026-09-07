@@ -8,7 +8,31 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)
+## Dernier lot — REVENIR AU PLANNING QUAND ON EN VIENT (7 septembre 2026)
+
+**Document du lot :** `docs/lot-retour-au-planning.md`.
+**Décisions :** `ARCHITECTURE.md` §268.
+
+Son signalement : depuis la feuille du planning, ouvrir un module puis toucher
+la flèche déposait sur l'accueil. Les trois écrans visés portaient une flèche
+**écrite en dur** — juste tant qu'ils ne s'atteignaient que depuis les listes.
+
+**AUCUN MÉCANISME NEUF.** La provenance voyage dans `?de=`, validée par
+égalité : c'est le motif de `retour-du-devis.ts` depuis le 31 août, repris tel
+quel dans `src/lib/retour-au-planning.ts`. Sans provenance reconnue, chaque
+écran retrouve sa destination d'avant — le repli n'a pas bougé.
+
+**Le piège si l'on reprend ce coin :** ajouter une porte vers un écran sans
+regarder d'où sa flèche repart. C'est exactement ce qui a produit ce défaut, et
+chaque moitié était juste séparément.
+
+**Reste ouvert, et c'est son arbitrage :** le devis PAS ENCORE parti garde sa
+flèche vers la fiche client (sa règle du 31 août). Depuis le planning, ce
+chemin-là fait donc deux pas pour sortir.
+
+---
+
+## Lot précédent — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)
 
 **Document du lot :** `docs/lot-pas-la-ce-jour.md`.
 **Planche :** `appli/pas-la-ce-jour.html`.

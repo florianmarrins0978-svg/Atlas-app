@@ -1,5 +1,6 @@
 import { ongletDepuisJalons, type JalonsDeRangement } from "./onglet-chantier";
 import { jourIso } from "./jour";
+import { depuisLePlanning } from "./retour-au-planning";
 
 /**
  * ─── LES PORTES D'UN CHANTIER, DEPUIS LE PLANNING ───────────────────────────
@@ -74,7 +75,7 @@ export function portesDuPlanning(
       // geste lui donnait le bouton plein de l'écran, et c'est ce que la revue
       // de la planche a corrigé le 4 septembre.
       geste: false,
-      href: `/chantiers/${c.id}/facture`,
+      href: depuisLePlanning(`/chantiers/${c.id}/facture`, c.id),
     });
   } else if (aEuLieu) {
     portes.push({
@@ -82,7 +83,7 @@ export function portesDuPlanning(
       libelle: "Créer la facture",
       etat: "",
       geste: true,
-      href: `/chantiers/${c.id}/facture`,
+      href: depuisLePlanning(`/chantiers/${c.id}/facture`, c.id),
     });
   }
 
@@ -98,12 +99,21 @@ export function portesDuPlanning(
   // lui-même vers le devis et la cascade se voit à l'œil ; après l'envoi, c'est
   // lui qu'il faut — il porte le lien du client et la reprise. Le planning
   // connaît l'envoi sous le nom de `envoiEnvoyeAt` : c'est le même événement.
+  //
+  // **Seul `/export` porte la provenance, et c'est délibéré.** La flèche de
+  // `/devis-complet` mène TOUJOURS à la fiche client — sa règle tranchée le
+  // 31 août 2026, *« je veux tout le temps revenir à cette page et seulement
+  // celle-là »* (`retour-du-devis.ts`). Lui passer une provenance que personne
+  // ne relit écrirait dans l'adresse une promesse que l'écran ne tient pas, et
+  // la session suivante croirait le cas traité.
   portes.push({
     cle: "devis",
     libelle: "Le devis",
     etat: etatDuDevis(c),
     geste: false,
-    href: c.envoiEnvoyeAt ? `/chantiers/${c.id}/export` : `/chantiers/${c.id}/devis-complet`,
+    href: c.envoiEnvoyeAt
+      ? depuisLePlanning(`/chantiers/${c.id}/export`, c.id)
+      : `/chantiers/${c.id}/devis-complet`,
   });
 
   // ── La fiche client ───────────────────────────────────────────────────────
@@ -114,7 +124,7 @@ export function portesDuPlanning(
     libelle: "La fiche client",
     etat: "",
     geste: false,
-    href: `/chantiers/${c.id}/coordonnees`,
+    href: depuisLePlanning(`/chantiers/${c.id}/coordonnees`, c.id),
   });
 
   return portes;
