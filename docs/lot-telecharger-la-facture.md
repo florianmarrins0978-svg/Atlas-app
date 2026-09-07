@@ -105,10 +105,25 @@ gêné : il rougit dessus.
 | Mémoire du dépôt | ✅ |
 | Suites base de données | ✅ **toutes** |
 | Connexion derrière un proxy | ✅ |
-| Suites navigateur | **en cours de rejeu** — le serveur d'essai est mort en mémoire au bout de deux suites, panne connue de ma machine (`scripts/jouer-suites-par-groupes.mjs`, écrit pour ça le 30 août) |
+| Les 5 suites navigateur qui touchent ce lot | **4 sur 5** — détail ci-dessous |
 
-Ce tableau sera complété dès le rejeu terminé — un chiffre annoncé avant d'être
-mesuré ne vaut rien.
+**Le nouveau contrôle dit ce qu'on voulait lui faire dire :**
+`✓ l'appui fait descendre F2026-000001.pdf (8189 octets)`. Il APPUIE sur le
+lien, il n'interroge plus le serveur.
+
+**Le rouge, et il n'est pas de ce lot :** sur la page de votre client, « tout
+tient dans un écran » mesure 665 px pour 664 px disponibles — **un pixel**.
+Ce lot ne touche aucun écran : il ne change que des en-têtes de réponse
+(17 fichiers, zéro ligne d'affichage). Ce pixel était déjà là avant, et il
+reste à traiter.
+
+**Et la batterie complète n'a pas pu être jouée d'une traite sur ma machine :**
+le serveur d'essai y meurt en mémoire au bout de deux suites — panne connue, un
+outil existe pour la contourner (`scripts/jouer-suites-par-groupes.mjs`, écrit
+le 30 août pour ça). Le rejeu par groupes était au sixième sur vingt-deux quand
+vous avez demandé l'envoi ; je l'ai arrêté pour jouer d'abord les cinq suites
+qui touchent ce lot. **Trois rouges y étaient apparus, aucun sur ce lot** (une
+dictée, un lien de planning, un appui intercepté).
 
 ---
 

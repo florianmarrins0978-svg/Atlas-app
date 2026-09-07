@@ -9,6 +9,20 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ UN PIXEL DE TROP SUR LA PAGE DU CLIENT — constaté le 7 septembre 2026
+
+`test-devis-client-e2e.ts`, « TOUT TIENT DANS UN ÉCRAN » : **665 px pour 664 px
+d'écran**, avec la case de rétractation ouverte. Rouge sur `main`, et **pas du
+fait du lot du téléchargement** — celui-ci ne change que des en-têtes de
+réponse, aucune ligne d'affichage.
+
+Un pixel ne se voit pas ; c'est le contrôle qui a raison de le dire, parce que
+c'est ainsi que la page se met à dépasser de vingt. À reprendre par qui touchera
+cet écran — et **sans relever le seuil** : 664 px est la hauteur réelle de son
+téléphone, barre d'adresse comprise (`scripts/e2e-browser.ts`).
+
+---
+
 ## ⏳ UNE RÉPONSE ATTENDUE — la facture se télécharge-t-elle, sur SON iPhone ?
 
 **Posée le 7 septembre 2026**, après son *« quand je clique sur télécharger ça
