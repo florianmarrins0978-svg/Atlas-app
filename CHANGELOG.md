@@ -94,6 +94,22 @@ dépôt. Les liens de la planche ne mènent nulle part, exprès.
 ouvertes pour 112 fermées. Le navigateur refermait tout seul, donc rien ne se
 voyait ; le lien suivant s'en trouvait avalé dans la même zone cliquable.
 
+### La fiche du salarié : la planche du lot 2
+
+`appli/la-fiche-du-salarie.html` — par où il arrive (le planning, sa seule
+porte), deux façons de tenir la preuve de fin de chantier, et l'écran du patron
+qui décide si elle est exigée. **Rien n'est codé dans `src/`.**
+
+**Ses deux ajouts du 8 septembre**, écrits dans `TODO.md` : la fiche
+d'intervention se rattache aux informations du client **sur le planning**, et
+une feuille de preuve *« que le salarié remplira ou non, ça sera au patron de
+décider »*.
+
+**Ce que la capture a montré et qu'aucune mesure ne dit** : le numéro du client
+manquait sur la fiche. Il est devant un portail fermé, le client est au travail,
+et le planning est sa seule porte — sans ce lien, il n'a nulle part où aller le
+chercher.
+
 ### Repartir d'un client : la planche du lot 1, et deux décisions prises avant
 
 `appli/le-client-quon-connait.html` — cinq propositions essayables, trois pour
