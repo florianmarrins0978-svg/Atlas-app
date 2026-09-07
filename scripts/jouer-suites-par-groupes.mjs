@@ -83,6 +83,28 @@ console.log(`${suites.length} suites, par groupes de ${PAR_GROUPE}. Journal : ${
 const groupes = [];
 for (let i = 0; i < suites.length; i += PAR_GROUPE) groupes.push(suites.slice(i, i + PAR_GROUPE));
 
+/**
+ * **LE MÊME ENVIRONNEMENT QUE LA BATTERIE — sans quoi ce pilote ment.**
+ *
+ * Trouvé le 7 septembre 2026, au prix de cinq faux rouges : `ia-01`,
+ * `lecons-prix`, `madame-lucie` et deux autres accusaient le produit — « le
+ * prix 1400 n'est arrivé sur AUCUNE ligne » — alors que la dictée n'avait
+ * simplement aucun fournisseur pour la lire.
+ *
+ * `verifier-avant-livraison.ts` coupe délibérément les clés d'IA et impose le
+ * mode déterministe (`SANS_CLES_IA`, `IA_COUPEE`) pour les suites navigateur :
+ * une batterie jouée chez le patron ne doit pas envoyer ses dictées d'essai
+ * chez le fournisseur, ni les lui faire payer (`CLAUDE.md` §1 ter). Ce pilote
+ * annonce rendre « le même verdict » — il doit donc poser le même décor, et
+ * pas s'en remettre à ce que l'appelant a dans son terminal.
+ *
+ * Retirer les variables ne suffit pas : Next.js relit `.env.local`, où le
+ * patron est invité à coller les siennes. D'où les deux réglages explicites.
+ */
+const CLES_IA = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "DEEPGRAM_API_KEY", "GOOGLE_API_KEY"];
+const decor = { ...process.env, LLM_PROVIDER: "dev", TRANSCRIPTION_PROVIDER: "dev" };
+for (const cle of CLES_IA) delete decor[cle];
+
 const bilan = [];
 let joues = 0;
 let reussis = 0;
@@ -92,7 +114,7 @@ for (const [rang, groupe] of groupes.entries()) {
   if (rang > 0) args.push("--sans-seed");
   const sortie = await new Promise((ok) => {
     let texte = "";
-    const p = spawn("npm", args, { stdio: ["ignore", "pipe", "pipe"], env: process.env });
+    const p = spawn("npm", args, { stdio: ["ignore", "pipe", "pipe"], env: decor });
     const ecrire = (d) => {
       texte += d;
       appendFileSync(JOURNAL, d);

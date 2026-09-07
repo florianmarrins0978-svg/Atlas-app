@@ -24,6 +24,7 @@ import { Pool } from "pg";
 import { mkdirSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { TYPOGRAPHIES } from "../src/lib/allure-documents";
 
 const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
 const BASE = "http://localhost:3000";
@@ -93,9 +94,31 @@ async function main() {
     await page.waitForSelector('[data-atlas="typo-merriweather"]', { timeout: 30_000 });
   });
 
-  await cas("une dizaine de typographies lui sont proposées", async () => {
-    const combien = await page.locator('[data-atlas^="typo-"]').count();
-    assert.ok(combien >= 10, `seulement ${combien} typographies`);
+  // **Ce que l'écran propose est EXACTEMENT ce que le code offre.**
+  //
+  // Ce contrôle exigeait « au moins dix » typographies. Le 7 septembre 2026, le
+  // patron en a fait retirer quatre — *« tu peux en enlever si tu estimes que
+  // certaines sont moches »* — et le contrôle a rougi sur du code juste, pour
+  // une demande exaucée. C'est `CLAUDE.md` §5 bis : on adapte le contrôle, on
+  // ne remet pas ce qu'il a fait enlever.
+  //
+  // Un nombre écrit en dur ne défendait rien de toute façon. Ce qui compte est
+  // qu'aucune entrée ne se perde entre la liste et l'écran : une police offerte
+  // par le code et absente de l'écran, il ne la choisira jamais ; l'inverse est
+  // pire encore — il choisirait une police que le PDF ne sait pas embarquer.
+  await cas("l'écran propose TOUTES les typographies du code, et rien d'autre", async () => {
+    const surLEcran = (await page.locator('[data-atlas^="typo-"]').all()).map((e) =>
+      e.getAttribute("data-atlas")
+    );
+    const clefsAffichees = (await Promise.all(surLEcran)).map((a) => (a ?? "").replace(/^typo-/, "")).sort();
+    const clefsDuCode = TYPOGRAPHIES.map((t) => t.clef).sort();
+    // Une mesure de zéro n'est pas un succès (`CLAUDE.md` §5).
+    assert.ok(clefsDuCode.length > 0, "le code n'offre aucune typographie — rien à comparer");
+    assert.deepEqual(
+      clefsAffichees,
+      clefsDuCode,
+      `l'écran montre [${clefsAffichees}] et le code offre [${clefsDuCode}]`
+    );
   });
 
   await cas("LES POLICES SONT VRAIMENT CHARGÉES — l'écran ne montre pas du Georgia", async () => {

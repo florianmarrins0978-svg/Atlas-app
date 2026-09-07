@@ -68,16 +68,29 @@ async function main() {
     );
   });
 
-  await cas("il est DANS la rubrique de l'allure, pas ailleurs", async () => {
-    const titre = await apercu.evaluate(
-      (e) => e.closest("section")?.querySelector("p")?.textContent ?? ""
-    );
-    assert.match(
-      titre,
-      /allure de mes devis/i,
-      `l'aperçu est collé dans « ${titre} » : ailleurs, il recouvrirait des réglages ` +
-        `qui n'ont rien à voir avec l'apparence`
-    );
+  // **Il est sur l'écran de l'allure, et sur AUCUN autre.**
+  //
+  // Ce contrôle cherchait le titre de la rubrique dans la `<section>` qui
+  // entourait l'aperçu — la forme qu'avait l'écran quand « Devis & factures »
+  // tenait en une seule page. Le 7 septembre 2026, cette page a été coupée en
+  // quatre : l'allure a son propre écran, la section a disparu, et le contrôle
+  // a rougi sur du rangement voulu (`CLAUDE.md` §5 bis).
+  //
+  // Ce qu'il défendait vraiment n'était pas un libellé, c'était un débordement :
+  // un aperçu collé qui suivrait sur les autres écrans recouvrirait des réglages
+  // qui n'ont rien à voir avec l'apparence. On l'éprouve donc là où ça se
+  // verrait — sur les trois écrans voisins.
+  await cas("il est sur l'écran de l'allure, et sur aucun de ses voisins", async () => {
+    for (const voisin of ["message", "numero", "conditions"]) {
+      await page.goto(`${BASE}/reglages/documents/${voisin}`, { waitUntil: "networkidle" });
+      assert.equal(
+        await page.locator('[data-atlas="allure-apercu-colle"]').count(),
+        0,
+        `l'aperçu du devis est collé sur « ${voisin} » : il y recouvre des réglages d'apparence`
+      );
+    }
+    await page.goto(`${BASE}/reglages/documents/allure`, { waitUntil: "networkidle" });
+    assert.equal(await apercu.count(), 1, "l'aperçu a disparu de l'écran de l'allure");
   });
 
   // ─── LE CŒUR : ON DESCEND POUR DE BON ────────────────────────────────────
