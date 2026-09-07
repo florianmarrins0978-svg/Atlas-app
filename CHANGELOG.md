@@ -130,6 +130,24 @@ Vérifié rouge en forçant 400 px de trop.
 
 ---
 ## 2026-09-07
+
+### Sa règle d'or : pas de pansement, on corrige à la racine
+
+*« Lorsque tu fais une correction, je ne veux pas de pansement. Je veux que tu
+ailles corriger le problème directement à la racine — pas de superposition de
+couches de code. »*
+
+Écrite dans `CLAUDE.md` §4 quater, donc relue au début de **chaque**
+conversation — c'est le seul endroit qui survit à une session. Elle nomme les
+sept gestes qui sont des pansements (le `catch` qui avale, la valeur par défaut
+qui masque un manque, le cas particulier posé à côté de la règle, la correction
+faite dans l'appelant, le style qui écrase un style, l'attente qui masque une
+course, le chiffre remis en dur), la marche à suivre, et **le signe qui doit
+alerter : une correction qui n'enlève rien**.
+
+Et quand la racine ne peut pas être touchée tout de suite, le contournement se
+nomme dans le code et dans `TODO.md` — un pansement avoué se retire un jour.
+
 ### Le trou entre le tiroir du planning et le menu du bas
 
 **20,3 px de vide, mesurés.** `--atlas-barre` valait 68 px écrits à la main

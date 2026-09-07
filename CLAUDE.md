@@ -452,6 +452,51 @@ Concrètement, pour toute planche dont on attend un choix :
 - **Envoyer, valider ou facturer sans un geste du patron.** Les arrêts du
   parcours sont décidés, pas optionnels.
 - **Marquer une tâche terminée sans l'avoir vérifiée.** Voir §5.
+- **Poser un pansement sur un défaut au lieu de le corriger.** Voir §4 quater.
+
+## 4 quater. PAS DE PANSEMENT — ON CORRIGE À LA RACINE
+
+**Sa règle d'or, posée le 7 septembre 2026 :** *« lorsque tu fais une
+correction, je ne veux pas de pansement. Je veux que tu ailles corriger le
+problème directement à la racine — pas de superposition de couches de code. »*
+
+**Ce qu'est un pansement**, et chacun de ces gestes en est un :
+
+| Le geste | Ce qu'il fait vraiment |
+|---|---|
+| un `try/catch` qui avale le refus | le défaut devient muet, et la prochaine session cherchera ailleurs |
+| un `?? valeur par défaut` devant une valeur absente | l'écran affiche du plausible ; personne ne saura plus qu'il manquait quelque chose |
+| un cas particulier ajouté à côté de la règle générale | deux règles pour une seule question — c'est le §3, « jamais de règle dupliquée » |
+| une correction dans l'APPELANT parce que l'appelé est plus dur à toucher | le prochain appelant refera le même défaut |
+| un style qui écrase un style qui écrasait déjà | trois couches, et plus personne ne sait laquelle décide |
+| un `setTimeout` qui attend que l'autre bout ait fini | le défaut revient sur une machine plus lente, et il ne se reproduit plus ici |
+| remettre en dur un chiffre que le calcul rendait faux | le calcul reste faux, et il sert ailleurs |
+
+**Ce qu'on fait à la place, dans cet ordre :**
+
+1. **trouver l'endroit d'où ça part** — pas le premier endroit où ça se voit ;
+   `AGENTS.md` le dit déjà pour les pannes muettes : rendre le défaut bavard
+   AVANT de corriger, plutôt que de réparer une panne imaginée ;
+2. **corriger là**, quitte à toucher une signature, un dépôt, une migration ;
+3. **retirer la couche qui compensait** — un pansement laissé en place devient
+   la prochaine couche, et il masquera la correction suivante ;
+4. **écrire pourquoi** dans le code : le piège évité, pas ce que fait la ligne.
+
+**Le signe qui doit alerter, et il est simple : une correction qui n'enlève
+rien.** Un défaut réparé à sa racine remplace du code ; un défaut recouvert en
+ajoute. Devant un correctif qui ne fait qu'ajouter, la question à se poser est :
+*qu'est-ce que j'aurais dû supprimer ?*
+
+**Le dépôt en porte déjà deux exemples**, et ils montrent ce qui est attendu :
+`retourDuDevis` ne prend plus de `clientId` — la condition a disparu de la
+signature au lieu d'y dormir ; et le veilleur **remesure** le port au lieu de
+garder « ouvert » pour toute la session.
+
+**Et quand la racine ne peut pas être touchée maintenant** — elle est dans une
+dépendance, elle demande une migration, elle sort du lot en cours — on ne
+maquille pas en silence : le contournement est **nommé comme tel** dans le code
+et dans `TODO.md`, avec ce qu'il faudrait faire pour de bon. Un pansement avoué
+se retire un jour ; un pansement oublié devient la fondation du suivant.
 
 ## 4 ter. L'ARROSAGE N'A PAS LE DROIT À L'ERREUR
 
