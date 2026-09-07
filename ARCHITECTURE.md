@@ -24120,10 +24120,139 @@ s'écrit à l'encre — `document-commun.ts` ne donne l'accent qu'à `titreParti
 Une phrase d'écran qui promet ce que le PDF ne fait pas se paie à la première
 capture : il change l'accent, regarde son total, et croit à une panne. Corrigée,
 et l'aperçu de l'écran aussi, qui coloriait le total lui aussi.
+## §273. Une porte neuve n'apprend pas à la sortie qu'elle existe
+
+**Son signalement du 7 septembre 2026, capture à l'appui :** *« quand je clique
+sur un client dans le planning et que je vais sur un des modules, lorsque je
+fais retour j'arrive sur la page d'accueil, or je devrais arriver d'où je suis
+parti — donc de cette page ! »*
+
+**Ce qui s'était passé, et pourquoi personne ne l'a vu.** La feuille du planning
+est arrivée le 4 septembre (§254) et a ouvert trois portes vers des écrans qui
+existaient déjà. Chacun de ces écrans portait une flèche de retour **écrite en
+dur**, et aucune n'était fausse le jour où elle a été écrite :
+
+| L'écran | Sa flèche | Elle valait pour |
+|---|---|---|
+| `/chantiers/[id]/export` | `/` | la liste des chantiers, seule entrée jusqu'au 4 septembre |
+| `/chantiers/[id]/coordonnees` | `/` | l'accueil, « Adresse non renseignée » (17 août) |
+| `/chantiers/[id]/facture` | `/termines` | le fil des terminés (21 août) |
+
+**Le défaut n'est donc pas une flèche fausse : c'est une SORTIE qui ne connaît
+qu'une entrée.** Ajouter une porte vers un écran sans regarder d'où sa flèche
+repart laisse un chemin qui ne se referme pas — et c'est exactement le genre de
+trou qu'aucun test ne voit, parce que chaque moitié est juste séparément.
+
+**LA PROVENANCE VOYAGE DANS L'ADRESSE, ET C'EST LE MOTIF DÉJÀ EN PLACE.**
+`retour-du-devis.ts` le fait depuis le 31 août (§229) : un paramètre `?de=`,
+validé **par égalité** contre le seul chemin qu'il a le droit de valoir. La
+règle du planning (`src/lib/retour-au-planning.ts`) reprend le même nom, la même
+validation, et n'invente rien.
+
+**Pourquoi pas `history.back()`**, qui aurait tenu en une ligne : la flèche
+d'Atlas n'est pas le bouton du navigateur. Elle mène à un endroit **nommé**,
+elle est un `<Link>` qu'on peut ouvrir dans un onglet, et elle doit dire à voix
+haute où elle va. Un retour d'historique ne sait rien annoncer, ment dès qu'on
+arrive par un signet ou qu'on recharge, et après un enregistrement il
+redéposerait sur le formulaire qu'on vient de quitter.
+
+**Le repli ne bouge pas d'un pouce**, et c'est ce qui rend le changement sans
+risque : sans provenance reconnue, chaque écran retrouve la destination qu'il
+avait. La règle n'enlève aucun chemin, elle en reconnaît un de plus.
+
+**LE LIBELLÉ EST DESCENDU DE L'ÉCRAN VERS LA RÈGLE, ET C'ÉTAIT NÉCESSAIRE.** La
+fiche client annonçait sa flèche par un ternaire écrit dans le composant —
+« Retour au devis » dès qu'une provenance existait. Vrai tant qu'il n'y en avait
+qu'une ; la seconde l'aurait fait annoncer un devis en menant au planning.
+`libelleRetourDesCoordonnees` vit désormais dans `src/lib` (`CLAUDE.md` §3).
+
+**Ce qui reste ouvert, et c'est dit à dessein.** La porte « Le devis » d'un
+devis **non parti** mène à `/devis-complet`, dont la flèche va toujours à la
+fiche client — sa règle tranchée le 31 août : *« je veux tout le temps revenir à
+cette page et seulement celle-là »*. Elle n'emporte donc **aucune** provenance :
+un paramètre que personne ne relit écrirait dans l'adresse une promesse que
+l'écran ne tient pas, et la session suivante croirait le cas traité. Depuis le
+planning, ce chemin-là fait donc encore deux pas pour sortir. Le trancher
+demande son arbitrage, pas le nôtre.
+
+**Et le contrôle éprouve SON GESTE.** `test-planning-vers-facture-e2e.ts` touche
+la porte dans la feuille, puis la flèche, et vérifie que le planning se rouvre
+sur la feuille du même chantier. Une suite qui aurait appelé la règle avec une
+adresse écrite à la main serait restée verte : ce qui manquait, c'était le
+paramètre que la PORTE pose et que l'ÉCRAN relit — deux moitiés qu'aucun
+contrôle ne faisait se rencontrer (`CLAUDE.md` §5 quater).
+
+## §274. Un mot qui abrège, un geste qui ne se voit pas
+
+**Ses deux remarques du 7 septembre 2026, captures à l'appui**, sur le planning
+et à quelques minutes d'intervalle :
+
+> *« Que veut dire "1 chez le client" ? On comprend pas bien ! »*
+>
+> *« Deuxième photo, y'a marqué "quelqu'un pas là" mais comment savoir qu'il
+> faut cliquer dessus ? Pareil, on comprend pas bien ! »*
+
+**Ce sont deux défauts de nature différente, et les confondre aurait produit un
+mauvais correctif.** Le premier est un MOT. Le second est un GESTE INVISIBLE —
+et c'est le plus grave des deux, parce qu'il rendait inatteignable une
+fonctionnalité livrée la veille (§267).
+
+**Sa décision, sur planche** (`appli/deux-mots-du-planning.html`, trois
+variantes par bloc) : **1 = B, 2 = A**.
+
+### Bloc 1 — la poignée écrit le titre de la liste qu'elle ouvre
+
+« 1 chez le client » ne disait ni ce qui est chez lui, ni ce qu'on attend. Or la
+liste, à l'intérieur du tiroir, s'appelle **« En attente du client »** depuis le
+26 août : le mot juste existait déjà, un écran plus bas.
+
+**Le nom est désormais écrit une seule fois** (`EN_ATTENTE_DU_CLIENT`), et sert
+au titre comme à la poignée. Écrits séparément, ils avaient dérivé — c'est
+exactement le mécanisme que `CLAUDE.md` §3 interdit, appliqué à un libellé
+plutôt qu'à une règle métier.
+
+**Le contrôle ne fixe AUCUN des deux textes**, et c'est délibéré (§5 bis) : il
+vérifie que la poignée CONTIENT le titre. S'il fait renommer la liste demain, le
+contrôle défend encore quelque chose ; s'il avait figé « en attente du client »,
+il rougirait sur un renommage qu'il aurait lui-même demandé.
+
+### Bloc 2 — le geste prend la forme d'un bouton
+
+« Quelqu'un n'est pas là » était un `<button>` sans cerne, sans fond, sans
+couleur propre, au milieu d'une feuille où **tous** les autres gestes sont des
+pastilles cerclées : les noms d'équipe, « Terminé », « Déplacer », « Retirer ».
+Il avait donc l'allure d'une phrase d'information.
+
+Il devient une pastille, sous un surtitre « Ce jour-là ». **Pas de flèche au
+bout** — sa règle du 25 août : un bouton n'a pas besoin d'une flèche pour dire
+qu'on l'appuie, il a besoin d'avoir la forme d'un bouton.
+
+**La ligne d'une absence DÉJÀ posée ne change pas** : elle porte « Annuler » à
+droite, un mot qui nomme son geste. Elle n'a jamais eu ce défaut.
+
+**Une pièce, pas deux copies.** Le dessin de cette pastille existait déjà, écrit
+en dur pour les noms d'équipe. `PastilleDuJour` le porte maintenant une seule
+fois.
+
+### POURQUOI LA SUITE ÉTAIT VERTE DEVANT UN BOUTON INVISIBLE
+
+`test-pas-la-ce-jour-e2e.ts` visait `[data-atlas="fermer-le-jour"]`, cliquait, et
+vérifiait que le serveur avait écrit l'absence. **Tout était juste.** Un bouton
+qu'aucun humain ne reconnaît se clique très bien depuis un script : la suite ne
+mesurait pas ce qui manquait.
+
+Elle mesure désormais **l'allure** : le geste a-t-il un cerne, une ombre, ou un
+fond distinct de son environnement ? Aucun des trois, et c'est une phrase. Elle
+refuse de conclure sur une boîte de zéro pixel — le défaut du 15 août, où
+`0 − 0 = 0` rendait un vert sur un écran cassé.
+
+**La leçon, et elle dépasse ce lot :** un contrôle qui vise un `data-atlas`
+prouve qu'un geste EXISTE, jamais qu'il se VOIT. Pour tout geste neuf, se
+demander : *si ce bouton n'avait l'air de rien, ma suite le dirait-elle ?*
 
 ---
 
-## §273. Télécharger, ce n'est pas servir le même fichier avec un autre en-tête
+## §275. Télécharger, ce n'est pas servir le même fichier avec un autre en-tête
 
 **Le 7 septembre 2026**, capture à l'appui, sous « Voir la facture en PDF » :
 *« quand je clique sur télécharger ça ne la télécharge pas — un clic, une

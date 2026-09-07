@@ -11,7 +11,7 @@ sert.
 ## Dernier lot — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
 
 **Document du lot :** `docs/lot-telecharger-la-facture.md`.
-**Décisions :** `ARCHITECTURE.md` §273.
+**Décisions :** `ARCHITECTURE.md` §275.
 
 **Ce qui a changé, en une ligne :** une adresse `?telecharger=1` sert désormais
 `application/octet-stream` au lieu de `application/pdf`. Un navigateur qui a un
@@ -44,6 +44,52 @@ JavaScript (`fetch` + `blob`) pour pouvoir afficher l'erreur. Cela remplacerait
 un chemin natif qui fonctionne partout ailleurs par un chemin qui dépend de ce
 que ce même Safari fait des adresses `blob:` — soigner un doute avec un second
 doute.
+
+---
+
+## Lot précédent — DEUX MOTS DU PLANNING (7 septembre 2026)
+
+**Planche :** `appli/deux-mots-du-planning.html` — retenu **1 = B, 2 = A**.
+**Décisions :** `ARCHITECTURE.md` §274.
+
+**LE PIÈGE À RETENIR, et il vaut pour tout geste neuf.** « Quelqu'un n'est pas
+là » était un bouton sans cerne ni fond : invisible pour lui, cliquable pour un
+script. `test-pas-la-ce-jour-e2e.ts` était donc VERTE sur une fonction que
+personne ne pouvait trouver.
+
+Un contrôle qui vise un `data-atlas` prouve qu'un geste EXISTE, jamais qu'il se
+VOIT. La suite mesure désormais l'allure (cerne, ombre, ou fond propre) et
+refuse de conclure sur une boîte de zéro pixel.
+
+**Et le libellé d'une liste s'écrit une fois** (`EN_ATTENTE_DU_CLIENT`) : le
+titre et la poignée qui l'annonce avaient dérivé, et c'est le raccourci de la
+poignée qu'il n'a pas compris.
+
+---
+
+## Lot précédent — REVENIR AU PLANNING QUAND ON EN VIENT (7 septembre 2026)
+
+**Document du lot :** `docs/lot-retour-au-planning.md`.
+**Décisions :** `ARCHITECTURE.md` §273.
+
+Son signalement : depuis la feuille du planning, ouvrir un module puis toucher
+la flèche déposait sur l'accueil. Les trois écrans visés portaient une flèche
+**écrite en dur** — juste tant qu'ils ne s'atteignaient que depuis les listes.
+
+**AUCUN MÉCANISME NEUF.** La provenance voyage dans `?de=`, validée par
+égalité : c'est le motif de `retour-du-devis.ts` depuis le 31 août, repris tel
+quel dans `src/lib/retour-au-planning.ts`. Sans provenance reconnue, chaque
+écran retrouve sa destination d'avant — le repli n'a pas bougé.
+
+**Le piège si l'on reprend ce coin :** ajouter une porte vers un écran sans
+regarder d'où sa flèche repart. C'est exactement ce qui a produit ce défaut, et
+chaque moitié était juste séparément.
+
+**Reste ouvert, et c'est son arbitrage :** le devis PAS ENCORE parti garde sa
+flèche vers la fiche client (sa règle du 31 août). Depuis le planning, ce
+chemin-là fait donc deux pas pour sortir.
+
+---
 
 ---
 
@@ -116,7 +162,6 @@ auquel on ne touche pas.
 transcription (le fournisseur y rend un texte de remplacement), donc aucune
 suite navigateur ne peut partir du micro. Les deux suites tiennent la chaîne
 SOUS le micro, et elles savent rougir.
-
 
 ---
 ## Lot précédent — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)

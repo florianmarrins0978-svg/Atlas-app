@@ -119,6 +119,49 @@ async function main() {
     assert.ok(!couvert.recouvert, "le geste passe sous une bande fixe : il ne se vise pas");
   });
 
+  await cas("IL SE VOIT : le geste a l'allure d'un bouton, pas d'une phrase", async () => {
+    /*
+     * **Son signalement du 7 septembre 2026 :** *« y'a marqué "quelqu'un pas
+     * là" mais comment savoir qu'il faut cliquer dessus ? On comprend pas
+     * bien ! »* — sur du code qui MARCHAIT. La suite ci-dessus visait le
+     * `data-atlas` : elle était verte devant un bouton invisible, parce qu'un
+     * bouton qu'on ne reconnaît pas se clique très bien depuis un script.
+     *
+     * Ce qu'on mesure donc : le geste se DISTINGUE-t-il du texte qui l'entoure ?
+     * Un cerne, une ombre, ou un fond différent de celui de la carte — n'importe
+     * lequel des trois suffit ; aucun des trois, et c'est une phrase.
+     *
+     * **Il refuse de conclure sur une boîte de zéro pixel** (`CLAUDE.md` §5) :
+     * un élément non mis en page rendrait « aucune bordure » en vert, ce qui
+     * ne prouverait rien.
+     */
+    await ouvrirLeJour(dansCinqJours);
+    const allure = await page.evaluate(() => {
+      const cible = document.querySelector<HTMLElement>('[data-atlas="fermer-le-jour"]');
+      if (!cible) return null;
+      const b = cible.getBoundingClientRect();
+      if (b.width < 8 || b.height < 8) return null;
+      const s = getComputedStyle(cible);
+      const parent = cible.parentElement ? getComputedStyle(cible.parentElement) : null;
+      return {
+        bordure: parseFloat(s.borderTopWidth) > 0 || parseFloat(s.borderBottomWidth) > 0,
+        ombre: s.boxShadow !== "none" && s.boxShadow.length > 0,
+        fond:
+          parent !== null &&
+          s.backgroundColor !== parent.backgroundColor &&
+          s.backgroundColor !== "rgba(0, 0, 0, 0)",
+        hauteur: b.height,
+      };
+    });
+    assert.ok(allure, "le geste n'a pas de boîte mesurable : rien n'est mesuré");
+    assert.ok(
+      allure.bordure || allure.ombre || allure.fond,
+      "le geste n'a ni cerne, ni ombre, ni fond propre : il se lit comme une phrase"
+    );
+    // La cible du pouce, tant qu'on y est — 48 px est la mesure de l'écran.
+    assert.ok(allure.hauteur >= 44, `le geste ne fait que ${Math.round(allure.hauteur)} px de haut`);
+  });
+
   let idFerme = false;
 
   await cas("un appui ferme le jour, et le serveur l'a bien écrit", async () => {

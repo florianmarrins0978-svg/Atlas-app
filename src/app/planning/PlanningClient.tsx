@@ -1604,6 +1604,45 @@ function AjoutAuJour({
  * **UN JOUR PASSÉ NE SE FERME PAS** : l'appelant ne rend ce bloc que sur un
  * jour à venir, par le même drapeau `ecriture` que le reste de la carte.
  */
+/**
+ * La pastille des gestes d'une journée.
+ *
+ * **Elle existe parce que le même dessin était déjà écrit en dur** pour les
+ * noms d'équipe, et qu'il fallait l'écrire une seconde fois le 7 septembre
+ * 2026 pour « Quelqu'un n'est pas là » (son choix, variante A de la planche
+ * « Deux mots du planning »). Deux copies du même bouton auraient divergé au
+ * premier ajustement — c'est exactement ce que `CLAUDE.md` §3 interdit.
+ *
+ * **Le cerne est un `inset`, pas une bordure**, et c'est la mesure d'origine :
+ * une bordure ajoute un pixel de chaque côté et décale la pastille de ses
+ * voisines d'une demi-ligne. `min-h-[48px]` est la cible du pouce.
+ */
+function PastilleDuJour({
+  children,
+  onClick,
+  ...reste
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+} & Record<string, unknown>) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      {...reste}
+      className="min-h-[48px] rounded-full px-4 text-[14px]"
+      style={{
+        backgroundColor: colors.card,
+        color: colors.ink,
+        boxShadow: `inset 0 0 0 1px ${colors.line}`,
+        WebkitTapHighlightColor: "transparent",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 function PasLaCeJour({
   jour,
   absences,
@@ -1653,60 +1692,73 @@ function PasLaCeJour({
         </button>
       ))}
 
-      {!tousAbsents &&
-        (nombreSalaries === 0 ? (
-          <button
-            type="button"
-            data-atlas="fermer-le-jour"
-            onClick={() => fermer(jour, 1)}
-            className={ligne}
-            style={{ color: colors.ink }}
-          >
-            <span className="text-[14.5px]">Je ne suis pas là</span>
-          </button>
-        ) : !demande ? (
-          <button
-            type="button"
-            data-atlas="fermer-le-jour"
-            onClick={() => setDemande(true)}
-            className={ligne}
-            style={{ color: colors.ink }}
-          >
-            <span className="text-[14.5px]">Quelqu&apos;un n&apos;est pas là</span>
-          </button>
-        ) : (
-          /* **La question ne s'ouvre QUE s'il a quelqu'un.** Fermer la journée
-             entière quand une seule personne manque lui coûterait un chantier
-             que l'autre pouvait faire. */
-          <div className="py-2">
-            <p className={`mb-2 ${texteSituation}`} style={{ color: colors.inkSoft }}>
-              Qui n&apos;est pas là&nbsp;?
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {rangs
-                .filter((r) => !absentsParRang.has(r))
-                .map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    data-atlas="qui-nest-pas-la"
-                    onClick={() => {
-                      fermer(jour, r);
-                      setDemande(false);
-                    }}
-                    className="min-h-[48px] rounded-full px-4 text-[14px]"
-                    style={{
-                      backgroundColor: colors.card,
-                      color: colors.ink,
-                      boxShadow: `inset 0 0 0 1px ${colors.line}`,
-                    }}
-                  >
-                    {nomEquipe(r)}
-                  </button>
-                ))}
-            </div>
-          </div>
-        ))}
+      {/* ─── LE GESTE SE VOIT, IL NE SE DEVINE PLUS — 7 septembre 2026 ──────
+          **Sa remarque, capture à l'appui :** *« y'a marqué "quelqu'un pas là"
+          mais comment savoir qu'il faut cliquer dessus ? On comprend pas
+          bien ! »* — et il avait raison : ce texte était un bouton depuis la
+          veille, sans cerne, sans couleur, sans forme. Il avait exactement
+          l'allure d'une phrase posée là, si bien qu'une fonction livrée le
+          6 septembre était restée invisible.
+
+          **Son choix du 7 septembre** (planche « Deux mots du planning »,
+          variante A) : une pastille, comme TOUS les autres gestes de cette
+          feuille — « Terminé », les noms d'équipe, « Déplacer », « Retirer ».
+          Le geste se reconnaît alors sans qu'on l'explique.
+
+          **Pas de flèche au bout, et ce n'est pas un oubli** : sa règle du
+          25 août. Un bouton n'a pas besoin d'une flèche pour dire qu'on
+          l'appuie — il a besoin d'avoir la forme d'un bouton.
+
+          **La ligne d'une absence DÉJÀ posée, elle, ne change pas.** Elle
+          porte « Annuler » à droite, un mot qui nomme son geste : elle n'a
+          jamais eu le défaut que celle-ci avait. */}
+      {!tousAbsents && (
+        <div className="py-2">
+          <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
+            Ce jour-là
+          </p>
+          {nombreSalaries === 0 ? (
+            <PastilleDuJour
+              data-atlas="fermer-le-jour"
+              onClick={() => fermer(jour, 1)}
+            >
+              Je ne suis pas là
+            </PastilleDuJour>
+          ) : !demande ? (
+            <PastilleDuJour
+              data-atlas="fermer-le-jour"
+              onClick={() => setDemande(true)}
+            >
+              Quelqu&apos;un n&apos;est pas là
+            </PastilleDuJour>
+          ) : (
+            /* **La question ne s'ouvre QUE s'il a quelqu'un.** Fermer la
+               journée entière quand une seule personne manque lui coûterait un
+               chantier que l'autre pouvait faire. */
+            <>
+              <p className={`mb-2 ${texteSituation}`} style={{ color: colors.inkSoft }}>
+                Qui n&apos;est pas là&nbsp;?
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {rangs
+                  .filter((r) => !absentsParRang.has(r))
+                  .map((r) => (
+                    <PastilleDuJour
+                      key={r}
+                      data-atlas="qui-nest-pas-la"
+                      onClick={() => {
+                        fermer(jour, r);
+                        setDemande(false);
+                      }}
+                    >
+                      {nomEquipe(r)}
+                    </PastilleDuJour>
+                  ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -2504,6 +2556,17 @@ function Geste({
 
 
 /**
+ * Le nom de cette liste, écrit une seule fois.
+ *
+ * **Il sert à DEUX endroits, et c'est tout le correctif du 7 septembre 2026 :**
+ * le titre de la section, et la poignée qui l'annonce avant qu'on l'ouvre.
+ * Écrits séparément, ils s'étaient mis à dire deux choses — « En attente du
+ * client » dedans, « chez le client » dehors —, et c'est le raccourci du
+ * dehors qu'il n'a pas compris.
+ */
+const EN_ATTENTE_DU_CLIENT = "En attente du client";
+
+/**
  * LE TIROIR DU BAS — ce qui n'a pas encore de jour, à portée du pouce.
  *
  * ───────────────────────────────────────────────────────────────────────────
@@ -2594,9 +2657,12 @@ function TiroirDuBas({
     ? `À poser sur ${jourLisibleCourt(jourTouche).toLowerCase()}`
     : [
         aSansDate ? `${sansDate.length} sans date` : null,
-        aAttente
-          ? `${attenteClient.length} chez le client`
-          : null,
+        // **Le TITRE de la liste, pas un raccourci** — son choix du 7 septembre
+        // 2026 (planche « Deux mots du planning », variante B). « 1 chez le
+        // client » ne disait ni ce qui est chez lui, ni ce qu'on attend : il
+        // l'a signalé le matin même, *« on comprend pas bien ! »*. La poignée
+        // annonce désormais ce qu'on trouve dedans, mot pour mot.
+        aAttente ? `${attenteClient.length} ${EN_ATTENTE_DU_CLIENT.toLowerCase()}` : null,
       ]
         .filter(Boolean)
         .join(" · ");
@@ -2795,7 +2861,9 @@ function TiroirDuBas({
         {/* ─── EN ATTENTE DU CLIENT ───────────────────────────────────────── */}
         {attenteClient.length > 0 && (
           <>
-            <TitreSection encadre>En attente du client</TitreSection>
+            <TitreSection encadre data-atlas="titre-attente-client">
+              {EN_ATTENTE_DU_CLIENT}
+            </TitreSection>
             <div className="mx-[18px] mt-3">
               {attenteClient.map((c, i) => (
                 <div

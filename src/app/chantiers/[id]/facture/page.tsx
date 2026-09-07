@@ -13,11 +13,24 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { exigibiliteDe } from "@/server/repositories/paiements-facture";
 import { dernierEnvoiFacture } from "@/server/repositories/envois-factures";
 import FactureClient from "./FactureClient";
+import { PARAM_PROVENANCE, retourDepuisLePlanning } from "@/lib/retour-au-planning";
 
 export const dynamic = "force-dynamic";
 
-export default async function FacturePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function FacturePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
+  // **D'où il vient, et donc où le ramener** — son signalement du 7 septembre
+  // 2026. Venu des terminés, on y retourne : le repli ne bouge pas.
+  const retour = retourDepuisLePlanning(id, (await searchParams)[PARAM_PROVENANCE], {
+    href: "/termines",
+    libelle: "Retour aux chantiers terminés",
+  });
 
   const ctx = await getCurrentCtx();
   const chantier = await getChantier(ctx, id);
@@ -77,7 +90,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-16">
         <EnTeteEcran
-          retour={{ href: "/termines", libelle: "Retour aux chantiers terminés" }}
+          retour={retour}
           surtitre={chantier.nom}
           titre="Facture"
         />

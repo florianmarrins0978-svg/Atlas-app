@@ -7,6 +7,44 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-07
+### Deux mots du planning qu'il ne comprenait pas
+
+« 1 chez le client » n'apprenait rien : la liste qu'il ouvre s'appelle pourtant
+« En attente du client », un écran plus bas. Le nom est désormais écrit une
+seule fois et sert aux deux.
+
+« Quelqu'un n'est pas là » était un bouton sans cerne ni fond, au milieu d'une
+feuille où tous les autres gestes sont des pastilles. Il rendait invisible ce
+qui avait été livré la veille. Il prend la forme d'une pastille.
+
+**Ce que ça évite :** une fonction livrée que personne ne trouve, et un compte
+qu'on lit sans savoir ce qu'il compte.
+
+**Et le contrôle qui manquait.** La suite visait le `data-atlas` du bouton, le
+cliquait, vérifiait le serveur — tout était juste, et elle est restée verte
+devant un bouton invisible. Elle mesure maintenant son ALLURE. Voir
+`ARCHITECTURE.md` §274.
+
+### Revenir au planning quand on en vient
+
+Depuis la feuille du planning (4 septembre), ouvrir le devis parti, la facture
+ou la fiche client d'un chantier puis toucher la flèche déposait sur l'accueil
+— jamais sur le planning. Les trois écrans portaient une flèche écrite en dur,
+juste le jour où elle a été écrite : ils ne s'atteignaient alors que depuis les
+listes. La feuille leur a ouvert une seconde entrée sans que la sortie
+l'apprenne.
+
+**Ce que ça évite :** perdre sa place dans le mois à chaque aller-retour, et
+refeuilleter le planning pour retrouver la journée qu'on venait de quitter.
+
+La provenance voyage dans l'adresse et se valide par égalité — le motif de la
+fiche client depuis le 31 août, pas un second mécanisme. Sans provenance
+reconnue, chaque écran retrouve exactement la destination qu'il avait.
+
+**Reste ouvert :** le devis PAS ENCORE parti garde sa flèche vers la fiche
+client (sa règle du 31 août) ; depuis le planning, ce chemin-là fait encore deux
+pas pour sortir. Voir `ARCHITECTURE.md` §273.
+
 ### « Monsieur » ne va plus dans la case du nom, il allume la pastille
 
 Il dictait « monsieur Ludovic » et la case du nom portait « Monsieur Ludovic ».
@@ -70,7 +108,7 @@ Sous « Voir la facture en PDF », toucher « Télécharger » ouvrait la factur
 le lecteur du téléphone au lieu de l'enregistrer : le fichier était servi comme
 un PDF, c'est-à-dire comme un document que Safari sait peindre. Une adresse de
 téléchargement sert désormais un type que le navigateur ne peut qu'enregistrer
-(`ARCHITECTURE.md` §273). L'aperçu, lui, s'ouvre comme avant.
+(`ARCHITECTURE.md` §275). L'aperçu, lui, s'ouvre comme avant.
 
 Vaut aussi pour le devis, la fiche de chantier, et les deux pages du client —
 les cinq routes lisaient la même règle chacune à sa façon, et deux d'entre elles

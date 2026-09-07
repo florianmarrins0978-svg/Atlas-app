@@ -107,8 +107,12 @@ cas("le devis parti mène à l'envoi, pas à l'édition — la règle de la fich
     portesDuPlanning({ ...BASE, datePlanifiee: AUJ, envoiEnvoyeAt: envoi }, AUJ).find(
       (p) => p.cle === "devis"
     )!.href;
-  assert.ok(ou(null).endsWith("/devis-complet"));
-  assert.ok(ou("2026-09-01").endsWith("/export"));
+  // Le CHEMIN, sans la question : depuis le 7 septembre 2026, une porte
+  // emporte d'où l'on vient (`retour-au-planning.ts`). Comparer l'adresse
+  // entière ferait rougir cette suite sur un ajout qui ne change pas sa
+  // destination.
+  assert.equal(ou(null).split("?")[0], "/chantiers/c1/devis-complet");
+  assert.equal(ou("2026-09-01").split("?")[0], "/chantiers/c1/export");
 });
 
 cas("aucune porte ne mène à l'écran que le patron fait supprimer", () => {
@@ -116,7 +120,7 @@ cas("aucune porte ne mène à l'écran que le patron fait supprimer", () => {
   // disparaître depuis le 21 août. Une porte qui y mènerait la ferait renaître.
   for (const date of ["2026-09-03", AUJ, "2026-09-11"]) {
     for (const p of portesDuPlanning({ ...BASE, datePlanifiee: date, factureEnvoyeeAt: "2026-09-03" }, AUJ)) {
-      assert.ok(/^\/chantiers\/[^/]+\/.+$/.test(p.href), `${p.cle} → ${p.href}`);
+      assert.ok(/^\/chantiers\/[^/?]+\/[^?]+/.test(p.href), `${p.cle} → ${p.href}`);
     }
   }
 });

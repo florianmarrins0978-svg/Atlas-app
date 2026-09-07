@@ -1160,6 +1160,34 @@ async function main() {
   // (`CLAUDE.md` §3). Ce qu'il a demandé, c'est l'identité — c'est donc
   // l'identité qu'on mesure.
   // ─────────────────────────────────────────────────────────────────────
+  await essai("la poignée annonce EXACTEMENT le titre de la liste qu'elle ouvre", async () => {
+    /*
+     * **Sa remarque du 7 septembre 2026 :** *« que veut dire "1 chez le
+     * client" ? On comprend pas bien ! »* La poignée abrégeait « En attente du
+     * client » en « chez le client » — un raccourci qui ne dit ni ce qui est
+     * chez lui, ni ce qu'on attend. Son choix : la poignée écrit le titre.
+     *
+     * **On ne fixe AUCUN des deux textes** (`CLAUDE.md` §5 bis) : s'il fait
+     * renommer cette liste demain, ce contrôle doit défendre encore quelque
+     * chose. Ce qu'il défend, c'est qu'ils ne puissent pas DIVERGER — le
+     * défaut d'origine, et le seul qui compte.
+     */
+    await allerAuPlanning();
+    const poignee = page.locator('[data-atlas="poignee-tiroir"]');
+    if ((await poignee.count()) === 0) return; // pas de tiroir : rien à mesurer
+    const annonce = ((await poignee.textContent()) ?? "").toLowerCase();
+    const ouvert = await ouvrirLeTiroirDuPlanning(page);
+    if (!ouvert) return;
+    const titre = page.locator('[data-atlas="titre-attente-client"]');
+    if ((await titre.count()) === 0) return; // aucune attente en cours
+    const mot = ((await titre.textContent()) ?? "").trim();
+    assert.ok(mot.length > 0, "le titre est vide : rien n'est mesuré");
+    assert.ok(
+      annonce.includes(mot.toLowerCase()),
+      `la poignée annonce « ${annonce.trim()} » et la liste s'appelle « ${mot} »`
+    );
+  });
+
   await essai("« Sans date » porte la même pastille qu'un jour", async () => {
     // **Le décor est POSÉ, pas espéré.** Il faut les deux à l'écran en même
     // temps : une pastille de jour (donc la liste amenée sur la semaine de
