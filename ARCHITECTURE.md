@@ -24822,3 +24822,81 @@ en dur.
 **Et il sait échouer** : son dernier cas repose les 68 px d'avant et exige de
 voir le trou revenir. Sans ce cas, une barre absente ou un tiroir resté fermé
 rendraient du vert sans avoir rien regardé.
+
+---
+
+## §285. Repartir d'un client : ce qu'il a tranché le 8 septembre 2026
+
+Deux décisions prises **avant d'écrire une ligne**, parce que les deux
+entraient en collision avec des règles déjà posées. Elles commandent les lots 2
+et 3, et elles ne se redemandent pas.
+
+### A. La confirmation du client N'EST PAS un arrêt
+
+**Sa décision :** *« la confirmation du client ne bloque rien. Elle vaut preuve
+en plus, jamais permission. Je ne veux pas attendre un clic qui ne viendra
+pas. »*
+
+Le brief demandait « le client dit oui, le chantier est fini ». Trois choses du
+dépôt s'y opposaient, et c'est ce qui a fait poser la question :
+
+| | |
+|---|---|
+| **le client n'est pas là** | son constat du 16 août 2026 — *« on tond pendant que le client est au travail »* —, écrit en tête de `src/app/entretien/[jeton]/page.tsx`. C'est pour ça que la preuve est un horodatage et une empreinte, et non une signature |
+| **deux arrêts, pas trois** | `PRODUCT.md` : avant l'envoi du devis, avant le départ de la facture. Un troisième a été retiré parce qu'il ne pouvait mener qu'à « oui » |
+| **sa trésorerie** | une facture suspendue à un clic que personne ne fera est une facture qui ne part pas |
+
+Le client **peut** confirmer, et sa confirmation se garde comme l'acceptation
+d'un devis. Son silence n'empêche rien.
+
+### B. Le salarié gagne une écriture ÉTROITE — le modèle des rôles rouvre
+
+**Sa décision :** *« le salarié dépose photos et "c'est fini" sur les chantiers
+de sa journée, et rien d'autre : aucun montant, ni devis, ni facture, ni un
+chantier qui n'est pas le sien. Que le contrôle le prouve. »*
+
+C'est la **première brèche** dans le modèle figé le 30 août 2026
+(`docs/modele-des-roles.md` §E : *« aucun droit d'écriture ne lui a été
+rouvert »*). Elle est délibérée, elle est bornée, et sa borne est ce qui la rend
+acceptable :
+
+| Ce qu'il gagne | Ce qui ne bouge pas |
+|---|---|
+| déposer des photos sur un chantier de SA journée | `OUVERT_AU_SALARIE` ne s'élargit pas à `/chantiers/…` |
+| poser « c'est fini », horodaté, à son nom | aucun montant ne sort du serveur pour lui — page, PDF, réponse d'API |
+| | ni le devis, ni la facture, ni un chantier qui n'est pas le sien |
+
+**Le contrôle doit le PROUVER, pas l'affirmer** : un salarié qui tente d'ouvrir
+un prix se fait refuser, et la suite doit avoir été vue rouge sur la protection
+retirée (`docs/modele-des-roles.md` §F, « les faux verts »).
+
+### C. « Terminer un chantier » CRÉE la facture — il faut deux gestes
+
+Ce n'était dans aucun brief, et cela commande le lot 2. `terminerChantier`
+(`src/server/repositories/factures.ts:172`) **crée la facture** et refuse même
+de le faire tant que le devis n'est pas parti : c'est l'entrée du cycle
+comptable, pas un changement d'état.
+
+Le « c'est fini » du salarié **ne peut donc pas être ce geste-là**. Sa décision
+du 8 septembre : *« deux gestes séparés pour la fin de chantier : le tien
+constate, le mien facture. »* Le besoin était déjà noté dans `TODO.md` depuis le
+30 août, pour le commercial ; il devient obligatoire.
+
+### D. Ce que le lot 1 NE fait pas, et pourquoi
+
+Le brief demandait qu'Atlas **propose** le client reconnu pendant la frappe,
+avec de quoi le distinguer. **Il l'a écarté le 17 août 2026** — *« non
+justement, il ne faut pas »* —, et c'est écrit dans
+`src/lib/rapprochement-client.ts` : le rapprochement est automatique, sans geste
+de sa part.
+
+La planche `appli/le-client-quon-connait.html` respecte ce refus : Atlas décide
+comme aujourd'hui, et se contente de **dire** ce qu'il a fait, avec un moyen de
+séparer si c'est le mauvais. Le patron a validé la correction —
+*« tes trois remarques sont justes, et j'ai fait corriger le prompt sur la
+première »*.
+
+**Le compte rendu par jeton n'est pas rattaché à un chantier.** `passages_entretien`
+porte `client_id`, jamais `chantier_id` : c'est l'outil des tournées d'entretien.
+Le lot 3 devra soit l'y rattacher, soit donner au chantier sa propre page de
+preuve. *Tranché au lot 3, sa décision du 8 septembre.*

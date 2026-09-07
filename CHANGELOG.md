@@ -6,6 +6,43 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-08
+
+### Repartir d'un client : la planche du lot 1, et deux décisions prises avant
+
+`appli/le-client-quon-connait.html` — cinq propositions essayables, trois pour
+dire au patron chez QUI son chantier vient d'être rangé, deux pour ouvrir un
+chantier depuis la fiche d'un client. **Rien n'est codé dans `src/`**
+(`CLAUDE.md` §3 bis).
+
+**Ce que la lecture du brief a évité.** Il demandait qu'Atlas propose le client
+reconnu pendant la frappe : le patron avait écarté exactement cela le 17 août
+2026 — *« non justement, il ne faut pas »*, écrit dans
+`src/lib/rapprochement-client.ts`. La planche dit ce qu'Atlas a fait au lieu de
+faire choisir. Il a validé la correction.
+
+**Deux décisions du patron, consignées en `ARCHITECTURE.md` §285** : la
+confirmation du client ne bloque pas la facture, et le salarié gagne un droit
+d'écriture étroit — photos et « c'est fini » sur les chantiers de sa journée,
+sans jamais un montant.
+
+**Et un troisième point, qui n'était dans aucun brief :** `terminerChantier`
+crée la facture. Le « c'est fini » du salarié ne peut donc pas être ce geste-là ;
+il en faut deux, et le patron l'a tranché.
+
+**Deux défauts trouvés sur la CAPTURE, par aucune mesure.** « Ce n'est pas lui »
+restait affiché sur une fiche neuve : `.defaire` porte `display:block`, qui
+l'emporte sur le `[hidden]{display:none}` du navigateur — la propriété valait
+bien `true`, et le contrôle rendait un vert. Et la coche du sceau contredisait
+« Nouvelle fiche » : elle se lisait comme une confirmation de reprise. Sixième
+fois dans ce dépôt qu'un défaut sort d'une image (`CLAUDE.md` §5).
+
+**Un contrôle qui ne mesurait rien**, corrigé dans la foulée : il comparait
+`.ecran.scrollHeight` au cadre, alors que `.ecran` est une colonne flexible dont
+la hauteur vaut toujours celle du cadre. Le débordement se voit sur `.corps`.
+Vérifié rouge en forçant 400 px de trop.
+
+---
 ## 2026-09-07
 ### Le trou entre le tiroir du planning et le menu du bas
 

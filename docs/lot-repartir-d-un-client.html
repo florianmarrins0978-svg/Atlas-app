@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Repartir d'un client, et finir un chantier avec une preuve</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="repartir-dun-client-et-finir-un-chantier-avec-une-preuve">Repartir d'un client, et finir un chantier avec une preuve</h1>
+<p><em>Lot ouvert le 8 septembre 2026. Ce document est à jour au <strong>stade des maquettes</strong> : rien n'est codé dans <code>src/</code>.</em></p>
+<hr>
+<h2 id="ce-qui-a-été-fait-en-une-ligne">Ce qui a été fait, en une ligne</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le brief a été lu et confronté au code <strong>avant</strong> d'écrire quoi que ce soit. Deux questions ont été posées au patron, il les a tranchées, et <strong>la première proposition du lot 1 a dû être corrigée</strong> : elle demandait exactement ce qu'il avait écarté le 17 août. La planche des cinq propositions est publiée.</p>
+<hr>
+<h2 id="1-les-deux-questions-posées-avant-de-coder-et-ses-réponses">1. Les deux questions posées avant de coder, et ses réponses</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="a-la-confirmation-du-client-bloque-t-elle-la-facture-">A. La confirmation du client bloque-t-elle la facture ?</h3>
+<p><strong>Sa réponse :</strong> <em>« oui, la confirmation du client ne bloque rien. Elle vaut preuve en plus, jamais permission. Je ne veux pas attendre un clic qui ne viendra pas. »</em></p>
+<p><strong>Pourquoi la question se posait.</strong> Le brief demandait « le client dit oui, le chantier est fini ». Trois choses du dépôt s'y opposaient :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que le code ou ses décisions disent</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>le client n'est pas là</strong></td>
+<td>son constat du 16 août 2026, <em>« on tond pendant que le client est au travail »</em>, écrit en tête de <code>src/app/entretien/[jeton]/page.tsx</code>. C'est pour cela que la preuve est un horodatage et une empreinte, pas une signature</td>
+</tr>
+<tr>
+<td><strong>deux arrêts, jamais trois</strong></td>
+<td><code>PRODUCT.md</code> : avant l'envoi du devis, avant le départ de la facture. Un troisième a été retiré parce qu'il ne pouvait mener qu'à « oui »</td>
+</tr>
+<tr>
+<td><strong>sa trésorerie</strong></td>
+<td>une facture suspendue à un clic que personne ne fera est une facture qui ne part pas</td>
+</tr>
+</tbody></table></div>
+<h3 id="b-le-salarié-peut-il-déposer-une-preuve-et-clore-un-chantier-">B. Le salarié peut-il déposer une preuve et clore un chantier ?</h3>
+<p><strong>Sa réponse :</strong> <em>« oui, le salarié dépose photos et "c'est fini" sur les chantiers de sa journée, et rien d'autre : aucun montant, ni devis, ni facture, ni un chantier qui n'est pas le sien. Que le contrôle le prouve. »</em></p>
+<p>C'est la <strong>première brèche</strong> dans le modèle des rôles figé le 30 août 2026, qui disait mot pour mot : <em>« aucun droit d'écriture ne lui a été rouvert »</em> (<code>docs/modele-des-roles.md</code> §E). Elle est délibérée et bornée.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'il gagne</th>
+<th>Ce qui ne bouge pas</th>
+</tr></thead><tbody>
+<tr>
+<td>déposer des photos sur un chantier de SA journée</td>
+<td><code>OUVERT_AU_SALARIE</code> ne s'élargit pas à <code>/chantiers/…</code></td>
+</tr>
+<tr>
+<td>poser « c'est fini », horodaté, à son nom</td>
+<td>aucun montant ne sort du serveur pour lui — ni page, ni PDF, ni réponse d'API</td>
+</tr>
+<tr>
+<td></td>
+<td>ni le devis, ni la facture, ni le chantier d'un autre</td>
+</tr>
+</tbody></table></div>
+<p>Les deux réponses sont consignées dans <code>ARCHITECTURE.md</code> §285.</p>
+<hr>
+<h2 id="2-point-par-point-le-verdict-sur-le-brief">2. Point par point, le verdict sur le brief</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point du brief</th>
+<th>Verdict</th>
+<th>Sur quoi il se fonde</th>
+</tr></thead><tbody>
+<tr>
+<td>« Le rapprochement de clients existe et il marche »</td>
+<td><strong>juste</strong></td>
+<td><code>src/lib/rapprochement-client.ts</code>, appelé par <code>trouverOuCreerClient</code> (<code>clients.ts:46</code>)</td>
+</tr>
+<tr>
+<td>« Depuis la fiche d'un client, aucun lien ne mène à un nouveau chantier »</td>
+<td><strong>juste</strong></td>
+<td><code>src/app/clients/[id]/page.tsx</code> ne porte que les registres du dossier</td>
+</tr>
+<tr>
+<td>« La feuille de chantier du salarié existe, en PDF, sans montants »</td>
+<td><strong>juste</strong></td>
+<td><code>src/server/pdf/fiche-chantier-pdf.ts</code>, servie par <code>/api/chantiers/[id]/feuille/pdf</code></td>
+</tr>
+<tr>
+<td>« Le compte rendu au client existe, sans photos »</td>
+<td><strong>juste</strong></td>
+<td><code>src/app/entretien/[jeton]/page.tsx</code></td>
+</tr>
+<tr>
+<td>« La validation du client entre en collision avec deux décisions »</td>
+<td><strong>juste</strong></td>
+<td>voir A ci-dessus</td>
+</tr>
+<tr>
+<td>« Donner au salarié le droit d'écrire rouvre le modèle des rôles »</td>
+<td><strong>juste</strong></td>
+<td><code>docs/modele-des-roles.md</code> §E</td>
+</tr>
+<tr>
+<td><strong>Lot 1 · « Atlas le RECONNAÎT à l'écran et propose de le reprendre »</strong></td>
+<td><strong>REFUSÉ, et il l'a confirmé</strong></td>
+<td>voir §3</td>
+</tr>
+<tr>
+<td>Lot 1 · un chemin de la fiche client vers un chantier pour lui</td>
+<td><strong>retenu, avec une réserve</strong></td>
+<td>voir §3</td>
+</tr>
+<tr>
+<td>« L'intervention est rattachée au chantier, le chantier au client »</td>
+<td><strong>juste pour un chantier, FAUX pour le compte rendu existant</strong></td>
+<td>voir §4</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="3-ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">3. Ce qui a été refusé, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="la-proposition-de-client-pendant-la-frappe">La proposition de client pendant la frappe</h3>
+<p>Le brief demandait : <em>« pendant qu'il tape un nom déjà connu, Atlas le RECONNAÎT à l'écran et propose de le reprendre — avec ce qui le distingue (son lieu, son nombre de chantiers), parce qu'il a quatre Martins »</em>.</p>
+<p><strong>C'est exactement ce que le patron a écarté le 17 août 2026</strong>, et c'est écrit dans le code, pas dans un souvenir de conversation :</p>
+<blockquote><em>« Il a explicitement écarté qu'on lui propose une liste de correspondances ("non justement, il ne faut pas") : le rapprochement est automatique, sans geste de sa part. »</em> — <code>src/lib/rapprochement-client.ts</code></blockquote>
+<p><strong>Ce qui a été fait à la place.</strong> Atlas décide comme aujourd'hui, et se contente de <strong>dire</strong> ce qu'il a fait, avec un moyen de séparer si c'est le mauvais. Le patron a validé : <em>« tes trois remarques sont justes, et j'ai fait corriger le prompt sur la première. »</em></p>
+<h3 id="la-réserve-sur-la-fiche-client">La réserve sur la fiche client</h3>
+<p>Cet écran a été <strong>délibérément vidé le 2 septembre 2026</strong> — <em>« tout le reste, tu enlèves, c'est du trop »</em>, sa quatrième plainte en dix jours sur le nombre de mots. Le lot 1 y ajoute donc <strong>un geste et aucun mot</strong>. C'est la raison pour laquelle les deux propositions D et E tiennent en un bouton.</p>
+<hr>
+<h2 id="4-ce-que-le-brief-navait-pas-vu">4. Ce que le brief n'avait pas vu</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="-terminer-un-chantier--crée-la-facture">« Terminer un chantier » CRÉE la facture</h3>
+<p><code>terminerChantier</code> (<code>src/server/repositories/factures.ts:172</code>) <strong>crée la facture</strong>, et refuse même de le faire tant que le devis n'est pas parti. Ce n'est pas un changement d'état : c'est l'entrée du cycle comptable.</p>
+<p>Le « c'est fini » du salarié ne peut donc pas être ce geste-là. Il en faut deux, et le patron l'a tranché : <em>« deux gestes séparés pour la fin de chantier : le tien constate, le mien facture. »</em> Le besoin était déjà noté dans <code>TODO.md</code> depuis le 30 août, pour le commercial ; il devient obligatoire.</p>
+<h3 id="le-compte-rendu-par-jeton-nest-pas-rattaché-à-un-chantier">Le compte rendu par jeton n'est PAS rattaché à un chantier</h3>
+<p>Le brief avertissait : <em>« ne crée pas un troisième lien direct entre une intervention et un client »</em>. L'avertissement est juste — <strong>et le compte rendu existant fait déjà exactement cela.</strong></p>
+<p><code>passages_entretien</code> (<code>src/server/db/schema.ts</code>) porte <code>client_id</code>, jamais <code>chantier_id</code> : c'est l'outil des <strong>tournées d'entretien</strong>, pas la preuve de fin d'un chantier. Le lot 3 devra soit l'y rattacher, soit donner au chantier sa propre page de preuve.</p>
+<p><em>Remis au lot 3 par le patron, le 8 septembre.</em></p>
+<hr>
+<h2 id="5-la-planche-du-lot-1">5. La planche du lot 1</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Adresse :</strong> <code>https://florianmarrins0978-svg.github.io/Atlas-app/le-client-quon-connait.html</code></p>
+<p>Cinq propositions, toutes essayables. Trois cas se touchent en haut de page — un seul Martins, quatre Martins avec son numéro, « ce n'est pas lui » — et les cinq écrans changent ensemble. Un bouton « Nuit » montre la charte sombre.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Proposition</th>
+<th>Ce qu'elle fait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>A</strong></td>
+<td>Le mot après</td>
+<td>le chantier s'ouvre avec une ligne : « Rangé chez M. Martins · Saint-Marc · 3 chantiers »</td>
+</tr>
+<tr>
+<td><strong>B</strong></td>
+<td>La ligne pendant qu'il tape</td>
+<td>sous la case du nom, une phrase qui ne demande rien</td>
+</tr>
+<tr>
+<td><strong>C</strong></td>
+<td>La fiche se remplit ✦</td>
+<td>le nom reconnu, Atlas pose ce qu'il sait déjà — téléphone, e-mail, adresse</td>
+</tr>
+<tr>
+<td><strong>D</strong></td>
+<td>Le bouton sous son nom</td>
+<td>« Nouveau chantier » depuis la fiche du client</td>
+</tr>
+<tr>
+<td><strong>E</strong></td>
+<td>Refaire ce qu'on lui a fait ✦</td>
+<td>le chantier s'ouvre avec la <strong>prestation</strong> déjà écrite, pas seulement le nom</td>
+</tr>
+</tbody></table></div>
+<p>✦ <em>ce que nous défendons.</em> C répond à sa plainte réelle — « je dois tout retaper » — au moment précis où elle se forme. E répond à ce qu'il fait neuf fois sur dix : la même prestation, chez le même client.</p>
+<p><strong>D et E ne s'opposent pas</strong> : E porte les deux gestes. Si E est retenu, D disparaît.</p>
+<hr>
+<h2 id="6-ce-qui-a-été-vérifié-et-ce-qui-ne-la-pas-été">6. Ce qui a été vérifié, et ce qui ne l'a pas été</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>les cinq écrans tiennent en <strong>390 × 664</strong> sans rien couper</td>
+<td>mesuré, et le contrôle a été <strong>vu rouge</strong> en forçant 400 px de trop</td>
+</tr>
+<tr>
+<td>aucune flèche décorative</td>
+<td><code>scripts/test-aucune-fleche.ts</code> — 119 032 lignes lues</td>
+</tr>
+<tr>
+<td>les couleurs sont celles du produit</td>
+<td>lues en jouant <code>charte("origine")</code> et <code>charte("nuit")</code>, pas approchées à l'œil</td>
+</tr>
+<tr>
+<td><strong>les polices n'ont PAS pu être vues ici</strong></td>
+<td>le mandataire de ce poste refuse Google Fonts : les captures montrent les replis, pas Playfair Display. Sur son téléphone, elles se chargent</td>
+</tr>
+<tr>
+<td>la batterie complète</td>
+<td><strong>non jouée, et elle n'a pas lieu d'être</strong> : aucun fichier de <code>src/</code> n'est touché</td>
+</tr>
+</tbody></table></div>
+<h3 id="deux-défauts-trouvés-sur-la-capture-et-par-aucune-mesure">Deux défauts trouvés sur la CAPTURE, et par aucune mesure</h3>
+<p>C'est la sixième fois dans ce dépôt (<code>CLAUDE.md</code> §5), et les deux méritent d'être écrits parce qu'ils sont du même genre : <strong>un contrôle vert sur un écran faux.</strong></p>
+<ol>
+<li><strong>« Ce n'est pas lui » restait affiché sur une fiche neuve.</strong> Le bouton porte <code>display:block</code>, qui l'emporte sur le <code>[hidden]{display:none}</code> du navigateur. La propriété <code>hidden</code> valait bien <code>true</code> — le contrôle la lisait, et rendait un vert. L'image, elle, montrait le bouton. Le contrôle mesure désormais ce qui se <strong>voit</strong>.</li>
+<li><strong>La coche contredisait le texte.</strong> Sous « Nouvelle fiche », le sceau portait une coche : elle se lit comme une confirmation de reprise, soit l'inverse de ce que la ligne annonce. Elle devient un « + ».</li>
+</ol>
+<h3 id="un-contrôle-qui-ne-mesurait-rien">Un contrôle qui ne mesurait rien</h3>
+<p>Le premier contrôle de débordement comparait <code>.ecran.scrollHeight</code> au cadre. Or <code>.ecran</code> est une colonne flexible dont la hauteur vaut <strong>toujours</strong> celle du cadre : il rendait 664 = 664 quoi qu'on y mette. Le débordement se voit sur <code>.corps</code>. Corrigé, puis confronté à un débordement forcé pour le voir rougir.</p>
+<hr>
+<h2 id="7-ce-qui-reste-ouvert-et-qui-peut-le-trancher">7. Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui reste</th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>quelle proposition pour le lot 1</strong> — A, B ou C ; D ou E</td>
+<td><strong>lui</strong>, sur la planche</td>
+</tr>
+<tr>
+<td>le compte rendu du lot 3 : rattacher <code>passages_entretien</code> au chantier, ou page propre</td>
+<td><strong>nous</strong>, au lot 3, une fois le lot 2 posé</td>
+</tr>
+<tr>
+<td>le lot 2 (fiche d'intervention) et le lot 3 (ce que le client reçoit)</td>
+<td><strong>nous</strong>, dans cet ordre, après son choix</td>
+</tr>
+</tbody></table></div>
+<hr>
+<p><em>Tenu à jour à chaque avancée du lot. Un document périmé le ferait travailler sur une version disparue.</em></p>
+</main>
+</body>
+</html>

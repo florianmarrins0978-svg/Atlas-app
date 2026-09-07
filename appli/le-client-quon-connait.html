@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le client qu'on connaît déjà — cinq propositions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    LE CLIENT QU'ON CONNAÎT DÉJÀ — lot 1, 8 septembre 2026.
+
+    Sa demande : « repartir d'un client qui existe », parce qu'il croit devoir
+    tout retaper. `CLAUDE.md` §3 bis : ça se dessine, ça se montre, et ça ne
+    touche à `src/` qu'une fois choisi. RIEN N'EST CODÉ dans l'application.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST DÉJÀ VRAI DANS LE PRODUIT, ET QU'ON NE REFAIT PAS.
+
+    `rapprocherClient` (`src/lib/rapprochement-client.ts`) tourne déjà à chaque
+    enregistrement : même nom + une coordonnée qui concorde, le client est
+    RÉUTILISÉ. Une coordonnée qui contredit interdit le rapprochement — c'est
+    ce qui sépare quatre Martins. Sa base n'a donc pas de doublons.
+
+    **Ce qui manque n'est pas la règle, c'est le mot.** Rien à l'écran ne lui
+    dit ce qu'Atlas vient de faire, et rien ne mène de la fiche d'un client à
+    un chantier pour lui.
+
+    ─────────────────────────────────────────────────────────────────────────
+    SA DÉCISION DU 17 AOÛT 2026, QUI COMMANDE TOUTE LA PARTIE 1.
+
+    Il a écarté qu'on lui propose une liste de clients à choisir : « non
+    justement, il ne faut pas ». Aucune des trois propositions ci-dessous ne
+    lui fait donc choisir. Atlas décide, comme aujourd'hui, et se contente de
+    DIRE ce qu'il a fait — avec un moyen de le défaire si c'est le mauvais.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST VRAI DANS CETTE PLANCHE, ET CE QUI EST DESSINÉ.
+
+    · les couleurs sont celles du produit, au caractère près — Origine et Nuit
+      (`src/lib/chartes.ts` : Nuit fond #101210, plage #1a1d19, encre #e9e8de,
+      plein #e9e8de). Sur Nuit l'accent plein est CLAIR : ce qu'on pose dessus
+      est sombre, et cela se voit ici ;
+    · les polices sont celles du produit : Playfair Display et Inter ;
+    · l'écran « Fiche client » reprend celui qui existe
+      (`FormulaireNouveauChantier.tsx`) : le duo nom + téléphone, la case du
+      téléphone à 152 px fixes ;
+    · l'écran du client reprend l'allure « ample » retenue le 2 septembre —
+      « Client » doré au-dessus, nom à 40 px, trois registres ;
+    · les noms, les numéros et les chantiers sont inventés pour la
+      démonstration. Ce ne sont pas ses clients.
+
+    ─────────────────────────────────────────────────────────────────────────
+    MESURÉ POUR SON TÉLÉPHONE : 390 × 664.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    /* ── LES JETONS DE L'APPLICATION ────────────────────────────────────
+       Recopiés de `src/lib/chartes.ts`, pas approchés à l'œil : la valeur
+       de chacun a été lue en jouant `charte("origine")` et `charte("nuit")`.
+       `orTexte` n'est pas `or` — le produit assombrit déjà l'or dès qu'il
+       porte du texte, pour tenir 4,5 contre le fond ET contre la plage. */
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  /* NUIT — et c'est tout l'intérêt de la regarder : les pôles s'inversent.
+     L'accent plein devient CLAIR (#e9e8de), donc ce qu'on pose dessus devient
+     sombre. Un « #faf9f5 sur le plein » écrit en dur serait illisible ici —
+     c'est exactement la faute du 22 août 2026, « le mode nuit est illisible ».
+     `surPlein` vaut la PLAGE, jamais le fond : c'est ce qu'écrit le produit. */
+  body.nuit{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47;
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12);
+  }
+  *{box-sizing:border-box}
+  /* **Payé sur une capture, pas sur une mesure.** `.defaire` porte
+     `display:block` : il l'emporte sur le `[hidden]{display:none}` du
+     navigateur, et le bouton « Ce n'est pas lui » restait donc AFFICHÉ sur une
+     fiche neuve alors que sa propriété `hidden` valait bien `true`. Le contrôle
+     lisait la propriété et rendait un vert ; l'image, elle, montrait le bouton.
+     C'est la règle du dépôt : on mesure ce qui se VOIT (`CLAUDE.md` §5). */
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);
+       -webkit-text-size-adjust:100%;padding:0 0 70px}
+  ::selection{background:rgba(138,101,40,.22)}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+
+  .mot{max-width:560px;margin:30px auto 0;padding:17px 20px;background:var(--etabli-carte);
+       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
+       font-size:14px;line-height:1.62;color:var(--etabli-doux)}
+  .mot b{color:var(--etabli-encre)}
+  .mot + .mot{margin-top:11px}
+
+  /* ── L'établi : les cas qu'on peut jouer ─────────────────────────── */
+  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
+         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
+  .etats .quoi{max-width:1000px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+               letter-spacing:.2em;text-transform:uppercase;color:var(--etabli-gris)}
+  .etats .rangee{max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
+                color:var(--etabli-doux);border-radius:999px;padding:10px 15px;
+                font:400 13px/1 var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent;
+                transition:background .18s cubic-bezier(.22,.9,.3,1),color .18s cubic-bezier(.22,.9,.3,1)}
+  .etats button:hover{border-color:var(--etabli-gris)}
+  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+  .etats .filet{width:1px;height:26px;background:var(--etabli-trait);margin:0 4px}
+
+  /* ── Les planches ────────────────────────────────────────────────── */
+  .partie{max-width:1000px;margin:46px auto 0;padding:0 20px}
+  .partie h2{margin:0;font:400 28px/1.12 var(--serif);letter-spacing:-.012em}
+  .partie p{margin:10px 0 0;font-size:14.5px;line-height:1.62;color:var(--etabli-doux);max-width:64ch}
+  .partie p b{color:var(--etabli-encre)}
+
+  .planches{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;
+            max-width:1360px;margin:26px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.25 var(--serif)}
+  .planche .nom .tenu{display:inline-block;margin-left:8px;font:600 9px/1 var(--sans);
+                      letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);
+                      vertical-align:3px}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--etabli-doux);min-height:44px}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
+       background:var(--fond);color:var(--encre);
+       box-shadow:0 16px 44px rgba(20,18,14,.22)}
+  .ecran{position:absolute;inset:0;display:flex;flex-direction:column;padding:22px 0 0}
+
+  /* ── L'en-tête ───────────────────────────────────────────────────── */
+  .entete{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 24px}
+  .entete h1{margin:0;font:400 27px/1.05 var(--serif);white-space:nowrap}
+  .rond{width:38px;height:38px;border-radius:999px;display:grid;place-items:center;
+        background:var(--tuile);color:var(--doux);flex:0 0 auto}
+  .rond.vide{background:transparent}
+
+  /* ── Les cases ───────────────────────────────────────────────────── */
+  .corps{flex:1;overflow:hidden;padding:20px 24px 0}
+  .etiq{display:block;font:600 10.5px/1.35 var(--sans);letter-spacing:.16em;
+        text-transform:uppercase;color:var(--gris)}
+  .duo{display:flex;align-items:flex-end;gap:9px}
+  .duo .col-nom{flex:1;min-width:0}
+  .duo .col-tel{width:152px;flex:0 0 auto}
+  .duo .col-tel .etiq{text-align:right}
+  .case{display:block;width:100%;border:0;border-radius:11px;background:var(--plage);
+        color:var(--encre);padding:13px 15px;font:400 16px/1.25 var(--sans);
+        box-shadow:inset 0 0 0 1px var(--trait);-webkit-tap-highlight-color:transparent;
+        transition:box-shadow .2s cubic-bezier(.22,.9,.3,1)}
+  .case::placeholder{color:var(--gris)}
+  .case:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--or)}
+  .pile{display:flex;flex-direction:column;gap:5px}
+  .pile + .pile{margin-top:13px}
+
+  /* Une case qu'Atlas vient de remplir tout seul. Un fond teinté ne suffit
+     pas sur Nuit — c'est le liseré d'or, qui tient sur les huit chartes. */
+  .case.repris{box-shadow:inset 0 0 0 1.5px var(--or)}
+
+  /* Le canal d'envoi et la pellicule existent sur ces écrans : les omettre
+     laisserait deux cents pixels de vide sous les cases, et donnerait à juger
+     une composition qui n'est pas celle du produit. */
+  .canal{display:flex;gap:8px;margin-top:6px}
+  .canal span{flex:1;height:46px;display:grid;place-items:center;border-radius:999px;
+              font:500 14px/1 var(--sans);color:var(--gris);background:var(--plage);
+              box-shadow:inset 0 0 0 1px var(--trait)}
+  .canal span.actif{color:var(--surplein);background:var(--plein);box-shadow:none}
+  .photos{display:flex;gap:9px;margin-top:6px}
+  .photos .plus{width:64px;height:64px;border-radius:12px;background:var(--plage);
+                box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;
+                color:var(--orTexte)}
+
+  .valider{margin:auto 0 0;padding:16px 24px 22px}
+  .valider button{width:100%;border:0;border-radius:999px;background:var(--plein);
+                  color:var(--surplein);height:56px;font:400 17px/1 var(--serif);
+                  cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .valider button:active{transform:scale(.99)}
+
+  /* ── Le mot d'Atlas : « voilà ce que j'ai fait » ─────────────────── */
+  .dit{display:flex;align-items:flex-start;gap:11px;background:var(--plage);
+       border-radius:13px;padding:13px 15px;box-shadow:inset 0 0 0 1px var(--trait)}
+  .dit .sceau{width:30px;height:30px;border-radius:999px;flex:0 0 auto;display:grid;
+              place-items:center;background:var(--tuile);color:var(--orTexte)}
+  .dit .quoi{min-width:0;flex:1}
+  .dit .fort{display:block;font:400 17px/1.3 var(--serif)}
+  .dit .sous{display:block;margin-top:3px;font-size:13px;line-height:1.45;color:var(--gris)}
+  .defaire{display:block;margin-top:6px;border:0;background:transparent;padding:9px 0 2px;
+           font:500 14px/1 var(--sans);color:var(--orTexte);text-decoration:underline;
+           text-underline-offset:4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+  /* La ligne discrète sous la case du nom — proposition B. */
+  .souffle{display:flex;align-items:center;gap:7px;padding:9px 2px 0;font-size:13px;
+           line-height:1.45;color:var(--gris)}
+  .souffle b{color:var(--doux);font-weight:500}
+  .souffle svg{flex:0 0 auto;color:var(--orTexte)}
+
+  /* ── L'écran du client (partie 2) ────────────────────────────────── */
+  .sur{display:block;font:600 10.5px/1 var(--sans);letter-spacing:.22em;
+       text-transform:uppercase;color:var(--orTexte)}
+  .grand{margin:10px 0 0;font:400 40px/1.04 var(--serif);letter-spacing:-.015em}
+  .coord{margin:11px 0 0;font-size:14px;line-height:1.62;color:var(--doux)}
+  .derniere{margin-top:22px}
+  .derniere .quoi{margin:5px 0 0;font:400 17px/1.4 var(--serif)}
+  .derniere .quand{margin:3px 0 0;font-size:13px;color:var(--gris)}
+
+  .onglets{display:flex;gap:5px;margin-top:20px}
+  .onglets span{flex:1;text-align:center;padding:11px 4px;border-radius:9px;
+                font:500 13px/1 var(--sans);color:var(--gris)}
+  .onglets span.actif{background:var(--plage);color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait)}
+  .piece{display:flex;align-items:center;justify-content:space-between;gap:10px;
+         padding:13px 0;border-bottom:1px solid var(--trait);font-size:14.5px}
+  .piece .num{color:var(--doux)}
+  .piece .jour{font-size:13px;color:var(--gris);font-variant-numeric:tabular-nums}
+
+  /* Les gestes du lot 1, côté client. Cinquante-six et quarante-six pixels :
+     on vise mal, avec des doigts épais, au soleil. */
+  .geste-plein{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+               border:0;border-radius:999px;background:var(--plein);color:var(--surplein);
+               height:56px;font:400 17px/1 var(--serif);cursor:pointer;
+               -webkit-tap-highlight-color:transparent}
+  .geste-plein:active{transform:scale(.99)}
+  .refaire{display:inline-flex;align-items:center;gap:9px;border:0;border-radius:999px;
+           background:transparent;box-shadow:inset 0 0 0 1px var(--orTexte);color:var(--orTexte);
+           height:46px;padding:0 18px;font:500 14.5px/1 var(--sans);cursor:pointer;
+           -webkit-tap-highlight-color:transparent}
+  /* Un écran, un geste : « Refaire » est ce qu'il fait neuf fois sur dix, et il
+     porte donc l'aplat. « Autre chantier » reste disponible, en creux. */
+  .refaire.premier{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .refaire:active{transform:scale(.99)}
+
+  /* La barre du bas — elle existe sur cet écran, elle prend sa place. */
+  .barre{display:flex;align-items:center;justify-content:space-around;height:62px;
+         background:var(--plage);box-shadow:inset 0 1px 0 var(--trait)}
+  .barre i{display:flex;flex-direction:column;align-items:center;gap:4px;
+           font:500 9.5px/1 var(--sans);font-style:normal;color:var(--gris)}
+  .barre i.actif{color:var(--encre)}
+
+  .creux{height:14px}
+  @media (max-width:900px){ .planche{width:100%} .tel{width:100%} }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Maquette.</b> Rien n'est codé dans l'application. Touche les cas en haut
+  pour voir les écrans changer, et regarde-les aussi en Nuit.
+</div>
+
+<div class="mot">
+  <b>Ce qui existe déjà et qui ne bouge pas :</b> Atlas retrouve tout seul le bon
+  client à l'enregistrement, et refuse de rapprocher deux Martins dont les
+  numéros diffèrent. Ta base n'a pas de doublons.
+</div>
+<div class="mot">
+  <b>Ce qui manque :</b> rien ne te dit ce qu'il a fait, et rien ne mène de la
+  fiche d'un client à un chantier pour lui. <b>Aucune proposition ci-dessous ne
+  te fait choisir dans une liste</b> — tu l'avais écarté le 17 août.
+</div>
+
+<div class="etats" role="group" aria-label="Les cas à jouer">
+  <p class="quoi">Le cas</p>
+  <div class="rangee">
+    <button type="button" data-cas="nom" aria-pressed="true">Un seul Martins</button>
+    <button type="button" data-cas="coordonnee" aria-pressed="false">Quatre Martins, son numéro</button>
+    <button type="button" data-cas="contradiction" aria-pressed="false">Ce n'est pas lui</button>
+    <span class="filet" aria-hidden="true"></span>
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<!-- ══════════════════ PARTIE 1 ══════════════════════════════════════ -->
+<div class="partie">
+  <h2>Il tape un nom qu'Atlas connaît</h2>
+  <p>Trois façons de le lui dire. <b>Aucune ne lui demande de choisir</b> : Atlas
+  range le chantier chez le bon client comme il le fait déjà, et se contente de
+  le dire — avec un moyen de le séparer si c'est le mauvais.</p>
+</div>
+
+<div class="planches">
+
+  <!-- ── A ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">A. Le mot après</p>
+    <p class="idee">Il enregistre, le chantier s'ouvre, et une ligne dit chez qui
+      c'est rangé.</p>
+    <div class="tel"><div class="ecran">
+      <div class="entete">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h1>Le chantier</h1>
+        <span class="rond vide" aria-hidden="true"></span>
+      </div>
+      <div class="corps">
+        <div class="dit">
+          <span class="sceau" data-r="sceau" aria-hidden="true"></span>
+          <span class="quoi">
+            <span class="fort" data-r="titre">Rangé chez M. Martins</span>
+            <span class="sous" data-r="sous">Saint-Marc &middot; 3 chantiers</span>
+            <button type="button" class="defaire" data-r="defaire">Ce n'est pas lui</button>
+          </span>
+        </div>
+        <div class="creux"></div>
+        <div class="pile">
+          <span class="etiq">Le chantier</span>
+          <div class="case">Taille de haie, 40 ml</div>
+        </div>
+        <div class="pile">
+          <span class="etiq">Adresse</span>
+          <div class="case">12 rue des Lilas, Saint-Marc</div>
+        </div>
+        <div class="pile">
+          <span class="etiq">Photos</span>
+          <div class="photos">
+            <div class="plus">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="valider"><button type="button">Dicter la visite</button></div>
+    </div></div>
+  </div>
+
+  <!-- ── B ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">B. La ligne pendant qu'il tape</p>
+    <p class="idee">Sous la case du nom, une phrase qui ne demande rien. Il
+      continue, ou il ajoute un numéro.</p>
+    <div class="tel"><div class="ecran">
+      <div class="entete">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h1>Fiche client</h1>
+        <span class="rond" aria-hidden="true">
+          <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><rect x="4" y="1" width="6" height="9.4" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M1.6 8.4a5.4 5.4 0 0 0 10.8 0M7 13.8V17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="corps">
+        <div class="duo">
+          <span class="col-nom"><span class="etiq">Nom du client</span>
+            <input class="case" style="margin-top:5px" value="Martins" aria-label="Nom du client"></span>
+          <span class="col-tel"><span class="etiq">Téléphone</span>
+            <input class="case" style="margin-top:5px" data-r="telB" placeholder="06 12 34 56 78" aria-label="Téléphone"></span>
+        </div>
+        <div class="souffle">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.4" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.4v4.1M8 4.6v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span data-r="souffle"><b>Déjà un Martins</b> &middot; Saint-Marc, 3 chantiers</span>
+        </div>
+        <div class="pile" style="margin-top:15px"><span class="etiq">E-mail</span>
+          <input class="case" placeholder="bernard@exemple.fr" aria-label="E-mail"></div>
+        <div class="pile"><span class="etiq">Adresse du chantier</span>
+          <input class="case" placeholder="12 rue des Lilas, Nantes" aria-label="Adresse du chantier"></div>
+        <div class="pile"><span class="etiq">Comment lui envoyer son devis</span>
+          <div class="canal"><span class="actif">SMS</span><span>E-mail</span></div></div>
+      </div>
+      <div class="valider"><button type="button">Enregistrer</button></div>
+    </div></div>
+  </div>
+
+  <!-- ── C ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">C. La fiche se remplit<span class="tenu">Ce que je défends</span></p>
+    <p class="idee">Le nom reconnu, Atlas pose ce qu'il sait déjà. Il ne retape
+      rien, et il voit de qui il s'agit.</p>
+    <div class="tel"><div class="ecran">
+      <div class="entete">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h1>Fiche client</h1>
+        <span class="rond" aria-hidden="true">
+          <svg width="14" height="18" viewBox="0 0 14 18" fill="none"><rect x="4" y="1" width="6" height="9.4" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M1.6 8.4a5.4 5.4 0 0 0 10.8 0M7 13.8V17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="corps">
+        <div class="dit">
+          <span class="sceau" data-r="sceau" aria-hidden="true"></span>
+          <span class="quoi">
+            <span class="fort" data-r="titreC">Repris de sa fiche</span>
+            <span class="sous" data-r="sousC">Saint-Marc &middot; 3 chantiers</span>
+            <button type="button" class="defaire" data-r="defaireC">Ce n'est pas lui</button>
+          </span>
+        </div>
+        <div class="creux"></div>
+        <div class="duo">
+          <span class="col-nom"><span class="etiq">Nom du client</span>
+            <input class="case" style="margin-top:5px" value="Martins" aria-label="Nom du client"></span>
+          <span class="col-tel"><span class="etiq">Téléphone</span>
+            <input class="case" style="margin-top:5px" data-r="telC" value="06 79 98 45 14" aria-label="Téléphone"></span>
+        </div>
+        <div class="pile" style="margin-top:13px"><span class="etiq">E-mail</span>
+          <input class="case" data-r="mailC" value="martins@exemple.fr" aria-label="E-mail"></div>
+        <div class="pile"><span class="etiq">Adresse du chantier</span>
+          <input class="case" data-r="adrC" value="12 rue des Lilas, Saint-Marc" aria-label="Adresse du chantier"></div>
+        <div class="pile"><span class="etiq">Comment lui envoyer son devis</span>
+          <div class="canal"><span class="actif">SMS</span><span>E-mail</span></div></div>
+      </div>
+      <div class="valider"><button type="button">Enregistrer</button></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ══════════════════ PARTIE 2 ══════════════════════════════════════ -->
+<div class="partie">
+  <h2>Il part de la fiche d'un client</h2>
+  <p>Aujourd'hui cet écran ne mène nulle part — tu avais fait retirer le reste le
+  2 septembre, « c'est du trop ». <b>Ces deux-là n'ajoutent aucun mot</b> : un
+  geste, et le chantier s'ouvre déjà rempli.</p>
+</div>
+
+<div class="planches">
+
+  <!-- ── D ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">D. Le bouton sous son nom</p>
+    <p class="idee">Un chantier neuf pour lui, ses coordonnées déjà posées.
+      Visible sans faire défiler.</p>
+    <div class="tel"><div class="ecran" style="padding-bottom:0">
+      <div class="entete" style="justify-content:flex-start">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+      <div class="corps" style="padding-top:16px">
+        <span class="sur">Client</span>
+        <h2 class="grand">Bernard Martins</h2>
+        <p class="coord">12 rue des Lilas, Saint-Marc<br>06 79 98 45 14</p>
+        <div style="margin-top:20px">
+          <button type="button" class="geste-plein">
+            <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 3.2v11.6M3.2 9h11.6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+            Nouveau chantier</button>
+        </div>
+        <div class="onglets">
+          <span class="actif">Devis</span><span>Facture</span><span>Fiche</span>
+        </div>
+        <div class="piece"><span class="num">Devis 2026-041</span><span class="jour">2 sept.</span></div>
+        <div class="piece"><span class="num">Devis 2026-018</span><span class="jour">14 juin</span></div>
+      </div>
+      <div class="barre" aria-hidden="true">
+        <i class="actif"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3 8.6 10 3l7 5.6V17H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Chantiers</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><rect x="3" y="4.5" width="14" height="12.5" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Planning</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 10.2 9 12.6l4.4-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Terminés</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 17c0-6 2.6-9.6 7-10.4C17 12 14 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 17C10 11 7.4 7.4 3 6.6 3 12 6 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Paysage</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4 4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Réglages</i>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── E ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">E. Refaire ce qu'on lui a fait<span class="tenu">Ce que je défends</span></p>
+    <p class="idee">Le plus souvent, il lui refait la même chose. Le chantier
+      s'ouvre avec la prestation déjà écrite, pas seulement le nom.</p>
+    <div class="tel"><div class="ecran" style="padding-bottom:0">
+      <div class="entete" style="justify-content:flex-start">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+      <div class="corps" style="padding-top:16px">
+        <span class="sur">Client</span>
+        <h2 class="grand">Bernard Martins</h2>
+        <p class="coord">12 rue des Lilas, Saint-Marc<br>06 79 98 45 14</p>
+        <div class="derniere">
+          <span class="etiq">Dernière prestation</span>
+          <p class="quoi">Taille de haie, 40 ml</p>
+          <p class="quand">2 septembre</p>
+          <div style="margin-top:14px;display:flex;gap:9px;flex-wrap:wrap">
+            <button type="button" class="refaire premier">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M15.2 9a6.2 6.2 0 1 1-1.9-4.5M15.2 2.4V6h-3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Refaire</button>
+            <button type="button" class="refaire">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 3.4v11.2M3.4 9h11.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              Autre chantier</button>
+          </div>
+        </div>
+        <div class="onglets">
+          <span class="actif">Devis</span><span>Facture</span><span>Fiche</span>
+        </div>
+        <div class="piece"><span class="num">Devis 2026-041</span><span class="jour">2 sept.</span></div>
+      </div>
+      <div class="barre" aria-hidden="true">
+        <i class="actif"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3 8.6 10 3l7 5.6V17H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Chantiers</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><rect x="3" y="4.5" width="14" height="12.5" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Planning</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 10.2 9 12.6l4.4-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Terminés</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 17c0-6 2.6-9.6 7-10.4C17 12 14 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 17C10 11 7.4 7.4 3 6.6 3 12 6 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Paysage</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4 4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Réglages</i>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<div class="mot" style="margin-top:42px">
+  <b>D et E ne s'opposent pas.</b> E porte les deux gestes — « Refaire » et
+  « Autre chantier ». Si tu retiens E, D n'a plus lieu d'être.
+</div>
+
+<script>
+/*
+  LES TROIS CAS SONT CEUX DE `rapprocherClient`, PAS DES CAS INVENTÉS.
+
+  · « nom »           il tape un nom, rien d'autre : un seul Martins en base,
+                      rien ne contredit, on le reprend (motif `nom`) ;
+  · « coordonnee »    quatre Martins ; le numéro tapé concorde avec un seul,
+                      et cela tranche tout le reste (motif `coordonnee`) ;
+  · « contradiction » aucun des quatre ne porte ce numéro : c'est quelqu'un
+                      d'autre, la fiche reste séparée.
+
+  Le troisième est le plus important à regarder : c'est celui où Atlas doit se
+  taire sur la reprise et créer une fiche neuve SANS que cela ressemble à une
+  panne.
+*/
+/*
+  LE SCEAU DIT LAQUELLE DES DEUX CHOSES S'EST PASSÉE, ET C'EST LE POINT.
+
+  Une coche sous « Nouvelle fiche » se lit comme une confirmation de reprise :
+  elle dirait exactement l'inverse de ce que la ligne annonce. Vu sur la
+  capture — la mesure, elle, ne regardait que le texte.
+*/
+const COCHE = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const NEUVE = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2.8v10.4M2.8 8h10.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+const CAS = {
+  nom: {
+    repris: true,
+    titre: "Rangé chez M. Martins",
+    sous: "Saint-Marc · 3 chantiers",
+    titreC: "Repris de sa fiche",
+    souffle: "<b>Déjà un Martins</b> · Saint-Marc, 3 chantiers",
+    telB: ""
+  },
+  coordonnee: {
+    repris: true,
+    titre: "Rangé chez M. Martins",
+    sous: "Son numéro correspond · 4 Martins en fiche",
+    titreC: "Repris de sa fiche",
+    souffle: "<b>Son numéro le désigne</b> · Saint-Marc, 3 chantiers",
+    telB: "06 79 98 45 14"
+  },
+  contradiction: {
+    repris: false,
+    titre: "Nouvelle fiche",
+    sous: "Aucun Martins n'a ce numéro",
+    titreC: "Nouvelle fiche",
+    souffle: "<b>Aucun Martins n'a ce numéro</b> · fiche séparée",
+    telB: "07 55 12 04 88"
+  }
+};
+
+const qq = (s) => Array.from(document.querySelectorAll(s));
+const par = (n) => qq('[data-r="' + n + '"]');
+
+function poser(nomCas) {
+  const c = CAS[nomCas];
+
+  par("titre").forEach((e) => { e.textContent = c.titre; });
+  par("sous").forEach((e) => { e.textContent = c.sous; });
+  par("titreC").forEach((e) => { e.textContent = c.titreC; });
+  par("sousC").forEach((e) => { e.textContent = c.sous; });
+  par("souffle").forEach((e) => { e.innerHTML = c.souffle; });
+  par("sceau").forEach((e) => { e.innerHTML = c.repris ? COCHE : NEUVE; });
+  par("telB").forEach((e) => { e.value = c.telB; });
+
+  // Quand la fiche est neuve, il n'y a RIEN à défaire : le bouton disparaît
+  // plutôt que de se griser. Un bouton grisé se touche quand même, et un refus
+  // muet se lit comme une panne.
+  par("defaire").concat(par("defaireC")).forEach((e) => { e.hidden = !c.repris; });
+
+  // Proposition C : une fiche neuve NE SE PRÉ-REMPLIT PAS. C'est la moitié
+  // qu'on oublie de dessiner, et c'est celle qui écrirait le numéro d'un homme
+  // sur la fiche d'un autre.
+  par("telC").forEach((e) => { e.value = c.repris ? "06 79 98 45 14" : c.telB; });
+  par("mailC").forEach((e) => { e.value = c.repris ? "martins@exemple.fr" : ""; });
+  par("adrC").forEach((e) => { e.value = c.repris ? "12 rue des Lilas, Saint-Marc" : ""; });
+  par("telC").concat(par("mailC"), par("adrC")).forEach((e) => {
+    e.classList.toggle("repris", c.repris);
+  });
+
+  qq('.etats button[data-cas]').forEach((b) => {
+    b.setAttribute("aria-pressed", String(b.dataset.cas === nomCas));
+  });
+}
+
+qq('.etats button[data-cas]').forEach((b) => {
+  b.addEventListener("click", () => poser(b.dataset.cas));
+});
+
+// « Ce n'est pas lui » sépare pour de bon : la fiche se vide, et le mot change.
+qq(".defaire").forEach((b) => {
+  b.addEventListener("click", () => poser("contradiction"));
+});
+
+const bouton = document.getElementById("charte");
+bouton.addEventListener("click", () => {
+  const nuit = document.body.classList.toggle("nuit");
+  bouton.setAttribute("aria-pressed", String(nuit));
+  bouton.textContent = nuit ? "Origine" : "Nuit";
+});
+
+poser("nom");
+</script>
+</body>
+</html>

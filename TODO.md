@@ -9,6 +9,55 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — repartir d'un client (lot 1)
+
+**Née le 8 septembre 2026.** `appli/le-client-quon-connait.html`, cinq
+propositions, publiée et listée dans `appli/essais.html`.
+
+**Rien ne se code tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Ce qu'on
+défend : **C** (la fiche se remplit de ce qu'Atlas sait déjà) et **E** (« Refaire »
+depuis la dernière prestation, qui reprend aussi le contenu du chantier).
+
+**Ce que le lot 1 touchera quand il aura tranché :**
+
+- `src/app/chantiers/nouveau/actions.ts` — `trouverOuCreerClient` rend déjà le
+  motif du rapprochement ; il faut le remonter jusqu'à l'écran, pas le recalculer ;
+- `src/app/clients/[id]/page.tsx` — un chemin vers un chantier pour lui. Attention :
+  cet écran a été délibérément vidé le 2 septembre (*« c'est du trop »*). On ajoute
+  **un geste, aucun mot** ;
+- « Ce n'est pas lui » doit **séparer pour de bon** : c'est le geste qui répare un
+  rapprochement, et il n'existe nulle part aujourd'hui.
+
+## 🔜 LOT 2 — la fiche d'intervention du salarié
+
+Bloqué par rien, mais il vient **après** le lot 1 et il ne se mélange pas avec
+lui. Ce qui est déjà décidé (`ARCHITECTURE.md` §285) :
+
+- le salarié dépose photos et « c'est fini » **sur les chantiers de sa journée**,
+  sans jamais un montant. Le contrôle doit le **prouver**, et avoir été vu rouge ;
+- **deux gestes distincts** pour la fin d'un chantier : le sien constate,
+  `terminerChantier` facture. Aujourd'hui c'est le même geste
+  (`src/server/repositories/factures.ts:172`) ;
+- la feuille de chantier sans montants **existe** (`src/server/pdf/fiche-chantier-pdf.ts`)
+  et la pellicule aussi (`src/app/chantiers/[id]/Pellicule.tsx`) : on les reprend,
+  on ne les réécrit pas.
+
+## 🔜 LOT 3 — ce que le client reçoit
+
+**Une question ouverte, qu'il a remise à ce lot-là :** le compte rendu par jeton
+porte `client_id`, jamais `chantier_id` (`passages_entretien`, `src/server/db/schema.ts`).
+C'est l'outil des tournées d'entretien, pas la preuve de fin d'un chantier. Il
+faudra soit l'y rattacher, soit donner au chantier sa propre page de preuve.
+
+**Et sa confirmation ne bloque rien** — décision A du 8 septembre.
+
+**Le point de sécurité qui prime :** des photos de chantier partent chez un client.
+La page par jeton s'éprouve avec une suite **base**, sous `atlas_app` — les suites
+navigateur traversent la RLS et ne verraient rien (`CLAUDE.md` §5, le lien de
+facture mort en production le 8 août 2026).
+
+---
+
 ## ⏳ UNE RÉPONSE ATTENDUE — le devis PAS ENCORE parti, depuis le planning
 
 **Né le 7 septembre 2026**, en corrigeant le retour au planning
