@@ -669,7 +669,11 @@ async function main() {
     assert.ok(adresse, "le geste ne mène nulle part");
     const reponse = await page.request.get(new URL(adresse!, BASE).toString());
     assert.strictEqual(reponse.status(), 200, `le devis ne se télécharge pas (${reponse.status()})`);
-    assert.strictEqual(reponse.headers()["content-type"], "application/pdf");
+    // **Le type décide autant que la disposition** — 7 septembre 2026 : servi
+    // en `application/pdf`, le lecteur du téléphone s'ouvre et le client croit
+    // avoir gardé son devis. C'est exactement ce que la ligne du dessous
+    // prétendait empêcher, et qu'elle n'empêchait pas seule.
+    assert.strictEqual(reponse.headers()["content-type"], "application/octet-stream");
     assert.ok(
       (reponse.headers()["content-disposition"] ?? "").startsWith("attachment"),
       `le fichier s'ouvre au lieu de descendre : ${reponse.headers()["content-disposition"]}`

@@ -23887,3 +23887,76 @@ en laissant deux absences derrière elle ; le tour suivant trouvait un jour déj
 fermé, ne voyait plus le geste et accusait le code. Il remet désormais le jour à
 l'état ouvert **avant** de commencer et **à la fin** — une suite qui salit la
 base accuse la suivante.
+
+---
+
+## §268. Télécharger, ce n'est pas servir le même fichier avec un autre en-tête
+
+**Le 7 septembre 2026**, capture à l'appui, sous « Voir la facture en PDF » :
+*« quand je clique sur télécharger ça ne la télécharge pas — un clic, une
+action, ça doit la télécharger direct »*.
+
+La route répondait pourtant ce qu'il fallait. `?telecharger=1` posait bien
+`Content-Disposition: attachment`, et **trois contrôles le vérifiaient** :
+`test-facture-au-client-e2e.ts`, `capture-facture.mts`, et la suite du devis du
+client. Tous verts, et tous à côté.
+
+### Ce qui manquait : le TYPE, pas la disposition
+
+| Ce qu'on servait | Ce que Safari en fait |
+|---|---|
+| `application/pdf` + `attachment` | un document **qu'il sait peindre** — il l'ouvre dans son lecteur |
+| `application/zip` + `attachment` | rien à peindre — il l'enregistre |
+
+**Ce n'est pas une supposition sur iOS, c'est un écart déjà consigné dans ce
+dépôt.** Le 7 août 2026, `test-mes-donnees-e2e.ts` a noté que son Safari ignore
+le `filename` de cet en-tête : la sauvegarde arrivait nommée « reglages », le
+nom de la page. Un navigateur qui ne lit pas le nom de l'en-tête n'a aucune
+raison d'en respecter la disposition — et la sauvegarde descendait quand même,
+parce qu'un `.zip` ne s'affiche pas.
+
+D'où la règle, écrite une seule fois (`src/lib/remise-de-fichier.ts`) :
+**télécharger sert `application/octet-stream`.** Le navigateur n'a plus de
+lecteur à proposer, il ne lui reste qu'à enregistrer. C'est ce que
+`src/lib/type-de-fichier.ts` disait déjà de son côté depuis le 23 août — « une
+extension inconnue rend `application/octet-stream` : le navigateur propose alors
+de télécharger plutôt que d'afficher ». La moitié de la règle vivait dans le
+dépôt, et l'autre moitié manquait.
+
+`X-Content-Type-Options: nosniff` est posé sur toutes les routes
+(`next.config.ts`) : aucun navigateur ne peut redevenir malin et deviner le PDF
+derrière ce type générique. **L'aperçu, lui, ne bouge pas** — sans
+`?telecharger=1`, c'est toujours `application/pdf` et `inline`.
+
+### Cinq routes servaient la même règle, et elles avaient déjà divergé
+
+Le paramètre se lisait `=== "1"` dans quatre routes et `.has("telecharger")`
+dans la cinquième (le devis du client) ; le nom accentué n'était correctement
+écrit que par la fiche de chantier — les quatre autres auraient laissé tomber la
+réponse entière sur un accent. Une règle écrite cinq fois se corrige une fois
+sur cinq (`CLAUDE.md` §3). `enTetesDeRemise` et `veutTelecharger` sont désormais
+seuls à en décider, pour la facture et le devis du patron, la fiche de chantier,
+et les deux pages du client.
+
+Le nom y est écrit deux fois — `filename` en ASCII, `filename*=UTF-8''` avec ses
+accents — et les guillemets comme les retours à la ligne en sont **retirés** :
+le nom d'une fiche de chantier vient de ce que le patron a tapé, et une valeur
+d'en-tête qui se referme trop tôt laisse écrire l'en-tête suivant.
+
+### Ce que ce défaut apprend sur les contrôles
+
+**Trois suites regardaient l'en-tête, aucune n'appuyait sur le lien.** Elles
+interrogeaient le serveur par `page.request.get()` — la moitié qu'on venait
+d'écrire, jamais le chemin qu'il emprunte, lui (`CLAUDE.md` §5 quater).
+`test-facture-au-client-e2e.ts` **appuie désormais pour de bon** et exige qu'un
+fichier descende. Cela n'aurait pas suffi à voir ce défaut-ci — Chromium range
+le fichier dans les deux cas —, et c'est pourquoi la même suite refuse
+maintenant tout type affichable sur une adresse de téléchargement.
+
+**Ce qui reste hors de portée d'ici, et il faut le dire :** aucun WebKit n'est
+installable dans l'environnement de l'agent (le miroir de Playwright est
+refusé par le mandataire), et Chromium range le fichier quelle que soit la
+version. **Le défaut ne se reproduit donc pas ici, et le correctif ne s'y
+éprouve pas.** Ce qui s'y prouve : que la règle est appliquée par les cinq
+routes, que l'aperçu n'a pas changé, et qu'un vrai appui fait bien descendre un
+fichier.

@@ -77,7 +77,12 @@ async function main() {
   // existe, il est servi, et c'en est bien un.
   const reponsePdf = await page.request.get(`http://localhost:3000${apercuHref}?telecharger=1`);
   assert.equal(reponsePdf.status(), 200);
-  assert.equal(reponsePdf.headers()["content-type"], "application/pdf");
+  // **Et il est servi À ENREGISTRER, pas à lire** — 7 septembre 2026. Cette
+  // ligne exigeait `application/pdf` : c'est précisément le type qui faisait
+  // que Safari peignait la facture au lieu de la ranger (`CLAUDE.md` §5 bis —
+  // on adapte le contrôle, on ne remet pas le défaut). Que ce soit un vrai PDF
+  // reste prouvé deux lignes plus bas, par ses premiers octets.
+  assert.equal(reponsePdf.headers()["content-type"], "application/octet-stream");
   const octetsPdf = await reponsePdf.body();
   assert.equal(octetsPdf.slice(0, 5).toString("ascii"), "%PDF-");
 

@@ -6,6 +6,7 @@ import { withEntreprise } from "@/server/db/with-entreprise";
 import { devis } from "@/server/db/schema";
 import { genererPdfPourApercu, getOuCreerDevisBrouillon } from "@/server/repositories/devis";
 import { lireObjet } from "@/server/storage";
+import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
 export async function GET(requete: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -22,8 +23,11 @@ export async function GET(requete: Request, { params }: { params: Promise<{ id: 
   // servait le document `inline` dans les deux cas — un navigateur l'affiche
   // alors, et n'offre rien. C'est le geste attendu pour un aperçu ; c'est
   // l'inverse de ce qu'il demandait.
-  const enPieceJointe = new URL(requete.url).searchParams.get("telecharger") === "1";
-  const disposition = enPieceJointe ? "attachment" : "inline";
+  //
+  // **Et servir le PDF comme un PDF ne suffisait pas** (7 septembre 2026) :
+  // Safari le peint alors au lieu de l'enregistrer. Voir
+  // `src/lib/remise-de-fichier.ts`.
+  const enPieceJointe = veutTelecharger(requete.url);
 
   const d = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [row] = await tx.select().from(devis).where(eq(devis.id, id)).limit(1);
@@ -40,10 +44,11 @@ export async function GET(requete: Request, { params }: { params: Promise<{ id: 
     try {
       const octets = await lireObjet(d.pdfStorageKey);
       return new NextResponse(new Uint8Array(octets), {
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `${disposition}; filename="devis-${d.numeroCommercial}.pdf"`,
-        },
+        headers: enTetesDeRemise({
+          telecharger: enPieceJointe,
+          nom: `devis-${d.numeroCommercial}.pdf`,
+          type: "application/pdf",
+        }),
       });
     } catch {
       return NextResponse.json({ error: "Fichier introuvable" }, { status: 404 });
@@ -69,9 +74,10 @@ export async function GET(requete: Request, { params }: { params: Promise<{ id: 
   await getOuCreerDevisBrouillon(ctx, d.chantierId);
   const pdfBytes = await genererPdfPourApercu(ctx, id);
   return new NextResponse(new Uint8Array(pdfBytes), {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `${disposition}; filename="devis-${d.numeroCommercial}-brouillon.pdf"`,
-    },
+    headers: enTetesDeRemise({
+      telecharger: enPieceJointe,
+      nom: `devis-${d.numeroCommercial}-brouillon.pdf`,
+      type: "application/pdf",
+    }),
   });
 }

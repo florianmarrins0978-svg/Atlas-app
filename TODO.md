@@ -9,6 +9,29 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE RÉPONSE ATTENDUE — la facture se télécharge-t-elle, sur SON iPhone ?
+
+**Posée le 7 septembre 2026**, après son *« quand je clique sur télécharger ça
+ne la télécharge pas »*. Le correctif est parti (`ARCHITECTURE.md` §268) : une
+adresse `?telecharger=1` sert désormais un type que le navigateur ne peut
+qu'enregistrer.
+
+**Il ne se prouve pas ici, et cela ne changera pas** : aucun WebKit n'est
+installable dans l'environnement de l'agent, et Chromium rangeait déjà le
+fichier avant le correctif. Ce qui a été éprouvé : la règle sur les cinq
+routes, l'aperçu inchangé, et un appui réel qui fait descendre un fichier.
+
+**Ce qu'il faut lui demander s'il redit que ça ne marche pas** — et une seule
+question suffit : *que se passe-t-il quand tu appuies ?*
+
+| Sa réponse | Ce que ça veut dire |
+|---|---|
+| la facture s'ouvre | le type n'est pas arrivé jusqu'à lui — regarder la version servie (Réglages) |
+| une feuille demande de confirmer | c'est iOS, et c'est le geste normal ; il n'y a rien à corriger |
+| rien du tout | la requête n'aboutit pas — et **l'écran ne dit rien** : la prochaine livraison est de rendre ce refus bavard, pas de deviner |
+
+---
+
 ## ✅ ~~UNE RÉPONSE ATTENDUE — le texte secondaire est-il assez gros ?~~ — **OUI, le 6 septembre 2026**
 
 **Sa réponse, le jour même : « Oui ça me va ».** La TAILLE est codée (jeton,

@@ -6,6 +6,7 @@ import { withEntreprise } from "@/server/db/with-entreprise";
 import { factures } from "@/server/db/schema";
 import { genererPdfFacturePourApercu } from "@/server/repositories/factures";
 import { lireObjet } from "@/server/storage";
+import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
 // Sert la facture en PDF. Calquée sur la route du devis, et pour la même
 // raison : une facture émise est immuable, donc on rend le fichier archivé au
@@ -18,11 +19,17 @@ import { lireObjet } from "@/server/storage";
 // non le seul attribut `download` du lien : celui-ci est ignoré par certaines
 // versions d'iOS, et le PDF s'ouvrait alors dans un onglet, sans rien ranger.
 //
+// **Et la disposition ne suffisait pas non plus** — son constat du 7 septembre
+// 2026 : « quand je clique sur télécharger ça ne la télécharge pas ». Un PDF
+// servi comme un PDF reste un document que Safari sait peindre. Ce qui range
+// vraiment le fichier est dans `src/lib/remise-de-fichier.ts`, avec ses
+// raisons.
+//
 // **Et le nom du fichier porte le numéro** — « F2026-0001.pdf ». Il en aura des
 // centaines dans le même dossier ; « facture (17).pdf » ne se retrouve pas.
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const telecharger = new URL(req.url).searchParams.get("telecharger") === "1";
+  const telecharger = veutTelecharger(req.url);
   const ctx = await getCurrentCtx();
 
   // Le rôle referme ce que la barre du bas ne montre plus : une adresse d'API
@@ -42,10 +49,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     try {
       const octets = await lireObjet(f.pdfStorageKey);
       return new NextResponse(new Uint8Array(octets), {
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": remise(telecharger, `${f.numeroCommercial}.pdf`),
-        },
+        headers: enTetesDeRemise({
+          telecharger,
+          nom: `${f.numeroCommercial}.pdf`,
+          type: "application/pdf",
+        }),
       });
     } catch {
       return NextResponse.json({ error: "Fichier introuvable" }, { status: 404 });
@@ -54,17 +62,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const pdfBytes = await genererPdfFacturePourApercu(ctx, id);
   return new NextResponse(new Uint8Array(pdfBytes), {
-    headers: {
-      "Content-Type": "application/pdf",
-      // Un brouillon le dit dans son nom : deux fichiers du même numéro
-      // finiraient par cohabiter dans son dossier, et rien ne dirait lequel
-      // le client a reçu.
-      "Content-Disposition": remise(telecharger, `${f.numeroCommercial}-brouillon.pdf`),
-    },
+    // Un brouillon le dit dans son nom : deux fichiers du même numéro
+    // finiraient par cohabiter dans son dossier, et rien ne dirait lequel le
+    // client a reçu.
+    headers: enTetesDeRemise({
+      telecharger,
+      nom: `${f.numeroCommercial}-brouillon.pdf`,
+      type: "application/pdf",
+    }),
   });
-}
-
-/** `attachment` range le fichier, `inline` l'ouvre. Le nom est le même dans les deux cas. */
-function remise(telecharger: boolean, nom: string): string {
-  return `${telecharger ? "attachment" : "inline"}; filename="${nom}"`;
 }

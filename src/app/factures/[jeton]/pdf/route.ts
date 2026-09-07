@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { pdfFactureParJeton } from "@/server/repositories/envois-factures";
+import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
 // La facture, ouverte par le client depuis le lien que le patron lui a envoyé
 // — sans compte, sans application.
@@ -29,12 +30,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ jeton: s
   // facture ». C'est l'en-tête qui décide, pas seulement l'attribut `download`
   // du lien : iOS l'ignore souvent, et c'est alors `Content-Disposition` qui
   // tranche (c'est ce que fait déjà l'écran du patron). « Voir » reste `inline`.
-  const telecharger = new URL(req.url).searchParams.get("telecharger") === "1";
+  //
+  // **Et le type décide autant que la disposition** — 7 septembre 2026 : servi
+  // en `application/pdf`, Safari le peint au lieu de l'enregistrer
+  // (`src/lib/remise-de-fichier.ts`).
+  const telecharger = veutTelecharger(req.url);
 
   return new NextResponse(new Uint8Array(fichier.octets), {
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `${telecharger ? "attachment" : "inline"}; filename="${fichier.nom}"`,
+      ...enTetesDeRemise({ telecharger, nom: fichier.nom, type: "application/pdf" }),
       // Une facture n'a rien à faire dans un cache partagé ni dans un index.
       "Cache-Control": "no-store",
       "X-Robots-Tag": "noindex, nofollow",

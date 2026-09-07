@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
@@ -253,6 +254,32 @@ async function main() {
     `${envoi.rows[0].numero_commercial}.pdf`,
     `Nom de fichier inexploitable : « ${nomPropose} » pour la facture ${envoi.rows[0].numero_commercial}`
   );
+  // **CE QUE LE SERVEUR SERT, ET NON CE QU'IL ANNONCE — 7 septembre 2026.**
+  //
+  // Le patron : *« quand je clique sur télécharger ça ne la télécharge pas »*.
+  // Cette suite était pourtant verte : elle lisait `attachment` et s'arrêtait
+  // là. Servi en `application/pdf`, un PDF reste un document que Safari sait
+  // peindre — il l'ouvrait dans son lecteur, et rien n'était enregistré. La
+  // règle est dans `src/lib/remise-de-fichier.ts`, ce contrôle en tient l'effet.
+  const type = range.headers()["content-type"] ?? "";
+  assert.ok(
+    !/^application\/pdf/.test(type),
+    `Le serveur sert « ${type} » : Safari a un lecteur pour ce type et affichera la facture au lieu de l'enregistrer.`
+  );
+
+  // **ET LE GESTE LUI-MÊME, APPUYÉ POUR DE BON.** Tout ce qui précède interroge
+  // le serveur sans jamais toucher le lien : c'est la moitié qu'on a écrite,
+  // pas celle qu'il emprunte (`CLAUDE.md` §5 quater). Un appui réel, et un
+  // fichier qui descend — sans quoi le contrôle ne dit rien du seul geste qui
+  // compte.
+  const fichierQuiDescend = page.waitForEvent("download", { timeout: 30_000 });
+  await telechargement.click();
+  const descendu = await fichierQuiDescend.catch(() => null);
+  assert.ok(descendu, "L'appui sur « Télécharger » n'a fait descendre aucun fichier.");
+  const octets = readFileSync(await descendu.path()).length;
+  assert.ok(octets > 0, "Le fichier téléchargé est vide.");
+  console.log(`  ✓ l'appui fait descendre ${descendu.suggestedFilename()} (${octets} octets)`);
+
   // Et l'aperçu continue de s'ouvrir : la nouveauté s'ajoute, elle ne remplace pas.
   const apercu = await page.request.get(`${BASE}${cheminPdf.replace("?telecharger=1", "")}`);
   assert.ok(

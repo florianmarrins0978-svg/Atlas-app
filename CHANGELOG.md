@@ -6,6 +6,25 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-07
+### La facture se télécharge pour de bon
+
+Sous « Voir la facture en PDF », toucher « Télécharger » ouvrait la facture dans
+le lecteur du téléphone au lieu de l'enregistrer : le fichier était servi comme
+un PDF, c'est-à-dire comme un document que Safari sait peindre. Une adresse de
+téléchargement sert désormais un type que le navigateur ne peut qu'enregistrer
+(`ARCHITECTURE.md` §268). L'aperçu, lui, s'ouvre comme avant.
+
+Vaut aussi pour le devis, la fiche de chantier, et les deux pages du client —
+les cinq routes lisaient la même règle chacune à sa façon, et deux d'entre elles
+auraient laissé tomber la réponse entière sur un nom de chantier accentué.
+
+**NON REPRODUIT ICI, et donc non éprouvé ici :** aucun WebKit n'est installable
+dans l'environnement de l'agent, et Chromium range le fichier dans les deux cas.
+Le diagnostic s'appuie sur un écart déjà consigné le 7 août 2026 sur son iPhone
+(`test-mes-donnees-e2e.ts`). À confirmer sur son téléphone.
+
+---
 ## 2026-09-06
 ### Fermer un jour depuis le planning, en un appui
 

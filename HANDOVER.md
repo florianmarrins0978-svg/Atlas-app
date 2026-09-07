@@ -4,11 +4,49 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-06 · `main`
+**Point de reprise :** 2026-09-07 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)
+## Dernier lot — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
+
+**Document du lot :** `docs/lot-telecharger-la-facture.md`.
+**Décisions :** `ARCHITECTURE.md` §268.
+
+**Ce qui a changé, en une ligne :** une adresse `?telecharger=1` sert désormais
+`application/octet-stream` au lieu de `application/pdf`. Un navigateur qui a un
+lecteur pour le type qu'on lui sert **s'en sert** — `attachment` ne l'en empêche
+pas, et c'est ce qui ouvrait la facture au lieu de l'enregistrer.
+
+**⚠ CE LOT N'A PAS PU ÊTRE ÉPROUVÉ LÀ OÙ LE DÉFAUT SE VOIT.** Le mandataire de
+l'agent refuse le miroir de Playwright : pas de WebKit, donc pas de moteur de
+Safari. Chromium, lui, rangeait déjà le fichier **avant** le correctif — il
+range toujours après. Ce qui est prouvé ici : la règle s'applique aux cinq
+routes, l'aperçu n'a pas bougé, et un vrai appui fait descendre un fichier.
+**Le seul verdict qui compte est le sien, sur son iPhone.**
+
+**Le diagnostic ne sort pas de nulle part**, et c'est ce qui le rend crédible :
+le 7 août 2026, `scripts/test-mes-donnees-e2e.ts` avait déjà consigné que son
+Safari ignore le `filename` de `Content-Disposition` (la sauvegarde arrivait
+nommée « reglages »). Un navigateur qui ne lit pas le nom de l'en-tête n'a
+aucune raison d'en respecter la disposition ; la sauvegarde descendait quand
+même parce qu'un `.zip` ne s'affiche pas. Le PDF, si.
+
+**S'il dit que ça ne marche toujours pas**, la question suivante n'est pas « as-tu
+rechargé » mais : *que se passe-t-il exactement quand tu appuies ?* Trois
+réponses, trois pistes différentes — la facture s'ouvre (le type n'est pas
+arrivé jusqu'à lui : version servie), une feuille demande de confirmer (c'est
+iOS, et c'est normal), ou rien du tout (alors la requête n'aboutit pas, et il
+faut rendre le refus bavard — l'écran n'affiche AUCUN message aujourd'hui).
+
+**Ce qui a été refusé, et pourquoi :** faire passer le téléchargement par du
+JavaScript (`fetch` + `blob`) pour pouvoir afficher l'erreur. Cela remplacerait
+un chemin natif qui fonctionne partout ailleurs par un chemin qui dépend de ce
+que ce même Safari fait des adresses `blob:` — soigner un doute avec un second
+doute.
+
+---
+## Lot précédent — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)
 
 **Document du lot :** `docs/lot-pas-la-ce-jour.md`.
 **Planche :** `appli/pas-la-ce-jour.html`.

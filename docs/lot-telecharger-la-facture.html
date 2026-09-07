@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « Quand je clique sur télécharger, ça ne la télécharge pas »</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="-quand-je-clique-sur-télécharger-ça-ne-la-télécharge-pas-">« Quand je clique sur télécharger, ça ne la télécharge pas »</h1>
+<p><strong>7 septembre 2026.</strong> Votre message du matin, sous votre facture F2026-000001.</p>
+<hr>
+<h2 id="ce-qui-se-passait">Ce qui se passait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le lien <strong>était</strong> juste, et le serveur répondait bien « range ce fichier ». Ce qui manquait, c'est ce qu'on lui disait du fichier : on l'annonçait comme un <strong>PDF</strong>. Or un PDF, Safari sait le peindre — alors il le peint, et il n'enregistre rien. Le geste paraît sans effet : il montre au lieu de ranger.</p>
+<p>C'est réparé : une adresse de téléchargement annonce désormais un fichier que le navigateur <strong>ne sait pas afficher</strong>. Il ne lui reste qu'à l'enregistrer.</p>
+<p>L'aperçu (« Voir la facture en PDF ») n'a pas changé d'un pouce.</p>
+<hr>
+<h2 id="ce-que-je-ne-peux-pas-vous-promettre-et-je-préfère-lécrire">Ce que je ne peux pas vous promettre, et je préfère l'écrire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Je n'ai pas pu reproduire votre panne, et je n'ai pas pu éprouver le correctif là où il compte.</strong> Le moteur de Safari ne s'installe pas sur ma machine — le réseau me le refuse. Chromium, lui, rangeait déjà le fichier <strong>avant</strong> la correction : il ne pouvait pas voir le défaut, et il ne peut pas prouver qu'il est parti.</p>
+<p><strong>Ce sur quoi je m'appuie n'est pas une intuition.</strong> Le 7 août, sur votre iPhone, votre sauvegarde était arrivée sous le nom « reglages », sans extension : votre Safari ne lit pas le nom que le serveur lui donne. Un navigateur qui ignore le nom n'a aucune raison de respecter la consigne « enregistre-le » — et ce jour-là le fichier descendait quand même, parce qu'un <code>.zip</code> ne s'affiche pas. Un PDF, si.</p>
+<p><strong>Donc c'est vous qui tranchez.</strong> Rechargez la page de la facture, appuyez sur « Télécharger ».</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que vous voyez</th>
+<th>Ce que ça veut dire</th>
+</tr></thead><tbody>
+<tr>
+<td>le fichier s'enregistre (une feuille peut demander de confirmer — c'est iOS)</td>
+<td><strong>c'est réglé</strong></td>
+</tr>
+<tr>
+<td>la facture s'ouvre encore</td>
+<td>dites-le-moi : la correction n'est pas arrivée jusqu'à votre espace</td>
+</tr>
+<tr>
+<td>toujours rien du tout</td>
+<td>dites-le-moi aussi : ce n'est pas la même panne, et l'écran ne vous dit rien — c'est ce qu'il faudra corriger d'abord</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-qui-a-été-corrigé-en-même-temps-sans-que-vous-layez-demandé">Ce qui a été corrigé en même temps, sans que vous l'ayez demandé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Cinq écrans servaient ce même téléchargement, chacun à sa façon — et ils avaient déjà pris des chemins différents.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>la facture et le devis</strong> (votre écran)</td>
+<td>même défaut, même correction</td>
+</tr>
+<tr>
+<td><strong>la fiche de chantier</strong></td>
+<td>même défaut ; c'était la seule à savoir écrire un nom accentué</td>
+</tr>
+<tr>
+<td><strong>la page de votre client</strong> (devis, facture)</td>
+<td>même défaut : il croyait garder son devis alors qu'il ne faisait que le regarder</td>
+</tr>
+<tr>
+<td><strong>un nom de chantier avec un accent</strong></td>
+<td>faisait tomber la réponse entière sur quatre routes sur cinq — un fichier qui n'arrive pas du tout</td>
+</tr>
+</tbody></table></div>
+<p>La règle vit maintenant à <strong>un seul endroit</strong> (<code>src/lib/remise-de-fichier.ts</code>). Écrite cinq fois, elle se corrigeait une fois sur cinq.</p>
+<hr>
+<h2 id="ce-que-jai-refusé-de-faire-et-ce-que-ça-vous-aurait-coûté">Ce que j'ai refusé de faire, et ce que ça vous aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Faire passer le téléchargement par du code, pour pouvoir afficher une erreur.</strong> C'était tentant : aujourd'hui, si quelque chose se refuse, votre écran ne dit <strong>rien</strong> du tout. Mais cela remplacerait un mécanisme natif — qui marche partout ailleurs — par un mécanisme qui dépend de ce que ce même Safari fait d'un fichier fabriqué dans la page. On soignerait un doute avec un second doute, et sur l'écran qui engage votre comptabilité.</p>
+<p>Si vous me dites qu'il ne se passe toujours <strong>rien</strong>, c'est ce qu'il faudra faire — mais dans ce sens-là : d'abord rendre le refus visible, puis corriger ce qu'il désigne.</p>
+<hr>
+<h2 id="ce-que-ce-défaut-apprend-sur-mes-contrôles">Ce que ce défaut apprend sur mes contrôles</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Trois contrôles vérifiaient ce téléchargement. Les trois étaient verts.</strong> Ils interrogeaient le serveur sans jamais appuyer sur le lien — la moitié que je venais d'écrire, jamais le chemin que vous prenez, vous.</p>
+<p>Deux choses ont changé :</p>
+<ul>
+<li>la suite de la facture <strong>appuie pour de bon</strong> sur « Télécharger », et exige qu'un fichier descende ;</li>
+<li>elle refuse désormais qu'une adresse de téléchargement annonce un type que le navigateur sait afficher — c'est le défaut du jour, et il ne peut plus repasser en silence.</li>
+</ul>
+<p>Un huitième contrôle, sans base ni réseau, tient la règle elle-même (<code>scripts/test-remise-de-fichier.ts</code>). Je l'ai confronté à la version qui vous a gêné : il rougit dessus.</p>
+<hr>
+<h2 id="les-chiffres">Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, construction</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td>✅ <strong>toutes</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>en cours de rejeu</strong> — le serveur d'essai est mort en mémoire au bout de deux suites, panne connue de ma machine (<code>scripts/jouer-suites-par-groupes.mjs</code>, écrit pour ça le 30 août)</td>
+</tr>
+</tbody></table></div>
+<p>Ce tableau sera complété dès le rejeu terminé — un chiffre annoncé avant d'être mesuré ne vaut rien.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Qui peut trancher</th>
+</tr></thead><tbody>
+<tr>
+<td>Est-ce que ça télécharge, sur votre iPhone ?</td>
+<td><strong>vous</strong>, en une minute</td>
+</tr>
+<tr>
+<td>L'écran ne dit rien quand un téléchargement se refuse</td>
+<td>moi, si votre réponse est « toujours rien »</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

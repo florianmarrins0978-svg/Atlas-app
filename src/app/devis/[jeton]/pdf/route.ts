@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { pdfDevisParJeton } from "@/server/repositories/envois-devis";
+import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
 // Le devis complet, ouvert par le client depuis sa page — sans compte.
 //
@@ -23,9 +24,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ jeton: 
    * regarder, et il n'en reste rien une fois l'onglet fermé.
    *
    * L'attribut `download` d'un lien ne l'aurait pas fait : les navigateurs de
-   * téléphone l'ignorent largement. Cela se décide ici, dans l'en-tête.
+   * téléphone l'ignorent largement. Cela se décide ici, dans l'en-tête — et
+   * dans le TYPE servi, sans quoi Safari peint le PDF au lieu de le ranger
+   * (7 septembre 2026, `src/lib/remise-de-fichier.ts`).
    */
-  const telecharger = new URL(_req.url).searchParams.has("telecharger");
+  const telecharger = veutTelecharger(_req.url);
 
   if (!fichier) {
     // **Jamais de JSON brut à un client.**
@@ -44,8 +47,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ jeton: 
 
   return new NextResponse(new Uint8Array(fichier.octets), {
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `${telecharger ? "attachment" : "inline"}; filename="${fichier.nom}"`,
+      ...enTetesDeRemise({ telecharger, nom: fichier.nom, type: "application/pdf" }),
       // Un devis n'a rien à faire dans un cache partagé ni dans un index.
       "Cache-Control": "no-store",
       "X-Robots-Tag": "noindex, nofollow",

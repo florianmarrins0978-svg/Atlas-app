@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-06 · branche `main`
+**Dernière mise à jour :** 2026-09-07 · branche `main`
 · dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
 l’affichage)
 
