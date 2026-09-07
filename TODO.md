@@ -165,6 +165,16 @@ le **compte rendu de passage** avec le même modèle : à deux, ce troisième
 document serait resté sur le message d'Atlas pendant que les deux autres
 portaient sa voix. La planche en montre donc trois, et il l'a validé.
 
+**SA CORRECTION DU MÊME JOUR, et elle retire une boîte sur deux :** *« pas
+besoin de répéter, il faut juste que l'utilisateur voie le message final qu'il
+peut modifier entièrement »*. L'écran ne montre plus qu'**une case par
+document** — celle qui part, mots dorés déjà remplis —, un avertissement en
+tête, et **deux mots verrouillés** : le lien **et le mot qui nomme le document**.
+
+**Il appelle le troisième document « fiche client ».** Il s'appelle *compte
+rendu de passage* dans le code (`composerMessageEntretien`) et la planche garde
+ce nom : le renommer se décide, ça ne se suppose pas.
+
 **Ce que ça coûte en base, à ne pas découvrir en codant :**
 `entreprises.message_client` est **une seule colonne**. Il en faut trois — donc
 une migration, et **l'ancienne valeur devient celle du devis** : la perdre

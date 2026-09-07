@@ -300,9 +300,20 @@ td b{color:var(--encre)}
   </table>
   <p><b>Les mots dorés restent</b>, comme vous l'avez demandé — le prénom, le
   numéro, l'échéance, votre entreprise se remplissent tout seuls. Ils se
-  modifient et se retirent, à une exception : <b>le lien</b>. Sans lui, votre
-  client ne peut ni ouvrir son document ni choisir sa date, et votre planning ne
-  reçoit rien ; l'application refuse déjà d'enregistrer un message sans lui.</p>
+  modifient et se retirent, à <b>deux exceptions</b>, encadrées d'or dans
+  l'écran : <b>le lien</b> — sans lui votre client n'ouvre rien et votre planning
+  ne reçoit aucune date, l'application refuse déjà d'enregistrer un message sans
+  lui — et <b>le mot qui nomme le document</b>, votre consigne du 7 septembre :
+  un message qui ne dit plus « devis » laisse le client deviner ce qu'il vient
+  de recevoir.</p>
+  <p><b>Une seule case par document, et c'est le message final.</b> Votre
+  correction : chaque message était dessiné deux fois — une fois avec les mots
+  nommés (« le prénom »), une fois rempli (« Mme Larousse »). Six boîtes
+  presque identiques à la suite : on cherche laquelle se modifie, et l'écran
+  double de longueur sans rien dire de plus. Il ne reste que celle qui part.</p>
+  <p><b>Un mot sur le troisième document :</b> vous l'appelez « fiche client ».
+  Dans l'application il s'appelle <b>compte rendu de passage</b>, et c'est ce
+  nom qui est écrit ici — le renommer se décide, ça ne se suppose pas.</p>
   <p><b>Et l'échéance emporte ses mots avec elle :</b> sur un devis, le
   « , à régler avant le … » disparaît en entier. Un trou qui laisserait
   « Voici votre devis , . » serait pire que pas d'échéance du tout. Ça se voit
@@ -490,18 +501,23 @@ function commun(phrase){
 }
 
 /* Ses trois phrases d'aujourd'hui, telles qu'elles partent — mot pour mot
-   depuis `phraseDuDocument`, le tiret retiré le 25 août compris. */
-var PHRASE_DEVIS = "Voici votre devis. Vous pouvez le consulter et choisir votre date " +
+   depuis `phraseDuDocument`, le tiret retiré le 25 août compris.
+
+   **Le mot qui NOMME le document est un jeton**, et pas du texte ordinaire :
+   sa consigne du 7 septembre — *« le lien, les mots devis, facture et fiche
+   client ne peuvent être enlevés »*. Un message qui ne dit plus de quoi il
+   parle laisse le client deviner ce qu'il vient de recevoir. */
+var PHRASE_DEVIS = "Voici votre [document]. Vous pouvez le consulter et choisir votre date " +
   "d'intervention. Et si aucune des dates proposées ne vous convient, vous pouvez en " +
   "proposer une autre. Tout se fait sur cette page :";
-var PHRASE_FACTURE = "Voici votre facture [numero], à régler avant le [echeance]. " +
+var PHRASE_FACTURE = "Voici votre [document] [numero], à régler avant le [echeance]. " +
   "Vous pouvez la consulter et la télécharger ici :";
-var PHRASE_PASSAGE = "Voici le compte rendu de mon passage chez vous :";
+var PHRASE_PASSAGE = "Voici le [document] de mon passage chez vous :";
 
 var MESSAGES = [
-  {clef:"devis", titre:"Quand j'envoie un devis", corps: commun(PHRASE_DEVIS)},
-  {clef:"facture", titre:"Quand j'envoie une facture", corps: commun(PHRASE_FACTURE)},
-  {clef:"passage", titre:"Quand j'envoie un compte rendu", corps: commun(PHRASE_PASSAGE)}
+  {clef:"devis", titre:"Ce que j'envoie avec un devis", corps: commun(PHRASE_DEVIS)},
+  {clef:"facture", titre:"Ce que j'envoie avec une facture", corps: commun(PHRASE_FACTURE)},
+  {clef:"passage", titre:"Ce que j'envoie avec un compte rendu", corps: commun(PHRASE_PASSAGE)}
 ];
 
 /* L'existant : un seul message, et la phrase du document y est POSÉE par
@@ -615,13 +631,17 @@ function blocCoupe(){
   … » disparaît en entier. Un trou qui laisserait « Voici votre devis , . »
   serait pire que pas de trou du tout.
 */
-function remplir(texte, doc){
+function remplir(texte, doc, verrouiller){
   var mot = doc === "devis" ? "devis" : doc === "facture" ? "facture" : "compte rendu";
+  /* Les deux seuls mots qu'on ne peut pas retirer portent le cadre d'or : le
+     lien, et celui qui nomme le document. Les autres sont dorés parce qu'ils
+     se remplissent seuls — pas parce qu'ils sont verrouillés. */
+  var v = verrouiller ? " verrou" : "";
   var t = ech(texte)
     .replace("[prenom]", '<span class="jeton">Mme Larousse</span>')
-    .replace("[document]", '<span class="jeton">' + mot + '</span>')
+    .replace("[document]", '<span class="jeton' + v + '">' + mot + '</span>')
     .replace("[numero]", '<span class="jeton">' + (doc === "devis" ? "D" : "F") + AN + '-0008</span>')
-    .replace("[lien]", '<span class="jeton">https://…</span>')
+    .replace("[lien]", '<span class="jeton' + v + '">https://…</span>')
     .replace("[entreprise]", "Eden Nature");
   /* L'échéance n'existe que sur une facture, et elle emporte SES MOTS avec
      elle : « Voici votre devis , . » serait pire que pas d'échéance du tout. */
@@ -663,23 +683,28 @@ function blocMessage(){
       }).join("") + '</div></div>';
   }
 
-  /* SA DÉCISION : trois messages entiers, les mots dorés gardés, le lien seul
-     verrouillé. Chacun porte SON aperçu — un aperçu posé loin de son message
-     oblige à faire l'aller-retour pour savoir lequel il montre. */
+  /*
+    SA CORRECTION DU 7 SEPTEMBRE, ET ELLE RETIRE UNE BOÎTE SUR DEUX :
+    *« pas besoin de répéter, il faut juste que l'utilisateur voie le message
+    final qu'il peut modifier entièrement »*.
+
+    Chaque message était dessiné DEUX FOIS — une fois avec les mots nommés
+    (« le prénom »), une fois rempli (« Mme Larousse »). Six boîtes presque
+    identiques à la suite : on cherche laquelle se modifie, et l'écran double
+    de longueur pour ne rien dire de plus.
+
+    Il ne reste donc QUE le message final, celui qui part. L'avertissement du
+    haut dit ce que le doré veut dire, une fois pour les trois.
+  */
   var h = '<div class="bloc"><p class="inter">Mon message au client</p>' +
-    /* Trois lignes suffisent : sa règle du 25 août, « le moins de mots
-       possible ». Ce qui reste explique le seul verrou — sans quoi il se
-       lirait comme une panne. */
-    '<p class="note" style="margin:0 0 14px">Un message par document, déjà écrit. Tout se ' +
-    'modifie, même les mots dorés. <b style="color:var(--encre);font-weight:400">Seul le lien ' +
-    'ne se retire pas</b> : sans lui, votre client ne peut rien ouvrir.</p>';
+    '<p class="note" style="margin:0 0 14px">Les mots en doré se remplissent tout seuls. ' +
+    '<b style="color:var(--encre);font-weight:400">Le lien et le mot du document — devis, ' +
+    'facture, compte rendu — ne peuvent pas être retirés.</b> Tout le reste se modifie.</p>';
 
   for (var i = 0; i < MESSAGES.length; i++) {
     var m = MESSAGES[i];
     h += '<p class="inter" style="margin:' + (i ? "22px" : "0") + ' 0 8px">' + ech(m.titre) + '</p>' +
-      '<div class="cadre">' + cadreEcrit(m.corps, true) + '</div>' +
-      '<div class="apercu" style="margin-top:8px"><div class="tt">Ce que votre client recevra' +
-      '</div><div class="cp">' + remplir(m.corps, m.clef) + '</div></div>';
+      '<div class="cadre">' + remplir(m.corps, m.clef, true) + '</div>';
   }
   return h + '</div>';
 }
