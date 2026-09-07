@@ -24772,3 +24772,53 @@ qu'il vient d'envoyer, pendant que le devis se prépare, pour qu'il puisse la
 retirer s'il s'est trompé. Cela touche la chaîne de préparation — retirer la
 note doit l'interrompre — et ne se code pas à l'aveugle : c'est le prochain lot,
 et il se dessine avant de s'écrire (`CLAUDE.md` §3 bis).
+
+## §284. La barre du bas publie sa hauteur — le chiffre écrit avait vingt pixels de retard
+
+**Sa capture du 7 septembre 2026 :** *« Problème, il y a un trou entre "1 en
+attente du client" et le menu du bas. »*
+
+**Mesuré, pas estimé : 20,3 px.** Le tiroir du planning se pose à
+`bottom: var(--atlas-barre)`. La variable valait `4.25rem` — 68 px écrits à la
+main — pour une barre qui en mesure **47,75**. Le tiroir obéissait donc à la
+variable, pas à la barre, et flottait de la différence.
+
+### Le défaut n'est pas le chiffre : c'est qu'il soit écrit
+
+`globals.css` portait déjà la règle, **deux lignes plus bas**, à propos du
+bandeau du banc :
+
+> Elle valait 40 px, écrits à la main dans `layout.tsx`, pour un bandeau qui en
+> mesure 48. […] Un élément qui change de taille ne se mesure pas dans un
+> fichier.
+
+Ce bandeau publie donc la sienne (`BandeauBanc.tsx`, `ResizeObserver`). La barre
+du bas, elle, ne le faisait pas — elle a maigri au fil des lots, et la variable
+est restée où elle était. Corriger `4.25rem` en `3rem` aurait refermé le trou du
+jour et préparé le suivant.
+
+`AtlasBottomNav` publie donc sa hauteur réelle, par le même mécanisme et pour la
+même raison. La valeur du fichier reste : elle sert au **premier rendu**, avant
+que JavaScript ait mesuré quoi que ce soit — un contenu qui passerait sous la
+barre pendant deux images se verrait. Et elle est **rendue à la feuille de style
+au démontage** : sur un écran sans barre, une hauteur survivante volerait sa
+place au contenu pour toujours.
+
+### Ce que la correction change ailleurs, et qui a été vérifié
+
+`--atlas-barre` sert à trois choses : la réserve que le contenu garde sous lui
+(`.atlas-contenu`), la hauteur qu'un écran retranche, et l'appui du tiroir.
+Toutes trois gagnent 20 px — c'est-à-dire cessent d'en perdre. Rejouées :
+`test-rien-de-recouvert-e2e`, `test-aucun-texte-coupe-e2e`,
+`test-barre-basse-e2e`, `test-planning-e2e` — vertes.
+
+### Le contrôle éprouve la conséquence, pas le mécanisme
+
+`scripts/test-hauteur-barre-basse-e2e.ts` vérifie que la variable annonce la
+hauteur réelle, et que le tiroir **touche** la barre. Il survivrait à un
+changement de dessin, et il rougirait le jour où quelqu'un remettrait un chiffre
+en dur.
+
+**Et il sait échouer** : son dernier cas repose les 68 px d'avant et exige de
+voir le trou revenir. Sans ce cas, une barre absente ou un tiroir resté fermé
+rendraient du vert sans avoir rien regardé.

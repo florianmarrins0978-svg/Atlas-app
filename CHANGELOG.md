@@ -7,6 +7,14 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-07
+### Le trou entre le tiroir du planning et le menu du bas
+
+**20,3 px de vide, mesurés.** `--atlas-barre` valait 68 px écrits à la main
+pour une barre qui en mesure 47,75 : le tiroir obéissait à la variable, pas à
+la barre. La barre publie désormais sa hauteur réelle, comme le bandeau du banc
+le fait depuis le 31 août — corriger le chiffre aurait refermé le trou du jour
+et préparé le suivant (`ARCHITECTURE.md` §284).
+
 ### La note vocale se glisse vers la gauche
 
 *« Je veux la déplacer vers la gauche pour laisser apparaître le

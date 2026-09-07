@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { colors } from "@/lib/design-tokens";
 import { cheminAutorise, type Role } from "@/lib/acces-roles";
@@ -84,6 +85,49 @@ const ONGLETS = [
  */
 export default function AtlasBottomNav({ role = null }: { role?: Role | null }) {
   const pathname = usePathname();
+
+  /**
+   * LA BARRE PUBLIE SA HAUTEUR RÉELLE — sa capture du 7 septembre 2026 :
+   * *« il y a un trou entre “1 en attente du client” et le menu du bas »*.
+   *
+   * **Mesuré : 20,3 px de vide.** `--atlas-barre` valait `4.25rem` — 68 px
+   * écrits à la main — pour une barre qui en mesure 47,75. Le tiroir du
+   * planning se pose à `bottom: var(--atlas-barre)` : il flottait donc vingt
+   * pixels au-dessus d'elle, et le trou se voyait sur son écran.
+   *
+   * **Le défaut n'est pas le chiffre, c'est qu'il soit écrit.** Le fichier
+   * qui le porte dit déjà la règle, deux lignes plus bas, pour le bandeau du
+   * banc : *« un élément qui change de taille ne se mesure pas dans un
+   * fichier »*. Ce bandeau publie la sienne (`BandeauBanc.tsx`) ; la barre
+   * ne le faisait pas, et elle a maigri sans que la variable suive.
+   *
+   * **La valeur du fichier reste**, et c'est délibéré : elle sert au premier
+   * rendu, avant que JavaScript ait mesuré quoi que ce soit. Un contenu qui
+   * passerait sous la barre pendant deux images se verrait.
+   */
+  const cadre = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const racine = document.documentElement;
+    // **Rendue à la feuille de style au démontage**, jamais laissée derrière :
+    // sur un écran sans barre, une hauteur survivante volerait sa place au
+    // contenu pour toujours — c'est la « valeur provisoire qui survit ».
+    const rendre = () => racine.style.removeProperty("--atlas-barre");
+    const noeud = cadre.current;
+    if (!noeud) {
+      rendre();
+      return;
+    }
+    const publier = () =>
+      racine.style.setProperty("--atlas-barre", `${Math.round(noeud.getBoundingClientRect().height)}px`);
+    publier();
+    const oeil = new ResizeObserver(publier);
+    oeil.observe(noeud);
+    return () => {
+      oeil.disconnect();
+      rendre();
+    };
+  }, [pathname, role]);
+
   // **Le second garde, et c'est le seul qui tienne quand on navigue en
   // appuyant — 5 septembre 2026.** La mise en page racine décide déjà de ne pas
   // rendre cette barre sur le devis seul (`estEcranSansNavigation`, appelée au
@@ -94,6 +138,7 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
   //
   // La MÊME fonction sert des deux côtés : deux copies de cette liste ont déjà
   // divergé une fois (`CLAUDE.md` §3, le 12 août 2026).
+
   if (estEcranSansNavigation(pathname)) return null;
   const onglets = role === null ? ONGLETS : ONGLETS.filter((o) => cheminAutorise(role, o.href));
   const indexActif = onglets.reduce(
@@ -105,6 +150,7 @@ export default function AtlasBottomNav({ role = null }: { role?: Role | null }) 
 
   return (
     <nav
+      ref={cadre}
       className="atlas-nav-basse fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md"
       aria-label="Navigation principale"
       style={{ backgroundColor: colors.cream, borderTop: `1px solid ${colors.line}` }}
