@@ -172,7 +172,17 @@ async function main() {
       `/chantiers/${chantierId}/devis-complet`,
       `la liste l'envoie sur « ${destination} » — c'est la panne qu'il décrit`
     );
-    await ligne.click();
+    // **ON APPUIE SUR SON NOM, pas au milieu de la ligne.**
+    //
+    // Payé le 7 septembre 2026 : le clic tombait au centre de l'ancre, et le
+    // centre, sur un chantier né d'une dictée, c'est « Adresse non renseignée »
+    // — une mention qui mène EXPRÈS aux coordonnées depuis sa demande du
+    // 17 août (`ListeChantiers.tsx`). La suite accusait donc l'application
+    // d'une panne qu'elle avait fabriquée en visant le mauvais endroit.
+    //
+    // Lui appuie sur le nom de sa cliente : c'est ce que dit sa phrase — *« j'ai
+    // cliqué sur Madame Lucie »*. On vise donc le nom.
+    await ligne.locator("h2").click();
     await page2.waitForURL(/\/devis-complet$/, { timeout: 60_000 });
   });
 

@@ -30,6 +30,30 @@ planning, ou rester sur la fiche client ?*
 
 ---
 
+## ⚠ SEPT SUITES ROUGES SUR `main` — relevées le 7 septembre 2026
+
+Rejeu complet des 131 suites navigateur, dans le décor de la batterie (IA
+éteinte). **Trois rouges corrigés le jour même** — `allure-de-mes-devis`
+réclamait dix polices quand il en a fait retirer quatre, `apercu-colle`
+cherchait une rubrique coupée en quatre, `madame-lucie` appuyait au centre de
+la ligne, c'est-à-dire sur « Adresse non renseignée », qui mène EXPRÈS ailleurs.
+
+**Ce qui reste, et qui n'appartient à aucun lot de cette session :**
+
+| Suite | Ce qu'elle dit | Première piste |
+|---|---|---|
+| `anneau-vers-devis` | la chaîne dictée → devis n'arrive jamais (120 s) ; et un devis parti n'est plus joignable par le planning | à jouer seule : l'arrêt d'avant-chiffrage s'ouvre-t-il ? |
+| `message-au-client` | « les trois messages disent chacun le sien » | lot des trois messages (0075), tout frais |
+| `fiche-client`, `devis-client` | tiennent d'un pixel : 665 px pour 664 | **sans relever le seuil** — 664 px est la hauteur réelle de son téléphone |
+| `carte-reponse-mene-au-geste` | un appui intercepté par un bouton du planning | même famille que `madame-lucie` : viser l'élément, pas le centre |
+| `reprise-chantier`, `reprise-morceau` | non diagnostiqués | |
+| `suivi-devis`, `tva-multiple` | « un appui long sur un devis à UN SEUL taux n'ouvre rien » | |
+
+**Ne pas les traiter en bloc** : ce sont cinq lots différents, et deux d'entre
+eux sont des contrôles qui réclament ce qu'il a fait enlever (`CLAUDE.md` §5 bis).
+
+---
+
 ## ⚠ UN PIXEL DE TROP SUR LA PAGE DU CLIENT — constaté le 7 septembre 2026
 
 `test-devis-client-e2e.ts`, « TOUT TIENT DANS UN ÉCRAN » : **665 px pour 664 px
