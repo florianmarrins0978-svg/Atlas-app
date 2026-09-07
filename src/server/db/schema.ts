@@ -161,6 +161,22 @@ export const entreprises = pgTable("entreprises", {
   messageClient: text("message_client"),
 
   /**
+   * Les deux autres messages (migration 0075, sa décision du 7 septembre 2026).
+   *
+   * **`message_client` est devenu celui du DEVIS**, et ces deux-là complètent :
+   * la facture et le compte rendu de passage. Un seul message pour trois
+   * documents (0062) obligeait Atlas à écrire lui-même la phrase du milieu —
+   * le seul morceau qu'il ne pouvait pas toucher, et celui qu'il voulait écrire.
+   *
+   * **`null` veut dire « celui d'Atlas »**, comme pour le devis. Et le nom
+   * `passage` suit le dépôt — `composerMessageEntretien`, la fiche de passage —
+   * plutôt que « fiche client », le mot du patron : le renommer se décide d'un
+   * bloc (`TODO.md`), ça ne se glisse pas dans une colonne.
+   */
+  messageClientFacture: text("message_client_facture"),
+  messageClientPassage: text("message_client_passage"),
+
+  /**
    * L'allure de son devis et de sa facture (migration 0063, 23 août 2026).
    *
    * **`null` veut dire « comme aujourd'hui »** — sa règle : *« les réglages

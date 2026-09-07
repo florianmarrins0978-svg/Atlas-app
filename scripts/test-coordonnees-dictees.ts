@@ -3,6 +3,7 @@ import {
   lireCoordonneesEvidentes,
   nettoyerChamp,
   assemblerCoordonnees,
+  champsARemplir,
   coordonneesVides,
 } from "../src/lib/coordonnees-dictees";
 
@@ -111,7 +112,11 @@ cas("un numéro approché par le modèle ne remplace pas celui qui a été dict�
     adresse: "12 rue des Lilas",
   });
   assert.equal(r.telephone, "0652889751", "Le numéro du modèle a écrasé celui qui était écrit noir sur blanc.");
-  assert.equal(r.nom, "Monsieur Martin");
+  // **Le nom ne porte plus « Monsieur » depuis le 7 septembre 2026** : le mot
+  // est parti sur la pastille. Le contrôle a été adapté plutôt que la règle
+  // remise (`CLAUDE.md` §5 bis) — c'est le patron qui a demandé le retrait.
+  assert.equal(r.nom, "Martin");
+  assert.equal(r.civilite, "mr");
   assert.equal(r.adresse, "12 rue des Lilas");
 });
 
@@ -122,7 +127,8 @@ cas("le modèle complète ce que la forme ne sait pas voir", () => {
     telephone: "inconnu",
     email: "non précisé",
   });
-  assert.equal(r.nom, "Madame Aubry");
+  assert.equal(r.nom, "Aubry");
+  assert.equal(r.civilite, "mme");
   assert.equal(r.adresse, "2 route de Vertou");
   assert.equal(r.telephone, null, "« inconnu » est devenu un numéro de téléphone.");
   assert.equal(r.email, null);
@@ -252,6 +258,97 @@ cas("ce qui marchait déjà marche encore", () => {
   );
   assert.equal(lireCoordonneesEvidentes("contact arobase eden-nature point fr").email, "contact@eden-nature.fr");
   assert.equal(lireCoordonneesEvidentes("mail : paul.durand@wanadoo.fr").email, "paul.durand@wanadoo.fr");
+});
+
+
+console.log("\n=== « Monsieur Ludovic » : le mot va sur la pastille, pas dans le nom ===");
+
+// **Sa capture du 7 septembre 2026.** Il dicte « monsieur Ludovic » ; la case du
+// nom porte « Monsieur Ludovic ». *« Il ne faut jamais qu'il y ait marqué
+// monsieur, madame ou quoi que ce soit d'autre à part le nom dans cette
+// case-là. Mais est-ce que c'est possible que lorsqu'il entend monsieur ou
+// madame, il vienne sélectionner tout seul en haut soit le monsieur, soit le
+// madame ? »*
+//
+// **POURQUOI CETTE SUITE ET PAS UNE SUITE NAVIGATEUR** (`CLAUDE.md` §5 quater) :
+// la dictée demande une clé de transcription que cet environnement n'a pas — le
+// fournisseur y rend un texte de remplacement. Le geste du patron ne peut donc
+// pas être joué du micro jusqu'à l'écran ICI. Ce qui est tenu à la place, c'est
+// la chaîne entière SOUS le micro : ce que le modèle rend → ce que la fiche
+// reçoit. La règle de remplissage a été sortie de l'écran exprès pour cela
+// (`champsARemplir`).
+
+cas("SON cas : « monsieur Ludovic » remplit le nom et allume « Mr »", () => {
+  const r = assemblerCoordonnees("monsieur Ludovic, 06 79 98 45 14", {
+    nom: "Monsieur Ludovic",
+    telephone: "0679984514",
+  });
+  assert.equal(r.nom, "Ludovic", "« Monsieur » est resté dans la case du nom");
+  assert.equal(r.civilite, "mr");
+  assert.equal(r.telephone, "0679984514");
+});
+
+cas("une civilité dite sans nom n'est pas annoncée comme « rien compris »", () => {
+  // Sinon l'écran dirait « je n'ai rien reconnu » pendant qu'une pastille
+  // s'allume sous ses yeux : le seul message qu'il ne peut pas recouper.
+  const r = assemblerCoordonnees("madame", { nom: "Madame" });
+  assert.equal(r.nom, null, "un nom vide est devenu une chaîne, qui se glisserait dans le champ");
+  assert.equal(r.civilite, "mme");
+  assert.ok(!coordonneesVides(r), "l'écran annoncerait n'avoir rien compris");
+});
+
+cas("une dictée sans civilité n'en invente aucune", () => {
+  const r = assemblerCoordonnees("Ludovic Martin, 12 rue des Lilas", {
+    nom: "Ludovic Martin",
+    adresse: "12 rue des Lilas",
+  });
+  assert.equal(r.nom, "Ludovic Martin");
+  assert.equal(r.civilite, null, "une pastille s'est allumée sans que rien ne l'ait dite");
+});
+
+console.log("\n=== Ce que la dictée a le droit de changer sur une fiche commencée ===");
+
+const VIDE = { nom: "", civilite: null, telephone: "", email: "", adresse: "" } as const;
+const RIEN_DIT = { nom: null, civilite: null, telephone: null, email: null, adresse: null } as const;
+
+cas("sur une fiche vierge, tout ce qui a été compris entre", () => {
+  const aRemplir = champsARemplir({ ...VIDE }, {
+    ...RIEN_DIT,
+    nom: "Ludovic",
+    civilite: "mr",
+    telephone: "0679984514",
+  });
+  assert.deepEqual(aRemplir, { nom: "Ludovic", civilite: "mr", telephone: "0679984514" });
+});
+
+cas("rien de ce qu'il a SAISI n'est écrasé par une dictée", () => {
+  // Il aurait tapé le numéro, dicté l'adresse, et perdu le numéro sans
+  // comprendre pourquoi. C'est la règle qui coûte cher si elle se trompe.
+  const aRemplir = champsARemplir(
+    { nom: "Bernard", civilite: null, telephone: "0611223344", email: "", adresse: "" },
+    { ...RIEN_DIT, nom: "Ludovic", telephone: "0679984514", adresse: "10 rue de Nantes" }
+  );
+  assert.deepEqual(aRemplir, { adresse: "10 rue de Nantes" });
+});
+
+cas("une pastille qu'il a TOUCHÉE lui appartient : la dictée ne la reprend pas", () => {
+  const aRemplir = champsARemplir(
+    { ...VIDE, civilite: "mme" },
+    { ...RIEN_DIT, nom: "Ludovic", civilite: "mr" }
+  );
+  assert.deepEqual(aRemplir, { nom: "Ludovic" }, "son choix a été retourné par la dictée");
+});
+
+cas("la pastille ne dépend PAS du nom — « Monsieur, 06 79… » l'allume", () => {
+  // Aucun nom à poser, mais il a bien dit monsieur.
+  const aRemplir = champsARemplir({ ...VIDE }, { ...RIEN_DIT, civilite: "mr", telephone: "0679984514" });
+  assert.deepEqual(aRemplir, { civilite: "mr", telephone: "0679984514" });
+});
+
+cas("le contrôle sait échouer : une dictée muette ne change rien", () => {
+  // Un contrôle qui n'a jamais échoué ne prouve rien (`AGENTS.md`). Si un champ
+  // sortait d'ici sans que rien ne l'ait dit, c'est que la fonction fabrique.
+  assert.deepEqual(champsARemplir({ ...VIDE }, { ...RIEN_DIT }), {});
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Coordonnées dictées — ${echecs} échec(s).`);

@@ -73,7 +73,7 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
         {etat === "ecoutee" && (
           <>
             <div className="mx-6 mt-6 rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
-              <p className="whitespace-pre-wrap text-[15px] leading-relaxed" style={{ color: colors.ink }}>
+              <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed" style={{ color: colors.ink }}>
                 {note!.transcription}
               </p>
             </div>

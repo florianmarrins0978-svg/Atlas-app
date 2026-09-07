@@ -52,7 +52,7 @@ async function main() {
 
   // `networkidle` et non `domcontentloaded` : sans la mise en page appliquée,
   // toutes les mesures qui suivent vaudraient zéro.
-  await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/reglages/documents/allure`, { waitUntil: "networkidle" });
 
   const apercu = page.locator('[data-atlas="allure-apercu-colle"]');
   const feuille = page.locator('[data-atlas="allure-feuille"]');

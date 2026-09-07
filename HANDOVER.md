@@ -11,7 +11,7 @@ sert.
 ## Dernier lot — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
 
 **Document du lot :** `docs/lot-telecharger-la-facture.md`.
-**Décisions :** `ARCHITECTURE.md` §268.
+**Décisions :** `ARCHITECTURE.md` §273.
 
 **Ce qui a changé, en une ligne :** une adresse `?telecharger=1` sert désormais
 `application/octet-stream` au lieu de `application/pdf`. Un navigateur qui a un
@@ -44,6 +44,79 @@ JavaScript (`fetch` + `blob`) pour pouvoir afficher l'erreur. Cela remplacerait
 un chemin natif qui fonctionne partout ailleurs par un chemin qui dépend de ce
 que ce même Safari fait des adresses `blob:` — soigner un doute avec un second
 doute.
+
+---
+
+## Lot précédent — « DEVIS & FACTURES » COUPÉ EN QUATRE (7 septembre 2026)
+
+**Document du lot :** `docs/lot-couper-devis-et-factures.md`.
+**Décision :** `ARCHITECTURE.md` §272. **Migration : 0075.**
+**La planche qu'il a validée :** `appli/couper-devis-et-factures.html`.
+
+**CE QU'IL FAUT SAVOIR AVANT DE TOUCHER À CET ÉCRAN :**
+
+1. **Rien ne sort de « Devis & factures », et c'est ce qui a permis de le
+   couper.** Ses trois réponses des 23 et 25 août — l'allure « ici et pas dans
+   une rubrique à part », le message « ici », l'aperçu collé — tiennent : le
+   sommaire des réglages garde ses **douze** lignes, et les quatre écrans
+   vivent SOUS `/reglages/documents`.
+
+2. **`[document]` A CHANGÉ DE SENS.** Il portait la phrase entière du document ;
+   il ne pose plus que le mot (« devis », « facture », « compte rendu »). Un
+   modèle écrit avant le 7 septembre est réécrit par la migration 0075 — sans
+   elle, le client recevrait un message réduit à un mot nu.
+
+3. **Il y a TROIS documents, pas deux.** Le compte rendu de passage part avec
+   ce même mécanisme (`composerMessageEntretien`) : c'est ce qu'on a failli
+   oublier, et le patron ne pouvait pas le savoir.
+
+4. **Deux jetons ne se retirent pas** (`refusDuMessage`) : le lien, et le mot
+   du document. Ce n'est pas un dessin — l'écran ne les encadre plus, à sa
+   demande ; c'est le refus qui le tient.
+
+5. **Quatre typographies ont été retirées**, et une clef retirée est TRADUITE
+   vers la plus proche (`TYPOGRAPHIE_REMPLACEE`). Ne pas supprimer cette table :
+   les factures portent leur allure figée (0074) et peuvent encore nommer
+   Playfair dans dix ans.
+
+---
+## Lot précédent — « MONSIEUR » VA SUR LA PASTILLE (7 septembre 2026)
+
+**Document du lot :** `docs/lot-civilite-dictee.md`. **Décisions :**
+`ARCHITECTURE.md` §268. **Pas de maquette** : rien n'est dessiné, un mot change
+de champ.
+
+Il a dicté « monsieur Ludovic » ; la case du nom portait « Monsieur Ludovic ».
+`detacherCivilite` (`src/lib/civilite.ts`) retire le mot du nom et rend la
+pastille qu'il désigne.
+
+**⚠ DEUX FONCTIONS INVERSES, À NE JAMAIS SÉPARER.** `detacherCivilite` et
+`avecCivilite` vivent dans le même fichier sur la MÊME liste de graphies. Poser
+l'une ailleurs, ou recopier sa liste, et un nom dicté ressortira sans sa
+civilité sur le devis. `CIVILITES_CONNUES` se **déduit** des deux listes de
+travail — ne pas la réécrire à la main.
+
+**⚠ « DOCTEUR » ET « MAÎTRE » PARTENT AUSSI, SANS ALLUMER DE PASTILLE — et ce
+n'est pas un oubli.** J'avais livré l'inverse en disant le prix : le titre
+s'efface, le nom nu reçoit le défaut « Mr. », donc « Mr. Rivière » pour une femme
+médecin. Il a tranché le jour même : *« seulement les noms de famille ! »*. Dans
+`CIVILITES_A_RETIRER` ils portent la valeur `null`, et `detacherCivilite`
+interroge la liste avec `in` — tester la valeur les remettrait dans le nom.
+
+**⚠ LE PREMIER MOT SE DÉCOUPE AVEC `\p{L}`, JAMAIS `\w`.** « Maître »
+s'arrêtait à « Ma » : en JavaScript `\w` reste l'alphabet anglais même sous le
+drapeau `u`. Un seul mot accentué dans la liste, et il passait au travers.
+
+**La règle de remplissage a quitté l'écran** : `champsARemplir`
+(`src/lib/coordonnees-dictees.ts`) décide, `FormulaireNouveauChantier` ne fait
+que poser. Elle rend **uniquement ce qui change** — un champ absent est un champ
+auquel on ne touche pas.
+
+**NON ÉPROUVÉ ICI :** le parcours micro compris. Ce poste n'a pas de clé de
+transcription (le fournisseur y rend un texte de remplacement), donc aucune
+suite navigateur ne peut partir du micro. Les deux suites tiennent la chaîne
+SOUS le micro, et elles savent rougir.
+
 
 ---
 ## Lot précédent — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)

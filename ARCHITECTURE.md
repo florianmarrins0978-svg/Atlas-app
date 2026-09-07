@@ -23890,7 +23890,240 @@ base accuse la suivante.
 
 ---
 
-## §268. Télécharger, ce n'est pas servir le même fichier avec un autre en-tête
+## §268. Le mot dicté quitte le nom pour la pastille
+
+**Sa capture du 7 septembre 2026.** Il a dicté « monsieur Ludovic » ; la case du
+nom portait **« Monsieur Ludovic »**. Sa règle, en deux temps : *« il ne faut
+jamais qu'il y ait marqué monsieur, madame ou quoi que ce soit d'autre à part le
+nom dans cette case-là »*, et *« est-ce que c'est possible que lorsqu'il entend
+monsieur ou madame, il vienne sélectionner tout seul en haut soit le monsieur,
+soit le madame ? »*
+
+### CE QUE LE MOT COÛTAIT LÀ OÙ IL ÉTAIT
+
+Un nom qui porte déjà sa civilité la garde telle quelle (`avecCivilite`, §
+civilité du 13 août). « Monsieur Ludovic » partait donc **mot pour mot** sur le
+devis, la facture et le SMS — alors qu'il écrit « Mr. », et qu'il l'a corrigé
+lui-même le 13 août. Deux clients dictés « monsieur Ludovic » et « Ludovic »
+faisaient en outre **deux fiches** pour une seule personne : le rapprochement
+compare des noms.
+
+Le mot n'est donc pas jeté, il **change de champ** : il rejoint la pastille, où
+il est une donnée, d'où il se recopie déjà partout.
+
+### DEUX FONCTIONS INVERSES, UNE SEULE LISTE DE MOTS
+
+`detacherCivilite` est l'exacte inverse d'`avecCivilite`, et elles vivent dans
+le même fichier sur la **même** liste de graphies. Séparées, l'une aurait appris
+un mot que l'autre ignorerait — « Melle Roux » détachée ici, « Mr. » reposé
+là-bas. Le contrôle les confronte plutôt que de décrire chacune dans son coin.
+
+`CIVILITES_CONNUES` se **déduit** désormais des deux listes de travail au lieu
+de les recopier : une troisième liste à tenir aurait divergé au premier mot
+ajouté, et la divergence se serait vue sur un devis.
+
+### CE QUI SE DÉTACHE, ET CE QUI RESTE
+
+| | |
+|---|---|
+| « Monsieur », « M. », « Mme », « Mlle »… | retiré → **pastille allumée** |
+| **« Docteur », « Maître »** | **retiré, pastille éteinte** |
+| une civilité au milieu (« Jean-Marie Leme ») | rien |
+| un patronyme qui commence pareil (« Merlin », « Mmelanie ») | rien |
+
+**LA DEUXIÈME LIGNE EST À LUI, ET J'AVAIS LIVRÉ L'INVERSE.** « Docteur Rivière »
+ne dit ni monsieur ni madame : j'avais donc gardé le titre dans le nom, en lui
+écrivant ce que le retirer coûterait — le titre s'efface, le nom nu reçoit le
+défaut « Mr. », et une femme médecin devient **« Mr. Rivière »**. Sa réponse, le
+jour même : *« Docteur et maître ne doivent pas apparaître dans le nom. Seulement
+les noms de famille ! »*
+
+Sa règle prime, et elle se tient : la case du nom porte un nom. Le prix reste
+celui que je lui ai décrit, et il est borné — la pastille est à un appui,
+au-dessus, et il relit la fiche avant de créer le chantier.
+
+**Dans le code, c'est `null` et non une absence de la liste** : « retirer sans
+rien allumer » est une décision, pas un oubli. `detacherCivilite` interroge donc
+la liste avec `in`, jamais sur la valeur — sinon « je ne connais pas ce mot » et
+« ce mot ne désigne aucune pastille » se confondent, et le titre reste.
+
+### « MAÎTRE » S'ARRÊTAIT À « MA » — `\w` N'EST PAS `\p{L}`
+
+Le premier mot était découpé avec `[^\W\d_]`. En JavaScript, `\w` reste
+l'alphabet anglais **même sous le drapeau `u`** : le « î » y compte pour un
+séparateur. Le seul titre accentué de la liste passait donc au travers, en
+silence, pendant que les trois autres marchaient. C'est le contrôle qui l'a
+montré — et il ne l'aurait pas fait si son corpus s'était contenté de « Dr ».
+
+**Un cas que la règle ne sait pas voir :** une enseigne qui s'appelle
+« Monsieur Bricolage » rendrait « Bricolage » avec la pastille « Mr ». Le patron
+relit la fiche avant de créer le chantier — c'est l'arrêt du parcours qui
+rattrape ce cas, et il se paie en une correction visible.
+
+### LA RÈGLE DE REMPLISSAGE A QUITTÉ L'ÉCRAN
+
+`appliquerDictee` portait quatre `if` mêlés à quatre `setState` : donc éprouvable
+au navigateur seulement, c'est-à-dire **nulle part**, puisque la dictée demande
+une clé de transcription que cet environnement n'a pas. La décision vit
+maintenant dans `champsARemplir` (`src/lib/coordonnees-dictees.ts`), et l'écran
+ne fait plus que poser ce qu'elle rend (`CLAUDE.md` §3).
+
+Elle rend **uniquement ce qui change** : un champ absent du résultat est un champ
+auquel on ne touche pas. Rendre l'état complet aurait obligé l'écran à comparer,
+et une comparaison de plus est une occasion de plus d'écraser une saisie.
+
+**La pastille suit la règle des autres champs, et rien d'autre** : elle ne se
+pose que s'il n'a rien choisi, et **elle ne dépend pas du nom** — « Monsieur,
+06 79 98 45 14 » ne laisse aucun nom à poser, mais il a bien dit monsieur.
+`coordonneesVides` la compte pour la même raison : annoncer « rien compris »
+pendant qu'une pastille s'allume serait le seul message qu'il ne peut pas
+recouper.
+
+### LA CONSIGNE DU MODÈLE N'A PAS BOUGÉ
+
+On continue de lui demander le nom « avec sa civilité si elle est dite ». Lui
+faire choisir entre `mr` et `mme` aurait ajouté une façon de se tromper là où il
+n'y en avait pas, et la règle aurait existé en deux endroits — la consigne et
+`civilite.ts` — que rien ne tient d'accord. Le mot se reconnaît sans comprendre
+la phrase : même partage que le téléphone et l'e-mail.
+
+### CE QUI N'A PAS PU ÊTRE ÉPROUVÉ ICI
+
+Le geste complet — micro, transcription, modèle, écran — demande une clé que ce
+poste n'a pas ; le fournisseur y rend un texte de remplacement. Ce qui est tenu,
+c'est **toute la chaîne sous le micro** : ce que le modèle rend → ce que la fiche
+reçoit (`test-coordonnees-dictees`), et les deux fonctions inverses confrontées
+(`test-civilite`). Les deux suites rougissent quand on retire le détachement.
+**Le parcours micro compris reste à jouer sur son espace.**
+
+## §272. « Devis & factures » coupé en quatre, et trois messages au lieu d'un
+
+**7 septembre 2026.** L'écran le plus long de l'application — **4 350 px, six
+écrans et demi de son téléphone** — portait six sujets sans rapport : ce qui
+s'imprime, ce que le devis dira, ce qui ne se coupe pas, son message au client,
+le numéro de ses documents, l'allure de ses devis. Pour changer son logo, il
+traversait tout.
+
+Il a tranché lui-même, planche en main
+(`appli/couper-devis-et-factures.html`) : **« on coupe »**. Quatre lignes à
+l'entrée, quatre écrans courts.
+
+### Ce que le découpage NE fait pas, et c'est ce qui a permis de le faire
+
+**Rien ne sort de « Devis & factures ».** Trois de ses propres réponses avaient
+mis ces blocs sur un seul écran — l'allure *« ici et pas dans une rubrique à
+part »* (réponse B, 23 août), le message *« ici »* (A, 23 août), l'aperçu collé
+(B, 25 août). Elles tiennent : le sommaire des réglages garde ses **douze**
+lignes, et ces réglages vivent un cran plus bas, pas ailleurs.
+
+**Ce qui a changé depuis ces réponses, et qui justifiait de les rouvrir :** elles
+ont été données quand l'écran portait **deux** blocs. Il en portait **six**.
+
+| | |
+|---|---|
+| `/reglages/documents` | le sommaire, quatre lignes |
+| `…/conditions` | les six interrupteurs, le récapitulatif qu'ils produisent, les mentions obligatoires |
+| `…/message` | ses trois messages |
+| `…/numero` | le format de ses numéros |
+| `…/allure` | logo, typographie, fond, accent — avec l'aperçu collé |
+
+**Les quatre titres sont ceux de ses six blocs, mot pour mot.** Deux blocs
+n'ouvrent aucune ligne : « Ce que votre devis dira » se recalcule tout seul et
+« Ce qui ne se coupe pas » est obligatoire — ils vivent dans le premier écran,
+sous les interrupteurs qu'ils commentent.
+
+**La garde est répétée sur les quatre écrans, et ce n'est pas une redondance :**
+chacun a son adresse, et une adresse se tape. La poser au seul sommaire aurait
+laissé les quatre autres ouverts.
+
+### Trois messages, et `[document]` change de sens
+
+**Sa décision, prise en deux temps.** *« En fait il faut faire deux messages par
+défaut, un pour devis et un pour facture »* — puis, le troisième document
+retrouvé : *« dans ce cas faut faire 3 messages par défaut et garder le système
+un seul mot change »*.
+
+**IL Y EN A TROIS, PAS DEUX, et il ne pouvait pas le savoir.** Le **compte rendu
+de passage** part avec ce même modèle (`composerMessageEntretien`). À deux
+messages, son client aurait entendu sa voix sur son devis et sa facture, celle
+d'Atlas sur le compte rendu.
+
+**Ce qui a rendu la version d'avant intenable :** la phrase qui distingue les
+trois envois était écrite par Atlas et posée à l'endroit du `[document]`. C'était
+le seul morceau de son message qu'il ne pouvait pas toucher — et précisément
+celui qu'il voulait écrire.
+
+| | Avant | Après |
+|---|---|---|
+| `[document]` | **la phrase entière** — « Voici votre devis. Vous pouvez le consulter… » | **le mot seul** — « devis », « facture », « compte rendu » |
+| en base | une colonne, `message_client` | trois (migration 0075) |
+| verrouillé | les quatre mots dorés | **le lien et le mot du document**, et rien d'autre |
+
+**LE PIÈGE DE LA MIGRATION, et il aurait été muet.** Un message déjà enregistré
+porte un `[document]` au sens ancien : rendu avec le nouveau, il serait parti
+chez le client réduit à un mot nu — « Bonjour Mme Larousse, / devis / https://… ».
+La migration 0075 y réécrit donc la phrase EN CLAIR, et l'ancienne valeur devient
+celle du **devis** : son texte n'est pas perdu.
+
+**L'échéance emporte ses mots** (`clauseEcheance`) : elle rend « , à régler avant
+le 21 septembre » ou rien du tout. Le délai de paiement est un interrupteur, il
+s'éteint ; une pastille qui ne rendrait que la date laisserait « facture
+F2026-0008, à régler avant le . » dans la boîte du client.
+
+**Deux mots ne se retirent pas**, et c'est `refusDuMessage` qui le tient — pas un
+dessin. Le lien, sans lequel le client n'ouvre rien et le planning ne reçoit
+aucune date ; le mot du document, sans lequel il ne sait pas s'il reçoit un devis
+à signer ou une facture à payer.
+
+### Ce qu'une seule case a coûté à l'écran, et ce qu'elle lui a rendu
+
+Sa correction du même jour : *« pas besoin de répéter, il faut juste que
+l'utilisateur voie le message final qu'il peut modifier entièrement »*. Chaque
+message était dessiné **deux fois** — une fois avec les mots nommés (« le
+prénom »), une fois rempli (« Mme Larousse ») : six boîtes presque identiques, et
+l'on cherche laquelle se modifie. Il ne reste que celle qui part.
+
+**Et le cadre d'or a été retiré le même jour :** *« pourquoi la facture et le lien
+sont encadrés ? laisse-les normaux mais juste en doré »*. Il avait raison — le
+cadre n'apprenait rien que l'avertissement du haut ne dise déjà, et il fabriquait
+deux sortes de doré à comprendre au lieu d'une.
+
+### Six typographies au lieu de dix
+
+*« Tu peux en enlever ou en changer si tu estimes que certaines sont moches et ne
+servent à rien. »* Quatre sont parties, chacune pour une raison qui se voit sur un
+devis : **Source Sans** et **Work Sans** ne se distinguent pas d'Inter à cette
+taille, **Libre Baskerville** rallonge le devis d'une page, **Playfair Display**
+perd ses déliés à l'impression.
+
+**Une clef retirée est TRADUITE, jamais ignorée** (`TYPOGRAPHIE_REMPLACEE`) : sans
+cette table, une entreprise réglée sur Playfair serait retombée sur la police de
+l'appareil — une allure qu'elle n'a pas choisie, sans un mot nulle part. Et la
+table ne s'efface pas quand plus personne ne l'emploie : les factures portent
+leur allure **figée** (migration 0074), et une facture de l'an dernier peut
+encore nommer Playfair dans dix ans.
+
+**En revanche, une photo de devis dans une police retirée n'est PAS approchée** :
+`typographieDepuisNom` rend `null` et la réserve le dit. Poser la plus
+ressemblante repeindrait ses documents d'après une photo, sans qu'il l'ait choisi.
+
+### Un défaut du code trouvé en vérifiant sa remarque sur le doré
+
+Il a signalé qu'« il manque le doré » dans les couleurs d'accent. **C'était la
+planche, pas l'application** : `couleursDocument.accent` vaut `#B98B47`, c'est
+déjà le défaut de ses documents, et la première pastille le porte sous le nom
+« Celui d'aujourd'hui ».
+
+Mais en le vérifiant, un vrai défaut est sorti : l'aide de ce réglage annonçait
+« le trait sous le titre, les intitulés, **et le total à payer** ». Le total
+s'écrit à l'encre — `document-commun.ts` ne donne l'accent qu'à `titrePartie`.
+Une phrase d'écran qui promet ce que le PDF ne fait pas se paie à la première
+capture : il change l'accent, regarde son total, et croit à une panne. Corrigée,
+et l'aperçu de l'écran aussi, qui coloriait le total lui aussi.
+
+---
+
+## §273. Télécharger, ce n'est pas servir le même fichier avec un autre en-tête
 
 **Le 7 septembre 2026**, capture à l'appui, sous « Voir la facture en PDF » :
 *« quand je clique sur télécharger ça ne la télécharge pas — un clic, une

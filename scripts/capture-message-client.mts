@@ -28,7 +28,7 @@ const contexte = await navigateur.newContext({
 const page = await contexte.newPage();
 await connecter(page);
 
-await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+await page.goto(`${BASE}/reglages/documents/message`, { waitUntil: "networkidle" });
 await page.waitForTimeout(600);
 
 const zone = page.locator('[data-atlas="message-client"]').first();

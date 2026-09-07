@@ -1,6 +1,13 @@
-# L'accueil — ce que j'ai trouvé, et ce que je propose
+# L'accueil — ce que j'ai trouvé, ce que j'ai proposé, ce qui est codé
 
-**Le 6 septembre 2026. Rien n'est codé : aucun fichier de `src/` n'a été touché.**
+> **CE DOCUMENT A ÉTÉ ÉCRIT LE 6 SEPTEMBRE, AVANT TOUT CODE.** Il commençait par
+> « rien n'est codé ». Ce n'est plus vrai : le 7 septembre, vous avez retenu
+> « À bout de bras » avec l'anneau resserré, et c'est en ligne. **Ce qui a été
+> codé, et les chiffres de la batterie, sont à la fin — section « Ce qui est
+> codé ».** Le reste du document raconte comment on y est arrivé, et garde ses
+> phrases d'origine : les corriger après coup effacerait ce qui a été appris.
+
+---
 
 **Trois planches, et elles ne disent pas la même chose :**
 
@@ -575,3 +582,139 @@ bouton devient clair et son mot devient sombre.
 | **Deux bandeaux ou un seul** avant « N autres devis à regarder » | **vous** |
 | **Le compteur de mots qui empêche les écrans de regrossir** n'existe toujours pas. C'était la vraie réponse à « il y aura une quatrième fois » (`docs/QUESTIONS.md` §23) | n'importe quelle session |
 | **Le gris hors des Réglages** — le planning, les terminés, le devis, la facture, la fiche client, Paysage. 525 emplois, 82 repris | à faire écran par écran, jamais en balayage |
+
+---
+
+# CE QUI EST CODÉ — 7 septembre 2026
+
+**Votre décision :** *« je veux l'écran à bout de bras avec l'anneau resserré,
+tu peux coder ça »*, puis *« le 2, l'anneau resserré »*.
+
+## Ce qui a changé dans l'application
+
+| | Avant | Après |
+|---|---|---|
+| **l'anneau** de « Créer un devis » | 42 px, cerne gris, une onde | **32 px, cerne DORÉ, trois ondes** décalées, à 1,9 fois le rond |
+| sa **cible** | 42 px | **44** — six pixels invisibles autour |
+| l'**état** d'un chantier | 9,5 px | **12 px**, interlettrage 0,28 → 0,14 em |
+| le **lieu** | 11,5 px, gris à 3,32 | **14 px**, encre douce à 8,04 |
+| la **date d'envoi** | 11,5 px, « Envoyé le lundi 10 août. » | **13 px**, « Lundi 10 août » |
+| le **mois** sur le fil | 9,5 px, gris | **11 px**, encre douce |
+| « **ATLAS** » en haut | 39 px de haut | **retiré** |
+| « **Vos clients** » | 9,5 px, cible de 14 px, flèche CSS | **11 px, cible de 44**, chevron « › » à 19 px déclaré |
+| « **En cours** » | au-dessus des bandeaux | **collé à la liste**, 27 px au-dessus du premier jour |
+| « **Adresse non renseignée** » | 11,5 px, cible 34, trait pointillé | **14 px, cible 44, trait plein** |
+| **bandeaux** visibles | 2 | **1**, et « **Replier** » referme |
+| leurs **gestes** | 21 px de haut | **44** |
+
+**L'or ne change pas**, et c'est votre décision du 6 septembre : *« mets-le en
+doré, celui de l'appli »*. Il tient **2,77** de contraste sur le crème là où un
+mot en demande 4,5 ; le chiffre vous a été donné, c'est votre écran. `orTexte`
+(4,59) existe dans le dépôt le jour où vous changerez d'avis.
+
+## Trois défauts trouvés en CAPTURE, par aucun test
+
+1. À 12 px et 0,28 em, « DEVIS PRÊT À ENVOYER · 3 PHOTOS » **passait à la ligne**
+   et laissait « PHOTOS » seul en dessous — un état replié se lit comme deux
+   états. L'interlettrage descend à 0,14 em, celui de vos onglets du bas.
+2. Le chevron à 11 px **faisait une virgule** : c'est un signe maigre, et une
+   capitale espacée l'écrase. 19 px, graisse 700, remonté d'un pixel.
+3. « En cours » était **au-dessus dans le code et à un demi-écran pour l'œil** :
+   un bandeau de trois cents pixels s'intercalait. Vous me l'avez dit deux fois ;
+   la première, ma mesure ne regardait que l'ordre des éléments, pas l'écran.
+
+## Ce qui a été fait autrement que la maquette
+
+**La phrase sous le titre des bandeaux n'est PAS retirée.** Sur les trois
+exemples de la planche elle paraphrasait le titre — mais dans le produit,
+**cinq types de carte sur huit y portent leur seule date ou leur seul délai** :
+« Parti depuis 8 jours », « Échéance dépassée depuis 12 jours », « Le client a
+accepté, et retenu le lundi 10 août ». La retirer aurait fait moins
+d'information, pas moins de mots.
+
+## Les chiffres de la batterie
+
+`npm run verifier:avant-livraison`, jouée en entier sur votre poste.
+
+| Étape | Résultat | Ce matin sur `main`, SANS ce lot |
+|---|---|---|
+| Types, lint, mémoire | **verts** | verts |
+| Suites base de données | **306 / 314** | 306 / 314 |
+| Suites navigateur | **116 / 131** | 116 / 130 |
+| Connexion derrière un proxy | **n'a pas mesuré** — panne d'outillage Windows | n'a pas mesuré |
+
+**Le même nombre passe qu'avant ce lot.** Une suite de plus existe (131 au lieu
+de 130) : une autre session en a ajouté une entre-temps.
+
+**Et je l'ai prouvé plutôt que de l'affirmer :**
+
+1. **Les 8 rouges en base** sont les suites d'infrastructure du banc — le
+   veilleur, le port, la relance, les rôles, le verrou, le seed. Aucune ne lit
+   un fichier touché ici, compté fichier par fichier.
+2. **La seule suite navigateur qui pouvait m'accuser** — celle des bandeaux de
+   l'accueil — **tombe exactement pareil quand on retire ce lot de l'arbre**.
+   Fait, mesuré, puis remis : même attente, sur « J'accepte ce devis », page du
+   client. C'est un rouge antérieur.
+3. **La liste des rouges navigateur change d'un passage à l'autre sur le MÊME
+   code** : quatre redeviennent vertes, six autres apparaissent. C'est la
+   signature des suites qui se gênent entre elles, déjà consignée dans
+   `TODO.md` — pas celle d'un défaut.
+
+**Ce qui n'a pas été mesuré, et il faut le savoir :** la connexion derrière un
+proxy ne s'est jamais jouée sur votre poste Windows, ni ce matin ni ce soir.
+
+## Une chose qui s'est passée toute seule
+
+**Ce lot est parti sur `main` avant que je l'aie mesuré.** Une de vos sessions
+voisines a poussé depuis le même dossier, et son `git push` a emporté mes
+commits avec les siens — c'est mécanique, vous partagez l'arbre. Le message de
+commit disait encore « NON ÉPROUVÉ, à ne pas pousser ».
+
+Ce n'est pas grave — la batterie ci-dessus porte exactement ce code, et elle
+donne les chiffres du matin. Mais **c'est une chose à savoir pour la suite** :
+tant que trois sessions partagent un dossier, un commit local n'est pas à
+l'abri d'être poussé par une autre.
+
+---
+
+# UN SECOND DÉFAUT, TROUVÉ PAR VOUS — 7 septembre 2026
+
+**Vos mots :** *« si le client écrit un message trop long avant de retourner le
+devis, ça fait bugger le message de retour, le texte sort du cadre. Je pense
+qu'il faut brider le nombre de lettres. »*
+
+**Vous avez vu juste sur le défaut. La cause n'est pas celle-là.**
+
+Le champ du client **est déjà bridé à 500 caractères**
+(`src/app/devis/[jeton]/formulaire.tsx`). Le brider davantage n'aurait rien
+réglé : le débordement n'a rien à voir avec la longueur. Il arrive dès qu'il y a
+**un mot long sans espace** — quelqu'un qui écrit vite sans ponctuation, une
+adresse internet collée, un numéro à rallonge.
+
+La cause : le message s'affichait en `whitespace-pre-wrap` **sans autorisation
+de couper un mot**. Le navigateur refuse alors de casser la ligne.
+
+**Mesuré à 390 px, sur la carte de l'accueil :**
+
+| | Largeur du texte | Dehors |
+|---|---|---|
+| avant | 2 440 px dans une carte de 342 | **2 140 px** |
+| après | 300 px | **0** |
+
+La page entière passait à **2 486 px de large** au lieu de 390 : tout l'écran
+défilait en travers. C'est ce que vous avez vu.
+
+**Le défaut vivait à CINQ endroits, pas un** — la carte de l'accueil, l'écran
+d'envoi du devis, la note du planning, l'aperçu de votre message dans les
+Réglages, la dictée transcrite. Les cinq sont corrigés.
+
+**Et un garde-fou est posé :** `scripts/test-mots-longs-ne-debordent-pas.ts`
+refuse désormais tout bloc qui affiche du texte tapé par quelqu'un sans pouvoir
+couper un mot. Corriger cinq endroits sans garde-fou, c'est attendre le
+sixième — c'est ce que le dépôt a déjà payé avec les barres de défilement. Le
+contrôle sait rougir : je lui ai remis la faute d'hier, il l'a désignée à la
+ligne près.
+
+**Ce lot-ci n'a PAS eu de batterie** : une autre de vos sessions tient le port.
+Types et lint sont verts, le garde-fou passe, et le correctif a été mesuré au
+navigateur avant d'être écrit.
