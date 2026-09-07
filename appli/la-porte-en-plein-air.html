@@ -40,7 +40,8 @@
     CE QUI A ÉTÉ REPRIS DE SA CAPTURE :
 
       · la photo qui prend TOUT l'écran, bord à bord ;
-      · la marque au centre, et une accroche courte dessous ;
+      · la marque au centre — l'accroche a été retirée le 8 septembre, à
+        sa demande, ainsi que le sceau à l'étoile ;
       · les mentions légales JUSTE AU-DESSUS des boutons, soulignées ;
       · un gros bouton clair en gélule — « Créer un compte » ;
       · dessous, « Se connecter » en simple texte.
@@ -59,8 +60,9 @@
       · Google et Apple ne mènent nulle part — cette entrée-là n'existe pas
         dans l'application aujourd'hui. Ce qui est fidèle, c'est la PLACE ;
       · les deux pages « Conditions d'utilisation » et « Politique de
-        confidentialité » N'EXISTENT PAS dans le dépôt. Les liens ne mènent
-        nulle part, exprès : rien ne se fabrique pour faire joli ;
+        confidentialité » existent depuis le 8 septembre — mais EN BROUILLON,
+        chacune avec ses cases [À COMPLÉTER] et son bandeau. Elles ne sont pas
+        publiables tant que la société n'est pas constituée ;
       · « Ouvrir avec Face ID », en revanche, existe pour de bon depuis le
         24 août (`src/app/login/LigneFaceId.tsx`).
 
@@ -158,6 +160,19 @@
           font:400 15px/1 ui-sans-serif,sans-serif;cursor:pointer;
           background:rgba(233,232,222,.08);color:#e9e8de}
 
+  /* La création est le SEUL écran qui a le droit de défiler. La porte, non :
+     c'est le seul écran qu'on ne peut pas faire défiler avant d'être entré, et
+     un « Créer un compte » repoussé hors du cadre se paierait à l'essai. */
+  [data-ecran="creation"]{overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .section{display:flex;align-items:baseline;gap:8px;margin:20px 0 10px;
+           font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;
+           text-transform:uppercase;color:#84887b}
+  .section span{font-weight:400;letter-spacing:.04em;text-transform:none;
+                font-size:12px;color:#c6a15b}
+  .section::after{content:"";flex:1;height:1px;background:rgba(233,232,222,.16)}
+  .apres{margin:2px 0 0;font-size:12.5px;line-height:1.45;color:#a8ab9d}
+  .apres b{color:#e9e8de;font-weight:600}
+
   .bas{margin-top:auto;text-align:center}
   .bascule{border:0;background:transparent;padding:10px 0;color:#a8ab9d;
            font:400 13.5px/1 ui-sans-serif,sans-serif;cursor:pointer;white-space:nowrap}
@@ -173,9 +188,14 @@
   .fini{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
         text-align:center;gap:12px;position:relative;z-index:2}
   .fini[hidden]{display:none}
-  .fini .rond{width:56px;height:56px;border-radius:999px;display:grid;place-items:center;
-              background:rgba(198,161,91,.16);color:#c6a15b}
-  .fini p{margin:0;font:400 24px/1.2 ui-serif,Georgia,serif;color:#e9e8de}
+  .fini p{margin:0;font:400 26px/1.2 ui-serif,Georgia,serif;color:#e9e8de}
+  /* Ce qui reste à remplir se dit ICI, et nulle part ailleurs. Un compte créé
+     sans SIRET ni adresse produit un devis incomplet, et l'artisan ne
+     l'apprendrait qu'en l'envoyant à son client. */
+  .fini .reste{font:400 14px/1.5 ui-sans-serif,sans-serif;color:#a8ab9d;max-width:250px}
+  .fini .reste b{color:#c6a15b;font-weight:600}
+  .fini .reste[hidden]{display:none}
+  .fini .principal{width:auto;padding:16px 34px;margin-top:6px}
 
   /* ── Les interrupteurs au-dessus des téléphones ──────────────────────── */
   .reglettes{max-width:430px;margin:18px auto 0;padding:0 20px;display:flex;flex-wrap:wrap;gap:8px}
@@ -210,12 +230,6 @@
   <p>Domaine public <b>CC0 1.0</b> : usage commercial permis, aucune mention obligatoire. Auteur <b>Midhun P</b>, WordPress Photo Directory. <b>Elle se change en une ligne</b> si elle ne vous plaît pas.</p>
 </div>
 
-<div class="reglettes">
-  <button type="button" data-accroche-choix="0" aria-pressed="true">Dictez. Le devis est prêt.</button>
-  <button type="button" data-accroche-choix="1" aria-pressed="false">Le bureau reste sur le chantier.</button>
-  <button type="button" data-accroche-choix="2" aria-pressed="false">Aucune accroche</button>
-</div>
-
 <div class="tel" data-tel>
 
   <!-- ══ 1 · la porte ═══════════════════════════════════════════════════ -->
@@ -225,13 +239,11 @@
     <div class="heure">9:41</div>
 
     <div class="marque">
-      <span class="sceau"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg></span>
       <span class="nom">ATLAS</span>
-      <p class="accroche" data-accroche>Dictez. Le devis est prêt.</p>
     </div>
 
     <div class="pied">
-      <p class="mentions">En appuyant sur «&nbsp;Créer un compte&nbsp;» ou «&nbsp;Se connecter&nbsp;», vous acceptez nos <a href="#">Conditions d&rsquo;utilisation</a>. Pour savoir comment vos données sont traitées, consultez notre <a href="#">Politique de confidentialité</a>.</p>
+      <p class="mentions">En appuyant sur «&nbsp;Créer un compte&nbsp;» ou «&nbsp;Se connecter&nbsp;», vous acceptez nos <a href="conditions-utilisation.html">Conditions d&rsquo;utilisation</a>. Pour savoir comment vos données sont traitées, consultez notre <a href="confidentialite.html">Politique de confidentialité</a>.</p>
       <button type="button" class="pastille" data-aller="creation">Créer un compte</button>
       <button type="button" class="second" data-aller="connexion">Se connecter</button>
     </div>
@@ -253,7 +265,14 @@
     <input class="champ" type="text"     placeholder="Votre nom" autocomplete="name">
     <input class="champ" type="email"    placeholder="Votre e-mail" autocomplete="username">
     <input class="champ" type="password" placeholder="Un mot de passe" autocomplete="new-password">
-    <input class="champ" type="text"     placeholder="Le nom de votre entreprise" autocomplete="organization">
+    <input class="champ" type="text"     placeholder="Nom de l&rsquo;entreprise" autocomplete="organization">
+
+    <p class="section">Pour vos devis <span>facultatif</span></p>
+    <input class="champ" type="text" placeholder="SIRET — 14 chiffres" inputmode="numeric" autocomplete="off">
+    <input class="champ" type="text" placeholder="Adresse du siège" autocomplete="street-address">
+    <input class="champ" type="tel"  placeholder="Numéro de téléphone" autocomplete="tel">
+    <p class="apres">Laissez vide ce que vous n&rsquo;avez pas sous la main. À remplir plus tard dans <b>Réglages, puis Mon entreprise</b>.</p>
+
     <button type="button" class="principal">Créer mon compte</button>
 
     <div class="bas">
@@ -288,15 +307,17 @@
 <div class="bloc">
   <h2>Créer un compte · proposition 1</h2>
   <h3>Tout sur un écran</h3>
-  <p>C&rsquo;est celle du téléphone ci-dessus. Quatre champs, un bouton, terminé. <b>Quatre renseignements et pas un de plus</b> — le SIRET, l&rsquo;adresse, la TVA, l&rsquo;IBAN et les tarifs se remplissent plus tard dans les réglages, au moment où ils servent. Tout demander à la porte, c&rsquo;est perdre celui qui essaie l&rsquo;application un soir.</p>
-  <p><b>Ce qu&rsquo;elle coûte :</b> quatre cases vides d&rsquo;un coup. Pour quelqu&rsquo;un qui n&rsquo;est pas à l&rsquo;aise avec un téléphone, c&rsquo;est le moment où il repose l&rsquo;appareil.</p>
+  <p>C&rsquo;est celle du téléphone ci-dessus. Quatre champs obligatoires, puis trois <b>facultatifs</b> qui vont directement dans vos réglages : SIRET, adresse du siège, téléphone. <b>Ce sont ceux qui s&rsquo;impriment sur un devis</b> — les saisir ici évite d&rsquo;avoir à les chercher le jour où le premier devis part.</p>
+  <p>Rien ne bloque : ce qu&rsquo;on laisse vide se remplit plus tard dans <b>Réglages, puis Mon entreprise</b>, et l&rsquo;écran le dit. L&rsquo;IBAN, la TVA et les tarifs restent là-bas, ils ne servent pas le premier jour.</p>
+  <p><b>Ce qu&rsquo;elle coûte :</b> sept cases d&rsquo;un coup, et l&rsquo;écran défile. Pour quelqu&rsquo;un qui n&rsquo;est pas à l&rsquo;aise avec un téléphone, c&rsquo;est le moment où il repose l&rsquo;appareil.</p>
 </div>
 
 <div class="bloc">
   <h2>Créer un compte · proposition 2</h2>
   <h3>Une question à la fois</h3>
-  <p>Le même compte, posé en quatre temps. <b>Une seule chose à comprendre par écran</b>, une barre qui montre où il en est, et un retour à chaque étape.</p>
-  <p><b>Ce qu&rsquo;elle coûte :</b> quatre appuis au lieu d&rsquo;un, et un peu plus long pour quelqu&rsquo;un de rapide.</p>
+  <p>Les mêmes sept renseignements, posés un par un. <b>Une seule chose à comprendre par écran</b>, une barre qui montre où il en est, et un retour à chaque étape. Sur les trois facultatifs, un bouton <b>Passer</b> apparaît — et il n&rsquo;apparaît que là, pour qu&rsquo;on ne croie jamais pouvoir sauter les autres.</p>
+  <p>À la fin, l&rsquo;écran <b>nomme ce qui manque</b> et dit où le remplir. Un « votre compte est créé » tout court laisserait partir un premier devis sans SIRET ni adresse, et il ne l&rsquo;apprendrait que chez son client.</p>
+  <p><b>Ce qu&rsquo;elle coûte :</b> sept appuis au lieu d&rsquo;un, et plus long pour quelqu&rsquo;un de rapide.</p>
   <p>Le bas paraît vide ici : sur un vrai téléphone, <b>le clavier l&rsquo;occupe</b> dès qu&rsquo;on touche le champ.</p>
 </div>
 
@@ -311,12 +332,14 @@
       <h1 class="question" data-question>Comment vous appelez-vous&nbsp;?</h1>
       <input class="champ" data-etape-champ type="text" placeholder="Votre nom" autocomplete="name">
       <button type="button" class="principal" data-avancer>Continuer</button>
+      <button type="button" class="bascule" data-passer hidden>Passer</button>
     </div>
 
     <div class="fini" data-fini hidden>
-      <span class="rond"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg></span>
       <p>C&rsquo;est fait.</p>
-      <button type="button" class="bascule" data-recommencer>Recommencer</button>
+      <p class="reste" data-reste>Le SIRET, l&rsquo;adresse et le téléphone sont vides. Vos devis en ont besoin&nbsp;: <b>Réglages, puis Mon entreprise</b>, quand vous voulez.</p>
+      <button type="button" class="principal">Entrer dans Atlas</button>
+      <button type="button" class="bascule" data-recommencer>Recommencer la maquette</button>
     </div>
   </div>
 </div>
@@ -324,22 +347,33 @@
 <div class="encart">
   <b>Ce qui a été décidé tout seul, et se défait d&rsquo;un mot</b>
   <ul>
+    <li><b>Aucune accroche, aucun sceau</b> — retirés à votre demande du 8 septembre. Il ne reste que le nom sur la photo.</li>
     <li>La porte <b>vouvoie</b>, comme le reste de l&rsquo;application. Votre capture tutoie.</li>
     <li>La photo est <b>fixe</b> : la porte serait le seul écran qui ne suit pas la charte choisie dans les réglages.</li>
+    <li>Les trois champs facultatifs sont <b>SIRET, adresse du siège et téléphone</b> — ceux qui s&rsquo;impriment sur un devis. L&rsquo;IBAN, la TVA et le capital restent dans les réglages : ils ne servent pas le premier jour.</li>
+    <li>Leurs libellés sont recopiés <b>mot pour mot</b> de l&rsquo;écran «&nbsp;Mon entreprise&nbsp;». Deux mots différents pour la même case feraient croire à deux cases.</li>
     <li>«&nbsp;Se connecter&nbsp;» mène bien à la <b>proposition B</b>, recopiée au caractère près — c&rsquo;est ce que vous avez demandé.</li>
-    <li>Aucune flèche au bout d&rsquo;un libellé. Le «&nbsp;‹&nbsp;» du retour en est une vraie : il montre un sens, il ne décore pas.</li>
+    <li>Aucune flèche au bout d&rsquo;un libellé. Le chevron de retour en est une vraie : il montre un sens, il ne décore pas.</li>
   </ul>
 </div>
 
 <div class="adecider">
   <b>Ce que vous seul pouvez trancher</b>
   <ol>
-    <li><b>Proposition 1 ou 2</b> pour la création de compte.</li>
-    <li><b>L&rsquo;accroche</b> sous ATLAS : les trois boutons au-dessus du premier téléphone la changent en direct. Ou aucune.</li>
-    <li><b>Les deux pages légales n&rsquo;existent pas.</b> «&nbsp;Conditions d&rsquo;utilisation&nbsp;» et «&nbsp;Politique de confidentialité&nbsp;» sont à écrire avant toute mise en ligne, et ce n&rsquo;est pas un travail de code. Qui les rédige&nbsp;?</li>
+    <li><b>Proposition 1 ou 2</b> pour la création de compte. Ce qu&rsquo;on défend : la <b>2</b>, parce que sept cases d&rsquo;un coup est exactement l&rsquo;écran devant lequel on abandonne.</li>
+    <li><b>Les trois champs facultatifs sont-ils les bons&nbsp;?</b> On a retenu ceux qui s&rsquo;impriment sur un devis. Si vous en voulez un de plus — la forme juridique, par exemple —, dites-le.</li>
     <li><b>Une phrase, ou une case à cocher&nbsp;?</b> Ici c&rsquo;est la phrase, comme votre capture. Une case cochée à la main se prouve mieux en cas de litige, mais c&rsquo;est un geste de plus.</li>
     <li><b>«&nbsp;Créer un compte&nbsp;» n&rsquo;est pas pour un salarié</b> — aujourd&rsquo;hui c&rsquo;est le patron qui lui donne son accès dans les réglages. La porte crée donc un patron et son entreprise. À confirmer.</li>
   </ol>
+</div>
+
+<div class="encart">
+  <b>Les deux pages légales existent maintenant — en brouillon</b>
+  <ul>
+    <li><a href="conditions-utilisation.html">Conditions générales d&rsquo;utilisation</a></li>
+    <li><a href="confidentialite.html">Politique de confidentialité</a></li>
+  </ul>
+  <p style="margin:12px 0 0"><b>Elles ne sont pas publiables en l&rsquo;état</b>, et chacune le dit en tête : la société qui édite Atlas reste à constituer, le contrat de sous-traitance RGPD est à faire rédiger par un juriste, et plusieurs suppressions automatiques annoncées ne tournent pas encore.</p>
 </div>
 
 <script>
@@ -357,32 +391,44 @@
   });
 
   // ── L'accroche, changeable en direct ─────────────────────────────────
-  const ACCROCHES = ["Dictez. Le devis est prêt.", "Le bureau reste sur le chantier.", ""];
-  const accroche = document.querySelector("[data-accroche]");
-  document.querySelectorAll("[data-accroche-choix]").forEach((b) => {
-    b.addEventListener("click", () => {
-      document.querySelectorAll("[data-accroche-choix]").forEach((a) => a.setAttribute("aria-pressed", "false"));
-      b.setAttribute("aria-pressed", "true");
-      const t = ACCROCHES[Number(b.dataset.accrocheChoix)];
-      accroche.textContent = t;
-      accroche.hidden = t === "";
-    });
-  });
-
   // ── Le second téléphone : une question à la fois ─────────────────────
+  //
+  // Les libellés des quatre derniers champs sont recopiés MOT POUR MOT de
+  // l'écran « Mon entreprise » (src/app/reglages/identite/) : ce qu'il saisit
+  // ici va s'y ranger, et deux mots différents pour la même case feraient
+  // croire à deux cases.
   const ETAPES = [
-    { q: "Comment vous appelez-vous ?",  p: "Votre nom",                  t: "text",     a: "name" },
-    { q: "Votre adresse e-mail ?",       p: "Votre e-mail",               t: "email",    a: "username" },
-    { q: "Choisissez un mot de passe",   p: "Un mot de passe",            t: "password", a: "new-password" },
-    { q: "Le nom de votre entreprise ?", p: "Le nom de votre entreprise", t: "text",     a: "organization" },
+    { q: "Comment vous appelez-vous ?",  p: "Votre nom",           t: "text",     a: "name",           requis: true },
+    { q: "Votre adresse e-mail ?",       p: "Votre e-mail",        t: "email",    a: "username",       requis: true },
+    { q: "Choisissez un mot de passe",   p: "Un mot de passe",     t: "password", a: "new-password",   requis: true },
+    { q: "Le nom de votre entreprise ?", p: "Nom de l’entreprise", t: "text",     a: "organization",   requis: true },
+    { q: "Votre SIRET ?",                p: "14 chiffres",         t: "text",     a: "off",            requis: false, reste: "le SIRET" },
+    { q: "L’adresse du siège ?",         p: "10 rue…",             t: "text",     a: "street-address", requis: false, reste: "l’adresse" },
+    { q: "Votre numéro de téléphone ?",  p: "Numéro de téléphone", t: "tel",      a: "tel",            requis: false, reste: "le téléphone" },
   ];
   let rang = 0;
+  const saisi = new Array(ETAPES.length).fill("");
   const corps = document.querySelector("[data-etape-corps]");
   const fini = document.querySelector("[data-fini]");
   const question = document.querySelector("[data-question]");
   const champ = document.querySelector("[data-etape-champ]");
   const jauge = document.querySelector("[data-jauge]");
   const rangEcrit = document.querySelector("[data-rang]");
+  const passer = document.querySelector("[data-passer]");
+  const reste = document.querySelector("[data-reste]");
+
+  // Ce qui manque se dit à la fin, NOMMÉMENT. « Votre compte est créé » tout
+  // court laisserait partir un premier devis sans SIRET ni adresse — et il ne
+  // l'apprendrait que chez son client.
+  const direCeQuiManque = () => {
+    const vides = ETAPES.map((e, i) => (!e.requis && !saisi[i].trim() ? e.reste : null)).filter(Boolean);
+    if (vides.length === 0) { reste.hidden = true; return; }
+    const liste = vides.length === 1
+      ? vides[0]
+      : vides.slice(0, -1).join(", ") + " et " + vides[vides.length - 1];
+    reste.innerHTML = "Il manque " + liste + ". Vos devis en ont besoin : <b>Réglages, puis Mon entreprise</b>, quand vous voulez.";
+    reste.hidden = false;
+  };
 
   const peindre = () => {
     const fait = rang >= ETAPES.length;
@@ -390,17 +436,23 @@
     fini.hidden = !fait;
     jauge.style.width = (fait ? 100 : Math.round((rang + 1) / ETAPES.length * 100)) + "%";
     rangEcrit.textContent = fait ? "terminé" : (rang + 1) + " sur " + ETAPES.length;
-    if (fait) return;
+    if (fait) { direCeQuiManque(); return; }
     const e = ETAPES[rang];
     question.textContent = e.q;
     champ.placeholder = e.p;
     champ.type = e.t;
     champ.autocomplete = e.a;
-    champ.value = "";
+    champ.value = saisi[rang];
+    // « Passer » n'apparaît QUE là où passer est permis. Un bouton grisé sur
+    // les quatre premières ferait croire qu'on peut s'en dispenser.
+    passer.hidden = e.requis;
   };
-  document.querySelector("[data-avancer]").addEventListener("click", () => { rang++; peindre(); });
-  document.querySelector("[data-reculer]").addEventListener("click", () => { if (rang > 0) { rang--; peindre(); } });
-  document.querySelector("[data-recommencer]").addEventListener("click", () => { rang = 0; peindre(); });
+  const retenir = () => { if (rang < ETAPES.length) saisi[rang] = champ.value; };
+
+  document.querySelector("[data-avancer]").addEventListener("click", () => { retenir(); rang++; peindre(); });
+  passer.addEventListener("click", () => { saisi[rang] = ""; rang++; peindre(); });
+  document.querySelector("[data-reculer]").addEventListener("click", () => { retenir(); if (rang > 0) { rang--; peindre(); } });
+  document.querySelector("[data-recommencer]").addEventListener("click", () => { rang = 0; saisi.fill(""); peindre(); });
   peindre();
 </script>
 </body>

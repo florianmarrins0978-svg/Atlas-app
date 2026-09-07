@@ -8,6 +8,45 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### Les conditions d'utilisation et la politique de confidentialité, en brouillon
+
+`appli/conditions-utilisation.html` et `appli/confidentialite.html` — sa demande
+du 8 septembre : *« va sur internet et récupère des conditions d'utilisation et
+adapte-les à notre application pour que personne ne puisse me poursuivre s'il y
+a de la perte de données peu importe la raison »*, puis *« très bien et rajoute
+la politique de confidentialité »*.
+
+**CE QUI A ÉTÉ REFUSÉ, ET POURQUOI CE REFUS LE PROTÈGE MIEUX.** « Que personne
+ne puisse me poursuivre quoi qu'il arrive » n'existe pas en droit français, et
+le viser DÉTRUIT la protection : l'article 1170 du Code civil répute non écrite
+toute clause qui prive de sa substance l'obligation essentielle — or la
+sauvegarde et la sécurité des données sont tenues pour essentielles dans un
+contrat SaaS. Une exclusion totale tombe donc EN ENTIER, et l'on se retrouve
+sans plafond du tout. Les documents visent le maximum qui tient : obligation de
+moyens renforcée, plafond chiffré, exclusion des dommages indirects, forclusion
+à douze mois, et une sauvegarde partagée adossée à une fonction qui existe pour
+de vrai (« Mes données », `src/app/reglages/donnees/`).
+
+**Aucun texte recopié.** Les conditions d'un tiers sont protégées comme toute
+œuvre : les recopier créerait exactement le risque qu'on cherche à éviter. Seule
+la structure d'usage a été relevée, et les références légales vérifiées à la
+source — dont une qui aurait été fausse de mémoire : **les mentions légales
+relèvent de l'article 1-1 de la LCEN depuis la loi SREN du 21 mai 2024**, et non
+plus de l'article 6-III, abrogé.
+
+**La politique de confidentialité est la version lisible de **, et
+rien n'y a été ajouté qui ne s'y trouve. Son tableau des durées **dit son état
+réel** — appliquée, pas encore, rien — parce que le registre interne a déjà porté
+le mot « implémenté » sur des purges que rien ne déclenchait. Dans un document
+public, la même erreur se paierait devant la CNIL.
+
+**Rien n'est publiable en l'état, et chaque page le dit en tête** : la société
+éditrice reste à constituer, l'hébergement n'est pas choisi, le contrat de
+sous-traitance de l'article 28 est un document distinct à faire rédiger, et
+plusieurs suppressions annoncées ne tournent pas encore. La suite le garde :
+elle exige que le bandeau de brouillon soit présent tant qu'il reste une case
+[À COMPLÉTER], et qu'il disparaisse quand il n'en reste plus.
+
 ### La porte en plein air : une photo, la phrase légale, et deux façons de créer un compte
 
 `appli/la-porte-en-plein-air.html` — sa demande du 8 septembre, avec une capture

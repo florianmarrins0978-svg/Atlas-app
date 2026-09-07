@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Conditions générales d'utilisation</title>
+<style>
+  /*
+    CONDITIONS GÉNÉRALES D'UTILISATION — brouillon à faire relire.
+
+    Sa demande du 8 septembre 2026 : « va sur internet et récupère des
+    conditions d'utilisation et adapte-les à notre application pour que
+    personne ne puisse me poursuivre s'il y a de la perte de données peu
+    importe la raison, plus les conditions d'utilisation générales qui sont
+    utilisées d'habitude pour ce genre d'application ».
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI A ÉTÉ REFUSÉ, ET POURQUOI CE REFUS LE PROTÈGE MIEUX.
+
+    « Que personne ne puisse me poursuivre quoi qu'il arrive » n'est pas
+    possible en droit français, et le viser détruit la protection au lieu de
+    la créer :
+
+      · article 1170 du Code civil — toute clause qui prive de sa substance
+        l'obligation essentielle du débiteur est RÉPUTÉE NON ÉCRITE. Or la
+        jurisprudence tient la sécurité et la sauvegarde des données pour une
+        obligation essentielle d'un contrat SaaS. Une exclusion totale sur ce
+        point tombe donc ENTIÈREMENT — et l'on se retrouve sans plafond du
+        tout, c'est-à-dire moins protégé qu'avec une clause raisonnable ;
+      · article 1231-3 du Code civil — la faute lourde et le dol font sauter
+        tout plafond, quel qu'il soit ;
+      · article L.442-1 du Code de commerce — un déséquilibre significatif
+        entre professionnels engage la responsabilité de celui qui l'impose.
+
+    Ce document vise donc le MAXIMUM QUI TIENT : obligation de moyens,
+    plafond chiffré, exclusion des dommages indirects, délai pour agir, et un
+    partage de la sauvegarde adossé à une fonction qui existe pour de vrai
+    (« Réglages, puis Mes données », `src/app/reglages/donnees/`).
+
+    ─────────────────────────────────────────────────────────────────────────
+    AUCUN TEXTE RECOPIÉ. Les conditions d'un tiers sont protégées comme toute
+    œuvre : les recopier créerait exactement le risque qu'on cherche à éviter.
+    Seules la structure d'usage et les références légales ont été relevées ;
+    la rédaction est originale.
+
+    ─────────────────────────────────────────────────────────────────────────
+    RIEN N'EST INVENTÉ. Chaque affirmation de fait vient de `docs/RGPD.md`,
+    qui décrit ce que l'application traite RÉELLEMENT. Ce qui n'est pas encore
+    décidé — l'éditeur, l'hébergeur, le prix — reste en [À COMPLÉTER] plutôt
+    que d'être rempli au plausible.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE N'EST PAS UN AVIS JURIDIQUE. Ce document est de la matière préparée
+    pour un juriste, pas un texte à publier tel quel. Le bandeau du haut le
+    dit, et il ne se retire qu'après relecture par un professionnel.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --papier:#ece9e1;
+    --encre:#1c1c1a; --encre-douce:#4a4a44; --gris:#8a8578;
+    --pin:#2f3b2f; --or:#B98B47; --trait:rgba(28,28,26,.12);
+    --alerte:#9C3B2E; --fond-alerte:#f7ece9;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --fond:#171613; --plage:#1e1c18; --papier:#262420;
+           --encre:#e9e5dc; --encre-douce:#c9c4b8; --gris:#8a867c;
+           --pin:#9db09d; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+           --alerte:#e0917f; --fond-alerte:#2a1d1a; }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.62 -apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 72px}
+  .page{max-width:660px;margin:0 auto;padding:0 22px}
+
+  header{background:var(--pin);color:#faf9f5;padding:30px 0 26px;margin-bottom:0}
+  @media (prefers-color-scheme: dark){ header{background:#20261f;color:#e9e5dc} }
+  header .page{padding-top:0}
+  header .marque{display:flex;align-items:center;gap:9px;margin-bottom:16px;opacity:.9}
+  header .nom{font:400 14px/1 ui-serif,Georgia,serif;letter-spacing:.3em}
+  header h1{margin:0;font:400 30px/1.18 ui-serif,Georgia,serif;letter-spacing:-.01em}
+  header .date{margin:10px 0 0;font-size:13.5px;opacity:.82}
+
+  .brouillon{background:var(--fond-alerte);border-left:4px solid var(--alerte);
+             padding:16px 18px;margin:26px 0 0;border-radius:0 10px 10px 0;font-size:14.5px;
+             line-height:1.6}
+  .brouillon b{color:var(--alerte)}
+  .brouillon ul{margin:10px 0 0;padding-left:20px}
+  .brouillon li{margin-top:6px}
+
+  nav.sommaire{margin:30px 0 0;padding:18px 20px;background:var(--plage);
+               border:1px solid var(--trait);border-radius:12px}
+  nav.sommaire b{display:block;margin-bottom:10px;font:700 10px/1 sans-serif;
+                 letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  nav.sommaire ol{margin:0;padding-left:22px;font-size:14.5px}
+  nav.sommaire li{margin-top:6px}
+  nav.sommaire a{color:var(--encre);text-decoration:none;border-bottom:1px solid var(--trait)}
+
+  h2{margin:44px 0 12px;font:400 22px/1.25 ui-serif,Georgia,serif;
+     padding-top:14px;border-top:1px solid var(--trait)}
+  h2 .num{color:var(--or);font-family:sans-serif;font-size:14px;font-weight:700;
+          letter-spacing:.08em;display:block;margin-bottom:6px}
+  h3{margin:26px 0 8px;font:600 16px/1.35 sans-serif}
+  p{margin:0 0 12px}
+  ul,ol{margin:0 0 12px;padding-left:22px}
+  li{margin-top:7px}
+  strong,b{font-weight:600}
+  .fort{background:var(--papier);padding:14px 16px;border-radius:10px;margin:0 0 14px}
+  .avide{color:var(--alerte);font-weight:600}
+  code{background:var(--papier);padding:1px 5px;border-radius:4px;font-size:13.5px}
+  table{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:14.5px}
+  th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--trait)}
+  th{font-weight:600;color:var(--encre-douce)}
+  .acompleter{color:var(--alerte);font-weight:600;white-space:nowrap}
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--trait);
+         font-size:13.5px;color:var(--gris)}
+  footer a{color:inherit}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="page">
+    <div class="marque">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg>
+      <span class="nom">ATLAS</span>
+    </div>
+    <h1>Conditions générales d’utilisation</h1>
+    <p class="date">Version 0.1 — brouillon du 8 septembre 2026</p>
+  </div>
+</header>
+
+<div class="page">
+
+  <div class="brouillon">
+    <b>Brouillon — à faire relire par un juriste avant toute mise en ligne.</b>
+    <p style="margin:8px 0 0">Ce texte n’est pas publiable en l’état. Trois raisons, et elles sont indépendantes :</p>
+    <ul>
+      <li>l’<b>éditeur n’existe pas encore</b> : la société reste à constituer (<code>docs/A-FAIRE.md</code> point 4). Sans elle, aucune mention légale ne peut être remplie ;</li>
+      <li>le <b>contrat de sous-traitance</b> exigé par l’article 28 du RGPD est un document distinct, et il doit être rédigé par un juriste (<code>docs/A-FAIRE.md</code> point 2) ;</li>
+      <li>plusieurs <b>durées de conservation annoncées ne sont pas encore appliquées</b> : le mécanisme existe, rien ne le déclenche (<code>docs/RGPD.md</code> §4). Annoncer une suppression qui n’a pas lieu est pire que ne rien annoncer.</li>
+    </ul>
+  </div>
+
+  <nav class="sommaire">
+    <b>Sommaire</b>
+    <ol>
+      <li><a href="#art1">Qui édite Atlas</a></li>
+      <li><a href="#art2">Ce que ce document engage</a></li>
+      <li><a href="#art3">Ce qu’Atlas fait — et ce qu’il ne fait pas</a></li>
+      <li><a href="#art4">L’assistance par intelligence artificielle</a></li>
+      <li><a href="#art5">Votre compte et vos accès</a></li>
+      <li><a href="#art6">Ce que vous vous engagez à ne pas faire</a></li>
+      <li><a href="#art7">Vos contenus vous appartiennent</a></li>
+      <li><a href="#art8">Données personnelles</a></li>
+      <li><a href="#art9">Disponibilité du service</a></li>
+      <li><a href="#art10">Sauvegarde et perte de données</a></li>
+      <li><a href="#art11">Responsabilité</a></li>
+      <li><a href="#art12">Durée, suspension, résiliation</a></li>
+      <li><a href="#art13">Récupérer vos données</a></li>
+      <li><a href="#art14">Prix et abonnement</a></li>
+      <li><a href="#art15">Modification des présentes conditions</a></li>
+      <li><a href="#art16">Force majeure</a></li>
+      <li><a href="#art17">Preuve</a></li>
+      <li><a href="#art18">Droit applicable et litiges</a></li>
+      <li><a href="#art19">Dispositions diverses</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="art1"><span class="num">ARTICLE 1</span>Qui édite Atlas</h2>
+
+  <p>Atlas est édité par :</p>
+  <table>
+    <tr><th>Dénomination sociale</th><td class="acompleter">[À COMPLÉTER]</td></tr>
+    <tr><th>Forme juridique</th><td class="acompleter">[À COMPLÉTER]</td></tr>
+    <tr><th>Capital social</th><td class="acompleter">[À COMPLÉTER]</td></tr>
+    <tr><th>Siège social</th><td class="acompleter">[À COMPLÉTER]</td></tr>
+    <tr><th>RCS et numéro SIREN</th><td class="acompleter">[À COMPLÉTER]</td></tr>
+    <tr><th>Numéro de TVA intracommunautaire</th><td class="acompleter">[À COMPLÉTER]</td></tr>
+    <tr><th>Directeur de la publication</th><td class="acompleter">[À COMPLÉTER]</td></tr>
+    <tr><th>Téléphone</th><td class="acompleter">[À COMPLÉTER]</td></tr>
+    <tr><th>Contact</th><td class="acompleter">[À COMPLÉTER — adresse e-mail dédiée]</td></tr>
+    <tr><th>Hébergeur</th><td class="acompleter">[À COMPLÉTER — dénomination, adresse, téléphone]</td></tr>
+  </table>
+
+  <div class="fort">
+    <p style="margin:0"><b>Pourquoi ces cases sont vides et le restent.</b> Ces mentions sont imposées par l’article&nbsp;1-1 de la loi pour la confiance dans l’économie numérique — depuis la loi SREN du 21&nbsp;mai&nbsp;2024, qui a remplacé l’ancien article&nbsp;6-III. Les omettre est puni d’un an d’emprisonnement et de 75&nbsp;000&nbsp;€ d’amende, portés à 375&nbsp;000&nbsp;€ pour une personne morale (article&nbsp;1-2 de la même loi). Les remplir au plausible serait donc pire que les laisser vides.</p>
+  </div>
+
+  <h2 id="art2"><span class="num">ARTICLE 2</span>Ce que ce document engage</h2>
+
+  <p>Les présentes conditions régissent l’accès à Atlas et son utilisation. Elles forment un contrat entre l’éditeur et vous — <b>professionnel agissant dans le cadre de votre activité</b>. Atlas n’est pas destiné aux consommateurs.</p>
+
+  <p>Vous les acceptez en créant un compte. Si vous n’en acceptez pas un point, n’utilisez pas le service.</p>
+
+  <p>Si vous créez un compte pour le compte d’une entreprise, vous déclarez avoir le pouvoir de l’engager.</p>
+
+  <p>Deux documents s’y ajoutent et en font partie intégrante :</p>
+  <ul>
+    <li>la <a href="confidentialite.html">politique de confidentialité</a> ;</li>
+    <li>le <b>contrat de sous-traitance</b> au sens de l’article&nbsp;28 du RGPD, qui régit les données de <em>vos</em> clients — <span class="acompleter">[À COMPLÉTER — document distinct, à faire rédiger]</span>.</li>
+  </ul>
+
+  <h2 id="art3"><span class="num">ARTICLE 3</span>Ce qu’Atlas fait — et ce qu’il ne fait pas</h2>
+
+  <p>Atlas est un outil d’aide à la préparation du travail administratif d’un artisan : transcription d’une note dictée, rédaction de propositions de lignes de devis, planning, préparation de factures et de relevés de TVA, et outils de métier (plan d’arrosage, diagnostic végétal, fiches d’entretien).</p>
+
+  <h3>Ce qu’Atlas n’est pas</h3>
+  <ul>
+    <li><b>Atlas n’est pas un logiciel de comptabilité</b>, et ne se substitue à aucune obligation comptable, fiscale ou déclarative. Il prépare des éléments destinés à être transmis aux outils et aux professionnels dont c’est le métier.</li>
+    <li><b>Atlas ne fournit aucun conseil</b> comptable, fiscal, juridique, technique ou d’assurance.</li>
+    <li><b>Atlas n’émet aucun document en votre nom sans votre geste.</b> Aucun devis, aucune facture, aucun envoi ne part sans que vous l’ayez validé.</li>
+  </ul>
+
+  <h3>Les outils de métier sont des aides au dimensionnement</h3>
+  <p>Les calculs de métier — en particulier le <b>plan d’arrosage</b> — sont des <b>aides à la décision fondées sur les informations que vous saisissez</b>. Ils ne constituent ni une étude d’exécution, ni une note de calcul opposable, ni un document de conception au sens des règles de l’art.</p>
+  <p class="fort" style="margin-top:0"><b>Vous demeurez seul responsable</b> du dimensionnement, du choix du matériel, de la conformité de l’installation et de sa mise en œuvre. Il vous appartient de vérifier chaque valeur avant d’engager un chantier. Atlas signale à l’écran ce qu’il n’a pas pu calculer ; l’absence de réserve ne vaut pas garantie d’exactitude.</p>
+
+  <h2 id="art4"><span class="num">ARTICLE 4</span>L’assistance par intelligence artificielle</h2>
+
+  <p>Atlas utilise des modèles d’intelligence artificielle fournis par des tiers pour transcrire vos dictées, en extraire des informations et proposer des lignes de devis.</p>
+
+  <div class="fort">
+    <p style="margin:0 0 8px"><b>L’intelligence artificielle prépare&nbsp;; vous décidez.</b></p>
+    <p style="margin:0">Tout résultat produit par ces modèles est une <b>proposition</b>, susceptible d’être inexacte, incomplète ou inadaptée. Vous vous engagez à la relire et à la corriger avant tout usage. <b>Vous demeurez seul auteur et seul responsable</b> des devis, factures, prix, durées, quantités et documents que vous émettez à partir d’Atlas, ainsi que de leur conformité.</p>
+  </div>
+
+  <p>L’éditeur ne garantit ni l’exactitude, ni la pertinence, ni la complétude des propositions générées, et n’est pas responsable des conséquences d’un contenu généré que vous auriez validé sans vérification.</p>
+
+  <p>Vous êtes informé que le contenu de vos dictées et des informations de chantier est transmis aux fournisseurs listés dans la <a href="confidentialite.html">politique de confidentialité</a>. <b>Ne dictez pas d’information que vous ne souhaitez pas voir transmise à ces fournisseurs</b> — notamment des données sensibles au sens de l’article&nbsp;9 du RGPD (santé, situation familiale, opinions).</p>
+
+  <h2 id="art5"><span class="num">ARTICLE 5</span>Votre compte et vos accès</h2>
+
+  <ul>
+    <li>Vous vous engagez à fournir des informations exactes et à les tenir à jour.</li>
+    <li><b>Vos identifiants sont personnels et confidentiels.</b> Vous êtes responsable de leur conservation et de tout usage fait depuis votre compte.</li>
+    <li>Vous informez l’éditeur sans délai de toute utilisation non autorisée dont vous auriez connaissance.</li>
+    <li>En tant que titulaire du compte de l’entreprise, <b>vous créez et supprimez les accès de vos collaborateurs</b> et vous êtes responsable de leurs agissements sur le service, ainsi que du retrait d’un accès devenu inutile.</li>
+  </ul>
+
+  <h2 id="art6"><span class="num">ARTICLE 6</span>Ce que vous vous engagez à ne pas faire</h2>
+
+  <ul>
+    <li>utiliser Atlas à des fins illicites, ou en violation des droits d’un tiers ;</li>
+    <li>y verser des contenus dont vous n’avez pas le droit de disposer ;</li>
+    <li>tenter d’accéder aux données d’une autre entreprise, contourner une mesure de sécurité, ou éprouver la résistance du service sans autorisation écrite préalable ;</li>
+    <li>procéder à une extraction massive ou automatisée des données du service ;</li>
+    <li>décompiler ou désassembler le service, hors les cas prévus par l’article&nbsp;L.122-6-1 du Code de la propriété intellectuelle ;</li>
+    <li>revendre, sous-licencier ou mettre le service à disposition d’un tiers sans autorisation écrite ;</li>
+    <li>soumettre au service des volumes manifestement disproportionnés au regard d’un usage professionnel normal.</li>
+  </ul>
+
+  <h2 id="art7"><span class="num">ARTICLE 7</span>Vos contenus vous appartiennent</h2>
+
+  <p><b>Vous demeurez propriétaire de tout ce que vous versez dans Atlas</b> : clients, chantiers, dictées, photos, prix, devis et factures.</p>
+
+  <p>Vous concédez à l’éditeur une licence non exclusive, limitée à la durée du contrat et <b>strictement nécessaire à l’exécution du service</b> : héberger, afficher, sauvegarder, transmettre aux sous-traitants listés, et générer les documents que vous demandez.</p>
+
+  <p class="fort" style="margin-top:0"><b>Aucun autre usage.</b> L’éditeur n’exploite pas vos contenus à des fins commerciales, publicitaires, statistiques nominatives, ni pour entraîner des modèles d’intelligence artificielle.</p>
+
+  <p>Le service lui-même — son code, son interface, ses bases de connaissances métier — reste la propriété exclusive de l’éditeur. Ces conditions ne vous en cèdent aucun droit.</p>
+
+  <h2 id="art8"><span class="num">ARTICLE 8</span>Données personnelles</h2>
+
+  <p>Deux relations distinctes, qu’il ne faut pas confondre :</p>
+  <table>
+    <tr><th>Données concernées</th><th>Rôle de l’éditeur</th><th>Votre rôle</th></tr>
+    <tr><td>Votre compte, votre entreprise, votre abonnement</td><td>Responsable de traitement</td><td>Personne concernée</td></tr>
+    <tr><td><b>Les données de vos clients</b> — nom, adresse, téléphone, chantiers, devis</td><td><b>Sous-traitant</b></td><td><b>Responsable de traitement</b></td></tr>
+  </table>
+
+  <p>Pour la seconde relation, l’article&nbsp;28 du RGPD impose un <b>contrat de sous-traitance écrit</b>, distinct des présentes conditions. Il précise la liste des sous-traitants ultérieurs, que vous autorisez en l’acceptant, et dont tout changement vous est notifié avec un délai pour vous y opposer.</p>
+
+  <p>Le détail est dans la <a href="confidentialite.html">politique de confidentialité</a>.</p>
+
+  <h2 id="art9"><span class="num">ARTICLE 9</span>Disponibilité du service</h2>
+
+  <p>L’éditeur est tenu d’une <b>obligation de moyens</b> quant à la disponibilité et au bon fonctionnement d’Atlas.</p>
+
+  <p><b>Aucun taux de disponibilité n’est garanti</b> en l’absence de convention de service (SLA) souscrite séparément. Le service peut être interrompu, notamment :</p>
+  <ul>
+    <li>pour maintenance, corrective ou évolutive ;</li>
+    <li>du fait d’un hébergeur, d’un opérateur, d’un fournisseur d’intelligence artificielle ou de tout autre tiers ;</li>
+    <li>du fait de votre propre connexion, de votre matériel ou de votre configuration ;</li>
+    <li>en cas de force majeure (article&nbsp;16).</li>
+  </ul>
+
+  <p>Les fonctions faisant appel à l’intelligence artificielle dépendent de services tiers : leur indisponibilité, leur lenteur ou leur modification échappent au contrôle de l’éditeur.</p>
+
+  <p>L’éditeur peut faire évoluer le service, en modifier ou en retirer des fonctions. Si un retrait affecte substantiellement l’usage que vous en faites, vous pouvez résilier sans frais dans les conditions de l’article&nbsp;12.</p>
+
+  <h2 id="art10"><span class="num">ARTICLE 10</span>Sauvegarde et perte de données</h2>
+
+  <div class="fort">
+    <p style="margin:0 0 8px"><b>L’essentiel en une phrase.</b></p>
+    <p style="margin:0">Atlas met en œuvre des moyens raisonnables pour conserver vos données, mais <b>il vous appartient d’en conserver votre propre copie</b> — et le service vous en donne le moyen à tout moment.</p>
+  </div>
+
+  <h3>Ce que l’éditeur s’engage à faire</h3>
+  <p>L’éditeur met en œuvre les moyens techniques raisonnables, conformes à l’état de l’art, pour préserver l’intégrité et la disponibilité de vos données : cloisonnement des entreprises appliqué au niveau de la base de données, empreintes des mots de passe, en-têtes de sécurité, limitation de débit, et procédures de sauvegarde et de restauration documentées.</p>
+  <p>Il s’agit d’une <b>obligation de moyens renforcée</b>, non d’une obligation de résultat.</p>
+
+  <h3>Ce que vous vous engagez à faire</h3>
+  <p>Atlas met à votre disposition, en permanence et sans frais, une fonction d’export de l’ensemble des données de votre entreprise, dans un fichier qui s’ouvre sans Atlas : <b>Réglages, puis Mes données</b>.</p>
+  <p><b>Vous vous engagez à en faire usage régulièrement</b> et à conserver ces copies sur un support dont vous avez la maîtrise. Cette copie est votre sauvegarde de référence.</p>
+
+  <h3>Ce qui en découle</h3>
+  <p>En cas de perte, d’altération ou d’indisponibilité de données, l’intervention de l’éditeur consiste à <b>rétablir le service et restaurer les données à partir de ses dernières sauvegardes disponibles</b>. Vous acceptez que cette restauration puisse comporter une perte portant sur la période séparant l’incident de la dernière sauvegarde exploitable.</p>
+
+  <p><b>L’éditeur n’est pas responsable des pertes de données résultant :</b></p>
+  <ul>
+    <li>d’une suppression, d’une modification ou d’une manipulation effectuée depuis votre compte ou celui d’un de vos collaborateurs ;</li>
+    <li>d’un défaut de conservation de vos propres exports ;</li>
+    <li>de la perte, du partage ou de la compromission de vos identifiants ;</li>
+    <li>du fait d’un tiers — hébergeur, opérateur, fournisseur — ou d’un acte de malveillance dirigé contre ces tiers ;</li>
+    <li>d’une cause de force majeure.</li>
+  </ul>
+
+  <p>Les durées de conservation applicables — y compris les suppressions automatiques et les conservations imposées par la loi — figurent dans la <a href="confidentialite.html">politique de confidentialité</a>.</p>
+
+  <h2 id="art11"><span class="num">ARTICLE 11</span>Responsabilité</h2>
+
+  <h3>11.1 — Dommages exclus</h3>
+  <p>La responsabilité de l’éditeur ne peut être engagée au titre des <b>dommages indirects</b>, notamment : perte d’exploitation, perte de chiffre d’affaires, de bénéfice, de marge ou d’économies escomptées, perte de clientèle ou de chance, perte de commande, atteinte à l’image ou à la réputation, ainsi que toute action dirigée contre vous par un tiers, dès lors que ces préjudices ne sont pas la suite immédiate et directe d’un manquement de l’éditeur.</p>
+
+  <h3>11.2 — Plafond</h3>
+  <p>En tout état de cause, et pour l’ensemble des dommages confondus survenus au cours d’une même année contractuelle, la responsabilité de l’éditeur est plafonnée au plus élevé des deux montants suivants :</p>
+  <ul>
+    <li>le total des sommes que vous avez effectivement versées au titre de l’abonnement au cours des <b>douze mois</b> précédant le fait générateur ;</li>
+    <li><span class="acompleter">[À COMPLÉTER — un montant plancher, en euros]</span>.</li>
+  </ul>
+  <div class="fort">
+    <p style="margin:0"><b>Pourquoi un plancher, et pourquoi il n’est pas rempli ici.</b> Un plafond dérisoire — a fortiori un plafond nul, ce que donnerait un service gratuit — est écarté par le juge comme privant l’obligation essentielle de sa substance. Le montant doit donc être réel et proportionné, et se décide avec le juriste et l’assureur, pas ici.</p>
+  </div>
+
+  <h3>11.3 — Ce que rien ne peut exclure</h3>
+  <p>Les limitations ci-dessus ne s’appliquent pas :</p>
+  <ul>
+    <li>en cas de <b>dol ou de faute lourde</b> de l’éditeur (article&nbsp;1231-3 du Code civil) ;</li>
+    <li>en cas de dommage corporel ;</li>
+    <li>dans tous les cas où la loi interdit une telle limitation.</li>
+  </ul>
+  <p>Elles ne font pas obstacle aux droits que les personnes concernées tiennent du RGPD, qui ne peuvent être écartés par contrat.</p>
+
+  <h3>11.4 — Votre responsabilité</h3>
+  <p>Vous êtes responsable de l’exactitude des données que vous saisissez, du contrôle des propositions générées avant émission, du respect de vos obligations professionnelles, comptables et fiscales, et de la licéité des traitements que vous mettez en œuvre sur les données de vos clients.</p>
+  <p>Vous garantissez l’éditeur contre toute réclamation d’un tiers résultant d’un usage du service contraire aux présentes conditions ou à la loi.</p>
+
+  <h3>11.5 — Délai pour agir</h3>
+  <p>Conformément à l’article&nbsp;2254 du Code civil, toute action fondée sur les présentes doit être engagée dans un délai de <b>douze mois</b> à compter du jour où vous avez connu ou auriez dû connaître le fait générateur, à peine de forclusion.</p>
+
+  <h2 id="art12"><span class="num">ARTICLE 12</span>Durée, suspension, résiliation</h2>
+
+  <p>Le contrat est conclu pour la durée de l’abonnement souscrit et se renouvelle selon les modalités indiquées lors de la souscription.</p>
+
+  <h3>Résiliation par vous</h3>
+  <p>Vous pouvez résilier à tout moment, avec effet à la fin de la période en cours. Les sommes déjà versées au titre de la période en cours restent acquises, sauf manquement de l’éditeur.</p>
+
+  <h3>Suspension ou résiliation par l’éditeur</h3>
+  <p>L’éditeur peut suspendre l’accès, immédiatement et sans indemnité, en cas de manquement grave — notamment un usage illicite, une atteinte à la sécurité, ou un défaut de paiement persistant après mise en demeure restée sans effet pendant quinze jours.</p>
+  <p>Hors urgence ou illicéité manifeste, la suspension est précédée d’un avertissement laissant un délai raisonnable pour y remédier.</p>
+
+  <h2 id="art13"><span class="num">ARTICLE 13</span>Récupérer vos données</h2>
+
+  <p>Pendant toute la durée du contrat, vous pouvez exporter l’intégralité des données de votre entreprise depuis <b>Réglages, puis Mes données</b>, dans un format exploitable sans Atlas.</p>
+
+  <p>À compter de la fin du contrat, vos données restent récupérables par ce moyen pendant <span class="acompleter">[À COMPLÉTER — un délai, 30 jours étant l’usage]</span>. Passé ce délai, elles sont supprimées, à l’exception de ce que la loi impose de conserver — notamment les pièces comptables, conservées dix ans en application de l’article&nbsp;L.123-22 du Code de commerce.</p>
+
+  <p>Aucune prestation de reprise, de conversion ou d’accompagnement à la migration n’est incluse&nbsp;; elle peut faire l’objet d’un devis distinct.</p>
+
+  <h2 id="art14"><span class="num">ARTICLE 14</span>Prix et abonnement</h2>
+
+  <p class="fort" style="margin-top:0"><span class="acompleter">[À COMPLÉTER]</span> — le prix et le contenu de l’abonnement ne sont pas arrêtés à ce jour. Cet article doit énoncer&nbsp;: le tarif, sa périodicité, ce qu’il comprend, la TVA applicable, les modalités et le moyen de paiement, les conséquences d’un défaut de paiement, et les conditions de révision du tarif — avec un préavis raisonnable et un droit de résiliation en cas de hausse.</p>
+
+  <h2 id="art15"><span class="num">ARTICLE 15</span>Modification des présentes conditions</h2>
+
+  <p>L’éditeur peut modifier les présentes conditions. Toute modification substantielle vous est notifiée par un moyen durable, au moins <b>trente jours</b> avant son entrée en vigueur.</p>
+  <p>Si vous refusez la nouvelle version, vous pouvez résilier sans frais avant cette date. La poursuite de l’utilisation après l’entrée en vigueur vaut acceptation.</p>
+  <p>Chaque version est datée et numérotée&nbsp;; les versions antérieures sont conservées et communiquées sur demande.</p>
+
+  <h2 id="art16"><span class="num">ARTICLE 16</span>Force majeure</h2>
+
+  <p>Aucune des parties ne répond d’un manquement causé par un événement de force majeure au sens de l’article&nbsp;1218 du Code civil.</p>
+  <p>Sont notamment regardés comme tels, dès lors qu’ils réunissent les caractères de ce texte&nbsp;: les défaillances généralisées des réseaux de communication électronique ou de fourniture d’énergie, les défaillances d’un hébergeur ou d’un opérateur, les attaques informatiques d’une ampleur qui n’a pas pu être raisonnablement prévenue, les catastrophes naturelles, incendies et inondations, ainsi que les décisions d’une autorité publique faisant obstacle à l’exécution.</p>
+  <p>Si l’empêchement se prolonge au-delà de trente jours, chaque partie peut résilier de plein droit, sans indemnité.</p>
+
+  <h2 id="art17"><span class="num">ARTICLE 17</span>Preuve</h2>
+
+  <p>Les journaux techniques et enregistrements conservés par l’éditeur dans des conditions de nature à en garantir l’intégrité font foi entre les parties, jusqu’à preuve contraire, des connexions, des acceptations et des opérations réalisées sur le service.</p>
+
+  <h2 id="art18"><span class="num">ARTICLE 18</span>Droit applicable et litiges</h2>
+
+  <p>Les présentes conditions sont soumises au <b>droit français</b>.</p>
+  <p>En cas de différend, les parties s’efforcent d’abord de trouver une solution amiable. À défaut d’accord dans un délai de trente jours à compter de la première réclamation écrite, le litige est porté devant le <b>tribunal de commerce du ressort du siège social de l’éditeur</b>, y compris en cas de pluralité de défendeurs, d’appel en garantie ou de procédure d’urgence.</p>
+
+  <h2 id="art19"><span class="num">ARTICLE 19</span>Dispositions diverses</h2>
+
+  <ul>
+    <li><b>Nullité partielle.</b> Si une clause est jugée nulle, non écrite ou inapplicable, elle est réputée non écrite dans cette seule mesure&nbsp;; les autres conservent leur plein effet, et les parties s’efforcent de lui substituer une clause valable d’effet équivalent.</li>
+    <li><b>Non-renonciation.</b> Le fait de ne pas se prévaloir d’un manquement ne vaut pas renonciation à s’en prévaloir ultérieurement.</li>
+    <li><b>Cession.</b> Vous ne pouvez céder le contrat sans l’accord écrit de l’éditeur. L’éditeur peut le céder en cas d’opération sur son capital ou de transfert de son activité, à charge de vous en informer.</li>
+    <li><b>Intégralité.</b> Les présentes conditions, la politique de confidentialité et le contrat de sous-traitance forment l’intégralité de l’accord.</li>
+    <li><b>Langue.</b> La version française fait seule foi.</li>
+  </ul>
+
+  <footer>
+    <p>Version 0.1 — brouillon du 8 septembre 2026. <b>Non publiable en l’état</b> : voir le bandeau du haut.</p>
+    <p><a href="confidentialite.html">Politique de confidentialité</a> · <a href="essais.html">Retour aux maquettes</a></p>
+  </footer>
+</div>
+
+</body>
+</html>

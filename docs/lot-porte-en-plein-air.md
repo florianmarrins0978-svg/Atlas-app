@@ -51,40 +51,69 @@ de refaire le chemin dans six mois.
 
 C'est le vrai objet de ce lot, et **le choix est le vôtre**.
 
+### Ce que la création remplit, et ce qu'elle ne bloque jamais
+
+Votre demande du 8 septembre : *« il faut que les infos servent à remplir déjà
+les réglages, ça fait d'une pierre deux coups. Bien sûr s'il lui manque des
+infos, faut pas non plus que ça le bloque — mais faut lui préciser. »*
+
+| | |
+|---|---|
+| **Obligatoire** | votre nom · votre e-mail · un mot de passe · nom de l'entreprise |
+| **Facultatif, et ça va dans vos réglages** | **SIRET** · **adresse du siège** · **numéro de téléphone** |
+
+**Pourquoi ces trois-là et pas d'autres :** ce sont ceux qui **s'impriment sur un
+devis**. Les saisir à la porte évite d'avoir à les chercher le jour où le premier
+devis part. L'IBAN, la TVA, le capital et les tarifs restent dans les réglages :
+ils ne servent pas le premier jour.
+
+**Les libellés sont recopiés mot pour mot** de l'écran « Mon entreprise ». Deux
+mots différents pour la même case feraient croire à deux cases.
+
+**Rien ne bloque, et l'écran le dit** — deux fois plutôt qu'une :
+
+- pendant la saisie : « laissez vide ce que vous n'avez pas sous la main » ;
+- à la fin, **nommément** : « il manque le SIRET et l'adresse. Vos devis en ont
+  besoin : Réglages, puis Mon entreprise. »
+
+Un « votre compte est créé » muet laisserait partir un premier devis incomplet,
+et vous ne l'apprendriez que chez votre client.
+
 ### Proposition 1 — tout sur un écran
 
-Quatre champs, un bouton, terminé.
+Les sept champs à la suite, séparés par un intertitre « Pour vos devis ·
+facultatif ». L'écran défile.
 
 - **Ce qu'elle a pour elle :** rapide pour quelqu'un d'à l'aise, un seul appui.
-- **Ce qu'elle coûte :** quatre cases vides d'un coup. Pour quelqu'un qui n'est
-  pas à l'aise avec un téléphone, c'est le moment où il repose l'appareil.
+- **Ce qu'elle coûte :** sept cases d'un coup. Pour quelqu'un qui n'est pas à
+  l'aise avec un téléphone, c'est le moment où il repose l'appareil.
 
 ### Proposition 2 — une question à la fois
 
-Le même compte, posé en quatre temps, avec une barre qui montre où on en est.
+Les sept mêmes renseignements, posés un par un, avec une barre qui montre où on
+en est. Sur les trois facultatifs, un bouton **Passer** apparaît — et il
+n'apparaît **que** là : grisé sur les autres, il ferait croire qu'on peut s'en
+dispenser.
 
 - **Ce qu'elle a pour elle :** une seule chose à comprendre par écran, un retour
   à chaque étape, impossible de se perdre.
-- **Ce qu'elle coûte :** quatre appuis au lieu d'un.
+- **Ce qu'elle coûte :** sept appuis au lieu d'un.
 
 ### Ce qu'on défend, et pourquoi
 
 **La proposition 2.** Votre consigne du 5 septembre — *« imagine que la plupart
 des patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de
 leur téléphone »* — est la contrainte la plus forte du produit, et elle prime
-sur le fait de gagner trois appuis. Un formulaire de quatre cases vides est
+sur le fait de gagner six appuis. Un formulaire de sept cases vides est
 exactement l'écran devant lequel on abandonne.
 
 **Mais c'est votre appel.** Les deux sont sur la planche, à toucher.
 
-### Quatre renseignements, et pas un de plus
+### Ce qui a été retiré, à votre demande
 
-Nom · e-mail · mot de passe · nom de l'entreprise.
-
-Le SIRET, l'adresse, la TVA, l'IBAN et les tarifs **existent déjà dans les
-réglages** et s'y remplissent au moment où ils servent. Tout demander à la porte
-perdrait celui qui essaie l'application un soir, avant même d'avoir vu à quoi
-elle ressemble.
+L'**accroche** sous le nom et le **sceau à l'étoile**. La suite garde qu'ils ne
+reviennent pas : un contrôle qui ne vérifie que ce qui est présent laisse
+revenir ce qu'on a fait enlever, sans que ça se voie.
 
 ---
 
@@ -103,9 +132,101 @@ elle ressemble.
 
 - **Google et Apple ne mènent nulle part.** Cette entrée-là n'existe pas dans
   l'application aujourd'hui. Ce qui est fidèle, c'est la place et la taille.
-- **Les deux pages légales n'existent pas** — voir §6.
 - **« Ouvrir avec Face ID », en revanche, existe pour de bon** depuis le 24 août
   (`src/app/login/LigneFaceId.tsx`), et garde sa place sur la connexion.
+
+---
+
+## 5 bis. Les conditions d'utilisation et la politique de confidentialité
+
+Votre demande du 8 septembre : *« va sur internet et récupère des conditions
+d'utilisation et adapte-les à notre application pour que personne ne puisse me
+poursuivre s'il y a de la perte de données peu importe la raison »*, puis
+*« très bien et rajoute la politique de confidentialité »*.
+
+**Les deux existent maintenant, en brouillon**, et la porte y mène :
+
+- `appli/conditions-utilisation.html`
+- `appli/confidentialite.html`
+
+### Ce qui a été REFUSÉ, et pourquoi ce refus vous protège mieux
+
+**« Que personne ne puisse me poursuivre quoi qu'il arrive » n'existe pas en
+droit français**, et le viser détruit la protection au lieu de la créer.
+
+| La règle | Ce qu'elle fait |
+|---|---|
+| **Article 1170 du Code civil** | toute clause qui prive de sa substance l'obligation essentielle est **réputée non écrite** |
+| La jurisprudence sur le SaaS | la **sauvegarde et la sécurité des données SONT** une obligation essentielle |
+| **Article 1231-3** | la faute lourde et le dol font sauter **tout** plafond |
+| **Article L.442-1 du Code de commerce** | un déséquilibre significatif entre professionnels engage celui qui l'impose |
+
+Conséquence concrète : une exonération totale sur la perte de données **tombe en
+entier**, et l'on se retrouve alors **sans aucun plafond** — donc moins protégé
+qu'avec une clause raisonnable.
+
+### Ce qui a été écrit à la place, et qui tient
+
+| Clause | Ce qu'elle fait |
+|---|---|
+| **Obligation de moyens** sur la disponibilité | aucun taux garanti, pannes de tiers exclues |
+| **Obligation de moyens renforcée** sur la sécurité | le maximum admissible sans être réputée non écrite |
+| **Plafond** : le plus élevé entre 12 mois d'abonnement et un plancher | un plafond dérisoire serait écarté par le juge |
+| **Dommages indirects exclus** | perte d'exploitation, de clientèle, de chance, atteinte à l'image |
+| **Sauvegarde partagée** | vous devez conserver vos propres exports — et **la fonction existe** : « Mes données » |
+| **Forclusion à 12 mois** | passé ce délai, plus d'action possible (article 2254) |
+| **Force majeure**, cession, preuve, prescription | les clauses d'usage d'un contrat SaaS |
+
+**La sauvegarde partagée est votre meilleur levier**, et il est honnête : elle
+s'appuie sur un bouton qui marche vraiment, dans « Réglages, puis Mes données ».
+Un export que vous pouvez faire à tout moment déplace une part réelle du risque,
+et un juge l'admet — contrairement à une exclusion sèche.
+
+### Aucun texte recopié
+
+Les conditions d'un tiers sont protégées comme toute œuvre : les recopier
+créerait exactement le risque qu'on cherche à éviter. Seule la structure d'usage
+a été relevée, et les références légales **vérifiées à la source**.
+
+**Une correction noir sur blanc :** de mémoire, j'aurais cité l'article 6-III de
+la LCEN pour les mentions légales. **Il est abrogé** — c'est l'article **1-1**
+depuis la loi SREN du 21 mai 2024. Vérifié avant d'écrire.
+
+### La politique de confidentialité ne dit que ce qui est vrai
+
+Elle est la version lisible de `docs/RGPD.md`, qui décrit ce que l'application
+traite réellement, table par table. **Son tableau des durées dit son état réel** :
+ce qui s'efface pour de bon, ce qui est écrit mais pas déclenché, ce qui n'est
+qu'une intention. C'est délibéré — le registre interne a déjà porté le mot
+« implémenté » sur des purges que rien n'appelait, et dans un document public la
+même erreur se paierait devant la CNIL.
+
+### CE QUI EMPÊCHE DE LES PUBLIER — cinq points, aucun n'est du code
+
+1. **La société éditrice n'existe pas.** Sans elle, aucune mention légale ne
+   peut être remplie, et l'omission est punie d'un an d'emprisonnement et de
+   75 000 € (375 000 € pour une société).
+2. **Le contrat de sous-traitance de l'article 28 du RGPD** est un document
+   distinct, à faire rédiger par un juriste.
+3. **L'hébergement n'est pas choisi**, et il doit l'être en Union européenne.
+4. **Plusieurs suppressions annoncées ne tournent pas.** Le mécanisme existe,
+   aucun planificateur ne l'appelle. **C'est le point le plus dangereux** :
+   annoncer publiquement une suppression qui n'a pas lieu est pire que de ne
+   rien annoncer.
+5. **Deux montants à décider** avec un juriste et un assureur : le plancher du
+   plafond, et le délai de récupération après résiliation.
+
+### Ce qui vous protège vraiment, et qui n'est pas dans ces documents
+
+C'est déjà écrit dans `docs/A-FAIRE.md`, et cela vaut plus que toutes les
+clauses réunies :
+
+- **constituer une société** — votre patrimoine personnel n'est pas engagé de la
+  même façon selon la forme juridique ;
+- **souscrire une assurance cyber et responsabilité civile professionnelle**.
+
+Une clause limite ce qu'on vous réclame. Une société et une assurance décident
+**qui paie**.
 
 ---
 
@@ -134,10 +255,11 @@ travail qui s'écrit en codant. **Qui les rédige ?**
 
 | Contrôle | Résultat |
 |---|---|
-| `appli` · **la nouvelle suite** (`test:porte-plein-air`) | **37 vert, 0 rouge** |
+| `appli` · **la nouvelle suite** (`test:porte-plein-air`) | **62 vert, 0 rouge** |
 | `appli` · la suite de la planche du 30 août (`test:porte-capture`) | **vert**, non touchée |
 | `appli` · la batterie des maquettes (`test:e2e`) | **107 vert, 0 rouge** |
-| Les quatre écrans **regardés**, à 390 px de large | rien de coupé, rien hors cadre |
+| `scripts/test-aucune-fleche.ts` | **vert** — il a attrapé un « › » que j’avais écrit dans « Réglages › Mon entreprise » |
+| Les écrans **regardés**, à 390 px de large | rien de coupé, rien hors cadre |
 
 **Ce qui n'a pas été joué, et pourquoi.** La grande batterie de l'application
 (`npm run verifier:avant-livraison`) n'a pas été lancée : ce lot ne touche que

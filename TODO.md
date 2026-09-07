@@ -26,11 +26,32 @@ attendent sa réponse, et le détail est dans `docs/lot-porte-en-plein-air.md` :
 5. « Créer un compte » crée un **patron et son entreprise** — un salarié reçoit
    son accès de son patron dans les réglages. À confirmer.
 
-**BLOQUANT, ET CE N'EST PAS DU CODE.** Les pages « Conditions d'utilisation » et
-« Politique de confidentialité » **n'existent pas** dans le dépôt : la porte les
-lie, et les liens ne mènent nulle part. Aucune mise en ligne publique n'est
-possible sans elles. À proposer pour `docs/A-FAIRE.md` — son accord d'abord
-(`AGENTS.md`).
+**Les deux pages légales existent désormais, EN BROUILLON** —
+`appli/conditions-utilisation.html` et `appli/confidentialite.html`, écrites le
+8 septembre à sa demande. La porte y mène pour de bon.
+
+**CE QUI RESTE BLOQUANT, ET CE N'EST PAS DU CODE :**
+
+1. **la société éditrice n'existe pas** — sans elle, aucune mention légale de
+   l'article 1-1 de la LCEN ne peut être remplie, et l'omission est pénalement
+   sanctionnée (`docs/A-FAIRE.md` point 4) ;
+2. **le contrat de sous-traitance de l'article 28 du RGPD** reste à faire
+   rédiger — document distinct des conditions (`docs/A-FAIRE.md` point 2) ;
+3. **l'hébergement n'est pas choisi**, et il doit l'être en Union européenne
+   (`docs/A-FAIRE.md` point 3) ;
+4. **plusieurs durées de conservation annoncées ne tournent pas** : le mécanisme
+   existe, aucun planificateur ne l'appelle (`docs/RGPD.md` §4,
+   `docs/DEPLOIEMENT-PURGE.md`). **C'est le point le plus dangereux des cinq** —
+   annoncer dans un document public une suppression qui n'a pas lieu est une
+   faute plus grave que ne rien annoncer ;
+5. **deux montants à décider** avec un juriste et un assureur : le plancher du
+   plafond de responsabilité, et le délai de récupération des données après
+   résiliation. Un plafond dérisoire — ce que donnerait un service gratuit — est
+   écarté par le juge, et l'on se retrouve alors sans plafond du tout.
+
+Tant que ces cinq points tiennent, les deux pages portent leur bandeau de
+brouillon. `essai-porte-plein-air.mjs` refuse qu'il disparaisse tant qu'il reste
+une case `[À COMPLÉTER]`, et refuse qu'il reste quand il n'y en a plus.
 
 ---
 
@@ -56,7 +77,26 @@ depuis la dernière prestation, qui reprend aussi le contenu du chantier).
 ## 🔜 LOT 2 — la fiche d'intervention du salarié
 
 Bloqué par rien, mais il vient **après** le lot 1 et il ne se mélange pas avec
-lui. Ce qui est déjà décidé (`ARCHITECTURE.md` §285) :
+lui.
+
+**Deux choses qu'il a ajoutées le 8 septembre 2026, et qui ne sont écrites que
+là :**
+
+1. **La fiche d'intervention se rattache aux informations du client SUR LE
+   PLANNING** — *« pour que le salarié puisse la voir »*. C'est le seul endroit
+   d'où il l'atteint : `OUVERT_AU_SALARIE` ne contient que `/planning`, et
+   `/chantiers/…` lui est fermé d'office (`src/lib/acces-roles.ts`). La carte du
+   planning est donc la porte, et il ne faut pas en inventer une autre.
+2. **Une feuille de PREUVE DE FIN DE CHANTIER**, distincte de la feuille de
+   travail : *« que le salarié remplira ou non, ça sera au patron de décider —
+   mais sur cette feuille il marquera ce qu'ils ont fait sur le chantier, avec
+   photo à l'appui »*.
+
+   Trois choses à ne pas rater : **c'est le patron qui décide** si elle est
+   demandée (donc un réglage, pas une obligation) ; elle porte **ce qui a été
+   fait**, pas ce qu'il y avait à faire ; et **aucun montant** n'y figure.
+
+Ce qui est déjà décidé (`ARCHITECTURE.md` §285) :
 
 - le salarié dépose photos et « c'est fini » **sur les chantiers de sa journée**,
   sans jamais un montant. Le contrôle doit le **prouver**, et avoir été vu rouge ;
