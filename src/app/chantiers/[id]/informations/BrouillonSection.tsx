@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { colors, libelleCaps, texteSituation, font } from "@/lib/design-tokens";
+import { colors, libelleCaps, texteSituation, font, voile } from "@/lib/design-tokens";
+import PrimaryButton from "@/components/atlas/PrimaryButton";
 import type { PropositionExtraction, LigneExtraite, LectureDictee } from "@/server/ai/schemas/extraction";
 import type { EtatFraicheurBrouillon } from "@/lib/brouillon-etat";
 import { reservesLisibles, phraseDuReste } from "@/lib/brouillon-reserves";
@@ -27,25 +28,35 @@ const MENTION_LITTERALE =
   "Votre dictée a été recopiée mot à mot : aucun modèle n'était disponible pour la comprendre. " +
   "Chaque phrase est donc reprise telle quelle — relisez-la de près avant de confirmer.";
 
-type Props = {
-  chantierId: string;
-  brouillonInitial: BrouillonInitial;
-  transcriptionDisponible: boolean;
-  /** Une note vocale existe, mais elle n'a pas été transcrite (aucun prestataire). */
-  dicteeNonTranscrite: boolean;
-  onApplique: (prestations: { id: string; libelle: string }[], materiel: { id: string; libelle: string }[]) => void;
-};
+/** Tout ce que l'écran sait du brouillon — une seule source pour ses morceaux. */
+export type Brouillon = ReturnType<typeof useBrouillon>;
 
-// Brouillon structuré issu de la dictée. Tout ce qui s'affiche ici est une
-// proposition : rien n'entre dans les données du chantier avant la
-// confirmation explicite du patron.
-export default function BrouillonSection({
+/**
+ * ─── L'ÉTAT DU BROUILLON VIT DANS L'ÉCRAN, PAS DANS L'ENCART ────────────────
+ *
+ * **Pourquoi il a fallu le sortir, le 5 septembre 2026.** Le patron a demandé
+ * que ses trois notes — déchets, contraintes d'accès, remarques — se lisent
+ * SOUS le matériel, juste avant le bouton. Elles se dessinaient dans l'encart,
+ * c'est-à-dire tout en haut : entre les deux, il y a maintenant les vraies
+ * cases du chantier, qui appartiennent à l'écran.
+ *
+ * **Ce qu'on ne pouvait pas faire à la place, et pourquoi.** Donner aux notes
+ * leur propre copie du brouillon aurait été deux états pour la même
+ * proposition : chaque enregistrement envoie la proposition ENTIÈRE, donc la
+ * copie qui n'a pas vu la correction de l'autre l'efface en la réécrivant. Une
+ * ligne de prestation corrigée disparaîtrait en modifiant une remarque, sans
+ * un mot. C'est exactement ce que `CLAUDE.md` §3 interdit — jamais deux fois la
+ * même règle, jamais deux fois le même état.
+ */
+export function useBrouillon({
   chantierId,
   brouillonInitial,
-  transcriptionDisponible,
-  dicteeNonTranscrite,
   onApplique,
-}: Props) {
+}: {
+  chantierId: string;
+  brouillonInitial: BrouillonInitial;
+  onApplique: (prestations: { id: string; libelle: string }[], materiel: { id: string; libelle: string }[]) => void;
+}) {
   const [contenu, setContenu] = useState<PropositionExtraction | null>(brouillonInitial?.contenu ?? null);
   const [statut, setStatut] = useState<"brouillon" | "confirme" | null>(brouillonInitial?.statut ?? null);
   const [lecture, setLecture] = useState<LectureDictee>(brouillonInitial?.lecture ?? "modele");
@@ -71,10 +82,14 @@ export default function BrouillonSection({
       // Dire la vérité plutôt que de proposer du vide : votre dictée n'a pas
       // été écoutée, et aucune prestation ne sera fabriquée à partir de rien.
       if (resultat.statut === "transcription_simulee") {
+        // **La phrase ne dit plus « aucun prestataire n'est encore raccordé »**
+        // (5 septembre 2026) : c'était vrai en juillet, ce ne l'est plus — les
+        // clés sont posées chez le patron (`docs/A-FAIRE.md` §1, `CLAUDE.md`
+        // §1 ter). Une affirmation périmée à l'écran se croit encore. Ce qui
+        // reste est ce qu'on SAIT : rien n'en est sorti, et rien ne s'invente.
         setErreur(
-          "Votre dictée n'a pas été transcrite : aucun prestataire de transcription " +
-            "n'est encore raccordé (voir le document « à faire », point 1). Rien n'a donc " +
-            "pu en être extrait. Vous pouvez saisir les prestations à la main ci-dessous."
+          "Votre dictée n'a pas été transcrite : rien n'a donc pu en être extrait, " +
+            "et rien ne sera inventé. Vous pouvez saisir les prestations à la main ci-dessous."
         );
         return;
       }
@@ -142,6 +157,44 @@ export default function BrouillonSection({
     setContenu({ ...contenu, [champ]: valeur || null });
   }
 
+  return {
+    contenu,
+    statut,
+    lecture,
+    enCours,
+    erreur,
+    conflit,
+    setConflit,
+    /** Ce qui attend encore un geste de lui — l'écran s'y règle tout entier. */
+    enAttente: !!contenu && statut !== "confirme",
+    fraicheur: brouillonInitial?.fraicheur ?? null,
+    generer,
+    persister,
+    confirmer,
+    majLigne,
+    retirerLigne,
+    majChamp,
+  };
+}
+
+// Brouillon structuré issu de la dictée. Tout ce qui s'affiche ici est une
+// proposition : rien n'entre dans les données du chantier avant la
+// confirmation explicite du patron.
+export default function BrouillonSection({
+  chantierId,
+  brouillon,
+  transcriptionDisponible,
+  dicteeNonTranscrite,
+}: {
+  chantierId: string;
+  brouillon: Brouillon;
+  transcriptionDisponible: boolean;
+  /** Une note vocale existe, mais aucune transcription n'en est sortie. */
+  dicteeNonTranscrite: boolean;
+}) {
+  const { contenu, statut, lecture, enCours, erreur, conflit, setConflit, enAttente, fraicheur } = brouillon;
+  const { generer, persister, majLigne, retirerLigne, majChamp } = brouillon;
+
   if (!transcriptionDisponible && !contenu) {
     // Renvoyer vers la note vocale quand elle a DÉJÀ été enregistrée et
     // transcrite envoie le patron refaire ce qu'il vient de faire — et lui
@@ -150,13 +203,9 @@ export default function BrouillonSection({
     if (dicteeNonTranscrite) {
       return (
         <Carte>
-          <span className={libelleCaps} style={{ color: colors.muted }}>
-            Brouillon
-          </span>
           <p className={texteSituation} style={{ color: colors.muted }}>
-            Votre dictée est bien enregistrée, mais elle n&apos;a pas été transcrite :
-            aucun prestataire de transcription n&apos;est encore raccordé. Rien n&apos;a donc
-            pu en être extrait — et rien ne sera inventé.
+            Votre dictée est bien enregistrée, mais elle n&apos;a pas été transcrite. Rien n&apos;a
+            donc pu en être extrait — et rien ne sera inventé.
           </p>
           <a
             href={`/chantiers/${chantierId}/transcription`}
@@ -170,9 +219,6 @@ export default function BrouillonSection({
     }
     return (
       <Carte>
-        <span className={libelleCaps} style={{ color: colors.muted }}>
-          Brouillon
-        </span>
         <p className={texteSituation} style={{ color: colors.muted }}>
           Enregistrez une note vocale et lancez sa transcription pour obtenir un brouillon d&apos;informations.
         </p>
@@ -188,10 +234,31 @@ export default function BrouillonSection({
   }
 
   return (
-    <Carte>
+    <>
+    {/* ── L'ENCART, C'EST CE QUE LA MACHINE A ENTENDU — 5 septembre 2026 ────
+        **Le défaut réparé, et le patron l'a tranché sur planche** (« un seul à
+        la fois », `appli/relire-sa-dictee.html`). L'écran écrivait DEUX FOIS
+        « Prestations », « Durée », « Équipe », « Matériel » : une fois pour la
+        proposition, une fois pour la donnée acquise. Et les deux se
+        distinguaient par les deux MÊMES tons, échangés — une case crème dans
+        une plage claire contre une case claire sur fond crème. En plein soleil,
+        d'une main, rien ne disait laquelle comptait.
+
+        Trois choses le séparent maintenant, et aucune n'est un mot de plus :
+        le CHEVEU D'OR à gauche (quelque chose est dû), le titre qui ne nomme
+        plus une rubrique mais une provenance, et surtout — c'est le choix du
+        patron — les vraies cases qui ne se dessinent pas tant qu'il reste
+        quelque chose à confirmer (`InformationsClient.tsx`). */}
+    <Carte teinte={enAttente}>
+      {/* **« Entendu » ne s'écrit QUE si quelque chose a été entendu.** Vu en
+          capture, sur Nuit : au-dessus de « Générez un brouillon structuré », le
+          mot annonçait une lecture qui n'avait pas encore eu lieu. La phrase,
+          elle, dit déjà où l'on en est — et la rangée entière disparaît avec le
+          mot, sinon elle laisse une bande vide en tête de l'encart. */}
+      {contenu && (
       <div className="flex items-baseline justify-between gap-3">
         <span className={libelleCaps} style={{ color: colors.muted }}>
-          Brouillon issu de la dictée
+          Entendu
         </span>
         {/* « Confirmé » en gris, et non en accent : rien n'est attendu du patron
             sur un brouillon déjà appliqué, et la couleur ne se pose que sur ce
@@ -202,6 +269,7 @@ export default function BrouillonSection({
           </span>
         )}
       </div>
+      )}
 
       {!contenu && (
         <>
@@ -228,9 +296,7 @@ export default function BrouillonSection({
 
       {/* Brouillon issu d'une transcription qui n'est plus celle du chantier :
           signalé, jamais supprimé — il peut porter des corrections humaines. */}
-      {contenu && brouillonInitial?.fraicheur.obsolete && (
-        <Avertissement>{brouillonInitial.fraicheur.message}</Avertissement>
-      )}
+      {contenu && fraicheur?.obsolete && <Avertissement>{fraicheur.message}</Avertissement>}
 
       {contenu && (
         <div className="flex flex-col gap-4">
@@ -251,7 +317,7 @@ export default function BrouillonSection({
               contraintes d'accès, remarques n'ont AUCUNE autre case dans toute
               l'application. Les figer, c'était perdre l'information pour de
               bon. C'est ce que la lecture seule faisait. */}
-          {statut !== "confirme" && (
+          {enAttente && (
             <>
               <ListeLignes
                 titre="Prestations"
@@ -290,64 +356,20 @@ export default function BrouillonSection({
             </>
           )}
 
-          <ChampBrouillon
-            label="Déchets / branchages"
-            value={contenu.gestionDechets ?? ""}
-            lectureSeule={false}
-            onChange={(v) => majChamp("gestionDechets", v)}
-            onCommit={() => persister(contenu)}
-          />
-          <ChampBrouillon
-            label="Contraintes d'accès"
-            value={contenu.contraintesAcces ?? ""}
-            lectureSeule={false}
-            onChange={(v) => majChamp("contraintesAcces", v)}
-            onCommit={() => persister(contenu)}
-          />
-          <ChampBrouillon
-            label="Remarques"
-            value={contenu.remarques ?? ""}
-            lectureSeule={false}
-            onChange={(v) => majChamp("remarques", v)}
-            onCommit={() => persister(contenu)}
-          />
-
           {/* « À confirmer » est la seule chose de cet encart qui réclame un
-              geste du patron : c'est donc la seule à porter l'or. */}
-          <Reserves titre="À confirmer" teinte={colors.or} items={contenu.ambiguites} />
+              geste du patron : c'est donc la seule à porter l'or.
+              **`orTexte` et non `or` depuis le 5 septembre 2026** : l'or du
+              patron tient 2,91 sur une plage, et un mot en demande 4,5. Le
+              jeton ne dépend pas de la charte mais du RÔLE — un mot qu'on lit,
+              et non un trait qu'on regarde (`chartes.ts`). L'or des traits, en
+              dessous et dans `Avertissement`, ne bouge pas d'un caractère. */}
+          <Reserves titre="À confirmer" teinte={colors.orTexte} items={contenu.ambiguites} />
           <Reserves
             titre="Non mentionné dans la dictée"
             teinte={colors.muted}
             items={contenu.informationsManquantes}
           />
 
-          {statut !== "confirme" && (
-            <div className="flex flex-col gap-2.5">
-              {/* L'action teintée des écrans refaits (voir le pied de Photos) :
-                  elle se voit comme un geste sans disputer la place au bouton
-                  principal du bas de page, qui, lui, valide tout l'écran. */}
-              <button
-                type="button"
-                onClick={confirmer}
-                disabled={enCours}
-                className={`rounded-full py-3.5 disabled:opacity-40 ${libelleCaps}`}
-                style={{ backgroundColor: colors.rustTint, color: colors.rust, minHeight: 48 }}
-              >
-                {enCours ? "Application…" : "Confirmer et ajouter au chantier"}
-              </button>
-              <button
-                type="button"
-                onClick={() => generer()}
-                disabled={enCours}
-                // Aligné à gauche comme toutes les actions en toutes lettres de
-                // ces deux écrans : seule une PLAGE occupe la largeur entière.
-                className={`self-start disabled:opacity-40 ${libelleCaps}`}
-                style={{ color: colors.muted }}
-              >
-                Régénérer depuis la dictée
-              </button>
-            </div>
-          )}
         </div>
       )}
 
@@ -356,9 +378,19 @@ export default function BrouillonSection({
           {erreur}
         </p>
       )}
+    </Carte>
 
       {conflit && (
-        <div className="fixed inset-0 z-[50] flex items-end" style={{ backgroundColor: "rgba(20,18,14,0.35)" }}>
+        <div
+          className="fixed inset-0 z-[50] flex items-end"
+          // **`voile()` et non `rgba(20,18,14,0.35)` — 5 septembre 2026.** Une
+          // encre écrite en clair est du sombre sur du sombre sur Nuit et sur
+          // Sylve : la feuille ne se détachait plus de la page, au-dessus du
+          // seul geste irréversible de l'écran. Quatrième retour de la faute du
+          // 22 août, et `test-chartes-lisibles.ts` ne peut pas la voir — il lit
+          // les chartes, pas les couleurs qu'un écran écrit lui-même.
+          style={{ backgroundColor: voile(colors.ink, 0.35) }}
+        >
           <div className="w-full rounded-t-[26px] px-[26px] pb-9 pt-3" style={{ backgroundColor: colors.cream }}>
             <div className="mx-auto mb-6 h-1 w-10 rounded-full" style={{ backgroundColor: colors.line }} />
             <p
@@ -393,7 +425,89 @@ export default function BrouillonSection({
           </div>
         </div>
       )}
-    </Carte>
+    </>
+  );
+}
+
+/**
+ * ── SES TROIS NOTES, SOUS LE MATÉRIEL ──────────────────────────────────────
+ *
+ * **Sa décision du 5 septembre 2026**, sur capture : déchets, contraintes
+ * d'accès et remarques se lisaient AVANT les prestations, parce qu'elles
+ * vivaient dans l'encart de la proposition. Elles se posent maintenant là où on
+ * les cherche — au bout de la description du chantier, juste avant le bouton.
+ *
+ * **Elles sont à LUI, pas à la machine** : aucune autre case de l'application
+ * ne les porte, et elles restent après la confirmation, quand tout le reste a
+ * été recopié dans le chantier. Les laisser dans l'encart faisait croire
+ * qu'elles disparaîtraient avec lui.
+ */
+export function NotesDuBrouillon({ brouillon }: { brouillon: Brouillon }) {
+  const { contenu, majChamp, persister } = brouillon;
+  if (!contenu) return null;
+  return (
+    <div className="flex flex-col gap-6">
+      <ChampBrouillon
+        label="Déchets / branchages"
+        value={contenu.gestionDechets ?? ""}
+        lectureSeule={false}
+        surLaPage
+        onChange={(v) => majChamp("gestionDechets", v)}
+        onCommit={() => persister(contenu)}
+      />
+      <ChampBrouillon
+        label="Contraintes d'accès"
+        value={contenu.contraintesAcces ?? ""}
+        lectureSeule={false}
+        surLaPage
+        onChange={(v) => majChamp("contraintesAcces", v)}
+        onCommit={() => persister(contenu)}
+      />
+      <ChampBrouillon
+        label="Remarques"
+        value={contenu.remarques ?? ""}
+        lectureSeule={false}
+        surLaPage
+        onChange={(v) => majChamp("remarques", v)}
+        onCommit={() => persister(contenu)}
+      />
+    </div>
+  );
+}
+
+/**
+ * ── LE SEUL GESTE DE L'ÉCRAN TANT QUE RIEN N'EST CONFIRMÉ ──────────────────
+ *
+ * Il était teinté, en petites capitales, sous une pile d'autres cases — et le
+ * bouton PLEIN du bas de page, « Valider et calculer le prix », proposait de
+ * sauter par-dessus la confirmation. Deux actions principales pour un seul
+ * moment : c'est l'une des deux qu'on appuie au hasard. Confirmer est donc
+ * l'action de l'écran, et l'autre ne revient qu'une fois qu'il n'y a plus rien
+ * à confirmer.
+ *
+ * **Il vit au BAS de l'écran**, après les notes : un bouton principal qui
+ * n'est pas le dernier élément se fait doubler par ce qui le suit.
+ */
+export function ConfirmerLeBrouillon({ brouillon }: { brouillon: Brouillon }) {
+  const { enAttente, enCours, confirmer, generer } = brouillon;
+  if (!enAttente) return null;
+  return (
+    <div className="flex flex-col gap-4">
+      <PrimaryButton onClick={confirmer} disabled={enCours}>
+        {enCours ? "Application…" : "Confirmer et ajouter au chantier"}
+      </PrimaryButton>
+      <button
+        type="button"
+        onClick={() => generer()}
+        disabled={enCours}
+        // Aligné à gauche comme toutes les actions en toutes lettres de ces
+        // deux écrans : seule une PLAGE occupe la largeur entière.
+        className={`self-start disabled:opacity-40 ${libelleCaps}`}
+        style={{ color: colors.muted }}
+      >
+        Régénérer depuis la dictée
+      </button>
+    </div>
   );
 }
 
@@ -448,11 +562,19 @@ function Avertissement({ children }: { children: React.ReactNode }) {
 // `div.flex.flex-col.gap-2`, y compris par les tests de bout en bout. Un
 // conteneur du brouillon portant la même signature rendrait ce repère ambigu —
 // et ferait passer une proposition pour une donnée validée.
-function Carte({ children }: { children: React.ReactNode }) {
+function Carte({ children, teinte = false }: { children: React.ReactNode; teinte?: boolean }) {
   return (
     <div
       className="flex flex-col gap-3 px-[15px] py-4"
-      style={{ backgroundColor: colors.card, borderRadius: 4 }}
+      style={{
+        backgroundColor: colors.card,
+        borderRadius: 4,
+        // Le cheveu d'or, comme l'ourlet de la maquette : le trait ne prend la
+        // couleur d'attente QUE là où quelque chose est dû. Une fois confirmé,
+        // plus rien n'est attendu de lui — le cheveu disparaît avec l'attente.
+        // C'est un TRAIT : il garde `or`, jamais `orTexte`.
+        ...(teinte ? { borderLeft: `1px solid ${colors.or}` } : null),
+      }}
     >
       {children}
     </div>
@@ -463,12 +585,20 @@ function ChampBrouillon({
   label,
   value,
   lectureSeule,
+  surLaPage = false,
   onChange,
   onCommit,
 }: {
   label: string;
   value: string;
   lectureSeule: boolean;
+  /**
+   * Le champ est posé sur le fond de page et non dans l'encart : il prend
+   * alors la plage claire, comme toutes les cases de l'écran. Le fond crème
+   * d'un champ d'encart, posé sur le fond de page, serait invisible — c'est
+   * la même couleur.
+   */
+  surLaPage?: boolean;
   onChange: (v: string) => void;
   onCommit: () => void;
 }) {
@@ -488,7 +618,12 @@ function ChampBrouillon({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onCommit}
         className="border-0 px-[15px] py-3 outline-none"
-        style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px", borderRadius: 4 }}
+        style={{
+          backgroundColor: surLaPage ? colors.card : colors.cream,
+          color: colors.ink,
+          fontSize: "16px",
+          borderRadius: 4,
+        }}
       />
     </label>
   );

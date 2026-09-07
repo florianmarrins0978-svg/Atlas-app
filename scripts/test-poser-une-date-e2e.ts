@@ -1,7 +1,9 @@
 import { lancerNavigateur } from "./e2e-browser";
+import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 import { devices } from "playwright";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { jourDuPatron } from "./_jour-e2e";
 
 // **« Je peux toujours pas poser de date sur les chantiers test. »**
 //
@@ -84,9 +86,9 @@ async function main() {
   const NOM = `Poser ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', NOM);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = idChantier;
   const marque = await pool.query(
     `UPDATE chantiers SET devis_envoye_at = now() WHERE id = $1`,
     [chantierId]
@@ -103,6 +105,10 @@ async function main() {
   await cas("le chantier attend bien une date, sous « Sans date »", async () => {
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
     await page.waitForTimeout(700);
+    // Depuis le 3 septembre 2026, la liste vit dans le tiroir du bas
+    // (`ARCHITECTURE.md` §243) : on rejoue son appui plutôt que d'exiger un
+    // écran qui n'existe plus.
+    await ouvrirLeTiroirDuPlanning(page);
     if ((await ligne.count()) === 0) {
       const ecran = await page.locator("body").innerText();
       throw new Error(
@@ -118,6 +124,7 @@ async function main() {
   // offrir aucun chemin. Ici la liste le dit en toutes lettres tant qu'aucun
   // jour n'est touché.
   await cas("tant qu'aucun jour n'est touché, la liste DIT quoi faire", async () => {
+    await ouvrirLeTiroirDuPlanning(page);
     await page.locator('[data-atlas="sans-date"]').last().scrollIntoViewIfNeeded();
     const dit = await page.locator('[data-atlas="ou-poser"]').innerText();
     if (!/Touchez d’abord un jour/.test(dit)) {
@@ -132,23 +139,63 @@ async function main() {
   // on touche un jour, et l'on ajoute DEPUIS SA FICHE. C'est la réponse au
   // défaut du 17 août : le geste part de là où l'œil est déjà.
   await cas("depuis la fiche d'un jour, « Ajouter un chantier » le pose", async () => {
-    const jours = await page.$$eval('[data-atlas="grille-mois"] [data-jour]', (l) =>
-      l.map((e) => ({
-        jour: e.getAttribute("data-jour"),
-        matin: e.querySelector('[data-demi="matin"]')?.getAttribute("data-etat"),
-        apres: e.querySelector('[data-demi="apres_midi"]')?.getAttribute("data-etat"),
-      }))
-    );
+    const lireLeMois = () =>
+      page.$$eval('[data-atlas="grille-mois"] [data-jour]', (l) =>
+        l.map((e) => ({
+          jour: e.getAttribute("data-jour"),
+          matin: e.querySelector('[data-demi="matin"]')?.getAttribute("data-etat"),
+          apres: e.querySelector('[data-demi="apres_midi"]')?.getAttribute("data-etat"),
+        }))
+      );
+    let jours = await lireLeMois();
     // **On vise un jour OUVRABLE, et depuis le 23 août 2026 ce n'est plus
     // parce qu'un samedi refuserait quoi que ce soit** — il offre désormais les
     // mêmes gestes (sa règle : « s'il a des salariés qui font des extras »).
     // C'est simplement le cas ordinaire que ce contrôle décrit ; le samedi a le
     // sien, dans `test-planning-e2e.ts`.
     const ouvrable = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
-    const libre = jours.find(
-      (j) => j.jour && ouvrable(j.jour) && j.matin === "libre" && j.apres === "libre"
-    );
-    if (!libre) throw new Error("aucun jour ouvrable entièrement libre au calendrier");
+    // **ET UN JOUR QUI N'EST PAS PASSÉ — depuis le 31 août 2026.**
+    //
+    // Ce contrôle prenait le PREMIER jour libre du mois affiché : le 31 août,
+    // c'est le 3 août, un jour déjà passé. Il marchait tant que le planning
+    // offrait « + Ajouter » sur n'importe quelle journée ; depuis que la
+    // mémoire du calendrier existe, un jour passé se lit et ne s'écrit plus
+    // (`ARCHITECTURE.md` §224), et le bouton n'y est plus.
+    //
+    // **On adapte le contrôle, on ne rend pas le bouton** (`CLAUDE.md` §5 bis) :
+    // ce qu'il défend est *« de cet écran-là, une date se pose »*, et une date
+    // se pose sur un jour à venir. Le jour retenu était incident, pas la règle.
+    // **« Aujourd'hui » se lit comme l'ÉCRAN le lit, jamais en UTC.**
+    //
+    // Trouvé le 2 septembre 2026 à 23 h 36 UTC : cette suite cherchait la carte
+    // du 2 septembre alors qu'il était déjà le 3 à l'atelier. Le calendrier
+    // n'offre plus un jour passé (`ARCHITECTURE.md` §224), la carte n'existait
+    // pas, et le contrôle rougissait — sur du code parfaitement juste, DEUX
+    // HEURES CHAQUE NUIT.
+    //
+    // C'est exactement le piège que `_jour-e2e.ts` a été écrit pour fermer, et
+    // que `CLAUDE.md` §3 nomme : deux définitions de la même règle finissent
+    // toujours par diverger. Celle-ci n'avait jamais été branchée dessus.
+    const aujourdHui = jourDuPatron();
+    const chercher = (l: typeof jours) =>
+      l.find(
+        (j) =>
+          j.jour && j.jour >= aujourdHui && ouvrable(j.jour) && j.matin === "libre" && j.apres === "libre"
+      );
+    // **ET L'ON FEUILLETTE, s'il ne reste rien dans le mois affiché.** Le
+    // 31 août, le mois courant n'offre qu'un seul jour à venir — lui —, que les
+    // suites d'avant ont déjà occupé. Le contrôle rougissait alors sur un
+    // calendrier parfaitement sain, et son verdict dépendait du jour du mois où
+    // la batterie tourne. Le mois suivant est à un doigt : c'est ce que le
+    // patron ferait.
+    let libre = chercher(jours);
+    for (let i = 0; i < 3 && !libre; i++) {
+      await page.click('button[aria-label="Mois suivant"]');
+      await page.waitForTimeout(120);
+      jours = await lireLeMois();
+      libre = chercher(jours);
+    }
+    if (!libre) throw new Error("aucun jour ouvrable à venir entièrement libre, sur quatre mois");
 
     await page.click(`[data-atlas="grille-mois"] [data-jour="${libre.jour}"]`);
     await page.waitForSelector('[data-atlas="carte-jour"]', { timeout: 15_000 });
@@ -198,6 +245,11 @@ async function main() {
     if (!libre) throw new Error("aucun jour ouvrable libre au calendrier");
     await page.click(`[data-atlas="grille-mois"] [data-jour="${libre.jour}"]`);
     await page.waitForTimeout(600);
+    // **Le tiroir se rouvre APRÈS avoir touché le jour**, et l'ordre compte :
+    // c'est le jour touché qui arme les trois boutons, donc les lire avant
+    // n'éprouverait rien. La liste vit dans le tiroir du bas depuis le
+    // 3 septembre 2026 (`ARCHITECTURE.md` §243).
+    await ouvrirLeTiroirDuPlanning(page);
 
     const moments = await ligne.locator("[data-poser]").allInnerTexts();
     if (moments.length !== 3) {

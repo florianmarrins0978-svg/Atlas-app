@@ -47,6 +47,33 @@ export const colors = {
   rust: "var(--atlas-rust, #2f3b2f)", // --pine
   rustDeep: "var(--atlas-rustDeep, #4f5f4c)", // --pine-light : survol, second niveau
   rustTint: "var(--atlas-rustTint, #ece9e1)", // --paper : fond des avatars d'icône et éléments teintés
+  // ─── L'APLAT DES BOUTONS QU'ON APPUIE, posé le 3 septembre 2026 ──────────
+  //
+  // **Sa décision, prise sur planche** (`appli/boutons-verts.html`, la D) :
+  // *« verdict la D à plat sans brillant, donc tout ce qui est bouton
+  // cliquable tu remplaces par la D ».* C'est le vert du milieu de sa note
+  // vocale — `sage`, #7d9a6d —, à plat : ni dégradé, ni filet d'or, ni halo.
+  //
+  // **POURQUOI UN JETON À PART, ET NON `rust` MODIFIÉ.** `rust` teinte aussi
+  // des TEXTES, des icônes, des liserés et les fonds pâles : le changer aurait
+  // reverdi la moitié des écrans pour une demande qui ne vise que des aplats.
+  // C'est déjà l'arbitrage du 31 août, et il n'a pas bougé.
+  //
+  // **ET POURQUOI IL REMPLACE `--atlas-plein-fond`.** Jusqu'ici la couleur
+  // arrivait par un `background-image` peint PAR-DESSUS le fond en ligne des
+  // boutons — un contournement assumé, écrit noir sur blanc dans `chartes.ts` :
+  // « c'est laid à lire et c'est le prix d'un changement qui ne touche ni les
+  // six autres apparences, ni les trente-quatre écrans ». Le jeton supprime la
+  // cause : le bouton pose sa couleur lui-même, et le calque n'a plus lieu
+  // d'être.
+  //
+  // **CE JETON EST L'AFFAIRE DES BOUTONS PLEINS, DE RIEN D'AUTRE.** Un texte,
+  // un liseré, une icône gardent `rust`. Un bouton CREUX n'en a pas — sa
+  // consigne du 31 août : *« surtout pas ceux qui sont creux »*.
+  //
+  // Sur les sept autres chartes, il vaut leur accent : le bleu marine de Brume
+  // ne devient pas vert (`chartes.ts`, et `scripts/test-chartes.ts` le garde).
+  plein: "var(--atlas-plein, #7d9a6d)",
   sage: "#7d9a6d", // --sage : bordure de survol, encarts d'information
   sageLight: "#9fbd82", // --sage-light
   // Exception discrète, sans équivalent chez Arborea : uniquement pour
@@ -98,11 +125,42 @@ export const colors = {
   // bavard — c'est exactement l'aspect « tableau de bord » que le patron
   // refuse.
   //
-  // Sur le fond crème, `or` tient le contraste du texte courant ; `orClair` est
-  // réservé aux traits, cercles et icônes posés sur le vert pin, où il faut
-  // remonter la clarté.
+  // **CORRIGÉ LE 4 SEPTEMBRE 2026, CONTRE CE QUE CETTE LIGNE AFFIRMAIT.** Il
+  // était écrit ici que « sur le fond crème, `or` tient le contraste du texte
+  // courant ». C'est faux, et mesuré : 2,91 sur la plage d'Origine, 2,62 sur
+  // celle de Moka — contre les 4,5 qu'un texte demande. L'or tient le contraste
+  // d'un TRAIT, pas d'un mot ; personne ne l'avait mesuré parce que
+  // `test-chartes-lisibles.ts` regarde les chartes, jamais ce qu'un écran en
+  // fait.
+  //
+  // `orClair` est réservé aux traits, cercles et icônes posés sur le vert pin,
+  // où il faut remonter la clarté.
   or: "var(--atlas-or, #B98B47)",
   orClair: "var(--atlas-orClair, #C9A15E)",
+  /**
+   * L'or d'un MOT — le même, assombri jusqu'à 4,5 sur la plage de sa charte.
+   *
+   * Dérivé par `chartes.ts`, comme `alerte` depuis le 22 août 2026 ; sur Nuit
+   * et Sylve il vaut `or` au caractère près, parce qu'il n'y manque rien.
+   *
+   * **La valeur de repli est celle d'Origine**, et `test-or-du-texte.ts` refuse
+   * qu'elles divergent : une page rendue hors du gabarit — un document, un
+   * courriel — ne pose aucune variable, et retomberait sinon sur un or qui
+   * n'est plus celui de personne.
+   */
+  orTexte: "var(--atlas-orTexte, #8b6835)",
+  /**
+   * L'or d'un mot posé sur `ink` — là où un écran prend l'encre pour FOND.
+   *
+   * La visionneuse de photos le fait, pour qu'on ne voie que la photo. Sur
+   * Nuit et Sylve l'encre est CLAIRE : l'or y tombait à 2,49 et le mot
+   * « Retirer » disparaissait. Dérivé par `chartes.ts`, dans le sens inverse
+   * d'`orTexte` — voir le jeton là-bas.
+   *
+   * **Le repli est l'or d'Origine sans retouche**, parce qu'il n'en a pas
+   * besoin : sur une encre presque noire, l'or tient déjà 5,56.
+   */
+  orSurEncre: "var(--atlas-orSurEncre, #B98B47)",
   line: "var(--atlas-line, rgba(28,28,26,0.12))", // --line : séparateurs, bordures fines
   lineSoft: "var(--atlas-lineSoft, rgba(28,28,26,0.07))", // --line-soft : bordure des tuiles
   chevron: "var(--atlas-chevron, rgba(28,28,26,0.28))", // affordance de navigation discrète
@@ -200,12 +258,27 @@ export const smallCaps = "text-[11px] font-semibold uppercase tracking-[0.18em]"
 // 0,28 em d'écartement : c'est ce qui distingue un repère d'une phrase, et
 // c'est ce qui manquait à « Ajouter un fichier audio » quand elle se lisait
 // comme du texte courant.
-export const libelleCaps = "text-[9.5px] font-medium uppercase tracking-[0.28em]";
+// **ONZE PIXELS DEPUIS LE 6 SEPTEMBRE 2026, ET NON PLUS 9,5.** Sa consigne du
+// 5 septembre — *« la plupart des patrons qui vont utiliser l'app sont des
+// vieux qui ont du mal à se servir de leur téléphone »* — puis son accord du 6,
+// planche en main (`appli/lire-au-soleil.html`).
+export const libelleCaps = "text-[11px] font-medium uppercase tracking-[0.28em]";
 
 // **La voix de la situation** : l'adresse sous un nom, ce que change une
 // durée, d'où viennent les informations affichées. Elle se lit, elle ne se
-// touche pas — et à 11,5 px elle ne dispute jamais la place au serif.
-export const texteSituation = "text-[11.5px] leading-[1.5]";
+// touche pas.
+//
+// **TREIZE PIXELS DEPUIS LE 6 SEPTEMBRE 2026, ET NON PLUS 11,5.** Sa prose
+// disait : *« à 11,5 px elle ne dispute jamais la place au serif »* — c'était
+// vrai du dessin, et faux de l'œil qui la lit. À 13 px elle ne la dispute
+// toujours pas : le serif des noms est à 17 ou 19 px, et le titre à 36.
+//
+// **CE QUE CE CHANGEMENT COÛTE, MESURÉ ET NON SUPPOSÉ** — relevé au navigateur
+// à 390 × 664 en surchargeant les deux tailles sur les vrais écrans : +0,8 %
+// de hauteur sur le sommaire des réglages, +0,9 % sur Équipe, +2,6 % sur Mon
+// entreprise, +5,7 % sur « Devis & factures ». C'est le marché qu'il a accepté :
+// entre un et six pour cent d'écran, contre du texte qui se lit.
+export const texteSituation = "text-[13px] leading-[1.5]";
 
 // La plage d'un champ de saisie : 15 px de retrait, 4 px de rayon, le fond des
 // plages, aucune bordure. Ce sont les mesures de la maquette retenue.

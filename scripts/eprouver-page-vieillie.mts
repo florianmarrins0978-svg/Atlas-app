@@ -97,7 +97,12 @@ async function main() {
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
-  await page.goto(`${BASE}/chantiers/${chantierId}`, { waitUntil: "networkidle" });
+  // **La fiche client, et plus la fiche du chantier** (4 septembre 2026,
+  // `ARCHITECTURE.md` §254). Ce qu'on éprouve ici est une page OUVERTE qui
+  // survit à un redémarrage du serveur : une redirection ne vieillit pas, elle
+  // se rejoue. Il faut un écran qui reste sous ses yeux, et celui-ci porte les
+  // photos et la dictée — ce qu'il regarde le plus longtemps.
+  await page.goto(`${BASE}/chantiers/${chantierId}/coordonnees`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1500);
   console.log("→ page ouverte");
 

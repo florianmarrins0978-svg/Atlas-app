@@ -12,11 +12,25 @@ import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/reposi
 import { dernierEnvoi } from "@/server/repositories/envois-devis";
 import { etatEnvoi } from "@/lib/etat-envoi";
 import ExportClient from "./ExportClient";
+import { PARAM_PROVENANCE, retourDepuisLePlanning } from "@/lib/retour-au-planning";
 
 export const dynamic = "force-dynamic";
 
-export default async function ExportPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ExportPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
+  // **D'où il vient, et donc où le ramener** — son signalement du 7 septembre
+  // 2026. Sans provenance, rien ne change : c'est la liste, comme depuis le
+  // 4 septembre.
+  const retour = retourDepuisLePlanning(id, (await searchParams)[PARAM_PROVENANCE], {
+    href: "/",
+    libelle: "Retour à la liste des chantiers",
+  });
 
   const ctx = await getCurrentCtx();
   const chantier = await getChantier(ctx, id);
@@ -115,8 +129,16 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
 
           Le trou, lui, ne peut plus se rouvrir : avant l'envoi, l'écran EST le
           devis modifiable. */}
+      {/* **La flèche HÉRITE de celle de la fiche du chantier**, mot pour mot,
+          depuis que celle-ci a disparu (4 septembre 2026, `ARCHITECTURE.md`
+          §254). Cet écran était à un cran d'elle : il prend sa place, il
+          n'invente pas une destination.
+
+          **Sauf quand il vient du planning** — sa feuille du 4 septembre est
+          une seconde porte d'entrée, et la flèche l'a appris le 7 septembre
+          (`retour-au-planning.ts`). */}
       <EnTeteEcran
-        retour={{ href: `/chantiers/${id}`, libelle: "Retour à la fiche du chantier" }}
+        retour={retour}
         surtitre={chantier.nom}
         titre="Devis"
       />

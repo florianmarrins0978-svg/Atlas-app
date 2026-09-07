@@ -73,7 +73,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
   };
 
   return (
-    <div className="px-6 pt-6">
+    <div className="px-[26px] pt-6">
       {retour && (
         <p
           role="status"
@@ -220,8 +220,8 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
                 type="button"
                 disabled={enCours}
                 onClick={enregistrerIdentifiants}
-                className="rounded-full px-5 py-3 text-[15px] font-medium"
-                style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+                className="atlas-plein rounded-full px-5 py-3 text-[15px] font-medium"
+                style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
               >
                 Enregistrer
               </button>
@@ -247,8 +247,8 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
             type="button"
             disabled={enCours}
             onClick={() => demarrer(() => void demarrerRaccordementAction())}
-            className="rounded-full px-5 py-3 text-[15px] font-medium"
-            style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+            className="atlas-plein rounded-full px-5 py-3 text-[15px] font-medium"
+            style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
           >
             {etat.relie ? "Rebrancher mon agenda Google" : "Relier mon agenda Google"}
           </button>

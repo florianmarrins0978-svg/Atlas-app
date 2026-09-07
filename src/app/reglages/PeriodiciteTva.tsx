@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import type { PeriodiciteTva } from "@/server/periode-tva";
 import { mettreAJourPeriodiciteTvaAction } from "./actions";
 
@@ -44,12 +44,26 @@ export default function PeriodiciteTvaReglage({ initiale }: { initiale: Periodic
   }
 
   return (
-    <section className="mt-7 px-[26px]">
-      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
-        Votre TVA
-      </p>
+    // Aucun retrait horizontal : ce réglage vit DANS le bloc « Votre régime de
+    // TVA » depuis le 6 septembre 2026, et ce bloc pose déjà les 26 px de la
+    // charte. Les additionner décalerait ces deux boutons, seuls au milieu de
+    // l'écran — le défaut déjà payé sur les tarifs (`ReglagesClient`).
+    // **`data-atlas` plutôt qu'un titre à lire.** Sa suite visait le mot
+    // « Votre TVA », qui vient de disparaître — elle serait morte sur un
+    // renommage, c'est-à-dire sur du code juste (`CLAUDE.md` §5 bis). Ce
+    // marqueur-ci ne se renomme pas pour faire joli.
+    <section data-atlas="periodicite-tva" className="mt-7">
+      {/* **SON INTERTITRE EST PARTI, et c'est le déplacement qui l'exige.**
 
-      <p className="pb-3 pt-1 text-[13px] leading-[1.6]" style={{ color: colors.muted }}>
+          Il disait « VOTRE TVA », et il avait raison tant que ce réglage vivait
+          seul, à un écran du régime. Collé sous « VOTRE RÉGIME DE TVA », il
+          donnait deux titres de TVA à trois centimètres l'un de l'autre — et
+          deux titres pour une seule question, c'est la question qu'on croit
+          double.
+
+          La phrase qui suit suffit, et elle dit ce que le titre disait mal :
+          « à quel rythme vous la déclarez ». */}
+      <p className="pb-3 pt-1 text-[13px] leading-[1.6]" style={{ color: colors.inkSoft }}>
         À quel rythme vous la déclarez.
       </p>
 
@@ -64,8 +78,9 @@ export default function PeriodiciteTvaReglage({ initiale }: { initiale: Periodic
               aria-pressed={actif}
               className="flex-1 rounded-full px-3 py-3 text-[15px]"
               style={{
-                backgroundColor: actif ? colors.rust : colors.card,
-                border: `1px solid ${actif ? colors.rust : colors.line}`,
+                // Le vert des boutons — 4 septembre 2026.
+                backgroundColor: actif ? colors.plein : colors.card,
+                border: `1px solid ${actif ? colors.plein : colors.line}`,
                 color: actif ? colors.cream : colors.ink,
                 fontFamily: font.display,
               }}

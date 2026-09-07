@@ -98,8 +98,8 @@ export default function ImportTarifs({ onImporte }: { onImporte: (tarifs: Tarif[
       />
       <label
         htmlFor="fichier-tarifs"
-        className="mt-3 inline-block cursor-pointer rounded-[4px] px-4 py-2.5 text-[14px] font-medium text-white"
-        style={{ backgroundColor: colors.rust }}
+        className="atlas-plein mt-3 inline-block cursor-pointer rounded-[4px] px-4 py-2.5 text-[14px] font-medium text-white"
+        style={{ backgroundColor: colors.plein }}
       >
         {enCours ? "Lecture…" : "Choisir un fichier"}
       </label>
@@ -182,8 +182,8 @@ export default function ImportTarifs({ onImporte }: { onImporte: (tarifs: Tarif[
               type="button"
               onClick={appliquer}
               disabled={enCours || (apercu.aCreer.length === 0 && apercu.aMettreAJour.length === 0)}
-              className="rounded-full py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
-              style={{ backgroundColor: colors.rust }}
+              className="atlas-plein rounded-full py-2.5 text-[14px] font-medium text-white disabled:opacity-40"
+              style={{ backgroundColor: colors.plein }}
             >
               {enCours ? "Enregistrement…" : "Enregistrer ces tarifs"}
             </button>

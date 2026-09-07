@@ -35,9 +35,9 @@ async function main() {
   const nom = `Chantier doublon e2e ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nom);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
   const prixUrl = `${chantierUrl}/prix`;
 
   // Une prestation qui correspond à un tarif des données de démonstration :

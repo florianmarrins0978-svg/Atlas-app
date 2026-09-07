@@ -46,10 +46,25 @@ const jour = (dans: number) => versJourIso(ajouterJours(LUNDI, dans));
 
 console.log("=== Ce que le patron peut proposer : dix-huit mois ===\n");
 
-cas("l'horizon va d'après-demain à dix-huit mois", () => {
+cas("l'horizon du patron va d'AUJOURD'HUI à dix-huit mois", () => {
+  // **Sa règle du 31 août 2026 :** « si l'utilisateur veut choisir le
+  // 1ᵉʳ septembre il doit pouvoir ! » L'horizon commençait après-demain, et
+  // c'est ce qui lui reprenait le lendemain que le calendrier lui montrait.
   const h = fenetrePatron(LUNDI);
-  assert.equal(h.debut, jour(DELAI_MINIMAL_JOURS));
+  assert.equal(h.debut, jour(0));
   assert.equal(h.fin, jour(HORIZON_PATRON_JOURS));
+});
+
+cas("le délai de deux jours gouverne encore ce qu'on SUGGÈRE", () => {
+  // La distinction qui porte tout le lot : proposer de soi-même, c'est décider
+  // à sa place ; accepter son choix, c'est le laisser décider. Réunir les deux
+  // fenêtres remettrait l'application à suggérer demain — ce que personne n'a
+  // demandé — ou lui reprendrait son choix.
+  assert.equal(fenetreProposition(LUNDI).debut, jour(DELAI_MINIMAL_JOURS));
+  assert.ok(
+    fenetrePatron(LUNDI).debut < fenetreProposition(LUNDI).debut,
+    "les deux fenêtres se sont réunies : il ne peut plus choisir demain, ou l'application le suggère toute seule"
+  );
 });
 
 cas("une date à six mois y tient — c'était sa demande", () => {
@@ -177,17 +192,37 @@ cas("deux dates lointaines voisines ne font qu'une bande", () => {
   assert.equal(bandes.length, 1, `${bandes.length} bandes qui se chevauchent`);
 });
 
-cas("la fenêtre ne commence jamais avant après-demain", () => {
-  // La marge de trois semaines en amont ne doit pas rouvrir hier.
+cas("la marge amont d'une date lointaine ne rouvre pas le passé", () => {
+  // La marge de trois semaines en amont ne doit pas descendre sous le plancher
+  // ordinaire quand aucune date proche ne l'y oblige.
   const f = fenetrePourDates(LUNDI, [jour(4), jour(182)]);
   assert.ok(f.debut >= jour(DELAI_MINIMAL_JOURS), `${f.debut} est avant le délai minimal`);
+});
+
+cas("une date proche PROPOSÉE fait descendre le plancher jusqu'à elle", () => {
+  // Le trou ouvert par sa règle du 31 août, et il aurait été muet : le patron
+  // propose demain, son écran dit oui — et la page du client répond « date
+  // indisponible » pour la date qu'il vient de recevoir. Le devis se perd là.
+  const f = fenetrePourDates(LUNDI, [jour(1)]);
+  assert.equal(f.debut, jour(1), `le plancher est resté à ${f.debut}`);
+});
+
+cas("le plancher ne descend QUE jusqu'à la date proposée, pas plus bas", () => {
+  // Ce n'est pas une fenêtre élargie : c'est une fenêtre qui contient ce
+  // qu'elle transporte. Sans cette borne, la marge amont d'une date lointaine
+  // rouvrirait des jours que personne n'a proposés.
+  const f = fenetrePourDates(LUNDI, [jour(1), jour(182)]);
+  assert.equal(f.debut, jour(1), `le plancher est descendu à ${f.debut}`);
 });
 
 cas("toute date proposée tombe DANS la fenêtre montrée au client", () => {
   // La propriété qui compte, éprouvée sur tout l'horizon plutôt que sur trois
   // exemples : si elle tombe, le client lit « cette date n'est plus disponible »
   // pour un jour que personne n'a pris — et il n'a aucun moyen de le savoir.
-  for (let dans = DELAI_MINIMAL_JOURS; dans <= HORIZON_PATRON_JOURS; dans += 7) {
+  // **Le balayage part de ZÉRO depuis le 31 août 2026.** Il commençait au
+  // délai minimal — donc précisément à côté des seuls jours que sa nouvelle
+  // règle rend proposables, et le défaut serait passé sous ce contrôle-là.
+  for (let dans = 0; dans <= HORIZON_PATRON_JOURS; dans += 7) {
     const date = jour(dans);
     const f = fenetrePourDates(LUNDI, [date]);
     assert.ok(date >= f.debut && date <= f.fin, `${date} hors de [${f.debut} … ${f.fin}]`);

@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — note vocale, série 2 : la forme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LA NOTE VOCALE — SES DEUX MOMENTS, SUR LA FICHE « ÉPURÉE »
+  Quatre dessins au repos, trois pendant la dictée. RIEN N'EST CODÉ.
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Ses deux demandes du 2 septembre 2026 :
+
+    « J'aime bien la Épurée, par contre je n'aime pas la grosse note vocale
+      verte ; propose-moi des visuels pour rester dans le thème de
+      l'application de luxe. »
+
+    « Lorsque je clique sur la note vocale il y a une petite animation avec la
+      poubelle à gauche, une ligne vocale dorée qui défile et la flèche pour
+      envoyer sur la droite — j'aimerais modifier ça aussi. »
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUI A DÉJÀ ÉTÉ MONTRÉ, ET QU'ON NE LUI RESERT PAS.
+
+  · **Au repos, 30 août** (`note-vocale-au-repos.html`) : cinq dessins —
+    A l'anneau creux, B le disque plein, C la barre pleine largeur,
+    D l'anneau au micro, E l'onde à plat. **Il a répondu B**, le disque plein,
+    celui qu'il refuse aujourd'hui. Les quatre autres sont donc DÉJÀ écartés.
+  · **Pendant la dictée, 31 août** (`dictee-embellie.html`, puis
+    `dictee-la-ligne.html`) : quatre allures — la barre, l'anneau, la ligne,
+    le galet. **Il a choisi la ligne**, et c'est ce que l'application porte :
+    poubelle, chrono, onde d'or, rond d'envoi.
+
+  · **Première série du 2 septembre**, écartée par lui d'un mot — « j'aime
+    pas » : au repos la couronne godronnée, le guilloché, l'empreinte, le
+    cabochon d'or ; pendant la dictée le sillon, la règle, le fil.
+
+  CE QUE CETTE PREMIÈRE SÉRIE AVAIT DE COMMUN, ET QUI EST SANS DOUTE LA
+  RAISON DU REFUS : les quatre dessins du repos gardaient TOUS le même gros
+  rond de 76 px au centre. On changeait la matière — or, gravure, creux —,
+  jamais la silhouette. La deuxième série change la forme elle-même, et va
+  jusqu'à la supprimer : « la phrase » ne pose plus rien sur la fiche.
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUI NE CHANGE PAS D'UN DESSIN À L'AUTRE — sinon il choisirait un écran
+  au lieu d'un dessin :
+
+  · la fiche est la « Épurée » qu'il vient de retenir, à l'identique ;
+  · la réserve de la dictée reste de 104 px, l'objet de 76 : rien ne bouge
+    au-dessus ni en dessous quand on change de dessin ;
+  · un appui dicte, un second arrête, la poubelle jette, le rond envoie ;
+  · **l'onde suit le volume**, dans les trois dessins comme aujourd'hui. Une
+    onde tirée au sort serait un décor — c'est le reproche qu'il a déjà fait
+    à un anneau qui battait sans rien lire. Ici elle est SIMULÉE, faute de
+    micro dans une maquette, et c'est dit.
+
+  L'ÉCART SE MESURE : l'encre sombre posée au repos, en pixels carrés, est
+  écrite sous chaque dessin. Le disque d'aujourd'hui en porte 4 536 sur une
+  fiche qui n'en porte aucun ailleurs.
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --pine-light:#4f5f4c; --or:#B98B47; --or-clair:#d8b477;
+  --alerte:#9C3B2E;
+  --line:rgba(28,28,26,.13); --line-soft:rgba(28,28,26,.07);
+  --exemple:#6b6659;
+  --ombre-feuille:0 -22px 50px rgba(20,18,14,.22);
+  --creux:rgba(28,28,26,.20); --relief:rgba(255,255,255,.75);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E; --or-clair:#e0bd83;
+         --pine:#cfd8c9; --pine-light:#b6c2af; --exemple:#9a958a; --alerte:#d4685a;
+         --line:rgba(233,229,220,.17); --line-soft:rgba(233,229,220,.09);
+         --ombre-feuille:0 -22px 50px rgba(0,0,0,.5);
+         --creux:rgba(0,0,0,.55); --relief:rgba(233,229,220,.10); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.55 Inter,-apple-system,"Segoe UI",Roboto,sans-serif}
+::selection{background:rgba(185,139,71,.22)}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:4px}
+
+/* ─── L'appareil de la planche ───────────────────────────────────────── */
+.tete{max-width:1240px;margin:0 auto;padding:34px 22px 0}
+.tete h1{margin:0;font:400 30px/1.15 "Playfair Display",Georgia,serif;letter-spacing:-.01em}
+.tete p{margin:10px 0 0;max-width:64ch;color:var(--charcoal-soft);font-size:15px}
+
+.choix{position:sticky;top:0;z-index:5;background:var(--bone);
+       margin:22px auto 0;max-width:1240px;padding:12px 22px 4px}
+/* **Les chips défilent, elles ne s'empilent pas.** À 390 px, deux rangées de
+   cinq passaient à quatre lignes : la barre mangeait la moitié de l'écran
+   qu'elle sert à regarder. Vu à la capture, jamais autrement. */
+.rangee{display:flex;gap:8px;align-items:center;margin-bottom:8px;
+        overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.rangee::-webkit-scrollbar{display:none}
+.rangee > .quoi{flex:0 0 auto;margin:0 4px 0 0;width:76px;
+                font:500 9.5px/1.25 Inter,sans-serif;letter-spacing:.2em;
+                text-transform:uppercase;color:var(--or)}
+.rangee button{flex:0 0 auto;white-space:nowrap;min-height:44px;padding:10px 16px;cursor:pointer;
+               border:1px solid var(--line);border-radius:99px;background:transparent;
+               font:500 11.5px/1 Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;
+               color:var(--charcoal-soft);transition:background .18s,border-color .18s,color .18s}
+.rangee button[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:var(--bone)}
+@media (prefers-color-scheme: dark){ .rangee button[aria-pressed="true"]{color:#171613} }
+
+.scene{max-width:1240px;margin:0 auto;padding:16px 22px 70px;
+       display:flex;flex-direction:column;gap:26px;align-items:center}
+@media (min-width:1000px){
+  .scene{flex-direction:row;align-items:flex-start;justify-content:center;gap:40px}
+  .colonne{max-width:420px}
+}
+.colonne{width:100%;max-width:390px;display:flex;flex-direction:column;gap:26px}
+.legende .nom{font:500 11px/1 Inter,sans-serif;letter-spacing:.26em;text-transform:uppercase;color:var(--or)}
+.legende h2{margin:8px 0 0;font:400 22px/1.2 "Playfair Display",Georgia,serif}
+.legende p{margin:10px 0 0;font-size:15px;color:var(--charcoal-soft)}
+.legende b{font-weight:600;color:var(--charcoal)}
+.mesure{margin-top:12px;display:flex;align-items:baseline;gap:10px;
+        border-top:1px solid var(--line-soft);padding-top:10px;
+        font:500 9.5px/1.4 Inter,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.mesure b{font:600 14px/1 Inter,sans-serif;letter-spacing:.02em;color:var(--charcoal);
+          font-variant-numeric:tabular-nums}
+
+/* ─── LE TÉLÉPHONE ────────────────────────────────────────────────────── */
+.tel{position:relative;width:390px;height:664px;max-width:100%;flex:0 0 auto;
+     background:var(--bone);border-radius:30px;overflow:hidden;
+     box-shadow:0 1px 0 rgba(28,28,26,.08),0 24px 60px rgba(20,18,14,.14)}
+.derriere{height:60px;display:flex;align-items:center;justify-content:center;
+          font:500 10px/1 Inter,sans-serif;letter-spacing:.34em;color:var(--muted);
+          background:linear-gradient(180deg,var(--paper),rgba(28,28,26,.06))}
+.feuille{position:absolute;inset:60px 0 0;background:var(--cream);
+         border-radius:26px 26px 0 0;box-shadow:var(--ombre-feuille);
+         display:flex;flex-direction:column;overflow:hidden}
+.dedans{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.dedans::-webkit-scrollbar{width:0}
+.entete{display:flex;align-items:center;gap:12px;padding:0 26px;min-height:44px}
+.retour{flex:0 0 auto;width:26px;height:34px;display:flex;align-items:center;
+        border:0;background:none;padding:0;color:var(--charcoal);cursor:pointer}
+.entete h3{margin:0;flex:1;text-align:center;font:400 27px/1.05 "Playfair Display",Georgia,serif;white-space:nowrap}
+.micro-coin{flex:0 0 auto;width:44px;height:44px;border-radius:99px;cursor:pointer;border:0;
+            background:none;box-shadow:inset 0 0 0 1px var(--line-soft);
+            display:flex;align-items:center;justify-content:center;color:var(--pine)}
+.caps{font:500 9.5px/1.35 Inter,sans-serif;letter-spacing:.28em;text-transform:uppercase;
+      color:var(--muted);white-space:nowrap}
+
+/* ─── La fiche « Épurée », reprise à l'identique ──────────────────────── */
+.form{display:flex;flex-direction:column;padding:0 26px 4px}
+.civilite{display:flex;gap:8px;margin-top:4px}
+.civilite button{min-height:36px;border-radius:99px;border:1px solid var(--line);background:transparent;
+                 padding:0 26px;font:400 15px/1 Inter,sans-serif;color:var(--charcoal-soft);cursor:pointer;
+                 transition:border-color .18s,background .18s,color .18s}
+.civilite button[aria-pressed="true"]{border-color:var(--pine);background:var(--paper);color:var(--charcoal)}
+.bloc{margin-top:9px}
+.titres{display:flex;align-items:flex-end;gap:9px;margin-bottom:5px}
+.titres span:first-child{flex:1;min-width:0}
+.titres span:last-child{width:152px;flex:0 0 152px;text-align:right}
+.libelle{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:4px}
+.duo{display:flex;gap:9px}
+.duo .nom{flex:1;min-width:0}
+.duo .num{flex:0 0 152px}
+.case{width:100%;min-height:46px;border:0;border-radius:13px;background:var(--paper);
+      padding:13px 15px;font:400 16px/1.2 Inter,sans-serif;color:var(--charcoal);transition:box-shadow .18s}
+.case::placeholder{color:var(--exemple)}
+.case:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.ajout{border:0;background:none;padding:0;cursor:pointer;font:500 9.5px/1.35 Inter,sans-serif;
+       letter-spacing:.28em;text-transform:uppercase;color:var(--pine);white-space:nowrap}
+.envoi{display:flex;align-items:center;justify-content:space-between;gap:12px;
+       min-height:34px;margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px}
+.envoi .groupe{display:flex;gap:4px}
+.envoi button{min-height:34px;border:0;background:none;padding:6px 10px;cursor:pointer;
+              font:400 14px/1 Inter,sans-serif;color:var(--charcoal-soft);border-radius:2px}
+.envoi button[aria-pressed="true"]{color:var(--charcoal);box-shadow:inset 0 -1.5px 0 var(--or)}
+.photos{margin-top:8px}
+.photo{margin-top:5px;width:44px;height:44px;border-radius:8px;border:1px solid var(--line);
+       background:var(--paper);color:var(--pine);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.secondaire{width:66%;min-height:42px;align-self:center;margin-top:8px;border:1px solid var(--line);
+            border-radius:99px;background:none;padding:0 20px;cursor:pointer;
+            font:400 15px/1.2 Inter,sans-serif;color:var(--charcoal-soft)}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LA DICTÉE — sa réserve ne bouge JAMAIS d'un dessin à l'autre : 104 px au
+   repos comme pendant. C'est au moment où l'on appuie que l'écran doit être
+   le plus stable.
+   ═══════════════════════════════════════════════════════════════════════ */
+.dictee{display:flex;flex-direction:column;align-items:center;justify-content:center;
+        --v:1;min-height:104px;margin-top:8px;width:100%}
+[data-lit="oui"] .repos{display:none}
+[data-lit="non"] .ligne{display:none}
+.repos{display:flex;flex-direction:column;align-items:center}
+.objet{position:relative;display:flex;align-items:center;justify-content:center}
+.frange{position:absolute;top:0;bottom:0;width:1.5cm;display:flex;align-items:center;
+        justify-content:space-between;gap:2px;pointer-events:none;overflow:hidden}
+.frange-g{right:calc(100% + 9px);-webkit-mask-image:linear-gradient(90deg,transparent,#000);
+          mask-image:linear-gradient(90deg,transparent,#000)}
+.frange-d{left:calc(100% + 9px);-webkit-mask-image:linear-gradient(270deg,transparent,#000);
+          mask-image:linear-gradient(270deg,transparent,#000)}
+.frange i{display:block;flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.7}
+.indice{margin:9px 0 0;height:16px;font-size:11.5px;line-height:16px;color:var(--charcoal-soft)}
+
+.disque{position:relative;z-index:2;width:76px;height:76px;border-radius:99px;border:0;
+        background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+        transition:transform .2s}
+.disque:active{transform:scale(.95)}
+
+/* — REPOS 0 · AUJOURD'HUI : le disque plein, son choix du 30 août. — */
+[data-repos="plein"] .disque{background:var(--pine);color:var(--cream);
+                             box-shadow:0 8px 22px rgba(0,0,0,.16)}
+@media (prefers-color-scheme: dark){ [data-repos="plein"] .disque{color:#171613} }
+
+/* ═══ LA DEUXIÈME SÉRIE — 2 septembre 2026, après « j'aime pas » ═══════
+   Les quatre premiers dessins gardaient TOUS le même gros rond de 76 px au
+   centre : on changeait la matière, jamais la silhouette. C'est probablement
+   ça qu'il refuse. Cette série change la forme elle-même, et va jusqu'à la
+   supprimer. */
+
+/* — REPOS 1 · LA PHRASE — aucun objet du tout : la ligne EST le geste.
+   C'est la seule proposition qui ne pose rien sur la fiche. Le serif de vos
+   titres, un filet d'or dessous, et l'on appuie sur les mots. */
+[data-repos="phrase"] .disque{width:auto;height:auto;min-height:44px;padding:6px 4px;
+  border-radius:0;color:var(--charcoal);box-shadow:inset 0 -1.5px 0 var(--or)}
+[data-repos="phrase"] .signe{display:none}
+
+[data-repos="phrase"] .frange{display:none}
+[data-repos="phrase"] .indice{visibility:hidden}
+/* Un micro d'or de quinze pixels précède les mots : sans lui, une belle ligne
+   ne dit pas qu'elle enregistre — c'est le seul risque de ce dessin, et il ne
+   coûte que ça à écarter. */
+.mot{display:none;align-items:center;gap:9px;
+     font:400 22px/1.3 "Playfair Display",Georgia,serif;white-space:nowrap}
+.mot svg{color:var(--or);flex:0 0 auto}
+[data-repos="phrase"] .mot{display:flex}
+
+/* — REPOS 2 · LE CACHET — on sort du rond. Un cachet à angles adoucis, du
+   beige de vos cases, un filet d'or, le micro gravé dedans. Plus petit que le
+   disque, et il ne roule plus. */
+[data-repos="cachet"] .disque{width:62px;height:62px;border-radius:15px;background:var(--paper);
+  color:var(--pine);box-shadow:inset 0 0 0 1px var(--or), 0 6px 16px rgba(20,18,14,.10)}
+
+/* — REPOS 3 · LE MICRO NU — pas de contenant. Le dessin seul, plus grand et
+   plus fin, comme gravé à même le papier. Rien à remplir, rien à cerner. */
+[data-repos="micro"] .disque{color:var(--pine)}
+[data-repos="micro"] .signe svg{width:46px;height:46px;stroke-width:1.1}
+
+/* — REPOS 4 · LE SIGNET — le ruban d'une reliure, avec son encoche. C'est le
+   seul dessin qui n'est pas centré sur lui-même : il pend, comme un signet
+   sorti d'un livre. */
+[data-repos="signet"] .disque{width:50px;height:74px;border-radius:4px 4px 0 0;
+  background:var(--paper);color:var(--pine);overflow:hidden;
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%)}
+[data-repos="signet"] .disque::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;
+  background:var(--or)}
+[data-repos="signet"] .signe{margin-bottom:12px}
+
+/* ─── PENDANT LA DICTÉE — la ligne, recopiée de `globals.css` ──────────── */
+.ligne{display:flex;align-items:center;gap:12px;width:100%;padding:0 0 0 0}
+.jeter{flex:0 0 auto;width:32px;height:32px;border:0;background:none;cursor:pointer;
+       color:var(--muted);display:flex;align-items:center;justify-content:center;border-radius:99px}
+.jeter:active{color:var(--alerte)}
+.compteur{flex:0 0 auto;display:flex;align-items:center;gap:7px;font-size:14px;
+          font-variant-numeric:tabular-nums;color:var(--or)}
+.pastille{width:8px;height:8px;border-radius:99px;background:var(--alerte);
+          animation:battre-pastille 1.3s ease-in-out infinite}
+@keyframes battre-pastille{0%,100%{opacity:1}50%{opacity:.25}}
+.envoyer{flex:0 0 auto;width:44px;height:44px;border-radius:99px;cursor:pointer;
+         background:transparent;border:0;box-shadow:inset 0 0 0 1.5px var(--pine);color:var(--pine);
+         display:flex;align-items:center;justify-content:center;transition:transform .18s}
+.envoyer:active{transform:scale(.975)}
+
+/* Le champ où vit l'onde : même place, même largeur, quel que soit le dessin. */
+.trace{flex:1;min-width:0;height:26px;position:relative;display:flex;align-items:center}
+
+/* — DICTÉE 0 · AUJOURD'HUI : l'onde en barreaux. — */
+.onde{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;gap:2px;
+      overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000);
+      mask-image:linear-gradient(90deg,transparent,#000 22%,#000)}
+.onde i{flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.85;
+        transform:scaleY(var(--v));transition:transform 90ms linear}
+
+/* — DICTÉE 1 · LE SISMOGRAPHE — un TRAIT continu qui se trace et défile.
+   Les barreaux d'aujourd'hui découpent la voix en morceaux ; un sismographe
+   la garde d'un seul tenant. C'est la même information, écrite à la plume
+   plutôt qu'en bâtons. */
+.sismo{position:absolute;inset:0;overflow:hidden;
+       -webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000);
+       mask-image:linear-gradient(90deg,transparent,#000 22%,#000)}
+.sismo svg{position:absolute;top:0;right:0;height:26px;width:420px;
+           transform:scaleY(var(--v));transition:transform 110ms linear;
+           animation:derouler 6s linear infinite}
+.sismo path{fill:none;stroke:var(--or);stroke-width:1.4;stroke-linejoin:round;stroke-linecap:round}
+@keyframes derouler{from{transform:translateX(0) scaleY(var(--v))}
+                    to{transform:translateX(210px) scaleY(var(--v))}}
+
+/* — DICTÉE 2 · LES CHIFFRES — la durée EST l'objet, et il n'y a rien d'autre.
+   Le plus dépouillé des trois : la poubelle à gauche, le temps en grand dans
+   vos caractères de titre, l'avion à droite. Aucune onde. */
+[data-ligne="chiffres"] .compteur{display:none}
+.chiffres{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:9px;
+          font:400 30px/1 "Playfair Display",Georgia,serif;color:var(--charcoal);
+          font-variant-numeric:tabular-nums}
+.chiffres .pastille{width:7px;height:7px}
+
+/* — DICTÉE 3 · LA GOUTTE — la vôtre, celle de la première page, en or.
+   Elle grossit quand vous parlez et retombe quand vous vous taisez : c'est la
+   voix qu'on voit, sans une seule barre. */
+.goutte{position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-8px 0 0 -8px;
+        background:var(--or);border-radius:0 50% 50% 50%;
+        transform:rotate(45deg) scale(calc(.5 + var(--v) * .6));
+        transition:transform 110ms cubic-bezier(.22,.61,.36,1)}
+.ondulation{position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-8px 0 0 -8px;
+            border-radius:99px;box-shadow:0 0 0 1px var(--or);opacity:.5;
+            animation:essaimer 2.2s ease-out infinite}
+@keyframes essaimer{from{transform:scale(1);opacity:.45}to{transform:scale(3.6);opacity:0}}
+
+@media (prefers-reduced-motion:reduce){
+  .sismo svg,.ondulation{animation:none}
+}
+
+.a-bulle{position:absolute;left:14px;bottom:14px;width:46px;height:46px;border-radius:99px;
+         background:var(--charcoal);color:var(--bone);display:flex;align-items:center;
+         justify-content:center;font:400 19px/1 "Playfair Display",Georgia,serif;
+         box-shadow:0 6px 18px rgba(0,0,0,.22)}
+@media (prefers-color-scheme: dark){ .a-bulle{color:#171613} }
+</style>
+</head>
+<body>
+
+<header class="tete">
+  <h1>La note vocale — série 2 : la forme</h1>
+  <p>La silhouette change, et l'un des dessins ne pose plus rien : la phrase, le cachet, le micro nu, le signet. Pendant la dictée : le sismographe, les chiffres, la goutte. Page conservée pour comparer.</p>
+</header>
+
+<nav class="choix" aria-label="Choisir les dessins">
+  <div class="rangee" role="group" aria-label="Avant d'appuyer">
+    <p class="quoi">Avant d'appuyer</p>
+    <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-repos="phrase" aria-pressed="false">1 · La phrase</button>
+    <button type="button" data-repos="cachet" aria-pressed="false">2 · Le cachet</button>
+    <button type="button" data-repos="micro" aria-pressed="false">3 · Le micro nu</button>
+    <button type="button" data-repos="signet" aria-pressed="false">4 · Le signet</button>
+  </div>
+  <div class="rangee" role="group" aria-label="Pendant la dictée">
+    <p class="quoi">Pendant la dictée</p>
+    <button type="button" data-ligne="onde" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-ligne="sismo" aria-pressed="false">1 · Sismographe</button>
+    <button type="button" data-ligne="chiffres" aria-pressed="false">2 · Les chiffres</button>
+    <button type="button" data-ligne="goutte" aria-pressed="false">3 · La goutte</button>
+  </div>
+</nav>
+
+<div class="scene">
+  <div class="tel" data-repos="plein" data-ligne="onde" id="cadre">
+    <div class="derriere">ATLAS</div>
+    <div class="feuille">
+      <div class="dedans">
+        <div class="entete">
+          <button class="retour" type="button" aria-label="Retour">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <h3>Fiche client</h3>
+          <button class="micro-coin" type="button" aria-label="Dicter les coordonnées">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+          </button>
+        </div>
+
+        <form class="form" onsubmit="return false">
+          <div class="civilite">
+            <button type="button" aria-pressed="false">Mr</button>
+            <button type="button" aria-pressed="false">Mme</button>
+          </div>
+
+          <div class="bloc">
+            <div class="titres caps"><span>Nom du client</span><span>Téléphone</span></div>
+            <div class="duo">
+              <span class="nom"><input class="case" placeholder="Bernard" aria-label="Nom du client"></span>
+              <span class="num"><input class="case num" placeholder="06 12 34 56 78" inputmode="tel" aria-label="Téléphone"></span>
+            </div>
+          </div>
+
+          <div class="bloc">
+            <div class="libelle"><span class="caps">E-mail</span></div>
+            <input class="case" placeholder="bernard@exemple.fr" inputmode="email" aria-label="E-mail">
+          </div>
+
+          <div class="bloc">
+            <div class="libelle">
+              <span class="caps">Chantier</span>
+              <button class="ajout" type="button" data-ajout-adresse>+ Client</button>
+            </div>
+            <input class="case" placeholder="12 rue des Lilas, Nantes" aria-label="Adresse du chantier">
+            <div data-adresse-client hidden style="margin-top:7px">
+              <div class="libelle"><span class="caps">Client</span></div>
+              <input class="case" placeholder="Si différente" aria-label="Adresse du client">
+            </div>
+          </div>
+
+          <div class="envoi">
+            <span class="caps">Envoi</span>
+            <span class="groupe">
+              <button type="button" aria-pressed="false">SMS</button>
+              <button type="button" aria-pressed="false">E-mail</button>
+            </span>
+          </div>
+
+          <div class="photos">
+            <span class="caps">Photos</span>
+            <button class="photo" type="button" aria-label="Ajouter des photos">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>
+            </button>
+          </div>
+
+          <div class="dictee" data-lit="non" id="dictee">
+            <!-- AVANT D'APPUYER -->
+            <div class="repos">
+              <div class="objet">
+                <span class="frange frange-g" aria-hidden="true"></span>
+                <span class="frange frange-d" aria-hidden="true"></span>
+                <button class="disque" type="button" id="dicter" aria-label="Dicter le chantier">
+                  <span class="signe">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+                  </span>
+                  <span class="mot">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+                    Décrivez le chantier
+                  </span>
+                </button>
+              </div>
+              <p class="indice" id="indice">Appuyez et décrivez le chantier</p>
+            </div>
+
+            <!-- PENDANT — poubelle, chrono, la trace, envoi. -->
+            <div class="ligne">
+              <button class="jeter" type="button" id="jeter" aria-label="Supprimer la note">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5h6v2M7 7l1 12h8l1-12M10 11v5M14 11v5"/></svg>
+              </button>
+              <span class="compteur"><span class="pastille" aria-hidden="true"></span><span id="chrono">0:00</span></span>
+
+              <span class="trace" aria-hidden="true">
+                <span class="onde" id="onde"></span>
+                <span class="sismo" hidden><svg viewBox="0 0 420 26" preserveAspectRatio="none"><path d=""/></svg></span>
+                <span class="chiffres" hidden><span class="pastille"></span><span id="chrono-grand">0:00</span></span>
+                <span class="goutte" hidden></span>
+                <span class="ondulation" hidden></span>
+              </span>
+
+              <button class="envoyer" type="button" id="envoyer" aria-label="Envoyer la note et préparer le devis">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2.5-6.5L4 12z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <button class="secondaire" type="button">Je rédige à la main</button>
+        </form>
+      </div>
+    </div>
+    <div class="a-bulle" aria-hidden="true">N</div>
+  </div>
+
+  <div class="colonne">
+    <div class="legende">
+      <span class="nom" id="rang-repos">Avant d'appuyer — aujourd'hui</span>
+      <h2 id="titre-repos">Le disque plein, votre choix du 30 août</h2>
+      <p id="propos-repos">C'est le « B » de la planche des cinq dessins. Il est ici pour comparer :
+        c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.</p>
+      <p class="mesure"><span>Encre sombre au repos</span><b id="encre">4 536 px²</b></p>
+    </div>
+    <div class="legende">
+      <span class="nom" id="rang-ligne">Pendant la dictée — aujourd'hui</span>
+      <h2 id="titre-ligne">La ligne, votre choix du 31 août</h2>
+      <p id="propos-ligne">Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que
+        l'application porte, et le point de départ des trois dessins d'à côté.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const MOTS_REPOS = {
+  plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
+    "C'est le « B » de la planche des cinq dessins. Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
+    "4 536 px²"],
+  phrase: ["Avant d'appuyer — dessin 1", "La phrase",
+    "Aucun objet du tout : la ligne est le geste. Vos caractères de titre, un filet d'or dessous, et l'on appuie sur les mots. C'est la seule proposition qui ne pose plus rien sur la fiche.",
+    "0 px²"],
+  cachet: ["Avant d'appuyer — dessin 2", "Le cachet",
+    "On sort du rond : un cachet à angles adoucis, du beige de vos cases, un filet d'or, le micro gravé dedans. Plus petit que le disque, et il ne roule plus.",
+    "0 px²"],
+  micro: ["Avant d'appuyer — dessin 3", "Le micro nu",
+    "Pas de contenant. Le dessin seul, plus grand et plus fin, comme gravé à même le papier. Rien à remplir, rien à cerner — et rien à colorer.",
+    "0 px²"],
+  signet: ["Avant d'appuyer — dessin 4", "Le signet",
+    "Le ruban d'une reliure, avec son encoche. Le seul dessin qui ne soit pas centré sur lui-même : il pend, comme un signet sorti d'un livre.",
+    "0 px²"],
+};
+const MOTS_LIGNE = {
+  onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
+    "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
+  sismo: ["Pendant la dictée — dessin 1", "Le sismographe",
+    "Un trait continu qui se trace et défile. Les barreaux d'aujourd'hui découpent la voix en morceaux ; celui-ci la garde d'un seul tenant. Même information, écrite à la plume plutôt qu'en bâtons."],
+  chiffres: ["Pendant la dictée — dessin 2", "Les chiffres",
+    "La durée est l'objet, et il n'y a rien d'autre : la poubelle à gauche, le temps en grand dans vos caractères de titre, l'avion à droite. Aucune onde. Le plus dépouillé des trois."],
+  goutte: ["Pendant la dictée — dessin 3", "La goutte",
+    "La vôtre, celle de la première page, en or. Elle grossit quand vous parlez et retombe quand vous vous taisez : c'est la voix qu'on voit, sans une seule barre."],
+};
+
+const cadre = document.getElementById("cadre");
+document.querySelectorAll(".rangee").forEach((rangee) => {
+  const touches = [...rangee.querySelectorAll("button")];
+  touches.forEach((b) => b.addEventListener("click", () => {
+    touches.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    if (b.dataset.repos) {
+      cadre.dataset.repos = b.dataset.repos;
+      const [r, t, p, e] = MOTS_REPOS[b.dataset.repos];
+      document.getElementById("rang-repos").textContent = r;
+      document.getElementById("titre-repos").textContent = t;
+      document.getElementById("propos-repos").textContent = p;
+      document.getElementById("encre").textContent = e;
+    } else {
+      cadre.dataset.ligne = b.dataset.ligne;
+      const [r, t, p] = MOTS_LIGNE[b.dataset.ligne];
+      document.getElementById("rang-ligne").textContent = r;
+      document.getElementById("titre-ligne").textContent = t;
+      document.getElementById("propos-ligne").textContent = p;
+      montrerLaTrace();
+    }
+  }));
+});
+
+// La trace : un seul dessin visible à la fois, les autres retirés du document.
+const PIECES = { onde: [".onde"], sismo: [".sismo"], chiffres: [".chiffres"], goutte: [".goutte", ".ondulation"] };
+function montrerLaTrace() {
+  const choisi = cadre.dataset.ligne;
+  for (const nom in PIECES) {
+    for (const sel of PIECES[nom]) {
+      document.querySelector(sel).hidden = nom !== choisi;
+    }
+  }
+}
+
+document.querySelectorAll(".civilite,.envoi .groupe").forEach((groupe) => {
+  const touches = [...groupe.querySelectorAll("button[aria-pressed]")];
+  touches.forEach((t) => t.addEventListener("click", () => {
+    const etait = t.getAttribute("aria-pressed") === "true";
+    touches.forEach((x) => x.setAttribute("aria-pressed", "false"));
+    t.setAttribute("aria-pressed", etait ? "false" : "true");
+  }));
+});
+
+document.querySelectorAll("[data-ajout-adresse]").forEach((b) => {
+  b.addEventListener("click", () => {
+    const champ = b.closest("form").querySelector("[data-adresse-client]");
+    champ.hidden = false; b.hidden = true;
+    champ.querySelector("input").focus();
+  });
+});
+
+const HAUTEURS = [7, 13, 9, 18, 11, 22, 10, 15, 8, 19, 12, 16];
+document.querySelectorAll(".frange").forEach((f) => {
+  f.innerHTML = HAUTEURS.map((h) => `<i style="height:${h}px"></i>`).join("");
+});
+// Vingt-six barreaux : l'onde part PLEINE, à plat — sinon les deux premières
+// secondes montrent un trait qui pousse dans le vide.
+document.getElementById("onde").innerHTML =
+  Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 17)}px"></i>`).join("");
+
+// Le tracé du sismographe : 210 px de dents, répétés deux fois. La boucle
+// défile d'exactement 210 px, donc la reprise ne se voit pas.
+const PAS = 6, MOTIF = [];
+for (let x = 0; x <= 210; x += PAS) {
+  const t = x / PAS;
+  const h = 4.5 * Math.sin(t * 1.7) + 3.2 * Math.sin(t * 0.61) + 2.4 * Math.sin(t * 2.9);
+  MOTIF.push(`${x} ${(13 + h).toFixed(1)}`);
+}
+const SUITE = MOTIF.map((p) => { const [x, y] = p.split(" "); return `${Number(x) + 210} ${y}`; });
+document.querySelector(".sismo path").setAttribute("d", "M" + MOTIF.concat(SUITE.slice(1)).join(" L"));
+
+const dictee = document.getElementById("dictee");
+const chrono = document.getElementById("chrono");
+const indice = document.getElementById("indice");
+let horloge = null, souffle = null, secondes = 0;
+
+function demarrer() {
+  dictee.dataset.lit = "oui";
+  secondes = 0; chrono.textContent = "0:00";
+  document.getElementById("chrono-grand").textContent = "0:00";
+  horloge = setInterval(() => {
+    secondes++;
+    const mmss = `${Math.floor(secondes / 60)}:${String(secondes % 60).padStart(2, "0")}`;
+    chrono.textContent = mmss;
+    document.getElementById("chrono-grand").textContent = mmss;
+  }, 1000);
+  // Le volume est SIMULÉ ici : une maquette n'a pas de micro. Dans
+  // l'application, cette valeur vient du son réellement capté.
+  souffle = setInterval(() => {
+    dictee.style.setProperty("--v", (0.45 + Math.random() * 0.85).toFixed(2));
+  }, 110);
+}
+function arreter(mot) {
+  dictee.dataset.lit = "non";
+  clearInterval(horloge); clearInterval(souffle);
+  dictee.style.setProperty("--v", "1");
+  indice.textContent = mot;
+}
+document.getElementById("dicter").addEventListener("click", demarrer);
+document.getElementById("jeter").addEventListener("click", () => arreter("Appuyez et décrivez le chantier"));
+document.getElementById("envoyer").addEventListener("click", () => arreter("Note enregistrée"));
+montrerLaTrace();
+</script>
+</body>
+</html>

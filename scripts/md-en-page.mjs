@@ -74,7 +74,21 @@ function enligne(texte) {
 }
 
 function convertir(markdown) {
-  const lignes = markdown.split("\n");
+  // **Les fins de ligne Windows sont retirées ICI, et c'est une BOUCLE SANS
+  // FIN qu'on ferme.**
+  //
+  // Découpé sur le seul saut de ligne, chaque ligne d'un fichier CRLF garde
+  // son retour chariot. Le motif du séparateur de tableau exige un « | » en
+  // FIN de chaîne : il ne reconnaît alors plus rien, la branche « tableau »
+  // est sautée — et la branche « paragraphe », qui refuse les lignes
+  // commençant par « | », ne la ramasse pas davantage. Plus personne
+  // n'avance l'index, et le script tourne pour toujours, sans écrire une
+  // ligne ni se plaindre.
+  //
+  // Trouvé le 4 septembre 2026 sur un document que `git stash` venait de
+  // convertir en CRLF (`core.autocrlf`, poste Windows). Le même document
+  // passait la veille : rien n'avait changé dans le Markdown.
+  const lignes = markdown.split(/\r?\n/);
   const sortie = [];
   const sections = [];
   let i = 0;

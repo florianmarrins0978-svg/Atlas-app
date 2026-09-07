@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantierPourCoordonnees } from "@/server/repositories/chantiers";
 import FormulaireNouveauChantier from "../../nouveau/FormulaireNouveauChantier";
+import { provenanceDesCoordonnees } from "@/lib/retour-du-devis";
+import { listerPhotos } from "@/server/repositories/photos";
+import { getNoteVocale } from "@/server/repositories/notes-vocales";
 
 // Données réelles, propres à l'entreprise courante : jamais de pré-rendu statique.
 export const dynamic = "force-dynamic";
@@ -28,13 +31,32 @@ export const dynamic = "force-dynamic";
  */
 export default async function CoordonneesDuChantierPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
+  // **D'où il vient, et donc où le ramener** — sa demande du 31 août 2026.
+  // Entré depuis un devis sans client, il doit y retourner une fois la fiche
+  // remplie : c'est le document qu'il était en train de lire. Entré depuis
+  // l'accueil (« Adresse non renseignée », 17 août), rien ne change.
+  const provenance = provenanceDesCoordonnees(id, (await searchParams).de);
   const ctx = await getCurrentCtx();
   const chantier = await getChantierPourCoordonnees(ctx, id);
   if (!chantier) notFound();
+
+  // **Ce que le chantier porte déjà** — sa demande du 31 août 2026 : la fiche
+  // client rouverte est la MÊME que celle de la création, photos et anneau
+  // compris. Les lire ici, et non les inventer vides : une pellicule vide sur
+  // un chantier photographié lui ferait croire ses photos perdues.
+  //
+  // **De la dictée, on ne retient que son EXISTENCE** — sa remarque du
+  // 5 septembre 2026 : l'anneau de cette fiche ne devient pas un lecteur parce
+  // qu'une note existe, sinon l'écran change de visage entre deux visites
+  // (`FormulaireNouveauChantier`, champ `aUneNote`). Elle sert seulement à ne
+  // pas l'inviter à dicter par-dessus.
+  const [photos, note] = await Promise.all([listerPhotos(ctx, id), getNoteVocale(ctx, id)]);
 
   const adresseChantier = chantier.adresseChantier ?? "";
   const adresseClient = chantier.clientAdresse ?? "";
@@ -46,6 +68,9 @@ export default async function CoordonneesDuChantierPage({
     <FormulaireNouveauChantier
       reprise={{
         id: chantier.id,
+        provenance,
+        photos,
+        aUneNote: note !== null,
         nomClient: chantier.clientNom ?? "",
         civilite: chantier.clientCivilite ?? null,
         telephone: chantier.clientTelephone ?? "",

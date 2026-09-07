@@ -27,8 +27,7 @@
 // banc ; un banc mort lui coûte sa soirée.
 
 import { spawn } from "node:child_process";
-import { createServer } from "node:net";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
@@ -37,12 +36,15 @@ import {
   versionEpinglee,
   dependancesIncoherentes,
   constructionMuette,
+  arbreIncomplet,
 } from "./coherence-dependances.mjs";
 import {
   delogerConstructionsOrphelines,
   attendreLaConstructionEnCours,
   detenteursDuVerrou,
 } from "./verrou-construction.mjs";
+import { quoiServir, echangerLesDossiers } from "./relais-version-batie.mjs";
+import { portLibre } from "./port-libre.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
@@ -51,8 +53,88 @@ const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
 // permet de SERVIR PENDANT QU'ON BÂTIT — sans quoi le patron regarde une page
 // blanche pendant toute la construction, qui dure des dizaines de minutes sur
 // un disque lent. Voir `next.config.ts` (`ATLAS_DIST_DIR`).
+// **LE NEXT DU PROJET, JAMAIS CELUI QUE `npx` IRAIT CHERCHER — 31 août 2026.**
+//
+// Sa plainte de midi : *« version rapide en construction, elle est super
+// lente »*. Sa fiche donnait le message au mot près :
+//
+//     ▲ Next.js 16.3.3 (Turbopack)          ← le projet épingle 16.3.2
+//     Error: Could not find the Next.js package (next/package.json)
+//     Resolved from: /workspaces/Atlas-app/src/app
+//
+// **`npx next build` ne se contente pas d'échouer quand `node_modules/next`
+// manque : il TÉLÉCHARGE la dernière version depuis le registre et la lance.**
+// Reproduit ici en écartant le paquet — « npm warn exec The following package
+// was not found and will be installed: next@16.3.3 », puis exactement son
+// erreur. Ce Next-là ne trouve évidemment pas le paquet du projet, la
+// construction tombe, le banc reste en mode développement, et le veilleur
+// retente la même construction condamnée indéfiniment.
+//
+// **C'est aussi l'explication du « 16.3.3 » du 29 août**, que `TODO.md` portait
+// comme inexpliqué : ses `node_modules` n'avaient pas dérivé — c'est `npx` qui
+// allait chercher ailleurs ce qui manquait chez lui.
+//
+// On appelle donc le binaire du projet, par son chemin. Absent, l'échec est
+// franc et porte « Cannot find module » — ce que la réinstallation plus bas
+// sait déjà traiter.
+const NEXT = "node_modules/next/dist/bin/next";
+
 const DIST = ".next-batie";
-const TEMOIN_BATI = `${DIST}/atlas-version-batie.txt`;
+
+// **LA VERSION D'AVANT RESTE EN SERVICE PENDANT QU'ON BÂTIT LA NEUVE.**
+// **Correctif du 31 août 2026, au soir — sa huitième plainte de lenteur.**
+//
+// Jusqu'ici, dès que le code changeait, ce script repartait sur `next dev` le
+// temps de bâtir : le patron perdait sa version rapide À CHAQUE mise à jour,
+// et se retrouvait sur un mode où un écran neuf met trente à cent secondes à
+// s'ouvrir — au-delà de la minute que le relais de GitHub accepte d'attendre.
+// Autrement dit : **pendant toute la construction, il ne pouvait rien ouvrir.**
+//
+// Ce n'était pas un accident, c'était le dessin : « une gêne qui s'arrête »
+// (`memoire-prechauffage.mjs`). Sauf qu'elle ne s'arrêtait pas. Six sessions
+// poussent sur `main` dans la même soirée ; chacun de ses redémarrages tire du
+// code neuf, donc rebâtit, donc le renvoie en mode développement. La gêne était
+// devenue son état ordinaire — le 14, le 16, le 17, le 20, le 25, le 29 août,
+// puis deux fois le 31.
+//
+// **Et quand la construction ÉCHOUE, ce qui lui arrive souvent (mémoire trop
+// juste, paquet absent), il restait en mode développement POUR TOUJOURS.**
+// Désormais il reste sur la dernière version rapide : une application entière
+// et immédiate, en retard de quelques commits — ce que la fiche de son espace
+// sait déjà dire (« LE CODE SERVI N'EST PAS LE CODE RÉCUPÉRÉ »).
+//
+// **Le prix, dit franchement, parce qu'il est réel :** pendant la construction
+// il voit le code d'AVANT. C'est le malentendu qui a coûté deux heures le
+// 12 août — « commit récupéré » contre « commit servi ». Trois choses le
+// tiennent : le bandeau de l'écran le dit (`BandeauBanc.tsx`), la fiche le dit,
+// et la fenêtre dure le temps d'une construction, pas une soirée. À comparer
+// avec ce qu'on remplace : un mode développement où il voyait le code neuf sans
+// pouvoir ouvrir un seul écran.
+//
+// **Deux dossiers ne suffisent pas, il en faut trois.** `next build` efface son
+// dossier de destination : bâtir dans celui qu'on sert retirerait le sol au
+// serveur en marche. La neuve se bâtit donc à côté, et la bascule est un
+// ÉCHANGE DE NOMS — deux renommages, instantanés, et réversibles si le second
+// tombe. Coût mesuré : 351 Mo par dossier, dont 255 de cache (31 août 2026).
+const DIST_NEUVE = ".next-batie-neuve";
+const DIST_VIEILLE = ".next-batie-vieille";
+
+const temoinBatiDans = (dossier) => `${dossier}/atlas-version-batie.txt`;
+const TEMOIN_BATI = temoinBatiDans(DIST);
+
+// **Le témoin d'une construction EN COURS, et il porte son pid.**
+//
+// Sans lui, le bandeau « version rapide en construction » s'éteint dès qu'on
+// sert une version bâtie : `next start` impose `NODE_ENV=production`, et c'est
+// à cela que l'écran reconnaissait le mode développement. Le patron verrait
+// donc le code d'avant sans qu'aucun écran ne le lui dise — précisément le
+// malentendu qu'on refuse de rouvrir.
+//
+// Le pid, parce qu'un fichier resté d'un banc tué mentirait indéfiniment : le
+// lecteur demande au système si le processus vit (`src/server/etat-banc.ts`),
+// exactement comme le verrou du veilleur.
+const TEMOIN_CONSTRUCTION =
+  process.env.ATLAS_TEMOIN_CONSTRUCTION || "/tmp/atlas-construction-en-cours.json";
 // **Le témoin d'ÉCHEC, et il vaut le témoin de réussite.**
 //
 // Le 16 août 2026 : « l'appli est vraiment très lente, vraiment ». Sa fiche
@@ -86,6 +168,52 @@ function mesure(commande, args) {
       .join(" | ");
   } catch {
     return "inconnu";
+  }
+}
+
+/**
+ * Dépose l'échec là où la fiche de l'espace saura le lire.
+ *
+ * **Sorti de la branche « construction échouée » le 2 septembre 2026, parce
+ * qu'un second endroit en a besoin.** Sa panne de ce soir-là : `node_modules`
+ * amputé, `next` absent, le serveur mort à la seconde — et **rien n'était
+ * enregistré nulle part**, parce que seul un `next build` non nul écrivait ce
+ * témoin. Sa fiche a donc répété « NE RÉPOND PAS » pendant une heure sans
+ * jamais pouvoir dire pourquoi, et il a fallu lui faire lire son journal à la
+ * main. Une copie de ce bloc aurait divergé au premier changement de format ;
+ * la fiche, elle, n'en lit qu'un (`lire-echec-construction.mjs`).
+ *
+ * Ne lève jamais : un témoin qu'on ne peut pas écrire ne doit rien empêcher.
+ */
+function deposerEchec({ code, signal = null, sortie, verrou = null }) {
+  try {
+    writeFileSync(
+      TEMOIN_ECHEC,
+      [
+        `quand: ${new Date().toISOString()}`,
+        `code: ${code}`,
+        // **Le signal, quand il y en a un.** C'est LUI qui distingue une
+        // erreur de compilation d'un abattage par le noyau : sans cette ligne,
+        // les deux s'écrivent `code: 1` et la fiche ne peut plus nommer le
+        // coupable (29 août 2026).
+        `signal: ${signal ?? "aucun"}`,
+        // Les deux suspects d'une panne sur une machine modeste, relevés À
+        // L'INSTANT de l'échec : plus tard, la mémoire est rendue et le
+        // coupable a disparu.
+        `disque: ${mesure("df", ["-h", "--output=avail", "."])}`,
+        `memoire: ${mesure("free", ["-h"])}`,
+        // **Qui tenait le verrou, s'il a parlé.** Relevé à l'instant du refus,
+        // pas maintenant : le coupable a souvent disparu depuis.
+        ...(verrou ? ["verrou tenu par :", verrou] : []),
+        // **CE QUI A ÉTÉ DIT.** Sans ces lignes, le 16 août a été passé à
+        // chercher une saturation qui n'existait pas, alors que le message
+        // tenait en une phrase.
+        "dit:",
+        sortie || "(rien n'a été écrit)",
+      ].join("\n")
+    );
+  } catch {
+    // Un témoin qu'on ne peut pas écrire ne doit pas empêcher le repli.
   }
 }
 
@@ -152,22 +280,114 @@ async function reinstallerSiDesaccordees() {
     return; // Hors du dépôt : rien à comparer.
   }
 
-  const { incoherent, motif } = dependancesIncoherentes(
+  const versions = dependancesIncoherentes(
     PAQUETS_SENSIBLES.map((nom) => ({
       nom,
       exigee: versionEpinglee(paquet, nom),
       installee: versionInstallee(nom),
     }))
   );
-  if (!incoherent) return;
 
-  console.log(`\n  ${motif}\n`);
-  const { code } = await jouerEnRetenant("npm", ["install", "--no-audit", "--no-fund"]);
+  // **DEUX QUESTIONS, ET LA SECONDE EST LA PLUS LARGE — 3 septembre 2026.**
+  //
+  // La comparaison de versions ci-dessus ne regarde que deux paquets nommés à
+  // la main (`PAQUETS_SENSIBLES`). Le 3 septembre, l'arbre du patron était
+  // amputé AILLEURS — `@apm-js-collab/tracing-hooks`, une dépendance de Sentry
+  // — : ce garde a répondu « tout va bien », le serveur est parti, et chaque
+  // écran a rendu « Internal Server Error » parce que `instrumentation.ts` ne
+  // pouvait plus se charger.
+  //
+  // On demande donc aussi à npm si le dossier est ENTIER. Une seconde, mesurée,
+  // et elle couvre les centaines de paquets qu'aucune liste écrite à la main ne
+  // couvrira jamais.
+  const arbre = versions.incoherent ? { incomplet: false, motif: null } : await arbreIncomplet((c, a) => jouerEnRetenant(c, a, process.env, 400, true));
+  if (!versions.incoherent && !arbre.incomplet) return;
+
+  console.log(`\n  ${versions.motif ?? arbre.motif}\n`);
+  const { code, sortie } = await jouerEnRetenant("npm", ["install", "--no-audit", "--no-fund"]);
+  if (code === 0 && !paquetsEpinglesAbsents().length && !(await arbreIncomplet((c, a) => jouerEnRetenant(c, a, process.env, 400, true))).incomplet) {
+    console.log("\n  Dépendances remises d'aplomb.\n");
+    return;
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // **`npm install` NE RÉPARE PAS UN `node_modules` AMPUTÉ — 2 septembre 2026.**
+  //
+  // Sa panne du soir, et elle a duré une heure. Une installation interrompue
+  // avait laissé l'arbre à moitié ; `next` manquait. Cette garde s'est bien
+  // déclenchée — puis `npm install` a rendu, deux fois de suite :
+  //
+  //     npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist'
+  //     npm error ENOTEMPTY: directory not empty, rename '.../zod' -> '.../.zod-Nu9WQpaH'
+  //
+  // `npm install` répare un arbre COHÉRENT auquel il manque des paquets. Devant
+  // des dossiers à demi effacés, il bute sur ses propres restes, et il y butera
+  // encore au tour suivant : ce n'est pas une malchance passagère, c'est un
+  // arbre qu'il ne sait plus démêler.
+  //
+  // `npm ci` efface `node_modules` avant de réinstaller — c'est exactement le
+  // geste qui manquait, et c'est celui qui a rendu son application.
+  //
+  // **Et il est sans danger ICI, contrairement à ce que ce fichier a longtemps
+  // dit.** L'ancienne consigne — « `npm install` et non `npm ci`, parce que le
+  // serveur de développement TOURNE pendant ce temps » — datait d'avant le
+  // 31 août, quand cette garde vivait APRÈS le lancement. Elle vient désormais
+  // AVANT : rien ne sert, il n'y a aucun sol à retirer.
   console.log(
-    code === 0
-      ? "\n  Dépendances remises d'aplomb.\n"
-      : "\n  La réinstallation a échoué : on tente la construction telle quelle.\n"
+    "\n  npm install n'a pas suffi — l'arbre des dépendances est abîmé.\n" +
+      "  Réinstallation complète (npm ci), deux à trois minutes.\n"
   );
+  const propre = await jouerEnRetenant("npm", ["ci", "--no-audit", "--no-fund"]);
+
+  const manquants = paquetsEpinglesAbsents();
+  const restant = await arbreIncomplet((c, a) => jouerEnRetenant(c, a, process.env, 400, true));
+  if (propre.code === 0 && !manquants.length && !restant.incomplet) {
+    console.log("\n  Dépendances remises d'aplomb.\n");
+    return;
+  }
+
+  // **ET SI ÇA NE SUFFIT PAS, ON LE DIT — au lieu de foncer dans le mur.**
+  //
+  // L'ancienne version concluait « on tente la construction telle quelle ». Ce
+  // n'est pas un repli quand le paquet ABSENT est `next` : le serveur meurt à
+  // la seconde (« Cannot find module »), le banc s'arrête avec lui, le veilleur
+  // le relance, et cela recommence toutes les quinze secondes SANS QUE RIEN NE
+  // SOIT ENREGISTRÉ. C'est ce qui s'est passé pendant une heure : sa fiche
+  // répétait « NE RÉPOND PAS » sans jamais pouvoir dire pourquoi.
+  //
+  // On dépose donc l'échec là où la fiche le lit. Le banc continue quand même —
+  // un banc mort coûte plus cher qu'un banc qui se plaint —, mais il ne se tait
+  // plus.
+  deposerEchec({
+    code: propre.code,
+    sortie:
+      (manquants.length ? `paquets épinglés toujours absents : ${manquants.join(", ")}\n` : "") +
+      (restant.motif ? `${restant.motif}\n` : "") +
+      (propre.sortie || sortie || "(npm n'a rien écrit)"),
+  });
+  console.error(
+    "\n  ⚠️  LES DÉPENDANCES N'ONT PAS PU ÊTRE RÉPARÉES" +
+      (manquants.length ? ` — ${manquants.join(", ")} manque encore.` : ".") +
+      "\n     Depuis un terminal de l'espace :  rm -rf node_modules && npm ci\n"
+  );
+}
+
+/**
+ * Les paquets que le projet ÉPINGLE et qui ne sont pas sur le disque.
+ *
+ * **La question qui manquait, et elle coûtait une heure de boucle.** La garde
+ * se contentait du code de sortie de npm : une commande qui rend 0 en ayant
+ * laissé `next` absent était comptée comme une réussite. On regarde ce qui
+ * compte — le paquet est-il là ? —, pas ce que la commande a bien voulu dire.
+ */
+function paquetsEpinglesAbsents() {
+  let paquet;
+  try {
+    paquet = JSON.parse(readFileSync("package.json", "utf8"));
+  } catch {
+    return [];
+  }
+  return PAQUETS_SENSIBLES.filter((nom) => versionEpinglee(paquet, nom) && !versionInstallee(nom));
 }
 
 async function repond() {
@@ -256,7 +476,11 @@ function jouer(commande, args, env = process.env) {
  * La sortie reste héritée — le patron doit voir la construction avancer — et
  * elle est en plus RETENUE, pour que l'échec puisse se raconter.
  */
-function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
+// **`silencieux` : la sortie est RETENUE sans être déversée.** `npm ls` répond
+// en listant l'arbre entier — des centaines de lignes que le patron n'a aucune
+// raison de lire dans son journal, et qui noieraient le message qui compte.
+// Une question n'a pas à publier son inventaire pour rendre son verdict.
+function jouerEnRetenant(commande, args, env = process.env, lignes = 30, silencieux = false) {
   return new Promise((resoudre) => {
     const gardees = [];
     const retenir = (morceau) => {
@@ -268,11 +492,11 @@ function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
     };
     const p = spawn(commande, args, { stdio: ["ignore", "pipe", "pipe"], env });
     p.stdout?.on("data", (m) => {
-      process.stdout.write(m);
+      if (!silencieux) process.stdout.write(m);
       retenir(m);
     });
     p.stderr?.on("data", (m) => {
-      process.stderr.write(m);
+      if (!silencieux) process.stderr.write(m);
       retenir(m);
     });
     // **LE SIGNAL SE GARDE, et c'est un correctif — 29 août 2026.**
@@ -295,30 +519,6 @@ function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
 }
 
 /**
- * **Le PORT est-il libre — pas « la santé se tait-elle ».**
- *
- * La version précédente interrogeait `/api/health/live` et concluait « port
- * rendu » dès qu'il ne répondait plus. C'est faux, et c'est ce qui a fait
- * revenir « EADDRINUSE » chez le patron le 10 août 2026 au soir, APRÈS une
- * construction réussie : un serveur qu'on vient de tuer cesse de répondre bien
- * avant de rendre sa socket, et un processus qui tient le port sans servir
- * Atlas ne répond à cette route dans aucun cas. Le banc lançait donc
- * `next start` sur un port encore occupé.
- *
- * On demande maintenant au système, en essayant d'ÉCOUTER dessus : c'est la
- * seule question dont la réponse engage `next start`. La socket d'essai est
- * refermée aussitôt.
- */
-function portLibre() {
-  return new Promise((resoudre) => {
-    const essai = createServer();
-    essai.once("error", () => resoudre(false));
-    essai.once("listening", () => essai.close(() => resoudre(true)));
-    essai.listen(Number(PORT), "0.0.0.0");
-  });
-}
-
-/**
  * Déloge ce qui écoute encore, sans condition.
  *
  * `serveur.kill()` ne tue que l'enveloppe `npx` : le processus qui écoute
@@ -337,7 +537,7 @@ function delogerCeQuiEcoute() {
 async function portRendu(limiteMs) {
   const fin = Date.now() + limiteMs;
   while (Date.now() < fin) {
-    if (await portLibre()) return true;
+    if (await portLibre(PORT)) return true;
     await attendre(1000);
   }
   return false;
@@ -397,7 +597,7 @@ process.on("exit", () => libererVerrouBanc());
 // **La distinction qui compte** : si quelque chose répond à la santé, c'est
 // Atlas qui sert — on n'y touche pas, et le verrou ci-dessus a déjà tranché. Si
 // le port est pris SANS que rien ne réponde, c'est un orphelin, et lui seul.
-if (!(await portLibre())) {
+if (!(await portLibre(PORT))) {
   if (await repond()) {
     console.log(
       "\n  ─────────────────────────────────────────────────────────────\n" +
@@ -413,6 +613,55 @@ if (!(await portLibre())) {
 
 const version = versionDuCode();
 const raison = doitRebatir(version);
+
+// **La question n'est plus « faut-il rebâtir », mais « qu'est-ce qu'on sert
+// PENDANT ».** Une version bâtie utilisable — même périmée — vaut mieux qu'un
+// mode développement où rien ne s'ouvre. Le raisonnement, ce qu'il coûte et ce
+// qu'il remplace vivent dans `relais-version-batie.mjs`.
+const { servirDavant, modeDeveloppement, dossierDeConstruction: DIST_CONSTRUCTION } = quoiServir({
+  raison,
+  // `BUILD_ID` et non le dossier : `next build` crée sa destination dès la
+  // première seconde, et un dossier à demi rempli ne se sert pas. Ce fichier-là
+  // n'est écrit qu'à la fin d'une construction réussie.
+  versionDavantUtilisable: existsSync(`${DIST}/BUILD_ID`),
+  dist: DIST,
+  neuve: DIST_NEUVE,
+});
+
+/** L'échange, avec les gestes de fichiers de CETTE machine. */
+function echangerMaintenant() {
+  const { echange, motif } = echangerLesDossiers({
+    dist: DIST,
+    neuve: DIST_NEUVE,
+    vieille: DIST_VIEILLE,
+    renommer: (de, vers) => renameSync(de, vers),
+    effacer: (d) => rmSync(d, { recursive: true, force: true }),
+    effacerEnFond: (d) => spawn("rm", ["-rf", d], { stdio: "ignore", detached: true }).unref(),
+  });
+  if (motif) console.error(`  (Échange des versions : ${motif}.)`);
+  return echange;
+}
+
+/** Dit au bandeau de l'écran qu'une construction est en cours, et laquelle. */
+function ouvrirLeChantier() {
+  try {
+    writeFileSync(
+      TEMOIN_CONSTRUCTION,
+      JSON.stringify({ pid: process.pid, depuis: new Date().toISOString(), versionDavant: servirDavant })
+    );
+  } catch {
+    // Le bandeau est un confort ; son absence ne doit rien arrêter.
+  }
+}
+
+/** La construction est finie — réussie ou non. Le bandeau n'a plus rien à dire. */
+function fermerLeChantier() {
+  try {
+    rmSync(TEMOIN_CONSTRUCTION, { force: true });
+  } catch {
+    // Le pid inscrit dedans sert précisément à ce qu'un reste ne mente pas.
+  }
+}
 
 // **`detached: true` — c'est ce qui rend la bascule sûre, et rien d'autre.**
 //
@@ -430,10 +679,10 @@ const raison = doitRebatir(version);
 // Ce que cela impose, et qui est fait plus bas : le groupe ne meurt plus avec ce
 // script, il faut donc le tuer explicitement — à la sortie ET sur Ctrl+C.
 const lancerBati = () =>
-  spawn("npx", ["next", "start", "-H", "0.0.0.0", "-p", PORT],
+  spawn(process.execPath, [NEXT, "start", "-H", "0.0.0.0", "-p", PORT],
     { stdio: SANS_TERMINAL, detached: true, env: { ...process.env, ATLAS_DIST_DIR: DIST } });
 const lancerDev = () =>
-  spawn("npx", ["next", "dev", "-H", "0.0.0.0", "-p", PORT],
+  spawn(process.execPath, [NEXT, "dev", "-H", "0.0.0.0", "-p", PORT],
     { stdio: SANS_TERMINAL, detached: true, env: process.env });
 
 /**
@@ -631,34 +880,58 @@ async function prechaufferEcransPublics() {
  * qu'une ligne, l'adresse ne change pas.
  */
 let annonceFaite = false;
-function annoncer(bati) {
+function annoncer(bati, davant = false) {
   if (annonceFaite) return;
   annonceFaite = true;
   console.log(
     annoncePrete({
       port: PORT,
-      precision: bati ? "version bâtie, chaque écran est immédiat." : "mode développement, premier accès lent.",
+      // **Trois états, trois phrases.** « Version bâtie » tout court serait un
+      // demi-mensonge pendant qu'on sert la précédente : il faut qu'il sache
+      // que ce qu'il essaie N'EST PAS le code qu'il vient de récupérer, sans
+      // quoi c'est le malentendu du 12 août qui revient.
+      precision: davant
+        ? "version rapide PRÉCÉDENTE — la neuve se construit."
+        : bati
+          ? "version bâtie, chaque écran est immédiat."
+          : "mode développement, premier accès lent.",
     })
   );
 }
 
-async function annoncerDesQueCaRepond(bati) {
+async function annoncerDesQueCaRepond(bati, davant = false) {
   const limite = Date.now() + 180_000;
   while (Date.now() < limite) {
     if (await repond()) {
-      annoncer(bati);
+      annoncer(bati, davant);
       return;
     }
     await attendre(1000);
   }
 }
 
-let serveur = raison ? lancerDev() : lancerBati();
+// **RÉPARER AVANT DE LANCER, ET NON PENDANT — 31 août 2026.**
+//
+// Ce contrôle vivait dans la voie de construction, c'est-à-dire APRÈS le
+// lancement du serveur. Tant que le serveur partait par `npx`, cela ne se
+// voyait pas : `npx` téléchargeait un Next du registre et servait quand même,
+// mal. En appelant le binaire du projet, un `node_modules/next` absent tue le
+// serveur à la seconde — et la mort du serveur **arrête ce script** (voir
+// `surSortie` juste en dessous). La réparation était donc coupée en plein
+// `npm install`, ce qui est le pire moment pour interrompre une installation.
+//
+// Trouvé en le JOUANT, pas en le relisant : paquet écarté à la main, banc
+// lancé, sortie 1 sans un mot après « Réinstallation avant de bâtir ».
+//
+// Ne coûte rien quand tout va bien : deux `package.json` lus, aucune commande.
+await reinstallerSiDesaccordees();
+
+let serveur = modeDeveloppement ? lancerDev() : lancerBati();
 let enBascule = false;
 // Ce qui SERT réellement, à cet instant — pas ce qu'on espérait servir. La
 // bascule peut échouer (le port n'est pas rendu) : l'annonce doit alors dire
 // « mode développement », sinon elle promet une vitesse qui n'existe pas.
-let sertBati = !raison;
+let sertBati = !modeDeveloppement;
 
 // Le serveur tient ce script en vie ; sa mort l'arrête — SAUF pendant la
 // bascule, où on le tue nous-mêmes pour le remplacer.
@@ -703,14 +976,30 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 // Même chose pour une sortie ordinaire, ou une exception : un serveur détaché ne
 // meurt plus avec son père, et un orphelin accroché au port est précisément la
 // panne qu'on répare ici.
-process.on("exit", () => tuerLeServeur(serveur));
+process.on("exit", () => {
+  tuerLeServeur(serveur);
+  // Un banc arrêté ne construit plus : laisser le témoin ferait dire au
+  // bandeau qu'une construction avance alors que plus personne ne bâtit.
+  fermerLeChantier();
+});
 
 if (raison) {
-  console.log(`\n  Atlas répond déjà, en mode développement.`);
-  // Pas d'`await` : le préchauffage, l'annonce et la construction avancent
-  // ensemble. L'adresse doit partir la première — c'est elle qu'il attend.
-  void annoncerDesQueCaRepond(false);
-  prechaufferEcransPublics();
+  ouvrirLeChantier();
+  if (servirDavant) {
+    console.log(`\n  Atlas répond déjà, sur la version rapide PRÉCÉDENTE.`);
+    void annoncerDesQueCaRepond(true, true);
+    // **AUCUN PRÉCHAUFFAGE ICI, et ce n'est pas un oubli.** Une version bâtie
+    // n'a rien à préchauffer : ses écrans sortent en 50 à 100 ms. Et les 887 Mo
+    // que le préchauffage retiendrait sont exactement ceux qui manquaient à la
+    // construction sur son espace (`memoire-prechauffage.mjs`) — servir la
+    // version d'avant supprime donc l'arbitrage au lieu de le trancher.
+  } else {
+    console.log(`\n  Atlas répond déjà, en mode développement.`);
+    // Pas d'`await` : le préchauffage, l'annonce et la construction avancent
+    // ensemble. L'adresse doit partir la première — c'est elle qu'il attend.
+    void annoncerDesQueCaRepond(false);
+    prechaufferEcransPublics();
+  }
   console.log(`  Sa version rapide se construit en même temps (${raison}) — ne fermez rien.\n`);
 
   // **Écarter les types laissés par une AUTRE construction, avant de bâtir.**
@@ -773,7 +1062,7 @@ if (raison) {
   //
   // On ne double donc pas une construction — on retire celle qui n'a plus de
   // destinataire. Le raisonnement complet est dans `verrou-construction.mjs`.
-  await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
+  await delogerConstructionsOrphelines({ dossierDist: DIST_CONSTRUCTION, dire: (m) => console.log(m) });
 
   // **DES DÉPENDANCES DÉSACCORDÉES SE VOIENT AVANT DE BÂTIR — 29 août 2026.**
   //
@@ -788,15 +1077,16 @@ if (raison) {
   // un paquet PRÉSENT MAIS DÉSACCORDÉ, non — il ne dit rien. Le veilleur
   // retentait donc la même construction condamnée, indéfiniment.
   //
-  // Deux nombres suffisent à le voir, et sans rien lancer.
-  await reinstallerSiDesaccordees();
+  // Deux nombres suffisent à le voir, et sans rien lancer — c'est fait plus
+  // haut, AVANT de lancer quoi que ce soit (voir le bloc qui précède le
+  // lancement du serveur).
 
   // La construction écrit dans SON dossier : le serveur de développement garde
   // le sien, et les deux ne se marchent jamais dessus.
   // Rempli seulement si le verrou parle : c'est la seule information qui
   // manquait pour comprendre pourquoi deux constructions se rencontrent.
   let quiTenaitLeVerrou = "";
-  let { code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+  let { code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], { ...process.env, ATLAS_DIST_DIR: DIST_CONSTRUCTION });
 
   // **Une seconde tentative, et une seule, quand c'est LE verrou qui a parlé.**
   //
@@ -816,15 +1106,15 @@ if (raison) {
     // Trois matinées de suite ont été perdues faute de cette ligne : on savait
     // qu'un verrou était tenu, jamais par qui. Plus tard, le coupable a disparu
     // et il ne reste qu'à supposer — ce que ce dépôt s'interdit (`AGENTS.md`).
-    quiTenaitLeVerrou = detenteursDuVerrou(DIST)
+    quiTenaitLeVerrou = detenteursDuVerrou(DIST_CONSTRUCTION)
       .map(({ pid, ligne }) => `      pid ${pid} — ${ligne}`)
       .join("\n");
     console.log("\n  (Le verrou de construction est tenu.)\n");
     if (quiTenaitLeVerrou) console.log(`  Il est tenu par :\n${quiTenaitLeVerrou}\n`);
-    await attendreLaConstructionEnCours({ dossierDist: DIST, dire: (m) => console.log(m) });
+    await attendreLaConstructionEnCours({ dossierDist: DIST_CONSTRUCTION, dire: (m) => console.log(m) });
     // Ce qui reste après l'attente est bien une orpheline, ou rien du tout.
-    await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
-    ({ code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
+    await delogerConstructionsOrphelines({ dossierDist: DIST_CONSTRUCTION, dire: (m) => console.log(m) });
+    ({ code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], { ...process.env, ATLAS_DIST_DIR: DIST_CONSTRUCTION }));
   }
 
   // ─── UNE DÉPENDANCE MANQUANTE SE RÉPARE, ELLE NE S'ATTEND PAS ─────────────
@@ -861,10 +1151,52 @@ if (raison) {
   // s'arrête : le témoin d'échec garde les deux sorties, et la fiche de son
   // espace les publiera. Insister davantage rendrait la boucle infinie qu'on
   // vient de supprimer.
+  //
+  // **ON NE LIT PLUS LES PHRASES DE L'OUTIL, ON LUI DEMANDE — 3 septembre 2026.**
+  //
+  // Cette condition énumérait les formulations rencontrées : `Cannot find
+  // module` (22 août), puis `Could not find the Next.js package` (31 août). Le
+  // 3 septembre, Turbopack en a écrit une troisième — `Module not found` — et
+  // elle est passée au travers comme les deux précédentes. Le veilleur a
+  // retenté la même construction condamnée toute la matinée, et le patron est
+  // resté devant « Internal Server Error ».
+  //
+  // Trois fois la même faute : on cherchait à reconnaître un message au lieu de
+  // poser la question. `arbreIncomplet` la pose à npm, qui répond en une
+  // seconde et NOMME ce qui manque (`coherence-dependances.mjs`).
+  const { incomplet, motif: motifArbre } =
+    code !== 0 ? await arbreIncomplet((c, a) => jouerEnRetenant(c, a, process.env, 400, true)) : { incomplet: false, motif: null };
+
+  // **DEUX SIGNAUX, ET ILS NE REGARDENT PAS LA MÊME CHOSE.** Le second a
+  // failli disparaître avec l'énumération, et c'est la batterie qui l'a
+  // rattrapé — `test-dependance-manquante.ts` défend deux pannes réelles.
+  //
+  //   | ce qui est cassé | qui le voit |
+  //   |---|---|
+  //   | un paquet déclaré et ABSENT | `npm ls` ci-dessus, quelle que soit la phrase |
+  //   | un paquet PRÉSENT mais mutilé — des fichiers manquants dedans | lui seul : npm le compte installé, à la bonne version |
+  //
+  // La panne du 22 août 2026 était de la seconde espèce : `./detect-typo`
+  // absent À L'INTÉRIEUR de `node_modules/next`. `npm ls` n'y voit rien.
+  //
+  // **Ce qui a été supprimé, c'est la course aux formulations.** « Could not
+  // find the Next.js package » disait qu'un paquet MANQUE — cas que `npm ls`
+  // couvre désormais sans qu'on ait à connaître la phrase. Ce qui reste ici
+  // est le message de NODE, pas celui d'un outil de construction : il ne
+  // change pas, et il est le seul à nommer un fichier introuvable au fond de
+  // `node_modules`.
+  //
+  // La clause `node_modules` reste indispensable : sans elle, un import cassé
+  // du dépôt (`@/lib/…`) ferait réinstaller pour rien.
+  //
+  // **Ce signal-ci reste une expression PURE de la sortie**, et ce n'est pas
+  // un détail de style : `test-dependance-manquante.ts` l'extrait du fichier
+  // et le joue tel quel, plutôt que d'en écrire une copie qui divergerait
+  // (`CLAUDE.md` §3). Y mêler la réponse de npm le rendrait inextractible, et
+  // la suite perdrait les deux pannes réelles qu'elle défend. Les deux signaux
+  // se composent plus bas, comme le troisième le fait déjà.
   const dependanceManquante =
-    code !== 0 &&
-    /Cannot find module|MODULE_NOT_FOUND/i.test(sortie) &&
-    /node_modules/.test(sortie);
+    code !== 0 && /Cannot find module|MODULE_NOT_FOUND/i.test(sortie) && /node_modules/.test(sortie);
 
   // **Le second filet — 29 août 2026.** La condition ci-dessus exige un
   // message ; sa construction n'en produisait aucun. Une mort juste après
@@ -873,12 +1205,14 @@ if (raison) {
   // installé — que la comparaison de versions ne peut pas voir.
   const morteSansRienDire = constructionMuette({ code, sortie });
 
-  if (dependanceManquante || morteSansRienDire) {
+  if (dependanceManquante || incomplet || morteSansRienDire) {
     console.log(
-      (morteSansRienDire && !dependanceManquante
-        ? "\n  La construction s'est arrêtée sans rien dire — c'est la marque de\n" +
-          "  dépendances abîmées.\n"
-        : "\n  Un paquet manque dans node_modules — la construction ne peut pas aboutir.\n") +
+      (dependanceManquante
+        ? "\n  Un paquet de node_modules est mutilé — la construction ne peut pas aboutir.\n"
+        : incomplet
+          ? `\n  ${motifArbre}\n`
+          : "\n  La construction s'est arrêtée sans rien dire — c'est la marque de\n" +
+            "  dépendances abîmées.\n") +
         "  Réinstallation des dépendances, puis nouvelle tentative.\n"
     );
     const { code: codeInstall } = await jouerEnRetenant("npm", [
@@ -887,20 +1221,26 @@ if (raison) {
       "--no-fund",
     ]);
     if (codeInstall === 0) {
-      await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
-      ({ code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], {
+      await delogerConstructionsOrphelines({ dossierDist: DIST_CONSTRUCTION, dire: (m) => console.log(m) });
+      ({ code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], {
         ...process.env,
-        ATLAS_DIST_DIR: DIST,
+        ATLAS_DIST_DIR: DIST_CONSTRUCTION,
       }));
     } else {
       console.log("\n  La réinstallation a échoué : le banc reste en mode développement.\n");
     }
   }
 
+  fermerLeChantier();
+
   if (code === 0) {
     try {
-      mkdirSync(DIST, { recursive: true });
-      writeFileSync(TEMOIN_BATI, version ?? "inconnue");
+      // **Dans le dossier qu'on vient de bâtir, pas dans celui qu'on sert.**
+      // L'écrire dans `DIST` avant l'échange ferait dire à la fiche que le code
+      // neuf est servi alors qu'il ne l'est pas encore — et si l'échange
+      // échoue, elle le dirait pour toujours.
+      mkdirSync(DIST_CONSTRUCTION, { recursive: true });
+      writeFileSync(temoinBatiDans(DIST_CONSTRUCTION), version ?? "inconnue");
       // Un échec d'hier ne doit pas accuser la construction d'aujourd'hui : le
       // témoin d'échec ne survit pas à une réussite.
       rmSync(TEMOIN_ECHEC, { force: true });
@@ -934,6 +1274,18 @@ if (raison) {
     //      réponse engage `next start`.
     tuerLeServeur(serveur);
     delogerCeQuiEcoute();
+
+    // **L'échange n'a lieu qu'ICI, serveur mort.** Renommer sous un serveur
+    // vivant lui retirerait les fichiers qu'il lit encore — un écran sur deux
+    // rendrait une erreur, ce qui est pire que la lenteur qu'on répare.
+    if (servirDavant && !echangerMaintenant()) {
+      console.error(
+        "\n  ⚠️  La version neuve n'a pas pu prendre la place de l'ancienne.\n" +
+          "     Atlas repart sur la version PRÉCÉDENTE — entière et rapide, mais\n" +
+          "     en retard. La fiche de l'espace le dira, et le prochain démarrage\n" +
+          "     refera l'échange.\n"
+      );
+    }
 
     // **Et si `next start` tombe quand même, on RÉESSAIE une fois.** Un banc
     // qui meurt sur son propre remède coûte une soirée ; une seconde tentative
@@ -998,41 +1350,24 @@ if (raison) {
     // L'échec se dépose là où la fiche saura le lire. Sans cela il ne vit que
     // dans un journal local, et l'agent voit un banc « sans version bâtie »
     // sans pouvoir dire si c'est passager ou définitif.
-    try {
-      writeFileSync(
-        TEMOIN_ECHEC,
-        [
-          `quand: ${new Date().toISOString()}`,
-          `code: ${code}`,
-          // **Le signal, quand il y en a un.** C'est LUI qui distingue une
-          // erreur de compilation d'un abattage par le noyau : sans cette
-          // ligne, les deux s'écrivent `code: 1` et la fiche ne peut plus
-          // nommer le coupable (29 août 2026).
-          `signal: ${signal ?? "aucun"}`,
-          // Les deux suspects d'une construction qui tombe sur une machine
-          // modeste, relevés À L'INSTANT de l'échec : plus tard, la mémoire est
-          // rendue et le coupable a disparu.
-          `disque: ${mesure("df", ["-h", "--output=avail", "."])}`,
-          `memoire: ${mesure("free", ["-h"])}`,
-          // **Qui tenait le verrou, s'il a parlé.** Relevé à l'instant du
-          // refus, pas maintenant : le coupable a souvent disparu depuis.
-          ...(quiTenaitLeVerrou ? ["verrou tenu par :", quiTenaitLeVerrou] : []),
-          // **CE QUE LA CONSTRUCTION A DIT.** Sans ces lignes, le 16 août a été
-          // passé à chercher une saturation qui n'existait pas, alors que le
-          // message tenait en une phrase.
-          "dit:",
-          sortie || "(la construction n'a rien écrit)",
-        ].join("\n")
-      );
-    } catch {
-      // Un témoin qu'on ne peut pas écrire ne doit pas empêcher le repli.
-    }
+    // L'échec se dépose là où la fiche saura le lire — un seul écrivain pour
+    // ce format, partagé avec la réparation des dépendances (`deposerEchec`).
+    deposerEchec({ code, signal, sortie, verrou: quiTenaitLeVerrou });
     // **Jamais en silence, et jamais rien du tout.** Voir l'en-tête : un banc
     // lent reste un banc, un banc mort coûte une soirée.
+    // **Et le repli n'est plus le même selon qu'une version rapide existe.**
+    // C'est tout l'apport du correctif du 31 août au soir : un échec de
+    // construction ne le condamne plus au mode développement — il garde une
+    // application entière et immédiate, simplement en retard.
     console.error(
-      "\n  ⚠️  LA CONSTRUCTION A ÉCHOUÉ — les lignes ci-dessus disent pourquoi.\n" +
-        "     Atlas continue en mode développement : il fonctionne, mais chaque\n" +
-        "     écran mettra jusqu'à une minute à s'ouvrir la première fois.\n"
+      servirDavant
+        ? "\n  ⚠️  LA CONSTRUCTION A ÉCHOUÉ — les lignes ci-dessus disent pourquoi.\n" +
+            "     Atlas RESTE sur la version rapide précédente : chaque écran s'ouvre\n" +
+            "     du premier coup, mais c'est le code d'AVANT. La fiche de l'espace\n" +
+            "     le dit (« LE CODE SERVI N'EST PAS LE CODE RÉCUPÉRÉ »).\n"
+        : "\n  ⚠️  LA CONSTRUCTION A ÉCHOUÉ — les lignes ci-dessus disent pourquoi.\n" +
+            "     Atlas continue en mode développement : il fonctionne, mais chaque\n" +
+            "     écran mettra jusqu'à une minute à s'ouvrir la première fois.\n"
     );
   }
 }

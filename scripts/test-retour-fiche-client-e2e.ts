@@ -68,39 +68,27 @@ async function principal() {
     );
   });
 
-  await cas("depuis un CHANTIER : la flèche ramène au chantier, pas chez les clients", async () => {
-    // **On cherche un chantier qui ait un client**, au lieu de prendre le
-    // premier venu : tous n'en ont pas, et conclure sur celui-là ne mesurerait
-    // rien (`CLAUDE.md` §5).
-    await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
-    const liens = await page.locator('a[href^="/chantiers/"]').evaluateAll((as) =>
-      as.map((a) => (a as HTMLAnchorElement).getAttribute("href") ?? "")
-    );
-    const candidats = [...new Set(liens.filter((h) => /^\/chantiers\/[^/]+$/.test(h)))];
-    assert.ok(candidats.length > 0, "aucun chantier sur l'accueil : ce contrôle ne mesure rien");
-
-    let chantier = "";
-    for (const c of candidats) {
-      await page.goto(`${BASE}${c}`, { waitUntil: "domcontentloaded" });
-      if ((await page.locator('a[href^="/clients/"]').count()) > 0) {
-        chantier = new URL(page.url()).pathname;
-        break;
-      }
-    }
-    assert.ok(
-      chantier,
-      `aucun des ${candidats.length} chantiers de l'accueil n'ouvre une fiche client — rien à mesurer`
-    );
-
-    await page.locator('a[href^="/clients/"]').first().click();
-    await page.waitForURL(/\/clients\/[^/]+/, { timeout: DELAI_PAR_DEFAUT_MS });
-
-    const fleche = page.locator('a[aria-label^="Retour"]').first();
-    await fleche.waitFor();
-    await fleche.click();
-    await page.waitForURL((u) => new URL(u).pathname === chantier, { timeout: DELAI_PAR_DEFAUT_MS });
-    assert.equal(chemin(page), chantier, `la flèche a mené à « ${chemin(page)} » au lieu du chantier`);
-  });
+  // ─── CE CAS A PERDU SON ÉCRAN, ET IL FAUT SAVOIR CE QUE ÇA COÛTE ──────────
+  //
+  // « depuis un CHANTIER : la flèche ramène au chantier » ouvrait la fiche du
+  // client depuis un chantier, puis vérifiait que la flèche y ramenait. Cette
+  // porte vivait dans le tiroir de la fiche du chantier (arrangement B du
+  // 16 août 2026) ; **cette fiche est retirée le 4 septembre**
+  // (`ARCHITECTURE.md` §254), et le tiroir avec.
+  //
+  // **AUCUN ÉCRAN N'OUVRE PLUS `/clients/[id]` DEPUIS UN CHANTIER.** Ce cas ne
+  // peut donc plus être joué : il n'a plus de porte d'entrée. Le réécrire sur
+  // un autre écran serait inventer un chemin que le produit n'offre pas, et un
+  // contrôle qui se cherche une porte de service ne dit plus rien de celle que
+  // le patron emprunte (`CLAUDE.md` §5 quater).
+  //
+  // Ce n'est pas un oubli : c'est le prix du retrait, écrit plutôt que
+  // découvert, et `TODO.md` porte la question — faut-il lui rendre cette porte,
+  // et où ? Lui seul peut trancher.
+  //
+  // **Le mécanisme, lui, reste éprouvé** : l'aller et le retour se répondent
+  // dans `test-retour-fiche-client.ts`, et le cas suivant tient toujours qu'une
+  // origine étrangère ne fait pas sortir d'Atlas.
 
   await cas("une origine étrangère ne fait pas sortir d'Atlas", async () => {
     await page.goto(`${BASE}/clients`, { waitUntil: "domcontentloaded" });

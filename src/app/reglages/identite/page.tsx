@@ -64,6 +64,9 @@ export default async function IdentitePage() {
           villeRcs: e?.villeRcs ?? "",
           mentionsLegalesPosition: e?.mentionsLegalesPosition ?? "aucune",
         }}
+        periodicite={
+          <PeriodiciteTvaReglage initiale={e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT} />
+        }
       />
 
       {/* **La périodicité de TVA rejoint le régime de TVA, le 14 août 2026.**
@@ -74,10 +77,18 @@ export default async function IdentitePage() {
 
           Le doublon que cela évite n'est pas un doublon de code mais de
           PENSÉE : « suis-je en franchise » et « à quel rythme je déclare » se
-          répondent ensemble, ou pas du tout. */}
-      <div className="pb-24">
-        <PeriodiciteTvaReglage initiale={e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT} />
-      </div>
+          répondent ensemble, ou pas du tout.
+
+          **ET ELLE NE L'AVAIT JAMAIS REJOINT — corrigé le 6 septembre 2026.**
+          Ce commentaire disait vrai de l'intention et faux de l'écran : le
+          réglage était rendu ICI, c'est-à-dire APRÈS tout `IdentiteClient` —
+          donc après le téléphone, l'e-mail et les coordonnées bancaires. Il
+          passe désormais en enfant (`periodicite`) et se pose sous le régime,
+          dans le même bloc.
+
+          **Il reste monté par la PAGE**, et c'est voulu : elle seule lit la
+          base. Le recopier dans l'écran en aurait fait deux. */}
+      <div className="pb-24" />
     </div>
   );
 }

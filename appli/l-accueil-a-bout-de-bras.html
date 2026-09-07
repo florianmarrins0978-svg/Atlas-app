@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — l'accueil à bout de bras</title>
+<style>
+/*
+  L'ACCUEIL — proposition pour « / » (src/app/page.tsx, EcranChantiers.tsx,
+  ListeChantiers.tsx, Notifications.tsx).
+
+  ══════════════════════════════════════════════════════════════════════════
+  TOUT CE QUI EST DESSINÉ ICI VIENT DU DÉPÔT.
+
+  · Les couleurs sont celles de `src/lib/chartes.ts`, relevées en EXÉCUTANT le
+    fichier — pas approchées à l'œil. Origine et Nuit, jeton par jeton.
+  · `orTexte` (#8b6835 sur Origine) existe déjà dans `design-tokens.ts` : c'est
+    le même or, assombri jusqu'à 4,5 sur la plage de sa charte. L'accueil ne
+    l'emploie nulle part aujourd'hui.
+  · Les polices sont celles de `globals.css` — la serif DU SYSTÈME, la sans DU
+    SYSTÈME. Ni Playfair ni Inter : c'est ce dessin-là qu'il a retenu.
+  · Les états d'un chantier sont ceux de `statutLabel`, composés comme le fait
+    `ligneEtatChantier()`. Aucun « Planifié », « À facturer » ni « Facturé » :
+    `ongletDuChantier()` les range ailleurs, et un chantier n'est jamais dans
+    deux onglets.
+  · « Adresse non renseignée » est la constante `LIEU_MANQUANT`.
+  · Les cinq onglets, leurs mots et leur 8,5 px / 0,14 em viennent
+    d'`AtlasBottomNav.tsx`.
+  · `descenteDeLaPerle()` est recopiée telle quelle depuis `perle-descente.ts`.
+
+  Les noms, communes et montants sont des exemples de maquette.
+
+  ══════════════════════════════════════════════════════════════════════════
+  ÇA SE SERT AU DOIGT, et c'est le but : glissez une ligne vers la gauche pour
+  découvrir « Retirer », touchez « Annuler » dans le tiroir, appuyez sur
+  l'anneau — le tour, les onze grains, puis la feuille qui monte. Les cinq
+  onglets répondent. Le bandeau « J'ai vu » s'en va.
+
+  LA BANDE DE MESURE SOUS L'ÉCRAN SE RECALCULE À CHAQUE BASCULE. Elle ne
+  récite pas des chiffres écrits à la main : elle interroge la page rendue.
+*/
+
+/* ─── Les jetons, au caractère près ─────────────────────────────────────── */
+.origine{
+  --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+  --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+  /* **SON OR, ET PAS UN AUTRE — sa demande du 6 septembre :** *« mes clients,
+     mets-le en doré, le même qu'il y a partout dans l'appli »*. Le libellé
+     portait `orTexte` (#8b6835), le même or assombri jusqu'à 4,59 ; il porte
+     désormais `or` (#B98B47), le sien.
+     Ce que ça coûte est dit une fois et se lit en permanence dans la bande de
+     mesure : 2,77 sur le crème, là où un mot en demande 4,5. Sur Nuit les deux
+     ors sont identiques, rien n'y change. Une seule ligne défait ceci. */
+  --or:#B98B47; --orTexte:#B98B47; --alerte:#9C3B2E; --plein:#7d9a6d;
+  --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+}
+.nuit{
+  --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+  --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+  --or:#B98B47; --orTexte:#b98b47; --alerte:#cd6456; --plein:#e9e8de;
+  --line:rgba(233,232,222,.12); --lineSoft:rgba(233,232,222,.07);
+}
+
+:root{
+  --serif: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --pilote-encre:#3a382f; --pilote-gris:#6f6a5e; --pilote-fond:#e7e4dc;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; }
+body{
+  font-family:var(--sans);
+  background:var(--pilote-fond); color:#1c1c1a;
+  padding:0 0 44px;
+  -webkit-text-size-adjust:100%;
+}
+::selection{ background:#B98B47; color:#f5f3ee; }
+
+/* ─── Le pilote — hors du téléphone, il ne fait pas partie de l'écran ──── */
+.pilote{
+  position:sticky; top:0; z-index:60;
+  background:var(--pilote-fond); border-bottom:1px solid rgba(28,28,26,.14);
+  padding:11px 12px 12px;
+}
+.pilote h1{
+  font:400 16px/1.2 var(--serif); margin:0 0 9px; letter-spacing:-.012em;
+}
+.pilote h1 small{
+  display:block; font:500 9.5px/1.5 var(--sans);
+  letter-spacing:.24em; text-transform:uppercase; color:var(--pilote-gris);
+  margin-top:4px;
+}
+.rang{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:5px; align-items:center; }
+.rang b{
+  font:500 8.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase;
+  color:var(--pilote-gris); width:50px; flex:none;
+}
+.pilote button{
+  font:500 11px/1 var(--sans); letter-spacing:.04em;
+  border:1px solid rgba(28,28,26,.22); background:transparent;
+  color:var(--pilote-encre);
+  border-radius:3px; padding:9px 10px; cursor:pointer; min-height:34px;
+}
+.pilote button:focus-visible{ outline:2px solid #B98B47; outline-offset:2px; }
+.pilote button[aria-pressed="true"]{ background:#1c1c1a; color:#f5f3ee; border-color:#1c1c1a; }
+
+/* ─── Le téléphone : 390 × 664, sa mesure (PRODUCT.md) ─────────────────── */
+.cadre{
+  width:390px; height:664px; margin:16px auto 0;
+  position:relative; overflow:hidden;
+  outline:1px solid rgba(28,28,26,.18);
+  background:var(--cream); color:var(--ink);
+  font-family:var(--sans);
+}
+@media (max-width:414px){ .cadre{ width:100%; outline:none; } }
+
+/* `--atlas-barre` vaut 4.25rem = 68 px (globals.css). L'écran occupe donc
+   664 − 68, exactement comme chez lui. */
+.ecran{
+  height:596px; display:flex; flex-direction:column; overflow:hidden;
+  transform-origin:50% 44%;
+  transition:transform .56s cubic-bezier(.22,.61,.36,1), filter .56s;
+}
+.cadre[data-feuille="oui"] .ecran{ transform:scale(.93) translateY(-10px); filter:brightness(.78); }
+
+/* ─── LES DEUX ÉCRANS ────────────────────────────────────────────────────
+   Un seul jeu de balises, deux jeux de valeurs. Deux marquages séparés
+   auraient divergé dès la première correction — c'est la règle du dépôt
+   (`CLAUDE.md` §3), et elle vaut pour une maquette comme pour un écran. */
+.cadre[data-ecran="avant"]{
+  --t-etat:9.5px;   --c-etat:var(--or);
+  --t-lieu:11.5px;  --c-lieu:var(--muted);
+  --t-date:11.5px;  --c-date:var(--muted);
+  --t-mois:9.5px;   --c-mois:var(--muted);
+  --t-caps:9.5px;
+  --c-geste:var(--or);
+}
+.cadre[data-ecran="apres"]{
+  --t-etat:12px;    --c-etat:var(--orTexte);
+  --t-lieu:14px;    --c-lieu:var(--inkSoft);
+  --t-date:13px;    --c-date:var(--inkSoft);
+  --t-mois:11px;    --c-mois:var(--inkSoft);
+  --t-caps:11px;
+  --c-geste:var(--orTexte);
+}
+
+/* ─── L'en-tête ─────────────────────────────────────────────────────────── */
+.marque{
+  padding-top:26px; text-align:center;
+  font:400 11px/1.5 var(--sans); letter-spacing:.52em; color:var(--ink);
+}
+.cadre[data-ecran="apres"] .marque{ display:none; }
+
+.entete{ padding:44px 26px 0; }
+.titrage{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.titre{
+  margin:14px 0 0; font:400 40px/1.02 var(--serif); letter-spacing:-.018em;
+  white-space:nowrap;
+}
+.assistant{
+  margin-top:14px; flex:none; width:44px; height:44px; border-radius:9999px;
+  border:1px solid var(--line); background:transparent; display:grid;
+  place-items:center; cursor:pointer; color:var(--ink);
+}
+.assistant svg{ width:19px; height:19px; }
+
+/* Le compteur et « Vos clients ».
+   AVANT : deux bandes, à 30 px d'écart.
+   APRÈS : une seule ligne — ses deux éléments, ses mots, son ordre. */
+.rubrique{
+  display:flex; align-items:baseline; gap:10px;
+  font:500 var(--t-caps)/1.5 var(--sans); letter-spacing:.28em;
+  text-transform:uppercase; color:var(--inkSoft);
+}
+.rubrique .nombre{
+  font-weight:700; font-size:calc(var(--t-caps) + 2.5px); letter-spacing:.06em;
+  color:var(--ink); font-variant-numeric:tabular-nums;
+}
+.clients{
+  display:inline-flex; align-items:center; text-decoration:none;
+  font:500 var(--t-caps)/1.5 var(--sans); letter-spacing:.28em;
+  text-transform:uppercase; color:var(--c-geste);
+}
+/* 44 px de haut, et la marge négative les reprend à l'affichage : un mot de
+   11 px ne s'attrape pas sous un pouce ganté, et sa cible ne doit pas pour
+   autant décaler la ligne. Aujourd'hui elle fait 10 px. */
+.cadre[data-ecran="apres"] .clients{ min-height:44px; margin:-16px 0; }
+/* AVANT : un carré de 5 px tourné à 45°, dessiné en CSS.
+   APRÈS : le caractère « › », comme dans le code. Voir juste en dessous. */
+.cadre[data-ecran="avant"] .chevron{
+  width:5px; height:5px; margin-left:6px; transform:rotate(45deg);
+  border-right:1.5px solid var(--or); border-top:1.5px solid var(--or);
+}
+.cadre[data-ecran="avant"] .chevron-mot{ display:none; }
+.cadre[data-ecran="apres"] .chevron{ display:none; }
+/* 16 px, et non les 11 du libelle : a la taille du mot, le chevron
+   faisait une virgule. Il porte une fonction, il doit se voir. */
+.chevron-mot{
+  margin-left:5px; letter-spacing:0; font-size:19px; font-weight:700;
+  line-height:1; position:relative; top:-1px;
+}
+/* **LE CHEVRON RESTE — sa demande du 6 septembre au soir :** *« il faut
+   rajouter un chevron après Vos clients, je pense, pour qu'on sache qu'on
+   puisse cliquer dessus »*.
+
+   Il avait été retiré le matin même, au nom de sa règle du 25 août. Cette
+   règle-là vise l'ORNEMENT — « Créer le devis → » —, pas ce qui porte une
+   fonction : « Vos clients » est le seul mot de cet en-tête qui mène ailleurs,
+   et rien d'autre ne le dit.
+
+   Dans le code il s'écrit avec le caractère « › », que
+   scripts/test-aucune-fleche.ts SAIT lire, et il y est DÉCLARÉ avec sa raison.
+   Il était dessiné en CSS jusqu'ici — un carré tourné à 45° —, donc invisible
+   pour ce contrôle : une exception qu'un contrôle ne peut pas voir n'est pas
+   une exception, c'est un trou. */
+
+.cadre[data-ecran="avant"] .ligne-tete{ display:block; margin-top:10px; }
+.cadre[data-ecran="avant"] .compte-bande{ margin:30px 26px 4px; }
+/* **« EN COURS » EST AU-DESSUS DU « 04 SEPT. » — sa demande du 6 septembre :**
+   *« le "en cours", mets-le au-dessus du 4 sept »*. Il était monté sur la ligne
+   de « Vos clients » pour économiser une bande ; il redescend juste au-dessus
+   de la liste, sur la même marge de 26 px que la colonne des dates — il coiffe
+   donc le « 04 » de la première ligne, comme un en-tête de colonne. */
+.cadre[data-ecran="apres"] .ligne-tete{
+  display:flex; align-items:baseline; justify-content:flex-start;
+  gap:14px; margin-top:12px; min-height:44px;
+}
+.cadre[data-ecran="apres"] .compte-bande{ display:none; }
+/* **AU-DESSUS DU « 04 SEPT. », ET PAS SEULEMENT PLUS HAUT DANS LA PAGE.**
+   Posé avant les bandeaux, il était bien au-dessus dans le marquage — et un
+   bandeau de trois cents pixels s'intercalait entre lui et la première ligne.
+   Ma mesure ne regardait que l'ORDRE ; lui regardait l'écran, et il avait
+   raison. Le compteur entre donc DANS le fil, après les bandeaux, collé à la
+   liste qu'il compte. */
+.compte-liste{ display:none; }
+.cadre[data-ecran="apres"] .compte-liste{ display:flex; margin:0 26px 6px; }
+.ligne-tete .rubrique{ display:none; }
+
+/* ═══ CINQ FAÇONS DE « CRÉER UN DEVIS » — sa demande du 6 septembre ═══════
+   *« propose-moi plusieurs styles pour le créer le devis, en cliquable »*, et
+   *« sur une, fais le rond plus petit en doré avec plus d'onde de choc »*.
+
+   Les cinq se pressent pour de vrai : le mot s'ouvre, le geste part, la feuille
+   monte une demi-seconde plus tard. Ce qui change, c'est la FORME.
+
+     1 · AUJOURD'HUI — le mot et l'anneau de 42 px, cerne gris, une onde. C'est
+         ce qui est codé, resserré par lui-même en août ;
+     2 · L'ANNEAU SERRÉ — sa demande : rond de 32 px, cerne DORÉ, et TROIS
+         ondes décalées qui partent plus loin (1,9 fois le rond au lieu de
+         1,42). Le même geste, plus vif et plus petit ;
+     3 · LE MOT SOULIGNÉ — plus d'anneau : le mot seul, pleine largeur, un
+         filet d'or dessous. Le plus discret des cinq ;
+     4 · LA CAPSULE CREUSE — un contour d'or arrondi, pleine largeur, le mot
+         dedans ;
+     5 · L'APLAT VERT — le vert qu'il a choisi le 3 septembre (« la D à plat
+         sans brillant »), pleine largeur, le mot en ENCRE dessus : 5,46 de
+         contraste au lieu de 2,97, sans que le vert bouge d'un cheveu.
+
+   **CE QUE LES TROIS DERNIÈRES COÛTENT, ET IL FAUT LE SAVOIR :** l'anneau
+   disparaît, donc le tour du signe et les ONZE GRAINS d'or aussi — ceux qu'il
+   a ramenés lui-même de seize à onze, et leur portée de 58 à 46 px. Seul
+   l'écartement des lettres reste pour dire que l'appui est pris. C'est le prix
+   d'un bouton qui prend toute la largeur. ═══ */
+.action{ display:flex; justify-content:center; padding:22px 26px 2px; }
+.cadre[data-bouton="3"] .action,
+.cadre[data-bouton="4"] .action,
+.cadre[data-bouton="5"] .action{ display:block; }
+
+/* 2 · L'anneau serré, doré, et ses trois ondes. */
+/* Le rond descend à 32 px, mais la CIBLE reste à 44 : les six pixels sont
+   autour, invisibles. Un anneau plus petit ne doit pas rendre le geste plus
+   difficile à attraper — mesuré à 34 px avant ce rembourrage. */
+.cadre[data-ecran="apres"][data-bouton="2"] .geste{ padding:6px 0; }
+.cadre[data-bouton="2"] .rond{ width:32px; height:32px; }
+.cadre[data-bouton="2"] .cerne{ border-color:var(--or); }
+.cadre[data-bouton="2"] .signe{ width:15px; height:15px; }
+.pouls-2, .pouls-3{ display:none; }
+.cadre[data-bouton="2"] .pouls-2,
+.cadre[data-bouton="2"] .pouls-3{ display:block; }
+.cadre[data-bouton="2"] .pouls,
+.cadre[data-bouton="2"] .pouls-2,
+.cadre[data-bouton="2"] .pouls-3{
+  animation:onde 3.4s cubic-bezier(.16,.7,.3,1) infinite;
+}
+.cadre[data-bouton="2"] .pouls-2{ animation-delay:.42s; }
+.cadre[data-bouton="2"] .pouls-3{ animation-delay:.84s; }
+@keyframes onde{
+  0%{ transform:scale(1); opacity:0; }
+  6%{ opacity:.62; }
+  52%{ transform:scale(1.9); opacity:0; }
+  100%{ transform:scale(1.9); opacity:0; }
+}
+
+/* 3, 4, 5 · Pleine largeur, sans anneau. */
+.cadre[data-bouton="3"] .rond,
+.cadre[data-bouton="4"] .rond,
+.cadre[data-bouton="5"] .rond{ display:none; }
+.cadre[data-ecran="apres"][data-bouton="3"] .geste,
+.cadre[data-ecran="apres"][data-bouton="4"] .geste,
+.cadre[data-ecran="apres"][data-bouton="5"] .geste{ width:100%; min-height:56px; padding:0; }
+
+/* 3 · Le mot souligné. */
+.cadre[data-bouton="3"] .geste{ border-bottom:1px solid var(--or); }
+/* 4 · La capsule creuse. */
+.cadre[data-bouton="4"] .geste{ border:1px solid var(--or); border-radius:6px; }
+/* 5 · L'aplat vert, le mot en encre. */
+.cadre[data-bouton="5"] .geste{
+  background:var(--plein); border-radius:6px; color:var(--surPlein);
+}
+.cadre[data-bouton="5"] .geste:active{ transform:scale(.985); }
+.geste{
+  display:flex; align-items:center; justify-content:center; gap:13px;
+  background:none; border:0; padding:0; cursor:pointer;
+  color:var(--ink); -webkit-tap-highlight-color:transparent;
+}
+/* L'anneau garde ses 42 px — c'est sa mesure, il l'a resserrée lui-même. Ce
+   sont les DEUX pixels autour qui manquent pour que la cible en fasse 44 :
+   rien de ce qu'il voit ne bouge. */
+.cadre[data-ecran="apres"] .geste{ padding:1px 0; }
+.geste .mot{
+  font:800 13px/1 var(--sans); letter-spacing:.22em; text-transform:uppercase;
+  white-space:nowrap; transition:letter-spacing .62s cubic-bezier(.22,.61,.36,1);
+}
+.geste[data-part="oui"] .mot{ letter-spacing:.32em; }
+.rond{
+  position:relative; display:grid; place-items:center;
+  width:42px; height:42px; border-radius:9999px;
+  transition:transform .14s cubic-bezier(.2,.7,.3,1);
+}
+.geste:active .rond{ transform:scale(.92); }
+.cerne{ position:absolute; inset:0; z-index:2; border-radius:9999px; border:1px solid var(--line); }
+.signe{ position:relative; z-index:4; display:block; width:20px; height:20px; }
+.pouls{
+  position:absolute; inset:0; z-index:1; border-radius:9999px;
+  border:1px solid var(--or); opacity:0;
+  animation:battement 3.4s cubic-bezier(.16,.7,.3,1) infinite;
+}
+@keyframes battement{
+  0%{ transform:scale(1); opacity:0; }
+  8%{ opacity:.5; }
+  46%{ transform:scale(1.42); opacity:0; }
+  100%{ transform:scale(1.42); opacity:0; }
+}
+.geste[data-part="oui"] .pouls{ animation:none; opacity:0; }
+.geste[data-part="oui"] .signe{ animation:tour .56s cubic-bezier(.16,.74,.22,1) both; }
+@keyframes tour{ 0%{ transform:rotate(0); } 14%{ transform:rotate(120deg); } 100%{ transform:rotate(1080deg); } }
+.gerbe{ position:absolute; inset:0; z-index:3; pointer-events:none; }
+.gerbe i{
+  position:absolute; left:50%; top:50%;
+  width:var(--l); height:var(--l);
+  margin:calc(var(--l) / -2) 0 0 calc(var(--l) / -2);
+  border-radius:9999px; background:var(--or); opacity:0;
+}
+.geste[data-part="oui"] .gerbe i{
+  animation:grain .56s cubic-bezier(.16,.68,.3,1) both; animation-delay:var(--t);
+}
+@keyframes grain{
+  0%{ transform:translate(calc(var(--x) * .46), calc(var(--y) * .46)) scale(.4); opacity:0; }
+  16%{ opacity:1; }
+  64%{ opacity:1; }
+  100%{ transform:translate(var(--x), var(--y)) scale(.7); opacity:0; }
+}
+
+/* ─── Le fil qui défile ─────────────────────────────────────────────────── */
+.fil{
+  flex:1; min-height:0; overflow-y:auto; scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  mask-image:linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  padding:10px 0 12px;
+}
+.fil::-webkit-scrollbar{ display:none; }
+.tige{ margin:0 26px; padding-bottom:120px; position:relative; }
+
+.perle{ position:sticky; top:50%; display:block; height:0; z-index:3; }
+.perle i{
+  position:absolute; left:47px; top:23px; display:block;
+  width:7px; height:7px; margin:-3.5px 0 0 -3.5px; border-radius:9999px;
+  background:var(--or); box-shadow:0 0 0 4px var(--cream);
+  transform:translateY(var(--descente, 0px));
+}
+
+/* ─── Une ligne de chantier ─────────────────────────────────────────────── */
+.ligne{ max-height:190px; overflow:hidden; transition:max-height .42s cubic-bezier(.4,0,.2,1); }
+.ligne[data-retiree="oui"]{ max-height:0; }
+.chute{ transition:opacity .3s, transform .42s cubic-bezier(.4,0,.2,1); }
+.ligne[data-retiree="oui"] .chute{ opacity:0; transform:translateY(-6px); }
+
+.grille{
+  position:relative; display:grid; grid-template-columns:47px 1fr;
+  column-gap:26px; padding:21px 0;
+}
+.trait{ position:absolute; top:0; bottom:0; left:47px; width:1px; background:var(--line); }
+.jour{
+  grid-row:span 3; padding-right:13px; text-align:right;
+  font:500 var(--t-mois)/1.5 var(--sans); letter-spacing:.28em;
+  text-transform:uppercase; color:var(--c-mois); font-variant-numeric:tabular-nums;
+}
+.jour b{
+  display:block; font:400 19px/1 var(--serif); color:var(--ink); letter-spacing:-.01em;
+}
+.jour span{ display:block; margin-top:4px; }
+
+/* Ce qui glisse : la colonne du texte. Le fil et la date ne bougent pas. */
+.glisse{
+  display:flex; overflow-x:auto; scroll-snap-type:x mandatory;
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  mask-image:linear-gradient(90deg, #000 calc(100% - 16px), transparent 100%);
+  -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 16px), transparent 100%);
+}
+.glisse::-webkit-scrollbar{ display:none; }
+.volet{ flex:0 0 100%; scroll-snap-align:start; }
+.decouvre{
+  flex:0 0 120px; scroll-snap-align:end; display:flex; align-items:center;
+  justify-content:flex-start; padding-left:14px; background:none; border:0;
+  cursor:pointer; font:500 11px/1.5 var(--sans); letter-spacing:.26em;
+  text-transform:uppercase; color:var(--c-geste);
+}
+.brin{ display:block; text-decoration:none; color:inherit; }
+.nom{ margin:0; font:400 19px/1.15 var(--serif); letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lieu{
+  margin:3px 0 0; font-size:var(--t-lieu); line-height:1.5; color:var(--c-lieu);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.lieu-manquant{
+  display:inline-flex; align-items:center; min-height:34px; max-width:100%;
+  font-size:var(--t-lieu); color:var(--alerte); cursor:pointer;
+}
+.lieu-manquant span{
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  border-bottom:1px dotted var(--alerte); padding-bottom:1px;
+}
+/* 34 px aujourd'hui, et c'était déjà une correction du 17 août. Ce n'est
+   toujours pas une cible : elle mène ailleurs que le reste de la ligne. */
+.cadre[data-ecran="apres"] .lieu-manquant{ min-height:44px; margin:-5px 0; }
+.cadre[data-ecran="apres"] .lieu-manquant span{ border-bottom-style:solid; }
+.etat{
+  margin:7px 0 0; font:500 var(--t-etat)/1.5 var(--sans); letter-spacing:.28em;
+  text-transform:uppercase; color:var(--c-etat);
+}
+/* 0,14 em, l'espacement des onglets du bas — et non 0,28.
+   Mesuré en capture : « DEVIS PRÊT À ENVOYER · 3 PHOTOS » passait à la ligne
+   et laissait « PHOTOS » seul en dessous. Un état qui se replie se lit comme
+   deux états. Le texte a grossi de 9,5 à 12 px : il fallait bien reprendre
+   quelque part. */
+.cadre[data-ecran="apres"] .etat{ letter-spacing:.14em; }
+.precision{
+  margin:4px 0 0; font-size:var(--t-date); line-height:1.5; color:var(--c-date);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+/* ─── Les bandeaux ──────────────────────────────────────────────────────── */
+.bandeaux{ display:flex; flex-direction:column; gap:12px; margin:28px 24px 0; }
+.bandeau{ border-radius:18px; padding:16px 20px; background:var(--card); }
+.bandeau[data-ton="teinte"]{ background:var(--rustTint); }
+.bandeau .quoi{
+  margin:0 0 6px; font:600 11px/1.5 var(--sans); letter-spacing:.18em;
+  text-transform:uppercase; color:var(--muted);
+}
+.bandeau[data-ton="teinte"] .quoi{ color:var(--rust); }
+.bandeau .qui{ margin:0; font:400 16px/1.5 var(--serif); color:var(--ink); letter-spacing:-.01em; }
+.bandeau .phrase{ margin:4px 0 0; font-size:13px; line-height:1.5; color:var(--muted); }
+.cadre[data-ecran="apres"] .bandeau .phrase{ display:none; }
+/* Ce que ces douze pixels rendent : la première ligne de chantier remonte
+   d'autant sur un matin chargé. Rien de ce qui se lit n'est touché. */
+.cadre[data-ecran="apres"] .bandeaux{ margin-top:16px; }
+.cadre[data-ecran="apres"] .bandeau{ padding:14px 18px; }
+.bandeau blockquote{
+  margin:12px 0 0; padding-left:12px; border-left:2px solid var(--rust);
+  font-size:14px; line-height:1.625; color:var(--ink); white-space:pre-wrap;
+}
+/* `gap-4` = 16 px, comme `Notifications.tsx`. Écrit à 4 px, la reproduction
+   collait les deux gestes l'un à l'autre et accusait l'écran d'aujourd'hui
+   d'un défaut qu'il n'a pas : une comparaison ne vaut que si le « avant » est
+   exact. */
+.bandeau .gestes{ display:flex; align-items:center; gap:16px; margin-top:12px; }
+.cadre[data-ecran="apres"] .bandeau .gestes{ margin-top:4px; margin-left:-10px; gap:4px; }
+.cadre[data-ecran="apres"] .bandeau blockquote{ margin-top:10px; }
+.bandeau .gestes button{
+  background:none; border:0; cursor:pointer;
+  font:500 14px/1.5 var(--sans); padding:0;
+}
+.cadre[data-ecran="apres"] .bandeau .gestes button{ min-height:44px; padding:0 10px; }
+.bandeau .faire{ color:var(--rust); }
+.bandeau .vu{ color:var(--muted); }
+.cadre[data-ecran="apres"] .bandeau .vu{ color:var(--inkSoft); }
+.bandeau .gestes button:focus-visible,
+.decouvre:focus-visible, .clients:focus-visible, .brin:focus-visible{
+  outline:2px solid var(--or); outline-offset:3px; border-radius:2px;
+}
+.de-plus{
+  background:none; border:0; cursor:pointer; text-align:center;
+  font:500 14px/1.5 var(--sans); color:var(--rust); padding:12px 0; min-height:44px;
+}
+
+/* ─── Le tiroir des retirés ─────────────────────────────────────────────── */
+.tiroir{
+  margin:0 26px; display:flex; align-items:center; justify-content:space-between;
+  border-top:1px solid transparent; max-height:0; overflow:hidden;
+  transition:max-height .34s cubic-bezier(.4,0,.2,1), padding .34s;
+  padding:0;
+}
+.tiroir[data-ouvert="oui"]{ max-height:64px; padding:10px 0; border-top-color:var(--line); }
+.tiroir span{ font-size:13px; line-height:1.5; color:var(--inkSoft); }
+.tiroir button{
+  margin-right:-8px; padding:8px; background:none; border:0; cursor:pointer;
+  font:500 11px/1.5 var(--sans); letter-spacing:.24em; text-transform:uppercase;
+  color:var(--c-geste); min-height:44px;
+}
+
+/* ─── La barre du bas ───────────────────────────────────────────────────── */
+.barre{
+  position:absolute; inset-inline:0; bottom:0; height:68px; z-index:20;
+  background:var(--cream); border-top:1px solid var(--line);
+}
+.onglets{ position:relative; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); padding:18px 14px 8px; }
+.onglets a{
+  position:relative; z-index:1; padding-bottom:8px; text-align:center;
+  text-decoration:none; font:500 8.5px/1.5 var(--sans); letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+  transition:color .32s cubic-bezier(.22,.61,.36,1), transform .34s cubic-bezier(.34,1.4,.5,1);
+}
+.onglets a[aria-current="page"]{ color:var(--ink); transform:translateY(-2px); }
+.marque-onglet{
+  position:absolute; bottom:8px; left:14px; z-index:0; pointer-events:none;
+  width:calc((100% - 28px) / 5); height:1px; background:var(--or);
+  transition:transform .54s cubic-bezier(.34,1.4,.5,1);
+}
+
+/* ─── Le voile et la feuille ────────────────────────────────────────────── */
+.voile{
+  position:absolute; inset:0; z-index:45; border:0; padding:0; cursor:pointer;
+  background:rgba(20,18,14,.12); opacity:0; visibility:hidden;
+  transition:opacity .46s, visibility 0s .46s;
+}
+.cadre[data-feuille="oui"] .voile{ opacity:1; visibility:visible; transition:opacity .46s, visibility 0s 0s; }
+.feuille{
+  position:absolute; inset-inline:0; bottom:0; top:60px; z-index:50;
+  background:var(--cream); border-radius:26px 26px 0 0;
+  box-shadow:0 -22px 50px rgba(20,18,14,.22);
+  transform:translateY(100%); visibility:hidden;
+  transition:transform .56s cubic-bezier(.22,.61,.36,1), visibility 0s .56s;
+  padding:22px 26px; overflow-y:auto;
+}
+.cadre[data-feuille="oui"] .feuille{ transform:translateY(0); visibility:visible; transition:transform .56s cubic-bezier(.22,.61,.36,1), visibility 0s 0s; }
+.feuille h2{ margin:0 0 4px; font:400 26px/1.1 var(--serif); letter-spacing:-.016em; }
+.feuille p{ margin:0 0 18px; font-size:13px; line-height:1.5; color:var(--inkSoft); }
+.feuille label{
+  display:block; font:500 11px/1 var(--sans); letter-spacing:.28em;
+  text-transform:uppercase; color:var(--inkSoft); margin:0 0 8px;
+}
+.feuille input{
+  width:100%; min-height:48px; padding:0 14px; margin-bottom:18px;
+  border:1px solid var(--line); border-radius:4px; background:var(--card);
+  font:400 16px/1 var(--sans); color:var(--ink);
+}
+.feuille .plein{
+  width:100%; min-height:52px; border:0; border-radius:4px; cursor:pointer;
+  background:var(--plein); color:var(--card);
+  font:600 13px/1 var(--sans); letter-spacing:.16em; text-transform:uppercase;
+}
+.feuille .fermer{
+  background:none; border:0; cursor:pointer; padding:10px 12px 10px 0;
+  min-height:44px; font:400 22px/1 var(--sans); color:var(--inkSoft);
+}
+
+/* ─── La bande de mesure, sous l'écran ──────────────────────────────────── */
+.mesures{
+  max-width:390px; margin:14px auto 0;
+  border-top:1px solid rgba(28,28,26,.16);
+}
+.mesures table{ width:100%; border-collapse:collapse; }
+.mesures th, .mesures td{
+  padding:7px 2px; text-align:left; vertical-align:baseline;
+  border-bottom:1px solid rgba(28,28,26,.07);
+}
+.mesures th{
+  font:500 8.5px/1.5 var(--sans); letter-spacing:.2em; text-transform:uppercase;
+  color:var(--pilote-gris); font-weight:500;
+}
+.mesures td{ font:400 13px/1.35 var(--sans); color:#26251f; }
+.mesures td b{ font-weight:600; font-variant-numeric:tabular-nums; }
+.mesures td em{ font-style:normal; color:#8a5a2a; }
+.mesures caption{
+  caption-side:bottom; padding-top:10px; text-align:left;
+  font:400 12px/1.5 var(--sans); color:var(--pilote-gris);
+}
+
+.note{
+  max-width:390px; margin:22px auto 0;
+  font:400 13px/1.6 var(--sans); color:#3a382f;
+}
+.note h2{
+  font:500 8.5px/1.5 var(--sans); letter-spacing:.2em; text-transform:uppercase;
+  color:var(--pilote-gris); margin:20px 0 6px;
+}
+.note ul{ margin:0; padding-left:17px; }
+.note li{ margin-bottom:5px; }
+.note b{ font-weight:600; }
+
+@media (prefers-reduced-motion: reduce){
+  .pouls, .geste[data-part="oui"] .signe, .geste[data-part="oui"] .gerbe i{ animation:none; }
+  .ecran, .ligne, .chute, .tiroir, .feuille, .voile, .marque-onglet{ transition:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="pilote">
+  <h1>L'accueil, à bout de bras
+    <small>Proposition — rien n'est codé</small>
+  </h1>
+  <div class="rang"><b>Écran</b>
+    <button data-k="ecran" data-v="apres">À bout de bras</button>
+    <button data-k="ecran" data-v="avant">Aujourd'hui</button>
+  </div>
+  <div class="rang"><b>Le bouton</b>
+    <button data-k="bouton" data-v="1">1 · aujourd'hui</button>
+    <button data-k="bouton" data-v="2">2 · l'anneau serré</button>
+    <button data-k="bouton" data-v="3">3 · le mot souligné</button>
+    <button data-k="bouton" data-v="4">4 · la capsule</button>
+    <button data-k="bouton" data-v="5">5 · l'aplat vert</button>
+  </div>
+  <div class="rang"><b>Charte</b>
+    <button data-k="charte" data-v="origine">Origine</button>
+    <button data-k="charte" data-v="nuit">Nuit</button>
+  </div>
+  <div class="rang"><b>Matin</b>
+    <button data-k="cas" data-v="charge">Chargé</button>
+    <button data-k="cas" data-v="calme">Calme</button>
+    <button data-k="cas" data-v="un">Un seul</button>
+    <button data-k="cas" data-v="vide">Aucun</button>
+  </div>
+</div>
+
+<div class="cadre origine" id="cadre" data-ecran="apres" data-cas="charge" data-bouton="1" data-feuille="non">
+  <div class="ecran" id="ecran">
+    <p class="marque">ATLAS</p>
+
+    <div class="entete">
+      <div class="titrage">
+        <h1 class="titre">Vos chantiers</h1>
+        <button class="assistant" type="button" aria-label="Ouvrir l'assistant">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3.6c-4.2 0-7.6 2.9-7.6 6.5 0 2 1.1 3.9 2.8 5.1v3.2l3-1.6c.6.1 1.2.2 1.8.2 4.2 0 7.6-2.9 7.6-6.5S16.2 3.6 12 3.6Z"
+                  stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="ligne-tete">
+        <span class="rubrique" data-atlas="compteur"><span>En cours</span><span class="nombre" id="compte-haut">0</span></span>
+        <a class="clients" href="#clients">Vos clients<span class="chevron" aria-hidden="true"></span><span class="chevron-mot" aria-hidden="true">›</span></a>
+      </div>
+    </div>
+
+    <div class="action">
+      <button class="geste" id="geste" type="button" data-part="non">
+        <span class="mot">Créer un devis</span>
+        <span class="rond">
+          <span class="pouls" aria-hidden="true"></span>
+          <span class="pouls pouls-2" aria-hidden="true"></span>
+          <span class="pouls pouls-3" aria-hidden="true"></span>
+          <span class="cerne" aria-hidden="true"></span>
+          <span class="gerbe" aria-hidden="true" id="gerbe"></span>
+          <svg class="signe" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <path d="M16 9.6v12.8M9.6 16h12.8" stroke="#B98B47" stroke-width="1.25"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+
+    <div class="rubrique compte-bande" data-atlas="compteur-bas"><span>En cours</span><span class="nombre" id="compte-bas">0</span></div>
+
+    <div class="fil" id="fil">
+      <div class="bandeaux" id="bandeaux"></div>
+      <div class="rubrique compte-liste" data-atlas="compteur-liste"><span>En cours</span><span class="nombre" id="compte-liste">0</span></div>
+      <div class="tige" id="tige">
+        <span class="perle" aria-hidden="true" id="perle"><i></i></span>
+      </div>
+    </div>
+
+    <div class="tiroir" id="tiroir" data-ouvert="non" aria-live="polite">
+      <span id="tiroir-mot">Retiré à l'instant</span>
+      <button type="button" id="annuler" tabindex="-1">Annuler</button>
+    </div>
+  </div>
+
+  <button class="voile" id="voile" tabindex="-1" aria-hidden="true"></button>
+
+  <div class="feuille" role="dialog" aria-modal="true" aria-label="Créer un devis">
+    <button class="fermer" type="button" id="fermer" aria-label="Fermer">&lsaquo;</button>
+    <h2>Votre client</h2>
+    <p>Son nom suffit pour commencer.</p>
+    <label for="nom-client">Nom</label>
+    <input id="nom-client" type="text" placeholder="M. Martins">
+    <label for="tel-client">Téléphone</label>
+    <input id="tel-client" type="tel" placeholder="06 12 34 56 78">
+    <button class="plein" type="button" id="creer">Créer et dicter</button>
+  </div>
+
+  <nav class="barre" aria-label="Navigation principale">
+    <div class="onglets" id="onglets">
+      <a href="#chantiers" aria-current="page">Chantiers</a>
+      <a href="#planning">Planning</a>
+      <a href="#termines">Terminés</a>
+      <a href="#paysage">Paysage</a>
+      <a href="#reglages">Réglages</a>
+      <span class="marque-onglet" id="marque-onglet" aria-hidden="true"></span>
+    </div>
+  </nav>
+</div>
+
+<div class="mesures">
+  <table>
+    <caption id="legende-mesures"></caption>
+    <thead>
+      <tr><th>Ce qu'on mesure</th><th>Sur l'écran affiché</th></tr>
+    </thead>
+    <tbody id="corps-mesures"></tbody>
+  </table>
+</div>
+
+<div class="note">
+  <h2>Ce qui ne bouge pas d'un pixel</h2>
+  <ul>
+    <li>Le <b>fil</b> et la <b>perle</b> à mi-hauteur, qui plonge sur le dernier jour.</li>
+    <li>Les <b>44 px</b> au-dessus du titre, le titre à <b>40 px</b>, les <b>21 px</b> entre deux chantiers.</li>
+    <li>« <b>Créer un devis</b> » : le mot à 13 px graisse 800, l'anneau de 42 px, le battement,
+        les onze grains, la demi-seconde avant la feuille.</li>
+    <li>Les <b>cinq onglets</b> sans icônes, à 8,5 px / 0,14 em, et le trait d'or qui glisse.</li>
+    <li>Le <b>glissement</b> qui retire une ligne, et le tiroir qui annule.</li>
+    <li>« <b>En cours</b> » puis le chiffre en gras, et rien d'autre.</li>
+    <li>Aucun trait gris dans l'en-tête, aucun « Bonjour », aucune phrase sur la liste vide.</li>
+  </ul>
+
+  <h2>Ce qui change, et pourquoi</h2>
+  <ul>
+    <li><b>Tout ce qui se lit grossit et sort du gris.</b> L'état d'un chantier passe de
+        9,5 à 12 px, le lieu de 11,5 à 14, la date d'envoi à 13. L'or des états passe de
+        <b>2,77</b> à <b>4,59</b> de contraste — c'est le même or, celui que le dépôt
+        appelle déjà <b>orTexte</b> ; il n'a jamais servi ici.</li>
+    <li><b>« ATLAS » part.</b> C'est le nom de l'application, écrit en haut de
+        l'application qu'on vient d'ouvrir. Il coûte 39 px sur 596.</li>
+    <li><b>« En cours 3 » et « Vos clients » tiennent sur une ligne</b> au lieu de deux
+        bandes séparées par 30 px de vide.</li>
+    <li><b>La flèche de « Vos clients » part.</b> Elle est dessinée en CSS, un carré
+        tourné à 45°, et c'est pour ça que le contrôle qui interdit les flèches ne la
+        voit pas.</li>
+    <li><b>Les bandeaux perdent leur phrase d'explication.</b> « Le client n'a pas donné
+        suite. Le devis peut être repris et renvoyé. » redit le titre et le bouton.
+        Ce que le client a <b>écrit</b>, lui, reste mot pour mot.</li>
+    <li><b>Leurs deux gestes deviennent des cibles.</b> « J'ai vu » fait 17 px de haut
+        aujourd'hui ; il en fait 44.</li>
+    <li><b>« Adresse non renseignée » est soulignée d'un trait plein</b>, à 14 px : c'est
+        une cible, elle ne mène pas au même endroit que le reste de la ligne.</li>
+  </ul>
+
+  <h2>Ce que je vous demande</h2>
+  <ul>
+    <li>Une <b>autre proposition d'accueil</b> vous attend depuis le 3 septembre, faite
+        par une autre session : <b>florianmarrins0978-svg.github.io/Atlas-app/accueil-ce-qui-vous-attend.html</b>.
+        Elle change ce que l'écran <b>montre</b> ; celle-ci change ce qu'il <b>donne à
+        lire</b>. Dites-moi si l'une des deux tombe.</li>
+    <li>Un chantier prévu <b>hier</b> passe tout seul dans « Terminés », sans rien dire.
+        Faut-il qu'il vous le signale ici ?</li>
+  </ul>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   LES DONNÉES — des exemples de maquette, dans les formes du dépôt.
+   Les états viennent de `statutLabel` ; leur composition de `ligneEtatChantier()`.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const LIEU_MANQUANT = "Adresse non renseignée";
+
+const CHANTIERS = [
+  /* `precision` est ce que `ligneEtatChantier()` écrit aujourd'hui.
+     `precisionCourte` retire le mot « Envoyé », déjà dit par la ligne d'état
+     juste au-dessus — c'est sa plainte du 19 août, mot pour mot : « l'ancienneté
+     du devis est écrite deux fois ». La DATE, qu'il a demandée le 13 août,
+     reste entière. */
+  { id:"c1", nom:"M. Martins", jour:"04", mois:"sept.", lieu:"12 rue d'Enfer, Nantes",
+    etat:"Devis envoyé · sans réponse",
+    precision:"Envoyé le lundi 1er septembre.", precisionCourte:"Lundi 1er septembre" },
+  { id:"c2", nom:"Mme Rialland", jour:"03", mois:"sept.", lieu:LIEU_MANQUANT,
+    etat:"Devis prêt à envoyer · 3 photos", precision:null },
+  { id:"c3", nom:"Résidence des Tilleuls", jour:"02", mois:"sept.", lieu:"Chemin du Pré, Vertou",
+    etat:"À vérifier · 2 photos", precision:null },
+  { id:"c4", nom:"M. Bourgeois", jour:"31", mois:"août", lieu:"9 allée des Chênes, Rezé",
+    etat:"Brouillon · sans photo", precision:null },
+];
+
+const BANDEAUX = [
+  { id:"b1", ton:"teinte", quoi:"Correction demandée", qui:"Mme Lucie Grandet",
+    phrase:"Le client veut ce devis corrigé avant de l'accepter.",
+    dit:"Le portail est en 3,20 m et non 2,80. Le reste me va très bien.",
+    faire:"Reprendre le devis" },
+  { id:"b2", ton:"teinte", quoi:"Devis retourné", qui:"M. Chauvet",
+    phrase:"Le client n'a pas donné suite. Le devis peut être repris et renvoyé.",
+    dit:null, faire:"Reprendre le devis" },
+  /* Teinté, et c'est SA décision du 16 août — la proposition B : « au
+     quatorzième jour, ça ne doit pas se rater ». C'est le seul des trois
+     rappels où rien n'est encore parti chez le client. */
+  { id:"b3", ton:"teinte", quoi:"Devis en attente · 14 jours", qui:"Résidence des Tilleuls",
+    phrase:"Chantier ouvert depuis 14 jours, et aucun devis n'est parti.",
+    dit:null, faire:"Faire le devis" },
+];
+
+const CAS = {
+  charge: { chantiers:[0,1,2,3], bandeaux:[0,1,2] },
+  calme:  { chantiers:[0,1,2,3], bandeaux:[] },
+  un:     { chantiers:[0],       bandeaux:[] },
+  vide:   { chantiers:[],        bandeaux:[0] },
+};
+
+/* Combien de bandeaux avant de proposer de déplier.
+   AVANT : 2 (`VISIBLES_PAR_DEFAUT` dans Notifications.tsx).
+   APRÈS : 1 — l'écran s'appelle « Vos chantiers » et doit en montrer. */
+const VISIBLES = { avant:2, apres:1 };
+
+/* Les onze grains, repris tels quels de `EcranChantiers.tsx`. Irréguliers à
+   dessein : onze grains à la même distance dessinent une roue de vélo. */
+const GRAINS = [
+  [7.7,-36.9,2.3,9],[17,-44.8,1.6,43],[34.9,-22.6,1.7,22],[35.2,2.1,1.8,0],
+  [35,29,1.9,34],[9.5,38,2,13],[-18.7,45.7,2.2,47],[-36.7,22.4,2.3,26],
+  [-36.5,-3.1,2.4,5],[-45.5,-11.3,1.6,39],[-25.9,-31.2,1.8,18],
+];
+
+/* `descenteDeLaPerle()` — recopiée telle quelle depuis `src/lib/perle-descente.ts`. */
+function descenteDeLaPerle({ milieuDuDernier, milieuDuCadre, restantADefiler, hauteurADefiler }) {
+  if (hauteurADefiler <= 0) return Math.min(0, milieuDuDernier - milieuDuCadre);
+  const descenteEntiere = milieuDuDernier - restantADefiler - milieuDuCadre;
+  if (descenteEntiere <= 0) return 0;
+  const plongee = Math.min(descenteEntiere, hauteurADefiler);
+  const avancement = (plongee - restantADefiler) / plongee;
+  return descenteEntiere * Math.min(1, Math.max(0, avancement));
+}
+
+/* ═══ L'état de la maquette ═══════════════════════════════════════════════ */
+const cadre = document.getElementById("cadre");
+const tige = document.getElementById("tige");
+const perle = document.getElementById("perle");
+const fil = document.getElementById("fil");
+const bandeauxHote = document.getElementById("bandeaux");
+const tiroir = document.getElementById("tiroir");
+
+let etat = { ecran:"apres", charte:"origine", cas:"charge", bouton:"1" };
+let retires = [];      // { id, libelle }
+let acquittes = [];
+let toutVoir = false;
+
+const gerbe = document.getElementById("gerbe");
+gerbe.innerHTML = GRAINS.map(([x,y,l,t]) =>
+  `<i style="--x:${x}px;--y:${y}px;--l:${l}px;--t:${t}ms"></i>`).join("");
+
+function precisionDe(c){
+  return etat.ecran === "apres" ? (c.precisionCourte ?? c.precision) : c.precision;
+}
+
+function echapper(s){
+  return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+}
+
+function dessiner(){
+  cadre.className = "cadre " + etat.charte;
+  cadre.dataset.ecran = etat.ecran;
+  cadre.dataset.cas = etat.cas;
+  cadre.dataset.bouton = etat.bouton;
+
+  const choix = CAS[etat.cas];
+  const lignes = choix.chantiers.map(i => CHANTIERS[i]).filter(c => !retires.some(r => r.id === c.id));
+  const compte = lignes.length;
+  document.getElementById("compte-haut").textContent = compte;
+  document.getElementById("compte-bas").textContent = compte;
+  document.getElementById("compte-liste").textContent = compte;
+
+  /* Les bandeaux */
+  const restantes = choix.bandeaux.map(i => BANDEAUX[i]).filter(b => !acquittes.includes(b.id));
+  const max = VISIBLES[etat.ecran];
+  const visibles = toutVoir ? restantes : restantes.slice(0, max);
+  const enPlus = restantes.length - visibles.length;
+
+  bandeauxHote.innerHTML = visibles.map(b => `
+    <div class="bandeau" data-ton="${b.ton}">
+      <p class="quoi">${echapper(b.quoi)}</p>
+      <p class="qui">${echapper(b.qui)}</p>
+      <p class="phrase">${echapper(b.phrase)}</p>
+      ${b.dit ? `<blockquote>« ${echapper(b.dit)} »</blockquote>` : ""}
+      <div class="gestes">
+        <button class="faire" type="button">${echapper(b.faire)}</button>
+        <button class="vu" type="button" data-vu="${b.id}">J'ai vu</button>
+      </div>
+    </div>`).join("")
+    /* **UNE PORTE QUI S'OUVRE DOIT SE REFERMER — trouvé par le patron le
+       6 septembre 2026 : « on peut cliquer dessus pour agrandir la fenêtre
+       mais on peut pas la refermer ».**
+
+       Le défaut est dans L'APPLICATION, pas seulement ici
+       (`src/app/Notifications.tsx:564`) : `setToutVoir(true)` n'a pas de
+       retour, et le bouton disparaît une fois déplié — il ne reste plus rien
+       à toucher. C'est sa règle du 5 septembre, « une erreur se rattrape » :
+       un geste sans retour en est une.
+
+       « Replier » : un verbe, un mot. */
+    + (enPlus > 0
+      ? `<button class="de-plus" type="button" id="de-plus">${enPlus === 1 ? "1 autre devis à regarder" : enPlus + " autres devis à regarder"}</button>`
+      : toutVoir && restantes.length > max
+        ? `<button class="de-plus" type="button" id="replier">Replier</button>`
+        : "");
+  bandeauxHote.style.display = visibles.length || enPlus > 0 ? "" : "none";
+
+  /* Les lignes.
+     **Aucune perle sur une liste vide** : l'application ne rend `ListeChantiers`
+     que si `restants.length > 0` (`EcranChantiers.tsx`). Sans cette ligne, la
+     maquette laissait le point d'or seul au milieu du vide — un défaut de la
+     maquette, pas de l'écran, et il ne s'est vu qu'en capture. */
+  const dedans = choix.chantiers.map(i => CHANTIERS[i]);
+  if (dedans.length === 0) { tige.innerHTML = ""; tige.style.display = "none"; }
+  else { tige.style.display = ""; }
+  tige.innerHTML = dedans.length === 0 ? "" :
+    `<span class="perle" aria-hidden="true"><i></i></span>` + dedans.map(c => {
+    const retiree = retires.some(r => r.id === c.id);
+    const lieu = c.lieu === LIEU_MANQUANT
+      ? `<span class="lieu-manquant" role="link" tabindex="0"><span>${echapper(c.lieu)}</span></span>`
+      : `<p class="lieu">${echapper(c.lieu)}</p>`;
+    return `
+      <div class="ligne" data-retiree="${retiree ? "oui" : "non"}" data-id="${c.id}">
+        <div class="chute">
+          <div class="grille">
+            <span class="trait" aria-hidden="true"></span>
+            <span class="jour"><b>${echapper(c.jour)}</b><span>${echapper(c.mois)}</span></span>
+            <div class="glisse">
+              <div class="volet">
+                <a class="brin" href="#reprise-${c.id}">
+                  <h2 class="nom">${echapper(c.nom)}</h2>
+                  ${lieu}
+                  <p class="etat">${echapper(c.etat)}</p>
+                  ${precisionDe(c) ? `<p class="precision">${echapper(precisionDe(c))}</p>` : ""}
+                </a>
+              </div>
+              <button class="decouvre" type="button" data-retirer="${c.id}"
+                      aria-label="Retirer le chantier ${echapper(c.nom)}">Retirer</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+
+  /* Le tiroir */
+  tiroir.dataset.ouvert = retires.length ? "oui" : "non";
+  document.getElementById("tiroir-mot").textContent =
+    retires.length > 1 ? "Retirés à l'instant" : "Retiré à l'instant";
+  document.getElementById("annuler").tabIndex = retires.length ? 0 : -1;
+
+  placerPerle();
+  mesurer();
+}
+
+/* La descente de la perle, comme dans l'application. */
+function placerPerle(){
+  const point = tige.querySelector(".perle i");
+  if (!point) return;
+  const debout = [...tige.querySelectorAll(".ligne")].filter(l => l.offsetHeight > 0);
+  const derniere = debout[debout.length - 1];
+  if (!derniere) { point.style.setProperty("--descente", "0px"); return; }
+  const boite = fil.getBoundingClientRect();
+  const d = descenteDeLaPerle({
+    milieuDuDernier: derniere.getBoundingClientRect().top + derniere.offsetHeight / 2,
+    milieuDuCadre: boite.top + boite.height / 2,
+    restantADefiler: fil.scrollHeight - fil.clientHeight - fil.scrollTop,
+    hauteurADefiler: fil.scrollHeight - fil.clientHeight,
+  });
+  point.style.setProperty("--descente", Math.round(d) + "px");
+}
+
+let prevu = 0;
+fil.addEventListener("scroll", () => {
+  if (prevu) return;
+  prevu = requestAnimationFrame(() => { prevu = 0; placerPerle(); });
+}, { passive:true });
+
+/* ═══ LA MESURE — elle interroge la page, elle ne récite rien ═════════════ */
+
+function luminance(c){
+  const [r,g,b] = c.map(v => { v /= 255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); });
+  return 0.2126*r + 0.7152*g + 0.0722*b;
+}
+function versRvb(s){
+  const m = s.match(/rgba?\(([^)]+)\)/);
+  if (!m) return [0,0,0];
+  const p = m[1].split(",").map(Number);
+  return [p[0], p[1], p[2]];
+}
+function contraste(devant, derriere){
+  const a = luminance(versRvb(devant)), b = luminance(versRvb(derriere));
+  return (Math.max(a,b) + 0.05) / (Math.min(a,b) + 0.05);
+}
+
+/** Visible dans les 390 × 596 de l'écran, barre du bas exclue. */
+function dansLEcran(el){
+  const e = document.getElementById("ecran").getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  return r.height > 0 && r.width > 0 && r.bottom > e.top + 1 && r.top < e.bottom - 1;
+}
+
+function mesurer(){
+  const ecran = document.getElementById("ecran");
+  const boite = ecran.getBoundingClientRect();
+
+  /* Où commence la liste des chantiers, comptée depuis le haut de l'écran. */
+  const premiere = tige.querySelector(".ligne");
+  const debut = premiere ? Math.round(premiere.getBoundingClientRect().top - boite.top) : null;
+
+  /* Combien de chantiers tiennent ENTIÈREMENT à l'écran. */
+  const entiers = [...tige.querySelectorAll(".ligne")].filter(l => {
+    const r = l.getBoundingClientRect();
+    return r.height > 0 && r.top >= boite.top - 1 && r.bottom <= boite.bottom + 1;
+  }).length;
+
+  /* Ce qu'on voit VRAIMENT du premier chantier. « Entier ou pas » est trop
+     grossier : sur un matin chargé, la différence entre les deux écrans est
+     qu'on lit son nom, son lieu et son état — ou qu'on ne le voit pas du tout. */
+  const parties = [[".nom","le nom"],[".lieu, .lieu-manquant","le lieu"],[".etat","l'état"],[".precision","la date"]];
+  let vues = [];
+  if (premiere) {
+    for (const [sel, mot] of parties) {
+      const el = premiere.querySelector(sel);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      if (r.height > 0 && r.top >= boite.top - 1 && r.bottom <= boite.bottom + 1) vues.push(mot);
+    }
+  }
+
+  /* Les mots réellement affichés, en DEUX comptes.
+     Le total seul ne se compare pas d'un écran à l'autre : celui d'aujourd'hui
+     en affiche moins parce qu'il n'affiche aucun chantier. Le second compte —
+     tout ce qui n'est pas un chantier — est celui qui se compare, et c'est
+     celui que sa plainte du 19 août visait. */
+  let mots = 0, motsHors = 0;
+  const marche = document.createTreeWalker(ecran, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = marche.nextNode())) {
+    const texte = n.nodeValue.trim();
+    if (!texte) continue;
+    const parent = n.parentElement;
+    if (!parent || !dansLEcran(parent)) continue;
+    if (getComputedStyle(parent).display === "none") continue;
+    const combien = texte.split(/\s+/).filter(m => /[\p{L}\p{N}]/u.test(m)).length;
+    mots += combien;
+    if (!parent.closest(".tige")) motsHors += combien;
+  }
+
+  /* Le plus petit texte visible, et son contraste sur son fond. */
+  let plusPetit = null;
+  ecran.querySelectorAll(".etat, .lieu, .lieu-manquant, .precision, .jour, .rubrique, .clients, .phrase, .quoi, .qui, .titre, .mot, .onglets a, .tiroir span, .decouvre").forEach(el => {
+    if (!dansLEcran(el)) return;
+    const st = getComputedStyle(el);
+    if (st.display === "none") return;
+    const taille = parseFloat(st.fontSize);
+    if (!plusPetit || taille < plusPetit.taille) plusPetit = { taille, el, st };
+  });
+
+  /* Le contraste de la ligne d'état — celle que toutes les lignes portent. */
+  const unEtat = [...ecran.querySelectorAll(".etat")].find(dansLEcran);
+  let cEtat = null;
+  if (unEtat) {
+    const fond = getComputedStyle(cadre).getPropertyValue("--cream").trim();
+    const tmp = document.createElement("span");
+    tmp.style.color = fond; document.body.appendChild(tmp);
+    cEtat = contraste(getComputedStyle(unEtat).color, getComputedStyle(tmp).color);
+    tmp.remove();
+  }
+
+  /* La plus petite cible que le doigt doit viser. */
+  let cible = null;
+  ecran.querySelectorAll("a, button, [role='link']").forEach(el => {
+    if (!dansLEcran(el)) return;
+    const r = el.getBoundingClientRect();
+    if (r.height < 4) return;
+    const quoi = (el.textContent || "").trim() || (el.getAttribute("aria-label") || "").trim();
+    if (!cible || r.height < cible.h) cible = { h:Math.round(r.height), quoi:quoi.slice(0,26) };
+  });
+
+  const seuil = v => v >= 4.5;
+  const rangs = [
+    ["La liste commence à", debut === null ? "aucun chantier" :
+      (debut > 596 ? `<b>${debut} px</b> — <em>hors de l'écran</em>` : `<b>${debut} px</b> sur 596`)],
+    ["Chantiers entiers à l'écran", entiers === 0 ? `<b>0</b> — <em>l'écran s'appelle « Vos chantiers »</em>` : `<b>${entiers}</b>`],
+    ["Du premier chantier, on voit", !premiere ? "—" :
+      (vues.length === 0 ? `<em>rien</em>` : `<b>${vues.join(", ")}</b>`)],
+    ["Mots affichés", `<b>${mots}</b>`],
+    ["Dont mots qui ne sont pas un chantier", `<b>${motsHors}</b>`],
+    ["Le plus petit texte", plusPetit ? `<b>${plusPetit.taille.toString().replace(".", ",")} px</b>` : "—"],
+    ["Contraste de la ligne d'état", cEtat === null ? "—" :
+      (seuil(cEtat) ? `<b>${cEtat.toFixed(2).replace(".", ",")}</b> — passe 4,5` : `<b>${cEtat.toFixed(2).replace(".", ",")}</b> — <em>il en faut 4,5</em>`)],
+    ["La plus petite cible", cible ? (cible.h >= 44 ? `<b>${cible.h} px</b> — « ${echapper(cible.quoi)} »` : `<b>${cible.h} px</b> — <em>« ${echapper(cible.quoi)} », il en faut 44</em>`) : "—"],
+  ];
+  document.getElementById("corps-mesures").innerHTML =
+    rangs.map(([a,b]) => `<tr><th>${a}</th><td>${b}</td></tr>`).join("");
+  document.getElementById("legende-mesures").textContent =
+    "Relevé sur l'écran ci-dessus, à l'instant, par la page elle-même — 390 × 596, la barre du bas déduite.";
+}
+
+/* ═══ Les gestes ═════════════════════════════════════════════════════════ */
+
+document.querySelectorAll(".pilote button").forEach(b => {
+  b.addEventListener("click", () => {
+    etat[b.dataset.k] = b.dataset.v;
+    if (b.dataset.k === "bouton" && b.dataset.v !== "1") etat.ecran = "apres";
+    if (b.dataset.k === "ecran") etat.bouton = "1";
+    if (b.dataset.k === "cas" || b.dataset.k === "ecran") { retires = []; acquittes = []; toutVoir = false; }
+    marquerPilote();
+    dessiner();
+  });
+});
+function marquerPilote(){
+  document.querySelectorAll(".pilote button").forEach(b =>
+    b.setAttribute("aria-pressed", String(etat[b.dataset.k] === b.dataset.v)));
+}
+
+document.addEventListener("click", e => {
+  const retirer = e.target.closest("[data-retirer]");
+  if (retirer) {
+    const c = CHANTIERS.find(x => x.id === retirer.dataset.retirer);
+    retires = [...retires, { id:c.id, libelle:"le chantier " + c.nom }];
+    dessiner();
+    return;
+  }
+  const vu = e.target.closest("[data-vu]");
+  if (vu) { acquittes = [...acquittes, vu.dataset.vu]; dessiner(); return; }
+  if (e.target.id === "de-plus") { toutVoir = true; dessiner(); return; }
+  if (e.target.id === "replier") { toutVoir = false; dessiner(); return; }
+  if (e.target.id === "annuler") { retires = retires.slice(0, -1); dessiner(); return; }
+
+  const onglet = e.target.closest(".onglets a");
+  if (onglet) {
+    e.preventDefault();
+    const tous = [...document.querySelectorAll(".onglets a")];
+    tous.forEach(a => a.removeAttribute("aria-current"));
+    onglet.setAttribute("aria-current", "page");
+    document.getElementById("marque-onglet").style.transform =
+      `translateX(${tous.indexOf(onglet) * 100}%)`;
+  }
+
+  const lien = e.target.closest(".brin, .clients, .lieu-manquant, .faire");
+  if (lien) e.preventDefault();
+});
+
+/* Le geste du bouton : le tour, les grains, puis la feuille — 520 ms. */
+const geste = document.getElementById("geste");
+geste.addEventListener("click", () => {
+  if (geste.dataset.part === "oui") return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { ouvrir(true); return; }
+  geste.dataset.part = "oui";
+  setTimeout(() => ouvrir(true), 520);
+  setTimeout(() => { geste.dataset.part = "non"; }, 940);
+});
+function ouvrir(oui){ cadre.dataset.feuille = oui ? "oui" : "non"; }
+document.getElementById("voile").addEventListener("click", () => ouvrir(false));
+document.getElementById("fermer").addEventListener("click", () => ouvrir(false));
+document.getElementById("creer").addEventListener("click", () => ouvrir(false));
+document.addEventListener("keydown", e => { if (e.key === "Escape") ouvrir(false); });
+
+new ResizeObserver(() => { placerPerle(); mesurer(); }).observe(fil);
+marquerPilote();
+dessiner();
+</script>
+</body>
+</html>

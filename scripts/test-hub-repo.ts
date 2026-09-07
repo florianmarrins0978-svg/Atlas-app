@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import { getChantierPourHub } from "../src/server/repositories/chantiers";
-import { getNextAction, getSecondarySteps, getStatutAffiche } from "../src/lib/chantier-etat";
+import { getNextAction, getStatutAffiche, lienDeReprise } from "../src/lib/chantier-etat";
 import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
@@ -79,7 +79,7 @@ async function main() {
     assert.equal(c, null);
   });
 
-  await test("getNextAction / getSecondarySteps fonctionnent sur la forme réelle", async () => {
+  await test("getNextAction / lienDeReprise fonctionnent sur la forme réelle", async () => {
     const c = await getChantierPourHub(A, chantierId);
     const statut = getStatutAffiche(c!);
     assert.equal(statut, "verifie"); // photos + info vérifiées, pas de prix -> "verifie"
@@ -89,12 +89,25 @@ async function main() {
     // pour qui chiffre à la main, et se rejoint par le tiroir.
     const next = getNextAction(c!);
     assert.equal(next?.key, "devis-preparer");
-    const steps = getSecondarySteps(c!.id, c!, next?.key);
-    assert.ok(!steps.some((s) => s.key === "devis"), "L'étape correspondant à l'action principale ne doit pas être dupliquée");
-    assert.ok(steps.some((s) => s.key === "prix"), "L'écran Prix doit rester joignable par le tiroir");
-    const photosStep = steps.find((s) => s.key === "photos");
-    assert.equal(photosStep?.done, true);
-    assert.equal(photosStep?.meta, "1 photo");
+
+    // **CE QUE CE CONTRÔLE DÉFEND A CHANGÉ DE FORME, PAS DE FOND.**
+    //
+    // Il lisait `getSecondarySteps` — la liste du tiroir de la fiche du
+    // chantier — pour prouver que l'écran « Prix » restait joignable. La fiche
+    // est retirée le 4 septembre 2026 (`ARCHITECTURE.md` §254), et une suite
+    // qui réclamerait sa liste rendrait l'écran impossible à changer
+    // (`CLAUDE.md` §5 bis).
+    //
+    // La règle, elle, n'a pas bougé : **rouvrir un chantier depuis la liste
+    // mène à une adresse qui existe, et jamais à la fiche retirée** — sans
+    // quoi la route redirigerait sur elle-même.
+    const reprise = lienDeReprise(c!.id, c!);
+    assert.notEqual(
+      reprise,
+      `/chantiers/${c!.id}`,
+      "la reprise renvoie sur la fiche retirée : la route boucle sur elle-même"
+    );
+    assert.equal(reprise, `/chantiers/${c!.id}/devis-complet`);
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

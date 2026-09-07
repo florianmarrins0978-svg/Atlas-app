@@ -28,7 +28,6 @@ export function useMagnetophone() {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const morceauxRef = useRef<Blob[]>([]);
   const [enregistre, setEnregistre] = useState(false);
-  const [suspendu, setSuspendu] = useState(false);
   const [secondes, setSecondes] = useState(0);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -103,13 +102,13 @@ export function useMagnetophone() {
   }, []);
 
   useEffect(() => {
-    // **Le compteur s'arrête AUSSI en pause**, sinon il compterait un silence
-    // que la note ne contient pas — et l'on croirait avoir dicté trois minutes
-    // là où il y en a une.
-    if (!enregistre || suspendu) return;
+    // Le compteur suit la dictée, et rien d'autre ne l'arrête : **la pause a
+    // été retirée le 31 août 2026, à sa demande** (voir `basculerSuspension`
+    // plus bas, qui n'existe plus).
+    if (!enregistre) return;
     const t = setInterval(() => setSecondes((s) => s + 1), 1000);
     return () => clearInterval(t);
-  }, [enregistre, suspendu]);
+  }, [enregistre]);
 
   /**
    * **Le micro se relâche même si l'écran disparaît.** Sans cela, le voyant
@@ -136,7 +135,6 @@ export function useMagnetophone() {
       recorderRef.current = recorder;
       brancherLEcoute(stream);
       setSecondes(0);
-      setSuspendu(false);
       setEnregistre(true);
       return true;
     } catch {
@@ -146,24 +144,22 @@ export function useMagnetophone() {
   }, [brancherLEcoute]);
 
   /**
-   * Suspend, ou reprend.
+   * **`basculerSuspension` A ÉTÉ RETIRÉE LE 31 AOÛT 2026, à sa demande** —
+   * *« supprime le rond avec le carré dedans pour me mettre pause »*. Elle
+   * appelait `MediaRecorder.pause()` et gardait la session ouverte, ce qui
+   * était juste ; ce n'est pas un défaut qui l'a fait partir, c'est un choix
+   * d'écran.
    *
-   * **Ce n'est pas un arrêt.** `MediaRecorder.pause()` garde les morceaux déjà
-   * captés et la session ouverte : la reprise poursuit LE MÊME fichier. Arrêter
-   * puis redémarrer produirait deux enregistrements, et le second écraserait le
-   * premier — le patron perdrait la moitié de ce qu'il a dit sans le savoir.
+   * **Elle n'est pas gardée « au cas où »** (`CLAUDE.md` §3) : un geste que
+   * plus aucun écran n'emploie finit rebranché au hasard, et la pause a une
+   * conséquence qu'il faut assumer devant lui — un enregistrement suspendu ne
+   * se voit pas. Si elle revient, elle revient avec son bouton et son dessin.
+   *
+   * **Le piège, si on la remet :** ne jamais l'écrire en `arreter()` puis
+   * `demarrer()`. Cela produirait deux enregistrements, et le second
+   * écraserait le premier — il perdrait la moitié de ce qu'il a dit sans le
+   * savoir.
    */
-  const basculerSuspension = useCallback(() => {
-    const recorder = recorderRef.current;
-    if (!recorder) return;
-    if (recorder.state === "recording") {
-      recorder.pause();
-      setSuspendu(true);
-    } else if (recorder.state === "paused") {
-      recorder.resume();
-      setSuspendu(false);
-    }
-  }, []);
 
   /**
    * Jette : on arrête tout, et **rien ne part**.
@@ -192,7 +188,6 @@ export function useMagnetophone() {
     recorderRef.current = null;
     fermerLEcoute();
     setSecondes(0);
-    setSuspendu(false);
     setEnregistre(false);
   }, [fermerLEcoute]);
 
@@ -211,21 +206,18 @@ export function useMagnetophone() {
     streamRef.current = null;
     recorderRef.current = null;
     fermerLEcoute();
-    setSuspendu(false);
     setEnregistre(false);
     return { blob, secondes: dureeFinale };
   }, [secondes, fermerLEcoute]);
 
   return {
     enregistre,
-    suspendu,
     secondes,
     erreur,
     setErreur,
     demarrer,
     arreter,
     jeter,
-    basculerSuspension,
     niveau,
   };
 }

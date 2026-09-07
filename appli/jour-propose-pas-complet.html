@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Un jour proposé n’est pas un jour complet</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA REMARQUE DU 31 AOÛT 2026, capture à l'appui.
+
+  *« Écrit deux chantiers par jour, planning complet, et met le petit carré
+  vert foncé avec écrit "complet" du planning. Ne code rien, fais-moi un
+  visuel. »*
+
+  ─── Ce qu'il a vu, et il a raison ────────────────────────────────────────
+
+  Ses réglages disent DEUX chantiers par jour ; son planning de septembre est
+  VIDE. Il propose le 2 et le 3 à une cliente — et les deux cases se peignent
+  en vert foncé plein. Or la légende, juste dessous, appelle ce vert-là
+  « complet ». Deux journées entièrement libres s'affichent donc exactement
+  comme deux journées où il ne reste plus personne à envoyer.
+
+  Ce n'est pas un défaut de calcul : `src/lib/planning-jour.ts` rend bien
+  « libre » pour ces deux jours-là. C'est la MÊME COULEUR employée pour deux
+  choses qui n'ont rien à voir (`src/components/atlas/MoisCharge.tsx`) :
+
+    · `fondDeLEtat("plein")` → colors.rust    (la charge : complet)
+    · `retenus.has(jour)`    → colors.rust    (le choix : proposé au client)
+
+  Et le remplissage coûte une seconde chose, plus grave : les deux barres du
+  jour — matin dessus, après-midi dessous — disparaissent sous l'aplat. Le
+  jour qu'il vient de proposer devient le seul du mois dont il ne peut plus
+  lire la charge. C'est précisément ce que la planche 91 avait apporté.
+
+  ─── Ce que cette planche montre ──────────────────────────────────────────
+
+  Le même écran d'envoi, dans trois états, à comparer d'un doigt :
+
+    · AUJOURD'HUI — ce qu'il a photographié : le jour proposé est peint en
+      plein, de la couleur de « complet » ;
+    · LE POINT — le jour proposé garde son fond clair et ses deux barres, et
+      reçoit un point vert dans le coin. La légende gagne « proposé » ;
+    · LA PASTILLE — même chose, mais c'est le CHIFFRE qui entre dans un
+      disque vert ; les deux barres restent lisibles dessous.
+
+  Un troisième essai a été écarté avant de lui être montré : entourer la case
+  d'un liseré vert. Vu à l'écran, il se confond avec le liseré noir de la case
+  qu'on vient de toucher — trois cases entourées à la suite. C'est très
+  exactement ce qu'il a signalé le 23 août 2026 : *« je ne comprends pas
+  pourquoi le 22 reste sélectionné, ce n'est pas très clair »*.
+
+  Aucun des trois ne touche au calcul : la charge affichée est la même dans
+  les trois, et c'est celle de l'application.
+
+  ─── Ce qui a été écarté, et pourquoi ─────────────────────────────────────
+
+  Garder l'aplat et ajouter simplement « proposé » à la légende : le vert
+  foncé y voudrait alors dire deux choses selon la case, et les barres
+  resteraient noyées. Une légende ne rattrape pas une couleur qui ment.
+
+  Les jours de démonstration sont posés à partir d'AUJOURD'HUI, quel que soit
+  le jour où il ouvre la page — une planche qui montre un mois périmé se lit
+  comme une planche fausse.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.5}
+  .bandeau b{color:#fff}
+
+  .choix{position:sticky;top:0;z-index:9;display:flex;gap:8px;justify-content:center;
+         padding:10px 12px;background:#e6e3dc;border-bottom:1px solid var(--trait)}
+  .choix button{border:1px solid var(--trait);background:transparent;border-radius:99px;
+                padding:9px 15px;font:600 12.5px/1 ui-sans-serif,sans-serif;color:var(--gris);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--papier);border-color:var(--or);color:var(--encre)}
+
+  /* ── Les deux cases côte à côte : tout le sujet en un coup d'œil ────── */
+  .face-a-face{max-width:430px;margin:16px auto 0;padding:14px 18px 16px;background:var(--fond);
+               border-radius:18px;display:flex;justify-content:center;gap:34px;text-align:center}
+  .face-a-face .col{width:70px}
+  .face-a-face .col p{margin:8px 0 0;font-size:11px;color:var(--gris);line-height:1.3}
+  .face-a-face .col b{display:block;font-size:11.5px;color:var(--encre)}
+
+  .tel{max-width:430px;margin:14px auto 0;background:var(--fond);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18)}
+
+  .feuille-tete{padding:22px 18px 0;text-align:center}
+  .feuille-tete h1{margin:0;font:400 24px/1.15 ui-serif,Georgia,serif}
+  .caps{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+  .bloc{margin:18px 18px 0}
+  .bloc > .caps{display:block;margin-bottom:8px;text-align:center}
+  .cadre{border-radius:10px;background:var(--plage);padding:12px}
+
+  /* ── Le calendrier, recopié de `appli/planning-simple.html` ─────────── */
+  .fleche{width:34px;height:34px;border:0;background:transparent;border-radius:999px;
+          font-size:18px;color:var(--encre-douce);cursor:pointer;flex-shrink:0}
+  .mois-tete{margin:0 6px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .mois-tete b{flex:1;text-align:center;font:700 15px/1.2 ui-sans-serif,sans-serif}
+
+  .entete-jours{margin:16px 0 6px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;
+                font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.1em;text-transform:uppercase;
+                color:var(--gris);text-align:center}
+  .entete-jours .we{color:rgba(28,28,26,.3)}
+  .mois{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .creux{aspect-ratio:1/1.06}
+  .case{position:relative;border:0;background:transparent;padding:0;cursor:pointer;border-radius:10px;
+        aspect-ratio:1/1.06;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+  .case.we{background:rgba(28,28,26,.035)}
+  .case[aria-pressed="true"]{background:var(--papier);box-shadow:inset 0 0 0 1.5px var(--encre)}
+  .case.aujourdhui{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .case .n{font:400 17px/1 ui-serif,Georgia,serif;color:var(--encre)}
+  .case.we .n{color:rgba(28,28,26,.42)}
+  .case.aujourdhui .n{color:var(--or);font-weight:600}
+  .case.passe .n{color:rgba(28,28,26,.3)}
+
+  .marqueA{width:24px;display:flex;flex-direction:column;gap:2.5px}
+  .marqueA i{height:6px;border-radius:2px;background:var(--plage);
+             box-shadow:inset 0 0 0 1px var(--trait);overflow:hidden;display:flex}
+  .marqueA .seg{height:100%}
+  .marqueA .seg.dispo{background:var(--pale)}
+  .marqueA .seg.plein{background:var(--pin)}
+  .marqueA .seg.dela{background:var(--bordeaux)}
+  .case.we .marqueA{visibility:hidden}
+
+  /* Le point du coin : posé en absolu, il ne déplace rien quand il apparaît. */
+  .case .point{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:99px;
+               background:var(--pin);display:none}
+
+  /* ── AUJOURD'HUI : le jour proposé est peint en plein ───────────────── */
+  body[data-vue="avant"] .case.retenu{background:var(--pin);box-shadow:none}
+  body[data-vue="avant"] .case.retenu .n{color:#faf9f5}
+  body[data-vue="avant"] .case.retenu .marqueA i{background:rgba(250,249,245,.22);box-shadow:none}
+
+  /* ── LE POINT : fond clair, barres lisibles, un point dans le coin ──── */
+  body[data-vue="point"] .case.retenu{background:var(--papier);box-shadow:none}
+  body[data-vue="point"] .case.retenu .point{display:block}
+
+  /* ── LA PASTILLE : le chiffre dans un disque vert, les barres intactes ─ */
+  body[data-vue="pastille"] .case.retenu{background:transparent;box-shadow:none}
+  body[data-vue="pastille"] .case.retenu .n{background:var(--pin);color:#faf9f5;
+    width:25px;height:25px;border-radius:99px;display:flex;align-items:center;justify-content:center}
+
+  .legende{margin:14px 8px 0;display:flex;flex-wrap:nowrap;gap:6px;justify-content:center;
+           font-size:9px;color:var(--gris)}
+  .legende > span{flex-shrink:0;white-space:nowrap;display:flex;align-items:center;gap:5px}
+  .legende .carre{width:10px;height:10px;border-radius:3px;display:block;flex-shrink:0;
+                  background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .legende .carre.dispo{background:var(--pale);box-shadow:none}
+  .legende .carre.plein{background:var(--pin);box-shadow:none}
+  .legende .carre.dela{background:var(--bordeaux);box-shadow:none}
+  .legende .carre.propose-point{background:var(--papier);box-shadow:none;position:relative}
+  .legende .carre.propose-point::after{content:"";position:absolute;top:1px;right:1px;width:4px;height:4px;
+                                       border-radius:99px;background:var(--pin)}
+  /* Le disque est ROND quand les quatre états de charge sont carrés : la forme
+     dit à elle seule qu'on ne parle plus de la même chose. */
+  .legende .carre.propose-pastille{background:var(--pin);box-shadow:none;border-radius:99px}
+  .legende .annote{display:flex;align-items:center;gap:7px}
+  .legende .annote .marqueA{flex-shrink:0;align-items:stretch}
+  .legende .annote .mots{display:flex;flex-direction:column;gap:2.5px;line-height:1}
+  .legende .annote .mots b{height:6px;display:flex;align-items:center;font-weight:600;
+                           font-size:9.5px;color:var(--encre-douce)}
+
+  .retour-aujourdhui{margin:12px auto 0;display:block;border:0;background:transparent;cursor:pointer;
+                     font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;
+                     color:var(--or)}
+  .retour-aujourdhui[hidden]{display:none}
+
+  /* ── La fiche du jour ───────────────────────────────────────────────── */
+  .jour-ouvert{margin:14px 0 0;padding:14px 15px;border-radius:10px;background:var(--plage)}
+  .jour-ouvert .titre{font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+                      text-transform:uppercase;text-align:center;color:var(--encre);margin-bottom:14px}
+  .jour-ouvert .dit{margin:0;text-align:center;font-size:13px;color:var(--gris)}
+  .ligne-chantier{margin-bottom:12px}
+  .ligne-chantier:last-of-type{margin-bottom:0}
+  .ligne-chantier .nom{font:400 18px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .ligne-chantier .ou{display:block;font:400 12.5px/1.3 ui-sans-serif,sans-serif;color:var(--gris)}
+  .demi{display:flex;align-items:center;gap:8px;margin-top:7px}
+  .demi .mot{width:74px;flex-shrink:0;font:600 10px/1.15 ui-sans-serif,sans-serif;
+             letter-spacing:.06em;text-transform:uppercase;color:var(--encre)}
+  .demi .equipe{flex-shrink:0;border-radius:999px;padding:5px 11px;font-size:12.5px;
+                background:var(--pin);color:#faf9f5;white-space:nowrap}
+  .demi .compte{margin-left:auto;font-size:12px;color:var(--gris)}
+  .pastille{width:11px;height:11px;border-radius:3px;display:inline-block;flex-shrink:0;
+            background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .pastille.dispo{background:var(--pale);box-shadow:none}
+  .pastille.plein{background:var(--pin);box-shadow:none}
+  .pastille.dela{background:var(--bordeaux);box-shadow:none}
+
+  .verdict{margin-top:14px;padding-top:12px;border-top:1px solid var(--trait-doux);
+           font-size:13px;line-height:1.35;color:var(--encre-douce)}
+  .verdict.non{color:var(--bordeaux)}
+  .alternative{margin:10px 0 0;text-align:center;font-size:13px}
+  .alternative button{border:0;background:transparent;padding:0;font:500 13px/1.3 inherit;
+                      color:var(--pin);text-decoration:underline;cursor:pointer}
+
+  .liste{margin:16px 18px 0;display:flex;flex-direction:column;gap:6px}
+  .liste button{display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;
+                border-radius:99px;padding:13px 16px;background:var(--papier);color:var(--encre);
+                font:15px/1.2 inherit;cursor:pointer;text-align:left}
+  .liste button .dit{font-size:13px;font-weight:500;color:var(--pin);flex-shrink:0}
+
+  .principal{margin:18px 18px 26px;width:calc(100% - 36px);border:0;border-radius:99px;
+             background:var(--pin);color:#fff;padding:16px 20px;font-family:ui-serif,Georgia,serif;
+             font-size:17px;cursor:pointer}
+
+  .note{max-width:430px;margin:16px auto 0;padding:0 20px;font-size:12.5px;line-height:1.6;color:#5b564c}
+  .note b{color:#2b2820}
+  .note + .note{margin-top:10px}
+</style>
+</head>
+<body data-vue="avant">
+
+<p class="bandeau">
+  <b>Deux chantiers par jour, un planning vide</b> — et pourtant les jours que vous proposez
+  se peignent du vert que la légende appelle « complet ».
+  <b>Ils ne sont pas complets : ils sont proposés.</b>
+  Touchez les jours, changez de mois, comparez les trois. <b>Rien n’est codé.</b>
+</p>
+
+<nav class="choix" aria-label="Les trois versions">
+  <button type="button" data-vue="avant" aria-pressed="true">Aujourd’hui</button>
+  <button type="button" data-vue="point" aria-pressed="false">Le point</button>
+  <button type="button" data-vue="pastille" aria-pressed="false">La pastille</button>
+</nav>
+
+<!-- Les deux cases côte à côte : à gauche une journée réellement complète, à
+     droite une journée vide que vous proposez. Aujourd'hui, elles sont
+     identiques. -->
+<div class="face-a-face" id="face-a-face"></div>
+
+<div class="tel">
+  <div class="feuille-tete">
+    <h1>Envoyer à Madame Lucie</h1>
+  </div>
+
+  <div class="bloc">
+    <span class="caps">Proposez une ou deux dates</span>
+    <div class="cadre" id="calendrier"></div>
+    <div id="fiche"></div>
+  </div>
+
+  <div class="liste" id="liste"></div>
+
+  <button class="principal" type="button">Envoyer le devis</button>
+</div>
+
+<p class="note">
+  <b>Ce que la couleur dit aujourd’hui.</b> Le même vert sert à deux choses :
+  la charge d’une journée (« complet ») et votre choix (« proposé »).
+  Et l’aplat recouvre les deux barres — le jour que vous venez de proposer devient
+  le seul du mois dont vous ne pouvez plus lire la charge.
+</p>
+<p class="note">
+  <b>Écarté :</b> garder l’aplat et ajouter « proposé » à la légende. Le vert voudrait
+  alors dire deux choses selon la case, et les barres resteraient noyées.
+</p>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   Les règles de charge sont celles de l'application (`src/lib/planning-jour.ts`)
+   — recopiées ici parce qu'une maquette ne peut pas l'importer, et tenues en
+   une seule fonction pour qu'on voie tout de suite qu'elles n'ont pas dérivé :
+
+     charge = équipes mobilisées ÷ nombre d'équipes
+     libre  : rien              dispo : charge < 1
+     plein  : charge = 1        au-delà : charge > 1
+
+   AUCUNE des trois vues ne touche à ce calcul : la charge affichée est la
+   même partout. Seule change la façon de marquer un jour PROPOSÉ.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const EQUIPES = 2;                  /* ses réglages : deux chantiers par jour */
+const JOURS_COURTS = ["L","M","M","J","V","S","D"];
+const MOIS_LONGS = ["janvier","février","mars","avril","mai","juin","juillet","août",
+                    "septembre","octobre","novembre","décembre"];
+const JOURS_LONGS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+
+const $ = (s) => document.querySelector(s);
+const iso = (d) => d.toISOString().slice(0,10);
+const enDate = (j) => new Date(j + "T00:00:00Z");
+const plus = (d,n) => { const x = new Date(d); x.setUTCDate(x.getUTCDate()+n); return x; };
+const estWeekEnd = (d) => d.getUTCDay() === 0 || d.getUTCDay() === 6;
+
+const MAINTENANT = new Date();
+const AUJOURDHUI = iso(new Date(Date.UTC(
+  MAINTENANT.getFullYear(), MAINTENANT.getMonth(), MAINTENANT.getDate())));
+
+/* Le premier jour proposable : le surlendemain, comme sur son écran — un jour
+   annoncé le matin pour le lendemain ne laisse pas le temps de répondre. */
+const PREMIER = iso(plus(enDate(AUJOURDHUI), 2));
+
+/* Le prochain jour ouvré à partir d'un décalage : les chantiers de
+   démonstration ne tombent jamais un dimanche, ce qui se lirait comme faux. */
+function ouvre(decalage){
+  let d = plus(enDate(AUJOURDHUI), decalage);
+  while (estWeekEnd(d)) d = plus(d, 1);
+  return iso(d);
+}
+
+/* Ses chantiers déjà posés : un jour VRAIMENT complet, et un jour à moitié
+   pris. Sans eux, la planche ne montrerait aucun vert « complet » à comparer. */
+const POSES = [
+  { id:1, jour: ouvre(6), demis:["matin","apres_midi"], nom:"M. Bernard", ou:"Vertou",   equipe:"Julien" },
+  { id:2, jour: ouvre(6), demis:["matin","apres_midi"], nom:"Mme Renard", ou:"Basse-Goulaine", equipe:"Antoine" },
+  { id:3, jour: ouvre(8), demis:["matin"],              nom:"M. Leroy",   ou:"Saint-Sébastien", equipe:"Julien" },
+];
+
+const posesDe = (jour, demi) => POSES.filter((c) => c.jour === jour && c.demis.includes(demi));
+const occupationDe = (jour, demi) => {
+  const pris = posesDe(jour, demi);
+  return { pris, charge: pris.length / Math.max(1, EQUIPES) };
+};
+function etatDemi(o){
+  if (o.pris.length === 0 && o.charge === 0) return "libre";
+  if (o.charge < 1) return "dispo";
+  return o.charge === 1 ? "plein" : "dela";
+}
+const partDeLaBarre = (charge) => Math.round(Math.min(charge,1) * 100);
+function compteLisible(o){
+  if (o.pris.length === 0) return "libre";
+  const t = o.pris.length + " chantier" + (o.pris.length > 1 ? "s" : "");
+  if (o.charge > 1) return t + " · " + Math.round(o.charge*100) + " % de vos équipes";
+  if (o.charge === 1) return t + " · complet";
+  return t;
+}
+function jourLisible(j){
+  const d = enDate(j);
+  return JOURS_LONGS[(d.getUTCDay()+6)%7] + " " + d.getUTCDate() + " " + MOIS_LONGS[d.getUTCMonth()];
+}
+
+/* ── L'état de l'écran ──────────────────────────────────────────────────── */
+const dPremier = enDate(PREMIER);
+let curseur = { annee: dPremier.getUTCFullYear(), mois: dPremier.getUTCMonth() };
+/* Deux dates déjà proposées, comme sur sa capture. */
+const selection = new Set([PREMIER, iso(plus(dPremier, 1))]);
+/* La fiche s'ouvre sur le jour trop proche : c'est l'écran qu'il a photographié. */
+let touche = iso(plus(enDate(AUJOURDHUI), 1));
+
+function barre(o, quoi){
+  const e = etatDemi(o);
+  return '<i data-demi="'+quoi+'"><span class="seg '+e+'" style="width:'+partDeLaBarre(o.charge)+'%"></span></i>';
+}
+function marque(jour){
+  return '<span class="marqueA">' + barre(occupationDe(jour,"matin"),"matin")
+       + barre(occupationDe(jour,"apres_midi"),"apres_midi") + '</span>';
+}
+
+function grille(annee, mois){
+  const premier = new Date(Date.UTC(annee, mois, 1));
+  const decalage = (premier.getUTCDay() + 6) % 7;
+  const cases = [];
+  for (let i = 0; i < decalage; i++) cases.push(null);
+  const fin = new Date(Date.UTC(annee, mois + 1, 0)).getUTCDate();
+  for (let n = 1; n <= fin; n++) cases.push(iso(new Date(Date.UTC(annee, mois, n))));
+  while (cases.length % 7 !== 0) cases.push(null);
+  return cases;
+}
+
+function dessinerCalendrier(){
+  const cases = grille(curseur.annee, curseur.mois);
+  const surLeMois = enDate(AUJOURDHUI).getUTCFullYear() === curseur.annee
+                 && enDate(AUJOURDHUI).getUTCMonth() === curseur.mois;
+  $("#calendrier").innerHTML =
+    '<div class="mois-tete">'
+    + '<button class="fleche" type="button" data-mois="-1" aria-label="Mois précédent">‹</button>'
+    + '<b>' + MOIS_LONGS[curseur.mois] + ' ' + curseur.annee + '</b>'
+    + '<button class="fleche" type="button" data-mois="1" aria-label="Mois suivant">›</button>'
+    + '</div>'
+    + '<div class="entete-jours">' + JOURS_COURTS.map((j,i) =>
+        '<span' + (i>=5 ? ' class="we"' : '') + '>' + j + '</span>').join("") + '</div>'
+    + '<div class="mois">' + cases.map((j) => {
+        if (!j) return '<span class="creux"></span>';
+        const d = enDate(j);
+        const classes = ["case"];
+        if (estWeekEnd(d)) classes.push("we");
+        if (j === AUJOURDHUI) classes.push("aujourdhui");
+        if (j < AUJOURDHUI) classes.push("passe");
+        if (selection.has(j)) classes.push("retenu");
+        return '<button type="button" class="' + classes.join(" ") + '" data-jour="' + j + '"'
+             + ' aria-pressed="' + (j === touche) + '"'
+             + ' aria-label="' + d.getUTCDate() + ' ' + MOIS_LONGS[curseur.mois]
+             + (selection.has(j) ? ' — proposé au client' : '') + '">'
+             + '<span class="n">' + d.getUTCDate() + '</span>' + marque(j)
+             + '<span class="point"></span></button>';
+      }).join("") + '</div>'
+    + '<button class="retour-aujourdhui" type="button" data-retour' + (surLeMois ? " hidden" : "") + '>← Aujourd’hui</button>'
+    + legende();
+}
+
+function legende(){
+  const vue = document.body.dataset.vue;
+  const mots = [["libre","rien"],["dispo","incomplet"],["plein","complet"],["dela","au-delà"]];
+  let html = mots.map(([e,m]) => '<span><i class="carre ' + (e==="libre"?"":e) + '"></i> ' + m + '</span>').join("");
+  if (vue === "point")   html += '<span><i class="carre propose-point"></i> proposé</span>';
+  if (vue === "pastille") html += '<span><i class="carre propose-pastille"></i> proposé</span>';
+  html += '<span class="annote"><span class="marqueA">'
+        + '<i></i><i></i></span><span class="mots"><b>matin</b><b>après-midi</b></span></span>';
+  return '<div class="legende">' + html + '</div>';
+}
+
+function dessinerFiche(){
+  if (!touche) { $("#fiche").innerHTML = ""; return; }
+  const parNom = [];
+  for (const demi of ["matin","apres_midi"]) {
+    for (const c of posesDe(touche, demi)) {
+      const deja = parNom.find((b) => b.c.id === c.id);
+      if (deja) deja.demis.push(demi); else parNom.push({ c, demis:[demi] });
+    }
+  }
+  const corps = parNom.length === 0
+    ? '<p class="dit">Personne. La journée est entière.</p>'
+    : parNom.map(({c,demis}) =>
+        '<div class="ligne-chantier"><span class="nom">' + c.nom
+        + '<span class="ou">' + c.ou + '</span></span>'
+        + demis.map((d) => '<div class="demi"><span class="mot">'
+            + (d==="matin"?"Matin":"Après-midi") + '</span><span class="equipe">' + c.equipe + '</span></div>').join("")
+        + '</div>').join("");
+
+  const comptes = ["matin","apres_midi"].map((d) => {
+    const o = occupationDe(touche, d);
+    return '<div class="demi"><span class="mot">' + (d==="matin"?"Matin":"Après-midi") + '</span>'
+         + '<span class="pastille ' + (etatDemi(o)==="libre"?"":etatDemi(o)) + '"></span>'
+         + '<span class="compte">' + compteLisible(o) + '</span></div>';
+  }).join("");
+
+  const tropProche = touche < PREMIER;
+  const verdict = tropProche
+    ? '<p class="verdict non">Ce jour est trop proche. Le premier possible est le ' + jourLisible(PREMIER) + '.</p>'
+      + '<p class="alternative"><button type="button" data-jour="' + PREMIER + '">Proposer le ' + jourLisible(PREMIER) + '</button></p>'
+    : selection.has(touche)
+      ? '<p class="verdict">Proposé à votre cliente. Retouchez le jour pour le retirer.</p>'
+      : '';
+
+  $("#fiche").innerHTML = '<div class="jour-ouvert"><p class="titre">' + jourLisible(touche)
+    + '</p>' + corps + comptes + verdict + '</div>';
+}
+
+function dessinerListe(){
+  const jours = [...selection].sort();
+  $("#liste").innerHTML = jours.map((j) =>
+    '<button type="button" data-jour="' + j + '"><span>' + jourLisible(j)
+    + '</span><span class="dit">proposée</span></button>').join("");
+}
+
+/* Les deux cases côte à côte, hors du téléphone : une journée réellement
+   complète, et une journée vide qu'on propose. */
+function dessinerFaceAFace(){
+  const complet = ouvre(6);
+  const propose = PREMIER;
+  const caseSeule = (jour, retenu, num) =>
+    '<span class="case' + (retenu ? " retenu" : "") + '" style="width:52px;margin:0 auto;display:flex">'
+    + '<span class="n">' + num + '</span>' + marque(jour) + '<span class="point"></span></span>';
+  $("#face-a-face").innerHTML =
+      '<span class="col">' + caseSeule(complet, false, enDate(complet).getUTCDate())
+    + '<p><b>complet</b>2 chantiers</p></span>'
+    + '<span class="col">' + caseSeule(propose, true, enDate(propose).getUTCDate())
+    + '<p><b>proposé</b>personne</p></span>';
+}
+
+function tout(){ dessinerCalendrier(); dessinerFiche(); dessinerListe(); dessinerFaceAFace(); }
+
+/* Toucher un jour l'ouvre ET le propose — sa demande du 25 août 2026 :
+   « je dois pouvoir sélectionner les jours juste en les touchant ». Un jour
+   trop proche s'ouvre quand même : c'est là qu'on lit pourquoi il est refusé. */
+function toucher(jour){
+  touche = jour;
+  if (jour >= PREMIER) {
+    if (selection.has(jour)) selection.delete(jour); else selection.add(jour);
+  }
+  tout();
+}
+
+document.addEventListener("click", (e) => {
+  const vue = e.target.closest("[data-vue]");
+  if (vue && vue.tagName === "BUTTON") {
+    document.body.dataset.vue = vue.dataset.vue;
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b === vue)));
+    tout();
+    return;
+  }
+  const mois = e.target.closest("[data-mois]");
+  if (mois) {
+    const pas = Number(mois.dataset.mois);
+    let m = curseur.mois + pas, a = curseur.annee;
+    if (m < 0) { m = 11; a--; } if (m > 11) { m = 0; a++; }
+    curseur = { annee:a, mois:m };
+    dessinerCalendrier();
+    return;
+  }
+  if (e.target.closest("[data-retour]")) {
+    const d = enDate(AUJOURDHUI);
+    curseur = { annee:d.getUTCFullYear(), mois:d.getUTCMonth() };
+    dessinerCalendrier();
+    return;
+  }
+  const j = e.target.closest("[data-jour]");
+  if (j) toucher(j.dataset.jour);
+});
+
+tout();
+</script>
+</body>
+</html>

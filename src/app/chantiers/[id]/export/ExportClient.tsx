@@ -230,8 +230,8 @@ export default function ExportClient({
                 type="button"
                 onClick={reprendre}
                 disabled={reprise}
-                className="mt-4 block w-full rounded-full py-3 text-[15px] font-medium text-white disabled:opacity-50"
-                style={{ backgroundColor: colors.rust }}
+                className="atlas-plein mt-4 block w-full rounded-full py-3 text-[15px] font-medium text-white disabled:opacity-50"
+                style={{ backgroundColor: colors.plein }}
               >
                 {reprise
                   ? "Reprise…"
@@ -335,8 +335,8 @@ function AvertissementModification({
           type="button"
           onClick={onConfirmer}
           disabled={enCours}
-          className="mt-6 block w-full rounded-full py-3 text-center text-[15px] font-medium text-white disabled:opacity-50"
-          style={{ backgroundColor: colors.rust }}
+          className="atlas-plein mt-6 block w-full rounded-full py-3 text-center text-[15px] font-medium text-white disabled:opacity-50"
+          style={{ backgroundColor: colors.plein }}
         >
           {enCours ? "Ouverture…" : "Modifier quand même"}
         </button>
@@ -419,7 +419,7 @@ function EcranDevisParti({
           lui demander de deviner ce qu'il doit changer. */}
       {messageClient && (
         <blockquote
-          className="mt-4 whitespace-pre-wrap pl-3 text-[14px] leading-relaxed"
+          className="mt-4 whitespace-pre-wrap break-words pl-3 text-[14px] leading-relaxed"
           style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
         >
           « {messageClient} »

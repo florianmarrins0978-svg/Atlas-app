@@ -64,7 +64,10 @@ export default async function FichePage({ params }: { params: Promise<{ id: stri
         }}
         origine={origine}
         entrepriseNom={entrepriseNom}
-        modeleMessage={entreprise?.messageClient ?? null}
+        // **Le message du COMPTE RENDU de passage (migration 0075).** C'est le
+        // troisième document, celui qu'on a failli laisser sur le texte d'Atlas
+        // pendant que les deux autres portaient sa voix.
+        modeleMessage={entreprise?.messageClientPassage ?? null}
         // **Les coordonnées partent avec la liste, et ce n'est pas du confort.**
         // La fiche s'ouvre sans client : celles du passage sont donc vides, et
         // le rester après qu'il a nommé quelqu'un ferait ouvrir un message SANS

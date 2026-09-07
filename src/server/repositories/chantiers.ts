@@ -1,4 +1,4 @@
-import { and, eq, isNull, isNotNull, or, sql, desc } from "drizzle-orm";
+import { and, eq, gte, isNull, isNotNull, or, sql, desc } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { NOTE_MAX } from "../../lib/note-chantier";
 import { equipesParChantier } from "./occupation-chantiers";
@@ -13,6 +13,7 @@ import {
 import { absencesEquipe, equipes } from "../db/schema";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { departEtDuree, type QuandChantier } from "../../lib/planning-jour";
+import { seuilMemoireCalendrier } from "../../lib/onglet-chantier";
 import type { Ctx } from "./context";
 
 /**
@@ -708,10 +709,29 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
       // date doit se voir dans « Sans date » —, mais il n'en est plus le SEUL :
       // une date posée suffit. Rien de ce qui occupe une journée ne peut plus
       // rester invisible.
+      //
+      // **ET UNE BORNE BASSE, DEPUIS LE 31 AOÛT 2026.** Cette liste n'en avait
+      // AUCUNE : tous les chantiers datés depuis la création de l'entreprise
+      // descendaient dans son téléphone à chaque ouverture du planning, et
+      // l'écran les jetait aussitôt sans rien en montrer. Un poids qui grossit
+      // pour toujours, au service de rien.
+      //
+      // Le calendrier garde désormais deux ans (`MEMOIRE_CALENDRIER_JOURS`,
+      // son choix du 31 août) : la requête s'arrête au même jour que l'écran,
+      // et pas un jour plus tôt — sinon un chantier serait chargé sans être
+      // peint, ou peint sans être chargé. Au-delà, la mémoire longue est
+      // « Terminés », qui a sa propre requête.
+      //
+      // **Un chantier SANS date passe toujours** : c'est « Sans date » et
+      // « En attente du client », qui ne dépendent d'aucun jour.
       .where(
         and(
           isNull(chantiers.deletedAt),
-          or(isNotNull(chantiers.devisEnvoyeAt), isNotNull(chantiers.datePlanifiee))
+          or(isNotNull(chantiers.devisEnvoyeAt), isNotNull(chantiers.datePlanifiee)),
+          or(
+            isNull(chantiers.datePlanifiee),
+            gte(chantiers.datePlanifiee, seuilMemoireCalendrier())
+          )
         )
       );
 

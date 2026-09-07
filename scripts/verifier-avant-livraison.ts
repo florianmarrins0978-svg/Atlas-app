@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { rmSync } from "node:fs";
 
 // La batterie complète, à jouer AVANT de demander au patron d'essayer quoi que
 // ce soit.
@@ -52,9 +53,31 @@ const SANS_CLES_IA = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "
 // explicite, qui garantit le mode déterministe quoi qu'il y ait sur le disque.
 const IA_COUPEE = { LLM_PROVIDER: "dev", TRANSCRIPTION_PROVIDER: "dev" };
 
-const APP = "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test";
-const OWNER = "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test";
-const SUPER = "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test";
+/**
+ * Les trois adresses de la base d'essai — celles de la CI par défaut, et
+ * SURCHARGEABLES par l'environnement.
+ *
+ * **Pourquoi elles ne sont plus écrites en dur — 4 septembre 2026.** Sur le
+ * poste du patron (Windows, base dans Docker), le rôle `postgres` répond à
+ * `postgres_dev_pw`, jamais à `postgres_ci_pw`. Les trois dernières étapes
+ * tombaient donc TOUJOURS, quel que soit le code — « Données de démonstration »
+ * sur un `auth_failed`, puis les suites navigateur et la connexion faute de jeu
+ * de démonstration. Et l'écran de connexion accusait alors le produit : *« un
+ * service d'Atlas ne répond pas »*.
+ *
+ * Une batterie qui ne peut pas être verte est pire qu'absente : on s'habitue à
+ * son rouge, et le jour où il dit vrai, personne ne le lit. Trois sessions ont
+ * rejoué ces étapes à la main ce jour-là.
+ *
+ * **Le défaut ne bouge pas d'un caractère** : la CI ne pose aucune de ces
+ * variables et retombe exactement sur ce qu'elle avait. Ce qui change, c'est
+ * qu'une machine dont les mots de passe diffèrent peut enfin les dire.
+ */
+const adresse = (nom: string, defaut: string) => process.env[nom]?.trim() || defaut;
+
+const APP = adresse("ATLAS_BASE_APP", "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test");
+const OWNER = adresse("ATLAS_BASE_OWNER", "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test");
+const SUPER = adresse("ATLAS_BASE_SUPER", "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test");
 
 const ETAPES: Etape[] = [
   {
@@ -171,12 +194,51 @@ const ETAPES: Etape[] = [
 
 const echecs: Etape[] = [];
 
+/**
+ * Le dossier de la construction, effacé AVANT de commencer.
+ *
+ * **Payé le 5 septembre 2026, et c'est la deuxième fois que ce piège se
+ * referme.** L'étape « Types » passe la PREMIÈRE ; « Construction » écrit dans
+ * `.next-verification`. À la batterie suivante, `tsc` relit donc le validateur
+ * de routes laissé par la précédente — `tsconfig.json` l'inclut exprès — et
+ * rend quatre erreurs (`Type 'Route' does not satisfy the constraint 'never'`)
+ * sur du code que personne n'a touché.
+ *
+ * Le rouge accuse alors les types, c'est-à-dire le lot en cours, et il est
+ * INSOLUBLE : rien dans `src/` ne le fait bouger. Une batterie qui ne peut pas
+ * être verte s'apprend à être ignorée — la même phrase qu'au 4 septembre, pour
+ * la même raison.
+ *
+ * On l'efface plutôt que de l'exclure de `tsconfig.json` : Next réécrit cette
+ * liste tout seul (`test-tsconfig-sans-restes-dev.ts` le raconte), et une
+ * exclusion qui se remet d'elle-même n'en est pas une. La construction le
+ * recrée trois lignes plus bas.
+ */
+rmSync(".next-verification", { recursive: true, force: true });
+
 for (const etape of ETAPES) {
   console.log(`\n\x1b[1m→ ${etape.nom}\x1b[0m`);
   const env = { ...process.env, ...(etape.env ?? {}) };
   for (const cle of etape.envSupprime ?? []) delete env[cle];
 
-  const r = spawnSync(etape.commande, etape.args, { stdio: "inherit", env });
+  // **`shell` sous Windows, et rien d'autre — 2 septembre 2026.**
+  //
+  // Sur Windows, `npm` et `npx` sont des fichiers `.cmd` : `spawnSync` ne sait
+  // pas les lancer sans passer par l'interpréteur, et rend ENOENT. La batterie
+  // affichait alors **les neuf étapes en échec d'un coup, en une seconde**, y
+  // compris « Types » et « Lint » qui passent quand on les joue à la main —
+  // c'est-à-dire le pire des verdicts : faux, complet, et instantané.
+  //
+  // Le drapeau reste FAUX partout ailleurs. Sous shell, les arguments sont
+  // ré-interprétés (guillemets, `&`, espaces) : l'activer sur Linux et en CI
+  // changerait le comportement d'étapes qui marchent depuis des mois, pour
+  // corriger un défaut qui ne s'y produit pas. Les arguments passés ici sont de
+  // simples jetons sans espace — la condition tient tant que cela reste vrai.
+  const r = spawnSync(etape.commande, etape.args, {
+    stdio: "inherit",
+    env,
+    shell: process.platform === "win32",
+  });
   if (r.status === 0) {
     console.log(`   ✅ ${etape.nom}`);
   } else {

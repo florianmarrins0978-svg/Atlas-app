@@ -1,4 +1,5 @@
 import type { Ctx } from "../../repositories/context";
+import { indicePourDictee } from "../indice-dictee";
 import {
   getNoteVocale,
   marquerTranscriptionEnCours,
@@ -42,7 +43,9 @@ export async function lancerTranscription(ctx: Ctx, chantierId: string) {
   }
 
   const fournisseur = getFournisseurTranscription();
-  const resultat = await fournisseur.transcrire(octets, note.mimeType);
+  // **Son vocabulaire part AVANT l'écoute** (28 août 2026) : c'est ici qu'il
+  // dicte le plus, et c'est ici que « désherbage » devenait « herbages ».
+  const resultat = await fournisseur.transcrire(octets, note.mimeType, await indicePourDictee(ctx));
 
   if (!resultat.succes) {
     return enregistrerEchecTranscription(ctx, chantierId, resultat.erreur.message);

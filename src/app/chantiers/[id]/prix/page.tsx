@@ -42,8 +42,12 @@ export default async function PrixPage({
           talon, elle mordait sur le coin de « Préparer le devis ». Vu en
           capture, jamais par une suite — le bouton était bien là. */}
       <div className="pb-28">
+        {/* **La flèche HÉRITE de celle de la fiche du chantier**, mot pour mot,
+            depuis que celle-ci a disparu (4 septembre 2026, `ARCHITECTURE.md`
+            §254). Cet écran était à un cran d'elle : il prend sa place, il
+            n'invente pas une destination. */}
         <EnTeteEcran
-          retour={{ href: `/chantiers/${id}`, libelle: "Retour à la fiche du chantier" }}
+          retour={{ href: "/", libelle: "Retour à la liste des chantiers" }}
           surtitre={chantier.nom}
           titre="Prix"
         />

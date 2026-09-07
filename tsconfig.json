@@ -89,7 +89,9 @@
     ".next-vue/types/**/*.ts",
     ".next-vue/dev/types/**/*.ts",
     ".next-diag/types/**/*.ts",
-    ".next-diag/dev/types/**/*.ts"
+    ".next-diag/dev/types/**/*.ts",
+    ".next-batie-neuve/types/**/*.ts",
+    ".next-batie-neuve/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

@@ -109,7 +109,12 @@ async function main() {
       "DESCRIPTION",
       "QTÉ",
       "PRIX UNITAIRE HT",
-      "TOTAL HT",
+      // **L'en-tête de COLONNE et le récapitulatif du bas ne disent plus la
+      // même chose, et c'est voulu.** Sa demande du 30 août 2026 : la colonne
+      // de chaque ligne s'appelle « MONTANT HT », le total général reste
+      // « Total HT ». Les deux se ressemblaient assez pour qu'il les confonde
+      // en lisant son devis — c'est exactement ce qu'il a signalé.
+      "MONTANT HT",
       "Total HT",
       "Total TTC",
       "NOTES / CONDITIONS",
@@ -263,6 +268,80 @@ async function main() {
     assert.ok(!textes.some((t) => t.startsWith("SIRET")), "Un SIRET a été inventé.");
     // Le pied, lui, reste : c'est ce que le client signe.
     assert.ok(textes.includes("Bon pour accord — signature du client"), "Le cadre de signature a disparu.");
+  });
+
+  await cas("une ligne CHIFFRÉE n'affiche jamais « à chiffrer », drapeau ou pas", async () => {
+    // ═══════════════════════════════════════════════════════════════════════
+    // **Sa capture du 31 août 2026, et c'est le pire des trois défauts du
+    // jour.** Son devis portait « à chiffrer » en face du dessouchage et de la
+    // tonte, un seul montant visible (560,00 €) — et un Total HT de
+    // 2 280,00 €. Le document comptait 1 720 € que son tableau refusait de
+    // montrer.
+    //
+    // Un devis bloqué se voit. Un devis dont le total ne correspond pas à ses
+    // lignes PART chez le client : il additionne, n'y arrive pas, et cesse de
+    // croire le reste.
+    //
+    // Le drapeau était resté levé sur des lignes qu'il avait chiffrées ; le
+    // PDF le lisait seul. Un montant posé répond désormais à la question.
+    // ═══════════════════════════════════════════════════════════════════════
+    const { trace } = await composerDevisPdf({
+      ...DEVIS,
+      totalHt: "2280.00",
+      totalTva: "456.00",
+      totalTtc: "2736.00",
+      lignes: [
+        { libelle: "Dessouchage", quantite: "2", unite: "souche", prixUnitaire: "860.00", montant: "1720.00", aChiffrer: true },
+        { libelle: "Démontage en rétention d'un érable", quantite: "1", prixUnitaire: "560.00", montant: "560.00" },
+      ],
+    });
+    const textes = contenus(trace);
+    assert.ok(
+      !textes.includes("à chiffrer"),
+      "Une ligne qui porte 1 720,00 € s'affiche encore « à chiffrer » : le total ne correspond plus au tableau."
+    );
+
+    // **La propriété qui compte, et elle vaut plus qu'une chaîne attendue :**
+    // ce qui est imprimé doit faire le total imprimé. Les montants sont relus
+    // en NOMBRES plutôt que comparés au mot près : le séparateur de milliers
+    // est une espace insécable étroite, invisible dans un fichier source, et un
+    // contrôle qui rougit sur ce caractère-là accuse le mauvais coupable.
+    const montantsLus = textes
+      .filter((t) => /^-?[\d\u202f\u00a0 ]+,\d{2}\s*€$/.test(t))
+      .map((t) => Number(t.replace(/[^\d,]/g, "").replace(",", ".")));
+    assert.ok(
+      montantsLus.includes(2280),
+      "Le Total HT n'a pas été lu — le contrôle ne mesure rien (`CLAUDE.md` §5)."
+    );
+    assert.ok(
+      montantsLus.includes(1720) && montantsLus.includes(560),
+      `Le tableau ne montre pas les deux montants qui font le total. Lus : ${montantsLus.join(", ")}`
+    );
+    // Et ils font bien le total : c'est la contradiction elle-même qu'on
+    // interdit, pas seulement le mot « à chiffrer ».
+    assert.strictEqual(1720 + 560, 2280, "le jeu d'essai ne représente plus sa capture");
+  });
+
+  await cas("une ligne VRAIMENT sans prix dit toujours « à chiffrer »", async () => {
+    // La règle ne s'est pas retournée : un zéro affiché comme un montant se lit
+    // « gratuit ». C'est ce que le drapeau existe pour éviter (26 août 2026),
+    // et l'assouplissement ci-dessus ne doit pas l'emporter avec lui.
+    const { trace } = await composerDevisPdf({
+      ...DEVIS,
+      totalHt: "560.00",
+      totalTva: "112.00",
+      totalTtc: "672.00",
+      lignes: [
+        { libelle: "Tonte de la pelouse", quantite: "1200", unite: "m²", prixUnitaire: "0", montant: "0", aChiffrer: true },
+        { libelle: "Démontage en rétention d'un érable", quantite: "1", prixUnitaire: "560.00", montant: "560.00" },
+      ],
+    });
+    const textes = contenus(trace);
+    assert.ok(textes.includes("à chiffrer"), "Une ligne sans prix ne le dit plus.");
+    assert.ok(
+      !textes.some((t) => t === "0,00 €"),
+      "Un travail non chiffré s'affiche à 0,00 € : le client le lira « gratuit »."
+    );
   });
 
   await cas("un devis sans ligne le dit plutôt que de paraître tronqué", async () => {

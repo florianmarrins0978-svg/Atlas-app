@@ -176,10 +176,37 @@ cas("l'`exec` qui tuait le démarrage a bien disparu", () => {
 cas("après une mise à jour, veilleur ET serveur sont remplacés", () => {
   // C'est ce qui remplace l'`exec` : sans cela, le code neuf arriverait sur le
   // disque pendant qu'un serveur d'hier continue de le servir.
+  //
+  // ───────────────────────────────────────────────────────────────────────────
+  // **CE CAS EXIGEAIT L'ORDRE QUI A CAUSÉ LA PANNE — corrigé le 2 septembre
+  // 2026.** Il cherchait les arrêts APRÈS `appliquer-migrations.sh`, parce que
+  // c'est là qu'ils vivaient. Or `npm ci`, qui s'exécute juste avant, EFFACE
+  // `node_modules` — sous un serveur et une construction qui y tenaient des
+  // fichiers ouverts. L'arbre restait amputé, `next` disparaissait, et le banc
+  // mourait en boucle toutes les quinze secondes (`ARCHITECTURE.md` §238).
+  //
+  // Les arrêts sont donc remontés AVANT l'installation. Ce cas les cherchait
+  // encore après, et rougissait sur le correctif — il fixait la MÉCANIQUE, pas
+  // la règle (`CLAUDE.md` §5 bis).
+  //
+  // Ce qui doit tenir, et qui n'a pas changé : rien de l'ancien banc ne survit
+  // à une mise à jour, et un veilleur neuf repart une fois le code, les
+  // dépendances et la base en place. L'ordre vis-à-vis de l'installation est
+  // tenu par `test-prechauffage.ts` — le répéter ici ferait deux contrôles
+  // pour une seule règle.
   const source = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8");
+  const blocDeMiseAJour = source.slice(source.indexOf('if [ "$MISE_A_JOUR" = "faite" ]'));
+  assert.ok(blocDeMiseAJour.length > 0, "le bloc de mise à jour est introuvable : ce contrôle n'éprouve rien");
+  assert.match(blocDeMiseAJour, /pkill -f "\[v\]eiller\.sh"/, "l'ancien veilleur survivrait à la mise à jour");
+  assert.match(blocDeMiseAJour, /atlas-veilleur\.pid/, "le verrou du veilleur empêcherait la relance");
+  assert.match(
+    blocDeMiseAJour,
+    /pkill -f "\[n\]ext\(-server\| dev\| start\| build\)"/,
+    "le serveur d'avant survivrait au code neuf"
+  );
+  // Le veilleur repart APRÈS les migrations : plus tôt, il relancerait un banc
+  // au milieu de l'installation ou sur une base restée en arrière.
   const apresMigration = source.slice(source.indexOf("appliquer-migrations.sh"));
-  assert.match(apresMigration, /pkill -f "\[v\]eiller\.sh"/, "l'ancien veilleur survivrait à la mise à jour");
-  assert.match(apresMigration, /atlas-veilleur\.pid/, "le verrou du veilleur empêcherait la relance");
   assert.match(apresMigration, /lancer_veilleur/, "rien ne relance le veilleur après la mise à jour");
 });
 

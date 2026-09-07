@@ -51,6 +51,32 @@ export const MOT_DEMI: Record<Demi, string> = {
  */
 export type EtatDemi = "libre" | "dispo" | "plein" | "dela";
 
+/**
+ * LE MOT de chaque état, écrit UNE fois.
+ *
+ * **Sa demande du 31 août 2026 :** *« écrit deux chantiers par jour, planning
+ * complet, et met le petit carré vert foncé avec écrit "complet" du planning »*
+ * — sur l'écran Réglages, qu'il a désigné : *« c'est sur cette page que doit se
+ * faire la modification »*.
+ *
+ * Ces quatre mots vivaient dans la légende du calendrier, en clair. Le réglage
+ * des chantiers menés en même temps les emploie maintenant lui aussi : recopier
+ * « complet » dans un second écran, c'est accepter qu'un jour l'un dise
+ * « complet » et l'autre « plein » pour la même couleur — et c'est le genre
+ * d'écart qu'on ne voit jamais, parce que les deux écrans ne se lisent pas
+ * ensemble (`CLAUDE.md` §3).
+ *
+ * **« rien » et non « libre »** : c'est le mot de la légende, celui qu'il a sous
+ * les yeux. `ditLaBarre` dit « libre » à voix haute, pour qui n'emploie pas ses
+ * yeux — une phrase lue n'est pas une étiquette.
+ */
+export const MOT_ETAT: Record<EtatDemi, string> = {
+  libre: "rien",
+  dispo: "incomplet",
+  plein: "complet",
+  dela: "au-delà",
+};
+
 export type OccupationDemi<C> = {
   /** Les chantiers posés sur cette demi-journée. */
   pris: readonly C[];

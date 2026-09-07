@@ -123,23 +123,87 @@ async function main() {
 
   // Et le chantier se crée quand même, avec une adresse que la base ignore —
   // un chemin, un lieu-dit, « derrière la scierie ». C'est là qu'il travaille.
-  await creerPuisFiche(page);
+  const chantierId = await creerPuisFiche(page);
+  // **ON NE VA PLUS SUR LA FICHE DU CHANTIER : elle n'existe plus** — retirée
+  // le 4 septembre 2026 (`ARCHITECTURE.md` §254), son adresse ne rend qu'une
+  // redirection. Ce contrôle l'attendait encore et tombait sur un délai de
+  // soixante secondes qui accusait l'adresse, laquelle n'y était pour rien.
+  //
+  // **Ce qu'il vérifie n'a pas bougé d'un mot** : que l'adresse LIBRE — un
+  // chemin, un lieu-dit, « derrière la scierie », ce que la base ne connaît
+  // pas — a bien été conservée. On la relit donc là où elle vit désormais : la
+  // fiche client rouverte, dans son champ. Le texte de la page ne la porte pas
+  // (c'est une valeur de champ, pas du texte), et une assertion sur
+  // `innerText` serait rouge sur un écran juste.
+  //
   // **Généreux, et pour une raison précise.** Cette suite passe la PREMIÈRE de
   // la batterie (ordre alphabétique) : elle paie donc la toute première
-  // compilation de la fiche de chantier, sur un serveur de développement qui
-  // n'a encore rien en cache. Quinze secondes suffisaient seule et pas en
-  // batterie — l'échec accusait alors l'adresse, qui n'y était pour rien.
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 60_000 });
-  // La fiche affiche « CHARGEMENT… » le temps de se composer : lire l'écran à
-  // cet instant reviendrait à accuser le produit d'avoir perdu l'adresse.
-  await page.waitForFunction(() => !document.body.innerText.includes("CHARGEMENT"), null, { timeout: 40_000 });
-
-  const fiche = await page.locator("body").innerText();
+  // compilation de l'écran, sur un serveur de développement qui n'a encore
+  // rien en cache.
+  await page.goto(`${BASE}/chantiers/${chantierId}/coordonnees`, { waitUntil: "networkidle" });
+  // Le champ se prend par son RÔLE, comme plus haut dans cette suite : son
+  // `aria-label` n'existe que lorsque l'écran cache le libellé, et cela dépend
+  // du dessin du jour.
+  const champChantier = page.getByRole("combobox").first();
+  await champChantier.waitFor({ state: "visible", timeout: 60_000 });
   assert.match(
-    fiche,
+    await champChantier.inputValue(),
     /Scierie/i,
     "L'adresse libre n'a pas été conservée : la liste aurait alors enfermé le patron dans ce que la base connaît."
   );
+
+  // ─── LA FICHE ROUVERTE N'OUVRE AUCUNE LISTE ──────────────────────────────
+  //
+  // **Sa plainte du 4 septembre 2026 :** *« je suis arrivé sur la page de la
+  // fiche client […] ce n'est pas la même que lorsque j'ai cliqué sur nouveau
+  // chantier »*. C'était bien le même écran : ce qui différait, c'est que la
+  // liste des suggestions s'était ouverte TOUTE SEULE sur l'adresse que la
+  // reprise venait de remplir. Six adresses recouvraient les photos, l'anneau
+  // de la note vocale et « Je rédige à la main ».
+  //
+  // **Le contrôle mesure la HAUTEUR, et pas seulement la liste.** C'est elle
+  // qui dit ce qu'il voyait : 672 px à la création, 1099 px à la reprise. Une
+  // assertion sur le seul `combobox` resterait verte le jour où la liste
+  // s'ouvrirait sous une autre forme.
+  const appelsAvant = appels;
+
+  // On rouvre la fiche du chantier qu'on vient de créer — celui qui porte
+  // l'adresse libre, et c'est le chemin du retour depuis le devis
+  // (`src/lib/retour-du-devis.ts`).
+  //
+  // **L'identifiant vient de la création, plus de l'accueil.** Il se lisait
+  // dans le premier lien `/chantiers/<uuid>` de la liste ; ces liens ont
+  // changé de cible le 4 septembre, la fiche du chantier ayant été retirée
+  // (`ARCHITECTURE.md` §254) — plus aucun ne portait cette forme, et le
+  // contrôle s'arrêtait sur « aucun chantier sur l'accueil » alors qu'il
+  // venait d'en créer un. Le prendre à la source vaut mieux : c'est CE
+  // chantier-là qu'on veut rouvrir, pas le premier venu.
+  await page.goto(`${BASE}/chantiers/${chantierId}/coordonnees`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(900);
+
+  const champReprise = page.getByRole("combobox").first();
+  assert.equal(
+    await champReprise.count(),
+    1,
+    "La fiche rouverte n'a pas de champ d'adresse : ce n'est plus le même écran que la création."
+  );
+  const adresseReprise = await champReprise.inputValue();
+  if (adresseReprise.trim().length >= 5) {
+    assert.equal(
+      appels,
+      appelsAvant,
+      `La fiche rouverte a interrogé le service d'adresses ${appels - appelsAvant} fois sur une valeur ` +
+        "qu'elle venait elle-même de remplir : la liste s'ouvre sous les yeux du patron, sur un écran " +
+        "où il n'a rien tapé."
+    );
+    const listes = await page.locator('[role="listbox"], ul[id*="suggestion"]').count();
+    assert.equal(
+      listes,
+      0,
+      "Une liste de suggestions est ouverte à l'arrivée sur la fiche : elle recouvre les photos, " +
+        "l'anneau de la note vocale et « Je rédige à la main »."
+    );
+  }
 
   await navigateur.close();
   console.log("✅ L'adresse se propose, se choisit d'un doigt, et n'enferme personne.");

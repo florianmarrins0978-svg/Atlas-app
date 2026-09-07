@@ -3,13 +3,14 @@ import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
-import { totauxAvecReduction, pourcentValide } from "@/lib/reduction-devis";
+import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
 import { genererPdfDevis } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
+import { lignesEnAttenteDePrix } from "@/lib/preparation-devis";
 
 const TAUX_TVA_DEFAUT = "20.00";
 
@@ -62,7 +63,7 @@ export async function attribuerNumeroDevis(tx: DbOrTx, entrepriseId: string): Pr
  * client. Une seule règle, appelée partout.
  */
 function calculerTotaux(
-  lignes: { montant: string }[],
+  lignes: { montant: string; tauxTva?: string | null }[],
   tauxTva: string,
   reductionPourcent?: string | null
 ) {
@@ -85,6 +86,41 @@ export async function getDevisPourChantier(ctx: Ctx, chantierId: string) {
       .orderBy(desc(devis.numeroVersion))
       .limit(1);
     return rows[0] ?? null;
+  });
+}
+
+/**
+ * LE DEVIS QUI FAIT FOI — la dernière version **ENVOYÉE**, jamais un brouillon.
+ *
+ * **Une seule fonction pour la seule question qui compte au moment de
+ * facturer :** quel prix le client a-t-il vu ? `getDevisPourChantier` rend la
+ * dernière version *quelle qu'elle soit*, brouillon commencé la veille compris,
+ * et c'est une autre question.
+ *
+ * **Le défaut qu'elle referme.** `terminerChantier` prenait la dernière
+ * version, puis refusait si elle n'était pas envoyée. Un devis v1 envoyé et une
+ * v2 laissée en brouillon rendaient donc « Le devis de ce chantier n'a jamais
+ * été envoyé » — une phrase FAUSSE, sur un chantier parfaitement facturable, et
+ * un refus qu'aucun geste ne pouvait lever (`AGENTS.md` : une erreur qui accuse
+ * à tort coûte plus cher que pas d'erreur du tout).
+ *
+ * **C'est déjà la règle ailleurs** — `listerChantiersTermines` annonce le
+ * montant « prévu au devis » d'après la dernière version envoyée. Les deux
+ * écrans disent enfin la même chose du même chantier.
+ */
+export function lireDevisQuiFaitFoi(tx: DbOrTx, chantierId: string) {
+  return tx
+    .select()
+    .from(devis)
+    .where(and(eq(devis.chantierId, chantierId), eq(devis.statut, "envoye")))
+    .orderBy(desc(devis.numeroVersion))
+    .limit(1);
+}
+
+export async function devisQuiFaitFoi(ctx: Ctx, chantierId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await lireDevisQuiFaitFoi(tx, chantierId);
+    return d ?? null;
   });
 }
 
@@ -262,6 +298,11 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
             // lignes de prix, qui ont pu bouger depuis.
             unite: l.unite,
             aChiffrer: l.aChiffrer,
+            // **Le taux de sa catégorie descend au document** (migration 0073).
+            // Recopié, jamais relu : un devis garde ce qu'il portait, et changer
+            // la ligne du chantier l'an prochain ne doit pas réécrire une pièce
+            // déjà partie. Nul quand il n'a qu'un taux — le devis commande.
+            tauxTva: l.tauxTva,
             ordre: i,
           }))
         );
@@ -304,6 +345,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
           montant: l.montant,
           unite: l.unite,
           aChiffrer: l.aChiffrer,
+          tauxTva: l.tauxTva,
           ordre: i,
         }))
       );
@@ -374,6 +416,9 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
         montant: l.montant,
         unite: l.unite,
         aChiffrer: l.aChiffrer,
+        // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
+        // ventilerait tout sur le taux du document (migration 0073).
+        tauxTva: l.tauxTva,
       })),
     }, habillage);
   });
@@ -399,12 +444,17 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
     //
     // Un devis envoyé est immuable — le corriger demande une nouvelle version,
     // et le client, lui, a déjà lu « 0 € » en face d'un travail.
-    const enAttente = lignes.filter((l) => l.aChiffrer);
-    if (enAttente.length > 0) {
+    //
+    // **La phrase vient de `lignesEnAttenteDePrix`, et n'est plus réécrite
+    // ici.** Elle l'était, et les deux versions ont divergé : celle-ci disait
+    // « 2 lignes attendent **son** prix […] Posez-**le** » — le pluriel traité
+    // sur le verbe et nulle part ailleurs. Une seule fonction pour l'écran et
+    // pour le serveur (`CLAUDE.md` §3).
+    const enAttente = lignesEnAttenteDePrix(lignes);
+    if (enAttente) {
       throw new Error(
-        `Ce devis ne peut pas être envoyé : ${enAttente.length === 1 ? "une ligne attend" : `${enAttente.length} lignes attendent`} ` +
-          `son prix (${enAttente.map((l) => `« ${l.libelle.split("\n")[0]} »`).join(", ")}). ` +
-          "Posez-le sur l'écran Prix, puis revenez ici."
+        `Ce devis ne peut pas être envoyé : ${enAttente} ` +
+          "Posez leur montant sur l'écran du devis, puis revenez ici."
       );
     }
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
@@ -443,6 +493,9 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
         montant: l.montant,
         unite: l.unite,
         aChiffrer: l.aChiffrer,
+        // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
+        // ventilerait tout sur le taux du document (migration 0073).
+        tauxTva: l.tauxTva,
       })),
     }, habillage);
 
@@ -500,10 +553,12 @@ export async function mettreAJourEnTeteDevis(
       updatedAt: Date;
     } = { updatedAt: new Date() };
     if (data.tauxTva !== undefined) {
-      // Borné : un taux négatif ou à trois chiffres produirait un total que le
-      // patron ne comprendrait pas, et qu'aucun client n'accepterait.
-      const taux = Math.min(100, Math.max(0, Number(data.tauxTva.replace(",", "."))));
-      if (Number.isFinite(taux)) valeurs.tauxTva = taux.toFixed(2);
+      // **La même règle que les catégories, appelée et non réécrite.** Elle
+      // vivait ici en `Math.min(100, Math.max(0, …))` ; depuis que l'écran des
+      // catégories valide lui aussi des taux, deux validations séparées
+      // auraient fini par accepter deux choses différentes (`CLAUDE.md` §3).
+      const taux = tauxTvaValide(data.tauxTva);
+      if (taux !== null) valeurs.tauxTva = taux;
     }
     if (data.conditionsPaiement !== undefined) valeurs.conditionsPaiement = data.conditionsPaiement;
     // **Le prix accordé au client passe par la MÊME borne que l'écran**

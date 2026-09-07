@@ -33,7 +33,14 @@ export async function ajouterLignePrix(
   chantierId: string,
   libelle: string,
   montant: string,
-  options?: { quantite?: string; prixUnitaire?: string; unite?: string | null; aChiffrer?: boolean }
+  options?: {
+    quantite?: string;
+    prixUnitaire?: string;
+    unite?: string | null;
+    aChiffrer?: boolean;
+    /** Le taux de sa catégorie (migration 0073). Absent : la ligne suit le devis. */
+    tauxTva?: string | null;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
@@ -48,6 +55,7 @@ export async function ajouterLignePrix(
         prixUnitaire: options?.prixUnitaire ?? montant,
         unite: options?.unite ?? undefined,
         aChiffrer: options?.aChiffrer ?? false,
+        tauxTva: options?.tauxTva ?? null,
         ordre: existantes.length,
       })
       .returning();
@@ -65,6 +73,13 @@ export async function modifierLignePrix(
     prixUnitaire?: string;
     unite?: string;
     aChiffrer?: boolean;
+    /**
+     * Déplacer la ligne d'une catégorie de TVA à l'autre (migration 0073).
+     *
+     * `null` la renvoie au taux du devis — c'est ce que fait le retrait d'une
+     * catégorie, plutôt que de supprimer les lignes qu'elle portait.
+     */
+    tauxTva?: string | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -79,12 +94,6 @@ export async function modifierLignePrix(
     // zéro alors que l'écran affichait 750 €. Une ligne dont le total ne
     // correspond pas à son détail ne se rattrape que par un avoir.
     const patch: typeof data = { ...data };
-    // **Poser un prix, c'est répondre à « à chiffrer ».** Sans cela le devis
-    // resterait bloqué après qu'il a fait exactement ce qu'on lui demandait, et
-    // il n'aurait aucun moyen de comprendre pourquoi.
-    if (data.aChiffrer === undefined && data.montant !== undefined && Number(data.montant) > 0) {
-      patch.aChiffrer = false;
-    }
     if (data.montant !== undefined && data.prixUnitaire === undefined && data.quantite === undefined) {
       patch.prixUnitaire = data.montant;
       patch.quantite = "1";
@@ -95,6 +104,45 @@ export async function modifierLignePrix(
         const pu = new Decimal(patch.prixUnitaire ?? avant.prixUnitaire);
         patch.montant = q.times(pu).toFixed(2);
       }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // **POSER UN PRIX, C'EST RÉPONDRE À « À CHIFFRER » — QUEL QUE SOIT LE
+    // CHAMP PAR LEQUEL ON L'A POSÉ.**
+    //
+    // **Le défaut du 31 août 2026, dans ses mots :** *« je suis revenu en
+    // arrière, j'ai mis les prix pour chaque ligne, mais il ne veut quand même
+    // pas que j'envoie mon devis »*. Et il avait raison de ne rien comprendre :
+    // l'écran affichait 2 280,00 € de total, plus aucune ligne marquée « à
+    // chiffrer », et l'envoi nommait pourtant deux lignes qu'il venait de
+    // chiffrer.
+    //
+    // Cette extinction lisait `data.montant` — l'ENTRÉE. Or il y a deux
+    // chemins d'écriture, et un seul envoie un montant :
+    //
+    // | Écran | Ce qu'il poste | Le drapeau |
+    // |---|---|---|
+    // | Prix | `{ montant }` | s'éteignait |
+    // | Devis complet | `{ libelle, quantite, prixUnitaire }` | **restait levé** |
+    //
+    // Sur le second, le montant est CALCULÉ quinze lignes plus haut
+    // (quantité × prix unitaire) : le total du devis devenait juste, l'étiquette
+    // « à chiffrer » disparaissait de l'écran — elle ne s'affiche qu'à montant
+    // nul —, et rien ne trahissait le drapeau resté en base. La photographie du
+    // devis le recopiait à la régénération suivante (`devis.ts`), et l'envoi
+    // refusait en le renvoyant vers un écran Prix où tout paraissait normal.
+    // **Une boucle sans sortie : aucun geste ne pouvait la rouvrir.**
+    //
+    // On lit donc `patch.montant` — le RÉSULTAT, après calcul —, seul chiffre
+    // qui vaille pour la question « cette ligne est-elle chiffrée ».
+    //
+    // **Et l'extinction reste à sens unique.** Un montant qui retombe à zéro ne
+    // relève pas le drapeau : `aChiffrer` dit « le prix n'a pas été trouvé »,
+    // pas « la ligne vaut zéro ». Le rallumer ferait d'une remise gratuite
+    // délibérée un devis impossible à envoyer.
+    // ═══════════════════════════════════════════════════════════════════════
+    if (data.aChiffrer === undefined && patch.montant !== undefined && Number(patch.montant) > 0) {
+      patch.aChiffrer = false;
     }
     const [row] = await tx
       .update(lignesPrix)
@@ -245,4 +293,122 @@ export async function prestationsDeLaLigneDans(tx: DbOrTx, lignePrixId: string) 
       .where(eq(lignesPrixPrestations.lignePrixId, lignePrixId))
       .orderBy(_asc(lignesPrixPrestations.ordre))
   );
+}
+
+// ─── Les catégories de TVA (migration 0073) ─────────────────────────────────
+//
+// **Sa demande du 1er septembre 2026** : *« quand j'appuie sur ajouter une TVA,
+// une catégorie s'ajoute, et là je mets toutes mes lignes qui seront en TVA à
+// 10 »*. Une catégorie n'est pas une table : c'est l'ensemble des lignes qui
+// partagent un taux. Les trois gestes ci-dessous sont donc des écritures sur
+// des LIGNES — mais groupées ici, parce qu'ils portent tous sur plusieurs à la
+// fois et qu'un écran qui les ferait une par une laisserait une catégorie à
+// moitié déplacée si le réseau lâche au milieu.
+
+/**
+ * Changer le taux d'une catégorie entière.
+ *
+ * **Toutes ses lignes suivent, et c'est tout l'intérêt du geste** : c'est
+ * précisément ce qu'il ne voulait pas refaire ligne par ligne.
+ *
+ * `ancien` est le taux tel que l'écran l'affiche ; les lignes qui suivent le
+ * devis (taux nul) sont concernées quand `ancien` est le taux du document —
+ * d'où le paramètre `tauxDuDevis`, sans lequel changer la première catégorie
+ * d'un devis existant n'aurait touché aucune ligne.
+ */
+export async function changerTauxCategorie(
+  ctx: Ctx,
+  chantierId: string,
+  ancien: string,
+  nouveau: string,
+  tauxDuDevis: string
+) {
+  const avant = new Decimal(ancien).toFixed(2);
+  const apres = new Decimal(nouveau).toFixed(2);
+  const suitLeDevis = new Decimal(tauxDuDevis).toFixed(2) === avant;
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+    for (const ligne of lignes) {
+      const sien = ligne.tauxTva === null ? (suitLeDevis ? avant : null) : new Decimal(ligne.tauxTva).toFixed(2);
+      if (sien !== avant) continue;
+      await tx.update(lignesPrix).set({ tauxTva: apres, updatedAt: new Date() }).where(eq(lignesPrix.id, ligne.id));
+    }
+  });
+}
+
+/**
+ * Retirer une catégorie — SES LIGNES NE SONT PAS SUPPRIMÉES.
+ *
+ * Elles reviennent à la catégorie d'accueil, celle du taux du devis. Supprimer
+ * les lignes serait la faute : il retirerait une TVA posée par erreur et
+ * perdrait du même geste le travail qu'il venait de chiffrer, sans qu'aucun
+ * écran ne le prévienne.
+ */
+export async function retirerCategorieTva(
+  ctx: Ctx,
+  chantierId: string,
+  taux: string,
+  tauxDuDevis: string
+) {
+  const vise = new Decimal(taux).toFixed(2);
+  // Retirer la catégorie d'accueil n'a pas de sens : c'est celle où tout
+  // retombe. L'écran ne propose d'ailleurs pas le geste sur elle.
+  if (new Decimal(tauxDuDevis).toFixed(2) === vise) return;
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+    for (const ligne of lignes) {
+      if (ligne.tauxTva === null || new Decimal(ligne.tauxTva).toFixed(2) !== vise) continue;
+      await tx.update(lignesPrix).set({ tauxTva: null, updatedAt: new Date() }).where(eq(lignesPrix.id, ligne.id));
+    }
+  });
+}
+
+/**
+ * Déplacer UNE ligne d'une catégorie de TVA à l'autre — son appui long.
+ *
+ * **La ligne rejoint la FIN de son nouveau groupe, et ce n'est pas un détail.**
+ * L'ordre des catégories suit celui des lignes : sans ce déplacement de rang,
+ * déplacer la PREMIÈRE ligne du devis faisait remonter toute sa nouvelle
+ * catégorie au-dessus de l'autre — on croyait avoir bougé le tableau entier
+ * alors qu'on n'avait bougé qu'une ligne. Trouvé en JOUANT la planche
+ * (`appli/devis-tva-deplacer-ligne.html`), avant d'écrire ce code.
+ *
+ * **Vers le taux du devis, on écrit `null`** plutôt que la valeur : c'est ce que
+ * porte la catégorie d'accueil, et ce que `retirerCategorieTva` y remet. Deux
+ * façons d'être « au taux du devis » se seraient mises à diverger le jour où il
+ * change ce taux — les lignes marquées « 20.00 » y seraient restées pendant que
+ * les nulles suivaient.
+ */
+export async function deplacerLigneVersCategorie(
+  ctx: Ctx,
+  ligneId: string,
+  taux: string,
+  tauxDuDevis: string
+) {
+  const vise = new Decimal(taux).toFixed(2);
+  const versLAccueil = new Decimal(tauxDuDevis).toFixed(2) === vise;
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, ligneId)).limit(1);
+    if (!ligne) return null;
+
+    const soeurs = await tx
+      .select()
+      .from(lignesPrix)
+      .where(eq(lignesPrix.chantierId, ligne.chantierId));
+    const dernier = soeurs.reduce((max, l) => Math.max(max, l.ordre), 0);
+
+    const [row] = await tx
+      .update(lignesPrix)
+      .set({
+        tauxTva: versLAccueil ? null : vise,
+        ordre: dernier + 1,
+        updatedAt: new Date(),
+      })
+      .where(eq(lignesPrix.id, ligneId))
+      .returning();
+    return row ?? null;
+  });
 }

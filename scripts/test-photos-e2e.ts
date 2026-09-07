@@ -43,14 +43,18 @@ async function main() {
   const nomUnique = `Chantier photos e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const chantierUrl = page.url();
+  const chantierId = await creerPuisFiche(page);
+  // **LA PELLICULE EST À DÉCOUVERT SUR LA FICHE CLIENT** — 4 septembre 2026.
+  // Elle vivait dans le tiroir de la fiche du chantier, dont seule la prise
+  // dépassait au repos. Cette fiche est retirée (`ARCHITECTURE.md` §254) parce
+  // qu'elle montrait une seconde fois ce que la fiche client porte déjà : il
+  // n'y a donc plus de tiroir à ouvrir, et c'est un geste de moins.
+  const racineChantier = `http://localhost:3000/chantiers/${chantierId}`;
+  const chantierUrl = `${racineChantier}/coordonnees`;
+  await page.goto(chantierUrl, { waitUntil: "networkidle" });
 
-  // La pellicule vit dans le tiroir : au repos, seule sa prise dépasse.
-  const tiroir = page.locator('[data-atlas="tiroir-fiche"]');
+  const tiroir = page.locator('[aria-label="Photos du chantier"]');
   await tiroir.waitFor({ state: "visible", timeout: 10000 });
-  await page.click('button[aria-label="Ouvrir le détail du chantier"]');
   await tiroir.locator('button[aria-label="Ajouter des photos"]').waitFor({ state: "visible", timeout: 10000 });
 
   // --- Ce qui est demandé : le « + » n'emmène nulle part ------------------
@@ -162,7 +166,6 @@ async function main() {
   // d'être gardé — un ajout qui ne survit pas au rechargement est un ajout qui
   // n'a pas eu lieu, et rien d'autre ici ne le disait.
   await page.reload({ waitUntil: "networkidle" });
-  await page.click('button[aria-label="Ouvrir le détail du chantier"]');
   await tiroir.locator('img[src^="/api/fichiers/"]').first().waitFor({ state: "visible", timeout: 15000 });
   assert.equal(
     await tiroir.locator('img[src^="/api/fichiers/"]').count(),
@@ -234,7 +237,9 @@ async function main() {
   console.log("  ✓ regarder et retirer se font depuis la fiche");
 
   // --- L'écran Photos n'existe plus --------------------------------------
-  const disparu = await page.request.get(`${chantierUrl}/photos`);
+  // **Sur la RACINE du chantier, pas sur la fiche client** : `/coordonnees/photos`
+  // n'a jamais existé, et le contrôle serait vert sans rien éprouver.
+  const disparu = await page.request.get(`${racineChantier}/photos`);
   assert.equal(
     disparu.status(),
     404,

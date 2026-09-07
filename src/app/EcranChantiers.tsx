@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, texteSituation } from "@/lib/design-tokens";
+import { vibrer } from "@/lib/vibration";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -126,6 +127,44 @@ export default function EcranChantiers({
   const restants = chantiers.filter((c) => !retraits.estRetire(c.id));
   const compte = restants.filter((c) => c.enCours).length;
 
+  // ── « En cours 4 », COLLÉ À LA LISTE — 6 septembre 2026 ──────────────────
+  //
+  // **Sa remarque, deux fois de suite :** *« mets En cours au-dessus du
+  // 4 septembre »*. Je lui avais répondu que c'était fait, mesure à l'appui —
+  // et ma mesure ne regardait que l'ORDRE des éléments. La rubrique était posée
+  // AVANT les bandeaux : au-dessus dans le marquage, à un demi-écran de
+  // distance pour l'œil, parce qu'une notification de trois cents pixels
+  // s'intercalait entre elle et la première ligne.
+  //
+  // Elle vit donc DANS le fil, après les bandeaux, collée à ce qu'elle compte :
+  // 27 px entre son bas et le haut de la première date, quel que soit le matin.
+  //
+  // **La leçon vaut plus que le correctif** : un contrôle qui compare des
+  // positions dans l'arbre ne dit rien de ce qu'on voit (`CLAUDE.md` §5).
+  //
+  // **Le repère `data-atlas="compteur"` voyage avec elle** — `test-dashboard`
+  // le lit pour savoir combien de chantiers sont en cours, et lit AUSSI le
+  // chiffre à l'écran. Le laisser derrière aurait rendu la suite muette.
+  //
+  // **11 px et non 9,5** : la consigne du 5 septembre n'avait pas atteint cet
+  // écran, qui écrit ses tailles à la main plutôt que par le jeton commun.
+  const rubriqueEnCours = (
+    <div
+      data-atlas="compteur"
+      data-compte={compte}
+      className="mx-[26px] mb-1 mt-[18px] flex items-baseline gap-[10px] text-[11px] font-medium uppercase"
+      style={{ color: colors.inkSoft, letterSpacing: "0.28em" }}
+    >
+      <span>En cours</span>
+      <span
+        className="text-[13.5px] font-bold"
+        style={{ color: colors.ink, letterSpacing: "0.06em", fontVariantNumeric: "tabular-nums" }}
+      >
+        {compte}
+      </span>
+    </div>
+  );
+
   // Échapper referme, comme partout ailleurs. Sans cela, une personne au
   // clavier se retrouve enfermée dans la feuille.
   useEffect(() => {
@@ -158,12 +197,17 @@ export default function EcranChantiers({
         aria-hidden={ouvert || undefined}
         inert={ouvert || undefined}
       >
-        <p
-          className="pt-[26px] text-center text-[11px]"
-          style={{ letterSpacing: "0.52em", color: colors.ink }}
-        >
-          ATLAS
-        </p>
+        {/* **« ATLAS » A ÉTÉ RETIRÉ LE 6 SEPTEMBRE 2026**, sur la planche
+            `appli/l-accueil-a-bout-de-bras.html`, qu'il a retenue.
+
+            C'était le nom de l'application, écrit en haut de l'application
+            qu'il vient d'ouvrir. Il coûtait 39 px sur les 596 de son écran, et
+            l'accueil n'en montrait aucun chantier sur un matin chargé.
+
+            La marque n'est pas perdue : elle reste dans les Réglages et sur
+            l'écran de lancement. **Ne pas la remettre** —
+            `scripts/test-accueil-en-tete.ts` la refuse désormais, comme il
+            refuse déjà le « Bonjour » et le trait gris. */}
 
         {/* **« Bonjour … » a été RETIRÉ le 24 août 2026**, sur planche 95, à sa
             demande : *« supprime le bonjour compte »*.
@@ -176,7 +220,12 @@ export default function EcranChantiers({
             **Le prénom n'est plus lu du tout** : le garder pour ne rien en
             faire aurait laissé croire, à la prochaine lecture, qu'il servait
             encore quelque part. */}
-        <div className="px-[26px] pt-[34px]">
+        {/* **44 px au-dessus du titre, et non 34 — sa demande du 2 septembre
+            2026**, après avoir manipulé la planche d'accueil : *« garde l'air,
+            les 44 px, 40 px et 21 px, par contre ne touche à rien d'autre »*.
+            Les dix pixels vont AU TITRE, pas à la marque : c'est la première
+            ligne qu'il lit, et elle démarrait collée au bord. */}
+        <div className="px-[26px] pt-[44px]">
           {/*
             **L'assistant se pose à côté du titre**, comme sur les autres écrans
             — cet accueil ne passe pas par `EnTeteEcran`, la pièce partagée ne
@@ -188,7 +237,10 @@ export default function EcranChantiers({
           */}
           <div className="flex items-start justify-between gap-4">
             <h1
-              className="mt-3.5 whitespace-nowrap text-[36px] leading-[1.02]"
+              // 40 px depuis le 2 septembre 2026, comme la fiche client : le nom
+              // de l'écran est ce qu'on lit en premier, et les 44 px au-dessus
+              // ne servent à rien si le titre reste au format d'un sous-titre.
+              className="mt-3.5 whitespace-nowrap text-[40px] leading-[1.02]"
               style={{ fontFamily: font.display, letterSpacing: "-0.018em" }}
             >
               Vos chantiers
@@ -204,31 +256,87 @@ export default function EcranChantiers({
               Il reste la rubrique, avec le chiffre collé au mot.
 
               Le repère `data-atlas="compteur"` a suivi le compte : il vit
-              maintenant sur la rubrique (`test-dashboard` le lit pour savoir
-              combien de chantiers sont en cours). Le laisser sur une ligne
-              supprimée aurait rendu la suite muette. */}
+              sur la rubrique (`test-dashboard` le lit pour savoir combien de
+              chantiers sont en cours). Le laisser sur une ligne supprimée
+              aurait rendu la suite muette.
+
+              **Et la rubrique n'est plus ici depuis le 6 septembre 2026** :
+              elle est descendue DANS le fil, après les bandeaux, collée à la
+              liste qu'elle compte — voir `rubriqueEnCours`, plus haut dans ce
+              fichier. */}
 
           {/* **« La catégorie client n'a pas été créée » — 17 août 2026, au
               soir.** La fiche d'un client existait depuis la veille, mais elle
               ne s'atteignait que depuis un chantier : rien ne menait à SES
-              clients. Le lien se pose ici, sous le compteur, plutôt que dans un
+              clients. Le lien se pose ici, sous le titre, plutôt que dans un
               cinquième onglet — la barre du bas en porte quatre et le cinquième
               est déjà décidé pour les outils métier (`ARCHITECTURE.md` §125).
 
               En or et en petites capitales, comme le reste de ce bloc : ce
               qu'on LIT, jamais ce qu'on FAIT. L'action de cet écran reste
               « Nouveau chantier », et rien ne doit lui disputer l'œil. */}
+          {/* **Deux corrections du 6 septembre 2026**, sur la planche qu'il a
+              retenue :
+
+              1. **11 px et non 9,5.** Sa consigne du 5 septembre — « des vieux
+                 qui ont du mal à se servir de leur téléphone » — a grossi le
+                 petit texte de l'application le 6 au matin, mais l'accueil
+                 écrit ses tailles à la main : il n'avait pas suivi.
+              2. **Le chevron reste, mais il est DÉCLARÉ.** Il était dessiné en
+                 CSS — un carré tourné à 45° —, et c'est pour cela que
+                 `scripts/test-aucune-fleche.ts` ne le voyait pas : il cherche
+                 des caractères. Une exception qu'un contrôle ne peut pas voir
+                 n'est pas une exception, c'est un trou.
+
+                 **Il l'a redemandé le 6 septembre au soir, et sa raison est
+                 juste :** *« il faut rajouter un chevron après Vos clients je
+                 pense, pour qu'on sache qu'on puisse cliquer dessus »*. C'est
+                 le seul mot de cet en-tête qui mène ailleurs — rien d'autre ne
+                 le dit. Sa consigne du 25 août visait l'ORNEMENT (« Créer le
+                 devis → ») ; celui-ci porte une fonction.
+
+                 Il s'écrit donc avec le caractère « › », que le contrôle SAIT
+                 lire, et il est inscrit dans sa liste d'exceptions avec sa
+                 raison. Le jour où quelqu'un voudra le retirer, il saura
+                 pourquoi il est là.
+
+              **44 px de haut, et la marge négative les reprend à
+              l'affichage** : un mot de 11 px ne s'attrape pas sous un pouce
+              ganté, et sa cible ne doit pas pour autant décaler la ligne.
+              Mesuré à 14 px avant ce lot. */}
           <Link
             href="/clients"
-            className="mt-[10px] inline-flex items-center gap-[6px] text-[9.5px] font-medium uppercase"
-            style={{ color: colors.or, letterSpacing: "0.28em" }}
+            className="inline-flex min-h-[44px] items-center text-[11px] font-medium uppercase"
+            // Les marges sont écrites ici, et non en classes : deux classes de
+            // marge sur le même axe (`-my-` puis `mt-`) laissent l'ordre du
+            // rendu décider laquelle gagne, ce qui n'est pas une décision.
+            // Le mot reste où il était ; seule sa cible grandit autour.
+            style={{
+              color: colors.or,
+              letterSpacing: "0.28em",
+              marginTop: -5,
+              marginBottom: -15,
+            }}
           >
             Vos clients
+            {/* **19 px et graisse 700 — sa remarque du 6 septembre au soir :**
+                *« il est trop petit le chevron »*. À la taille du libellé
+                (11 px), le glyphe « › » de la police du système fait une
+                virgule : c'est un signe maigre, et une capitale espacée à
+                0,28 em l'écrase. Il porte une fonction — dire que ce mot mène
+                ailleurs —, donc il doit se voir.
+
+                L'interlettrage est remis à zéro (à 0,28 em il flottait à cinq
+                pixels du mot) et le signe remonte d'un pixel : son centre
+                optique tombe alors sur celui des capitales, et non une ligne
+                en dessous. Vu en capture, à trois fois la taille. */}
             <span
               aria-hidden="true"
-              className="h-[5px] w-[5px] rotate-45"
-              style={{ borderRight: `1.5px solid ${colors.or}`, borderTop: `1.5px solid ${colors.or}` }}
-            />
+              className="ml-[5px] text-[19px] font-bold leading-none"
+              style={{ letterSpacing: 0, position: "relative", top: -1 }}
+            >
+              ›
+            </span>
           </Link>
         </div>
 
@@ -273,13 +381,28 @@ export default function EcranChantiers({
             onClick={(e) => {
               if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
               e.preventDefault();
+              // **Sa demande du 31 août : un seul bouton pour essayer.** Le
+              // retour part AVANT l'ouverture de la feuille, pas après : ce
+              // qu'il veut sentir, c'est que l'appui est pris, et une feuille
+              // qui monte se voit déjà toute seule.
+              //
+              // **Sur son iPhone, cela ne fera rien** tant qu'Atlas est servi
+              // dans Safari — l'API n'y existe pas (`src/lib/vibration.ts`).
+              // C'est délibéré : il a demandé à essayer plutôt qu'à attendre.
+              vibrer();
               ouvrirAvecLeGeste();
             }}
             className="atlas-geste-nouveau"
           >
             <span className="atlas-mot">Créer un devis</span>
             <span className="atlas-rond">
+              {/* **Trois ondes depuis le 6 septembre 2026** — sa décision sur
+                  la planche, « le 2, l'anneau resserré ». Les deux suivantes ne
+                  diffèrent que du retard (`globals.css`) : une seule règle
+                  d'animation pour les trois, donc une seule à corriger. */}
               <span className="atlas-pouls" aria-hidden="true" />
+              <span className="atlas-pouls atlas-pouls-2" aria-hidden="true" />
+              <span className="atlas-pouls atlas-pouls-3" aria-hidden="true" />
               <span className="atlas-cerne" aria-hidden="true" />
               <span className="atlas-gerbe" aria-hidden="true">
                 {GRAINS.map(({ x, y, l, t }) => (
@@ -317,21 +440,6 @@ export default function EcranChantiers({
                plus dans les sept chartes. Jamais une valeur écrite en clair
                ici : elle serait juste sur « Origine » et fausse sur les deux
                chartes sombres. */}
-        <div
-          data-atlas="compteur"
-          data-compte={compte}
-          className="mx-[26px] mb-1 mt-[30px] flex items-baseline gap-[10px] text-[9.5px] font-medium uppercase"
-          style={{ color: colors.inkSoft, letterSpacing: "0.28em" }}
-        >
-          <span>En cours</span>
-          <span
-            className="text-[12px] font-bold"
-            style={{ color: colors.ink, letterSpacing: "0.06em", fontVariantNumeric: "tabular-nums" }}
-          >
-            {compte}
-          </span>
-        </div>
-
         {restants.length === 0 ? (
           /* **AUCUNE PHRASE QUAND LA LISTE EST VIDE** — sa demande du 25 août
              2026 : *« supprime la phrase "aucun chantier pour l'instant" »*.
@@ -344,7 +452,10 @@ export default function EcranChantiers({
 
              Les bandeaux restent : ce sont les réponses de ses clients, et
              elles arrivent justement quand plus aucun chantier n'est en cours. */
-          <div className="atlas-fil-defile pt-4">{bandeaux}</div>
+          <div className="atlas-fil-defile pt-4">
+            {bandeaux}
+            {rubriqueEnCours}
+          </div>
         ) : (
           <div className="atlas-fil-defile pb-3 pt-2.5">
             {/* **Les bandeaux défilent AVEC la liste, ils ne la repoussent
@@ -355,6 +466,7 @@ export default function EcranChantiers({
                 les suites étaient vertes. C'est le même défaut qu'en juillet,
                 à un autre endroit. */}
             {bandeaux}
+            {rubriqueEnCours}
             <ListeChantiers
               chantiers={chantiers}
               estRetire={retraits.estRetire}

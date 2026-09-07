@@ -421,11 +421,19 @@ function Bouton({ href, children, creux }: { href: string; children: React.React
     <div className="flex justify-center">
       <Link
         href={href}
-        className="inline-flex items-center justify-center px-9 py-[13px] text-[17px]"
+        // **Passé au vert des boutons le 4 septembre 2026.** Il l'a relevé
+        // lui-même — *« j'avais demandé à changer tous les boutons en vert
+        // clair »* —, et ce bouton-ci avait échappé au balayage du 3 : il ne
+        // portait pas `atlas-plein`, et le contrôle ne regardait QUE ce qui la
+        // portait. Il la porte maintenant, et il est donc gardé.
+        //
+        // **Le creux ne prend ni l'aplat ni le geste** — *« surtout pas ceux
+        // qui sont creux »*, sa consigne du 31 août.
+        className={`inline-flex items-center justify-center px-9 py-[13px] text-[17px] ${creux ? "" : "atlas-plein"}`}
         style={{
           borderRadius: 9999,
           fontFamily: font.display,
-          backgroundColor: creux ? "transparent" : colors.rust,
+          backgroundColor: creux ? "transparent" : colors.plein,
           color: creux ? colors.rust : colors.card,
           border: creux ? `1px solid ${colors.line}` : undefined,
         }}

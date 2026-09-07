@@ -21,9 +21,9 @@ async function main() {
   // — à juste titre — de partir chez le client.
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `http://localhost:3000/chantiers/${idChantier}`;
 
   // Ajoute une ligne de prix réelle pour que le devis ait un contenu non nul.
   await page.goto(`${chantierUrl}/prix`, { waitUntil: "networkidle" });
@@ -77,7 +77,12 @@ async function main() {
   // existe, il est servi, et c'en est bien un.
   const reponsePdf = await page.request.get(`http://localhost:3000${apercuHref}?telecharger=1`);
   assert.equal(reponsePdf.status(), 200);
-  assert.equal(reponsePdf.headers()["content-type"], "application/pdf");
+  // **Et il est servi À ENREGISTRER, pas à lire** — 7 septembre 2026. Cette
+  // ligne exigeait `application/pdf` : c'est précisément le type qui faisait
+  // que Safari peignait la facture au lieu de la ranger (`CLAUDE.md` §5 bis —
+  // on adapte le contrôle, on ne remet pas le défaut). Que ce soit un vrai PDF
+  // reste prouvé deux lignes plus bas, par ses premiers octets.
+  assert.equal(reponsePdf.headers()["content-type"], "application/octet-stream");
   const octetsPdf = await reponsePdf.body();
   assert.equal(octetsPdf.slice(0, 5).toString("ascii"), "%PDF-");
 

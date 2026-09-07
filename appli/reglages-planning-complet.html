@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Réglages — ce que « 2 chantiers par jour » donne au planning</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SA DEMANDE DU 31 AOÛT 2026, capture des Réglages à l'appui :
+
+  *« Écrit deux chantiers par jour, planning complet, et met le petit carré vert
+  foncé avec écrit "complet" du planning. Ne code rien, fais-moi un visuel. »*
+  Puis, devant une première planche qui visait le calendrier d'envoi :
+  *« c'est sur cette page que doit se faire la modification »* — l'écran
+  Réglages, le compteur « Chantiers menés en même temps ».
+
+  ─── Ce qu'il demande, et pourquoi il a raison ────────────────────────────
+
+  Aujourd'hui le compteur dit : *« 2 chantiers par jour. C'est ce qui remplit
+  votre planning. »* (`src/lib/equipes.ts`, `phraseDuCompteur`). La phrase dit
+  que le réglage remplit le planning ; elle ne montre pas CE QU'ON VERRA. Or ce
+  qu'on voit au planning, c'est une couleur — et le mot qui va avec est
+  « complet ». Le réglage et sa conséquence se lisent donc sur deux écrans
+  différents, et rien ne les relie.
+
+  ─── Ce que cette planche montre ──────────────────────────────────────────
+
+  Le même bloc de Réglages, dans quatre états, à comparer d'un doigt :
+
+    · AUJOURD'HUI — sa capture ;
+    · A · LA PHRASE — la phrase gagne le carré vert et le mot « complet » ;
+    · B · L'ÉCHELLE — les trois carrés du planning, avec ce que vaut chacun à
+      ce réglage-là (0, 1, 2 chantiers) ;
+    · C · LE JOUR — la case du planning dessinée, telle qu'il la verra.
+
+  **Le compteur marche** : le − et le + bougent le chiffre, et tout se
+  recalcule. À 3, l'échelle dit 0 / 1-2 / 3 — c'est ce qu'il faut vérifier, un
+  réglage qui ne se relit qu'à 2 ne prouve rien.
+
+  ─── Ce qui est repris du produit, et pas redessiné ───────────────────────
+
+  Les carrés sont ceux du planning (`fondDeLEtat`, `src/components/atlas/
+  MoisCharge.tsx`) : creux pour « rien », vert pâle pour « incomplet », vert
+  foncé pour « complet ». Un carré redessiné ici finirait par ne plus être
+  celui de l'écran qu'il montre.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 40px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.5}
+  .bandeau b{color:#fff}
+
+  .choix{position:sticky;top:0;z-index:9;display:flex;gap:7px;justify-content:center;flex-wrap:wrap;
+         padding:10px 12px;background:#e6e3dc;border-bottom:1px solid var(--trait)}
+  .choix button{border:1px solid var(--trait);background:transparent;border-radius:99px;
+                padding:9px 14px;font:600 12.5px/1 ui-sans-serif,sans-serif;color:var(--gris);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--papier);border-color:var(--or);color:var(--encre)}
+
+  .tel{max-width:430px;margin:16px auto 0;background:var(--fond);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);padding-bottom:6px}
+
+  .caps{font:500 10px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+  section{padding:28px 26px 0}
+  .separateur{margin:26px 0 0;border-top:1px solid var(--trait-doux)}
+
+  /* Le compteur des Réglages : deux ronds cerclés, le nombre en serif. */
+  .compteur{display:flex;align-items:center;justify-content:center;gap:30px;padding:14px 0 4px}
+  .compteur button{width:46px;height:46px;flex:none;border:0;background:transparent;border-radius:99px;
+                   box-shadow:inset 0 0 0 1px var(--trait);font:21px/1 ui-serif,Georgia,serif;
+                   color:var(--encre);cursor:pointer}
+  .compteur button[disabled]{color:var(--gris);opacity:.32;cursor:default}
+  .compteur .valeur{min-width:2ch;text-align:center;font:52px/1 ui-serif,Georgia,serif;
+                    letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+
+  .sous{margin:8px 0 0;text-align:center;font-size:12.5px;line-height:1.6;color:var(--gris)}
+
+  /* Les carrés du planning — les mêmes que la légende du calendrier. */
+  .carre{width:11px;height:11px;border-radius:3px;display:inline-block;flex:none;vertical-align:-1px;
+         background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .carre.incomplet{background:var(--pale);box-shadow:none}
+  .carre.complet{background:var(--pin);box-shadow:none}
+
+  /* B · l'échelle : trois lignes, le carré puis ce qu'il vaut. */
+  .echelle{margin:12px auto 0;display:flex;flex-direction:column;gap:7px;width:max-content}
+  .echelle > span{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--gris)}
+  .echelle b{font-weight:500;color:var(--encre-douce);min-width:74px}
+
+  /* C · le jour du planning, dessiné comme dans le calendrier. */
+  .jour{margin:12px auto 0;display:flex;align-items:center;justify-content:center;gap:12px}
+  .case{width:46px;border-radius:10px;display:flex;flex-direction:column;align-items:center;
+        justify-content:center;gap:4px;padding:5px 0}
+  .case .n{font:400 17px/1 ui-serif,Georgia,serif}
+  .case .marque{width:24px;display:flex;flex-direction:column;gap:2.5px}
+  .case .marque i{height:6px;border-radius:2px;background:var(--plage);
+                  box-shadow:inset 0 0 0 1px var(--trait);overflow:hidden;display:flex}
+  .case .marque .seg{height:100%;background:var(--pin)}
+  .jour .mot{font-size:12.5px;color:var(--gris)}
+
+  .note{max-width:430px;margin:16px auto 0;padding:0 20px;font-size:12.5px;line-height:1.6;color:#5b564c}
+  .note b{color:#2b2820}
+  .note + .note{margin-top:10px}
+</style>
+</head>
+<body data-vue="avant">
+
+<p class="bandeau">
+  <b>Votre demande du 31 août</b> — sur cette page, dire ce que le réglage donne au
+  planning : <b>le petit carré vert foncé et le mot « complet »</b>.
+  Le − et le + marchent : changez le chiffre, tout suit. <b>Rien n’est codé.</b>
+</p>
+
+<nav class="choix" aria-label="Les quatre versions">
+  <button type="button" data-vue="avant" aria-pressed="true">Aujourd’hui</button>
+  <button type="button" data-vue="phrase" aria-pressed="false">A · la phrase</button>
+  <button type="button" data-vue="echelle" aria-pressed="false">B · l’échelle</button>
+  <button type="button" data-vue="jour" aria-pressed="false">C · le jour</button>
+</nav>
+
+<div class="tel">
+  <section>
+    <p class="caps">Chantiers menés en même temps</p>
+    <div class="compteur">
+      <button type="button" data-pas="-1" aria-label="Un chantier de moins">−</button>
+      <span class="valeur" id="valeur" aria-live="polite">2</span>
+      <button type="button" data-pas="1" aria-label="Un chantier de plus">+</button>
+    </div>
+    <div id="dessous"></div>
+  </section>
+
+  <div class="separateur"></div>
+
+  <!-- Le bloc voisin, pour qu'il retrouve sa page : il ne bouge pas. -->
+  <section>
+    <p class="caps">Vos salariés</p>
+    <div class="compteur">
+      <button type="button" disabled aria-hidden="true">−</button>
+      <span class="valeur">2</span>
+      <button type="button" disabled aria-hidden="true">+</button>
+    </div>
+    <p class="sous">Leurs noms se cochent sur chaque demi-journée.</p>
+  </section>
+</div>
+
+<p class="note">
+  <b>Ce qui manque aujourd’hui.</b> La phrase dit que le réglage remplit le planning ;
+  elle ne montre pas ce que vous y verrez. Le réglage est ici, sa couleur est là-bas,
+  et rien ne les relie.
+</p>
+<p class="note">
+  <b>Les carrés sont ceux du planning</b>, pas des carrés dessinés pour l’occasion :
+  creux « rien », vert pâle « incomplet », vert foncé « complet ».
+</p>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   Les mots et les seuils viennent du produit, et d'un seul endroit chacun :
+
+     · la phrase d'aujourd'hui  → `phraseDuCompteur` (src/lib/equipes.ts)
+     · les états et leurs mots  → `etatDemi` + la légende de MoisCharge.tsx
+       (charge = chantiers ÷ capacité : < 1 incomplet, = 1 complet)
+
+   Une planche qui recalculerait autrement montrerait un écran qui n'existe pas.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const MAX = 20;
+let nombre = 2;
+
+const $ = (s) => document.querySelector(s);
+const chantiers = (n) => (n <= 1 ? "1 chantier" : n + " chantiers");
+
+/* La phrase d'aujourd'hui, mot pour mot. */
+const phraseDuCompteur = (n) =>
+  (n <= 1 ? "Un chantier" : n + " chantiers") + " par jour. C'est ce qui remplit votre planning.";
+
+function dessous() {
+  const vue = document.body.dataset.vue;
+  const n = nombre;
+
+  if (vue === "phrase") {
+    /* Sa phrase, avec le carré et le mot du planning. */
+    return '<p class="sous">' + chantiers(n) + ' par jour. Planning '
+         + '<i class="carre complet"></i> <b style="font-weight:500;color:var(--encre-douce)">complet</b>.</p>';
+  }
+
+  if (vue === "echelle") {
+    /* Ce que vaut chaque carré à CE réglage-là : c'est le chiffre qui bouge,
+       pas les mots. À 1 chantier par jour, « incomplet » n'existe pas — une
+       ligne qui dirait « 1 à 0 chantier » serait une ligne fausse. */
+    const milieu = n <= 1 ? null : (n === 2 ? "1 chantier" : "1 à " + (n - 1) + " chantiers");
+    return '<div class="echelle">'
+      + '<span><i class="carre"></i><b>rien</b>aucun chantier</span>'
+      + (milieu ? '<span><i class="carre incomplet"></i><b>incomplet</b>' + milieu + '</span>' : '')
+      + '<span><i class="carre complet"></i><b>complet</b>' + chantiers(n) + '</span>'
+      + '</div>';
+  }
+
+  if (vue === "jour") {
+    /* La case du planning, pleine : les deux barres remplies à 100 %. */
+    return '<div class="jour"><span class="case"><span class="n">12</span>'
+      + '<span class="marque"><i><span class="seg" style="width:100%"></span></i>'
+      + '<i><span class="seg" style="width:100%"></span></i></span></span>'
+      + '<span class="mot">' + chantiers(n) + ' par jour : <b style="font-weight:500;color:var(--encre-douce)">complet</b></span></div>';
+  }
+
+  return '<p class="sous">' + phraseDuCompteur(n) + '</p>';
+}
+
+function tout() {
+  $("#valeur").textContent = nombre;
+  $("#dessous").innerHTML = dessous();
+  $('[data-pas="-1"]').disabled = nombre <= 1;
+  $('[data-pas="1"]').disabled = nombre >= MAX;
+}
+
+document.addEventListener("click", (e) => {
+  const vue = e.target.closest("button[data-vue]");
+  if (vue) {
+    document.body.dataset.vue = vue.dataset.vue;
+    document.querySelectorAll(".choix button").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b === vue)));
+    tout();
+    return;
+  }
+  const pas = e.target.closest("button[data-pas]");
+  if (pas && !pas.disabled) {
+    nombre = Math.min(MAX, Math.max(1, nombre + Number(pas.dataset.pas)));
+    tout();
+  }
+});
+
+tout();
+</script>
+</body>
+</html>

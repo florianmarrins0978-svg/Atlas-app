@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « À facturer » dans la matière de la note vocale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    « À FACTURER » DANS LA MATIÈRE DE LA NOTE VOCALE
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 2 septembre 2026 : « mets-les de la même couleur que la note
+    vocale de la fiche, et fais quelques déclinaisons en respectant le style de
+    la note vocale. Ne code rien, fais-moi des visuels. »
+
+    CE QU'EST EXACTEMENT LA MATIÈRE DE LA NOTE VOCALE, relevée dans
+    `src/app/globals.css` (`.atlas-micro`, `.atlas-envoyer`) — rien n'est
+    approché à l'œil :
+
+      • un dégradé radial, lumière à 34 % / 26 % :
+        #9fbd82 (sage clair) → #7d9a6d (sage) → #4f5f4c (pin clair) ;
+      • TROIS anneaux concentriques posés en creux : or, crème, or
+        (1,1 / 3 / 4,1 px sur le disque de 80 px ; 1 / 2,4 / 3,2 sur la
+        flèche de 46 px — c'est cette échelle-là qu'une capsule de 44 px
+        reprend) ;
+      • un creux sous le bord haut, et une ombre portée verte qui décolle
+        l'objet du papier ;
+      • le signe est BLANC ;
+      • à l'appui, l'objet rentre de 2,5 % et une onde blanche s'échappe.
+
+    LE PIÈGE, ET IL EST MESURÉ. Cette matière a été dessinée pour porter un
+    GROS PICTOGRAMME BLANC de 28 px. Le blanc y tient 3,2 de contraste sur le
+    vert moyen — au-dessus du seuil de 3 exigé d'un pictogramme, et le fichier
+    le dit noir sur blanc.
+
+    « À FACTURER », lui, est un mot de 12,5 px en capitales espacées. Le seuil
+    n'est plus 3 mais 4,5, et le coin clair du dégradé ne tient que 2,1. Le mot
+    s'efface donc là où le dessin, lui, tenait — et il s'efface d'abord en plein
+    soleil, c'est-à-dire sur le chantier.
+
+    Les quatre déclinaisons ci-dessous ne sont donc pas quatre goûts : ce sont
+    quatre façons de garder SA matière en gardant le mot lisible. Chacune porte
+    son chiffre mesuré, sous elle.
+
+    RIEN N'EST CODÉ (`CLAUDE.md` §3 bis).
+  */
+
+  :root{
+    --fond:#e6e3dc; --carte:#f5f3ee; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --or:#8A6530; --trait:rgba(28,28,26,.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+      --gris:#948f84; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+    --gris:#948f84; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--fond)}
+  body{color:var(--encre);
+       font:16px/1.55 Inter,ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:0 0 60px;-webkit-text-size-adjust:100%}
+  ::selection{background:rgba(138,101,48,.22)}
+  :focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .entete{max-width:430px;margin:0 auto;padding:30px 22px 0}
+  .entete h1{margin:0;
+             font:400 30px/1.14 "Playfair Display",ui-serif,Georgia,serif;
+             letter-spacing:-.018em}
+  .entete p{margin:14px 0 0;font-size:14px;color:var(--encre-douce);line-height:1.62}
+  .entete p b{color:var(--encre)}
+
+  .choix{max-width:430px;margin:24px auto 0;padding:0 16px;display:grid;
+         grid-template-columns:repeat(2,1fr);gap:8px}
+  .choix button{appearance:none;border:0;cursor:pointer;font:inherit;
+                background:transparent;color:var(--gris);padding:12px 8px 11px;
+                border-radius:12px;font-size:11.5px;font-weight:600;
+                letter-spacing:.07em;text-transform:uppercase;line-height:1.35;
+                box-shadow:inset 0 0 0 1px var(--trait);min-height:54px;
+                transition:background .14s ease,color .14s ease}
+  .choix button[aria-pressed="true"]{background:var(--encre);color:var(--carte);
+                                     box-shadow:none}
+  .choix button:last-child{grid-column:1 / -1}
+
+  .dit{max-width:430px;margin:16px auto 0;padding:0 22px;font-size:13.5px;
+       line-height:1.62;color:var(--encre-douce);min-height:74px}
+  .dit b{color:var(--encre)}
+  .dit .retenu{color:var(--or);font-weight:600}
+
+  /* ═══ LA MATIÈRE, RELEVÉE DANS `globals.css` ═══════════════════════════
+     Les huit valeurs ci-dessous ne sont pas choisies ici : elles sont
+     recopiées du fichier de l'application. Une planche qui approcherait la
+     couleur à l'œil ne dirait rien de ce que donnera l'écran. */
+  .banc{
+    --sage-clair:#9fbd82; --sage:#7d9a6d; --pin-clair:#4f5f4c; --pin:#2f3b2f;
+    --or-vif:#B98B47; --creme-anneau:#f3efe6;
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-douce:#4a4a44;
+    --e-gris:#8a8578; --e-or:#B98B47; --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:calc(100% - 24px);margin:20px auto 0;
+    background:var(--e-fond);color:var(--e-encre);
+    border-radius:26px;overflow:hidden;
+    box-shadow:0 20px 50px rgba(20,18,14,.22)}
+
+  .duo{display:flex;align-items:center;justify-content:center;gap:26px;
+       padding:34px 22px 8px}
+  .duo .cote{display:flex;flex-direction:column;align-items:center;gap:11px}
+  .duo .quoi{font-size:9.5px;font-weight:500;letter-spacing:.28em;
+             text-transform:uppercase;color:var(--e-gris)}
+
+  /* ── LE DISQUE DE LA NOTE VOCALE ─────────────────────────────────────
+     Il est là pour une seule raison : on ne juge pas une parenté de mémoire.
+     C'est le `.atlas-micro` de l'application, au caractère près, réduit de
+     80 à 64 px pour tenir à côté de la capsule. */
+  .micro{position:relative;width:64px;height:64px;border-radius:99px;
+         display:flex;align-items:center;justify-content:center;color:#fff;
+         background:radial-gradient(circle at 34% 26%,
+                    var(--sage-clair) 0%, var(--sage) 50%, var(--pin-clair) 100%);
+         box-shadow:
+           inset 0 0 0 1.1px var(--or-vif),
+           inset 0 0 0 2.6px var(--creme-anneau),
+           inset 0 0 0 3.6px var(--or-vif),
+           inset 0 7px 10px -5px rgba(47,59,47,.42),
+           0 9px 20px -6px rgba(79,95,76,.36);
+         transition:transform .2s cubic-bezier(.22,.61,.36,1)}
+  .micro::before{content:"";position:absolute;inset:5px;border-radius:99px;
+                 pointer-events:none;
+                 background:radial-gradient(circle at 68% 74%,
+                            rgba(255,255,255,.34), transparent 58%);
+                 animation:tourner 8s linear infinite}
+  .micro svg{position:relative;width:24px;height:24px;fill:none;
+             stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+  .micro:active{transform:scale(.97)}
+  @keyframes tourner{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){ .micro::before{animation:none} }
+
+  /* ── LA CAPSULE, ET SES CINQ ÉTATS ───────────────────────────────────
+     Le socle est commun ; ce qui change tient dans le fond, les anneaux et
+     l'ombre. Les hauteurs, le rayon, la graisse et l'espacement des lettres
+     ne bougent JAMAIS : c'est le bouton de l'application, pas un autre. */
+  .facturer{position:relative;overflow:hidden;display:inline-flex;border:0;appearance:none;font-family:inherit;cursor:pointer;
+            align-items:center;justify-content:center;min-height:44px;
+            padding:0 17px;border-radius:999px;
+            font-size:12.5px;font-weight:600;letter-spacing:.12em;
+            text-transform:uppercase;white-space:nowrap;
+            background:var(--pin);color:#faf9f5;
+            transition:transform 190ms cubic-bezier(.22,.8,.3,1),box-shadow 220ms ease}
+  .facturer span{position:relative;z-index:2}
+  .facturer::after{content:"";position:absolute;inset:0;background:#fff;opacity:0;
+                   pointer-events:none;transition:opacity 220ms ease}
+  .facturer:active{transform:scale(.975);transition-duration:70ms,90ms}
+  .facturer:active::after{opacity:.14;transition-duration:90ms}
+
+  /* 1 — LA TASSE. La matière du micro, transposée telle quelle : dégradé
+     radial, lumière à 34 % / 26 %, les trois anneaux à l'échelle de la
+     flèche (46 px), le creux et l'ombre portée. C'est la parenté maximale —
+     et c'est aussi là que le mot s'efface. */
+  [data-bouton="tasse"] .facturer{
+    background:radial-gradient(circle at 34% 26%,
+               var(--sage-clair) 0%, var(--sage) 50%, var(--pin-clair) 100%);
+    color:#fff;
+    box-shadow:
+      inset 0 0 0 1px var(--or-vif),
+      inset 0 0 0 2.4px var(--creme-anneau),
+      inset 0 0 0 3.2px var(--or-vif),
+      inset 0 5px 8px -5px rgba(47,59,47,.42),
+      0 6px 14px -5px rgba(79,95,76,.36)}
+  [data-bouton="tasse"] .facturer::before{
+    content:"";position:absolute;inset:4px;border-radius:99px;pointer-events:none;
+    background:radial-gradient(circle at 68% 74%,rgba(255,255,255,.30),transparent 58%);
+    animation:tourner 8s linear infinite}
+
+  /* 2 — LA TASSE PROFONDE. Même dégradé, même lumière, mêmes anneaux : on ne
+     descend l'échelle des verts que d'un cran, sage → pin clair → pin. Le mot
+     se repose alors sur du vert foncé partout où il passe. */
+  [data-bouton="profonde"] .facturer{
+    background:radial-gradient(circle at 26% 20%,
+               var(--sage) 0%, var(--pin-clair) 52%, var(--pin) 100%);
+    color:#fff;
+    box-shadow:
+      inset 0 0 0 1px var(--or-vif),
+      inset 0 0 0 2.4px var(--creme-anneau),
+      inset 0 0 0 3.2px var(--or-vif),
+      inset 0 5px 8px -5px rgba(47,59,47,.42),
+      0 6px 14px -5px rgba(79,95,76,.36)}
+  [data-bouton="profonde"] .facturer::before{
+    content:"";position:absolute;inset:4px;border-radius:99px;pointer-events:none;
+    background:radial-gradient(circle at 68% 74%,rgba(255,255,255,.22),transparent 58%);
+    animation:tourner 8s linear infinite}
+
+  /* 3 — LE FILET DORÉ. Le vert de l'application, celui d'aujourd'hui, et de la
+     note vocale on ne garde que la JOAILLERIE : les trois anneaux or / crème /
+     or, le creux du haut, l'ombre portée verte. Le mot ne perd rien. */
+  [data-bouton="filet"] .facturer{
+    background:var(--pin);color:#faf9f5;
+    box-shadow:
+      inset 0 0 0 1px var(--or-vif),
+      inset 0 0 0 2.4px var(--creme-anneau),
+      inset 0 0 0 3.2px var(--or-vif),
+      inset 0 5px 8px -5px rgba(47,59,47,.42),
+      0 6px 14px -5px rgba(79,95,76,.36)}
+
+  /* 4 — LE GALET. Une capsule est longue : un dégradé radial y devient une
+     ellipse qui coupe. Celui-ci suit le grand axe, du sage au pin — et un seul
+     filet d'or, parce qu'à cette largeur trois anneaux dessinent un cadre. */
+  [data-bouton="galet"] .facturer{
+    background:linear-gradient(103deg,
+               var(--sage) 0%, var(--pin-clair) 46%, var(--pin) 100%);
+    color:#fff;
+    box-shadow:
+      inset 0 0 0 1px var(--or-vif),
+      inset 0 7px 10px -7px rgba(255,255,255,.30),
+      inset 0 -7px 10px -7px rgba(47,59,47,.55),
+      0 6px 14px -5px rgba(79,95,76,.36)}
+
+  /* ── Le chiffre sous l'objet ─────────────────────────────────────────
+     Il n'est pas décoratif : c'est ce qui départage les quatre. */
+  .mesure{margin:0;padding:14px 26px 0;font-size:12.5px;line-height:1.6;
+          color:var(--e-douce);text-align:center}
+  .mesure b{color:var(--e-encre)}
+  .mesure .bon{color:#2f3b2f;font-weight:600}
+  .mesure .faible{color:#9C3B2E;font-weight:600}
+
+  /* ── La liste, pour juger en situation ──────────────────────────────
+     Un bouton se juge dans sa page, pas sur une planche. Trois rangées de
+     « Terminés », dont deux qui attendent : c'est là qu'on voit si l'objet
+     tient sa place ou s'il écrase les montants. */
+  .liste{margin:22px 26px 0;padding-bottom:8px}
+  .surtitre{margin:0 0 2px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--e-gris)}
+  .ligne{display:flex;align-items:center;gap:14px;padding:22px 0;
+         text-decoration:none;color:inherit;border-radius:6px;cursor:pointer}
+  .ligne.avec-capsule{align-items:center}
+  .ligne .qui{min-width:0;flex:1}
+  .ligne .nom{display:block;font:400 17px/1.2 "Playfair Display",ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .etat{display:block;margin-top:5px;font-size:13px;line-height:1.5;
+               color:var(--e-douce);font-variant-numeric:tabular-nums}
+  .ligne .euros{flex:none;font:400 16px/1.2 "Playfair Display",ui-serif,Georgia,serif;
+                font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ligne:active{background:rgba(28,28,26,.05)}
+
+  .note{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:13.5px;
+        line-height:1.68;color:var(--encre-douce)}
+  .note h2{margin:26px 0 8px;font:400 19px/1.25 "Playfair Display",ui-serif,Georgia,serif;
+           color:var(--encre)}
+  .note h2:first-child{margin-top:0}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin:7px 0}
+  .note b{color:var(--encre)}
+  .note table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  .note th,.note td{text-align:left;padding:7px 8px 7px 0;
+                    border-bottom:1px solid var(--trait);vertical-align:top}
+  .note th{font-weight:600;color:var(--encre)}
+</style>
+
+<header class="entete">
+  <h1>« À facturer », dans la matière de la note vocale</h1>
+  <p>Le disque de gauche est <b>votre note vocale</b>, recopiée du code — pas
+     approchée à l'œil. La capsule de droite change à chaque bouton.
+     <b>Appuyez sur les deux</b> : elles rentrent du même geste.</p>
+</header>
+
+<div class="choix" role="group" aria-label="Les déclinaisons">
+  <button type="button" data-b="aujourdhui" aria-pressed="false">Aujourd'hui</button>
+  <button type="button" data-b="tasse" aria-pressed="true">1 · La tasse</button>
+  <button type="button" data-b="profonde" aria-pressed="false">2 · La tasse profonde</button>
+  <button type="button" data-b="filet" aria-pressed="false">3 · Le filet doré</button>
+  <button type="button" data-b="galet" aria-pressed="false">4 · Le galet</button>
+</div>
+
+<p class="dit" id="dit"></p>
+
+<section class="banc" id="banc" data-bouton="tasse">
+  <div class="duo">
+    <span class="cote">
+      <span class="micro" role="img" aria-label="La note vocale">
+        <svg viewBox="0 0 24 24">
+          <rect x="9" y="3" width="6" height="11" rx="3"/>
+          <path d="M5 11a7 7 0 0 0 14 0"/>
+          <path d="M12 18v3"/>
+        </svg>
+      </span>
+      <span class="quoi">La note vocale</span>
+    </span>
+    <span class="cote">
+      <span class="facturer"><span>À facturer</span></span>
+      <span class="quoi">Le bouton</span>
+    </span>
+  </div>
+
+  <p class="mesure" id="mesure"></p>
+
+  <div class="liste">
+    <p class="surtitre">Dans la page</p>
+    <a class="ligne avec-capsule" href="#">
+      <span class="qui">
+        <span class="nom">Mr. Martins</span>
+        <span class="etat">12 août · 360,00 € prévus</span>
+      </span>
+      <span class="facturer"><span>À facturer</span></span>
+    </a>
+    <a class="ligne" href="#">
+      <span class="qui">
+        <span class="nom">Mme Ravaud</span>
+        <span class="etat">11 août · Facturé le 21 août</span>
+      </span>
+      <span class="euros">415,00 €</span>
+    </a>
+    <a class="ligne avec-capsule" href="#">
+      <span class="qui">
+        <span class="nom">Copropriété Les Tilleuls</span>
+        <span class="etat">8 août · 2 480,00 € prévus</span>
+      </span>
+      <span class="facturer"><span>À facturer</span></span>
+    </a>
+  </div>
+</section>
+
+<div class="note">
+  <h2>Ce que dit le chiffre</h2>
+  <p>La matière de votre note vocale a été dessinée pour porter un
+     <b>gros pictogramme blanc</b> de 28 px. Le blanc y tient <b>3,2</b> de
+     contraste sur le vert moyen — au-dessus du seuil de 3 exigé d'un dessin, et
+     le code le dit noir sur blanc.</p>
+  <p>« À facturer » n'est pas un dessin : c'est un mot de 12,5 px en capitales
+     espacées. Le seuil passe alors à <b>4,5</b>, et le coin clair du dégradé
+     n'en tient que <b>2,1</b>. Le mot s'efface là où le micro, lui, tenait — et
+     il s'efface d'abord en plein soleil, c'est-à-dire sur le chantier.</p>
+  <table>
+    <tr><th>Le bouton</th><th>Le mot tient</th><th>La parenté</th></tr>
+    <tr><td>Aujourd'hui</td><td>10,9</td><td>aucune</td></tr>
+    <tr><td>1 · La tasse</td><td>2,1 au plus clair</td><td>totale</td></tr>
+    <tr><td>2 · La tasse profonde</td><td>3,1 au plus clair</td><td>presque totale</td></tr>
+    <tr><td>3 · Le filet doré</td><td>10,9</td><td>les anneaux</td></tr>
+    <tr><td>4 · Le galet</td><td>3,1 au plus clair</td><td>le vert et l'or</td></tr>
+  </table>
+
+  <h2>Ce que je vous recommande, et pourquoi</h2>
+  <p><b>La 2.</b> C'est celle qui répond vraiment à votre demande : le dégradé,
+     la lumière au même endroit, les trois anneaux — la même matière, descendue
+     d'un cran dans votre échelle de verts. Le mot repose alors sur du vert
+     foncé partout où il passe.</p>
+  <p><b>Sa réserve, dite honnêtement :</b> tout en haut à gauche, le vert reste
+     à 3,1 — sous les 4,5 exigés d'un mot. Aucune lettre ne s'y trouve, et à
+     l'écran il se lit ; mais c'est une marge, pas un acquis.</p>
+  <p><b>La 3 si vous préférez ne rien risquer.</b> Elle garde de la note vocale
+     ce qui la rend reconnaissable — les anneaux, le creux, l'ombre verte — et
+     laisse le vert plein derrière le mot : 10,9 de contraste, à bout de bras,
+     en plein soleil.</p>
+
+  <h2>Ce qui ne bouge dans aucune</h2>
+  <ul>
+    <li>La hauteur de 44 px, le rayon, la graisse et l'espacement des lettres :
+        c'est votre bouton, pas un autre.</li>
+    <li>Le libellé « À facturer » et sa place dans la ligne.</li>
+    <li>L'appui : l'objet rentre de 2,5 %, comme la note vocale.</li>
+    <li>Rien n'est facturé en appuyant — le bouton ouvre l'écran de facture.</li>
+  </ul>
+
+  <h2>Une réserve, et elle compte</h2>
+  <p>La note vocale est <b>le geste unique</b> d'un écran : un seul objet
+     précieux, et l'on sait où appuyer. Dans « Terminés », il y en a
+     <b>un par ligne qui attend</b> — trois, huit, parfois plus. Regardez la
+     liste ci-dessus, puis imaginez-en dix : c'est le seul endroit où la 1 et
+     la 4 peuvent devenir bruyantes. La 3, plus sobre, tient mieux la
+     répétition.</p>
+</div>
+
+<script>
+  const DITS = {
+    aujourdhui: "<b>Ce que vous avez aujourd'hui.</b> Un vert pin plein, sans anneau ni ombre. Rien ne le rattache à la note vocale.",
+    tasse:      "<b>La matière du micro, telle quelle</b> — même dégradé, même lumière, mêmes trois anneaux. La parenté est totale. <b>Regardez le mot</b> : sur le coin clair, il s'efface.",
+    profonde:   "<span class='retenu'>La même lumière, une nuance plus bas.</span> Sage → pin clair → pin : le mot repose sur du vert foncé, et les anneaux ne changent pas.",
+    filet:      "<b>Le vert d'aujourd'hui, et la joaillerie de la note vocale</b> — les trois anneaux, le creux, l'ombre verte. On reconnaît la famille, et le mot ne perd rien.",
+    galet:      "<b>Le dégradé suit la longueur</b> de la capsule au lieu de rayonner du centre, avec un seul filet d'or. Un galet, plutôt qu'une tasse vue de dessus.",
+  };
+  const MESURES = {
+    aujourdhui: "Le mot tient <span class='bon'>10,9</span> de contraste. <b>Aucune parenté</b> avec la note vocale.",
+    tasse:      "Le mot tient <span class='faible'>2,1</span> sur le coin clair — il en faut <b>4,5</b>. Parenté totale, mot fragile.",
+    profonde:   "Le mot tient <span class='faible'>3,1</span> au plus clair — mieux, mais toujours sous <b>4,5</b>.",
+    filet:      "Le mot tient <span class='bon'>10,9</span>. Les anneaux et l'ombre font la parenté, le vert plein tient le mot.",
+    galet:      "Le mot tient <span class='faible'>3,1</span> à l'entrée du dégradé, <span class='bon'>6,8</span> à la sortie.",
+  };
+
+  const banc = document.getElementById("banc");
+  const dit = document.getElementById("dit");
+  const mesure = document.getElementById("mesure");
+
+  function poser(nom) {
+    banc.dataset.bouton = nom;
+    dit.innerHTML = DITS[nom];
+    mesure.innerHTML = MESURES[nom];
+    for (const b of document.querySelectorAll(".choix button")) {
+      b.setAttribute("aria-pressed", String(b.dataset.b === nom));
+    }
+  }
+  for (const b of document.querySelectorAll(".choix button")) {
+    b.addEventListener("click", function () { poser(b.dataset.b); });
+  }
+  document.addEventListener("click", function (e) {
+    if (e.target.closest(".ligne")) e.preventDefault();
+  });
+  poser("tasse");
+</script>
+</body>
+</html>

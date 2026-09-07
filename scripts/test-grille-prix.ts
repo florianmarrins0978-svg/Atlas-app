@@ -108,11 +108,11 @@ cas("une seule mesure ne désigne rien", () => {
 cas("les deux mesures désignent une case, et son libellé se lit", () => {
   const c = celluleFendage(12, 45, AXES_PAR_DEFAUT)!;
   assert.equal(c.cle, "h10|d40");
-  assert.equal(c.libelle, "10 à 15 m de haut · tronc de 40 à 50 cm");
+  assert.equal(c.libelle, "10 à 15 m de haut · tronc de ⌀ 40 à 50 cm");
 });
 
 cas("une case se retrouve depuis sa clé, et une clé inventée ne rend rien", () => {
-  assert.equal(celluleDepuisCle("h10|d40", AXES_PAR_DEFAUT)!.libelle, "10 à 15 m de haut · tronc de 40 à 50 cm");
+  assert.equal(celluleDepuisCle("h10|d40", AXES_PAR_DEFAUT)!.libelle, "10 à 15 m de haut · tronc de ⌀ 40 à 50 cm");
   for (const fausse of ["", "h99|d40", "h10", "d40|h10", "; DROP TABLE"]) {
     assert.equal(celluleDepuisCle(fausse, AXES_PAR_DEFAUT), null, `« ${fausse} » a désigné une case`);
   }

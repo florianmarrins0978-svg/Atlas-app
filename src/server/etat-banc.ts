@@ -52,6 +52,18 @@ export type EtatConstructionBanc = {
   total: number;
   /** Celui qui compile à cet instant, s'il est connu. */
   encours: string | null;
+  /**
+   * Sert-on la version rapide **PRÉCÉDENTE** pendant que la neuve se construit ?
+   *
+   * **Ce champ existe pour ne pas rouvrir le malentendu du 12 août 2026**, qui a
+   * coûté deux heures : « le commit récupéré » et « le commit servi » ne sont
+   * pas le même, et rien à l'écran ne le disait. Depuis le 31 août au soir,
+   * `scripts/banc.mjs` garde la version d'avant en service pendant qu'il bâtit
+   * — l'application est donc rapide, et en retard. Taire le second point
+   * reviendrait à lui faire essayer une correction sur du code qui ne la porte
+   * pas, ce qui est exactement la panne qu'on lui a déjà fait chercher.
+   */
+  versionDavant: boolean;
 };
 
 /** Où `scripts/prechauffer.mjs` dépose son avancement. */
@@ -74,7 +86,7 @@ export function lireEtatConstruction(brut: string | null): EtatConstructionBanc 
   // Pas encore de fichier : le préchauffage n'a pas commencé, mais la
   // construction, elle, a bien démarré. On le dit — sans compte, puisqu'on ne
   // l'a pas. Inventer « 0 sur 19 » serait inventer un total.
-  if (brut === null || brut.trim() === "") return { faits: 0, total: 0, encours: null };
+  if (brut === null || brut.trim() === "") return { faits: 0, total: 0, encours: null, versionDavant: false };
 
   let objet: unknown;
   try {
@@ -82,9 +94,10 @@ export function lireEtatConstruction(brut: string | null): EtatConstructionBanc 
   } catch {
     // Lu pendant son écriture : le fichier est tronqué, et ce n'est pas une
     // panne. On retombe sur « ça travaille », jamais sur une erreur.
-    return { faits: 0, total: 0, encours: null };
+    return { faits: 0, total: 0, encours: null, versionDavant: false };
   }
-  if (typeof objet !== "object" || objet === null) return { faits: 0, total: 0, encours: null };
+  if (typeof objet !== "object" || objet === null)
+    return { faits: 0, total: 0, encours: null, versionDavant: false };
 
   const etat = objet as Record<string, unknown>;
   if (etat.termine === true) return null;
@@ -96,7 +109,11 @@ export function lireEtatConstruction(brut: string | null): EtatConstructionBanc 
   const faits = total === 0 ? entier(etat.faits) : Math.min(total, entier(etat.faits));
   const encours = typeof etat.encours === "string" && etat.encours !== "" ? etat.encours : null;
 
-  return { faits, total, encours };
+  // `versionDavant` ne sort JAMAIS de ce fichier-là : il dit l'avancement du
+  // préchauffage, pas ce qui est servi. C'est `etatConstructionBanc` qui le
+  // pose, et lui seul — deux sources pour une même réponse finiraient par se
+  // contredire (`CLAUDE.md` §3).
+  return { faits, total, encours, versionDavant: false };
 }
 
 /**
@@ -115,8 +132,87 @@ export function laVersionRapideSeConstruit(env: NodeJS.ProcessEnv = process.env)
   return env.NODE_ENV !== "production";
 }
 
+/** Où `scripts/banc.mjs` dit qu'une construction est en cours, et laquelle. */
+const TEMOIN_CONSTRUCTION =
+  process.env.ATLAS_TEMOIN_CONSTRUCTION || "/tmp/atlas-construction-en-cours.json";
+
+/**
+ * Ce que le témoin de construction apprend, ou `null` s'il ne dit rien.
+ *
+ * **Fonction pure, et elle reçoit le verdict de vie du processus** plutôt que
+ * de le demander elle-même : c'est ce qui la rend éprouvable sans banc, et
+ * c'est là que vivent les pièges — un fichier tronqué parce qu'on l'a lu
+ * pendant son écriture, un pid qui n'en est pas un, un reste d'un banc mort.
+ *
+ * **Le pid n'est pas une décoration.** Un banc tué en pleine construction —
+ * ce qui arrive sur son espace, où le noyau abat ce qui prend trop de mémoire —
+ * laisse son témoin derrière lui. Sans cette vérification, le bandeau
+ * annoncerait une construction en cours pour toujours, et le patron
+ * attendrait quelque chose que plus personne ne fait : c'est exactement la
+ * faute du 20 août (`src/lib/version-lente.ts`).
+ */
+export function lireChantier(
+  brut: string | null,
+  vivant: (pid: number) => boolean
+): { versionDavant: boolean } | null {
+  if (brut === null || brut.trim() === "") return null;
+  let objet: unknown;
+  try {
+    objet = JSON.parse(brut);
+  } catch {
+    return null;
+  }
+  if (typeof objet !== "object" || objet === null) return null;
+  const chantier = objet as Record<string, unknown>;
+  const pid = chantier.pid;
+  if (typeof pid !== "number" || !Number.isInteger(pid) || pid <= 0) return null;
+  if (!vivant(pid)) return null;
+  return { versionDavant: chantier.versionDavant === true };
+}
+
+/** Le chantier ouvert à cet instant sur CETTE machine, ou `null`. */
+function chantierOuvert(): { versionDavant: boolean } | null {
+  let brut: string | null = null;
+  try {
+    brut = readFileSync(TEMOIN_CONSTRUCTION, "utf8");
+  } catch {
+    return null; // Aucune construction en cours : le cas normal.
+  }
+  return lireChantier(brut, (pid) => {
+    try {
+      process.kill(pid, 0); // Ne tue rien : demande seulement s'il existe.
+      return true;
+    } catch {
+      return false;
+    }
+  });
+}
+
 /** L'état à cet instant, ou `null` s'il n'y a rien à dire. */
 export function etatConstructionBanc(): EtatConstructionBanc | null {
+  // **La version bâtie servie n'est plus une preuve que tout est prêt.**
+  // Depuis le 31 août 2026 au soir, `banc.mjs` garde la version rapide
+  // précédente en service pendant qu'il bâtit la neuve : `NODE_ENV` vaut alors
+  // `production`, et `laVersionRapideSeConstruit()` répond « non » — ce qui
+  // était juste tant que servir bâti signifiait servir à jour. Le témoin de
+  // chantier est le seul à connaître la différence.
+  //
+  // **`estBancDEssai()` sans argument, et surtout pas les variables à la main.**
+  // Les nommer ici en ferait une SECONDE décision de ce qu'est un banc — c'est
+  // le défaut de M12, où trois endroits lisaient `ATLAS_BANC_ESSAI` et
+  // ignoraient tous `ATLAS_PROFIL`, la seule marque que `demarrer.sh` pose
+  // vraiment. `scripts/test-mise-a-jour-role-db.ts` refuse ce retour, et il
+  // vient de le refuser.
+  const chantier = estBancDEssai() && chantierOuvert();
+
+  // On sert la version d'AVANT : il n'y a aucun préchauffage à raconter — les
+  // écrans sortent déjà en quelques millisecondes. Ce qu'il faut dire tient en
+  // un mot, et c'est le seul qui compte : ce n'est pas le code de tout à
+  // l'heure.
+  if (chantier && chantier.versionDavant) {
+    return { faits: 0, total: 0, encours: null, versionDavant: true };
+  }
+
   if (!laVersionRapideSeConstruit()) return null;
   let brut: string | null = null;
   try {
@@ -126,6 +222,21 @@ export function etatConstructionBanc(): EtatConstructionBanc | null {
     // information, pas une panne.
   }
   return lireEtatConstruction(brut);
+}
+
+/**
+ * Le bandeau a-t-il quelque chose à dire sur cet écran ?
+ *
+ * **Une condition de plus que `laVersionRapideSeConstruit`, et elle a failli
+ * manquer.** La disposition ne rendait le bandeau QUE sous `NODE_ENV`
+ * développement. Depuis que le banc sert la version précédente pendant qu'il
+ * bâtit, ce test-là répond « non » au moment exact où l'on a quelque chose à
+ * dire : le composant n'aurait jamais été monté, et tout ce qu'il annonce
+ * serait resté lettre morte. C'est la faute du 28 août — un geste écrit,
+ * éprouvé, et injoignable faute d'une porte (`CLAUDE.md` §5 quater).
+ */
+export function leBandeauDoitParler(): boolean {
+  return laVersionRapideSeConstruit() || etatConstructionBanc() !== null;
 }
 
 /** Le verrou du veilleur, tel que `.devcontainer/veiller.sh` le pose. */

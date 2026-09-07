@@ -159,6 +159,15 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/chantiers/xxxx/facture",
     "/reglages/abonnement",
     "/reglages/documents",
+    // **Les quatre écrans du découpage du 7 septembre 2026**, et leur présence
+    // ici est une bonne nouvelle : `cheminAutorise` les a refusés d'elle-même,
+    // par héritage de `/reglages/documents`. C'est exactement ce que ce contrôle
+    // sert à voir — une adresse neuve qui hérite d'un refus en SILENCE serait le
+    // jour où l'on en pose une qui ne devait pas l'hériter.
+    "/reglages/documents/allure",
+    "/reglages/documents/conditions",
+    "/reglages/documents/message",
+    "/reglages/documents/numero",
     "/reglages/donnees",
     "/reglages/equipe",
     // **Ajoutée le 26 août 2026 par ce contrôle lui-même**, et c'est ce qu'on

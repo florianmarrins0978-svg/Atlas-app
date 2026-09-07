@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import { renommerCompteAction } from "./actions";
 
 /**
@@ -71,12 +72,12 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
         className="mx-[26px] mt-[30px] border-t pt-[18px] [&>*:last-child]:border-b-0"
         style={{ borderColor: colors.line }}
       >
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
           Qui vous êtes
         </p>
 
         <label className="block border-b py-[13px]" style={{ borderColor: colors.line }}>
-          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             Nom
           </span>
           <input
@@ -97,7 +98,7 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
         </label>
 
         <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
-          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+          <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             E-mail
           </span>
           <span
@@ -115,7 +116,7 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
               **Mais la ligne ne disparaît pas**, contrairement à celle du nom :
               un champ qui ne s'ouvre pas quand on le touche se lit comme une
               panne, et il chercherait ce qu'il a mal fait. */}
-          <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.muted }}>
+          <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
             Sert aussi à vous connecter. Pas encore modifiable.
           </span>
         </div>
@@ -147,43 +148,4 @@ export function initialesDe(nom: string, email: string): string {
   if (mots.length === 1) return mots[0].slice(0, 2).toUpperCase();
   const avant = email.split("@")[0] ?? "";
   return (avant.slice(0, 2) || "?").toUpperCase();
-}
-
-/**
- * Le bouton du bas, posé SUR l'écran — sa réponse « À » du 14 août 2026.
- *
- * Il se pose sur `--atlas-barre`, jamais sur un nombre écrit à la main : la
- * hauteur de la barre du bas comprend `env(safe-area-inset-bottom)`, nulle sur
- * un ordinateur et d'une vingtaine de pixels sur un iPhone à encoche.
- */
-function BarreEnregistrer({
-  aEcrire,
-  enCours,
-  onEnregistrer,
-}: {
-  aEcrire: boolean;
-  enCours: boolean;
-  onEnregistrer: () => void;
-}) {
-  const rien = !aEcrire && !enCours;
-  return (
-    <div
-      className="fixed inset-x-0 z-10 mx-auto max-w-md border-t px-[26px] pb-4 pt-3.5"
-      style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
-    >
-      <button
-        type="button"
-        onClick={onEnregistrer}
-        disabled={rien}
-        className="block w-full rounded-full py-[15px] text-center text-[16px]"
-        style={{
-          backgroundColor: rien ? colors.card : colors.rust,
-          color: rien ? colors.muted : colors.cream,
-          boxShadow: rien ? `inset 0 0 0 1px ${colors.line}` : "none",
-        }}
-      >
-        {enCours ? "Enregistrement…" : rien ? "Enregistré ✓" : "Enregistrer"}
-      </button>
-    </div>
-  );
 }

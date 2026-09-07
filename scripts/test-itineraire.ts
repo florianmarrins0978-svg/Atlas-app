@@ -80,6 +80,14 @@ test("Plans demande un itinéraire en voiture", () => {
   assert.equal(new URL(liens!.plans).searchParams.get("dirflg"), "d");
 });
 
+// Même piège chez Google, et il se retient plus longtemps : le mode de trajet
+// est mémorisé d'une session à l'autre. C'est le lien que sert le bouton
+// « Maps » de la feuille de chantier depuis le 31 août 2026.
+test("Google Maps demande un itinéraire en voiture", () => {
+  const liens = liensItineraire(ADRESSE);
+  assert.equal(new URL(liens!.google).searchParams.get("travelmode"), "driving");
+});
+
 test("Waze démarre la navigation au lieu de poser un point sur la carte", () => {
   const liens = liensItineraire(ADRESSE);
   assert.equal(new URL(liens!.waze).searchParams.get("navigate"), "yes");

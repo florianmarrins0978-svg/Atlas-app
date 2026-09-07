@@ -69,12 +69,6 @@ const AUTORISEES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
     pourquoi: "feuilleter les années du calendrier de TVA",
   },
   {
-    fichier: "src/app/termines/tva/page.tsx",
-    motif: /libellePeriode\((precedent|suivant)\)/,
-    pourquoi:
-      "période précédente et suivante, à sa demande du 12 août 2026 : « le calendrier se glisse ENTRE les deux flèches »",
-  },
-  {
     fichier: "src/components/atlas/MoisCharge.tsx",
     motif: /← Aujourd/,
     pourquoi: "revenir au mois courant — la flèche EST le retour, elle ne suit pas un libellé",
@@ -89,6 +83,19 @@ const AUTORISEES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
     fichier: "src/lib/retouches-devis.ts",
     motif: /detail:/,
     pourquoi: "« 250 € → 350 € » : la flèche dit avant/après, elle ne décore pas",
+  },
+  {
+    fichier: "src/app/EcranChantiers.tsx",
+    motif: /^\s*›\s*$/,
+    pourquoi:
+      "« Vos clients › » — sa demande du 6 septembre 2026 : « il faut rajouter un " +
+      "chevron pour qu'on sache qu'on puisse cliquer dessus ». C'est le seul mot de " +
+      "cet en-tête qui mène ailleurs, et rien d'autre ne le dit : le titre au-dessus " +
+      "et le compteur en dessous ne s'appuient pas. " +
+      "IL EXISTAIT DÉJÀ, DESSINÉ EN CSS — un carré tourné à 45° que ce contrôle ne " +
+      "pouvait pas voir, puisqu'il cherche des caractères. Une exception invisible " +
+      "n'est pas une exception, c'est un trou : il s'écrit désormais en toutes " +
+      "lettres, et il se déclare ici",
   },
 ];
 

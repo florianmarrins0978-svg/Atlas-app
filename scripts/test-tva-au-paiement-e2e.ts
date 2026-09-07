@@ -64,9 +64,10 @@ async function chantierRealise(page: Page, suffixe: string) {
   const client = `M. Bernard ${suffixe} ${Date.now()}`;
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const url = page.url();
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
   const chantierId = url.split("/").pop()!;
 
   await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
@@ -265,6 +266,11 @@ async function main() {
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const avant = await collectee(page);
 
+    // **Le régime vit dans une feuille depuis le 3 septembre 2026** : il
+    // ouvrait l'écran, avant le titre et le premier chiffre. On rejoue donc le
+    // geste du patron — la ligne de provenance, puis le choix. La feuille reste
+    // ensuite ouverte, `RegimeTva` ne faisant que rafraîchir.
+    await page.click('[data-atlas="declarations"]');
     await page.getByRole("radio", { name: /Le mois où j'envoie la facture/ }).click();
     await page.waitForFunction(
       (a) => {
@@ -312,6 +318,9 @@ async function main() {
     const { chantierId } = await chantierRealise(page, "ecart");
     await emettre(page, chantierId); // émise, et jamais payée
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    // La phrase accompagne le choix, et le choix est dans la feuille : c'est
+    // là qu'on se demande ce qu'il change, et nulle part ailleurs.
+    await page.click('[data-atlas="declarations"]');
 
     const phrase = page.locator('[data-atlas="ecart-des-regimes"]');
     assert.equal(await phrase.count(), 1, "la phrase qui dit ce que le choix change a disparu");

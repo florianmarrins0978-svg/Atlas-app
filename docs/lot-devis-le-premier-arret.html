@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La page du devis — le premier arrêt</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-page-du-devis--le-premier-arrêt">La page du devis — le premier arrêt</h1>
+<p><strong>4 septembre 2026.</strong> Lot demandé sur l'écran <code>/chantiers/[id]/devis-complet</code>, là où le patron relit, corrige et valide son devis avant qu'il parte.</p>
+<p>Ce document répond au brief <code>docs/prompt-impeccable-devis-cote-patron.md</code>, point par point. Ce qui a été refusé y est écrit, avec ce que ça aurait coûté.</p>
+<hr>
+<h2 id="ce-qui-a-été-trouvé-et-ce-qui-a-été-fait">Ce qui a été trouvé, et ce qui a été fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="1-le-refus-le-plus-probable-arrivait-en-dernier--corrigé">1. Le refus le plus probable arrivait en dernier — CORRIGÉ</h3>
+<p><strong>Le défaut.</strong> Une ligne « à chiffrer » — l'issue normale d'une dictée dont un prix manque — n'empêchait rien sur cet écran :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>le bouton « Choisir la date »</td>
+<td>ouvert sans condition</td>
+</tr>
+<tr>
+<td>la feuille des dates</td>
+<td>ne connaît pas ce blocage : elle n'en porte que quatre (<code>preparation-envoi.ts</code>), et celui-là n'y est pas</td>
+</tr>
+<tr>
+<td>le refus</td>
+<td>tombait au serveur, après le choix de la date (<code>repositories/devis.ts</code>)</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et la phrase du refus l'envoyait où il se tenait déjà :</strong> <em>« Posez leur montant sur l'écran du devis, puis revenez ici. »</em> Elle a été écrite quand la feuille d'envoi vivait sur <code>/export</code> ; depuis le 20 août 2026, elle s'ouvre depuis le devis lui-même.</p>
+<p>Or <strong>l'écran savait déjà</strong> : il écrit « à chiffrer » en or en face de la ligne, quelques centimètres plus haut. Il refusait de conclure ce qu'il affichait.</p>
+<p><strong>Ce qui a été fait.</strong> Le refus remonte avant la feuille. À la place du bouton, l'écran dit ce qui manque — avec le nom de la ligne — et porte un geste, « Poser le prix », qui amène le doigt sur le champ concerné et l'ouvre. Le prix posé, le bouton revient de lui-même.</p>
+<p><strong>Aucune seconde règle n'a été écrite.</strong> C'est la fonction pure du dépôt qui répond (<code>lignesEnAttenteDePrix</code>, dans <code>src/lib/preparation-devis.ts</code>), celle-là même que le serveur oppose au refus : donc mot pour mot la même phrase. Le contrôle du serveur reste en place — cacher un bouton ne ferme rien, et l'action reste appelable.</p>
+<p><strong>Fichiers :</strong> <code>src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx</code>.</p>
+<h3 id="2-neuf-couleurs-écrites-en-clair--corrigé">2. Neuf couleurs écrites en clair — CORRIGÉ</h3>
+<p>Cette feuille n'a volontairement aucun cadre autour de ses champs : c'est un document, pas un formulaire. <strong>Le seul signe qu'on écrit dedans</strong> était un voile <code>rgba(0,0,0,0.03)</code>, répété huit fois, plus une ombre <code>rgba(28,28,26,0.10)</code>.</p>
+<p>Sur <strong>Nuit</strong> (<code>#1a1d19</code>) et sur <strong>Sylve</strong>, du noir à 3 % posé sur un fond noir ne se voit pas : le champ en cours de saisie devenait identique au champ au repos. C'est mot pour mot la deuxième famille de fautes du 22 août 2026 — <em>« le mode nuit est illisible »</em> —, et <code>voile()</code> existe depuis pour ça.</p>
+<p>Les neuf valeurs passent par <code>voile(colors.ink, …)</code>, posé une seule fois sur la feuille et hérité par les champs (<code>--voile-champ</code>, <code>--voile-champ-teinte</code>).</p>
+<p><strong>Pourquoi <code>test-chartes-lisibles.ts</code> ne le voyait pas :</strong> il mesure les huit chartes, pas les classes écrites dans un écran. Il ne pouvait pas l'attraper, et c'est déjà ce que son commentaire annonce.</p>
+<h3 id="3-les-1-657-lignes--découpées">3. Les 1 657 lignes — DÉCOUPÉES</h3>
+<p>299 lignes sorties dans <code>ChampsDuDevis.tsx</code> : les champs et la mise en forme, qui ne connaissent ni le devis, ni le chantier, ni le serveur. <strong>Rien n'a changé en passant</strong> — même code, mêmes classes, et le pourquoi de chacun est resté avec lui.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td><code>DevisCompletClient.tsx</code></td>
+<td>1 657</td>
+<td><strong>1 479</strong></td>
+</tr>
+<tr>
+<td><code>ChampsDuDevis.tsx</code></td>
+<td>—</td>
+<td>336</td>
+</tr>
+</tbody></table></div>
+<p><strong>Le chiffre mérite d'être dit franchement :</strong> 299 lignes sont parties, et le correctif du point 1 en a ramené 121 — dont l'essentiel est le paragraphe qui explique pourquoi ce refus vit là et pas ailleurs. L'écran perd donc 178 lignes nettes, pas 299. Un dépôt qui compte ses lignes en cachant ce qu'il rajoute ailleurs se ment à lui-même.</p>
+<p><strong>Ce qui n'a PAS été sorti, et pourquoi.</strong> Le tableau des lignes et le bloc des totaux forment des unités cohérentes, mais chacun demanderait quinze à vingt paramètres pour franchir la frontière — c'est-à-dire autant d'occasions de changer un comportement en croyant déplacer du code. Le brief dit « aucun comportement ne change en passant » ; l'extraction s'arrête donc là où le risque commence.</p>
+<h3 id="4-le-bouton-au-bout-de-26-hauteurs-décran--dessiné-puis-codé-sur-sa-lettre">4. Le bouton au bout de 2,6 hauteurs d'écran — DESSINÉ, PUIS CODÉ SUR SA LETTRE</h3>
+<p><strong>Mesuré :</strong> 2,59 hauteurs d'écran à 390 × 664 avant d'atteindre « Choisir la date », qui était le tout dernier élément de la page — après le cadre de signature. La mesure de <code>TODO.md</code> se confirme.</p>
+<p><strong>Trois façons ont été dessinées avant d'écrire une ligne</strong> (<code>appli/devis-le-premier-arret.html</code>), et il a répondu : <strong>« La B »</strong>.</p>
+<p>B est codée : le document ne bouge pas d'un pixel, et « Choisir la date » reste posé en bas de l'écran à toute hauteur de lecture. Mesuré sur l'écran réel, à 390 × 664, sur un devis de trois lignes qui fait <strong>3,32 hauteurs</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Où il en est de sa lecture</th>
+<th>Le bas du bouton</th>
+</tr></thead><tbody>
+<tr>
+<td>en haut de page</td>
+<td>648 px (fenêtre : 664)</td>
+</tr>
+<tr>
+<td>à mi-parcours</td>
+<td>648 px</td>
+</tr>
+<tr>
+<td>en bas</td>
+<td>604 px — il s'est posé à sa place</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui a été fait autrement que la maquette :</strong> le bouton est passé en pleine largeur (<code>pleineLargeur</code>). Une barre qu'on garde sous le pouce et un bouton qui n'occupe que le milieu se contredisent — vu à la capture, pas au test.</p>
+<p><strong>A a été écartée par lui</strong>, et sa raison tient : replier le document derrière « Voir le document » aurait caché ce qu'il signe sur le seul écran dont c'est le sujet.</p>
+<h3 id="5-deux-défauts-quil-a-vus-sur-son-téléphone-le-5-septembre--corrigés">5. Deux défauts qu'il a vus sur son téléphone, le 5 septembre — CORRIGÉS</h3>
+<p><strong>a) La barre collée était cachée par la barre d'onglets.</strong> <em>« Le sous le pouce est caché par le menu du bas. »</em> Le bouton était bien collé au bas de la <strong>fenêtre</strong> — et la barre du bas de l'application s'y trouvait déjà, lui mangeant la moitié. Le geste le plus important de l'écran était à moitié intouchable : la barre livrée la veille ne servait donc à rien là où il s'en sert.</p>
+<p>Elle réserve désormais la hauteur de la barre, <strong>lue là où elle est écrite</strong> (<code>--atlas-barre</code>, qui porte la barre et la marge de sécurité de l'iPhone). Un nombre écrit à la main ici vieillirait au premier changement sans que personne le voie — c'est la faute du 31 août, où « Me déconnecter partout » finissait dessous pour huit pixels. Rembourrage plutôt que <code>bottom</code> décalé : sur <code>bottom</code>, le dégradé remonterait avec le bouton et laisserait une bande de document défiler entre les deux.</p>
+<p><strong>Ce que ça dit de ma vérification de la veille :</strong> mes captures étaient prises sur un écran <strong>sans</strong> cette barre. Une mesure juste sur une page qui n'est pas la sienne ne prouve rien de la sienne.</p>
+<p><strong>b) Le refus « pas de client » l'envoyait où il était déjà.</strong> La feuille disait <em>« Ouvrez le devis pour lui donner un nom, puis revenez ici »</em> — or elle s'ouvre <strong>depuis</strong> le devis depuis le 20 août. Il devait fermer, reculer deux fois, et retrouver seul un écran qu'aucun lien n'indiquait. Sa demande : <em>« un bouton raccourci vers la fiche client, pour qu'il n'y ait pas besoin de faire retour deux fois »</em>.</p>
+<p>La phrase porte désormais le lien, et <strong>son adresse vient de la règle qui porte déjà la flèche du devis</strong> (<code>src/lib/retour-du-devis.ts</code>) — deux chemins écrits séparément vers la fiche client divergeraient. Le chemin se referme tout seul : la fiche enregistrée ramène au devis.</p>
+<p><strong>C'est le même travers que le refus « à chiffrer » du point 1</strong> : une raison juste, et pas de geste. Deux fois le même défaut sur le même parcours, à un jour d'intervalle.</p>
+<hr>
+<h2 id="ce-qui-a-été-refusé">Ce qui a été REFUSÉ</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="-le-document-entier-passe-derrière-voir-le-document--nest-pas-tranché">« Le document entier passe derrière <em>Voir le document</em> » n'est pas tranché</h3>
+<p>Le brief le range dans <strong>« DÉJÀ TRANCHÉ PAR LE PATRON — ne pas rouvrir »</strong>. C'est inexact, et c'est vérifiable :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>où ça existe</td>
+<td>uniquement dans la maquette <code>appli/moins-de-mots.html</code></td>
+</tr>
+<tr>
+<td>ce qu'en dit <code>docs/QUESTIONS.md</code> §23</td>
+<td>le paragraphe se termine sur <strong>une question sans réponse</strong> : <em>« La seule chose à me dire : ces trois écrans vous vont-ils ? »</em></td>
+</tr>
+<tr>
+<td>ce qu'en dit <code>TODO.md</code></td>
+<td><em>« Rien n'est codé »</em></td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce que le coder aurait coûté.</strong> Replier le document, c'est refondre l'écran du <strong>premier arrêt</strong> — celui où il relit ce qu'il engage — sur un accord qu'il n'a jamais donné. Et cela contredit la raison d'être de l'arrêt : <em>voir ce qu'il signe</em>. Le défaut est réel ; le remède lui appartient.</p>
+<p><strong>Trois façons sont donc dessinées plutôt que codées</strong>, à la taille de son téléphone :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que ça fait</th>
+<th>Profondeur mesurée</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Aujourd'hui</strong></td>
+<td>le document entier, puis le bouton</td>
+<td>2,96 hauteurs</td>
+</tr>
+<tr>
+<td><strong>A — Replié</strong></td>
+<td>client, total, bouton ; le document derrière « Voir le document »</td>
+<td>1,00</td>
+</tr>
+<tr>
+<td><strong>B — Sous le pouce</strong></td>
+<td>le document ne bouge pas d'un pixel, le bouton reste posé en bas de l'écran</td>
+<td>2,92, et le bouton est là à toute hauteur</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ma préférence : B.</strong> Elle règle l'accès sans rien replier de ce qu'il relit — c'est le seul écran du parcours où voir tout le document est le sujet.</p>
+<h3 id="ce-qui-na-pas-été-touché-trois-sessions-travaillant-à-côté">Ce qui n'a pas été touché, trois sessions travaillant à côté</h3>
+<p>La facture, la fiche du chantier, l'écran du client <code>/devis/[jeton]</code>, et la feuille d'envoi. Le correctif du point 1 tient <strong>entièrement dans l'écran du devis</strong> : ni <code>preparation-envoi.ts</code>, ni <code>repositories/devis.ts</code>, ni <code>export/actions.ts</code> n'ont été modifiés.</p>
+<hr>
+<h2 id="ce-qui-a-été-dit-et-qui-se-révèle-faux">Ce qui a été dit et qui se révèle FAUX</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Une erreur de mon analyse, corrigée ici noir sur blanc.</strong> J'ai d'abord retenu que le refus « à chiffrer » n'arrivait pas jusqu'à lui, parce que <code>envoyerDevis</code> <strong>lance</strong> une erreur au lieu d'en rendre une — et qu'une exception d'action serveur est remplacée en production par un identifiant opaque (<code>AGENTS.md</code>).</p>
+<p><strong>C'est faux.</strong> <code>envoyerAuClientAction</code> l'attrape et la rend en valeur (<code>raisonLisible</code>, dans <code>export/actions.ts</code>) : la phrase lui parvient bien. Le défaut n'était pas le silence — c'était <strong>le moment</strong> où le refus tombe, et <strong>l'endroit</strong> où sa phrase l'envoie.</p>
+<p><strong>Et une seconde, plus grave, parce qu'elle t'a fait perdre une journée — corrigée le 5 septembre 2026.</strong></p>
+<p>Le 4 septembre j'ai annoncé : <em>la barre d'onglets est revenue sur la page du devis et sur les pages publiques du client</em>. Je l'avais déduit d'une seule assertion rouge, <strong>sans regarder l'écran</strong> — alors que mes propres captures du soir même ne portaient aucune barre. Tu as mesuré page par page sur le serveur, tu n'as rien trouvé, et c'est allé au journal en « non reproduit ».</p>
+<p><strong>Les deux mesures étaient justes.</strong> Ce qui les séparait, c'est la façon d'arriver sur la page :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le devis ouvert…</th>
+<th>La barre</th>
+</tr></thead><tbody>
+<tr>
+<td>à son adresse, ou en rechargeant</td>
+<td><strong>absente</strong> — ta mesure</td>
+</tr>
+<tr>
+<td>en appuyant sur « Je rédige à la main »</td>
+<td><strong>présente</strong> — la suite, et ta capture iPhone</td>
+</tr>
+</tbody></table></div>
+<p>La décision vivait dans la mise en page RACINE, que Next.js ne rejoue pas sur une navigation de lien : la page gardait la barre de l'écran précédent. C'est elle qui couvrait ton bouton d'envoi.</p>
+<p><strong>Réparé :</strong> la règle est descendue dans <code>src/lib/ecrans-sans-navigation.ts</code>, appelée des deux côtés — au serveur pour ne pas peindre la barre, et par la barre elle-même, qui suit le chemin courant. La réserve de hauteur du contenu se retire avec elle. <code>ARCHITECTURE.md</code> §258.</p>
+<p><strong>Mesuré, à 390 × 664 :</strong> par le lien, 0 barre, « Choisir la date » à 652 px d'une fenêtre de 664 — exactement l'écran qu'on obtient à son adresse. Les deux captures sont superposables.</p>
+<p><strong>Ce que ça apprend, et qui vaut pour la suite :</strong> une suite rouge dit qu'une mesure a échoué, jamais laquelle des deux — le produit ou la mesure. Ici c'était le produit ; je n'avais aucun moyen de l'affirmer en l'écrivant, et « aussi sur les pages publiques du client » était faux. <strong>Et deux mesures qui se contredisent ne sont pas une erreur à arbitrer : c'est une différence qu'on n'a pas encore vue.</strong></p>
+<hr>
+<h2 id="le-contrôle-qui-tient-tout-ça">Le contrôle qui tient tout ça</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>scripts/test-devis-refus-a-chiffrer-e2e.ts</code> — et il <strong>entre par sa porte</strong>, pas par la fonction qu'on vient d'écrire (<code>CLAUDE.md</code> §5 quater) : il ouvre l'écran du devis avec une ligne qui attend son prix, et regarde ce que l'écran propose.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Il vérifie</th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>« Choisir la date » n'est pas proposé</td>
+</tr>
+<tr>
+<td>2</td>
+<td>le refus nomme sa raison <strong>et la ligne</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>« Poser le prix » met le doigt sur le bon champ</td>
+</tr>
+<tr>
+<td>4</td>
+<td>le prix posé, le bouton revient et le refus s'efface</td>
+</tr>
+</tbody></table></div>
+<p><strong>Il sait échouer :</strong> confronté à l'écran d'avant ce lot, il rougit sur la première assertion — « Choisir la date » y est présent.</p>
+<p><strong>Une limite, dite plutôt que cachée :</strong> le drapeau <code>a_chiffrer</code> ne se lève que par la dictée, qui demande une clé d'IA absente des postes de développement. La suite reproduit donc l'<strong>état</strong> que la dictée laisse, pas le chemin qui l'y amène.</p>
+<hr>
+<h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types (<code>tsc --noEmit</code>)</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Lint</td>
+<td><strong>vert</strong> — 0 erreur, 17 avertissements tous antérieurs</td>
+</tr>
+<tr>
+<td>Construction (<code>next build</code>)</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td><strong>vert</strong> — 8 fichiers</td>
+</tr>
+<tr>
+<td>Fournisseurs d'IA</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td><strong>300/310</strong></td>
+</tr>
+<tr>
+<td>Données de démonstration</td>
+<td>rouge d'abord, <strong>verte après correction de l'adresse</strong> (voir ci-dessous)</td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>70/127</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>verte</strong></td>
+</tr>
+</tbody></table></div>
+<h3 id="les-10-rouges-des-suites-base-ne-sont-à-personne">Les 10 rouges des suites base ne sont à personne</h3>
+<p><code>test-boutons-arrondis</code>, <code>test-fiche-pendant-relance</code>, <code>test-mise-a-jour-role-db</code>, <code>test-mode-emploi</code>, <code>test-ouvrir-port</code>, <code>test-relance-construction</code>, <code>test-roles-capacites-db</code>, <code>test-salarie-planning-lecture-seule-db</code>, <code>test-seed-conserve-identifiants</code>, <code>test-verrou-construction</code>.</p>
+<p>Ce sont <strong>exactement</strong> ceux que le dépôt connaît déjà : neuf de machine ou d'infrastructure, deux venus d'un lot voisin déjà sur <code>main</code>. Aucun n'est de ce lot.</p>
+<h3 id="la-batterie-ne-peut-pas-être-verte-sur-son-poste-et-ce-nest-aucun-lot">La batterie ne peut pas être verte sur son poste, et ce n'est aucun lot</h3>
+<p>Trois étapes tombaient d'un coup : « Données de démonstration » sur <code>auth_failed</code>, puis les suites navigateur et la connexion <strong>faute de jeu de démonstration</strong>. L'écran de connexion accusait alors le produit — <em>« un service d'Atlas ne répond pas »</em> — pour un mot de passe.</p>
+<p><code>verifier-avant-livraison.ts</code> code en dur celui de la CI (<code>postgres_ci_pw</code>) ; le rôle <code>postgres</code> de son Docker répond à <code>postgres_dev_pw</code>. <strong>Rejouées avec la bonne adresse, la connexion derrière un proxy est verte et le seed passe.</strong></p>
+<p><strong>Le piège de diagnostic, à ne pas retomber dedans :</strong> <code>docker exec … psql</code> accepte les deux mots de passe — l'authentification locale du conteneur est en confiance. Il faut essayer <strong>depuis l'hôte</strong> pour voir l'échec. Consigné dans <code>TODO.md</code>, avec le remède (rendre l'adresse surchargeable, défaut CI inchangé).</p>
+<h3 id="les-57-rouges-des-suites-navigateur-ne-sont-pas-de-ce-lot--mesuré-pas-supposé">Les 57 rouges des suites navigateur ne sont pas de ce lot — MESURÉ, pas supposé</h3>
+<p>70/127 est anormal, et il aurait été malhonnête de l'annoncer sans le vérifier. Cinq suites tombées ont donc été rejouées <strong>avec</strong> puis <strong>sans</strong> le lot, en remettant <code>DevisCompletClient.tsx</code> dans son état d'avant :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th><code>tva-multiple</code>, <code>brouillon</code>, <code>calcul-prix</code>, <code>choisir-la-date</code>, <code>adresse-suggestions</code></th>
+</tr></thead><tbody>
+<tr>
+<td>avec le lot</td>
+<td><strong>0/5</strong></td>
+</tr>
+<tr>
+<td>sans le lot</td>
+<td><strong>0/5</strong></td>
+</tr>
+</tbody></table></div>
+<p>Elles tombent à l'identique. Et <code>test-devis-complet-e2e</code> échoue sur la <strong>même assertion, à la même ligne</strong>, avant comme après.</p>
+<p>Les suites qui ouvrent l'écran du devis et qui passent le disent aussi : <code>test-devis-refus-a-chiffrer-e2e</code> (neuve), <code>test-devis-sans-client-e2e</code>, <code>test-devis-a-la-main-e2e</code>.</p>
+<p><strong>LA CAUSE EST CONNUE DEPUIS, ET ELLE EST CORRIGÉE — 5 septembre 2026.</strong> Elle vient de la session qui a retiré la fiche du chantier, et elle referme ce point.</p>
+<p>L'écran <code>/chantiers/[id]</code> a été retiré (<code>ARCHITECTURE.md</code> §254). Or <strong>soixante-dix suites relisaient l'identifiant du chantier DANS L'ADRESSE</strong> — <code>page.url().split("/").pop()</code> et ses variantes. Le navigateur étant désormais déposé sur <code>/chantiers/&lt;id&gt;/devis-complet</code>, elles récupéraient la chaîne « devis-complet » et la passaient pour un identifiant.</p>
+<p><strong>C'est très exactement le message que j'avais relevé sans savoir l'expliquer</strong> : <code>invalid input syntax for type uuid: "devis-complet"</code>. Aucun typecheck ne peut le voir — l'expression reste valide, seule sa valeur change.</p>
+<p>Redressées par le commit <code>917616ff</code>. Mesure de cette session après correction : <strong>suites base 301/311, suites navigateur 104/128</strong> — contre 70/127 quand j'ai mesuré.</p>
+<p><strong>Ce que ça confirme de la méthode, et c'est le seul mérite à en tirer :</strong> rejouer cinq suites tombées <strong>avec</strong> et <strong>sans</strong> le lot (0/5 des deux côtés) disait déjà que ces rouges n'étaient pas les miens. La cause réelle était ailleurs, et il aurait été faux de la deviner.</p>
+<h3 id="ce-que-jai-annoncé-et-qui-est-faux--la-barre-donglets">CE QUE J'AI ANNONCÉ ET QUI EST FAUX : la barre d'onglets</h3>
+<p><strong>J'ai écrit que la barre d'onglets était revenue sur la page du devis et sur les pages publiques du client. C'est faux.</strong></p>
+<p>Je m'appuyais sur <code>test-devis-complet-e2e</code>, qui échoue sur cette assertion (1 au lieu de 0), à l'identique avant et après le lot. Le patron l'a mesuré <strong>page par page, sur le serveur</strong> : aucune barre sur la page que reçoit son client, aucune sur le devis seul, et <code>src/app/layout.tsx</code> n'a pas bougé depuis le 31 août. <strong>Non reproduit.</strong></p>
+<p><strong>La faute n'est pas d'avoir vu la suite rouge — c'est d'en avoir déduit un défaut du produit sans regarder le produit.</strong> J'avais pourtant l'image sous les yeux : mes propres captures de l'écran du devis, prises le soir même à 390 × 664, ne portent aucune barre d'onglets. Une suite rouge dit qu'une mesure a échoué ; elle ne dit jamais laquelle des deux a tort, le produit ou la mesure.</p>
+<p><code>AGENTS.md</code> connaît ce piège dans un sens — <em>« ne pas annoncer une panne corrigée quand seul le silence l'a été »</em>. Celui-ci en est le miroir, et il mérite d'être écrit : <strong>ne pas annoncer une panne trouvée quand seul un contrôle a parlé.</strong></p>
+<h3 id="ce-que-jai-annoncé-et-qui-nest-déjà-plus-vrai--la-batterie">CE QUE J'AI ANNONCÉ ET QUI N'EST DÉJÀ PLUS VRAI : la batterie</h3>
+<p>J'ai écrit que <code>verifier:avant-livraison</code> ne pouvait pas être verte sur son poste. C'était exact au moment de la mesure ; <strong>ça ne l'est plus.</strong> Une session voisine a rendu les trois adresses surchargeables — <code>ATLAS_BASE_APP</code>, <code>ATLAS_BASE_OWNER</code>, <code>ATLAS_BASE_SUPER</code> — sans toucher au défaut de la CI. Chez lui, la batterie va au bout ainsi :</p>
+<p>``<code>bash export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test" npm run verifier:avant-livraison </code>``</p>
+<p>Ce qui reste vrai, et qui a coûté le diagnostic : <code>docker exec … psql</code> accepte les deux mots de passe — l'authentification locale du conteneur est en confiance. <strong>Il faut essayer depuis l'hôte pour voir l'échec.</strong> Porté dans <code>TODO.md</code>.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Qui peut trancher</th>
+</tr></thead><tbody>
+<tr>
+<td>~~Les 57 suites navigateur rouges~~</td>
+<td><strong>RÉGLÉ</strong> — l'identifiant du chantier relu dans l'adresse, corrigé par <code>917616ff</code> (104/128 après)</td>
+</tr>
+<tr>
+<td><strong>Une dernière batterie</strong> — six suites corrigées après la dernière mesure ne sont pas confirmées</td>
+<td>à jouer quand le patron dit que le dossier est libre</td>
+</tr>
+<tr>
+<td>« Atlas prépare toujours votre devis… (96 s) » — jamais reproduit sur un poste de développement</td>
+<td>à rendre bavard avant de corriger ; <strong>pas touché ici</strong></td>
+</tr>
+<tr>
+<td>Un artisan qui arrive les mains vides n'a jamais été essayé (<code>docs/A-FAIRE.md</code>)</td>
+<td>ouvert</td>
+</tr>
+<tr>
+<td>Le tableau et les totaux, encore dans l'écran</td>
+<td>un lot suivant, si le besoin se présente</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

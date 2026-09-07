@@ -161,6 +161,22 @@ export const entreprises = pgTable("entreprises", {
   messageClient: text("message_client"),
 
   /**
+   * Les deux autres messages (migration 0075, sa décision du 7 septembre 2026).
+   *
+   * **`message_client` est devenu celui du DEVIS**, et ces deux-là complètent :
+   * la facture et le compte rendu de passage. Un seul message pour trois
+   * documents (0062) obligeait Atlas à écrire lui-même la phrase du milieu —
+   * le seul morceau qu'il ne pouvait pas toucher, et celui qu'il voulait écrire.
+   *
+   * **`null` veut dire « celui d'Atlas »**, comme pour le devis. Et le nom
+   * `passage` suit le dépôt — `composerMessageEntretien`, la fiche de passage —
+   * plutôt que « fiche client », le mot du patron : le renommer se décide d'un
+   * bloc (`TODO.md`), ça ne se glisse pas dans une colonne.
+   */
+  messageClientFacture: text("message_client_facture"),
+  messageClientPassage: text("message_client_passage"),
+
+  /**
    * L'allure de son devis et de sa facture (migration 0063, 23 août 2026).
    *
    * **`null` veut dire « comme aujourd'hui »** — sa règle : *« les réglages
@@ -864,6 +880,19 @@ export const lignesPrix = pgTable(
      * préparé ni envoyé (`peutPreparerDevis`).
      */
     aChiffrer: boolean("a_chiffrer").notNull().default(false),
+    /**
+     * Le taux de SA catégorie de TVA (migration 0073).
+     *
+     * **Nul veut dire « suit le taux du devis »**, et c'est ce qui protège
+     * l'existant : toutes les lignes écrites avant restent nulles, donc pas un
+     * devis émis ne change d'un centime.
+     *
+     * Sa règle du 1er septembre 2026 : le taux ne se pose pas ligne par ligne
+     * mais par catégorie — l'écran groupe les lignes qui partagent le même
+     * taux. La catégorie est donc une VUE, jamais une table : deux sources
+     * auraient fini par diverger (`CLAUDE.md` §3).
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -1117,6 +1146,14 @@ export const lignesDevis = pgTable(
      * prix — qui ont pu bouger depuis que le devis a été préparé.
      */
     aChiffrer: boolean("a_chiffrer").notNull().default(false),
+    /**
+     * Le taux de sa catégorie, recopié de la ligne de prix (migration 0073).
+     *
+     * Recopié, et non relu : un document garde ce qu'il portait le jour de son
+     * émission — même règle que l'identité de l'entreprise ou la durée de
+     * validité. Nul sur les devis d'avant : ils suivent `devis.tauxTva`.
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [
@@ -1707,6 +1744,31 @@ export const factures = pgTable(
     pdfStorageKey: text("pdf_storage_key"),
     pdfChecksum: text("pdf_checksum"),
 
+    /**
+     * L'ALLURE DE SES DOCUMENTS, FIGÉE AU MOMENT DE L'ENVOI (migration 0074).
+     *
+     * **Sa décision du 4 septembre 2026 :** *« une facture partie ne change plus
+     * d'aspect : mon client doit retrouver en ligne exactement ce qu'il a reçu
+     * en PDF, y compris six mois plus tard. Un changement de réglage ne rattrape
+     * pas les anciennes, c'est voulu. »*
+     *
+     * C'est la même règle que l'identité de l'entreprise, le régime de TVA
+     * (0039) et les mentions légales (0072) : ce qui part figé reste figé.
+     * L'aspect était le dernier à ne pas l'être — la page du client le lisait
+     * sur l'entreprise, donc à l'instant de la consultation.
+     *
+     * **Les trois NULLES ensemble** veulent dire « facture antérieure à 0074 » :
+     * son aspect n'a jamais été relevé, et la page retombe sur l'allure vivante
+     * de l'entreprise. Ce repli porte l'historique — ne pas le retirer.
+     *
+     * **Écrites, elles valent le DÉFAUT en clair** quand il n'avait rien réglé —
+     * l'inverse de ce que fait `entreprises`, et pour la raison inverse : là-bas
+     * c'est une préférence vivante, ici un constat. Voir la migration.
+     */
+    docTypographie: text("doc_typographie"),
+    docFond: text("doc_fond"),
+    docAccent: text("doc_accent"),
+
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     createdBy: uuid("created_by").references(() => users.id),
     emiseLe: timestamp("emise_le", { withTimezone: true }),
@@ -1776,6 +1838,13 @@ export const lignesFacture = pgTable(
     quantite: numeric("quantite", { precision: 10, scale: 2 }).notNull().default("1"),
     prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull(),
     montant: numeric("montant", { precision: 10, scale: 2 }).notNull(),
+    /**
+     * Le taux de sa catégorie, recopié du devis (migration 0073).
+     *
+     * **Sans lui, une facture née d'un devis à deux TVA se réglerait sur un
+     * seul taux** — et l'écart partirait dans une déclaration trimestrielle.
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [

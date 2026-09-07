@@ -8,11 +8,17 @@ import ChoixCanal from "@/components/atlas/ChoixCanal";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import DicterCoordonnees from "./DicterCoordonnees";
-import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
+import { champsARemplir, type CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { creerChantierAction } from "./actions";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
+import {
+  apresLesCoordonnees,
+  libelleRetourDesCoordonnees,
+  retourDesCoordonnees,
+  type Provenance,
+} from "@/lib/retour-du-devis";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
-import Pellicule from "../[id]/Pellicule";
+import Pellicule, { type VignettePhoto } from "../[id]/Pellicule";
 import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
 import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
 import type { Civilite } from "@/lib/civilite";
@@ -63,6 +69,47 @@ type Destination = "fiche" | "devis";
  */
 export type ChantierRepris = {
   id: string;
+  /** D'où il est entré — le devis le renvoie chez lui (`retour-du-devis.ts`). */
+  provenance: Provenance;
+  /**
+   * Ce que le chantier porte DÉJÀ — 31 août 2026.
+   *
+   * **Sans elles, l'écran mentirait.** Une pellicule vide sur un chantier
+   * photographié, un anneau muet sur une dictée existante : il croirait avoir
+   * perdu ce qu'il avait posé, et recommencerait.
+   */
+  photos: VignettePhoto[];
+  /**
+   * Une dictée est DÉJÀ enregistrée sur ce chantier — et c'est tout ce que cet
+   * écran a besoin d'en savoir.
+   *
+   * **Sa remarque du 5 septembre 2026, capture à l'appui :** *« je suis arrivé
+   * sur la page de la fiche client, j'ai dicté mon chantier […] j'ai fait
+   * retour […] ce n'est pas la même que lorsque j'ai cliqué sur nouveau
+   * chantier. Tu verras par toi-même que la note vocale a changé. »*
+   *
+   * Il avait raison, et la mesure le dit : à la création l'objet est le micro
+   * vert (`.atlas-dictee`) ; au retour du devis, le même écran rendait
+   * l'anneau creux du LECTEUR (`.atlas-lecteur`), qui n'offre qu'un geste —
+   * « Poussez l'anneau vers le haut », c'est-à-dire retirer. Un troisième
+   * visage existait même : l'audio purgé après transcription, l'anneau
+   * disparaissait entièrement de la fiche. Trois écrans pour une seule fiche
+   * client.
+   *
+   * **La fiche client ne porte donc plus qu'un objet, celui de la DICTÉE** —
+   * c'est ce qu'elle sert à faire, et c'est l'objet qu'il a laissé deux
+   * minutes plus tôt en envoyant sa note. Écouter et retirer vivent sur
+   * l'écran **Note vocale** (`/chantiers/[id]/note-vocale`), qu'ouvrent la
+   * Transcription et le brouillon des Informations.
+   *
+   * **Ce point a été revérifié le 5 septembre au soir**, la fiche du CHANTIER
+   * ayant été retirée la veille (§254) : le second rendu d'`AnneauNoteVocale`
+   * n'a plus d'écran, et ce sont `NoteVocaleClient` et lui seul qui portent
+   * désormais la lecture et le retrait.
+   *
+   * Ce booléen ne sert plus qu'à taire l'invite : voir `preparationEnCours`.
+   */
+  aUneNote: boolean;
   nomClient: string;
   civilite: Civilite | null;
   telephone: string;
@@ -118,15 +165,24 @@ export default function FormulaireNouveauChantier({
   /**
    * Ce que la dictée a compris entre dans les champs VIDES seulement.
    *
-   * Écraser une saisie parce qu'on a dicté ensuite serait la pire façon
-   * d'aider : le patron aurait tapé le numéro, dicté l'adresse, et perdu le
-   * numéro sans comprendre pourquoi.
+   * **La décision n'est plus ici** : `champsARemplir` la porte, éprouvable sans
+   * navigateur ni clé de transcription (`CLAUDE.md` §3). Cet écran ne fait plus
+   * que poser ce qu'elle rend — et un champ absent du résultat est un champ
+   * auquel on ne touche pas.
+   *
+   * La pastille « Mr / Mme » en fait partie depuis le 7 septembre 2026 : le mot
+   * dicté a quitté le nom (`detacherCivilite`) pour venir ici.
    */
   function appliquerDictee(c: CoordonneesDictees) {
-    if (c.nom && !nomClient.trim()) setNomClient(c.nom);
-    if (c.telephone && !telephone.trim()) setTelephone(c.telephone);
-    if (c.email && !email.trim()) setEmail(c.email);
-    if (c.adresse && !adresseChantier.trim()) setAdresseChantier(c.adresse);
+    const aRemplir = champsARemplir(
+      { nom: nomClient, civilite, telephone, email, adresse: adresseChantier },
+      c
+    );
+    if (aRemplir.nom !== undefined) setNomClient(aRemplir.nom);
+    if (aRemplir.civilite !== undefined) setCivilite(aRemplir.civilite);
+    if (aRemplir.telephone !== undefined) setTelephone(aRemplir.telephone);
+    if (aRemplir.email !== undefined) setEmail(aRemplir.email);
+    if (aRemplir.adresse !== undefined) setAdresseChantier(aRemplir.adresse);
   }
 
   /**
@@ -247,7 +303,15 @@ export default function FormulaireNouveauChantier({
         setEnCoursVers(null);
         return;
       }
-      router.push(vers === "devis" ? `/chantiers/${reprise.id}/devis-complet` : `/chantiers/${reprise.id}`);
+      // **Enregistré, on repart d'où l'on venait** — 31 août 2026. Entré
+      // depuis un devis sans client, il retrouve son devis, qui porte
+      // désormais la fiche qui lui manquait ; entré depuis l'accueil, la fiche
+      // du chantier, comme depuis le 17 août.
+      router.push(
+        vers === "devis"
+          ? `/chantiers/${reprise.id}/devis-complet`
+          : apresLesCoordonnees(reprise.id, reprise.provenance)
+      );
       return;
     }
 
@@ -258,7 +322,13 @@ export default function FormulaireNouveauChantier({
       const id = chantierCree
         ? await enregistrerSurLeChantier(chantierCree)
         : await assurerChantier();
-      router.push(vers === "devis" ? `/chantiers/${id}/devis-complet` : `/chantiers/${id}`);
+      // **UN CHANTIER NEUF VA TOUJOURS AU DEVIS**, et le ternaire qui
+      // envoyait vers la fiche du chantier était déjà mort : depuis le
+      // 21 août 2026, la création ne porte plus qu'un bouton, et il vaut
+      // « devis » (`creerPuisAller("fiche")` ne s'appelle que sur un écran
+      // ROUVERT, qui repart plus haut). Le laisser aurait fait croire à un
+      // chemin vers un écran retiré le 4 septembre (`ARCHITECTURE.md` §254).
+      router.push(`/chantiers/${id}/devis-complet`);
     } catch {
       setErreur("Impossible de créer le chantier pour l'instant. Réessayez.");
       setEnCoursVers(null);
@@ -284,7 +354,44 @@ export default function FormulaireNouveauChantier({
           recouvre déjà la bulle et le bandeau du bas (`EcranChantiers.tsx`).
           Y poser la même réserve ajoutait quatre-vingts pixels de vide sous le
           formulaire, pour se protéger de quelque chose qui n'y arrive pas. */}
-      <div className={enFeuille ? "" : "pb-40"}>
+      {/* ═══════════════════════════════════════════════════════════════════
+          **UNE SEULE PAGE, CENTRÉE — sa demande du 1ᵉʳ septembre 2026 :**
+          *« la page doit remplir tout l'espace, elle n'est pas centrée. Je veux
+          qu'une seule page mais centrée, il y a trop de marge en bas et en
+          haut, la note vocale est presque coupée tellement elle est haute. »*
+
+          **MESURÉ AVANT DE TOUCHER** (`scripts/capture-fiche-client-hauteur.mts`) :
+          la page faisait 933 px pour un écran de 844, dont **272 px de réserve
+          en bas** — un `pb-40` ici PLUS un `pb-28` sur le formulaire, cumulés
+          sans que rien ne les additionne jamais. La barre d'onglets, elle,
+          mesure **48 px**. On réservait donc près de six fois ce qu'il fallait,
+          et tout le contenu était poussé vers le haut : d'où le micro « presque
+          coupé » et le grand vide sous le bouton.
+
+          **LA HAUTEUR SE CALCULE, elle ne se copie pas — et deux essais l'ont
+          appris.** Une hauteur d'écran entière (`100svh`) s'AJOUTE à la réserve
+          que le gabarit pose déjà (`main.atlas-contenu`, 68 px) : la page
+          faisait alors 912 px pour 844 de fenêtre. Et `min-h-full` ne vaut
+          rien du tout — un pourcentage sur un parent qui n'a lui-même qu'un
+          `min-height` ne résout pas, si bien que la page cessait de déborder
+          mais restait collée en haut, tout le vide en dessous.
+
+          On retire donc la réserve du gabarit à la hauteur d'écran, en lisant
+          SA variable : le jour où la barre d'onglets change de taille, ce
+          calcul suit tout seul.
+
+          **`my-auto` plutôt que `justify-center`, et ce n'est pas un détail.**
+          Un centrage par `justify-content` déborde des DEUX côtés quand le
+          contenu dépasse : sur un petit iPhone, le haut de la fiche passerait
+          au-dessus du pli, inatteignable même en défilant. Les marges
+          automatiques, elles, n'absorbent que la place LIBRE — s'il n'y en a
+          pas, elles valent zéro et l'écran se lit normalement depuis le haut.
+          ═══════════════════════════════════════════════════════════════════ */}
+      <div
+        className={enFeuille ? "" : "flex flex-col"}
+        style={enFeuille ? undefined : { minHeight: "calc(100svh - var(--atlas-barre))" }}
+      >
+      <div className={enFeuille ? "" : "my-auto w-full"}>
         {/* Retour discret — même style que la fiche chantier. En feuille il
             referme sans quitter l'accueil ; en page il y revient. Le dessin est
             le même : c'est le même geste pour le patron. */}
@@ -309,9 +416,18 @@ export default function FormulaireNouveauChantier({
               <FlecheRetour />
             </button>
           ) : (
+            /* **La flèche SORT, elle ne revient jamais sur ses pas** — sa
+               correction du 7 septembre 2026. Elle menait au devis quand on en
+               venait, et le retour du devis menait ici : les deux se
+               pointaient l'une l'autre, sans sortie. Voir
+               `src/lib/retour-du-devis.ts`. Revenir au devis reste le
+               comportement de l'ENREGISTREMENT, qui, lui, rapporte quelque
+               chose. */
             <Link
-              href="/"
-              aria-label="Retour à la liste des chantiers"
+              href={retourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)}
+              aria-label={
+                libelleRetourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
+              }
               className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >
               <FlecheRetour />
@@ -356,7 +472,7 @@ export default function FormulaireNouveauChantier({
           // capture) : la barre d'onglets est FIXÉE au bas de l'écran, et sans
           // lui elle coupait l'anneau en deux — le geste principal de l'écran,
           // à moitié sous une barre. Ni les types ni les suites ne voient cela.
-          className={`flex flex-col gap-[7px] px-6 pt-1.5 ${enFeuille ? "pb-2" : "pb-28"}`}
+          className={`flex flex-col gap-[4px] px-6 pt-1.5 pb-2`}
           onSubmit={(e) => {
             e.preventDefault();
             // « Entrée » fait ce que fait le bouton, et il n'y en a plus qu'un.
@@ -450,45 +566,93 @@ export default function FormulaireNouveauChantier({
             </div>
           </div>
 
-          <Field
-            label="E-mail"
-            placeholder="bernard@exemple.fr"
-            type="email"
-            value={email}
-            onChange={setEmail}
-            sansLibelle
-          />
+          {/* ═══════════════════════════════════════════════════════════════
+              **LES QUATRE CASES PORTENT DE NOUVEAU LEUR NOM — son choix du
+              2 septembre 2026**, planche « A — Épurée »
+              (`appli/fiche-client-haut-de-gamme.html`).
+
+              **C'EST UN REVIREMENT, ET IL EST ASSUMÉ.** Les intitulés avaient
+              été retirés le 30 août à sa demande : *« je veux que tout tienne
+              sur une seule page »*. Deux d'entre eux seulement étaient restés
+              (le nom et le numéro), et les deux autres cases ne tenaient qu'à
+              leur exemple en gris — qui disparaît à la première touche. Au
+              soleil, on ne savait plus laquelle attendait quoi.
+
+              **CE QUI REND SA CONTRAINTE DU 30 AOÛT TENABLE MALGRÉ TOUT :** les
+              trente-six pixels des deux libellés sont payés, pas ajoutés —
+              vingt-huit rendus par la rangée « + Ajouter une adresse client
+              différente », qui remonte au bout de l'intitulé « Chantier », et
+              vingt-sept par l'écart des blocs, ramené de 7 à 4 px. L'écran
+              reste dans la feuille, et `scripts/capture-fiche-client-hauteur.mts`
+              le mesure.
+              ═══════════════════════════════════════════════════════════════ */}
+          <div>
+            <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+              E-mail
+            </div>
+            <Field
+              label="E-mail"
+              placeholder="bernard@exemple.fr"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              sansLibelle
+            />
+          </div>
 
           {/* 6 — Adresse du chantier : facultative, et proposée pendant la
               frappe. Le champ reste libre : un lieu-dit ou un chemin de
               campagne ne figure dans aucune base, et le patron y travaille
               (`src/components/atlas/ChampAdresse.tsx`). */}
-          <ChampAdresse
-            label="Adresse du chantier"
-            placeholder="12 rue des Lilas, Nantes"
-            value={adresseChantier}
-            onChange={setAdresseChantier}
-            sansLibelle
-          />
-
-          {/* 7 — Adresse client, masquée par défaut */}
-          {!adresseClientVisible ? (
-            <button
-              type="button"
-              onClick={() => setAdresseClientVisible(true)}
-              className="self-start text-[14px] font-medium"
-              style={{ color: colors.rust }}
-            >
-              + Ajouter une adresse client différente
-            </button>
-          ) : (
+          <div>
+            {/* **« + CLIENT » VIT AU BOUT DE L'INTITULÉ, plus sur sa propre
+                rangée.** C'est là qu'on y pense — en écrivant l'adresse — et
+                cela rend vingt-huit pixels à l'écran. Les deux mots ne se
+                coupent jamais : « Chantier » et « + Client » tiennent sur une
+                ligne à 390 px, là où « Adresse du chantier » et « + Adresse
+                client » se brisaient tous les deux (vu à la capture). */}
+            <div className="mb-1 flex items-baseline justify-between gap-2.5">
+              <span className={`whitespace-nowrap ${libelleCaps}`} style={{ color: colors.muted }}>
+                Chantier
+              </span>
+              {!adresseClientVisible && (
+                <button
+                  type="button"
+                  onClick={() => setAdresseClientVisible(true)}
+                  data-atlas="adresse-client"
+                  className={`whitespace-nowrap ${libelleCaps}`}
+                  style={{ color: colors.rust }}
+                >
+                  + Client
+                </button>
+              )}
+            </div>
             <ChampAdresse
-              label="Adresse du client"
-              placeholder="Si différente de l'adresse du chantier"
-              value={adresseClient}
-              onChange={setAdresseClient}
+              label="Adresse du chantier"
+              placeholder="12 rue des Lilas, Nantes"
+              value={adresseChantier}
+              onChange={setAdresseChantier}
               sansLibelle
             />
+          </div>
+
+          {/* 7 — Adresse client, demandée au bout de l'intitulé ci-dessus.
+              Elle porte son nom comme les quatre autres : une case sans
+              intitulé est exactement ce que cet écran vient de corriger, et
+              une exception suffit à défaire la règle. */}
+          {adresseClientVisible && (
+            <div>
+              <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                Client
+              </div>
+              <ChampAdresse
+                label="Adresse du client"
+                placeholder="Si différente de l'adresse du chantier"
+                value={adresseClient}
+                onChange={setAdresseClient}
+                sansLibelle
+              />
+            </div>
           )}
 
           {/* 8 — Les deux actions.
@@ -524,10 +688,13 @@ export default function FormulaireNouveauChantier({
               « je sais déjà que je l'écrirai moi-même » ; là-bas, « j'ai
               commencé, finalement je l'écris ».
 
-              **En reprise, un seul bouton — et c'est délibéré.** L'écran sert
-              alors à corriger des coordonnées (sa demande du 17 août : « RIEN
-              DE PLUS, RIEN DE MOINS ») ; lui proposer deux devis pour changer
-              une adresse serait lui poser une question qu'il n'a pas. */}
+              **En reprise, « Enregistrer » — et c'est la SEULE différence qui
+              reste.** Le 31 août 2026, tout le reste de l'écart a été supprimé à
+              sa demande : la reprise porte désormais les photos, l'anneau et la
+              chaîne du devis, comme la création. Ce bouton-ci subsiste parce
+              qu'il répond à un besoin que la création n'a pas — enregistrer ce
+              qu'il vient de TAPER, sur un chantier qui existe déjà. Sans lui,
+              une adresse corrigée au clavier ne partirait nulle part. */}
           {/* **Le canal d'envoi vit SOUS l'adresse depuis le 21 août 2026** —
               sa place, choisie par lui : *« comment lui envoyer son devis, tu
               le mets sous l'adresse »*. Il n'apparaît toujours qu'une fois une
@@ -538,21 +705,47 @@ export default function FormulaireNouveauChantier({
               numéro. Les deux capsules restent inertes tant qu'il n'y a rien
               pour envoyer : proposer un canal sans coordonnée est sans objet,
               le masquer laisse chercher pourquoi le choix a disparu. */}
-          <fieldset aria-label="Comment lui envoyer son devis ?">
-              <div className="flex gap-2">
-                <ChoixCanal
-                  libelle="Par SMS"
-                  actif={canal === "sms"}
-                  disponible={aTelephone}
-                  onClick={() => setCanalChoisi("sms")}
-                />
-                <ChoixCanal
-                  libelle="Par e-mail"
-                  actif={canal === "email"}
-                  disponible={aEmail}
-                  onClick={() => setCanalChoisi("email")}
-                />
-              </div>
+          {/* ═══ L'ENVOI EST UN RÉGLAGE, PAS UNE ACTION — planche « A — Épurée »
+              ═══════════════════════════════════════════════════════════════
+              **Son choix du 2 septembre 2026, appliqué le 4.** La planche
+              l'écrit en une phrase : *« l'envoi n'est plus une action : c'est un
+              réglage. Il en prend la forme — une ligne, deux mots — et rend
+              40 px à l'anneau. »*
+
+              Deux capsules pleine largeur se lisaient comme des boutons
+              d'envoi ; elles ne disent que par où le devis partira. Le libellé
+              « ENVOI » les nomme, et le canal retenu porte un trait d'or sous
+              son mot.
+
+              **Le filet du dessus vient avec** : c'est lui qui sépare les
+              coordonnées de ce réglage, et il est dans la planche
+              (`.b-envoi{border-top}`). Il n'existe pas comme élément à part —
+              le poser séparément ferait deux séparateurs pour une couture. */}
+          <fieldset
+            aria-label="Comment lui envoyer son devis ?"
+            data-atlas="envoi-canal"
+            className="mt-2.5 flex min-h-[34px] items-center justify-between gap-3 pt-2"
+            style={{ borderTop: `1px solid ${colors.lineSoft}` }}
+          >
+            <span className={libelleCaps} style={{ color: colors.muted }}>
+              Envoi
+            </span>
+            <span className="flex gap-1">
+              <ChoixCanal
+                apparence="reglage"
+                libelle="SMS"
+                actif={canal === "sms"}
+                disponible={aTelephone}
+                onClick={() => setCanalChoisi("sms")}
+              />
+              <ChoixCanal
+                apparence="reglage"
+                libelle="E-mail"
+                actif={canal === "email"}
+                disponible={aEmail}
+                onClick={() => setCanalChoisi("email")}
+              />
+            </span>
           </fieldset>
 
           {/* **LES PHOTOS ET L'ANNEAU, sur la fiche client — 21 août 2026.**
@@ -572,25 +765,66 @@ export default function FormulaireNouveauChantier({
               **Elles fonctionnent AVANT que le chantier existe** : c'est le
               geste qui le crée (`assurerChantier`). L'ordre est celui de sa
               maquette (`appli/fiche-client-vocale.html`), qu'il a demandé de
-              coder trait pour trait : photos, puis anneau, puis le devis. */}
-          {!reprise && (
-            <div aria-label="Photos du chantier" role="group">
-              <Pellicule chantierId={chantierCree} assurerChantier={assurerChantier} initiales={[]} />
-            </div>
-          )}
+              coder trait pour trait : photos, puis anneau, puis le devis.
 
-          {!reprise && (
-            <div>
-              <AnneauNoteVocale
-                chantierId={chantierCree}
-                assurerChantier={assurerChantier}
-                onDicte={() => setDicteeFaite(true)}
-                onDictee={setDicteeEnCours}
-                storageKey={null}
-                dureeSecondes={null}
-              />
+              **ET ELLES SONT LÀ EN REPRISE AUSSI — 31 août 2026.** Sa demande,
+              deux captures à l'appui : *« lorsque je fais retour j'arrive sur la
+              page 1re photo alors que je veux arriver sur la 2e. Je sais pas
+              d'où sort la 1re photo ? Si elle sert à rien il faut la
+              supprimer. »* La première était CET écran privé de ses photos et de
+              son anneau ; la seconde, le même écran entier. Il n'y a donc plus
+              qu'une fiche client, et c'est la bonne — deux versions du même
+              écran se lisaient comme deux écrans, dont un amputé sans raison
+              visible.
+
+              Ce que la reprise change, et rien d'autre : les pièces partent de
+              ce que le chantier porte DÉJÀ. Les nourrir de vide afficherait une
+              pellicule vide sur un chantier photographié, et il croirait ses
+              photos perdues. */}
+          {/* **Le carré de photo cesse d'être orphelin.** Il flottait seul,
+              en pointillé doré, sans un mot — le seul objet « brouillon » d'un
+              écran par ailleurs net. Son intitulé le fait rentrer dans le
+              rythme des quatre cases au-dessus. */}
+          <div aria-label="Photos du chantier" role="group">
+            <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+              Photos
             </div>
-          )}
+            <Pellicule
+              chantierId={reprise?.id ?? chantierCree}
+              assurerChantier={assurerChantier}
+              initiales={reprise?.photos ?? []}
+            />
+          </div>
+
+          {/* **UN SEUL VISAGE, AUX DEUX VISITES — sa remarque du 5 septembre
+              2026** (le détail est sur `aUneNote`, plus haut). Cet écran ne
+              passe donc JAMAIS de note à l'anneau : le lecteur — l'anneau
+              creux, son glisseur « Retirer », son chrono — reste sur la fiche
+              du chantier, qui est faite pour relire. Ici, on dicte.
+
+              **Et il est là dans tous les cas**, y compris quand l'audio a été
+              purgé après transcription : l'ancienne garde faisait disparaître
+              l'anneau entier de la fiche au bout de quelques jours, sans que
+              rien ne le dise. */}
+          <div>
+            <AnneauNoteVocale
+              chantierId={reprise?.id ?? chantierCree}
+              assurerChantier={assurerChantier}
+              onDicte={() => setDicteeFaite(true)}
+              onDictee={setDicteeEnCours}
+              // **L'invite se tait devant une dictée déjà faite.** Dès que la
+              // note est partie, la chaîne du devis démarre seule (`auto`,
+              // plus bas) ; et sur un chantier qui porte DÉJÀ sa note,
+              // « Appuyez et décrivez le chantier » inviterait à recouvrir ce
+              // qu'il a dicté — c'est sa règle du 1ᵉʳ septembre 2026, appliquée
+              // au même endroit pour la même raison. L'objet, lui, ne bouge
+              // pas : il reste appuyable, et une seconde dictée remplace la
+              // première, en le disant (`DevisDepuisDictee`, cas « conflit »).
+              preparationEnCours={dicteeFaite || (reprise?.aUneNote ?? false)}
+              storageKey={null}
+              dureeSecondes={null}
+            />
+          </div>
 
           {/* **L'AVION FAIT TOUT : envoyer, préparer, arriver sur le devis.**
               Sa demande du 30 août 2026 : *« appuyer sur la flèche pour envoyer
@@ -602,10 +836,10 @@ export default function FormulaireNouveauChantier({
               se fait (`surLeDevis={false}`). Ce composant ne rend plus alors que
               ce qui se PASSE — le travail en cours, l'arrêt d'avant-chiffrage,
               ou ce qui a échoué. */}
-          {!reprise && dicteeFaite && chantierCree && (
+          {dicteeFaite && (reprise?.id ?? chantierCree) && (
             <div>
               <DevisDepuisDictee
-                chantierId={chantierCree}
+                chantierId={(reprise?.id ?? chantierCree)!}
                 transcriptionDisponible
                 auto
                 surLeDevis={false}
@@ -690,6 +924,7 @@ export default function FormulaireNouveauChantier({
             {erreur}
           </p>
         </form>
+      </div>
       </div>
     </div>
   );

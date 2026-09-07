@@ -44,9 +44,9 @@ async function main() {
   await page.fill('input[placeholder="06 12 34 56 78"]', "0660060265");
   await page.fill('input[placeholder="bernard@exemple.fr"]', "client@exemple.net");
   await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', ADRESSE);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 15000 });
-  const chantierId = page.url().split("/").pop()!;
+  const chantierId = idChantier;
 
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Total TTC", { timeout: 20000 });

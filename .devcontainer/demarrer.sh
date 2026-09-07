@@ -229,7 +229,56 @@ export ATLAS_VERSION
 # produit une panne au lieu d'un correctif : un écran qui plante sur une colonne
 # absente est pire que l'ancienne version.
 if [ "$MISE_A_JOUR" = "faite" ]; then
-  npm ci --silent >> "$JOURNAL" 2>&1 || npm install --silent >> "$JOURNAL" 2>&1 || true
+  # ───────────────────────────────────────────────────────────────────────────
+  # **ON ARRÊTE LE BANC AVANT D'INSTALLER, ET C'EST LA RACINE DE SA PANNE DU
+  # 2 SEPTEMBRE 2026.**
+  #
+  # Ce soir-là, son application est restée blanche pendant une heure. Son
+  # journal disait, à 21 h 13 :
+  #
+  #     npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist'
+  #     npm error ENOTEMPTY: directory not empty, rename '.../zod' -> '.../.zod-…'
+  #
+  # puis, trente fois de suite :
+  #
+  #     Error: Cannot find module '/workspaces/Atlas-app/node_modules/next/dist/bin/next'
+  #
+  # **`npm ci` EFFACE `node_modules` avant de réinstaller.** Or le veilleur est
+  # posé cinquante lignes plus haut — délibérément, pour que le patron ait une
+  # application qui répond quoi qu'il arrive —, et quinze secondes plus tard un
+  # banc tourne : un `next-server` qui SERT, et un `next build` qui bâtit. Tous
+  # deux tiennent des fichiers ouverts dans `node_modules`.
+  #
+  # npm efface ce qu'il peut, échoue sur ce qui est tenu, et **laisse l'arbre
+  # amputé** — `next` en fut la victime. Le serveur suivant meurt à la seconde,
+  # le veilleur le relance, il remeurt : une boucle qui ne s'arrête jamais.
+  #
+  # Les processus étaient tués vingt lignes plus bas, APRÈS l'installation.
+  # C'est-à-dire après les dégâts. Ils le sont désormais AVANT.
+  #
+  # **Ce que cela ne coûte pas :** rien. Ils étaient tués de toute façon, et un
+  # `npm ci` tue déjà le serveur — salement. Il n'y a pas de service perdu,
+  # seulement une corruption évitée.
+  echo "$(date '+%d/%m %H:%M:%S') — code neuf : on arrête le banc AVANT d'installer" >> "$JOURNAL"
+  pkill -f "[v]eiller.sh" 2>/dev/null || true
+  rm -f /tmp/atlas-veilleur.pid
+  # Voir le pavé plus haut : `build` est dans le motif à dessein.
+  pkill -f "[n]ext(-server| dev| start| build)" 2>/dev/null || true
+  # Tuer n'est pas instantané : installer sur des fichiers encore ouverts
+  # reproduirait exactement ce qu'on vient d'éviter.
+  sleep 2
+
+  # **L'échec de l'installation NE S'AVALE PLUS.** Le `|| true` d'avant le
+  # taisait : le code neuf arrivait sur des dépendances vieilles ou amputées, et
+  # rien ne le disait — la même faute que les migrations du 9 août.
+  if npm ci --silent >> "$JOURNAL" 2>&1; then
+    DEPENDANCES="faites"
+  elif npm install --silent >> "$JOURNAL" 2>&1; then
+    DEPENDANCES="faites (npm install, après un refus de npm ci)"
+  else
+    DEPENDANCES="échec"
+  fi
+  echo "dépendances : $DEPENDANCES" >> "$JOURNAL"
 
   # **Les migrations passent par leur propre script, sous le rôle
   # PROPRIÉTAIRE.** Lancées ici avec la variable ambiante, elles tournaient sous
@@ -239,14 +288,7 @@ if [ "$MISE_A_JOUR" = "faite" ]; then
   MIGRATIONS="$(bash "$(dirname "$0")/appliquer-migrations.sh" "$CD")"
   echo "migrations : $MIGRATIONS" >> "$JOURNAL"
 
-  # Le code a changé sous le serveur qui tourne : on remplace le veilleur ET le
-  # serveur par leurs versions neuves. C'est ce qui rend l'`exec` inutile.
-  echo "$(date '+%d/%m %H:%M:%S') — code neuf : on remplace veilleur et serveur" >> "$JOURNAL"
-  pkill -f "[v]eiller.sh" 2>/dev/null || true
-  rm -f /tmp/atlas-veilleur.pid
-  # Voir le pavé plus haut : `build` est dans le motif à dessein.
-  pkill -f "[n]ext(-server| dev| start| build)" 2>/dev/null || true
-  sleep 1
+  # Le banc repart, sur le code neuf et des dépendances entières.
   lancer_veilleur
 fi
 
@@ -369,6 +411,18 @@ esac
 # 9 août 2026 : les migrations échouaient sous le mauvais rôle, l'échec était
 # avalé, et le patron ouvrait un écran qui tombait sur une table absente sans
 # rien pour le relier à la mise à jour qu'il venait de faire.
+# **Des dépendances qui n'ont pas suivi se DISENT.** Sa panne du 2 septembre
+# 2026 : `next` absent, le serveur mort à la seconde, en boucle — et le seul
+# endroit qui le savait était un journal que personne ne lit.
+case "${DEPENDANCES:-}" in
+  échec*)
+    echo
+    echo "  ⚠ LES DÉPENDANCES N'ONT PAS SUIVI LE CODE."
+    echo "    Atlas ne pourra pas démarrer. Dans un terminal de cet espace :"
+    echo
+    echo "      rm -rf node_modules && npm ci"
+    ;;
+esac
 case "${MIGRATIONS:-}" in
   échec*)
     echo

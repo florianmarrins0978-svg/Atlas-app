@@ -76,15 +76,28 @@ export async function absencesSurLaFenetre(
   ctx: Ctx,
   debut: JourIso,
   fin: JourIso
-): Promise<{ equipeId: string; premierJour: JourIso; dernierJour: JourIso }[]> {
+): Promise<
+  { id: string; equipeId: string; rang: number; premierJour: JourIso; dernierJour: JourIso }[]
+> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     return tx
       .select({
+        // **`id` et `rang` ont rejoint la sélection le 6 septembre 2026**, pour
+        // que le PLANNING puisse fermer et rouvrir un jour sans quitter l'écran.
+        //
+        // Le calcul de disponibilité, lui, n'en a toujours pas besoin — il ne
+        // lit que l'équipe et les dates (`fusionnerAbsences`). Les deux champs
+        // servent à l'écran : `id` pour retirer la ligne d'un appui, `rang`
+        // pour écrire le NOM de la personne plutôt qu'un numéro, comme le fait
+        // déjà l'écran des absences (`libelleSalarie`).
+        id: absencesEquipe.id,
         equipeId: absencesEquipe.equipeId,
+        rang: equipes.rang,
         premierJour: absencesEquipe.premierJour,
         dernierJour: absencesEquipe.dernierJour,
       })
       .from(absencesEquipe)
+      .innerJoin(equipes, eq(equipes.id, absencesEquipe.equipeId))
       .where(
         and(
           eq(absencesEquipe.entrepriseId, ctx.entrepriseId),

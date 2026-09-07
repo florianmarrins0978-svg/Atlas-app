@@ -88,9 +88,10 @@ async function chantierPlanifie(
   const nom = avecCivilite(client);
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const url = page.url();
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
   const chantierId = url.split("/").pop()!;
 
   await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
@@ -222,45 +223,81 @@ async function main() {
     await page.click(`[data-atlas="grille-mois"] [data-jour="${jour}"]`);
     await page.waitForTimeout(600);
 
-    // **Le CHEVRON, et non le nom.** Depuis la planche 84, le nom d'un chantier
-    // planifié déplie sa journée et sa feuille sur place ; c'est le chevron qui
-    // MÈNE au chantier. Le geste a changé de forme, jamais d'objet : sans lui,
-    // un chantier posé quitte l'onglet « Chantiers » et devient inatteignable —
-    // le cul-de-sac du 8 août 2026, mot pour mot.
+    // **Le CHEVRON, et non le nom.** Le nom d'un chantier planifié déplie sa
+    // journée sur place ; c'est le chevron qui MÈNE au chantier. Le geste a
+    // changé de forme, jamais d'objet : sans lui, un chantier posé quitte
+    // l'onglet « Chantiers » et devient inatteignable — le cul-de-sac du 8 août
+    // 2026, mot pour mot.
+    //
+    // **Depuis le 4 septembre 2026, il fait monter une feuille** au lieu
+    // d'ouvrir la fiche du chantier — son allure C, choisie sur
+    // `appli/facture-au-planning.html`. Ce contrôle défend la RÈGLE (« depuis le
+    // planning, on atteint le devis »), pas le chemin qu'elle empruntait hier :
+    // c'est ce que `CLAUDE.md` §5 bis exige quand un écran change.
+    const ligne = page.locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`).first();
+
+    // **LE NOM NE MONTE PAS LA FEUILLE — sa consigne du 4 septembre 2026 :**
+    // *« quand on appuie sur le nom du client la page avec ses infos s'ouvre, il
+    // ne faut pas l'accrocher là-dessus ; sur la petite flèche à droite, ça
+    // c'est bien »*.
+    //
+    // Deux gestes sur la même ligne, et ils ne se confondent pas : le nom
+    // déplie la journée sur place, le chevron ouvre les portes. Sans ce
+    // contrôle, une session suivante recollerait la feuille sur le nom — c'est
+    // le geste le plus large, donc le plus tentant — et lui perdrait le déplié
+    // qu'il vient de valider.
+    await ligne.locator('[data-atlas="nom-planifie"]').click();
+    await page.waitForTimeout(500);
+    assert.equal(
+      await page.locator('[data-atlas^="porte-"]').count(),
+      0,
+      "le nom du chantier a fait monter les portes : elles appartiennent au chevron"
+    );
+
+    await ligne.getByRole("button", { name: `Ouvrir le chantier — ${nom}` }).click();
+
+    // La feuille porte le devis, nommé et daté. Le lien est visé par son
+    // adresse : « Devis » apparaît à plusieurs endroits, et viser le premier
+    // texte venu ferait passer le contrôle pour de mauvaises raisons.
+    await page.waitForSelector('[data-atlas="porte-devis"]', { timeout: 15000 });
     await page
-      .locator(`[data-atlas="ligne-planifiee"]:has-text("${nom}")`)
-      .first()
-      .getByRole("link", { name: `Ouvrir le chantier — ${nom}` })
+      .locator(`a[data-atlas="porte-devis"][href^="/chantiers/${chantierId}/export"]`)
       .click();
-    // **On attend l'écran, pas l'URL.** Ces liens font une navigation côté
-    // client : `waitForURL` ne la voit pas, même en « commit », et le contrôle
-    // échouait sur une page pourtant bien ouverte — il accusait le code au lieu
-    // de son propre montage. Un repère de la fiche prouve mieux qu'une adresse
-    // qu'on est arrivé.
-    // Le repère est le tiroir du bas : « Autres étapes » ne s'écrit plus depuis
-    // que les étapes y sont rangées (`ARCHITECTURE.md` §49).
-    await page.waitForSelector("[data-atlas='tiroir-fiche']", { timeout: 15000 });
-    assert.match(page.url(), new RegExp(`/chantiers/${chantierId}$`), "le planning ne mène pas à ce chantier");
-
-    // **Il faut ouvrir le tiroir : au repos, seule sa prise dépasse.** Les
-    // étapes existent dans la page mais sont clippées — un clic direct
-    // échouerait sur un écran pourtant juste. C'est le geste du patron, pas un
-    // contournement : les étapes sont désormais rangées, et on les tire.
-    await page.locator("[data-atlas='tiroir-fiche'] button[aria-expanded]").click();
-    await page.waitForSelector("[data-atlas='tiroir-fiche'][data-ouvert='oui']", { timeout: 5000 });
-
-    // La fiche mène au devis. Le lien est visé par son adresse : « Devis »
-    // apparaît à plusieurs endroits de l'écran, et viser le premier texte venu
-    // ferait passer le contrôle pour de mauvaises raisons.
-    await page.locator(`a[href="/chantiers/${chantierId}/export"]`).click();
     // Le titre de l'écran, et non un bouton : « Envoyer au client » disparaît
     // une fois le devis parti — c'est-à-dire précisément dans le cas qui
     // intéresse le patron, celui d'un chantier planifié.
     await page.waitForSelector("h1:has-text('Devis')", { timeout: 15000 });
-    assert.ok(page.url().endsWith("/export"), `arrivé sur ${page.url()} au lieu du devis`);
+    assert.ok(
+      new URL(page.url()).pathname.endsWith("/export"),
+      `arrivé sur ${page.url()} au lieu du devis`
+    );
     assert.ok(
       (await page.locator(`text=${nom}`).count()) > 0,
       "le devis atteint n'est pas celui de ce chantier"
+    );
+
+    // ─────────────────────────────────────────────────────────────────────
+    // **ET LA FLÈCHE LE RAMÈNE OÙ IL ÉTAIT** — son signalement du 7 septembre
+    // 2026 : *« lorsque je fais retour j'arrive sur la page d'accueil, or je
+    // devrais arriver d'où je suis parti. »*
+    //
+    // **Le geste, pas la fonction.** Une suite qui aurait appelé
+    // `retourDepuisLePlanning` avec une adresse écrite à la main aurait été
+    // verte tout du long : ce qui manquait, c'était le paramètre que la PORTE
+    // pose et que l'ÉCRAN relit — deux moitiés qu'aucun contrôle ne faisait se
+    // rencontrer (`CLAUDE.md` §5 quater).
+    await page.getByRole("link", { name: "Retour au planning" }).click();
+    await page.waitForSelector('[data-atlas="porte-devis"]', { timeout: 15000 });
+    assert.equal(
+      new URL(page.url()).pathname,
+      "/planning",
+      `la flèche a déposé sur ${page.url()} au lieu du planning`
+    );
+    // La feuille est remontée sur SON chantier : il retrouve l'écran exact
+    // qu'il avait quitté, portes levées, et non le mois à refeuilleter.
+    assert.ok(
+      (await page.locator(`[data-atlas="feuille-chantier-nom"]:has-text("${nom}")`).count()) > 0,
+      "le planning s'est rouvert sans la feuille du chantier"
     );
   });
 

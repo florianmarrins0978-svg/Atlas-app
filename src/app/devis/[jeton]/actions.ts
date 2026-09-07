@@ -7,7 +7,16 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
 import { SOURCE_NON_ETABLIE } from "@/lib/source-visiteur";
 
-export type EtatReponse = { erreur: string } | { succes: string } | undefined;
+export type EtatReponse =
+  | { erreur: string }
+  /**
+   * `devisTelechargeable` n'est vrai qu'après une acceptation : c'est là que le
+   * client cherche sa pièce. On ne propose pas d'emporter un devis auquel on
+   * vient de renoncer, ni celui qu'on vient de renvoyer en correction — celui-là
+   * va changer.
+   */
+  | { succes: string; devisTelechargeable?: boolean }
+  | undefined;
 
 // Première adresse de X-Forwarded-For : celle du client vue par le proxy de
 // tête. Élément de preuve d'appoint — elle documente l'acceptation, elle ne la
@@ -166,5 +175,5 @@ export async function repondreAction(
   if (!r.succes) return { erreur: MESSAGES[r.motif] ?? "Impossible d'enregistrer votre réponse." };
 
   logger.info("Devis accepté par le client", { contreProposee: r.contreProposee });
-  return { succes: "C'est noté. Votre artisan est prévenu." };
+  return { succes: "C'est noté. Votre artisan est prévenu.", devisTelechargeable: true };
 }

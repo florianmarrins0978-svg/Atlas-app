@@ -52,6 +52,38 @@ export function jourNumerique(iso: string): string {
   return `${j}/${m}/${a}`;
 }
 
+/**
+ * Le mois d'un jour, en toutes lettres : « septembre », « août ».
+ *
+ * **Une seule table de mois dans le dépôt**, et c'est celle-ci (`CLAUDE.md`
+ * §3). La liste des clients en a besoin pour nommer ses bandes ; en recopier
+ * une seconde, c'est se donner deux orthographes d'« août » et n'en corriger
+ * qu'une le jour venu.
+ */
+export function moisDuJour(iso: string): string | null {
+  const mois = Number(iso.split("-")[1]);
+  return MOIS[mois - 1] ?? null;
+}
+
+/**
+ * « 6 août », « 1er août » — le jour sans son jour de semaine ni son année.
+ *
+ * Pour les listes où la date n'est qu'un repère de second rang : la ligne d'un
+ * achat de TVA en est l'exemple, sous le nom du fournisseur. « jeudi 6 août »
+ * y prendrait la moitié de la largeur pour un mot que personne ne lit.
+ *
+ * **Elle existe pour qu'il n'y ait pas de seconde table de mois.** La ligne
+ * d'achat en fabriquait une par `toLocaleDateString`, avec son propre fuseau à
+ * midi pour ne pas décaler le jour — deux façons d'écrire « août » dans le même
+ * dépôt, et une seule qui se corrigerait le jour venu (`CLAUDE.md` §3). Le
+ * premier du mois garde son ordinal, comme dans `jourLisible`.
+ */
+export function jourEtMois(iso: string): string {
+  const [a, m, j] = iso.split("-").map(Number);
+  if (!a || !m || !j) return iso;
+  return `${j === 1 ? "1er" : j} ${MOIS[m - 1]}`;
+}
+
 /** Le fuseau du patron. Ses journées se comptent chez lui, pas à Greenwich. */
 export const FUSEAU_DU_PATRON = "Europe/Paris";
 

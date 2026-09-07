@@ -62,7 +62,7 @@ essai("l'adresse ne se dit pas APRÈS la construction", () => {
   // qui vient toujours en tête de fichier. Retirer l'appel ne le faisait donc
   // pas rougir — un contrôle qui ne sait pas échouer ne prouve rien.
   const annonce = banc.indexOf("void annoncerDesQueCaRepond(");
-  const build = banc.search(/"npx", \["next", "build"\]/);
+  const build = banc.search(/process\.execPath, \[NEXT, "build"\]/);
   assert.notEqual(annonce, -1, "banc.mjs n'appelle plus l'annonce sans attendre la construction");
   assert.notEqual(build, -1, "banc.mjs ne construit plus : ce contrôle n'éprouve plus rien");
   assert.ok(
@@ -87,7 +87,7 @@ essai("le banc efface les types d'une AUTRE construction avant de bâtir", () =>
   // l'annonce de l'adresse (contrôle ci-dessus).
   const banc = readFileSync("scripts/banc.mjs", "utf8");
   const nettoyage = banc.indexOf('rmSync(".next/types"');
-  const build = banc.search(/"npx", \["next", "build"\]/);
+  const build = banc.search(/process\.execPath, \[NEXT, "build"\]/);
   assert.notEqual(nettoyage, -1, "banc.mjs n'efface plus les types d'une autre construction avant de bâtir");
   assert.notEqual(build, -1, "banc.mjs ne construit plus : ce contrôle n'éprouve plus rien");
   assert.ok(

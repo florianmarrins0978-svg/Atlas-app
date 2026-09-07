@@ -3,8 +3,11 @@
 // **Sa demande du 23 août 2026 :** *« y a-t-il un endroit dans les réglages où
 // l'utilisateur peut rédiger ce message automatique ? S'il n'y en a pas, il faut
 // en créer un. »* Puis ses trois décisions : **A** (dans « Devis & factures »),
-// **le lien obligatoire**, et **un seul message pour tous** — « façon 1 », avec
-// la phrase du document posée par Atlas.
+// **le lien obligatoire**, et ~~un seul message pour tous~~ — **RENVERSÉ PAR LUI
+// LE 7 SEPTEMBRE 2026** : trois messages, un par document, et la phrase du
+// milieu qui lui appartient. Ce qu'Atlas pose encore tient en quelques mots qui
+// se remplissent seuls, dont deux qui ne se retirent pas : le lien, et le mot
+// du document.
 //
 // **CE QUE CETTE SUITE TIENT, ET QU'AUCUNE AUTRE NE VERRAIT.** Les suites de
 // `message-client` éprouvent la règle sans base : elles diraient vert même si
@@ -19,15 +22,23 @@ import { Pool } from "pg";
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-/** Son message à lui — reconnaissable entre mille, et qui porte les quatre pastilles. */
+/**
+ * Son message à lui — reconnaissable entre mille, et qui porte les pastilles.
+ *
+ * **La phrase du milieu est SIENNE depuis le 7 septembre 2026.** Elle était
+ * posée par Atlas à l'endroit du `[document]` ; ce jeton n'y pose plus que le
+ * mot, et c'est lui qui écrit autour. C'est exactement ce que ce lot rend
+ * possible, donc c'est ce que cette suite doit éprouver.
+ */
 const SIEN = [
   "Salut [client] !",
   "",
-  "[document]",
+  "Voici votre [document] à regarder tranquillement.",
   "",
   "[lien]",
   "",
@@ -79,8 +90,11 @@ const messageEnBase = async () =>
  * chemin réel de la saisie, celui qui finit en base.
  */
 async function ecrireMessage(p: Page, texte: string) {
+  // **Le premier cadre est celui du DEVIS.** Il y en a trois depuis le
+  // découpage ; viser « le cadre » sans dire lequel écrirait au hasard le jour
+  // où l'ordre changerait.
   await p.evaluate((t) => {
-    const el = document.querySelector('[data-atlas="message-client"]');
+    const el = document.querySelectorAll('[data-atlas="message-client"]')[0];
     if (!el) throw new Error("le cadre du message est introuvable");
     el.textContent = t;
     el.dispatchEvent(new InputEvent("input", { bubbles: true }));
@@ -102,7 +116,7 @@ async function main() {
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
   // ── 1. LE RÉGLAGE EST BIEN LÀ OÙ IL L'A DEMANDÉ : dans « Devis & factures »
-  await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/reglages/documents/message`, { waitUntil: "networkidle" });
   await page.waitForSelector('[data-atlas="message-client"]', { timeout: 30_000 });
 
   await cas("le cadre est dans « Devis & factures », pas dans une rubrique à part", async () => {
@@ -116,7 +130,7 @@ async function main() {
       !rubriques.includes("/reglages/messages"),
       "une rubrique « Mes messages » est apparue : c'est la proposition B, qu'il n'a pas retenue"
     );
-    await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/reglages/documents/message`, { waitUntil: "networkidle" });
     await page.waitForSelector('[data-atlas="message-client"]', { timeout: 30_000 });
   });
 
@@ -132,15 +146,27 @@ async function main() {
         `la pastille « ${mot} » est revenue : il avait demandé « un simple texte »`
       );
     }
-    // Les deux aperçus, eux, sont là — c'est par eux qu'il voit ce qui bouge.
-    assert.equal(await page.locator('[data-atlas="apercu-devis"]').count(), 1, "l'aperçu du devis manque");
-    assert.equal(await page.locator('[data-atlas="apercu-facture"]').count(), 1, "l'aperçu de la facture manque");
+    // **ET LES APERÇUS SONT PARTIS AUSSI — sa correction du 7 septembre 2026 :**
+    // *« pas besoin de répéter, il faut juste que l'utilisateur voie le message
+    // final qu'il peut modifier entièrement »*. Chaque message était dessiné
+    // deux fois — nommé puis rempli —, soit six boîtes presque identiques. Il
+    // ne reste que celle qui part, et c'est elle qu'on lit maintenant.
+    assert.equal(
+      await page.locator('[data-atlas="apercu-devis"]').count(),
+      0,
+      "l'aperçu séparé est revenu : il l'a fait retirer, l'écran répète"
+    );
+    assert.equal(
+      await page.locator('[data-atlas="message-client"]').count(),
+      3,
+      "il n'y a pas trois messages : un document part avec le texte d'un autre"
+    );
   });
 
   // ── 2. LE LIEN EST OBLIGATOIRE — et c'est un REFUS, pas un avertissement
   await cas("sans le lien, l'écran refuse et le bouton s'éteint", async () => {
-    await ecrireMessage(page, "Bonjour [client], voici [document]. [entreprise]");
-    const refus = await page.locator('[data-atlas="message-refus"]').innerText();
+    await ecrireMessage(page, "Bonjour [client], voici votre [document]. [entreprise]");
+    const refus = await page.locator('[data-atlas="message-refus-devis"]').innerText();
     assert.ok(/obligatoire/i.test(refus), `le refus ne dit pas que le lien est obligatoire : « ${refus} »`);
     // **Le bouton s'éteint AVEC le message.** Un bouton resté allumé s'appuie,
     // ne fait rien, et l'on croit l'écran cassé.
@@ -161,7 +187,7 @@ async function main() {
   await cas("son message s'écrit et s'enregistre", async () => {
     await ecrireMessage(page, SIEN);
     assert.equal(
-      await page.locator('[data-atlas="message-refus"]').count(),
+      await page.locator('[data-atlas="message-refus-devis"]').count(),
       0,
       "l'écran refuse un message qui porte pourtant son lien"
     );
@@ -170,24 +196,41 @@ async function main() {
     assert.equal(enBase, SIEN, "le message n'est pas arrivé en base");
   });
 
-  await cas("les deux aperçus, côte à côte, disent chacun le sien", async () => {
-    // **Plus de bascule : les deux envois se voient ENSEMBLE** (sa maquette
-    // `message-au-client-simple.html`). Le mot change tout seul — c'est ce que
-    // la « façon 2 » lui coûtait : une facture qui parle d'un devis, l'échéance
-    // perdue. Le compte rendu, lui, n'est pas prévisualisé ici — sa maquette ne
-    // montre que devis et facture ; son adaptation reste tenue par la suite pure
-    // `test-message-client`.
-    const devis = await page.locator('[data-atlas="apercu-devis"]').innerText();
-    const facture = await page.locator('[data-atlas="apercu-facture"]').innerText();
+  await cas("les trois messages disent chacun le sien, et rien de l'autre", async () => {
+    // **CE QUE CE CAS DÉFENDAIT AVANT, ET QUI EST TOMBÉ.** Il vérifiait deux
+    // aperçus côte à côte sous un message COMMUN — « un message pour tous ».
+    // Le patron a renversé cette règle le 7 septembre 2026 : chaque document a
+    // son texte, et l'écran ne montre plus que le message final. Ce qui reste à
+    // défendre est plus fort : le mot juste vient par construction, et aucun
+    // document ne parle d'un autre.
+    // **ON RECHARGE L'ÉCRAN AVANT DE LIRE, et c'est le contrôle qui l'a appris.**
+    //
+    // Le cas rougissait sur « le message du devis ne se nomme pas », et le
+    // produit n'y était pour rien : cette suite écrit le modèle en posant du
+    // TEXTE BRUT dans le cadre (`ecrireMessage`), donc « [document] » en clair.
+    // L'éditeur ne redessine ses pastilles que lorsque la valeur CHANGE — ici
+    // elle revient identique de la base —, si bien qu'on relisait ce qu'on
+    // venait de taper, pas ce que le patron voit.
+    //
+    // Recharger prouve mieux : le modèle est relu de la base et rendu comme il
+    // le sera à sa prochaine visite.
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForSelector('[data-atlas="message-client"]', { timeout: 30_000 });
+    const cadres = page.locator('[data-atlas="message-client"]');
+    const devis = await cadres.nth(0).innerText();
+    const facture = await cadres.nth(1).innerText();
+    const passage = await cadres.nth(2).innerText();
 
-    // Le cadre est le sien sur les deux — c'est « un message pour tous ».
-    assert.ok(devis.includes("Salut "), `l'aperçu du devis ne porte pas son message : ${devis.slice(0, 60)}`);
-    assert.ok(facture.includes("Salut "), `l'aperçu de la facture ne porte pas son message : ${facture.slice(0, 60)}`);
-    // Le milieu, lui, s'adapte.
-    assert.match(devis, /votre devis/i, "l'aperçu du devis ne se nomme pas");
-    assert.match(facture, /votre facture/i, "l'aperçu de la facture ne se nomme pas");
-    assert.match(facture, /à régler avant le/i, "l'échéance manque à l'aperçu de la facture");
-    assert.doesNotMatch(facture, /votre devis/i, "l'aperçu de la facture parle d'un devis");
+    // Le premier porte SON texte — c'est celui qu'on vient d'enregistrer.
+    assert.ok(devis.includes("Salut "), `le message du devis n'est pas le sien : ${devis.slice(0, 60)}`);
+
+    // Et chacun nomme son document, sans jamais nommer les autres.
+    assert.match(devis, /devis/i, "le message du devis ne se nomme pas");
+    assert.doesNotMatch(devis, /facture|compte rendu/i, "le message du devis parle d'un autre document");
+    assert.match(facture, /facture/i, "le message de la facture ne se nomme pas");
+    assert.doesNotMatch(facture, /votre devis/i, "le message de la facture parle d'un devis");
+    assert.match(facture, /à régler avant le/i, "l'échéance manque au message de la facture");
+    assert.match(passage, /compte rendu/i, "le compte rendu ne se nomme pas");
   });
 
   // ── 4. LE FIL ENTIER : ce qu'il a écrit arrive au TÉLÉPHONE du client
@@ -202,9 +245,9 @@ async function main() {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', `Larousse ${Date.now()}`);
     await page.fill('input[placeholder="06 12 34 56 78"]', "06 79 98 45 14");
-    await creerPuisFiche(page);
+    const idChantier = await creerPuisFiche(page);
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 20_000 });
-    const chantierUrl = page.url();
+    const chantierUrl = `${BASE}/chantiers/${idChantier}`;
 
     await page.goto(`${chantierUrl}/prix`, { waitUntil: "networkidle" });
     await page.click("text=+ Ajouter une ligne");
@@ -253,9 +296,11 @@ async function main() {
     );
     // **Et la phrase d'Atlas est bien posée à la place de `[document]`** : sans
     // elle, le client recevrait « [document] » en clair.
+    // **La phrase est la SIENNE désormais**, et le mot du document s'y pose :
+    // c'est tout ce qu'Atlas garde de l'ancien `[document]`.
     assert.ok(
-      /votre devis/i.test(adresse),
-      `la phrase du document n'a pas été posée : « ${adresse.slice(0, 160)} »`
+      /votre devis à regarder tranquillement/i.test(adresse),
+      `sa phrase n'est pas partie telle qu'il l'a écrite : « ${adresse.slice(0, 160)} »`
     );
     assert.ok(!adresse.includes("[document]"), "une pastille est partie en clair chez le client");
     assert.ok(!adresse.includes("[lien]"), "la pastille du lien est partie en clair chez le client");

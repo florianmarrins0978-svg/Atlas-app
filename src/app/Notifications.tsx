@@ -135,13 +135,37 @@ type Carte = {
  * ouvre son application pour voir son travail, pas pour faire défiler des
  * alertes. Les autres ne sont pas cachées — elles sont annoncées et à un appui.
  */
-const VISIBLES_PAR_DEFAUT = 2;
+/**
+ * **UN SEUL depuis le 6 septembre 2026**, et non deux.
+ *
+ * Sur un matin à trois réponses, deux cartes repoussaient la liste des
+ * chantiers à 770 px dans une fenêtre qui en fait 596 : l'écran s'appelait
+ * « Vos chantiers » et n'en montrait aucun — pas même le nom du premier.
+ * Mesuré, pas estimé, sur la planche `appli/l-accueil-a-bout-de-bras.html`
+ * qu'il a retenue.
+ *
+ * Avec une seule, il lit le nom, le lieu et l'état du premier chantier. Les
+ * autres ne sont pas cachées : elles sont annoncées et à un appui — et
+ * **depuis ce même jour, elles se replient**, ce qui n'était pas le cas.
+ */
+const VISIBLES_PAR_DEFAUT = 1;
 
 function versCarte(n: NotificationPatron): Carte {
   const refus = n.reponse === "refusee";
   const correction = n.reponse === "correction";
 
-  const titre = correction ? "Correction demandée" : refus ? "Devis retourné" : "Autre date proposée";
+  // **« Devis accepté » est un titre à part entière depuis le 7 septembre
+  // 2026.** Une acceptation simple ne remontait pas jusqu'ici ; la seule
+  // qui passait était celle où le client avait proposé SA date, d'où un titre
+  // qui parlait de la date plutôt que de la nouvelle. Le garder pour les deux
+  // aurait annoncé « Autre date proposée » sur un devis accepté tel quel.
+  const titre = correction
+    ? "Correction demandée"
+    : refus
+      ? "Devis retourné"
+      : n.dateContreProposee
+        ? "Autre date proposée"
+        : "Devis accepté";
   const texte = correction
     ? "Le client veut ce devis corrigé avant de l'accepter."
     : refus
@@ -271,10 +295,23 @@ function rappelVersCarte(r: RappelAffiche): Carte {
         ? `Parti ${r.depuisTexte}, sans un mot du client. Vous pouvez le relancer vous-même.`
         : `Chantier terminé ${r.depuisTexte}, et aucune facture n'est partie.`,
     suite: {
-      // **Le chantier, pas le devis vierge.** De la fiche il dicte, il chiffre,
-      // ou il écrit le devis à la main — trois chemins, et c'est lui qui sait
-      // lequel. L'envoyer d'office sur `devis-complet` choisirait à sa place.
-      href: devis || sansDevis ? `/chantiers/${r.chantierId}` : `/chantiers/${r.chantierId}/facture`,
+      // **CHAQUE RAPPEL MÈNE OÙ SON LIBELLÉ LE DIT — 4 septembre 2026.**
+      //
+      // Les deux premiers menaient à la fiche du chantier, pour ne pas choisir
+      // entre dicter, chiffrer et rédiger à la main. Cette fiche est retirée
+      // (`ARCHITECTURE.md` §254), et les trois chemins n'y étaient plus depuis
+      // longtemps : la chaîne va de la dictée au devis d'un seul tenant.
+      //
+      //   · « Faire le devis » : le devis. Il s'y dicte ET s'y écrit à la main,
+      //     donc rien n'est choisi à sa place ;
+      //   · « Ouvrir le chantier » — un devis parti sans réponse : `/export`,
+      //     qui porte le lien du client et la relance. C'est la règle du
+      //     20 août 2026, parti → export, pas une nouvelle.
+      href: sansDevis
+        ? `/chantiers/${r.chantierId}/devis-complet`
+        : devis
+          ? `/chantiers/${r.chantierId}/export`
+          : `/chantiers/${r.chantierId}/facture`,
       libelle: sansDevis ? "Faire le devis" : devis ? "Ouvrir le chantier" : "Créer la facture",
       reprendreAvant: false,
     },
@@ -467,14 +504,20 @@ export default function Notifications({
                 gauche disent que ces mots ne sont pas ceux de l'application. */}
             {n.messageClient && (
               <blockquote
-                className="mt-3 whitespace-pre-wrap pl-3 text-[14px] leading-relaxed"
+                className="mt-3 whitespace-pre-wrap break-words pl-3 text-[14px] leading-relaxed"
                 style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
               >
                 « {n.messageClient} »
               </blockquote>
             )}
 
-            <div className="mt-3 flex items-center gap-4">
+            {/* **44 px de haut, et la rangée reprend ses marges — 6 septembre
+                2026.** Ces deux gestes n'avaient aucun rembourrage : mesurés à
+                21 px, sur un écran qu'il touche debout, d'une main, avec un
+                doigt épais. Le remboursement intérieur donne la cible, la marge
+                négative la reprend à l'affichage — les deux mots restent où ils
+                étaient, et l'écart entre eux ne bouge pas. */}
+            <div className="-mx-2 mt-2 flex items-center gap-2">
               {/* **Le lien mène là où est le geste**, et l'annonce. Voir
                   `suite-de-la-reponse.ts` : un devis accepté s'ouvre figé, tel
                   que le client l'a reçu ; un devis à corriger mène à l'écran
@@ -487,7 +530,7 @@ export default function Notifications({
                   type="button"
                   onClick={() => corriger(n)}
                   disabled={enCours !== null}
-                  className="text-[14px] font-medium disabled:opacity-60"
+                  className="min-h-[44px] px-2 text-[14px] font-medium disabled:opacity-60"
                   style={{ color: colors.rust }}
                 >
                   {enCours === n.chantierId ? "Ouverture…" : n.suite.libelle}
@@ -495,7 +538,7 @@ export default function Notifications({
               ) : (
                 <Link
                   href={n.suite.href}
-                  className="text-[14px] font-medium"
+                  className="inline-flex min-h-[44px] items-center px-2 text-[14px] font-medium"
                   style={{ color: colors.rust }}
                 >
                   {n.suite.libelle}
@@ -523,8 +566,8 @@ export default function Notifications({
                 data-atlas="j-ai-vu"
                 onClick={() => (n.repousser ? repousser(n) : n.vu ? marquerRappel(n) : marquerVue(n.envoiId))}
                 disabled={enCours !== null}
-                className="text-[14px] font-medium disabled:opacity-60"
-                style={{ color: colors.muted }}
+                className="min-h-[44px] px-2 text-[14px] font-medium disabled:opacity-60"
+                style={{ color: colors.inkSoft }}
               >
                 J&apos;ai vu
               </button>
@@ -545,15 +588,39 @@ export default function Notifications({
         );
       })}
 
-      {enPlus > 0 && (
+      {/* ── UNE PORTE QUI S'OUVRE DOIT SE REFERMER ────────────────────────
+          **Trouvé par le patron le 6 septembre 2026 :** *« les autres devis à
+          regarder, on peut cliquer dessus pour agrandir la fenêtre mais on
+          peut pas la refermer »*.
+
+          Il avait raison, et ce n'était pas un défaut de maquette : l'appui
+          posait `setToutVoir(true)` sans retour, et le bouton DISPARAISSAIT
+          une fois déplié — il ne restait plus rien à toucher, et la seule
+          façon de replier était de quitter l'écran et d'y revenir.
+
+          C'est sa règle du 5 septembre, « une erreur se rattrape » : un geste
+          sans retour en est une. « Replier » — un verbe, un mot. */}
+      {enPlus > 0 ? (
         <button
           type="button"
           onClick={() => setToutVoir(true)}
-          className="text-center text-[14px] font-medium"
+          className="min-h-[44px] text-center text-[14px] font-medium"
           style={{ color: colors.rust }}
         >
           {enPlus === 1 ? "1 autre devis à regarder" : `${enPlus} autres devis à regarder`}
         </button>
+      ) : (
+        toutVoir &&
+        restantes.length > VISIBLES_PAR_DEFAUT && (
+          <button
+            type="button"
+            onClick={() => setToutVoir(false)}
+            className="min-h-[44px] text-center text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
+            Replier
+          </button>
+        )
       )}
     </div>
   );

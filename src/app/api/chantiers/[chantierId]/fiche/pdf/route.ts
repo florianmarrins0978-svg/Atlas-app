@@ -3,6 +3,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerOuverture } from "@/server/garde-route";
 import { chargerFicheChantierPourPdf } from "@/server/repositories/fiche-chantier-pdf";
 import { genererPdfFicheChantier } from "@/server/pdf/fiche-chantier-pdf";
+import { enTetesDeRemise, veutTelecharger } from "@/lib/remise-de-fichier";
 
 // Le PDF de la fiche d'un chantier — le troisième document d'Atlas, demandé par
 // le patron le 20 août 2026.
@@ -46,8 +47,10 @@ export async function GET(
   // « Aperçu » et « Télécharger » ne sont pas le même geste — la leçon du
   // 7 août 2026 sur le devis : « quand je clique sur télécharger le PDF, ça me
   // propose pas de l'enregistrer, ça ouvre juste une page de plus ».
-  const enPieceJointe = new URL(requete.url).searchParams.get("telecharger") === "1";
-  const disposition = enPieceJointe ? "attachment" : "inline";
+  //
+  // **Et le type compte autant que la disposition** (7 septembre 2026) :
+  // `src/lib/remise-de-fichier.ts`.
+  const enPieceJointe = veutTelecharger(requete.url);
 
   const pdf = await genererPdfFicheChantier(fiche);
 
@@ -61,15 +64,10 @@ export async function GET(
     .slice(0, 60);
   const nom = `fiche-chantier-${fiche.jour ?? "sans-date"}-${morceau}.pdf`;
 
+  // L'ASCII de l'en-tête et le vrai nom accentué sont écrits par
+  // `enTetesDeRemise` — c'est ce que cette route savait faire seule, et que les
+  // quatre autres ignoraient.
   return new NextResponse(new Uint8Array(pdf), {
-    headers: {
-      "Content-Type": "application/pdf",
-      // L'en-tête HTTP n'accepte que l'ASCII : `filename*` porte le vrai nom,
-      // accents compris, et `filename` sa version dégradée pour les vieux
-      // navigateurs. Sans les deux, un accent fait tomber la réponse entière.
-      "Content-Disposition":
-        `${disposition}; filename="${nom.normalize("NFD").replace(/[\u0300-\u036f]/g, "")}"; ` +
-        `filename*=UTF-8''${encodeURIComponent(nom)}`,
-    },
+    headers: enTetesDeRemise({ telecharger: enPieceJointe, nom, type: "application/pdf" }),
   });
 }

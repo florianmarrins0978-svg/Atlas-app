@@ -404,6 +404,84 @@ async function main() {
 
   const DANS_SIX_MOIS = dans(182);
 
+  // ---- Une date TRÈS PROCHE : le parcours entier, dans l'autre sens -------
+  //
+  // **Sa règle du 31 août 2026 :** *« si l'utilisateur veut choisir le
+  // 1ᵉʳ septembre il doit pouvoir ! »* — le lendemain, donc.
+  //
+  // C'est la symétrie exacte du bloc ci-dessous, et elle méritait ses propres
+  // cas : la borne haute avait coûté trois barrières, la borne basse en cachait
+  // une, à l'endroit le plus cher — la page du client.
+
+  const DEMAIN = dans(1);
+
+  await test("le patron peut proposer DEMAIN", async () => {
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`proche-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [DEMAIN], contenuDevis: "x" },
+      MAINTENANT
+    );
+    assert.ok(envoi.jeton, "l'envoi n'a pas été créé");
+  });
+
+  await test("une date PASSÉE reste refusée", async () => {
+    // La seule borne basse qui subsiste. Ouvrir le lendemain sans la garder
+    // aurait ouvert hier du même geste — et un client ne peut pas retenir un
+    // jour écoulé.
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`hier-${Date.now()}@t.test`);
+    await assert.rejects(
+      creerEnvoi(
+        ctx,
+        { chantierId, devisId, canal: "sms", datesProposees: [dans(-1)], contenuDevis: "x" },
+        MAINTENANT
+      ),
+      /hors_fenetre|Date/i
+    );
+  });
+
+  await test("le client VOIT la date de demain dans sa fenêtre", async () => {
+    // La fenêtre du client commence après-demain. Une date proposée en deçà
+    // tombait dessous, et rien ne le disait.
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`vueproche-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [DEMAIN], contenuDevis: "x" },
+      MAINTENANT
+    );
+    const vue = await lireParJeton(envoi.jeton, MAINTENANT);
+    assert.ok(vue, "le lien ne s'ouvre pas");
+    assert.ok(
+      DEMAIN >= vue.fenetre.debut && DEMAIN <= vue.fenetre.fin,
+      `la date proposée ${DEMAIN} tombe hors de la fenêtre [${vue.fenetre.debut} … ${vue.fenetre.fin}]`
+    );
+  });
+
+  await test("le client ACCEPTE la date de demain, et le chantier se pose", async () => {
+    // ═══════════════════════════════════════════════════════════════════════
+    // **La barrière muette du 31 août 2026.** Rendre le lendemain choisissable
+    // au patron ne suffisait pas : la revérification, côté client, se faisait
+    // contre une fenêtre qui commence après-demain. Son client aurait lu « date
+    // indisponible » en acceptant la date qu'il venait de recevoir — l'écran du
+    // patron disant oui, la page du client non, et le devis perdu là.
+    //
+    // Rien ne l'aurait signalé : le lot paraissait fini côté patron.
+    // ═══════════════════════════════════════════════════════════════════════
+    const { ctx, chantierId, devisId } = await contexteAvecDevis(`acceptproche-${Date.now()}@t.test`);
+    const envoi = await creerEnvoi(
+      ctx,
+      { chantierId, devisId, canal: "sms", datesProposees: [DEMAIN], contenuDevis: "x" },
+      MAINTENANT
+    );
+    const r = await enregistrerReponse(
+      envoi.jeton,
+      { decision: "accepte", dateRetenue: DEMAIN },
+      MAINTENANT
+    );
+    assert.strictEqual(r.succes, true, `le client s'est fait refuser : ${JSON.stringify(r)}`);
+    assert.strictEqual(r.succes && r.dateRetenue, DEMAIN);
+  });
+
   await test("le patron peut proposer une date à six mois", async () => {
     const { ctx, chantierId, devisId } = await contexteAvecDevis(`loin-${Date.now()}@t.test`);
     const envoi = await creerEnvoi(

@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — corriger la facture avant qu'elle parte</title>
+<style>
+/*
+  L'ARRÊT 3, RENDU CORRIGEABLE — solutions B et D du document
+  `docs/travaux-supplementaires.md`.
+
+  `docs/AGENT.md` §2.3 l'avait écrit dès le départ : « un chantier finit
+  rarement exactement comme il a été devisé : travaux en plus, journée en
+  moins, matériel non utilisé ». L'arrêt 3 existe POUR ÇA — et l'écran codé
+  aujourd'hui n'offre qu'un seul champ, l'échéance.
+
+  DEUX CHOSES SE MANIPULENT ICI :
+
+  · **Les quantités au réel (D).** Une ligne marquée « au réel » se corrige
+    sur la facture : 60 ml devisés, 68 mesurés. Pas d'avenant pour ça — le
+    devis annonçait la règle. Le total suit.
+  · **Une ligne ajoutée à la main (B).** C'est le geste qui manque, et c'est
+    aussi le piège : ce montant, le client ne l'a signé nulle part.
+
+  L'INTERRUPTEUR EST LA VRAIE QUESTION. « L'appli avertit » laisse partir la
+  facture avec un supplément non signé — c'est lui qui porte l'impayé.
+  « L'appli bloque » ne laisse pas passer, et gêne le jour où le client a dit
+  oui au téléphone. Les deux postures s'essaient sur les mêmes chiffres.
+
+  RIEN N'EST CODÉ dans l'application (`CLAUDE.md` §3 bis).
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --alert:#9C3B2E;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --surPlein:#faf9f5;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --pine:#9db98f; --alert:#d98b7c; --surPlein:#171613;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+     padding:30px 0 56px;-webkit-text-size-adjust:100%}
+.page{max-width:430px;margin:0 auto;padding:0 20px}
+.sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+     text-transform:uppercase;color:var(--or)}
+h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
+   line-height:1.08;letter-spacing:-.018em}
+.chapo{margin:11px 0 0;font-size:14px;color:var(--charcoal-soft);line-height:1.6}
+.chapo b{color:var(--charcoal)}
+
+.posture{display:flex;gap:6px;margin-top:18px}
+.posture button{flex:1;min-height:44px;background:var(--cream);border:0;border-radius:11px;
+                font:inherit;font-size:13.5px;color:var(--charcoal-soft);cursor:pointer;
+                box-shadow:inset 0 0 0 1px var(--line)}
+.posture button[aria-selected="true"]{background:var(--pine);color:var(--surPlein);box-shadow:none}
+
+.tel{margin-top:12px;background:var(--cream);border-radius:20px;padding:20px 18px 22px;
+     box-shadow:inset 0 0 0 1px var(--line)}
+.tel h2{margin:0;font-family:Georgia,serif;font-weight:400;font-size:23px;line-height:1.12}
+.ou{margin:4px 0 0;font-size:9px;font-weight:600;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--or)}
+.dit{margin:9px 0 0;font-size:12.5px;line-height:1.55;color:var(--muted)}
+.etiq{margin:18px 0 0;font-size:11.5px;color:var(--muted)}
+
+.lgn{display:flex;align-items:center;gap:9px;padding:11px 0;
+     border-bottom:1px solid var(--line-soft);font-size:14px}
+.lgn .nom{flex:1;line-height:1.3}
+.lgn .nom small{display:block;color:var(--muted);font-size:11.5px}
+.lgn .nom .marque{display:inline-block;margin-top:3px;font-size:9px;font-weight:600;
+                  letter-spacing:.16em;text-transform:uppercase}
+.marque.reel{color:var(--or)}
+.marque.nonsigne{color:var(--alert)}
+.marque.signe{color:var(--pine)}
+.lgn input.qte{width:58px;background:var(--bone);border:1px solid var(--line);
+               border-radius:8px;padding:8px 6px;font:inherit;font-size:14px;
+               color:inherit;text-align:right}
+.lgn .fige{width:58px;text-align:right;font-size:13px;color:var(--muted)}
+.lgn .mt{width:78px;text-align:right;font-variant-numeric:tabular-nums}
+.lgn .x{flex:none;width:30px;height:30px;border:0;background:none;color:var(--muted);
+        font-size:16px;cursor:pointer}
+.lgn.ajoutee{background:linear-gradient(var(--paper),var(--paper));border-radius:9px;
+             padding-left:10px;padding-right:6px}
+
+.ajout{display:block;width:100%;margin-top:12px;background:none;border:0;
+       color:var(--or);font:inherit;font-size:13px;text-align:left;padding:9px 0;cursor:pointer}
+
+.saisie{margin-top:10px;background:var(--bone);border-radius:12px;padding:13px 14px;
+        box-shadow:inset 0 0 0 1px var(--line)}
+.saisie input{width:100%;margin-top:8px;background:var(--cream);border:1px solid var(--line);
+              border-radius:9px;padding:11px 12px;font:inherit;font-size:14px;color:inherit}
+.saisie .duo{display:flex;gap:8px}
+.saisie .duo input{flex:1}
+
+.totaux{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.tot{display:flex;justify-content:space-between;padding:3px 0;font-size:13.5px;
+     color:var(--charcoal-soft);font-variant-numeric:tabular-nums}
+.tot.gros{margin-top:5px;font-family:Georgia,serif;font-size:19px;color:var(--charcoal)}
+.ecart{font-size:12.5px;color:var(--or);margin-top:6px}
+
+.bandeau{margin-top:16px;padding:13px 15px;border-radius:12px;background:var(--paper);
+         font-size:12.5px;line-height:1.6;color:var(--charcoal)}
+.bandeau.dur{box-shadow:inset 0 0 0 1.5px var(--alert)}
+.bandeau .t{display:block;margin-bottom:5px;font-size:9px;font-weight:600;
+            letter-spacing:.2em;text-transform:uppercase;color:var(--alert)}
+.bandeau button{margin-top:10px;background:var(--pine);color:var(--surPlein);border:0;
+                border-radius:999px;padding:10px 16px;font:inherit;font-size:13px;
+                font-family:Georgia,serif;cursor:pointer}
+
+.bouton{display:block;width:100%;margin-top:16px;background:var(--pine);color:var(--surPlein);
+        border:0;border-radius:999px;padding:14px 20px;font-size:15px;
+        font-family:Georgia,serif;cursor:pointer}
+.bouton[disabled]{opacity:.38;cursor:default}
+
+.note{margin-top:20px;background:var(--cream);border-radius:13px;padding:15px 16px;
+      font-size:12.5px;line-height:1.65;color:var(--charcoal-soft);
+      box-shadow:inset 0 0 0 1px var(--line)}
+.note .t{display:block;margin-bottom:6px;font-size:9px;font-weight:600;
+         letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+.note b{color:var(--charcoal)}
+.note a{color:var(--or)}
+.autres{margin-top:14px;font-size:13px;line-height:2}
+.autres a{color:var(--or)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Travaux en plus · solutions B et D</p>
+  <h1>Corriger avant l'envoi</h1>
+  <p class="chapo">La facture en brouillon, <b>modifiable</b> : les quantités au réel se corrigent, une ligne s'ajoute. <b>Essayez les deux postures</b> ci-dessous.</p>
+
+  <div class="posture" role="tablist">
+    <button type="button" role="tab" aria-selected="true" data-mode="avertit">L'appli avertit</button>
+    <button type="button" role="tab" aria-selected="false" data-mode="bloque">L'appli bloque</button>
+  </div>
+
+  <div class="tel">
+    <h2>Facture 2026-031</h2>
+    <p class="ou">Brouillon · M. Bernard</p>
+    <p class="dit">Devis 2026-014, accepté le 18 août · 950,00 € HT</p>
+
+    <p class="etiq">Les lignes</p>
+    <div id="lignes"></div>
+
+    <button class="ajout" type="button" id="ouvrirAjout">+ Ajouter une ligne</button>
+    <div class="saisie" id="saisie" hidden>
+      <input id="nNom" type="text" placeholder="Ce qui a été fait en plus">
+      <div class="duo">
+        <input id="nQte" type="number" inputmode="decimal" step="0.5" placeholder="Quantité" value="1">
+        <input id="nPu" type="number" inputmode="decimal" step="10" placeholder="Prix unitaire">
+      </div>
+      <button class="bouton" type="button" id="validerAjout">Ajouter</button>
+    </div>
+
+    <div class="totaux">
+      <div class="tot"><span>Total HT</span><span id="ht">0,00 €</span></div>
+      <div class="tot"><span>TVA 10 %</span><span id="tva">0,00 €</span></div>
+      <div class="tot gros"><span>Total TTC</span><span id="ttc">0,00 €</span></div>
+      <p class="ecart" id="ecart"></p>
+    </div>
+
+    <div class="bandeau dur" id="alerte" hidden>
+      <span class="t">Non signé par le client</span>
+      <span id="alerteTexte"></span>
+      <button type="button" id="faireSigner">Faire signer sur place</button>
+    </div>
+
+    <button class="bouton" type="button" id="arreter">Arrêter la facture et l'envoyer</button>
+    <p class="dit" id="motBouton"></p>
+  </div>
+
+  <div class="note"><span class="t">Ce que cette page ne fait pas</span>
+    Rien n'est enregistré, rien ne part chez personne. « Faire signer »
+    n'ouvre pas la vraie signature — elle se manipule sur
+    <b><a href="ts-bon-sur-place.html">l'autre planche</a></b>.
+  </div>
+
+  <p class="autres">
+    <a href="ts-bon-sur-place.html">Le bon signé sur place</a><br>
+    <a href="ts-avenant.html">L'avenant et la facture qui l'additionne</a><br>
+    <a href="essais.html">Toutes les maquettes</a>
+  </p>
+</div>
+
+<script>
+/* Les trois lignes du devis. `reel` : la quantité se corrige à la facture,
+   parce que le devis l'annonçait estimative. Les autres sont au forfait. */
+let lignes = [
+  { nom:'Taille de haie automne', unite:'ml',      pu:4.5, qte:60, devisee:60, reel:true,  ajoutee:false, signee:true },
+  { nom:'Ramassage des feuilles', unite:'jour',    pu:250, qte:2,  devisee:2,  reel:true,  ajoutee:false, signee:true },
+  { nom:'Évacuation des déchets', unite:'forfait', pu:180, qte:1,  devisee:1,  reel:false, ajoutee:false, signee:true }
+];
+const TVA = 0.10;
+const DEVIS_HT = 950;
+const euros = n => n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+const $ = s => document.querySelector(s);
+
+let mode = 'avertit';
+document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-mode]').forEach(x => x.setAttribute('aria-selected', x === b));
+  mode = b.dataset.mode;
+  maj();
+}));
+
+function dessiner(){
+  const hote = $('#lignes');
+  hote.innerHTML = '';
+  lignes.forEach((l,i) => {
+    const d = document.createElement('div');
+    d.className = 'lgn' + (l.ajoutee ? ' ajoutee' : '');
+    let marque = '';
+    if (l.ajoutee && !l.signee) marque = '<span class="marque nonsigne">Non signé</span>';
+    else if (l.ajoutee && l.signee) marque = '<span class="marque signe">Signé sur place</span>';
+    else if (l.reel && l.qte !== l.devisee) marque = '<span class="marque reel">Devisé ' + l.devisee + ' ' + l.unite + '</span>';
+    else if (l.reel) marque = '<span class="marque reel">Au réel</span>';
+
+    const champ = l.reel || l.ajoutee
+      ? '<input class="qte" type="number" inputmode="decimal" step="0.5" value="' + l.qte + '">'
+      : '<span class="fige">' + l.qte + ' ' + l.unite + '</span>';
+
+    d.innerHTML = '<span class="nom">' + l.nom +
+      '<small>' + euros(l.pu) + (l.unite === 'u' ? '' : ' / ' + l.unite) + '</small>' + marque + '</span>' +
+      champ + '<span class="mt">' + euros(l.qte * l.pu) + '</span>' +
+      (l.ajoutee ? '<button class="x" type="button" aria-label="Retirer">×</button>' : '');
+
+    const q = d.querySelector('.qte');
+    if (q) q.addEventListener('input', e => {
+      const v = parseFloat(e.target.value.replace(',','.'));
+      l.qte = isNaN(v) ? 0 : v;
+      dessiner();
+    });
+    const x = d.querySelector('.x');
+    if (x) x.addEventListener('click', () => { lignes.splice(i,1); dessiner(); });
+    hote.appendChild(d);
+  });
+  maj();
+}
+
+function maj(){
+  const ht = lignes.reduce((s,l) => s + l.qte * l.pu, 0);
+  $('#ht').textContent  = euros(ht);
+  $('#tva').textContent = euros(ht * TVA);
+  $('#ttc').textContent = euros(ht * (1 + TVA));
+
+  const ecart = ht - DEVIS_HT;
+  $('#ecart').textContent = ecart === 0 ? ''
+    : (ecart > 0 ? 'En plus du devis : ' : 'En moins du devis : ') + euros(Math.abs(ecart)) + ' HT';
+
+  const nonSignees = lignes.filter(l => l.ajoutee && !l.signee);
+  const montantNonSigne = nonSignees.reduce((s,l) => s + l.qte * l.pu, 0);
+  $('#alerte').hidden = nonSignees.length === 0;
+  $('#alerteTexte').textContent = nonSignees.length === 0 ? '' :
+    euros(montantNonSigne) + ' HT que le client n’a accepté nulle part. Sans écrit, il peut refuser de les payer.';
+
+  const bloque = mode === 'bloque' && nonSignees.length > 0;
+  $('#arreter').disabled = bloque;
+  $('#motBouton').textContent = nonSignees.length === 0
+    ? 'Tout est couvert par le devis ou par un bon signé.'
+    : (bloque ? 'Bloqué tant que le supplément n’est pas signé.'
+              : 'Elle partira quand même — le risque est pour vous.');
+}
+
+$('#faireSigner').addEventListener('click', () => {
+  lignes.forEach(l => { if (l.ajoutee) l.signee = true; });
+  dessiner();
+});
+
+$('#ouvrirAjout').addEventListener('click', () => {
+  const s = $('#saisie');
+  s.hidden = !s.hidden;
+  if (!s.hidden) $('#nNom').focus();
+});
+
+$('#validerAjout').addEventListener('click', () => {
+  const nom = $('#nNom').value.trim();
+  const qte = parseFloat(($('#nQte').value || '').replace(',','.'));
+  const pu  = parseFloat(($('#nPu').value  || '').replace(',','.'));
+  if (!nom || isNaN(qte) || isNaN(pu)) return;
+  lignes.push({ nom, unite:'u', pu, qte, devisee:0, reel:false, ajoutee:true, signee:false });
+  $('#nNom').value = ''; $('#nQte').value = '1'; $('#nPu').value = '';
+  $('#saisie').hidden = true;
+  dessiner();
+});
+
+dessiner();
+</script>
+</body>
+</html>

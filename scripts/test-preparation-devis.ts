@@ -150,4 +150,45 @@ cas("le message ne nomme qu'un travail par ligne empilée", () => {
   assert.doesNotMatch(v.probleme, /Broyage/, `le message empile tout : ${v.probleme}`);
 });
 
+cas("un drapeau resté levé sur une ligne CHIFFRÉE ne bloque plus", () => {
+  // ═════════════════════════════════════════════════════════════════════════
+  // **Le cas exact de sa capture du 31 août 2026.** Deux lignes marquées « à
+  // chiffrer » portaient 1 720 € posés de sa main ; le devis restait bloqué,
+  // et le PDF affichait « à chiffrer » en face de montants que le total
+  // comptait pourtant.
+  //
+  // L'invariant : un montant posé RÉPOND à la question. C'est sûr parce que
+  // les deux seuls chemins qui lèvent le drapeau écrivent « 0 » avec lui —
+  // aucun prix deviné ne peut donc passer par cette porte.
+  //
+  // **Effet de bord voulu :** les devis déjà bloqués dans sa base se rouvrent
+  // sans qu'il ait à retaper quoi que ce soit.
+  // ═════════════════════════════════════════════════════════════════════════
+  const v = peutPreparerDevis([
+    { libelle: "Dessouchage", montant: "1720.00", aChiffrer: true },
+    { libelle: "Démontage en rétention d'un érable", montant: "560.00" },
+  ]);
+  assert.equal(v.possible, true, v.possible ? "" : `bloqué à tort : ${v.probleme}`);
+});
+
+cas("un montant à ZÉRO sous le drapeau bloque toujours", () => {
+  // L'assouplissement ci-dessus ne doit pas emporter la règle du 27 août : une
+  // ligne sans prix n'est pas une ligne gratuite.
+  const v = peutPreparerDevis([
+    { libelle: "Abattage", montant: "840" },
+    { libelle: "Tonte de la pelouse", montant: "0.00", aChiffrer: true },
+  ]);
+  assert.equal(v.possible, false, "une ligne réellement non chiffrée est passée");
+});
+
+cas("un montant NÉGATIF ne compte pas pour un prix posé", () => {
+  // Une remise saisie en négatif ne répond pas à « combien vaut ce travail ».
+  // Le contrôle lit « strictement positif », jamais « différent de zéro ».
+  const v = peutPreparerDevis([
+    { libelle: "Abattage", montant: "840" },
+    { libelle: "Tonte", montant: "-50.00", aChiffrer: true },
+  ]);
+  assert.equal(v.possible, false, "un montant négatif a été pris pour un prix");
+});
+
 console.log("Tous les contrôles de préparation du devis sont passés.");

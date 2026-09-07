@@ -40,20 +40,66 @@ export default function ChoixCanal({
   actif,
   disponible,
   onClick,
+  apparence = "capsule",
 }: {
   libelle: string;
   actif: boolean;
   /** La coordonnée existe-t-elle ? Sinon la capsule reste inerte. */
   disponible: boolean;
   onClick: () => void;
+  /**
+   * DEUX DESSINS DU MÊME GESTE, ET UNE SEULE RÈGLE.
+   *
+   * `"capsule"` — la pilule pleine largeur, celle de la facture, inchangée
+   * depuis le 22 août 2026.
+   *
+   * `"reglage"` — deux mots sur une ligne, l'actif souligné d'or. **C'est la
+   * planche « A — Épurée » qu'il a retenue le 2 septembre 2026**, et elle en
+   * donne la raison en une phrase : *« l'envoi n'est plus une action : c'est un
+   * réglage. Il en prend la forme — une ligne, deux mots — et rend 40 px à
+   * l'anneau. »* Les deux capsules pleine largeur se lisaient comme des boutons
+   * d'envoi alors qu'elles ne font que dire par où l'on écrira.
+   *
+   * **Un réglage de plus, pas un composant de plus** : recopier la capsule pour
+   * l'habiller autrement aurait donné deux dessins du même geste, qui auraient
+   * divergé au premier ajustement — et c'est LUI qui aurait vu deux réponses à
+   * la même question à deux écrans d'intervalle (`CLAUDE.md` §3). C'est ce que
+   * fait déjà `ChampAdresse` avec son `apparence`.
+   */
+  apparence?: "capsule" | "reglage";
 }) {
+  const repere = `canal-${libelle.toLowerCase().includes("sms") ? "sms" : "email"}`;
+
+  if (apparence === "reglage") {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={!disponible}
+        aria-pressed={actif}
+        data-atlas={repere}
+        // Les mesures de la planche (`.b-envoi button`) : 14 px, aucun fond, et
+        // l'actif porte un trait d'or SOUS le mot — 1,5 px, comme le marqueur
+        // d'onglet de la barre du bas. La hauteur de 34 px est celle du doigt.
+        className="min-h-[34px] rounded-[2px] px-[10px] py-1.5 text-[14px] leading-none disabled:opacity-40"
+        style={{
+          background: "none",
+          color: actif ? colors.ink : colors.inkSoft,
+          boxShadow: actif ? `inset 0 -1.5px 0 ${colors.or}` : "none",
+        }}
+      >
+        {libelle}
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={!disponible}
       aria-pressed={actif}
-      data-atlas={`canal-${libelle.toLowerCase().includes("sms") ? "sms" : "email"}`}
+      data-atlas={repere}
       // Les mesures de sa maquette (`.canal button`) : 14 px de texte, un
       // liseré gris au repos, l'OR et le fond papier quand le canal est pris.
       className="flex-1 rounded-full py-[11px] text-[14px] disabled:opacity-40"

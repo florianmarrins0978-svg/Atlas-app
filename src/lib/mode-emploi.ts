@@ -113,10 +113,19 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     motsCles: ["nouveau", "chantier", "client", "nom", "telephone", "email", "adresse", "photos", "saisir"],
     geste:
       "Remplissez la fiche client (nom, téléphone ou e-mail, adresse du chantier), " +
-      "choisissez SMS ou e-mail, puis « Enregistrer ».",
+      "réglez l'envoi sur SMS ou E-mail, puis « Enregistrer ».",
     reserve: "Sans coordonnée, le devis ne pourra pas partir : mieux vaut la poser tout de suite.",
     source: "src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx",
-    preuves: ["Nom du client", "Par SMS", "Par e-mail", "Adresse du chantier"],
+    // **« Par SMS » et « Par e-mail » ne sont plus à l'écran** — planche
+    // « A — Épurée », codée le 4 septembre 2026 : l'envoi est devenu un
+    // RÉGLAGE, une ligne et deux mots, « SMS » et « E-mail ». La fiche suit le
+    // mot qu'il lit ; garder l'ancien libellé aurait fait chercher un bouton
+    // qui n'existe plus.
+    // **« Envoi » et non « ENVOI »** : la capitale vient de la feuille de
+    // style (`libelleCaps`), le mot écrit dans l'écran porte sa minuscule. Ce
+    // contrôle lit la SOURCE — viser la forme affichée l'aurait fait tomber
+    // sur le commentaire d'à côté, c'est-à-dire une preuve qui ne prouve rien.
+    preuves: ["Nom du client", "Envoi", "E-mail", "Adresse du chantier"],
   },
 
   // --- La fiche du chantier -------------------------------------------------
@@ -495,7 +504,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   },
   {
     id: "vocabulaire-regles",
-    ecran: "Le vocabulaire de mon métier",
+    ecran: "Mon vocabulaire",
     ou: "Réglages, puis Atlas IA",
     intitule: "Poser une règle que l'IA doit suivre",
     motsCles: ["regle", "regles", "ia", "consigne", "vocabulaire", "habitude", "toujours", "devis"],
@@ -546,7 +555,11 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     motsCles: ["validite", "acompte", "delai", "paiement", "mention", "condition", "document", "devis", "facture"],
     geste: "Ouvrez « Devis & factures » et réglez chaque valeur.",
     source: "src/lib/rubriques-reglages.ts",
-    preuves: ["Devis & factures", "Validité, acompte, délai de paiement et mentions"],
+    // **La glose du sommaire a disparu le 5 septembre 2026**, avec les onze
+    // autres. La preuve qui reste est d'ailleurs la bonne : le geste de cette
+    // fiche est « ouvrez Devis & factures », et ce qu'il faut prouver, c'est
+    // que cette rubrique-là existe toujours.
+    preuves: ["Devis & factures"],
   },
   {
     id: "reglages-allure-photo",
@@ -571,7 +584,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     motsCles: ["equipe", "equipes", "salarie", "salaries", "nom", "prenom", "gars", "absence", "conge", "vacances", "combien", "partent"],
     geste: "Ouvrez « Équipe » : le nombre de chantiers menés en même temps, vos salariés et leurs absences s'y règlent.",
     source: "src/lib/rubriques-reglages.ts",
-    preuves: ["Équipe", "Combien partent en même temps, leurs noms et leurs absences"],
+    preuves: ["Équipe"],
   },
   {
     id: "paysage-composer-ma-fiche",
@@ -599,32 +612,32 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   },
   {
     id: "reglages-agenda",
-    ecran: "Intégrations",
-    ou: "Réglages, puis Intégrations",
+    ecran: "Mon agenda",
+    ou: "Réglages, puis Mon agenda",
     intitule: "Relier son agenda Google",
     motsCles: ["agenda", "calendrier", "google", "relier", "connecter", "brancher", "synchroniser", "doublon"],
-    geste: "Ouvrez « Intégrations », puis « Relier mon agenda Google ».",
+    geste: "Ouvrez « Mon agenda », puis « Relier mon agenda Google ».",
     reserve: "Sans lui, Atlas ne voit pas les rendez-vous notés ailleurs et un client peut retenir un jour déjà pris.",
     source: "src/app/reglages/agenda/AgendaClient.tsx",
     preuves: ["Relier mon agenda Google", "Mettre en pause"],
   },
   {
     id: "reglages-agenda-apple",
-    ecran: "Intégrations",
-    ou: "Réglages, puis Intégrations",
+    ecran: "Mon agenda",
+    ou: "Réglages, puis Mon agenda",
     intitule: "Relier son agenda Apple, iCloud",
     motsCles: ["agenda", "calendrier", "apple", "icloud", "iphone", "relier", "connecter", "synchroniser"],
-    geste: "Ouvrez « Intégrations », puis « Relier mon agenda Apple ».",
+    geste: "Ouvrez « Mon agenda », puis « Relier mon agenda Apple ».",
     source: "src/app/reglages/agenda/AgendaAppleClient.tsx",
     preuves: ["Relier mon agenda Apple"],
   },
   {
     id: "reglages-donnees",
-    ecran: "Sécurité & données",
-    ou: "Réglages, puis Sécurité & données",
+    ecran: "Mes données",
+    ou: "Réglages, puis Mes données",
     intitule: "Télécharger toutes ses données",
     motsCles: ["donnee", "donnees", "export", "telecharger", "sauvegarde", "copie", "rgpd", "effacer"],
-    geste: "Ouvrez « Sécurité & données », puis « Télécharger mes données ».",
+    geste: "Ouvrez « Mes données », puis « Télécharger mes données ».",
     // **Le bouton a DÉMÉNAGÉ avec M11, et ce contrôle l'a vu.** Il vivait dans
     // la page ; il est devenu un composant client pour pouvoir demander à qui
     // l'on parle avant d'ouvrir l'export — un export porte tout ce que
@@ -642,7 +655,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     motsCles: ["abonnement", "offre", "payer", "paiement", "facture", "atlas", "prix", "resilier"],
     geste: "Ouvrez « Abonnement ».",
     source: "src/lib/rubriques-reglages.ts",
-    preuves: ["Abonnement", "Offre, paiement et factures Atlas"],
+    preuves: ["Abonnement"],
   },
 
   // --- Réglages : moi -------------------------------------------------------

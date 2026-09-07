@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — la note vocale couleur café</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LA NOTE VOCALE, COULEUR CAFÉ — quatre matières. RIEN N'EST CODÉ.
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa demande du 2 septembre 2026, avec trois images à l'appui : *« pour la
+  note vocale j'aimerais que l'intérieur du cercle soit couleur café, que le
+  bouton soit onctueux, qu'il donne envie d'appuyer dessus comme un bon
+  café »*.
+
+  ───────────────────────────────────────────────────────────────────────────
+  LES COULEURS VIENNENT DE SA PALETTE, RELEVÉE SUR SON IMAGE — pas inventées.
+
+  Sa planche « Coffee color palette » porte dix-huit valeurs ; six servent
+  ici, et leur code est celui de son image, au caractère près :
+
+    #2D0C05  le café noir, le fond du ristretto
+    #591F0B  le café foncé
+    #794022  le café
+    #9E7148  le café clair
+    #B57537  la crema — la mousse d'un espresso
+    #DEAC76  la crema claire
+    #E8C5A5  la mousse de lait
+    #C6A988  le lait
+
+  ET SA SECONDE IMAGE DONNE LE RESTE : une tasse blanche à FILET D'OR, posée
+  sur un cuir VERT SOMBRE. C'est exactement la charte d'Atlas — l'or et le
+  vert pin. Le filet d'or de la tasse devient le liseré du bouton ; rien n'est
+  à inventer, sa photo l'avait déjà.
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUE « ONCTUEUX » VEUT DIRE, CONCRÈTEMENT, ET COMMENT ON L'OBTIENT.
+
+  Un café n'est pas un aplat brun : c'est une matière qui a une profondeur,
+  une lumière rasante, et une surface qui bouge. Quatre choses le font ici :
+
+  1. UNE LUMIÈRE, PAS UNE COULEUR. Un dégradé radial décentré en haut à
+     gauche, comme la lumière du jour sur sa tasse ;
+  2. UNE SURFACE QUI RESPIRE. La crema tourne très lentement — huit secondes
+     par tour, à peine perceptible. Un mouvement qu'on voit est un décor ; un
+     mouvement qu'on sent est une matière ;
+  3. UN CREUX SOUS LE BORD. Une ombre interne en haut : le liquide est DANS
+     la tasse, il n'est pas posé dessus ;
+  4. LE GESTE. À l'appui, le bouton s'enfonce de 3 % et la crema ondule — la
+     tension de surface d'un café qu'on touche. C'est ça qui donne envie
+     d'appuyer une seconde fois.
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QU'IL FAUT SAVOIR AVANT DE CHOISIR, ET QUI N'EST PAS UN DÉTAIL.
+
+  · **Le café ne suit PAS les huit chartes.** Vert pin, or, crème changent
+    d'une charte à l'autre ; un café qui changerait de couleur ne serait plus
+    du café. Il rejoindrait donc « alert » et « sage » — les rares valeurs fixes
+    de design-tokens.ts. Sur les deux chartes sombres, le bouton restera
+    café sur fond noir : c'est lisible, mais c'est un choix, pas un hasard.
+  · **C'est le seul aplat sombre de la fiche**, comme l'était le vert. Ce
+    qu'il refusait n'était donc peut-être pas la masse, mais le vert : ces
+    quatre dessins le vérifient.
+  · L'onctuosité coûte une animation permanente au repos. Elle est très lente
+    et s'arrête sous prefers-reduced-motion.
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --pine-light:#4f5f4c; --or:#B98B47; --or-clair:#d8b477;
+  --alerte:#9C3B2E;
+  --line:rgba(28,28,26,.13); --line-soft:rgba(28,28,26,.07);
+  --exemple:#6b6659;
+  /* Relevées sur SA palette, à l'identique. Elles ne suivent pas les huit
+     chartes : un café qui change de couleur n'est plus du café. */
+  --cafe-noir:#2D0C05; --cafe-fonce:#591F0B; --cafe:#794022; --cafe-clair:#9E7148;
+  --crema:#B57537; --crema-clair:#DEAC76; --mousse:#E8C5A5; --lait:#C6A988;
+  --ombre-feuille:0 -22px 50px rgba(20,18,14,.22);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E; --or-clair:#e0bd83;
+         --pine:#cfd8c9; --pine-light:#b6c2af; --exemple:#9a958a; --alerte:#d4685a;
+         --line:rgba(233,229,220,.17); --line-soft:rgba(233,229,220,.09);
+         --ombre-feuille:0 -22px 50px rgba(0,0,0,.5); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.55 Inter,-apple-system,"Segoe UI",Roboto,sans-serif}
+::selection{background:rgba(185,139,71,.22)}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:4px}
+
+/* ─── L'appareil de la planche ───────────────────────────────────────── */
+.tete{max-width:1240px;margin:0 auto;padding:34px 22px 0}
+.tete h1{margin:0;font:400 30px/1.15 "Playfair Display",Georgia,serif;letter-spacing:-.01em}
+.tete p{margin:10px 0 0;max-width:64ch;color:var(--charcoal-soft);font-size:15px}
+
+.choix{position:sticky;top:0;z-index:5;background:var(--bone);
+       margin:22px auto 0;max-width:1240px;padding:12px 22px 4px}
+/* **Les chips défilent, elles ne s'empilent pas.** À 390 px, deux rangées de
+   cinq passaient à quatre lignes : la barre mangeait la moitié de l'écran
+   qu'elle sert à regarder. Vu à la capture, jamais autrement. */
+.rangee{display:flex;gap:8px;align-items:center;margin-bottom:8px;
+        overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.rangee::-webkit-scrollbar{display:none}
+.rangee > .quoi{flex:0 0 auto;margin:0 4px 0 0;width:76px;
+                font:500 9.5px/1.25 Inter,sans-serif;letter-spacing:.2em;
+                text-transform:uppercase;color:var(--or)}
+.rangee button{flex:0 0 auto;white-space:nowrap;min-height:44px;padding:10px 16px;cursor:pointer;
+               border:1px solid var(--line);border-radius:99px;background:transparent;
+               font:500 11.5px/1 Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;
+               color:var(--charcoal-soft);transition:background .18s,border-color .18s,color .18s}
+.rangee button[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:var(--bone)}
+@media (prefers-color-scheme: dark){ .rangee button[aria-pressed="true"]{color:#171613} }
+
+.scene{max-width:1240px;margin:0 auto;padding:16px 22px 70px;
+       display:flex;flex-direction:column;gap:26px;align-items:center}
+@media (min-width:1000px){
+  .scene{flex-direction:row;align-items:flex-start;justify-content:center;gap:40px}
+  .colonne{max-width:420px}
+}
+.colonne{width:100%;max-width:390px;display:flex;flex-direction:column;gap:26px}
+.legende .nom{font:500 11px/1 Inter,sans-serif;letter-spacing:.26em;text-transform:uppercase;color:var(--or)}
+.legende h2{margin:8px 0 0;font:400 22px/1.2 "Playfair Display",Georgia,serif}
+.legende p{margin:10px 0 0;font-size:15px;color:var(--charcoal-soft)}
+.legende b{font-weight:600;color:var(--charcoal)}
+.mesure{margin-top:12px;display:flex;align-items:baseline;gap:10px;
+        border-top:1px solid var(--line-soft);padding-top:10px;
+        font:500 9.5px/1.4 Inter,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.mesure b{font:600 14px/1 Inter,sans-serif;letter-spacing:.02em;color:var(--charcoal);
+          font-variant-numeric:tabular-nums}
+
+/* ─── LE TÉLÉPHONE ────────────────────────────────────────────────────── */
+.tel{position:relative;width:390px;height:664px;max-width:100%;flex:0 0 auto;
+     background:var(--bone);border-radius:30px;overflow:hidden;
+     box-shadow:0 1px 0 rgba(28,28,26,.08),0 24px 60px rgba(20,18,14,.14)}
+.derriere{height:60px;display:flex;align-items:center;justify-content:center;
+          font:500 10px/1 Inter,sans-serif;letter-spacing:.34em;color:var(--muted);
+          background:linear-gradient(180deg,var(--paper),rgba(28,28,26,.06))}
+.feuille{position:absolute;inset:60px 0 0;background:var(--cream);
+         border-radius:26px 26px 0 0;box-shadow:var(--ombre-feuille);
+         display:flex;flex-direction:column;overflow:hidden}
+.dedans{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.dedans::-webkit-scrollbar{width:0}
+.entete{display:flex;align-items:center;gap:12px;padding:0 26px;min-height:44px}
+.retour{flex:0 0 auto;width:26px;height:34px;display:flex;align-items:center;
+        border:0;background:none;padding:0;color:var(--charcoal);cursor:pointer}
+.entete h3{margin:0;flex:1;text-align:center;font:400 27px/1.05 "Playfair Display",Georgia,serif;white-space:nowrap}
+.micro-coin{flex:0 0 auto;width:44px;height:44px;border-radius:99px;cursor:pointer;border:0;
+            background:none;box-shadow:inset 0 0 0 1px var(--line-soft);
+            display:flex;align-items:center;justify-content:center;color:var(--pine)}
+.caps{font:500 9.5px/1.35 Inter,sans-serif;letter-spacing:.28em;text-transform:uppercase;
+      color:var(--muted);white-space:nowrap}
+
+/* ─── La fiche « Épurée », reprise à l'identique ──────────────────────── */
+.form{display:flex;flex-direction:column;padding:0 26px 4px}
+.civilite{display:flex;gap:8px;margin-top:4px}
+.civilite button{min-height:36px;border-radius:99px;border:1px solid var(--line);background:transparent;
+                 padding:0 26px;font:400 15px/1 Inter,sans-serif;color:var(--charcoal-soft);cursor:pointer;
+                 transition:border-color .18s,background .18s,color .18s}
+.civilite button[aria-pressed="true"]{border-color:var(--pine);background:var(--paper);color:var(--charcoal)}
+.bloc{margin-top:9px}
+.titres{display:flex;align-items:flex-end;gap:9px;margin-bottom:5px}
+.titres span:first-child{flex:1;min-width:0}
+.titres span:last-child{width:152px;flex:0 0 152px;text-align:right}
+.libelle{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:4px}
+.duo{display:flex;gap:9px}
+.duo .nom{flex:1;min-width:0}
+.duo .num{flex:0 0 152px}
+.case{width:100%;min-height:46px;border:0;border-radius:13px;background:var(--paper);
+      padding:13px 15px;font:400 16px/1.2 Inter,sans-serif;color:var(--charcoal);transition:box-shadow .18s}
+.case::placeholder{color:var(--exemple)}
+.case:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.ajout{border:0;background:none;padding:0;cursor:pointer;font:500 9.5px/1.35 Inter,sans-serif;
+       letter-spacing:.28em;text-transform:uppercase;color:var(--pine);white-space:nowrap}
+.envoi{display:flex;align-items:center;justify-content:space-between;gap:12px;
+       min-height:34px;margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px}
+.envoi .groupe{display:flex;gap:4px}
+.envoi button{min-height:34px;border:0;background:none;padding:6px 10px;cursor:pointer;
+              font:400 14px/1 Inter,sans-serif;color:var(--charcoal-soft);border-radius:2px}
+.envoi button[aria-pressed="true"]{color:var(--charcoal);box-shadow:inset 0 -1.5px 0 var(--or)}
+.photos{margin-top:8px}
+.photo{margin-top:5px;width:44px;height:44px;border-radius:8px;border:1px solid var(--line);
+       background:var(--paper);color:var(--pine);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.secondaire{width:66%;min-height:42px;align-self:center;margin-top:8px;border:1px solid var(--line);
+            border-radius:99px;background:none;padding:0 20px;cursor:pointer;
+            font:400 15px/1.2 Inter,sans-serif;color:var(--charcoal-soft)}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LA DICTÉE — sa réserve ne bouge JAMAIS d'un dessin à l'autre : 104 px au
+   repos comme pendant. C'est au moment où l'on appuie que l'écran doit être
+   le plus stable.
+   ═══════════════════════════════════════════════════════════════════════ */
+.dictee{display:flex;flex-direction:column;align-items:center;justify-content:center;
+        --v:1;min-height:104px;margin-top:8px;width:100%}
+[data-lit="oui"] .repos{display:none}
+[data-lit="non"] .ligne{display:none}
+.repos{display:flex;flex-direction:column;align-items:center}
+.objet{position:relative;display:flex;align-items:center;justify-content:center}
+/* Les franges d'onde n'existent plus que sur « aujourd'hui », pour comparer :
+   la série minimaliste les retire — c'était de l'ornement autour de l'objet. */
+.frange{position:absolute;top:0;bottom:0;width:1.5cm;display:flex;align-items:center;
+        justify-content:space-between;gap:2px;pointer-events:none;overflow:hidden}
+.frange-g{right:calc(100% + 9px);-webkit-mask-image:linear-gradient(90deg,transparent,#000);
+          mask-image:linear-gradient(90deg,transparent,#000)}
+.frange-d{left:calc(100% + 9px);-webkit-mask-image:linear-gradient(270deg,transparent,#000);
+          mask-image:linear-gradient(270deg,transparent,#000)}
+.frange i{display:block;flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.7}
+.tel:not([data-repos="plein"]) .frange{display:none}
+.indice{margin:9px 0 0;height:16px;font-size:11.5px;line-height:16px;color:var(--charcoal-soft)}
+
+.disque{position:relative;z-index:2;width:76px;height:76px;border-radius:99px;border:0;
+        background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+        transition:transform .2s}
+.disque:active{transform:scale(.95)}
+
+/* — REPOS 0 · AUJOURD'HUI : le disque plein, son choix du 30 août. — */
+[data-repos="plein"] .disque{background:var(--pine);color:var(--cream);
+                             box-shadow:0 8px 22px rgba(0,0,0,.16)}
+@media (prefers-color-scheme: dark){ [data-repos="plein"] .disque{color:#171613} }
+
+/* ═══ LA QUATRIÈME SÉRIE — LE SIGNE RESTE, ET LA DICTÉE DÉFILE ═══════════
+   Ses deux phrases du 2 septembre 2026 : « je veux le signe de la note
+   vocale », et « pour la dictée j'aimerais quelque chose qui défile ».
+
+   CE QUE ÇA TRANCHE, ET QUI VALAIT LES TROIS SÉRIES PRÉCÉDENTES : le micro
+   n'est pas un ornement dont on cherche la bonne matière, c'est le PANNEAU
+   qui dit ce que fait le bouton. Les séries 1 et 2 l'habillaient ; la 3 l'a
+   retiré, et c'est ce retrait qu'il refuse. Les quatre dessins ci-dessous le
+   portent donc tous, et ne se distinguent que par ce qu'il y a AUTOUR — de
+   moins en moins. */
+
+/* ═══ LES QUATRE MATIÈRES ════════════════════════════════════════════════
+   Le disque garde ses 76 px et son micro : seule la MATIÈRE change. Le
+   liseré d'or est celui du filet de sa tasse, sur les quatre. */
+
+.mot{display:none}
+.disque{transition:transform .22s cubic-bezier(.22,.61,.36,1),box-shadow .22s}
+/* **Le creux sous le bord, l'ombre portée chaude, et le filet d'or.**
+   L'ombre porte un décalage et un flou — un halo sans décalage serait un
+   effet, pas une lumière. Sa teinte vient du café, pas du gris : une ombre
+   grise sous un objet chaud le décolle du papier. */
+[data-repos^="cafe"] .disque{
+  box-shadow:inset 0 0 0 1.2px var(--or),
+             inset 0 6px 10px -4px rgba(0,0,0,.45),
+             0 10px 22px -6px rgba(89,31,11,.42)}
+[data-repos^="cafe"] .disque:active{transform:scale(.97);
+  box-shadow:inset 0 0 0 1.2px var(--or),
+             inset 0 8px 14px -4px rgba(0,0,0,.55),
+             0 4px 12px -6px rgba(89,31,11,.5)}
+/* La surface qui tourne : huit secondes par tour, et l'on ne doit PAS la
+   voir tourner — on doit sentir que ça n'est pas figé. */
+[data-repos^="cafe"] .disque::before{
+  content:"";position:absolute;inset:3px;border-radius:99px;pointer-events:none;
+  animation:tourner 8s linear infinite}
+@keyframes tourner{to{transform:rotate(360deg)}}
+/* L'ondulation au doigt : la tension de surface d'un café qu'on touche. */
+[data-repos^="cafe"] .disque::after{
+  content:"";position:absolute;inset:6px;border-radius:99px;pointer-events:none;
+  box-shadow:0 0 0 0 rgba(232,197,165,.55);opacity:0}
+[data-repos^="cafe"] .disque:active::after{animation:onduler .5s ease-out}
+@keyframes onduler{
+  from{opacity:.8;box-shadow:0 0 0 0 rgba(232,197,165,.55)}
+  to{opacity:0;box-shadow:0 0 0 16px rgba(232,197,165,0)}}
+
+/* — 1 · LE RISTRETTO — le café serré, presque noir, sa lumière en haut à
+   gauche. Le plus profond des quatre, et le plus contrasté sous le micro. */
+[data-repos="cafe-ristretto"] .disque{color:var(--mousse);
+  background:radial-gradient(circle at 33% 26%, var(--cafe) 0%, var(--cafe-fonce) 46%, var(--cafe-noir) 100%)}
+[data-repos="cafe-ristretto"] .disque::before{
+  background:radial-gradient(circle at 70% 74%, rgba(158,113,72,.30), transparent 58%)}
+
+/* — 2 · LA CREMA — le dessus d'un espresso vu de haut, exactement sa photo :
+   la mousse blonde, ses bulles, et le tourbillon du centre. */
+[data-repos="cafe-crema"] .disque{color:var(--cafe-noir);
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255,255,255,.34), transparent 42%),
+    radial-gradient(circle at 62% 70%, var(--cafe) 0%, transparent 55%),
+    radial-gradient(circle at 44% 42%, var(--crema-clair) 0%, var(--crema) 52%, var(--cafe-clair) 100%)}
+/* Les bulles : deux trames de points, décalées, jamais alignées — une trame
+   régulière se lit comme un tissu, pas comme une mousse. */
+/* **Une crema, ce sont des CENTAINES de bulles fines, pas cinq grosses.**
+   Première version : cinq points de deux pixels — on lisait de la poussière
+   sur un bouton, pas de la mousse. Vu à la capture. Deux trames de points
+   d'un pixel, décalées et de pas différents (7 et 9 px), donnent la densité
+   sans jamais s'aligner : un pas unique se lit comme un tissu. */
+[data-repos="cafe-crema"] .disque::before{
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,.22) 0 .5px, transparent .8px),
+    radial-gradient(circle, rgba(255,255,255,.15) 0 .4px, transparent .7px),
+    radial-gradient(circle, rgba(45,12,5,.10) 0 .45px, transparent .75px);
+  background-size:6px 6px, 8px 8px, 11px 11px;
+  background-position:0 0, 3px 4px, 5px 1px;
+  /* Les bulles s'effacent au centre : c'est là que le micro se lit, et une
+     mousse dense sous un pictogramme le rend illisible. */
+  -webkit-mask:radial-gradient(circle, transparent 0 15px, #000 26px);
+  mask:radial-gradient(circle, transparent 0 15px, #000 26px)}
+
+/* — 3 · LE LATTE — la volute de lait de sa troisième image. Le plus clair et
+   le plus doux ; le micro y passe en café foncé. */
+/* **Pas de dégradé conique : ça fait du métal brossé, pas du lait.** La
+   première version tournait la lumière autour du centre et le bouton devenait
+   une pièce d'or — vu à la capture. Le lait, lui, s'étale : deux nappes
+   douces et décentrées, dans le sens où on l'a versé. */
+[data-repos="cafe-latte"] .disque{color:var(--cafe-noir);
+  background:
+    radial-gradient(ellipse 70% 46% at 42% 34%, rgba(232,197,165,.92), transparent 70%),
+    radial-gradient(ellipse 46% 34% at 62% 62%, rgba(232,197,165,.5), transparent 72%),
+    radial-gradient(circle at 40% 30%, var(--lait) 0%, var(--cafe-clair) 55%, var(--cafe) 100%)}
+[data-repos="cafe-latte"] .disque::before{
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.22) 0 12%, transparent 40%)}
+
+/* — 4 · LE GRAIN — le contre-essai : la même couleur, MATE. Aucune brillance,
+   aucun tour. Il est là pour vérifier que c'est bien l'onctuosité qui donne
+   envie d'appuyer, et pas seulement le brun. */
+[data-repos="cafe-grain"] .disque{color:var(--mousse);background:var(--cafe)}
+[data-repos="cafe-grain"] .disque::before{animation:none;
+  background:radial-gradient(circle at 30% 24%, rgba(255,255,255,.06), transparent 60%)}
+
+@media (prefers-reduced-motion:reduce){
+  [data-repos^="cafe"] .disque::before{animation:none}
+}
+
+/* ─── PENDANT LA DICTÉE — la ligne, recopiée de `globals.css` ──────────── */
+.ligne{display:flex;align-items:center;gap:12px;width:100%}
+.jeter{flex:0 0 auto;width:32px;height:32px;border:0;background:none;cursor:pointer;
+       color:var(--muted);display:flex;align-items:center;justify-content:center;border-radius:99px}
+.jeter:active{color:var(--alerte)}
+.compteur{flex:0 0 auto;display:flex;align-items:center;gap:7px;font-size:14px;
+          font-variant-numeric:tabular-nums;color:var(--or)}
+.pastille{width:8px;height:8px;border-radius:99px;background:var(--alerte);
+          animation:battre-pastille 1.3s ease-in-out infinite}
+@keyframes battre-pastille{0%,100%{opacity:1}50%{opacity:.25}}
+.envoyer{flex:0 0 auto;width:44px;height:44px;border-radius:99px;cursor:pointer;
+         background:transparent;border:0;box-shadow:inset 0 0 0 1.5px var(--pine);color:var(--pine);
+         display:flex;align-items:center;justify-content:center;transition:transform .18s}
+.envoyer:active{transform:scale(.975)}
+
+/* Le champ où vit la trace : même place, même largeur, quel que soit le dessin. */
+.trace{flex:1;min-width:0;height:26px;position:relative;display:flex;align-items:center}
+
+/* — DICTÉE 0 · AUJOURD'HUI : l'onde en barreaux. — */
+.onde{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;gap:2px;
+      overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000);
+      mask-image:linear-gradient(90deg,transparent,#000 22%,#000)}
+.onde i{flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.85;
+        transform:scaleY(var(--v));transition:transform 90ms linear}
+
+/* ═══ LES TROIS DÉFILENT, ET DANS LE MÊME SENS : de la droite vers la
+   gauche, comme un papier qu'on tire. Ce qui est à gauche est déjà dit, ce
+   qui arrive à droite est ce qu'on est en train de dire. */
+
+/* — DICTÉE 1 · LA BANDE — une bande de papier qui sort de l'appareil, liseré
+   d'or en haut et en bas, le tracé imprimé dessus. */
+.bande{position:absolute;left:0;right:0;height:20px;overflow:hidden;background:var(--paper);
+       border-radius:2px;box-shadow:inset 0 1px 0 var(--or),inset 0 -1px 0 var(--or);
+       -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+       mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.bande svg{position:absolute;top:0;left:0;height:20px;width:840px;
+           animation:defiler 7s linear infinite}
+.bande path{fill:none;stroke:var(--or);stroke-width:1.3;stroke-linejoin:round}
+@keyframes defiler{from{transform:translateX(0)}to{transform:translateX(-420px)}}
+
+/* — DICTÉE 2 · LE MÈTRE — votre mètre ruban qui se déroule. Les graduations
+   passent avec le temps ; leur hauteur, elle, garde ce que la voix a fait à
+   cet instant-là. */
+.metre{position:absolute;left:0;right:0;height:22px;overflow:hidden;
+       -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+       mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.metre span{position:absolute;left:0;bottom:0;display:flex;align-items:flex-end;gap:5px;
+            width:840px;height:22px;animation:defiler 7s linear infinite}
+.metre i{flex:0 0 1.4px;border-radius:2px;background:var(--or);opacity:.85}
+.metre::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--or);
+              opacity:.45}
+
+/* — DICTÉE 3 · LE TRAIT — un seul trait continu qui défile, épais quand la
+   voix monte, fin quand elle baisse. Le dessin le plus sobre des trois : ni
+   papier, ni graduation, juste la ligne. */
+.trait{position:absolute;left:0;right:0;height:26px;overflow:hidden;
+       -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+       mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.trait svg{position:absolute;top:0;left:0;height:26px;width:840px;
+           animation:defiler 7s linear infinite}
+.trait path{fill:var(--or);opacity:.9}
+
+/* Ce qui DÉFILE ne s'arrête pas au repos : les trois traces n'existent que
+   pendant la dictée, et la boucle est calculée pour que la reprise ne se voie
+   pas — 420 px de motif, répétés, défilés de 420. */
+@media (prefers-reduced-motion:reduce){
+  .bande svg,.metre span,.trait svg{animation:none}
+}
+
+.a-bulle{position:absolute;left:14px;bottom:14px;width:46px;height:46px;border-radius:99px;
+         background:var(--charcoal);color:var(--bone);display:flex;align-items:center;
+         justify-content:center;font:400 19px/1 "Playfair Display",Georgia,serif;
+         box-shadow:0 6px 18px rgba(0,0,0,.22)}
+@media (prefers-color-scheme: dark){ .a-bulle{color:#171613} }
+</style>
+</head>
+<body>
+
+<header class="tete">
+  <h1>La note vocale, couleur café</h1>
+  <p>Quatre matières, sur la fiche « Épurée » inchangée. Les couleurs viennent de votre palette,
+     à l'identique ; le filet d'or est celui de votre tasse. Appuyez : le bouton s'enfonce et la
+     crema ondule. La quatrième est mate, exprès — elle sert à comparer.</p>
+</header>
+
+<nav class="choix" aria-label="Choisir les dessins">
+  <div class="rangee" role="group" aria-label="Avant d'appuyer">
+    <p class="quoi">Avant d'appuyer</p>
+    <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-repos="cafe-ristretto" aria-pressed="false">1 · Le ristretto</button>
+    <button type="button" data-repos="cafe-crema" aria-pressed="false">2 · La crema</button>
+    <button type="button" data-repos="cafe-latte" aria-pressed="false">3 · Le latte</button>
+    <button type="button" data-repos="cafe-grain" aria-pressed="false">4 · Le grain (mat)</button>
+  </div>
+  <div class="rangee" role="group" aria-label="Pendant la dictée">
+    <p class="quoi">Pendant la dictée</p>
+    <button type="button" data-ligne="onde" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-ligne="bande" aria-pressed="false">1 · La bande</button>
+    <button type="button" data-ligne="metre" aria-pressed="false">2 · Le mètre</button>
+    <button type="button" data-ligne="trait" aria-pressed="false">3 · Le trait</button>
+  </div>
+</nav>
+
+<div class="scene">
+  <div class="tel" data-repos="plein" data-ligne="onde" id="cadre">
+    <div class="derriere">ATLAS</div>
+    <div class="feuille">
+      <div class="dedans">
+        <div class="entete">
+          <button class="retour" type="button" aria-label="Retour">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <h3>Fiche client</h3>
+          <button class="micro-coin" type="button" aria-label="Dicter les coordonnées">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+          </button>
+        </div>
+
+        <form class="form" onsubmit="return false">
+          <div class="civilite">
+            <button type="button" aria-pressed="false">Mr</button>
+            <button type="button" aria-pressed="false">Mme</button>
+          </div>
+
+          <div class="bloc">
+            <div class="titres caps"><span>Nom du client</span><span>Téléphone</span></div>
+            <div class="duo">
+              <span class="nom"><input class="case" placeholder="Bernard" aria-label="Nom du client"></span>
+              <span class="num"><input class="case num" placeholder="06 12 34 56 78" inputmode="tel" aria-label="Téléphone"></span>
+            </div>
+          </div>
+
+          <div class="bloc">
+            <div class="libelle"><span class="caps">E-mail</span></div>
+            <input class="case" placeholder="bernard@exemple.fr" inputmode="email" aria-label="E-mail">
+          </div>
+
+          <div class="bloc">
+            <div class="libelle">
+              <span class="caps">Chantier</span>
+              <button class="ajout" type="button" data-ajout-adresse>+ Client</button>
+            </div>
+            <input class="case" placeholder="12 rue des Lilas, Nantes" aria-label="Adresse du chantier">
+            <div data-adresse-client hidden style="margin-top:7px">
+              <div class="libelle"><span class="caps">Client</span></div>
+              <input class="case" placeholder="Si différente" aria-label="Adresse du client">
+            </div>
+          </div>
+
+          <div class="envoi">
+            <span class="caps">Envoi</span>
+            <span class="groupe">
+              <button type="button" aria-pressed="false">SMS</button>
+              <button type="button" aria-pressed="false">E-mail</button>
+            </span>
+          </div>
+
+          <div class="photos">
+            <span class="caps">Photos</span>
+            <button class="photo" type="button" aria-label="Ajouter des photos">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>
+            </button>
+          </div>
+
+          <div class="dictee" data-lit="non" id="dictee">
+            <!-- AVANT D'APPUYER -->
+            <div class="repos">
+              <div class="objet">
+                <span class="frange frange-g" aria-hidden="true"></span>
+                <span class="frange frange-d" aria-hidden="true"></span>
+                <button class="disque" type="button" id="dicter" aria-label="Dicter le chantier">
+                  <span class="signe">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+                  </span>
+                  <span class="mot">Dicter le chantier</span>
+                </button>
+              </div>
+              <p class="indice" id="indice">Appuyez et décrivez le chantier</p>
+            </div>
+
+            <!-- PENDANT — poubelle, chrono, la trace, envoi. -->
+            <div class="ligne">
+              <button class="jeter" type="button" id="jeter" aria-label="Supprimer la note">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5h6v2M7 7l1 12h8l1-12M10 11v5M14 11v5"/></svg>
+              </button>
+              <span class="compteur"><span class="pastille" aria-hidden="true"></span><span id="chrono">0:00</span></span>
+
+              <span class="trace" aria-hidden="true">
+                <span class="onde" id="onde"></span>
+                <span class="bande" hidden><svg viewBox="0 0 840 20" preserveAspectRatio="none"><path d=""/></svg></span>
+                <span class="metre" hidden><span></span></span>
+                <span class="trait" hidden><svg viewBox="0 0 840 26" preserveAspectRatio="none"><path d=""/></svg></span>
+              </span>
+
+              <button class="envoyer" type="button" id="envoyer" aria-label="Envoyer la note et préparer le devis">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2.5-6.5L4 12z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <button class="secondaire" type="button">Je rédige à la main</button>
+        </form>
+      </div>
+    </div>
+    <div class="a-bulle" aria-hidden="true">N</div>
+  </div>
+
+  <div class="colonne">
+    <div class="legende">
+      <span class="nom" id="rang-repos">Avant d'appuyer — aujourd'hui</span>
+      <h2 id="titre-repos">Le disque plein, votre choix du 30 août</h2>
+      <p id="propos-repos">Il est ici pour comparer : c'est la seule tache sombre de la fiche,
+        et c'est elle que vous ne voulez plus.</p>
+      <p class="mesure"><span>Encre sombre au repos</span><b id="encre">4 536 px²</b></p>
+    </div>
+    <div class="legende">
+      <span class="nom" id="rang-ligne">Pendant la dictée — aujourd'hui</span>
+      <h2 id="titre-ligne">La ligne, votre choix du 31 août</h2>
+      <p id="propos-ligne">Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que
+        l'application porte, et le point de départ des trois dessins d'à côté.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const MOTS_REPOS = {
+  plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
+    "Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
+    "4 536 px²"],
+  "cafe-ristretto": ["Avant d'appuyer — matière 1", "Le ristretto",
+    "Le café serré, presque noir, et sa lumière en haut à gauche. Le plus profond des quatre : le micro s'y détache en mousse de lait. Filet d'or, comme celui de votre tasse.",
+    "4 536 px²"],
+  "cafe-crema": ["Avant d'appuyer — matière 2", "La crema",
+    "Le dessus d'un espresso vu de haut — votre photo : la mousse blonde, ses bulles, le tourbillon du centre. C'est la matière la plus gourmande, et la plus claire.",
+    "4 536 px²"],
+  "cafe-latte": ["Avant d'appuyer — matière 3", "Le latte",
+    "La volute de lait de votre troisième image, tournée dans le café. Le plus doux et le plus clair des quatre ; le micro y passe en café foncé.",
+    "4 536 px²"],
+  "cafe-grain": ["Avant d'appuyer — matière 4", "Le grain, mat",
+    "La même couleur, sans aucune brillance et sans mouvement. Il est là pour trancher une question : est-ce l'onctuosité qui donne envie d'appuyer, ou seulement le brun ? Comparez-le au 1.",
+    "4 536 px²"],
+};
+const MOTS_LIGNE = {
+  onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
+    "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
+  bande: ["Pendant la dictée — dessin 1", "La bande",
+    "Une bande de papier qui sort de l'appareil et défile vers la gauche, liseré d'or en haut et en bas, le tracé imprimé dessus. Ce qui est passé à gauche est déjà dit."],
+  metre: ["Pendant la dictée — dessin 2", "Le mètre",
+    "Votre mètre ruban qui se déroule. Les graduations passent avec le temps ; leur hauteur garde ce que la voix a fait à cet instant-là."],
+  trait: ["Pendant la dictée — dessin 3", "Le trait",
+    "Un seul trait continu qui défile, épais quand la voix monte, fin quand elle baisse. Le plus sobre des trois : ni papier, ni graduation, juste la ligne."],
+
+};
+
+const cadre = document.getElementById("cadre");
+document.querySelectorAll(".rangee").forEach((rangee) => {
+  const touches = [...rangee.querySelectorAll("button")];
+  touches.forEach((b) => b.addEventListener("click", () => {
+    touches.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    if (b.dataset.repos) {
+      cadre.dataset.repos = b.dataset.repos;
+      const [r, t, p, e] = MOTS_REPOS[b.dataset.repos];
+      document.getElementById("rang-repos").textContent = r;
+      document.getElementById("titre-repos").textContent = t;
+      document.getElementById("propos-repos").textContent = p;
+      document.getElementById("encre").textContent = e;
+    } else {
+      cadre.dataset.ligne = b.dataset.ligne;
+      const [r, t, p] = MOTS_LIGNE[b.dataset.ligne];
+      document.getElementById("rang-ligne").textContent = r;
+      document.getElementById("titre-ligne").textContent = t;
+      document.getElementById("propos-ligne").textContent = p;
+      montrerLaTrace();
+    }
+  }));
+});
+
+// La trace : un seul dessin visible à la fois, les autres retirés du document.
+// « rien » n'a pas de pièce : tout se cache, et c'est son propos.
+const PIECES = { onde: [".onde"], bande: [".bande"], metre: [".metre"], trait: [".trait"] };
+function montrerLaTrace() {
+  const choisi = cadre.dataset.ligne;
+  document.querySelectorAll(".trace > span").forEach((el) => { el.hidden = true; });
+  for (const sel of PIECES[choisi]) document.querySelector(sel).hidden = false;
+}
+
+document.querySelectorAll(".civilite,.envoi .groupe").forEach((groupe) => {
+  const touches = [...groupe.querySelectorAll("button[aria-pressed]")];
+  touches.forEach((t) => t.addEventListener("click", () => {
+    const etait = t.getAttribute("aria-pressed") === "true";
+    touches.forEach((x) => x.setAttribute("aria-pressed", "false"));
+    t.setAttribute("aria-pressed", etait ? "false" : "true");
+  }));
+});
+
+document.querySelectorAll("[data-ajout-adresse]").forEach((b) => {
+  b.addEventListener("click", () => {
+    const champ = b.closest("form").querySelector("[data-adresse-client]");
+    champ.hidden = false; b.hidden = true;
+    champ.querySelector("input").focus();
+  });
+});
+
+const HAUTEURS = [7, 13, 9, 18, 11, 22, 10, 15, 8, 19, 12, 16];
+document.querySelectorAll(".frange").forEach((f) => {
+  f.innerHTML = HAUTEURS.map((h) => `<i style="height:${h}px"></i>`).join("");
+});
+// Vingt-six barreaux : l'onde part PLEINE, à plat — sinon les deux premières
+// secondes montrent un trait qui pousse dans le vide.
+document.getElementById("onde").innerHTML =
+  Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 17)}px"></i>`).join("");
+
+// ─── LES TROIS TRACES QUI DÉFILENT ──────────────────────────────────────
+//
+// **Le motif fait 420 px et il est POSÉ DEUX FOIS ; la boucle défile de 420.**
+// C'est ce qui fait qu'on ne voit pas la reprise : au moment où l'animation
+// revient à zéro, le pixel affiché est exactement le même. Un motif qui ne se
+// répète pas au pas de la boucle fabrique un saut, une fois toutes les sept
+// secondes — assez rare pour passer les tests, assez visible pour agacer.
+const LARGE = 420, PAS = 6;
+const AMPLEUR = [];
+for (let x = 0; x <= LARGE; x += PAS) {
+  const t = x / PAS;
+  // Trois sinus de périodes non multiples : le motif paraît irrégulier, mais
+  // il se referme exactement sur 420 px.
+  AMPLEUR.push(0.34 + 0.3 * Math.abs(Math.sin(t * 0.41)) + 0.26 * Math.abs(Math.sin(t * 1.13)));
+}
+AMPLEUR[AMPLEUR.length - 1] = AMPLEUR[0];
+
+// 1 · LA BANDE — un tracé imprimé sur le papier.
+{
+  const pts = [];
+  for (let k = 0; k < AMPLEUR.length; k++) pts.push(`${k * PAS} ${(10 + (AMPLEUR[k] - 0.6) * 13).toFixed(1)}`);
+  const suite = pts.map((p) => { const [x, y] = p.split(" "); return `${Number(x) + LARGE} ${y}`; });
+  document.querySelector(".bande path").setAttribute("d", "M" + pts.concat(suite.slice(1)).join(" L"));
+}
+
+// 2 · LE MÈTRE — des graduations dont la hauteur garde ce que la voix a fait.
+{
+  const un = AMPLEUR.slice(0, -1)
+    .map((a, k) => `<i style="height:${(4 + a * 15).toFixed(1)}px${k % 5 === 0 ? ";opacity:1" : ""}"></i>`)
+    .join("");
+  document.querySelector(".metre span").innerHTML = un + un;
+}
+
+// 3 · LE TRAIT — un ruban dont l'épaisseur suit la voix : un seul contour
+// fermé, dessiné aller par le dessus et retour par le dessous.
+{
+  const haut = [], bas = [];
+  for (let k = 0; k < AMPLEUR.length; k++) {
+    // **Un TRAIT, pas un ruban.** Première version à 0,8 + 7 × l'ampleur : le
+    // tracé faisait quinze pixels d'épais et se lisait comme un boudin d'or.
+    // Une ligne qui varie doit rester une ligne.
+    const e = 0.3 + AMPLEUR[k] * 1.55;
+    haut.push(`${k * PAS} ${(13 - e).toFixed(1)}`);
+    bas.push(`${k * PAS} ${(13 + e).toFixed(1)}`);
+  }
+  const dec = (p) => { const [x, y] = p.split(" "); return `${Number(x) + LARGE} ${y}`; };
+  const h = haut.concat(haut.slice(1).map(dec));
+  const b = bas.concat(bas.slice(1).map(dec));
+  document.querySelector(".trait path")
+    .setAttribute("d", "M" + h.join(" L") + " L" + b.reverse().join(" L") + " Z");
+}
+
+const dictee = document.getElementById("dictee");
+const chrono = document.getElementById("chrono");
+const indice = document.getElementById("indice");
+let horloge = null, souffle = null, secondes = 0;
+
+function demarrer() {
+  dictee.dataset.lit = "oui";
+  secondes = 0; chrono.textContent = "0:00";
+  horloge = setInterval(() => {
+    secondes++;
+    chrono.textContent = `${Math.floor(secondes / 60)}:${String(secondes % 60).padStart(2, "0")}`;
+  }, 1000);
+  // Le volume est SIMULÉ ici : une maquette n'a pas de micro. Dans
+  // l'application, cette valeur vient du son réellement capté.
+  souffle = setInterval(() => {
+    dictee.style.setProperty("--v", (0.45 + Math.random() * 0.85).toFixed(2));
+  }, 110);
+}
+function arreter(mot) {
+  dictee.dataset.lit = "non";
+  clearInterval(horloge); clearInterval(souffle);
+  dictee.style.setProperty("--v", "1");
+  indice.textContent = mot;
+}
+document.getElementById("dicter").addEventListener("click", demarrer);
+document.getElementById("jeter").addEventListener("click", () => arreter("Appuyez et décrivez le chantier"));
+document.getElementById("envoyer").addEventListener("click", () => arreter("Note enregistrée"));
+montrerLaTrace();
+</script>
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — la dictée, quatre allures</title>
+<style>
+/*
+  LA DICTÉE DE LA FICHE CHANTIER — QUATRE ALLURES À ESSAYER.
+
+  Sa demande du 31 août 2026, capture à l'appui (le gros disque sombre, la
+  poubelle, l'avion, le chrono et l'onde en dessous) :
+
+    « Propose-moi une maquette pour embellir cette partie de la fiche chantier,
+      je trouve que ça dénature l'appli. Code rien, je veux un visuel que je
+      peux essayer en .html »
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUI DÉNATURE, ET QUI SE MESURE — ce n'est pas une question de goût.
+
+  Atlas ne pose d'aplat sombre nulle part ailleurs sur cet écran : la fiche
+  n'est faite que de traits fins, de crème et d'or. Pendant la dictée, elle
+  porte d'un coup **deux** aplats vert pin — un disque de 76 px et un rond de
+  46 px, chacun avec son ombre portée. Soit ~6 200 px² de sombre, là où le
+  reste de l'écran n'en a aucun.
+
+  Trois autres défauts, tous visibles sur sa capture :
+
+    · **rien ne tient les trois boutons ensemble** — ils flottent sur le fond,
+      sans cadre ni ligne ;
+    · **le chrono et l'onde ne s'alignent sur rien** : le chrono est collé au
+      bord gauche, l'onde au bord droit, et le disque est au milieu. Trois
+      objets, trois axes ;
+    · **les poids sont inégaux** — la poubelle est un trait gris clair, l'avion
+      un aplat plein avec ombre. Deux gestes de même importance, dessinés
+      comme s'il y en avait un seul.
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUI NE CHANGE PAS, ET C'EST VOULU.
+
+  · **Le repos est identique dans les quatre** — le micro plein et ses deux
+    petites ondes de 1,5 cm, son choix (B) du 30 août. Il n'a rien reproché à
+    cet état-là, et changer deux choses à la fois empêche de choisir.
+  · **Les deux gestes qu'il a demandés restent** : jeter, et envoyer. Arrêter
+    n'envoie toujours pas.
+  · **Aucun mot n'est ajouté** — sa règle du 25 août. Pendant la dictée, la
+    zone ne porte aucune phrase, dans les quatre.
+
+  ───────────────────────────────────────────────────────────────────────────
+  LES QUATRE, ET CE QU'ELLES CORRIGENT.
+
+    0 · AUJOURD'HUI — pour comparer, à l'identique de ce qui est codé.
+
+    1 · LA BARRE    — une seule capsule crème tient tout : poubelle, chrono,
+                      onde, arrêt. Le seul aplat de l'écran devient l'envoi.
+                      C'est la plus proche d'une messagerie, et la plus rangée.
+
+    2 · L'ANNEAU    — le disque redevient l'anneau d'Atlas (74 px vert pin,
+                      56 px or), avec un arc d'or qui tourne tant que ça
+                      enregistre. Plus AUCUN aplat sombre : poubelle et avion
+                      sont deux cercles creux de même poids. C'est l'allure de
+                      l'application, à la lettre.
+
+    3 · LA LIGNE    — la dictée cesse d'être un objet : une ligne fine sous la
+                      fiche, chrono et onde dessus. C'est la plus discrète, et
+                      celle qui laisse le plus de place au reste de l'écran.
+
+    4 · LE GALET    — le disque reste au centre mais devient clair, cerclé d'or
+                      ; le chrono et l'onde entrent dans une capsule alignée
+                      sur lui. Un seul aplat, l'envoi.
+
+  ───────────────────────────────────────────────────────────────────────────
+  L'ONDE DE CETTE PLANCHE EST UN DÉCOR, et il faut le dire.
+
+  Dans l'application, elle suit le volume RÉELLEMENT capté par le micro — c'est
+  une règle, et un anneau qui battrait sans rien lire lui a déjà été reproché.
+  Une page publiée ne peut pas demander le micro sans un dialogue de permission
+  qui casserait l'essai : l'onde d'ici est donc tirée au sort, lissée. Elle dit
+  la FORME, pas le contenu. Rien n'est codé à partir de cette planche sans que
+  l'onde reprenne sa source réelle.
+
+  L'AVION EN PAPIER N'EST PAS UNE FLÈCHE DÉCORATIVE : il EST le bouton, il ne
+  suit aucun libellé (`CLAUDE.md` §3, déjà admis pour la dictée).
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --or-clair:#C9A15E;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --alert:#9C3B2E;
+  /* **CE QUI EST PLEIN S'INVERSE EN NUIT** (`src/lib/chartes.ts`) : sur les
+     chartes claires l'aplat est le vert pin et l'on écrit du crème dessus ; sur
+     Nuit, l'aplat EST le crème et l'on écrit sombre dedans. Un `#fff` posé sur
+     `--pine` serait juste ici et illisible là-bas. */
+  --plein:var(--pine); --sur-plein:#faf9f5;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+    --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+    --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09);
+    --alert:#C9584A; --plein:#e9e8de; --sur-plein:#1a1d19; }
+}
+:root[data-theme="dark"]{
+    --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+    --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+    --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09);
+    --alert:#C9584A; --plein:#e9e8de; --sur-plein:#1a1d19; }
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* `.capsule{display:flex}` l'emporte sur le `[hidden]{display:none}` du
+   navigateur : sans ce `!important`, les quatre propositions s'afficheraient
+   toutes à la fois. */
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+.tel{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* ─── Le cadre de la planche ───────────────────────────────────────────── */
+/* La bascule de teinte ne défile PAS avec les onglets : elle change
+   l'éclairage de toutes les propositions, elle n'en choisit aucune. */
+.onglets{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:6px;
+         padding:5px 12px;background:var(--bone);border-bottom:1px solid var(--line)}
+.onglets-piste{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.onglets-piste::-webkit-scrollbar{display:none}
+.onglets button{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:99px;
+                padding:7px 12px;font-size:11.5px;color:var(--muted);cursor:pointer;font-family:inherit}
+.onglets button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
+.onglets .teinte{flex:0 0 auto;font-size:15px;line-height:1;padding:7px 10px;color:var(--or)}
+
+/* ─── La fiche chantier, autour de la dictée ───────────────────────────── */
+/* L'écran occupe toute la hauteur : le tiroir affleure en bas, comme dans
+   l'application, plutôt que de laisser un demi-écran vide sous la dictée. */
+.ecran{display:flex;flex-direction:column;min-height:calc(100vh - 46px);padding:0 0 12px}
+/* L'ordre de lecture de l'écran réel : client, puis titre, puis état en or —
+   le surtitre est passé SOUS le titre le 26 août 2026, à sa demande. */
+.entete{display:flex;align-items:flex-start;gap:6px;padding:18px 26px 0}
+.entete .retour{border:0;background:none;color:var(--or);font-size:24px;line-height:1;
+                padding:0 6px 0 0;cursor:pointer;font-family:inherit}
+.avant{margin:0;font-family:Georgia,serif;font-size:13.5px;color:var(--muted)}
+.entete h1{margin:3px 0 0;font-family:Georgia,serif;font-weight:400;font-size:27px;line-height:1.15}
+.statut{margin:6px 0 0;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+.calme{margin:22px 26px 0;background:var(--cream);border-radius:4px;padding:18px 20px}
+.calme p{margin:0;font-size:14px;color:var(--muted)}
+
+/* ─── LA ZONE DE DICTÉE — hauteur FIXE ─────────────────────────────────── */
+/* Sans elle, la barre d'enregistrement étant plus haute que le micro seul,
+   tout ce qui suit sauterait à l'instant où l'on appuie — c'est-à-dire au
+   moment où l'écran doit être le plus stable. */
+.zone{margin:18px 20px 0;min-height:122px;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      /* Les ondes de repos sont posées en absolu de part et d'autre du disque :
+         un élément absolu compte dans le débordement d'une page, et l'écran se
+         mettait à glisser de droite à gauche. */
+      overflow-x:clip}
+.indice{margin:6px 0 0;font-size:11px;color:var(--muted);text-align:center;min-height:13px}
+
+/* — LE REPOS, commun aux quatre : le micro plein et ses deux ondes de 1,5 cm — */
+.objet{position:relative;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.micro-plein{position:relative;z-index:2;width:76px;height:76px;border-radius:99px;border:0;
+             cursor:pointer;background:var(--plein);color:var(--sur-plein);
+             display:flex;align-items:center;justify-content:center;
+             box-shadow:0 8px 22px rgba(0,0,0,.16);transition:transform .2s}
+.micro-plein:active{transform:scale(.95)}
+.aile{position:absolute;top:0;bottom:0;width:1.5cm;display:flex;align-items:center;
+      justify-content:space-between;gap:2px;pointer-events:none;overflow:hidden}
+.aile-g{right:calc(100% + 9px);
+        -webkit-mask-image:linear-gradient(90deg,transparent,#000);
+        mask-image:linear-gradient(90deg,transparent,#000)}
+.aile-d{left:calc(100% + 9px);
+        -webkit-mask-image:linear-gradient(270deg,transparent,#000);
+        mask-image:linear-gradient(270deg,transparent,#000)}
+.aile i{display:block;flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.7}
+
+/* — Ce qui sert dans plusieurs propositions — */
+.chrono{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--or);
+        font-variant-numeric:tabular-nums;flex:0 0 auto}
+.pastille{width:8px;height:8px;border-radius:99px;background:var(--alert);
+          animation:battre 1.3s ease-in-out infinite}
+@keyframes battre{0%,100%{opacity:1}50%{opacity:.25}}
+body[data-etat="pause"] .pastille{animation:none;opacity:.3}
+/* L'onde part PLEINE, à plat : sinon les deux premières secondes montrent un
+   trait qui pousse dans le vide, et la barre paraît mal cadrée. */
+.onde{flex:1;min-width:0;height:24px;display:flex;align-items:center;justify-content:flex-end;
+      gap:2px;overflow:hidden;
+      -webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000);
+      mask-image:linear-gradient(90deg,transparent,#000 22%,#000)}
+.onde i{flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.85;
+        transition:height .09s linear}
+.geste{border:0;background:none;padding:0;cursor:pointer;display:flex;align-items:center;
+       justify-content:center;font-family:inherit;flex:0 0 auto;
+       animation:venir .26s cubic-bezier(.22,.61,.36,1) both}
+@keyframes venir{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+/* La poubelle ne rougit QUE sous le doigt : rouge au repos, elle mettrait en
+   garde avant qu'on ait rien fait. */
+.jeter{color:var(--muted)}
+.jeter:active{color:var(--alert)}
+.carre{display:block;border-radius:3px}
+.rang{display:flex;align-items:center;width:100%}
+/* Les allures « en colonne » (le trio, puis le chrono et l'onde) et le repos
+   prennent toute la largeur : sans cela, `align-items:center` de la zone les
+   rétrécit au contenu, et l'onde de la 0 n'occupe plus la barre entière. */
+#repos,.v0,.v2,.v4{width:100%;display:flex;flex-direction:column;align-items:center}
+
+/* ═══ 0 · AUJOURD'HUI — à l'identique de ce qui est codé ═══════════════════ */
+.v0 .trio{display:flex;align-items:center;justify-content:center;gap:22px;width:100%}
+.v0 .jeter{width:46px;height:46px;border-radius:99px}
+.v0 .envoyer{width:46px;height:46px;border-radius:99px;background:var(--plein);
+             color:var(--sur-plein);box-shadow:0 6px 16px rgba(0,0,0,.18)}
+.v0 .stop{width:76px;height:76px;border-radius:99px;background:var(--plein);color:var(--sur-plein);
+          box-shadow:0 8px 22px rgba(0,0,0,.16)}
+.v0 .stop .carre{width:19px;height:19px;background:var(--sur-plein)}
+.v0 .sous{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px;padding:0 4px}
+
+/* ═══ 1 · LA BARRE — une capsule tient tout, l'envoi est le seul aplat ═════ */
+.v1{gap:10px}
+.v1 .capsule{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:58px;
+             padding:0 8px 0 12px;border-radius:99px;background:var(--cream);
+             box-shadow:inset 0 0 0 1px var(--line-soft)}
+.v1 .jeter{width:34px;height:34px;border-radius:99px}
+.v1 .stop{width:40px;height:40px;border-radius:99px;color:var(--plein);
+          box-shadow:inset 0 0 0 1.5px var(--plein)}
+.v1 .stop .carre{width:14px;height:14px;background:currentColor}
+.v1 .envoyer{width:54px;height:54px;border-radius:99px;background:var(--plein);
+             color:var(--sur-plein);box-shadow:0 6px 16px rgba(0,0,0,.14)}
+
+/* ═══ 2 · L'ANNEAU — l'allure d'Atlas, aucun aplat sombre ═════════════════ */
+.v2 .trio{display:flex;align-items:center;justify-content:center;gap:26px;width:100%}
+.v2 .stop{position:relative;width:76px;height:76px;border-radius:99px;background:transparent;
+          color:var(--plein)}
+.v2 .cercle{position:absolute;border-radius:99px}
+.v2 .cercle-1{width:74px;height:74px;border:1.5px solid var(--plein)}
+.v2 .cercle-2{width:56px;height:56px;border:1px solid var(--or)}
+/* L'arc d'or qui tourne dit « ça enregistre » sans aucun mot ni aucun aplat.
+   Il s'immobilise en pause — un anneau qui tournerait à l'arrêt mentirait. */
+.v2 .stop::after{content:"";position:absolute;width:74px;height:74px;border-radius:99px;
+                 border:1.5px solid transparent;border-top-color:var(--or);
+                 animation:tourner 2.4s linear infinite}
+@keyframes tourner{to{transform:rotate(360deg)}}
+body[data-etat="pause"] .v2 .stop::after{animation-play-state:paused}
+.v2 .stop .carre{position:relative;width:15px;height:15px;background:var(--plein)}
+/* Les deux gestes ont le MÊME poids : deux cercles creux. C'est le défaut de
+   l'écran d'aujourd'hui, où l'avion pèse un aplat et la poubelle un trait. */
+.v2 .jeter,.v2 .envoyer{width:44px;height:44px;border-radius:99px;
+                        box-shadow:inset 0 0 0 1px var(--line)}
+.v2 .envoyer{color:var(--plein)}
+.v2 .sous{display:flex;align-items:center;gap:10px;margin-top:12px;width:100%;max-width:266px}
+
+/* ═══ 3 · LA LIGNE — la dictée cesse d'être un objet ══════════════════════ */
+.v3{gap:10px;padding-top:14px;border-top:1px solid var(--line)}
+.v3 .jeter{width:32px;height:32px;border-radius:99px}
+.v3 .stop{width:34px;height:34px;border-radius:99px;color:var(--plein);
+          box-shadow:inset 0 0 0 1.5px var(--plein)}
+.v3 .stop .carre{width:12px;height:12px;background:currentColor}
+.v3 .envoyer{width:42px;height:42px;border-radius:99px;background:var(--plein);
+             color:var(--sur-plein)}
+
+/* ═══ 4 · LE GALET — le disque reste, mais il s'éclaircit ═════════════════ */
+.v4 .trio{display:flex;align-items:center;justify-content:center;gap:24px;width:100%}
+.v4 .stop{width:72px;height:72px;border-radius:99px;background:var(--paper);color:var(--plein);
+          box-shadow:inset 0 0 0 1px var(--or)}
+.v4 .stop .carre{width:17px;height:17px;background:currentColor}
+.v4 .jeter{width:44px;height:44px;border-radius:99px}
+.v4 .envoyer{width:48px;height:48px;border-radius:99px;background:var(--plein);
+             color:var(--sur-plein);box-shadow:0 6px 16px rgba(0,0,0,.14)}
+/* Le chrono et l'onde entrent dans une capsule alignée sur le trio : c'est le
+   troisième défaut de sa capture — trois objets sur trois axes. */
+.v4 .sous{display:flex;align-items:center;gap:10px;margin-top:12px;height:34px;
+          padding:0 14px;border-radius:99px;width:100%;max-width:288px;
+          box-shadow:inset 0 0 0 1px var(--line-soft)}
+
+/* ─── L'attente de transcription, commune aux quatre ───────────────────── */
+.attente{display:flex;align-items:center;justify-content:center;gap:9px;min-height:76px;
+         font-size:13px;color:var(--muted)}
+.attente i{display:inline-block;width:4px;height:4px;margin-left:3px;border-radius:99px;
+           background:var(--or);animation:pointiller 1.1s ease-in-out infinite}
+.attente i:nth-child(2){animation-delay:.18s}
+.attente i:nth-child(3){animation-delay:.36s}
+@keyframes pointiller{0%,100%{opacity:.2}50%{opacity:1}}
+
+/* ─── Le tiroir de la fiche : la pellicule et les étapes ───────────────── */
+/* `margin-top:auto` le colle en bas de l'écran : c'est là qu'il affleure dans
+   l'application, et c'est ce qui donne à la dictée son vrai voisinage. */
+.tiroir{margin-top:auto;background:var(--cream);border-radius:14px 14px 0 0;
+        box-shadow:0 -1px 0 var(--line-soft);padding:10px 20px 18px}
+.prise{width:38px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 14px}
+.pellicule{display:flex;gap:8px}
+.pellicule span{width:56px;height:56px;border-radius:6px;background:var(--paper);
+                box-shadow:inset 0 0 0 1px var(--line-soft)}
+.pellicule .plus{display:flex;align-items:center;justify-content:center;background:transparent;
+                 border:1px dashed var(--or);color:var(--or);font-size:22px}
+.etape{display:flex;align-items:center;justify-content:space-between;gap:12px;
+       padding:13px 0;border-bottom:1px solid var(--line-soft);font-size:15px}
+.etape:last-child{border-bottom:0}
+.etape .dit{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+</style>
+</head>
+<body data-etat="repos" data-variante="0">
+<div class="tel">
+
+  <nav class="onglets" aria-label="Les quatre allures">
+    <div class="onglets-piste" id="piste">
+      <button type="button" data-v="0" aria-pressed="true">Aujourd'hui</button>
+      <button type="button" data-v="1" aria-pressed="false">1 · La barre</button>
+      <button type="button" data-v="2" aria-pressed="false">2 · L'anneau</button>
+      <button type="button" data-v="3" aria-pressed="false">3 · La ligne</button>
+      <button type="button" data-v="4" aria-pressed="false">4 · Le galet</button>
+    </div>
+    <button type="button" class="teinte" id="teinte" aria-label="Passer en fond noir">☾</button>
+  </nav>
+
+  <section class="ecran">
+    <div class="entete">
+      <button class="retour" type="button" aria-label="Retour">‹</button>
+      <div>
+        <p class="avant">M. Bernard — 12 rue des Lilas, Nantes</p>
+        <h1>Taille de haie</h1>
+        <p class="statut">Devis à faire</p>
+      </div>
+    </div>
+
+    <div class="calme">
+      <p>Intervention prévue le vendredi 4 septembre.</p>
+    </div>
+
+    <!-- ════════════ LA DICTÉE ════════════ -->
+    <div class="zone" id="zone">
+
+      <!-- LE REPOS — identique dans les quatre allures : son choix du 30 août. -->
+      <div id="repos">
+        <span class="objet">
+          <span class="aile aile-g" aria-hidden="true"></span>
+          <button class="micro-plein" type="button" data-geste="objet" aria-label="Dicter une note vocale">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="9" y="3" width="6" height="11" rx="3"/>
+              <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+              <path d="M12 18v3" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <span class="aile aile-d" aria-hidden="true"></span>
+        </span>
+        <p class="indice">Appuyez et décrivez le chantier</p>
+      </div>
+
+      <!-- 0 · AUJOURD'HUI -->
+      <div class="v0" data-quand="dicte" hidden>
+        <div class="trio">
+          <button class="geste jeter" type="button" data-geste="jeter" aria-label="Supprimer la note"></button>
+          <button class="geste stop" type="button" data-geste="objet" aria-label="Mettre la dictée en pause">
+            <span class="carre" aria-hidden="true"></span>
+          </button>
+          <button class="geste envoyer" type="button" data-geste="envoyer" aria-label="Envoyer la note"></button>
+        </div>
+        <div class="sous">
+          <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
+          <span class="onde" data-onde aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <!-- 1 · LA BARRE -->
+      <div class="v1 rang" data-quand="dicte" hidden>
+        <div class="capsule">
+          <button class="geste jeter" type="button" data-geste="jeter" aria-label="Supprimer la note"></button>
+          <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
+          <span class="onde" data-onde aria-hidden="true"></span>
+          <button class="geste stop" type="button" data-geste="objet" aria-label="Mettre la dictée en pause">
+            <span class="carre" aria-hidden="true"></span>
+          </button>
+        </div>
+        <button class="geste envoyer" type="button" data-geste="envoyer" aria-label="Envoyer la note"></button>
+      </div>
+
+      <!-- 2 · L'ANNEAU -->
+      <div class="v2" data-quand="dicte" hidden>
+        <div class="trio">
+          <button class="geste jeter" type="button" data-geste="jeter" aria-label="Supprimer la note"></button>
+          <button class="geste stop" type="button" data-geste="objet" aria-label="Mettre la dictée en pause">
+            <span class="cercle cercle-1" aria-hidden="true"></span>
+            <span class="cercle cercle-2" aria-hidden="true"></span>
+            <span class="carre" aria-hidden="true"></span>
+          </button>
+          <button class="geste envoyer" type="button" data-geste="envoyer" aria-label="Envoyer la note"></button>
+        </div>
+        <div class="sous">
+          <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
+          <span class="onde" data-onde aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <!-- 3 · LA LIGNE -->
+      <div class="v3 rang" data-quand="dicte" hidden>
+        <button class="geste jeter" type="button" data-geste="jeter" aria-label="Supprimer la note"></button>
+        <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
+        <span class="onde" data-onde aria-hidden="true"></span>
+        <button class="geste stop" type="button" data-geste="objet" aria-label="Mettre la dictée en pause">
+          <span class="carre" aria-hidden="true"></span>
+        </button>
+        <button class="geste envoyer" type="button" data-geste="envoyer" aria-label="Envoyer la note"></button>
+      </div>
+
+      <!-- 4 · LE GALET -->
+      <div class="v4" data-quand="dicte" hidden>
+        <div class="trio">
+          <button class="geste jeter" type="button" data-geste="jeter" aria-label="Supprimer la note"></button>
+          <button class="geste stop" type="button" data-geste="objet" aria-label="Mettre la dictée en pause">
+            <span class="carre" aria-hidden="true"></span>
+          </button>
+          <button class="geste envoyer" type="button" data-geste="envoyer" aria-label="Envoyer la note"></button>
+        </div>
+        <div class="sous">
+          <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
+          <span class="onde" data-onde aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="attente" id="attente" hidden>
+        <span>Transcription</span><span aria-hidden="true"><i></i><i></i><i></i></span>
+      </div>
+    </div>
+
+    <div class="tiroir">
+      <div class="prise" aria-hidden="true"></div>
+      <div class="pellicule" aria-hidden="true">
+        <span></span><span></span><span class="plus">+</span>
+      </div>
+      <div class="etape" style="margin-top:14px"><span>Informations</span><span class="dit">À vérifier</span></div>
+      <div class="etape"><span>Devis</span><span class="dit">À faire</span></div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   Une seule machine d'états pour les cinq dessins.
+
+   Les cinq portent le MÊME chrono et la MÊME onde : deux horloges qui
+   avanceraient séparément finiraient par ne plus dire la même chose d'une
+   proposition à l'autre, et il choisirait sur un écart qui n'existe pas.
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function () {
+  var corps = document.body;
+  var zone = document.getElementById('zone');
+  var repos = document.getElementById('repos');
+  var attente = document.getElementById('attente');
+  var variantes = {};
+  [0, 1, 2, 3, 4].forEach(function (n) { variantes[n] = zone.querySelector('.v' + n); });
+
+  var etat = 'repos';
+  var variante = 0;
+  var secondes = 0;
+  var minuterie = null;
+  var retourEnvoi = null;
+
+  /* ─── Le dessin des poubelles et des avions ──────────────────────────── */
+  var POUBELLE = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+    ' stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M4 7h16"/><path d="M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1z"/>' +
+    '<path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M10 11v6M14 11v6"/></svg>';
+  /* L'avion en papier EST le bouton : ce n'est pas une flèche qui suit un
+     libellé (`CLAUDE.md` §3). */
+  var AVION = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+    ' stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M20.5 3.5 10.6 13.4"/>' +
+    '<path d="M20.5 3.5 14.2 21a.6.6 0 0 1-1.1.05l-3-6.6-6.6-3a.6.6 0 0 1 .05-1.1z"/></svg>';
+  Array.prototype.forEach.call(document.querySelectorAll('.jeter'), function (b) { b.innerHTML = POUBELLE; });
+  Array.prototype.forEach.call(document.querySelectorAll('.envoyer'), function (b) { b.innerHTML = AVION; });
+
+  /* ─── Les deux petites ondes du repos, 1,5 cm de chaque côté ─────────── */
+  var SOUFFLE = [7, 11, 16, 22, 16, 11, 7, 5, 4];
+  Array.prototype.forEach.call(document.querySelectorAll('.aile'), function (aile, n) {
+    SOUFFLE.forEach(function (h, i) {
+      var b = document.createElement('i');
+      b.style.height = h + 'px';
+      /* À gauche l'ordre s'inverse : le creux doit être dehors, comme le son
+         qui s'éteint en s'éloignant. */
+      b.style.order = n === 0 ? String(SOUFFLE.length - i) : String(i);
+      aile.appendChild(b);
+    });
+  });
+
+  /* ─── L'onde : un décor, et la planche le dit ─────────────────────────
+     Dans l'application elle suit le volume réellement capté ; une page publiée
+     ne peut pas demander le micro sans un dialogue qui casserait l'essai. */
+  var HAUTEURS = [];
+  var MAX = 220;
+  var courant = 8;
+  function hauteurSuivante() {
+    courant += (Math.random() - 0.5) * 9;
+    if (courant < 3) courant = 3;
+    if (courant > 22) courant = 22;
+    return Math.round(courant);
+  }
+  function dessinerOnde() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-onde]'), function (o) {
+      var n = Math.max(8, Math.floor(o.clientWidth / 4));
+      while (o.children.length < n) o.appendChild(document.createElement('i'));
+      while (o.children.length > n) o.removeChild(o.lastChild);
+      var vus = HAUTEURS.slice(-n);
+      while (vus.length < n) vus.unshift(2);
+      for (var i = 0; i < n; i++) o.children[i].style.height = vus[i] + 'px';
+    });
+  }
+  setInterval(function () {
+    if (etat === 'dicte') {
+      HAUTEURS.push(hauteurSuivante());
+      if (HAUTEURS.length > MAX) HAUTEURS.shift();
+      dessinerOnde();
+    }
+  }, 95);
+
+  function mmss(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+  function ecrireChrono() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-chrono]'), function (c) {
+      c.textContent = mmss(secondes);
+    });
+  }
+
+  function rendre() {
+    corps.dataset.etat = etat;
+    corps.dataset.variante = String(variante);
+    repos.hidden = etat !== 'repos';
+    attente.hidden = etat !== 'envoi';
+    [0, 1, 2, 3, 4].forEach(function (n) {
+      variantes[n].hidden = !(n === variante && (etat === 'dicte' || etat === 'pause'));
+    });
+    ecrireChrono();
+    dessinerOnde();
+  }
+
+  function battreChrono(marche) {
+    if (minuterie) { clearInterval(minuterie); minuterie = null; }
+    if (marche) minuterie = setInterval(function () { secondes += 1; ecrireChrono(); }, 1000);
+  }
+
+  function aller(nouvel) {
+    etat = nouvel;
+    if (etat === 'repos') { secondes = 0; HAUTEURS.length = 0; courant = 8; }
+    battreChrono(etat === 'dicte');
+    rendre();
+  }
+
+  zone.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-geste]') : null;
+    if (!b) return;
+    var geste = b.dataset.geste;
+    if (geste === 'objet') {
+      /* Appuyer sur l'objet met en PAUSE, il n'envoie pas : c'est tout
+         l'intérêt de la poubelle et de l'avion. */
+      if (etat === 'repos') aller('dicte');
+      else if (etat === 'dicte') aller('pause');
+      else if (etat === 'pause') aller('dicte');
+      return;
+    }
+    if (geste === 'jeter') { aller('repos'); return; }
+    if (geste === 'envoyer') {
+      aller('envoi');
+      if (retourEnvoi) clearTimeout(retourEnvoi);
+      /* La planche revient au repos : dans l'application, l'envoi mène au
+         devis — ici il n'y a rien derrière, et rester bloqué sur trois points
+         empêcherait d'essayer la proposition suivante. */
+      retourEnvoi = setTimeout(function () { aller('repos'); }, 2400);
+    }
+  });
+
+  document.getElementById('piste').addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-v]') : null;
+    if (!b) return;
+    variante = Number(b.dataset.v);
+    Array.prototype.forEach.call(this.querySelectorAll('[data-v]'), function (o) {
+      o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
+    });
+    rendre();
+  });
+
+  var teinte = document.getElementById('teinte');
+  teinte.addEventListener('click', function () {
+    var sombre = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', sombre ? 'light' : 'dark');
+    teinte.textContent = sombre ? '☾' : '☀';
+    teinte.setAttribute('aria-label', sombre ? 'Passer en fond noir' : 'Passer en fond clair');
+  });
+
+  window.addEventListener('resize', dessinerOnde);
+  rendre();
+})();
+</script>
+</body>
+</html>

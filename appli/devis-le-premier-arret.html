@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le premier arrêt — où se pose le bouton</title>
+<style>
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1; --or:#B98B47;
+    --plein:#7d9a6d; --line:#d8d4ca; --lineSoft:#e8e5dd;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--cream); color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-text-size-adjust:100%; overflow-x:hidden;
+  }
+  .page{max-width:920px;margin:0 auto;padding:22px 16px 60px}
+
+  h1{font:600 22px/1.25 Georgia,"Times New Roman",serif;margin:0 0 6px}
+  .chapo{margin:0 0 22px;color:var(--inkSoft);font-size:14px;max-width:58ch}
+  .chapo b{color:var(--ink)}
+
+  input[name="vue"]{position:absolute;opacity:0;pointer-events:none}
+  .onglets{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+  .onglets label{
+    padding:9px 14px;border-radius:999px;background:var(--rustTint);
+    color:var(--rust);font-size:13.5px;font-weight:600;cursor:pointer;user-select:none;
+  }
+  #v-avant:checked ~ .onglets label[for="v-avant"],
+  #v-a:checked ~ .onglets label[for="v-a"],
+  #v-b:checked ~ .onglets label[for="v-b"]{background:var(--plein);color:var(--card)}
+
+  .dit{margin:0 0 14px;font-size:13.5px;color:var(--inkSoft);max-width:58ch}
+  .dit b{color:var(--ink)}
+  .vue{display:none}
+  #v-avant:checked ~ .scene .vue.avant,
+  #v-a:checked ~ .scene .vue.a,
+  #v-b:checked ~ .scene .vue.b{display:block}
+
+  .scene{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+  .tel{
+    width:390px;height:664px;overflow:auto;position:relative;
+    background:var(--cream);border-radius:26px;
+    box-shadow:0 14px 44px rgba(28,28,26,.16), inset 0 0 0 1px var(--line);
+    padding:12px 12px 0;scrollbar-width:thin;
+  }
+  .taille{font-size:12px;color:var(--muted);margin:8px 0 0}
+
+  .barre{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .rond{width:30px;height:30px;border-radius:999px;background:var(--rustTint);
+        display:flex;align-items:center;justify-content:center;color:var(--rust);font-size:15px}
+  .feuille{background:var(--card);border-radius:10px;padding:22px 18px;
+           box-shadow:0 12px 40px rgba(28,28,26,.10)}
+  .ent{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .nom{font:600 20px/1.2 Georgia,serif;margin:0 0 4px}
+  .ligneinfo{font-size:13px;color:var(--ink);margin:1px 0}
+  .refs{width:100%;margin-top:12px}
+  .ref{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--lineSoft)}
+  .ref span:first-child{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .ref span:last-child{font-size:13px}
+  .filet{border-top:2px solid var(--ink);margin:18px 0}
+  .titre{text-align:center;font:400 25px/1 Georgia,serif;letter-spacing:.14em;margin:0 0 22px}
+  .sur{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--rust);font-weight:700;margin:0 0 5px}
+
+  .lig{border-bottom:1px solid var(--lineSoft);padding:11px 0}
+  .desc{font-size:15px;margin:0 0 6px}
+  .cell{display:flex;justify-content:space-between;align-items:baseline;padding:1px 0}
+  .cell span:first-child{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .cell span:last-child{font-size:15px}
+  .ajout{color:var(--rust);font-size:14px;font-weight:500;margin-top:14px}
+  .ajout.or{color:var(--or);margin-top:16px}
+
+  .tot{margin-top:24px}
+  .tot .l{display:flex;justify-content:space-between;padding:5px 0;font-size:15px}
+  .ttc{display:flex;justify-content:space-between;border-top:2px solid var(--ink);
+       margin-top:6px;padding-top:9px;align-items:baseline}
+  .ttc b{font-size:17px}
+  .ttc i{font:600 20px/1 Georgia,serif;font-style:normal}
+
+  .cond{margin-top:26px;font-size:15px}
+  .cadre{height:88px;border:1px dashed var(--line);border-radius:4px;margin-top:22px}
+  .sous{text-align:center;font-size:12px;color:var(--muted);margin:6px 0 0}
+  .mention{font-size:12px;color:var(--muted);line-height:1.55;margin:22px 0 0}
+
+  .actions{border-top:1px solid var(--lineSoft);margin-top:26px;padding:22px 6px 26px;text-align:center}
+  .bouton{display:block;width:100%;background:var(--plein);color:var(--card);
+          border:0;border-radius:999px;padding:15px;font-size:15.5px;font-weight:600;cursor:pointer}
+  .lien{display:inline-block;margin-top:14px;color:var(--rust);font-size:14px;font-weight:500}
+
+  .resume{background:var(--card);border-radius:10px;padding:18px;
+          box-shadow:0 12px 40px rgba(28,28,26,.10)}
+  .resume .qui{font:600 17px/1.25 Georgia,serif;margin:0}
+  .resume .ou{font-size:13px;color:var(--muted);margin:2px 0 10px}
+  .resume .compte{font-size:12.5px;color:var(--muted);margin:0 0 12px}
+  .resume .gros{display:flex;justify-content:space-between;align-items:baseline;
+                border-top:1px solid var(--lineSoft);padding-top:12px}
+  .resume .gros b{font-size:13px;font-weight:600}
+  .resume .gros i{font:600 24px/1 Georgia,serif;font-style:normal}
+  details{margin-top:14px}
+  summary{list-style:none;cursor:pointer;background:var(--rustTint);color:var(--rust);
+          border-radius:999px;padding:12px;text-align:center;font-size:14px;font-weight:600}
+  summary::-webkit-details-marker{display:none}
+  details[open] summary{margin-bottom:12px}
+
+  .pouce{position:sticky;bottom:0;margin:18px -12px 0;padding:14px 16px 18px;
+         background:linear-gradient(to top, var(--cream) 74%, rgba(245,243,238,0))}
+
+  .jauge{width:158px;flex:0 0 158px;padding-top:4px}
+  .jauge p{font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.45}
+  .bar{height:240px;border-radius:6px;background:var(--rustTint);position:relative;overflow:hidden}
+  .bar .bande{position:absolute;inset:0;background:var(--plein);opacity:.2;z-index:0}
+  .bar i{position:absolute;left:0;right:0;height:2px;z-index:2}
+  .bar .etiq{position:absolute;left:0;right:0;text-decoration:none;font-size:10.5px;
+             padding:0 6px;font-weight:700;z-index:2}
+  /* Au-dessus de la bande, et en gris franc : une légende qui nomme un trait
+     qu'on ne voit pas est pire qu'une légende absente. */
+  .bar .ecran{position:absolute;left:0;right:0;z-index:1;
+              border-top:1px dashed var(--muted)}
+  /* ─── Sur un téléphone, la maquette EST l'écran ────────────────────────
+     Vu à la capture, et c'est le genre de défaut qu'aucun test ne montre :
+     un cadre de 664 px posé sous un titre et trois onglets déborde d'un écran
+     qui fait 664 px. On se retrouve alors à faire défiler la PAGE pour voir le
+     bas du TÉLÉPHONE, puis le téléphone pour voir le bas du devis — deux
+     défilements imbriqués, et la barre du pouce de la version B tombait hors
+     de vue, c'est-à-dire exactement ce qu'elle est censée démontrer.
+
+     Le cadre ne sert qu'à l'ordinateur, pour donner la taille. Sur son
+     téléphone, la page a déjà la bonne largeur : le cadre s'efface, le
+     document devient la page, et la profondeur de défilement qu'il sent sous
+     le doigt est la vraie. */
+  @media (max-width:780px){
+    .jauge{display:none}
+    .page{padding:14px 12px 0}
+    h1{font-size:20px}
+    .chapo{font-size:13.5px;margin-bottom:16px}
+    .onglets{position:sticky;top:0;z-index:5;background:var(--cream);
+             padding:8px 0;margin:0 0 6px}
+    .tel{width:auto;height:auto;overflow:visible;background:none;
+         box-shadow:none;border-radius:0;padding:0;margin:0}
+    .pouce{margin:18px -12px 0;padding:14px 16px 20px}
+    .taille{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Le premier arrêt</h1>
+  <p class="chapo">
+    Sur l’écran du devis d’aujourd’hui, <b>« Choisir la date » est le dernier élément de la page</b> :
+    il vient après le cadre de signature. Mesuré : <b>2,6 hauteurs d’écran</b> avant de l’atteindre.
+    Deux façons de le rapprocher, sans retirer un mot du document.
+  </p>
+
+  <input type="radio" name="vue" id="v-avant" checked>
+  <input type="radio" name="vue" id="v-a">
+  <input type="radio" name="vue" id="v-b">
+
+  <div class="onglets">
+    <label for="v-avant">Aujourd’hui</label>
+    <label for="v-a">A — Replié</label>
+    <label for="v-b">B — Sous le pouce</label>
+  </div>
+
+  <div class="scene">
+
+    <div class="vue avant">
+      <p class="dit">Le document entier, puis le bouton. <b>Il faut tout traverser pour partir.</b></p>
+      <div class="tel">
+        <div class="barre"><span class="rond">‹</span><span class="rond">●</span></div>
+        <div class="feuille">
+          <div class="ent">
+            <div>
+              <p class="nom">Arborea</p>
+              <p class="ligneinfo">12 rue des Tilleuls, 78200 Mantes</p>
+              <p class="ligneinfo">06 12 34 56 78</p>
+              <p class="ligneinfo">contact@arborea.fr</p>
+              <p class="ligneinfo">SIRET 000 000 000 00000</p>
+            </div>
+            <div class="refs">
+              <div class="ref"><span>Devis n°</span><span>2026-0148</span></div>
+              <div class="ref"><span>Date</span><span>04/09/2026</span></div>
+              <div class="ref"><span>Validité</span><span>30 jours</span></div>
+            </div>
+          </div>
+          <div class="filet"></div>
+          <p class="titre">DEVIS</p>
+          <p class="sur">Client</p>
+          <p class="ligneinfo">Mme Roux</p>
+          <p class="ligneinfo">4 chemin du Clos, 78200 Mantes</p>
+          <p class="ligneinfo">roux.helene@exemple.fr</p>
+          <p class="ligneinfo">06 98 76 54 32</p>
+
+          <div style="margin-top:26px">
+            <div class="lig">
+              <p class="desc">Élagage d’un tilleul — taille architecturée</p>
+              <div class="cell"><span>Qté</span><span>1</span></div>
+              <div class="cell"><span>Prix unitaire HT</span><span>620,00</span></div>
+              <div class="cell"><span>Montant HT</span><span>620,00 €</span></div>
+            </div>
+            <div class="lig">
+              <p class="desc">Démontage d’un frêne sec, évacuation</p>
+              <div class="cell"><span>Qté</span><span>1</span></div>
+              <div class="cell"><span>Prix unitaire HT</span><span>980,00</span></div>
+              <div class="cell"><span>Montant HT</span><span>980,00 €</span></div>
+            </div>
+            <div class="lig">
+              <p class="desc">Broyage des rémanents sur place</p>
+              <div class="cell"><span>Qté</span><span>1</span></div>
+              <div class="cell"><span>Prix unitaire HT</span><span>240,00</span></div>
+              <div class="cell"><span>Montant HT</span><span>240,00 €</span></div>
+            </div>
+            <p class="ajout">+ Ajouter une ligne</p>
+            <p class="ajout or">+ Ajouter une TVA</p>
+          </div>
+
+          <div class="tot">
+            <div class="l"><span>Total HT</span><span>1 840,00 €</span></div>
+            <div class="l"><span>TVA (20 %)</span><span>368,00 €</span></div>
+            <div class="ttc"><b>Total TTC</b><i>2 208,00 €</i></div>
+            <p class="ajout or" style="font-size:13.5px">+ Prix accordé au client</p>
+          </div>
+
+          <div class="cond">
+            <p class="sur">Notes / conditions</p>
+            <p style="margin:0">Acompte de 30 % à la signature, solde à réception des travaux.</p>
+          </div>
+          <div class="cond">
+            <p class="sur">Modalités de paiement</p>
+            <p style="margin:0">Paiement par virement bancaire</p>
+            <p class="ligneinfo">IBAN : FR76 0000 0000 0000 0000 0000 000</p>
+          </div>
+
+          <p class="mention">Devis établi par Arborea, valable 30 jours. Bon pour accord précédé de la
+            mention manuscrite, daté et signé par le client.</p>
+          <div class="cadre"></div>
+          <p class="sous">Bon pour accord — signature du client</p>
+
+          <div class="actions">
+            <button class="bouton" type="button">Choisir la date</button>
+            <span class="lien">Aperçu du PDF</span>
+          </div>
+        </div>
+        <div style="height:20px"></div>
+      </div>
+      <p class="taille">390 × 664, la taille de votre écran.</p>
+    </div>
+
+    <div class="vue a">
+      <p class="dit">Ce qu’il faut décider, le bouton, et <b>le document juste dessous</b>, replié.
+        Il s’ouvre d’un appui et ne se referme plus.</p>
+      <div class="tel">
+        <div class="barre"><span class="rond">‹</span><span class="rond">●</span></div>
+        <div class="resume">
+          <p class="qui">Mme Roux</p>
+          <p class="ou">4 chemin du Clos, 78200 Mantes</p>
+          <p class="compte">3 lignes — devis n° 2026-0148</p>
+          <div class="gros"><b>Total TTC</b><i>2 208,00 €</i></div>
+        </div>
+        <div style="padding:14px 6px 0">
+          <button class="bouton" type="button">Choisir la date</button>
+        </div>
+        <details>
+          <summary>Voir le document</summary>
+          <div class="feuille">
+            <div class="ent">
+              <div>
+                <p class="nom">Arborea</p>
+                <p class="ligneinfo">12 rue des Tilleuls, 78200 Mantes</p>
+                <p class="ligneinfo">06 12 34 56 78</p>
+                <p class="ligneinfo">SIRET 000 000 000 00000</p>
+              </div>
+              <div class="refs">
+                <div class="ref"><span>Devis n°</span><span>2026-0148</span></div>
+                <div class="ref"><span>Date</span><span>04/09/2026</span></div>
+                <div class="ref"><span>Validité</span><span>30 jours</span></div>
+              </div>
+            </div>
+            <div class="filet"></div>
+            <p class="titre">DEVIS</p>
+            <p class="sur">Client</p>
+            <p class="ligneinfo">Mme Roux</p>
+            <p class="ligneinfo">4 chemin du Clos, 78200 Mantes</p>
+            <div style="margin-top:22px">
+              <div class="lig">
+                <p class="desc">Élagage d’un tilleul — taille architecturée</p>
+                <div class="cell"><span>Qté</span><span>1</span></div>
+                <div class="cell"><span>Prix unitaire HT</span><span>620,00</span></div>
+                <div class="cell"><span>Montant HT</span><span>620,00 €</span></div>
+              </div>
+              <div class="lig">
+                <p class="desc">Démontage d’un frêne sec, évacuation</p>
+                <div class="cell"><span>Qté</span><span>1</span></div>
+                <div class="cell"><span>Prix unitaire HT</span><span>980,00</span></div>
+                <div class="cell"><span>Montant HT</span><span>980,00 €</span></div>
+              </div>
+              <div class="lig">
+                <p class="desc">Broyage des rémanents sur place</p>
+                <div class="cell"><span>Qté</span><span>1</span></div>
+                <div class="cell"><span>Prix unitaire HT</span><span>240,00</span></div>
+                <div class="cell"><span>Montant HT</span><span>240,00 €</span></div>
+              </div>
+              <p class="ajout">+ Ajouter une ligne</p>
+              <p class="ajout or">+ Ajouter une TVA</p>
+            </div>
+            <div class="tot">
+              <div class="l"><span>Total HT</span><span>1 840,00 €</span></div>
+              <div class="l"><span>TVA (20 %)</span><span>368,00 €</span></div>
+              <div class="ttc"><b>Total TTC</b><i>2 208,00 €</i></div>
+            </div>
+            <div class="cond">
+              <p class="sur">Notes / conditions</p>
+              <p style="margin:0">Acompte de 30 % à la signature, solde à réception des travaux.</p>
+            </div>
+            <div class="cadre"></div>
+            <p class="sous">Bon pour accord — signature du client</p>
+            <p class="sous" style="margin-top:16px"><span class="lien">Aperçu du PDF</span></p>
+          </div>
+        </details>
+        <div style="height:20px"></div>
+      </div>
+      <p class="taille">Le bouton est là sans défiler. Le document est à un appui.</p>
+    </div>
+
+    <div class="vue b">
+      <p class="dit">Le document ne bouge pas d’un pixel. <b>Le bouton reste posé en bas de l’écran</b>,
+        où qu’on en soit de la lecture.</p>
+      <div class="tel">
+        <div class="barre"><span class="rond">‹</span><span class="rond">●</span></div>
+        <div class="feuille">
+          <div class="ent">
+            <div>
+              <p class="nom">Arborea</p>
+              <p class="ligneinfo">12 rue des Tilleuls, 78200 Mantes</p>
+              <p class="ligneinfo">06 12 34 56 78</p>
+              <p class="ligneinfo">contact@arborea.fr</p>
+              <p class="ligneinfo">SIRET 000 000 000 00000</p>
+            </div>
+            <div class="refs">
+              <div class="ref"><span>Devis n°</span><span>2026-0148</span></div>
+              <div class="ref"><span>Date</span><span>04/09/2026</span></div>
+              <div class="ref"><span>Validité</span><span>30 jours</span></div>
+            </div>
+          </div>
+          <div class="filet"></div>
+          <p class="titre">DEVIS</p>
+          <p class="sur">Client</p>
+          <p class="ligneinfo">Mme Roux</p>
+          <p class="ligneinfo">4 chemin du Clos, 78200 Mantes</p>
+          <p class="ligneinfo">roux.helene@exemple.fr</p>
+          <p class="ligneinfo">06 98 76 54 32</p>
+
+          <div style="margin-top:26px">
+            <div class="lig">
+              <p class="desc">Élagage d’un tilleul — taille architecturée</p>
+              <div class="cell"><span>Qté</span><span>1</span></div>
+              <div class="cell"><span>Prix unitaire HT</span><span>620,00</span></div>
+              <div class="cell"><span>Montant HT</span><span>620,00 €</span></div>
+            </div>
+            <div class="lig">
+              <p class="desc">Démontage d’un frêne sec, évacuation</p>
+              <div class="cell"><span>Qté</span><span>1</span></div>
+              <div class="cell"><span>Prix unitaire HT</span><span>980,00</span></div>
+              <div class="cell"><span>Montant HT</span><span>980,00 €</span></div>
+            </div>
+            <div class="lig">
+              <p class="desc">Broyage des rémanents sur place</p>
+              <div class="cell"><span>Qté</span><span>1</span></div>
+              <div class="cell"><span>Prix unitaire HT</span><span>240,00</span></div>
+              <div class="cell"><span>Montant HT</span><span>240,00 €</span></div>
+            </div>
+            <p class="ajout">+ Ajouter une ligne</p>
+            <p class="ajout or">+ Ajouter une TVA</p>
+          </div>
+
+          <div class="tot">
+            <div class="l"><span>Total HT</span><span>1 840,00 €</span></div>
+            <div class="l"><span>TVA (20 %)</span><span>368,00 €</span></div>
+            <div class="ttc"><b>Total TTC</b><i>2 208,00 €</i></div>
+            <p class="ajout or" style="font-size:13.5px">+ Prix accordé au client</p>
+          </div>
+
+          <div class="cond">
+            <p class="sur">Notes / conditions</p>
+            <p style="margin:0">Acompte de 30 % à la signature, solde à réception des travaux.</p>
+          </div>
+          <div class="cond">
+            <p class="sur">Modalités de paiement</p>
+            <p style="margin:0">Paiement par virement bancaire</p>
+            <p class="ligneinfo">IBAN : FR76 0000 0000 0000 0000 0000 000</p>
+          </div>
+
+          <p class="mention">Devis établi par Arborea, valable 30 jours. Bon pour accord précédé de la
+            mention manuscrite, daté et signé par le client.</p>
+          <div class="cadre"></div>
+          <p class="sous">Bon pour accord — signature du client</p>
+          <p class="sous" style="margin-top:16px"><span class="lien">Aperçu du PDF</span></p>
+        </div>
+        <div class="pouce">
+          <button class="bouton" type="button">Choisir la date</button>
+        </div>
+      </div>
+      <p class="taille">Défilez : la barre ne quitte pas l’écran.</p>
+    </div>
+
+    <div class="jauge">
+      <p>Où tombe le bouton, dans la hauteur de la page.</p>
+      <div class="bar">
+        <!-- B ne se marque pas d'un trait : le bouton est là sur TOUTE la
+             hauteur, et c'est ce que la bande dit d'un coup d'œil. -->
+        <span class="bande"></span>
+        <u class="etiq" style="top:8px;color:var(--rust)">B — partout</u>
+        <div class="ecran" style="top:34%"></div>
+        <div class="ecran" style="top:67%"></div>
+        <i style="top:12%;background:var(--or)"></i>
+        <u class="etiq" style="top:calc(12% + 6px);color:var(--or)">A</u>
+        <i style="top:96%;background:var(--ink)"></i>
+        <u class="etiq" style="top:calc(96% - 18px)">Aujourd’hui</u>
+      </div>
+      <p style="margin-top:10px">Les deux traits fins sont les bords d’écran : un doigt, deux doigts.</p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

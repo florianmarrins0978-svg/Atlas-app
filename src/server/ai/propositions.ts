@@ -8,48 +8,65 @@ export const NOM_OUTIL_PROPOSITION = "ProposerModifications";
 // PROPOSER — jamais exécuter. L'exécution passe systématiquement par les
 // Server Actions existantes, après confirmation explicite de l'utilisateur.
 
-export type TypeActionProposee =
-  | "ajouter_prestation"
-  | "supprimer_prestation"
-  | "modifier_prestation"
-  | "ajouter_materiel"
-  | "supprimer_materiel"
-  | "modifier_materiel"
-  | "modifier_duree"
-  | "modifier_equipe"
-  | "ajouter_ligne_prix"
+/**
+ * **LA LISTE FAIT FOI, ET LE TYPE EN DÉCOULE.**
+ *
+ * **Payé le 28 août 2026.** Six gestes ajoutés la veille — supprimer un
+ * chantier, un tarif, poser une absence, régler les documents, composer la
+ * fiche d'entretien — vivaient dans le type, avaient leur `case` et leurs
+ * contrôles… et **le modèle ne pouvait pas les employer** : l'énumération que
+ * l'assistant lui présente était une SECONDE liste, écrite à la main dans
+ * `assistant-service.ts`, et personne ne l'avait complétée. Les contrôles
+ * construisaient la proposition à la main : ils étaient verts sur une porte
+ * fermée.
+ *
+ * Deux listes finissent toujours par diverger (`CLAUDE.md` §3). Il n'y en a
+ * plus qu'une : celle-ci, lisible à l'exécution, et le type se déduit d'elle.
+ */
+export const TYPES_ACTION_PROPOSEE = [
+  "ajouter_prestation",
+  "supprimer_prestation",
+  "modifier_prestation",
+  "ajouter_materiel",
+  "supprimer_materiel",
+  "modifier_materiel",
+  "modifier_duree",
+  "modifier_equipe",
+  "ajouter_ligne_prix",
   // Reprendre, sur le devis courant, une ligne trouvée dans le devis d'un
   // AUTRE client (sa demande du 25 août 2026). Ne porte que `ligneOrigineId` :
   // le libellé et le montant sont relus en base à l'application, jamais
   // transmis — voir `getLigneDevisPourCopie`.
-  | "copier_ligne_devis"
+  "copier_ligne_devis",
   // --- Sa demande du 26 août 2026 : « un vrai agent avec toutes les
   // capacités possibles sur l'appli ». Tous ces gestes restent des
   // PROPOSITIONS : *« très important que ça reste le doigt du patron »*.
-  | "creer_chantier"
-  | "modifier_client"
-  | "modifier_adresse_chantier"
-  | "noter_chantier"
-  | "planifier_chantier"
-  | "deplacer_chantier"
-  | "retirer_du_planning"
-  | "creer_tarif"
-  | "modifier_tarif"
-  | "preparer_facture"
+  "creer_chantier",
+  "modifier_client",
+  "modifier_adresse_chantier",
+  "noter_chantier",
+  "planifier_chantier",
+  "deplacer_chantier",
+  "retirer_du_planning",
+  "creer_tarif",
+  "modifier_tarif",
+  "preparer_facture",
   // --- Sa demande du 27 août 2026 : « fais la dernière » — les gestes qui
-  // manquaient encore. Tous restent des PROPOSITIONS : *« très important que ça
-  // reste le doigt du patron »* (26 août).
+  // manquaient encore.
   //
   // **Les deux suppressions sont ici, et c'est délibéré.** Un geste qui efface
   // est celui qu'on hésite le plus à confier ; mais rien ne s'exécute sans
   // qu'il coche, et le refus métier reste au serveur — un chantier dont la
   // facture est émise ne part pas, quoi qu'on lui demande.
-  | "supprimer_chantier"
-  | "supprimer_tarif"
-  | "poser_absence_equipe"
-  | "regler_documents"
-  | "ajouter_prestation_entretien"
-  | "retirer_prestation_entretien";
+  "supprimer_chantier",
+  "supprimer_tarif",
+  "poser_absence_equipe",
+  "regler_documents",
+  "ajouter_prestation_entretien",
+  "retirer_prestation_entretien",
+] as const;
+
+export type TypeActionProposee = (typeof TYPES_ACTION_PROPOSEE)[number];
 
 export type ActionProposee = {
   type: TypeActionProposee;

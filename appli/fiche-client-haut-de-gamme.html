@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — la fiche client, deux propositions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LA FICHE CLIENT — L'ÉCRAN OÙ L'ON ARRIVE APRÈS « CRÉER UN DEVIS »
+  Deux propositions, essayables. RIEN N'EST CODÉ : `src/` n'a pas été touché.
+  ═══════════════════════════════════════════════════════════════════════════
+
+  L'ÉCRAN D'AUJOURD'HUI A ÉTÉ PHOTOGRAPHIÉ AVANT D'ÊTRE JUGÉ — application
+  réelle, compte de démonstration, 390 × 664 (la hauteur qui reste chez vous,
+  barre d'adresse déduite). Ce que la photo dit, et qu'aucun test ne disait :
+
+  1. DEUX MICROS. Un rond beige en haut à droite (dicter les coordonnées) et
+     l'anneau vert en bas (dicter le chantier). Le geste principal de l'écran
+     n'est plus le seul objet rare de l'écran.
+  2. QUATRE CASES IDENTIQUES. Le nom du client — la seule donnée qui crée la
+     fiche — pèse exactement le même poids que l'e-mail, qui est facultatif.
+  3. DEUX LIBELLÉS SUR QUATRE. « Nom du client » et « Téléphone » sont écrits ;
+     l'e-mail et l'adresse ne tiennent qu'à leur exemple en gris — 3,0 de
+     contraste, et il disparaît à la première touche. Au soleil, on ne sait
+     plus quelle case est laquelle.
+  4. LE CARRÉ PHOTO EST ORPHELIN. Pointillé doré, seul objet « brouillon » de
+     la page, posé hors du rythme, sans un mot.
+  5. DEUX CAPSULES D'ENVOI PLEINE LARGEUR, ÉTEINTES. Beaucoup de surface pour
+     un choix qui n'a pas encore lieu d'être.
+  6. L'OR CONCURRENCE LE VERT. Le bouton secondaire est cerclé d'or juste sous
+     l'anneau : deux objets s'appellent, alors que l'un des deux se retire.
+  7. LE VIDE N'EST PAS DÉCIDÉ. 7 px entre les cases, 60 px autour de l'anneau :
+     ce n'est pas un rythme, c'est ce qui reste.
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUI NE BOUGE PAS, DANS LES DEUX PROPOSITIONS.
+
+  · La charte est la vôtre — Arborea, relevée au navigateur, pas approchée à
+    l'œil : vert pin, or, crème, Playfair Display et Inter. Aucune couleur
+    inventée ici (`src/lib/design-tokens.ts`).
+  · L'anneau est celui de l'application, au pixel : disque plein de 76 px, ses
+    deux souffles d'or à 1,5 cm, son ombre portée (`globals.css`, `.atlas-objet`).
+  · Aucune donnée n'est ajoutée, aucune n'est retirée : ce sont les mêmes champs,
+    le même chemin, les mêmes deux sorties.
+  · Aucune flèche décorative, et le moins de mots possible à l'écran.
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --pine-light:#4f5f4c; --or:#B98B47;
+  --line:rgba(28,28,26,.13); --line-soft:rgba(28,28,26,.07);
+  /* L'exemple gris de l'application tient 3,0 de contraste sur le beige des
+     cases. Celui-ci en tient 4,7 : c'est la même teinte, assombrie jusqu'à
+     être lisible au soleil. */
+  --exemple:#6b6659;
+  --ombre-feuille:0 -22px 50px rgba(20,18,14,.22);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --pine:#cfd8c9; --pine-light:#b6c2af; --exemple:#9a958a;
+         --line:rgba(233,229,220,.17); --line-soft:rgba(233,229,220,.09);
+         --ombre-feuille:0 -22px 50px rgba(0,0,0,.5); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* Une rangée du registre est en `display:flex` : sans cette ligne, `hidden` ne
+   la cache pas, et l'adresse du client s'affichait avant d'être demandée. */
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.55 Inter,-apple-system,"Segoe UI",Roboto,sans-serif}
+::selection{background:rgba(185,139,71,.22)}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px;border-radius:4px}
+
+/* ─── L'appareil de la planche ───────────────────────────────────────── */
+.tete{max-width:1180px;margin:0 auto;padding:34px 22px 0}
+.tete h1{margin:0;font:400 30px/1.15 "Playfair Display",Georgia,serif;letter-spacing:-.01em}
+.tete p{margin:10px 0 0;max-width:62ch;color:var(--charcoal-soft);font-size:15px}
+.tete .rappel{margin-top:14px;font-size:15px;color:var(--charcoal-soft)}
+
+.bascule{position:sticky;top:0;z-index:5;margin:26px auto 0;max-width:1180px;
+         padding:12px 22px;background:var(--bone);
+         display:flex;gap:8px;flex-wrap:wrap}
+.bascule button{flex:1 1 0;min-width:104px;min-height:44px;padding:10px 12px;cursor:pointer;
+                border:1px solid var(--line);border-radius:99px;background:transparent;
+                font:500 12px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;
+                color:var(--charcoal-soft);transition:background .18s,border-color .18s,color .18s}
+.bascule button[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);
+                color:var(--bone)}
+@media (prefers-color-scheme: dark){ .bascule button[aria-pressed="true"]{color:#171613} }
+
+.scene{max-width:1180px;margin:0 auto;padding:18px 22px 70px;
+       display:flex;flex-direction:column;gap:44px;align-items:center}
+.poste{margin:0;display:none;flex-direction:column;align-items:center;gap:18px;width:100%;max-width:430px}
+.poste[data-actif="oui"]{display:flex}
+.legende{width:100%;max-width:390px}
+.legende .nom{font:500 11px/1 Inter,sans-serif;letter-spacing:.26em;text-transform:uppercase;color:var(--or)}
+.legende h2{margin:8px 0 0;font:400 22px/1.2 "Playfair Display",Georgia,serif}
+.legende ul{margin:12px 0 0;padding:0;list-style:none;font-size:15px;color:var(--charcoal-soft)}
+.legende li{position:relative;padding:0 0 0 16px;margin:0 0 7px}
+.legende li::before{content:"";position:absolute;left:0;top:9px;width:6px;height:1px;background:var(--or)}
+.legende b{font-weight:600;color:var(--charcoal)}
+
+/* Sur un écran large, les trois se regardent côte à côte : c'est la seule
+   façon de voir un écart de rythme, qui ne se raconte pas. */
+@media (min-width:1180px){
+  .bascule{display:none}
+  .scene{flex-direction:row;align-items:flex-start;justify-content:center;gap:34px}
+  .poste{display:flex !important}
+}
+
+/* ─── LE TÉLÉPHONE ────────────────────────────────────────────────────── */
+.tel{position:relative;width:390px;height:664px;max-width:100%;
+     background:var(--bone);border-radius:30px;overflow:hidden;
+     box-shadow:0 1px 0 rgba(28,28,26,.08),0 24px 60px rgba(20,18,14,.14)}
+/* Ce qu'on voit derrière la feuille : l'accueil, reculé. La feuille s'arrête à
+   60 px du haut — c'est l'application, pas une licence de maquette. */
+.derriere{height:60px;display:flex;align-items:center;justify-content:center;
+          font:500 10px/1 Inter,sans-serif;letter-spacing:.34em;color:var(--muted);
+          background:linear-gradient(180deg,var(--paper),rgba(28,28,26,.06))}
+.feuille{position:absolute;inset:60px 0 0;background:var(--cream);
+         border-radius:26px 26px 0 0;box-shadow:var(--ombre-feuille);
+         display:flex;flex-direction:column;overflow:hidden}
+.dedans{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.dedans::-webkit-scrollbar{width:0}
+
+/* ─── L'en-tête de la feuille, commun aux trois ───────────────────────── */
+/* **44 px de haut, et le titre à 8 px du bord de la feuille.** Ce n'est pas
+   une estimation : c'est mesuré sur l'application (`h1` à 8, hauteur 28, le
+   formulaire à 44). Une maquette qui se donne dix pixels de plus fait mentir
+   la comparaison qu'elle prétend rendre possible. */
+.entete{display:flex;align-items:center;gap:12px;padding:0 26px;min-height:44px}
+.retour{flex:0 0 auto;width:26px;height:34px;display:flex;align-items:center;
+        border:0;background:none;padding:0;color:var(--charcoal);cursor:pointer}
+.entete h3{margin:0;font:400 27px/1.05 "Playfair Display",Georgia,serif;white-space:nowrap}
+.micro-coin{flex:0 0 auto;width:44px;height:44px;border-radius:99px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;color:var(--pine)}
+
+/* ─── Les voix, reprises des jetons ───────────────────────────────────── */
+.caps{font:500 9.5px/1.35 Inter,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.serif{font-family:"Playfair Display",Georgia,serif;font-weight:400}
+
+/* ═══ L'ANNEAU — recopié de `globals.css` (.atlas-objet), pas réinventé ══ */
+/* 104 px : la réserve de l'application (`.atlas-dictee`, min-height). Elle ne
+   bouge pas d'un état à l'autre — c'est au moment où l'on appuie que l'écran
+   doit être le plus stable. */
+.dictee{display:flex;flex-direction:column;align-items:center;--ampleur:1;min-height:104px}
+.objet{position:relative;display:flex;align-items:center;justify-content:center}
+.micro-plein{position:relative;z-index:2;width:76px;height:76px;border-radius:99px;border:0;
+             background:var(--pine);color:var(--cream);cursor:pointer;
+             display:flex;align-items:center;justify-content:center;
+             box-shadow:0 8px 22px rgba(0,0,0,.16);transition:transform .2s}
+@media (prefers-color-scheme: dark){ .micro-plein{color:#171613} }
+.micro-plein:active{transform:scale(.95)}
+.frange{position:absolute;top:0;bottom:0;width:1.5cm;display:flex;align-items:center;
+        justify-content:space-between;gap:2px;pointer-events:none;overflow:hidden;
+        transform:scaleY(var(--ampleur));transition:transform 90ms linear,opacity .2s}
+.frange-g{right:calc(100% + 9px);-webkit-mask-image:linear-gradient(90deg,transparent,#000);
+          mask-image:linear-gradient(90deg,transparent,#000)}
+.frange-d{left:calc(100% + 9px);-webkit-mask-image:linear-gradient(270deg,transparent,#000);
+          mask-image:linear-gradient(270deg,transparent,#000)}
+.frange i{display:block;flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.7}
+/* UNE SEULE LIGNE sous l'anneau, qui change de texte — pas deux empilées.
+   Deux lignes réservent la place de la seconde en permanence, et l'anneau
+   descend de quinze pixels pour un mot qui n'existe pas encore. */
+.indice{margin:9px 0 0;height:16px;font-size:11.5px;line-height:16px;color:var(--charcoal-soft);
+        font-variant-numeric:tabular-nums;transition:color .3s}
+[data-lit="oui"] .indice{color:var(--or)}
+[data-lit="oui"] .frange{animation:respirer 1.4s ease-in-out infinite}
+@keyframes respirer{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1.25)}}
+@media (prefers-reduced-motion:reduce){ [data-lit="oui"] .frange{animation:none} }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   1 · AUJOURD'HUI — l'écran tel qu'il est, redessiné d'après la photo
+   ═══════════════════════════════════════════════════════════════════════ */
+/* Toutes les cotes de ce cadre sont RELEVÉES sur l'application, pas
+   approchées : civilité 38, cases 46, canal 43, photo 75, anneau 104, bouton
+   52, et 7 px entre chaque. Le formulaire commence à 44 et finit à 601. */
+.a-form{display:flex;flex-direction:column;gap:7px;padding:0 26px 3px}
+.a-civilite{display:flex;gap:10px;margin-top:6px}
+.a-civilite button{min-height:38px;border-radius:99px;border:1px solid var(--line);background:var(--cream);
+                   padding:0 30px;font-size:15px;color:var(--charcoal);cursor:pointer;font-family:inherit}
+.a-civilite button[aria-pressed="true"]{border-color:var(--or);background:var(--paper)}
+.a-duo-titres{display:flex;align-items:flex-end;gap:9px;margin-top:6px}
+.a-duo-titres span:first-child{flex:1;min-width:0}
+.a-duo-titres span:last-child{width:152px;flex:0 0 152px;text-align:right}
+.a-duo{display:flex;gap:9px;margin-top:-3px}
+.a-duo .nom{flex:1;min-width:0}
+.a-duo .num{flex:0 0 152px}
+.a-case{width:100%;min-height:46px;border:0;border-radius:14px;background:var(--paper);
+        padding:13px 15px;font:400 16px/1.2 Inter,sans-serif;color:var(--charcoal)}
+.a-case::placeholder{color:var(--muted)}
+.a-case:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+.a-num{text-align:right;font-variant-numeric:tabular-nums}
+.a-lien{align-self:flex-start;border:0;background:none;padding:2px 0;font:500 14px/1.3 Inter,sans-serif;
+        color:var(--pine);cursor:pointer}
+.a-canal{display:flex;gap:8px}
+.a-canal button{flex:1;min-height:43px;border-radius:99px;border:1px solid var(--line-soft);background:transparent;
+                padding:0 8px;font-size:15px;color:var(--muted);cursor:pointer;font-family:inherit}
+.a-photo{width:74px;height:74px;border-radius:6px;border:1px dashed var(--or);background:none;
+         color:var(--or);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.a-dictee{margin-top:0}
+.a-secondaire{width:66%;min-height:52px;align-self:center;margin-top:0;border:1px solid var(--or);
+              border-radius:99px;background:none;padding:0 20px;cursor:pointer;
+              font:400 17px/1.2 "Playfair Display",Georgia,serif;color:var(--charcoal)}
+/* La bulle de l'assistant, qui vit par-dessus le bas de l'écran. Elle est là
+   parce qu'elle EST là : c'est elle qui frôle le bouton. */
+.a-bulle{position:absolute;left:14px;bottom:14px;width:46px;height:46px;border-radius:99px;
+         background:var(--charcoal);color:var(--bone);display:flex;align-items:center;
+         justify-content:center;font:400 19px/1 "Playfair Display",Georgia,serif;
+         box-shadow:0 6px 18px rgba(0,0,0,.22)}
+@media (prefers-color-scheme: dark){ .a-bulle{color:#171613} }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   2 · A — ÉPURÉE : votre écran, embelli. Même squelette, rythme décidé.
+   ═══════════════════════════════════════════════════════════════════════
+   Ce qui change, et rien d'autre :
+   · le micro du coin perd son aplat — il devient un cercle d'un cheveu, et
+     l'anneau redevient le seul objet plein de l'écran ;
+   · chaque case porte son libellé, qui reste quand on tape ;
+   · l'exemple gris passe de 3,0 à 4,7 de contraste — le seuil est à 4,5 ;
+   · « + adresse client » remonte au bout du libellé : une rangée en moins ;
+   · les deux capsules d'envoi deviennent une ligne de réglage ;
+   · le carré photo rentre dans le rythme et prend son mot ;
+   · le bouton secondaire quitte l'or : il ne dispute plus l'anneau.
+   L'espace ainsi rendu — 62 px — passe entièrement autour de l'anneau.
+*/
+.b-form{display:flex;flex-direction:column;padding:0 26px 4px}
+.b-civilite{display:flex;gap:8px;margin-top:4px}
+.b-civilite button{min-height:36px;border-radius:99px;border:1px solid var(--line);
+                   background:transparent;padding:0 26px;font:400 15px/1 Inter,sans-serif;
+                   color:var(--charcoal-soft);cursor:pointer;transition:border-color .18s,background .18s,color .18s}
+.b-civilite button[aria-pressed="true"]{border-color:var(--pine);background:var(--paper);color:var(--charcoal)}
+.b-bloc{margin-top:9px}
+/* Les deux mots ne se coupent JAMAIS. Coupé, « + Adresse client » passait sur
+   deux lignes et poussait « Adresse du chantier » à en faire autant : deux
+   libellés brisés pour un mot de trop. Le libellé de gauche dit « Chantier »,
+   celui de droite « + Client » — c'est la même paire que sur la proposition B,
+   et elle tient sur une ligne à 390 px. */
+.b-libelle span,.b-ajout{white-space:nowrap}
+.b-titres{display:flex;align-items:flex-end;gap:9px;margin-bottom:5px}
+.b-titres span:first-child{flex:1;min-width:0}
+.b-titres span:last-child{width:152px;flex:0 0 152px;text-align:right}
+.b-libelle{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:4px}
+.b-duo{display:flex;gap:9px}
+.b-duo .nom{flex:1;min-width:0}
+.b-duo .num{flex:0 0 152px}
+.b-case{width:100%;min-height:46px;border:0;border-radius:13px;background:var(--paper);
+        padding:12px 15px;font:400 16px/1.2 Inter,sans-serif;color:var(--charcoal);
+        transition:box-shadow .18s}
+.b-case::placeholder{color:var(--exemple)}
+.b-case:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+.b-num{text-align:right;font-variant-numeric:tabular-nums}
+.b-ajout{border:0;background:none;padding:0;cursor:pointer;font:500 9.5px/1.35 Inter,sans-serif;
+         letter-spacing:.28em;text-transform:uppercase;color:var(--pine)}
+/* L'envoi n'est plus une action : c'est un réglage. Il en prend la forme —
+   une ligne, deux mots — et rend 40 px à l'anneau. */
+.b-envoi{display:flex;align-items:center;justify-content:space-between;gap:12px;
+         min-height:34px;margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px}
+.b-envoi .choix{display:flex;gap:4px}
+.b-envoi button{min-height:34px;border:0;background:none;padding:6px 10px;cursor:pointer;
+                font:400 14px/1 Inter,sans-serif;color:var(--charcoal-soft);border-radius:2px}
+.b-envoi button[aria-pressed="true"]{color:var(--charcoal);box-shadow:inset 0 -1.5px 0 var(--or)}
+.b-photos{margin-top:8px}
+.b-photo{margin-top:5px;width:44px;height:44px;border-radius:8px;border:1px solid var(--line);
+         background:var(--paper);color:var(--pine);cursor:pointer;
+         display:flex;align-items:center;justify-content:center;transition:border-color .18s}
+.b-photo:hover{border-color:var(--pine)}
+.b-dictee{margin-top:8px}
+.b-secondaire{width:66%;min-height:42px;align-self:center;margin-top:8px;border:1px solid var(--line);
+              border-radius:99px;background:none;padding:0 20px;cursor:pointer;
+              font:400 15px/1.2 Inter,sans-serif;color:var(--charcoal-soft);
+              transition:border-color .18s,color .18s}
+.b-secondaire:hover{border-color:var(--charcoal-soft);color:var(--charcoal)}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   3 · B — REGISTRE : la proposition neuve.
+   ═══════════════════════════════════════════════════════════════════════
+   LE PARTI PRIS, EN UNE PHRASE : les cases disparaissent, et la fiche devient
+   ce qu'elle est déjà — la première page du devis que le client recevra.
+
+   POURQUOI CELLE-LÀ. Sur cet écran, tout le bruit vient des aplats : quatre
+   rectangles beiges identiques qui pèsent pareil et ne disent rien. On les
+   retire, et il ne reste que ce qui porte du sens — un libellé, une valeur, un
+   filet. La hiérarchie n'est plus dessinée, elle est TYPOGRAPHIQUE : le nom du
+   client est en Playfair, tout le reste en Inter.
+
+   CE QUE ÇA GAGNE, ET QUI SE MESURE :
+   · la cible d'un champ passe de 50 px à toute la largeur de la rangée ;
+   · l'anneau redevient le seul aplat de l'écran — donc le seul geste évident ;
+   · l'écran tient sans défiler, avec 40 px d'air en plus.
+
+   LE RISQUE, DIT FRANCHEMENT : un filet d'un cheveu se voit moins qu'un aplat
+   en plein soleil. C'est le libellé en petites capitales qui tient la rangée,
+   pas le trait — et c'est pour ça qu'il est là sur TOUTES les rangées.
+*/
+.c-registre{margin-top:6px;border-top:1px solid var(--line)}
+.c-rang{display:flex;align-items:center;gap:11px;min-height:50px;padding:5px 26px;
+        border-bottom:1px solid var(--line);transition:background .18s}
+.c-rang:focus-within{background:var(--paper)}
+/* **C'est le libellé qui tient la rangée, pas le filet** — d'où sa teinte, plus
+   sombre que les petites capitales de l'application : sans aplat sous elle, une
+   rangée qui n'a plus qu'un trait d'un cheveu s'efface au soleil. */
+.c-rang .etiq{flex:0 0 74px;font:500 9.5px/1.35 Inter,sans-serif;letter-spacing:.22em;
+              text-transform:uppercase;color:var(--charcoal-soft)}
+.c-rang .val{flex:1;min-width:0;border:0;background:none;padding:0;text-overflow:ellipsis;
+             font:400 17px/1.3 Inter,sans-serif;color:var(--charcoal)}
+.c-rang .val:focus{outline:0}
+.c-rang .val::placeholder{color:var(--exemple)}
+.c-rang .val.nom{font:400 20px/1.25 "Playfair Display",Georgia,serif}
+.c-rang .val.num{font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.c-fin{flex:0 0 auto;display:flex;gap:4px}
+.c-fin button{border:0;background:none;padding:7px 6px;min-height:34px;cursor:pointer;border-radius:2px;
+              font:500 9.5px/1 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--charcoal-soft)}
+.c-fin button[aria-pressed="true"]{color:var(--charcoal);box-shadow:inset 0 -1.5px 0 var(--or)}
+.c-fin .ajouter{color:var(--pine)}
+.c-photo{width:40px;height:40px;border-radius:7px;border:1px solid var(--line);background:none;
+         color:var(--pine);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.c-dictee{margin-top:22px}
+.c-secondaire{display:block;width:fit-content;margin:20px auto 0;border:0;background:none;padding:12px 4px;cursor:pointer;
+              font:500 10px/1 Inter,sans-serif;letter-spacing:.24em;text-transform:uppercase;
+              color:var(--muted);box-shadow:inset 0 -1px 0 var(--line);border-radius:2px;
+              transition:color .18s,box-shadow .18s}
+.c-secondaire:hover{color:var(--charcoal);box-shadow:inset 0 -1px 0 var(--charcoal-soft)}
+.c-marge{padding:0 26px 16px}
+</style>
+</head>
+<body>
+
+<header class="tete">
+  <h1>La fiche client, deux propositions</h1>
+  <p>L'écran où l'on arrive après « Créer un devis ». À gauche le vôtre, photographié
+     sur l'application réelle. Puis deux chemins : le même écran embelli, et un écran neuf.</p>
+  <p class="rappel">Tout est essayable : tapez dans les cases, appuyez sur l'anneau.
+     Rien n'est codé dans l'application.</p>
+</header>
+
+<nav class="bascule" aria-label="Choisir la proposition">
+  <button type="button" data-vue="actuel" aria-pressed="true">Aujourd'hui</button>
+  <button type="button" data-vue="epuree" aria-pressed="false">A. Épurée</button>
+  <button type="button" data-vue="registre" aria-pressed="false">B. Registre</button>
+</nav>
+
+<div class="scene">
+
+  <!-- ══════════════════ 1 · AUJOURD'HUI ══════════════════ -->
+  <figure class="poste" data-poste="actuel" data-actif="oui">
+    <div class="tel">
+      <div class="derriere">ATLAS</div>
+      <div class="feuille">
+        <div class="dedans">
+          <div class="entete">
+            <button class="retour" type="button" aria-label="Retour">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+            </button>
+            <h3 style="flex:1;text-align:center">Fiche client</h3>
+            <span class="micro-coin" style="background:var(--paper)" aria-hidden="true">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+            </span>
+          </div>
+
+          <form class="a-form" onsubmit="return false">
+            <div class="a-civilite">
+              <button type="button" aria-pressed="false">Mr</button>
+              <button type="button" aria-pressed="false">Mme</button>
+            </div>
+            <div class="a-duo-titres caps"><span>Nom du client</span><span>Téléphone</span></div>
+            <div class="a-duo">
+              <span class="nom"><input class="a-case" placeholder="Bernard" aria-label="Nom du client"></span>
+              <span class="num"><input class="a-case a-num" placeholder="06 12 34 56 78" inputmode="tel" aria-label="Téléphone"></span>
+            </div>
+            <input class="a-case" placeholder="bernard@exemple.fr" inputmode="email" aria-label="E-mail">
+            <input class="a-case" placeholder="12 rue des Lilas, Nantes" aria-label="Adresse du chantier">
+            <button class="a-lien" type="button">+ Ajouter une adresse client différente</button>
+            <div class="a-canal">
+              <button type="button">Par SMS</button>
+              <button type="button">Par e-mail</button>
+            </div>
+            <div>
+              <button class="a-photo" type="button" aria-label="Ajouter des photos">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>
+              </button>
+            </div>
+
+            <div class="dictee a-dictee" data-lit="non">
+              <div class="objet">
+                <span class="frange frange-g" aria-hidden="true"></span>
+                <span class="frange frange-d" aria-hidden="true"></span>
+                <button class="micro-plein" type="button" data-dicter aria-pressed="false" aria-label="Dicter le chantier">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+                </button>
+              </div>
+              <p class="indice" style="color:var(--muted)">Appuyez et décrivez le chantier</p>
+            </div>
+
+            <button class="a-secondaire" type="button">Je rédige à la main</button>
+          </form>
+        </div>
+      </div>
+      <div class="a-bulle" aria-hidden="true">N</div>
+    </div>
+
+    <figcaption class="legende">
+      <span class="nom">Aujourd'hui</span>
+      <h2>Ce que la photo montre</h2>
+      <ul>
+        <li><b>Deux micros</b> pour deux fonctions différentes : celui du coin dicte les
+            coordonnées, l'anneau dicte le chantier. Rien ne les distingue que la taille.</li>
+        <li><b>Deux libellés sur quatre.</b> L'e-mail et l'adresse ne tiennent qu'à leur
+            exemple en gris, qui disparaît à la première touche.</li>
+        <li><b>L'or contre le vert :</b> le bouton secondaire est cerclé de la couleur de
+            lecture, juste sous l'anneau.</li>
+      </ul>
+    </figcaption>
+  </figure>
+
+  <!-- ══════════════════ 2 · A — ÉPURÉE ══════════════════ -->
+  <figure class="poste" data-poste="epuree">
+    <div class="tel">
+      <div class="derriere">ATLAS</div>
+      <div class="feuille">
+        <div class="dedans">
+          <div class="entete">
+            <button class="retour" type="button" aria-label="Retour">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+            </button>
+            <h3 style="flex:1;text-align:center">Fiche client</h3>
+            <!-- Le micro des coordonnées garde sa place et sa fonction ; il perd
+                 seulement son aplat, qui en faisait un second geste principal. -->
+            <button class="micro-coin" type="button" style="box-shadow:inset 0 0 0 1px var(--line-soft)" aria-label="Dicter les coordonnées">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+            </button>
+          </div>
+
+          <form class="b-form" onsubmit="return false">
+            <div class="b-civilite">
+              <button type="button" aria-pressed="false">Mr</button>
+              <button type="button" aria-pressed="false">Mme</button>
+            </div>
+
+            <div class="b-bloc">
+              <div class="b-titres caps"><span>Nom du client</span><span>Téléphone</span></div>
+              <div class="b-duo">
+                <span class="nom"><input class="b-case" placeholder="Bernard" aria-label="Nom du client"></span>
+                <span class="num"><input class="b-case b-num" placeholder="06 12 34 56 78" inputmode="tel" aria-label="Téléphone"></span>
+              </div>
+            </div>
+
+            <div class="b-bloc">
+              <div class="b-libelle"><span class="caps">E-mail</span></div>
+              <input class="b-case" placeholder="bernard@exemple.fr" inputmode="email" aria-label="E-mail">
+            </div>
+
+            <div class="b-bloc">
+              <!-- L'adresse du client vit au bout du libellé de l'adresse du
+                   chantier : c'est là qu'on y pense, et ça rend une rangée. -->
+              <div class="b-libelle">
+                <span class="caps">Chantier</span>
+                <button class="b-ajout" type="button" data-ajout-adresse>+ Client</button>
+              </div>
+              <input class="b-case" placeholder="12 rue des Lilas, Nantes" aria-label="Adresse du chantier">
+              <!-- Elle porte son libellé comme les autres : une case sans nom est
+                   exactement ce que cette proposition corrige, et une exception
+                   suffit à défaire la règle. -->
+              <div data-adresse-client hidden style="margin-top:7px">
+                <div class="b-libelle"><span class="caps">Client</span></div>
+                <input class="b-case" placeholder="Si différente" aria-label="Adresse du client">
+              </div>
+            </div>
+
+            <div class="b-envoi">
+              <span class="caps">Envoi</span>
+              <span class="choix">
+                <button type="button" aria-pressed="false">SMS</button>
+                <button type="button" aria-pressed="false">E-mail</button>
+              </span>
+            </div>
+
+            <div class="b-photos">
+              <span class="caps">Photos</span>
+              <button class="b-photo" type="button" aria-label="Ajouter des photos">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>
+              </button>
+            </div>
+
+            <div class="dictee b-dictee" data-lit="non">
+              <div class="objet">
+                <span class="frange frange-g" aria-hidden="true"></span>
+                <span class="frange frange-d" aria-hidden="true"></span>
+                <button class="micro-plein" type="button" data-dicter aria-pressed="false" aria-label="Dicter le chantier">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+                </button>
+              </div>
+              <p class="indice">Appuyez et décrivez le chantier</p>
+            </div>
+
+            <button class="b-secondaire" type="button">Je rédige à la main</button>
+          </form>
+        </div>
+      </div>
+      <div class="a-bulle" aria-hidden="true">N</div>
+    </div>
+
+    <figcaption class="legende">
+      <span class="nom">Proposition A</span>
+      <h2>Épurée — votre écran, embelli</h2>
+      <ul>
+        <li><b>Rien n'est déplacé.</b> Mêmes champs, même ordre, même chemin : ce sont les
+            poids qui changent, pas la page.</li>
+        <li><b>Chaque case porte son nom</b>, et il reste quand vous tapez. L'exemple gris
+            passe de 3,0 à 4,7 de contraste — le seuil de lisibilité est à 4,5.</li>
+        <li><b>Deux libellés en plus, et l'écran ne s'allonge pas d'un pixel.</b> La rangée
+            « + Ajouter une adresse client différente » et le bloc photo les paient : les
+            trois écrans finissent au même endroit, à 604 px.</li>
+        <li><b>Un seul aplat sur l'écran :</b> l'anneau. Le micro du coin et le bouton
+            secondaire passent au trait.</li>
+      </ul>
+    </figcaption>
+  </figure>
+
+  <!-- ══════════════════ 3 · B — REGISTRE ══════════════════ -->
+  <figure class="poste" data-poste="registre">
+    <div class="tel">
+      <div class="derriere">ATLAS</div>
+      <div class="feuille">
+        <div class="dedans">
+          <div class="entete">
+            <button class="retour" type="button" aria-label="Retour">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+            </button>
+            <h3 style="flex:1">Fiche client</h3>
+            <button class="micro-coin" type="button" style="box-shadow:inset 0 0 0 1px var(--line-soft)" aria-label="Dicter les coordonnées">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+            </button>
+          </div>
+
+          <form onsubmit="return false">
+            <div class="c-registre">
+              <div class="c-rang">
+                <span class="etiq">Nom</span>
+                <input class="val nom" placeholder="Bernard" aria-label="Nom du client">
+                <span class="c-fin">
+                  <button type="button" aria-pressed="false">Mr</button>
+                  <button type="button" aria-pressed="false">Mme</button>
+                </span>
+              </div>
+              <div class="c-rang">
+                <span class="etiq">Téléphone</span>
+                <input class="val num" placeholder="06 12 34 56 78" inputmode="tel" aria-label="Téléphone">
+              </div>
+              <div class="c-rang">
+                <span class="etiq">E-mail</span>
+                <input class="val" placeholder="bernard@exemple.fr" inputmode="email" aria-label="E-mail">
+              </div>
+              <div class="c-rang">
+                <span class="etiq">Chantier</span>
+                <input class="val" placeholder="12 rue des Lilas" aria-label="Adresse du chantier">
+                <span class="c-fin"><button class="ajouter" type="button" data-ajout-adresse>+ Client</button></span>
+              </div>
+              <div class="c-rang" data-adresse-client hidden>
+                <span class="etiq">Client</span>
+                <input class="val" placeholder="Si différente" aria-label="Adresse du client">
+              </div>
+              <div class="c-rang">
+                <span class="etiq">Envoi</span>
+                <span style="flex:1"></span>
+                <span class="c-fin">
+                  <button type="button" aria-pressed="false">SMS</button>
+                  <button type="button" aria-pressed="false">E-mail</button>
+                </span>
+              </div>
+              <div class="c-rang">
+                <span class="etiq">Photos</span>
+                <span style="flex:1"></span>
+                <button class="c-photo" type="button" aria-label="Ajouter des photos">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="c-marge">
+              <div class="dictee c-dictee" data-lit="non">
+                <div class="objet">
+                  <span class="frange frange-g" aria-hidden="true"></span>
+                  <span class="frange frange-d" aria-hidden="true"></span>
+                  <button class="micro-plein" type="button" data-dicter aria-pressed="false" aria-label="Dicter le chantier">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+                  </button>
+                </div>
+                <p class="indice">Appuyez et décrivez le chantier</p>
+              </div>
+              <button class="c-secondaire" type="button">Je rédige à la main</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="a-bulle" aria-hidden="true">N</div>
+    </div>
+
+    <figcaption class="legende">
+      <span class="nom">Proposition B</span>
+      <h2>Registre — la fiche devient le devis</h2>
+      <ul>
+        <li><b>Plus une seule case.</b> Une rangée, un filet, un libellé qui ne part jamais :
+            c'est la première page du devis que votre client recevra.</li>
+        <li><b>Le nom et le numéro ne se partagent plus une ligne</b> : chacun prend toute
+            la largeur. À dire franchement, cela défait votre choix du 21 août — si vous y
+            tenez, ils tiennent sur une seule rangée.</li>
+        <li><b>L'anneau est le seul aplat de l'écran.</b> Il n'a plus rien à disputer : le
+            geste principal se voit sans qu'on l'explique.</li>
+        <li><b>Le risque, dit franchement :</b> un filet se voit moins qu'un aplat en plein
+            soleil. C'est le libellé qui tient la rangée — d'où sa présence partout.</li>
+      </ul>
+    </figcaption>
+  </figure>
+
+</div>
+
+<script>
+/* ── La bascule entre les trois postes ───────────────────────────────── */
+const postes = document.querySelectorAll("[data-poste]");
+document.querySelectorAll(".bascule button").forEach((b) => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".bascule button").forEach((x) =>
+      x.setAttribute("aria-pressed", String(x === b)));
+    postes.forEach((p) =>
+      p.setAttribute("data-actif", p.dataset.poste === b.dataset.vue ? "oui" : "non"));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+});
+
+/* ── Les paires de touches (civilité, canal) : une seule allumée ─────── */
+document.querySelectorAll(".a-civilite,.b-civilite,.b-envoi .choix,.c-fin").forEach((groupe) => {
+  const touches = [...groupe.querySelectorAll("button[aria-pressed]")];
+  touches.forEach((t) => t.addEventListener("click", () => {
+    const etait = t.getAttribute("aria-pressed") === "true";
+    touches.forEach((x) => x.setAttribute("aria-pressed", "false"));
+    // Un second appui retire le choix : son silence ne doit pas devenir un choix.
+    t.setAttribute("aria-pressed", etait ? "false" : "true");
+  }));
+});
+
+/* ── « + Adresse client » : la rangée n'existe qu'une fois demandée ──── */
+document.querySelectorAll("[data-ajout-adresse]").forEach((b) => {
+  b.addEventListener("click", () => {
+    const zone = b.closest("form");
+    const champ = zone.querySelector("[data-adresse-client]");
+    if (!champ) return;
+    champ.hidden = false;
+    b.hidden = true;
+    (champ.matches("input") ? champ : champ.querySelector("input")).focus();
+  });
+});
+
+/* ── L'anneau : un appui dicte, un second arrête ─────────────────────── */
+const FRANGE = [7, 13, 9, 18, 11, 22, 10, 15, 8, 19, 12, 16];
+document.querySelectorAll(".frange").forEach((f) => {
+  f.innerHTML = FRANGE.map((h) => `<i style="height:${h}px"></i>`).join("");
+});
+document.querySelectorAll("[data-dicter]").forEach((bouton) => {
+  const bloc = bouton.closest(".dictee");
+  const indice = bloc.querySelector(".indice");
+  let horloge = null, secondes = 0;
+  const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  bouton.addEventListener("click", () => {
+    const lit = bloc.dataset.lit === "oui";
+    bloc.dataset.lit = lit ? "non" : "oui";
+    bouton.setAttribute("aria-pressed", String(!lit));
+    if (lit) {
+      clearInterval(horloge);
+      indice.textContent = "Note enregistrée";
+      bouton.innerHTML = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>`;
+      return;
+    }
+    secondes = 0; indice.textContent = "0:00";
+    // Le signe change, jamais la forme : c'est sa règle la plus ancienne sur
+    // cet objet — « il ne doit pas changer de visage ».
+    bouton.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>`;
+    horloge = setInterval(() => { secondes++; indice.textContent = mmss(secondes); }, 1000);
+  });
+});
+</script>
+</body>
+</html>

@@ -5,6 +5,14 @@
  * Sur le planning, un chevron doré au bout de chaque ligne ouvre une feuille :
  * Plans, Google Maps, Waze. Le doigt part, l'adresse est déjà posée.
  *
+ * ## Laquelle est nommée « Maps » sur la feuille de chantier
+ *
+ * **Sa demande du 31 août 2026 : « pour Maps c'est Google Maps que je veux ».**
+ * La feuille n'en porte que deux (« pas besoin d'en mettre trois », 21 août), et
+ * le bouton « Maps » servait jusque-là Plans d'Apple. C'est `google` qu'il ouvre
+ * désormais. `plans` reste calculée : elle ne coûte rien, et le jour où un
+ * écran veut proposer les trois, elle est là — mais aucun écran ne la sert.
+ *
  * ## Pourquoi des liens universels, et jamais les schémas propres
  *
  * `waze://` et `comgooglemaps://` existent, et sont plus courts. Ils ont un
@@ -58,7 +66,12 @@ export function liensItineraire(adresse: string | null | undefined): LiensItiner
     // dernier mode utilisé — à pied, s'il a cherché une adresse en ville la
     // veille, et l'estimation devient absurde pour trente kilomètres.
     plans: `https://maps.apple.com/?daddr=${q}&dirflg=d`,
-    google: `https://www.google.com/maps/dir/?api=1&destination=${q}`,
+    // `travelmode=driving` pour la MÊME raison que `dirflg=d` chez Plans :
+    // sans lui, Google Maps rouvre le dernier mode utilisé. Le piège est plus
+    // vicieux ici, car ce mode se retient d'une session à l'autre — un trajet
+    // cherché à pied en ville la veille, et le chantier de trente kilomètres
+    // s'annonce à six heures de marche.
+    google: `https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=driving`,
     // `navigate=yes` démarre la navigation au lieu de poser un point sur la
     // carte : c'est un geste de moins, et c'est ce qu'on veut à 7 h du matin.
     waze: `https://waze.com/ul?q=${q}&navigate=yes`,

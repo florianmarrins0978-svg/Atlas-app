@@ -32,7 +32,7 @@
 
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, sep } from "node:path";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
 import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
@@ -98,7 +98,14 @@ function fichiersUseServer(): string[] {
         // entrer les fichiers qui ne font qu'en PARLER — celui-ci, par exemple.
         const debut = readFileSync(chemin, "utf8").slice(0, 200);
         if (/^\s*(\/\/[^\n]*\n)*\s*["']use server["']/.test(debut)) {
-          trouves.push(relative(process.cwd(), chemin));
+          // **Toujours des barres obliques, quelle que soit la machine.** Sur
+          // Windows, `relative` rend « src\app\login\actions.ts » ; les clés
+          // d'`EXEMPTIONS` et la liste d'énumération, elles, sont écrites avec
+          // des « / ». Aucune exemption ne correspondait donc, et ce contrôle
+          // accusait TREIZE actions gardées de ne pas l'être — sur la machine
+          // du patron seulement, jamais sur la CI. Une erreur qui désigne le
+          // mauvais coupable coûte plus cher que pas d'erreur (`CLAUDE.md` §5).
+          trouves.push(relative(process.cwd(), chemin).split(sep).join("/"));
         }
       }
     }

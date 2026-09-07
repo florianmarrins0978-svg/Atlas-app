@@ -64,7 +64,7 @@ export default async function IAPage() {
         />
 
         <section className="mx-[26px] mt-[26px]">
-          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             Ce que l&apos;application utilise
           </p>
 
@@ -115,13 +115,13 @@ export default async function IAPage() {
             tarifs et l'agenda le rendait introuvable. */}
         {editeur && (
           <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-            <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.muted }}>
+            <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
               Ce qu&apos;elle sait reconnaître
             </p>
             <Link href="/reglages/vocabulaire" className="flex min-h-[56px] w-full items-center gap-[15px] py-[13px]">
               <span className="min-w-0 flex-1">
                 <span className="block text-[17px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
-                  Le vocabulaire de mon métier
+                  Mon vocabulaire
                 </span>
                 <span className="mt-[3px] block text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
                   Les mots qu&apos;Atlas rattache à une prestation quand vous dictez.

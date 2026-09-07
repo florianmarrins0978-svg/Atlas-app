@@ -251,6 +251,32 @@ export function questionsAvantChiffrage(
   // fente n'aurait jamais de prix, sans qu'aucune erreur ne le signale.
   const hauteurDansLaDictee = prestations.some((l) => contientHauteur(l));
 
+  // **LA HAUTEUR APPARTIENT À L'ARBRE — sa règle du 7 septembre 2026.**
+  //
+  // *« Il m'a proposé la hauteur pour la fente. Cette case-là ne doit jamais
+  // comporter de hauteur, c'est de la fente. La hauteur, c'est pour un
+  // arbre. »*
+  //
+  // Elle se demandait sur la ligne du FENDAGE depuis le 8 août 2026, parce
+  // que c'est le fendage qui la CONSOMME — sa grille est « hauteur ×
+  // diamètre ». Mais on la lui demandait sous le titre « Fente du gros
+  // bois » : sur un objet qui n'a pas de hauteur, et sa réponse partait
+  // ensuite grossir le libellé de la fente sur le devis du client.
+  //
+  // **Elle n'est pas supprimée pour autant — elle change de ligne.** La
+  // retirer purement laisserait la fente sans case dans sa grille, donc sans
+  // prix, et rien ne le dirait (`CLAUDE.md` §4 ter : ce qui n'est pas
+  // calculé se dit). C'est l'arbre qui la porte quand il y en a un ; la
+  // fente ne la demande plus que s'il n'y a aucun arbre à qui la demander.
+  const arbrePorteurDeLaHauteur = prestations.some(
+    (l) => estDeNature(l, ["abattage"], ABATTAGE) && !estDessouchage(l)
+  );
+
+  // Le fendage est le seul à avoir besoin de la hauteur. Sur un abattage
+  // seul, elle ne décide de rien — et une question qui ne décide de rien rend
+  // l'arrêt pénible, ce que le produit paie plus cher qu'un champ vide.
+  const fendageDansLaDictee = prestations.some((l) => estDeNature(l, ["fendage"], FENDAGE));
+
   // **Le diamètre aussi, et il a fallu qu'il le voie pour qu'on le corrige.**
   //
   // Le patron, le 30 août 2026, devant l'écran : *« tu dis deux souches de
@@ -288,7 +314,7 @@ export function questionsAvantChiffrage(
     // diamètre multiplié par la hauteur. Un chêne de 60 cm fait quatre fois le
     // bois d'un chêne de 30 cm à hauteur égale — et c'est ce bois-là qu'on fend.
     if (estDeNature(ligne, ["fendage"], FENDAGE)) {
-      if (!hauteurDansLaDictee) {
+      if (!hauteurDansLaDictee && !arbrePorteurDeLaHauteur) {
         questions.push({
           id: `fendage.hauteur#${rang}`,
           libellePrestation: libelle,
@@ -330,6 +356,23 @@ export function questionsAvantChiffrage(
           question: "Comment s'abat-il ?",
           options: optionsTechnique,
           unite: null,
+        });
+      }
+
+      // **La hauteur de l'arbre, et seulement quand du bois sera fendu.**
+      // Voir `arbrePorteurDeLaHauteur` plus haut : c'est la même règle, prise
+      // par son autre bout. Une souche n'en a pas — l'arbre n'est plus là.
+      if (!souche && fendageDansLaDictee && !hauteurDansLaDictee) {
+        questions.push({
+          id: `abattage.hauteur#${rang}`,
+          libellePrestation: libelle,
+          // Elle nomme sa mesure ET son objet, comme le diamètre juste en
+          // dessous : c'est son arbitrage du test téléphone, et il vaut ici
+          // pour la même raison — sous un titre, « Quelle hauteur ? » ne dit
+          // pas DE QUOI, et c'est précisément la confusion qu'il a vécue.
+          question: "Quelle hauteur fait l'arbre ?",
+          options: null,
+          unite: "m",
         });
       }
 

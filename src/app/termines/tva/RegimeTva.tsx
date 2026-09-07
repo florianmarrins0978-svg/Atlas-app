@@ -111,7 +111,7 @@ export default function RegimeTva({
   const siEnvoye = actuelle === "encaissements" ? tvaAutre : tvaRetenue;
 
   return (
-    <div className="mt-5 px-6">
+    <div className="mt-6">
       <p className={libelleCaps} style={{ color: colors.muted }}>
         Je reverse ma TVA aux impôts
       </p>
@@ -154,10 +154,16 @@ export default function RegimeTva({
       {/* **La ligne qui répond à « rien ne se passe ».** Elle est là même quand
           les deux régimes donnent le même chiffre — c'est ce cas-là, le plus
           fréquent chez lui, qui l'a fait douter de l'application. */}
+      {/* **La plage passe de `rustTint` à `card`, le 3 septembre 2026.** Sur les
+          deux chartes sombres, `rustTint` est dérivé du FOND (`chartes.ts`) :
+          `#1f211e` posé sur `#101210` tient 1,14 de contraste, c'est-à-dire
+          rien. L'encart existait donc sur cinq chartes et disparaissait sur
+          Nuit et Sylve. `card` est aux antipodes du fond dans chacune des huit
+          par construction, et le cheveu lui donne son bord. */}
       <p
         data-atlas="ecart-des-regimes"
-        className="mt-3 rounded-[10px] px-3 py-2.5 text-[12.5px] leading-snug"
-        style={{ backgroundColor: colors.rustTint, color: colors.muted }}
+        className="mt-3 rounded-[4px] px-3 py-2.5 text-[12.5px] leading-snug"
+        style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.inkSoft }}
       >
         {memeChiffre ? (
           <>

@@ -140,14 +140,22 @@ async function main() {
     assert.equal(notifications[0].precisionClient, "Plutôt le matin si possible.");
   });
 
-  await test("une acceptation muette sur une date proposée ne dérange toujours personne", async () => {
-    // Le contrôle précédent ne prouverait rien si TOUTES les acceptations
-    // remontaient : ce serait noyer les deux nouvelles qui appellent un geste.
+  // **CE CAS A CHANGÉ DE SENS LE 7 SEPTEMBRE 2026, et c'est lui qui l'a
+  // demandé :** *« il faut aussi rajouter une notification lorsqu'un client
+  // accepte un devis, elle doit apparaître en haut dans les retours client ! »*
+  //
+  // La version qui vivait ici exigeait le SILENCE sur une acceptation muette,
+  // au motif qu'elle « ne surprend personne ». Le raisonnement tenait sur le
+  // papier et oubliait l'essentiel : **c'est la nouvelle qu'il attend.** Un
+  // chantier gagné ne s'apprend pas en ouvrant une fiche.
+  await test("une acceptation muette remonte AUSSI — sa règle du 7 septembre", async () => {
     const { ctx, envoi } = await contexteAvecEnvoi(`muet-${Date.now()}@t.test`);
     await enregistrerReponse(envoi.jeton, { decision: "accepte", dateRetenue: dans(7) }, MARDI);
 
     const notifications = await notificationsPatron(ctx);
-    assert.equal(notifications.length, 0, "Une acceptation sans surprise ni message ne doit rien réclamer.");
+    assert.equal(notifications.length, 1, "Une acceptation doit être portée au patron.");
+    assert.equal(notifications[0].reponse, "acceptee");
+    assert.equal(notifications[0].precisionClient, null, "muette : aucun message du client");
   });
 
   await test("une correction sans message est refusée, avec un motif utilisable", async () => {

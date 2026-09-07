@@ -127,9 +127,9 @@ async function main() {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', "Bernard-Delacroix");
     await page.fill('input[placeholder="06 12 34 56 78"]', "05 56 00 00 12");
-    await creerPuisFiche(page);
+    const idChantier = await creerPuisFiche(page);
     await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-    const id = page.url().split("/").pop()!;
+    const id = idChantier;
 
     // Un LUNDI, pour que « 3 jours » ne saute pas le week-end : le saut est
     // éprouvé côté règle (`test-libelle-occupation.ts`), et l'introduire ici

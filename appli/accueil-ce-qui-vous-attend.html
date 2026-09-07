@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — l'accueil, ce qui vous attend</title>
+<style>
+/*
+  L'ACCUEIL — proposition pour « / » (src/app/page.tsx + EcranChantiers.tsx).
+
+  ══════════════════════════════════════════════════════════════════════════
+  CE QUI EST DESSINÉ ICI VIENT DU DÉPÔT, ET RIEN D'AUTRE.
+
+  · Les couleurs sont celles de `src/lib/design-tokens.ts`. Nuit n'est pas
+    approchée à l'œil : ce sont les valeurs que `depuisPlanche()` calcule dans
+    `src/lib/chartes.ts`, relevées en exécutant le fichier.
+  · Les polices sont celles de `globals.css` — la serif DU SYSTÈME
+    (ui-serif / Georgia / Iowan Old Style), pas Playfair ; la sans DU SYSTÈME,
+    pas Inter. Les commentaires de `design-tokens.ts` nomment encore Playfair
+    et Inter : ils datent d'avant le passage aux polices du système.
+  · Les états d'un chantier sont ceux de `statutLabel`, composés comme le fait
+    `ligneEtatChantier()`. Aucun statut « Planifié », « À facturer » ni
+    « Facturé » ne figure dans la liste : `ongletDuChantier()` les range au
+    Planning ou dans Terminés, et un chantier n'est jamais dans deux onglets.
+  · Le retard affiché à gauche reprend `depuisCombien()` : aujourd'hui, hier,
+    N jours — les trois cas, pas un quatrième.
+  · Les onglets du bas par rôle sont ceux que `cheminAutorise()` autorise,
+    vérifiés en exécutant `src/lib/acces-roles.ts`.
+
+  Les noms, communes et montants sont des exemples de maquette.
+
+  ══════════════════════════════════════════════════════════════════════════
+  IL Y A DU JAVASCRIPT, ET C'EST DEMANDÉ : il faut pouvoir essayer au doigt le
+  glissement qui retire une ligne, le tiroir qui annule, le geste du bouton et
+  la feuille qui monte. `descenteDeLaPerle()` est recopiée telle quelle depuis
+  `src/lib/perle-descente.ts`.
+*/
+
+/* ─── Les jetons, au caractère près ─────────────────────────────────────── */
+.origine{
+  --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+  --muted:#8a8578; --rust:#2f3b2f; --rustDeep:#4f5f4c; --rustTint:#ece9e1;
+  --or:#B98B47; --orClair:#C9A15E; --alerte:#9C3B2E; --plein:#7d9a6d;
+  --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+  --chevron:rgba(28,28,26,.28);
+}
+.nuit{
+  --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+  --muted:#84887b; --rust:#e9e8de; --rustDeep:#acaca4; --rustTint:#1f211e;
+  --or:#B98B47; --orClair:#C9A15E; --alerte:#cd6456; --plein:#e9e8de;
+  --line:rgba(233,232,222,.12); --lineSoft:rgba(233,232,222,.07);
+  --chevron:rgba(233,232,222,.28);
+}
+/* Ce qu'on écrit SUR un aplat plein : `surPlein` = `card` (design-tokens.ts). */
+.origine, .nuit{ --surPlein: var(--card); }
+
+/* L'or au contraste mesuré — proposé, pas appliqué. La valeur sort de la
+   fonction `detacher()` du dépôt, seuil 4,5 contre le fond ET la plage. */
+.or-corrige.origine{ --or:#8b6835; }
+
+:root{
+  --serif: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; }
+body{
+  font-family:var(--sans);
+  background:#e7e4dc; color:#1c1c1a;
+  padding:0 0 40px;
+  -webkit-text-size-adjust:100%;
+}
+
+/* ─── Le pilote — hors du téléphone, il ne fait pas partie de l'écran ──── */
+.pilote{
+  position:sticky; top:0; z-index:60;
+  background:#e7e4dc; border-bottom:1px solid rgba(28,28,26,.14);
+  padding:10px 12px 11px;
+}
+.pilote h1{
+  font:400 15px/1.2 var(--serif); margin:0 0 8px;
+  letter-spacing:-.01em;
+}
+.pilote h1 small{
+  display:block; font:500 9.5px/1.5 var(--sans);
+  letter-spacing:.24em; text-transform:uppercase; color:#6f6a5e; margin-top:3px;
+}
+.rang{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:5px; align-items:center; }
+.rang b{
+  font:500 8.5px/1 var(--sans); letter-spacing:.2em; text-transform:uppercase;
+  color:#6f6a5e; width:52px; flex:none;
+}
+.pilote button{
+  font:500 11px/1 var(--sans); letter-spacing:.04em;
+  border:1px solid rgba(28,28,26,.22); background:transparent; color:#3a382f;
+  border-radius:3px; padding:8px 9px; cursor:pointer; min-height:32px;
+}
+.pilote button[aria-pressed="true"]{ background:#1c1c1a; color:#f5f3ee; border-color:#1c1c1a; }
+
+/* ─── Le téléphone : 390 × 664, sa mesure (PRODUCT.md) ─────────────────── */
+.cadre{
+  width:390px; height:664px; margin:14px auto 0;
+  position:relative; overflow:hidden;
+  outline:1px solid rgba(28,28,26,.18);
+  background:var(--cream); color:var(--ink);
+  font-family:var(--sans);
+  display:flex; flex-direction:column;
+}
+@media (max-width:414px){ .cadre{ width:100%; outline:none; } }
+
+.mesure{
+  max-width:390px; margin:8px auto 0; padding:0 2px;
+  font:500 9px/1.5 var(--sans); letter-spacing:.16em; text-transform:uppercase;
+  color:#6f6a5e; text-align:center;
+}
+
+/* ─── L'en-tête, figé ──────────────────────────────────────────────────── */
+.marque{
+  padding-top:26px; text-align:center;
+  font-size:11px; letter-spacing:.52em; color:var(--ink);
+}
+.titre-bloc{ padding:44px 26px 0; }
+.titre-rang{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+h2.titre{
+  margin:14px 0 0; font:400 40px/1.02 var(--serif);
+  letter-spacing:-.018em; white-space:nowrap; color:var(--ink);
+}
+.assistant{
+  margin-top:14px; flex:none;
+  width:44px; height:44px; border-radius:9999px; border:0;
+  background:var(--plein); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+}
+.lien-clients{
+  margin-top:10px; display:inline-flex; align-items:center; gap:6px;
+  font:500 9.5px/1 var(--sans); letter-spacing:.28em; text-transform:uppercase;
+  color:var(--or); text-decoration:none;
+}
+.lien-clients i{
+  width:5px; height:5px; transform:rotate(45deg);
+  border-right:1.5px solid var(--or); border-top:1.5px solid var(--or);
+}
+
+/* ─── La rangée de l'action ─────────────────────────────────────────────
+   ELLE EST À ELLE SEULE, ET C'EST UNE CORRECTION FAITE SUR CAPTURE.
+   Le compte et le bouton avaient d'abord été mis sur la MÊME rangée : à
+   390 px c'était juste, à 360 px « 4 » et « CRÉER » se touchaient. La mesure
+   annonçait pourtant 10 px de marge — c'est l'image qui a tranché, pas le
+   nombre. Le mot ne se raccourcit pas : il a été grossi à sa demande le
+   16 août 2026. */
+.rubrique-rang{
+  margin:0 26px; display:flex; align-items:center; justify-content:flex-end;
+  gap:10px;
+}
+.rubrique{
+  display:flex; align-items:baseline; gap:10px; min-width:0;
+  font:500 9.5px/1 var(--sans); letter-spacing:.28em; text-transform:uppercase;
+}
+.rubrique .mot{ color:var(--inkSoft); white-space:nowrap; }
+.rubrique .mot.pointe{ color:var(--or); }
+.rubrique .nb{
+  font:700 12px/1 var(--sans); letter-spacing:.06em;
+  color:var(--ink); font-variant-numeric:tabular-nums;
+}
+
+/* Le geste « Créer un devis » — mesures de docs/maquettes/24-le-bouton-retenu.html */
+.geste{
+  display:flex; align-items:center; justify-content:center; gap:13px;
+  text-decoration:none; color:var(--ink); flex:none;
+  -webkit-tap-highlight-color:transparent; cursor:pointer;
+  background:none; border:0; padding:0;
+}
+.geste .mot{
+  font:800 13px/1 var(--sans); letter-spacing:.22em; text-transform:uppercase;
+  white-space:nowrap; color:var(--ink);
+  transition:letter-spacing .62s cubic-bezier(.22,.61,.36,1);
+}
+.geste[data-geste="part"] .mot{ letter-spacing:.32em; }
+.rond{
+  position:relative; display:grid; place-items:center;
+  width:42px; height:42px; border-radius:9999px;
+  transition:transform .14s cubic-bezier(.2,.7,.3,1);
+}
+.geste:active .rond{ transform:scale(.92); }
+.cerne{ position:absolute; inset:0; z-index:2; border-radius:9999px; border:1px solid var(--line); }
+.signe{ position:relative; z-index:4; display:block; width:20px; height:20px; }
+.pouls{
+  position:absolute; inset:0; z-index:1; border-radius:9999px;
+  border:1px solid var(--or); opacity:0;
+  animation:battement 3.4s cubic-bezier(.16,.7,.3,1) infinite;
+}
+@keyframes battement{
+  0%{ transform:scale(1); opacity:0 } 8%{ opacity:.5 }
+  46%{ transform:scale(1.42); opacity:0 } 100%{ transform:scale(1.42); opacity:0 }
+}
+.geste[data-geste="part"] .pouls{ animation:none; opacity:0 }
+.geste[data-geste="part"] .signe{ animation:tour .56s cubic-bezier(.16,.74,.22,1) both }
+@keyframes tour{ 0%{transform:rotate(0)} 14%{transform:rotate(120deg)} 100%{transform:rotate(1080deg)} }
+.gerbe{ position:absolute; inset:0; z-index:3; pointer-events:none }
+.gerbe i{
+  position:absolute; left:50%; top:50%;
+  width:var(--l); height:var(--l); margin:calc(var(--l)/-2) 0 0 calc(var(--l)/-2);
+  border-radius:9999px; background:var(--or); opacity:0;
+}
+.geste[data-geste="part"] .gerbe i{
+  animation:grain .56s cubic-bezier(.16,.68,.3,1) both; animation-delay:var(--t);
+}
+@keyframes grain{
+  0%{ transform:translate(calc(var(--x)*.46),calc(var(--y)*.46)) scale(.4); opacity:0 }
+  16%{opacity:1} 64%{opacity:1}
+  100%{ transform:translate(var(--x),var(--y)) scale(.7); opacity:0 }
+}
+
+/* ─── La zone qui défile ───────────────────────────────────────────────── */
+.fil{
+  flex:1; min-height:0; overflow-y:auto;
+  scroll-snap-type:y proximity; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);
+  mask-image:linear-gradient(180deg,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);
+}
+.fil::-webkit-scrollbar{ display:none }
+.tige{ position:relative; padding-bottom:3.5rem; margin:0 26px; }
+.tige.serree{ padding-bottom:0 }
+
+/* La perle — sticky à mi-hauteur, plongée sur le dernier jour en fin de liste */
+.perle{
+  position:sticky; top:calc(50% - 23px); height:0; z-index:2;
+  pointer-events:none; display:block;
+  transform:translateY(var(--perle-descente,0px));
+}
+.perle span{
+  position:absolute; display:block; width:7px; height:7px;
+  left:47px; top:23px; transform:translate(-50%,-50%);
+  border-radius:9999px; background:var(--or);
+  box-shadow:0 0 0 4px var(--cream);
+}
+
+/* Une ligne : ce qui tombe, ce qui glisse, ce qui se découvre */
+.ligne{ position:relative; overflow:hidden; scroll-snap-align:center;
+  transition:max-height .44s .2s cubic-bezier(.4,0,.2,1); max-height:210px; }
+.ligne[data-retiree="oui"]{ max-height:0 }
+.chute{ transition:transform .44s cubic-bezier(.4,0,.6,1), opacity .34s .1s }
+.ligne[data-retiree="oui"] .chute{ transform:translateY(46px); opacity:0 }
+.grille{
+  position:relative; display:grid; grid-template-columns:47px 1fr;
+  column-gap:26px; padding:21px 0;
+}
+.trait-fil{ position:absolute; top:0; bottom:0; left:47px; width:1px; background:var(--line) }
+.rail{
+  grid-row:span 3; padding-right:13px; text-align:right;
+  font:500 9.5px/1 var(--sans); letter-spacing:.28em; text-transform:uppercase;
+  color:var(--muted); font-variant-numeric:tabular-nums;
+}
+.rail b{ display:block; font:400 19px/1 var(--serif); color:var(--ink); }
+.rail span{ display:block; margin-top:4px }
+/* Le retard, quand la rangée en porte un plutôt qu'une date */
+.rail.retard b{ color:var(--or) }
+.rail.retard.seul{ padding-top:2px }
+
+.glisse{
+  display:flex; min-width:0; margin-left:-16px;
+  overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none;
+  overscroll-behavior-x:contain;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 16px);
+  mask-image:linear-gradient(90deg,transparent 0,#000 16px);
+}
+.glisse::-webkit-scrollbar{ display:none }
+.volet{ flex:0 0 100%; scroll-snap-align:start; padding-left:16px; min-width:0 }
+.decouvre{
+  flex:0 0 92px; scroll-snap-align:end; display:flex; align-items:center;
+  justify-content:flex-end; -webkit-tap-highlight-color:transparent;
+  background:none; border:0; cursor:pointer;
+  font:500 9.5px/1 var(--sans); letter-spacing:.26em; text-transform:uppercase;
+  color:var(--or);
+}
+.decouvre.refus{
+  flex-basis:168px; padding-left:12px; justify-content:flex-start;
+  font:400 10px/1.35 var(--sans); letter-spacing:normal; text-transform:none;
+  color:var(--muted); text-align:left; cursor:default;
+}
+
+.brin{ display:block; text-decoration:none; color:inherit }
+.brin h3{
+  margin:0; font:400 19px/1.15 var(--serif); color:var(--ink);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.lieu{ margin:3px 0 0; font-size:11.5px; line-height:1.5; color:var(--muted);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lieu-manquant{
+  display:inline-flex; align-items:center; min-height:34px; max-width:100%;
+  font-size:11.5px; color:var(--alerte); cursor:pointer;
+}
+.lieu-manquant span{ border-bottom:1px dotted var(--alerte); padding-bottom:1px }
+.etat{
+  margin:7px 0 0; font:500 9.5px/1.4 var(--sans);
+  letter-spacing:.28em; text-transform:uppercase; color:var(--or);
+}
+.precision{ margin:4px 0 0; font-size:11.5px; line-height:1.5; color:var(--muted);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* ─── Ce qui vous attend : sur le même fil, sans boîte ─────────────────── */
+.attentes{ margin:0 26px; position:relative }
+/* Le fil traverse la zone ENTIÈRE, « N de plus » compris. Dessiné rangée par
+   rangée, il s'arrêtait en l'air sous la dernière — ce qui se lit comme un
+   défaut d'affichage, pas comme une fin. */
+.attentes > .trait-zone{ position:absolute; top:0; bottom:0; left:47px; width:1px;
+  background:var(--line) }
+/* Le point d'accroche, et il n'est pas décoratif : sans lui le fil se cale sur
+   le premier CHANTIER (`.ligne` porte `snap-align:center`) et la rangée du haut
+   se retrouve coupée sous le fondu. C'est le défaut que le patron a signalé le
+   16 août 2026 — « le premier message est trop haut et le début n'est pas
+   visible » — et `globals.css` le corrige exactement ainsi pour les cartes.
+   La marge dépasse le fondu de 18 px, sinon la rangée s'arrête DEDANS. */
+.attente, .carte{ scroll-snap-align:start; scroll-margin-top:24px }
+.attente{ position:relative; display:grid; grid-template-columns:47px 1fr;
+  column-gap:26px; padding:16px 0 18px }
+.attente .corps{ min-width:0 }
+.etiquette{
+  margin:0; font:500 9.5px/1.4 var(--sans);
+  letter-spacing:.28em; text-transform:uppercase; color:var(--or);
+}
+.attente h3{ margin:4px 0 0; font:400 19px/1.15 var(--serif); color:var(--ink);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dit{ margin:4px 0 0; font-size:11.5px; line-height:1.5; color:var(--muted) }
+/* LA PAROLE DU CLIENT PASSE EN TÊTE, ET EN SERIF.
+
+   C'est la seule chose de cet écran qui ne soit pas écrite par l'application :
+   elle mérite la voix des titres, pas celle des notes de bas de page. 16 px et
+   non 19 — un message de trois lignes en 19 px mange l'écran, et il y a
+   toujours une liste dessous.
+
+   Le filet reste à un cheveu et prend l'or : c'est ce qu'on LIT. */
+.parole{
+  margin:6px 0 0; padding-left:11px; border-left:1px solid var(--or);
+  font:400 16px/1.45 var(--serif); color:var(--ink); white-space:pre-wrap;
+}
+/* Le client a décidé sans écrire un mot : sa décision passe en tête, à la même
+   place et dans la même voix — mais sans guillemets, parce qu'il n'a rien dit,
+   et sans filet, parce qu'il n'y a personne à citer. */
+.decision{ margin:6px 0 0; font:400 16px/1.35 var(--serif); color:var(--ink) }
+.mot-client{
+  margin:9px 0 0; padding-left:11px; border-left:1px solid var(--or);
+  font-size:12.5px; line-height:1.5; color:var(--ink); white-space:pre-wrap;
+}
+.somme{ margin:8px 0 0; font:400 19px/1.2 var(--serif); color:var(--ink) }
+.somme small{ margin-left:8px; font:400 12.5px/1 var(--sans); color:var(--muted) }
+.gestes{ display:flex; align-items:center; gap:18px; margin:6px 0 -10px }
+.gestes button{
+  background:none; border:0; padding:10px 0; cursor:pointer;
+  font:500 9.5px/1 var(--sans); letter-spacing:.26em; text-transform:uppercase;
+  -webkit-tap-highlight-color:transparent;
+}
+.gestes .faire{ color:var(--rust) }
+.gestes .vu{ color:var(--muted) }
+.de-plus{
+  display:block; width:100%; text-align:left; background:none; border:0;
+  padding:2px 0 14px 73px; cursor:pointer;
+  font:500 9.5px/1 var(--sans); letter-spacing:.28em; text-transform:uppercase;
+  color:var(--or);
+}
+.separateur{ height:1px; background:var(--line); margin:0 26px }
+
+/* ─── Le tiroir des retirés ────────────────────────────────────────────── */
+.tiroir{
+  flex:none; margin:0 26px; display:flex; justify-content:space-between;
+  align-items:center; max-height:0; overflow:hidden; opacity:0; padding:0;
+  border-top:1px solid transparent;
+  transition:max-height .42s cubic-bezier(.22,.61,.36,1), opacity .3s, padding .42s, border-color .3s;
+}
+.tiroir[data-ouvert="oui"]{ max-height:60px; opacity:1; padding:15px 0 4px; border-top-color:var(--line) }
+.tiroir span{ font-size:11.5px; line-height:1.5; color:var(--muted) }
+.tiroir button{
+  margin-right:-8px; padding:8px; background:none; border:0; cursor:pointer;
+  font:500 9.5px/1 var(--sans); letter-spacing:.24em; text-transform:uppercase;
+  color:var(--or);
+}
+
+/* ─── La barre du bas ──────────────────────────────────────────────────── */
+.barre{
+  flex:none; background:var(--cream); border-top:1px solid var(--line);
+  padding:18px 14px 8px; position:relative;
+}
+.barre .cols{ display:grid; position:relative }
+.barre a{
+  text-align:center; text-decoration:none; padding-bottom:8px;
+  font:500 8.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); position:relative; z-index:1;
+}
+.barre a[aria-current]{ color:var(--ink); transform:translateY(-2px) }
+.barre .marque-onglet{
+  position:absolute; bottom:0; height:1.5px; background:var(--or);
+  transition:transform .34s cubic-bezier(.22,.61,.36,1);
+}
+
+/* ─── L'ancienne version (« Avant »), pour comparer ────────────────────── */
+.band-bouton{ display:flex; justify-content:center; padding:22px 26px 2px }
+.compteur-seul{ margin:30px 26px 4px; display:flex; align-items:baseline; gap:10px;
+  font:500 9.5px/1 var(--sans); letter-spacing:.28em; text-transform:uppercase; color:var(--inkSoft) }
+.compteur-seul b{ font:700 12px/1 var(--sans); letter-spacing:.06em; color:var(--ink) }
+.cartes{ display:flex; flex-direction:column; gap:12px; padding:28px 24px 0 }
+.carte{ border-radius:18px; padding:16px 20px; background:var(--card) }
+.carte[data-ton="teinte"]{ background:var(--rustTint) }
+.carte .t{ margin:0 0 6px; font:600 11px/1.4 var(--sans);
+  letter-spacing:.18em; text-transform:uppercase; color:var(--muted) }
+.carte[data-ton="teinte"] .t{ color:var(--rust) }
+.carte .n{ margin:0; font:400 16px/1.2 var(--serif); color:var(--ink) }
+.carte .x{ margin:4px 0 0; font-size:13px; line-height:1.45; color:var(--muted) }
+.carte blockquote{ margin:12px 0 0; padding-left:12px; border-left:2px solid var(--rust);
+  font-size:14px; line-height:1.6; color:var(--ink); white-space:pre-wrap }
+.carte .s{ margin:8px 0 0; font:400 19px/1.2 var(--serif); color:var(--ink) }
+.carte .s small{ margin-left:8px; font:400 12.5px/1 var(--sans); color:var(--muted) }
+.carte .g{ display:flex; align-items:center; gap:16px; margin-top:12px }
+.carte .g button{ background:none; border:0; padding:0; cursor:pointer;
+  font:500 14px/1 var(--sans) }
+.carte .g .faire{ color:var(--rust) } .carte .g .vu{ color:var(--muted) }
+.autres{ background:none; border:0; padding:0; cursor:pointer; text-align:center;
+  font:500 14px/1 var(--sans); color:var(--rust) }
+
+/* ─── La feuille « Fiche client » ──────────────────────────────────────── */
+.voile{
+  position:absolute; inset:0; z-index:45; background:rgba(20,18,14,.12);
+  opacity:0; visibility:hidden; transition:opacity .46s, visibility 0s .46s;
+  border:0; padding:0;
+}
+.cadre[data-feuille="oui"] .voile{ opacity:1; visibility:visible; transition:opacity .46s, visibility 0s 0s }
+.cadre[data-feuille="oui"] .ecran{ transform:scale(.93) translateY(-10px); filter:brightness(.78) }
+.ecran{
+  display:flex; flex-direction:column; min-height:0; flex:1;
+  transform-origin:50% 44%;
+  transition:transform .56s cubic-bezier(.22,.61,.36,1), filter .56s;
+}
+.feuille{
+  position:absolute; left:0; right:0; bottom:0; top:60px; z-index:50;
+  background:var(--cream); border-radius:26px 26px 0 0;
+  box-shadow:0 -22px 50px rgba(20,18,14,.22);
+  transform:translateY(100%); visibility:hidden;
+  transition:transform .56s cubic-bezier(.22,.61,.36,1), visibility 0s .56s;
+  overflow-y:auto; scrollbar-width:none;
+}
+.feuille::-webkit-scrollbar{ display:none }
+.cadre[data-feuille="oui"] .feuille{ transform:translateY(0); visibility:visible;
+  transition:transform .56s cubic-bezier(.22,.61,.36,1), visibility 0s 0s }
+.feuille .tete{ display:flex; align-items:center; gap:10px; padding:22px 24px 0 }
+.feuille .tete h3{ margin:0; font:400 27px/1.05 var(--serif); white-space:nowrap; color:var(--ink) }
+.feuille .tete button{ background:none; border:0; color:var(--ink); cursor:pointer;
+  font-size:20px; line-height:1; padding:0 6px 0 0 }
+.feuille form{ display:flex; flex-direction:column; gap:4px; padding:6px 24px 24px }
+.duo-titres{ display:flex; align-items:flex-end; gap:9px; margin-top:8px;
+  font:500 9.5px/1.35 var(--sans); letter-spacing:.28em; text-transform:uppercase; color:var(--muted) }
+.duo-titres .a{ flex:1; min-width:0 } .duo-titres .b{ width:152px; flex:none; text-align:right }
+.duo{ display:flex; gap:9px; margin-top:-3px }
+.duo .a{ flex:1; min-width:0 } .duo .b{ width:152px; flex:none }
+.feuille input{
+  width:100%; border:0; padding:12px 15px; outline:none; border-radius:4px;
+  background:var(--card); color:var(--ink); font-size:16px; font-family:var(--sans);
+}
+.feuille input::placeholder{ color:var(--muted) }
+.feuille .ecrit{ margin:10px 0 2px; font:500 9.5px/1 var(--sans);
+  letter-spacing:.28em; text-transform:uppercase; color:var(--muted) }
+.feuille .plein{
+  margin-top:16px; width:100%; border:0; border-radius:5px; padding:15px;
+  background:var(--plein); color:var(--surPlein); cursor:pointer;
+  font:500 9.5px/1 var(--sans); letter-spacing:.26em; text-transform:uppercase;
+}
+.civilites{ display:flex; gap:8px; margin-bottom:2px }
+.civilites button{
+  border:1px solid var(--line); background:transparent; color:var(--muted);
+  border-radius:9999px; padding:8px 16px; cursor:pointer;
+  font:500 9.5px/1 var(--sans); letter-spacing:.22em; text-transform:uppercase;
+}
+.civilites button[aria-pressed="true"]{ border-color:var(--or); color:var(--or) }
+
+@media (prefers-reduced-motion: reduce){
+  .pouls, .geste[data-geste="part"] .signe, .geste[data-geste="part"] .gerbe i{ animation:none }
+  .gerbe{ display:none }
+  .ligne, .chute, .tiroir, .ecran, .feuille{ transition:none }
+}
+
+/* ─── Les notes sous la maquette ───────────────────────────────────────── */
+.notes{ max-width:640px; margin:26px auto 0; padding:0 16px;
+  font:400 13px/1.65 var(--sans); color:#3a382f }
+.notes h3{ font:400 19px/1.25 var(--serif); letter-spacing:-.01em; margin:22px 0 6px }
+.notes p{ margin:0 0 9px } .notes ul{ margin:0 0 9px; padding-left:18px }
+.notes li{ margin-bottom:5px }
+.notes code{ font:400 12px/1 ui-monospace, Menlo, Consolas, monospace; background:rgba(28,28,26,.07);
+  padding:2px 4px; border-radius:3px }
+.notes table{ border-collapse:collapse; width:100%; margin:0 0 10px; font-size:12.5px }
+.notes th, .notes td{ text-align:left; padding:5px 8px 5px 0; border-bottom:1px solid rgba(28,28,26,.12); vertical-align:top }
+.notes th{ font:500 9px/1.4 var(--sans); letter-spacing:.2em; text-transform:uppercase; color:#6f6a5e }
+</style>
+</head>
+<body>
+
+<div class="pilote">
+  <h1>L'accueil, ce qui vous attend
+    <small>Proposition pour « / » — rien n'est codé dans l'application</small></h1>
+
+  <div class="rang"><b>Écran</b>
+    <button data-k="ecran" data-v="apres">Après</button>
+    <button data-k="ecran" data-v="avant">Avant (aujourd'hui)</button>
+  </div>
+  <div class="rang"><b>Charte</b>
+    <button data-k="charte" data-v="origine">Origine</button>
+    <button data-k="charte" data-v="nuit">Nuit</button>
+  </div>
+  <div class="rang"><b>Rôle</b>
+    <button data-k="role" data-v="patron">Patron</button>
+    <button data-k="role" data-v="facturation">Facturation</button>
+    <button data-k="role" data-v="commercial">Commercial</button>
+  </div>
+  <div class="rang"><b>Matin</b>
+    <button data-k="cas" data-v="chargee">Chargé</button>
+    <button data-k="cas" data-v="calme">Calme</button>
+    <button data-k="cas" data-v="un">Un seul</button>
+    <button data-k="cas" data-v="vide">Aucun</button>
+    <button data-k="cas" data-v="trente">Trente</button>
+    <button data-k="cas" data-v="limites">Cas limites</button>
+  </div>
+  <div class="rang"><b>Essai</b>
+    <button data-k="orCorrige" data-v="1">Or au contraste mesuré</button>
+  </div>
+</div>
+
+<div class="cadre origine" id="cadre" data-feuille="non">
+  <div class="ecran" id="ecran"></div>
+  <button class="voile" id="voile" tabindex="-1" aria-hidden="true"></button>
+  <div class="feuille" id="feuille"></div>
+</div>
+<p class="mesure" id="mesure"></p>
+
+<div class="notes" id="notes"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   `descenteDeLaPerle` — RECOPIÉE de src/lib/perle-descente.ts, sans un mot
+   changé. La maquette ne refait pas la règle : elle l'exécute.
+   ══════════════════════════════════════════════════════════════════════════ */
+function descenteDeLaPerle({ milieuDuDernier, milieuDuCadre, restantADefiler, hauteurADefiler }) {
+  if (hauteurADefiler <= 0) return Math.min(0, milieuDuDernier - milieuDuCadre);
+  const descenteEntiere = milieuDuDernier - restantADefiler - milieuDuCadre;
+  if (descenteEntiere <= 0) return 0;
+  const plongee = Math.min(descenteEntiere, hauteurADefiler);
+  const avancement = (plongee - restantADefiler) / plongee;
+  return descenteEntiere * Math.min(1, Math.max(0, avancement));
+}
+
+/* `depuisCombien` — src/lib/rappels.ts. Trois cas, pas un quatrième. */
+function depuisCombien(j) { return j <= 0 ? "aujourd'hui" : j === 1 ? "depuis hier" : `depuis ${j} jours`; }
+/* Ce que le rail écrit du même nombre : la forme courte des mêmes trois cas. */
+function railDuRetard(j) {
+  if (j <= 0) return { haut: null, bas: "Auj." };
+  if (j === 1) return { haut: null, bas: "Hier" };
+  return { haut: String(j), bas: j > 1 ? "jours" : "jour" };
+}
+
+/* Les onze grains — EcranChantiers.tsx, repris tels quels. */
+const GRAINS = [
+  {x:7.7,y:-36.9,l:2.3,t:9},{x:17,y:-44.8,l:1.6,t:43},{x:34.9,y:-22.6,l:1.7,t:22},
+  {x:35.2,y:2.1,l:1.8,t:0},{x:35,y:29,l:1.9,t:34},{x:9.5,y:38,l:2,t:13},
+  {x:-18.7,y:45.7,l:2.2,t:47},{x:-36.7,y:22.4,l:2.3,t:26},{x:-36.5,y:-3.1,l:2.4,t:5},
+  {x:-45.5,y:-11.3,l:1.6,t:39},{x:-25.9,y:-31.2,l:1.8,t:18},
+];
+
+/* ── Les données de démonstration ──────────────────────────────────────────
+   États composés comme `ligneEtatChantier()` : `${statutLabel} · ${photos}`,
+   sauf les trois statuts d'un devis parti sans réponse, qui portent leur
+   propre libellé et une précision datée. */
+const SEPT = [
+  { j:"03", m:"sept.", nom:"Mme Rialland", lieu:"7 chemin du Pré, Vertou",
+    etat:"Devis prêt à envoyer · 3 photos" },
+  { j:"02", m:"sept.", nom:"Mr. Martins", lieu:"Adresse non renseignée", manquant:true,
+    etat:"Brouillon · sans photo" },
+  { j:"31", m:"août", nom:"Mme Lucie", lieu:"18 allée des Chênes, Rezé",
+    etat:"Correction demandée · 4 photos" },
+  { j:"28", m:"août", nom:"Mr. Bernard", lieu:"12 rue des Lilas, Nantes",
+    etat:"Devis envoyé · sans réponse", precision:"Envoyé le lundi 10 août." },
+  { j:"26", m:"août", nom:"Copropriété Les Tilleuls", lieu:"3 bd Guist'hau, Nantes",
+    etat:"Devis envoyé · à relancer", precision:"Envoyé le mardi 12 août." },
+  { j:"24", m:"août", nom:"Mr. Gourdon", lieu:"La Chapelle-sur-Erdre",
+    etat:"À vérifier · 2 photos" },
+  { j:"21", m:"août", nom:"Mme Peltier", lieu:"9 rue du Verger, Orvault",
+    etat:"Vérifié · 5 photos" },
+];
+
+const LIMITES = [
+  { j:"03", m:"sept.", nom:"Mr. Martins", lieu:"Adresse non renseignée", manquant:true,
+    etat:"Brouillon · sans photo" },
+  { j:"02", m:"sept.", nom:"Syndicat intercommunal des Bords de Sèvre", lieu:"Vertou",
+    etat:"Devis prêt à envoyer · 1 photo" },
+  { j:"01", m:"sept.", nom:"Mme Lucie", lieu:"18 allée des Chênes, Rezé",
+    etat:"Devis caduc · sans photo" },
+  { j:"29", m:"août", nom:"Mr. Bernard", lieu:"12 rue des Lilas, Nantes",
+    etat:"Facturé · 2 photos",
+    refus:"Ce chantier est facturé : sa facture figure au relevé de TVA." },
+];
+
+/* Ce qui attend un geste. `jours` alimente À LA FOIS le rail et la phrase :
+   une seule source, comme `depuisJours` / `depuisTexte` au serveur. */
+const ATTENTES = [
+  /* UNE PERSONNE A ÉCRIT — `parle` porte ses mots, et ils passent en tête. */
+  { id:"a1", genre:"correction", jours:0, qui:"Mme Lucie", verbe:"a répondu",
+    parle:"Il manque l'évacuation des déchets verts, et je voudrais le paillage en écorce.",
+    etat:"Correction demandée", faire:"Corriger le devis", ferme:[] },
+  /* UNE PERSONNE A DÉCIDÉ, SANS UN MOT — `decide` porte sa décision. */
+  { id:"a5", genre:"acceptee", jours:1, qui:"Mme Rialland", verbe:"a accepté",
+    decide:"Retenu le mardi 15 septembre.",
+    faire:"Ouvrir le devis validé", ferme:[] },
+  /* PERSONNE N'A RIEN DIT — c'est l'application qui compte les jours. */
+  { id:"a2", genre:"facture-impayee", jours:9, etiquette:"Facture impayée", nom:"Mr. Gourdon",
+    dit:"Échéance dépassée.", somme:"1 240,00 €", sur:"2 480,00 €",
+    faire:"Noter un règlement", ferme:["commercial"] },
+  { id:"a3", genre:"chantier-sans-devis", jours:14, etiquette:"Devis en attente", nom:"Mr. Martins",
+    dit:"Aucun devis n'est parti.", faire:"Faire le devis", ferme:[] },
+  { id:"a4", genre:"chantier-non-facture", jours:5, etiquette:"À facturer", nom:"Mme Peltier",
+    dit:"Chantier terminé, et aucune facture n'est partie.",
+    faire:"Créer la facture", ferme:["commercial"] },
+  /* LE LIEN A EXPIRÉ : personne n'a rien dit. C'est donc un rappel, pas une
+     réponse — et c'est la limite de la règle, assumée. */
+  { id:"a6", genre:"caduc", jours:3, etiquette:"Devis caduc", nom:"Mr. Gourdon",
+    dit:"Le lien a expiré sans réponse.", faire:"Reprendre le devis", ferme:[] },
+];
+
+/* Les onglets du bas, par rôle — ce que `cheminAutorise()` autorise, vérifié
+   en exécutant src/lib/acces-roles.ts. */
+const ONGLETS = {
+  patron:      ["Chantiers","Planning","Terminés","Paysage","Réglages"],
+  facturation: ["Chantiers","Planning","Terminés","Réglages"],
+  commercial:  ["Chantiers","Planning","Paysage","Réglages"],
+};
+
+/* Combien de rangées « Aujourd'hui » se montrent sans qu'on déplie.
+   UNE, et c'est une correction faite APRÈS mesure : à deux, la liste des
+   chantiers ne montrait plus une seule ligne entière sur un matin chargé —
+   c'est-à-dire exactement le défaut qu'on venait réparer. Le compte de la
+   rangée (« Aujourd'hui 3 ») dit ce qui n'est pas montré ; « 2 de plus »
+   l'ouvre. */
+const VISIBLES = 1;
+
+const etat = { ecran:"apres", charte:"origine", role:"patron", cas:"chargee", orCorrige:false };
+let masquees = [], retires = [], toutVoir = false;
+
+const cadre = document.getElementById("cadre");
+const ecran = document.getElementById("ecran");
+const feuille = document.getElementById("feuille");
+
+function chantiers() {
+  if (etat.cas === "vide") return [];
+  if (etat.cas === "un") return SEPT.slice(0, 1);
+  if (etat.cas === "limites") return LIMITES;
+  if (etat.cas === "trente") {
+    const out = [];
+    for (let i = 0; i < 30; i++) {
+      const s = SEPT[i % SEPT.length];
+      out.push({ ...s, nom: s.nom + (i >= SEPT.length ? " · " + (i + 1) : ""), id: "c" + i });
+    }
+    return out;
+  }
+  return SEPT;
+}
+function attentes() {
+  if (etat.cas === "calme" || etat.cas === "vide" || etat.cas === "un") return [];
+  let a = ATTENTES;
+  if (etat.cas === "trente" || etat.cas === "limites") a = ATTENTES.slice(0, 1);
+  /* Un commercial n'atteint ni /termines/tva ni /chantiers/<id>/facture : les
+     deux rappels d'argent ne lui sont pas montrés. Voir les notes. */
+  return a
+    .filter((x) => !x.ferme.includes(etat.role))
+    .filter((x) => !masquees.includes(x.id))
+    /* LE PLUS RÉCENT EN HAUT, ET RIEN D'AUTRE — sa règle du 26 août 2026
+       ($src/lib/ordre-notifications.ts). Ni la sorte, ni l'urgence, ni le
+       montant : une seule question, quand est-ce arrivé. Le tri est le MÊME
+       dans les deux versions de l'écran, sans quoi la comparaison mentirait. */
+    .slice()
+    .sort((x, y) => x.jours - y.jours);
+}
+
+const svgAssistant = `<svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+  style="stroke:var(--surPlein)" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8
+  8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0
+  0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`;
+
+function boutonGeste() {
+  return `<button class="geste" id="geste" type="button">
+    <span class="mot">Créer un devis</span>
+    <span class="rond">
+      <span class="pouls" aria-hidden="true"></span>
+      <span class="cerne" aria-hidden="true"></span>
+      <span class="gerbe" aria-hidden="true">${GRAINS.map(g =>
+        `<i style="--x:${g.x}px;--y:${g.y}px;--l:${g.l}px;--t:${g.t}ms"></i>`).join("")}</span>
+      <svg class="signe" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 9.6v12.8M9.6 16h12.8" stroke="var(--or)" stroke-width="1.25"/></svg>
+    </span></button>`;
+}
+
+function enTete() {
+  return `<p class="marque">ATLAS</p>
+  <div class="titre-bloc">
+    <div class="titre-rang">
+      <h2 class="titre">Vos chantiers</h2>
+      <button class="assistant" aria-label="Ouvrir l'assistant">${svgAssistant}</button>
+    </div>
+    <a class="lien-clients" href="#">Vos clients<i aria-hidden="true"></i></a>
+  </div>`;
+}
+
+function uneLigne(c, i) {
+  const id = c.id || ("l" + i);
+  const retiree = retires.includes(id);
+  const lieu = c.manquant
+    ? `<span class="lieu-manquant"><span>${c.lieu}</span></span>`
+    : `<p class="lieu">${c.lieu}</p>`;
+  const decouvre = c.refus
+    ? `<div class="decouvre refus">${c.refus}</div>`
+    : `<button class="decouvre" data-retirer="${id}">Retirer</button>`;
+  return `<div class="ligne" data-retiree="${retiree ? "oui" : "non"}">
+    <div class="chute"><div class="grille">
+      <span class="trait-fil" aria-hidden="true"></span>
+      <span class="rail"><b>${c.j}</b><span>${c.m}</span></span>
+      <div class="glisse">
+        <div class="volet"><a class="brin" href="#">
+          <h3>${c.nom}</h3>${lieu}
+          <p class="etat">${c.etat}</p>
+          ${c.precision ? `<p class="precision">${c.precision}</p>` : ""}
+        </a></div>
+        ${decouvre}
+      </div>
+    </div></div></div>`;
+}
+
+function uneAttente(a) {
+  const r = railDuRetard(a.jours);
+  const rail = r.haut
+    ? `<span class="rail retard"><b>${r.haut}</b><span>${r.bas}</span></span>`
+    : `<span class="rail retard seul"><span>${r.bas}</span></span>`;
+
+  /* ══════════════════════════════════════════════════════════════════════
+     UNE RÉPONSE DE CLIENT NE RESSEMBLE PAS À UN RAPPEL.
+
+     Sa remarque, et elle visait juste : les deux avaient la même colonne, le
+     même or, la même graisse. Or un rappel COMPTE DES JOURS ; une réponse,
+     c'est QUELQU'UN QUI A ÉCRIT.
+
+     La règle tient en une ligne : **la grande ligne porte ce que la PERSONNE
+     a dit ou décidé.** S'il n'y a personne — un rappel, un lien expiré —,
+     elle porte le nom du chantier, comme avant. Les deux rangées n'ont donc
+     plus la même silhouette : l'une s'ouvre sur des mots entre guillemets,
+     l'autre sur un nom.
+
+     Et l'étiquette NOMME LA PERSONNE ET SON GESTE — « Mme Lucie a répondu »,
+     « Mme Rialland a accepté » — au lieu de nommer un état de dossier.
+
+     Ce qui NE change pas : l'ordre reste la date, sa règle du 26 août. Une
+     réponse ne double personne ; elle se reconnaît, c'est tout.
+     ══════════════════════════════════════════════════════════════════════ */
+  const dUnePersonne = a.parle || a.decide;
+  const tete = a.parle
+    ? `<blockquote class="parole">« ${a.parle} »</blockquote>`
+    : `<p class="decision">${a.decide}</p>`;
+  const corps = dUnePersonne
+    ? `<p class="etiquette qui">${a.qui} ${a.verbe}</p>${tete}${a.etat ? `<p class="dit">${a.etat}</p>` : ""}`
+    : `<p class="etiquette">${a.etiquette}</p><h3>${a.nom}</h3>${a.dit ? `<p class="dit">${a.dit}</p>` : ""}`;
+
+  return `<div class="attente" data-de="${dUnePersonne ? "personne" : "machine"}">
+    ${rail}
+    <div class="corps">
+      ${corps}
+      ${a.somme ? `<p class="somme">${a.somme}<small>restant sur ${a.sur}</small></p>` : ""}
+      <div class="gestes">
+        <button class="faire">${a.faire}</button>
+        <button class="vu" data-vu="${a.id}">J'ai vu</button>
+      </div>
+    </div></div>`;
+}
+
+function barreDuBas() {
+  const ong = ONGLETS[etat.role];
+  const largeur = (100 / ong.length);
+  return `<nav class="barre" aria-label="Navigation principale">
+    <div class="cols" style="grid-template-columns:repeat(${ong.length},minmax(0,1fr))">
+      ${ong.map((o, i) => `<a href="#" ${i === 0 ? 'aria-current="page"' : ""}>${o}</a>`).join("")}
+      <span class="marque-onglet" style="width:calc(${largeur}% - 22px);
+        left:11px; transform:translateX(0)"></span>
+    </div></nav>`;
+}
+
+/* ─── APRÈS ─────────────────────────────────────────────────────────────── */
+function rendreApres() {
+  const cs = chantiers();
+  const as = attentes();
+  const visibles = toutVoir ? as : as.slice(0, VISIBLES);
+  const enPlus = as.length - visibles.length;
+
+  /* La rangée porte le compte de tête ET l'action. Une seule rangée, toujours
+     à la même place : « Aujourd'hui » quand quelque chose attend, « En cours »
+     sinon — et « Créer un devis » à sa droite dans les deux cas. */
+  const rubriqueHaute = as.length
+    ? `<span class="mot pointe">Aujourd'hui</span><span class="nb">${as.length}</span>`
+    : `<span class="mot">En cours</span><span class="nb">${cs.length}</span>`;
+
+  const zoneAttentes = as.length ? `
+    <div class="attentes"><span class="trait-zone" aria-hidden="true"></span>${visibles.map(uneAttente).join("")}
+      ${enPlus > 0 ? `<button class="de-plus" id="de-plus">${enPlus} de plus</button>` : ""}</div>
+    <div class="separateur"></div>
+    <div class="rubrique" style="margin:14px 26px 0"><span class="mot">En cours</span><span class="nb">${cs.length}</span></div>
+  ` : "";
+
+  ecran.innerHTML = `${enTete()}
+    <div class="rubrique-rang" style="margin-top:12px">${boutonGeste()}</div>
+    <div class="rubrique" style="margin:14px 26px 0">${rubriqueHaute}</div>
+    <div class="fil" id="fil" style="margin-top:2px">
+      ${zoneAttentes}
+      <div class="tige ${cs.length ? "" : "serree"}" id="tige">
+        <span class="perle" aria-hidden="true" id="perle"><span></span></span>
+        ${cs.map(uneLigne).join("")}
+      </div>
+    </div>
+    <div class="tiroir" data-ouvert="${retires.length ? "oui" : "non"}">
+      <span>${retires.length > 1 ? "Retirés à l'instant" : "Retiré à l'instant"}</span>
+      <button id="annuler" tabindex="${retires.length ? 0 : -1}">Annuler</button>
+    </div>
+    ${barreDuBas()}`;
+}
+
+/* ─── AVANT — l'écran d'aujourd'hui, reproduit pour comparer ───────────── */
+function rendreAvant() {
+  const cs = chantiers();
+  const as = attentes();
+  const visibles = toutVoir ? as : as.slice(0, 2);
+  const enPlus = as.length - visibles.length;
+
+  /* Les libellés et les phrases sont ceux de $src/app/Notifications.tsx$ :
+     c'est ce qu'il a sous les yeux aujourd'hui, pas une reconstitution. */
+  const carte = (a) => {
+    const urgent = a.genre === "correction" || a.genre === "chantier-sans-devis";
+    const texte =
+      a.genre === "correction" ? "Le client veut ce devis corrigé avant de l'accepter."
+      : a.genre === "acceptee" ? "Le client a accepté, et retenu le mardi 15 septembre."
+      : a.genre === "caduc" ? "Le lien a expiré sans réponse. Le client n'a rien dit — ni oui, ni non. Le devis peut être repris et renvoyé."
+      : a.genre === "chantier-sans-devis" ? `Chantier ouvert ${depuisCombien(a.jours)}, et aucun devis n'est parti.`
+      : a.genre === "facture-impayee" ? `Échéance dépassée ${depuisCombien(a.jours)}.`
+      : `Chantier terminé ${depuisCombien(a.jours)}, et aucune facture n'est partie.`;
+    const titre =
+      a.genre === "chantier-sans-devis" ? `Devis en attente · ${a.jours} jours`
+      : a.genre === "correction" ? "Correction demandée"
+      : a.genre === "acceptee" ? "Autre date proposée"
+      : a.etiquette;
+    /* Le nom du chantier, qui est celui du client quand rien ne l'a nommé
+       ($src/lib/nom-chantier.ts$). Une réponse et un rappel l'affichent
+       pareil — c'est exactement ce qu'il reproche à cet écran. */
+    const nom = a.qui || a.nom;
+    return `<div class="carte" data-ton="${urgent ? "teinte" : "nu"}">
+      <p class="t">${titre}</p><p class="n">${nom}</p><p class="x">${texte}</p>
+      ${a.parle ? `<blockquote>« ${a.parle} »</blockquote>` : ""}
+      ${a.somme ? `<p class="s">${a.somme}<small>restant sur ${a.sur}</small></p>` : ""}
+      <div class="g"><button class="faire">${a.faire}</button>
+        <button class="vu" data-vu="${a.id}">J'ai vu</button></div></div>`;
+  };
+
+  ecran.innerHTML = `${enTete()}
+    <div class="band-bouton">${boutonGeste()}</div>
+    <div class="compteur-seul"><span>En cours</span><b>${cs.length}</b></div>
+    <div class="fil" id="fil">
+      ${as.length ? `<div class="cartes">${visibles.map(carte).join("")}
+        ${enPlus > 0 ? `<button class="autres" id="de-plus">${enPlus} autres devis à regarder</button>` : ""}
+      </div>` : ""}
+      <div class="tige ${cs.length ? "" : "serree"}" id="tige" style="margin-top:10px">
+        <span class="perle" aria-hidden="true" id="perle"><span></span></span>
+        ${cs.map(uneLigne).join("")}
+      </div>
+    </div>
+    <div class="tiroir" data-ouvert="${retires.length ? "oui" : "non"}">
+      <span>${retires.length > 1 ? "Retirés à l'instant" : "Retiré à l'instant"}</span>
+      <button id="annuler" tabindex="${retires.length ? 0 : -1}">Annuler</button>
+    </div>
+    ${barreDuBas()}`;
+}
+
+function rendreFeuille() {
+  feuille.innerHTML = `
+    <div class="tete"><button id="fermer-feuille" aria-label="Fermer">&lsaquo;</button>
+      <h3>Fiche client</h3></div>
+    <form onsubmit="return false">
+      <div class="civilites"><button type="button" aria-pressed="false">Mr</button>
+        <button type="button" aria-pressed="false">Mme</button></div>
+      <div class="duo-titres"><span class="a">Nom du client</span><span class="b">Téléphone</span></div>
+      <div class="duo"><span class="a"><input placeholder="Bernard"></span>
+        <span class="b"><input placeholder="06 12 34 56 78" inputmode="tel"></span></div>
+      <p class="ecrit">Adresse du chantier</p>
+      <input placeholder="12 rue des Lilas, Nantes">
+      <p class="ecrit">E-mail</p>
+      <input placeholder="bernard@exemple.fr" inputmode="email">
+      <button class="plein" type="button" id="creer">Créer et dicter</button>
+    </form>`;
+}
+
+/* ─── La perle : sticky, plus la plongée sur le dernier jour ───────────── */
+function suivrePerle() {
+  const perle = document.getElementById("perle");
+  const fil = document.getElementById("fil");
+  const tige = document.getElementById("tige");
+  if (!perle || !fil || !tige) return;
+  let prevu = 0;
+  const placer = () => {
+    prevu = 0;
+    const lignes = [...tige.querySelectorAll(".ligne")].filter((l) => l.offsetHeight > 0);
+    const derniere = lignes[lignes.length - 1];
+    if (!derniere) { perle.style.opacity = "0"; return; }
+    perle.style.opacity = "1";
+    const boite = fil.getBoundingClientRect();
+    const d = descenteDeLaPerle({
+      milieuDuDernier: derniere.getBoundingClientRect().top + derniere.offsetHeight / 2,
+      milieuDuCadre: boite.top + boite.height / 2,
+      restantADefiler: fil.scrollHeight - fil.clientHeight - fil.scrollTop,
+      hauteurADefiler: fil.scrollHeight - fil.clientHeight,
+    });
+    perle.style.setProperty("--perle-descente", Math.round(d) + "px");
+  };
+  const auGeste = () => { if (prevu) return; prevu = requestAnimationFrame(placer); };
+  placer();
+  fil.addEventListener("scroll", auGeste, { passive: true });
+  new ResizeObserver(auGeste).observe(tige);
+}
+
+function rendre() {
+  cadre.className = "cadre " + etat.charte + (etat.orCorrige ? " or-corrige" : "");
+  if (etat.ecran === "apres") rendreApres(); else rendreAvant();
+  rendreFeuille();
+  suivrePerle();
+  brancher();
+  document.querySelectorAll(".pilote button").forEach((b) => {
+    const k = b.dataset.k;
+    b.setAttribute("aria-pressed", k === "orCorrige" ? String(etat.orCorrige)
+      : String(etat[k] === b.dataset.v));
+  });
+  mesurer();
+}
+
+/* Ce qui reste visible sous la ligne de flottaison — mesuré, pas estimé. */
+function mesurer() {
+  const fil = document.getElementById("fil");
+  if (!fil) return;
+  const bas = fil.getBoundingClientRect().bottom;
+  const lignes = [...fil.querySelectorAll(".ligne")];
+  const entieres = lignes.filter((l) => l.getBoundingClientRect().bottom <= bas + 1).length;
+  const att = [...fil.querySelectorAll(".attente, .carte")]
+    .filter((a) => a.getBoundingClientRect().bottom <= bas + 1).length;
+  document.getElementById("mesure").textContent =
+    `Sans faire défiler : ${att} chose${att > 1 ? "s" : ""} qui attend${att > 1 ? "ent" : ""} · `
+    + `${entieres} chantier${entieres > 1 ? "s" : ""} entier${entieres > 1 ? "s" : ""}`;
+}
+
+let minuteur = null;
+function brancher() {
+  const geste = document.getElementById("geste");
+  if (geste) geste.addEventListener("click", () => {
+    if (geste.dataset.geste === "part") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      cadre.dataset.feuille = "oui"; return;
+    }
+    geste.dataset.geste = "part";
+    setTimeout(() => { cadre.dataset.feuille = "oui"; }, 520);
+    setTimeout(() => { delete geste.dataset.geste; }, 940);
+  });
+
+  ecran.querySelectorAll("[data-retirer]").forEach((b) => {
+    b.addEventListener("click", () => {
+      retires = [...retires.filter((r) => r !== b.dataset.retirer), b.dataset.retirer];
+      majTiroir();
+      if (minuteur) clearTimeout(minuteur);
+      minuteur = setTimeout(() => { retires = []; rendre(); }, 6000);
+    });
+  });
+  ecran.querySelectorAll("[data-vu]").forEach((b) => {
+    b.addEventListener("click", () => { masquees.push(b.dataset.vu); toutVoir = false; rendre(); });
+  });
+  const dePlus = document.getElementById("de-plus");
+  if (dePlus) dePlus.addEventListener("click", () => { toutVoir = true; rendre(); });
+  const annuler = document.getElementById("annuler");
+  if (annuler) annuler.addEventListener("click", () => {
+    retires = retires.slice(0, -1);
+    if (!retires.length && minuteur) { clearTimeout(minuteur); minuteur = null; }
+    majTiroir();
+  });
+  const fermer = document.getElementById("fermer-feuille");
+  if (fermer) fermer.addEventListener("click", () => { cadre.dataset.feuille = "non"; });
+  const creer = document.getElementById("creer");
+  if (creer) creer.addEventListener("click", () => { cadre.dataset.feuille = "non"; });
+}
+
+/* Le tiroir se met à jour sans reconstruire l'écran : reconstruire couperait
+   la chute de la ligne en plein mouvement. */
+function majTiroir() {
+  ecran.querySelectorAll("[data-retirer]").forEach((b) => {
+    const l = b.closest(".ligne");
+    if (l) l.dataset.retiree = retires.includes(b.dataset.retirer) ? "oui" : "non";
+  });
+  const t = ecran.querySelector(".tiroir");
+  if (!t) return;
+  t.dataset.ouvert = retires.length ? "oui" : "non";
+  t.querySelector("span").textContent = retires.length > 1 ? "Retirés à l'instant" : "Retiré à l'instant";
+  t.querySelector("button").tabIndex = retires.length ? 0 : -1;
+  /* Le compte suit le retrait tout de suite — sa règle : « un 8 au-dessus de
+     sept lignes ferait douter que le retrait ait eu lieu ». */
+  const nbs = [...ecran.querySelectorAll(".rubrique")];
+  const enCours = nbs.find((r) => r.textContent.trim().startsWith("En cours"));
+  if (enCours) enCours.querySelector(".nb").textContent = String(chantiers().length - retires.length);
+  setTimeout(mesurer, 700);
+}
+
+document.getElementById("voile").addEventListener("click", () => { cadre.dataset.feuille = "non"; });
+document.querySelectorAll(".pilote button").forEach((b) => {
+  b.addEventListener("click", () => {
+    if (b.dataset.k === "orCorrige") etat.orCorrige = !etat.orCorrige;
+    else etat[b.dataset.k] = b.dataset.v;
+    masquees = []; retires = []; toutVoir = false;
+    if (minuteur) { clearTimeout(minuteur); minuteur = null; }
+    rendre();
+  });
+});
+window.addEventListener("resize", mesurer);
+
+/* ─── Les notes, sous la maquette ──────────────────────────────────────── */
+document.getElementById("notes").innerHTML = `
+<h3>Une réponse de client ne ressemble plus à un rappel</h3>
+<p><b>Sa remarque, et elle visait juste :</b> les deux avaient la même colonne, le même or,
+la même graisse. Or un rappel <b>compte des jours</b> ; une réponse, c'est <b>quelqu'un qui a
+écrit</b>. Rien ne les distinguait.</p>
+<p>La règle tient en une ligne : <b>la grande ligne porte ce que la personne a dit ou
+décidé.</b> S'il n'y a personne, elle porte le nom du chantier, comme avant.</p>
+<table>
+<tr><th>Ce qui est arrivé</th><th>Ce que la rangée montre</th></tr>
+<tr><td>Le client a <b>écrit</b></td><td>« Mme Lucie a répondu », puis <b>ses mots</b>, en serif, sous un cheveu d'or</td></tr>
+<tr><td>Le client a <b>décidé</b> sans un mot</td><td>« Mme Rialland a accepté », puis <b>sa décision</b> — sans guillemets, il n'a rien dit</td></tr>
+<tr><td><b>Personne</b> n'a rien dit</td><td>le délai en gros à gauche, l'état, le nom du chantier</td></tr>
+</table>
+<p>L'étiquette <b>nomme la personne et son geste</b> au lieu de nommer un état de dossier.
+Touchez <b>« 5 de plus »</b> pour voir les deux formes l'une sous l'autre.</p>
+<p><b>Ce qui ne change pas :</b> l'ordre reste la date, votre règle du 26 août — une réponse
+ne double personne, elle se reconnaît. <b>Et une limite, dite franchement :</b> un devis caduc
+garde la forme d'un rappel, parce que personne n'a rien dit — ni oui, ni non.</p>
+
+<h3>Ce qui change</h3>
+<ul>
+  <li><b>Le rail de gauche porte le retard, pas la date.</b> « Hier », « 14 / jours ».
+      Le nombre existe déjà au serveur (<code>depuisJours</code>) ; il croît vers le bas,
+      ce qui rend lisible l'ordre qu'il a choisi le 26 août — le plus récent en haut —
+      sans avoir à l'expliquer.</li>
+  <li><b>Plus de cartes.</b> Ce qui attend se pose sur le même fil que les chantiers.
+      Il avait refusé les boîtes autour d'un chantier le 10 août ; les notifications en
+      étaient restées une, et l'écran portait deux mondes.</li>
+  <li><b>Le compte de tête est nommé</b> — « Aujourd'hui 4 ». Une pile de cartes ne dit
+      pas si on les a toutes vues.</li>
+  <li><b>« Créer un devis » quitte le milieu de l'écran</b> et se range à droite, au-dessus
+      de la liste. Le mot, l'anneau, le battement et les onze grains ne bougent pas d'un
+      pixel : seule leur place change.</li>
+  <li><b>Rien n'est retiré</b> : le glissement, le tiroir, « Annuler », le compte qui suit
+      le retrait, le lieu manquant cliquable, « J'ai vu », le refus de retrait d'un chantier
+      facturé, la feuille de création, la perle et sa plongée.</li>
+</ul>
+
+<h3>Ce que ça donne, mesuré sur l'écran</h3>
+<table>
+<tr><th>Un matin chargé, 390 px</th><th>Aujourd'hui</th><th>Proposition</th></tr>
+<tr><td>La liste commence à</td><td>300 px</td><td>270 px</td></tr>
+<tr><td>Hauteur utile de la liste</td><td>320 px</td><td>350 px</td></tr>
+<tr><td>Ce qui attend, en entier, sans défiler</td><td>1</td><td>1</td></tr>
+<tr><td><b>Chantiers entiers, sans défiler</b></td><td><b>0</b></td><td><b>1</b></td></tr>
+<tr><td>Hauteur d'une chose qui attend</td><td>178 px</td><td>145 px</td></tr>
+</table>
+<p>Et à 360 px, l'écran le plus étroit visé, les deux versions montrent zéro chantier
+entier sur un matin chargé : la citation du client y prend trois lignes. Le gain est réel
+mais il est d'un chantier, pas de trois.</p>
+
+<h3>Trois choses que j'avais prévues et que la capture a démenties</h3>
+<ul>
+  <li>Le compte et le bouton étaient sur <b>la même rangée</b>. À 390 px c'était juste ;
+      à 360 px « 4 » et « CRÉER » se touchaient. La mesure annonçait pourtant 10 px de
+      marge — c'est l'image qui a tranché. Le bouton a sa rangée.</li>
+  <li>La zone du haut montrait <b>deux</b> choses en attente. Mesuré : plus un seul
+      chantier entier à l'écran, c'est-à-dire le défaut qu'on venait réparer. Elle en
+      montre une, et le compte dit le reste.</li>
+  <li>Mes rangées n'avaient <b>aucun point d'accroche</b> : le fil se calait sur le
+      premier chantier et coupait le haut de la première. C'est exactement ce qu'il avait
+      signalé le 16 août — « le premier message est trop haut » — et c'est corrigé comme
+      <code>globals.css</code> le corrige.</li>
+</ul>
+
+<h3>Ce que la mesure des couleurs a dit</h3>
+<table><tr><th>Mesuré</th><th>Origine</th><th>Nuit</th></tr>
+<tr><td>L'or sur le fond — la ligne d'état de chaque chantier</td><td><b>2,77</b></td><td>6,14</td></tr>
+<tr><td>Le gris sur le fond — le lieu, « En cours »</td><td><b>3,32</b></td><td>5,19</td></tr>
+<tr><td>Carte teintée contre carte nue — « urgent » contre « pas urgent »</td><td>1,15</td><td><b>1,05</b></td></tr></table>
+<p>Le seuil d'un texte est 4,5. La ligne d'état est en dessous sur la charte qu'il regarde
+tous les jours, en plein soleil. Le bouton « Or au contraste mesuré » montre ce que la
+fonction <code>detacher()</code> du dépôt rend au seuil 4,5 : <code>#8b6835</code>.
+C'est son or — il ne se change pas sans lui.</p>
+<p>Sur Nuit, la carte teintée qu'il a choisie le 16 août — « la B », pour qu'au quatorzième
+jour ça ne se rate pas — se distingue d'une carte ordinaire de <b>1,05</b>. Elle ne signale
+rien. Dans la proposition, ce qui attend se distingue par sa place et par son retard : ça
+tient sur les huit chartes.</p>
+
+<h3>Deux points à trancher par lui</h3>
+<ul>
+  <li>Un <b>commercial</b> n'atteint ni <code>/termines/tva</code> ni
+      <code>/chantiers/&lt;id&gt;/facture</code>. Or l'accueil lui montre aujourd'hui
+      « Facture impayée » et « À facturer », dont le seul geste mène à un refus.
+      La maquette ne les lui montre pas.</li>
+  <li>« <b>N autres devis à regarder</b> » est faux quand ce qui reste est une facture
+      impayée. La maquette écrit « N de plus ».</li>
+</ul>`;
+
+rendre();
+</script>
+</body>
+</html>

@@ -126,13 +126,13 @@ export default function ApparenceClient({ initiale }: { initiale: NomCharte }) {
         </p>
       )}
 
-      <p className={`mx-[26px] mt-[26px] ${texteSituation}`} style={{ color: colors.muted }}>
+      <p className={`mx-[26px] mt-[26px] ${texteSituation}`} style={{ color: colors.inkSoft }}>
         La couleur change <b style={{ color: colors.ink, fontWeight: 500 }}>toute l&apos;application</b>, tout de
         suite. Elle n&apos;appartient qu&apos;à vous : vos devis et vos factures gardent leur apparence.
       </p>
 
       <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
           Votre charte
         </p>
         {CHARTES.map((c) => (
@@ -148,7 +148,7 @@ export default function ApparenceClient({ initiale }: { initiale: NomCharte }) {
 
       <p
         className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
-        style={{ borderColor: colors.line, color: colors.muted }}
+        style={{ borderColor: colors.line, color: colors.inkSoft }}
       >
         Deux d&apos;entre elles sont sombres — <b style={{ color: colors.ink, fontWeight: 500 }}>Nuit</b> et{" "}
         <b style={{ color: colors.ink, fontWeight: 500 }}>Sylve</b>. Elles se lisent mal en plein soleil : sur un
@@ -216,7 +216,7 @@ function LigneCharte({
             </span>
           )}
         </span>
-        <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
+        <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.inkSoft }}>
           {charte.dit}
         </span>
       </span>

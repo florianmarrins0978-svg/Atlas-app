@@ -140,7 +140,10 @@ export async function reprendreChantierAction(
     // retrouverait « Adresse non renseignée » après avoir enregistré, et
     // croirait le geste sans effet.
     revalidatePath("/");
-    revalidatePath(`/chantiers/${chantierId}`);
+    // **Cet écran-ci, et plus la fiche du chantier** (4 septembre 2026,
+    // `ARCHITECTURE.md` §254) : `/chantiers/[id]` ne rend plus qu'une
+    // redirection, et revalider une redirection ne rafraîchit rien.
+    revalidatePath(`/chantiers/${chantierId}/coordonnees`);
     return { ok: true };
   } catch (erreur) {
     // **Rendre le défaut bavard AVANT de le corriger** (`AGENTS.md`) : sans

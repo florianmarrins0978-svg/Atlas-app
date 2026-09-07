@@ -67,44 +67,38 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "0612345678");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const chantierUrl = page.url();
-  const chantierId = chantierUrl.split("/").pop()!;
+  const chantierId = await creerPuisFiche(page);
+  const chantierUrl = `${BASE}/chantiers/${chantierId}`;
 
-  // --- 1. Le devis à la main, depuis la fiche, sans passer par la dictée ----
-  // Le repère d'arrivée est le tiroir du bas. « Autres étapes » ne s'écrit plus
-  // nulle part depuis que les étapes y sont rangées (`ARCHITECTURE.md` §49) :
-  // attendre un titre disparu ferait échouer le contrôle sur un écran sain.
-  await page.waitForSelector("[data-atlas='tiroir-fiche']", { timeout: 10000 });
-  // **Repéré par sa DESTINATION, plus par son libellé.** Depuis le 11 août 2026,
-  // le corps de la fiche ne porte plus que l'anneau (à la demande du patron,
-  // maquette en main) : la rédaction à la main est descendue dans le tiroir, où
-  // elle s'écrit « Devis à la main ». Ce qui compte n'a jamais été le mot mais
-  // le chemin — et viser le chemin met ce contrôle à l'abri du prochain
-  // changement de mise en page.
-  const versLaMain = page.locator('[data-atlas="tiroir-fiche"] a[href$="/devis-complet"]');
-  assert.equal(
-    await versLaMain.count(),
-    1,
-    "La fiche d'un chantier neuf n'offre aucun chemin vers le devis écrit à la main."
-  );
+  // --- 1. Le devis à la main, sans passer par la dictée --------------------
+  //
+  // **LE CHEMIN A REMONTÉ D'UN CRAN, ET IL S'EST RACCOURCI.** Sa demande du
+  // 4 août 2026 — *« je ne peux toujours pas rédiger mon devis seulement à la
+  // main si je le souhaite »* — était tenue par une ligne « Devis à la main »
+  // dans le tiroir de la fiche du chantier. Cette fiche est retirée
+  // (`ARCHITECTURE.md` §254) ; le chemin, lui, existe un écran plus haut, et
+  // sans détour : « Je rédige à la main », sur la fiche client, mène droit au
+  // devis. C'est ce bouton-là que `creerPuisFiche` vient de toucher.
+  //
+  // **Ce contrôle vise donc l'ARRIVÉE, pas le lien.** Une suite qui réclamerait
+  // la ligne du tiroir rendrait l'écran impossible à changer (`CLAUDE.md`
+  // §5 bis) — et surtout, elle réclamerait un détour de plus entre lui et son
+  // devis, quand toute la direction du produit est de les retirer.
+  await page.waitForURL(new RegExp(`/chantiers/${chantierId}/devis-complet`), { timeout: 10000 });
 
-  // Et les étapes ne se lisent plus comme des verrous.
+  // Et rien ne se lit comme un verrou : c'est ce qui lui a fait croire qu'il ne
+  // pouvait pas rédiger son devis lui-même.
   const fiche = await page.locator("body").innerText();
   assert.ok(
     !/en attente des informations/i.test(fiche),
     "« En attente des informations » se lit comme un verrou : c'est ce qui lui a fait croire qu'il ne pouvait pas."
   );
-
-  await versLaMain.click();
   // Depuis le 5 août 2026, le lien ouvre le DEVIS ENTIER, seul sur sa page —
   // « une page où il n'y a que le devis ». Le détail de ce document est éprouvé
   // par `test-devis-complet-e2e.ts` ; ici on vérifie seulement que le chemin y
   // mène et qu'une ligne écrite à la main aboutit au devis.
-  await page.waitForURL(/\/devis-complet$/, { timeout: 10000 });
   await page.waitForSelector("text=DEVIS", { timeout: 10000 });
-  console.log("  ✓ la fiche mène au devis écrit à la main, en un lien");
+  console.log("  ✓ la fiche client mène au devis écrit à la main, sans détour");
 
   // Une ligne, son prix — c'est tout ce que le patron veut faire.
   await page.click("text=+ Ajouter une ligne");

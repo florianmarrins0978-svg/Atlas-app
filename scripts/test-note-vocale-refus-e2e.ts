@@ -63,9 +63,9 @@ async function main() {
   // d'un défaut qui n'existait pas.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Refus note ${Date.now()}`);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantier = page.url().split("/").pop()!.split("?")[0];
+  const chantier = idChantier;
 
   /** Dépose un fichier sur l'écran de dictée et rend ce que l'écran répond. */
   async function deposer(nom: string, mimeType: string, octets: Buffer): Promise<string> {

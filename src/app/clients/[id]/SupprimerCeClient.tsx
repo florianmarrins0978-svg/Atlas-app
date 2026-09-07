@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { colors, font, surPlein, voile } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
 import { supprimerClientAction } from "./actions";
 
 /**
@@ -71,16 +71,29 @@ export default function SupprimerCeClient({
 
   return (
     <>
+      {/* ── LE GESTE NE S'ANNONCE PLUS, IL SE TROUVE — 2 septembre 2026 ─────
+          Retenu sur maquette. C'était une capsule cernée de rouge sur toute la
+          largeur : le seul objet dessiné de l'écran, et il désignait la seule
+          chose irréparable qu'on puisse y faire. Elle appelait l'œil vers la
+          sortie.
+
+          Devenu une ligne en capitales espacées, il reste parfaitement lisible
+          et cesse d'appeler. Ce que la place disait déjà — « un geste qu'on
+          trouve EN LE CHERCHANT ne se déclenche pas au pouce » — le dessin le
+          dit maintenant aussi.
+
+          **Les 44 px de haut restent**, invisibles : le mot fait 9,5 px, la
+          cible n'en fait pas moins pour autant. */}
       <div className="mt-10 px-[26px]">
         <button
           type="button"
           data-atlas="supprimer-client"
           onClick={() => setOuverte(true)}
-          className="h-12 w-full cursor-pointer rounded-full text-[14px] font-semibold"
+          className="inline-flex min-h-[44px] cursor-pointer items-center text-[9.5px] font-medium uppercase"
           style={{
             background: "transparent",
-            border: `1px solid ${voile(colors.alert, 0.45)}`,
             color: colors.alert,
+            letterSpacing: "0.28em",
             WebkitTapHighlightColor: "transparent",
           }}
         >
@@ -89,8 +102,17 @@ export default function SupprimerCeClient({
       </div>
 
       <BottomSheet open={ouverte} onBackdropClick={enCours ? undefined : fermer}>
+        {/* **Ce qui va se passer se nomme avant le nom de qui le subit.** En
+            capitales d'alerte : c'est la seule chose de cette feuille qui doit
+            se lire avant d'avoir lu quoi que ce soit d'autre. */}
+        <p
+          className="mt-1 text-[9.5px] font-medium uppercase"
+          style={{ color: colors.alert, letterSpacing: "0.28em" }}
+        >
+          Suppression définitive
+        </p>
         <h2
-          className="mt-2 text-[24px] leading-[1.2]"
+          className="mt-[11px] text-[26px] leading-[1.15]"
           style={{ fontFamily: font.display, color: colors.ink }}
         >
           {nom}
@@ -99,20 +121,29 @@ export default function SupprimerCeClient({
         {/* **Ce que la loi cloue se dit AVANT, avec son numéro.** « Des documents
             sont conservés » est une phrase ; « la facture n° F2026-0009 est
             conservée dix ans » se retrouve dans un classeur. Ce qu'il ne peut
-            pas situer, il le croit perdu. */}
+            pas situer, il le croit perdu.
+
+            **Le pavé teinté est devenu deux filets — 2 septembre 2026.** Un
+            aplat de couleur au milieu d'une feuille de suppression se lit comme
+            un encart d'information, alors que c'est la seule bonne nouvelle de
+            l'écran : ce qui est gardé. Deux cheveux et un intertitre d'or
+            séparent aussi bien, sans poser d'objet. */}
         {conserve.length > 0 && (
-          <div
-            data-atlas="ce-qui-reste"
-            className="mt-4 rounded-[12px] px-[15px] py-[13px]"
-            style={{ background: colors.rustTint }}
-          >
+          <div data-atlas="ce-qui-reste">
+            <div className="mt-[18px] h-px w-full" style={{ background: colors.lineSoft }} />
+            <p
+              className="mt-[18px] text-[9.5px] font-medium uppercase"
+              style={{ color: colors.or, letterSpacing: "0.28em" }}
+            >
+              Conservé par la loi
+            </p>
             {/* **La raison s'écrit UNE fois, les numéros autant qu'il en faut.**
                 Deux factures répétaient « une facture émise se conserve dix ans »
                 deux fois de suite — vu à la capture, pas au code. Ce qui change
                 d'une ligne à l'autre, c'est le numéro ; le reste est du bruit
                 (`CLAUDE.md` §3). */}
             {[...new Set(conserve.map((p) => p.pourquoi))].map((pourquoi) => (
-              <p key={pourquoi} className="text-[13.5px] leading-[1.5]" style={{ color: colors.ink }}>
+              <p key={pourquoi} className="mt-2 text-[13.5px] leading-[1.55]" style={{ color: colors.ink }}>
                 {conserve
                   .filter((p) => p.pourquoi === pourquoi)
                   .map((p) => `n° ${p.numero}`)
@@ -120,19 +151,20 @@ export default function SupprimerCeClient({
                 — {pourquoi}
               </p>
             ))}
+            <div className="mt-[18px] h-px w-full" style={{ background: colors.lineSoft }} />
           </div>
         )}
 
         {documents > 0 ? (
           <p
             data-atlas="prevention"
-            className="mt-4 text-[14px] leading-[1.5]"
+            className="mt-[18px] text-[14.5px] leading-[1.55]"
             style={{ color: colors.inkSoft }}
           >
             Ses devis, ses photos et ses notes seront détruits. C’est définitif.
           </p>
         ) : (
-          <p className="mt-4 text-[14px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+          <p className="mt-[18px] text-[14.5px] leading-[1.55]" style={{ color: colors.inkSoft }}>
             Il n’a aucun document. C’est définitif.
           </p>
         )}
@@ -195,12 +227,15 @@ export default function SupprimerCeClient({
         >
           {enCours ? "Suppression…" : "Supprimer"}
         </button>
+        {/* **« Annuler » n'est pas un second bouton, c'est la sortie.** Deux
+            capsules empilées se pèsent l'une l'autre, et la plus grave des deux
+            perd de son poids. Un mot suffit — 2 septembre 2026. */}
         <button
           type="button"
           onClick={fermer}
           disabled={enCours}
-          className="mt-2.5 h-[52px] w-full cursor-pointer rounded-full text-[15px]"
-          style={{ background: "transparent", border: `1px solid ${colors.line}`, color: colors.ink }}
+          className="mt-1.5 h-[46px] w-full cursor-pointer text-[14px]"
+          style={{ background: "transparent", color: colors.muted }}
         >
           Annuler
         </button>

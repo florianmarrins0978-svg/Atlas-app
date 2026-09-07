@@ -157,6 +157,16 @@ body {
  * s'assurer qu'un jour l'une bougera sans l'autre. */
 :root {
   --atlas-barre: calc(4.25rem + env(safe-area-inset-bottom));
+  /* La hauteur RÉELLE du bandeau du banc, publiée par lui-même
+   * (`BandeauBanc.tsx`) et remise à zéro dès qu'il s'efface. Zéro par défaut :
+   * hors banc d'essai, ce bandeau n'existe pas.
+   *
+   * **Elle valait 40 px, écrits à la main dans `layout.tsx`, pour un bandeau
+   * qui en mesure 48.** Huit pixels de trop, plus la barre de progression, plus
+   * une phrase qui passe à deux lignes sur un écran étroit : c'est ce qui
+   * faisait finir « Me déconnecter partout » sous la barre du bas, le 31 août
+   * 2026. Un élément qui change de taille ne se mesure pas dans un fichier. */
+  --atlas-bandeau: 0px;
 }
 
 .atlas-nav-basse {
@@ -169,6 +179,20 @@ body {
   padding-bottom: var(--atlas-barre);
 }
 
+/* **Et la réserve se retire quand la barre n'est pas là — 5 septembre 2026.**
+ * Sur une navigation de lien vers le devis seul, ce cadre reste en place — la
+ * mise en page racine n'est pas rejouée — alors que la barre, elle, se retire
+ * d'elle-même (`AtlasBottomNav`). Sans cette ligne, soixante-huit pixels de
+ * vide restaient sous le bouton d'envoi, qui ne touchait plus le bas de
+ * l'écran.
+ *
+ * Écrit dans CE sens — la réserve par défaut, son retrait sous condition — un
+ * navigateur qui ne connaît pas `:has()` réserve encore : il montre un bouton
+ * un peu haut, jamais un bouton caché. */
+body:not(:has(.atlas-nav-basse)) .atlas-contenu {
+  padding-bottom: 0;
+}
+
 /* --- L'écran des chantiers : une hauteur fixe, une liste qui défile dedans --
  *
  * C'est ce qui rend possible le fil et sa perle. L'en-tête ne bouge pas, la
@@ -179,11 +203,20 @@ body {
  * déjà `padding-top: env(safe-area-inset-top)`, donc `100dvh` déborderait
  * d'autant. */
 .atlas-ecran {
-  height: calc(100dvh - var(--atlas-barre) - env(safe-area-inset-top));
+  /* **Le bandeau du banc entre dans le calcul depuis le 31 août 2026.** Sans
+   * lui, tout écran figé était 48 px trop haut sur son banc : il débordait, la
+   * page se remettait à défiler, et la dernière rangée passait sous la barre. */
+  height: calc(100dvh - var(--atlas-bandeau) - var(--atlas-barre) - env(safe-area-inset-top));
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  /* **Sa demande du 31 août : « aucun scroll possible ».** Une page qui tient
+   * dans l'écran REBONDIT quand même sous le doigt, sur iOS — c'est l'élastique
+   * du navigateur, et c'est ce qu'il appelle « ça bouge encore ». Cette ligne
+   * l'arrête. Elle ne peut pas être éprouvée ici : aucun navigateur de ce poste
+   * ne rebondit. */
+  overscroll-behavior: none;
 }
 
 /* --- Une colonne d'écran qui défile, sans barre grise ----------------------
@@ -665,11 +698,26 @@ body {
  * doigt et finit sa course avec l'élan de la plateforme, ce que la maquette ne
  * savait pas faire. `overscroll-behavior: contain` empêche le geste de
  * continuer sur la page — sans lui, le doigt emporterait tout l'écran. */
+/* **LE GESTE VA VERS LA GAUCHE — sa réponse du 7 septembre 2026.**
+ *
+ * Il glissait vers le HAUT depuis le 30 août, et il ne l'a jamais trouvé :
+ * *« je veux la déplacer vers la gauche pour laisser apparaître le
+ * supprimer »*. La liste des chantiers, elle, se glisse vers la gauche
+ * depuis le 10 août (`.atlas-glisse`). **Deux sens pour le même geste dans
+ * la même application** : il cherchait celui qu'il connaît.
+ *
+ * Planche `appli/retirer-la-note-vocale.html`, trois onglets ; il a
+ * répondu 2.
+ *
+ * Le `flex` et le `100%` des volets vont ensemble : sans eux, deux blocs de
+ * la largeur de l'écran se rangeraient l'un SOUS l'autre, et le glissement
+ * horizontal n'aurait rien à découvrir. */
 .atlas-glisseur {
   height: 78px;
   width: 100%;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
   overscroll-behavior: contain;
   transition: opacity 0.26s;
@@ -685,6 +733,10 @@ body {
    * se retrouvait collé au bord gauche de l'écran, son R à moitié dehors,
    * pendant que l'anneau restait centré. Vu en capture, jamais autrement — le
    * bouton existait, il était touchable, et tous les contrôles passaient. */
+  /* `flex: 0 0 100%` et non `width` seul : dans un rail horizontal, un
+   * volet se laisserait comprimer par son voisin et les deux tiendraient
+   * sur un écran — le glissement n'aurait plus rien à révéler. */
+  flex: 0 0 100%;
   width: 100%;
   display: flex;
   align-items: center;
@@ -882,6 +934,11 @@ body {
   text-decoration: none;
   color: var(--ink);
   -webkit-tap-highlight-color: transparent;
+  /* **Six pixels autour, pour que la CIBLE fasse 44 — 6 septembre 2026.**
+   * L'anneau est descendu de 42 à 32 px ce jour-là ; sans ce rembourrage, le
+   * geste qu'il fait vingt fois par jour se viserait sur 32 px. Les six pixels
+   * sont invisibles : rien de ce qu'il regarde ne bouge. */
+  padding: 6px 0;
 }
 .atlas-geste-nouveau .atlas-mot {
   font-size: 13px;
@@ -895,12 +952,24 @@ body {
    qu'avant sous le doigt, sans que le geste change de caractère. */
 [data-geste="part"] .atlas-mot { letter-spacing: 0.32em; }
 
+/* **L'ANNEAU RESSERRÉ — sa décision du 6 septembre 2026**, sur la planche
+ * `appli/l-accueil-a-bout-de-bras.html` où cinq formes se pressaient au doigt :
+ * ***« le 2, l'anneau resserré »***. Il l'avait demandé en ces termes :
+ * *« sur une, fais le rond plus petit en doré avec plus d'onde de choc »*.
+ *
+ * Trois choses changent, et rien d'autre : 42 px → **32**, le cerne passe du
+ * gris à **l'or**, et le battement porte **trois ondes** au lieu d'une, plus
+ * amples (1,9 fois le rond au lieu de 1,42).
+ *
+ * **Ce qui ne bouge pas :** le mot à 13 px graisse 800, les onze grains et
+ * leur portée de 46 px — qu'il a réglés lui-même en août —, la demi-seconde
+ * avant la feuille, et le tour du signe. */
 .atlas-rond {
   position: relative;
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
   border-radius: 9999px;
   transition: transform 0.14s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
@@ -910,14 +979,18 @@ body {
   inset: 0;
   z-index: 2;
   border-radius: 9999px;
-  border: 1px solid var(--line);
+  /* L'or, et non le gris du trait : c'est ce qui fait tenir un anneau plus
+   * petit. Sur les deux chartes sombres, l'or ne bouge pas — il y tient
+   * 6,14 de contraste, contre 2,77 sur le crème. Un CERNE n'est pas un mot :
+   * c'est le seuil d'un trait qui s'applique, pas celui d'un texte. */
+  border: 1px solid var(--or);
 }
 .atlas-rond .atlas-signe {
   position: relative;
   z-index: 4;
   display: block;
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
 }
 
 /* Le battement d'attente : une onde d'or qui naît du bord et se dissout, toutes
@@ -934,12 +1007,26 @@ body {
   opacity: 0;
   animation: atlas-battement 3.4s cubic-bezier(0.16, 0.7, 0.3, 1) infinite;
 }
+/* **TROIS ONDES, ET ELLES VONT PLUS LOIN — 6 septembre 2026.** Sa demande :
+ * *« plus d'onde de choc »*. Une seule onde sur un anneau de 32 px se voyait à
+ * peine ; trois, décalées d'un tiers de seconde, font un battement qui se
+ * remarque sans clignoter — et le clignotement reste ce qu'on refuse ici, un
+ * écran qui alerte dix fois par jour finit par être ignoré.
+ *
+ * 1,9 fois le rond au lieu de 1,42 : sur un anneau plus petit, la même
+ * proportion partait moins loin en pixels qu'avant. Mesuré : 32 × 1,9 = 61 px,
+ * contre 42 × 1,42 = 60 px. **L'onde occupe donc la même place à l'écran
+ * qu'avant** — c'est l'anneau qui a maigri, pas le geste. */
 @keyframes atlas-battement {
   0% { transform: scale(1); opacity: 0; }
-  8% { opacity: 0.5; }
-  46% { transform: scale(1.42); opacity: 0; }
-  100% { transform: scale(1.42); opacity: 0; }
+  6% { opacity: 0.62; }
+  52% { transform: scale(1.9); opacity: 0; }
+  100% { transform: scale(1.9); opacity: 0; }
 }
+/* Les deux ondes qui suivent la première. Elles portent la même animation —
+ * une seule règle à corriger le jour venu — et ne diffèrent que du retard. */
+.atlas-rond .atlas-pouls-2 { animation-delay: 0.42s; }
+.atlas-rond .atlas-pouls-3 { animation-delay: 0.84s; }
 [data-geste="part"] .atlas-pouls { animation: none; opacity: 0; }
 
 [data-geste="part"] .atlas-signe {
@@ -1181,6 +1268,34 @@ body {
   box-shadow: inset 0 0 0 1.5px var(--atlas-or, #B98B47);
 }
 
+/* ─── « Chercher un client » : la plage grise du navigateur n'est d'aucune
+ * charte ───────────────────────────────────────────────────────────────────
+ *
+ * **Posée le 3 septembre 2026, avec la refonte de la liste des clients.** Ce
+ * champ-là n'avait aucune couleur de repère : il héritait donc de celle que
+ * chaque navigateur décide, un gris bleuté sur Safari — la même faute que la
+ * croix bleue de `type="search"`, et trouvée de la même façon, en regardant.
+ *
+ * **Mesuré, et c'est pourquoi ce n'est pas `muted`.** Le gris des méta tient
+ * 3,32 de contraste sur le fond crème : sous le seuil de lecture, et c'est la
+ * première chose qui disparaît en plein soleil, sur un chantier. `inkSoft` à
+ * 85 % en tient 5,0 sur la plage teintée — assez pour se lire, assez clair pour
+ * ne pas se confondre avec un nom déjà tapé.
+ *
+ * Ce réglage est ICI et pas dans l'écran : aucun style en ligne ne peut viser
+ * `::placeholder`.
+ *
+ * **La coordonnée saisie à l'envoi a rejoint la règle le 4 septembre 2026.**
+ * Elle porte l'exemple — « 06 12 34 56 78 » — sur le seul écran où le patron
+ * répare un client sans numéro, et le gris du navigateur y disparaissait
+ * pareillement. La mesure est la même, la raison est la même : deux règles
+ * séparées auraient fini par diverger. */
+[data-atlas="chercher-client"]::placeholder,
+[data-atlas="coordonnee-client"]::placeholder {
+  color: var(--atlas-inkSoft, #4a4a44);
+  opacity: 0.85;
+}
+
 /* ═══ LA NOTE VOCALE « À LA MESSAGERIE » ══════════════════════════════════
  *
  * Ses choix du 30 août 2026, faits sur trois planches successives
@@ -1210,10 +1325,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* La réserve ne bouge pas d'un état à l'autre : sans elle, la barre étant plus
-   * haute que le micro seul, tout ce qui suit — le bouton compris — sauterait
-   * vers le bas à l'instant où l'on appuie, c'est-à-dire au moment où l'écran
-   * doit être le plus stable. */
+  /* La réserve ne bouge pas d'un état à l'autre, et depuis le 31 août 2026 elle
+   * retient l'écran dans l'AUTRE sens : la ligne de dictée (58 px) est plus
+   * BASSE que le micro et son indice, si bien que tout ce qui suit remonterait
+   * à l'instant où l'on appuie — c'est-à-dire au moment où l'écran doit être le
+   * plus stable. Le chiffre reste celui du repos, qui est le plus haut des
+   * deux. */
   min-height: 104px;
   /* **Les ondes ne doivent JAMAIS élargir la page.** Elles sont posées en
    * absolu de part et d'autre du disque — 1,5 cm plus 9 px, soit 66 px de
@@ -1234,26 +1351,52 @@ body {
   overflow-x: clip;
 }
 
-/* L'objet au centre, les deux gestes de part et d'autre. Au repos ils n'existent
- * pas : il n'y a rien à jeter ni à envoyer. */
-.atlas-trio {
+/* ─── LA LIGNE DE DICTÉE — sa décision du 31 août 2026 ───────────────────
+ *
+ * Planche `appli/dictee-la-ligne.html`, onglet « Avec le rond ». Elle remplace
+ * le trio (poubelle · disque · avion) et la rangée chrono + onde qui vivait
+ * dessous.
+ *
+ * **Ce que le trio avait de faux, et qui se mesurait** — sa plainte du matin,
+ * « ça dénature l'appli » :
+ *
+ *   · deux aplats vert pin (76 px et 46 px), ~7 950 px² de sombre, là où le
+ *     reste de la fiche n'en porte AUCUN. Il en reste 64 : la pastille ;
+ *   · rien ne tenait les trois boutons ensemble — ils flottaient sur le fond ;
+ *   · le chrono à gauche, l'onde à droite et le disque au milieu : trois
+ *     objets sur trois axes.
+ *
+ * Le trait du haut est ce qui les tient désormais, et il suffit : la ligne ne
+ * porte plus d'objet, elle traverse l'écran. */
+.atlas-ligne-dictee {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 22px;
+  gap: 12px;
   width: 100%;
+  /* **PLUS DE TRAIT AU-DESSUS** — sa demande du 1ᵉʳ septembre 2026 : *« supprime
+   * le trait gris qu'il y a au-dessus »*. Il tenait la ligne au moment où elle
+   * remplaçait un objet centré ; une fois l'aplat parti, c'était un trait de
+   * plus sur un écran qui n'en porte nulle part ailleurs.
+   *
+   * **L'espace, lui, RESTE** : c'est lui qui sépare la dictée du reste, et le
+   * retirer avec le trait ferait remonter la ligne contre la fiche. */
+  padding-top: 14px;
+  animation: atlas-venir 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
-.atlas-cote {
+/* Les deux gestes ne partagent PAS un bloc commun, et ce n'est pas une
+ * répétition par distraction : `test-classes-atlas-uniques` refuse qu'une
+ * classe soit déclarée deux fois, parce que la dernière écrase les autres sur
+ * tous les écrans qui la portent. Six lignes en double coûtent moins qu'un
+ * groupe qu'on croit sûr. */
+.atlas-jeter {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
+  width: 32px;
+  height: 32px;
   border-radius: 99px;
   -webkit-tap-highlight-color: transparent;
-  animation: atlas-venir 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-  transition: color 0.18s, background 0.18s;
 }
 /* **La poubelle ne rougit QUE sous le doigt** — `.jeter:active` de sa planche.
  * Rouge au repos, elle mettrait en garde avant qu'on ait rien fait ; ici elle
@@ -1263,11 +1406,61 @@ body {
   from { opacity: 0; transform: scale(0.7); }
   to { opacity: 1; transform: none; }
 }
+/* **UN ROND, ET NON UN OVALE** — sa correction du 31 août au soir, après avoir
+ * vu trois aplatissements proposés (44 × 44, 48 × 40, 52 × 36) : *« autour de
+ * la flèche envoyer je veux un rond, pas un ovale »*. Largeur et hauteur sont
+ * la même mesure, et le fond vient de la page (posé `transparent` dans le
+ * composant) : c'est ce qu'il a demandé, et c'est ce qui tient sur les sept
+ * chartes sans qu'aucun beige soit écrit en dur. */
+/* **LA FLÈCHE EST UNE TASSE AUSSI — son choix du 2 septembre 2026.** Elle
+ * passe de 44 à 46 px : un objet à trois anneaux a besoin d'un peu plus de
+ * place qu'un cercle nu, sinon les filets se touchent.
+ *
+ * Les épaisseurs ne sont PAS mises à l'échelle (1,0 et 1,4 au lieu de 1,1 et
+ * 1,9) : voir `.atlas-micro` ci-dessus — sous un pixel, un anneau disparaît.
+ *
+ * **La poubelle, elle, reste un simple trait, et c'est délibéré.** Elle jette ;
+ * ce n'est pas le geste qu'on veut donner envie de faire. Deux objets précieux
+ * côte à côte, et l'on ne saurait plus lequel est l'action. */
 .atlas-envoyer {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-  transition: transform 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 99px;
+  -webkit-tap-highlight-color: transparent;
+  /* Blanc, comme le micro : c'est le même objet à deux tailles. */
+  color: #ffffff;
+  background: radial-gradient(
+    circle at 34% 26%,
+    var(--atlas-sageLight, #9fbd82) 0%,
+    var(--atlas-sage, #7d9a6d) 50%,
+    var(--atlas-rustDeep, #4f5f4c) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px var(--atlas-or, #B98B47),
+    inset 0 0 0 2.4px #f3efe6,
+    inset 0 0 0 3.2px var(--atlas-or, #B98B47),
+    inset 0 5px 8px -5px rgba(47, 59, 47, 0.42),
+    0 6px 14px -5px rgba(79, 95, 76, 0.36);
+  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.2s;
 }
-.atlas-envoyer:active { transform: scale(0.93); }
+/* **0,975 — le geste « discret », sa décision du 31 août** (`.atlas-plein` plus
+ * bas, posé le même jour par la session voisine). La touche d'envoi ne porte
+ * PAS `atlas-plein` : il a été clair — *« surtout pas ceux qui sont creux »* —,
+ * et depuis ce soir celle-ci est creuse. Elle prend donc le geste seul, à la
+ * même force que les pleins : deux forces dans le même écran se sentiraient. */
+.atlas-envoyer:active {
+  transform: scale(0.96);
+  box-shadow:
+    inset 0 0 0 1px var(--atlas-or, #B98B47),
+    inset 0 0 0 2.4px #f3efe6,
+    inset 0 0 0 3.2px var(--atlas-or, #B98B47),
+    inset 0 7px 11px -5px rgba(47, 59, 47, 0.52),
+    0 3px 8px -5px rgba(79, 95, 76, 0.46);
+}
 
 /* L'OBJET — un disque plein, son micro, ses deux souffles. Il ne change jamais
  * de forme, seulement de signe : le micro devient un carré d'arrêt. C'est sa
@@ -1279,105 +1472,121 @@ body {
   justify-content: center;
   flex: 0 0 auto;
 }
+/* ═══ « EN TASSE », VERT CLAIR — son choix du 2 septembre 2026 ═════════════
+ *
+ * Planche `appli/note-vocale-tasse-et-envoi.html`, matière 6 et flèche « en
+ * tasse ». Ce qui remplace l'aplat vert pin plat du 30 août, et pourquoi :
+ * sa plainte du matin — *« je n'aime pas la grosse note vocale verte »* — ne
+ * visait pas la COULEUR mais l'aplat. Le même vert, éclairé et cerclé, lui
+ * convient ; c'est ce que la planche a permis de trancher, en posant côte à
+ * côte le brun et le vert dans la même matière.
+ *
+ * TROIS ANNEAUX, ET LEURS ÉPAISSEURS SONT RETENUES, PAS DÉRIVÉES. Le filet
+ * d'or au bord, la porcelaine, un second filet d'or, puis le liquide. Sur la
+ * flèche (46 px) les mêmes anneaux à proportion tomberaient à 1,1 et 0,63 px :
+ * sous un pixel, un anneau ne s'affiche plus — il devient une teinte pâle, et
+ * la tasse disparaît. On garde donc la LISIBILITÉ du trait avant sa
+ * proportion.
+ *
+ * CE QUI SUIT LA CHARTE ET CE QUI NE LA SUIT PAS :
+ *   · l'or du filet — il vaut déjà la même valeur sur les huit chartes
+ *     (`OR_ORIGINE`), donc rien à faire ;
+ *   · les deux verts — `sage` et `sageLight` sont FIXES par construction
+ *     (`design-tokens.ts`), au même titre qu'`alert` : ils ne changent pas
+ *     d'un thème à l'autre, ce qui en fait justement une matière ;
+ *   · la porcelaine reste claire sur les huit. Une porcelaine qui suivrait le
+ *     fond deviendrait sombre sur Nuit et Sylve — l'anneau disparaîtrait, et
+ *     avec lui l'objet. C'est le même arbitrage que pour `sage`.
+ *
+ * L'ANIMATION EST LENTE À DESSEIN : huit secondes par tour. On ne doit pas la
+ * voir tourner, on doit sentir que ce n'est pas figé. Elle s'arrête sous
+ * `prefers-reduced-motion`. */
 .atlas-micro {
   position: relative;
   z-index: 2;
-  width: 76px;
-  height: 76px;
+  width: 80px;
+  height: 80px;
   border-radius: 99px;
   display: flex;
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  /* Les deux ombres viennent de sa planche (`.micro-plein`, `.envoyer`) : elles
-   * décollent le disque du fond, et c'est ce qui le désigne comme LE geste de
-   * l'écran. Sans elles, il se lit comme une pastille posée à plat. */
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
-  transition: transform 0.2s;
+  /* **Le signe est BLANC, et sa couleur vit ICI, pas dans l'écran.** La
+   * matière est fixe sur les huit chartes ; son pictogramme l'est donc aussi.
+   * L'écrire en style en ligne reviendrait à poser une couleur en clair dans
+   * un `.tsx`, ce que le dépôt refuse. Mesuré : le blanc tient 3,2 de
+   * contraste sur ce vert — au-dessus du seuil de 3 pour un pictogramme. */
+  color: #ffffff;
+  background: radial-gradient(
+    circle at 34% 26%,
+    var(--atlas-sageLight, #9fbd82) 0%,
+    var(--atlas-sage, #7d9a6d) 50%,
+    var(--atlas-rustDeep, #4f5f4c) 100%
+  );
+  /* Le creux sous le bord dit que le liquide est DANS la tasse ; l'ombre
+   * portée la décolle du papier, et c'est ce qui désigne LE geste de l'écran. */
+  box-shadow:
+    inset 0 0 0 1.1px var(--atlas-or, #B98B47),
+    inset 0 0 0 3px #f3efe6,
+    inset 0 0 0 4.1px var(--atlas-or, #B98B47),
+    inset 0 8px 12px -6px rgba(47, 59, 47, 0.42),
+    0 10px 22px -6px rgba(79, 95, 76, 0.36);
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.22s;
 }
-.atlas-micro:active { transform: scale(0.95); }
-/* `display:block` n'est pas cosmétique : un `<span>` resté en ligne ne prend ni
- * `width` ni `height`, sa boîte vaut zéro pixel, et le disque s'affiche vide.
- * Trouvé sur capture le 30 août 2026 — aucun contrôle ne le voyait, l'élément
- * existant bel et bien. */
-.atlas-carre-stop {
-  display: block;
-  width: 19px;
-  height: 19px;
-  border-radius: 3px;
-}
-
-/* LES DEUX SOUFFLES — « 1,5 cm max de chaque côté », sa mesure exacte, écrite
- * en centimètres plutôt que traduite en pixels : dans six mois, « 57 px » ne
- * dirait plus d'où il sort. Ils s'éteignent vers l'extérieur — une onde qui
- * s'arrête net donne un bord, et c'est un souffle qu'on veut. */
-/* **`atlas-frange`, et NI `atlas-souffle` NI `atlas-aile` — les deux étaient
- * déjà pris, et les deux ont été essayés avant celui-ci.**
- *
- * `atlas-souffle`, ce sont les trois points de l'attente (sa proposition C du
- * 12 août) ; `atlas-aile`, les barreaux du lecteur de note vocale. Écrites plus
- * bas dans le fichier, mes règles les écrasaient l'une puis l'autre : points
- * devenus des barreaux de 2 px invisibles, ailes du lecteur mises en absolu sur
- * 1,5 cm. **Aucun test ne l'aurait dit** — ces dessins vivent sur des écrans que
- * rien ne rapproche, et une feuille de style n'a pas de portée. Trouvé en
- * relisant mon propre diff, et confirmé en comparant la liste des `.atlas-*`
- * d'avant et d'après :
- *
- *     git show HEAD:src/app/globals.css | grep -o "\.atlas-[a-z0-9-]*" | sort -u
- *
- * **La règle qui en sort :** avant de baptiser une classe dans ce fichier,
- * vérifier qu'elle est libre. Un nom repris ne casse pas l'écran qu'on regarde,
- * il casse l'autre. */
-.atlas-frange {
+/* La surface qui tourne, et l'ondulation de la tension de surface à l'appui :
+ * deux pseudo-éléments plutôt qu'un, parce que l'un tourne en permanence et
+ * l'autre ne vit qu'un demi-tiers de seconde sous le doigt. */
+.atlas-micro::before {
+  content: "";
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1.5cm;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2px;
+  inset: 5px;
+  border-radius: 99px;
   pointer-events: none;
-  overflow: hidden;
-  transition: opacity 0.2s;
+  background: radial-gradient(circle at 68% 74%, rgba(255, 255, 255, 0.34), transparent 58%);
+  animation: atlas-tourner 8s linear infinite;
 }
-.atlas-frange-g {
-  right: calc(100% + 9px);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000);
-  mask-image: linear-gradient(90deg, transparent, #000);
-}
-.atlas-frange-d {
-  left: calc(100% + 9px);
-  -webkit-mask-image: linear-gradient(270deg, transparent, #000);
-  mask-image: linear-gradient(270deg, transparent, #000);
-}
-.atlas-frange i {
-  display: block;
-  flex: 0 0 2px;
-  border-radius: 2px;
-  opacity: 0.7;
-}
-/* **Ils s'effacent dès qu'on appuie, et c'est de la géométrie.** Chaque souffle
- * occupe 1,5 cm plus 9 px de part et d'autre du disque, soit 66 px ; la poubelle
- * et l'avion ne peuvent se poser qu'à une vingtaine de pixels — la largeur d'un
- * téléphone ne laisse pas le choix. Les barreaux passaient donc PAR-DESSUS les
- * deux gestes, à l'endroit exact où il faut viser. Vu sur capture, jamais
- * autrement. Le mouvement n'est pas perdu : l'onde du dessous le porte. */
-.atlas-dictee[data-etat="dicte"] .atlas-frange,
-.atlas-dictee[data-etat="pause"] .atlas-frange,
-.atlas-dictee[data-etat="envoi"] .atlas-frange {
+.atlas-micro::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 99px;
+  pointer-events: none;
   opacity: 0;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55);
 }
+.atlas-micro:active {
+  transform: scale(0.97);
+  box-shadow:
+    inset 0 0 0 1.1px var(--atlas-or, #B98B47),
+    inset 0 0 0 3px #f3efe6,
+    inset 0 0 0 4.1px var(--atlas-or, #B98B47),
+    inset 0 10px 16px -6px rgba(47, 59, 47, 0.52),
+    0 4px 12px -6px rgba(79, 95, 76, 0.46);
+}
+.atlas-micro:active::after { animation: atlas-onduler 0.5s ease-out; }
+@keyframes atlas-tourner { to { transform: rotate(360deg); } }
+@keyframes atlas-onduler {
+  from { opacity: 0.8; box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55); }
+  to { opacity: 0; box-shadow: 0 0 0 16px rgba(255, 255, 255, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-micro::before { animation: none; }
+}
+/* LES DEUX SOUFFLES SONT PARTIS — sa demande du 5 septembre 2026 : *« supprime
+ * moi les traits jaunes de chaque côté de la note vocale »*. Il les avait
+ * demandés le 30 août (« le micro, mais avec des petites ondes de chaque
+ * côté ») ; il les fait retirer six jours plus tard. Les règles s'en vont avec
+ * le dessin plutôt que de dormir ici : une feuille de style qui garde ce que
+ * plus rien ne rend se recopie ensuite sans qu'on sache ce qu'elle décorait.
+ *
+ * **Ce qu'il faut garder de ce qui était écrit là**, et qui vaut pour le
+ * prochain dessin posé dans ce fichier : `atlas-frange` avait été baptisée
+ * ainsi parce que `atlas-souffle` (les trois points de l'attente) et
+ * `atlas-aile` (les barreaux du lecteur) étaient DÉJÀ PRIS — et les avoir
+ * repris écrasait silencieusement deux écrans qu'aucun test ne rapprochait.
+ * Avant de baptiser une classe ici, vérifier qu'elle est libre ;
+ * `scripts/test-classes-atlas-uniques.ts` le tient désormais. */
 
-/* Le chrono et l'onde qui se déroule, sous le trio. */
-.atlas-sous-trio {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  margin-top: 8px;
-  padding: 0 4px;
-}
 .atlas-compteur {
   display: flex;
   align-items: center;
@@ -1396,24 +1605,191 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.25; }
 }
-.atlas-dictee[data-etat="pause"] .atlas-pastille { animation: none; opacity: 0.3; }
 
 /* L'onde part PLEINE, à plat : sinon les deux premières secondes montrent un
  * trait qui pousse dans le vide, et la barre paraît mal cadrée. */
-.atlas-onde {
+/* ═══ LE TRAIT — son choix du 2 septembre 2026 ════════════════════════════
+ *
+ * Il remplace les barreaux. Sa demande : *« pour la dictée j'aimerais essayer
+ * le trait à la voix, voir comment il augmente »*.
+ *
+ * **Un trait continu garde la voix d'un seul tenant** là où des barreaux la
+ * découpent en morceaux. C'est la même information — la force du son —, écrite
+ * à la plume plutôt qu'en bâtons.
+ *
+ * **ET IL NE DÉFILE PAS PAR UNE ANIMATION : ce sont les MESURES qui avancent.**
+ * Le composant tient soixante cases ; à chaque tour il pousse la mesure du
+ * moment à droite et tout glisse d'un cran. Ce qu'il a dit il y a deux
+ * secondes reste donc mince à gauche — le trait garde sa voix au lieu de la
+ * rejouer. Une animation CSS ferait passer un motif figé sous ses yeux, ce qui
+ * est exactement le contraire de « voir comment il augmente ».
+ *
+ * Le fondu des deux bords évite que le trait ne bute contre le chrono à
+ * gauche et contre la flèche à droite. */
+.atlas-trait {
   flex: 1;
   min-width: 0;
   height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 2px;
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000);
-  mask-image: linear-gradient(90deg, transparent, #000 22%, #000);
+  position: relative;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
 }
-.atlas-onde i {
-  flex: 0 0 2px;
-  border-radius: 2px;
-  opacity: 0.85;
+.atlas-trait svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 26px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE BOUTON PLEIN : SA COULEUR, ET SON GESTE SOUS LE DOIGT
+
+   **Ses deux décisions du 31 août 2026, prises sur planche**
+   (`appli/le-bouton-qui-repond.html`) :
+
+     · *« mets-moi la couleur 8 partout sur chaque bouton plein de couleur
+       verte de l'appli, surtout pas ceux qui sont creux ou d'une autre couleur
+       que la verte »* — puis, après avoir vu les deux verts côte à côte sur le
+       vrai bouton : **« je garde le #29382F »**, plus sourd que le vert 8 ;
+     · *« comme force du geste tu mets discret sur chaque bouton qui demande à
+       être appuyé »* — l'échelle 0,975, la plus légère des trois.
+
+   Puis, quand la question des sept chartes lui a été posée : **« les boutons à
+   changer c'est seulement pour la version origine, ne touche pas aux autres
+   apparences ! »**
+
+   ─── CE QUI SÉPARE LA COULEUR DU GESTE, ET POURQUOI ────────────────────────
+
+   **LA COULEUR N'EST PLUS ICI DEPUIS LE 3 SEPTEMBRE 2026, et c'est le
+   correctif.** Elle arrivait par un `background-image: var(--atlas-plein-fond)`
+   peint PAR-DESSUS le fond en ligne des boutons — le seul calque capable de
+   supplanter un style en ligne. Les écrans posent désormais `colors.plein`
+   eux-mêmes : la cause a disparu, et le calque avec elle. Ce qui reste ici est
+   ce qui doit y être — le geste, et lui seul.
+
+   Sa décision de ce jour-là, sur `appli/boutons-verts.html` : **« verdict la D
+   à plat sans brillant, donc tout ce qui est bouton cliquable tu remplaces par
+   la D »** — le vert du milieu de sa note vocale, #7d9a6d. Le « seulement pour
+   la version origine » du 31 août tient toujours : c'est `chartes.ts` qui
+   décide, charte par charte.
+
+   **Le geste, lui, vaut PARTOUT.** Un bouton qui répond au doigt n'est pas une
+   apparence : c'est le même geste quelle que soit la couleur, et le priver aux
+   six autres chartes ferait deux comportements dans la même application.
+
+   ─── POURQUOI UN VOILE, ET NON UN `filter` ─────────────────────────────────
+
+   `brightness()` éclaircirait AUSSI le texte, qui perdrait exactement le
+   contraste que l'éclaircissement du fond vient de lui coûter. Le voile est un
+   calque posé derrière les lettres.
+
+   Et il s'ÉCLAIRCIT, il ne s'assombrit pas : sous un doigt, un aplat qui fonce
+   disparaît dans l'ombre de la main. C'est ce que montrait sa capture.
+
+   ─── CONTRASTES MESURÉS, PAS ESTIMÉS ───────────────────────────────────────
+
+   Crème `#faf9f5` sur le vert du 3 septembre `#7d9a6d` : **2,97:1** au repos,
+   et **2,55:1** sous le voile de l'appui. Il en faudrait 4,5.
+
+   **C'est un choix, pas un oubli, et il faut le savoir avant d'y toucher.** Le
+   chiffre était écrit EN ROUGE sous chaque bouton de la planche — « 3,0 — il en
+   faut 4,5 » — quand il a répondu « verdict la D ». Le vert d'avant, #29382F,
+   en tenait 11,72 au repos et 7,55 sous le doigt.
+
+   Ce qui reste à sa main s'il trouve le mot pâle en plein soleil : passer les
+   lettres à l'encre plutôt qu'à la crème — #1c1c1a sur #7d9a6d tient **5,46**,
+   sans toucher à la couleur qu'il a retenue. Ne pas le faire sans lui : le
+   blanc sur vert est ce qu'il regarde depuis trois jours.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.atlas-plein {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 190ms cubic-bezier(0.22, 0.8, 0.3, 1),
+    box-shadow 220ms ease;
+}
+
+/* Le voile de l'appui. `inset: 0` le cale sur le bouton — d'où le
+   `position: relative` ci-dessus, qui n'est pas décoratif. */
+.atlas-plein::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+/* **L'aller est plus rapide que le retour.** Le doigt doit trouver le bouton
+   déjà enfoncé, et le voir remonter quand il lâche ; des durées égales font un
+   bouton mou, qu'on relâche sans savoir si le geste est parti. */
+.atlas-plein:active {
+  transform: scale(0.975);
+  transition-duration: 70ms, 90ms;
+}
+.atlas-plein:active::after {
+  opacity: 0.14;
+  transition-duration: 90ms;
+}
+
+/* Le contenu passe DEVANT le voile. Sans cela, le texte pâlirait avec le fond
+   et l'appui coûterait le contraste qu'il vient de gagner. */
+.atlas-plein > * {
+  position: relative;
+}
+
+/* Un bouton éteint ne répond pas : il n'y a rien à confirmer. */
+.atlas-plein:disabled {
+  transform: none;
+}
+.atlas-plein:disabled::after {
+  opacity: 0;
+}
+
+/* ═══ LE GALET A ÉTÉ RETIRÉ LE 4 SEPTEMBRE 2026 — ne pas le remettre ═════════
+ *
+ * Il l'avait demandé le 2 septembre (planche `appli/facturer-note-vocale.html`,
+ * déclinaison 4 : *« code moi la A le calme avec la 4 le galet »*), puis étendu
+ * aux deux onglets. Deux jours plus tard, en rouvrant « Terminés » :
+ * *« j'avais demandé à changer tous les boutons en vert clair, or si tu regardes
+ * la page terminé ils n'ont pas changé »* — et, la planche en main : **« oui,
+ * vert clair partout »**.
+ *
+ * **Ce que ça tranche, et qui vaut au-delà de cet écran.** Il n'y a plus qu'une
+ * matière pour ce qu'on appuie dans Atlas : l'aplat `colors.plein`. La note
+ * vocale (`.atlas-micro`) garde la sienne, et elle seule — c'est un OBJET, pas
+ * un bouton, et il l'a nommément mise à part le 3 septembre.
+ *
+ * **Ce qui est parti avec :** le dégradé en long, le filet d'or, le blanc écrit
+ * en clair, et `scripts/test-galet.ts` qui les gardait. Un contrôle qui ne
+ * mesure plus rien est pire qu'absent (`CLAUDE.md` §5) : il rassure.
+ *
+ * Le dessin reste consultable sur la planche, si l'usage lui donne tort. */
+
+/* ─── LA PLAGE D'UNE LIGNE QUI ATTEND SON PRIX ────────────────────────────────
+ *
+ * **Son choix du 5 septembre 2026, sur planche** (`ligne-qui-attend-son-prix.html`,
+ * la B) : le mot « à chiffrer » dans la case, ET les deux plages de la ligne
+ * passées à l'or. Il a écarté la A, qui ne teintait rien : la B se retrouve
+ * **en défilant, sans lire**, et c'est ce qui compte sur un devis de dix lignes.
+ *
+ * **POURQUOI UNE CLASSE, ET NON UN STYLE EN LIGNE.** `color-mix` n'existe pas
+ * avant iOS 16.2. Une couleur inconnue posée en style en ligne est ignorée, et
+ * l'élément retombe alors sur *aucun fond* : la plage DISPARAÎTRAIT, sur un
+ * écran dont tout le dessin repose sur elle (`HANDOVER.md`, piège 18 — un champ
+ * sans plage se lit comme « pas cliquable »). Écrite ici, la déclaration
+ * ordinaire tient le repli et `@supports` ne pose la teinte que là où elle est
+ * comprise : au pire la ligne perd sa couleur et garde son mot.
+ *
+ * **C'est `or` et non `orTexte`** : cette teinte est du dessin, pas un mot. Le
+ * mot, lui, est écrit dans la couleur qui tient 4,5 (`design-tokens.ts`). */
+.atlas-plage-attente {
+  background-color: var(--atlas-card, #faf9f5);
+}
+@supports (background-color: color-mix(in srgb, red 10%, blue)) {
+  .atlas-plage-attente {
+    background-color: color-mix(in srgb, var(--atlas-or, #B98B47) 13%, var(--atlas-card, #faf9f5));
+  }
 }

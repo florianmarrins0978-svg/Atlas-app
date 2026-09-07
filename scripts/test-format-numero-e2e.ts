@@ -69,7 +69,7 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
-  await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/reglages/documents/numero`, { waitUntil: "networkidle" });
   await page.waitForSelector('button[data-atlas^="format-"]', { timeout: 30_000 });
 
   await cas("le réglage est dans « Devis & factures » — là où il l'a demandé", async () => {
@@ -229,7 +229,7 @@ async function main() {
   await cas("on repose le défaut derrière soi", async () => {
     // Une suite qui laisse le décor de travers fait rougir sa voisine sur du
     // code juste (`CLAUDE.md` §5 bis).
-    await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/reglages/documents/numero`, { waitUntil: "networkidle" });
     await page.waitForSelector('[data-atlas="format-annee-6"]', { timeout: 30_000 });
     await page.click('[data-atlas="format-annee-6"]');
     const lu = await attendreEnBase(formatEnBase, (v) => v === "annee-6");

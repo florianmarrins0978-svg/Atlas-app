@@ -53,8 +53,14 @@ export default function BandeDuree({ label, valeur, onChange, aide, disabled }: 
           </option>
         ))}
       </select>
+      {/* **L'encre douce plutôt que le gris — 4 septembre 2026.** Cette phrase
+          est le seul endroit où la bande apprend quelque chose : « 8 jours
+          ouvrés d'affilée seront réservés ». Le gris des méta tient 2,85 à 3,59
+          de contraste sur les six chartes claires, pour un seuil de 4,5 — la
+          première chose qui disparaît en plein soleil, sur un chantier. Un
+          avertissement qu'on ne lit pas n'a pas averti. */}
       {aide && (
-        <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
+        <p className={`mt-2 ${texteSituation}`} style={{ color: colors.inkSoft }}>
           {aide}
         </p>
       )}

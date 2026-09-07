@@ -62,9 +62,10 @@ async function main() {
   // moins souvent qu'un exemple, et elle dit ce que le champ EST.
   await page.getByLabel(/Nom du client/i).fill(client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30000 });
-  const fiche = page.url();
+  // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
+  // le navigateur donnait « devis-complet » depuis que la fiche du chantier
+  // est retirée (`ARCHITECTURE.md` §254).
+  const fiche = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
   const id = fiche.split("/").pop()!;
 
   await cas("un chantier neuf se rouvre LÀ OÙ IL EN EST", async () => {
@@ -86,9 +87,13 @@ async function main() {
     const lien = page.locator(`a:has-text("${marque}")`).first();
     await lien.waitFor({ state: "visible", timeout: 20000 });
     const href = await lien.getAttribute("href");
-    assert.ok(
-      href === `/chantiers/${id}` || href === `/chantiers/${id}/devis-complet`,
-      `la ligne mène à « ${href} » : ce n'est ni la fiche du chantier ni son devis`
+    // **La fiche du chantier n'est plus une réponse acceptable** (4 septembre
+    // 2026, `ARCHITECTURE.md` §254) : son adresse ne rend qu'une redirection,
+    // et la laisser ici accepterait un aller-retour invisible au patron.
+    assert.equal(
+      href,
+      `/chantiers/${id}/devis-complet`,
+      `la ligne mène à « ${href} » au lieu du devis où il s'est arrêté`
     );
   });
 
@@ -194,10 +199,22 @@ async function main() {
     );
   });
 
-  await cas("la fiche reste à un doigt — reprendre ne ferme aucune porte", async () => {
-    // Photos, dictée, tiroir : tout reste joignable par la flèche de retour.
-    const retour = page.locator(`a[href="/chantiers/${id}"]`).first();
+  await cas("reprendre ne ferme aucune porte — la flèche mène à la fiche client", async () => {
+    // **Depuis le 31 août 2026 au soir, elle mène à la fiche CLIENT** et non
+    // plus à celle du chantier : *« je veux tout le temps revenir à cette page
+    // et seulement celle-là »* (`ARCHITECTURE.md` §230).
+    //
+    // Ce que ce cas défend n'a pas changé pour autant : que le devis ait une
+    // sortie, et qu'elle rouvre ce qu'il avait sous la main. La fiche client
+    // porte ses photos et son anneau depuis §226 — reprendre ne ferme donc
+    // toujours aucune porte, et la fiche du chantier reste à la barre du bas.
+    const retour = page.locator('[data-atlas="retour-du-devis"]').first();
     await retour.waitFor({ state: "visible", timeout: 15000 });
+    const cible = await retour.getAttribute("href");
+    assert.ok(
+      cible?.startsWith(`/chantiers/${id}/coordonnees`),
+      `la flèche du devis mène à « ${cible} » : ce n'est pas la fiche client de ce chantier`
+    );
   });
 
   await contexte.close();

@@ -50,6 +50,7 @@ relues à chaque session) :
 25. [Peut-on ouvrir Atlas avec Face ID, au lieu d'un mot de passe ?](#25-peut-on-ouvrir-atlas-avec-face-id-au-lieu-dun-mot-de-passe-)
 26. [Combien d'heures avons-nous passé à créer Atlas ?](#26-combien-dheures-avons-nous-passé-à-créer-atlas-)
 27. [Le format de mes numéros de facture, c'est obligatoire ?](#27-le-format-de-mes-numéros-de-facture-cest-obligatoire-)
+28. [Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?](#28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-)
 
 ---
 
@@ -1602,6 +1603,48 @@ depuis votre page habituelle, **« À essayer »** — c'est le premier lien.
 **La seule chose à me dire : ces trois écrans vous vont-ils ?** Si un seul vous
 va, on ne fait que celui-là.
 
+### Ce qui a été décidé — 6 septembre 2026
+
+**Cette question est restée sans réponse dix-sept jours**, et le 5 septembre
+vous avez demandé qu'elle soit tranchée plutôt que reposée une troisième fois,
+avec cette consigne : *« imagine que la plupart des patrons qui vont utiliser
+l'app sont des vieux qui ont du mal à se servir de leur téléphone »*.
+
+**Verdict : oui pour les réglages, et c'est codé.** Les douze phrases sous les
+titres sont parties. Le motif était déjà dans votre question du 19 août — une
+phrase d'explication ne répare jamais un mauvais titre, elle le cache : on a
+donc corrigé les titres, puis retiré les phrases.
+
+Quatre titres ont changé parce qu'ils **mentaient**, pas parce qu'ils sonnaient
+mal :
+
+| Avant | Après | Ce qu'il promettait de faux |
+|---|---|---|
+| Intégrations | **Mon agenda** | « calendrier, comptabilité et services connectés » — les deux derniers n'existent pas, et l'écran derrière s'appelle « Mon agenda » |
+| Sécurité & données | **Mes données** | aucune sécurité ne s'y règle : on y télécharge un fichier |
+| Connexion | **Mot de passe** | nomme un mécanisme, pas ce qu'on vient y faire |
+| Apparence | **Couleurs** | plus large que l'écran : on n'y choisit que des couleurs |
+
+**Ce qui n'a pas été touché :** « Tarifs & catalogue » et « Devis & factures ».
+Ce sont vos mots, ils sont justes, et neuf contrôles les lisent.
+
+**Mesuré sur votre écran**, à 390 × 664 : 1 310 px de haut → **1 145**, six
+rubriques atteintes sans défiler → **huit**, 89 mots → **30**. L'écran ne tient
+toujours pas en une seule fenêtre, et il ne le tiendra pas — douze rubriques à
+56 px de haut, plus la version en bas, font davantage que 664. Serrer les
+lignes rendrait au pouce ce qu'on gagnerait à l'œil.
+
+**Les deux autres écrans de la maquette « Moins de mots » — la fiche client et
+l'accueil — ne sont pas faits.** Ils appartiennent à des zones reprises entre
+le 2 et le 5 septembre par d'autres lots ; les refaire au jugé serait
+exactement l'erreur que cette question cherchait à arrêter.
+
+**Et le compteur de mots qui empêche de regrossir n'existe toujours pas.**
+C'était la vraie réponse à « il y aura une quatrième fois ». Il reste à écrire.
+
+Détail complet : `docs/lot-sommaire-des-reglages.md`.
+Planche : `https://florianmarrins0978-svg.github.io/Atlas-app/sommaire-des-reglages.html`
+
 ---
 
 ## 24. Faut-il une licence pour se servir des données de l'INRAE ?
@@ -1834,3 +1877,44 @@ possible, et le dit là où ça ne l'est pas.
 **Changer de format ne renumérote rien.** Vos factures déjà émises gardent leur
 numéro. Les réécrire creuserait un trou dans la suite — exactement ce qu'on
 cherche à éviter.
+
+---
+
+## 28. Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?
+
+**Parce que vous l'avez décidé ainsi, le 4 septembre 2026** — *« non, garde les
+couleurs d'origine »*.
+
+### Ce qui vous avait été signalé
+
+Votre client reçoit deux choses, à une minute d'intervalle : **la page** qu'il
+ouvre depuis son SMS, puis **le PDF** qu'il télécharge depuis cette page.
+
+Le PDF suit le papier et la couleur d'accent que vous réglez dans « Devis &
+factures ». La page, non : ses couleurs sont fixées dans le code. Les deux ne se
+ressemblent donc pas tout à fait, et le fond que vous choisissez n'atteint pas
+cet écran-là.
+
+### Ce que vous avez répondu, et ce que ça veut dire
+
+On ne touche à rien. Les deux identités cohabitent, et c'est assumé.
+
+| | |
+|---|---|
+| votre **PDF** | suit l'allure que vous réglez |
+| la **page** de votre client | garde ses couleurs, quoi que vous régliez |
+
+### Ce qui n'a jamais été en cause
+
+**Votre charte de couleurs à vous ne part pas chez le client, et n'a jamais
+risqué de partir.** Si vous mettez Atlas en « Nuit », votre devis ne devient pas
+noir chez lui : l'application coupe délibérément la charte sur les deux pages
+que votre client reçoit. C'est vérifié, et ce n'est pas ce dont il s'agissait
+ici.
+
+### Si vous changez d'avis
+
+C'est une demi-journée, pas plus : la page passerait par le même endroit que le
+PDF. Mais tant que vous ne le demandez pas, **personne ne doit le faire « pour
+faire propre »** — c'est écrit dans le dépôt (`ARCHITECTURE.md` §248), pour
+qu'une session ne défasse pas votre choix en croyant bien faire.

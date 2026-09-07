@@ -8,7 +8,7 @@ import { SUITES_SERVEUR } from "./_suites-serveur";
 const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
 const TSX = path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs");
-const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
+import { CHEMIN_NEXT, arreterArbre } from "./_processus";
 
 function attendre(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -479,7 +479,18 @@ async function main() {
   // code juste. Un empaqueteur qui fabrique des faux rouges ne mesure rien —
   // il fait pire que ne rien mesurer, puisqu'on cherche la panne dans le
   // produit (`CLAUDE.md` §5). La mémoire reste donc à traiter ailleurs.
-  const serveur = spawn(NPM, ["run", "dev", "--", "-p", "3000"], {
+  // **ON LANCE `next` DIRECTEMENT, PAS `npm run dev` — et ce n'est pas un
+  // raccourci.** Passer par `npm` obligeait à un shell sous Windows (`npm` y
+  // est un `.cmd` que Node refuse depuis la CVE-2024-27980), et le shell
+  // AVALAIT le journal : `atlas-serveur-e2e.log` restait à zéro octet. Quand le
+  // serveur est mort au milieu des suites, il n'y avait donc rien à lire — un
+  // contrôle qui ne sait pas dire POURQUOI il tombe ne vaut guère mieux qu'un
+  // contrôle absent (`AGENTS.md`).
+  //
+  // `next` est un script Node : on le lance par l'exécutable qui nous porte
+  // déjà. Plus de `.cmd`, plus de shell, plus d'interposition — le journal
+  // revient, et l'arbre se tue proprement des deux côtés.
+  const serveur = spawn(process.execPath, [CHEMIN_NEXT, "dev", "-p", "3000"], {
     env: { ...process.env, ATLAS_URL_PUBLIQUE: "https://atlas-suites.test" },
     stdio: ["ignore", journalFd, journalFd],
     detached: true,
@@ -509,7 +520,7 @@ async function main() {
   if (!pret) {
     console.error("❌ Le serveur n'a jamais répondu — abandon.");
     montrerJournalServeur();
-    process.kill(-serveur.pid!);
+    arreterArbre(serveur.pid);
     process.exit(1);
   }
 
@@ -537,7 +548,7 @@ async function main() {
     );
     if (fichiers.length === 0) {
       console.error(`❌ Aucune suite ne correspond à « ${motifDemande} ».`);
-      process.kill(-serveur.pid!);
+      arreterArbre(serveur.pid);
       process.exit(1);
     }
   }
@@ -597,7 +608,7 @@ async function main() {
   // Le serveur a pu mourir de lui-même : le tuer alors lève ESRCH et masque le
   // bilan, qui est la seule ligne que quiconque va lire.
   try {
-    process.kill(-serveur.pid!);
+    arreterArbre(serveur.pid);
   } catch {
     // Déjà parti — rien à faire, et surtout rien à cacher.
   }

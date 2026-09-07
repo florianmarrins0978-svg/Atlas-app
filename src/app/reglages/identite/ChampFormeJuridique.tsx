@@ -60,7 +60,7 @@ export default function ChampFormeJuridique({
 
   return (
     <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
-      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Forme juridique
       </span>
 
@@ -111,7 +111,7 @@ export default function ChampFormeJuridique({
                 </span>
                 {/* Le nom complet à côté du sigle : « EURL » ne se retient pas,
                     et sans lui il faudrait chercher ailleurs pour choisir. */}
-                <span className={`flex-1 text-right ${texteSituation}`} style={{ color: colors.muted }}>
+                <span className={`flex-1 text-right ${texteSituation}`} style={{ color: colors.inkSoft }}>
                   {f.nom}
                 </span>
               </button>

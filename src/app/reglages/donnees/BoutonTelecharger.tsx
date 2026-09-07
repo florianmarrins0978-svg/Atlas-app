@@ -74,8 +74,8 @@ export default function BoutonTelecharger({ nomFichier }: { nomFichier: string }
         download={nomFichier}
         onClick={auClic}
         data-atlas="telecharger-mes-donnees"
-        className="inline-block rounded-full px-5 py-3 text-[15px] font-medium"
-        style={{ backgroundColor: colors.rust, color: colors.cream }}
+        className="atlas-plein inline-block rounded-full px-5 py-3 text-[15px] font-medium"
+        style={{ backgroundColor: colors.plein, color: colors.cream }}
       >
         {enCours ? "Un instant…" : "Télécharger mes données"}
       </a>

@@ -2,6 +2,7 @@ import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Le rythme de la TVA — au mois ou au trimestre — et le calendrier qui suit.
@@ -22,7 +23,7 @@ import { pool } from "../src/server/db/client";
  * Atlas ne connaît pas. L'écran doit renvoyer au comptable, et le dire.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let passed = 0;
 let failed = 0;
@@ -52,7 +53,7 @@ async function choisir(page: Page, libelle: "Tous les mois" | "Tous les trimestr
   // La périodicité a rejoint le régime de TVA dans « Mon entreprise » le
   // 14 août 2026 : deux réglages fiscaux à deux endroits (ARCHITECTURE.md §96).
   await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
+  await page.waitForSelector('[data-atlas="periodicite-tva"]', { timeout: 30_000 });
   await page.getByRole("button", { name: libelle, exact: true }).click();
 
   // **On RECHARGE pour vérifier, au lieu de croire le bouton.** L'écran coche
@@ -69,7 +70,7 @@ async function choisir(page: Page, libelle: "Tous les mois" | "Tous les trimestr
   for (const essai of [1, 2, 3]) {
     await page.waitForTimeout(essai * 400);
     await page.reload({ waitUntil: "domcontentloaded" });
-    await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
+    await page.waitForSelector('[data-atlas="periodicite-tva"]', { timeout: 30_000 });
     const coche = await page
       .getByRole("button", { name: libelle, exact: true })
       .getAttribute("aria-pressed");
@@ -186,6 +187,12 @@ async function main() {
     const avant = (await page.locator("h1").first().textContent())?.trim() ?? "";
     assert.ok(!/trimestre/i.test(avant), `l'écran ne part pas d'un mois : « ${avant} »`);
 
+    // **Les deux mots soulignés vivent dans une feuille depuis le 3 septembre
+    // 2026.** Ils ouvraient l'écran, AVANT son titre et son chiffre ; ils sont
+    // maintenant derrière la ligne de provenance, sous le total. Le geste du
+    // patron a donc un appui de plus, et c'est celui-là qu'on rejoue — pas
+    // celui d'un écran qui n'existe plus.
+    await page.click('[data-atlas="declarations"]');
     await page.getByRole("button", { name: "Tous les trois mois", exact: true }).click();
 
     // **On attend le TITRE, pas un délai.** Un `waitForTimeout` mesurerait la
@@ -207,6 +214,11 @@ async function main() {
 
     // Et le retour au mois doit marcher pareil : une correction qui ne
     // fonctionnerait que dans un sens laisserait la moitié du défaut.
+    //
+    // **La feuille reste ouverte**, et c'est voulu : `RythmeTva` navigue par le
+    // routeur, sans recharger, donc rien ne la referme. La rouvrir ici visait
+    // un bouton que la feuille elle-même recouvrait — Playwright a tourné
+    // quarante-cinq secondes sur « intercepts pointer events ».
     await page.getByRole("button", { name: "Tous les mois", exact: true }).click();
     await page.waitForFunction(
       () => !/trimestre/i.test(document.querySelector("h1")?.textContent ?? ""),
@@ -223,8 +235,8 @@ async function main() {
     // La périodicité a rejoint le régime de TVA dans « Mon entreprise » le
   // 14 août 2026 : deux réglages fiscaux à deux endroits (ARCHITECTURE.md §96).
   await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
-    const texte = (await page.locator("section:has-text('Votre TVA')").last().textContent()) ?? "";
+    await page.waitForSelector('[data-atlas="periodicite-tva"]', { timeout: 30_000 });
+    const texte = (await page.locator('[data-atlas="periodicite-tva"]').textContent()) ?? "";
     // **CE CONTRÔLE A ÉTÉ RE-VISÉ le 24 août 2026, pas assoupli.**
     //
     // Il exigeait deux phrases — « votre comptable dit lequel vous concerne » et
@@ -239,7 +251,7 @@ async function main() {
     // reviendrait à inventer une donnée (`CLAUDE.md` §4) — et c'est cela qu'on
     // mesure désormais, sur le texte, pas sur un libellé qu'il peut vouloir
     // réécrire demain.
-    assert.ok(texte.trim().length > 0, "la rubrique « Votre TVA » est vide : rien n'est mesuré");
+    assert.ok(texte.trim().length > 0, "la rubrique de la périodicité est vide : rien n'est mesuré");
     // **Le mois reste annoncé comme le DÉFAUT** — sa phrase courte du 24 août.
     // Sans cela, les deux boutons se lisent comme un choix libre, et le mauvais
     // coûte un rappel de l'administration. Le motif est volontairement large :

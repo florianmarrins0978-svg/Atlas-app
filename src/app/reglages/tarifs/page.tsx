@@ -56,7 +56,7 @@ export default async function TarifsPage() {
         />
 
         <section className="mx-[26px] mt-[26px]">
-          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             Mes tarifs
           </p>
           <ReglagesClient
@@ -70,7 +70,7 @@ export default async function TarifsPage() {
             pas à l'artisan. Les déplier ici donnerait un écran de six mètres,
             exactement celui qu'on vient de défaire. */}
         <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             Main-d&apos;œuvre, machine et matière
           </p>
 

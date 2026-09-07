@@ -108,7 +108,7 @@ export default function AgendaAppleClient({ etat }: { etat: EtatAgendaApple }) {
     });
 
   return (
-    <div className="px-6 pt-8">
+    <div className="px-[26px] pt-8">
       <p className="text-[11px] uppercase tracking-[0.28em]" style={{ color: colors.or, marginBottom: 10 }}>
         iCloud
       </p>
@@ -229,8 +229,8 @@ export default function AgendaAppleClient({ etat }: { etat: EtatAgendaApple }) {
             type="button"
             disabled={enCours}
             onClick={relier}
-            className="w-full rounded-full px-5 py-3 text-[15px] font-medium"
-            style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+            className="atlas-plein w-full rounded-full px-5 py-3 text-[15px] font-medium"
+            style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
           >
             {enCours ? "Connexion à Apple…" : "Relier mon agenda Apple"}
           </button>

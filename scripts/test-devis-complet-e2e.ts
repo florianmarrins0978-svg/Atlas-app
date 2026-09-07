@@ -66,15 +66,14 @@ async function main() {
   const client = `M. Ledoux ${Date.now()}`;
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const chantierUrl = page.url();
-  const chantierId = chantierUrl.split("/").pop()!;
+  const chantierId = await creerPuisFiche(page);
+  const chantierUrl = `${BASE}/chantiers/${chantierId}`;
 
-  // --- 1. Le lien mène au document entier --------------------------------
-  // Par sa destination : la rédaction à la main vit dans le tiroir depuis le
-  // 11 août 2026, et s'y écrit « Devis à la main ».
-  await page.locator('[data-atlas="tiroir-fiche"] a[href$="/devis-complet"]').click();
+  // --- 1. Le chemin mène au document entier ------------------------------
+  // **Sans détour depuis le 4 septembre 2026.** La rédaction à la main vivait
+  // dans le tiroir de la fiche du chantier, retirée (`ARCHITECTURE.md` §254) ;
+  // « Je rédige à la main », sur la fiche client, y mène droit — c'est ce
+  // bouton que `creerPuisFiche` vient de toucher.
   await page.waitForURL(/\/devis-complet$/, { timeout: 10000 });
   // Le titre du DOCUMENT, et non un titre d'écran : la page ne porte plus que
   // le devis (« une page où il n'y a que le devis », le 5 août 2026).

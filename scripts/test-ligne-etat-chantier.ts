@@ -58,7 +58,7 @@ cas("un devis parti se dit parti, et porte sa date d'envoi", () => {
     aujourdHui: AUJOURDHUI,
   });
   assert.equal(l.etat, "Devis envoyé · sans réponse");
-  assert.equal(l.precision, "Envoyé le lundi 10 août.");
+  assert.equal(l.precision, "Lundi 10 août");
   assert.equal(l.enOr, true);
 });
 
@@ -70,7 +70,7 @@ cas("« devis envoyé » dit la même chose : c'est le même moment pour lui", (
 cas("à relancer : la ligne le dit, et garde la date", () => {
   const l = ligneEtatChantier({ statut: "a_relancer", photosCount: 0, envoyeLe: "2026-07-28", aujourdHui: AUJOURDHUI });
   assert.equal(l.etat, "Devis envoyé · à relancer");
-  assert.equal(l.precision, "Envoyé le mardi 28 juillet.");
+  assert.equal(l.precision, "Mardi 28 juillet");
 });
 
 cas("SANS envoi enregistré, aucune date n'est inventée", () => {
@@ -138,9 +138,9 @@ cas("INVARIANT — la date affichée est celle qu'on lui a donnée", () => {
   // Aucun décalage de fuseau : « 2026-08-01 » ne doit jamais s'afficher
   // « 31 juillet », ce que produirait un `new Date(iso)` naïf.
   for (const [iso, attendu] of [
-    ["2026-08-01", "Envoyé le samedi 1er août."],
-    ["2026-01-31", "Envoyé le samedi 31 janvier."],
-    ["2026-12-25", "Envoyé le vendredi 25 décembre."],
+    ["2026-08-01", "Samedi 1er août"],
+    ["2026-01-31", "Samedi 31 janvier"],
+    ["2026-12-25", "Vendredi 25 décembre"],
   ] as const) {
     const l = ligneEtatChantier({ statut: "en_attente_client", photosCount: 0, envoyeLe: iso, aujourdHui: AUJOURDHUI });
     assert.equal(l.precision, attendu);

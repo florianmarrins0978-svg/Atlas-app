@@ -4,6 +4,8 @@ import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { envoisFactures, factures, chantiers } from "../db/schema";
 import { lireObjet } from "../storage";
+import { allureSeuleDesDocuments } from "./entreprises";
+import { allureDepuisColonnes, type Allure } from "@/lib/allure-documents";
 import type { Ctx } from "./context";
 
 // **Transmettre la facture, puisque personne ne le fait à la place du patron.**
@@ -176,6 +178,27 @@ export type FacturePourClient = {
   entrepriseNom: string;
   totalTtc: string;
   echeanceLe: string | null;
+  /**
+   * L'allure de SES documents — typographie, fond, accent —, **FIGÉE au moment
+   * de l'envoi** (migration 0074).
+   *
+   * **Sa décision du 4 septembre 2026 :** *« une facture partie ne change plus
+   * d'aspect : mon client doit retrouver en ligne exactement ce qu'il a reçu en
+   * PDF, y compris six mois plus tard. Un changement de réglage ne rattrape pas
+   * les anciennes, c'est voulu. »* C'est la même règle que les montants,
+   * l'identité (0039) et les mentions légales (0072) : l'aspect était le dernier
+   * à ne pas l'être.
+   *
+   * **Ce n'est PAS sa charte d'écran**, et les deux ne doivent jamais se
+   * confondre : une facture ne part pas en noir chez le client parce qu'il a
+   * choisi « Nuit » (`layout.tsx`, `estPageDuClient`).
+   *
+   * **`null` rend la page d'aujourd'hui, au pixel près** — soit qu'il n'avait
+   * rien réglé (l'écran le reconnaît par `estLAllureParDefaut`), soit que la
+   * facture soit antérieure à 0074 et retombe alors sur l'allure vivante de
+   * l'entreprise.
+   */
+  allure: Allure | null;
 };
 
 export async function factureParJeton(
@@ -217,6 +240,22 @@ export async function factureParJeton(
       entrepriseNom: f.entrepriseNom,
       totalTtc: f.totalTtc,
       echeanceLe: f.dateEcheance ?? null,
+      // **L'allure FIGÉE de cette facture-là**, celle qui a servi à composer le
+      // PDF archivé : la page et le papier montrent donc la même chose, quoi
+      // qu'il règle ensuite (migration 0074).
+      //
+      // **Le repli porte l'historique, et rien d'autre.** Les trois colonnes
+      // nulles ensemble ne veulent pas dire « aucune allure » — cela s'écrit en
+      // clair depuis 0074 — mais « facture antérieure à la migration, son aspect
+      // n'a jamais été relevé ». On rend alors ce que la page rendait avant ce
+      // lot : l'allure vivante de l'entreprise, lue par le jeton et jamais par
+      // une entrée du client.
+      allure:
+        allureDepuisColonnes({
+          typographie: f.docTypographie,
+          fond: f.docFond,
+          accent: f.docAccent,
+        }) ?? (await allureSeuleDesDocuments(tx, envoi.entrepriseId)),
     };
   });
 }

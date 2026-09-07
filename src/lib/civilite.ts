@@ -65,30 +65,69 @@ export type CiviliteChoisie = Civilite | null | undefined;
 export const CIVILITE_PAR_DEFAUT = CIVILITES.mr;
 
 /**
+ * Les civilités qu'on RETIRE du nom, et la pastille que chacune désigne — ou
+ * `null` quand aucune des deux ne peut la porter.
+ *
+ * **Sa demande du 7 septembre 2026, capture de la dictée à l'appui :** il a
+ * dicté « monsieur Ludovic », et la case du nom portait « Monsieur Ludovic ».
+ * *« Il ne faut jamais qu'il y ait marqué monsieur, madame ou quoi que ce soit
+ * d'autre à part le nom dans cette case-là. Mais est-ce que c'est possible que
+ * lorsqu'il entend monsieur ou madame, il vienne sélectionner tout seul en haut
+ * soit le monsieur, soit le madame ? »*
+ *
+ * Le mot dit n'est donc pas perdu : il quitte le nom pour aller là où il est
+ * une DONNÉE — la pastille, d'où il se recopie sur le devis et la facture
+ * (`ChoixCivilite`). Un mot laissé dans le nom se serait retrouvé tel quel sur
+ * le document, et il y a écrit « Monsieur » là où il écrit « Mr. ».
+ *
+ * ── « DOCTEUR » ET « MAÎTRE » AUSSI, ET C'EST LUI QUI L'A TRANCHÉ ───────────
+ *
+ * J'avais fait l'inverse, et je le lui ai dit : ces deux titres ne désignent
+ * aucune pastille, donc les retirer les efface sans laisser de trace, et le nom
+ * nu reçoit alors le défaut « Mr. » — **« Mr. Rivière » pour une femme
+ * médecin**. Sa réponse, le jour même : *« Docteur et maître ne doivent pas
+ * apparaître dans le nom. Seulement les noms de famille ! »*
+ *
+ * Sa règle prime, et elle se tient : la case du nom porte un nom, un point.
+ * **Ce que ça coûte, et qu'il faut savoir :** un titre dicté disparaît, et la
+ * pastille reste vide — donc « Mr. » par défaut sur le document. La pastille
+ * est juste au-dessus, à un appui, et il relit la fiche avant de créer le
+ * chantier ; c'est cet arrêt-là qui rattrape le cas.
+ *
+ * `null` plutôt qu'une absence de la liste : « retirer, sans rien allumer » est
+ * une décision, pas un oubli, et elle doit se lire comme telle.
+ */
+const CIVILITES_A_RETIRER: Record<string, Civilite | null> = {
+  m: "mr",
+  mr: "mr",
+  mm: "mr",
+  monsieur: "mr",
+  messieurs: "mr",
+  mme: "mme",
+  mmes: "mme",
+  mlle: "mme",
+  melle: "mme",
+  madame: "mme",
+  mesdames: "mme",
+  mademoiselle: "mme",
+  dr: null,
+  docteur: null,
+  me: null,
+  maitre: null,
+};
+
+/**
  * Civilités déjà écrites, sous les graphies qu'un artisan tape vraiment.
  *
  * Comparées sans accent ni casse, et **suivies d'un séparateur** : sans cela,
  * « Merlin » commencerait par « m » et « Mathieu Dubois » passerait pour un
  * « M. » — le contrôle attrape les deux.
+ *
+ * **Elle se DÉDUIT de la liste ci-dessus**, elle ne la recopie pas : une
+ * seconde liste à tenir à jour aurait divergé au premier mot ajouté, et la
+ * divergence se serait vue sur un devis, pas ici.
  */
-const CIVILITES_CONNUES = [
-  "m",
-  "mr",
-  "mme",
-  "mmes",
-  "mlle",
-  "melle",
-  "mm",
-  "monsieur",
-  "messieurs",
-  "madame",
-  "mesdames",
-  "mademoiselle",
-  "dr",
-  "docteur",
-  "me",
-  "maitre",
-];
+const CIVILITES_CONNUES = Object.keys(CIVILITES_A_RETIRER);
 
 /**
  * Marqueurs de raison sociale. Courte à dessein : chaque entrée est un mot
@@ -189,4 +228,63 @@ export function avecCivilite(nom: string | null | undefined, civilite?: Civilite
   if (civilite) return `${CIVILITES[civilite]} ${propre}`;
   if (porteDejaSonAppellation(propre)) return propre;
   return `${CIVILITE_PAR_DEFAUT} ${propre}`;
+}
+
+/**
+ * « Monsieur Ludovic » → le nom « Ludovic », et la pastille « Mr ».
+ *
+ * **Sa demande du 7 septembre 2026**, devant la case du nom remplie par la
+ * dictée : *« il ne faut jamais qu'il y ait marqué monsieur, madame ou quoi que
+ * ce soit d'autre à part le nom dans cette case-là »*, et le mot entendu doit
+ * *« venir sélectionner tout seul en haut soit le monsieur, soit le madame »*.
+ *
+ * **L'inverse exact d'`avecCivilite`** — et c'est pour cela que les deux vivent
+ * dans le même fichier, sur la même liste de mots. Séparées, l'une aurait
+ * appris une graphie que l'autre ignorerait : « Melle Roux » détachée ici, et
+ * « Mr. » reposé devant là-bas.
+ *
+ * **Ce qu'elle ne fait PAS, et qui est délibéré :**
+ *
+ * - **Elle ne détache qu'en TÊTE.** « Jean-Marie Leme » garde son nom entier :
+ *   une civilité au milieu d'un nom n'en est pas une.
+ * - **Elle ne détache qu'UNE fois.** « Monsieur Monsieur » n'existe pas dans la
+ *   bouche de personne, et boucler ferait disparaître un vrai patronyme le jour
+ *   où l'un d'eux ressemble à une civilité.
+ * - **Elle retire « Docteur » et « Maître » SANS allumer de pastille**, parce
+ *   qu'il l'a tranché : *« seulement les noms de famille ! »*. Le titre
+ *   disparaît donc, et le document portera « Mr. » par défaut — le prix est
+ *   écrit sur `CIVILITES_A_RETIRER`, et il l'a payé en connaissance de cause.
+ * - **Elle ne sait pas qu'une enseigne peut s'appeler « Monsieur ».** « Monsieur
+ *   Bricolage » rendrait « Bricolage » avec la pastille « Mr ». Le patron relit
+ *   la fiche avant de créer le chantier — c'est l'arrêt du parcours qui rattrape
+ *   ce cas-là, et il ne se paie qu'en une correction visible.
+ *
+ * Le nom rendu est **coupé dans la chaîne d'origine**, jamais reconstruit : sa
+ * casse et ses accents sont ceux qui ont été dictés. Le reconstruire à partir
+ * des mots aplatis aurait rendu « riviere » pour « Rivière ».
+ */
+export function detacherCivilite(nom: string | null | undefined): {
+  nom: string;
+  civilite: Civilite | null;
+} {
+  const propre = nom?.trim() ?? "";
+  // Le premier mot, son point d'abréviation éventuel, et ce qui l'en sépare.
+  // Le point est hors du groupe : « M. » et « M » sont le même mot.
+  //
+  // **`\p{L}` et non `\w` : « Maître » se serait arrêté à « Ma ».** En
+  // JavaScript, `\w` reste l'alphabet anglais même sous le drapeau `u` — le
+  // « î » y est un séparateur. Le seul titre accentué de la liste passait donc
+  // au travers, et c'est le contrôle qui l'a montré.
+  const tete = propre.match(/^(\p{L}+)\.?(?:[\s,]+|$)/u);
+  if (!tete) return { nom: propre, civilite: null };
+
+  // **`in` et non une valeur vraie** : « Docteur » est dans la liste AVEC la
+  // valeur `null` — il se retire sans rien allumer. Tester la valeur aurait
+  // confondu « je ne connais pas ce mot » et « ce mot ne désigne aucune
+  // pastille », et le titre serait resté dans le nom.
+  const mot = aplati(tete[1]);
+  if (!(mot in CIVILITES_A_RETIRER)) return { nom: propre, civilite: null };
+  const civilite = CIVILITES_A_RETIRER[mot];
+
+  return { nom: propre.slice(tete[0].length).trim(), civilite };
 }

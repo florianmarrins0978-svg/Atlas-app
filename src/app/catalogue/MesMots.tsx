@@ -177,8 +177,8 @@ export default function MesMots({
                   type="button"
                   onClick={() => poserLeMot(carte)}
                   disabled={enCours}
-                  className="rounded-full px-[15px] py-[8px] text-[13.5px]"
-                  style={{ backgroundColor: colors.rust, color: colors.card }}
+                  className="atlas-plein rounded-full px-[15px] py-[8px] text-[13.5px]"
+                  style={{ backgroundColor: colors.plein, color: colors.card }}
                 >
                   Ajouter
                 </button>
@@ -233,8 +233,8 @@ export default function MesMots({
               type="button"
               onClick={creer}
               disabled={enCours}
-              className="rounded-full px-[15px] py-[8px] text-[13.5px]"
-              style={{ backgroundColor: colors.rust, color: colors.card }}
+              className="atlas-plein rounded-full px-[15px] py-[8px] text-[13.5px]"
+              style={{ backgroundColor: colors.plein, color: colors.card }}
             >
               Créer
             </button>

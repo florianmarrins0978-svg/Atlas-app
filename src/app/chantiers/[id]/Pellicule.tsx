@@ -3,7 +3,7 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -156,9 +156,24 @@ export default function Pellicule({
           // montre et ce qu'il annonce doivent raconter le même instant.
           aria-label={enCours ? "Envoi des photos en cours" : "Ajouter des photos"}
           className="atlas-ajouter"
-          // Le liseré est en TIRETS et doré, comme sur sa maquette : un carré
-          // en trait plein se lit comme une case vide, pas comme un endroit où
-          // poser une photo.
+          // ─── LE LISERÉ EN TIRETS — il y revient le 5 septembre 2026 ──────
+          //
+          // **Il a tranché deux fois, en sens contraire, et les deux sont
+          // écrites ici pour que personne ne rouvre la question de mémoire.**
+          //
+          // | | |
+          // |---|---|
+          // | 4 septembre | *« Seulement pour le carré photo, je le veux plein doré. »* — l'aplat |
+          // | 5 septembre | capture à l'appui, il montre le liseré en TIRETS : *« l'encadré pour les photos, je veux celui que je te joins en photo »* |
+          //
+          // C'est donc le dessin d'origine qui revient — celui de ses planches
+          // (`.ajout-photo` dans `appli/note-vocale-choix.html`), et le dernier
+          // mot est le sien.
+          //
+          // **Ce que l'aplat disait et que les tirets ne disent pas** : « posez
+          // ici », une invitation plutôt qu'un vide. Les tirets, eux, disent
+          // « il n'y a rien encore ». Il a vu les deux à l'écran et il a
+          // choisi ; on ne remet pas l'aplat sans lui.
           style={{ border: `1px dashed ${colors.or}`, color: colors.or }}
         >
           {/* **Le même souffle que la dictée**, sur sa demande du 13 août 2026 :
@@ -206,6 +221,24 @@ export default function Pellicule({
       {/* `document` n'existe pas au rendu serveur. Le garde ne masque aucun
           écart d'hydratation : au premier rendu, aucune photo n'est ouverte —
           des deux côtés. */}
+      {/* ─── CET ÉCRAN RETOURNE LES PÔLES, ET C'EST TOUT LE PIÈGE ──────────
+          La visionneuse prend `ink` pour FOND, pour qu'on ne voie que la photo.
+          Sur les six chartes claires l'encre est presque noire ; sur Nuit et
+          Sylve elle est CLAIRE. Rien de ce qu'on pose dessus ne peut donc être
+          écrit en clair — la croix était `#F6F1E6` et les pastilles
+          `rgba(255,255,255,0.12)`, soit un crème sur un crème : 1,09 sur Nuit,
+          1,12 sur Sylve. On ne voyait plus comment sortir de la photo.
+
+          C'est la faute du 22 août 2026 — celle de la pastille d'équipe, qui a
+          fait naître `surPlein` (`design-tokens.ts`) —, écrite ici le 11 août
+          et oubliée par la passe qui a corrigé les huit autres endroits.
+          Pourquoi elle a survécu : **aucune capture ne la montrait**, la
+          visionneuse demandant qu'une photo soit ouverte, et aucune suite ne
+          l'ouvre. Trouvée le 5 septembre 2026 par l'audit de santé, sur les
+          valeurs de `chartes.ts` — pas à l'écran.
+
+          `orSurEncre` plutôt que `surPlein` pour le mot « Retirer » : il garde
+          son doré. Voir le jeton dans `chartes.ts`. */}
       {photoOuverte && typeof document !== "undefined"
         ? createPortal(
             <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: colors.ink }}>
@@ -214,14 +247,18 @@ export default function Pellicule({
                   onClick={() => setOuverte(null)}
                   aria-label="Fermer"
                   className="flex h-11 w-11 items-center justify-center rounded-full"
-                  style={{ backgroundColor: "rgba(255,255,255,0.12)" }}
+                  style={{ backgroundColor: voile(surPlein, 0.12) }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F6F1E6" strokeWidth="2.2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={surPlein} strokeWidth="2.2">
                     <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
                   </svg>
                 </button>
                 {/* La photo se retire d'où on la regarde : le mot « Retirer »,
-                    sa couleur, et le tiroir qui rattrape. */}
+                    sa couleur, et le tiroir qui rattrape.
+                    **`orSurEncre`, et non `orClair`.** `orClair` sert les traits
+                    posés sur le vert pin ; ici l'or porte un MOT, sur l'encre.
+                    Sur les six claires il vaut l'or d'Origine au caractère
+                    près — son doré ne bouge pas (sa consigne du 31 août). */}
                 <button
                   onClick={() => {
                     const id = photoOuverte.id;
@@ -230,7 +267,7 @@ export default function Pellicule({
                   }}
                   aria-label="Retirer cette photo"
                   className={`flex h-11 items-center justify-center rounded-full px-4 ${libelleCaps}`}
-                  style={{ backgroundColor: "rgba(255,255,255,0.12)", color: colors.orClair, letterSpacing: "0.26em" }}
+                  style={{ backgroundColor: voile(surPlein, 0.12), color: colors.orSurEncre, letterSpacing: "0.26em" }}
                 >
                   Retirer
                 </button>

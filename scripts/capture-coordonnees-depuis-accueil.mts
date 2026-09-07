@@ -35,9 +35,9 @@ await page.waitForURL(`${BASE}/`, { timeout: 60_000 });
 
 // Le chantier de sa capture : créé sans rien: ni client, ni adresse.
 await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
-await creerPuisFiche(page);
+const idChantier = await creerPuisFiche(page);
 await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-const chantierId = page.url().split("/").pop()!.split("?")[0];
+const chantierId = idChantier;
 
 // La mention n'est pas une ancre : une ligne de l'accueil est UN SEUL `<a>`, et
 // la mention vit dedans en détournant le geste. Son `data-href` dit où elle mène.

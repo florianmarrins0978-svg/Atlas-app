@@ -84,13 +84,19 @@ const SONDE = `(() => {
     fleches: [...(corps ? corps.querySelectorAll("[data-atlas^='mois-']") : [])]
       .map((b) => ({ quoi: b.dataset.atlas, h: Math.round(b.getBoundingClientRect().height),
                      ferme: b.disabled })),
-    // La capsule « Facturer », visée par son texte : le dernier \`span\` d'une
-    // ligne facturée est le MONTANT, et le mesurer ne prouvait rien.
+    // La capsule à facturer, visée par son REPÈRE et non par son texte : elle
+    // s'appelait « Facturer » jusqu'au 31 août 2026, et ce contrôle-là rougissait
+    // alors sur du code juste, pour un mot que le patron a fait changer
+    // (\`CLAUDE.md\` §5 bis). Le dernier \`span\` d'une ligne facturée, lui, est le
+    // MONTANT : le mesurer ne prouvait rien.
     capsuleFacturer: (() => {
-      const c = [...(corps ? corps.querySelectorAll("[data-atlas='ligne-terminee'] span") : [])]
-        .find((e) => e.children.length === 0 && e.textContent.trim() === "Facturer");
+      const c = corps ? corps.querySelector("[data-atlas='capsule-a-facturer']") : null;
       return c ? Math.round(c.getBoundingClientRect().height) : null;
     })(),
+    // Chaque rangée en attente porte SA capsule. Compter les deux permet de dire
+    // « une rangée attend sans rien qui le dise », ce que la présence d'une
+    // phrase quelque part dans l'écran ne prouvait pas.
+    capsules: corps ? corps.querySelectorAll("[data-atlas='capsule-a-facturer']").length : 0,
     montantsDroite: [...new Set(montants.map((m) => m.droite))],
     montantsTabulaires: montants.every((m) => m.tabulaire),
     // **Aucun code graphique de l'ancien écran ne doit survivre.**
@@ -157,7 +163,7 @@ for (const f of fleches) {
 
 // **Les montants d'une même colonne finissent au même pixel.**
 if (etat.capsuleFacturer !== null && (etat.capsuleFacturer as number) < 44)
-  echecs.push(`la capsule « Facturer » fait ${etat.capsuleFacturer} px : sous 44, on la rate.`);
+  echecs.push(`la capsule « À facturer » fait ${etat.capsuleFacturer} px : sous 44, on la rate.`);
 
 const droites = etat.montantsDroite as number[];
 if (droites.length > 1)
@@ -200,8 +206,15 @@ if ((await ongletAttente.count()) === 0) {
   const texte = await page.locator("[data-atlas='ecran-termines']").innerText();
   if ((etat.lignes as number) === 0 && !/Rien n['’]attend/i.test(texte))
     echecs.push("rien n'attend, et l'écran ne le dit pas — il a l'air amputé plutôt que calme.");
-  if ((etat.lignes as number) > 0 && !/Pas encore facturé/i.test(texte))
-    echecs.push("une ligne en attente ne dit pas son état en toutes lettres.");
+  // **Ce que porte une rangée en attente, c'est sa CAPSULE.** Ce contrôle
+  // exigeait « Pas encore facturé » quelque part dans l'écran — un texte que le
+  // patron a fait retirer le 31 août 2026, et qui prouvait de toute façon peu :
+  // une seule occurrence suffisait pour dix rangées muettes.
+  if ((etat.lignes as number) > 0 && (etat.capsules as number) !== (etat.lignes as number))
+    echecs.push(
+      `${etat.lignes} rangée(s) en attente pour ${etat.capsules} capsule(s) « À facturer » : ` +
+        `une rangée attend sans que rien ne le dise.`
+    );
 }
 
 await navigateur.close();

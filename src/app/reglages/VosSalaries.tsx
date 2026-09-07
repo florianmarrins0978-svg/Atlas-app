@@ -76,7 +76,7 @@ export default function VosSalaries({
       style={{ borderTop: `1px solid ${colors.line}` }}
       data-atlas="vos-salaries"
     >
-      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Vos salariés
       </p>
 

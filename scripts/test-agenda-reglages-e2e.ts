@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 // **« Que l'utilisateur puisse, s'il le souhaite ou non, connecter son planning
 // à son agenda Google. »** — le patron, le 9 août 2026.
@@ -21,7 +22,7 @@ import { lancerNavigateur } from "./e2e-browser";
 //      notés ailleurs, et peut proposer ce jour-là. L'artisan doit l'apprendre
 //      de l'écran, pas de son client mécontent.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();
@@ -49,10 +50,16 @@ async function main() {
 
   await cas("les réglages mènent à l'écran de l'agenda", async () => {
     await page.goto(`${BASE}/reglages`, { waitUntil: "domcontentloaded" });
-    // **La rubrique s'appelle « Intégrations » depuis le 14 août 2026.** Elle
-    // mène au même écran : l'agenda est le premier service raccordé, il ne sera
-    // pas le dernier (`ARCHITECTURE.md` §96).
-    const lien = page.getByRole("link", { name: /Intégrations/i });
+    // **La rubrique s'est appelée « Intégrations » du 14 août au 5 septembre
+    // 2026.** Elle porte désormais le nom de l'écran où elle mène — « Mon
+    // agenda » —, parce qu'elle en annonçait trois : un calendrier, une
+    // comptabilité et des « services connectés », dont deux n'ont jamais
+    // existé.
+    //
+    // **Le lien se cherche par son ADRESSE, pas par son libellé.** Ce contrôle
+    // veut prouver que le sommaire ouvre bien cet écran ; visé par le mot, il
+    // rougissait au premier renommage, sur du code juste (`CLAUDE.md` §5 bis).
+    const lien = page.locator('a[href="/reglages/agenda"]');
     await lien.waitFor({ state: "visible", timeout: 15000 });
     await lien.click();
     // `waitForURL` ne se résout pas sur une navigation côté client : on attend

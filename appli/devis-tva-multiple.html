@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Devis — plusieurs TVA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1c1a; --muted:#8a8578; --rust:#2f3b2f; --or:#B98B47;
+    --cream:#f5f3ee; --card:#ffffff; --rustTint:#ece9e1;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --display:"Playfair Display",Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--cream); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .bandeau{max-width:820px;margin:0 auto;padding:28px 20px 4px}
+  .bandeau h1{font-family:var(--display);font-size:22px;font-weight:600;margin:0 0 4px}
+  .bandeau p{margin:0;font-size:14px;color:var(--muted);line-height:1.5}
+  .etape{max-width:820px;margin:26px auto 0;padding:0 20px}
+  .etape-titre{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--rust);margin:0 0 10px}
+  .etape-note{font-size:13.5px;color:var(--muted);margin:0 0 14px;line-height:1.5;max-width:60ch}
+
+  /* --- la feuille, exactement comme l'écran --- */
+  .feuille{
+    max-width:820px;margin:0 auto 40px;background:var(--card);border-radius:10px;
+    padding:48px;box-shadow:0 12px 40px rgba(28,28,26,.10);
+  }
+  @media(max-width:640px){ .feuille{padding:20px 18px} }
+
+  .entete{display:flex;gap:20px;align-items:flex-start;justify-content:space-between}
+  @media(max-width:640px){ .entete{flex-direction:column} }
+  .emetteur{min-width:0;flex:1}
+  .nom-entreprise{font-family:var(--display);font-size:22px;font-weight:600;margin:0 0 2px}
+  .ligne-id{font-size:15px;line-height:1.5;margin:0;color:var(--ink)}
+  .refs{width:280px;flex:none}
+  @media(max-width:640px){ .refs{width:100%} }
+  .ref{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:4px 0;border-bottom:1px solid var(--lineSoft)}
+  .ref-lib{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .ref-val{font-size:14px}
+
+  .trait-fort{border-top:2px solid var(--ink);margin:24px 0}
+  .titre-doc{font-family:var(--display);font-size:30px;letter-spacing:.14em;text-align:center;margin:0 0 32px;font-weight:400}
+  @media(max-width:640px){ .titre-doc{font-size:26px} }
+
+  .intertitre{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--rust);margin:0 0 6px}
+  .bloc-client{margin-bottom:36px}
+
+  /* --- tableau --- */
+  .cols{display:grid;grid-template-columns:1fr 70px 130px 130px;gap:12px;padding-bottom:8px;border-bottom:1px solid var(--ink)}
+  .col{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .col.d{text-align:right}
+  .ligne{display:grid;grid-template-columns:1fr 70px 130px 130px;gap:12px;padding:12px 0;border-bottom:1px solid var(--lineSoft);align-items:start}
+  /* `pretty` évite le mot seul en fin de description — « hauteur 1,80 m »
+     laissait le « m » tout seul sur la ligne suivante. */
+  .ligne .desc{font-size:16px;line-height:1.45;text-wrap:pretty}
+  .ligne .n{font-size:16px;text-align:right}
+  @media(max-width:640px){
+    .cols{display:none}
+    .ligne{grid-template-columns:1fr 1fr;gap:6px 12px}
+    .ligne .desc{grid-column:1/-1}
+    .ligne .n{text-align:left}
+    .ligne .n::before{content:attr(data-lib);display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  }
+
+  /* --- la catégorie de TVA : le seul élément neuf --- */
+  .categorie{margin-top:22px}
+  .cat-tete{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--rustTint);border-radius:6px;padding:7px 12px;margin-bottom:2px;
+  }
+  .cat-nom{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--rust);display:flex;align-items:center;gap:2px}
+  .taux{
+    font-size:16px;color:var(--ink);border:0;background:transparent;padding:0 2px;width:34px;text-align:right;
+    font-family:inherit;border-bottom:1px solid rgba(47,59,47,.35);
+  }
+  .taux:focus{outline:none;background:rgba(0,0,0,.04)}
+  .cat-retirer{
+    width:26px;height:26px;flex:none;border-radius:50%;border:1px solid var(--or);color:var(--or);
+    background:transparent;font-size:15px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .sous-total{display:flex;justify-content:flex-end;gap:16px;padding:8px 0 0;font-size:13px;color:var(--muted)}
+  .sous-total b{font-weight:600;color:var(--ink)}
+
+  .ajouter{margin-top:14px;font-size:14px;font-weight:500;color:var(--rust);background:none;border:0;padding:0;cursor:pointer;font-family:inherit}
+  .ajouter.tva{margin-top:20px;color:var(--or);font-size:14px}
+  .ajouter.dans-cat{margin-top:10px;font-size:13.5px}
+
+  /* --- totaux --- */
+  .totaux{display:flex;justify-content:flex-end;margin-top:32px}
+  .totaux-boite{width:320px;max-width:100%}
+  .t-ligne{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:15px}
+  .t-ligne.or{color:var(--or)}
+  .t-ttc{display:flex;align-items:center;justify-content:space-between;padding-top:10px;margin-top:4px;border-top:2px solid var(--ink)}
+  .t-ttc .lib{font-size:17px;font-weight:600}
+  .t-ttc .val{font-size:20px;font-weight:600;font-family:var(--display)}
+
+  .notes{margin-top:36px}
+  .notes p{font-size:16px;line-height:1.5;margin:0}
+  .pied{margin-top:40px;display:flex;gap:24px;align-items:flex-end;justify-content:space-between}
+  @media(max-width:640px){ .pied{flex-direction:column;align-items:stretch} }
+  .mention{max-width:46ch;font-size:12px;line-height:1.6;color:var(--muted);margin:0}
+  .signature{width:300px;flex:none}
+  @media(max-width:640px){ .signature{width:100%} }
+  .cadre{height:96px;border:1px dashed var(--line);border-radius:4px}
+  .legende{margin:6px 0 0;text-align:center;font-size:12px;color:var(--muted)}
+  .actions{margin-top:40px;padding-top:24px;border-top:1px solid var(--lineSoft);display:flex;flex-direction:column;align-items:center;gap:12px}
+  .bouton{
+    width:100%;padding:15px;border-radius:10px;background:var(--rust);color:#f5f3ee;border:0;
+    font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;
+  }
+  .lien{font-size:14px;font-weight:500;color:var(--rust);text-decoration:none}
+  .lien:hover{color:var(--or)}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <h1>Plusieurs TVA sur un devis</h1>
+  <p>La TVA ne se pose pas ligne par ligne : on ajoute une catégorie, et on y range les lignes concernées.</p>
+</div>
+
+<!-- ═══════════════ ÉTAPE 1 ═══════════════ -->
+<div class="etape">
+  <p class="etape-titre">1 — Aujourd'hui, rien ne change</p>
+  <p class="etape-note">Un seul taux : le devis reste exactement celui d'aujourd'hui. Le tableau est plat, aucune catégorie n'apparaît. Une seule ligne est neuve, sous le tableau : « Ajouter une TVA ».</p>
+</div>
+
+<article class="feuille">
+  <header class="entete">
+    <div class="emetteur">
+      <p class="nom-entreprise">Arborea</p>
+      <p class="ligne-id">12 chemin des Peupliers</p>
+      <p class="ligne-id">69540 Irigny</p>
+      <p class="ligne-id">06 12 34 56 78</p>
+      <p class="ligne-id">contact@arborea.fr</p>
+      <p class="ligne-id">SIRET 812 456 903 00017</p>
+    </div>
+    <div class="refs">
+      <div class="ref"><span class="ref-lib">Devis n°</span><span class="ref-val">2026-0042</span></div>
+      <div class="ref"><span class="ref-lib">Date</span><span class="ref-val">01/09/2026</span></div>
+      <div class="ref"><span class="ref-lib">Validité</span><span class="ref-val">30 jours</span></div>
+    </div>
+  </header>
+
+  <div class="trait-fort"></div>
+  <h2 class="titre-doc">DEVIS</h2>
+
+  <div class="bloc-client">
+    <p class="intertitre">Client</p>
+    <p class="ligne-id">M. Bernard Legrand</p>
+    <p class="ligne-id">42 avenue de la Paix</p>
+    <p class="ligne-id">69600 Oullins</p>
+  </div>
+
+  <div class="cols">
+    <span class="col">Description</span>
+    <span class="col d">Qté</span>
+    <span class="col d">Prix unitaire HT</span>
+    <span class="col d">Montant HT</span>
+  </div>
+
+  <div class="ligne">
+    <span class="desc">Taille de haie de charmille — hauteur 1,80 m</span>
+    <span class="n" data-lib="Qté">80</span>
+    <span class="n" data-lib="Prix unitaire HT">17,50 €</span>
+    <span class="n" data-lib="Montant HT">1 400,00 €</span>
+  </div>
+  <div class="ligne">
+    <span class="desc">Évacuation des déchets verts</span>
+    <span class="n" data-lib="Qté">1</span>
+    <span class="n" data-lib="Prix unitaire HT">180,00 €</span>
+    <span class="n" data-lib="Montant HT">180,00 €</span>
+  </div>
+
+  <button class="ajouter">+ Ajouter une ligne</button>
+  <br>
+  <button class="ajouter tva">+ Ajouter une TVA</button>
+
+  <div class="totaux">
+    <div class="totaux-boite">
+      <div class="t-ligne"><span>Total HT</span><span>1 580,00 €</span></div>
+      <div class="t-ligne"><span>TVA (<input class="taux" value="20" style="width:26px;text-align:left" aria-label="Taux de TVA">%)</span><span>316,00 €</span></div>
+      <div class="t-ttc"><span class="lib">Total TTC</span><span class="val">1 896,00 €</span></div>
+      <div style="margin-top:10px"><button class="ajouter" style="color:var(--or);font-size:13.5px">+ Prix accordé au client</button></div>
+    </div>
+  </div>
+</article>
+
+<!-- ═══════════════ ÉTAPE 2 ═══════════════ -->
+<div class="etape">
+  <p class="etape-titre">2 — Il appuie sur « Ajouter une TVA »</p>
+  <p class="etape-note">Le tableau se range en deux catégories. Les lignes déjà saisies restent dans la première ; la nouvelle catégorie s'ouvre vide, avec son propre « Ajouter une ligne ». Chaque catégorie porte autant de lignes qu'il veut.</p>
+</div>
+
+<article class="feuille">
+  <header class="entete">
+    <div class="emetteur">
+      <p class="nom-entreprise">Arborea</p>
+      <p class="ligne-id">12 chemin des Peupliers</p>
+      <p class="ligne-id">69540 Irigny</p>
+      <p class="ligne-id">06 12 34 56 78</p>
+      <p class="ligne-id">contact@arborea.fr</p>
+      <p class="ligne-id">SIRET 812 456 903 00017</p>
+    </div>
+    <div class="refs">
+      <div class="ref"><span class="ref-lib">Devis n°</span><span class="ref-val">2026-0042</span></div>
+      <div class="ref"><span class="ref-lib">Date</span><span class="ref-val">01/09/2026</span></div>
+      <div class="ref"><span class="ref-lib">Validité</span><span class="ref-val">30 jours</span></div>
+    </div>
+  </header>
+
+  <div class="trait-fort"></div>
+  <h2 class="titre-doc">DEVIS</h2>
+
+  <div class="bloc-client">
+    <p class="intertitre">Client</p>
+    <p class="ligne-id">M. Bernard Legrand</p>
+    <p class="ligne-id">42 avenue de la Paix</p>
+    <p class="ligne-id">69600 Oullins</p>
+  </div>
+
+  <div class="cols">
+    <span class="col">Description</span>
+    <span class="col d">Qté</span>
+    <span class="col d">Prix unitaire HT</span>
+    <span class="col d">Montant HT</span>
+  </div>
+
+  <section class="categorie">
+    <div class="cat-tete">
+      <span class="cat-nom">TVA <input class="taux" value="20" aria-label="Taux de la catégorie"> %</span>
+    </div>
+    <div class="ligne">
+      <span class="desc">Taille de haie de charmille — hauteur 1,80 m</span>
+      <span class="n" data-lib="Qté">80</span>
+      <span class="n" data-lib="Prix unitaire HT">17,50 €</span>
+      <span class="n" data-lib="Montant HT">1 400,00 €</span>
+    </div>
+    <div class="ligne">
+      <span class="desc">Évacuation des déchets verts</span>
+      <span class="n" data-lib="Qté">1</span>
+      <span class="n" data-lib="Prix unitaire HT">180,00 €</span>
+      <span class="n" data-lib="Montant HT">180,00 €</span>
+    </div>
+    <div class="ligne">
+      <span class="desc">Plantation et mise en place</span>
+      <span class="n" data-lib="Qté">1</span>
+      <span class="n" data-lib="Prix unitaire HT">640,00 €</span>
+      <span class="n" data-lib="Montant HT">640,00 €</span>
+    </div>
+    <button class="ajouter dans-cat">+ Ajouter une ligne</button>
+    <div class="sous-total">Sous-total HT <b>2 220,00 €</b></div>
+  </section>
+
+  <section class="categorie">
+    <div class="cat-tete">
+      <span class="cat-nom">TVA <input class="taux" value="10" aria-label="Taux de la catégorie"> %</span>
+      <button class="cat-retirer" aria-label="Retirer cette TVA">−</button>
+    </div>
+    <div class="ligne">
+      <span class="desc">Charmille en motte — 1,50/1,75 m</span>
+      <span class="n" data-lib="Qté">45</span>
+      <span class="n" data-lib="Prix unitaire HT">22,00 €</span>
+      <span class="n" data-lib="Montant HT">990,00 €</span>
+    </div>
+    <div class="ligne">
+      <span class="desc">Terreau de plantation — sac 40 L</span>
+      <span class="n" data-lib="Qté">12</span>
+      <span class="n" data-lib="Prix unitaire HT">8,90 €</span>
+      <span class="n" data-lib="Montant HT">106,80 €</span>
+    </div>
+    <button class="ajouter dans-cat">+ Ajouter une ligne</button>
+    <div class="sous-total">Sous-total HT <b>1 096,80 €</b></div>
+  </section>
+
+  <button class="ajouter tva">+ Ajouter une TVA</button>
+
+  <div class="totaux">
+    <div class="totaux-boite">
+      <div class="t-ligne"><span>Total HT</span><span>3 316,80 €</span></div>
+      <div class="t-ligne"><span>TVA (20 %)</span><span>444,00 €</span></div>
+      <div class="t-ligne"><span>TVA (10 %)</span><span>109,68 €</span></div>
+      <div class="t-ttc"><span class="lib">Total TTC</span><span class="val">3 870,48 €</span></div>
+      <div style="margin-top:10px"><button class="ajouter" style="color:var(--or);font-size:13.5px">+ Prix accordé au client</button></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <p class="intertitre">Notes / conditions</p>
+    <p>Acompte de 30 % à la signature, solde à réception des travaux.</p>
+  </div>
+
+  <div class="notes">
+    <p class="intertitre">Modalités de paiement</p>
+    <p>Paiement par virement bancaire</p>
+    <p>IBAN : FR76 3000 4000 0300 0012 3456 789</p>
+  </div>
+
+  <div class="pied">
+    <p class="mention">Devis établi par Arborea, valable 30 jours. Bon pour accord précédé de la mention manuscrite, daté et signé par le client.</p>
+    <div class="signature">
+      <div class="cadre"></div>
+      <p class="legende">Bon pour accord — signature du client</p>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="bouton">Choisir la date</button>
+    <a class="lien" href="#">Aperçu du PDF</a>
+  </div>
+</article>
+
+<!-- ═══════════════ ÉTAPE 3 ═══════════════ -->
+<div class="etape">
+  <p class="etape-titre">3 — Ce que le client reçoit</p>
+  <p class="etape-note">Le PDF porte les mêmes catégories, sans les boutons. Les totaux détaillent une ligne de TVA par taux.</p>
+</div>
+
+<article class="feuille">
+  <header class="entete">
+    <div class="emetteur">
+      <p class="nom-entreprise">Arborea</p>
+      <p class="ligne-id">12 chemin des Peupliers</p>
+      <p class="ligne-id">69540 Irigny</p>
+      <p class="ligne-id">06 12 34 56 78</p>
+      <p class="ligne-id">SIRET 812 456 903 00017</p>
+    </div>
+    <div class="refs">
+      <div class="ref"><span class="ref-lib">Devis n°</span><span class="ref-val">2026-0042</span></div>
+      <div class="ref"><span class="ref-lib">Date</span><span class="ref-val">01/09/2026</span></div>
+      <div class="ref"><span class="ref-lib">Validité</span><span class="ref-val">30 jours</span></div>
+    </div>
+  </header>
+
+  <div class="trait-fort"></div>
+  <h2 class="titre-doc">DEVIS</h2>
+
+  <div class="bloc-client">
+    <p class="intertitre">Client</p>
+    <p class="ligne-id">M. Bernard Legrand</p>
+    <p class="ligne-id">42 avenue de la Paix</p>
+    <p class="ligne-id">69600 Oullins</p>
+  </div>
+
+  <div class="cols">
+    <span class="col">Description</span>
+    <span class="col d">Qté</span>
+    <span class="col d">Prix unitaire HT</span>
+    <span class="col d">Montant HT</span>
+  </div>
+
+  <section class="categorie">
+    <div class="cat-tete"><span class="cat-nom">TVA 20 %</span></div>
+    <div class="ligne">
+      <span class="desc">Taille de haie de charmille — hauteur 1,80 m</span>
+      <span class="n" data-lib="Qté">80</span>
+      <span class="n" data-lib="Prix unitaire HT">17,50 €</span>
+      <span class="n" data-lib="Montant HT">1 400,00 €</span>
+    </div>
+    <div class="ligne">
+      <span class="desc">Évacuation des déchets verts</span>
+      <span class="n" data-lib="Qté">1</span>
+      <span class="n" data-lib="Prix unitaire HT">180,00 €</span>
+      <span class="n" data-lib="Montant HT">180,00 €</span>
+    </div>
+    <div class="ligne">
+      <span class="desc">Plantation et mise en place</span>
+      <span class="n" data-lib="Qté">1</span>
+      <span class="n" data-lib="Prix unitaire HT">640,00 €</span>
+      <span class="n" data-lib="Montant HT">640,00 €</span>
+    </div>
+    <div class="sous-total">Sous-total HT <b>2 220,00 €</b></div>
+  </section>
+
+  <section class="categorie">
+    <div class="cat-tete"><span class="cat-nom">TVA 10 %</span></div>
+    <div class="ligne">
+      <span class="desc">Charmille en motte — 1,50/1,75 m</span>
+      <span class="n" data-lib="Qté">45</span>
+      <span class="n" data-lib="Prix unitaire HT">22,00 €</span>
+      <span class="n" data-lib="Montant HT">990,00 €</span>
+    </div>
+    <div class="ligne">
+      <span class="desc">Terreau de plantation — sac 40 L</span>
+      <span class="n" data-lib="Qté">12</span>
+      <span class="n" data-lib="Prix unitaire HT">8,90 €</span>
+      <span class="n" data-lib="Montant HT">106,80 €</span>
+    </div>
+    <div class="sous-total">Sous-total HT <b>1 096,80 €</b></div>
+  </section>
+
+  <div class="totaux">
+    <div class="totaux-boite">
+      <div class="t-ligne"><span>Total HT</span><span>3 316,80 €</span></div>
+      <div class="t-ligne"><span>TVA (20 %)</span><span>444,00 €</span></div>
+      <div class="t-ligne"><span>TVA (10 %)</span><span>109,68 €</span></div>
+      <div class="t-ttc"><span class="lib">Total TTC</span><span class="val">3 870,48 €</span></div>
+    </div>
+  </div>
+
+  <div class="pied">
+    <p class="mention">Devis établi par Arborea, valable 30 jours. Bon pour accord précédé de la mention manuscrite, daté et signé par le client.</p>
+    <div class="signature">
+      <div class="cadre"></div>
+      <p class="legende">Bon pour accord — signature du client</p>
+    </div>
+  </div>
+</article>
+
+</body>
+</html>

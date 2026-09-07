@@ -43,6 +43,50 @@ export type JetonsCharte = {
   rustTint: string;
   or: string;
   orClair: string;
+  /**
+   * ─── L'OR QUAND IL PORTE DU TEXTE, ET SEULEMENT ALORS ──────────────────
+   *
+   * **Mesuré le 4 septembre 2026, sur la planche de l'écran des prix :**
+   * `or` posé sur la plage d'un champ donne **2,62 à 3,07** selon la charte —
+   * sous les 4,5 exigés d'un texte, et sur les **six chartes claires**. Il
+   * passe sur les deux sombres (Nuit 5,55, Sylve 4,55), où les pôles
+   * s'inversent.
+   *
+   * **Ce n'est pas la même question que celle du 31 août.** Sa consigne — *«
+   * tout ce qui est en doré sur Origine reste doré sur les autres apparences »*
+   * — interdit à la CHARTE de repeindre l'or, et `or` ne bouge donc pas d'un
+   * caractère : filets, sceau, marqueur d'onglet, fonds pâles gardent
+   * `#B98B47` partout. Ce jeton-ci ne dépend pas de la charte mais du RÔLE :
+   * un mot qu'on lit, et non un trait qu'on regarde. Le chiffre de 2,77 cité
+   * plus bas pour justifier l'or fixe vaut pour du dessin ; il ne vaut pas
+   * pour « à chiffrer », qui est le mot disant qu'une ligne de devis n'a pas
+   * de prix, et qui se lit au soleil.
+   *
+   * **Sur Nuit et Sylve, il vaut l'or exactement** — `detacher` ne corrige que
+   * ce qui manque, et là il ne manque rien.
+   */
+  orTexte: string;
+  /**
+   * ─── L'OR POSÉ SUR L'ENCRE, LÀ OÙ LES PÔLES S'INVERSENT ────────────────
+   *
+   * **Mesuré le 5 septembre 2026, sur la visionneuse de photos.** Un écran
+   * peut prendre `ink` pour FOND — la photo en plein écran le fait, pour
+   * qu'on ne voie que la photo. Sur les six chartes claires l'encre est
+   * sombre, et l'or y tient 5,56 ; sur Nuit et Sylve **l'encre est claire**,
+   * et le même or tombe à **2,49**. Le mot « Retirer » y devenait illisible.
+   *
+   * **Ce n'est pas `orTexte`**, et la nuance est tout l'objet de ce jeton :
+   * `orTexte` s'écarte du FOND et de la PLAGE, c'est-à-dire du pôle ordinaire
+   * de la charte. Ici on s'écarte du pôle CONTRAIRE. Sur une charte claire
+   * `orTexte` s'assombrit quand celui-ci ne bouge pas, et sur une sombre
+   * c'est l'inverse : les deux ne peuvent pas être le même jeton.
+   *
+   * **Sur les six claires il vaut l'or au caractère près** — `detacher` ne
+   * corrige que ce qui manque, et là il ne manque rien. La consigne du
+   * 31 août (*« tout ce qui est en doré reste doré »*) est donc tenue : ce
+   * qu'il voit aujourd'hui ne bouge pas d'un pixel.
+   */
+  orSurEncre: string;
   line: string;
   lineSoft: string;
   chevron: string;
@@ -212,9 +256,7 @@ function depuisPlanche(p: {
   plage: string;
   encre: string;
   gris: string;
-  bronze: string;
   plein: string;
-  pleinSigne: string;
 }): JetonsCharte {
   const sombre = lumiere(p.fond) < lumiere(p.encre);
   // Sur une charte sombre on REMONTE la clarté, sur une claire on la descend :
@@ -235,8 +277,21 @@ function depuisPlanche(p: {
     // charte sombre, la valeur claire d'`origine` (#ece9e1) poserait un pavé
     // blanc au milieu de l'écran.
     rustTint: meler(p.fond, p.encre, 0.07),
-    or: p.bronze,
-    orClair: p.pleinSigne,
+    // ─── L'OR NE SUIT PAS LA CHARTE, ET C'EST TOUT L'OBJET DE CE LOT ──────
+    //
+    // Il vaut la valeur d'Origine sur les huit chartes, au caractère près.
+    // Voir `OR_ORIGINE` plus bas pour le pourquoi — c'est sa consigne, et elle
+    // ne se dérive pas.
+    or: OR_ORIGINE,
+    orClair: OR_CLAIR_ORIGINE,
+    // Du texte, donc 4,5 — contre le fond ET contre la plage, comme l'alerte.
+    orTexte: detacher(OR_ORIGINE, [p.fond, p.plage], 4.5, sens),
+    // **Le sens EST L'INVERSE de celui d'`orTexte`, et c'est le tout.** `sens`
+    // s'éloigne du fond ; ce jeton-ci s'éloigne de l'encre, qui est à l'autre
+    // bout. Le poser avec `sens` corrigerait la charte qui n'en a pas besoin
+    // et laisserait intacte celle qui en a besoin — soit exactement le défaut
+    // qu'on répare, retourné.
+    orSurEncre: detacher(OR_ORIGINE, [p.encre], 4.5, sens === 1 ? -1 : 1),
     line: voile(p.encre, "0.12"),
     lineSoft: voile(p.encre, "0.07"),
     chevron: voile(p.encre, "0.28"),
@@ -262,6 +317,45 @@ function depuisPlanche(p: {
 // TEINTE est la sienne et ne bouge pas, leur CLARTÉ s'accorde au fond, sans
 // quoi elles disparaissent sur Nuit et sur Sylve.
 const ALERTE_ORIGINE = "#9C3B2E";
+
+/**
+ * ─── L'OR EST LE MÊME PARTOUT — sa consigne du 31 août 2026 ─────────────────
+ *
+ * ***« Pour l'apparence, j'aimerais que tout ce qui est en doré sur la version
+ * originale apparaisse en doré sur les autres apparences. »***
+ *
+ * **Ce n'est pas une demande neuve : c'est la GÉNÉRALISATION de celle du
+ * 27 août**, qui ne portait que sur une charte — *« lorsque je choisis
+ * l'apparence Brume, tout ce qui est en doré sur Origine le reste aussi sur
+ * Brume »*. On avait alors corrigé le seul endroit qui perdait l'or sur Brume
+ * (le marqueur d'onglet) sans voir que la règle valait pour les six autres.
+ *
+ * **Ce qui changeait avant, et qu'il ne voulait pas.** La planche donnait à
+ * chaque charte son propre second accent, et `or` le recopiait : la sauge de
+ * Pierre (`#6f8466`), l'argile de Moka (`#7c5c46`), le prune de Prune
+ * (`#7a2f52`), et pour `orClair` des valeurs qui n'avaient plus rien de doré —
+ * un bleu sur Brume (`#6f95c4`), un rose sur Prune (`#d9a2bd`), un vert sur
+ * Sylve (`#3d6b4a`). Changer d'apparence ne changeait donc pas que le fond :
+ * **cela repeignait tout ce que l'or porte** — l'accueil, les libellés d'état,
+ * les filets, le sceau, le compteur de la dictée. C'est précisément ce qu'il
+ * refuse.
+ *
+ * **Pourquoi l'or peut rester FIXE là où l'alerte, le bordeaux et le vert pâle
+ * doivent bouger** (`detacher`, plus haut) : mesuré sur les huit chartes, il se
+ * détache du fond partout, et **mieux sur les deux sombres que sur les cinq
+ * claires** — 6,14 sur Nuit et 5,25 sur Sylve, contre 2,77 sur Origine, qui est
+ * l'écran qu'il regarde tous les jours. Un or remonté « par précaution » sur le
+ * sombre aurait donc corrigé ce qui n'était pas cassé, et cessé d'être le même
+ * or. `test-chartes-lisibles.ts` le mesure, charte par charte.
+ *
+ * **Ce que cela coûte, et il faut le dire :** les valeurs de la planche pour ce
+ * second accent sont abandonnées — elles étaient les siennes, choisies au
+ * pouce le 14 août. Sa consigne du 31 les remplace ; les deux ne peuvent pas
+ * tenir ensemble.
+ */
+const OR_ORIGINE = "#B98B47";
+/** Le même or, remonté — posé sur un aplat plein ou sur une photo. */
+const OR_CLAIR_ORIGINE = "#C9A15E";
 const BORDEAUX_ORIGINE = "#6E2433";
 const VERT_PALE_ORIGINE = "#b9c6b4";
 
@@ -331,8 +425,18 @@ export const CHARTES: Charte[] = [
       rust: "#2f3b2f",
       rustDeep: "#4f5f4c",
       rustTint: "#ece9e1",
-      or: "#B98B47",
-      orClair: "#C9A15E",
+      or: OR_ORIGINE,
+      orClair: OR_CLAIR_ORIGINE,
+      // **Dérivé, et non recopié — la seule valeur d'Origine qui le soit.**
+      // Les autres sont recopiées parce qu'elles EXISTAIENT avant les chartes
+      // et qu'un écart ferait bouger l'application sans demande. Celle-ci
+      // n'existait pas : la recopier n'aurait rien conservé, et la poser à la
+      // main aurait donné une seconde façon de calculer la même chose.
+      orTexte: detacher(OR_ORIGINE, ["#f5f3ee", "#faf9f5"], 4.5, -1),
+      // Dérivé pour la même raison, et il rend l'or intact : sur une encre
+      // `#1c1c1a`, `#B98B47` tient déjà 5,56. Le poser à la main aurait donné
+      // une seconde façon de calculer la même chose.
+      orSurEncre: detacher(OR_ORIGINE, ["#1c1c1a"], 4.5, 1),
       line: "rgba(28,28,26,0.12)",
       lineSoft: "rgba(28,28,26,0.07)",
       chevron: "rgba(28,28,26,0.28)",
@@ -372,7 +476,7 @@ export const CHARTES: Charte[] = [
     sombre: false,
     jetons: depuisPlanche({
       fond: "#f4f7fb", plage: "#ffffff", encre: "#111823", gris: "#78838f",
-      bronze: "#B98B47", plein: "#22456d", pleinSigne: "#6f95c4",
+      plein: "#22456d",
     }),
     /**
      * **La moitié « moderne », et c'est tout ce que la charte peut en porter.**
@@ -398,11 +502,13 @@ export const CHARTES: Charte[] = [
   {
     nom: "pierre",
     libelle: "Pierre",
-    dit: "Gris légèrement vert, encre presque noire, sauge désaturée. Aucun or.",
+    // « Aucun or » a été retiré le 31 août 2026 : sa consigne y remet l'or, et
+    // une phrase qui décrit la charte d'avant se croit encore.
+    dit: "Gris légèrement vert, encre presque noire, sauge désaturée.",
     sombre: false,
     jetons: depuisPlanche({
       fond: "#e8e8e3", plage: "#f4f4f0", encre: "#1b1d19", gris: "#83867c",
-      bronze: "#6f8466", plein: "#1b1d19", pleinSigne: "#8b9d83",
+      plein: "#1b1d19",
     }),
   },
   {
@@ -412,17 +518,18 @@ export const CHARTES: Charte[] = [
     sombre: false,
     jetons: depuisPlanche({
       fond: "#efe7cf", plage: "#f8f3e4", encre: "#26221a", gris: "#8b8368",
-      bronze: "#8a6a3a", plein: "#26221a", pleinSigne: "#c2a05f",
+      plein: "#26221a",
     }),
   },
   {
     nom: "moka",
     libelle: "Moka",
-    dit: "Un moka laiteux, une encre espresso, une argile pour l'accent.",
+    // L'argile était le second accent, remplacé par l'or le 31 août 2026.
+    dit: "Un moka laiteux, une encre espresso.",
     sombre: false,
     jetons: depuisPlanche({
       fond: "#e6ded5", plage: "#f2ece5", encre: "#2b241e", gris: "#8d8175",
-      bronze: "#7c5c46", plein: "#2b241e", pleinSigne: "#b99274",
+      plein: "#2b241e",
     }),
   },
   {
@@ -432,7 +539,7 @@ export const CHARTES: Charte[] = [
     sombre: false,
     jetons: depuisPlanche({
       fond: "#efe6ea", plage: "#f9f2f5", encre: "#23131c", gris: "#8c7481",
-      bronze: "#7a2f52", plein: "#3d1730", pleinSigne: "#d9a2bd",
+      plein: "#3d1730",
     }),
   },
   {
@@ -442,7 +549,7 @@ export const CHARTES: Charte[] = [
     sombre: true,
     jetons: depuisPlanche({
       fond: "#16241c", plage: "#1e3026", encre: "#e6e6da", gris: "#8ba189",
-      bronze: "#c3b184", plein: "#e6e6da", pleinSigne: "#3d6b4a",
+      plein: "#e6e6da",
     }),
   },
   {
@@ -452,7 +559,7 @@ export const CHARTES: Charte[] = [
     sombre: true,
     jetons: depuisPlanche({
       fond: "#101210", plage: "#1a1d19", encre: "#e9e8de", gris: "#84887b",
-      bronze: "#c6a15b", plein: "#e9e8de", pleinSigne: "#8f7130",
+      plein: "#e9e8de",
     }),
   },
 ];
@@ -490,11 +597,64 @@ export function normaliserCharte(nom: string | null | undefined): NomCharte | nu
  * Les deux formes dérivent désormais d'ici : ajouter une variable la donne aux
  * deux, ou à aucune.
  */
+/**
+ * L'aplat des boutons pleins d'Origine — sa décision du 3 septembre 2026.
+ *
+ * **Écrit ici en clair, et une seule fois.** C'est le vert du milieu de sa note
+ * vocale (`sage` dans `design-tokens.ts`, #7d9a6d), mais il n'est PAS écrit
+ * `colors.sage` : ce serait dire que le bouton suit la note vocale, alors qu'il
+ * a été choisi pour lui-même, sur une planche, parmi cinq. Le jour où l'un des
+ * deux bouge, l'autre ne doit pas suivre en silence.
+ *
+ * Le repli de `colors.plein` porte la même valeur : une page rendue hors du
+ * gabarit — un courriel, un document — retombe donc sur Origine, comme tous
+ * les autres jetons.
+ */
+export const VERT_DES_BOUTONS = "#7d9a6d";
+
 export function variablesCharte(c: Charte): Record<string, string> {
   const sortie: Record<string, string> = {};
   for (const cle of Object.keys(c.jetons) as (keyof JetonsCharte)[]) {
     sortie[`--atlas-${cle}`] = c.jetons[cle];
   }
+  // **L'APLAT DES BOUTONS QU'ON APPUIE — ORIGINE ET ELLE SEULE.**
+  //
+  // *Sa décision du 3 septembre 2026, prise sur planche* (`boutons-verts.html`,
+  // la déclinaison D) : **« verdict la D à plat sans brillant, donc tout ce qui
+  // est bouton cliquable tu remplaces par la D »**. C'est le vert du milieu de
+  // sa note vocale, à plat — ni dégradé, ni filet d'or, ni halo. Il a écarté ce
+  // jour-là, dans l'ordre, le galet, la tasse entière, le bord doré et la
+  // lumière rasante : chaque message allait vers plus dépouillé.
+  //
+  // **CE QUE CE VERT REMPLACE**, et il faut le savoir pour ne pas le rouvrir :
+  // le #29382F qu'il avait retenu le 31 août sur `le-bouton-qui-repond.html`,
+  // les deux verts photographiés côte à côte — *« je garde le #29382F »*. Ce
+  // choix-là tenait onze mois de contraste (11,7 avec la crème) ; celui-ci en
+  // tient **3,0**, et le chiffre était écrit en rouge sous chaque bouton de la
+  // planche quand il a tranché.
+  //
+  // Et la question des sept autres chartes lui étant posée le 31 août :
+  // **« les boutons à changer c'est seulement pour la version origine, ne
+  // touche pas aux autres apparences ! »** — d'où le ternaire ci-dessous plutôt
+  // qu'une valeur unique.
+  //
+  // **POURQUOI UNE VARIABLE ÉCRITE POUR TOUTES, ET NON POUR UNE SEULE.** La
+  // version d'avant n'écrivait `--atlas-plein-fond` que pour Origine, et
+  // peignait un `background-image` PAR-DESSUS le fond en ligne des boutons —
+  // un contournement assumé, parce que les écrans écrivaient
+  // `backgroundColor: colors.rust` et qu'aucune feuille de style ne peut
+  // supplanter un style en ligne. Depuis le 3 septembre les boutons portent
+  // `colors.plein` : ils posent leur couleur eux-mêmes, le calque n'a plus lieu
+  // d'être, et la variable peut valoir quelque chose pour les huit. Les sept
+  // autres reçoivent leur PROPRE accent — rien ne bouge chez elles.
+  //
+  // **Ce que ce jeton ne touche PAS, et c'est voulu :** l'accent `rust`
+  // lui-même ne bouge pas d'un cheveu. Les textes verts, les icônes, les
+  // liserés, les fonds pâles `rustTint` gardent le vert pin. Sa consigne vise
+  // les boutons PLEINS — « surtout pas ceux qui sont creux ou d'une autre
+  // couleur que la verte ».
+  sortie["--atlas-plein"] = c.nom === "origine" ? VERT_DES_BOUTONS : c.jetons.rust;
+
   // **Une forme absente n'écrit RIEN**, et c'est ce qui tient sa consigne du
   // 24 août : « ne change pas l'appli ». Poser `--atlas-police-titres:initial`
   // sur les chartes sans forme aurait écrasé le repli de `globals.css` — donc

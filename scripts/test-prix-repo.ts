@@ -116,6 +116,62 @@ async function main() {
     assert.equal(total, "0.00");
   });
 
+  // ═════════════════════════════════════════════════════════════════════════
+  // « À chiffrer » : le drapeau s'éteint QUEL QUE SOIT LE CHAMP par lequel un
+  // prix arrive. Deux écrans écrivent ici, et ils n'envoient pas la même chose.
+  // ═════════════════════════════════════════════════════════════════════════
+
+  await test("l'écran Prix éteint « à chiffrer » — il envoie un montant", async () => {
+    const l = await lignesPrixRepo.ajouterLignePrix(A, chantier.id, "Dessouchage", "0.00", {
+      aChiffrer: true,
+    });
+    await lignesPrixRepo.modifierLignePrix(A, l.id, { montant: "400.00" });
+    const [relue] = (await lignesPrixRepo.listerLignesPrix(A, chantier.id)).filter((x) => x.id === l.id);
+    assert.equal(relue.aChiffrer, false, "le drapeau est resté levé malgré un montant posé");
+  });
+
+  await test("l'écran DEVIS COMPLET l'éteint aussi — il n'envoie pas de montant", async () => {
+    // ═══════════════════════════════════════════════════════════════════════
+    // **Le défaut du 31 août 2026, et il n'avait aucune sortie.** Dans ses
+    // mots : *« je suis revenu en arrière, j'ai mis les prix pour chaque ligne,
+    // mais il ne veut quand même pas que j'envoie mon devis »*.
+    //
+    // Cet écran-là poste `{ libelle, quantite, prixUnitaire }` ; le montant est
+    // CALCULÉ par le dépôt. L'extinction lisait l'entrée au lieu du résultat :
+    // le total du devis devenait juste, l'étiquette « à chiffrer » disparaissait
+    // de l'écran — elle ne s'affiche qu'à montant nul —, et le drapeau restait
+    // levé en base. L'envoi refusait alors en nommant les lignes qu'il venait
+    // de chiffrer, et le renvoyait vers un écran où tout paraissait normal.
+    //
+    // Aucun contrôle ne le voyait : celui du dessus passe par l'autre chemin.
+    // ═══════════════════════════════════════════════════════════════════════
+    const l = await lignesPrixRepo.ajouterLignePrix(A, chantier.id, "Tonte de la pelouse", "0.00", {
+      aChiffrer: true,
+    });
+    await lignesPrixRepo.modifierLignePrix(A, l.id, {
+      libelle: "Tonte de la pelouse",
+      quantite: "2",
+      prixUnitaire: "150.00",
+    });
+    const [relue] = (await lignesPrixRepo.listerLignesPrix(A, chantier.id)).filter((x) => x.id === l.id);
+    assert.equal(relue.montant, "300.00", "le montant calculé n'est pas celui du détail");
+    assert.equal(
+      relue.aChiffrer,
+      false,
+      "le devis reste bloqué alors qu'il a fait exactement ce qu'on lui demandait"
+    );
+  });
+
+  await test("un montant qui retombe à zéro ne RELÈVE pas le drapeau", async () => {
+    // L'extinction est à sens unique, et c'est délibéré : « à chiffrer » dit
+    // que le prix n'a pas été trouvé, pas que la ligne vaut zéro. Le rallumer
+    // ferait d'une remise gratuite délibérée un devis impossible à envoyer.
+    const l = await lignesPrixRepo.ajouterLignePrix(A, chantier.id, "Geste commercial", "80.00");
+    await lignesPrixRepo.modifierLignePrix(A, l.id, { montant: "0.00" });
+    const [relue] = (await lignesPrixRepo.listerLignesPrix(A, chantier.id)).filter((x) => x.id === l.id);
+    assert.equal(relue.aChiffrer, false, "une ligne volontairement gratuite bloque le devis");
+  });
+
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
   await pool.end();
   if (failed > 0) process.exit(1);

@@ -139,7 +139,13 @@ export const estPartie = (v: unknown): v is Partie => DANS(PARTIES, v);
 export const estMotif = (v: unknown): v is Motif => DANS(MOTIFS, v);
 export const estCouleur = (v: unknown): v is Couleur => DANS(COULEURS, v);
 export const estLocalisation = (v: unknown): v is Localisation => DANS(LOCALISATIONS, v);
-export const estPort = (v: unknown): v is Port => DANS(PORTS, v);
+// **`estPort` a été retiré le 5 septembre 2026, et il ne manque à rien.** Les
+// quatre gardes ci-dessus servent `verifierVocabulaire`, qui contrôle les
+// symptômes d'une fiche importée. Le `port` d'un hôte, lui, ne passe pas par
+// là : il est validé À L'ENTRÉE par `TaxonSchema` (`import-fiches-phyto.ts`,
+// `z.enum(PORTS)`), donc plus tôt et mieux. L'audit du 5 septembre l'avait
+// signalé comme un possible oubli de validation — il ne l'était pas, et c'est
+// écrit ici pour qu'on ne le réécrive pas.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 2. CE QUI ENTRE DANS LE MOTEUR

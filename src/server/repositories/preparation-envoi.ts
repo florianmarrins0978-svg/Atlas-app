@@ -7,7 +7,6 @@ import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers"
 import { absencesEquipe, chantiers, clients, devis, entreprises, lignesDevis } from "../db/schema";
 import { devisEnvoyable } from "../../lib/devis-envoyable";
 import type { Ctx } from "./context";
-import { jourLisible } from "../../lib/jour";
 import {
   fenetreProposition,
   fenetrePatron,
@@ -424,18 +423,10 @@ export async function verifierJourPropose(
     return { jour, retenable: false, raison: "Cette date n'est pas lisible.", alternative: null };
   }
   if (jour < horizon.debut) {
-    // **Sa remarque du 23 août 2026 :** *« "trop tôt" veut rien dire, on
-    // comprend pas bien »*. La phrase disait la règle au lieu de dire quoi
-    // faire — et « après-demain » oblige à compter dans sa tête devant un
-    // calendrier qui affiche déjà les dates. On nomme donc le premier jour
-    // possible, et on s'arrête là : le « sinon vous vous mettez en défaut »
-    // le mettait en tort pour un appui.
-    return {
-      jour,
-      retenable: false,
-      raison: `Ce jour est trop proche. Le premier possible est le ${jourLisible(horizon.debut)}.`,
-      alternative: horizon.debut,
-    };
+    // Le passé, et lui seul, reste un refus : son client lira ce devis demain
+    // au plus tôt. Le calendrier grise déjà ces cases — ce contrôle-ci est là
+    // pour ce qui se poste sans passer par lui.
+    return { jour, retenable: false, raison: "Ce jour est déjà passé.", alternative: null };
   }
   if (jour > horizon.fin) {
     return {
@@ -451,6 +442,32 @@ export async function verifierJourPropose(
   // faute de savoir ce qui s'y trouve, pas parce qu'il l'est.
   const contrainte = await contrainteSurHorizon(ctx, chantierId, horizon, preparation.nombreEquipes);
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // **UN JOUR TRÈS PROCHE SE PRÉVIENT, IL NE SE REFUSE PLUS.**
+  //
+  // *Sa règle du 31 août 2026 :* « si l'utilisateur veut choisir le
+  // 1ᵉʳ septembre il doit pouvoir ! » Le calendrier lui montrait le lendemain,
+  // la case s'ouvrait sous son doigt, et le verdict la reprenait : « ce jour
+  // est trop proche ». Un jour offert puis refusé se lit comme une panne.
+  //
+  // C'est mot pour mot l'arbitrage qu'il avait rendu le 23 août pour les
+  // journées pleines, et il vaut ici pour la même raison : lui seul sait qu'il
+  // a une remorque libre demain matin, ou que ce client-là décroche tout de
+  // suite.
+  //
+  // **Ce que cela ne rouvre PAS :** l'application ne SUGGÈRE toujours rien en
+  // deçà de deux jours (`premiersJoursLibres` passe par `fenetreProposition`).
+  // Ce qui change, c'est qu'il peut passer outre en le sachant — la remarque
+  // est sous ses yeux.
+  //
+  // La remarque s'ajoute aux autres au lieu de les remplacer : un samedi
+  // demain, ou une journée déjà pleine demain, doivent dire les deux choses.
+  // ═══════════════════════════════════════════════════════════════════════
+  const tresProche = jour < fenetreProposition(maintenant).debut;
+  const remarqueProche = tresProche
+    ? "C'est dans moins de deux jours — votre client aura peu de temps pour répondre."
+    : null;
+
   const libre = (j: JourIso) => jourRetenable(j, preparation.dureeDemiJournees, contrainte, preparation.nombreEquipes, horizon);
   if (libre(jour)) {
     const weekEnd = [0, 6].includes(new Date(`${jour}T12:00:00Z`).getUTCDay());
@@ -459,7 +476,11 @@ export async function verifierJourPropose(
       retenable: true,
       // Pas un refus : il connaît ses clients. Mais le dire évite l'appui
       // distrait sur un samedi, qui ne se rattrape qu'en rappelant le client.
-      raison: weekEnd ? "C'est un week-end — vous pouvez le proposer, mais vérifiez que c'est voulu." : null,
+      raison:
+        joindre(
+          weekEnd ? "C'est un week-end — vous pouvez le proposer, mais vérifiez que c'est voulu." : null,
+          remarqueProche
+        ),
       alternative: null,
     };
   }
@@ -487,9 +508,18 @@ export async function verifierJourPropose(
   return {
     jour,
     retenable: true,
-    raison: `Ce jour est complet — ${libelleDuree(preparation.dureeDemiJournees).toLowerCase()} n'y tient pas. Vous pouvez le proposer quand même.`,
+    raison: joindre(
+      `Ce jour est complet — ${libelleDuree(preparation.dureeDemiJournees).toLowerCase()} n'y tient pas. Vous pouvez le proposer quand même.`,
+      remarqueProche
+    ),
     alternative: jourLibreLePlusProche(jour, horizon, libre),
   };
+}
+
+/** Deux remarques valent mieux qu'une tronquée : elles se suivent, sans vide. */
+function joindre(...remarques: (string | null)[]): string | null {
+  const dites = remarques.filter((r): r is string => Boolean(r));
+  return dites.length > 0 ? dites.join(" ") : null;
 }
 
 /** Le jour libre le plus proche, cherché des deux côtés en s'éloignant. */

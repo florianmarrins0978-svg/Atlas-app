@@ -4,7 +4,12 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
 import { mettreAJourEntreprise, getEntreprise } from "@/server/repositories/entreprises";
 import { conditionsDepuisEntreprise, type ConditionsLues } from "@/lib/conditions-documents";
-import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
+import {
+  refusDuMessage,
+  GENRES,
+  MESSAGES_PAR_DEFAUT,
+  type GenreDocument,
+} from "@/lib/message-client";
 import { normaliserAllure, refusDuLogo, type Allure } from "@/lib/allure-documents";
 import { FORMAT_PAR_DEFAUT } from "@/lib/numero-documents";
 import { lireAllureDevis } from "@/server/ai/services/lire-allure-devis";
@@ -27,33 +32,19 @@ import { logger } from "@/server/logger";
  * plutôt que la saisie aberrante qu'il vient de taper.
  */
 export async function majConditionsAction(
-  saisie: ConditionsLues,
-  /**
-   * Son message au client, s'il l'a touché (sa demande du 23 août 2026).
-   *
-   * **Il passe par la MÊME action, et donc par le même bouton.** Deux
-   * enregistrements sur un seul écran, c'est un réglage sur deux qui se perd :
-   * il en touche un, appuie sur l'autre bouton, et croit avoir tout posé.
-   */
-  messageClient?: string
-): Promise<
-  | { ok: true; conditions: ConditionsLues; messageClient: string | null }
-  | { ok: false; raison: string }
-> {
+  saisie: ConditionsLues
+): Promise<{ ok: true; conditions: ConditionsLues } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
   try {
     // Ces conditions engagent l'entreprise sur un document que le client garde :
     // elles appartiennent au patron (`docs/QUESTIONS.md` §10).
     await exigerProprietaire(ctx, "modifier les conditions des documents");
-    // **Le refus du message est rendu ICI, en clair.** `mettreAJourEntreprise`
-    // ignore en silence un message sans lien — c'est ce qu'il faut au plus près
-    // de la base —, mais un silence à cet endroit lui laisserait croire que
-    // c'est enregistré. On le dit avec ses mots, et sans lever (`AGENTS.md`).
-    if (messageClient !== undefined) {
-      const refus = refusDuMessage(messageClient.trim() || MESSAGE_PAR_DEFAUT);
-      if (refus) return { ok: false, raison: refus };
-    }
-    await mettreAJourEntreprise(ctx, { conditions: saisie, messageClient });
+    // **LE MESSAGE NE PASSE PLUS PAR ICI — 7 septembre 2026.** Il voyageait avec
+    // les conditions parce que les deux vivaient sur le même écran et
+    // partageaient un bouton ; l'écran a été coupé en quatre, et chacun
+    // enregistre ce qu'il montre. Les mêler obligerait maintenant à réécrire
+    // trois messages pour changer un pourcentage.
+    await mettreAJourEntreprise(ctx, { conditions: saisie });
     const e = await getEntreprise(ctx);
     const c = conditionsDepuisEntreprise(e);
     return {
@@ -66,7 +57,6 @@ export async function majConditionsAction(
         rappelerPenalites: c.rappelerPenalites,
         textePied: c.textePied,
       },
-      messageClient: e.messageClient ?? null,
     };
   } catch (err) {
     // **Une panne imprévue se journalise AVANT d'être rendue.** Sans cela, le
@@ -78,6 +68,61 @@ export async function majConditionsAction(
     return {
       ok: false,
       raison: "Ces conditions n'ont pas pu être enregistrées. Réessayez dans un instant.",
+    };
+  }
+}
+
+/**
+ * Enregistre SES TROIS MESSAGES au client — devis, facture, compte rendu.
+ *
+ * **Les trois d'un coup, et par un seul bouton.** Ils vivent sur le même écran
+ * et se lisent ensemble : trois enregistrements séparés, c'est deux messages
+ * corrigés et un troisième oublié parce qu'on a quitté l'écran.
+ *
+ * **Le refus est rendu ICI, en clair, message par message.**
+ * `mettreAJourEntreprise` ignore en silence un message sans lien ou sans le mot
+ * du document — c'est ce qu'il faut au plus près de la base —, mais un silence
+ * à cet endroit lui laisserait croire que c'est enregistré. On le dit avec ses
+ * mots, et sans lever (`AGENTS.md`).
+ *
+ * **Elle rend ce que la base porte**, jamais ce qu'on lui a demandé d'écrire :
+ * `null` veut dire « celui d'Atlas », et l'écran doit alors réafficher ce texte
+ * plutôt qu'un cadre vide qu'il croirait avoir effacé.
+ */
+export async function majMessagesAction(
+  saisie: Partial<Record<GenreDocument, string>>
+): Promise<
+  | { ok: true; messages: Record<GenreDocument, string | null> }
+  | { ok: false; raison: string }
+> {
+  const ctx = await getCurrentCtx();
+  try {
+    // Ce texte part au nom de l'entreprise, chez ses clients : il appartient au
+    // patron, comme les conditions (`docs/QUESTIONS.md` §10).
+    await exigerProprietaire(ctx, "modifier les messages au client");
+    for (const genre of GENRES) {
+      const texte = saisie[genre];
+      if (texte === undefined) continue;
+      const refus = refusDuMessage(texte.trim() || MESSAGES_PAR_DEFAUT[genre]);
+      if (refus) return { ok: false, raison: refus };
+    }
+    await mettreAJourEntreprise(ctx, { messages: saisie });
+    const e = await getEntreprise(ctx);
+    return {
+      ok: true,
+      messages: {
+        devis: e?.messageClient ?? null,
+        facture: e?.messageClientFacture ?? null,
+        passage: e?.messageClientPassage ?? null,
+      },
+    };
+  } catch (err) {
+    logger.error("Enregistrement des messages impossible", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return {
+      ok: false,
+      raison: "Vos messages n'ont pas pu être enregistrés. Réessayez dans un instant.",
     };
   }
 }

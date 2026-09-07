@@ -172,11 +172,29 @@ export function equipesMobilisees(salariesCoches: number, nombreEquipes: number)
  *
  * **Aucun mot de métier ici**, et c'est une consigne explicite : « chantiers de
  * front » a été soumis au patron et rejeté — *« pour moi rien »*.
+ *
+ * ─── ELLE DIT MAINTENANT LA COULEUR, et rend donc DEUX morceaux ───────────
+ *
+ * **Sa demande du 31 août 2026, planche 99, réponse A :** *« écrit deux
+ * chantiers par jour, planning complet, et met le petit carré vert foncé avec
+ * écrit "complet" du planning »*, sur l'écran Réglages — *« c'est sur cette
+ * page que doit se faire la modification »*.
+ *
+ * *« C'est ce qui remplit votre planning »* disait que le réglage remplissait
+ * le planning ; il ne montrait pas CE QU'ON Y VERRA — et ce qu'on y voit est
+ * une couleur. Le réglage vivait sur un écran, sa conséquence sur un autre.
+ *
+ * **Pourquoi deux morceaux plutôt qu'une phrase.** Entre les deux se glissent
+ * le carré du planning et son mot, qui ne sont pas du texte : le carré se peint
+ * avec `fondDeLEtat` et le mot se lit dans `MOT_ETAT` (`planning-jour.ts`).
+ * Les écrire ici en clair ferait deux sources pour une seule couleur et deux
+ * rédactions pour un seul mot — et un `#2f3b2f` posé dans un écran serait faux
+ * sur les deux chartes sombres (`CLAUDE.md` §3).
  */
-export function phraseDuCompteur(nombreEquipes: number): string {
+export function phraseDuCompteur(nombreEquipes: number): { avant: string; apres: string } {
   const n = Math.max(1, Math.trunc(nombreEquipes) || 1);
   const combien = n <= 1 ? "Un chantier" : `${n} chantiers`;
-  return `${combien} par jour. C'est ce qui remplit votre planning.`;
+  return { avant: `${combien} par jour. Planning`, apres: "." };
 }
 
 /**

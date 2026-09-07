@@ -24,8 +24,10 @@ const BASE = "http://localhost:3000";
 //   1. le geste de dictée est là **dès l'arrivée**, sur un chantier vide, sans
 //      qu'on ait touché quoi que ce soit ;
 //   2. un appui dicte, l'avion envoie — et la note existe vraiment ;
-//   3. l'objet redevient alors le lecteur, au même endroit ;
-//   4. **la bulle de l'assistant ne recouvre rien.**
+//   3. rouverte, la fiche montre LE MÊME objet — le micro, jamais le lecteur
+//      (sa remarque du 5 septembre 2026, `ARCHITECTURE.md` §261) ;
+//   4. la note reste écoutable et retirable, sur l'écran qui la porte ;
+//   5. **la bulle de l'assistant ne recouvre rien.**
 //
 // **Le DESSIN a changé le 30 août 2026, la règle non.** Le repos est le disque
 // plein qu'il a choisi (repos B) et non plus l'anneau creux ; l'arrêt n'envoie
@@ -71,9 +73,16 @@ async function main() {
   // Un chantier NEUF : ni photo, ni dictée — exactement le sien.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Anneau e2e ${Date.now()}`);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 20_000 });
-  const fiche = page.url();
+  const chantierId = await creerPuisFiche(page);
+  // **L'ANNEAU VIT SUR LA FICHE CLIENT** — 4 septembre 2026. Il était au milieu
+  // de la fiche du chantier depuis sa demande du 11 août ; cette fiche est
+  // retirée (`ARCHITECTURE.md` §254) parce qu'elle montrait une seconde fois ce
+  // que la fiche client porte déjà — la pellicule et l'anneau.
+  //
+  // **Sa demande, elle, n'a pas bougé d'un mot** : *« l'anneau qui est en plein
+  // milieu et dès qu'on arrive sur la page, il y est »*. C'est cette page-ci,
+  // désormais.
+  const fiche = `${BASE}/chantiers/${chantierId}/coordonnees`;
   // **On attend que la PAGE soit arrivée, pas plus.** `waitForURL` rend la main
   // dès que l'adresse change, avant que quoi que ce soit soit rendu : sans
   // cela, le premier contrôle mesurait un écran encore vide et accusait
@@ -99,42 +108,21 @@ async function main() {
     );
   });
 
-  // **Rien ne s'est perdu en vidant le corps de la fiche.**
+  // ─── UN CAS A ÉTÉ RETIRÉ ICI, ET IL FAUT SAVOIR LEQUEL ─────────────────────
   //
-  // Le 11 août 2026, le patron a demandé que la fiche respecte strictement sa
-  // maquette : ni bouton, ni lien dans le corps — l'anneau, et rien d'autre.
-  // Alléger un écran est facile ; le faire sans amputer l'est moins. L'étape
-  // suivante et la rédaction à la main descendent dans le tiroir, et ce
-  // contrôle existe pour que personne ne les y oublie : ce sont deux demandes
-  // qu'il avait faites lui-même, les 3 et 4 août.
-  await cas("le corps ne porte que l'anneau, et le tiroir garde tout le reste", async () => {
-    // **On s'assure d'abord que la cible existe.** Un sélecteur qui ne trouve
-    // rien compte zéro lien, et ce contrôle passerait alors au vert sur une
-    // page vide — c'est-à-dire exactement quand il devrait crier.
-    const corps = page.locator(".atlas-scene-fiche");
-    assert.equal(await corps.count(), 1, "le corps de la fiche est introuvable : ce contrôle n'éprouve rien");
-    assert.equal(
-      await corps.locator("a[href*='/devis-complet'], a[href*='/photos']").count(),
-      0,
-      "le corps de la fiche porte encore un bouton ou un lien : la maquette n'en montre aucun"
-    );
-
-    // **Le tiroir est exigé, pas espéré.** Une première version se rabattait
-    // sur la page entière quand elle ne le trouvait pas : le tiroir aurait pu
-    // disparaître sans que rien ne rougisse, alors que c'est précisément lui
-    // qui recueille ce qu'on a retiré du corps.
-    const tiroir = page.locator('[data-atlas="tiroir-fiche"]');
-    assert.equal(await tiroir.count(), 1, "le tiroir a disparu : le corps a été vidé sans que rien ne recueille le reste");
-    for (const [quoi, href] of [
-      ["l'étape suivante", "/note-vocale"],
-      ["la rédaction à la main", "/devis-complet"],
-    ] as const) {
-      assert.ok(
-        await tiroir.locator(`a[href*="${href}"]`).count(),
-        `${quoi} a disparu du tiroir : vider le corps l'a supprimée au lieu de la déplacer`
-      );
-    }
-  });
+  // « le corps ne porte que l'anneau, et le tiroir garde tout le reste »
+  // défendait la maquette du 11 août 2026 : ni bouton ni lien dans le corps de
+  // la fiche du chantier, l'étape suivante et la rédaction à la main
+  // recueillies dans son tiroir. **Cet écran est retiré le 4 septembre** —
+  // corps, tiroir et tout (`ARCHITECTURE.md` §254).
+  //
+  // Le réécrire sur la fiche client aurait été lui prêter une promesse qu'il
+  // n'a jamais faite sur cet écran-là : celui-ci porte un formulaire, et c'est
+  // sa raison d'être. Écrire un contrôle qui réclame ce que le patron a fait
+  // retirer, c'est rendre son écran impossible à changer (`CLAUDE.md` §5 bis).
+  //
+  // Ce que ce cas défendait de vivant — la rédaction à la main reste
+  // atteignable — est tenu sur son écran à lui, `test-devis-a-la-main-e2e.ts`.
 
   await cas("un appui dicte, l'avion envoie — et la note existe", async () => {
     await bouton.click();
@@ -160,24 +148,103 @@ async function main() {
     // envoyer.
     await page.locator('[data-atlas="dictee-envoyer"]').click();
 
-    // La fiche se rafraîchit sur place : l'anneau devient le lecteur.
-    await page.waitForFunction(
-      () => document.querySelector(".atlas-indice")?.textContent?.includes("Poussez") ?? false,
-      undefined,
-      { timeout: 60_000 }
+    // **LA PAGE NE RESTE PLUS SOUS SES YEUX, ET C'EST SA DEMANDE DU 30 AOÛT.**
+    //
+    // Sur la fiche du chantier, l'écran se rafraîchissait sur place et l'anneau
+    // devenait le lecteur. Sur la fiche client — où l'anneau vit depuis que la
+    // fiche du chantier est retirée (`ARCHITECTURE.md` §254) —, l'avion fait
+    // tout : *« envoyer de suite la transcription et arriver sur la page du
+    // devis »*. La chaîne part seule et emmène le patron.
+    //
+    // On attend donc l'un OU l'autre : la chaîne s'annonce, ou elle a déjà
+    // emmené. Exiger le lecteur ici réclamerait un écran qu'il a fait quitter.
+    // **`any` et non `race` :** l'une des attentes n'aboutira JAMAIS — selon
+    // que la chaîne s'annonce ou qu'elle a déjà emmené. `race` échoue sur la
+    // première qui expire, `any` réussit sur la première qui aboutit.
+    //
+    // **UNE TROISIÈME ISSUE, ET C'EST ELLE QUI PORTE LE TITRE DE CE CAS.**
+    // Les deux premières disent ce que fait la CHAÎNE du devis — qui dépend
+    // d'un service d'IA, absent des postes de développement (`CLAUDE.md`
+    // §1 ter). En batterie, sous cinquante suites, elles expiraient toutes les
+    // deux et le rouge accusait la dictée : « All promises were rejected »,
+    // sur une note pourtant bien enregistrée. Un contrôle qui échoue au hasard
+    // s'apprend à être ignoré.
+    //
+    // Ce que ce cas affirme, lui, c'est que **la note existe** — et l'écran le
+    // dit sans dépendre d'aucun service : l'invite « Appuyez et décrivez le
+    // chantier » ne se tait que lorsque l'envoi a RÉUSSI (`onDicte`, puis
+    // `preparationEnCours`). Un refus la laisserait en place avec son message.
+    await Promise.any([
+      page.locator('[data-atlas="preparation-automatique"]').waitFor({ timeout: 60_000 }),
+      page.waitForURL(/\/devis-complet$/, { timeout: 60_000 }),
+      // **Le micro REVENU et l'invite TUE — les deux, et pas l'un des deux.**
+      // Écrite d'abord sur la seule absence d'invite, cette attente se
+      // dénouait dès le premier appui : pendant qu'on dicte, l'objet n'est
+      // plus le micro et l'invite n'est pas rendue non plus. Elle rendait donc
+      // un vert AVANT l'envoi, et les cas suivants trouvaient un chantier sans
+      // note — deux rouges qui accusaient l'écran. Un contrôle qui conclut
+      // trop tôt est pire qu'absent (`AGENTS.md`).
+      //
+      // Les deux ensemble ne se rencontrent qu'après un envoi RÉUSSI : le
+      // micro renaît (la dictée est finie) et l'invite reste tue
+      // (`preparationEnCours`). Un refus, lui, ramène le micro AVEC sa phrase.
+      page.waitForFunction(
+        () =>
+          !!document.querySelector(".atlas-micro") && !document.querySelector(".atlas-indice"),
+        undefined,
+        { timeout: 60_000 }
+      ),
+    ]);
+  });
+
+  await cas("rouverte, la fiche montre LE MÊME objet — 5 septembre 2026", async () => {
+    // **Ce contrôle demandait l'inverse jusqu'au 5 septembre, et c'est LUI qui
+    // l'a fait changer** (`ARCHITECTURE.md` §261) : *« ce n'est pas la même que
+    // lorsque j'ai cliqué sur nouveau chantier. Tu verras par toi-même que la
+    // note vocale a changé. »*
+    //
+    // Il exigeait ici « Poussez l'anneau vers le haut » — le LECTEUR. C'est
+    // exactement l'écran qu'il ne reconnaissait pas : le micro vert de la
+    // création devenu un anneau creux dont le seul geste est de retirer. La
+    // règle défendue est donc retournée : le même objet aux deux visites.
+    await page.goto(fiche, { waitUntil: "networkidle" });
+    assert.equal(await anneau.count(), 1, "l'anneau a disparu après la dictée");
+    assert.equal(
+      await page.locator('button[aria-label="Dicter une note vocale"]').count(),
+      1,
+      "la fiche rouverte ne porte plus le micro : elle a changé de visage entre deux visites"
+    );
+    assert.equal(
+      await page.locator('button[aria-label="Écouter la note vocale"]').count(),
+      0,
+      "le lecteur est revenu sur la fiche client : c'est l'écran qu'il ne reconnaît pas"
+    );
+    // **Et l'écran n'invite plus à parler par-dessus** — sa règle du
+    // 1ᵉʳ septembre : une invitation devant une note déjà là proposerait de
+    // recouvrir ce qu'il vient de dicter.
+    assert.equal(
+      await consigne.count(),
+      0,
+      "l'écran invite encore à dicter alors qu'une note existe : la précédente serait écrasée"
     );
   });
 
-  await cas("l'anneau est redevenu le lecteur, au même endroit", async () => {
-    await page.goto(fiche, { waitUntil: "networkidle" });
-    assert.equal(await anneau.count(), 1, "l'anneau a disparu après la dictée");
-    assert.match(
-      (await consigne.textContent())?.trim() ?? "",
-      /Poussez/,
-      "l'anneau propose encore de dicter alors qu'une note existe : la précédente serait écrasée"
-    );
+  await cas("ET LA NOTE RESTE RETIRABLE — sur l'écran qui la porte", async () => {
+    // **Ce que l'ancien contrôle défendait ne se perd pas, il change
+    // d'adresse.** Il exigeait « Retirer » sous l'anneau de la fiche client ;
+    // le geste vit sur l'écran Note vocale, avec l'écoute. Le vérifier ailleurs
+    // qu'où il vit, c'était réclamer un dessin ; le vérifier ici, c'est tenir
+    // la promesse — une note qu'on ne peut plus enlever resterait chez lui.
+    await page.goto(`${BASE}/chantiers/${chantierId}/note-vocale`, { waitUntil: "networkidle" });
     assert.ok(
-      await page.locator(".atlas-fosse").count(),
+      await page.locator('button[aria-label="Écouter la note"]').count(),
+      "on ne peut plus écouter sa dictée nulle part"
+    );
+    // Le geste est celui de partout : la ligne glisse et « Retirer » se
+    // découvre (`LigneRetirable`). On vise son nom accessible, pas sa classe :
+    // le dessin peut changer, la promesse non.
+    assert.ok(
+      await page.locator('button[aria-label="Retirer cette note vocale"]').count(),
       "le retrait a disparu : une note qu'on ne peut plus enlever"
     );
   });

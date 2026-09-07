@@ -113,7 +113,15 @@ export default async function TerminesPage() {
         <Link
           href="/termines/tva"
           data-atlas="carte-tva"
-          className="mx-[26px] mt-[18px] flex items-center justify-between gap-3 rounded-[4px] px-[15px] py-[17px]"
+          // **20 px de haut au lieu de 17, 18 de côté au lieu de 15, et 24 sous
+          // le titre au lieu de 18 — « le calme », sa proposition A du
+          // 2 septembre 2026** (`appli/termines-elegance.html`). La carte porte
+          // un montant de 21 px entre 17 px de marge : le chiffre touchait
+          // presque le contour doré, et la carte paraissait pincée là où elle
+          // est le premier objet de l'écran. Rien d'autre n'y bouge — ni la
+          // forme, ni le fond, ni le contour : *« garde ce style et cette
+          // forme, j'aime bien »* (26 août).
+          className="mx-[26px] mt-6 flex items-center justify-between gap-3 rounded-[4px] px-[18px] py-5"
           style={{
             backgroundColor: colors.card,
             boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.55)}`,
@@ -129,7 +137,7 @@ export default async function TerminesPage() {
               Ma TVA à déclarer
             </span>
             <span
-              className="mt-[3px] block truncate text-[16.5px]"
+              className="mt-[5px] block truncate text-[17px]"
               style={{ fontFamily: font.display }}
             >
               {tva.periode}

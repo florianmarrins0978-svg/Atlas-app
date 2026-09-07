@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — vos clients, la liste</title>
+<style>
+  /*
+    VOS CLIENTS — proposition pour /clients (src/app/clients/).
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST DESSINÉ ICI VIENT DU DÉPÔT, ET RIEN D'AUTRE.
+
+    Les cinq informations d'une ligne existent en base :
+
+      · le nom            clients.nom
+      · le lieu           clients.adresse            (colonne existante ;
+                                                      la liste ne la charge pas
+                                                      encore — une ligne à
+                                                      ajouter dans
+                                                      listerFichesClients)
+      · les chantiers     compté (fiche.chantiers)
+      · ce qui reste dû   resteDu()  →  fiche.du
+      · la date du dernier chantier   dernierJour    (DÉJÀ calculé et rendu par
+                                                      listerFichesClients ;
+                                                      page.tsx ne le transmet
+                                                      pas à l'écran)
+
+    Aucun champ inventé. Les noms, communes et montants ci-dessous sont des
+    exemples, repris de `appli/clients-recherche.html`.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LES COULEURS SONT CELLES DE src/lib/design-tokens.ts, AU CARACTÈRE PRÈS.
+
+    Origine : les valeurs de repli du fichier.
+    Nuit    : les valeurs que `depuisPlanche()` dérive dans src/lib/chartes.ts
+              (fond #101210, plage #1a1d19, encre #e9e8de, gris #84887b) —
+              calculées, pas approchées à l'œil.
+
+    Les polices sont celles de globals.css : la serif DU SYSTÈME, pas Playfair.
+    Le patron a retenu ce dessin le 10 août 2026, maquette en main.
+
+    ─────────────────────────────────────────────────────────────────────────
+    IL Y A DU JAVASCRIPT ICI, ET C'EST DEMANDÉ.
+
+    Les maquettes de ce dépôt s'en passent d'habitude. Celle-ci filtre pour de
+    vrai à chaque frappe, parce que c'est justement ce qu'il faut juger. La
+    liste est écrite dans le HTML : sans script, elle reste lisible, seul le
+    filtre est perdu.
+
+    La règle de filtrage recopie `src/lib/recherche-client.ts` : sans accents,
+    sans casse, ponctuation ramenée à des espaces, chaque mot cherché n'importe
+    où dans le nom.
+  */
+
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --lineSoft:rgba(28,28,26,.07);
+    --chevron:rgba(28,28,26,.28);
+    --marque:rgba(185,139,71,.24);
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --or:#B98B47; --alerte:#cd6456;
+    --line:rgba(233,232,222,.12); --lineSoft:rgba(233,232,222,.07);
+    --chevron:rgba(233,232,222,.28);
+    --marque:rgba(185,139,71,.30);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:#e7e4dd;color:#1c1c1a;
+       font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:20px 0 56px}
+  body[data-charte="nuit"]{background:#070806;color:#e9e8de}
+  a{color:inherit;text-decoration:none}
+  ::selection{background:var(--marque);color:inherit}
+
+  /* ══ Le banc d'essai — hors de l'écran, et il doit s'en distinguer ══════ */
+  .banc{max-width:390px;margin:0 auto 14px;padding:0 4px}
+  .banc h2{margin:0;font-size:10px;font-weight:500;letter-spacing:.26em;
+           text-transform:uppercase;color:#8a8578}
+  .boutons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .boutons button{font:inherit;font-size:12px;padding:8px 12px;border-radius:6px;
+                  border:1px solid rgba(28,28,26,.18);background:#faf9f5;
+                  color:#1c1c1a;cursor:pointer;min-height:36px}
+  body[data-charte="nuit"] .boutons button{background:#1a1d19;color:#e9e8de;
+                  border-color:rgba(233,232,222,.2)}
+  .boutons button[aria-pressed="true"]{background:#2f3b2f;color:#faf9f5;
+                  border-color:#2f3b2f}
+  body[data-charte="nuit"] .boutons button[aria-pressed="true"]{
+                  background:#e9e8de;color:#101210;border-color:#e9e8de}
+
+  /* ══ L'écran ═══════════════════════════════════════════════════════════ */
+  .tel{max-width:390px;margin:0 auto;background:var(--cream);color:var(--ink);
+       font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       min-height:664px;position:relative;overflow:hidden;
+       border:1px solid rgba(28,28,26,.14);border-radius:14px}
+  body[data-charte="nuit"] .tel{border-color:rgba(233,232,222,.14)}
+  .defile{height:664px;overflow-y:auto;overscroll-behavior:contain;
+          padding-bottom:96px;scrollbar-width:thin;
+          scrollbar-color:var(--chevron) transparent}
+  .defile::-webkit-scrollbar{width:6px}
+  .defile::-webkit-scrollbar-thumb{background:var(--chevron);border-radius:3px}
+  .defile::-webkit-scrollbar-track{background:transparent}
+
+  .serif{font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+         font-weight:400;letter-spacing:-.01em}
+
+  /* ── L'en-tête, grammaire d'EnTeteEcran ──────────────────────────────────
+     Le TITRE nomme l'écran, la PRÉCISION porte le compte. C'est l'inverse
+     d'aujourd'hui, où le compte est à 36 px et le nom de l'écran en petites
+     capitales dorées en dessous. Rien n'est ajouté : les deux fentes existent
+     déjà dans le composant, on échange ce qu'on met dedans. */
+  .haut{display:flex;align-items:center;justify-content:space-between;
+        padding:26px 26px 0}
+  .rond{width:40px;height:40px;border-radius:50%;background:var(--rustTint);
+        display:flex;align-items:center;justify-content:center;flex:none}
+  .rond svg{display:block}
+  .titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;
+               gap:16px;padding:20px 26px 0}
+  h1{margin:0;font-size:36px;line-height:1.02;letter-spacing:-.018em}
+  /* **`min-height`, et c'est une réparation vue en capture.** Quand une
+     recherche ne trouve rien, ce compte n'a rien à dire et se vide : la ligne
+     disparaissait, et le champ de saisie remontait de 24 px sous les doigts —
+     à chaque frappe qui ne trouve pas. La place est donc gardée. */
+  .compte{display:block;margin-top:10px;min-height:14px;font-size:9.5px;
+          font-weight:500;letter-spacing:.28em;text-transform:uppercase;
+          color:var(--muted)}
+  .assistant{width:44px;height:44px;border-radius:50%;background:var(--rust);
+             display:flex;align-items:center;justify-content:center;flex:none}
+
+  /* ── La recherche ────────────────────────────────────────────────────────
+     Toujours affichée, même à trois clients : une barre qui apparaît et
+     disparaît est une règle de plus à deviner (ListeClients.tsx).
+
+     Elle est COLLANTE : sur vingt et un noms on descend, et l'outil qui sert à
+     remonter ne doit pas être resté en haut. */
+  .cherche-zone{position:sticky;top:0;z-index:4;background:var(--cream);
+                padding:18px 26px 14px;transition:box-shadow 180ms ease-out}
+  .cherche-zone.posee{box-shadow:0 1px 0 var(--line)}
+  .cherche{position:relative;display:flex;align-items:center;
+           background:var(--rustTint);border-radius:10px;min-height:50px;
+           padding:0 46px 0 44px}
+  .loupe{position:absolute;left:16px;top:50%;margin-top:-8px;width:14px;height:14px;
+         border:1.6px solid var(--muted);border-radius:50%;pointer-events:none}
+  .loupe::after{content:"";position:absolute;right:-5px;bottom:-3px;width:7px;
+                height:1.6px;background:var(--muted);transform:rotate(45deg)}
+  /* 16 px au moins : en dessous, Safari agrandit la page au premier appui. */
+  .cherche input{width:100%;border:0;background:none;outline:none;font:inherit;
+                 font-size:16px;color:var(--ink);padding:13px 0;
+                 caret-color:var(--or)}
+  /* La plage grise du navigateur n'appartient à aucune charte : on la pose. */
+  .cherche input::placeholder{color:var(--inkSoft);opacity:.72}
+  .cherche input:focus-visible{outline:none}
+  .cherche:focus-within{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .effacer{position:absolute;right:0;top:0;height:100%;width:46px;border:0;
+           background:none;color:var(--muted);font-size:19px;line-height:1;
+           cursor:pointer;display:none}
+  .effacer.vu{display:block}
+
+  /* ── Une bande : l'ordre de la liste, dit ────────────────────────────────
+     La liste est rangée du chantier le plus récent au plus ancien
+     (listerFichesClients). Personne ne le sait aujourd'hui : rien ne l'annonce
+     et rien ne permet de sauter. Les trois derniers mois portent leur nom, le
+     reste est groupé. */
+  .bande{margin:24px 26px 2px;font-size:9.5px;font-weight:500;
+         letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .liste .bande:first-child{margin-top:14px}
+
+  /* ── Une ligne de client ─────────────────────────────────────────────────
+     Deux blocs : ce qui IDENTIFIE à gauche, ce qui DEMANDE UN GESTE à droite.
+     64 px de haut au moins — c'est une liste qu'on touche debout, dehors. */
+  .ligne{display:flex;align-items:center;gap:14px;margin:0 26px;padding:13px 0;
+         min-height:64px;border-bottom:1px solid var(--line)}
+  .liste .ligne.dernier{border-bottom:0}
+  .ligne:focus-visible{outline:2px solid var(--or);outline-offset:3px;
+                       border-radius:3px}
+  .gauche{flex:1;min-width:0}
+  .nom{display:block;font-size:17.5px;line-height:1.25;
+       overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* **Le lieu, et c'est lui qui répond à « lequel des quatre Martins ? ».**
+     En inkSoft et non en muted : mesuré, muted tient 3,32 contre le fond crème
+     — sous le seuil de lecture, et c'est la première chose qui disparaît au
+     soleil. inkSoft en tient 8,04, sans changer de voix. */
+  .dit{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;
+       color:var(--inkSoft);
+       overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .droite{flex:none;text-align:right}
+  /* Ce qui reste dû ne se lit plus en capitales de 9,5 px en bout de ligne :
+     c'est la seule chose de cet écran qui demande un geste. */
+  .montant{display:block;font-size:16px;line-height:1.15;font-weight:500;
+           color:var(--alerte);font-variant-numeric:tabular-nums;
+           white-space:nowrap}
+  .etiq{display:block;margin-top:3px;font-size:9.5px;font-weight:500;
+        letter-spacing:.28em;text-transform:uppercase;color:var(--alerte)}
+  .chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+        border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+  mark{background:var(--marque);color:inherit;border-radius:2px;padding:0 1px}
+
+  /* Ces deux phrases-là sont les SEULES de l'écran, et il faut les lire : elles
+     prennent inkSoft comme la ligne du lieu, jamais le gris à 3,32. */
+  .rien{margin:22px 26px 0;max-width:31ch;font-size:13px;line-height:1.6;
+        color:var(--inkSoft)}
+
+  /* Le compte de bas de liste : il n'existe QUE dans l'écran d'aujourd'hui.
+     Dans la proposition, il est remonté dans l'en-tête, là où l'œil est. */
+  .compte-bas{margin:16px 26px 0;font-size:9.5px;font-weight:500;
+              letter-spacing:.28em;text-transform:uppercase;color:var(--muted);
+              display:none}
+
+  /* ── La barre du bas, pour la mesure ────────────────────────────────────*/
+  .barre{position:absolute;left:0;right:0;bottom:0;background:var(--cream);
+         border-top:1px solid var(--line);padding:18px 14px 10px}
+  .onglets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+           position:relative}
+  .onglets span{text-align:center;font-size:8.5px;font-weight:500;
+                letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+                padding-bottom:8px}
+  .onglets span.actif{color:var(--ink);transform:translateY(-2px)}
+  .filet-onglet{position:absolute;bottom:0;left:0;height:1px;background:var(--or);
+                width:calc(100% / 5)}
+
+  /* ══ L'écran d'AUJOURD'HUI, pour comparer ══════════════════════════════ */
+  .avant-seul{display:none}
+  body.mode-avant .avant-seul{display:block}
+  body.mode-avant .apres-seul{display:none}
+  body.mode-avant .bande{display:none}
+  body.mode-avant .cherche-zone{position:static;padding:18px 26px 0}
+  body.mode-avant .cherche-zone.posee{box-shadow:none}
+  body.mode-avant .cherche{padding-left:14px}
+  body.mode-avant .loupe{display:none}
+  body.mode-avant .dit{color:var(--muted);font-size:11.5px}
+  body.mode-avant .montant{font-size:9.5px;font-weight:500;letter-spacing:.28em;
+                           text-transform:uppercase;line-height:1.4}
+  body.mode-avant .etiq{display:none}
+  body.mode-avant .ligne{min-height:56px}
+  body.mode-avant .compte-bas.a-des-resultats{display:block}
+  body.mode-avant mark{background:none;padding:0}
+
+  /* ══ Les notes, sous l'écran ═══════════════════════════════════════════ */
+  .notes{max-width:390px;margin:20px auto 0;padding:0 4px;font-size:13.5px;
+         line-height:1.6;color:#3a3a34}
+  body[data-charte="nuit"] .notes{color:#c1c2b6}
+  .notes h3{margin:22px 0 8px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:#8a8578}
+  .notes ul{margin:0;padding-left:18px}
+  .notes li{margin-bottom:7px}
+  .notes b{font-weight:600}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="banc">
+  <h2>Vos clients — proposition</h2>
+  <div class="boutons">
+    <button type="button" data-etat="repos" aria-pressed="true">Au repos</button>
+    <button type="button" data-frappe="martins">Je tape « martins »</button>
+    <button type="button" data-frappe="dupont">Je tape « dupont »</button>
+    <button type="button" data-etat="vide" aria-pressed="false">Aucun client</button>
+    <button type="button" data-bascule="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-bascule="nuit" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="tel">
+  <div class="defile" id="defile">
+
+    <div class="haut">
+      <a class="rond" href="#" aria-label="Retour à la liste des chantiers">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.4" style="color:var(--rust)">
+          <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <span></span>
+    </div>
+
+    <div class="titre-ligne">
+      <div style="min-width:0">
+        <h1 class="serif">
+          <span class="apres-seul">Vos clients</span>
+          <span class="avant-seul" id="titre-avant">21 clients</span>
+        </h1>
+        <span class="compte apres-seul" id="compte">21 clients</span>
+        <span class="compte avant-seul" style="color:var(--or)">Vos clients</span>
+      </div>
+      <span class="assistant" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+             stroke="var(--card)" stroke-width="1.8">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </span>
+    </div>
+
+    <div class="cherche-zone" id="zone-cherche">
+      <div class="cherche">
+        <span class="loupe" aria-hidden="true"></span>
+        <input type="text" inputmode="search" autocomplete="off" id="champ"
+               placeholder="Chercher un client" aria-label="Chercher un client">
+        <button type="button" class="effacer" id="effacer" aria-label="Effacer la recherche">✕</button>
+      </div>
+    </div>
+
+    <div class="liste" id="liste"></div>
+    <p class="rien" id="rien" hidden></p>
+    <p class="compte-bas" id="compte-bas"></p>
+
+  </div>
+
+  <nav class="barre" aria-hidden="true">
+    <div class="onglets">
+      <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span>
+      <span>Paysage</span><span>Réglages</span>
+      <i class="filet-onglet"></i>
+    </div>
+  </nav>
+</div>
+
+<div class="notes">
+  <h3>Ce qui change</h3>
+  <ul>
+    <li><b>Le lieu remplace les comptes d'argent</b> sur la deuxième ligne&nbsp;:
+      c'est ce qui distingue quatre Martins. La colonne existe
+      (<code>clients.adresse</code>) ; la liste ne la charge pas encore.</li>
+    <li><b>Ce qui reste dû passe de 9,5 px en capitales à 16 px</b>, à droite du
+      nom. C'est la seule chose de l'écran qui demande un geste.</li>
+    <li><b>La liste dit son ordre</b> — du chantier le plus récent au plus ancien
+      (elle l'est déjà, sans le dire). La date vient de <code>dernierJour</code>,
+      déjà calculée, jamais transmise à l'écran.</li>
+    <li><b>Le compte remonte dans l'en-tête</b> et suit la recherche. Aujourd'hui
+      il est écrit sous le dernier résultat, hors de l'écran.</li>
+    <li><b>Ce qui est trouvé est surligné</b> : sur quatre Martins, on voit
+      pourquoi la ligne sort.</li>
+    <li><b>Le gris secondaire passe de <code>muted</code> à <code>inkSoft</code></b> :
+      3,32 de contraste contre 8,04. C'est ce qui s'efface au soleil.</li>
+  </ul>
+  <h3>Ce que ça retire, et il faut le dire</h3>
+  <ul>
+    <li>Le total facturé par client (« 2 400,00 € facturés ») quitte la ligne.
+      Deux montants sur une même ligne, l'un gris l'autre rouge, se confondent
+      d'un coup d'œil. Il ne se lit plus nulle part ailleurs depuis que la fiche
+      a été allégée le 2 septembre — <b>à trancher</b>.</li>
+  </ul>
+</div>
+
+<script>
+/* ── Les vingt et un clients de l'exemple ─────────────────────────────────
+   Cinq champs, tous en base. `du` à null : rien n'est facturé — jamais 0 €. */
+const CLIENTS = [
+  {nom:"Mme Chauvin",      lieu:"Bouguenais",                    n:3, jour:"2026-09-01", du:null},
+  {nom:"M. Martins",       lieu:"10 rue d'Enfer, Nantes",        n:5, jour:"2026-08-28", du:"740,00 €"},
+  {nom:"Mme Moreau",       lieu:"Saint-Herblain",                n:2, jour:"2026-08-24", du:null},
+  {nom:"M. Bernard",       lieu:"Rezé",                          n:1, jour:"2026-08-19", du:null},
+  {nom:"Martins Frères",   lieu:"Zone de la Lande, Vertou",      n:4, jour:"2026-08-12", du:"1 260,00 €"},
+  {nom:"Mme Costa",        lieu:"Sainte-Luce-sur-Loire",         n:2, jour:"2026-08-06", du:null},
+  {nom:"M. Faucher",       lieu:"Carquefou",                     n:1, jour:"2026-08-02", du:"480,00 €"},
+  {nom:"Mme Aubry",        lieu:"Orvault",                       n:3, jour:"2026-07-29", du:null},
+  {nom:"M. Martins",       lieu:"4 allée des Chênes, Vertou",    n:2, jour:"2026-07-21", du:null},
+  {nom:"Mme Félicie",      lieu:"Vertou",                        n:1, jour:"2026-07-15", du:null},
+  {nom:"M. Guérin",        lieu:"La Chapelle-sur-Erdre",         n:2, jour:"2026-07-09", du:null},
+  {nom:"Mme Renard",       lieu:"Basse-Goulaine",                n:4, jour:"2026-07-02", du:"320,00 €"},
+  {nom:"Mme Martins",      lieu:"18 rue des Tilleuls, Rezé",     n:1, jour:"2026-06-24", du:null},
+  {nom:"M. Pichon",        lieu:"Couëron",                       n:2, jour:"2026-06-11", du:null},
+  {nom:"Mme Léger",        lieu:"Sautron",                       n:1, jour:"2026-05-28", du:null},
+  {nom:"M. Thibault",      lieu:"Saint-Sébastien-sur-Loire",     n:3, jour:"2026-05-14", du:null},
+  {nom:"Mme Vasseur",      lieu:"Thouaré-sur-Loire",             n:1, jour:"2026-04-30", du:null},
+  {nom:"Copropriété Les Cèdres", lieu:"12 bd des Poilus, Nantes",n:6, jour:"2026-04-08", du:"2 150,00 €"},
+  {nom:"M. Ollivier",      lieu:"Les Sorinières",                n:1, jour:"2026-03-17", du:null},
+  {nom:"Mme Perrot",       lieu:"Saint-Jean-de-Boiseau",         n:2, jour:"2025-11-20", du:null},
+  {nom:"M. Delaunay",      lieu:null,                            n:0, jour:null,         du:null}
+];
+
+/* Le total facturé, pour l'écran « Aujourd'hui » seulement. */
+const FACTURE = ["2 940,00 €","3 200,00 €","1 180,00 €","640,00 €","4 820,00 €",
+  "1 940,00 €","480,00 €","2 210,00 €","1 460,00 €","840,00 €","1 330,00 €",
+  "2 660,00 €","590,00 €","1 120,00 €","470,00 €","2 380,00 €","560,00 €",
+  "7 940,00 €","390,00 €","1 020,00 €",null];
+
+/* ── La règle de recherche, recopiée de src/lib/recherche-client.ts ────────
+   Caractère par caractère, pour pouvoir surligner ensuite : `normalize("NFD")`
+   sur la chaîne entière décale les indices dès qu'un accent est séparé. */
+function normChar(c){
+  const d = c.normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase();
+  return /[.'’\-_\s]/.test(d) ? " " : (d || " ");
+}
+function normTab(texte){ return Array.from(texte).map(normChar).join(""); }
+function mots(saisie){
+  return normTab(saisie).split(" ").filter(Boolean);
+}
+function aucunClientTrouve(saisie){
+  return "Aucun client ne s'appelle « " + saisie.trim() + " ».";
+}
+
+/* Le nom, avec les morceaux trouvés surlignés. */
+function nomSurligne(nom, listeMots){
+  if(!listeMots.length) return echapper(nom);
+  const plat = normTab(nom);
+  const marque = new Array(nom.length).fill(false);
+  for(const m of listeMots){
+    let i = plat.indexOf(m);
+    while(i !== -1){
+      for(let k=i;k<i+m.length;k++) marque[k]=true;
+      i = plat.indexOf(m, i+1);
+    }
+  }
+  let out="", ouvert=false;
+  const car = Array.from(nom);
+  for(let i=0;i<car.length;i++){
+    if(marque[i] && !ouvert){ out+="<mark>"; ouvert=true; }
+    if(!marque[i] && ouvert){ out+="</mark>"; ouvert=false; }
+    out += echapper(car[i]);
+  }
+  if(ouvert) out+="</mark>";
+  return out;
+}
+function echapper(t){
+  return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+/* ── Les bandes : les trois derniers mois portent leur nom ─────────────── */
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet",
+              "août","septembre","octobre","novembre","décembre"];
+const AUJOURD_HUI = "2026-09-03";
+function bandeDe(jour){
+  if(!jour) return "Sans chantier";
+  const [a,m] = jour.split("-").map(Number);
+  const [aa,am] = AUJOURD_HUI.split("-").map(Number);
+  const ecart = (aa-a)*12 + (am-m);
+  return ecart <= 2 ? MOIS[m-1] : "Plus ancien";
+}
+
+/* ── Le rendu ─────────────────────────────────────────────────────────── */
+const champ = document.getElementById("champ");
+const liste = document.getElementById("liste");
+const rien = document.getElementById("rien");
+const compte = document.getElementById("compte");
+const titreAvant = document.getElementById("titre-avant");
+const compteBas = document.getElementById("compte-bas");
+const effacer = document.getElementById("effacer");
+const zone = document.getElementById("zone-cherche");
+const defile = document.getElementById("defile");
+let etat = "repos";
+
+function dessiner(){
+  const saisie = champ.value;
+  const listeMots = mots(saisie);
+  const cherche = saisie.trim().length > 0;
+  const source = etat === "vide" ? [] : CLIENTS;
+  const vus = source
+    .map((c,i) => ({c, i}))
+    .filter(({c}) => {
+      const plat = normTab(c.nom);
+      return listeMots.every(m => plat.includes(m));
+    });
+
+  effacer.classList.toggle("vu", cherche);
+
+  /* Aucun client du tout : ni recherche, ni liste — il n'y a rien à chercher. */
+  if(etat === "vide"){
+    zone.style.display = "none";
+    liste.innerHTML = "";
+    rien.hidden = false;
+    rien.innerHTML = "Aucun client pour l'instant. Ils naissent avec vos chantiers.";
+    compte.textContent = "";
+    titreAvant.textContent = "Aucun client";
+    compteBas.classList.remove("a-des-resultats");
+    return;
+  }
+  zone.style.display = "";
+
+  /* Le compte : dans l'en-tête, et il suit la recherche. */
+  const n = vus.length;
+  const motCompte = n === 1 ? "1 client" : n + " clients";
+  compte.textContent = cherche ? (n === 0 ? "" : motCompte + " trouvé" + (n>1?"s":"")) : motCompte;
+  titreAvant.textContent = CLIENTS.length + " clients";
+  compteBas.textContent = n === 1 ? "1 client trouvé" : n + " clients trouvés";
+  compteBas.classList.toggle("a-des-resultats", cherche && n > 0);
+
+  if(n === 0){
+    liste.innerHTML = "";
+    rien.hidden = false;
+    rien.innerHTML = aucunClientTrouve(saisie);
+    return;
+  }
+  rien.hidden = true;
+
+  let html = "", bandeVue = null;
+  vus.forEach(({c,i}, rang) => {
+    const b = bandeDe(c.jour);
+    if(!cherche && b !== bandeVue){
+      html += '<p class="bande">' + b + '</p>';
+      bandeVue = b;
+    }
+    const suite = [];
+    if(c.lieu) suite.push(echapper(c.lieu));
+    suite.push(c.n === 0 ? "aucun chantier" : c.n === 1 ? "1 chantier" : c.n + " chantiers");
+    const ditAvant = (c.n === 0 ? "aucun chantier" : c.n === 1 ? "1 chantier" : c.n + " chantiers")
+      + (FACTURE[i] ? " · " + FACTURE[i] + " facturés" : " · rien de facturé");
+    const dernier = rang === vus.length - 1 ? " dernier" : "";
+    html +=
+      '<a class="ligne' + dernier + '" href="#" tabindex="0">' +
+        '<span class="gauche">' +
+          '<span class="nom serif">' + nomSurligne(c.nom, listeMots) + '</span>' +
+          '<span class="dit apres-seul">' + suite.join(" · ") + '</span>' +
+          '<span class="dit avant-seul">' + ditAvant + '</span>' +
+        '</span>' +
+        (c.du
+          ? '<span class="droite">' +
+              '<span class="montant apres-seul">' + c.du + '</span>' +
+              '<span class="etiq apres-seul">dus</span>' +
+              '<span class="montant avant-seul">' + c.du + ' dus</span>' +
+            '</span>'
+          : '') +
+        '<span class="chev" aria-hidden="true"></span>' +
+      '</a>';
+  });
+  liste.innerHTML = html;
+}
+
+champ.addEventListener("input", dessiner);
+effacer.addEventListener("click", () => { champ.value = ""; dessiner(); champ.focus(); });
+defile.addEventListener("scroll", () => {
+  zone.classList.toggle("posee", defile.scrollTop > 118);
+});
+
+document.querySelectorAll("[data-frappe]").forEach(b => {
+  b.addEventListener("click", () => {
+    etat = "repos";
+    majEtat();
+    champ.value = b.dataset.frappe;
+    dessiner();
+    defile.scrollTop = 0;
+  });
+});
+document.querySelectorAll("[data-etat]").forEach(b => {
+  b.addEventListener("click", () => {
+    etat = b.dataset.etat;
+    champ.value = "";
+    majEtat();
+    dessiner();
+    defile.scrollTop = 0;
+  });
+});
+function majEtat(){
+  document.querySelectorAll("[data-etat]").forEach(b =>
+    b.setAttribute("aria-pressed", String(b.dataset.etat === etat)));
+}
+document.querySelector('[data-bascule="avant"]').addEventListener("click", e => {
+  const on = !document.body.classList.contains("mode-avant");
+  document.body.classList.toggle("mode-avant", on);
+  e.currentTarget.setAttribute("aria-pressed", String(on));
+  dessiner();
+});
+document.querySelector('[data-bascule="nuit"]').addEventListener("click", e => {
+  const on = document.body.dataset.charte !== "nuit";
+  document.body.dataset.charte = on ? "nuit" : "origine";
+  e.currentTarget.setAttribute("aria-pressed", String(on));
+});
+
+dessiner();
+</script>
+</body>
+</html>

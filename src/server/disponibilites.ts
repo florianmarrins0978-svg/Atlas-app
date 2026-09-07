@@ -65,8 +65,26 @@ export const HORIZON_PATRON_JOURS = 550;
 export const MARGE_AUTOUR_PROPOSITION_JOURS = 21;
 
 /**
- * Délai minimal entre aujourd'hui et une date proposable. Proposer le jour même
- * n'a aucun sens pour un chantier, et proposer demain met le patron en défaut.
+ * Délai en deçà duquel l'application ne propose **d'elle-même** aucune date.
+ *
+ * **Ce n'est plus une interdiction — sa règle du 31 août 2026 :** *« si
+ * l'utilisateur veut choisir le 1ᵉʳ septembre il doit pouvoir ! »*. Elle ne
+ * fait que reprendre, pour la proximité, la décision qu'il avait déjà prise le
+ * 23 août pour les journées pleines : *« si l'utilisateur juge qu'il peut
+ * rajouter un chantier, il doit pouvoir le faire quand même ; nous on prévient
+ * juste »*.
+ *
+ * Ce que ce délai gouverne encore, et ce qu'il ne gouverne plus :
+ *
+ * | | |
+ * |---|---|
+ * | les six jours **suggérés** (`fenetreProposition`, `premiersJoursLibres`) | plancher à **+2** : l'application ne met jamais demain sous ses yeux d'elle-même |
+ * | ce qu'il **choisit au calendrier** (`fenetrePatron`) | dès **aujourd'hui** — il connaît ses clients et ses camions |
+ *
+ * Ce partage n'est pas un détail de forme : suggérer, c'est décider à sa place ;
+ * accepter son choix, c'est le laisser décider. La seule borne basse qui reste
+ * est le passé, et ce n'en est pas une de jugement — un client ne peut pas
+ * retenir un jour déjà écoulé.
  */
 export const DELAI_MINIMAL_JOURS = 2;
 
@@ -102,13 +120,23 @@ export function fenetreProposition(
 }
 
 /**
- * Ce que LE PATRON peut retenir : de après-demain à dix-huit mois.
+ * Ce que LE PATRON peut retenir : d'aujourd'hui à dix-huit mois.
  *
  * Sert à valider son choix, jamais à composer ce que le client verra.
+ *
+ * **Elle commençait après-demain, et c'est ce qui l'a bloqué le 31 août 2026**
+ * — *« si l'utilisateur veut choisir le 1ᵉʳ septembre il doit pouvoir ! »*. Le
+ * calendrier lui montrait le lendemain, la case s'ouvrait, et le verdict
+ * refusait : un jour offert au doigt puis repris. Le délai de deux jours reste
+ * là où il a un sens, sur ce que l'application propose d'elle-même
+ * (`fenetreProposition`) ; ici, c'est LUI qui choisit.
+ *
+ * **Le passé, lui, reste dehors, et ce n'est pas un arbitrage** : son client
+ * lira ce devis demain au plus tôt, et ne peut pas retenir un jour écoulé.
  */
 export function fenetrePatron(aujourdHui: Date): FenetreProposition {
   return {
-    debut: versJourIso(ajouterJours(aujourdHui, DELAI_MINIMAL_JOURS)),
+    debut: versJourIso(aujourdHui),
     fin: versJourIso(ajouterJours(aujourdHui, HORIZON_PATRON_JOURS)),
   };
 }
@@ -137,8 +165,29 @@ export function bandesVisibles(
   aujourdHui: Date,
   datesProposees: readonly JourIso[]
 ): FenetreProposition[] {
-  const ordinaire = fenetreProposition(aujourdHui);
   const retenues = [...datesProposees].filter(Boolean).sort();
+  const ordinaire = fenetreProposition(aujourdHui);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // **UNE DATE PROPOSÉE EST TOUJOURS RETENABLE — DES DEUX CÔTÉS.**
+  //
+  // La bande s'étirait déjà vers le HAUT pour une date lointaine. Le bas n'en
+  // avait pas besoin tant que le patron ne pouvait rien choisir avant
+  // après-demain ; depuis sa règle du 31 août 2026, il le peut, et le trou
+  // s'ouvre : un chantier proposé pour demain tombait sous `ordinaire.debut`,
+  // et `jourRetenable` le refusait à SON CLIENT avec « date indisponible ».
+  //
+  // **Le devis se serait perdu là**, sur la date que l'artisan venait de lui
+  // offrir, et sans que personne ne comprenne — l'écran du patron aurait dit
+  // oui, la page du client non. C'est exactement le défaut que la borne haute
+  // avait déjà coûté, dans l'autre sens.
+  //
+  // Le plancher ne descend jamais plus bas qu'une date qu'il a réellement
+  // proposée : ce n'est pas une fenêtre élargie, c'est une fenêtre qui contient
+  // ce qu'elle transporte.
+  // ═══════════════════════════════════════════════════════════════════════
+  if (retenues.length > 0 && retenues[0] < ordinaire.debut) ordinaire.debut = retenues[0];
+
   const lointaines = retenues.filter((d) => d > ordinaire.fin);
 
   // Rien de lointain : le cas ordinaire, et il ne bouge pas d'un jour.

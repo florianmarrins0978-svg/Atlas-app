@@ -21,7 +21,13 @@ export default async function DocumentsLegauxPage() {
   if (documents.length === 0) redirect("/");
 
   return (
-    <div className="min-h-dvh bg-[#F4EFE8] px-5 py-8">
+    /* **`bg-paper` et non un crème écrit en clair — 4 septembre 2026.**
+       Cet écran est celui du PATRON, pas de son client : il reçoit donc la
+       charte comme les autres (`estPageDuClient` ne le compte pas). Son fond
+       était figé pendant que son texte suivait `--atlas-ink` : sur Nuit,
+       l'encre passait au clair sur un fond resté crème, et la page devenait
+       illisible — le défaut même qu'il a signalé le 22 août. */
+    <div className="min-h-dvh bg-paper px-5 py-8">
       <div className="mx-auto flex w-full max-w-md flex-col gap-5">
         <header>
           <h1

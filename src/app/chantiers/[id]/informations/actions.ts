@@ -998,13 +998,48 @@ export async function appliquerPropositionsAction(
 export async function preparerDevisDepuisDicteeAction(chantierId: string, remplacer = false) {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/chantiers", "préparer un devis depuis la dictée");
-  const resultat = await preparerDevisDepuisDictee(ctx, chantierId, { remplacer });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // **LA PANNE SE DIT, ELLE NE SE COMPTE PLUS — sa capture du 1ᵉʳ septembre
+  // 2026 : « Atlas prépare toujours votre devis… (96 s) », et la note qui
+  // n'atteint jamais le devis.**
+  //
+  // Le service journalisait déjà la cause (`devis-depuis-dictee.ts`), puis
+  // relançait. Or **le message d'une exception d'action serveur n'arrive
+  // JAMAIS jusqu'à lui** : Next.js le remplace en production par un
+  // identifiant opaque (`AGENTS.md`). L'écran tombait donc dans son rattrapage
+  // — celui du 12 août, écrit pour les réponses PERDUES — et se mettait à
+  // compter des secondes devant un travail déjà mort. Quatre-vingt-seize
+  // secondes à regarder un devis qui ne viendrait pas.
+  //
+  // On rend donc un refus EN VALEUR. Le rattrapage garde son rôle : il ne sert
+  // plus qu'aux vraies coupures, celles où rien ne revient du tout.
+  //
+  // La raison est courte et sans détail de pile : elle doit tenir sur un
+  // téléphone et pouvoir être recopiée telle quelle. Le détail complet reste
+  // au journal du serveur.
+  // ═══════════════════════════════════════════════════════════════════════
+  let resultat: Awaited<ReturnType<typeof preparerDevisDepuisDictee>>;
+  try {
+    resultat = await preparerDevisDepuisDictee(ctx, chantierId, { remplacer });
+  } catch (err) {
+    const motif = (err instanceof Error ? err.message : String(err))
+      .split("\n")[0]!
+      .slice(0, 160);
+    return {
+      statut: "echec" as const,
+      erreur: `La préparation s'est arrêtée : ${motif}`,
+    };
+  }
 
   if (resultat.statut === "prepare") {
-    // Les quatre écrans que l'enchaînement vient de modifier. Sans cela, le
+    // Les trois écrans que l'enchaînement vient de modifier. Sans cela, le
     // patron revient sur « Informations » et y trouve la page d'avant : il
     // croirait que rien ne s'est passé.
-    revalidatePath(`/chantiers/${chantierId}`);
+    //
+    // **La fiche du chantier a quitté cette liste le 4 septembre 2026**
+    // (`ARCHITECTURE.md` §254) : son adresse ne rend plus qu'une
+    // redirection, et revalider une redirection ne rafraîchit rien.
     revalidatePath(`/chantiers/${chantierId}/informations`);
     revalidatePath(`/chantiers/${chantierId}/prix`);
     revalidatePath(`/chantiers/${chantierId}/export`);
@@ -1035,7 +1070,6 @@ export async function repondreQuestionsChiffrageAction(
   const resultat = await enregistrerPrecisionsEtReprendre(ctx, chantierId, reponses);
 
   if (resultat.statut === "prepare") {
-    revalidatePath(`/chantiers/${chantierId}`);
     revalidatePath(`/chantiers/${chantierId}/informations`);
     revalidatePath(`/chantiers/${chantierId}/prix`);
     revalidatePath(`/chantiers/${chantierId}/export`);

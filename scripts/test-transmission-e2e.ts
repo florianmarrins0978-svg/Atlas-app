@@ -49,9 +49,9 @@ async function main() {
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', TELEPHONE);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 10000 });
-  const chantierUrl = page.url();
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
 
   await page.goto(`${chantierUrl}/prix`, { waitUntil: "networkidle" });
   await page.click("text=+ Ajouter une ligne");

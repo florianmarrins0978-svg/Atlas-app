@@ -23,9 +23,9 @@ async function main() {
   const nomUnique = `Chantier informations e2e ${Date.now()}`;
   await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
-  await creerPuisFiche(page);
+  const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const infoUrl = `${page.url()}/informations`;
+  const infoUrl = `http://localhost:3000/chantiers/${idChantier}/informations`;
 
   // --- État vide ---
   await page.goto(infoUrl, { waitUntil: "networkidle" });

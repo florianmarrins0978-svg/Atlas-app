@@ -73,9 +73,11 @@ async function main() {
 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Note par URL ${Date.now()}`);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-  const chantierId = page.url().split("/").pop()!.split("?")[0];
+  const chantierId = await creerPuisFiche(page);
+  // **L'ANNEAU VIT SUR LA FICHE CLIENT** — 4 septembre 2026. Il était au milieu
+  // de la fiche du chantier ; celle-ci est retirée (`ARCHITECTURE.md` §254)
+  // parce qu'elle montrait une seconde fois ce que la fiche client porte déjà.
+  await page.goto(`${BASE}/chantiers/${chantierId}/coordonnees`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1500);
 
   // **Le micro plein, puis l'AVION** — 30 août 2026. La dictée a son propre

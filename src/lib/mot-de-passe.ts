@@ -88,6 +88,24 @@ export function messageRefus(refus: RefusMotDePasse): string {
 }
 
 /**
+ * Ce que la ligne sous le NOUVEAU mot de passe dit, pendant la frappe.
+ *
+ * **Née du 31 août 2026, quand il a fait retirer les phrases grises.** Une
+ * ligne annonçait en permanence « Au moins 12 caractères. » sous le champ. Elle
+ * est partie avec les autres — mais la retirer SANS RIEN METTRE À LA PLACE
+ * aurait laissé un bouton éteint sans raison lisible : on tape huit caractères,
+ * la confirmation dit « les deux sont identiques ✓ », et rien ne bouge.
+ *
+ * La règle se dit donc au moment où elle mord, et à ce moment-là seulement.
+ * `null` tant que le champ est vide : une exigence affichée avant la première
+ * touche est exactement la phrase qu'il a fait retirer.
+ */
+export function etatNouveau(nouveau: string): { message: string } | null {
+  if (nouveau === "" || nouveau.length >= LONGUEUR_MINIMALE) return null;
+  return { message: messageRefus("trop-court") };
+}
+
+/**
  * Ce que la ligne sous la confirmation dit, pendant la frappe.
  *
  * `null` tant qu'il n'a rien écrit dans la confirmation : lui annoncer que les

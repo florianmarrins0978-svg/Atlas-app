@@ -169,7 +169,7 @@ export default function AbsencesEquipe({
 
   return (
     <section className="mt-[30px]">
-      <p className={`mb-1.5 px-[26px] ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-1.5 px-[26px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Absences
       </p>
 
@@ -315,9 +315,9 @@ export default function AbsencesEquipe({
           type="button"
           onClick={() => void enregistrer()}
           disabled={!armé}
-          className="mt-3 w-full rounded-full py-[15px] text-[15px]"
+          className="atlas-plein mt-3 w-full rounded-full py-[15px] text-[15px]"
           style={{
-            backgroundColor: colors.rust,
+            backgroundColor: colors.plein,
             color: colors.cream,
             fontFamily: font.display,
             opacity: armé ? 1 : 0.35,

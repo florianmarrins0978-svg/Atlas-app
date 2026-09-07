@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le sommaire des réglages — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LE SOMMAIRE DES RÉGLAGES — ce qui a été tranché, et pourquoi
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa consigne du 5 septembre 2026 : « la plupart des patrons qui vont utiliser
+  l'app sont des vieux qui ont du mal à se servir de leur téléphone ; il faut
+  que ce soit hyper intuitif et simple. »
+
+  Deux questions traînaient sans réponse — la maquette « Moins de mots »
+  (19 août, docs/QUESTIONS.md §23) et la planche 96 sur l'écran Équipe
+  (26 août). Il a demandé le 5 septembre qu'elles soient TRANCHÉES plutôt que
+  reposées une troisième fois. Elles le sont ici, et c'est écrit sur la
+  planche : RIEN ICI N'EST UNE QUESTION.
+
+  Les couleurs sont copiées de `src/lib/chartes.ts`, jeton par jeton, les deux
+  pôles compris. Aucune n'est approchée à l'œil.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28); --scene:#e6e3dc;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28); --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+/* ─── les commandes ─────────────────────────────────────────────────────── */
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+
+/* ─── le bandeau d'explication ─────────────────────────────────────────── */
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+/* ─── le téléphone ──────────────────────────────────────────────────────── */
+.scene{display:flex;justify-content:center;padding:22px 16px 6px}
+.colonne{width:390px;max-width:100%}
+.etiquette{text-align:center;font-size:11px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--encre-douce);margin:0 0 10px}
+.tel{width:390px;max-width:100%;height:664px;overflow-y:auto;overflow-x:hidden;
+  background:var(--fond);border:1px solid var(--trait);border-radius:10px}
+.regle{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:10px 0 0}
+
+/* ─── l'écran lui-même, aux mesures du code ────────────────────────────── */
+.ecran{padding-bottom:96px}
+.enTete{padding:28px 26px 0}
+.enTete h2{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:36px;line-height:1.02;letter-spacing:-.018em;margin:0}
+.surtitre{margin:12px 0 0;font-size:9.5px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--or)}
+.bloc{margin:26px 26px 0}
+.bloc+.bloc{margin-top:30px;padding-top:18px;border-top:1px solid var(--trait)}
+.inter{margin:0 0 10px;font-size:9.5px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--gris)}
+.apres .inter{color:var(--encre-douce)}
+.rub{display:flex;align-items:center;gap:15px;min-height:56px;padding:13px 0;
+  border-bottom:1px solid var(--trait);text-decoration:none;color:inherit}
+.rub:last-child{border-bottom:0}
+/*
+  **UN DISQUE, PAS UN CARRÉ — vu sur la capture de la planche elle-même.**
+  Le carré à filet doré posé devant chaque libellé se lisait comme une CASE À
+  COCHER : douze cases vides en tête d'une liste, sur un écran de réglages,
+  c'est une invitation à cocher quelque chose. Le pictogramme réel, lui, est
+  dans l'application ; ici il n'est qu'un repère de place.
+*/
+.ico{flex:none;width:22px;height:22px;border:1.6px solid var(--or);border-radius:50%;
+  opacity:.55}
+.corps{flex:1;min-width:0}
+.nom{display:block;font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:17px;line-height:1.25}
+.apres .nom{font-size:19px}
+.dit{display:block;margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--gris)}
+.chev{flex:none;width:8px;height:8px;transform:rotate(45deg);
+  border-right:1.5px solid var(--chevron);border-top:1.5px solid var(--chevron)}
+.version{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--trait)}
+.version .inter{margin-bottom:6px}
+.version p{margin:0;font-size:13px;color:var(--gris)}
+
+/* ─── les verdicts ─────────────────────────────────────────────────────── */
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
+  vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+.nb{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" data-vue="apres" aria-pressed="true">Après</button>
+  <button type="button" data-vue="avant" aria-pressed="false">Avant</button>
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">Tranché — ce n'est pas une question</span>
+  <h1>Le sommaire des réglages</h1>
+  <p>C'est la porte de quatorze écrans, et le plus ouvert après l'accueil. Il
+  fait aujourd'hui <b class="nb">1 310 pixels</b> de haut pour une fenêtre de
+  <b class="nb">664</b> : deux écrans pleins, dont la moitié est de la phrase
+  grise.</p>
+  <p><b>Faites défiler dans le téléphone ci-dessous</b>, puis basculez entre
+  « Après » et « Avant » sans bouger le doigt : c'est le même écran au même
+  endroit.</p>
+</div>
+
+<div class="scene">
+  <div class="colonne">
+    <p class="etiquette" id="etiquette">Après</p>
+    <div class="tel" id="tel"></div>
+    <p class="regle" id="regle"></p>
+  </div>
+</div>
+
+<div class="notes">
+
+  <h3>1. Les douze phrases grises partent</h3>
+  <p>C'était la question de <b>docs/QUESTIONS.md §23</b>, posée le 19 août et
+  restée sans réponse. Le motif est dans la question elle-même : une phrase
+  d'explication ne répare jamais un mauvais titre, elle le cache. On corrige
+  donc les titres, et on retire les phrases — jamais l'inverse.</p>
+
+  <h3>2. Quatre titres changent de mot</h3>
+  <table>
+    <tr><th>Aujourd'hui</th><th>Demain</th><th>Ce qui le fonde</th></tr>
+    <tr><td>Intégrations</td><td><b>Mon agenda</b></td>
+      <td>c'est déjà le titre de l'écran derrière. « Comptabilité » et
+      « services connectés » n'existent nulle part : on annonçait trois choses
+      pour une seule</td></tr>
+    <tr><td>Connexion</td><td><b>Mot de passe</b></td>
+      <td>l'écran ne fait que ça : le mot de passe, Face&nbsp;ID qui le
+      remplace, et se déconnecter partout</td></tr>
+    <tr><td>Apparence</td><td><b>Couleurs</b></td>
+      <td>on y choisit huit chartes de couleurs, rien d'autre</td></tr>
+    <tr><td>Sécurité &amp; données</td><td><b>Mes données</b></td>
+      <td>aucune sécurité ne s'y règle : on y télécharge un fichier. Le titre
+      promettait un écran qui n'existe pas</td></tr>
+  </table>
+  <p><b>Deux titres ne changent pas, et c'est un refus assumé :</b>
+  « Tarifs&nbsp;&amp;&nbsp;catalogue » et « Devis&nbsp;&amp;&nbsp;factures ».
+  Ce sont des mots du métier, ils sont justes, et onze suites les lisent.
+  Les retoucher aurait coûté une demi-journée pour un gain nul.</p>
+
+  <h3>3. Ce qui se lit grossit</h3>
+  <table>
+    <tr><th>Quoi</th><th>Avant</th><th>Après</th></tr>
+    <tr><td>le nom d'une rubrique</td><td>17 px</td><td><b>19 px</b></td></tr>
+    <tr><td>« L'ENTREPRISE », « MOI »</td>
+      <td>gris, <b class="nb">3,3</b> de contraste</td>
+      <td>encre douce, <b class="nb">8,0</b></td></tr>
+    <tr><td>la ligne du salarié</td><td>gris</td><td>encre douce</td></tr>
+  </table>
+  <p>Le gris de la charte n'a pas été touché : c'est la vôtre, relevée sur le
+  site d'Arborea. Ce qui change, c'est <b>où on l'emploie</b> — plus pour du
+  texte qu'il faut lire au soleil. Mesuré sur les huit chartes, ce gris tient
+  entre <b class="nb">2,85</b> (Moka) et <b class="nb">3,59</b> (Brume) là où
+  la norme demande 4,5 ; les deux seules qui passent sont Nuit et Sylve.</p>
+  <p><b>La hauteur des lignes ne bouge pas : 56 pixels.</b> C'est au-delà des
+  44 d'Apple, et c'est toute la ligne qui se touche. Gagner un demi-écran en
+  serrant les lignes se serait payé au pouce — mauvais marché.</p>
+
+  <h3>Ce que ça donne</h3>
+  <table>
+    <tr><th></th><th>Avant</th><th>Après</th></tr>
+    <tr><td>hauteur de l'écran</td><td class="nb">1 310 px</td>
+      <td class="nb"><b>1 145 px</b></td></tr>
+    <tr><td>ce que ça fait en écrans de 664</td><td class="nb">1,97</td>
+      <td class="nb"><b>1,72</b></td></tr>
+    <tr><td>rubriques atteintes sans défiler</td><td class="nb">6</td>
+      <td class="nb"><b>8</b></td></tr>
+    <tr><td>hauteur d'une ligne</td><td class="nb">56 à 84 px</td>
+      <td class="nb"><b>56 px partout</b></td></tr>
+    <tr><td>mots à l'écran</td><td class="nb">89</td><td class="nb"><b>30</b></td></tr>
+  </table>
+  <p><b>Ces chiffres viennent de votre application, pas de ce dessin.</b> Ils
+  sont relevés dans un navigateur sur l'écran réel, avant et après, à 390 × 664
+  et sur les deux pôles — <i>scripts/capture-sommaire-reglages.mts</i>. Le
+  téléphone ci-dessus est une image de l'écran ; c'est la mesure qui fait foi.</p>
+  <p><b>Un détail de cette planche, pour qu'il ne trompe pas :</b> les
+  pictogrammes ne sont pas dessinés ici, seulement leur place. Dans
+  l'application ils y sont — et l'un d'eux a changé le même jour : « Mon
+  agenda » portait encore la <b>pièce de puzzle</b> d'« Intégrations », la
+  métaphore d'informaticien qu'on venait justement de retirer du mot. C'est un
+  calendrier depuis. Aucun test ne l'a vu ; la capture, si.</p>
+  <p><b>La ligne la plus parlante est la quatrième.</b> Avant, les lignes ne
+  faisaient pas toutes la même hauteur : celles dont l'explication tenait sur
+  deux lignes — « Équipe » — poussaient à 84 px. Une liste au pas irrégulier se
+  parcourt moins vite qu'une liste au pas égal, et c'est ce qu'on ne voit pas
+  en lisant le code.</p>
+  <p><b>Et ce que ça ne fait pas :</b> ça ne tient toujours pas en un seul
+  écran. Douze rubriques à 56 pixels, plus la version en bas, font plus que
+  664. Écrire le contraire aurait été un mensonge de trois lignes.</p>
+
+  <h3>La seconde question : l'écran Équipe</h3>
+  <p><b>Tranché : la proposition C</b> de la planche 96, restée sans réponse
+  depuis le 26 août. Le titre pose la question — « Combien d'équipes partent en
+  même temps ? » — au lieu de la faire deviner. C'est quatre mots de plus, et
+  c'est exactement ce que demande la consigne du 5 septembre : celui qui ouvre
+  l'écran pour la première fois n'a plus rien à deviner. La phrase sur les
+  congés part vers « Absences », où elle est chez elle.</p>
+  <p><b>Cet écran-là n'est pas codé dans ce lot.</b> Il vient au sixième, avec
+  le reste des rubriques. Il est écrit ici pour que la décision soit visible,
+  pas pour laisser croire qu'elle est livrée.</p>
+
+</div>
+
+<script>
+/*
+  Un seul jeu de données, deux rendus. Deux listes écrites à la main
+  divergeraient au premier libellé changé — la règle du dépôt vaut aussi pour
+  une planche.
+*/
+var RUBRIQUES = [
+  ["L'entreprise", [
+    ["Mon entreprise",     "Mon entreprise", "Identité, coordonnées et informations légales"],
+    ["Équipe",             "Équipe",         "Combien partent en même temps, leurs noms et leurs absences"],
+    ["Tarifs & catalogue", "Tarifs & catalogue", "Prestations, main-d'œuvre, matériel et marges"],
+    ["Devis & factures",   "Devis & factures", "Validité, acompte, délai de paiement et mentions"],
+    ["Atlas IA",           "Atlas IA",       "Automatisations et suggestions"],
+    ["Intégrations",       "Mon agenda",     "Calendrier, comptabilité et services connectés"],
+    ["Abonnement",         "Abonnement",     "Offre, paiement et factures Atlas"],
+    ["Sécurité & données", "Mes données",    "Export, effacement et RGPD"]
+  ]],
+  ["Moi", [
+    ["Mon compte",    "Mon compte",    "Nom et e-mail"],
+    ["Notifications", "Notifications", "Alertes et rappels"],
+    ["Connexion",     "Mot de passe",  "Mot de passe et sécurité"],
+    ["Apparence",     "Couleurs",      "Les couleurs de l'application"]
+  ]]
+];
+
+var vue = "apres";
+var tel = document.getElementById("tel");
+
+function echapper(t){
+  return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function dessiner(){
+  var ap = vue === "apres";
+  var h = '<div class="ecran ' + (ap ? "apres" : "avant") + '">' +
+    '<div class="enTete"><h2>Réglages</h2>' +
+    '<p class="surtitre">Mon entreprise</p></div>';
+  for (var i = 0; i < RUBRIQUES.length; i++) {
+    var titre = RUBRIQUES[i][0], lignes = RUBRIQUES[i][1];
+    h += '<div class="bloc"><p class="inter">' + echapper(titre) + '</p>';
+    for (var j = 0; j < lignes.length; j++) {
+      var r = lignes[j];
+      h += '<a class="rub" href="#"><span class="ico"></span><span class="corps">' +
+           '<span class="nom">' + echapper(ap ? r[1] : r[0]) + '</span>' +
+           (ap ? "" : '<span class="dit">' + echapper(r[2]) + '</span>') +
+           '</span><span class="chev"></span></a>';
+    }
+    h += '</div>';
+  }
+  h += '<div class="version"><p class="inter">Version</p>' +
+       '<p>5 septembre 2026 · a1b2c3d · main</p></div></div>';
+  tel.innerHTML = h;
+  document.getElementById("etiquette").textContent = ap ? "Après" : "Avant";
+  mesurer();
+}
+
+/*
+  **LA PLANCHE NE MESURE PLUS ELLE-MÊME, ET C'EST DÉLIBÉRÉ.**
+
+  Elle affichait sous le téléphone une règle vivante — hauteur, rubriques
+  visibles — recalculée sur son propre dessin. Elle rendait 1 076 px là où
+  l'application en fait 1 145 : ce dessin n'est pas l'écran, son en-tête est à
+  quelques pixels près, et l'écart n'a aucune signification.
+
+  Or le tableau plus bas porte, lui, les mesures relevées dans un navigateur
+  sur l'écran RÉEL. Deux chiffres qui se contredisent sur la même page, c'est
+  toute la liste qu'on cesse de croire (`CLAUDE.md` §4 bis) — et le patron
+  aurait eu raison de ne plus croire aucune des deux.
+
+  Le dessin montre donc, et la mesure chiffre. Chacun son métier.
+*/
+function mesurer(){
+  var rubs = tel.querySelectorAll(".rub");
+  var attendues = RUBRIQUES[0][1].length + RUBRIQUES[1][1].length;
+  document.getElementById("regle").textContent =
+      rubs.length === attendues
+        ? "Les mesures de l'écran réel sont dans le tableau, plus bas."
+        : "dessin incomplet : " + rubs.length + " rubriques sur " + attendues;
+}
+
+var boutons = document.querySelectorAll("[data-vue]");
+for (var b = 0; b < boutons.length; b++) {
+  boutons[b].addEventListener("click", function(){
+    vue = this.getAttribute("data-vue");
+    for (var k = 0; k < boutons.length; k++) {
+      boutons[k].setAttribute("aria-pressed",
+        String(boutons[k].getAttribute("data-vue") === vue));
+    }
+    dessiner();
+  });
+}
+
+document.getElementById("pole").addEventListener("click", function(){
+  var nuit = document.body.classList.toggle("nuit");
+  this.setAttribute("aria-pressed", String(nuit));
+  this.textContent = nuit ? "Voir sur Origine" : "Voir sur Nuit";
+});
+
+/* Les deux vues se mesurent au chargement, pour que le tableau soit rempli
+   avant qu'il ait touché quoi que ce soit. */
+vue = "avant"; dessiner();
+vue = "apres"; dessiner();
+</script>
+</body>
+</html>

@@ -10,7 +10,7 @@ import BoutonTelecharger from "./BoutonTelecharger";
 export const dynamic = "force-dynamic";
 
 /**
- * « Sécurité & données » — emporter ses données, en un appui.
+ * « Mes données » — emporter son travail, en un appui.
  *
  * **Le patron a perdu ses chantiers une fois**, en supprimant l'espace de
  * travail — sur mon conseil, deux fois donné. Il a ensuite posé la question qui
@@ -28,7 +28,7 @@ export default async function DonneesPage() {
   if (!(await estProprietaire(ctx))) {
     return (
       <RubriqueReservee
-        titre="Sécurité & données"
+        titre="Mes données"
         quoi="Le fichier contient les clients, les devis et les factures de toute l'entreprise."
       />
     );
@@ -41,12 +41,12 @@ export default async function DonneesPage() {
       <div className="pb-24">
         <EnTeteEcran
           surtitre="Réglages"
-          titre="Sécurité & données"
+          titre="Mes données"
           retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
         />
 
         <section className="mx-[26px] mt-[26px]">
-          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
             En garder une copie
           </p>
 

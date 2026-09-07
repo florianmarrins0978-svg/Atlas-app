@@ -264,12 +264,13 @@ cas("une dictée passe devant « informations vérifiées » — l'arrêt de chi
 
 cas("chaque arrêt a son écran de reprise, et « ainsi de suite »", () => {
   const attendus: [Partial<EtatChantierPourAction>, string][] = [
-    // Rien fait, ou seulement des photos et une dictée : la fiche EST l'écran —
-    // l'anneau et la pellicule y vivent. C'est son deuxième exemple.
-    [{}, ""],
-    // Photos et dictée se reprennent SUR la fiche : la pellicule et l'anneau y
-    // sont, au milieu de l'écran. C'est « cette page-là », dans ses mots.
-    [{ photosCount: 2 }, ""],
+    // **Rien fait, ou seulement des photos : la FICHE CLIENT.** La pellicule
+    // et l'anneau y vivent depuis le 31 août 2026 — c'est « cette page-là »,
+    // dans ses mots. Elles étaient sur la fiche du chantier, qui montrait donc
+    // deux fois la même chose : c'est le doublon qu'il a fait retirer le
+    // 4 septembre (`ARCHITECTURE.md` §254).
+    [{}, "/coordonnees"],
+    [{ photosCount: 2 }, "/coordonnees"],
     // Sa panne du 21 août 2026 : il dicte, ferme l'application, revient, clique
     // sur sa cliente — et doit tomber SUR SON DEVIS, pas sur un écran de
     // contrôle intermédiaire. Le devis se prépare lui-même en arrivant
@@ -289,15 +290,52 @@ cas("chaque arrêt a son écran de reprise, et « ainsi de suite »", () => {
   }
 });
 
-cas("un devis parti ou un chantier planifié restent sur leur fiche", () => {
-  // **Le planning général n'est PAS un écran de reprise.** L'y envoyer
-  // l'éloignerait de son chantier au lieu de l'y ramener — et il n'y a rien à
-  // reprendre : c'est le client qu'on attend.
-  assert.equal(lienDeReprise(CHANTIER, { ...NEUF, devisEnvoyeAt: JADIS }), `/chantiers/${CHANTIER}`);
+cas("un devis parti va au planning, un chantier posé À SA JOURNÉE", () => {
+  // ─── CE CONTRÔLE DISAIT L'INVERSE, ET IL AVAIT RAISON JUSQU'AU 4 SEPT. ──
+  //
+  // Il défendait « les deux restent sur leur fiche », parce que la fiche était
+  // alors le seul endroit qui portât l'état et la sortie vers la facture. Elle
+  // est retirée (`ARCHITECTURE.md` §254), et la garder ici ferait **boucler la
+  // redirection sur elle-même** — sur un chantier posé, c'est-à-dire
+  // précisément le cas du patron.
+  //
+  // **Ce qui remplace la fiche a été tranché par lui le 4 septembre**, devant
+  // les deux options : *« sa journée »*.
+
+  // Le devis est parti, aucune date : il est dans « À planifier », et sa ligne
+  // y porte désormais ses portes.
+  assert.equal(lienDeReprise(CHANTIER, { ...NEUF, devisEnvoyeAt: JADIS }), "/planning");
+
+  // La date est posée : le planning SUR SA JOURNÉE, portes levées. Le mois
+  // courant, à lui de retrouver sa ligne, c'est l'errance du 8 août 2026.
   assert.equal(
     lienDeReprise(CHANTIER, { ...NEUF, devisEnvoyeAt: JADIS, datePlanifiee: "2026-09-01" }),
-    `/chantiers/${CHANTIER}`
+    `/planning?chantier=${CHANTIER}`
   );
+});
+
+cas("la reprise ne renvoie JAMAIS sur la fiche retirée", () => {
+  // **Le contrôle qui empêche la boucle de renaître.** La route
+  // `/chantiers/[id]` ne rend plus qu'une redirection, et elle interroge
+  // `lienDeReprise` : le jour où celle-ci rendrait de nouveau cette adresse,
+  // le patron tournerait en rond sans qu'aucun autre contrôle ne le voie.
+  const etats: Partial<EtatChantierPourAction>[] = [
+    {},
+    { photosCount: 2 },
+    { aUneNoteVocale: true },
+    { informationsVerifieesAt: JADIS },
+    { prixValideAt: JADIS },
+    { devisGenereAt: JADIS },
+    { devisEnvoyeAt: JADIS },
+    { devisEnvoyeAt: JADIS, datePlanifiee: "2026-09-01" },
+  ];
+  for (const jalon of etats) {
+    assert.notEqual(
+      lienDeReprise(CHANTIER, { ...NEUF, ...jalon }),
+      `/chantiers/${CHANTIER}`,
+      `${JSON.stringify(jalon)} renvoie sur la fiche retirée : la route boucle`
+    );
+  }
 });
 
 cas("la reprise et l'étape suivante ne peuvent pas diverger", () => {
@@ -317,11 +355,14 @@ cas("la reprise et l'étape suivante ne peuvent pas diverger", () => {
     const action = getNextAction(etat);
     assert.ok(action, "un chantier non planifié a toujours une étape suivante");
     const reprise = lienDeReprise(CHANTIER, etat);
-    // La reprise est SOIT la fiche (pour ce qui s'y fait déjà), SOIT exactement
-    // l'écran de l'étape suivante. Jamais un troisième endroit inventé.
-    assert.ok(
-      reprise === `/chantiers/${CHANTIER}` || reprise === getNextActionHref(CHANTIER, action),
-      `la liste ouvre « ${reprise} » là où la fiche propose « ${getNextActionHref(CHANTIER, action)} »`
+    // **La reprise EST l'écran de l'étape suivante, sans exception.** Elle en
+    // avait une jusqu'au 4 septembre 2026 — la fiche du chantier absorbait les
+    // photos et la dictée. Cette fiche partie, il ne reste qu'une règle, donc
+    // plus rien à faire diverger.
+    assert.equal(
+      reprise,
+      getNextActionHref(CHANTIER, action),
+      `la liste ouvre « ${reprise} » là où l'étape suivante est « ${getNextActionHref(CHANTIER, action)} »`
     );
   }
 });

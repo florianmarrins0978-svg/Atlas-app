@@ -96,6 +96,14 @@ cas("la haie : le travail se nomme, la mesure part", () => {
 cas("le dessouchage : la quantité part, le diamètre RESTE", () => {
   // Sa demande est explicite sur cette ligne : « Dessouchage de souches de
   // 60 cm ». Le 60 cm dit QUELLES souches ; le « deux » a sa colonne.
+  // **Le ⌀ y compris ici — sa règle du 7 septembre 2026.**
+  //
+  // *« Lorsque l'on parle de diamètre, mets le signe. D'ailleurs quand on dit
+  // souche de 60, ou 60 au pied, on parle de diamètre en réalité. »*
+  //
+  // J'avais laissé cette ligne sans signe et le lui ai dit, en pensant que
+  // « de souches de ⌀ 60 cm » se lirait mal. Il a tranché l'inverse, et sa
+  // raison est la bonne : ce 60 EST un diamètre, et rien ne le disait.
   assert.equal(
     libelleClient({
       libelle: "Dessouchage — deux souches de 60 cm (2 souche)",
@@ -104,7 +112,7 @@ cas("le dessouchage : la quantité part, le diamètre RESTE", () => {
       unite: "souche",
       caracteristiques: { diametreCm: 60 },
     }),
-    "Dessouchage de souches de 60 cm"
+    "Dessouchage de souches de ⌀ 60 cm"
   );
 });
 
@@ -397,6 +405,84 @@ cas("le regroupement ne change pas — la rédaction ne touche QUE le texte", ()
   ]);
   assert.equal(lignes.length, 2, "la tonte ne rejoint pas l'abattage");
   assert.equal(lignes.find((l) => l.cle === "tonte")?.libelle, "Tonte de la pelouse");
+});
+
+console.log("" + String.fromCharCode(10) + "=== La quantité n'est JAMAIS dans le libellé (7 septembre 2026) ===");
+
+// **Sa règle, en colère :** *« il met entre parenthèses (1 arbre), ça il ne
+// doit jamais le faire, la quantité (Qté) est là pour ça !!! »*
+//
+// Ce qu'il a lu : « Démontage d'un chêne mort (1 arbre) de ⌀ 60 cm ».
+//
+// La règle existait, et ne regardait que la FIN du libellé. Une parenthèse
+// posée au milieu passait sans être vue.
+cas("SON cas : « (1 arbre) » au MILIEU du libellé s'en va aussi", () => {
+  assert.equal(
+    libelleClient({
+      libelle: "Démontage d'un chêne mort (1 arbre) — ⌀ 60 cm",
+      quantite: "1",
+      unite: "arbre",
+      nature: "abattage",
+      caracteristiques: { diametreCm: 60 },
+    }),
+    "Démontage d'un chêne mort"
+  );
+});
+
+// **La borne : une parenthèse qui apprend quelque chose reste.** Et elle ne
+// doit pas empêcher d'examiner celles qui suivent — c'est ce que la première
+// version de la boucle faisait, en s'arrêtant à la première rencontrée.
+cas("une parenthèse qui dit autre chose reste, et la suivante part quand même", () => {
+  assert.equal(
+    libelleClient({
+      libelle: "Taille (haie mixte) (800 ml)",
+      quantite: "800",
+      unite: "ml",
+      nature: "haie",
+      caracteristiques: {},
+    }),
+    "Taille (haie mixte)"
+  );
+});
+
+console.log("" + String.fromCharCode(10) + "=== Un fragment de MESURES s'en va en entier (7 septembre 2026) ===");
+
+// **Ce qu'il a lu sur son devis, et le mot qui manquait était SA réponse.**
+//
+//   « Fente du gros bois de m de haut, ⌀ 80 cm »
+//
+// Il avait bien saisi 20 m. Le nettoyage a retiré le « 20 » — la colonne le
+// portait — et gardé la phrase autour de lui. Un libellé amputé part chez le
+// client tel quel, et celui-là annonce en plus une hauteur que la fente ne
+// devrait même pas porter : « la hauteur, c'est pour un arbre ».
+cas("un fragment qui ne dit QUE les mesures disparaît, il ne s'ampute pas", () => {
+  assert.equal(
+    libelleClient({
+      libelle: "Fente du gros bois — 20 m de haut, ⌀ 80 cm",
+      quantite: "1",
+      unite: null,
+      nature: "fendage",
+      caracteristiques: { hauteurM: 20, diametreCm: 80 },
+    }),
+    "Fente du gros bois"
+  );
+});
+
+// **La borne : un fragment qui apprend quelque chose reste entier.** C'est ce
+// qui distingue cette règle d'un « retire tout après le tiret » — la technique
+// ne se lit nulle part ailleurs, et la perdre priverait le client de ce qu'on
+// lui facture.
+cas("mais un fragment qui apprend quelque chose n'est pas touché", () => {
+  assert.equal(
+    libelleClient({
+      libelle: "Érable — démontage en rétention",
+      quantite: "1",
+      unite: null,
+      nature: "abattage",
+      caracteristiques: { diametreCm: 40 },
+    }),
+    "Démontage en rétention d'un érable"
+  );
 });
 
 console.log(`\n${reussites} réussite(s), ${echecs} échec(s).`);

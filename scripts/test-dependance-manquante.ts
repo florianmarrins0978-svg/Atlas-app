@@ -187,7 +187,7 @@ cas("la réinstallation est bien lancée, et le banc reconstruit après", () => 
     "rien ne réinstalle : le banc reconnaît le défaut et n'en fait rien."
   );
   assert.ok(
-    apres.indexOf('jouerEnRetenant("npx", ["next", "build"]') !== -1,
+    apres.indexOf('jouerEnRetenant(process.execPath, [NEXT, "build"]') !== -1,
     "la construction n'est pas retentée après la réinstallation : elle n'aura servi à rien."
   );
 });

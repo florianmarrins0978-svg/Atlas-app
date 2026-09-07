@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « Terminés », la version haut de gamme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    « TERMINÉS » — PLUS ÉLÉGANT, SANS RIEN PERDRE
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 2 septembre 2026 :
+
+      « Rends la page plus élégante, moderne et haut de gamme, garde le style
+        minimaliste d'Atlas, améliore la hiérarchie, les espacements, les
+        cartes, les boutons — sans ajouter d'éléments inutiles et sans perdre
+        une seule fonction. Ne code rien : je veux voir avant de décider. »
+
+    CE QUI N'A PAS ÉTÉ TOUCHÉ, ET NE LE SERA PAS.
+
+    Cet écran porte une trentaine d'arbitrages datés, tous à lui. Aucun n'est
+    rouvert ici :
+
+      • pas de traits entre les lignes (26 août) ;
+      • pas de flèche décorative (25 août, redit le soir même) ;
+      • pas un mot de plus (25 août) ;
+      • la carte de TVA garde sa forme, son fond, son contour doré et sa place
+        en tête (23 puis 26 août : « garde ce style et cette forme, j'aime
+        bien ») ;
+      • pas de total du mois (23 août : « celui-là tu peux le supprimer ») ;
+      • pas de volet replié, pas de pastille dorée, pas de fil vertical
+        (22 août) ;
+      • la capsule verte reste DANS la ligne (31 août).
+
+    LES TROIS PROPOSITIONS S'AJOUTENT L'UNE À L'AUTRE. A est contenue dans B,
+    B dans C. On peut donc s'arrêter où l'on veut : chaque cran est livrable
+    seul.
+
+    CE QUI EST FAUX ICI, ET C'EST DÉLIBÉRÉ. Les chantiers, les montants et le
+    total de TVA sont inventés pour ressembler à un vrai mois d'août. Cette
+    planche ne fait aucun calcul : elle montre une mise en page.
+
+    RIEN N'EST CODÉ TANT QU'IL N'A PAS CHOISI (`CLAUDE.md` §3 bis).
+  */
+
+  :root{
+    --fond:#e6e3dc; --carte:#f5f3ee; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --or:#8A6530; --trait:rgba(28,28,26,.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+      --gris:#948f84; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+    --gris:#948f84; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--fond)}
+  body{color:var(--encre);
+       font:16px/1.55 Inter,ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:0 0 60px;-webkit-text-size-adjust:100%}
+  ::selection{background:rgba(138,101,48,.22)}
+  :focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .entete{max-width:430px;margin:0 auto;padding:30px 22px 0}
+  .entete h1{margin:0;
+             font:400 30px/1.14 "Playfair Display",ui-serif,Georgia,"Iowan Old Style",serif;
+             letter-spacing:-.018em}
+  .entete p{margin:14px 0 0;font-size:14px;color:var(--encre-douce);line-height:1.62}
+  .entete p b{color:var(--encre)}
+
+  /* ── Le sélecteur ────────────────────────────────────────────────────
+     Quatre écrans côte à côte, sur un téléphone, font quatre défilements
+     avant de pouvoir comparer. On en montre UN, et on change. */
+  .choix{max-width:430px;margin:24px auto 0;padding:0 16px;display:grid;
+         grid-template-columns:repeat(2,1fr);gap:8px}
+  .choix button{appearance:none;border:0;cursor:pointer;font:inherit;
+                background:transparent;color:var(--gris);padding:12px 8px 11px;
+                border-radius:12px;font-size:11.5px;font-weight:600;
+                letter-spacing:.07em;text-transform:uppercase;line-height:1.35;
+                box-shadow:inset 0 0 0 1px var(--trait);min-height:54px;
+                transition:background .14s ease,color .14s ease}
+  .choix button[aria-pressed="true"]{background:var(--encre);color:var(--carte);
+                                     box-shadow:none}
+
+  .dit{max-width:430px;margin:16px auto 0;padding:0 22px;font-size:13.5px;
+       line-height:1.62;color:var(--encre-douce);min-height:78px}
+  .dit b{color:var(--encre)}
+  .dit .retenu{color:var(--or);font-weight:600}
+
+  /* ── Le téléphone ─────────────────────────────────────────────────────
+     Son écran fait 390 × 664. Les couleurs sont celles de l'application,
+     FIGÉES sur sa charte « Origine » : une maquette qui changerait de teinte
+     selon le réglage du téléphone ne se comparerait plus à rien. */
+  .tel{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-douce:#4a4a44;
+    --e-gris:#8a8578; --e-or:#B98B47; --e-pin:#2f3b2f; --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:calc(100% - 24px);margin:20px auto 0;
+    background:var(--e-fond);color:var(--e-encre);
+    border-radius:26px;overflow:hidden;box-shadow:0 20px 50px rgba(20,18,14,.22);
+    min-height:664px;display:flex;flex-direction:column;
+    font-family:Inter,ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .corps{flex:1;padding:24px 0 12px}
+  .tel[data-calme] .corps{padding-top:28px}
+
+  /* ── L'en-tête de l'écran ───────────────────────────────────────────── */
+  .titre-ecran{margin:0 26px;display:flex;align-items:flex-start;
+               justify-content:space-between;gap:14px}
+  .titre-ecran h2{margin:0;
+                  font:400 36px/1.02 "Playfair Display",ui-serif,Georgia,serif;
+                  letter-spacing:-.018em}
+  .bulle{width:44px;height:44px;flex:none;border-radius:999px;background:var(--e-pin);
+         display:flex;align-items:center;justify-content:center}
+  .bulle svg{width:19px;height:19px;stroke:#faf9f5;fill:none;stroke-width:1.8}
+
+  /* ── LA CARTE DE TVA ─────────────────────────────────────────────────
+     Sa forme ne bouge dans AUCUNE des propositions : même rectangle, même
+     rayon de 4 px, même fond, même contour doré, même titre en capitales,
+     même mois en serif, même montant vert à droite. Ce qui bouge en A, c'est
+     l'AIR à l'intérieur : 17 px de haut pour un montant de 21 px, ça pince. */
+  .tva{display:flex;align-items:center;justify-content:space-between;gap:12px;
+       margin:18px 26px 0;padding:17px 15px;border-radius:4px;
+       background:var(--e-plage);cursor:pointer;appearance:none;border:0;
+       width:calc(100% - 52px);text-align:left;font:inherit;color:inherit;
+       box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.55);
+       transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
+  .tva:active{transform:scale(.985);box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.9);
+              background:#f2efe6}
+  .tva .quoi{min-width:0}
+  .tva .nom{display:block;font-size:9.5px;font-weight:700;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--e-or)}
+  .tva .mois{display:block;margin-top:3px;
+             font:400 16.5px/1.3 "Playfair Display",ui-serif,Georgia,serif;
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tva .somme{flex:none;font:400 21px/1.2 "Playfair Display",ui-serif,Georgia,serif;
+              color:var(--e-pin);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tel[data-calme] .tva{margin-top:24px;padding:20px 18px}
+  .tel[data-calme] .tva .mois{margin-top:5px;font-size:17px}
+
+  /* ── Les onglets ─────────────────────────────────────────────────────
+     44 px en A : c'est un pouce, sur un chantier, parfois avec des gants —
+     la mesure que tout le reste de l'application tient déjà. */
+  .onglets{display:flex;gap:8px;margin:22px 26px 0}
+  .onglets button{appearance:none;border:0;cursor:pointer;font:inherit;font-size:13px;
+                  min-height:40px;padding:0 16px;border-radius:999px;
+                  background:transparent;color:var(--e-gris);
+                  box-shadow:inset 0 0 0 1px var(--e-trait);
+                  transition:background .14s ease,color .14s ease}
+  .onglets button[aria-pressed="true"]{background:var(--e-encre);color:var(--e-plage);
+                                       box-shadow:none}
+  .tel[data-calme] .onglets{margin-top:28px}
+  .tel[data-calme] .onglets button{min-height:44px;padding:0 18px}
+
+  /* ── Le mois qu'on feuillette ────────────────────────────────────────
+     En A il passe de 21 à 26 px. C'est LUI qui dit où l'on est ; à 21 px il
+     avait le corps d'un nom de client, et la page n'avait plus de repère.
+     Les chevrons se resserrent pour que « ‹ Août 2026 › » se lise comme un
+     seul objet, et non comme trois. */
+  .liste{margin:30px 26px 0}
+  .tel[data-calme] .liste{margin-top:32px}
+
+  .mois-nav{display:flex;align-items:center;gap:2px}
+  .mois-nav .nom-mois{font:400 21px/1.2 "Playfair Display",ui-serif,Georgia,serif;
+                      white-space:nowrap}
+  .mois-nav button{appearance:none;border:0;background:transparent;cursor:pointer;
+                   height:44px;width:38px;display:flex;align-items:center;
+                   justify-content:center;font-size:22px;line-height:1;
+                   font-family:"Playfair Display",ui-serif,Georgia,serif;
+                   color:var(--e-or);padding:0}
+  .mois-nav button:first-child{margin-left:-10px}
+  .mois-nav button[disabled]{color:var(--e-trait);cursor:default}
+  .tel[data-calme] .mois-nav .nom-mois{font-size:26px;margin:0 2px}
+  .tel[data-calme] .mois-nav button{width:34px}
+  .tel[data-calme] .mois-nav button:first-child{margin-left:-9px}
+
+  /* ── Le compte ───────────────────────────────────────────────────────
+     Il compte TOUS les mois, pas seulement celui qu'on regarde : c'est ainsi
+     qu'il a été demandé le 23 août. */
+  .compte{margin:14px 0 9px;font-size:14px;font-weight:700;line-height:1.6;
+          font-variant-numeric:tabular-nums}
+  .compte .or{color:var(--e-or)}
+  .tel[data-calme] .compte{margin:14px 0 12px}
+  .compte.seul{margin:6px 0 9px;font-size:13px}
+  .tel[data-calme] .compte.seul{margin:2px 0 12px}
+
+  /* ── LA PLAQUE (proposition B) ───────────────────────────────────────
+     Les marges négatives font que la plaque déborde jusqu'à 8 px du bord de
+     l'écran pendant que son remplissage ramène le texte exactement à 26 px :
+     aucun nom ne bouge d'un pixel entre A et B. */
+  .plaque{border-radius:4px;transition:background .18s ease}
+  .tel[data-plaque] .plaque{background:var(--e-plage);margin:0 -18px;padding:4px 18px;
+                            box-shadow:inset 0 0 0 1px var(--e-trait)}
+
+  /* ── Une ligne ───────────────────────────────────────────────────────
+     Aucun trait — sa demande du 26 août. C'est l'espace qui tient la
+     démarcation : 24 px de respiration, et 5 px seulement entre le nom et sa
+     ligne d'état, pour que les deux étages se lisent comme UNE ligne. */
+  .ligne{display:flex;align-items:center;gap:14px;padding:24px 0;
+         cursor:pointer;border-radius:6px;text-decoration:none;color:inherit;
+         transition:background .12s ease}
+  .ligne:first-of-type{padding-top:22px}
+  .ligne:active{background:rgba(28,28,26,.05)}
+  .ligne .qui{min-width:0;flex:1}
+  .ligne .nom{display:block;
+              font:400 17px/1.2 "Playfair Display",ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .etat{display:block;margin-top:5px;font-size:13px;line-height:1.5;
+               color:var(--e-or)}
+  .ligne .etat.faite{color:var(--e-gris)}
+  .ligne .euros{flex:none;
+                font:400 16px/1.2 "Playfair Display",ui-serif,Georgia,serif;
+                font-variant-numeric:tabular-nums;white-space:nowrap}
+  .facturer{flex:none;display:flex;align-items:center;min-height:44px;
+            padding:0 17px;border-radius:999px;background:var(--e-pin);color:#faf9f5;
+            font-size:12.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+            transition:transform .12s ease}
+  .ligne:active .facturer{transform:scale(.97)}
+
+  /* A — L'ALIGNEMENT. `align-items:center` centrait le montant sur la HAUTEUR
+     de la rangée : sur une ligne à deux étages, il flottait entre le nom et la
+     date, aligné sur rien. En ligne de base, il se pose sur le nom — et douze
+     montants dessinent enfin une colonne.
+     Les rangées qui portent la capsule gardent le centrage : une pastille de
+     44 px ne s'aligne pas sur une lettre. */
+  .tel[data-calme] .ligne{align-items:baseline}
+  .tel[data-calme] .ligne.avec-capsule{align-items:center}
+  /* A — LA LISIBILITÉ EN PLEIN SOLEIL. Mesuré : le gris #8a8578 tient 3,3 de
+     contraste sur le crème, l'or 2,8. Debout dehors, ces deux lignes-là sont
+     les premières à disparaître. #4a4a44 en tient 8,0 sans rien changer à la
+     charte — et le signal « ça attend » ne repose plus sur une nuance, mais
+     sur la capsule verte, qui se voit de loin. */
+  .tel[data-calme] .ligne .etat,
+  .tel[data-calme] .ligne .etat.faite{color:var(--e-douce);
+                                      font-variant-numeric:tabular-nums}
+
+  .rien{margin:16px 0 0;font-size:13.5px;line-height:1.65;color:var(--e-gris)}
+  .tel[data-calme] .rien{color:var(--e-douce)}
+
+  /* ── Le relevé, quand on appuie sur la carte ─────────────────────────
+     Il ne sert qu'à prouver que la carte MÈNE quelque part. Rien d'autre n'y
+     est fidèle. */
+  .releve{margin:18px 26px 0;padding:18px 16px;border-radius:4px;background:var(--e-plage)}
+  .releve h3{margin:0;font:400 21px/1.2 "Playfair Display",ui-serif,Georgia,serif}
+  .releve p{margin:9px 0 0;font-size:13px;line-height:1.6;color:var(--e-douce)}
+  .releve button{appearance:none;border:0;cursor:pointer;font:inherit;margin-top:15px;
+                 min-height:44px;padding:0 18px;border-radius:999px;font-size:13px;
+                 background:transparent;color:var(--e-encre);
+                 box-shadow:inset 0 0 0 1px var(--e-trait)}
+
+  /* ── La barre du bas ─────────────────────────────────────────────────── */
+  .barre{display:flex;justify-content:space-between;gap:4px;padding:16px 15px 20px;
+         background:var(--e-plage);box-shadow:inset 0 1px 0 var(--e-trait)}
+  .barre span{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+              color:var(--e-gris)}
+  .barre span.actif{color:var(--e-encre);padding-bottom:7px;
+                    border-bottom:2px solid var(--e-or)}
+
+  .note{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:13.5px;
+        line-height:1.68;color:var(--encre-douce)}
+  .note h2{margin:26px 0 8px;
+           font:400 19px/1.25 "Playfair Display",ui-serif,Georgia,serif;color:var(--encre)}
+  .note h2:first-child{margin-top:0}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin:7px 0}
+  .note b{color:var(--encre)}
+</style>
+
+<header class="entete">
+  <h1>« Terminés », en plus haut de gamme</h1>
+  <p>Trois crans, qui <b>s'ajoutent</b> : A est dans B, B est dans C.
+     Commencez par <b>Aujourd'hui</b> pour avoir l'œil, puis montez.
+     <b>Tout fonctionne</b> — les onglets, les mois, la carte, les lignes.</p>
+</header>
+
+<div class="choix" role="group" aria-label="Les propositions">
+  <button type="button" data-plan="aujourdhui" aria-pressed="false">Aujourd'hui</button>
+  <button type="button" data-plan="calme" aria-pressed="true">A · Le calme</button>
+  <button type="button" data-plan="releve" aria-pressed="false">B · Le relevé</button>
+  <button type="button" data-plan="colonne" aria-pressed="false">C · La colonne</button>
+</div>
+
+<p class="dit" id="dit"></p>
+
+<section class="tel" id="tel" data-plan="calme" data-calme="">
+  <div class="corps">
+    <div class="titre-ecran">
+      <h2>Terminés</h2>
+      <span class="bulle" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </div>
+
+    <button class="tva" id="tva" type="button">
+      <span class="quoi">
+        <span class="nom">Ma TVA à déclarer</span>
+        <span class="mois">Août 2026</span>
+      </span>
+      <span class="somme">1 046,33 €</span>
+    </button>
+
+    <div id="releve" hidden>
+      <div class="releve">
+        <h3>Mon relevé de TVA</h3>
+        <p>C'est ici que la carte mène. Cette planche ne montre pas le relevé.</p>
+        <button type="button" id="fermer-releve">Revenir</button>
+      </div>
+    </div>
+
+    <div class="onglets" role="group" aria-label="Ce qu'on regarde">
+      <button type="button" data-onglet="tout" aria-pressed="true">Tout</button>
+      <button type="button" data-onglet="attente" aria-pressed="false">À facturer</button>
+    </div>
+
+    <div class="liste" id="liste"></div>
+  </div>
+
+  <nav class="barre">
+    <span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span>
+    <span>Paysage</span><span>Réglages</span>
+  </nav>
+</section>
+
+<div class="note">
+  <h2>A · Le calme — rien ne bouge de place</h2>
+  <ul>
+    <li><b>Les montants s'alignent enfin.</b> Ils étaient centrés sur la hauteur
+        de la rangée : sur une ligne à deux étages, un montant flottait entre le
+        nom et la date. Posés sur la ligne du nom, douze montants dessinent une
+        colonne qu'on lit d'un trait.</li>
+    <li><b>Le mois passe de 21 à 26 px.</b> C'est lui qui dit où l'on est, et il
+        avait le corps d'un nom de client. Les chevrons se resserrent : « ‹ Août
+        2026 › » devient un seul objet.</li>
+    <li><b>Les lignes grises et dorées passent en #4a4a44.</b> Mesuré sur votre
+        crème : le gris tient 3,3 de contraste, l'or 2,8 — debout en plein
+        soleil, ce sont les deux premières choses à disparaître. Le nouveau en
+        tient 8,0. Ce qui dit « ça attend » n'est plus une nuance de couleur,
+        c'est la capsule verte, qui se voit de loin.</li>
+    <li><b>Les onglets passent à 44 px</b>, comme tout le reste de
+        l'application, et la carte de TVA respire de 20 px au lieu de 17.</li>
+  </ul>
+
+  <h2>B · Le relevé — deux plaques sur le crème</h2>
+  <p>Le mois se pose sur une plaque de la même matière que la carte de TVA.
+     L'écran devient deux objets au lieu d'une liste flottante : <b>ce que je
+     dois</b>, et <b>ce que j'ai fait</b>. C'est ce qui donne le calme d'un
+     relevé de banque — sans une ombre et sans un mot de plus. Aucun nom ne
+     bouge d'un pixel : la plaque déborde vers le bord, son remplissage ramène
+     le texte exactement où il était.</p>
+  <p><b>Elle porte un cheveu gris</b>, et il faut le dire : votre plage crème
+     n'est qu'à deux points du fond de la page — sans contour, la plaque ne se
+     voit tout simplement pas en plein soleil. C'est exactement ce que vous
+     aviez relevé sur la carte de TVA le 26 août. Les deux contours se
+     répondent alors : <b>doré, on peut appuyer ; gris, c'est un contenant</b>.
+     Ce n'est pas un trait entre deux lignes — il n'y en a toujours aucun.</p>
+
+  <h2>C · La colonne — seulement dans « À facturer »</h2>
+  <p>Dans cet onglet, <b>toutes</b> les lignes portent la capsule verte : elle
+     ne distingue plus rien. Elle laisse donc la place au montant, à droite, en
+     colonne — et la ligne du dessous se réduit à la date. La rangée reste
+     entièrement touchable et mène toujours à l'écran de facture.</p>
+  <p><b>La réserve, et elle est à vous :</b> le mot « prévus » disparaît. Ce qui
+     le dit à sa place, c'est l'onglet lui-même. Dans « Tout », la capsule
+     reste : là, elle sépare vraiment ce qui attend de ce qui est parti.</p>
+
+  <h2>Ce qui reste ouvert</h2>
+  <p>« 3 à facturer · 10 facturés » compte <b>tous les mois</b> — c'est ainsi
+     que vous l'avez demandé le 23 août. La phrase est donc la même en août et
+     en juillet, alors qu'elle est posée juste sous le nom du mois. Reculez d'un
+     mois : le chiffre ne bouge pas. Faut-il le laisser ainsi ? Je n'y ai pas
+     touché.</p>
+</div>
+
+<script>
+  // ── Un mois d'août plausible, et un juillet en retard ───────────────────
+  // Rien n'est recalculé : cette planche montre une mise en page.
+  const CHANTIERS = [
+    { mois:"2026-08", nom:"Résidence du Pré-Fleuri",  date:"26 août", attente:false, montant:"1 980,00 €", quand:"Facturé le 31 août" },
+    { mois:"2026-08", nom:"Mme Sorin",                date:"21 août", attente:false, montant:"1 065,00 €", quand:"Facturé le 27 août" },
+    { mois:"2026-08", nom:"Mr. Guérin",               date:"19 août", attente:false, montant:"720,00 €",   quand:"Facturé le 26 août" },
+    { mois:"2026-08", nom:"Mairie de Clisson — square Vinet", date:"14 août", attente:false, montant:"3 150,00 €", quand:"Facturé le 24 août" },
+    { mois:"2026-08", nom:"Mr. Martins",              date:"12 août", attente:true,  montant:"360,00 €" },
+    { mois:"2026-08", nom:"Mme Ravaud",               date:"11 août", attente:false, montant:"415,00 €",   quand:"Facturé le 21 août" },
+    { mois:"2026-08", nom:"Copropriété Les Tilleuls", date:"8 août",  attente:false, montant:"2 480,00 €", quand:"Facturé le 18 août" },
+    { mois:"2026-08", nom:"Mr. Lemoine",              date:"6 août",  attente:false, montant:"890,00 €",   quand:"Facturé le 14 août" },
+    { mois:"2026-08", nom:"Mme Bernard",              date:"3 août",  attente:false, montant:"1 240,00 €", quand:"Facturé le 20 août" },
+    // Sans date et sans montant : la rangée n'a alors PAS de deuxième ligne.
+    // On n'écrit rien plutôt que d'inventer.
+    { mois:"2026-08", nom:"Chantier test — Muret Clisson", date:null, attente:true, montant:null },
+    // Le retard de juillet : il se voit encore dans « À facturer », sinon il
+    // faudrait déjà savoir qu'il existe pour aller le chercher.
+    { mois:"2026-07", nom:"Mr. Eric",     date:"28 juillet", attente:true,  montant:"0,00 €" },
+    { mois:"2026-07", nom:"Mr. Pineau",   date:"22 juillet", attente:false, montant:"1 340,00 €", quand:"Facturé le 29 juillet" },
+    { mois:"2026-07", nom:"Mme Chauvet",  date:"9 juillet",  attente:false, montant:"640,00 €",   quand:"Facturé le 18 juillet" }
+  ];
+
+  const MOIS = ["2026-06","2026-07","2026-08"];
+  const NOMS = { "2026-06":"Juin 2026", "2026-07":"Juillet 2026", "2026-08":"Août 2026" };
+
+  const PLANS = {
+    aujourdhui: {},
+    calme:      { calme:1 },
+    releve:     { calme:1, plaque:1 },
+    colonne:    { calme:1, plaque:1, colonne:1 }
+  };
+
+  const DITS = {
+    aujourdhui: "<b>Ce que vous avez sous les yeux aujourd'hui.</b> Regardez la colonne de droite : les montants ne sont pas alignés entre eux, et le nom du mois a le même corps qu'un nom de client.",
+    calme:      "<span class='retenu'>Rien n'a changé de place.</span> Les montants se posent sur la ligne du nom, le mois reprend sa place de repère, et les petites lignes deviennent lisibles en plein soleil.",
+    releve:     "<b>Le mois se pose sur une plaque</b>, de la même matière que la carte de TVA. Deux objets sur le crème : ce que je dois, ce que j'ai fait. <span class='retenu'>C'est celle que je vous recommande.</span>",
+    colonne:    "<b>Ouvrez « À facturer ».</b> Toutes les lignes y portaient la même capsule verte : elle laisse la place au montant, en colonne. Dans « Tout », elle reste — là, elle sépare vraiment."
+  };
+
+  const tel = document.getElementById("tel");
+  const dit = document.getElementById("dit");
+  const liste = document.getElementById("liste");
+  const releve = document.getElementById("releve");
+  let onglet = "tout";
+  let cle = "2026-08";
+
+  function poserPlan(nom) {
+    tel.dataset.plan = nom;
+    for (const f of ["calme","plaque","colonne"]) {
+      if (PLANS[nom][f]) tel.setAttribute("data-" + f, "");
+      else tel.removeAttribute("data-" + f);
+    }
+    dit.innerHTML = DITS[nom];
+    for (const b of document.querySelectorAll(".choix button")) {
+      b.setAttribute("aria-pressed", String(b.dataset.plan === nom));
+    }
+    dessiner();
+  }
+
+  function rangee(c) {
+    const colonne = tel.hasAttribute("data-colonne") && onglet === "attente";
+    let etat = "";
+    const classeEtat = c.attente ? "" : " faite";
+    if (c.attente) {
+      const bouts = [];
+      if (c.date) bouts.push(c.date);
+      if (!colonne && c.montant) bouts.push(c.montant + " prévus");
+      etat = bouts.join(" · ");
+    } else {
+      etat = [c.date, c.quand].filter(Boolean).join(" · ");
+    }
+    const droite = (c.attente && !colonne)
+      ? '<span class="facturer">À facturer</span>'
+      : '<span class="euros">' + (c.montant === null ? "—" : c.montant) + "</span>";
+    const capsule = (c.attente && !colonne) ? " avec-capsule" : "";
+    return '<a class="ligne' + capsule + '" href="#">'
+      + '<span class="qui"><span class="nom">' + c.nom + "</span>"
+      + (etat ? '<span class="etat' + classeEtat + '">' + etat + "</span>" : "")
+      + "</span>" + droite + "</a>";
+  }
+
+  function dessiner() {
+    const attente = CHANTIERS.filter(function (c) { return c.attente; });
+    const faits = CHANTIERS.filter(function (c) { return !c.attente; });
+
+    if (onglet === "attente") {
+      const n = attente.length;
+      liste.innerHTML =
+        '<p class="compte seul">' + n + " chantier" + (n > 1 ? "s" : "")
+        + " à facturer, tous mois confondus.</p>"
+        + '<div class="plaque">' + attente.map(rangee).join("") + "</div>";
+      return;
+    }
+
+    const duMois = CHANTIERS.filter(function (c) { return c.mois === cle; });
+    const i = MOIS.indexOf(cle);
+    const nav = '<div class="mois-nav">'
+      + '<button type="button" aria-label="Mois précédent" data-pas="-1"'
+      + (i === 0 ? " disabled" : "") + ">‹</button>"
+      + '<span class="nom-mois">' + NOMS[cle] + "</span>"
+      + '<button type="button" aria-label="Mois suivant" data-pas="1"'
+      + (i === MOIS.length - 1 ? " disabled" : "") + ">›</button></div>";
+
+    if (duMois.length === 0) {
+      liste.innerHTML = nav + '<p class="rien">Rien en '
+        + NOMS[cle].split(" ")[0].toLowerCase() + ".</p>";
+    } else {
+      const compte = '<p class="compte">'
+        + (attente.length > 0
+            ? '<span class="or">' + attente.length + " à facturer</span> · "
+            : "")
+        + faits.length + " facturé" + (faits.length > 1 ? "s" : "") + "</p>";
+      liste.innerHTML = nav + compte
+        + '<div class="plaque">' + duMois.map(rangee).join("") + "</div>";
+    }
+
+    for (const b of liste.querySelectorAll(".mois-nav button")) {
+      b.addEventListener("click", function () {
+        const j = MOIS.indexOf(cle) + Number(b.dataset.pas);
+        if (j >= 0 && j < MOIS.length) { cle = MOIS[j]; dessiner(); }
+      });
+    }
+  }
+
+  for (const b of document.querySelectorAll(".choix button")) {
+    b.addEventListener("click", function () { poserPlan(b.dataset.plan); });
+  }
+  for (const b of document.querySelectorAll(".onglets button")) {
+    b.addEventListener("click", function () {
+      onglet = b.dataset.onglet;
+      for (const a of document.querySelectorAll(".onglets button")) {
+        a.setAttribute("aria-pressed", String(a === b));
+      }
+      dessiner();
+    });
+  }
+  document.getElementById("tva").addEventListener("click", function () {
+    releve.hidden = false;
+  });
+  document.getElementById("fermer-releve").addEventListener("click", function () {
+    releve.hidden = true;
+  });
+  document.addEventListener("click", function (e) {
+    if (e.target.closest(".ligne")) e.preventDefault();
+  });
+
+  poserPlan("calme");
+</script>
+</body>
+</html>

@@ -28,7 +28,7 @@ const contexte = await navigateur.newContext({
 const page = await contexte.newPage();
 await connecter(page);
 
-await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+await page.goto(`${BASE}/reglages/documents/allure`, { waitUntil: "networkidle" });
 await page.waitForTimeout(600);
 await page.screenshot({ path: path.join(dossier, "documents-complet.png"), fullPage: true });
 
