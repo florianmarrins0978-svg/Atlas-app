@@ -217,6 +217,20 @@ for (const f of ["conditions-utilisation.html", "confidentialite.html"]) {
   const avertit = /Brouillon — à faire relire/.test(corps);
   dire(cases === 0 ? avertit === false : avertit === true,
     f + " : " + cases + " case(s) à compléter, et le bandeau de brouillon " + (avertit ? "est là" : "est absent"));
+
+  // ELLES SE LISENT SUR SON TÉLÉPHONE, PAS SEULEMENT SUR UN ÉCRAN LARGE.
+  // Payé le 8 septembre : « [À COMPLÉTER — dénomination, adresse, téléphone] »
+  // portait white-space:nowrap, et cela a emporté la page ENTIÈRE à 546 px de
+  // large sur un écran de 390. Une page qui glisse latéralement se lit une
+  // main sur deux — et la mesure ci-dessus, elle, était verte.
+  const ctx = await nav.newContext({ viewport: { width: 390, height: 844 } });
+  const onglet = await ctx.newPage();
+  await onglet.goto(BASE + "/" + f, { waitUntil: "networkidle" });
+  const large = await onglet.evaluate(() => document.documentElement.scrollWidth);
+  dire(large <= 390, f + " : rien ne déborde en largeur (" + large + " px)");
+  dire(await onglet.locator(".brouillon").first().isVisible(),
+    f + " : le bandeau de brouillon se voit dès l'ouverture, sans défiler");
+  await ctx.close();
 }
 
 console.log("\nLes règles du dépôt");
