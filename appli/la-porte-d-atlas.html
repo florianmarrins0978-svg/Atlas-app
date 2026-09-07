@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La porte d'Atlas — trois propositions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    LA PORTE D'ATLAS — trois propositions, 7 septembre 2026.
+
+    Sa demande : « je veux une page de connexion comme les plus grandes applis
+    qui existent, avec la reconnaissance faciale, jolie, épurée et design »,
+    puis : « avec la possibilité de se connecter avec son compte Google ou
+    Apple, comme ce que proposent toutes les applis aujourd'hui ».
+
+    `CLAUDE.md` §3 bis : une demande d'apparence se dessine, se montre, et ne
+    touche à `src/` qu'une fois choisie. RIEN N'EST CODÉ dans l'application.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST VRAI DANS CETTE PLANCHE, ET CE QUI EST DESSINÉ.
+
+    · les couleurs sont celles du produit, au caractère près
+      (`src/lib/design-tokens.ts` : crème #f5f3ee, encre #1c1c1a, vert pin
+      #2f3b2f, or #B98B47, aplat des boutons #7d9a6d) ;
+    · les polices sont celles du produit : Playfair Display et Inter ;
+    · la fenêtre de Face ID appartient à iOS — aucune page web ne la dessine.
+      Ici les boutons répondent, mais ils ne vérifient rien ;
+    · les marques Google et Apple sont dessinées d'après leurs chartes. Au
+      codage, leurs libellés et leurs proportions suivront leurs règles à
+      elles : elles n'admettent pas d'à-peu-près.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LES TROIS SONT MESURÉES POUR SON TÉLÉPHONE : 390 × 664, sans défilement.
+    C'est sa contrainte du 31 août 2026 — « je veux qu'elle tienne sur une
+    seule page » —, et elle vaut d'autant plus qu'on ajoute deux entrées.
+  */
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --alerte:#9C3B2E;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+
+  .note{max-width:460px;margin:34px auto 0;padding:16px 20px;background:var(--carte);
+        border-left:3px solid var(--or);font-size:14px;line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .note + .note{margin-top:12px}
+
+  /* ── Le tableau de bord des états ────────────────────────────────── */
+  .etats{position:sticky;top:0;z-index:20;background:#e6e3dc;
+         border-bottom:1px solid rgba(28,28,26,.14);padding:12px 16px 13px}
+  .etats .quoi{max-width:460px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+               letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+  .etats .rangee{max-width:460px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+  .etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+                border-radius:999px;padding:8px 13px;font:400 13px/1 var(--sans);cursor:pointer;
+                -webkit-tap-highlight-color:transparent}
+  .etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+
+  /* ── Le cadre du téléphone ───────────────────────────────────────── */
+  .planches{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;
+            max-width:1360px;margin:30px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
+       box-shadow:0 16px 44px rgba(20,18,14,.22)}
+
+  /* ── Ce qui est commun aux trois portes ──────────────────────────── */
+  .etiq{display:block;text-align:left;font:600 10px/1 var(--sans);letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gris);margin:0 0 7px}
+  .champ{width:100%;border:0;border-bottom:1px solid var(--trait);background:transparent;
+         padding:6px 0 9px;font:400 16px/1.4 var(--sans);color:var(--encre);
+         -webkit-tap-highlight-color:transparent}
+  .champ:focus{outline:none;border-bottom-color:var(--or)}
+  .refus{margin:0;min-height:18px;font-size:13px;line-height:18px;color:var(--alerte);text-align:left}
+  .entrer{display:block;width:100%;border:0;border-radius:999px;background:var(--plein);color:#faf9f5;
+          padding:14px 20px;font:400 17px/1 var(--serif);cursor:pointer;
+          -webkit-tap-highlight-color:transparent}
+  .entrer:active{transform:scale(.99)}
+
+  /* Un bouton « un geste » : visage, Google, Apple. Cinquante-quatre pixels de
+     haut — on vise mal, avec les doigts froids, au soleil. */
+  .geste{display:flex;align-items:center;gap:12px;width:100%;border:0;border-radius:999px;
+         background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);
+         padding:0 18px;height:54px;text-align:left;cursor:pointer;
+         font:400 15.5px/1 var(--sans);color:var(--encre);-webkit-tap-highlight-color:transparent}
+  .geste:active{transform:scale(.99)}
+  .geste svg{flex:0 0 auto}
+
+  /* Le filet d'or et son « ou ». */
+  .ou{display:flex;align-items:center;gap:12px;color:var(--gris);font-size:12.5px}
+  .ou::before,.ou::after{content:"";flex:1;height:1px;background:var(--or);opacity:.34}
+
+  .sceau{display:grid;place-items:center;border-radius:999px;border:1.5px solid var(--or);color:var(--or)}
+  .sep{height:16px}
+
+  /* ── PORTE A — L'imprimé ─────────────────────────────────────────── */
+  /* **Centrée, et non posée en haut.** Alignée sur le bord supérieur, elle
+     laissait quatre-vingt-dix pixels de vide sous « Entrer » et rien au-dessus
+     du sceau : l'écran paraissait tomber. Vu sur la capture, pas au code. */
+  #porteA{background:var(--fond);color:var(--encre);height:100%;
+          padding:26px 24px 30px;display:flex;flex-direction:column;
+          justify-content:center;text-align:center}
+  #porteA .sceau{width:54px;height:54px;margin:0 auto}
+  #porteA .marque{display:block;margin:12px 0 20px;font:400 20px/1 var(--serif);letter-spacing:.3em}
+  #porteA .gestes{display:flex;flex-direction:column;gap:9px}
+  #porteA .ou{margin:16px 0}
+  #porteA .champs{text-align:left}
+
+  /* ── PORTE B — La carte ──────────────────────────────────────────── */
+  /* Centrée comme A : posée en haut, la carte laissait cent pixels de vert nu
+     sous elle dès que Face ID disparaissait. */
+  #porteB{background:var(--pin);height:100%;padding:14px 18px;display:flex;
+          flex-direction:column;align-items:center;justify-content:center}
+  /* Dix-huit et douze, pas vingt-deux et seize : le message de panne fait
+     trois lignes, et la carte débordait de quinze pixels dans ce seul état —
+     attrapé par `scripts/test-porte-tient-en-une-page.mts`, jamais à l'œil. */
+  #porteB .haut{padding:18px 0 12px;text-align:center}
+  #porteB .sceau{width:46px;height:46px;margin:0 auto}
+  #porteB .marque{display:block;margin:10px 0 0;font:400 17px/1 var(--serif);
+                  letter-spacing:.34em;color:#f0eee7}
+  #porteB .carte{width:100%;background:var(--carte);border-radius:22px;padding:22px 22px 20px;
+                 box-shadow:0 18px 40px rgba(10,14,10,.34)}
+  #porteB .titre{margin:0 0 13px;font:400 22px/1.2 var(--serif);color:var(--encre);text-align:left}
+  #porteB .gestes{display:flex;flex-direction:column;gap:9px}
+  #porteB .geste{background:var(--papier);box-shadow:inset 0 0 0 1px rgba(28,28,26,.09)}
+  #porteB .ou{margin:15px 0 14px}
+  #porteB .sep{height:14px}
+
+  /* ── PORTE C — Le grand geste ────────────────────────────────────── */
+  /* Le sceau reste EN HAUT — il tient lieu d'en-tête —, et tout le reste se
+     centre. Sans cela, la porte sans Face ID pendait au plafond. */
+  #porteC{background:var(--fond);height:100%;padding:24px 24px 30px;display:flex;
+          flex-direction:column;justify-content:center;position:relative}
+  #porteC .haut{position:absolute;top:24px;left:24px;display:flex;align-items:center;gap:10px}
+  #porteC .sceau{width:30px;height:30px;flex:0 0 auto}
+  #porteC .marque{font:400 15px/1 var(--serif);letter-spacing:.3em}
+  #porteC .anneau{margin:18px auto 0;width:148px;height:148px;border-radius:999px;border:0;
+                  background:var(--pin);color:#f5f3ee;display:grid;place-items:center;
+                  cursor:pointer;box-shadow:0 12px 30px rgba(47,59,47,.32);
+                  -webkit-tap-highlight-color:transparent}
+  #porteC .anneau:active{transform:scale(.985)}
+  #porteC .sous-anneau{margin:12px 0 0;text-align:center;font:400 17px/1.25 var(--serif);color:var(--encre)}
+  #porteC .deux{display:flex;gap:9px;margin-top:16px}
+  #porteC .deux .geste{justify-content:center;gap:9px;padding:0 10px;font-size:14.5px}
+  #porteC .ou{margin:15px 0 13px}
+  #porteC .sep{height:13px}
+  #porteC .titre-repli{display:none;margin:28px 0 22px;font:400 26px/1.2 var(--serif)}
+  /* Sans Face ID, l'anneau n'a plus d'objet : la porte se réorganise autour du
+     reste plutôt que de laisser un trou de cent cinquante pixels. */
+  body.sans-faceid #porteC .anneau,
+  body.sans-faceid #porteC .sous-anneau{display:none}
+  body.sans-faceid #porteC .titre-repli{display:block}
+
+  /* ── Les états ───────────────────────────────────────────────────── */
+  .refus-mdp,.refus-panne{display:none}
+  body.mdp-faux .refus-mdp{display:inline}
+  body.panne .refus-panne{display:inline}
+  body.panne .refus{min-height:54px}
+  body.sans-faceid .geste-faceid{display:none}
+  body.sans-apple .geste-apple{display:none}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Trois portes, à essayer.</b> Elles se touchent : appuyez sur le visage, sur Google, sur Apple.
+  Les boutons répondent, ils ne vérifient rien — <b>rien n'est codé dans l'application</b>.
+  Dites-moi A, B ou C.
+</div>
+
+<div class="etats">
+  <p class="quoi">Voir les trois dans cet état</p>
+  <div class="rangee">
+    <button type="button" data-etat="" aria-pressed="true">Ordinaire</button>
+    <button type="button" data-etat="sans-faceid" aria-pressed="false">Face ID absent</button>
+    <button type="button" data-etat="mdp-faux" aria-pressed="false">Mot de passe faux</button>
+    <button type="button" data-etat="panne" aria-pressed="false">Service en panne</button>
+    <button type="button" data-etat="sans-apple" aria-pressed="false">Apple pas encore payé</button>
+  </div>
+</div>
+
+<div class="planches">
+
+  <!-- ══ A ══════════════════════════════════════════════════════════ -->
+  <div class="planche">
+    <p class="nom">A — L'imprimé</p>
+    <p class="idee">Votre porte d'aujourd'hui, agrandie. Les trois gestes empilés, un filet d'or,
+      puis vos deux champs. Rien de neuf à apprendre : c'est l'écran que vous connaissez, avec
+      deux entrées de plus.</p>
+    <div class="tel">
+      <div id="porteA">
+        <span class="sceau" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M12 2.6 13.5 10.5 21.4 12 13.5 13.5 12 21.4 10.5 13.5 2.6 12 10.5 10.5Z"/>
+            <circle cx="12" cy="12" r="9.1" opacity=".5"/>
+          </svg>
+        </span>
+        <span class="marque">ATLAS</span>
+
+        <div class="gestes">
+          <button type="button" class="geste geste-faceid">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.6" stroke-linecap="round">
+              <path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/>
+              <path d="M9 10v1.5M15 10v1.5M12 10v3.2h-1M9 15.6c1.6 1.2 4.4 1.2 6 0"/>
+            </svg>
+            Ouvrir avec Face ID
+          </button>
+          <button type="button" class="geste geste-google">
+            <svg width="19" height="19" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Continuer avec Google
+          </button>
+          <button type="button" class="geste geste-apple">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="#1c1c1a" aria-hidden="true">
+              <path d="M16.37 1.43c0 1.14-.42 2.2-1.25 3.06-.99 1.05-2.14 1.66-3.38 1.56-.02-.12-.04-.3-.04-.5 0-1.1.47-2.27 1.28-3.09.5-.53 1.13-.96 1.9-1.29.72-.3 1.4-.46 2.03-.5.02.25.04.5.04.76zM20.7 17.3c-.35.8-.52 1.16-.97 1.87-.63.99-1.51 2.22-2.61 2.23-.98.01-1.23-.64-2.56-.63-1.33.01-1.6.64-2.58.63-1.1-.01-1.94-1.12-2.57-2.11-1.76-2.77-1.95-6.02-.86-7.75.77-1.23 1.99-1.95 3.13-1.95 1.17 0 1.9.64 2.87.64.94 0 1.51-.64 2.86-.64 1.02 0 2.1.56 2.87 1.52-2.52 1.38-2.11 4.98.42 6.19z"/>
+            </svg>
+            Continuer avec Apple
+          </button>
+        </div>
+
+        <p class="ou">ou</p>
+
+        <div class="champs">
+          <label class="etiq" for="a-mail">Adresse</label>
+          <input class="champ" id="a-mail" type="email" autocomplete="username">
+          <div class="sep"></div>
+          <label class="etiq" for="a-mdp">Mot de passe</label>
+          <input class="champ" id="a-mdp" type="password" autocomplete="current-password">
+          <div class="sep"></div>
+          <p class="refus"><span class="refus-mdp">Email ou mot de passe incorrect.</span><span class="refus-panne">Un service d'Atlas ne répond pas. Ce n'est pas votre mot de passe. Réessayez dans un instant.</span></p>
+          <div class="sep"></div>
+          <button type="button" class="entrer">Entrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ B ══════════════════════════════════════════════════════════ -->
+  <div class="planche">
+    <p class="nom">B — La carte</p>
+    <p class="idee">Le vert pin devient le décor, plus seulement l'accent. Une carte crème posée
+      dessus, comme une feuille sur une table. C'est le contraste le plus fort des trois : celle
+      qui se lit le mieux en plein soleil.</p>
+    <div class="tel">
+      <div id="porteB">
+        <div class="haut">
+          <span class="sceau" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <path d="M12 2.6 13.5 10.5 21.4 12 13.5 13.5 12 21.4 10.5 13.5 2.6 12 10.5 10.5Z"/>
+              <circle cx="12" cy="12" r="9.1" opacity=".5"/>
+            </svg>
+          </span>
+          <span class="marque">ATLAS</span>
+        </div>
+
+        <div class="carte">
+          <p class="titre">Bonjour.</p>
+
+          <div class="gestes">
+            <button type="button" class="geste geste-faceid">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2f3b2f" stroke-width="1.6" stroke-linecap="round">
+                <path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/>
+                <path d="M9 10v1.5M15 10v1.5M12 10v3.2h-1M9 15.6c1.6 1.2 4.4 1.2 6 0"/>
+              </svg>
+              Ouvrir avec Face ID
+            </button>
+            <button type="button" class="geste geste-google">
+              <svg width="19" height="19" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              </svg>
+              Continuer avec Google
+            </button>
+            <button type="button" class="geste geste-apple">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="#1c1c1a" aria-hidden="true">
+                <path d="M16.37 1.43c0 1.14-.42 2.2-1.25 3.06-.99 1.05-2.14 1.66-3.38 1.56-.02-.12-.04-.3-.04-.5 0-1.1.47-2.27 1.28-3.09.5-.53 1.13-.96 1.9-1.29.72-.3 1.4-.46 2.03-.5.02.25.04.5.04.76zM20.7 17.3c-.35.8-.52 1.16-.97 1.87-.63.99-1.51 2.22-2.61 2.23-.98.01-1.23-.64-2.56-.63-1.33.01-1.6.64-2.58.63-1.1-.01-1.94-1.12-2.57-2.11-1.76-2.77-1.95-6.02-.86-7.75.77-1.23 1.99-1.95 3.13-1.95 1.17 0 1.9.64 2.87.64.94 0 1.51-.64 2.86-.64 1.02 0 2.1.56 2.87 1.52-2.52 1.38-2.11 4.98.42 6.19z"/>
+              </svg>
+              Continuer avec Apple
+            </button>
+          </div>
+
+          <p class="ou">ou</p>
+
+          <label class="etiq" for="b-mail">Adresse</label>
+          <input class="champ" id="b-mail" type="email" autocomplete="username">
+          <div class="sep"></div>
+          <label class="etiq" for="b-mdp">Mot de passe</label>
+          <input class="champ" id="b-mdp" type="password" autocomplete="current-password">
+          <div class="sep"></div>
+          <p class="refus"><span class="refus-mdp">Email ou mot de passe incorrect.</span><span class="refus-panne">Un service d'Atlas ne répond pas. Ce n'est pas votre mot de passe. Réessayez dans un instant.</span></p>
+          <div class="sep"></div>
+          <button type="button" class="entrer">Entrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ C ══════════════════════════════════════════════════════════ -->
+  <div class="planche">
+    <p class="nom">C — Le grand geste</p>
+    <p class="idee">Le visage prend le haut de l'écran : on ne cherche pas, on pose le pouce.
+      C'est celle qui répond le plus littéralement à « comme les plus grandes applis » — un geste,
+      et on est dedans. Le reste attend en dessous, visible.</p>
+    <div class="tel">
+      <div id="porteC">
+        <div class="haut">
+          <span class="sceau" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+              <path d="M12 2.6 13.5 10.5 21.4 12 13.5 13.5 12 21.4 10.5 13.5 2.6 12 10.5 10.5Z"/>
+            </svg>
+          </span>
+          <span class="marque">ATLAS</span>
+        </div>
+
+        <button type="button" class="anneau geste-faceid" aria-label="Ouvrir avec Face ID">
+          <svg width="66" height="66" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+            <path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/>
+            <path d="M9 10v1.5M15 10v1.5M12 10v3.2h-1M9 15.6c1.6 1.2 4.4 1.2 6 0"/>
+          </svg>
+        </button>
+        <p class="sous-anneau geste-faceid">Ouvrir avec Face ID</p>
+        <p class="titre-repli">Bonjour.</p>
+
+        <div class="deux">
+          <button type="button" class="geste geste-google">
+            <svg width="19" height="19" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Google
+          </button>
+          <button type="button" class="geste geste-apple">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="#1c1c1a" aria-hidden="true">
+              <path d="M16.37 1.43c0 1.14-.42 2.2-1.25 3.06-.99 1.05-2.14 1.66-3.38 1.56-.02-.12-.04-.3-.04-.5 0-1.1.47-2.27 1.28-3.09.5-.53 1.13-.96 1.9-1.29.72-.3 1.4-.46 2.03-.5.02.25.04.5.04.76zM20.7 17.3c-.35.8-.52 1.16-.97 1.87-.63.99-1.51 2.22-2.61 2.23-.98.01-1.23-.64-2.56-.63-1.33.01-1.6.64-2.58.63-1.1-.01-1.94-1.12-2.57-2.11-1.76-2.77-1.95-6.02-.86-7.75.77-1.23 1.99-1.95 3.13-1.95 1.17 0 1.9.64 2.87.64.94 0 1.51-.64 2.86-.64 1.02 0 2.1.56 2.87 1.52-2.52 1.38-2.11 4.98.42 6.19z"/>
+            </svg>
+            Apple
+          </button>
+        </div>
+
+        <p class="ou">ou</p>
+
+        <label class="etiq" for="c-mail">Adresse</label>
+        <input class="champ" id="c-mail" type="email" autocomplete="username">
+        <div class="sep"></div>
+        <label class="etiq" for="c-mdp">Mot de passe</label>
+        <input class="champ" id="c-mdp" type="password" autocomplete="current-password">
+        <div class="sep"></div>
+        <p class="refus"><span class="refus-mdp">Email ou mot de passe incorrect.</span><span class="refus-panne">Un service d'Atlas ne répond pas. Ce n'est pas votre mot de passe. Réessayez dans un instant.</span></p>
+        <div class="sep"></div>
+        <button type="button" class="entrer">Entrer</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <b>Face ID ne s'affiche que si le téléphone sait le faire.</b> Sur un ordinateur sans visage ni
+  empreinte, la ligne disparaît d'elle-même — c'est déjà ce que fait l'application aujourd'hui.
+  <b>Face ID absent</b>, en haut, le montre sur les trois.
+</div>
+
+<div class="note">
+  <b>Apple ne peut pas exister sans son compte développeur payant.</b> Tant qu'il n'est pas pris,
+  le bouton ne s'affiche pas du tout : un bouton qui rend une erreur est pire qu'un bouton absent.
+  <b>Apple pas encore payé</b> montre les trois portes dans cet état.
+</div>
+
+<div class="note">
+  <b>Ce que la planche ne montre pas, et qui existe.</b> Sur les huit chartes de couleurs, ces
+  portes prennent l'accent de la charte choisie — sur <b>Nuit</b> et <b>Sylve</b>, le fond et
+  l'accent s'inversent. Aucune couleur n'est écrite en dur dans l'écran, et un contrôle le vérifie.
+</div>
+
+<p id="dit" hidden style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+   background:#1c1c1a;color:#f5f3ee;padding:11px 18px;border-radius:999px;font-size:14px;
+   margin:0;z-index:40;box-shadow:0 10px 26px rgba(0,0,0,.3)">
+  C'est une maquette — rien ne vérifie encore.
+</p>
+
+<script>
+  /* Les états, appliqués aux trois portes à la fois : c'est en les comparant
+     dans le MÊME état qu'on les départage. */
+  var etats = document.querySelectorAll('.etats button');
+  etats.forEach(function (b) {
+    b.addEventListener('click', function () {
+      etats.forEach(function (a) { a.setAttribute('aria-pressed', String(a === b)); });
+      document.body.className = b.dataset.etat || '';
+    });
+  });
+
+  /* Les gestes répondent — mais ils ne vérifient rien, et il faut le dire
+     plutôt que de laisser croire à une porte qui marche. */
+  var minuteur;
+  document.querySelectorAll('.geste-faceid, .geste-google, .geste-apple, .entrer').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var d = document.getElementById('dit');
+      d.hidden = false;
+      clearTimeout(minuteur);
+      minuteur = setTimeout(function () { d.hidden = true; }, 2400);
+    });
+  });
+</script>
+
+</body>
+</html>
