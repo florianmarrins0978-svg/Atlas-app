@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La page que voit son client — la facture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    LA PAGE QUE VOIT SON CLIENT — 8 septembre 2026.
+
+    Sa demande, capture à l'appui : « il faut le modifier, déjà mets-le aux
+    couleurs de l'appli. Ensuite le montant ne doit pas apparaître, ça incitera
+    le client à ouvrir sa facture. Donc il faut supprimer "voir la facture en
+    PDF", on garde que télécharger. Ensuite rajouter une phrase bien écrite
+    pour dire que pour nous régler il faut impérativement mettre le numéro de
+    facture dans le libellé. Et tu rajoutes le numéro de facture en cliquable
+    (copier-coller) automatique pour les virements bancaires, et une phrase
+    pour les paiements par chèque, l'ordre de l'entreprise — tout ça en
+    automatique, repris des infos que l'utilisateur rentrera dans ses
+    réglages. »
+
+    `CLAUDE.md` §3 bis : une demande d'apparence se dessine avant de toucher à
+    `src/`. RIEN N'EST CODÉ.
+
+    ─────────────────────────────────────────────────────────────────────────
+    POURQUOI SA PAGE EST NOIRE AUJOURD'HUI, ET CE QUE ÇA CHANGE.
+
+    Ce n'est pas un défaut : `src/app/factures/[jeton]/page.tsx` prend l'ALLURE
+    FIGÉE de la facture (migration 0074) — le fond et l'accent qu'il a réglés
+    dans « Devis & factures ». Sans réglage, la page serait déjà crème et
+    verte. Il demande les couleurs de l'application : la page les prendra, et
+    le PDF gardera son allure à lui. Une décision du 23 août les tenait
+    identiques ; elle est rouverte ici, parce que le PDF est SON document et la
+    page n'en est que l'enveloppe.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST VRAI, ET CE QUI EST DESSINÉ.
+
+    · les champs existent déjà : `entreprises.iban` et « Titulaire du compte »
+      sont dans Réglages › Identité, et l'IBAN est déjà figé sur chaque facture
+      (`factures.entreprise_iban`). Aucune migration n'est nécessaire ;
+    · l'ordre du chèque est le NOM DE L'ENTREPRISE, lui aussi déjà figé ;
+    · les couleurs sont celles du produit au caractère près (`design-tokens`) ;
+    · l'IBAN affiché ici est un IBAN d'exemple, pas le sien.
+  */
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --alerte:#9C3B2E;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+
+  .note{max-width:470px;margin:32px auto 0;padding:16px 20px;background:var(--carte);
+        border-left:3px solid var(--or);font-size:14px;line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .note + .note{margin-top:12px}
+
+  .etats{position:sticky;top:0;z-index:20;background:#e6e3dc;
+         border-bottom:1px solid rgba(28,28,26,.14);padding:12px 16px 13px}
+  .etats .quoi{max-width:470px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+               letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+  .etats .rangee{max-width:470px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+  .etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+                border-radius:999px;padding:8px 13px;font:400 13px/1 var(--sans);cursor:pointer;
+                -webkit-tap-highlight-color:transparent}
+  .etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+
+  .planches{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;
+            max-width:1000px;margin:30px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+  .tel{width:390px;max-width:100%;min-height:664px;border-radius:26px;overflow:hidden;
+       box-shadow:0 16px 44px rgba(20,18,14,.22);display:flex;align-items:center;
+       justify-content:center;padding:24px}
+
+  /* ── L'AVANT : ce qu'il a photographié ───────────────────────────── */
+  /* Reproduit d'après sa capture du 8 septembre — fond blanc, accent noir :
+     l'allure qu'il a réglée pour ses documents, portée jusqu'ici. */
+  #avant{background:var(--fond);width:100%;height:100%;display:flex;
+         align-items:center;justify-content:center}
+  #avant .feuille{width:100%;background:#fff;border-radius:16px;padding:26px 22px;
+                  text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);border:1px solid var(--trait)}
+  #avant .eyebrow{margin:0;font:600 12px/1 var(--sans);letter-spacing:.12em;
+                  text-transform:uppercase;color:#6b6b6b}
+  #avant .numero{margin:8px 0 0;font:400 22px/1.2 var(--serif);color:#111}
+  #avant .qui{margin:6px 0 0;font-size:14px;color:#6b6b6b}
+  #avant .montant{margin:24px 0 0;font:500 34px/1 var(--serif);color:#111}
+  #avant .quand{margin:10px 0 0;font-size:14px;color:#6b6b6b}
+  #avant .noir{display:block;margin:22px 0 0;border-radius:999px;background:#1a1a1a;color:#fff;
+               padding:14px 18px;font-size:15px;font-weight:500}
+  #avant .creux{display:block;margin:12px 0 0;border-radius:999px;background:#fff;color:#111;
+                padding:14px 18px;font-size:15px;font-weight:500;border:1.5px solid #111}
+
+  /* ── L'APRÈS : aux couleurs d'Atlas ──────────────────────────────── */
+  #apres{background:var(--fond);width:100%;height:100%;display:flex;
+         align-items:center;justify-content:center}
+  #apres .feuille{width:100%;background:var(--carte);border-radius:18px;padding:26px 22px 24px;
+                  text-align:center;border:1px solid var(--trait);
+                  box-shadow:0 8px 24px rgba(20,18,14,.10)}
+  #apres .eyebrow{margin:0;font:600 10px/1 var(--sans);letter-spacing:.2em;
+                  text-transform:uppercase;color:var(--or)}
+  #apres .numero{margin:10px 0 0;font:400 24px/1.2 var(--serif);color:var(--encre)}
+  #apres .qui{margin:6px 0 0;font-size:14.5px;color:var(--gris)}
+  #apres .quand{margin:14px 0 0;font-size:14.5px;color:var(--encre-douce)}
+  #apres .telecharger{display:block;width:100%;margin:20px 0 0;border:0;border-radius:999px;
+                      background:var(--plein);color:#faf9f5;padding:15px 18px;
+                      font:400 17px/1 var(--serif);cursor:pointer;
+                      -webkit-tap-highlight-color:transparent}
+  #apres .telecharger:active{transform:scale(.99)}
+
+  /* Le pavé « Pour régler ». Séparé par un filet, jamais par une carte dans la
+     carte : deux cadres emboîtés font croire à deux documents. */
+  .regler{margin:22px 0 0;padding:18px 0 0;border-top:1px solid var(--trait);text-align:left}
+  .regler .chapeau{margin:0 0 12px;font:600 10px/1 var(--sans);letter-spacing:.2em;
+                   text-transform:uppercase;color:var(--gris)}
+  .regler p{margin:0;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .regler p b{color:var(--encre);font-weight:500}
+  .regler .moyen + .moyen{margin-top:16px;padding-top:16px;border-top:1px solid var(--trait)}
+
+  /* La pastille qu'on touche pour copier. Cinquante-deux pixels de haut : on
+     la vise avec un pouce, pas avec une souris. */
+  .copier{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
+          margin:10px 0 0;border:0;border-radius:12px;background:var(--papier);
+          box-shadow:inset 0 0 0 1px var(--trait);padding:9px 14px;min-height:52px;
+          cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
+  .copier:active{transform:scale(.995)}
+  .copier .quoi{display:block;margin:0 0 3px;font:600 9.5px/1 var(--sans);letter-spacing:.18em;
+                text-transform:uppercase;color:var(--gris)}
+  /* **`break-all` coupait l'IBAN au milieu d'un groupe** — « …0112 345 / 6 7890 189 »,
+     vu sur la capture. Un IBAN se relit par paquets de quatre ; coupé ailleurs,
+     on ne sait plus où on en est. Les espaces suffisent à le replier. */
+  .copier .valeur{display:block;font:400 16px/1.35 var(--sans);color:var(--encre);
+                  letter-spacing:.02em;word-break:normal;overflow-wrap:break-word}
+  .copier .dit{flex:0 0 auto;font:500 13px/1 var(--sans);color:var(--pin)}
+  .copier.fait{box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .copier.fait .dit{color:var(--plein)}
+
+  /* ── Le lien périmé ──────────────────────────────────────────────── */
+  #apres .perime{display:none}
+  body.perime #apres .vivante{display:none}
+  body.perime #apres .perime{display:block;text-align:center}
+  #apres .perime h1{margin:0;font:400 20px/1.3 var(--serif)}
+  #apres .perime p{margin:10px 0 0;font-size:14.5px;line-height:1.55;color:var(--gris)}
+
+  /* ── Les états ───────────────────────────────────────────────────── */
+  /* Sans IBAN réglé, le pavé virement ne montre pas une case vide : il garde
+     la consigne du libellé, qui vaut pour tout virement, et tait ce qu'il ne
+     sait pas (`CLAUDE.md` §4 : un champ sans source reste vide et le dit). */
+  body.sans-iban .bloc-iban{display:none}
+  body:not(.avec-iban) .bloc-iban{display:none}
+  body.sans-echeance .quand{display:none}
+</style>
+</head>
+<body class="avec-iban">
+
+<div class="bandeau">
+  <b>La page que reçoit votre client, avant et après.</b> Les pastilles se touchent :
+  appuyez sur le numéro de facture, il se copie pour de vrai.
+  <b>Rien n'est codé</b> — dites-moi ce qui va et ce qui ne va pas.
+</div>
+
+<div class="etats">
+  <p class="quoi">Voir la page dans cet état</p>
+  <div class="rangee">
+    <button type="button" data-etat="avec-iban" aria-pressed="true">Avec l'IBAN</button>
+    <button type="button" data-etat="sans-iban" aria-pressed="false">Sans montrer l'IBAN</button>
+    <button type="button" data-etat="avec-iban sans-echeance" aria-pressed="false">Sans échéance</button>
+    <button type="button" data-etat="perime" aria-pressed="false">Lien périmé</button>
+  </div>
+</div>
+
+<div class="planches">
+
+  <!-- ══ AVANT ══════════════════════════════════════════════════════ -->
+  <div class="planche">
+    <p class="nom">Aujourd'hui</p>
+    <p class="idee">Votre capture. Le noir vient de l'allure que vous avez réglée pour vos
+      documents, pas d'un défaut. Le montant s'affiche, et deux boutons se disputent le geste.</p>
+    <div class="tel">
+      <div id="avant">
+        <div class="feuille">
+          <p class="eyebrow">Facture</p>
+          <p class="numero">F2026-000002</p>
+          <p class="qui">Atlas</p>
+          <p class="montant">1 480,00 €</p>
+          <p class="quand">À régler avant le mercredi 7 octobre</p>
+          <span class="noir">Voir la facture en PDF</span>
+          <span class="creux">Télécharger ma facture</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ APRÈS ══════════════════════════════════════════════════════ -->
+  <div class="planche">
+    <p class="nom">La proposition</p>
+    <p class="idee">Aux couleurs d'Atlas. Plus de montant, un seul bouton, et en dessous ce
+      qu'il faut pour vous régler sans se tromper — repris de vos réglages, jamais tapé deux fois.</p>
+    <div class="tel">
+      <div id="apres">
+        <div class="feuille">
+
+          <div class="perime">
+            <h1>Ce lien n'est plus valable</h1>
+            <p>Contactez votre artisan pour en recevoir un nouveau.</p>
+          </div>
+
+          <div class="vivante">
+            <p class="eyebrow">Facture</p>
+            <p class="numero">F2026-000002</p>
+            <p class="qui">Atlas</p>
+            <p class="quand">À régler avant le mercredi 7 octobre</p>
+
+            <button type="button" class="telecharger">Télécharger ma facture</button>
+
+            <div class="regler">
+              <p class="chapeau">Pour régler</p>
+
+              <div class="moyen">
+                <p>Par virement, indiquez <b>F2026-000002</b> dans le libellé. Sans ce numéro,
+                  votre règlement ne peut pas être rattaché à cette facture.</p>
+                <button type="button" class="copier" data-copie="F2026-000002">
+                  <span><span class="quoi">Numéro de facture</span><span class="valeur">F2026-000002</span></span>
+                  <span class="dit">Copier</span>
+                </button>
+                <button type="button" class="copier bloc-iban" data-copie="FR7630006000011234567890189">
+                  <span><span class="quoi">IBAN</span><span class="valeur">FR76 3000 6000 0112 3456 7890 189</span></span>
+                  <span class="dit">Copier</span>
+                </button>
+              </div>
+
+              <div class="moyen">
+                <p>Par chèque, à l'ordre de : <b>Atlas</b>.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <b>Le montant a disparu, et c'est ce que vous demandez.</b> Votre client doit ouvrir sa facture
+  pour savoir ce qu'il doit. <b>Ce que ça coûte</b> : celui qui paie sans ouvrir n'a pas le montant.
+  L'échéance reste, elle, pour qu'il sache qu'il y a une date.
+</div>
+
+<div class="note">
+  <b>« À l'ordre de : Atlas », avec deux points, et ce n'est pas une coquetterie.</b> Écrit
+  « à l'ordre d'Atlas », il faudrait deviner l'apostrophe selon le nom de chaque entreprise —
+  « d'Atlas », mais « de Dupont Paysage ». Les deux points suppriment la question, quel que soit
+  le nom que vous avez réglé.
+</div>
+
+<div class="note">
+  <b>L'IBAN : à vous de dire.</b> Le montrer ici évite à votre client d'ouvrir le PDF pour le
+  chercher ; le taire garde la page nue. <b>Sans montrer l'IBAN</b>, en haut, montre les deux.
+  Dans les deux cas, s'il n'est pas rempli dans vos réglages, rien ne s'affiche — jamais une case vide.
+</div>
+
+<div class="note">
+  <b>Tout vient de vos réglages, rien n'est tapé ici.</b> L'IBAN et le titulaire sont dans
+  <b>Réglages › Identité</b> ; le nom qui sert d'ordre au chèque est celui de votre entreprise.
+  Les trois sont <b>figés sur la facture au moment de l'envoi</b> : changer d'IBAN demain ne
+  réécrit pas une facture déjà partie.
+</div>
+
+<p id="dit" hidden style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+   background:#1c1c1a;color:#f5f3ee;padding:11px 18px;border-radius:999px;font-size:14px;
+   margin:0;z-index:40;box-shadow:0 10px 26px rgba(0,0,0,.3)">
+  C'est une maquette — le téléchargement ne fait rien encore.
+</p>
+
+<script>
+  var etats = document.querySelectorAll('.etats button');
+  etats.forEach(function (b) {
+    b.addEventListener('click', function () {
+      etats.forEach(function (a) { a.setAttribute('aria-pressed', String(a === b)); });
+      document.body.className = b.dataset.etat || '';
+    });
+  });
+
+  /* Copier POUR DE VRAI : une pastille qui ferait semblant ne dirait rien de ce
+     que vivra son client. Le repli existe parce que `navigator.clipboard`
+     n'est pas donné hors HTTPS, et la maquette doit marcher partout. */
+  function copier(texte) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(texte);
+    var z = document.createElement('textarea');
+    z.value = texte; z.style.position = 'fixed'; z.style.opacity = '0';
+    document.body.appendChild(z); z.select();
+    try { document.execCommand('copy'); } finally { document.body.removeChild(z); }
+    return Promise.resolve();
+  }
+
+  document.querySelectorAll('.copier').forEach(function (b) {
+    var dit = b.querySelector('.dit');
+    b.addEventListener('click', function () {
+      copier(b.dataset.copie).then(function () {
+        b.classList.add('fait');
+        dit.textContent = 'Copié';
+        setTimeout(function () { b.classList.remove('fait'); dit.textContent = 'Copier'; }, 2000);
+      });
+    });
+  });
+
+  var minuteur;
+  document.querySelectorAll('.telecharger').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var d = document.getElementById('dit');
+      d.hidden = false;
+      clearTimeout(minuteur);
+      minuteur = setTimeout(function () { d.hidden = true; }, 2400);
+    });
+  });
+</script>
+
+</body>
+</html>
