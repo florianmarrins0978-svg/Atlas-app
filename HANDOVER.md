@@ -4,8 +4,46 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-06 · `main`
+**Point de reprise :** 2026-09-07 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## Dernier lot — « DEVIS & FACTURES » COUPÉ EN QUATRE (7 septembre 2026)
+
+**Document du lot :** `docs/lot-couper-devis-et-factures.md`.
+**Décision :** `ARCHITECTURE.md` §272. **Migration : 0075.**
+**La planche qu'il a validée :** `appli/couper-devis-et-factures.html`.
+
+**CE QU'IL FAUT SAVOIR AVANT DE TOUCHER À CET ÉCRAN :**
+
+1. **Rien ne sort de « Devis & factures », et c'est ce qui a permis de le
+   couper.** Ses trois réponses des 23 et 25 août — l'allure « ici et pas dans
+   une rubrique à part », le message « ici », l'aperçu collé — tiennent : le
+   sommaire des réglages garde ses **douze** lignes, et les quatre écrans
+   vivent SOUS `/reglages/documents`.
+
+2. **`[document]` A CHANGÉ DE SENS.** Il portait la phrase entière du document ;
+   il ne pose plus que le mot (« devis », « facture », « compte rendu »). Un
+   modèle écrit avant le 7 septembre est réécrit par la migration 0075 — sans
+   elle, le client recevrait un message réduit à un mot nu.
+
+3. **Il y a TROIS documents, pas deux.** Le compte rendu de passage part avec
+   ce même mécanisme (`composerMessageEntretien`) : c'est ce qu'on a failli
+   oublier, et le patron ne pouvait pas le savoir.
+
+4. **Deux jetons ne se retirent pas** (`refusDuMessage`) : le lien, et le mot
+   du document. Ce n'est pas un dessin — l'écran ne les encadre plus, à sa
+   demande ; c'est le refus qui le tient.
+
+5. **Quatre typographies ont été retirées**, et une clef retirée est TRADUITE
+   vers la plus proche (`TYPOGRAPHIE_REMPLACEE`). Ne pas supprimer cette table :
+   les factures portent leur allure figée (0074) et peuvent encore nommer
+   Playfair dans dix ans.
+
+**CE QUI RESTE À FAIRE, ET C'EST LA PREMIÈRE CHOSE :** la batterie complète
+n'a pas été jouée sur ce lot — migration 0075 à appliquer d'abord
+(`DATABASE_URL="$DATABASE_ADMIN_URL" npm run db:migrate`). Types, lint et les
+suites pures sont au vert ; les suites base et navigateur n'ont pas tourné.
 
 ---
 ## Dernier lot — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)

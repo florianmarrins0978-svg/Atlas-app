@@ -17,7 +17,11 @@ export type SegmentMessage =
 /** Le modèle, coupé sur ses pastilles. Les morceaux vides sont écartés. */
 export function segmentsDuModele(modele: string): SegmentMessage[] {
   return modele
-    .split(/(\[client\]|\[document\]|\[lien\]|\[entreprise\])/)
+    // **La liste suit `PASTILLES`, et il faut y penser en ajoutant un jeton.**
+    // Le 7 septembre 2026, `[numero]` et `[echeance]` sont entrés : oubliés
+    // ici, ils se seraient affichés en clair — « [numero] » — dans son cadre,
+    // et il les aurait effacés en croyant à une coquille.
+    .split(/(\[client\]|\[document\]|\[numero\]|\[echeance\]|\[lien\]|\[entreprise\])/)
     .filter((bout) => bout !== "")
     .map((bout) =>
       (PASTILLES as readonly string[]).includes(bout)

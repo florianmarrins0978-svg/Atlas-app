@@ -57,16 +57,33 @@ export type Typographie = {
 };
 
 /**
- * LES DIX, dans l'ordre où il les voit.
+ * LES SIX, dans l'ordre où il les voit.
  *
  * **La première est celle d'aujourd'hui**, et c'est la valeur par défaut : sa
  * règle du 23 août. Elle n'embarque rien — c'est ce que ses devis portent
  * depuis toujours, et un réglage neuf ne doit pas changer l'allure de ses
  * documents tant qu'il n'y a pas touché.
  *
- * **Les neuf autres existent en fichier**, et c'est la condition pour figurer
+ * **Les cinq autres existent en fichier**, et c'est la condition pour figurer
  * ici : une police que le PDF ne pourrait pas embarquer ferait un écran qui
  * ment — il la choisirait, et son client recevrait autre chose.
+ *
+ * ═══ ELLES ÉTAIENT DIX — 7 septembre 2026, et c'est lui qui l'a demandé ═══
+ *
+ * *« Pour la typographie tu peux en enlever ou en changer si tu estimes que
+ * certaines sont moches et ne servent à rien. »* Quatre sont parties, chacune
+ * pour une raison qui se voit sur un devis :
+ *
+ *   Source Sans, Work Sans  à la taille d'un devis, on ne les distingue pas
+ *                           d'Inter — trois linéales neutres, c'est deux de trop
+ *   Libre Baskerville       très large : le même devis prend une page de plus
+ *   Playfair Display        ses déliés sont des cheveux ; à 9 px dans un
+ *                           tableau, imprimés ou faxés, ils disparaissent
+ *
+ * **Les six qui restent ne se ressemblent pas** : la sienne, une neutre, une
+ * ronde, une étroite qui tient plus de lignes, et deux à empattements. Un choix
+ * où deux entrées font la même chose n'est pas un choix — c'est une hésitation
+ * de plus, sur un écran fait pour des patrons qui n'aiment pas leur téléphone.
  */
 export const TYPOGRAPHIES: readonly Typographie[] = [
   {
@@ -94,22 +111,6 @@ export const TYPOGRAPHIES: readonly Typographie[] = [
     fichiers: { normal: "lato-400.ttf", gras: "lato-700.ttf" },
   },
   {
-    clef: "source-sans",
-    nom: "Source Sans",
-    dit: "Linéale, sobre",
-    pileCss: '"Source Sans 3", ui-sans-serif, system-ui, sans-serif',
-    famille: "Source Sans 3",
-    fichiers: { normal: "source-sans-400.ttf", gras: "source-sans-700.ttf" },
-  },
-  {
-    clef: "work-sans",
-    nom: "Work Sans",
-    dit: "Linéale, franche",
-    pileCss: '"Work Sans", ui-sans-serif, system-ui, sans-serif',
-    famille: "Work Sans",
-    fichiers: { normal: "work-sans-400.ttf", gras: "work-sans-700.ttf" },
-  },
-  {
     clef: "archivo-narrow",
     nom: "Archivo Narrow",
     dit: "Étroite — tient plus de lignes",
@@ -126,28 +127,12 @@ export const TYPOGRAPHIES: readonly Typographie[] = [
     fichiers: { normal: "eb-garamond-400.ttf", gras: "eb-garamond-700.ttf" },
   },
   {
-    clef: "libre-baskerville",
-    nom: "Libre Baskerville",
-    dit: "Empattements, lisible",
-    pileCss: '"Libre Baskerville", ui-serif, Georgia, serif',
-    famille: "Libre Baskerville",
-    fichiers: { normal: "libre-baskerville-400.ttf", gras: "libre-baskerville-700.ttf" },
-  },
-  {
     clef: "merriweather",
     nom: "Merriweather",
     dit: "Empattements, solide",
     pileCss: 'Merriweather, ui-serif, Georgia, serif',
     famille: "Merriweather",
     fichiers: { normal: "merriweather-400.ttf", gras: "merriweather-700.ttf" },
-  },
-  {
-    clef: "playfair",
-    nom: "Playfair Display",
-    dit: "Empattements, contrasté",
-    pileCss: '"Playfair Display", ui-serif, Georgia, serif',
-    famille: "Playfair Display",
-    fichiers: { normal: "playfair-400.ttf", gras: "playfair-700.ttf" },
   },
 ];
 
@@ -178,9 +163,36 @@ export type Allure = {
   accent: string;
 };
 
-/** La typographie désignée, ou celle d'aujourd'hui si la clef ne dit rien. */
+/**
+ * CE QUE DEVIENT UNE POLICE RETIRÉE — la plus proche, jamais le défaut.
+ *
+ * **Sans cette table, retirer quatre polices le 7 septembre 2026 aurait
+ * repeint des documents en silence.** Une entreprise réglée sur « Playfair
+ * Display » serait retombée sur `TYPOGRAPHIES[0]` — la police de l'appareil —,
+ * c'est-à-dire sur une allure qu'elle n'a pas choisie, sans un mot nulle part.
+ * Le plus proche parent conserve l'intention : une serif reste une serif.
+ *
+ * **Elle ne s'efface pas quand plus personne ne l'emploie** : les factures
+ * portent leur allure FIGÉE (migration 0074), et une facture de l'an dernier
+ * peut encore nommer Playfair dans dix ans.
+ */
+const TYPOGRAPHIE_REMPLACEE: Record<string, string> = {
+  "source-sans": "inter",
+  "work-sans": "inter",
+  "libre-baskerville": "merriweather",
+  playfair: "eb-garamond",
+};
+
+/**
+ * La typographie désignée, ou celle d'aujourd'hui si la clef ne dit rien.
+ *
+ * **Une clef retirée est traduite AVANT d'être cherchée**, jamais ignorée :
+ * c'est ce qui fait que le PDF, l'écran et l'aperçu répondent tous les trois la
+ * même chose sur un vieux réglage (`normaliserAllure` passe par ici).
+ */
 export function typographieDe(clef: string | null | undefined): Typographie {
-  return TYPOGRAPHIES.find((t) => t.clef === clef) ?? TYPOGRAPHIES[0];
+  const voulue = typeof clef === "string" ? (TYPOGRAPHIE_REMPLACEE[clef] ?? clef) : clef;
+  return TYPOGRAPHIES.find((t) => t.clef === voulue) ?? TYPOGRAPHIES[0];
 }
 
 /**

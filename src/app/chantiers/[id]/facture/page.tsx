@@ -88,7 +88,11 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
           reprise={reprise}
           origine={origine}
           entrepriseNom={entreprise?.nom ?? ""}
-          modeleMessage={entreprise?.messageClient ?? null}
+          // **Le message de la FACTURE, depuis le 7 septembre 2026 (0075).** Il
+          // en a trois maintenant ; prendre `messageClient` ici enverrait son
+          // texte de devis avec sa facture, et le client lirait « choisissez
+          // votre date d'intervention » sur ce qu'il doit payer.
+          modeleMessage={entreprise?.messageClientFacture ?? null}
           // Sans lui, une coordonnée manquante ne peut se saisir nulle part :
           // il n'existe aucun écran de fiche client (voir `TransmettreLaFacture`).
           clientId={chantier.clientId ?? null}

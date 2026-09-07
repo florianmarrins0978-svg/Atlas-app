@@ -19,6 +19,23 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+### « Devis & factures » coupé en quatre, et trois messages (7 septembre 2026)
+
+**Fait.** L'écran le plus long de l'application — 4 350 px — est devenu un
+sommaire de quatre lignes et quatre écrans courts, à sa demande : *« on
+coupe »*. **Rien n'en sort** : le sommaire des réglages garde ses douze lignes.
+
+**Trois messages au client**, un par document (devis, facture, compte rendu de
+passage), migration **0075**. `[document]` n'y pose plus que le mot ; la phrase
+lui appartient. Deux jetons ne se retirent pas : le lien et le mot du document.
+
+**Six typographies au lieu de dix**, et une clef retirée est traduite vers la
+plus proche (`TYPOGRAPHIE_REMPLACEE`) plutôt que perdue.
+
+**Reste à jouer sur son poste :** la batterie complète, migration appliquée —
+les suites base et navigateur de ce lot n'ont pas encore tourné ici.
+Détail : `ARCHITECTURE.md` §272, `docs/lot-couper-devis-et-factures.md`.
+
 ## FAIT : fermer un jour depuis le planning (6 septembre 2026)
 
 | | |

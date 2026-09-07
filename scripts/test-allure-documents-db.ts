@@ -56,10 +56,10 @@ async function main() {
     await nettoyerBase();
     const { ctx, entrepriseId } = await monter("Réglée");
     await mettreAJourEntreprise(ctx, {
-      allure: { typographie: "playfair", fond: "#1c2b1c", accent: "#d8c48a" },
+      allure: { typographie: "merriweather", fond: "#1c2b1c", accent: "#d8c48a" },
     });
     const lu = await allureDesDocuments(db, entrepriseId);
-    assert.deepEqual(lu.allure, { typographie: "playfair", fond: "#1c2b1c", accent: "#d8c48a" });
+    assert.deepEqual(lu.allure, { typographie: "merriweather", fond: "#1c2b1c", accent: "#d8c48a" });
   });
 
   await essai("LE DÉFAUT S'ÉCRIT VIDE, jamais en clair", async () => {
@@ -126,7 +126,7 @@ async function main() {
     const a = await monter("Chez Dupont");
     const b = await monter("Chez Martin");
     await mettreAJourEntreprise(a.ctx, {
-      allure: { typographie: "playfair", fond: "#1c2b1c", accent: "#d8c48a" },
+      allure: { typographie: "merriweather", fond: "#1c2b1c", accent: "#d8c48a" },
     });
     // Lue depuis le contexte de B, la ligne de A ne doit rien rendre.
     const vueDeB = await allureDesDocuments(db, a.entrepriseId);

@@ -40,7 +40,9 @@ export type NomIcone =
   | "etincelle"
   | "puzzle"
   | "couronne"
-  | "bouclier";
+  | "bouclier"
+  /** Le message au client — entrée le 7 septembre 2026 avec ses trois messages. */
+  | "bulle";
 
 const TRACES: Record<NomIcone, React.ReactNode> = {
   compte: (
@@ -131,6 +133,15 @@ const TRACES: Record<NomIcone, React.ReactNode> = {
     <>
       <path d="M12 3.2 5.2 5.9v5.3c0 4.2 2.8 7.9 6.8 9.1 4-1.2 6.8-4.9 6.8-9.1V5.9z" />
       <path d="M9.3 12.1l1.9 1.9 3.6-3.7" />
+    </>
+  ),
+  // La bulle du message, avec sa pointe en bas à gauche : c'est ce qu'on écrit
+  // à quelqu'un. Deux lignes dedans, comme `feuille` — même famille de traits,
+  // même épaisseur ; une icône remplie détonnerait au milieu des treize autres.
+  bulle: (
+    <>
+      <path d="M20.5 13.4c0 3.2-3.4 5.8-7.6 5.8-.9 0-1.8-.1-2.6-.3L5.5 20.5l1.2-3.3c-1.4-1-2.2-2.4-2.2-3.8 0-3.2 3.4-5.8 7.6-5.8s8.4 2.6 8.4 5.8Z" />
+      <path d="M8.6 12.6h7.6M8.6 15.4h4.6" />
     </>
   ),
 };

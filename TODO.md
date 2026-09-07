@@ -393,7 +393,7 @@ légitimes, et aucune n'est un oubli :
 | `devis/[jeton]/*`, `entretien/[jeton]/*` | il a tranché le 4 septembre : *« garde les couleurs d'origine »* (`ARCHITECTURE.md` §248) |
 | `src/components/atlas/Calendrier.tsx` | employé UNIQUEMENT par la page du client ci-dessus |
 | `src/app/paysage/arrosage/PlanDessine.tsx` | un plan est un dessin technique, pas un écran ; ses couleurs sont documentées en tête |
-| `src/app/reglages/documents/DocumentsClient.tsx` | c'est le nuancier lui-même |
+| `src/app/reglages/documents/allure/AllureClient.tsx` | c'est le nuancier lui-même (l'écran a été coupé le 7 septembre 2026 : le nuancier vit maintenant là) |
 | `src/components/atlas/BrancheEucalyptus.tsx` | une illustration |
 | `src/app/design/*` | maquettes gelées, absentes en production |
 | `layout.tsx` (`themeColor`) | **pas une exception, un défaut** — voir le point ci-dessus |

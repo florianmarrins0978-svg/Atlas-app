@@ -6,6 +6,35 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+
+## 2026-09-07
+### « Devis & factures » coupé en quatre, et trois messages au lieu d'un
+
+L'écran le plus long de l'application — **4 350 px, six écrans et demi de son
+téléphone** — portait six sujets sans rapport. Il a tranché devant la planche :
+**« on coupe »**. Quatre lignes à l'entrée, quatre écrans courts, et **rien qui
+sorte de « Devis & factures »** : le sommaire des réglages garde ses douze
+lignes.
+
+**Trois messages au client**, un par document — dont le **compte rendu de
+passage**, qu'il n'avait pas compté : il partait avec le même modèle, et serait
+resté sur le texte d'Atlas pendant que les deux autres portaient sa voix. La
+phrase du milieu lui appartient désormais ; Atlas n'y pose plus que des mots qui
+se remplissent seuls, dont **deux qui ne se retirent pas** — le lien et le mot
+du document.
+
+**Ce que la migration 0075 évite, et qui aurait été muet :** un message déjà
+enregistré porte `[document]` au sens ancien — la phrase entière. Rendu avec le
+nouveau, il serait parti chez le client réduit au mot « devis ». Sa phrase y est
+réécrite en clair, et son texte devient celui du devis.
+
+**Six typographies au lieu de dix**, comme il l'a laissé trancher, et une police
+retirée est traduite vers la plus proche plutôt que perdue.
+
+**Un défaut trouvé en vérifiant sa remarque sur le doré :** l'écran promettait
+l'accent « sur le total à payer ». Le total est à l'encre, et l'a toujours été
+(`ARCHITECTURE.md` §272).
+
 ## 2026-09-06
 ### Fermer un jour depuis le planning, en un appui
 

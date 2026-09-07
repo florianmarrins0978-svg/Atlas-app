@@ -61,9 +61,15 @@ export default function Sommaire({ ensembles }: { ensembles: EnsembleRubriques[]
               le sien, relevé sur le site d'Arborea, et `test-chartes-lisibles`
               refuse volontairement d'y poser un seuil (`scripts/…:144`). Ce qui
               change, c'est OÙ on l'emploie — plus pour du texte à lire. */}
-          <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-            {ensemble.titre}
-          </p>
+          {/* **Un titre vide ne dessine RIEN — 7 septembre 2026.** Le sommaire
+              de « Devis & factures » n'a qu'un ensemble de quatre lignes : il
+              n'y a pas de familles à séparer, et un intertitre vide laissait un
+              blanc de dix pixels qu'on lit comme un défaut d'alignement. */}
+          {ensemble.titre !== "" && (
+            <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+              {ensemble.titre}
+            </p>
+          )}
           {ensemble.rubriques.map((r, j) => (
             <Ligne key={r.nom} rubrique={r} derniere={j === ensemble.rubriques.length - 1} />
           ))}

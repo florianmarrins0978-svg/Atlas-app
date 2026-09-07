@@ -4,7 +4,12 @@ import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
 import type { Ctx } from "./context";
 import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
-import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
+import {
+  refusDuMessage,
+  GENRES,
+  MESSAGES_PAR_DEFAUT,
+  type GenreDocument,
+} from "@/lib/message-client";
 import {
   allureDepuisColonnes,
   estLAllureParDefaut,
@@ -16,6 +21,18 @@ import { MAX_EQUIPES, MAX_SALARIES } from "@/lib/equipes";
 import { lireObjet } from "../storage";
 import type { LogoDocument } from "../pdf/document-commun";
 import { logger } from "../logger";
+
+/**
+ * Où chaque message s'écrit en base — une seule table de correspondance.
+ *
+ * Écrite ici plutôt que dans `src/lib/` : c'est un fait de la BASE, pas une
+ * règle métier. La bibliothèque du message ne doit rien savoir des colonnes.
+ */
+const COLONNE_DU_MESSAGE: Record<GenreDocument, string> = {
+  devis: "messageClient",
+  facture: "messageClientFacture",
+  passage: "messageClientPassage",
+};
 
 // Cas particulier : à la création, l'entreprise n'existe pas encore, donc
 // withEntreprise() (qui exige une adhésion préexistante) ne peut pas s'appliquer.
@@ -154,12 +171,16 @@ export async function mettreAJourEntreprise(
      */
     conditions?: ConditionsLues;
     /**
-     * Son message au client (migration 0062).
+     * SES messages au client — un par document (migrations 0062 puis 0075).
      *
      * **`null` REMET celui d'Atlas**, une chaîne vide aussi : c'est ainsi qu'il
      * revient au message d'origine sans avoir à le retaper de mémoire.
+     *
+     * **Un genre absent n'est pas touché.** L'écran n'envoie que ce qu'il a
+     * modifié : recevoir « les trois ou rien » ferait effacer deux messages
+     * pour en corriger un, depuis un écran resté ouvert.
      */
-    messageClient?: string | null;
+    messages?: Partial<Record<GenreDocument, string | null>>;
     /**
      * L'allure de ses documents (migration 0063).
      *
@@ -227,16 +248,22 @@ export async function mettreAJourEntreprise(
     // accepterait ce que l'écran refuse laisserait passer un message sans lien
     // — par une adresse tapée à la main, ou par un écran resté ouvert depuis
     // une version d'avant. Un refus se garde au plus près de la base.
-    if (data.messageClient !== undefined) {
-      const texte = data.messageClient?.trim() ?? "";
+    // **TROIS MESSAGES DEPUIS LE 7 SEPTEMBRE 2026 (migration 0075), et la règle
+    // est la même pour les trois.** Une boucle plutôt que trois blocs recopiés :
+    // le jour où le refus changera, il changerait dans deux d'entre eux.
+    for (const genre of GENRES) {
+      const saisi = data.messages?.[genre];
+      if (saisi === undefined) continue;
+      const colonne = COLONNE_DU_MESSAGE[genre];
+      const texte = saisi?.trim() ?? "";
       // Vide = il revient au message d'Atlas. Ce n'est pas un refus : c'est le
       // seul moyen de retrouver l'original sans le retaper de mémoire.
       // **Le texte d'Atlas retapé à l'identique reste « celui d'Atlas ».** Sans
       // cette ligne, un aller-retour par « Remettre celui d'Atlas » figerait
       // l'entreprise sur la version du jour : une correction ultérieure ne
       // l'atteindrait plus, et personne ne s'en apercevrait.
-      if (texte === "" || texte === MESSAGE_PAR_DEFAUT.trim()) valeurs.messageClient = null;
-      else if (refusDuMessage(texte) === null) valeurs.messageClient = texte;
+      if (texte === "" || texte === MESSAGES_PAR_DEFAUT[genre].trim()) valeurs[colonne] = null;
+      else if (refusDuMessage(texte) === null) valeurs[colonne] = texte;
       // Sinon : on n'écrit rien. Le réglage reste celui d'avant, et l'écran a
       // déjà dit pourquoi — lever ici rendrait un identifiant opaque au patron.
     }

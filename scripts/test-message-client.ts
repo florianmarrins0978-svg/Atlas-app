@@ -8,7 +8,7 @@ import {
   refusDuMessage,
   rendreMessage,
   MESSAGE_MAX,
-  MESSAGE_PAR_DEFAUT,
+  MESSAGES_PAR_DEFAUT,
 } from "../src/lib/message-client";
 import { CIVILITE_PAR_DEFAUT, avecCivilite } from "../src/lib/civilite";
 
@@ -167,10 +167,15 @@ test("le lien est OBLIGATOIRE : un message sans lui est refusé", () => {
   // **Sa règle, et c'est un refus, pas un avertissement.** Sans lien, le
   // message part et le client ne peut rien ouvrir : le patron ne l'apprend
   // qu'au téléphone, une semaine plus tard.
-  const refus = refusDuMessage("Bonjour [client], voici [document]. [entreprise]");
+  const refus = refusDuMessage("Bonjour [client], voici votre [document]. [entreprise]");
   assert.ok(refus, "un message sans lien a été accepté");
   assert.ok(/lien/i.test(refus), `le refus ne nomme pas le lien : « ${refus} »`);
-  assert.equal(refusDuMessage(MESSAGE_PAR_DEFAUT), null, "le message d'Atlas est refusé");
+  // Les TROIS messages d'Atlas doivent passer : depuis le 7 septembre 2026 il y
+  // en a un par document, et un refus qui n'en verrait qu'un laisserait les deux
+  // autres se casser sans bruit.
+  for (const [genre, modele] of Object.entries(MESSAGES_PAR_DEFAUT)) {
+    assert.equal(refusDuMessage(modele), null, `le message d'Atlas est refusé : ${genre}`);
+  }
 });
 
 test("un message vide ou démesuré est refusé, et le dit", () => {
@@ -228,9 +233,18 @@ test("SON message remplace celui d'Atlas, partout", () => {
 
   assert.ok(devis.startsWith("Salut Mr. Larousse !"), `son message n'est pas servi : ${devis.slice(0, 40)}`);
   assert.ok(devis.includes("À bientôt, Eden Nature"), "sa signature n'est pas servie");
-  // Le sien sert AUSSI la facture : c'est « un message pour tous ».
-  assert.ok(facture.startsWith("Salut Mr. Larousse !"), "la facture garde l'ancien message");
-  assert.ok(/votre facture F2026-0008/i.test(facture), "la phrase du document n'est plus posée");
+
+  // **CE CAS DÉFENDAIT « UN MESSAGE POUR TOUS », ET CETTE RÈGLE EST TOMBÉE.**
+  // Elle datait du 23 août 2026 ; le patron l'a renversée le 7 septembre — trois
+  // messages, un par document — et chaque envoi lit désormais SA colonne. Ce
+  // qui reste vrai, et que ce cas vérifie maintenant : le modèle qu'on donne
+  // est bien celui qui sert, et le mot du document s'y accorde tout seul.
+  assert.ok(facture.startsWith("Salut Mr. Larousse !"), "le modèle donné n'est pas servi");
+  assert.ok(/\nfacture\n/.test(facture), `le mot du document ne s'accorde pas : ${facture}`);
+  // **On vise la LIGNE du document, pas le mot « devis » n'importe où :**
+  // l'adresse d'exemple en contient un, et un contrôle qui le lirait accuserait
+  // le lien à la place du modèle.
+  assert.ok(!/\ndevis\n/.test(facture), "la facture pose encore le mot du devis");
   // Et une pastille inconnue reste en clair plutôt que de disparaître : il la
   // voit à l'aperçu et se corrige, au lieu de perdre un mot sans savoir où.
   assert.ok(
@@ -280,6 +294,83 @@ test("Le canal se DÉDUIT, il ne s'invente pas", () => {
     "sans canal convenu, l'application choisit encore à sa place"
   );
   assert.equal(canalPourJoindre({ telephone: null, email: null }), null);
+});
+
+// ═══ TROIS MESSAGES, UN PAR DOCUMENT — sa décision du 7 septembre 2026 ═══
+//
+// Ces cas défendent ce que le lot a changé, et rien d'autre : le mot juste par
+// document, l'échéance qui emporte ses mots, et le refus d'un message qui ne
+// nomme plus ce qu'il transmet.
+
+test("chaque document reçoit SON message, avec le mot juste", () => {
+  const devis = composerMessageClient({
+    clientNom: "Martins",
+    entrepriseNom: "Eden Nature",
+    lien: "https://exemple/devis/1",
+  }).corps;
+  const facture = composerMessageFacture({
+    clientNom: "Martins",
+    entrepriseNom: "Eden Nature",
+    numeroFacture: "F2026-0008",
+    echeanceLisible: "21 septembre",
+    lien: "https://exemple/facture/1",
+  }).corps;
+  const passage = composerMessageEntretien({
+    clientNom: "Martins",
+    entrepriseNom: "Eden Nature",
+    lien: "https://exemple/passage/1",
+  }).corps;
+
+  // **Le piège que ce lot devait fermer :** un seul modèle pour trois envois
+  // faisait dire à la facture « choisissez votre date d'intervention ».
+  assert.ok(/Voici votre devis\./.test(devis), `le devis ne dit pas « devis » : ${devis}`);
+  assert.ok(/date d'intervention/.test(devis), "le devis ne propose plus de date");
+  assert.ok(/Voici votre facture F2026-0008/.test(facture), `la facture : ${facture}`);
+  assert.ok(!/date d'intervention/.test(facture), "la facture parle encore de choisir une date");
+  assert.ok(/compte rendu de mon passage/.test(passage), `le compte rendu : ${passage}`);
+  assert.ok(!/facture|devis/i.test(passage), "le compte rendu évoque un autre document");
+});
+
+test("l'échéance emporte ses mots quand il n'y en a pas", () => {
+  // **Le délai de paiement est un interrupteur : éteint, il n'y a pas
+  // d'échéance.** Une pastille qui ne rendrait que la date laisserait alors
+  // « facture F2026-0008, à régler avant le . » dans la boîte du client.
+  const sans = composerMessageFacture({
+    clientNom: "Martins",
+    entrepriseNom: "Eden Nature",
+    numeroFacture: "F2026-0008",
+    echeanceLisible: null,
+    lien: "https://exemple/facture/1",
+  }).corps;
+  assert.ok(!/à régler avant/.test(sans), `une échéance vide est restée : ${sans}`);
+  assert.ok(!/, \./.test(sans), `une ponctuation orpheline est restée : ${sans}`);
+  assert.ok(/Voici votre facture F2026-0008\./.test(sans), sans);
+});
+
+test("le mot du document ne se retire pas", () => {
+  // Sa consigne du 7 septembre : *« le lien, les mots devis, facture et fiche
+  // client ne peuvent être enlevés »*.
+  const refus = refusDuMessage("Bonjour [client], c'est prêt : [lien] — [entreprise]");
+  assert.ok(refus, "un message sans le mot du document a été accepté");
+  assert.ok(/document/i.test(refus), `le refus ne nomme pas le document : « ${refus} »`);
+  // Et il ne parle pas à tort : le message d'Atlas, lui, passe.
+  assert.equal(refusDuMessage(MESSAGES_PAR_DEFAUT.facture), null);
+});
+
+test("son texte à lui commande, et les pastilles s'y remplissent", () => {
+  // Ce que le lot rend possible : la phrase du milieu est à lui.
+  const sien = "Coucou [client] ! Ta [document] [numero][echeance]. Ici : [lien]. [entreprise]";
+  const corps = composerMessageFacture({
+    clientNom: "Martins",
+    entrepriseNom: "Eden Nature",
+    numeroFacture: "F2026-0009",
+    echeanceLisible: "3 octobre",
+    lien: "https://exemple/facture/2",
+    modele: sien,
+  }).corps;
+  assert.ok(corps.startsWith("Coucou "), `son texte n'a pas été employé : ${corps}`);
+  assert.ok(/Ta facture F2026-0009, à régler avant le 3 octobre\./.test(corps), corps);
+  assert.ok(!/\[/.test(corps), `une pastille est restée en clair : ${corps}`);
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

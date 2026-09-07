@@ -23887,3 +23887,128 @@ en laissant deux absences derrière elle ; le tour suivant trouvait un jour déj
 fermé, ne voyait plus le geste et accusait le code. Il remet désormais le jour à
 l'état ouvert **avant** de commencer et **à la fin** — une suite qui salit la
 base accuse la suivante.
+
+## §272. « Devis & factures » coupé en quatre, et trois messages au lieu d'un
+
+**7 septembre 2026.** L'écran le plus long de l'application — **4 350 px, six
+écrans et demi de son téléphone** — portait six sujets sans rapport : ce qui
+s'imprime, ce que le devis dira, ce qui ne se coupe pas, son message au client,
+le numéro de ses documents, l'allure de ses devis. Pour changer son logo, il
+traversait tout.
+
+Il a tranché lui-même, planche en main
+(`appli/couper-devis-et-factures.html`) : **« on coupe »**. Quatre lignes à
+l'entrée, quatre écrans courts.
+
+### Ce que le découpage NE fait pas, et c'est ce qui a permis de le faire
+
+**Rien ne sort de « Devis & factures ».** Trois de ses propres réponses avaient
+mis ces blocs sur un seul écran — l'allure *« ici et pas dans une rubrique à
+part »* (réponse B, 23 août), le message *« ici »* (A, 23 août), l'aperçu collé
+(B, 25 août). Elles tiennent : le sommaire des réglages garde ses **douze**
+lignes, et ces réglages vivent un cran plus bas, pas ailleurs.
+
+**Ce qui a changé depuis ces réponses, et qui justifiait de les rouvrir :** elles
+ont été données quand l'écran portait **deux** blocs. Il en portait **six**.
+
+| | |
+|---|---|
+| `/reglages/documents` | le sommaire, quatre lignes |
+| `…/conditions` | les six interrupteurs, le récapitulatif qu'ils produisent, les mentions obligatoires |
+| `…/message` | ses trois messages |
+| `…/numero` | le format de ses numéros |
+| `…/allure` | logo, typographie, fond, accent — avec l'aperçu collé |
+
+**Les quatre titres sont ceux de ses six blocs, mot pour mot.** Deux blocs
+n'ouvrent aucune ligne : « Ce que votre devis dira » se recalcule tout seul et
+« Ce qui ne se coupe pas » est obligatoire — ils vivent dans le premier écran,
+sous les interrupteurs qu'ils commentent.
+
+**La garde est répétée sur les quatre écrans, et ce n'est pas une redondance :**
+chacun a son adresse, et une adresse se tape. La poser au seul sommaire aurait
+laissé les quatre autres ouverts.
+
+### Trois messages, et `[document]` change de sens
+
+**Sa décision, prise en deux temps.** *« En fait il faut faire deux messages par
+défaut, un pour devis et un pour facture »* — puis, le troisième document
+retrouvé : *« dans ce cas faut faire 3 messages par défaut et garder le système
+un seul mot change »*.
+
+**IL Y EN A TROIS, PAS DEUX, et il ne pouvait pas le savoir.** Le **compte rendu
+de passage** part avec ce même modèle (`composerMessageEntretien`). À deux
+messages, son client aurait entendu sa voix sur son devis et sa facture, celle
+d'Atlas sur le compte rendu.
+
+**Ce qui a rendu la version d'avant intenable :** la phrase qui distingue les
+trois envois était écrite par Atlas et posée à l'endroit du `[document]`. C'était
+le seul morceau de son message qu'il ne pouvait pas toucher — et précisément
+celui qu'il voulait écrire.
+
+| | Avant | Après |
+|---|---|---|
+| `[document]` | **la phrase entière** — « Voici votre devis. Vous pouvez le consulter… » | **le mot seul** — « devis », « facture », « compte rendu » |
+| en base | une colonne, `message_client` | trois (migration 0075) |
+| verrouillé | les quatre mots dorés | **le lien et le mot du document**, et rien d'autre |
+
+**LE PIÈGE DE LA MIGRATION, et il aurait été muet.** Un message déjà enregistré
+porte un `[document]` au sens ancien : rendu avec le nouveau, il serait parti
+chez le client réduit à un mot nu — « Bonjour Mme Larousse, / devis / https://… ».
+La migration 0075 y réécrit donc la phrase EN CLAIR, et l'ancienne valeur devient
+celle du **devis** : son texte n'est pas perdu.
+
+**L'échéance emporte ses mots** (`clauseEcheance`) : elle rend « , à régler avant
+le 21 septembre » ou rien du tout. Le délai de paiement est un interrupteur, il
+s'éteint ; une pastille qui ne rendrait que la date laisserait « facture
+F2026-0008, à régler avant le . » dans la boîte du client.
+
+**Deux mots ne se retirent pas**, et c'est `refusDuMessage` qui le tient — pas un
+dessin. Le lien, sans lequel le client n'ouvre rien et le planning ne reçoit
+aucune date ; le mot du document, sans lequel il ne sait pas s'il reçoit un devis
+à signer ou une facture à payer.
+
+### Ce qu'une seule case a coûté à l'écran, et ce qu'elle lui a rendu
+
+Sa correction du même jour : *« pas besoin de répéter, il faut juste que
+l'utilisateur voie le message final qu'il peut modifier entièrement »*. Chaque
+message était dessiné **deux fois** — une fois avec les mots nommés (« le
+prénom »), une fois rempli (« Mme Larousse ») : six boîtes presque identiques, et
+l'on cherche laquelle se modifie. Il ne reste que celle qui part.
+
+**Et le cadre d'or a été retiré le même jour :** *« pourquoi la facture et le lien
+sont encadrés ? laisse-les normaux mais juste en doré »*. Il avait raison — le
+cadre n'apprenait rien que l'avertissement du haut ne dise déjà, et il fabriquait
+deux sortes de doré à comprendre au lieu d'une.
+
+### Six typographies au lieu de dix
+
+*« Tu peux en enlever ou en changer si tu estimes que certaines sont moches et ne
+servent à rien. »* Quatre sont parties, chacune pour une raison qui se voit sur un
+devis : **Source Sans** et **Work Sans** ne se distinguent pas d'Inter à cette
+taille, **Libre Baskerville** rallonge le devis d'une page, **Playfair Display**
+perd ses déliés à l'impression.
+
+**Une clef retirée est TRADUITE, jamais ignorée** (`TYPOGRAPHIE_REMPLACEE`) : sans
+cette table, une entreprise réglée sur Playfair serait retombée sur la police de
+l'appareil — une allure qu'elle n'a pas choisie, sans un mot nulle part. Et la
+table ne s'efface pas quand plus personne ne l'emploie : les factures portent
+leur allure **figée** (migration 0074), et une facture de l'an dernier peut
+encore nommer Playfair dans dix ans.
+
+**En revanche, une photo de devis dans une police retirée n'est PAS approchée** :
+`typographieDepuisNom` rend `null` et la réserve le dit. Poser la plus
+ressemblante repeindrait ses documents d'après une photo, sans qu'il l'ait choisi.
+
+### Un défaut du code trouvé en vérifiant sa remarque sur le doré
+
+Il a signalé qu'« il manque le doré » dans les couleurs d'accent. **C'était la
+planche, pas l'application** : `couleursDocument.accent` vaut `#B98B47`, c'est
+déjà le défaut de ses documents, et la première pastille le porte sous le nom
+« Celui d'aujourd'hui ».
+
+Mais en le vérifiant, un vrai défaut est sorti : l'aide de ce réglage annonçait
+« le trait sous le titre, les intitulés, **et le total à payer** ». Le total
+s'écrit à l'encre — `document-commun.ts` ne donne l'accent qu'à `titrePartie`.
+Une phrase d'écran qui promet ce que le PDF ne fait pas se paie à la première
+capture : il change l'accent, regarde son total, et croit à une panne. Corrigée,
+et l'aperçu de l'écran aussi, qui coloriait le total lui aussi.

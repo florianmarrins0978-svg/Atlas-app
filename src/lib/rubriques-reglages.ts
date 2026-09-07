@@ -115,7 +115,7 @@ const ENTREPRISE: Rubrique[] = [
   },
   // **« Tarifs & catalogue » et « Devis & factures » NE CHANGENT PAS, et c'est
   // un refus assumé du 5 septembre 2026.** Ce sont des mots de son métier, ils
-  // sont justes, et onze suites les lisent : les retoucher aurait coûté une
+  // sont justes, et neuf suites les lisent : les retoucher aurait coûté une
   // demi-journée pour un gain nul. Ce lot ne renomme que ce qui MENT.
   { nom: "Tarifs & catalogue", icone: "etiquette", href: "/reglages/tarifs" },
   {
@@ -306,6 +306,30 @@ export function surtitreReglages(role: RoleReglages | null): string {
  * raison ci-dessus. Le paragraphe est conservé parce qu'il explique POURQUOI la
  * règle vit dans `acces-roles.ts` et non dans un sommaire.
  */
+/**
+ * LES QUATRE ÉCRANS DE « DEVIS & FACTURES » — le découpage du 7 septembre 2026.
+ *
+ * *« On coupe »*, devant `appli/couper-devis-et-factures.html`. L'écran faisait
+ * **4 350 px** — six écrans et demi de son téléphone — et portait six sujets
+ * sans rapport ; il est devenu ce sommaire-ci, et quatre écrans courts.
+ *
+ * **Les titres sont ceux de ses six blocs, mot pour mot**, et deux blocs
+ * n'ouvrent aucune ligne : « Ce que votre devis dira » se recalcule tout seul,
+ * « Ce qui ne se coupe pas » est obligatoire. Ils vivent dans le premier écran,
+ * sous les interrupteurs qu'ils commentent.
+ *
+ * **Ils vivent ici, avec les rubriques, et non dans l'écran :** c'est la même
+ * règle qu'au-dessus — une liste dessinée dans un composant ne peut pas être
+ * lue par un contrôle, et c'est ainsi qu'on se retrouve avec un écran qui
+ * propose une adresse morte.
+ */
+export const SOUS_RUBRIQUES_DOCUMENTS: Rubrique[] = [
+  { nom: "Ce qui s'imprime sur le devis", icone: "liste_cochee", href: "/reglages/documents/conditions" },
+  { nom: "Mon message au client", icone: "bulle", href: "/reglages/documents/message" },
+  { nom: "Le numéro de mes documents", icone: "etiquette", href: "/reglages/documents/numero" },
+  { nom: "L'allure de mes devis", icone: "contraste", href: "/reglages/documents/allure" },
+];
+
 export function adressesAutorisees(role: RoleReglages | null): string[] {
   return rubriquesReglages(role)
     .flatMap((e) => e.rubriques)

@@ -65,7 +65,8 @@ async function main() {
    * autres. On les parcourt donc tous les trois.
    */
   for (const [nom, url, attendre] of [
-    ["Devis & factures", "/reglages/documents", '[data-atlas="typo-playfair"]'],
+    ["Ce qui s'imprime", "/reglages/documents/conditions", "text=Durée de validité"],
+    ["Mon message au client", "/reglages/documents/message", '[data-atlas="message-client"]'],
     ["Mon entreprise", "/reglages/identite", "text=Votre régime de TVA"],
     ["Mon compte", "/reglages/compte", "text=Mon compte"],
   ] as const) {
@@ -80,8 +81,10 @@ async function main() {
     });
   }
 
-  await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
-  await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });
+  // **L'écran des messages, depuis le découpage du 7 septembre 2026.** Il y
+  // en a trois ; on touche le premier, et la barre doit suffire pour tous.
+  await page.goto(`${BASE}/reglages/documents/message`, { waitUntil: "networkidle" });
+  await page.waitForSelector('[data-atlas="message-client"]', { timeout: 30_000 });
   await page.waitForTimeout(600);
 
   /**
