@@ -8,7 +8,27 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — REVENIR AU PLANNING QUAND ON EN VIENT (7 septembre 2026)
+## Dernier lot — DEUX MOTS DU PLANNING (7 septembre 2026)
+
+**Planche :** `appli/deux-mots-du-planning.html` — retenu **1 = B, 2 = A**.
+**Décisions :** `ARCHITECTURE.md` §269.
+
+**LE PIÈGE À RETENIR, et il vaut pour tout geste neuf.** « Quelqu'un n'est pas
+là » était un bouton sans cerne ni fond : invisible pour lui, cliquable pour un
+script. `test-pas-la-ce-jour-e2e.ts` était donc VERTE sur une fonction que
+personne ne pouvait trouver.
+
+Un contrôle qui vise un `data-atlas` prouve qu'un geste EXISTE, jamais qu'il se
+VOIT. La suite mesure désormais l'allure (cerne, ombre, ou fond propre) et
+refuse de conclure sur une boîte de zéro pixel.
+
+**Et le libellé d'une liste s'écrit une fois** (`EN_ATTENTE_DU_CLIENT`) : le
+titre et la poignée qui l'annonce avaient dérivé, et c'est le raccourci de la
+poignée qu'il n'a pas compris.
+
+---
+
+## Lot précédent — REVENIR AU PLANNING QUAND ON EN VIENT (7 septembre 2026)
 
 **Document du lot :** `docs/lot-retour-au-planning.md`.
 **Décisions :** `ARCHITECTURE.md` §268.

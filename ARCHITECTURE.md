@@ -23949,3 +23949,71 @@ sur la feuille du même chantier. Une suite qui aurait appelé la règle avec un
 adresse écrite à la main serait restée verte : ce qui manquait, c'était le
 paramètre que la PORTE pose et que l'ÉCRAN relit — deux moitiés qu'aucun
 contrôle ne faisait se rencontrer (`CLAUDE.md` §5 quater).
+
+## §269. Un mot qui abrège, un geste qui ne se voit pas
+
+**Ses deux remarques du 7 septembre 2026, captures à l'appui**, sur le planning
+et à quelques minutes d'intervalle :
+
+> *« Que veut dire "1 chez le client" ? On comprend pas bien ! »*
+>
+> *« Deuxième photo, y'a marqué "quelqu'un pas là" mais comment savoir qu'il
+> faut cliquer dessus ? Pareil, on comprend pas bien ! »*
+
+**Ce sont deux défauts de nature différente, et les confondre aurait produit un
+mauvais correctif.** Le premier est un MOT. Le second est un GESTE INVISIBLE —
+et c'est le plus grave des deux, parce qu'il rendait inatteignable une
+fonctionnalité livrée la veille (§267).
+
+**Sa décision, sur planche** (`appli/deux-mots-du-planning.html`, trois
+variantes par bloc) : **1 = B, 2 = A**.
+
+### Bloc 1 — la poignée écrit le titre de la liste qu'elle ouvre
+
+« 1 chez le client » ne disait ni ce qui est chez lui, ni ce qu'on attend. Or la
+liste, à l'intérieur du tiroir, s'appelle **« En attente du client »** depuis le
+26 août : le mot juste existait déjà, un écran plus bas.
+
+**Le nom est désormais écrit une seule fois** (`EN_ATTENTE_DU_CLIENT`), et sert
+au titre comme à la poignée. Écrits séparément, ils avaient dérivé — c'est
+exactement le mécanisme que `CLAUDE.md` §3 interdit, appliqué à un libellé
+plutôt qu'à une règle métier.
+
+**Le contrôle ne fixe AUCUN des deux textes**, et c'est délibéré (§5 bis) : il
+vérifie que la poignée CONTIENT le titre. S'il fait renommer la liste demain, le
+contrôle défend encore quelque chose ; s'il avait figé « en attente du client »,
+il rougirait sur un renommage qu'il aurait lui-même demandé.
+
+### Bloc 2 — le geste prend la forme d'un bouton
+
+« Quelqu'un n'est pas là » était un `<button>` sans cerne, sans fond, sans
+couleur propre, au milieu d'une feuille où **tous** les autres gestes sont des
+pastilles cerclées : les noms d'équipe, « Terminé », « Déplacer », « Retirer ».
+Il avait donc l'allure d'une phrase d'information.
+
+Il devient une pastille, sous un surtitre « Ce jour-là ». **Pas de flèche au
+bout** — sa règle du 25 août : un bouton n'a pas besoin d'une flèche pour dire
+qu'on l'appuie, il a besoin d'avoir la forme d'un bouton.
+
+**La ligne d'une absence DÉJÀ posée ne change pas** : elle porte « Annuler » à
+droite, un mot qui nomme son geste. Elle n'a jamais eu ce défaut.
+
+**Une pièce, pas deux copies.** Le dessin de cette pastille existait déjà, écrit
+en dur pour les noms d'équipe. `PastilleDuJour` le porte maintenant une seule
+fois.
+
+### POURQUOI LA SUITE ÉTAIT VERTE DEVANT UN BOUTON INVISIBLE
+
+`test-pas-la-ce-jour-e2e.ts` visait `[data-atlas="fermer-le-jour"]`, cliquait, et
+vérifiait que le serveur avait écrit l'absence. **Tout était juste.** Un bouton
+qu'aucun humain ne reconnaît se clique très bien depuis un script : la suite ne
+mesurait pas ce qui manquait.
+
+Elle mesure désormais **l'allure** : le geste a-t-il un cerne, une ombre, ou un
+fond distinct de son environnement ? Aucun des trois, et c'est une phrase. Elle
+refuse de conclure sur une boîte de zéro pixel — le défaut du 15 août, où
+`0 − 0 = 0` rendait un vert sur un écran cassé.
+
+**La leçon, et elle dépasse ce lot :** un contrôle qui vise un `data-atlas`
+prouve qu'un geste EXISTE, jamais qu'il se VOIT. Pour tout geste neuf, se
+demander : *si ce bouton n'avait l'air de rien, ma suite le dirait-elle ?*

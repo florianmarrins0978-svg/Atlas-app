@@ -19,6 +19,21 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : deux mots du planning qu'il ne comprenait pas (7 septembre 2026)
+
+Ses deux remarques, à quelques minutes : « que veut dire 1 chez le client ? » et
+« comment savoir qu'il faut cliquer sur quelqu'un pas là ? ».
+
+Choix sur planche (`appli/deux-mots-du-planning.html`) : **1 = B, 2 = A**. La
+poignée écrit le titre exact de la liste qu'elle ouvre ; le geste d'absence
+devient une pastille, comme tous les autres gestes de cette feuille.
+
+**Le second défaut rendait invisible une fonction livrée la veille** (§267), et
+la suite qui l'éprouvait était verte : elle visait le `data-atlas`, pas
+l'allure. Elle mesure désormais le cerne. Décisions : `ARCHITECTURE.md` §269.
+
+---
+
 ## FAIT : revenir au planning quand on en vient (7 septembre 2026)
 
 Son signalement : depuis la feuille du planning, ouvrir le devis parti, la
