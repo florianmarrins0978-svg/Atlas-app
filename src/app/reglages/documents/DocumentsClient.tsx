@@ -547,7 +547,7 @@ export default function DocumentsClient({
                 {a.titre}
               </div>
               <p
-                className="whitespace-pre-wrap px-[11px] py-[11px] text-[12px] leading-[1.5]"
+                className="whitespace-pre-wrap break-words px-[11px] py-[11px] text-[12px] leading-[1.5]"
                 style={{ backgroundColor: colors.card, color: colors.inkSoft }}
               >
                 {apercuColore(message.trim() || MESSAGE_PAR_DEFAUT, {

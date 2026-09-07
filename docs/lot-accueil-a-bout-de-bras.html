@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — L'accueil — ce que j'ai trouvé, et ce que je propose</title>
+<title>Atlas — L'accueil — ce que j'ai trouvé, ce que j'ai proposé, ce qui est codé</title>
 <style>
   :root{
     --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
@@ -57,8 +57,9 @@
 </head>
 <body>
 <main>
-<h1 id="laccueil--ce-que-jai-trouvé-et-ce-que-je-propose">L'accueil — ce que j'ai trouvé, et ce que je propose</h1>
-<p><strong>Le 6 septembre 2026. Rien n'est codé : aucun fichier de <code>src/</code> n'a été touché.</strong></p>
+<h1 id="laccueil--ce-que-jai-trouvé-ce-que-jai-proposé-ce-qui-est-codé">L'accueil — ce que j'ai trouvé, ce que j'ai proposé, ce qui est codé</h1>
+<blockquote><strong>CE DOCUMENT A ÉTÉ ÉCRIT LE 6 SEPTEMBRE, AVANT TOUT CODE.</strong> Il commençait par « rien n'est codé ». Ce n'est plus vrai : le 7 septembre, vous avez retenu « À bout de bras » avec l'anneau resserré, et c'est en ligne. <strong>Ce qui a été codé, et les chiffres de la batterie, sont à la fin — section « Ce qui est codé ».</strong> Le reste du document raconte comment on y est arrivé, et garde ses phrases d'origine : les corriger après coup effacerait ce qui a été appris.</blockquote>
+<hr>
 <p><strong>Trois planches, et elles ne disent pas la même chose :</strong></p>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
@@ -707,6 +708,156 @@
 <td>à faire écran par écran, jamais en balayage</td>
 </tr>
 </tbody></table></div>
+<hr>
+<h1 id="ce-qui-est-codé--7-septembre-2026">CE QUI EST CODÉ — 7 septembre 2026</h1>
+<p><strong>Votre décision :</strong> <em>« je veux l'écran à bout de bras avec l'anneau resserré, tu peux coder ça »</em>, puis <em>« le 2, l'anneau resserré »</em>.</p>
+<h2 id="ce-qui-a-changé-dans-lapplication">Ce qui a changé dans l'application</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Avant</th>
+<th>Après</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>l'anneau</strong> de « Créer un devis »</td>
+<td>42 px, cerne gris, une onde</td>
+<td><strong>32 px, cerne DORÉ, trois ondes</strong> décalées, à 1,9 fois le rond</td>
+</tr>
+<tr>
+<td>sa <strong>cible</strong></td>
+<td>42 px</td>
+<td><strong>44</strong> — six pixels invisibles autour</td>
+</tr>
+<tr>
+<td>l'<strong>état</strong> d'un chantier</td>
+<td>9,5 px</td>
+<td><strong>12 px</strong>, interlettrage 0,28 → 0,14 em</td>
+</tr>
+<tr>
+<td>le <strong>lieu</strong></td>
+<td>11,5 px, gris à 3,32</td>
+<td><strong>14 px</strong>, encre douce à 8,04</td>
+</tr>
+<tr>
+<td>la <strong>date d'envoi</strong></td>
+<td>11,5 px, « Envoyé le lundi 10 août. »</td>
+<td><strong>13 px</strong>, « Lundi 10 août »</td>
+</tr>
+<tr>
+<td>le <strong>mois</strong> sur le fil</td>
+<td>9,5 px, gris</td>
+<td><strong>11 px</strong>, encre douce</td>
+</tr>
+<tr>
+<td>« <strong>ATLAS</strong> » en haut</td>
+<td>39 px de haut</td>
+<td><strong>retiré</strong></td>
+</tr>
+<tr>
+<td>« <strong>Vos clients</strong> »</td>
+<td>9,5 px, cible de 14 px, flèche CSS</td>
+<td><strong>11 px, cible de 44</strong>, chevron « › » à 19 px déclaré</td>
+</tr>
+<tr>
+<td>« <strong>En cours</strong> »</td>
+<td>au-dessus des bandeaux</td>
+<td><strong>collé à la liste</strong>, 27 px au-dessus du premier jour</td>
+</tr>
+<tr>
+<td>« <strong>Adresse non renseignée</strong> »</td>
+<td>11,5 px, cible 34, trait pointillé</td>
+<td><strong>14 px, cible 44, trait plein</strong></td>
+</tr>
+<tr>
+<td><strong>bandeaux</strong> visibles</td>
+<td>2</td>
+<td><strong>1</strong>, et « <strong>Replier</strong> » referme</td>
+</tr>
+<tr>
+<td>leurs <strong>gestes</strong></td>
+<td>21 px de haut</td>
+<td><strong>44</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>L'or ne change pas</strong>, et c'est votre décision du 6 septembre : <em>« mets-le en doré, celui de l'appli »</em>. Il tient <strong>2,77</strong> de contraste sur le crème là où un mot en demande 4,5 ; le chiffre vous a été donné, c'est votre écran. <code>orTexte</code> (4,59) existe dans le dépôt le jour où vous changerez d'avis.</p>
+<h2 id="trois-défauts-trouvés-en-capture-par-aucun-test">Trois défauts trouvés en CAPTURE, par aucun test</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li>À 12 px et 0,28 em, « DEVIS PRÊT À ENVOYER · 3 PHOTOS » <strong>passait à la ligne</strong> et laissait « PHOTOS » seul en dessous — un état replié se lit comme deux états. L'interlettrage descend à 0,14 em, celui de vos onglets du bas.</li>
+<li>Le chevron à 11 px <strong>faisait une virgule</strong> : c'est un signe maigre, et une capitale espacée l'écrase. 19 px, graisse 700, remonté d'un pixel.</li>
+<li>« En cours » était <strong>au-dessus dans le code et à un demi-écran pour l'œil</strong> : un bandeau de trois cents pixels s'intercalait. Vous me l'avez dit deux fois ; la première, ma mesure ne regardait que l'ordre des éléments, pas l'écran.</li>
+</ol>
+<h2 id="ce-qui-a-été-fait-autrement-que-la-maquette">Ce qui a été fait autrement que la maquette</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La phrase sous le titre des bandeaux n'est PAS retirée.</strong> Sur les trois exemples de la planche elle paraphrasait le titre — mais dans le produit, <strong>cinq types de carte sur huit y portent leur seule date ou leur seul délai</strong> : « Parti depuis 8 jours », « Échéance dépassée depuis 12 jours », « Le client a accepté, et retenu le lundi 10 août ». La retirer aurait fait moins d'information, pas moins de mots.</p>
+<h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>npm run verifier:avant-livraison</code>, jouée en entier sur votre poste.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+<th>Ce matin sur <code>main</code>, SANS ce lot</th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, mémoire</td>
+<td><strong>verts</strong></td>
+<td>verts</td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td><strong>306 / 314</strong></td>
+<td>306 / 314</td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>116 / 131</strong></td>
+<td>116 / 130</td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>n'a pas mesuré</strong> — panne d'outillage Windows</td>
+<td>n'a pas mesuré</td>
+</tr>
+</tbody></table></div>
+<p><strong>Le même nombre passe qu'avant ce lot.</strong> Une suite de plus existe (131 au lieu de 130) : une autre session en a ajouté une entre-temps.</p>
+<p><strong>Et je l'ai prouvé plutôt que de l'affirmer :</strong></p>
+<ol>
+<li><strong>Les 8 rouges en base</strong> sont les suites d'infrastructure du banc — le veilleur, le port, la relance, les rôles, le verrou, le seed. Aucune ne lit un fichier touché ici, compté fichier par fichier.</li>
+<li><strong>La seule suite navigateur qui pouvait m'accuser</strong> — celle des bandeaux de l'accueil — <strong>tombe exactement pareil quand on retire ce lot de l'arbre</strong>. Fait, mesuré, puis remis : même attente, sur « J'accepte ce devis », page du client. C'est un rouge antérieur.</li>
+<li><strong>La liste des rouges navigateur change d'un passage à l'autre sur le MÊME code</strong> : quatre redeviennent vertes, six autres apparaissent. C'est la signature des suites qui se gênent entre elles, déjà consignée dans <code>TODO.md</code> — pas celle d'un défaut.</li>
+</ol>
+<p><strong>Ce qui n'a pas été mesuré, et il faut le savoir :</strong> la connexion derrière un proxy ne s'est jamais jouée sur votre poste Windows, ni ce matin ni ce soir.</p>
+<h2 id="une-chose-qui-sest-passée-toute-seule">Une chose qui s'est passée toute seule</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce lot est parti sur <code>main</code> avant que je l'aie mesuré.</strong> Une de vos sessions voisines a poussé depuis le même dossier, et son <code>git push</code> a emporté mes commits avec les siens — c'est mécanique, vous partagez l'arbre. Le message de commit disait encore « NON ÉPROUVÉ, à ne pas pousser ».</p>
+<p>Ce n'est pas grave — la batterie ci-dessus porte exactement ce code, et elle donne les chiffres du matin. Mais <strong>c'est une chose à savoir pour la suite</strong> : tant que trois sessions partagent un dossier, un commit local n'est pas à l'abri d'être poussé par une autre.</p>
+<hr>
+<h1 id="un-second-défaut-trouvé-par-vous--7-septembre-2026">UN SECOND DÉFAUT, TROUVÉ PAR VOUS — 7 septembre 2026</h1>
+<p><strong>Vos mots :</strong> <em>« si le client écrit un message trop long avant de retourner le devis, ça fait bugger le message de retour, le texte sort du cadre. Je pense qu'il faut brider le nombre de lettres. »</em></p>
+<p><strong>Vous avez vu juste sur le défaut. La cause n'est pas celle-là.</strong></p>
+<p>Le champ du client <strong>est déjà bridé à 500 caractères</strong> (<code>src/app/devis/[jeton]/formulaire.tsx</code>). Le brider davantage n'aurait rien réglé : le débordement n'a rien à voir avec la longueur. Il arrive dès qu'il y a <strong>un mot long sans espace</strong> — quelqu'un qui écrit vite sans ponctuation, une adresse internet collée, un numéro à rallonge.</p>
+<p>La cause : le message s'affichait en <code>whitespace-pre-wrap</code> <strong>sans autorisation de couper un mot</strong>. Le navigateur refuse alors de casser la ligne.</p>
+<p><strong>Mesuré à 390 px, sur la carte de l'accueil :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Largeur du texte</th>
+<th>Dehors</th>
+</tr></thead><tbody>
+<tr>
+<td>avant</td>
+<td>2 440 px dans une carte de 342</td>
+<td><strong>2 140 px</strong></td>
+</tr>
+<tr>
+<td>après</td>
+<td>300 px</td>
+<td><strong>0</strong></td>
+</tr>
+</tbody></table></div>
+<p>La page entière passait à <strong>2 486 px de large</strong> au lieu de 390 : tout l'écran défilait en travers. C'est ce que vous avez vu.</p>
+<p><strong>Le défaut vivait à CINQ endroits, pas un</strong> — la carte de l'accueil, l'écran d'envoi du devis, la note du planning, l'aperçu de votre message dans les Réglages, la dictée transcrite. Les cinq sont corrigés.</p>
+<p><strong>Et un garde-fou est posé :</strong> <code>scripts/test-mots-longs-ne-debordent-pas.ts</code> refuse désormais tout bloc qui affiche du texte tapé par quelqu'un sans pouvoir couper un mot. Corriger cinq endroits sans garde-fou, c'est attendre le sixième — c'est ce que le dépôt a déjà payé avec les barres de défilement. Le contrôle sait rougir : je lui ai remis la faute d'hier, il l'a désignée à la ligne près.</p>
+<p><strong>Ce lot-ci n'a PAS eu de batterie</strong> : une autre de vos sessions tient le port. Types et lint sont verts, le garde-fou passe, et le correctif a été mesuré au navigateur avant d'être écrit.</p>
 </main>
 </body>
 </html>

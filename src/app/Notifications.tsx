@@ -493,7 +493,7 @@ export default function Notifications({
                 gauche disent que ces mots ne sont pas ceux de l'application. */}
             {n.messageClient && (
               <blockquote
-                className="mt-3 whitespace-pre-wrap pl-3 text-[14px] leading-relaxed"
+                className="mt-3 whitespace-pre-wrap break-words pl-3 text-[14px] leading-relaxed"
                 style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
               >
                 « {n.messageClient} »

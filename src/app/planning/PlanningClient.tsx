@@ -2256,7 +2256,7 @@ function NoteDuChantier({
         </p>
         <p
           data-atlas="note-lecture"
-          className="m-0 whitespace-pre-wrap text-[14.5px] leading-[1.45]"
+          className="m-0 whitespace-pre-wrap break-words text-[14.5px] leading-[1.45]"
           style={{ color: colors.ink }}
         >
           {ecrite}

@@ -419,7 +419,7 @@ function EcranDevisParti({
           lui demander de deviner ce qu'il doit changer. */}
       {messageClient && (
         <blockquote
-          className="mt-4 whitespace-pre-wrap pl-3 text-[14px] leading-relaxed"
+          className="mt-4 whitespace-pre-wrap break-words pl-3 text-[14px] leading-relaxed"
           style={{ borderLeft: `2px solid ${colors.rust}`, color: colors.ink }}
         >
           « {messageClient} »
