@@ -71,8 +71,8 @@ async function main() {
   await page.click('button[type="submit"]');
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
-  await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
-  await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });
+  await page.goto(`${BASE}/reglages/documents/allure`, { waitUntil: "networkidle" });
+  await page.waitForSelector('[data-atlas="typo-merriweather"]', { timeout: 30_000 });
 
   await cas("le réglage est dans « Devis & factures » — sa réponse B", async () => {
     // **La A aurait été une rubrique à part.** On le prouve par les DEUX bouts :
@@ -89,8 +89,8 @@ async function main() {
       0,
       "le choix de typographie est apparu dans « Apparence » : ce n'est pas là qu'il l'a demandé"
     );
-    await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
-    await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });
+    await page.goto(`${BASE}/reglages/documents/allure`, { waitUntil: "networkidle" });
+    await page.waitForSelector('[data-atlas="typo-merriweather"]', { timeout: 30_000 });
   });
 
   await cas("une dizaine de typographies lui sont proposées", async () => {
@@ -136,9 +136,9 @@ async function main() {
     // L'allure s'enregistre seule : le bouton du bas engage les conditions, qui
     // lient l'entreprise. Lui faire valider des conditions pour changer une
     // police serait une chausse-trappe.
-    await page.click('[data-atlas="typo-playfair"]');
-    const lu = await attendreEnBase(allureEnBase, (v) => v?.doc_typographie === "playfair");
-    assert.equal(lu?.doc_typographie, "playfair", "la typographie n'est pas arrivée en base");
+    await page.click('[data-atlas="typo-merriweather"]');
+    const lu = await attendreEnBase(allureEnBase, (v) => v?.doc_typographie === "merriweather");
+    assert.equal(lu?.doc_typographie, "merriweather", "la typographie n'est pas arrivée en base");
   });
 
   await cas("un fond choisi s'enregistre, et l'aperçu se repeint", async () => {
@@ -187,9 +187,9 @@ async function main() {
     // CSS. On descend donc jusqu'à la dernière police, et l'on regarde où est
     // la feuille — comme lui.
     await page.reload({ waitUntil: "networkidle" });
-    await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });
+    await page.waitForSelector('[data-atlas="typo-merriweather"]', { timeout: 30_000 });
 
-    const derniere = page.locator('[data-atlas="typo-playfair"]');
+    const derniere = page.locator('[data-atlas="typo-merriweather"]');
     await derniere.scrollIntoViewIfNeeded();
     await page.waitForTimeout(400);
 
@@ -224,7 +224,7 @@ async function main() {
     const avant = await page.locator('[data-atlas="allure-feuille"]').evaluate(
       (n) => getComputedStyle(n).fontFamily
     );
-    const cible = /playfair/i.test(avant) ? "typo-inter" : "typo-playfair";
+    const cible = /merriweather/i.test(avant) ? "typo-inter" : "typo-merriweather";
     const autre = page.locator(`[data-atlas="${cible}"]`);
     await autre.scrollIntoViewIfNeeded();
     await page.waitForTimeout(300);
@@ -243,18 +243,18 @@ async function main() {
     // survit au rechargement, et il attend Playfair : laisser Inter derrière
     // soi le ferait rougir sur du code juste. Un cas qui réécrit le décor de
     // ses voisins déplace le défaut au lieu de l'attraper.
-    if (cible !== "typo-playfair") {
-      const playfair = page.locator('[data-atlas="typo-playfair"]');
-      await playfair.scrollIntoViewIfNeeded();
-      await playfair.click();
+    if (cible !== "typo-merriweather") {
+      const merriweather = page.locator('[data-atlas="typo-merriweather"]');
+      await merriweather.scrollIntoViewIfNeeded();
+      await merriweather.click();
       await page.waitForTimeout(900);
     }
   });
 
   await cas("le choix survit au rechargement — il n'est pas seulement à l'écran", async () => {
     await page.reload({ waitUntil: "networkidle" });
-    await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });
-    const choisie = await page.getAttribute('[data-atlas="typo-playfair"]', "aria-pressed");
+    await page.waitForSelector('[data-atlas="typo-merriweather"]', { timeout: 30_000 });
+    const choisie = await page.getAttribute('[data-atlas="typo-merriweather"]', "aria-pressed");
     assert.equal(choisie, "true", "la typographie choisie n'est plus cochée après rechargement");
     const valeur = await page.textContent('[data-atlas="couleur-fond-valeur"]');
     assert.equal(valeur?.trim(), "#1C2B1C", `l'écran affiche ${valeur}`);
@@ -288,7 +288,7 @@ async function main() {
   // puis on ouvre un devis et on regarde. Vérifier la seule présence de la
   // balise ne suffirait pas — une image cassée est aussi une balise.
   await cas("le logo posé dans les réglages apparaît sur le devis", async () => {
-    await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/reglages/documents/allure`, { waitUntil: "networkidle" });
     // Le champ de fichier est CACHÉ derrière son bouton (c'est la forme de
     // l'écran) : on attend le bouton, et l'on pose le fichier dans le champ.
     await page.waitForSelector('[data-atlas="logo-choisir"]', { timeout: 30_000 });

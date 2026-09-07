@@ -23,7 +23,7 @@ qu'on lit sans savoir ce qu'il compte.
 **Et le contrôle qui manquait.** La suite visait le `data-atlas` du bouton, le
 cliquait, vérifiait le serveur — tout était juste, et elle est restée verte
 devant un bouton invisible. Elle mesure maintenant son ALLURE. Voir
-`ARCHITECTURE.md` §269.
+`ARCHITECTURE.md` §274.
 
 ### Revenir au planning quand on en vient
 
@@ -43,7 +43,64 @@ reconnue, chaque écran retrouve exactement la destination qu'il avait.
 
 **Reste ouvert :** le devis PAS ENCORE parti garde sa flèche vers la fiche
 client (sa règle du 31 août) ; depuis le planning, ce chemin-là fait encore deux
-pas pour sortir. Voir `ARCHITECTURE.md` §268.
+pas pour sortir. Voir `ARCHITECTURE.md` §273.
+
+### « Monsieur » ne va plus dans la case du nom, il allume la pastille
+
+Il dictait « monsieur Ludovic » et la case du nom portait « Monsieur Ludovic ».
+Le mot part désormais **là où il est une donnée** : la pastille « Mr / Mme »
+au-dessus du nom se sélectionne toute seule, et le nom reste nu.
+
+**Ce que ça évite** (`ARCHITECTURE.md` §268) : « Monsieur Ludovic » repartait
+mot pour mot sur le devis, la facture et le SMS, alors qu'il écrit « Mr. » — et
+deux dictées, « monsieur Ludovic » et « Ludovic », faisaient deux fiches pour un
+seul client.
+
+**« Docteur » et « Maître » partent aussi — sa décision.** J'avais livré
+l'inverse, en écrivant ce que le retrait coûterait : aucune pastille ne les
+porte, donc le titre s'efface et le nom nu reçoit « Mr. » — « Mr. Rivière » pour
+une femme médecin. Il a tranché : *« seulement les noms de famille ! »*. Le prix
+tient, et il est borné — la pastille est à un appui au-dessus.
+
+**Un défaut attrapé par le contrôle, et par rien d'autre :** « Maître » était
+découpé à « Ma ». En JavaScript, `\w` reste l'alphabet anglais même sous le
+drapeau Unicode — le seul titre accentué de la liste passait au travers pendant
+que les trois autres marchaient.
+
+**La règle de remplissage a quitté l'écran.** Elle vivait en quatre `if` mêlés à
+des `setState`, donc éprouvable au navigateur seulement — c'est-à-dire nulle
+part, la dictée demandant une clé que cet environnement n'a pas. Elle est
+maintenant une fonction pure (`champsARemplir`), et deux suites la tiennent.
+
+**NON ÉPROUVÉ ICI :** le parcours micro compris. Sans clé de transcription, ce
+poste ne peut jouer que la chaîne sous le micro. À essayer sur son espace.
+
+### « Devis & factures » coupé en quatre, et trois messages au lieu d'un
+
+L'écran le plus long de l'application — **4 350 px, six écrans et demi de son
+téléphone** — portait six sujets sans rapport. Il a tranché devant la planche :
+**« on coupe »**. Quatre lignes à l'entrée, quatre écrans courts, et **rien qui
+sorte de « Devis & factures »** : le sommaire des réglages garde ses douze
+lignes.
+
+**Trois messages au client**, un par document — dont le **compte rendu de
+passage**, qu'il n'avait pas compté : il partait avec le même modèle, et serait
+resté sur le texte d'Atlas pendant que les deux autres portaient sa voix. La
+phrase du milieu lui appartient désormais ; Atlas n'y pose plus que des mots qui
+se remplissent seuls, dont **deux qui ne se retirent pas** — le lien et le mot
+du document.
+
+**Ce que la migration 0075 évite, et qui aurait été muet :** un message déjà
+enregistré porte `[document]` au sens ancien — la phrase entière. Rendu avec le
+nouveau, il serait parti chez le client réduit au mot « devis ». Sa phrase y est
+réécrite en clair, et son texte devient celui du devis.
+
+**Six typographies au lieu de dix**, comme il l'a laissé trancher, et une police
+retirée est traduite vers la plus proche plutôt que perdue.
+
+**Un défaut trouvé en vérifiant sa remarque sur le doré :** l'écran promettait
+l'accent « sur le total à payer ». Le total est à l'encre, et l'a toujours été
+(`ARCHITECTURE.md` §272).
 
 ---
 ## 2026-09-06

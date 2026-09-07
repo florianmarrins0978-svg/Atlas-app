@@ -160,7 +160,7 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "un interrupteur",
   },
   {
-    fichier: "src/app/reglages/documents/DocumentsClient.tsx",
+    fichier: "src/app/reglages/documents/pieces.tsx",
     motif: /allume \? colors\.rust/,
     pourquoi: "un interrupteur",
   },

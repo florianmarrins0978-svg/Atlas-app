@@ -30,7 +30,7 @@ devient une pastille, comme tous les autres gestes de cette feuille.
 
 **Le second défaut rendait invisible une fonction livrée la veille** (§267), et
 la suite qui l'éprouvait était verte : elle visait le `data-atlas`, pas
-l'allure. Elle mesure désormais le cerne. Décisions : `ARCHITECTURE.md` §269.
+l'allure. Elle mesure désormais le cerne. Décisions : `ARCHITECTURE.md` §274.
 
 ---
 
@@ -48,7 +48,40 @@ le 31 août, pas un second mécanisme. **Sans provenance reconnue, rien ne
 change :** chaque écran retrouve la destination qu'il avait.
 
 **Reste ouvert :** le devis PAS ENCORE parti garde sa flèche vers la fiche
-client (sa règle du 31 août). Décisions : `ARCHITECTURE.md` §268.
+client (sa règle du 31 août). Décisions : `ARCHITECTURE.md` §273.
+
+---
+
+### « Devis & factures » coupé en quatre, et trois messages (7 septembre 2026)
+
+**Fait.** L'écran le plus long de l'application — 4 350 px — est devenu un
+sommaire de quatre lignes et quatre écrans courts, à sa demande : *« on
+coupe »*. **Rien n'en sort** : le sommaire des réglages garde ses douze lignes.
+
+**Trois messages au client**, un par document (devis, facture, compte rendu de
+passage), migration **0075**. `[document]` n'y pose plus que le mot ; la phrase
+lui appartient. Deux jetons ne se retirent pas : le lien et le mot du document.
+
+**Six typographies au lieu de dix**, et une clef retirée est traduite vers la
+plus proche (`TYPOGRAPHIE_REMPLACEE`) plutôt que perdue.
+
+**Reste à jouer sur son poste :** la batterie complète, migration appliquée —
+les suites base et navigateur de ce lot n'ont pas encore tourné ici.
+Détail : `ARCHITECTURE.md` §272, `docs/lot-couper-devis-et-factures.md`.
+
+## FAIT : « Monsieur » va sur la pastille, plus dans le nom (7 septembre 2026)
+
+| | |
+|---|---|
+| **Son constat** | il dicte « monsieur Ludovic », la case du nom porte « Monsieur Ludovic » |
+| **Ce qui change** | le mot est retiré du nom et **sélectionne la pastille** « Mr » ou « Mme » au-dessus. Le nom reste nu |
+| **« Docteur », « Maître »** | **partent aussi — sa décision du jour même**, après que je lui ai livré l'inverse et dit le prix : aucune pastille ne les porte, donc le document écrira « Mr. Rivière ». *« Seulement les noms de famille ! »* |
+| **Ce qui n'est jamais écrasé** | une pastille qu'il a touchée, et tout champ déjà saisi. La pastille ne dépend pas du nom : « Monsieur, 06 79… » l'allume quand même |
+| **Sorti de l'écran** | la règle de remplissage est une fonction pure (`champsARemplir`) — elle n'était éprouvable nulle part tant qu'elle vivait dans des `setState` |
+| **Les contrôles** | `test-civilite` (9 cas neufs), `test-coordonnees-dictees` (8 cas neufs). Les deux rougissent quand on retire le détachement — et l'un d'eux a attrapé « Maître » découpé à « Ma » |
+| **NON ÉPROUVÉ ICI** | le parcours **micro compris** : pas de clé de transcription sur ce poste. À essayer sur son espace |
+
+`ARCHITECTURE.md` §268 · `docs/lot-civilite-dictee.md`
 
 ---
 
