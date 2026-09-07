@@ -66,6 +66,10 @@ export function rangerDuPlusRecent<T extends { jour: string | null }>(pieces: T[
 }
 
 export type DerniereePrestation = {
+  /** Le chantier lui-même — c'est de LUI qu'on repart quand il touche « Refaire »
+   *  (`reprendreLesLignesPrix`, 8 septembre 2026). Sans cet identifiant, l'écran
+   *  sait ce qu'on a fait la dernière fois mais pas où le relire. */
+  id: string;
   /** Le nom du chantier — « Élagage de trois chênes ». */
   nom: string;
   jour: string | null;
@@ -93,6 +97,7 @@ export function dernierePrestation(
   const [premier] = rangerDuPlusRecent(chantiers);
   if (!premier) return null;
   return {
+    id: premier.id,
     nom: premier.nom,
     jour: premier.jour,
     // **Les libellés vides ne comptent pas.** La table `prestations` les
