@@ -3,6 +3,11 @@
 *Lot ouvert le 8 septembre 2026. Ce document est à jour au **stade des
 maquettes** : rien n'est codé dans `src/`.*
 
+*Sa page consultable vit dans `appli/`, jamais dans `docs/` : le site publié ne
+sert que `appli/`. Posée ailleurs, elle n'a aucune adresse — payé le
+8 septembre, un lien mort donné au patron. Régénérer avec
+`node scripts/md-en-page.mjs docs/lot-repartir-d-un-client.md appli/lot-repartir-d-un-client.html`.*
+
 ---
 
 ## Ce qui a été fait, en une ligne
