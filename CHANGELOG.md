@@ -207,8 +207,6 @@ l'accent « sur le total à payer ». Le total est à l'encre, et l'a toujours �
 (`ARCHITECTURE.md` §272).
 ### Le ⌀ partout où un nombre est un diamètre
 
-
-
 *« Quand on dit souche de 60, ou 60 au pied, on parle de diamètre en
 réalité. »* Atlas le LISAIT déjà ainsi depuis le 31 août — il ne l'ÉCRIVAIT
 pas. Le signe est posé sur le libellé du devis client et sur les cases de ses
@@ -629,8 +627,6 @@ rouge (`verifier-maquette-logo.mjs`, page qui plante sous Playwright). Les
 quatorze verts complètent la chaîne ; le rouge reste dehors avec son symptôme
 écrit — un rouge dans une chaîne en `&&` barre tout ce qui suit, et le dépôt l'a
 payé dix heures le 23 août. Reste à décider où cette chaîne se joue (`TODO.md`).
-
-
 
 ### Le contrôle de l'unité de tarif cesse de mesurer une page qui glisse encore
 
@@ -2327,6 +2323,34 @@ impossible.
 
 ## 2026-08-31
 
+### La porte, comme sa capture — trois planches, rien de codé
+
+**Sa demande du 30 août**, avec la photo d'écran d'une application tierce :
+*« voilà à quoi j'aimerais que ressemble la page de connexion de l'appli. Ne
+code rien, présente-moi des maquettes en .html, pas de photo. »*
+
+`appli/porte-comme-ta-capture.html` — trois reprises du dessin relevé sur sa
+capture (fond sombre à dégradé, Google et Apple côte à côte, champs en gélule,
+gros bouton clair) : **A** son bleu, **B** la charte « Nuit » recopiée de
+`src/lib/chartes.ts`, **C** la même en clair sur le crème et le vert pin. Les
+trois basculent de Connexion à Créer un compte.
+
+**Deux écarts assumés, écrits dans la planche** : la phrase qui explique les
+champs juste au-dessus d'eux est retirée (`CLAUDE.md` §3), et aucune flèche
+n'est reprise. **Et ce qui est simulé se dit** : Google et Apple ne mènent
+nulle part, cette entrée n'existe pas dans l'application — seule leur place est
+fidèle.
+
+`src/app/login/` n'a pas bougé d'une ligne (`CLAUDE.md` §3 bis).
+
+### La planche qu'il doit essayer se parcourt d'abord ici
+
+`appli/tests/essai-porte-capture.mjs`, jouée par `pages.yml` avant publication :
+les trois écrans doivent TENIR dans le cadre d'un téléphone, dans les deux vues.
+Un « Entrer » repoussé hors de l'écran ne se voit sur aucune capture prise d'en
+haut, et se paierait à l'essai — sur le seul écran qu'on ne peut pas faire
+défiler avant d'être entré. Vue rouge contre une hauteur ramenée à 520 px (7
+rouges) et contre une bascule débranchée (16).
 
 ### Le retour du devis mène à la fiche client, toujours
 
@@ -2905,8 +2929,6 @@ n'installe qu'un Chromium sans lecteur PDF, et c'est ce qui avait fait rougir la
 première version de ce contrôle.
 
 Raisons et pièges : `ARCHITECTURE.md` §223. Compte-rendu : `docs/devis-client-verrouille.md`.
-
-
 
 ### Un prix posé sur l'écran du devis débloque enfin l'envoi
 
@@ -5781,8 +5803,6 @@ n'a pas à expliquer ce qu'il ne fait pas.
 Le contrôle des en-têtes couvre désormais la pièce partagée, et il a été vu rouge
 contre le trait remis en place.
 
-
-
 ### Trois rôles, trois sessions — et le refus est au serveur
 
 *« Je voudrais que l'utilisateur principal puisse donner accès qu'au planning à
@@ -6851,8 +6871,6 @@ il lit la source. L'éprouver au navigateur demanderait de servir Atlas sur une
 adresse locale, or la batterie pose délibérément `ATLAS_URL_PUBLIQUE` pour que
 les suites aient des liens valides — le refus ne s'y déclencherait jamais, et un
 vert n'y prouverait rien.
-
-
 
 ### Lot 2B : une image ne se range plus jamais sans être nettoyée
 
@@ -12549,8 +12567,6 @@ jusqu'à lui avant de cliquer. Un contrôle qui clique éprouve qu'une cible
 existe, jamais qu'elle est ATTEIGNABLE. Le nouveau mesure la position du
 calendrier dans la fenêtre. `ARCHITECTURE.md` §127.
 
-
-
 ### Une prestation qu'il ajoute s'écrit en NOIR, comme les autres
 
 Sa correction du 17 août, capture à l'appui : « Entretient » en doré sous
@@ -17903,8 +17919,6 @@ sur les écrans à barre de navigation. **L'écran de connexion en était dépou
 — c'est-à-dire précisément l'écran où une réponse coupée est la plus probable,
 puisque c'est le premier appel, celui qui compile tout, et le seul où il n'a
 aucun autre repère.
-
-
 
 ### Le devis parti, sur sa base — cinq façons de tenir ce qu'il a arrêté
 

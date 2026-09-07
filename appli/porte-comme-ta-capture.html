@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La porte, comme ta capture</title>
+<style>
+  /*
+    LA PORTE, COMME TA CAPTURE — la planche, avant le code.
+
+    Sa demande du 30 août 2026, avec une photo d'écran d'une application
+    nommée « Floxly » : « voilà à quoi j'aimerais que ressemble la page de
+    connexion de l'appli. Ne code rien, présente-moi des maquettes en .html,
+    pas de photo. »
+
+    `CLAUDE.md` §3 bis : une demande d'APPARENCE se dessine, se montre, et ne
+    touche à `src/` qu'une fois choisie. Rien n'est codé — `src/app/login/`
+    n'a pas bougé d'une ligne.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI A ÉTÉ RELEVÉ SUR SA CAPTURE, et qui commande les trois propositions :
+
+      · un fond SOMBRE, avec une lueur en dégradé dans un coin ;
+      · la marque et son nom, en haut, petits ;
+      · un titre large, puis rien qui l'explique ;
+      · deux gros boutons ronds « Google » et « Apple », côte à côte ;
+      · un « ou » entre deux filets ;
+      · des champs en GÉLULE, pleins, sans étiquette au-dessus ;
+      · un bouton principal CLAIR, en dégradé, sur le fond sombre ;
+      · une ligne « Vous avez un compte ? Se connecter » ;
+      · les mentions légales, soulignées, tout en bas.
+
+    ─────────────────────────────────────────────────────────────────────────
+    DEUX ÉCARTS ASSUMÉS PAR RAPPORT À SA CAPTURE, et ils se disent :
+
+    1. **La phrase sous le titre est retirée.** Sa capture porte « To create an
+       account provide details verify email and set a password » — exactement
+       ce que `CLAUDE.md` §3 interdit : un écran n'explique pas ce que font les
+       champs juste en dessous. Les trois propositions n'ont donc aucune phrase
+       sous le titre.
+    2. **Aucune flèche** au bout des libellés (`CLAUDE.md` §3,
+       `scripts/test-aucune-fleche.ts`).
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST SIMULÉ ICI, ET IL FAUT LE DIRE. Les boutons Google et Apple ne
+    mènent nulle part sur cette planche : cette entrée-là n'existe pas dans
+    l'application aujourd'hui. Ce qui est fidèle, c'est la PLACE, la taille et
+    l'ordre. « Ouvrir avec Face ID », en revanche, existe pour de bon depuis le
+    24 août (`src/app/login/LigneFaceId.tsx`), et garde ici sa place.
+
+    AUCUNE COULEUR INVENTÉE. Le bleu de la proposition A est celui de sa
+    capture. B recopie la charte « Nuit » et C la charte « Origine », au
+    caractère près (`src/lib/chartes.ts`).
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --or:#B98B47;
+    --trait:rgba(28,28,26,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 56px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:26px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc h3{margin:0 0 6px;font:400 22px/1.15 ui-serif,Georgia,serif}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  /* ── Le téléphone ────────────────────────────────────────────────────── */
+  .tel{width:318px;margin:14px auto 0;border-radius:42px;padding:10px;
+       background:#0e0e0d;box-shadow:0 18px 44px rgba(20,18,14,.30)}
+  .ecran{border-radius:33px;overflow:hidden;position:relative;height:604px;
+         display:flex;flex-direction:column;padding:0 22px 20px}
+  .heure{padding:14px 6px 0;font:600 13px/1 -apple-system,ui-sans-serif,sans-serif;opacity:.85}
+
+  .haut{padding-top:34px;display:flex;align-items:center;gap:9px}
+  .sceau{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;flex-shrink:0}
+  .nom{font:400 15px/1 ui-serif,Georgia,serif;letter-spacing:.3em}
+
+  .titre{margin:26px 0 20px;font:400 30px/1.1 ui-serif,Georgia,serif;letter-spacing:-.01em}
+
+  .duo{display:flex;gap:10px}
+  .duo button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border:0;
+              border-radius:999px;padding:14px 8px;font:500 14.5px/1 ui-sans-serif,sans-serif;
+              cursor:pointer}
+  .duo button:active{transform:scale(.985)}
+  .duo button svg{flex-shrink:0}
+
+  .ou{display:flex;align-items:center;gap:12px;margin:16px 0;font-size:13px}
+  .ou span{flex:1;height:1px}
+
+  .champ{width:100%;border:0;border-radius:999px;padding:15px 20px;margin-bottom:10px;
+         font:400 16px/1.2 ui-sans-serif,-apple-system,sans-serif}
+  .champ:focus{outline:none}
+
+  .principal{width:100%;border:0;border-radius:999px;padding:16px;margin-top:6px;
+             font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer}
+  .principal:active{transform:scale(.985)}
+
+  .visage{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;border:0;
+          border-radius:999px;padding:13px;margin-bottom:14px;
+          font:400 15px/1 ui-sans-serif,sans-serif;cursor:pointer}
+  .visage:active{transform:scale(.985)}
+
+  .bas{margin-top:auto;text-align:center}
+  /* 13,5 px et non 14,5 : « Pas de compte ? Créer un compte » passait à la
+     ligne dans la largeur d'un téléphone, et le lien se coupait en deux. */
+  .bascule{border:0;background:transparent;padding:10px 0;font:400 13.5px/1 ui-sans-serif,sans-serif;
+           cursor:pointer;white-space:nowrap}
+  .bascule b{font-weight:600}
+  .legal{margin:6px 0 0;font-size:11.5px}
+  .legal a{text-decoration:underline;color:inherit}
+
+  .refus{min-height:18px;margin:2px 0 0;font-size:12.5px;line-height:18px;text-align:center}
+
+  /* ── A · le bleu de sa capture ───────────────────────────────────────── */
+  .a .ecran{background:radial-gradient(120% 62% at 8% 4%, #2f7fe0 0%, #17418c 34%, #0a1226 72%);
+            color:#f4f7ff}
+  .a .sceau{border:1.4px solid #cfe0ff;color:#cfe0ff}
+  .a .duo button{background:#181b22;color:#f4f7ff}
+  .a .ou{color:#9fb2d6}
+  .a .ou span{background:rgba(244,247,255,.22)}
+  .a .champ{background:#181b22;color:#f4f7ff}
+  .a .champ::placeholder{color:#8b9ab5}
+  .a .champ:focus{box-shadow:inset 0 0 0 1.4px #7fd8d0}
+  .a .principal{background:linear-gradient(100deg,#a8f0e2,#cfd9ff 55%,#eef1ff);color:#0d1730}
+  .a .visage{background:rgba(244,247,255,.10);color:#dbe6ff}
+  .a .bascule{color:#c3d3f2}
+  .a .bascule b{color:#fff}
+  .a .legal{color:#8b9ab5}
+  .a .refus{color:#ffb3a6}
+
+  /* ── B · la charte « Nuit », recopiée ────────────────────────────────── */
+  .b .ecran{background:radial-gradient(120% 62% at 8% 4%, #3a2f18 0%, #1a1d19 40%, #101210 78%);
+            color:#e9e8de}
+  .b .sceau{border:1.4px solid #c6a15b;color:#c6a15b}
+  .b .duo button{background:#1a1d19;color:#e9e8de;box-shadow:inset 0 0 0 1px rgba(233,232,222,.14)}
+  .b .ou{color:#84887b}
+  .b .ou span{background:rgba(233,232,222,.16)}
+  .b .champ{background:#1a1d19;color:#e9e8de;box-shadow:inset 0 0 0 1px rgba(233,232,222,.14)}
+  .b .champ::placeholder{color:#84887b}
+  .b .champ:focus{box-shadow:inset 0 0 0 1.4px #c6a15b}
+  .b .principal{background:linear-gradient(100deg,#e9e8de,#d9cba8);color:#101210}
+  .b .visage{background:rgba(233,232,222,.08);color:#e9e8de}
+  .b .bascule{color:#a8ab9d}
+  .b .bascule b{color:#c6a15b}
+  .b .legal{color:#84887b}
+  .b .refus{color:#e0917f}
+
+  /* ── C · la charte d'aujourd'hui, en clair ───────────────────────────── */
+  .c .ecran{background:radial-gradient(120% 62% at 8% 4%, #ffffff 0%, #f7f5f0 38%, #ece9e1 100%);
+            color:#1c1c1a}
+  .c .sceau{border:1.4px solid #B98B47;color:#B98B47}
+  .c .duo button{background:#fff;color:#1c1c1a;box-shadow:inset 0 0 0 1px rgba(28,28,26,.12)}
+  .c .ou{color:#8a8578}
+  .c .ou span{background:rgba(28,28,26,.12)}
+  .c .champ{background:#fff;color:#1c1c1a;box-shadow:inset 0 0 0 1px rgba(28,28,26,.12)}
+  .c .champ::placeholder{color:#8a8578}
+  .c .champ:focus{box-shadow:inset 0 0 0 1.4px #B98B47}
+  .c .principal{background:#2f3b2f;color:#faf9f5}
+  .c .visage{background:#fff;color:#2f3b2f;box-shadow:inset 0 0 0 1px rgba(28,28,26,.12)}
+  .c .bascule{color:#4a4a44}
+  .c .bascule b{color:#2f3b2f}
+  .c .legal{color:#8a8578}
+  .c .refus{color:#9C3B2E}
+
+  .cache{display:none}
+
+  .question{max-width:430px;margin:30px auto 0;padding:16px 18px;border-radius:14px;
+            background:#1c1c1a;color:#e9e5dc;font-size:15px;line-height:1.6}
+  .question > b:first-child{display:block;margin-bottom:10px;font-size:16px;color:#fff}
+  .question .choix{margin-top:12px;padding-top:12px;border-top:1px solid rgba(233,229,220,.18)}
+  .question .choix div{display:flex;align-items:baseline;gap:10px;margin-top:8px}
+  .question .choix .mot{flex-shrink:0;width:24px;font-weight:700;color:var(--or)}
+
+  .acquis{max-width:430px;margin:26px auto 0;padding:16px 18px;border-radius:14px;
+          background:var(--papier);font-size:14.5px;line-height:1.6}
+  .acquis > b:first-child{display:block;margin-bottom:10px;font-size:15.5px}
+  .acquis ul{margin:0;padding-left:20px}
+  .acquis li{margin-top:7px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Ta demande :</b> « voilà à quoi j’aimerais que ressemble la page de connexion de l’appli. Ne code rien, présente-moi des maquettes en .html ». <b>Rien n’est codé.</b> Trois propositions, à toucher. Appuie sur la ligne du bas de chaque téléphone pour passer de <b>Connexion</b> à <b>Créer un compte</b>.
+</div>
+
+<div class="bloc">
+  <h2>Ce que j’ai relevé sur ta capture</h2>
+  <p>Fond sombre avec une lueur dans un coin, marque en haut, <b>titre seul</b>, deux gros boutons Google et Apple, un « ou », des champs en gélule, un <b>bouton clair en dégradé</b>, et les mentions légales tout en bas.</p>
+  <p><b>Deux choses de ta capture n’ont pas été reprises</b>, exprès : la phrase qui explique les champs juste en dessous d’eux, et les flèches. Ce sont deux règles que tu as posées toi-même.</p>
+</div>
+
+<!-- ══ A ══════════════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>Proposition A</h2>
+  <h3>Le bleu de ta capture</h3>
+  <p>La plus proche de la photo : même bleu, même dégradé, même bouton clair. <b>Le reste de l’application ne change pas</b> — la porte devient un écran à part.</p>
+</div>
+
+<div class="tel a" data-tel>
+  <div class="ecran">
+    <div class="heure">9:41</div>
+    <div class="haut">
+      <span class="sceau"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg></span>
+      <span class="nom">ATLAS</span>
+    </div>
+
+    <div data-vue="connexion">
+      <h1 class="titre">Connexion</h1>
+      <div class="duo">
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.9Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.8l4-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4C17.9 1.2 15.2 0 12 0A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8Z"/></svg>Google</button>
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.6 2.1-3.9 2.2-4-1.2-1.8-3.1-2-3.8-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5.6-.9.9-1.7 1.2-2.6-2.7-1-2.4-4-2.4-4.1Z"/><path d="M14.3 4.3c.7-.9 1.2-2.1 1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3.1-1.5Z"/></svg>Apple</button>
+      </div>
+      <div class="ou"><span></span>ou<span></span></div>
+      <button type="button" class="visage">Ouvrir avec Face ID</button>
+      <input class="champ" type="email" placeholder="Adresse" autocomplete="username">
+      <input class="champ" type="password" placeholder="Mot de passe" autocomplete="current-password">
+      <p class="refus"></p>
+      <button type="button" class="principal">Entrer</button>
+    </div>
+
+    <div data-vue="creation" class="cache">
+      <h1 class="titre">Créer un compte</h1>
+      <div class="duo">
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.9Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.8l4-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4C17.9 1.2 15.2 0 12 0A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8Z"/></svg>Google</button>
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.6 2.1-3.9 2.2-4-1.2-1.8-3.1-2-3.8-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5.6-.9.9-1.7 1.2-2.6-2.7-1-2.4-4-2.4-4.1Z"/><path d="M14.3 4.3c.7-.9 1.2-2.1 1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3.1-1.5Z"/></svg>Apple</button>
+      </div>
+      <div class="ou"><span></span>ou<span></span></div>
+      <input class="champ" type="email" placeholder="Adresse">
+      <input class="champ" type="password" placeholder="Mot de passe">
+      <p class="refus"></p>
+      <button type="button" class="principal">Continuer</button>
+    </div>
+
+    <div class="bas">
+      <button type="button" class="bascule" data-bascule>Pas de compte ? <b>Créer un compte</b></button>
+      <p class="legal"><a href="#">Conditions</a> · <a href="#">Confidentialité</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ B ══════════════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>Proposition B</h2>
+  <h3>La même, à tes couleurs</h3>
+  <p>Même dessin qu’en A, mais en noir chaud et laiton : <b>c’est ta charte « Nuit »</b>, celle qui existe déjà dans les réglages. Rien d’inventé, les couleurs sont recopiées.</p>
+</div>
+
+<div class="tel b" data-tel>
+  <div class="ecran">
+    <div class="heure">9:41</div>
+    <div class="haut">
+      <span class="sceau"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg></span>
+      <span class="nom">ATLAS</span>
+    </div>
+
+    <div data-vue="connexion">
+      <h1 class="titre">Connexion</h1>
+      <div class="duo">
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.9Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.8l4-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4C17.9 1.2 15.2 0 12 0A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8Z"/></svg>Google</button>
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.6 2.1-3.9 2.2-4-1.2-1.8-3.1-2-3.8-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5.6-.9.9-1.7 1.2-2.6-2.7-1-2.4-4-2.4-4.1Z"/><path d="M14.3 4.3c.7-.9 1.2-2.1 1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3.1-1.5Z"/></svg>Apple</button>
+      </div>
+      <div class="ou"><span></span>ou<span></span></div>
+      <button type="button" class="visage">Ouvrir avec Face ID</button>
+      <input class="champ" type="email" placeholder="Adresse" autocomplete="username">
+      <input class="champ" type="password" placeholder="Mot de passe" autocomplete="current-password">
+      <p class="refus"></p>
+      <button type="button" class="principal">Entrer</button>
+    </div>
+
+    <div data-vue="creation" class="cache">
+      <h1 class="titre">Créer un compte</h1>
+      <div class="duo">
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.9Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.8l4-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4C17.9 1.2 15.2 0 12 0A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8Z"/></svg>Google</button>
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.6 2.1-3.9 2.2-4-1.2-1.8-3.1-2-3.8-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5.6-.9.9-1.7 1.2-2.6-2.7-1-2.4-4-2.4-4.1Z"/><path d="M14.3 4.3c.7-.9 1.2-2.1 1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3.1-1.5Z"/></svg>Apple</button>
+      </div>
+      <div class="ou"><span></span>ou<span></span></div>
+      <input class="champ" type="email" placeholder="Adresse">
+      <input class="champ" type="password" placeholder="Mot de passe">
+      <p class="refus"></p>
+      <button type="button" class="principal">Continuer</button>
+    </div>
+
+    <div class="bas">
+      <button type="button" class="bascule" data-bascule>Pas de compte ? <b>Créer un compte</b></button>
+      <p class="legal"><a href="#">Conditions</a> · <a href="#">Confidentialité</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ C ══════════════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>Proposition C</h2>
+  <h3>La même, en clair</h3>
+  <p>Le dessin de ta capture, mais sur le crème et le vert pin du reste de l’appli. <b>La porte ressemble alors à ce qu’il y a derrière</b> — et elle se lit au soleil, sur un chantier.</p>
+</div>
+
+<div class="tel c" data-tel>
+  <div class="ecran">
+    <div class="heure">9:41</div>
+    <div class="haut">
+      <span class="sceau"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg></span>
+      <span class="nom">ATLAS</span>
+    </div>
+
+    <div data-vue="connexion">
+      <h1 class="titre">Connexion</h1>
+      <div class="duo">
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.9Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.8l4-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4C17.9 1.2 15.2 0 12 0A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8Z"/></svg>Google</button>
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.6 2.1-3.9 2.2-4-1.2-1.8-3.1-2-3.8-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5.6-.9.9-1.7 1.2-2.6-2.7-1-2.4-4-2.4-4.1Z"/><path d="M14.3 4.3c.7-.9 1.2-2.1 1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3.1-1.5Z"/></svg>Apple</button>
+      </div>
+      <div class="ou"><span></span>ou<span></span></div>
+      <button type="button" class="visage">Ouvrir avec Face ID</button>
+      <input class="champ" type="email" placeholder="Adresse" autocomplete="username">
+      <input class="champ" type="password" placeholder="Mot de passe" autocomplete="current-password">
+      <p class="refus"></p>
+      <button type="button" class="principal">Entrer</button>
+    </div>
+
+    <div data-vue="creation" class="cache">
+      <h1 class="titre">Créer un compte</h1>
+      <div class="duo">
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.9Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.8l4-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4C17.9 1.2 15.2 0 12 0A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8Z"/></svg>Google</button>
+        <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.6 2.1-3.9 2.2-4-1.2-1.8-3.1-2-3.8-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5.6-.9.9-1.7 1.2-2.6-2.7-1-2.4-4-2.4-4.1Z"/><path d="M14.3 4.3c.7-.9 1.2-2.1 1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3.1-1.5Z"/></svg>Apple</button>
+      </div>
+      <div class="ou"><span></span>ou<span></span></div>
+      <input class="champ" type="email" placeholder="Adresse">
+      <input class="champ" type="password" placeholder="Mot de passe">
+      <p class="refus"></p>
+      <button type="button" class="principal">Continuer</button>
+    </div>
+
+    <div class="bas">
+      <button type="button" class="bascule" data-bascule>Pas de compte ? <b>Créer un compte</b></button>
+      <p class="legal"><a href="#">Conditions</a> · <a href="#">Confidentialité</a></p>
+    </div>
+  </div>
+</div>
+
+<div class="acquis">
+  <b>Ce qui est simulé, et il faut le savoir</b>
+  <ul>
+    <li><b>Google et Apple ne mènent nulle part ici</b> : cette entrée n’existe pas encore dans l’appli. Ce qui est juste, c’est leur place et leur taille.</li>
+    <li><b>Google est le moins cher des deux</b> : l’appli sait déjà parler à Google pour ton agenda. Apple demande un compte développeur payant, et Apple l’exige dès qu’on propose Google sur l’App Store.</li>
+    <li><b>Face ID existe déjà</b> et garde sa place, au-dessus des champs.</li>
+    <li>Les mentions légales renvoient à des pages qui restent à écrire.</li>
+  </ul>
+</div>
+
+<div class="question">
+  <b>Ce que j’attends de toi</b>
+  <div>1. Laquelle : <b>A</b>, <b>B</b> ou <b>C</b> ?</div>
+  <div class="choix">
+    <div><span class="mot">2.</span><span>Je mets <b>Google et Apple</b> pour de bon, ou je les enlève de la maquette ?</span></div>
+    <div><span class="mot">3.</span><span>Le fond sombre te va aussi <b>en plein soleil</b> ? C’est le seul écran qu’on ouvre dehors, avant d’être connecté.</span></div>
+  </div>
+</div>
+
+<script>
+  /* Aucune donnée, aucun envoi : la bascule montre l'un ou l'autre écran. */
+  document.querySelectorAll("[data-tel]").forEach(function (tel) {
+    var bascule = tel.querySelector("[data-bascule]");
+    var vues = {
+      connexion: tel.querySelector('[data-vue="connexion"]'),
+      creation: tel.querySelector('[data-vue="creation"]')
+    };
+    var courante = "connexion";
+    bascule.addEventListener("click", function () {
+      courante = courante === "connexion" ? "creation" : "connexion";
+      vues.connexion.classList.toggle("cache", courante !== "connexion");
+      vues.creation.classList.toggle("cache", courante !== "creation");
+      bascule.innerHTML = courante === "connexion"
+        ? "Pas de compte ? <b>Créer un compte</b>"
+        : "Déjà un compte ? <b>Se connecter</b>";
+    });
+  });
+</script>
+
+</body>
+</html>
