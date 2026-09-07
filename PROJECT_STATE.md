@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-07 · branche `main`
+**Dernière mise à jour :** 2026-09-08 · branche `main`
 · dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
 l’affichage)
 
@@ -16,6 +16,27 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## FAIT : on ne coche plus quelqu'un qui n'est pas là (8 septembre 2026)
+
+Son signalement, capture à l'appui : Julien en congé le 10, la carte l'affiche
+— et sa pastille reste cochable sur le chantier du jour. L'absence était comptée
+là où elle change une DATE (14 août), nulle part où elle change une PERSONNE.
+
+La règle vit dans `src/lib/equipe-absente.ts` et sert **les deux côtés** : elle
+grise la pastille ET le serveur refuse la coche. Un écran ne protège rien.
+
+**Décocher reste possible** — sinon la coche antérieure au congé, qui est l'état
+qu'il a photographié, serait sans issue.
+
+**Arbitrage :** chantier de deux jours, un seul de congé → refusé (une coche
+vaut pour le chantier entier). Décisions : `ARCHITECTURE.md` §286.
+
+**Éprouvé :** règle pure + **suite base du refus serveur**, les deux confrontées
+à la version d'avant. Écran regardé : Julien pâle et non cliquable, Antoine
+intact.
 
 ---
 

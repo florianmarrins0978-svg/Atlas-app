@@ -8,6 +8,31 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — ON NE COCHE PLUS UN ABSENT (8 septembre 2026)
+
+**Décisions :** `ARCHITECTURE.md` §286.
+
+**LE PIÈGE À RETENIR.** « Absence » est née le 14 août d'une question de
+CAPACITÉ — combien de dates proposer au client. Personne n'est allé voir ce
+qu'elle devait changer ailleurs, et pendant trois semaines on pouvait envoyer
+sur un chantier quelqu'un que l'application savait absent.
+
+Devant une notion arrivée par un seul chemin, se demander : *où d'autre
+devrait-elle compter ?*
+
+**La règle sert les deux côtés** (`equipe-absente.ts`) : elle grise la pastille
+et le serveur refuse la coche. Un écran ne protège rien, il se contourne.
+
+**Décocher reste toujours possible** — `cocheRefusee(..., dejaCochee)` rend
+`false` quand la case est déjà mise. Sans cette sortie, une coche antérieure au
+congé serait irréparable : aucun autre chemin ne retire quelqu'un d'une
+demi-journée.
+
+**Le refus rend l'état INCHANGÉ**, jamais `null` (qui veut dire « pas à vous »)
+ni une exception (dont le message n'arrive jamais au patron).
+
+---
+
 ## Dernier lot — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
 
 **Document du lot :** `docs/lot-telecharger-la-facture.md`.

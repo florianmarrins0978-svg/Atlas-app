@@ -7,6 +7,24 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-08
+### On ne coche plus quelqu'un qui n'est pas là
+
+Une personne en congé pouvait être cochée sur un chantier de ce jour-là, alors
+que la carte affichait « Julien n'est pas là » trois centimètres plus haut.
+L'absence était comptée là où elle change une DATE — les jours proposés au
+client, depuis le 14 août — et nulle part où elle change une PERSONNE.
+
+Sa pastille est grise et refuse la coche ; le serveur la refuse aussi, avec la
+même règle et pas une copie. **Décocher reste toujours possible** : c'est la
+seule façon de réparer une coche antérieure au congé, et c'est exactement l'état
+qu'il a photographié.
+
+**Ce que ça évite :** un chantier qui part avec quelqu'un qui n'y sera pas.
+
+**Un arbitrage à connaître :** sur un chantier de deux jours dont UN SEUL tombe
+sur le congé, la coche est refusée — une coche vaut pour le chantier entier, et
+l'accepter annoncerait la personne un jour où elle n'y est pas. Voir
+`ARCHITECTURE.md` §286.
 
 ### Les conditions d'utilisation et la politique de confidentialité, en brouillon
 

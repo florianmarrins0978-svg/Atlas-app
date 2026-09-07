@@ -17,6 +17,7 @@ import {
   type JourIso,
 } from "@/server/disponibilites";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
+import { joursAbsentsDuChantier, type ChantierPourAbsence } from "@/lib/equipe-absente";
 import { noterAbsenceAction, retirerAbsenceAction } from "@/app/reglages/actions";
 
 /**
@@ -425,6 +426,20 @@ export default function PlanningClient({
   );
 
   /** Qui n'est pas là ce jour-là — par rang, avec l'`id` pour pouvoir défaire. */
+  /**
+   * Les jours d'un chantier où cette personne n'est pas là — son signalement du
+   * 7 septembre 2026.
+   *
+   * **Elle regarde TOUTES les absences, pas celles du jour affiché.** Un
+   * chantier de deux jours traverse deux journées, et une coche d'équipe vaut
+   * pour le chantier entier : n'interroger que le jour ouvert laisserait
+   * cocher quelqu'un absent le lendemain (`equipe-absente.ts`).
+   */
+  const joursAbsentsDe = useCallback(
+    (rang: number, c: ChantierPourAbsence) => joursAbsentsDuChantier(rang, c, absencesVues),
+    [absencesVues]
+  );
+
   const absencesDuJour = useCallback(
     (jour: JourIso) =>
       absencesVues.filter((a) => a.premierJour <= jour && jour <= a.dernierJour),
@@ -755,6 +770,7 @@ export default function PlanningClient({
     ecriture: ouvertes.ecriture,
     nombreSalaries,
     absencesDuJour,
+    joursAbsentsDe,
     fermerLeJour,
     rouvrirLeJour,
     ouvert,
@@ -1260,12 +1276,29 @@ function Petit({
   retenue,
   fini,
   serre,
+  absente,
   ...reste
 }: {
   children: React.ReactNode;
   onClick: () => void;
   retenue?: boolean;
   fini?: boolean;
+  /**
+   * **Cette personne n'est pas là ce jour-là** — son signalement du
+   * 7 septembre 2026 : *« il doit être grisé et on ne doit pas pouvoir le
+   * sélectionner »*.
+   *
+   * **Grise TOUJOURS, n'interdit que la COCHE.** Une pastille déjà cochée
+   * reste cliquable pour être retirée : c'est le seul chemin qui existe pour
+   * réparer une coche antérieure au congé, et c'est exactement l'état qu'il a
+   * photographié. Le gris dit alors qu'il faut la retirer, il n'enferme pas
+   * dedans.
+   *
+   * **Ce que l'écran décide ici, c'est l'apparence, jamais la règle** : le
+   * refus vit dans `equipe-absente.ts` et le serveur l'applique aussi
+   * (`CLAUDE.md` §3).
+   */
+  absente?: boolean;
   /**
    * Resserré à 9 px, comme `.demi .petit` sur la planche 84.
    *
@@ -1287,13 +1320,22 @@ function Petit({
       type="button"
       onClick={onClick}
       {...reste}
-      className={`flex-shrink-0 cursor-pointer rounded-full py-[7px] text-[12px] ${
-        serre ? "px-[9px]" : "px-3"
-      }`}
+      disabled={absente && !retenue}
+      aria-disabled={absente && !retenue ? true : undefined}
+      data-absente={absente ? "1" : undefined}
+      className={`flex-shrink-0 rounded-full py-[7px] text-[12px] ${
+        absente && !retenue ? "cursor-not-allowed" : "cursor-pointer"
+      } ${serre ? "px-[9px]" : "px-3"}`}
       style={{
-        border: `1px solid ${retenue ? colors.plein : fini ? colors.or : colors.line}`,
-        background: retenue ? colors.plein : colors.card,
-        color: retenue ? surPlein : fini ? colors.or : colors.inkSoft,
+        border: `1px solid ${
+          absente ? colors.line : retenue ? colors.plein : fini ? colors.or : colors.line
+        }`,
+        background: absente ? colors.card : retenue ? colors.plein : colors.card,
+        color: absente ? colors.muted : retenue ? surPlein : fini ? colors.or : colors.inkSoft,
+        // **Le gris se voit, sans effacer.** À 0,5 la pastille disparaissait sur
+        // les deux chartes sombres, mesuré : un nom qu'on ne lit plus ne dit pas
+        // « absent », il dit « rien ».
+        opacity: absente ? 0.72 : undefined,
         WebkitTapHighlightColor: "transparent",
       }}
     >
@@ -1797,6 +1839,7 @@ function CarteDuJour({
   poser,
   taches,
   absencesDuJour,
+  joursAbsentsDe,
   fermerLeJour,
   rouvrirLeJour,
 }: {
@@ -1804,6 +1847,8 @@ function CarteDuJour({
   jour: JourIso;
   /** Qui n'est pas là ce jour-là — voir §267. */
   absencesDuJour: (jour: JourIso) => AbsenceDuPlanning[];
+  /** Les jours d'un chantier où cette personne n'est pas là — voir §286. */
+  joursAbsentsDe: (rang: number, c: ChantierPourAbsence) => JourIso[];
   fermerLeJour: (jour: JourIso, rang: number) => void;
   rouvrirLeJour: (id: string) => void;
   /**
@@ -2104,12 +2149,19 @@ function CarteDuJour({
                       <Choisir>
                         {lignesEquipes.map((e) => {
                           const cochee = rangs.includes(e.rang);
+                          // **Elle n'est pas là sur au moins un jour de CE
+                          // chantier** — son signalement du 7 septembre 2026.
+                          // La règle vit dans `equipe-absente.ts`, et le serveur
+                          // applique la même : l'écran ne fait que la montrer.
+                          const absente =
+                            joursAbsentsDe(e.rang, c).length > 0;
                           return (
                             <Petit
                               key={e.rang}
                               serre
                               data-choix={e.rang}
                               retenue={cochee}
+                              absente={absente}
                               onClick={() => basculerEquipe(c.id, demi, e.rang)}
                             >
                               {cochee ? "✓ " : ""}

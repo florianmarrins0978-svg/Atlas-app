@@ -24900,3 +24900,76 @@ première »*.
 porte `client_id`, jamais `chantier_id` : c'est l'outil des tournées d'entretien.
 Le lot 3 devra soit l'y rattacher, soit donner au chantier sa propre page de
 preuve. *Tranché au lot 3, sa décision du 8 septembre.*
+
+## §286. Une absence connue d'un côté de l'écran, ignorée de l'autre
+
+**Son signalement du 7 septembre 2026, capture à l'appui :** *« j'ai mis Julien
+en congé, la feuille le dit aussi, or je peux quand même sélectionner Julien ce
+jour — il doit être grisé et on ne doit pas pouvoir le sélectionner. »*
+
+**Sa capture montre les deux vérités à trois centimètres d'écart** : en haut de
+la carte, « Julien n'est pas là » ; en dessous, la pastille « ✓ Julien » cochée
+sur le matin du chantier. L'application savait, et laissait faire.
+
+**CE QUI MANQUAIT ÉTAIT UNE MOITIÉ DE RÈGLE.** Une absence était comptée depuis
+le 14 août là où elle change une **date** — les jours proposés au client
+(`absences-equipe.ts`, 14 août 2026). Elle ne l'était nulle part où elle change une
+**personne** : les pastilles d'équipe ne l'avaient jamais consultée.
+
+C'est le défaut typique d'une notion arrivée par un seul chemin. « Absence » est
+née d'une question de capacité ; personne n'est allé voir ce qu'elle devait
+changer ailleurs.
+
+### La règle vit dans `src/lib`, et sert LES DEUX CÔTÉS
+
+`equipe-absente.ts` grise la pastille **et** refuse la coche au serveur.
+`CLAUDE.md` §3 : *« jamais de règle dupliquée entre l'affichage et la
+vérification »*. Écrite deux fois, la version de l'écran aurait suffi — et un
+écran ne protège rien : il se contourne.
+
+### LE CAS QUI TRANCHE : deux jours, un seul de congé
+
+Une équipe n'est pas cochée « pour le 10 » : elle est cochée **pour le matin du
+chantier**, et cette coche traverse tous les jours qu'il occupe. Le modèle ne
+sait pas dire « Julien le 11 mais pas le 10 ».
+
+| Refuser dès UN jour d'absence | Refuser seulement si TOUS les jours |
+|---|---|
+| il ne peut pas cocher Julien sur un chantier de deux jours dont un tombe sur son congé | Julien est annoncé sur un chantier un jour où il n'y sera pas |
+| coût : une coche à faire autrement | coût : **personne ne vient** |
+
+On refuse dès un jour. C'est le seul des deux qui ne fasse pas partir un
+chantier sans personne, et l'erreur qu'il produit se répare le jour même.
+
+### ON PEUT TOUJOURS DÉCOCHER, ET C'EST ESSENTIEL
+
+Sa capture montre Julien **coché** un jour où il est absent : la coche est
+antérieure au congé. Griser franchement l'aurait enfermé dans l'état faux — il
+n'existe aucun autre chemin pour retirer quelqu'un d'une demi-journée.
+
+Le refus ne porte donc que sur la **coche**. Une pastille déjà cochée reste
+cliquable pour être retirée, et son gris dit pourquoi il faut le faire. Le
+serveur applique la même distinction : `cocheRefusee(..., dejaCochee)` rend
+toujours `false` quand la case est déjà mise.
+
+### Le refus rend l'état INCHANGÉ, jamais `null` ni une exception
+
+`null` veut déjà dire « ce chantier n'est pas à vous » dans cette fonction ; le
+message d'une exception levée par une action serveur n'arrive jamais jusqu'au
+patron (`AGENTS.md`). Le serveur relit donc l'état réel et le rend : l'écran se
+repeint sur ce qui est vrai, et la pastille grisée porte déjà l'explication.
+
+### Ce qu'il a fallu deux suites pour tenir
+
+| | |
+|---|---|
+| `test-equipe-absente.ts` | la règle pure — les bornes, les jours traversés, la bascule |
+| `test-coche-equipe-absente.ts` | **le refus du SERVEUR**, sous `atlas_app` |
+
+La seconde n'est pas un doublon : une suite navigateur ne l'aurait pas vue. Elles
+tournent sous un rôle qui traverse la RLS (`CLAUDE.md` §5), et surtout un écran
+qui grise se contourne — c'est le serveur qui tient. Les deux ont été
+confrontées à la version d'avant et rougissent sur le cas exact de sa capture.
+
+**Et l'écran a été REGARDÉ**, pas seulement mesuré : Julien pâle et non
+cliquable, Antoine intact, sur la carte du jeudi 10 — la journée de sa capture.
