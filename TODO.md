@@ -9,6 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — la porte en plein air
+
+**Née le 8 septembre 2026.** `appli/la-porte-en-plein-air.html`, publiée et
+listée dans `appli/essais.html`.
+
+**Rien ne se code tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Cinq points
+attendent sa réponse, et le détail est dans `docs/lot-porte-en-plein-air.md` :
+
+1. **la création de compte** : *tout sur un écran* ou *une question à la fois*.
+   Ce qu'on défend : **une question à la fois**, pour sa contrainte du
+   5 septembre (« des vieux qui ont du mal à se servir de leur téléphone ») ;
+2. l'accroche sous ATLAS — trois choix, changeables en direct sur la planche ;
+3. la phrase des conditions, **ou** une case à cocher ;
+4. la photo reste-t-elle fixe alors que le reste suit la charte choisie ;
+5. « Créer un compte » crée un **patron et son entreprise** — un salarié reçoit
+   son accès de son patron dans les réglages. À confirmer.
+
+**BLOQUANT, ET CE N'EST PAS DU CODE.** Les pages « Conditions d'utilisation » et
+« Politique de confidentialité » **n'existent pas** dans le dépôt : la porte les
+lie, et les liens ne mènent nulle part. Aucune mise en ligne publique n'est
+possible sans elles. À proposer pour `docs/A-FAIRE.md` — son accord d'abord
+(`AGENTS.md`).
+
+---
+
 ## ⏳ UNE PLANCHE À REGARDER — repartir d'un client (lot 1)
 
 **Née le 8 septembre 2026.** `appli/le-client-quon-connait.html`, cinq

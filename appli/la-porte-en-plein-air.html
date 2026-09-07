@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La porte en plein air</title>
+<style>
+  /*
+    LA PORTE EN PLEIN AIR — la planche, avant le code.
+
+    Sa demande du 8 septembre 2026, avec une capture de l'application Hinge :
+    « j'aimerais quelque chose dans cet esprit, une belle photo libre de droit
+    bien sûr en rapport avec la nature. La phrase pour accepter les conditions
+    d'utilisation. Ensuite si on clique sur créer un compte il faut que tu me
+    fasses une maquette pour cela qu'on réfléchisse ensemble et que je te
+    valide. Et si on clique sur se connecter on arrive sur la proposition B de
+    la planche comme-ta-capture. »
+
+    `CLAUDE.md` §3 bis : une demande d'apparence se dessine, se montre, et ne
+    touche à `src/` qu'une fois choisie. RIEN N'EST CODÉ — `src/app/login/`
+    n'a pas bougé d'une ligne.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LA PHOTO, ET SA LICENCE. C'est la première image qui entre dans `appli/`,
+    donc la règle se pose ici : on ne pose pas une photo dont on ne peut pas
+    montrer le droit de s'en servir.
+
+      fichier   images/porte-foret.jpg (840 × 1120, 196 Ko)
+      licence   CC0 1.0 — domaine public, usage commercial permis, aucune
+                mention obligatoire
+      auteur    Midhun P
+      source    WordPress Photo Directory
+                https://wordpress.org/photos/photo/5476968b3f/
+      trouvée   par l'API Openverse, filtre `license=cc0`
+
+    La mention de l'auteur n'est pas exigée par CC0 ; elle est écrite ici pour
+    qu'on puisse refaire le chemin dans six mois.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI A ÉTÉ REPRIS DE SA CAPTURE :
+
+      · la photo qui prend TOUT l'écran, bord à bord ;
+      · la marque au centre, et une accroche courte dessous ;
+      · les mentions légales JUSTE AU-DESSUS des boutons, soulignées ;
+      · un gros bouton clair en gélule — « Créer un compte » ;
+      · dessous, « Se connecter » en simple texte.
+
+    CE QUI N'A PAS ÉTÉ REPRIS, ET POURQUOI :
+
+      · le tutoiement. L'application vouvoie partout (`essais.html`, les écrans
+        de `src/app/`), et une porte qui tutoie devant un produit qui vouvoie
+        se remarque tout de suite ;
+      · le troisième lien, « cookies ». Sa capture en a trois ; Atlas n'a pas
+        de régie publicitaire. À rouvrir le jour où il y en a une.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST SIMULÉ, ET IL FAUT LE DIRE :
+
+      · Google et Apple ne mènent nulle part — cette entrée-là n'existe pas
+        dans l'application aujourd'hui. Ce qui est fidèle, c'est la PLACE ;
+      · les deux pages « Conditions d'utilisation » et « Politique de
+        confidentialité » N'EXISTENT PAS dans le dépôt. Les liens ne mènent
+        nulle part, exprès : rien ne se fabrique pour faire joli ;
+      · « Ouvrir avec Face ID », en revanche, existe pour de bon depuis le
+        24 août (`src/app/login/LigneFaceId.tsx`).
+
+    AUCUNE COULEUR INVENTÉE. Les deux écrans sombres recopient la charte
+    « Nuit », comme la proposition B de `porte-comme-ta-capture.html`.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --or:#B98B47;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 56px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:26px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc h3{margin:0 0 6px;font:400 22px/1.15 ui-serif,Georgia,serif}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  /* ── Le téléphone ────────────────────────────────────────────────────── */
+  .tel{width:318px;margin:14px auto 0;border-radius:42px;padding:10px;
+       background:#0e0e0d;box-shadow:0 18px 44px rgba(20,18,14,.30)}
+  .ecran{border-radius:33px;overflow:hidden;position:relative;height:604px;
+         display:flex;flex-direction:column}
+  .ecran[hidden]{display:none}
+  .heure{padding:14px 6px 0;font:600 13px/1 -apple-system,ui-sans-serif,sans-serif;opacity:.85;
+         position:relative;z-index:2}
+
+  /* ── L'écran 1 : la porte, en plein air ──────────────────────────────── */
+  .porte{color:#fff;padding:0 22px 22px}
+  .porte .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  /* Deux voiles, et ils ne font pas le même travail. Le premier assombrit
+     l'ensemble — sans lui, le rai de soleil de la photo mange le mot ATLAS.
+     Le second noircit le bas, là où se posent les mentions et les boutons :
+     c'est la seule zone où un texte de 11,5 px doit rester lisible dehors. */
+  .porte .voile{position:absolute;inset:0;z-index:1;
+    background:linear-gradient(180deg,rgba(10,14,10,.52) 0%,rgba(10,14,10,.30) 34%,
+                               rgba(10,14,10,.48) 62%,rgba(8,11,8,.90) 100%)}
+  .porte .marque{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;
+                 align-items:center;justify-content:center;text-align:center;gap:14px}
+  .porte .sceau{width:44px;height:44px;border-radius:999px;display:grid;place-items:center;
+                border:1.5px solid rgba(255,255,255,.72);color:#fff}
+  .porte .nom{font:400 34px/1 ui-serif,Georgia,serif;letter-spacing:.28em;text-indent:.28em;
+              text-shadow:0 2px 18px rgba(0,0,0,.55)}
+  .porte .accroche{margin:0;font:400 17px/1.35 ui-sans-serif,sans-serif;color:rgba(255,255,255,.94);
+                   text-shadow:0 1px 12px rgba(0,0,0,.55);max-width:250px}
+  .porte .accroche[hidden]{display:none}
+  .porte .pied{position:relative;z-index:2}
+  .porte .mentions{margin:0 0 14px;font-size:11.5px;line-height:1.5;text-align:center;
+                   color:rgba(255,255,255,.88)}
+  .porte .mentions a{color:#fff;text-decoration:underline;text-underline-offset:2px}
+  .pastille{width:100%;border:0;border-radius:999px;padding:17px;background:#fff;color:#12160f;
+            font:500 16.5px/1 ui-sans-serif,sans-serif;cursor:pointer}
+  .pastille:active{transform:scale(.985)}
+  .second{width:100%;border:0;background:transparent;padding:15px 0 2px;color:#fff;
+          font:600 15.5px/1 ui-sans-serif,sans-serif;cursor:pointer}
+
+  /* ── Les écrans sombres : la charte « Nuit », recopiée ───────────────── */
+  .nuit{background:radial-gradient(120% 62% at 8% 4%, #3a2f18 0%, #1a1d19 40%, #101210 78%);
+        color:#e9e8de;padding:0 22px 20px}
+  .retour{position:relative;z-index:2;align-self:flex-start;display:flex;align-items:center;gap:6px;
+          margin-top:10px;border:0;background:transparent;color:#a8ab9d;cursor:pointer;
+          font:400 14px/1 ui-sans-serif,sans-serif;padding:8px 10px 8px 0}
+  .titre{margin:12px 0 16px;font:400 30px/1.1 ui-serif,Georgia,serif;letter-spacing:-.01em}
+
+  .duo{display:flex;gap:10px}
+  .duo button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border:0;
+              border-radius:999px;padding:14px 8px;font:500 14.5px/1 ui-sans-serif,sans-serif;
+              cursor:pointer;background:#1a1d19;color:#e9e8de;
+              box-shadow:inset 0 0 0 1px rgba(233,232,222,.14)}
+  .duo button:active{transform:scale(.985)}
+
+  .ou{display:flex;align-items:center;gap:12px;margin:14px 0;font-size:13px;color:#84887b}
+  .ou span{flex:1;height:1px;background:rgba(233,232,222,.16)}
+
+  .champ{width:100%;border:0;border-radius:999px;padding:15px 20px;margin-bottom:10px;
+         font:400 16px/1.2 ui-sans-serif,-apple-system,sans-serif;
+         background:#1a1d19;color:#e9e8de;box-shadow:inset 0 0 0 1px rgba(233,232,222,.14)}
+  .champ::placeholder{color:#84887b}
+  .champ:focus{outline:none;box-shadow:inset 0 0 0 1.4px #c6a15b}
+
+  .principal{width:100%;border:0;border-radius:999px;padding:16px;margin-top:6px;
+             font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer;
+             background:linear-gradient(100deg,#e9e8de,#d9cba8);color:#101210}
+  .principal:active{transform:scale(.985)}
+
+  .visage{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;border:0;
+          border-radius:999px;padding:13px;margin-bottom:14px;
+          font:400 15px/1 ui-sans-serif,sans-serif;cursor:pointer;
+          background:rgba(233,232,222,.08);color:#e9e8de}
+
+  .bas{margin-top:auto;text-align:center}
+  .bascule{border:0;background:transparent;padding:10px 0;color:#a8ab9d;
+           font:400 13.5px/1 ui-sans-serif,sans-serif;cursor:pointer;white-space:nowrap}
+  .bascule b{font-weight:600;color:#c6a15b}
+
+  /* ── L'écran « une question à la fois » ──────────────────────────────── */
+  .pas{position:relative;z-index:2;display:flex;align-items:center;gap:10px;margin-top:12px}
+  .jauge{flex:1;height:4px;border-radius:999px;background:rgba(233,232,222,.16);overflow:hidden}
+  .jauge i{display:block;height:100%;background:#c6a15b;transition:width .22s ease}
+  .rang{font:500 12px/1 ui-sans-serif,sans-serif;color:#84887b;white-space:nowrap}
+  .question{margin:30px 0 20px;font:400 27px/1.2 ui-serif,Georgia,serif}
+  [data-etape-corps][hidden]{display:none}
+  .fini{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+        text-align:center;gap:12px;position:relative;z-index:2}
+  .fini[hidden]{display:none}
+  .fini .rond{width:56px;height:56px;border-radius:999px;display:grid;place-items:center;
+              background:rgba(198,161,91,.16);color:#c6a15b}
+  .fini p{margin:0;font:400 24px/1.2 ui-serif,Georgia,serif;color:#e9e8de}
+
+  /* ── Les interrupteurs au-dessus des téléphones ──────────────────────── */
+  .reglettes{max-width:430px;margin:18px auto 0;padding:0 20px;display:flex;flex-wrap:wrap;gap:8px}
+  .reglettes button{border:1px solid rgba(28,28,26,.16);background:var(--plage);color:var(--encre-douce);
+                    border-radius:999px;padding:9px 14px;font:400 13.5px/1 ui-sans-serif,sans-serif;
+                    cursor:pointer}
+  .reglettes button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+
+  .encart{max-width:430px;margin:26px auto 0;padding:16px 18px;border-radius:14px;
+          background:var(--papier);font-size:14.5px;line-height:1.6}
+  .encart > b:first-child{display:block;margin-bottom:10px;font-size:15.5px}
+  .encart ul{margin:0;padding-left:20px}
+  .encart li{margin-top:8px}
+
+  .adecider{max-width:430px;margin:30px auto 0;padding:16px 18px;border-radius:14px;
+            background:#1c1c1a;color:#e9e5dc;font-size:15px;line-height:1.6}
+  .adecider > b:first-child{display:block;margin-bottom:10px;font-size:16px;color:#fff}
+  .adecider ol{margin:0;padding-left:20px}
+  .adecider li{margin-top:10px}
+  .adecider b{color:#fff}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Votre demande du 8 septembre :</b> « quelque chose dans cet esprit, une belle photo libre de droit en rapport avec la nature ». <b>Rien n&rsquo;est codé.</b> La porte se touche pour de vrai : <b>Créer un compte</b> mène à la maquette que vous devez valider, <b>Se connecter</b> mène à la proposition B que vous connaissez déjà.
+</div>
+
+<div class="bloc">
+  <h2>La photo</h2>
+  <h3>Libre de droit, et vérifiable</h3>
+  <p>Domaine public <b>CC0 1.0</b> : usage commercial permis, aucune mention obligatoire. Auteur <b>Midhun P</b>, WordPress Photo Directory. <b>Elle se change en une ligne</b> si elle ne vous plaît pas.</p>
+</div>
+
+<div class="reglettes">
+  <button type="button" data-accroche-choix="0" aria-pressed="true">Dictez. Le devis est prêt.</button>
+  <button type="button" data-accroche-choix="1" aria-pressed="false">Le bureau reste sur le chantier.</button>
+  <button type="button" data-accroche-choix="2" aria-pressed="false">Aucune accroche</button>
+</div>
+
+<div class="tel" data-tel>
+
+  <!-- ══ 1 · la porte ═══════════════════════════════════════════════════ -->
+  <div class="ecran porte" data-ecran="porte">
+    <img class="photo" src="images/porte-foret.jpg" alt="">
+    <div class="voile"></div>
+    <div class="heure">9:41</div>
+
+    <div class="marque">
+      <span class="sceau"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8 13.7 10.3 21.2 12 13.7 13.7 12 21.2 10.3 13.7 2.8 12 10.3 10.3Z"/></svg></span>
+      <span class="nom">ATLAS</span>
+      <p class="accroche" data-accroche>Dictez. Le devis est prêt.</p>
+    </div>
+
+    <div class="pied">
+      <p class="mentions">En appuyant sur «&nbsp;Créer un compte&nbsp;» ou «&nbsp;Se connecter&nbsp;», vous acceptez nos <a href="#">Conditions d&rsquo;utilisation</a>. Pour savoir comment vos données sont traitées, consultez notre <a href="#">Politique de confidentialité</a>.</p>
+      <button type="button" class="pastille" data-aller="creation">Créer un compte</button>
+      <button type="button" class="second" data-aller="connexion">Se connecter</button>
+    </div>
+  </div>
+
+  <!-- ══ 2 · créer un compte — tout sur un écran ════════════════════════ -->
+  <div class="ecran nuit" data-ecran="creation" hidden>
+    <div class="heure">9:41</div>
+    <button type="button" class="retour" data-aller="porte" aria-label="Revenir à la porte"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>Retour</button>
+
+    <h1 class="titre">Créer un compte</h1>
+
+    <div class="duo">
+      <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.9Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.8l4-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4C17.9 1.2 15.2 0 12 0A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8Z"/></svg>Google</button>
+      <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.6 2.1-3.9 2.2-4-1.2-1.8-3.1-2-3.8-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5.6-.9.9-1.7 1.2-2.6-2.7-1-2.4-4-2.4-4.1Z"/><path d="M14.3 4.3c.7-.9 1.2-2.1 1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3.1-1.5Z"/></svg>Apple</button>
+    </div>
+    <div class="ou"><span></span>ou<span></span></div>
+
+    <input class="champ" type="text"     placeholder="Votre nom" autocomplete="name">
+    <input class="champ" type="email"    placeholder="Votre e-mail" autocomplete="username">
+    <input class="champ" type="password" placeholder="Un mot de passe" autocomplete="new-password">
+    <input class="champ" type="text"     placeholder="Le nom de votre entreprise" autocomplete="organization">
+    <button type="button" class="principal">Créer mon compte</button>
+
+    <div class="bas">
+      <button type="button" class="bascule" data-aller="connexion">Déjà un compte&nbsp;? <b>Se connecter</b></button>
+    </div>
+  </div>
+
+  <!-- ══ 3 · se connecter — la proposition B, recopiée ══════════════════ -->
+  <div class="ecran nuit" data-ecran="connexion" hidden>
+    <div class="heure">9:41</div>
+    <button type="button" class="retour" data-aller="porte" aria-label="Revenir à la porte"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>Retour</button>
+
+    <h1 class="titre">Connexion</h1>
+
+    <div class="duo">
+      <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.7v3h3.9c2.3-2.1 3.5-5.2 3.5-8.9Z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.8l4-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4C17.9 1.2 15.2 0 12 0A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8Z"/></svg>Google</button>
+      <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.7c0-2.6 2.1-3.9 2.2-4-1.2-1.8-3.1-2-3.8-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5.6-.9.9-1.7 1.2-2.6-2.7-1-2.4-4-2.4-4.1Z"/><path d="M14.3 4.3c.7-.9 1.2-2.1 1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3.1-1.5Z"/></svg>Apple</button>
+    </div>
+    <div class="ou"><span></span>ou<span></span></div>
+
+    <button type="button" class="visage">Ouvrir avec Face ID</button>
+    <input class="champ" type="email"    placeholder="Adresse" autocomplete="username">
+    <input class="champ" type="password" placeholder="Mot de passe" autocomplete="current-password">
+    <button type="button" class="principal">Entrer</button>
+
+    <div class="bas">
+      <button type="button" class="bascule" data-aller="creation">Pas de compte&nbsp;? <b>Créer un compte</b></button>
+    </div>
+  </div>
+</div>
+
+<div class="bloc">
+  <h2>Créer un compte · proposition 1</h2>
+  <h3>Tout sur un écran</h3>
+  <p>C&rsquo;est celle du téléphone ci-dessus. Quatre champs, un bouton, terminé. <b>Quatre renseignements et pas un de plus</b> — le SIRET, l&rsquo;adresse, la TVA, l&rsquo;IBAN et les tarifs se remplissent plus tard dans les réglages, au moment où ils servent. Tout demander à la porte, c&rsquo;est perdre celui qui essaie l&rsquo;application un soir.</p>
+  <p><b>Ce qu&rsquo;elle coûte :</b> quatre cases vides d&rsquo;un coup. Pour quelqu&rsquo;un qui n&rsquo;est pas à l&rsquo;aise avec un téléphone, c&rsquo;est le moment où il repose l&rsquo;appareil.</p>
+</div>
+
+<div class="bloc">
+  <h2>Créer un compte · proposition 2</h2>
+  <h3>Une question à la fois</h3>
+  <p>Le même compte, posé en quatre temps. <b>Une seule chose à comprendre par écran</b>, une barre qui montre où il en est, et un retour à chaque étape.</p>
+  <p><b>Ce qu&rsquo;elle coûte :</b> quatre appuis au lieu d&rsquo;un, et un peu plus long pour quelqu&rsquo;un de rapide.</p>
+  <p>Le bas paraît vide ici : sur un vrai téléphone, <b>le clavier l&rsquo;occupe</b> dès qu&rsquo;on touche le champ.</p>
+</div>
+
+<div class="tel" data-tel-pas>
+  <div class="ecran nuit">
+    <div class="heure">9:41</div>
+    <button type="button" class="retour" data-reculer aria-label="Revenir en arrière"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg>Retour</button>
+
+    <div class="pas"><div class="jauge"><i data-jauge style="width:25%"></i></div><span class="rang" data-rang>1 sur 4</span></div>
+
+    <div data-etape-corps>
+      <h1 class="question" data-question>Comment vous appelez-vous&nbsp;?</h1>
+      <input class="champ" data-etape-champ type="text" placeholder="Votre nom" autocomplete="name">
+      <button type="button" class="principal" data-avancer>Continuer</button>
+    </div>
+
+    <div class="fini" data-fini hidden>
+      <span class="rond"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg></span>
+      <p>C&rsquo;est fait.</p>
+      <button type="button" class="bascule" data-recommencer>Recommencer</button>
+    </div>
+  </div>
+</div>
+
+<div class="encart">
+  <b>Ce qui a été décidé tout seul, et se défait d&rsquo;un mot</b>
+  <ul>
+    <li>La porte <b>vouvoie</b>, comme le reste de l&rsquo;application. Votre capture tutoie.</li>
+    <li>La photo est <b>fixe</b> : la porte serait le seul écran qui ne suit pas la charte choisie dans les réglages.</li>
+    <li>«&nbsp;Se connecter&nbsp;» mène bien à la <b>proposition B</b>, recopiée au caractère près — c&rsquo;est ce que vous avez demandé.</li>
+    <li>Aucune flèche au bout d&rsquo;un libellé. Le «&nbsp;‹&nbsp;» du retour en est une vraie : il montre un sens, il ne décore pas.</li>
+  </ul>
+</div>
+
+<div class="adecider">
+  <b>Ce que vous seul pouvez trancher</b>
+  <ol>
+    <li><b>Proposition 1 ou 2</b> pour la création de compte.</li>
+    <li><b>L&rsquo;accroche</b> sous ATLAS : les trois boutons au-dessus du premier téléphone la changent en direct. Ou aucune.</li>
+    <li><b>Les deux pages légales n&rsquo;existent pas.</b> «&nbsp;Conditions d&rsquo;utilisation&nbsp;» et «&nbsp;Politique de confidentialité&nbsp;» sont à écrire avant toute mise en ligne, et ce n&rsquo;est pas un travail de code. Qui les rédige&nbsp;?</li>
+    <li><b>Une phrase, ou une case à cocher&nbsp;?</b> Ici c&rsquo;est la phrase, comme votre capture. Une case cochée à la main se prouve mieux en cas de litige, mais c&rsquo;est un geste de plus.</li>
+    <li><b>«&nbsp;Créer un compte&nbsp;» n&rsquo;est pas pour un salarié</b> — aujourd&rsquo;hui c&rsquo;est le patron qui lui donne son accès dans les réglages. La porte crée donc un patron et son entreprise. À confirmer.</li>
+  </ol>
+</div>
+
+<script>
+  /* Aucune dépendance, aucun réseau : la planche s'ouvre hors ligne, sur un
+     téléphone qui n'exécute rien d'autre. */
+
+  // ── Les trois écrans du premier téléphone ────────────────────────────
+  const tel = document.querySelector("[data-tel]");
+  const montrer = (nom) => {
+    tel.querySelectorAll("[data-ecran]").forEach((e) => { e.hidden = e.dataset.ecran !== nom; });
+  };
+  tel.addEventListener("click", (ev) => {
+    const b = ev.target.closest("[data-aller]");
+    if (b) montrer(b.dataset.aller);
+  });
+
+  // ── L'accroche, changeable en direct ─────────────────────────────────
+  const ACCROCHES = ["Dictez. Le devis est prêt.", "Le bureau reste sur le chantier.", ""];
+  const accroche = document.querySelector("[data-accroche]");
+  document.querySelectorAll("[data-accroche-choix]").forEach((b) => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll("[data-accroche-choix]").forEach((a) => a.setAttribute("aria-pressed", "false"));
+      b.setAttribute("aria-pressed", "true");
+      const t = ACCROCHES[Number(b.dataset.accrocheChoix)];
+      accroche.textContent = t;
+      accroche.hidden = t === "";
+    });
+  });
+
+  // ── Le second téléphone : une question à la fois ─────────────────────
+  const ETAPES = [
+    { q: "Comment vous appelez-vous ?",  p: "Votre nom",                  t: "text",     a: "name" },
+    { q: "Votre adresse e-mail ?",       p: "Votre e-mail",               t: "email",    a: "username" },
+    { q: "Choisissez un mot de passe",   p: "Un mot de passe",            t: "password", a: "new-password" },
+    { q: "Le nom de votre entreprise ?", p: "Le nom de votre entreprise", t: "text",     a: "organization" },
+  ];
+  let rang = 0;
+  const corps = document.querySelector("[data-etape-corps]");
+  const fini = document.querySelector("[data-fini]");
+  const question = document.querySelector("[data-question]");
+  const champ = document.querySelector("[data-etape-champ]");
+  const jauge = document.querySelector("[data-jauge]");
+  const rangEcrit = document.querySelector("[data-rang]");
+
+  const peindre = () => {
+    const fait = rang >= ETAPES.length;
+    corps.hidden = fait;
+    fini.hidden = !fait;
+    jauge.style.width = (fait ? 100 : Math.round((rang + 1) / ETAPES.length * 100)) + "%";
+    rangEcrit.textContent = fait ? "terminé" : (rang + 1) + " sur " + ETAPES.length;
+    if (fait) return;
+    const e = ETAPES[rang];
+    question.textContent = e.q;
+    champ.placeholder = e.p;
+    champ.type = e.t;
+    champ.autocomplete = e.a;
+    champ.value = "";
+  };
+  document.querySelector("[data-avancer]").addEventListener("click", () => { rang++; peindre(); });
+  document.querySelector("[data-reculer]").addEventListener("click", () => { if (rang > 0) { rang--; peindre(); } });
+  document.querySelector("[data-recommencer]").addEventListener("click", () => { rang = 0; peindre(); });
+  peindre();
+</script>
+</body>
+</html>

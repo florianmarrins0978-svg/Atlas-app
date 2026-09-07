@@ -8,6 +8,53 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### La porte en plein air : une photo, la phrase légale, et deux façons de créer un compte
+
+`appli/la-porte-en-plein-air.html` — sa demande du 8 septembre, avec une capture
+de l'application Hinge : *« quelque chose dans cet esprit, une belle photo libre
+de droit en rapport avec la nature »*. Trois écrans qui se touchent : la porte,
+« Créer un compte » (la maquette qu'il doit valider) et « Se connecter » (la
+proposition B de `porte-comme-ta-capture.html`, recopiée au caractère près,
+comme il l'a demandé). **Rien n'est codé** — `src/app/login/` n'a pas bougé.
+
+**La première image du dossier `appli/`, et la règle qui vient avec.** On ne
+pose pas une photo dont on ne peut pas montrer le droit de s'en servir. Celle-ci
+est en **domaine public CC0 1.0** (auteur Midhun P, WordPress Photo Directory,
+trouvée par l'API Openverse avec le filtre `license=cc0`) : usage commercial
+permis, aucune mention obligatoire. La licence, l'auteur et l'adresse de la
+source sont écrits en tête du fichier, pour qu'on puisse refaire le chemin dans
+six mois.
+
+**Ce que la suite garde, et qu'aucune mesure de hauteur n'aurait vu.** Une image
+qui ne charge pas laisse un écran **noir** avec du texte blanc dessus : lisible,
+donc invisible à tout contrôle de débordement. `essai-porte-plein-air.mjs` exige
+donc de vrais pixels (`naturalWidth`), pas une balise `<img>` — et
+`pages.yml` interroge en plus `images/porte-foret.jpg` sur le site publié, comme
+il le fait déjà pour le PDF de l'anthracnose. Elle garde aussi **le chemin qu'il
+a demandé** : deux boutons qui mèneraient au même endroit passeraient toutes les
+mesures de hauteur sans qu'on s'en aperçoive.
+
+**Deux façons de créer un compte lui sont proposées**, parce que le choix n'est
+pas à nous : *tout sur un écran* (quatre champs, un bouton) ou *une question à
+la fois* (quatre temps, une barre de progression). La seconde existe pour sa
+contrainte du 5 septembre — *« la plupart des patrons qui vont utiliser l'app
+sont des vieux qui ont du mal à se servir de leur téléphone »*.
+
+**Quatre renseignements, pas un de plus** : nom, e-mail, mot de passe, nom de
+l'entreprise. Le SIRET, l'adresse, la TVA, l'IBAN et les tarifs existent déjà
+dans les réglages et s'y remplissent quand ils servent. Tout demander à la porte
+perdrait celui qui essaie l'application un soir.
+
+**Ce qui reste ouvert et qu'il tranche seul** est écrit dans
+`docs/lot-porte-en-plein-air.md` — dont, bloquant : **les pages « Conditions
+d'utilisation » et « Politique de confidentialité » n'existent pas** dans le
+dépôt. Les liens de la planche ne mènent nulle part, exprès.
+
+**Défaut attrapé au passage :** dans `appli/essais.html`, l'entrée
+`la-porte-d-atlas.html` n'était pas refermée (`</a>` manquant) — 113 ancres
+ouvertes pour 112 fermées. Le navigateur refermait tout seul, donc rien ne se
+voyait ; le lien suivant s'en trouvait avalé dans la même zone cliquable.
+
 ### Repartir d'un client : la planche du lot 1, et deux décisions prises avant
 
 `appli/le-client-quon-connait.html` — cinq propositions essayables, trois pour

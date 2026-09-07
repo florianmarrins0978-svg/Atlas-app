@@ -11,6 +11,7 @@
     "test:termines": "node tests/essai-termines.mjs",
     "test:face-id": "node tests/essai-face-id.mjs",
     "test:porte-capture": "node tests/essai-porte-capture.mjs",
+    "test:porte-plein-air": "node tests/essai-porte-plein-air.mjs",
     "test:boutons-verts": "node tests/essai-boutons-verts.mjs",
     "cap:sync": "npm run build:www && cap sync"
   },

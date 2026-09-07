@@ -116,6 +116,12 @@ jobs:
           # TENIR dans le cadre d'un téléphone — un « Entrer » repoussé hors de
           # l'écran ne se voit sur aucune capture, et se paie à l'essai.
           jouer test:porte-capture
+          # **Même raison, et un danger de plus : la PHOTO.** Cette planche-ci
+          # est la première du dossier à poser une image, et une image qui ne
+          # charge pas laisse un écran NOIR avec du texte blanc dessus — donc
+          # lisible, donc invisible à toute mesure de débordement. La suite
+          # exige des pixels (`naturalWidth`), pas une balise `<img>`.
+          jouer test:porte-plein-air
 
           if [ -n "$ECHECS" ]; then
             echo "::error::Suites en échec :$ECHECS"
@@ -259,7 +265,7 @@ jobs:
           for f in index.html essais.html nav.js arrosage-catalogue.js \
                    arrosage-simple.html arrosage-plan.html \
                    arrosage-discuter.html anthracnose-du-platane.pdf \
-                   ecran-anthracnose-platane.png $LIES; do
+                   ecran-anthracnose-platane.png images/porte-foret.jpg $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }

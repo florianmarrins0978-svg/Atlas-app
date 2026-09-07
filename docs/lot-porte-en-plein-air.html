@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La porte en plein air — ce qui a été fait, et ce qui vous attend</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-porte-en-plein-air--ce-qui-a-été-fait-et-ce-qui-vous-attend">La porte en plein air — ce qui a été fait, et ce qui vous attend</h1>
+<p><strong>8 septembre 2026.</strong> Votre demande, avec une capture de l'application Hinge :</p>
+<blockquote>« J'aimerais quelque chose dans cet esprit, une belle photo libre de droit bien sûr en rapport avec la nature. La phrase pour accepter les conditions d'utilisation. Ensuite si on clique sur créer un compte il faut que tu me fasses une maquette pour cela qu'on réfléchisse ensemble et que je te valide. Et si on clique sur se connecter on arrive sur la proposition B de la planche comme-ta-capture. »</blockquote>
+<p><strong>Rien n'est codé.</strong> <code>src/app/login/</code> n'a pas bougé d'une ligne.</p>
+<p><strong>L'adresse à ouvrir :</strong> https://florianmarrins0978-svg.github.io/Atlas-app/la-porte-en-plein-air.html</p>
+<hr>
+<h2 id="1-un-verdict-par-point">1. Un verdict par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que vous avez demandé</th>
+<th>Fait</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>Une porte dans l'esprit de votre capture</td>
+<td><strong>oui</strong></td>
+<td>photo bord à bord, marque au centre, gros bouton clair, « Se connecter » en texte dessous</td>
+</tr>
+<tr>
+<td>Une belle photo <strong>libre de droit</strong>, nature</td>
+<td><strong>oui</strong></td>
+<td><code>appli/images/porte-foret.jpg</code> — voir §2</td>
+</tr>
+<tr>
+<td>La phrase pour accepter les conditions</td>
+<td><strong>oui</strong></td>
+<td>juste au-dessus des boutons, ses deux liens soulignés</td>
+</tr>
+<tr>
+<td>« Créer un compte » ouvre une maquette à valider</td>
+<td><strong>oui, et deux</strong></td>
+<td>voir §3 — le choix est à vous</td>
+</tr>
+<tr>
+<td>« Se connecter » mène à la proposition B</td>
+<td><strong>oui</strong></td>
+<td>recopiée au caractère près depuis <code>porte-comme-ta-capture.html</code></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="2-la-photo-et-pourquoi-on-peut-la-garder">2. La photo, et pourquoi on peut la garder</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Licence</strong></td>
+<td><strong>CC0 1.0</strong> — domaine public</td>
+</tr>
+<tr>
+<td><strong>Ce que ça permet</strong></td>
+<td>usage commercial, modification, aucune mention obligatoire</td>
+</tr>
+<tr>
+<td><strong>Auteur</strong></td>
+<td>Midhun P</td>
+</tr>
+<tr>
+<td><strong>Source</strong></td>
+<td>WordPress Photo Directory — https://wordpress.org/photos/photo/5476968b3f/</td>
+</tr>
+<tr>
+<td><strong>Trouvée par</strong></td>
+<td>l'API Openverse, filtre <code>license=cc0</code></td>
+</tr>
+<tr>
+<td><strong>Poids</strong></td>
+<td>196 Ko (840 × 1120), redimensionnée depuis l'originale</td>
+</tr>
+</tbody></table></div>
+<p>La licence a été vérifiée à la source, pas supposée. L'auteur est écrit en tête du fichier de la planche alors que CC0 ne l'exige pas : c'est ce qui permettra de refaire le chemin dans six mois.</p>
+<p><strong>Elle se change en une ligne</strong> si elle ne vous plaît pas.</p>
+<hr>
+<h2 id="3-créer-un-compte--les-deux-propositions">3. Créer un compte : les deux propositions</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>C'est le vrai objet de ce lot, et <strong>le choix est le vôtre</strong>.</p>
+<h3 id="proposition-1--tout-sur-un-écran">Proposition 1 — tout sur un écran</h3>
+<p>Quatre champs, un bouton, terminé.</p>
+<ul>
+<li><strong>Ce qu'elle a pour elle :</strong> rapide pour quelqu'un d'à l'aise, un seul appui.</li>
+<li><strong>Ce qu'elle coûte :</strong> quatre cases vides d'un coup. Pour quelqu'un qui n'est pas à l'aise avec un téléphone, c'est le moment où il repose l'appareil.</li>
+</ul>
+<h3 id="proposition-2--une-question-à-la-fois">Proposition 2 — une question à la fois</h3>
+<p>Le même compte, posé en quatre temps, avec une barre qui montre où on en est.</p>
+<ul>
+<li><strong>Ce qu'elle a pour elle :</strong> une seule chose à comprendre par écran, un retour à chaque étape, impossible de se perdre.</li>
+<li><strong>Ce qu'elle coûte :</strong> quatre appuis au lieu d'un.</li>
+</ul>
+<h3 id="ce-quon-défend-et-pourquoi">Ce qu'on défend, et pourquoi</h3>
+<p><strong>La proposition 2.</strong> Votre consigne du 5 septembre — <em>« imagine que la plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de leur téléphone »</em> — est la contrainte la plus forte du produit, et elle prime sur le fait de gagner trois appuis. Un formulaire de quatre cases vides est exactement l'écran devant lequel on abandonne.</p>
+<p><strong>Mais c'est votre appel.</strong> Les deux sont sur la planche, à toucher.</p>
+<h3 id="quatre-renseignements-et-pas-un-de-plus">Quatre renseignements, et pas un de plus</h3>
+<p>Nom · e-mail · mot de passe · nom de l'entreprise.</p>
+<p>Le SIRET, l'adresse, la TVA, l'IBAN et les tarifs <strong>existent déjà dans les réglages</strong> et s'y remplissent au moment où ils servent. Tout demander à la porte perdrait celui qui essaie l'application un soir, avant même d'avoir vu à quoi elle ressemble.</p>
+<hr>
+<h2 id="4-ce-qui-a-été-décidé-tout-seul-et-se-défait-dun-mot">4. Ce qui a été décidé tout seul, et se défait d'un mot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Décision</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>La porte <strong>vouvoie</strong></td>
+<td>votre capture tutoie, mais toute l'application vouvoie — une porte qui tutoie devant un produit qui vouvoie se remarque tout de suite</td>
+</tr>
+<tr>
+<td><strong>Pas de troisième lien « cookies »</strong></td>
+<td>votre capture en a trois ; Atlas n'a pas de régie publicitaire. À rouvrir le jour où il y en a une</td>
+</tr>
+<tr>
+<td>La photo est <strong>fixe</strong></td>
+<td>la porte serait le seul écran qui ne suit pas la charte choisie dans les réglages</td>
+</tr>
+<tr>
+<td>Aucune flèche décorative</td>
+<td>votre règle du 25 août. Le « ‹ » du retour en est une vraie : il montre un sens</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="5-ce-qui-est-simulé-et-quil-ne-faut-pas-croire-acquis">5. Ce qui est SIMULÉ, et qu'il ne faut pas croire acquis</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>Google et Apple ne mènent nulle part.</strong> Cette entrée-là n'existe pas dans l'application aujourd'hui. Ce qui est fidèle, c'est la place et la taille.</li>
+<li><strong>Les deux pages légales n'existent pas</strong> — voir §6.</li>
+<li><strong>« Ouvrir avec Face ID », en revanche, existe pour de bon</strong> depuis le 24 août (<code>src/app/login/LigneFaceId.tsx</code>), et garde sa place sur la connexion.</li>
+</ul>
+<hr>
+<h2 id="6-ce-qui-reste-ouvert-et-qui-peut-le-trancher">6. Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Proposition 1 ou 2</strong> pour la création de compte</td>
+<td><strong>vous</strong></td>
+</tr>
+<tr>
+<td><strong>L'accroche</strong> sous ATLAS — trois choix sur la planche, ou aucune</td>
+<td><strong>vous</strong></td>
+</tr>
+<tr>
+<td><strong>Une phrase, ou une case à cocher</strong> pour les conditions</td>
+<td><strong>vous</strong> — la case se prouve mieux en cas de litige, mais c'est un geste de plus</td>
+</tr>
+<tr>
+<td>La photo reste-t-elle fixe malgré les huit chartes</td>
+<td><strong>vous</strong></td>
+</tr>
+<tr>
+<td>« Créer un compte » crée un <strong>patron et son entreprise</strong> — un salarié reçoit son accès de son patron dans les réglages. À confirmer</td>
+<td><strong>vous</strong></td>
+</tr>
+</tbody></table></div>
+<h3 id="bloquant-et-ce-nest-pas-du-code">Bloquant, et ce n'est pas du code</h3>
+<p><strong>Les pages « Conditions d'utilisation » et « Politique de confidentialité » n'existent pas dans le dépôt.</strong> La porte les lie ; les liens ne mènent nulle part, exprès — rien ne se fabrique pour faire joli.</p>
+<p>Aucune mise en ligne publique n'est possible sans elles, et ce n'est pas un travail qui s'écrit en codant. <strong>Qui les rédige ?</strong></p>
+<hr>
+<h2 id="7-les-chiffres-et-ce-quils-valent">7. Les chiffres, et ce qu'ils valent</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>appli</code> · <strong>la nouvelle suite</strong> (<code>test:porte-plein-air</code>)</td>
+<td><strong>37 vert, 0 rouge</strong></td>
+</tr>
+<tr>
+<td><code>appli</code> · la suite de la planche du 30 août (<code>test:porte-capture</code>)</td>
+<td><strong>vert</strong>, non touchée</td>
+</tr>
+<tr>
+<td><code>appli</code> · la batterie des maquettes (<code>test:e2e</code>)</td>
+<td><strong>107 vert, 0 rouge</strong></td>
+</tr>
+<tr>
+<td>Les quatre écrans <strong>regardés</strong>, à 390 px de large</td>
+<td>rien de coupé, rien hors cadre</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui n'a pas été joué, et pourquoi.</strong> La grande batterie de l'application (<code>npm run verifier:avant-livraison</code>) n'a pas été lancée : ce lot ne touche que <code>appli/</code>, <code>.github/workflows/pages.yml</code> et la documentation — aucun fichier de <code>src/</code>, aucune migration. Elle prend dix minutes et occupe la base et le port 3000, que vos autres sessions partagent (votre consigne du 4 septembre).</p>
+<p><strong>Ce que la nouvelle suite garde, et qu'aucun test de hauteur n'aurait vu :</strong></p>
+<ol>
+<li><strong>La photo a de vrais pixels.</strong> Une image qui ne charge pas laisse un écran <em>noir</em> avec du texte blanc dessus — donc lisible, donc invisible à toute mesure de débordement. La suite exige <code>naturalWidth</code>, pas une balise.</li>
+<li><strong>Les deux boutons mènent à deux endroits différents.</strong> Une porte dont « Créer un compte » et « Se connecter » ouvriraient le même écran passerait toutes les mesures sans qu'on s'en aperçoive.</li>
+<li><strong>Tout tient dans le cadre</strong>, sur les quatre écrans. Une porte est le seul écran qu'on ne peut pas faire défiler avant d'être entré.</li>
+</ol>
+<p>Et <code>pages.yml</code> interroge en plus <code>images/porte-foret.jpg</code> <strong>sur le site publié</strong>, comme il le fait déjà pour le PDF de l'anthracnose : une image absente de l'artefact ne se verrait pas autrement.</p>
+<hr>
+<h2 id="8-un-défaut-trouvé-au-passage-sans-rapport-avec-la-demande">8. Un défaut trouvé au passage, sans rapport avec la demande</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Dans <code>appli/essais.html</code>, l'entrée « La porte d'Atlas » n'était pas refermée — un <code>&lt;/a&gt;</code> manquant, 113 ancres ouvertes pour 112 fermées. Le navigateur refermait tout seul, donc rien ne se voyait à l'œil ; le lien suivant s'en trouvait avalé dans la même zone cliquable. Corrigé.</p>
+</main>
+</body>
+</html>
