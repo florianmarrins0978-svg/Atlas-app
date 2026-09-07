@@ -22,8 +22,9 @@ import { Pool } from "pg";
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 /**
@@ -202,6 +203,19 @@ async function main() {
     // son texte, et l'écran ne montre plus que le message final. Ce qui reste à
     // défendre est plus fort : le mot juste vient par construction, et aucun
     // document ne parle d'un autre.
+    // **ON RECHARGE L'ÉCRAN AVANT DE LIRE, et c'est le contrôle qui l'a appris.**
+    //
+    // Le cas rougissait sur « le message du devis ne se nomme pas », et le
+    // produit n'y était pour rien : cette suite écrit le modèle en posant du
+    // TEXTE BRUT dans le cadre (`ecrireMessage`), donc « [document] » en clair.
+    // L'éditeur ne redessine ses pastilles que lorsque la valeur CHANGE — ici
+    // elle revient identique de la base —, si bien qu'on relisait ce qu'on
+    // venait de taper, pas ce que le patron voit.
+    //
+    // Recharger prouve mieux : le modèle est relu de la base et rendu comme il
+    // le sera à sa prochaine visite.
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForSelector('[data-atlas="message-client"]', { timeout: 30_000 });
     const cadres = page.locator('[data-atlas="message-client"]');
     const devis = await cadres.nth(0).innerText();
     const facture = await cadres.nth(1).innerText();
