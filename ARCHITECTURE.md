@@ -23887,3 +23887,93 @@ en laissant deux absences derrière elle ; le tour suivant trouvait un jour déj
 fermé, ne voyait plus le geste et accusait le code. Il remet désormais le jour à
 l'état ouvert **avant** de commencer et **à la fin** — une suite qui salit la
 base accuse la suivante.
+
+---
+
+## §268. Le mot dicté quitte le nom pour la pastille
+
+**Sa capture du 7 septembre 2026.** Il a dicté « monsieur Ludovic » ; la case du
+nom portait **« Monsieur Ludovic »**. Sa règle, en deux temps : *« il ne faut
+jamais qu'il y ait marqué monsieur, madame ou quoi que ce soit d'autre à part le
+nom dans cette case-là »*, et *« est-ce que c'est possible que lorsqu'il entend
+monsieur ou madame, il vienne sélectionner tout seul en haut soit le monsieur,
+soit le madame ? »*
+
+### CE QUE LE MOT COÛTAIT LÀ OÙ IL ÉTAIT
+
+Un nom qui porte déjà sa civilité la garde telle quelle (`avecCivilite`, §
+civilité du 13 août). « Monsieur Ludovic » partait donc **mot pour mot** sur le
+devis, la facture et le SMS — alors qu'il écrit « Mr. », et qu'il l'a corrigé
+lui-même le 13 août. Deux clients dictés « monsieur Ludovic » et « Ludovic »
+faisaient en outre **deux fiches** pour une seule personne : le rapprochement
+compare des noms.
+
+Le mot n'est donc pas jeté, il **change de champ** : il rejoint la pastille, où
+il est une donnée, d'où il se recopie déjà partout.
+
+### DEUX FONCTIONS INVERSES, UNE SEULE LISTE DE MOTS
+
+`detacherCivilite` est l'exacte inverse d'`avecCivilite`, et elles vivent dans
+le même fichier sur la **même** liste de graphies. Séparées, l'une aurait appris
+un mot que l'autre ignorerait — « Melle Roux » détachée ici, « Mr. » reposé
+là-bas. Le contrôle les confronte plutôt que de décrire chacune dans son coin.
+
+`CIVILITES_CONNUES` se **déduit** désormais des deux listes de travail au lieu
+de les recopier : une troisième liste à tenir aurait divergé au premier mot
+ajouté, et la divergence se serait vue sur un devis.
+
+### CE QUI NE SE DÉTACHE PAS, ET POURQUOI
+
+| | |
+|---|---|
+| « Monsieur », « M. », « Mme », « Mlle »… | détaché → pastille |
+| **« Docteur », « Maître »** | **reste dans le nom** |
+| une civilité au milieu (« Jean-Marie Leme ») | rien |
+| un patronyme qui commence pareil (« Merlin », « Mmelanie ») | rien |
+
+« Docteur Rivière » ne dit ni monsieur ni madame : aucune pastille ne peut le
+porter. Le détacher le ferait disparaître sans trace, et le nom nu recevrait
+alors le défaut « Mr. » — soit **« Mr. Rivière » pour une femme médecin**. C'est
+le seul écart assumé à sa règle, et il n'existe que faute d'endroit où poser ces
+mots-là.
+
+**Un cas que la règle ne sait pas voir :** une enseigne qui s'appelle
+« Monsieur Bricolage » rendrait « Bricolage » avec la pastille « Mr ». Le patron
+relit la fiche avant de créer le chantier — c'est l'arrêt du parcours qui
+rattrape ce cas, et il se paie en une correction visible.
+
+### LA RÈGLE DE REMPLISSAGE A QUITTÉ L'ÉCRAN
+
+`appliquerDictee` portait quatre `if` mêlés à quatre `setState` : donc éprouvable
+au navigateur seulement, c'est-à-dire **nulle part**, puisque la dictée demande
+une clé de transcription que cet environnement n'a pas. La décision vit
+maintenant dans `champsARemplir` (`src/lib/coordonnees-dictees.ts`), et l'écran
+ne fait plus que poser ce qu'elle rend (`CLAUDE.md` §3).
+
+Elle rend **uniquement ce qui change** : un champ absent du résultat est un champ
+auquel on ne touche pas. Rendre l'état complet aurait obligé l'écran à comparer,
+et une comparaison de plus est une occasion de plus d'écraser une saisie.
+
+**La pastille suit la règle des autres champs, et rien d'autre** : elle ne se
+pose que s'il n'a rien choisi, et **elle ne dépend pas du nom** — « Monsieur,
+06 79 98 45 14 » ne laisse aucun nom à poser, mais il a bien dit monsieur.
+`coordonneesVides` la compte pour la même raison : annoncer « rien compris »
+pendant qu'une pastille s'allume serait le seul message qu'il ne peut pas
+recouper.
+
+### LA CONSIGNE DU MODÈLE N'A PAS BOUGÉ
+
+On continue de lui demander le nom « avec sa civilité si elle est dite ». Lui
+faire choisir entre `mr` et `mme` aurait ajouté une façon de se tromper là où il
+n'y en avait pas, et la règle aurait existé en deux endroits — la consigne et
+`civilite.ts` — que rien ne tient d'accord. Le mot se reconnaît sans comprendre
+la phrase : même partage que le téléphone et l'e-mail.
+
+### CE QUI N'A PAS PU ÊTRE ÉPROUVÉ ICI
+
+Le geste complet — micro, transcription, modèle, écran — demande une clé que ce
+poste n'a pas ; le fournisseur y rend un texte de remplacement. Ce qui est tenu,
+c'est **toute la chaîne sous le micro** : ce que le modèle rend → ce que la fiche
+reçoit (`test-coordonnees-dictees`), et les deux fonctions inverses confrontées
+(`test-civilite`). Les deux suites rougissent quand on retire le détachement.
+**Le parcours micro compris reste à jouer sur son espace.**

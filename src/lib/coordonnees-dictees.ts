@@ -21,9 +21,19 @@
  * qu'il rend.
  */
 import { chiffrerNombresDictes } from "./nombres-dictes";
+import { detacherCivilite, type Civilite } from "./civilite";
 
 export type CoordonneesDictees = {
   nom: string | null;
+  /**
+   * La pastille que le mot dicté désigne, ou `null` s'il n'en a dit aucun.
+   *
+   * **Sa demande du 7 septembre 2026 :** *« il ne faut jamais qu'il y ait
+   * marqué monsieur, madame ou quoi que ce soit d'autre à part le nom dans
+   * cette case-là »*, et le mot entendu doit sélectionner la pastille du haut.
+   * Le mot n'est donc pas jeté : il change de champ.
+   */
+  civilite: Civilite | null;
   telephone: string | null;
   email: string | null;
   adresse: string | null;
@@ -163,8 +173,19 @@ export function assemblerCoordonnees(
   duModele: Partial<Record<keyof CoordonneesDictees, unknown>>
 ): CoordonneesDictees {
   const evidentes = lireCoordonneesEvidentes(transcription);
+  // **La civilité se détache ICI, et non dans la consigne du modèle.**
+  //
+  // On continue de lui demander le nom « avec sa civilité si elle est dite »
+  // (`coordonnees-service.ts`) : lui faire choisir entre deux valeurs qu'il ne
+  // connaît pas aurait ajouté une façon de se tromper là où il n'y en avait
+  // pas, et la règle aurait alors existé en deux endroits — la consigne et
+  // `civilite.ts` — que rien ne tient d'accord (`CLAUDE.md` §3). Le mot se
+  // reconnaît sans comprendre la phrase : c'est le même partage que le
+  // téléphone et l'e-mail, décrit en tête de ce fichier.
+  const detache = detacherCivilite(nettoyerChamp(duModele.nom));
   return {
-    nom: nettoyerChamp(duModele.nom),
+    nom: detache.nom || null,
+    civilite: detache.civilite,
     adresse: nettoyerChamp(duModele.adresse),
     telephone:
       evidentes.telephone ??
@@ -175,5 +196,54 @@ export function assemblerCoordonnees(
 
 /** Rien de reconnu : l'écran doit le dire plutôt que de laisser croire. */
 export function coordonneesVides(c: CoordonneesDictees): boolean {
-  return !c.nom && !c.telephone && !c.email && !c.adresse;
+  // **La civilité compte**, même seule. « Monsieur » dicté sans nom ne remplit
+  // aucune case, mais il allume une pastille : annoncer « rien compris »
+  // pendant qu'un choix s'inscrit à l'écran serait le seul message que le
+  // patron ne peut pas recouper.
+  return !c.nom && !c.civilite && !c.telephone && !c.email && !c.adresse;
+}
+
+/**
+ * Ce que la dictée a le droit de CHANGER sur la fiche déjà commencée.
+ *
+ * **Sortie de l'écran le 7 septembre 2026** (`CLAUDE.md` §3 : un écran
+ * n'décide de rien). Elle y vivait en quatre `if` mêlés à quatre `setState` —
+ * donc éprouvable seulement au navigateur, c'est-à-dire nulle part, puisque la
+ * dictée demande une clé que cet environnement n'a pas. La règle qu'elle porte
+ * est pourtant celle qui coûte cher si elle se trompe : elle décide de ce qui
+ * s'efface.
+ *
+ * **La règle, la même pour les cinq champs : on ne remplit que le vide.**
+ * Écraser une saisie parce qu'on a dicté ensuite serait la pire façon d'aider —
+ * le patron aurait tapé le numéro, dicté l'adresse, et perdu le numéro sans
+ * comprendre pourquoi.
+ *
+ * **La civilité obéit à la même règle et à rien d'autre.** Elle ne dépend pas
+ * du nom : « Monsieur, 06 79 98 45 14 » ne laisse aucun nom à poser, mais il a
+ * bien dit monsieur. Et une pastille qu'il a touchée lui appartient — la dictée
+ * ne la reprend pas.
+ *
+ * Rend **uniquement ce qui change** : un champ absent du résultat est un champ
+ * auquel on ne touche pas. Rendre l'état complet aurait obligé l'écran à
+ * comparer, et une comparaison de plus est une occasion de plus d'écraser.
+ */
+export type FicheEnCours = {
+  nom: string;
+  civilite: Civilite | null;
+  telephone: string;
+  email: string;
+  adresse: string;
+};
+
+export function champsARemplir(
+  actuel: FicheEnCours,
+  dictee: CoordonneesDictees
+): Partial<FicheEnCours> {
+  const aRemplir: Partial<FicheEnCours> = {};
+  if (dictee.nom && !actuel.nom.trim()) aRemplir.nom = dictee.nom;
+  if (dictee.civilite && actuel.civilite === null) aRemplir.civilite = dictee.civilite;
+  if (dictee.telephone && !actuel.telephone.trim()) aRemplir.telephone = dictee.telephone;
+  if (dictee.email && !actuel.email.trim()) aRemplir.email = dictee.email;
+  if (dictee.adresse && !actuel.adresse.trim()) aRemplir.adresse = dictee.adresse;
+  return aRemplir;
 }

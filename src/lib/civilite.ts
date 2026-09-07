@@ -65,30 +65,61 @@ export type CiviliteChoisie = Civilite | null | undefined;
 export const CIVILITE_PAR_DEFAUT = CIVILITES.mr;
 
 /**
+ * Les civilités qui DÉSIGNENT une des deux pastilles, et laquelle.
+ *
+ * **Sa demande du 7 septembre 2026, capture de la dictée à l'appui :** il a
+ * dicté « monsieur Ludovic », et la case du nom portait « Monsieur Ludovic ».
+ * *« Il ne faut jamais qu'il y ait marqué monsieur, madame ou quoi que ce soit
+ * d'autre à part le nom dans cette case-là. Mais est-ce que c'est possible que
+ * lorsqu'il entend monsieur ou madame, il vienne sélectionner tout seul en haut
+ * soit le monsieur, soit le madame ? »*
+ *
+ * Le mot dit n'est donc pas perdu : il quitte le nom pour aller là où il est
+ * une DONNÉE — la pastille, d'où il se recopie sur le devis et la facture
+ * (`ChoixCivilite`). Un mot laissé dans le nom se serait retrouvé tel quel sur
+ * le document, et il y a écrit « Monsieur » là où il écrit « Mr. ».
+ */
+const CIVILITES_DETACHABLES: Record<string, Civilite> = {
+  m: "mr",
+  mr: "mr",
+  mm: "mr",
+  monsieur: "mr",
+  messieurs: "mr",
+  mme: "mme",
+  mmes: "mme",
+  mlle: "mme",
+  melle: "mme",
+  madame: "mme",
+  mesdames: "mme",
+  mademoiselle: "mme",
+};
+
+/**
+ * Les civilités qui n'en désignent AUCUNE — et qui restent donc dans le nom.
+ *
+ * « Docteur Rivière » ne dit ni monsieur ni madame : aucune pastille ne peut le
+ * porter. Le détacher quand même le ferait disparaître sans trace, et le nom
+ * nu recevrait alors le défaut « Mr. » — soit « Mr. Rivière » pour une femme
+ * médecin. Un titre gardé dans le nom se voit et se corrige ; un titre effacé
+ * ne se voit plus.
+ *
+ * C'est le seul écart assumé à sa règle « rien d'autre que le nom », et il
+ * n'existe que faute d'endroit où poser ces mots-là.
+ */
+const CIVILITES_SANS_PASTILLE = ["dr", "docteur", "me", "maitre"];
+
+/**
  * Civilités déjà écrites, sous les graphies qu'un artisan tape vraiment.
  *
  * Comparées sans accent ni casse, et **suivies d'un séparateur** : sans cela,
  * « Merlin » commencerait par « m » et « Mathieu Dubois » passerait pour un
  * « M. » — le contrôle attrape les deux.
+ *
+ * **Elle se DÉDUIT des deux listes ci-dessus**, elle ne les recopie pas : une
+ * troisième liste à tenir à jour aurait divergé au premier mot ajouté, et la
+ * divergence se serait vue sur un devis, pas ici.
  */
-const CIVILITES_CONNUES = [
-  "m",
-  "mr",
-  "mme",
-  "mmes",
-  "mlle",
-  "melle",
-  "mm",
-  "monsieur",
-  "messieurs",
-  "madame",
-  "mesdames",
-  "mademoiselle",
-  "dr",
-  "docteur",
-  "me",
-  "maitre",
-];
+const CIVILITES_CONNUES = [...Object.keys(CIVILITES_DETACHABLES), ...CIVILITES_SANS_PASTILLE];
 
 /**
  * Marqueurs de raison sociale. Courte à dessein : chaque entrée est un mot
@@ -189,4 +220,50 @@ export function avecCivilite(nom: string | null | undefined, civilite?: Civilite
   if (civilite) return `${CIVILITES[civilite]} ${propre}`;
   if (porteDejaSonAppellation(propre)) return propre;
   return `${CIVILITE_PAR_DEFAUT} ${propre}`;
+}
+
+/**
+ * « Monsieur Ludovic » → le nom « Ludovic », et la pastille « Mr ».
+ *
+ * **Sa demande du 7 septembre 2026**, devant la case du nom remplie par la
+ * dictée : *« il ne faut jamais qu'il y ait marqué monsieur, madame ou quoi que
+ * ce soit d'autre à part le nom dans cette case-là »*, et le mot entendu doit
+ * *« venir sélectionner tout seul en haut soit le monsieur, soit le madame »*.
+ *
+ * **L'inverse exact d'`avecCivilite`** — et c'est pour cela que les deux vivent
+ * dans le même fichier, sur la même liste de mots. Séparées, l'une aurait
+ * appris une graphie que l'autre ignorerait : « Melle Roux » détachée ici, et
+ * « Mr. » reposé devant là-bas.
+ *
+ * **Ce qu'elle ne fait PAS, et qui est délibéré :**
+ *
+ * - **Elle ne détache qu'en TÊTE.** « Jean-Marie Leme » garde son nom entier :
+ *   une civilité au milieu d'un nom n'en est pas une.
+ * - **Elle ne détache qu'UNE fois.** « Monsieur Monsieur » n'existe pas dans la
+ *   bouche de personne, et boucler ferait disparaître un vrai patronyme le jour
+ *   où l'un d'eux ressemble à une civilité.
+ * - **Elle ne touche pas aux titres sans pastille** (`CIVILITES_SANS_PASTILLE`).
+ * - **Elle ne sait pas qu'une enseigne peut s'appeler « Monsieur ».** « Monsieur
+ *   Bricolage » rendrait « Bricolage » avec la pastille « Mr ». Le patron relit
+ *   la fiche avant de créer le chantier — c'est l'arrêt du parcours qui rattrape
+ *   ce cas-là, et il ne se paie qu'en une correction visible.
+ *
+ * Le nom rendu est **coupé dans la chaîne d'origine**, jamais reconstruit : sa
+ * casse et ses accents sont ceux qui ont été dictés. Le reconstruire à partir
+ * des mots aplatis aurait rendu « riviere » pour « Rivière ».
+ */
+export function detacherCivilite(nom: string | null | undefined): {
+  nom: string;
+  civilite: Civilite | null;
+} {
+  const propre = nom?.trim() ?? "";
+  // Le premier mot, son point d'abréviation éventuel, et ce qui l'en sépare.
+  // Le point est hors du groupe : « M. » et « M » sont le même mot.
+  const tete = propre.match(/^([^\W\d_]+)\.?(?:[\s,]+|$)/u);
+  if (!tete) return { nom: propre, civilite: null };
+
+  const civilite = CIVILITES_DETACHABLES[aplati(tete[1])];
+  if (!civilite) return { nom: propre, civilite: null };
+
+  return { nom: propre.slice(tete[0].length).trim(), civilite };
 }

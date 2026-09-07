@@ -4,10 +4,43 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-06 · `main`
+**Point de reprise :** 2026-09-07 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — « MONSIEUR » VA SUR LA PASTILLE (7 septembre 2026)
+
+**Document du lot :** `docs/lot-civilite-dictee.md`. **Décisions :**
+`ARCHITECTURE.md` §268. **Pas de maquette** : rien n'est dessiné, un mot change
+de champ.
+
+Il a dicté « monsieur Ludovic » ; la case du nom portait « Monsieur Ludovic ».
+`detacherCivilite` (`src/lib/civilite.ts`) retire le mot du nom et rend la
+pastille qu'il désigne.
+
+**⚠ DEUX FONCTIONS INVERSES, À NE JAMAIS SÉPARER.** `detacherCivilite` et
+`avecCivilite` vivent dans le même fichier sur la MÊME liste de graphies. Poser
+l'une ailleurs, ou recopier sa liste, et un nom dicté ressortira sans sa
+civilité sur le devis. `CIVILITES_CONNUES` se **déduit** des deux listes de
+travail — ne pas la réécrire à la main.
+
+**⚠ « DOCTEUR » ET « MAÎTRE » RESTENT DANS LE NOM, et c'est voulu.** Aucune
+pastille ne les porte ; détachés, ils disparaîtraient et le nom nu recevrait le
+défaut « Mr. » — « Mr. Rivière » pour une femme médecin. Ne pas « finir le
+travail » en les ajoutant à `CIVILITES_DETACHABLES`.
+
+**La règle de remplissage a quitté l'écran** : `champsARemplir`
+(`src/lib/coordonnees-dictees.ts`) décide, `FormulaireNouveauChantier` ne fait
+que poser. Elle rend **uniquement ce qui change** — un champ absent est un champ
+auquel on ne touche pas.
+
+**NON ÉPROUVÉ ICI :** le parcours micro compris. Ce poste n'a pas de clé de
+transcription (le fournisseur y rend un texte de remplacement), donc aucune
+suite navigateur ne peut partir du micro. Les deux suites tiennent la chaîne
+SOUS le micro, et elles savent rougir.
+
+---
+
 ## Dernier lot — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)
 
 **Document du lot :** `docs/lot-pas-la-ce-jour.md`.

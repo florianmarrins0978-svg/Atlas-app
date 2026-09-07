@@ -8,7 +8,7 @@ import ChoixCanal from "@/components/atlas/ChoixCanal";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import DicterCoordonnees from "./DicterCoordonnees";
-import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
+import { champsARemplir, type CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { creerChantierAction } from "./actions";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
 import { apresLesCoordonnees, retourDesCoordonnees, type Provenance } from "@/lib/retour-du-devis";
@@ -160,15 +160,24 @@ export default function FormulaireNouveauChantier({
   /**
    * Ce que la dictée a compris entre dans les champs VIDES seulement.
    *
-   * Écraser une saisie parce qu'on a dicté ensuite serait la pire façon
-   * d'aider : le patron aurait tapé le numéro, dicté l'adresse, et perdu le
-   * numéro sans comprendre pourquoi.
+   * **La décision n'est plus ici** : `champsARemplir` la porte, éprouvable sans
+   * navigateur ni clé de transcription (`CLAUDE.md` §3). Cet écran ne fait plus
+   * que poser ce qu'elle rend — et un champ absent du résultat est un champ
+   * auquel on ne touche pas.
+   *
+   * La pastille « Mr / Mme » en fait partie depuis le 7 septembre 2026 : le mot
+   * dicté a quitté le nom (`detacherCivilite`) pour venir ici.
    */
   function appliquerDictee(c: CoordonneesDictees) {
-    if (c.nom && !nomClient.trim()) setNomClient(c.nom);
-    if (c.telephone && !telephone.trim()) setTelephone(c.telephone);
-    if (c.email && !email.trim()) setEmail(c.email);
-    if (c.adresse && !adresseChantier.trim()) setAdresseChantier(c.adresse);
+    const aRemplir = champsARemplir(
+      { nom: nomClient, civilite, telephone, email, adresse: adresseChantier },
+      c
+    );
+    if (aRemplir.nom !== undefined) setNomClient(aRemplir.nom);
+    if (aRemplir.civilite !== undefined) setCivilite(aRemplir.civilite);
+    if (aRemplir.telephone !== undefined) setTelephone(aRemplir.telephone);
+    if (aRemplir.email !== undefined) setEmail(aRemplir.email);
+    if (aRemplir.adresse !== undefined) setAdresseChantier(aRemplir.adresse);
   }
 
   /**

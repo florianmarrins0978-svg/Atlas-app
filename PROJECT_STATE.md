@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-06 · branche `main`
+**Dernière mise à jour :** 2026-09-07 · branche `main`
 · dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
 l’affichage)
 
@@ -16,6 +16,22 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## FAIT : « Monsieur » va sur la pastille, plus dans le nom (7 septembre 2026)
+
+| | |
+|---|---|
+| **Son constat** | il dicte « monsieur Ludovic », la case du nom porte « Monsieur Ludovic » |
+| **Ce qui change** | le mot est retiré du nom et **sélectionne la pastille** « Mr » ou « Mme » au-dessus. Le nom reste nu |
+| **Ce qui reste dans le nom** | « Docteur », « Maître » — aucune pastille ne les porte, et les effacer donnerait « Mr. Rivière » à une femme médecin |
+| **Ce qui n'est jamais écrasé** | une pastille qu'il a touchée, et tout champ déjà saisi. La pastille ne dépend pas du nom : « Monsieur, 06 79… » l'allume quand même |
+| **Sorti de l'écran** | la règle de remplissage est une fonction pure (`champsARemplir`) — elle n'était éprouvable nulle part tant qu'elle vivait dans des `setState` |
+| **Les contrôles** | `test-civilite` (9 cas neufs), `test-coordonnees-dictees` (8 cas neufs). Les deux rougissent quand on retire le détachement |
+| **NON ÉPROUVÉ ICI** | le parcours **micro compris** : pas de clé de transcription sur ce poste. À essayer sur son espace |
+
+`ARCHITECTURE.md` §268 · `docs/lot-civilite-dictee.md`
 
 ---
 

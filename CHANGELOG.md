@@ -6,6 +6,31 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-07
+### « Monsieur » ne va plus dans la case du nom, il allume la pastille
+
+Il dictait « monsieur Ludovic » et la case du nom portait « Monsieur Ludovic ».
+Le mot part désormais **là où il est une donnée** : la pastille « Mr / Mme »
+au-dessus du nom se sélectionne toute seule, et le nom reste nu.
+
+**Ce que ça évite** (`ARCHITECTURE.md` §268) : « Monsieur Ludovic » repartait
+mot pour mot sur le devis, la facture et le SMS, alors qu'il écrit « Mr. » — et
+deux dictées, « monsieur Ludovic » et « Ludovic », faisaient deux fiches pour un
+seul client.
+
+**Ce qui reste dans le nom, et c'est assumé :** « Docteur », « Maître ». Aucune
+pastille ne les porte ; les détacher les ferait disparaître, et le nom nu
+recevrait « Mr. » — soit « Mr. Rivière » pour une femme médecin.
+
+**La règle de remplissage a quitté l'écran.** Elle vivait en quatre `if` mêlés à
+des `setState`, donc éprouvable au navigateur seulement — c'est-à-dire nulle
+part, la dictée demandant une clé que cet environnement n'a pas. Elle est
+maintenant une fonction pure (`champsARemplir`), et deux suites la tiennent.
+
+**NON ÉPROUVÉ ICI :** le parcours micro compris. Sans clé de transcription, ce
+poste ne peut jouer que la chaîne sous le micro. À essayer sur son espace.
+
+---
 ## 2026-09-06
 ### Fermer un jour depuis le planning, en un appui
 
