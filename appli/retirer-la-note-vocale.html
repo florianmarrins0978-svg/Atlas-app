@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — retirer une note vocale déjà partie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  RETIRER UNE NOTE VOCALE DÉJÀ PARTIE
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa question du 7 septembre 2026 : « une fois la note vocale partie et
+  qu'Atlas prépare le devis, si on veut modifier il faut faire retour arrière,
+  on retombe sur cette page et on refait une note vocale ? Ou alors on pourrait
+  mettre un geste, déplacer la note vocale de droite vers la gauche, ça ferait
+  apparaître la suppression comme c'est déjà le cas pour certaines choses. »
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUE LE CODE DIT, ET QUI CHANGE LA QUESTION
+
+  Le geste EXISTE déjà sur cet écran (`AnneauNoteVocale`, `.atlas-glisseur`).
+  Il ne se fait simplement pas dans le sens qu'il attend :
+
+    · sur la note vocale            →  glissement VERTICAL  (overflow-y, snap Y)
+    · dans la liste des chantiers   →  DROITE À GAUCHE      (.atlas-glisse, flex)
+
+  Deux sens pour le même geste, dans la même application. C'est pour ça qu'il
+  ne l'a pas trouvé — pas parce qu'il manquait.
+
+  ───────────────────────────────────────────────────────────────────────────
+  ET SA PROPRE RÈGLE DU 5 SEPTEMBRE TIRE DANS L'AUTRE SENS
+
+  « La plupart des patrons qui vont utiliser l'app sont des vieux qui ont du
+  mal à se servir de leur téléphone. » D'où : rien de caché — un glissement ne
+  s'apprend pas tout seul. Un geste, si discret soit-il, se découvre par
+  accident ou jamais.
+
+  Les trois planches ci-dessous posent le choix. La troisième n'est pas là pour
+  faire nombre : c'est celle qui obéit à cette règle-là.
+
+  ───────────────────────────────────────────────────────────────────────────
+  AUCUN TEXTE PRÉ-ÉCRIT, AUCUNE FLÈCHE DÉCORATIVE : les règles du dépôt valent
+  pour les maquettes autant que pour les écrans (CLAUDE.md §3).
+*/
+:root{
+  --papier:#f3efe6; --carte:#faf9f5; --encre:#171613; --pin:#2f3b2f;
+  --or:#B98B47; --muted:#8a8578; --rouge:#8c3b32; --trait:#e3ddd0;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papier);color:var(--encre);
+  font:15px/1.5 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.cadre{max-width:430px;margin:0 auto;padding:22px 18px 60px}
+h1{font:500 27px/1.2 'Playfair Display',Georgia,serif;margin:0 0 4px}
+.sous{color:var(--muted);font-size:13px;margin:0 0 20px}
+
+.onglets{display:flex;gap:6px;margin-bottom:18px}
+.onglets button{flex:1;padding:11px 4px;border:1px solid var(--trait);
+  background:var(--carte);border-radius:999px;font:500 12px Inter,sans-serif;
+  color:var(--muted);cursor:pointer}
+.onglets button[aria-selected=true]{border-color:var(--or);color:var(--encre)}
+
+.planche{display:none}
+.planche.vu{display:block}
+
+.ecran{background:var(--carte);border-radius:20px;padding:20px 16px;
+  border:1px solid var(--trait)}
+.etiq{font:600 10px Inter,sans-serif;letter-spacing:.14em;color:var(--muted);
+  text-transform:uppercase;margin-bottom:10px}
+
+/* ── La note posée, telle qu'elle est après l'envoi ────────────────────── */
+.note{display:flex;align-items:center;gap:12px;height:64px;padding:0 14px;
+  background:var(--papier);border-radius:14px}
+.lire{width:34px;height:34px;border-radius:50%;flex:0 0 34px;
+  background:var(--pin);display:flex;align-items:center;justify-content:center}
+.lire svg{width:13px;height:13px;fill:#faf9f5}
+.onde{flex:1;display:flex;align-items:center;gap:3px;height:22px}
+.onde i{flex:1;background:var(--or);opacity:.5;border-radius:2px}
+.duree{font:500 13px Inter,sans-serif;color:var(--muted);flex:0 0 auto}
+
+/* ── 1. Le glissement vertical, ce qui existe aujourd'hui ──────────────── */
+.vertical{height:64px;overflow-y:auto;scroll-snap-type:y mandatory;
+  scrollbar-width:none;overscroll-behavior:contain;border-radius:14px}
+.vertical::-webkit-scrollbar{display:none}
+.vertical>*{scroll-snap-align:start}
+.retirer-bloc{height:64px;display:flex;align-items:center;justify-content:center;
+  background:var(--papier);border-radius:14px;color:var(--rouge);
+  font:500 15px Inter,sans-serif}
+
+/* ── 2. Le glissement droite vers la gauche ────────────────────────────── */
+.horizontal{position:relative;height:64px;border-radius:14px;overflow:hidden}
+.dessous{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:flex-end;padding-right:20px;background:var(--papier);
+  color:var(--rouge);font:500 15px Inter,sans-serif}
+.dessus{position:absolute;inset:0;touch-action:pan-y;cursor:grab;
+  transition:transform .18s ease-out}
+.dessus:active{cursor:grabbing}
+
+/* ── 3. Rien de caché ──────────────────────────────────────────────────── */
+.jeter{width:44px;height:44px;flex:0 0 44px;border:0;background:transparent;
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.jeter svg{width:16px;height:16px;stroke:var(--muted);stroke-width:1.6;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+
+/* ── Le tiroir d'annulation, commun aux trois ──────────────────────────── */
+.tiroir{margin-top:14px;display:none;align-items:center;justify-content:space-between;
+  gap:12px;padding:13px 16px;background:var(--pin);border-radius:14px;color:#faf9f5;
+  font-size:14px}
+.tiroir.vu{display:flex}
+.tiroir button{background:transparent;border:0;color:#faf9f5;text-decoration:underline;
+  font:500 14px Inter,sans-serif;cursor:pointer;padding:6px}
+
+.dit{margin-top:16px;font-size:13px;color:var(--muted)}
+.dit b{color:var(--encre);font-weight:600}
+.pour{margin-top:22px;border-top:1px solid var(--trait);padding-top:16px;font-size:13px;
+  color:var(--muted)}
+.pour p{margin:0 0 8px}
+.pour b{color:var(--encre);font-weight:600}
+</style>
+</head>
+<body>
+<div class="cadre">
+
+<h1>Retirer une note vocale déjà partie</h1>
+<p class="sous">Trois façons. Essayez-les au doigt.</p>
+
+<div class="onglets" role="tablist">
+  <button role="tab" aria-selected="true" data-vue="a">Aujourd'hui</button>
+  <button role="tab" aria-selected="false" data-vue="b">Vers la gauche</button>
+  <button role="tab" aria-selected="false" data-vue="c">Rien de caché</button>
+</div>
+
+<!-- ═══ 1 ═══════════════════════════════════════════════════════════════ -->
+<section class="planche vu" data-vue="a">
+  <div class="ecran">
+    <div class="etiq">Note vocale</div>
+    <div class="vertical" id="vGlisseur">
+      <div class="note">
+        <span class="lire"><svg viewBox="0 0 12 14"><path d="M0 0l12 7-12 7z"/></svg></span>
+        <span class="onde" data-onde></span>
+        <span class="duree">0:38</span>
+      </div>
+      <div class="retirer-bloc">Retirer</div>
+    </div>
+  </div>
+  <div class="tiroir" id="tA"><span>Note vocale retirée</span><button data-annule="A">Annuler</button></div>
+  <p class="dit">Ce que fait Atlas <b>aujourd'hui</b> : le glissement est vertical. Vous ne l'avez pas trouvé — et dans la liste des chantiers, le même geste se fait vers la gauche.</p>
+</section>
+
+<!-- ═══ 2 ═══════════════════════════════════════════════════════════════ -->
+<section class="planche" data-vue="b">
+  <div class="ecran">
+    <div class="etiq">Note vocale</div>
+    <div class="horizontal">
+      <div class="dessous">Retirer</div>
+      <div class="dessus" id="hDessus">
+        <div class="note">
+          <span class="lire"><svg viewBox="0 0 12 14"><path d="M0 0l12 7-12 7z"/></svg></span>
+          <span class="onde" data-onde></span>
+          <span class="duree">0:38</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tiroir" id="tB"><span>Note vocale retirée</span><button data-annule="B">Annuler</button></div>
+  <p class="dit">Votre proposition : <b>le même geste que dans la liste des chantiers</b>. Un seul sens dans toute l'application, au lieu de deux.</p>
+</section>
+
+<!-- ═══ 3 ═══════════════════════════════════════════════════════════════ -->
+<section class="planche" data-vue="c">
+  <div class="ecran">
+    <div class="etiq">Note vocale</div>
+    <div class="note">
+      <span class="lire"><svg viewBox="0 0 12 14"><path d="M0 0l12 7-12 7z"/></svg></span>
+      <span class="onde" data-onde></span>
+      <span class="duree">0:38</span>
+      <button class="jeter" id="cJeter" aria-label="Retirer la note vocale">
+        <svg viewBox="0 0 20 20"><path d="M3 5h14M8 5V3h4v2M5 5l1 12h8l1-12"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="tiroir" id="tC"><span>Note vocale retirée</span><button data-annule="C">Annuler</button></div>
+  <p class="dit">Aucun geste à découvrir : <b>la corbeille se voit</b>. C'est votre règle du 5 septembre — rien de caché, un glissement ne s'apprend pas tout seul.</p>
+</section>
+
+<div class="pour">
+  <p>Les trois retirent <b>tout de suite</b>, et Annuler rend la note : rien n'est effacé tant que le bandeau vert est là.</p>
+  <p>Aucune ne demande <b>« Êtes-vous sûr ? »</b> — c'est la règle d'Atlas : on répare après plutôt que de demander avant.</p>
+</div>
+
+</div>
+
+<script>
+/* Les ondes, pour que la note ait l'air d'une note. */
+document.querySelectorAll('[data-onde]').forEach(function (o) {
+  [7,13,20,15,9,17,22,12,8,16,21,11,6,14,19,10,15,8,12,18].forEach(function (v) {
+    var i = document.createElement('i');
+    i.style.height = v + 'px';
+    o.appendChild(i);
+  });
+});
+
+/* Les onglets. */
+document.querySelectorAll('.onglets button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    document.querySelectorAll('.onglets button').forEach(function (x) {
+      x.setAttribute('aria-selected', 'false');
+    });
+    b.setAttribute('aria-selected', 'true');
+    document.querySelectorAll('.planche').forEach(function (p) {
+      p.classList.toggle('vu', p.dataset.vue === b.dataset.vue);
+    });
+  });
+});
+
+function retirer(quelle) { document.getElementById('t' + quelle).classList.add('vu'); }
+
+document.querySelectorAll('[data-annule]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    document.getElementById('t' + b.dataset.annule).classList.remove('vu');
+    if (b.dataset.annule === 'A') document.getElementById('vGlisseur').scrollTo({ top: 0 });
+    if (b.dataset.annule === 'B') document.getElementById('hDessus').style.transform = 'translateX(0)';
+  });
+});
+
+/* 1. Le glissement vertical : le bloc Retirer atteint le haut. */
+var v = document.getElementById('vGlisseur');
+v.addEventListener('scroll', function () { if (v.scrollTop > 40) retirer('A'); });
+
+/* 2. Le glissement vers la gauche, au doigt comme à la souris. */
+(function () {
+  var d = document.getElementById('hDessus'), x0 = null, dx = 0;
+  function debut(x) { x0 = x; d.style.transition = 'none'; }
+  function bouge(x) {
+    if (x0 === null) return;
+    dx = Math.min(0, x - x0);
+    d.style.transform = 'translateX(' + Math.max(dx, -120) + 'px)';
+  }
+  function fin() {
+    if (x0 === null) return;
+    x0 = null;
+    d.style.transition = 'transform .18s ease-out';
+    if (dx < -70) { d.style.transform = 'translateX(-120px)'; retirer('B'); }
+    else { d.style.transform = 'translateX(0)'; }
+    dx = 0;
+  }
+  d.addEventListener('touchstart', function (e) { debut(e.touches[0].clientX); }, { passive: true });
+  d.addEventListener('touchmove', function (e) { bouge(e.touches[0].clientX); }, { passive: true });
+  d.addEventListener('touchend', fin);
+  d.addEventListener('mousedown', function (e) { debut(e.clientX); e.preventDefault(); });
+  window.addEventListener('mousemove', function (e) { bouge(e.clientX); });
+  window.addEventListener('mouseup', fin);
+})();
+
+/* 3. La corbeille visible. */
+document.getElementById('cJeter').addEventListener('click', function () { retirer('C'); });
+</script>
+</body>
+</html>
