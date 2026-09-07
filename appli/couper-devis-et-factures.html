@@ -128,10 +128,12 @@ h2.petit{font-size:29px}
 .cadre{background:var(--plage);border-radius:6px;padding:14px 15px;font-size:14px;
   line-height:1.6;white-space:pre-wrap}
 .jeton{color:var(--or);font-weight:600}
-/* Le seul mot qui ne se retire pas se VOIT comme tel : un mot doré parmi
-   d'autres mots dorés ne dirait plus rien, maintenant qu'ils sont tous
-   modifiables. */
-.jeton.verrou{box-shadow:inset 0 0 0 1px var(--or);border-radius:4px;padding:1px 6px}
+/* **LE CADRE D'OR EST PARTI — sa remarque du 7 septembre 2026 :** *« pourquoi
+   la facture et le lien sont encadrés ? laisse-les normaux, mais juste en
+   doré »*. Il avait raison : le cadre n'apprenait rien que la phrase du haut ne
+   dise déjà, et il fabriquait deux sortes de doré à comprendre au lieu d'une.
+   Tous les mots qui se remplissent seuls se ressemblent donc, et
+   l'avertissement nomme ceux qui ne se retirent pas. */
 /* Un aperçu par ligne, et non deux colonnes : à 390 px de large, un message
    coupé en colonne de 160 px ne se lit plus — il se devine. */
 .apercus{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
@@ -216,7 +218,7 @@ td b{color:var(--encre)}
   basculez sur <b>« Aujourd'hui »</b> : c'est exactement le même contenu, d'une
   seule coulée.</p>
   <p><b>Vos remarques du 7 septembre y sont</b> : <b>trois messages</b> — un par
-  document, mots dorés gardés, seul le lien verrouillé —, le <b>doré</b> revenu
+  document, mots dorés gardés, le lien et le mot du document gardés —, le <b>doré</b> revenu
   dans les couleurs d'accent (<b>c'était une erreur de ma planche, pas de
   l'application</b>), et la typographie ramenée de <b>dix choix à six</b>. Le
   détail de chacune est sous l'écran.</p>
@@ -278,7 +280,7 @@ td b{color:var(--encre)}
   Ils n'ouvrent donc aucune ligne : ils vivent dans le premier écran, juste
   sous les interrupteurs qu'ils commentent.</p>
 
-  <h3>Le message : trois messages, et le lien seul verrouillé</h3>
+  <h3>Le message : trois messages, et deux mots qui ne se retirent pas</h3>
   <p><b>Votre décision du 7 septembre, et elle vaut mieux que ma proposition.</b>
   Je vous proposais un message commun avec une « phrase du milieu » qui change —
   une mécanique à comprendre. Un message entier par document ne demande rien à
@@ -292,16 +294,16 @@ td b{color:var(--encre)}
     <tr><th>Aujourd'hui</th><th>Décidé</th></tr>
     <tr><td>un message pour les trois documents</td><td><b>trois messages</b>,
       un par document, tous pré-remplis avec le texte d'aujourd'hui</td></tr>
-    <tr><td>quatre mots dorés verrouillés</td><td><b>un seul</b> : le lien,
-      encadré d'or dans l'écran</td></tr>
+    <tr><td>quatre mots dorés verrouillés</td><td><b>deux</b> : le lien, et le mot
+      qui nomme le document</td></tr>
     <tr><td>la phrase du milieu est posée par Atlas</td><td>elle est à vous, et
       le mot juste vient tout seul : la phrase du devis dit « devis », celle de
       la facture dit « facture »</td></tr>
   </table>
   <p><b>Les mots dorés restent</b>, comme vous l'avez demandé — le prénom, le
   numéro, l'échéance, votre entreprise se remplissent tout seuls. Ils se
-  modifient et se retirent, à <b>deux exceptions</b>, encadrées d'or dans
-  l'écran : <b>le lien</b> — sans lui votre client n'ouvre rien et votre planning
+  modifient et se retirent, à <b>deux exceptions</b> — nommées dans
+  l'avertissement du haut : <b>le lien</b> — sans lui votre client n'ouvre rien et votre planning
   ne reçoit aucune date, l'application refuse déjà d'enregistrer un message sans
   lui — et <b>le mot qui nomme le document</b>, votre consigne du 7 septembre :
   un message qui ne dit plus « devis » laisse le client deviner ce qu'il vient
@@ -490,7 +492,7 @@ var TYPOS = [
     - les mots dorés RESTENT dans chacun — ils se remplissent tout seuls (le
       prénom, le numéro, l'échéance, son entreprise) ;
     - tout se modifie, y compris ces mots-là ;
-    - SAUF LE LIEN, qui reste verrouillé dans les trois.
+    - SAUF LE LIEN et le mot qui nomme le document, gardés dans les trois.
 
   Il n'y a donc plus de façon à comparer : cette planche montre ce qui est
   décidé. Le bouton « Aujourd'hui », lui, montre toujours l'existant — un seul
@@ -631,17 +633,16 @@ function blocCoupe(){
   … » disparaît en entier. Un trou qui laisserait « Voici votre devis , . »
   serait pire que pas de trou du tout.
 */
-function remplir(texte, doc, verrouiller){
+function remplir(texte, doc){
   var mot = doc === "devis" ? "devis" : doc === "facture" ? "facture" : "compte rendu";
-  /* Les deux seuls mots qu'on ne peut pas retirer portent le cadre d'or : le
-     lien, et celui qui nomme le document. Les autres sont dorés parce qu'ils
-     se remplissent seuls — pas parce qu'ils sont verrouillés. */
-  var v = verrouiller ? " verrou" : "";
+  /* Un seul doré pour tous : ce qui se remplit tout seul. Ce qui ne se retire
+     pas est dit en toutes lettres au-dessus — c'est sa correction du
+     7 septembre, et elle vaut mieux qu'un signe de plus à déchiffrer. */
   var t = ech(texte)
     .replace("[prenom]", '<span class="jeton">Mme Larousse</span>')
-    .replace("[document]", '<span class="jeton' + v + '">' + mot + '</span>')
+    .replace("[document]", '<span class="jeton">' + mot + '</span>')
     .replace("[numero]", '<span class="jeton">' + (doc === "devis" ? "D" : "F") + AN + '-0008</span>')
-    .replace("[lien]", '<span class="jeton' + v + '">https://…</span>')
+    .replace("[lien]", '<span class="jeton">https://…</span>')
     .replace("[entreprise]", "Eden Nature");
   /* L'échéance n'existe que sur une facture, et elle emporte SES MOTS avec
      elle : « Voici votre devis , . » serait pire que pas d'échéance du tout. */
@@ -652,13 +653,13 @@ function remplir(texte, doc, verrouiller){
 
 /* Ce qu'il VOIT dans le cadre : les mots qui se remplissent seuls sont nommés,
    pas remplis. Tout se modifie — sauf celui qui porte le cadre d'or. */
-function cadreEcrit(texte, lienVerrouille){
+function cadreEcrit(texte){
   return ech(texte)
     .replace("[prenom]", '<span class="jeton">le prénom</span>')
     .replace("[document]", '<span class="jeton">la phrase de votre devis / facture</span>')
     .replace("[numero]", '<span class="jeton">le numéro</span>')
     .replace("[echeance]", '<span class="jeton">l\'échéance</span>')
-    .replace("[lien]", '<span class="jeton' + (lienVerrouille ? " verrou" : "") + '">le lien</span>')
+    .replace("[lien]", '<span class="jeton">le lien</span>')
     .replace("[entreprise]", "Eden Nature");
 }
 
@@ -673,7 +674,7 @@ function blocMessage(){
     return '<div class="bloc"><p class="inter">Mon message au client</p>' +
       '<p class="note" style="margin:0 0 12px">Modifiez ce que vous voulez. Les mots en doré ' +
       'se remplissent tout seuls et ne se modifient pas.</p>' +
-      '<div class="cadre">' + cadreEcrit(MESSAGE_AUJOURDHUI, false) + '</div>' +
+      '<div class="cadre">' + cadreEcrit(MESSAGE_AUJOURDHUI) + '</div>' +
       '<p class="inter" style="margin:18px 0 0">Ce que votre client recevra</p>' +
       '<div class="apercus">' + APERCUS.map(function(a){
         return '<div class="apercu"><div class="tt">' + ech(a[1]) + '</div><div class="cp">' +
@@ -704,7 +705,7 @@ function blocMessage(){
   for (var i = 0; i < MESSAGES.length; i++) {
     var m = MESSAGES[i];
     h += '<p class="inter" style="margin:' + (i ? "22px" : "0") + ' 0 8px">' + ech(m.titre) + '</p>' +
-      '<div class="cadre">' + remplir(m.corps, m.clef, true) + '</div>';
+      '<div class="cadre">' + remplir(m.corps, m.clef) + '</div>';
   }
   return h + '</div>';
 }
