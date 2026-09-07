@@ -18,9 +18,16 @@ mot pour mot sur le devis, la facture et le SMS, alors qu'il écrit « Mr. » �
 deux dictées, « monsieur Ludovic » et « Ludovic », faisaient deux fiches pour un
 seul client.
 
-**Ce qui reste dans le nom, et c'est assumé :** « Docteur », « Maître ». Aucune
-pastille ne les porte ; les détacher les ferait disparaître, et le nom nu
-recevrait « Mr. » — soit « Mr. Rivière » pour une femme médecin.
+**« Docteur » et « Maître » partent aussi — sa décision.** J'avais livré
+l'inverse, en écrivant ce que le retrait coûterait : aucune pastille ne les
+porte, donc le titre s'efface et le nom nu reçoit « Mr. » — « Mr. Rivière » pour
+une femme médecin. Il a tranché : *« seulement les noms de famille ! »*. Le prix
+tient, et il est borné — la pastille est à un appui au-dessus.
+
+**Un défaut attrapé par le contrôle, et par rien d'autre :** « Maître » était
+découpé à « Ma ». En JavaScript, `\w` reste l'alphabet anglais même sous le
+drapeau Unicode — le seul titre accentué de la liste passait au travers pendant
+que les trois autres marchaient.
 
 **La règle de remplissage a quitté l'écran.** Elle vivait en quatre `if` mêlés à
 des `setState`, donc éprouvable au navigateur seulement — c'est-à-dire nulle

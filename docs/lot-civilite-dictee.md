@@ -24,6 +24,7 @@
 | « madame Roux, 06 12 34 56 78 » | **Mme** s'allume | Roux |
 | « Ludovic Martin » | rien | Ludovic Martin |
 | « monsieur » tout seul | **Mr** s'allume | vide |
+| « docteur Rivière » | rien | Rivière |
 
 Le mot n'est pas jeté : il va là où c'est une donnée. De là, il se recopie tout
 seul sur le devis, la facture et le message au client — comme quand vous
@@ -45,12 +46,16 @@ compare les noms.
 
 ## Trois décisions que j'ai prises, et ce qu'elles coûtent
 
-**1. « Docteur » et « Maître » restent dans le nom.** Ils ne disent ni monsieur
-ni madame — aucune pastille ne peut les porter. Si je les enlevais, ils
-disparaîtraient sans laisser de trace, et le nom nu recevrait « Mr. » par
-défaut : une femme médecin deviendrait « Mr. Rivière ». C'est le seul écart à
-votre règle « rien d'autre que le nom », et il tient à ce qu'il n'y a nulle part
-où les poser. **Dites-moi si vous préférez qu'on les retire quand même.**
+**1. « Docteur » et « Maître » partent aussi — c'est VOUS qui l'avez tranché.**
+Je vous avais livré l'inverse, en vous disant ce que le retrait coûterait : ces
+deux titres ne disent ni monsieur ni madame, donc aucune pastille ne les porte ;
+en les enlevant, ils disparaissent, et le nom nu reçoit « Mr. » par défaut —
+une femme médecin devient « Mr. Rivière » sur le devis.
+
+Votre réponse : *« Docteur et maître ne doivent pas apparaître dans le nom.
+Seulement les noms de famille ! »* C'est fait. **Le prix reste celui-là**, et il
+est petit : la pastille est juste au-dessus, à un appui, et vous relisez la fiche
+avant de créer le chantier.
 
 **2. La dictée n'écrase jamais ce que vous avez fait.** Si vous avez déjà touché
 « Mme », une dictée qui dit « monsieur » **ne la retourne pas**. Même règle que
@@ -75,6 +80,7 @@ sans se tromper ailleurs.
 | | |
 |---|---|
 | **Vérifié ici** | 17 contrôles neufs : le mot part du nom, il désigne la bonne pastille, un patronyme qui commence pareil (« Merlin », « Meunier ») n'est pas amputé, votre saisie n'est jamais écrasée. Les deux suites **rougissent** quand on retire la correction — c'est ce qui prouve qu'elles servent |
+| **Un défaut qu'elles ont attrapé** | « Maître Roux » ressortait entier : le découpage s'arrêtait sur l'accent. Corrigé. Aucun contrôle ne l'aurait vu si son corpus s'était contenté de « Dr » |
 | **PAS vérifié ici** | **le parcours en partant du micro.** Ce poste n'a pas de clé de transcription : la dictée y rend un texte de remplacement. Je tiens toute la chaîne SOUS le micro, pas le micro lui-même |
 
 **Donc : à essayer sur votre espace.** Ouvrez « Un chantier », appuyez sur le
@@ -87,5 +93,5 @@ du nom afficher « Ludovic ».
 
 | | Qui |
 |---|---|
-| « Docteur » / « Maître » : les retirer du nom aussi ? | **vous** |
+| ~~« Docteur » / « Maître » : les retirer du nom aussi ?~~ **tranché le 7 septembre : oui** | ~~vous~~ |
 | Corriger la civilité d'un client **déjà créé** — il n'y a toujours pas d'écran de fiche client où le faire (signalé le 13 août 2026) | **vous**, si ça vous gêne |

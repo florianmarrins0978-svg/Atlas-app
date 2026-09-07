@@ -23922,20 +23922,38 @@ là-bas. Le contrôle les confronte plutôt que de décrire chacune dans son coi
 de les recopier : une troisième liste à tenir aurait divergé au premier mot
 ajouté, et la divergence se serait vue sur un devis.
 
-### CE QUI NE SE DÉTACHE PAS, ET POURQUOI
+### CE QUI SE DÉTACHE, ET CE QUI RESTE
 
 | | |
 |---|---|
-| « Monsieur », « M. », « Mme », « Mlle »… | détaché → pastille |
-| **« Docteur », « Maître »** | **reste dans le nom** |
+| « Monsieur », « M. », « Mme », « Mlle »… | retiré → **pastille allumée** |
+| **« Docteur », « Maître »** | **retiré, pastille éteinte** |
 | une civilité au milieu (« Jean-Marie Leme ») | rien |
 | un patronyme qui commence pareil (« Merlin », « Mmelanie ») | rien |
 
-« Docteur Rivière » ne dit ni monsieur ni madame : aucune pastille ne peut le
-porter. Le détacher le ferait disparaître sans trace, et le nom nu recevrait
-alors le défaut « Mr. » — soit **« Mr. Rivière » pour une femme médecin**. C'est
-le seul écart assumé à sa règle, et il n'existe que faute d'endroit où poser ces
-mots-là.
+**LA DEUXIÈME LIGNE EST À LUI, ET J'AVAIS LIVRÉ L'INVERSE.** « Docteur Rivière »
+ne dit ni monsieur ni madame : j'avais donc gardé le titre dans le nom, en lui
+écrivant ce que le retirer coûterait — le titre s'efface, le nom nu reçoit le
+défaut « Mr. », et une femme médecin devient **« Mr. Rivière »**. Sa réponse, le
+jour même : *« Docteur et maître ne doivent pas apparaître dans le nom. Seulement
+les noms de famille ! »*
+
+Sa règle prime, et elle se tient : la case du nom porte un nom. Le prix reste
+celui que je lui ai décrit, et il est borné — la pastille est à un appui,
+au-dessus, et il relit la fiche avant de créer le chantier.
+
+**Dans le code, c'est `null` et non une absence de la liste** : « retirer sans
+rien allumer » est une décision, pas un oubli. `detacherCivilite` interroge donc
+la liste avec `in`, jamais sur la valeur — sinon « je ne connais pas ce mot » et
+« ce mot ne désigne aucune pastille » se confondent, et le titre reste.
+
+### « MAÎTRE » S'ARRÊTAIT À « MA » — `\w` N'EST PAS `\p{L}`
+
+Le premier mot était découpé avec `[^\W\d_]`. En JavaScript, `\w` reste
+l'alphabet anglais **même sous le drapeau `u`** : le « î » y compte pour un
+séparateur. Le seul titre accentué de la liste passait donc au travers, en
+silence, pendant que les trois autres marchaient. C'est le contrôle qui l'a
+montré — et il ne l'aurait pas fait si son corpus s'était contenté de « Dr ».
 
 **Un cas que la règle ne sait pas voir :** une enseigne qui s'appelle
 « Monsieur Bricolage » rendrait « Bricolage » avec la pastille « Mr ». Le patron

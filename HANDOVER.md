@@ -24,10 +24,16 @@ l'une ailleurs, ou recopier sa liste, et un nom dicté ressortira sans sa
 civilité sur le devis. `CIVILITES_CONNUES` se **déduit** des deux listes de
 travail — ne pas la réécrire à la main.
 
-**⚠ « DOCTEUR » ET « MAÎTRE » RESTENT DANS LE NOM, et c'est voulu.** Aucune
-pastille ne les porte ; détachés, ils disparaîtraient et le nom nu recevrait le
-défaut « Mr. » — « Mr. Rivière » pour une femme médecin. Ne pas « finir le
-travail » en les ajoutant à `CIVILITES_DETACHABLES`.
+**⚠ « DOCTEUR » ET « MAÎTRE » PARTENT AUSSI, SANS ALLUMER DE PASTILLE — et ce
+n'est pas un oubli.** J'avais livré l'inverse en disant le prix : le titre
+s'efface, le nom nu reçoit le défaut « Mr. », donc « Mr. Rivière » pour une femme
+médecin. Il a tranché le jour même : *« seulement les noms de famille ! »*. Dans
+`CIVILITES_A_RETIRER` ils portent la valeur `null`, et `detacherCivilite`
+interroge la liste avec `in` — tester la valeur les remettrait dans le nom.
+
+**⚠ LE PREMIER MOT SE DÉCOUPE AVEC `\p{L}`, JAMAIS `\w`.** « Maître »
+s'arrêtait à « Ma » : en JavaScript `\w` reste l'alphabet anglais même sous le
+drapeau `u`. Un seul mot accentué dans la liste, et il passait au travers.
 
 **La règle de remplissage a quitté l'écran** : `champsARemplir`
 (`src/lib/coordonnees-dictees.ts`) décide, `FormulaireNouveauChantier` ne fait

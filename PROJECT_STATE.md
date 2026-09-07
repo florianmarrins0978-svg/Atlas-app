@@ -25,10 +25,10 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 |---|---|
 | **Son constat** | il dicte « monsieur Ludovic », la case du nom porte « Monsieur Ludovic » |
 | **Ce qui change** | le mot est retiré du nom et **sélectionne la pastille** « Mr » ou « Mme » au-dessus. Le nom reste nu |
-| **Ce qui reste dans le nom** | « Docteur », « Maître » — aucune pastille ne les porte, et les effacer donnerait « Mr. Rivière » à une femme médecin |
+| **« Docteur », « Maître »** | **partent aussi — sa décision du jour même**, après que je lui ai livré l'inverse et dit le prix : aucune pastille ne les porte, donc le document écrira « Mr. Rivière ». *« Seulement les noms de famille ! »* |
 | **Ce qui n'est jamais écrasé** | une pastille qu'il a touchée, et tout champ déjà saisi. La pastille ne dépend pas du nom : « Monsieur, 06 79… » l'allume quand même |
 | **Sorti de l'écran** | la règle de remplissage est une fonction pure (`champsARemplir`) — elle n'était éprouvable nulle part tant qu'elle vivait dans des `setState` |
-| **Les contrôles** | `test-civilite` (9 cas neufs), `test-coordonnees-dictees` (8 cas neufs). Les deux rougissent quand on retire le détachement |
+| **Les contrôles** | `test-civilite` (9 cas neufs), `test-coordonnees-dictees` (8 cas neufs). Les deux rougissent quand on retire le détachement — et l'un d'eux a attrapé « Maître » découpé à « Ma » |
 | **NON ÉPROUVÉ ICI** | le parcours **micro compris** : pas de clé de transcription sur ce poste. À essayer sur son espace |
 
 `ARCHITECTURE.md` §268 · `docs/lot-civilite-dictee.md`

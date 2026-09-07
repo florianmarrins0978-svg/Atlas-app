@@ -257,12 +257,29 @@ cas("une civilité au MILIEU du nom reste où elle est", () => {
   assert.deepEqual(detacherCivilite("Jean-Marie Leme"), { nom: "Jean-Marie Leme", civilite: null });
 });
 
-cas("un titre qu'aucune pastille ne porte reste dans le nom", () => {
-  // « Docteur Rivière » ne dit ni monsieur ni madame. Le détacher le ferait
-  // disparaître sans trace, et le nom nu recevrait le défaut « Mr. » — soit
-  // « Mr. Rivière » pour une femme médecin.
-  for (const nom of ["Docteur Rivière", "Dr Rivière", "Maître Roux", "Me Roux"]) {
-    assert.deepEqual(detacherCivilite(nom), { nom, civilite: null }, `« ${nom} » a perdu son titre`);
+cas("« Docteur » et « Maître » quittent le nom SANS allumer de pastille", () => {
+  // **Sa décision du 7 septembre 2026**, après que je lui ai livré l'inverse et
+  // dit ce qu'elle coûte : *« Docteur et maître ne doivent pas apparaître dans
+  // le nom. Seulement les noms de famille ! »*
+  //
+  // Ce que ça coûte, et qui est assumé : aucune pastille ne les porte, donc le
+  // document écrira « Mr. Rivière » — y compris pour une femme médecin. La
+  // pastille est à un appui, juste au-dessus, et il relit la fiche.
+  //
+  // Le contrôle tient les DEUX moitiés : le titre part, et rien ne s'allume à
+  // sa place. Un contrôle qui ne dirait que la première laisserait passer une
+  // civilité devinée, ce que le dépôt interdit partout ailleurs.
+  for (const [dit, attendu] of [
+    ["Docteur Rivière", "Rivière"],
+    ["Dr Rivière", "Rivière"],
+    ["Maître Roux", "Roux"],
+    ["Me Roux", "Roux"],
+  ] as const) {
+    assert.deepEqual(
+      detacherCivilite(dit),
+      { nom: attendu, civilite: null },
+      `« ${dit} » : le titre est resté, ou une pastille a été devinée`
+    );
   }
 });
 
