@@ -416,13 +416,15 @@ export default function FormulaireNouveauChantier({
               <FlecheRetour />
             </button>
           ) : (
-            /* **La flèche repart d'où il est entré.** Depuis un devis sans
-               client (31 août 2026), elle y retourne — sans quoi le devis
-               qu'il lisait serait à retrouver seul. Partout ailleurs, la
-               liste : c'est la sortie de l'écran de création, et celle de la
-               reprise ouverte depuis l'accueil. */
+            /* **La flèche SORT, elle ne revient jamais sur ses pas** — sa
+               correction du 7 septembre 2026. Elle menait au devis quand on en
+               venait, et le retour du devis menait ici : les deux se
+               pointaient l'une l'autre, sans sortie. Voir
+               `src/lib/retour-du-devis.ts`. Revenir au devis reste le
+               comportement de l'ENREGISTREMENT, qui, lui, rapporte quelque
+               chose. */
             <Link
-              href={retourDesCoordonnees(reprise?.provenance ?? null)}
+              href={retourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)}
               aria-label={
                 libelleRetourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
               }

@@ -89,6 +89,54 @@ question suffit : *que se passe-t-il quand tu appuies ?*
 | une feuille demande de confirmer | c'est iOS, et c'est le geste normal ; il n'y a rien à corriger |
 | rien du tout | la requête n'aboutit pas — et **l'écran ne dit rien** : la prochaine livraison est de rendre ce refus bavard, pas de deviner |
 
+## ✅ ~~Comment retirer une note vocale déjà partie ?~~ — **2, le 7 septembre 2026**
+
+**Sa réponse :** *« je veux la déplacer vers la gauche pour laisser apparaître
+le supprimer »*. Codé : `.atlas-glisseur` est un rail horizontal
+(`ARCHITECTURE.md` §283).
+
+---
+
+## LA NOTE N'EXISTE PAS SUR L'ÉCRAN OÙ IL LA CHERCHE
+
+**Né le 7 septembre 2026, dans le même message que la réponse ci-dessus :**
+*« aujourd'hui, lever la note vocale ne propose pas de la supprimer, je viens
+d'essayer »* — capture de la fiche client pendant « Atlas prépare votre
+devis… ».
+
+`FormulaireNouveauChantier` monte `AnneauNoteVocale` avec `storageKey={null}`
+— le rendu « lecteur », celui qui porte le glisseur, n'est jamais atteint là.
+**Le geste corrigé n'a rien à saisir sur cet écran.**
+
+**Ce qui manque est un OBJET, pas un geste :** faire apparaître la note
+envoyée pendant que le devis se prépare, et que la retirer interrompe la
+préparation. Cela touche la chaîne de préparation — ça se dessine avant de
+s'écrire (`CLAUDE.md` §3 bis), et ça ne se vérifie pas sans son espace.
+
+---
+
+
+## ✅ ~~Le ⌀ sur « souches de 60 cm » ?~~ — **OUI, le 7 septembre 2026**
+
+**Sa réponse le jour même :** *« Lorsque l'on parle de diamètre, mets le
+signe. D'ailleurs quand on dit souche de 60, ou 60 au pied, on parle de
+diamètre en réalité. »* Posé sur le libellé client et sur les trois formes de
+cases de grille ; pas là où le mot « diamètre » est déjà écrit
+(`ARCHITECTURE.md` §279).
+
+**Mon arbitrage était le mauvais, et c'est noté :** j'avais gardé la ligne
+sans signe en invoquant le français. Le nombre EST un diamètre, et rien ne le
+disait au client qui lit le devis.
+
+---
+
+## LA BATTERIE COMPLÈTE DU LOT DU 7 SEPTEMBRE N'A PAS ÉTÉ JOUÉE
+
+Son feu vert était attendu (`CLAUDE.md` §5 : ses sessions partagent le
+dossier). **Rien de ce lot n'est sur `main` tant qu'elle n'est pas verte.**
+Ce qui a été joué : 18 suites concernées, vertes ; 4 rouges faute de
+`DATABASE_URL` sur ce poste — elles tombent à l'import, avant le code du lot.
+
 ---
 
 ## ✅ ~~UNE RÉPONSE ATTENDUE — le texte secondaire est-il assez gros ?~~ — **OUI, le 6 septembre 2026**

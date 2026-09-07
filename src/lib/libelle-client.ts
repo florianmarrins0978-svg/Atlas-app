@@ -359,7 +359,7 @@ function ceSurQuoiLeGestePorte(texte: string, p: PrestationLisible): string {
   if (diametreCm === undefined) return texte;
   const nombre = Number(p.quantite ?? "1");
   const pluriel = Number.isFinite(nombre) && nombre > 1 && !/[sx]$/i.test(objet) ? `${objet}s` : objet;
-  return `${texte} de ${pluriel.toLocaleLowerCase("fr")} de ${diametreCm} cm`;
+  return `${texte} de ${pluriel.toLocaleLowerCase("fr")} de ⌀ ${diametreCm} cm`;
 }
 
 
@@ -408,27 +408,60 @@ export function libelleClient(p: PrestationLisible): string {
   const { valeurs, unites } = valeursConnues(p);
   if (valeurs.size === 0 && !p.methode) return base;
 
-  // ── 1. Les parenthèses techniques s'en vont ─────────────────────────────
+  // ── 1. Les parenthèses techniques s'en vont, OÙ QU'ELLES SOIENT ──────
   //
-  // Par la fin, et l'on s'arrête à la première qui apprend quelque chose.
+  // **Sa règle du 7 septembre 2026 :** *« il met entre parenthèses (1 arbre),
+  // ça il ne doit jamais le faire, la quantité (Qté) est là pour ça !!! »*
+  //
+  // Ce qu'il a lu : « Démontage d'un chêne mort (1 arbre) de ⌀ 60 cm ».
+  //
+  // **La règle existait ; elle ne regardait que la FIN du libellé.** Une
+  // parenthèse posée au milieu — parce que le modèle l'y met, ou parce que la
+  // rédaction du tiret a recollé du texte derrière elle — passait sans être
+  // vue. Un contrôle qui ne regarde qu'un bout ne prouve rien de l'autre.
   let reste = base;
   for (;;) {
-    // `[\s\S]` plutôt que le drapeau `s` : le projet vise ES2017, où ce drapeau
-    // n'existe pas. Un libellé sur plusieurs lignes — une ligne de devis en
-    // réunit — resterait sinon intouché sans que rien ne le dise.
-    const parenthese = reste.match(/^([\s\S]*?)\s*\(([^()]*)\)\s*$/);
-    if (parenthese && seulementDesMesuresConnues(parenthese[2], valeurs, unites)) {
-      reste = parenthese[1].trimEnd();
-      continue;
+    // **Toutes les parenthèses sont examinées, pas seulement la première.**
+    // « Taille (haie mixte) (800 ml) » : s'arrêter à celle qui apprend quelque
+    // chose laisserait la seconde en place, et c'est celle-là qui double la
+    // colonne Qté.
+    const motif = /\(([^()]*)\)/g;
+    let retire = false;
+    for (let m = motif.exec(reste); m !== null; m = motif.exec(reste)) {
+      if (!seulementDesMesuresConnues(m[1], valeurs, unites)) continue;
+      const avant = reste.slice(0, m.index).trimEnd();
+      const apres = reste.slice(m.index + m[0].length).trimStart();
+      reste = (avant && apres ? `${avant} ${apres}` : avant + apres).trim();
+      retire = true;
+      break;
     }
-    break;
+    if (!retire) break;
   }
 
   // ── 2. Le tiret devient une phrase ──────────────────────────────────────
   const tiret = reste.match(/^([\s\S]*\S)\s*[—–]\s*(\S[^—–]*)$/);
   if (tiret) {
     const tete = tiret[1].trim();
-    const complement = sansLaQuantite(tiret[2], valeurs);
+    // **Un fragment qui ne dit QUE ce que les colonnes portent s'en va en
+    // entier — et c'est la règle annoncée en tête de ce fichier.**
+    //
+    // Elle ne s'appliquait qu'aux parenthèses. Après un tiret, on passait
+    // droit à `sansLaQuantite`, qui retire le nombre de TÊTE quand une
+    // colonne le porte — et laisse les mots derrière lui.
+    //
+    // Ce qu'il a lu sur son devis, le 7 septembre 2026 :
+    //
+    //   « Fente du gros bois — 20 m de haut »  →  « Fente du gros bois de m de haut »
+    //
+    // Le « 20 » était pourtant sa réponse, correctement enregistrée : c'est
+    // le nettoyage qui l'a mangé en gardant sa phrase. Un libellé amputé est
+    // pire qu'un libellé bavard — il part chez le client tel quel.
+    //
+    // `sansLaQuantite` garde son emploi : les fragments MIXTES, où le nombre
+    // de tête est une quantité et le reste apprend quelque chose.
+    const complement = seulementDesMesuresConnues(tiret[2], valeurs, unites)
+      ? ""
+      : sansLaQuantite(tiret[2], valeurs);
     if (complement.length === 0) {
       reste = tete;
     } else if (estUnGeste(tete)) {

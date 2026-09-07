@@ -132,7 +132,7 @@ cas("CE QUI N'EST PAS DIT SE DEMANDE TOUJOURS — le garde-fou n'est pas cassé"
 console.log("\n=== Ce que le CLIENT lit sur le devis ===\n");
 
 cas("LE DEVIS AFFICHE « Dessouchage de souches de 60 cm »", () => {
-  assert.equal(libelleClient(enBase(LECTURE_SERREE[2])), "Dessouchage de souches de 60 cm");
+  assert.equal(libelleClient(enBase(LECTURE_SERREE[2])), "Dessouchage de souches de ⌀ 60 cm");
 });
 
 cas("le nombre ne revient PAS dans le libellé — il reste dans sa colonne", () => {
@@ -145,7 +145,7 @@ cas("le nombre ne revient PAS dans le libellé — il reste dans sa colonne", ()
 
 cas("une seule souche reste au SINGULIER", () => {
   const une: LigneExtraite = { libelle: "Dessouchage", description: "souche de 45", quantite: "1", unite: "souche", nature: "dessouchage", espece: null, aConfirmer: false };
-  assert.equal(libelleClient(enBase(une)), "Dessouchage de souche de 45 cm");
+  assert.equal(libelleClient(enBase(une)), "Dessouchage de souche de ⌀ 45 cm");
 });
 
 cas("les trois autres libellés qu'il a validés ne bougent PAS", () => {

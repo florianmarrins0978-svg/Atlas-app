@@ -54,20 +54,20 @@ client (sa règle du 31 août). Décisions : `ARCHITECTURE.md` §273.
 
 ### « Devis & factures » coupé en quatre, et trois messages (7 septembre 2026)
 
-**Fait.** L'écran le plus long de l'application — 4 350 px — est devenu un
-sommaire de quatre lignes et quatre écrans courts, à sa demande : *« on
-coupe »*. **Rien n'en sort** : le sommaire des réglages garde ses douze lignes.
+## FAIT : le devis qui ne partait pas (7 septembre 2026)
 
-**Trois messages au client**, un par document (devis, facture, compte rendu de
-passage), migration **0075**. `[document]` n'y pose plus que le mot ; la phrase
-lui appartient. Deux jetons ne se retirent pas : le lien et le mot du document.
+| | |
+|---|---|
+| **Ce qui le bloquait** | `WinAnsi cannot encode "⌀"` — les polices d'un PDF ne connaissent que 224 caractères, et un seul manquant fait échouer le document ENTIER |
+| **Corrigé comment** | à l'entrée du papier, une fois pour toutes (`src/lib/texte-pdf.ts`), et non par une troisième rustine : les deux caractères précédents avaient été réparés un par un, et le quatrième serait venu d'une dictée |
+| **Ce qui ne bouge PAS** | le ⌀ reste partout dans le produit — sa demande du jour. Seul le PDF reçoit un Ø, le même rond barré |
+| **La hauteur** | demandée sur l'ARBRE, plus sur la fente. Elle change de ligne, elle ne disparaît pas : sans elle, la fente n'a plus de case dans sa grille |
+| **Son libellé ampué** | « Fente du gros bois de m de haut » : sa réponse était bien enregistrée, c'est le nettoyage du libellé client qui retirait le nombre en gardant sa phrase |
+| **Le ⌀ étendu** | il s'écrit maintenant partout où un nombre EST un diamètre — libellé du devis client et cases de grilles —, sa règle du jour. Atlas les LISAIT déjà ainsi depuis le 31 août (§279) |
+| **Les contrôles** | `test-texte-pdf` (neuf, il compose SON devis avec le ⌀), `test-questions-chiffrage`, `test-libelle-client` |
+| **État** | **pas sur `main`** — batterie complète non jouée, son feu vert attendu |
 
-**Six typographies au lieu de dix**, et une clef retirée est traduite vers la
-plus proche (`TYPOGRAPHIE_REMPLACEE`) plutôt que perdue.
-
-**Reste à jouer sur son poste :** la batterie complète, migration appliquée —
-les suites base et navigateur de ce lot n'ont pas encore tourné ici.
-Détail : `ARCHITECTURE.md` §272, `docs/lot-couper-devis-et-factures.md`.
+---
 
 ## FAIT : « Monsieur » va sur la pastille, plus dans le nom (7 septembre 2026)
 

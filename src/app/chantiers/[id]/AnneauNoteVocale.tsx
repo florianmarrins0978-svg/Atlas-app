@@ -435,7 +435,7 @@ export default function AnneauNoteVocale({
     retraits.retirer(chantierId, "cette note vocale");
     // Le glisseur revient à sa place : rouvert par « Annuler », l'anneau doit
     // se retrouver là où on l'a laissé, pas déjà poussé vers le haut.
-    glisseurRef.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    glisseurRef.current?.scrollTo({ left: 0, behavior: "instant" as ScrollBehavior });
   }
 
   const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -720,7 +720,7 @@ export default function AnneauNoteVocale({
           chercher un geste sans effet — et un anneau muet sur un chantier neuf
           ne dirait pas qu'il attend la voix. */}
       <p className="atlas-indice mt-2 text-[11px]" style={{ color: colors.muted }}>
-        Poussez l&apos;anneau vers le haut
+        Glissez l&apos;anneau vers la gauche
       </p>
 
       <p className="atlas-chrono" style={{ color: colors.or }} aria-hidden={!lit}>

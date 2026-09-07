@@ -438,7 +438,7 @@ function celluleCroisee(hauteur: Tranche, diametre: Tranche): Cellule {
     cle: `${hauteur.cle}|${diametre.cle}`,
     hauteur,
     diametre,
-    libelle: `${hauteur.libelle} de haut · tronc de ${diametre.libelle}`,
+    libelle: `${hauteur.libelle} de haut · tronc de ⌀ ${diametre.libelle}`,
   };
 }
 
@@ -478,7 +478,7 @@ function celluleTechnique(t: Technique, diametre: Tranche): Cellule {
     // connaître ; ce sont les LIBELLÉS qui disent au patron de quoi on parle.
     hauteur: { cle: t.cle, de: 0, a: null, libelle: t.libelle },
     diametre,
-    libelle: `${t.libelle} · tronc de ${diametre.libelle}`,
+    libelle: `${t.libelle} · tronc de ⌀ ${diametre.libelle}`,
   };
 }
 
@@ -502,7 +502,7 @@ function celluleDiametreSeul(diametre: Tranche, prefixe: string): Cellule {
     cle: diametre.cle,
     hauteur: { cle: "un-axe", de: 0, a: null, libelle: prefixe },
     diametre,
-    libelle: `${prefixe} ${diametre.libelle}`,
+    libelle: `${prefixe} ⌀ ${diametre.libelle}`,
   };
 }
 

@@ -23996,6 +23996,192 @@ reçoit (`test-coordonnees-dictees`), et les deux fonctions inverses confrontée
 (`test-civilite`). Les deux suites rougissent quand on retire le détachement.
 **Le parcours micro compris reste à jouer sur son espace.**
 
+## §276. Le papier ne sait écrire que 224 caractères — on assainit à son entrée
+
+**Payé trois fois, la troisième le 7 septembre 2026.** Le patron, devant son
+devis prêt à partir : *« je pense que ce sigle-là ne lui convient pas, il n'a
+pas réussi à m'envoyer le devis. »* Sous le bouton, en rouge :
+
+    WinAnsi cannot encode "⌀" (0x2300)
+
+Le devis était juste. La date était choisie. Il ne partait pas — à cause du
+signe de diamètre que le produit écrit **lui-même**, et qu'il venait de valider
+dans le même message : *« j'ai bien aimé le petit rond barré ; quand on parle de
+diamètre, s'il peut à chaque fois mettre ce signe-là, c'est parfait. »*
+
+### Le vrai défaut n'était pas le caractère, c'était la méthode
+
+Les deux occurrences précédentes ont été réparées **à l'endroit exact où elles
+sont apparues**, et c'est ce qui a produit la troisième :
+
+| le caractère | d'où il venait | la rustine d'alors |
+|---|---|---|
+| U+202F, espace fine | `toLocaleString('fr-FR')` | `euros.ts` écrit U+00A0 |
+| U+2212, moins typographique | la ligne de remise | `document-commun.ts` écrit `-` |
+| **U+2300, le signe ⌀** | `questions-chiffrage.ts` | *celle-ci* |
+
+Un seul défaut sous les trois : les polices standard d'un PDF sont encodées en
+**WinAnsi**, qui ne connaît que 224 caractères, et `pdf-lib` refuse la page
+entière dès qu'un seul lui échappe. Réparer au cas par cas, c'est attendre le
+quatrième — et **le quatrième serait venu d'une DICTÉE, pas du code** : un nom
+de client, une note, un mot recopié d'un site. Le devis aurait alors été bloqué
+par une chaîne que personne n'a écrite, et personne n'aurait su où regarder.
+
+### Ce qui a été fait
+
+`src/lib/texte-pdf.ts` — une fonction pure, trois passes, dans cet ordre :
+
+1. **une table d'équivalents** : ⌀ devient Ø, le rond barré que WinAnsi porte ;
+2. **le retrait des accents** que la police ignore (« ā » devient « a »), sans
+   rien traduire ni inventer ;
+3. **le retrait pur et simple**, et il est **consigné** — un caractère effacé en
+   silence, c'est un mot amputé sur le devis d'un client sans que personne ne
+   l'apprenne.
+
+Branchée sur les **cinq** points d'entrée du papier
+(`document-commun.ts` : `surLePapier`). Pas quatre : `widthOfTextAtSize`
+**encode lui aussi**, donc `ecrireADroite` et `ecrireEspaceADroite` échouaient
+en calculant leur retrait, avant même d'écrire quoi que ce soit.
+
+### Ce que cela ne change PAS
+
+Le ⌀ reste le ⌀ **partout dans le produit** — c'est sa demande explicite. Seul
+le papier, qui ne sait pas l'écrire, reçoit le Ø. Les deux dessinent un rond
+barré, le client ne verra pas la différence, et `mesures-arbre.ts` sait déjà
+relire les deux formes.
+
+### Le choix assumé : le document part quand même
+
+Un devis bloqué coûte un chantier ; un signe manquant se voit et se corrige.
+Mais il ne part pas en silence — d'où la trace. `scripts/test-texte-pdf.ts`
+**sait échouer** : son premier cas confronte `pdf-lib` au caractère brut et
+exige son refus. Le jour où WinAnsi l'accepterait, ce cas rougirait pour dire
+que le garde-fou n'a plus de raison d'être, au lieu de dormir pour toujours.
+
+---
+
+## §277. La hauteur appartient à l'arbre, jamais à la fente
+
+**Sa règle du 7 septembre 2026**, dans le même message que §276 : *« il m'a
+proposé la hauteur pour la fente. Cette case-là ne doit jamais comporter de
+hauteur, c'est de la fente. La hauteur, c'est pour un arbre. »*
+
+### Ce qui se passait, et pourquoi c'était défendable
+
+La question vivait sur la ligne du **fendage** depuis le 8 août 2026, et c'est
+lui qui l'y avait mise : *« pour la fente ils devraient demander la hauteur de
+l'arbre et son diamètre »*. La raison tient toujours — la grille de fendage est
+« hauteur × diamètre », c'est du volume.
+
+L'erreur n'était donc pas de demander la hauteur : c'était de la demander **sous
+le titre « Fente du gros bois »**, c'est-à-dire sur un objet qui n'a pas de
+hauteur. Et la réponse partait ensuite grossir le libellé de la fente.
+
+### Ce qui a été fait, et la borne qui va avec
+
+La question **change de ligne, elle ne disparaît pas.** La supprimer aurait
+laissé la fente sans case dans sa grille, donc sans prix, et rien ne l'aurait
+dit — exactement le défaut muet que `CLAUDE.md` §4 ter interdit.
+
+| la dictée porte | qui pose la question |
+|---|---|
+| un arbre **et** du bois à fendre | l'**arbre** : « Quelle hauteur fait l'arbre ? » |
+| du bois à fendre **seul** | la fente, comme avant — il n'y a personne d'autre |
+| un arbre **sans** fendage | personne : la hauteur ne décide alors de rien |
+
+Le prix de la fente n'en souffre pas : `prixDeLaLigne` chiffre contre **toutes**
+les réponses du chantier et tous ses libellés (`textesChantier`), pas contre la
+seule ligne. C'est le même mécanisme qui, depuis le premier jour, évitait de
+redemander une hauteur déjà dictée.
+
+---
+
+## §278. Un fragment de mesures s'en va en entier, il ne s'ampute pas
+
+**Même message, même soir.** Sur son devis :
+
+    « Fente du gros bois de m de haut, ⌀ 80 cm »
+
+Il l'a lu comme une réponse perdue — *« il n'a pas réussi à la retranscrire »*.
+**Elle ne l'était pas** : le « 20 » était bien enregistré, en colonne. C'est le
+nettoyage du libellé client qui l'a mangé.
+
+### La cause
+
+`libelle-client.ts` annonce sa règle en tête : *« on retire un fragment dont
+TOUT ce qu'il dit est déjà dans les colonnes »*. Elle n'était appliquée qu'aux
+**parenthèses**. Après un tiret, on passait droit à `sansLaQuantite`, qui retire
+le nombre de **tête** quand une colonne le porte — et laisse les mots derrière
+lui.
+
+Le geste avait été écrit pour « — deux souches de 60 cm », où le nombre de tête
+est une **quantité**. Sur « — 20 m de haut », où le nombre **est** la mesure, il
+produit une phrase amputée. Et une phrase amputée part chez le client telle
+quelle, sans que rien ne la signale.
+
+### Ce qui a été fait
+
+La règle des parenthèses s'applique aussi après le tiret : un fragment qui ne
+dit que ce que les colonnes portent **disparaît en entier**. `sansLaQuantite`
+garde son emploi pour les fragments **mixtes**, où le nombre de tête est une
+quantité et le reste apprend quelque chose.
+
+La formulation qu'il avait validée le 30 août — « Dessouchage de souches de
+60 cm » — ne bouge pas : elle est reconstruite juste après, par
+`ceSurQuoiLeGestePorte`, depuis les colonnes. Les 27 cas de
+`test-libelle-client.ts` le tiennent.
+
+## §279. Un nombre qui EST un diamètre porte son signe — même sans le mot
+
+**Sa règle du 7 septembre 2026, en réponse à une question que je lui avais
+posée :** *« Lorsque l'on parle de diamètre, mets le signe. D'ailleurs quand on
+dit souche de 60, ou 60 au pied, on parle de diamètre en réalité. »*
+
+### J'avais tranché l'inverse, et je le lui avais dit — il a corrigé
+
+En livrant §278, j'avais laissé une ligne **sans** le signe et je l'avais
+signalé plutôt que de le faire en silence : `ceSurQuoiLeGestePorte` écrivait
+« Dessouchage de souches de 60 cm ». Mes deux raisons étaient qu'« de souches de
+⌀ 60 cm » se lit mal en français, et que la formulation avait été validée le
+30 août.
+
+**Les deux étaient faibles, et sa réponse dit pourquoi :** ce 60 **est** un
+diamètre, et rien dans la ligne ne le disait. Un paysagiste le sait ; le client
+qui reçoit le devis, non — et c'est lui qui lit cette ligne. Le signe n'est pas
+un ornement, c'est la seule chose qui nomme la mesure.
+
+### Les deux moitiés de la règle, et une seule manquait
+
+| | |
+|---|---|
+| **LIRE** « souche de 60 », « 60 au pied » comme un diamètre | **déjà fait** — sa convention du 31 août 2026, dans `mesures-arbre.ts`, avec ses bornes : « 60 cm de circonférence » est refusé, une autre unité aussi |
+| **ÉCRIRE** le signe quand on rend ce nombre | **c'est ce qui manquait** |
+
+C'est la dissymétrie qui l'a fait parler : Atlas comprenait déjà sa langue, mais
+ne la lui rendait pas.
+
+### Où le signe a été posé
+
+| l'endroit | avant | après |
+|---|---|---|
+| le libellé du devis client | `Dessouchage de souches de 60 cm` | `… de ⌀ 60 cm` |
+| une case de fendage | `10 à 15 m de haut · tronc de 40 à 50 cm` | `… tronc de ⌀ 40 à 50 cm` |
+| une case d'abattage | `démontage · tronc de 40 à 50 cm` | `… tronc de ⌀ 40 à 50 cm` |
+| une case de dessouchage | `Souche de 40 à 50 cm` | `Souche de ⌀ 40 à 50 cm` |
+
+Les **clés** des cases ne bougent pas (`h10|d40`) : elles sont persistées, et
+seuls les libellés sont réécrits. Un prix déjà saisi reste dans sa case.
+
+### Ce qui n'a PAS reçu le signe, et pourquoi
+
+Les endroits qui disent déjà le mot : la question « Quel diamètre fait le
+tronc ? », l'axe « Diamètre du tronc » en tête de ses grilles. Le signe y
+répéterait le titre — et `CLAUDE.md` §3 demande le moins de mots possible, pas
+le plus de symboles.
+
+**Et sur le papier, le ⌀ devient Ø** (§276) : la police d'un PDF ne connaît pas
+le premier. Même rond barré, même sens, et `mesures-arbre.ts` relit les deux.
+
 ## §272. « Devis & factures » coupé en quatre, et trois messages au lieu d'un
 
 **7 septembre 2026.** L'écran le plus long de l'application — **4 350 px, six
@@ -24322,3 +24508,267 @@ version. **Le défaut ne se reproduit donc pas ici, et le correctif ne s'y
 éprouve pas.** Ce qui s'y prouve : que la règle est appliquée par les cinq
 routes, que l'aperçu n'a pas changé, et qu'un vrai appui fait bien descendre un
 fichier.
+
+
+## §280. La dictée de la fiche client : trois défauts, une seule racine
+
+**Sa plainte du 7 septembre 2026, deux messages à une heure d'écart :** *« la
+dictée pour remplir la fiche client est vraiment pas terrible, elle comprend
+souvent rien ou à côté ! Souvent l'arobase elle ne le comprend pas donc ne
+l'écrit pas ! C'est très embêtant, l'utilisateur va vite se lasser si ça ne
+fonctionne pas bien. »* Puis, devant une seconde tentative : *« Ça fonctionne
+toujours très mal !!!!! »*
+
+### La mesure a montré pire que la plainte
+
+Sur sa phrase exacte, jouée sur la fonction pure — aucune clé d'IA nécessaire :
+
+| ce qu'il dicte | ce qu'Atlas en tirait |
+|---|---|
+| `florian point martin zéro neuf sept huit arobase laposte point net` | **`huit@laposte.net`** |
+| la même avec « arobas » | **`null`** |
+| `… arobase la poste point net` | **`null`** |
+| `flo tiret speed arobase hotmail point fr` | **`flo-speed-hotmail.fr`** (du modèle) |
+
+Le premier est le plus grave : **le prénom était avalé en silence et le résultat
+avait l'air juste.** C'est exactement le défaut que le commentaire d'origine
+disait avoir corrigé pour « tiret » le 9 août 2026 — les chiffres dictés le
+recréaient par un autre chemin.
+
+### Une seule racine, et elle n'est pas celle qu'il croit
+
+Il croit que la transcription ne comprend pas. **La transcription comprend très
+bien** : elle écrit « arobase », « point », les chiffres en lettres. C'est la
+LECTURE de ce texte qui échouait, et quand elle échoue, `assemblerCoordonnees`
+laisse la main au modèle de langue — qui, lui, invente une adresse plausible.
+
+Le défaut visible (« il écrit n'importe quoi ») est donc le **symptôme** d'un
+silence en amont. Les trois causes :
+
+| ce qui manquait | ce que ça coûtait |
+|---|---|
+| les chiffres dictés n'étaient PAS convertis pour l'e-mail | ils coupaient l'adresse en deux, et seul le dernier morceau restait |
+| une seule orthographe d'« arobase » | « arobas », « arrobase », « at » : plus d'adresse du tout |
+| aucun recollage des morceaux | « la poste » en deux mots : plus d'adresse du tout |
+
+**La conversion des chiffres existait déjà** — elle ne servait qu'au téléphone.
+Deux lectures de la même phrase, dont une seule tenue à jour : c'est la règle
+dupliquée que `CLAUDE.md` §3 interdit, sous une forme qui ne se voyait pas.
+
+### Le recollage, et pourquoi il ne peut pas s'emballer
+
+`recollerEmail` colle **un morceau à gauche, un à droite, jamais deux**. Quatre
+bornes, et chacune a été trouvée en écrivant le correctif :
+
+| la borne | ce qu'elle empêche |
+|---|---|
+| à droite, seulement si l'adresse n'est pas déjà complète | `florian@gmail.com merci` → `…commerci` |
+| jamais un mot français courant (`MOTS_QUI_ARRETENT`) | `sonmailflorian@…` |
+| jamais un mot à majuscule | `Ludovicflorian.martin@…` |
+| jamais le numéro de téléphone reconnu | `0652889751martin@exemple.fr` |
+
+**La dernière a été attrapée par la suite existante, pas par moi.** Une fois les
+chiffres convertis, un numéro a exactement la forme d'un morceau d'adresse.
+
+### La seconde ligne de défense : ce que le modèle rend doit AVOIR la forme
+
+`flo-speed-hotmail.fr` n'est pas une adresse e-mail. Elle entrait quand même,
+parce que rien ne vérifiait la forme de ce que le modèle proposait. Désormais un
+e-mail venu du modèle n'entre que s'il porte un @ et un point ; sinon le champ
+reste **vide**.
+
+C'est `CLAUDE.md` §4 appliqué à la lettre : un champ vide se voit et se corrige,
+une adresse plausible part avec le devis.
+
+### L'adresse : ce qui se répare, et ce qui ne se répare pas
+
+| ce qu'il a dicté | ce qui s'affichait | après |
+|---|---|---|
+| `27730 Villennes` | `27 730 Villene` | `27730 Villene` |
+| `12 rue Bérangère 27500 Mâcon` | `12 rue Bérangère, 27 500, Macon` | `12 rue Bérangère, 27500 Macon` |
+| `10 rue des marguerites` | `Dierud et Marguerite` | **inchangé** |
+
+Un code postal n'est pas un nombre : il ne se sépare jamais. Une virgule entre
+le code postal et la ville vient du modèle, pas de sa bouche — **celle qui suit
+la rue reste**, c'est du français, et une enveloppe s'écrit ainsi.
+
+**« Dierud et Marguerite » est une faute d'oreille, et rien dans le code ne peut
+la rattraper.** Le dire est la seule réponse honnête : il la corrige à la main.
+Prétendre l'avoir réparée lui coûterait un essai, puis un aller-retour.
+
+### Ce qui n'a PAS pu être éprouvé ici
+
+Ce poste n'a aucune clé d'IA (`CLAUDE.md` §1 ter). Tout ce qui précède est joué
+sur les fonctions pures — c'est là que vivaient les trois défauts. **Ce qui
+dépend de la transcription réelle et du modèle se vérifie sur son espace**, et
+la ligne ajoutée à la consigne du modèle en fait partie.
+
+## §281. Trois autres défauts de sa soirée du 7 septembre 2026
+
+Ils sont arrivés par messages successifs, chacun avec sa capture, pendant que le
+lot précédent était encore en cours. Ils ne se ressemblent pas, et c'est la
+raison de les écrire ensemble : **aucun n'aurait été trouvé sans qu'il essaie.**
+
+### 1. Une adresse e-mail ne comporte AUCUN espace, jamais
+
+*« arborea pro@outlook.fr »*, pour « arborea pro arobase outlook point fr ».
+
+Sa règle est absolue et se code en une ligne : les espaces sont retirés **avant**
+que la forme soit jugée. L'inverse — juger puis retirer — refuserait l'adresse au
+lieu de la réparer, et le champ resterait vide alors que tout était là. C'est le
+piège de l'ordre des opérations, pas celui de la règle.
+
+### 2. Une circonférence se CONVERTIT, elle ne se jette pas
+
+*« Un chêne mort à démonter, hauteur 20 m de haut et 60 cm de circonférence »* —
+et l'écran lui redemandait le diamètre du tronc.
+
+**Le refus était juste, et c'était quand même un défaut.** Le dépôt refusait
+expressément « 60 cm de circonférence » comme diamètre — sa règle du 31 août — et
+elle a évité le pire : confondre les deux **triple** la mesure et range le prix
+trois cases plus loin.
+
+Mais refuser n'était que la moitié du travail. **Sur un tronc debout, on ne
+mesure pas un diamètre : on passe un mètre ruban autour.** La circonférence est
+ce qu'un élagueur relit sur son ruban ; la jeter revient à lui redemander une
+mesure qu'il vient de donner.
+
+Ce n'est pas une devinette, c'est une division : `diamètre = circonférence / π`.
+60 cm de tour font **19 cm** de tronc — et l'écart avec 60 dit à quel point s'en
+passer coûtait cher. **Un diamètre dit explicitement l'emporte toujours** : la
+conversion est un dernier recours, jamais un arbitrage entre deux valeurs.
+
+### 3. La quantité n'est jamais dans le libellé
+
+*« Il met entre parenthèses (1 arbre), ça il ne doit jamais le faire, la
+quantité (Qté) est là pour ça !!! »* — sur « Démontage d'un chêne mort (1 arbre)
+de ⌀ 60 cm ».
+
+**La règle existait depuis le 30 août ; elle ne regardait que la FIN du
+libellé.** Une parenthèse posée au milieu — parce que le modèle l'y met, ou parce
+que la rédaction du tiret a recollé du texte derrière elle — passait sans être
+vue. Un contrôle qui ne regarde qu'un bout ne prouve rien de l'autre.
+
+Deux bornes dans le correctif, et la seconde a été trouvée en l'écrivant :
+une parenthèse qui apprend quelque chose reste (« Taille **(haie mixte)** »), et
+elle ne doit pas empêcher d'examiner celles qui la suivent — la première version
+de la boucle s'arrêtait à la première rencontrée, et laissait donc « (800 ml) »
+en place derrière elle.
+
+## §282. Trois fils tirés le soir du 7 septembre 2026
+
+Ils arrivent après §281, par messages successifs, et n'ont rien à voir entre
+eux — sauf qu'aucun n'aurait été trouvé sans qu'il essaie l'application.
+
+### 1. Un devis accepté ne se disait nulle part
+
+*« Il faut aussi rajouter une notification lorsqu'un client accepte un devis,
+elle doit apparaître en haut dans les retours client ! »*
+
+**Ce que cela renverse, et c'était une décision délibérée.** Une acceptation sur
+l'une des dates proposées était **tue** dans `notificationsPatron`, au motif
+écrit noir sur blanc qu'elle *« ne surprend personne »* et *« noierait les deux
+nouvelles qui, elles, appellent quelque chose »*.
+
+Le raisonnement tenait sur le papier. Il oubliait une chose : **c'est la
+nouvelle qu'il attend.** Un chantier gagné ne s'apprend pas en ouvrant une
+fiche — il s'annonce. Le bruit qu'on craignait est borné ailleurs : la carte
+s'acquitte, et l'accueil n'en montre qu'une à la fois (`VISIBLES_PAR_DEFAUT`).
+
+**L'ordre « en haut » ne demande aucun code.** `ordre-notifications.ts` range par
+date de réponse, le plus récent d'abord : une acceptation qui vient d'arriver
+est en tête par construction.
+
+**Un titre a dû naître avec.** La seule acceptation qui remontait jusqu'ici
+était celle où le client avait proposé SA date, d'où un titre qui parlait de la
+date — « Autre date proposée ». Le garder pour les deux aurait annoncé une autre
+date sur un devis accepté tel quel. `dateContreProposee` les sépare.
+
+### 2. Deux flèches de retour se pointaient l'une l'autre
+
+*« J'appuie une fois sur le retour du devis, j'arrive sur la fiche client, et si
+je refais retour arrière je retourne sur le devis et non sur la page chantier.
+Il faut rectifier ça !! »*
+
+**C'était une boucle, et elle venait de deux de ses propres règles du 31 août**,
+justes séparément :
+
+| sa règle | ce qu'elle donnait |
+|---|---|
+| la flèche du devis mène à la fiche client, toujours | devis → fiche |
+| « le chemin se referme » : venu du devis, on y retourne | fiche → devis |
+
+Bout à bout : **aucune sortie**. Il fallait fermer l'onglet ou passer par la
+barre du bas.
+
+**Ce qui est gardé est la moitié qui compte.** « Le chemin se referme » vaut pour
+l'**enregistrement** (`apresLesCoordonnees`), et c'est là qu'il a du sens : il
+remplit ce qui manquait, il enregistre, il revient à son devis complété. Ce qui
+change n'est que la **flèche** — elle sert à renoncer, pas à revenir avec
+quelque chose. Renoncer, c'est sortir ; sortir, c'est la liste.
+
+**Le contrôle dit la RÈGLE, pas une adresse.** `test-retour-du-devis.ts` vérifie
+désormais qu'aucun cycle n'est possible : si une troisième porte renvoyait
+demain vers le devis, il rougirait.
+
+### 3. Le geste pour retirer une note vocale existe — dans l'autre sens
+
+*« On pourrait mettre un geste, déplacer la note vocale de droite vers la
+gauche, ça ferait apparaître la suppression comme c'est déjà le cas pour
+certaines choses. »*
+
+**Le geste existe déjà sur cet écran**, et c'est la vraie découverte :
+
+| | le geste | le code |
+|---|---|---|
+| la note vocale | glissement **vertical** | `.atlas-glisseur` — `overflow-y`, snap Y |
+| la liste des chantiers | **droite à gauche** | `.atlas-glisse` — flex |
+
+**Deux sens pour le même geste dans la même application.** Il ne l'a pas trouvé
+parce qu'il cherchait celui qu'il connaît, pas parce qu'il manquait.
+
+**Et sa propre règle du 5 septembre tire dans l'autre sens :** *« la plupart des
+patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de
+leur téléphone »*, d'où « rien de caché ». Un glissement, quel que soit son
+sens, se découvre par accident ou jamais.
+
+`appli/retirer-la-note-vocale.html` pose les trois — l'actuel, le sien, et une
+corbeille visible sans aucun geste. **Rien n'est codé** : c'est à lui de
+trancher, et la troisième n'est pas là pour faire nombre.
+
+## §283. Le glissement de la note vocale va vers la gauche — et il ne suffit pas
+
+**Sa réponse du 7 septembre 2026, planche `appli/retirer-la-note-vocale.html` :**
+*« Je veux la déplacer vers la gauche pour laisser apparaître le supprimer. »*
+C'est l'onglet 2.
+
+Le glissement était **vertical** depuis le 30 août ; la liste des chantiers,
+elle, se glisse **vers la gauche** depuis le 10 août. Deux sens pour le même
+geste dans la même application — il cherchait celui qu'il connaît, et concluait
+que le geste n'existait pas.
+
+`.atlas-glisseur` devient donc un rail horizontal, et ses deux volets prennent
+`flex: 0 0 100%` : sans cette base, deux blocs de la largeur de l'écran se
+rangeraient l'un sous l'autre et le glissement n'aurait rien à découvrir.
+
+### CE QUI RESTE OUVERT, et il faut le savoir avant de croire le lot fini
+
+**Sur l'écran où il a essayé, il n'y a AUCUNE note à glisser.** Il l'a dit dans
+le même message : *« aujourd'hui, lever la note vocale ne propose pas de la
+supprimer, je viens d'essayer »* — et sa capture montre la fiche client pendant
+« Atlas prépare votre devis… ».
+
+La raison est dans le code, pas dans le geste : `FormulaireNouveauChantier`
+monte `AnneauNoteVocale` avec **`storageKey={null}`**. Le rendu « lecteur » —
+celui qui porte le glisseur — n'est donc jamais atteint là. Après l'envoi,
+l'écran ne montre que le micro au repos et la phrase d'attente : **le geste
+corrigé ici n'a rien à saisir sur cet écran-là.**
+
+Il n'est atteint que sur un chantier qui porte DÉJÀ sa note — la seconde visite
+de la fiche, ou l'écran de la note vocale du chantier.
+
+**Ce qui manque est donc un objet, pas un geste** : faire apparaître la note
+qu'il vient d'envoyer, pendant que le devis se prépare, pour qu'il puisse la
+retirer s'il s'est trompé. Cela touche la chaîne de préparation — retirer la
+note doit l'interrompre — et ne se code pas à l'aveugle : c'est le prochain lot,
+et il se dessine avant de s'écrire (`CLAUDE.md` §3 bis).

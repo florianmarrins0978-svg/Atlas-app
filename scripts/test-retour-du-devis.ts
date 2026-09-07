@@ -74,11 +74,37 @@ cas("l'adresse de la fiche porte sa provenance, et elle se relit", () => {
   assert.equal(provenanceDesCoordonnees(CHANTIER, de ?? undefined), SON_DEVIS);
 });
 
-cas("venu du devis, enregistrer la fiche RAMÈNE au devis", () => {
+cas("venu du devis, ENREGISTRER la fiche ramène au devis", () => {
   // Sans cela, le document qu'il était en train de lire serait à retrouver
   // seul — un chemin qui s'ouvre et ne se referme pas.
   assert.equal(apresLesCoordonnees(CHANTIER, SON_DEVIS), SON_DEVIS);
-  assert.equal(retourDesCoordonnees(SON_DEVIS), SON_DEVIS);
+});
+
+// **CE CAS A CHANGÉ DE SENS LE 7 SEPTEMBRE 2026, et c'est lui qui l'a
+// provoqué :** *« j'appuie une fois sur le retour du devis, j'arrive sur la
+// fiche client, et si je refais retour arrière je retourne sur le devis et non
+// sur la page chantier. Il faut rectifier ça !! »*
+//
+// La ligne qui vivait ici exigeait l'inverse — `retourDesCoordonnees(CHANTIER, devis)
+// === devis` —, et elle aurait donc empêché la correction. Deux de ses
+// règles du 31 août, justes séparément, se pointaient l'une l'autre.
+cas("la FLÈCHE, elle, sort toujours : plus aucune boucle", () => {
+  assert.equal(retourDesCoordonnees(CHANTIER, SON_DEVIS), "/");
+  assert.equal(retourDesCoordonnees(CHANTIER, null), "/");
+});
+
+// **Le contrôle qui tient la règle, et pas seulement une valeur.** Le défaut
+// n'était pas une mauvaise adresse : c'était un cycle. On le dit comme tel —
+// si demain une troisième porte renvoyait vers le devis, ce cas rougirait.
+cas("aller au devis puis revenir ne peut plus tourner en rond", () => {
+  const versLaFiche = retourDuDevis({ chantierId: CHANTIER });
+  const de = new URL(versLaFiche, "http://exemple.test").searchParams.get("de");
+  const provenance = provenanceDesCoordonnees(CHANTIER, de ?? undefined);
+  assert.notEqual(
+    retourDesCoordonnees(CHANTIER, provenance),
+    SON_DEVIS,
+    "la flèche de la fiche renvoie au devis dont la flèche mène ici : il n'y a plus de sortie"
+  );
 });
 
 cas("SANS provenance, la flèche et l'enregistrement disent LA MÊME CHOSE", () => {
@@ -93,7 +119,7 @@ cas("SANS provenance, la flèche et l'enregistrement disent LA MÊME CHOSE", () 
   //
   // Les deux gestes s'accordent donc, ce qu'ils ne faisaient pas : la flèche
   // rendait déjà la liste.
-  assert.equal(retourDesCoordonnees(null), "/");
+  assert.equal(retourDesCoordonnees(CHANTIER, null), "/");
   assert.equal(apresLesCoordonnees(CHANTIER, null), "/");
 });
 

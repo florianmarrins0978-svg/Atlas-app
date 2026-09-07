@@ -980,11 +980,21 @@ export async function notificationsPatron(ctx: Ctx): Promise<NotificationPatron[
           isNull(envoisDevis.vuParPatronAt),
           isNull(chantiers.deletedAt),
           sql`${envoisDevis.reponse} IS NOT NULL`,
-          // Une acceptation sur l'une des dates proposées ne surprend personne :
-          // c'est le déroulement attendu. La signaler noierait les deux nouvelles
-          // qui, elles, appellent quelque chose.
-          sql`(${envoisDevis.reponse} IN ('refusee', 'correction') OR ${envoisDevis.dateContreProposee}
-               OR ${envoisDevis.precisionClient} IS NOT NULL)`
+          // **TOUTE réponse d'un client remonte — sa demande du 7 septembre
+          // 2026 :** *« il faut aussi rajouter une notification lorsqu'un client
+          // accepte un devis, elle doit apparaître en haut dans les retours
+          // client ! »*
+          //
+          // **Ce que cela renverse, et je l'écris parce que c'était une
+          // décision délibérée :** une acceptation sur une date proposée était
+          // TUE ici, au motif qu'elle « ne surprend personne » et noierait les
+          // nouvelles qui appellent un geste. Le raisonnement tenait sur le
+          // papier ; il oubliait que c'est la nouvelle qu'il ATTEND. Un
+          // chantier gagné ne s'apprend pas en ouvrant une fiche.
+          //
+          // Le bruit qu'on craignait est borné par ailleurs : la carte
+          // s'acquitte, et l'accueil n'en montre qu'une à la fois
+          // (`VISIBLES_PAR_DEFAUT`).
         )
       )
       .orderBy(desc(envoisDevis.responduAt));

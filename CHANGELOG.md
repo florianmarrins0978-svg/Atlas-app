@@ -7,6 +7,17 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-07
+### La note vocale se glisse vers la gauche
+
+*« Je veux la déplacer vers la gauche pour laisser apparaître le
+supprimer »* — sa réponse sur la planche, onglet 2. Le geste allait vers le
+HAUT depuis le 30 août, quand la liste des chantiers va vers la gauche :
+**deux sens pour le même geste**, et il cherchait celui qu'il connaît.
+
+**Ce que ça ne règle PAS, et il faut le lire :** sur la fiche client, après
+l'envoi, aucune note n'est affichée — le geste corrigé n'a rien à saisir là.
+C'est un objet qui manque, pas un geste (`ARCHITECTURE.md` §283).
+
 ### Deux mots du planning qu'il ne comprenait pas
 
 « 1 chez le client » n'apprenait rien : la liste qu'il ouvre s'appelle pourtant
@@ -45,13 +56,61 @@ reconnue, chaque écran retrouve exactement la destination qu'il avait.
 client (sa règle du 31 août) ; depuis le planning, ce chemin-là fait encore deux
 pas pour sortir. Voir `ARCHITECTURE.md` §273.
 
+### Un devis accepté se dit maintenant sur l'accueil
+
+*« Il faut aussi rajouter une notification lorsqu'un client accepte un devis,
+elle doit apparaître en haut dans les retours client ! »* Une acceptation sur
+une date proposée était **délibérément tue**, au motif qu'elle ne surprend
+personne. Elle ne surprend pas : **c'est celle qu'il attend**. La carte porte
+son propre titre, « Devis accepté », distinct de « Autre date proposée »
+(`ARCHITECTURE.md` §282).
+
+### Deux flèches de retour se pointaient l'une l'autre
+
+Du devis on revenait à la fiche client, et de la fiche client au devis :
+**aucune sortie**. Deux de ses règles du 31 août, justes séparément. La
+flèche de la fiche mène désormais toujours à la liste ; l'ENREGISTREMENT, lui,
+continue de ramener au devis — c'est là que « le chemin se referme » a du sens
+(`ARCHITECTURE.md` §282).
+
+### La dictée de la fiche client comprenait mal — trois causes, une racine
+
+*« Souvent l'arobase elle ne le comprend pas donc ne l'écrit pas ! »* La
+transcription, elle, comprenait très bien : c'est la LECTURE de son texte qui
+échouait, et le modèle prenait alors la main pour inventer une adresse.
+
+Mesuré sur sa phrase exacte : « florian point martin zéro neuf sept huit
+arobase laposte point net » rendait **`huit@laposte.net`** — le prénom avalé
+en silence, et le résultat avait l'air juste. Trois causes : les chiffres
+dictés n'étaient pas convertis pour l'e-mail, une seule orthographe
+d'« arobase était reconnue », et rien ne recollait les morceaux
+(`ARCHITECTURE.md` §280).
+
+Et une seconde ligne de défense : ce que le modèle propose n'entre plus que
+s'il a la forme d'une adresse. `flo-speed-hotmail.fr` laisse désormais le
+champ vide — un champ vide se voit, une adresse plausible part avec le devis.
+
+### Une circonférence de tronc se convertit, elle ne se jette plus
+
+*« 60 cm de circonférence »* et l'écran redemandait le diamètre. Sur un tronc
+debout on mesure un tour de ruban, pas un diamètre : `diamètre = tour / π`.
+60 cm de tour font 19 cm de tronc. **Un diamètre dit l'emporte toujours**
+(`ARCHITECTURE.md` §281).
+
+### La quantité ne s'écrit plus dans le libellé du devis
+
+*« Il met entre parenthèses (1 arbre), ça il ne doit jamais le faire, la
+quantité est là pour ça ».* La règle existait depuis le 30 août mais ne
+regardait que la fin du libellé ; une parenthèse au milieu passait
+(`ARCHITECTURE.md` §281).
+
 ### « Monsieur » ne va plus dans la case du nom, il allume la pastille
 
 Il dictait « monsieur Ludovic » et la case du nom portait « Monsieur Ludovic ».
 Le mot part désormais **là où il est une donnée** : la pastille « Mr / Mme »
 au-dessus du nom se sélectionne toute seule, et le nom reste nu.
 
-**Ce que ça évite** (`ARCHITECTURE.md` §268) : « Monsieur Ludovic » repartait
+**Ce que ça évite** (`ARCHITECTURE.md` §273) : « Monsieur Ludovic » repartait
 mot pour mot sur le devis, la facture et le SMS, alors qu'il écrit « Mr. » — et
 deux dictées, « monsieur Ludovic » et « Ludovic », faisaient deux fiches pour un
 seul client.
@@ -101,6 +160,42 @@ retirée est traduite vers la plus proche plutôt que perdue.
 **Un défaut trouvé en vérifiant sa remarque sur le doré :** l'écran promettait
 l'accent « sur le total à payer ». Le total est à l'encre, et l'a toujours été
 (`ARCHITECTURE.md` §272).
+### Le ⌀ partout où un nombre est un diamètre
+
+
+
+*« Quand on dit souche de 60, ou 60 au pied, on parle de diamètre en
+réalité. »* Atlas le LISAIT déjà ainsi depuis le 31 août — il ne l'ÉCRIVAIT
+pas. Le signe est posé sur le libellé du devis client et sur les cases de ses
+grilles ; pas là où le mot est déjà écrit. Les clés des cases ne bougent pas :
+un prix déjà saisi reste dans la sienne (`ARCHITECTURE.md` §279).
+
+### Son devis ne partait pas : le signe de diamètre bloquait le PDF
+
+« WinAnsi cannot encode "⌀" » sous le bouton d'envoi. Le devis était juste,
+la date choisie ; il ne partait pas à cause du signe que le produit écrit
+lui-même. **Le ⌀ reste partout dans l'application** — c'est sa demande. Seul
+le papier reçoit un Ø, le même rond barré, que la police sait écrire.
+
+C'était la **troisième** fois qu'un caractère arrêtait un document, et les deux
+premières avaient été réparées une par une. Le garde-fou vit désormais à
+l'entrée du papier : plus aucun caractère — y compris venu d'une dictée ou du
+nom d'un client — ne peut empêcher un envoi (`ARCHITECTURE.md` §276).
+
+### La hauteur se demande sur l'arbre, plus sur la fente
+
+*« Cette case-là ne doit jamais comporter de hauteur, c'est de la fente. La
+hauteur, c'est pour un arbre. »* La question **change de ligne, elle ne
+disparaît pas** : sans elle, la fente n'aurait plus de case dans sa grille,
+donc plus de prix. Un fendage dicté seul la garde — il n'y a personne d'autre
+à qui la poser (`ARCHITECTURE.md` §277).
+
+### « Fente du gros bois de m de haut » : sa réponse n'était pas perdue
+
+Le « 20 » qu'il avait saisi était bien enregistré. C'est le nettoyage du
+libellé client qui le retirait en gardant la phrase autour de lui. Un fragment
+qui ne dit que ce que les colonnes portent s'en va maintenant en entier
+(`ARCHITECTURE.md` §278).
 
 ### La facture se télécharge pour de bon
 

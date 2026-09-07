@@ -154,7 +154,18 @@ function versCarte(n: NotificationPatron): Carte {
   const refus = n.reponse === "refusee";
   const correction = n.reponse === "correction";
 
-  const titre = correction ? "Correction demandée" : refus ? "Devis retourné" : "Autre date proposée";
+  // **« Devis accepté » est un titre à part entière depuis le 7 septembre
+  // 2026.** Une acceptation simple ne remontait pas jusqu'ici ; la seule
+  // qui passait était celle où le client avait proposé SA date, d'où un titre
+  // qui parlait de la date plutôt que de la nouvelle. Le garder pour les deux
+  // aurait annoncé « Autre date proposée » sur un devis accepté tel quel.
+  const titre = correction
+    ? "Correction demandée"
+    : refus
+      ? "Devis retourné"
+      : n.dateContreProposee
+        ? "Autre date proposée"
+        : "Devis accepté";
   const texte = correction
     ? "Le client veut ce devis corrigé avant de l'accepter."
     : refus

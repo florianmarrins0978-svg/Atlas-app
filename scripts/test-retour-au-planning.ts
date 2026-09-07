@@ -149,14 +149,23 @@ cas("la fiche client reconnaît le planning sans oublier le devis", () => {
 
 cas("sa flèche ANNONCE la bonne destination, et non « le devis » pour tout", () => {
   assert.equal(libelleRetourDesCoordonnees(ID, PLANNING), LIBELLE_RETOUR_PLANNING);
-  assert.equal(libelleRetourDesCoordonnees(ID, `/chantiers/${ID}/devis-complet`), "Retour au devis");
+  // **Venu du DEVIS, la flèche sort vers la liste — sa correction du
+  // 7 septembre 2026 :** *« je refais retour arrière et je retourne sur le
+  // devis et non sur la page chantier »*. Les deux flèches se pointaient l'une
+  // l'autre. Le PLANNING, lui, ne ramène pas ici : il garde son retour.
+  assert.equal(
+    libelleRetourDesCoordonnees(ID, `/chantiers/${ID}/devis-complet`),
+    "Retour à la liste des chantiers"
+  );
   assert.equal(libelleRetourDesCoordonnees(ID, null), "Retour à la liste des chantiers");
 });
 
 cas("enregistrée depuis le planning, la fiche client y repart", () => {
   // Il est venu du planning pour remplir ce qui manquait : il y retourne, et
   // c'est la même règle que pour le devis depuis le 31 août.
-  assert.equal(retourDesCoordonnees(PLANNING), PLANNING);
+  assert.equal(retourDesCoordonnees(ID, PLANNING), PLANNING);
+  // Et la borne qui va avec : le devis, lui, ne se reçoit plus en retour.
+  assert.equal(retourDesCoordonnees(ID, `/chantiers/${ID}/devis-complet`), "/");
   assert.equal(apresLesCoordonnees(ID, PLANNING), PLANNING);
   assert.equal(apresLesCoordonnees(ID, null), "/");
 });

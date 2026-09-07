@@ -363,15 +363,63 @@ cas("la hauteur dite ailleurs dans la dictée ne se redemande pas", () => {
   );
 });
 
-cas("mais elle se demande dès que la dictée ne la donne nulle part", () => {
+// **La hauteur a CHANGÉ DE LIGNE le 7 septembre 2026, elle n'a pas disparu.**
+//
+// Sa règle : *« il m'a proposé la hauteur pour la fente — cette case-là ne
+// doit jamais comporter de hauteur, c'est de la fente. La hauteur, c'est pour
+// un arbre. »* Le cas qui vivait ici exigeait l'inverse : il demandait que la
+// hauteur soit posée sur la FENTE, et il aurait donc empêché sa correction.
+//
+// Ce qu'il défendait reste défendu, et c'est le seul point qui compte : sans
+// hauteur, aucune case de la grille de fendage ne peut être désignée, et la
+// fente n'a plus de prix. On vérifie donc qu'elle est TOUJOURS demandée —
+// une fois, et sur l'arbre (`CLAUDE.md` §5 bis).
+cas("la hauteur se demande toujours, mais sur l'ARBRE et jamais sur la fente", () => {
   const q = questionsAvantChiffrage([
     { libelle: "Abattage d'un chêne mort" },
     { libelle: "Fendage du bois" },
   ]);
   assert.equal(
     q.filter((x) => x.id.startsWith("fendage.hauteur")).length,
+    0,
+    "la fente n'a pas de hauteur : c'est l'arbre qui en a une"
+  );
+  assert.equal(
+    q.filter((x) => x.id.startsWith("abattage.hauteur")).length,
     1,
-    "sans hauteur, aucune case de la grille ne peut être désignée — et la fente resterait sans prix"
+    "sans hauteur, aucune case de la grille ne peut être désignée — la fente resterait sans prix"
+  );
+  assert.equal(
+    q.find((x) => x.id.startsWith("abattage.hauteur"))!.libellePrestation,
+    "Abattage d'un chêne mort",
+    "la question doit s'afficher sous l'arbre, pas sous la fente"
+  );
+});
+
+// **Sans arbre, la fente redemande — sinon elle n'aurait plus de prix.**
+// C'est la borne de la règle ci-dessus : elle déplace la question, elle ne la
+// supprime pas. Un fendage dicté seul (le bois est déjà à terre) n'a personne
+// à qui la poser, et un plan muet vaut un plan faux (`CLAUDE.md` §4 ter).
+cas("un fendage SANS arbre dicté garde ses deux questions", () => {
+  const q = questionsAvantChiffrage([{ libelle: "Fendage du bois" }]);
+  assert.equal(q.filter((x) => x.id.startsWith("fendage.hauteur")).length, 1);
+  assert.equal(q.filter((x) => x.id.startsWith("fendage.diametre")).length, 1);
+});
+
+// **Et le cas exact du 7 septembre 2026, de bout en bout.** Sa dictée portait
+// un chêne mort à démonter et du gros bois à fendre ; l'écran lui a demandé
+// « Quelle hauteur ? » et « Quel diamètre ? » sous le titre
+// « Fente du gros bois ». Plus une seule question ne doit y apparaître.
+cas("sa dictée du 7 septembre : la fente ne demande plus rien", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Rabattage de haie de laurier", nature: "haie", quantite: "50", unite: "ml" },
+    { libelle: "Fente du gros bois", nature: "fendage" },
+    { libelle: "Démontage d'un chêne mort", nature: "abattage" },
+  ]);
+  assert.deepEqual(
+    q.filter((x) => x.libellePrestation === "Fente du gros bois"),
+    [],
+    "la fente ne porte plus aucune question"
   );
 });
 
@@ -619,19 +667,42 @@ cas("le pluriel dicté ne change pas la question — il a accepté ce coût", ()
 
 console.log("\n=== La borne : tout ce qui est en cm n'est pas un diamètre ===\n");
 
-cas("« 60 cm de circonférence » n'est JAMAIS un diamètre", () => {
-  // Le tour d'un tronc fait π fois son diamètre : confondre les deux
-  // triplerait la case de sa grille.
-  for (const dit of [
-    "Dessouchage d'une souche de 60 cm de circonférence",
-    "Abattage d'un chêne de 60 cm de circonférence au pied",
-  ]) {
-    const q = questionsAvantChiffrage([{ libelle: dit, nature: dit.startsWith("Dess") ? "dessouchage" : "abattage" }]);
-    assert.ok(
-      q.some((x) => x.id.includes("diametre")),
-      `« ${dit} » a été pris pour un diamètre`
-    );
-  }
+// **CE CAS A CHANGÉ DE SENS LE 7 SEPTEMBRE 2026, et c'est lui qui l'a
+// provoqué.** Sa dictée : *« un chêne mort à démonter, hauteur 20 m de haut
+// et 60 cm de circonférence »*, et l'écran lui redemandait le diamètre.
+//
+// Le refus d'origine était juste — confondre les deux TRIPLE la mesure —,
+// mais il ne faisait que la moitié du travail : **sur un tronc debout, on
+// mesure un tour de ruban, pas un diamètre.** Ce qui est défendu ici n'a pas
+// bougé — 60 ne devient jamais 60 — ; ce qui change, c'est qu'on divise par
+// π au lieu de jeter la mesure (`CLAUDE.md` §5 bis).
+cas("une circonférence est CONVERTIE, jamais recopiée", () => {
+  assert.equal(diametreLu("Abattage d'un chêne de 60 cm de circonférence au pied"), 19);
+  assert.equal(diametreLu("Dessouchage d'une souche de 60 cm de circonférence"), 19);
+});
+
+// **SON cas exact du 7 septembre.** La mesure était donnée : plus une seule
+// question ne doit s'afficher.
+cas("SON chêne : la circonférence dite ferme la question du diamètre", () => {
+  const q = questionsAvantChiffrage([
+    {
+      libelle: "Démontage d'un chêne mort",
+      description: "hauteur 20 m de haut et 60 cm de circonférence",
+      nature: "abattage",
+      methode: "demontage",
+    },
+  ]);
+  assert.deepEqual(
+    q.map((x) => x.id.split("#")[0]),
+    [],
+    "une mesure déjà donnée ne se redemande pas"
+  );
+});
+
+// **La borne : un diamètre DIT l'emporte toujours.** La conversion est un
+// dernier recours, jamais un arbitrage entre deux valeurs.
+cas("un diamètre dit l'emporte sur une circonférence dite", () => {
+  assert.equal(diametreLu("un chêne de diamètre 60 et 190 cm de circonférence"), 60);
 });
 
 cas("une hauteur, une longueur ou une largeur ne deviennent pas un diamètre", () => {
@@ -726,11 +797,10 @@ cas("une AUTRE unité n'est pas prise pour des centimètres", () => {
   assert.equal(diametreLu("une souche de 2 mètres"), null);
 });
 
+// (La circonférence a quitté cette liste le 7 septembre 2026 : elle n'est
+// toujours pas recopiée, mais elle est désormais convertie — voir plus haut.)
 cas("une mesure NOMMÉE autrement reste ce qu'elle est, avec ou sans unité", () => {
   for (const dit of [
-    "une souche de 60 de circonférence",
-    "une souche de 60 cm de circonférence",
-    "un chêne de 60 de circonférence au pied",
     "un chêne de 12 m de haut",
     "une haie de 800 cm de long",
     "bordure de 30 cm de large",

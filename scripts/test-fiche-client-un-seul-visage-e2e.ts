@@ -21,7 +21,7 @@ const BASE = "http://localhost:3000";
 //
 // Il avait raison, et c'était mesurable : à la création l'objet est le micro
 // vert de la DICTÉE ; au retour du devis, le même écran rendait l'anneau creux
-// du LECTEUR, dont le seul geste est « Poussez l'anneau vers le haut » — c'est
+// du LECTEUR, dont le seul geste est « Glissez l'anneau vers la gauche » — c'est
 // à dire retirer. Un troisième visage existait : quelques jours plus tard,
 // l'audio purgé après transcription, l'anneau disparaissait entièrement.
 //

@@ -698,11 +698,26 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
  * doigt et finit sa course avec l'élan de la plateforme, ce que la maquette ne
  * savait pas faire. `overscroll-behavior: contain` empêche le geste de
  * continuer sur la page — sans lui, le doigt emporterait tout l'écran. */
+/* **LE GESTE VA VERS LA GAUCHE — sa réponse du 7 septembre 2026.**
+ *
+ * Il glissait vers le HAUT depuis le 30 août, et il ne l'a jamais trouvé :
+ * *« je veux la déplacer vers la gauche pour laisser apparaître le
+ * supprimer »*. La liste des chantiers, elle, se glisse vers la gauche
+ * depuis le 10 août (`.atlas-glisse`). **Deux sens pour le même geste dans
+ * la même application** : il cherchait celui qu'il connaît.
+ *
+ * Planche `appli/retirer-la-note-vocale.html`, trois onglets ; il a
+ * répondu 2.
+ *
+ * Le `flex` et le `100%` des volets vont ensemble : sans eux, deux blocs de
+ * la largeur de l'écran se rangeraient l'un SOUS l'autre, et le glissement
+ * horizontal n'aurait rien à découvrir. */
 .atlas-glisseur {
   height: 78px;
   width: 100%;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
   overscroll-behavior: contain;
   transition: opacity 0.26s;
@@ -718,6 +733,10 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
    * se retrouvait collé au bord gauche de l'écran, son R à moitié dehors,
    * pendant que l'anneau restait centré. Vu en capture, jamais autrement — le
    * bouton existait, il était touchable, et tous les contrôles passaient. */
+  /* `flex: 0 0 100%` et non `width` seul : dans un rail horizontal, un
+   * volet se laisserait comprimer par son voisin et les deux tiendraient
+   * sur un écran — le glissement n'aurait plus rien à révéler. */
+  flex: 0 0 100%;
   width: 100%;
   display: flex;
   align-items: center;

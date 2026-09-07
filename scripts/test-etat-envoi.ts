@@ -306,7 +306,11 @@ async function main() {
     );
   });
 
-  await test("une acceptation sur une date proposée ne dérange personne", async () => {
+  // **CE CAS A CHANGÉ DE SENS LE 7 SEPTEMBRE 2026**, à sa demande : *« il faut
+  // aussi rajouter une notification lorsqu'un client accepte un devis, elle
+  // doit apparaître en haut dans les retours client ! »* Il exigeait le
+  // silence ; il exige désormais la nouvelle. Voir `ARCHITECTURE.md` §282.
+  await test("une acceptation remonte au patron, même sans surprise", async () => {
     const { ctx, chantierId, devisId } = await contexteAvecDevis("notifok");
     const envoi = await creerEnvoi(
       ctx,
@@ -315,10 +319,13 @@ async function main() {
     );
     await enregistrerReponse(envoi.jeton, { decision: "accepte" as const, dateRetenue: dans(10) }, ilYA(1));
 
+    const notifs = await notificationsPatron(ctx);
+    assert.strictEqual(notifs.length, 1, "un chantier gagné ne s'apprend pas en ouvrant une fiche");
+    assert.strictEqual(notifs[0].reponse, "acceptee");
     assert.strictEqual(
-      (await notificationsPatron(ctx)).length,
-      0,
-      "signaler le déroulement attendu noierait les nouvelles qui comptent"
+      notifs[0].dateContreProposee,
+      false,
+      "il a pris une date proposée : la carte doit dire « Devis accepté », pas « Autre date »"
     );
   });
 

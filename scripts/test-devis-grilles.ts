@@ -162,7 +162,7 @@ async function main() {
     const manquantes = p!.explication.donneesManquantes.join(" | ");
     assert.match(
       manquantes,
-      /grille de fendage n'a pas de prix pour 15 à 20 m de haut · tronc de 40 à 50 cm/,
+      /grille de fendage n'a pas de prix pour 15 à 20 m de haut · tronc de ⌀ 40 à 50 cm/,
       `la case manquante n'est pas nommée : ${manquantes}`
     );
   });

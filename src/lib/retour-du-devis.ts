@@ -133,14 +133,56 @@ export function libelleRetourDuDevis(clientId: string | null): string {
 }
 
 /**
- * Où mène la flèche de retour DE LA FICHE CLIENT.
+ * Où mène la flèche de retour DE LA FICHE CLIENT : la liste, toujours.
  *
- * Sans provenance, c'est la liste des chantiers — inchangé depuis le 17 août
- * 2026 : la mention « Adresse non renseignée » de l'accueil entre par la même
- * porte, et elle vient de là.
+ * ─── SA CORRECTION DU 7 SEPTEMBRE 2026 ────────────────────────────────────
+ *
+ * *« Lorsqu'on clique sur “faire le devis” d'un devis en attente, si je me
+ * suis trompé et que je veux faire retour arrière, j'appuie une fois sur le
+ * retour du devis, j'arrive donc sur la page de la fiche client avec la note
+ * vocale, et si je refais retour arrière je retourne sur le devis et non sur
+ * la page chantier. Il faut rectifier ça !! »*
+ *
+ * **C'était une boucle, et elle venait de deux de ses propres règles.** Le
+ * 31 août il avait demandé deux choses justes séparément :
+ *
+ * | sa règle | ce qu'elle donnait |
+ * |---|---|
+ * | la flèche du devis mène à la fiche client, toujours | devis → fiche |
+ * | « le chemin se referme » : venu du devis, on y retourne | fiche → devis |
+ *
+ * Mises bout à bout, les deux flèches se pointaient l'une l'autre : **aucune
+ * ne sortait**. Il fallait fermer l'onglet ou passer par la barre du bas.
+ *
+ * ─── CE QUI EST GARDÉ, ET C'EST LA MOITIÉ QUI COMPTE ──────────────────────
+ *
+ * « Le chemin se referme » n'est pas abandonné : il vaut pour
+ * l'ENREGISTREMENT (`apresLesCoordonnees`), et c'est là qu'il a du sens. Il
+ * remplit ce qui manquait, il enregistre, il revient à son devis complété.
+ *
+ * Ce qui change n'est que la FLÈCHE : elle sert à renoncer, pas à revenir
+ * avec quelque chose. Renoncer, c'est sortir — et sortir, c'est la liste.
+ *
+ * **La provenance reste dans la signature** : l'enregistrement s'en sert
+ * toujours, et l'ôter d'ici obligerait à la reconstruire le jour où une
+ * troisième porte s'ouvrira sur cet écran.
+ * **Et la provenance reste dans la signature alors qu'elle ne décide plus de
+ * rien.** Ce n'est pas un oubli : c'est elle qui permet à
+ * `test-retour-du-devis.ts` d'écrire la règle telle qu'elle se dit —
+ * *« même venu du devis, on sort vers la liste »*. L'ôter rendrait le cas
+ * inexprimable, et la boucle du 7 septembre pourrait revenir sans qu'aucune
+ * suite ne rougisse.
  */
-export function retourDesCoordonnees(provenance: Provenance): string {
-  return provenance ?? "/";
+export function retourDesCoordonnees(chantierId: string, provenance: Provenance): string {
+  // **Le devis est la SEULE provenance qui pointe en retour vers cet écran.**
+  // C'est ce qui en fait un cycle, et rien d'autre : le planning, lui, ne
+  // ramène pas ici — on peut y repartir sans risque de tourner en rond.
+  //
+  // La comparaison se fait par ÉGALITÉ au devis DE CE chantier, jamais par
+  // motif : c'est la règle posée en tête de ce fichier, et un `endsWith` la
+  // contournerait au premier chemin qui lui ressemblerait.
+  if (provenance === null || provenance === devisDuChantier(chantierId)) return "/";
+  return provenance;
 }
 
 /**
@@ -157,10 +199,13 @@ export function libelleRetourDesCoordonnees(
   chantierId: string,
   provenance: Provenance
 ): string {
+  // **Venu du devis, la flèche ne dit plus « au devis »**, parce qu'elle n'y
+  // va plus : voir `retourDesCoordonnees` — c'était la boucle du 7 septembre
+  // 2026. Une flèche qui annonce une destination et en prend une autre est
+  // pire qu'une flèche muette.
   if (provenance === null) return "Retour à la liste des chantiers";
-  return provenance === devisDuChantier(chantierId)
-    ? "Retour au devis"
-    : LIBELLE_RETOUR_PLANNING;
+  if (provenance === devisDuChantier(chantierId)) return "Retour à la liste des chantiers";
+  return LIBELLE_RETOUR_PLANNING;
 }
 
 /**

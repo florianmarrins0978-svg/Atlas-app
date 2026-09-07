@@ -95,22 +95,34 @@ chemin-là fait donc deux pas pour sortir.
 
 ## Lot précédent — « DEVIS & FACTURES » COUPÉ EN QUATRE (7 septembre 2026)
 
-**Document du lot :** `docs/lot-couper-devis-et-factures.md`.
-**Décision :** `ARCHITECTURE.md` §272. **Migration : 0075.**
-**La planche qu'il a validée :** `appli/couper-devis-et-factures.html`.
+## Dernier lot — LE DEVIS QUI NE PARTAIT PAS (7 septembre 2026)
 
-**CE QU'IL FAUT SAVOIR AVANT DE TOUCHER À CET ÉCRAN :**
+**Document du lot :** `docs/lot-diametre-verdict.md`.
+**Décisions :** `ARCHITECTURE.md` §276 à §282.
 
-1. **Rien ne sort de « Devis & factures », et c'est ce qui a permis de le
-   couper.** Ses trois réponses des 23 et 25 août — l'allure « ici et pas dans
-   une rubrique à part », le message « ici », l'aperçu collé — tiennent : le
-   sommaire des réglages garde ses **douze** lignes, et les quatre écrans
-   vivent SOUS `/reglages/documents`.
+**Le lot a doublé de taille en cours de route** : il a essayé pendant qu'on
+corrigeait, et chaque essai a rendu un défaut de plus — la dictée de la fiche
+client (§274), puis trois autres (§275). **Tous ont été trouvés parce qu'il
+essayait, aucun par une suite.**
 
-2. **`[document]` A CHANGÉ DE SENS.** Il portait la phrase entière du document ;
-   il ne pose plus que le mot (« devis », « facture », « compte rendu »). Un
-   modèle écrit avant le 7 septembre est réécrit par la migration 0075 — sans
-   elle, le client recevrait un message réduit à un mot nu.
+Trois défauts signalés dans un seul message, et le plus grave l'empêchait
+d'envoyer un devis : `WinAnsi cannot encode "⌀"`.
+
+**CE QU'IL FAUT SAVOIR AVANT DE TOUCHER À CES TROIS ENDROITS :**
+
+1. **Le ⌀ reste le ⌀ partout dans le produit, et il a été ÉTENDU (§271).** C'est sa demande explicite du
+   7 septembre. Seul le PAPIER reçoit un Ø — `src/lib/texte-pdf.ts` —, parce
+   que les polices standard d'un PDF ne connaissent que 224 caractères. Ne pas
+   « harmoniser » en remplaçant le ⌀ dans `questions-chiffrage.ts` : ce serait
+   défaire ce qu'il vient de valider.
+2. **La hauteur a changé de ligne, elle n'a pas été supprimée.** Elle se
+   demande sur l'ARBRE quand il y en a un, sur la fente sinon. La retirer
+   complètement laisserait la fente sans prix, en silence (§269).
+3. **« Il n'a pas réussi à retranscrire ma réponse » était un faux diagnostic —
+   le sien, et je l'écris parce qu'il compte.** La réponse était bien
+   enregistrée : c'est le nettoyage du libellé client qui retirait le nombre
+   en gardant sa phrase (§270). Chercher du côté de la saisie aurait fait
+   perdre la soirée.
 
 3. **Il y a TROIS documents, pas deux.** Le compte rendu de passage part avec
    ce même mécanisme (`composerMessageEntretien`) : c'est ce qu'on a failli
@@ -162,6 +174,11 @@ auquel on ne touche pas.
 transcription (le fournisseur y rend un texte de remplacement), donc aucune
 suite navigateur ne peut partir du micro. Les deux suites tiennent la chaîne
 SOUS le micro, et elles savent rougir.
+
+
+**ÉTAT À LA FERMETURE :** batterie complète **non jouée** — son feu vert
+attendu (`CLAUDE.md` §5). 18 suites concernées vertes ; 4 rouges faute de
+`DATABASE_URL` sur le poste, tombées à l'import. **Rien n'est sur `main`.**
 
 ---
 ## Lot précédent — FERMER UN JOUR DEPUIS LE PLANNING (6 septembre 2026)

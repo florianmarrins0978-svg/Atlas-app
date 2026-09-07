@@ -19,6 +19,7 @@ import { avecCivilite } from "@/lib/civilite";
 import { libelleReduction, lignesParCategorie, tauxLisible, totauxAvecReduction } from "@/lib/reduction-devis";
 import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
 import { protegerContreModification } from "./proteger-pdf";
+import { pourLePapier } from "@/lib/texte-pdf";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
 //
@@ -160,10 +161,39 @@ function formatMontant(v: string, devise: string): string {
   return `${signe}${groupe},${decimales}\u00a0${SYMBOLES[devise] ?? devise}`;
 }
 
+/**
+ * **Le seul texte qui touche le papier.** Rien n'est écrit ni mesuré sans
+ * être passé par là — c'est ce qui empêche un caractère de bloquer un envoi.
+ *
+ * Le 7 septembre 2026, un devis juste refusait de partir sur
+ * « WinAnsi cannot encode … » — le signe de diamètre —, et c'était la
+ * TROISIÈME fois qu'un caractère arrêtait tout. `src/lib/texte-pdf.ts` dit
+ * pourquoi la réparation vit là, et pas une rustine de plus au cas par cas.
+ *
+ * **Mesurer échoue autant qu'écrire** : `widthOfTextAtSize` encode lui aussi.
+ * D'où l'assainissement AVANT toute mesure — `ecrireADroite` et
+ * `ecrireEspaceADroite` calculent leur retrait sur le texte, et poser le
+ * garde seulement au moment d'écrire n'aurait rien empêché.
+ */
+function surLePapier(contenu: string): string {
+  const { texte, retraits } = pourLePapier(contenu);
+  if (retraits.length > 0) {
+    // **Le document part quand même, et c'est le choix.** Un devis bloqué
+    // coûte un chantier ; un signe manquant se voit et se corrige. Mais il ne
+    // part pas en silence : sans cette trace, un mot amputé sur le devis d'un
+    // client ne s'apprendrait jamais.
+    logger.warn("Caractères retirés d'un document : la police du PDF ne sait pas les écrire", {
+      pointsDeCode: retraits.map((r) => r.pointDeCode),
+      apercu: texte.slice(0, 80),
+    });
+  }
+  return texte;
+}
+
 /** Découpe un texte pour qu'aucune ligne ne dépasse `largeur`. */
 function enLignes(texte: string, police: PDFFont, taille: number, largeur: number): string[] {
   const lignes: string[] = [];
-  for (const paragraphe of texte.split("\n")) {
+  for (const paragraphe of surLePapier(texte).split("\n")) {
     let courante = "";
     for (const mot of paragraphe.split(/\s+/)) {
       const essai = courante ? `${courante} ${mot}` : mot;
@@ -247,6 +277,7 @@ function poser(ctx: Contexte, contenu: string, x: number, y: number, style: Styl
 }
 
 function ecrire(ctx: Contexte, contenu: string, x: number, y: number, style: Style = {}) {
+  contenu = surLePapier(contenu);
   poser(ctx, contenu, x, y, style);
   ctx.trace.textes.push({
     contenu,
@@ -260,6 +291,7 @@ function ecrire(ctx: Contexte, contenu: string, x: number, y: number, style: Sty
 
 /** Texte calé sur son bord droit — colonnes de chiffres et bloc de totaux. */
 function ecrireADroite(ctx: Contexte, contenu: string, droite: number, y: number, style: Style = {}) {
+  contenu = surLePapier(contenu);
   const police = style.police ?? ctx.sans;
   const taille = style.taille ?? 9.5;
   ecrire(ctx, contenu, droite - police.widthOfTextAtSize(contenu, taille), y, style);
@@ -297,6 +329,7 @@ function ecrireEspace(
   approche: number,
   style: Style = {}
 ) {
+  contenu = surLePapier(contenu);
   const police = style.police ?? ctx.sans;
   const taille = style.taille ?? 9.5;
   let curseur = x;
@@ -325,6 +358,7 @@ function ecrireEspaceADroite(
   approche: number,
   style: Style = {}
 ) {
+  contenu = surLePapier(contenu);
   const police = style.police ?? ctx.sans;
   const taille = style.taille ?? 9.5;
   // La dernière lettre ne porte pas d'approche à sa droite : la mesure la

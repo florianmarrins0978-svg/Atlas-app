@@ -185,8 +185,58 @@ function premiereMesure(texte: string, motifs: readonly RegExp[]): number | null
 }
 
 /** Le diamètre du tronc en cm, lu dans un texte. `null` s'il n'y est pas. */
+/**
+ * LA CIRCONFÉRENCE, parce que c'est ÇA qu'on mesure sur un tronc debout.
+ *
+ * **Sa dictée du 7 septembre 2026, et sa colère avec :** *« je lui ai dit un
+ * chêne mort à démonter, hauteur 20 m de haut et 60 cm de circonférence —
+ * regarde encore ce qu'il me sort ! Ça ne fonctionne vraiment pas, c'est une
+ * catastrophe !! »* L'écran lui redemandait le diamètre du tronc.
+ *
+ * ─── LE REFUS ÉTAIT JUSTE, ET C'ÉTAIT QUAND MÊME UN DÉFAUT ────────────────
+ *
+ * Le depôt refusait expressément « 60 cm de circonférence » comme diamètre —
+ * sa règle du 31 août, et elle a évité le pire : confondre les deux TRIPLE la
+ * mesure, et range le prix trois cases plus loin.
+ *
+ * Mais refuser n'était que la moitié du travail. **Sur un tronc debout, on ne
+ * mesure pas un diamètre : on passe un mètre ruban autour.** La circonférence
+ * est ce qu'un élagueur relit sur son ruban, et la jeter revient à lui
+ * redemander une mesure qu'il vient de donner.
+ *
+ * **Ce n'est pas une devinette, c'est une division.** Un tronc est rond :
+ * `diamètre = circonférence / π`. 60 cm de tour font 19 cm de tronc — et
+ * l'écart avec 60 dit à quel point s'en passer coûtait cher.
+ *
+ * **Le diamètre dit explicitement l'emporte toujours** : la conversion n'est
+ * qu'un dernier recours, jamais un arbitrage entre deux valeurs.
+ */
+const CIRCONFERENCE = [
+  /circonf[ée]rence\s*(?:de\s*)?(\d{1,3})/i,
+  /(\d{1,3})\s*(?:cm|centim[èe]tres?)\s+de\s+circonf[ée]rence/i,
+  /(\d{1,3})\s*(?:cm|centim[èe]tres?)\s+de\s+(?:tour|p[ée]rim[èe]tre)/i,
+];
+
+/** La circonférence du tronc en centimètres, lue dans un texte. */
+export function circonferenceLue(texte: string): number | null {
+  return premiereMesure(texte, CIRCONFERENCE);
+}
+
+/**
+ * Le diamètre du tronc en centimètres. `null` s'il n'est pas dans le texte.
+ *
+ * À défaut d'un diamètre dit, une circonférence en tient lieu — divisée par
+ * π, jamais recopiée. Voir `CIRCONFERENCE` juste au-dessus.
+ */
 export function diametreLu(texte: string): number | null {
-  return premiereMesure(texte, DIAMETRE);
+  const dit = premiereMesure(texte, DIAMETRE);
+  if (dit !== null) return dit;
+  const tour = circonferenceLue(texte);
+  if (tour === null) return null;
+  // Arrondi au centimètre : les tranches de sa grille se comptent en dizaines,
+  // et prétendre à 19,0986 cm donnerait à croire à une précision qui n'existe
+  // pas — un ruban posé sur une écorce ne rend pas le dixième.
+  return Math.round(tour / Math.PI);
 }
 
 /** La hauteur de l'arbre en mètres, lue dans un texte. `null` s'il n'y est pas. */
