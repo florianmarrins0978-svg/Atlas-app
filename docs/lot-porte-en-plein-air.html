@@ -361,7 +361,13 @@
 </ol>
 <p>Et <code>pages.yml</code> interroge en plus <code>images/porte-foret.jpg</code> <strong>sur le site publié</strong>, comme il le fait déjà pour le PDF de l'anthracnose : une image absente de l'artefact ne se verrait pas autrement.</p>
 <hr>
-<h2 id="8-un-défaut-trouvé-au-passage-sans-rapport-avec-la-demande">8. Un défaut trouvé au passage, sans rapport avec la demande</h2>
+<h2 id="8-trois-défauts-de-mon-fait-corrigés--et-il-faut-les-dire">8. Trois défauts de MON fait, corrigés — et il faut les dire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>1. Les conditions débordaient de l'écran.</strong> À l'ouverture sur un téléphone de 390 px, la page faisait <strong>546 px de large</strong> : elle glissait latéralement, et se lit alors une main sur deux. La cause tenait en trois mots — le texte « [À COMPLÉTER — dénomination, adresse, téléphone] » portait une consigne de non-coupure, et il a emporté la page entière. <strong>Aucun test ne le voyait</strong> : la suite vérifiait que la page répondait, pas qu'elle se lisait. C'est la capture, regardée, qui l'a montré — la cinquième fois dans ce dépôt qu'un défaut sort d'une image et d'aucun test. Le contrôle existe maintenant, et il mesure les deux pages à la largeur de votre téléphone.</p>
+<p><strong>2. Le flux de publication cherchait un écran nommé « n ».</strong> En ajoutant les deux pages à la liste vérifiée en ligne, j'ai laissé une continuation de ligne mal écrite : le retour à la ligne s'est retrouvé en littéral, et la vérification a demandé au site une page appelée « n ». <strong>404, job rouge — sur un site qui allait très bien</strong>, ses quatre nouvelles adresses répondant déjà. Un rouge sur un produit sain fait chercher au mauvais endroit, et c'est pour ça qu'il est écrit ici.</p>
+<p><strong>3. L'écran de fin de la création n'offrait aucune suite</strong> — un cul-de-sac a l'air d'une panne. « Entrer dans Atlas » ajouté. Trouvé en regardant, là encore.</p>
+<hr>
+<h2 id="9-un-défaut-trouvé-au-passage-sans-rapport-avec-la-demande">9. Un défaut trouvé au passage, sans rapport avec la demande</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Dans <code>appli/essais.html</code>, l'entrée « La porte d'Atlas » n'était pas refermée — un <code>&lt;/a&gt;</code> manquant, 113 ancres ouvertes pour 112 fermées. Le navigateur refermait tout seul, donc rien ne se voyait à l'œil ; le lien suivant s'en trouvait avalé dans la même zone cliquable. Corrigé.</p>
 </main>

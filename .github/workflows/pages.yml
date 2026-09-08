@@ -265,7 +265,8 @@ jobs:
           for f in index.html essais.html nav.js arrosage-catalogue.js \
                    arrosage-simple.html arrosage-plan.html \
                    arrosage-discuter.html anthracnose-du-platane.pdf \
-                   ecran-anthracnose-platane.png images/porte-foret.jpg \n                   conditions-utilisation.html confidentialite.html $LIES; do
+                   ecran-anthracnose-platane.png images/porte-foret.jpg \
+                   conditions-utilisation.html confidentialite.html $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }

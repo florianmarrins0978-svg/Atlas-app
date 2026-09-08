@@ -49,6 +49,16 @@
 
   <p class="famille">Tout d’un coup</p>
 
+  <a class="item" href="../../appli/ma-fiche-sur-le-planning.html">
+    <span class="no">110</span><span class="titre">Ma fiche sur le planning, sur la VRAIE page — ESSAYABLE</span>
+    <span class="quoi">8 septembre 2026, après sa remarque : <i>« je veux voir exactement où tu vas la mettre sur le planning, sur la vraie page, pour que je me rende compte — ta reconstitution n’est pas réelle »</i>. <b>Elle ne l’était pas</b> : la planche 109 dessinait « Ma journée » comme une liste de chantiers, alors que le planning est un <b>calendrier du mois</b> suivi de <b>« Planifiés »</b>. Le premier écran est donc une <b>photographie du produit</b>, prise sur le serveur local ; le deuxième reconstruit la même zone au pixel, avec la seule ligne ajoutée. <b>« Ma fiche » prend la place du chevron des documents</b>, qu’un salarié n’a jamais eu — il ne perd aucun geste. Le troisième porte <b>l’encadré libre « À signaler »</b> qu’il a demandé, facultatif. Le quatrième montre ce qui remonte au planning du patron une fois le chantier fini. <b>La journée fausse de la planche 109 a été retirée</b> : la laisser en ligne l’aurait trompé une seconde fois. <b>Rien n’est codé.</b></span>
+  </a>
+
+  <a class="item" href="../../appli/la-fiche-du-salarie.html">
+    <span class="no">109</span><span class="titre">La fiche du salarié, et la preuve de fin de chantier — ESSAYABLE</span>
+    <span class="quoi">Lot 2, dessiné le 8 septembre 2026 sur ses deux demandes du jour : <i>« la fiche d’intervention doit se rattacher aux infos du client sur le planning pour que le salarié puisse la voir »</i> et <i>« une feuille de preuve de fin de chantier que le salarié remplira ou non — ça sera au patron de décider »</i>. <b>Aucun montant nulle part</b>, et le planning reste sa seule porte : <code>OUVERT_AU_SALARIE</code> est une liste blanche, un écran neuf lui est fermé d’office. <b>Deux façons de tenir la preuve</b> — <b>A</b>, une seule page où il coche et photographie au fil du chantier ; <b>B</b>, une feuille de fin où il réécrit ce qu’ils ont fait. <b>Le troisième écran est celui du patron</b> : l’interrupteur qui exige, ou non, la preuve et la photo — et les deux premiers lui obéissent, pour qu’on voie ce que le réglage coûte à celui qui est sur le chantier. <b>Ce qui manque se dit AVANT l’appui</b>, jamais après. <b>Rien n’est codé.</b></span>
+  </a>
+
   <a class="item" href="../../appli/repartir-de-son-chantier.html">
     <span class="no">108</span><span class="titre">Repartir de son chantier — ESSAYABLE</span>
     <span class="quoi">Suite du lot 1, une fois la proposition E retenue le 8 septembre 2026. <b>Sa deuxième option est écartée, et c’est lui qui l’avait tranchée</b> : « une autre page avec la note vocale plus les photos » existe déjà — c’est la fiche client (<code>FormulaireNouveauChantier</code> porte <code>AnneauNoteVocale</code> et <code>Pellicule</code> depuis le 31 août), et la fiche du chantier séparée a été supprimée le 4 septembre parce qu’elle faisait doublon. <b>« Autre chantier » ne recrée aucun client</b> : <code>trouverOuCreerClient</code> réutilise la fiche. <b>Les photos de la dernière fois s’affichent éteintes</b>, cochables : non cochées elles ne sont copiées nulle part ; cochées, elles seront <b>recopiées</b> — jamais partagées, sinon effacer l’ancien chantier les retirerait de la fiche du salarié. <b>Une seule question reste, et c’est son argent :</b> « Refaire » recharge aux tarifs d’aujourd’hui, avec l’ancien prix barré et une ligne « à chiffrer » quand le tarif a disparu, ou à l’identique. <b>Rien n’est codé.</b></span>
@@ -606,6 +616,11 @@
 
 
   <p class="famille">La dernière porte</p>
+
+  <a class="item" href="../../appli/le-devis-de-son-client.html">
+    <span class="no">107</span><span class="titre">Le devis que voit son client — ESSAYABLE</span>
+    <span class="quoi">Sa demande du 8 septembre 2026, dans la foulée de la facture : <b>« sors-moi le visuel que le client reçoit avec le lien pour choisir sa date d’intervention et son devis, on va le modifier aussi comme la facture »</b>. <b>Deux défauts que la lecture du code a trouvés, et qu’aucune capture ne montre :</b> <code>formulaire.tsx</code> peint le refus et le cadre de rétractation en <code>#B5502F</code> — <b>le terre cuite abandonné le 3 août 2026</b> —, et « J’accepte ce devis » porte <code>#2F3B2F</code>, le vert des TEXTES, au lieu du vert des boutons tranché le 3 septembre (<code>#7d9a6d</code>, verdict la D). <b>La cause commune :</b> cette page écrit ses couleurs en dur (<code>bg-[#F4EFE8]</code>, <code>bg-white</code>), ce que <code>CLAUDE.md</code> §3 interdit — d’où cinq semaines d’identité manquée, et l’incapacité de suivre les huit chartes. <b>Ce qu’on NE reprend PAS de la facture :</b> le montant reste. Le client s’apprête à accepter, et un accord donné sans voir le prix n’en est pas un. <b>Trois défauts de la planche elle-même, tous trouvés en mesurant :</b> l’interrupteur « rétractation » ne faisait rien (<code>#avant .retract</code> écrasait <code>body.retractation .retract</code> — un contrôle qui ment) ; la mesure comparait deux hauteurs sans tenir compte des marges du cadre ; et une colonne flexible en <code>height:100%</code> <b>comprimait</b> le contenu au lieu de déborder, si bien que tous les états rendaient le même chiffre. <b>Elle tient en 390 × 664 dans les quatre états</b>, cadre de rétractation compris. <b>Rien n’est codé.</b></span>
+  </a>
 
   <a class="item" href="../../appli/la-page-de-sa-facture.html">
     <span class="no">106</span><span class="titre">La page que voit son client — la facture — ESSAYABLE</span>

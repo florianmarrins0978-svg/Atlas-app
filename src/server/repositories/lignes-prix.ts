@@ -6,6 +6,8 @@ import { and, asc as _asc } from "drizzle-orm";
 import { lignesPrix, lignesPrixPrestations, prestations } from "../db/schema";
 import type { Ctx } from "./context";
 import { membresDuLibelle } from "../../lib/lignes-vendables";
+import { reprendreLesLignes, type LigneReprise } from "../../lib/reprise-des-prix";
+import { listerTarifs } from "./tarifs";
 
 export async function listerLignesPrix(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
@@ -411,4 +413,67 @@ export async function deplacerLigneVersCategorie(
       .returning();
     return row ?? null;
   });
+}
+
+/**
+ * Reprendre le détail d'un chantier passé sur un chantier neuf, AUX TARIFS
+ * D'AUJOURD'HUI.
+ *
+ * **Sa décision du 8 septembre 2026 :** *« si on clique sur refaire il faut que
+ * ça se mette au prix d'aujourd'hui, la 1 »*. La règle qui décide du prix de
+ * chaque ligne est pure et vit dans `src/lib/reprise-des-prix.ts` — ici on ne
+ * fait que lire, appeler, écrire.
+ *
+ * **Rien ne se recalcule ici, et surtout pas la quantité** : quarante mètres de
+ * haie la dernière fois n'en font pas quarante cette fois-ci, mais c'est un
+ * relevé de chantier, et un relevé ne s'invente pas (`CLAUDE.md` §4). Il le
+ * corrige sur la vraie page du devis — celle qu'il a exigée le 8 septembre
+ * précisément pour pouvoir tout reprendre à la main.
+ *
+ * **Les prestations liées ne suivent PAS** (`lignes_prix_prestations`) : elles
+ * décrivent le découpage d'un travail dicté ce jour-là, et les recopier
+ * prêterait au chantier neuf une dictée qui n'a pas eu lieu. Une ligne reprise
+ * est une ligne écrite à la main, du point de vue du découpage.
+ *
+ * Rend le détail de ce qui a été repris — c'est ce que l'écran affiche.
+ */
+export async function reprendreLesLignesPrix(
+  ctx: Ctx,
+  depuisChantierId: string,
+  versChantierId: string
+): Promise<LigneReprise[]> {
+  const [anciennes, grille] = await Promise.all([
+    listerLignesPrix(ctx, depuisChantierId),
+    listerTarifs(ctx),
+  ]);
+
+  const reprises = reprendreLesLignes(
+    anciennes.map((l) => ({
+      libelle: l.libelle,
+      quantite: l.quantite,
+      prixUnitaire: l.prixUnitaire,
+      unite: l.unite,
+      aChiffrer: l.aChiffrer,
+      tauxTva: l.tauxTva,
+      ordre: l.ordre,
+    })),
+    grille.map((t) => ({ intitule: t.intitule, prix: t.prix, unite: t.unite }))
+  );
+
+  // **En série, jamais en parallèle.** `ajouterLignePrix` compte les lignes
+  // déjà posées pour se donner un `ordre` : lancées ensemble, elles liraient
+  // toutes le même compte et se retrouveraient toutes à la même place — le
+  // devis sortirait dans un ordre arbitraire, et ce désordre-là ne se voit
+  // qu'à l'écran.
+  for (const l of reprises) {
+    await ajouterLignePrix(ctx, versChantierId, l.libelle, l.montant, {
+      quantite: l.quantite,
+      prixUnitaire: l.prixUnitaire,
+      unite: l.unite,
+      aChiffrer: l.sort === "attend-son-prix",
+      tauxTva: l.tauxTva,
+    });
+  }
+
+  return reprises;
 }

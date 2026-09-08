@@ -47,6 +47,113 @@ sur le congé, la coche est refusée — une coche vaut pour le chantier entier,
 l'accepter annoncerait la personne un jour où elle n'y est pas. Voir
 `ARCHITECTURE.md` §286.
 
+### La porte : le mot de passe se confirme, le déroulant passe à la charte, l'identité se sépare
+
+Cinq remarques du 8 septembre, sur la planche qu'il venait d'essayer.
+
+**LE MOT DE PASSE SE CONFIRME, ET L'ŒIL LE MONTRE.** Deux cases sur le même
+écran, et « Continuer » refuse tant qu'elles diffèrent. L'œil est celui qui
+existe déjà — mêmes tracés, même libellé « Afficher / Masquer le mot de passe »
+que `src/app/reglages/equipe/nouveau/NouveauCompte.tsx` : un second
+dessin pour le même geste finirait par diverger. Sans lui, un mot de passe se
+tape à l'aveugle sur un chantier au soleil, et l'on ne sait jamais lequel des
+deux est faux.
+
+**LE BANDEAU DÉROULANT EST DESSINÉ PAR NOUS, PLUS PAR LE TÉLÉPHONE.** Sa
+remarque : *« le bandeau déroulant doit respecter la charte de couleur et de
+style de l'appli »*. Un `<select>` natif ne le peut pas — c'est le
+système qui dessine sa roue, et aucune charte d'Atlas ne l'atteint. Le nouveau
+est fait à la main : replié il a l'allure d'un champ, déplié il ouvre un panneau
+aux couleurs de l'application. La suite compare la couleur du chevron à l'or de
+la charte, sinon « à la charte » ne serait qu'une intention.
+
+**L'IDENTITÉ SE SÉPARE — ET TROIS CASES N'EXISTENT PAS EN BASE.** Civilité,
+prénom et nom sur un écran, comme sur sa capture de Qonto. Aujourd'hui
+`users.nom` est un champ unique, et `civilite` n'existe que sur
+les CLIENTS (`src/lib/civilite.ts`, valeurs `mr` et `mme`).
+Les poser à la porte veut donc dire **les créer** — c'est écrit dans la planche
+plutôt que passé sous silence, et la décision lui revient.
+
+**LA DOMICILIATION ÉTAIT DÉJÀ LÀ, SOUS UN AUTRE NOM.** Sa question — *« on ne
+met pas où est domiciliée l'entreprise ? »* — portait sur la case « Adresse du
+siège », dont le libellé, repris des réglages, ne le disait pas assez. La
+QUESTION emploie désormais ses mots, la CASE garde ceux des réglages : deux
+libellés différents pour la même case feraient croire à deux endroits. Aucune
+question sur le pays : Atlas ne sait faire que des documents français — SIRET,
+RCS, TVA française — et la poser laisserait croire le contraire.
+
+**« Un mot pour accompagner vos devis » est retiré**, à sa demande. Il retourne
+dans les réglages, où il se voit sur un devis en l'écrivant.
+
+Treize questions pour une micro-entreprise en franchise, seize pour une SAS
+assujettie — et la suite compare ces deux chiffres à ceux **écrits dans la
+planche**. Ce contrôle a servi le jour même : ils annonçaient encore 14 et 17.
+
+**Deux défauts de mon fait, vus à la capture et par aucune mesure :** le chevron
+du bandeau se repliait en équerre à l'ouverture — une rotation de SVG sans
+`transform-box` tourne autour de l'origine du repère —, et un
+remplacement mal écrit avait laissé un commentaire CSS non fermé, qui mangeait
+la règle suivante.
+
+### La création de compte remplit les réglages, et ne pose que les questions qui ont un sens
+
+Sa décision du 8 septembre, après avoir essayé les deux propositions : *« il
+faut pour la création du compte la deuxième option sous forme de question qui
+avance, et faut lui poser TOUTES les questions qui s'enregistreront dans ce
+réglage, pour qu'il ait le moins d'infos à rentrer ensuite. Une fois dans
+l'appli, s'il a tout bien rempli, il peut direct s'en servir ou quasiment. »*
+
+**LE MOINS D'INFOS À RENTRER, CE N'EST PAS POSER MOINS DE QUESTIONS.** C'est ne
+poser que celles qui ont un sens, et deux embranchements font tout le travail —
+tous deux lus dans le code du produit, aucun inventé :
+
+- la **forme juridique** commande le capital social et la ville du RCS. Une EI
+  et une micro-entreprise n'en ont pas légalement (`formeADuCapital`,
+  `src/lib/formes-juridiques.ts`) : les deux questions disparaissent ;
+- le **régime de TVA** commande le numéro intracommunautaire. En franchise, la
+  question ne se pose pas.
+
+Une micro-entreprise en franchise répond à **14 questions** là où une SAS
+assujettie en voit **17** — et la suite mesure les deux parcours pour le
+vérifier. Un embranchement débranché rendrait des écrans parfaitement valides,
+tiendrait dans le cadre, et poserait trois questions absurdes.
+
+**LA QUESTION QUI N'EXISTAIT NULLE PART, ET QUI COMPTE LE PLUS.**
+`entreprises.regimeTva` vaut « assujettie » PAR DÉFAUT : un artisan en
+franchise qui ne va jamais dans les réglages sort des devis **avec une TVA qu'il
+n'a pas le droit de facturer**, et rien ne le lui dit. C'est la seule question
+dont l'oubli fabrique un document faux — elle est obligatoire, et la suite
+exige qu'elle soit **impossible à passer**.
+
+**LA FORME JURIDIQUE EST UN MENU DÉROULANT**, à sa demande du même jour —
+*« tu ne vas pas tous les énumérer »*. C'est la même qu'il avait posée le
+14 août pour l'écran des réglages. Onze boutons occupaient l'écran entier et le
+faisaient défiler ; le menu ouvre la roue du téléphone, et chaque sigle voyage
+avec son nom complet — « EURL » seul ne se retient pas.
+
+**LA PROGRESSION EST EN SEGMENTS**, un par chapitre, relevé sur sa capture de
+Qonto : des segments disent COMBIEN d'étapes il reste, là où un pourcentage ne
+dit que le chemin parcouru. Écartés de la même capture, et il faut dire
+pourquoi : le groupement en trois familles pour la forme juridique — il a
+demandé un déroulant —, Madame/Monsieur — la civilité ne se range nulle part
+pour un utilisateur d'Atlas, et rien ne s'invente —, et la flèche sur
+« Continuer », que sa règle du 25 août interdit.
+
+**Le compteur ne monte jamais.** Une question conditionnelle est comptée tant
+qu'on ne sait pas : sans cela, il afficherait « 5 sur 14 » puis « 6 sur 16 » dès
+qu'on choisit une SAS. Un total qui grossit en cours de route se lit comme une
+mauvaise surprise, et c'est exactement ce qu'on veut éviter chez quelqu'un qui
+n'est pas à l'aise.
+
+**Défaut attrapé par la suite, jamais à l'œil :** une fois la liste des formes
+affichée, elle ne disparaissait plus — les onze boutons restaient à la place du
+champ des onze questions suivantes. L'attribut `hidden` ne vaut qu'un
+`display:none` de la feuille du navigateur, et le `display:flex`
+de la liste le battait. Chaque écran, pris isolément, avait l'air correct.
+
+**La proposition écartée a été RETIRÉE**, pas gardée « au cas où » : une planche
+qui montre encore l'option non retenue fait rouvrir un débat clos.
+
 ### Les conditions d'utilisation et la politique de confidentialité, en brouillon
 
 `appli/conditions-utilisation.html` et `appli/confidentialite.html` — sa demande
@@ -132,6 +239,22 @@ dépôt. Les liens de la planche ne mènent nulle part, exprès.
 `la-porte-d-atlas.html` n'était pas refermée (`</a>` manquant) — 113 ancres
 ouvertes pour 112 fermées. Le navigateur refermait tout seul, donc rien ne se
 voyait ; le lien suivant s'en trouvait avalé dans la même zone cliquable.
+
+### La fiche du salarié : la planche du lot 2
+
+`appli/la-fiche-du-salarie.html` — par où il arrive (le planning, sa seule
+porte), deux façons de tenir la preuve de fin de chantier, et l'écran du patron
+qui décide si elle est exigée. **Rien n'est codé dans `src/`.**
+
+**Ses deux ajouts du 8 septembre**, écrits dans `TODO.md` : la fiche
+d'intervention se rattache aux informations du client **sur le planning**, et
+une feuille de preuve *« que le salarié remplira ou non, ça sera au patron de
+décider »*.
+
+**Ce que la capture a montré et qu'aucune mesure ne dit** : le numéro du client
+manquait sur la fiche. Il est devant un portail fermé, le client est au travail,
+et le planning est sa seule porte — sans ce lien, il n'a nulle part où aller le
+chercher.
 
 ### Repartir d'un client : la planche du lot 1, et deux décisions prises avant
 

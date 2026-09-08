@@ -284,7 +284,32 @@ de l'artefact ne se verrait pas autrement.
 
 ---
 
-## 8. Un défaut trouvé au passage, sans rapport avec la demande
+## 8. Trois défauts de MON fait, corrigés — et il faut les dire
+
+**1. Les conditions débordaient de l'écran.** À l'ouverture sur un téléphone de
+390 px, la page faisait **546 px de large** : elle glissait latéralement, et se
+lit alors une main sur deux. La cause tenait en trois mots — le texte
+« [À COMPLÉTER — dénomination, adresse, téléphone] » portait une consigne de
+non-coupure, et il a emporté la page entière. **Aucun test ne le voyait** : la
+suite vérifiait que la page répondait, pas qu'elle se lisait. C'est la capture,
+regardée, qui l'a montré — la cinquième fois dans ce dépôt qu'un défaut sort
+d'une image et d'aucun test. Le contrôle existe maintenant, et il mesure les
+deux pages à la largeur de votre téléphone.
+
+**2. Le flux de publication cherchait un écran nommé « n ».** En ajoutant les
+deux pages à la liste vérifiée en ligne, j'ai laissé une continuation de ligne
+mal écrite : le retour à la ligne s'est retrouvé en littéral, et la vérification
+a demandé au site une page appelée « n ». **404, job rouge — sur un site qui
+allait très bien**, ses quatre nouvelles adresses répondant déjà. Un rouge sur
+un produit sain fait chercher au mauvais endroit, et c'est pour ça qu'il est
+écrit ici.
+
+**3. L'écran de fin de la création n'offrait aucune suite** — un cul-de-sac a
+l'air d'une panne. « Entrer dans Atlas » ajouté. Trouvé en regardant, là encore.
+
+---
+
+## 9. Un défaut trouvé au passage, sans rapport avec la demande
 
 Dans `appli/essais.html`, l'entrée « La porte d'Atlas » n'était pas refermée —
 un `</a>` manquant, 113 ancres ouvertes pour 112 fermées. Le navigateur
