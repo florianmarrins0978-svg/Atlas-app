@@ -81,12 +81,30 @@ h3{margin:0 0 2px;font-family:ui-serif,Georgia,serif;font-size:21px;font-weight:
 
 .demi{font-size:10px;letter-spacing:.18em;text-transform:uppercase;
   color:var(--encre-douce);margin:14px 0 8px;display:flex;align-items:center;gap:8px}
+/* **La question et ses pastilles sur UNE ligne** — sa demande du 8 septembre.
+   Le libellé ne prend pas une ligne à lui : il annonce, il n'occupe pas. C'est
+   déjà la grammaire de sa carte du jour — « APRÈS-MIDI [Qui ?] ». */
+.ligneq{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.ligneq > .q{font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--encre-douce);flex:none}
+.ligneq .pastilles{flex:1 1 auto;gap:6px}
+/* **Le retrait serré vient de son écran**, pas de cette planche : `Petit serre`
+   met 9 px depuis le 21 août, précisément pour qu'une ligne de la carte du jour
+   ne se replie pas. Même problème, même mesure. */
+.ligneq .past{padding:11px 12px;font-size:13.5px}
 .demi .carre{width:11px;height:11px;border-radius:3px;background:#b9c9ad}
 .pastilles{display:flex;flex-wrap:wrap;gap:8px}
 .past{padding:11px 18px;border-radius:999px;border:1px solid var(--trait);
   background:var(--fond);color:var(--encre-douce);font:inherit;font-size:14px;
   cursor:pointer;min-height:48px}
 .past.mis{background:var(--plein);border-color:var(--plein);color:#fff}
+/* **Présent, mais pas tous les jours.** Le patron l'a relevé le 8 septembre :
+   une pastille PLEINE dit « il est là », et la phrase en dessous disait
+   « sauf jeudi ». Deux vérités à trois centimètres — le défaut même qu'il
+   avait signalé. Le cerne vert sans aplat dit « oui, mais pas partout », et
+   la pastille porte alors les jours. */
+.past.partiel{background:var(--fond);border-color:var(--plein);color:var(--plein)}
+.past.partiel b{font-weight:600}
 .past.or{border-color:var(--or);color:var(--or)}
 .past.absent{color:var(--gris);opacity:.72;cursor:not-allowed}
 .bas{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
@@ -147,7 +165,7 @@ td b{color:var(--encre)}
   jour</b>. Sur un chantier de deux jours, un congé sur un seul le retire des
   deux.</p>
   <p><b>Touchez les pastilles</b>, essayez les trois. Julien est en congé le
-  jeudi 10 : il est grisé ce jour-là, et libre le vendredi.</p>
+  jeudi 10, et libre le vendredi.</p>
   <p>Le bouton du haut montre ce que ça donne sur un chantier d'<b>un seul
   jour</b> — c'est neuf chantiers sur dix, et rien ne doit y changer.</p>
 </div>
@@ -185,6 +203,7 @@ td b{color:var(--encre)}
 
 <div class="choix" id="choix2">
   <button type="button" data-v="d" aria-pressed="true">D — trois pastilles</button>
+  <button type="button" data-v="d2" aria-pressed="false">D2 — deux pastilles</button>
   <button type="button" data-v="e" aria-pressed="false">E — deux cases</button>
 </div>
 
@@ -201,9 +220,9 @@ td b{color:var(--encre)}
     <tr>
       <td><b>C</b><span class="reco">recommandé</span></td>
       <td>Rien de votre côté : <b>vous cochez comme aujourd'hui</b>, une fois.</td>
-      <td>Le congé retire la personne du seul jour concerné, et l'écran l'écrit
-      sous son nom. Sur un chantier d'un jour, l'écran est identique à celui
-      d'aujourd'hui.</td>
+      <td>Le congé retire la personne du seul jour concerné, et <b>la pastille
+      le porte</b> : « Julien ven. », cerclée au lieu d'être pleine. Sur un
+      chantier d'un jour, l'écran est identique à celui d'aujourd'hui.</td>
     </tr>
     <tr>
       <td><b>A</b></td>
@@ -220,6 +239,15 @@ td b{color:var(--encre)}
     </tbody>
   </table>
 
+  <h3>Ce que votre remarque a corrigé dans C</h3>
+  <p>La première version cochait Julien en <b>vert plein</b> et écrivait
+  « sauf le jeudi 10 » en dessous. Vous avez demandé : <i>« c'est normal ? »</i>
+  — non. <b>On lit l'aplat, pas la phrase</b> : c'était exactement le défaut que
+  vous aviez signalé au départ, redessiné sans le voir.</p>
+  <p>La pastille est maintenant <b>cerclée et non pleine</b>, et elle porte le
+  jour. Une pastille pleine veut dire « tous les jours », un cerne veut dire
+  « pas partout » — et il n'y a plus de phrase à confronter au dessin.</p>
+
   <h3>Pourquoi C, en un mot</h3>
   <p>Les trois règlent le problème. <b>C est la seule qui ne vous demande rien
   de plus</b> : votre geste ne change pas, c'est l'application qui retire la
@@ -227,10 +255,22 @@ td b{color:var(--encre)}
   payer, sur chaque chantier, une complexité qui ne sert qu'aux rares chantiers
   à cheval sur un congé.</p>
 
-  <h3>Pour le congé d'une demi-journée : D</h3>
-  <p><b>D suit l'ordre de votre pensée</b> — qui, puis quand — et surtout
-  « La journée » est déjà choisi. Vous notez une absence exactement comme
-  aujourd'hui, en un appui ; la demi-journée n'existe que si vous la demandez.</p>
+  <h3>Pour le congé d'une demi-journée : D2</h3>
+  <p>Vous avez demandé que <b>« Qui » et « Quand » tiennent sur la même
+  ligne</b> que leurs pastilles. Mesuré, à trois largeurs d'écran :</p>
+  <table>
+    <thead><tr><th>Version</th><th>Sur votre iPhone (390)</th><th>Sur un écran plus étroit (360)</th></tr></thead>
+    <tbody>
+    <tr><td><b>D</b> — trois pastilles</td><td>tient</td><td><b>se replie</b> : « Quand » passe au-dessus</td></tr>
+    <tr><td><b>D2</b> — deux pastilles<span class="reco">recommandé</span></td><td>tient</td><td>tient</td></tr>
+    </tbody>
+  </table>
+  <p><b>D tient sur votre téléphone, et sur lui seul.</b> Les trois pastilles
+  plus le mot font 440 px pour 354 disponibles dès qu'un écran est un peu plus
+  étroit. Je ne vous propose pas quelque chose qui ne tient qu'ici.</p>
+  <p><b>D2 tient partout</b>, et le cas courant reste sans appui : rien de coché
+  vaut la journée entière, comme aujourd'hui. Vous ne touchez « Matin » ou
+  « Après-midi » que le jour où ça compte.</p>
   <p><b>E</b> est plus souple sur une longue période, mais elle vous fait
   regarder deux cases à chaque congé, y compris les neuf fois sur dix où c'est
   la journée entière.</p>
@@ -304,14 +344,14 @@ function rendre() {
   } else {
     corps.innerHTML = `
       <p class="demi"><span class="carre"></span>Matin</p>
-      <div class="pastilles">${P("Julien", "mis")}${P("Antoine", "mis")}${P("Terminé", "or")}</div>
+      <div class="pastilles">${P("Julien <b>ven.</b>", "partiel")}${P("Antoine", "mis")}${P("Terminé", "or")}</div>
       <p class="demi"><span class="carre"></span>Après-midi</p>
-      <div class="pastilles">${P("Julien", "mis")}${P("Antoine")}</div>
-      <!-- **UNE fois, pas une par demi-journée.** Écrite sous chacune des deux,
-           la même phrase se répétait à trois centimètres d'écart — sa règle du
-           25 août : « retire les phrases inutiles qui expliquent ». Le congé
-           porte sur la JOURNÉE, pas sur une moitié : il se dit une fois. -->
-      <p class="sauf">Julien : <b>pas le jeudi 10</b>, il est en congé.</p>`;
+      <div class="pastilles">${P("Julien <b>ven.</b>", "partiel")}${P("Antoine")}</div>
+      <!-- **La pastille DIT ce qu'elle couvre, plus une phrase en dessous.**
+           Le patron, 8 septembre : « la phrase dit Julien en congé mais il est
+           quand même coché en vert, c'est normal ? » Non — et c'était le défaut
+           d'origine, redessiné. Le vert plein ne peut pas porter une exception :
+           on lit l'aplat, pas la phrase. -->`;
     document.getElementById("dit").textContent =
       "C — vous cochez une fois, comme aujourd'hui. L'application retire le jour du congé, et l'écrit.";
   }
@@ -342,11 +382,19 @@ rendre();
 const DEMI = {
   d: [`
     <p class="jour">Jeudi 10 septembre</p>
-    <p class="demi" style="margin-top:4px">Qui n'est pas là ?</p>
-    <div class="pastilles">${P("Julien", "mis")}${P("Antoine")}</div>
-    <p class="demi">Quand ?</p>
-    <div class="pastilles">${P("Matin")}${P("Après-midi")}${P("La journée", "mis")}</div>`,
-    "D — vous dites qui, puis quand. « La journée » est déjà choisi : si vous ne touchez rien, c'est comme aujourd'hui."],
+    <div class="ligneq"><span class="q">Qui</span>
+      <div class="pastilles">${P("Julien", "mis")}${P("Antoine")}</div></div>
+    <div class="ligneq"><span class="q">Quand</span>
+      <div class="pastilles">${P("Matin")}${P("Après-midi")}${P("Journée", "mis")}</div></div>`,
+    "D — qui, puis quand, sur une ligne chacun. « Journée » est déjà choisi : si vous ne touchez rien, c'est comme aujourd'hui."],
+  d2: [`
+    <p class="jour">Jeudi 10 septembre</p>
+    <div class="ligneq"><span class="q">Qui</span>
+      <div class="pastilles">${P("Julien", "mis")}${P("Antoine")}</div></div>
+    <div class="ligneq"><span class="q">Quand</span>
+      <div class="pastilles">${P("Matin")}${P("Après-midi")}</div></div>
+    <p class="sauf">Rien de coché&nbsp;: la journée entière.</p>`,
+    "D2 — deux pastilles seulement. La ligne tient partout, et ne rien toucher vaut la journée : le cas courant reste sans appui."],
   e: [`
     <p class="jour">Réglages · Équipe · Absences</p>
     <p class="demi" style="margin-top:4px">Julien n'est pas là</p>
