@@ -184,7 +184,7 @@ async function prechaufferLesEcrans(): Promise<void> {
       console.log(`⚠ Préchauffage sans session : ${motif ?? "raison inconnue"}`);
       return;
     }
-    const base = "http://localhost:3000";
+    const base = BASE;
     /**
      * **En TRANCHE, on ne préchauffe que l'indispensable — et c'est une
      * question de mémoire, pas de temps.**
@@ -300,6 +300,35 @@ if (process.argv.includes("--list")) {
 }
 
 /**
+ * ─── LE PORT DE CETTE SESSION ───────────────────────────────────────────────
+ *
+ * **Sa consigne du 8 septembre 2026 :** *« maintenant chaque session a son
+ * dossier et son port pour ne pas vous bousculer ; vérifie et prends un port
+ * libre. »*
+ *
+ * Il était écrit **en dur, à sept endroits** dans ce fichier. Deux sessions qui
+ * jouaient la batterie en même temps se prenaient donc le port l'une à l'autre,
+ * et la seconde refusait de démarrer — c'est exactement ce qui est arrivé le
+ * 8 septembre au matin, où deux batteries lancées à quelques minutes d'écart
+ * ont rendu douze suites rouges qui n'accusaient personne.
+ *
+ * **`PORT` et pas un nom à nous** : c'est celui que Next lit déjà, et celui
+ * qu'un développeur essaie en premier. Un `ATLAS_PORT` aurait obligé à le
+ * traduire à chaque lancement, et la traduction se serait oubliée quelque part.
+ *
+ * **3000 reste le défaut**, pour que rien ne change quand on ne demande rien.
+ */
+const PORT = (() => {
+  const brut = Number(process.env.PORT);
+  // Un port hors des bornes ferait échouer le serveur bien plus loin, sur un
+  // message qui n'accuserait pas la variable.
+  return Number.isInteger(brut) && brut > 0 && brut < 65536 ? brut : 3000;
+})();
+
+/** L'adresse de CETTE batterie — jamais recopiée ailleurs. */
+const BASE = `http://localhost:${PORT}`;
+
+/**
  * Quelque chose écoute-t-il déjà sur le port qu'on s'apprête à prendre ?
  *
  * **Ce que ça évite, et qui est arrivé quatre fois le 11 août 2026.** Ce script
@@ -327,13 +356,15 @@ async function quelquUnEcouteDeja(url: string): Promise<boolean> {
 
 async function main() {
   // **Avant tout le reste** : un port occupé rend la suite entière ininterprétable.
-  if (await quelquUnEcouteDeja("http://localhost:3000/api/health/live")) {
+  if (await quelquUnEcouteDeja(`${BASE}/api/health/live`)) {
     console.error(
-      "❌ Quelque chose écoute DÉJÀ sur le port 3000, et ce n'est pas cette batterie.\n" +
+      `❌ Quelque chose écoute DÉJÀ sur le port ${PORT}, et ce n'est pas cette batterie.\n` +
         "   Refus de continuer : les suites travailleraient sur ce serveur-là — celui d'un autre\n" +
         "   code, peut-être d'une autre branche — et leur résultat ne voudrait rien dire.\n" +
         "   Le plus souvent, c'est un orphelin du banc d'essai :\n" +
-        "     pgrep -af 'next-server|next dev'   puis   kill -9 <pid>"
+        "     pgrep -af 'next-server|next dev'   puis   kill -9 <pid>\n" +
+        "   Et si c'est une AUTRE SESSION qui travaille, prenez un autre port :\n" +
+        "     PORT=3100 npm run verifier:avant-livraison"
     );
     process.exit(1);
   }
@@ -455,7 +486,7 @@ async function main() {
    * une fiche de chantier dont le lien pointait sur `localhost`, et son client
    * a reçu « Connexion au serveur impossible » (`src/lib/adresse-du-client.ts`).
    *
-   * Or les suites, elles, tournent sur `http://localhost:3000` — sans cette
+   * Or les suites, elles, tournent sur l'adresse locale — sans cette
    * variable, chaque écran d'envoi rendrait le refus, et une dizaine de suites
    * rougiraient en accusant l'envoi alors que c'est leur adresse qui est en
    * cause. On DÉCLARE donc une adresse publique, comme le ferait un
@@ -490,8 +521,17 @@ async function main() {
   // `next` est un script Node : on le lance par l'exécutable qui nous porte
   // déjà. Plus de `.cmd`, plus de shell, plus d'interposition — le journal
   // revient, et l'arbre se tue proprement des deux côtés.
-  const serveur = spawn(process.execPath, [CHEMIN_NEXT, "dev", "-p", "3000"], {
-    env: { ...process.env, ATLAS_URL_PUBLIQUE: "https://atlas-suites.test" },
+  const serveur = spawn(process.execPath, [CHEMIN_NEXT, "dev", "-p", String(PORT)], {
+    // **`BASE_URL` suit le port de cette session.** Les suites qui le lisent
+    // (`scripts/_adresse.ts`) parlent alors au bon serveur. Celles qui écrivent
+    // encore `localhost:3000` en dur — il y en a 120 au 8 septembre 2026 — ne
+    // suivront pas : changer de port ne les emporte pas encore, et c'est écrit
+    // dans `TODO.md` plutôt que laissé à découvrir.
+    env: {
+      ...process.env,
+      ATLAS_URL_PUBLIQUE: "https://atlas-suites.test",
+      BASE_URL: BASE,
+    },
     stdio: ["ignore", journalFd, journalFd],
     detached: true,
   });
@@ -516,7 +556,7 @@ async function main() {
     console.error("---------------------------------------------------\n");
   }
 
-  const pret = await attendreServeurPret("http://localhost:3000/api/health/live");
+  const pret = await attendreServeurPret(`${BASE}/api/health/live`);
   if (!pret) {
     console.error("❌ Le serveur n'a jamais répondu — abandon.");
     montrerJournalServeur();
@@ -563,7 +603,7 @@ async function main() {
     // Un serveur mort ne se répare pas en lui envoyant vingt suites de plus :
     // il produit vingt échecs qui accusent chacun un écran différent. On
     // s'arrête au premier, en disant ce qui s'est réellement passé.
-    if (!(await serveurVivant("http://localhost:3000/api/health/live"))) {
+    if (!(await serveurVivant(`${BASE}/api/health/live`))) {
       console.error(
         `❌ Le serveur ne répond plus avant ${fichier}` +
           (serveurTermine ? ` — il s'est arrêté (${serveurTermine}).` : " — il est resté sourd une minute.")

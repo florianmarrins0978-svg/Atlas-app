@@ -131,6 +131,35 @@ facture mort en production le 8 août 2026).
 
 ---
 
+## ⏳ LE PORT NE SUIT QU'À MOITIÉ — 120 suites l'écrivent en dur
+
+**Sa consigne du 8 septembre 2026 :** *« maintenant chaque session a son dossier
+et son port pour ne pas vous bousculer ; vérifie et prends un port libre. »*
+
+**Fait :** la batterie lit `PORT` (défaut 3000), lance son serveur dessus, et le
+passe aux suites par `BASE_URL`. `PORT=3100 npm run verifier:avant-livraison`
+fonctionne pour le serveur.
+
+**PAS FAIT, et il faut le savoir avant de s'y fier :** **198 occurrences dans
+120 suites** écrivent encore `http://localhost:3000` en dur. Elles ne suivront
+donc pas un autre port — une batterie lancée sur 3100 démarrerait son serveur
+là et ferait parler ses suites à 3000, c'est-à-dire à personne, ou pire au
+serveur d'une AUTRE session.
+
+Le compte du jour :
+
+```bash
+grep -rc "localhost:3000\|127.0.0.1:3000" scripts/test-*-e2e.ts | grep -v ':0' | wc -l
+```
+
+**Ce qu'il faudrait :** que chaque suite lise `scripts/_adresse.ts`, qui porte
+déjà `BASE_URL`. C'est mécanique mais ça touche 120 fichiers — un lot à part,
+pas un à-côté.
+
+**Qui peut le faire :** n'importe quelle session, avec la batterie derrière.
+
+---
+
 ## ✅ ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR~~ — **TRANCHÉ le 8 septembre 2026**
 
 **Ses choix : C et D2** (planche `appli/qui-travaille-quel-jour.html`), codés le
