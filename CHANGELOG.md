@@ -115,6 +115,24 @@ de la liste le battait. Chaque écran, pris isolément, avait l'air correct.
 **La proposition écartée a été RETIRÉE**, pas gardée « au cas où » : une planche
 qui montre encore l'option non retenue fait rouvrir un débat clos.
 
+### La machine de la CI dira ce qu'elle a, au lieu de mourir en silence
+
+Deux exécutions de suite se sont arrêtées au même endroit sans un seul test
+rouge : « The runner has received a shutdown signal ». Sa demande : *« corrige
+le problème à la racine »* — donc on la cherche, et on ne répare pas une panne
+imaginée (`AGENTS.md`).
+
+**Quatre suspects écartés par la mesure, pas par le raisonnement** : le serveur
+ne gonfle pas (1 820 → 1 887 Mo sur douze suites, et la CI meurt à la deuxième),
+`.next` ne bouge pas d'un octet (1 241 Mo avant comme après), le test joué seul
+passe, et `ci.yml` ne porte aucun `concurrency` qui annulerait une exécution.
+
+`ci.yml` relève donc mémoire libre, disque libre et charge **toutes les cinq
+secondes pendant les suites navigateur**, et les recrache `if: always()` — le
+pire moment en tête. C'est la règle du dépôt appliquée à la lettre : devant un
+défaut muet, la première livraison n'est pas un correctif, c'est de rendre le
+défaut bavard.
+
 ### La vignette d'une photo reprise n'est pas un bouton
 
 La CI a rougi sur `main` : un carré de 62 px arrivé avec « repartir d'un

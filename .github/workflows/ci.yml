@@ -184,6 +184,35 @@ jobs:
       - name: Installer le navigateur Playwright
         run: npx playwright install --with-deps chromium
 
+      # **LA MACHINE DIT CE QU'ELLE A, PENDANT QU'ELLE TOURNE.**
+      #
+      # Les 7 et 8 septembre 2026, les suites navigateur ont tué le runner deux
+      # fois de suite au même endroit — « The runner has received a shutdown
+      # signal » —, et le journal ne montrait AUCUN test rouge : la machine
+      # s'arrête, c'est tout. Mesuré ici, sur l'environnement de l'agent, le
+      # serveur ne gonfle pas (+67 Mo sur douze suites) et `.next` ne bouge pas
+      # d'un octet : la cause n'est donc pas celle qu'on suppose de loin.
+      #
+      # `AGENTS.md` : « devant un défaut muet, la première livraison n'est pas
+      # un correctif, c'est de rendre le défaut bavard ». Ce relevé coûte un
+      # processus endormi et écrit une ligne toutes les cinq secondes ; il
+      # nomme le coupable — mémoire, disque ou ni l'un ni l'autre — au lieu de
+      # nous faire deviner une fois de plus.
+      - name: Relever ce que la machine a sous le pied
+        run: |
+          echo "instant;memoire_libre_Mo;disque_libre_Mo;charge" > /tmp/machine.csv
+          (
+            while true; do
+              printf '%s;%s;%s;%s\n' \
+                "$(date -u +%H:%M:%S)" \
+                "$(free -m | awk '/^Mem:/ {print $7}')" \
+                "$(df -m --output=avail / | tail -1 | tr -d ' ')" \
+                "$(cut -d' ' -f1 /proc/loadavg)" >> /tmp/machine.csv
+              sleep 5
+            done
+          ) &
+          echo $! > /tmp/releveur.pid
+
       - name: Tests de bout en bout
         env:
           # Sans CRON_SECRET, la route de purge répond 503 (« non configuré »)
@@ -195,6 +224,19 @@ jobs:
           # connexion entre deux suites (cf. scripts/run-e2e-tests.ts).
           REDIS_URL: redis://localhost:6379
         run: npm run test:e2e
+
+      # **Il parle SURTOUT quand ça s'est mal passé** : `always()`, sinon le
+      # relevé disparaîtrait précisément le jour où il sert.
+      - name: Ce que la machine avait sous le pied
+        if: always()
+        run: |
+          kill "$(cat /tmp/releveur.pid)" 2>/dev/null || true
+          echo "── les 30 derniers relevés (5 s d'intervalle) ──"
+          tail -30 /tmp/machine.csv
+          echo "── le pire moment ──"
+          tail -n +2 /tmp/machine.csv | sort -t';' -k2 -n | head -3
+          echo "── à la fin ──"
+          free -m; df -h /
 
       # Se connecte pour de vrai, DEPUIS UNE ORIGINE ÉTRANGÈRE.
       #

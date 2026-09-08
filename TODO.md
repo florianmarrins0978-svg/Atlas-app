@@ -1825,10 +1825,26 @@ chantier dans un navigateur, à la suite de six autres écrans.
 précèdent sur `main` sont rouges elles aussi. Ce qui était de ce lot a été
 corrigé (les 321 suites base passent, la construction aussi).
 
-**Où regarder d'abord**, pour qui reprend : jouer `test-acces-salarie-e2e` seul,
-puis le même cas avec le PDF retiré — si la machine tient, c'est le rendu du PDF
-qu'il faut soulager, pas le test qu'il faut désactiver (`CLAUDE.md` §4 quater :
-on ne skippe pas un contrôle pour obtenir du vert).
+**CE QUI A ÉTÉ MESURÉ LE 8 SEPTEMBRE, et qui écarte les deux suspects
+évidents** — il a demandé de corriger à la racine, la racine se cherche donc
+avec des chiffres :
+
+| Ce qu'on soupçonnait | Ce que la mesure dit |
+|---|---|
+| la mémoire qui s'emballe | serveur à **1 820 Mo** au démarrage, **1 887 Mo** après douze suites : +67 Mo, et la CI meurt à la DEUXIÈME |
+| le disque qui se remplit | `.next` : **1 241 Mo** avant, **1 241 Mo** après douze suites — pas un octet |
+| le test lui-même | `test-acces-salarie-e2e` joué SEUL passe, 0 échec |
+| une poussée qui annule la précédente | `ci.yml` ne porte aucun `concurrency` — ce n'est pas ça non plus |
+
+**Donc on ne devine plus : la machine dit ce qu'elle a.** `ci.yml` relève
+désormais mémoire libre, disque libre et charge toutes les cinq secondes
+pendant les suites navigateur, et les recrache `if: always()` — le pire moment
+en tête. La prochaine exécution nomme le coupable au lieu de nous faire
+supposer une troisième fois (`AGENTS.md` : rendre le défaut bavard AVANT de
+corriger).
+
+**Ce qui reste interdit en attendant :** désactiver le test pour obtenir du vert
+(`CLAUDE.md` §4 quater).
 
 **Et la même chose se voit ici** : la batterie locale du 8 septembre s'est
 arrêtée au même endroit, sur des délais de 45 s. Ce n'est donc pas propre à
