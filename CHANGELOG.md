@@ -8,6 +8,39 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### Deux règles d'or de plus, et six fichiers morts en moins
+
+*« Je ne veux pas de code mort, si ça ne sert plus on le supprime proprement »*
+et *« pas de spaghettis : si demain je dois faire appel à un développeur, il
+faut qu'il comprenne facilement comment fonctionne le code »*. `CLAUDE.md`
+§4 quinquies et §4 sexies, chacune tenue par un contrôle de la batterie.
+
+**Supprimés le jour même, parce qu'une règle qu'on n'applique pas à soi ne vaut
+rien** : `ScreenHeader`, `ActionPrincipale`, `BrancheEucalyptus` (dont l'en-tête
+disait lui-même « dessinée, jamais importée »), `lib/date-relative`,
+`lib/nombre-en-lettres`, `server/ai/pipeline/etapes` — plus les deux suites qui
+n'éprouvaient qu'eux, l'exception d'un contrôle qui nommait l'un d'eux, et trois
+renvois de documentation devenus faux. `verifier:memoire` a attrapé les trois
+derniers : c'est exactement son rôle.
+
+`scripts/test-pas-de-code-mort.ts` refuse désormais tout fichier de `src/` que
+plus rien n'importe, sa liste d'exceptions **vide**. Sa première version accusait
+155 fichiers bien vivants — elle comparait des bouts de chemin au lieu de
+résoudre les imports ; un contrôle qui accuse à tort ne se corrige pas, il
+s'éteint, et l'on aurait perdu la règle le jour de sa pose.
+
+`scripts/test-couches.ts` tient le sens des liens : `lib` ignore `server`, ni
+l'un ni l'autre ne connaît d'écran, un composant ne parle à la base que s'il est
+un composant serveur. Les `import type` ne comptent pas — ils s'effacent à la
+compilation. La dette du jour est nommée (quatre remontées, une seule cause :
+`src/server/disponibilites.ts` mêle règles pures et accès base) et inscrite dans
+`TODO.md` ; le contrôle refuse toute remontée NOUVELLE, donc la liste ne peut
+que rétrécir.
+
+Les deux contrôles ont été vus rouges avant d'être crus : contre un orphelin
+posé exprès sous `src/lib/`, et contre une remontée `lib → server`.
+
+
 ### Les conditions d'utilisation et la politique de confidentialité, en brouillon
 
 `appli/conditions-utilisation.html` et `appli/confidentialite.html` — sa demande

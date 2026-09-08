@@ -161,14 +161,6 @@ const HORS_CHARTE: Array<{
     seulement: /data-atlas="carte-composer-ma-fiche"/,
   },
   {
-    // Le chevron de retour : 32 × 32, une icône dans un cadre, pas un bouton
-    // d'action. La charte réserve la capsule à ce qu'on FAIT ; l'arrondir
-    // entièrement en ferait une pastille ronde, ce qui n'a été demandé nulle
-    // part.
-    motif: /^src[/\\]components[/\\]ScreenHeader\.tsx$/,
-    pourquoi: "chevron de retour, icône encadrée et non bouton d'action",
-  },
-  {
     // **Une case qu'on REMPLIT, pas un geste qu'on appuie.** La charte est
     // citée juste au-dessus : « elle ne donne la capsule qu'à ce qu'on APPUIE,
     // jamais à ce qu'on remplit ». La case de l'unité est un champ — elle se

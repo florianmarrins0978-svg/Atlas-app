@@ -638,7 +638,6 @@ légitimes, et aucune n'est un oubli :
 | `src/components/atlas/Calendrier.tsx` | employé UNIQUEMENT par la page du client ci-dessus |
 | `src/app/paysage/arrosage/PlanDessine.tsx` | un plan est un dessin technique, pas un écran ; ses couleurs sont documentées en tête |
 | `src/app/reglages/documents/allure/AllureClient.tsx` | c'est le nuancier lui-même (l'écran a été coupé le 7 septembre 2026 : le nuancier vit maintenant là) |
-| `src/components/atlas/BrancheEucalyptus.tsx` | une illustration |
 | `src/app/design/*` | maquettes gelées, absentes en production |
 | `layout.tsx` (`themeColor`) | **pas une exception, un défaut** — voir le point ci-dessus |
 
@@ -1797,6 +1796,35 @@ main ce que `useOccupation` fait déjà — `parCreneau`, `absentesParCreneau`,
 `CLAUDE.md` §3 interdit : elles divergeront au premier réglage ajouté d'un seul
 côté. Ce lot ne les a pas réunies pour ne pas mêler un remaniement à un
 changement de comportement — mais la dette est là, et elle porte un vrai risque.
+
+---
+
+## LA DETTE DE STRUCTURE : `disponibilites.ts` MÊLE DEUX CHOSES (8 septembre 2026)
+
+Relevée en posant sa règle « pas de spaghettis » (`CLAUDE.md` §4 sexies).
+
+`src/server/disponibilites.ts` porte à la fois des **règles pures** — durées,
+libellés, conversion de jour — et des **accès base**. Quatre fichiers d'étages
+inférieurs remontent donc vers `server` pour aller chercher les premières :
+
+| Le fichier | Ce qu'il vient chercher |
+|---|---|
+| `src/lib/mois.ts` | `versJourIso` |
+| `src/lib/planning-jour.ts` | `DUREE_PAR_DEFAUT_DEMI_JOURNEES` |
+| `src/lib/jours-barres.ts` | `libelleDuree` |
+| `src/components/atlas/useOccupation.ts` | `cleCreneau`, `creneauxDuChantier` |
+
+**La correction est un déménagement, pas une exception** : sortir ces fonctions
+pures vers `src/lib/`, et laisser `src/server/disponibilites.ts` les importer. Rien
+ne change de comportement — c'est un lot à part, avec sa batterie, parce qu'il
+touche quatre fichiers employés par le planning.
+
+**Ce que ça coûte de ne pas le faire :** une règle de planning ne peut pas
+s'éprouver sans monter une base, et le développeur qui reprendra l'appli devra
+ouvrir `server/` pour comprendre un calcul de jours.
+
+`scripts/test-couches.ts` nomme ces quatre lignes et **refuse toute remontée
+nouvelle** : la liste ne peut que rétrécir. Elle disparaîtra avec le lot.
 
 ---
 
@@ -8749,10 +8777,10 @@ facture »), corrigé le jour même. Les cinq autres n'ont jamais été arbitré
   l'appui. « Oui » : ses clients voient la capsule eux aussi. Les couleurs
   propres à ces écrans restent — c'est l'identité qui devait rester distincte,
   pas la forme du geste ;
-- `src/components/ScreenHeader.tsx` — le chevron de retour, 32 × 32 en
-  `rounded-md`. **Seul point restant.** Une icône encadrée, pas un bouton
-  d'action : l'arrondir entièrement en ferait une pastille ronde, ce qui n'a
-  été demandé nulle part. Question posée le 13 août, sans réponse à ce jour.
+- ~~`ScreenHeader` — le chevron de retour, 32 × 32~~ : **la question tombe
+  d'elle-même le 8 septembre 2026.** Le composant a été supprimé, plus rien ne
+  l'importait depuis la refonte des en-têtes (`CLAUDE.md` §4 quinquies). Il
+  n'y a donc plus de point restant.
 
 Ils sont **déclarés comme exceptions nommées** dans
 `scripts/test-boutons-arrondis.ts`, chacune avec sa raison : un bouton NEUF écrit

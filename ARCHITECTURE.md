@@ -577,8 +577,10 @@ défile avec le contenu et sort de l'écran. Atlas est une application installé
 sur un écran d'accueil, pas un site que l'on parcourt.
 
 **L'action principale, elle, prend la forme d'Arborea** : carte vert pin, rond
-d'icône, titre en Playfair, sous-ligne et flèche
-(`src/components/atlas/ActionPrincipale.tsx`).
+d'icône, titre en Playfair, sous-ligne et flèche. *(Le composant qui la portait,
+`ActionPrincipale`, a été supprimé le 8 septembre 2026 : plus rien ne
+l'importait depuis que l'accueil a été refait — `CLAUDE.md` §4 quinquies. La
+forme, elle, n'a pas changé : `PrimaryButton` la porte.)*
 
 Deux écarts assumés avec le modèle, et notés dans le composant :
 
