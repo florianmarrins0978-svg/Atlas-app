@@ -4,10 +4,49 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-07 · `main`
+**Point de reprise :** 2026-09-08 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — CINQ SESSIONS EN MÊME TEMPS (8 septembre 2026, nuit)
+
+**Sa demande :** *« l'idée c'est qu'après ça chaque session puisse tourner en
+même temps sans se gêner »*. Il en fait tourner cinq dans le même dossier ; une
+seule pouvait mesurer.
+
+**Ce qui est en place :**
+
+| | |
+|---|---|
+| un **atelier** par session | rang pris au premier port libre → port, base, Redis et dossiers bâtis (`scripts/_atelier.ts`) |
+| un **dossier** par session | `npm run sessions:preparer 5` (`git worktree`) |
+| la commande | **inchangée** : `npm run verifier:avant-livraison` |
+
+**Le rang 0 rend exactement la batterie d'avant.** Une session seule ne voit
+aucune différence — c'est ce qui rend le lot éprouvable.
+
+**CE QU'IL FAUT SAVOIR AVANT DE REPRENDRE, et qui n'est pas de ce lot :**
+
+1. **`main` ne compile pas pour qui le récupère à neuf.**
+   **Quatre** contrôles sur `main` réclament du code non enregistré :
+   `test-compte-db` (`ecrireIdentite`, `civilite`, `prenom`),
+   `test-facture-reprend-le-devis-db` (`modalites`), `test-identite-personne`
+   et `test-modalites-paiement` — ces deux-là visent `src/lib/identite-personne.ts`
+   et `src/lib/modalites-paiement.ts`, qui ne sont **même pas suivis par git**. Dans le dossier du patron ça compile, ailleurs
+   non — donc aucune batterie ne peut être verte dans un worktree. C'est le
+   travail en vol d'une session voisine : le lui dire, ne pas le corriger à sa
+   place.
+2. **Cinq batteries EN MÊME TEMPS ne tiennent pas sur cette machine.** Deux ont
+   suffi à faire tomber un serveur (connexion à 43 s, puis panique interne de
+   Turbopack). Les suites BASE tiennent à deux ; les suites NAVIGATEUR non. Ce
+   que le lot donne vraiment : cinq sessions qui **travaillent** ensemble, et
+   chacune qui **mesure quand elle veut** sans attendre le port de l'autre.
+
+**Le document pour lui :** `docs/lot-cinq-sessions-en-meme-temps.md`.
+Le détail : `ARCHITECTURE.md` §287 (l'atelier) et §288 (le dossier).
+
+---
+
 ## Dernier lot — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
 
 **Document du lot :** `docs/lot-telecharger-la-facture.md`.

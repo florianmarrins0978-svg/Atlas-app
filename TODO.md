@@ -74,6 +74,23 @@ depuis la dernière prestation, qui reprend aussi le contenu du chantier).
 
 **Ce que le lot 1 touchera quand il aura tranché :**
 
+- **`main` NE COMPILE PAS pour qui le récupère à neuf — 8 septembre 2026.**
+  **Quatre contrôles** sont sur `main` et réclament du code qui n'existe que
+  dans l'arbre partagé, non enregistré :
+
+      scripts/test-compte-db.ts                    → ecrireIdentite, civilite, prenom
+      scripts/test-facture-reprend-le-devis-db.ts  → modalites, entrepriseTitulaireCompte
+      scripts/test-identite-personne.ts            → src/lib/identite-personne.ts   (NON SUIVI)
+      scripts/test-modalites-paiement.ts           → src/lib/modalites-paiement.ts  (NON SUIVI)
+
+  Dans le dossier du patron ça compile — les fichiers non enregistrés y sont.
+  Ailleurs, `tsc` rend dix-neuf erreurs, donc aucune batterie jouée dans un
+  dossier de travail ne peut être verte.
+
+  **Qui peut le régler :** la session qui tient ce travail. Enregistrer son
+  implémentation, ou retirer le contrôle de `main` en attendant. Ce n'est pas à
+  une autre session de le faire à sa place.
+
 - `src/app/chantiers/nouveau/actions.ts` — `trouverOuCreerClient` rend déjà le
   motif du rapprochement ; il faut le remonter jusqu'à l'écran, pas le recalculer ;
 - `src/app/clients/[id]/page.tsx` — un chemin vers un chantier pour lui. Attention :

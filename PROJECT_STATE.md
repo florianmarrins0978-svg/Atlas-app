@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-07 · branche `main`
+**Dernière mise à jour :** 2026-09-08 · branche `main`
 · dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
 l’affichage)
 
@@ -18,6 +18,21 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## FAIT : cinq sessions en même temps (8 septembre 2026, nuit)
+
+Chaque session mesure chez elle. `ARCHITECTURE.md` §287 et §288,
+`docs/lot-cinq-sessions-en-meme-temps.md`.
+
+| | |
+|---|---|
+| **Fait** | un **atelier** par session — rang pris au premier port libre, qui dérive le port, la base, le coin de Redis et les dossiers bâtis (`scripts/_atelier.ts`) |
+| **Fait** | la base d'un atelier neuf se crée seule, avec ses droits et ses migrations (`scripts/preparer-atelier.ts`) |
+| **Fait** | un **dossier de travail** par session : `npm run sessions:preparer 5` |
+| **Fait** | l'étape « Connexion derrière un proxy » cesse d'échouer en silence — elle lançait le banc par `npm` à travers un shell, qui avalait tout : le banc ne démarrait pas |
+| **Mesuré** | deux batteries en même temps, deux dossiers, ateliers 1 et 2 : **303/321** suites base chacune, sans se toucher |
+| **Ouvert** | `main` ne compile pas à neuf — `scripts/test-compte-db.ts` réclame du code non enregistré d'une session voisine |
+| **Ouvert** | cinq batteries simultanées ne tiennent pas sur la machine : deux suffisent à faire tomber un serveur de développement |
 
 ## FAIT : deux mots du planning qu'il ne comprenait pas (7 septembre 2026)
 
