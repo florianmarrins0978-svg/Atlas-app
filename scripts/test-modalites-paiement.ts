@@ -16,6 +16,8 @@
 import assert from "node:assert/strict";
 import {
   LIBELLE_APRES,
+  messageNouvelIban,
+  porteUnAutreIban,
   LIBELLE_AVANT,
   consigneDuLibelle,
   ibanEnGroupes,
@@ -190,6 +192,70 @@ essai("une facture sans IBAN garde quand même un ordre de chèque", () => {
   assert.equal(m.ibanLisible, null);
   assert.equal(m.ordreDuCheque, "Jardins du Val");
   assert.notEqual(m.ordreDuCheque.trim(), "");
+});
+
+// ─── Quand l'IBAN change : qui prévenir, et avec quels mots ─────────────────
+
+essai("UNE FACTURE QUI PORTE UN AUTRE IBAN SE SIGNALE", () => {
+  assert.equal(porteUnAutreIban("FR7611110000011111111111111", "FR7622220000022222222222222"), true);
+});
+
+essai("le même compte écrit autrement n'est PAS un autre compte", () => {
+  // Sans normalisation, une espace de saisie ferait prévenir tous ses clients.
+  assert.equal(porteUnAutreIban("FR76 1111 0000 0111 1111 1111 111", "fr7611110000011111111111111"), false);
+  assert.equal(porteUnAutreIban("  FR7611110000011111111111111  ", "FR7611110000011111111111111"), false);
+});
+
+essai("SANS IBAN AUJOURD'HUI, ON NE PRÉVIENT DE RIEN", () => {
+  // Il n'y a pas de nouveau compte à annoncer : le message serait vide de sens.
+  for (const rien of [null, "", "   "]) {
+    assert.equal(
+      porteUnAutreIban("FR7611110000011111111111111", rien),
+      false,
+      `« ${rien} » comme IBAN d'aujourd'hui ne doit rien déclencher`
+    );
+  }
+});
+
+essai("UNE FACTURE QUI N'EN PORTAIT AUCUN N'A RIEN À CORRIGER", () => {
+  // Son client n'a jamais lu d'IBAN dessus : il n'a pas pu se tromper de compte.
+  for (const rien of [null, "", "   "]) {
+    assert.equal(
+      porteUnAutreIban(rien, "FR7622220000022222222222222"),
+      false,
+      `une facture sans IBAN (« ${rien} ») ne doit pas être signalée`
+    );
+  }
+});
+
+essai("LE MESSAGE PORTE LE NUMÉRO DEUX FOIS, ET LE NOUVEL IBAN", () => {
+  const m = messageNouvelIban({
+    clientAvecCivilite: "Mme Grospiron",
+    numeroFacture: "F2026-000012",
+    ibanLisible: "FR76 2222 0000 0222 2222 2222 222",
+    entrepriseNom: "Jardins du Val",
+  });
+  // Une fois pour désigner la facture, une fois pour le libellé : sans ce
+  // numéro, le règlement ne se rattache à rien.
+  assert.equal(m.split("F2026-000012").length - 1, 2, "le numéro ne figure pas deux fois");
+  assert.ok(m.includes("FR76 2222 0000 0222 2222 2222 222"), "le nouvel IBAN manque");
+  assert.ok(m.includes("Mme Grospiron"), "le client n'est pas nommé");
+  assert.ok(m.includes("Jardins du Val"), "l'artisan ne signe pas");
+  assert.ok(m.includes("libellé"), "la consigne du libellé a disparu");
+});
+
+essai("le message n'explique PAS pourquoi l'IBAN a changé", () => {
+  // Un client n'a pas à savoir si l'artisan a changé de banque ou corrigé une
+  // faute de frappe. Ce qu'il lui faut, c'est le bon compte.
+  const m = messageNouvelIban({
+    clientAvecCivilite: "M. Lefèvre",
+    numeroFacture: "F2026-000011",
+    ibanLisible: "FR76 2222",
+    entrepriseNom: "Jardins du Val",
+  });
+  for (const mot of ["banque", "erreur", "désolé", "excuse"]) {
+    assert.equal(m.toLowerCase().includes(mot), false, `le message se justifie : « ${mot} »`);
+  }
 });
 
 console.log("");

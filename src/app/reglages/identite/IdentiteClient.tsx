@@ -11,6 +11,9 @@ import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 import { sirenDepuisSiret } from "@/lib/siren";
 import { formeADuCapital } from "@/lib/formes-juridiques";
 import type { PositionMentionsLegales } from "@/lib/mentions-legales";
+import AlerteAncienIban from "@/components/atlas/AlerteAncienIban";
+import { listerAPrevenirAction, prevenirAction } from "@/app/prevenir-du-nouvel-iban";
+import type { FactureAPrevenir } from "@/server/repositories/factures";
 
 /**
  * L'identité de l'entreprise — d'après `maquettes/atlas-reglages-identite.html`.
@@ -46,9 +49,17 @@ type Identite = {
 
 export default function IdentiteClient({
   initial,
+  aPrevenir,
   periodicite,
 }: {
   initial: Identite;
+  /**
+   * **Les factures parties avec l'ancien IBAN** — sa demande du 8 septembre
+   * 2026. C'est ICI que l'alerte vit, tant qu'il n'a pas prévenu : sa question
+   * — *« si je les relance plus tard, où je retrouve l'écran ? »* — a montré
+   * qu'un écran ouvert une fois ne suffit pas.
+   */
+  aPrevenir: FactureAPrevenir[];
   /**
    * Le réglage de périodicité de TVA, monté par la page — elle seule lit la
    * base — et posé ICI, sous le régime de TVA, parce que les deux moitiés
@@ -57,6 +68,22 @@ export default function IdentiteClient({
   periodicite: React.ReactNode;
 }) {
   const [valeurs, setValeurs] = useState<Identite>(initial);
+  /**
+   * **Une seule liste pour les deux exemplaires de l'alerte.** L'encart sous le
+   * champ et l'écran du premier jour montrent la même chose : deux états
+   * séparés laisseraient l'un réclamer un client que l'autre vient de prévenir.
+   */
+  const [aSignaler, setASignaler] = useState(aPrevenir);
+  /**
+   * L'ÉCRAN DU PREMIER JOUR — le troisième endroit, qu'il a voulu le
+   * 8 septembre 2026. Il s'ouvre une fois, juste après l'enregistrement d'un
+   * IBAN qui laisse des factures derrière lui.
+   *
+   * **Il ne remplace rien**, et c'est SA question qui l'a imposé : *« si je les
+   * relance plus tard, où je retrouve l'écran ? »* — « Plus tard » referme
+   * celui-ci, et l'encart sous le champ, lui, ne s'en va pas.
+   */
+  const [premierJour, setPremierJour] = useState(false);
   const [refus, setRefus] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
   /**
@@ -95,6 +122,14 @@ export default function IdentiteClient({
       setRefus(r.ok ? null : r.raison);
       // **On ne déclare écrit que ce que le serveur a accepté.** Vider la liste
       // sur un refus afficherait « Enregistré » sur une valeur perdue.
+      if (r.ok && "iban" in partiel) {
+        // La liste se relit côté serveur : la calculer ici demanderait de
+        // savoir quelles factures portent quel IBAN, c'est-à-dire de refaire la
+        // règle qui vit déjà dans le dépôt (`CLAUDE.md` §3).
+        const restantes = await listerAPrevenirAction();
+        setASignaler(restantes);
+        setPremierJour(restantes.length > 0);
+      }
       if (r.ok) {
         setAEcrire((a) => {
           const reste = { ...a };
@@ -320,6 +355,11 @@ export default function IdentiteClient({
           onChange={(v) => ecrire("titulaireCompte", v)}
           onFini={() => enregistrer({ titulaireCompte: valeurs.titulaireCompte })}
         />
+
+        {/* **Sous le champ, et non ailleurs** : il voit la conséquence à
+            l'endroit de la cause. L'alerte reste tant qu'il n'a pas prévenu —
+            elle ne dépend d'aucun écran ouvert une fois. */}
+        <AlerteAncienIban factures={aSignaler} onPrevenir={prevenirAction} onMaj={setASignaler} />
       </Bloc>
 
       {/* **La pièce partagée attend un OUI ou NON, pas un compte.** Les trois
@@ -328,6 +368,41 @@ export default function IdentiteClient({
           autres répondaient vrai ou faux. Ce que la barre en faisait était
           identique — `> 0` — et la seule chose que le compte ajoutait, c'était
           une façon de plus d'écrire la même question. */}
+      {/* **L'écran du premier jour.** Il occupe la page pour qu'on ne le
+          traverse pas sans le voir — mais il ne barre rien : « Plus tard » le
+          referme, et l'alerte reste sous le champ. */}
+      {premierJour && aSignaler.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto p-5"
+          style={{ backgroundColor: colors.cream }}
+        >
+          <div className="mx-auto w-full max-w-md">
+            <h1 className="text-[24px]" style={{ fontFamily: font.display, color: colors.ink }}>
+              Votre IBAN a changé
+            </h1>
+            <p className="mt-2 text-[14px] leading-relaxed" style={{ color: colors.inkSoft }}>
+              Les factures ci-dessous sont parties avec l&apos;ancien.
+            </p>
+            <div className="mt-3.5">
+              <AlerteAncienIban
+                factures={aSignaler}
+                onPrevenir={prevenirAction}
+                onMaj={setASignaler}
+                variante="ecran"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setPremierJour(false)}
+              className="mt-3.5 w-full rounded-full py-3 text-[15px]"
+              style={{ color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+            >
+              Plus tard
+            </button>
+          </div>
+        </div>
+      )}
+
       <BarreEnregistrer
         aEcrire={Object.keys(aEcrire).length > 0}
         enCours={enCours}

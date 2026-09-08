@@ -22,6 +22,7 @@ import EnAttenteDePaiement from "./EnAttenteDePaiement";
 import { facturesEnAttente } from "@/server/repositories/paiements-facture";
 import { listerAchatsTva, totalTvaDeductible } from "@/server/repositories/achats-tva";
 import { tvaDue } from "@/lib/achat-tva";
+import { facturesAvecAncienIban } from "@/server/repositories/factures";
 
 export const dynamic = "force-dynamic";
 
@@ -100,11 +101,14 @@ export default async function ReleveTvaPage({
   // **Les DEUX régimes, en une seule lecture des factures.** Le second total ne
   // s'affiche pas : il sert à dire, dans la feuille des déclarations, ce que le
   // choix change — ou ne change pas (`ARCHITECTURE.md` §194).
-  const [releves, deductible, achats, enAttente] = await Promise.all([
+  const [releves, deductible, achats, enAttente, aPrevenir] = await Promise.all([
     relevesSousLesDeuxRegimes(ctx, periode.debut, periode.fin),
     totalTvaDeductible(ctx, periode.debut, periode.fin),
     listerAchatsTva(ctx, periode.debut, periode.fin),
     facturesEnAttente(ctx),
+    // Ce qui reste à signaler après un changement d'IBAN. Vide presque
+    // toujours — et rien ne s'affiche alors.
+    facturesAvecAncienIban(ctx),
   ]);
   const releve = releves.retenu;
   const collectee = Number(releve.totalTva);
@@ -185,6 +189,7 @@ export default async function ReleveTvaPage({
             relevé. Placé AVANT les deux preuves : c'est ce qui reste à faire,
             et ça se lit avant ce qui est fait. */}
         <EnAttenteDePaiement
+          aPrevenir={aPrevenir}
           regime={releve.regime}
           aujourdHui={jourIso(new Date())}
           factures={enAttente.map((f) => ({

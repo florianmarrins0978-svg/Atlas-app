@@ -9,7 +9,14 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## 🔨 À CODER — prévenir des factures parties avec l'ancien IBAN
+## ✅ FAIT LE 8 SEPTEMBRE 2026 — prévenir des factures parties avec l'ancien IBAN
+
+~~À coder~~ — **codé et éprouvé** : les trois endroits, la trace de ce qui a été
+signalé (migration 0078) et l'ouverture d'une seule colonne dans le trigger
+d'immuabilité (0079). Détail : `docs/lot-alerte-ancien-iban.md`,
+`ARCHITECTURE.md` §298.
+
+Ce qui suit est ce qui a été demandé, gardé pour mémoire :
 
 **Tranché par lui le 8 septembre 2026**, maquette à l'appui
 (`appli/changer-d-iban.html`) : *« oui je le veux »*, aux **trois** endroits.

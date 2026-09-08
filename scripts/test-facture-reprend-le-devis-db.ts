@@ -10,8 +10,11 @@ import {
   emettreFacture,
   getFacturePourChantier,
   reprendreLeDevisSurLaFacture,
+  facturesAvecAncienIban,
+  marquerIbanSignale,
   FinChantierImpossibleError,
 } from "../src/server/repositories/factures";
+import { noterPaiement } from "../src/server/repositories/paiements-facture";
 import { creerEnvoiFacture, factureParJeton } from "../src/server/repositories/envois-factures";
 import { repriseDuDevis } from "../src/lib/facture-face-au-devis";
 import {
@@ -511,6 +514,182 @@ async function main() {
     assert.strictEqual(vue?.modalites.ordreDuCheque, "Jardins du Val SAS");
     assert.strictEqual(vue?.modalites.ibanLisible, null, "un IBAN non réglé ne doit rien afficher");
   });
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // LES FACTURES PARTIES AVEC UN AUTRE IBAN — tranché par lui le 8 sept. 2026.
+  //
+  // Ce qu'on éprouve ici n'est pas l'écran : c'est **qui** doit être prévenu.
+  // Un faux positif ferait écrire à un client qui n'a rien à corriger, et un
+  // avertissement qui parle à tort s'apprend à être ignoré.
+  // ═════════════════════════════════════════════════════════════════════════
+
+  await test("UNE FACTURE PARTIE AVANT LE CHANGEMENT D'IBAN EST SIGNALÉE", async () => {
+    const ctx = await contexte("ancien-iban");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    // Il change de banque APRÈS l'envoi.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7622220000022222222222222" });
+
+    const aPrevenir = await facturesAvecAncienIban(ctx);
+    assert.strictEqual(aPrevenir.length, 1, "la facture partie avec l'ancien IBAN n'est pas signalée");
+    assert.strictEqual(aPrevenir[0].numeroCommercial, facture.numeroCommercial);
+
+    // **Le message porte le NOUVEL IBAN**, jamais celui de la facture : c'est
+    // tout l'objet du message.
+    assert.ok(
+      aPrevenir[0].message.includes("FR76 2222 0000 0222 2222 2222 222"),
+      `le message ne porte pas le nouvel IBAN : « ${aPrevenir[0].message} »`
+    );
+    assert.equal(
+      aPrevenir[0].message.includes("1111"),
+      false,
+      "le message porte encore l'ancien IBAN"
+    );
+    assert.ok(aPrevenir[0].message.includes(facture.numeroCommercial), "le numéro manque au message");
+  });
+
+  await test("une facture émise APRÈS le changement n'est pas signalée", async () => {
+    const ctx = await contexte("iban-deja-bon");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+
+    // Le changement précède la facture : elle naît déjà avec le bon IBAN
+    // (migration 0076).
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7622220000022222222222222" });
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    assert.deepStrictEqual(await facturesAvecAncienIban(ctx), []);
+  });
+
+  await test("UNE FACTURE DÉJÀ RÉGLÉE N'A PLUS RIEN À CORRIGER", async () => {
+    const ctx = await contexte("iban-deja-paye");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7622220000022222222222222" });
+
+    // Sans le règlement, elle serait signalée : la suite au-dessus le prouve.
+    assert.strictEqual((await facturesAvecAncienIban(ctx)).length, 1);
+
+    const ligne = await ligneDeFacture(ctx, facture.id);
+    const regle = await noterPaiement(ctx, facture.id, {
+      date: ligne.dateEmission,
+      montant: ligne.totalTtc,
+    });
+    assert.strictEqual(regle.ok, true, "le montage n'a pas pu solder la facture");
+
+    assert.deepStrictEqual(
+      await facturesAvecAncienIban(ctx),
+      [],
+      "on écrit à un client qui a déjà payé"
+    );
+  });
+
+  await test("sans IBAN aujourd'hui, il n'y a rien à annoncer", async () => {
+    const ctx = await contexte("iban-retire");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    // Il retire son IBAN : il n'y a pas de nouveau compte à donner.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: null });
+
+    assert.deepStrictEqual(await facturesAvecAncienIban(ctx), []);
+  });
+
+
+  await test("UN CLIENT PRÉVENU NE SE REDEMANDE PAS", async () => {
+    const ctx = await contexte("iban-signale");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7622220000022222222222222" });
+
+    assert.strictEqual((await facturesAvecAncienIban(ctx)).length, 1, "l'essai ne prouverait rien");
+
+    await marquerIbanSignale(ctx, facture.id);
+    assert.deepStrictEqual(
+      await facturesAvecAncienIban(ctx),
+      [],
+      "l'alerte réclame un client déjà prévenu : elle s'apprendra à être ignorée"
+    );
+  });
+
+  await test("MAIS UN SECOND CHANGEMENT DE BANQUE LE REDEMANDE", async () => {
+    // C'est ce qu'un simple drapeau « prévenu » aurait raté : il serait resté
+    // levé, et ce client n'aurait jamais su où virer (migration 0078).
+    const ctx = await contexte("iban-deux-fois");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7622220000022222222222222" });
+    await marquerIbanSignale(ctx, facture.id);
+    assert.deepStrictEqual(await facturesAvecAncienIban(ctx), []);
+
+    // Il change encore de banque : le client doit être prévenu du troisième.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7633330000033333333333333" });
+    const encore = await facturesAvecAncienIban(ctx);
+    assert.strictEqual(encore.length, 1, "le client reste sur un compte dont personne ne lui a parlé");
+    assert.ok(encore[0].message.includes("FR76 3333 0000 0333 3333 3333 333"));
+  });
+
+  await test("marquer sans IBAN réglé ne fait rien taire", async () => {
+    // Noter un signalement alors qu'aucun compte n'est donné éteindrait l'alerte
+    // pour un IBAN qui n'existe pas.
+    const ctx = await contexte("iban-marquer-a-vide");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: "FR7611110000011111111111111" });
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    await entreprisesRepo.mettreAJourEntreprise(ctx, { iban: null });
+    await marquerIbanSignale(ctx, facture.id);
+    const ligne = await ligneDeFacture(ctx, facture.id);
+    assert.strictEqual(ligne.ibanSignale, null, "un signalement a été noté sans compte à annoncer");
+  });
+
+
+  await test("LE TROU FAIT UNE SEULE COLONNE DE LARGE — le reste reste immuable", async () => {
+    // La migration 0079 pardonne `iban_signale`, et RIEN d'autre. Sans cette
+    // suite, l'ouverture pourrait s'élargir sans que personne le voie — et
+    // c'est le relevé de TVA qui en paierait le prix.
+    const ctx = await contexte("immuable-encore");
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    const refus = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+      try {
+        await tx
+          .update(factures)
+          .set({ entrepriseIban: "FR7699990000099999999999999" })
+          .where(eq(factures.id, facture.id));
+        return null;
+      } catch (e) {
+        // **Drizzle enveloppe l'erreur de Postgres** : le texte est dans la
+        // cause, pas dans le message. L'y chercher ferait passer une protection
+        // qui marche pour une protection absente.
+        const cause = (e as { cause?: { message?: string } }).cause;
+        return `${(e as Error).message} ${cause?.message ?? ""}`;
+      }
+    });
+    assert.ok(refus, "l'IBAN figé d'une facture émise a pu être réécrit");
+    assert.ok(
+      /immuable/i.test(refus),
+      `le refus ne vient pas du bon garde-fou : « ${refus} »`
+    );
+  });
+
 
   console.log(`\n${passed} réussis, ${failed} échoués`);
   await pool.end();
