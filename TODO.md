@@ -60,6 +60,25 @@ porte (`docs/lot-pages-du-client.md`).
 
 ---
 
+## 🧹 `tsconfig.json` GROSSIT D'UNE LIGNE PAR ATELIER — à replier en un motif
+
+**Constaté le 8 septembre 2026, en jouant trois batteries de suite.** Next.js
+ajoute lui-même le dossier bâti à `include` à chaque construction. Un atelier de
+plus, c'est deux lignes de plus, et elles reviennent dans l'arbre à chaque
+passage : on les défait à la main avant de commiter, ce qui finit par se faire
+au mauvais moment.
+
+Le fichier en porte déjà six — `.next-batie-neuve`, `.next-a1`,
+`.next-verification-a1`, `.next-verification-a2`… — pour une seule et même
+chose. **Un motif les remplacerait tous** (`.next-verification-a*/types/**/*.ts`),
+comme `.gitignore` vient de le faire pour les mêmes dossiers.
+
+**Ce qui reste à vérifier avant de le faire, et qui demande une construction :**
+Next.js relit cette liste pour savoir s'il doit s'y ajouter. S'il compare des
+chaînes plutôt que d'évaluer le motif, il rajoutera sa ligne quand même et l'on
+aura les deux. À éprouver sur un atelier neuf, machine libre — pas pendant une
+batterie.
+
 ## ⏳ LA PORTE EN PLEIN AIR — CODÉE ; trois points attendent encore sa réponse
 
 **Née le 8 septembre 2026.** `appli/la-porte-en-plein-air.html`, publiée et
