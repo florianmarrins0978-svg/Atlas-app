@@ -8,6 +8,54 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### La porte : le mot de passe se confirme, le déroulant passe à la charte, l'identité se sépare
+
+Cinq remarques du 8 septembre, sur la planche qu'il venait d'essayer.
+
+**LE MOT DE PASSE SE CONFIRME, ET L'ŒIL LE MONTRE.** Deux cases sur le même
+écran, et « Continuer » refuse tant qu'elles diffèrent. L'œil est celui qui
+existe déjà — mêmes tracés, même libellé « Afficher / Masquer le mot de passe »
+que `src/app/reglages/equipe/nouveau/NouveauCompte.tsx` : un second
+dessin pour le même geste finirait par diverger. Sans lui, un mot de passe se
+tape à l'aveugle sur un chantier au soleil, et l'on ne sait jamais lequel des
+deux est faux.
+
+**LE BANDEAU DÉROULANT EST DESSINÉ PAR NOUS, PLUS PAR LE TÉLÉPHONE.** Sa
+remarque : *« le bandeau déroulant doit respecter la charte de couleur et de
+style de l'appli »*. Un `<select>` natif ne le peut pas — c'est le
+système qui dessine sa roue, et aucune charte d'Atlas ne l'atteint. Le nouveau
+est fait à la main : replié il a l'allure d'un champ, déplié il ouvre un panneau
+aux couleurs de l'application. La suite compare la couleur du chevron à l'or de
+la charte, sinon « à la charte » ne serait qu'une intention.
+
+**L'IDENTITÉ SE SÉPARE — ET TROIS CASES N'EXISTENT PAS EN BASE.** Civilité,
+prénom et nom sur un écran, comme sur sa capture de Qonto. Aujourd'hui
+`users.nom` est un champ unique, et `civilite` n'existe que sur
+les CLIENTS (`src/lib/civilite.ts`, valeurs `mr` et `mme`).
+Les poser à la porte veut donc dire **les créer** — c'est écrit dans la planche
+plutôt que passé sous silence, et la décision lui revient.
+
+**LA DOMICILIATION ÉTAIT DÉJÀ LÀ, SOUS UN AUTRE NOM.** Sa question — *« on ne
+met pas où est domiciliée l'entreprise ? »* — portait sur la case « Adresse du
+siège », dont le libellé, repris des réglages, ne le disait pas assez. La
+QUESTION emploie désormais ses mots, la CASE garde ceux des réglages : deux
+libellés différents pour la même case feraient croire à deux endroits. Aucune
+question sur le pays : Atlas ne sait faire que des documents français — SIRET,
+RCS, TVA française — et la poser laisserait croire le contraire.
+
+**« Un mot pour accompagner vos devis » est retiré**, à sa demande. Il retourne
+dans les réglages, où il se voit sur un devis en l'écrivant.
+
+Treize questions pour une micro-entreprise en franchise, seize pour une SAS
+assujettie — et la suite compare ces deux chiffres à ceux **écrits dans la
+planche**. Ce contrôle a servi le jour même : ils annonçaient encore 14 et 17.
+
+**Deux défauts de mon fait, vus à la capture et par aucune mesure :** le chevron
+du bandeau se repliait en équerre à l'ouverture — une rotation de SVG sans
+`transform-box` tourne autour de l'origine du repère —, et un
+remplacement mal écrit avait laissé un commentaire CSS non fermé, qui mangeait
+la règle suivante.
+
 ### La création de compte remplit les réglages, et ne pose que les questions qui ont un sens
 
 Sa décision du 8 septembre, après avoir essayé les deux propositions : *« il

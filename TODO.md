@@ -21,7 +21,10 @@ attendent sa réponse, et le détail est dans `docs/lot-porte-en-plein-air.md` :
    fois*~~ — **tranché le 8 septembre 2026 : une question à la fois**, et elle
    pose désormais **toutes** les questions qui remplissent les réglages
    (14 pour une micro-entreprise en franchise, 17 pour une SAS assujettie).
-   Ce qui reste à trancher : **dix-sept questions au plus, est-ce trop ?**
+   Ce qui reste à trancher : **seize questions au plus, est-ce trop ?** Et
+   surtout : **la civilité, le prénom et le nom séparés n'existent pas en
+   base** — les poser à la porte veut dire créer trois colonnes et les ajouter
+   à l'écran « Mon compte ». Son accord d'abord.
    L'IBAN et le message au client ne servent qu'à la première facture et
    pourraient retourner dans les réglages ;
 2. ~~l'accroche sous ATLAS~~ — **tranché le 8 septembre : aucune accroche**, et

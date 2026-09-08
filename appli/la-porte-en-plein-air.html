@@ -49,8 +49,24 @@
       · le RÉGIME DE TVA commande le numéro de TVA intracommunautaire. En
         franchise, la question ne se pose pas.
 
-    Un artisan en micro-entreprise et en franchise répond donc à 14 questions
-    là où une SAS assujettie en voit 17.
+    Un artisan en micro-entreprise et en franchise répond donc à 13 questions
+    là où une SAS assujettie en voit 16.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LE BANDEAU DÉROULANT EST DESSINÉ ICI, PAS PAR LE TÉLÉPHONE.
+
+    Sa remarque du 8 septembre : « le bandeau déroulant doit respecter la charte
+    de couleur et de style de l'appli ». Un <select> natif ne le peut PAS —
+    c'est le système qui dessine sa roue, et aucune charte d'Atlas ne
+    l'atteint. Celui-ci est fait à la main : replié il a l'allure d'un champ,
+    déplié il ouvre un panneau aux couleurs de l'application.
+
+    ─────────────────────────────────────────────────────────────────────────
+    TROIS CASES QUI N'EXISTENT PAS ENCORE EN BASE, et il faut le dire :
+    la CIVILITÉ, le PRÉNOM et le NOM séparés. `users.nom` est aujourd'hui un
+    champ unique, et `civilite` n'existe que sur les CLIENTS
+    (`src/lib/civilite.ts`, valeurs `mr` et `mme`). Les poser à la porte veut
+    dire les créer — c'est une décision, pas un obstacle, et elle lui revient.
 
     ─────────────────────────────────────────────────────────────────────────
     LA QUESTION QUI N'EXISTAIT NULLE PART, ET QUI COMPTE LE PLUS.
@@ -169,11 +185,6 @@
   .champ::placeholder{color:#84887b}
   .champ:focus{outline:none;box-shadow:inset 0 0 0 1.4px #c6a15b}
   textarea.champ{border-radius:20px;min-height:104px;resize:none;line-height:1.45}
-  select.deroulant{appearance:none;-webkit-appearance:none;padding-right:46px;cursor:pointer;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none' stroke='%23c6a15b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;background-position:right 20px center}
-  select.deroulant[hidden]{display:none}
-  select.deroulant option{background:#1a1d19;color:#e9e8de}
 
   .principal{width:100%;border:0;border-radius:999px;padding:16px;
              font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer;
@@ -217,6 +228,53 @@
   .aide{margin:-10px 0 16px;font-size:13px;line-height:1.45;color:#84887b}
   .aide[hidden]{display:none}
 
+  /* ── Les cases groupées : identité, mot de passe ──────────────────── */
+  .unChamp[hidden],.groupe[hidden],.deroulant[hidden]{display:none}
+  .groupe{display:flex;flex-direction:column;gap:10px}
+  .paire{display:flex;gap:10px}
+  .paire button{flex:1;border:0;border-radius:16px;padding:15px 8px;cursor:pointer;
+                background:#1a1d19;color:#e9e8de;box-shadow:inset 0 0 0 1px rgba(233,232,222,.14);
+                font:400 15.5px/1 ui-sans-serif,sans-serif}
+  .paire button[aria-pressed="true"]{box-shadow:inset 0 0 0 1.6px #c6a15b;background:#232620;color:#fff}
+  /* L’œil vit DANS la case, pas à côté : posé dehors, il pousserait le
+     champ et casserait l’alignement des deux mots de passe. */
+  .case{position:relative}
+  .case.avecOeil .champ{padding-right:52px}
+  .oeil{position:absolute;top:50%;right:6px;transform:translateY(-50%);border:0;background:transparent;
+        width:44px;height:44px;display:grid;place-items:center;cursor:pointer;color:#84887b}
+  .oeil[aria-pressed="true"]{color:#c6a15b}
+  .oeil svg{width:21px;height:21px}
+
+  /* ── Le bandeau déroulant, DESSINÉ ICI ─────────────────────────────── */
+  /* Sa remarque du 8 septembre : « le bandeau déroulant doit respecter la
+     charte de couleur et de style de l’appli ». Un <select> natif ne le peut
+     pas — c’est le système du téléphone qui dessine sa roue, et aucune charte
+     ne l’atteint. Celui-ci est fait à la main : replié il a l’allure d’un
+     champ, déplié il ouvre un panneau aux couleurs de l’application. */
+  .deroulant{position:relative}
+  .tete{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
+        text-align:left;cursor:pointer;color:#e9e8de}
+  .tete.vide{color:#84887b}
+  /* `transform-box` et `transform-origin` explicites : sans eux, la rotation
+     d’un SVG se fait autour de l’origine de son repère, et le chevron se
+     replie en équerre. Vu à la capture, jamais par une mesure. */
+  .tete svg{flex-shrink:0;color:#c6a15b;transition:transform .18s ease;
+            transform-box:fill-box;transform-origin:center}
+  .tete[aria-expanded="true"] svg{transform:rotate(180deg)}
+  .panneau{margin-top:8px;display:flex;flex-direction:column;gap:6px;max-height:268px;overflow-y:auto;
+           -webkit-overflow-scrolling:touch;padding:6px;border-radius:20px;background:#151814;
+           box-shadow:inset 0 0 0 1px rgba(233,232,222,.14)}
+  .panneau[hidden]{display:none}
+  .panneau button{display:flex;align-items:baseline;gap:9px;text-align:left;border:0;border-radius:14px;
+                  padding:12px 14px;cursor:pointer;background:transparent;color:#e9e8de;
+                  font:400 15px/1.25 ui-sans-serif,sans-serif}
+  .panneau button b{font-weight:600;flex-shrink:0}
+  .panneau button i{font-style:normal;font-size:12.5px;color:#84887b}
+  .panneau button[aria-selected="true"]{background:#232620;box-shadow:inset 0 0 0 1.4px #c6a15b}
+
+  /* Le refus se dit SOUS la case fautive, jamais en haut de l’écran. */
+  .refus{margin:12px 0 0;font:400 13.5px/1.45 ui-sans-serif,sans-serif;color:#e0917f}
+  .refus[hidden]{display:none}
   .liste{display:flex;flex-direction:column;gap:8px}
   /* SANS CETTE LIGNE, LA LISTE NE DISPARAÎT JAMAIS. L'attribut `hidden` ne
      vaut qu'un `display:none` de la feuille du navigateur : n'importe quelle
@@ -312,9 +370,34 @@
     <div class="corps" data-corps>
       <h1 class="question" data-question>Comment vous appelez-vous&nbsp;?</h1>
       <p class="aide" data-aide hidden></p>
-      <input class="champ" data-champ type="text" placeholder="Votre nom" autocomplete="name">
+
+      <!-- Un seul champ : le cas ordinaire. -->
+      <div class="unChamp" data-un-champ>
+        <input class="champ" data-champ type="text" placeholder="Votre nom" autocomplete="name">
+      </div>
+
+      <!-- Plusieurs cases sur le même écran : l'identité, le mot de passe. -->
+      <div class="groupe" data-groupe hidden></div>
+
+      <!-- Deux grands choix : la TVA. -->
       <div class="liste" data-liste hidden></div>
-      <select class="champ deroulant" data-select hidden></select>
+
+      <!-- LE BANDEAU DÉROULANT, DESSINÉ ICI ET PAS PAR LE TÉLÉPHONE.
+           Sa remarque du 8 septembre : « le bandeau déroulant doit respecter la
+           charte de couleur et de style de l'appli ». Un <select> natif ne le
+           peut pas — c'est le système qui dessine sa roue, et aucune charte
+           d'Atlas ne l'atteint. Celui-ci est donc fait à la main : replié il a
+           l'allure d'un champ, déplié il ouvre un panneau aux couleurs de
+           l'application. -->
+      <div class="deroulant" data-deroulant hidden>
+        <button type="button" class="champ tete" data-deroulant-tete aria-haspopup="listbox" aria-expanded="false">
+          <span data-deroulant-valeur>Choisissez</span>
+          <svg width="14" height="9" viewBox="0 0 14 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l6 6 6-6"/></svg>
+        </button>
+        <div class="panneau" data-deroulant-panneau role="listbox" hidden></div>
+      </div>
+
+      <p class="refus" data-refus hidden></p>
     </div>
 
     <div class="pied-questions" data-pied>
@@ -363,13 +446,28 @@
 <div class="defile">
   <table>
     <tr><th>Chapitre</th><th>Ce qui est demandé</th><th>Où ça se range</th></tr>
-    <tr><td><b>Vous</b></td><td>votre nom · votre e-mail · un mot de passe</td><td>Mon compte</td></tr>
-    <tr><td><b>Votre entreprise</b></td><td>nom · forme juridique · SIRET · adresse du siège<br><i>puis, seulement si la forme a un capital&nbsp;:</i> capital social · ville du RCS</td><td>Mon entreprise</td></tr>
+    <tr><td><b>Vous</b></td><td>civilité, prénom, nom · votre e-mail · un mot de passe <b>et sa confirmation</b></td><td>Mon compte</td></tr>
+    <tr><td><b>Votre entreprise</b></td><td>nom · forme juridique · SIRET · où elle est domiciliée<br><i>puis, seulement si la forme a un capital&nbsp;:</i> capital social · ville du RCS</td><td>Mon entreprise</td></tr>
     <tr><td><b>Vous joindre</b></td><td>numéro de téléphone · adresse e-mail</td><td>Mon entreprise</td></tr>
     <tr><td><b>La TVA</b></td><td>facturez-vous la TVA&nbsp;?<br><i>puis, seulement si oui&nbsp;:</i> numéro de TVA intracommunautaire</td><td>Mon entreprise</td></tr>
     <tr><td><b>Être payé</b></td><td>IBAN · titulaire du compte · moyens de paiement acceptés</td><td>Mon entreprise · Devis &amp; factures</td></tr>
-    <tr><td><b>Vos devis</b></td><td>votre message au client</td><td>Devis &amp; factures</td></tr>
   </table>
+</div>
+
+<div class="encart">
+  <b>Trois renseignements qui n&rsquo;existent pas encore dans Atlas</b>
+  <p style="margin:0 0 10px">Vous les avez demandés le 8 septembre, et vous aviez raison de dire <b>« une info à rajouter dans les réglages »</b> : aujourd&rsquo;hui, l&rsquo;application ne garde qu&rsquo;<b>un seul nom</b> pour vous, sans civilité ni prénom.</p>
+  <ul>
+    <li><b>Madame / Monsieur</b> — existe pour vos <i>clients</i>, pas pour vous.</li>
+    <li><b>Prénom</b> et <b>Nom</b> séparés — aujourd&rsquo;hui c&rsquo;est une seule case.</li>
+  </ul>
+  <p style="margin:10px 0 0">Les poser ici veut donc dire <b>trois cases à créer en base</b>, et à ajouter à l&rsquo;écran « Mon compte ». Ce n&rsquo;est pas un obstacle&nbsp;: c&rsquo;est une décision, et elle est prise dès que vous validez la planche.</p>
+</div>
+
+<div class="encart">
+  <b>La domiciliation était déjà là — sous un autre nom</b>
+  <p style="margin:0">Vous avez demandé&nbsp;: <b>« on ne met pas où est domiciliée l&rsquo;entreprise&nbsp;? »</b>. Si, c&rsquo;était la case <b>« Adresse du siège »</b> — le libellé de l&rsquo;écran des réglages, qui ne le disait pas assez. La <b>question</b> emploie donc vos mots, et la case garde ceux des réglages, pour qu&rsquo;on ne croie pas à deux endroits différents.</p>
+  <p style="margin:10px 0 0">Rien de nouveau à créer, donc. Et pas de question sur le <b>pays</b>&nbsp;: Atlas ne sait faire que des documents français — SIRET, RCS, TVA française. La poser laisserait croire le contraire.</p>
 </div>
 
 <div class="encart">
@@ -377,7 +475,7 @@
   <ul>
     <li><b>La forme juridique commande deux questions.</b> Une EI ou une micro-entreprise n’a légalement ni capital ni RCS : les deux disparaissent. La liste vient de <b>votre application</b>, pas d’ailleurs.</li>
     <li><b>Le régime de TVA en commande une.</b> En franchise, le numéro de TVA intracommunautaire ne se pose pas.</li>
-    <li><b>Résultat :</b> une micro-entreprise en franchise voit <b data-court>14</b> questions, une SAS assujettie en voit <b data-long>17</b>.</li>
+    <li><b>Résultat :</b> une micro-entreprise en franchise voit <b data-court>13</b> questions, une SAS assujettie en voit <b data-long>16</b>.</li>
     <li><b>Deux réponses sont pré-remplies</b> et se corrigent d’un doigt : l’e-mail de l’entreprise reprend le vôtre, le titulaire du compte reprend le nom de l’entreprise.</li>
   </ul>
 </div>
@@ -390,6 +488,7 @@
 <div class="encart">
   <b>Ce qui reste dans les réglages, et pourquoi</b>
   <ul>
+    <li><b>Votre message au client</b> — retiré du parcours à votre demande du 8 septembre. Il se règle une fois, en le voyant sur un devis.</li>
     <li><b>Vos tarifs et votre catalogue</b> — ça se construit chantier après chantier, ou ça s’importe. Ce n’est pas une question à laquelle on répond debout.</li>
     <li><b>L’allure de vos devis</b> et les couleurs — ça se choisit en regardant, pas en répondant.</li>
     <li><b>Votre équipe, votre agenda, l’IA</b> — ça vient quand le besoin vient.</li>
@@ -400,8 +499,8 @@
 <div class="adecider">
   <b>Ce que vous seul pouvez trancher</b>
   <ol>
-    <li><b>Dix-sept questions au plus, est-ce trop&nbsp;?</b> On peut en repousser dans les réglages — l’IBAN et le message au client, par exemple, ne servent qu’à la première facture. Dites lesquelles.</li>
-    <li><b>Le message au client</b> : faut-il en proposer un tout prêt, à corriger, plutôt qu’une case vide&nbsp;?</li>
+    <li><b>Les trois cases de l’identité</b> — civilité, prénom, nom — <b>n’existent pas en base</b>. Les poser à la porte veut dire les créer. D’accord&nbsp;?</li>
+    <li><b>Seize questions au plus, est-ce trop&nbsp;?</b> On peut en repousser dans les réglages — l’IBAN et le message au client, par exemple, ne servent qu’à la première facture. Dites lesquelles.</li>
     <li><b>«&nbsp;Créer un compte&nbsp;» n’est pas pour un salarié</b> — aujourd’hui c’est le patron qui lui donne son accès dans les réglages. La porte crée donc un patron et son entreprise. À confirmer.</li>
   </ol>
 </div>
@@ -435,74 +534,91 @@
   // `capital` compris. Le drapeau n'est pas décoratif : il fait disparaître
   // deux questions pour une EI ou une micro-entreprise, qui n'ont légalement
   // ni capital social ni RCS.
-  //
-  // « Autre » ferme la liste, et répond OUI au capital faute de savoir — une
-  // société civile en a un, une association non, et rien ici ne permet de
-  // trancher à la place de celui qui l'a tapée.
   const FORMES = [
-    { sigle: "EI",              nom: "Entreprise individuelle",              capital: false },
+    { sigle: "EI",               nom: "Entreprise individuelle",             capital: false },
     { sigle: "Micro-entreprise", nom: "Régime de l’entreprise individuelle", capital: false },
-    { sigle: "EURL",            nom: "SARL à associé unique",                capital: true },
-    { sigle: "SARL",            nom: "Société à responsabilité limitée",     capital: true },
-    { sigle: "SASU",            nom: "SAS à associé unique",                 capital: true },
-    { sigle: "SAS",             nom: "Société par actions simplifiée",       capital: true },
-    { sigle: "SA",              nom: "Société anonyme",                      capital: true },
-    { sigle: "SNC",             nom: "Société en nom collectif",             capital: true },
-    { sigle: "SCOP",            nom: "Société coopérative de production",    capital: true },
-    { sigle: "SCI",             nom: "Société civile immobilière",           capital: true },
-    { sigle: "Autre",           nom: "à écrire vous-même",                   capital: true },
+    { sigle: "EURL",             nom: "SARL à associé unique",               capital: true },
+    { sigle: "SARL",             nom: "Société à responsabilité limitée",    capital: true },
+    { sigle: "SASU",             nom: "SAS à associé unique",                capital: true },
+    { sigle: "SAS",              nom: "Société par actions simplifiée",      capital: true },
+    { sigle: "SA",               nom: "Société anonyme",                     capital: true },
+    { sigle: "SNC",              nom: "Société en nom collectif",            capital: true },
+    { sigle: "SCOP",             nom: "Société coopérative de production",   capital: true },
+    { sigle: "SCI",              nom: "Société civile immobilière",          capital: true },
+    { sigle: "Autre",            nom: "à écrire vous-même",                  capital: true },
   ];
 
   // ── Les questions ────────────────────────────────────────────────────
   //
-  // `p` est le libellé de l'écran de réglages correspondant, RECOPIÉ MOT POUR
-  // MOT : ce qui est saisi ici va s'y ranger, et deux mots différents pour la
-  // même case feraient croire à deux cases.
+  // Les libellés des cases sont RECOPIÉS MOT POUR MOT des écrans de réglages :
+  // ce qui est saisi ici va s'y ranger, et deux mots différents pour la même
+  // case feraient croire à deux cases.
   const QUESTIONS = [
-    { id: "nom",        ch: "Vous", q: "Comment vous appelez-vous ?", p: "Votre nom", t: "text", a: "name", requis: true },
-    { id: "email",      ch: "Vous", q: "Votre adresse e-mail ?", p: "Votre e-mail", t: "email", a: "username", requis: true,
-      aide: "C’est elle qui vous ouvrira Atlas." },
-    { id: "mdp",        ch: "Vous", q: "Choisissez un mot de passe", p: "Un mot de passe", t: "password", a: "new-password", requis: true },
+    {
+      id: "identite", ch: "Vous", q: "Quelle est votre identité ?", requis: true,
+      // MADAME / MONSIEUR EN TOUTES LETTRES, alors que l'application écrit
+      // « Mme » et « Mr. » sur les documents. Une abréviation sur une question
+      // posée en grand se lit mal, et c'est le seul écran où l'on a la place.
+      choix: [{ valeur: "mme", titre: "Madame" }, { valeur: "mr", titre: "Monsieur" }],
+      champs: [
+        { cle: "prenom", p: "Prénom", t: "text", a: "given-name" },
+        { cle: "nom",    p: "Nom",    t: "text", a: "family-name" },
+      ],
+    },
+    { id: "email", ch: "Vous", q: "Votre adresse e-mail ?", p: "Votre e-mail", t: "email", a: "username",
+      requis: true, aide: "C’est elle qui vous ouvrira Atlas." },
+    {
+      id: "mdp", ch: "Vous", q: "Choisissez un mot de passe", requis: true,
+      champs: [
+        { cle: "mdp",     p: "Un mot de passe",           t: "password", a: "new-password", oeil: true },
+        { cle: "confirm", p: "Confirmez le mot de passe", t: "password", a: "new-password", oeil: true },
+      ],
+      // Deux saisies qui diffèrent, c'est un mot de passe qu'on ne retrouvera
+      // plus jamais — et personne pour le redonner. Le refus se dit ici, pas
+      // trois écrans plus loin.
+      verifier: (v) => (v.mdp !== v.confirm ? "Les deux mots de passe ne sont pas les mêmes." : null),
+    },
 
-    { id: "entreprise", ch: "Votre entreprise", q: "Le nom de votre entreprise ?", p: "Nom de l’entreprise", t: "text", a: "organization", requis: true },
-    { id: "forme",      ch: "Votre entreprise", q: "Sa forme juridique ?", deroulant: "formes", requis: true, reste: "la forme juridique" },
-    { id: "siret",      ch: "Votre entreprise", q: "Votre SIRET ?", p: "14 chiffres", t: "text", a: "off", reste: "le SIRET" },
-    { id: "adresse",    ch: "Votre entreprise", q: "L’adresse du siège ?", p: "10 rue…", t: "text", a: "street-address", reste: "l’adresse" },
-    { id: "capital",    ch: "Votre entreprise", q: "Le capital social ?", p: "1 000", t: "text", a: "off", reste: "le capital",
-      siFormeACapital: true },
-    { id: "rcs",        ch: "Votre entreprise", q: "La ville du RCS ?", p: "Versailles", t: "text", a: "off", reste: "la ville du RCS",
-      siFormeACapital: true },
+    { id: "entreprise", ch: "Votre entreprise", q: "Le nom de votre entreprise ?", p: "Nom de l’entreprise",
+      t: "text", a: "organization", requis: true },
+    { id: "forme", ch: "Votre entreprise", q: "Sa forme juridique ?", deroulant: true, requis: true,
+      reste: "la forme juridique" },
+    { id: "siret", ch: "Votre entreprise", q: "Votre SIRET ?", p: "14 chiffres", t: "text", a: "off",
+      reste: "le SIRET" },
+    // Sa question du 8 septembre — « on ne met pas où est domiciliée
+    // l'entreprise ? ». Si : c'est cette case-là. Elle portait le libellé de
+    // l'écran des réglages, « Adresse du siège », qui ne le disait pas assez.
+    // La QUESTION emploie donc ses mots ; la case garde ceux des réglages.
+    { id: "adresse", ch: "Votre entreprise", q: "Où est domiciliée votre entreprise ?", p: "Adresse du siège",
+      t: "text", a: "street-address", reste: "l’adresse" },
+    { id: "capital", ch: "Votre entreprise", q: "Le capital social ?", p: "1 000", t: "text", a: "off",
+      reste: "le capital", siFormeACapital: true },
+    { id: "rcs", ch: "Votre entreprise", q: "La ville du RCS ?", p: "Versailles", t: "text", a: "off",
+      reste: "la ville du RCS", siFormeACapital: true },
 
-    { id: "tel",        ch: "Vous joindre", q: "Votre numéro de téléphone ?", p: "Numéro de téléphone", t: "tel", a: "tel", reste: "le téléphone" },
-    { id: "emailPro",   ch: "Vous joindre", q: "L’e-mail à mettre sur vos devis ?", p: "Adresse e-mail", t: "email", a: "email", reste: "l’e-mail de l’entreprise",
-      repriseDe: "email" },
+    { id: "tel", ch: "Vous joindre", q: "Votre numéro de téléphone ?", p: "Numéro de téléphone",
+      t: "tel", a: "tel", reste: "le téléphone" },
+    { id: "emailPro", ch: "Vous joindre", q: "L’e-mail à mettre sur vos devis ?", p: "Adresse e-mail",
+      t: "email", a: "email", reste: "l’e-mail de l’entreprise", repriseDe: "email" },
 
-    { id: "tva",        ch: "La TVA", q: "Facturez-vous la TVA ?", requis: true,
-      liste: "tva", reste: "le régime de TVA" },
-    { id: "numTva",     ch: "La TVA", q: "Votre numéro de TVA intracommunautaire ?", p: "FR…", t: "text", a: "off", reste: "le numéro de TVA",
-      siAssujettie: true },
+    { id: "tva", ch: "La TVA", q: "Facturez-vous la TVA ?", requis: true, reste: "le régime de TVA",
+      liste: [
+        { valeur: "assujettie", titre: "Oui", note: "je facture la TVA à mes clients" },
+        { valeur: "franchise",  titre: "Non", note: "je suis en franchise de TVA" },
+      ] },
+    { id: "numTva", ch: "La TVA", q: "Votre numéro de TVA intracommunautaire ?", p: "FR…", t: "text", a: "off",
+      reste: "le numéro de TVA", siAssujettie: true },
 
-    { id: "iban",       ch: "Être payé", q: "Votre IBAN ?", p: "IBAN", t: "text", a: "off", reste: "l’IBAN" },
-    { id: "titulaire",  ch: "Être payé", q: "Le titulaire du compte ?", p: "Titulaire du compte", t: "text", a: "off", reste: "le titulaire du compte",
-      repriseDe: "entreprise" },
-    { id: "moyens",     ch: "Être payé", q: "Les moyens de paiement que vous acceptez ?", p: "Virement, chèque…", t: "text", a: "off", reste: "les moyens de paiement" },
-
-    { id: "message",    ch: "Vos devis", q: "Un mot pour accompagner vos devis ?", p: "Votre message au client", t: "zone", reste: "votre message au client" },
+    { id: "iban", ch: "Être payé", q: "Votre IBAN ?", p: "IBAN", t: "text", a: "off", reste: "l’IBAN" },
+    { id: "titulaire", ch: "Être payé", q: "Le titulaire du compte ?", p: "Titulaire du compte", t: "text",
+      a: "off", reste: "le titulaire du compte", repriseDe: "entreprise" },
+    { id: "moyens", ch: "Être payé", q: "Les moyens de paiement que vous acceptez ?", p: "Virement, chèque…",
+      t: "text", a: "off", reste: "les moyens de paiement" },
   ];
-
-  const LISTES = {
-    formes: FORMES.map((f) => ({ valeur: f.sigle, titre: f.sigle, note: f.nom })),
-    tva: [
-      { valeur: "assujettie", titre: "Oui", note: "je facture la TVA à mes clients" },
-      { valeur: "franchise",  titre: "Non", note: "je suis en franchise de TVA" },
-    ],
-  };
 
   const reponses = {};
   let rang = 0;
 
-  // Les deux embranchements. Ils ne sont pas décoratifs : ils font disparaître
-  // trois questions sur seize pour une micro-entreprise en franchise.
   const formeACapital = () => {
     const f = FORMES.find((x) => x.sigle === reponses.forme);
     return f ? f.capital : false;
@@ -517,11 +633,9 @@
    * Le total ANNONCÉ, et il ne monte jamais.
    *
    * Une question conditionnelle est comptée TANT QU'ON NE SAIT PAS. Sans cela,
-   * le compteur afficherait « 5 sur 14 » puis « 6 sur 16 » dès qu'on choisit
-   * une SAS : un total qui grossit en cours de route se lit comme une
-   * mauvaise surprise, et c'est exactement ce qu'on cherche à éviter chez
-   * quelqu'un qui n'est pas à l'aise. Ici il ne peut que descendre — et
-   * descendre, c'est une bonne nouvelle.
+   * le compteur passerait de « 5 sur 13 » à « 6 sur 15 » dès qu'on choisit une
+   * SAS : un total qui grossit en cours de route se lit comme une mauvaise
+   * surprise, et c'est ce qu'on veut éviter chez quelqu'un qui hésite.
    */
   const total = () => QUESTIONS.filter((q) => {
     if (q.siFormeACapital) return reponses.forme === undefined || formeACapital();
@@ -536,55 +650,28 @@
   const fini = ecran.querySelector("[data-fini]");
   const question = ecran.querySelector("[data-question]");
   const aide = ecran.querySelector("[data-aide]");
-  const champ = ecran.querySelector("[data-champ]");
+  const unChamp = ecran.querySelector("[data-un-champ]");
+  const groupe = ecran.querySelector("[data-groupe]");
   const liste = ecran.querySelector("[data-liste]");
-  const deroulant = ecran.querySelector("[data-select]");
+  const deroulant = ecran.querySelector("[data-deroulant]");
+  const tete = ecran.querySelector("[data-deroulant-tete]");
+  const teteValeur = ecran.querySelector("[data-deroulant-valeur]");
+  const panneau = ecran.querySelector("[data-deroulant-panneau]");
+  const refus = ecran.querySelector("[data-refus]");
   const jauge = ecran.querySelector("[data-jauge]");
   const chapitre = ecran.querySelector("[data-chapitre]");
   const rangEcrit = ecran.querySelector("[data-rang]");
   const passer = ecran.querySelector("[data-passer]");
+  const avancer = ecran.querySelector("[data-avancer]");
   const reste = ecran.querySelector("[data-reste]");
   const finiTitre = ecran.querySelector("[data-fini-titre]");
 
-  const valeurBrute = (q) => {
-    if (reponses[q.id] !== undefined) return reponses[q.id];
-    // Deux réponses se devinent de ce qu'il vient de dire, et se corrigent
-    // d'un doigt : les retaper serait lui faire écrire deux fois la même chose.
-    if (q.repriseDe && reponses[q.repriseDe]) return reponses[q.repriseDe];
-    return "";
-  };
-
-  // Ce qui manque se dit à la fin, NOMMÉMENT. « Votre compte est créé » tout
-  // court laisserait partir un premier devis sans SIRET ni adresse — et il ne
-  // l'apprendrait que chez son client.
-  const direCeQuiManque = () => {
-    const vides = applicables()
-      .filter((q) => !q.requis && q.reste && !String(valeurBrute(q)).trim())
-      .map((q) => q.reste);
-    if (vides.length === 0) {
-      finiTitre.textContent = "Tout est prêt.";
-      reste.innerHTML = "Vos réglages sont remplis. Votre premier devis peut partir.";
-      reste.hidden = false;
-      return;
-    }
-    finiTitre.textContent = "C’est fait.";
-    const liste3 = vides.length > 3 ? vides.slice(0, 3) : vides;
-    const suite = vides.length > 3 ? ", et " + (vides.length - 3) + " autre" + (vides.length - 3 > 1 ? "s" : "") : "";
-    const enumere = liste3.length === 1
-      ? liste3[0]
-      : liste3.slice(0, -1).join(", ") + " et " + liste3[liste3.length - 1];
-    reste.innerHTML = "Il manque " + enumere + suite +
-      ". À remplir quand vous voulez dans <b>Réglages, puis Mon entreprise</b>.";
-    reste.hidden = false;
-  };
-
-  /** Les chapitres, dans l'ordre où ils se présentent. */
   const CHAPITRES = [...new Set(QUESTIONS.map((q) => q.ch))];
 
   /**
    * Un segment par chapitre : plein pour ceux qui sont derrière, à moitié pour
    * celui en cours. Il montre COMBIEN il reste d'étapes, ce qu'un pourcentage
-   * ne dit pas — et c'est ce qui compte pour quelqu'un qui hésite à commencer.
+   * ne dit pas — relevé sur sa capture de Qonto du 8 septembre.
    */
   function peindreSegments(suite, position) {
     if (jauge.childElementCount !== CHAPITRES.length) {
@@ -598,6 +685,99 @@
     });
   }
 
+  /** Une case avec, au besoin, l'œil qui montre ce qu'on écrit. */
+  function fabriquerCase(def, valeur) {
+    const boite = document.createElement("div");
+    boite.className = def.oeil ? "case avecOeil" : "case";
+    const input = document.createElement("input");
+    input.className = "champ";
+    input.type = def.t;
+    input.placeholder = def.p;
+    input.autocomplete = def.a;
+    input.value = valeur ?? "";
+    input.setAttribute("data-cle", def.cle);
+    boite.appendChild(input);
+    if (def.oeil) {
+      // L'ŒIL, ET IL EXISTE DÉJÀ DANS L'APPLICATION. Mêmes tracés et même
+      // libellé que `src/app/reglages/equipe/nouveau/NouveauCompte.tsx` : un
+      // second dessin pour le même geste finirait par diverger.
+      const oeil = document.createElement("button");
+      oeil.type = "button";
+      oeil.className = "oeil";
+      oeil.setAttribute("aria-pressed", "false");
+      oeil.setAttribute("aria-label", "Afficher le mot de passe");
+      oeil.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"' +
+        ' stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z"/>' +
+        '<circle cx="12" cy="12" r="3.1"/><path class="barre" d="M4 20 20 4" hidden/></svg>';
+      oeil.addEventListener("click", () => {
+        const ouvert = input.type === "password";
+        input.type = ouvert ? "text" : "password";
+        oeil.setAttribute("aria-pressed", String(ouvert));
+        oeil.setAttribute("aria-label", ouvert ? "Masquer le mot de passe" : "Afficher le mot de passe");
+        oeil.querySelector(".barre").hidden = !ouvert;
+      });
+      boite.appendChild(oeil);
+    }
+    return boite;
+  }
+
+  /** Ce que le viseur affiche pour la forme choisie. */
+  const libelleForme = (sigle) => {
+    const f = FORMES.find((x) => x.sigle === sigle);
+    return f ? f.sigle + " — " + f.nom : "Choisissez";
+  };
+
+  const fermerPanneau = () => {
+    panneau.hidden = true;
+    tete.setAttribute("aria-expanded", "false");
+  };
+
+  tete.addEventListener("click", () => {
+    const ouvert = panneau.hidden;
+    panneau.hidden = !ouvert;
+    tete.setAttribute("aria-expanded", String(ouvert));
+  });
+
+  const valeurBrute = (q) => {
+    if (reponses[q.id] !== undefined) return reponses[q.id];
+    // Deux réponses se devinent de ce qu'il vient de dire, et se corrigent
+    // d'un doigt : les retaper serait lui faire écrire deux fois la même chose.
+    if (q.repriseDe && reponses[q.repriseDe]) return reponses[q.repriseDe];
+    return "";
+  };
+
+  /** Une réponse est-elle vide ? Un groupe l'est si toutes ses cases le sont. */
+  const estVide = (q) => {
+    const v = valeurBrute(q);
+    if (v && typeof v === "object") return Object.values(v).every((x) => !String(x).trim());
+    return !String(v).trim();
+  };
+
+  // Ce qui manque se dit à la fin, NOMMÉMENT. « Votre compte est créé » tout
+  // court laisserait partir un premier devis sans SIRET ni adresse — et il ne
+  // l'apprendrait que chez son client.
+  const direCeQuiManque = () => {
+    const vides = applicables().filter((q) => !q.requis && q.reste && estVide(q)).map((q) => q.reste);
+    if (vides.length === 0) {
+      finiTitre.textContent = "Tout est prêt.";
+      reste.innerHTML = "Vos réglages sont remplis. Votre premier devis peut partir.";
+      reste.hidden = false;
+      return;
+    }
+    finiTitre.textContent = "C’est fait.";
+    const trois = vides.slice(0, 3);
+    const suite = vides.length > 3
+      ? ", et " + (vides.length - 3) + " autre" + (vides.length - 3 > 1 ? "s" : "")
+      : "";
+    const enumere = trois.length === 1
+      ? trois[0]
+      : trois.slice(0, -1).join(", ") + " et " + trois[trois.length - 1];
+    reste.innerHTML = "Il manque " + enumere + suite +
+      ". À remplir quand vous voulez dans <b>Réglages, puis Mon entreprise</b>.";
+    reste.hidden = false;
+  };
+
   const peindre = () => {
     const suite = applicables();
     const fait = rang >= suite.length;
@@ -605,6 +785,8 @@
     pied.hidden = fait;
     entete.hidden = fait;
     fini.hidden = !fait;
+    refus.hidden = true;
+    fermerPanneau();
     if (fait) { peindreSegments(suite, suite.length); direCeQuiManque(); return; }
 
     const q = suite[rang];
@@ -612,65 +794,92 @@
     const combien = Math.max(total(), suite.length);
     rangEcrit.textContent = (rang + 1) + " sur " + combien;
     peindreSegments(suite, rang);
-    // L'ESPACE INSÉCABLE AVANT LE « ? », ET ELLE SE VOIT. Sans elle,
-    // « Facturez-vous la TVA ? » laissait le point d'interrogation TOUT SEUL
-    // sur la deuxième ligne. Posée ici plutôt que dans les dix-sept libellés :
-    // une règle de typographie appliquée à un seul endroit ne peut pas être
-    // oubliée à la dix-huitième question.
+    // L'ESPACE INSÉCABLE AVANT LE « ? ». Sans elle, « Facturez-vous la TVA ? »
+    // laissait le point d'interrogation TOUT SEUL sur la deuxième ligne. Posée
+    // ici plutôt que dans les seize libellés : une règle de typographie
+    // appliquée à un seul endroit ne s'oublie pas à la dix-septième question.
     question.textContent = q.q.replace(/ ([?!:;])/g, " $1");
     aide.textContent = q.aide || "";
     aide.hidden = !q.aide;
 
-    if (q.deroulant) {
-      // Le menu déroulant ouvre la roue du téléphone : un geste que tout le
-      // monde connaît, et qui ne fait pas défiler l'écran.
-      liste.hidden = true;
-      ecran.querySelector("[data-champ]").hidden = true;
-      deroulant.hidden = false;
-      deroulant.innerHTML = "";
-      const vide = document.createElement("option");
-      vide.value = "";
-      vide.textContent = "Choisissez";
-      vide.disabled = true;
-      deroulant.appendChild(vide);
-      for (const opt of LISTES[q.deroulant]) {
-        const o = document.createElement("option");
-        o.value = opt.valeur;
-        // Le sigle SEUL ne se retient pas — « EURL » et « SASU » ne disent
-        // rien. Son nom complet voyage avec lui, sinon il faut chercher
-        // ailleurs pour choisir, c'est-à-dire quitter l'application.
-        o.textContent = opt.titre + " — " + opt.note;
-        deroulant.appendChild(o);
+    unChamp.hidden = true;
+    groupe.hidden = true;
+    liste.hidden = true;
+    deroulant.hidden = true;
+
+    if (q.champs) {
+      groupe.hidden = false;
+      groupe.innerHTML = "";
+      const dejaLa = valeurBrute(q) || {};
+      if (q.choix) {
+        const rangee = document.createElement("div");
+        rangee.className = "paire";
+        for (const opt of q.choix) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.setAttribute("data-choix", opt.valeur);
+          b.setAttribute("aria-pressed", String(dejaLa.choix === opt.valeur));
+          b.textContent = opt.titre;
+          b.addEventListener("click", () => {
+            rangee.querySelectorAll("[data-choix]").forEach((x) => x.setAttribute("aria-pressed", "false"));
+            b.setAttribute("aria-pressed", "true");
+          });
+          rangee.appendChild(b);
+        }
+        groupe.appendChild(rangee);
       }
-      deroulant.value = reponses[q.id] ?? "";
-      if (!deroulant.value) vide.selected = true;
+      for (const def of q.champs) groupe.appendChild(fabriquerCase(def, dejaLa[def.cle]));
     } else if (q.liste) {
-      deroulant.hidden = true;
-      ecran.querySelector("[data-champ]").hidden = true;
       liste.hidden = false;
       liste.innerHTML = "";
-      for (const opt of LISTES[q.liste]) {
+      for (const opt of q.liste) {
         const b = document.createElement("button");
         b.type = "button";
         b.setAttribute("aria-pressed", String(reponses[q.id] === opt.valeur));
         b.innerHTML = "<b>" + opt.titre + "</b><i>" + opt.note + "</i>";
         b.addEventListener("click", () => {
+          // Un choix entre deux avance tout seul : demander « Continuer »
+          // après un appui sans ambiguïté, c'est un geste pour rien.
           reponses[q.id] = opt.valeur;
-          // Un choix dans une liste avance tout seul : demander « Continuer »
-          // après un appui qui ne laisse aucune ambiguïté, c'est un geste de
-          // plus pour rien.
           rang++;
           peindre();
         });
         liste.appendChild(b);
       }
+    } else if (q.deroulant) {
+      deroulant.hidden = false;
+      teteValeur.textContent = libelleForme(reponses[q.id]);
+      tete.classList.toggle("vide", !reponses[q.id]);
+      panneau.innerHTML = "";
+      for (const forme of FORMES) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("role", "option");
+        b.setAttribute("aria-selected", String(reponses[q.id] === forme.sigle));
+        // Le sigle SEUL ne se retient pas — « EURL » et « SASU » ne disent
+        // rien. Son nom complet voyage avec lui, sinon il faut chercher
+        // ailleurs pour choisir, c'est-à-dire quitter l'application.
+        b.innerHTML = "<b>" + forme.sigle + "</b><i>" + forme.nom + "</i>";
+        b.addEventListener("click", () => {
+          reponses[q.id] = forme.sigle;
+          teteValeur.textContent = libelleForme(forme.sigle);
+          tete.classList.remove("vide");
+          fermerPanneau();
+          panneau.querySelectorAll("[role=option]").forEach((x) => x.setAttribute("aria-selected", "false"));
+          b.setAttribute("aria-selected", "true");
+        });
+        panneau.appendChild(b);
+      }
     } else {
-      liste.hidden = true;
-      deroulant.hidden = true;
-      ecran.querySelector("[data-champ]").hidden = false;
+      unChamp.hidden = false;
       const zone = q.t === "zone";
-      if (zone !== (champ.tagName === "TEXTAREA")) remplacerChamp(zone);
-      const c = ecran.querySelector("[data-champ]");
+      if (zone !== (unChamp.firstElementChild.tagName === "TEXTAREA")) {
+        const neuf = document.createElement(zone ? "textarea" : "input");
+        neuf.className = "champ";
+        neuf.setAttribute("data-champ", "");
+        unChamp.firstElementChild.replaceWith(neuf);
+      }
+      const c = unChamp.firstElementChild;
       c.placeholder = q.p;
       if (!zone) { c.type = q.t; c.autocomplete = q.a; }
       c.value = valeurBrute(q);
@@ -679,41 +888,50 @@
     // « Passer » n'apparaît QUE là où passer est permis. Un bouton grisé sur
     // une question obligatoire ferait croire qu'on peut s'en dispenser.
     passer.hidden = Boolean(q.requis);
-    // Sur une liste, « Continuer » n'a rien à valider : le choix avance seul.
-    ecran.querySelector("[data-avancer]").hidden = Boolean(q.liste);
+    // Sur un choix entre deux, « Continuer » n'a rien à valider.
+    avancer.hidden = Boolean(q.liste);
   };
 
-  // Le message au client est un paragraphe, pas une ligne : il lui faut une
-  // vraie zone. Échanger l'élément plutôt que d'en garder deux évite qu'une
-  // valeur reste dans celui qu'on ne voit pas.
-  function remplacerChamp(zone) {
-    const vieux = ecran.querySelector("[data-champ]");
-    const neuf = document.createElement(zone ? "textarea" : "input");
-    neuf.className = "champ";
-    neuf.setAttribute("data-champ", "");
-    if (zone) neuf.rows = 4;
-    vieux.replaceWith(neuf);
-  }
-
+  /** Lit ce qui est à l'écran. Rend un refus, ou `null` si tout va bien. */
   const retenir = () => {
     const suite = applicables();
-    if (rang >= suite.length) return;
+    if (rang >= suite.length) return null;
     const q = suite[rang];
-    if (q.liste) return;
-    if (q.deroulant) { if (deroulant.value) reponses[q.id] = deroulant.value; return; }
-    reponses[q.id] = ecran.querySelector("[data-champ]").value;
+    if (q.liste) return null;
+
+    if (q.champs) {
+      const v = {};
+      const choisi = groupe.querySelector('[data-choix][aria-pressed="true"]');
+      if (q.choix) v.choix = choisi ? choisi.dataset.choix : "";
+      groupe.querySelectorAll("[data-cle]").forEach((i) => { v[i.dataset.cle] = i.value; });
+      if (q.verifier) {
+        const souci = q.verifier(v);
+        if (souci) return souci;
+      }
+      reponses[q.id] = v;
+      return null;
+    }
+    if (q.deroulant) {
+      if (q.requis && !reponses[q.id]) return "Choisissez une forme juridique.";
+      return null;
+    }
+    reponses[q.id] = unChamp.firstElementChild.value;
+    return null;
   };
 
-  ecran.querySelector("[data-avancer]").addEventListener("click", () => {
-    const q = applicables()[rang];
-    if (q && q.deroulant && q.requis && !deroulant.value) { deroulant.focus(); return; }
-    retenir();
+  avancer.addEventListener("click", () => {
+    const souci = retenir();
+    if (souci) {
+      refus.textContent = souci;
+      refus.hidden = false;
+      return;
+    }
     rang++;
     peindre();
   });
   passer.addEventListener("click", () => {
     const q = applicables()[rang];
-    if (q) reponses[q.id] = "";
+    if (q) delete reponses[q.id];
     rang++;
     peindre();
   });

@@ -115,24 +115,45 @@ const repartir = async () => {
   await ouvrirLaCreation();
 };
 
-/** Répond à la question affichée. `null` = passer. Rend son intitulé. */
+/** Quel outil l'écran présente-t-il ? */
+const outil = async () => {
+  if (await creation.locator("[data-groupe]").isVisible()) return "groupe";
+  if (await creation.locator("[data-deroulant]").isVisible()) return "deroulant";
+  if (await creation.locator("[data-liste]").isVisible()) return "liste";
+  return "champ";
+};
+
+/** Répond à la question affichée. `null` = passer quand c'est permis. */
 const repondre = async (valeur) => {
-  const q = (await creation.locator("[data-question]").innerText()).replace(/\s+/g, " ");
-  if (await creation.locator("[data-select]").isVisible()) {
-    // Le menu déroulant se choisit PAR SA VALEUR, jamais par son libellé :
-    // « SAS » est contenu dans « SASU », et un filtre sur le texte prendrait
-    // la mauvaise forme juridique — donc le mauvais embranchement.
-    await creation.locator("[data-select]").selectOption(valeur);
-    await creation.locator("[data-avancer]").click();
-  } else if (await creation.locator("[data-liste]").isVisible()) {
-    await creation.locator("[data-liste] button", { hasText: valeur }).first().click();
-  } else if (valeur === null) {
-    await creation.locator("[data-passer]").click();
-  } else {
-    await creation.locator("[data-champ]").fill(valeur);
-    await creation.locator("[data-avancer]").click();
+  switch (await outil()) {
+    case "groupe": {
+      const paire = creation.locator("[data-choix]");
+      if (await paire.count()) await paire.first().click();
+      const cases = creation.locator("[data-cle]");
+      const n = await cases.count();
+      // Les deux mots de passe reçoivent la MÊME valeur : c'est le cas
+      // ordinaire, le désaccord est éprouvé à part.
+      for (let i = 0; i < n; i++) await cases.nth(i).fill(valeur === null ? "" : "essai");
+      await creation.locator("[data-avancer]").click();
+      break;
+    }
+    case "deroulant":
+      await creation.locator("[data-deroulant-tete]").click();
+      // Choisi par son SIGLE exact : « SAS » est contenu dans « SASU », et un
+      // filtre sur le texte prendrait la mauvaise forme — donc le mauvais
+      // embranchement.
+      await creation.locator("[data-deroulant-panneau] button b", { hasText: new RegExp("^" + valeur + "$") })
+        .first().click();
+      await creation.locator("[data-avancer]").click();
+      break;
+    case "liste":
+      await creation.locator("[data-liste] button", { hasText: valeur }).first().click();
+      break;
+    default:
+      if (valeur === null) { await creation.locator("[data-passer]").click(); break; }
+      await creation.locator("[data-champ]").fill(valeur);
+      await creation.locator("[data-avancer]").click();
   }
-  return q;
 };
 
 /** Déroule tout le parcours et rend la liste des questions vues. */
@@ -144,11 +165,21 @@ const parcourir = async (forme, tva, remplir) => {
     let reponse = remplir ? "essai" : null;
     if (/forme juridique/i.test(q)) reponse = forme;
     else if (/Facturez-vous la TVA/i.test(q)) reponse = tva;
-    else if (/vous appelez-vous|adresse e-mail \?|mot de passe|nom de votre entreprise/i.test(q)) reponse = "essai";
+    else if (/identité|adresse e-mail \?|Choisissez un mot de passe|nom de votre entreprise/i.test(q)) {
+      reponse = "essai";
+    }
     vues.push(q);
     await repondre(reponse);
   }
   return vues;
+};
+
+/** Avance d'une question, quel que soit l'outil, en remplissant.
+ *  Chaque outil veut sa propre réponse valable : « essai » ne désigne aucune
+ *  forme juridique, et le bandeau attendrait indéfiniment. */
+const avancerUneFois = async () => {
+  const quoi = await outil();
+  await repondre(quoi === "deroulant" ? "EI" : quoi === "liste" ? "Oui" : "essai");
 };
 
 console.log("\nParcours 1 — micro-entreprise en franchise");
@@ -184,30 +215,94 @@ dire(Number(await page.locator("[data-long]").innerText()) === long.length,
   "le chiffre annoncé pour la SAS est le vrai (" +
     (await page.locator("[data-long]").innerText()) + " annoncé, " + long.length + " mesuré)");
 
-console.log("\nLa forme juridique est un menu déroulant");
+console.log("\nLe bandeau déroulant, et il est à NOUS");
 await repartir();
-for (let i = 0; i < 4; i++) {
-  await creation.locator("[data-champ]").fill("essai");
-  await creation.locator("[data-avancer]").click();
-}
+for (let i = 0; i < 4; i++) await avancerUneFois();
 dire(/forme juridique/i.test(await creation.locator("[data-question]").innerText()),
   "on arrive bien sur la forme juridique");
-dire(await creation.locator("[data-select]").isVisible(),
-  "c'est un menu déroulant — pas onze boutons énumérés");
-dire(!(await creation.locator("[data-liste]").isVisible()),
-  "aucune liste de boutons n'est affichée à sa place");
-const options = await creation.locator("[data-select] option").allTextContents();
-dire(options.length === 12, "il porte les onze formes, plus l'invite (" + options.length + " lignes)");
-dire(options.some((o) => /^EURL — SARL à associé unique/.test(o)),
+// Sa remarque du 8 septembre : « le bandeau déroulant doit respecter la charte
+// de couleur et de style de l'appli ». Un <select> natif ne le peut pas —
+// c'est le téléphone qui dessine sa roue. Le jour où quelqu'un le remet « pour
+// faire simple », c'est ici qu'on doit l'apprendre.
+dire((await creation.locator("select").count()) === 0,
+  "aucun menu natif : le téléphone ne dessine plus rien à notre place");
+dire(await creation.locator("[data-deroulant-tete]").isVisible(),
+  "le bandeau est replié, et il a l'allure d'un champ");
+dire(await creation.locator("[data-deroulant-panneau]").isHidden(),
+  "son panneau est fermé tant qu'on ne l'ouvre pas");
+await creation.locator("[data-deroulant-tete]").click();
+dire(await creation.locator("[data-deroulant-panneau]").isVisible(), "il s'ouvre au doigt");
+const formes = await creation.locator("[data-deroulant-panneau] button").allTextContents();
+dire(formes.length === 11, "il porte les onze formes (" + formes.length + ")");
+dire(formes.some((o) => /^EURL/.test(o) && /SARL à associé unique/.test(o)),
   "chaque sigle voyage avec son nom — « EURL » seul ne se retient pas");
+// La couleur se vérifie, sinon « à la charte » n'est qu'une intention : l'or
+// d'Atlas est #B98B47, éclairci en #c6a15b sur la charte « Nuit ».
+const orDuChevron = await creation.locator("[data-deroulant-tete] svg")
+  .evaluate((e) => getComputedStyle(e).color);
+dire(orDuChevron === "rgb(198, 161, 91)", "son chevron porte l'or de la charte (" + orDuChevron + ")");
+await creation.locator("[data-deroulant-tete]").click();
+dire(await creation.locator("[data-deroulant-panneau]").isHidden(), "il se referme");
+
 // Obligatoire veut dire obligatoire : « Continuer » ne doit pas enjamber un
-// menu resté sur son invite, sinon les deux questions que la forme commande
+// bandeau resté sur son invite, sinon les deux questions que la forme commande
 // disparaîtraient pour de mauvaises raisons.
 await creation.locator("[data-avancer]").click();
 dire(/forme juridique/i.test(await creation.locator("[data-question]").innerText()),
-  "« Continuer » n'enjambe pas un menu resté vide");
+  "« Continuer » n'enjambe pas un bandeau resté vide");
+dire(await creation.locator("[data-refus]").isVisible(), "et il dit pourquoi");
 dire(!(await creation.evaluate((e) => e.scrollHeight > e.clientHeight + 1)),
-  "l'écran de la forme juridique ne défile plus");
+  "l'écran de la forme juridique ne défile pas, bandeau replié");
+
+console.log("\nLe mot de passe se confirme, et l'œil le montre");
+await repartir();
+await avancerUneFois();
+await avancerUneFois();
+dire(/mot de passe/i.test(await creation.locator("[data-question]").innerText()),
+  "on arrive sur le mot de passe");
+const cases = creation.locator("[data-cle]");
+dire((await cases.count()) === 2, "il y a bien DEUX cases : le mot de passe et sa confirmation");
+await cases.nth(0).fill("secret-un");
+await cases.nth(1).fill("secret-deux");
+await creation.locator("[data-avancer]").click();
+dire(/mot de passe/i.test(await creation.locator("[data-question]").innerText()),
+  "deux mots de passe différents ne passent pas");
+dire(await creation.locator("[data-refus]").isVisible(), "et l'écran dit lequel est le problème");
+// L'ŒIL : sans lui, un mot de passe tapé sur un clavier de téléphone au soleil
+// se saisit à l'aveugle, et l'on ne sait jamais lequel des deux est faux.
+const oeil = creation.locator(".oeil").first();
+dire(await oeil.isVisible(), "l'œil est là");
+dire((await cases.nth(0).getAttribute("type")) === "password", "au départ, rien ne se lit");
+await oeil.click();
+dire((await cases.nth(0).getAttribute("type")) === "text", "l'œil montre ce qu'il écrit");
+dire((await oeil.getAttribute("aria-label")) === "Masquer le mot de passe",
+  "et son libellé suit — celui de l'application, mot pour mot");
+await oeil.click();
+dire((await cases.nth(0).getAttribute("type")) === "password", "il se referme");
+await cases.nth(1).fill("secret-un");
+await creation.locator("[data-avancer]").click();
+dire(!/mot de passe/i.test(await creation.locator("[data-question]").innerText()),
+  "deux mots de passe identiques passent");
+
+console.log("\nL'identité : civilité, prénom, nom");
+await repartir();
+dire(/identité/i.test(await creation.locator("[data-question]").innerText()),
+  "la première question est l'identité");
+dire((await creation.locator("[data-choix]").count()) === 2, "Madame et Monsieur, deux choix");
+const civilites = await creation.locator("[data-choix]").allTextContents();
+dire(civilites.join("|") === "Madame|Monsieur", "en toutes lettres (" + civilites.join(", ") + ")");
+const nomEtPrenom = await creation.locator("[data-cle]").evaluateAll((l) => l.map((i) => i.placeholder));
+dire(nomEtPrenom.join("|") === "Prénom|Nom", "prénom et nom, séparés (" + nomEtPrenom.join(", ") + ")");
+dire(!(await creation.evaluate((e) => e.scrollHeight > e.clientHeight + 1)),
+  "les trois tiennent sur un écran");
+
+console.log("\nLa domiciliation est demandée, et avec ses mots");
+await repartir();
+const vues = await parcourir("Micro-entreprise", "Non", false);
+dire(vues.some((q) => /Où est domiciliée votre entreprise/i.test(q)),
+  "« Où est domiciliée votre entreprise ? » est bien posée");
+dire(!vues.some((q) => /accompagner vos devis/i.test(q)),
+  "le mot pour accompagner les devis est retiré, à sa demande");
 
 console.log("\nCe qui ne se passe pas, et ce qui se passe");
 await repartir();
@@ -215,14 +310,9 @@ for (const attendu of [true, true, true, true, true]) {
   dire((await creation.locator("[data-passer]").isHidden()) === attendu,
     "question obligatoire : « Passer » est absent — " +
       (await creation.locator("[data-question]").innerText()).replace(/\s+/g, " ").slice(0, 34));
-  if (await creation.locator("[data-select]").isVisible()) {
-    await creation.locator("[data-select]").selectOption({ index: 1 });
-    await creation.locator("[data-avancer]").click();
-  } else if (await creation.locator("[data-liste]").isVisible()) {
-    await creation.locator("[data-liste] button").first().click();
-  } else { await creation.locator("[data-champ]").fill("essai"); await creation.locator("[data-avancer]").click(); }
+  await avancerUneFois();
 }
-// Cinq obligatoires d'affilée : nom, e-mail, mot de passe, nom de
+// Cinq obligatoires d'affilée : identité, e-mail, mot de passe, nom de
 // l'entreprise, forme juridique. La sixième — le SIRET — se passe.
 dire(await creation.locator("[data-passer]").isVisible(),
   "question facultative : « Passer » est offert");
@@ -234,17 +324,7 @@ for (let i = 0; i < 30; i++) {
   if (await creation.locator("[data-fini]").isVisible()) break;
   const q = (await creation.locator("[data-question]").innerText()).replace(/\s+/g, " ");
   if (/Facturez-vous la TVA/i.test(q)) { vueTva = true; break; }
-  if (await creation.locator("[data-select]").isVisible()) {
-    await creation.locator("[data-select]").selectOption({ index: 1 });
-    await creation.locator("[data-avancer]").click();
-  } else if (await creation.locator("[data-liste]").isVisible()) {
-    await creation.locator("[data-liste] button").first().click();
-  } else if (await creation.locator("[data-passer]").isVisible()) {
-    await creation.locator("[data-passer]").click();
-  } else {
-    await creation.locator("[data-champ]").fill("essai");
-    await creation.locator("[data-avancer]").click();
-  }
+  await avancerUneFois();
 }
 dire(vueTva === true, "la question de la TVA est atteinte");
 dire(await creation.locator("[data-passer]").isHidden(),
@@ -275,23 +355,17 @@ for (let i = 0; i < 30; i++) {
   if (await creation.locator("[data-fini]").isVisible()) break;
   const deborde = await creation.evaluate((e) => e.scrollHeight > e.clientHeight + 1);
   if (deborde) { dire(false, "l'écran déborde à la question " + (i + 1)); break; }
-  // Le bouton « Continuer » ne doit jamais être poussé hors du cadre par une
-  // liste longue : la forme juridique en a onze.
-  if (await creation.locator("[data-select]").isVisible()) {
-    await creation.locator("[data-select]").selectOption({ index: 1 });
-    await creation.locator("[data-avancer]").click();
-  } else if (await creation.locator("[data-liste]").isVisible()) {
-    await creation.locator("[data-liste] button").first().click();
-  } else {
+  // « Continuer » ne doit jamais être poussé hors du cadre — ni par le groupe
+  // de trois cases de l’identité, ni par le bandeau des onze formes.
+  if ((await outil()) !== "liste") {
     const b = await creation.locator("[data-avancer]").boundingBox();
     const c = await creation.boundingBox();
     if (!(b && c && b.y + b.height <= c.y + c.height + 1)) {
       dire(false, "« Continuer » sort du cadre à la question " + (i + 1));
       break;
     }
-    await creation.locator("[data-champ]").fill("essai");
-    await creation.locator("[data-avancer]").click();
   }
+  await avancerUneFois();
   if (i === 29) dire(false, "le parcours ne s'arrête pas");
 }
 dire(await creation.locator("[data-fini]").isVisible(),
