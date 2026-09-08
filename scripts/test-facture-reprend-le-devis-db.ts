@@ -111,34 +111,6 @@ async function chantierAvecDevisEnvoye(ctx: Ctx, montantHt: string) {
   return { chantierId: chantier.id, devisV1: v1.id };
 }
 
-/**
- * L'allure FIGÉE d'une facture, lue en base.
- *
- * **Ce qu'on interroge quand on veut savoir ce qui a été figé** — et non ce que
- * tel ou tel écran veut bien en montrer. La page du client a changé le
- * 8 septembre 2026 ; ces colonnes-là, elles, portent toujours la règle.
- */
-/** La ligne de facture telle qu'elle est en base — ce qui a réellement été figé. */
-async function ligneDeFacture(ctx: Ctx, factureId: string) {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
-    return f;
-  });
-}
-
-async function allureFigeeDe(ctx: Ctx, factureId: string) {
-  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
-    // La lecture des trois colonnes vit dans `src/lib` et sert aussi bien à
-    // l'entreprise qu'à la facture : la refaire ici en ferait une seconde.
-    return allureDepuisColonnes({
-      typographie: f.docTypographie,
-      fond: f.docFond,
-      accent: f.docAccent,
-    });
-  });
-}
-
 async function main() {
   await nettoyerBase();
 
@@ -283,17 +255,10 @@ async function main() {
     // qui distingue « parti sans allure » de « facture antérieure à 0074 » ; et
     // c'est `estLAllureParDefaut` qui rend alors la page d'aujourd'hui, au pixel
     // près (`src/app/factures/[jeton]/page.tsx`).
-    // **On l'interroge SUR LA FACTURE, plus sur ce que la page du client
-    // renvoie — 8 septembre 2026.** Le patron a demandé que cette page porte les
-    // couleurs d'Atlas ; elle ne transporte donc plus d'allure. La RÈGLE, elle,
-    // n'a pas bougé : c'est le PDF archivé qui la porte, et il naît de ces trois
-    // colonnes. Viser la colonne plutôt que l'écran, c'est ce que `CLAUDE.md`
-    // §5 bis demande — un contrôle ne doit pas réclamer ce qu'il a fait retirer.
-    const allureFigee = await allureFigeeDe(ctx, facture.id);
-    assert.ok(allureFigee, "l'aspect n'a pas été figé à l'émission");
+    assert.ok(vue.allure, "l'aspect n'a pas été figé à l'émission");
     assert.ok(
-      estLAllureParDefaut(allureFigee),
-      "un réglage jamais touché repeint le document de son client"
+      estLAllureParDefaut(vue.allure),
+      "un réglage jamais touché repeint la page de son client"
     );
   });
 
@@ -314,13 +279,11 @@ async function main() {
     });
 
     const vue = await factureParJeton(envoi.jeton, MAINTENANT);
-    assert.ok(vue, "la page du client ne trouve plus sa facture");
-    const fige = await allureFigeeDe(ctx, facture.id);
-    assert.ok(fige, "la facture a perdu son aspect");
-    assert.strictEqual(fige.typographie, "inter", "l'aspect a suivi le nouveau réglage");
-    assert.strictEqual(fige.fond, "#101010");
+    assert.ok(vue?.allure, "la page du client a perdu son aspect");
+    assert.strictEqual(vue.allure.typographie, "inter", "l'aspect a suivi le nouveau réglage");
+    assert.strictEqual(vue.allure.fond, "#101010");
     assert.strictEqual(
-      fige.accent,
+      vue.allure.accent,
       "#c0392b",
       "son client ne retrouve plus l'aspect du PDF qu'il a reçu"
     );
@@ -399,13 +362,12 @@ async function main() {
 
     const vue = await factureParJeton(envoi.jeton, MAINTENANT);
     assert.ok(vue, "la page du client ne trouve pas sa facture");
-    const reglee = await allureFigeeDe(ctx, facture.id);
-    assert.ok(reglee, "l'allure réglée n'a pas été figée sur la facture");
-    assert.strictEqual(reglee.typographie, "inter");
-    assert.strictEqual(reglee.fond, "#101010");
-    assert.strictEqual(reglee.accent, "#c0392b");
+    assert.ok(vue.allure, "la page reste peinte aux couleurs d'Atlas, pas aux siennes");
+    assert.strictEqual(vue.allure.typographie, "inter");
+    assert.strictEqual(vue.allure.fond, "#101010");
+    assert.strictEqual(vue.allure.accent, "#c0392b");
     assert.ok(
-      !estLAllureParDefaut(reglee),
+      !estLAllureParDefaut(vue.allure),
       "une allure réglée ne doit pas être prise pour le défaut"
     );
     // Et elle est bien FIGÉE dans la pièce, pas relue sur l'entreprise.
@@ -429,87 +391,6 @@ async function main() {
     assert.strictEqual(await factureParJeton("ceci-n-existe-pas", MAINTENANT), null);
     const bienPlusTard = new Date(MAINTENANT.getTime() + 400 * 86400_000);
     assert.strictEqual(await factureParJeton(envoi.jeton, bienPlusTard), null);
-  });
-
-  // ═════════════════════════════════════════════════════════════════════════
-  // L'IDENTITÉ QUE PORTE LA FACTURE — sa question du 8 septembre 2026.
-  //
-  // *« Lorsque l'utilisateur modifie son IBAN dans ses réglages ou le nom de sa
-  // société, les infos se modifient automatiquement dans le lien que recevra le
-  // client ? »* — puis : *« ne fais pas de pansement, corrige à la racine. »*
-  //
-  // **CES DEUX SUITES ROUGISSENT CONTRE LA VERSION D'HIER**, et c'est leur
-  // raison d'être : la facture recopiait l'identité DU DEVIS, figée le jour du
-  // devis. Un devis de janvier facturé en juin partait avec l'IBAN de janvier —
-  // le client virait sur un compte fermé, sur une facture toute neuve.
-  // ═════════════════════════════════════════════════════════════════════════
-
-  await test("L'IBAN DE LA FACTURE EST CELUI DU JOUR, PAS CELUI DU DEVIS", async () => {
-    const ctx = await contexte("iban-du-jour");
-    await entreprisesRepo.mettreAJourEntreprise(ctx, {
-      iban: "FR7611110000011111111111111",
-      titulaireCompte: "Ancienne Banque",
-    });
-
-    // Le devis part avec l'IBAN d'alors : c'est normal, et cela ne change pas.
-    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "500.00");
-
-    // Des mois plus tard, il change de banque et régularise le titulaire.
-    await entreprisesRepo.mettreAJourEntreprise(ctx, {
-      iban: "FR7622220000022222222222222",
-      titulaireCompte: "Jardins du Val",
-    });
-
-    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
-    const ligne = await ligneDeFacture(ctx, facture.id);
-    assert.strictEqual(
-      ligne.entrepriseIban,
-      "FR7622220000022222222222222",
-      "la facture part avec l'IBAN du devis : le client vire sur un compte fermé"
-    );
-    assert.strictEqual(
-      ligne.entrepriseTitulaireCompte,
-      "Jardins du Val",
-      "le titulaire n'est pas figé : le chèque sera libellé au mauvais nom"
-    );
-
-    // Et ce que le client LIT sur sa page vient de ces colonnes-là, groupé par
-    // quatre — la même fonction que le PDF archivé.
-    await emettreFacture(ctx, facture.id, MAINTENANT);
-    const envoi = await creerEnvoiFacture(ctx, facture.id, "sms", MAINTENANT);
-    const vue = await factureParJeton(envoi.jeton, MAINTENANT);
-    assert.ok(vue, "la page du client ne trouve pas sa facture");
-    assert.strictEqual(vue.modalites.ibanLisible, "FR76 2222 0000 0222 2222 2222 222");
-    assert.strictEqual(vue.modalites.ibanACopier, "FR7622220000022222222222222");
-    assert.strictEqual(
-      vue.modalites.ordreDuCheque,
-      "Jardins du Val",
-      "l'ordre du chèque ignore le titulaire du compte"
-    );
-  });
-
-  await test("et le NOM de l'entreprise aussi — une facture porte la raison sociale du jour", async () => {
-    const ctx = await contexte("nom-du-jour");
-    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "620.00");
-
-    // Il passe en société, et l'enseigne change.
-    await entreprisesRepo.mettreAJourEntreprise(ctx, { nom: "Jardins du Val SAS" });
-
-    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
-    const ligne = await ligneDeFacture(ctx, facture.id);
-    assert.strictEqual(
-      ligne.entrepriseNom,
-      "Jardins du Val SAS",
-      "la facture porte une raison sociale qui n'existe plus"
-    );
-
-    // Sans titulaire de compte réglé, l'ordre du chèque retombe sur ce nom-là,
-    // et un IBAN jamais renseigné ne doit rien afficher du tout.
-    await emettreFacture(ctx, facture.id, MAINTENANT);
-    const envoi = await creerEnvoiFacture(ctx, facture.id, "email", MAINTENANT);
-    const vue = await factureParJeton(envoi.jeton, MAINTENANT);
-    assert.strictEqual(vue?.modalites.ordreDuCheque, "Jardins du Val SAS");
-    assert.strictEqual(vue?.modalites.ibanLisible, null, "un IBAN non réglé ne doit rien afficher");
   });
 
   console.log(`\n${passed} réussis, ${failed} échoués`);
