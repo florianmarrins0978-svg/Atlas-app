@@ -12,6 +12,7 @@ import {
 } from "@/lib/disponibilites";
 import { absencesEquipe, equipes } from "../db/schema";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
+import { cocheRefusee } from "../../lib/equipe-absente";
 import { departEtDuree, type QuandChantier } from "../../lib/planning-jour";
 import { seuilMemoireCalendrier } from "../../lib/onglet-chantier";
 import type { Ctx } from "./context";
@@ -365,7 +366,12 @@ export async function basculerEquipeDuChantier(
     // seule barrière serait la FK composite — qui protège, mais rendrait une
     // erreur de base là où une ligne ignorée suffit.
     const [le] = await tx
-      .select({ id: chantiers.id })
+      .select({
+        id: chantiers.id,
+        datePlanifiee: chantiers.datePlanifiee,
+        creneauDebut: chantiers.creneauDebut,
+        dureeDemiJournees: chantiers.dureeDemiJournees,
+      })
       .from(chantiers)
       .where(
         and(
@@ -392,6 +398,44 @@ export async function basculerEquipeDuChantier(
         )
       )
       .limit(1);
+
+    // ─── ON N'ENVOIE PAS QUELQU'UN QUI N'EST PAS LÀ ───────────────────────
+    // **Son signalement du 7 septembre 2026.** Le refus vit ICI, et pas
+    // seulement dans l'écran qui grise la pastille : un écran ne protège rien,
+    // il se contourne. La règle, elle, est la MÊME des deux côtés
+    // (`equipe-absente.ts`, `CLAUDE.md` §3) — deux implémentations auraient
+    // fini par diverger, et c'est la moins sévère qui aurait gagné.
+    //
+    // **Décocher reste toujours possible**, et ce n'est pas une tolérance :
+    // c'est la seule façon de réparer une coche antérieure au congé, qui est
+    // exactement l'état qu'il a photographié.
+    if (!deja) {
+      const absences = await tx
+        .select({
+          rang: equipes.rang,
+          premierJour: absencesEquipe.premierJour,
+          dernierJour: absencesEquipe.dernierJour,
+          premierDemi: absencesEquipe.premierDemi,
+          dernierDemi: absencesEquipe.dernierDemi,
+        })
+        .from(absencesEquipe)
+        .innerJoin(equipes, eq(absencesEquipe.equipeId, equipes.id))
+        .where(
+          and(
+            eq(absencesEquipe.entrepriseId, ctx.entrepriseId),
+            eq(absencesEquipe.equipeId, equipeId),
+            isNull(absencesEquipe.deletedAt)
+          )
+        );
+      if (cocheRefusee(rangEquipe, le, absences, false)) {
+        // **On rend l'état INCHANGÉ, jamais `null` et jamais une exception.**
+        // `null` veut déjà dire « ce chantier n'est pas à vous » ; le message
+        // d'une exception levée par une action serveur n'arrive jamais jusqu'au
+        // patron (`AGENTS.md`). L'écran repeint alors ce qui est vrai, et la
+        // pastille grisée dit déjà pourquoi.
+        return lireEquipesDuChantier(tx, ctx.entrepriseId, chantierId);
+      }
+    }
 
     if (deja) {
       await tx.delete(equipesDuChantier).where(eq(equipesDuChantier.id, deja.id));
@@ -559,6 +603,11 @@ export async function planifierChantier(
         equipeId: absencesEquipe.equipeId,
         premierJour: absencesEquipe.premierJour,
         dernierJour: absencesEquipe.dernierJour,
+        // Sans ces deux-là, une absence d'un matin bloquerait la journée
+        // entière dans la capacité — le défaut du 8 septembre 2026, corrigé
+        // partout ou nulle part : ces trois chemins doivent compter pareil.
+        premierDemi: absencesEquipe.premierDemi,
+        dernierDemi: absencesEquipe.dernierDemi,
       })
       .from(absencesEquipe)
       .where(

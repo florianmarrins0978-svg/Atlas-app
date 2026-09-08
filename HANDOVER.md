@@ -8,6 +8,75 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — QUI TRAVAILLE QUEL JOUR (8 septembre 2026)
+
+**Planche :** `appli/qui-travaille-quel-jour.html` — retenu **C et D2**.
+**Décisions :** `ARCHITECTURE.md` §292. **Migration : 0076.**
+
+**LA LEÇON DU LOT.** Les règles des §290 et §291 étaient des CONTOURNEMENTS
+d'une limite du modèle. Quand la limite tombe, le contournement doit tomber
+avec — sinon il reste comme une interdiction que plus rien ne justifie. Les
+deux ont été relâchés ici, et leurs contrôles RETOURNÉS.
+
+**LE RISQUE DE CETTE MIGRATION**, si l'on reprend ce coin : huit `select`
+lisent `absences_equipe`. Une demi-journée comptée pour une journée entière
+dans UN seul rendrait la capacité fausse là et nulle part ailleurs — et une
+date refusée à un client ne se voit pas. Le compte se vérifie :
+`grep -rc "dernierJour: absencesEquipe.dernierJour," src` doit égaler
+`grep -rc "dernierDemi: absencesEquipe.dernierDemi," src`.
+
+**Une erreur de chiffrage à connaître :** j'ai annoncé deux migrations au
+patron. Une seule était nécessaire — C déduit l'exception des congés au lieu de
+la faire saisir.
+
+---
+
+## Dernier lot — POSER UN CONGÉ DÉFAIT CE QU'IL REND FAUX (8 septembre 2026)
+
+**Décisions :** `ARCHITECTURE.md` §291. **Document :** `docs/lot-ne-pas-cocher-un-absent.md`.
+
+**CE QU'IL A CORRIGÉ CHEZ MOI, et c'est la leçon du lot :** j'ai livré un
+correctif qui refusait de COCHER un absent. Il a répondu *« pas de pansement,
+corrige le problème à la racine »* — et l'incohérence de sa capture était
+effectivement entrée par l'AUTRE bout : sa coche était antérieure au congé.
+
+**Devant un défaut d'état incohérent, énumérer les DEUX sens** : ce qui crée
+l'état faux en avant, et ce qui le crée en arrière. Fermer un seul sens donne
+l'illusion du travail fait.
+
+**⚠ LA RACINE PROFONDE N'EST PAS CORRIGÉE, et c'est délibéré.**
+`equipes_du_chantier` porte `(chantier, demi, équipe)` — aucun jour. Sur un
+chantier de deux jours dont un seul tombe sur un congé, la personne devient
+inaffectable sur ce chantier. Corriger demande une migration ET change son
+geste : question posée dans `TODO.md`, à ne pas trancher seul.
+
+---
+
+## Lot précédent — ON NE COCHE PLUS UN ABSENT (8 septembre 2026)
+
+**Décisions :** `ARCHITECTURE.md` §290.
+
+**LE PIÈGE À RETENIR.** « Absence » est née le 14 août d'une question de
+CAPACITÉ — combien de dates proposer au client. Personne n'est allé voir ce
+qu'elle devait changer ailleurs, et pendant trois semaines on pouvait envoyer
+sur un chantier quelqu'un que l'application savait absent.
+
+Devant une notion arrivée par un seul chemin, se demander : *où d'autre
+devrait-elle compter ?*
+
+**La règle sert les deux côtés** (`equipe-absente.ts`) : elle grise la pastille
+et le serveur refuse la coche. Un écran ne protège rien, il se contourne.
+
+**Décocher reste toujours possible** — `cocheRefusee(..., dejaCochee)` rend
+`false` quand la case est déjà mise. Sans cette sortie, une coche antérieure au
+congé serait irréparable : aucun autre chemin ne retire quelqu'un d'une
+demi-journée.
+
+**Le refus rend l'état INCHANGÉ**, jamais `null` (qui veut dire « pas à vous »)
+ni une exception (dont le message n'arrive jamais au patron).
+
+---
+
 ## Dernier lot — LES PAGES QUE VOIT SON CLIENT (8 septembre 2026)
 
 **Ce qu'il faut savoir avant de toucher aux pages publiques par jeton.**
@@ -69,6 +138,7 @@ aucune différence — c'est ce qui rend le lot éprouvable.
 
 **Le document pour lui :** `docs/lot-cinq-sessions-en-meme-temps.md`.
 Le détail : `ARCHITECTURE.md` §287 (l'atelier) et §288 (le dossier).
+
 
 ---
 

@@ -76,6 +76,19 @@ export function grilleDuMois(annee: number, mois: number): CaseMois[] {
 // c'est exactement ce que `CLAUDE.md` §3 interdit : elles auraient divergé au
 // premier réglage, et l'écart se serait vu là où le patron compare.
 
+/**
+ * « ven. » — le jour de la semaine, en trois lettres.
+ *
+ * Pour les pastilles d'équipe d'un chantier de plusieurs jours (sa proposition
+ * C du 8 septembre 2026) : la place y est comptée, et le quantième n'apprend
+ * rien de plus quand les jours sont voisins.
+ */
+export function jourAbrege(jour: JourIso): string {
+  const d = new Date(`${jour}T12:00:00Z`);
+  // `getUTCDay()` rend 0 pour dimanche ; la table commence au lundi.
+  return `${JOURS_COURTS[(d.getUTCDay() + 6) % 7]}.`;
+}
+
 /** « Jeudi 20 août » — la date telle que la journée l'écrit. */
 export function jourLisibleCourt(jour: JourIso): string {
   const d = new Date(`${jour}T12:00:00Z`);

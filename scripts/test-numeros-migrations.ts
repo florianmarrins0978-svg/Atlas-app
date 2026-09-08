@@ -75,6 +75,19 @@ const DOUBLONS_CONNUS = new Set([
   "0068", // effacement_client_devis_envoye · prestation_structuree
   "0069", // fil_assistant · journal_des_purges · ligne_de_prix_et_ses_prestations
   "0071", // rappel_vu · role_facturation
+  // **Le douzième, arrivé le 8 septembre 2026** — et il est entré par la porte
+  // que ce contrôle ne garde pas : les deux sessions ont poussé sur `main` à
+  // une heure d'intervalle, chacune verte de son côté, et le doublon n'est
+  // apparu qu'une fois les deux fusionnées. Le contrôle a fait son travail : il
+  // a rougi tout de suite, et c'est LUI qui a barré la CI.
+  //
+  // **Renommer est exclu, les deux sont sur `main`** (doctrine ci-dessus : la
+  // clé de suivi est le nom du fichier). Reste à vérifier ce qui compte
+  // vraiment, l'ORDRE — et elles ne se touchent pas : `absence_demi_journee`
+  // n'écrit que sur `absences_equipe`, `identite_vivante_sur_la_facture` que
+  // sur `factures`. Aucune ne crée ce que l'autre modifie ; une base neuve peut
+  // donc les appliquer dans n'importe quel ordre.
+  "0076", // absence_demi_journee · identite_vivante_sur_la_facture
 ]);
 
 let passed = 0;

@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { ADRESSE } from "./_adresse";
 
 let passed = 0;
 let failed = 0;
@@ -16,7 +17,7 @@ async function test(nom: string, fn: () => Promise<void>) {
 
 async function main() {
   await test("Liveness : renvoie 200 sans dépendre de PostgreSQL", async () => {
-    const r = await fetch("http://localhost:3000/api/health/live");
+    const r = await fetch(`${ADRESSE}/api/health/live`);
     assert.equal(r.status, 200);
     const corps = await r.json();
     assert.equal(corps.statut, "vivant");
@@ -39,7 +40,7 @@ async function main() {
     // La perdre ne casserait RIEN à l'écran — c'est bien le danger : le
     // diagnostic se remettrait à accuser le relais en toutes circonstances, et
     // personne ne le saurait.
-    const r = await fetch("http://localhost:3000/api/health/live");
+    const r = await fetch(`${ADRESSE}/api/health/live`);
     assert.equal(
       r.headers.get("x-atlas-vivant"),
       "1",
@@ -49,7 +50,7 @@ async function main() {
   });
 
   await test("Readiness : renvoie 200 quand PostgreSQL est disponible", async () => {
-    const r = await fetch("http://localhost:3000/api/health/ready");
+    const r = await fetch(`${ADRESSE}/api/health/ready`);
     assert.equal(r.status, 200);
     const corps = await r.json();
     assert.equal(corps.statut, "pret");
@@ -57,15 +58,15 @@ async function main() {
   });
 
   await test("Readiness : ne fuit aucun secret ni URL de connexion dans la réponse", async () => {
-    const r = await fetch("http://localhost:3000/api/health/ready");
+    const r = await fetch(`${ADRESSE}/api/health/ready`);
     const texte = await r.text();
     assert.ok(!texte.includes("postgresql://"), "L'URL de connexion ne doit jamais apparaître dans la réponse");
     assert.ok(!/password|secret/i.test(texte), "Aucun secret ne doit apparaître dans la réponse");
   });
 
   await test("Les routes de santé sont accessibles sans authentification (non bloquées par le middleware)", async () => {
-    const rLive = await fetch("http://localhost:3000/api/health/live", { redirect: "manual" });
-    const rReady = await fetch("http://localhost:3000/api/health/ready", { redirect: "manual" });
+    const rLive = await fetch(`${ADRESSE}/api/health/live`, { redirect: "manual" });
+    const rReady = await fetch(`${ADRESSE}/api/health/ready`, { redirect: "manual" });
     assert.notEqual(rLive.status, 307);
     assert.notEqual(rReady.status, 307);
   });

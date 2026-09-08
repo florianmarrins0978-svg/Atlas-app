@@ -295,7 +295,10 @@ async function main() {
     });
     await chevron.waitFor({ state: "visible", timeout: 20_000 });
     await chevron.click();
-    const versLeDevis = page.locator(`a[href="/chantiers/${chantierId}/export"]`);
+    // **Le début du chemin, pas l'adresse entière** : depuis le 7 septembre
+    // 2026 une porte du planning emporte d'où l'on vient (`?de=`), et viser
+    // l'égalité ferait rougir ce contrôle sur du code juste.
+    const versLeDevis = page.locator(`a[href^="/chantiers/${chantierId}/export"]`);
     await versLeDevis.waitFor({ state: "visible", timeout: 20_000 });
 
     // On remet l'état d'avant : les contrôles suivants parlent d'un chantier

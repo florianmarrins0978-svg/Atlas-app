@@ -7,6 +7,131 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-08
+
+### Sa porte, c'est « en plein air » — l'autre planche est écartée
+
+*« J'ai déjà choisi, c'était la deuxième maquette, la porte en plein air. »*
+
+`appli/porte-comme-ta-capture.html` (31 août) sort donc du jeu. Elle reste en
+ligne, comme toute planche non retenue — elle raconte le chemin —, mais plus
+aucune session ne doit attendre de réponse dessus : c'était écrit dans `TODO.md`
+depuis huit jours, et c'est ce genre d'attente fantôme qui fait redemander au
+patron ce qu'il a déjà tranché.
+
+Les deux questions qu'elle posait sont reportées là où elles vivent désormais —
+Google et Apple sur la porte retenue, et les mentions légales, qui existent en
+brouillon depuis le 8 septembre.
+
+### Le douzième numéro de migration pris deux fois — constaté, pas défait
+
+Deux sessions ont poussé un `0076` à une heure d'intervalle le 8 septembre,
+chacune verte de son côté : le doublon n'existait qu'une fois les deux
+fusionnées. Le contrôle a rougi aussitôt et a barré la CI entière — les suites
+base s'arrêtent avant la construction et les suites navigateur.
+
+**Renommer est exclu** : les deux sont sur `main`, et la clé de suivi étant le
+nom du fichier, un renommage les rejouerait sur toutes les bases à jour. Reste
+ce qui compte vraiment — l'ORDRE, qu'une base neuve tire d'un tri alphabétique.
+Vérifié : `absence_demi_journee` n'écrit que sur `absences_equipe`,
+`identite_vivante_sur_la_facture` que sur `factures`. Aucune ne crée ce que
+l'autre modifie ; l'ordre est donc sans effet.
+
+Le doublon rejoint les onze acquis, avec cette vérification écrite à côté.
+
+### Les suites navigateur servent la version BÂTIE — le mur de mémoire tombe
+
+Sa décision, après quatre morts de la CI au même endroit : *« bascule sur la
+version bâtie »*.
+
+| | Serveur de développement | Version bâtie |
+|---|---|---|
+| la course | **meurt à la 2ᵉ suite**, machine tuée | **va au bout : 133 suites** |
+| le serveur | 1 820 Mo, jusqu'à 13 200 | **236 à 451 Mo** |
+| mémoire libre | tombe à 396 Mo | **reste à 14,6 Go** |
+
+Turbopack compilait à la demande, au milieu des suites, et allouait hors du tas
+de V8 : rien ne le bornait. Une version bâtie ne compile plus rien. Le
+préchauffage disparaît avec la cause — il n'existait que pour absorber cette
+compilation (le banc, lui en développement, le garde).
+
+**Et cela comble un trou ouvert depuis un mois** (`CLAUDE.md` §5) : les suites
+navigateur ne passaient jamais par le chemin de production, celui que le banc du
+patron sert vraiment. Deux refus l'ont prouvé dès le premier essai — le profil de
+l'IA et l'hôte de confiance d'Auth.js — que personne n'avait jamais vus.
+
+**Trois suites écrivaient `localhost:3000` en dur** et rougissaient dès qu'une
+session travaillait sur un autre port : elles lisent l'adresse de leur atelier.
+
+**Ce qui reste, écrit dans `TODO.md`** : le jeu des rouges change d'une course à
+l'autre (19 puis 21, pas les mêmes) — huit suites flottent, probablement parce
+que la version bâtie répond trop vite pour des attentes écrites contre un
+serveur qui compilait. Interdiction de les rejouer automatiquement pour obtenir
+du vert.
+
+### Cocher un absent, poser un congé d'une demi-journée
+
+**Ses deux choix sur maquette : C et D2.**
+
+Une personne en congé un jour sur deux reste cochée sur son chantier, et la
+pastille dit les jours où elle vient — « Julien ven. », cerclée au lieu d'être
+pleine. Il coche une fois, comme avant : c'est l'application qui retire le jour
+du congé.
+
+Et une absence peut ne prendre qu'un matin. Toucher un nom pose la journée,
+comme avant ; deux pastilles « Matin / Après-midi » restreignent ensuite.
+Migration 0076.
+
+**Ce que ça évite :** un rendez-vous d'une heure qui coûte la journée entière
+d'un salarié, et un chantier qu'on ne peut plus doter pour un congé d'un jour.
+
+**CE QUI SE RELÂCHE, ET C'EST VOULU.** Les règles du 7 et du 8 septembre
+interdisaient faute de pouvoir exprimer : refus de cocher dès un jour
+d'absence, retrait du chantier entier à la pose. C les rend inutiles — on ne
+refuse plus que si la personne n'est là aucun jour. Voir `ARCHITECTURE.md` §292.
+
+**Une correction à mon propre chiffrage :** j'avais annoncé deux migrations. La
+seconde suffit — l'exception se déduit des congés, elle ne se saisit pas.
+
+### Poser un congé défait ce qu'il rend faux
+
+Sa consigne, devant le premier correctif : *« pas de pansement, corrige le
+problème à la racine »*. Refuser de COCHER un absent fermait une porte — mais
+l'incohérence qu'il a photographiée était entrée par l'autre : sa coche était
+ANTÉRIEURE au congé, et poser un congé n'avait jamais rien réconcilié.
+
+Poser un congé retire désormais la personne des chantiers qu'il traverse, dans
+la même transaction, et **le dit** : au planning la pastille disparaît sous ses
+yeux, aux Réglages une ligne nomme les chantiers concernés.
+
+**Ce que ça évite :** un chantier qui part avec quelqu'un qui n'y sera pas, sans
+que rien ne l'ait signalé.
+
+**LA RACINE QUI RESTE, et elle demande son arbitrage :** `equipes_du_chantier`
+ne porte aucun jour. Une coche vaut pour le chantier entier, donc l'application
+ne peut pas dire « Julien le 11 mais pas le 10 ». Conséquence à connaître : sur
+un chantier de deux jours dont un seul tombe sur un congé, la personne devient
+inaffectable sur ce chantier. Corriger cela demande une migration et change son
+geste — `ARCHITECTURE.md` §291, question dans `TODO.md`.
+
+### On ne coche plus quelqu'un qui n'est pas là
+
+Une personne en congé pouvait être cochée sur un chantier de ce jour-là, alors
+que la carte affichait « Julien n'est pas là » trois centimètres plus haut.
+L'absence était comptée là où elle change une DATE — les jours proposés au
+client, depuis le 14 août — et nulle part où elle change une PERSONNE.
+
+Sa pastille est grise et refuse la coche ; le serveur la refuse aussi, avec la
+même règle et pas une copie. **Décocher reste toujours possible** : c'est la
+seule façon de réparer une coche antérieure au congé, et c'est exactement l'état
+qu'il a photographié.
+
+**Ce que ça évite :** un chantier qui part avec quelqu'un qui n'y sera pas.
+
+**Un arbitrage à connaître :** sur un chantier de deux jours dont UN SEUL tombe
+sur le congé, la coche est refusée — une coche vaut pour le chantier entier, et
+l'accepter annoncerait la personne un jour où elle n'y est pas. Voir
+`ARCHITECTURE.md` §290.
+
 ### Les pages que voit son client, et l'IBAN qu'elles portaient
 
 Sa capture du 8 septembre : la page de facture de son client était noire, le
@@ -101,6 +226,7 @@ Quatre défauts trouvés en mesurant : l'essai du port mentait sous Windows, deu
 sessions simultanées prenaient le même rang, le jeu de démonstration refusait la
 base d'un atelier, et une base créée à la volée n'avait aucun privilège par
 défaut. `ARCHITECTURE.md` §287 et §288.
+
 
 
 ### La porte : le mot de passe se confirme, le déroulant passe à la charte, l'identité se sépare
