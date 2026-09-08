@@ -8,6 +8,29 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### Deux contrôles qui accusaient à tort, corrigés à la racine
+
+Relevés par la batterie du 8 septembre, et **aucun des deux ne venait du lot** :
+
+`test-mode-emploi` — une fiche de l'assistant pointait
+l'ancien `DocumentsClient` de la rubrique Documents, supprimé la veille par le découpage de
+« Devis & factures ». L'assistant enseignait donc un geste sur un écran disparu,
+ce qui est pire qu'une page vide : on le suit. La fiche vise maintenant
+`src/app/reglages/documents/allure/AllureClient.tsx`, où le bouton « Photographier mon devis »
+vit réellement.
+
+`test-garde-travail-non-enregistre` — le cas « arbre sale » exigeait qu'une
+modification traîne dans le dossier, et refusait de conclure sinon. La batterie
+a donc rougi **parce que le lot venait d'être enregistré proprement** : un
+contrôle qui dépend de l'état du dossier n'éprouve pas le garde-fou, il éprouve
+l'heure qu'il est. Il fabrique désormais son propre témoin (un fichier non
+suivi) et le retire quoi qu'il arrive.
+
+**Un détail qui coûtera une minute à quelqu'un un jour** : ce fichier de contrôle
+ne peut plus porter « git reset --hard » en toutes lettres — le garde-fou lit la
+commande qui l'écrit et la refuse. Le geste s'y monte à partir de ses morceaux,
+et le commentaire le dit.
+
 ### `disponibilites.ts` descend à son étage — le premier déménagement
 
 Sa réponse à la dette relevée le matin : *« oui fais-le »*. Le fichier ne portait
