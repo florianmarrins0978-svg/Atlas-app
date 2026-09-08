@@ -620,22 +620,19 @@ async function main() {
     // demande `dev` sur un port —, pas par la commande qui le porte, qui a
     // déjà changé deux fois.
     //
-    // **ET PAS PAR LE NUMÉRO DU PORT — 8 septembre 2026, troisième fois.** Ce
-    // repère cherchait `"-p", "3000"` écrit en toutes lettres. Le lot de
-    // l'atelier a donné son port à chaque session (`§287`), le `spawn` écrit
-    // désormais `String(atelier!.port)`, et `iSpawn` valait -1 : ce contrôle
-    // rougissait sur du code juste, en annonçant qu'il n'éprouvait rien —
-    // exactement ce que le commentaire ci-dessus raconte de la fois d'avant.
+    // **Le repère a vieilli TROIS fois, et deux sessions l'ont rajeuni le même
+    // jour — 8 septembre 2026. On arrête.**
     //
-    // On vise donc ce qui ne peut PAS disparaître sans que le serveur cesse
-    // d'être lancé : `spawn`, `dev`, et le drapeau `-p`. Ce qui suit `-p` est
-    // libre.
+    // Il visait `"dev"`, puis `"-p", "3000"`. Le lot de l'atelier a donné son
+    // port à chaque session (`ARCHITECTURE.md` §287), donc `"3000"` a disparu ;
+    // la bascule sur la version bâtie a remplacé `dev` par `start`. À chaque
+    // fois, `iSpawn` valait -1 et le contrôle restait vert en n'éprouvant plus
+    // rien — ou rougissait sur du code juste.
     //
-    // **Sans le drapeau `s`, et ce n'est pas un détail de style :** la cible de
-    // `tsconfig.json` est antérieure à ES2018, et `tsc` refuse ce drapeau
-    // (TS1501). Il ne servait à rien ici — `[^)]` accepte déjà les retours à la
-    // ligne, seul un `.` aurait eu besoin de lui.
-    const iSpawn = source.search(/spawn\([^)]*"dev"[^)]*"-p"/);
+    // On vise donc ce qui ne peut pas changer sans que le serveur cesse d'être
+    // lancé : l'exécutable Node et le binaire du projet. La sous-commande et le
+    // port sont libres.
+    const iSpawn = source.search(/spawn\(process\.execPath, \[CHEMIN_NEXT/);
     assert.ok(
       iGarde > 0,
       "aucune garde en tête de batterie : un orphelin du banc rendrait les cinquante suites ininterprétables"

@@ -29,6 +29,66 @@ session voisine avait pris les deux premiers le même jour. Ils passent à §293
 §6 B : jamais de `sed` à l'aveugle, les renvois du voisin portent les mêmes
 numéros).
 
+### Sa porte, c'est « en plein air » — l'autre planche est écartée
+
+*« J'ai déjà choisi, c'était la deuxième maquette, la porte en plein air. »*
+
+`appli/porte-comme-ta-capture.html` (31 août) sort donc du jeu. Elle reste en
+ligne, comme toute planche non retenue — elle raconte le chemin —, mais plus
+aucune session ne doit attendre de réponse dessus : c'était écrit dans `TODO.md`
+depuis huit jours, et c'est ce genre d'attente fantôme qui fait redemander au
+patron ce qu'il a déjà tranché.
+
+Les deux questions qu'elle posait sont reportées là où elles vivent désormais —
+Google et Apple sur la porte retenue, et les mentions légales, qui existent en
+brouillon depuis le 8 septembre.
+
+### Le douzième numéro de migration pris deux fois — constaté, pas défait
+
+Deux sessions ont poussé un `0076` à une heure d'intervalle le 8 septembre,
+chacune verte de son côté : le doublon n'existait qu'une fois les deux
+fusionnées. Le contrôle a rougi aussitôt et a barré la CI entière — les suites
+base s'arrêtent avant la construction et les suites navigateur.
+
+**Renommer est exclu** : les deux sont sur `main`, et la clé de suivi étant le
+nom du fichier, un renommage les rejouerait sur toutes les bases à jour. Reste
+ce qui compte vraiment — l'ORDRE, qu'une base neuve tire d'un tri alphabétique.
+Vérifié : `absence_demi_journee` n'écrit que sur `absences_equipe`,
+`identite_vivante_sur_la_facture` que sur `factures`. Aucune ne crée ce que
+l'autre modifie ; l'ordre est donc sans effet.
+
+Le doublon rejoint les onze acquis, avec cette vérification écrite à côté.
+
+### Les suites navigateur servent la version BÂTIE — le mur de mémoire tombe
+
+Sa décision, après quatre morts de la CI au même endroit : *« bascule sur la
+version bâtie »*.
+
+| | Serveur de développement | Version bâtie |
+|---|---|---|
+| la course | **meurt à la 2ᵉ suite**, machine tuée | **va au bout : 133 suites** |
+| le serveur | 1 820 Mo, jusqu'à 13 200 | **236 à 451 Mo** |
+| mémoire libre | tombe à 396 Mo | **reste à 14,6 Go** |
+
+Turbopack compilait à la demande, au milieu des suites, et allouait hors du tas
+de V8 : rien ne le bornait. Une version bâtie ne compile plus rien. Le
+préchauffage disparaît avec la cause — il n'existait que pour absorber cette
+compilation (le banc, lui en développement, le garde).
+
+**Et cela comble un trou ouvert depuis un mois** (`CLAUDE.md` §5) : les suites
+navigateur ne passaient jamais par le chemin de production, celui que le banc du
+patron sert vraiment. Deux refus l'ont prouvé dès le premier essai — le profil de
+l'IA et l'hôte de confiance d'Auth.js — que personne n'avait jamais vus.
+
+**Trois suites écrivaient `localhost:3000` en dur** et rougissaient dès qu'une
+session travaillait sur un autre port : elles lisent l'adresse de leur atelier.
+
+**Ce qui reste, écrit dans `TODO.md`** : le jeu des rouges change d'une course à
+l'autre (19 puis 21, pas les mêmes) — huit suites flottent, probablement parce
+que la version bâtie répond trop vite pour des attentes écrites contre un
+serveur qui compilait. Interdiction de les rejouer automatiquement pour obtenir
+du vert.
+
 ### Cocher un absent, poser un congé d'une demi-journée
 
 **Ses deux choix sur maquette : C et D2.**

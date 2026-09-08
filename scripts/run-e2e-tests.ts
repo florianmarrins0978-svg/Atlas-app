@@ -144,102 +144,6 @@ async function serveurVivant(url: string, tentatives = 6, delaiMs = 10_000): Pro
  * Ne fait jamais échouer la batterie : si un écran ne répond pas ici, la suite
  * qui en dépend le dira mieux, avec son propre message.
  */
-/**
- * Préchauffer les écrans — **avec une session, sinon on ne préchauffe rien.**
- *
- * ───────────────────────────────────────────────────────────────────────────
- * **Trois faux rouges en une journée, le 12 août 2026**, sur trois suites sans
- * rapport : « clôturé AVANT sa date » (deux fois), « Créer la facture », puis
- * « un appui dicte, un second enregistre ». Chacune diagnostiquait la même
- * chose et avait raison — le serveur de développement n'avait pas suivi — et
- * chacune passait au vert jouée seule. Coût : une batterie complète rejouée à
- * chaque fois, vingt-cinq minutes, quatre fois dans la journée.
- *
- * **La cause n'était pas la machine** — 13 Go libres, charge à 1,2 — mais deux
- * défauts de ce préchauffage :
- *
- *   1. **il tournait SANS session.** Un appel anonyme sur `/termines` est
- *      renvoyé vers `/login` par le middleware : la route visée n'est jamais
- *      rendue, donc jamais compilée. Il ne préchauffait en vérité que `/login`,
- *      et faisait croire au contraire ;
- *   2. **sa liste était incomplète** — `/termines`, justement, n'y figurait pas,
- *      alors que c'est l'écran qui a dépassé son délai deux fois.
- *
- * **Et les deux défauts avaient la même origine : une deuxième implémentation.**
- * `scripts/prechauffer.mjs` sait ouvrir une session et parcourir la liste
- * complète, écrans de chantier compris — c'est ce que fait le banc d'essai
- * depuis toujours. La batterie, elle, avait sa propre version naïve. Deux
- * copies de la même idée finissent toujours par diverger, et c'est la plus
- * faible qui servait ici (`CLAUDE.md` §3).
- *
- * Enveloppé en entier : un préchauffage qui échoue ne doit pas empêcher la
- * batterie de tourner. Au pire, le premier appel repaie son coût — c'est-à-dire
- * la situation d'avant.
- */
-async function prechaufferLesEcrans(): Promise<void> {
-  try {
-    const { cookieDeSession, ecransDeChantier, ECRANS_A_PRECHAUFFER, prechauffer } = await import(
-      "./prechauffer.mjs"
-    );
-    let motif: string | null = null;
-    const cookie = await cookieDeSession({
-      databaseUrl: process.env.DATABASE_URL,
-      authSecret: process.env.AUTH_SECRET,
-      nodeEnv: process.env.NODE_ENV,
-      ecrire: (raison: string) => {
-        motif = raison;
-      },
-    });
-    if (!cookie) {
-      // **Dire la VRAIE raison.** Un préchauffage muet laisserait croire qu'il a
-      // eu lieu, et les faux rouges reviendraient sans qu'on sache pourquoi.
-      console.log(`⚠ Préchauffage sans session : ${motif ?? "raison inconnue"}`);
-      return;
-    }
-    const base = adresse();
-    /**
-     * **En TRANCHE, on ne préchauffe que l'indispensable — et c'est une
-     * question de mémoire, pas de temps.**
-     *
-     * Mesuré le 30 août 2026, en échantillonnant `next-server` pendant une
-     * batterie : **0,6 Go au démarrage, 8,9 Go une fois les 33 écrans
-     * préchauffés, 13,2 Go deux suites plus tard** — et là le conteneur l'abat
-     * (`Memory cgroup out of memory`). Turbopack alloue dans son Rust : rien ne
-     * borne cette croissance, et la batterie s'arrêtait à la deuxième suite en
-     * laissant les cent seize autres non jouées.
-     *
-     * Le préchauffage ne CRÉE pas cette mémoire — il l'avance. Mais devant un
-     * plafond, avancer c'est mourir plus tôt : une tranche de quatorze suites
-     * n'a besoin que d'une poignée d'écrans, et payait pourtant les trente-trois.
-     *
-     * **Ce qui reste préchauffé, et pourquoi ces trois-là :** la connexion, que
-     * toute suite ouvre en premier ; l'accueil, qui la suit ; et la feuille de
-     * chantier en PDF, la seule route dont la première compilation dépasse le
-     * délai des suites (45 à 50 s — elle a fait rougir `test-acces-salarie`
-     * pendant deux jours). Les autres se compilent en deux à dix secondes,
-     * largement sous le délai.
-     *
-     * **La batterie entière, elle, préchauffe tout** : c'est elle qui autorise
-     * une livraison, et elle doit ressembler à ce que le patron exécute.
-     */
-    const ecransDeCeChantier = await ecransDeChantier({ base, cookie });
-    const ecrans = motifDemande
-      ? ["/login", "/", ...ecransDeCeChantier.filter((c) => c.startsWith("/api/"))]
-      : [...ECRANS_A_PRECHAUFFER, ...ecransDeCeChantier];
-    console.log(`Préchauffage de ${ecrans.length} écrans (compilation à la demande)...`);
-    const bilan = await prechauffer({ base, cookie, ecrans });
-    console.log(
-      `Préchauffage terminé : ${bilan.reussis} écran(s) prêts` +
-        (bilan.echoues ? `, ${bilan.echoues} en échec` : "") +
-        ` — ${bilan.secondes} s.`
-    );
-  } catch (err) {
-    console.log(
-      `⚠ Préchauffage impossible : ${err instanceof Error ? err.message : String(err)}. ` +
-        "La batterie continue — le premier appel de chaque écran paiera sa compilation."
-    );
-  }
-}
 
 async function attendreServeurPret(url: string, tentativesMax = 30): Promise<boolean> {
   for (let i = 0; i < tentativesMax; i++) {
@@ -452,7 +356,53 @@ async function main() {
     process.exit(1);
   }
 
-  console.log("Démarrage du serveur (mode développement)...");
+  /**
+   * **LES SUITES TOURNENT CONTRE LA VERSION BÂTIE, PLUS CONTRE LE SERVEUR DE
+   * DÉVELOPPEMENT — 8 septembre 2026, sur sa décision.**
+   *
+   * **Ce que le mode développement coûtait, mesuré et non supposé.** La CI a
+   * tué son runner quatre fois de suite, toujours au même endroit, sans un
+   * seul test rouge. Le relevé posé dans le journal l'a dit :
+   *
+   *     libre 13 349 Mo  →  8 033  →  3 624  →  396 Mo  →  la machine s'arrête
+   *
+   * Le disque n'avait pas bougé. C'est Turbopack qui compile à la demande, et
+   * ce script le savait déjà sans en tirer la conséquence : le commentaire de
+   * `--webpack`, plus bas, cite un `Memory cgroup out of memory: Killed
+   * process … next-server … anon-rss:13,2 Go` du 30 août, et conclut « la
+   * mémoire reste donc à traiter ailleurs ». Cet ailleurs, c'est ici.
+   *
+   * **Une version bâtie ne compile plus rien** : elle sert des fichiers déjà
+   * produits. Plus de pic de trois gigaoctets au milieu d'une suite, et le
+   * préchauffage n'a plus de raison d'être — il n'existait que pour absorber
+   * cette compilation (il reste employé par le banc, lui en développement).
+   *
+   * **Et cela comble un trou que `CLAUDE.md` §5 signale depuis un mois** : les
+   * suites navigateur ne passaient JAMAIS par le chemin de production —
+   * vérification des types de routes, rendu statique, découpage des paquets —
+   * alors que c'est celui que le banc du patron sert. Une panne qui n'existe
+   * qu'à la construction leur était invisible.
+   *
+   * **On bâtit à chaque fois, sans se demander si c'est utile.** Servir un
+   * `.next` d'hier ferait éprouver du code qui n'est plus le nôtre, et ce
+   * genre de vert coûte plus cher que pas de test du tout.
+   */
+  console.log("Construction de l'application (les suites servent la version bâtie)...");
+  const distDir = suffixeDeLAtelier(atelier!) ? `.next${suffixeDeLAtelier(atelier!)}` : ".next";
+  const construction = spawnSync(process.execPath, [CHEMIN_NEXT, "build"], {
+    stdio: "inherit",
+    env: { ...process.env, NODE_ENV: "production", ATLAS_DIST_DIR: distDir },
+  });
+  if (construction.status !== 0) {
+    console.error(
+      `❌ La construction a échoué (${construction.signal ?? `code ${construction.status}`}).\n` +
+        "   Les suites navigateur servent la version bâtie : sans elle, il n'y a rien à servir.\n" +
+        "   Rejouer `npm run build` pour lire l'erreur en entier."
+    );
+    process.exit(1);
+  }
+
+  console.log("Démarrage du serveur (version bâtie)...");
 
   /**
    * **La sortie du serveur va dans un FICHIER, jamais dans un tuyau — et c'est
@@ -523,14 +473,38 @@ async function main() {
   // `next` est un script Node : on le lance par l'exécutable qui nous porte
   // déjà. Plus de `.cmd`, plus de shell, plus d'interposition — le journal
   // revient, et l'arbre se tue proprement des deux côtés.
-  const serveur = spawn(process.execPath, [CHEMIN_NEXT, "dev", "-p", String(atelier!.port)], {
+  const serveur = spawn(process.execPath, [CHEMIN_NEXT, "start", "-p", String(atelier!.port)], {
     env: {
       ...process.env,
       ATLAS_URL_PUBLIQUE: "https://atlas-suites.test",
-      // Chaque atelier compile dans SON dossier : deux serveurs de
-      // développement sur le même `.next` se réécrivent leurs morceaux, et les
-      // deux batteries rendent des rouges qui n'accusent personne.
-      ...(suffixeDeLAtelier(atelier!) ? { ATLAS_DIST_DIR: `.next${suffixeDeLAtelier(atelier!)}` } : {}),
+      // Chaque atelier sert SON dossier : deux serveurs sur le même `.next` se
+      // réécrivent leurs morceaux, et les deux batteries rendent des rouges qui
+      // n'accusent personne.
+      ATLAS_DIST_DIR: distDir,
+      /**
+       * **LE PROFIL BANC, ET LE DÉPÔT L'AVAIT DÉJÀ PRÉVU POUR ÇA.**
+       *
+       * `next start` impose `NODE_ENV=production` — même ici. Sans ce profil,
+       * `src/server/env.ts` refuse de démarrer : « LLM_PROVIDER vaut "dev" en
+       * production », puis exige un compartiment S3. Il a raison sur un vrai
+       * déploiement, et il aurait interdit ce qu'on fait ici, c'est-à-dire
+       * SERVIR une version bâtie sans clé facturée (`src/profil-banc.ts`).
+       *
+       * Ce n'est pas un contournement : c'est le profil que le banc du patron
+       * emploie déjà, et il n'ouvre rien de plus qu'à lui.
+       */
+      ATLAS_PROFIL: "banc",
+      /**
+       * **« UntrustedHost », vu au premier essai du 8 septembre.** Auth.js
+       * refuse de servir une session en production si l'hôte n'est pas déclaré
+       * de confiance : chaque suite restait plantée devant un formulaire de
+       * connexion qui ne s'affichait jamais.
+       *
+       * L'hôte, ici, c'est `localhost` — le serveur que cette batterie vient
+       * d'allumer elle-même. Il n'y a rien à deviner ni personne à croire sur
+       * parole ; c'est exactement le cas que ce drapeau existe pour couvrir.
+       */
+      AUTH_TRUST_HOST: "true",
     },
     stdio: ["ignore", journalFd, journalFd],
     detached: true,
@@ -592,8 +566,6 @@ async function main() {
       process.exit(1);
     }
   }
-
-  await prechaufferLesEcrans();
 
   console.log(`\nExécution de ${fichiers.length} suites dépendant du serveur...\n`);
   let echecs = 0;

@@ -1961,6 +1961,42 @@ changement de comportement — mais la dette est là, et elle porte un vrai risq
 
 ---
 
+## ⚠ LES SUITES NAVIGATEUR FLOTTENT CONTRE LA VERSION BÂTIE (8 septembre 2026)
+
+**Le mur de mémoire est tombé** — les 133 suites vont jusqu'au bout, serveur à
+236-451 Mo au lieu de 13 200, et 14,6 Go libres du début à la fin. C'était le
+point ; il est acquis.
+
+**Ce qui reste : le jeu des rouges CHANGE d'une course à l'autre.**
+
+| Course | Rouges |
+|---|---|
+| première | 19 sur 133 |
+| seconde, même code | 21 — et pas les mêmes |
+
+Sept d'entre eux étaient déjà rouges avant la bascule. Trois écrivaient le port
+3000 en dur et sont **corrigés**. Un est le travail en vol d'une autre session
+(le prénom séparé du nom). Le reste flotte : `bandeau-banc`, `cases-reglables`,
+`connexion-figee`, `face-id`, `grille-prix`, `pas-la-ce-jour`,
+`reduction-devis`, `retour-messagerie` rougissent dans une course et passent
+dans l'autre, à code identique.
+
+**La piste, et elle n'est pas mesurée** : la version bâtie répond beaucoup plus
+vite que le serveur de développement. Les attentes écrites pour un serveur qui
+compilait à la demande peuvent maintenant courir après un écran déjà rendu — ce
+sont des attentes de temps, pas d'état.
+
+**Ce qui est interdit ici, et il faut l'écrire avant que quelqu'un y pense :**
+rejouer automatiquement une suite rouge pour obtenir du vert. Un rejeu qui
+masque un flottement masquera aussi le vrai défaut du lendemain
+(`CLAUDE.md` §4 quater).
+
+**Par où commencer** : prendre une des huit, la jouer dix fois seule contre la
+version bâtie, et regarder si elle flotte encore. Si oui, c'est son attente
+qu'il faut viser — `waitForURL`/`textContent` remplacés par une attente d'ÉTAT.
+
+---
+
 ## ✅ ~~LA CI TUE SON RUNNER~~ — **trouvé et corrigé le 8 septembre 2026**
 
 **C'était la mémoire, et il a fallu quatre morts pour le prouver.** Le relevé
@@ -2022,30 +2058,28 @@ ne visait pas — il ne cherchait que `@/server/…`. Une règle qui ne tient qu
 
 ---
 
-## LA PORTE : IL DOIT CHOISIR A, B OU C (31 août 2026)
+## ✅ ~~LA PORTE : A, B OU C ?~~ — **tranché le 8 septembre 2026 : ni l'un ni l'autre**
 
-Sa capture du 30 août, et la planche qui en sort :
-`appli/porte-comme-ta-capture.html` — **rien n'est codé**, `src/app/login/` est
-intact.
+Sa réponse, et elle est nette : *« j'ai déjà choisi, c'était la deuxième
+maquette, la porte en plein air »*.
 
-| | |
-|---|---|
-| **A** | le bleu de sa capture ; la porte devient un écran à part |
-| **B** | le même dessin à ses couleurs — la charte « Nuit », recopiée |
-| **C** | le même dessin en clair ; se lit au soleil, comme le reste de l'appli |
+`appli/porte-comme-ta-capture.html` (31 août, trois reprises de sa capture du
+30) est donc **écartée**. La planche reste en ligne — elle raconte le chemin,
+comme toute maquette non retenue (`CLAUDE.md` §3 bis) — mais **plus personne ne
+l'attend** : aucune session ne doit rouvrir cette question.
 
-**Deux questions partent avec le choix**, et elles coûtent :
+**Ce qui vit, c'est `appli/la-porte-en-plein-air.html`** et les cinq points qui
+restent à trancher dessus, en tête de ce fichier. Les deux questions que ma
+planche posait n'ont pas disparu pour autant, et elles se rangent là-bas :
 
-- **Google et Apple pour de bon, ou on les retire ?** Google est le moins cher
-  des deux — l'application parle déjà à Google pour l'agenda
+- **Google et Apple** — la porte en plein air les porte aussi. Google est le
+  moins cher : l'application parle déjà à Google pour l'agenda
   (`src/server/agenda/google.ts`). Apple demande un compte développeur payant,
   et l'App Store l'exige dès que Google est proposé.
-- **Les mentions légales** de la planche renvoient à des pages qui n'existent
-  pas encore.
+- **Les mentions légales** — elles existent depuis le 8 septembre,
+  `appli/conditions-utilisation.html` et `appli/confidentialite.html`, en
+  brouillon.
 
-Tant qu'il n'a pas répondu, rien ne se code : c'est `CLAUDE.md` §3 bis.
-
----
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide
