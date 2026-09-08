@@ -253,6 +253,24 @@ export const entreprises = pgTable("entreprises", {
   // saisie : il n'a personne à affilier, et lui proposer une case à cocher lui
   // inventerait une organisation qu'il n'a pas.
   nombreSalaries: integer("nombre_salaries").notNull().default(0),
+  /**
+   * Le patron exige-t-il un retour d'intervention en fin de chantier ?
+   *
+   * *« Ça sera au patron de décider »*, 8 septembre 2026. **Éteint par défaut**,
+   * et ce n'est pas une timidité : l'allumer d'office bloquerait, dès la mise à
+   * jour, un salarié dont le téléphone est mort à 18 h — sur un chantier, sans
+   * personne à qui demander (migration 0080).
+   */
+  retourDemande: boolean("retour_demande").notNull().default(false),
+  /**
+   * Le retour exige-t-il au moins une photo ?
+   *
+   * N'a de sens que si `retourDemande` est vrai — c'est `ceQuiManque`
+   * (`src/lib/retour-intervention.ts`) qui tient cette dépendance, et elle seule :
+   * un second endroit qui la redirait finirait par exiger une photo pour un
+   * retour que personne ne demande.
+   */
+  retourPhotoExigee: boolean("retour_photo_exigee").notNull().default(false),
   // Comment le relevé de TVA découpe l'année. **Le mois est le défaut LÉGAL**
   // (déclaration CA3 mensuelle ; le trimestre est une option sous condition de
   // TVA due), pas une préférence d'écran — voir `drizzle/0035_periodicite_tva.sql`.
@@ -2800,3 +2818,99 @@ export const executionsPurge = pgTable("executions_purge", {
   photosPurgees: integer("photos_purgees").notNull().default(0),
   preuvesPurgees: integer("preuves_purgees").notNull().default(0),
 });
+
+/**
+ * LE RETOUR D'INTERVENTION — ce que le salarié laisse en partant du chantier.
+ *
+ * Sa décision du 8 septembre 2026, prise sur maquette
+ * (`appli/retours-d-intervention.html`). Le pourquoi de chaque colonne est dans
+ * `drizzle/0080_retour_d_intervention.sql` ; ce qui suit en est le reflet.
+ *
+ * **Aucun montant, et c'est structurel** : un salarié ne voit pas un euro, et
+ * un retour ne facture rien. Son « c'est fini » n'est PAS `terminerChantier`,
+ * qui crée la facture (`ARCHITECTURE.md` §285, décision C).
+ */
+export const retoursIntervention = pgTable(
+  "retours_intervention",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id")
+      .notNull()
+      .references(() => chantiers.id, { onDelete: "cascade" }),
+    /** Qui l'a posé. NULL quand la personne a quitté l'entreprise : son départ
+     *  n'efface pas la preuve du travail fait. */
+    posePar: uuid("pose_par").references(() => users.id, { onDelete: "set null" }),
+    poseLe: timestamp("pose_le", { withTimezone: true }).notNull().defaultNow(),
+    /** Son mot, s'il en a écrit un. NULL est le cas ordinaire. */
+    aSignaler: text("a_signaler"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Un seul retour par chantier : deux « c'est fini » donneraient deux
+    // versions du même travail, et rien ne dirait laquelle fait foi.
+    unique("retours_intervention_chantier_uk").on(t.chantierId),
+    index("retours_intervention_recents_idx").on(t.entrepriseId, t.poseLe),
+  ]
+);
+
+/**
+ * Les tâches d'un retour — **recopiées du devis**, jamais référencées.
+ *
+ * Le devis change ; un retour qui pointerait dessus raconterait un chantier qui
+ * n'a pas eu lieu. Même raison que les lignes d'un passage d'entretien.
+ *
+ * **Celles qui n'ont pas été faites restent, à `faite = false`.** Ne garder que
+ * les cochées donnerait un chantier qui paraît complet — et c'est sur cette
+ * impression qu'une facture part pour un travail qui n'a pas eu lieu.
+ */
+export const retoursInterventionTaches = pgTable(
+  "retours_intervention_taches",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    retourId: uuid("retour_id")
+      .notNull()
+      .references(() => retoursIntervention.id, { onDelete: "cascade" }),
+    libelle: text("libelle").notNull(),
+    faite: boolean("faite").notNull().default(false),
+    ordre: integer("ordre").notNull().default(0),
+  },
+  (t) => [index("retours_intervention_taches_idx").on(t.retourId, t.ordre)]
+);
+
+/**
+ * Les photos qu'un retour montre — **celles du chantier, pas des copies**.
+ *
+ * **C'est cette table qui les protège de la purge.** `supprimerPhoto` met la
+ * clé de rangement en file (`fichiers_a_purger`) : sans la question posée ici,
+ * effacer une photo depuis la pellicule du chantier détruirait le fichier que
+ * le retour montre encore — des mois plus tard, sans que personne fasse le
+ * lien. C'est le même piège que la reprise des photos du lot 1, dans l'autre
+ * sens.
+ */
+export const retoursInterventionPhotos = pgTable(
+  "retours_intervention_photos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    retourId: uuid("retour_id")
+      .notNull()
+      .references(() => retoursIntervention.id, { onDelete: "cascade" }),
+    photoId: uuid("photo_id")
+      .notNull()
+      .references(() => photos.id, { onDelete: "cascade" }),
+    ordre: integer("ordre").notNull().default(0),
+  },
+  (t) => [
+    unique("retours_intervention_photos_uk").on(t.retourId, t.photoId),
+    index("retours_intervention_photos_par_photo_idx").on(t.photoId),
+  ]
+);

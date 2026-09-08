@@ -46,6 +46,9 @@ import {
   propositionsIa,
   messagesAssistant,
   rappelsVus,
+  retoursIntervention,
+  retoursInterventionTaches,
+  retoursInterventionPhotos,
   tarifs,
   motsCatalogue,
 } from "../db/schema";
@@ -156,6 +159,9 @@ export async function exporterEntreprise(
       sesPhotosAPurger,
       sesEchangesAssistant,
       sesRappelsRanges,
+      sesRetours,
+      sesTachesDeRetour,
+      sesPhotosDeRetour,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -296,6 +302,20 @@ export async function exporterEntreprise(
       // sont ses gestes, et ils disent quand il a vu quoi : les taire ferait
       // revenir, sur une base restaurée, des rappels qu'il avait acquittés.
       tx.select().from(rappelsVus).where(eq(rappelsVus.entrepriseId, e)),
+      // **Les retours d'intervention, leurs tâches et leurs photos
+      // (migration 0080).** C'est ce que le salarié a constaté sur place : ce
+      // qui a été fait, ce qui ne l'a pas été, et ce qu'il a signalé. Rien ne
+      // les reconstitue — le devis dit ce qui était PRÉVU, jamais ce qui a eu
+      // lieu. Et c'est exactement la pièce qu'on relit le jour où un client
+      // conteste, comme les passages d'entretien plus haut.
+      //
+      // Les photos, elles, sont déjà dans `photos` : cette table ne porte que
+      // le lien. L'exporter quand même est ce qui permet de savoir LESQUELLES
+      // faisaient la preuve — sans elle, une reprise rendrait un retour muet
+      // au milieu des photos du chantier.
+      tx.select().from(retoursIntervention).where(eq(retoursIntervention.entrepriseId, e)),
+      tx.select().from(retoursInterventionTaches).where(eq(retoursInterventionTaches.entrepriseId, e)),
+      tx.select().from(retoursInterventionPhotos).where(eq(retoursInterventionPhotos.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -369,6 +389,12 @@ export async function exporterEntreprise(
       // répondu.
       messages_assistant: sesEchangesAssistant,
       rappels_vus: sesRappelsRanges,
+      // Ce que le salarié a constaté en fin de chantier. Parent avant enfants,
+      // comme partout ici : rejoué ligne à ligne, rien n'a de contrainte à
+      // désactiver.
+      retours_intervention: sesRetours,
+      retours_intervention_taches: sesTachesDeRetour,
+      retours_intervention_photos: sesPhotosDeRetour,
     };
 
     const compte: Record<string, number> = {};

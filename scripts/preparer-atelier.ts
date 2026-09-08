@@ -55,14 +55,29 @@ async function main() {
   const base = nomDeLaBase(SUPER!);
   const proprietaire = decodeURIComponent(new URL(OWNER!).username);
 
-  // Déjà là ? On ne touche à rien — et surtout on ne la recrée pas : ce serait
-  // effacer le travail d'une batterie voisine sur le même rang.
+  // Déjà là ? On ne la RECRÉE pas — ce serait effacer le travail d'une batterie
+  // voisine sur le même rang — mais **on la migre quand même**.
+  //
+  // ═══════════════════════════════════════════════════════════════════════
+  // **CETTE ÉTAPE RENDAIT LA MAIN SANS MIGRER, ET ÇA A COÛTÉ DEUX BATTERIES
+  // (8 septembre 2026).** Une base d'atelier créée avant une migration neuve
+  // restait périmée pour toujours : la batterie rendait alors 222/325, et une
+  // centaine de suites accusaient le code sur un « column … does not exist »
+  // qui ne venait que d'une colonne jamais posée.
+  //
+  // Le défaut se déguise en régression du lot en cours, et il se déplace : le
+  // rang change d'une session à l'autre, donc une batterie verte le matin
+  // rougit l'après-midi sans qu'une ligne ait bougé.
+  //
+  // Migrer est **idempotent** (`_migrations` retient ce qui est déjà passé) et
+  // ne touche à aucune donnée. Rien à perdre, et une heure à gagner.
   const dejaLa = new Client({ connectionString: SUPER });
   let echec: unknown;
   try {
     await dejaLa.connect();
     await dejaLa.end();
     console.log(`✅ Base « ${base} » en place.`);
+    migrer(base);
     return;
   } catch (e) {
     echec = e;
@@ -143,6 +158,18 @@ async function main() {
     await neuve.end().catch(() => undefined);
   }
 
+  migrer(base);
+  console.log(`✅ Base « ${base} » prête.`);
+}
+
+/**
+ * Les migrations en attente, sous le rôle PROPRIÉTAIRE.
+ *
+ * Sous `postgres` elles réussiraient sans se plaindre, puis rendraient
+ * « permission denied for table … » cinquante suites plus loin, sur une table
+ * qu'on n'a pas touchée (`CLAUDE.md` §5, payé le 13 août 2026).
+ */
+function migrer(base: string) {
   console.log("Migrations…");
   const r = spawnSync("npm", ["run", "db:migrate"], {
     stdio: "inherit",
@@ -152,11 +179,10 @@ async function main() {
   if (r.status !== 0) {
     console.error(
       `❌ Les migrations ont échoué sur « ${base} » (code ${r.status}).\n` +
-        "   La base est créée mais vide : la batterie mesurerait dans le vide."
+        "   La batterie mesurerait sur une base qui n'a pas la forme du code."
     );
     process.exit(1);
   }
-  console.log(`✅ Base « ${base} » prête.`);
 }
 
 main().catch((erreur) => {

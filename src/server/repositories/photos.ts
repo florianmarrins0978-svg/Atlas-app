@@ -2,6 +2,7 @@ import { and, desc, eq, inArray, isNull, ne } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { photos, fichiersAPurger, chantiers } from "../db/schema";
 import { enregistrerObjet, lireObjet } from "../storage";
+import { photoTenueParUnRetour } from "./retours-intervention";
 import type { Ctx } from "./context";
 
 type FichierPhoto = {
@@ -175,12 +176,28 @@ function extensionDe(storageKey: string): string {
 
 // Suppression douce : marquée deleted_at, le fichier physique n'est jamais
 // détruit immédiatement — mis en file pour purge différée (voir fichiers.ts).
+//
+// ───────────────────────────────────────────────────────────────────────────
+// **SAUF SI UN RETOUR D'INTERVENTION LA MONTRE — et c'est tout l'enjeu de sa
+// règle du 8 septembre 2026 :** *« il faut pouvoir les garder longtemps »*.
+//
+// Les photos d'un retour ne sont pas des copies : ce sont celles du chantier.
+// Mettre la clé en file de purge détruirait donc le fichier que le retour
+// montre encore — **des mois plus tard**, quand la purge passe, et sur un écran
+// que personne ne regardait ce jour-là. Le lien ne se ferait jamais.
+//
+// La ligne disparaît quand même de la pellicule du chantier : c'est son geste,
+// et il reste vrai. C'est le FICHIER qui survit, parce qu'un autre écran en
+// dépend.
 export async function supprimerPhoto(ctx: Ctx, photoId: string) {
+  const tenueParUnRetour = await photoTenueParUnRetour(ctx, photoId);
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [photo] = await tx.select().from(photos).where(eq(photos.id, photoId)).limit(1);
     if (!photo) return null;
     await tx.update(photos).set({ deletedAt: new Date() }).where(eq(photos.id, photoId));
-    await tx.insert(fichiersAPurger).values({ storageKey: photo.storageKey });
+    if (!tenueParUnRetour) {
+      await tx.insert(fichiersAPurger).values({ storageKey: photo.storageKey });
+    }
     return photo;
   });
 }

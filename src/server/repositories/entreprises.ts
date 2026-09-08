@@ -153,6 +153,17 @@ export async function mettreAJourEntreprise(
     numeroTva?: string | null;
     titulaireCompte?: string | null;
     /**
+     * Ce que le patron exige en fin de chantier — sa décision du 8 septembre
+     * 2026, *« ça sera au patron de décider »* (migration 0080).
+     *
+     * `retourPhotoExigee` n'a de sens que si `retourDemande` est vrai ; c'est
+     * l'action qui tient cette dépendance, pas cette signature — un appel qui
+     * poserait la seconde sans la première laisserait `ceQuiManque` sans rien
+     * à refuser.
+     */
+    retourDemande?: boolean;
+    retourPhotoExigee?: boolean;
+    /**
      * Le capital social et le RCS (migration 0072) — n'ont de sens que pour
      * une société (`formeADuCapital`), jamais pour une EI ou une
      * micro-entreprise. Voir `src/lib/mentions-legales.ts`.

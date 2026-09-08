@@ -9,6 +9,39 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Les rouges qui ne sont à personne — relevé du 9 septembre 2026
+
+**Mesuré sur la batterie du lot « retour d'intervention »**, atelier au rang 0,
+`atlas_test` à jour. À lire AVANT d'accuser son propre lot : refaire la mesure
+plutôt que de croire cette liste, elle vieillira.
+
+| | |
+|---|---|
+| suites base | **314 / 325** |
+| suites navigateur | **115 / 133** |
+
+**Les onze rouges base**, tous d'infrastructure ou d'un lot voisin, aucun de ce
+lot : `test-fiche-pendant-relance`, `test-mise-a-jour-role-db`,
+`test-ouvrir-port`, `test-prechauffage`, `test-relance-construction`,
+`test-roles-capacites-db`, `test-salarie-planning-lecture-seule-db`,
+`test-seed-conserve-identifiants`, `test-verrou-construction` — ceux-là ouvrent
+des ports ou relancent des serveurs, et se gênent entre eux — plus
+`test-boutons-arrondis` et `test-mode-emploi`, qui viennent de la planche
+« A — Épurée » et sont consignés depuis le 4 septembre.
+
+**Les dix-sept rouges navigateur restants** (après correction de
+`test-fiche-chantier-e2e`) : plusieurs dépendent de l'IA, que la batterie coupe
+délibérément (`SANS_CLES_IA`) — `test-anneau-dictee`, `test-anneau-vers-devis`,
+`test-devis-doublon`, `test-carte-reponse-mene-au-geste`. Les autres n'ont pas
+été instruits un par un.
+
+**Ce qui reste à faire ici**, et personne ne l'a pris : **les instruire, et
+soit les réparer, soit les nommer**. Huit rouges permanents deviennent un bruit
+dans lequel un vrai défaut se cache — c'est déjà écrit plus bas dans ce fichier,
+et la liste s'allonge.
+
+---
+
 ## ✅ FAIT LE 8 SEPTEMBRE 2026 — prévenir des factures parties avec l'ancien IBAN
 
 ~~À coder~~ — **codé et éprouvé** : les trois endroits, la trace de ce qui a été
@@ -157,57 +190,18 @@ depuis la dernière prestation, qui reprend aussi le contenu du chantier).
 - « Ce n'est pas lui » doit **séparer pour de bon** : c'est le geste qui répare un
   rapprochement, et il n'existe nulle part aujourd'hui.
 
-## 🔜 LOT 2 — la fiche d'intervention du salarié
+## ~~LOT 2 — la fiche d’intervention du salarié~~ — CODÉ LE 8 SEPTEMBRE 2026
 
-Bloqué par rien, mais il vient **après** le lot 1 et il ne se mélange pas avec
-lui.
+Migration 0080, `ARCHITECTURE.md` §293. Ce qui a été livré : la fiche renommée,
+le bandeau « Fin de chantier » qui déplie dans la fiche, l’onglet « Retours »
+de Terminés et sa page rangée par client, les deux interrupteurs du patron.
 
-**Deux choses qu'il a ajoutées le 8 septembre 2026, et qui ne sont écrites que
-là :**
+**Ce qui reste ouvert sur ce lot, et qui peut le trancher :**
 
-1. **La fiche d'intervention se rattache aux informations du client SUR LE
-   PLANNING** — *« pour que le salarié puisse la voir »*. C'est le seul endroit
-   d'où il l'atteint : `OUVERT_AU_SALARIE` ne contient que `/planning`, et
-   `/chantiers/…` lui est fermé d'office (`src/lib/acces-roles.ts`). La carte du
-   planning est donc la porte, et il ne faut pas en inventer une autre.
-2. **Une feuille de PREUVE DE FIN DE CHANTIER**, distincte de la feuille de
-   travail : *« que le salarié remplira ou non, ça sera au patron de décider —
-   mais sur cette feuille il marquera ce qu'ils ont fait sur le chantier, avec
-   photo à l'appui »*.
-
-   Trois choses à ne pas rater : **c'est le patron qui décide** si elle est
-   demandée (donc un réglage, pas une obligation) ; elle porte **ce qui a été
-   fait**, pas ce qu'il y avait à faire ; et **aucun montant** n'y figure.
-
-**Ce qu'il a tranché le 8 septembre 2026 au soir, sur maquette :**
-
-| | |
+| Ce qui reste | Qui |
 |---|---|
-| le salarié | le **bandeau déroulant** dans la fiche d'intervention — « Fin de chantier » déplie les cases, les photos et « À signaler », sans recouvrir la liste des tâches |
-| le patron | une **sous-catégorie « Retours »** dans Terminés, à côté de « À facturer », qui ouvre **sa propre page** |
-| cette page | les retours **rangés par client**, du plus récent au plus ancien, avec un **filtre en haut** : recherche par nom et pastilles d'années |
-
-**« IL FAUT POUVOIR LES GARDER LONGTEMPS » — trois règles de code, et la
-troisième est un piège.**
-
-1. ce que le salarié écrit ne s'efface pas avec le mois ;
-2. la liste remonte aux **années** passées, pas aux dix-huit mois du
-   feuilletage de Terminés (`RECUL_MAX`, `ListeTermines.tsx`) ;
-3. **`fichiers_a_purger` ne doit JAMAIS recevoir une photo de retour.** C'est le
-   même piège que la recopie des photos du lot 1 : `supprimerPhoto` met la CLÉ
-   en file de purge, et une photo partagée effacée d'un côté disparaît de
-   l'autre — des mois plus tard, sans que personne fasse le lien.
-
-Ce qui est déjà décidé (`ARCHITECTURE.md` §285) :
-
-- le salarié dépose photos et « c'est fini » **sur les chantiers de sa journée**,
-  sans jamais un montant. Le contrôle doit le **prouver**, et avoir été vu rouge ;
-- **deux gestes distincts** pour la fin d'un chantier : le sien constate,
-  `terminerChantier` facture. Aujourd'hui c'est le même geste
-  (`src/server/repositories/factures.ts:172`) ;
-- la feuille de chantier sans montants **existe** (`src/server/pdf/fiche-chantier-pdf.ts`)
-  et la pellicule aussi (`src/app/chantiers/[id]/Pellicule.tsx`) : on les reprend,
-  on ne les réécrit pas.
+| **la carte d’un retour ne mène nulle part.** Le chantier s’ouvre sur sa facture, mais l’adresse dépend de son état et cette règle vit dans `portesDuPlanning` : la recopier ferait une seconde vérité (`CLAUDE.md` §3). Un faux lien promettrait un geste qui ne se passe pas — c’est donc un bloc, pas une porte | **nous**, en nommant la porte plutôt qu’en la recopiant |
+| **aucune suite de bout en bout** ne joue le parcours du salarié : il faudrait un compte salarié amorcé, et le jeu de démonstration n’en porte pas. La règle et l’isolation sont éprouvées (pure + base), le RACCORD ne l’est pas — et c’est exactement le défaut du 28 août (`CLAUDE.md` §5 quater) | **nous**, au prochain lot |
 
 ## 🔜 LOT 3 — ce que le client reçoit
 

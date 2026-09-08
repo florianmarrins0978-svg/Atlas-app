@@ -510,6 +510,51 @@ export function peutModifierLePlanning(role: Role): boolean {
 }
 
 /**
+ * POSER UN RETOUR D'INTERVENTION — **la première écriture jamais rendue au
+ * salarié**, et la seule.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **SA DÉCISION DU 8 SEPTEMBRE 2026**, posée en réponse à une question qui lui
+ * a été explicitement soumise avant d'écrire une ligne : *« oui, le salarié
+ * dépose photos et "c'est fini" sur les chantiers de sa journée, et rien
+ * d'autre : aucun montant, ni devis, ni facture, ni un chantier qui n'est pas
+ * le sien. Que le contrôle le prouve. »*
+ *
+ * C'est une brèche dans le modèle figé le 30 août — `docs/modele-des-roles.md`
+ * §E disait mot pour mot *« aucun droit d'écriture ne lui a été rouvert »*. Elle
+ * est délibérée, et **sa borne est ce qui la rend acceptable** :
+ *
+ * | ce qu'il gagne | ce qui ne bouge pas |
+ * |---|---|
+ * | cocher, photographier, écrire un mot | aucun montant ne sort du serveur pour lui |
+ * | poser « c'est fini », horodaté, à son nom | ni le devis, ni la facture |
+ * | | ni un chantier qui n'est pas de sa journée |
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **POURQUOI UNE FONCTION À ELLE, ET PAS UN `!== "salarie"` RETOURNÉ.**
+ *
+ * Trois raisons, et la troisième est celle qui compte :
+ *
+ * 1. cette permission est VRAIE pour tout le monde, `peutModifierLePlanning`
+ *    est fausse pour deux rôles : les écrire ensemble obligerait à une
+ *    négation, et une négation se relit mal à trois heures du matin ;
+ * 2. elle ne dit rien du CHANTIER. « Il a le droit de poser un retour » n'est
+ *    pas « il a le droit de poser CELUI-CI » — le second se vérifie en base,
+ *    contre la journée du salarié, et ne peut pas vivre dans une fonction pure ;
+ * 3. **elle sera la première à bouger.** Le jour où le patron voudra qu'un
+ *    salarié ne pose plus rien, c'est cette ligne-ci qu'on change — et pas une
+ *    condition mêlée à l'écriture du planning, qui ferait tomber le commercial
+ *    avec lui.
+ *
+ * **Ce que cette fonction n'autorise pas, et qu'aucun rôle ne franchit :**
+ * lire un montant. Un retour n'en porte aucun, par construction — la table
+ * elle-même n'a pas de colonne d'argent (migration 0080).
+ */
+export function peutPoserUnRetour(role: Role): boolean {
+  return role === "proprietaire" || role === "facturation" || role === "commercial" || role === "salarie";
+}
+
+/**
  * L'assistant, est-ce pour cette personne ? **NON, sauf le patron.**
  *
  * ───────────────────────────────────────────────────────────────────────────

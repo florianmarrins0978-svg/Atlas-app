@@ -86,6 +86,23 @@ async function main() {
     [entrepriseId, premier]
   );
 
+  // ── LE CHANTIER EST TERMINÉ : sans ça, « Refaire » n'existe pas ─────────
+  //
+  // **Cette suite jouait un cas impossible, et c'est elle qui avait tort.**
+  // Elle visitait la fiche d'un client dont le chantier venait de naître, et
+  // réclamait « Refaire ». Or la fiche ne connaît « la dernière fois » que
+  // pour un chantier TERMINÉ (`fiche-client.ts`) — une règle apprise à l'écran
+  // le 3 septembre : un chantier créé le matin même porte la date du jour, et
+  // s'annonçait comme une prestation où personne n'était encore allé.
+  //
+  // Le bouton se tient sous ce bloc et parle de lui : le montrer sans lui
+  // aurait proposé de refaire un travail qui n'a pas eu lieu.
+  //
+  // La fin de chantier se pose ici en base plutôt qu'à l'écran : `terminer`
+  // exige un devis parti et CRÉE la facture — tout un cycle comptable, qui a
+  // ses propres suites. Ce qu'on éprouve ici commence APRÈS.
+  await pool.query(`UPDATE chantiers SET termine_at = now() WHERE id = $1`, [premier]);
+
   // ── LE TARIF MONTE, entre les deux chantiers ────────────────────────────
   await pool.query(`UPDATE tarifs SET prix = '18.20' WHERE entreprise_id = $1 AND intitule = $2`, [
     entrepriseId,

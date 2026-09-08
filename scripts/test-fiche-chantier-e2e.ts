@@ -276,7 +276,7 @@ async function main() {
     const fiche = await page.locator('[data-atlas="fiche-chantier"]').innerText();
     assert.match(
       fiche,
-      /Votre client ne le verra pas sur son compte rendu\./,
+      /Votre client ne le verra pas sur son retour d'intervention\./,
       "la phrase qu'il a dictée le 23 août ne paraît pas sous la molette"
     );
 
@@ -409,7 +409,14 @@ async function main() {
     const texte = await pageClient.locator("body").innerText();
     // Insensible à la casse : le surtitre est mis en capitales par la feuille
     // de style, et `innerText` rend ce qui est AFFICHÉ, pas la source.
-    assert.match(texte, /compte rendu de passage/i);
+    //
+    // **Cette suite réclamait « compte rendu de passage » jusqu'au 9 septembre
+    // 2026, et elle rougissait sur du code juste.** Le patron avait fait
+    // renommer la page (commit `dc4449dc`) ; ce contrôle, lui, exigeait encore
+    // l'ancien mot. C'est le §5 bis de `CLAUDE.md` : quand une suite rougit
+    // après un retrait qu'il a demandé, **on adapte le contrôle, on ne remet
+    // pas le libellé** — sinon son écran devient impossible à changer.
+    assert.match(texte, /retour d'intervention/i);
     assert.match(texte, /1 h 45/, "le temps passé n'apparaît pas");
     assert.match(texte, /haie du fond/, "les observations n'apparaissent pas");
 

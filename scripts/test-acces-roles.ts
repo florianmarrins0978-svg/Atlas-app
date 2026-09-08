@@ -28,6 +28,7 @@ import {
   ongletsDuRole,
   peutFacturer,
   peutModifierLePlanning,
+  peutPoserUnRetour,
   peutVoirLesMontants,
 } from "../src/lib/acces-roles";
 import { rubriquesReglages, adressesAutorisees } from "../src/lib/rubriques-reglages";
@@ -178,6 +179,12 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/reglages/equipe/nouveau",
     "/reglages/identite",
     "/termines",
+    // **Ajoutée le 8 septembre 2026 par ce contrôle**, comme
+    // `/reglages/equipe/nouveau` deux semaines plus tôt : la page des retours
+    // d'intervention est née sous `/termines`, et elle en hérite le refus.
+    // L'hériter en silence serait le jour où l'on pose, sous `/termines`, une
+    // page qui ne devait PAS l'hériter.
+    "/termines/retours",
     "/termines/tva",
   ]);
 });
@@ -363,6 +370,34 @@ essai("L'ÉCRAN NE PROMET PAS CE QUE LA RÈGLE REFUSE — le mensonge du 13 aoû
       assert.ok(dit(nonPlus, "planning"), `${role} n'écrit pas au planning, et l'écran se tait`);
     }
   }
+});
+
+// ── LA PREMIÈRE ÉCRITURE RENDUE AU SALARIÉ — 8 septembre 2026 ─────────────
+//
+// Sa décision, et sa phrase : « que le contrôle le prouve ». Ce qui suit tient
+// les deux moitiés — ce qui lui est OUVERT, et ce qui reste fermé. Une suite
+// qui ne vérifierait que la première laisserait passer le jour où quelqu'un
+// élargit la brèche « puisqu'il écrit déjà ».
+essai("le salarié peut poser un retour d'intervention", () => {
+  assert.equal(peutPoserUnRetour("salarie"), true);
+});
+
+essai("tous les rôles le peuvent — un retour n'est pas un privilège", () => {
+  for (const role of ROLES) {
+    assert.equal(peutPoserUnRetour(role), true, `${role} ne peut pas poser de retour`);
+  }
+});
+
+// **La borne, et c'est elle qui rend la brèche acceptable.** Poser un retour
+// ne donne AUCUN des droits voisins : le jour où l'un d'eux se met à suivre
+// celui-ci, cette suite rougit avant que le salarié ne lise un prix.
+essai("poser un retour n'ouvre ni les montants, ni le planning, ni la facture", () => {
+  assert.equal(peutVoirLesMontants("salarie"), false);
+  assert.equal(peutModifierLePlanning("salarie"), false);
+  assert.equal(peutFacturer("salarie"), false);
+  assert.equal(cheminAutorise("salarie", "/chantiers/abc/devis-complet"), false);
+  assert.equal(cheminAutorise("salarie", "/chantiers/abc/facture"), false);
+  assert.equal(cheminAutorise("salarie", "/termines"), false);
 });
 
 console.log("");

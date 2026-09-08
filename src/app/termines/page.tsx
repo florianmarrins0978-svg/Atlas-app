@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
+import { compterLesRetours } from "@/server/repositories/retours-intervention";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersTermines } from "@/server/repositories/factures";
@@ -57,6 +58,12 @@ export default async function TerminesPage() {
   // recomposer ces chiffres ici aurait donné deux additions de la même somme,
   // et deux montants possiblement différents à deux écrans d'intervalle.
   const tva = await tvaDeLaPeriodeCourante(ctx);
+
+  // **Le compte des retours, TOUS mois confondus** — sa règle du 8 septembre
+  // 2026 : « il faut pouvoir les garder longtemps ». Le limiter au mois affiché
+  // aurait fait disparaître l’onglet un 1er du mois, avec toute l’histoire
+  // derrière lui.
+  const retours = await compterLesRetours(ctx);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -173,7 +180,7 @@ export default async function TerminesPage() {
               Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
             </p>
           ) : (
-            <ListeTermines lignes={lignes} moisCourant={moisCourant} />
+            <ListeTermines lignes={lignes} retours={retours} moisCourant={moisCourant} />
           )}
         </div>
 
