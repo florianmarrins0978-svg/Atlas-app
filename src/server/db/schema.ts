@@ -34,6 +34,22 @@ import { sql } from "drizzle-orm";
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
+  /**
+   * La civilité de la personne (migration 0077), avec les mêmes codes que ceux
+   * de ses clients — `src/lib/civilite.ts` décide seule de ce qu'ils valent à
+   * l'écran. NULL : elle ne l'a pas dite, et rien ne l'y oblige.
+   */
+  civilite: text("civilite", { enum: ["mr", "mme"] }),
+  /** Le prénom, séparé du nom de famille (migration 0077). */
+  prenom: text("prenom"),
+  /**
+   * Le NOM DE FAMILLE depuis la migration 0077.
+   *
+   * **Sur un compte antérieur, il porte encore le nom COMPLET** : `prenom` est
+   * alors NULL, et l'affichage retombe dessus
+   * (`src/lib/identite-personne.ts`). Aucun découpage automatique n'a été
+   * fait — « Jean-Pierre de La Fontaine » ne se coupe pas par un espace.
+   */
   nom: text("nom"),
   emailVerified: timestamp("email_verified", { withTimezone: true }),
   image: text("image"),

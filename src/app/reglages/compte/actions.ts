@@ -1,7 +1,7 @@
 "use server";
 
 import { getCurrentCtx } from "@/server/session-ctx";
-import { renommerCompte } from "@/server/repositories/compte";
+import { ecrireIdentite } from "@/server/repositories/compte";
 
 /**
  * Le nom du compte, écrit depuis les réglages.
@@ -18,10 +18,14 @@ import { renommerCompte } from "@/server/repositories/compte";
  */
 export type ResultatCompte = { ok: true } | { ok: false; raison: string };
 
-export async function renommerCompteAction(nom: string): Promise<ResultatCompte> {
+export async function ecrireIdentiteAction(identite: {
+  civilite: string | null;
+  prenom: string;
+  nom: string;
+}): Promise<ResultatCompte> {
   const ctx = await getCurrentCtx();
   try {
-    await renommerCompte(ctx, nom);
+    await ecrireIdentite(ctx, identite);
     return { ok: true };
   } catch (erreur) {
     // Journalisé AVANT de rendre : sans cela le défaut serait muet, et c'est le
