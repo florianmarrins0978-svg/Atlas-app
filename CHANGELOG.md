@@ -115,6 +115,26 @@ de la liste le battait. Chaque écran, pris isolément, avait l'air correct.
 **La proposition écartée a été RETIRÉE**, pas gardée « au cas où » : une planche
 qui montre encore l'option non retenue fait rouvrir un débat clos.
 
+### La CI mourait faute de mémoire : trois routes PDF compilées trop tard
+
+**Quatre morts au même endroit, sans un seul test rouge.** Le relevé écrit dans
+le journal a fini par le dire : la mémoire libre tombe de **13 349 Mo à 396 Mo**,
+dont **trois gigaoctets d'un coup** sur le cas qui demande le PDF d'un devis,
+celui d'une facture et l'export complet. Le disque, lui, n'avait pas bougé.
+
+Ces trois routes n'étaient jamais préchauffées : Turbopack les compilait donc au
+milieu des suites, quand il ne restait plus rien. Le dépôt savait pourtant ce que
+ça coûte — il écrivait déjà que la feuille de chantier en PDF met « 45 à 50 s à
+se compiler la première fois, et le serveur ne répond plus à rien pendant ce
+temps ». Elles rejoignent le préchauffage (`API_DE_DOCUMENTS`), avec un
+identifiant nul : la route se compile parce qu'elle s'exécute, et rend un 404
+sans fabriquer le moindre document.
+
+**Cinq suspects écartés en chemin, chacun par une mesure** : le serveur ne gonfle
+pas au fil des suites (+67 Mo sur douze), `.next` ne bouge pas d'un octet, la
+suite jouée seule passe, la CI n'annule aucune exécution, et le RENDU du PDF
+coûte 80 Mo — c'est sa COMPILATION qui coûte des gigaoctets.
+
 ### La machine de la CI dira ce qu'elle a, au lieu de mourir en silence
 
 Deux exécutions de suite se sont arrêtées au même endroit sans un seul test

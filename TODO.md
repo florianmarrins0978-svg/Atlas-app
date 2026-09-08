@@ -1807,58 +1807,43 @@ changement de comportement — mais la dette est là, et elle porte un vrai risq
 
 ---
 
-## ⚠ LA CI DE `main` TUE SON RUNNER, TOUJOURS AU MÊME ENDROIT (8 septembre 2026)
+## ✅ ~~LA CI TUE SON RUNNER~~ — **trouvé et corrigé le 8 septembre 2026**
 
-**Constat, pas diagnostic.** Les suites navigateur meurent deux fois de suite à
-la même seconde du même test — `test-acces-salarie-e2e`, cas *« mais SA feuille
-de chantier, elle, sort — sans un seul montant »* —, et le journal ne montre pas
-un test rouge mais :
+**C'était la mémoire, et il a fallu quatre morts pour le prouver.** Le relevé
+posé dans le journal de la CI (une ligne toutes les dix secondes, parce qu'un
+fichier lu par une étape suivante ne survit pas à l'arrêt de la machine) :
 
-    ##[error]The runner has received a shutdown signal.
+    02:55:20  libre 13 349 Mo     le préchauffage commence
+    02:55:40  libre  8 033 Mo
+    02:56:01  libre  3 624 Mo
+    02:56:11  libre    396 Mo     « aucun PDF … ne sort pour lui »
+    02:56:44  la machine s'arrête
 
-C'est **la machine de GitHub qui s'arrête**, pas un contrôle qui refuse. Le
-premier soupçon est donc la mémoire : ce cas fabrique un PDF de feuille de
-chantier dans un navigateur, à la suite de six autres écrans.
+Le disque n'avait pas bougé (84 Go libres). **Trois gigaoctets partent d'un
+coup** sur le cas qui demande, coup sur coup, le PDF d'un devis, celui d'une
+facture et l'export complet — trois routes que rien n'avait ouvertes avant,
+donc trois compilations de Turbopack au milieu des suites, quand il ne reste
+plus rien.
 
-**Ce qui est déjà écarté** : le lot des règles d'or et le déménagement de
-`disponibilites.ts` n'y sont pour rien — les cinq exécutions de CI qui les
-précèdent sur `main` sont rouges elles aussi. Ce qui était de ce lot a été
-corrigé (les 321 suites base passent, la construction aussi).
+**Le préchauffage existait déjà pour exactement ça**, et le dépôt l'écrivait
+noir sur blanc : *« la feuille de chantier en PDF met 45 à 50 s à se compiler
+la première fois, et le serveur ne répond plus à rien pendant ce temps »*. Ces
+trois routes-là lui avaient simplement échappé. Elles y sont désormais
+(`API_DE_DOCUMENTS`), avec un identifiant nul : la route se compile parce
+qu'elle s'exécute, et rend un 404 sans fabriquer le moindre document.
 
-**CE QUI A ÉTÉ MESURÉ LE 8 SEPTEMBRE, et qui écarte les deux suspects
-évidents** — il a demandé de corriger à la racine, la racine se cherche donc
-avec des chiffres :
+**Les cinq suspects écartés en chemin**, pour qu'on ne les reprenne pas : le
+serveur ne gonfle pas au fil des suites (+67 Mo sur douze), `.next` ne bouge
+pas d'un octet, la suite jouée seule passe, `ci.yml` n'annule aucune exécution,
+et le rendu du PDF coûte 80 Mo — c'est sa COMPILATION qui coûte des
+gigaoctets, pas son exécution.
 
-| Ce qu'on soupçonnait | Ce que la mesure dit |
-|---|---|
-| la mémoire qui s'emballe | serveur à **1 820 Mo** au démarrage, **1 887 Mo** après douze suites : +67 Mo, et la CI meurt à la DEUXIÈME |
-| le disque qui se remplit | `.next` : **1 241 Mo** avant, **1 241 Mo** après douze suites — pas un octet |
-| le test lui-même | `test-acces-salarie-e2e` joué SEUL passe, 0 échec |
-| une poussée qui annule la précédente | `ci.yml` ne porte aucun `concurrency` — ce n'est pas ça non plus |
-
-**Un cinquième suspect écarté le 8 septembre au petit matin** : le rendu du PDF
-au moment exact de la mort coûte **80 Mo** (1 065 → 1 146 Mo, relevé toutes les
-0,3 s pendant la suite jouée ici). Ce n'est pas lui non plus.
-
-**Et une leçon sur les relevés eux-mêmes, payée dans la foulée** : le premier
-écrivait dans un fichier qu'une étape suivante devait afficher. Il n'a jamais
-servi — **quand la machine meurt, aucune étape ne suit, pas même une
-`if: always()`**. Un témoin que la panne emporte ne témoigne de rien. Les
-mesures partent désormais dans le JOURNAL, une ligne toutes les dix secondes
-pendant les suites : ce qui est écrit reste lisible même si la machine
-disparaît la seconde d'après.
-
-**Ce que la prochaine exécution doit trancher** : la mémoire libre s'effondre-t-
-elle (alors c'est bien la machine), ou reste-t-elle haute jusqu'à la coupure
-(alors c'est l'hébergeur qui reprend son runner, et il n'y a rien à corriger
-dans le dépôt) ?
-
-**Ce qui reste interdit en attendant :** désactiver le test pour obtenir du vert
-(`CLAUDE.md` §4 quater).
-
-**Et la même chose se voit ici** : la batterie locale du 8 septembre s'est
-arrêtée au même endroit, sur des délais de 45 s. Ce n'est donc pas propre à
-GitHub.
+**Ce qui reste à surveiller** : le préchauffage consomme à lui seul 5 Go sur les
+16 de la machine. Si une route lourde s'ajoute un jour, le même mur reviendra —
+la vraie sortie serait de jouer les suites contre la version BÂTIE plutôt que
+contre le serveur de développement, ce qui supprimerait toute compilation à la
+demande (`CLAUDE.md` §5 note déjà que les suites navigateur ne passent jamais
+par le chemin de production).
 
 ---
 

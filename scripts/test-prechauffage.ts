@@ -322,6 +322,18 @@ async function main() {
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/prix",
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/devis-complet",
       "/api/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/feuille/pdf",
+      // **Les trois qui manquaient, et ce que leur absence a coûté** : la CI a
+      // tué son runner quatre fois de suite, toujours au même endroit. Le
+      // relevé posé dans le journal l'a montré — la mémoire libre tombe de
+      // 3 624 Mo à 396 Mo sur le cas qui demande ces trois routes coup sur
+      // coup, puis la machine s'arrête. Elles se compilent maintenant pendant
+      // le préchauffage, quand il reste treize gigaoctets.
+      //
+      // L'identifiant nul est délibéré : la route s'exécute donc se compile,
+      // et rend un 404 sans fabriquer le moindre document.
+      "/api/devis/00000000-0000-0000-0000-000000000000/pdf",
+      "/api/factures/00000000-0000-0000-0000-000000000000/pdf",
+      "/api/mes-donnees",
     ]);
   });
 
