@@ -25586,3 +25586,57 @@ l'iPhone — là où l'appui ferme l'application. D'où `.atlas-bas-sans-barre`.
 **Elle est en CSS et non en classe Tailwind sur mesure** : `env()` dans une
 valeur entre crochets ressort corrompu de leur analyseur — « safe-area-inset-bottom »
 y devient « safe-area-\b-bottom », et la feuille entière cesse de compiler.
+
+---
+
+## §298. LA BATTERIE EST UNE MACHINE À UN SEUL OCCUPANT — et elle le vérifie
+
+*Posé le 8 septembre 2026, sur sa demande, après une heure perdue devant lui.*
+
+### Ce que la prose ne tenait pas
+
+`CLAUDE.md` §5 disait déjà les deux règles : ne rien jouer à la main pendant
+qu'elle tourne, et la lancer seule. Elles n'ont pas tenu, et la raison est
+toujours la même (`CLAUDE.md` §1 bis) — **une consigne se lit au début d'une
+conversation et s'oublie au bout de trois heures**, or c'est au bout de trois
+heures qu'on arrête une batterie pour en relancer une.
+
+### Les deux garde-fous, et ce qu'ils refusent de faire
+
+| | |
+|---|---|
+| au DÉMARRAGE | elle lit `ps`, cherche les signatures d'une batterie (`verifier-avant-livraison`, `run-all-tests`, `run-e2e-tests`, `verifier-connexion-avec-serveur`) et refuse s'il en reste |
+| au VERDICT | elle compare l'empreinte des sources (`src/`, `scripts/`, `drizzle/`) prise avant, et refuse de conclure si un fichier de code a bougé |
+
+**Ils ne tuent rien, et c'est délibéré** : ce qui tourne peut être la batterie
+d'une AUTRE session, en train de mesurer pour de bon — l'atelier existe
+précisément pour qu'elles cohabitent. On refuse, on nomme, on rend la décision à
+qui sait.
+
+**Le second ne regarde que le CODE** — `.ts`, `.tsx`, `.js`, `.mjs`, `.mts`,
+`.sql`, `.css`. Une note écrite dans un `.md` pendant qu'elle tourne ne change
+rien à ce qu'elle mesure, et faire rougir dessus la rendrait inutilisable.
+
+### La racine, et non sa seule détection
+
+`pkill` tue le père, **jamais les suites qu'il avait lancées**. Le 8 septembre,
+un moteur de suites navigateur a survécu à l'arrêt de sa batterie et a continué à
+jouer des suites qui **vident la base** (`TRUNCATE … CASCADE`) sous la suivante :
+cinq contrôles d'authentification ont rougi d'un coup, sur du code juste — la
+panne du 26 août, réécrite à l'identique.
+
+La batterie emporte donc son **groupe entier** sur `SIGINT` et `SIGTERM`, et
+**dit** quand elle n'y arrive pas (lancée sans groupe à elle) plutôt que de
+laisser croire les enfants emportés.
+
+### Le défaut de la première minute, et pourquoi il est écrit ici
+
+Confronté à une vraie batterie, le garde-fou **s'est dénoncé lui-même** : entre
+le terminal et le `node` qui l'exécute, cinq processus portent son nom dans leur
+ligne de commande — `bash`, `timeout`, `npm exec`, `sh -c`, `node`. Écarter le
+père et soi n'en retirait que deux, et le refus partait à tous les coups.
+
+C'est **le pire des garde-fous** : celui qui parle toujours, donc qu'on apprend
+à contourner — sa propre suite l'annonçait sans pouvoir le voir. On remonte
+maintenant toute la lignée, et `scripts/test-batterie-solitaire.ts` garde ce cas
+avec les cinq lignes de `ps` relevées ce soir-là.
