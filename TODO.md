@@ -250,7 +250,7 @@ pas un à-côté.
 ## ✅ ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR~~ — **TRANCHÉ le 8 septembre 2026**
 
 **Ses choix : C et D2** (planche `appli/qui-travaille-quel-jour.html`), codés le
-jour même. `ARCHITECTURE.md` §292.
+jour même. `ARCHITECTURE.md` §295.
 
 **Et le chiffrage était faux dans mon sens :** j'annonçais deux migrations, une
 seule était nécessaire. C déduit l'exception des congés au lieu de la faire
@@ -261,7 +261,7 @@ saisir — sa façon de cocher ne change pas.
 ## ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR, et non par chantier~~
 
 **Née le 8 septembre 2026**, en corrigeant à la racine ce qu'il a signalé
-(`ARCHITECTURE.md` §291).
+(`ARCHITECTURE.md` §294).
 
 **Le manque.** `equipes_du_chantier` porte `(chantier, demi, équipe)` — **aucun
 jour**. Une coche vaut pour le chantier entier. L'application ne peut donc pas
@@ -281,24 +281,28 @@ les chantiers de plusieurs jours, ou l'affectation reste-t-elle globale ?*
 
 ---
 
-## ⏳ UNE RÉPONSE ATTENDUE — le devis PAS ENCORE parti, depuis le planning
+## ✅ ~~UNE RÉPONSE ATTENDUE — le devis PAS ENCORE parti, depuis le planning~~ — **TRANCHÉ le 8 septembre 2026**
 
 **Né le 7 septembre 2026**, en corrigeant le retour au planning
-(`ARCHITECTURE.md` §273).
+(`ARCHITECTURE.md` §273) : depuis le planning, la porte du devis non parti
+menait à `/devis-complet`, dont la flèche allait toujours à la fiche client.
+Deux pas pour sortir.
 
-Depuis la feuille du planning, les trois autres portes ramènent maintenant au
-planning. Celle du **devis non parti** mène à `/devis-complet`, dont la flèche
-va toujours à la fiche client — **sa règle tranchée le 31 août** : *« je veux
-tout le temps revenir à cette page et seulement celle-là »*. Depuis le planning,
-ce chemin-là fait donc deux pas pour sortir.
+**Sa réponse, captures à l'appui :** *« oui fais la 1 »* — la flèche ramène au
+planning quand on en vient, et reste sur la fiche client partout ailleurs.
+Codé le jour même, `ARCHITECTURE.md` §296.
 
-**Ce qui n'a PAS été fait, et pourquoi :** détourner cette flèche reviendrait sur
-une décision qu'il a prise lui-même, capture à l'appui. Ce n'est pas notre
-arbitrage.
+**Ce que la question avait de faux, et il faut le dire :** elle était posée
+comme un arbitrage entre deux de ses décisions, alors que les deux tenaient
+ensemble — sa règle du 31 août corrigeait une flèche qui déposait sur la fiche
+du CHANTIER, elle ne disait rien d'une provenance. Attendre sa réponse pour
+cela lui a coûté un aller-retour.
 
-**Qui peut le trancher :** lui seul. La question à lui poser, quand l'occasion
-se présente : *depuis le planning, la flèche du devis doit-elle ramener au
-planning, ou rester sur la fiche client ?*
+**Reste ouvert, et personne ne l'a signalé :** `planning → devis → fiche client`
+retombe sur la liste au retour. Une adresse ne porte qu'un cran de mémoire, et
+sa règle du 7 septembre veut de toute façon que la flèche de la fiche SORTE.
+S'il le signale, c'est une chaîne de provenances qu'il faudra — pas un cas de
+plus.
 
 ---
 

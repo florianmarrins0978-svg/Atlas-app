@@ -15,7 +15,7 @@ import JourneeRegardee from "./JourneeRegardee";
 import { basculerJour } from "@/lib/calendrier";
 import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
 // La même règle que la flèche du devis : une seule adresse pour la fiche client.
-import { libelleRetourDuDevis, retourDuDevis } from "@/lib/retour-du-devis";
+import { coordonneesDepuisLeDevis, libelleRetourDuDevis } from "@/lib/retour-du-devis";
 import {
   preparerEnvoiAction,
   envoyerAuClientAction,
@@ -549,10 +549,16 @@ function Contenu({
               n'indiquait. C'est le même travers que le refus « à chiffrer » du
               4 septembre : une raison juste, et pas de geste.
 
-              **L'adresse vient de la règle, pas d'ici** (`retour-du-devis.ts`) —
-              celle-là même que porte la flèche du devis. Deux chemins écrits
-              séparément vers la fiche client divergeraient au premier
-              remaniement (`CLAUDE.md` §3). Et le chemin se referme tout seul :
+              **L'adresse vient de la règle, pas d'ici** (`retour-du-devis.ts`).
+              Deux chemins écrits séparément vers la fiche client divergeraient
+              au premier remaniement (`CLAUDE.md` §3).
+
+              **Elle NOMME sa destination, elle n'emprunte plus une flèche.**
+              C'était `retourDuDevis`, la flèche du devis — laquelle sait revenir
+              au planning depuis le 8 septembre 2026. Ce raccourci-ci ne recule
+              pas : il mène à la fiche client, et il doit y mener même arrivé du
+              planning. Un lien qui suit la flèche d'un autre écran change de
+              destination le jour où cette flèche change d'avis. Et le chemin se referme tout seul :
               la fiche enregistrée ramène au devis, d'où cette feuille se rouvre
               d'un doigt.
               ═══════════════════════════════════════════════════════════════ */}
@@ -562,7 +568,7 @@ function Contenu({
                 Ce chantier n&apos;a pas encore de client.
               </p>
               <a
-                href={retourDuDevis({ chantierId })}
+                href={coordonneesDepuisLeDevis(chantierId)}
                 className="mt-1.5 inline-block text-[13px] font-semibold underline"
                 style={{ color: colors.rust }}
               >

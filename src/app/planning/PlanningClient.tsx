@@ -1856,7 +1856,7 @@ function PasLaCeJour({
    * **On retire et on repose**, plutôt que de modifier. Une action de mise à
    * jour aurait ajouté un troisième chemin d'écriture sur cette table — donc un
    * troisième endroit où la réconciliation des affectations pourrait être
-   * oubliée (`ARCHITECTURE.md` §291). Reposer traverse celle qui existe déjà.
+   * oubliée (`ARCHITECTURE.md` §294). Reposer traverse celle qui existe déjà.
    */
   function restreindre(rang: number, quand: "matin" | "apres_midi") {
     const a = absentsParRang.get(rang);
@@ -2040,9 +2040,9 @@ function CarteDuJour({
   jour: JourIso;
   /** Qui n'est pas là ce jour-là — voir §267. */
   absencesDuJour: (jour: JourIso) => AbsenceDuPlanning[];
-  /** Les jours d'un chantier où cette personne n'est pas là — voir §290. */
+  /** Les jours d'un chantier où cette personne n'est pas là — voir §293. */
   joursAbsentsDe: (rang: number, c: ChantierPourAbsence) => JourIso[];
-  /** Ce que la pastille écrit sous le nom — « ven. », ou rien. Voir §292. */
+  /** Ce que la pastille écrit sous le nom — « ven. », ou rien. Voir §295. */
   joursDeLaPastilleDe: (
     rang: number,
     c: ChantierPourAbsence,

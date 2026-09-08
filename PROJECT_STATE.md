@@ -1,10 +1,24 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-08 · branche `main`
-· dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
-l’affichage)
+· dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
+(ce lot-ci ne touche que le chemin de retour, sans base)
 
 ---
+
+## Le retour du devis — 8 septembre 2026
+
+Depuis la feuille du planning, la flèche d'un devis pas encore envoyé ramène au
+planning. Partout ailleurs — liste, notification, signet — elle mène toujours à
+la fiche client (sa règle du 31 août). Décisions : `ARCHITECTURE.md` §296.
+
+**Éprouvé :** quinze cas de règle pure, plus un qui déroule le chemin entier
+(la porte écrit, l'écran relit). Les deux moitiés confrontées à la version
+d'avant, séparément.
+
+**Reste ouvert :** `planning → devis → fiche client` retombe sur la liste — une
+adresse ne porte qu'un cran de mémoire.
+
 
 · dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
 (la mienne : `0076_identite_vivante_sur_la_facture.sql`)
@@ -37,7 +51,7 @@ mon premier chiffrage, l'exception se déduit des congés.
 Toucher un nom pose la journée ; « Matin / Après-midi » restreignent ensuite.
 
 **Les contournements du 7 et du 8 tombent** : on ne refuse plus la coche que si
-la personne n'est là aucun jour. Décisions : `ARCHITECTURE.md` §292.
+la personne n'est là aucun jour. Décisions : `ARCHITECTURE.md` §295.
 
 ---
 
@@ -55,7 +69,7 @@ ligne nomme les chantiers).
 **⚠ LA RACINE RESTE, et c'est son arbitrage.** `equipes_du_chantier` n'a pas de
 jour : une coche vaut pour le chantier entier. Sur un chantier de deux jours
 dont un seul tombe sur un congé, la personne devient inaffectable. Migration +
-changement de geste : `ARCHITECTURE.md` §291, question dans `TODO.md`.
+changement de geste : `ARCHITECTURE.md` §294, question dans `TODO.md`.
 
 ---
 
@@ -72,7 +86,7 @@ grise la pastille ET le serveur refuse la coche. Un écran ne protège rien.
 qu'il a photographié, serait sans issue.
 
 **Arbitrage :** chantier de deux jours, un seul de congé → refusé (une coche
-vaut pour le chantier entier). Décisions : `ARCHITECTURE.md` §290.
+vaut pour le chantier entier). Décisions : `ARCHITECTURE.md` §293.
 
 **Éprouvé :** règle pure + **suite base du refus serveur**, les deux confrontées
 à la version d'avant. Écran regardé : Julien pâle et non cliquable, Antoine

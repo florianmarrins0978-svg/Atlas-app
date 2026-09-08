@@ -2,11 +2,12 @@ import {
   LIBELLE_RETOUR_PLANNING,
   PARAM_PROVENANCE,
   provenanceDuPlanning,
+  retourDepuisLePlanning,
 } from "./retour-au-planning";
 
 /**
- * Où mène la flèche de retour du devis — la fiche client, toujours — et comment
- * on revient ensuite au devis.
+ * Où mène la flèche de retour du devis — la fiche client, sauf quand on vient
+ * du planning — et comment on revient ensuite au devis.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * **Le patron, le 31 août 2026, deux captures à l'appui :** *« j'ai oublié de
@@ -48,6 +49,26 @@ import {
  * **Le chantier ne devient pas injoignable pour autant** : la fiche client
  * porte sa propre flèche, et neuf autres chemins y mènent — le planning, une
  * notification, la reprise de la liste, la flèche de cinq autres écrans.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **ET « TOUJOURS » S'ENTEND COMME IL L'A DIT — 8 septembre 2026.** Capture à
+ * l'appui, il a vu qu'ouvrir un devis DEPUIS LE PLANNING puis reculer le
+ * déposait sur la fiche client, d'où il lui fallait un second retour pour
+ * retrouver sa journée. Sa réponse : *« oui fais la 1 »*, soit — le devis en
+ * rédaction se souvient d'où l'on vient, comme le devis parti le fait depuis
+ * le 7 septembre.
+ *
+ * **Ce n'est pas revenir sur sa règle du 31 août, et la nuance porte tout.**
+ * Ce jour-là il corrigeait une flèche qui le déposait sur la fiche du CHANTIER
+ * — un écran qui ne lui proposait rien. La fiche client reste la sortie de cet
+ * écran partout où l'on n'a pas de provenance : depuis la liste, depuis une
+ * notification, depuis un signet. Ce qui change, c'est la seule porte qui sait
+ * dire d'où elle vient.
+ *
+ * **Une seule mécanique pour les deux devis** : `retourDepuisLePlanning` sert
+ * déjà `/export`, la facture et la fiche client. En écrire une seconde ici
+ * aurait donné deux façons de relire la même adresse, et c'est exactement ce
+ * que `CLAUDE.md` §3 refuse.
  *
  * **ET LE CHEMIN SE REFERME.** Arriver sur la fiche client par cette porte puis
  * être renvoyé sur la fiche du chantier après avoir enregistré laisserait son
@@ -109,24 +130,43 @@ export function provenanceDesCoordonnees(
 }
 
 /**
- * Où mène le retour de l'écran du devis : la fiche client, dans tous les cas.
+ * Où mène la flèche de l'écran du devis, et ce qu'elle annonce.
  *
- * **L'argument reste un objet**, et ce n'est pas une coquetterie : cette
- * fonction a déjà changé de règle une fois en un jour. Un objet nommé laisse
- * ajouter demain ce dont elle aurait besoin sans retoucher chaque appel — et
- * surtout sans risquer d'y glisser un identifiant à la place d'un autre.
+ * **Elle rend les DEUX ensemble, et c'est le point.** L'adresse et le libellé
+ * vivaient dans deux fonctions ; le 7 septembre 2026, la fiche client a payé
+ * exactement ce partage — son libellé annonçait « Retour au devis » en menant
+ * au planning (voir `libelleRetourDesCoordonnees`). Deux fonctions qui doivent
+ * changer d'avis ensemble finissent par ne le faire qu'à moitié.
+ *
+ * **L'argument reste un objet** : cette fonction a déjà changé de règle deux
+ * fois, et un objet nommé laisse ajouter ce dont elle a besoin sans risquer
+ * d'intervertir deux identifiants au passage.
+ *
+ * `de` est ce que l'adresse portait, tel quel — la validation vit dans
+ * `retour-au-planning.ts`, jamais ici.
  */
-export function retourDuDevis(arg: { chantierId: string }): string {
-  return coordonneesDepuisLeDevis(arg.chantierId);
+export function retourDuDevis(arg: {
+  chantierId: string;
+  clientId: string | null;
+  de?: string | string[] | null;
+}): { href: string; libelle: string } {
+  return retourDepuisLePlanning(arg.chantierId, arg.de, {
+    href: coordonneesDepuisLeDevis(arg.chantierId),
+    libelle: libelleRetourDuDevis(arg.clientId),
+  });
 }
 
 /**
- * Ce que la flèche annonce à voix haute.
+ * Ce que la fiche client annonce quand on y va DEPUIS LE DEVIS.
  *
- * Elle mène au même écran dans les deux cas, mais n'y va pas pour la même
- * raison : remplir ce qui manque, ou relire avant d'envoyer. Une flèche qui
- * dirait « remplir » devant un formulaire complet ferait chercher un champ vide
- * qui n'existe pas.
+ * Deux raisons d'y aller : remplir ce qui manque, ou relire avant d'envoyer.
+ * Une flèche qui dirait « remplir » devant un formulaire complet ferait
+ * chercher un champ vide qui n'existe pas.
+ *
+ * **Ce n'est plus seulement un libellé de flèche.** L'écran du devis parti s'en
+ * sert aussi pour son raccourci vers la fiche (5 septembre 2026) : là, elle ne
+ * recule pas, elle mène. Le mot vaut pour les deux — c'est la destination qu'il
+ * nomme, pas le geste.
  */
 export function libelleRetourDuDevis(clientId: string | null): string {
   return clientId === null ? "Remplir la fiche client" : "Revenir à la fiche client";
