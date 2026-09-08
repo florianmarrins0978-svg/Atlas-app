@@ -617,14 +617,25 @@ async function main() {
     // rien du tout. Elle rougissait sur du code juste.
     //
     // On vise donc le lancement du serveur par ce qu'il EST — un `spawn` qui
-    // demande `dev` sur le port 3000 —, pas par la commande qui le porte, qui a
+    // demande `dev` sur un port —, pas par la commande qui le porte, qui a
     // déjà changé deux fois.
+    //
+    // **ET PAS PAR LE NUMÉRO DU PORT — 8 septembre 2026, troisième fois.** Ce
+    // repère cherchait `"-p", "3000"` écrit en toutes lettres. Le lot de
+    // l'atelier a donné son port à chaque session (`§287`), le `spawn` écrit
+    // désormais `String(atelier!.port)`, et `iSpawn` valait -1 : ce contrôle
+    // rougissait sur du code juste, en annonçant qu'il n'éprouvait rien —
+    // exactement ce que le commentaire ci-dessus raconte de la fois d'avant.
+    //
+    // On vise donc ce qui ne peut PAS disparaître sans que le serveur cesse
+    // d'être lancé : `spawn`, `dev`, et le drapeau `-p`. Ce qui suit `-p` est
+    // libre.
     //
     // **Sans le drapeau `s`, et ce n'est pas un détail de style :** la cible de
     // `tsconfig.json` est antérieure à ES2018, et `tsc` refuse ce drapeau
     // (TS1501). Il ne servait à rien ici — `[^)]` accepte déjà les retours à la
     // ligne, seul un `.` aurait eu besoin de lui.
-    const iSpawn = source.search(/spawn\([^)]*"dev"[^)]*"-p", "3000"/);
+    const iSpawn = source.search(/spawn\([^)]*"dev"[^)]*"-p"/);
     assert.ok(
       iGarde > 0,
       "aucune garde en tête de batterie : un orphelin du banc rendrait les cinquante suites ininterprétables"
