@@ -141,6 +141,8 @@ td b{color:var(--encre)}
 <div class="tete">
   <span class="sceau">Maquette — rien n'est codé</span>
   <h1>Qui travaille quel jour</h1>
+  <p><b>Deux questions ici</b>, sur le même coin de l'application : qui travaille
+  quel jour, et comment noter un congé d'une demi-journée.</p>
   <p>Aujourd'hui Atlas note « Julien le matin sur ce chantier », <b>sans le
   jour</b>. Sur un chantier de deux jours, un congé sur un seul le retire des
   deux.</p>
@@ -170,6 +172,26 @@ td b{color:var(--encre)}
   </div>
 </div>
 <p class="dit" id="dit"></p>
+
+<h2 style="max-width:740px;margin:38px auto 0;padding:0 20px;
+           font-family:ui-serif,Georgia,serif;font-size:23px;font-weight:400">
+  Et poser un congé d'une demi-journée
+</h2>
+<p class="dit" style="text-align:left;max-width:740px;margin:6px auto 0">
+  <b>Votre question du 8 septembre, et la réponse est non</b> : aujourd'hui une
+  absence prend la journée entière. Un rendez-vous médical un matin vous coûte
+  la journée de votre gars.
+</p>
+
+<div class="choix" id="choix2">
+  <button type="button" data-v="d" aria-pressed="true">D — trois pastilles</button>
+  <button type="button" data-v="e" aria-pressed="false">E — deux cases</button>
+</div>
+
+<div class="scene">
+  <div class="tel" id="tel2"></div>
+</div>
+<p class="dit" id="dit2"></p>
 
 <div class="notes">
   <h3>Ce que je recommande</h3>
@@ -205,10 +227,20 @@ td b{color:var(--encre)}
   payer, sur chaque chantier, une complexité qui ne sert qu'aux rares chantiers
   à cheval sur un congé.</p>
 
+  <h3>Pour le congé d'une demi-journée : D</h3>
+  <p><b>D suit l'ordre de votre pensée</b> — qui, puis quand — et surtout
+  « La journée » est déjà choisi. Vous notez une absence exactement comme
+  aujourd'hui, en un appui ; la demi-journée n'existe que si vous la demandez.</p>
+  <p><b>E</b> est plus souple sur une longue période, mais elle vous fait
+  regarder deux cases à chaque congé, y compris les neuf fois sur dix où c'est
+  la journée entière.</p>
+
   <h3>Ce qui change dans tous les cas, sous le capot</h3>
-  <p>Il faut <b>modifier votre base</b> pour qu'une affectation porte un jour.
-  C'est la seule façon de dire « Julien vendredi mais pas jeudi ». Rien ne se
-  perd : ce qui est déjà coché reste coché, sur tous les jours du chantier.</p>
+  <p>Il faut <b>modifier votre base</b> deux fois : pour qu'une affectation porte
+  un jour, et pour qu'une absence porte une demi-journée. C'est la seule façon
+  de dire « Julien vendredi mais pas jeudi », et « Julien absent jeudi matin ».</p>
+  <p><b>Rien ne se perd.</b> Ce qui est déjà coché reste coché sur tous les jours
+  du chantier ; les congés déjà notés restent des journées entières.</p>
 </div>
 
 <script>
@@ -305,6 +337,43 @@ document.getElementById("duree").addEventListener("click", (e) => {
 });
 
 rendre();
+
+/* ── Poser un congé d'une demi-journée ─────────────────────────────────── */
+const DEMI = {
+  d: [`
+    <p class="jour">Jeudi 10 septembre</p>
+    <p class="demi" style="margin-top:4px">Qui n'est pas là ?</p>
+    <div class="pastilles">${P("Julien", "mis")}${P("Antoine")}</div>
+    <p class="demi">Quand ?</p>
+    <div class="pastilles">${P("Matin")}${P("Après-midi")}${P("La journée", "mis")}</div>`,
+    "D — vous dites qui, puis quand. « La journée » est déjà choisi : si vous ne touchez rien, c'est comme aujourd'hui."],
+  e: [`
+    <p class="jour">Réglages · Équipe · Absences</p>
+    <p class="demi" style="margin-top:4px">Julien n'est pas là</p>
+    <div class="pastilles" style="gap:10px">
+      <span style="font-size:14px;color:var(--encre-douce);align-self:center">du</span>
+      ${P("jeu. 10")}
+      <span style="font-size:14px;color:var(--encre-douce);align-self:center">au</span>
+      ${P("jeu. 10")}
+    </div>
+    <p class="demi">Sur ces jours-là</p>
+    <div class="pastilles">${P("Matin", "mis")}${P("Après-midi", "mis")}</div>
+    <p class="sauf">Décochez-en une pour une demi-journée.</p>`,
+    "E — deux cases à décocher. Plus souple sur une longue période, mais deux gestes au lieu d'un pour le cas courant."],
+};
+let volet = "d";
+function rendre2() {
+  document.getElementById("tel2").innerHTML = DEMI[volet][0];
+  document.getElementById("dit2").textContent = DEMI[volet][1];
+}
+document.getElementById("choix2").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  for (const x of e.currentTarget.querySelectorAll("button")) x.setAttribute("aria-pressed", "false");
+  b.setAttribute("aria-pressed", "true");
+  volet = b.dataset.v;
+  rendre2();
+});
+rendre2();
 </script>
 </body>
 </html>
