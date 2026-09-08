@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { salariesAffiches, libelleSalarie } from "@/lib/equipes";
@@ -59,6 +60,7 @@ export default function AbsencesEquipe({
   noms,
   initialAbsences,
   aujourdHui,
+  agendaRelie,
 }: {
   nombreSalaries: number;
   /** Ce que la base porte, par rang. Un rang absent est un cas ordinaire. */
@@ -66,6 +68,14 @@ export default function AbsencesEquipe({
   initialAbsences: AbsenceAffichee[];
   /** Le jour d'aujourd'hui, calculé au serveur — jamais dans le navigateur. */
   aujourdHui: string;
+  /**
+   * Un agenda extérieur est-il relié ET actif — Google ou iCloud ?
+   *
+   * **Lu au serveur, jamais supposé.** C'est lui qui décide de ce que la phrase
+   * du bas a le droit de promettre : sans raccordement, les périodes
+   * extérieures sont vides, et des congés posés ailleurs ne bloquent rien.
+   */
+  agendaRelie: boolean;
 }) {
   const router = useRouter();
 
@@ -85,6 +95,22 @@ export default function AbsencesEquipe({
   const [retirees, setRetirees] = useState<Set<string>>(new Set());
 
   if (nombreSalaries <= 0) {
+    /**
+     * **CETTE PHRASE PROMETTAIT UN AGENDA QUI N'EST PEUT-ÊTRE PAS RELIÉ.**
+     *
+     * Trouvé le 8 septembre 2026, en vérifiant la phrase d'à côté qu'il venait
+     * de faire retirer. Elle affirmait « Atlas en tient compte » sans rien
+     * savoir : `periodesOccupeesPourEntreprise` rend une liste VIDE quand
+     * aucune ligne d'agenda n'est reliée et active — donc un artisan seul, sans
+     * agenda branché, posait ses congés dans Google et Atlas continuait de
+     * proposer ces jours-là. Il ne l'aurait su qu'en recevant l'appel d'un
+     * client un jour de vacances.
+     *
+     * **Ce n'est pas la phrase qu'on répare, c'est ce qu'elle dit du produit :**
+     * l'écran lit l'état réel des deux raccordements (Google et iCloud) et
+     * n'affirme que ce qui est vrai pour LUI. Quand rien n'est relié, il donne
+     * le geste qui manque au lieu d'une promesse.
+     */
     return (
       <p
         className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.7]"
@@ -92,10 +118,22 @@ export default function AbsencesEquipe({
       >
         Seul, une absence fermerait l’entreprise : plus aucune date ne serait
         proposable.{" "}
-        <span style={{ color: colors.ink }}>
-          Pour vos congés, posez-les dans votre agenda
-        </span>{" "}
-        — Atlas en tient compte et ne proposera rien sur ces jours-là.
+        {agendaRelie ? (
+          <>
+            <span style={{ color: colors.ink }}>
+              Pour vos congés, posez-les dans votre agenda
+            </span>{" "}
+            — Atlas en tient compte et ne proposera rien sur ces jours-là.
+          </>
+        ) : (
+          <>
+            Pour vos congés,{" "}
+            <Link href="/reglages/agenda" style={{ color: colors.ink, textDecoration: "underline" }}>
+              reliez votre agenda
+            </Link>{" "}
+            : Atlas n’en tient compte qu’une fois relié.
+          </>
+        )}
       </p>
     );
   }

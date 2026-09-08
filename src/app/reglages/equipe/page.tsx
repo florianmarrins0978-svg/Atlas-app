@@ -6,6 +6,8 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerEquipes } from "@/server/repositories/equipes";
 import { equipesPourRattachement, listerAcces } from "@/server/repositories/membres-entreprise";
 import { listerAbsencesEquipe } from "@/server/repositories/absences-equipe";
+import { etatAgenda } from "@/server/repositories/agendas-externes";
+import { etatAgendaApple } from "@/server/repositories/agenda-apple";
 import { jourIso } from "@/lib/jour";
 import RubriqueReservee from "../RubriqueReservee";
 import VosEquipes from "../VosEquipes";
@@ -54,13 +56,24 @@ export default async function EquipePage() {
   const aujourdHui = jourIso(new Date());
   // Seulement ce qui n'est pas fini : une liste qui accumulerait deux ans de
   // déplacements passés ne se relirait plus.
-  const [entreprise, equipes, absences, acces, equipesRattachables] = await Promise.all([
-    getEntreprise(ctx),
-    listerEquipes(ctx),
-    listerAbsencesEquipe(ctx, aujourdHui),
-    listerAcces(ctx),
-    equipesPourRattachement(ctx),
-  ]);
+  const [entreprise, equipes, absences, acces, equipesRattachables, google, apple] =
+    await Promise.all([
+      getEntreprise(ctx),
+      listerEquipes(ctx),
+      listerAbsencesEquipe(ctx, aujourdHui),
+      listerAcces(ctx),
+      equipesPourRattachement(ctx),
+      // **L'état RÉEL des deux raccordements, lu ici.** La phrase du bas
+      // promettait « Atlas en tient compte » sans rien savoir : sans agenda
+      // relié et actif, `periodesOccupeesPourEntreprise` rend une liste vide,
+      // et des congés posés dans Google ne bloquaient rien du tout. Ce sont les
+      // deux lectures que le calcul de disponibilité emploie lui-même — pas
+      // leurs sosies (`CLAUDE.md` §3).
+      etatAgenda(ctx),
+      etatAgendaApple(ctx),
+    ]);
+
+  const agendaRelie = (google.relie && google.actif) || (apple.relie && apple.actif);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -109,6 +122,7 @@ export default async function EquipePage() {
             motif: a.motif,
           }))}
           aujourdHui={aujourdHui}
+          agendaRelie={agendaRelie}
         />
 
         {/* **RETIRÉ le 26 août 2026 : la phrase qui expliquait pourquoi le

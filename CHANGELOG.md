@@ -37,6 +37,18 @@ non corrigé, ouvert depuis le 25 août.
 
 Le détail, avec les chiffres et ce qui reste : `docs/lot-pages-du-client.md`.
 
+### L'agenda n'est promis que s'il est vraiment relié
+
+Sur le même écran, quand l'artisan est seul : *« pour vos congés, posez-les
+dans votre agenda — Atlas en tient compte »*. **Atlas n'en tenait compte que
+si un agenda était relié ET actif** ; sans raccordement, les périodes
+extérieures sont vides et les congés posés dans Google ne bloquaient rien.
+
+Il ne l'aurait su qu'en recevant l'appel d'un client un jour de vacances.
+
+L'écran lit maintenant l'état réel des deux raccordements — Google et
+iCloud — et n'affirme que ce qui est vrai pour lui. Rien de relié : il donne
+le geste qui manque au lieu d'une promesse.
 ### Une phrase des absences promettait ce qu'Atlas ne fait pas
 
 Sur le même écran : *« notez-le ici et Atlas n'enverra plus personne à sa
