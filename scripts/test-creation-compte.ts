@@ -72,9 +72,60 @@ const SOCIETE: Record<string, string> = {
   moyens: "Virement, chèque",
 };
 
-test("la liste est celle de la planche : seize questions, cinq chapitres", () => {
+test("seize questions, cinq chapitres, et on parle de LUI avant sa société", () => {
   assert.equal(QUESTIONS.length, 16);
-  assert.deepEqual([...CHAPITRES], ["Vous", "Votre entreprise", "Vous joindre", "La TVA", "Être payé"]);
+  // **Sa correction du 8 septembre 2026** : « avant le nom de l'entreprise, je
+  // pense qu'il faut mettre le numéro de tél ». On finit de parler de la
+  // personne avant de parler de sa société.
+  assert.deepEqual([...CHAPITRES], ["Vous", "Vous joindre", "Votre entreprise", "La TVA", "Être payé"]);
+});
+
+test("le téléphone se demande AVANT le nom de l'entreprise", () => {
+  const rang = (id: string) => QUESTIONS.findIndex((q) => q.id === id);
+  assert.ok(rang("tel") < rang("entreprise"), "le téléphone est demandé après le nom de l'entreprise");
+  assert.ok(rang("tel") > rang("identite"), "le téléphone est demandé avant de savoir qui il est");
+});
+
+test("une question conditionnelle suit CELLE QUI LA COMMANDE", () => {
+  // Choisir « SASU » puis se voir demander son capital deux questions plus loin
+  // rompt le fil — et l'on ne voit plus POURQUOI on le demande.
+  const rang = (id: string) => QUESTIONS.findIndex((q) => q.id === id);
+  for (const [conditionnelle, commande] of [
+    ["capital", "forme"],
+    ["rcs", "forme"],
+    ["numTva", "tva"],
+  ]) {
+    const ecart = rang(conditionnelle) - rang(commande);
+    assert.ok(ecart > 0, `${conditionnelle} est posée AVANT ${commande}, dont elle dépend`);
+    assert.ok(
+      ecart <= 2,
+      `${ecart - 1} question(s) séparent ${commande} de ${conditionnelle} : on ne voit plus pourquoi elle est posée`
+    );
+  }
+});
+
+test("une question qui en REPREND une autre vient après elle", () => {
+  const rang = (id: string) => QUESTIONS.findIndex((q) => q.id === id);
+  for (const question of QUESTIONS) {
+    if (!question.repriseDe) continue;
+    assert.ok(
+      rang(question.repriseDe) < rang(question.id),
+      `${question.id} propose la réponse de ${question.repriseDe}, qui n'a pas encore été posée`
+    );
+  }
+});
+
+test("les chapitres ne s'entrecoupent pas", () => {
+  // Un chapitre repris plus loin ferait reculer la jauge, qui compte un segment
+  // par chapitre : on repasserait en arrière en avançant.
+  const vus = new Set<string>();
+  let precedent = "";
+  for (const question of QUESTIONS) {
+    if (question.chapitre === precedent) continue;
+    assert.ok(!vus.has(question.chapitre), `le chapitre « ${question.chapitre} » revient après en être sorti`);
+    vus.add(question.chapitre);
+    precedent = question.chapitre;
+  }
 });
 
 test("on ne demande jamais le capital d'une micro-entreprise", () => {

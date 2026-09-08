@@ -437,6 +437,11 @@
   </div>
 </div>
 
+<div class="encart">
+  <b>L&rsquo;ordre a changé le 8 septembre au soir — votre remarque</b>
+  <p style="margin:0"><b>&laquo;&nbsp;Avant le nom de l&rsquo;entreprise je pense qu&rsquo;il faut mettre le numéro de tél&nbsp;&raquo;</b>. Deux choses ont bougé&nbsp;: <b>&laquo;&nbsp;Vous joindre&nbsp;&raquo; passe avant &laquo;&nbsp;Votre entreprise&nbsp;&raquo;</b> — on finit de parler de vous avant de parler de votre société —, et <b>le capital et le RCS suivent maintenant la forme juridique</b>, dont ils dépendent. Ils en étaient séparés par le SIRET et l&rsquo;adresse&nbsp;: on choisissait &laquo;&nbsp;SASU&nbsp;&raquo; et l&rsquo;on se voyait demander son capital deux questions plus loin, sans plus voir pourquoi.</p>
+</div>
+
 <div class="bloc">
   <h2>Ce que le parcours remplit</h2>
   <h3>Tout ce qui vit dans vos réglages</h3>
@@ -447,8 +452,8 @@
   <table>
     <tr><th>Chapitre</th><th>Ce qui est demandé</th><th>Où ça se range</th></tr>
     <tr><td><b>Vous</b></td><td>civilité, prénom, nom · votre e-mail · un mot de passe <b>et sa confirmation</b></td><td>Mon compte</td></tr>
-    <tr><td><b>Votre entreprise</b></td><td>nom · forme juridique · SIRET · où elle est domiciliée<br><i>puis, seulement si la forme a un capital&nbsp;:</i> capital social · ville du RCS</td><td>Mon entreprise</td></tr>
     <tr><td><b>Vous joindre</b></td><td>numéro de téléphone · adresse e-mail</td><td>Mon entreprise</td></tr>
+    <tr><td><b>Votre entreprise</b></td><td>nom · forme juridique<br><i>puis, seulement si la forme a un capital&nbsp;:</i> capital social · ville du RCS<br>puis SIRET · où elle est domiciliée</td><td>Mon entreprise</td></tr>
     <tr><td><b>La TVA</b></td><td>facturez-vous la TVA&nbsp;?<br><i>puis, seulement si oui&nbsp;:</i> numéro de TVA intracommunautaire</td><td>Mon entreprise</td></tr>
     <tr><td><b>Être payé</b></td><td>IBAN · titulaire du compte · moyens de paiement acceptés</td><td>Mon entreprise · Devis &amp; factures</td></tr>
   </table>
@@ -579,10 +584,19 @@
       verifier: (v) => (v.mdp !== v.confirm ? "Les deux mots de passe ne sont pas les mêmes." : null),
     },
 
+    { id: "tel", ch: "Vous joindre", q: "Votre numéro de téléphone ?", p: "Numéro de téléphone",
+      t: "tel", a: "tel", reste: "le téléphone" },
+    { id: "emailPro", ch: "Vous joindre", q: "L’e-mail à mettre sur vos devis ?", p: "Adresse e-mail",
+      t: "email", a: "email", reste: "l’e-mail de l’entreprise", repriseDe: "email" },
+
     { id: "entreprise", ch: "Votre entreprise", q: "Le nom de votre entreprise ?", p: "Nom de l’entreprise",
       t: "text", a: "organization", requis: true },
     { id: "forme", ch: "Votre entreprise", q: "Sa forme juridique ?", deroulant: true, requis: true,
       reste: "la forme juridique" },
+    { id: "capital", ch: "Votre entreprise", q: "Le capital social ?", p: "1 000", t: "text", a: "off",
+      reste: "le capital", siFormeACapital: true },
+    { id: "rcs", ch: "Votre entreprise", q: "La ville du RCS ?", p: "Versailles", t: "text", a: "off",
+      reste: "la ville du RCS", siFormeACapital: true },
     { id: "siret", ch: "Votre entreprise", q: "Votre SIRET ?", p: "14 chiffres", t: "text", a: "off",
       reste: "le SIRET" },
     // Sa question du 8 septembre — « on ne met pas où est domiciliée
@@ -591,15 +605,6 @@
     // La QUESTION emploie donc ses mots ; la case garde ceux des réglages.
     { id: "adresse", ch: "Votre entreprise", q: "Où est domiciliée votre entreprise ?", p: "Adresse du siège",
       t: "text", a: "street-address", reste: "l’adresse" },
-    { id: "capital", ch: "Votre entreprise", q: "Le capital social ?", p: "1 000", t: "text", a: "off",
-      reste: "le capital", siFormeACapital: true },
-    { id: "rcs", ch: "Votre entreprise", q: "La ville du RCS ?", p: "Versailles", t: "text", a: "off",
-      reste: "la ville du RCS", siFormeACapital: true },
-
-    { id: "tel", ch: "Vous joindre", q: "Votre numéro de téléphone ?", p: "Numéro de téléphone",
-      t: "tel", a: "tel", reste: "le téléphone" },
-    { id: "emailPro", ch: "Vous joindre", q: "L’e-mail à mettre sur vos devis ?", p: "Adresse e-mail",
-      t: "email", a: "email", reste: "l’e-mail de l’entreprise", repriseDe: "email" },
 
     { id: "tva", ch: "La TVA", q: "Facturez-vous la TVA ?", requis: true, reste: "le régime de TVA",
       liste: [

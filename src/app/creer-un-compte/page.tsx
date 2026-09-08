@@ -264,7 +264,12 @@ export default function CreerUnComptePage() {
                       setReponses(avec);
                       suivante(avec);
                     }}
-                    className="rounded-[14px] px-[18px] py-[15px] text-left"
+                    // **`rounded-full` et non le rectangle arrondi de la
+                    // planche** : sa règle du 12 août 2026 — la même forme
+                    // partout —, et `test-boutons-arrondis.ts` la tient. Le
+                    // rembourrage passe à 26 px, sinon le texte entre dans la
+                    // courbe sur une carte de deux lignes.
+                    className="rounded-full px-[26px] py-[15px] text-left"
                     style={{ background: NUIT.card, boxShadow: `inset 0 0 0 1px ${NUIT.line}` }}
                   >
                     <span className="block text-[16px]" style={{ color: NUIT.ink }}>

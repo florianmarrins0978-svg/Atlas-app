@@ -78,11 +78,37 @@ export type Question = {
 };
 
 /**
- * Les seize questions, dans l'ordre de la planche.
+ * Les seize questions, dans l'ordre.
  *
- * **L'ORDRE N'EST PAS DÉCORATIF** : on commence par ce qui ouvre le compte
- * (l'adresse et le mot de passe), pour qu'un abandon au milieu laisse quand
- * même un compte utilisable. Ce qui remplit les documents vient après.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **SA CORRECTION DU 8 SEPTEMBRE 2026 AU SOIR**, en regardant le parcours codé :
+ * *« l'ordre des questions me semble bizarre ! Avant le nom de l'entreprise je
+ * pense qu'il faut mettre le numéro de tél. Vérifie l'ordre et corrige que ça
+ * ait un sens ! »* Il a raison, et deux choses ont bougé :
+ *
+ * 1. **« Vous joindre » passe AVANT « Votre entreprise ».** On finit de parler
+ *    de la personne avant de parler de sa société. Le téléphone est ce que le
+ *    client compose ; le demander après la ville du RCS le range parmi les
+ *    formalités, alors que c'est le renseignement le plus ordinaire des cinq
+ *    chapitres.
+ * 2. **Le capital et le RCS suivent immédiatement la forme juridique**, dont ils
+ *    dépendent (`siFormeACapital`). Ils étaient séparés d'elle par le SIRET et
+ *    l'adresse : choisir « SASU » puis se voir demander deux questions plus loin
+ *    son capital rompt le fil, et surtout **on ne voit plus POURQUOI** on le
+ *    demande. Une question conditionnelle se pose contre celle qui la commande.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE QUI EST ÉCRIT ICI ÉTAIT FAUX, ET C'EST CORRIGÉ NOIR SUR BLANC.** La
+ * version d'avant justifiait l'ordre ainsi : *« on commence par ce qui ouvre le
+ * compte, pour qu'un abandon au milieu laisse quand même un compte
+ * utilisable »*. **Rien n'est enregistré avant la dernière question** — tout
+ * part en une seule transaction (`creerSonCompte`). Un abandon au milieu ne
+ * laisse donc RIEN, et cette raison ne défendait aucun ordre. Elle aurait servi
+ * à refuser la correction qu'il vient de demander, ce qui est exactement le
+ * danger d'un « pourquoi » inventé après coup.
+ *
+ * **Le vrai critère est celui-là** : chaque question doit se comprendre depuis
+ * celle qui la précède.
  */
 export const QUESTIONS: readonly Question[] = [
   {
@@ -124,6 +150,26 @@ export const QUESTIONS: readonly Question[] = [
   },
 
   {
+    id: "tel",
+    chapitre: "Vous joindre",
+    question: "Votre numéro de téléphone ?",
+    placeholder: "Numéro de téléphone",
+    type: "tel",
+    autocomplete: "tel",
+    reste: "le téléphone",
+  },
+  {
+    id: "emailPro",
+    chapitre: "Vous joindre",
+    question: "L’e-mail à mettre sur vos devis ?",
+    placeholder: "Adresse e-mail",
+    type: "email",
+    autocomplete: "email",
+    reste: "l’e-mail de l’entreprise",
+    repriseDe: "email",
+  },
+
+  {
     id: "entreprise",
     chapitre: "Votre entreprise",
     question: "Le nom de votre entreprise ?",
@@ -142,6 +188,26 @@ export const QUESTIONS: readonly Question[] = [
     // Son nom complet voyage avec lui, sinon il faut chercher ailleurs pour
     // choisir, c'est-à-dire quitter l'application.
     deroulant: FORMES_JURIDIQUES.map((f) => ({ valeur: f.sigle, titre: f.sigle, note: f.nom })),
+  },
+  {
+    id: "capital",
+    chapitre: "Votre entreprise",
+    question: "Le capital social ?",
+    placeholder: "1 000",
+    type: "text",
+    autocomplete: "off",
+    reste: "le capital",
+    siFormeACapital: true,
+  },
+  {
+    id: "rcs",
+    chapitre: "Votre entreprise",
+    question: "La ville du RCS ?",
+    placeholder: "Versailles",
+    type: "text",
+    autocomplete: "off",
+    reste: "la ville du RCS",
+    siFormeACapital: true,
   },
   {
     id: "siret",
@@ -164,46 +230,6 @@ export const QUESTIONS: readonly Question[] = [
     type: "text",
     autocomplete: "street-address",
     reste: "l’adresse",
-  },
-  {
-    id: "capital",
-    chapitre: "Votre entreprise",
-    question: "Le capital social ?",
-    placeholder: "1 000",
-    type: "text",
-    autocomplete: "off",
-    reste: "le capital",
-    siFormeACapital: true,
-  },
-  {
-    id: "rcs",
-    chapitre: "Votre entreprise",
-    question: "La ville du RCS ?",
-    placeholder: "Versailles",
-    type: "text",
-    autocomplete: "off",
-    reste: "la ville du RCS",
-    siFormeACapital: true,
-  },
-
-  {
-    id: "tel",
-    chapitre: "Vous joindre",
-    question: "Votre numéro de téléphone ?",
-    placeholder: "Numéro de téléphone",
-    type: "tel",
-    autocomplete: "tel",
-    reste: "le téléphone",
-  },
-  {
-    id: "emailPro",
-    chapitre: "Vous joindre",
-    question: "L’e-mail à mettre sur vos devis ?",
-    placeholder: "Adresse e-mail",
-    type: "email",
-    autocomplete: "email",
-    reste: "l’e-mail de l’entreprise",
-    repriseDe: "email",
   },
 
   {

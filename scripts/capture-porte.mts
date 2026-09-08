@@ -68,6 +68,14 @@ await prendre("mot-de-passe");
 await page.fill('input[name="mdp"]', "un mot de passe long");
 await page.fill('input[name="confirm"]', "un mot de passe long");
 await page.click("text=Continuer");
+
+// « Vous joindre » vient AVANT « Votre entreprise » depuis sa correction du
+// 8 septembre au soir : on finit de parler de lui avant de parler de sa société.
+await page.fill('input[name="tel"]', "01 02 03 04 05");
+await page.click("text=Continuer");
+await prendre("telephone-puis-email");
+await page.click("text=Passer");
+
 await page.fill('input[name="entreprise"]', "Amiot Paysage");
 await page.click("text=Continuer");
 await prendre("forme-repliee");
@@ -77,10 +85,11 @@ await prendre("forme-depliee");
 
 await page.click('[role="option"]:has-text("SASU")');
 await page.click("text=Continuer");
-await prendre("siret");
+// Le capital suit immédiatement la forme, dont il dépend.
+await prendre("capital");
 
 // Jusqu'à la TVA, la seule question qui avance d'elle-même.
-for (const _ of ["siret", "adresse", "capital", "rcs", "tel", "emailPro"]) {
+for (const _ of ["capital", "rcs", "siret", "adresse"]) {
   await page.click("text=Passer");
 }
 await prendre("tva");
