@@ -17,6 +17,25 @@ empêche de revenir.
 | **`/creer-un-compte`** | **une question à la fois**, seize au plus. Elle crée votre compte ET votre entreprise, et **vous fait entrer directement** |
 | **`/login`** | inchangé, sauf deux liens qui manquaient : le retour vers la porte, et « Pas de compte ? » |
 
+**L'ORDRE, tel que vous l'avez corrigé le 8 septembre au soir.** *« Avant le nom
+de l'entreprise je pense qu'il faut mettre le numéro de tél. »* Vous aviez
+raison, et j'ai trouvé un second endroit qui n'avait pas de sens :
+
+| | |
+|---|---|
+| **1** | « Vous joindre » (téléphone, e-mail des devis) passe **avant** « Votre entreprise » — on finit de parler de vous avant de parler de votre société |
+| **2** | le **capital** et le **RCS** suivent maintenant la **forme juridique**, dont ils dépendent. Ils en étaient séparés par le SIRET et l'adresse : on choisissait « SASU », et deux questions plus loin on se voyait demander son capital sans plus voir pourquoi |
+
+identité → e-mail → mot de passe → **téléphone** → e-mail des devis → **nom de
+l'entreprise** → forme → capital → RCS → SIRET → adresse → TVA → n° TVA → IBAN →
+titulaire → moyens de paiement.
+
+**Et une chose que j'avais écrite était fausse.** Je justifiais l'ancien ordre en
+disant qu'un abandon en cours de route laissait « un compte utilisable ». C'est
+faux : rien n'est enregistré avant la dernière question. Cette raison inventée
+aurait servi à refuser votre correction — elle est corrigée noir sur blanc dans
+le code.
+
 **Le compte de questions n'est pas fixe, et c'est voulu :** quatorze pour une
 micro-entreprise en franchise, seize pour une société assujettie. On ne vous
 demande jamais le capital d'une entreprise qui n'en a pas, ni le numéro de TVA
@@ -113,4 +132,20 @@ pas encore — le détail est dans `docs/A-FAIRE.md`.
 | la porte et ses retraits (8 contrôles) | **8 / 8** |
 | les trois règles d'or — pas de pansement, pas de code mort, pas de spaghettis | **au vert** |
 | parcours complet, du premier écran au compte créé | **joué en entier**, compte et entreprise vérifiés en base |
-| batterie complète | *à jouer — vous êtes prévenu avant, vos autres sessions partagent le dossier* |
+| batterie complète | types, lint, mémoire **verts** · connexion derrière un proxy **verte** · suites base **327/328** · suites navigateur **113/133** |
+
+**LE ROUGE N'EST PAS DE CE LOT, ET LA PREUVE EST VÉRIFIABLE.** Les sept derniers
+passages de la CI sur `main` ont échoué, dont ceux d'AVANT que ce lot existe ; et
+une session voisine a écrit le matin même, dans un commit sur `main` : *« dix-sept
+suites navigateur rougissent… le témoin sur main propre a été lancé trois fois et
+coupé trois fois »*. C'est le même paquet, et il est recompté par elle.
+
+**Trois rouges étaient bien de moi. Ils sont réparés :** l'ordre des questions,
+la forme des deux cartes de TVA (votre règle du 12 août : la même forme partout),
+et l'action de création de compte, qui n'avait pas déclaré son ouverture
+volontaire.
+
+**Une que je ne sais pas encore expliquer** : une suite base sur
+l'authentification, verte au premier passage et rouge aux deux suivants, sur du
+code que ce lot ne touche pas. Elle est notée dans `TODO.md` plutôt que passée
+sous silence.

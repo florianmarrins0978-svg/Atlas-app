@@ -79,6 +79,34 @@ chaînes plutôt que d'évaluer le motif, il rajoutera sa ligne quand même et l
 aura les deux. À éprouver sur un atelier neuf, machine libre — pas pendant une
 batterie.
 
+## 🔎 UNE SUITE BASE SUR L'AUTHENTIFICATION, ROUGE SANS EXPLICATION
+
+**Constaté le 8 septembre 2026 au soir**, et écrit ici plutôt que passé sous
+silence : `scripts/test-secret-authentification-db.ts` a été **verte** au
+premier passage de la batterie, puis **rouge aux deux suivants**, sur du code
+que le lot de la porte ne touche pas de ce côté-là.
+
+**Le symptôme, et il est unique** : la ligne d'utilisateur que la suite vient
+d'insérer n'est plus lisible par `atlas_app` — cinq contrôles tombent d'un coup,
+tous sur cette absence. C'est exactement la signature d'un `TRUNCATE` joué
+dessous (`CLAUDE.md` §5, payé le 26 août)…
+
+**…et le deuxième passage l'avait pour de bon** : le moteur des suites navigateur
+de la batterie précédente avait survécu à son arrêt et tournait en parallèle.
+Mais **le troisième passage était seul**, vérifié processus par processus, et
+elle a rougi quand même. C'est ce qui reste à comprendre.
+
+**Ce qu'il ne faut PAS faire** : la rejouer jusqu'à ce qu'elle passe. Elle garde
+le condensat des mots de passe hors de portée du rôle applicatif — c'est le
+contrôle qu'on veut le moins voir vert par hasard.
+
+**Par où commencer** : la jouer SEULE sur une base neuve, et regarder si la ligne
+existe encore en base après l'insertion (`psql`, en `postgres`, qui traverse la
+RLS). Si elle y est, c'est une politique de RLS qui la cache ; si elle n'y est
+pas, c'est l'insertion qui a échoué en silence.
+
+---
+
 ## ⏳ LA PORTE EN PLEIN AIR — CODÉE ; trois points attendent encore sa réponse
 
 **Née le 8 septembre 2026.** `appli/la-porte-en-plein-air.html`, publiée et

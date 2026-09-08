@@ -80,6 +80,22 @@
 <td>inchangé, sauf deux liens qui manquaient : le retour vers la porte, et « Pas de compte ? »</td>
 </tr>
 </tbody></table></div>
+<p><strong>L'ORDRE, tel que vous l'avez corrigé le 8 septembre au soir.</strong> <em>« Avant le nom de l'entreprise je pense qu'il faut mettre le numéro de tél. »</em> Vous aviez raison, et j'ai trouvé un second endroit qui n'avait pas de sens :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>« Vous joindre » (téléphone, e-mail des devis) passe <strong>avant</strong> « Votre entreprise » — on finit de parler de vous avant de parler de votre société</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>le <strong>capital</strong> et le <strong>RCS</strong> suivent maintenant la <strong>forme juridique</strong>, dont ils dépendent. Ils en étaient séparés par le SIRET et l'adresse : on choisissait « SASU », et deux questions plus loin on se voyait demander son capital sans plus voir pourquoi</td>
+</tr>
+</tbody></table></div>
+<p>identité → e-mail → mot de passe → <strong>téléphone</strong> → e-mail des devis → <strong>nom de l'entreprise</strong> → forme → capital → RCS → SIRET → adresse → TVA → n° TVA → IBAN → titulaire → moyens de paiement.</p>
+<p><strong>Et une chose que j'avais écrite était fausse.</strong> Je justifiais l'ancien ordre en disant qu'un abandon en cours de route laissait « un compte utilisable ». C'est faux : rien n'est enregistré avant la dernière question. Cette raison inventée aurait servi à refuser votre correction — elle est corrigée noir sur blanc dans le code.</p>
 <p><strong>Le compte de questions n'est pas fixe, et c'est voulu :</strong> quatorze pour une micro-entreprise en franchise, seize pour une société assujettie. On ne vous demande jamais le capital d'une entreprise qui n'en a pas, ni le numéro de TVA si vous êtes en franchise.</p>
 <p><strong>Le compteur ne grossit jamais.</strong> Il annonce « 1 sur 16 » dès la première question, et il descend si vos réponses retirent des questions — jamais l'inverse. Un total qui grossit en cours de route se lit comme une mauvaise surprise.</p>
 <p><strong>Ce que vous passez n'est pas oublié.</strong> L'écran de fin nomme ce qui manque — « Il manque le SIRET, l'adresse et le capital, et 7 autres. À remplir quand vous voulez dans Réglages, puis Mon entreprise. » Trois nommés au plus : une énumération de huit se lit comme un reproche.</p>
@@ -175,9 +191,12 @@
 </tr>
 <tr>
 <td>batterie complète</td>
-<td><em>à jouer — vous êtes prévenu avant, vos autres sessions partagent le dossier</em></td>
+<td>types, lint, mémoire <strong>verts</strong> · connexion derrière un proxy <strong>verte</strong> · suites base <strong>327/328</strong> · suites navigateur <strong>113/133</strong></td>
 </tr>
 </tbody></table></div>
+<p><strong>LE ROUGE N'EST PAS DE CE LOT, ET LA PREUVE EST VÉRIFIABLE.</strong> Les sept derniers passages de la CI sur <code>main</code> ont échoué, dont ceux d'AVANT que ce lot existe ; et une session voisine a écrit le matin même, dans un commit sur <code>main</code> : <em>« dix-sept suites navigateur rougissent… le témoin sur main propre a été lancé trois fois et coupé trois fois »</em>. C'est le même paquet, et il est recompté par elle.</p>
+<p><strong>Trois rouges étaient bien de moi. Ils sont réparés :</strong> l'ordre des questions, la forme des deux cartes de TVA (votre règle du 12 août : la même forme partout), et l'action de création de compte, qui n'avait pas déclaré son ouverture volontaire.</p>
+<p><strong>Une que je ne sais pas encore expliquer</strong> : une suite base sur l'authentification, verte au premier passage et rouge aux deux suivants, sur du code que ce lot ne touche pas. Elle est notée dans <code>TODO.md</code> plutôt que passée sous silence.</p>
 </main>
 </body>
 </html>
