@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terminés — où les retours se posent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    TERMINÉS, ET OÙ LES RETOURS SE POSENT — 8 septembre 2026.
+
+    Sa demande : *« je veux voir précisément comment tu vas l'implémenter dans
+    la catégorie terminé, je veux une vraie maquette de la vraie page pour
+    voir. Si il faut repenser la page pour que ça soit plus simple pour
+    l'utilisateur, fais-moi plusieurs propositions. »*
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST RÉEL ICI, ET CE QUI EST RECONSTRUIT.
+
+    · **l'écran 1 est une photo de son application**, prise le 8 septembre sur
+      le serveur qui tourne. Sa base de démonstration n'ayant AUCUN chantier
+      terminé, la page y montre son état vide — et c'est justement ce qu'elle
+      montre : l'en-tête, la carte « Ma TVA à déclarer », et la phrase
+      d'attente. Les onglets, eux, ne sont pas rendus quand la liste est vide ;
+    · **les écrans 2 à 4 sont reconstruits d'après le CODE**, pas de mémoire :
+      `src/app/termines/ListeTermines.tsx` et `src/app/termines/page.tsx`. Les
+      onglets « Tout » et « À facturer » à 44 px, la navigation « ‹ mois › », la
+      phrase de comptes en gras dont « à facturer » est en or, les lignes à
+      24 px sans trait, le nom en serif 17 et l'état en `inkSoft` 13, la capsule
+      verte « FACTURER » à droite — tout vient de là.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LA SIMPLIFICATION QU'IL DEMANDE, ET OÙ ELLE EST VRAIMENT.
+
+    L'écran dit **deux fois la même chose** : l'onglet « À facturer » et, trois
+    centimètres plus bas, « 3 à facturer · 8 facturés ». C'est le seul doublon
+    de la page, et c'est là que la proposition 3 coupe — pas ailleurs. Le reste
+    (la carte de TVA en tête, le calme des 44 px, les traits supprimés entre
+    les lignes) a été demandé par lui les 23 août et 2 septembre : on n'y
+    touche pas.
+
+    MESURÉ POUR SON TÉLÉPHONE : 390 × 664. RIEN N'EST CODÉ dans `src/`.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  body.nuit{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47;
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);
+       -webkit-text-size-adjust:100%;padding:0 0 70px}
+  ::selection{background:rgba(138,101,40,.22)}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+  .mot{max-width:560px;margin:30px auto 0;padding:17px 20px;background:var(--etabli-carte);
+       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
+       font-size:14px;line-height:1.62;color:var(--etabli-doux)}
+  .mot b{color:var(--etabli-encre)}
+  .mot + .mot{margin-top:11px}
+
+  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
+         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
+  .etats .quoi{max-width:1000px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+               letter-spacing:.2em;text-transform:uppercase;color:var(--etabli-gris)}
+  .etats .rangee{max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
+                color:var(--etabli-doux);border-radius:999px;padding:10px 15px;
+                font:400 13px/1 var(--sans);cursor:pointer}
+  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+
+  .partie{max-width:1000px;margin:46px auto 0;padding:0 20px}
+  .partie h2{margin:0;font:400 28px/1.12 var(--serif);letter-spacing:-.012em}
+  .partie p{margin:10px 0 0;font-size:14.5px;line-height:1.62;color:var(--etabli-doux);max-width:64ch}
+  .partie p b{color:var(--etabli-encre)}
+
+  .planches{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;
+            max-width:1360px;margin:26px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.25 var(--serif)}
+  .planche .nom .vrai{display:inline-block;margin-left:8px;font:600 9px/1 var(--sans);
+                      letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-pin);vertical-align:3px}
+  .planche .nom .tenu{display:inline-block;margin-left:8px;font:600 9px/1 var(--sans);
+                      letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);vertical-align:3px}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--etabli-doux);min-height:58px}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
+       background:var(--fond);color:var(--encre);box-shadow:0 16px 44px rgba(20,18,14,.22)}
+  .ecran{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+  .cadre-photo{position:absolute;inset:0;background:var(--fond);overflow:hidden}
+  .cadre-photo img{width:390px;display:block}
+
+  /* ── L'écran Terminés, repris du code ────────────────────────────── */
+  .enTete{padding:26px 26px 0}
+  .enTete h1{margin:0;font:400 36px/1.02 var(--serif)}
+  .carteTva{margin:22px 26px 0;border-radius:14px;padding:15px 17px;background:var(--plage);
+            box-shadow:inset 0 0 0 1px var(--trait);display:flex;align-items:center;
+            justify-content:space-between;gap:12px}
+  .carteTva .quoi{font:700 10.5px/1.35 var(--sans);letter-spacing:.16em;
+                  text-transform:uppercase;color:var(--or)}
+  .carteTva .quand{display:block;margin-top:6px;font:400 14px/1 var(--sans);color:var(--doux)}
+  .carteTva .combien{font:400 22px/1 var(--serif);font-variant-numeric:tabular-nums}
+
+  /* Quarante-quatre pixels : la mesure du pouce, sa proposition A du
+     2 septembre. Ces onglets étaient les seuls à 40. */
+  .onglets{display:flex;gap:8px;margin:28px 26px 0}
+  .onglet{height:44px;display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;
+          padding:0 18px;font:400 14px/1 var(--sans);cursor:pointer;
+          background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux);
+          -webkit-tap-highlight-color:transparent}
+  .onglet[aria-pressed="true"]{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .onglet .compte{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:999px;
+                  background:var(--or);color:var(--fond);font:700 11px/1 var(--sans);padding:0 6px}
+  .onglet[aria-pressed="true"] .compte{background:var(--surplein);color:var(--plein)}
+
+  .navMois{display:flex;align-items:center;justify-content:center;gap:16px;margin:32px 26px 0}
+  .navMois .fleche{width:36px;height:36px;border-radius:999px;display:grid;place-items:center;
+                   background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux)}
+  .navMois .quand{font:600 15px/1 var(--sans)}
+  .comptes{margin:14px 26px 12px;font:700 14px/1.6 var(--sans);color:var(--encre)}
+  .comptes .aFacturer{color:var(--orTexte)}
+
+  .liste{margin:0 26px}
+  .rangee{display:flex;gap:14px;align-items:center;padding:24px 0;text-decoration:none;color:inherit}
+  .rangee:first-child{padding-top:22px}
+  .rangee .qui{min-width:0;flex:1}
+  .rangee .nomC{display:block;font:400 17px/1.2 var(--serif);color:var(--encre);
+                white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rangee .etat{display:block;margin-top:5px;font:400 13px/1.5 var(--sans);color:var(--doux);
+                font-variant-numeric:tabular-nums}
+  .capsule{flex:0 0 auto;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;
+           padding:0 17px;font:600 12.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+           background:var(--plein);color:var(--surplein)}
+  .chev{flex:0 0 auto;color:var(--gris)}
+
+  /* ── CE QU'ON AJOUTE : le retour ─────────────────────────────────── */
+  .retour{display:flex;align-items:center;gap:10px;margin-top:9px;padding:10px 12px;
+          border-radius:10px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .retour.neuf{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .retour .sceau{width:24px;height:24px;border-radius:999px;flex:0 0 auto;display:grid;
+                 place-items:center;background:var(--tuile);color:var(--orTexte)}
+  .retour .dit{min-width:0;flex:1;font:400 13px/1.45 var(--sans);color:var(--doux)}
+  .retour .dit b{color:var(--encre);font-weight:500}
+  .retour .vign{display:flex;gap:4px;flex:0 0 auto}
+  .retour .vign span{width:22px;height:22px;border-radius:6px;background:var(--tuile);
+                     box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)}
+  /* La pastille d'or sur le NOM : elle dit « pas encore lu », et elle disparaît
+     dès qu'il ouvre. Un compte en tête ne dirait pas LEQUEL. */
+  .pasLu{display:inline-block;width:7px;height:7px;border-radius:999px;background:var(--or);
+         margin-right:8px;vertical-align:2px}
+
+  /* ── Proposition 3 : la ligne de comptes DEVIENT le filtre ───────── */
+  .filtres{display:flex;flex-wrap:wrap;gap:7px;margin:26px 26px 0}
+  .filtre{height:44px;display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;
+          padding:0 16px;font:400 14px/1 var(--sans);cursor:pointer;background:transparent;
+          color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait);
+          -webkit-tap-highlight-color:transparent}
+  .filtre[aria-pressed="true"]{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .filtre b{font-weight:700}
+  .filtre.or b{color:var(--orTexte)}
+  .filtre.or[aria-pressed="true"] b{color:var(--surplein)}
+
+  .barre{display:flex;align-items:center;justify-content:space-around;height:60px;
+         background:var(--plage);box-shadow:inset 0 1px 0 var(--trait);margin-top:auto;flex:0 0 auto}
+  .barre i{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;
+           font:500 9.5px/1 var(--sans);font-style:normal;color:var(--gris)}
+  .barre i.actif{color:var(--encre)}
+  .barre i .pastille{position:absolute;top:-3px;right:-9px;min-width:16px;height:16px;border-radius:999px;
+                     background:var(--or);color:var(--fond);font:700 10px/16px var(--sans);
+                     text-align:center;padding:0 4px}
+
+  @media (max-width:900px){ .planche{width:100%} .tel{width:100%} .cadre-photo img{width:100%} }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Le premier écran est une photo de VOTRE application</b>, prise aujourd'hui.
+  Votre base d'essai n'a aucun chantier terminé — c'est donc l'écran vide, tel
+  qu'il est. Les trois autres sont reconstruits d'après le code, et ils
+  s'appuient.
+</div>
+
+<div class="mot">
+  <b>La seule chose que cette page dit deux fois :</b> l'onglet « À facturer », et
+  trois centimètres plus bas « 3 à facturer · 8 facturés ». C'est là que la
+  proposition 3 coupe. <b>Le reste ne bouge pas</b> — la carte de TVA en tête, les
+  44 px, les traits supprimés entre les lignes : c'est vous qui les avez
+  demandés les 23 août et 2 septembre.
+</div>
+
+<div class="etats" role="group" aria-label="Ce qu'on peut jouer">
+  <p class="quoi">L'écran</p>
+  <div class="rangee">
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="partie">
+  <h2>Votre page, et trois façons d'y poser les retours</h2>
+  <p>Toutes trois montrent la même chose : <b>deux retours à lire</b>, dont un
+  chantier déjà facturé. La différence est <b>combien il faut apprendre</b> pour
+  les trouver.</p>
+</div>
+
+<div class="planches">
+
+  <!-- ── 1. LA PHOTO ────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">1. Votre page, aujourd'hui<span class="vrai">Photo réelle</span></p>
+    <p class="idee">Prise sur le serveur qui tourne. Aucun chantier terminé dans
+      la base d'essai : c'est l'écran vide, et les onglets ne s'y affichent
+      pas.</p>
+    <div class="tel">
+      <div class="cadre-photo">
+        <img src="data:image/png;base64,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kgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQyRI2qAAANF0lEQVQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJAAQhkgAIQiQBEIRIAiAIkQRAECIJgCBEEgBBiCQAghBJ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" alt="La page Terminés telle qu'elle est aujourd'hui, sans chantier">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. UN ONGLET DE PLUS ───────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">2. Un onglet de plus</p>
+    <p class="idee">« Retours » se pose à côté de « Tout » et « À facturer », avec
+      son compte. Rien d'autre ne change.</p>
+    <div class="tel"><div class="ecran">
+      <div class="enTete"><h1>Terminés</h1></div>
+      <div class="carteTva">
+        <span><span class="quoi">Ma TVA à déclarer</span>
+          <span class="quand">Septembre 2026</span></span>
+        <span class="combien">0,00 €</span>
+      </div>
+      <div class="onglets">
+        <button type="button" class="onglet" aria-pressed="false">Tout</button>
+        <button type="button" class="onglet" aria-pressed="false">À facturer</button>
+        <button type="button" class="onglet" aria-pressed="true">Retours <span class="compte">2</span></button>
+      </div>
+      <div class="liste" style="margin-top:20px">
+        <a class="rangee" href="#p2">
+          <span class="qui">
+            <span class="nomC"><span class="pasLu" aria-hidden="true"></span>M. Rialland</span>
+            <span class="etat">2 sept. &middot; 1 240,00 € prévus</span>
+            <span class="retour neuf">
+              <span class="sceau" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="dit"><b>Julien</b> &middot; 2 sur 3 faites &middot; « haie trop mouillée »</span>
+              <span class="vign"><span><svg width="12" height="12" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span><svg width="12" height="12" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span></span>
+            </span>
+          </span>
+          <span class="capsule">Facturer</span>
+        </a>
+        <a class="rangee" href="#p2">
+          <span class="qui">
+            <span class="nomC"><span class="pasLu" aria-hidden="true"></span>Résidence des Ormes</span>
+            <span class="etat">1er sept. &middot; Facturé le 4 sept.</span>
+            <span class="retour neuf">
+              <span class="sceau" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="dit"><b>Paul</b> &middot; tout fait</span>
+              <span class="vign"><span><svg width="12" height="12" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span></span>
+            </span>
+          </span>
+          <span class="chev" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M1.5 1.5l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+      </div>
+      <div class="barre" aria-hidden="true">
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3 8.6 10 3l7 5.6V17H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Chantiers</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><rect x="3" y="4.5" width="14" height="12.5" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Planning</i>
+        <i class="actif"><span class="pastille">2</span><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 10.2 9 12.6l4.4-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Terminés</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 17c0-6 2.6-9.6 7-10.4C17 12 14 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 17C10 11 7.4 7.4 3 6.6 3 12 6 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Paysage</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4 4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Réglages</i>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── 3. RIEN DE PLUS : LE RETOUR SUR LA LIGNE ───────────────────── -->
+  <div class="planche">
+    <p class="nom">3. Rien de plus : le retour sur la ligne<span class="tenu">Ce que je défends</span></p>
+    <p class="idee">Aucun onglet ajouté. Le retour se pose sous le chantier
+      auquel il appartient, et une pastille d'or dit ce qui n'a pas été lu.</p>
+    <div class="tel"><div class="ecran">
+      <div class="enTete"><h1>Terminés</h1></div>
+      <div class="carteTva">
+        <span><span class="quoi">Ma TVA à déclarer</span>
+          <span class="quand">Septembre 2026</span></span>
+        <span class="combien">0,00 €</span>
+      </div>
+      <div class="onglets">
+        <button type="button" class="onglet" aria-pressed="true">Tout</button>
+        <button type="button" class="onglet" aria-pressed="false">À facturer</button>
+      </div>
+      <div class="navMois">
+        <span class="fleche" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="quand">Septembre 2026</span>
+        <span class="fleche" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M1.5 1.5l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <p class="comptes"><span class="aFacturer">3 à facturer</span> &middot; 8 facturés</p>
+      <div class="liste">
+        <a class="rangee" href="#p3">
+          <span class="qui">
+            <span class="nomC"><span class="pasLu" aria-hidden="true"></span>M. Rialland</span>
+            <span class="etat">2 sept. &middot; 1 240,00 € prévus</span>
+            <span class="retour neuf">
+              <span class="sceau" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="dit"><b>Julien</b> &middot; 2 sur 3 faites</span>
+              <span class="vign"><span><svg width="12" height="12" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span><svg width="12" height="12" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span></span>
+            </span>
+          </span>
+          <span class="capsule">Facturer</span>
+        </a>
+        <a class="rangee" href="#p3">
+          <span class="qui">
+            <span class="nomC">Mme Costa</span>
+            <span class="etat">30 août &middot; 480,00 € prévus</span>
+          </span>
+          <span class="capsule">Facturer</span>
+        </a>
+      </div>
+      <div class="barre" aria-hidden="true">
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3 8.6 10 3l7 5.6V17H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Chantiers</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><rect x="3" y="4.5" width="14" height="12.5" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Planning</i>
+        <i class="actif"><span class="pastille">2</span><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 10.2 9 12.6l4.4-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Terminés</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 17c0-6 2.6-9.6 7-10.4C17 12 14 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 17C10 11 7.4 7.4 3 6.6 3 12 6 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Paysage</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4 4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Réglages</i>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── 4. LA PAGE SIMPLIFIÉE ──────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">4. La page allégée<span class="tenu">Si vous voulez plus simple</span></p>
+    <p class="idee">Les onglets et la phrase de comptes disaient la même chose.
+      Il n'en reste qu'une rangée : les comptes SONT les filtres. Une chose de
+      moins à lire.</p>
+    <div class="tel"><div class="ecran">
+      <div class="enTete"><h1>Terminés</h1></div>
+      <div class="carteTva">
+        <span><span class="quoi">Ma TVA à déclarer</span>
+          <span class="quand">Septembre 2026</span></span>
+        <span class="combien">0,00 €</span>
+      </div>
+      <div class="filtres" id="filtres">
+        <button type="button" class="filtre" aria-pressed="true">Tout</button>
+        <button type="button" class="filtre or" aria-pressed="false"><b>3</b> à facturer</button>
+        <button type="button" class="filtre or" aria-pressed="false"><b>2</b> retours</button>
+      </div>
+      <div class="navMois">
+        <span class="fleche" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="quand">Septembre 2026</span>
+        <span class="fleche" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M1.5 1.5l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="liste" style="margin-top:8px">
+        <a class="rangee" href="#p4">
+          <span class="qui">
+            <span class="nomC"><span class="pasLu" aria-hidden="true"></span>M. Rialland</span>
+            <span class="etat">2 sept. &middot; 1 240,00 € prévus</span>
+            <span class="retour neuf">
+              <span class="sceau" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="dit"><b>Julien</b> &middot; 2 sur 3 faites</span>
+              <span class="vign"><span><svg width="12" height="12" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span><svg width="12" height="12" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span></span>
+            </span>
+          </span>
+          <span class="capsule">Facturer</span>
+        </a>
+        <a class="rangee" href="#p4">
+          <span class="qui">
+            <span class="nomC">Mme Costa</span>
+            <span class="etat">30 août &middot; 480,00 € prévus</span>
+          </span>
+          <span class="capsule">Facturer</span>
+        </a>
+      </div>
+      <div class="barre" aria-hidden="true">
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3 8.6 10 3l7 5.6V17H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Chantiers</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><rect x="3" y="4.5" width="14" height="12.5" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Planning</i>
+        <i class="actif"><span class="pastille">2</span><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 10.2 9 12.6l4.4-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Terminés</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 17c0-6 2.6-9.6 7-10.4C17 12 14 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 17C10 11 7.4 7.4 3 6.6 3 12 6 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Paysage</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4 4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Réglages</i>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<div class="mot" style="margin-top:42px">
+  <b>Pourquoi je défends la 3.</b> Un retour ne se lit pas pour lui-même : il se
+  lit <b>avant de facturer</b>. Le poser sous le chantier auquel il appartient met
+  la preuve et le bouton « Facturer » <b>sur la même rangée</b> — vous lisez, vous
+  facturez, sans changer d'onglet. La 2 vous fait lire d'un côté et facturer de
+  l'autre.
+</div>
+<div class="mot">
+  <b>La pastille d'or sur le nom fait le travail du compte.</b> Un compte en tête
+  dit qu'il y a deux retours ; la pastille dit <b>lesquels</b>. Elle s'éteint dès
+  que vous ouvrez le chantier.
+</div>
+<div class="mot">
+  <b>Ce que la 4 change, et rien d'autre :</b> elle supprime le doublon. Les
+  onglets « Tout / À facturer » et la phrase « 3 à facturer · 8 facturés » disent
+  la même chose à trois centimètres d'écart. Une seule rangée les remplace, et
+  les chiffres deviennent touchables. <b>Trois lignes de moins avant d'atteindre
+  le premier chantier.</b>
+</div>
+<div class="mot">
+  <b>Ce que la 4 vous coûte, et c'est à vous de juger :</b> « 8 facturés »
+  disparaît. Il ne servait à rien qu'à rassurer — mais s'il vous sert, dites-le
+  et il reste.
+</div>
+
+<script>
+/*
+  Les filtres de la proposition 4 fonctionnent pour de vrai : c'est le seul
+  moyen de sentir si une rangée de trois capsules se touche bien avec un pouce.
+*/
+const filtres = Array.from(document.querySelectorAll("#filtres .filtre"));
+filtres.forEach((f) =>
+  f.addEventListener("click", () => {
+    filtres.forEach((autre) => autre.setAttribute("aria-pressed", String(autre === f)));
+  })
+);
+
+// Les onglets des propositions 2 et 3 aussi — un onglet qui ne répond pas se
+// juge comme un écran mort.
+document.querySelectorAll(".onglets").forEach((groupe) => {
+  const onglets = Array.from(groupe.querySelectorAll(".onglet"));
+  onglets.forEach((o) =>
+    o.addEventListener("click", () => {
+      onglets.forEach((autre) => autre.setAttribute("aria-pressed", String(autre === o)));
+    })
+  );
+});
+
+const bouton = document.getElementById("charte");
+bouton.addEventListener("click", () => {
+  const nuit = document.body.classList.toggle("nuit");
+  bouton.setAttribute("aria-pressed", String(nuit));
+  bouton.textContent = nuit ? "Origine" : "Nuit";
+});
+</script>
+</body>
+</html>
