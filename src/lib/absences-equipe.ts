@@ -1,4 +1,4 @@
-import { cleCreneau, MOMENTS, type Creneau, type JourIso } from "../server/disponibilites";
+import { cleCreneau, MOMENTS, type Creneau, type JourIso } from "@/lib/disponibilites";
 
 /**
  * Une équipe absente ne compte plus dans les dates proposées.

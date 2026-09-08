@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { phraseJoursBarres, libelleJourBarre } from "../src/lib/jours-barres";
-import { compterOccupation, jourRetenable, type JourIso } from "../src/server/disponibilites";
+import { compterOccupation, jourRetenable, type JourIso } from "../src/lib/disponibilites";
 
 // Un jour barré doit dire POURQUOI il l'est.
 //

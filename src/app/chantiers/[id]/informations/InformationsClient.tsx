@@ -24,7 +24,7 @@ import BrouillonSection, {
   type BrouillonInitial,
 } from "./BrouillonSection";
 import BandeDuree from "../BandeDuree";
-import { dureeEnDemiJournees, libelleDuree } from "@/server/disponibilites";
+import { dureeEnDemiJournees, libelleDuree } from "@/lib/disponibilites";
 
 type Ligne = { id: string; libelle: string };
 type NomListe = "prestations" | "materiel";

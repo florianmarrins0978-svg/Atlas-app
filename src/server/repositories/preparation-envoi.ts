@@ -21,7 +21,7 @@ import {
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type ChantierPlanifie,
   type JourIso,
-} from "../disponibilites";
+} from "@/lib/disponibilites";
 import type { CanalCommunication } from "./envois-devis";
 
 // Ce que l'écran d'envoi doit savoir avant de poser au patron son unique

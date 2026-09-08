@@ -6,7 +6,7 @@ import * as clientsRepo from "../src/server/repositories/clients";
 import * as devisRepo from "../src/server/repositories/devis";
 import { preparerEnvoi } from "../src/server/repositories/preparation-envoi";
 import { creerEnvoi, lireParJeton, enregistrerReponse } from "../src/server/repositories/envois-devis";
-import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 
 // Le cas du patron, joué de bout en bout sur la vraie base.

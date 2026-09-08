@@ -24,7 +24,7 @@ import {
   type Creneau,
   type JourIso,
   type Moment,
-} from "../server/disponibilites";
+} from "@/lib/disponibilites";
 
 /**
  * Une période pendant laquelle l'artisan n'est pas disponible, telle qu'un

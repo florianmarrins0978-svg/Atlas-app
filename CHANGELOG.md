@@ -31,7 +31,7 @@ s'écrasaient l'une l'autre.
 Quatre défauts trouvés en mesurant : l'essai du port mentait sous Windows, deux
 sessions simultanées prenaient le même rang, le jeu de démonstration refusait la
 base d'un atelier, et une base créée à la volée n'avait aucun privilège par
-défaut. `ARCHITECTURE.md` §286 et §287.
+défaut. `ARCHITECTURE.md` §287 et §288.
 
 
 ### La porte : le mot de passe se confirme, le déroulant passe à la charte, l'identité se sépare
@@ -140,6 +140,129 @@ de la liste le battait. Chaque écran, pris isolément, avait l'air correct.
 
 **La proposition écartée a été RETIRÉE**, pas gardée « au cas où » : une planche
 qui montre encore l'option non retenue fait rouvrir un débat clos.
+
+### La CI mourait faute de mémoire : trois routes PDF compilées trop tard
+
+**Quatre morts au même endroit, sans un seul test rouge.** Le relevé écrit dans
+le journal a fini par le dire : la mémoire libre tombe de **13 349 Mo à 396 Mo**,
+dont **trois gigaoctets d'un coup** sur le cas qui demande le PDF d'un devis,
+celui d'une facture et l'export complet. Le disque, lui, n'avait pas bougé.
+
+Ces trois routes n'étaient jamais préchauffées : Turbopack les compilait donc au
+milieu des suites, quand il ne restait plus rien. Le dépôt savait pourtant ce que
+ça coûte — il écrivait déjà que la feuille de chantier en PDF met « 45 à 50 s à
+se compiler la première fois, et le serveur ne répond plus à rien pendant ce
+temps ». Elles rejoignent le préchauffage (`API_DE_DOCUMENTS`), avec un
+identifiant nul : la route se compile parce qu'elle s'exécute, et rend un 404
+sans fabriquer le moindre document.
+
+**Cinq suspects écartés en chemin, chacun par une mesure** : le serveur ne gonfle
+pas au fil des suites (+67 Mo sur douze), `.next` ne bouge pas d'un octet, la
+suite jouée seule passe, la CI n'annule aucune exécution, et le RENDU du PDF
+coûte 80 Mo — c'est sa COMPILATION qui coûte des gigaoctets.
+
+### La machine de la CI dira ce qu'elle a, au lieu de mourir en silence
+
+Deux exécutions de suite se sont arrêtées au même endroit sans un seul test
+rouge : « The runner has received a shutdown signal ». Sa demande : *« corrige
+le problème à la racine »* — donc on la cherche, et on ne répare pas une panne
+imaginée (`AGENTS.md`).
+
+**Quatre suspects écartés par la mesure, pas par le raisonnement** : le serveur
+ne gonfle pas (1 820 → 1 887 Mo sur douze suites, et la CI meurt à la deuxième),
+`.next` ne bouge pas d'un octet (1 241 Mo avant comme après), le test joué seul
+passe, et `ci.yml` ne porte aucun `concurrency` qui annulerait une exécution.
+
+`ci.yml` relève donc mémoire libre, disque libre et charge **toutes les cinq
+secondes pendant les suites navigateur**, et les recrache `if: always()` — le
+pire moment en tête. C'est la règle du dépôt appliquée à la lettre : devant un
+défaut muet, la première livraison n'est pas un correctif, c'est de rendre le
+défaut bavard.
+
+### La vignette d'une photo reprise n'est pas un bouton
+
+La CI a rougi sur `main` : un carré de 62 px arrivé avec « repartir d'un
+client » portait un rayon de 11 px, et le contrôle des boutons arrondis le
+dénonçait. C'est une **vignette photo** qu'on coche pour reprendre l'image, pas
+un geste qu'on appuie — l'état se lit d'ailleurs au liseré d'or. L'arrondir
+entièrement rognerait les quatre coins d'une photo déjà réduite à 62 px, c'est-
+à-dire ce qui permet de la reconnaître.
+
+Elle est donc inscrite comme exception **nommée, avec sa raison**, et le motif
+vise la ligne et non le fichier : un vrai bouton rectangulaire écrit demain dans
+cet écran serait toujours refusé.
+
+### Deux contrôles qui accusaient à tort, corrigés à la racine
+
+Relevés par la batterie du 8 septembre, et **aucun des deux ne venait du lot** :
+
+`test-mode-emploi` — une fiche de l'assistant pointait
+l'ancien `DocumentsClient` de la rubrique Documents, supprimé la veille par le découpage de
+« Devis & factures ». L'assistant enseignait donc un geste sur un écran disparu,
+ce qui est pire qu'une page vide : on le suit. La fiche vise maintenant
+`src/app/reglages/documents/allure/AllureClient.tsx`, où le bouton « Photographier mon devis »
+vit réellement.
+
+`test-garde-travail-non-enregistre` — le cas « arbre sale » exigeait qu'une
+modification traîne dans le dossier, et refusait de conclure sinon. La batterie
+a donc rougi **parce que le lot venait d'être enregistré proprement** : un
+contrôle qui dépend de l'état du dossier n'éprouve pas le garde-fou, il éprouve
+l'heure qu'il est. Il fabrique désormais son propre témoin (un fichier non
+suivi) et le retire quoi qu'il arrive.
+
+**Un détail qui coûtera une minute à quelqu'un un jour** : ce fichier de contrôle
+ne peut plus porter « git reset --hard » en toutes lettres — le garde-fou lit la
+commande qui l'écrit et la refuse. Le geste s'y monte à partir de ses morceaux,
+et le commentaire le dit.
+
+### `disponibilites.ts` descend à son étage — le premier déménagement
+
+Sa réponse à la dette relevée le matin : *« oui fais-le »*. Le fichier ne portait
+**aucune requête et aucune fonction `async`** — rien que des calculs — et vivait
+pourtant sous `src/server/`, où l'on range ce qui parle à la base. Six fichiers
+d'étages inférieurs remontaient donc l'y chercher.
+
+Il vit maintenant dans `src/lib/`, ses 39 imports réécrits, **aucun comportement
+changé** : c'est le même code au bon étage (`ARCHITECTURE.md` §286). La liste de
+dette de `test-couches.ts` est repartie vide.
+
+**Le déménagement a révélé un trou dans le contrôle qui l'avait signalée** : il
+ne visait que `@/server/…`, si bien que deux fichiers de `lib` remontaient par
+`../server/…` sans être vus. Une règle qui ne tient qu'une écriture sur deux ne
+tient rien — les deux formes sont désormais refusées, et le cas est éprouvé.
+
+### Deux règles d'or de plus, et six fichiers morts en moins
+
+*« Je ne veux pas de code mort, si ça ne sert plus on le supprime proprement »*
+et *« pas de spaghettis : si demain je dois faire appel à un développeur, il
+faut qu'il comprenne facilement comment fonctionne le code »*. `CLAUDE.md`
+§4 quinquies et §4 sexies, chacune tenue par un contrôle de la batterie.
+
+**Supprimés le jour même, parce qu'une règle qu'on n'applique pas à soi ne vaut
+rien** : `ScreenHeader`, `ActionPrincipale`, `BrancheEucalyptus` (dont l'en-tête
+disait lui-même « dessinée, jamais importée »), `lib/date-relative`,
+`lib/nombre-en-lettres`, `server/ai/pipeline/etapes` — plus les deux suites qui
+n'éprouvaient qu'eux, l'exception d'un contrôle qui nommait l'un d'eux, et trois
+renvois de documentation devenus faux. `verifier:memoire` a attrapé les trois
+derniers : c'est exactement son rôle.
+
+`scripts/test-pas-de-code-mort.ts` refuse désormais tout fichier de `src/` que
+plus rien n'importe, sa liste d'exceptions **vide**. Sa première version accusait
+155 fichiers bien vivants — elle comparait des bouts de chemin au lieu de
+résoudre les imports ; un contrôle qui accuse à tort ne se corrige pas, il
+s'éteint, et l'on aurait perdu la règle le jour de sa pose.
+
+`scripts/test-couches.ts` tient le sens des liens : `lib` ignore `server`, ni
+l'un ni l'autre ne connaît d'écran, un composant ne parle à la base que s'il est
+un composant serveur. Les `import type` ne comptent pas — ils s'effacent à la
+compilation. La dette du jour est nommée (quatre remontées, une seule cause :
+`src/lib/disponibilites.ts` mêle règles pures et accès base) et inscrite dans
+`TODO.md` ; le contrôle refuse toute remontée NOUVELLE, donc la liste ne peut
+que rétrécir.
+
+Les deux contrôles ont été vus rouges avant d'être crus : contre un orphelin
+posé exprès sous `src/lib/`, et contre une remontée `lib → server`.
+
 
 ### Les conditions d'utilisation et la politique de confidentialité, en brouillon
 
@@ -279,6 +402,50 @@ Vérifié rouge en forçant 400 px de trop.
 
 ---
 ## 2026-09-07
+
+### Sa règle d'or devient non franchissable : deux garde-fous, pas une prose
+
+*« Je veux que ça soit une règle incontournable, non franchissable, obligatoire
+de respecter. »* Écrire la règle ne suffisait pas : le dépôt a déjà payé deux
+fois la même leçon — les flèches décoratives ont dû être redemandées avant que
+`test-aucune-fleche.ts` existe, et le travail non enregistré s'est perdu avant
+que son garde-fou existe.
+
+`scripts/test-pas-de-pansement.ts` est joué par `npm test`, donc **par la
+batterie** : un lot qui livre un `catch` vide, un `@ts-ignore`, un
+`eslint-disable`, un `as any` ou un `!important` **ne passe pas**. Il ne regarde
+que ce que le lot AJOUTE sous `src/` — un contrôle qui rougirait sur du code
+d'il y a six mois serait éteint dans la journée. Vu rouge contre un
+`eslint-disable` posé exprès dans `src/app/login/page.tsx`, et il éprouve aussi
+son propre détecteur : sans cela, un lot sans ligne ajoutée l'aurait rendu vert
+sans rien mesurer (`CLAUDE.md` §5).
+
+`scripts/rappel-racine.mjs` tient l'autre moitié — celle qu'aucun script ne sait
+juger : dès qu'il demande une correction, la règle revient sous les yeux de la
+session, même trois heures après son début. Il se tait sur les demandes
+ordinaires (maquette, ajout, question) : un rappel qui parle à tort s'apprend à
+être ignoré.
+
+La seule porte de sortie est **avouée** : `pansement assumé : <la raison>` dans
+le code, ET une entrée dans `TODO.md`. Les deux, sinon le contrôle rougit.
+
+### Sa règle d'or : pas de pansement, on corrige à la racine
+
+*« Lorsque tu fais une correction, je ne veux pas de pansement. Je veux que tu
+ailles corriger le problème directement à la racine — pas de superposition de
+couches de code. »*
+
+Écrite dans `CLAUDE.md` §4 quater, donc relue au début de **chaque**
+conversation — c'est le seul endroit qui survit à une session. Elle nomme les
+sept gestes qui sont des pansements (le `catch` qui avale, la valeur par défaut
+qui masque un manque, le cas particulier posé à côté de la règle, la correction
+faite dans l'appelant, le style qui écrase un style, l'attente qui masque une
+course, le chiffre remis en dur), la marche à suivre, et **le signe qui doit
+alerter : une correction qui n'enlève rien**.
+
+Et quand la racine ne peut pas être touchée tout de suite, le contournement se
+nomme dans le code et dans `TODO.md` — un pansement avoué se retire un jour.
+
 ### Le trou entre le tiroir du planning et le menu du bas
 
 **20,3 px de vide, mesurés.** `--atlas-barre` valait 68 px écrits à la main
@@ -16150,7 +16317,7 @@ au 25 août »** au-delà d'un jour — le week-end sauté, comme la réservatio
 écartés par lui.
 
 **La règle vit dans une fonction pure**, `libelleOccupation()`
-(`src/server/disponibilites.ts`) : elle demande à `creneauxDuChantier` ce qui est
+(`src/lib/disponibilites.ts`) : elle demande à `creneauxDuChantier` ce qui est
 occupé au lieu de refaire l'arithmétique à côté. Deux calculs auraient produit
 deux vérités — celle de l'écran et celle de la réservation — qui se seraient
 contredites un vendredi, jour où le saut du week-end entre en jeu.

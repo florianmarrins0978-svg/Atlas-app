@@ -19,7 +19,7 @@ import {
   RELANCE_APRES_JOURS,
 } from "../src/lib/etat-envoi";
 import { getStatutAffiche, getPlanificationEtat, chantierEnCours } from "../src/lib/chantier-etat";
-import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 
 // Où en est le devis d'un chantier, du point de vue du patron — docs/AGENT.md

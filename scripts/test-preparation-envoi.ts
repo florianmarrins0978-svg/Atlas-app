@@ -7,7 +7,7 @@ import * as devisRepo from "../src/server/repositories/devis";
 import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi, lireParJeton, enregistrerReponse } from "../src/server/repositories/envois-devis";
 import { preparerEnvoi, premiersJoursLibres, verifierJourPropose } from "../src/server/repositories/preparation-envoi";
-import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from "../src/lib/disponibilites";
 
 // Depuis les créneaux (migration 0019), la disponibilité dépend du chantier
 // qu'on cherche à caler : une demi-journée tient là où une journée entière ne

@@ -646,7 +646,6 @@ légitimes, et aucune n'est un oubli :
 | `src/components/atlas/Calendrier.tsx` | employé UNIQUEMENT par la page du client ci-dessus |
 | `src/app/paysage/arrosage/PlanDessine.tsx` | un plan est un dessin technique, pas un écran ; ses couleurs sont documentées en tête |
 | `src/app/reglages/documents/allure/AllureClient.tsx` | c'est le nuancier lui-même (l'écran a été coupé le 7 septembre 2026 : le nuancier vit maintenant là) |
-| `src/components/atlas/BrancheEucalyptus.tsx` | une illustration |
 | `src/app/design/*` | maquettes gelées, absentes en production |
 | `layout.tsx` (`themeColor`) | **pas une exception, un défaut** — voir le point ci-dessus |
 
@@ -1701,7 +1700,7 @@ renoncer, et celui qui part en correction va changer.
 Depuis sa règle du 31 août, le patron peut proposer **aujourd'hui ou demain** :
 l'application prévient au lieu de refuser. Ce qu'elle **suggère** d'elle-même
 reste plafonné à après-demain (`DELAI_MINIMAL_JOURS`, écrit en dur dans
-`src/server/disponibilites.ts`).
+`src/lib/disponibilites.ts`).
 
 **Ce qui reste ouvert :** ce chiffre n'est ni un réglage d'entreprise, ni une
 variable d'environnement. Un artisan dont les chantiers se calent une semaine à
@@ -1805,6 +1804,67 @@ main ce que `useOccupation` fait déjà — `parCreneau`, `absentesParCreneau`,
 `CLAUDE.md` §3 interdit : elles divergeront au premier réglage ajouté d'un seul
 côté. Ce lot ne les a pas réunies pour ne pas mêler un remaniement à un
 changement de comportement — mais la dette est là, et elle porte un vrai risque.
+
+---
+
+## ✅ ~~LA CI TUE SON RUNNER~~ — **trouvé et corrigé le 8 septembre 2026**
+
+**C'était la mémoire, et il a fallu quatre morts pour le prouver.** Le relevé
+posé dans le journal de la CI (une ligne toutes les dix secondes, parce qu'un
+fichier lu par une étape suivante ne survit pas à l'arrêt de la machine) :
+
+    02:55:20  libre 13 349 Mo     le préchauffage commence
+    02:55:40  libre  8 033 Mo
+    02:56:01  libre  3 624 Mo
+    02:56:11  libre    396 Mo     « aucun PDF … ne sort pour lui »
+    02:56:44  la machine s'arrête
+
+Le disque n'avait pas bougé (84 Go libres). **Trois gigaoctets partent d'un
+coup** sur le cas qui demande, coup sur coup, le PDF d'un devis, celui d'une
+facture et l'export complet — trois routes que rien n'avait ouvertes avant,
+donc trois compilations de Turbopack au milieu des suites, quand il ne reste
+plus rien.
+
+**Le préchauffage existait déjà pour exactement ça**, et le dépôt l'écrivait
+noir sur blanc : *« la feuille de chantier en PDF met 45 à 50 s à se compiler
+la première fois, et le serveur ne répond plus à rien pendant ce temps »*. Ces
+trois routes-là lui avaient simplement échappé. Elles y sont désormais
+(`API_DE_DOCUMENTS`), avec un identifiant nul : la route se compile parce
+qu'elle s'exécute, et rend un 404 sans fabriquer le moindre document.
+
+**Les cinq suspects écartés en chemin**, pour qu'on ne les reprenne pas : le
+serveur ne gonfle pas au fil des suites (+67 Mo sur douze), `.next` ne bouge
+pas d'un octet, la suite jouée seule passe, `ci.yml` n'annule aucune exécution,
+et le rendu du PDF coûte 80 Mo — c'est sa COMPILATION qui coûte des
+gigaoctets, pas son exécution.
+
+**Ce qui reste à surveiller** : le préchauffage consomme à lui seul 5 Go sur les
+16 de la machine. Si une route lourde s'ajoute un jour, le même mur reviendra —
+la vraie sortie serait de jouer les suites contre la version BÂTIE plutôt que
+contre le serveur de développement, ce qui supprimerait toute compilation à la
+demande (`CLAUDE.md` §5 note déjà que les suites navigateur ne passent jamais
+par le chemin de production).
+
+---
+
+## ✅ ~~LA DETTE DE STRUCTURE : `disponibilites.ts` au mauvais étage~~ — **réglée le 8 septembre 2026**
+
+Relevée en posant sa règle « pas de spaghettis » (`CLAUDE.md` §4 sexies), et
+corrigée dans la foulée sur son accord : *« oui fais-le »*.
+
+**Ce n'était pas un mélange, c'était un mauvais rangement** — et le regarder de
+près l'a montré : `disponibilites.ts` ne portait **aucune** requête, aucune
+fonction `async`, rien que des calculs. Il était pourtant sous `src/server/`,
+si bien que six fichiers d'étages inférieurs remontaient l'y chercher.
+
+**Le fichier a été déplacé dans `src/lib/`**, et ses 39 imports réécrits. Aucun
+comportement ne change : c'est le même code, au bon étage.
+`scripts/test-couches.ts` porte désormais une dette **vide**.
+
+**Et le déménagement a révélé un trou dans le contrôle lui-même** : deux
+fichiers de `lib` remontaient par un chemin relatif (`../server/…`) que le motif
+ne visait pas — il ne cherchait que `@/server/…`. Une règle qui ne tient qu'une
+écriture sur deux ne tient rien ; le contrôle vise maintenant les deux.
 
 ---
 
@@ -7984,7 +8044,7 @@ veux journée et du 21 au 25 »*.
 | plus d'un jour | « du 21 au 25 août » — le week-end sauté, comme la réservation |
 | à cheval sur deux mois | « du 31 août au 2 septembre » |
 
-Écrit dans `libelleOccupation()` (`src/server/disponibilites.ts`), **fonction
+Écrit dans `libelleOccupation()` (`src/lib/disponibilites.ts`), **fonction
 pure** : elle demande à `creneauxDuChantier` ce qui est occupé plutôt que de
 refaire l'arithmétique, sans quoi l'écran et la réservation finiraient par se
 contredire un vendredi. Éprouvée par `scripts/test-libelle-occupation.ts`, et
@@ -8757,10 +8817,10 @@ facture »), corrigé le jour même. Les cinq autres n'ont jamais été arbitré
   l'appui. « Oui » : ses clients voient la capsule eux aussi. Les couleurs
   propres à ces écrans restent — c'est l'identité qui devait rester distincte,
   pas la forme du geste ;
-- `src/components/ScreenHeader.tsx` — le chevron de retour, 32 × 32 en
-  `rounded-md`. **Seul point restant.** Une icône encadrée, pas un bouton
-  d'action : l'arrondir entièrement en ferait une pastille ronde, ce qui n'a
-  été demandé nulle part. Question posée le 13 août, sans réponse à ce jour.
+- ~~`ScreenHeader` — le chevron de retour, 32 × 32~~ : **la question tombe
+  d'elle-même le 8 septembre 2026.** Le composant a été supprimé, plus rien ne
+  l'importait depuis la refonte des en-têtes (`CLAUDE.md` §4 quinquies). Il
+  n'y a donc plus de point restant.
 
 Ils sont **déclarés comme exceptions nommées** dans
 `scripts/test-boutons-arrondis.ts`, chacune avec sa raison : un bouton NEUF écrit
@@ -10018,7 +10078,7 @@ que le patron doit créer ; le reste est codable. Le point bloquant est détaill
 dans `docs/A-FAIRE.md` §7.
 
 Aujourd'hui, les jours libres se déduisent des seuls chantiers planifiés dans
-Atlas (`src/server/disponibilites.ts`). Un patron qui tient son agenda ailleurs
+Atlas (`src/lib/disponibilites.ts`). Un patron qui tient son agenda ailleurs
 verra donc proposer des jours où il est déjà pris — et c'est le client qui
 choisira ce jour-là.
 
@@ -10039,7 +10099,7 @@ agenda Google »* — et elle contraint la conception :
   est prise. Même règle qu'à la page du client, qui reçoit des dates et rien
   d'autre (`docs/AGENT.md` §2.2 bis).
 - **Une seule fonction de disponibilité**, jamais deux. La fusion des créneaux
-  Google et des chantiers Atlas se fait *dans* `src/server/disponibilites.ts`.
+  Google et des chantiers Atlas se fait *dans* `src/lib/disponibilites.ts`.
   Un second calcul à côté finirait par diverger du premier — c'est exactement le
   défaut qui a produit, le 9 août, un chantier rangé dans deux onglets à la fois
   (`ARCHITECTURE.md` §33).

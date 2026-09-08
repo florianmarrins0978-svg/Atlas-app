@@ -1,5 +1,14 @@
 // Disponibilités du patron — voir docs/AGENT.md §2.2 bis.
 //
+// **Il vit dans `src/lib/` depuis le 8 septembre 2026, et il n'y a rien perdu
+// en route.** Il était rangé sous `src/server/`, où l'on met ce qui parle à la
+// base — or ce fichier n'a jamais rien fait de tel : pas une requête, pas une
+// fonction `async`, rien que des calculs. Quatre fichiers d'étages inférieurs
+// devaient donc remonter jusqu'à `server` pour venir y chercher une durée ou un
+// libellé, et c'est exactement le lien « dans tous les sens » que le patron
+// refuse (`CLAUDE.md` §4 sexies). Le déménagement remet la règle là où elle se
+// décide ; ce sont les dépôts qui l'importent, et plus l'inverse.
+//
 // Ce module ne fait qu'une chose, et c'est voulu : dire quels JOURS sont
 // occupés. Il ne renvoie jamais ce qui les occupe. La page du client reçoit
 // des dates, rien d'autre — aucun intitulé de chantier, aucun nom, aucune

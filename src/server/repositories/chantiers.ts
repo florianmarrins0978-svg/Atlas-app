@@ -9,7 +9,7 @@ import {
   dureeEnDemiJournees,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type Moment,
-} from "../disponibilites";
+} from "@/lib/disponibilites";
 import { absencesEquipe, equipes } from "../db/schema";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { departEtDuree, type QuandChantier } from "../../lib/planning-jour";

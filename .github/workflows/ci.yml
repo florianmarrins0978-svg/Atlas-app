@@ -184,6 +184,25 @@ jobs:
       - name: Installer le navigateur Playwright
         run: npx playwright install --with-deps chromium
 
+      # **LA MACHINE DIT CE QU'ELLE A, DANS LE JOURNAL, PENDANT QU'ELLE TOURNE.**
+      #
+      # Les 7 et 8 septembre 2026, les suites navigateur ont tué le runner
+      # TROIS fois au même endroit — « The runner has received a shutdown
+      # signal » —, sans un seul test rouge. Mesuré sur l'environnement de
+      # l'agent : le serveur ne gonfle pas (1 820 → 1 887 Mo sur douze suites,
+      # quand la CI meurt à la deuxième), `.next` ne bouge pas d'un octet, la
+      # suite jouée seule passe, et le rendu du PDF au moment de la mort coûte
+      # 80 Mo. Aucun des suspects évidents ne tient.
+      #
+      # **Le premier relevé écrivait dans un fichier lu par une étape suivante,
+      # et il n'a jamais servi** : quand la machine meurt, aucune étape ne
+      # suit — pas même une `if: always()`. Un témoin que la panne emporte ne
+      # témoigne de rien. Les mesures partent donc dans le JOURNAL, au fil de
+      # l'eau : ce qui est déjà écrit reste lisible même si la machine
+      # disparaît à la seconde suivante.
+      #
+      # `AGENTS.md` : devant un défaut muet, la première livraison n'est pas un
+      # correctif, c'est de rendre le défaut bavard.
       - name: Tests de bout en bout
         env:
           # Sans CRON_SECRET, la route de purge répond 503 (« non configuré »)
@@ -194,7 +213,26 @@ jobs:
           # serveur, pour que le runner puisse remettre à zéro le compteur de
           # connexion entre deux suites (cf. scripts/run-e2e-tests.ts).
           REDIS_URL: redis://localhost:6379
-        run: npm run test:e2e
+        run: |
+          (
+            while true; do
+              echo "◆ machine $(date -u +%H:%M:%S) · libre $(free -m | awk '/^Mem:/ {print $7}') Mo" \
+                   "· disque $(df -m --output=avail / | tail -1 | tr -d ' ') Mo" \
+                   "· charge $(cut -d' ' -f1 /proc/loadavg)"
+              sleep 10
+            done
+          ) &
+          releveur=$!
+          trap 'kill $releveur 2>/dev/null || true' EXIT
+          npm run test:e2e
+
+      # **Il parle SURTOUT quand ça s'est mal passé** : `always()`, sinon le
+      # relevé disparaîtrait précisément le jour où il sert.
+      - name: Ce que la machine avait sous le pied
+        if: always()
+        run: |
+          echo "── ce qu'il reste, si la machine est encore là ──"
+          free -m; df -h /
 
       # Se connecte pour de vrai, DEPUIS UNE ORIGINE ÉTRANGÈRE.
       #

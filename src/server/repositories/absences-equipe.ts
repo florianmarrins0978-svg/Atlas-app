@@ -16,7 +16,7 @@ import { and, asc, eq, gte, isNull, lte } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { absencesEquipe, equipes } from "../db/schema";
 import type { Ctx } from "./context";
-import type { JourIso } from "../disponibilites";
+import type { JourIso } from "@/lib/disponibilites";
 
 export type AbsenceEnregistree = {
   id: string;

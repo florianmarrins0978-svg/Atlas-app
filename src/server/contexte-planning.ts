@@ -2,7 +2,7 @@ import { chantiersDeLEquipe, listerChantiersPourPlanning } from "@/server/reposi
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerEquipes } from "@/server/repositories/equipes";
 import { absencesSurLaFenetre } from "@/server/repositories/absences-equipe";
-import { HORIZON_OCCUPATION_PATRON_JOURS, ajouterJours, versJourIso } from "@/server/disponibilites";
+import { HORIZON_OCCUPATION_PATRON_JOURS, ajouterJours, versJourIso } from "@/lib/disponibilites";
 import type { Ctx } from "@/server/repositories/context";
 import { accesDeLaPersonne } from "@/server/autorisation";
 import { seuilMemoireCalendrier } from "@/lib/onglet-chantier";

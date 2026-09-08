@@ -11,7 +11,7 @@ import { creerEnvoi, DatesProposeesInvalidesError } from "@/server/repositories/
 import { mettreAJourClient } from "@/server/repositories/clients";
 import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
 import { datesHorsFenetre, motifDatesRefusees } from "@/lib/dates-envoi";
-import { fenetrePatron } from "@/server/disponibilites";
+import { fenetrePatron } from "@/lib/disponibilites";
 
 export async function chargerDevisAction(chantierId: string) {
   const ctx = await getCurrentCtx();

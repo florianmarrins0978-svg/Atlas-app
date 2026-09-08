@@ -73,7 +73,7 @@ cette route sans repenser à la vérification.
 ## 4. Les règles métier sont des fonctions pures, dans `src/lib/`
 
 **Décidé.** `src/lib/etat-envoi.ts`, `src/lib/chantier-etat.ts`, `src/lib/jour.ts`,
-`src/server/disponibilites.ts`, `src/server/trimestre.ts` : aucune n'accède à la base. Elles se testent sans monter un
+`src/lib/disponibilites.ts`, `src/server/trimestre.ts` : aucune n'accède à la base. Elles se testent sans monter un
 chantier.
 
 **Le cas qui l'a imposé :** l'état d'un devis parti est lu par trois écrans — la
@@ -577,8 +577,10 @@ défile avec le contenu et sort de l'écran. Atlas est une application installé
 sur un écran d'accueil, pas un site que l'on parcourt.
 
 **L'action principale, elle, prend la forme d'Arborea** : carte vert pin, rond
-d'icône, titre en Playfair, sous-ligne et flèche
-(`src/components/atlas/ActionPrincipale.tsx`).
+d'icône, titre en Playfair, sous-ligne et flèche. *(Le composant qui la portait,
+`ActionPrincipale`, a été supprimé le 8 septembre 2026 : plus rien ne
+l'importait depuis que l'accueil a été refait — `CLAUDE.md` §4 quinquies. La
+forme, elle, n'a pas changé : `PrimaryButton` la porte.)*
 
 Deux écarts assumés avec le modèle, et notés dans le composant :
 
@@ -630,7 +632,7 @@ premier mot mal orthographié.
 
 ### Une seule règle, quatre chemins
 
-`src/server/disponibilites.ts` porte tout le calcul, sans base. Quatre chemins
+`src/lib/disponibilites.ts` porte tout le calcul, sans base. Quatre chemins
 l'emploient — l'écran d'envoi, la création de l'envoi, la revérification de la
 réponse du client, et la planification à la main. Quatre calculs distincts
 finiraient par diverger, et c'est le client qui découvrirait l'écart.
@@ -24901,7 +24903,63 @@ porte `client_id`, jamais `chantier_id` : c'est l'outil des tournées d'entretie
 Le lot 3 devra soit l'y rattacher, soit donner au chantier sa propre page de
 preuve. *Tranché au lot 3, sa décision du 8 septembre.*
 
-## §286. Un ATELIER par session — et pourquoi le port ne suffisait pas
+## §286. Les trois règles d'or, et ce qui les tient : pansement, code mort, spaghettis
+
+**Ses consignes des 7 et 8 septembre 2026**, dans cet ordre : *« quand tu fais
+une correction, je ne veux pas de pansement, va corriger à la racine »* ; *« je
+veux que ça soit une règle incontournable, non franchissable »* ; *« je ne veux
+pas de code mort, si ça ne sert plus on le supprime proprement »* ; *« pas de
+spaghettis : si demain je dois faire appel à un développeur, il faut qu'il
+comprenne facilement comment fonctionne le code »*.
+
+**Pourquoi elles ne vivent PAS que dans `CLAUDE.md`.** Le dépôt a payé deux fois
+la même leçon : les flèches décoratives ont dû être redemandées, capture à
+l'appui, avant que `test-aucune-fleche.ts` existe ; du travail non enregistré
+s'est perdu avant que son garde-fou existe. Une règle en prose se lit au début
+d'une conversation et s'oublie au bout de trois heures — or c'est au bout de
+trois heures qu'un `catch` vide paraît raisonnable. « Incontournable » ne se
+décrète pas, ça se branche.
+
+| La règle | Ce qui la tient | Ce qu'il refuse |
+|---|---|---|
+| §4 quater — pas de pansement | `scripts/test-pas-de-pansement.ts` | dans ce que le lot AJOUTE : `catch` vide, `@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `as any`, `!important` |
+| §4 quinquies — pas de code mort | `scripts/test-pas-de-code-mort.ts` | un fichier de `src/` que plus rien n'importe |
+| §4 sexies — pas de spaghettis | `scripts/test-couches.ts` | une remontée de couche, en `@/server/…` comme en `../server/…` |
+
+Les trois sont découverts par `npm test`, donc joués **par la batterie** : un lot
+qui en porte un ne se livre pas. `scripts/rappel-racine.mjs` tient la moitié
+qu'aucun script ne juge — l'endroit qu'on choisit de corriger — en remettant la
+règle sous les yeux de la session dès qu'une correction est demandée.
+
+**Trois principes de conception valent pour ces contrôles**, et chacun a été payé
+ici même :
+
+1. **Ne mesurer que ce que le lot ajoute.** Un contrôle qui rougirait sur du code
+   d'il y a six mois serait éteint dans la journée — et l'on aurait perdu la
+   règle en croyant l'avoir posée. C'est ce que fait `test-pas-de-pansement`, qui
+   compare à la base commune avec `main`.
+2. **Résoudre, ne pas deviner.** La première version de `test-pas-de-code-mort`
+   cherchait des bouts de chemin dans les textes : elle a accusé **155 fichiers
+   bien vivants**, tous importés par « ./actions » ou « ./Client ». Elle résout
+   désormais chaque import.
+3. **Une règle doit tenir TOUTES les écritures.** `test-couches` ne visait que
+   `@/server/…` : deux fichiers de `lib` remontaient par `../server/…` sans être
+   vus. Une règle qui ne tient qu'une écriture sur deux ne tient rien.
+
+**Les étages, et le déménagement du 8 septembre.** `src/lib` (règles pures) →
+`src/server` (base) → `src/components` → `src/app` : une flèche ne remonte
+jamais. `disponibilites.ts` vivait sous `server` sans faire une seule requête ;
+six fichiers d'étages inférieurs remontaient l'y chercher. Il a été **déplacé**
+dans `src/lib/` — descendre la règle plutôt que remonter le lien —, ses 39
+imports réécrits, et la liste de dette du contrôle est repartie vide.
+
+**Les `import type` ne comptent pas comme une remontée** : ils s'effacent à la
+compilation, et interdire à une règle de NOMMER la forme d'une donnée
+reviendrait à la recopier — la divergence que §3 refuse. Un composant SERVEUR
+(reconnu à `next/headers`, pas à son nom) a le droit d'appeler un dépôt : c'est
+sa raison d'être dans ce cadre.
+
+## §287. Un ATELIER par session — et pourquoi le port ne suffisait pas
 
 **Sa demande du 8 septembre 2026 :** *« l'idée c'est qu'après ça chaque session
 puisse tourner en même temps sans se gêner »*. Il fait tourner cinq sessions
@@ -24960,7 +25018,7 @@ créée ensuite reste hors de portée du rôle applicatif. `preparer-atelier.ts`
 rejoue les `GRANT` et les `ALTER DEFAULT PRIVILEGES` de l'amorçage. Trouvé par
 `test-toute-table-est-cloisonnee`, qui a rougi sur ce point précis.
 
-## §287. Un DOSSIER de travail par session — la condition, pas le confort
+## §288. Un DOSSIER de travail par session — la condition, pas le confort
 
 **Découvert le 8 septembre 2026, en rendant bavarde une étape qui échouait en
 silence depuis trois batteries.**
