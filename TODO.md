@@ -60,13 +60,16 @@ porte (`docs/lot-pages-du-client.md`).
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — la porte en plein air
+## ⏳ LA PORTE EN PLEIN AIR — CODÉE ; trois points attendent encore sa réponse
 
 **Née le 8 septembre 2026.** `appli/la-porte-en-plein-air.html`, publiée et
-listée dans `appli/essais.html`.
+listée dans `appli/essais.html`. **Les écrans 1 et 2 sont dans l'application
+depuis le 8 septembre au soir** (`/bienvenue`, `/creer-un-compte`), à sa
+demande — *« code-moi exactement la deuxième maquette avec les questions »*.
 
-**Rien ne se code tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Cinq points
-attendent sa réponse, et le détail est dans `docs/lot-porte-en-plein-air.md` :
+**Ce qui reste ouvert ci-dessous se code en une heure chacun** : ce sont des
+choix d'apparence, pas des travaux. Le détail est dans
+`docs/lot-porte-en-plein-air.md` :
 
 1. ~~**la création de compte** : *tout sur un écran* ou *une question à la
    fois*~~ — **tranché le 8 septembre 2026 : une question à la fois**, et elle
@@ -84,6 +87,23 @@ attendent sa réponse, et le détail est dans `docs/lot-porte-en-plein-air.md` :
 4. la photo reste-t-elle fixe alors que le reste suit la charte choisie ;
 5. « Créer un compte » crée un **patron et son entreprise** — un salarié reçoit
    son accès de son patron dans les réglages. À confirmer.
+
+**Ce qui a été CODÉ sans son accord, et qu'il peut défaire d'un mot :**
+
+| | |
+|---|---|
+| l'ordre des écrans | la porte est à `/bienvenue`, et `/login` garde son formulaire. La planche montre la porte EN PREMIER ; le porter sur `/login` demandait de toucher 140 navigations dans 129 scripts, dont `verifier-connexion.mjs` — un lot d'apparence qui réécrit cent vingt-neuf contrôles ne se relit plus |
+| les couleurs | la charte **Nuit** est nommée, et ce sont SES jetons qui servent — personne n'est connu à cette adresse, donc aucune charte choisie à lire |
+| Google et Apple | **refusés** : aucun des deux fournisseurs n'est branché, et deux boutons qui ne font rien valent moins que pas de boutons |
+
+**LES DEUX PAGES LÉGALES EXISTENT EN DOUBLE, et c'est le chemin qui l'impose :**
+`pages.yml` ne publie que `appli/` — c'est là qu'il les lit depuis son téléphone
+— et Next.js ne sert que `public/` — c'est là que la porte les fait accepter.
+`scripts/test-pages-legales-uniques.ts` refuse tout écart entre les deux, au
+caractère près : le jour où l'une serait corrigée seule, on ferait accepter un
+texte qui n'est pas celui qu'on publie, et rien ne le montrerait. **Les réunir
+pour de bon demande de toucher au flux de publication** — à faire quand les
+pages sortiront du brouillon, pas avant.
 
 **Les deux pages légales existent désormais, EN BROUILLON** —
 `appli/conditions-utilisation.html` et `appli/confidentialite.html`, écrites le

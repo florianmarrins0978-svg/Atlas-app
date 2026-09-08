@@ -18,6 +18,7 @@ import {
 } from "@/lib/allure-documents";
 import { FORMATS_NUMERO } from "@/lib/numero-documents";
 import { MAX_EQUIPES, MAX_SALARIES } from "@/lib/equipes";
+import { capitalEnBase } from "@/lib/mentions-legales";
 import { lireObjet } from "../storage";
 import type { LogoDocument } from "../pdf/document-commun";
 import { logger } from "../logger";
@@ -225,13 +226,8 @@ export async function mettreAJourEntreprise(
     // laisse le capital tel qu'il était plutôt que d'écrire n'importe quoi —
     // même règle que la périodicité de TVA plus bas.
     if (data.capitalSocial !== undefined) {
-      const brut = data.capitalSocial?.trim() ?? "";
-      if (brut === "") {
-        valeurs.capitalSocial = null;
-      } else {
-        const nombre = Number(brut.replace(",", "."));
-        if (Number.isFinite(nombre) && nombre >= 0) valeurs.capitalSocial = nombre.toFixed(2);
-      }
+      const lu = capitalEnBase(data.capitalSocial);
+      if (lu !== undefined) valeurs.capitalSocial = lu;
     }
     if (data.conditions !== undefined) {
       const c = normaliserConditions(data.conditions);

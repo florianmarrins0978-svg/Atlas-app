@@ -25420,3 +25420,90 @@ grep -rc "dernierDemi: absencesEquipe.dernierDemi," src   # celui-ci
 journée sinon. Sur la ligne du matin, un congé d'après-midi ne retire pas le
 jour : sans cela la pastille annoncerait un jour de moins que la vérité, et le
 patron enverrait quelqu'un d'autre pour rien.
+
+---
+
+## §293. LA PORTE EN PLEIN AIR — l'écran d'avant le compte, et les seize questions
+
+*Codé le 8 septembre 2026, d'après `appli/la-porte-en-plein-air.html`, écrans 1
+et 2, qu'il a retenus : « c'était la deuxième maquette, la porte en plein air ».*
+
+### Pourquoi la porte n'est pas `/login`
+
+C'est **la seule décision de ce lot prise sans lui**, et elle est mécanique. La
+planche montre la porte EN PREMIER, puis « Se connecter » qui ouvre le
+formulaire. Porter cet ordre sur `/login` demandait de toucher **140 navigations
+vers cette adresse, réparties dans 129 scripts** — captures, suites de bout en
+bout, et `verifier-connexion.mjs`, le seul contrôle qui éprouve une vraie
+connexion derrière une origine étrangère. Un lot d'apparence qui réécrit cent
+vingt-neuf contrôles ne se relit plus : on ne distingue plus ce qui a changé de
+ce qui a été déplacé.
+
+L'ordre qu'il a choisi est donc tenu — le middleware envoie un visiteur sans
+session sur `/bienvenue` —, et `/login` garde son adresse et son formulaire, avec
+les deux liens qui lui manquaient : le retour vers la porte, et « Pas de
+compte ? ». **Une session périmée continue d'aller à `/login`** (`/api/session-perimee`) :
+celui-là a un compte, l'envoyer choisir entre créer et se connecter serait une
+question sans objet.
+
+### Où vivent les règles, et pourquoi pas dans l'écran
+
+`src/lib/creation-compte.ts` décide de six choses qui ne sont pas de
+l'affichage : l'ordre, ce qui est obligatoire, ce qui ne se pose que dans
+certains cas, ce qui se propose d'office, le nombre annoncé, et ce qu'on dit à la
+fin. `scripts/test-creation-compte.ts` les joue **sans base et sans navigateur**.
+
+Deux d'entre elles ne se devinent pas :
+
+| | |
+|---|---|
+| **le total annoncé ne monte jamais** | une question conditionnelle est comptée TANT QU'ON NE SAIT PAS. Sans cela, choisir une SAS ferait passer « 5 sur 14 » à « 6 sur 16 » — un total qui grossit en cours de route se lit comme une mauvaise surprise, chez quelqu'un qui hésite déjà |
+| **la proposition affichée EST celle qui part en base** | `reponsesProposees` sert à l'écran et à l'envoi. La première version posait l'e-mail repris dans le champ sans l'écrire dans les réponses : l'écran montrait une adresse que l'entreprise n'aurait jamais eue |
+
+### Ce qui a été ramené à une seule source en codant ce lot
+
+Trois règles allaient exister en double, et **chacune avait déjà divergé dans
+l'écriture** :
+
+1. **le mot de passe** — la porte imposait huit caractères là où
+   `src/lib/mot-de-passe.ts` en exige douze depuis l'audit du 23 août. Le PATRON
+   aurait eu le mot de passe le plus faible du produit, plus faible que celui
+   qu'il impose à ses salariés ;
+2. **le capital social** — `entreprises.ts` savait lire « 1 000 », la porte non.
+   La règle déménage dans `src/lib/mentions-legales.ts` (`capitalEnBase`), où le
+   capital vit déjà. Elle rend **trois** réponses, et la nuance compte : `null`
+   (vide), une chaîne (le nombre), `undefined` (on n'a pas compris — on ne touche
+   à rien). Sans elle, un capital saisi avec une espace faisait échouer la
+   création entière pour une case facultative ;
+3. **`formeADuCapital`** — la copie répondait **l'inverse** de l'originale sur
+   une forme libre.
+
+Et `OeilMotDePasse` sort de `NouveauCompte.tsx` : la planche l'avait dit avant
+qu'on le fasse — *« un second dessin pour le même geste finirait par diverger »*.
+
+### Le middleware ne voit plus les fichiers de `public/`
+
+**Trouvé en regardant la porte, et par aucun test vert.** Le matcher listait ses
+exceptions une par une (`favicon.ico`, `robots.txt`) ; tout le reste de `public/`
+recevait donc une redirection quand le visiteur n'avait pas de session — c'est-à-
+dire précisément sur cet écran-là. La photo ne s'affichait pas, `manifest.json`
+et les icônes de l'écran d'accueil non plus, et **les deux pages légales que la
+porte fait accepter** répondaient une redirection : on demandait d'accepter des
+conditions illisibles.
+
+La liste devient une règle : **ce qui porte une extension est un fichier, pas un
+écran.** Aucune route de `src/app/` n'en a, les jetons du client (`/devis/<jeton>`)
+n'ont pas de point, et un fichier n'a ni session à vérifier ni `x-atlas-pathname`
+à recevoir. `scripts/test-porte-bienvenue.ts` éprouve le motif lui-même, dans les
+deux sens.
+
+### Deux écrans sans barre d'onglets réservent l'indicateur d'accueil
+
+`globals.css` pose `env(safe-area-inset-*)` sur le corps de la page mais **pas en
+bas** : partout ailleurs c'est la barre d'onglets qui s'en charge. Ces deux
+écrans n'en ont pas, et « Se connecter » finissait sous le trait blanc de
+l'iPhone — là où l'appui ferme l'application. D'où `.atlas-bas-sans-barre`.
+
+**Elle est en CSS et non en classe Tailwind sur mesure** : `env()` dans une
+valeur entre crochets ressort corrompu de leur analyseur — « safe-area-inset-bottom »
+y devient « safe-area-\b-bottom », et la feuille entière cesse de compiler.

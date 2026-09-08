@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Politique de confidentialité</title>
+<style>
+  /*
+    POLITIQUE DE CONFIDENTIALITÉ — brouillon à faire relire.
+
+    Sa demande du 8 septembre 2026, en deux temps : les conditions
+    d'utilisation, puis « très bien et rajoute la politique de
+    confidentialité ».
+
+    ─────────────────────────────────────────────────────────────────────────
+    TOUT VIENT DE `docs/RGPD.md`, ET RIEN D'AUTRE.
+
+    Ce document est la version LISIBLE PAR UN UTILISATEUR du registre tenu
+    dans `docs/RGPD.md` — lequel décrit ce que l'application traite
+    réellement, table par table. Aucune finalité, aucun destinataire, aucune
+    durée n'a été ajoutée ici qui ne s'y trouve.
+
+    C'est la seule façon d'éviter la faute que ce dépôt a déjà payée une fois :
+    `docs/RGPD.md` a porté le mot « implémenté » sur trois purges que RIEN ne
+    déclenchait. Le lecteur comprenait « la donnée est effacée ». Dans un
+    document public, la même erreur se paierait devant la CNIL.
+
+    ─────────────────────────────────────────────────────────────────────────
+    D'OÙ LE TABLEAU DES DURÉES, QUI DIT SON ÉTAT RÉEL.
+
+    Trois états, jamais deux — repris de `docs/RGPD.md` §4 :
+
+      ✅ appliquée     le mécanisme existe ET quelque chose le déclenche
+      ⏳ pas encore    le mécanisme existe, rien ne l'appelle
+      ❌ rien          aucun code, seulement une intention
+
+    Les lignes ⏳ et ❌ SONT DES ENGAGEMENTS QU'ON NE TIENT PAS AUJOURD'HUI.
+    Elles ne peuvent pas partir en ligne telles quelles : soit le
+    planificateur est branché (`docs/DEPLOIEMENT-PURGE.md`), soit la durée
+    est retirée du document. Le bandeau du haut le dit.
+
+    ─────────────────────────────────────────────────────────────────────────
+    AUCUN TEXTE RECOPIÉ, ET AUCUN SOUS-TRAITANT INVENTÉ. La liste des
+    destinataires est celle de `docs/RGPD.md` §3, avec sa réserve : les
+    fournisseurs sont interchangeables par variable d'environnement, et
+    SEULE LA CONFIGURATION RÉELLEMENT DÉPLOYÉE FAIT FOI.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --papier:#ece9e1;
+    --encre:#1c1c1a; --encre-douce:#4a4a44; --gris:#8a8578;
+    --pin:#2f3b2f; --or:#B98B47; --trait:rgba(28,28,26,.12);
+    --alerte:#9C3B2E; --fond-alerte:#f7ece9;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --fond:#171613; --plage:#1e1c18; --papier:#262420;
+           --encre:#e9e5dc; --encre-douce:#c9c4b8; --gris:#8a867c;
+           --pin:#9db09d; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+           --alerte:#e0917f; --fond-alerte:#2a1d1a; }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.62 -apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 72px}
+  .page{max-width:660px;margin:0 auto;padding:0 22px}
+
+  header{background:var(--pin);color:#faf9f5;padding:30px 0 26px}
+  @media (prefers-color-scheme: dark){ header{background:#20261f;color:#e9e5dc} }
+  header .marque{display:flex;align-items:center;gap:9px;margin-bottom:16px;opacity:.9}
+  header .nom{font:400 14px/1 ui-serif,Georgia,serif;letter-spacing:.3em}
+  header h1{margin:0;font:400 30px/1.18 ui-serif,Georgia,serif;letter-spacing:-.01em}
+  header .date{margin:10px 0 0;font-size:13.5px;opacity:.82}
+
+  .brouillon{background:var(--fond-alerte);border-left:4px solid var(--alerte);
+             padding:16px 18px;margin:26px 0 0;border-radius:0 10px 10px 0;
+             font-size:14.5px;line-height:1.6}
+  .brouillon b{color:var(--alerte)}
+  .brouillon ul{margin:10px 0 0;padding-left:20px}
+  .brouillon li{margin-top:6px}
+
+  nav.sommaire{margin:30px 0 0;padding:18px 20px;background:var(--plage);
+               border:1px solid var(--trait);border-radius:12px}
+  nav.sommaire b{display:block;margin-bottom:10px;font:700 10px/1 sans-serif;
+                 letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  nav.sommaire ol{margin:0;padding-left:22px;font-size:14.5px}
+  nav.sommaire li{margin-top:6px}
+  nav.sommaire a{color:var(--encre);text-decoration:none;border-bottom:1px solid var(--trait)}
+
+  h2{margin:44px 0 12px;font:400 22px/1.25 ui-serif,Georgia,serif;
+     padding-top:14px;border-top:1px solid var(--trait)}
+  h2 .num{color:var(--or);font-family:sans-serif;font-size:14px;font-weight:700;
+          letter-spacing:.08em;display:block;margin-bottom:6px}
+  h3{margin:26px 0 8px;font:600 16px/1.35 sans-serif}
+  p{margin:0 0 12px}
+  ul,ol{margin:0 0 12px;padding-left:22px}
+  li{margin-top:7px}
+  strong,b{font-weight:600}
+  .fort{background:var(--papier);padding:14px 16px;border-radius:10px;margin:0 0 14px}
+  code{background:var(--papier);padding:1px 5px;border-radius:4px;font-size:13.5px}
+  .defile{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 14px}
+  table{width:100%;min-width:460px;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--trait)}
+  th{font-weight:600;color:var(--encre-douce)}
+  .acompleter{color:var(--alerte);font-weight:600}
+  .etat{white-space:nowrap;font-weight:600}
+  .ok{color:var(--pin)}
+  .attente{color:var(--or)}
+  .rien{color:var(--alerte)}
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--trait);
+         font-size:13.5px;color:var(--gris)}
+  footer a{color:inherit}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="page">
+    <div class="marque">
+      <span class="nom">ATLAS</span>
+    </div>
+    <h1>Politique de confidentialité</h1>
+    <p class="date">Version 0.1 — brouillon du 8 septembre 2026</p>
+  </div>
+</header>
+
+<div class="page">
+
+  <div class="brouillon">
+    <b>Brouillon — à faire relire par un juriste avant toute mise en ligne.</b>
+    <p style="margin:8px 0 0">Ce texte décrit ce que l’application fait réellement, y compris ce qu’elle ne fait pas encore. Il n’est pas publiable en l’état :</p>
+    <ul>
+      <li>l’<b>éditeur n’existe pas encore</b> : la société reste à constituer, donc le responsable de traitement ne peut pas être nommé ;</li>
+      <li>l’<b>hébergement n’est pas choisi</b>, et il doit l’être en Union européenne, base et fichiers compris ;</li>
+      <li>plusieurs <b>suppressions automatiques annoncées ne tournent pas</b> : le mécanisme est écrit, aucun planificateur ne l’appelle. Le tableau de l’article&nbsp;6 le dit ligne par ligne. <b>Annoncer une suppression qui n’a pas lieu est une faute plus grave que ne rien annoncer&nbsp;;</b></li>
+      <li>le <b>contrat de sous-traitance</b> de l’article&nbsp;28 du RGPD est un document distinct, et il reste à faire rédiger.</li>
+    </ul>
+  </div>
+
+  <nav class="sommaire">
+    <b>Sommaire</b>
+    <ol>
+      <li><a href="#a1">Qui est responsable de quoi</a></li>
+      <li><a href="#a2">Ce que nous traitons, et pourquoi</a></li>
+      <li><a href="#a3">L’intelligence artificielle : le point le plus exposé</a></li>
+      <li><a href="#a4">Ce que voit le client de l’artisan</a></li>
+      <li><a href="#a5">À qui vos données sont transmises</a></li>
+      <li><a href="#a6">Combien de temps nous les gardons</a></li>
+      <li><a href="#a7">Ce que nous ne faisons pas</a></li>
+      <li><a href="#a8">Comment nous les protégeons</a></li>
+      <li><a href="#a9">Vos droits</a></li>
+      <li><a href="#a10">En cas de fuite de données</a></li>
+      <li><a href="#a11">Cookies</a></li>
+      <li><a href="#a12">Modification et contact</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="a1"><span class="num">ARTICLE 1</span>Qui est responsable de quoi</h2>
+
+  <p>Atlas est édité par <span class="acompleter">[À COMPLÉTER — dénomination, siège, RCS]</span>, ci-après «&nbsp;nous&nbsp;».</p>
+
+  <p><b>Il y a deux relations, et il ne faut jamais les confondre.</b></p>
+
+  <div class="defile">
+  <table>
+    <tr><th>Données</th><th>Notre rôle</th><th>Le rôle de l’artisan</th></tr>
+    <tr>
+      <td><b>Celles de l’artisan</b> : son compte, son entreprise, son abonnement</td>
+      <td><b>Responsable de traitement</b></td>
+      <td>Personne concernée</td>
+    </tr>
+    <tr>
+      <td><b>Celles de ses clients</b> : nom, adresse, téléphone, chantiers, devis</td>
+      <td><b>Sous-traitant</b> — nous agissons sur ses instructions</td>
+      <td><b>Responsable de traitement</b></td>
+    </tr>
+  </table>
+  </div>
+
+  <p class="fort"><b>Ce que cela veut dire pour un client d’artisan.</b> Si vous êtes le client d’un paysagiste qui utilise Atlas, c’est <b>auprès de lui</b> que vous exercez vos droits, pas auprès de nous. Nous lui fournissons les moyens d’y répondre.</p>
+
+  <p>Pour cette seconde relation, l’article&nbsp;28 du RGPD impose un contrat écrit entre l’artisan et nous. Il liste nommément les sous-traitants ultérieurs de l’article&nbsp;5, que l’artisan autorise en l’acceptant.</p>
+
+  <h2 id="a2"><span class="num">ARTICLE 2</span>Ce que nous traitons, et pourquoi</h2>
+
+  <h3>2.1 — Le compte et l’entreprise</h3>
+  <ul>
+    <li><b>Pourquoi</b> : authentifier l’artisan, rattacher ses données à son entreprise.</li>
+    <li><b>Base légale</b> : exécution du contrat d’abonnement.</li>
+    <li><b>Quoi</b> : adresse e-mail, empreinte du mot de passe (jamais le mot de passe lui-même), raison sociale et paramètres de l’entreprise, appartenance à l’entreprise, charte de couleurs choisie.</li>
+    <li><b>Qui</b> : les artisans abonnés et leurs collaborateurs.</li>
+  </ul>
+
+  <h3>2.2 — Les chantiers et les clients de l’artisan</h3>
+  <ul>
+    <li><b>Pourquoi</b> : permettre à l’artisan de préparer ses devis, son planning et ses factures.</li>
+    <li><b>Base légale</b> : intérêt légitime de l’artisan dans le cadre de sa relation commerciale. Nous agissons sur ses instructions.</li>
+    <li><b>Quoi</b> : identité et coordonnées du client, adresse et description du chantier, devis et leurs lignes, historique des prix, photos, notes vocales et leurs transcriptions, propositions de l’assistant, documents versés.</li>
+    <li><b>Qui</b> : les clients des artisans — des particuliers, le plus souvent.</li>
+  </ul>
+
+  <div class="fort">
+    <p style="margin:0"><b>Un point de vigilance qu’il faut dire.</b> Une note vocale est dictée librement, sur un chantier. Elle peut capter, sans que personne l’ait voulu, des propos relevant de l’article&nbsp;9 du RGPD — santé, situation familiale, difficultés d’un client. Le champ est libre : nous ne pouvons pas garantir qu’il ne contiendra jamais de donnée sensible. C’est ce qui justifie à soi seul une conservation courte de l’audio, et l’interdiction d’exploiter ces contenus à d’autres fins.</p>
+  </div>
+
+  <h3>2.3 — Sécurité et exploitation</h3>
+  <ul>
+    <li><b>Pourquoi</b> : limitation de débit, journalisation, détection d’anomalies.</li>
+    <li><b>Base légale</b> : intérêt légitime — la sécurité du service.</li>
+    <li><b>Quoi</b> : identifiants de session, adresses IP, identifiants de requête, contextes d’erreur.</li>
+  </ul>
+
+  <h2 id="a3"><span class="num">ARTICLE 3</span>L’intelligence artificielle : le point le plus exposé</h2>
+
+  <p>Atlas transcrit les dictées, en extrait des informations et propose des lignes de devis. Il lit aussi des images : ticket de caisse, croquis d’arrosage, photo de végétal.</p>
+
+  <p><b>Ce qui sort de chez nous&nbsp;:</b></p>
+  <ul>
+    <li>l’<b>audio brut</b> de la note vocale, puis le <b>texte transcrit</b> ;</li>
+    <li>les informations du chantier ;</li>
+    <li>les <b>photographies</b> prises chez le client, <b>après retrait des métadonnées EXIF</b>.</li>
+  </ul>
+
+  <p>Ces contenus comportent, par construction, l’identité et l’adresse du client : l’application est faite pour qu’on les dicte.</p>
+
+  <div class="fort">
+    <p style="margin:0 0 8px"><b>Le nettoyage des photos, et sa limite.</b></p>
+    <p style="margin:0 0 8px">Une photo de jardin prise au téléphone porte, sans que personne l’ait voulu, les <b>coordonnées GPS du domicile du client</b>, l’horodatage exact, le modèle d’appareil, parfois une vignette ayant survécu à un recadrage. Rien de cela n’aide à reconnaître un champignon : ces métadonnées sont retirées avant tout envoi et tout rangement. Un fichier qu’on n’a pas su nettoyer est <b>refusé</b> plutôt que rangé.</p>
+    <p style="margin:0"><b>Ce que cela ne fait pas</b>, et qu’il faut savoir : l’image reste l’image. Une maison, une plaque d’immatriculation ou un visage au second plan y sont toujours. C’est la conservation limitée qui répond à cela, pas le nettoyage.</p>
+  </div>
+
+  <p>Le texte dicté est explicitement présenté au modèle comme une <b>donnée à analyser</b>, jamais comme une instruction : c’est ce qui empêche qu’une phrase dictée détourne le comportement de l’assistant.</p>
+
+  <h2 id="a4"><span class="num">ARTICLE 4</span>Ce que voit le client de l’artisan</h2>
+
+  <p>Le client de l’artisan ne crée aucun compte. Il reçoit un lien, par SMS ou par e-mail, qui ouvre une page publique : son devis, le choix d’une date, puis sa facture.</p>
+
+  <p><b>Trois garanties sur cette page</b>, qui est la seule surface publique du produit :</p>
+  <ul>
+    <li>un identifiant <b>impossible à deviner</b> ;</li>
+    <li>une <b>expiration</b> — 45 jours pour un devis, 60 pour une facture ;</li>
+    <li>un contenu <b>strictement limité au document concerné</b> : jamais la fiche client complète, jamais l’historique des prix, jamais les autres chantiers. Un lien qui fuite n’expose qu’un seul devis, et pas indéfiniment.</li>
+  </ul>
+
+  <p><b>Ce qui est conservé de sa réponse</b> : le devis et son montant, les dates proposées, sa réponse et son horodatage, ainsi que la <b>preuve d’acceptation</b> — empreinte du document accepté, adresse IP, canal utilisé, et validation d’un code SMS le cas échéant. Cette trace vaut signature&nbsp;: elle est conservée aussi longtemps que le contrat peut être contesté, et c’est voulu — une preuve effacée trop tôt ne prouve plus rien.</p>
+
+  <p><b>Les jours occupés de l’artisan lui sont transmis</b>, pour qu’il ne retienne pas une date impossible. Cette transmission est bornée à une <b>liste de dates, et rien d’autre</b> : aucun intitulé de chantier, aucun nom, aucune adresse, aucune durée, aucun motif.</p>
+
+  <h2 id="a5"><span class="num">ARTICLE 5</span>À qui vos données sont transmises</h2>
+
+  <p class="fort"><span class="acompleter">[À COMPLÉTER]</span> — les fournisseurs d’intelligence artificielle sont interchangeables par configuration. <b>Seule la configuration réellement déployée fait foi</b> : ce tableau doit être réduit aux fournisseurs effectivement activés avant publication, et le contrat de sous-traitance doit refléter ce choix.</p>
+
+  <div class="defile">
+  <table>
+    <tr><th>Rôle</th><th>Ce qui est transmis</th><th>Fournisseur</th></tr>
+    <tr><td>Transcription de la dictée</td><td><b>Audio brut</b> de la note vocale</td><td class="acompleter">[à arrêter]</td></tr>
+    <tr><td>Rédaction des lignes de devis</td><td>Texte dicté, informations du chantier</td><td class="acompleter">[à arrêter]</td></tr>
+    <tr><td>Lecture d’image</td><td>Photographies, EXIF retirés</td><td class="acompleter">[à arrêter]</td></tr>
+    <tr><td>Hébergement de la base</td><td>L’ensemble des données</td><td class="acompleter">[à choisir — Union européenne]</td></tr>
+    <tr><td>Stockage des fichiers</td><td>Photos, audio</td><td class="acompleter">[à choisir — Union européenne]</td></tr>
+    <tr><td>Limitation de débit</td><td>Identifiants de session, adresses IP</td><td class="acompleter">[à choisir — Union européenne]</td></tr>
+    <tr><td>Envoi des SMS et des e-mails</td><td>Numéro ou adresse du client, lien vers son document</td><td class="acompleter">[à choisir]</td></tr>
+    <tr><td>Supervision des erreurs</td><td>Contextes d’erreur</td><td class="acompleter">[optionnel — à filtrer ou à retirer]</td></tr>
+    <tr>
+      <td>Aide à la saisie d’adresse</td>
+      <td><b>Uniquement la rue en cours de frappe</b> — jamais le nom du client, jamais le chantier</td>
+      <td><b>Base Adresse Nationale</b><br>service public français, hébergé en France</td>
+    </tr>
+  </table>
+  </div>
+
+  <div class="fort">
+    <p style="margin:0 0 8px"><b>L’aide à la saisie d’adresse mérite une note, parce qu’elle a été choisie contre la solution évidente.</b></p>
+    <p style="margin:0">Retenir Google aurait envoyé les adresses des clients chez un acteur hors Union européenne, et ajouté un sous-traitant de plus à faire autoriser. La Base Adresse Nationale est un service public français, sans compte ni clé, et ne reçoit que la rue tapée. La requête part <b>de notre serveur et jamais du navigateur</b> : un seul endroit à limiter et à couper, plutôt qu’autant de téléphones qu’il y a d’utilisateurs.</p>
+  </div>
+
+  <p><b>Transferts hors Union européenne.</b> Les fournisseurs d’intelligence artificielle envisagés sont situés hors de l’Union. Un tel transfert exige un encadrement contractuel — clauses contractuelles types de la Commission européenne — et il doit être en place avant toute utilisation avec des données de clients réels. <span class="acompleter">[À COMPLÉTER une fois les fournisseurs arrêtés.]</span></p>
+
+  <p><b>Changement de sous-traitant.</b> Tout ajout ou remplacement est notifié à l’artisan, avec un délai raisonnable pour s’y opposer.</p>
+
+  <h2 id="a6"><span class="num">ARTICLE 6</span>Combien de temps nous les gardons</h2>
+
+  <p>Le principe est simple : <b>ce qui n’est pas conservé ne peut pas fuir.</b></p>
+
+  <div class="brouillon">
+    <b>Ce tableau dit son état réel, et c’est délibéré.</b>
+    <p style="margin:8px 0 0">Une version antérieure du registre interne portait le mot «&nbsp;implémenté&nbsp;» sur des purges que <b>rien ne déclenchait</b>. Le code existait ; aucun fichier n’était effacé. C’est le pire écart possible dans un document de conformité : il rassure exactement là où il faudrait alerter. Trois états sont donc distingués, jamais deux — et <b>les lignes «&nbsp;pas encore&nbsp;» et «&nbsp;rien&nbsp;» doivent être réglées ou retirées avant publication.</b></p>
+  </div>
+
+  <div class="defile">
+  <table>
+    <tr><th>Donnée</th><th>Durée</th><th>État réel</th></tr>
+    <tr><td>Tentatives de connexion</td><td>1 heure</td><td class="etat ok">✅ appliquée</td></tr>
+    <tr><td>Preuves de ré-authentification</td><td>10 minutes</td><td class="etat ok">✅ appliquée</td></tr>
+    <tr><td>Lien public d’un devis</td><td>45 jours</td><td class="etat ok">✅ appliquée</td></tr>
+    <tr><td>Lien public d’une facture</td><td>60 jours</td><td class="etat ok">✅ appliquée</td></tr>
+    <tr><td>Photo de diagnostic rattachée à un chantier</td><td>suit le dossier</td><td class="etat ok">✅ appliquée</td></tr>
+    <tr><td>Fichiers orphelins</td><td>24 heures</td><td class="etat attente">⏳ pas encore</td></tr>
+    <tr><td><b>Audio des notes vocales</b></td><td>7 jours après transcription</td><td class="etat attente">⏳ pas encore</td></tr>
+    <tr><td>Photos de diagnostic sans chantier</td><td>90 jours</td><td class="etat attente">⏳ pas encore</td></tr>
+    <tr><td>Lien d’un compte rendu d’entretien</td><td>aucune expiration</td><td class="etat rien">❌ écart connu</td></tr>
+    <tr><td>Transcriptions, chantiers, devis, clients, photos de chantier</td><td>durée de la relation, à définir</td><td class="etat rien">❌ rien</td></tr>
+    <tr><td>Journaux techniques</td><td>180 jours visés</td><td class="etat rien">❌ dépend de l’hébergeur</td></tr>
+    <tr><td>Compte fermé</td><td>30 jours visés</td><td class="etat rien">❌ aucun chemin de fermeture n’existe</td></tr>
+  </table>
+  </div>
+
+  <h3>Ce que nous refusons d’effacer</h3>
+  <p>Ces durées-là ne sont pas des échéances de suppression : ce sont des refus d’effacer. Elles bornent ce que le droit à l’effacement ne peut pas emporter.</p>
+  <div class="defile">
+  <table>
+    <tr><th>Donnée</th><th>Durée</th><th>Fondement</th></tr>
+    <tr><td>Factures et pièces comptables</td><td><b>10 ans</b></td><td>article L.123-22 du Code de commerce</td></tr>
+    <tr><td>Devis <b>accepté</b></td><td><b>5 ans</b></td><td>engagement contractuel — un devis non accepté, lui, s’efface</td></tr>
+  </table>
+  </div>
+
+  <h2 id="a7"><span class="num">ARTICLE 7</span>Ce que nous ne faisons pas</h2>
+
+  <ul>
+    <li><b>Nous ne vendons ni ne louons vos données</b>, ni celles de vos clients.</li>
+    <li><b>Nous n’entraînons aucun modèle</b> d’intelligence artificielle sur vos contenus, et nous exigeons la même chose de nos fournisseurs. Une offre gratuite conditionnée à l’autorisation d’entraîner sur le trafic a été refusée pour cette raison.</li>
+    <li><b>Aucune publicité</b>, aucun profilage publicitaire, aucun traceur commercial.</li>
+    <li><b>Aucune décision automatisée</b> produisant un effet juridique. L’assistant propose&nbsp;; l’artisan décide, et le parcours s’arrête devant lui avant l’envoi d’un devis et avant celui d’une facture.</li>
+  </ul>
+
+  <h2 id="a8"><span class="num">ARTICLE 8</span>Comment nous les protégeons</h2>
+
+  <p>Ces mesures existent aujourd’hui et sont vérifiables dans le code :</p>
+  <ul>
+    <li><b>Cloisonnement des entreprises appliqué dans la base de données</b> elle-même, et pas seulement dans le code. Les rôles applicatifs ne peuvent pas le contourner, et la mise en production échoue si l’un d’eux devient trop privilégié.</li>
+    <li>Mots de passe stockés sous forme d’<b>empreinte</b>, jamais en clair.</li>
+    <li>En-têtes de sécurité stricts, dont une politique limitant l’accès à la caméra et au micro.</li>
+    <li>Limitation de débit sur les points d’entrée sensibles.</li>
+    <li>Purges protégées par un secret, comparé en temps constant.</li>
+    <li>Le texte dicté est traité comme une donnée, jamais comme une instruction.</li>
+    <li>Procédures de sauvegarde et de restauration documentées et éprouvées.</li>
+  </ul>
+
+  <h3>Ce qui manque, et que nous ne cachons pas</h3>
+  <ul>
+    <li>le <b>chiffrement au repos</b> de la base — il dépend de l’hébergeur, qui reste à choisir ;</li>
+    <li>un <b>journal des accès aux données clients</b> — qui a consulté quoi, et quand ;</li>
+    <li>le <b>filtrage des données personnelles</b> avant envoi à l’outil de supervision des erreurs ;</li>
+    <li>l’<b>export et l’effacement d’un client donné</b> (voir l’article&nbsp;9).</li>
+  </ul>
+
+  <h2 id="a9"><span class="num">ARTICLE 9</span>Vos droits</h2>
+
+  <p>Vous disposez des droits d’accès, de rectification, d’effacement, de limitation, d’opposition et de portabilité prévus par le RGPD.</p>
+
+  <div class="defile">
+  <table>
+    <tr><th>Droit</th><th>Où il s’exerce aujourd’hui</th></tr>
+    <tr><td><b>Accès et portabilité</b> — l’artisan</td><td><b>Réglages, puis Mes données</b> : un fichier qui contient tout et s’ouvre sans Atlas</td></tr>
+    <tr><td><b>Rectification</b></td><td>Tous les champs sont modifiables dans l’application</td></tr>
+    <tr><td><b>Accès et effacement</b> — un client de l’artisan</td><td><span class="acompleter">à construire</span> — l’export et l’effacement complets d’un client donné n’existent pas encore</td></tr>
+    <tr><td><b>Opposition à l’assistance par IA</b></td><td><span class="acompleter">à construire</span> pour un client donné ; l’assistance se coupe déjà entièrement</td></tr>
+  </table>
+  </div>
+
+  <p><b>Si vous êtes le client d’un artisan</b>, adressez-vous à lui : c’est lui le responsable de traitement. Nous lui fournissons les moyens de vous répondre.</p>
+
+  <p>Vous pouvez introduire une réclamation auprès de la <b>CNIL</b> — 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07, <a href="https://www.cnil.fr">cnil.fr</a>.</p>
+
+  <h2 id="a10"><span class="num">ARTICLE 10</span>En cas de fuite de données</h2>
+
+  <p>En tant que sous-traitant, nous alertons l’artisan concerné <b>sans délai</b>, sans attendre d’avoir tout compris : une alerte partielle vaut mieux qu’une alerte tardive. C’est lui qui dispose ensuite de <b>72 heures</b> pour notifier la CNIL, et nous lui fournissons les éléments techniques.</p>
+
+  <p>Si le risque est élevé pour les personnes, l’artisan les informe. Tout incident est consigné à notre registre interne, y compris ceux qui n’ont pas été notifiés.</p>
+
+  <h2 id="a11"><span class="num">ARTICLE 11</span>Cookies</h2>
+
+  <p>Atlas n’utilise <b>aucun cookie publicitaire ni de mesure d’audience tierce</b>.</p>
+  <p>Les seuls témoins déposés sont ceux <b>strictement nécessaires au fonctionnement</b> : maintenir votre session ouverte et protéger les formulaires. Ils sont dispensés de consentement au titre de l’article&nbsp;82 de la loi Informatique et Libertés. Les refuser rendrait la connexion impossible.</p>
+
+  <h2 id="a12"><span class="num">ARTICLE 12</span>Modification et contact</h2>
+
+  <p>Cette politique peut évoluer. Toute modification substantielle est notifiée par un moyen durable, au moins <b>trente jours</b> avant son entrée en vigueur. Chaque version est datée&nbsp;; les versions antérieures sont conservées et communiquées sur demande.</p>
+
+  <p><b>Nous écrire</b> : <span class="acompleter">[À COMPLÉTER — adresse e-mail dédiée]</span>.</p>
+  <p><b>Délégué à la protection des données</b> : <span class="acompleter">[À COMPLÉTER — sa désignation n’est pas obligatoire ici, mais la question doit être tranchée et la réponse écrite.]</span></p>
+
+  <footer>
+    <p>Version 0.1 — brouillon du 8 septembre 2026. <b>Non publiable en l’état</b> : voir le bandeau du haut.</p>
+    <p><a href="conditions-utilisation.html">Conditions générales d’utilisation</a> · <a href="essais.html">Retour aux maquettes</a></p>
+  </footer>
+</div>
+
+</body>
+</html>

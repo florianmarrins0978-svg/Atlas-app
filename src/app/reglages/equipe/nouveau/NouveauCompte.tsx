@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import { etatConfirmation, LONGUEUR_MINIMALE } from "@/lib/mot-de-passe";
+import OeilMotDePasse from "@/components/atlas/OeilMotDePasse";
 import type { Role } from "@/lib/acces-roles";
 import ChoixRole from "../ChoixRole";
 import { donnerUnAccesAction } from "../actions";
@@ -206,26 +207,14 @@ function ChampSecret({
           value={valeur}
           onChange={(e) => onChange(e.target.value)}
         />
-        <button
-          type="button"
-          onClick={() => setOuvert((o) => !o)}
-          aria-label={ouvert ? `Masquer ${etiquette.toLowerCase()}` : `Afficher ${etiquette.toLowerCase()}`}
-          aria-pressed={ouvert}
-          // 44 px : la cible tactile d'Atlas. Le pictogramme en fait 21.
-          className="-mr-2.5 flex h-11 w-11 flex-none items-center justify-center"
-          style={{ color: ouvert ? colors.or : colors.muted }}
-        >
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="h-[21px] w-[21px]"
-            style={{ fill: "none", stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round", strokeLinejoin: "round" }}
-          >
-            <path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z" />
-            <circle cx="12" cy="12" r="3.1" />
-            {ouvert && <path d="M4 20 20 4" />}
-          </svg>
-        </button>
+        <OeilMotDePasse
+          ouvert={ouvert}
+          onBasculer={() => setOuvert((o) => !o)}
+          quoi={etiquette.toLowerCase()}
+          couleur={colors.muted}
+          couleurOuvert={colors.or}
+          className="-mr-2.5"
+        />
       </div>
       {sous && (
         <span className="mt-1.5 block text-[11.5px]" style={{ color: souligne ?? colors.muted }}>

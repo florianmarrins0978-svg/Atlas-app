@@ -65,7 +65,7 @@ async function main() {
     echecs++;
 
   if (
-    !(await verifier("Une route protégée redirige vers /login sans session", async () => {
+    !(await verifier("Une route protégée renvoie à la porte sans session", async () => {
       const r = await fetch(`${url}/`, { redirect: "manual" });
       if (r.status !== 307 && r.status !== 302) throw new Error(`statut ${r.status}, attendu une redirection`);
     }))

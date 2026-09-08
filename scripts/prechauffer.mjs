@@ -418,7 +418,12 @@ export function expliquerObstacle(renvoiDominant) {
       "à l'ouverture, une fois chacun."
     );
   }
-  if (renvoiDominant.vers.startsWith("/login")) {
+  // **`/bienvenue` COMPTE AUTANT QUE `/login`** — depuis le 8 septembre 2026, le
+  // middleware envoie un visiteur sans session à la porte, et non au formulaire.
+  // Sans cette ligne, la panne la plus fréquente du préchauffage (une session
+  // refusée) se serait mise à sortir sous la forme « l'application renvoie vers
+  // /bienvenue », qui n'apprend rien et envoie chercher au mauvais endroit.
+  if (renvoiDominant.vers.startsWith("/login") || renvoiDominant.vers.startsWith("/bienvenue")) {
     return (
       "Les écrans n'ont pas pu être compilés : la session du préchauffage a été " +
       "refusée. Vérifier qu'AUTH_SECRET est bien le même que celui du serveur."

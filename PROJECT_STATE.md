@@ -9,6 +9,10 @@ l’affichage)
 · dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
 (la mienne : `0076_identite_vivante_sur_la_facture.sql`)
 
+**La porte en plein air est codée** (8 septembre 2026) : `/bienvenue` est l'écran
+d'un visiteur sans compte, et `/creer-un-compte` pose seize questions une à une
+— patron et entreprise créés d'un coup, session ouverte. `ARCHITECTURE.md` §293.
+
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une

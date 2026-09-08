@@ -42,6 +42,11 @@ const SURVEILLES = [
   "src/app/chantiers/[id]/informations/page.tsx",
   "src/app/chantiers/[id]/informations/InformationsClient.tsx",
   "src/app/chantiers/[id]/informations/BrouillonSection.tsx",
+  // La création de compte, écrite le 8 septembre 2026 : elle NOMME la charte
+  // Nuit (personne n'est connu à cette adresse) et prend ses jetons. La
+  // planche portait un gris et un or à elle, à un cheveu de ceux du produit ;
+  // les recopier aurait fait vivre huit chartes et demie.
+  "src/app/creer-un-compte/page.tsx",
 ];
 
 /**

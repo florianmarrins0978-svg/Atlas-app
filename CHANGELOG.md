@@ -8,6 +8,64 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### La porte en plein air est codée — l'écran d'accueil et les seize questions
+
+Sa demande : *« code-moi exactement la deuxième maquette avec les questions »*.
+Écrans 1 et 2 de `appli/la-porte-en-plein-air.html`, portés dans l'application.
+
+Un visiteur sans compte arrive désormais sur **`/bienvenue`** — la photo, le nom,
+et deux gestes — au lieu de tomber sur un formulaire qui suppose qu'il a déjà un
+compte. « Créer un compte » ouvre **une question à la fois**, seize au plus,
+quatorze pour une micro-entreprise en franchise : on ne demande jamais le capital
+d'une entreprise qui n'en a pas. Le compte et l'entreprise sont créés dans une
+seule transaction, et **la session s'ouvre toute seule** — sans quoi on
+retomberait sur « Adresse » et « Mot de passe » après avoir répondu à seize
+questions.
+
+Ce qui a été **refusé**, et pourquoi : les boutons Google et Apple de l'écran 3
+de la planche. Aucun de ces deux fournisseurs n'est branché ; deux boutons qui ne
+font rien valent moins que pas de boutons. `/login` garde donc sa charte et
+reçoit seulement les deux liens qui manquaient — le retour vers la porte, et
+« Pas de compte ? ».
+
+### Trois défauts trouvés en REGARDANT l'écran, aucun par un test
+
+`CLAUDE.md` §5, une cinquième fois. Les trois sont réels et aucun n'était visible
+autrement :
+
+1. **Tout `public/` recevait une redirection.** Le middleware interceptait
+   `/images/porte-foret.jpg` : la photo de la porte ne s'affichait pas, un carré
+   gris à la place. Et pas seulement elle — `manifest.json`, les icônes de
+   l'écran d'accueil, et **les deux pages légales que la porte fait accepter**.
+   On demandait d'accepter des conditions qu'on ne pouvait pas lire. La liste
+   d'exceptions (`favicon.ico`, `robots.txt`) devient une règle : ce qui porte
+   une extension est un fichier, pas un écran.
+2. **« Se connecter » finissait sous l'indicateur d'accueil de l'iPhone.** La
+   marge du bas est réservée partout ailleurs par la barre d'onglets ; ces deux
+   écrans n'en ont pas.
+3. **Le bandeau des formes juridiques sortait de l'écran** — les dernières
+   formes et « Continuer » étaient hors de portée. Il s'ouvre vers le haut, là
+   où la question laisse la place.
+
+Et un quatrième, en marge : `.gitignore` nommait les dossiers bâtis un par un, et
+le huitième manquait. Ce n'est pas un fichier de trop dans `git status` :
+**Tailwind lit tout ce que git ne cache pas**, il a relu ses propres classes
+compilées, et la feuille de style entière a cessé de compiler.
+
+### Trois règles qui vivaient en double, ramenées à une seule
+
+Écrites en codant la porte, et chacune aurait divergé :
+
+| | |
+|---|---|
+| le mot de passe | la porte imposait **huit** caractères quand le produit en exige douze depuis l'audit du 23 août : le PATRON aurait eu le mot de passe le plus faible, plus faible que celui qu'il impose à ses salariés |
+| le capital social | `entreprises.ts` savait lire « 1 000 » ; la porte, non — un capital saisi avec une espace aurait fait échouer la création entière, pour une case facultative |
+| la forme juridique | `formeADuCapital` existait déjà, et la copie répondait **l'inverse** sur « Autre » |
+
+Et l'œil qui montre le mot de passe sort de l'écran des salariés : deux dessins
+pour le même geste, c'est le libellé lu à voix haute qui aurait dérivé.
+
+
 ### Sa porte, c'est « en plein air » — l'autre planche est écartée
 
 *« J'ai déjà choisi, c'était la deuxième maquette, la porte en plein air. »*

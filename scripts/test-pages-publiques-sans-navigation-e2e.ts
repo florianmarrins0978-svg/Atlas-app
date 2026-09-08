@@ -50,7 +50,15 @@ async function cas(nom: string, verifier: () => Promise<void>) {
  * exactement le genre de contrôle vert sur du vide que ce dépôt a déjà payé.
  */
 async function adressesPubliques(): Promise<Array<[string, string]>> {
-  const liste: Array<[string, string]> = [["la page de connexion", "/login"]];
+  const liste: Array<[string, string]> = [
+    ["la page de connexion", "/login"],
+    // La porte et la création de compte, ouvertes le 8 septembre 2026 : elles
+    // s'ouvrent SANS session par construction — c'est là qu'on arrive quand on
+    // n'en a pas — et elles ne doivent donc pas plus porter la barre d'onglets
+    // que la facture du client.
+    ["la porte", "/bienvenue"],
+    ["la création de compte", "/creer-un-compte"],
+  ];
 
   const devis = await pool.query(`select jeton from envois_devis limit 1`);
   if (devis.rows[0]) liste.push(["le devis vu par le client", `/devis/${devis.rows[0].jeton}`]);
@@ -166,7 +174,10 @@ async function main() {
   await cas("sans compte, les écrans du patron restent fermés", async () => {
     for (const ecran of ["/", "/planning", "/termines", "/reglages"]) {
       await page.goto(`${BASE}${ecran}`, { waitUntil: "networkidle" });
-      if (!page.url().includes("/login")) {
+      // La porte depuis le 8 septembre 2026 ; `/login` reste accepté, car
+      // c'est là que mène une session périmée — l'un ou l'autre prouve la même
+      // chose : l'écran du patron ne s'est pas ouvert.
+      if (!page.url().includes("/bienvenue") && !page.url().includes("/login")) {
         throw new Error(
           `${ecran} s'est ouvert sans session (arrivé sur ${page.url()}). ` +
             "Ce n'est plus une gêne d'affichage : le client accède aux données du patron."
@@ -181,6 +192,8 @@ async function main() {
     // de passer au vert en ne regardant que les anciens.
     const couverts = [
       "/login",
+      "/bienvenue",
+      "/creer-un-compte",
       "/devis",
       "/factures",
       "/entretien",

@@ -8,6 +8,31 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA PORTE EN PLEIN AIR (8 septembre 2026)
+
+**Planche :** `appli/la-porte-en-plein-air.html`, écrans 1 et 2 — retenus par
+lui. **Décisions :** `ARCHITECTURE.md` §293. **Migration : 0077** (civilité et
+prénom du compte). **Document de retour :** `docs/lot-porte-en-plein-air-code.md`.
+
+**Ce qui existe maintenant.** `/bienvenue` — la photo, ATLAS, deux gestes — est
+où arrive un visiteur sans session. `/creer-un-compte` pose **une question à la
+fois**, seize au plus, et crée le patron ET son entreprise dans une seule
+transaction, session ouverte comprise. `/login` garde son adresse, sa charte et
+son formulaire ; il reçoit seulement le retour vers la porte et « Pas de
+compte ? ».
+
+**LA LEÇON DU LOT — trois défauts trouvés en REGARDANT, aucun par un test.** Le
+plus coûteux : le middleware redirigeait **tout `public/`**, donc la photo, les
+icônes, le manifeste et les deux pages légales qu'on fait accepter. Il listait
+ses exceptions une par une, et la liste avait vieilli. Le même défaut de forme
+était dans `.gitignore`, qui nommait les dossiers bâtis un par un : le huitième
+manquait, **Tailwind a relu ses propres classes compilées**, et la feuille de
+style entière a cessé de compiler sur du code juste.
+
+**Ce qui reste ouvert, et qui est à LUI :** trois points d'apparence
+(`TODO.md`) — la phrase des conditions ou une case à cocher, la photo fixe ou
+non, et « seize questions, est-ce trop ? ».
+
 ## Dernier lot — QUI TRAVAILLE QUEL JOUR (8 septembre 2026)
 
 **Planche :** `appli/qui-travaille-quel-jour.html` — retenu **C et D2**.
