@@ -2054,30 +2054,28 @@ ne visait pas — il ne cherchait que `@/server/…`. Une règle qui ne tient qu
 
 ---
 
-## LA PORTE : IL DOIT CHOISIR A, B OU C (31 août 2026)
+## ✅ ~~LA PORTE : A, B OU C ?~~ — **tranché le 8 septembre 2026 : ni l'un ni l'autre**
 
-Sa capture du 30 août, et la planche qui en sort :
-`appli/porte-comme-ta-capture.html` — **rien n'est codé**, `src/app/login/` est
-intact.
+Sa réponse, et elle est nette : *« j'ai déjà choisi, c'était la deuxième
+maquette, la porte en plein air »*.
 
-| | |
-|---|---|
-| **A** | le bleu de sa capture ; la porte devient un écran à part |
-| **B** | le même dessin à ses couleurs — la charte « Nuit », recopiée |
-| **C** | le même dessin en clair ; se lit au soleil, comme le reste de l'appli |
+`appli/porte-comme-ta-capture.html` (31 août, trois reprises de sa capture du
+30) est donc **écartée**. La planche reste en ligne — elle raconte le chemin,
+comme toute maquette non retenue (`CLAUDE.md` §3 bis) — mais **plus personne ne
+l'attend** : aucune session ne doit rouvrir cette question.
 
-**Deux questions partent avec le choix**, et elles coûtent :
+**Ce qui vit, c'est `appli/la-porte-en-plein-air.html`** et les cinq points qui
+restent à trancher dessus, en tête de ce fichier. Les deux questions que ma
+planche posait n'ont pas disparu pour autant, et elles se rangent là-bas :
 
-- **Google et Apple pour de bon, ou on les retire ?** Google est le moins cher
-  des deux — l'application parle déjà à Google pour l'agenda
+- **Google et Apple** — la porte en plein air les porte aussi. Google est le
+  moins cher : l'application parle déjà à Google pour l'agenda
   (`src/server/agenda/google.ts`). Apple demande un compte développeur payant,
   et l'App Store l'exige dès que Google est proposé.
-- **Les mentions légales** de la planche renvoient à des pages qui n'existent
-  pas encore.
+- **Les mentions légales** — elles existent depuis le 8 septembre,
+  `appli/conditions-utilisation.html` et `appli/confidentialite.html`, en
+  brouillon.
 
-Tant qu'il n'a pas répondu, rien ne se code : c'est `CLAUDE.md` §3 bis.
-
----
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide

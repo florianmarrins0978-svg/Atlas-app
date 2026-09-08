@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### Sa porte, c'est « en plein air » — l'autre planche est écartée
+
+*« J'ai déjà choisi, c'était la deuxième maquette, la porte en plein air. »*
+
+`appli/porte-comme-ta-capture.html` (31 août) sort donc du jeu. Elle reste en
+ligne, comme toute planche non retenue — elle raconte le chemin —, mais plus
+aucune session ne doit attendre de réponse dessus : c'était écrit dans `TODO.md`
+depuis huit jours, et c'est ce genre d'attente fantôme qui fait redemander au
+patron ce qu'il a déjà tranché.
+
+Les deux questions qu'elle posait sont reportées là où elles vivent désormais —
+Google et Apple sur la porte retenue, et les mentions légales, qui existent en
+brouillon depuis le 8 septembre.
+
 ### Le douzième numéro de migration pris deux fois — constaté, pas défait
 
 Deux sessions ont poussé un `0076` à une heure d'intervalle le 8 septembre,
