@@ -481,6 +481,30 @@ async function main() {
       // réécrivent leurs morceaux, et les deux batteries rendent des rouges qui
       // n'accusent personne.
       ATLAS_DIST_DIR: distDir,
+      /**
+       * **LE PROFIL BANC, ET LE DÉPÔT L'AVAIT DÉJÀ PRÉVU POUR ÇA.**
+       *
+       * `next start` impose `NODE_ENV=production` — même ici. Sans ce profil,
+       * `src/server/env.ts` refuse de démarrer : « LLM_PROVIDER vaut "dev" en
+       * production », puis exige un compartiment S3. Il a raison sur un vrai
+       * déploiement, et il aurait interdit ce qu'on fait ici, c'est-à-dire
+       * SERVIR une version bâtie sans clé facturée (`src/profil-banc.ts`).
+       *
+       * Ce n'est pas un contournement : c'est le profil que le banc du patron
+       * emploie déjà, et il n'ouvre rien de plus qu'à lui.
+       */
+      ATLAS_PROFIL: "banc",
+      /**
+       * **« UntrustedHost », vu au premier essai du 8 septembre.** Auth.js
+       * refuse de servir une session en production si l'hôte n'est pas déclaré
+       * de confiance : chaque suite restait plantée devant un formulaire de
+       * connexion qui ne s'affichait jamais.
+       *
+       * L'hôte, ici, c'est `localhost` — le serveur que cette batterie vient
+       * d'allumer elle-même. Il n'y a rien à deviner ni personne à croire sur
+       * parole ; c'est exactement le cas que ce drapeau existe pour couvrir.
+       */
+      AUTH_TRUST_HOST: "true",
     },
     stdio: ["ignore", journalFd, journalFd],
     detached: true,
