@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### Le douzième numéro de migration pris deux fois — constaté, pas défait
+
+Deux sessions ont poussé un `0076` à une heure d'intervalle le 8 septembre,
+chacune verte de son côté : le doublon n'existait qu'une fois les deux
+fusionnées. Le contrôle a rougi aussitôt et a barré la CI entière — les suites
+base s'arrêtent avant la construction et les suites navigateur.
+
+**Renommer est exclu** : les deux sont sur `main`, et la clé de suivi étant le
+nom du fichier, un renommage les rejouerait sur toutes les bases à jour. Reste
+ce qui compte vraiment — l'ORDRE, qu'une base neuve tire d'un tri alphabétique.
+Vérifié : `absence_demi_journee` n'écrit que sur `absences_equipe`,
+`identite_vivante_sur_la_facture` que sur `factures`. Aucune ne crée ce que
+l'autre modifie ; l'ordre est donc sans effet.
+
+Le doublon rejoint les onze acquis, avec cette vérification écrite à côté.
+
 ### Les suites navigateur servent la version BÂTIE — le mur de mémoire tombe
 
 Sa décision, après quatre morts de la CI au même endroit : *« bascule sur la
