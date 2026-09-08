@@ -306,27 +306,44 @@ plus.
 
 ---
 
-## ⚠ SEPT SUITES ROUGES SUR `main` — relevées le 7 septembre 2026
+## ⚠ QUINZE SUITES ROUGES SUR `main` — recomptées le 8 septembre 2026
 
-Rejeu complet des 131 suites navigateur, dans le décor de la batterie (IA
-éteinte). **Trois rouges corrigés le jour même** — `allure-de-mes-devis`
-réclamait dix polices quand il en a fait retirer quatre, `apercu-colle`
-cherchait une rubrique coupée en quatre, `madame-lucie` appuyait au centre de
-la ligne, c'est-à-dire sur « Adresse non renseignée », qui mène EXPRÈS ailleurs.
+**Elles étaient sept le 7 septembre. Elles sont quinze**, et le relevé n'est
+plus une impression : chacune a été **rejouée sur `main` dans un arbre témoin**,
+sans le lot en cours. Les quinze y sont rouges. Aucune n'appartient au lot du
+retour du devis.
 
-**Ce qui reste, et qui n'appartient à aucun lot de cette session :**
+**Ce que le témoin a coûté, et pourquoi il valait le coup :** un arbre de
+travail sur `origin/main`, `node_modules` **copié** et non lié — Turbopack
+refuse un lien symbolique qui sort de la racine du projet, et rend un
+« Symlink [project]/node_modules is invalid » qui n'accuse rien de juste. Le
+filtre se sépare par des **virgules**, jamais par des barres verticales : un
+motif mal séparé retient zéro suite et ne le dit qu'en petit.
 
 | Suite | Ce qu'elle dit | Première piste |
 |---|---|---|
-| `anneau-vers-devis` | la chaîne dictée → devis n'arrive jamais (120 s) ; et un devis parti n'est plus joignable par le planning | à jouer seule : l'arrêt d'avant-chiffrage s'ouvre-t-il ? |
-| `message-au-client` | « les trois messages disent chacun le sien » | lot des trois messages (0075), tout frais |
-| `fiche-client`, `devis-client` | tiennent d'un pixel : 665 px pour 664 | **sans relever le seuil** — 664 px est la hauteur réelle de son téléphone |
-| `carte-reponse-mene-au-geste` | un appui intercepté par un bouton du planning | même famille que `madame-lucie` : viser l'élément, pas le centre |
+| `anneau-vers-devis` | la chaîne dictée → devis n'arrive jamais (120 s) | à jouer seule : l'arrêt d'avant-chiffrage s'ouvre-t-il ? |
+| `anneau-dictee` | l'anneau ne redevient pas le lecteur (`.atlas-indice`) | demande une transcription — clé absente de ce poste |
+| `ia-01` | « Texte enregistré » ne paraît pas | même famille : sans clé, ce chemin ne peut pas finir |
+| `message-au-client` | « les trois messages disent chacun le sien » | lot des trois messages (0075) |
+| `facture-au-client` | « Le client ne voit aucun montant » | **le contrôle réclame ce qu'il a fait retirer** : la page de facture est sans montant, à sa demande (`CLAUDE.md` §5 bis) |
+| `fiche-chantier` | la phrase dictée du 23 août absente ; le titre n'est plus « compte rendu de passage » | même travers : deux libellés qu'il a fait changer |
+| `devis-client` | tient d'un pixel : 665 px pour 664 | **sans relever le seuil** — 664 px est la hauteur réelle de son téléphone |
+| `carte-reponse-mene-au-geste` | un appui intercepté par un bouton du planning | viser l'élément, pas le centre |
+| `recherche-client` | la barre de recherche part avec le défilement (155 px du haut) | **défaut réel d'écran**, reproduit seul sur `main` |
+| `adresse-suggestions` | attente de navigation dépassée (60 s) | non diagnostiqué |
 | `reprise-chantier`, `reprise-morceau` | non diagnostiqués | |
+| `repartir-du-client` | le bouton « Refaire » n'est pas sur la fiche du client | lot « repartir d'un client », inachevé |
 | `suivi-devis`, `tva-multiple` | « un appui long sur un devis à UN SEUL taux n'ouvre rien » | |
 
-**Ne pas les traiter en bloc** : ce sont cinq lots différents, et deux d'entre
-eux sont des contrôles qui réclament ce qu'il a fait enlever (`CLAUDE.md` §5 bis).
+**Ne pas les traiter en bloc** : ce sont sept lots différents, et **trois
+d'entre eux sont des contrôles qui réclament ce qu'il a fait enlever**
+(`CLAUDE.md` §5 bis — on adapte le contrôle, on ne remet pas le libellé).
+
+**Deux suites ont changé de rouge entre deux batteries du même soir** —
+`recherche-client` a rougi sur deux cas différents. Ce n'est pas une
+intermittence : jouée seule, elle rougit sur le même cas que sur `main`. C'est
+l'ordre des suites qui décide laquelle des deux fautes se voit la première.
 
 ---
 

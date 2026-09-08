@@ -77,6 +77,27 @@ correction — exactement comme une ligne du 31 août avait empêché celle du
 
 ---
 
+## Les chiffres de la batterie
+
+| | |
+|---|---|
+| types, lint, mémoire | verts |
+| **suites base** | **325 / 325** |
+| **suites navigateur** | **118 / 133** |
+| connexion derrière un proxy | verte |
+
+**Les quinze rouges ne sont pas de ce lot, et ce n'est pas une affirmation :**
+chacune a été rejouée sur `main` dans un arbre témoin, sans ce lot. Les quinze
+y sont rouges. Elles appartiennent à sept lots différents, et **trois d'entre
+elles réclament ce qu'il a fait retirer** — le montant sur la page de facture,
+deux libellés du rapport de chantier. Le relevé complet est dans `TODO.md`.
+
+**Un vrai défaut d'écran y a été trouvé au passage** : sur la liste des
+clients, la barre de recherche part avec le défilement — il faut remonter toute
+la liste pour chercher. Reproduit seul sur `main`, donc antérieur à ce lot.
+
+---
+
 ## Ce qui reste ouvert
 
 `planning → devis → fiche client` retombe encore sur la liste au retour : la
