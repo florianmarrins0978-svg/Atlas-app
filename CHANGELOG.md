@@ -7,6 +7,16 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-08
+### Une phrase des absences promettait ce qu'Atlas ne fait pas
+
+Sur le même écran : *« notez-le ici et Atlas n'enverra plus personne à sa
+place ces jours-là »*. **Atlas n'envoie personne** — il propose des dates à un
+client —, et « à sa place » laissait entendre qu'un remplaçant serait choisi.
+
+Elle disait de travers ce qui était déjà écrit juste sous le bouton : « un
+absent ne compte plus ces jours-là ; Atlas propose une date de moins ». Deux
+phrases pour une seule règle, dont la fausse arrivait la première. Il ne reste
+que ce que l'autre ne dit pas.
 ### Deux compteurs identiques dans « Équipe » : les titres les séparent
 
 Sur l'écran Équipe, deux compteurs se suivaient, dessinés pareil et affichant

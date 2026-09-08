@@ -173,10 +173,26 @@ export default function AbsencesEquipe({
         Absences
       </p>
 
+      {/* **« ATLAS N'ENVERRA PLUS PERSONNE À SA PLACE » EST PARTI — sa
+          remarque du 8 septembre 2026 : *« la phrase dans absence n'a aucun
+          sens »*. Il avait raison, et deux fois.
+
+          **Atlas n'envoie personne**, et n'a jamais envoyé personne : il
+          propose des dates à un client. « À sa place » laissait même entendre
+          qu'un remplaçant serait choisi. La phrase décrivait une application
+          qui n'existe pas.
+
+          **Et elle disait de travers ce qui était déjà écrit juste**, sous le
+          bouton : « un absent ne compte plus ces jours-là ; Atlas propose une
+          date de moins ». Deux phrases pour une seule règle, dont la fausse
+          arrivait la première (`CLAUDE.md` §3 : jamais deux fois la même
+          règle).
+
+          Ne reste ici que ce que l'autre ne dit pas : qu'il n'y a personne
+          d'absent, et ce qu'on note dans ce bloc. */}
       {absences.length === 0 ? (
         <p className="px-[26px] py-2 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
-          Personne d’absent. Un déplacement, un congé, un arrêt : notez-le ici et
-          Atlas n’enverra plus personne à sa place ces jours-là.
+          Personne d’absent. Un déplacement, un congé, un arrêt : notez-le ici.
         </p>
       ) : (
         <div className="px-[26px]">
