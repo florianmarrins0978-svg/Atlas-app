@@ -24900,3 +24900,97 @@ première »*.
 porte `client_id`, jamais `chantier_id` : c'est l'outil des tournées d'entretien.
 Le lot 3 devra soit l'y rattacher, soit donner au chantier sa propre page de
 preuve. *Tranché au lot 3, sa décision du 8 septembre.*
+
+## §286. Un ATELIER par session — et pourquoi le port ne suffisait pas
+
+**Sa demande du 8 septembre 2026 :** *« l'idée c'est qu'après ça chaque session
+puisse tourner en même temps sans se gêner »*. Il fait tourner cinq sessions
+dans le même dossier, et une seule pouvait mesurer.
+
+**Ce que la batterie s'approprie**, et qu'aucune deuxième session ne peut
+partager :
+
+| | |
+|---|---|
+| le **port 3000** | son serveur de développement |
+| la **base d'essai** | elle la VIDE entre les suites (`TRUNCATE … CASCADE`) |
+| le **limiteur de connexion** | remis à zéro entre deux suites, dans Redis |
+| les **dossiers bâtis** | `.next`, `.next-verification`, `.next-batie` |
+
+Deux batteries dessus s'effacent mutuellement leurs données et rendent des
+rouges qui n'accusent personne — le défaut payé le 26 août 2026, cinq suites
+rouges d'un coup et une demi-heure à soupçonner du code juste.
+
+**L'atelier est ces quatre choses, dérivées d'UN numéro de rang** — pris au
+premier port libre, sans que personne se coordonne (`scripts/_atelier.ts`) :
+
+| Rang | Port | Base | Redis | Dossiers |
+|---|---|---|---|---|
+| 0 | 3000 | `atlas_test` | base 0 | `.next`, `.next-verification` |
+| 1 | 3001 | `atlas_test_a1` | base 1 | `.next-a1`, `.next-verification-a1` |
+| 2 | 3002 | `atlas_test_a2` | base 2 | `.next-a2`, … |
+
+**Le rang 0 rend EXACTEMENT la batterie d'avant.** C'est délibéré : une session
+seule ne voit aucune différence, aucun chiffre ne bouge, et le partage ne
+s'invente que lorsqu'une seconde session arrive. C'est ce qui rend ce lot
+éprouvable.
+
+### Ce que la mesure a corrigé, et qu'aucune lecture n'aurait vu
+
+**L'essai du port mentait sous Windows.** La première version ouvrait un serveur
+d'essai sur `127.0.0.1` : cela RÉUSSIT alors qu'un autre écoute déjà sur
+`0.0.0.0` — les deux adresses ne se disputent pas comme sous Linux. Le rang 0
+était rendu « libre » pendant qu'une session servait dessus. On s'y connecte
+désormais : une connexion refusée dit la même chose sur les deux systèmes.
+
+**Deux sessions lancées dans la même seconde prenaient le même rang** — le
+partage échouait précisément dans le cas qu'il devait couvrir. Le jeton se crée
+en exclusivité (`wx`) : le système tranche, l'autre passe au suivant.
+
+**Le jeu de démonstration refusait la base d'un atelier, et il avait raison.**
+Sa garde n'accepte que des bases où effacer est sans conséquence
+(`src/lib/garde-seed.ts`). Elle s'ouvre au plus juste — `atlas_test_a` suivi
+d'un ou deux chiffres — et `test-garde-seed.ts` éprouve la porte dans les deux
+sens : `atlas_test_a1` passe, `atlas_test_atelier` et `atlas_test_a1_prod` sont
+refusés.
+
+**Une base créée à la volée n'a aucun privilège par défaut.** La base d'essai
+habituelle les tient de son amorçage ; une base neuve n'a rien, et chaque table
+créée ensuite reste hors de portée du rôle applicatif. `preparer-atelier.ts`
+rejoue les `GRANT` et les `ALTER DEFAULT PRIVILEGES` de l'amorçage. Trouvé par
+`test-toute-table-est-cloisonnee`, qui a rougi sur ce point précis.
+
+## §287. Un DOSSIER de travail par session — la condition, pas le confort
+
+**Découvert le 8 septembre 2026, en rendant bavarde une étape qui échouait en
+silence depuis trois batteries.**
+
+L'étape « Connexion derrière un proxy » tombait sur *« le serveur n'a pas
+répondu en dix minutes »*, sans un mot de plus : la sortie du banc allait dans
+`ignore`. Trois jours de suppositions, dont une cause avancée puis démentie.
+Son journal rétabli, elle a dit la vraie cause en une ligne :
+
+    ⨯ Another next dev server is already running.
+      Dir: C:\Users\Flori\Desktop\atlas-real-app\atlas-app
+
+**Next.js refuse un second serveur de développement dans le même DOSSIER**,
+quel que soit le port. Le dépôt le savait déjà, à un seul endroit — le
+commentaire de `.next-banc-essai` dans `.gitignore` — et personne n'avait fait
+le lien.
+
+**Conséquence : l'atelier est nécessaire, il n'est pas suffisant.** Tant que les
+sessions partagent l'arbre, une seule peut jouer ses suites navigateur.
+`npm run sessions:preparer` crée donc un `git worktree` par session
+(`scripts/preparer-sessions.mjs`).
+
+**Et cela règle un second défaut, plus ancien :** ses modifications de
+`CHANGELOG.md` effacées le 4 septembre, un module laissé trois jours dans un
+arbre partagé en cassant `tsc` pour tout le monde. Un dossier par session
+supprime les deux.
+
+**`main` reste le seul bien commun.** Un worktree n'est pas un clone : même
+dépôt, même historique, mêmes remontées — seul le répertoire de travail change.
+Chaque session fusionne et pousse comme avant (`CLAUDE.md` §6).
+
+**Le seul geste, et il se fait une fois :** un `npm install` par dossier, les
+dépendances ne se partageant pas. Ensuite, plus rien à faire.

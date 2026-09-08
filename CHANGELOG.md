@@ -8,6 +8,32 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### Chaque session mesure chez elle : un atelier, puis un dossier de travail
+
+Il fait tourner cinq sessions dans le même dossier, et une seule pouvait jouer
+la batterie : elle s'approprie le port 3000, la base d'essai qu'elle vide entre
+les suites, le limiteur de connexion et les dossiers bâtis. Les autres
+attendaient cinquante minutes.
+
+Chaque session prend désormais un **atelier** — un rang, pris au premier port
+libre, qui dérive à lui seul le port, la base, le coin de Redis et les dossiers
+bâtis. Le rang 0 rend exactement la batterie d'avant : une session seule ne voit
+aucune différence. Aucune manip nouvelle, la commande ne change pas.
+
+**Et l'atelier ne suffisait pas.** L'étape « Connexion derrière un proxy »
+échouait en silence depuis trois batteries ; son journal rétabli, elle a dit la
+cause en une ligne : *« Another next dev server is already running »*. Next.js
+refuse un second serveur de développement dans le même DOSSIER, quel que soit le
+port. `npm run sessions:preparer` crée donc un dossier de travail par session
+(`git worktree`), ce qui règle du même coup les fichiers que deux sessions
+s'écrasaient l'une l'autre.
+
+Quatre défauts trouvés en mesurant : l'essai du port mentait sous Windows, deux
+sessions simultanées prenaient le même rang, le jeu de démonstration refusait la
+base d'un atelier, et une base créée à la volée n'avait aucun privilège par
+défaut. `ARCHITECTURE.md` §286 et §287.
+
+
 ### La porte : le mot de passe se confirme, le déroulant passe à la charte, l'identité se sépare
 
 Cinq remarques du 8 septembre, sur la planche qu'il venait d'essayer.
