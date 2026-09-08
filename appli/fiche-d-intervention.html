@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La fiche d'intervention, et où les retours reviennent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    LA FICHE D'INTERVENTION — 8 septembre 2026.
+
+    Ses trois demandes du soir, capture à l'appui :
+
+      1. *« pour le salarié je pense que ça devrait plutôt se trouver dans la
+         feuille de chantier »* — donc pas de ligne verte à part sur la journée ;
+      2. *« qui d'ailleurs devrait s'appeler fiche d'intervention, change le
+         nom »* ;
+      3. *« fais en sorte qu'elle s'incrémente proprement, fais pas un truc trop
+         gros »*.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LA FEUILLE EXISTE DÉJÀ, ET ELLE EST REPRISE AU DÉTAIL PRÈS.
+
+    `FeuilleChantier` (`src/app/planning/PlanningClient.tsx`) porte, dans cet
+    ordre : le titre en capitales dorées, le nom du client en serif 22, deux
+    rangées de gestes — Maps · Waze, puis Copier l'adresse · Appeler le client —,
+    le pense-bête, un filet, les lignes du devis en puces dorées, et le bouton
+    « Ouvrir le PDF sans les prix ».
+
+    **Rien de tout cela ne bouge.** Ce qui s'ajoute pour le salarié tient en
+    trois choses discrètes : les puces deviennent des cases, une bande de photos,
+    et un mot à signaler. Le geste de fin remplace le bouton du PDF chez lui —
+    il n'a pas de devis à imprimer.
+
+    **« Appeler le client » y était déjà** : la maquette d'hier le redessinait
+    plus bas, en double. Retiré.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI NE BOUGE PAS.
+
+    · aucun montant, nulle part, pour un salarié ;
+    · le planning reste sa seule porte ;
+    · le pense-bête se LIT et ne s'écrit pas chez lui (30 août 2026) — ce qu'il
+      a à dire passe par « À signaler », qui est à lui.
+
+    RIEN N'EST CODÉ dans `src/`.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  body.nuit{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47;
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);
+       -webkit-text-size-adjust:100%;padding:0 0 70px}
+  ::selection{background:rgba(138,101,40,.22)}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+  .mot{max-width:560px;margin:30px auto 0;padding:17px 20px;background:var(--etabli-carte);
+       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
+       font-size:14px;line-height:1.62;color:var(--etabli-doux)}
+  .mot b{color:var(--etabli-encre)}
+  .mot + .mot{margin-top:11px}
+
+  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
+         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
+  .etats .quoi{max-width:1000px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+               letter-spacing:.2em;text-transform:uppercase;color:var(--etabli-gris)}
+  .etats .rangee{max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
+                color:var(--etabli-doux);border-radius:999px;padding:10px 15px;
+                font:400 13px/1 var(--sans);cursor:pointer}
+  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+
+  .partie{max-width:1000px;margin:46px auto 0;padding:0 20px}
+  .partie h2{margin:0;font:400 28px/1.12 var(--serif);letter-spacing:-.012em}
+  .partie p{margin:10px 0 0;font-size:14.5px;line-height:1.62;color:var(--etabli-doux);max-width:64ch}
+  .partie p b{color:var(--etabli-encre)}
+
+  .planches{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;
+            max-width:1360px;margin:26px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.25 var(--serif)}
+  .planche .nom .tenu{display:inline-block;margin-left:8px;font:600 9px/1 var(--sans);
+                      letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);
+                      vertical-align:3px}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--etabli-doux);min-height:44px}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
+       background:var(--fond);color:var(--encre);box-shadow:0 16px 44px rgba(20,18,14,.22)}
+  .ecran{position:absolute;inset:0;display:flex;flex-direction:column;padding:16px 0 0;overflow:hidden}
+
+  /* ── La journée, telle qu'elle est ───────────────────────────────── */
+  .pastilleJour{display:block;width:max-content;margin:0 auto;background:var(--tuile);
+                border-radius:999px;padding:7px 14px;font:600 10.5px/1 var(--sans);
+                letter-spacing:.16em;text-transform:uppercase;color:var(--doux)}
+  .teteChantier{padding:12px 20px 0}
+  .teteChantier .nomClient{display:block;font:400 21px/1.2 var(--serif)}
+  .teteChantier .duree{display:block;margin-top:5px;font:400 13px/1 var(--sans);color:var(--orTexte)}
+  .teteChantier .ville{display:block;margin-top:5px;font:400 13.5px/1 var(--sans);color:var(--gris)}
+  .creneaux{margin-top:11px;display:flex;flex-direction:column;gap:7px}
+  .creneau{display:flex;align-items:center;gap:11px}
+  .creneau .carre{width:15px;height:15px;border-radius:4px;background:var(--accent);flex:0 0 auto}
+  .creneau .mot-creneau{font:600 10.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--doux);flex:1}
+  .creneau .gars{background:var(--accent);color:var(--fond);border-radius:999px;padding:8px 15px;
+                 font:400 13.5px/1 var(--sans)}
+
+  /* ── LA FICHE D'INTERVENTION — la feuille du produit, au détail près ── */
+  .feuille{margin:12px 18px 0;border-radius:10px;padding:15px 16px 14px;
+           background:var(--tuile);box-shadow:inset 0 0 0 1px var(--trait)}
+  .feuille .titre{margin:0;text-align:center;font:700 10.5px/1 var(--sans);
+                  letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+  .feuille .quiCest{margin:10px 0 0;text-align:center;font:400 22px/1.15 var(--serif)}
+  .gestes{display:flex;gap:6px;margin-top:10px}
+  .gestes + .gestes{margin-top:6px}
+  .geste{flex:1;border-radius:8px;padding:11px 6px;text-align:center;font:400 13px/1 var(--sans);
+         background:var(--plage);border:1px solid var(--trait);color:var(--encre);
+         text-decoration:none;-webkit-tap-highlight-color:transparent}
+  .filet{margin-top:14px;padding-top:12px;border-top:1px solid var(--trait)}
+
+  /* Les lignes du devis : une PUCE chez le patron, une CASE chez le salarié.
+     C'est le seul changement de forme, et il tient dans quinze pixels. */
+  .ligneTache{position:relative;margin:0 0 9px;padding-left:14px;font-size:14.5px;line-height:1.45}
+  .ligneTache .puce{position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:999px;background:var(--or)}
+  .tacheCochable{display:flex;align-items:flex-start;gap:11px;width:100%;border:0;background:transparent;
+                 padding:7px 0;text-align:left;cursor:pointer;color:inherit;
+                 -webkit-tap-highlight-color:transparent}
+  .tacheCochable .boite{width:24px;height:24px;flex:0 0 auto;border-radius:6px;display:grid;place-items:center;
+                        background:var(--plage);box-shadow:inset 0 0 0 1.5px var(--trait);color:transparent}
+  .tacheCochable[aria-pressed="true"] .boite{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .tacheCochable .quoi{font-size:14.5px;line-height:1.45;padding-top:2px;min-width:0;flex:1}
+  .tacheCochable[aria-pressed="true"] .quoi{color:var(--gris)}
+
+  .bandePhotos{display:flex;gap:7px;align-items:center;margin-top:10px}
+  .bandePhotos .vignette{width:46px;height:46px;border-radius:9px;background:var(--plage);
+                         box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)}
+  .bandePhotos .plus{color:var(--orTexte);cursor:pointer}
+  .bandePhotos .mot-photos{font:600 10.5px/1.3 var(--sans);letter-spacing:.14em;
+                           text-transform:uppercase;color:var(--gris);margin-right:2px}
+
+  .aSignaler{width:100%;margin-top:9px;border:0;border-radius:9px;background:var(--plage);
+             box-shadow:inset 0 0 0 1px var(--trait);padding:11px 13px;min-height:54px;
+             font:400 14.5px/1.45 var(--sans);color:var(--encre);resize:none}
+  .aSignaler::placeholder{color:var(--gris)}
+  .aSignaler:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--or)}
+
+  .boutonFeuille{display:block;width:max-content;margin:12px auto 0;border:0;border-radius:999px;
+                 padding:11px 22px;font:400 13.5px/1 var(--sans);cursor:pointer;
+                 background:var(--plein);color:var(--surplein);text-decoration:none}
+  .boutonFeuille:disabled{opacity:.45;cursor:not-allowed}
+  .manque{margin:8px 0 0;text-align:center;font-size:12.5px;color:var(--gris)}
+
+  /* Le retour, une fois posé — ce que le patron lit. */
+  .retour{display:flex;align-items:flex-start;gap:10px;margin-top:12px;padding-top:12px;
+          border-top:1px solid var(--trait)}
+  .retour .sceau{width:26px;height:26px;border-radius:999px;flex:0 0 auto;display:grid;
+                 place-items:center;background:var(--plage);color:var(--orTexte)}
+  .retour .fort{display:block;font:400 15px/1.3 var(--serif)}
+  .retour .sous{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--gris)}
+
+  /* ── Où les retours reviennent ───────────────────────────────────── */
+  .entete{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 24px 0}
+  .entete h1{margin:0;font:400 30px/1.06 var(--serif)}
+  .corps{flex:1;overflow:hidden;padding:16px 20px 0}
+  .etiq{display:block;font:600 10.5px/1.35 var(--sans);letter-spacing:.16em;
+        text-transform:uppercase;color:var(--gris)}
+  .onglets{display:flex;gap:6px;margin-top:12px}
+  .onglets span{padding:9px 14px;border-radius:999px;font:500 13px/1 var(--sans);color:var(--gris)}
+  .onglets span.actif{background:var(--plage);color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait)}
+  .onglets span .pastille{display:inline-grid;place-items:center;margin-left:7px;min-width:19px;height:19px;
+                          border-radius:999px;background:var(--plein);color:var(--surplein);
+                          font:600 11px/1 var(--sans);padding:0 5px}
+  .carteRetour{display:flex;align-items:flex-start;gap:11px;background:var(--plage);border-radius:12px;
+               padding:13px 14px;margin-top:9px;box-shadow:inset 0 0 0 1px var(--trait)}
+  .carteRetour.neuf{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .carteRetour .qui{min-width:0;flex:1}
+  .carteRetour .nomC{display:block;font:400 16.5px/1.25 var(--serif)}
+  .carteRetour .quand{display:block;margin-top:3px;font-size:12.5px;color:var(--gris)}
+  .carteRetour .vign{display:flex;gap:4px;flex:0 0 auto;padding-top:3px}
+  .carteRetour .vign span{width:24px;height:24px;border-radius:6px;background:var(--tuile);
+                          box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)}
+
+  .barre{display:flex;align-items:center;justify-content:space-around;height:60px;
+         background:var(--plage);box-shadow:inset 0 1px 0 var(--trait);margin-top:auto}
+  .barre i{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;
+           font:500 9.5px/1 var(--sans);font-style:normal;color:var(--gris)}
+  .barre i.actif{color:var(--encre)}
+  .barre i .compte{position:absolute;top:-3px;right:-9px;min-width:16px;height:16px;border-radius:999px;
+                   background:var(--plein);color:var(--surplein);font:600 10px/16px var(--sans);
+                   text-align:center;padding:0 4px}
+
+  @media (max-width:900px){ .planche{width:100%} .tel{width:100%} }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Maquette.</b> Rien n'est codé. <b>Touchez les cases et le « + »</b> de la
+  fiche du salarié, et <b>« Nuit »</b> pour le fond noir.
+</div>
+
+<div class="mot">
+  <b>Trois choses changent, et rien d'autre.</b> La feuille s'appelle désormais
+  <b>Fiche d'intervention</b>. Chez le salarié, ses puces deviennent des cases,
+  une bande de photos s'ajoute sous les tâches, et un mot « À signaler ».
+  <b>Chez vous, elle ne bouge pas d'un pixel</b> tant que le chantier n'est pas
+  fait.
+</div>
+
+<div class="etats" role="group" aria-label="Ce qu'on peut jouer">
+  <p class="quoi">L'écran</p>
+  <div class="rangee">
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<!-- ══════════════════ LA FICHE ══════════════════════════════════════ -->
+<div class="partie">
+  <h2>Dans la fiche, pas à côté</h2>
+  <p>Vous aviez raison : une ligne verte de plus sur la journée aurait fait un
+  second endroit. <b>Tout tient dans la fiche</b>, à l'endroit exact où sont déjà
+  les lignes du devis.</p>
+</div>
+
+<div class="planches">
+
+  <!-- ── 1. CHEZ LE PATRON ──────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">1. Chez vous, aujourd'hui</p>
+    <p class="idee">Le seul changement : le titre. Tout le reste est votre
+      feuille, au détail près.</p>
+    <div class="tel"><div class="ecran">
+      <span class="pastilleJour">Mercredi 2 septembre</span>
+      <div class="teteChantier">
+        <span class="nomClient">M. Rialland</span>
+        <span class="duree">une journée</span>
+        <span class="ville">Les Moutiers-en-Retz</span>
+        <div class="creneaux">
+          <div class="creneau"><span class="carre" aria-hidden="true"></span>
+            <span class="mot-creneau">Matin</span><span class="gars">Julien, Paul</span></div>
+          <div class="creneau"><span class="carre" aria-hidden="true"></span>
+            <span class="mot-creneau">Après-midi</span><span class="gars">Julien, Paul</span></div>
+        </div>
+      </div>
+      <div class="feuille">
+        <p class="titre">Fiche d'intervention</p>
+        <p class="quiCest">M. Rialland</p>
+        <div class="gestes"><span class="geste">Maps</span><span class="geste">Waze</span></div>
+        <div class="gestes"><span class="geste">Copier l'adresse</span><span class="geste">Appeler le client</span></div>
+        <div class="filet">
+          <p class="ligneTache"><span class="puce" aria-hidden="true"></span>Débroussaillage du talus</p>
+          <p class="ligneTache"><span class="puce" aria-hidden="true"></span>Évacuation des déchets verts</p>
+          <p class="ligneTache" style="margin-bottom:0"><span class="puce" aria-hidden="true"></span>Taille de la haie de laurier</p>
+        </div>
+        <span class="boutonFeuille">Ouvrir le PDF sans les prix</span>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── 2. CHEZ LE SALARIÉ ─────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">2. Chez le salarié<span class="tenu">Ce qui s'ajoute</span></p>
+    <p class="idee">Les mêmes lignes, en cases. Une bande de photos, un mot à
+      signaler, et le geste de fin à la place du PDF.</p>
+    <div class="tel"><div class="ecran">
+      <span class="pastilleJour">Mercredi 2 septembre</span>
+      <div class="teteChantier">
+        <span class="nomClient">M. Rialland</span>
+        <span class="duree">une journée</span>
+        <span class="ville">Les Moutiers-en-Retz</span>
+        <div class="creneaux">
+          <div class="creneau"><span class="carre" aria-hidden="true"></span>
+            <span class="mot-creneau">Matin</span><span class="gars">Julien, Paul</span></div>
+        </div>
+      </div>
+      <div class="feuille">
+        <p class="titre">Fiche d'intervention</p>
+        <p class="quiCest">M. Rialland</p>
+        <div class="gestes"><span class="geste">Maps</span><span class="geste">Waze</span></div>
+        <div class="gestes"><span class="geste">Copier l'adresse</span><span class="geste">Appeler le client</span></div>
+        <div class="filet" id="taches">
+          <button type="button" class="tacheCochable" aria-pressed="false">
+            <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="quoi">Débroussaillage du talus</span>
+          </button>
+          <button type="button" class="tacheCochable" aria-pressed="false">
+            <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="quoi">Évacuation des déchets verts</span>
+          </button>
+          <button type="button" class="tacheCochable" aria-pressed="false">
+            <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="quoi">Taille de la haie de laurier</span>
+          </button>
+        </div>
+        <div class="bandePhotos" id="bande">
+          <span class="mot-photos">Photos</span>
+          <button type="button" class="vignette plus" aria-label="Ajouter une photo">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <textarea class="aSignaler" placeholder="À signaler — facultatif"></textarea>
+        <button type="button" class="boutonFeuille" id="boutonFini" disabled>C'est fini</button>
+        <p class="manque" id="manque"></p>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── 3. UNE FOIS FINI ───────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">3. Ce que vous lisez ensuite</p>
+    <p class="idee">La même fiche, chez vous, une fois qu'il a appuyé. Le retour
+      se pose sous les lignes.</p>
+    <div class="tel"><div class="ecran">
+      <span class="pastilleJour">Mercredi 2 septembre</span>
+      <div class="teteChantier">
+        <span class="nomClient">M. Rialland</span>
+        <span class="duree">une journée</span>
+        <span class="ville">Les Moutiers-en-Retz</span>
+      </div>
+      <div class="feuille">
+        <p class="titre">Fiche d'intervention</p>
+        <p class="quiCest">M. Rialland</p>
+        <div class="gestes"><span class="geste">Maps</span><span class="geste">Waze</span></div>
+        <div class="gestes"><span class="geste">Copier l'adresse</span><span class="geste">Appeler le client</span></div>
+        <div class="filet">
+          <p class="ligneTache"><span class="puce" aria-hidden="true"></span>Débroussaillage du talus</p>
+          <p class="ligneTache"><span class="puce" aria-hidden="true"></span>Évacuation des déchets verts</p>
+          <p class="ligneTache" style="margin-bottom:0;color:var(--gris)"><span class="puce" aria-hidden="true" style="background:var(--gris)"></span>Taille de la haie de laurier</p>
+        </div>
+        <div class="retour">
+          <span class="sceau" aria-hidden="true">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span style="min-width:0;flex:1">
+            <span class="fort">Fini &middot; Julien</span>
+            <span class="sous">2 sept., 16 h 40 &middot; 2 sur 3 faites<br>« haie trop mouillée »</span>
+          </span>
+          <span class="vign" style="display:flex;gap:4px">
+            <span style="width:24px;height:24px;border-radius:6px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)"><svg width="13" height="13" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+            <span style="width:24px;height:24px;border-radius:6px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)"><svg width="13" height="13" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+            <span style="width:24px;height:24px;border-radius:6px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)"><svg width="13" height="13" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+          </span>
+        </div>
+        <span class="boutonFeuille">Ouvrir le PDF sans les prix</span>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ══════════════════ OÙ LES RETOURS REVIENNENT ═════════════════════ -->
+<div class="partie">
+  <h2>Où vous retrouvez les retours</h2>
+  <p>Votre crainte est fondée : un chantier dont la date est passée quitte le
+  planning pour <b>Terminés</b>. <b>Mais il reste retrouvable</b> — les flèches
+  de semaine et le calendrier remontent en arrière, c'est déjà le cas
+  aujourd'hui. La vraie question est de <b>ne pas en rater un</b>.</p>
+</div>
+
+<div class="planches">
+
+  <!-- ── A. DANS TERMINÉS ───────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">A. Dans Terminés<span class="tenu">Ce que je défends</span></p>
+    <p class="idee">Un onglet de plus dans l'écran où vous facturez déjà, et un
+      compte sur la barre du bas tant que vous n'avez pas lu.</p>
+    <div class="tel"><div class="ecran" style="padding-bottom:0">
+      <div class="entete"><h1>Terminés</h1></div>
+      <div class="corps">
+        <div class="onglets">
+          <span class="actif">Retours<span class="pastille">2</span></span>
+          <span>À facturer</span>
+          <span>TVA</span>
+        </div>
+        <div class="carteRetour neuf">
+          <span class="qui">
+            <span class="nomC">M. Rialland</span>
+            <span class="quand">2 sept. &middot; Julien &middot; 2 sur 3 faites</span>
+          </span>
+          <span class="vign">
+            <span><svg width="13" height="13" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+            <span><svg width="13" height="13" viewBox="0 0 22 22" fill="none"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.7"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+          </span>
+        </div>
+        <div class="carteRetour neuf">
+          <span class="qui">
+            <span class="nomC">Résidence des Ormes</span>
+            <span class="quand">1er sept. &middot; Paul &middot; tout fait</span>
+          </span>
+        </div>
+        <div class="carteRetour">
+          <span class="qui">
+            <span class="nomC">Mme Costa</span>
+            <span class="quand">28 août &middot; Julien &middot; tout fait</span>
+          </span>
+        </div>
+      </div>
+      <div class="barre" aria-hidden="true">
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3 8.6 10 3l7 5.6V17H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Chantiers</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><rect x="3" y="4.5" width="14" height="12.5" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Planning</i>
+        <i class="actif"><span class="compte">2</span><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 10.2 9 12.6l4.4-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Terminés</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 17c0-6 2.6-9.6 7-10.4C17 12 14 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 17C10 11 7.4 7.4 3 6.6 3 12 6 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Paysage</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4 4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Réglages</i>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── B. UNE CATÉGORIE À PART ────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">B. Un onglet à lui</p>
+    <p class="idee">Votre deuxième idée : une entrée « Retours » dans la barre
+      du bas, et une page qui les liste tous.</p>
+    <div class="tel"><div class="ecran" style="padding-bottom:0">
+      <div class="entete"><h1>Retours</h1></div>
+      <div class="corps">
+        <span class="etiq" style="margin-top:4px">Septembre</span>
+        <div class="carteRetour neuf">
+          <span class="qui">
+            <span class="nomC">M. Rialland</span>
+            <span class="quand">2 sept. &middot; Julien &middot; 2 sur 3 faites</span>
+          </span>
+        </div>
+        <div class="carteRetour neuf">
+          <span class="qui">
+            <span class="nomC">Résidence des Ormes</span>
+            <span class="quand">1er sept. &middot; Paul &middot; tout fait</span>
+          </span>
+        </div>
+        <span class="etiq" style="margin-top:16px">Août</span>
+        <div class="carteRetour">
+          <span class="qui">
+            <span class="nomC">Mme Costa</span>
+            <span class="quand">28 août &middot; Julien &middot; tout fait</span>
+          </span>
+        </div>
+      </div>
+      <div class="barre" aria-hidden="true">
+        <i><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 8.6 10 3l7 5.6V17H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Chantiers</i>
+        <i><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="4.5" width="14" height="12.5" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Planning</i>
+        <i class="actif"><span class="compte">2</span><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 6h12M4 10h9M4 14h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Retours</i>
+        <i><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 10.2 9 12.6l4.4-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Terminés</i>
+        <i><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 17c0-6 2.6-9.6 7-10.4C17 12 14 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 17C10 11 7.4 7.4 3 6.6 3 12 6 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Paysage</i>
+        <i><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4 4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Réglages</i>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<div class="mot" style="margin-top:42px">
+  <b>Pourquoi je défends la A.</b> Un retour sert à décider de facturer. Le lire
+  dans <b>Terminés</b>, c'est le lire là où vous facturez déjà — un seul chemin,
+  un seul soir. La B vous fait ouvrir un écran, lire, en ouvrir un autre, et
+  refacturer de tête ce que vous venez de lire.
+</div>
+<div class="mot">
+  <b>Et ce que la B coûte, sur votre téléphone :</b> la barre du bas passe de
+  cinq entrées à six. Regardez-la sur l'écran B — les mots se resserrent, et les
+  cibles avec. Vous visez avec un doigt, au soleil, parfois avec des gants.
+</div>
+<div class="mot">
+  <b>Ce qui est commun aux deux, et qui est l'essentiel :</b> le <b>compte</b> sur
+  la barre du bas. C'est lui qui vous empêche d'en rater un — pas l'endroit où
+  la liste vit.
+</div>
+
+<script>
+const qq = (s) => Array.from(document.querySelectorAll(s));
+const taches = qq("#taches .tacheCochable");
+const bande = document.getElementById("bande");
+const boutonFini = document.getElementById("boutonFini");
+const manque = document.getElementById("manque");
+
+function photos() {
+  return bande.querySelectorAll(".vignette:not(.plus)").length;
+}
+
+/*
+  Ce qui manque se dit AVANT l'appui. Un bouton actif qui refuse au moment du
+  geste se lit comme une panne — et sur un chantier, il n'a personne à qui
+  demander.
+*/
+function redire() {
+  const cochees = taches.filter((t) => t.getAttribute("aria-pressed") === "true").length;
+  const raisons = [];
+  if (cochees === 0) raisons.push("cochez ce que vous avez fait");
+  if (photos() === 0) raisons.push("ajoutez une photo");
+  boutonFini.disabled = raisons.length > 0;
+  manque.textContent = raisons.length === 0 ? "" : raisons.join(" et ");
+}
+
+taches.forEach((t) =>
+  t.addEventListener("click", () => {
+    t.setAttribute("aria-pressed", t.getAttribute("aria-pressed") === "true" ? "false" : "true");
+    redire();
+  })
+);
+
+bande.querySelector(".plus").addEventListener("click", () => {
+  const v = document.createElement("span");
+  v.className = "vignette";
+  v.innerHTML =
+    '<svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">' +
+    '<rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.6"/>' +
+    '<path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+  bande.insertBefore(v, bande.querySelector(".plus"));
+  redire();
+});
+
+const bouton = document.getElementById("charte");
+bouton.addEventListener("click", () => {
+  const nuit = document.body.classList.toggle("nuit");
+  bouton.setAttribute("aria-pressed", String(nuit));
+  bouton.textContent = nuit ? "Origine" : "Nuit";
+});
+
+redire();
+</script>
+</body>
+</html>
