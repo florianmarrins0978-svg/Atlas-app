@@ -58,13 +58,44 @@ async function main() {
   // Déjà là ? On ne touche à rien — et surtout on ne la recrée pas : ce serait
   // effacer le travail d'une batterie voisine sur le même rang.
   const dejaLa = new Client({ connectionString: SUPER });
+  let echec: unknown;
   try {
     await dejaLa.connect();
     await dejaLa.end();
     console.log(`✅ Base « ${base} » en place.`);
     return;
-  } catch {
+  } catch (e) {
+    echec = e;
     await dejaLa.end().catch(() => undefined);
+  }
+
+  // **« Absente » et « injoignable » ne sont pas la même panne — 8 septembre
+  // 2026.** Docker s'est arrêté au milieu d'une batterie ; cette étape a
+  // annoncé « base absente : création… », puis a échoué sur un ECONNREFUSED
+  // incompréhensible. Le message envoyait chercher du côté de l'atelier alors
+  // que c'est le serveur qui était éteint — et « une erreur qui accuse à tort
+  // coûte plus cher que pas d'erreur du tout » (`AGENTS.md`).
+  //
+  // Une base absente rend `3D000` ; tout le reste est un problème de serveur.
+  const code = (echec as { code?: string } | undefined)?.code;
+  if (code !== "3D000") {
+    // **`AggregateError` n'a PAS de texte**, et c'est précisément celle que
+    // rend un serveur éteint : afficher `.message` donnait une ligne vide, donc
+    // un refus sans raison — l'exact défaut qu'on répare ici. On descend donc
+    // chercher la première cause qui parle.
+    const parle = (e: unknown): string => {
+      const err = e as { message?: string; code?: string; errors?: unknown[] };
+      if (err?.message) return err.message;
+      if (Array.isArray(err?.errors) && err.errors.length > 0) return parle(err.errors[0]);
+      return err?.code ?? String(e);
+    };
+    console.error(
+      `❌ La base d'essai est INJOIGNABLE — ce n'est pas l'atelier, c'est le serveur.\n` +
+        `   ${parle(echec)}\n\n` +
+        "   Sur son poste, c'est presque toujours Docker qui s'est arrêté :\n" +
+        "     docker start atlas-postgres atlas-redis"
+    );
+    process.exit(1);
   }
 
   console.log(`Base « ${base} » absente : création pour le rôle « ${proprietaire} »…`);
