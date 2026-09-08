@@ -131,6 +131,32 @@ Vérifié rouge en forçant 400 px de trop.
 ---
 ## 2026-09-07
 
+### Sa règle d'or devient non franchissable : deux garde-fous, pas une prose
+
+*« Je veux que ça soit une règle incontournable, non franchissable, obligatoire
+de respecter. »* Écrire la règle ne suffisait pas : le dépôt a déjà payé deux
+fois la même leçon — les flèches décoratives ont dû être redemandées avant que
+`test-aucune-fleche.ts` existe, et le travail non enregistré s'est perdu avant
+que son garde-fou existe.
+
+`scripts/test-pas-de-pansement.ts` est joué par `npm test`, donc **par la
+batterie** : un lot qui livre un `catch` vide, un `@ts-ignore`, un
+`eslint-disable`, un `as any` ou un `!important` **ne passe pas**. Il ne regarde
+que ce que le lot AJOUTE sous `src/` — un contrôle qui rougirait sur du code
+d'il y a six mois serait éteint dans la journée. Vu rouge contre un
+`eslint-disable` posé exprès dans `src/app/login/page.tsx`, et il éprouve aussi
+son propre détecteur : sans cela, un lot sans ligne ajoutée l'aurait rendu vert
+sans rien mesurer (`CLAUDE.md` §5).
+
+`scripts/rappel-racine.mjs` tient l'autre moitié — celle qu'aucun script ne sait
+juger : dès qu'il demande une correction, la règle revient sous les yeux de la
+session, même trois heures après son début. Il se tait sur les demandes
+ordinaires (maquette, ajout, question) : un rappel qui parle à tort s'apprend à
+être ignoré.
+
+La seule porte de sortie est **avouée** : `pansement assumé : <la raison>` dans
+le code, ET une entrée dans `TODO.md`. Les deux, sinon le contrôle rougit.
+
 ### Sa règle d'or : pas de pansement, on corrige à la racine
 
 *« Lorsque tu fais une correction, je ne veux pas de pansement. Je veux que tu

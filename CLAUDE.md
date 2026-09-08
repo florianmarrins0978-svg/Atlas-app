@@ -454,11 +454,25 @@ Concrètement, pour toute planche dont on attend un choix :
 - **Marquer une tâche terminée sans l'avoir vérifiée.** Voir §5.
 - **Poser un pansement sur un défaut au lieu de le corriger.** Voir §4 quater.
 
-## 4 quater. PAS DE PANSEMENT — ON CORRIGE À LA RACINE
+## 4 quater. RÈGLE D'OR — PAS DE PANSEMENT, ON CORRIGE À LA RACINE
 
-**Sa règle d'or, posée le 7 septembre 2026 :** *« lorsque tu fais une
-correction, je ne veux pas de pansement. Je veux que tu ailles corriger le
-problème directement à la racine — pas de superposition de couches de code. »*
+**Posée le 7 septembre 2026 :** *« lorsque tu fais une correction, je ne veux
+pas de pansement. Je veux que tu ailles corriger le problème directement à la
+racine — pas de superposition de couches de code. »* Puis, dans la foulée :
+*« je veux que ça soit une règle incontournable, non franchissable, obligatoire
+de respecter. »*
+
+**Elle ne dépend donc plus de la mémoire de personne**, et c'est ce qui la rend
+non franchissable — deux garde-fous la tiennent, chacun sur une moitié :
+
+| | |
+|---|---|
+| `scripts/test-pas-de-pansement.ts` | joué par `npm test`, donc **par la batterie** : il refuse dans ce que le lot AJOUTE un `catch` vide, `@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `as any`, `!important`. Un lot qui en porte un ne se livre pas |
+| `scripts/rappel-racine.mjs` | branché sur chaque message (`.claude/settings.json`) : dès qu'il demande une correction, cette règle revient sous les yeux de la session — quelle qu'elle soit, et même trois heures après son début |
+
+**Ce qu'aucun script ne saura faire**, et qui reste un jugement : dire si une
+correction vise l'origine ou la recouvre. Le contrôle tient les gestes qui ne
+se discutent pas ; le reste tient à ce qui suit.
 
 **Ce qu'est un pansement**, et chacun de ces gestes en est un :
 
@@ -494,8 +508,10 @@ garder « ouvert » pour toute la session.
 
 **Et quand la racine ne peut pas être touchée maintenant** — elle est dans une
 dépendance, elle demande une migration, elle sort du lot en cours — on ne
-maquille pas en silence : le contournement est **nommé comme tel** dans le code
-et dans `TODO.md`, avec ce qu'il faudrait faire pour de bon. Un pansement avoué
+maquille pas en silence. Le contournement s'écrit **`pansement assumé : <la
+raison>`** sur la ligne ou juste au-dessus (c'est la formule exacte que le
+contrôle accepte, et il exige une raison d'au moins vingt caractères), **et une
+entrée dans `TODO.md`** — sans quoi le contrôle rougit aussi. Un pansement avoué
 se retire un jour ; un pansement oublié devient la fondation du suivant.
 
 ## 4 ter. L'ARROSAGE N'A PAS LE DROIT À L'ERREUR
