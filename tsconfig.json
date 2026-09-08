@@ -97,7 +97,9 @@
     ".next-verification-a1/types/**/*.ts",
     ".next-verification-a1/dev/types/**/*.ts",
     ".next-verification-a2/types/**/*.ts",
-    ".next-verification-a2/dev/types/**/*.ts"
+    ".next-verification-a2/dev/types/**/*.ts",
+    ".next-a2/types/**/*.ts",
+    ".next-a2/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
