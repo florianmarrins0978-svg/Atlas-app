@@ -498,7 +498,7 @@ ajouté en cours de route.
 |---|---|---|
 | **Google** | **une décision du patron, pas un lot de code.** Le formulaire d'identifiants Google est un DÉPANNAGE : chaque artisan devrait créer son projet chez Google, activer une API et coller un identifiant OAuth. Le code sait déjà employer des identifiants ATLAS posés une fois pour tous — `ATLAS_GOOGLE_CLIENT_ID`, `ATLAS_GOOGLE_CLIENT_SECRET`, `ATLAS_GOOGLE_REDIRECTION` dans `src/server/agenda/google.ts` —, et ils ne sont posés nulle part (vérifié le 6 septembre 2026 sur son `.env`). **C'est à lui de les créer**, avec son compte. ⚠ À vérifier avant de le lui promettre : Google fait valider les applications qui touchent aux agendas, et le délai n'est pas connu ici |
 | **iCloud** | rien de mieux n'existe : Apple n'offre que le mot de passe pour les apps. À laisser tel quel |
-| 6 | **le reste** | Équipe (**proposition C** de la planche 96, décidée le 6 septembre, pas codée), notifications, mot de passe, données, couleurs, IA, abonnement, compte |
+| 6 | **le reste** | ~~Équipe~~ **FAIT le 8 septembre 2026** (§289) — mais PAS la proposition C : elle visait un écran refait depuis, et la capture montrait deux compteurs jumeaux que rien ne distinguait. Sa réponse A devant `appli/deux-compteurs-de-l-equipe.html` : les titres posent la question. **Restent** : notifications, mot de passe, données, couleurs, IA, abonnement, compte |
 
 ---
 

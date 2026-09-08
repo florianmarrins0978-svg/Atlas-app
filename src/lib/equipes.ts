@@ -194,7 +194,15 @@ export function equipesMobilisees(salariesCoches: number, nombreEquipes: number)
 export function phraseDuCompteur(nombreEquipes: number): { avant: string; apres: string } {
   const n = Math.max(1, Math.trunc(nombreEquipes) || 1);
   const combien = n <= 1 ? "Un chantier" : `${n} chantiers`;
-  return { avant: `${combien} par jour. Planning`, apres: "." };
+  // **UNE SEULE PHRASE, ET PLUS DEUX — sa correction du 8 septembre 2026 :**
+  // *« deux chantiers par jour pour un planning complet »*, et le carré vert
+  // foncé à la fin.
+  //
+  // Elle disait « 2 chantiers par jour. Planning ▪ complet. » — deux phrases
+  // courtes collées, dont la seconde n'avait pas de verbe. Le lien entre les
+  // deux — c'est CE nombre qui remplit la journée — se devinait ; il s'écrit
+  // maintenant, avec le mot « pour ».
+  return { avant: `${combien} par jour pour un planning`, apres: "." };
 }
 
 /**

@@ -7,6 +7,23 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-08
+### Deux compteurs identiques dans « Équipe » : les titres les séparent
+
+Sur l'écran Équipe, deux compteurs se suivaient, dessinés pareil et affichant
+le même chiffre — « 2 » chantiers, « 2 » salariés. L'un dit ce que le planning
+accepte, l'autre qui part sur le chantier ; rien ne les distinguait.
+
+**Les deux étiquettes deviennent des questions** — « Combien de chantiers par
+jour ? » et « Combien de salariés ? » —, sa réponse A devant la planche.
+
+**Et la phrase du compteur dit enfin ce qu'elle veut dire** : « 2 chantiers par
+jour pour un planning complet ▪ », au lieu de deux phrases collées dont la
+seconde n'avait pas de verbe.
+
+**Ce que ça évite plus loin** (ARCHITECTURE.md §289) : la décision qui devait
+être appliquée ici datait d'un écran qui n'existait plus — deux de ses demandes
+l'avaient refait entre-temps. On regarde l'écran avant d'appliquer une
+décision d'apparence.
 
 ### Chaque session mesure chez elle : un atelier, puis un dossier de travail
 

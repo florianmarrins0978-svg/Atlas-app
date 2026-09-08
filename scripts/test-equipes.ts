@@ -169,9 +169,9 @@ essai("la phrase du compteur d'équipes ne contient aucun mot de métier", () =>
   // entre les deux se glissent le carré du planning et son mot, qui ne sont pas
   // du texte. Sa demande : *« écrit deux chantiers par jour, planning complet,
   // et met le petit carré vert foncé avec écrit "complet" du planning »*.
-  assert.deepEqual(phraseDuCompteur(1), { avant: "Un chantier par jour. Planning", apres: "." });
-  assert.deepEqual(phraseDuCompteur(2), { avant: "2 chantiers par jour. Planning", apres: "." });
-  assert.deepEqual(phraseDuCompteur(5), { avant: "5 chantiers par jour. Planning", apres: "." });
+  assert.deepEqual(phraseDuCompteur(1), { avant: "Un chantier par jour pour un planning", apres: "." });
+  assert.deepEqual(phraseDuCompteur(2), { avant: "2 chantiers par jour pour un planning", apres: "." });
+  assert.deepEqual(phraseDuCompteur(5), { avant: "5 chantiers par jour pour un planning", apres: "." });
   for (const n of [2, 7, 20]) {
     assert.ok(
       phraseDuCompteur(n).avant.startsWith(`${n} chantiers`),
@@ -188,7 +188,7 @@ essai("la phrase du compteur d'équipes ne contient aucun mot de métier", () =>
   }
   // Une valeur aberrante ne doit pas écrire « 0 chantiers par jour » : le
   // compteur est borné à 1 partout ailleurs, et la phrase le suit.
-  assert.deepEqual(phraseDuCompteur(0), { avant: "Un chantier par jour. Planning", apres: "." });
+  assert.deepEqual(phraseDuCompteur(0), { avant: "Un chantier par jour pour un planning", apres: "." });
 });
 
 essai("le mot du planning est celui de la légende, et il n'existe qu'une fois", () => {

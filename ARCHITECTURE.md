@@ -25052,3 +25052,64 @@ Chaque session fusionne et pousse comme avant (`CLAUDE.md` §6).
 
 **Le seul geste, et il se fait une fois :** un `npm install` par dossier, les
 dépendances ne se partageant pas. Ensuite, plus rien à faire.
+
+## §289. Deux compteurs jumeaux : ce sont les TITRES qui les séparent
+
+**8 septembre 2026, écran Équipe.** Deux compteurs se suivaient, au dessin
+identique, affichant le même chiffre — « 2 » chantiers, « 2 » salariés. L'un dit
+ce que le planning accepte, l'autre qui part sur le chantier. **Rien à l'œil ne
+les séparait.**
+
+### Pourquoi une décision déjà prise ne s'appliquait plus
+
+Le lot devait commencer en portant sa « proposition C » du 6 septembre : le
+titre pose la question, la phrase des congés part vers « Absences ». Cette
+planche-là (96) décrivait un écran à **quatre blocs dont deux se répétaient**.
+
+Cet écran n'existait plus. Ses deux demandes du 26 août l'avaient refait : les
+compteurs séparés (§ des salariés), et les trois blocs bavards réduits à **une**
+phrase par compteur — la phrase des congés comprise, partie ce jour-là.
+
+**La leçon, et elle vaut au-delà de cet écran :** une décision d'apparence prise
+sur une planche vieillit avec l'écran. **On regarde l'écran AVANT d'appliquer la
+décision** (`CLAUDE.md` §5, « regarder l'écran ») — sans quoi on porte une
+réponse juste sur une question qui a changé.
+
+### Ce qui a été fait, et ce qui a été écarté
+
+Deux propositions lui ont été dessinées
+(`appli/deux-compteurs-de-l-equipe.html`), et il a répondu **A** :
+
+| | |
+|---|---|
+| **A — retenue** | les deux étiquettes en capitales deviennent des **questions** : « Combien de chantiers par jour ? », « Combien de salariés ? » |
+| **B — écartée par lui** | le second compteur disparaissait au profit d'une **liste de noms** avec « + Ajouter un salarié » — le nombre se déduisant des lignes |
+
+**B était la proposition conseillée**, et c'est son appel : elle retirait la
+ressemblance au lieu de l'expliquer, et elle suivait sa propre correction du
+6 septembre (*« c'est pas les équipes, c'est le nom des salariés »*). Elle
+coûtait une migration — le nombre de salariés cessait d'être une colonne. Il a
+gardé A ; le compteur reste, et deux questions le distinguent de son voisin.
+
+**En serif et en minuscules, jamais en `libelleCaps`.** Une question posée en
+capitales espacées se lit comme une étiquette — c'est-à-dire exactement ce que
+ce lot retire.
+
+### La phrase du compteur, corrigée par lui dans la foulée
+
+*« Deux chantiers par jour pour un planning complet, et là tu mets le carré vert
+foncé. »*
+
+| | |
+|---|---|
+| avant | « 2 chantiers par jour. Planning ▪ complet. » |
+| après | « 2 chantiers par jour pour un planning complet ▪. » |
+
+C'étaient deux phrases courtes collées, dont la seconde n'avait pas de verbe :
+le lien entre les deux — c'est CE nombre qui remplit la journée — se devinait.
+Le mot « pour » l'écrit.
+
+**Le mot « complet » et le carré ne sont toujours pas écrits ici** : ils viennent
+de `MOT_ETAT` et de `fondDeLEtat`, ceux du calendrier. Un « complet » recopié
+cesserait de suivre la légende le jour où elle change, et `test-equipes` refuse
+délibérément qu'il s'écrive dans la phrase.
