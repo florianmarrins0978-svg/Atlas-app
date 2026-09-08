@@ -7,6 +7,36 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-08
+### Les pages que voit son client, et l'IBAN qu'elles portaient
+
+Sa capture du 8 septembre : la page de facture de son client était noire, le
+montant s'affichait, et deux boutons se disputaient le geste. Les six points
+qu'il a demandés sont faits — couleurs d'Atlas, montant retiré, un seul bouton,
+la consigne du libellé, le numéro et l'IBAN à copier d'un doigt, l'ordre du
+chèque. Tout vient de ses réglages : **aucun champ n'a été créé**.
+
+**Ce que sa question a trouvé, et qui valait plus que les six points.** *« Si je
+modifie mon IBAN, les infos se modifient dans le lien que recevra le client ? »*
+— non, et le défaut remontait au devis : une facture recopiait l'identité DU
+DEVIS, figée parfois plusieurs mois plus tôt. Un devis de janvier facturé en
+juin partait avec l'IBAN de janvier, et le client virait sur un compte fermé.
+L'identité de l'émetteur se lit désormais sur l'entreprise **au moment où la
+facture naît**, comme le régime de TVA le faisait déjà seul (migration 0076).
+
+**Le figeage n'est pas affaibli — son instant a bougé.** Il le fallait : le PDF
+servi est le fichier archivé, jamais reconstruit. Montrer l'IBAN vivant sur la
+page aurait donné DEUX IBAN au même client, dans le même envoi.
+
+La page du devis suit : elle portait encore le terre cuite abandonné le 3 août
+et le vert des textes sur son bouton d'acceptation, faute d'être passée par les
+jetons. Le montant y RESTE, lui — le client s'apprête à accepter.
+
+**Et la serrure Face ID est réparée** : « Me déconnecter partout » ferme
+désormais aussi les clés d'appareil. C'était le seul défaut de sécurité connu et
+non corrigé, ouvert depuis le 25 août.
+
+Le détail, avec les chiffres et ce qui reste : `docs/lot-pages-du-client.md`.
+
 ### Une phrase des absences promettait ce qu'Atlas ne fait pas
 
 Sur le même écran : *« notez-le ici et Atlas n'enverra plus personne à sa

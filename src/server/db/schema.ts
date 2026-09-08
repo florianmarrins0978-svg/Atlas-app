@@ -1699,9 +1699,18 @@ export const factures = pgTable(
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
     /**
+     * À qui le chèque est libellé, quand le compte n'est pas au nom de
+     * l'enseigne (migration 0076). `NULL` = aucun titulaire distinct, et
+     * l'ordre retombe sur le nom de l'entreprise — la règle vit dans
+     * `src/lib/modalites-paiement.ts`, appelée par la page du client comme par
+     * le PDF.
+     */
+    entrepriseTitulaireCompte: text("entreprise_titulaire_compte"),
+    /**
      * Les trois mentions légales, et leur emplacement (migration 0072) —
-     * recopiées du devis, comme le reste de l'identité. Nulles pour les
-     * factures antérieures à la migration.
+     * lues sur l'ENTREPRISE à la création de la facture depuis la migration
+     * 0076, comme le reste de l'identité de l'émetteur. Nulles pour les
+     * factures antérieures à 0072.
      */
     entrepriseFormeJuridique: text("entreprise_forme_juridique"),
     entrepriseCapitalSocial: numeric("entreprise_capital_social", { precision: 12, scale: 2 }),

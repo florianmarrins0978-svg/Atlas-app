@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Les pages que voit son client — facture, devis, et la serrure Face ID</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="les-pages-que-voit-son-client--facture-devis-et-la-serrure-face-id">Les pages que voit son client — facture, devis, et la serrure Face ID</h1>
+<p><strong>7 et 8 septembre 2026.</strong> Document de retour, à lire d'un bout à l'autre : un verdict par point, le fichier qui le fonde, ce qui a été fait autrement, ce qui a été refusé, les chiffres de la batterie, et ce qui reste ouvert.</p>
+<hr>
+<h2 id="en-cinq-lignes">En cinq lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>La page de facture de son client</strong> est refaite : couleurs d'Atlas, montant retiré, un seul bouton, IBAN et numéro à copier d'un doigt, ordre du chèque.</li>
+<li><strong>La page de devis</strong> aussi — et elle portait encore une couleur abandonnée le 3 août.</li>
+<li><strong>Un vrai défaut a été corrigé à la racine</strong> : une facture prenait l'IBAN du <em>devis</em>, parfois vieux de plusieurs mois.</li>
+<li><strong>La serrure Face ID est réparée</strong> : « Me déconnecter partout » ferme désormais aussi les clés d'appareil.</li>
+<li><strong>Trois maquettes sont en ligne</strong>, dont une qui attend encore un choix.</li>
+</ol>
+<hr>
+<h2 id="1-la-facture--ses-six-points-un-par-un">1. La facture — ses six points, un par un</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sa demande du 8 septembre, capture à l'appui.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'il a demandé</th>
+<th>Verdict</th>
+<th>Le fichier</th>
+</tr></thead><tbody>
+<tr>
+<td>« mets-le aux couleurs de l'appli »</td>
+<td><strong>fait</strong></td>
+<td><code>src/app/factures/[jeton]/page.tsx</code></td>
+</tr>
+<tr>
+<td>« le montant ne doit pas apparaître »</td>
+<td><strong>fait</strong></td>
+<td>idem</td>
+</tr>
+<tr>
+<td>« supprime "voir la facture en PDF", on garde que télécharger »</td>
+<td><strong>fait</strong></td>
+<td>idem</td>
+</tr>
+<tr>
+<td>« une phrase pour dire qu'il faut mettre le numéro dans le libellé »</td>
+<td><strong>fait</strong></td>
+<td><code>src/lib/modalites-paiement.ts</code></td>
+</tr>
+<tr>
+<td>« le numéro en cliquable, copier-coller »</td>
+<td><strong>fait</strong></td>
+<td><code>src/app/factures/[jeton]/PastilleACopier.tsx</code></td>
+</tr>
+<tr>
+<td>« une phrase pour les chèques, l'ordre de l'entreprise »</td>
+<td><strong>fait</strong></td>
+<td><code>modalites-paiement.ts</code></td>
+</tr>
+<tr>
+<td>« tout ça en automatique, repris des réglages »</td>
+<td><strong>fait</strong>, et aucun champ n'a été créé</td>
+<td>Réglages → Identité existait déjà</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-qui-a-été-corrigé-dans-ce-que-je-lui-avais-dit">Ce qui a été corrigé dans ce que je lui avais dit</h3>
+<p><strong>Je lui ai d'abord annoncé que la page était noire par un défaut.</strong> C'était faux. Elle prenait <strong>l'allure figée de la facture</strong> (migration 0074), c'est-à-dire le fond et l'accent qu'il a réglés lui-même dans « Devis &amp; factures ». Sans réglage, elle aurait déjà été crème et verte.</p>
+<p><strong>Et cela rouvre une règle qu'il a posée le 4 septembre</strong> — <em>« mon client doit retrouver en ligne exactement ce qu'il a reçu en PDF »</em>. Elle est révisée, par lui, après avoir vu la proposition : <strong>le PDF est son document et garde son allure ; la page est l'enveloppe d'Atlas et porte les couleurs d'Atlas.</strong> Ce ne sont pas deux fois le même objet.</p>
+<h3 id="ce-qui-a-été-refusé">Ce qui a été refusé</h3>
+<p><strong>Rien de sa demande.</strong> Une réserve a été dite avant de coder, et elle tient toujours : montant caché, le client qui règle sans ouvrir le PDF n'a pas le montant sous les yeux. L'échéance reste, pour qu'il sache qu'il y a une date.</p>
+<hr>
+<h2 id="2-la-correction-de-racine--sa-question-et-ce-quelle-a-trouvé">2. LA CORRECTION DE RACINE — sa question, et ce qu'elle a trouvé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote><em>« Lorsque l'utilisateur modifie son IBAN dans ses réglages ou le nom de sa société, les infos se modifient automatiquement dans le lien que recevra le client ? »</em> — puis : <em>« ne fais pas de pansement, corrige à la racine. »</em></blockquote>
+<p><strong>La réponse était non, et le défaut était plus haut que la page.</strong></p>
+<p>Une facture recopiait l'identité <strong>du devis</strong> (<code>instantaneDuDevis</code>), figée le jour du devis. Un devis de janvier facturé en juin partait donc avec l'IBAN de janvier — et si l'artisan avait changé de banque entre-temps, <strong>son client virait l'argent sur un compte fermé, sur une facture toute neuve.</strong> Le nom de l'entreprise avait le même défaut, en pire : la facture portait une raison sociale qui n'existait plus.</p>
+<h3 id="ce-qui-a-changé-et-ce-qui-na-pas-changé">Ce qui a changé, et ce qui n'a PAS changé</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>ce qui vient du <strong>devis</strong></td>
+<td>le client et les prix — ce qu'il a accepté</td>
+</tr>
+<tr>
+<td>ce qui vient de l'<strong>entreprise</strong>, lu quand la facture naît</td>
+<td>l'émetteur et ses modalités de paiement</td>
+</tr>
+</tbody></table></div>
+<p><strong>Le figeage n'est pas affaibli : c'est son INSTANT qui a bougé</strong>, du devis à la facture. Une fois créée, tout reste figé — et c'est indispensable, parce que le PDF servi au client est le fichier <strong>archivé</strong>, jamais reconstruit (<code>src/app/factures/[jeton]/pdf/route.ts</code>).</p>
+<p><strong>Une première idée a été abandonnée en cours de route, et il faut l'écrire :</strong> montrer l'IBAN <em>vivant</em> sur la page du client. C'est la lecture de cette route qui l'a arrêtée — la page aurait affiché l'IBAN d'aujourd'hui à côté d'un PDF portant celui d'hier. <strong>Deux IBAN pour un même envoi, pire que le défaut de départ.</strong></p>
+<p>Le régime de TVA suivait déjà cette règle depuis la migration 0039 ; elle vaut désormais pour toute l'identité.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Fichier</th>
+<th>Ce qu'il porte</th>
+</tr></thead><tbody>
+<tr>
+<td><code>drizzle/0076_identite_vivante_sur_la_facture.sql</code></td>
+<td>la colonne du titulaire de compte, figée comme le reste</td>
+</tr>
+<tr>
+<td><code>src/server/repositories/factures.ts</code></td>
+<td><code>identiteDeLEmetteur</code>, et <code>instantaneDuDevis</code> allégé</td>
+</tr>
+<tr>
+<td><code>src/lib/modalites-paiement.ts</code></td>
+<td>la règle pure : IBAN groupé, ordre du chèque, consigne du libellé</td>
+</tr>
+<tr>
+<td><code>scripts/test-modalites-paiement.ts</code></td>
+<td>14 contrôles, sans base</td>
+</tr>
+<tr>
+<td><code>scripts/test-facture-reprend-le-devis-db.ts</code></td>
+<td>2 contrôles neufs, <strong>vus rouges contre la version d'hier</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Le contrôle a été confronté au défaut qu'il prétend attraper</strong> : le défaut a été remis en place une minute, la suite a rougi en désignant l'IBAN du devis, puis le défaut a été retiré et elle a reverdi.</p>
+<hr>
+<h2 id="3-le-devis--deux-défauts-que-la-capture-ne-montrait-pas">3. Le devis — deux défauts que la capture ne montrait pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sa demande : <em>« on va le modifier aussi comme la facture »</em>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que la lecture a trouvé</th>
+<th>Ce que c'était</th>
+</tr></thead><tbody>
+<tr>
+<td>le refus et le cadre de rétractation en <code>#B5502F</code></td>
+<td><strong>le terre cuite abandonné le 3 août 2026</strong>, encore là cinq semaines plus tard</td>
+</tr>
+<tr>
+<td>« J'accepte ce devis » en <code>#2F3B2F</code></td>
+<td>le vert des <strong>textes</strong>, au lieu du vert des <strong>boutons</strong> tranché le 3 septembre</td>
+</tr>
+</tbody></table></div>
+<p><strong>La cause des deux est la même</strong> : cette page écrivait ses couleurs <strong>en dur</strong> (<code>bg-[#F4EFE8]</code>, <code>bg-white</code>), ce que <code>CLAUDE.md</code> §3 interdit. C'est pourquoi elle n'a suivi aucun changement d'identité — et pourquoi elle n'aurait pas suivi les huit chartes.</p>
+<h3 id="ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">Ce qui a été REFUSÉ, et ce que ça aurait coûté</h3>
+<blockquote><em>« Pour la page du devis j'hésite à faire comme pour la facture, ne pas afficher le montant pour les obliger à télécharger leur devis. »</em></blockquote>
+<p><strong>Refusé, et c'est le seul refus franc de ce lot.</strong> Sur la facture, le client DOIT déjà l'argent. Sur le devis, il <strong>décide</strong> — le bouton juste dessous dit « J'accepte ce devis », et un accord donné sans voir le prix n'en est pas un. C'est aussi la première chose qu'un litige regarderait. S'y ajoutent : les chantiers perdus par ceux qui ne téléchargent pas, l'effet « vendeur qui cache son prix », et ceux qui ne savent pas ouvrir un PDF.</p>
+<p><strong>Mais son inquiétude était juste, et elle est traitée</strong> : le téléchargement tenait dans un lien souligné de 13 px que personne ne voyait. C'est devenu un vrai bouton, sous le prix. Le mot reste le sien — « Télécharger », choisi le 31 août pour que le libellé dise ce qui se passe.</p>
+<h3 id="ce-que-la-batterie-ma-repris">Ce que la batterie m'a repris</h3>
+<p><strong>Deux fois.</strong> Le bouton a fait déborder la page : <strong>713 px pour 664</strong> avec la case de rétractation, contre sa règle du 31 août. Puis <strong>676</strong>. Les pixels ont été rendus sur les espacements, jamais sur une phrase — et l'intertitre « Devis » que j'avais ajouté est reparti : quatorze pixels pour un mot que « Devis n° » disait déjà.</p>
+<p><strong>Et un contrôle a été retourné</strong> (<code>scripts/test-devis-client-e2e.ts</code>) : il exigeait que le lien soit <strong>en gras et souligné</strong>. C'était la façon dont le geste avait été rendu visible le 31 août, pas la règle. Il mesure désormais ce qui compte et survivra au prochain remaniement : <strong>le geste est une cible qu'un doigt atteint</strong> — au moins 40 px de haut, et il se distingue du texte.</p>
+<hr>
+<h2 id="4-la-serrure-face-id--le-seul-défaut-de-sécurité-connu-et-non-réparé">4. La serrure Face ID — le seul défaut de sécurité connu et non réparé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Constaté le 25 août 2026, écrit à l'écran, et jamais corrigé.</strong></p>
+<p>Une clé Face ID posée depuis une session volée <strong>rouvrait Atlas après « Me déconnecter partout »</strong>, et après un changement de mot de passe. <code>deconnecterPartout</code> ne touchait pas <code>cles_appareil</code>, et <code>ouvrirAvecCle</code> ne consultait jamais la coupure.</p>
+<p>La raison notée pour ne pas le corriger — « il faudrait tout réenregistrer » — ne tient pas : ce bouton n'est pas un geste courant, c'est celui qu'on appuie quand on croit s'être fait voler quelque chose. Son prix doit être la fermeture complète, et remettre Face ID est un toucher sur le téléphone qu'on tient.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Fichier</th>
+<th>Ce qu'il porte</th>
+</tr></thead><tbody>
+<tr>
+<td><code>src/server/repositories/cles-appareil.ts</code></td>
+<td><code>retirerToutesLesCles</code></td>
+</tr>
+<tr>
+<td><code>src/server/repositories/compte.ts</code></td>
+<td>la coupure ferme aussi les clés</td>
+</tr>
+<tr>
+<td><code>src/app/reglages/connexion/ConnexionClient.tsx</code></td>
+<td>la phrase annonce un coût, plus une faille</td>
+</tr>
+<tr>
+<td><code>scripts/test-compte-db.ts</code></td>
+<td>2 contrôles, dont un <strong>vu rouge</strong> contre la version d'hier</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui n'a pas été touché, et pourquoi :</strong> changer son mot de passe ne déconnecte toujours aucun autre appareil. C'est un choix documenté, et il l'a confirmé le 7 septembre — deux gestes séparés, plus prévisibles.</p>
+<hr>
+<h2 id="5-ce-qui-a-été-abandonné-en-cours-de-route">5. Ce qui a été abandonné en cours de route</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La porte d'Atlas</strong> — la page de connexion « comme les plus grandes applis », avec Google et Apple. Trois propositions ont été dessinées et publiées ; il a répondu <em>« j'ai changé d'idée, je ne fais plus ça »</em>. <strong>Rien n'a été codé.</strong></p>
+<p><strong>Conséquence à retenir : le compte développeur Apple (99 $/an) n'a pas à être pris.</strong> Il ne servait qu'à ça.</p>
+<p>La planche reste en ligne — même écartée, elle raconte le chemin : <code>https://florianmarrins0978-svg.github.io/Atlas-app/la-porte-d-atlas.html</code></p>
+<hr>
+<h2 id="6-les-chiffres-de-la-batterie">6. Les chiffres de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>npm run verifier:avant-livraison</code>, sur <code>atlas_test</code>, le 8 septembre 2026.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>typecheck</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><code>lint</code></td>
+<td><strong>0 erreur</strong> (19 avertissements, tous antérieurs)</td>
+</tr>
+<tr>
+<td><code>verifier:memoire</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>Suites base</strong></td>
+<td>rouge — voir le tri ci-dessous</td>
+</tr>
+<tr>
+<td><strong>Suites navigateur</strong></td>
+<td>interrompue après 5 suites</td>
+</tr>
+<tr>
+<td><strong>Connexion derrière un proxy</strong></td>
+<td><strong>vert</strong></td>
+</tr>
+</tbody></table></div>
+<h3 id="le-tri-des-rouges-sans-complaisance">Le tri des rouges, sans complaisance</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Suite</th>
+<th>À qui</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-boutons-arrondis</code></td>
+<td><strong>à moi</strong> — ma pastille à copier était en coin carré, contre sa règle du 12 août. <strong>Corrigé, suite verte</strong></td>
+</tr>
+<tr>
+<td><code>test-roles-capacites-db</code>, <code>test-salarie-planning-lecture-seule-db</code></td>
+<td>à une session voisine : leurs essais négatifs modifient un fichier dont son refactor a changé la forme</td>
+</tr>
+<tr>
+<td><code>test-ouvrir-port</code>, <code>test-port-remesure</code>, <code>test-prechauffage</code>, <code>test-relance-construction</code>, <code>test-fiche-pendant-relance</code>, <code>test-seed-conserve-identifiants</code></td>
+<td>l'outillage de l'atelier — rouges avant ce lot</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les suites navigateur se sont arrêtées après cinq suites</strong>, sur une expiration dans <code>test-adresse-suggestions-e2e</code>, pendant que le serveur répondait 200. Ce n'est pas le produit.</p>
+<h3 id="ce-qui-a-été-éprouvé-à-la-place-et-qui-compte">Ce qui a été éprouvé à la place, et qui compte</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-devis-client-e2e.ts</code></td>
+<td><strong>16 réussis, 0 échoué</strong> — dont « tout tient dans un écran »</td>
+</tr>
+<tr>
+<td><code>test-modalites-paiement.ts</code></td>
+<td><strong>14 / 14</strong></td>
+</tr>
+<tr>
+<td><code>test-facture-reprend-le-devis-db.ts</code></td>
+<td><strong>15 / 15</strong>, dont les deux neufs</td>
+</tr>
+<tr>
+<td><code>test-facture-jeton-rls.ts</code></td>
+<td><strong>6 / 6</strong></td>
+</tr>
+<tr>
+<td><code>test-boutons-arrondis.ts</code></td>
+<td>vert après correction</td>
+</tr>
+<tr>
+<td><strong>les deux écrans, regardés</strong></td>
+<td>captures prises sur de vraies données</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="7-ce-qui-reste-ouvert">7. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Qui tranche</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>L'alerte IBAN</strong> — prévenir des factures déjà parties quand l'IBAN change</td>
+<td><strong>tranché le 8 septembre : il la veut, aux trois endroits.</strong> À coder</td>
+</tr>
+<tr>
+<td>Les six suites d'outillage rouges</td>
+<td>une session dédiée à l'atelier</td>
+</tr>
+<tr>
+<td>Les deux suites de rôles</td>
+<td>la session qui a refait le compte</td>
+</tr>
+</tbody></table></div>
+<p><strong>La maquette de l'alerte IBAN</strong>, avec ses trois endroits : <code>https://florianmarrins0978-svg.github.io/Atlas-app/changer-d-iban.html</code></p>
+<p><strong>Ce qu'Atlas ne fera pas, et il faut le redire :</strong> réécrire une facture déjà partie. Le client a le PDF dans son téléphone, et le changer sous ses yeux ferait mentir la page. Ce qui est proposé, c'est de <strong>prévenir</strong>.</p>
+</main>
+</body>
+</html>

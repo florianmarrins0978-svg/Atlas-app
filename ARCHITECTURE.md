@@ -25113,3 +25113,76 @@ Le mot « pour » l'écrit.
 de `MOT_ETAT` et de `fondDeLEtat`, ceux du calendrier. Un « complet » recopié
 cesserait de suivre la légende le jour où elle change, et `test-equipes` refuse
 délibérément qu'il s'écrive dans la phrase.
+
+## §290 — Ce qu'une facture recopie du devis, et ce qu'elle lit sur l'entreprise
+
+**Décidé le 8 septembre 2026, sur sa question :** *« lorsque l'utilisateur
+modifie son IBAN dans ses réglages ou le nom de sa société, les infos se
+modifient automatiquement dans le lien que recevra le client ? »*
+
+La réponse était **non**, et la racine n'était pas dans la page : une facture
+recopiait l'identité **du devis** (`instantaneDuDevis`), figée le jour du devis.
+Un devis de janvier facturé en juin partait avec l'IBAN de janvier — le client
+virait sur un compte fermé, sur une facture toute neuve.
+
+**La règle, désormais :**
+
+| Ce qui vient du **devis** | Ce qui vient de l'**entreprise**, à la création de la facture |
+|---|---|
+| le client, les prix, la remise accordée | le nom, l'adresse, le SIRET, le téléphone, l'e-mail, l'IBAN, le titulaire du compte, les trois mentions légales, le régime de TVA |
+
+Ce n'est pas un affaiblissement du figeage : **c'est son INSTANT qui a bougé**,
+du devis à la facture. Une facture est une pièce NEUVE, émise aujourd'hui, qui
+porte l'identité d'aujourd'hui. Le régime de TVA suivait déjà exactement cette
+règle depuis la migration 0039 ; elle vaut maintenant pour toute l'identité.
+
+**POURQUOI L'IBAN NE SE LIT PAS VIVANT SUR LA PAGE DU CLIENT — l'idée a été
+essayée puis abandonnée, et c'est le point à retenir.** Le PDF servi par
+`src/app/factures/[jeton]/pdf/route.ts` est le fichier **archivé** à l'arrêt,
+jamais reconstruit. Une page qui aurait affiché l'IBAN d'aujourd'hui à côté d'un
+PDF portant celui d'hier aurait donné **deux IBAN au même client, dans le même
+envoi** — pire que le défaut qu'on répare. La page et le PDF lisent donc les
+mêmes colonnes figées, par la même fonction (`src/lib/modalites-paiement.ts`).
+
+**Ce qui reste ouvert, et qui se voit à l'écran plutôt qu'en silence :** les
+factures déjà parties gardent l'ancien IBAN. Atlas ne les réécrit pas — il
+préviendra l'artisan, aux trois endroits qu'il a retenus le 8 septembre
+(`appli/changer-d-iban.html`, `TODO.md`).
+
+**Colonne neuve :** `factures.entreprise_titulaire_compte` (migration 0076).
+`NULL` = aucun titulaire distinct, et l'ordre du chèque retombe sur le nom de
+l'entreprise — un chèque libellé à l'enseigne quand le compte est au nom propre
+se fait refuser au guichet.
+
+## §291 — La page du client porte les couleurs d'Atlas, le PDF garde les siennes
+
+**Sa demande du 8 septembre 2026, capture à l'appui :** *« il faut le modifier,
+déjà mets-le aux couleurs de l'appli »*.
+
+La page de facture de son client prenait **l'allure figée de la facture**
+(migration 0074) : un artisan ayant réglé un accent noir pour ses documents
+voyait une page noire. Ce n'était pas un défaut — c'était son propre réglage,
+porté jusqu'au bout.
+
+**Cela rouvre sa décision du 4 septembre** — *« mon client doit retrouver en
+ligne exactement ce qu'il a reçu en PDF »* —, et il l'a révisée lui-même après
+avoir vu la proposition. La règle devient :
+
+| | |
+|---|---|
+| le **PDF** | son document. Il garde l'allure qu'il a réglée, figée à l'envoi |
+| la **page** | l'enveloppe d'Atlas. Elle porte les couleurs d'Atlas |
+
+Ce ne sont pas deux fois le même objet : l'un s'archive et se garde, l'autre se
+traverse. **Ce n'est toujours pas sa charte d'écran** — une page de client ne
+reçoit aucune variable (`layout.tsx`, `estPageDuClient`), et les jetons
+retombent sur la charte d'origine : un devis ne part pas en noir chez le client
+parce que l'artisan a choisi « Nuit ».
+
+**La page du devis y passe aussi**, et la lecture y a trouvé deux défauts
+qu'aucune capture ne montrait : elle écrivait ses couleurs **en dur**
+(`bg-[#F4EFE8]`, `bg-white`, `#2F3B2F`, `#B5502F`), ce que `CLAUDE.md` §3
+interdit. Elle portait donc encore le terre cuite abandonné le 3 août 2026 sur
+son refus et son cadre de rétractation, et le vert des TEXTES sur son bouton
+d'acceptation au lieu du vert des BOUTONS tranché le 3 septembre. Cinq semaines
+d'identité manquée, faute d'être passée par les jetons.

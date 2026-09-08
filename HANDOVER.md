@@ -8,6 +8,33 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LES PAGES QUE VOIT SON CLIENT (8 septembre 2026)
+
+**Ce qu'il faut savoir avant de toucher aux pages publiques par jeton.**
+
+| | |
+|---|---|
+| **la page de facture** | `src/app/factures/[jeton]/page.tsx` — couleurs d'Atlas, **pas de montant** (sa demande), un seul bouton, l'IBAN et le numéro à copier (`PastilleACopier.tsx`), l'ordre du chèque |
+| **la page de devis** | `src/app/devis/[jeton]/` — passée aux jetons de charte : elle écrivait ses couleurs en dur et portait encore le terre cuite du 3 août. **Le montant y RESTE** : le client s'apprête à accepter |
+| **la règle du paiement** | `src/lib/modalites-paiement.ts` — IBAN groupé par quatre, IBAN nu pour le copier-coller, ordre du chèque, consigne du libellé. **La page ET le PDF passent par elle** |
+| **la racine corrigée** | une facture lit l'identité de l'émetteur sur l'ENTREPRISE au moment où elle naît, plus sur le devis (migration 0076, `ARCHITECTURE.md` §290) |
+| **la serrure Face ID** | « Me déconnecter partout » ferme aussi les clés d'appareil |
+
+**Deux pièges à ne pas rouvrir :**
+
+1. **ne pas lire l'IBAN vivant sur la page du client.** Le PDF servi est le
+   fichier archivé : la page afficherait alors un IBAN et le PDF un autre, dans
+   le même envoi. Les deux lisent les colonnes figées de la facture ;
+2. **la page du devis tient en 390 × 664, case de rétractation comprise.** Sa
+   règle du 31 août, mesurée par `scripts/test-devis-client-e2e.ts`. Elle a
+   attrapé ce lot deux fois (713 px, puis 676) : tout ajout se paie ailleurs,
+   sur les espacements et jamais sur une phrase.
+
+Le document du lot, avec les verdicts et les chiffres :
+`docs/lot-pages-du-client.md`.
+
+---
+
 ## Dernier lot — CINQ SESSIONS EN MÊME TEMPS (8 septembre 2026, nuit)
 
 **Sa demande :** *« l'idée c'est qu'après ça chaque session puisse tourner en

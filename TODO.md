@@ -9,6 +9,57 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## 🔨 À CODER — prévenir des factures parties avec l'ancien IBAN
+
+**Tranché par lui le 8 septembre 2026**, maquette à l'appui
+(`appli/changer-d-iban.html`) : *« oui je le veux »*, aux **trois** endroits.
+
+**Le trou.** Depuis la migration 0076, une facture prend l'IBAN de l'entreprise
+au jour où elle est créée : les factures à venir sont justes. Mais celles **déjà
+envoyées et non réglées** gardent l'ancien, et le PDF que le client a dans son
+téléphone ne se réécrit pas (`src/app/factures/[jeton]/pdf/route.ts`, fichier archivé).
+Le client risque de virer sur un compte fermé.
+
+**Ce qu'il faut coder :**
+
+1. **sous le champ, dans Réglages → Identité** — c'est là que ça vit, tant que
+   ce n'est pas fait. La liste des factures concernées, un bouton *Prévenir*
+   par ligne, et *Prévenir les N* ;
+2. **une marque sur « En attente de paiement »**
+   (`src/app/termines/tva/EnAttenteDePaiement.tsx`) — l'écran existe déjà, et
+   c'est là qu'il va voir qui n'a pas payé ;
+3. **l'écran du premier jour**, qui s'ouvre après l'enregistrement. Il ne
+   remplace rien : « Plus tard » renvoie aux deux précédents. *(C'est SA
+   question qui a corrigé la première proposition — sans les deux premiers,
+   « Plus tard » était un cul-de-sac.)*
+
+**Rien à créer côté données :** `enAttenteDeReglement`
+(`src/lib/exigibilite-tva.ts`) dit lesquelles sont impayées, et la comparaison
+se fait entre `factures.entreprise_iban` et l'IBAN vivant de l'entreprise. Le
+message au client se compose avec `src/lib/modalites-paiement.ts` — les mêmes
+fonctions que la page du client et le PDF, sans quoi les deux se
+contrediraient.
+
+**Ce qui ne s'affiche pas :** aucune facture concernée → **rien**. Ni
+« 0 facture », ni coche verte (`CLAUDE.md` §4 ter).
+
+---
+
+## ✅ ABANDONNÉ — la porte d'Atlas (connexion Google et Apple)
+
+**Le 8 septembre 2026 :** *« j'ai changé d'idée, je ne fais plus ça »*, après
+trois propositions dessinées et publiées
+(`appli/la-porte-d-atlas.html`). **Rien n'avait été codé.**
+
+**À ne pas rouvrir sans qu'il le redemande.** Conséquence à retenir : **le
+compte développeur Apple (99 $/an) n'a pas à être pris** — il ne servait qu'à
+« Continuer avec Apple ».
+
+La serrure Face ID, elle, a bien été réparée : elle ne dépendait pas de la
+porte (`docs/lot-pages-du-client.md`).
+
+---
+
 ## ⏳ UNE PLANCHE À REGARDER — la porte en plein air
 
 **Née le 8 septembre 2026.** `appli/la-porte-en-plein-air.html`, publiée et

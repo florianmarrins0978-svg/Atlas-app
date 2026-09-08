@@ -1,8 +1,8 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-08 · branche `main`
-· dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
-l’affichage)
+· dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
+(la mienne : `0076_identite_vivante_sur_la_facture.sql`)
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
@@ -18,6 +18,28 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## Fait le 8 septembre 2026 — les pages que voit son client
+
+- **La page de facture** de son client : aux couleurs d'Atlas, **sans montant**
+  (sa demande : « ça incitera le client à ouvrir sa facture »), un seul bouton,
+  le numéro et l'IBAN à copier d'un doigt, l'ordre du chèque. Tout vient de
+  Réglages → Identité, **aucun champ n'a été créé**.
+- **La page de devis** : passée aux jetons de charte. Elle portait encore le
+  terre cuite abandonné le 3 août et le vert des textes sur son bouton
+  d'acceptation. **Le montant y reste** — le client s'apprête à accepter.
+- **Une correction de racine** : une facture lit l'identité de l'émetteur sur
+  l'entreprise au moment où elle naît, plus sur le devis, qui pouvait dater de
+  plusieurs mois (migration 0076, `ARCHITECTURE.md` §290 et §291).
+- **La serrure Face ID** : « Me déconnecter partout » ferme aussi les clés
+  d'appareil. C'était le seul défaut de sécurité connu et non corrigé.
+
+**Abandonné le même jour, par lui :** la refonte de la page de connexion avec
+Google et Apple — *« j'ai changé d'idée »*. Rien n'avait été codé, et le compte
+développeur Apple n'a pas à être pris.
+
+**Reste à coder, tranché par lui :** prévenir des factures parties avec l'ancien
+IBAN, aux trois endroits de `appli/changer-d-iban.html` (voir `TODO.md`).
 
 ## FAIT : cinq sessions en même temps (8 septembre 2026, nuit)
 
