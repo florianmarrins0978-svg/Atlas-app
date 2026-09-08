@@ -115,6 +115,19 @@ de la liste le battait. Chaque écran, pris isolément, avait l'air correct.
 **La proposition écartée a été RETIRÉE**, pas gardée « au cas où » : une planche
 qui montre encore l'option non retenue fait rouvrir un débat clos.
 
+### La vignette d'une photo reprise n'est pas un bouton
+
+La CI a rougi sur `main` : un carré de 62 px arrivé avec « repartir d'un
+client » portait un rayon de 11 px, et le contrôle des boutons arrondis le
+dénonçait. C'est une **vignette photo** qu'on coche pour reprendre l'image, pas
+un geste qu'on appuie — l'état se lit d'ailleurs au liseré d'or. L'arrondir
+entièrement rognerait les quatre coins d'une photo déjà réduite à 62 px, c'est-
+à-dire ce qui permet de la reconnaître.
+
+Elle est donc inscrite comme exception **nommée, avec sa raison**, et le motif
+vise la ligne et non le fichier : un vrai bouton rectangulaire écrit demain dans
+cet écran serait toujours refusé.
+
 ### Deux contrôles qui accusaient à tort, corrigés à la racine
 
 Relevés par la batterie du 8 septembre, et **aucun des deux ne venait du lot** :

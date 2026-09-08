@@ -181,6 +181,25 @@ const HORS_CHARTE: Array<{
     pourquoi: "case d'un champ qu'on remplit, alignée sur le champ « Prix » voisin",
   },
   {
+    // **UNE VIGNETTE PHOTO, PAS UN BOUTON D'ACTION.** Arrivée le 8 septembre
+    // 2026 avec « repartir d'un client » : un carré de 62 px qui montre une
+    // photo de l'ancien chantier, et qu'on touche pour la reprendre. La charte
+    // donne la capsule à ce qu'on APPUIE ; ici on ne presse pas un geste, on
+    // COCHE une image — l'état se lit d'ailleurs au liseré d'or, pas à la
+    // forme.
+    //
+    // **Et l'arrondir entièrement abîmerait ce qu'elle montre** : un cercle
+    // rogne les quatre coins d'une photo déjà réduite à 62 px, c'est-à-dire
+    // précisément ce qui permet de la reconnaître. La même raison que la tuile
+    // du calendrier deux entrées plus bas : une image n'est pas un geste.
+    //
+    // Le motif vise la LIGNE — la vignette —, pas le fichier : un vrai bouton
+    // rectangulaire écrit demain dans cet écran serait toujours dénoncé.
+    motif: /^src[/\\]app[/\\]chantiers[/\\]nouveau[/\\]FormulaireNouveauChantier\.tsx$/,
+    seulement: /h-\[62px\] w-\[62px\]/,
+    pourquoi: "vignette d'une photo qu'on reprend : un cercle rognerait l'image",
+  },
+  {
     // **UNE CASE DU CALENDRIER, PAS UN BOUTON.** La charte est citée deux fois
     // plus haut : la capsule va à ce qu'on APPUIE, les 4 px à ce qu'on remplit —
     // et une case de calendrier n'est ni l'un ni l'autre. C'est une TUILE : un
