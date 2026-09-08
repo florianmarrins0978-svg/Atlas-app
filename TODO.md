@@ -1836,12 +1836,22 @@ avec des chiffres :
 | le test lui-même | `test-acces-salarie-e2e` joué SEUL passe, 0 échec |
 | une poussée qui annule la précédente | `ci.yml` ne porte aucun `concurrency` — ce n'est pas ça non plus |
 
-**Donc on ne devine plus : la machine dit ce qu'elle a.** `ci.yml` relève
-désormais mémoire libre, disque libre et charge toutes les cinq secondes
-pendant les suites navigateur, et les recrache `if: always()` — le pire moment
-en tête. La prochaine exécution nomme le coupable au lieu de nous faire
-supposer une troisième fois (`AGENTS.md` : rendre le défaut bavard AVANT de
-corriger).
+**Un cinquième suspect écarté le 8 septembre au petit matin** : le rendu du PDF
+au moment exact de la mort coûte **80 Mo** (1 065 → 1 146 Mo, relevé toutes les
+0,3 s pendant la suite jouée ici). Ce n'est pas lui non plus.
+
+**Et une leçon sur les relevés eux-mêmes, payée dans la foulée** : le premier
+écrivait dans un fichier qu'une étape suivante devait afficher. Il n'a jamais
+servi — **quand la machine meurt, aucune étape ne suit, pas même une
+`if: always()`**. Un témoin que la panne emporte ne témoigne de rien. Les
+mesures partent désormais dans le JOURNAL, une ligne toutes les dix secondes
+pendant les suites : ce qui est écrit reste lisible même si la machine
+disparaît la seconde d'après.
+
+**Ce que la prochaine exécution doit trancher** : la mémoire libre s'effondre-t-
+elle (alors c'est bien la machine), ou reste-t-elle haute jusqu'à la coupure
+(alors c'est l'hébergeur qui reprend son runner, et il n'y a rien à corriger
+dans le dépôt) ?
 
 **Ce qui reste interdit en attendant :** désactiver le test pour obtenir du vert
 (`CLAUDE.md` §4 quater).
