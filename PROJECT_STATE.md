@@ -19,6 +19,22 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : qui travaille quel jour, et le congé d'une demi-journée (8 septembre 2026)
+
+Ses choix sur maquette (`appli/qui-travaille-quel-jour.html`) : **C et D2**.
+
+**C** — la coche reste globale, et la pastille porte les jours de présence
+(« Julien ven. », cerclée). **Aucune migration sur les affectations** : contre
+mon premier chiffrage, l'exception se déduit des congés.
+
+**D2** — une absence peut ne prendre qu'une demi-journée (migration **0076**).
+Toucher un nom pose la journée ; « Matin / Après-midi » restreignent ensuite.
+
+**Les contournements du 7 et du 8 tombent** : on ne refuse plus la coche que si
+la personne n'est là aucun jour. Décisions : `ARCHITECTURE.md` §288.
+
+---
+
 ## FAIT : poser un congé défait ce qu'il rend faux (8 septembre 2026)
 
 Sa consigne devant le premier correctif : *« pas de pansement, corrige le

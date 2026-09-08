@@ -305,7 +305,20 @@ export async function noterAbsenceAction(formData: FormData): Promise<ResultatAb
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "noter l'absence d'une équipe");
 
-  const ligne = await noterAbsenceEquipe(ctx, { rang, premierJour, dernierJour, motif });
+  // **Les bornes de demi-journée, son choix D2 du 8 septembre 2026.** Absentes
+  // de la requête, elles valent la journée entière : le geste courant n'a rien
+  // à envoyer de plus qu'avant.
+  const premierDemi = String(formData.get("premierDemi") ?? "").trim() || null;
+  const dernierDemi = String(formData.get("dernierDemi") ?? "").trim() || null;
+
+  const ligne = await noterAbsenceEquipe(ctx, {
+    rang,
+    premierJour,
+    dernierJour,
+    premierDemi,
+    dernierDemi,
+    motif,
+  });
   if (!ligne) return { ok: false, raison: "Cette équipe n\u2019existe pas." };
   // **Ce que le congé a défait remonte jusqu'à l'écran** — sa consigne du
   // 8 septembre 2026, « pas de pansement, corrige à la racine ». Retirer une

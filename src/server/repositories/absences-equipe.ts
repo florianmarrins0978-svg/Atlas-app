@@ -15,7 +15,7 @@
 import { and, asc, eq, gte, inArray, isNull, isNotNull, lte } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { absencesEquipe, chantiers, equipes, equipesDuChantier } from "../db/schema";
-import { joursAbsentsDuChantier } from "../../lib/equipe-absente";
+import { joursPresentsSurLeChantier } from "../../lib/equipe-absente";
 import type { Ctx } from "./context";
 import type { JourIso } from "../disponibilites";
 
@@ -27,6 +27,9 @@ export type AbsenceEnregistree = {
   nom: string | null;
   premierJour: JourIso;
   dernierJour: JourIso;
+  /** Les bornes de demi-journée — journée entière par défaut (0076). */
+  premierDemi: string;
+  dernierDemi: string;
   motif: string | null;
 };
 
@@ -84,6 +87,8 @@ export async function listerAbsencesEquipe(
         nom: equipes.nom,
         premierJour: absencesEquipe.premierJour,
         dernierJour: absencesEquipe.dernierJour,
+        premierDemi: absencesEquipe.premierDemi,
+        dernierDemi: absencesEquipe.dernierDemi,
         motif: absencesEquipe.motif,
       })
       .from(absencesEquipe)
@@ -111,7 +116,22 @@ export async function absencesSurLaFenetre(
   debut: JourIso,
   fin: JourIso
 ): Promise<
-  { id: string; equipeId: string; rang: number; premierJour: JourIso; dernierJour: JourIso }[]
+  {
+    id: string;
+    equipeId: string;
+    rang: number;
+    premierJour: JourIso;
+    dernierJour: JourIso;
+    /**
+     * **Les bornes de demi-journée passent par ICI, et c'est le chemin qui
+     * compte** : c'est cette fonction qui alimente le calcul de capacité, donc
+     * les dates proposées aux clients. Les oublier aurait laissé une absence
+     * d'un matin bloquer la journée entière — le défaut qu'il signale le
+     * 8 septembre 2026, corrigé partout sauf là où il se voit.
+     */
+    premierDemi: string;
+    dernierDemi: string;
+  }[]
 > {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     return tx
@@ -129,6 +149,8 @@ export async function absencesSurLaFenetre(
         rang: equipes.rang,
         premierJour: absencesEquipe.premierJour,
         dernierJour: absencesEquipe.dernierJour,
+        premierDemi: absencesEquipe.premierDemi,
+        dernierDemi: absencesEquipe.dernierDemi,
       })
       .from(absencesEquipe)
       .innerJoin(equipes, eq(equipes.id, absencesEquipe.equipeId))
@@ -159,7 +181,21 @@ export async function absencesSurLaFenetre(
  */
 export async function noterAbsenceEquipe(
   ctx: Ctx,
-  entree: { rang: number; premierJour: JourIso; dernierJour: JourIso; motif: string | null }
+  entree: {
+    rang: number;
+    premierJour: JourIso;
+    dernierJour: JourIso;
+    motif: string | null;
+    /**
+     * Les bornes de demi-journée — son choix D2 du 8 septembre 2026.
+     *
+     * **Facultatives, et c'est ce qui garde le geste courant en un appui** :
+     * absentes, elles valent la journée entière, exactement comme avant. Il ne
+     * touche « Matin » ou « Après-midi » que le jour où ça compte.
+     */
+    premierDemi?: string | null;
+    dernierDemi?: string | null;
+  }
 ): Promise<AbsencePosee | null> {
   const rang = Math.trunc(entree.rang);
   if (!Number.isInteger(rang) || rang < 1) return null;
@@ -191,6 +227,12 @@ export async function noterAbsenceEquipe(
         equipeId: cible.id,
         premierJour: entree.premierJour,
         dernierJour: entree.dernierJour,
+        // **Tout ce qui n'est pas « apres_midi » vaut matin**, et l'inverse
+        // pour la fin : une valeur venue de l'écran ne doit pas pouvoir poser
+        // une absence que la base refuse. La contrainte 0076 la rattraperait,
+        // mais par une erreur de base — qui n'arrive jamais jusqu'au patron.
+        premierDemi: entree.premierDemi === "apres_midi" ? "apres_midi" : "matin",
+        dernierDemi: entree.dernierDemi === "matin" ? "matin" : "apres_midi",
         motif: entree.motif?.trim() ? entree.motif.trim() : null,
       })
       .returning({
@@ -198,6 +240,8 @@ export async function noterAbsenceEquipe(
         equipeId: absencesEquipe.equipeId,
         premierJour: absencesEquipe.premierJour,
         dernierJour: absencesEquipe.dernierJour,
+        premierDemi: absencesEquipe.premierDemi,
+        dernierDemi: absencesEquipe.dernierDemi,
         motif: absencesEquipe.motif,
       });
     if (!creee) return null;
@@ -226,13 +270,50 @@ export async function noterAbsenceEquipe(
         )
       );
 
+    // ─── CE QUI A CHANGÉ AVEC SON CHOIX C, LE 8 SEPTEMBRE 2026 ────────────
+    // **On ne retire QUE si la personne ne vient plus AUCUN jour.**
+    //
+    // La version d'hier retirait dès qu'un jour du chantier tombait sur le
+    // congé : elle vidait un chantier de deux jours pour une absence d'un
+    // seul, et le §286 empêchait ensuite de recocher. C'était un
+    // contournement du modèle, qui ne savait pas dire « Julien vendredi mais
+    // pas jeudi ».
+    //
+    // La proposition C le dit : la pastille porte les jours où il vient. Une
+    // affectation partiellement recouverte reste donc VRAIE — la retirer
+    // ferait perdre au patron un choix encore valable, et sur le seul jour où
+    // son gars était disponible.
+    //
+    // Le retrait ne garde qu'un cas, et il est nécessaire : le congé couvre
+    // TOUT le chantier. Là, la coche n'annonce plus personne, et la laisser
+    // ferait partir un chantier avec un nom qui n'y sera jamais.
+    //
+    // **Les absences déjà en base comptent, pas seulement celle qu'on pose** :
+    // deux congés qui se suivent peuvent couvrir un chantier qu'aucun ne
+    // couvre seul. Ne regarder que la nouvelle laisserait ce cas passer.
+    const toutes = await tx
+      .select({
+        premierJour: absencesEquipe.premierJour,
+        dernierJour: absencesEquipe.dernierJour,
+        premierDemi: absencesEquipe.premierDemi,
+        dernierDemi: absencesEquipe.dernierDemi,
+      })
+      .from(absencesEquipe)
+      .where(
+        and(
+          eq(absencesEquipe.entrepriseId, ctx.entrepriseId),
+          eq(absencesEquipe.equipeId, cible.id),
+          isNull(absencesEquipe.deletedAt)
+        )
+      );
+    const siennes = toutes.map((a) => ({ ...a, rang: cible.rang }));
+
     const touches = new Map<string, string>();
     for (const c of poses) {
       if (touches.has(c.id)) continue;
-      const jours = joursAbsentsDuChantier(cible.rang, c, [
-        { rang: cible.rang, premierJour: creee.premierJour, dernierJour: creee.dernierJour },
-      ]);
-      if (jours.length > 0) touches.set(c.id, c.nom);
+      if (joursPresentsSurLeChantier(cible.rang, c, siennes).length === 0) {
+        touches.set(c.id, c.nom);
+      }
     }
 
     if (touches.size > 0) {

@@ -225,6 +225,11 @@ export async function preparerEnvoi(
         equipeId: absencesEquipe.equipeId,
         premierJour: absencesEquipe.premierJour,
         dernierJour: absencesEquipe.dernierJour,
+        // Sans ces deux-là, une absence d'un matin bloquerait la journée
+        // entière dans la capacité — le défaut du 8 septembre 2026, corrigé
+        // partout ou nulle part : ces trois chemins doivent compter pareil.
+        premierDemi: absencesEquipe.premierDemi,
+        dernierDemi: absencesEquipe.dernierDemi,
       })
       .from(absencesEquipe)
       .where(

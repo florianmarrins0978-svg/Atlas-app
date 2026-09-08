@@ -229,5 +229,74 @@ cas("à cheval sur deux mois, les deux sont écrits", () => {
   assert.equal(libelleAbsence("2026-08-30", "2026-09-02"), "du 30 août au 2 septembre");
 });
 
+console.log("\n=== Une absence d'une demi-journée ===\n");
+
+// ═══ UNE ABSENCE PEUT NE PRENDRE QU'UNE DEMI-JOURNÉE — 8 septembre 2026 ═════
+//
+// Sa question : *« je peux les mettre seulement le matin ou seulement
+// l'après-midi ? Sinon il faut corriger ça. »* Choix D2 sur maquette.
+
+cas("le matin seul n'occupe QUE le matin", () => {
+  const c = creneauxOccupesParAbsence({
+    equipeId: "e1", premierJour: "2026-09-10", dernierJour: "2026-09-10",
+    premierDemi: "matin", dernierDemi: "matin",
+  });
+  assert.deepEqual(c, [{ jour: "2026-09-10", moment: "matin" }]);
+});
+
+cas("l'après-midi seul n'occupe QUE l'après-midi", () => {
+  const c = creneauxOccupesParAbsence({
+    equipeId: "e1", premierJour: "2026-09-10", dernierJour: "2026-09-10",
+    premierDemi: "apres_midi", dernierDemi: "apres_midi",
+  });
+  assert.deepEqual(c, [{ jour: "2026-09-10", moment: "apres_midi" }]);
+});
+
+cas("SANS bornes, c'est la journée — toutes les absences d'avant", () => {
+  const c = creneauxOccupesParAbsence({
+    equipeId: "e1", premierJour: "2026-09-10", dernierJour: "2026-09-10",
+  });
+  assert.equal(c.length, 2, "une absence d'avant a changé de sens");
+});
+
+cas("LE CAS QUI TRANCHE : les bornes rognent les EXTRÉMITÉS, pas le milieu", () => {
+  // « Du jeudi après-midi au lundi matin » : le jeudi matin reste libre, le
+  // lundi après-midi aussi, et le vendredi est pris en entier. Deux booléens
+  // appliqués à chaque jour auraient retiré tous les matins de la période.
+  const c = creneauxOccupesParAbsence({
+    equipeId: "e1", premierJour: "2026-09-10", dernierJour: "2026-09-14",
+    premierDemi: "apres_midi", dernierDemi: "matin",
+  });
+  assert.equal(c.find((x) => x.jour === "2026-09-10" && x.moment === "matin"), undefined,
+    "le matin du premier jour a été pris");
+  assert.equal(c.find((x) => x.jour === "2026-09-14" && x.moment === "apres_midi"), undefined,
+    "l'après-midi du dernier jour a été pris");
+  assert.equal(c.filter((x) => x.jour === "2026-09-11").length, 2,
+    "un jour du milieu n'est pas pris en entier");
+});
+
+cas("une absence VIDE ne se déduit pas — elle retirerait zéro et s'afficherait", () => {
+  const c = creneauxOccupesParAbsence({
+    equipeId: "e1", premierJour: "2026-09-10", dernierJour: "2026-09-10",
+    premierDemi: "apres_midi", dernierDemi: "matin",
+  });
+  assert.deepEqual(c, []);
+});
+
+cas("une demi-journée ne retire qu'une demi-journée de capacité", () => {
+  const pleine = fusionnerAbsences(new Map(), [
+    { equipeId: "e1", premierJour: "2026-09-10", dernierJour: "2026-09-10" },
+  ], 2);
+  const demie = fusionnerAbsences(new Map(), [
+    { equipeId: "e1", premierJour: "2026-09-10", dernierJour: "2026-09-10",
+      premierDemi: "matin", dernierDemi: "matin" },
+  ], 2);
+  assert.equal(pleine.size, 2, "le décor n'est pas celui qu'on croit");
+  assert.equal(demie.size, 1, "une demi-journée bloque encore la journée entière");
+});
+
+
+
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Absences d'équipe — ${echecs} échec(s).`);
+
 if (echecs > 0) process.exit(1);

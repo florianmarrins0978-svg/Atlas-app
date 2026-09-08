@@ -8,6 +8,29 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — QUI TRAVAILLE QUEL JOUR (8 septembre 2026)
+
+**Planche :** `appli/qui-travaille-quel-jour.html` — retenu **C et D2**.
+**Décisions :** `ARCHITECTURE.md` §288. **Migration : 0076.**
+
+**LA LEÇON DU LOT.** Les règles des §286 et §287 étaient des CONTOURNEMENTS
+d'une limite du modèle. Quand la limite tombe, le contournement doit tomber
+avec — sinon il reste comme une interdiction que plus rien ne justifie. Les
+deux ont été relâchés ici, et leurs contrôles RETOURNÉS.
+
+**LE RISQUE DE CETTE MIGRATION**, si l'on reprend ce coin : huit `select`
+lisent `absences_equipe`. Une demi-journée comptée pour une journée entière
+dans UN seul rendrait la capacité fausse là et nulle part ailleurs — et une
+date refusée à un client ne se voit pas. Le compte se vérifie :
+`grep -rc "dernierJour: absencesEquipe.dernierJour," src` doit égaler
+`grep -rc "dernierDemi: absencesEquipe.dernierDemi," src`.
+
+**Une erreur de chiffrage à connaître :** j'ai annoncé deux migrations au
+patron. Une seule était nécessaire — C déduit l'exception des congés au lieu de
+la faire saisir.
+
+---
+
 ## Dernier lot — POSER UN CONGÉ DÉFAIT CE QU'IL REND FAUX (8 septembre 2026)
 
 **Décisions :** `ARCHITECTURE.md` §287. **Document :** `docs/lot-ne-pas-cocher-un-absent.md`.

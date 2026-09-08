@@ -145,13 +145,24 @@ async function main() {
     assert.deepEqual(apres?.matin, [], "impossible de retirer un absent déjà coché");
   });
 
-  await essai("deux jours, un seul de congé : refusé — la coche vaut pour les deux", async () => {
+  await essai("deux jours, un seul de congé : ACCEPTÉ — son choix C du 8 septembre", async () => {
+    /*
+     * **Ce contrôle a été retourné, et c'est tout le lot du 8 septembre 2026.**
+     *
+     * Il défendait l'inverse la veille : la coche était refusée dès qu'un jour
+     * du chantier tombait sur un congé. Ce refus était un CONTOURNEMENT — le
+     * modèle ne savait pas dire « Julien vendredi mais pas jeudi », alors on
+     * interdisait plutôt que de mentir.
+     *
+     * Sa proposition C le dit désormais : la pastille porte les jours où il
+     * vient. Refuser reviendrait à lui interdire d'envoyer son gars le jour où
+     * il est disponible.
+     */
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Deux jours" });
     await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
     await etalerSurDeuxJours(ctx.entrepriseId, chantier.id);
-    // Absent le SECOND jour seulement : le premier est libre, et pourtant la
-    // coche traverserait le second.
+    // Absent le SECOND jour seulement : le premier reste à faire.
     await noterAbsenceEquipe(ctx, {
       rang: 1,
       premierJour: LENDEMAIN,
@@ -160,7 +171,23 @@ async function main() {
     });
 
     const etat = await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
-    assert.deepEqual(etat?.matin, [], "coché alors qu'il manque le second jour");
+    assert.deepEqual(etat?.matin, [1], "refusé alors qu'il est là le premier jour");
+  });
+
+  await essai("le congé qui couvre TOUT le chantier refuse encore", async () => {
+    // La seule interdiction qui reste, et elle est nécessaire : cocher
+    // quelqu'un qui ne viendra aucun des deux jours ferait partir le chantier
+    // avec un nom qui n'y sera jamais.
+    const ctx = await monter();
+    const chantier = await creerChantier(ctx, { nom: "Deux jours couverts" });
+    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await etalerSurDeuxJours(ctx.entrepriseId, chantier.id);
+    await noterAbsenceEquipe(ctx, {
+      rang: 1, premierJour: JOUR, dernierJour: LENDEMAIN, motif: null,
+    });
+
+    const etat = await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
+    assert.deepEqual(etat?.matin, [], "coché alors qu'il n'est là aucun jour");
   });
 
   await essai("le congé RETIRÉ rend la coche possible", async () => {
@@ -191,6 +218,9 @@ async function main() {
   // était ANTÉRIEURE au congé. Poser un congé n'avait jamais rien défait.
 
   await essai("RACINE : poser le congé RETIRE la personne des chantiers touchés", async () => {
+    // Chantier d'UNE journée : le congé le couvre en entier, donc la coche
+    // n'annonce plus personne et se retire. Sur un chantier de deux jours dont
+    // un seul est couvert, elle RESTE — c'est le cas juste en dessous.
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Chez Mr. Julien" });
     await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
@@ -280,6 +310,45 @@ async function main() {
       motif: null,
     });
     assert.deepEqual(posee?.chantiersLiberes, [], "un chantier sans date a été touché");
+  });
+
+  await essai("un congé PARTIEL ne défait plus rien — son choix C", async () => {
+    // La version d'hier vidait le chantier entier ; C garde la coche et écrit
+    // les jours restants sur la pastille.
+    const ctx = await monter();
+    const chantier = await creerChantier(ctx, { nom: "Deux jours, un congé" });
+    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await etalerSurDeuxJours(ctx.entrepriseId, chantier.id);
+    await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
+
+    const posee = await noterAbsenceEquipe(ctx, {
+      rang: 1, premierJour: LENDEMAIN, dernierJour: LENDEMAIN, motif: null,
+    });
+    assert.deepEqual(posee?.chantiersLiberes, [], "un congé partiel a vidé le chantier");
+
+    const etat = await basculerEquipeDuChantier(ctx, chantier.id, "apres_midi", 2);
+    assert.deepEqual(etat?.matin, [1], "la personne a été retirée du jour où elle est là");
+  });
+
+  await essai("DEUX congés qui se suivent couvrent le chantier, et là on retire", async () => {
+    // **Les absences déjà en base comptent.** Deux congés d'un jour chacun
+    // couvrent un chantier de deux jours qu'aucun ne couvre seul : ne regarder
+    // que celui qu'on pose laisserait la coche sur un chantier vide.
+    const ctx = await monter();
+    const chantier = await creerChantier(ctx, { nom: "Couvert en deux fois" });
+    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await etalerSurDeuxJours(ctx.entrepriseId, chantier.id);
+    await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
+
+    await noterAbsenceEquipe(ctx, { rang: 1, premierJour: JOUR, dernierJour: JOUR, motif: null });
+    const seconde = await noterAbsenceEquipe(ctx, {
+      rang: 1, premierJour: LENDEMAIN, dernierJour: LENDEMAIN, motif: null,
+    });
+    assert.deepEqual(
+      seconde?.chantiersLiberes.map((c) => c.nom),
+      ["Couvert en deux fois"],
+      "les deux congés réunis couvrent le chantier, et la coche est restée"
+    );
   });
 
   await essai("sans aucun congé, rien ne change — le cas de tous les jours", async () => {

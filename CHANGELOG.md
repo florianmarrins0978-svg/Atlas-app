@@ -7,6 +7,30 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-08
+### Cocher un absent, poser un congé d'une demi-journée
+
+**Ses deux choix sur maquette : C et D2.**
+
+Une personne en congé un jour sur deux reste cochée sur son chantier, et la
+pastille dit les jours où elle vient — « Julien ven. », cerclée au lieu d'être
+pleine. Il coche une fois, comme avant : c'est l'application qui retire le jour
+du congé.
+
+Et une absence peut ne prendre qu'un matin. Toucher un nom pose la journée,
+comme avant ; deux pastilles « Matin / Après-midi » restreignent ensuite.
+Migration 0076.
+
+**Ce que ça évite :** un rendez-vous d'une heure qui coûte la journée entière
+d'un salarié, et un chantier qu'on ne peut plus doter pour un congé d'un jour.
+
+**CE QUI SE RELÂCHE, ET C'EST VOULU.** Les règles du 7 et du 8 septembre
+interdisaient faute de pouvoir exprimer : refus de cocher dès un jour
+d'absence, retrait du chantier entier à la pose. C les rend inutiles — on ne
+refuse plus que si la personne n'est là aucun jour. Voir `ARCHITECTURE.md` §288.
+
+**Une correction à mon propre chiffrage :** j'avais annoncé deux migrations. La
+seconde suffit — l'exception se déduit des congés, elle ne se saisit pas.
+
 ### Poser un congé défait ce qu'il rend faux
 
 Sa consigne, devant le premier correctif : *« pas de pansement, corrige le

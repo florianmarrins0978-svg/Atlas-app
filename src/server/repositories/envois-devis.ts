@@ -166,6 +166,13 @@ async function contrainteDuPlanning(
       equipeId: absencesEquipe.equipeId,
       premierJour: absencesEquipe.premierJour,
       dernierJour: absencesEquipe.dernierJour,
+      // **Les demi-journées comptent ICI aussi, et c'est le chemin qui va
+      // jusqu'au client** (8 septembre 2026). Les oublier laisserait une
+      // absence d'un matin bloquer l'après-midi dans les dates proposées :
+      // une demi-journée de travail perdue à chaque rendez-vous médical, et
+      // invisible — personne ne voit une date qu'on n'a pas offerte.
+      premierDemi: absencesEquipe.premierDemi,
+      dernierDemi: absencesEquipe.dernierDemi,
     })
     .from(absencesEquipe)
     .where(

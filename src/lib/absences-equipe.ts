@@ -1,4 +1,4 @@
-import { cleCreneau, MOMENTS, type Creneau, type JourIso } from "../server/disponibilites";
+import { cleCreneau, MOMENTS, type Creneau, type JourIso, type Moment } from "../server/disponibilites";
 
 /**
  * Une équipe absente ne compte plus dans les dates proposées.
@@ -49,7 +49,27 @@ export type AbsenceEquipe = {
   premierJour: JourIso;
   /** Dernier jour d'absence, inclus. */
   dernierJour: JourIso;
+  /**
+   * ─── DEPUIS LE 8 SEPTEMBRE 2026, UNE ABSENCE PEUT COMMENCER À MIDI ───────
+   *
+   * Sa question : *« je peux les mettre seulement le matin ou seulement
+   * l'après-midi ? »* Elles sont **facultatives** ici, et c'est délibéré : des
+   * dizaines d'appels construisent une absence à la main, et les rendre
+   * obligatoires aurait forcé chaque appelant à répéter la journée entière.
+   * Absentes, elles valent la journée — exactement ce que la base met par
+   * défaut, et ce que toutes les absences d'avant signifiaient.
+   */
+  premierDemi?: Moment | string | null;
+  dernierDemi?: Moment | string | null;
 };
+
+/** Ce que vaut une borne non renseignée : la journée entière. */
+function borneDebut(a: AbsenceEquipe): Moment {
+  return a.premierDemi === "apres_midi" ? "apres_midi" : "matin";
+}
+function borneFin(a: AbsenceEquipe): Moment {
+  return a.dernierDemi === "matin" ? "matin" : "apres_midi";
+}
 
 /** Deux ans de jours : au-delà, une donnée absurde ferait tourner la boucle. */
 const JOURS_MAX = 750;
@@ -80,10 +100,26 @@ export function creneauxOccupesParAbsence(absence: AbsenceEquipe): Creneau[] {
   if (!EST_UN_JOUR.test(premierJour) || !EST_UN_JOUR.test(dernierJour)) return [];
   if (dernierJour < premierJour) return [];
 
+  // **Les bornes rognent le PREMIER et le DERNIER jour, jamais ceux du
+  // milieu.** C'est tout le sens des deux colonnes : « du jeudi après-midi au
+  // lundi matin » laisse le jeudi matin libre et le lundi après-midi libre,
+  // mais occupe entièrement vendredi. Deux booléens appliqués à chaque jour
+  // auraient retiré tous les matins de la période.
+  const debut = borneDebut(absence);
+  const fin = borneFin(absence);
+  // Sur un seul jour, « de l'après-midi au matin » n'occupe rien. La base le
+  // refuse (contrainte 0076) ; ici on refuse d'en déduire une absence vide,
+  // qui retirerait zéro capacité en s'affichant comme une absence.
+  if (premierJour === dernierJour && debut === "apres_midi" && fin === "matin") return [];
+
   const creneaux: Creneau[] = [];
   let jour = premierJour;
   for (let garde = 0; garde <= JOURS_MAX && jour <= dernierJour; garde++) {
-    for (const moment of MOMENTS) creneaux.push({ jour, moment });
+    for (const moment of MOMENTS) {
+      if (jour === premierJour && debut === "apres_midi" && moment === "matin") continue;
+      if (jour === dernierJour && fin === "matin" && moment === "apres_midi") continue;
+      creneaux.push({ jour, moment });
+    }
     jour = lendemain(jour);
   }
   return creneaux;

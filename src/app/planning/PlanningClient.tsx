@@ -17,7 +17,11 @@ import {
   type JourIso,
 } from "@/server/disponibilites";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
-import { joursAbsentsDuChantier, type ChantierPourAbsence } from "@/lib/equipe-absente";
+import {
+  joursAbsentsDuChantier,
+  joursDeLaPastille,
+  type ChantierPourAbsence,
+} from "@/lib/equipe-absente";
 import { noterAbsenceAction, retirerAbsenceAction } from "@/app/reglages/actions";
 
 /**
@@ -31,6 +35,7 @@ import { noterAbsenceAction, retirerAbsenceAction } from "@/app/reglages/actions
 export type AbsenceDuPlanning = AbsenceEquipe & { id: string; rang: number };
 import { communeDeLAdresse } from "@/lib/commune-adresse";
 import {
+  jourAbrege,
   jourLisibleCourt,
   MOIS_LONGS,
 } from "@/lib/mois";
@@ -440,6 +445,19 @@ export default function PlanningClient({
     [absencesVues]
   );
 
+  /**
+   * Ce que la pastille écrit sous le nom — « ven. » quand il ne vient qu'un
+   * jour sur deux. Vide le reste du temps, c'est-à-dire presque toujours.
+   *
+   * Sa proposition C, retenue le 8 septembre 2026 : il coche une fois, et
+   * l'application dit les jours. La règle vit dans `equipe-absente.ts`.
+   */
+  const joursDeLaPastilleDe = useCallback(
+    (rang: number, c: ChantierPourAbsence, demi?: "matin" | "apres_midi") =>
+      joursDeLaPastille(rang, c, absencesVues, jourAbrege, demi),
+    [absencesVues]
+  );
+
   const absencesDuJour = useCallback(
     (jour: JourIso) =>
       absencesVues.filter((a) => a.premierJour <= jour && jour <= a.dernierJour),
@@ -455,13 +473,18 @@ export default function PlanningClient({
    * qui part chez un client est exactement ce qu'on cherche à éviter.
    */
   const fermerLeJour = useCallback(
-    async (jour: JourIso, rang: number) => {
+    async (jour: JourIso, rang: number, quand: "matin" | "apres_midi" | null = null) => {
       const provisoire: AbsenceDuPlanning = {
         id: `provisoire-${rang}-${jour}`,
         equipeId: `provisoire-${rang}`,
         rang,
         premierJour: jour,
         dernierJour: jour,
+        // **Une demi-journée n'occupe qu'une moitié**, y compris pendant la
+        // seconde où l'écran devance le serveur : sans ces deux bornes, la
+        // journée entière se barrerait puis se corrigerait sous ses yeux.
+        premierDemi: quand ?? "matin",
+        dernierDemi: quand ?? "apres_midi",
       };
       setAbsencesVues((v) => [...v, provisoire]);
 
@@ -469,6 +492,12 @@ export default function PlanningClient({
       formulaire.set("rang", String(rang));
       formulaire.set("premierJour", jour);
       formulaire.set("dernierJour", jour);
+      // Rien à envoyer pour une journée entière : le serveur met ses valeurs
+      // par défaut, et le geste courant reste exactement ce qu'il était.
+      if (quand) {
+        formulaire.set("premierDemi", quand);
+        formulaire.set("dernierDemi", quand);
+      }
       const r = await noterAbsenceAction(formulaire);
 
       setAbsencesVues((v) =>
@@ -801,6 +830,7 @@ export default function PlanningClient({
     nombreSalaries,
     absencesDuJour,
     joursAbsentsDe,
+    joursDeLaPastilleDe,
     fermerLeJour,
     rouvrirLeJour,
     ouvert,
@@ -1307,6 +1337,7 @@ function Petit({
   fini,
   serre,
   absente,
+  partielle,
   ...reste
 }: {
   children: React.ReactNode;
@@ -1329,6 +1360,17 @@ function Petit({
    * (`CLAUDE.md` §3).
    */
   absente?: boolean;
+  /**
+   * **Cochée, mais pas sur tous les jours du chantier** — sa proposition C,
+   * retenue le 8 septembre 2026.
+   *
+   * **Un aplat ne peut pas porter une exception**, et c'est lui qui l'a relevé
+   * sur la maquette : *« la phrase dit Julien en congé mais il est quand même
+   * coché en vert, c'est normal ? »* Non — on lit l'aplat, pas ce qui
+   * l'accompagne. Le cerne vert sans fond dit « oui, mais pas partout », et la
+   * pastille porte alors les jours.
+   */
+  partielle?: boolean;
   /**
    * Resserré à 9 px, comme `.demi .petit` sur la planche 84.
    *
@@ -1358,10 +1400,24 @@ function Petit({
       } ${serre ? "px-[9px]" : "px-3"}`}
       style={{
         border: `1px solid ${
-          absente ? colors.line : retenue ? colors.plein : fini ? colors.or : colors.line
+          absente
+            ? colors.line
+            : retenue || partielle
+              ? colors.plein
+              : fini
+                ? colors.or
+                : colors.line
         }`,
-        background: absente ? colors.card : retenue ? colors.plein : colors.card,
-        color: absente ? colors.muted : retenue ? surPlein : fini ? colors.or : colors.inkSoft,
+        background: retenue && !absente ? colors.plein : colors.card,
+        color: absente
+          ? colors.muted
+          : retenue
+            ? surPlein
+            : partielle
+              ? colors.plein
+              : fini
+                ? colors.or
+                : colors.inkSoft,
         // **Le gris se voit, sans effacer.** À 0,5 la pastille disparaissait sur
         // les deux chartes sombres, mesuré : un nom qu'on ne lit plus ne dit pas
         // « absent », il dit « rien ».
@@ -1677,6 +1733,50 @@ function AjoutAuJour({
  * jour à venir, par le même drapeau `ecriture` que le reste de la carte.
  */
 /**
+ * Les deux façons de restreindre une absence — la journée entière n'y est pas.
+ *
+ * **Son choix D2, le 8 septembre 2026, et c'est une mesure.** Trois pastilles
+ * plus le mot « Quand » faisaient 440 px pour 354 disponibles : la ligne se
+ * repliait dès qu'un écran était un peu plus étroit que le sien, et une
+ * troisième pastille « La journée » ne tient pas davantage dans l'application
+ * que sur la planche — vérifié à l'écran, pas supposé.
+ *
+ * **Toucher un nom pose la journée entière, tout de suite.** C'est le cas
+ * courant, et il reste à un appui, exactement comme avant ce lot. Les deux
+ * pastilles ci-dessous ne servent qu'à RESTREINDRE ce qui vient d'être posé —
+ * le jour où ça compte.
+ */
+const MOMENTS_ABSENCE: { cle: "matin" | "apres_midi"; mot: string }[] = [
+  { cle: "matin", mot: "Matin" },
+  { cle: "apres_midi", mot: "Après-midi" },
+];
+
+/**
+ * Une question et ses pastilles, sur la MÊME ligne.
+ *
+ * **Sa demande du 8 septembre 2026 :** *« Qui n'est pas là ? et Quand ? doivent
+ * tenir sur la même ligne. »* C'est déjà la grammaire de sa carte du jour —
+ * « APRÈS-MIDI [Qui ?] » — et le libellé n'a pas à prendre une ligne pour lui :
+ * il annonce, il n'occupe pas.
+ */
+function LigneQuestion({
+  libelle,
+  children,
+}: {
+  libelle: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-2">
+      <span className={libelleCaps} style={{ color: colors.muted, flex: "none" }}>
+        {libelle}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+/**
  * La pastille des gestes d'une journée.
  *
  * **Elle existe parce que le même dessin était déjà écrit en dur** pour les
@@ -1692,10 +1792,13 @@ function AjoutAuJour({
 function PastilleDuJour({
   children,
   onClick,
+  retenue,
   ...reste
 }: {
   children: React.ReactNode;
   onClick: () => void;
+  /** Le choix par défaut, montré comme tel — « la journée », le cas courant. */
+  retenue?: boolean;
 } & Record<string, unknown>) {
   return (
     <button
@@ -1704,9 +1807,9 @@ function PastilleDuJour({
       {...reste}
       className="min-h-[48px] rounded-full px-4 text-[14px]"
       style={{
-        backgroundColor: colors.card,
-        color: colors.ink,
-        boxShadow: `inset 0 0 0 1px ${colors.line}`,
+        backgroundColor: retenue ? colors.plein : colors.card,
+        color: retenue ? surPlein : colors.ink,
+        boxShadow: retenue ? "none" : `inset 0 0 0 1px ${colors.line}`,
         WebkitTapHighlightColor: "transparent",
       }}
     >
@@ -1729,16 +1832,38 @@ function PasLaCeJour({
   lignesEquipes: { rang: number; nom?: string | null }[];
   nombreSalaries: number;
   nomEquipe: (rang: number) => string;
-  fermer: (jour: JourIso, rang: number) => void;
+  fermer: (jour: JourIso, rang: number, quand?: "matin" | "apres_midi" | null) => void;
   rouvrir: (id: string) => void;
 }) {
   const [demande, setDemande] = useState(false);
+  /** Qui il vient de poser absent — le seul à qui « Plutôt » s'adresse (D2). */
+  const [quiManque, setQuiManque] = useState<number | null>(null);
 
   // **Le rang 1, c'est LUI.** Sans salarié, la seule ligne d'équipe qui existe
   // est la sienne : fermer le jour revient à noter son absence à ce rang-là.
   const rangs = nombreSalaries > 0 ? lignesEquipes.map((e) => e.rang) : [1];
   const absentsParRang = new Map(absences.map((a) => [a.rang, a]));
   const tousAbsents = rangs.every((r) => absentsParRang.has(r));
+
+  /** Ce que porte l'absence qu'il vient de poser : la journée, ou une moitié. */
+  const posee = quiManque === null ? undefined : absentsParRang.get(quiManque);
+  const demiPosee =
+    posee && posee.premierDemi === posee.dernierDemi ? (posee.premierDemi ?? null) : null;
+
+  /**
+   * Ramener une absence du jour à une seule demi-journée.
+   *
+   * **On retire et on repose**, plutôt que de modifier. Une action de mise à
+   * jour aurait ajouté un troisième chemin d'écriture sur cette table — donc un
+   * troisième endroit où la réconciliation des affectations pourrait être
+   * oubliée (`ARCHITECTURE.md` §287). Reposer traverse celle qui existe déjà.
+   */
+  function restreindre(rang: number, quand: "matin" | "apres_midi") {
+    const a = absentsParRang.get(rang);
+    if (!a) return;
+    rouvrir(a.id);
+    fermer(jour, rang, quand);
+  }
 
   const ligne = "flex min-h-[48px] w-full items-center justify-between gap-3 py-[11px] text-left";
 
@@ -1784,6 +1909,28 @@ function PasLaCeJour({
           **La ligne d'une absence DÉJÀ posée, elle, ne change pas.** Elle
           porte « Annuler » à droite, un mot qui nomme son geste : elle n'a
           jamais eu le défaut que celle-ci avait. */}
+      {/* **Restreindre à une demi-journée, juste après l'avoir posée.**
+          Son choix D2 : la journée est le geste courant, et ces deux pastilles
+          ne servent qu'au jour où un rendez-vous ne prend qu'une matinée.
+          Elles ne s'affichent QUE sur l'absence qu'il vient de poser — les
+          faire vivre sous chaque ligne remettrait deux gestes là où il n'en
+          faut qu'un. */}
+      {quiManque !== null && absentsParRang.has(quiManque) && (
+        <LigneQuestion libelle="Plutôt">
+          {MOMENTS_ABSENCE.map((m) => (
+            <PastilleDuJour
+              key={m.cle}
+              data-atlas="quand-absent"
+              data-quand={m.cle}
+              retenue={demiPosee === m.cle}
+              onClick={() => restreindre(quiManque, m.cle)}
+            >
+              {m.mot}
+            </PastilleDuJour>
+          ))}
+        </LigneQuestion>
+      )}
+
       {!tousAbsents && (
         <div className="py-2">
           <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
@@ -1804,14 +1951,26 @@ function PasLaCeJour({
               Quelqu&apos;un n&apos;est pas là
             </PastilleDuJour>
           ) : (
-            /* **La question ne s'ouvre QUE s'il a quelqu'un.** Fermer la
+            /* ─── SON CHOIX D2, LE 8 SEPTEMBRE 2026 ────────────────────────
+               Sa question : *« lorsque je note les congés, je peux les mettre
+               seulement le matin ou seulement l'après-midi ? Sinon il faut
+               corriger ça. »* Non — une absence prenait la journée entière, et
+               un rendez-vous d'une heure lui coûtait la journée de son gars.
+
+               **Deux lignes, « Qui » puis « Quand »**, chacune sur la ligne de
+               ses pastilles : sa demande du même jour. Mesuré sur la planche,
+               trois pastilles plus le mot ne tenaient QUE sur son téléphone —
+               d'où deux pastilles, et rien de coché valant la journée.
+
+               **Le cas courant reste en un appui** : il touche un nom, et
+               c'est la journée. « Matin » et « Après-midi » n'existent que
+               pour le jour où ça compte.
+
+               **La question ne s'ouvre QUE s'il a quelqu'un.** Fermer la
                journée entière quand une seule personne manque lui coûterait un
                chantier que l'autre pouvait faire. */
             <>
-              <p className={`mb-2 ${texteSituation}`} style={{ color: colors.inkSoft }}>
-                Qui n&apos;est pas là&nbsp;?
-              </p>
-              <div className="flex flex-wrap gap-2">
+              <LigneQuestion libelle="Qui">
                 {rangs
                   .filter((r) => !absentsParRang.has(r))
                   .map((r) => (
@@ -1819,14 +1978,17 @@ function PasLaCeJour({
                       key={r}
                       data-atlas="qui-nest-pas-la"
                       onClick={() => {
+                        // **La journée entière, tout de suite.** Le cas courant
+                        // reste à un appui : il touche un nom, c'est posé.
                         fermer(jour, r);
+                        setQuiManque(r);
                         setDemande(false);
                       }}
                     >
                       {nomEquipe(r)}
                     </PastilleDuJour>
                   ))}
-              </div>
+              </LigneQuestion>
             </>
           )}
         </div>
@@ -1870,6 +2032,7 @@ function CarteDuJour({
   taches,
   absencesDuJour,
   joursAbsentsDe,
+  joursDeLaPastilleDe,
   fermerLeJour,
   rouvrirLeJour,
 }: {
@@ -1879,7 +2042,13 @@ function CarteDuJour({
   absencesDuJour: (jour: JourIso) => AbsenceDuPlanning[];
   /** Les jours d'un chantier où cette personne n'est pas là — voir §286. */
   joursAbsentsDe: (rang: number, c: ChantierPourAbsence) => JourIso[];
-  fermerLeJour: (jour: JourIso, rang: number) => void;
+  /** Ce que la pastille écrit sous le nom — « ven. », ou rien. Voir §288. */
+  joursDeLaPastilleDe: (
+    rang: number,
+    c: ChantierPourAbsence,
+    demi?: "matin" | "apres_midi"
+  ) => string;
+  fermerLeJour: (jour: JourIso, rang: number, quand?: "matin" | "apres_midi" | null) => void;
   rouvrirLeJour: (id: string) => void;
   /**
    * Le chantier SEUL qu'on déplie, quand la carte sort d'une ligne des
@@ -2141,6 +2310,13 @@ function CarteDuJour({
               {bloc.demis.map((demi) => {
                 const o = occupationDe(jour, demi);
                 const rangs = demi === "matin" ? c.equipes.matin : c.equipes.apres_midi;
+                // **Qui part VRAIMENT ce jour-là** — la coche vaut pour tout le
+                // chantier, la carte montre un seul jour (sa proposition C du
+                // 8 septembre 2026). Un absent nommé sur la journée où il ne
+                // vient pas, c'est le défaut qu'il a photographié le 7.
+                const rangsPresents = rangs.filter(
+                  (r) => !absencesDuJour(jour).some((a) => a.rang === r)
+                );
                 const choixEquipe =
                   ouvert?.quoi === "equipe" &&
                   ouvert.cle === cle &&
@@ -2162,6 +2338,13 @@ function CarteDuJour({
                       {MOT_DEMI[demi]}
                     </span>
 
+                    {/* ─── QUI PART VRAIMENT CE JOUR-LÀ — sa proposition C ──
+                        La coche vaut pour tout le chantier ; la carte, elle,
+                        montre UN jour. Écrire « Julien » sur le jeudi où il est
+                        en congé, c'est le défaut qu'il a photographié le
+                        7 septembre — deux vérités à trois centimètres, ici
+                        entre la ligne « Julien n'est pas là » du haut et la
+                        pastille du chantier juste en dessous. */}
                     {nombreSalaries <= 0 ? null : !ecriture ? (
                       // Un salarié LIT qui part. La règle vit dans la pastille
                       // elle-même, pas recopiée ici (`CLAUDE.md` §3).
@@ -2169,7 +2352,7 @@ function CarteDuJour({
                         ecriture={false}
                         vide={rangs.length === 0}
                         onClick={() => undefined}
-                        libelle={ditQuiPart(rangs.map(nomEquipe))}
+                        libelle={ditQuiPart(rangsPresents.map(nomEquipe))}
                       />
                     ) : choixEquipe ? (
                       // **On COCHE, on ne choisit pas une seule fois.** La liste
@@ -2183,19 +2366,35 @@ function CarteDuJour({
                           // chantier** — son signalement du 7 septembre 2026.
                           // La règle vit dans `equipe-absente.ts`, et le serveur
                           // applique la même : l'écran ne fait que la montrer.
+                          // **Absente PARTOUT** : la coche n'annoncerait
+                          // personne, et le serveur la refuse. Absente sur
+                          // certains jours seulement : elle reste cochable, et
+                          // la pastille dit lesquels (sa proposition C).
+                          // **La demi-journée compte** : sur la ligne du
+                          // matin, un congé qui ne prend que l'après-midi ne
+                          // retire pas le jour. Sans elle, la pastille
+                          // annoncerait un jour de moins que la vérité.
+                          const jours = joursDeLaPastilleDe(e.rang, c, demi);
                           const absente =
-                            joursAbsentsDe(e.rang, c).length > 0;
+                            joursAbsentsDe(e.rang, c).length > 0 && jours === "";
                           return (
                             <Petit
                               key={e.rang}
                               serre
                               data-choix={e.rang}
-                              retenue={cochee}
+                              retenue={cochee && jours === ""}
+                              partielle={cochee && jours !== ""}
                               absente={absente}
                               onClick={() => basculerEquipe(c.id, demi, e.rang)}
                             >
                               {cochee ? "✓ " : ""}
                               {nomEquipe(e.rang)}
+                              {/* **Les jours de PRÉSENCE, pas d'absence** —
+                                  « ven. » répond à « quand vient-il », là où
+                                  « pas jeudi » oblige à soustraire de tête. */}
+                              {jours && (
+                                <span className="ml-1 font-medium">{jours}</span>
+                              )}
                             </Petit>
                           );
                         })}
@@ -2206,7 +2405,7 @@ function CarteDuJour({
                     ) : (
                       <PastilleEquipe
                         vide={rangs.length === 0}
-                        libelle={ditQuiPart(rangs.map(nomEquipe))}
+                        libelle={ditQuiPart(rangsPresents.map(nomEquipe))}
                         onClick={() =>
                           setOuvert({ quoi: "equipe", cle, chantierId: c.id, demi })
                         }

@@ -131,7 +131,18 @@ facture mort en production le 8 août 2026).
 
 ---
 
-## ⏳ UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR, et non par chantier
+## ✅ ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR~~ — **TRANCHÉ le 8 septembre 2026**
+
+**Ses choix : C et D2** (planche `appli/qui-travaille-quel-jour.html`), codés le
+jour même. `ARCHITECTURE.md` §288.
+
+**Et le chiffrage était faux dans mon sens :** j'annonçais deux migrations, une
+seule était nécessaire. C déduit l'exception des congés au lieu de la faire
+saisir — sa façon de cocher ne change pas.
+
+---
+
+## ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR, et non par chantier~~
 
 **Née le 8 septembre 2026**, en corrigeant à la racine ce qu'il a signalé
 (`ARCHITECTURE.md` §287).

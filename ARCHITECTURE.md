@@ -25040,3 +25040,97 @@ existante) et change son geste : il cocherait par journée, plus par chantier.
 **Cela se demande à LUI** (`CLAUDE.md` §2 bis) : une migration touche ses
 données, et un geste qui change se dessine d'abord (§3 bis). La question est
 posée dans `TODO.md`.
+
+## §288. Le contournement tombe avec la limite qu'il contournait
+
+**Ses deux choix du 8 septembre 2026, sur maquette** (`appli/qui-travaille-quel-jour.html`) :
+**C** pour qui travaille quel jour, **D2** pour le congé d'une demi-journée.
+
+### CE QUE C A CORRIGÉ DANS MON PROPRE CHIFFRAGE
+
+J'ai annoncé au patron qu'il faudrait **deux** migrations : un jour sur
+l'affectation, une demi-journée sur l'absence. **La première est inutile**, et
+c'est en codant C qu'on le voit : l'exception se DÉDUIT des congés, elle ne se
+saisit pas. Il coche une fois, comme avant ; l'application retire le jour du
+congé et l'écrit sur la pastille.
+
+Une colonne de moins, un geste inchangé, et rien à ressaisir sur les chantiers
+déjà posés. **Le dire noir sur blanc** vaut mieux que de laisser croire au
+chiffrage d'hier (`CLAUDE.md` §2 bis).
+
+### LES DEUX RÈGLES DU 7 ET DU 8 SEPTEMBRE ÉTAIENT DES CONTOURNEMENTS
+
+| | Ce qu'elle faisait | Pourquoi |
+|---|---|---|
+| §286 | refuser la coche dès UN jour d'absence | le modèle ne savait pas dire « Julien vendredi mais pas jeudi » |
+| §287 | retirer la personne du chantier ENTIER à la pose du congé | même raison |
+
+Les deux interdisaient faute de pouvoir exprimer. **C l'exprime — donc les deux
+se relâchent, et c'est voulu :**
+
+- on ne refuse plus que si la personne n'est là **aucun** jour ;
+- on ne retire à la pose que si le congé couvre **tout** le chantier.
+
+Le second cas reste nécessaire : une coche qui n'annonce personne ferait partir
+un chantier avec un nom qui n'y sera jamais. **Et il compte toutes les absences
+en base, pas seulement celle qu'on pose** — deux congés d'un jour couvrent un
+chantier de deux jours qu'aucun ne couvre seul.
+
+### UNE PASTILLE PLEINE NE PEUT PAS PORTER UNE EXCEPTION
+
+C'est **lui** qui l'a relevé, sur la première version de la planche : *« la
+phrase dit Julien en congé mais il est quand même coché en vert, c'est
+normal ? »* Non. On lit l'aplat, pas la phrase en dessous — et c'était
+exactement le défaut d'origine, redessiné dans la maquette censée le corriger.
+
+La pastille est donc **cerclée et non pleine** quand la présence est partielle,
+et elle porte les jours. Aplat = tous les jours, cerne = pas partout.
+
+**Elle dit les jours de PRÉSENCE, pas d'absence** : « ven. » répond à « quand
+vient-il », là où « pas jeudi » oblige à soustraire de tête.
+
+**Et elle se tait presque toujours** : chantier d'un jour, aucun congé, ou
+absence totale — dans les trois cas, rien n'est écrit. Un écran qui daterait
+chaque coche ferait payer à tous une précision qui ne sert qu'à quelques-uns.
+
+### D2 : LA JOURNÉE EN UN APPUI, LA MOITIÉ EN DEUX
+
+`absences_equipe` porte deux bornes de demi-journée (`0076`), et non deux
+booléens : « du jeudi après-midi au lundi matin » n'a pas de sens en booléens —
+ils excluraient tous les matins de la période au lieu du seul premier.
+
+**Le geste ne change pas pour le cas courant.** Toucher un nom pose la journée,
+comme avant. Deux pastilles « Matin / Après-midi » apparaissent ensuite pour
+restreindre ce qui vient d'être posé — elles n'existent que le jour où ça
+compte.
+
+**Trois pastilles ne tenaient pas**, et c'est une mesure : « Quand » plus trois
+faisaient 440 px pour 354 disponibles. Vérifié sur la planche ET dans
+l'application, pas supposé.
+
+**Restreindre RETIRE et REPOSE**, plutôt que de modifier : une action de mise à
+jour aurait ajouté un troisième chemin d'écriture sur cette table, donc un
+troisième endroit où la réconciliation du §287 pourrait être oubliée.
+
+### LES HUIT CHEMINS QUI LISENT UNE ABSENCE
+
+C'est le vrai risque de cette migration. Une demi-journée qui compterait pour
+une journée entière **quelque part** rendrait la capacité fausse là et
+seulement là — et une date refusée au client ne se voit pas : personne ne
+remarque une date qu'on ne lui a pas offerte.
+
+Les huit `select` sur `absences_equipe` portent donc les deux bornes, y compris
+`envois-devis.ts` (les dates proposées), `preparation-envoi.ts` et la
+revérification. Le compte se vérifie d'un coup :
+
+```bash
+grep -rc "dernierJour: absencesEquipe.dernierJour," src   # doit égaler
+grep -rc "dernierDemi: absencesEquipe.dernierDemi," src   # celui-ci
+```
+
+### ET LA MOITIÉ COMPTE JUSQUE SUR LA PASTILLE
+
+`absenteCeCreneau` répond sur la demi-journée quand on la connaît, sur la
+journée sinon. Sur la ligne du matin, un congé d'après-midi ne retire pas le
+jour : sans cela la pastille annoncerait un jour de moins que la vérité, et le
+patron enverrait quelqu'un d'autre pour rien.
