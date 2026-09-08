@@ -1,4 +1,4 @@
-import { libelleDuree } from "@/server/disponibilites";
+import { libelleDuree } from "@/lib/disponibilites";
 
 // Ce qu'un jour barré veut dire — et pourquoi la phrase d'avant était fausse.
 //

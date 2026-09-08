@@ -4,10 +4,33 @@ import FormulaireReponse from "./formulaire";
 import { jourLisible } from "@/lib/jour";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { avecCivilite } from "@/lib/civilite";
+import { colors, font } from "@/lib/design-tokens";
 import BoutonTelechargerDevis from "./BoutonTelechargerDevis";
 
-// Seule page publique du produit : consultée sans compte, depuis un lien reçu
-// par SMS ou e-mail (docs/AGENT.md §2.2 bis).
+// Seule page publique du produit avec celle de la facture : consultée sans
+// compte, depuis un lien reçu par SMS ou e-mail (docs/AGENT.md §2.2 bis).
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// **AUX COULEURS D'ATLAS — 8 septembre 2026, sur sa demande.** Après la page de
+// la facture : *« on va le modifier aussi comme la facture »*.
+//
+// **Ce que la lecture a trouvé, et qu'aucune capture ne montrait.** Cette page
+// écrivait ses couleurs EN DUR — `bg-[#F4EFE8]`, `bg-white`, `#2F3B2F`,
+// `#B5502F` —, ce que `CLAUDE.md` §3 interdit depuis toujours. Deux
+// conséquences, invisibles à l'œil :
+//
+//   · elle portait encore le **terre cuite `#B5502F`**, la couleur abandonnée
+//     le 3 août 2026, sur le refus et le cadre de rétractation ;
+//   · son bouton d'acceptation portait `#2F3B2F`, le vert des TEXTES, au lieu
+//     du vert des boutons qu'il a tranché le 3 septembre (`colors.plein`).
+//
+// Cinq semaines d'identité manquée, faute d'être passée par les jetons. Elle y
+// passe désormais, et suivra ce qui vient.
+//
+// **Ce n'est PAS sa charte d'écran** : une page de client ne reçoit aucune
+// variable (`layout.tsx`, `estPageDuClient`), et les jetons retombent sur leur
+// repli — la charte d'Arborea, qui EST l'identité d'Atlas. Un devis ne part pas
+// en noir chez le client parce que l'artisan a choisi « Nuit ».
 //
 // `force-dynamic` est impératif : une mise en cache exposerait le devis d'un
 // client à un autre visiteur, et figerait des disponibilités qui changent.
@@ -29,12 +52,24 @@ function Cadre({
   enDessous?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#F4EFE8] p-6">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-sm">
-        <h1 className="text-[18px] font-semibold text-ink" style={{ fontFamily: "ui-serif, Georgia, serif" }}>
+    <div
+      className="flex min-h-dvh items-center justify-center p-6"
+      style={{ backgroundColor: colors.cream, color: colors.ink }}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl p-6 text-center"
+        style={{
+          backgroundColor: colors.card,
+          border: `1px solid ${colors.line}`,
+          boxShadow: "0 8px 24px rgba(20,18,14,0.08)",
+        }}
+      >
+        <h1 className="text-[21px]" style={{ fontFamily: font.display }}>
           {titre}
         </h1>
-        <p className="mt-2 text-[14px] leading-relaxed text-ink/70">{texte}</p>
+        <p className="mt-2.5 text-[14.5px] leading-relaxed" style={{ color: colors.muted }}>
+          {texte}
+        </p>
         {enDessous}
       </div>
     </div>
@@ -114,20 +149,32 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
        ailleurs les 53 px qui manquaient. Ils viennent tous des espacements :
        aucune phrase n'a été retirée. Le détail des gains est en
        `ARCHITECTURE.md` §250. */
-    <div className="min-h-dvh bg-[#F4EFE8] px-4 pt-1 pb-0.5">
+    <div className="min-h-dvh px-4 pt-1 pb-0.5" style={{ backgroundColor: colors.cream, color: colors.ink }}>
       <div className="mx-auto flex w-full max-w-md flex-col gap-0.5">
-        <header className="rounded-2xl bg-white p-3 shadow-sm">
+        <header
+          className="rounded-2xl p-2.5"
+          style={{
+            backgroundColor: colors.card,
+            border: `1px solid ${colors.line}`,
+            boxShadow: "0 4px 14px rgba(20,18,14,0.06)",
+          }}
+        >
+          {/* **PAS D'INTERTITRE « DEVIS » ICI, contrairement à la facture.**
+              Il a été ajouté le 8 septembre 2026 puis retiré le jour même : la
+              suite a mesuré la page à 713 px pour 664 d'écran, cadre de
+              rétractation compris. Quatorze pixels pour un mot que « Devis n° »
+              disait déjà — c'est exactement la phrase inutile que `CLAUDE.md`
+              §3 fait supprimer, et sa règle du 31 août l'a tranché pour nous. */}
           {/* Le nom de l'entreprise sur la MÊME ligne que le numéro : il occupait
               la sienne, pour trois mots que l'œil lit de toute façon d'un bloc
               avec le titre. Dix-huit pixels rendus à l'écran. */}
           <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-            <h1
-              className="text-[19px] font-semibold text-ink"
-              style={{ fontFamily: "ui-serif, Georgia, serif" }}
-            >
+            <h1 className="text-[19px]" style={{ fontFamily: font.display }}>
               Devis n° <NumeroDeDocument valeur={d.numeroCommercial} />
             </h1>
-            <p className="shrink-0 text-[12px] uppercase tracking-wider text-ink/45">{d.entrepriseNom}</p>
+            <p className="shrink-0 text-[12px] uppercase tracking-wider" style={{ color: colors.muted }}>
+              {d.entrepriseNom}
+            </p>
           </div>
           {/* **La même civilité que partout ailleurs** (`src/lib/civilite.ts`).
               Le client lit « Bonjour Mr. Martins » dans le message qui lui
@@ -135,46 +182,72 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
               qu'il ouvre juste après ferait douter qu'elle lui soit
               destinée. */}
           {d.clientNom && (
-            <p className="mt-0.5 text-[14px] text-ink/70">Pour {avecCivilite(d.clientNom, d.clientCivilite)}</p>
+            <p className="mt-0.5 text-[14px]" style={{ color: colors.inkSoft }}>
+              Pour {avecCivilite(d.clientNom, d.clientCivilite)}
+            </p>
           )}
-          {d.adresseChantier && <p className="text-[13px] text-ink/50">{d.adresseChantier}</p>}
+          {d.adresseChantier && (
+            <p className="text-[13px]" style={{ color: colors.muted }}>
+              {d.adresseChantier}
+            </p>
+          )}
 
-          <dl className="mt-2 border-t border-black/10 pt-1.5 text-[14px]">
-            <div className="flex justify-between text-ink/60">
+          <dl className="mt-1.5 border-t pt-1 text-[14px]" style={{ borderColor: colors.line }}>
+            <div className="flex justify-between" style={{ color: colors.muted }}>
               <dt>Total HT</dt>
               <dd className="tabular-nums">{euros(d.totalHt)}</dd>
             </div>
-            <div className="flex justify-between text-ink/60">
+            <div className="flex justify-between" style={{ color: colors.muted }}>
               <dt>TVA ({Number(d.tauxTva)} %)</dt>
               <dd className="tabular-nums">{euros(d.totalTva)}</dd>
             </div>
-            <div className="flex justify-between text-[16px] font-semibold text-ink">
+            {/* **Le TTC est le chiffre sur lequel il s'engage** : il doit être
+                le plus fort de la carte. En gris et en corps courant, il se
+                lisait comme une ligne de détail — vu sur la planche. */}
+            <div
+              className="flex justify-between text-[16px]"
+              style={{ fontFamily: font.display, color: colors.ink }}
+            >
               <dt>Total TTC</dt>
               <dd className="tabular-nums">{euros(d.totalTtc)}</dd>
             </div>
           </dl>
 
-          {/* Le détail des prestations a quitté cette page, à la demande du
-              patron. Il vit dans le PDF, et ce lien y mène : sans lui, le
-              client accepterait un total sans pouvoir consulter ce qu'il paie
-              — son accord porte pourtant sur le contenu exact, et un devis de
-              travaux doit détailler chaque prestation.
+          {/* **UN VRAI BOUTON, ET NON PLUS UN LIEN SOULIGNÉ DE 13 PX.**
 
-              Le patron pensait le PDF joint au mail. Il ne l'est pas : le
-              partage n'envoie que du texte, et un `mailto:` ne peut porter
-              aucune pièce. Le client ne reçoit qu'un lien — celui-ci.
+              Sa question du 8 septembre 2026 : *« pour la page du devis
+              j'hésite à faire comme pour la facture, ne pas afficher le montant
+              pour les obliger à télécharger leur devis, tu en penses quoi ? »*
 
-              **« Voir » est devenu « Télécharger », en gras et souligné** — sa
-              demande du 31 août 2026. Ce n'est pas qu'un mot : le lien EMPORTE
-              désormais le fichier (`?telecharger`), au lieu de l'ouvrir dans le
-              lecteur du navigateur. Un lien qui dit « télécharger » et se
-              contente d'afficher laisse croire qu'on a gardé le devis alors
-              qu'il ne reste rien à la fermeture de l'onglet. */}
+              **Refusé, et c'est le seul endroit où ce l'est franchement.** Sur
+              la facture, le client DOIT déjà l'argent : cacher le montant ne
+              change rien à sa dette. Ici il DÉCIDE — le bouton juste dessous
+              dit « J'accepte ce devis », et un accord donné sans voir le prix
+              n'en est pas un. C'est aussi la première chose qu'un litige
+              regarderait. S'y ajoutent trois coûts : les chantiers perdus par
+              ceux qui ne téléchargent pas, l'effet « vendeur qui cache son
+              prix », et ceux qui ne savent pas ouvrir un PDF (`PRODUCT.md`).
+
+              **Mais son inquiétude est juste, et elle est traitée ici.** Un
+              client qui accepte sur un total sans lire le détail rappelle en
+              juillet. Le bon levier n'est pas de cacher le prix : c'est que le
+              téléchargement cesse d'être invisible.
+
+              **Le mot reste le sien** — « Télécharger », choisi le 31 août
+              précisément pour que le libellé dise ce qui se passe : le lien
+              EMPORTE le fichier (`?telecharger`), il ne l'ouvre pas. Seul
+              « (PDF) » tombe, le format n'intéressant personne.
+
+              Le détail des prestations vit dans ce fichier, et nulle part
+              ailleurs : sans lui, le client accepterait un total sans pouvoir
+              consulter ce qu'il paie. Le patron le croyait joint au mail — il
+              ne l'est pas, un `mailto:` ne porte aucune pièce. */}
           <a
             href={`/devis/${envoi.jeton}/pdf?telecharger=1`}
-            className="mt-1.5 block text-[13px] font-semibold text-ink/70 underline underline-offset-4"
+            className="mt-1.5 block rounded-full py-2.5 text-center text-[14.5px] font-medium"
+            style={{ color: colors.rust, boxShadow: `inset 0 0 0 1.5px ${colors.rust}` }}
           >
-            Télécharger mon devis (PDF)
+            Télécharger mon devis
           </a>
         </header>
 
@@ -182,7 +255,7 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
 
         {/* La mention de preuve, ramenée à une ligne : elle disait la même
             chose en trois, sur un écran qui doit tenir d'un seul tenant. */}
-        <p className="text-center text-[11px] leading-snug text-ink/40">
+        <p className="text-center text-[11px] leading-snug" style={{ color: colors.muted }}>
           Votre accord est horodaté et conservé avec le devis.
         </p>
       </div>

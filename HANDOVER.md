@@ -4,16 +4,16 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-07 · `main`
+**Point de reprise :** 2026-09-08 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 ## Dernier lot — QUI TRAVAILLE QUEL JOUR (8 septembre 2026)
 
 **Planche :** `appli/qui-travaille-quel-jour.html` — retenu **C et D2**.
-**Décisions :** `ARCHITECTURE.md` §288. **Migration : 0076.**
+**Décisions :** `ARCHITECTURE.md` §292. **Migration : 0076.**
 
-**LA LEÇON DU LOT.** Les règles des §286 et §287 étaient des CONTOURNEMENTS
+**LA LEÇON DU LOT.** Les règles des §290 et §291 étaient des CONTOURNEMENTS
 d'une limite du modèle. Quand la limite tombe, le contournement doit tomber
 avec — sinon il reste comme une interdiction que plus rien ne justifie. Les
 deux ont été relâchés ici, et leurs contrôles RETOURNÉS.
@@ -33,7 +33,7 @@ la faire saisir.
 
 ## Dernier lot — POSER UN CONGÉ DÉFAIT CE QU'IL REND FAUX (8 septembre 2026)
 
-**Décisions :** `ARCHITECTURE.md` §287. **Document :** `docs/lot-ne-pas-cocher-un-absent.md`.
+**Décisions :** `ARCHITECTURE.md` §291. **Document :** `docs/lot-ne-pas-cocher-un-absent.md`.
 
 **CE QU'IL A CORRIGÉ CHEZ MOI, et c'est la leçon du lot :** j'ai livré un
 correctif qui refusait de COCHER un absent. Il a répondu *« pas de pansement,
@@ -54,7 +54,7 @@ geste : question posée dans `TODO.md`, à ne pas trancher seul.
 
 ## Lot précédent — ON NE COCHE PLUS UN ABSENT (8 septembre 2026)
 
-**Décisions :** `ARCHITECTURE.md` §286.
+**Décisions :** `ARCHITECTURE.md` §290.
 
 **LE PIÈGE À RETENIR.** « Absence » est née le 14 août d'une question de
 CAPACITÉ — combien de dates proposer au client. Personne n'est allé voir ce
@@ -74,6 +74,71 @@ demi-journée.
 
 **Le refus rend l'état INCHANGÉ**, jamais `null` (qui veut dire « pas à vous »)
 ni une exception (dont le message n'arrive jamais au patron).
+
+---
+
+## Dernier lot — LES PAGES QUE VOIT SON CLIENT (8 septembre 2026)
+
+**Ce qu'il faut savoir avant de toucher aux pages publiques par jeton.**
+
+| | |
+|---|---|
+| **la page de facture** | `src/app/factures/[jeton]/page.tsx` — couleurs d'Atlas, **pas de montant** (sa demande), un seul bouton, l'IBAN et le numéro à copier (`PastilleACopier.tsx`), l'ordre du chèque |
+| **la page de devis** | `src/app/devis/[jeton]/` — passée aux jetons de charte : elle écrivait ses couleurs en dur et portait encore le terre cuite du 3 août. **Le montant y RESTE** : le client s'apprête à accepter |
+| **la règle du paiement** | `src/lib/modalites-paiement.ts` — IBAN groupé par quatre, IBAN nu pour le copier-coller, ordre du chèque, consigne du libellé. **La page ET le PDF passent par elle** |
+| **la racine corrigée** | une facture lit l'identité de l'émetteur sur l'ENTREPRISE au moment où elle naît, plus sur le devis (migration 0076, `ARCHITECTURE.md` §290) |
+| **la serrure Face ID** | « Me déconnecter partout » ferme aussi les clés d'appareil |
+
+**Deux pièges à ne pas rouvrir :**
+
+1. **ne pas lire l'IBAN vivant sur la page du client.** Le PDF servi est le
+   fichier archivé : la page afficherait alors un IBAN et le PDF un autre, dans
+   le même envoi. Les deux lisent les colonnes figées de la facture ;
+2. **la page du devis tient en 390 × 664, case de rétractation comprise.** Sa
+   règle du 31 août, mesurée par `scripts/test-devis-client-e2e.ts`. Elle a
+   attrapé ce lot deux fois (713 px, puis 676) : tout ajout se paie ailleurs,
+   sur les espacements et jamais sur une phrase.
+
+Le document du lot, avec les verdicts et les chiffres :
+`docs/lot-pages-du-client.md`.
+
+---
+
+## Dernier lot — CINQ SESSIONS EN MÊME TEMPS (8 septembre 2026, nuit)
+
+**Sa demande :** *« l'idée c'est qu'après ça chaque session puisse tourner en
+même temps sans se gêner »*. Il en fait tourner cinq dans le même dossier ; une
+seule pouvait mesurer.
+
+**Ce qui est en place :**
+
+| | |
+|---|---|
+| un **atelier** par session | rang pris au premier port libre → port, base, Redis et dossiers bâtis (`scripts/_atelier.ts`) |
+| un **dossier** par session | `npm run sessions:preparer 5` (`git worktree`) |
+| la commande | **inchangée** : `npm run verifier:avant-livraison` |
+
+**Le rang 0 rend exactement la batterie d'avant.** Une session seule ne voit
+aucune différence — c'est ce qui rend le lot éprouvable.
+
+**CE QU'IL FAUT SAVOIR AVANT DE REPRENDRE, et qui n'est pas de ce lot :**
+
+1. ~~`main` ne compile pas à neuf~~ — **réparé (`9c34d4f0`), et c'était moi.**
+   Mon `git add scripts/` a emporté 527 lignes du travail en cours d'une session
+   voisine, non enregistré dans l'arbre partagé. J'ai d'abord accusé cette
+   session ; `git log` a montré que le commit était le mien. Rendu sans rien
+   changer sur le disque. **La règle à en tirer : jamais de `git add <dossier>`
+   dans un arbre partagé — on nomme les fichiers de son lot.**
+
+2. **Cinq batteries EN MÊME TEMPS ne tiennent pas sur cette machine.** Deux ont
+   suffi à faire tomber un serveur (connexion à 43 s, puis panique interne de
+   Turbopack). Les suites BASE tiennent à deux ; les suites NAVIGATEUR non. Ce
+   que le lot donne vraiment : cinq sessions qui **travaillent** ensemble, et
+   chacune qui **mesure quand elle veut** sans attendre le port de l'autre.
+
+**Le document pour lui :** `docs/lot-cinq-sessions-en-meme-temps.md`.
+Le détail : `ARCHITECTURE.md` §287 (l'atelier) et §288 (le dossier).
+
 
 ---
 
@@ -3191,7 +3256,7 @@ Posé le 22 août 2026, sur sa règle : *« oui si c'est des journées complète
 si c'est des demi-journées »*.
 
 Un chantier prend **autant d'équipes qu'on lui en coche, au moins une**
-(`equipesMobilisees`, `src/server/disponibilites.ts`). Toute nouvelle lecture de
+(`equipesMobilisees`, `src/lib/disponibilites.ts`). Toute nouvelle lecture de
 la place doit passer par là — jamais par un `pris.length`.
 
 **Elles sont quatre, et elles doivent rendre le même verdict** (`CLAUDE.md` §3) :
@@ -7855,7 +7920,7 @@ DATABASE_URL=postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test \
 | Comment le parcours doit se comporter | `docs/AGENT.md` |
 | Isolation par entreprise | `src/server/db/with-entreprise.ts` |
 | Où en est un devis parti | `src/lib/etat-envoi.ts` |
-| Jours libres du patron | `src/server/disponibilites.ts` |
+| Jours libres du patron | `src/lib/disponibilites.ts` |
 | Cycle d'envoi et réponse du client | `src/server/repositories/envois-devis.ts` |
 | Facture, fin de chantier, relevé de TVA | `src/server/repositories/factures.ts` |
 | Conservation, purge, effacement | `src/server/retention.ts`, `src/server/repositories/donnees-client.ts` |

@@ -25,8 +25,9 @@ import assert from "node:assert";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { MEMOIRE_CALENDRIER_JOURS } from "../src/lib/onglet-chantier";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let reussis = 0;

@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { mkdirSync } from "node:fs";
+import { ADRESSE } from "./_adresse";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MICRO_SIMULE = path.join(__dirname, "fixtures", "fake-mic.wav");
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 // **« La phrase doit disparaître, sinon ça incite à appuyer. »**
 //

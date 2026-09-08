@@ -14,8 +14,8 @@
 // calendrier et la répartition par équipe. Le planning refait porte ses propres
 // règles dans `src/lib/planning-jour.ts` — voir plus bas.
 
-import type { JourIso } from "@/server/disponibilites";
-import { versJourIso } from "@/server/disponibilites";
+import type { JourIso } from "@/lib/disponibilites";
+import { versJourIso } from "@/lib/disponibilites";
 
 /** Lundi en tête — la semaine française, pas celle du navigateur. */
 export const JOURS_COURTS = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];

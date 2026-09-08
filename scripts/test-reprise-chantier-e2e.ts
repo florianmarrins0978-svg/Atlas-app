@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { Pool } from "pg";
+import { ADRESSE } from "./_adresse";
 
 // **« Il n'y a pas de mémoire dans les actions. »** — le patron, 13 août 2026.
 //
@@ -20,7 +21,7 @@ import { Pool } from "pg";
 // soit cliquable, et qu'on arrive sur un écran qui offre l'envoi. C'est ce
 // parcours-là qu'il a fait, et c'est celui-là qui était cassé.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function main() {

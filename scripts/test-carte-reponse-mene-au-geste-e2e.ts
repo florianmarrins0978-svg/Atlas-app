@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **La carte de réponse mène là où est le geste — et le geste y est vraiment.**
 //
@@ -21,7 +22,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // que c'est le seul moyen d'obtenir les états « accepté » et « à corriger » tels
 // qu'ils se produisent chez lui.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;

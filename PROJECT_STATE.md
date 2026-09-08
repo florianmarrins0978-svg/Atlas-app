@@ -4,6 +4,12 @@
 · dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
 l’affichage)
 
+---
+
+· dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
+(la mienne : `0076_identite_vivante_sur_la_facture.sql`)
+
+
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
 ligne fausse coûte plus cher qu'une ligne absente, et celle-ci l'était à
@@ -31,7 +37,7 @@ mon premier chiffrage, l'exception se déduit des congés.
 Toucher un nom pose la journée ; « Matin / Après-midi » restreignent ensuite.
 
 **Les contournements du 7 et du 8 tombent** : on ne refuse plus la coche que si
-la personne n'est là aucun jour. Décisions : `ARCHITECTURE.md` §288.
+la personne n'est là aucun jour. Décisions : `ARCHITECTURE.md` §292.
 
 ---
 
@@ -49,7 +55,7 @@ ligne nomme les chantiers).
 **⚠ LA RACINE RESTE, et c'est son arbitrage.** `equipes_du_chantier` n'a pas de
 jour : une coche vaut pour le chantier entier. Sur un chantier de deux jours
 dont un seul tombe sur un congé, la personne devient inaffectable. Migration +
-changement de geste : `ARCHITECTURE.md` §287, question dans `TODO.md`.
+changement de geste : `ARCHITECTURE.md` §291, question dans `TODO.md`.
 
 ---
 
@@ -66,13 +72,53 @@ grise la pastille ET le serveur refuse la coche. Un écran ne protège rien.
 qu'il a photographié, serait sans issue.
 
 **Arbitrage :** chantier de deux jours, un seul de congé → refusé (une coche
-vaut pour le chantier entier). Décisions : `ARCHITECTURE.md` §286.
+vaut pour le chantier entier). Décisions : `ARCHITECTURE.md` §290.
 
 **Éprouvé :** règle pure + **suite base du refus serveur**, les deux confrontées
 à la version d'avant. Écran regardé : Julien pâle et non cliquable, Antoine
 intact.
 
 ---
+
+---
+
+## Fait le 8 septembre 2026 — les pages que voit son client
+
+- **La page de facture** de son client : aux couleurs d'Atlas, **sans montant**
+  (sa demande : « ça incitera le client à ouvrir sa facture »), un seul bouton,
+  le numéro et l'IBAN à copier d'un doigt, l'ordre du chèque. Tout vient de
+  Réglages → Identité, **aucun champ n'a été créé**.
+- **La page de devis** : passée aux jetons de charte. Elle portait encore le
+  terre cuite abandonné le 3 août et le vert des textes sur son bouton
+  d'acceptation. **Le montant y reste** — le client s'apprête à accepter.
+- **Une correction de racine** : une facture lit l'identité de l'émetteur sur
+  l'entreprise au moment où elle naît, plus sur le devis, qui pouvait dater de
+  plusieurs mois (migration 0076, `ARCHITECTURE.md` §290 et §291).
+- **La serrure Face ID** : « Me déconnecter partout » ferme aussi les clés
+  d'appareil. C'était le seul défaut de sécurité connu et non corrigé.
+
+**Abandonné le même jour, par lui :** la refonte de la page de connexion avec
+Google et Apple — *« j'ai changé d'idée »*. Rien n'avait été codé, et le compte
+développeur Apple n'a pas à être pris.
+
+**Reste à coder, tranché par lui :** prévenir des factures parties avec l'ancien
+IBAN, aux trois endroits de `appli/changer-d-iban.html` (voir `TODO.md`).
+
+## FAIT : cinq sessions en même temps (8 septembre 2026, nuit)
+
+Chaque session mesure chez elle. `ARCHITECTURE.md` §287 et §288,
+`docs/lot-cinq-sessions-en-meme-temps.md`.
+
+| | |
+|---|---|
+| **Fait** | un **atelier** par session — rang pris au premier port libre, qui dérive le port, la base, le coin de Redis et les dossiers bâtis (`scripts/_atelier.ts`) |
+| **Fait** | la base d'un atelier neuf se crée seule, avec ses droits et ses migrations (`scripts/preparer-atelier.ts`) |
+| **Fait** | un **dossier de travail** par session : `npm run sessions:preparer 5` |
+| **Fait** | l'étape « Connexion derrière un proxy » cesse d'échouer en silence — elle lançait le banc par `npm` à travers un shell, qui avalait tout : le banc ne démarrait pas |
+| **Mesuré** | deux batteries en même temps, deux dossiers, ateliers 1 et 2 : **303/321** suites base chacune, sans se toucher |
+| **Corrigé** | `main` ne compilait plus à neuf : MON `git add scripts/` avait emporté 527 lignes du travail en cours d'une session voisine. Rendu par `9c34d4f0`, sans rien changer sur le disque |
+| **Ouvert** | cinq batteries simultanées ne tiennent pas sur la machine : deux suffisent à faire tomber un serveur de développement |
+
 
 ## FAIT : deux mots du planning qu'il ne comprenait pas (7 septembre 2026)
 
@@ -1848,7 +1894,7 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 |---|---|
 | Envoi du devis au client, une ou deux dates | `src/app/chantiers/[id]/export/EnvoiAuClient.tsx` |
 | Canal de communication recueilli à la création du chantier | `src/app/chantiers/nouveau/` |
-| Jours libres du patron, calculés une seule fois pour tous les usages | `src/server/disponibilites.ts` |
+| Jours libres du patron, calculés une seule fois pour tous les usages | `src/lib/disponibilites.ts` |
 | Page publique de réponse du client (sans session) | `src/app/devis/[jeton]/` |
 | Cycle d'envoi, jeton, expiration, réponse | `src/server/repositories/envois-devis.ts` |
 | Suivi de ce que devient le devis (5 états) | `src/lib/etat-envoi.ts` |
@@ -1870,7 +1916,7 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 | Relevé de TVA collectée, par trimestre | `src/app/termines/tva/` + `src/server/trimestre.ts` |
 | Devis PDF reprenant le modèle du patron, sur autant de pages qu'il faut | `src/server/pdf/devis-pdf.ts` |
 | Découpage de la dictée en prestations, matériel, déchets, durée, équipe | `src/server/orchestrateur/analyse-demande.ts` |
-| Planning en demi-journées et nombre d'équipes (le client ne voit que la date) | `src/server/disponibilites.ts` + `drizzle/0019_creneaux_et_equipes.sql` |
+| Planning en demi-journées et nombre d'équipes (le client ne voit que la date) | `src/lib/disponibilites.ts` + `drizzle/0019_creneaux_et_equipes.sql` |
 | Correction demandée par le client, avec son message porté au patron | `src/app/devis/[jeton]/formulaire.tsx` + `src/lib/etat-envoi.ts` |
 | Écrire le devis soi-même, sans passer par la proposition de prix | `src/app/chantiers/[id]/informations/InformationsClient.tsx` → `prix?saisie=manuelle` |
 | Transmission au client : messagerie ouverte **au bon destinataire**, canal changeable, coordonnée saisissable sur place | `src/app/chantiers/[id]/export/TransmettreAuClient.tsx` |
@@ -1893,7 +1939,7 @@ le bouton « J'ai bien reçu » horodaté sur la page du client.
 | **Le devis se découpe en lignes vendables** : abattage + broyage + évacuation ensemble, la fente à part, sans point-virgule | `src/lib/lignes-vendables.ts` |
 | **Cinq grilles de prix** — abattage (technique × diamètre), fendage (hauteur × diamètre), dessouchage (diamètre), haie (au ml), grumes (à la tonne) — nées vides et remplies par ses devis | `src/lib/grille-prix.ts` + `src/app/reglages/prix/` + `drizzle/0029_grumes_a_la_tonne.sql` |
 | **Le retour de la messagerie ramène à l'accueil**, avec un mot qui dit ce qui a été transmis | `src/lib/annonce-transmission.ts` + `src/components/atlas/AnnonceTransmission.tsx` |
-| **Proposer une date jusqu'à 18 mois**, sans montrer au client plus de trois semaines autour | `src/server/disponibilites.ts` (`fenetrePatron`, `bandesVisibles`) |
+| **Proposer une date jusqu'à 18 mois**, sans montrer au client plus de trois semaines autour | `src/lib/disponibilites.ts` (`fenetrePatron`, `bandesVisibles`) |
 | **Un calendrier des deux côtés**, où les jours déjà pris sont barrés et ne se choisissent pas | `src/lib/calendrier.ts` + `src/components/atlas/Calendrier.tsx` |
 | **Déposer sa liste de prix Excel ou CSV**, avec aperçu avant écriture | `src/app/reglages/ImportTarifs.tsx` + `src/lib/import-tarifs.ts` + `src/server/import/lire-classeur.ts` |
 | **La TVA quand le client PAIE, et non quand la facture part** — le relevé se calcule sur la date du règlement (défaut légal d'une prestation de services, CGI art. 269-2-c) ; les factures parties attendent dans « Ma TVA » et y entrent d'un appui. Les acomptes n'apportent que leur part. Réglage encaissements / débits. Le passé ne bouge pas : la migration a supposé réglées les factures déjà émises, et le dit (`ARCHITECTURE.md` §110) | `src/lib/exigibilite-tva.ts` + `src/server/repositories/paiements-facture.ts` + `src/app/termines/tva/` + `drizzle/0045_paiements_et_exigibilite.sql` |

@@ -168,12 +168,28 @@ verifier("le motif de démarrage attrape « next build », pas seulement les ser
 // qui l'écrit et noie celui qui le rejoue.
 verifier("le dossier bâti par la batterie est écarté du lint", () => {
   const batterie = readFileSync(BATTERIE, "utf8");
-  const dossiers = [...batterie.matchAll(/ATLAS_DIST_DIR:\s*"([^"]+)"/g)].map((m) => m[1]);
+  // **On cherche les NOMS, plus la forme dans laquelle ils sont écrits.**
+  //
+  // Depuis le 8 septembre 2026, le dossier porte le rang de l'atelier —
+  // `.next-verification-a1` pour la deuxième session qui mesure — donc il n'est
+  // plus une chaîne littérale mais un gabarit. La première version de ce
+  // contrôle lisait `ATLAS_DIST_DIR: "…"` : elle serait devenue muette du jour
+  // au lendemain, en annonçant « la batterie ne déclare plus de dossier »
+  // plutôt que de vérifier quoi que ce soit. Un contrôle qui ne sait plus quoi
+  // regarder ne doit pas rendre vert — mais il ne doit pas non plus exiger une
+  // écriture particulière (`CLAUDE.md` §5 bis).
+  const dossiers = [...new Set([...batterie.matchAll(/\.next-[a-z][a-z-]*/g)].map((m) => m[0]))];
   assert.ok(dossiers.length > 0, "la batterie ne déclare plus de dossier de construction");
   const eslint = readFileSync(path.join(__dirname, "..", "eslint.config.mjs"), "utf8");
   for (const dossier of dossiers) {
+    // Écarté nommément, ou par une famille qui le couvre — `.next-*/**` prend
+    // aussi bien `.next-verification` que `.next-verification-a3`.
+    const nommement = eslint.includes(`"${dossier}/**"`);
+    const parFamille = [...eslint.matchAll(/"(\.next-[a-z-]*)\*\/\*\*"/g)].some((m) =>
+      dossier.startsWith(m[1])
+    );
     assert.ok(
-      eslint.includes(`"${dossier}/**"`),
+      nommement || parFamille,
       `« ${dossier} » n'est pas écarté dans eslint.config.mjs : le lint de la batterie suivante ` +
         "sera noyé sous du code généré, et un contrôle noyé ne se lit plus"
     );

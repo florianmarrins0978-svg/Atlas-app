@@ -46,8 +46,9 @@
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   console.log("=== La coupure des sessions se contourne-t-elle ? ===\n");

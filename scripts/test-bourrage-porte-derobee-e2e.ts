@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
+import { ADRESSE } from "./_adresse";
 
 // LE FORMULAIRE EST GARDÉ — LA PORTE D'À CÔTÉ DOIT L'ÊTRE AUSSI.
 //
@@ -36,7 +37,7 @@ import assert from "node:assert/strict";
 // rappel rendait 200 et un cookie de session. Un contrôle qui n'a jamais échoué
 // ne prouve rien.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const COMPTE = "demo@atlas.local";
 
 /** Les fournisseurs `Credentials` de `src/auth.ts`, et leurs rappels. */

@@ -17,7 +17,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { absencesEquipe, chantiers, equipes, equipesDuChantier } from "../db/schema";
 import { joursPresentsSurLeChantier } from "../../lib/equipe-absente";
 import type { Ctx } from "./context";
-import type { JourIso } from "../disponibilites";
+import type { JourIso } from "@/lib/disponibilites";
 
 export type AbsenceEnregistree = {
   id: string;
@@ -275,7 +275,7 @@ export async function noterAbsenceEquipe(
     //
     // La version d'hier retirait dès qu'un jour du chantier tombait sur le
     // congé : elle vidait un chantier de deux jours pour une absence d'un
-    // seul, et le §286 empêchait ensuite de recocher. C'était un
+    // seul, et le §290 empêchait ensuite de recocher. C'était un
     // contournement du modèle, qui ne savait pas dire « Julien vendredi mais
     // pas jeudi ».
     //

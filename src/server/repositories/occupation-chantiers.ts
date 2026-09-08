@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import type { DbOrTx } from "../db/client";
 import { chantiers, equipesDuChantier } from "../db/schema";
-import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, type JourIso, type Moment } from "../disponibilites";
+import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, type JourIso, type Moment } from "@/lib/disponibilites";
 
 /**
  * Quels chantiers peuvent encore occuper une fenêtre qui commence à `debut`.

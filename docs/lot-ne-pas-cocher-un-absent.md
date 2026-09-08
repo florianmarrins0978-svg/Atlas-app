@@ -120,4 +120,4 @@ les protections. Et c'est le serveur qui tient vraiment.
 
 ---
 
-**Le détail technique est dans `ARCHITECTURE.md` §286.**
+**Le détail technique est dans `ARCHITECTURE.md` §291.**

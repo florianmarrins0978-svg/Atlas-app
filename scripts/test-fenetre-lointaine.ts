@@ -11,7 +11,7 @@ import {
   jourVisible,
   fenetreProposition,
   versJourIso,
-} from "../src/server/disponibilites";
+} from "../src/lib/disponibilites";
 
 // **« Comment je fais si je dois lui proposer une date dans six mois ? »**
 // — le patron, le 8 août 2026, sur un écran qui ne suggérait que les six

@@ -12,7 +12,7 @@ import {
   compterOccupation,
   departPossible,
   jourRetenable,
-} from "../src/server/disponibilites";
+} from "../src/lib/disponibilites";
 
 /**
  * Une équipe absente ne compte plus dans les dates proposées.

@@ -90,8 +90,8 @@ const ABSOLUS: (Couple & { seuil: number })[] = [
   // `design-tokens.ts` à poser `surPlein = card` plutôt qu'un crème en clair.
   { quoi: "ce qu'on écrit sur l'accent plein (surPlein)", devant: (c) => c.jetons.card, derriere: (c) => c.jetons.rust, seuil: TEXTE },
   { quoi: "ce qu'on écrit sur le rouge d'alerte (surPlein)", devant: (c) => c.jetons.card, derriere: (c) => c.jetons.alerte, seuil: TEXTE },
-  // Le fond de page sert lui aussi d'encre sur l'accent — `ActionPrincipale`,
-  // `CalendrierPeriodes`.
+  // Le fond de page sert lui aussi d'encre sur l'accent — `CalendrierPeriodes`.
+  // (`ActionPrincipale` le faisait aussi ; supprimé le 8 septembre 2026, mort.)
   { quoi: "le fond de page écrit sur l'accent", devant: (c) => c.jetons.cream, derriere: (c) => c.jetons.rust, seuil: TEXTE },
   // ─── Un refus doit pouvoir se lire ────────────────────────────────────────
   { quoi: "le rouge d'alerte sur une plage", devant: (c) => c.jetons.alerte, derriere: (c) => c.jetons.card, seuil: TEXTE },

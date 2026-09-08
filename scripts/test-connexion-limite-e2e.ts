@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
+import { ADRESSE } from "./_adresse";
 
 // **Le défaut qui a empêché les parents du patron d'entrer.**
 //
@@ -19,7 +20,7 @@ import assert from "node:assert/strict";
 // Les deux visiteurs sont distingués par `x-forwarded-for`, exactement comme le
 // proxy le fait devant l'application.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const MAUVAIS = "pas-le-bon-mot-de-passe";
 
 async function tenter(navigateur: Awaited<ReturnType<typeof lancerNavigateur>>, ip: string, motDePasse: string) {

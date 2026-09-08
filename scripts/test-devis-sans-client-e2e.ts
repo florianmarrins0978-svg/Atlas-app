@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **Le retour du devis mène à la fiche client — avec ou sans client.**
 //
@@ -20,7 +21,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // que le chemin se REFERME — enregistrer ramène au devis, qui porte alors le
 // client. Une règle juste et débranchée serait verte des deux côtés sauf ici.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, verifier: () => Promise<void>) {

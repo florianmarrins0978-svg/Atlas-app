@@ -9,6 +9,18 @@ const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
 const TSX = path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs");
 import { CHEMIN_NEXT, arreterArbre } from "./_processus";
+import { prendreUnAtelier, suffixeDeLAtelier, type Atelier } from "./_atelier";
+
+/**
+ * L'atelier de cette exécution : son port, et l'adresse que les suites visent.
+ *
+ * **Posé dans `main()`, jamais ici** : le choix demande d'interroger les ports,
+ * donc d'attendre. Tout ce fichier le lit à travers `adresse()`, pour qu'aucune
+ * ligne ne puisse redevenir « localhost:3000 » par distraction.
+ */
+let atelier: Atelier | null = null;
+const adresse = () => atelier?.adresse ?? process.env.ATLAS_ADRESSE ?? "http://localhost:3000";
+const sante = () => `${adresse()}/api/health/live`;
 
 function attendre(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -184,7 +196,7 @@ async function prechaufferLesEcrans(): Promise<void> {
       console.log(`⚠ Préchauffage sans session : ${motif ?? "raison inconnue"}`);
       return;
     }
-    const base = BASE;
+    const base = adresse();
     /**
      * **En TRANCHE, on ne préchauffe que l'indispensable — et c'est une
      * question de mémoire, pas de temps.**
@@ -300,35 +312,6 @@ if (process.argv.includes("--list")) {
 }
 
 /**
- * ─── LE PORT DE CETTE SESSION ───────────────────────────────────────────────
- *
- * **Sa consigne du 8 septembre 2026 :** *« maintenant chaque session a son
- * dossier et son port pour ne pas vous bousculer ; vérifie et prends un port
- * libre. »*
- *
- * Il était écrit **en dur, à sept endroits** dans ce fichier. Deux sessions qui
- * jouaient la batterie en même temps se prenaient donc le port l'une à l'autre,
- * et la seconde refusait de démarrer — c'est exactement ce qui est arrivé le
- * 8 septembre au matin, où deux batteries lancées à quelques minutes d'écart
- * ont rendu douze suites rouges qui n'accusaient personne.
- *
- * **`PORT` et pas un nom à nous** : c'est celui que Next lit déjà, et celui
- * qu'un développeur essaie en premier. Un `ATLAS_PORT` aurait obligé à le
- * traduire à chaque lancement, et la traduction se serait oubliée quelque part.
- *
- * **3000 reste le défaut**, pour que rien ne change quand on ne demande rien.
- */
-const PORT = (() => {
-  const brut = Number(process.env.PORT);
-  // Un port hors des bornes ferait échouer le serveur bien plus loin, sur un
-  // message qui n'accuserait pas la variable.
-  return Number.isInteger(brut) && brut > 0 && brut < 65536 ? brut : 3000;
-})();
-
-/** L'adresse de CETTE batterie — jamais recopiée ailleurs. */
-const BASE = `http://localhost:${PORT}`;
-
-/**
  * Quelque chose écoute-t-il déjà sur le port qu'on s'apprête à prendre ?
  *
  * **Ce que ça évite, et qui est arrivé quatre fois le 11 août 2026.** Ce script
@@ -355,16 +338,35 @@ async function quelquUnEcouteDeja(url: string): Promise<boolean> {
 }
 
 async function main() {
+  /**
+   * **L'atelier d'abord : c'est lui qui décide du port.**
+   *
+   * Quand la batterie appelle ce lanceur, elle a déjà pris son atelier et posé
+   * `ATLAS_ADRESSE` — on la suit, sans en reprendre un second, sinon la base et
+   * le serveur ne seraient plus du même rang. Joué seul, le lanceur en prend un.
+   *
+   * Le rang 0 rend exactement le port 3000 d'avant : une session seule ne voit
+   * aucune différence (`scripts/_atelier.ts`).
+   */
+  if (process.env.ATLAS_ADRESSE) {
+    const port = Number(new URL(process.env.ATLAS_ADRESSE).port || 80);
+    atelier = { rang: port - 3000, port, adresse: process.env.ATLAS_ADRESSE };
+  } else {
+    atelier = await prendreUnAtelier();
+    process.env.ATLAS_ADRESSE = atelier.adresse;
+  }
+  if (atelier.rang !== 0) {
+    console.log(`Atelier n° ${atelier.rang} — port ${atelier.port}.`);
+  }
+
   // **Avant tout le reste** : un port occupé rend la suite entière ininterprétable.
-  if (await quelquUnEcouteDeja(`${BASE}/api/health/live`)) {
+  if (await quelquUnEcouteDeja(sante())) {
     console.error(
-      `❌ Quelque chose écoute DÉJÀ sur le port ${PORT}, et ce n'est pas cette batterie.\n` +
+      `❌ Quelque chose écoute DÉJÀ sur le port ${atelier.port}, et ce n'est pas cette batterie.\n` +
         "   Refus de continuer : les suites travailleraient sur ce serveur-là — celui d'un autre\n" +
         "   code, peut-être d'une autre branche — et leur résultat ne voudrait rien dire.\n" +
         "   Le plus souvent, c'est un orphelin du banc d'essai :\n" +
-        "     pgrep -af 'next-server|next dev'   puis   kill -9 <pid>\n" +
-        "   Et si c'est une AUTRE SESSION qui travaille, prenez un autre port :\n" +
-        "     PORT=3100 npm run verifier:avant-livraison"
+        "     pgrep -af 'next-server|next dev'   puis   kill -9 <pid>"
     );
     process.exit(1);
   }
@@ -475,7 +477,7 @@ async function main() {
    * Le descripteur est passé directement à l'enfant : le noyau écrit dans le
    * fichier sans jamais rien attendre de nous.
    */
-  const JOURNAL_SERVEUR = path.join(tmpdir(), "atlas-serveur-e2e.log");
+  const JOURNAL_SERVEUR = path.join(tmpdir(), `atlas-serveur-e2e${suffixeDeLAtelier(atelier!)}.log`);
   const journalFd = openSync(JOURNAL_SERVEUR, "w");
   /**
    * **Le serveur des suites ANNONCE une adresse publique — posé le 24 août
@@ -486,7 +488,7 @@ async function main() {
    * une fiche de chantier dont le lien pointait sur `localhost`, et son client
    * a reçu « Connexion au serveur impossible » (`src/lib/adresse-du-client.ts`).
    *
-   * Or les suites, elles, tournent sur l'adresse locale — sans cette
+   * Or les suites, elles, tournent sur `http://localhost:3000` — sans cette
    * variable, chaque écran d'envoi rendrait le refus, et une dizaine de suites
    * rougiraient en accusant l'envoi alors que c'est leur adresse qui est en
    * cause. On DÉCLARE donc une adresse publique, comme le ferait un
@@ -521,16 +523,14 @@ async function main() {
   // `next` est un script Node : on le lance par l'exécutable qui nous porte
   // déjà. Plus de `.cmd`, plus de shell, plus d'interposition — le journal
   // revient, et l'arbre se tue proprement des deux côtés.
-  const serveur = spawn(process.execPath, [CHEMIN_NEXT, "dev", "-p", String(PORT)], {
-    // **`BASE_URL` suit le port de cette session.** Les suites qui le lisent
-    // (`scripts/_adresse.ts`) parlent alors au bon serveur. Celles qui écrivent
-    // encore `localhost:3000` en dur — il y en a 120 au 8 septembre 2026 — ne
-    // suivront pas : changer de port ne les emporte pas encore, et c'est écrit
-    // dans `TODO.md` plutôt que laissé à découvrir.
+  const serveur = spawn(process.execPath, [CHEMIN_NEXT, "dev", "-p", String(atelier!.port)], {
     env: {
       ...process.env,
       ATLAS_URL_PUBLIQUE: "https://atlas-suites.test",
-      BASE_URL: BASE,
+      // Chaque atelier compile dans SON dossier : deux serveurs de
+      // développement sur le même `.next` se réécrivent leurs morceaux, et les
+      // deux batteries rendent des rouges qui n'accusent personne.
+      ...(suffixeDeLAtelier(atelier!) ? { ATLAS_DIST_DIR: `.next${suffixeDeLAtelier(atelier!)}` } : {}),
     },
     stdio: ["ignore", journalFd, journalFd],
     detached: true,
@@ -556,7 +556,7 @@ async function main() {
     console.error("---------------------------------------------------\n");
   }
 
-  const pret = await attendreServeurPret(`${BASE}/api/health/live`);
+  const pret = await attendreServeurPret(sante());
   if (!pret) {
     console.error("❌ Le serveur n'a jamais répondu — abandon.");
     montrerJournalServeur();
@@ -603,7 +603,7 @@ async function main() {
     // Un serveur mort ne se répare pas en lui envoyant vingt suites de plus :
     // il produit vingt échecs qui accusent chacun un écran différent. On
     // s'arrête au premier, en disant ce qui s'est réellement passé.
-    if (!(await serveurVivant(`${BASE}/api/health/live`))) {
+    if (!(await serveurVivant(sante()))) {
       console.error(
         `❌ Le serveur ne répond plus avant ${fichier}` +
           (serveurTermine ? ` — il s'est arrêté (${serveurTermine}).` : " — il est resté sourd une minute.")

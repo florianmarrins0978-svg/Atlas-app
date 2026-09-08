@@ -35,10 +35,11 @@ import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as devisRepo from "../src/server/repositories/devis";
 import { creerEnvoi } from "../src/server/repositories/envois-devis";
-import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { ressembleAUnTelephone } from "../src/lib/numero-document";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 // Ce que le navigateur doit lire pour cesser de fabriquer des liens. Next rend
 // les trois refus dans un seul en-tête, séparés par des virgules.

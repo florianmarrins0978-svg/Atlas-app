@@ -1,6 +1,9 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 async function main() {
   const browser = await lancerNavigateur();
@@ -9,14 +12,14 @@ async function main() {
 
   // Connexion réelle (Auth.js) — toutes les routes applicatives sont
   // désormais protégées par le middleware d'authentification.
-  await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+  await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
   // --- Chantier avec transcription réelle (seed : Rénovation salle de bain) ---
-  await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
   // **La LIGNE de la liste, pas la première mention du nom.** Depuis le 16 août
   // 2026, les rappels passent devant les réponses sur l'accueil (« fait la B »),
   // et un chantier sans devis y porte désormais une carte qui cite son nom. Un
@@ -61,18 +64,18 @@ async function main() {
 
   // --- Chantier neuf : note vocale absente ---
   const nomUnique = `Chantier transcription e2e ${Date.now()}`;
-  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
   // L'adresse se bâtit sur l'identifiant que l'aide rend : la relire dans
   // le navigateur donnait « devis-complet » depuis que la fiche du chantier
   // est retirée (`ARCHITECTURE.md` §254).
-  const nouveauChantierUrl = `http://localhost:3000/chantiers/${await creerPuisFiche(page)}`;
+  const nouveauChantierUrl = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
 
   await page.goto(`${nouveauChantierUrl}/transcription`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Aucune note vocale pour ce chantier.").isVisible());
 
   // --- Chantier introuvable ---
-  await page.goto("http://localhost:3000/chantiers/00000000-0000-0000-0000-000000000000/transcription", {
+  await page.goto(`${BASE}/chantiers/00000000-0000-0000-0000-000000000000/transcription`, {
     waitUntil: "networkidle",
   });
   assert.ok(await page.locator("text=404").first().isVisible(), "Le code 404 doit être visible");

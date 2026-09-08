@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { mkdirSync } from "node:fs";
+import { ADRESSE } from "./_adresse";
 
 // Plusieurs TVA sur le devis — PAR LE CHEMIN QU'IL EMPRUNTE, LUI.
 //
@@ -35,7 +36,7 @@ import { mkdirSync } from "node:fs";
 //   6. retirer la catégorie NE SUPPRIME PAS ses lignes.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {

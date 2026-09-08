@@ -25,9 +25,10 @@ import { mkdirSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { TYPOGRAPHIES } from "../src/lib/allure-documents";
+import { ADRESSE } from "./_adresse";
 
 const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;

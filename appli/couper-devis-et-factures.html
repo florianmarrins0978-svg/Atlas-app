@@ -286,10 +286,10 @@ td b{color:var(--encre)}
   une mécanique à comprendre. Un message entier par document ne demande rien à
   comprendre : ce que vous lisez est ce que votre client reçoit.</p>
   <p><b>Mais il y en a TROIS, pas deux</b>, et c'est la seule chose que vous ne
-  pouviez pas savoir : le <b>compte rendu de passage</b> part avec ce même
+  pouviez pas savoir : le <b>retour d’intervention</b> part avec ce même
   message (<i>composerMessageEntretien</i>). À deux, le troisième document
   restait orphelin — votre client aurait entendu votre voix sur son devis et sa
-  facture, celle d'Atlas sur le compte rendu.</p>
+  facture, celle d'Atlas sur le retour d’intervention.</p>
   <table>
     <tr><th>Aujourd'hui</th><th>Décidé</th></tr>
     <tr><td>un message pour les trois documents</td><td><b>trois messages</b>,
@@ -314,7 +314,7 @@ td b{color:var(--encre)}
   presque identiques à la suite : on cherche laquelle se modifie, et l'écran
   double de longueur sans rien dire de plus. Il ne reste que celle qui part.</p>
   <p><b>Un mot sur le troisième document :</b> vous l'appelez « fiche client ».
-  Dans l'application il s'appelle <b>compte rendu de passage</b>, et c'est ce
+  Dans l'application il s'appelle <b>retour d’intervention</b>, et c'est ce
   nom qui est écrit ici — le renommer se décide, ça ne se suppose pas.</p>
   <p><b>Et l'échéance emporte ses mots avec elle :</b> sur un devis, le
   « , à régler avant le … » disparaît en entier. Un trou qui laisserait
@@ -482,7 +482,7 @@ var TYPOS = [
   savoir : `composerMessageEntretien` envoie le COMPTE RENDU DE PASSAGE avec ce
   même message. À deux messages, le troisième document reste orphelin — le
   client entendrait sa voix sur son devis et sa facture, celle d'Atlas sur le
-  compte rendu.
+  retour d’intervention.
 
   SA DÉCISION, PRISE DANS LA FOULÉE : *« dans ce cas faut faire 3 messages par
   défaut et garder le système un seul mot change »*. Donc :
@@ -519,7 +519,7 @@ var PHRASE_PASSAGE = "Voici le [document] de mon passage chez vous :";
 var MESSAGES = [
   {clef:"devis", titre:"Ce que j'envoie avec un devis", corps: commun(PHRASE_DEVIS)},
   {clef:"facture", titre:"Ce que j'envoie avec une facture", corps: commun(PHRASE_FACTURE)},
-  {clef:"passage", titre:"Ce que j'envoie avec un compte rendu", corps: commun(PHRASE_PASSAGE)}
+  {clef:"passage", titre:"Ce que j'envoie avec un retour d’intervention", corps: commun(PHRASE_PASSAGE)}
 ];
 
 /* L'existant : un seul message, et la phrase du document y est POSÉE par
@@ -634,7 +634,7 @@ function blocCoupe(){
   serait pire que pas de trou du tout.
 */
 function remplir(texte, doc){
-  var mot = doc === "devis" ? "devis" : doc === "facture" ? "facture" : "compte rendu";
+  var mot = doc === "devis" ? "devis" : doc === "facture" ? "facture" : "retour d’intervention";
   /* Un seul doré pour tous : ce qui se remplit tout seul. Ce qui ne se retire
      pas est dit en toutes lettres au-dessus — c'est sa correction du
      7 septembre, et elle vaut mieux qu'un signe de plus à déchiffrer. */
@@ -664,7 +664,7 @@ function cadreEcrit(texte){
 }
 
 var APERCUS = [["devis", "Envoi d'un devis"], ["facture", "Envoi d'une facture"],
-  ["passage", "Envoi d'un compte rendu"]];
+  ["passage", "Envoi d'un retour d’intervention"]];
 
 function blocMessage(){
   /* L'EXISTANT, dans la vue « Aujourd'hui » : un seul message pour les trois
@@ -700,7 +700,7 @@ function blocMessage(){
   var h = '<div class="bloc"><p class="inter">Mon message au client</p>' +
     '<p class="note" style="margin:0 0 14px">Les mots en doré se remplissent tout seuls. ' +
     '<b style="color:var(--encre);font-weight:400">Le lien et le mot du document — devis, ' +
-    'facture, compte rendu — ne peuvent pas être retirés.</b> Tout le reste se modifie.</p>';
+    'facture, retour d’intervention — ne peuvent pas être retirés.</b> Tout le reste se modifie.</p>';
 
   for (var i = 0; i < MESSAGES.length; i++) {
     var m = MESSAGES[i];

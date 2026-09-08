@@ -8,6 +8,7 @@ import { planifierChantier, basculerEquipeDuChantier } from "../src/server/repos
 import { nommerEquipe } from "../src/server/repositories/equipes";
 import { jourIso } from "../src/lib/jour";
 import type { Ctx } from "../src/server/repositories/context";
+import { ADRESSE } from "./_adresse";
 
 // UN SALARIÉ, DANS UN VRAI NAVIGATEUR, DEVANT SON PLANNING.
 //
@@ -50,7 +51,7 @@ import type { Ctx } from "../src/server/repositories/context";
 // fichier par la suite base, qui rougit si l'une l'oublie.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 /**
  * **LES CAPTURES SONT UNE PIÈCE DU CONTRÔLE, PAS UNE FINITION.**
  *

@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { Client } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import type { Page } from "playwright";
+import { ADRESSE } from "./_adresse";
 
 // La mémoire des corrections, parcourue comme le patron la parcourt.
 //
@@ -61,7 +62,7 @@ async function preparerTerrain(): Promise<Terrain> {
   }
 }
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const terrain = await preparerTerrain();

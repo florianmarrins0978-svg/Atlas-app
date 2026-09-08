@@ -1,6 +1,9 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
+
+const BASE = ADRESSE;
 
 async function main() {
   const browser = await lancerNavigateur();
@@ -9,21 +12,21 @@ async function main() {
 
   // Connexion réelle (Auth.js) — toutes les routes applicatives sont
   // désormais protégées par le middleware d'authentification.
-  await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+  await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
   const client = `M. Bernard ${Date.now()}`;
-  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   // Client et coordonnée : sans canal d'envoi convenu, l'écran devis refuse
   // — à juste titre — de partir chez le client.
   await page.fill('input[placeholder="Bernard"]', client);
   await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
   const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const chantierUrl = `http://localhost:3000/chantiers/${idChantier}`;
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
 
   // Ajoute une ligne de prix réelle pour que le devis ait un contenu non nul.
   await page.goto(`${chantierUrl}/prix`, { waitUntil: "networkidle" });
@@ -42,7 +45,7 @@ async function main() {
   assert.ok(await page.locator("text=Aperçu du PDF").isVisible());
 
   const apercuHref = await page.locator("text=Aperçu du PDF").getAttribute("href");
-  const reponseApercu = await page.request.get(`http://localhost:3000${apercuHref}`);
+  const reponseApercu = await page.request.get(`${BASE}${apercuHref}`);
   assert.equal(reponseApercu.status(), 200);
   assert.equal(reponseApercu.headers()["content-type"], "application/pdf");
   const octetsApercu = await reponseApercu.body();
@@ -56,7 +59,7 @@ async function main() {
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 10000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 10000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   // --- Persistance : l'écran du devis parti, retrouvé plus tard ---
   // **On y VA, il ne s'affiche plus tout seul.** Depuis le 21 août 2026, l'envoi
@@ -75,7 +78,7 @@ async function main() {
   // le PDF » en a été retiré le 21 août 2026, à sa demande — il n'y voulait que
   // deux gestes. Ce qui est vérifié ici n'a pas bougé d'un pouce : le document
   // existe, il est servi, et c'en est bien un.
-  const reponsePdf = await page.request.get(`http://localhost:3000${apercuHref}?telecharger=1`);
+  const reponsePdf = await page.request.get(`${BASE}${apercuHref}?telecharger=1`);
   assert.equal(reponsePdf.status(), 200);
   // **Et il est servi À ENREGISTRER, pas à lire** — 7 septembre 2026. Cette
   // ligne exigeait `application/pdf` : c'est précisément le type qui faisait

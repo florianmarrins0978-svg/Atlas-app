@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fin de chantier — trois façons de la poser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    FIN DE CHANTIER — trois façons, 8 septembre 2026.
+
+    Sa demande : *« fais-moi une maquette avec plusieurs options, dont une je
+    veux que ce soit un bouton genre fin de chantier ; on clique dessus et là on
+    coche ce qu'on a fait, on ajoute photo et on écrit si besoin »*.
+
+    C'est la B ci-dessous, et elle répond à sa consigne précédente du même soir :
+    *« fais pas un truc trop gros »*. Les trois partent de la MÊME fiche
+    d'intervention — celle du produit, reprise au détail près
+    (`FeuilleChantier`, `src/app/planning/PlanningClient.tsx`).
+
+    ─────────────────────────────────────────────────────────────────────────
+    LA TENSION QU'IL FAUT VOIR AVANT DE CHOISIR.
+
+    Sa règle du 5 septembre 2026 : *« rien de caché — pas de geste à découvrir.
+    Ce qui est important est VISIBLE. »* Un bouton **nommé** ne viole pas cette
+    règle : « Fin de chantier » se lit, il ne se devine pas. Ce qui la
+    violerait, c'est un glissement ou un appui long.
+
+    Mais la B a un coût réel, et il est écrit sous la planche : **tant qu'il n'a
+    pas appuyé, il ne voit pas ce qu'on attend de lui.** Sur un chantier qu'on
+    quitte à la hâte, c'est ce qui fait rentrer sans avoir rien posé.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI NE BOUGE PAS, QUELLE QUE SOIT L'OPTION.
+
+    · aucun montant, nulle part, pour un salarié ;
+    · le planning reste sa seule porte ;
+    · ce qui manque se dit AVANT l'appui, jamais après.
+
+    Les noms et les tâches sont inventés pour la démonstration.
+    MESURÉ POUR SON TÉLÉPHONE : 390 × 664. RIEN N'EST CODÉ dans `src/`.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  body.nuit{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47;
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);
+       -webkit-text-size-adjust:100%;padding:0 0 70px}
+  ::selection{background:rgba(138,101,40,.22)}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+  .mot{max-width:560px;margin:30px auto 0;padding:17px 20px;background:var(--etabli-carte);
+       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
+       font-size:14px;line-height:1.62;color:var(--etabli-doux)}
+  .mot b{color:var(--etabli-encre)}
+  .mot + .mot{margin-top:11px}
+
+  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
+         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
+  .etats .quoi{max-width:1000px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+               letter-spacing:.2em;text-transform:uppercase;color:var(--etabli-gris)}
+  .etats .rangee{max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
+                color:var(--etabli-doux);border-radius:999px;padding:10px 15px;
+                font:400 13px/1 var(--sans);cursor:pointer}
+  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+
+  .partie{max-width:1000px;margin:46px auto 0;padding:0 20px}
+  .partie h2{margin:0;font:400 28px/1.12 var(--serif);letter-spacing:-.012em}
+  .partie p{margin:10px 0 0;font-size:14.5px;line-height:1.62;color:var(--etabli-doux);max-width:64ch}
+  .partie p b{color:var(--etabli-encre)}
+
+  .planches{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;
+            max-width:1360px;margin:26px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.25 var(--serif)}
+  .planche .nom .tenu{display:inline-block;margin-left:8px;font:600 9px/1 var(--sans);
+                      letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);
+                      vertical-align:3px}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--etabli-doux);min-height:58px}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
+       background:var(--fond);color:var(--encre);box-shadow:0 16px 44px rgba(20,18,14,.22)}
+  .ecran{position:absolute;inset:0;display:flex;flex-direction:column;padding:16px 0 0;overflow-y:auto;overflow-x:hidden}
+
+  .pastilleJour{display:block;width:max-content;margin:0 auto;background:var(--tuile);
+                border-radius:999px;padding:7px 14px;font:600 10.5px/1 var(--sans);
+                letter-spacing:.16em;text-transform:uppercase;color:var(--doux)}
+  .teteChantier{padding:12px 20px 0}
+  .teteChantier .nomClient{display:block;font:400 21px/1.2 var(--serif)}
+  .teteChantier .duree{display:block;margin-top:5px;font:400 13px/1 var(--sans);color:var(--orTexte)}
+  .teteChantier .ville{display:block;margin-top:5px;font:400 13.5px/1 var(--sans);color:var(--gris)}
+
+  /* ── La fiche d'intervention, telle que le produit la dessine ─────── */
+  .feuille{margin:12px 18px 0;border-radius:10px;padding:15px 16px 14px;
+           background:var(--tuile);box-shadow:inset 0 0 0 1px var(--trait)}
+  .feuille .titre{margin:0;text-align:center;font:700 10.5px/1 var(--sans);
+                  letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+  .feuille .quiCest{margin:10px 0 0;text-align:center;font:400 22px/1.15 var(--serif)}
+  .gestes{display:flex;gap:6px;margin-top:10px}
+  .gestes + .gestes{margin-top:6px}
+  .geste{flex:1;border-radius:8px;padding:11px 6px;text-align:center;font:400 13px/1 var(--sans);
+         background:var(--plage);border:1px solid var(--trait);color:var(--encre)}
+  .filet{margin-top:13px;padding-top:12px;border-top:1px solid var(--trait)}
+  .ligneTache{position:relative;margin:0 0 9px;padding-left:14px;font-size:14.5px;line-height:1.45}
+  .ligneTache:last-child{margin-bottom:0}
+  .ligneTache .puce{position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:999px;background:var(--or)}
+
+  .tacheCochable{display:flex;align-items:flex-start;gap:11px;width:100%;border:0;background:transparent;
+                 padding:7px 0;text-align:left;cursor:pointer;color:inherit;
+                 -webkit-tap-highlight-color:transparent}
+  .tacheCochable .boite{width:24px;height:24px;flex:0 0 auto;border-radius:6px;display:grid;place-items:center;
+                        background:var(--plage);box-shadow:inset 0 0 0 1.5px var(--trait);color:transparent}
+  .tacheCochable[aria-pressed="true"] .boite{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .tacheCochable .quoi{font-size:14.5px;line-height:1.45;padding-top:2px;min-width:0;flex:1}
+  .tacheCochable[aria-pressed="true"] .quoi{color:var(--gris)}
+
+  .bandePhotos{display:flex;gap:7px;align-items:center;margin-top:10px}
+  .bandePhotos .vignette{width:46px;height:46px;border-radius:9px;background:var(--plage);
+                         box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)}
+  .bandePhotos .plus{color:var(--orTexte);cursor:pointer}
+  .bandePhotos .mot-photos{font:600 10.5px/1.3 var(--sans);letter-spacing:.14em;
+                           text-transform:uppercase;color:var(--gris);margin-right:2px}
+  .aSignaler{width:100%;margin-top:9px;border:0;border-radius:9px;background:var(--plage);
+             box-shadow:inset 0 0 0 1px var(--trait);padding:11px 13px;min-height:54px;
+             font:400 14.5px/1.45 var(--sans);color:var(--encre);resize:none}
+  .aSignaler::placeholder{color:var(--gris)}
+  .aSignaler:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--or)}
+
+  .boutonFeuille{display:block;width:max-content;margin:12px auto 0;border:0;border-radius:999px;
+                 padding:11px 22px;font:400 13.5px/1 var(--sans);cursor:pointer;
+                 background:var(--plein);color:var(--surplein)}
+  .boutonFeuille:disabled{opacity:.45;cursor:not-allowed}
+  .manque{margin:8px 0 0;text-align:center;font-size:12.5px;color:var(--gris)}
+
+  /* Le grand bouton nommé — celui qu'il demande. Cinquante-six pixels. */
+  .finDeChantier{display:flex;align-items:center;justify-content:center;gap:11px;
+                 width:calc(100% - 36px);margin:14px 18px 18px;border:0;border-radius:999px;
+                 background:var(--plein);color:var(--surplein);height:56px;
+                 font:400 17px/1 var(--serif);cursor:pointer;
+                 -webkit-tap-highlight-color:transparent}
+  .finDeChantier:active{transform:scale(.99)}
+
+  /* ── La feuille qui monte (option B) ─────────────────────────────── */
+  .voile{position:absolute;inset:0;background:rgba(20,18,14,.42);opacity:0;pointer-events:none;
+         transition:opacity .26s cubic-bezier(.22,.9,.3,1)}
+  .voile[data-ouvert="oui"]{opacity:1;pointer-events:auto}
+  .feuilleMontante{position:absolute;left:0;right:0;bottom:0;background:var(--fond);
+                   border-radius:22px 22px 0 0;padding:8px 20px 20px;
+                   transform:translateY(102%);transition:transform .3s cubic-bezier(.22,.9,.3,1);
+                   box-shadow:0 -12px 34px rgba(20,18,14,.22);max-height:92%;overflow:hidden;
+                   display:flex;flex-direction:column}
+  .feuilleMontante[data-ouvert="oui"]{transform:translateY(0)}
+  .poignee{width:38px;height:4px;border-radius:999px;background:var(--trait);margin:0 auto 12px}
+  .feuilleMontante h2{margin:0;text-align:center;font:400 22px/1.2 var(--serif)}
+  .feuilleMontante .sous{margin:6px 0 0;text-align:center;font-size:12.5px;color:var(--gris)}
+
+  /* ── Le dépliage sur place (option C) ────────────────────────────── */
+  .deplie{overflow:hidden;max-height:0;transition:max-height .3s cubic-bezier(.22,.9,.3,1)}
+  .deplie[data-ouvert="oui"]{max-height:420px}
+
+  @media (max-width:900px){ .planche{width:100%} .tel{width:100%} }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Maquette.</b> Rien n'est codé. <b>Appuyez sur les boutons verts</b> des
+  écrans B et C, cochez, ajoutez une photo. <b>« Nuit »</b> pour le fond noir.
+</div>
+
+<div class="mot">
+  <b>Les trois partent de la même fiche d'intervention</b> — la vôtre, au détail
+  près. La seule différence est <b>quand</b> le salarié voit ce qu'on attend de
+  lui : tout de suite, ou après avoir appuyé.
+</div>
+
+<div class="etats" role="group" aria-label="Ce qu'on peut jouer">
+  <p class="quoi">L'écran</p>
+  <div class="rangee">
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="partie">
+  <h2>Trois façons de poser la fin</h2>
+  <p>La <b>B</b> est celle que vous demandez : un bouton nommé, et tout se
+  remplit après. La <b>C</b> fait la même chose sans quitter la fiche. La
+  <b>A</b> ne cache rien, mais la fiche est plus longue.</p>
+</div>
+
+<div class="planches">
+
+  <!-- ── A ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">A. Tout ouvert</p>
+    <p class="idee">Les cases, les photos et le mot sont là dès l'ouverture.
+      Rien à découvrir — mais la fiche est plus longue, et il fait défiler
+      pour lire ce qu'il y a à faire.</p>
+    <div class="tel"><div class="ecran">
+      <span class="pastilleJour">Mercredi 2 septembre</span>
+      <div class="teteChantier">
+        <span class="nomClient">M. Rialland</span>
+        <span class="ville">Les Moutiers-en-Retz</span>
+      </div>
+      <div class="feuille">
+        <p class="titre">Fiche d'intervention</p>
+        <p class="quiCest">M. Rialland</p>
+        <div class="gestes"><span class="geste">Maps</span><span class="geste">Waze</span></div>
+        <div class="gestes"><span class="geste">Copier l'adresse</span><span class="geste">Appeler le client</span></div>
+        <div class="filet" data-taches="A">
+          <button type="button" class="tacheCochable" aria-pressed="false">
+            <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="quoi">Débroussaillage du talus</span>
+          </button>
+          <button type="button" class="tacheCochable" aria-pressed="false">
+            <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="quoi">Évacuation des déchets verts</span>
+          </button>
+          <button type="button" class="tacheCochable" aria-pressed="false">
+            <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="quoi">Taille de la haie de laurier</span>
+          </button>
+        </div>
+        <div class="bandePhotos" data-bande="A">
+          <span class="mot-photos">Photos</span>
+          <button type="button" class="vignette plus" aria-label="Ajouter une photo">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <textarea class="aSignaler" placeholder="À signaler — facultatif"></textarea>
+        <button type="button" class="boutonFeuille" data-fini="A" disabled>C'est fini</button>
+        <p class="manque" data-manque="A"></p>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── B ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">B. Un bouton « Fin de chantier »<span class="tenu">Ce que vous demandez</span></p>
+    <p class="idee">La fiche reste comme la vôtre. Le bouton est en bas, nommé.
+      On appuie, une feuille monte, et tout s'y remplit — au calme, en grand.</p>
+    <div class="tel"><div class="ecran">
+      <span class="pastilleJour">Mercredi 2 septembre</span>
+      <div class="teteChantier">
+        <span class="nomClient">M. Rialland</span>
+        <span class="ville">Les Moutiers-en-Retz</span>
+      </div>
+      <div class="feuille">
+        <p class="titre">Fiche d'intervention</p>
+        <p class="quiCest">M. Rialland</p>
+        <div class="gestes"><span class="geste">Maps</span><span class="geste">Waze</span></div>
+        <div class="gestes"><span class="geste">Copier l'adresse</span><span class="geste">Appeler le client</span></div>
+        <div class="filet">
+          <p class="ligneTache"><span class="puce" aria-hidden="true"></span>Débroussaillage du talus</p>
+          <p class="ligneTache"><span class="puce" aria-hidden="true"></span>Évacuation des déchets verts</p>
+          <p class="ligneTache"><span class="puce" aria-hidden="true"></span>Taille de la haie de laurier</p>
+        </div>
+      </div>
+      <button type="button" class="finDeChantier" id="ouvrirB">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Fin de chantier
+      </button>
+
+      <div class="voile" id="voileB" data-ouvert="non"></div>
+      <div class="feuilleMontante" id="feuilleB" data-ouvert="non">
+        <span class="poignee" aria-hidden="true"></span>
+        <h2>Fin de chantier</h2>
+        <p class="sous">M. Rialland &middot; mercredi 2 septembre</p>
+        <div style="margin-top:12px" data-taches="B">
+          <button type="button" class="tacheCochable" aria-pressed="false">
+            <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="quoi">Débroussaillage du talus</span>
+          </button>
+          <button type="button" class="tacheCochable" aria-pressed="false">
+            <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="quoi">Évacuation des déchets verts</span>
+          </button>
+          <button type="button" class="tacheCochable" aria-pressed="false">
+            <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="quoi">Taille de la haie de laurier</span>
+          </button>
+        </div>
+        <div class="bandePhotos" data-bande="B">
+          <span class="mot-photos">Photos</span>
+          <button type="button" class="vignette plus" aria-label="Ajouter une photo">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <textarea class="aSignaler" placeholder="À signaler — facultatif"></textarea>
+        <button type="button" class="boutonFeuille" data-fini="B" disabled>Envoyer au patron</button>
+        <p class="manque" data-manque="B"></p>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── C ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">C. Le même bouton, sans quitter la fiche<span class="tenu">Ce que je défends</span></p>
+    <p class="idee">Votre bouton, mais il déplie la suite <b>dans</b> la fiche.
+      Il garde sous les yeux ce qu'il y avait à faire pendant qu'il coche, et
+      il n'a rien à refermer.</p>
+    <div class="tel"><div class="ecran">
+      <span class="pastilleJour">Mercredi 2 septembre</span>
+      <div class="teteChantier">
+        <span class="nomClient">M. Rialland</span>
+        <span class="ville">Les Moutiers-en-Retz</span>
+      </div>
+      <div class="feuille">
+        <p class="titre">Fiche d'intervention</p>
+        <p class="quiCest">M. Rialland</p>
+        <div class="gestes"><span class="geste">Maps</span><span class="geste">Waze</span></div>
+        <div class="gestes"><span class="geste">Copier l'adresse</span><span class="geste">Appeler le client</span></div>
+
+        <div class="filet" id="listeC">
+          <p class="ligneTache" data-puce><span class="puce" aria-hidden="true"></span>Débroussaillage du talus</p>
+          <p class="ligneTache" data-puce><span class="puce" aria-hidden="true"></span>Évacuation des déchets verts</p>
+          <p class="ligneTache" data-puce><span class="puce" aria-hidden="true"></span>Taille de la haie de laurier</p>
+          <div id="casesC" hidden data-taches="C">
+            <button type="button" class="tacheCochable" aria-pressed="false">
+              <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="quoi">Débroussaillage du talus</span>
+            </button>
+            <button type="button" class="tacheCochable" aria-pressed="false">
+              <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="quoi">Évacuation des déchets verts</span>
+            </button>
+            <button type="button" class="tacheCochable" aria-pressed="false">
+              <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="quoi">Taille de la haie de laurier</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="deplie" id="deplieC" data-ouvert="non">
+          <div class="bandePhotos" data-bande="C">
+            <span class="mot-photos">Photos</span>
+            <button type="button" class="vignette plus" aria-label="Ajouter une photo">
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <textarea class="aSignaler" placeholder="À signaler — facultatif"></textarea>
+          <button type="button" class="boutonFeuille" data-fini="C" disabled>C'est fini</button>
+          <p class="manque" data-manque="C"></p>
+        </div>
+      </div>
+
+      <button type="button" class="finDeChantier" id="ouvrirC">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Fin de chantier
+      </button>
+    </div></div>
+  </div>
+</div>
+
+<div class="mot" style="margin-top:42px">
+  <b>Pourquoi je défends la C plutôt que la B.</b> Sur la B, la feuille qui monte
+  <b>recouvre ce qu'il y avait à faire</b> : il coche de mémoire. Sur la C, la
+  liste est celle qu'il vient de lire, à la même place, et il n'a rien à
+  refermer avant de repartir.
+</div>
+<div class="mot">
+  <b>Ce que la B a de mieux, et ce n'est pas rien :</b> la place. L'encadré et le
+  clavier y sont au large, ce qui compte s'il écrit trois lignes. Sur la C, le
+  clavier pousse la fiche.
+</div>
+<div class="mot">
+  <b>Le risque commun à B et C, et il faut le dire :</b> tant qu'il n'a pas
+  appuyé, <b>il ne voit pas ce qu'on attend de lui</b>. Sur un chantier qu'on
+  quitte à la hâte, c'est ce qui fait rentrer sans rien poser. La A n'a pas ce
+  défaut — elle a l'autre, la longueur.
+</div>
+
+<script>
+/*
+  UN SEUL MÉCANISME POUR LES TROIS. Chaque option porte ses tâches, sa bande de
+  photos, son bouton et sa ligne de manque, marqués par la même lettre. Écrire
+  trois fois la même règle les aurait fait diverger à la première correction.
+*/
+const qq = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+function brancher(lettre) {
+  const taches = qq(`[data-taches="${lettre}"] .tacheCochable`);
+  const bande = document.querySelector(`[data-bande="${lettre}"]`);
+  const fini = document.querySelector(`[data-fini="${lettre}"]`);
+  const manque = document.querySelector(`[data-manque="${lettre}"]`);
+
+  function redire() {
+    const cochees = taches.filter((t) => t.getAttribute("aria-pressed") === "true").length;
+    const photos = bande.querySelectorAll(".vignette:not(.plus)").length;
+    const raisons = [];
+    if (cochees === 0) raisons.push("cochez ce que vous avez fait");
+    if (photos === 0) raisons.push("ajoutez une photo");
+    // Ce qui manque se dit AVANT l'appui : un bouton actif qui refuse au moment
+    // du geste se lit comme une panne, et sur un chantier il n'a personne à qui
+    // demander.
+    fini.disabled = raisons.length > 0;
+    manque.textContent = raisons.length === 0 ? "" : raisons.join(" et ");
+  }
+
+  taches.forEach((t) =>
+    t.addEventListener("click", () => {
+      t.setAttribute("aria-pressed", t.getAttribute("aria-pressed") === "true" ? "false" : "true");
+      redire();
+    })
+  );
+
+  bande.querySelector(".plus").addEventListener("click", () => {
+    const v = document.createElement("span");
+    v.className = "vignette";
+    v.innerHTML =
+      '<svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">' +
+      '<rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.6"/>' +
+      '<path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+    bande.insertBefore(v, bande.querySelector(".plus"));
+    redire();
+  });
+
+  redire();
+}
+
+["A", "B", "C"].forEach(brancher);
+
+// ── B : la feuille monte, et le voile la referme ────────────────────────
+const voileB = document.getElementById("voileB");
+const feuilleB = document.getElementById("feuilleB");
+function poserB(ouvert) {
+  voileB.dataset.ouvert = ouvert ? "oui" : "non";
+  feuilleB.dataset.ouvert = ouvert ? "oui" : "non";
+}
+document.getElementById("ouvrirB").addEventListener("click", () => poserB(true));
+voileB.addEventListener("click", () => poserB(false));
+
+// ── C : les puces deviennent des cases, sur place ───────────────────────
+const ouvrirC = document.getElementById("ouvrirC");
+const deplieC = document.getElementById("deplieC");
+const casesC = document.getElementById("casesC");
+const pucesC = qq("#listeC [data-puce]");
+ouvrirC.addEventListener("click", () => {
+  const ouvert = deplieC.dataset.ouvert === "oui";
+  deplieC.dataset.ouvert = ouvert ? "non" : "oui";
+  casesC.hidden = ouvert;
+  // **Les puces s'effacent quand les cases arrivent.** Les deux à la fois
+  // afficherait la même liste deux fois — et c'est ce qui fait douter d'un
+  // écran plus sûrement qu'une erreur franche.
+  pucesC.forEach((p) => (p.hidden = !ouvert));
+  ouvrirC.lastChild.textContent = ouvert ? " Fin de chantier" : " Replier";
+});
+
+const bouton = document.getElementById("charte");
+bouton.addEventListener("click", () => {
+  const nuit = document.body.classList.toggle("nuit");
+  bouton.setAttribute("aria-pressed", String(nuit));
+  bouton.textContent = nuit ? "Origine" : "Nuit";
+});
+</script>
+</body>
+</html>

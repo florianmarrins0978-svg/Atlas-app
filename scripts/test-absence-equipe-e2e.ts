@@ -2,6 +2,7 @@ import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Une équipe absente ne compte plus — du doigt jusqu'à la date proposée.
@@ -29,7 +30,7 @@ import { pool } from "../src/server/db/client";
  * retirée du calcul, le dernier cas tombe en nommant le jour.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 /** Reconnaissable, et retiré à la fin : aucune autre suite ne doit le lire. */
 /**
  * **Un motif NEUF à chaque exécution.** Il était fixe, et c'est une source de

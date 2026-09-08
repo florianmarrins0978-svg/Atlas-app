@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { ADRESSE } from "./_adresse";
 
 // **Rien de touchable ne doit être caché sous le mobilier fixe.**
 //
@@ -24,7 +25,7 @@ import { Pool } from "pg";
 // recouvrait jamais rien : ce contrôle aurait été vert d'un bout à l'autre, y
 // compris le jour du défaut.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { devices } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Enregistrer une pièce depuis la fiche du client.
@@ -25,7 +26,7 @@ import { pool } from "../src/server/db/client";
  * nom dans son dossier.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let reussis = 0;
 let echecs = 0;

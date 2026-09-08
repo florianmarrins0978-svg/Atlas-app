@@ -452,6 +452,131 @@ Concrètement, pour toute planche dont on attend un choix :
 - **Envoyer, valider ou facturer sans un geste du patron.** Les arrêts du
   parcours sont décidés, pas optionnels.
 - **Marquer une tâche terminée sans l'avoir vérifiée.** Voir §5.
+- **Poser un pansement sur un défaut au lieu de le corriger.** Voir §4 quater.
+- **Laisser du code qui ne sert plus.** Voir §4 quinquies.
+- **Faire remonter un lien d'une couche à l'autre.** Voir §4 sexies.
+
+## 4 quater. RÈGLE D'OR — PAS DE PANSEMENT, ON CORRIGE À LA RACINE
+
+**Posée le 7 septembre 2026 :** *« lorsque tu fais une correction, je ne veux
+pas de pansement. Je veux que tu ailles corriger le problème directement à la
+racine — pas de superposition de couches de code. »* Puis, dans la foulée :
+*« je veux que ça soit une règle incontournable, non franchissable, obligatoire
+de respecter. »*
+
+**Elle ne dépend donc plus de la mémoire de personne**, et c'est ce qui la rend
+non franchissable — deux garde-fous la tiennent, chacun sur une moitié :
+
+| | |
+|---|---|
+| `scripts/test-pas-de-pansement.ts` | joué par `npm test`, donc **par la batterie** : il refuse dans ce que le lot AJOUTE un `catch` vide, `@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `as any`, `!important`. Un lot qui en porte un ne se livre pas |
+| `scripts/rappel-racine.mjs` | branché sur chaque message (`.claude/settings.json`) : dès qu'il demande une correction, cette règle revient sous les yeux de la session — quelle qu'elle soit, et même trois heures après son début |
+
+**Ce qu'aucun script ne saura faire**, et qui reste un jugement : dire si une
+correction vise l'origine ou la recouvre. Le contrôle tient les gestes qui ne
+se discutent pas ; le reste tient à ce qui suit.
+
+**Ce qu'est un pansement**, et chacun de ces gestes en est un :
+
+| Le geste | Ce qu'il fait vraiment |
+|---|---|
+| un `try/catch` qui avale le refus | le défaut devient muet, et la prochaine session cherchera ailleurs |
+| un `?? valeur par défaut` devant une valeur absente | l'écran affiche du plausible ; personne ne saura plus qu'il manquait quelque chose |
+| un cas particulier ajouté à côté de la règle générale | deux règles pour une seule question — c'est le §3, « jamais de règle dupliquée » |
+| une correction dans l'APPELANT parce que l'appelé est plus dur à toucher | le prochain appelant refera le même défaut |
+| un style qui écrase un style qui écrasait déjà | trois couches, et plus personne ne sait laquelle décide |
+| un `setTimeout` qui attend que l'autre bout ait fini | le défaut revient sur une machine plus lente, et il ne se reproduit plus ici |
+| remettre en dur un chiffre que le calcul rendait faux | le calcul reste faux, et il sert ailleurs |
+
+**Ce qu'on fait à la place, dans cet ordre :**
+
+1. **trouver l'endroit d'où ça part** — pas le premier endroit où ça se voit ;
+   `AGENTS.md` le dit déjà pour les pannes muettes : rendre le défaut bavard
+   AVANT de corriger, plutôt que de réparer une panne imaginée ;
+2. **corriger là**, quitte à toucher une signature, un dépôt, une migration ;
+3. **retirer la couche qui compensait** — un pansement laissé en place devient
+   la prochaine couche, et il masquera la correction suivante ;
+4. **écrire pourquoi** dans le code : le piège évité, pas ce que fait la ligne.
+
+**Le signe qui doit alerter, et il est simple : une correction qui n'enlève
+rien.** Un défaut réparé à sa racine remplace du code ; un défaut recouvert en
+ajoute. Devant un correctif qui ne fait qu'ajouter, la question à se poser est :
+*qu'est-ce que j'aurais dû supprimer ?*
+
+**Le dépôt en porte déjà deux exemples**, et ils montrent ce qui est attendu :
+`retourDuDevis` ne prend plus de `clientId` — la condition a disparu de la
+signature au lieu d'y dormir ; et le veilleur **remesure** le port au lieu de
+garder « ouvert » pour toute la session.
+
+**Et quand la racine ne peut pas être touchée maintenant** — elle est dans une
+dépendance, elle demande une migration, elle sort du lot en cours — on ne
+maquille pas en silence. Le contournement s'écrit **`pansement assumé : <la
+raison>`** sur la ligne ou juste au-dessus (c'est la formule exacte que le
+contrôle accepte, et il exige une raison d'au moins vingt caractères), **et une
+entrée dans `TODO.md`** — sans quoi le contrôle rougit aussi. Un pansement avoué
+se retire un jour ; un pansement oublié devient la fondation du suivant.
+
+## 4 quinquies. RÈGLE D'OR — PAS DE CODE MORT
+
+**Posée le 8 septembre 2026 :** *« je ne veux pas de code mort, si ça ne sert
+plus on le supprime proprement. »*
+
+**Ce n'est pas du rangement.** Un fichier que plus rien n'importe continue
+d'être lu — par la session qui cherche d'où vient un défaut, par le
+développeur qu'il paiera un jour pour reprendre l'application. Les deux
+perdent le même temps, et tous deux peuvent corriger LÀ, dans le fichier
+mort, en croyant avoir réparé.
+
+**Rien ne se perd** : l'historique git garde tout, et un fichier supprimé se
+retrouve en une commande. Garder « au cas où » ne protège de rien — cela
+ajoute seulement une pièce à comprendre.
+
+| | |
+|---|---|
+| **le garde-fou** | `scripts/test-pas-de-code-mort.ts`, joué par `npm test`, donc par la batterie : un fichier de `src/` que rien n'importe fait rougir le lot |
+| **sa liste d'exceptions** | **vide**, et elle doit le rester : une exception qui s'ajoute est une dette qui commence |
+| **ce qu'il ne voit pas** | une fonction morte dans un fichier vivant, une branche jamais prise — celles-là restent au jugement, et se voient en lisant |
+
+**Et ce qui tenait le mort en vie s'en va avec lui** : la suite qui n'éprouvait
+que lui, l'exception d'un contrôle qui le nommait, le renvoi d'un commentaire.
+Sinon le contrôle suivant réclamera un fichier disparu (`CLAUDE.md` §5 bis).
+
+## 4 sexies. RÈGLE D'OR — PAS DE SPAGHETTIS : UN SEUL SENS
+
+**Posée le 8 septembre 2026 :** *« le code doit être structuré proprement, il ne
+doit pas y avoir de liens dans tous les sens. Si demain j'ai un problème sur
+l'appli et que je dois faire appel à un développeur, il faut qu'il comprenne
+facilement comment fonctionne le code. »*
+
+**Ce qui rend un code illisible n'est pas sa taille, c'est le SENS de ses
+liens.** Trois couches qui s'appellent en boucle obligent à tout lire pour
+comprendre une ligne ; trois couches qui ne s'appellent que vers le bas se
+lisent par étages, et l'on peut n'en ouvrir qu'un.
+
+**Les étages, du bas vers le haut** — chacun ignore ceux du dessus :
+
+| | |
+|---|---|
+| `src/lib/` | les règles pures : aucune base, aucun écran. C'est là que se décide un calcul, et cela s'éprouve sans rien monter |
+| `src/server/` | les dépôts, l'IA, les PDF — tout ce qui parle à la base, toujours par `withEntreprise` |
+| `src/components/` | ce qui se dessine et se réutilise |
+| `src/app/` | les écrans, qui assemblent et ne décident de rien |
+
+**Une flèche ne remonte jamais** : `lib` ignore `server`, et ni l'un ni l'autre
+ne connaît d'écran. `scripts/test-couches.ts` le refuse, dans la batterie. Les
+`import type` ne comptent pas — ils s'effacent à la compilation, et interdire à
+une règle de NOMMER la forme d'une donnée reviendrait à la recopier, donc à
+créer la divergence que le §3 refuse.
+
+**Devant une remontée, on descend la règle — on ne remonte pas le lien.** Si
+`lib` a besoin d'une fonction qui vit dans `server`, c'est qu'elle est pure :
+elle déménage dans `lib`, et `server` l'importe. La dette du 8 septembre 2026
+est exactement de cette forme, et elle est nommée dans `test-couches.ts` et
+`TODO.md`.
+
+**Et pour le développeur qu'il appellera un jour** : `ARCHITECTURE.md` porte les
+décisions et leur pourquoi, `HANDOVER.md` de quoi reprendre à froid. Un lot qui
+change la structure sans les toucher a déménagé la maison sans changer le plan.
 
 ## 4 ter. L'ARROSAGE N'A PAS LE DROIT À L'ERREUR
 

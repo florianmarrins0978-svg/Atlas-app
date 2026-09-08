@@ -1,4 +1,4 @@
-import { creneauxDuChantier, type Creneau, type JourIso } from "../server/disponibilites";
+import { creneauxDuChantier, type Creneau, type JourIso } from "@/lib/disponibilites";
 
 /**
  * ─── ON NE COCHE PAS QUELQU'UN QUI N'EST PAS LÀ ─────────────────────────────

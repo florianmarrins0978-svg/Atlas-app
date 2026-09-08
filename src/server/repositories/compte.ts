@@ -6,6 +6,7 @@ import { verifierNouveauMotDePasse, type RefusMotDePasse } from "../../lib/mot-d
 import type { Ctx } from "./context";
 import { motDePasseEstCeluiDe, poserNouveauCondensat } from "../secret-authentification";
 import { effacerPreuves } from "../preuve-recente";
+import { retirerToutesLesCles } from "./cles-appareil";
 
 /**
  * Le compte de la personne — son nom, son e-mail, son mot de passe.
@@ -26,30 +27,51 @@ import { effacerPreuves } from "../preuve-recente";
  * éprouvée par `scripts/test-compte-db.ts`.
  */
 
-export type Compte = { nom: string; email: string };
+export type Civilite = "mr" | "mme";
+export type Compte = { civilite: Civilite | null; prenom: string; nom: string; email: string };
 
 export async function lireCompte(ctx: Ctx): Promise<Compte | null> {
   const [ligne] = await db
-    .select({ nom: users.nom, email: users.email })
+    .select({ civilite: users.civilite, prenom: users.prenom, nom: users.nom, email: users.email })
     .from(users)
     .where(eq(users.id, ctx.utilisateurId))
     .limit(1);
   if (!ligne) return null;
-  return { nom: ligne.nom ?? "", email: ligne.email };
+  return {
+    civilite: ligne.civilite ?? null,
+    prenom: ligne.prenom ?? "",
+    nom: ligne.nom ?? "",
+    email: ligne.email,
+  };
 }
 
 /**
- * Renommer son compte.
+ * Écrire son identité : civilité, prénom, nom.
  *
- * **Le nom peut être vidé, contrairement à celui de l'entreprise.** Celui-ci ne
- * s'imprime sur aucun document : il n'est là que pour dire à qui est le compte
- * ouvert, et un compte sans nom se désigne par son e-mail.
+ * **Les trois peuvent être vidés, contrairement au nom de l'entreprise.** Ils
+ * ne s'impriment sur aucun document : ils disent à qui est le compte ouvert, et
+ * un compte sans nom se désigne par son e-mail.
+ *
+ * **Une civilité inconnue devient NULL plutôt que de lever.** La contrainte de
+ * la base (migration 0077) refuserait un troisième code, et l'écran n'en
+ * propose que deux : ce qui arrive ici d'ailleurs est une donnée fausse, pas
+ * une panne à faire remonter au patron. `null` la neutralise sans rien casser.
  */
-export async function renommerCompte(ctx: Ctx, nom: string): Promise<void> {
-  const propre = nom.trim();
+export async function ecrireIdentite(
+  ctx: Ctx,
+  identite: { civilite: string | null; prenom: string; nom: string }
+): Promise<void> {
+  const vider = (v: string) => (v.trim() === "" ? null : v.trim());
+  const civilite: Civilite | null =
+    identite.civilite === "mr" || identite.civilite === "mme" ? identite.civilite : null;
   await db
     .update(users)
-    .set({ nom: propre === "" ? null : propre, updatedAt: new Date() })
+    .set({
+      civilite,
+      prenom: vider(identite.prenom),
+      nom: vider(identite.nom),
+      updatedAt: new Date(),
+    })
     .where(eq(users.id, ctx.utilisateurId));
 }
 
@@ -139,12 +161,24 @@ export async function changerMotDePasse(
  * serait donc antérieure à sa propre seconde, et le jeton du moment
  * survivrait — le patron appuierait sur « me déconnecter partout » en restant
  * connecté sur l'appareil qui a appuyé, ce que l'écran promet explicitement.
+ *
+ * **ET LES CLÉS FACE ID TOMBENT AUSSI — corrigé le 7 septembre 2026.** C'était
+ * le seul défaut de sécurité connu et non réparé du produit : les jetons
+ * tombaient, les preuves tombaient, et une clé posée depuis une session volée
+ * rouvrait Atlas à l'instant d'après. Le raisonnement complet, et pourquoi on
+ * efface plutôt que de dater, sont dans `repositories/cles-appareil.ts`.
  */
 export async function deconnecterPartout(ctx: Ctx): Promise<Date> {
   const coupure = new Date(Math.ceil(Date.now() / 1000) * 1000);
   // Les sessions tombent : leurs preuves n'attestent donc plus de rien. Les
   // laisser serait laisser derrière soi des droits sans porteur.
   await effacerPreuves(ctx.utilisateurId);
+  // **AVANT la coupure, et l'ordre se défend.** Une session expire d'elle-même ;
+  // une clé est une porte permanente. Si l'écriture qui suit échoue, l'appelant
+  // rend un refus et le geste se refait — refaire est sans effet de bord. Dans
+  // l'autre sens, on aurait annoncé « tout est fermé » avec une porte encore
+  // ouverte, ce qui est exactement le défaut qu'on répare.
+  await retirerToutesLesCles(ctx.utilisateurId);
   await db
     .update(users)
     .set({ jetonsValidesDepuis: coupure, updatedAt: new Date() })

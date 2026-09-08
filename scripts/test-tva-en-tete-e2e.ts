@@ -3,6 +3,7 @@ import { devices } from "playwright";
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Où se lit la TVA, et ce qui fait monter la déductible.
@@ -61,7 +62,7 @@ import { pool } from "../src/server/db/client";
  * que le trait faisait, parce qu'un retrait sec aurait collé les rangées.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let reussis = 0;
 let echecs = 0;

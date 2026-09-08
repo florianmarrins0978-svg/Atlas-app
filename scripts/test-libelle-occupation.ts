@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { libelleOccupation, libelleDureeCourt, type JourIso } from "../src/server/disponibilites";
+import { libelleOccupation, libelleDureeCourt, type JourIso } from "../src/lib/disponibilites";
 import { DUREES } from "../src/lib/durees-chantier";
 
 // Ce qu'un chantier OCCUPE, dit en toutes lettres.

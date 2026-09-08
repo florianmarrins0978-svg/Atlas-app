@@ -79,7 +79,13 @@ const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
 // sait déjà traiter.
 const NEXT = "node_modules/next/dist/bin/next";
 
-const DIST = ".next-batie";
+// **Le dossier bâti porte le port — 8 septembre 2026.** Deux bancs montés en
+// même temps (une session par port, voir `scripts/_atelier.ts`) se
+// réécriraient leurs morceaux dans le même `.next-batie`, et les deux
+// serviraient une application à moitié compilée. Le port 3000 garde le nom
+// d'avant : une machine seule ne voit aucune différence.
+const SUFFIXE_PORT = PORT === "3000" ? "" : `-p${PORT}`;
+const DIST = `.next-batie${SUFFIXE_PORT}`;
 
 // **LA VERSION D'AVANT RESTE EN SERVICE PENDANT QU'ON BÂTIT LA NEUVE.**
 // **Correctif du 31 août 2026, au soir — sa huitième plainte de lenteur.**
@@ -116,8 +122,8 @@ const DIST = ".next-batie";
 // serveur en marche. La neuve se bâtit donc à côté, et la bascule est un
 // ÉCHANGE DE NOMS — deux renommages, instantanés, et réversibles si le second
 // tombe. Coût mesuré : 351 Mo par dossier, dont 255 de cache (31 août 2026).
-const DIST_NEUVE = ".next-batie-neuve";
-const DIST_VIEILLE = ".next-batie-vieille";
+const DIST_NEUVE = `.next-batie${SUFFIXE_PORT}-neuve`;
+const DIST_VIEILLE = `.next-batie${SUFFIXE_PORT}-vieille`;
 
 const temoinBatiDans = (dossier) => `${dossier}/atlas-version-batie.txt`;
 const TEMOIN_BATI = temoinBatiDans(DIST);

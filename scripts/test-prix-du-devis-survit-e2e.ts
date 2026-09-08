@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { Client } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 // UN PRIX TAPÉ NE PART JAMAIS À ZÉRO — même quand l'écran est en retard.
 //
@@ -35,7 +36,7 @@ import { lancerNavigateur } from "./e2e-browser";
 //
 // Vu rouge sur le code d'avant : `{"prixUnitaire":"0"}` posté, réponse 200.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const PRIX = "1234";
 
 let echecs = 0;

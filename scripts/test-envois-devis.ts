@@ -20,7 +20,7 @@ import {
   compterOccupation,
   versJourIso,
   ajouterJours,
-} from "../src/server/disponibilites";
+} from "../src/lib/disponibilites";
 import { jourLisible } from "../src/lib/jour";
 import { nettoyerBase } from "./_test-db";
 

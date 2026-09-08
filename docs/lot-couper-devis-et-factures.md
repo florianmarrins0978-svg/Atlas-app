@@ -33,9 +33,9 @@ seul, « Ce qui ne se coupe pas » est obligatoire. Ils vivent dans le premier
 
 ## Vos trois messages
 
-Un par document — et il y en a **trois**, pas deux : le **compte rendu de
-passage** partait avec le même texte. À deux, votre client aurait entendu votre
-voix sur son devis et sa facture, celle d'Atlas sur le compte rendu.
+Un par document — et il y en a **trois**, pas deux : le **retour d’intervention**
+partait avec le même texte. À deux, votre client aurait entendu votre
+voix sur son devis et sa facture, celle d'Atlas sur le retour d’intervention.
 
 **Ce que ça change vraiment.** La phrase du milieu — « Voici votre devis. Vous
 pouvez le consulter et choisir votre date… » — était écrite par Atlas et
@@ -168,6 +168,6 @@ navigateur à démêler. **Aucune ne touche « Devis & factures ».**
 
 | | |
 |---|---|
-| **« fiche client »** | vous appelez ainsi le troisième document ; le dépôt l'appelle **compte rendu de passage**, et c'est ce nom qui est écrit partout. Le renommer se décide — dites-le, et je le fais d'un bloc |
+| **« fiche client »** | vous appelez ainsi le troisième document ; le dépôt l'appelle **retour d’intervention**, et c'est ce nom qui est écrit partout. Le renommer se décide — dites-le, et je le fais d'un bloc |
 | **deux façons d'enregistrer** | l'allure et le numéro s'écrivent tout seuls, les interrupteurs et les messages attendent un bouton. Coupé, c'est plus visible : deux écrans voisins ne se comportent pas pareil |
 | **Lot 6** | le dernier des Réglages : Équipe, notifications, mot de passe, données, couleurs, IA, abonnement, compte |

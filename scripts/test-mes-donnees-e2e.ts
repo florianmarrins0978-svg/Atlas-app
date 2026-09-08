@@ -4,6 +4,9 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 // Le parcours entier du patron, du bouton au fichier ouvert.
 //
@@ -27,15 +30,15 @@ async function main() {
   const page = await context.newPage();
 
   try {
-    await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
     await page.fill('input[name="email"]', "demo@atlas.local");
     await page.fill('input[name="password"]', "demo1234");
     await page.click('button[type="submit"]');
-    await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+    await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
     // Le téléchargement a rejoint la rubrique « Sécurité & données » le 14 août
     // 2026, quand l'écran des réglages est devenu un sommaire (ARCHITECTURE.md §96).
-    await page.goto("http://localhost:3000/reglages/donnees", { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/reglages/donnees`, { waitUntil: "networkidle" });
 
     const bouton = page.locator("text=Télécharger mes données");
     assert.ok(await bouton.isVisible(), "Le bouton « Télécharger mes données » est absent de Réglages.");

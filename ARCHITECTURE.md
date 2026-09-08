@@ -73,7 +73,7 @@ cette route sans repenser à la vérification.
 ## 4. Les règles métier sont des fonctions pures, dans `src/lib/`
 
 **Décidé.** `src/lib/etat-envoi.ts`, `src/lib/chantier-etat.ts`, `src/lib/jour.ts`,
-`src/server/disponibilites.ts`, `src/server/trimestre.ts` : aucune n'accède à la base. Elles se testent sans monter un
+`src/lib/disponibilites.ts`, `src/server/trimestre.ts` : aucune n'accède à la base. Elles se testent sans monter un
 chantier.
 
 **Le cas qui l'a imposé :** l'état d'un devis parti est lu par trois écrans — la
@@ -577,8 +577,10 @@ défile avec le contenu et sort de l'écran. Atlas est une application installé
 sur un écran d'accueil, pas un site que l'on parcourt.
 
 **L'action principale, elle, prend la forme d'Arborea** : carte vert pin, rond
-d'icône, titre en Playfair, sous-ligne et flèche
-(`src/components/atlas/ActionPrincipale.tsx`).
+d'icône, titre en Playfair, sous-ligne et flèche. *(Le composant qui la portait,
+`ActionPrincipale`, a été supprimé le 8 septembre 2026 : plus rien ne
+l'importait depuis que l'accueil a été refait — `CLAUDE.md` §4 quinquies. La
+forme, elle, n'a pas changé : `PrimaryButton` la porte.)*
 
 Deux écarts assumés avec le modèle, et notés dans le composant :
 
@@ -630,7 +632,7 @@ premier mot mal orthographié.
 
 ### Une seule règle, quatre chemins
 
-`src/server/disponibilites.ts` porte tout le calcul, sans base. Quatre chemins
+`src/lib/disponibilites.ts` porte tout le calcul, sans base. Quatre chemins
 l'emploient — l'écran d'envoi, la création de l'envoi, la revérification de la
 réponse du client, et la planification à la main. Quatre calculs distincts
 finiraient par diverger, et c'est le client qui découvrirait l'écart.
@@ -24901,7 +24903,291 @@ porte `client_id`, jamais `chantier_id` : c'est l'outil des tournées d'entretie
 Le lot 3 devra soit l'y rattacher, soit donner au chantier sa propre page de
 preuve. *Tranché au lot 3, sa décision du 8 septembre.*
 
-## §286. Une absence connue d'un côté de l'écran, ignorée de l'autre
+## §286. Les trois règles d'or, et ce qui les tient : pansement, code mort, spaghettis
+
+**Ses consignes des 7 et 8 septembre 2026**, dans cet ordre : *« quand tu fais
+une correction, je ne veux pas de pansement, va corriger à la racine »* ; *« je
+veux que ça soit une règle incontournable, non franchissable »* ; *« je ne veux
+pas de code mort, si ça ne sert plus on le supprime proprement »* ; *« pas de
+spaghettis : si demain je dois faire appel à un développeur, il faut qu'il
+comprenne facilement comment fonctionne le code »*.
+
+**Pourquoi elles ne vivent PAS que dans `CLAUDE.md`.** Le dépôt a payé deux fois
+la même leçon : les flèches décoratives ont dû être redemandées, capture à
+l'appui, avant que `test-aucune-fleche.ts` existe ; du travail non enregistré
+s'est perdu avant que son garde-fou existe. Une règle en prose se lit au début
+d'une conversation et s'oublie au bout de trois heures — or c'est au bout de
+trois heures qu'un `catch` vide paraît raisonnable. « Incontournable » ne se
+décrète pas, ça se branche.
+
+| La règle | Ce qui la tient | Ce qu'il refuse |
+|---|---|---|
+| §4 quater — pas de pansement | `scripts/test-pas-de-pansement.ts` | dans ce que le lot AJOUTE : `catch` vide, `@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `as any`, `!important` |
+| §4 quinquies — pas de code mort | `scripts/test-pas-de-code-mort.ts` | un fichier de `src/` que plus rien n'importe |
+| §4 sexies — pas de spaghettis | `scripts/test-couches.ts` | une remontée de couche, en `@/server/…` comme en `../server/…` |
+
+Les trois sont découverts par `npm test`, donc joués **par la batterie** : un lot
+qui en porte un ne se livre pas. `scripts/rappel-racine.mjs` tient la moitié
+qu'aucun script ne juge — l'endroit qu'on choisit de corriger — en remettant la
+règle sous les yeux de la session dès qu'une correction est demandée.
+
+**Trois principes de conception valent pour ces contrôles**, et chacun a été payé
+ici même :
+
+1. **Ne mesurer que ce que le lot ajoute.** Un contrôle qui rougirait sur du code
+   d'il y a six mois serait éteint dans la journée — et l'on aurait perdu la
+   règle en croyant l'avoir posée. C'est ce que fait `test-pas-de-pansement`, qui
+   compare à la base commune avec `main`.
+2. **Résoudre, ne pas deviner.** La première version de `test-pas-de-code-mort`
+   cherchait des bouts de chemin dans les textes : elle a accusé **155 fichiers
+   bien vivants**, tous importés par « ./actions » ou « ./Client ». Elle résout
+   désormais chaque import.
+3. **Une règle doit tenir TOUTES les écritures.** `test-couches` ne visait que
+   `@/server/…` : deux fichiers de `lib` remontaient par `../server/…` sans être
+   vus. Une règle qui ne tient qu'une écriture sur deux ne tient rien.
+
+**Les étages, et le déménagement du 8 septembre.** `src/lib` (règles pures) →
+`src/server` (base) → `src/components` → `src/app` : une flèche ne remonte
+jamais. `disponibilites.ts` vivait sous `server` sans faire une seule requête ;
+six fichiers d'étages inférieurs remontaient l'y chercher. Il a été **déplacé**
+dans `src/lib/` — descendre la règle plutôt que remonter le lien —, ses 39
+imports réécrits, et la liste de dette du contrôle est repartie vide.
+
+**Les `import type` ne comptent pas comme une remontée** : ils s'effacent à la
+compilation, et interdire à une règle de NOMMER la forme d'une donnée
+reviendrait à la recopier — la divergence que §3 refuse. Un composant SERVEUR
+(reconnu à `next/headers`, pas à son nom) a le droit d'appeler un dépôt : c'est
+sa raison d'être dans ce cadre.
+
+## §287. Un ATELIER par session — et pourquoi le port ne suffisait pas
+
+**Sa demande du 8 septembre 2026 :** *« l'idée c'est qu'après ça chaque session
+puisse tourner en même temps sans se gêner »*. Il fait tourner cinq sessions
+dans le même dossier, et une seule pouvait mesurer.
+
+**Ce que la batterie s'approprie**, et qu'aucune deuxième session ne peut
+partager :
+
+| | |
+|---|---|
+| le **port 3000** | son serveur de développement |
+| la **base d'essai** | elle la VIDE entre les suites (`TRUNCATE … CASCADE`) |
+| le **limiteur de connexion** | remis à zéro entre deux suites, dans Redis |
+| les **dossiers bâtis** | `.next`, `.next-verification`, `.next-batie` |
+
+Deux batteries dessus s'effacent mutuellement leurs données et rendent des
+rouges qui n'accusent personne — le défaut payé le 26 août 2026, cinq suites
+rouges d'un coup et une demi-heure à soupçonner du code juste.
+
+**L'atelier est ces quatre choses, dérivées d'UN numéro de rang** — pris au
+premier port libre, sans que personne se coordonne (`scripts/_atelier.ts`) :
+
+| Rang | Port | Base | Redis | Dossiers |
+|---|---|---|---|---|
+| 0 | 3000 | `atlas_test` | base 0 | `.next`, `.next-verification` |
+| 1 | 3001 | `atlas_test_a1` | base 1 | `.next-a1`, `.next-verification-a1` |
+| 2 | 3002 | `atlas_test_a2` | base 2 | `.next-a2`, … |
+
+**Le rang 0 rend EXACTEMENT la batterie d'avant.** C'est délibéré : une session
+seule ne voit aucune différence, aucun chiffre ne bouge, et le partage ne
+s'invente que lorsqu'une seconde session arrive. C'est ce qui rend ce lot
+éprouvable.
+
+### Ce que la mesure a corrigé, et qu'aucune lecture n'aurait vu
+
+**L'essai du port mentait sous Windows.** La première version ouvrait un serveur
+d'essai sur `127.0.0.1` : cela RÉUSSIT alors qu'un autre écoute déjà sur
+`0.0.0.0` — les deux adresses ne se disputent pas comme sous Linux. Le rang 0
+était rendu « libre » pendant qu'une session servait dessus. On s'y connecte
+désormais : une connexion refusée dit la même chose sur les deux systèmes.
+
+**Deux sessions lancées dans la même seconde prenaient le même rang** — le
+partage échouait précisément dans le cas qu'il devait couvrir. Le jeton se crée
+en exclusivité (`wx`) : le système tranche, l'autre passe au suivant.
+
+**Le jeu de démonstration refusait la base d'un atelier, et il avait raison.**
+Sa garde n'accepte que des bases où effacer est sans conséquence
+(`src/lib/garde-seed.ts`). Elle s'ouvre au plus juste — `atlas_test_a` suivi
+d'un ou deux chiffres — et `test-garde-seed.ts` éprouve la porte dans les deux
+sens : `atlas_test_a1` passe, `atlas_test_atelier` et `atlas_test_a1_prod` sont
+refusés.
+
+**Une base créée à la volée n'a aucun privilège par défaut.** La base d'essai
+habituelle les tient de son amorçage ; une base neuve n'a rien, et chaque table
+créée ensuite reste hors de portée du rôle applicatif. `preparer-atelier.ts`
+rejoue les `GRANT` et les `ALTER DEFAULT PRIVILEGES` de l'amorçage. Trouvé par
+`test-toute-table-est-cloisonnee`, qui a rougi sur ce point précis.
+
+## §288. Un DOSSIER de travail par session — la condition, pas le confort
+
+**Découvert le 8 septembre 2026, en rendant bavarde une étape qui échouait en
+silence depuis trois batteries.**
+
+L'étape « Connexion derrière un proxy » tombait sur *« le serveur n'a pas
+répondu en dix minutes »*, sans un mot de plus : la sortie du banc allait dans
+`ignore`. Trois jours de suppositions, dont une cause avancée puis démentie.
+Son journal rétabli, elle a dit la vraie cause en une ligne :
+
+    ⨯ Another next dev server is already running.
+      Dir: C:\Users\Flori\Desktop\atlas-real-app\atlas-app
+
+**Next.js refuse un second serveur de développement dans le même DOSSIER**,
+quel que soit le port. Le dépôt le savait déjà, à un seul endroit — le
+commentaire de `.next-banc-essai` dans `.gitignore` — et personne n'avait fait
+le lien.
+
+**Conséquence : l'atelier est nécessaire, il n'est pas suffisant.** Tant que les
+sessions partagent l'arbre, une seule peut jouer ses suites navigateur.
+`npm run sessions:preparer` crée donc un `git worktree` par session
+(`scripts/preparer-sessions.mjs`).
+
+**Et cela règle un second défaut, plus ancien :** ses modifications de
+`CHANGELOG.md` effacées le 4 septembre, un module laissé trois jours dans un
+arbre partagé en cassant `tsc` pour tout le monde. Un dossier par session
+supprime les deux.
+
+**`main` reste le seul bien commun.** Un worktree n'est pas un clone : même
+dépôt, même historique, mêmes remontées — seul le répertoire de travail change.
+Chaque session fusionne et pousse comme avant (`CLAUDE.md` §6).
+
+**Le seul geste, et il se fait une fois :** un `npm install` par dossier, les
+dépendances ne se partageant pas. Ensuite, plus rien à faire.
+
+## §289. Deux compteurs jumeaux : ce sont les TITRES qui les séparent
+
+**8 septembre 2026, écran Équipe.** Deux compteurs se suivaient, au dessin
+identique, affichant le même chiffre — « 2 » chantiers, « 2 » salariés. L'un dit
+ce que le planning accepte, l'autre qui part sur le chantier. **Rien à l'œil ne
+les séparait.**
+
+### Pourquoi une décision déjà prise ne s'appliquait plus
+
+Le lot devait commencer en portant sa « proposition C » du 6 septembre : le
+titre pose la question, la phrase des congés part vers « Absences ». Cette
+planche-là (96) décrivait un écran à **quatre blocs dont deux se répétaient**.
+
+Cet écran n'existait plus. Ses deux demandes du 26 août l'avaient refait : les
+compteurs séparés (§ des salariés), et les trois blocs bavards réduits à **une**
+phrase par compteur — la phrase des congés comprise, partie ce jour-là.
+
+**La leçon, et elle vaut au-delà de cet écran :** une décision d'apparence prise
+sur une planche vieillit avec l'écran. **On regarde l'écran AVANT d'appliquer la
+décision** (`CLAUDE.md` §5, « regarder l'écran ») — sans quoi on porte une
+réponse juste sur une question qui a changé.
+
+### Ce qui a été fait, et ce qui a été écarté
+
+Deux propositions lui ont été dessinées
+(`appli/deux-compteurs-de-l-equipe.html`), et il a répondu **A** :
+
+| | |
+|---|---|
+| **A — retenue** | les deux étiquettes en capitales deviennent des **questions** : « Combien de chantiers par jour ? », « Combien de salariés ? » |
+| **B — écartée par lui** | le second compteur disparaissait au profit d'une **liste de noms** avec « + Ajouter un salarié » — le nombre se déduisant des lignes |
+
+**B était la proposition conseillée**, et c'est son appel : elle retirait la
+ressemblance au lieu de l'expliquer, et elle suivait sa propre correction du
+6 septembre (*« c'est pas les équipes, c'est le nom des salariés »*). Elle
+coûtait une migration — le nombre de salariés cessait d'être une colonne. Il a
+gardé A ; le compteur reste, et deux questions le distinguent de son voisin.
+
+**En serif et en minuscules, jamais en `libelleCaps`.** Une question posée en
+capitales espacées se lit comme une étiquette — c'est-à-dire exactement ce que
+ce lot retire.
+
+### La phrase du compteur, corrigée par lui dans la foulée
+
+*« Deux chantiers par jour pour un planning complet, et là tu mets le carré vert
+foncé. »*
+
+| | |
+|---|---|
+| avant | « 2 chantiers par jour. Planning ▪ complet. » |
+| après | « 2 chantiers par jour pour un planning complet ▪. » |
+
+C'étaient deux phrases courtes collées, dont la seconde n'avait pas de verbe :
+le lien entre les deux — c'est CE nombre qui remplit la journée — se devinait.
+Le mot « pour » l'écrit.
+
+**Le mot « complet » et le carré ne sont toujours pas écrits ici** : ils viennent
+de `MOT_ETAT` et de `fondDeLEtat`, ceux du calendrier. Un « complet » recopié
+cesserait de suivre la légende le jour où elle change, et `test-equipes` refuse
+délibérément qu'il s'écrive dans la phrase.
+
+## §290 — Ce qu'une facture recopie du devis, et ce qu'elle lit sur l'entreprise
+
+**Décidé le 8 septembre 2026, sur sa question :** *« lorsque l'utilisateur
+modifie son IBAN dans ses réglages ou le nom de sa société, les infos se
+modifient automatiquement dans le lien que recevra le client ? »*
+
+La réponse était **non**, et la racine n'était pas dans la page : une facture
+recopiait l'identité **du devis** (`instantaneDuDevis`), figée le jour du devis.
+Un devis de janvier facturé en juin partait avec l'IBAN de janvier — le client
+virait sur un compte fermé, sur une facture toute neuve.
+
+**La règle, désormais :**
+
+| Ce qui vient du **devis** | Ce qui vient de l'**entreprise**, à la création de la facture |
+|---|---|
+| le client, les prix, la remise accordée | le nom, l'adresse, le SIRET, le téléphone, l'e-mail, l'IBAN, le titulaire du compte, les trois mentions légales, le régime de TVA |
+
+Ce n'est pas un affaiblissement du figeage : **c'est son INSTANT qui a bougé**,
+du devis à la facture. Une facture est une pièce NEUVE, émise aujourd'hui, qui
+porte l'identité d'aujourd'hui. Le régime de TVA suivait déjà exactement cette
+règle depuis la migration 0039 ; elle vaut maintenant pour toute l'identité.
+
+**POURQUOI L'IBAN NE SE LIT PAS VIVANT SUR LA PAGE DU CLIENT — l'idée a été
+essayée puis abandonnée, et c'est le point à retenir.** Le PDF servi par
+`src/app/factures/[jeton]/pdf/route.ts` est le fichier **archivé** à l'arrêt,
+jamais reconstruit. Une page qui aurait affiché l'IBAN d'aujourd'hui à côté d'un
+PDF portant celui d'hier aurait donné **deux IBAN au même client, dans le même
+envoi** — pire que le défaut qu'on répare. La page et le PDF lisent donc les
+mêmes colonnes figées, par la même fonction (`src/lib/modalites-paiement.ts`).
+
+**Ce qui reste ouvert, et qui se voit à l'écran plutôt qu'en silence :** les
+factures déjà parties gardent l'ancien IBAN. Atlas ne les réécrit pas — il
+préviendra l'artisan, aux trois endroits qu'il a retenus le 8 septembre
+(`appli/changer-d-iban.html`, `TODO.md`).
+
+**Colonne neuve :** `factures.entreprise_titulaire_compte` (migration 0076).
+`NULL` = aucun titulaire distinct, et l'ordre du chèque retombe sur le nom de
+l'entreprise — un chèque libellé à l'enseigne quand le compte est au nom propre
+se fait refuser au guichet.
+
+## §291 — La page du client porte les couleurs d'Atlas, le PDF garde les siennes
+
+**Sa demande du 8 septembre 2026, capture à l'appui :** *« il faut le modifier,
+déjà mets-le aux couleurs de l'appli »*.
+
+La page de facture de son client prenait **l'allure figée de la facture**
+(migration 0074) : un artisan ayant réglé un accent noir pour ses documents
+voyait une page noire. Ce n'était pas un défaut — c'était son propre réglage,
+porté jusqu'au bout.
+
+**Cela rouvre sa décision du 4 septembre** — *« mon client doit retrouver en
+ligne exactement ce qu'il a reçu en PDF »* —, et il l'a révisée lui-même après
+avoir vu la proposition. La règle devient :
+
+| | |
+|---|---|
+| le **PDF** | son document. Il garde l'allure qu'il a réglée, figée à l'envoi |
+| la **page** | l'enveloppe d'Atlas. Elle porte les couleurs d'Atlas |
+
+Ce ne sont pas deux fois le même objet : l'un s'archive et se garde, l'autre se
+traverse. **Ce n'est toujours pas sa charte d'écran** — une page de client ne
+reçoit aucune variable (`layout.tsx`, `estPageDuClient`), et les jetons
+retombent sur la charte d'origine : un devis ne part pas en noir chez le client
+parce que l'artisan a choisi « Nuit ».
+
+**La page du devis y passe aussi**, et la lecture y a trouvé deux défauts
+qu'aucune capture ne montrait : elle écrivait ses couleurs **en dur**
+(`bg-[#F4EFE8]`, `bg-white`, `#2F3B2F`, `#B5502F`), ce que `CLAUDE.md` §3
+interdit. Elle portait donc encore le terre cuite abandonné le 3 août 2026 sur
+son refus et son cadre de rétractation, et le vert des TEXTES sur son bouton
+d'acceptation au lieu du vert des BOUTONS tranché le 3 septembre. Cinq semaines
+d'identité manquée, faute d'être passée par les jetons.
+
+## §290. Une absence connue d'un côté de l'écran, ignorée de l'autre
 
 **Son signalement du 7 septembre 2026, capture à l'appui :** *« j'ai mis Julien
 en congé, la feuille le dit aussi, or je peux quand même sélectionner Julien ce
@@ -24974,7 +25260,7 @@ confrontées à la version d'avant et rougissent sur le cas exact de sa capture.
 **Et l'écran a été REGARDÉ**, pas seulement mesuré : Julien pâle et non
 cliquable, Antoine intact, sur la carte du jeudi 10 — la journée de sa capture.
 
-## §287. « Pas de pansement » — fermer la porte par les DEUX bouts
+## §291. « Pas de pansement » — fermer la porte par les DEUX bouts
 
 **Sa consigne du 8 septembre 2026, devant le §286 :** *« Pas de pansement,
 corrige le problème à la racine ! »* Il avait raison, et voici ce que le §286
@@ -25041,7 +25327,7 @@ existante) et change son geste : il cocherait par journée, plus par chantier.
 données, et un geste qui change se dessine d'abord (§3 bis). La question est
 posée dans `TODO.md`.
 
-## §288. Le contournement tombe avec la limite qu'il contournait
+## §292. Le contournement tombe avec la limite qu'il contournait
 
 **Ses deux choix du 8 septembre 2026, sur maquette** (`appli/qui-travaille-quel-jour.html`) :
 **C** pour qui travaille quel jour, **D2** pour le congé d'une demi-journée.

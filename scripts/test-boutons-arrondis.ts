@@ -161,14 +161,6 @@ const HORS_CHARTE: Array<{
     seulement: /data-atlas="carte-composer-ma-fiche"/,
   },
   {
-    // Le chevron de retour : 32 × 32, une icône dans un cadre, pas un bouton
-    // d'action. La charte réserve la capsule à ce qu'on FAIT ; l'arrondir
-    // entièrement en ferait une pastille ronde, ce qui n'a été demandé nulle
-    // part.
-    motif: /^src[/\\]components[/\\]ScreenHeader\.tsx$/,
-    pourquoi: "chevron de retour, icône encadrée et non bouton d'action",
-  },
-  {
     // **Une case qu'on REMPLIT, pas un geste qu'on appuie.** La charte est
     // citée juste au-dessus : « elle ne donne la capsule qu'à ce qu'on APPUIE,
     // jamais à ce qu'on remplit ». La case de l'unité est un champ — elle se
@@ -187,6 +179,25 @@ const HORS_CHARTE: Array<{
     // que cette case et les rangs de sa liste.
     motif: /^src[/\\]components[/\\]atlas[/\\]ChoixUnite\.tsx$/,
     pourquoi: "case d'un champ qu'on remplit, alignée sur le champ « Prix » voisin",
+  },
+  {
+    // **UNE VIGNETTE PHOTO, PAS UN BOUTON D'ACTION.** Arrivée le 8 septembre
+    // 2026 avec « repartir d'un client » : un carré de 62 px qui montre une
+    // photo de l'ancien chantier, et qu'on touche pour la reprendre. La charte
+    // donne la capsule à ce qu'on APPUIE ; ici on ne presse pas un geste, on
+    // COCHE une image — l'état se lit d'ailleurs au liseré d'or, pas à la
+    // forme.
+    //
+    // **Et l'arrondir entièrement abîmerait ce qu'elle montre** : un cercle
+    // rogne les quatre coins d'une photo déjà réduite à 62 px, c'est-à-dire
+    // précisément ce qui permet de la reconnaître. La même raison que la tuile
+    // du calendrier deux entrées plus bas : une image n'est pas un geste.
+    //
+    // Le motif vise la LIGNE — la vignette —, pas le fichier : un vrai bouton
+    // rectangulaire écrit demain dans cet écran serait toujours dénoncé.
+    motif: /^src[/\\]app[/\\]chantiers[/\\]nouveau[/\\]FormulaireNouveauChantier\.tsx$/,
+    seulement: /h-\[62px\] w-\[62px\]/,
+    pourquoi: "vignette d'une photo qu'on reprend : un cercle rognerait l'image",
   },
   {
     // **UNE CASE DU CALENDRIER, PAS UN BOUTON.** La charte est citée deux fois

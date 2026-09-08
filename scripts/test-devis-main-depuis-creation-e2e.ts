@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Ça m'ouvre la page du devis complet, avec les informations du client
 // qui se seront ajoutées automatiquement ? C'est bien ça ? »**
@@ -36,7 +37,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // `data-atlas`, pas des libellés.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 

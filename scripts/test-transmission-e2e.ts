@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { numeroLisible } from "../src/lib/numero-lisible";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // Le dernier mètre : le message part-il au bon destinataire ?
 //
@@ -20,7 +21,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // l'endroit où le patron appuie. L'adresse est désormais portée par un vrai
 // lien, donc lisible — c'est ce qui la rend vérifiable.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const TELEPHONE = "0679984514";
 
 async function main() {
@@ -66,7 +67,7 @@ async function main() {
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 15000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   // On revient sur l'écran du devis parti, comme il le fera par la carte du
   // chantier : il ne s'affiche plus de lui-même après l'envoi.

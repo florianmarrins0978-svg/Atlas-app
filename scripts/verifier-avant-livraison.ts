@@ -1,5 +1,11 @@
 import { spawnSync } from "node:child_process";
 import { rmSync } from "node:fs";
+import {
+  prendreUnAtelierSync,
+  baseDeLAtelier,
+  redisDeLAtelier,
+  suffixeDeLAtelier,
+} from "./_atelier";
 
 // La batterie complète, à jouer AVANT de demander au patron d'essayer quoi que
 // ce soit.
@@ -37,7 +43,6 @@ type Etape = {
 
 const AUTH = { AUTH_SECRET: "ci-secret-not-a-real-production-value-000000000000" };
 const CRON = { CRON_SECRET: "ci-placeholder-cron-secret-0000000000" };
-const REDIS = { REDIS_URL: "redis://localhost:6379" };
 
 // **Aucune suite ne doit appeler un vrai fournisseur d'IA.** Depuis que poser
 // une clé suffit à brancher l'IA, une batterie lancée dans l'espace de travail
@@ -75,9 +80,42 @@ const IA_COUPEE = { LLM_PROVIDER: "dev", TRANSCRIPTION_PROVIDER: "dev" };
  */
 const adresse = (nom: string, defaut: string) => process.env[nom]?.trim() || defaut;
 
-const APP = adresse("ATLAS_BASE_APP", "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test");
-const OWNER = adresse("ATLAS_BASE_OWNER", "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test");
-const SUPER = adresse("ATLAS_BASE_SUPER", "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test");
+/**
+ * **L'ATELIER DE CETTE BATTERIE — sa demande du 8 septembre 2026.**
+ *
+ * *« L'idée c'est qu'après ça chaque session puisse tourner en même temps sans
+ * se gêner. »* Il fait tourner trois ou quatre sessions dans le même dossier,
+ * et une seule pouvait mesurer : la batterie s'approprie le port 3000, la base
+ * d'essai — qu'elle VIDE entre les suites — et le limiteur de connexion. Les
+ * autres attendaient cinquante minutes, ou mesuraient des chiffres qui
+ * n'accusent personne.
+ *
+ * Le rang se prend au premier port libre, sans que personne se coordonne, et il
+ * dérive à lui seul le port, la base, le coin de Redis et les dossiers bâtis
+ * (`scripts/_atelier.ts`). **Le rang 0 rend exactement la batterie d'avant** :
+ * une session seule ne voit aucune différence, et aucun chiffre ne bouge.
+ *
+ * Aucune manip pour lui — sa condition du 5 septembre : la commande ne prend ni
+ * variable ni option nouvelle.
+ */
+const ATELIER = prendreUnAtelierSync();
+const SUFFIXE = suffixeDeLAtelier(ATELIER);
+process.env.ATLAS_ADRESSE = ATELIER.adresse;
+if (ATELIER.rang !== 0) {
+  console.log(
+    `Atelier n° ${ATELIER.rang} : port ${ATELIER.port}, base et Redis à part.`
+  );
+}
+
+/** Le limiteur de connexion, dans le coin de Redis de cet atelier. */
+const REDIS = { REDIS_URL: redisDeLAtelier("redis://localhost:6379", ATELIER) };
+
+/** Le dossier bâti par l'étape « Construction », propre à cet atelier. */
+const DIST_VERIFICATION = `.next-verification${SUFFIXE}`;
+
+const APP = baseDeLAtelier(adresse("ATLAS_BASE_APP", "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test"), ATELIER);
+const OWNER = baseDeLAtelier(adresse("ATLAS_BASE_OWNER", "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test"), ATELIER);
+const SUPER = baseDeLAtelier(adresse("ATLAS_BASE_SUPER", "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test"), ATELIER);
 
 const ETAPES: Etape[] = [
   {
@@ -91,6 +129,21 @@ const ETAPES: Etape[] = [
     commande: "npm",
     args: ["run", "lint"],
     ceQueCaAttrape: "les pièges connus de React et de Next",
+  },
+  {
+    // **La base de CET atelier, montée si elle n'existe pas encore.**
+    //
+    // Au rang 0 elle existe déjà : l'étape ne fait que vérifier qu'on l'atteint,
+    // ce qui vaut mieux que de le découvrir six étapes plus loin sur un
+    // « compte de démonstration absent » qui accuse le navigateur.
+    nom: "Atelier",
+    commande: "npx",
+    args: ["tsx", "scripts/preparer-atelier.ts"],
+    env: { ATLAS_BASE_SUPER: SUPER, ATLAS_BASE_OWNER: OWNER, ATLAS_BASE_APP: APP },
+    envSupprime: SANS_CLES_IA,
+    ceQueCaAttrape:
+      "une base d'essai injoignable — et, quand plusieurs sessions mesurent,\n" +
+      "     deux batteries qui s'effaceraient mutuellement leurs données",
   },
   {
     // **LA CONSTRUCTION, et il aura fallu une soirée entière pour l'ajouter.**
@@ -128,7 +181,7 @@ const ETAPES: Etape[] = [
     // pas ce que la CI joue**, et son rouge permanent apprenait à ignorer le
     // seul contrôle qui protège le banc du mode lent. Aucune requête n'est
     // faite pendant une construction : cette adresse n'a qu'à être lisible.
-    env: { ATLAS_DIST_DIR: ".next-verification", DATABASE_URL: APP },
+    env: { ATLAS_DIST_DIR: DIST_VERIFICATION, DATABASE_URL: APP },
     ceQueCaAttrape: "une erreur qui n'existe qu'à la construction — et qui condamne le banc au mode lent",
   },
   {
@@ -214,7 +267,7 @@ const echecs: Etape[] = [];
  * exclusion qui se remet d'elle-même n'en est pas une. La construction le
  * recrée trois lignes plus bas.
  */
-rmSync(".next-verification", { recursive: true, force: true });
+rmSync(DIST_VERIFICATION, { recursive: true, force: true });
 
 for (const etape of ETAPES) {
   console.log(`\n\x1b[1m→ ${etape.nom}\x1b[0m`);

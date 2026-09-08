@@ -1,4 +1,5 @@
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 // **LA BARRE DU BAS TIENT SUR UN ÉCRAN DE 360 PIXELS.**
 //
@@ -31,7 +32,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // rendrait « aucun mot ne déborde » en vert, sans avoir rien regardé — le piège
 // du contrôle qui mesure zéro, payé le 15 août sur les noms coupés.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 // Son écran le plus étroit. En dessous, il n'y a plus de téléphone à servir.
 const LARGEUR = 360;

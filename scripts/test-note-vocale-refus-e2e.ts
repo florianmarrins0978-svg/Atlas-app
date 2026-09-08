@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **Un refus de note vocale DIT pourquoi, jusqu'à l'écran.**
 //
@@ -28,7 +29,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // où une suite peut choisir ce qu'elle envoie. Éprouver la route, c'est éprouver
 // les trois.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;

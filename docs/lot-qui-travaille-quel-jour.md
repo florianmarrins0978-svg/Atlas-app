@@ -89,4 +89,4 @@ d'une batterie jouée seule, base amorcée, après nettoyage.
 
 ---
 
-**Le détail technique est dans `ARCHITECTURE.md` §288.**
+**Le détail technique est dans `ARCHITECTURE.md` §292.**

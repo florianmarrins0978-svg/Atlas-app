@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 /**
  * La phrase française apparaît-elle vraiment, dans un vrai navigateur ?
@@ -23,7 +24,7 @@ import { lancerNavigateur } from "./e2e-browser";
  *   3. sur un défaut ORDINAIRE, rien n'apparaît : l'habiller en lenteur
  *      enverrait chercher au mauvais endroit.
  */
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();

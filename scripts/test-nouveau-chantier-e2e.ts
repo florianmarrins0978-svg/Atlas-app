@@ -3,6 +3,9 @@ import { nomDuChantier } from "../src/lib/nom-chantier";
 import { jourIso } from "../src/lib/jour";
 import assert from "node:assert";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 // Créer un chantier, et ce que cela demande au patron.
 //
@@ -24,11 +27,11 @@ async function main() {
 
   // Connexion réelle (Auth.js) — toutes les routes applicatives sont
   // désormais protégées par le middleware d'authentification.
-  await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+  await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
   const client = `M. E2E ${Date.now()}`;
   // Le nom du chantier se DÉDUIT du client (`src/lib/nom-chantier.ts`) : on
@@ -37,7 +40,7 @@ async function main() {
   // le patron a fait retirer ce mot.
   const nomAttendu = nomDuChantier({ nomClient: client, jour: jourIso(new Date()) });
 
-  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
 
   // Le champ retiré ne doit pas revenir par une autre porte.
   assert.equal(
@@ -120,7 +123,7 @@ async function main() {
 
   // Le nom déduit et l'anneau se regardent sur la FICHE CLIENT : c'est elle qui
   // les porte depuis le 31 août, et c'était le doublon qu'il a fait retirer.
-  await page.goto(`http://localhost:3000/chantiers/${idChantier}/coordonnees`, {
+  await page.goto(`${BASE}/chantiers/${idChantier}/coordonnees`, {
     waitUntil: "networkidle",
   });
 
@@ -165,7 +168,7 @@ async function main() {
   );
 
   // Revérifie via la liste (autre écran, autre requête) que le chantier y figure aussi.
-  await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
   assert.ok(
     await page.locator(`text=${nomAttendu}`).first().isVisible(),
     "Le nouveau chantier doit apparaître dans la liste, sous son nom déduit"
@@ -175,14 +178,14 @@ async function main() {
   // Le cas qui rendait le champ obligatoire. Un chantier sans client ni adresse
   // doit exister quand même, et rester reconnaissable : la date est la seule
   // chose vraie qui reste, et elle vaut mieux qu'un « Sans titre ».
-  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await creerPuisFiche(page);
   // **LE NOM SE LIT DANS LA LISTE, PLUS DANS LE TITRE DE LA FICHE.** Il se
   // lisait dans le `h1` de la fiche du chantier ; cette fiche est retirée le
   // 4 septembre 2026 (`ARCHITECTURE.md` §254). La liste est l'écran où ce nom
   // SERT — c'est là qu'il reconnaît son chantier —, et c'est déjà par elle que
   // le cas précédent se vérifie deux blocs plus haut.
-  await page.goto("http://localhost:3000/", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
   const sansNom = page.locator(`text=/^Chantier du /`).first();
   assert.ok(
     await sansNom.isVisible(),

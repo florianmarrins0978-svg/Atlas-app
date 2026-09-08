@@ -9,7 +9,7 @@ import {
   cleCreneau,
   fenetreProposition,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
-} from "../src/server/disponibilites";
+} from "../src/lib/disponibilites";
 
 // Les demi-journées et les équipes.
 //

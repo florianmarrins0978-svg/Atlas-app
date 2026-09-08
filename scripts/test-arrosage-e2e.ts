@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
+import { ADRESSE } from "./_adresse";
 
 // L'écran « Plan d'arrosage », DANS l'application — sa demande du 20 août 2026 :
 // *« code le tout dans l'appli »*.
@@ -19,7 +20,7 @@ import assert from "node:assert/strict";
 //   5. **aucun chiffre n'est annoncé tant que rien n'est calculé.** « 0,00 m³/h »
 //      se lirait comme une mesure.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {

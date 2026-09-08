@@ -95,6 +95,13 @@ sauvegarde-atlas-*.json
 .next-batie-neuve
 .next-batie-vieille
 .next-verification
+# Les dossiers bâtis d'un ATELIER — un par session qui mesure (8 septembre
+# 2026, `scripts/_atelier.ts`). Deux sessions qui bâtissent dans le même
+# dossier se réécrivent leurs morceaux et servent une application à moitié
+# compilée.
+.next-verification-a*
+.next-a*
+.next-batie-p*
 # Le serveur au profil « banc » monté par `test-bandeau-banc-e2e.ts` : Next.js
 # refuse deux serveurs de développement dans un même dossier, il lui faut donc
 # le sien. Un fichier neuf dans l'arbre git ferait refuser TOUTES les mises à

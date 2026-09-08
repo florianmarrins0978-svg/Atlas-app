@@ -34,6 +34,22 @@ import { sql } from "drizzle-orm";
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
+  /**
+   * La civilité de la personne (migration 0077), avec les mêmes codes que ceux
+   * de ses clients — `src/lib/civilite.ts` décide seule de ce qu'ils valent à
+   * l'écran. NULL : elle ne l'a pas dite, et rien ne l'y oblige.
+   */
+  civilite: text("civilite", { enum: ["mr", "mme"] }),
+  /** Le prénom, séparé du nom de famille (migration 0077). */
+  prenom: text("prenom"),
+  /**
+   * Le NOM DE FAMILLE depuis la migration 0077.
+   *
+   * **Sur un compte antérieur, il porte encore le nom COMPLET** : `prenom` est
+   * alors NULL, et l'affichage retombe dessus
+   * (`src/lib/identite-personne.ts`). Aucun découpage automatique n'a été
+   * fait — « Jean-Pierre de La Fontaine » ne se coupe pas par un espace.
+   */
   nom: text("nom"),
   emailVerified: timestamp("email_verified", { withTimezone: true }),
   image: text("image"),
@@ -1715,9 +1731,18 @@ export const factures = pgTable(
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
     /**
+     * À qui le chèque est libellé, quand le compte n'est pas au nom de
+     * l'enseigne (migration 0076). `NULL` = aucun titulaire distinct, et
+     * l'ordre retombe sur le nom de l'entreprise — la règle vit dans
+     * `src/lib/modalites-paiement.ts`, appelée par la page du client comme par
+     * le PDF.
+     */
+    entrepriseTitulaireCompte: text("entreprise_titulaire_compte"),
+    /**
      * Les trois mentions légales, et leur emplacement (migration 0072) —
-     * recopiées du devis, comme le reste de l'identité. Nulles pour les
-     * factures antérieures à la migration.
+     * lues sur l'ENTREPRISE à la création de la facture depuis la migration
+     * 0076, comme le reste de l'identité de l'émetteur. Nulles pour les
+     * factures antérieures à 0072.
      */
     entrepriseFormeJuridique: text("entreprise_forme_juridique"),
     entrepriseCapitalSocial: numeric("entreprise_capital_social", { precision: 12, scale: 2 }),

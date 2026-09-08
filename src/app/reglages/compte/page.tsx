@@ -33,7 +33,14 @@ export default async function ComptePage() {
         titre="Mon compte"
         retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
       />
-      <CompteClient initial={{ nom: compte?.nom ?? "", email: compte?.email ?? "" }} />
+      <CompteClient
+        initial={{
+          civilite: compte?.civilite ?? null,
+          prenom: compte?.prenom ?? "",
+          nom: compte?.nom ?? "",
+          email: compte?.email ?? "",
+        }}
+      />
     </div>
   );
 }

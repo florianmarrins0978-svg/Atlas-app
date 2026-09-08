@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { CHEMINS_PUBLICS, estPageDuClient } from "../src/lib/chemins-publics";
+import { ADRESSE } from "./_adresse";
 
 // **Ce que voit le client de l'artisan ne porte JAMAIS l'outil de l'artisan.**
 //
@@ -25,7 +26,7 @@ import { CHEMINS_PUBLICS, estPageDuClient } from "../src/lib/chemins-publics";
 // (`src/lib/chemins-publics.ts`). Un nouveau chemin public y entre, et il est
 // éprouvé le jour même — sans que personne ait à y penser.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;

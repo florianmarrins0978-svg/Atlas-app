@@ -11,7 +11,7 @@ import {
   SuppressionChantierRefusee,
   basculerEquipeDuChantier,
 } from "@/server/repositories/chantiers";
-import type { Moment } from "@/server/disponibilites";
+import type { Moment } from "@/lib/disponibilites";
 import type { QuandChantier } from "@/lib/planning-jour";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";

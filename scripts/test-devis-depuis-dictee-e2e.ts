@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **Le parcours que le patron réclamait : de la dictée au devis, en un geste.**
 //
@@ -21,7 +22,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 //   3. **rien ne part au client** — l'arrêt avant l'envoi reste entier.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 const DICTEE =
   "Taille de haie de laurier, 20 mètres linéaire, chaîne mort à démonter, couper le bois en 50, " +

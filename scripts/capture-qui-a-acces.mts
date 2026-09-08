@@ -83,7 +83,10 @@ const etat = (await page.evaluate(`(() => {
     // **Sans casse** : \`innerText\` rend le texte TEL QU'IL EST PEINT, et ces
     // deux titres portent \`text-transform: uppercase\`. Comparé tel quel, le
     // contrôle cherchait un texte que la page n'affiche jamais.
-    deuxListes: ['qui a accès', 'vos salariés'].every((t) =>
+    // **Le second titre est devenu une QUESTION le 8 septembre 2026** — sa
+    // réponse A : deux compteurs identiques ne se distinguaient pas, deux
+    // questions si. Le contrôle vise donc ce que l'écran dit maintenant.
+    deuxListes: ['qui a accès', 'combien de salariés'].every((t) =>
       document.body.innerText.toLowerCase().includes(t)
     ),
   };
@@ -96,7 +99,7 @@ if (!etat.largeurDeLaPremiere) {
 }
 if (etat.personnes === 0) echecs.push("aucune personne dans la liste : l'écran ne montre rien à regarder");
 if (!etat.donnerVisible) echecs.push("« Donner un accès » n'est pas visible");
-if (!etat.deuxListes) echecs.push("les deux listes ne cohabitent pas : « Qui a accès » et « Vos salariés »");
+if (!etat.deuxListes) echecs.push("les deux listes ne cohabitent pas : « Qui a accès » et « Combien de salariés ? »");
 if (etat.colonnes !== 5) echecs.push(`le patron devrait voir 5 onglets, la grille en a ${etat.colonnes}`);
 
 // ─── Le rôle déplié ─────────────────────────────────────────────────────────

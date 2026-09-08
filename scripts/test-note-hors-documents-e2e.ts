@@ -5,6 +5,7 @@ import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { texteDuPdf } from "./_lecteur-pdf-protege";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Ce que la note ne doit JAMAIS quitter : l'application.
@@ -37,7 +38,7 @@ import { texteDuPdf } from "./_lecteur-pdf-protege";
  * (`ARCHITECTURE.md` §154).
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let reussis = 0;
 let echecs = 0;

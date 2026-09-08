@@ -2,6 +2,7 @@ import type { BrowserContext, Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // **« Facture impayée » : la carte, son montant, et son « J'ai vu ».**
 //
@@ -30,7 +31,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 //      de saisie rouvrirait le « tous les jours » qu'il a exclu ;
 //   5. et le rythme choisi **tient après rechargement**.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, verifier: () => Promise<void>) {
@@ -90,7 +91,7 @@ async function chantierFacturable(page: Page): Promise<string> {
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await monter("UPDATE chantiers SET date_planifiee = CURRENT_DATE - 3 WHERE id = $1", [chantierId]);
 

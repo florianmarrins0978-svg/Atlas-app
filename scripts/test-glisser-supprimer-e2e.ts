@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **Le retrait, sur toutes les listes — pas seulement au planning.**
 //
@@ -36,7 +37,7 @@ import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 // l'être : l'oublier sur une liste est le défaut probable, et il est invisible
 // tant qu'on ne glisse pas.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();

@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { devices } from "playwright";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Le devis qui tarde » : la carte, et sa ligne dans les réglages.**
 //
@@ -29,7 +30,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 //   5. **et le mot ne se confond pas avec sa voisine** — c'est sa crainte du
 //      16 août, et c'est le seul contrôle qui la tient.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const ECRAN_DU_PATRON = devices["iPhone 13"];
 
 let echecs = 0;

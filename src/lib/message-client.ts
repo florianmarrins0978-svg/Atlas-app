@@ -68,7 +68,7 @@ export type MessageClient = {
  * verrouillée. Le patron l'a fait sauter : *« il faut faire 3 messages par
  * défaut et garder le système un seul mot change »*. La phrase est donc
  * désormais DANS son modèle, en texte qu'il modifie, et `[document]` ne pose
- * plus que le mot — « devis », « facture », « compte rendu ».
+ * plus que le mot — « devis », « facture », « retour d'intervention ».
  *
  * **Conséquence pour les messages déjà enregistrés**, et la migration 0075 s'en
  * charge : un modèle d'avant porte `[document]` au sens ancien, et le rendre
@@ -131,11 +131,12 @@ function enveloppe(phrase: string): string {
  * change, c'est qu'elles vivent maintenant dans SON modèle, donc qu'il peut
  * les modifier.
  *
- * **Le troisième document existe, et il a failli être oublié.** Le compte rendu
- * de passage part avec ce même modèle (`composerMessageEntretien`) : à deux
+ * **Le troisième document existe, et il a failli être oublié.** Le retour
+ * d'intervention part avec ce même modèle (`composerMessageEntretien`) : à deux
  * messages, il serait resté sur le texte d'Atlas pendant que les deux autres
- * portaient la voix du patron. *(Il l'appelle « fiche client » ; le dépôt dit
- * « compte rendu de passage », et le renommer se décide — `TODO.md`.)*
+ * portaient la voix du patron. **Il s'appelait « compte rendu de passage »**
+ * jusqu'au 8 septembre 2026 ; c'est LUI qui l'a renommé, et le nom d'écran est
+ * le seul à avoir changé — les identifiants du code gardent « passage ».*
  */
 export const MESSAGES_PAR_DEFAUT: Record<GenreDocument, string> = {
   devis: enveloppe(
@@ -147,7 +148,7 @@ export const MESSAGES_PAR_DEFAUT: Record<GenreDocument, string> = {
     "Voici votre [document] [numero][echeance]. Vous pouvez la consulter et la " +
       "télécharger ici :"
   ),
-  passage: enveloppe("Voici le [document] de mon passage chez vous :"),
+  passage: enveloppe("Voici mon [document] après le passage chez vous :"),
 };
 
 /**
@@ -201,7 +202,7 @@ export function refusDuMessage(modele: string): string | null {
   if (!modele.includes("[document]")) {
     return (
       "Le mot du document est obligatoire : sans lui, votre client ne sait pas " +
-      "s'il reçoit un devis, une facture ou un compte rendu. Reposez-le pour enregistrer."
+      "s'il reçoit un devis, une facture ou un retour d'intervention. Reposez-le pour enregistrer."
     );
   }
   if (!modele.includes("[lien]")) {
@@ -229,7 +230,7 @@ export function refusDuMessage(modele: string): string | null {
 export function motDuDocument(genre: GenreDocument): string {
   if (genre === "devis") return "devis";
   if (genre === "facture") return "facture";
-  return "compte rendu";
+  return "retour d'intervention";
 }
 
 /**
@@ -257,7 +258,7 @@ export function rendreMessage(
   modele: string,
   valeurs: {
     client: string;
-    /** Le mot du document : « devis », « facture », « compte rendu ». */
+    /** Le mot du document : « devis », « facture », « retour d'intervention ». */
     document: string;
     /** Le numéro du document. Vide quand il n'y en a pas encore. */
     numero?: string;
@@ -391,7 +392,7 @@ export function composerMessageEntretien(params: {
 }): MessageClient {
   const { clientNom, clientCivilite, entrepriseNom, lien, modele } = params;
   return {
-    objet: `Compte rendu de passage — ${entrepriseNom}`,
+    objet: `Retour d'intervention — ${entrepriseNom}`,
     corps: rendreMessage(modele?.trim() || MESSAGES_PAR_DEFAUT.passage, {
       client: nommer(clientNom, clientCivilite),
       document: motDuDocument("passage"),

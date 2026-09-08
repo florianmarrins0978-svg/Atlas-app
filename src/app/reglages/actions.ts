@@ -283,7 +283,7 @@ export type ResultatAbsence =
        *
        * Vide dans l'immense majorité des cas — un congé posé à l'avance ne
        * défait rien. Non vide, c'est une nouvelle que l'écran DOIT dire
-       * (`ARCHITECTURE.md` §287).
+       * (`ARCHITECTURE.md` §291).
        */
       chantiersLiberes: { id: string; nom: string }[];
     }

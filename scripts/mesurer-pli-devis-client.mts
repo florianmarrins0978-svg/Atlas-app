@@ -20,7 +20,7 @@ import * as clientsRepo from "../src/server/repositories/clients";
 import * as devisRepo from "../src/server/repositories/devis";
 import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi } from "../src/server/repositories/envois-devis";
-import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { pool } from "../src/server/db/client";
 
 const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(

@@ -34,7 +34,7 @@ export type Passage = {
   clientCanal: "sms" | "email" | null;
   jour: string;
   minutes: number | null;
-  /** Le temps paraît-il sur le compte rendu du client ? Vrai par défaut. */
+  /** Le temps paraît-il sur le retour d'intervention du client ? Vrai par défaut. */
   tempsVisible: boolean;
   observations: string | null;
   envoyeLe: Date | null;

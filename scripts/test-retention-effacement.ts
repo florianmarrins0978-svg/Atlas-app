@@ -20,7 +20,7 @@ import * as lignesPrixRepo from "../src/server/repositories/lignes-prix";
 import { devis as devisTable } from "../src/server/db/schema";
 import { creerEnvoi, enregistrerReponse } from "../src/server/repositories/envois-devis";
 import { audioAPurger, RETENTION, motifConservation, echeanceConservation } from "../src/server/retention";
-import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 
 let passed = 0;

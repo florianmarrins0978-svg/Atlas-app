@@ -21,8 +21,9 @@
 
 import { execFileSync } from "node:child_process";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 function verifier(nom: string, condition: boolean, detail = "") {

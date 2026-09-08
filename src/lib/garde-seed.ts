@@ -41,6 +41,28 @@
 export const BASES_AUTORISEES = ["atlas_test", "atlas_dev"] as const;
 
 /**
+ * Les bases d'ATELIER — `atlas_test_a1`, `atlas_test_a2`…
+ *
+ * **Pourquoi la liste ne pouvait pas rester fermée (8 septembre 2026).** Le
+ * patron fait tourner cinq sessions dans le même dossier, et chacune mesure
+ * désormais sur SA base pour ne pas effacer celle des autres
+ * (`scripts/_atelier.ts`). Ces bases naissent au besoin : leur nom ne peut pas
+ * être écrit d'avance ici.
+ *
+ * **Et le garde-fou ne s'ouvre pas d'un cran de plus que nécessaire.** Le motif
+ * exige le préfixe `atlas_test_a` ET un ou deux chiffres, rien d'autre :
+ * `atlas_test_atelier_client`, `atlas_testa1` ou `atlas_test_a1_prod` sont
+ * refusés comme avant. C'est la même exigence que le reste de ce fichier — la
+ * cible doit se PROUVER, un doute refuse.
+ */
+const BASE_D_ATELIER = /^atlas_test_a\d{1,2}$/;
+
+/** Cette base est-elle une base d'essai, nommée ou d'atelier ? */
+export function estBaseDEssai(base: string): boolean {
+  return (BASES_AUTORISEES as readonly string[]).includes(base) || BASE_D_ATELIER.test(base);
+}
+
+/**
  * Les hôtes tenus pour locaux. `postgres` et `db` sont les noms de service des
  * deux `docker-compose` du dépôt : sans eux, le banc d'essai ne pourrait plus
  * refaire son jeu de démonstration, et le remède créerait une panne.
@@ -139,10 +161,11 @@ export function garderSeed(contexte: ContexteSeed): VerdictSeed {
     );
   }
 
-  if (!(BASES_AUTORISEES as readonly string[]).includes(base)) {
+  if (!estBaseDEssai(base)) {
     return refus(
       "base-inconnue",
-      `La base « ${base} » n'est pas une base d'essai connue (${BASES_AUTORISEES.join(", ")}). ` +
+      `La base « ${base} » n'est pas une base d'essai connue (${BASES_AUTORISEES.join(", ")}, ` +
+        "ou une base d'atelier atlas_test_a1 à atlas_test_a99). " +
         "Le jeu de démonstration efface tout : il ne s'exécute que là où effacer est sans conséquence.",
     );
   }

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // **Revenir de sa messagerie, et retomber chez soi.**
 //
@@ -24,7 +25,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // reproduit donc ce qui se passe RÉELLEMENT — le passage en arrière-plan puis
 // le retour au premier plan, que le composant écoute par `visibilitychange`.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();
@@ -152,7 +153,7 @@ async function chantierAvecDevisPret(page: import("playwright").Page): Promise<s
   await page.getByText("Choisir la date", { exact: false }).first().click();
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   // On vérifie que le lien est bien là AVANT de jouer le retour : sans lui,
   // l'écran ne monte pas le mécanisme, et la suite accuserait le mauvais.

@@ -11,7 +11,7 @@ import {
   dernierEnvoi,
 } from "../src/server/repositories/envois-devis";
 import { etatEnvoi, etatEnvoiLabel, demandeUneAction } from "../src/lib/etat-envoi";
-import { versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { nettoyerBase } from "./_test-db";
 
 // La troisième issue : « corrigez, et je signe ».
