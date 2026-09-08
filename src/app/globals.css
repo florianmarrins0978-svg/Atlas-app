@@ -173,6 +173,19 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* LES ÉCRANS D'AVANT LE COMPTE — la porte et la création — n'ont pas de barre
+ * d'onglets, et c'est elle qui réserve partout ailleurs l'indicateur d'accueil
+ * de l'iPhone. Sans cette marge, « Se connecter » et « Passer » finissent sous
+ * le trait blanc, là où l'appui ferme l'application au lieu d'ouvrir la page.
+ * Vu sur une capture le 8 septembre 2026, et par aucun test.
+ *
+ * **Écrite ici et non en classe Tailwind sur mesure** : `env()` dans une valeur
+ * entre crochets ressort corrompu de leur analyseur — « safe-area-inset-bottom »
+ * y devient « safe-area-\b-bottom », et la feuille entière cesse de compiler. */
+.atlas-bas-sans-barre {
+  padding-bottom: calc(22px + env(safe-area-inset-bottom));
+}
+
 /* Le contenu réserve la hauteur de la barre, sinon la dernière carte de chaque
  * liste passe dessous. */
 .atlas-contenu {

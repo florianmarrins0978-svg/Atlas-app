@@ -275,7 +275,18 @@ export async function mettreAJourNombreSalariesAction(nombreSalaries: number) {
  * (`src/lib/absences-equipe.ts`).
  */
 export type ResultatAbsence =
-  | { ok: true; id: string }
+  | {
+      ok: true;
+      id: string;
+      /**
+       * Les chantiers d'où cette personne vient d'être retirée par le congé.
+       *
+       * Vide dans l'immense majorité des cas — un congé posé à l'avance ne
+       * défait rien. Non vide, c'est une nouvelle que l'écran DOIT dire
+       * (`ARCHITECTURE.md` §294).
+       */
+      chantiersLiberes: { id: string; nom: string }[];
+    }
   | { ok: false; raison: string };
 
 export async function noterAbsenceAction(formData: FormData): Promise<ResultatAbsence> {
@@ -294,9 +305,27 @@ export async function noterAbsenceAction(formData: FormData): Promise<ResultatAb
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "noter l'absence d'une équipe");
 
-  const ligne = await noterAbsenceEquipe(ctx, { rang, premierJour, dernierJour, motif });
+  // **Les bornes de demi-journée, son choix D2 du 8 septembre 2026.** Absentes
+  // de la requête, elles valent la journée entière : le geste courant n'a rien
+  // à envoyer de plus qu'avant.
+  const premierDemi = String(formData.get("premierDemi") ?? "").trim() || null;
+  const dernierDemi = String(formData.get("dernierDemi") ?? "").trim() || null;
+
+  const ligne = await noterAbsenceEquipe(ctx, {
+    rang,
+    premierJour,
+    dernierJour,
+    premierDemi,
+    dernierDemi,
+    motif,
+  });
   if (!ligne) return { ok: false, raison: "Cette équipe n\u2019existe pas." };
-  return { ok: true, id: ligne.id };
+  // **Ce que le congé a défait remonte jusqu'à l'écran** — sa consigne du
+  // 8 septembre 2026, « pas de pansement, corrige à la racine ». Retirer une
+  // affectation devenue fausse est la bonne réponse ; la retirer EN SILENCE
+  // laisserait une demi-journée passer de « Julien » à personne sans qu'il
+  // l'apprenne, et un chantier sans personne est ce qu'on veut éviter.
+  return { ok: true, id: ligne.id, chantiersLiberes: ligne.chantiersLiberes };
 }
 
 /**

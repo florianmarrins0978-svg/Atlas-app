@@ -58,3 +58,37 @@ export function lignesMentionsLegales(d: DonneesMentionsLegales): string[] {
 
   return lignes;
 }
+
+/**
+ * LE CAPITAL TEL QU'IL S'ÉCRIT EN BASE — `numeric(12,2)`, jamais du texte.
+ *
+ * **Un « 1 500 € » saisi de travers ne s'écrit pas en base** : il romprait le
+ * calcul ci-dessus (`enEuros` sur du texte), et PostgreSQL refuserait la ligne
+ * entière — donc, à la porte, la création du compte tout entière pour une case
+ * facultative.
+ *
+ * Trois réponses, et la nuance compte :
+ *
+ * | | |
+ * |---|---|
+ * | `null` | la case est vide : il n'y a pas de capital |
+ * | une chaîne | le nombre, à deux décimales |
+ * | `undefined` | **on n'a pas compris** : on ne touche à rien |
+ *
+ * `undefined` n'est pas un détail : sur l'écran des réglages, il laisse le
+ * capital tel qu'il était plutôt que d'écrire n'importe quoi par-dessus.
+ *
+ * **Elle vit ICI et non dans le dépôt qui l'employait** : la porte du
+ * 8 septembre 2026 écrit le même champ, et deux lectures d'un même chiffre
+ * finissent par diverger (`CLAUDE.md` §3).
+ */
+export function capitalEnBase(brut: string | null | undefined): string | null | undefined {
+  const net = (brut ?? "").trim();
+  if (net === "") return null;
+  // L'espace des milliers se tape (« 1 000 »), et l'insécable arrive du
+  // presse-papiers : les deux se retirent, sans quoi `Number` rend NaN sur une
+  // saisie parfaitement lisible.
+  const nombre = Number(net.replace(/[\s\u00a0\u202f]/g, "").replace(",", "."));
+  if (!Number.isFinite(nombre) || nombre < 0) return undefined;
+  return nombre.toFixed(2);
+}

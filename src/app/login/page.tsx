@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { connexionAction } from "./actions";
 import { SceauAtlas } from "@/components/atlas/MarqueAtlas";
@@ -96,6 +97,24 @@ export default function LoginPage() {
         onSubmit={() => setCle((n) => n + 1)}
         className="w-full max-w-[342px] text-center"
       >
+        {/* **LES DEUX LIENS DE LA PORTE — 8 septembre 2026.** Écran 3 de
+            `appli/la-porte-en-plein-air.html`. Sans eux, `/bienvenue` est un
+            aller simple : celui qui appuie sur « Se connecter » en découvrant
+            qu'il n'a pas de compte n'a plus rien pour revenir, et le bouton
+            « précédent » du navigateur n'existe pas sur un écran d'accueil
+            installé. Le chevron montre un sens ; ce n'est pas une flèche
+            décorative (`CLAUDE.md` §3). */}
+        <Link
+          href="/bienvenue"
+          className="mb-2 flex items-center gap-[6px] text-left text-[14px]"
+          style={{ color: colors.muted }}
+          aria-label="Revenir en arrière"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M15 5 8 12l7 7" />
+          </svg>
+          Retour
+        </Link>
         {/* Le sceau tourne tant que la vérification n'a pas répondu — pas
             pendant une demi-seconde décomptée. Voir `globals.css`,
             « La porte : le sceau qui tourne pendant qu'on vérifie ». */}
@@ -175,6 +194,14 @@ export default function LoginPage() {
         >
           Entrer
         </button>
+
+        <Link
+          href="/creer-un-compte"
+          className="mt-5 block text-[14.5px]"
+          style={{ color: colors.muted }}
+        >
+          Pas de compte&nbsp;? <b style={{ color: colors.ink, fontWeight: 600 }}>Créer un compte</b>
+        </Link>
       </form>
     </div>
   );

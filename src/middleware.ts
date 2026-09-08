@@ -106,25 +106,49 @@ export default auth((request) => {
   if (!request.auth) {
     // Redirection strictement interne (pas de callbackUrl construit à partir
     // d'une entrée arbitraire non validée) — protège contre l'open redirect.
-    const urlConnexion = new URL("/login", request.nextUrl.origin);
-    return NextResponse.redirect(urlConnexion);
+    // **Vers la PORTE, et non vers le formulaire — 8 septembre 2026.** Il a
+    // choisi la porte en plein air : un visiteur sans compte y arrive d'abord,
+    // et choisit lui-même entre créer un compte et se connecter. Envoyer
+    // directement au formulaire supposerait qu'il en a déjà un.
+    //
+    // `/login` reste à son adresse et garde son formulaire : cent quarante
+    // navigations de scripts y mènent, et les casser aurait noyé un lot
+    // d'apparence dans cent vingt-neuf contrôles réécrits.
+    const urlPorte = new URL("/bienvenue", request.nextUrl.origin);
+    return NextResponse.redirect(urlPorte);
   }
 
   return suivantAvecChemin(request, pathname);
 });
 
 export const config = {
-  // `robots.txt` y a rejoint `favicon.ico` le 25 août 2026 (constat F13) : un
-  // moteur n'a pas de session, et sans cette exclusion il recevrait une
-  // redirection vers `/login` au lieu de la consigne de ne rien indexer. Le
-  // fichier existerait, et ne servirait à rien — un garde-fou qu'on croit en
-  // place est pire qu'un garde-fou absent. Ce qu'il contient, et pourquoi il
-  // n'est PAS une frontière de sécurité, est écrit dans `src/app/robots.ts`.
+  // ─── LES FICHIERS DE `public/` NE PASSENT PLUS PAR ICI — 8 septembre 2026 ──
+  //
+  // **Trouvé en REGARDANT la porte**, et par aucun test vert (`CLAUDE.md` §5) :
+  // la photo de l'écran d'accueil ne s'affichait pas. Le middleware renvoyait
+  // `/images/porte-foret.jpg` vers `/bienvenue` — un visiteur sans session,
+  // c'est justement celui qui regarde cet écran —, et l'optimiseur d'images de
+  // Next recevait une redirection au lieu d'un JPEG.
+  //
+  // **Et ce n'était pas que la photo.** Tout `public/` était dans ce cas :
+  // `manifest.json`, les icônes de l'écran d'accueil, et **les deux pages
+  // légales que la porte fait accepter** — on demandait d'accepter des
+  // conditions qu'on ne pouvait pas lire.
+  //
+  // **La règle remplace la liste, elle ne s'y ajoute pas.** `favicon.ico` et
+  // `robots.txt` (constat F13, 25 août) y étaient nommés un par un ; la
+  // quatrième exception aurait été la preuve que la liste est le défaut. Ce qui
+  // porte une EXTENSION est un fichier, pas un écran : aucune route de cette
+  // application n'en a — vérifié sur `src/app/` —, et un fichier n'a ni session
+  // à vérifier ni `x-atlas-pathname` à recevoir.
+  //
+  // **Ce que cela n'ouvre PAS** : les jetons du client (`/devis/<jeton>`) n'ont
+  // pas de point, les routes d'API non plus. La garde de session reste entière
+  // sur tout ce qui est un écran.
+  //
   // **`api/health` est ancré à la fin d'un segment** — constat de l'audit final,
   // 29 août 2026. Écrit sans ancrage, le préfixe excluait aussi tout chemin qui
   // COMMENCE par ces lettres : `/api/healthXYZ` n'aurait traversé ni la garde de
   // session, ni la pose de `x-atlas-pathname` dont dépend `exigerOuverture`.
-  // Aucune route de ce nom n'existe — on ferme la porte avant qu'elle serve,
-  // pour trois caractères.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|api/health(?:/|$)).*)"],
+  matcher: ["/((?!_next/static|_next/image|api/health(?:/|$)|.*\\.[^/]+$).*)"],
 };

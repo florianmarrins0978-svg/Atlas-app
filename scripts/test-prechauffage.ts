@@ -617,14 +617,22 @@ async function main() {
     // rien du tout. Elle rougissait sur du code juste.
     //
     // On vise donc le lancement du serveur par ce qu'il EST — un `spawn` qui
-    // demande `dev` sur le port 3000 —, pas par la commande qui le porte, qui a
+    // demande `dev` sur un port —, pas par la commande qui le porte, qui a
     // déjà changé deux fois.
     //
-    // **Sans le drapeau `s`, et ce n'est pas un détail de style :** la cible de
-    // `tsconfig.json` est antérieure à ES2018, et `tsc` refuse ce drapeau
-    // (TS1501). Il ne servait à rien ici — `[^)]` accepte déjà les retours à la
-    // ligne, seul un `.` aurait eu besoin de lui.
-    const iSpawn = source.search(/spawn\([^)]*"dev"[^)]*"-p", "3000"/);
+    // **Le repère a vieilli TROIS fois, et deux sessions l'ont rajeuni le même
+    // jour — 8 septembre 2026. On arrête.**
+    //
+    // Il visait `"dev"`, puis `"-p", "3000"`. Le lot de l'atelier a donné son
+    // port à chaque session (`ARCHITECTURE.md` §287), donc `"3000"` a disparu ;
+    // la bascule sur la version bâtie a remplacé `dev` par `start`. À chaque
+    // fois, `iSpawn` valait -1 et le contrôle restait vert en n'éprouvant plus
+    // rien — ou rougissait sur du code juste.
+    //
+    // On vise donc ce qui ne peut pas changer sans que le serveur cesse d'être
+    // lancé : l'exécutable Node et le binaire du projet. La sous-commande et le
+    // port sont libres.
+    const iSpawn = source.search(/spawn\(process\.execPath, \[CHEMIN_NEXT/);
     assert.ok(
       iGarde > 0,
       "aucune garde en tête de batterie : un orphelin du banc rendrait les cinquante suites ininterprétables"

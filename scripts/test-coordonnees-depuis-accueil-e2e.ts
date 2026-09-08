@@ -73,7 +73,7 @@ async function main() {
   // coup quand ce lien avait été coupé en trois. La mention vit donc dans
   // l'ancre et détourne le geste ; son `data-href` dit où elle mène.
   const ligne = page.locator(
-    `[data-atlas="lieu-manquant"][data-href="/chantiers/${chantierId}/coordonnees"]`
+    `[data-atlas="lieu-manquant"][data-href^="/chantiers/${chantierId}/coordonnees"]`
   );
 
   await cas("la mention est un lien, et elle mène aux coordonnées de CE chantier", async () => {
@@ -150,7 +150,7 @@ async function main() {
     // annonçait « 8 liens dans la ligne » et accusait la ligne d'un défaut qui
     // était le sien (`AGENTS.md` : un contrôle doit désigner le bon coupable).
     const saLigne = page.locator(
-      `.atlas-ligne:has([data-href="/chantiers/${chantierId}/coordonnees"])`
+      `.atlas-ligne:has([data-href^="/chantiers/${chantierId}/coordonnees"])`
     );
     const ancres = await saLigne.locator("a").count();
     if (ancres !== 1) {

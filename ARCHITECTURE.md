@@ -25187,7 +25187,407 @@ son refus et son cadre de rétractation, et le vert des TEXTES sur son bouton
 d'acceptation au lieu du vert des BOUTONS tranché le 3 septembre. Cinq semaines
 d'identité manquée, faute d'être passée par les jetons.
 
-## §292 — Prévenir des factures parties avec l'ancien IBAN
+## §293. Une absence connue d'un côté de l'écran, ignorée de l'autre
+
+**Son signalement du 7 septembre 2026, capture à l'appui :** *« j'ai mis Julien
+en congé, la feuille le dit aussi, or je peux quand même sélectionner Julien ce
+jour — il doit être grisé et on ne doit pas pouvoir le sélectionner. »*
+
+**Sa capture montre les deux vérités à trois centimètres d'écart** : en haut de
+la carte, « Julien n'est pas là » ; en dessous, la pastille « ✓ Julien » cochée
+sur le matin du chantier. L'application savait, et laissait faire.
+
+**CE QUI MANQUAIT ÉTAIT UNE MOITIÉ DE RÈGLE.** Une absence était comptée depuis
+le 14 août là où elle change une **date** — les jours proposés au client
+(`absences-equipe.ts`, 14 août 2026). Elle ne l'était nulle part où elle change une
+**personne** : les pastilles d'équipe ne l'avaient jamais consultée.
+
+C'est le défaut typique d'une notion arrivée par un seul chemin. « Absence » est
+née d'une question de capacité ; personne n'est allé voir ce qu'elle devait
+changer ailleurs.
+
+### La règle vit dans `src/lib`, et sert LES DEUX CÔTÉS
+
+`equipe-absente.ts` grise la pastille **et** refuse la coche au serveur.
+`CLAUDE.md` §3 : *« jamais de règle dupliquée entre l'affichage et la
+vérification »*. Écrite deux fois, la version de l'écran aurait suffi — et un
+écran ne protège rien : il se contourne.
+
+### LE CAS QUI TRANCHE : deux jours, un seul de congé
+
+Une équipe n'est pas cochée « pour le 10 » : elle est cochée **pour le matin du
+chantier**, et cette coche traverse tous les jours qu'il occupe. Le modèle ne
+sait pas dire « Julien le 11 mais pas le 10 ».
+
+| Refuser dès UN jour d'absence | Refuser seulement si TOUS les jours |
+|---|---|
+| il ne peut pas cocher Julien sur un chantier de deux jours dont un tombe sur son congé | Julien est annoncé sur un chantier un jour où il n'y sera pas |
+| coût : une coche à faire autrement | coût : **personne ne vient** |
+
+On refuse dès un jour. C'est le seul des deux qui ne fasse pas partir un
+chantier sans personne, et l'erreur qu'il produit se répare le jour même.
+
+### ON PEUT TOUJOURS DÉCOCHER, ET C'EST ESSENTIEL
+
+Sa capture montre Julien **coché** un jour où il est absent : la coche est
+antérieure au congé. Griser franchement l'aurait enfermé dans l'état faux — il
+n'existe aucun autre chemin pour retirer quelqu'un d'une demi-journée.
+
+Le refus ne porte donc que sur la **coche**. Une pastille déjà cochée reste
+cliquable pour être retirée, et son gris dit pourquoi il faut le faire. Le
+serveur applique la même distinction : `cocheRefusee(..., dejaCochee)` rend
+toujours `false` quand la case est déjà mise.
+
+### Le refus rend l'état INCHANGÉ, jamais `null` ni une exception
+
+`null` veut déjà dire « ce chantier n'est pas à vous » dans cette fonction ; le
+message d'une exception levée par une action serveur n'arrive jamais jusqu'au
+patron (`AGENTS.md`). Le serveur relit donc l'état réel et le rend : l'écran se
+repeint sur ce qui est vrai, et la pastille grisée porte déjà l'explication.
+
+### Ce qu'il a fallu deux suites pour tenir
+
+| | |
+|---|---|
+| `test-equipe-absente.ts` | la règle pure — les bornes, les jours traversés, la bascule |
+| `test-coche-equipe-absente.ts` | **le refus du SERVEUR**, sous `atlas_app` |
+
+La seconde n'est pas un doublon : une suite navigateur ne l'aurait pas vue. Elles
+tournent sous un rôle qui traverse la RLS (`CLAUDE.md` §5), et surtout un écran
+qui grise se contourne — c'est le serveur qui tient. Les deux ont été
+confrontées à la version d'avant et rougissent sur le cas exact de sa capture.
+
+**Et l'écran a été REGARDÉ**, pas seulement mesuré : Julien pâle et non
+cliquable, Antoine intact, sur la carte du jeudi 10 — la journée de sa capture.
+
+## §294. « Pas de pansement » — fermer la porte par les DEUX bouts
+
+**Sa consigne du 8 septembre 2026, devant le §286 :** *« Pas de pansement,
+corrige le problème à la racine ! »* Il avait raison, et voici ce que le §286
+laissait passer.
+
+### Ce que le §286 corrigeait, et ce qu'il ne corrigeait pas
+
+Le §286 refuse de **cocher** quelqu'un d'absent. Il ferme une porte. Mais
+l'incohérence de sa capture n'était pas entrée par là : **la coche était
+ANTÉRIEURE au congé**. Elle est entrée par l'autre bout — `noterAbsenceEquipe`
+écrivait une ligne et s'arrêtait là, sans jamais regarder ce que ce congé rendait
+faux.
+
+| La porte | Avant le §286 | Après le §286 | Après celui-ci |
+|---|---|---|---|
+| cocher quelqu'un déjà en congé | ouverte | **fermée** | fermée |
+| poser un congé sur quelqu'un déjà coché | ouverte | **ouverte** | **fermée** |
+
+Un correctif qui ne ferme qu'un sens laisse le défaut se reproduire par l'autre,
+et donne l'illusion du travail fait. C'est exactement ce qu'il a nommé.
+
+### La réconciliation vit DANS la transaction du congé
+
+Faite après coup, une panne entre les deux laisserait le congé posé et les
+affectations fausses — le même état qu'on répare, mais désormais invisible parce
+que l'écran croirait le travail fait.
+
+### ELLE NE RETIRE JAMAIS EN SILENCE
+
+`noterAbsenceEquipe` rend `chantiersLiberes`. Sans cela, une demi-journée
+passerait de « Julien » à personne sans qu'il l'apprenne — et un chantier sans
+personne est précisément ce qu'on cherche à éviter.
+
+**Où le dire, et où se taire :**
+
+| | |
+|---|---|
+| **au planning** | rien. La carte du jour est ouverte sous ses yeux, la pastille disparaît : l'écran MONTRE (`CLAUDE.md` §3) |
+| **aux Réglages** | une ligne qui NOMME les chantiers — là-bas, rien de tout cela n'est visible |
+
+Et l'écran du planning **repeint sa liste locale** : sans cela il porterait
+encore « ✓ Julien » jusqu'au rechargement, c'est-à-dire les deux vérités
+contradictoires de sa capture, mais de notre fait cette fois.
+
+### LA RACINE QUI RESTE, ET QUI NE SE CORRIGE PAS SANS LUI
+
+**`equipes_du_chantier` ne porte pas de jour** : `(chantier_id, demi,
+equipe_id)`. Une coche vaut « le matin du chantier », pour tous les jours qu'il
+occupe. Le modèle **ne peut pas exprimer** « Julien le 11 mais pas le 10 ».
+
+Tout ce qui précède contourne ce manque. Et le contournement a un coût qu'il
+faut écrire noir sur blanc :
+
+> Sur un chantier de deux jours dont **un seul** tombe sur un congé, poser le
+> congé retire la personne du chantier **entier** — et le §286 l'empêche ensuite
+> de la recocher. Elle devient inaffectable sur ce chantier, y compris pour le
+> jour où elle est là.
+
+**Ce n'est pas un défaut d'implémentation, c'est la limite du modèle.** La
+corriger demande une migration (une ligne par jour, ou un jour sur la ligne
+existante) et change son geste : il cocherait par journée, plus par chantier.
+
+**Cela se demande à LUI** (`CLAUDE.md` §2 bis) : une migration touche ses
+données, et un geste qui change se dessine d'abord (§3 bis). La question est
+posée dans `TODO.md`.
+
+## §295. Le contournement tombe avec la limite qu'il contournait
+
+**Ses deux choix du 8 septembre 2026, sur maquette** (`appli/qui-travaille-quel-jour.html`) :
+**C** pour qui travaille quel jour, **D2** pour le congé d'une demi-journée.
+
+### CE QUE C A CORRIGÉ DANS MON PROPRE CHIFFRAGE
+
+J'ai annoncé au patron qu'il faudrait **deux** migrations : un jour sur
+l'affectation, une demi-journée sur l'absence. **La première est inutile**, et
+c'est en codant C qu'on le voit : l'exception se DÉDUIT des congés, elle ne se
+saisit pas. Il coche une fois, comme avant ; l'application retire le jour du
+congé et l'écrit sur la pastille.
+
+Une colonne de moins, un geste inchangé, et rien à ressaisir sur les chantiers
+déjà posés. **Le dire noir sur blanc** vaut mieux que de laisser croire au
+chiffrage d'hier (`CLAUDE.md` §2 bis).
+
+### LES DEUX RÈGLES DU 7 ET DU 8 SEPTEMBRE ÉTAIENT DES CONTOURNEMENTS
+
+| | Ce qu'elle faisait | Pourquoi |
+|---|---|---|
+| §286 | refuser la coche dès UN jour d'absence | le modèle ne savait pas dire « Julien vendredi mais pas jeudi » |
+| §287 | retirer la personne du chantier ENTIER à la pose du congé | même raison |
+
+Les deux interdisaient faute de pouvoir exprimer. **C l'exprime — donc les deux
+se relâchent, et c'est voulu :**
+
+- on ne refuse plus que si la personne n'est là **aucun** jour ;
+- on ne retire à la pose que si le congé couvre **tout** le chantier.
+
+Le second cas reste nécessaire : une coche qui n'annonce personne ferait partir
+un chantier avec un nom qui n'y sera jamais. **Et il compte toutes les absences
+en base, pas seulement celle qu'on pose** — deux congés d'un jour couvrent un
+chantier de deux jours qu'aucun ne couvre seul.
+
+### UNE PASTILLE PLEINE NE PEUT PAS PORTER UNE EXCEPTION
+
+C'est **lui** qui l'a relevé, sur la première version de la planche : *« la
+phrase dit Julien en congé mais il est quand même coché en vert, c'est
+normal ? »* Non. On lit l'aplat, pas la phrase en dessous — et c'était
+exactement le défaut d'origine, redessiné dans la maquette censée le corriger.
+
+La pastille est donc **cerclée et non pleine** quand la présence est partielle,
+et elle porte les jours. Aplat = tous les jours, cerne = pas partout.
+
+**Elle dit les jours de PRÉSENCE, pas d'absence** : « ven. » répond à « quand
+vient-il », là où « pas jeudi » oblige à soustraire de tête.
+
+**Et elle se tait presque toujours** : chantier d'un jour, aucun congé, ou
+absence totale — dans les trois cas, rien n'est écrit. Un écran qui daterait
+chaque coche ferait payer à tous une précision qui ne sert qu'à quelques-uns.
+
+### D2 : LA JOURNÉE EN UN APPUI, LA MOITIÉ EN DEUX
+
+`absences_equipe` porte deux bornes de demi-journée (`0076`), et non deux
+booléens : « du jeudi après-midi au lundi matin » n'a pas de sens en booléens —
+ils excluraient tous les matins de la période au lieu du seul premier.
+
+**Le geste ne change pas pour le cas courant.** Toucher un nom pose la journée,
+comme avant. Deux pastilles « Matin / Après-midi » apparaissent ensuite pour
+restreindre ce qui vient d'être posé — elles n'existent que le jour où ça
+compte.
+
+**Trois pastilles ne tenaient pas**, et c'est une mesure : « Quand » plus trois
+faisaient 440 px pour 354 disponibles. Vérifié sur la planche ET dans
+l'application, pas supposé.
+
+**Restreindre RETIRE et REPOSE**, plutôt que de modifier : une action de mise à
+jour aurait ajouté un troisième chemin d'écriture sur cette table, donc un
+troisième endroit où la réconciliation du §287 pourrait être oubliée.
+
+### LES HUIT CHEMINS QUI LISENT UNE ABSENCE
+
+C'est le vrai risque de cette migration. Une demi-journée qui compterait pour
+une journée entière **quelque part** rendrait la capacité fausse là et
+seulement là — et une date refusée au client ne se voit pas : personne ne
+remarque une date qu'on ne lui a pas offerte.
+
+Les huit `select` sur `absences_equipe` portent donc les deux bornes, y compris
+`envois-devis.ts` (les dates proposées), `preparation-envoi.ts` et la
+revérification. Le compte se vérifie d'un coup :
+
+```bash
+grep -rc "dernierJour: absencesEquipe.dernierJour," src   # doit égaler
+grep -rc "dernierDemi: absencesEquipe.dernierDemi," src   # celui-ci
+```
+
+### ET LA MOITIÉ COMPTE JUSQUE SUR LA PASTILLE
+
+`absenteCeCreneau` répond sur la demi-journée quand on la connaît, sur la
+journée sinon. Sur la ligne du matin, un congé d'après-midi ne retire pas le
+jour : sans cela la pastille annoncerait un jour de moins que la vérité, et le
+patron enverrait quelqu'un d'autre pour rien.
+
+---
+
+## §296. La flèche du devis se souvient d'où l'on vient
+
+**Sa demande du 8 septembre 2026**, après avoir vu les trois captures : depuis
+le planning, ouvrir un devis PAS ENCORE ENVOYÉ puis reculer le déposait sur la
+fiche client — il lui fallait un second retour pour retrouver sa journée.
+*« Oui fais la 1 »*, entre laisser en l'état et faire que le devis se souvienne.
+
+### CE N'EST PAS REVENIR SUR SA RÈGLE DU 31 AOÛT
+
+Le 31 août il avait tranché : *« je veux tout le temps revenir à cette page et
+seulement celle-là ! La page fiche client »*. Ce jour-là il corrigeait une
+flèche qui le déposait sur la fiche du CHANTIER, un écran qui ne lui proposait
+rien (§229).
+
+La fiche client reste la sortie **partout où l'on n'a pas de provenance** :
+depuis la liste, depuis une notification, depuis un signet. Ce qui change,
+c'est la seule porte qui sait dire d'où elle vient.
+
+| D'où l'on ouvre le devis | Où la flèche mène |
+|---|---|
+| la liste, une notification, un signet | la fiche client — inchangé |
+| **la feuille du planning** | **le planning, sur la journée du chantier** |
+
+### LE DÉFAUT VENAIT D'UN PARAGRAPHE QUI SE CROYAIT PRUDENT
+
+`portes-du-planning.ts` portait, écrit noir sur blanc, que **seul `/export`**
+emportait la provenance et que c'était délibéré : la flèche de `/devis-complet`
+menant sans condition à la fiche client, lui passer un paramètre que personne
+ne relit aurait écrit dans l'adresse une promesse que l'écran ne tient pas.
+
+Le raisonnement était juste, et sa conclusion fausse d'un cran : ce qu'il
+fallait, ce n'était pas retirer le paramètre — c'était **le faire relire**.
+Écrit ainsi, il annonçait le cas traité, et la session suivante l'aurait cru.
+
+### CE QUI A ÉTÉ RETIRÉ, ET C'EST LE SIGNE QUE LA RACINE EST TOUCHÉE
+
+Trois choses ont **disparu** plutôt que de s'ajouter (`CLAUDE.md` §4 quater) :
+
+| Ce qui est parti | Pourquoi |
+|---|---|
+| la branche à deux destinations dans `portesDuPlanning` | une seule adresse, marquée d'où l'on vient, quel que soit l'état du devis |
+| `libelleRetourDuDevis` comme libellé de la FLÈCHE | l'adresse et le mot rendus ensemble : deux fonctions qui doivent changer d'avis ensemble ne le font qu'à moitié — la fiche client l'a payé le 7 septembre |
+| `retourDuDevis` dans l'écran du devis parti | ce raccourci ne recule pas, il MÈNE à la fiche client ; emprunter la flèche d'un autre écran l'aurait fait changer de destination aujourd'hui |
+
+`retourDuDevis` rend désormais `{ href, libelle }` et s'appuie sur
+`retourDepuisLePlanning` — la mécanique qui sert déjà `/export`, la facture et
+la fiche client. En écrire une seconde aurait donné deux façons de relire la
+même adresse (`CLAUDE.md` §3).
+
+### LA VALIDATION NE SE RELÂCHE PAS
+
+La provenance vient de l'adresse, donc de n'importe qui. Elle se compare
+**par égalité** au seul chemin qu'elle a le droit de valoir — le planning ouvert
+sur CE chantier —, jamais par motif. `?de=https://ailleurs.example` ou le
+planning d'un autre chantier retombent sur la fiche client.
+
+### DEUX CONTRÔLES, ET LA PORTE NE PROMET PLUS DANS LE VIDE
+
+Le défaut se logeait entre les deux moitiés : une porte qui écrit une provenance
+devant un écran qui ne la relit pas. Un cas de `test-retour-au-planning.ts`
+déroule donc le chemin **en entier** — l'adresse que la porte donne, puis la
+flèche que l'écran en tire. Les deux moitiés ont été confrontées à la version
+d'avant, séparément, et chacune rougit.
+
+**Un cas a changé de sens**, comme celui du 7 septembre avant lui : il exigeait
+que le devis pas encore parti n'emporte AUCUNE provenance. Le garder aurait
+empêché la correction.
+
+### CE QUI RESTE OUVERT
+
+Le chemin **planning → devis → fiche client** dépose encore sur la liste au
+retour, pas sur le planning : la fiche client lit alors le devis comme
+provenance, et une adresse ne porte qu'un cran de mémoire. Sa règle du
+7 septembre veut de toute façon que cette flèche-là SORTE plutôt qu'elle ne
+remonte (`retourDesCoordonnees`), donc rien n'est cassé — mais le jour où il le
+signalera, c'est une chaîne de provenances qu'il faudra, pas un cas de plus.
+
+---
+
+## §297. LA PORTE EN PLEIN AIR — l'écran d'avant le compte, et les seize questions
+
+*Codé le 8 septembre 2026, d'après `appli/la-porte-en-plein-air.html`, écrans 1
+et 2, qu'il a retenus : « c'était la deuxième maquette, la porte en plein air ».*
+
+### Pourquoi la porte n'est pas `/login`
+
+C'est **la seule décision de ce lot prise sans lui**, et elle est mécanique. La
+planche montre la porte EN PREMIER, puis « Se connecter » qui ouvre le
+formulaire. Porter cet ordre sur `/login` demandait de toucher **140 navigations
+vers cette adresse, réparties dans 129 scripts** — captures, suites de bout en
+bout, et `verifier-connexion.mjs`, le seul contrôle qui éprouve une vraie
+connexion derrière une origine étrangère. Un lot d'apparence qui réécrit cent
+vingt-neuf contrôles ne se relit plus : on ne distingue plus ce qui a changé de
+ce qui a été déplacé.
+
+L'ordre qu'il a choisi est donc tenu — le middleware envoie un visiteur sans
+session sur `/bienvenue` —, et `/login` garde son adresse et son formulaire, avec
+les deux liens qui lui manquaient : le retour vers la porte, et « Pas de
+compte ? ». **Une session périmée continue d'aller à `/login`** (`/api/session-perimee`) :
+celui-là a un compte, l'envoyer choisir entre créer et se connecter serait une
+question sans objet.
+
+### Où vivent les règles, et pourquoi pas dans l'écran
+
+`src/lib/creation-compte.ts` décide de six choses qui ne sont pas de
+l'affichage : l'ordre, ce qui est obligatoire, ce qui ne se pose que dans
+certains cas, ce qui se propose d'office, le nombre annoncé, et ce qu'on dit à la
+fin. `scripts/test-creation-compte.ts` les joue **sans base et sans navigateur**.
+
+Deux d'entre elles ne se devinent pas :
+
+| | |
+|---|---|
+| **le total annoncé ne monte jamais** | une question conditionnelle est comptée TANT QU'ON NE SAIT PAS. Sans cela, choisir une SAS ferait passer « 5 sur 14 » à « 6 sur 16 » — un total qui grossit en cours de route se lit comme une mauvaise surprise, chez quelqu'un qui hésite déjà |
+| **la proposition affichée EST celle qui part en base** | `reponsesProposees` sert à l'écran et à l'envoi. La première version posait l'e-mail repris dans le champ sans l'écrire dans les réponses : l'écran montrait une adresse que l'entreprise n'aurait jamais eue |
+
+### Ce qui a été ramené à une seule source en codant ce lot
+
+Trois règles allaient exister en double, et **chacune avait déjà divergé dans
+l'écriture** :
+
+1. **le mot de passe** — la porte imposait huit caractères là où
+   `src/lib/mot-de-passe.ts` en exige douze depuis l'audit du 23 août. Le PATRON
+   aurait eu le mot de passe le plus faible du produit, plus faible que celui
+   qu'il impose à ses salariés ;
+2. **le capital social** — `entreprises.ts` savait lire « 1 000 », la porte non.
+   La règle déménage dans `src/lib/mentions-legales.ts` (`capitalEnBase`), où le
+   capital vit déjà. Elle rend **trois** réponses, et la nuance compte : `null`
+   (vide), une chaîne (le nombre), `undefined` (on n'a pas compris — on ne touche
+   à rien). Sans elle, un capital saisi avec une espace faisait échouer la
+   création entière pour une case facultative ;
+3. **`formeADuCapital`** — la copie répondait **l'inverse** de l'originale sur
+   une forme libre.
+
+Et `OeilMotDePasse` sort de `NouveauCompte.tsx` : la planche l'avait dit avant
+qu'on le fasse — *« un second dessin pour le même geste finirait par diverger »*.
+
+### Le middleware ne voit plus les fichiers de `public/`
+
+**Trouvé en regardant la porte, et par aucun test vert.** Le matcher listait ses
+exceptions une par une (`favicon.ico`, `robots.txt`) ; tout le reste de `public/`
+recevait donc une redirection quand le visiteur n'avait pas de session — c'est-à-
+dire précisément sur cet écran-là. La photo ne s'affichait pas, `manifest.json`
+et les icônes de l'écran d'accueil non plus, et **les deux pages légales que la
+porte fait accepter** répondaient une redirection : on demandait d'accepter des
+conditions illisibles.
+
+La liste devient une règle : **ce qui porte une extension est un fichier, pas un
+écran.** Aucune route de `src/app/` n'en a, les jetons du client (`/devis/<jeton>`)
+n'ont pas de point, et un fichier n'a ni session à vérifier ni `x-atlas-pathname`
+à recevoir. `scripts/test-porte-bienvenue.ts` éprouve le motif lui-même, dans les
+deux sens.
+
+### Deux écrans sans barre d'onglets réservent l'indicateur d'accueil
+
+`globals.css` pose `env(safe-area-inset-*)` sur le corps de la page mais **pas en
+bas** : partout ailleurs c'est la barre d'onglets qui s'en charge. Ces deux
+écrans n'en ont pas, et « Se connecter » finissait sous le trait blanc de
+l'iPhone — là où l'appui ferme l'application. D'où `.atlas-bas-sans-barre`.
+
+**Elle est en CSS et non en classe Tailwind sur mesure** : `env()` dans une
+valeur entre crochets ressort corrompu de leur analyseur — « safe-area-inset-bottom »
+y devient « safe-area-\b-bottom », et la feuille entière cesse de compiler.
+
+## §298 — Prévenir des factures parties avec l'ancien IBAN
 
 **Tranché par lui le 8 septembre 2026**, maquette à l'appui
 (`appli/changer-d-iban.html`) : *« oui je le veux »*, aux trois endroits.
@@ -25246,7 +25646,7 @@ parties.
 
 ---
 
-## §293 — Le retour d'intervention : la première écriture rendue au salarié
+## §299 — Le retour d'intervention : la première écriture rendue au salarié
 
 *Lot 2, codé le 8 septembre 2026 après trois maquettes et quatre arbitrages du
 patron. Migration 0080.*

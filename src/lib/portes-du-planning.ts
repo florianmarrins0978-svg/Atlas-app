@@ -100,20 +100,22 @@ export function portesDuPlanning(
   // lui qu'il faut — il porte le lien du client et la reprise. Le planning
   // connaît l'envoi sous le nom de `envoiEnvoyeAt` : c'est le même événement.
   //
-  // **Seul `/export` porte la provenance, et c'est délibéré.** La flèche de
-  // `/devis-complet` mène TOUJOURS à la fiche client — sa règle tranchée le
-  // 31 août 2026, *« je veux tout le temps revenir à cette page et seulement
-  // celle-là »* (`retour-du-devis.ts`). Lui passer une provenance que personne
-  // ne relit écrirait dans l'adresse une promesse que l'écran ne tient pas, et
-  // la session suivante croirait le cas traité.
+  // **LES DEUX PORTENT LA PROVENANCE DEPUIS LE 8 SEPTEMBRE 2026.** Elle ne
+  // voyageait que sur `/export`, parce que la flèche de `/devis-complet` menait
+  // sans condition à la fiche client. Capture à l'appui, il a vu ce que cela
+  // donnait : partir du planning sur un devis pas encore envoyé demandait DEUX
+  // retours pour retrouver sa journée — *« oui fais la 1 »*. `retour-du-devis.ts`
+  // relit désormais cette provenance, et sa règle du 31 août tient toujours
+  // partout où il n'y en a pas.
   portes.push({
     cle: "devis",
     libelle: "Le devis",
     etat: etatDuDevis(c),
     geste: false,
-    href: c.envoiEnvoyeAt
-      ? depuisLePlanning(`/chantiers/${c.id}/export`, c.id)
-      : `/chantiers/${c.id}/devis-complet`,
+    href: depuisLePlanning(
+      c.envoiEnvoyeAt ? `/chantiers/${c.id}/export` : `/chantiers/${c.id}/devis-complet`,
+      c.id
+    ),
   });
 
   // ── La fiche client ───────────────────────────────────────────────────────

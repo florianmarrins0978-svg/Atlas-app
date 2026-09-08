@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { ADRESSE } from "./_adresse";
 
 let passed = 0;
 let failed = 0;
@@ -15,7 +16,7 @@ async function test(nom: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-  const r = await fetch("http://localhost:3000/login");
+  const r = await fetch(`${ADRESSE}/login`);
 
   await test("Content-Security-Policy est présent et restrictif (default-src 'self')", async () => {
     const csp = r.headers.get("content-security-policy");
@@ -53,7 +54,7 @@ async function main() {
   });
 
   await test("Les en-têtes de sécurité sont appliqués à une seconde route distincte (pas seulement /login)", async () => {
-    const r2 = await fetch("http://localhost:3000/api/health/live");
+    const r2 = await fetch(`${ADRESSE}/api/health/live`);
     assert.ok(r2.headers.get("x-frame-options"));
     assert.ok(r2.headers.get("content-security-policy"));
   });

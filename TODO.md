@@ -47,7 +47,7 @@ et la liste s'allonge.
 ~~À coder~~ — **codé et éprouvé** : les trois endroits, la trace de ce qui a été
 signalé (migration 0078) et l'ouverture d'une seule colonne dans le trigger
 d'immuabilité (0079). Détail : `docs/lot-alerte-ancien-iban.md`,
-`ARCHITECTURE.md` §292.
+`ARCHITECTURE.md` §298.
 
 Ce qui suit est ce qui a été demandé, gardé pour mémoire :
 
@@ -100,13 +100,63 @@ porte (`docs/lot-pages-du-client.md`).
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — la porte en plein air
+## 🧹 `tsconfig.json` GROSSIT D'UNE LIGNE PAR ATELIER — à replier en un motif
+
+**Constaté le 8 septembre 2026, en jouant trois batteries de suite.** Next.js
+ajoute lui-même le dossier bâti à `include` à chaque construction. Un atelier de
+plus, c'est deux lignes de plus, et elles reviennent dans l'arbre à chaque
+passage : on les défait à la main avant de commiter, ce qui finit par se faire
+au mauvais moment.
+
+Le fichier en porte déjà six — `.next-batie-neuve`, `.next-a1`,
+`.next-verification-a1`, `.next-verification-a2`… — pour une seule et même
+chose. **Un motif les remplacerait tous** (`.next-verification-a*/types/**/*.ts`),
+comme `.gitignore` vient de le faire pour les mêmes dossiers.
+
+**Ce qui reste à vérifier avant de le faire, et qui demande une construction :**
+Next.js relit cette liste pour savoir s'il doit s'y ajouter. S'il compare des
+chaînes plutôt que d'évaluer le motif, il rajoutera sa ligne quand même et l'on
+aura les deux. À éprouver sur un atelier neuf, machine libre — pas pendant une
+batterie.
+
+## 🔎 UNE SUITE BASE SUR L'AUTHENTIFICATION, ROUGE SANS EXPLICATION
+
+**Constaté le 8 septembre 2026 au soir**, et écrit ici plutôt que passé sous
+silence : `scripts/test-secret-authentification-db.ts` a été **verte** au
+premier passage de la batterie, puis **rouge aux deux suivants**, sur du code
+que le lot de la porte ne touche pas de ce côté-là.
+
+**Le symptôme, et il est unique** : la ligne d'utilisateur que la suite vient
+d'insérer n'est plus lisible par `atlas_app` — cinq contrôles tombent d'un coup,
+tous sur cette absence. C'est exactement la signature d'un `TRUNCATE` joué
+dessous (`CLAUDE.md` §5, payé le 26 août)…
+
+**…et le deuxième passage l'avait pour de bon** : le moteur des suites navigateur
+de la batterie précédente avait survécu à son arrêt et tournait en parallèle.
+Mais **le troisième passage était seul**, vérifié processus par processus, et
+elle a rougi quand même. C'est ce qui reste à comprendre.
+
+**Ce qu'il ne faut PAS faire** : la rejouer jusqu'à ce qu'elle passe. Elle garde
+le condensat des mots de passe hors de portée du rôle applicatif — c'est le
+contrôle qu'on veut le moins voir vert par hasard.
+
+**Par où commencer** : la jouer SEULE sur une base neuve, et regarder si la ligne
+existe encore en base après l'insertion (`psql`, en `postgres`, qui traverse la
+RLS). Si elle y est, c'est une politique de RLS qui la cache ; si elle n'y est
+pas, c'est l'insertion qui a échoué en silence.
+
+---
+
+## ⏳ LA PORTE EN PLEIN AIR — CODÉE ; trois points attendent encore sa réponse
 
 **Née le 8 septembre 2026.** `appli/la-porte-en-plein-air.html`, publiée et
-listée dans `appli/essais.html`.
+listée dans `appli/essais.html`. **Les écrans 1 et 2 sont dans l'application
+depuis le 8 septembre au soir** (`/bienvenue`, `/creer-un-compte`), à sa
+demande — *« code-moi exactement la deuxième maquette avec les questions »*.
 
-**Rien ne se code tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Cinq points
-attendent sa réponse, et le détail est dans `docs/lot-porte-en-plein-air.md` :
+**Ce qui reste ouvert ci-dessous se code en une heure chacun** : ce sont des
+choix d'apparence, pas des travaux. Le détail est dans
+`docs/lot-porte-en-plein-air.md` :
 
 1. ~~**la création de compte** : *tout sur un écran* ou *une question à la
    fois*~~ — **tranché le 8 septembre 2026 : une question à la fois**, et elle
@@ -124,6 +174,23 @@ attendent sa réponse, et le détail est dans `docs/lot-porte-en-plein-air.md` :
 4. la photo reste-t-elle fixe alors que le reste suit la charte choisie ;
 5. « Créer un compte » crée un **patron et son entreprise** — un salarié reçoit
    son accès de son patron dans les réglages. À confirmer.
+
+**Ce qui a été CODÉ sans son accord, et qu'il peut défaire d'un mot :**
+
+| | |
+|---|---|
+| l'ordre des écrans | la porte est à `/bienvenue`, et `/login` garde son formulaire. La planche montre la porte EN PREMIER ; le porter sur `/login` demandait de toucher 140 navigations dans 129 scripts, dont `verifier-connexion.mjs` — un lot d'apparence qui réécrit cent vingt-neuf contrôles ne se relit plus |
+| les couleurs | la charte **Nuit** est nommée, et ce sont SES jetons qui servent — personne n'est connu à cette adresse, donc aucune charte choisie à lire |
+| Google et Apple | **refusés** : aucun des deux fournisseurs n'est branché, et deux boutons qui ne font rien valent moins que pas de boutons |
+
+**LES DEUX PAGES LÉGALES EXISTENT EN DOUBLE, et c'est le chemin qui l'impose :**
+`pages.yml` ne publie que `appli/` — c'est là qu'il les lit depuis son téléphone
+— et Next.js ne sert que `public/` — c'est là que la porte les fait accepter.
+`scripts/test-pages-legales-uniques.ts` refuse tout écart entre les deux, au
+caractère près : le jour où l'une serait corrigée seule, on ferait accepter un
+texte qui n'est pas celui qu'on publie, et rien ne le montrerait. **Les réunir
+pour de bon demande de toucher au flux de publication** — à faire quand les
+pages sortiront du brouillon, pas avant.
 
 **Les deux pages légales existent désormais, EN BROUILLON** —
 `appli/conditions-utilisation.html` et `appli/confidentialite.html`, écrites le
@@ -192,7 +259,7 @@ depuis la dernière prestation, qui reprend aussi le contenu du chantier).
 
 ## ~~LOT 2 — la fiche d’intervention du salarié~~ — CODÉ LE 8 SEPTEMBRE 2026
 
-Migration 0080, `ARCHITECTURE.md` §293. Ce qui a été livré : la fiche renommée,
+Migration 0080, `ARCHITECTURE.md` §299. Ce qui a été livré : la fiche renommée,
 le bandeau « Fin de chantier » qui déplie dans la fiche, l’onglet « Retours »
 de Terminés et sa page rangée par client, les deux interrupteurs du patron.
 
@@ -219,48 +286,132 @@ facture mort en production le 8 août 2026).
 
 ---
 
-## ⏳ UNE RÉPONSE ATTENDUE — le devis PAS ENCORE parti, depuis le planning
+## ⏳ LE PORT NE SUIT QU'À MOITIÉ — 120 suites l'écrivent en dur
 
-**Né le 7 septembre 2026**, en corrigeant le retour au planning
-(`ARCHITECTURE.md` §273).
+**Sa consigne du 8 septembre 2026 :** *« maintenant chaque session a son dossier
+et son port pour ne pas vous bousculer ; vérifie et prends un port libre. »*
 
-Depuis la feuille du planning, les trois autres portes ramènent maintenant au
-planning. Celle du **devis non parti** mène à `/devis-complet`, dont la flèche
-va toujours à la fiche client — **sa règle tranchée le 31 août** : *« je veux
-tout le temps revenir à cette page et seulement celle-là »*. Depuis le planning,
-ce chemin-là fait donc deux pas pour sortir.
+**Fait :** la batterie lit `PORT` (défaut 3000), lance son serveur dessus, et le
+passe aux suites par `BASE_URL`. `PORT=3100 npm run verifier:avant-livraison`
+fonctionne pour le serveur.
 
-**Ce qui n'a PAS été fait, et pourquoi :** détourner cette flèche reviendrait sur
-une décision qu'il a prise lui-même, capture à l'appui. Ce n'est pas notre
-arbitrage.
+**PAS FAIT, et il faut le savoir avant de s'y fier :** **198 occurrences dans
+120 suites** écrivent encore `http://localhost:3000` en dur. Elles ne suivront
+donc pas un autre port — une batterie lancée sur 3100 démarrerait son serveur
+là et ferait parler ses suites à 3000, c'est-à-dire à personne, ou pire au
+serveur d'une AUTRE session.
 
-**Qui peut le trancher :** lui seul. La question à lui poser, quand l'occasion
-se présente : *depuis le planning, la flèche du devis doit-elle ramener au
-planning, ou rester sur la fiche client ?*
+Le compte du jour :
+
+```bash
+grep -rc "localhost:3000\|127.0.0.1:3000" scripts/test-*-e2e.ts | grep -v ':0' | wc -l
+```
+
+**Ce qu'il faudrait :** que chaque suite lise `scripts/_adresse.ts`, qui porte
+déjà `BASE_URL`. C'est mécanique mais ça touche 120 fichiers — un lot à part,
+pas un à-côté.
+
+**Qui peut le faire :** n'importe quelle session, avec la batterie derrière.
 
 ---
 
-## ⚠ SEPT SUITES ROUGES SUR `main` — relevées le 7 septembre 2026
+## ✅ ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR~~ — **TRANCHÉ le 8 septembre 2026**
 
-Rejeu complet des 131 suites navigateur, dans le décor de la batterie (IA
-éteinte). **Trois rouges corrigés le jour même** — `allure-de-mes-devis`
-réclamait dix polices quand il en a fait retirer quatre, `apercu-colle`
-cherchait une rubrique coupée en quatre, `madame-lucie` appuyait au centre de
-la ligne, c'est-à-dire sur « Adresse non renseignée », qui mène EXPRÈS ailleurs.
+**Ses choix : C et D2** (planche `appli/qui-travaille-quel-jour.html`), codés le
+jour même. `ARCHITECTURE.md` §295.
 
-**Ce qui reste, et qui n'appartient à aucun lot de cette session :**
+**Et le chiffrage était faux dans mon sens :** j'annonçais deux migrations, une
+seule était nécessaire. C déduit l'exception des congés au lieu de la faire
+saisir — sa façon de cocher ne change pas.
+
+---
+
+## ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR, et non par chantier~~
+
+**Née le 8 septembre 2026**, en corrigeant à la racine ce qu'il a signalé
+(`ARCHITECTURE.md` §294).
+
+**Le manque.** `equipes_du_chantier` porte `(chantier, demi, équipe)` — **aucun
+jour**. Une coche vaut pour le chantier entier. L'application ne peut donc pas
+dire « Julien le 11 mais pas le 10 ».
+
+**Ce que ça coûte aujourd'hui.** Sur un chantier de deux jours dont un seul
+tombe sur un congé : poser le congé retire la personne du chantier entier, et
+elle ne peut plus y être recochée — y compris pour le jour où elle est là.
+
+**Ce qu'il faudrait.** Une migration (un jour sur la ligne, ou une ligne par
+jour) et un écran où l'on coche par journée. Ce n'est pas un correctif, c'est un
+changement de son geste : **maquette d'abord** (`CLAUDE.md` §3 bis).
+
+**Qui peut le trancher :** lui seul — une migration touche ses données, et le
+geste est le sien. La question : *veux-tu cocher tes salariés jour par jour sur
+les chantiers de plusieurs jours, ou l'affectation reste-t-elle globale ?*
+
+---
+
+## ✅ ~~UNE RÉPONSE ATTENDUE — le devis PAS ENCORE parti, depuis le planning~~ — **TRANCHÉ le 8 septembre 2026**
+
+**Né le 7 septembre 2026**, en corrigeant le retour au planning
+(`ARCHITECTURE.md` §273) : depuis le planning, la porte du devis non parti
+menait à `/devis-complet`, dont la flèche allait toujours à la fiche client.
+Deux pas pour sortir.
+
+**Sa réponse, captures à l'appui :** *« oui fais la 1 »* — la flèche ramène au
+planning quand on en vient, et reste sur la fiche client partout ailleurs.
+Codé le jour même, `ARCHITECTURE.md` §296.
+
+**Ce que la question avait de faux, et il faut le dire :** elle était posée
+comme un arbitrage entre deux de ses décisions, alors que les deux tenaient
+ensemble — sa règle du 31 août corrigeait une flèche qui déposait sur la fiche
+du CHANTIER, elle ne disait rien d'une provenance. Attendre sa réponse pour
+cela lui a coûté un aller-retour.
+
+**Reste ouvert, et personne ne l'a signalé :** `planning → devis → fiche client`
+retombe sur la liste au retour. Une adresse ne porte qu'un cran de mémoire, et
+sa règle du 7 septembre veut de toute façon que la flèche de la fiche SORTE.
+S'il le signale, c'est une chaîne de provenances qu'il faudra — pas un cas de
+plus.
+
+---
+
+## ⚠ QUINZE SUITES ROUGES SUR `main` — recomptées le 8 septembre 2026
+
+**Elles étaient sept le 7 septembre. Elles sont quinze**, et le relevé n'est
+plus une impression : chacune a été **rejouée sur `main` dans un arbre témoin**,
+sans le lot en cours. Les quinze y sont rouges. Aucune n'appartient au lot du
+retour du devis.
+
+**Ce que le témoin a coûté, et pourquoi il valait le coup :** un arbre de
+travail sur `origin/main`, `node_modules` **copié** et non lié — Turbopack
+refuse un lien symbolique qui sort de la racine du projet, et rend un
+« Symlink [project]/node_modules is invalid » qui n'accuse rien de juste. Le
+filtre se sépare par des **virgules**, jamais par des barres verticales : un
+motif mal séparé retient zéro suite et ne le dit qu'en petit.
 
 | Suite | Ce qu'elle dit | Première piste |
 |---|---|---|
-| `anneau-vers-devis` | la chaîne dictée → devis n'arrive jamais (120 s) ; et un devis parti n'est plus joignable par le planning | à jouer seule : l'arrêt d'avant-chiffrage s'ouvre-t-il ? |
-| `message-au-client` | « les trois messages disent chacun le sien » | lot des trois messages (0075), tout frais |
-| `fiche-client`, `devis-client` | tiennent d'un pixel : 665 px pour 664 | **sans relever le seuil** — 664 px est la hauteur réelle de son téléphone |
-| `carte-reponse-mene-au-geste` | un appui intercepté par un bouton du planning | même famille que `madame-lucie` : viser l'élément, pas le centre |
+| `anneau-vers-devis` | la chaîne dictée → devis n'arrive jamais (120 s) | à jouer seule : l'arrêt d'avant-chiffrage s'ouvre-t-il ? |
+| `anneau-dictee` | l'anneau ne redevient pas le lecteur (`.atlas-indice`) | demande une transcription — clé absente de ce poste |
+| `ia-01` | « Texte enregistré » ne paraît pas | même famille : sans clé, ce chemin ne peut pas finir |
+| `message-au-client` | « les trois messages disent chacun le sien » | lot des trois messages (0075) |
+| `facture-au-client` | « Le client ne voit aucun montant » | **le contrôle réclame ce qu'il a fait retirer** : la page de facture est sans montant, à sa demande (`CLAUDE.md` §5 bis) |
+| `fiche-chantier` | la phrase dictée du 23 août absente ; le titre n'est plus « compte rendu de passage » | même travers : deux libellés qu'il a fait changer |
+| `devis-client` | tient d'un pixel : 665 px pour 664 | **sans relever le seuil** — 664 px est la hauteur réelle de son téléphone |
+| `carte-reponse-mene-au-geste` | un appui intercepté par un bouton du planning | viser l'élément, pas le centre |
+| `recherche-client` | la barre de recherche part avec le défilement (155 px du haut) | **défaut réel d'écran**, reproduit seul sur `main` |
+| `adresse-suggestions` | attente de navigation dépassée (60 s) | non diagnostiqué |
 | `reprise-chantier`, `reprise-morceau` | non diagnostiqués | |
+| `repartir-du-client` | le bouton « Refaire » n'est pas sur la fiche du client | lot « repartir d'un client », inachevé |
 | `suivi-devis`, `tva-multiple` | « un appui long sur un devis à UN SEUL taux n'ouvre rien » | |
 
-**Ne pas les traiter en bloc** : ce sont cinq lots différents, et deux d'entre
-eux sont des contrôles qui réclament ce qu'il a fait enlever (`CLAUDE.md` §5 bis).
+**Ne pas les traiter en bloc** : ce sont sept lots différents, et **trois
+d'entre eux sont des contrôles qui réclament ce qu'il a fait enlever**
+(`CLAUDE.md` §5 bis — on adapte le contrôle, on ne remet pas le libellé).
+
+**Deux suites ont changé de rouge entre deux batteries du même soir** —
+`recherche-client` a rougi sur deux cas différents. Ce n'est pas une
+intermittence : jouée seule, elle rougit sur le même cas que sur `main`. C'est
+l'ordre des suites qui décide laquelle des deux fautes se voit la première.
 
 ---
 
@@ -1895,6 +2046,42 @@ changement de comportement — mais la dette est là, et elle porte un vrai risq
 
 ---
 
+## ⚠ LES SUITES NAVIGATEUR FLOTTENT CONTRE LA VERSION BÂTIE (8 septembre 2026)
+
+**Le mur de mémoire est tombé** — les 133 suites vont jusqu'au bout, serveur à
+236-451 Mo au lieu de 13 200, et 14,6 Go libres du début à la fin. C'était le
+point ; il est acquis.
+
+**Ce qui reste : le jeu des rouges CHANGE d'une course à l'autre.**
+
+| Course | Rouges |
+|---|---|
+| première | 19 sur 133 |
+| seconde, même code | 21 — et pas les mêmes |
+
+Sept d'entre eux étaient déjà rouges avant la bascule. Trois écrivaient le port
+3000 en dur et sont **corrigés**. Un est le travail en vol d'une autre session
+(le prénom séparé du nom). Le reste flotte : `bandeau-banc`, `cases-reglables`,
+`connexion-figee`, `face-id`, `grille-prix`, `pas-la-ce-jour`,
+`reduction-devis`, `retour-messagerie` rougissent dans une course et passent
+dans l'autre, à code identique.
+
+**La piste, et elle n'est pas mesurée** : la version bâtie répond beaucoup plus
+vite que le serveur de développement. Les attentes écrites pour un serveur qui
+compilait à la demande peuvent maintenant courir après un écran déjà rendu — ce
+sont des attentes de temps, pas d'état.
+
+**Ce qui est interdit ici, et il faut l'écrire avant que quelqu'un y pense :**
+rejouer automatiquement une suite rouge pour obtenir du vert. Un rejeu qui
+masque un flottement masquera aussi le vrai défaut du lendemain
+(`CLAUDE.md` §4 quater).
+
+**Par où commencer** : prendre une des huit, la jouer dix fois seule contre la
+version bâtie, et regarder si elle flotte encore. Si oui, c'est son attente
+qu'il faut viser — `waitForURL`/`textContent` remplacés par une attente d'ÉTAT.
+
+---
+
 ## ✅ ~~LA CI TUE SON RUNNER~~ — **trouvé et corrigé le 8 septembre 2026**
 
 **C'était la mémoire, et il a fallu quatre morts pour le prouver.** Le relevé
@@ -1956,30 +2143,28 @@ ne visait pas — il ne cherchait que `@/server/…`. Une règle qui ne tient qu
 
 ---
 
-## LA PORTE : IL DOIT CHOISIR A, B OU C (31 août 2026)
+## ✅ ~~LA PORTE : A, B OU C ?~~ — **tranché le 8 septembre 2026 : ni l'un ni l'autre**
 
-Sa capture du 30 août, et la planche qui en sort :
-`appli/porte-comme-ta-capture.html` — **rien n'est codé**, `src/app/login/` est
-intact.
+Sa réponse, et elle est nette : *« j'ai déjà choisi, c'était la deuxième
+maquette, la porte en plein air »*.
 
-| | |
-|---|---|
-| **A** | le bleu de sa capture ; la porte devient un écran à part |
-| **B** | le même dessin à ses couleurs — la charte « Nuit », recopiée |
-| **C** | le même dessin en clair ; se lit au soleil, comme le reste de l'appli |
+`appli/porte-comme-ta-capture.html` (31 août, trois reprises de sa capture du
+30) est donc **écartée**. La planche reste en ligne — elle raconte le chemin,
+comme toute maquette non retenue (`CLAUDE.md` §3 bis) — mais **plus personne ne
+l'attend** : aucune session ne doit rouvrir cette question.
 
-**Deux questions partent avec le choix**, et elles coûtent :
+**Ce qui vit, c'est `appli/la-porte-en-plein-air.html`** et les cinq points qui
+restent à trancher dessus, en tête de ce fichier. Les deux questions que ma
+planche posait n'ont pas disparu pour autant, et elles se rangent là-bas :
 
-- **Google et Apple pour de bon, ou on les retire ?** Google est le moins cher
-  des deux — l'application parle déjà à Google pour l'agenda
+- **Google et Apple** — la porte en plein air les porte aussi. Google est le
+  moins cher : l'application parle déjà à Google pour l'agenda
   (`src/server/agenda/google.ts`). Apple demande un compte développeur payant,
   et l'App Store l'exige dès que Google est proposé.
-- **Les mentions légales** de la planche renvoient à des pages qui n'existent
-  pas encore.
+- **Les mentions légales** — elles existent depuis le 8 septembre,
+  `appli/conditions-utilisation.html` et `appli/confidentialite.html`, en
+  brouillon.
 
-Tant qu'il n'a pas répondu, rien ne se code : c'est `CLAUDE.md` §3 bis.
-
----
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide

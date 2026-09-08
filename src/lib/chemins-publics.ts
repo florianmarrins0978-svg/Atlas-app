@@ -33,6 +33,15 @@
  */
 export const CHEMINS_PUBLICS = [
   "/login",
+  // **La porte en plein air, qu'il a choisie le 8 septembre 2026.** C'est
+  // l'écran d'un visiteur SANS compte : le rendre privé le renverrait vers
+  // lui-même, et la boucle serait infinie. Les deux pages légales qu'il porte
+  // sont publiques pour la même raison — on doit pouvoir lire ce qu'on accepte
+  // avant d'accepter.
+  "/bienvenue",
+  "/creer-un-compte",
+  // Les deux pages légales sont des fichiers de `public/` — servies avant le
+  // middleware, donc rien à déclarer ici pour elles.
   "/api/auth",
   "/api/cron",
   "/api/session-perimee",

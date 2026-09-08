@@ -89,21 +89,17 @@ maquettes/*-essai.html
 # Sauvegardes du banc d'essai — noms et adresses de clients : jamais versionnées.
 sauvegarde-atlas-*.sql
 sauvegarde-atlas-*.json
-.next-batie
-# La neuve se bâtit à côté pendant que l'ancienne sert, et l'échange laisse la
-# vieille le temps de l'effacer en fond (`scripts/relais-version-batie.mjs`).
-.next-batie-neuve
-.next-batie-vieille
-.next-verification
-# Les dossiers bâtis d'un ATELIER — un par session qui mesure (8 septembre
-# 2026, `scripts/_atelier.ts`). Deux sessions qui bâtissent dans le même
-# dossier se réécrivent leurs morceaux et servent une application à moitié
-# compilée.
-.next-verification-a*
-.next-a*
-.next-batie-p*
-# Le serveur au profil « banc » monté par `test-bandeau-banc-e2e.ts` : Next.js
-# refuse deux serveurs de développement dans un même dossier, il lui faut donc
-# le sien. Un fichier neuf dans l'arbre git ferait refuser TOUTES les mises à
-# jour du banc du patron (`mettre-a-jour.sh`).
-.next-banc-essai
+# TOUS LES DOSSIERS BÂTIS, ET LA RÈGLE REMPLACE LA LISTE — 8 septembre 2026.
+#
+# Ils étaient nommés un par un : `.next-batie`, ses deux versions de relais,
+# `.next-verification`, les ateliers (`.next-a*`), le profil « banc ». Le
+# huitième — un dossier de capture — n'y était pas, et cela ne s'est pas vu
+# comme un fichier de trop dans `git status` : **Tailwind lit tout ce que git
+# ne cache pas**. Il a donc relu ses propres classes compilées, y compris une
+# qu'on venait de corriger, et la feuille de style entière a cessé de
+# compiler — l'application rendait 500 sur du code juste.
+#
+# Un dossier bâti ne se versionne jamais, quel que soit son suffixe. Et un
+# fichier neuf dans l'arbre ferait refuser TOUTES les mises à jour du banc du
+# patron (`mettre-a-jour.sh`), qui n'avance qu'en ligne droite.
+.next-*

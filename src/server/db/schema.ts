@@ -515,6 +515,22 @@ export const absencesEquipe = pgTable("absences_equipe", {
   premierJour: date("premier_jour").notNull(),
   /** Dernier jour d'absence, inclus. */
   dernierJour: date("dernier_jour").notNull(),
+  /**
+   * ─── L'ABSENCE PEUT NE PRENDRE QU'UNE DEMI-JOURNÉE — 8 septembre 2026 ────
+   *
+   * Sa question : *« je peux les mettre seulement le matin ou seulement
+   * l'après-midi ? Sinon il faut corriger ça. »* La réponse était non, et un
+   * rendez-vous d'une heure lui coûtait la journée entière de son gars.
+   *
+   * **Deux bornes, pas deux booléens** : « du jeudi après-midi au lundi matin »
+   * n'a pas de sens en booléens (ils excluraient TOUS les matins de la
+   * période). Voir `drizzle/0076_absence_demi_journee.sql`.
+   *
+   * Par défaut la journée entière — les absences déjà notées ne changent pas
+   * de sens, et aucune date bloquée ne se rouvre.
+   */
+  premierDemi: text("premier_demi").notNull().default("matin"),
+  dernierDemi: text("dernier_demi").notNull().default("apres_midi"),
   motif: text("motif"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

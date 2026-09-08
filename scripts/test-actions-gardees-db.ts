@@ -212,6 +212,11 @@ const EXEMPTIONS: Record<string, string> = {
     "Même famille : elle ouvre la session par la clé d'appareil, donc elle s'appelle sans session.",
   "src/app/login/actions.ts#deconnexionAction":
     "Se déconnecter est ouvert à qui est connecté, quel que soit son rôle — et refuser reviendrait à retenir les gens dedans.",
+  "src/app/creer-un-compte/actions.ts#creerLeCompteAction":
+    "Elle CRÉE le compte, l'entreprise et la session : il n'existe encore ni rôle, " +
+    "ni entreprise, ni personne à qui les demander. Ce qui la protège n'est donc pas " +
+    "une garde de rôle mais le limiteur de `verifierLimite` — sans lui, cette adresse " +
+    "fabriquerait une entreprise par appel, aussi vite qu'on les envoie.",
 
   // ─── Public par jeton : le client de l'artisan n'a pas de compte ────────
   "src/app/devis/[jeton]/actions.ts#repondreAction":

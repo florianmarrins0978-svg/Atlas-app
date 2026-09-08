@@ -62,7 +62,7 @@ défaut** : les allumer d'office bloquerait un salarié dont le téléphone est 
 un retour ne part plus à la file de purge. Sans cela, effacer la photo depuis la
 pellicule du chantier aurait détruit le fichier que le retour montre encore — et
 personne n'aurait fait le lien. La suite base l'éprouve dans les deux sens :
-celle du retour reste, une photo ordinaire s'en va (`ARCHITECTURE.md` §293).
+celle du retour reste, une photo ordinaire s'en va (`ARCHITECTURE.md` §299).
 
 **Ce que je défendais et qu'il a corrigé** : je voulais le retour sous chaque
 chantier, pour lire et facturer d'un seul geste. Il a choisi l'onglet à part, et
@@ -227,6 +227,675 @@ Quatre défauts trouvés en mesurant : l'essai du port mentait sous Windows, deu
 sessions simultanées prenaient le même rang, le jeu de démonstration refusait la
 base d'un atelier, et une base créée à la volée n'avait aucun privilège par
 défaut. `ARCHITECTURE.md` §287 et §288.
+
+
+### La porte : le mot de passe se confirme, le déroulant passe à la charte, l'identité se sépare
+
+Cinq remarques du 8 septembre, sur la planche qu'il venait d'essayer.
+
+**LE MOT DE PASSE SE CONFIRME, ET L'ŒIL LE MONTRE.** Deux cases sur le même
+écran, et « Continuer » refuse tant qu'elles diffèrent. L'œil est celui qui
+existe déjà — mêmes tracés, même libellé « Afficher / Masquer le mot de passe »
+que `src/app/reglages/equipe/nouveau/NouveauCompte.tsx` : un second
+dessin pour le même geste finirait par diverger. Sans lui, un mot de passe se
+tape à l'aveugle sur un chantier au soleil, et l'on ne sait jamais lequel des
+deux est faux.
+
+**LE BANDEAU DÉROULANT EST DESSINÉ PAR NOUS, PLUS PAR LE TÉLÉPHONE.** Sa
+remarque : *« le bandeau déroulant doit respecter la charte de couleur et de
+style de l'appli »*. Un `<select>` natif ne le peut pas — c'est le
+système qui dessine sa roue, et aucune charte d'Atlas ne l'atteint. Le nouveau
+est fait à la main : replié il a l'allure d'un champ, déplié il ouvre un panneau
+aux couleurs de l'application. La suite compare la couleur du chevron à l'or de
+la charte, sinon « à la charte » ne serait qu'une intention.
+
+**L'IDENTITÉ SE SÉPARE — ET TROIS CASES N'EXISTENT PAS EN BASE.** Civilité,
+prénom et nom sur un écran, comme sur sa capture de Qonto. Aujourd'hui
+`users.nom` est un champ unique, et `civilite` n'existe que sur
+les CLIENTS (`src/lib/civilite.ts`, valeurs `mr` et `mme`).
+Les poser à la porte veut donc dire **les créer** — c'est écrit dans la planche
+plutôt que passé sous silence, et la décision lui revient.
+
+**LA DOMICILIATION ÉTAIT DÉJÀ LÀ, SOUS UN AUTRE NOM.** Sa question — *« on ne
+met pas où est domiciliée l'entreprise ? »* — portait sur la case « Adresse du
+siège », dont le libellé, repris des réglages, ne le disait pas assez. La
+QUESTION emploie désormais ses mots, la CASE garde ceux des réglages : deux
+libellés différents pour la même case feraient croire à deux endroits. Aucune
+question sur le pays : Atlas ne sait faire que des documents français — SIRET,
+RCS, TVA française — et la poser laisserait croire le contraire.
+
+**« Un mot pour accompagner vos devis » est retiré**, à sa demande. Il retourne
+dans les réglages, où il se voit sur un devis en l'écrivant.
+
+Treize questions pour une micro-entreprise en franchise, seize pour une SAS
+assujettie — et la suite compare ces deux chiffres à ceux **écrits dans la
+planche**. Ce contrôle a servi le jour même : ils annonçaient encore 14 et 17.
+
+**Deux défauts de mon fait, vus à la capture et par aucune mesure :** le chevron
+du bandeau se repliait en équerre à l'ouverture — une rotation de SVG sans
+`transform-box` tourne autour de l'origine du repère —, et un
+remplacement mal écrit avait laissé un commentaire CSS non fermé, qui mangeait
+la règle suivante.
+
+### La création de compte remplit les réglages, et ne pose que les questions qui ont un sens
+
+Sa décision du 8 septembre, après avoir essayé les deux propositions : *« il
+faut pour la création du compte la deuxième option sous forme de question qui
+avance, et faut lui poser TOUTES les questions qui s'enregistreront dans ce
+réglage, pour qu'il ait le moins d'infos à rentrer ensuite. Une fois dans
+l'appli, s'il a tout bien rempli, il peut direct s'en servir ou quasiment. »*
+
+**LE MOINS D'INFOS À RENTRER, CE N'EST PAS POSER MOINS DE QUESTIONS.** C'est ne
+poser que celles qui ont un sens, et deux embranchements font tout le travail —
+tous deux lus dans le code du produit, aucun inventé :
+
+- la **forme juridique** commande le capital social et la ville du RCS. Une EI
+  et une micro-entreprise n'en ont pas légalement (`formeADuCapital`,
+  `src/lib/formes-juridiques.ts`) : les deux questions disparaissent ;
+- le **régime de TVA** commande le numéro intracommunautaire. En franchise, la
+  question ne se pose pas.
+
+Une micro-entreprise en franchise répond à **14 questions** là où une SAS
+assujettie en voit **17** — et la suite mesure les deux parcours pour le
+vérifier. Un embranchement débranché rendrait des écrans parfaitement valides,
+tiendrait dans le cadre, et poserait trois questions absurdes.
+
+**LA QUESTION QUI N'EXISTAIT NULLE PART, ET QUI COMPTE LE PLUS.**
+`entreprises.regimeTva` vaut « assujettie » PAR DÉFAUT : un artisan en
+franchise qui ne va jamais dans les réglages sort des devis **avec une TVA qu'il
+n'a pas le droit de facturer**, et rien ne le lui dit. C'est la seule question
+dont l'oubli fabrique un document faux — elle est obligatoire, et la suite
+exige qu'elle soit **impossible à passer**.
+
+**LA FORME JURIDIQUE EST UN MENU DÉROULANT**, à sa demande du même jour —
+*« tu ne vas pas tous les énumérer »*. C'est la même qu'il avait posée le
+14 août pour l'écran des réglages. Onze boutons occupaient l'écran entier et le
+faisaient défiler ; le menu ouvre la roue du téléphone, et chaque sigle voyage
+avec son nom complet — « EURL » seul ne se retient pas.
+
+**LA PROGRESSION EST EN SEGMENTS**, un par chapitre, relevé sur sa capture de
+Qonto : des segments disent COMBIEN d'étapes il reste, là où un pourcentage ne
+dit que le chemin parcouru. Écartés de la même capture, et il faut dire
+pourquoi : le groupement en trois familles pour la forme juridique — il a
+demandé un déroulant —, Madame/Monsieur — la civilité ne se range nulle part
+pour un utilisateur d'Atlas, et rien ne s'invente —, et la flèche sur
+« Continuer », que sa règle du 25 août interdit.
+
+**Le compteur ne monte jamais.** Une question conditionnelle est comptée tant
+qu'on ne sait pas : sans cela, il afficherait « 5 sur 14 » puis « 6 sur 16 » dès
+qu'on choisit une SAS. Un total qui grossit en cours de route se lit comme une
+mauvaise surprise, et c'est exactement ce qu'on veut éviter chez quelqu'un qui
+n'est pas à l'aise.
+
+**Défaut attrapé par la suite, jamais à l'œil :** une fois la liste des formes
+affichée, elle ne disparaissait plus — les onze boutons restaient à la place du
+champ des onze questions suivantes. L'attribut `hidden` ne vaut qu'un
+`display:none` de la feuille du navigateur, et le `display:flex`
+de la liste le battait. Chaque écran, pris isolément, avait l'air correct.
+
+**La proposition écartée a été RETIRÉE**, pas gardée « au cas où » : une planche
+qui montre encore l'option non retenue fait rouvrir un débat clos.
+
+### La CI mourait faute de mémoire : trois routes PDF compilées trop tard
+
+**Quatre morts au même endroit, sans un seul test rouge.** Le relevé écrit dans
+le journal a fini par le dire : la mémoire libre tombe de **13 349 Mo à 396 Mo**,
+dont **trois gigaoctets d'un coup** sur le cas qui demande le PDF d'un devis,
+celui d'une facture et l'export complet. Le disque, lui, n'avait pas bougé.
+
+Ces trois routes n'étaient jamais préchauffées : Turbopack les compilait donc au
+milieu des suites, quand il ne restait plus rien. Le dépôt savait pourtant ce que
+ça coûte — il écrivait déjà que la feuille de chantier en PDF met « 45 à 50 s à
+se compiler la première fois, et le serveur ne répond plus à rien pendant ce
+temps ». Elles rejoignent le préchauffage (`API_DE_DOCUMENTS`), avec un
+identifiant nul : la route se compile parce qu'elle s'exécute, et rend un 404
+sans fabriquer le moindre document.
+
+**Cinq suspects écartés en chemin, chacun par une mesure** : le serveur ne gonfle
+pas au fil des suites (+67 Mo sur douze), `.next` ne bouge pas d'un octet, la
+suite jouée seule passe, la CI n'annule aucune exécution, et le RENDU du PDF
+coûte 80 Mo — c'est sa COMPILATION qui coûte des gigaoctets.
+
+### La machine de la CI dira ce qu'elle a, au lieu de mourir en silence
+
+Deux exécutions de suite se sont arrêtées au même endroit sans un seul test
+rouge : « The runner has received a shutdown signal ». Sa demande : *« corrige
+le problème à la racine »* — donc on la cherche, et on ne répare pas une panne
+imaginée (`AGENTS.md`).
+
+**Quatre suspects écartés par la mesure, pas par le raisonnement** : le serveur
+ne gonfle pas (1 820 → 1 887 Mo sur douze suites, et la CI meurt à la deuxième),
+`.next` ne bouge pas d'un octet (1 241 Mo avant comme après), le test joué seul
+passe, et `ci.yml` ne porte aucun `concurrency` qui annulerait une exécution.
+
+`ci.yml` relève donc mémoire libre, disque libre et charge **toutes les cinq
+secondes pendant les suites navigateur**, et les recrache `if: always()` — le
+pire moment en tête. C'est la règle du dépôt appliquée à la lettre : devant un
+défaut muet, la première livraison n'est pas un correctif, c'est de rendre le
+défaut bavard.
+
+### La vignette d'une photo reprise n'est pas un bouton
+
+La CI a rougi sur `main` : un carré de 62 px arrivé avec « repartir d'un
+client » portait un rayon de 11 px, et le contrôle des boutons arrondis le
+dénonçait. C'est une **vignette photo** qu'on coche pour reprendre l'image, pas
+un geste qu'on appuie — l'état se lit d'ailleurs au liseré d'or. L'arrondir
+entièrement rognerait les quatre coins d'une photo déjà réduite à 62 px, c'est-
+à-dire ce qui permet de la reconnaître.
+
+Elle est donc inscrite comme exception **nommée, avec sa raison**, et le motif
+vise la ligne et non le fichier : un vrai bouton rectangulaire écrit demain dans
+cet écran serait toujours refusé.
+
+### Deux contrôles qui accusaient à tort, corrigés à la racine
+
+Relevés par la batterie du 8 septembre, et **aucun des deux ne venait du lot** :
+
+`test-mode-emploi` — une fiche de l'assistant pointait
+l'ancien `DocumentsClient` de la rubrique Documents, supprimé la veille par le découpage de
+« Devis & factures ». L'assistant enseignait donc un geste sur un écran disparu,
+ce qui est pire qu'une page vide : on le suit. La fiche vise maintenant
+`src/app/reglages/documents/allure/AllureClient.tsx`, où le bouton « Photographier mon devis »
+vit réellement.
+
+`test-garde-travail-non-enregistre` — le cas « arbre sale » exigeait qu'une
+modification traîne dans le dossier, et refusait de conclure sinon. La batterie
+a donc rougi **parce que le lot venait d'être enregistré proprement** : un
+contrôle qui dépend de l'état du dossier n'éprouve pas le garde-fou, il éprouve
+l'heure qu'il est. Il fabrique désormais son propre témoin (un fichier non
+suivi) et le retire quoi qu'il arrive.
+
+**Un détail qui coûtera une minute à quelqu'un un jour** : ce fichier de contrôle
+ne peut plus porter « git reset --hard » en toutes lettres — le garde-fou lit la
+commande qui l'écrit et la refuse. Le geste s'y monte à partir de ses morceaux,
+et le commentaire le dit.
+
+### `disponibilites.ts` descend à son étage — le premier déménagement
+
+Sa réponse à la dette relevée le matin : *« oui fais-le »*. Le fichier ne portait
+**aucune requête et aucune fonction `async`** — rien que des calculs — et vivait
+pourtant sous `src/server/`, où l'on range ce qui parle à la base. Six fichiers
+d'étages inférieurs remontaient donc l'y chercher.
+
+Il vit maintenant dans `src/lib/`, ses 39 imports réécrits, **aucun comportement
+changé** : c'est le même code au bon étage (`ARCHITECTURE.md` §286). La liste de
+dette de `test-couches.ts` est repartie vide.
+
+**Le déménagement a révélé un trou dans le contrôle qui l'avait signalée** : il
+ne visait que `@/server/…`, si bien que deux fichiers de `lib` remontaient par
+`../server/…` sans être vus. Une règle qui ne tient qu'une écriture sur deux ne
+tient rien — les deux formes sont désormais refusées, et le cas est éprouvé.
+
+### Deux règles d'or de plus, et six fichiers morts en moins
+
+*« Je ne veux pas de code mort, si ça ne sert plus on le supprime proprement »*
+et *« pas de spaghettis : si demain je dois faire appel à un développeur, il
+faut qu'il comprenne facilement comment fonctionne le code »*. `CLAUDE.md`
+§4 quinquies et §4 sexies, chacune tenue par un contrôle de la batterie.
+
+**Supprimés le jour même, parce qu'une règle qu'on n'applique pas à soi ne vaut
+rien** : `ScreenHeader`, `ActionPrincipale`, `BrancheEucalyptus` (dont l'en-tête
+disait lui-même « dessinée, jamais importée »), `lib/date-relative`,
+`lib/nombre-en-lettres`, `server/ai/pipeline/etapes` — plus les deux suites qui
+n'éprouvaient qu'eux, l'exception d'un contrôle qui nommait l'un d'eux, et trois
+renvois de documentation devenus faux. `verifier:memoire` a attrapé les trois
+derniers : c'est exactement son rôle.
+
+`scripts/test-pas-de-code-mort.ts` refuse désormais tout fichier de `src/` que
+plus rien n'importe, sa liste d'exceptions **vide**. Sa première version accusait
+155 fichiers bien vivants — elle comparait des bouts de chemin au lieu de
+résoudre les imports ; un contrôle qui accuse à tort ne se corrige pas, il
+s'éteint, et l'on aurait perdu la règle le jour de sa pose.
+
+`scripts/test-couches.ts` tient le sens des liens : `lib` ignore `server`, ni
+l'un ni l'autre ne connaît d'écran, un composant ne parle à la base que s'il est
+un composant serveur. Les `import type` ne comptent pas — ils s'effacent à la
+compilation. La dette du jour est nommée (quatre remontées, une seule cause :
+`src/lib/disponibilites.ts` mêle règles pures et accès base) et inscrite dans
+`TODO.md` ; le contrôle refuse toute remontée NOUVELLE, donc la liste ne peut
+que rétrécir.
+
+Les deux contrôles ont été vus rouges avant d'être crus : contre un orphelin
+posé exprès sous `src/lib/`, et contre une remontée `lib → server`.
+
+
+### Les conditions d'utilisation et la politique de confidentialité, en brouillon
+
+`appli/conditions-utilisation.html` et `appli/confidentialite.html` — sa demande
+du 8 septembre : *« va sur internet et récupère des conditions d'utilisation et
+adapte-les à notre application pour que personne ne puisse me poursuivre s'il y
+a de la perte de données peu importe la raison »*, puis *« très bien et rajoute
+la politique de confidentialité »*.
+
+**CE QUI A ÉTÉ REFUSÉ, ET POURQUOI CE REFUS LE PROTÈGE MIEUX.** « Que personne
+ne puisse me poursuivre quoi qu'il arrive » n'existe pas en droit français, et
+le viser DÉTRUIT la protection : l'article 1170 du Code civil répute non écrite
+toute clause qui prive de sa substance l'obligation essentielle — or la
+sauvegarde et la sécurité des données sont tenues pour essentielles dans un
+contrat SaaS. Une exclusion totale tombe donc EN ENTIER, et l'on se retrouve
+sans plafond du tout. Les documents visent le maximum qui tient : obligation de
+moyens renforcée, plafond chiffré, exclusion des dommages indirects, forclusion
+à douze mois, et une sauvegarde partagée adossée à une fonction qui existe pour
+de vrai (« Mes données », `src/app/reglages/donnees/`).
+
+**Aucun texte recopié.** Les conditions d'un tiers sont protégées comme toute
+œuvre : les recopier créerait exactement le risque qu'on cherche à éviter. Seule
+la structure d'usage a été relevée, et les références légales vérifiées à la
+source — dont une qui aurait été fausse de mémoire : **les mentions légales
+relèvent de l'article 1-1 de la LCEN depuis la loi SREN du 21 mai 2024**, et non
+plus de l'article 6-III, abrogé.
+
+**La politique de confidentialité est la version lisible de **, et
+rien n'y a été ajouté qui ne s'y trouve. Son tableau des durées **dit son état
+réel** — appliquée, pas encore, rien — parce que le registre interne a déjà porté
+le mot « implémenté » sur des purges que rien ne déclenchait. Dans un document
+public, la même erreur se paierait devant la CNIL.
+
+**Rien n'est publiable en l'état, et chaque page le dit en tête** : la société
+éditrice reste à constituer, l'hébergement n'est pas choisi, le contrat de
+sous-traitance de l'article 28 est un document distinct à faire rédiger, et
+plusieurs suppressions annoncées ne tournent pas encore. La suite le garde :
+elle exige que le bandeau de brouillon soit présent tant qu'il reste une case
+[À COMPLÉTER], et qu'il disparaisse quand il n'en reste plus.
+
+### La porte en plein air : une photo, la phrase légale, et deux façons de créer un compte
+
+`appli/la-porte-en-plein-air.html` — sa demande du 8 septembre, avec une capture
+de l'application Hinge : *« quelque chose dans cet esprit, une belle photo libre
+de droit en rapport avec la nature »*. Trois écrans qui se touchent : la porte,
+« Créer un compte » (la maquette qu'il doit valider) et « Se connecter » (la
+proposition B de `porte-comme-ta-capture.html`, recopiée au caractère près,
+comme il l'a demandé). **Rien n'est codé** — `src/app/login/` n'a pas bougé.
+
+**La première image du dossier `appli/`, et la règle qui vient avec.** On ne
+pose pas une photo dont on ne peut pas montrer le droit de s'en servir. Celle-ci
+est en **domaine public CC0 1.0** (auteur Midhun P, WordPress Photo Directory,
+trouvée par l'API Openverse avec le filtre `license=cc0`) : usage commercial
+permis, aucune mention obligatoire. La licence, l'auteur et l'adresse de la
+source sont écrits en tête du fichier, pour qu'on puisse refaire le chemin dans
+six mois.
+
+**Ce que la suite garde, et qu'aucune mesure de hauteur n'aurait vu.** Une image
+qui ne charge pas laisse un écran **noir** avec du texte blanc dessus : lisible,
+donc invisible à tout contrôle de débordement. `essai-porte-plein-air.mjs` exige
+donc de vrais pixels (`naturalWidth`), pas une balise `<img>` — et
+`pages.yml` interroge en plus `images/porte-foret.jpg` sur le site publié, comme
+il le fait déjà pour le PDF de l'anthracnose. Elle garde aussi **le chemin qu'il
+a demandé** : deux boutons qui mèneraient au même endroit passeraient toutes les
+mesures de hauteur sans qu'on s'en aperçoive.
+
+**Deux façons de créer un compte lui sont proposées**, parce que le choix n'est
+pas à nous : *tout sur un écran* (quatre champs, un bouton) ou *une question à
+la fois* (quatre temps, une barre de progression). La seconde existe pour sa
+contrainte du 5 septembre — *« la plupart des patrons qui vont utiliser l'app
+sont des vieux qui ont du mal à se servir de leur téléphone »*.
+
+**Quatre renseignements, pas un de plus** : nom, e-mail, mot de passe, nom de
+l'entreprise. Le SIRET, l'adresse, la TVA, l'IBAN et les tarifs existent déjà
+dans les réglages et s'y remplissent quand ils servent. Tout demander à la porte
+perdrait celui qui essaie l'application un soir.
+
+**Ce qui reste ouvert et qu'il tranche seul** est écrit dans
+`docs/lot-porte-en-plein-air.md` — dont, bloquant : **les pages « Conditions
+d'utilisation » et « Politique de confidentialité » n'existent pas** dans le
+dépôt. Les liens de la planche ne mènent nulle part, exprès.
+
+**Défaut attrapé au passage :** dans `appli/essais.html`, l'entrée
+`la-porte-d-atlas.html` n'était pas refermée (`</a>` manquant) — 113 ancres
+ouvertes pour 112 fermées. Le navigateur refermait tout seul, donc rien ne se
+voyait ; le lien suivant s'en trouvait avalé dans la même zone cliquable.
+
+### La fiche du salarié : la planche du lot 2
+
+`appli/la-fiche-du-salarie.html` — par où il arrive (le planning, sa seule
+porte), deux façons de tenir la preuve de fin de chantier, et l'écran du patron
+qui décide si elle est exigée. **Rien n'est codé dans `src/`.**
+
+**Ses deux ajouts du 8 septembre**, écrits dans `TODO.md` : la fiche
+d'intervention se rattache aux informations du client **sur le planning**, et
+une feuille de preuve *« que le salarié remplira ou non, ça sera au patron de
+décider »*.
+
+**Ce que la capture a montré et qu'aucune mesure ne dit** : le numéro du client
+manquait sur la fiche. Il est devant un portail fermé, le client est au travail,
+et le planning est sa seule porte — sans ce lien, il n'a nulle part où aller le
+chercher.
+
+### Repartir d'un client : la planche du lot 1, et deux décisions prises avant
+
+`appli/le-client-quon-connait.html` — cinq propositions essayables, trois pour
+dire au patron chez QUI son chantier vient d'être rangé, deux pour ouvrir un
+chantier depuis la fiche d'un client. **Rien n'est codé dans `src/`**
+(`CLAUDE.md` §3 bis).
+
+**Ce que la lecture du brief a évité.** Il demandait qu'Atlas propose le client
+reconnu pendant la frappe : le patron avait écarté exactement cela le 17 août
+2026 — *« non justement, il ne faut pas »*, écrit dans
+`src/lib/rapprochement-client.ts`. La planche dit ce qu'Atlas a fait au lieu de
+faire choisir. Il a validé la correction.
+
+**Deux décisions du patron, consignées en `ARCHITECTURE.md` §285** : la
+confirmation du client ne bloque pas la facture, et le salarié gagne un droit
+d'écriture étroit — photos et « c'est fini » sur les chantiers de sa journée,
+sans jamais un montant.
+
+**Et un troisième point, qui n'était dans aucun brief :** `terminerChantier`
+crée la facture. Le « c'est fini » du salarié ne peut donc pas être ce geste-là ;
+il en faut deux, et le patron l'a tranché.
+
+**Deux défauts trouvés sur la CAPTURE, par aucune mesure.** « Ce n'est pas lui »
+restait affiché sur une fiche neuve : `.defaire` porte `display:block`, qui
+l'emporte sur le `[hidden]{display:none}` du navigateur — la propriété valait
+bien `true`, et le contrôle rendait un vert. Et la coche du sceau contredisait
+« Nouvelle fiche » : elle se lisait comme une confirmation de reprise. Sixième
+fois dans ce dépôt qu'un défaut sort d'une image (`CLAUDE.md` §5).
+
+**Un contrôle qui ne mesurait rien**, corrigé dans la foulée : il comparait
+`.ecran.scrollHeight` au cadre, alors que `.ecran` est une colonne flexible dont
+la hauteur vaut toujours celle du cadre. Le débordement se voit sur `.corps`.
+Vérifié rouge en forçant 400 px de trop.
+
+---
+
+### Le retour du devis ramène au planning quand on en vient
+
+Depuis la feuille du planning, ouvrir un devis pas encore envoyé puis reculer
+déposait sur la fiche client : deux retours pour retrouver sa journée. La
+flèche ramène désormais au planning quand on en vient — et à la fiche client
+partout ailleurs, sa règle du 31 août.
+
+**Ce qui a été RETIRÉ**, et c'est ce qui dit que la racine est touchée : la
+branche à deux destinations de la porte, le libellé rendu séparément de
+l'adresse, et le raccourci du devis parti qui empruntait la flèche d'un autre
+écran. Voir `ARCHITECTURE.md` §296.
+
+**Un contrôle disait l'inverse et a changé de sens** : il exigeait que le devis
+pas encore parti n'emporte aucune provenance. Le garder aurait empêché la
+correction — comme la ligne du 31 août avait empêché celle du 7 septembre.
+
+**Renumérotation :** mes §290, §291 et §292 devenaient des doublons — une
+session voisine avait pris les deux premiers le même jour. Ils passent à §293,
+§294 et §295, et leurs dix-neuf renvois ont été relus un par un (`CLAUDE.md`
+§6 B : jamais de `sed` à l'aveugle, les renvois du voisin portent les mêmes
+numéros).
+
+### La porte en plein air est codée — l'écran d'accueil et les seize questions
+
+Sa demande : *« code-moi exactement la deuxième maquette avec les questions »*.
+Écrans 1 et 2 de `appli/la-porte-en-plein-air.html`, portés dans l'application.
+
+Un visiteur sans compte arrive désormais sur **`/bienvenue`** — la photo, le nom,
+et deux gestes — au lieu de tomber sur un formulaire qui suppose qu'il a déjà un
+compte. « Créer un compte » ouvre **une question à la fois**, seize au plus,
+quatorze pour une micro-entreprise en franchise : on ne demande jamais le capital
+d'une entreprise qui n'en a pas. Le compte et l'entreprise sont créés dans une
+seule transaction, et **la session s'ouvre toute seule** — sans quoi on
+retomberait sur « Adresse » et « Mot de passe » après avoir répondu à seize
+questions.
+
+Ce qui a été **refusé**, et pourquoi : les boutons Google et Apple de l'écran 3
+de la planche. Aucun de ces deux fournisseurs n'est branché ; deux boutons qui ne
+font rien valent moins que pas de boutons. `/login` garde donc sa charte et
+reçoit seulement les deux liens qui manquaient — le retour vers la porte, et
+« Pas de compte ? ».
+
+### Trois défauts trouvés en REGARDANT l'écran, aucun par un test
+
+`CLAUDE.md` §5, une cinquième fois. Les trois sont réels et aucun n'était visible
+autrement :
+
+1. **Tout `public/` recevait une redirection.** Le middleware interceptait
+   `/images/porte-foret.jpg` : la photo de la porte ne s'affichait pas, un carré
+   gris à la place. Et pas seulement elle — `manifest.json`, les icônes de
+   l'écran d'accueil, et **les deux pages légales que la porte fait accepter**.
+   On demandait d'accepter des conditions qu'on ne pouvait pas lire. La liste
+   d'exceptions (`favicon.ico`, `robots.txt`) devient une règle : ce qui porte
+   une extension est un fichier, pas un écran.
+2. **« Se connecter » finissait sous l'indicateur d'accueil de l'iPhone.** La
+   marge du bas est réservée partout ailleurs par la barre d'onglets ; ces deux
+   écrans n'en ont pas.
+3. **Le bandeau des formes juridiques sortait de l'écran** — les dernières
+   formes et « Continuer » étaient hors de portée. Il s'ouvre vers le haut, là
+   où la question laisse la place.
+
+Et un quatrième, en marge : `.gitignore` nommait les dossiers bâtis un par un, et
+le huitième manquait. Ce n'est pas un fichier de trop dans `git status` :
+**Tailwind lit tout ce que git ne cache pas**, il a relu ses propres classes
+compilées, et la feuille de style entière a cessé de compiler.
+
+### Trois règles qui vivaient en double, ramenées à une seule
+
+Écrites en codant la porte, et chacune aurait divergé :
+
+| | |
+|---|---|
+| le mot de passe | la porte imposait **huit** caractères quand le produit en exige douze depuis l'audit du 23 août : le PATRON aurait eu le mot de passe le plus faible, plus faible que celui qu'il impose à ses salariés |
+| le capital social | `entreprises.ts` savait lire « 1 000 » ; la porte, non — un capital saisi avec une espace aurait fait échouer la création entière, pour une case facultative |
+| la forme juridique | `formeADuCapital` existait déjà, et la copie répondait **l'inverse** sur « Autre » |
+
+Et l'œil qui montre le mot de passe sort de l'écran des salariés : deux dessins
+pour le même geste, c'est le libellé lu à voix haute qui aurait dérivé.
+
+
+### Sa porte, c'est « en plein air » — l'autre planche est écartée
+
+*« J'ai déjà choisi, c'était la deuxième maquette, la porte en plein air. »*
+
+`appli/porte-comme-ta-capture.html` (31 août) sort donc du jeu. Elle reste en
+ligne, comme toute planche non retenue — elle raconte le chemin —, mais plus
+aucune session ne doit attendre de réponse dessus : c'était écrit dans `TODO.md`
+depuis huit jours, et c'est ce genre d'attente fantôme qui fait redemander au
+patron ce qu'il a déjà tranché.
+
+Les deux questions qu'elle posait sont reportées là où elles vivent désormais —
+Google et Apple sur la porte retenue, et les mentions légales, qui existent en
+brouillon depuis le 8 septembre.
+
+### Le douzième numéro de migration pris deux fois — constaté, pas défait
+
+Deux sessions ont poussé un `0076` à une heure d'intervalle le 8 septembre,
+chacune verte de son côté : le doublon n'existait qu'une fois les deux
+fusionnées. Le contrôle a rougi aussitôt et a barré la CI entière — les suites
+base s'arrêtent avant la construction et les suites navigateur.
+
+**Renommer est exclu** : les deux sont sur `main`, et la clé de suivi étant le
+nom du fichier, un renommage les rejouerait sur toutes les bases à jour. Reste
+ce qui compte vraiment — l'ORDRE, qu'une base neuve tire d'un tri alphabétique.
+Vérifié : `absence_demi_journee` n'écrit que sur `absences_equipe`,
+`identite_vivante_sur_la_facture` que sur `factures`. Aucune ne crée ce que
+l'autre modifie ; l'ordre est donc sans effet.
+
+Le doublon rejoint les onze acquis, avec cette vérification écrite à côté.
+
+### Les suites navigateur servent la version BÂTIE — le mur de mémoire tombe
+
+Sa décision, après quatre morts de la CI au même endroit : *« bascule sur la
+version bâtie »*.
+
+| | Serveur de développement | Version bâtie |
+|---|---|---|
+| la course | **meurt à la 2ᵉ suite**, machine tuée | **va au bout : 133 suites** |
+| le serveur | 1 820 Mo, jusqu'à 13 200 | **236 à 451 Mo** |
+| mémoire libre | tombe à 396 Mo | **reste à 14,6 Go** |
+
+Turbopack compilait à la demande, au milieu des suites, et allouait hors du tas
+de V8 : rien ne le bornait. Une version bâtie ne compile plus rien. Le
+préchauffage disparaît avec la cause — il n'existait que pour absorber cette
+compilation (le banc, lui en développement, le garde).
+
+**Et cela comble un trou ouvert depuis un mois** (`CLAUDE.md` §5) : les suites
+navigateur ne passaient jamais par le chemin de production, celui que le banc du
+patron sert vraiment. Deux refus l'ont prouvé dès le premier essai — le profil de
+l'IA et l'hôte de confiance d'Auth.js — que personne n'avait jamais vus.
+
+**Trois suites écrivaient `localhost:3000` en dur** et rougissaient dès qu'une
+session travaillait sur un autre port : elles lisent l'adresse de leur atelier.
+
+**Ce qui reste, écrit dans `TODO.md`** : le jeu des rouges change d'une course à
+l'autre (19 puis 21, pas les mêmes) — huit suites flottent, probablement parce
+que la version bâtie répond trop vite pour des attentes écrites contre un
+serveur qui compilait. Interdiction de les rejouer automatiquement pour obtenir
+du vert.
+
+### Cocher un absent, poser un congé d'une demi-journée
+
+**Ses deux choix sur maquette : C et D2.**
+
+Une personne en congé un jour sur deux reste cochée sur son chantier, et la
+pastille dit les jours où elle vient — « Julien ven. », cerclée au lieu d'être
+pleine. Il coche une fois, comme avant : c'est l'application qui retire le jour
+du congé.
+
+Et une absence peut ne prendre qu'un matin. Toucher un nom pose la journée,
+comme avant ; deux pastilles « Matin / Après-midi » restreignent ensuite.
+Migration 0076.
+
+**Ce que ça évite :** un rendez-vous d'une heure qui coûte la journée entière
+d'un salarié, et un chantier qu'on ne peut plus doter pour un congé d'un jour.
+
+**CE QUI SE RELÂCHE, ET C'EST VOULU.** Les règles du 7 et du 8 septembre
+interdisaient faute de pouvoir exprimer : refus de cocher dès un jour
+d'absence, retrait du chantier entier à la pose. C les rend inutiles — on ne
+refuse plus que si la personne n'est là aucun jour. Voir `ARCHITECTURE.md` §295.
+
+**Une correction à mon propre chiffrage :** j'avais annoncé deux migrations. La
+seconde suffit — l'exception se déduit des congés, elle ne se saisit pas.
+
+### Poser un congé défait ce qu'il rend faux
+
+Sa consigne, devant le premier correctif : *« pas de pansement, corrige le
+problème à la racine »*. Refuser de COCHER un absent fermait une porte — mais
+l'incohérence qu'il a photographiée était entrée par l'autre : sa coche était
+ANTÉRIEURE au congé, et poser un congé n'avait jamais rien réconcilié.
+
+Poser un congé retire désormais la personne des chantiers qu'il traverse, dans
+la même transaction, et **le dit** : au planning la pastille disparaît sous ses
+yeux, aux Réglages une ligne nomme les chantiers concernés.
+
+**Ce que ça évite :** un chantier qui part avec quelqu'un qui n'y sera pas, sans
+que rien ne l'ait signalé.
+
+**LA RACINE QUI RESTE, et elle demande son arbitrage :** `equipes_du_chantier`
+ne porte aucun jour. Une coche vaut pour le chantier entier, donc l'application
+ne peut pas dire « Julien le 11 mais pas le 10 ». Conséquence à connaître : sur
+un chantier de deux jours dont un seul tombe sur un congé, la personne devient
+inaffectable sur ce chantier. Corriger cela demande une migration et change son
+geste — `ARCHITECTURE.md` §294, question dans `TODO.md`.
+
+### On ne coche plus quelqu'un qui n'est pas là
+
+Une personne en congé pouvait être cochée sur un chantier de ce jour-là, alors
+que la carte affichait « Julien n'est pas là » trois centimètres plus haut.
+L'absence était comptée là où elle change une DATE — les jours proposés au
+client, depuis le 14 août — et nulle part où elle change une PERSONNE.
+
+Sa pastille est grise et refuse la coche ; le serveur la refuse aussi, avec la
+même règle et pas une copie. **Décocher reste toujours possible** : c'est la
+seule façon de réparer une coche antérieure au congé, et c'est exactement l'état
+qu'il a photographié.
+
+**Ce que ça évite :** un chantier qui part avec quelqu'un qui n'y sera pas.
+
+**Un arbitrage à connaître :** sur un chantier de deux jours dont UN SEUL tombe
+sur le congé, la coche est refusée — une coche vaut pour le chantier entier, et
+l'accepter annoncerait la personne un jour où elle n'y est pas. Voir
+`ARCHITECTURE.md` §293.
+
+### Les pages que voit son client, et l'IBAN qu'elles portaient
+
+Sa capture du 8 septembre : la page de facture de son client était noire, le
+montant s'affichait, et deux boutons se disputaient le geste. Les six points
+qu'il a demandés sont faits — couleurs d'Atlas, montant retiré, un seul bouton,
+la consigne du libellé, le numéro et l'IBAN à copier d'un doigt, l'ordre du
+chèque. Tout vient de ses réglages : **aucun champ n'a été créé**.
+
+**Ce que sa question a trouvé, et qui valait plus que les six points.** *« Si je
+modifie mon IBAN, les infos se modifient dans le lien que recevra le client ? »*
+— non, et le défaut remontait au devis : une facture recopiait l'identité DU
+DEVIS, figée parfois plusieurs mois plus tôt. Un devis de janvier facturé en
+juin partait avec l'IBAN de janvier, et le client virait sur un compte fermé.
+L'identité de l'émetteur se lit désormais sur l'entreprise **au moment où la
+facture naît**, comme le régime de TVA le faisait déjà seul (migration 0076).
+
+**Le figeage n'est pas affaibli — son instant a bougé.** Il le fallait : le PDF
+servi est le fichier archivé, jamais reconstruit. Montrer l'IBAN vivant sur la
+page aurait donné DEUX IBAN au même client, dans le même envoi.
+
+La page du devis suit : elle portait encore le terre cuite abandonné le 3 août
+et le vert des textes sur son bouton d'acceptation, faute d'être passée par les
+jetons. Le montant y RESTE, lui — le client s'apprête à accepter.
+
+**Et la serrure Face ID est réparée** : « Me déconnecter partout » ferme
+désormais aussi les clés d'appareil. C'était le seul défaut de sécurité connu et
+non corrigé, ouvert depuis le 25 août.
+
+Le détail, avec les chiffres et ce qui reste : `docs/lot-pages-du-client.md`.
+
+### L'agenda n'est promis que s'il est vraiment relié
+
+Sur le même écran, quand l'artisan est seul : *« pour vos congés, posez-les
+dans votre agenda — Atlas en tient compte »*. **Atlas n'en tenait compte que
+si un agenda était relié ET actif** ; sans raccordement, les périodes
+extérieures sont vides et les congés posés dans Google ne bloquaient rien.
+
+Il ne l'aurait su qu'en recevant l'appel d'un client un jour de vacances.
+
+L'écran lit maintenant l'état réel des deux raccordements — Google et
+iCloud — et n'affirme que ce qui est vrai pour lui. Rien de relié : il donne
+le geste qui manque au lieu d'une promesse.
+### Une phrase des absences promettait ce qu'Atlas ne fait pas
+
+Sur le même écran : *« notez-le ici et Atlas n'enverra plus personne à sa
+place ces jours-là »*. **Atlas n'envoie personne** — il propose des dates à un
+client —, et « à sa place » laissait entendre qu'un remplaçant serait choisi.
+
+Elle disait de travers ce qui était déjà écrit juste sous le bouton : « un
+absent ne compte plus ces jours-là ; Atlas propose une date de moins ». Deux
+phrases pour une seule règle, dont la fausse arrivait la première. Il ne reste
+que ce que l'autre ne dit pas.
+### Deux compteurs identiques dans « Équipe » : les titres les séparent
+
+Sur l'écran Équipe, deux compteurs se suivaient, dessinés pareil et affichant
+le même chiffre — « 2 » chantiers, « 2 » salariés. L'un dit ce que le planning
+accepte, l'autre qui part sur le chantier ; rien ne les distinguait.
+
+**Les deux étiquettes deviennent des questions** — « Combien de chantiers par
+jour ? » et « Combien de salariés ? » —, sa réponse A devant la planche.
+
+**Et la phrase du compteur dit enfin ce qu'elle veut dire** : « 2 chantiers par
+jour pour un planning complet ▪ », au lieu de deux phrases collées dont la
+seconde n'avait pas de verbe.
+
+**Ce que ça évite plus loin** (ARCHITECTURE.md §289) : la décision qui devait
+être appliquée ici datait d'un écran qui n'existait plus — deux de ses demandes
+l'avaient refait entre-temps. On regarde l'écran avant d'appliquer une
+décision d'apparence.
+
+### Chaque session mesure chez elle : un atelier, puis un dossier de travail
+
+Il fait tourner cinq sessions dans le même dossier, et une seule pouvait jouer
+la batterie : elle s'approprie le port 3000, la base d'essai qu'elle vide entre
+les suites, le limiteur de connexion et les dossiers bâtis. Les autres
+attendaient cinquante minutes.
+
+Chaque session prend désormais un **atelier** — un rang, pris au premier port
+libre, qui dérive à lui seul le port, la base, le coin de Redis et les dossiers
+bâtis. Le rang 0 rend exactement la batterie d'avant : une session seule ne voit
+aucune différence. Aucune manip nouvelle, la commande ne change pas.
+
+**Et l'atelier ne suffisait pas.** L'étape « Connexion derrière un proxy »
+échouait en silence depuis trois batteries ; son journal rétabli, elle a dit la
+cause en une ligne : *« Another next dev server is already running »*. Next.js
+refuse un second serveur de développement dans le même DOSSIER, quel que soit le
+port. `npm run sessions:preparer` crée donc un dossier de travail par session
+(`git worktree`), ce qui règle du même coup les fichiers que deux sessions
+s'écrasaient l'une l'autre.
+
+Quatre défauts trouvés en mesurant : l'essai du port mentait sous Windows, deux
+sessions simultanées prenaient le même rang, le jeu de démonstration refusait la
+base d'un atelier, et une base créée à la volée n'avait aucun privilège par
+défaut. `ARCHITECTURE.md` §287 et §288.
+
 
 
 ### La porte : le mot de passe se confirme, le déroulant passe à la charte, l'identité se sépare
