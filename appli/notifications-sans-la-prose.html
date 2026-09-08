@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notifications : retirer ce qui explique — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  NOTIFICATIONS : LA PROSE QUI RESTE — la planche, 9 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  D'OÙ VIENT CETTE PLANCHE. Lot 6, écran par écran, sa consigne du 5 septembre :
+  « la plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal
+  à se servir de leur téléphone ; il faut que ce soit hyper intuitif et simple ».
+
+  L'écran a été photographié avant d'écrire une ligne
+  (`scripts/capture-notifications.mts`) : 241 mots, dont quatre passages qui
+  n'expliquent rien d'autre que l'écran lui-même — et un bloc entier qui ne
+  porte aucun réglage.
+
+  Tous les libellés sont recopiés du code, jamais réécrits :
+    - les deux alertes fixes, les quatre rappels, leurs phrases grises et les
+      trois rythmes : src/app/reglages/notifications/NotificationsClient.tsx
+    - les délais montrés (4, 7, 3, 1) : les valeurs par défaut de `src/lib/rappels.ts`
+  Ce que les propositions RETIRENT est barré ; ce qu'elles ajoutent est signalé.
+
+  Les couleurs viennent de `src/lib/chartes.ts`, les deux pôles compris.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --pin:#2f3b2f; --rouille:#9c5b3f;
+  --trait:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28); --scene:#e6e3dc;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --pin:#8fae86; --rouille:#c07a56;
+  --trait:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28); --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--rouille);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+.scene{display:flex;justify-content:center;padding:22px 16px 6px}
+.colonne{width:390px;max-width:100%}
+.etiquette{text-align:center;font-size:11px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--encre-douce);margin:0 0 10px;min-height:17px}
+.tel{position:relative;width:390px;max-width:100%;height:664px;overflow:hidden;
+  background:var(--fond);border:1px solid var(--trait);border-radius:10px}
+.defile{height:100%;overflow-y:auto;padding:26px 26px 74px}
+.regle{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:10px 0 0}
+.compte{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:4px 0 0}
+.compte b{color:var(--encre)}
+
+/* ─── l'écran ───────────────────────────────────────────────────────────── */
+h2.titre{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:36px;
+  line-height:1.02;letter-spacing:-.018em;margin:20px 0 0}
+.surtitre{margin:12px 0 0;font-size:11px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--or)}
+.inter{margin:0 0 10px;font-size:11px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--encre-douce)}
+.bloc{margin-top:30px;padding-top:18px;border-top:1px solid var(--trait)}
+.bloc:first-of-type{margin-top:22px;padding-top:0;border-top:0}
+.chapeau{font-size:13.5px;line-height:1.6;color:var(--encre-douce);margin:22px 0 0}
+.chapeau b{color:var(--encre);font-weight:500}
+
+.ligne{padding:13px 0;border-bottom:1px solid var(--trait)}
+.ligne:last-child{border-bottom:0}
+.haut{display:flex;align-items:flex-start;gap:12px}
+.corps{min-width:0;flex:1}
+.nom{display:block;font-family:ui-serif,Georgia,serif;font-size:17px;line-height:1.25}
+.dit{display:block;margin-top:4px;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+.puce{margin-top:7px;width:6px;height:6px;border-radius:50%;background:var(--or);flex:none}
+
+.bascule{position:relative;margin-top:2px;width:48px;height:28px;border-radius:999px;
+  border:0;flex:none;background:var(--rouille);cursor:default}
+.bascule .rond{position:absolute;top:3px;left:23px;width:22px;height:22px;
+  border-radius:50%;background:var(--fond)}
+.delai{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13.5px;color:var(--encre-douce)}
+.delai .case{min-width:68px;text-align:right;padding:8px 10px;border-radius:4px;
+  background:var(--plage);color:var(--encre);font-size:16px}
+.rythme{margin-top:10px}
+.rythme .quoi{display:block;font-size:13.5px;color:var(--encre-douce)}
+.rythme .choix{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.rythme button{border-radius:999px;padding:7px 11px;font:inherit;font-size:12px;
+  border:0;box-shadow:inset 0 0 0 1px var(--trait);background:none;color:var(--gris);cursor:default}
+.rythme button.pris{background:var(--pin);color:var(--fond);box-shadow:none}
+.apres{font-size:12.5px;line-height:1.6;color:var(--encre-douce);margin:12px 0 0}
+.apres b{color:var(--encre);font-weight:500}
+
+/* Ce qu'une proposition RETIRE se montre barré plutôt que disparu : on ne peut
+   pas juger un retrait qu'on ne voit pas. Le bouton « Ce qui part » l'allume. */
+.parti{position:relative;opacity:.42}
+.parti::after{content:"";position:absolute;left:-6px;right:-6px;top:50%;
+  height:1px;background:var(--rouille)}
+.neuf{box-shadow:inset 3px 0 0 var(--or);padding-left:11px;margin-left:-14px}
+
+.nav{position:absolute;left:0;right:0;bottom:0;height:48px;background:var(--fond);
+  border-top:1px solid var(--trait);display:flex;align-items:center;
+  justify-content:space-around;font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--gris)}
+
+/* ─── les notes ─────────────────────────────────────────────────────────── */
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
+  vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+.nb{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" data-v="aujourdhui" aria-pressed="true">Aujourd'hui</button>
+  <button type="button" data-v="A" aria-pressed="false">A · on retire ce qui explique</button>
+  <button type="button" data-v="B" aria-pressed="false">B · A, et les réglages d'abord</button>
+  <button type="button" id="barre" aria-pressed="true">Montrer ce qui part</button>
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">Maquette — rien n'est codé</span>
+  <h1>Notifications : retirer ce qui explique</h1>
+  <p><b>Regardez « Aujourd'hui » d'abord.</b> L'écran porte <b>241 mots</b> pour
+  <b>quatre réglages</b>. Le reste explique l'écran : une phrase d'accueil qui
+  dit deux fois la même chose, un paragraphe qui répète le mot « toujours » du
+  titre juste au-dessus, un autre qui décrit ce que font les interrupteurs — et
+  tout en bas un bloc entier, « Où se solde une facture », qui ne règle rien.</p>
+  <p>Ce que chaque proposition retire est <b>barré en rouge</b>, ce qu'elle
+  ajoute porte un <b>trait doré</b>. Le bouton « Montrer ce qui part » les
+  cache si vous voulez voir l'écran net.</p>
+</div>
+
+<div class="scene">
+  <div class="colonne">
+    <p class="etiquette" id="etiquette">Aujourd'hui</p>
+    <div class="tel">
+      <div class="defile" id="defile"></div>
+      <div class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+    </div>
+    <p class="regle">Rien ne s'appuie : c'est un dessin.</p>
+    <p class="compte" id="compte"></p>
+  </div>
+</div>
+
+<div class="notes">
+
+  <h3>Ce qui part, et pourquoi</h3>
+  <table>
+    <tr><th>La phrase</th><th>Pourquoi elle part</th></tr>
+    <tr><td><b>« Rien ne part sur votre téléphone ni par e-mail : Atlas n'envoie
+      ni SMS ni courriel. »</b></td>
+      <td>elle redit la phrase d'avant. Il reste : <b>« Tout se passe sur
+      l'écran d'accueil. Ni SMS, ni e-mail. »</b> — même chose, en huit mots</td></tr>
+    <tr><td><b>« Ces deux-là ne se coupent pas… »</b></td>
+      <td>le titre au-dessus dit déjà <b>toujours</b>, et les deux lignes n'ont
+      pas d'interrupteur : l'absence se voit</td></tr>
+    <tr><td><b>« Ceux-là se coupent sans rien perdre… »</b></td>
+      <td>elle décrit ce que fait l'interrupteur d'à côté. Un écran ne
+      s'explique pas, il se montre</td></tr>
+    <tr><td><b>Le bloc « Où se solde une facture »</b></td>
+      <td>quatre lignes, aucun réglage. Ce qu'il apprend d'utile — le rappel
+      s'arrête tout seul, et où — descend en <b>une ligne sous « Facture
+      impayée »</b>, la seule que ça concerne</td></tr>
+  </table>
+
+  <h3>Les deux propositions</h3>
+  <table>
+    <tr><th></th><th>Ce que ça change</th></tr>
+    <tr><td><b>A · on retire ce qui explique</b></td>
+      <td>les quatre passages ci-dessus s'en vont, et rien d'autre ne bouge.
+      L'ordre reste : ce qui est toujours signalé, puis ce que vous réglez.
+      <b>240 mots, puis 146</b> — le compte sous le téléphone se mesure tout
+      seul, il n'est pas recopié</td></tr>
+    <tr><td><b>B · A, et les réglages d'abord</b><br><i>celle que je vous conseille</i></td>
+      <td>tout A, et les deux alertes qu'on ne peut pas couper passent
+      <b>en bas</b>. Vous ouvrez cet écran pour changer quelque chose : il
+      s'ouvre alors sur les quatre choses que vous pouvez changer, pas sur deux
+      lignes qui ne s'appuient pas</td></tr>
+  </table>
+  <p><b>Pourquoi B :</b> aujourd'hui, la première chose qu'on voit en arrivant,
+  c'est deux lignes sans interrupteur — on croit que l'écran ne se règle pas, et
+  il faut faire défiler pour trouver ce qu'on venait chercher. Les mettre en bas
+  ne fait rien perdre : elles sont <i>toujours</i> allumées, c'est justement ce
+  qu'elles disent.</p>
+
+  <h3>Ce qui ne bouge dans aucune des deux</h3>
+  <p><b>Les quatre rappels gardent leurs noms, leurs délais et leurs rythmes.</b>
+  « Chantier sans devis » est le mot que vous aviez choisi le 16 août contre
+  trois autres — il ne se renomme pas sans vous. Rien n'est ajouté, rien n'est
+  retiré aux réglages eux-mêmes : ce lot n'enlève que des mots.</p>
+
+  <h3>Ce que je n'ai pas tranché</h3>
+  <p>Les titres <b>« Ce qui vous est toujours signalé »</b> et <b>« Ce que vous
+  réglez »</b> restent en petites capitales espacées. Sur l'écran Équipe, vous
+  avez retenu des titres qui posent la question. Ici, ce ne sont pas des
+  questions mais deux familles — je les ai laissés tels quels. Dites-le si vous
+  voulez la même écriture partout.</p>
+
+</div>
+
+<script>
+/*
+  UN SEUL JEU DE DONNÉES, TROIS RENDUS. L'écran d'aujourd'hui et les deux
+  propositions sortent des mêmes lignes : deux dessins écrits à la main
+  divergeraient au premier libellé changé, et la comparaison serait fausse.
+
+  Chaque morceau de texte porte donc son SORT dans chaque vue — présent, parti,
+  ou neuf — plutôt que d'être recopié trois fois.
+*/
+var etat = { vue: "aujourdhui", barre: true, nuit: false };
+
+var defile = document.getElementById("defile");
+var etiquette = document.getElementById("etiquette");
+var compte = document.getElementById("compte");
+
+function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/** Les deux alertes qui n'ont pas d'interrupteur — `Fixe`, mot pour mot. */
+var FIXES = [
+  ["Réponse à un devis", "Accepté, corrigé ou refusé — avec le message du client"],
+  ["Lien de devis expiré", "Quand le client n'a pas pu l'ouvrir à temps"]
+];
+
+/** Les quatre rappels, avec les délais par défaut de `src/lib/rappels.ts`. */
+var RAPPELS = [
+  ["Chantier sans devis", "Le chantier est ouvert et vous n'avez pas encore envoyé de devis", 4, "jours", null],
+  ["Devis sans réponse", "Un devis parti, toujours valable, dont le client n'a rien dit", 7, "jours", null],
+  ["Chantier fini, pas facturé", "Le chantier est terminé et aucune facture n'est partie", 3, "jours", null],
+  ["Facture impayée", "L'échéance est passée et le règlement n'est pas arrivé", 1, "jour après l'échéance", "Chaque semaine"]
+];
+
+function classe(sort){
+  if (sort === "parti") return etat.barre ? " parti" : "";
+  if (sort === "neuf") return etat.barre ? " neuf" : "";
+  return "";
+}
+/**
+ * Trois sorts, et un seul est barré à l'écran :
+ *   « absent » — la proposition l'a retiré, on ne le dessine pas du tout ;
+ *   « parti »  — c'est l'écran d'aujourd'hui, on le montre barré (ou pas) ;
+ *   le reste   — il est là.
+ * La première version confondait « absent » et « présent », et les deux
+ * propositions gardaient les paragraphes qu'elles prétendaient retirer : le
+ * compte de mots, lui, l'a dit tout de suite — 159 au lieu de 116.
+ */
+function garde(sort){
+  if (sort === "absent") return false;
+  if (sort === "parti") return etat.barre;
+  return true;
+}
+
+function ligneFixe(f){
+  return '<div class="ligne"><div class="haut"><span class="puce"></span>' +
+    '<span class="corps"><span class="nom">' + ech(f[0]) + '</span>' +
+    '<span class="dit">' + ech(f[1]) + '</span></span></div></div>';
+}
+
+function ligneRappel(r, avecNote){
+  var h = '<div class="ligne"><div class="haut"><span class="corps">' +
+    '<span class="nom">' + ech(r[0]) + '</span>' +
+    '<span class="dit">' + ech(r[1]) + '</span></span>' +
+    '<span class="bascule"><span class="rond"></span></span></div>' +
+    '<div class="delai"><span>Au bout de</span><span class="case">' + r[2] +
+    '</span><span>' + ech(r[3]) + '</span></div>';
+  if (r[4]) {
+    h += '<div class="rythme"><span class="quoi">Puis me le redire</span><div class="choix">' +
+      '<button type="button">Chaque jour</button>' +
+      '<button type="button" class="pris">Chaque semaine</button>' +
+      '<button type="button">Tous les 15 jours</button></div></div>';
+  }
+  if (avecNote) {
+    h += '<p class="apres' + classe("neuf") + '">S\'arrête dès que le règlement est noté dans ' +
+      '<b>Terminés, TVA</b>.</p>';
+  }
+  return h + '</div>';
+}
+
+function blocFixes(sortTitre){
+  var h = '<section class="bloc"><p class="inter">Ce qui vous est toujours signalé</p>';
+  h += FIXES.map(ligneFixe).join("");
+  if (garde(sortTitre)) {
+    h += '<p class="apres' + classe(sortTitre) + '">Ces deux-là <b>ne se coupent pas</b>. ' +
+      'Les éteindre, ce serait accepter de ne plus savoir qu\'un client vous a refusé.</p>';
+  }
+  return h + '</section>';
+}
+
+function blocRappels(sortQueue, noteSousImpayee){
+  var h = '<section class="bloc"><p class="inter">Ce que vous réglez</p>';
+  h += RAPPELS.map(function(r, i){
+    return ligneRappel(r, noteSousImpayee && i === RAPPELS.length - 1);
+  }).join("");
+  if (garde(sortQueue)) {
+    h += '<p class="apres' + classe(sortQueue) + '">Ceux-là se coupent sans rien perdre : ' +
+      'le chantier reste dans votre liste, le devis reste sur sa fiche, et le chantier fini ' +
+      'reste dans « Terminés ».</p>';
+  }
+  return h + '</section>';
+}
+
+function rendre(){
+  var v = etat.vue;
+  var h = '<h2 class="titre">Notifications</h2><p class="surtitre">Moi</p>';
+
+  if (v === "aujourdhui") {
+    h += '<p class="chapeau">Tout se passe <b>dans l\'application</b>, sur l\'écran d\'accueil.' +
+      (garde("parti")
+        ? ' <span class="' + classe("parti").trim() + '">Rien ne part sur votre téléphone ni par e-mail : ' +
+          'Atlas n\'envoie ni SMS ni courriel.</span>'
+        : '') + '</p>';
+    h += blocFixes("parti");
+    h += blocRappels("parti", false);
+    if (garde("parti")) {
+      h += '<section class="bloc' + classe("parti") + '"><p class="inter">Où se solde une facture</p>' +
+        '<p class="apres">Le rappel s\'éteint <b>tout seul</b> dès que le règlement est enregistré, ' +
+        'dans « Terminés, TVA, En attente de paiement ». Un acompte ne suffit pas : la facture reste ' +
+        'rappelée, et c\'est le <b>reste dû</b> qui s\'affiche.</p></section>';
+    }
+  } else {
+    h += '<p class="chapeau">Tout se passe sur l\'écran d\'accueil. Ni SMS, ni e-mail.</p>';
+    if (v === "A") {
+      h += blocFixes("absent");
+      h += blocRappels("absent", true);
+    } else {
+      h += blocRappels("absent", true);
+      h += blocFixes("absent");
+    }
+  }
+
+  defile.innerHTML = h;
+  etiquette.textContent =
+    v === "aujourdhui" ? "Aujourd'hui" :
+    v === "A" ? "A · on retire ce qui explique" : "B · A, et les réglages d'abord";
+  // Le compte se MESURE sur le texte rendu, il ne se recopie pas : deux
+  // chiffres qui se contredisent dans le même écran, et l'on cesse de croire
+  // le reste (`CLAUDE.md` §4 bis). C'est lui qui a trouvé le défaut de `garde`.
+  var mots = (defile.innerText || defile.textContent || "").split(/\s+/).filter(Boolean).length;
+  compte.innerHTML = "<b>" + mots + " mots</b> à l'écran";
+}
+
+document.querySelectorAll(".commandes button[data-v]").forEach(function(b){
+  b.addEventListener("click", function(){
+    etat.vue = b.dataset.v;
+    document.querySelectorAll(".commandes button[data-v]").forEach(function(o){
+      o.setAttribute("aria-pressed", String(o === b));
+    });
+    rendre();
+  });
+});
+
+var barre = document.getElementById("barre");
+barre.addEventListener("click", function(){
+  etat.barre = !etat.barre;
+  barre.setAttribute("aria-pressed", String(etat.barre));
+  barre.textContent = etat.barre ? "Montrer ce qui part" : "Cacher ce qui part";
+  rendre();
+});
+
+var pole = document.getElementById("pole");
+pole.addEventListener("click", function(){
+  etat.nuit = !etat.nuit;
+  document.body.classList.toggle("nuit", etat.nuit);
+  pole.setAttribute("aria-pressed", String(etat.nuit));
+  pole.textContent = etat.nuit ? "Revenir sur Terre" : "Voir sur Nuit";
+});
+
+rendre();
+</script>
+</body>
+</html>
