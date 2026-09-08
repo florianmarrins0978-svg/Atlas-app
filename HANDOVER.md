@@ -3122,7 +3122,7 @@ Posé le 22 août 2026, sur sa règle : *« oui si c'est des journées complète
 si c'est des demi-journées »*.
 
 Un chantier prend **autant d'équipes qu'on lui en coche, au moins une**
-(`equipesMobilisees`, `src/server/disponibilites.ts`). Toute nouvelle lecture de
+(`equipesMobilisees`, `src/lib/disponibilites.ts`). Toute nouvelle lecture de
 la place doit passer par là — jamais par un `pris.length`.
 
 **Elles sont quatre, et elles doivent rendre le même verdict** (`CLAUDE.md` §3) :
@@ -7786,7 +7786,7 @@ DATABASE_URL=postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test \
 | Comment le parcours doit se comporter | `docs/AGENT.md` |
 | Isolation par entreprise | `src/server/db/with-entreprise.ts` |
 | Où en est un devis parti | `src/lib/etat-envoi.ts` |
-| Jours libres du patron | `src/server/disponibilites.ts` |
+| Jours libres du patron | `src/lib/disponibilites.ts` |
 | Cycle d'envoi et réponse du client | `src/server/repositories/envois-devis.ts` |
 | Facture, fin de chantier, relevé de TVA | `src/server/repositories/factures.ts` |
 | Conservation, purge, effacement | `src/server/retention.ts`, `src/server/repositories/donnees-client.ts` |

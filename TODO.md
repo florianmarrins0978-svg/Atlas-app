@@ -1692,7 +1692,7 @@ renoncer, et celui qui part en correction va changer.
 Depuis sa règle du 31 août, le patron peut proposer **aujourd'hui ou demain** :
 l'application prévient au lieu de refuser. Ce qu'elle **suggère** d'elle-même
 reste plafonné à après-demain (`DELAI_MINIMAL_JOURS`, écrit en dur dans
-`src/server/disponibilites.ts`).
+`src/lib/disponibilites.ts`).
 
 **Ce qui reste ouvert :** ce chiffre n'est ni un réglage d'entreprise, ni une
 variable d'environnement. Un artisan dont les chantiers se calent une semaine à
@@ -1799,32 +1799,24 @@ changement de comportement — mais la dette est là, et elle porte un vrai risq
 
 ---
 
-## LA DETTE DE STRUCTURE : `disponibilites.ts` MÊLE DEUX CHOSES (8 septembre 2026)
+## ✅ ~~LA DETTE DE STRUCTURE : `disponibilites.ts` au mauvais étage~~ — **réglée le 8 septembre 2026**
 
-Relevée en posant sa règle « pas de spaghettis » (`CLAUDE.md` §4 sexies).
+Relevée en posant sa règle « pas de spaghettis » (`CLAUDE.md` §4 sexies), et
+corrigée dans la foulée sur son accord : *« oui fais-le »*.
 
-`src/server/disponibilites.ts` porte à la fois des **règles pures** — durées,
-libellés, conversion de jour — et des **accès base**. Quatre fichiers d'étages
-inférieurs remontent donc vers `server` pour aller chercher les premières :
+**Ce n'était pas un mélange, c'était un mauvais rangement** — et le regarder de
+près l'a montré : `disponibilites.ts` ne portait **aucune** requête, aucune
+fonction `async`, rien que des calculs. Il était pourtant sous `src/server/`,
+si bien que six fichiers d'étages inférieurs remontaient l'y chercher.
 
-| Le fichier | Ce qu'il vient chercher |
-|---|---|
-| `src/lib/mois.ts` | `versJourIso` |
-| `src/lib/planning-jour.ts` | `DUREE_PAR_DEFAUT_DEMI_JOURNEES` |
-| `src/lib/jours-barres.ts` | `libelleDuree` |
-| `src/components/atlas/useOccupation.ts` | `cleCreneau`, `creneauxDuChantier` |
+**Le fichier a été déplacé dans `src/lib/`**, et ses 39 imports réécrits. Aucun
+comportement ne change : c'est le même code, au bon étage.
+`scripts/test-couches.ts` porte désormais une dette **vide**.
 
-**La correction est un déménagement, pas une exception** : sortir ces fonctions
-pures vers `src/lib/`, et laisser `src/server/disponibilites.ts` les importer. Rien
-ne change de comportement — c'est un lot à part, avec sa batterie, parce qu'il
-touche quatre fichiers employés par le planning.
-
-**Ce que ça coûte de ne pas le faire :** une règle de planning ne peut pas
-s'éprouver sans monter une base, et le développeur qui reprendra l'appli devra
-ouvrir `server/` pour comprendre un calcul de jours.
-
-`scripts/test-couches.ts` nomme ces quatre lignes et **refuse toute remontée
-nouvelle** : la liste ne peut que rétrécir. Elle disparaîtra avec le lot.
+**Et le déménagement a révélé un trou dans le contrôle lui-même** : deux
+fichiers de `lib` remontaient par un chemin relatif (`../server/…`) que le motif
+ne visait pas — il ne cherchait que `@/server/…`. Une règle qui ne tient qu'une
+écriture sur deux ne tient rien ; le contrôle vise maintenant les deux.
 
 ---
 
@@ -8004,7 +7996,7 @@ veux journée et du 21 au 25 »*.
 | plus d'un jour | « du 21 au 25 août » — le week-end sauté, comme la réservation |
 | à cheval sur deux mois | « du 31 août au 2 septembre » |
 
-Écrit dans `libelleOccupation()` (`src/server/disponibilites.ts`), **fonction
+Écrit dans `libelleOccupation()` (`src/lib/disponibilites.ts`), **fonction
 pure** : elle demande à `creneauxDuChantier` ce qui est occupé plutôt que de
 refaire l'arithmétique, sans quoi l'écran et la réservation finiraient par se
 contredire un vendredi. Éprouvée par `scripts/test-libelle-occupation.ts`, et
@@ -10038,7 +10030,7 @@ que le patron doit créer ; le reste est codable. Le point bloquant est détaill
 dans `docs/A-FAIRE.md` §7.
 
 Aujourd'hui, les jours libres se déduisent des seuls chantiers planifiés dans
-Atlas (`src/server/disponibilites.ts`). Un patron qui tient son agenda ailleurs
+Atlas (`src/lib/disponibilites.ts`). Un patron qui tient son agenda ailleurs
 verra donc proposer des jours où il est déjà pris — et c'est le client qui
 choisira ce jour-là.
 
@@ -10059,7 +10051,7 @@ agenda Google »* — et elle contraint la conception :
   est prise. Même règle qu'à la page du client, qui reçoit des dates et rien
   d'autre (`docs/AGENT.md` §2.2 bis).
 - **Une seule fonction de disponibilité**, jamais deux. La fusion des créneaux
-  Google et des chantiers Atlas se fait *dans* `src/server/disponibilites.ts`.
+  Google et des chantiers Atlas se fait *dans* `src/lib/disponibilites.ts`.
   Un second calcul à côté finirait par diverger du premier — c'est exactement le
   défaut qui a produit, le 9 août, un chantier rangé dans deux onglets à la fois
   (`ARCHITECTURE.md` §33).

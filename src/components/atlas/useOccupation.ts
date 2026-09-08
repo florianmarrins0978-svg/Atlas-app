@@ -9,7 +9,7 @@ import {
   creneauxDuChantier,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type JourIso,
-} from "@/server/disponibilites";
+} from "@/lib/disponibilites";
 import type { ChantierPlanning } from "@/app/planning/PlanningClient";
 
 /**

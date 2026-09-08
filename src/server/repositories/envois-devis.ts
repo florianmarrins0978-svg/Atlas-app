@@ -28,7 +28,7 @@ import {
   type FenetreProposition,
   type JourIso,
   type Moment,
-} from "../disponibilites";
+} from "@/lib/disponibilites";
 
 // Envoi d'un devis au client et recueil de sa réponse — docs/AGENT.md §2.1
 // à §2.2 ter.

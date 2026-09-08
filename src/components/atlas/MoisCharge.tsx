@@ -4,7 +4,7 @@ import { useMemo, type ReactNode } from "react";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { grilleDuMois, JOURS_COURTS, MOIS_LONGS } from "@/lib/mois";
 import { etatDemi, MOT_ETAT, partDeLaBarre, type EtatDemi } from "@/lib/planning-jour";
-import type { JourIso } from "@/server/disponibilites";
+import type { JourIso } from "@/lib/disponibilites";
 
 /**
  * LE MOIS AVEC SA CHARGE — le calendrier du planning, extrait pour être

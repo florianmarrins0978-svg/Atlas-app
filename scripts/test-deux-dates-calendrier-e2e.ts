@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
-import { versJourIso } from "../src/server/disponibilites";
+import { versJourIso } from "../src/lib/disponibilites";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { joursAProposer } from "./_calendrier-e2e";
 

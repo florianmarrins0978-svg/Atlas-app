@@ -66,21 +66,17 @@ const REGLES: Regle[] = [
 ];
 
 /**
- * **La dette relevée le 8 septembre 2026, et sa cause unique** :
- * `src/server/disponibilites.ts` mêle des règles PURES (durées, libellés,
- * conversion de jour) à des accès base. Les quatre fichiers ci-dessous ne
- * traversent que pour aller chercher ces règles-là.
+ * **La dette relevée le 8 septembre 2026 a été réglée le jour même.**
  *
- * **La correction est un déménagement**, pas une exception : sortir ces
- * fonctions pures vers `src/lib/` et laisser `server` les importer. Elle
- * est inscrite dans `TODO.md`, et ces lignes disparaîtront avec elle.
+ * `disponibilites.ts` était rangé sous `src/server/` alors qu'il ne fait aucune
+ * requête : quatre fichiers d'étages inférieurs remontaient donc y chercher des
+ * durées et des libellés. Le fichier a été DÉPLACÉ dans `src/lib/` — descendre
+ * la règle plutôt que remonter le lien (`CLAUDE.md` §4 sexies).
+ *
+ * **La liste est vide, et doit le rester.** Une entrée qui s'ajoute est une
+ * dette qui commence, et le contrôle en réclame la raison sous les yeux de tous.
  */
-const DETTE: { fichier: string; pourquoi: string }[] = [
-  { fichier: "src/lib/mois.ts", pourquoi: "versJourIso vit dans server/disponibilites" },
-  { fichier: "src/lib/planning-jour.ts", pourquoi: "DUREE_PAR_DEFAUT_DEMI_JOURNEES, idem" },
-  { fichier: "src/lib/jours-barres.ts", pourquoi: "libelleDuree, idem" },
-  { fichier: "src/components/atlas/useOccupation.ts", pourquoi: "cleCreneau et creneauxDuChantier, idem" },
-];
+const DETTE: { fichier: string; pourquoi: string }[] = [];
 
 function fichiersDe(dossier: string): string[] {
   const sortie: string[] = [];
@@ -118,7 +114,17 @@ export function traversees(
     for (const ligne of contenu.split("\n")) {
       // `import type { X } from "@/server/…"` s'efface à la compilation.
       if (/^\s*import\s+type\s/.test(ligne)) continue;
-      const cible = regle.interdits.find((i) => new RegExp(`from\\s+["']${i}/`).test(ligne));
+      // **Les deux écritures, et la seconde manquait.** `src/lib/absences-equipe.ts`
+      // remontait vers `server` par « ../server/… » : le contrôle ne visait que
+      // « @/server/… » et l'a laissée passer. Une règle qui ne tient qu'une
+      // écriture sur deux ne tient rien.
+      const cible = regle.interdits.find((i) => {
+        const dossier = i.replace("@/", "");
+        return (
+          new RegExp(`from\\s+["']${i}/`).test(ligne) ||
+          new RegExp(`from\\s+["'](?:\\.\\./)+${dossier}/`).test(ligne)
+        );
+      });
       if (!cible) continue;
       // Un import mêlé — `import { a, type B }` — reste un vrai lien : la
       // valeur `a` sera bien chargée à l'exécution.
@@ -136,6 +142,7 @@ const CAS = [
   { fichier: "src/lib/propre.ts", contenu: 'import { autre } from "@/lib/autre";' },
   { fichier: "src/lib/type-seul.ts", contenu: 'import type { Forme } from "@/server/depot";' },
   { fichier: "src/components/X.tsx", contenu: 'import { lire } from "@/server/depot";' },
+  { fichier: "src/lib/relatif.ts", contenu: 'import { lire } from "../server/depot";' },
   {
     fichier: "src/components/Garde.tsx",
     contenu: 'import { headers } from "next/headers";\nimport { lire } from "@/server/depot";',
@@ -144,10 +151,10 @@ const CAS = [
 const vues = traversees(CAS);
 assert.deepEqual(
   vues.map((v) => v.fichier),
-  ["src/lib/regle.ts", "src/components/X.tsx"],
+  ["src/lib/regle.ts", "src/components/X.tsx", "src/lib/relatif.ts"],
   `détecteur faux : ${vues.map((v) => v.fichier).join(", ")}`
 );
-console.log("  ok    une remontée de valeur est vue ; un import de type et un composant serveur, non");
+console.log("  ok    une remontée est vue (« @/server » comme « ../server ») ; un type et un composant serveur, non");
 
 // ── 2. Le dépôt lui-même ────────────────────────────────────────────────
 const fichiers = fichiersDe("src").map((fichier) => ({

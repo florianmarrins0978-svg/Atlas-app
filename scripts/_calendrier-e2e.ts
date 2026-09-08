@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import type { Page } from "playwright";
-import { DELAI_MINIMAL_JOURS } from "../src/server/disponibilites";
+import { DELAI_MINIMAL_JOURS } from "../src/lib/disponibilites";
 import { jourIso } from "../src/lib/jour";
 
 /**

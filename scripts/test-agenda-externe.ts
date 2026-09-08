@@ -14,7 +14,7 @@ import {
   departPossible,
   fenetreProposition,
   jourRetenable,
-} from "../src/server/disponibilites";
+} from "../src/lib/disponibilites";
 
 // **Ce que cette suite empêche, et c'est le seul endroit du parcours où Atlas
 // peut engager l'artisan sur une information qu'il n'a pas.**

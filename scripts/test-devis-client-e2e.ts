@@ -7,7 +7,7 @@ import * as devisRepo from "../src/server/repositories/devis";
 import * as clientsRepo from "../src/server/repositories/clients";
 import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi, lireParJeton, genererJeton } from "../src/server/repositories/envois-devis";
-import { fenetreProposition, versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { fenetreProposition, versJourIso, ajouterJours } from "../src/lib/disponibilites";
 
 // Parcours réel de la page publique de réponse au devis (docs/AGENT.md §2.2 bis).
 // Exercée dans un navigateur, SANS session : c'est tout l'intérêt de cette page,

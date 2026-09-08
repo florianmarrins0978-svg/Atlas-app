@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### `disponibilites.ts` descend à son étage — le premier déménagement
+
+Sa réponse à la dette relevée le matin : *« oui fais-le »*. Le fichier ne portait
+**aucune requête et aucune fonction `async`** — rien que des calculs — et vivait
+pourtant sous `src/server/`, où l'on range ce qui parle à la base. Six fichiers
+d'étages inférieurs remontaient donc l'y chercher.
+
+Il vit maintenant dans `src/lib/`, ses 39 imports réécrits, **aucun comportement
+changé** : c'est le même code au bon étage (`ARCHITECTURE.md` §286). La liste de
+dette de `test-couches.ts` est repartie vide.
+
+**Le déménagement a révélé un trou dans le contrôle qui l'avait signalée** : il
+ne visait que `@/server/…`, si bien que deux fichiers de `lib` remontaient par
+`../server/…` sans être vus. Une règle qui ne tient qu'une écriture sur deux ne
+tient rien — les deux formes sont désormais refusées, et le cas est éprouvé.
+
 ### Deux règles d'or de plus, et six fichiers morts en moins
 
 *« Je ne veux pas de code mort, si ça ne sert plus on le supprime proprement »*
@@ -33,7 +49,7 @@ s'éteint, et l'on aurait perdu la règle le jour de sa pose.
 l'un ni l'autre ne connaît d'écran, un composant ne parle à la base que s'il est
 un composant serveur. Les `import type` ne comptent pas — ils s'effacent à la
 compilation. La dette du jour est nommée (quatre remontées, une seule cause :
-`src/server/disponibilites.ts` mêle règles pures et accès base) et inscrite dans
+`src/lib/disponibilites.ts` mêle règles pures et accès base) et inscrite dans
 `TODO.md` ; le contrôle refuse toute remontée NOUVELLE, donc la liste ne peut
 que rétrécir.
 
@@ -16078,7 +16094,7 @@ au 25 août »** au-delà d'un jour — le week-end sauté, comme la réservatio
 écartés par lui.
 
 **La règle vit dans une fonction pure**, `libelleOccupation()`
-(`src/server/disponibilites.ts`) : elle demande à `creneauxDuChantier` ce qui est
+(`src/lib/disponibilites.ts`) : elle demande à `creneauxDuChantier` ce qui est
 occupé au lieu de refaire l'arithmétique à côté. Deux calculs auraient produit
 deux vérités — celle de l'écran et celle de la réservation — qui se seraient
 contredites un vendredi, jour où le saut du week-end entre en jeu.

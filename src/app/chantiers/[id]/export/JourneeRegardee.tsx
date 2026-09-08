@@ -11,7 +11,7 @@ import {
 } from "@/lib/planning-jour";
 import { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import type { ChantierPlanning } from "@/app/planning/PlanningClient";
-import type { JourIso } from "@/server/disponibilites";
+import type { JourIso } from "@/lib/disponibilites";
 
 /**
  * LA FICHE DU JOUR REGARDÉ, sous le calendrier de l'écran d'envoi.
