@@ -17,10 +17,15 @@ listée dans `appli/essais.html`.
 **Rien ne se code tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Cinq points
 attendent sa réponse, et le détail est dans `docs/lot-porte-en-plein-air.md` :
 
-1. **la création de compte** : *tout sur un écran* ou *une question à la fois*.
-   Ce qu'on défend : **une question à la fois**, pour sa contrainte du
-   5 septembre (« des vieux qui ont du mal à se servir de leur téléphone ») ;
-2. l'accroche sous ATLAS — trois choix, changeables en direct sur la planche ;
+1. ~~**la création de compte** : *tout sur un écran* ou *une question à la
+   fois*~~ — **tranché le 8 septembre 2026 : une question à la fois**, et elle
+   pose désormais **toutes** les questions qui remplissent les réglages
+   (14 pour une micro-entreprise en franchise, 17 pour une SAS assujettie).
+   Ce qui reste à trancher : **dix-sept questions au plus, est-ce trop ?**
+   L'IBAN et le message au client ne servent qu'à la première facture et
+   pourraient retourner dans les réglages ;
+2. ~~l'accroche sous ATLAS~~ — **tranché le 8 septembre : aucune accroche**, et
+   le sceau à l'étoile est retiré lui aussi ;
 3. la phrase des conditions, **ou** une case à cocher ;
 4. la photo reste-t-elle fixe alors que le reste suit la charte choisie ;
 5. « Créer un compte » crée un **patron et son entreprise** — un salarié reçoit

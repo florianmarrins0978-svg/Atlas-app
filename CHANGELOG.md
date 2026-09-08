@@ -8,6 +8,65 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### La création de compte remplit les réglages, et ne pose que les questions qui ont un sens
+
+Sa décision du 8 septembre, après avoir essayé les deux propositions : *« il
+faut pour la création du compte la deuxième option sous forme de question qui
+avance, et faut lui poser TOUTES les questions qui s'enregistreront dans ce
+réglage, pour qu'il ait le moins d'infos à rentrer ensuite. Une fois dans
+l'appli, s'il a tout bien rempli, il peut direct s'en servir ou quasiment. »*
+
+**LE MOINS D'INFOS À RENTRER, CE N'EST PAS POSER MOINS DE QUESTIONS.** C'est ne
+poser que celles qui ont un sens, et deux embranchements font tout le travail —
+tous deux lus dans le code du produit, aucun inventé :
+
+- la **forme juridique** commande le capital social et la ville du RCS. Une EI
+  et une micro-entreprise n'en ont pas légalement (`formeADuCapital`,
+  `src/lib/formes-juridiques.ts`) : les deux questions disparaissent ;
+- le **régime de TVA** commande le numéro intracommunautaire. En franchise, la
+  question ne se pose pas.
+
+Une micro-entreprise en franchise répond à **14 questions** là où une SAS
+assujettie en voit **17** — et la suite mesure les deux parcours pour le
+vérifier. Un embranchement débranché rendrait des écrans parfaitement valides,
+tiendrait dans le cadre, et poserait trois questions absurdes.
+
+**LA QUESTION QUI N'EXISTAIT NULLE PART, ET QUI COMPTE LE PLUS.**
+`entreprises.regimeTva` vaut « assujettie » PAR DÉFAUT : un artisan en
+franchise qui ne va jamais dans les réglages sort des devis **avec une TVA qu'il
+n'a pas le droit de facturer**, et rien ne le lui dit. C'est la seule question
+dont l'oubli fabrique un document faux — elle est obligatoire, et la suite
+exige qu'elle soit **impossible à passer**.
+
+**LA FORME JURIDIQUE EST UN MENU DÉROULANT**, à sa demande du même jour —
+*« tu ne vas pas tous les énumérer »*. C'est la même qu'il avait posée le
+14 août pour l'écran des réglages. Onze boutons occupaient l'écran entier et le
+faisaient défiler ; le menu ouvre la roue du téléphone, et chaque sigle voyage
+avec son nom complet — « EURL » seul ne se retient pas.
+
+**LA PROGRESSION EST EN SEGMENTS**, un par chapitre, relevé sur sa capture de
+Qonto : des segments disent COMBIEN d'étapes il reste, là où un pourcentage ne
+dit que le chemin parcouru. Écartés de la même capture, et il faut dire
+pourquoi : le groupement en trois familles pour la forme juridique — il a
+demandé un déroulant —, Madame/Monsieur — la civilité ne se range nulle part
+pour un utilisateur d'Atlas, et rien ne s'invente —, et la flèche sur
+« Continuer », que sa règle du 25 août interdit.
+
+**Le compteur ne monte jamais.** Une question conditionnelle est comptée tant
+qu'on ne sait pas : sans cela, il afficherait « 5 sur 14 » puis « 6 sur 16 » dès
+qu'on choisit une SAS. Un total qui grossit en cours de route se lit comme une
+mauvaise surprise, et c'est exactement ce qu'on veut éviter chez quelqu'un qui
+n'est pas à l'aise.
+
+**Défaut attrapé par la suite, jamais à l'œil :** une fois la liste des formes
+affichée, elle ne disparaissait plus — les onze boutons restaient à la place du
+champ des onze questions suivantes. L'attribut `hidden` ne vaut qu'un
+`display:none` de la feuille du navigateur, et le `display:flex`
+de la liste le battait. Chaque écran, pris isolément, avait l'air correct.
+
+**La proposition écartée a été RETIRÉE**, pas gardée « au cas où » : une planche
+qui montre encore l'option non retenue fait rouvrir un débat clos.
+
 ### Les conditions d'utilisation et la politique de confidentialité, en brouillon
 
 `appli/conditions-utilisation.html` et `appli/confidentialite.html` — sa demande
