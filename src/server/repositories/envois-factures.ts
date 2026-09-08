@@ -4,8 +4,7 @@ import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { envoisFactures, factures, chantiers } from "../db/schema";
 import { lireObjet } from "../storage";
-import { allureSeuleDesDocuments } from "./entreprises";
-import { allureDepuisColonnes, type Allure } from "@/lib/allure-documents";
+import { modalitesDeLaFacture, type ModalitesPaiement } from "@/lib/modalites-paiement";
 import type { Ctx } from "./context";
 
 // **Transmettre la facture, puisque personne ne le fait à la place du patron.**
@@ -176,29 +175,39 @@ export async function pdfFactureParJeton(
 export type FacturePourClient = {
   numeroCommercial: string;
   entrepriseNom: string;
+  /**
+   * **Le total ne s'affiche plus sur la page — sa demande du 8 septembre 2026 :**
+   * *« le montant ne doit pas apparaître, ça incitera le client à ouvrir sa
+   * facture »*. Il reste rendu ici : c'est ce qui identifie la facture derrière
+   * le jeton, et les suites base s'en servent pour prouver qu'un lien mène bien
+   * à la bonne pièce — une assertion sur un libellé d'écran, elle, tomberait au
+   * premier remaniement (`CLAUDE.md` §5 bis).
+   */
   totalTtc: string;
   echeanceLe: string | null;
   /**
-   * L'allure de SES documents — typographie, fond, accent —, **FIGÉE au moment
-   * de l'envoi** (migration 0074).
+   * COMMENT LE CLIENT RÈGLE — l'IBAN, l'ordre du chèque, lus sur les colonnes
+   * FIGÉES de la facture (`src/lib/modalites-paiement.ts`).
    *
-   * **Sa décision du 4 septembre 2026 :** *« une facture partie ne change plus
-   * d'aspect : mon client doit retrouver en ligne exactement ce qu'il a reçu en
-   * PDF, y compris six mois plus tard. Un changement de réglage ne rattrape pas
-   * les anciennes, c'est voulu. »* C'est la même règle que les montants,
-   * l'identité (0039) et les mentions légales (0072) : l'aspect était le dernier
-   * à ne pas l'être.
+   * **Ce sont exactement celles du PDF archivé**, par la même fonction : le
+   * client a les deux pièces sous les yeux, et deux IBAN pour un même envoi
+   * seraient pires que pas d'IBAN du tout.
    *
-   * **Ce n'est PAS sa charte d'écran**, et les deux ne doivent jamais se
-   * confondre : une facture ne part pas en noir chez le client parce qu'il a
-   * choisi « Nuit » (`layout.tsx`, `estPageDuClient`).
+   * ───────────────────────────────────────────────────────────────────────────
+   * **L'ALLURE A DISPARU D'ICI, ET C'EST LUI QUI L'A DEMANDÉ.** Le 8 septembre
+   * 2026, capture à l'appui : *« il faut le modifier, déjà mets-le aux couleurs
+   * de l'appli »*. La page portait jusqu'ici l'allure figée de la facture, si
+   * bien qu'un artisan ayant réglé un accent noir voyait une page noire.
    *
-   * **`null` rend la page d'aujourd'hui, au pixel près** — soit qu'il n'avait
-   * rien réglé (l'écran le reconnaît par `estLAllureParDefaut`), soit que la
-   * facture soit antérieure à 0074 et retombe alors sur l'allure vivante de
-   * l'entreprise.
+   * **Cela rouvre sa décision du 4 septembre**, et il faut le dire noir sur
+   * blanc plutôt que de la laisser croire encore vraie : *« mon client doit
+   * retrouver en ligne exactement ce qu'il a reçu en PDF »*. Il a vu la
+   * proposition en crème et vert (`appli/la-page-de-sa-facture.html`) et a
+   * répondu « code-moi ça ». La règle devient : **le PDF est son document et
+   * garde son allure ; la page est l'enveloppe d'Atlas et porte les couleurs
+   * d'Atlas.**
    */
-  allure: Allure | null;
+  modalites: ModalitesPaiement;
 };
 
 export async function factureParJeton(
@@ -240,22 +249,11 @@ export async function factureParJeton(
       entrepriseNom: f.entrepriseNom,
       totalTtc: f.totalTtc,
       echeanceLe: f.dateEcheance ?? null,
-      // **L'allure FIGÉE de cette facture-là**, celle qui a servi à composer le
-      // PDF archivé : la page et le papier montrent donc la même chose, quoi
-      // qu'il règle ensuite (migration 0074).
-      //
-      // **Le repli porte l'historique, et rien d'autre.** Les trois colonnes
-      // nulles ensemble ne veulent pas dire « aucune allure » — cela s'écrit en
-      // clair depuis 0074 — mais « facture antérieure à la migration, son aspect
-      // n'a jamais été relevé ». On rend alors ce que la page rendait avant ce
-      // lot : l'allure vivante de l'entreprise, lue par le jeton et jamais par
-      // une entrée du client.
-      allure:
-        allureDepuisColonnes({
-          typographie: f.docTypographie,
-          fond: f.docFond,
-          accent: f.docAccent,
-        }) ?? (await allureSeuleDesDocuments(tx, envoi.entrepriseId)),
+      // **Les mêmes trois colonnes que le PDF archivé, par la même fonction.**
+      // Le client a les deux pièces sous les yeux : un IBAN groupé autrement, ou
+      // un ordre de chèque calculé deux fois, finiraient par ne plus coïncider
+      // (`src/lib/modalites-paiement.ts`).
+      modalites: modalitesDeLaFacture(f),
     };
   });
 }

@@ -74,7 +74,7 @@ export default async function PageRapportClient({
           className="text-[11px] font-semibold uppercase tracking-[0.18em]"
           style={{ color: couleursDocument.etiquette }}
         >
-          Compte rendu de passage
+          Retour d&apos;intervention
         </p>
         <h1 className="mt-2 text-[21px]" style={{ fontFamily: "ui-serif, Georgia, serif" }}>
           {rapport.entrepriseNom}
@@ -132,7 +132,7 @@ export default async function PageRapportClient({
             timeStyle: "short",
             timeZone: "Europe/Paris",
           })}
-          . Ce compte rendu est figé&nbsp;: il ne peut plus être modifié.
+          . Ce retour d&apos;intervention est figé&nbsp;: il ne peut plus être modifié.
         </p>
       </div>
     </div>

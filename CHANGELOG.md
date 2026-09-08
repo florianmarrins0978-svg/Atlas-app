@@ -8,6 +8,170 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### Les suites navigateur servent la version BÂTIE — le mur de mémoire tombe
+
+Sa décision, après quatre morts de la CI au même endroit : *« bascule sur la
+version bâtie »*.
+
+| | Serveur de développement | Version bâtie |
+|---|---|---|
+| la course | **meurt à la 2ᵉ suite**, machine tuée | **va au bout : 133 suites** |
+| le serveur | 1 820 Mo, jusqu'à 13 200 | **236 à 451 Mo** |
+| mémoire libre | tombe à 396 Mo | **reste à 14,6 Go** |
+
+Turbopack compilait à la demande, au milieu des suites, et allouait hors du tas
+de V8 : rien ne le bornait. Une version bâtie ne compile plus rien. Le
+préchauffage disparaît avec la cause — il n'existait que pour absorber cette
+compilation (le banc, lui en développement, le garde).
+
+**Et cela comble un trou ouvert depuis un mois** (`CLAUDE.md` §5) : les suites
+navigateur ne passaient jamais par le chemin de production, celui que le banc du
+patron sert vraiment. Deux refus l'ont prouvé dès le premier essai — le profil de
+l'IA et l'hôte de confiance d'Auth.js — que personne n'avait jamais vus.
+
+**Trois suites écrivaient `localhost:3000` en dur** et rougissaient dès qu'une
+session travaillait sur un autre port : elles lisent l'adresse de leur atelier.
+
+**Ce qui reste, écrit dans `TODO.md`** : le jeu des rouges change d'une course à
+l'autre (19 puis 21, pas les mêmes) — huit suites flottent, probablement parce
+que la version bâtie répond trop vite pour des attentes écrites contre un
+serveur qui compilait. Interdiction de les rejouer automatiquement pour obtenir
+du vert.
+
+### Cocher un absent, poser un congé d'une demi-journée
+
+**Ses deux choix sur maquette : C et D2.**
+
+Une personne en congé un jour sur deux reste cochée sur son chantier, et la
+pastille dit les jours où elle vient — « Julien ven. », cerclée au lieu d'être
+pleine. Il coche une fois, comme avant : c'est l'application qui retire le jour
+du congé.
+
+Et une absence peut ne prendre qu'un matin. Toucher un nom pose la journée,
+comme avant ; deux pastilles « Matin / Après-midi » restreignent ensuite.
+Migration 0076.
+
+**Ce que ça évite :** un rendez-vous d'une heure qui coûte la journée entière
+d'un salarié, et un chantier qu'on ne peut plus doter pour un congé d'un jour.
+
+**CE QUI SE RELÂCHE, ET C'EST VOULU.** Les règles du 7 et du 8 septembre
+interdisaient faute de pouvoir exprimer : refus de cocher dès un jour
+d'absence, retrait du chantier entier à la pose. C les rend inutiles — on ne
+refuse plus que si la personne n'est là aucun jour. Voir `ARCHITECTURE.md` §292.
+
+**Une correction à mon propre chiffrage :** j'avais annoncé deux migrations. La
+seconde suffit — l'exception se déduit des congés, elle ne se saisit pas.
+
+### Poser un congé défait ce qu'il rend faux
+
+Sa consigne, devant le premier correctif : *« pas de pansement, corrige le
+problème à la racine »*. Refuser de COCHER un absent fermait une porte — mais
+l'incohérence qu'il a photographiée était entrée par l'autre : sa coche était
+ANTÉRIEURE au congé, et poser un congé n'avait jamais rien réconcilié.
+
+Poser un congé retire désormais la personne des chantiers qu'il traverse, dans
+la même transaction, et **le dit** : au planning la pastille disparaît sous ses
+yeux, aux Réglages une ligne nomme les chantiers concernés.
+
+**Ce que ça évite :** un chantier qui part avec quelqu'un qui n'y sera pas, sans
+que rien ne l'ait signalé.
+
+**LA RACINE QUI RESTE, et elle demande son arbitrage :** `equipes_du_chantier`
+ne porte aucun jour. Une coche vaut pour le chantier entier, donc l'application
+ne peut pas dire « Julien le 11 mais pas le 10 ». Conséquence à connaître : sur
+un chantier de deux jours dont un seul tombe sur un congé, la personne devient
+inaffectable sur ce chantier. Corriger cela demande une migration et change son
+geste — `ARCHITECTURE.md` §291, question dans `TODO.md`.
+
+### On ne coche plus quelqu'un qui n'est pas là
+
+Une personne en congé pouvait être cochée sur un chantier de ce jour-là, alors
+que la carte affichait « Julien n'est pas là » trois centimètres plus haut.
+L'absence était comptée là où elle change une DATE — les jours proposés au
+client, depuis le 14 août — et nulle part où elle change une PERSONNE.
+
+Sa pastille est grise et refuse la coche ; le serveur la refuse aussi, avec la
+même règle et pas une copie. **Décocher reste toujours possible** : c'est la
+seule façon de réparer une coche antérieure au congé, et c'est exactement l'état
+qu'il a photographié.
+
+**Ce que ça évite :** un chantier qui part avec quelqu'un qui n'y sera pas.
+
+**Un arbitrage à connaître :** sur un chantier de deux jours dont UN SEUL tombe
+sur le congé, la coche est refusée — une coche vaut pour le chantier entier, et
+l'accepter annoncerait la personne un jour où elle n'y est pas. Voir
+`ARCHITECTURE.md` §290.
+
+### Les pages que voit son client, et l'IBAN qu'elles portaient
+
+Sa capture du 8 septembre : la page de facture de son client était noire, le
+montant s'affichait, et deux boutons se disputaient le geste. Les six points
+qu'il a demandés sont faits — couleurs d'Atlas, montant retiré, un seul bouton,
+la consigne du libellé, le numéro et l'IBAN à copier d'un doigt, l'ordre du
+chèque. Tout vient de ses réglages : **aucun champ n'a été créé**.
+
+**Ce que sa question a trouvé, et qui valait plus que les six points.** *« Si je
+modifie mon IBAN, les infos se modifient dans le lien que recevra le client ? »*
+— non, et le défaut remontait au devis : une facture recopiait l'identité DU
+DEVIS, figée parfois plusieurs mois plus tôt. Un devis de janvier facturé en
+juin partait avec l'IBAN de janvier, et le client virait sur un compte fermé.
+L'identité de l'émetteur se lit désormais sur l'entreprise **au moment où la
+facture naît**, comme le régime de TVA le faisait déjà seul (migration 0076).
+
+**Le figeage n'est pas affaibli — son instant a bougé.** Il le fallait : le PDF
+servi est le fichier archivé, jamais reconstruit. Montrer l'IBAN vivant sur la
+page aurait donné DEUX IBAN au même client, dans le même envoi.
+
+La page du devis suit : elle portait encore le terre cuite abandonné le 3 août
+et le vert des textes sur son bouton d'acceptation, faute d'être passée par les
+jetons. Le montant y RESTE, lui — le client s'apprête à accepter.
+
+**Et la serrure Face ID est réparée** : « Me déconnecter partout » ferme
+désormais aussi les clés d'appareil. C'était le seul défaut de sécurité connu et
+non corrigé, ouvert depuis le 25 août.
+
+Le détail, avec les chiffres et ce qui reste : `docs/lot-pages-du-client.md`.
+
+### L'agenda n'est promis que s'il est vraiment relié
+
+Sur le même écran, quand l'artisan est seul : *« pour vos congés, posez-les
+dans votre agenda — Atlas en tient compte »*. **Atlas n'en tenait compte que
+si un agenda était relié ET actif** ; sans raccordement, les périodes
+extérieures sont vides et les congés posés dans Google ne bloquaient rien.
+
+Il ne l'aurait su qu'en recevant l'appel d'un client un jour de vacances.
+
+L'écran lit maintenant l'état réel des deux raccordements — Google et
+iCloud — et n'affirme que ce qui est vrai pour lui. Rien de relié : il donne
+le geste qui manque au lieu d'une promesse.
+### Une phrase des absences promettait ce qu'Atlas ne fait pas
+
+Sur le même écran : *« notez-le ici et Atlas n'enverra plus personne à sa
+place ces jours-là »*. **Atlas n'envoie personne** — il propose des dates à un
+client —, et « à sa place » laissait entendre qu'un remplaçant serait choisi.
+
+Elle disait de travers ce qui était déjà écrit juste sous le bouton : « un
+absent ne compte plus ces jours-là ; Atlas propose une date de moins ». Deux
+phrases pour une seule règle, dont la fausse arrivait la première. Il ne reste
+que ce que l'autre ne dit pas.
+### Deux compteurs identiques dans « Équipe » : les titres les séparent
+
+Sur l'écran Équipe, deux compteurs se suivaient, dessinés pareil et affichant
+le même chiffre — « 2 » chantiers, « 2 » salariés. L'un dit ce que le planning
+accepte, l'autre qui part sur le chantier ; rien ne les distinguait.
+
+**Les deux étiquettes deviennent des questions** — « Combien de chantiers par
+jour ? » et « Combien de salariés ? » —, sa réponse A devant la planche.
+
+**Et la phrase du compteur dit enfin ce qu'elle veut dire** : « 2 chantiers par
+jour pour un planning complet ▪ », au lieu de deux phrases collées dont la
+seconde n'avait pas de verbe.
+
+**Ce que ça évite plus loin** (ARCHITECTURE.md §289) : la décision qui devait
+être appliquée ici datait d'un écran qui n'existait plus — deux de ses demandes
+l'avaient refait entre-temps. On regarde l'écran avant d'appliquer une
+décision d'apparence.
+
 ### Chaque session mesure chez elle : un atelier, puis un dossier de travail
 
 Il fait tourner cinq sessions dans le même dossier, et une seule pouvait jouer
@@ -32,6 +196,7 @@ Quatre défauts trouvés en mesurant : l'essai du port mentait sous Windows, deu
 sessions simultanées prenaient le même rang, le jeu de démonstration refusait la
 base d'un atelier, et une base créée à la volée n'avait aucun privilège par
 défaut. `ARCHITECTURE.md` §287 et §288.
+
 
 
 ### La porte : le mot de passe se confirme, le déroulant passe à la charte, l'identité se sépare

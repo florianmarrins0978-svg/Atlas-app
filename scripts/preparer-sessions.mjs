@@ -43,6 +43,7 @@ import path from "node:path";
  *     npm run sessions:preparer --liste
  */
 
+const SOUS_WINDOWS = process.platform === "win32";
 const RACINE = process.cwd();
 const NOM = path.basename(RACINE);
 const PARENT = path.dirname(RACINE);
@@ -97,6 +98,8 @@ function main() {
 
   console.log(`Préparation de ${demande} dossiers de travail (celui-ci compris).\n`);
   const branche = git("rev-parse", "--abbrev-ref", "HEAD");
+  /** Ceux qu'on vient de créer, et qui attendent leurs dépendances. */
+  const neufs = [];
 
   for (let n = 2; n <= demande; n++) {
     const dossier = path.join(PARENT, `${NOM}-s${n}`);
@@ -122,17 +125,40 @@ function main() {
       if (existsSync(source)) copyFileSync(source, path.join(dossier, nomFichier));
     }
     console.log(`  ${n}. ${dossier}  (branche ${nomBranche})`);
+    neufs.push(dossier);
+  }
+
+  // **Les dépendances s'installent ICI, pas dans une consigne.** Sa condition
+  // du 5 septembre : aucune manip en plus. Un mode d'emploi en trois points
+  // est une manip — et celui-ci se serait payé au premier essai, sur une
+  // erreur de module introuvable qui accuse le code.
+  //
+  // Elles ne se partagent pas entre dossiers de travail : `next` et ses
+  // binaires se résolvent depuis la racine du projet, et un lien vers le
+  // `node_modules` du voisin ferait servir deux dossiers par la même
+  // installation — exactement le partage qu'on vient de supprimer.
+  for (const dossier of neufs) {
+    console.log(`\nInstallation des dépendances dans ${path.basename(dossier)}…`);
+    const r = spawnSync(SOUS_WINDOWS ? "npm.cmd" : "npm", ["install"], {
+      cwd: dossier,
+      stdio: "inherit",
+      shell: SOUS_WINDOWS,
+    });
+    if (r.status !== 0) {
+      console.error(
+        `❌ « npm install » a échoué dans ${dossier} (code ${r.status}).\n` +
+          "   Le dossier est créé : relancer l'installation dedans suffit."
+      );
+      process.exit(1);
+    }
   }
 
   console.log(`
-Ce qu'il reste à faire, une seule fois :
+✅ Tout est prêt. Il n'y a plus rien à faire.
 
-  · ouvrir une session dans CHACUN de ces dossiers ;
-  · y lancer « npm install » la première fois — les dépendances ne se
-    partagent pas entre dossiers de travail.
-
-Ensuite, plus rien : chaque session prend son port, sa base et son coin de
-Redis toute seule, et « npm run verifier:avant-livraison » ne change pas.
+Ouvre une session dans chacun de ces dossiers, et travaille comme d'habitude :
+chaque session prend son port, sa base et son coin de Redis toute seule, et
+« npm run verifier:avant-livraison » ne change pas.
 `);
 }
 

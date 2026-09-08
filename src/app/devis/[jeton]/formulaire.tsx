@@ -8,6 +8,7 @@ import { libelleAutreDate } from "@/lib/libelle-dates";
 import Calendrier from "@/components/atlas/Calendrier";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import BoutonTelechargerDevis from "./BoutonTelechargerDevis";
+import { colors, font, voile } from "@/lib/design-tokens";
 
 export default function FormulaireReponse({
   envoi,
@@ -113,9 +114,20 @@ export default function FormulaireReponse({
 
   if (etat && "succes" in etat) {
     return (
-      <div className="rounded-2xl bg-white p-6 text-center shadow-sm">
-        <p className="text-[16px] font-medium text-ink">{etat.succes}</p>
-        <p className="mt-2 text-[14px] text-ink/60">Vous pouvez fermer cette page.</p>
+      <div
+        className="rounded-2xl p-6 text-center"
+        style={{
+          backgroundColor: colors.card,
+          border: `1px solid ${colors.line}`,
+          boxShadow: "0 8px 24px rgba(20,18,14,0.08)",
+        }}
+      >
+        <p className="text-[17px]" style={{ fontFamily: font.display, color: colors.ink }}>
+          {etat.succes}
+        </p>
+        <p className="mt-2 text-[14px]" style={{ color: colors.muted }}>
+          Vous pouvez fermer cette page.
+        </p>
         {/* **Le devis accepté s'emporte tout de suite.** C'est l'instant où le
             client le cherche — et s'il ferme la page sans l'avoir pris, l'écran
             de retour le lui redonne (`page.tsx`). Après un refus, non : on ne
@@ -126,22 +138,30 @@ export default function FormulaireReponse({
   }
 
   return (
-    <form action={action} className="flex flex-col gap-2">
+    <form action={action} className="flex flex-col gap-1.5">
       <input type="hidden" name="jeton" value={envoi.jeton} />
 
-      <section className="rounded-2xl bg-white p-3 shadow-sm">
-        <h2 className="text-[15px] font-semibold text-ink">Quelle date vous arrange&nbsp;?</h2>
+      <section className="rounded-2xl p-2.5"
+        style={{
+          backgroundColor: colors.card,
+          border: `1px solid ${colors.line}`,
+          boxShadow: "0 4px 14px rgba(20,18,14,0.06)",
+        }}>
+        <h2 className="text-[16px]" style={{ fontFamily: font.display, color: colors.ink }}>
+          Quelle date vous arrange&nbsp;?
+        </h2>
 
         <div className="mt-1.5 flex flex-col gap-0.5">
           {/* Repliée, la liste ne rend plus qu'une ligne : la date retenue, et
               de quoi revenir. Voir `listeRepliee` pour le pourquoi. */}
           {listeRepliee && (
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[15px] text-ink">{jourLisible(dateAutre)}</span>
+              <span className="text-[15px]" style={{ color: colors.ink }}>{jourLisible(dateAutre)}</span>
               <button
                 type="button"
                 onClick={() => setListeDepliee(true)}
-                className="shrink-0 text-[13px] text-ink/70 underline underline-offset-4"
+                className="shrink-0 text-[13px] underline underline-offset-4"
+                style={{ color: colors.inkSoft }}
               >
                 changer
               </button>
@@ -152,7 +172,7 @@ export default function FormulaireReponse({
           {listeRepliee && <input type="hidden" name="choixDate" value="autre" />}
 
           {!listeRepliee && envoi.datesProposees.map((d) => (
-            <label key={d} className="flex items-center gap-3 text-[15px] text-ink">
+            <label key={d} className="flex items-center gap-3 text-[15px]" style={{ color: colors.ink }}>
               <input
                 type="radio"
                 name="choixDate"
@@ -177,7 +197,7 @@ export default function FormulaireReponse({
               son côté (`enregistrerReponse`, motif `autre_date_refusee`) — une
               règle tenue à un seul endroit, jamais deux. */}
           {envoi.autreDateAutorisee && !listeRepliee && (
-            <label className="flex items-center gap-3 text-[15px] text-ink">
+            <label className="flex items-center gap-3 text-[15px]" style={{ color: colors.ink }}>
               <input
                 type="radio"
                 name="choixDate"
@@ -206,7 +226,8 @@ export default function FormulaireReponse({
             <button
               type="button"
               onClick={() => setFeuilleOuverte(true)}
-              className="mt-0.5 self-start text-[13px] text-ink/70 underline underline-offset-4"
+              className="mt-0.5 self-start text-[13px] underline underline-offset-4"
+              style={{ color: colors.inkSoft }}
             >
               {jourLisible(dateAutre)} — changer
             </button>
@@ -259,7 +280,7 @@ export default function FormulaireReponse({
                   plus bas, donc derrière elle : un refus posé là serait caché
                   par ce qui vient de le provoquer. */}
               {refus && (
-                <p role="alert" className="mt-2 text-[14px] text-[#B5502F]">
+                <p role="alert" className="mt-2 text-[14px]" style={{ color: colors.alert }}>
                   {refus}
                 </p>
               )}
@@ -272,7 +293,11 @@ export default function FormulaireReponse({
                   // Ce qu'il vient de retenir devient la ligne ; le reste se replie.
                   setListeDepliee(false);
                 }}
-                className="mt-3 rounded-full bg-[#2F3B2F] py-3 text-[16px] font-medium text-white"
+                // Le vert des BOUTONS (`colors.plein`), tranché le 3 septembre
+                // 2026 sur `appli/boutons-verts.html` — et non le vert pin, qui
+                // est celui des textes et des liserés.
+                className="atlas-plein mt-3 rounded-full py-3 text-[16px] font-medium"
+                style={{ backgroundColor: colors.plein, color: colors.card }}
               >
                 Retenir cette date
               </button>
@@ -298,7 +323,7 @@ export default function FormulaireReponse({
             perdue : « votre artisan la lira » la porte, et le nomme. Un client qui repère une faute et
             n'ose pas l'écrire touche « Je ne donne pas suite », et le patron lit
             un refus là où il n'y avait qu'une coquille. */}
-        <label className="mt-2.5 block text-[13px] font-medium text-ink/70" htmlFor="precision">
+        <label className="mt-2.5 block text-[13px] font-medium" style={{ color: colors.inkSoft }} htmlFor="precision">
           Une erreur&nbsp;? Écrivez-la, votre artisan la lira.
         </label>
         <textarea
@@ -315,13 +340,25 @@ export default function FormulaireReponse({
             if (e.target.value.trim() !== "") setRefus(null);
           }}
           placeholder="« Mon nom est mal écrit », « plutôt le matin »…"
-          className="mt-1.5 w-full resize-y rounded-xl border border-black/10 px-3 py-2 text-[15px]"
+          className="mt-1.5 w-full resize-y rounded-xl px-3 py-2 text-[15px]"
+          style={{ border: `1px solid ${colors.line}`, backgroundColor: colors.card, color: colors.ink }}
         />
       </section>
 
+      {/* **Le cadre de rétractation quitte le terre cuite du 3 août.**
+          `#B5502F` a été abandonné le 3 août 2026 ; il vivait encore ici, faute
+          d'être passé par les jetons. `colors.alert` est la teinte d'alerte du
+          produit, et elle s'éclaircit sur les deux chartes sombres pour rester
+          lisible (`chartes.ts`, `detacher`). */}
       {montrerRetractation && (
-        <section className="rounded-2xl border border-[#B5502F]/25 bg-[#B5502F]/5 p-3">
-          <label className="flex items-start gap-3 text-[14px] leading-relaxed text-ink">
+        <section
+          className="rounded-2xl p-2"
+          style={{
+            border: `1px solid ${voile(colors.alert, 0.25)}`,
+            backgroundColor: voile(colors.alert, 0.05),
+          }}
+        >
+          <label className="flex items-start gap-3 text-[14px] leading-relaxed" style={{ color: colors.ink }}>
             {/* Jamais pré-cochée : c'est cette demande, et elle seule, qui
                 autorise l'artisan à intervenir avant la fin du délai légal. */}
             <input
@@ -341,7 +378,7 @@ export default function FormulaireReponse({
       {/* Elle se tait pendant que la feuille est ouverte : celle-ci porte sa
           propre phrase, et deux fois la même à deux endroits ne se lit pas. */}
       {!feuilleOuverte && (refus ?? (etat && "erreur" in etat ? etat.erreur : null)) && (
-        <p role="alert" className="text-[14px] text-[#B5502F]">
+        <p role="alert" className="text-[14px]" style={{ color: colors.alert }}>
           {refus ?? (etat && "erreur" in etat ? etat.erreur : null)}
         </p>
       )}
@@ -367,7 +404,8 @@ export default function FormulaireReponse({
           name="decision"
           value="accepte"
           disabled={enCours}
-          className="rounded-full bg-[#2F3B2F] py-3 text-[16px] font-medium text-white disabled:opacity-50"
+          className="atlas-plein rounded-full py-3 text-[17px] disabled:opacity-50"
+          style={{ backgroundColor: colors.plein, color: colors.card, fontFamily: font.display }}
         >
           {enCours ? "Envoi…" : "J'accepte ce devis"}
         </button>
@@ -385,7 +423,8 @@ export default function FormulaireReponse({
             setRefus("Écrivez d'abord ce qui doit être corrigé.");
             champMessage.current?.focus();
           }}
-          className="rounded-full border border-[#2F3B2F]/30 py-2.5 text-[14px] font-medium text-[#2F3B2F] disabled:opacity-40"
+          className="rounded-full py-2.5 text-[14px] font-medium disabled:opacity-40"
+          style={{ color: colors.rust, boxShadow: `inset 0 0 0 1px ${voile(colors.rust, 0.3)}` }}
         >
           Une correction avant d&apos;accepter
         </button>
@@ -394,7 +433,8 @@ export default function FormulaireReponse({
           name="decision"
           value="refuse"
           disabled={enCours}
-          className="rounded-full border border-black/15 py-2.5 text-[14px] text-ink/70 disabled:opacity-50"
+          className="rounded-full py-2.5 text-[14px] disabled:opacity-50"
+          style={{ color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
         >
           Je ne donne pas suite
         </button>

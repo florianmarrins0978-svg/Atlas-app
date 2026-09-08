@@ -617,19 +617,21 @@ async function main() {
     // rien du tout. Elle rougissait sur du code juste.
     //
     // On vise donc le lancement du serveur par ce qu'il EST — un `spawn` qui
-    // demande `dev` sur le port 3000 —, pas par la commande qui le porte, qui a
+    // demande `dev` sur un port —, pas par la commande qui le porte, qui a
     // déjà changé deux fois.
     //
-    // **Le repère a vieilli une TROISIÈME fois — 8 septembre 2026 — et cette
-    // fois on cesse de le rajeunir.** Il visait `"dev"` puis le port `3000` ;
-    // les suites servent désormais la version BÂTIE (`start`) sur le port de
-    // l'atelier. Viser la sous-commande, c'était s'attacher à ce qui change :
-    // trois fois en un mois, et chaque fois le contrôle est resté vert en
-    // n'éprouvant plus rien.
+    // **Le repère a vieilli TROIS fois, et deux sessions l'ont rajeuni le même
+    // jour — 8 septembre 2026. On arrête.**
     //
-    // On vise donc ce qui ne change pas : la batterie lance le serveur par
-    // l'exécutable Node et le binaire du projet. Quelle que soit la
-    // sous-commande de demain, c'est cette ligne-là qui la portera.
+    // Il visait `"dev"`, puis `"-p", "3000"`. Le lot de l'atelier a donné son
+    // port à chaque session (`ARCHITECTURE.md` §287), donc `"3000"` a disparu ;
+    // la bascule sur la version bâtie a remplacé `dev` par `start`. À chaque
+    // fois, `iSpawn` valait -1 et le contrôle restait vert en n'éprouvant plus
+    // rien — ou rougissait sur du code juste.
+    //
+    // On vise donc ce qui ne peut pas changer sans que le serveur cesse d'être
+    // lancé : l'exécutable Node et le binaire du projet. La sous-commande et le
+    // port sont libres.
     const iSpawn = source.search(/spawn\(process\.execPath, \[CHEMIN_NEXT/);
     assert.ok(
       iGarde > 0,

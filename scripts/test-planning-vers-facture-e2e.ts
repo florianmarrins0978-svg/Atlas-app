@@ -359,7 +359,7 @@ async function main() {
     // chercher un `<a>` DESCENDANT n'en trouvait aucun — le contrôle accusait
     // le chemin d'être coupé alors qu'il était sous son curseur.
     const ligne = page.locator(
-      `a[data-atlas="ligne-terminee"][href="/chantiers/${chantierId}/facture"]`
+      `a[data-atlas="ligne-terminee"][href^="/chantiers/${chantierId}/facture"]`
     );
     await ligne.waitFor({ state: "visible", timeout: 15000 });
     assert.equal(
@@ -547,7 +547,7 @@ async function main() {
     // est là, et sa ligne mène à sa facture.
     assert.ok((await page.locator(`text=${nom}`).count()) > 0, "le chantier n'est pas dans les terminés");
     assert.ok(
-      (await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count()) > 0,
+      (await page.locator(`a[href^="/chantiers/${chantierId}/facture"]`).count()) > 0,
       "rien ne mène à la facture qui attend sur ce chantier"
     );
   });

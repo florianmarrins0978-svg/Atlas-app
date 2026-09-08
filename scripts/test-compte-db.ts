@@ -27,11 +27,12 @@ import { motDePasseEstCeluiDe } from "../src/server/secret-authentification";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
 import {
   lireCompte,
-  renommerCompte,
+  ecrireIdentite,
   changerMotDePasse,
   deconnecterPartout,
   coupureDesJetons,
 } from "../src/server/repositories/compte";
+import { ajouterCle, cleParIdentifiant, listerCles } from "../src/server/repositories/cles-appareil";
 
 let echecs = 0;
 async function essai(nom: string, fn: () => Promise<void>) {
@@ -98,11 +99,15 @@ async function main() {
     assert.equal((await lireCompte(ctxB))?.email, "b@essai.local");
   });
 
-  await essai("renommer son compte n'en renomme qu'un", async () => {
+  await essai("écrire son identité n'écrit que la sienne", async () => {
     const { ctxA, ctxB } = await monter();
-    await renommerCompte(ctxA, "Anne A.");
-    assert.equal((await lireCompte(ctxA))?.nom, "Anne A.");
+    await ecrireIdentite(ctxA, { civilite: "mme", prenom: "Anne", nom: "Amiot" });
+    const a = await lireCompte(ctxA);
+    assert.equal(a?.civilite, "mme");
+    assert.equal(a?.prenom, "Anne");
+    assert.equal(a?.nom, "Amiot");
     assert.equal((await lireCompte(ctxB))?.nom, "Bruno Berger", "le compte du voisin a bougé");
+    assert.equal((await lireCompte(ctxB))?.civilite, null, "le voisin a hérité d'une civilité");
   });
 
   // Le nom du compte ne s'imprime sur aucun document, contrairement à celui de
@@ -110,10 +115,41 @@ async function main() {
   // e-mail.
   await essai("un nom vidé devient nul, il ne devient pas une chaîne vide", async () => {
     const { ctxA } = await monter();
-    await renommerCompte(ctxA, "   ");
+    await ecrireIdentite(ctxA, { civilite: null, prenom: "   ", nom: "   " });
     assert.equal((await lireCompte(ctxA))?.nom, "");
-    const [ligne] = await db.select({ nom: users.nom }).from(users).where(eq(users.id, ctxA.utilisateurId));
+    assert.equal((await lireCompte(ctxA))?.prenom, "");
+    const [ligne] = await db
+      .select({ nom: users.nom, prenom: users.prenom, civilite: users.civilite })
+      .from(users)
+      .where(eq(users.id, ctxA.utilisateurId));
     assert.equal(ligne.nom, null, "la base porte une chaîne vide plutôt qu'un vide");
+    assert.equal(ligne.prenom, null, "le prénom vidé porte une chaîne vide plutôt qu'un vide");
+    assert.equal(ligne.civilite, null, "la civilité retirée n'est pas nulle");
+  });
+
+  // LA CONTRAINTE DE LA BASE REFUSERAIT UN TROISIÈME CODE (migration 0077), et
+  // l'application ne doit jamais l'atteindre : une civilité inconnue est
+  // NEUTRALISÉE avant l'écriture. Ce qui arrive ici d'ailleurs est une donnée
+  // fausse, pas une panne à faire remonter au patron.
+  await essai("une civilité inconnue devient nulle, elle ne fait pas tomber l'écriture", async () => {
+    const { ctxA } = await monter();
+    await ecrireIdentite(ctxA, { civilite: "professeur", prenom: "Anne", nom: "Amiot" });
+    assert.equal((await lireCompte(ctxA))?.civilite, null);
+    assert.equal((await lireCompte(ctxA))?.prenom, "Anne", "le reste de l'identité a été perdu");
+  });
+
+  // LES DROITS DE `users` SONT ACCORDÉS COLONNE PAR COLONNE (migration 0064).
+  // Une colonne neuve sans `GRANT` échouerait sur un « permission denied for
+  // table users » qui désigne la TABLE — donc au mauvais endroit — et l'on
+  // chercherait du côté de la RLS, qui n'a rien à voir. Cet essai-ci le dirait
+  // tout de suite, et il vaut pour la PROCHAINE colonne autant que pour
+  // celles-ci.
+  await essai("le rôle applicatif lit et écrit bien les colonnes neuves", async () => {
+    const { ctxA } = await monter();
+    await ecrireIdentite(ctxA, { civilite: "mr", prenom: "Aimé", nom: "Amiot" });
+    const relu = await lireCompte(ctxA);
+    assert.equal(relu?.civilite, "mr", "civilite illisible : le GRANT SELECT manque");
+    assert.equal(relu?.prenom, "Aimé", "prenom illisible : le GRANT SELECT manque");
   });
 
   console.log("");
@@ -202,6 +238,71 @@ async function main() {
     const { ctxA, ctxB } = await monter();
     await deconnecterPartout(ctxA);
     assert.equal(await coupureDesJetons(ctxB.utilisateurId), null, "le voisin a été déconnecté aussi");
+  });
+
+  /**
+   * **LE SEUL DÉFAUT DE SÉCURITÉ CONNU ET NON RÉPARÉ DU PRODUIT, jusqu'au
+   * 7 septembre 2026.**
+   *
+   * Le scénario, et il n'a rien de théorique : une session volée ouvre les
+   * Réglages et pose une clé Face ID sur SON téléphone. Le patron s'en aperçoit,
+   * appuie sur « me déconnecter partout », change son mot de passe. Les jetons
+   * tombent, les preuves tombent — et le voleur rentre par la porte de devant,
+   * parce que `ouvrirAvecCle` ne consulte jamais la coupure.
+   *
+   * **Cette suite rougit contre la version d'avant ce lot**, et c'est sa raison
+   * d'être : le défaut avait été trouvé le 25 août 2026, écrit à l'écran, et
+   * reporté. Aucun contrôle ne le tenait, donc rien ne rappelait qu'il était
+   * ouvert.
+   *
+   * On éprouve `cleParIdentifiant` et non `listerCles` : c'est par là que passe
+   * la CONNEXION, et une clé qui ne s'affiche plus dans une liste tout en
+   * ouvrant encore la porte serait le pire des deux mondes.
+   */
+  await essai("« ME DÉCONNECTER PARTOUT » FERME AUSSI LES PORTES FACE ID", async () => {
+    const { ctxA } = await monter();
+    const pose = await ajouterCle({
+      utilisateurId: ctxA.utilisateurId,
+      identifiantCle: "cle-posee-depuis-une-session-volee",
+      clePublique: "publique-volee",
+      compteur: 0,
+      nomAppareil: "iPhone du voleur",
+    });
+    assert.equal(pose.ok, true, "le montage n'a pas posé de clé : la suite n'éprouverait rien");
+
+    await deconnecterPartout(ctxA);
+
+    assert.equal(
+      await cleParIdentifiant("cle-posee-depuis-une-session-volee"),
+      null,
+      "la clé rouvre encore Atlas après « me déconnecter partout »"
+    );
+    assert.equal(
+      (await listerCles(ctxA.utilisateurId)).length,
+      0,
+      "l'écran montrerait encore des appareils qui n'ouvrent plus rien"
+    );
+  });
+
+  // **Et elle ne ferme QUE les siennes.** `cles_appareil` n'est couverte par
+  // aucune politique d'isolation (`drizzle/0063_cles_appareil.sql`) : rien
+  // d'autre que le `WHERE` ne retient cette suppression. Un `utilisateur_id`
+  // oublié effacerait la porte de tous les artisans à la fois — exactement le
+  // genre de correctif de sécurité qui coûte plus cher que le défaut.
+  await essai("et elle ne retire pas les clés du voisin", async () => {
+    const { ctxA, ctxB } = await monter();
+    await ajouterCle({
+      utilisateurId: ctxB.utilisateurId,
+      identifiantCle: "cle-du-voisin",
+      clePublique: "publique-voisin",
+      compteur: 0,
+      nomAppareil: "iPhone du voisin",
+    });
+    await deconnecterPartout(ctxA);
+    assert.ok(
+      await cleParIdentifiant("cle-du-voisin"),
+      "le voisin a perdu son Face ID parce que quelqu'un d'autre s'est déconnecté"
+    );
   });
 
   console.log("");

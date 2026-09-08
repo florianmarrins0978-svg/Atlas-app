@@ -9,6 +9,57 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## 🔨 À CODER — prévenir des factures parties avec l'ancien IBAN
+
+**Tranché par lui le 8 septembre 2026**, maquette à l'appui
+(`appli/changer-d-iban.html`) : *« oui je le veux »*, aux **trois** endroits.
+
+**Le trou.** Depuis la migration 0076, une facture prend l'IBAN de l'entreprise
+au jour où elle est créée : les factures à venir sont justes. Mais celles **déjà
+envoyées et non réglées** gardent l'ancien, et le PDF que le client a dans son
+téléphone ne se réécrit pas (`src/app/factures/[jeton]/pdf/route.ts`, fichier archivé).
+Le client risque de virer sur un compte fermé.
+
+**Ce qu'il faut coder :**
+
+1. **sous le champ, dans Réglages → Identité** — c'est là que ça vit, tant que
+   ce n'est pas fait. La liste des factures concernées, un bouton *Prévenir*
+   par ligne, et *Prévenir les N* ;
+2. **une marque sur « En attente de paiement »**
+   (`src/app/termines/tva/EnAttenteDePaiement.tsx`) — l'écran existe déjà, et
+   c'est là qu'il va voir qui n'a pas payé ;
+3. **l'écran du premier jour**, qui s'ouvre après l'enregistrement. Il ne
+   remplace rien : « Plus tard » renvoie aux deux précédents. *(C'est SA
+   question qui a corrigé la première proposition — sans les deux premiers,
+   « Plus tard » était un cul-de-sac.)*
+
+**Rien à créer côté données :** `enAttenteDeReglement`
+(`src/lib/exigibilite-tva.ts`) dit lesquelles sont impayées, et la comparaison
+se fait entre `factures.entreprise_iban` et l'IBAN vivant de l'entreprise. Le
+message au client se compose avec `src/lib/modalites-paiement.ts` — les mêmes
+fonctions que la page du client et le PDF, sans quoi les deux se
+contrediraient.
+
+**Ce qui ne s'affiche pas :** aucune facture concernée → **rien**. Ni
+« 0 facture », ni coche verte (`CLAUDE.md` §4 ter).
+
+---
+
+## ✅ ABANDONNÉ — la porte d'Atlas (connexion Google et Apple)
+
+**Le 8 septembre 2026 :** *« j'ai changé d'idée, je ne fais plus ça »*, après
+trois propositions dessinées et publiées
+(`appli/la-porte-d-atlas.html`). **Rien n'avait été codé.**
+
+**À ne pas rouvrir sans qu'il le redemande.** Conséquence à retenir : **le
+compte développeur Apple (99 $/an) n'a pas à être pris** — il ne servait qu'à
+« Continuer avec Apple ».
+
+La serrure Face ID, elle, a bien été réparée : elle ne dépendait pas de la
+porte (`docs/lot-pages-du-client.md`).
+
+---
+
 ## ⏳ UNE PLANCHE À REGARDER — la porte en plein air
 
 **Née le 8 septembre 2026.** `appli/la-porte-en-plein-air.html`, publiée et
@@ -121,6 +172,25 @@ là :**
    demandée (donc un réglage, pas une obligation) ; elle porte **ce qui a été
    fait**, pas ce qu'il y avait à faire ; et **aucun montant** n'y figure.
 
+**Ce qu'il a tranché le 8 septembre 2026 au soir, sur maquette :**
+
+| | |
+|---|---|
+| le salarié | le **bandeau déroulant** dans la fiche d'intervention — « Fin de chantier » déplie les cases, les photos et « À signaler », sans recouvrir la liste des tâches |
+| le patron | une **sous-catégorie « Retours »** dans Terminés, à côté de « À facturer », qui ouvre **sa propre page** |
+| cette page | les retours **rangés par client**, du plus récent au plus ancien, avec un **filtre en haut** : recherche par nom et pastilles d'années |
+
+**« IL FAUT POUVOIR LES GARDER LONGTEMPS » — trois règles de code, et la
+troisième est un piège.**
+
+1. ce que le salarié écrit ne s'efface pas avec le mois ;
+2. la liste remonte aux **années** passées, pas aux dix-huit mois du
+   feuilletage de Terminés (`RECUL_MAX`, `ListeTermines.tsx`) ;
+3. **`fichiers_a_purger` ne doit JAMAIS recevoir une photo de retour.** C'est le
+   même piège que la recopie des photos du lot 1 : `supprimerPhoto` met la CLÉ
+   en file de purge, et une photo partagée effacée d'un côté disparaît de
+   l'autre — des mois plus tard, sans que personne fasse le lien.
+
 Ce qui est déjà décidé (`ARCHITECTURE.md` §285) :
 
 - le salarié dépose photos et « c'est fini » **sur les chantiers de sa journée**,
@@ -145,6 +215,69 @@ faudra soit l'y rattacher, soit donner au chantier sa propre page de preuve.
 La page par jeton s'éprouve avec une suite **base**, sous `atlas_app` — les suites
 navigateur traversent la RLS et ne verraient rien (`CLAUDE.md` §5, le lien de
 facture mort en production le 8 août 2026).
+
+---
+
+## ⏳ LE PORT NE SUIT QU'À MOITIÉ — 120 suites l'écrivent en dur
+
+**Sa consigne du 8 septembre 2026 :** *« maintenant chaque session a son dossier
+et son port pour ne pas vous bousculer ; vérifie et prends un port libre. »*
+
+**Fait :** la batterie lit `PORT` (défaut 3000), lance son serveur dessus, et le
+passe aux suites par `BASE_URL`. `PORT=3100 npm run verifier:avant-livraison`
+fonctionne pour le serveur.
+
+**PAS FAIT, et il faut le savoir avant de s'y fier :** **198 occurrences dans
+120 suites** écrivent encore `http://localhost:3000` en dur. Elles ne suivront
+donc pas un autre port — une batterie lancée sur 3100 démarrerait son serveur
+là et ferait parler ses suites à 3000, c'est-à-dire à personne, ou pire au
+serveur d'une AUTRE session.
+
+Le compte du jour :
+
+```bash
+grep -rc "localhost:3000\|127.0.0.1:3000" scripts/test-*-e2e.ts | grep -v ':0' | wc -l
+```
+
+**Ce qu'il faudrait :** que chaque suite lise `scripts/_adresse.ts`, qui porte
+déjà `BASE_URL`. C'est mécanique mais ça touche 120 fichiers — un lot à part,
+pas un à-côté.
+
+**Qui peut le faire :** n'importe quelle session, avec la batterie derrière.
+
+---
+
+## ✅ ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR~~ — **TRANCHÉ le 8 septembre 2026**
+
+**Ses choix : C et D2** (planche `appli/qui-travaille-quel-jour.html`), codés le
+jour même. `ARCHITECTURE.md` §292.
+
+**Et le chiffrage était faux dans mon sens :** j'annonçais deux migrations, une
+seule était nécessaire. C déduit l'exception des congés au lieu de la faire
+saisir — sa façon de cocher ne change pas.
+
+---
+
+## ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR, et non par chantier~~
+
+**Née le 8 septembre 2026**, en corrigeant à la racine ce qu'il a signalé
+(`ARCHITECTURE.md` §291).
+
+**Le manque.** `equipes_du_chantier` porte `(chantier, demi, équipe)` — **aucun
+jour**. Une coche vaut pour le chantier entier. L'application ne peut donc pas
+dire « Julien le 11 mais pas le 10 ».
+
+**Ce que ça coûte aujourd'hui.** Sur un chantier de deux jours dont un seul
+tombe sur un congé : poser le congé retire la personne du chantier entier, et
+elle ne peut plus y être recochée — y compris pour le jour où elle est là.
+
+**Ce qu'il faudrait.** Une migration (un jour sur la ligne, ou une ligne par
+jour) et un écran où l'on coche par journée. Ce n'est pas un correctif, c'est un
+changement de son geste : **maquette d'abord** (`CLAUDE.md` §3 bis).
+
+**Qui peut le trancher :** lui seul — une migration touche ses données, et le
+geste est le sien. La question : *veux-tu cocher tes salariés jour par jour sur
+les chantiers de plusieurs jours, ou l'affectation reste-t-elle globale ?*
 
 ---
 
@@ -498,7 +631,7 @@ ajouté en cours de route.
 |---|---|---|
 | **Google** | **une décision du patron, pas un lot de code.** Le formulaire d'identifiants Google est un DÉPANNAGE : chaque artisan devrait créer son projet chez Google, activer une API et coller un identifiant OAuth. Le code sait déjà employer des identifiants ATLAS posés une fois pour tous — `ATLAS_GOOGLE_CLIENT_ID`, `ATLAS_GOOGLE_CLIENT_SECRET`, `ATLAS_GOOGLE_REDIRECTION` dans `src/server/agenda/google.ts` —, et ils ne sont posés nulle part (vérifié le 6 septembre 2026 sur son `.env`). **C'est à lui de les créer**, avec son compte. ⚠ À vérifier avant de le lui promettre : Google fait valider les applications qui touchent aux agendas, et le délai n'est pas connu ici |
 | **iCloud** | rien de mieux n'existe : Apple n'offre que le mot de passe pour les apps. À laisser tel quel |
-| 6 | **le reste** | Équipe (**proposition C** de la planche 96, décidée le 6 septembre, pas codée), notifications, mot de passe, données, couleurs, IA, abonnement, compte |
+| 6 | **le reste** | ~~Équipe~~ **FAIT le 8 septembre 2026** (§289) — mais PAS la proposition C : elle visait un écran refait depuis, et la capture montrait deux compteurs jumeaux que rien ne distinguait. Sa réponse A devant `appli/deux-compteurs-de-l-equipe.html` : les titres posent la question. **Restent** : notifications, mot de passe, données, couleurs, IA, abonnement, compte |
 
 ---
 
@@ -1821,6 +1954,42 @@ main ce que `useOccupation` fait déjà — `parCreneau`, `absentesParCreneau`,
 `CLAUDE.md` §3 interdit : elles divergeront au premier réglage ajouté d'un seul
 côté. Ce lot ne les a pas réunies pour ne pas mêler un remaniement à un
 changement de comportement — mais la dette est là, et elle porte un vrai risque.
+
+---
+
+## ⚠ LES SUITES NAVIGATEUR FLOTTENT CONTRE LA VERSION BÂTIE (8 septembre 2026)
+
+**Le mur de mémoire est tombé** — les 133 suites vont jusqu'au bout, serveur à
+236-451 Mo au lieu de 13 200, et 14,6 Go libres du début à la fin. C'était le
+point ; il est acquis.
+
+**Ce qui reste : le jeu des rouges CHANGE d'une course à l'autre.**
+
+| Course | Rouges |
+|---|---|
+| première | 19 sur 133 |
+| seconde, même code | 21 — et pas les mêmes |
+
+Sept d'entre eux étaient déjà rouges avant la bascule. Trois écrivaient le port
+3000 en dur et sont **corrigés**. Un est le travail en vol d'une autre session
+(le prénom séparé du nom). Le reste flotte : `bandeau-banc`, `cases-reglables`,
+`connexion-figee`, `face-id`, `grille-prix`, `pas-la-ce-jour`,
+`reduction-devis`, `retour-messagerie` rougissent dans une course et passent
+dans l'autre, à code identique.
+
+**La piste, et elle n'est pas mesurée** : la version bâtie répond beaucoup plus
+vite que le serveur de développement. Les attentes écrites pour un serveur qui
+compilait à la demande peuvent maintenant courir après un écran déjà rendu — ce
+sont des attentes de temps, pas d'état.
+
+**Ce qui est interdit ici, et il faut l'écrire avant que quelqu'un y pense :**
+rejouer automatiquement une suite rouge pour obtenir du vert. Un rejeu qui
+masque un flottement masquera aussi le vrai défaut du lendemain
+(`CLAUDE.md` §4 quater).
+
+**Par où commencer** : prendre une des huit, la jouer dix fois seule contre la
+version bâtie, et regarder si elle flotte encore. Si oui, c'est son attente
+qu'il faut viser — `waitForURL`/`textContent` remplacés par une attente d'ÉTAT.
 
 ---
 

@@ -25052,3 +25052,371 @@ Chaque session fusionne et pousse comme avant (`CLAUDE.md` §6).
 
 **Le seul geste, et il se fait une fois :** un `npm install` par dossier, les
 dépendances ne se partageant pas. Ensuite, plus rien à faire.
+
+## §289. Deux compteurs jumeaux : ce sont les TITRES qui les séparent
+
+**8 septembre 2026, écran Équipe.** Deux compteurs se suivaient, au dessin
+identique, affichant le même chiffre — « 2 » chantiers, « 2 » salariés. L'un dit
+ce que le planning accepte, l'autre qui part sur le chantier. **Rien à l'œil ne
+les séparait.**
+
+### Pourquoi une décision déjà prise ne s'appliquait plus
+
+Le lot devait commencer en portant sa « proposition C » du 6 septembre : le
+titre pose la question, la phrase des congés part vers « Absences ». Cette
+planche-là (96) décrivait un écran à **quatre blocs dont deux se répétaient**.
+
+Cet écran n'existait plus. Ses deux demandes du 26 août l'avaient refait : les
+compteurs séparés (§ des salariés), et les trois blocs bavards réduits à **une**
+phrase par compteur — la phrase des congés comprise, partie ce jour-là.
+
+**La leçon, et elle vaut au-delà de cet écran :** une décision d'apparence prise
+sur une planche vieillit avec l'écran. **On regarde l'écran AVANT d'appliquer la
+décision** (`CLAUDE.md` §5, « regarder l'écran ») — sans quoi on porte une
+réponse juste sur une question qui a changé.
+
+### Ce qui a été fait, et ce qui a été écarté
+
+Deux propositions lui ont été dessinées
+(`appli/deux-compteurs-de-l-equipe.html`), et il a répondu **A** :
+
+| | |
+|---|---|
+| **A — retenue** | les deux étiquettes en capitales deviennent des **questions** : « Combien de chantiers par jour ? », « Combien de salariés ? » |
+| **B — écartée par lui** | le second compteur disparaissait au profit d'une **liste de noms** avec « + Ajouter un salarié » — le nombre se déduisant des lignes |
+
+**B était la proposition conseillée**, et c'est son appel : elle retirait la
+ressemblance au lieu de l'expliquer, et elle suivait sa propre correction du
+6 septembre (*« c'est pas les équipes, c'est le nom des salariés »*). Elle
+coûtait une migration — le nombre de salariés cessait d'être une colonne. Il a
+gardé A ; le compteur reste, et deux questions le distinguent de son voisin.
+
+**En serif et en minuscules, jamais en `libelleCaps`.** Une question posée en
+capitales espacées se lit comme une étiquette — c'est-à-dire exactement ce que
+ce lot retire.
+
+### La phrase du compteur, corrigée par lui dans la foulée
+
+*« Deux chantiers par jour pour un planning complet, et là tu mets le carré vert
+foncé. »*
+
+| | |
+|---|---|
+| avant | « 2 chantiers par jour. Planning ▪ complet. » |
+| après | « 2 chantiers par jour pour un planning complet ▪. » |
+
+C'étaient deux phrases courtes collées, dont la seconde n'avait pas de verbe :
+le lien entre les deux — c'est CE nombre qui remplit la journée — se devinait.
+Le mot « pour » l'écrit.
+
+**Le mot « complet » et le carré ne sont toujours pas écrits ici** : ils viennent
+de `MOT_ETAT` et de `fondDeLEtat`, ceux du calendrier. Un « complet » recopié
+cesserait de suivre la légende le jour où elle change, et `test-equipes` refuse
+délibérément qu'il s'écrive dans la phrase.
+
+## §290 — Ce qu'une facture recopie du devis, et ce qu'elle lit sur l'entreprise
+
+**Décidé le 8 septembre 2026, sur sa question :** *« lorsque l'utilisateur
+modifie son IBAN dans ses réglages ou le nom de sa société, les infos se
+modifient automatiquement dans le lien que recevra le client ? »*
+
+La réponse était **non**, et la racine n'était pas dans la page : une facture
+recopiait l'identité **du devis** (`instantaneDuDevis`), figée le jour du devis.
+Un devis de janvier facturé en juin partait avec l'IBAN de janvier — le client
+virait sur un compte fermé, sur une facture toute neuve.
+
+**La règle, désormais :**
+
+| Ce qui vient du **devis** | Ce qui vient de l'**entreprise**, à la création de la facture |
+|---|---|
+| le client, les prix, la remise accordée | le nom, l'adresse, le SIRET, le téléphone, l'e-mail, l'IBAN, le titulaire du compte, les trois mentions légales, le régime de TVA |
+
+Ce n'est pas un affaiblissement du figeage : **c'est son INSTANT qui a bougé**,
+du devis à la facture. Une facture est une pièce NEUVE, émise aujourd'hui, qui
+porte l'identité d'aujourd'hui. Le régime de TVA suivait déjà exactement cette
+règle depuis la migration 0039 ; elle vaut maintenant pour toute l'identité.
+
+**POURQUOI L'IBAN NE SE LIT PAS VIVANT SUR LA PAGE DU CLIENT — l'idée a été
+essayée puis abandonnée, et c'est le point à retenir.** Le PDF servi par
+`src/app/factures/[jeton]/pdf/route.ts` est le fichier **archivé** à l'arrêt,
+jamais reconstruit. Une page qui aurait affiché l'IBAN d'aujourd'hui à côté d'un
+PDF portant celui d'hier aurait donné **deux IBAN au même client, dans le même
+envoi** — pire que le défaut qu'on répare. La page et le PDF lisent donc les
+mêmes colonnes figées, par la même fonction (`src/lib/modalites-paiement.ts`).
+
+**Ce qui reste ouvert, et qui se voit à l'écran plutôt qu'en silence :** les
+factures déjà parties gardent l'ancien IBAN. Atlas ne les réécrit pas — il
+préviendra l'artisan, aux trois endroits qu'il a retenus le 8 septembre
+(`appli/changer-d-iban.html`, `TODO.md`).
+
+**Colonne neuve :** `factures.entreprise_titulaire_compte` (migration 0076).
+`NULL` = aucun titulaire distinct, et l'ordre du chèque retombe sur le nom de
+l'entreprise — un chèque libellé à l'enseigne quand le compte est au nom propre
+se fait refuser au guichet.
+
+## §291 — La page du client porte les couleurs d'Atlas, le PDF garde les siennes
+
+**Sa demande du 8 septembre 2026, capture à l'appui :** *« il faut le modifier,
+déjà mets-le aux couleurs de l'appli »*.
+
+La page de facture de son client prenait **l'allure figée de la facture**
+(migration 0074) : un artisan ayant réglé un accent noir pour ses documents
+voyait une page noire. Ce n'était pas un défaut — c'était son propre réglage,
+porté jusqu'au bout.
+
+**Cela rouvre sa décision du 4 septembre** — *« mon client doit retrouver en
+ligne exactement ce qu'il a reçu en PDF »* —, et il l'a révisée lui-même après
+avoir vu la proposition. La règle devient :
+
+| | |
+|---|---|
+| le **PDF** | son document. Il garde l'allure qu'il a réglée, figée à l'envoi |
+| la **page** | l'enveloppe d'Atlas. Elle porte les couleurs d'Atlas |
+
+Ce ne sont pas deux fois le même objet : l'un s'archive et se garde, l'autre se
+traverse. **Ce n'est toujours pas sa charte d'écran** — une page de client ne
+reçoit aucune variable (`layout.tsx`, `estPageDuClient`), et les jetons
+retombent sur la charte d'origine : un devis ne part pas en noir chez le client
+parce que l'artisan a choisi « Nuit ».
+
+**La page du devis y passe aussi**, et la lecture y a trouvé deux défauts
+qu'aucune capture ne montrait : elle écrivait ses couleurs **en dur**
+(`bg-[#F4EFE8]`, `bg-white`, `#2F3B2F`, `#B5502F`), ce que `CLAUDE.md` §3
+interdit. Elle portait donc encore le terre cuite abandonné le 3 août 2026 sur
+son refus et son cadre de rétractation, et le vert des TEXTES sur son bouton
+d'acceptation au lieu du vert des BOUTONS tranché le 3 septembre. Cinq semaines
+d'identité manquée, faute d'être passée par les jetons.
+
+## §290. Une absence connue d'un côté de l'écran, ignorée de l'autre
+
+**Son signalement du 7 septembre 2026, capture à l'appui :** *« j'ai mis Julien
+en congé, la feuille le dit aussi, or je peux quand même sélectionner Julien ce
+jour — il doit être grisé et on ne doit pas pouvoir le sélectionner. »*
+
+**Sa capture montre les deux vérités à trois centimètres d'écart** : en haut de
+la carte, « Julien n'est pas là » ; en dessous, la pastille « ✓ Julien » cochée
+sur le matin du chantier. L'application savait, et laissait faire.
+
+**CE QUI MANQUAIT ÉTAIT UNE MOITIÉ DE RÈGLE.** Une absence était comptée depuis
+le 14 août là où elle change une **date** — les jours proposés au client
+(`absences-equipe.ts`, 14 août 2026). Elle ne l'était nulle part où elle change une
+**personne** : les pastilles d'équipe ne l'avaient jamais consultée.
+
+C'est le défaut typique d'une notion arrivée par un seul chemin. « Absence » est
+née d'une question de capacité ; personne n'est allé voir ce qu'elle devait
+changer ailleurs.
+
+### La règle vit dans `src/lib`, et sert LES DEUX CÔTÉS
+
+`equipe-absente.ts` grise la pastille **et** refuse la coche au serveur.
+`CLAUDE.md` §3 : *« jamais de règle dupliquée entre l'affichage et la
+vérification »*. Écrite deux fois, la version de l'écran aurait suffi — et un
+écran ne protège rien : il se contourne.
+
+### LE CAS QUI TRANCHE : deux jours, un seul de congé
+
+Une équipe n'est pas cochée « pour le 10 » : elle est cochée **pour le matin du
+chantier**, et cette coche traverse tous les jours qu'il occupe. Le modèle ne
+sait pas dire « Julien le 11 mais pas le 10 ».
+
+| Refuser dès UN jour d'absence | Refuser seulement si TOUS les jours |
+|---|---|
+| il ne peut pas cocher Julien sur un chantier de deux jours dont un tombe sur son congé | Julien est annoncé sur un chantier un jour où il n'y sera pas |
+| coût : une coche à faire autrement | coût : **personne ne vient** |
+
+On refuse dès un jour. C'est le seul des deux qui ne fasse pas partir un
+chantier sans personne, et l'erreur qu'il produit se répare le jour même.
+
+### ON PEUT TOUJOURS DÉCOCHER, ET C'EST ESSENTIEL
+
+Sa capture montre Julien **coché** un jour où il est absent : la coche est
+antérieure au congé. Griser franchement l'aurait enfermé dans l'état faux — il
+n'existe aucun autre chemin pour retirer quelqu'un d'une demi-journée.
+
+Le refus ne porte donc que sur la **coche**. Une pastille déjà cochée reste
+cliquable pour être retirée, et son gris dit pourquoi il faut le faire. Le
+serveur applique la même distinction : `cocheRefusee(..., dejaCochee)` rend
+toujours `false` quand la case est déjà mise.
+
+### Le refus rend l'état INCHANGÉ, jamais `null` ni une exception
+
+`null` veut déjà dire « ce chantier n'est pas à vous » dans cette fonction ; le
+message d'une exception levée par une action serveur n'arrive jamais jusqu'au
+patron (`AGENTS.md`). Le serveur relit donc l'état réel et le rend : l'écran se
+repeint sur ce qui est vrai, et la pastille grisée porte déjà l'explication.
+
+### Ce qu'il a fallu deux suites pour tenir
+
+| | |
+|---|---|
+| `test-equipe-absente.ts` | la règle pure — les bornes, les jours traversés, la bascule |
+| `test-coche-equipe-absente.ts` | **le refus du SERVEUR**, sous `atlas_app` |
+
+La seconde n'est pas un doublon : une suite navigateur ne l'aurait pas vue. Elles
+tournent sous un rôle qui traverse la RLS (`CLAUDE.md` §5), et surtout un écran
+qui grise se contourne — c'est le serveur qui tient. Les deux ont été
+confrontées à la version d'avant et rougissent sur le cas exact de sa capture.
+
+**Et l'écran a été REGARDÉ**, pas seulement mesuré : Julien pâle et non
+cliquable, Antoine intact, sur la carte du jeudi 10 — la journée de sa capture.
+
+## §291. « Pas de pansement » — fermer la porte par les DEUX bouts
+
+**Sa consigne du 8 septembre 2026, devant le §286 :** *« Pas de pansement,
+corrige le problème à la racine ! »* Il avait raison, et voici ce que le §286
+laissait passer.
+
+### Ce que le §286 corrigeait, et ce qu'il ne corrigeait pas
+
+Le §286 refuse de **cocher** quelqu'un d'absent. Il ferme une porte. Mais
+l'incohérence de sa capture n'était pas entrée par là : **la coche était
+ANTÉRIEURE au congé**. Elle est entrée par l'autre bout — `noterAbsenceEquipe`
+écrivait une ligne et s'arrêtait là, sans jamais regarder ce que ce congé rendait
+faux.
+
+| La porte | Avant le §286 | Après le §286 | Après celui-ci |
+|---|---|---|---|
+| cocher quelqu'un déjà en congé | ouverte | **fermée** | fermée |
+| poser un congé sur quelqu'un déjà coché | ouverte | **ouverte** | **fermée** |
+
+Un correctif qui ne ferme qu'un sens laisse le défaut se reproduire par l'autre,
+et donne l'illusion du travail fait. C'est exactement ce qu'il a nommé.
+
+### La réconciliation vit DANS la transaction du congé
+
+Faite après coup, une panne entre les deux laisserait le congé posé et les
+affectations fausses — le même état qu'on répare, mais désormais invisible parce
+que l'écran croirait le travail fait.
+
+### ELLE NE RETIRE JAMAIS EN SILENCE
+
+`noterAbsenceEquipe` rend `chantiersLiberes`. Sans cela, une demi-journée
+passerait de « Julien » à personne sans qu'il l'apprenne — et un chantier sans
+personne est précisément ce qu'on cherche à éviter.
+
+**Où le dire, et où se taire :**
+
+| | |
+|---|---|
+| **au planning** | rien. La carte du jour est ouverte sous ses yeux, la pastille disparaît : l'écran MONTRE (`CLAUDE.md` §3) |
+| **aux Réglages** | une ligne qui NOMME les chantiers — là-bas, rien de tout cela n'est visible |
+
+Et l'écran du planning **repeint sa liste locale** : sans cela il porterait
+encore « ✓ Julien » jusqu'au rechargement, c'est-à-dire les deux vérités
+contradictoires de sa capture, mais de notre fait cette fois.
+
+### LA RACINE QUI RESTE, ET QUI NE SE CORRIGE PAS SANS LUI
+
+**`equipes_du_chantier` ne porte pas de jour** : `(chantier_id, demi,
+equipe_id)`. Une coche vaut « le matin du chantier », pour tous les jours qu'il
+occupe. Le modèle **ne peut pas exprimer** « Julien le 11 mais pas le 10 ».
+
+Tout ce qui précède contourne ce manque. Et le contournement a un coût qu'il
+faut écrire noir sur blanc :
+
+> Sur un chantier de deux jours dont **un seul** tombe sur un congé, poser le
+> congé retire la personne du chantier **entier** — et le §286 l'empêche ensuite
+> de la recocher. Elle devient inaffectable sur ce chantier, y compris pour le
+> jour où elle est là.
+
+**Ce n'est pas un défaut d'implémentation, c'est la limite du modèle.** La
+corriger demande une migration (une ligne par jour, ou un jour sur la ligne
+existante) et change son geste : il cocherait par journée, plus par chantier.
+
+**Cela se demande à LUI** (`CLAUDE.md` §2 bis) : une migration touche ses
+données, et un geste qui change se dessine d'abord (§3 bis). La question est
+posée dans `TODO.md`.
+
+## §292. Le contournement tombe avec la limite qu'il contournait
+
+**Ses deux choix du 8 septembre 2026, sur maquette** (`appli/qui-travaille-quel-jour.html`) :
+**C** pour qui travaille quel jour, **D2** pour le congé d'une demi-journée.
+
+### CE QUE C A CORRIGÉ DANS MON PROPRE CHIFFRAGE
+
+J'ai annoncé au patron qu'il faudrait **deux** migrations : un jour sur
+l'affectation, une demi-journée sur l'absence. **La première est inutile**, et
+c'est en codant C qu'on le voit : l'exception se DÉDUIT des congés, elle ne se
+saisit pas. Il coche une fois, comme avant ; l'application retire le jour du
+congé et l'écrit sur la pastille.
+
+Une colonne de moins, un geste inchangé, et rien à ressaisir sur les chantiers
+déjà posés. **Le dire noir sur blanc** vaut mieux que de laisser croire au
+chiffrage d'hier (`CLAUDE.md` §2 bis).
+
+### LES DEUX RÈGLES DU 7 ET DU 8 SEPTEMBRE ÉTAIENT DES CONTOURNEMENTS
+
+| | Ce qu'elle faisait | Pourquoi |
+|---|---|---|
+| §286 | refuser la coche dès UN jour d'absence | le modèle ne savait pas dire « Julien vendredi mais pas jeudi » |
+| §287 | retirer la personne du chantier ENTIER à la pose du congé | même raison |
+
+Les deux interdisaient faute de pouvoir exprimer. **C l'exprime — donc les deux
+se relâchent, et c'est voulu :**
+
+- on ne refuse plus que si la personne n'est là **aucun** jour ;
+- on ne retire à la pose que si le congé couvre **tout** le chantier.
+
+Le second cas reste nécessaire : une coche qui n'annonce personne ferait partir
+un chantier avec un nom qui n'y sera jamais. **Et il compte toutes les absences
+en base, pas seulement celle qu'on pose** — deux congés d'un jour couvrent un
+chantier de deux jours qu'aucun ne couvre seul.
+
+### UNE PASTILLE PLEINE NE PEUT PAS PORTER UNE EXCEPTION
+
+C'est **lui** qui l'a relevé, sur la première version de la planche : *« la
+phrase dit Julien en congé mais il est quand même coché en vert, c'est
+normal ? »* Non. On lit l'aplat, pas la phrase en dessous — et c'était
+exactement le défaut d'origine, redessiné dans la maquette censée le corriger.
+
+La pastille est donc **cerclée et non pleine** quand la présence est partielle,
+et elle porte les jours. Aplat = tous les jours, cerne = pas partout.
+
+**Elle dit les jours de PRÉSENCE, pas d'absence** : « ven. » répond à « quand
+vient-il », là où « pas jeudi » oblige à soustraire de tête.
+
+**Et elle se tait presque toujours** : chantier d'un jour, aucun congé, ou
+absence totale — dans les trois cas, rien n'est écrit. Un écran qui daterait
+chaque coche ferait payer à tous une précision qui ne sert qu'à quelques-uns.
+
+### D2 : LA JOURNÉE EN UN APPUI, LA MOITIÉ EN DEUX
+
+`absences_equipe` porte deux bornes de demi-journée (`0076`), et non deux
+booléens : « du jeudi après-midi au lundi matin » n'a pas de sens en booléens —
+ils excluraient tous les matins de la période au lieu du seul premier.
+
+**Le geste ne change pas pour le cas courant.** Toucher un nom pose la journée,
+comme avant. Deux pastilles « Matin / Après-midi » apparaissent ensuite pour
+restreindre ce qui vient d'être posé — elles n'existent que le jour où ça
+compte.
+
+**Trois pastilles ne tenaient pas**, et c'est une mesure : « Quand » plus trois
+faisaient 440 px pour 354 disponibles. Vérifié sur la planche ET dans
+l'application, pas supposé.
+
+**Restreindre RETIRE et REPOSE**, plutôt que de modifier : une action de mise à
+jour aurait ajouté un troisième chemin d'écriture sur cette table, donc un
+troisième endroit où la réconciliation du §287 pourrait être oubliée.
+
+### LES HUIT CHEMINS QUI LISENT UNE ABSENCE
+
+C'est le vrai risque de cette migration. Une demi-journée qui compterait pour
+une journée entière **quelque part** rendrait la capacité fausse là et
+seulement là — et une date refusée au client ne se voit pas : personne ne
+remarque une date qu'on ne lui a pas offerte.
+
+Les huit `select` sur `absences_equipe` portent donc les deux bornes, y compris
+`envois-devis.ts` (les dates proposées), `preparation-envoi.ts` et la
+revérification. Le compte se vérifie d'un coup :
+
+```bash
+grep -rc "dernierJour: absencesEquipe.dernierJour," src   # doit égaler
+grep -rc "dernierDemi: absencesEquipe.dernierDemi," src   # celui-ci
+```
+
+### ET LA MOITIÉ COMPTE JUSQUE SUR LA PASTILLE
+
+`absenteCeCreneau` répond sur la demi-journée quand on la connaît, sur la
+journée sinon. Sur la ligne du matin, un congé d'après-midi ne retire pas le
+jour : sans cela la pastille annoncerait un jour de moins que la vérité, et le
+patron enverrait quelqu'un d'autre pour rien.

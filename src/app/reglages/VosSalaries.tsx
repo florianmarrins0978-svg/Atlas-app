@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { MAX_SALARIES, phraseDesSalaries, salariesAffiches } from "@/lib/equipes";
 import { mettreAJourNombreSalariesAction, nommerEquipeAction } from "./actions";
 import CompteurRond from "./CompteurRond";
 
 /**
- * « Vos salariés » — combien ils sont, et comment ils s'appellent.
+ * « Combien de salariés ? » — combien ils sont, et comment ils s'appellent.
  *
  * *Sa demande du 26 août 2026, arrêtée sur la planche 97
  * (`appli/salaries-et-equipes.html`), à laquelle il a répondu **A**.*
@@ -76,8 +76,15 @@ export default function VosSalaries({
       style={{ borderTop: `1px solid ${colors.line}` }}
       data-atlas="vos-salaries"
     >
-      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-        Vos salariés
+      {/* **LE TITRE POSE LA QUESTION — sa réponse A du 8 septembre 2026**
+          (planche `appli/deux-compteurs-de-l-equipe.html`), et c'est le même
+          geste que sur le compteur du dessus.
+
+          **Ce qu'il répare :** les deux compteurs se suivaient, au dessin
+          identique, avec le même chiffre — « 2 » et « 2 ». Deux étiquettes en
+          capitales ne les distinguaient pas ; deux questions, si. */}
+      <p className="mb-1.5 text-[19px] leading-[1.25]" style={{ fontFamily: font.display, color: colors.ink }}>
+        Combien de salariés&nbsp;?
       </p>
 
       <CompteurRond

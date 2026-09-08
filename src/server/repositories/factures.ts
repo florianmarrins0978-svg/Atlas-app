@@ -31,6 +31,7 @@ import {
   type Exigibilite,
 } from "../../lib/exigibilite-tva";
 import { exigibiliteDe, facturesAvecPaiements } from "./paiements-facture";
+import { consigneDuLibelle, modalitesDeLaFacture } from "../../lib/modalites-paiement";
 
 // Fin de chantier, facture et TVA — docs/AGENT.md §2.3.
 //
@@ -80,9 +81,8 @@ export async function attribuerNumeroFacture(tx: DbOrTx, entrepriseId: string): 
 /**
  * CE QU'UNE FACTURE RECOPIE DE SON DEVIS — écrit une fois, appelé deux fois.
  *
- * Le tout premier instantané est celui du devis, pas celui de la base
- * aujourd'hui : la facture doit porter les coordonnées auxquelles le client a
- * répondu, et les montants qu'il a vus.
+ * Ce que le client a accepté : **lui-même, et les prix**. C'est cela, et rien
+ * d'autre, qui doit traverser depuis le devis.
  *
  * **Pourquoi une fonction plutôt que deux listes de champs.** La création
  * (`terminerChantier`) et la reprise (`reprendreLeDevisSurLaFacture`) recopient
@@ -90,25 +90,31 @@ export async function attribuerNumeroFacture(tx: DbOrTx, entrepriseId: string): 
  * au premier champ ajouté — et le champ oublié, ce serait un prix, une adresse
  * ou un prix accordé absent de la facture (`CLAUDE.md` §3).
  *
- * **Ce qui n'en fait PAS partie, et pourquoi :** le numéro commercial (consommé,
- * il ne se rejoue pas), la date d'émission et l'échéance (celles de la facture,
- * pas du devis), et le régime de TVA (lu sur l'entreprise — un devis n'imprime
- * pas la mention de l'article 293 B).
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **L'IDENTITÉ DE L'ÉMETTEUR N'EN FAIT PLUS PARTIE — corrigé le 8 septembre
+ * 2026, sur sa question.** *« Lorsque l'utilisateur modifie son IBAN dans ses
+ * réglages ou le nom de sa société, les infos se modifient automatiquement dans
+ * le lien que recevra le client ? »* — puis : *« ne fais pas de pansement, je
+ * veux que tu corriges le problème à la racine. »*
+ *
+ * Elles ne se modifiaient pas, et la racine était ici : la facture recopiait
+ * l'identité DU DEVIS, figée le jour du devis. **Un devis de janvier facturé en
+ * juin partait avec l'IBAN de janvier** — et si l'artisan avait changé de banque
+ * entre-temps, son client virait l'argent sur un compte fermé, sur une facture
+ * toute neuve. Le nom de l'entreprise avait le même défaut, en pire : une
+ * facture porte alors une raison sociale qui n'existe plus.
+ *
+ * Une facture n'est pas une copie du devis : c'est une pièce NEUVE, émise
+ * aujourd'hui, qui porte l'identité d'aujourd'hui. C'est la règle que suivaient
+ * déjà le régime de TVA (migration 0039) et le délai de paiement ; elle vaut
+ * désormais pour toute l'identité (`identiteDeLEmetteur`, migration 0076).
+ *
+ * **Ce qui n'en fait PAS partie non plus :** le numéro commercial (consommé, il
+ * ne se rejoue pas), la date d'émission et l'échéance (celles de la facture).
  */
 function instantaneDuDevis(d: typeof devis.$inferSelect) {
   return {
     devisId: d.id,
-    entrepriseNom: d.entrepriseNom,
-    entrepriseAdresse: d.entrepriseAdresse,
-    entrepriseSiret: d.entrepriseSiret,
-    entrepriseEmail: d.entrepriseEmail,
-    entrepriseTelephone: d.entrepriseTelephone,
-    entrepriseIban: d.entrepriseIban,
-    // Les trois mentions légales, et leur emplacement (migration 0072).
-    entrepriseFormeJuridique: d.entrepriseFormeJuridique,
-    entrepriseCapitalSocial: d.entrepriseCapitalSocial,
-    entrepriseVilleRcs: d.entrepriseVilleRcs,
-    entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
     clientNom: d.clientNom,
     clientCivilite: d.clientCivilite,
     clientAdresse: d.clientAdresse,
@@ -127,6 +133,77 @@ function instantaneDuDevis(d: typeof devis.$inferSelect) {
     // c'est lui qui s'en apercevrait.
     reductionPourcent: d.reductionPourcent,
     reductionMontant: d.reductionMontant,
+  };
+}
+
+/**
+ * L'IDENTITÉ DE L'ÉMETTEUR, LUE SUR L'ENTREPRISE — au moment où la facture naît.
+ *
+ * **Les colonnes que cette fonction rend sont ensuite FIGÉES**, et c'est
+ * essentiel : le PDF servi au client est le fichier ARCHIVÉ à l'arrêt, jamais un
+ * document reconstruit (`factures/[jeton]/pdf/route.ts`). Si la page du client
+ * lisait l'entreprise vivante pendant que le PDF porte l'ancienne valeur, le même
+ * envoi montrerait DEUX IBAN au même client — pire que le défaut qu'on répare.
+ *
+ * Ce qui a changé le 8 septembre 2026 n'est donc pas le figeage : c'est son
+ * INSTANT. Il était au devis, il est à la facture.
+ *
+ * **Le titulaire du compte y entre (migration 0076)** : un chèque libellé à
+ * l'enseigne quand le compte est ouvert au nom propre se fait refuser au
+ * guichet, et rien ne le figeait jusqu'ici.
+ */
+type EntreprisePourFacture = Pick<
+  typeof entreprises.$inferSelect,
+  | "nom"
+  | "adresse"
+  | "siret"
+  | "email"
+  | "telephone"
+  | "iban"
+  | "titulaireCompte"
+  | "formeJuridique"
+  | "capitalSocial"
+  | "villeRcs"
+  | "mentionsLegalesPosition"
+  | "regimeTva"
+>;
+
+const COLONNES_EMETTEUR = {
+  nom: entreprises.nom,
+  adresse: entreprises.adresse,
+  siret: entreprises.siret,
+  email: entreprises.email,
+  telephone: entreprises.telephone,
+  iban: entreprises.iban,
+  titulaireCompte: entreprises.titulaireCompte,
+  formeJuridique: entreprises.formeJuridique,
+  capitalSocial: entreprises.capitalSocial,
+  villeRcs: entreprises.villeRcs,
+  mentionsLegalesPosition: entreprises.mentionsLegalesPosition,
+  regimeTva: entreprises.regimeTva,
+} as const;
+
+function identiteDeLEmetteur(e: EntreprisePourFacture | undefined) {
+  return {
+    // **Le nom ne peut pas être vide en base**, et une facture sans émetteur
+    // n'est pas une facture : l'entreprise introuvable rend une chaîne vide
+    // plutôt que de faire tomber l'insertion sur une contrainte, ce qui
+    // n'apprendrait rien à personne. En pratique elle existe toujours — on est
+    // dans son propre contexte d'entreprise.
+    entrepriseNom: e?.nom ?? "",
+    entrepriseAdresse: e?.adresse ?? null,
+    entrepriseSiret: e?.siret ?? null,
+    entrepriseEmail: e?.email ?? null,
+    entrepriseTelephone: e?.telephone ?? null,
+    entrepriseIban: e?.iban ?? null,
+    entrepriseTitulaireCompte: e?.titulaireCompte ?? null,
+    entrepriseFormeJuridique: e?.formeJuridique ?? null,
+    entrepriseCapitalSocial: e?.capitalSocial ?? null,
+    entrepriseVilleRcs: e?.villeRcs ?? null,
+    entrepriseMentionsLegalesPosition: e?.mentionsLegalesPosition ?? null,
+    // Le régime au jour de l'émission (migration 0039) : il était déjà lu ici,
+    // et il rejoint simplement le reste de l'identité.
+    entrepriseRegimeTva: e?.regimeTva ?? null,
   };
 }
 
@@ -211,13 +288,17 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
       .where(eq(lignesDevis.devisId, devisSource.id))
       .orderBy(asc(lignesDevis.ordre));
 
-    // Le régime de TVA se lit MAINTENANT, pour être figé dans la facture — une
-    // pièce comptable garde ce qu'elle portait le jour de son émission
-    // (migration 0039). Le délai de paiement se lit du même coup : c'est lui qui
-    // PROPOSE l'échéance par défaut, plutôt qu'un « 30 » écrit en dur qui
-    // contredisait la mention « Paiement à X jours » qu'il avait réglée.
+    // **TOUTE l'identité de l'émetteur se lit MAINTENANT**, pour être figée dans
+    // la facture — une pièce comptable garde ce qu'elle portait le jour de son
+    // émission. Le régime de TVA le faisait déjà seul depuis la migration 0039 ;
+    // le nom, l'adresse, le SIRET et surtout l'IBAN venaient encore du devis, et
+    // pouvaient dater de plusieurs mois (migration 0076, `identiteDeLEmetteur`).
+    //
+    // Le délai de paiement se lit du même coup : c'est lui qui PROPOSE
+    // l'échéance par défaut, plutôt qu'un « 30 » écrit en dur qui contredisait
+    // la mention « Paiement à X jours » qu'il avait réglée.
     const [entrepriseCourante] = await tx
-      .select({ regimeTva: entreprises.regimeTva, delaiPaiementJours: entreprises.delaiPaiementJours })
+      .select({ ...COLONNES_EMETTEUR, delaiPaiementJours: entreprises.delaiPaiementJours })
       .from(entreprises)
       .where(eq(entreprises.id, ctx.entrepriseId))
       .limit(1);
@@ -235,12 +316,12 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
         entrepriseId: ctx.entrepriseId,
         chantierId,
         numeroCommercial,
+        // Du devis : le client et les prix — ce qu'il a accepté.
         ...instantaneDuDevis(devisSource),
-        // Le régime au jour de l'émission, figé comme le reste de l'identité
-        // (migration 0039). Lu sur l'entreprise et non sur le devis : un devis
-        // n'imprime pas la mention de l'article 293 B, il n'avait donc aucune
-        // raison de la porter.
-        entrepriseRegimeTva: entrepriseCourante?.regimeTva ?? null,
+        // De l'entreprise, à cet instant : l'émetteur et ses modalités de
+        // paiement. L'ordre compte peu ici (les deux ne partagent aucune clé),
+        // mais il se lit dans le sens de la règle.
+        ...identiteDeLEmetteur(entrepriseCourante),
         dateEmission: jourIso(maintenant),
         dateEcheance: jourIso(echeance),
         createdBy: ctx.utilisateurId,
@@ -353,7 +434,19 @@ export async function reprendreLeDevisSurLaFacture(
     if (lignes.length > 0) {
       await tx.insert(lignesFacture).values(lignesRecopiees(ctx.entrepriseId, f.id, lignes));
     }
-    await tx.update(factures).set(instantaneDuDevis(d)).where(eq(factures.id, f.id));
+    // **L'identité se rafraîchit aussi, et seulement parce que la facture est
+    // encore un BROUILLON** (garde ci-dessus). Rien n'est parti chez le client :
+    // reprendre le dernier devis sans reprendre l'IBAN du jour laisserait une
+    // facture à moitié à jour — des prix de juin et des coordonnées de janvier.
+    const [entrepriseCourante] = await tx
+      .select(COLONNES_EMETTEUR)
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+    await tx
+      .update(factures)
+      .set({ ...instantaneDuDevis(d), ...identiteDeLEmetteur(entrepriseCourante) })
+      .where(eq(factures.id, f.id));
 
     return { ok: true, numeroDevis: d.numeroCommercial };
   });
@@ -423,6 +516,7 @@ function donneesFacture(
   lignes: (typeof lignesFacture.$inferSelect)[],
   numeroDevis: string | null
 ): FacturePdfData {
+  const modalites = modalitesDeLaFacture(f);
   return {
     numeroCommercial: f.numeroCommercial,
     statut: f.statut as "brouillon" | "emise",
@@ -435,7 +529,14 @@ function donneesFacture(
     entrepriseSiret: f.entrepriseSiret,
     entrepriseTelephone: f.entrepriseTelephone,
     entrepriseEmail: f.entrepriseEmail,
-    entrepriseIban: f.entrepriseIban,
+    // **LES MÊMES FONCTIONS QUE LA PAGE DU CLIENT** (`modalites-paiement.ts`) :
+    // l'IBAN groupé par quatre, l'ordre du chèque, la consigne du libellé. Le
+    // client reçoit deux pièces — cette page et ce PDF — et deux rédactions
+    // séparées finiraient par lui donner deux consignes différentes pour le même
+    // règlement (`CLAUDE.md` §3).
+    entrepriseIban: modalites.ibanLisible,
+    consignePaiement: consigneDuLibelle(f.numeroCommercial),
+    ordreDuCheque: modalites.ordreDuCheque,
     entrepriseFormeJuridique: f.entrepriseFormeJuridique,
     entrepriseCapitalSocial: f.entrepriseCapitalSocial,
     entrepriseVilleRcs: f.entrepriseVilleRcs,

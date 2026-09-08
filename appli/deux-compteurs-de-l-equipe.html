@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les deux compteurs de l'écran Équipe — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  ÉQUIPE : DEUX COMPTEURS QUI SE RESSEMBLENT — la planche, 8 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  POURQUOI CETTE PLANCHE EXISTE, ALORS QU'UNE DÉCISION ÉTAIT DÉJÀ PRISE.
+
+  Le 6 septembre, il a tranché la « proposition C » de la planche 96 : le titre
+  du bloc pose la question, et la phrase sur les congés part vers « Absences ».
+  Cette planche-là décrivait un écran à QUATRE blocs dont deux disaient la même
+  chose.
+
+  Cet écran n'existe plus. Entre-temps, deux de ses demandes l'ont refait :
+    - 26 août : le compteur des équipes et celui des salariés sont SÉPARÉS ;
+    - 26 août encore : la phrase des congés est partie, et les trois blocs
+      bavards ont été réduits à UNE phrase sous chaque compteur.
+
+  La capture d'aujourd'hui montre donc autre chose, et c'est ce qu'aucune
+  décision ne couvre : **deux compteurs au dessin identique, l'un sous l'autre,
+  affichant le même chiffre**. « 2 » chantiers, « 2 » salariés. Ils ne parlent
+  pas de la même chose, et rien à l'œil ne les distingue.
+
+  Les libellés sont recopiés du code, jamais réécrits :
+    - « Chantiers menés en même temps », « Vos salariés » : VosEquipes.tsx,
+      VosSalaries.tsx
+    - les deux phrases : phraseDuCompteur, phraseDesSalaries (src/lib/equipes.ts)
+    - « Salarié 1 » : le repli du champ, `placeholder` de VosSalaries
+    - « Personne d'absent… », « + Noter une absence » : AbsencesEquipe.tsx
+
+  Les couleurs viennent de `src/lib/chartes.ts`, les deux pôles compris.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --pin:#2f3b2f; --rouille:#9c5b3f;
+  --trait:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28); --scene:#e6e3dc;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --pin:#8fae86; --rouille:#c07a56;
+  --trait:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28); --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--rouille);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+.scene{display:flex;justify-content:center;padding:22px 16px 6px}
+.colonne{width:390px;max-width:100%}
+.etiquette{text-align:center;font-size:11px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--encre-douce);margin:0 0 10px;min-height:17px}
+.tel{position:relative;width:390px;max-width:100%;height:664px;overflow:hidden;
+  background:var(--fond);border:1px solid var(--trait);border-radius:10px}
+.defile{height:100%;overflow-y:auto;padding:26px 26px 74px}
+.regle{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:10px 0 0}
+
+/* ─── l'écran ───────────────────────────────────────────────────────────── */
+h2.titre{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:36px;
+  line-height:1.02;letter-spacing:-.018em;margin:20px 0 0}
+.surtitre{margin:12px 0 0;font-size:11px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--or)}
+.inter{margin:0 0 10px;font-size:11px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.28em;color:var(--encre-douce)}
+/* La question, elle, se lit en minuscules : des capitales espacées ne se lisent
+   pas comme une question, elles se lisent comme une étiquette. */
+.question{margin:0 0 10px;font-family:ui-serif,Georgia,serif;font-size:19px;
+  line-height:1.25;color:var(--encre)}
+.bloc{margin-top:28px;padding-top:18px;border-top:1px solid var(--trait)}
+.bloc:first-of-type{margin-top:22px;padding-top:0;border-top:0}
+
+.acces{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  padding:12px 0;border-bottom:1px solid var(--trait)}
+.acces .nom{font-size:17px}
+.acces .mail{display:block;font-size:13px;color:var(--encre-douce);margin-top:2px}
+.acces .role{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--encre-douce)}
+.ajout{display:flex;align-items:center;gap:12px;min-height:52px;font-size:17px;
+  background:none;border:0;color:inherit;font-family:inherit;cursor:pointer;padding:0}
+.ajout .plus{font-size:20px;color:var(--gris)}
+
+.compteur{display:flex;align-items:center;justify-content:center;gap:34px;margin:6px 0 0}
+.compteur button{width:58px;height:58px;border-radius:50%;border:1px solid var(--trait);
+  background:none;color:var(--encre);font:inherit;font-size:22px;cursor:pointer}
+.compteur .n{font-family:ui-serif,Georgia,serif;font-size:44px;line-height:1}
+.sous{margin:8px 0 0;text-align:center;font-size:12.5px;line-height:1.6;color:var(--gris)}
+.carre{display:inline-block;width:11px;height:11px;border-radius:3px;
+  background:var(--pin);vertical-align:-1px}
+
+.gens{margin-top:14px}
+.gens .l{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--trait)}
+.gens .r{font-size:13px;color:var(--or);width:12px;text-align:center}
+.gens .champ{flex:1;font-family:ui-serif,Georgia,serif;font-size:17px;color:var(--gris)}
+.gens .champ.ecrit{color:var(--encre)}
+.gens .x{color:var(--chevron);font-size:18px}
+.ajouter{display:flex;align-items:center;gap:10px;min-height:48px;font-size:15px;
+  background:none;border:0;color:var(--encre);font-family:inherit;cursor:pointer;padding:0;margin-top:4px}
+
+.bouton{display:block;width:100%;min-height:52px;border-radius:999px;border:0;
+  background:none;color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait);
+  font:inherit;font-size:15px;cursor:pointer;margin-top:12px}
+.abs{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--trait)}
+.abs .pastille{width:30px;height:30px;border-radius:50%;background:var(--plage);
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--encre-douce);flex:none}
+.abs .qui{flex:1;font-size:15px}
+.abs .quand{font-size:13px;color:var(--or)}
+.note{font-size:12.5px;line-height:1.6;color:var(--gris);margin:10px 0 0}
+
+.nav{position:absolute;left:0;right:0;bottom:0;height:48px;background:var(--fond);
+  border-top:1px solid var(--trait);display:flex;align-items:center;
+  justify-content:space-around;font-size:9.5px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--gris)}
+
+/* ─── les notes ─────────────────────────────────────────────────────────── */
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
+  vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+.nb{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" data-v="aujourdhui" aria-pressed="true">Aujourd'hui</button>
+  <button type="button" data-v="A" aria-pressed="false">A · les titres posent la question</button>
+  <button type="button" data-v="B" aria-pressed="false">B · une liste, plus un compteur</button>
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">Maquette — rien n'est codé</span>
+  <h1>Les deux compteurs de l'écran Équipe</h1>
+  <p><b>Regardez « Aujourd'hui » d'abord.</b> Deux compteurs se suivent, dessinés
+  pareil, et ils affichent le même chiffre : <b>2</b> chantiers, <b>2</b> salariés.
+  Ils ne parlent pas de la même chose — l'un dit ce que votre planning accepte,
+  l'autre qui part sur le chantier — et rien à l'œil ne les sépare.</p>
+  <p><b>Ce n'est pas ce que la planche du 26 août montrait</b>, et c'est pour ça
+  que je vous en refais une : votre décision du 6 septembre visait un écran qui
+  n'existe plus. Le détail est sous le téléphone.</p>
+</div>
+
+<div class="scene">
+  <div class="colonne">
+    <p class="etiquette" id="etiquette">Aujourd'hui</p>
+    <div class="tel">
+      <div class="defile" id="defile"></div>
+      <div class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+    </div>
+    <p class="regle">Le dessin montre ; ce que fait le réglage est écrit plus bas.</p>
+  </div>
+</div>
+
+<div class="notes">
+
+  <h3>Ce que chaque compteur fait vraiment</h3>
+  <p>Vérifié dans le code avant d'écrire une ligne, et les deux ne se touchent
+  jamais :</p>
+  <table>
+    <tr><th>Le compteur</th><th>Ce qu'il gouverne</th></tr>
+    <tr><td><b>Chantiers menés en même temps</b></td>
+      <td>combien de chantiers tiennent le même jour. À 1, un jour pris n'est
+      plus proposé à vos clients ; à 2, il le reste tant qu'une place est
+      libre</td></tr>
+    <tr><td><b>Vos salariés</b></td>
+      <td>qui se coche sur une demi-journée du planning. Il ne change RIEN à ce
+      que vos clients peuvent réserver</td></tr>
+  </table>
+  <p><b>C'est vous qui avez fait séparer les deux, le 26 août</b> — et vous
+  aviez raison : tant qu'un seul chiffre portait les deux métiers, monter
+  l'effectif ouvrait des journées que vous ne pouviez pas tenir. Ce qui reste,
+  c'est que la séparation ne se VOIT pas.</p>
+
+  <h3>Les deux propositions</h3>
+  <table>
+    <tr><th></th><th>Ce que ça change</th></tr>
+    <tr><td><b>A · les titres posent la question</b></td>
+      <td>« Combien de chantiers par jour ? » et « Combien de salariés ? », en
+      toutes lettres à la place des étiquettes en capitales. C'est l'esprit de
+      votre décision du 6 septembre, appliqué à l'écran d'aujourd'hui. Les deux
+      compteurs se ressemblent toujours, mais on ne peut plus les confondre</td></tr>
+    <tr><td><b>B · une liste, plus un compteur</b><br><i>celle que je vous conseille</i></td>
+      <td>le compteur des chantiers reste un compteur. Les salariés deviennent
+      une <b>liste de noms</b> avec « + Ajouter un salarié » : on ne compte pas
+      des gens avec un + et un −, on les nomme. Le nombre se déduit de la liste,
+      et le second compteur disparaît</td></tr>
+  </table>
+  <p><b>Pourquoi B :</b> c'est le seul qui retire vraiment la ressemblance, au
+  lieu de l'expliquer. Et il suit ce que vous m'aviez dit le 6 septembre :
+  <i>« c'est pas les équipes, c'est le nom des salariés »</i> — dans B, ajouter
+  un salarié, c'est écrire son nom, pas pousser un chiffre.</p>
+  <p><b>Ce que B coûte, et je le dis avant :</b> le nombre de salariés n'est
+  plus un réglage à part en base — il devient le nombre de lignes. C'est un
+  changement de plomberie, pas un habillage ; une demi-journée de plus que A.</p>
+
+  <h3>Ce qui ne bouge dans aucune des deux</h3>
+  <p><b>« Qui a accès » reste en tête</b> — c'est la question qu'on se pose en
+  arrivant, et c'est votre planche du 13 août. <b>« Absences » reste en bas</b>,
+  sous les noms, comme vous l'aviez retenu. Et les deux réglages continuent de
+  faire exactement ce qu'ils font : rien n'est ajouté, rien n'est retiré.</p>
+
+  <h3>Ce que je n'ai pas tranché</h3>
+  <p>Sous la liste des noms, l'écran écrit aujourd'hui : <i>« 2 salariés n'ont
+  pas de nom : le chantier les montrera sous leur numéro »</i>. Dans B, cette
+  phrase n'a plus lieu d'être — une ligne sans nom se voit dans la liste. Elle
+  disparaît donc, sauf si vous la voulez.</p>
+
+</div>
+
+<script>
+/*
+  UN SEUL JEU DE DONNÉES, TROIS RENDUS. L'écran d'aujourd'hui et les deux
+  propositions sortent des mêmes valeurs : deux dessins écrits à la main
+  divergeraient au premier libellé changé, et la comparaison serait fausse.
+*/
+var etat = { vue: "aujourdhui", chantiers: 2, salaries: 2, noms: { 1: "", 2: "" } };
+var defile = document.getElementById("defile");
+
+function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/** La phrase du compteur des chantiers — `phraseDuCompteur`, mot pour mot. */
+function phraseChantiers(n){
+  return (n <= 1 ? "Un chantier" : n + " chantiers") +
+    ' par jour. Planning <span class="carre"></span> <span style="color:var(--encre-douce)">complet</span>.';
+}
+/** Celle des salariés — `phraseDesSalaries`. */
+function phraseSalaries(n){
+  return n <= 0 ? "Seul : rien à cocher sur un chantier."
+                : "Leurs noms se cochent sur chaque demi-journée.";
+}
+
+function enTete(){
+  return '<div><span style="display:flex;align-items:center;justify-content:center;width:40px;' +
+    'height:40px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--trait);font-size:15px;' +
+    'color:var(--gris)">&lsaquo;</span>' +
+    '<h2 class="titre">Équipe</h2><p class="surtitre">Réglages</p></div>';
+}
+
+function blocAcces(){
+  return '<div class="bloc"><p class="inter">Qui a accès</p>' +
+    '<div class="acces"><span><span class="nom">Vous</span>' +
+    '<span class="mail">demo@atlas.local</span></span><span class="role">Patron</span></div>' +
+    '<button class="ajout" type="button"><span class="plus">+</span>Donner un accès</button></div>';
+}
+
+function compteur(clef, valeur){
+  return '<div class="compteur">' +
+    '<button type="button" data-moins="' + clef + '">−</button>' +
+    '<span class="n">' + valeur + '</span>' +
+    '<button type="button" data-plus="' + clef + '">+</button></div>';
+}
+
+function blocChantiers(){
+  var titre = etat.vue === "A"
+    ? '<p class="question">Combien de chantiers par jour ?</p>'
+    : '<p class="inter">Chantiers menés en même temps</p>';
+  return '<div class="bloc">' + titre + compteur("chantiers", etat.chantiers) +
+    '<p class="sous">' + phraseChantiers(etat.chantiers) + '</p></div>';
+}
+
+function lignesNoms(){
+  var h = '<div class="gens">';
+  for (var i = 1; i <= etat.salaries; i++) {
+    var n = etat.noms[i] || "";
+    h += '<div class="l"><span class="r">' + i + '</span>' +
+      '<span class="champ' + (n ? " ecrit" : "") + '">' + ech(n || ("Salarié " + i)) + '</span>' +
+      (etat.vue === "B" ? '<span class="x" data-retirer="' + i + '">×</span>' : "") +
+      '</div>';
+  }
+  return h + '</div>';
+}
+
+function blocSalaries(){
+  // **B : plus de compteur du tout.** On ne compte pas des gens avec un + et un
+  // − ; on les nomme, et le nombre se lit dans la liste.
+  if (etat.vue === "B") {
+    return '<div class="bloc"><p class="question">Qui part sur les chantiers ?</p>' +
+      lignesNoms() +
+      '<button class="ajouter" type="button" data-ajouter="1"><span class="plus" ' +
+      'style="font-size:20px;color:var(--gris)">+</span>Ajouter un salarié</button>' +
+      '<p class="note">Leurs noms se cochent sur chaque demi-journée.</p></div>';
+  }
+  var titre = etat.vue === "A"
+    ? '<p class="question">Combien de salariés ?</p>'
+    : '<p class="inter">Vos salariés</p>';
+  var sansNom = 0;
+  for (var i = 1; i <= etat.salaries; i++) if (!etat.noms[i]) sansNom++;
+  var reste = sansNom === 0 ? ""
+    : '<p class="note">' + (sansNom === 1
+        ? 'Un salarié n\'a pas de nom : <span style="color:var(--encre)">le chantier le montrera sous son numéro</span>.'
+        : sansNom + ' salariés n\'ont pas de nom : <span style="color:var(--encre)">le chantier les montrera sous leur numéro</span>.') +
+      '</p>';
+  return '<div class="bloc">' + titre + compteur("salaries", etat.salaries) +
+    '<p class="sous">' + phraseSalaries(etat.salaries) + '</p>' +
+    (etat.salaries > 0 ? lignesNoms() + reste : "") + '</div>';
+}
+
+function blocAbsences(){
+  return '<div class="bloc"><p class="inter">Absences</p>' +
+    '<div class="abs"><span class="pastille">1</span>' +
+    '<span class="qui">Salarié 1</span><span class="quand">du 8 au 12 octobre</span></div>' +
+    '<button class="bouton" type="button">+ Noter une absence</button>' +
+    '<p class="note">Un absent <span style="color:var(--encre)">ne compte plus</span> ces ' +
+    'jours-là : Atlas propose une date de moins, et tout revient normal ensuite. ' +
+    'Vos clients ne voient rien de tout ceci.</p></div>';
+}
+
+function dessiner(){
+  defile.innerHTML = enTete() + blocAcces() + blocChantiers() + blocSalaries() + blocAbsences();
+  document.getElementById("etiquette").textContent =
+    etat.vue === "aujourdhui" ? "Aujourd'hui"
+    : etat.vue === "A" ? "A · les titres posent la question"
+    : "B · une liste, plus un compteur";
+  brancher();
+}
+
+function brancher(){
+  var moins = defile.querySelectorAll("[data-moins]");
+  for (var i = 0; i < moins.length; i++) moins[i].addEventListener("click", function(){
+    var c = this.getAttribute("data-moins");
+    var haut = defile.scrollTop;
+    // Le plancher n'est pas le même : à zéro chantier, plus aucun jour ne
+    // serait proposable — c'est la borne du code (`MAX_EQUIPES`, plancher 1).
+    etat[c] = Math.max(c === "chantiers" ? 1 : 0, etat[c] - 1);
+    dessiner(); defile.scrollTop = haut;
+  });
+  var plus = defile.querySelectorAll("[data-plus]");
+  for (var j = 0; j < plus.length; j++) plus[j].addEventListener("click", function(){
+    var c = this.getAttribute("data-plus");
+    var haut = defile.scrollTop;
+    etat[c] = Math.min(20, etat[c] + 1);
+    dessiner(); defile.scrollTop = haut;
+  });
+  var aj = defile.querySelectorAll("[data-ajouter]");
+  for (var k = 0; k < aj.length; k++) aj[k].addEventListener("click", function(){
+    var haut = defile.scrollTop;
+    etat.salaries = Math.min(20, etat.salaries + 1);
+    dessiner(); defile.scrollTop = haut;
+  });
+  var ret = defile.querySelectorAll("[data-retirer]");
+  for (var m = 0; m < ret.length; m++) ret[m].addEventListener("click", function(){
+    var haut = defile.scrollTop;
+    etat.salaries = Math.max(0, etat.salaries - 1);
+    dessiner(); defile.scrollTop = haut;
+  });
+}
+
+var vues = document.querySelectorAll("[data-v]");
+for (var b = 0; b < vues.length; b++) {
+  vues[b].addEventListener("click", function(){
+    etat.vue = this.getAttribute("data-v");
+    for (var k = 0; k < vues.length; k++)
+      vues[k].setAttribute("aria-pressed", String(vues[k].getAttribute("data-v") === etat.vue));
+    dessiner();
+  });
+}
+
+document.getElementById("pole").addEventListener("click", function(){
+  var nuit = document.body.classList.toggle("nuit");
+  this.setAttribute("aria-pressed", String(nuit));
+  this.textContent = nuit ? "Voir sur Origine" : "Voir sur Nuit";
+});
+
+dessiner();
+</script>
+</body>
+</html>

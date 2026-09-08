@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Changer d'IBAN — et les factures déjà parties</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    CHANGER D'IBAN — ET LES FACTURES DÉJÀ PARTIES. 8 septembre 2026.
+
+    Sa question, et elle a tué la première version de cette planche :
+    *« si on choisit la B et que je décide de les relancer plus tard, où je dois
+    aller pour retrouver l'écran B ? »*
+
+    **Nulle part.** C'était un cul-de-sac : « Plus tard » renvoyait à rien, et il
+    aurait fallu rechanger d'IBAN pour revoir l'écran. B n'est donc pas une
+    alternative à A — il a BESOIN de A.
+
+    D'où les trois endroits ci-dessous, qui ne se concurrencent plus :
+
+      1. dans ses réglages, sous le champ — c'est là que ça VIT, tant que ce
+         n'est pas fait ;
+      2. sur « En attente de paiement », là où il va déjà voir qui n'a pas
+         payé — les factures concernées y sont marquées ;
+      3. l'écran du premier jour, optionnel : la première apparition.
+
+    `CLAUDE.md` §3 bis : la planche d'abord. RIEN N'EST CODÉ.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LE TROU QUE ÇA BOUCHE, ET IL EST RÉEL.
+
+    Depuis la migration 0076, une facture prend l'IBAN de l'entreprise au jour
+    où elle est créée : toute facture à venir est juste. Mais celles **déjà
+    parties** gardent l'ancien, et ce n'est pas un défaut — le PDF servi est le
+    fichier ARCHIVÉ, jamais reconstruit (`factures/[jeton]/pdf/route.ts`). Le
+    réécrire ferait mentir la page sur ce que le client a dans son téléphone.
+
+    Reste un vrai risque qui coûte de l'argent : un client règle une facture de
+    la semaine dernière sur un compte fermé.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QU'ATLAS PEUT FAIRE, ET CE QU'IL NE PEUT PAS.
+
+      · réécrire une facture partie ....... NON, et la base le refuse déjà
+      · prévenir l'artisan ................ OUI, à l'instant du changement
+      · écrire le message au client ....... OUI — numéro et IBAN viennent de
+                                            `src/lib/modalites-paiement.ts`,
+                                            les mêmes fonctions que la page du
+                                            client et le PDF
+      · savoir lesquelles sont impayées ... OUI — `enAttenteDeReglement` existe
+                                            (`src/lib/exigibilite-tva.ts`), et
+                                            l'écran aussi
+                                            (`app/termines/tva/EnAttenteDePaiement.tsx`)
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI NE S'AFFICHE PAS, ET C'EST LA MOITIÉ DU TRAVAIL.
+
+    Aucune facture concernée → RIEN. Pas de « 0 facture », pas de coche verte :
+    un avertissement qui parle à tort s'apprend à être ignoré, et l'on perd le
+    garde-fou sans s'en apercevoir (`CLAUDE.md` §4 ter).
+  */
+  :root{
+    --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.07);
+    --alerte:#9C3B2E;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+
+  .note{max-width:520px;margin:32px auto 0;padding:16px 20px;background:var(--carte);
+        border-left:3px solid var(--or);font-size:14px;line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .note + .note{margin-top:12px}
+  .note code{font:400 13px/1 ui-monospace,monospace;background:var(--papier);padding:1px 4px;border-radius:3px}
+
+  .etats{position:sticky;top:0;z-index:20;background:#e6e3dc;
+         border-bottom:1px solid rgba(28,28,26,.14);padding:12px 16px 13px}
+  .etats .quoi{max-width:520px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+               letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+  .etats .rangee{max-width:520px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+  .etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+                border-radius:999px;padding:8px 13px;font:400 13px/1 var(--sans);cursor:pointer;
+                -webkit-tap-highlight-color:transparent}
+  .etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+
+  .planches{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;
+            max-width:1330px;margin:30px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+  .planche .quand{margin:0 0 6px;font:600 9.5px/1 var(--sans);letter-spacing:.2em;
+                  text-transform:uppercase;color:var(--or)}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce);min-height:60px}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;
+       box-shadow:0 16px 44px rgba(20,18,14,.22);position:relative}
+
+  .ecran{background:var(--fond);height:100%;padding:14px 16px;display:flex;
+         flex-direction:column;gap:10px;color:var(--encre);overflow:hidden}
+  .entete{display:flex;align-items:baseline;gap:10px}
+  .entete .retour{font-size:18px;color:var(--gris)}
+  .entete h1{margin:0;font:400 20px/1.2 var(--serif)}
+
+  .champ{background:var(--carte);border:1px solid var(--trait);border-radius:14px;padding:11px 13px}
+  .champ .etiq{display:block;font:600 9.5px/1 var(--sans);letter-spacing:.2em;
+               text-transform:uppercase;color:var(--gris)}
+  .champ .valeur{display:block;margin-top:5px;font-size:16px;letter-spacing:.02em}
+  .champ.neuf{box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .champ .dit{display:block;margin-top:4px;font-size:12.5px;color:var(--plein)}
+
+  .alerte{border-radius:16px;padding:13px;
+          border:1px solid rgba(156,59,46,.28);background:rgba(156,59,46,.05)}
+  .alerte h2{margin:0;font:400 17px/1.3 var(--serif);color:var(--encre)}
+  .alerte .quoi{margin:6px 0 0;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+  .liste{margin:11px 0 0;display:flex;flex-direction:column}
+  .ligne{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--trait)}
+  .ligne:first-child{border-top:0}
+  .ligne .qui{flex:1;min-width:0}
+  .ligne .num{display:block;font-size:14.5px}
+  .ligne .cli{display:block;margin-top:1px;font-size:12.5px;color:var(--gris)}
+  .ligne .eur{flex:0 0 auto;font-size:14.5px;font-variant-numeric:tabular-nums}
+  .ligne .geste{flex:0 0 auto;border:0;border-radius:999px;background:var(--papier);
+                box-shadow:inset 0 0 0 1px var(--trait);color:var(--pin);
+                padding:0 14px;min-height:38px;font:500 13.5px var(--sans);cursor:pointer}
+  .gestes{margin:12px 0 0;display:flex;flex-direction:column;gap:7px}
+  .gestes .tous{border:0;border-radius:999px;background:var(--plein);color:var(--carte);
+                padding:13px;font:400 16px var(--serif);cursor:pointer}
+  .gestes .apres{border:0;border-radius:999px;background:transparent;color:var(--gris);
+                 box-shadow:inset 0 0 0 1px var(--trait);padding:10px;
+                 font:400 14px var(--sans);cursor:pointer}
+
+  /* ── L'écran « En attente de paiement », reproduit ─────────────────── */
+  .impayes h2{margin:0;font:400 17px var(--serif)}
+  .impayes .compte{font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+  .impayes .chapo{margin:6px 0 0;font-size:13px;line-height:1.35;color:var(--encre-douce)}
+  .impayes ul{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column}
+  .impayes li{padding:12px 0;border-top:1px solid var(--filet)}
+  .impayes .haut{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .impayes .nomcli{font-size:14.5px}
+  .impayes .meta{margin:1px 0 0;font-size:11.5px;line-height:1.45;color:var(--gris)}
+  .impayes .eur{font-size:14.5px;font-variant-numeric:tabular-nums}
+  /* La marque : sobre, à la couleur d'alerte, et elle porte le geste. */
+  .marque{display:flex;align-items:center;gap:9px;margin-top:7px}
+  .marque .mot{font:600 9.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;
+               color:var(--alerte)}
+  .marque button{border:0;border-radius:999px;background:var(--papier);
+                 box-shadow:inset 0 0 0 1px var(--trait);color:var(--pin);
+                 padding:0 13px;min-height:34px;font:500 13px var(--sans);cursor:pointer}
+
+  /* ── Le message tout écrit ──────────────────────────────────────────── */
+  .feuille{position:absolute;inset:0;background:rgba(12,11,10,.45);display:none;
+           align-items:flex-end;z-index:5}
+  body.etat-message .feuille{display:flex}
+  .feuille .contenu{width:100%;background:var(--carte);border-radius:20px 20px 0 0;padding:16px}
+  .feuille h3{margin:0;font:400 18px/1.25 var(--serif)}
+  .feuille .apercu{margin:10px 0 0;border-radius:12px;background:var(--papier);
+                   box-shadow:inset 0 0 0 1px var(--trait);padding:11px 13px;
+                   font-size:14.5px;line-height:1.5;color:var(--encre)}
+  .feuille .deux{margin:12px 0 0;display:flex;gap:8px}
+  .feuille .deux button{flex:1;border:0;border-radius:999px;padding:12px;
+                        font:500 14.5px var(--sans);cursor:pointer}
+  .feuille .sms{background:var(--plein);color:var(--carte);font:400 16px var(--serif)}
+  .feuille .mail{background:transparent;color:var(--pin);box-shadow:inset 0 0 0 1px var(--trait)}
+
+  .rien{margin-top:auto;text-align:center;font-size:12.5px;color:var(--gris);padding-bottom:6px}
+
+  /* ── Les états ──────────────────────────────────────────────────────────
+     **Le préfixe `etat-` n'est pas une coquetterie.** Sans lui, l'état se posait
+     sur `<body class="une">` — et la règle `.une{display:none}`, écrite pour les
+     LIGNES, happait la page entière : toucher « 1 seule » l'effaçait d'un coup.
+     Trouvé en mesurant, jamais à l'œil : la vue par défaut, elle, était juste. */
+  .une,.aucune{display:none}
+  body.etat-une .trois,body.etat-aucune .trois{display:none}
+  body.etat-une .une{display:block}
+  body.etat-aucune .aucune{display:block}
+  body.etat-aucune .alerte,body.etat-aucune .marque{display:none}
+  body:not(.etat-aucune) .rien{display:none}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Votre question : « si je les relance plus tard, où je retrouve l'écran ? »</b>
+  Elle a tué ma première proposition — « Plus tard » ne menait nulle part.
+  Voici les <b>trois endroits</b>, qui ne se concurrencent plus.
+  <b>Rien n'est codé.</b>
+</div>
+
+<div class="etats">
+  <p class="quoi">Voir dans cet état</p>
+  <div class="rangee">
+    <button type="button" data-etat="" aria-pressed="true">3 factures</button>
+    <button type="button" data-etat="etat-une" aria-pressed="false">1 seule</button>
+    <button type="button" data-etat="etat-aucune" aria-pressed="false">Aucune</button>
+    <button type="button" data-etat="etat-message" aria-pressed="false">Le message tout écrit</button>
+  </div>
+</div>
+
+<div class="planches">
+
+  <!-- ══ 1 — DANS LES RÉGLAGES, EN PERMANENCE ═══════════════════════ -->
+  <div class="planche">
+    <p class="quand">Tant que ce n'est pas fait</p>
+    <p class="nom">Dans vos réglages</p>
+    <p class="idee">Sous votre IBAN, dans Réglages › Identité. C'est là que ça vit : l'alerte
+      reste tant que vous n'avez pas prévenu, et vous la retrouvez sans rien chercher.</p>
+    <div class="tel">
+      <div class="ecran">
+        <div class="entete"><span class="retour">‹</span><h1>Identité</h1></div>
+
+        <div class="champ neuf">
+          <span class="etiq">IBAN</span>
+          <span class="valeur">FR76 2222 0000 0222 2222 2222 222</span>
+          <span class="dit">Enregistré</span>
+        </div>
+
+        <div class="alerte">
+          <h2 class="trois">3 factures envoyées portent l'ancien IBAN</h2>
+          <h2 class="une">1 facture envoyée porte l'ancien IBAN</h2>
+          <p class="quoi">Elles ne sont pas encore réglées. Le document que vos clients ont
+            reçu ne peut pas être modifié.</p>
+
+          <div class="liste">
+            <div class="ligne">
+              <span class="qui"><span class="num">F2026-000012</span><span class="cli">Mme Grospiron</span></span>
+              <span class="eur">1 480,00 €</span>
+              <button type="button" class="geste">Prévenir</button>
+            </div>
+            <div class="ligne trois">
+              <span class="qui"><span class="num">F2026-000011</span><span class="cli">M. Lefèvre</span></span>
+              <span class="eur">640,00 €</span>
+              <button type="button" class="geste">Prévenir</button>
+            </div>
+            <div class="ligne trois">
+              <span class="qui"><span class="num">F2026-000009</span><span class="cli">Copropriété Les Tilleuls</span></span>
+              <span class="eur">2 310,00 €</span>
+              <button type="button" class="geste">Prévenir</button>
+            </div>
+          </div>
+
+          <div class="gestes">
+            <button type="button" class="tous trois">Prévenir les 3</button>
+            <button type="button" class="apres">Plus tard</button>
+          </div>
+        </div>
+
+        <p class="rien aucune">Aucune facture envoyée n'attend de règlement.<br>Rien ne s'affiche.</p>
+      </div>
+
+      <div class="feuille">
+        <div class="contenu">
+          <h3>Prévenir Mme Grospiron</h3>
+          <p class="apercu">Bonjour, notre IBAN a changé. Pour régler la facture F2026-000012,
+            merci d'utiliser FR76 2222 0000 0222 2222 2222 222 en indiquant F2026-000012 dans
+            le libellé.</p>
+          <div class="deux">
+            <button type="button" class="sms">Envoyer par SMS</button>
+            <button type="button" class="mail">Par e-mail</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 2 — SUR L'ÉCRAN DES IMPAYÉS ════════════════════════════════ -->
+  <div class="planche">
+    <p class="quand">Là où vous allez déjà</p>
+    <p class="nom">En attente de paiement</p>
+    <p class="idee">L'écran existe déjà (Terminés › TVA) : c'est là que vous regardez qui n'a
+      pas payé. Les factures concernées y portent une marque, et le même geste.</p>
+    <div class="tel">
+      <div class="ecran impayes">
+        <div class="entete" style="justify-content:space-between;width:100%">
+          <h2>En attente de paiement</h2>
+          <span class="compte trois">3 factures</span>
+          <span class="compte une">1 facture</span>
+          <span class="compte aucune">rien</span>
+        </div>
+        <p class="chapo">Ces factures sont parties chez vos clients. Elles entreront au relevé
+          le jour où vous serez payé, pas avant.</p>
+
+        <ul>
+          <li>
+            <div class="haut">
+              <div><span class="nomcli">Mme Grospiron</span>
+                <p class="meta">F2026-000012 · émise le 2 septembre</p></div>
+              <span class="eur">1 480,00 €</span>
+            </div>
+            <div class="marque">
+              <span class="mot">Ancien IBAN</span>
+              <button type="button">Prévenir</button>
+            </div>
+          </li>
+          <li class="trois">
+            <div class="haut">
+              <div><span class="nomcli">M. Lefèvre</span>
+                <p class="meta">F2026-000011 · émise le 29 août</p></div>
+              <span class="eur">640,00 €</span>
+            </div>
+            <div class="marque">
+              <span class="mot">Ancien IBAN</span>
+              <button type="button">Prévenir</button>
+            </div>
+          </li>
+          <li class="trois">
+            <div class="haut">
+              <div><span class="nomcli">M. Perrot</span>
+                <p class="meta">F2026-000014 · émise le 6 septembre</p></div>
+              <span class="eur">890,00 €</span>
+            </div>
+          </li>
+        </ul>
+
+        <p class="rien aucune">Tout est réglé. Rien n'attend son paiement.</p>
+      </div>
+
+      <div class="feuille">
+        <div class="contenu">
+          <h3>Prévenir Mme Grospiron</h3>
+          <p class="apercu">Bonjour, notre IBAN a changé. Pour régler la facture F2026-000012,
+            merci d'utiliser FR76 2222 0000 0222 2222 2222 222 en indiquant F2026-000012 dans
+            le libellé.</p>
+          <div class="deux">
+            <button type="button" class="sms">Envoyer par SMS</button>
+            <button type="button" class="mail">Par e-mail</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 3 — L'ÉCRAN DU PREMIER JOUR ════════════════════════════════ -->
+  <div class="planche">
+    <p class="quand">Optionnel — le jour du changement</p>
+    <p class="nom">L'écran qui s'ouvre</p>
+    <p class="idee">Il s'ouvre une fois, juste après l'enregistrement. Il ne remplace rien :
+      si vous touchez « Plus tard », l'alerte vous attend dans les deux écrans à gauche.</p>
+    <div class="tel">
+      <div class="ecran">
+        <div class="entete"><h1 style="font-size:22px">Votre IBAN a changé</h1></div>
+
+        <p class="quoi" style="margin:0;font-size:13.5px;line-height:1.5;color:var(--encre-douce)">
+          Les factures ci-dessous sont parties avec l'ancien. Elles ne sont pas encore réglées,
+          et le document que vos clients ont reçu ne peut pas être modifié.</p>
+
+        <div class="alerte" style="border:0;background:transparent;padding:0">
+          <div class="liste" style="margin-top:6px">
+            <div class="ligne">
+              <span class="qui"><span class="num">F2026-000012</span><span class="cli">Mme Grospiron</span></span>
+              <span class="eur">1 480,00 €</span>
+              <button type="button" class="geste">Prévenir</button>
+            </div>
+            <div class="ligne trois">
+              <span class="qui"><span class="num">F2026-000011</span><span class="cli">M. Lefèvre</span></span>
+              <span class="eur">640,00 €</span>
+              <button type="button" class="geste">Prévenir</button>
+            </div>
+            <div class="ligne trois">
+              <span class="qui"><span class="num">F2026-000009</span><span class="cli">Copropriété Les Tilleuls</span></span>
+              <span class="eur">2 310,00 €</span>
+              <button type="button" class="geste">Prévenir</button>
+            </div>
+          </div>
+
+          <div class="gestes">
+            <button type="button" class="tous trois">Prévenir les 3</button>
+            <button type="button" class="apres">Plus tard</button>
+          </div>
+        </div>
+
+        <p class="rien aucune">Aucune facture concernée.<br>Cet écran ne s'ouvre pas.</p>
+      </div>
+
+      <div class="feuille">
+        <div class="contenu">
+          <h3>Prévenir Mme Grospiron</h3>
+          <p class="apercu">Bonjour, notre IBAN a changé. Pour régler la facture F2026-000012,
+            merci d'utiliser FR76 2222 0000 0222 2222 2222 222 en indiquant F2026-000012 dans
+            le libellé.</p>
+          <div class="deux">
+            <button type="button" class="sms">Envoyer par SMS</button>
+            <button type="button" class="mail">Par e-mail</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <b>Votre question a corrigé ma proposition, et il faut le dire.</b> Je vous avais donné
+  « A ou B ». Avec B seul, <b>« Plus tard » ne menait nulle part</b> : il aurait fallu
+  rechanger d'IBAN pour revoir l'écran. B n'est donc pas une alternative — c'est juste la
+  première apparition, et il a besoin des deux autres.
+</div>
+
+<div class="note">
+  <b>La troisième ligne n'est pas marquée, et c'est le point.</b> M. Perrot a été facturé
+  <b>après</b> votre changement : sa facture porte déjà le bon IBAN. Seules les factures
+  concernées portent la marque — les autres ne bougent pas.
+</div>
+
+<div class="note">
+  <b>Ce qu'Atlas ne fera pas.</b> Il ne réécrit pas une facture déjà partie : votre client a le
+  PDF dans son téléphone, et le changer sous ses yeux ferait mentir la page. Ce qui est proposé,
+  c'est de <b>prévenir</b> — pas de refaire.
+</div>
+
+<div class="note">
+  <b>Le message est écrit par Atlas.</b> Le numéro et le nouvel IBAN viennent des mêmes
+  fonctions que la page de votre client et le PDF : ils ne peuvent pas se contredire.
+  Touchez <b>Le message tout écrit</b> en haut, ou n'importe quel bouton <b>Prévenir</b>.
+</div>
+
+<div class="note">
+  <b>Aucune facture concernée : rien ne s'affiche.</b> Ni « 0 facture », ni coche verte.
+  Un avertissement qui parle à tort s'apprend à être ignoré — et le jour où il a raison,
+  on ne le lit plus.
+</div>
+
+<script>
+  var etats = document.querySelectorAll('.etats button');
+  etats.forEach(function (b) {
+    b.addEventListener('click', function () {
+      etats.forEach(function (a) { a.setAttribute('aria-pressed', String(a === b)); });
+      document.body.className = b.dataset.etat || '';
+    });
+  });
+  document.querySelectorAll('.geste, .tous, .marque button').forEach(function (b) {
+    b.addEventListener('click', function () { document.body.className = 'etat-message'; });
+  });
+  document.querySelectorAll('.feuille').forEach(function (f) {
+    f.addEventListener('click', function (e) { if (e.target === f) document.body.className = ''; });
+  });
+</script>
+
+</body>
+</html>

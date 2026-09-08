@@ -220,8 +220,8 @@ const EXEMPTIONS: Record<string, string> = {
     "Accepter les documents légaux est la porte d'entrée : la fermer par rôle enfermerait dehors le salarié qui n'a pas encore accepté.",
 
   // ─── Ses propres réglages : elles n'écrivent que sur la personne ────────
-  "src/app/reglages/compte/actions.ts#renommerCompteAction":
-    "Écrit le nom de la personne connectée, sur elle seule. « Un salarié peut changer ses notifications ou son mot de passe » (13 août 2026).",
+  "src/app/reglages/compte/actions.ts#ecrireIdentiteAction":
+    "Écrit la civilité, le prénom et le nom de la personne connectée, sur elle seule. « Un salarié peut changer ses notifications ou son mot de passe » (13 août 2026).",
   "src/app/reglages/apparence/actions.ts#choisirCharteAction":
     "La charte de couleurs de la personne connectée. Aucune donnée d'entreprise, aucun autre compte touché.",
   "src/app/reglages/connexion/actions.ts#changerMotDePasseAction":

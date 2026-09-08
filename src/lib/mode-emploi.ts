@@ -571,7 +571,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     ou: "Réglages, puis Devis & factures, puis L'allure de mes devis",
     intitule: "Reprendre l'allure de son ancien devis en le photographiant",
     motsCles: ["photo", "photographier", "allure", "couleur", "police", "logo", "devis", "reprendre", "modele"],
-    geste: "Appuyez sur « Photographier mon devis » et choisissez l'appareil photo ou la photothèque.",
+    geste: "Ouvrez « L’allure de mes devis », appuyez sur « Photographier mon devis » et choisissez l'appareil photo ou la photothèque.",
     reserve: "L'allure et les mentions sont reprises ; ni les lignes, ni les prix, ni le logo.",
     source: "src/app/reglages/documents/allure/AllureClient.tsx",
     preuves: ["Photographier mon devis"],

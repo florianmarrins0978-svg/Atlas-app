@@ -1,4 +1,5 @@
 import { adressesDuDocument } from "../../lib/adresses";
+import { phraseDuCheque } from "@/lib/modalites-paiement";
 import { ligneAttendSonPrix } from "../../lib/preparation-devis";
 import { PDFDocument, PDFFont, PDFImage, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
@@ -422,6 +423,22 @@ export type DonneesDocument = {
   entrepriseTelephone?: string | null;
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
+  /**
+   * DEUX MENTIONS QUE SEULE LA FACTURE PORTE — sa demande du 8 septembre 2026.
+   *
+   * `consignePaiement` : *« une phrase bien écrite pour dire que pour nous
+   * régler il faut impérativement mettre le numéro de facture dans le
+   * libellé »*. `ordreDuCheque` : à qui le chèque est libellé.
+   *
+   * **Absentes sur un DEVIS, et le document ne change donc pas d'un octet.** Un
+   * devis ne se règle pas : lui imprimer « indiquez le numéro dans le libellé »
+   * ferait payer un document qui n'est pas dû. Les deux phrases elles-mêmes
+   * viennent de `src/lib/modalites-paiement.ts` — la page du client les compose
+   * à partir des mêmes fonctions, sinon les deux pièces du même envoi finiraient
+   * par ne plus dire la même chose (`CLAUDE.md` §3).
+   */
+  consignePaiement?: string | null;
+  ordreDuCheque?: string | null;
   /**
    * Les trois mentions légales, et leur emplacement (migration 0072). Absentes
    * sur un document d'avant la migration : rien de plus ne s'imprime.
@@ -1057,13 +1074,44 @@ export async function composerDocument(
 
   // Les modalités de paiement suivent le chiffrage : sur une fiche de chantier,
   // un IBAN sans montant invite à payer une somme que personne n'a écrite.
-  if (data.entrepriseIban && !options.sansChiffrage) {
-    place(38);
+  //
+  // **Le bloc s'affiche aussi sans IBAN dès qu'il y a une consigne**, et c'est
+  // voulu : sur une facture, dire à qui libeller le chèque et quoi écrire dans
+  // le libellé vaut même quand l'artisan n'a pas rempli ses coordonnées
+  // bancaires. Sur un devis, ni l'un ni l'autre n'est fourni — le document ne
+  // bouge pas d'un octet.
+  const aDesModalites = data.entrepriseIban || data.consignePaiement || data.ordreDuCheque;
+  if (aDesModalites && !options.sansChiffrage) {
+    // La consigne du libellé fait deux à trois lignes ; les mesurer plutôt que
+    // de réserver 38 px en dur, sinon elle déborderait sur le pied de page.
+    const lignesConsigne = data.consignePaiement
+      ? enLignes(data.consignePaiement, ctx.sans, 9, DROITE - MARGE)
+      : [];
+    // **38 EXACTEMENT quand il n'y a que l'IBAN**, et pas une hauteur calculée
+    // qui vaudrait 50 : c'est le cas du devis, et `place()` décide d'un saut de
+    // page. Une valeur différente ferait basculer certains devis sur une page de
+    // plus — un document que le client a déjà reçu, changé par un lot qui ne le
+    // vise pas. La règle du dépôt est que le défaut ne bouge pas d'un octet.
+    const hauteurBloc =
+      data.consignePaiement || data.ordreDuCheque
+        ? 26 + (data.entrepriseIban ? 24 : 0) + lignesConsigne.length * 12 + (data.ordreDuCheque ? 12 : 0)
+        : 38;
+    place(hauteurBloc);
     ecrireEspace(ctx, "MODALITÉS DE PAIEMENT", MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 14;
-    ecrire(ctx, "Paiement par virement bancaire", MARGE, y, { taille: 9 });
-    y -= 12;
-    ecrire(ctx, `IBAN : ${data.entrepriseIban}`, MARGE, y, { taille: 9 });
+    if (data.entrepriseIban) {
+      ecrire(ctx, "Paiement par virement bancaire", MARGE, y, { taille: 9 });
+      y -= 12;
+      ecrire(ctx, `IBAN : ${data.entrepriseIban}`, MARGE, y, { taille: 9 });
+      y -= 12;
+    }
+    for (const l of lignesConsigne) {
+      ecrire(ctx, l, MARGE, y, { taille: 9 });
+      y -= 12;
+    }
+    if (data.ordreDuCheque) {
+      ecrire(ctx, phraseDuCheque(data.ordreDuCheque), MARGE, y, { taille: 9 });
+    }
   }
 
   // ─── Pied : mention légale à gauche, cadre de signature à droite ────────
