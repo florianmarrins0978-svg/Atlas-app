@@ -14,14 +14,14 @@
   :root{
     --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
     --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
-    --or:#B98B47; --orTexte:#8b6835; --poleSombre:#1c1c1a;
+    --or:#B98B47; --orTexte:#8b6835; --orSurEncre:#b98b47; --poleSombre:#1c1c1a;
     --line:rgba(28,28,26,0.12); --chevron:rgba(28,28,26,0.28);
     --hors:#e6e3dc; --horsTexte:#4a4a44; --horsFort:#1c1c1a;
   }
   body[data-charte="nuit"]{
     --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
     --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
-    --or:#B98B47; --orTexte:#b98b47; --poleSombre:#101210;
+    --or:#B98B47; --orTexte:#b98b47; --orSurEncre:#826231; --poleSombre:#101210;
     --line:rgba(233,232,222,0.12); --chevron:rgba(233,232,222,0.28);
     --hors:#0a0b0a; --horsTexte:#c1c2b6; --horsFort:#e9e8de;
   }
@@ -87,13 +87,19 @@
   .date .mot-auj{display:none}
   [data-vue="a"] .date.today .mot-date,
   [data-vue="b"] .date.today .mot-date,
-  [data-vue="c"] .date.today .mot-date{display:none}
+  [data-vue="c"] .date.today .mot-date,
+  [data-vue="d"] .date.today .mot-date{display:none}
   [data-vue="a"] .date.today .mot-auj,
   [data-vue="b"] .date.today .mot-auj,
-  [data-vue="c"] .date.today .mot-auj{display:inline}
+  [data-vue="c"] .date.today .mot-auj,
+  [data-vue="d"] .date.today .mot-auj{display:inline}
   [data-vue="a"] .date.today{background:var(--or);color:var(--poleSombre)}
   [data-vue="b"] .date.today{color:var(--orTexte);font-size:19px;letter-spacing:.08em;padding:8px 17px}
   [data-vue="c"] .date.today{background:var(--card);color:var(--orTexte);border-color:var(--or)}
+  /* D — la B, mais avec le VRAI or. Il ne tient pas sur du papier pâle ; posé
+     sur l'encre, c'est exactement #B98B47 sur les six chartes claires. */
+  [data-vue="d"] .date.today{background:var(--ink);color:var(--orSurEncre);
+                             font-size:19px;letter-spacing:.08em;padding:8px 17px}
 
   /* Les jours déjà passés de la semaine, repoussés sous la journée du jour. */
   .plus-tot{margin:26px 18px 0;padding-top:14px;border-top:1px solid var(--line)}
@@ -129,17 +135,18 @@
 </div>
 
 <div class="choix">
-  <button type="button" data-vue="temoin" aria-pressed="true">Aujourd’hui</button>
+  <button type="button" data-vue="temoin" aria-pressed="false">Aujourd’hui</button>
   <button type="button" data-vue="a" aria-pressed="false">A</button>
   <button type="button" data-vue="b" aria-pressed="false">B</button>
   <button type="button" data-vue="c" aria-pressed="false">C</button>
+  <button type="button" data-vue="d" aria-pressed="true">D</button>
   <span class="sep"></span>
-  <button type="button" id="bascule-ordre" aria-pressed="false">Ordre du calendrier</button>
+  <button type="button" id="bascule-ordre" aria-pressed="true">En tête</button>
   <button type="button" id="bascule-vide" aria-pressed="false">Rien aujourd’hui</button>
   <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
 </div>
 
-<div class="tel" id="tel" data-vue="temoin">
+<div class="tel" id="tel" data-vue="d">
   <p class="titre-section">Planifiés</p>
   <div class="semaine">
     <button class="fleche" type="button" tabindex="-1" aria-hidden="true">‹</button>
@@ -156,6 +163,12 @@
   <p>Le nom du client en serif 19 px, la durée en or sous le nom, la pastille
   d’équipe, le chevron. <b>Seule la pastille de la date change</b> — sans quoi on
   ne saurait pas ce qu’on compare.</p>
+  <h2>Pourquoi une journée passée descend en bas</h2>
+  <p>Avec <b>En tête</b>, les jours <b>déjà passés</b> de la semaine descendent
+  sous « Plus tôt cette semaine ». Ce n’est pas un défaut de la planche : c’est
+  ce que « en tête » veut dire. <b>Ils ne disparaissent pas</b> — vous les
+  retrouvez au même endroit, en bas. Touchez <b>Ordre du calendrier</b> pour
+  revoir la semaine dans l’ordre.</p>
   <h2>La planche est à la vraie date</h2>
   <p>Elle est construite sur <b>le jour où vous l’ouvrez</b>. Si vous la rouvrez
   demain, « Aujourd’hui » aura bougé d’une journée : c’est le seul moyen de voir
@@ -209,9 +222,10 @@ for (const n of [1, 2]) {
 
 const tel = document.getElementById("tel");
 const liste = document.getElementById("liste");
-/* La planche s'ouvre sur CE QU'IL A : la date écrite, à sa place dans la
-   semaine. Les deux boutons ci-dessous montrent ce qui changerait. */
-let enTete = false, vide = false;
+/* La planche s'ouvre sur SON CHOIX du 9 septembre 2026 : la journée du jour en
+   tête, et la B avec le vrai or — c'est la D. « Aujourd'hui » ramène au témoin,
+   c'est-à-dire à ce qu'il a encore sous les yeux. */
+let enTete = true, vide = false;
 
 function bloc(j) {
   const estAuj = !!j.today;
@@ -263,7 +277,12 @@ const VERDICTS = {
   b: {
     titre: "B — le mot en doré, et plus gros",
     quoi: "Le papier ne change pas ; <b>le mot</b> passe en or et grandit de 12 à 19 px. C’est la plus proche de ce que vous avez demandé, et la plus petite dans le code : <b>deux valeurs</b>.",
-    defaut: "L’or clair sur le papier pâle donne <span class=\"mesure\">2,03</span> de contraste — illisible au soleil. Il faut l’or foncé, et même lui ne tient <span class=\"mesure\">3,92</span> que <b>parce que le mot est gros</b>. Écrit en 12 px comme les autres dates, cette proposition ne passe pas."
+    defaut: "<b>Le doré ici n’est PAS celui de l’application</b> : le vrai or sur le papier pâle donne <span class=\"mesure\">2,03</span> de contraste, illisible au soleil, quelle que soit la taille du mot. Celui-ci est un or assombri, et même lui ne tient <span class=\"mesure\">3,92</span> que parce que le mot est gros. <b>Pour garder le vrai or, il faut changer le papier</b> : c’est la D."
+  },
+  d: {
+    titre: "D — la B, avec le vrai or",
+    quoi: "Votre demande du 9 septembre : la B, <b>mais avec la vraie couleur dorée de l’application</b>. Le mot garde ses 19 px ; c’est le <b>papier</b> qui change et passe à l’encre. Sur vos six chartes claires, ce doré est <b>#B98B47 au caractère près</b> — celui de la durée sous le nom, du sceau, des filets. Mesuré : <span class=\"mesure\">4,56 à 5,81</span> sur les huit chartes.",
+    defaut: "La pastille devient <b>sombre</b> : elle pèse plus lourd sur l’écran qu’un papier pâle, et elle se rapproche de la A. Sur Nuit et Sylve, l’encre est claire — l’or y est légèrement foncé pour rester lisible, comme il l’est déjà ailleurs dans l’application."
   },
   c: {
     titre: "C — la pastille cerclée d’or",
@@ -313,7 +332,7 @@ bNuit.addEventListener("click", () => {
 });
 
 peindre();
-verdict("temoin");
+verdict("d");
 </script>
 </body>
 </html>

@@ -31,11 +31,20 @@ trois propositions sont les trois façons de tenir « en doré » sans ça :
 | **A** aplat d'or, mot dedans | 4,98 à 6,14 | un **jeton neuf** dans `chartes.ts` — le pôle sombre de la charte, à poser sur l'or ; `surPlein` ne convient pas (2,62 à 3,07 sur les claires) |
 | **B** mot en `orTexte`, 19 px | 3,92 à 5,29 | ne passe **que** parce que le mot est gros ; en 12 px comme les autres dates, il tombe sous le seuil |
 | **C** filet d'or, mot en `orTexte` | 4,55 à 5,55 | la plus sobre, donc la moins voyante du coin de l'œil |
+| **D** pastille d'encre, mot en `orSurEncre` | 4,56 à 5,81 | une pastille sombre de plus sur l'écran |
 
-**Rien n'est codé, et rien ne doit l'être avant son choix** (`CLAUDE.md` §3 bis).
-Deux questions restent ouvertes avec lui : l'ordre (journée du jour en tête, ou
-à sa place dans la semaine) et ce qu'affiche la pastille quand **rien n'est
-posé** aujourd'hui.
+**SON CHOIX, le 9 septembre 2026 :** *« mets en tête, et la B — mais avec la
+vraie couleur dorée de l'appli »*. La B porte `orTexte`, qui n'est PAS le doré
+qu'il connaît ; le vrai `or` ne se lit pas sur `rustTint` (2,03). D'où la **D**,
+ajoutée : la B, avec le vrai `#B98B47` sur une pastille d'encre — le jeton
+`orSurEncre` existe déjà et vaut l'or exactement sur les six chartes claires.
+La planche s'ouvre dessus, avec **En tête**.
+
+**Reste à coder** dans `PlanningClient.tsx` (pastille `date-planifiee`, vers la
+ligne 1014) : le mot « Aujourd'hui », la pastille de la D, et l'ordre — journée
+du jour en tête, jours déjà passés de la semaine sous « Plus tôt cette
+semaine ». **Une question reste ouverte** : ce qu'affiche la pastille quand
+**rien n'est posé** aujourd'hui (la planche propose « Rien de posé »).
 
 ---
 
