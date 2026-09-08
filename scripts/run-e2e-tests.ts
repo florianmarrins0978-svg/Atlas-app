@@ -9,6 +9,18 @@ const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
 const TSX = path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs");
 import { CHEMIN_NEXT, arreterArbre } from "./_processus";
+import { prendreUnAtelier, suffixeDeLAtelier, type Atelier } from "./_atelier";
+
+/**
+ * L'atelier de cette exécution : son port, et l'adresse que les suites visent.
+ *
+ * **Posé dans `main()`, jamais ici** : le choix demande d'interroger les ports,
+ * donc d'attendre. Tout ce fichier le lit à travers `adresse()`, pour qu'aucune
+ * ligne ne puisse redevenir « localhost:3000 » par distraction.
+ */
+let atelier: Atelier | null = null;
+const adresse = () => atelier?.adresse ?? process.env.ATLAS_ADRESSE ?? "http://localhost:3000";
+const sante = () => `${adresse()}/api/health/live`;
 
 function attendre(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -184,7 +196,7 @@ async function prechaufferLesEcrans(): Promise<void> {
       console.log(`⚠ Préchauffage sans session : ${motif ?? "raison inconnue"}`);
       return;
     }
-    const base = "http://localhost:3000";
+    const base = adresse();
     /**
      * **En TRANCHE, on ne préchauffe que l'indispensable — et c'est une
      * question de mémoire, pas de temps.**
@@ -326,10 +338,31 @@ async function quelquUnEcouteDeja(url: string): Promise<boolean> {
 }
 
 async function main() {
+  /**
+   * **L'atelier d'abord : c'est lui qui décide du port.**
+   *
+   * Quand la batterie appelle ce lanceur, elle a déjà pris son atelier et posé
+   * `ATLAS_ADRESSE` — on la suit, sans en reprendre un second, sinon la base et
+   * le serveur ne seraient plus du même rang. Joué seul, le lanceur en prend un.
+   *
+   * Le rang 0 rend exactement le port 3000 d'avant : une session seule ne voit
+   * aucune différence (`scripts/_atelier.ts`).
+   */
+  if (process.env.ATLAS_ADRESSE) {
+    const port = Number(new URL(process.env.ATLAS_ADRESSE).port || 80);
+    atelier = { rang: port - 3000, port, adresse: process.env.ATLAS_ADRESSE };
+  } else {
+    atelier = await prendreUnAtelier();
+    process.env.ATLAS_ADRESSE = atelier.adresse;
+  }
+  if (atelier.rang !== 0) {
+    console.log(`Atelier n° ${atelier.rang} — port ${atelier.port}.`);
+  }
+
   // **Avant tout le reste** : un port occupé rend la suite entière ininterprétable.
-  if (await quelquUnEcouteDeja("http://localhost:3000/api/health/live")) {
+  if (await quelquUnEcouteDeja(sante())) {
     console.error(
-      "❌ Quelque chose écoute DÉJÀ sur le port 3000, et ce n'est pas cette batterie.\n" +
+      `❌ Quelque chose écoute DÉJÀ sur le port ${atelier.port}, et ce n'est pas cette batterie.\n` +
         "   Refus de continuer : les suites travailleraient sur ce serveur-là — celui d'un autre\n" +
         "   code, peut-être d'une autre branche — et leur résultat ne voudrait rien dire.\n" +
         "   Le plus souvent, c'est un orphelin du banc d'essai :\n" +
@@ -444,7 +477,7 @@ async function main() {
    * Le descripteur est passé directement à l'enfant : le noyau écrit dans le
    * fichier sans jamais rien attendre de nous.
    */
-  const JOURNAL_SERVEUR = path.join(tmpdir(), "atlas-serveur-e2e.log");
+  const JOURNAL_SERVEUR = path.join(tmpdir(), `atlas-serveur-e2e${suffixeDeLAtelier(atelier!)}.log`);
   const journalFd = openSync(JOURNAL_SERVEUR, "w");
   /**
    * **Le serveur des suites ANNONCE une adresse publique — posé le 24 août
@@ -490,8 +523,15 @@ async function main() {
   // `next` est un script Node : on le lance par l'exécutable qui nous porte
   // déjà. Plus de `.cmd`, plus de shell, plus d'interposition — le journal
   // revient, et l'arbre se tue proprement des deux côtés.
-  const serveur = spawn(process.execPath, [CHEMIN_NEXT, "dev", "-p", "3000"], {
-    env: { ...process.env, ATLAS_URL_PUBLIQUE: "https://atlas-suites.test" },
+  const serveur = spawn(process.execPath, [CHEMIN_NEXT, "dev", "-p", String(atelier!.port)], {
+    env: {
+      ...process.env,
+      ATLAS_URL_PUBLIQUE: "https://atlas-suites.test",
+      // Chaque atelier compile dans SON dossier : deux serveurs de
+      // développement sur le même `.next` se réécrivent leurs morceaux, et les
+      // deux batteries rendent des rouges qui n'accusent personne.
+      ...(suffixeDeLAtelier(atelier!) ? { ATLAS_DIST_DIR: `.next${suffixeDeLAtelier(atelier!)}` } : {}),
+    },
     stdio: ["ignore", journalFd, journalFd],
     detached: true,
   });
@@ -516,7 +556,7 @@ async function main() {
     console.error("---------------------------------------------------\n");
   }
 
-  const pret = await attendreServeurPret("http://localhost:3000/api/health/live");
+  const pret = await attendreServeurPret(sante());
   if (!pret) {
     console.error("❌ Le serveur n'a jamais répondu — abandon.");
     montrerJournalServeur();
@@ -563,7 +603,7 @@ async function main() {
     // Un serveur mort ne se répare pas en lui envoyant vingt suites de plus :
     // il produit vingt échecs qui accusent chacun un écran différent. On
     // s'arrête au premier, en disant ce qui s'est réellement passé.
-    if (!(await serveurVivant("http://localhost:3000/api/health/live"))) {
+    if (!(await serveurVivant(sante()))) {
       console.error(
         `❌ Le serveur ne répond plus avant ${fichier}` +
           (serveurTermine ? ` — il s'est arrêté (${serveurTermine}).` : " — il est resté sourd une minute.")

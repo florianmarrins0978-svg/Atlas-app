@@ -590,7 +590,12 @@ async function main() {
   // de trouver un mot ne protège que du mot.
   await cas("`run-e2e-tests` refuse de continuer si quelque chose écoute déjà", () => {
     const source = readFileSync(path.join(RACINE, "scripts", "run-e2e-tests.ts"), "utf8");
-    const iGarde = source.indexOf('if (await quelquUnEcouteDeja("http://localhost:3000');
+    // **Le port n'est plus écrit en dur — 8 septembre 2026.** Chaque session
+    // mesure sur le sien (`scripts/_atelier.ts`), donc la garde interroge
+    // `sante()` et non plus une adresse littérale. On vise ce que la garde
+    // FAIT, comme le dit déjà le commentaire ci-dessus : appeler
+    // `quelquUnEcouteDeja` avant de lancer quoi que ce soit.
+    const iGarde = source.indexOf("if (await quelquUnEcouteDeja(");
     // **Ce repère a vieilli, et le contrôle est resté vert d'un côté et muet de
     // l'autre — 2 septembre 2026.** `run-e2e-tests.ts` lançait `npm run dev` ;
     // le commit `3cd0d21` l'a remplacé par l'exécutable Node et le binaire du
