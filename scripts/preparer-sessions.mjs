@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, copyFileSync } from "node:fs";
 import path from "node:path";
 
 /**
@@ -110,6 +110,17 @@ function main() {
     const nomBranche = `session-${n}`;
     const branchesConnues = git("branch", "--list", nomBranche);
     git("worktree", "add", ...(branchesConnues ? [] : ["-b", nomBranche]), dossier, ...(branchesConnues ? [nomBranche] : [branche]));
+
+    // **`.env` suit le dossier — sinon rien ne démarre, et le message accuse
+    // la base.** Il n'est pas versionné (il porte ses mots de passe), donc un
+    // worktree neuf n'en a aucun : la première commande y échoue sur
+    // « Variable d'environnement obligatoire manquante : DATABASE_URL », ce qui
+    // envoie chercher au mauvais endroit. Sa condition du 5 septembre — aucune
+    // manip en plus — vaut aussi pour ce fichier-là.
+    for (const nomFichier of [".env", ".env.local"]) {
+      const source = path.join(RACINE, nomFichier);
+      if (existsSync(source)) copyFileSync(source, path.join(dossier, nomFichier));
+    }
     console.log(`  ${n}. ${dossier}  (branche ${nomBranche})`);
   }
 
