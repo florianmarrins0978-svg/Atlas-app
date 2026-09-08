@@ -1807,6 +1807,35 @@ changement de comportement — mais la dette est là, et elle porte un vrai risq
 
 ---
 
+## ⚠ LA CI DE `main` TUE SON RUNNER, TOUJOURS AU MÊME ENDROIT (8 septembre 2026)
+
+**Constat, pas diagnostic.** Les suites navigateur meurent deux fois de suite à
+la même seconde du même test — `test-acces-salarie-e2e`, cas *« mais SA feuille
+de chantier, elle, sort — sans un seul montant »* —, et le journal ne montre pas
+un test rouge mais :
+
+    ##[error]The runner has received a shutdown signal.
+
+C'est **la machine de GitHub qui s'arrête**, pas un contrôle qui refuse. Le
+premier soupçon est donc la mémoire : ce cas fabrique un PDF de feuille de
+chantier dans un navigateur, à la suite de six autres écrans.
+
+**Ce qui est déjà écarté** : le lot des règles d'or et le déménagement de
+`disponibilites.ts` n'y sont pour rien — les cinq exécutions de CI qui les
+précèdent sur `main` sont rouges elles aussi. Ce qui était de ce lot a été
+corrigé (les 321 suites base passent, la construction aussi).
+
+**Où regarder d'abord**, pour qui reprend : jouer `test-acces-salarie-e2e` seul,
+puis le même cas avec le PDF retiré — si la machine tient, c'est le rendu du PDF
+qu'il faut soulager, pas le test qu'il faut désactiver (`CLAUDE.md` §4 quater :
+on ne skippe pas un contrôle pour obtenir du vert).
+
+**Et la même chose se voit ici** : la batterie locale du 8 septembre s'est
+arrêtée au même endroit, sur des délais de 45 s. Ce n'est donc pas propre à
+GitHub.
+
+---
+
 ## ✅ ~~LA DETTE DE STRUCTURE : `disponibilites.ts` au mauvais étage~~ — **réglée le 8 septembre 2026**
 
 Relevée en posant sa règle « pas de spaghettis » (`CLAUDE.md` §4 sexies), et
