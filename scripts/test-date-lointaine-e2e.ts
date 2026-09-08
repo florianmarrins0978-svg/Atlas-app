@@ -4,6 +4,7 @@ import { Pool } from "pg";
 import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS } from "../src/server/disponibilites";
 import { jourLisible } from "../src/lib/jour";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Comment je fais si je dois lui proposer une date dans six mois ? »**
 // — le patron, le 8 août 2026, en ajoutant : *« c'est un problème qui va se
@@ -18,7 +19,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // quelle date — et le patron n'avait aucun moyen d'en désigner une. Un défaut
 // invisible depuis le code, visible en deux secondes sur l'écran.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();

@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { spawn, type ChildProcess } from "node:child_process";
 import { writeFileSync, rmSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 /**
  * « Version rapide en construction » : il le voit sur son banc, et nulle part ailleurs.
@@ -32,7 +33,7 @@ import { lancerNavigateur } from "./e2e-browser";
 const PORT_BANC = 3111;
 const BANC = `http://localhost:${PORT_BANC}`;
 /** Le serveur du parcours ordinaire, monté par `run-e2e-tests`. */
-const ORDINAIRE = "http://localhost:3000";
+const ORDINAIRE = ADRESSE;
 const FICHIER_ETAT = "/tmp/atlas-prechauffage.json";
 /** Son propre dossier de construction — voir plus bas pourquoi il en faut un. */
 const DOSSIER_BANC = ".next-banc-essai";

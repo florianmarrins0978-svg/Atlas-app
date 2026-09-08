@@ -1,7 +1,8 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 /*
   L'assistant a quitté le coin flottant pour l'en-tête.

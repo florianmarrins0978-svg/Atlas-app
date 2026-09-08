@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« La facture s'affiche partie, mais le client ne la reçoit pas. »**
 //
@@ -29,7 +30,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // sur deux ne pouvait tout simplement pas être facturé.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();

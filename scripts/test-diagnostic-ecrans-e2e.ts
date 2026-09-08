@@ -5,6 +5,7 @@ import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { composerResultat } from "../src/server/diagnostic/moteur";
 import { lireBasePourMoteur } from "../src/server/repositories/fiches-phyto";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Les écrans du diagnostic végétal — **REGARDÉS, pas seulement testés**.
@@ -39,7 +40,7 @@ import { lireBasePourMoteur } from "../src/server/repositories/fiches-phyto";
  * fixtures par `test-diagnostic-base.ts`, sans navigateur.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const CAPTURES = "captures";
 
 let echecs = 0;

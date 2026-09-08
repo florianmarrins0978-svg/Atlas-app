@@ -4,6 +4,9 @@ import assert from "node:assert";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FIXTURE = path.join(__dirname, "fixtures", "test-photo.jpg");
@@ -33,15 +36,15 @@ async function main() {
 
   // Connexion réelle (Auth.js) — toutes les routes applicatives sont
   // désormais protégées par le middleware d'authentification.
-  await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+  await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
   // Crée un chantier dédié pour ce test, pour ne pas dépendre du contenu du seed.
   const nomUnique = `Chantier photos e2e ${Date.now()}`;
-  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
   const chantierId = await creerPuisFiche(page);
   // **LA PELLICULE EST À DÉCOUVERT SUR LA FICHE CLIENT** — 4 septembre 2026.
@@ -49,7 +52,7 @@ async function main() {
   // dépassait au repos. Cette fiche est retirée (`ARCHITECTURE.md` §254) parce
   // qu'elle montrait une seconde fois ce que la fiche client porte déjà : il
   // n'y a donc plus de tiroir à ouvrir, et c'est un geste de moins.
-  const racineChantier = `http://localhost:3000/chantiers/${chantierId}`;
+  const racineChantier = `${BASE}/chantiers/${chantierId}`;
   const chantierUrl = `${racineChantier}/coordonnees`;
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
 
@@ -154,7 +157,7 @@ async function main() {
 
   // Vérifie que l'image servie répond bien (contenu réel, pas un placeholder).
   const src = await tiroir.locator('img[src^="/api/fichiers/"]').first().getAttribute("src");
-  const reponse = await page.request.get(`http://localhost:3000${src}`);
+  const reponse = await page.request.get(`${BASE}${src}`);
   assert.equal(reponse.status(), 200);
   assert.equal(reponse.headers()["content-type"], "image/jpeg");
 

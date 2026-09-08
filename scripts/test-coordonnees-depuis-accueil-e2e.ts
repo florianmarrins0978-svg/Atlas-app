@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { devices } from "playwright";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Adresse non renseignée » ouvre l'écran du chantier.**
 //
@@ -31,7 +32,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 //      défaut serait corrigé partout sauf là où il l'a vu ;
 //   6. et la mention disparaît de l'accueil — il n'y a plus rien à compléter.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const ECRAN_DU_PATRON = devices["iPhone 13"];
 
 let echecs = 0;

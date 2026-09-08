@@ -8,12 +8,13 @@ import * as clientsRepo from "../src/server/repositories/clients";
 import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi, lireParJeton, genererJeton } from "../src/server/repositories/envois-devis";
 import { fenetreProposition, versJourIso, ajouterJours } from "../src/server/disponibilites";
+import { ADRESSE } from "./_adresse";
 
 // Parcours réel de la page publique de réponse au devis (docs/AGENT.md §2.2 bis).
 // Exercée dans un navigateur, SANS session : c'est tout l'intérêt de cette page,
 // et c'est ce qui la rend sensible.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let passed = 0;
 let failed = 0;
@@ -646,12 +647,38 @@ async function main() {
     assert.strictEqual(await lienEnTete.count(), 1, "l'en-tête ne porte plus de lien vers le devis");
     const libelle = await lienEnTete.innerText();
     assert.ok(/télécharger/i.test(libelle), `l'en-tête dit « ${libelle} » au lieu de télécharger`);
-    const style = await lienEnTete.evaluate((el) => {
+    /**
+     * **ON MESURE QU'IL SE VOIT, PLUS QU'IL EST EN GRAS — 8 septembre 2026.**
+     *
+     * Ce contrôle exigeait `font-weight >= 600` et un soulignement : c'était la
+     * FAÇON dont le geste avait été rendu visible le 31 août, pas la règle. Sa
+     * question de ce jour — *« j'hésite à ne pas afficher le montant pour les
+     * obliger à télécharger leur devis »* — a été tranchée autrement : le prix
+     * reste, et c'est le téléchargement qui cesse d'être invisible. Il est
+     * devenu un vrai bouton cerclé, sans souligné.
+     *
+     * Réclamer le gras et le souligné, ce serait réclamer ce qu'il vient de
+     * faire remplacer (`CLAUDE.md` §5 bis). Ce qu'on fixe désormais est ce qui
+     * compte vraiment, et qui survivra au prochain remaniement : **le geste est
+     * une cible qu'un doigt atteint**, pas un mot perdu dans une phrase.
+     */
+    const allure = await lienEnTete.evaluate((el) => {
       const c = getComputedStyle(el);
-      return { graisse: Number(c.fontWeight), souligne: c.textDecorationLine };
+      const b = el.getBoundingClientRect();
+      return {
+        hauteur: Math.round(b.height),
+        largeur: Math.round(b.width),
+        cercle: c.boxShadow !== "none" || c.borderStyle !== "none" || c.backgroundColor !== "rgba(0, 0, 0, 0)",
+      };
     });
-    assert.ok(style.graisse >= 600, `le lien n'est pas en gras (graisse ${style.graisse})`);
-    assert.ok(style.souligne.includes("underline"), `le lien n'est pas souligné (${style.souligne})`);
+    // Refuser de conclure sur une boîte de zéro pixel : l'absence de matière à
+    // mesurer n'est pas un succès (`CLAUDE.md` §5, payé le 15 août 2026).
+    assert.ok(allure.hauteur > 0 && allure.largeur > 0, "le geste n'a aucune dimension : mesure impossible");
+    assert.ok(
+      allure.hauteur >= 40,
+      `le geste ne fait que ${allure.hauteur} px de haut : on ne le vise pas avec un doigt`
+    );
+    assert.ok(allure.cercle, "le geste ne se distingue pas du texte : ni cadre, ni fond");
     const fichier = await surLaPageDuChoix.request.get(
       new URL((await lienEnTete.getAttribute("href"))!, BASE).toString()
     );

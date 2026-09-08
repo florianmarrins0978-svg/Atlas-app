@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Client } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // SON GESTE, DANS UN VRAI NAVIGATEUR : taper un prix avec SA virgule.
 //
@@ -25,7 +26,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // que le patron ne pouvait pas voir.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const BASE = process.env.ATLAS_BASE_URL ?? "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();

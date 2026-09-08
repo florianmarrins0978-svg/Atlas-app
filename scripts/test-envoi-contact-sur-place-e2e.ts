@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **Un devis dont le client n'a pas de coordonnée peut quand même partir.**
 //
@@ -26,7 +27,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // en base. Un écran qui accepterait la saisie sans la ranger serait vert à
 // l'œil, et faux — elle serait à ressaisir au prochain envoi.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const NUMERO = "0611223344";

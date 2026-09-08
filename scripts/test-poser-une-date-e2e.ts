@@ -4,6 +4,7 @@ import { devices } from "playwright";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { jourDuPatron } from "./_jour-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Je peux toujours pas poser de date sur les chantiers test. »**
 //
@@ -55,7 +56,7 @@ import { jourDuPatron } from "./_jour-e2e";
 // **Le contrôle a donc changé de cible, jamais d'objet** — il défend toujours
 // « de cet écran-là, une date se pose » (`CLAUDE.md` §5 bis).
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const ECRAN_DU_PATRON = devices["iPhone 13"];
 
 let echecs = 0;

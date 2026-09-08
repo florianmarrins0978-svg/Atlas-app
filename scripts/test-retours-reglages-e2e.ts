@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
+import { ADRESSE } from "./_adresse";
 
 // La flèche « retour » ramène-t-elle d'où l'on vient ?
 //
@@ -24,7 +25,7 @@ import assert from "node:assert/strict";
 // **Ce qu'elle exige d'un nouvel écran :** l'ajouter à la table ci-dessous.
 // Deux étages, c'est déjà assez pour se perdre ; trois le seront davantage.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 /** Chaque porte : la page d'où l'on part, et l'écran qu'elle ouvre. */
 const PORTES: { depuis: string; vers: string; nom: string }[] = [

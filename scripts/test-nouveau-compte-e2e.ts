@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
+import { ADRESSE } from "./_adresse";
 
 // « NOUVEAU COMPTE » — l'écran qu'il a retenu le 26 août 2026, dans un vrai
 // navigateur.
@@ -36,7 +37,7 @@ import assert from "node:assert/strict";
 // appuierait sur « Créer le compte » et il ne se passerait rien. C'est
 // précisément le défaut muet que `AGENTS.md` interdit de laisser vivre.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const MOT_DE_PASSE = "chene-tilleul-08";
 
 let echecs = 0;

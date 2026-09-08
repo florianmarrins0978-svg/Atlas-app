@@ -15,6 +15,7 @@ import { devis } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ajouterPrestation as ajouterPrestationEntretien } from "../src/server/repositories/prestations-entretien";
+import { ADRESSE } from "./_adresse";
 import {
   ouvrirPassage,
   lirePassage,
@@ -50,7 +51,7 @@ import {
 //      pourraient reparaître au premier rebasage sans que rien ne rougisse.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {

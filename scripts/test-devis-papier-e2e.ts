@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **Trois défauts trouvés par le patron sur son premier vrai devis à la main.**
 //
@@ -22,7 +23,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // parcourt son chemin, dans son ordre, avec un écran de six pouces.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();

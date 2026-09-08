@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import type { Page, Route } from "playwright";
+import { ADRESSE } from "./_adresse";
 
 // **La panne du 11 août 2026, rejouée dans un vrai navigateur.**
 //
@@ -25,7 +26,7 @@ import type { Page, Route } from "playwright";
 // niveau du réseau, c'est exactement la même chose — le morceau demandé n'est
 // pas là —, et c'est reproductible à la seconde près.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const CLE_RECHARGEMENT = "atlas:rechargement-morceau";
 
 async function connecter(page: Page) {

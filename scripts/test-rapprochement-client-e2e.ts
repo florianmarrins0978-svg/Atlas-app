@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // Deux chantiers chez le même homme, une seule fiche — par son parcours à lui.
 //
@@ -18,7 +19,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // client de monsieur Martins qui est déjà créé. »*
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, fn: () => Promise<void>) {

@@ -5,6 +5,7 @@ import { Pool } from "pg";
 import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
 import { documentsAAccepter, enregistrerAcceptations } from "../src/server/repositories/documents-legaux";
 import type { Ctx } from "../src/server/repositories/context";
+import { ADRESSE } from "./_adresse";
 
 // UN COMMERCIAL NE FACTURE PAS — MÊME EN FABRIQUANT LA REQUÊTE.
 //
@@ -47,7 +48,7 @@ import type { Ctx } from "../src/server/repositories/context";
 // fichier par la suite base, qui rougit si l'une l'oublie.
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const CAPTURES = "artifacts/screenshots/roles-facturation";
 const MOT_DE_PASSE = "trois-mots-courts";
 

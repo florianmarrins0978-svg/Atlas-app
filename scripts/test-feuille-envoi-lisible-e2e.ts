@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { CHARTES } from "../src/lib/chartes";
+import { ADRESSE } from "./_adresse";
 
 // CE QUE LA FEUILLE « ENVOYER À … » DOIT TENIR, ET QU'AUCUN TEST NE VOYAIT.
 //
@@ -28,7 +29,7 @@ import { CHARTES } from "../src/lib/chartes";
 // courte que l'écran ne prouve rien du pied collé : elle n'a rien à faire
 // tenir. Un zéro n'est pas un succès (`CLAUDE.md` §5).
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 

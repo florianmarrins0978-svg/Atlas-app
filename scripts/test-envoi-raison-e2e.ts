@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Je ne peux pas envoyer au client. »** — le patron, le 7 août 2026, devant
 // un écran qui affichait « L'envoi n'a pas pu être préparé. »
@@ -16,7 +17,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // C'est la même leçon que le bouton de mise à jour le matin même, et la
 // troisième fois de la journée qu'un message générique cache ce qui compte.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();

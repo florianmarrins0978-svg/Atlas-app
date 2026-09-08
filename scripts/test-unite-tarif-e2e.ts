@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import type { Locator, Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 // **« Crée-moi un bandeau déroulant avec infos à choisir, jours/hommes, m² etc. »**
 // — le patron, le 13 août 2026, puis *« fais celle-là »* devant la forme 1 de
@@ -18,7 +19,7 @@ import { lancerNavigateur } from "./e2e-browser";
 //   · **la case reste libre** : le stère s'écrit toujours. Une liste fermée
 //     retirerait à un élagueur ce qu'il a aujourd'hui.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 /**
  * La carte du tarif portant cet intitulé, désignée par sa POSITION réelle.

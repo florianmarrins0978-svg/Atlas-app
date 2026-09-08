@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { GRILLES_PAR_DEFAUT, cellulesDe, type NatureGrille } from "../src/lib/grille-prix";
+import { ADRESSE } from "./_adresse";
 
 /** Les natures affichées, dans l'ordre de l'écran (`GrillesPrixClient`). */
 const NATURES: NatureGrille[] = ["abattage", "grumes", "fendage", "dessouchage", "haie"];
@@ -25,7 +26,7 @@ const NATURES: NatureGrille[] = ["abattage", "grumes", "fendage", "dessouchage",
 //   4. **les trois grilles sont là** — abattre, fendre, tailler. Une grille
 //      qu'il ne voit pas n'existe pas pour lui.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 async function main() {
   const navigateur = await lancerNavigateur();
   // L'écran du patron vient de `e2e-browser` : 390 px de large, et non les 393

@@ -3,6 +3,7 @@ import { devices } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 /**
  * Envoyer la facture en un seul geste.
@@ -30,7 +31,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
  * problème.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let reussis = 0;
 let echecs = 0;
@@ -92,7 +93,7 @@ async function main() {
   // §5 bis, et le repère `data-atlas="invite-dates"` existe exactement pour ça.
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 });
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 30_000 });
 
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   // « Le chantier est réalisé ? » → la facture se bâtit depuis le devis. Visé

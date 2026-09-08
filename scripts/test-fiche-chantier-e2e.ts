@@ -4,6 +4,7 @@ import path from "node:path";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { ADRESSE } from "./_adresse";
 
 /**
  * La fiche de chantier, du premier geste au rapport reçu par le client.
@@ -32,7 +33,7 @@ import { pool } from "../src/server/db/client";
  * (`CLAUDE.md` §5).
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 /** Reconnaissable, et retiré à la fin : aucune autre suite ne doit le lire. */
 const CLIENT = "Chantier E2E Fiche";
 const DOSSIER_CAPTURES = process.env.ATLAS_CAPTURES ?? null;

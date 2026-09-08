@@ -217,12 +217,12 @@ test("UN SEUL message, et chaque document dit ce qu'il doit dire", () => {
   assert.ok(/votre facture F2026-0008/i.test(facture), "la facture ne porte pas son numéro");
   assert.ok(/à régler avant le 21 septembre/i.test(facture),
     "l'échéance manque : c'est précisément ce qu'il a refusé de perdre");
-  assert.ok(/compte rendu de mon passage/i.test(rapport), "le compte rendu ne se nomme pas");
+  assert.ok(/retour d.intervention après le passage/i.test(rapport), "le retour d'intervention ne se nomme pas");
 
   // **Et aucun ne parle du document d'un autre.** Une facture qui annonce un
   // devis, c'est le client qui rappelle pour comprendre.
   assert.ok(!/votre devis/i.test(facture), "la facture parle d'un devis");
-  assert.ok(!/votre devis|facture/i.test(rapport), "le compte rendu parle d'un autre document");
+  assert.ok(!/votre devis|facture/i.test(rapport), "le retour d'intervention parle d'un autre document");
 });
 
 test("SON message remplace celui d'Atlas, partout", () => {
@@ -327,8 +327,8 @@ test("chaque document reçoit SON message, avec le mot juste", () => {
   assert.ok(/date d'intervention/.test(devis), "le devis ne propose plus de date");
   assert.ok(/Voici votre facture F2026-0008/.test(facture), `la facture : ${facture}`);
   assert.ok(!/date d'intervention/.test(facture), "la facture parle encore de choisir une date");
-  assert.ok(/compte rendu de mon passage/.test(passage), `le compte rendu : ${passage}`);
-  assert.ok(!/facture|devis/i.test(passage), "le compte rendu évoque un autre document");
+  assert.ok(/retour d.intervention après le passage/.test(passage), `le retour d'intervention : ${passage}`);
+  assert.ok(!/facture|devis/i.test(passage), "le retour d'intervention évoque un autre document");
 });
 
 test("l'échéance emporte ses mots quand il n'y en a pas", () => {

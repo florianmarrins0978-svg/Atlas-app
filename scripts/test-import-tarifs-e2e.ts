@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { ADRESSE } from "./_adresse";
 
 // **« Il doit pouvoir le rentrer via une touche. »** — le patron, le 8 août 2026.
 //
@@ -15,7 +16,7 @@ import { Pool } from "pg";
 // Et surtout le contrôle qui compte : **déposer un fichier n'écrit rien.** Le
 // patron doit pouvoir regarder puis repartir, sa grille intacte.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 // **Des intitulés uniques à chaque exécution, et ce n'est pas un détail.**
 // La première version reprenait les mêmes noms : elle a réussi une fois, puis

@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { mkdirSync } from "node:fs";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 // Le parcours du patron sur l'écran « Catalogue », arrangement B (17 août 2026).
 //
@@ -21,7 +22,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // rouge ; ignorer le mot ajouté dans le rendu rend le cas de la persistance
 // rouge, en disant ce qu'il attendait et ce qu'il a vu.
 
-const RACINE = "http://localhost:3000";
+const RACINE = ADRESSE;
 const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
 
 async function main() {

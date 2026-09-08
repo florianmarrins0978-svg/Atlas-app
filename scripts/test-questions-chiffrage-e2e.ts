@@ -1,6 +1,9 @@
 import assert from "node:assert";
 import { Client } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 // L'arrêt d'avant-chiffrage, parcouru comme le patron le parcourt.
 //
@@ -78,13 +81,13 @@ async function main() {
   const page = await context.newPage();
 
   try {
-    await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
     await page.fill('input[name="email"]', "demo@atlas.local");
     await page.fill('input[name="password"]', "demo1234");
     await page.click('button[type="submit"]');
-    await page.waitForURL("http://localhost:3000/", { timeout: 20000 });
+    await page.waitForURL(`${BASE}/`, { timeout: 20000 });
 
-    await page.goto(`http://localhost:3000/chantiers/${chantierId}/transcription`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/chantiers/${chantierId}/transcription`, { waitUntil: "networkidle" });
     await page.click("text=Créer le devis à partir de ma dictée");
 
     // --- L'arrêt doit venir -------------------------------------------------
@@ -156,7 +159,7 @@ async function main() {
     // ici que le devis en porte la trace ferait passer au vert une promesse que
     // le produit ne tient pas.
     await page.waitForURL(`**/chantiers/${chantierId}/devis-complet`, { timeout: 60000 });
-    await page.goto(`http://localhost:3000/chantiers/${chantierId}/informations`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/chantiers/${chantierId}/informations`, { waitUntil: "networkidle" });
     // Les prestations y sont des champs de saisie : `innerText` ne rend PAS
     // leur valeur, et une assertion sur le texte de la page passerait au rouge
     // en accusant le produit d'un tort qui n'est qu'un mauvais sélecteur.
@@ -186,7 +189,7 @@ async function main() {
     // --- Rejouer ne repose pas les mêmes questions --------------------------
     // Le défaut qui ferait abandonner l'arrêt : répondre, rejouer, et se voir
     // redemander la même chose.
-    await page.goto(`http://localhost:3000/chantiers/${chantierId}/transcription`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/chantiers/${chantierId}/transcription`, { waitUntil: "networkidle" });
     await page.click("text=Créer le devis à partir de ma dictée");
     const reposees = page.locator("text=avant de chiffrer");
     await Promise.race([

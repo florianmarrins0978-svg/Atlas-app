@@ -3,6 +3,7 @@ import { devices } from "playwright";
 import { Pool } from "pg";
 import { avecCivilite } from "../src/lib/civilite";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Mme » choisi à la création se retrouve PARTOUT, jusque chez la cliente.**
 //
@@ -22,7 +23,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // Le nom est saisi NU, sans « Mme » devant : c'est le cas du patron, et le seul
 // où la pastille sert à quelque chose.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const ECRAN_DU_PATRON = devices["iPhone 13"];
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 

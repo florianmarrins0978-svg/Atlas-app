@@ -4,6 +4,7 @@ import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 /**
  * La ligne du planning, MESURÉE sur l'écran du patron — 390 px.
@@ -68,7 +69,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
  * ─────────────────────────────────────────────────────────────────────────
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 // La largeur réelle de son téléphone. Mesurer à 1280 px ne prouverait rien :
 // tout tient, et le défaut qu'on cherche n'apparaît qu'à l'étroit.
 const LARGEUR_TELEPHONE = 390;

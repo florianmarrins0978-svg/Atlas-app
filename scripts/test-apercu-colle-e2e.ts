@@ -23,8 +23,9 @@
 // Usage : npm run test:e2e -- --seulement apercu-colle
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 const cas = async (nom: string, verifier: () => Promise<void>) => {

@@ -3,10 +3,11 @@ import type { Page } from "playwright";
 import assert from "node:assert";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ADRESSE } from "./_adresse";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MICRO_SIMULE = path.join(__dirname, "fixtures", "fake-mic.wav");
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 // **« On ne sait pas ce qui se passe. »**
 //

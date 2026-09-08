@@ -1,4 +1,7 @@
 import type { Page } from "playwright";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 /**
  * Créer un chantier depuis la fiche client, et rendre son identifiant.
@@ -36,7 +39,7 @@ import type { Page } from "playwright";
  * lui, est éprouvé là où c'est son sujet : `test-nouveau-chantier-e2e.ts` pour
  * l'écran, et les suites de l'anneau pour la dictée.
  */
-export async function creerPuisFiche(page: Page, _base = "http://localhost:3000"): Promise<string> {
+export async function creerPuisFiche(page: Page, _base = BASE): Promise<string> {
   await page.click('[data-atlas="action-ecrire"]');
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}\/devis-complet/, { timeout: 30_000 });
 

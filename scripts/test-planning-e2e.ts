@@ -22,8 +22,9 @@ import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 import assert from "node:assert";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 // DATABASE_URL, jamais une base codée en dur : la suite doit viser la même base
 // que le serveur qu'elle pilote (atlas_dev en local, atlas_test en CI).
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });

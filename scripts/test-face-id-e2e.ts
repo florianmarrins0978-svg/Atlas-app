@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { Client } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 /**
  * « Ouvrir avec Face ID », parcouru en entier dans un vrai navigateur.
@@ -30,7 +31,7 @@ import { lancerNavigateur } from "./e2e-browser";
  * connaît.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const COMPTE = "demo@atlas.local";
 const MOT_DE_PASSE = process.env.ATLAS_MDP_DEMO?.trim() || "demo1234";
 

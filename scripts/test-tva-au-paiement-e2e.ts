@@ -4,6 +4,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // **« Est-ce qu'il y a une possibilité pour que la facture rentre au relevé de
 // TVA seulement une fois que le client m'a payé ? »** — le patron, le 14 août
@@ -21,7 +22,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 //     doigt, exactement ce qu'il a décrit ;
 //   · **le relevé bouge du bon montant** quand il valide, et pas avant.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function inspecter(sql: string, params: unknown[], attendu?: number) {
   const r = await pool.query(sql, params);
@@ -83,7 +84,7 @@ async function chantierRealise(page: Page, suffixe: string) {
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await inspecter("UPDATE chantiers SET date_planifiee = CURRENT_DATE - 3 WHERE id = $1", [chantierId], 1);
   return { chantierId, nom: avecCivilite(client) };

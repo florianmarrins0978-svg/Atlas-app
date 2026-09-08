@@ -3,6 +3,7 @@ import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { libellePeriode, periodeCourante, periodePrecedente } from "../src/server/periode-tva";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Un ticket daté d'un autre mois ne doit jamais disparaître en silence.
@@ -38,7 +39,7 @@ import { libellePeriode, periodeCourante, periodePrecedente } from "../src/serve
  * vert sans rien éprouver.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 /** Ce que le patron a réellement payé, à l'euro près, sur son ticket LAFON. */
 const FOURNISSEUR = "Station du contrôle hors période";
 const TOTAL_TTC = "97,39";

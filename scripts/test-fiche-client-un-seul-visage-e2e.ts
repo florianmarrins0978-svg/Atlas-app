@@ -3,10 +3,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
+import { ADRESSE } from "./_adresse";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MICRO_SIMULE = path.join(__dirname, "fixtures", "fake-mic.wav");
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 // **LA FICHE CLIENT N'A QU'UN VISAGE, AUX DEUX VISITES.**
 //

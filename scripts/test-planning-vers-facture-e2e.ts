@@ -9,6 +9,7 @@ import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { jourDuPatron } from "./_jour-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // **Du planning à la facture, en partant d'où le patron se trouve.**
 //
@@ -31,7 +32,7 @@ import { jourDuPatron } from "./_jour-e2e";
 // voir un écran réinventer la règle de rangement dans son coin, ce qui est
 // arrivé deux fois (`src/lib/onglet-chantier.ts`).
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function inspecter(sql: string, params: unknown[], attendu?: number) {
   const r = await pool.query(sql, params);
@@ -109,7 +110,7 @@ async function chantierPlanifie(
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 10000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await inspecter(
     // **Pas `CURRENT_DATE`** : c'est le jour de PostgreSQL, en UTC, et

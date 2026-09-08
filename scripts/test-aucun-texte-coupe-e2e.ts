@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { ADRESSE } from "./_adresse";
 
 // **Aucune zone de saisie ne cache ce qu'on vient d'y écrire.**
 //
@@ -22,7 +23,7 @@ import { Pool } from "pg";
 // Il écrit un texte long pour de bon, comme le patron le ferait. Une zone vide
 // ne déborde jamais : le contrôler à vide, c'est ne rien contrôler.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const LONG =

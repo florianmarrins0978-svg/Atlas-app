@@ -2,6 +2,7 @@ import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Le raccourci vers les dates : trois écrans devenus deux.
@@ -28,7 +29,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
  * avant l'envoi.
  */
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let passed = 0;
 let failed = 0;

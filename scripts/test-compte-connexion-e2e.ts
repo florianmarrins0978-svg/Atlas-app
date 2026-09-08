@@ -72,7 +72,18 @@ async function main() {
     const compte = (await page.locator("body").innerText()).replace(/\s+/g, " ");
 
     verifie("l'écran du compte s'ouvre sur son titre", /Mon compte/.test(compte));
-    verifie("le nom se saisit", await page.getByLabel("Nom").count() === 1);
+    // **`exact` N EST PAS UNE PRÉCAUTION, C EST LA CONDITION.** Depuis la
+    // migration 0077 l écran porte « Prénom » ET « Nom » : sans lui, Playwright
+    // cherche une sous-chaîne insensible à la casse, « Prénom » répond aussi,
+    // et le compte vaut deux. La suite accuserait alors l écran d avoir deux
+    // champs « Nom ».
+    verifie("le nom se saisit", await page.getByLabel("Nom", { exact: true }).count() === 1);
+    verifie("le prénom aussi — il est séparé du nom depuis le 8 septembre 2026",
+      await page.getByLabel("Prénom", { exact: true }).count() === 1);
+    // La civilité se CHOISIT : deux cibles de 44 px, jamais un champ libre —
+    // « Mr », « M. », « monsieur » partiraient ensuite sur des documents.
+    verifie("la civilité se choisit entre deux",
+      (await page.getByRole("button", { name: /^(Mme|Mr.)$/ }).count()) === 2);
     verifie("l'e-mail du compte s'affiche", /demo@atlas\.local/.test(compte), compte.slice(0, 140));
 
     // **LE CONTRÔLE QUI PORTE SA DÉCISION.** Un champ téléphone rajouté ici
@@ -120,7 +131,7 @@ async function main() {
     verifie("au repos, aucune barre ne mange l'écran",
       (await page.locator('[data-atlas="barre-enregistrer"]').count()) === 0);
 
-    await page.getByLabel("Nom").fill("Atelier Démo bis");
+    await page.getByLabel("Nom", { exact: true }).fill("Atelier Démo bis");
     await page.waitForTimeout(400);
     verifie("mais elle revient dès qu'on écrit, et propose d'enregistrer",
       (await page.locator('[data-atlas="barre-enregistrer"]').count()) === 1 &&

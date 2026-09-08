@@ -4,6 +4,7 @@ import { Pool } from "pg";
 import { versJourIso } from "../src/server/disponibilites";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { joursAProposer } from "./_calendrier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **« Je ne peux choisir qu'un seul jour à même le planning. »**
 //
@@ -32,7 +33,7 @@ import { joursAProposer } from "./_calendrier-e2e";
 //   4. les deux partent réellement dans l'envoi ;
 //   5. un troisième ne s'ajoute pas en silence — le plus ancien cède la place.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function main() {
   const navigateur = await lancerNavigateur();

@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
+import { ADRESSE } from "./_adresse";
 
 // **Aucune zone qui défile ne montre sa barre.**
 //
@@ -38,7 +39,7 @@ import { Pool } from "pg";
 // navigateur la peigne ou non — chez le patron comme ici. Le dire plutôt que de
 // laisser croire à une vérification de l'image (`AGENTS.md`).
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;

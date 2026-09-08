@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { MODELE_FOURNI } from "../src/lib/prestations-entretien";
+import { ADRESSE } from "./_adresse";
 
 // L'écran où la fiche se compose — Paysage → Fiche de chantier → Composer ma fiche.
 //
@@ -27,7 +28,7 @@ import { MODELE_FOURNI } from "../src/lib/prestations-entretien";
 //      renommer, et « enlever » n'existait pas.
 
 const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, verifier: () => Promise<void>) {

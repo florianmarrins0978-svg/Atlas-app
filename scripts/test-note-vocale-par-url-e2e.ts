@@ -1,6 +1,7 @@
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
 
 // **La note vocale part par une URL, jamais par une action serveur.**
 //
@@ -27,7 +28,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 // Ramener l'enregistrement dans une action serveur le fera rougir, et c'est
 // exactement le retour en arrière qu'il faut empêcher.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 let echecs = 0;

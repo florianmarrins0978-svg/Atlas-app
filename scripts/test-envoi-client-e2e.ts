@@ -4,6 +4,7 @@ import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { joursAProposer } from "./_calendrier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // L'envoi du devis au client, vu depuis l'écran du patron (docs/AGENT.md §2.2).
 //
@@ -12,7 +13,7 @@ import { joursAProposer } from "./_calendrier-e2e";
 // aucun chemin réel. Cette suite parcourt donc la chaîne entière, du
 // formulaire de création jusqu'au lien que le client ouvrira.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
 
 /**
@@ -149,7 +150,7 @@ async function main() {
     // SMS s'ouvrait à la place de l'e-mail.
     await page.locator("button[aria-pressed]").nth(1).click();
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 });
 
     const porte = page.locator("a[data-transmission-directe]");
     assert.equal(await porte.count(), 1, "l'appui n'a ouvert aucune messagerie");
@@ -185,7 +186,7 @@ async function main() {
     // c'est lui, le signal. Le lien touché pour lui, LUI, vit sur `document.body`
     // — hors de l'arbre React — et survit donc au changement d'écran ; c'est ce
     // qui permet de le relire ici.
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 });
 
     const porte = page.locator("a[data-transmission-directe]");
     assert.equal(await porte.count(), 1, "l'appui n'a ouvert aucune messagerie");
@@ -318,7 +319,7 @@ async function main() {
     const offerts = await joursRetenables(page, 1);
     await retenirAuCalendrier(page, offerts[0]);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
     // **L'appui doit ouvrir SA messagerie tout de suite** — sa demande du
     // 18 août 2026 : *« quand je clique sur le bouton envoyer le devis, tout de
@@ -455,7 +456,7 @@ async function main() {
     await page.click("text=Choisir la date");
     await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
     // On rouvre le DEVIS : c'est là que se poserait de nouveau « Choisir la
     // date », et c'est donc là qu'il faut vérifier qu'il ne s'y pose plus.
@@ -563,7 +564,7 @@ async function main() {
     );
 
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 });
 
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     const message = decodeURIComponent(
@@ -672,7 +673,7 @@ async function main() {
     for (const jour of libres.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 });
 
     await page.goto(`${url}/export`, { waitUntil: "networkidle" });
     const message = decodeURIComponent(
@@ -709,7 +710,7 @@ async function main() {
 
     await page.getByRole("switch", { name: /autre date/i }).click();
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
     // On revient sur l'écran du devis parti, comme par la carte du chantier :
     // c'est lui qui porte le message tout prêt, et il ne s'affiche plus seul.

@@ -3,6 +3,7 @@ import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 /**
  * L'écran d'un devis déjà parti — « le signet d'or ».
@@ -41,7 +42,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
  * toutes les suites navigateur, et muter des données partagées ferait échouer
  * les suivantes sur un défaut qui n'est pas le leur.
  */
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function seConnecter(contexte: BrowserContext): Promise<Page> {
   const page = await contexte.newPage();
@@ -77,7 +78,7 @@ async function devisParti(page: Page): Promise<{ chantierId: string; url: string
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 20_000 });
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
-  await page.waitForURL(/localhost:3000\/$/, { timeout: 20_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+  await page.waitForURL(ACCUEIL_EXACT, { timeout: 20_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   return { chantierId, url };
 }

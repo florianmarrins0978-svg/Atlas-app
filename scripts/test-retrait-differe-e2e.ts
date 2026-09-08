@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import { ADRESSE } from "./_adresse";
 
 // **Rien n'est effacé pour de bon tant que le tiroir est ouvert.**
 //
@@ -26,7 +27,7 @@ import { lancerNavigateur } from "./e2e-browser";
 // Le contrôle sait échouer dans les deux sens : c'est ce qui le distingue d'un
 // contrôle qui regarde le mauvais moment.
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 /** Le délai du tiroir (`useRetraits`), plus une marge pour l'aller-retour. */
 const DELAI_TIROIR_MS = 6000;
 

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE, ACCUEIL_EXACT, echapper } from "./_adresse";
 
 /**
  * Le message du devis figé mène quelque part.
@@ -31,7 +32,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
  *   4. sur un devis PAS ENCORE parti, rien de tout cela n'apparaît : la page
  *      s'écrit, et un message d'interdiction y serait faux.
  */
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 async function seConnecter(contexte: BrowserContext): Promise<Page> {
   const page = await contexte.newPage();
@@ -39,7 +40,8 @@ async function seConnecter(contexte: BrowserContext): Promise<Page> {
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL(/localhost:3000\/(?!login)/, { timeout: 30_000 });
+  // « On est entré » : n'importe où sauf la page de connexion, sur CE serveur.
+  await page.waitForURL(new RegExp(`^${echapper(ADRESSE)}/(?!login)`), { timeout: 30_000 });
   return page;
 }
 
@@ -67,7 +69,7 @@ async function chantierAvecDevis(page: Page, envoyer: boolean): Promise<string> 
     await page.click("text=Choisir la date");
     await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
-    await page.waitForURL(/localhost:3000\/$/, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
+    await page.waitForURL(ACCUEIL_EXACT, { timeout: 30_000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
   }
   return url;
 }

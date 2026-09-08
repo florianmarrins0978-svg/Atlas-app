@@ -24,8 +24,9 @@
 
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
+import { ADRESSE } from "./_adresse";
 
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 let reussis = 0;
 let echecs = 0;

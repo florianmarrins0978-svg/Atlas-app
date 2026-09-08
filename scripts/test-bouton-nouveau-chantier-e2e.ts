@@ -1,5 +1,6 @@
 import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
+import { ADRESSE } from "./_adresse";
 
 /**
  * Le bouton de l'accueil : le geste, et sa demi-seconde.
@@ -32,7 +33,7 @@ import assert from "node:assert";
  *      fait à 360 px — le plus étroit de ses écrans —, parce qu'une coupure ne
  *      se voit pas sur un écran large.
  */
-const BASE = "http://localhost:3000";
+const BASE = ADRESSE;
 
 /** Le lien garde son `href` : tant que React n'a pas attaché son écouteur, un
  *  appui NAVIGUE vers la page entière au lieu de jouer le geste. C'est le repli

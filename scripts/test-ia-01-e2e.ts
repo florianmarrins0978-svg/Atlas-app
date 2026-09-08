@@ -4,6 +4,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page, Locator } from "playwright";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ADRESSE } from "./_adresse";
+
+const BASE = ADRESSE;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FAKE_MIC = path.join(__dirname, "fixtures", "fake-mic.wav");
@@ -37,18 +40,18 @@ async function main() {
 
   // Connexion réelle (Auth.js) — toutes les routes applicatives sont
   // désormais protégées par le middleware d'authentification.
-  await page.goto("http://localhost:3000/login", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
   await page.fill('input[name="password"]', "demo1234");
   await page.click('button[type="submit"]');
-  await page.waitForURL("http://localhost:3000/", { timeout: 10000 });
+  await page.waitForURL(`${BASE}/`, { timeout: 10000 });
 
   const nomUnique = `Chantier IA-01 e2e ${Date.now()}`;
-  await page.goto("http://localhost:3000/chantiers/nouveau", { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', nomUnique);
   const idChantier = await creerPuisFiche(page);
   await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 5000 });
-  const chantierUrl = `http://localhost:3000/chantiers/${idChantier}`;
+  const chantierUrl = `${BASE}/chantiers/${idChantier}`;
 
   // --- Enregistrement réel puis transcription réelle (fournisseur dev) ---
   await page.goto(`${chantierUrl}/note-vocale`, { waitUntil: "networkidle" });
