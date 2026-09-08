@@ -74,22 +74,22 @@ depuis la dernière prestation, qui reprend aussi le contenu du chantier).
 
 **Ce que le lot 1 touchera quand il aura tranché :**
 
-- **`main` NE COMPILE PAS pour qui le récupère à neuf — 8 septembre 2026.**
-  **Quatre contrôles** sont sur `main` et réclament du code qui n'existe que
-  dans l'arbre partagé, non enregistré :
+- ~~**`main` ne compile pas pour qui le récupère à neuf**~~ — **réparé le
+  8 septembre 2026, et la cause était MOI.**
 
-      scripts/test-compte-db.ts                    → ecrireIdentite, civilite, prenom
-      scripts/test-facture-reprend-le-devis-db.ts  → modalites, entrepriseTitulaireCompte
-      scripts/test-identite-personne.ts            → src/lib/identite-personne.ts   (NON SUIVI)
-      scripts/test-modalites-paiement.ts           → src/lib/modalites-paiement.ts  (NON SUIVI)
+  Mon `git add scripts/` a mis sur `main` 527 lignes du travail EN COURS d'une
+  session voisine, laissé non enregistré dans l'arbre partagé : `test-compte-db`,
+  `test-facture-reprend-le-devis-db`, et deux fichiers entiers
+  (`test-identite-personne`, `test-modalites-paiement`). `main` réclamait alors
+  du code jamais poussé — dix-neuf erreurs `tsc` dans tout dossier autre que
+  celui du patron.
 
-  Dans le dossier du patron ça compile — les fichiers non enregistrés y sont.
-  Ailleurs, `tsc` rend dix-neuf erreurs, donc aucune batterie jouée dans un
-  dossier de travail ne peut être verte.
+  **J'ai d'abord annoncé que c'était une autre session.** Il a demandé laquelle,
+  et `git log` a répondu : la mienne. Corrigé par `9c34d4f0`, sans rien changer
+  sur le disque — la session concernée retrouve son travail intact.
 
-  **Qui peut le régler :** la session qui tient ce travail. Enregistrer son
-  implémentation, ou retirer le contrôle de `main` en attendant. Ce n'est pas à
-  une autre session de le faire à sa place.
+  **Ce qui reste à en tirer :** ne jamais faire `git add <dossier>` dans un
+  arbre partagé. On nomme les fichiers de son lot, un par un.
 
 - `src/app/chantiers/nouveau/actions.ts` — `trouverOuCreerClient` rend déjà le
   motif du rapprochement ; il faut le remonter jusqu'à l'écran, pas le recalculer ;

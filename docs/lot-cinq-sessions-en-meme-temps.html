@@ -174,17 +174,19 @@
 <hr>
 <h2 id="ce-qui-reste-ouvert--et-il-faut-que-tu-le-saches">Ce qui reste ouvert — et il faut que tu le saches</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<h3 id="1-main-ne-compile-pas-pour-qui-le-récupère-à-neuf">1. <code>main</code> ne compile pas pour qui le récupère à neuf</h3>
-<p><strong>Quatre contrôles</strong> sont sur <code>main</code> et réclament du code qui n'existe que dans <strong>l'arbre partagé, non enregistré</strong> — le travail en cours d'une autre session :</p>
-<p>``<code> scripts/test-compte-db.ts                    → ecrireIdentite, civilite, prenom scripts/test-facture-reprend-le-devis-db.ts  → modalites, entrepriseTitulaireCompte scripts/test-identite-personne.ts            → src/lib/identite-personne.ts   (NON SUIVI par git) scripts/test-modalites-paiement.ts           → src/lib/modalites-paiement.ts  (NON SUIVI par git) </code>``</p>
-<p>Les deux derniers sont les pires : <code>src/lib/identite-personne.ts</code> et <code>src/lib/modalites-paiement.ts</code> ne sont <strong>même pas suivis par git</strong>. Ils n'existent que dans ton dossier.</p>
-<p>Dans ton dossier, ça compile — le fichier non enregistré est là. Dans n'importe quel autre, <code>tsc</code> est rouge, donc la batterie ne peut pas être verte.</p>
-<p><strong>Ce n'est pas mon lot, et je n'y ai pas touché</strong> : c'est le travail en vol d'une session voisine. Mais c'est exactement la panne que j'ai causée le 5 septembre avec un autre fichier, et c'est le meilleur argument pour le dossier par session. <strong>À dire à cette session : enregistrer son implémentation, ou retirer le contrôle de <code>main</code> en attendant.</strong></p>
+<h3 id="1-main-ne-compile-pas-à-neuf--réparé-et-cétait-moi">1. ~~<code>main</code> ne compile pas à neuf~~ — RÉPARÉ, et c'était MOI</h3>
+<p><strong>Je t'ai dit que c'était une autre session. C'était faux, et tu as bien fait de demander laquelle.</strong></p>
+<p>Mon <code>git add scripts/</code> a mis sur <code>main</code> <strong>527 lignes qui ne sont pas de mon lot</strong> : le travail en cours d'une session voisine, qu'elle avait laissé non enregistré dans le dossier partagé. Quatre fichiers, dont deux entiers.</p>
+<p>Résultat : <code>main</code> réclamait du code qui n'a jamais été poussé. Chez toi ça compilait — les fichiers non enregistrés y sont ; partout ailleurs, dix-neuf erreurs.</p>
+<p><strong>Réparé</strong> (<code>9c34d4f0</code>) : le contenu est revenu à ce qu'il était, <strong>sans que rien ne bouge sur ton disque</strong>. La session qui tient ce travail le retrouve exactement où elle l'avait laissé. Vérifié : un dossier neuf compile.</p>
+<p><strong>Tu n'as donc rien à dire à personne.</strong> L'étape 2 que je t'avais donnée n'existe plus.</p>
+<p><strong>Ce que ça apprend :</strong> c'est la deuxième fois en trois jours que le dossier partagé coûte ça — la première, c'est moi qui avais laissé un fichier dans mon arbre. C'est exactement ce que le dossier par session supprime.</p>
 <h3 id="2-cinq-batteries-en-même-temps-ce-nest-pas-raisonnable-sur-cette-machine">2. Cinq batteries EN MÊME TEMPS, ce n'est pas raisonnable sur cette machine</h3>
 <p>Deux batteries simultanées ont suffi à faire tomber un serveur de développement : connexion à 43 secondes, puis effondrement de Turbopack (<em>« an internal panic occurred »</em>). Les suites base tiennent très bien à deux ; ce sont les <strong>suites navigateur</strong> qui ne tiennent pas — trois serveurs Next et deux navigateurs sur le même processeur.</p>
 <p><strong>Ce que ça change pour toi, concrètement :</strong> tes cinq sessions peuvent désormais <strong>travailler</strong> en même temps sans se gêner, et chacune peut mesurer <strong>quand elle en a besoin</strong> sans attendre qu'une autre libère le port. Deux batteries en parallèle passent. Cinq, non — et aucune ligne de code n'y changera rien, c'est la machine.</p>
-<h3 id="3-la-batterie-complète-na-pas-pu-être-rendue-verte-cette-nuit">3. La batterie complète n'a pas pu être rendue verte cette nuit</h3>
-<p>À cause du point 1 : <code>tsc</code> est rouge sur <code>main</code> pour une raison qui n'est pas la mienne. Le lot a été poussé quand même — il ne touche que l'outillage, il a été éprouvé par deux batteries réelles, et il ne rend <code>main</code> ni plus ni moins rouge qu'il ne l'était.</p>
+<h3 id="3-la-batterie-complète-na-pas-été-jouée-jusquau-vert">3. La batterie complète n'a pas été jouée jusqu'au vert</h3>
+<p>La dernière a été interrompue par Docker, qui s'est arrêté tout seul au milieu — ses chiffres ne valent rien. Ce qui EST mesuré : deux batteries en même temps, deux dossiers, deux bases, <strong>303/321</strong> suites base chacune, sans se toucher.</p>
+<p>À rejouer d'une traite quand la machine est libre.</p>
 <hr>
 <h2 id="où-cest-écrit">Où c'est écrit</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>

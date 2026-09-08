@@ -31,7 +31,7 @@ Chaque session mesure chez elle. `ARCHITECTURE.md` §287 et §288,
 | **Fait** | un **dossier de travail** par session : `npm run sessions:preparer 5` |
 | **Fait** | l'étape « Connexion derrière un proxy » cesse d'échouer en silence — elle lançait le banc par `npm` à travers un shell, qui avalait tout : le banc ne démarrait pas |
 | **Mesuré** | deux batteries en même temps, deux dossiers, ateliers 1 et 2 : **303/321** suites base chacune, sans se toucher |
-| **Ouvert** | `main` ne compile pas à neuf — `scripts/test-compte-db.ts` réclame du code non enregistré d'une session voisine |
+| **Corrigé** | `main` ne compilait plus à neuf : MON `git add scripts/` avait emporté 527 lignes du travail en cours d'une session voisine. Rendu par `9c34d4f0`, sans rien changer sur le disque |
 | **Ouvert** | cinq batteries simultanées ne tiennent pas sur la machine : deux suffisent à faire tomber un serveur de développement |
 
 ## FAIT : deux mots du planning qu'il ne comprenait pas (7 septembre 2026)

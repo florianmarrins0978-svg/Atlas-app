@@ -27,15 +27,13 @@ aucune différence — c'est ce qui rend le lot éprouvable.
 
 **CE QU'IL FAUT SAVOIR AVANT DE REPRENDRE, et qui n'est pas de ce lot :**
 
-1. **`main` ne compile pas pour qui le récupère à neuf.**
-   **Quatre** contrôles sur `main` réclament du code non enregistré :
-   `test-compte-db` (`ecrireIdentite`, `civilite`, `prenom`),
-   `test-facture-reprend-le-devis-db` (`modalites`), `test-identite-personne`
-   et `test-modalites-paiement` — ces deux-là visent `src/lib/identite-personne.ts`
-   et `src/lib/modalites-paiement.ts`, qui ne sont **même pas suivis par git**. Dans le dossier du patron ça compile, ailleurs
-   non — donc aucune batterie ne peut être verte dans un worktree. C'est le
-   travail en vol d'une session voisine : le lui dire, ne pas le corriger à sa
-   place.
+1. ~~`main` ne compile pas à neuf~~ — **réparé (`9c34d4f0`), et c'était moi.**
+   Mon `git add scripts/` a emporté 527 lignes du travail en cours d'une session
+   voisine, non enregistré dans l'arbre partagé. J'ai d'abord accusé cette
+   session ; `git log` a montré que le commit était le mien. Rendu sans rien
+   changer sur le disque. **La règle à en tirer : jamais de `git add <dossier>`
+   dans un arbre partagé — on nomme les fichiers de son lot.**
+
 2. **Cinq batteries EN MÊME TEMPS ne tiennent pas sur cette machine.** Deux ont
    suffi à faire tomber un serveur (connexion à 43 s, puis panique interne de
    Turbopack). Les suites BASE tiennent à deux ; les suites NAVIGATEUR non. Ce

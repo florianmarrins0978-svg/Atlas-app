@@ -106,31 +106,29 @@ démontrer, et c'est démontré.
 
 ## Ce qui reste ouvert — et il faut que tu le saches
 
-### 1. `main` ne compile pas pour qui le récupère à neuf
+### 1. ~~`main` ne compile pas à neuf~~ — RÉPARÉ, et c'était MOI
 
-**Quatre contrôles** sont sur `main` et réclament du code qui n'existe que
-dans **l'arbre partagé, non enregistré** — le travail en cours d'une autre
-session :
+**Je t'ai dit que c'était une autre session. C'était faux, et tu as bien fait de
+demander laquelle.**
 
-```
-scripts/test-compte-db.ts                    → ecrireIdentite, civilite, prenom
-scripts/test-facture-reprend-le-devis-db.ts  → modalites, entrepriseTitulaireCompte
-scripts/test-identite-personne.ts            → src/lib/identite-personne.ts   (NON SUIVI par git)
-scripts/test-modalites-paiement.ts           → src/lib/modalites-paiement.ts  (NON SUIVI par git)
-```
+Mon `git add scripts/` a mis sur `main` **527 lignes qui ne sont pas de mon
+lot** : le travail en cours d'une session voisine, qu'elle avait laissé non
+enregistré dans le dossier partagé. Quatre fichiers, dont deux entiers.
 
-Les deux derniers sont les pires : `src/lib/identite-personne.ts` et
-`src/lib/modalites-paiement.ts` ne sont **même pas suivis par git**. Ils
-n'existent que dans ton dossier.
+Résultat : `main` réclamait du code qui n'a jamais été poussé. Chez toi ça
+compilait — les fichiers non enregistrés y sont ; partout ailleurs, dix-neuf
+erreurs.
 
-Dans ton dossier, ça compile — le fichier non enregistré est là. Dans n'importe
-quel autre, `tsc` est rouge, donc la batterie ne peut pas être verte.
+**Réparé** (`9c34d4f0`) : le contenu est revenu à ce qu'il était, **sans que
+rien ne bouge sur ton disque**. La session qui tient ce travail le retrouve
+exactement où elle l'avait laissé. Vérifié : un dossier neuf compile.
 
-**Ce n'est pas mon lot, et je n'y ai pas touché** : c'est le travail en vol
-d'une session voisine. Mais c'est exactement la panne que j'ai causée le
-5 septembre avec un autre fichier, et c'est le meilleur argument pour le dossier
-par session. **À dire à cette session : enregistrer son implémentation, ou
-retirer le contrôle de `main` en attendant.**
+**Tu n'as donc rien à dire à personne.** L'étape 2 que je t'avais donnée
+n'existe plus.
+
+**Ce que ça apprend :** c'est la deuxième fois en trois jours que le dossier
+partagé coûte ça — la première, c'est moi qui avais laissé un fichier dans mon
+arbre. C'est exactement ce que le dossier par session supprime.
 
 ### 2. Cinq batteries EN MÊME TEMPS, ce n'est pas raisonnable sur cette machine
 
@@ -146,12 +144,13 @@ désormais **travailler** en même temps sans se gêner, et chacune peut mesurer
 batteries en parallèle passent. Cinq, non — et aucune ligne de code n'y
 changera rien, c'est la machine.
 
-### 3. La batterie complète n'a pas pu être rendue verte cette nuit
+### 3. La batterie complète n'a pas été jouée jusqu'au vert
 
-À cause du point 1 : `tsc` est rouge sur `main` pour une raison qui n'est pas
-la mienne. Le lot a été poussé quand même — il ne touche que l'outillage, il a
-été éprouvé par deux batteries réelles, et il ne rend `main` ni plus ni moins
-rouge qu'il ne l'était.
+La dernière a été interrompue par Docker, qui s'est arrêté tout seul au milieu —
+ses chiffres ne valent rien. Ce qui EST mesuré : deux batteries en même temps,
+deux dossiers, deux bases, **303/321** suites base chacune, sans se toucher.
+
+À rejouer d'une traite quand la machine est libre.
 
 ---
 
