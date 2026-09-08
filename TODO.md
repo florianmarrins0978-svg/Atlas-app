@@ -9,6 +9,36 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — « Aujourd'hui » en tête des planifiés
+
+**Sa demande du 9 septembre 2026 :** *« si on est le 8 septembre y'a écrit
+8 septembre ; ça serait bien que ce soit marqué aujourd'hui en doré, en premier
+— comme ça au premier coup d'œil, le salarié qui ouvre l'appli le matin la tête
+enfarinée, il sait que M. Martins sous aujourd'hui c'est le client qu'il doit
+faire »*.
+
+`appli/aujourd-hui-en-tete.html` — trois traitements de la pastille
+`data-atlas="date-planifiee"` (`PlanningClient.tsx`, vers la ligne 1014), plus
+une bascule d'ordre, une pour la journée vide, une pour la charte Nuit.
+
+**Ce que la mesure a appris, et qui n'était pas dans la demande** : l'or posé
+tel quel sur la pastille pâle donne **2,03 à 2,53** de contraste sur les six
+chartes claires — c'est-à-dire illisible sur l'écran qu'il lit au soleil. Les
+trois propositions sont les trois façons de tenir « en doré » sans ça :
+
+| | Le contraste, mesuré sur les huit chartes | Ce que ça coûte |
+|---|---|---|
+| **A** aplat d'or, mot dedans | 4,98 à 6,14 | un **jeton neuf** dans `chartes.ts` — le pôle sombre de la charte, à poser sur l'or ; `surPlein` ne convient pas (2,62 à 3,07 sur les claires) |
+| **B** mot en `orTexte`, 19 px | 3,92 à 5,29 | ne passe **que** parce que le mot est gros ; en 12 px comme les autres dates, il tombe sous le seuil |
+| **C** filet d'or, mot en `orTexte` | 4,55 à 5,55 | la plus sobre, donc la moins voyante du coin de l'œil |
+
+**Rien n'est codé, et rien ne doit l'être avant son choix** (`CLAUDE.md` §3 bis).
+Deux questions restent ouvertes avec lui : l'ordre (journée du jour en tête, ou
+à sa place dans la semaine) et ce qu'affiche la pastille quand **rien n'est
+posé** aujourd'hui.
+
+---
+
 ## Les rouges qui ne sont à personne — relevé du 9 septembre 2026
 
 **Mesuré sur la batterie du lot « retour d'intervention »**, atelier au rang 0,
