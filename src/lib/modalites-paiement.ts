@@ -155,3 +155,79 @@ export function consigneDuLibelle(numeroFacture: string): string {
 export function phraseDuCheque(ordre: string): string {
   return `Par chèque, à l'ordre de : ${ordre}.`;
 }
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * QUAND L'IBAN CHANGE — les factures déjà parties, et ce qu'on en dit.
+ *
+ * **Tranché par lui le 8 septembre 2026**, maquette à l'appui
+ * (`appli/changer-d-iban.html`) : *« oui je le veux »*, aux trois endroits.
+ *
+ * Depuis la migration 0076, une facture prend l'IBAN de l'entreprise au jour où
+ * elle naît : les factures à venir sont justes. Mais celles **déjà envoyées et
+ * non réglées** gardent l'ancien, et leur PDF ne se réécrit pas — c'est le
+ * fichier archivé que le client a dans son téléphone. Le risque est concret :
+ * un virement sur un compte fermé.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Cette facture porte-t-elle un AUTRE IBAN que celui d'aujourd'hui ?
+ *
+ * **Les deux absences ne se traitent pas pareil, et c'est tout le sens de cette
+ * fonction :**
+ *
+ * | | |
+ * |---|---|
+ * | l'entreprise n'a **plus** d'IBAN | on ne prévient de rien : il n'y a pas de nouveau compte à annoncer |
+ * | la facture n'en portait **aucun** | rien à corriger — son client n'a jamais lu d'IBAN dessus, et n'a donc pas pu se tromper de compte |
+ *
+ * Ne reste que le cas qui coûte de l'argent : **la facture en portait un, et ce
+ * n'est plus celui-là.** Un avertissement qui parle dans les autres cas
+ * s'apprendrait à être ignoré, et l'on perdrait le garde-fou le jour où il a
+ * raison (`CLAUDE.md` §4 ter).
+ *
+ * La comparaison se fait sur l'IBAN NU : « FR76 3000 » et « fr763000 » sont le
+ * même compte, et croire le contraire ferait prévenir tous les clients pour une
+ * espace de saisie.
+ */
+export function porteUnAutreIban(ibanFacture: string | null, ibanActuel: string | null): boolean {
+  const figee = (ibanFacture ?? "").trim();
+  const vivant = (ibanActuel ?? "").trim();
+  if (figee === "" || vivant === "") return false;
+  return ibanSansEspace(figee) !== ibanSansEspace(vivant);
+}
+
+/**
+ * LE MESSAGE QUE L'ARTISAN ENVOIE À SON CLIENT.
+ *
+ * **Écrit ici, et nulle part ailleurs.** Il porte le numéro de facture et le
+ * nouvel IBAN — les deux mêmes valeurs que la page du client et le PDF, par les
+ * mêmes fonctions. Le composer dans l'écran en ferait une seconde rédaction, et
+ * le jour où l'une des deux change, le client reçoit deux consignes
+ * (`CLAUDE.md` §3).
+ *
+ * **Il dit le numéro DEUX fois, et ce n'est pas une maladresse :** une fois pour
+ * désigner la facture, une fois pour ce qu'il faut recopier dans le libellé.
+ * C'est la même exigence que sur la page — sans ce numéro, le règlement ne se
+ * rattache à rien.
+ *
+ * **Il ne s'excuse pas et n'explique pas pourquoi.** Un client n'a pas à savoir
+ * si l'artisan a changé de banque ou corrigé une faute de frappe ; ce qu'il lui
+ * faut, c'est le bon compte et ce qu'il doit écrire.
+ */
+export function messageNouvelIban(entree: {
+  /** Comment on s'adresse à lui — déjà composé par `avecCivilite`. */
+  clientAvecCivilite: string;
+  numeroFacture: string;
+  /** L'IBAN d'aujourd'hui, groupé par quatre : c'est celui qu'il va recopier. */
+  ibanLisible: string;
+  entrepriseNom: string;
+}): string {
+  return (
+    `Bonjour ${entree.clientAvecCivilite}, nos coordonnées bancaires ont changé. ` +
+    `Pour régler la facture ${entree.numeroFacture}, merci d'utiliser ` +
+    `${entree.ibanLisible}, en indiquant ${entree.numeroFacture} dans le libellé. ` +
+    `Merci, ${entree.entrepriseNom}.`
+  );
+}

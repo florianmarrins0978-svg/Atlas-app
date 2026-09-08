@@ -6,6 +6,9 @@ import { colors, font } from "@/lib/design-tokens";
 import { jourEtMois } from "@/lib/jour";
 import { enEuros } from "@/lib/euros";
 import { noterPaiementAction, retirerPaiementAction, soldeFactureAction } from "./actions";
+import { MarqueAncienIban } from "@/components/atlas/AlerteAncienIban";
+import { prevenirAction } from "@/app/prevenir-du-nouvel-iban";
+import type { FactureAPrevenir } from "@/server/repositories/factures";
 
 export type FactureAttendue = {
   id: string;
@@ -38,10 +41,17 @@ export type FactureAttendue = {
  */
 export default function EnAttenteDePaiement({
   factures,
+  aPrevenir,
   aujourdHui,
   regime,
 }: {
   factures: FactureAttendue[];
+  /**
+   * **Les factures parties avec l'ancien IBAN** — le deuxième des trois
+   * endroits qu'il a retenus le 8 septembre 2026. C'est ici qu'il regarde déjà
+   * qui n'a pas payé : la marque va donc là, plutôt que dans un écran de plus.
+   */
+  aPrevenir: FactureAPrevenir[];
   /** Le jour, calculé sur le serveur : le téléphone peut être à l'heure d'ailleurs. */
   aujourdHui: string;
   regime: "encaissements" | "debits";
@@ -131,6 +141,13 @@ export default function EnAttenteDePaiement({
                   )}
                 </div>
               </div>
+
+              {/* La marque, sous la ligne et avant les gestes de paiement :
+                  elle dit quelque chose sur la facture, pas sur son règlement. */}
+              <MarqueAncienIban
+                facture={aPrevenir.find((p) => p.id === f.id)}
+                onPrevenir={prevenirAction}
+              />
 
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 <button
