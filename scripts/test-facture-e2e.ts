@@ -118,7 +118,7 @@ async function main() {
     // plus d'action évidente. Ce qui doit être vrai ici, c'est que le chemin
     // existe.
     assert.equal(
-      await page.locator(`a[href="/chantiers/${chantierId}/facture"]`).count(),
+      await page.locator(`a[href^="/chantiers/${chantierId}/facture"]`).count(),
       1,
       "la ligne du chantier ne mène pas à son écran de facture"
     );

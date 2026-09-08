@@ -590,7 +590,14 @@ async function main() {
   // de trouver un mot ne protège que du mot.
   await cas("`run-e2e-tests` refuse de continuer si quelque chose écoute déjà", () => {
     const source = readFileSync(path.join(RACINE, "scripts", "run-e2e-tests.ts"), "utf8");
-    const iGarde = source.indexOf('if (await quelquUnEcouteDeja("http://localhost:3000');
+    // **Le port n'est plus écrit là** — sa consigne du 8 septembre 2026 : chaque
+    // session prend le sien (`PORT`), pour que deux batteries ne se bousculent
+    // pas. Ce repère portait « localhost:3000 » en dur et rougissait donc sur
+    // du code juste, exactement comme `iSpawn` l'avait fait le 2 septembre.
+    //
+    // On vise ce qui NE PEUT PAS bouger sans que la garde disparaisse : l'appel
+    // lui-même, dans un `if`. Le port, lui, est libre de changer.
+    const iGarde = source.search(/if \(await quelquUnEcouteDeja\(/);
     // **Ce repère a vieilli, et le contrôle est resté vert d'un côté et muet de
     // l'autre — 2 septembre 2026.** `run-e2e-tests.ts` lançait `npm run dev` ;
     // le commit `3cd0d21` l'a remplacé par l'exécutable Node et le binaire du
@@ -607,7 +614,8 @@ async function main() {
     // `tsconfig.json` est antérieure à ES2018, et `tsc` refuse ce drapeau
     // (TS1501). Il ne servait à rien ici — `[^)]` accepte déjà les retours à la
     // ligne, seul un `.` aurait eu besoin de lui.
-    const iSpawn = source.search(/spawn\([^)]*"dev"[^)]*"-p", "3000"/);
+    // Même raison : le port du `spawn` est désormais une variable.
+    const iSpawn = source.search(/spawn\([^)]*"dev"[^)]*"-p", String\(PORT\)/);
     assert.ok(
       iGarde > 0,
       "aucune garde en tête de batterie : un orphelin du banc rendrait les cinquante suites ininterprétables"
