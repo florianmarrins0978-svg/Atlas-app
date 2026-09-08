@@ -289,7 +289,7 @@ pas un à-côté.
 ## ✅ ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR~~ — **TRANCHÉ le 8 septembre 2026**
 
 **Ses choix : C et D2** (planche `appli/qui-travaille-quel-jour.html`), codés le
-jour même. `ARCHITECTURE.md` §292.
+jour même. `ARCHITECTURE.md` §295.
 
 **Et le chiffrage était faux dans mon sens :** j'annonçais deux migrations, une
 seule était nécessaire. C déduit l'exception des congés au lieu de la faire
@@ -300,7 +300,7 @@ saisir — sa façon de cocher ne change pas.
 ## ~~UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR, et non par chantier~~
 
 **Née le 8 septembre 2026**, en corrigeant à la racine ce qu'il a signalé
-(`ARCHITECTURE.md` §291).
+(`ARCHITECTURE.md` §294).
 
 **Le manque.** `equipes_du_chantier` porte `(chantier, demi, équipe)` — **aucun
 jour**. Une coche vaut pour le chantier entier. L'application ne peut donc pas
@@ -320,48 +320,69 @@ les chantiers de plusieurs jours, ou l'affectation reste-t-elle globale ?*
 
 ---
 
-## ⏳ UNE RÉPONSE ATTENDUE — le devis PAS ENCORE parti, depuis le planning
+## ✅ ~~UNE RÉPONSE ATTENDUE — le devis PAS ENCORE parti, depuis le planning~~ — **TRANCHÉ le 8 septembre 2026**
 
 **Né le 7 septembre 2026**, en corrigeant le retour au planning
-(`ARCHITECTURE.md` §273).
+(`ARCHITECTURE.md` §273) : depuis le planning, la porte du devis non parti
+menait à `/devis-complet`, dont la flèche allait toujours à la fiche client.
+Deux pas pour sortir.
 
-Depuis la feuille du planning, les trois autres portes ramènent maintenant au
-planning. Celle du **devis non parti** mène à `/devis-complet`, dont la flèche
-va toujours à la fiche client — **sa règle tranchée le 31 août** : *« je veux
-tout le temps revenir à cette page et seulement celle-là »*. Depuis le planning,
-ce chemin-là fait donc deux pas pour sortir.
+**Sa réponse, captures à l'appui :** *« oui fais la 1 »* — la flèche ramène au
+planning quand on en vient, et reste sur la fiche client partout ailleurs.
+Codé le jour même, `ARCHITECTURE.md` §296.
 
-**Ce qui n'a PAS été fait, et pourquoi :** détourner cette flèche reviendrait sur
-une décision qu'il a prise lui-même, capture à l'appui. Ce n'est pas notre
-arbitrage.
+**Ce que la question avait de faux, et il faut le dire :** elle était posée
+comme un arbitrage entre deux de ses décisions, alors que les deux tenaient
+ensemble — sa règle du 31 août corrigeait une flèche qui déposait sur la fiche
+du CHANTIER, elle ne disait rien d'une provenance. Attendre sa réponse pour
+cela lui a coûté un aller-retour.
 
-**Qui peut le trancher :** lui seul. La question à lui poser, quand l'occasion
-se présente : *depuis le planning, la flèche du devis doit-elle ramener au
-planning, ou rester sur la fiche client ?*
+**Reste ouvert, et personne ne l'a signalé :** `planning → devis → fiche client`
+retombe sur la liste au retour. Une adresse ne porte qu'un cran de mémoire, et
+sa règle du 7 septembre veut de toute façon que la flèche de la fiche SORTE.
+S'il le signale, c'est une chaîne de provenances qu'il faudra — pas un cas de
+plus.
 
 ---
 
-## ⚠ SEPT SUITES ROUGES SUR `main` — relevées le 7 septembre 2026
+## ⚠ QUINZE SUITES ROUGES SUR `main` — recomptées le 8 septembre 2026
 
-Rejeu complet des 131 suites navigateur, dans le décor de la batterie (IA
-éteinte). **Trois rouges corrigés le jour même** — `allure-de-mes-devis`
-réclamait dix polices quand il en a fait retirer quatre, `apercu-colle`
-cherchait une rubrique coupée en quatre, `madame-lucie` appuyait au centre de
-la ligne, c'est-à-dire sur « Adresse non renseignée », qui mène EXPRÈS ailleurs.
+**Elles étaient sept le 7 septembre. Elles sont quinze**, et le relevé n'est
+plus une impression : chacune a été **rejouée sur `main` dans un arbre témoin**,
+sans le lot en cours. Les quinze y sont rouges. Aucune n'appartient au lot du
+retour du devis.
 
-**Ce qui reste, et qui n'appartient à aucun lot de cette session :**
+**Ce que le témoin a coûté, et pourquoi il valait le coup :** un arbre de
+travail sur `origin/main`, `node_modules` **copié** et non lié — Turbopack
+refuse un lien symbolique qui sort de la racine du projet, et rend un
+« Symlink [project]/node_modules is invalid » qui n'accuse rien de juste. Le
+filtre se sépare par des **virgules**, jamais par des barres verticales : un
+motif mal séparé retient zéro suite et ne le dit qu'en petit.
 
 | Suite | Ce qu'elle dit | Première piste |
 |---|---|---|
-| `anneau-vers-devis` | la chaîne dictée → devis n'arrive jamais (120 s) ; et un devis parti n'est plus joignable par le planning | à jouer seule : l'arrêt d'avant-chiffrage s'ouvre-t-il ? |
-| `message-au-client` | « les trois messages disent chacun le sien » | lot des trois messages (0075), tout frais |
-| `fiche-client`, `devis-client` | tiennent d'un pixel : 665 px pour 664 | **sans relever le seuil** — 664 px est la hauteur réelle de son téléphone |
-| `carte-reponse-mene-au-geste` | un appui intercepté par un bouton du planning | même famille que `madame-lucie` : viser l'élément, pas le centre |
+| `anneau-vers-devis` | la chaîne dictée → devis n'arrive jamais (120 s) | à jouer seule : l'arrêt d'avant-chiffrage s'ouvre-t-il ? |
+| `anneau-dictee` | l'anneau ne redevient pas le lecteur (`.atlas-indice`) | demande une transcription — clé absente de ce poste |
+| `ia-01` | « Texte enregistré » ne paraît pas | même famille : sans clé, ce chemin ne peut pas finir |
+| `message-au-client` | « les trois messages disent chacun le sien » | lot des trois messages (0075) |
+| `facture-au-client` | « Le client ne voit aucun montant » | **le contrôle réclame ce qu'il a fait retirer** : la page de facture est sans montant, à sa demande (`CLAUDE.md` §5 bis) |
+| `fiche-chantier` | la phrase dictée du 23 août absente ; le titre n'est plus « compte rendu de passage » | même travers : deux libellés qu'il a fait changer |
+| `devis-client` | tient d'un pixel : 665 px pour 664 | **sans relever le seuil** — 664 px est la hauteur réelle de son téléphone |
+| `carte-reponse-mene-au-geste` | un appui intercepté par un bouton du planning | viser l'élément, pas le centre |
+| `recherche-client` | la barre de recherche part avec le défilement (155 px du haut) | **défaut réel d'écran**, reproduit seul sur `main` |
+| `adresse-suggestions` | attente de navigation dépassée (60 s) | non diagnostiqué |
 | `reprise-chantier`, `reprise-morceau` | non diagnostiqués | |
+| `repartir-du-client` | le bouton « Refaire » n'est pas sur la fiche du client | lot « repartir d'un client », inachevé |
 | `suivi-devis`, `tva-multiple` | « un appui long sur un devis à UN SEUL taux n'ouvre rien » | |
 
-**Ne pas les traiter en bloc** : ce sont cinq lots différents, et deux d'entre
-eux sont des contrôles qui réclament ce qu'il a fait enlever (`CLAUDE.md` §5 bis).
+**Ne pas les traiter en bloc** : ce sont sept lots différents, et **trois
+d'entre eux sont des contrôles qui réclament ce qu'il a fait enlever**
+(`CLAUDE.md` §5 bis — on adapte le contrôle, on ne remet pas le libellé).
+
+**Deux suites ont changé de rouge entre deux batteries du même soir** —
+`recherche-client` a rougi sur deux cas différents. Ce n'est pas une
+intermittence : jouée seule, elle rougit sur le même cas que sur `main`. C'est
+l'ordre des suites qui décide laquelle des deux fautes se voit la première.
 
 ---
 

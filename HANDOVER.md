@@ -11,7 +11,7 @@ sert.
 ## Dernier lot — LA PORTE EN PLEIN AIR (8 septembre 2026)
 
 **Planche :** `appli/la-porte-en-plein-air.html`, écrans 1 et 2 — retenus par
-lui. **Décisions :** `ARCHITECTURE.md` §293. **Migration : 0077** (civilité et
+lui. **Décisions :** `ARCHITECTURE.md` §297. **Migration : 0077** (civilité et
 prénom du compte). **Document de retour :** `docs/lot-porte-en-plein-air-code.md`.
 
 **Ce qui existe maintenant.** `/bienvenue` — la photo, ATLAS, deux gestes — est
@@ -33,12 +33,39 @@ style entière a cessé de compiler sur du code juste.
 (`TODO.md`) — la phrase des conditions ou une case à cocher, la photo fixe ou
 non, et « seize questions, est-ce trop ? ».
 
-## Dernier lot — QUI TRAVAILLE QUEL JOUR (8 septembre 2026)
+---
+## Lot précédent — LE RETOUR DU DEVIS (8 septembre 2026)
+
+**Sa demande, captures à l'appui :** depuis le planning, ouvrir un devis pas
+encore envoyé puis reculer le déposait sur la fiche client. Deux retours pour
+retrouver sa journée. *« Oui fais la 1 »* — le devis se souvient d'où l'on
+vient.
+
+**Décisions :** `ARCHITECTURE.md` §296.
+
+**LE PIÈGE À NE PAS ROUVRIR.** Un paragraphe de `portes-du-planning.ts` disait
+que seul `/export` devait emporter la provenance, et que c'était délibéré. Le
+raisonnement était bon — ne pas écrire dans l'adresse une promesse que l'écran
+ne tient pas — mais la conclusion l'était d'un cran de trop : il fallait faire
+RELIRE le paramètre, pas le retirer. Écrit ainsi, il annonçait le cas traité.
+
+**Où vit la règle :** `src/lib/retour-du-devis.ts`, qui rend maintenant
+`{ href, libelle }` — l'adresse et le mot ensemble, parce que deux fonctions
+qui doivent changer d'avis ensemble ne le font qu'à moitié (la fiche client l'a
+payé le 7 septembre). Aucune base, aucun écran.
+
+**Ce qui reste ouvert :** `planning → devis → fiche client` retombe sur la
+liste, une adresse ne portant qu'un cran de mémoire. Rien n'est cassé — sa
+règle du 7 septembre veut que cette flèche-là sorte — mais s'il le signale,
+c'est une chaîne de provenances qu'il faudra.
+
+---
+## Lot d'avant — QUI TRAVAILLE QUEL JOUR (8 septembre 2026)
 
 **Planche :** `appli/qui-travaille-quel-jour.html` — retenu **C et D2**.
-**Décisions :** `ARCHITECTURE.md` §292. **Migration : 0076.**
+**Décisions :** `ARCHITECTURE.md` §295. **Migration : 0076.**
 
-**LA LEÇON DU LOT.** Les règles des §290 et §291 étaient des CONTOURNEMENTS
+**LA LEÇON DU LOT.** Les règles des §293 et §294 étaient des CONTOURNEMENTS
 d'une limite du modèle. Quand la limite tombe, le contournement doit tomber
 avec — sinon il reste comme une interdiction que plus rien ne justifie. Les
 deux ont été relâchés ici, et leurs contrôles RETOURNÉS.
@@ -58,7 +85,7 @@ la faire saisir.
 
 ## Dernier lot — POSER UN CONGÉ DÉFAIT CE QU'IL REND FAUX (8 septembre 2026)
 
-**Décisions :** `ARCHITECTURE.md` §291. **Document :** `docs/lot-ne-pas-cocher-un-absent.md`.
+**Décisions :** `ARCHITECTURE.md` §294. **Document :** `docs/lot-ne-pas-cocher-un-absent.md`.
 
 **CE QU'IL A CORRIGÉ CHEZ MOI, et c'est la leçon du lot :** j'ai livré un
 correctif qui refusait de COCHER un absent. Il a répondu *« pas de pansement,
@@ -79,7 +106,7 @@ geste : question posée dans `TODO.md`, à ne pas trancher seul.
 
 ## Lot précédent — ON NE COCHE PLUS UN ABSENT (8 septembre 2026)
 
-**Décisions :** `ARCHITECTURE.md` §290.
+**Décisions :** `ARCHITECTURE.md` §293.
 
 **LE PIÈGE À RETENIR.** « Absence » est née le 14 août d'une question de
 CAPACITÉ — combien de dates proposer au client. Personne n'est allé voir ce

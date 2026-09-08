@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { lienVersLeChantierAuPlanning } from "../src/lib/lien-planning";
+import { LIBELLE_RETOUR_PLANNING } from "../src/lib/retour-au-planning";
 import {
   apresLesCoordonnees,
   coordonneesDepuisLeDevis,
@@ -17,6 +19,11 @@ import {
 // devis). Elle sait échouer : rendre `/chantiers/${id}` dans l'un OU l'autre cas
 // rougit les deux premiers, et oublier la provenance dans `apresLesCoordonnees`
 // rougit le cinquième.
+//
+// **Et depuis le 8 septembre 2026, la moitié qui manquait** : venu du planning,
+// le devis y ramène (quatre cas en fin de fichier). Sa règle du 31 août n'est
+// pas défaite pour autant — c'est la SEULE porte qui sait dire d'où elle vient,
+// et l'un des cas le fixe.
 //
 // **Ce qu'elle NE fixe pas, délibérément :** aucun libellé d'écran. Une
 // assertion sur un mot affiché défendrait la formulation du jour plutôt que la
@@ -40,14 +47,15 @@ function cas(nom: string, verifier: () => void) {
 const CHANTIER = "11111111-2222-3333-4444-555555555555";
 const AUTRE = "99999999-8888-7777-6666-555555555555";
 const SON_DEVIS = `/chantiers/${CHANTIER}/devis-complet`;
+const SON_PLANNING = lienVersLeChantierAuPlanning(CHANTIER);
 
-console.log("=== Le retour du devis mène à la fiche client, toujours ===\n");
+console.log("=== Le retour du devis : la fiche client, ou le planning d'où il vient ===\n");
 
 const VERS_LA_FICHE = `/chantiers/${CHANTIER}/coordonnees?de=${encodeURIComponent(SON_DEVIS)}`;
 
 cas("SON CAS DU MATIN : aucun client rattaché — le retour mène à la fiche client", () => {
   assert.equal(
-    retourDuDevis({ chantierId: CHANTIER }),
+    retourDuDevis({ chantierId: CHANTIER, clientId: null }).href,
     VERS_LA_FICHE,
     "il retomberait sur la fiche du chantier, qui ne dit ni ce qui manque ni où le réparer"
   );
@@ -59,14 +67,19 @@ cas("SON CAS DU SOIR : la fiche du chantier n'est plus JAMAIS la sortie", () => 
   // condition — sous n'importe quel nom — remettrait la moitié de ses retours
   // sur un écran qui ne lui propose rien. C'est ce retour en arrière que ce cas
   // barre, et non l'adresse, déjà tenue au-dessus.
-  assert.notEqual(retourDuDevis({ chantierId: CHANTIER }), `/chantiers/${CHANTIER}`);
-  assert.ok(retourDuDevis({ chantierId: CHANTIER }).startsWith(`/chantiers/${CHANTIER}/coordonnees`));
+  const sansProvenance = retourDuDevis({ chantierId: CHANTIER, clientId: "un-client" }).href;
+  assert.notEqual(sansProvenance, `/chantiers/${CHANTIER}`);
+  assert.ok(sansProvenance.startsWith(`/chantiers/${CHANTIER}/coordonnees`));
 });
 
 cas("la flèche n'annonce pas la même chose selon la raison d'y aller", () => {
   // Même écran, deux raisons : remplir ce qui manque, ou relire avant d'envoyer.
   // « Remplir » devant un formulaire complet ferait chercher un champ vide.
   assert.notEqual(libelleRetourDuDevis(null), libelleRetourDuDevis("un-client"));
+  assert.equal(
+    retourDuDevis({ chantierId: CHANTIER, clientId: null }).libelle,
+    libelleRetourDuDevis(null)
+  );
 });
 
 cas("l'adresse de la fiche porte sa provenance, et elle se relit", () => {
@@ -97,7 +110,7 @@ cas("la FLÈCHE, elle, sort toujours : plus aucune boucle", () => {
 // n'était pas une mauvaise adresse : c'était un cycle. On le dit comme tel —
 // si demain une troisième porte renvoyait vers le devis, ce cas rougirait.
 cas("aller au devis puis revenir ne peut plus tourner en rond", () => {
-  const versLaFiche = retourDuDevis({ chantierId: CHANTIER });
+  const versLaFiche = retourDuDevis({ chantierId: CHANTIER, clientId: null }).href;
   const de = new URL(versLaFiche, "http://exemple.test").searchParams.get("de");
   const provenance = provenanceDesCoordonnees(CHANTIER, de ?? undefined);
   assert.notEqual(
@@ -151,6 +164,61 @@ cas("ET PAS DAVANTAGE SUR LE DEVIS D'UN AUTRE CHANTIER", () => {
   // Un paramètre répété arrive en tableau : c'est le premier qui compte.
   assert.equal(provenanceDesCoordonnees(CHANTIER, [SON_DEVIS, "https://ailleurs.example"]), SON_DEVIS);
   assert.equal(provenanceDesCoordonnees(CHANTIER, ["https://ailleurs.example", SON_DEVIS]), null);
+});
+
+
+// ─── SA DEMANDE DU 8 SEPTEMBRE 2026 ────────────────────────────────────────
+//
+// Capture à l'appui : partir du planning sur un devis PAS ENCORE ENVOYÉ, puis
+// reculer, le déposait sur la fiche client — d'où il lui fallait un second
+// retour pour retrouver sa journée. *« Oui fais la 1 »* : le devis en rédaction
+// se souvient d'où l'on vient, comme le devis parti depuis le 7 septembre.
+//
+// **Ces cas savent échouer** : rendre la fiche client sans regarder `de` rougit
+// le premier, et annoncer la fiche client en menant au planning rougit le
+// second — c'est exactement la faute que la fiche client a payée le
+// 7 septembre.
+cas("VENU DU PLANNING, la flèche du devis y ramène", () => {
+  assert.equal(
+    retourDuDevis({ chantierId: CHANTIER, clientId: "un-client", de: SON_PLANNING }).href,
+    SON_PLANNING,
+    "il lui faut deux retours pour retrouver sa journée"
+  );
+});
+
+cas("et elle ANNONCE le planning, pas la fiche client", () => {
+  // Une flèche qui nomme une destination et en prend une autre est pire qu'une
+  // flèche muette : c'est ce que `libelleRetourDesCoordonnees` a corrigé.
+  assert.equal(
+    retourDuDevis({ chantierId: CHANTIER, clientId: "un-client", de: SON_PLANNING }).libelle,
+    LIBELLE_RETOUR_PLANNING
+  );
+});
+
+cas("VENU D'AILLEURS, sa règle du 31 août ne bouge pas d'un pouce", () => {
+  // C'est la moitié qui compte : la porte du planning est la SEULE qui sait
+  // dire d'où elle vient. Depuis la liste, une notification ou un signet, la
+  // fiche client reste la sortie.
+  for (const de of [undefined, null, "", "/", "https://ailleurs.example", "//ailleurs.example"]) {
+    assert.equal(
+      retourDuDevis({ chantierId: CHANTIER, clientId: null, de }).href,
+      VERS_LA_FICHE,
+      `« ${String(de)} » a détourné la flèche`
+    );
+  }
+});
+
+cas("ET PAS DAVANTAGE VERS LE PLANNING D'UN AUTRE CHANTIER", () => {
+  // La valeur vient de l'adresse, donc de n'importe qui : elle se compare au
+  // seul chemin qu'elle a le droit de valoir, pour CE chantier.
+  assert.equal(
+    retourDuDevis({
+      chantierId: CHANTIER,
+      clientId: null,
+      de: lienVersLeChantierAuPlanning(AUTRE),
+    }).href,
+    VERS_LA_FICHE
+  );
 });
 
 console.log(

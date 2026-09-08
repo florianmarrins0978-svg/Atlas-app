@@ -7,6 +7,27 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-08
+### Le retour du devis ramène au planning quand on en vient
+
+Depuis la feuille du planning, ouvrir un devis pas encore envoyé puis reculer
+déposait sur la fiche client : deux retours pour retrouver sa journée. La
+flèche ramène désormais au planning quand on en vient — et à la fiche client
+partout ailleurs, sa règle du 31 août.
+
+**Ce qui a été RETIRÉ**, et c'est ce qui dit que la racine est touchée : la
+branche à deux destinations de la porte, le libellé rendu séparément de
+l'adresse, et le raccourci du devis parti qui empruntait la flèche d'un autre
+écran. Voir `ARCHITECTURE.md` §296.
+
+**Un contrôle disait l'inverse et a changé de sens** : il exigeait que le devis
+pas encore parti n'emporte aucune provenance. Le garder aurait empêché la
+correction — comme la ligne du 31 août avait empêché celle du 7 septembre.
+
+**Renumérotation :** mes §290, §291 et §292 devenaient des doublons — une
+session voisine avait pris les deux premiers le même jour. Ils passent à §293,
+§294 et §295, et leurs dix-neuf renvois ont été relus un par un (`CLAUDE.md`
+§6 B : jamais de `sed` à l'aveugle, les renvois du voisin portent les mêmes
+numéros).
 
 ### La porte en plein air est codée — l'écran d'accueil et les seize questions
 
@@ -145,7 +166,7 @@ d'un salarié, et un chantier qu'on ne peut plus doter pour un congé d'un jour.
 **CE QUI SE RELÂCHE, ET C'EST VOULU.** Les règles du 7 et du 8 septembre
 interdisaient faute de pouvoir exprimer : refus de cocher dès un jour
 d'absence, retrait du chantier entier à la pose. C les rend inutiles — on ne
-refuse plus que si la personne n'est là aucun jour. Voir `ARCHITECTURE.md` §292.
+refuse plus que si la personne n'est là aucun jour. Voir `ARCHITECTURE.md` §295.
 
 **Une correction à mon propre chiffrage :** j'avais annoncé deux migrations. La
 seconde suffit — l'exception se déduit des congés, elle ne se saisit pas.
@@ -169,7 +190,7 @@ ne porte aucun jour. Une coche vaut pour le chantier entier, donc l'application
 ne peut pas dire « Julien le 11 mais pas le 10 ». Conséquence à connaître : sur
 un chantier de deux jours dont un seul tombe sur un congé, la personne devient
 inaffectable sur ce chantier. Corriger cela demande une migration et change son
-geste — `ARCHITECTURE.md` §291, question dans `TODO.md`.
+geste — `ARCHITECTURE.md` §294, question dans `TODO.md`.
 
 ### On ne coche plus quelqu'un qui n'est pas là
 
@@ -188,7 +209,7 @@ qu'il a photographié.
 **Un arbitrage à connaître :** sur un chantier de deux jours dont UN SEUL tombe
 sur le congé, la coche est refusée — une coche vaut pour le chantier entier, et
 l'accepter annoncerait la personne un jour où elle n'y est pas. Voir
-`ARCHITECTURE.md` §290.
+`ARCHITECTURE.md` §293.
 
 ### Les pages que voit son client, et l'IBAN qu'elles portaient
 

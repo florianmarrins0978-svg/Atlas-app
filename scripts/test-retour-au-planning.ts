@@ -14,6 +14,7 @@ import {
   retourDesCoordonnees,
   apresLesCoordonnees,
   coordonneesDepuisLeDevis,
+  retourDuDevis,
 } from "../src/lib/retour-du-devis";
 
 // **Revenir au planning quand on en vient** — son signalement du 7 septembre
@@ -76,14 +77,43 @@ cas("le devis parti, la facture et la fiche client savent d'où l'on vient", () 
   }
 });
 
-cas("le devis PAS ENCORE parti ne promet rien que son écran ne tienne", () => {
-  // Sa flèche mène toujours à la fiche client — sa règle du 31 août 2026. Un
-  // paramètre que personne ne relit ferait croire le cas traité.
+// **CE CAS DISAIT L'INVERSE JUSQU'AU 8 SEPTEMBRE 2026**, et c'est lui qui l'a
+// retourné. Il exigeait que le devis pas encore parti n'emporte AUCUNE
+// provenance : sa flèche menait alors sans condition à la fiche client, et un
+// paramètre que personne ne relit aurait fait croire le cas traité.
+//
+// Capture à l'appui, il a vu ce que cela coûtait — deux retours pour retrouver
+// sa journée — et tranché : *« oui fais la 1 »*. L'écran relit désormais ce
+// paramètre (`retour-du-devis.ts`), donc la porte le porte. Garder l'ancienne
+// exigence aurait empêché la correction, exactement comme la ligne du 31 août
+// avait empêché celle du 7 septembre.
+cas("le devis PAS ENCORE parti sait d'où l'on vient, lui aussi", () => {
   const devis = portesDuPlanning(
     { id: ID, datePlanifiee: "2026-09-11", termineAt: null, factureEnvoyeeAt: null },
     AUJ
   ).find((p) => p.cle === "devis")!;
-  assert.equal(devis.href, `/chantiers/${ID}/devis-complet`);
+  assert.equal(devis.href.split("?")[0], `/chantiers/${ID}/devis-complet`);
+  assert.equal(
+    provenanceDuPlanning(ID, parametreDe(devis.href)),
+    PLANNING,
+    "il lui faudrait deux retours pour retrouver sa journée"
+  );
+});
+
+// **La promesse doit être TENUE, et c'est l'autre moitié du cas ci-dessus.**
+// Une porte qui écrit une provenance devant un écran qui ne la relit pas est
+// pire qu'une porte muette : la session suivante croirait le cas traité. On
+// déroule donc le chemin en entier — l'adresse que la porte donne, puis la
+// flèche que l'écran en tire.
+cas("et l'écran du devis la RELIT — la porte ne promet pas dans le vide", () => {
+  const devis = portesDuPlanning(
+    { id: ID, datePlanifiee: "2026-09-11", termineAt: null, factureEnvoyeeAt: null },
+    AUJ
+  ).find((p) => p.cle === "devis")!;
+  assert.equal(
+    retourDuDevis({ chantierId: ID, clientId: "un-client", de: parametreDe(devis.href) }).href,
+    PLANNING
+  );
 });
 
 cas("le chemin d'une porte reste celui d'avant : seule la question change", () => {

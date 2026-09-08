@@ -275,7 +275,7 @@ export async function noterAbsenceEquipe(
     //
     // La version d'hier retirait dès qu'un jour du chantier tombait sur le
     // congé : elle vidait un chantier de deux jours pour une absence d'un
-    // seul, et le §290 empêchait ensuite de recocher. C'était un
+    // seul, et le §293 empêchait ensuite de recocher. C'était un
     // contournement du modèle, qui ne savait pas dire « Julien vendredi mais
     // pas jeudi ».
     //

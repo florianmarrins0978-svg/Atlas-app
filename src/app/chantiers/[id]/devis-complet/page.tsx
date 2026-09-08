@@ -16,6 +16,8 @@ import { unLienExistePourLeDevis } from "@/server/repositories/envois-devis";
 import { leconsComparables } from "@/server/repositories/lecons-prix";
 import { rappelDePrix } from "@/lib/lecons-prix";
 import DevisCompletClient from "./DevisCompletClient";
+import { PARAM_PROVENANCE } from "@/lib/retour-au-planning";
+import { retourDuDevis } from "@/lib/retour-du-devis";
 import PreparationDictee from "./PreparationDictee";
 
 // **Une page où il n'y a que le devis.**
@@ -44,8 +46,15 @@ export const dynamic = "force-dynamic";
 // imprimée serait un engagement faux.
 const VALIDITE = "30 jours";
 
-export default async function DevisCompletPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function DevisCompletPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { id } = await params;
+  const de = (await searchParams)[PARAM_PROVENANCE];
 
   const ctx = await getCurrentCtx();
   const chantier = await getChantier(ctx, id);
@@ -99,6 +108,13 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
     if (rappel) rappels[ligne.id] = { prix: rappel.prix, phrase: rappel.phrase };
   }
 
+  // **D'où il vient, et donc où le ramener** — sa demande du 8 septembre 2026.
+  // Sans provenance, rien ne bouge : c'est la fiche client, comme depuis le
+  // 31 août. La flèche se décide ICI et non dans l'écran, parce qu'un écran ne
+  // décide de rien (`CLAUDE.md` §3) — et parce que son libellé dépend du client,
+  // qui vient d'être lu.
+  const retour = retourDuDevis({ chantierId: id, clientId: chantier.clientId ?? null, de });
+
   // Le pourquoi vit dans `originePublique` — c'était « même code que l'écran du
   // devis parti », et c'est désormais LE même code.
   const origine = originePublique(await headers());
@@ -137,6 +153,7 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
           iban: entreprise?.iban ?? "",
         }}
         clientId={chantier.clientId ?? null}
+        retour={retour}
         client={{
           nom: client?.nom ?? "",
           civilite: client?.civilite ?? null,

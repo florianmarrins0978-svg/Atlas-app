@@ -25187,7 +25187,7 @@ son refus et son cadre de rétractation, et le vert des TEXTES sur son bouton
 d'acceptation au lieu du vert des BOUTONS tranché le 3 septembre. Cinq semaines
 d'identité manquée, faute d'être passée par les jetons.
 
-## §290. Une absence connue d'un côté de l'écran, ignorée de l'autre
+## §293. Une absence connue d'un côté de l'écran, ignorée de l'autre
 
 **Son signalement du 7 septembre 2026, capture à l'appui :** *« j'ai mis Julien
 en congé, la feuille le dit aussi, or je peux quand même sélectionner Julien ce
@@ -25260,7 +25260,7 @@ confrontées à la version d'avant et rougissent sur le cas exact de sa capture.
 **Et l'écran a été REGARDÉ**, pas seulement mesuré : Julien pâle et non
 cliquable, Antoine intact, sur la carte du jeudi 10 — la journée de sa capture.
 
-## §291. « Pas de pansement » — fermer la porte par les DEUX bouts
+## §294. « Pas de pansement » — fermer la porte par les DEUX bouts
 
 **Sa consigne du 8 septembre 2026, devant le §286 :** *« Pas de pansement,
 corrige le problème à la racine ! »* Il avait raison, et voici ce que le §286
@@ -25327,7 +25327,7 @@ existante) et change son geste : il cocherait par journée, plus par chantier.
 données, et un geste qui change se dessine d'abord (§3 bis). La question est
 posée dans `TODO.md`.
 
-## §292. Le contournement tombe avec la limite qu'il contournait
+## §295. Le contournement tombe avec la limite qu'il contournait
 
 **Ses deux choix du 8 septembre 2026, sur maquette** (`appli/qui-travaille-quel-jour.html`) :
 **C** pour qui travaille quel jour, **D2** pour le congé d'une demi-journée.
@@ -25423,7 +25423,86 @@ patron enverrait quelqu'un d'autre pour rien.
 
 ---
 
-## §293. LA PORTE EN PLEIN AIR — l'écran d'avant le compte, et les seize questions
+## §296. La flèche du devis se souvient d'où l'on vient
+
+**Sa demande du 8 septembre 2026**, après avoir vu les trois captures : depuis
+le planning, ouvrir un devis PAS ENCORE ENVOYÉ puis reculer le déposait sur la
+fiche client — il lui fallait un second retour pour retrouver sa journée.
+*« Oui fais la 1 »*, entre laisser en l'état et faire que le devis se souvienne.
+
+### CE N'EST PAS REVENIR SUR SA RÈGLE DU 31 AOÛT
+
+Le 31 août il avait tranché : *« je veux tout le temps revenir à cette page et
+seulement celle-là ! La page fiche client »*. Ce jour-là il corrigeait une
+flèche qui le déposait sur la fiche du CHANTIER, un écran qui ne lui proposait
+rien (§229).
+
+La fiche client reste la sortie **partout où l'on n'a pas de provenance** :
+depuis la liste, depuis une notification, depuis un signet. Ce qui change,
+c'est la seule porte qui sait dire d'où elle vient.
+
+| D'où l'on ouvre le devis | Où la flèche mène |
+|---|---|
+| la liste, une notification, un signet | la fiche client — inchangé |
+| **la feuille du planning** | **le planning, sur la journée du chantier** |
+
+### LE DÉFAUT VENAIT D'UN PARAGRAPHE QUI SE CROYAIT PRUDENT
+
+`portes-du-planning.ts` portait, écrit noir sur blanc, que **seul `/export`**
+emportait la provenance et que c'était délibéré : la flèche de `/devis-complet`
+menant sans condition à la fiche client, lui passer un paramètre que personne
+ne relit aurait écrit dans l'adresse une promesse que l'écran ne tient pas.
+
+Le raisonnement était juste, et sa conclusion fausse d'un cran : ce qu'il
+fallait, ce n'était pas retirer le paramètre — c'était **le faire relire**.
+Écrit ainsi, il annonçait le cas traité, et la session suivante l'aurait cru.
+
+### CE QUI A ÉTÉ RETIRÉ, ET C'EST LE SIGNE QUE LA RACINE EST TOUCHÉE
+
+Trois choses ont **disparu** plutôt que de s'ajouter (`CLAUDE.md` §4 quater) :
+
+| Ce qui est parti | Pourquoi |
+|---|---|
+| la branche à deux destinations dans `portesDuPlanning` | une seule adresse, marquée d'où l'on vient, quel que soit l'état du devis |
+| `libelleRetourDuDevis` comme libellé de la FLÈCHE | l'adresse et le mot rendus ensemble : deux fonctions qui doivent changer d'avis ensemble ne le font qu'à moitié — la fiche client l'a payé le 7 septembre |
+| `retourDuDevis` dans l'écran du devis parti | ce raccourci ne recule pas, il MÈNE à la fiche client ; emprunter la flèche d'un autre écran l'aurait fait changer de destination aujourd'hui |
+
+`retourDuDevis` rend désormais `{ href, libelle }` et s'appuie sur
+`retourDepuisLePlanning` — la mécanique qui sert déjà `/export`, la facture et
+la fiche client. En écrire une seconde aurait donné deux façons de relire la
+même adresse (`CLAUDE.md` §3).
+
+### LA VALIDATION NE SE RELÂCHE PAS
+
+La provenance vient de l'adresse, donc de n'importe qui. Elle se compare
+**par égalité** au seul chemin qu'elle a le droit de valoir — le planning ouvert
+sur CE chantier —, jamais par motif. `?de=https://ailleurs.example` ou le
+planning d'un autre chantier retombent sur la fiche client.
+
+### DEUX CONTRÔLES, ET LA PORTE NE PROMET PLUS DANS LE VIDE
+
+Le défaut se logeait entre les deux moitiés : une porte qui écrit une provenance
+devant un écran qui ne la relit pas. Un cas de `test-retour-au-planning.ts`
+déroule donc le chemin **en entier** — l'adresse que la porte donne, puis la
+flèche que l'écran en tire. Les deux moitiés ont été confrontées à la version
+d'avant, séparément, et chacune rougit.
+
+**Un cas a changé de sens**, comme celui du 7 septembre avant lui : il exigeait
+que le devis pas encore parti n'emporte AUCUNE provenance. Le garder aurait
+empêché la correction.
+
+### CE QUI RESTE OUVERT
+
+Le chemin **planning → devis → fiche client** dépose encore sur la liste au
+retour, pas sur le planning : la fiche client lit alors le devis comme
+provenance, et une adresse ne porte qu'un cran de mémoire. Sa règle du
+7 septembre veut de toute façon que cette flèche-là SORTE plutôt qu'elle ne
+remonte (`retourDesCoordonnees`), donc rien n'est cassé — mais le jour où il le
+signalera, c'est une chaîne de provenances qu'il faudra, pas un cas de plus.
+
+---
+
+## §297. LA PORTE EN PLEIN AIR — l'écran d'avant le compte, et les seize questions
 
 *Codé le 8 septembre 2026, d'après `appli/la-porte-en-plein-air.html`, écrans 1
 et 2, qu'il a retenus : « c'était la deuxième maquette, la porte en plein air ».*
