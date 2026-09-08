@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La fiche du salarié — lot 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    LA FICHE DU SALARIÉ — lot 2, 8 septembre 2026.
+
+    Ses deux demandes : *« la fiche d'intervention doit se rattacher aux infos
+    du client sur le planning pour que le salarié puisse la voir »*, et *« il
+    faut aussi créer une feuille de preuve de fin de chantier que le salarié
+    remplira ou non — ça sera au patron de décider — mais sur cette feuille il
+    marquera ce qu'ils ont fait sur le chantier avec photo à l'appui »*.
+
+    `CLAUDE.md` §3 bis : RIEN N'EST CODÉ dans `src/`.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI COMMANDE TOUT LE RESTE, ET QUI NE SE NÉGOCIE PAS.
+
+    · **AUCUN MONTANT, NULLE PART.** Pas dans la page, pas dans un PDF, pas
+      dans une réponse d'API (`docs/QUESTIONS.md` §10). C'est la seule règle du
+      modèle des rôles qui n'a jamais bougé ;
+    · **le planning est sa SEULE porte.** `OUVERT_AU_SALARIE` ne contient que
+      `/planning`, ses propres réglages et les documents légaux ;
+      `/chantiers/…` lui est fermé d'office, par liste blanche
+      (`src/lib/acces-roles.ts`). Lui inventer un autre chemin obligerait à
+      ouvrir cette liste, et un écran neuf ajouté demain lui serait alors ouvert
+      en silence ;
+    · **son écriture est ÉTROITE** — décision B du patron, 8 septembre :
+      photos et « c'est fini » sur les chantiers de SA journée, rien d'autre.
+      C'est la première brèche dans le modèle figé le 30 août, et sa borne est
+      ce qui la rend acceptable ;
+    · **il porte des gants, l'écran est sale, il a une main.** Poser une photo
+      doit être UN appui.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EXISTE DÉJÀ, ET QU'ON NE RÉÉCRIT PAS.
+
+    · la **feuille de chantier sans montants** (`src/server/pdf/fiche-chantier-pdf.ts`) :
+      client, adresse, créneau, prestations, observations. Aucun total, aucune
+      TVA — le typage lui-même les refuse ;
+    · la **pellicule** (`src/app/chantiers/[id]/Pellicule.tsx`) : un seul champ
+      de fichier, sans `capture`, qui ouvre le menu à trois entrées de l'iPhone ;
+    · la **carte du planning**, qui porte déjà nom, client, adresse, téléphone,
+      créneau et pense-bête.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST DESSINÉ, ET NON RELEVÉ.
+
+    Les noms, les heures et les prestations sont inventés pour la démonstration.
+    Les vignettes de photos sont des marques, pas des images.
+
+    MESURÉ POUR SON TÉLÉPHONE : 390 × 664.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    /* Recopiés de `src/lib/chartes.ts`, lus en jouant `charte("origine")`. */
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12); --alerte:#9C3B2E;
+  }
+  body.nuit{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47;
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12); --alerte:#e08b7d;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);
+       -webkit-text-size-adjust:100%;padding:0 0 70px}
+  ::selection{background:rgba(138,101,40,.22)}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+
+  .mot{max-width:560px;margin:30px auto 0;padding:17px 20px;background:var(--etabli-carte);
+       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
+       font-size:14px;line-height:1.62;color:var(--etabli-doux)}
+  .mot b{color:var(--etabli-encre)}
+  .mot + .mot{margin-top:11px}
+
+  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
+         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
+  .etats .quoi{max-width:1000px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+               letter-spacing:.2em;text-transform:uppercase;color:var(--etabli-gris)}
+  .etats .rangee{max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
+                color:var(--etabli-doux);border-radius:999px;padding:10px 15px;
+                font:400 13px/1 var(--sans);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .etats button:hover{border-color:var(--etabli-gris)}
+  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+  .etats .filet{width:1px;height:26px;background:var(--etabli-trait);margin:0 4px}
+
+  .partie{max-width:1000px;margin:46px auto 0;padding:0 20px}
+  .partie h2{margin:0;font:400 28px/1.12 var(--serif);letter-spacing:-.012em}
+  .partie p{margin:10px 0 0;font-size:14.5px;line-height:1.62;color:var(--etabli-doux);max-width:64ch}
+  .partie p b{color:var(--etabli-encre)}
+
+  .planches{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;
+            max-width:1360px;margin:26px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.25 var(--serif)}
+  .planche .nom .tenu{display:inline-block;margin-left:8px;font:600 9px/1 var(--sans);
+                      letter-spacing:.18em;text-transform:uppercase;color:var(--etabli-or);
+                      vertical-align:3px}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--etabli-doux);min-height:44px}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
+       background:var(--fond);color:var(--encre);box-shadow:0 16px 44px rgba(20,18,14,.22)}
+  .ecran{position:absolute;inset:0;display:flex;flex-direction:column;padding:22px 0 0}
+
+  .entete{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 24px}
+  .entete h1{margin:0;font:400 26px/1.06 var(--serif)}
+  .rond{width:38px;height:38px;border-radius:999px;display:grid;place-items:center;
+        background:var(--tuile);color:var(--doux);flex:0 0 auto}
+  .rond.vide{background:transparent}
+
+  .corps{flex:1;overflow:hidden;padding:18px 24px 0}
+  .etiq{display:block;font:600 10.5px/1.35 var(--sans);letter-spacing:.16em;
+        text-transform:uppercase;color:var(--gris)}
+
+  /* ── La carte d'un chantier au planning ──────────────────────────── */
+  .jour{font:600 10.5px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+  .carte{margin-top:10px;background:var(--plage);border-radius:14px;padding:15px 16px;
+         box-shadow:inset 0 0 0 1px var(--trait)}
+  .carte .qui{font:400 19px/1.25 var(--serif)}
+  .carte .ou{margin-top:4px;font-size:13.5px;line-height:1.5;color:var(--doux)}
+  .carte .quand{margin-top:7px;font-size:12.5px;color:var(--gris)}
+  .porte{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
+         margin-top:13px;border:0;border-radius:999px;background:var(--plein);color:var(--surplein);
+         height:54px;padding:0 20px;font:400 16px/1 var(--serif);cursor:pointer;
+         -webkit-tap-highlight-color:transparent;text-align:left}
+  .porte:active{transform:scale(.99)}
+  .porte .compte{font:500 12px/1 var(--sans);opacity:.82}
+
+  /* Quarante-quatre pixels de haut : c est une cible qu on vise avec des gants,
+     debout, devant un portail. */
+  .appeler{display:inline-flex;align-items:center;gap:8px;margin-top:9px;height:44px;
+           padding:0 15px;border-radius:999px;text-decoration:none;font:500 15px/1 var(--sans);
+           color:var(--orTexte);box-shadow:inset 0 0 0 1px var(--orTexte);
+           -webkit-tap-highlight-color:transparent}
+
+  /* ── Ce qu'il y a à faire, et ce qu'il coche ─────────────────────── */
+  .tache{display:flex;align-items:center;gap:13px;width:100%;border:0;background:transparent;
+         padding:14px 0;border-bottom:1px solid var(--trait);text-align:left;cursor:pointer;
+         -webkit-tap-highlight-color:transparent;color:inherit}
+  /* Vingt-huit pixels, et la ligne entière est la cible : on vise mal avec des
+     gants, sur un écran sale, à contre-jour. */
+  .tache .boite{width:28px;height:28px;flex:0 0 auto;border-radius:8px;display:grid;place-items:center;
+                background:var(--plage);box-shadow:inset 0 0 0 1.5px var(--trait);color:transparent}
+  .tache[aria-pressed="true"] .boite{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .tache .quoi{font-size:15.5px;line-height:1.4;min-width:0;flex:1}
+  .tache[aria-pressed="true"] .quoi{color:var(--gris)}
+
+  /* ── Les photos ──────────────────────────────────────────────────── */
+  .pellicule{display:flex;gap:9px;margin-top:7px;flex-wrap:wrap}
+  .vignette{width:64px;height:64px;border-radius:12px;background:var(--tuile);
+            box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)}
+  .vignette.plus{background:var(--plage);color:var(--orTexte);cursor:pointer}
+
+  /* ── Le geste de fin ─────────────────────────────────────────────── */
+  .fini{margin:auto 0 0;padding:14px 24px 22px}
+  .fini button{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;
+               border:0;border-radius:999px;background:var(--plein);color:var(--surplein);
+               height:58px;font:400 18px/1 var(--serif);cursor:pointer}
+  .fini button:disabled{opacity:.45;cursor:not-allowed}
+  .fini button:active:not(:disabled){transform:scale(.99)}
+  /* **Ce qui manque se dit AVANT l'appui**, jamais après : un refus qui n'arrive
+     qu'au moment du geste se lit comme une panne. */
+  .manque{margin:9px 0 0;text-align:center;font-size:13px;line-height:1.45;color:var(--gris)}
+
+  .signe{display:flex;align-items:center;gap:10px;background:var(--plage);border-radius:13px;
+         padding:13px 15px;box-shadow:inset 0 0 0 1px var(--trait)}
+  .signe .sceau{width:30px;height:30px;border-radius:999px;flex:0 0 auto;display:grid;
+                place-items:center;background:var(--tuile);color:var(--orTexte)}
+  .signe .fort{display:block;font:400 16px/1.3 var(--serif)}
+  .signe .sous{display:block;margin-top:3px;font-size:12.5px;color:var(--gris)}
+
+  /* ── L'écran du patron : le réglage ──────────────────────────────── */
+  .reglage{display:flex;align-items:center;justify-content:space-between;gap:14px;
+           padding:16px 0;border-bottom:1px solid var(--trait)}
+  .reglage .quoi{min-width:0;flex:1}
+  .reglage .titre{display:block;font-size:15.5px;line-height:1.35}
+  .reglage .dit{display:block;margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--gris)}
+  .bascule{width:52px;height:31px;flex:0 0 auto;border:0;border-radius:999px;position:relative;
+           background:var(--tuile);box-shadow:inset 0 0 0 1px var(--trait);cursor:pointer;
+           transition:background .2s cubic-bezier(.22,.9,.3,1)}
+  .bascule[aria-pressed="true"]{background:var(--plein);box-shadow:none}
+  .bascule i{position:absolute;top:3px;left:3px;width:25px;height:25px;border-radius:999px;
+             background:var(--plage);box-shadow:0 1px 3px rgba(20,18,14,.28);
+             transition:transform .2s cubic-bezier(.22,.9,.3,1)}
+  .bascule[aria-pressed="true"] i{transform:translateX(21px)}
+
+  .barre{display:flex;align-items:center;justify-content:space-around;height:62px;
+         background:var(--plage);box-shadow:inset 0 1px 0 var(--trait)}
+  .barre i{display:flex;flex-direction:column;align-items:center;gap:4px;
+           font:500 9.5px/1 var(--sans);font-style:normal;color:var(--gris)}
+  .barre i.actif{color:var(--encre)}
+
+  @media (max-width:900px){ .planche{width:100%} .tel{width:100%} }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Maquette.</b> Rien n'est codé. <b>Touchez les cases et le « + »</b> des
+  écrans, et <b>« Preuve demandée »</b> en haut pour voir ce que votre réglage
+  change.
+</div>
+
+<div class="mot">
+  <b>Ce que le salarié voit, et rien d'autre :</b> le planning. C'est sa seule
+  porte — <b>aucun montant ne sort du serveur pour lui</b>, ni dans la page, ni
+  dans un PDF. Ces écrans ne portent donc pas un euro.
+</div>
+<div class="mot">
+  <b>Ce que vous lui ouvrez, et c'est nouveau :</b> déposer des photos et dire
+  « c'est fini », sur les chantiers de <b>sa</b> journée. Rien de plus.
+  <b>Son « c'est fini » ne facture rien</b> — c'est vous qui facturez, et c'est
+  ce que vous avez tranché.
+</div>
+
+<div class="etats" role="group" aria-label="Ce qu'on peut jouer">
+  <p class="quoi">Votre réglage</p>
+  <div class="rangee">
+    <button type="button" id="preuve" aria-pressed="true">Preuve demandée</button>
+    <span class="filet" aria-hidden="true"></span>
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<!-- **LA JOURNÉE DESSINÉE ICI ÉTAIT FAUSSE, ET ELLE A ÉTÉ RETIRÉE.**
+     Sa remarque du 8 septembre 2026 : *« ta reconstitution n  est pas réelle »*.
+     Elle l’était : le vrai planning est un calendrier du mois suivi d  une
+     section « Planifiés », pas une liste de chantiers. La vraie page,
+     photographiée, et l’endroit exact où « Ma fiche » se pose sont sur
+     . -->
+<div class="mot" style="margin-top:34px">
+  <b>La journée que j’avais dessinée ici était fausse</b>, et je l’ai retirée.
+  Votre vrai planning est un calendrier du mois, suivi de « Planifiés ». La
+  <b>photo de votre page</b> et l’endroit exact où « Ma fiche » se pose sont sur
+  la planche suivante :
+  <a href="ma-fiche-sur-le-planning.html" style="color:var(--etabli-or)">Ma fiche sur le planning</a>.
+</div>
+
+<!-- ══════════════════ LA FICHE ══════════════════════════════════════ -->
+<div class="partie">
+  <h2>Sa fiche, deux façons</h2>
+  <p>Toutes deux portent ce qu'il y a à faire, les photos et le geste de fin.
+  La différence est <b>où se remplit la preuve</b> : sur la même page, ou sur une
+  feuille qui s'ouvre à la fin.</p>
+</div>
+
+<div class="planches">
+
+  <!-- ── A ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">A. Une seule page<span class="tenu">Ce que je défends</span></p>
+    <p class="idee">Il coche au fur et à mesure, photographie quand il veut,
+      et appuie une fois en partant.</p>
+    <div class="tel"><div class="ecran">
+      <div class="entete">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h1>Bernard Martins</h1>
+        <span class="rond vide" aria-hidden="true"></span>
+      </div>
+      <div class="corps">
+        <p class="ou" style="margin:0;font-size:13.5px;color:var(--doux)">12 rue des Lilas, Saint-Marc</p>
+        <!-- **LE NUMÉRO DU CLIENT, APPELABLE.** Il est devant un portail fermé,
+             le client est au travail : sans ce lien il ressort de l  application,
+             cherche la fiche ailleurs — et il n  y a pas d  ailleurs pour lui,
+             le planning est sa seule porte. Vu sur la capture, pas au code. -->
+        <a href="tel:0679984514" class="appeler">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5.4 2.2 6.8 5 5.4 6.5a8 8 0 0 0 4.1 4.1L11 9.2l2.8 1.4v2.6c0 .6-.5 1-1.1 1A11.6 11.6 0 0 1 2 3.3c0-.6.4-1.1 1-1.1h2.4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          06 79 98 45 14
+        </a>
+
+        <div style="margin-top:20px">
+          <span class="etiq">Ce qu'il y a à faire</span>
+          <div id="taches">
+            <button type="button" class="tache" aria-pressed="false">
+              <span class="boite" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="quoi">Taille de haie, 40 ml</span>
+            </button>
+            <button type="button" class="tache" aria-pressed="false">
+              <span class="boite" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="quoi">Tonte de la pelouse</span>
+            </button>
+            <button type="button" class="tache" aria-pressed="false">
+              <span class="boite" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="quoi">Évacuation des déchets verts</span>
+            </button>
+            <button type="button" class="tache" aria-pressed="false">
+              <span class="boite" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="quoi">Désherbage des massifs</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top:16px">
+          <span class="etiq">Photos</span>
+          <div class="pellicule" id="pellicule">
+            <button type="button" class="vignette plus" aria-label="Ajouter une photo">
+              <svg width="21" height="21" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="fini">
+        <button type="button" id="boutonFini" disabled>
+          <svg width="19" height="19" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          C'est fini
+        </button>
+        <p class="manque" id="manque"></p>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── B ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">B. La feuille à la fin</p>
+    <p class="idee">La fiche ne montre que le travail. « C'est fini » ouvre une
+      feuille où il écrit ce qu'ils ont fait, et pose les photos.</p>
+    <div class="tel"><div class="ecran">
+      <div class="entete">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h1>Fin de chantier</h1>
+        <span class="rond vide" aria-hidden="true"></span>
+      </div>
+      <div class="corps">
+        <div class="signe">
+          <span class="sceau" aria-hidden="true">
+            <svg width="15" height="18" viewBox="0 0 14 18" fill="none"><circle cx="7" cy="5" r="3.2" stroke="currentColor" stroke-width="1.5"/><path d="M1.4 16.6a5.6 5.6 0 0 1 11.2 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          <span>
+            <span class="fort">Julien</span>
+            <span class="sous">Mardi 8 septembre &middot; 16 h 40</span>
+          </span>
+        </div>
+
+        <div style="margin-top:16px">
+          <span class="etiq">Ce qu'on a fait</span>
+          <div style="margin-top:6px;border-radius:11px;background:var(--plage);
+                      box-shadow:inset 0 0 0 1px var(--trait);padding:13px 15px;
+                      min-height:96px;font-size:15px;line-height:1.5;color:var(--gris)">
+            Haie taillée, tonte faite, déchets évacués. Massif du fond laissé —
+            trop humide.
+          </div>
+        </div>
+
+        <div style="margin-top:15px">
+          <span class="etiq">Photos à l'appui</span>
+          <div class="pellicule">
+            <span class="vignette">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.5"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="vignette">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.5"/><path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </span>
+            <button type="button" class="vignette plus" aria-label="Ajouter une photo">
+              <svg width="21" height="21" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="fini">
+        <button type="button">
+          <svg width="19" height="19" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Envoyer au patron
+        </button>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ── C ─────────────────────────────────────────────────────────── -->
+  <div class="planche">
+    <p class="nom">C. Votre réglage</p>
+    <p class="idee">C'est vous qui décidez si la preuve est demandée. Éteint,
+      « C'est fini » se pose en un appui, sans rien exiger.</p>
+    <div class="tel"><div class="ecran" style="padding-bottom:0">
+      <div class="entete">
+        <span class="rond" aria-hidden="true">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h1>Mon équipe</h1>
+        <span class="rond vide" aria-hidden="true"></span>
+      </div>
+      <div class="corps">
+        <span class="etiq">Fin de chantier</span>
+        <div class="reglage">
+          <span class="quoi">
+            <span class="titre">Demander une preuve</span>
+            <span class="dit">Photos et ce qui a été fait, avant « C'est fini »</span>
+          </span>
+          <button type="button" class="bascule" id="basculePreuve" aria-pressed="true" aria-label="Demander une preuve de fin de chantier">
+            <i aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="reglage">
+          <span class="quoi">
+            <span class="titre">Au moins une photo</span>
+            <span class="dit" data-r="ditPhoto">Sinon il ne peut pas terminer</span>
+          </span>
+          <button type="button" class="bascule" id="basculePhoto" aria-pressed="true" aria-label="Exiger au moins une photo">
+            <i aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div style="margin-top:22px">
+          <span class="etiq">Aujourd'hui</span>
+          <div class="signe" style="margin-top:8px">
+            <span class="sceau" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span>
+              <span class="fort">Martins &middot; terminé</span>
+              <span class="sous">Julien &middot; 16 h 40 &middot; 3 photos</span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="barre" aria-hidden="true">
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3 8.6 10 3l7 5.6V17H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Chantiers</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><rect x="3" y="4.5" width="14" height="12.5" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Planning</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 10.2 9 12.6l4.4-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Terminés</i>
+        <i><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M10 17c0-6 2.6-9.6 7-10.4C17 12 14 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 17C10 11 7.4 7.4 3 6.6 3 12 6 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Paysage</i>
+        <i class="actif"><svg width="19" height="19" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4 4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Réglages</i>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<div class="mot" style="margin-top:42px">
+  <b>Pourquoi je défends la A.</b> Une seule page, un seul endroit : il coche
+  quand il finit une tâche, photographie quand il a les mains libres, et appuie
+  une fois en repartant. La B lui demande de <b>réécrire</b> à la fin ce qu'il
+  vient de faire — debout, avec des gants, souvent sans réseau.
+</div>
+<div class="mot">
+  <b>Ce que la B a de mieux, et qu'il faut savoir :</b> une phrase libre dit ce
+  qu'aucune case ne dira — « massif laissé, trop humide ». <b>La A peut la
+  porter aussi</b> : une case à écrire sous les photos, facultative. C'est ce
+  que je propose si vous prenez la A.
+</div>
+<div class="mot">
+  <b>Une chose que je ne décide pas à votre place :</b> exiger une photo peut
+  bloquer un salarié dont le téléphone n'a plus de batterie à 18 h. Le réglage
+  existe pour ça — mais si vous l'allumez, il faut accepter qu'un chantier
+  reste ouvert ce soir-là.
+</div>
+
+<script>
+/*
+  DEUX RÉGLAGES, ET C'EST LE PATRON QUI TRANCHE.
+
+  Sa demande du 8 septembre 2026 : *« une feuille de preuve de fin de chantier
+  que le salarié remplira ou non — ça sera au patron de décider »*. L'écran C
+  porte donc l'interrupteur, et les écrans A et B lui obéissent : c'est le seul
+  moyen de voir ce que le réglage coûte à celui qui est sur le chantier.
+*/
+const qq = (s) => Array.from(document.querySelectorAll(s));
+const par = (n) => qq('[data-r="' + n + '"]');
+
+const etat = { preuve: true, photoExigee: true };
+
+const taches = qq(".tache");
+const boutonFini = document.getElementById("boutonFini");
+const manque = document.getElementById("manque");
+const pellicule = document.getElementById("pellicule");
+
+/** Combien de photos sont posées sur la fiche A. */
+function photosPosees() {
+  return pellicule.querySelectorAll(".vignette:not(.plus)").length;
+}
+
+function redire() {
+  const cochees = taches.filter((t) => t.getAttribute("aria-pressed") === "true").length;
+  const restant = taches.length - cochees;
+
+  par("comptePorte").forEach((e) => {
+    e.textContent = restant === 0 ? "tout est fait" : restant + " à faire";
+  });
+
+  // **Ce qui manque se dit AVANT l'appui.** Un bouton actif qui refuse au
+  // moment du geste se lit comme une panne, et c'est ce que le dépôt a déjà
+  // payé : un refus muet coûte plus cher qu'aucun refus.
+  const raisons = [];
+  if (etat.preuve && cochees === 0) raisons.push("cochez ce que vous avez fait");
+  if (etat.preuve && etat.photoExigee && photosPosees() === 0) raisons.push("ajoutez une photo");
+
+  boutonFini.disabled = raisons.length > 0;
+  manque.textContent = raisons.length === 0 ? "" : raisons.join(" et ");
+}
+
+taches.forEach((t) => {
+  t.addEventListener("click", () => {
+    t.setAttribute("aria-pressed", t.getAttribute("aria-pressed") === "true" ? "false" : "true");
+    redire();
+  });
+});
+
+// Le « + » pose une vignette : c'est ce que fait la pellicule du produit en un
+// appui, et c'est ce qu'il faut pouvoir essayer ici.
+pellicule.querySelector(".plus").addEventListener("click", () => {
+  const v = document.createElement("span");
+  v.className = "vignette";
+  v.innerHTML =
+    '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">' +
+    '<rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.5"/>' +
+    '<path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+  pellicule.insertBefore(v, pellicule.querySelector(".plus"));
+  redire();
+});
+
+function poserPreuve(active) {
+  etat.preuve = active;
+  document.getElementById("preuve").setAttribute("aria-pressed", String(active));
+  document.getElementById("preuve").textContent = active ? "Preuve demandée" : "Preuve non demandée";
+  document.getElementById("basculePreuve").setAttribute("aria-pressed", String(active));
+  // **Un réglage qui ne sert plus se retire, il ne se grise pas** — un réglage
+  // grisé se touche quand même, et son silence se lit comme une panne
+  // (`docs/modele-des-roles.md`, le défaut trouvé sur une capture).
+  document.getElementById("basculePhoto").closest(".reglage").hidden = !active;
+  redire();
+}
+
+document.getElementById("preuve").addEventListener("click", () => poserPreuve(!etat.preuve));
+document.getElementById("basculePreuve").addEventListener("click", () => poserPreuve(!etat.preuve));
+
+document.getElementById("basculePhoto").addEventListener("click", () => {
+  etat.photoExigee = !etat.photoExigee;
+  document.getElementById("basculePhoto").setAttribute("aria-pressed", String(etat.photoExigee));
+  par("ditPhoto").forEach((e) => {
+    e.textContent = etat.photoExigee ? "Sinon il ne peut pas terminer" : "Les photos restent possibles";
+  });
+  redire();
+});
+
+const bouton = document.getElementById("charte");
+bouton.addEventListener("click", () => {
+  const nuit = document.body.classList.toggle("nuit");
+  bouton.setAttribute("aria-pressed", String(nuit));
+  bouton.textContent = nuit ? "Origine" : "Nuit";
+});
+
+redire();
+</script>
+</body>
+</html>

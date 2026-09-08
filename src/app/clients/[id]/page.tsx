@@ -7,6 +7,7 @@ import { retourFicheClient } from "@/lib/retour-fiche-client";
 import { jourCourt } from "@/lib/documents-du-client";
 import { numeroLisible } from "@/lib/numero-lisible";
 import RegistresDuDossier from "./RegistresDuDossier";
+import RepartirDeCeClient from "./RepartirDeCeClient";
 import SupprimerCeClient from "./SupprimerCeClient";
 import { apercuSuppressionClient } from "@/server/repositories/donnees-client";
 
@@ -171,6 +172,8 @@ export default async function FicheClientPage({
           )}
         </div>
       )}
+
+      <RepartirDeCeClient clientId={fiche.client.id} dernierChantierId={fiche.derniere?.id ?? null} />
 
       {/* ─── Le dossier : trois registres, un seul ouvert ───────────────────
           Ses trois catégories et son ordre du 20 août au soir — Devis, Facture,

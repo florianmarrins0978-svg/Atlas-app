@@ -9,7 +9,7 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import DicterCoordonnees from "./DicterCoordonnees";
 import { champsARemplir, type CoordonneesDictees } from "@/lib/coordonnees-dictees";
-import { creerChantierAction } from "./actions";
+import { reprendreLesPhotosAction, creerChantierAction } from "./actions";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
 import {
   apresLesCoordonnees,
@@ -121,29 +121,73 @@ export type ChantierRepris = {
   adresseClient: string;
 };
 
+/**
+ * D'OÙ L'ON REPART QUAND ON VIENT DE LA FICHE D'UN CLIENT — 8 septembre 2026.
+ *
+ * *« Il faut la E car si c'est un client déjà enregistré en tant que client on
+ * ne va pas recréer une fiche client ! »*
+ *
+ * **Ce n'est PAS une reprise, et les deux ne se mélangent pas.** Une reprise
+ * rouvre un chantier qui EXISTE, et l'écran y enregistre. Ici le chantier
+ * n'existe pas encore : seul le client est connu. Les confondre ferait
+ * enregistrer sur un chantier qui n'a jamais été créé.
+ */
+export type ClientDeDepart = {
+  clientId: string;
+  nomClient: string;
+  civilite: Civilite | null;
+  telephone: string;
+  email: string;
+  canal: "sms" | "email" | null;
+  adresseClient: string;
+  /** Ce qu'on avait photographié chez lui, sur ses AUTRES chantiers. */
+  anciennesPhotos: { id: string; storageKey: string; chantierNom: string }[];
+};
+
 export default function FormulaireNouveauChantier({
   enFeuille = false,
   onFermer,
   reprise,
+  depuisClient,
 }: {
   enFeuille?: boolean;
   onFermer?: () => void;
   /** Présent : l'écran ENREGISTRE sur ce chantier au lieu d'en créer un. */
   reprise?: ChantierRepris;
+  /** Présent : le client est connu d'avance, ses cases sont déjà posées. */
+  depuisClient?: ClientDeDepart;
 } = {}) {
   const router = useRouter();
-  const [nomClient, setNomClient] = useState(reprise?.nomClient ?? "");
-  const [civilite, setCivilite] = useState<Civilite | null>(reprise?.civilite ?? null);
-  const [telephone, setTelephone] = useState(reprise?.telephone ?? "");
-  const [email, setEmail] = useState(reprise?.email ?? "");
-  const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(reprise?.canal ?? null);
+  // **La reprise l'emporte sur le client de départ**, et les deux n'arrivent
+  // jamais ensemble : on rouvre un chantier, ou on en ouvre un pour quelqu'un.
+  const depart = reprise ?? depuisClient;
+  const [nomClient, setNomClient] = useState(depart?.nomClient ?? "");
+  const [civilite, setCivilite] = useState<Civilite | null>(depart?.civilite ?? null);
+  const [telephone, setTelephone] = useState(depart?.telephone ?? "");
+  const [email, setEmail] = useState(depart?.email ?? "");
+  const [canalChoisi, setCanalChoisi] = useState<"sms" | "email" | null>(depart?.canal ?? null);
   const [adresseChantier, setAdresseChantier] = useState(reprise?.adresseChantier ?? "");
-  const [adresseClient, setAdresseClient] = useState(reprise?.adresseClient ?? "");
+  // **L'adresse du CLIENT sert d'adresse de chantier par défaut quand on vient
+  // de sa fiche** — c'est là qu'on retourne neuf fois sur dix. Elle reste
+  // modifiable : rien n'est enregistré tant qu'il n'a pas validé.
+  const [adresseClient, setAdresseClient] = useState(depart?.adresseClient ?? "");
   // Déjà dépliée quand elle porte quelque chose : la replier cacherait une
   // adresse qu'il a saisie, et il la croirait perdue.
   const [adresseClientVisible, setAdresseClientVisible] = useState(
-    (reprise?.adresseClient ?? "").length > 0
+    (depart?.adresseClient ?? "").length > 0
   );
+  /**
+   * Les photos de la dernière fois qu'il a COCHÉES — sa règle du 8 septembre.
+   *
+   * *« Si ce n'est pas le premier devis les anciennes photos peuvent apparaître
+   * à l'écran mais sans s'inscrire de nouveau, juste pour voir ce qu'on avait
+   * fait la dernière fois. […] Si il valide sans les avoir resélectionnées elles
+   * ne doivent pas apparaître dans la fiche d'intervention pour le salarié.
+   * Seulement si l'utilisateur les coche. »*
+   *
+   * L'ensemble vide est donc l'état NORMAL, pas un oubli.
+   */
+  const [photosReprises, setPhotosReprises] = useState<ReadonlySet<string>>(new Set());
   // **Quel bouton travaille**, et pas seulement « ça travaille ». Les deux
   // capsules sont identiques ; sans cela, « Création… » s'afficherait sur celle
   // qu'il n'a pas touchée, et il croirait s'être trompé de geste.
@@ -238,6 +282,10 @@ export default function FormulaireNouveauChantier({
     if (creationEnCours.current) return creationEnCours.current;
 
     const promesse = creerChantierAction({
+      // **Connu, donc pas cherché.** Venant de sa fiche, on tient
+      // l'identifiant : aucun rapprochement n'est joué, et le chantier ne peut
+      // pas atterrir chez un homonyme parce qu'un nom aurait été retouché.
+      clientId: depuisClient?.clientId,
       nomClient,
       civilite: civilite ?? undefined,
       telephone: numeroEnregistre(telephone),
@@ -322,6 +370,19 @@ export default function FormulaireNouveauChantier({
       const id = chantierCree
         ? await enregistrerSurLeChantier(chantierCree)
         : await assurerChantier();
+
+      // **Les photos cochées rejoignent le dossier À L'ENREGISTREMENT**, pas au
+      // moment où il les touche. Recopier à la volée poserait des fichiers sur
+      // un chantier qu'il peut encore abandonner — et décocher devrait alors
+      // les supprimer, geste que rien ne demande.
+      //
+      // **Une reprise qui échoue ne fait PAS échouer le chantier.** Ce qu'il a
+      // saisi est enregistré ; des photos de rappel qui manquent se recochent,
+      // un chantier perdu se retape.
+      if (photosReprises.size > 0) {
+        const r = await reprendreLesPhotosAction(id, [...photosReprises]);
+        if (!r.ok) setErreur(r.raison);
+      }
       // **UN CHANTIER NEUF VA TOUJOURS AU DEVIS**, et le ternaire qui
       // envoyait vers la fiche du chantier était déjà mort : depuis le
       // 21 août 2026, la création ne porte plus qu'un bouton, et il vaut
@@ -795,6 +856,68 @@ export default function FormulaireNouveauChantier({
               initiales={reprise?.photos ?? []}
             />
           </div>
+
+          {/* ─── CE QU'ON AVAIT FAIT LA DERNIÈRE FOIS — 8 septembre 2026 ─────
+              Sa règle, dans ses mots : *« si ce n'est pas le premier devis les
+              anciennes photos peuvent apparaître à l'écran mais sans s'inscrire
+              de nouveau, juste pour voir ce qu'on avait fait la dernière fois.
+              […] Si il valide sans les avoir resélectionnées elles ne doivent
+              pas apparaître dans la fiche d'intervention pour le salarié. »*
+
+              **Éteintes tant qu'elles ne sont pas cochées, et c'est le sens du
+              geste** : ce ne sont pas les photos de CE chantier. Les afficher
+              pleines les ferait passer pour des pièces du dossier, et le salarié
+              recevrait des images d'un chantier qu'il n'a pas fait.
+
+              **Rien quand il n'y en a pas** — un titre « La dernière fois »
+              au-dessus du vide sur le premier chantier d'un client serait du
+              bruit (`CLAUDE.md` §3). */}
+          {(depuisClient?.anciennesPhotos.length ?? 0) > 0 && (
+            <div role="group" aria-label="Les photos de la dernière fois">
+              <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                La dernière fois
+              </div>
+              <div className="flex flex-wrap gap-[9px]">
+                {depuisClient!.anciennesPhotos.map((photo) => {
+                  const cochee = photosReprises.has(photo.id);
+                  return (
+                    <button
+                      key={photo.id}
+                      type="button"
+                      aria-pressed={cochee}
+                      aria-label={`Reprendre une photo de ${photo.chantierNom}`}
+                      onClick={() =>
+                        setPhotosReprises((avant) => {
+                          const apres = new Set(avant);
+                          if (apres.has(photo.id)) apres.delete(photo.id);
+                          else apres.add(photo.id);
+                          return apres;
+                        })
+                      }
+                      className="relative h-[62px] w-[62px] overflow-hidden rounded-[11px]"
+                      style={{
+                        opacity: cochee ? 1 : 0.42,
+                        // **Le liseré d'or, pas un fond teinté.** Sur les deux
+                        // chartes sombres, un fond pâle poserait un pavé blanc
+                        // au milieu de l'écran ; l'or, lui, tient sur les huit
+                        // (`CLAUDE.md` §3).
+                        boxShadow: cochee
+                          ? `inset 0 0 0 2px ${colors.or}`
+                          : `inset 0 0 0 1px ${colors.line}`,
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`/api/fichiers/${photo.storageKey}`}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* **UN SEUL VISAGE, AUX DEUX VISITES — sa remarque du 5 septembre
               2026** (le détail est sur `aUneNote`, plus haut). Cet écran ne

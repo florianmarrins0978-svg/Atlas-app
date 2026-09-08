@@ -2,8 +2,15 @@
 
 import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { creerChantier } from "@/server/repositories/chantiers";
-import { trouverOuCreerClient, type CanalClient } from "@/server/repositories/clients";
+import { creerChantier, getChantier } from "@/server/repositories/chantiers";
+import { recopierPhotos } from "@/server/repositories/photos";
+import {
+  trouverOuCreerClient,
+  getClient,
+  mettreAJourClient,
+  type CanalClient,
+} from "@/server/repositories/clients";
+import { complementsPourFiche } from "@/lib/rapprochement-client";
 import { nomDuChantier } from "@/lib/nom-chantier";
 import type { Civilite } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
@@ -12,6 +19,19 @@ import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireCoordonneesDictees } from "@/server/ai/services/coordonnees-service";
 
 export type CreerChantierInput = {
+  /**
+   * Le client est DÉJÀ connu — on vient de sa fiche (« Autre chantier »).
+   *
+   * **Aucun rapprochement n'est alors joué, et c'est le point.** `rapprocherClient`
+   * sert à retrouver un client d'après ce qu'on tape ; ici, il n'y a rien à
+   * retrouver. Le faire quand même ferait passer le chantier par une règle de
+   * ressemblance alors qu'on tient l'identifiant : sur quatre Martins, un nom
+   * corrigé à la volée suffirait à ranger le chantier chez le mauvais.
+   *
+   * Ce que le patron tape à l'écran complète malgré tout les cases VIDES de la
+   * fiche, comme ailleurs — il n'écrase jamais ce qu'elle porte déjà.
+   */
+  clientId?: string;
   nomClient?: string;
   /** « Mr » ou « Mme », s'il l'a choisi. Absent : il n'a rien dit, et ce
    *  silence se garde tel quel (migration 0038). */
@@ -32,7 +52,36 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
 
   let clientId: string | undefined;
   const nomClient = data.nomClient?.trim();
-  if (nomClient) {
+
+  // **On vient de SA fiche : il n'y a rien à retrouver.** Le client est relu ici
+  // plutôt que cru sur parole — un identifiant qui voyage est un identifiant
+  // qu'on peut changer en chemin, et la RLS rend indiscernables « effacé » et
+  // « d'une autre entreprise », ce qui est exactement ce qu'on veut.
+  const clientConnu = data.clientId ? await getClient(ctx, data.clientId) : null;
+  if (clientConnu) {
+    clientId = clientConnu.id;
+    // Ce qu'il tape à la volée complète les cases VIDES, il n'écrase rien
+    // (`complementsPourFiche`, même règle que le rapprochement).
+    const complements = complementsPourFiche(
+      {
+        id: clientConnu.id,
+        nom: clientConnu.nom,
+        telephone: clientConnu.telephone,
+        email: clientConnu.email,
+        adresse: clientConnu.adresse,
+        creeLe: clientConnu.createdAt,
+      },
+      {
+        nom: nomClient ?? clientConnu.nom,
+        telephone: data.telephone,
+        email: data.email,
+        adresse: data.adresseClient ?? data.adresseChantier,
+      }
+    );
+    if (Object.keys(complements).length > 0) {
+      await mettreAJourClient(ctx, clientConnu.id, complements);
+    }
+  } else if (nomClient) {
     const telephone = data.telephone?.trim() || undefined;
     const email = data.email?.trim() || undefined;
 
@@ -122,4 +171,41 @@ export async function dicterCoordonneesAction(formData: FormData) {
   const audio = await preparerAudioEntrant(fichier);
   if (!audio.ok) throw new Error(audio.message);
   return lireCoordonneesDictees(audio.octets, audio.mime);
+}
+
+/**
+ * REPRENDRE LES PHOTOS DE LA DERNIÈRE FOIS — sa règle du 8 septembre 2026.
+ *
+ * *« Les anciennes photos peuvent apparaître à l'écran mais sans s'inscrire de
+ * nouveau, juste pour voir ce qu'on avait fait la dernière fois. […] Si il
+ * valide sans les avoir resélectionnées elles ne doivent pas apparaître dans la
+ * fiche d'intervention pour le salarié. Seulement si l'utilisateur les
+ * coche. »*
+ *
+ * **Le fichier est RECOPIÉ, jamais partagé** (`recopierPhotos`) : sans quoi
+ * effacer l'ancienne photo viderait la fiche du salarié, un mois plus tard,
+ * sans que personne fasse le lien.
+ *
+ * **Un refus se rend, il ne se lève pas** (`AGENTS.md`, piège 0 ter) : le
+ * message d'une exception d'action serveur n'arrive jamais jusqu'au patron.
+ */
+export async function reprendreLesPhotosAction(
+  chantierId: string,
+  photoIds: readonly string[]
+): Promise<{ ok: true; reprises: number } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "reprendre des photos");
+
+  // Un plafond, comme partout où le patron peut envoyer plusieurs fichiers
+  // d'un coup : la reprise copie de vrais octets, et une liste forgée à la main
+  // ferait recopier tout le rangement de l'entreprise en une requête.
+  if (photoIds.length > 24) {
+    return { ok: false, raison: "Trop de photos d'un coup. Reprenez-en moins de vingt-quatre." };
+  }
+
+  const chantier = await getChantier(ctx, chantierId);
+  if (!chantier) return { ok: false, raison: "Ce chantier n'existe plus." };
+
+  const creees = await recopierPhotos(ctx, photoIds, chantierId);
+  return { ok: true, reprises: creees.length };
 }
