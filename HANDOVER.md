@@ -10,7 +10,7 @@ sert.
 ---
 ## Dernier lot — LA BATTERIE NE MESURE PLUS À DEUX (8 septembre 2026)
 
-**Décisions :** `ARCHITECTURE.md` §298. **Aucune migration.**
+**Décisions :** `ARCHITECTURE.md` §299. **Aucune migration.**
 
 Elle refuse de démarrer si une autre tourne ou si la précédente a laissé des
 restes, et refuse de rendre un verdict si des fichiers de code ont bougé pendant

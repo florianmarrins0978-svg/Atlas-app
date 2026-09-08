@@ -44,6 +44,22 @@ export type FactureEnAttente = {
   totalHt: string;
   totalTva: string;
   totalTtc: string;
+  /**
+   * **De quoi prévenir son client quand l'IBAN change** (8 septembre 2026).
+   *
+   * Ces six-là voyagent avec la facture plutôt que dans une seconde requête :
+   * l'en-tête de ce fichier le dit déjà — « une seule lecture, une seule
+   * vérité ». Deux lectures qui compteraient chacune de leur côté finiraient
+   * par désigner deux listes de factures différentes sur le même écran.
+   */
+  entrepriseIban: string | null;
+  entrepriseTitulaireCompte: string | null;
+  /** L'IBAN dont ce client a déjà été prévenu, nu (migration 0078). */
+  ibanSignale: string | null;
+  entrepriseNom: string;
+  clientTelephone: string | null;
+  clientEmail: string | null;
+  clientCivilite: string | null;
   /** Ce qui reste à recevoir. */
   reste: string;
   etat: EtatPaiement;
@@ -90,6 +106,14 @@ export async function facturesAvecPaiements(ctx: Ctx): Promise<FactureEnAttente[
           totalHt: factures.totalHt,
           totalTva: factures.totalTva,
           totalTtc: factures.totalTtc,
+          // Ce qui permet de prévenir quand l'IBAN change — voir le type.
+          entrepriseIban: factures.entrepriseIban,
+          entrepriseTitulaireCompte: factures.entrepriseTitulaireCompte,
+          ibanSignale: factures.ibanSignale,
+          entrepriseNom: factures.entrepriseNom,
+          clientTelephone: factures.clientTelephone,
+          clientEmail: factures.clientEmail,
+          clientCivilite: factures.clientCivilite,
         })
         .from(factures)
         .where(eq(factures.statut, "emise"))

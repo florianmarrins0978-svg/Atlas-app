@@ -25587,9 +25587,67 @@ l'iPhone — là où l'appui ferme l'application. D'où `.atlas-bas-sans-barre`.
 valeur entre crochets ressort corrompu de leur analyseur — « safe-area-inset-bottom »
 y devient « safe-area-\b-bottom », et la feuille entière cesse de compiler.
 
+## §298 — Prévenir des factures parties avec l'ancien IBAN
+
+**Tranché par lui le 8 septembre 2026**, maquette à l'appui
+(`appli/changer-d-iban.html`) : *« oui je le veux »*, aux trois endroits.
+
+**Ce que sa question a corrigé.** La première proposition offrait deux
+emplacements « au choix » ; il a demandé : *« si je décide de les relancer plus
+tard, où je dois aller pour retrouver l'écran ? »* La réponse était **nulle
+part** — « Plus tard » était un cul-de-sac. L'écran du premier jour n'est donc
+pas une alternative aux deux autres : **il en a besoin**.
+
+| Où | Ce qu'il y fait |
+|---|---|
+| Réglages → Identité, sous le champ | c'est là que ça VIT, tant qu'il n'a pas prévenu |
+| « En attente de paiement » | une marque par ligne, là où il va déjà voir qui n'a pas payé |
+| l'écran du jour du changement | s'ouvre une fois, ne barre rien : « Plus tard » referme, les deux autres restent |
+
+**Une seule pièce pour les trois** (`src/components/atlas/AlerteAncienIban.tsx`),
+et une seule feuille de message : trois copies auraient fini par écrire trois
+consignes différentes au même client (`CLAUDE.md` §3). Sur l'écran des réglages,
+où deux exemplaires cohabitent, **c'est le parent qui tient la liste** — deux
+états séparés auraient laissé l'un réclamer un client que l'autre venait de
+prévenir.
+
+**CE QU'ON RANGE EST L'IBAN ANNONCÉ, PAS UN DRAPEAU** (migration 0078). Un
+« prévenu » booléen serait resté levé au changement de banque suivant, et ce
+client-là n'aurait jamais su où virer. En rangeant l'IBAN dont on l'a prévenu,
+la question se referme d'elle-même : s'il ne vaut pas celui d'aujourd'hui, il
+reste à prévenir. Rien à remettre à zéro.
+
+**Le signalement est noté quand il OUVRE le message, pas quand le client
+répond.** Atlas ne voit pas partir un SMS : il ouvre la messagerie, et la suite
+appartient à l'artisan. Attendre une preuve qu'on n'aura jamais laisserait
+l'alerte réclamer indéfiniment.
+
+**LE MUR RENCONTRÉ, ET POURQUOI IL AVAIT RAISON.** `trg_facture_immuable`
+(migration 0018) refuse toute écriture sur une facture émise — c'est ce qui
+garantit que le relevé de TVA, qui n'est pas une table mais un calcul sur ces
+factures, ne peut pas diverger. La colonne du signalement s'y est heurtée.
+
+Il s'ouvre d'**une seule colonne** (migration 0079), et la comparaison se fait
+en JSON : `to_jsonb(NEW) - 'iban_signale'` contre `to_jsonb(OLD) - 'iban_signale'`.
+Écrire la liste des colonnes protégées à la main aurait vieilli — celle ajoutée
+demain n'y serait pas, donc silencieusement modifiable sur une facture émise.
+Une suite le fixe (« LE TROU FAIT UNE SEULE COLONNE DE LARGE »).
+
+**Ce qui a été ÉCARTÉ :** une table à part, sur le modèle de `paiements_facture`.
+Elle aurait évité de rouvrir le trigger, au prix d'une table, d'une politique
+d'isolation, de droits et d'une jointure — pour un seul texte que rien ne
+calcule. Le garde-fou ci-dessus rend l'ouverture plus étroite que la table ne
+l'aurait été.
+
+**Et ce qui a été retiré de la maquette, sciemment : « Prévenir les 3 ».** Chaque
+message part dans la messagerie de l'artisan, une conversation à la fois : un
+bouton unique en aurait ouvert UNE et laissé croire que les trois étaient
+parties.
+
+---
 ---
 
-## §298. LA BATTERIE EST UNE MACHINE À UN SEUL OCCUPANT — et elle le vérifie
+## §299. LA BATTERIE EST UNE MACHINE À UN SEUL OCCUPANT — et elle le vérifie
 
 *Posé le 8 septembre 2026, sur sa demande, après une heure perdue devant lui.*
 

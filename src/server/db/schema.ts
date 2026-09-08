@@ -1739,6 +1739,15 @@ export const factures = pgTable(
      */
     entrepriseTitulaireCompte: text("entreprise_titulaire_compte"),
     /**
+     * L'IBAN dont le client a été prévenu pour CETTE facture (migration 0078).
+     *
+     * Rangé **nu**, et c'est ce qui referme la question à chaque changement de
+     * banque : s'il ne vaut pas l'IBAN d'aujourd'hui, il reste à prévenir. Un
+     * simple drapeau resterait levé au second changement, et le client ne
+     * saurait jamais où virer.
+     */
+    ibanSignale: text("iban_signale"),
+    /**
      * Les trois mentions légales, et leur emplacement (migration 0072) —
      * lues sur l'ENTREPRISE à la création de la facture depuis la migration
      * 0076, comme le reste de l'identité de l'émetteur. Nulles pour les

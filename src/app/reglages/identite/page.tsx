@@ -2,6 +2,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getEntreprise } from "@/server/repositories/entreprises";
+import { facturesAvecAncienIban } from "@/server/repositories/factures";
 import { estProprietaire } from "@/server/autorisation";
 import IdentiteClient from "./IdentiteClient";
 import PeriodiciteTvaReglage from "../PeriodiciteTva";
@@ -38,6 +39,10 @@ export default async function IdentitePage() {
   }
 
   const e = await getEntreprise(ctx);
+  // **La liste des factures parties avec l'ancien IBAN**, montée ici : la page
+  // seule lit la base, l'écran n'affiche que ce qu'elle lui donne. Vide dans
+  // l'immense majorité des cas — et rien ne s'affiche alors.
+  const aPrevenir = await facturesAvecAncienIban(ctx);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -64,6 +69,7 @@ export default async function IdentitePage() {
           villeRcs: e?.villeRcs ?? "",
           mentionsLegalesPosition: e?.mentionsLegalesPosition ?? "aucune",
         }}
+        aPrevenir={aPrevenir}
         periodicite={
           <PeriodiciteTvaReglage initiale={e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT} />
         }

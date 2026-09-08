@@ -30,8 +30,16 @@ import {
   entreesDuReleve,
   type Exigibilite,
 } from "../../lib/exigibilite-tva";
-import { exigibiliteDe, facturesAvecPaiements } from "./paiements-facture";
-import { consigneDuLibelle, modalitesDeLaFacture } from "../../lib/modalites-paiement";
+import { exigibiliteDe, facturesAvecPaiements, facturesEnAttente } from "./paiements-facture";
+import {
+  consigneDuLibelle,
+  ibanSansEspace,
+  messageNouvelIban,
+  modalitesDeLaFacture,
+  modalitesDePaiement,
+  porteUnAutreIban,
+} from "../../lib/modalites-paiement";
+import { avecCivilite, type CiviliteChoisie } from "../../lib/civilite";
 
 // Fin de chantier, facture et TVA — docs/AGENT.md §2.3.
 //
@@ -934,4 +942,128 @@ function tauxDeLaFacture(f: { totalHt: string; totalTva: string }): string {
   const ht = new Decimal(f.totalHt || "0");
   if (ht.lessThanOrEqualTo(0)) return "0.00";
   return new Decimal(f.totalTva || "0").dividedBy(ht).times(100).toDecimalPlaces(2).toFixed(2);
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * LES FACTURES PARTIES AVEC UN AUTRE IBAN QUE CELUI D'AUJOURD'HUI.
+ *
+ * **Tranché par lui le 8 septembre 2026**, maquette à l'appui
+ * (`appli/changer-d-iban.html`) : *« oui je le veux »*.
+ *
+ * Depuis la migration 0076, une facture prend l'IBAN de l'entreprise au jour où
+ * elle naît. Celles déjà parties gardent l'ancien — et ce n'est pas un défaut :
+ * leur PDF est le fichier ARCHIVÉ que le client a dans son téléphone, et le
+ * réécrire ferait mentir la page. Reste un risque qui coûte de l'argent : un
+ * virement sur un compte fermé.
+ *
+ * **Trois filtres, et chacun retire un faux positif :**
+ *
+ * | | |
+ * |---|---|
+ * | `facturesEnAttente` | seules celles **émises et non soldées** — une facture déjà payée n'a plus rien à corriger |
+ * | `porteUnAutreIban` | l'IBAN figé diffère de celui d'aujourd'hui, comparé NU : une espace de saisie ne doit pas faire prévenir tous ses clients |
+ * | l'IBAN d'aujourd'hui existe | sans nouveau compte, il n'y a rien à annoncer |
+ *
+ * **La liste vide n'est pas une erreur, c'est le cas ordinaire** : rien ne
+ * s'affiche alors, ni « 0 facture » ni coche verte (`CLAUDE.md` §4 ter).
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+export type FactureAPrevenir = {
+  id: string;
+  numeroCommercial: string;
+  dateEmission: string;
+  clientNom: string | null;
+  clientCivilite: string | null;
+  clientTelephone: string | null;
+  clientEmail: string | null;
+  /** Ce qui reste dû — c'est ce qu'on montre, pas le total de la facture. */
+  reste: string;
+  /** Le message tout écrit, prêt à partir. */
+  message: string;
+};
+
+export async function facturesAvecAncienIban(ctx: Ctx): Promise<FactureAPrevenir[]> {
+  const [enAttente, modalites] = await Promise.all([
+    facturesEnAttente(ctx),
+    withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+      const [e] = await tx
+        .select({ nom: entreprises.nom, iban: entreprises.iban, titulaireCompte: entreprises.titulaireCompte })
+        .from(entreprises)
+        .where(eq(entreprises.id, ctx.entrepriseId))
+        .limit(1);
+      // **`null` plutôt qu'une entreprise vide** : une lecture qui a échoué
+      // n'est pas « une entreprise sans IBAN », et prévenir sur cette base
+      // enverrait un message sans compte dedans.
+      return e ? modalitesDePaiement({ iban: e.iban, titulaireCompte: e.titulaireCompte, nomEntreprise: e.nom }) : null;
+    }),
+  ]);
+
+  if (!modalites?.ibanLisible) return [];
+  const ibanDuJour = modalites.ibanLisible;
+
+  const nu = modalites.ibanACopier;
+  return enAttente
+    .filter((f) => porteUnAutreIban(f.entrepriseIban, nu))
+    // **Ce dont le client a déjà été prévenu ne se redemande pas** (migration
+    // 0078). Sans ce filtre, l'alerte réclamerait les mêmes trois clients
+    // chaque jour jusqu'au paiement — et un avertissement qui parle à tort
+    // s'apprend à être ignoré (`CLAUDE.md` §4 ter).
+    .filter((f) => f.ibanSignale === null || f.ibanSignale !== nu)
+    .map((f) => ({
+      id: f.id,
+      numeroCommercial: f.numeroCommercial,
+      dateEmission: f.dateEmission,
+      clientNom: f.clientNom,
+      clientCivilite: f.clientCivilite,
+      clientTelephone: f.clientTelephone,
+      clientEmail: f.clientEmail,
+      reste: f.reste,
+      // **Le message est composé ICI, pas à l'écran.** Trois écrans le
+      // proposent (les réglages, l'attente de paiement, et l'écran du premier
+      // jour) : trois rédactions finiraient par envoyer trois consignes
+      // différentes au même client (`CLAUDE.md` §3).
+      message: messageNouvelIban({
+        clientAvecCivilite: avecCivilite(f.clientNom ?? "", f.clientCivilite as CiviliteChoisie),
+        numeroFacture: f.numeroCommercial,
+        ibanLisible: ibanDuJour,
+        entrepriseNom: f.entrepriseNom,
+      }),
+    }));
+}
+
+/**
+ * NOTER QU'ON A PRÉVENU CE CLIENT — et de QUEL compte.
+ *
+ * **On range l'IBAN, pas un oui.** Un drapeau resterait levé au changement de
+ * banque suivant, et ce client-là ne serait jamais averti du second compte
+ * (migration 0078). En rangeant l'IBAN annoncé, la question se referme d'elle-
+ * même : s'il ne vaut plus celui d'aujourd'hui, il reste à prévenir.
+ *
+ * **Rangé NU**, par la même fonction que partout ailleurs : « FR76 3000 » et
+ * « fr763000 » sont le même compte, et deux façons de les écrire en feraient
+ * deux.
+ *
+ * **Posé quand il OUVRE le message, pas quand le client répond.** Atlas ne voit
+ * pas partir un SMS — il ouvre la messagerie de l'artisan, et la suite lui
+ * appartient. Attendre une preuve qu'on n'aura jamais laisserait l'alerte
+ * réclamer indéfiniment ; ce qu'on note, c'est le geste, et il est honnête de
+ * ne pas prétendre davantage.
+ */
+export async function marquerIbanSignale(ctx: Ctx, factureId: string): Promise<void> {
+  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [e] = await tx
+      .select({ iban: entreprises.iban })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+    const nu = (e?.iban ?? "").trim();
+    // Sans IBAN, il n'y a rien à annoncer : noter quoi que ce soit ferait taire
+    // l'alerte pour un compte qui n'existe pas.
+    if (nu === "") return;
+    await tx
+      .update(factures)
+      .set({ ibanSignale: ibanSansEspace(nu) })
+      .where(eq(factures.id, factureId));
+  });
 }
