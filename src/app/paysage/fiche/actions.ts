@@ -133,7 +133,7 @@ export async function envoyerFicheAction(
   passageId: string
 ): Promise<{ ok: true; lien: string } | { ok: false; phrase: string }> {
   const ctx = await getCurrentCtx();
-  await exigerEcran(ctx, "/paysage", "envoyer le compte rendu au client");
+  await exigerEcran(ctx, "/paysage", "envoyer le retour d'intervention au client");
   const r = await figerPassage(ctx, passageId);
   if (!r.ok) return { ok: false, phrase: r.phrase };
   revalidatePath("/paysage/fiche");

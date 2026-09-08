@@ -398,7 +398,7 @@ export default function FicheChantierClient({
             type="button"
             data-atlas="temps-visible"
             aria-pressed={tempsVisible}
-            aria-label="Montrer le temps passé sur le compte rendu du client"
+            aria-label="Montrer le temps passé sur le retour d'intervention du client"
             disabled={parti}
             onClick={basculerTemps}
             className="flex items-center gap-2 disabled:opacity-40"
@@ -431,7 +431,7 @@ export default function FicheChantierClient({
             masqué : un écran qui commente un réglage au repos est du bruit. */}
         {!tempsVisible && (
           <p className="mt-[9px] text-[12.5px] leading-[1.5]" style={{ color: colors.muted }}>
-            Votre client ne le verra pas sur son compte rendu.
+            Votre client ne le verra pas sur son retour d&apos;intervention.
           </p>
         )}
       </section>
