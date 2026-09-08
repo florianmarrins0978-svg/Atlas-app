@@ -620,11 +620,17 @@ async function main() {
     // demande `dev` sur le port 3000 —, pas par la commande qui le porte, qui a
     // déjà changé deux fois.
     //
-    // **Sans le drapeau `s`, et ce n'est pas un détail de style :** la cible de
-    // `tsconfig.json` est antérieure à ES2018, et `tsc` refuse ce drapeau
-    // (TS1501). Il ne servait à rien ici — `[^)]` accepte déjà les retours à la
-    // ligne, seul un `.` aurait eu besoin de lui.
-    const iSpawn = source.search(/spawn\([^)]*"dev"[^)]*"-p", "3000"/);
+    // **Le repère a vieilli une TROISIÈME fois — 8 septembre 2026 — et cette
+    // fois on cesse de le rajeunir.** Il visait `"dev"` puis le port `3000` ;
+    // les suites servent désormais la version BÂTIE (`start`) sur le port de
+    // l'atelier. Viser la sous-commande, c'était s'attacher à ce qui change :
+    // trois fois en un mois, et chaque fois le contrôle est resté vert en
+    // n'éprouvant plus rien.
+    //
+    // On vise donc ce qui ne change pas : la batterie lance le serveur par
+    // l'exécutable Node et le binaire du projet. Quelle que soit la
+    // sous-commande de demain, c'est cette ligne-là qui la portera.
+    const iSpawn = source.search(/spawn\(process\.execPath, \[CHEMIN_NEXT/);
     assert.ok(
       iGarde > 0,
       "aucune garde en tête de batterie : un orphelin du banc rendrait les cinquante suites ininterprétables"
