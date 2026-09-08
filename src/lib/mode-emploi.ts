@@ -564,12 +564,16 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-allure-photo",
     ecran: "Devis & factures",
-    ou: "Réglages, puis Devis & factures",
+    ou: "Réglages, puis Devis & factures, puis Allure",
     intitule: "Reprendre l'allure de son ancien devis en le photographiant",
     motsCles: ["photo", "photographier", "allure", "couleur", "police", "logo", "devis", "reprendre", "modele"],
-    geste: "Appuyez sur « Photographier mon devis » et choisissez l'appareil photo ou la photothèque.",
+    geste: "Ouvrez « Allure », appuyez sur « Photographier mon devis » et choisissez l'appareil photo ou la photothèque.",
     reserve: "L'allure et les mentions sont reprises ; ni les lignes, ni les prix, ni le logo.",
-    source: "src/app/reglages/documents/DocumentsClient.tsx",
+    // **Le geste a déménagé le 7 septembre 2026**, quand « Devis & factures »
+    // a été coupé en quatre : il vit dans l'écran « Allure ». La fiche n'avait
+    // pas suivi, et son contrôle a fait ce pour quoi il existe — refuser une
+    // fiche qui enseignerait un geste mort.
+    source: "src/app/reglages/documents/allure/AllureClient.tsx",
     preuves: ["Photographier mon devis"],
   },
   {
