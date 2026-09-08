@@ -172,6 +172,25 @@ là :**
    demandée (donc un réglage, pas une obligation) ; elle porte **ce qui a été
    fait**, pas ce qu'il y avait à faire ; et **aucun montant** n'y figure.
 
+**Ce qu'il a tranché le 8 septembre 2026 au soir, sur maquette :**
+
+| | |
+|---|---|
+| le salarié | le **bandeau déroulant** dans la fiche d'intervention — « Fin de chantier » déplie les cases, les photos et « À signaler », sans recouvrir la liste des tâches |
+| le patron | une **sous-catégorie « Retours »** dans Terminés, à côté de « À facturer », qui ouvre **sa propre page** |
+| cette page | les retours **rangés par client**, du plus récent au plus ancien, avec un **filtre en haut** : recherche par nom et pastilles d'années |
+
+**« IL FAUT POUVOIR LES GARDER LONGTEMPS » — trois règles de code, et la
+troisième est un piège.**
+
+1. ce que le salarié écrit ne s'efface pas avec le mois ;
+2. la liste remonte aux **années** passées, pas aux dix-huit mois du
+   feuilletage de Terminés (`RECUL_MAX`, `ListeTermines.tsx`) ;
+3. **`fichiers_a_purger` ne doit JAMAIS recevoir une photo de retour.** C'est le
+   même piège que la recopie des photos du lot 1 : `supprimerPhoto` met la CLÉ
+   en file de purge, et une photo partagée effacée d'un côté disparaît de
+   l'autre — des mois plus tard, sans que personne fasse le lien.
+
 Ce qui est déjà décidé (`ARCHITECTURE.md` §285) :
 
 - le salarié dépose photos et « c'est fini » **sur les chantiers de sa journée**,

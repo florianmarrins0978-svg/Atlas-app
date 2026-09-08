@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retours d'intervention — la sous-catégorie et sa page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    RETOURS D'INTERVENTION — 8 septembre 2026, sa décision.
+
+    *« Dans la catégorie terminé il faut rajouter une sous-catégorie, comme tu
+    as fait, à côté de "à facturer" : mettre la sous-catégorie retour
+    d'intervention. On clique dessus et on arrive sur une page où seront listés
+    tous les retours d'intervention par client, avec les infos, et en haut
+    mettre un filtre pour que le patron puisse les retrouver facilement. Et il
+    faut pouvoir les garder longtemps. »*
+
+    Et pour le salarié : *« bien faire comme tu as mis sur la maquette, le
+    bandeau déroulant avec les infos qu'il coche, et écrit, ou ajoute photo ; et
+    une fois qu'il clique sur fini ils se retrouveront dans la catégorie retour
+    d'intervention »*.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUE CELA TRANCHE, ET QU'IL FAUT ÉCRIRE.
+
+    · **la proposition 2 l'emporte sur la 3** : un onglet à part, pas le retour
+      posé sous chaque chantier. C'est son choix, et il a une raison que je
+      n'avais pas vue : un retour se garde LONGTEMPS, et une liste rangée par
+      client se relit des mois plus tard. Sous les chantiers du mois, il aurait
+      fallu remonter mois par mois ;
+    · **le salarié garde le bandeau déroulant** — l'option C du 8 septembre :
+      « Fin de chantier » déplie DANS la fiche, sans la recouvrir.
+
+    ─────────────────────────────────────────────────────────────────────────
+    « LES GARDER LONGTEMPS » — ce que cela veut dire, et ce que ça coûte.
+
+    Ce n'est pas un mot d'écran, c'est une règle de conservation :
+
+    | ce qui est écrit | ne s'efface pas avec le mois |
+    | les photos       | ne partent pas à la purge des fichiers |
+    | la liste         | remonte aux années passées, pas aux 18 mois du feuilletage de Terminés |
+
+    À écrire noir sur blanc au moment de coder : `fichiers_a_purger` ne doit
+    JAMAIS recevoir une photo de retour. C'est le même piège que la recopie des
+    photos du lot 1 — un fichier partagé qu'on efface d'un côté disparaît de
+    l'autre, des mois plus tard, sans que personne fasse le lien.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST REPRIS DU PRODUIT, ET NON INVENTÉ.
+
+    L'écran Terminés vient de `src/app/termines/ListeTermines.tsx` : la carte de
+    TVA, les onglets à 44 px, la navigation du mois, les lignes à 24 px sans
+    trait, la capsule verte « Facturer ». La fiche d'intervention vient de
+    `FeuilleChantier` (`src/app/planning/PlanningClient.tsx`).
+
+    Les noms, dates et montants sont inventés pour la démonstration.
+    MESURÉ POUR SON TÉLÉPHONE : 390 × 664. RIEN N'EST CODÉ dans `src/`.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  body.nuit{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47;
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);
+       -webkit-text-size-adjust:100%;padding:0 0 60px}
+  ::selection{background:rgba(138,101,40,.22)}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+  .mot{max-width:520px;margin:26px auto 0;padding:16px 19px;background:var(--etabli-carte);
+       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
+       font-size:14px;line-height:1.62;color:var(--etabli-doux)}
+  .mot b{color:var(--etabli-encre)}
+  .mot + .mot{margin-top:10px}
+
+  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
+         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
+  .etats .rangee{max-width:640px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;
+                 align-items:center;justify-content:center}
+  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
+                color:var(--etabli-doux);border-radius:999px;padding:11px 17px;
+                font:400 13.5px/1 var(--sans);cursor:pointer;
+                -webkit-tap-highlight-color:transparent}
+  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+  .etats .filet{width:1px;height:26px;background:var(--etabli-trait);margin:0 5px}
+
+  .scene{display:flex;justify-content:center;margin-top:30px;padding:0 20px}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
+       background:var(--fond);color:var(--encre);box-shadow:0 18px 46px rgba(20,18,14,.24)}
+  .vue{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+  .vue[data-ouvert="oui"]{display:flex}
+
+  .barreHaute{display:flex;flex:0 0 auto;align-items:center;gap:12px;padding:20px 22px 0}
+  .retourRond{width:38px;height:38px;border-radius:999px;display:grid;place-items:center;
+              background:var(--tuile);color:var(--doux);border:0;cursor:pointer;flex:0 0 auto;
+              -webkit-tap-highlight-color:transparent}
+  .barreHaute h1{margin:0;font:400 26px/1.06 var(--serif)}
+  .enTeteSeul{padding:24px 26px 0}
+  .enTeteSeul h1{margin:0;font:400 34px/1.02 var(--serif)}
+
+  /* ── Terminés ────────────────────────────────────────────────────── */
+  .carteTva{margin:20px 26px 0;border-radius:14px;padding:15px 17px;background:var(--plage);
+            box-shadow:inset 0 0 0 1px var(--trait);display:flex;align-items:center;
+            justify-content:space-between;gap:12px}
+  .carteTva .quoi{font:700 10.5px/1.35 var(--sans);letter-spacing:.16em;
+                  text-transform:uppercase;color:var(--or)}
+  .carteTva .quand{display:block;margin-top:6px;font:400 14px/1 var(--sans);color:var(--doux)}
+  .carteTva .combien{font:400 22px/1 var(--serif);font-variant-numeric:tabular-nums}
+  /* Trois onglets : ils ne tiennent plus sur une ligne à 390 px, ils défilent.
+     Les serrer aurait coûté les 44 px du pouce, et c'est la mesure que tout le
+     reste de l'application tient déjà. */
+  .onglets{display:flex;flex:0 0 auto;gap:8px;margin:22px 0 0;padding:0 26px;
+           overflow-x:auto;scrollbar-width:none}
+  .onglets::-webkit-scrollbar{display:none}
+  .onglet{height:44px;flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;border:0;
+          border-radius:999px;padding:0 18px;font:400 14px/1 var(--sans);cursor:pointer;
+          background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux);
+          -webkit-tap-highlight-color:transparent}
+  .onglet[aria-pressed="true"]{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .onglet .compte{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:999px;
+                  background:var(--or);color:var(--fond);font:700 11px/1 var(--sans);padding:0 6px}
+  .onglet[aria-pressed="true"] .compte{background:var(--surplein);color:var(--plein)}
+
+  .navMois{display:flex;align-items:center;justify-content:center;gap:16px;margin:22px 26px 0}
+  .navMois .fleche{width:36px;height:36px;border-radius:999px;display:grid;place-items:center;
+                   background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux)}
+  .navMois .quand{font:600 15px/1 var(--sans)}
+  .comptes{margin:14px 26px 4px;font:700 14px/1.6 var(--sans);color:var(--encre)}
+  .comptes .aFacturer{color:var(--orTexte)}
+  .rangTermine{display:flex;gap:14px;align-items:center;width:100%;border:0;background:transparent;
+               padding:20px 26px;text-align:left;color:inherit}
+  .rangTermine .qui{min-width:0;flex:1}
+  .rangTermine .nomC{display:block;font:400 17px/1.2 var(--serif)}
+  .rangTermine .etat{display:block;margin-top:5px;font:400 13px/1.5 var(--sans);color:var(--doux);
+                     font-variant-numeric:tabular-nums}
+  .capsule{flex:0 0 auto;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;
+           padding:0 17px;font:600 12.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+           background:var(--plein);color:var(--surplein)}
+
+  /* ── La page des retours ─────────────────────────────────────────── */
+  .chercher{position:relative;flex:0 0 auto;margin:16px 22px 0}
+  .chercher input{width:100%;height:48px;border:0;border-radius:999px;background:var(--plage);
+                  box-shadow:inset 0 0 0 1px var(--trait);padding:0 16px 0 44px;
+                  font:400 16px/1 var(--sans);color:var(--encre)}
+  .chercher input::placeholder{color:var(--gris)}
+  .chercher input:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--or)}
+  .chercher .loupe{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--gris);
+                   pointer-events:none}
+  .periodes{display:flex;flex:0 0 auto;gap:7px;margin:10px 0 0;padding:0 22px;
+             overflow-x:auto;scrollbar-width:none}
+  .periodes::-webkit-scrollbar{display:none}
+  .periode{height:40px;flex:0 0 auto;display:inline-flex;align-items:center;border:0;border-radius:999px;
+           padding:0 15px;font:400 13.5px/1 var(--sans);cursor:pointer;background:transparent;
+           color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait);
+           -webkit-tap-highlight-color:transparent}
+  .periode[aria-pressed="true"]{background:var(--plein);color:var(--surplein);box-shadow:none}
+
+  .groupe{margin-top:22px}
+  .groupe .client{margin:0 22px;font:400 19px/1.2 var(--serif)}
+  .carteRetour{display:flex;align-items:flex-start;gap:11px;width:100%;border:0;text-align:left;
+               background:var(--plage);border-radius:13px;padding:13px 14px;margin:9px 22px 0;
+               width:calc(100% - 44px);box-shadow:inset 0 0 0 1px var(--trait);cursor:pointer;
+               color:inherit;-webkit-tap-highlight-color:transparent}
+  .carteRetour.neuf{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .carteRetour:active{background:var(--tuile)}
+  .carteRetour .sceau{width:26px;height:26px;border-radius:999px;flex:0 0 auto;display:grid;
+                      place-items:center;background:var(--tuile);color:var(--orTexte)}
+  .carteRetour .quoi{min-width:0;flex:1}
+  .carteRetour .quand{display:block;font:500 14px/1.3 var(--sans);color:var(--encre)}
+  .carteRetour .detail{display:block;margin-top:3px;font:400 12.5px/1.45 var(--sans);color:var(--gris)}
+  .vign{display:flex;gap:4px;flex:0 0 auto}
+  .vign span{width:24px;height:24px;border-radius:6px;background:var(--tuile);
+             box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)}
+  .rien{margin:24px 22px 0;font-size:13.5px;line-height:1.65;color:var(--gris)}
+
+  /* ── Le détail d'un retour ───────────────────────────────────────── */
+  .fiche{margin:16px 20px 0;border-radius:12px;padding:16px;background:var(--plage);
+         box-shadow:inset 0 0 0 1px var(--trait)}
+  .fiche .qui{margin:0;font:400 22px/1.15 var(--serif)}
+  .fiche .quand{margin:6px 0 0;font-size:13px;color:var(--gris)}
+  .etiq{display:block;margin-top:16px;font:600 10.5px/1.35 var(--sans);letter-spacing:.16em;
+        text-transform:uppercase;color:var(--gris)}
+  .ligneTache{position:relative;margin:9px 0 0;padding-left:22px;font-size:14.5px;line-height:1.45}
+  .ligneTache .marque{position:absolute;left:0;top:1px;width:16px;height:16px;color:var(--plein)}
+  .ligneTache.pasFaite{color:var(--gris)}
+  .ligneTache.pasFaite .marque{color:var(--gris)}
+  .citation{margin:9px 0 0;padding:11px 13px;border-radius:9px;background:var(--tuile);
+            font:400 14.5px/1.5 var(--sans);color:var(--encre)}
+  .grandesPhotos{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+  .grandesPhotos span{width:84px;height:84px;border-radius:10px;background:var(--tuile);
+                      box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)}
+  .grosBouton{display:flex;align-items:center;justify-content:center;gap:11px;
+              width:calc(100% - 40px);margin:16px 20px 20px;border:0;border-radius:999px;
+              background:var(--plein);color:var(--surplein);height:56px;
+              font:400 17px/1 var(--serif);cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+  .barre{display:flex;align-items:center;justify-content:space-around;height:60px;
+         background:var(--plage);box-shadow:inset 0 1px 0 var(--trait);margin-top:auto;flex:0 0 auto}
+  .barre i{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;
+           font:500 9.5px/1 var(--sans);font-style:normal;color:var(--gris)}
+  .barre i.actif{color:var(--encre)}
+  .barre i .pastille{position:absolute;top:-3px;right:-9px;min-width:16px;height:16px;border-radius:999px;
+                     background:var(--or);color:var(--fond);font:700 10px/16px var(--sans);
+                     text-align:center;padding:0 4px}
+
+  @media (max-width:900px){ .tel{width:100%} }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Tout se touche.</b> Commencez par l'onglet <b>« Retours »</b>, puis tapez un
+  nom dans la recherche ou touchez une année. <b>Ouvrez un retour</b> pour voir ce
+  que le salarié a coché.
+</div>
+
+<div class="etats" role="group" aria-label="Ce qu'on peut jouer">
+  <div class="rangee">
+    <button type="button" id="rejouer">Recommencer</button>
+    <span class="filet" aria-hidden="true"></span>
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="scene">
+  <div class="tel">
+
+    <!-- ══════════ TERMINÉS ═════════════════════════════════════════ -->
+    <div class="vue" id="vue-termines" data-ouvert="oui">
+      <div class="enTeteSeul"><h1>Terminés</h1></div>
+      <div class="carteTva">
+        <span><span class="quoi">Ma TVA à déclarer</span>
+          <span class="quand">Septembre 2026</span></span>
+        <span class="combien">0,00 €</span>
+      </div>
+      <div class="onglets">
+        <button type="button" class="onglet" aria-pressed="true">Tout</button>
+        <button type="button" class="onglet" aria-pressed="false">À facturer</button>
+        <button type="button" class="onglet" data-va="retours">Retours <span class="compte">2</span></button>
+      </div>
+      <div class="navMois">
+        <span class="fleche" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="quand">Septembre 2026</span>
+        <span class="fleche" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M1.5 1.5l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <p class="comptes"><span class="aFacturer">2 à facturer</span> &middot; 8 facturés</p>
+      <div class="rangTermine">
+        <span class="qui"><span class="nomC">M. Rialland</span>
+          <span class="etat">2 sept. &middot; 1 240,00 € prévus</span></span>
+        <span class="capsule">Facturer</span>
+      </div>
+      <div class="rangTermine">
+        <span class="qui"><span class="nomC">Mme Costa</span>
+          <span class="etat">30 août &middot; 480,00 € prévus</span></span>
+        <span class="capsule">Facturer</span>
+      </div>
+      <div class="barre" data-barre="patron" aria-hidden="true"></div>
+    </div>
+
+    <!-- ══════════ LES RETOURS ══════════════════════════════════════ -->
+    <div class="vue" id="vue-retours">
+      <div class="barreHaute">
+        <button type="button" class="retourRond" data-va="termines" aria-label="Retour aux terminés">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h1>Retours d'intervention</h1>
+      </div>
+
+      <div class="chercher">
+        <span class="loupe" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="7.6" cy="7.6" r="5.4" stroke="currentColor" stroke-width="1.6"/><path d="m11.6 11.6 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+        <input id="recherche" type="search" placeholder="Un nom de client" aria-label="Chercher un client">
+      </div>
+
+      <div class="periodes" id="periodes">
+        <button type="button" class="periode" data-an="tout" aria-pressed="true">Tout</button>
+        <button type="button" class="periode" data-an="2026" aria-pressed="false">2026</button>
+        <button type="button" class="periode" data-an="2025" aria-pressed="false">2025</button>
+        <button type="button" class="periode" data-an="2024" aria-pressed="false">2024</button>
+      </div>
+
+      <div id="listeRetours"></div>
+      <p class="rien" id="rien" hidden>Aucun retour ne porte ce nom.</p>
+      <div class="barre" data-barre="patron" aria-hidden="true"></div>
+    </div>
+
+    <!-- ══════════ UN RETOUR ════════════════════════════════════════ -->
+    <div class="vue" id="vue-detail">
+      <div class="barreHaute">
+        <button type="button" class="retourRond" data-va="retours" aria-label="Retour à la liste">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h1>Le retour</h1>
+      </div>
+      <div class="fiche">
+        <p class="qui" id="detailClient">M. Rialland</p>
+        <p class="quand" id="detailQuand">Mercredi 2 septembre 2026, 16 h 40 &middot; Julien</p>
+
+        <span class="etiq">Ce qui a été fait</span>
+        <div id="detailTaches"></div>
+
+        <span class="etiq" id="etiqSignale">À signaler</span>
+        <p class="citation" id="detailMot">La haie attendra, trop mouillée.</p>
+
+        <span class="etiq" id="etiqPhotos">Photos</span>
+        <div class="grandesPhotos" id="detailPhotos"></div>
+      </div>
+      <button type="button" class="grosBouton" data-va="termines">Créer la facture</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="mot">
+  <b>L'onglet « Retours » se pose à côté de « À facturer »</b>, comme vous l'avez
+  demandé. À trois onglets, la rangée ne tient plus sur la largeur d'un
+  téléphone : <b>elle défile</b> plutôt que de rétrécir les cibles — les 44 px
+  du pouce ne se négocient pas.
+</div>
+<div class="mot">
+  <b>La liste est rangée par client</b>, du plus récent au plus ancien. Le filtre
+  du haut fait les deux : <b>tapez un nom</b>, ou <b>touchez une année</b>. Essayez
+  « Costa », puis « 2024 ».
+</div>
+<div class="mot">
+  <b>« Les garder longtemps » n'est pas qu'un mot d'écran.</b> Trois choses en
+  découlent au moment de coder, et je les écris pour ne pas les perdre : ce que
+  le salarié écrit ne s'efface pas avec le mois ; <b>ses photos ne partent jamais
+  à la purge des fichiers</b> ; et cette liste remonte aux années passées, pas
+  aux dix-huit mois du feuilletage de Terminés.
+</div>
+<div class="mot">
+  <b>Côté salarié, rien ne change</b> : le bandeau déroulant « Fin de chantier »
+  reste tel que vous l'avez retenu, et c'est son appui sur « C'est fini » qui
+  fait apparaître le retour ici.
+  <a href="parcours-fin-de-chantier.html" style="color:var(--etabli-or)">Son parcours est là</a>.
+</div>
+
+<script>
+/*
+  LES RETOURS SONT DES DONNÉES, PAS DU DESSIN.
+
+  Ils vivent dans une liste, et l'écran ne fait que la filtrer et la ranger.
+  Écrire les cartes à la main dans le HTML aurait rendu le filtre décoratif —
+  et un filtre décoratif ne dit rien de ce qu'on veut savoir : est-ce qu'on
+  retrouve un chantier de 2024 en trois gestes ?
+*/
+const RETOURS = [
+  { client: "M. Rialland", an: "2026", jour: "Mercredi 2 septembre 2026", heure: "16 h 40",
+    par: "Julien", photos: 3, neuf: true,
+    taches: [["Débroussaillage du talus", true], ["Évacuation des déchets verts", true],
+             ["Taille de la haie de laurier", false]],
+    mot: "La haie attendra, trop mouillée." },
+  { client: "Résidence des Ormes", an: "2026", jour: "Mardi 1er septembre 2026", heure: "11 h 20",
+    par: "Paul", photos: 2, neuf: true,
+    taches: [["Tonte des espaces verts", true], ["Taille des massifs", true]],
+    mot: "" },
+  { client: "Mme Costa", an: "2026", jour: "Vendredi 28 août 2026", heure: "17 h 05",
+    par: "Julien", photos: 1, neuf: false,
+    taches: [["Tonte de la pelouse", true], ["Désherbage de l'allée", true]],
+    mot: "Portail à faire régler, il frotte." },
+  { client: "Mme Costa", an: "2025", jour: "Jeudi 12 juin 2025", heure: "15 h 40",
+    par: "Paul", photos: 2, neuf: false,
+    taches: [["Taille de la haie", true], ["Évacuation", true]],
+    mot: "" },
+  { client: "M. Bernard", an: "2024", jour: "Lundi 7 octobre 2024", heure: "16 h 15",
+    par: "Julien", photos: 4, neuf: false,
+    taches: [["Abattage du frêne", true], ["Dessouchage", true], ["Remise en herbe", false]],
+    mot: "Dessouchage fait, la remise en herbe attend le printemps." },
+];
+
+const qq = (s) => Array.from(document.querySelectorAll(s));
+const vues = qq(".vue");
+let annee = "tout";
+let cherche = "";
+const lus = new Set();
+
+function aller(nom) {
+  vues.forEach((v) => (v.dataset.ouvert = v.id === "vue-" + nom ? "oui" : "non"));
+  const ouverte = document.getElementById("vue-" + nom);
+  if (ouverte) ouverte.scrollTop = 0;
+}
+qq("[data-va]").forEach((b) => b.addEventListener("click", () => aller(b.dataset.va)));
+
+/** Sans accents ni casse : « Côsta » et « costa » sont le même client. */
+function pliee(t) {
+  return t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
+function vignette(taille) {
+  return (
+    '<svg width="' + taille + '" height="' + taille + '" viewBox="0 0 22 22" fill="none" aria-hidden="true">' +
+    '<rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.6"/>' +
+    '<path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'
+  );
+}
+
+function dessinerListe() {
+  const gardes = RETOURS.filter(
+    (r) => (annee === "tout" || r.an === annee) && (cherche === "" || pliee(r.client).includes(pliee(cherche)))
+  );
+
+  // **Rangés par client**, sa demande. Les clients arrivent dans l'ordre du
+  // retour le plus récent : celui qu'il vient de recevoir est en haut, et il
+  // n'a pas à chercher.
+  const parClient = new Map();
+  gardes.forEach((r) => {
+    if (!parClient.has(r.client)) parClient.set(r.client, []);
+    parClient.get(r.client).push(r);
+  });
+
+  const liste = document.getElementById("listeRetours");
+  liste.innerHTML = [...parClient.entries()]
+    .map(([client, siens]) => {
+      const cartes = siens
+        .map((r) => {
+          const cle = r.client + r.jour;
+          const neuf = r.neuf && !lus.has(cle);
+          const faites = r.taches.filter(([, f]) => f).length;
+          const vignettes = new Array(Math.min(r.photos, 3)).fill(0)
+            .map(() => "<span>" + vignette(13) + "</span>").join("");
+          return (
+            '<button type="button" class="carteRetour' + (neuf ? " neuf" : "") + '" data-cle="' + cle + '">' +
+            '<span class="sceau" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none">' +
+            '<path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
+            '<span class="quoi"><span class="quand">' + r.jour + "</span>" +
+            '<span class="detail">' + r.par + " &middot; " + faites + " sur " + r.taches.length +
+            " faites &middot; " + r.photos + " photo" + (r.photos > 1 ? "s" : "") + "</span></span>" +
+            '<span class="vign">' + vignettes + "</span></button>"
+          );
+        })
+        .join("");
+      return '<div class="groupe"><p class="client">' + client + "</p>" + cartes + "</div>";
+    })
+    .join("");
+
+  document.getElementById("rien").hidden = gardes.length > 0;
+
+  qq("#listeRetours .carteRetour").forEach((b) =>
+    b.addEventListener("click", () => {
+      lus.add(b.dataset.cle);
+      const r = RETOURS.find((x) => x.client + x.jour === b.dataset.cle);
+      ouvrirLeDetail(r);
+    })
+  );
+}
+
+function ouvrirLeDetail(r) {
+  document.getElementById("detailClient").textContent = r.client;
+  document.getElementById("detailQuand").textContent = r.jour + ", " + r.heure + " · " + r.par;
+
+  // **Ce qui n'a PAS été fait reste à l'écran, éteint.** Le retirer donnerait
+  // un chantier qui paraît complet — et c'est sur cette impression-là qu'une
+  // facture part pour un travail qui n'a pas eu lieu.
+  document.getElementById("detailTaches").innerHTML = r.taches
+    .map(
+      ([libelle, faite]) =>
+        '<p class="ligneTache' + (faite ? "" : " pasFaite") + '">' +
+        '<span class="marque" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none">' +
+        (faite
+          ? '<path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+          : '<circle cx="8" cy="8" r="5.4" stroke="currentColor" stroke-width="1.6"/>') +
+        "</svg></span>" + libelle + "</p>"
+    )
+    .join("");
+
+  // Rien à dire quand il n'a rien écrit : une case vide intitulée « À signaler »
+  // laisserait croire qu'on a perdu son mot.
+  const aUnMot = r.mot !== "";
+  document.getElementById("etiqSignale").hidden = !aUnMot;
+  document.getElementById("detailMot").hidden = !aUnMot;
+  document.getElementById("detailMot").textContent = r.mot;
+
+  document.getElementById("etiqPhotos").hidden = r.photos === 0;
+  document.getElementById("detailPhotos").innerHTML = new Array(r.photos)
+    .fill(0).map(() => "<span>" + vignette(26) + "</span>").join("");
+
+  aller("detail");
+  dessinerListe();
+}
+
+document.getElementById("recherche").addEventListener("input", (e) => {
+  cherche = e.target.value;
+  dessinerListe();
+});
+
+qq("#periodes .periode").forEach((p) =>
+  p.addEventListener("click", () => {
+    annee = p.dataset.an;
+    qq("#periodes .periode").forEach((a) => a.setAttribute("aria-pressed", String(a === p)));
+    dessinerListe();
+  })
+);
+
+const ONGLETS = {
+  patron: [
+    ["Chantiers", "maison", false], ["Planning", "calendrier", false],
+    ["Terminés", "coche", true], ["Paysage", "feuille", false], ["Réglages", "roue", false],
+  ],
+};
+const DESSINS = {
+  maison: '<path d="M3 8.6 10 3l7 5.6V17H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+  calendrier:
+    '<rect x="3" y="4.5" width="14" height="12.5" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  coche:
+    '<circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 10.2 9 12.6l4.4-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  feuille:
+    '<path d="M10 17c0-6 2.6-9.6 7-10.4C17 12 14 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 17C10 11 7.4 7.4 3 6.6 3 12 6 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+  roue:
+    '<circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4 4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+};
+qq("[data-barre]").forEach((barre) => {
+  const compte = 2;
+  barre.innerHTML = ONGLETS[barre.dataset.barre]
+    .map(([mot, dessin, actif]) =>
+      '<i class="' + (actif ? "actif" : "") + '">' +
+      (actif ? '<span class="pastille">' + compte + "</span>" : "") +
+      '<svg width="19" height="19" viewBox="0 0 20 20" fill="none">' + DESSINS[dessin] + "</svg>" +
+      mot + "</i>"
+    )
+    .join("");
+});
+
+document.getElementById("rejouer").addEventListener("click", () => {
+  lus.clear();
+  annee = "tout";
+  cherche = "";
+  document.getElementById("recherche").value = "";
+  qq("#periodes .periode").forEach((p) => p.setAttribute("aria-pressed", String(p.dataset.an === "tout")));
+  dessinerListe();
+  aller("termines");
+});
+
+const bouton = document.getElementById("charte");
+bouton.addEventListener("click", () => {
+  const nuit = document.body.classList.toggle("nuit");
+  bouton.setAttribute("aria-pressed", String(nuit));
+  bouton.textContent = nuit ? "Origine" : "Nuit";
+});
+
+dessinerListe();
+</script>
+</body>
+</html>
