@@ -30,6 +30,7 @@ import { creerEntreprise, mettreAJourEntreprise } from "../src/server/repositori
 import {
   creerChantier,
   planifierChantier,
+  deplanifierChantier,
   basculerEquipeDuChantier,
 } from "../src/server/repositories/chantiers";
 import {
@@ -180,6 +181,105 @@ async function main() {
     await retirerAbsenceEquipe(ctx, absence.id);
     const libre = await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
     assert.deepEqual(libre?.matin, [1], "un congé annulé interdit encore la personne");
+  });
+
+  // ═══ LA RACINE : poser un congé RÉCONCILIE ce qui devient faux ═══════════
+  //
+  // **Sa consigne du 8 septembre 2026 : « pas de pansement, corrige le problème
+  // à la racine ».** Refuser de COCHER un absent ferme une porte ; l'autre
+  // restait grande ouverte, et c'est par elle que son cas est arrivé — la coche
+  // était ANTÉRIEURE au congé. Poser un congé n'avait jamais rien défait.
+
+  await essai("RACINE : poser le congé RETIRE la personne des chantiers touchés", async () => {
+    const ctx = await monter();
+    const chantier = await creerChantier(ctx, { nom: "Chez Mr. Julien" });
+    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    const avant = await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
+    assert.deepEqual(avant?.matin, [1], "le décor n'est pas celui qu'on croit");
+
+    const posee = await noterAbsenceEquipe(ctx, {
+      rang: 1,
+      premierJour: JOUR,
+      dernierJour: JOUR,
+      motif: "congé",
+    });
+    assert.ok(posee, "l'absence n'a pas été posée : rien n'est mesuré");
+
+    // Ce que la base porte VRAIMENT après le congé — pas ce que l'écran croit.
+    const apres = await basculerEquipeDuChantier(ctx, chantier.id, "apres_midi", 2);
+    assert.deepEqual(
+      apres?.matin,
+      [],
+      "le congé a laissé la personne affectée : la racine n'est pas corrigée"
+    );
+    assert.deepEqual(
+      posee.chantiersLiberes.map((c) => c.nom),
+      ["Chez Mr. Julien"],
+      "le chantier libéré n'est pas annoncé : le retrait se ferait en silence"
+    );
+  });
+
+  await essai("elle est retirée des DEUX demi-journées, pas d'une seule", async () => {
+    const ctx = await monter();
+    const chantier = await creerChantier(ctx, { nom: "Journée entière" });
+    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
+    await basculerEquipeDuChantier(ctx, chantier.id, "apres_midi", 1);
+
+    await noterAbsenceEquipe(ctx, { rang: 1, premierJour: JOUR, dernierJour: JOUR, motif: null });
+
+    const etat = await basculerEquipeDuChantier(ctx, chantier.id, "matin", 2);
+    assert.deepEqual(etat?.matin, [2], "le matin garde l'absent");
+    assert.deepEqual(etat?.apres_midi, [], "l'après-midi garde l'absent");
+  });
+
+  await essai("le congé ne touche QUE la personne concernée", async () => {
+    const ctx = await monter();
+    const chantier = await creerChantier(ctx, { nom: "À deux" });
+    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
+    await basculerEquipeDuChantier(ctx, chantier.id, "matin", 2);
+
+    await noterAbsenceEquipe(ctx, { rang: 1, premierJour: JOUR, dernierJour: JOUR, motif: null });
+
+    const etat = await basculerEquipeDuChantier(ctx, chantier.id, "apres_midi", 2);
+    assert.deepEqual(etat?.matin, [2], "le congé de l'un a emporté l'autre");
+  });
+
+  await essai("un congé qui ne touche AUCUN chantier ne défait rien", async () => {
+    const ctx = await monter();
+    const chantier = await creerChantier(ctx, { nom: "Loin du congé" });
+    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
+
+    const posee = await noterAbsenceEquipe(ctx, {
+      rang: 1,
+      premierJour: "2027-04-05",
+      dernierJour: "2027-04-09",
+      motif: null,
+    });
+    assert.deepEqual(posee?.chantiersLiberes, [], "un congé lointain a défait quelque chose");
+
+    const etat = await basculerEquipeDuChantier(ctx, chantier.id, "apres_midi", 2);
+    assert.deepEqual(etat?.matin, [1], "la personne a été retirée sans raison");
+  });
+
+  await essai("un chantier SANS DATE n'est pas touché — un congé ne pose rien", async () => {
+    // Sans date, aucun jour n'est traversé : la coche reste vraie le jour où il
+    // le posera. La défaire serait lui faire perdre un choix déjà fait.
+    const ctx = await monter();
+    const chantier = await creerChantier(ctx, { nom: "Sans date" });
+    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
+    await deplanifierChantier(ctx, chantier.id);
+
+    const posee = await noterAbsenceEquipe(ctx, {
+      rang: 1,
+      premierJour: JOUR,
+      dernierJour: JOUR,
+      motif: null,
+    });
+    assert.deepEqual(posee?.chantiersLiberes, [], "un chantier sans date a été touché");
   });
 
   await essai("sans aucun congé, rien ne change — le cas de tous les jours", async () => {

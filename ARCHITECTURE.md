@@ -24973,3 +24973,70 @@ confrontées à la version d'avant et rougissent sur le cas exact de sa capture.
 
 **Et l'écran a été REGARDÉ**, pas seulement mesuré : Julien pâle et non
 cliquable, Antoine intact, sur la carte du jeudi 10 — la journée de sa capture.
+
+## §287. « Pas de pansement » — fermer la porte par les DEUX bouts
+
+**Sa consigne du 8 septembre 2026, devant le §286 :** *« Pas de pansement,
+corrige le problème à la racine ! »* Il avait raison, et voici ce que le §286
+laissait passer.
+
+### Ce que le §286 corrigeait, et ce qu'il ne corrigeait pas
+
+Le §286 refuse de **cocher** quelqu'un d'absent. Il ferme une porte. Mais
+l'incohérence de sa capture n'était pas entrée par là : **la coche était
+ANTÉRIEURE au congé**. Elle est entrée par l'autre bout — `noterAbsenceEquipe`
+écrivait une ligne et s'arrêtait là, sans jamais regarder ce que ce congé rendait
+faux.
+
+| La porte | Avant le §286 | Après le §286 | Après celui-ci |
+|---|---|---|---|
+| cocher quelqu'un déjà en congé | ouverte | **fermée** | fermée |
+| poser un congé sur quelqu'un déjà coché | ouverte | **ouverte** | **fermée** |
+
+Un correctif qui ne ferme qu'un sens laisse le défaut se reproduire par l'autre,
+et donne l'illusion du travail fait. C'est exactement ce qu'il a nommé.
+
+### La réconciliation vit DANS la transaction du congé
+
+Faite après coup, une panne entre les deux laisserait le congé posé et les
+affectations fausses — le même état qu'on répare, mais désormais invisible parce
+que l'écran croirait le travail fait.
+
+### ELLE NE RETIRE JAMAIS EN SILENCE
+
+`noterAbsenceEquipe` rend `chantiersLiberes`. Sans cela, une demi-journée
+passerait de « Julien » à personne sans qu'il l'apprenne — et un chantier sans
+personne est précisément ce qu'on cherche à éviter.
+
+**Où le dire, et où se taire :**
+
+| | |
+|---|---|
+| **au planning** | rien. La carte du jour est ouverte sous ses yeux, la pastille disparaît : l'écran MONTRE (`CLAUDE.md` §3) |
+| **aux Réglages** | une ligne qui NOMME les chantiers — là-bas, rien de tout cela n'est visible |
+
+Et l'écran du planning **repeint sa liste locale** : sans cela il porterait
+encore « ✓ Julien » jusqu'au rechargement, c'est-à-dire les deux vérités
+contradictoires de sa capture, mais de notre fait cette fois.
+
+### LA RACINE QUI RESTE, ET QUI NE SE CORRIGE PAS SANS LUI
+
+**`equipes_du_chantier` ne porte pas de jour** : `(chantier_id, demi,
+equipe_id)`. Une coche vaut « le matin du chantier », pour tous les jours qu'il
+occupe. Le modèle **ne peut pas exprimer** « Julien le 11 mais pas le 10 ».
+
+Tout ce qui précède contourne ce manque. Et le contournement a un coût qu'il
+faut écrire noir sur blanc :
+
+> Sur un chantier de deux jours dont **un seul** tombe sur un congé, poser le
+> congé retire la personne du chantier **entier** — et le §286 l'empêche ensuite
+> de la recocher. Elle devient inaffectable sur ce chantier, y compris pour le
+> jour où elle est là.
+
+**Ce n'est pas un défaut d'implémentation, c'est la limite du modèle.** La
+corriger demande une migration (une ligne par jour, ou un jour sur la ligne
+existante) et change son geste : il cocherait par journée, plus par chantier.
+
+**Cela se demande à LUI** (`CLAUDE.md` §2 bis) : une migration touche ses
+données, et un geste qui change se dessine d'abord (§3 bis). La question est
+posée dans `TODO.md`.

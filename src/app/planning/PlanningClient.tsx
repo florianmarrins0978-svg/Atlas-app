@@ -476,6 +476,36 @@ export default function PlanningClient({
           ? v.map((a) => (a.id === provisoire.id ? { ...a, id: r.id } : a))
           : v.filter((a) => a.id !== provisoire.id)
       );
+
+      // ─── CE QUE LE CONGÉ VIENT DE DÉFAIRE SE REPEINT ICI ────────────────
+      // **Sans cette ligne, l'écran MENT jusqu'au prochain rechargement.** Le
+      // serveur a retiré cette personne des chantiers que le congé traverse
+      // (sa consigne du 8 septembre 2026, « corrige à la racine ») ; la liste
+      // du navigateur, elle, porterait encore « ✓ Julien » — c'est-à-dire
+      // exactement les deux vérités contradictoires qu'il a photographiées, à
+      // ceci près qu'elles seraient désormais de notre fait.
+      //
+      // **Et cette disparition EST le message.** La carte du jour est ouverte
+      // sous ses yeux : la pastille s'en va, il le voit. Une phrase par-dessus
+      // expliquerait ce que l'écran montre déjà (`CLAUDE.md` §3). Aux
+      // Réglages, où rien de tout cela n'est visible, c'est l'inverse — et
+      // c'est là que la phrase est écrite.
+      if (r.ok && r.chantiersLiberes.length > 0) {
+        const liberes = new Set(r.chantiersLiberes.map((c) => c.id));
+        setChantiers((liste) =>
+          liste.map((c) =>
+            liberes.has(c.id)
+              ? {
+                  ...c,
+                  equipes: {
+                    matin: c.equipes.matin.filter((x) => x !== rang),
+                    apres_midi: c.equipes.apres_midi.filter((x) => x !== rang),
+                  },
+                }
+              : c
+          )
+        );
+      }
     },
     []
   );

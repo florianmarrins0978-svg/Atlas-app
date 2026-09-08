@@ -123,6 +123,29 @@ facture mort en production le 8 août 2026).
 
 ---
 
+## ⏳ UNE RÉPONSE ATTENDUE — cocher quelqu'un PAR JOUR, et non par chantier
+
+**Née le 8 septembre 2026**, en corrigeant à la racine ce qu'il a signalé
+(`ARCHITECTURE.md` §287).
+
+**Le manque.** `equipes_du_chantier` porte `(chantier, demi, équipe)` — **aucun
+jour**. Une coche vaut pour le chantier entier. L'application ne peut donc pas
+dire « Julien le 11 mais pas le 10 ».
+
+**Ce que ça coûte aujourd'hui.** Sur un chantier de deux jours dont un seul
+tombe sur un congé : poser le congé retire la personne du chantier entier, et
+elle ne peut plus y être recochée — y compris pour le jour où elle est là.
+
+**Ce qu'il faudrait.** Une migration (un jour sur la ligne, ou une ligne par
+jour) et un écran où l'on coche par journée. Ce n'est pas un correctif, c'est un
+changement de son geste : **maquette d'abord** (`CLAUDE.md` §3 bis).
+
+**Qui peut le trancher :** lui seul — une migration touche ses données, et le
+geste est le sien. La question : *veux-tu cocher tes salariés jour par jour sur
+les chantiers de plusieurs jours, ou l'affectation reste-t-elle globale ?*
+
+---
+
 ## ⏳ UNE RÉPONSE ATTENDUE — le devis PAS ENCORE parti, depuis le planning
 
 **Né le 7 septembre 2026**, en corrigeant le retour au planning

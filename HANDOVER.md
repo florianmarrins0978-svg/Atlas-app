@@ -8,7 +8,28 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — ON NE COCHE PLUS UN ABSENT (8 septembre 2026)
+## Dernier lot — POSER UN CONGÉ DÉFAIT CE QU'IL REND FAUX (8 septembre 2026)
+
+**Décisions :** `ARCHITECTURE.md` §287. **Document :** `docs/lot-ne-pas-cocher-un-absent.md`.
+
+**CE QU'IL A CORRIGÉ CHEZ MOI, et c'est la leçon du lot :** j'ai livré un
+correctif qui refusait de COCHER un absent. Il a répondu *« pas de pansement,
+corrige le problème à la racine »* — et l'incohérence de sa capture était
+effectivement entrée par l'AUTRE bout : sa coche était antérieure au congé.
+
+**Devant un défaut d'état incohérent, énumérer les DEUX sens** : ce qui crée
+l'état faux en avant, et ce qui le crée en arrière. Fermer un seul sens donne
+l'illusion du travail fait.
+
+**⚠ LA RACINE PROFONDE N'EST PAS CORRIGÉE, et c'est délibéré.**
+`equipes_du_chantier` porte `(chantier, demi, équipe)` — aucun jour. Sur un
+chantier de deux jours dont un seul tombe sur un congé, la personne devient
+inaffectable sur ce chantier. Corriger demande une migration ET change son
+geste : question posée dans `TODO.md`, à ne pas trancher seul.
+
+---
+
+## Lot précédent — ON NE COCHE PLUS UN ABSENT (8 septembre 2026)
 
 **Décisions :** `ARCHITECTURE.md` §286.
 

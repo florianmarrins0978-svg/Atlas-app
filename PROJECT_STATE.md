@@ -19,6 +19,24 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : poser un congé défait ce qu'il rend faux (8 septembre 2026)
+
+Sa consigne devant le premier correctif : *« pas de pansement, corrige le
+problème à la racine »*. Il avait raison : refuser de COCHER un absent fermait
+une porte, et l'incohérence de sa capture était entrée par l'autre — sa coche
+était ANTÉRIEURE au congé, que rien ne réconciliait.
+
+Poser un congé retire maintenant la personne des chantiers traversés, dans la
+même transaction, et le dit (planning : la pastille disparaît ; Réglages : une
+ligne nomme les chantiers).
+
+**⚠ LA RACINE RESTE, et c'est son arbitrage.** `equipes_du_chantier` n'a pas de
+jour : une coche vaut pour le chantier entier. Sur un chantier de deux jours
+dont un seul tombe sur un congé, la personne devient inaffectable. Migration +
+changement de geste : `ARCHITECTURE.md` §287, question dans `TODO.md`.
+
+---
+
 ## FAIT : on ne coche plus quelqu'un qui n'est pas là (8 septembre 2026)
 
 Son signalement, capture à l'appui : Julien en congé le 10, la carte l'affiche

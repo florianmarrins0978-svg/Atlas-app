@@ -275,7 +275,18 @@ export async function mettreAJourNombreSalariesAction(nombreSalaries: number) {
  * (`src/lib/absences-equipe.ts`).
  */
 export type ResultatAbsence =
-  | { ok: true; id: string }
+  | {
+      ok: true;
+      id: string;
+      /**
+       * Les chantiers d'où cette personne vient d'être retirée par le congé.
+       *
+       * Vide dans l'immense majorité des cas — un congé posé à l'avance ne
+       * défait rien. Non vide, c'est une nouvelle que l'écran DOIT dire
+       * (`ARCHITECTURE.md` §287).
+       */
+      chantiersLiberes: { id: string; nom: string }[];
+    }
   | { ok: false; raison: string };
 
 export async function noterAbsenceAction(formData: FormData): Promise<ResultatAbsence> {
@@ -296,7 +307,12 @@ export async function noterAbsenceAction(formData: FormData): Promise<ResultatAb
 
   const ligne = await noterAbsenceEquipe(ctx, { rang, premierJour, dernierJour, motif });
   if (!ligne) return { ok: false, raison: "Cette équipe n\u2019existe pas." };
-  return { ok: true, id: ligne.id };
+  // **Ce que le congé a défait remonte jusqu'à l'écran** — sa consigne du
+  // 8 septembre 2026, « pas de pansement, corrige à la racine ». Retirer une
+  // affectation devenue fausse est la bonne réponse ; la retirer EN SILENCE
+  // laisserait une demi-journée passer de « Julien » à personne sans qu'il
+  // l'apprenne, et un chantier sans personne est ce qu'on veut éviter.
+  return { ok: true, id: ligne.id, chantiersLiberes: ligne.chantiersLiberes };
 }
 
 /**

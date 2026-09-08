@@ -12,9 +12,10 @@
 // s'en sert aussi pour éteindre son bouton. Deux implémentations d'une même
 // règle finissent toujours par diverger.
 
-import { and, asc, eq, gte, isNull, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, isNotNull, lte } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { absencesEquipe, equipes } from "../db/schema";
+import { absencesEquipe, chantiers, equipes, equipesDuChantier } from "../db/schema";
+import { joursAbsentsDuChantier } from "../../lib/equipe-absente";
 import type { Ctx } from "./context";
 import type { JourIso } from "../disponibilites";
 
@@ -27,6 +28,39 @@ export type AbsenceEnregistree = {
   premierJour: JourIso;
   dernierJour: JourIso;
   motif: string | null;
+};
+
+/**
+ * Ce que la POSE d'une absence a produit — l'absence, et ce qu'elle a défait.
+ *
+ * **Un type à part, et ce n'est pas de la cosmétique** : `listerAbsencesEquipe`
+ * rend des absences, pas des poses. Coller ce champ sur le type commun
+ * l'aurait obligée à inventer une liste vide qui ne veut rien dire — et un
+ * lecteur l'aurait crue.
+ */
+export type AbsencePosee = AbsenceEnregistree & {
+  /**
+   * ─── LES CHANTIERS D'OÙ CETTE PERSONNE VIENT D'ÊTRE RETIRÉE ───────────────
+   *
+   * **Sa consigne du 8 septembre 2026 : « pas de pansement, corrige le problème
+   * à la racine ».** Elle est arrivée devant un correctif qui interdisait de
+   * COCHER un absent — et qui laissait intactes les affectations posées AVANT
+   * le congé. La porte était fermée d'un côté, grande ouverte de l'autre :
+   * poser un congé n'a jamais rien réconcilié.
+   *
+   * **Le vrai défaut n'était pas la coche, c'était l'absence de
+   * réconciliation.** Un congé est un fait nouveau qui rend fausses les
+   * affectations qu'il traverse ; les laisser en base, c'est garder deux
+   * vérités sur la même journée et compter sur lui pour voir laquelle est
+   * périmée. Il l'a vu, une fois, sur une capture — les autres fois, un
+   * chantier serait parti avec quelqu'un qui n'y était pas.
+   *
+   * **Elles sont RENDUES, jamais retirées en silence** (`CLAUDE.md` §4 : rien
+   * ne se décide à sa place). L'écran nomme les chantiers concernés : sans ça,
+   * une demi-journée passerait de « Julien » à personne sans qu'il l'apprenne,
+   * et un chantier sans personne est exactement ce qu'on veut éviter.
+   */
+  chantiersLiberes: { id: string; nom: string }[];
 };
 
 /**
@@ -126,7 +160,7 @@ export async function absencesSurLaFenetre(
 export async function noterAbsenceEquipe(
   ctx: Ctx,
   entree: { rang: number; premierJour: JourIso; dernierJour: JourIso; motif: string | null }
-): Promise<AbsenceEnregistree | null> {
+): Promise<AbsencePosee | null> {
   const rang = Math.trunc(entree.rang);
   if (!Number.isInteger(rang) || rang < 1) return null;
 
@@ -168,7 +202,57 @@ export async function noterAbsenceEquipe(
       });
     if (!creee) return null;
 
-    return { ...creee, rang: cible.rang, nom: cible.nom };
+    // ─── LA RÉCONCILIATION, DANS LA MÊME TRANSACTION ──────────────────────
+    // **Dans la même, et c'est le point.** Faite après coup, une panne entre
+    // les deux laisserait le congé posé et les affectations fausses — soit
+    // exactement l'état qu'on répare, mais désormais invisible parce que
+    // l'écran croirait le travail fait.
+    const poses = await tx
+      .select({
+        id: chantiers.id,
+        nom: chantiers.nom,
+        datePlanifiee: chantiers.datePlanifiee,
+        creneauDebut: chantiers.creneauDebut,
+        dureeDemiJournees: chantiers.dureeDemiJournees,
+      })
+      .from(chantiers)
+      .innerJoin(equipesDuChantier, eq(equipesDuChantier.chantierId, chantiers.id))
+      .where(
+        and(
+          eq(chantiers.entrepriseId, ctx.entrepriseId),
+          eq(equipesDuChantier.equipeId, cible.id),
+          isNull(chantiers.deletedAt),
+          isNotNull(chantiers.datePlanifiee)
+        )
+      );
+
+    const touches = new Map<string, string>();
+    for (const c of poses) {
+      if (touches.has(c.id)) continue;
+      const jours = joursAbsentsDuChantier(cible.rang, c, [
+        { rang: cible.rang, premierJour: creee.premierJour, dernierJour: creee.dernierJour },
+      ]);
+      if (jours.length > 0) touches.set(c.id, c.nom);
+    }
+
+    if (touches.size > 0) {
+      await tx
+        .delete(equipesDuChantier)
+        .where(
+          and(
+            eq(equipesDuChantier.entrepriseId, ctx.entrepriseId),
+            eq(equipesDuChantier.equipeId, cible.id),
+            inArray(equipesDuChantier.chantierId, [...touches.keys()])
+          )
+        );
+    }
+
+    return {
+      ...creee,
+      rang: cible.rang,
+      nom: cible.nom,
+      chantiersLiberes: [...touches].map(([id, nom]) => ({ id, nom })),
+    };
   });
 }
 

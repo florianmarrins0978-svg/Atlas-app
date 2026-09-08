@@ -39,7 +39,52 @@ il ne t'enferme pas dedans.
 
 ---
 
-## Un arbitrage que je te dois, et que tu peux contester
+## Ta correction : « pas de pansement »
+
+**Tu avais raison, et voici précisément ce que mon premier correctif ratait.**
+
+Il refusait de **cocher** quelqu'un déjà en congé. Or sur ta capture, la coche
+était **antérieure** au congé : l'incohérence n'était pas entrée par cette
+porte-là. Poser un congé ne défaisait rien, et ne l'avait jamais fait.
+
+| La porte | Avant | Mon 1er correctif | Maintenant |
+|---|---|---|---|
+| cocher quelqu'un déjà en congé | ouverte | **fermée** | fermée |
+| poser un congé sur quelqu'un déjà coché | ouverte | **ouverte** | **fermée** |
+
+**Poser un congé retire maintenant la personne des chantiers qu'il traverse**, et
+te le dit :
+
+- **au planning** : la pastille disparaît sous tes yeux, il n'y a rien à
+  expliquer ;
+- **aux Réglages** : une ligne nomme les chantiers concernés — là-bas tu ne les
+  vois pas.
+
+---
+
+## Ce qui n'est PAS corrigé, et pourquoi je ne l'ai pas fait seul
+
+**La racine la plus profonde reste ouverte.** Quand tu coches quelqu'un, Atlas
+enregistre « Julien, le matin, sur ce chantier » — **sans le jour**. Il ne sait
+donc pas dire « Julien le 11 mais pas le 10 ».
+
+**Ce que ça te coûte concrètement :**
+
+> Chantier de deux jours, congé sur un seul des deux → poser le congé retire
+> Julien du chantier **entier**, et tu ne peux plus l'y remettre, même pour le
+> jour où il est là.
+
+**Pourquoi je ne l'ai pas corrigé :** il faut une migration de ta base, et ça
+change ton geste — tu cocherais **par journée** au lieu de par chantier. Les
+deux se demandent, ils ne se décident pas à ta place.
+
+**La question :** veux-tu cocher tes salariés jour par jour sur les chantiers de
+plusieurs jours ? Si oui, je te fais une maquette avant de toucher à quoi que ce
+soit.
+
+---
+
+## L'arbitrage du moment, en attendant
 
 **Un chantier de deux jours dont UN SEUL tombe sur le congé : la coche est
 refusée.**
@@ -63,7 +108,8 @@ le mien.
 | | |
 |---|---|
 | la règle, seule | 12 cas, **confrontée à la version d'avant** : elle rougit sur ton cas exact |
-| **le refus du serveur** | 6 cas en base, sous le rôle de l'application — confrontée aussi |
+| **le refus du serveur** | 11 cas en base, sous le rôle de l'application — confrontés aussi |
+| **la réconciliation** | 5 cas neufs : ce qu'un congé défait, ce qu'il ne doit pas défaire (l'autre personne, un chantier sans date, un congé lointain) |
 | l'écran, **regardé** | Julien pâle et non cliquable, Antoine intact, sur la carte du jeudi 10 |
 | couleurs | aucune écrite en dur : le gris tient sur tes sept chartes, les deux sombres comprises |
 | batterie complète | *(chiffres à la fin)* |

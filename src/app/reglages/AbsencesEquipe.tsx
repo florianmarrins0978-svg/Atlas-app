@@ -72,6 +72,17 @@ export default function AbsencesEquipe({
   const [ouverte, setOuverte] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const [refus, setRefus] = useState<string | null>(null);
+  /**
+   * Les chantiers d'où ce congé vient de retirer la personne.
+   *
+   * **Ici, et pas au planning, parce qu'ici rien ne se voit.** Poser un congé
+   * défait les affectations qu'il traverse (sa consigne du 8 septembre 2026,
+   * « corrige à la racine »). Sur le planning, la pastille disparaît sous ses
+   * yeux : l'écran MONTRE, il n'a rien à expliquer (`CLAUDE.md` §3). Sur cet
+   * écran-là, les chantiers concernés sont ailleurs — sans cette phrase, une
+   * demi-journée passerait de « Julien » à personne sans qu'il l'apprenne.
+   */
+  const [liberes, setLiberes] = useState<{ id: string; nom: string }[]>([]);
 
   const [rang, setRang] = useState(1);
   const [premierJour, setPremierJour] = useState(aujourdHui);
@@ -131,6 +142,7 @@ export default function AbsencesEquipe({
   async function enregistrer() {
     setEnCours(true);
     setRefus(null);
+    setLiberes([]);
     const fd = new FormData();
     fd.set("rang", String(rang));
     fd.set("premierJour", premierJour);
@@ -143,6 +155,7 @@ export default function AbsencesEquipe({
       return;
     }
     setOuverte(false);
+    setLiberes(r.chantiersLiberes);
     router.refresh();
   }
 
@@ -172,6 +185,20 @@ export default function AbsencesEquipe({
       <p className={`mb-1.5 px-[26px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
         Absences
       </p>
+
+      {/* **Ce que le congé vient de défaire** — les chantiers d'où la personne
+          a été retirée. La liste se ferme d'elle-même au congé suivant : elle
+          annonce un fait, elle ne s'installe pas. */}
+      {liberes.length > 0 && (
+        <p
+          role="status"
+          data-atlas="chantiers-liberes"
+          className="mx-[26px] mb-2 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.6]"
+          style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}
+        >
+          Retiré de {liberes.map((c) => c.nom).join(", ")}.
+        </p>
+      )}
 
       {absences.length === 0 ? (
         <p className="px-[26px] py-2 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>

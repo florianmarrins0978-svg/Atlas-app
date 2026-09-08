@@ -7,6 +7,27 @@ Format : le plus récent en tête.
 
 ---
 ## 2026-09-08
+### Poser un congé défait ce qu'il rend faux
+
+Sa consigne, devant le premier correctif : *« pas de pansement, corrige le
+problème à la racine »*. Refuser de COCHER un absent fermait une porte — mais
+l'incohérence qu'il a photographiée était entrée par l'autre : sa coche était
+ANTÉRIEURE au congé, et poser un congé n'avait jamais rien réconcilié.
+
+Poser un congé retire désormais la personne des chantiers qu'il traverse, dans
+la même transaction, et **le dit** : au planning la pastille disparaît sous ses
+yeux, aux Réglages une ligne nomme les chantiers concernés.
+
+**Ce que ça évite :** un chantier qui part avec quelqu'un qui n'y sera pas, sans
+que rien ne l'ait signalé.
+
+**LA RACINE QUI RESTE, et elle demande son arbitrage :** `equipes_du_chantier`
+ne porte aucun jour. Une coche vaut pour le chantier entier, donc l'application
+ne peut pas dire « Julien le 11 mais pas le 10 ». Conséquence à connaître : sur
+un chantier de deux jours dont un seul tombe sur un congé, la personne devient
+inaffectable sur ce chantier. Corriger cela demande une migration et change son
+geste — `ARCHITECTURE.md` §287, question dans `TODO.md`.
+
 ### On ne coche plus quelqu'un qui n'est pas là
 
 Une personne en congé pouvait être cochée sur un chantier de ce jour-là, alors
