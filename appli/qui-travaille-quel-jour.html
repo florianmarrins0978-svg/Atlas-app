@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qui travaille quel jour — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  COCHER SES GARS JOUR PAR JOUR — sa décision du 8 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  **Le manque, tel qu'il est apparu.** Le 8 septembre il signale qu'un salarié
+  en congé reste sélectionnable. En corrigeant, on découvre plus profond :
+  `equipes_du_chantier` porte `(chantier, demi, équipe)` — **aucun jour**. Une
+  coche vaut pour le chantier entier. L'application ne peut donc pas dire
+  « Julien le 11 mais pas le 10 », et sur un chantier de deux jours dont un seul
+  tombe sur un congé, la personne est retirée des deux.
+
+  **Sa réponse, le 8 septembre : « oui, jour par jour ».**
+
+  **CE QUI NE DOIT PAS CHANGER, ET C'EST LA CONTRAINTE PRINCIPALE.** Neuf
+  chantiers sur dix durent UNE journée. Si le découpage par jour s'affiche
+  partout, on alourdit le cas courant pour servir l'exception — exactement ce
+  qu'il reprochait au planning le 19 août : *« cette page est beaucoup trop
+  compliquée à comprendre »*. Les trois propositions gardent donc l'écran
+  d'aujourd'hui, à l'identique, sur un chantier d'un seul jour.
+
+  RIEN N'EST CODÉ. Couleurs copiées de `src/lib/chartes.ts`.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --scene:#e6e3dc;
+  --plein:#6f8a5f; --papier:#ece9e1;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --scene:#070908;
+  --plein:#6f8a5f; --papier:#232722;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+.choix{max-width:740px;margin:14px auto 0;padding:0 20px;text-align:center}
+.choix button{font:inherit;font-size:13.5px;padding:10px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.choix button[aria-pressed=true]{background:var(--accent);color:var(--fond);
+  border-color:var(--accent)}
+
+.scene{display:flex;justify-content:center;padding:18px 16px 6px}
+.tel{width:390px;max-width:100%;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;padding:18px}
+
+.jour{text-align:center;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--encre-douce);margin-bottom:14px}
+h3{margin:0 0 2px;font-family:ui-serif,Georgia,serif;font-size:21px;font-weight:400}
+.duree{margin:0;font-size:13.5px;color:var(--or)}
+.lieu{margin:0 0 4px;font-size:13.5px;color:var(--gris)}
+
+.demi{font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--encre-douce);margin:14px 0 8px;display:flex;align-items:center;gap:8px}
+.demi .carre{width:11px;height:11px;border-radius:3px;background:#b9c9ad}
+.pastilles{display:flex;flex-wrap:wrap;gap:8px}
+.past{padding:11px 18px;border-radius:999px;border:1px solid var(--trait);
+  background:var(--fond);color:var(--encre-douce);font:inherit;font-size:14px;
+  cursor:pointer;min-height:48px}
+.past.mis{background:var(--plein);border-color:var(--plein);color:#fff}
+.past.or{border-color:var(--or);color:var(--or)}
+.past.absent{color:var(--gris);opacity:.72;cursor:not-allowed}
+.bas{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+
+/* A — un bloc par jour */
+.blocjour{margin-top:16px;padding-top:12px;border-top:1px solid var(--trait)}
+.blocjour .quand{font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--or);margin:0 0 8px}
+
+/* B — onglets de jours */
+.onglets{display:flex;gap:6px;margin:14px 0 4px}
+.onglets button{flex:1;padding:10px 4px;border-radius:8px;border:1px solid var(--trait);
+  background:var(--fond);color:var(--encre-douce);font:inherit;font-size:13px;
+  cursor:pointer;min-height:44px}
+.onglets button[aria-pressed=true]{background:var(--papier);color:var(--encre);
+  border-color:var(--encre)}
+.onglets .pt{display:block;font-size:10px;color:var(--gris);margin-top:2px}
+
+/* C — une coche, l'exception se dit */
+.sauf{font-size:12px;color:var(--gris);margin:6px 0 0}
+.sauf b{color:var(--or);font-weight:600}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px;font-weight:400}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
+  vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+@media (max-width:430px){
+  table,tbody,tr,td,th{display:block;width:100%}
+  thead{display:none}
+  tr{border-bottom:1px solid var(--trait);padding:10px 0}
+  td{border:0;padding:3px 0}
+}
+.reco{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--fond);background:var(--plein);
+  padding:3px 8px;border-radius:3px;margin-left:8px;vertical-align:middle}
+.dit{max-width:740px;margin:12px auto 0;padding:0 20px;text-align:center;
+  font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="duree" aria-pressed="false">Voir sur un chantier d'UN jour</button>
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">Maquette — rien n'est codé</span>
+  <h1>Qui travaille quel jour</h1>
+  <p><b>Deux questions ici</b>, sur le même coin de l'application : qui travaille
+  quel jour, et comment noter un congé d'une demi-journée.</p>
+  <p>Aujourd'hui Atlas note « Julien le matin sur ce chantier », <b>sans le
+  jour</b>. Sur un chantier de deux jours, un congé sur un seul le retire des
+  deux.</p>
+  <p><b>Touchez les pastilles</b>, essayez les trois. Julien est en congé le
+  jeudi 10 : il est grisé ce jour-là, et libre le vendredi.</p>
+  <p>Le bouton du haut montre ce que ça donne sur un chantier d'<b>un seul
+  jour</b> — c'est neuf chantiers sur dix, et rien ne doit y changer.</p>
+</div>
+
+<div class="choix" id="choix">
+  <button type="button" data-v="a" aria-pressed="false">A — un bloc par jour</button>
+  <button type="button" data-v="b" aria-pressed="false">B — un onglet par jour</button>
+  <button type="button" data-v="c" aria-pressed="true">C — une coche, l'exception se dit</button>
+</div>
+
+<div class="scene">
+  <div class="tel">
+    <p class="jour" id="entete">Jeudi 10 septembre</p>
+    <h3>Mr. Alicanter</h3>
+    <p class="duree" id="duree-txt">2 jours</p>
+    <p class="lieu">Bordeaux</p>
+    <div id="corps"></div>
+    <div class="bas">
+      <button type="button" class="past">Déplacer</button>
+      <button type="button" class="past">Retirer</button>
+    </div>
+  </div>
+</div>
+<p class="dit" id="dit"></p>
+
+<h2 style="max-width:740px;margin:38px auto 0;padding:0 20px;
+           font-family:ui-serif,Georgia,serif;font-size:23px;font-weight:400">
+  Et poser un congé d'une demi-journée
+</h2>
+<p class="dit" style="text-align:left;max-width:740px;margin:6px auto 0">
+  <b>Votre question du 8 septembre, et la réponse est non</b> : aujourd'hui une
+  absence prend la journée entière. Un rendez-vous médical un matin vous coûte
+  la journée de votre gars.
+</p>
+
+<div class="choix" id="choix2">
+  <button type="button" data-v="d" aria-pressed="true">D — trois pastilles</button>
+  <button type="button" data-v="e" aria-pressed="false">E — deux cases</button>
+</div>
+
+<div class="scene">
+  <div class="tel" id="tel2"></div>
+</div>
+<p class="dit" id="dit2"></p>
+
+<div class="notes">
+  <h3>Ce que je recommande</h3>
+  <table>
+    <thead><tr><th>Version</th><th>Ce qu'elle coûte</th><th>Ce qu'elle donne</th></tr></thead>
+    <tbody>
+    <tr>
+      <td><b>C</b><span class="reco">recommandé</span></td>
+      <td>Rien de votre côté : <b>vous cochez comme aujourd'hui</b>, une fois.</td>
+      <td>Le congé retire la personne du seul jour concerné, et l'écran l'écrit
+      sous son nom. Sur un chantier d'un jour, l'écran est identique à celui
+      d'aujourd'hui.</td>
+    </tr>
+    <tr>
+      <td><b>A</b></td>
+      <td>Un bloc par jour : sur trois jours, ça fait six lignes de pastilles.</td>
+      <td>Tout est visible d'un coup, sans rien toucher. Mais c'est long, et
+      neuf fois sur dix ça ne sert à rien.</td>
+    </tr>
+    <tr>
+      <td><b>B</b></td>
+      <td>Un appui de plus pour voir un autre jour.</td>
+      <td>Court à l'écran. Mais ce qui n'est pas affiché ne se vérifie pas : on
+      oublie de regarder le second jour.</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h3>Pourquoi C, en un mot</h3>
+  <p>Les trois règlent le problème. <b>C est la seule qui ne vous demande rien
+  de plus</b> : votre geste ne change pas, c'est l'application qui retire la
+  personne du jour où elle n'est pas là, et qui vous le dit. A et B vous font
+  payer, sur chaque chantier, une complexité qui ne sert qu'aux rares chantiers
+  à cheval sur un congé.</p>
+
+  <h3>Pour le congé d'une demi-journée : D</h3>
+  <p><b>D suit l'ordre de votre pensée</b> — qui, puis quand — et surtout
+  « La journée » est déjà choisi. Vous notez une absence exactement comme
+  aujourd'hui, en un appui ; la demi-journée n'existe que si vous la demandez.</p>
+  <p><b>E</b> est plus souple sur une longue période, mais elle vous fait
+  regarder deux cases à chaque congé, y compris les neuf fois sur dix où c'est
+  la journée entière.</p>
+
+  <h3>Ce qui change dans tous les cas, sous le capot</h3>
+  <p>Il faut <b>modifier votre base</b> deux fois : pour qu'une affectation porte
+  un jour, et pour qu'une absence porte une demi-journée. C'est la seule façon
+  de dire « Julien vendredi mais pas jeudi », et « Julien absent jeudi matin ».</p>
+  <p><b>Rien ne se perd.</b> Ce qui est déjà coché reste coché sur tous les jours
+  du chantier ; les congés déjà notés restent des journées entières.</p>
+</div>
+
+<script>
+document.getElementById("pole").addEventListener("click", (e) => {
+  const on = document.body.classList.toggle("nuit");
+  e.currentTarget.setAttribute("aria-pressed", on ? "true" : "false");
+});
+
+let unSeulJour = false;
+let version = "c";
+
+const P = (mot, cls) => `<button type="button" class="past ${cls || ""}">${mot}</button>`;
+
+function rendre() {
+  const corps = document.getElementById("corps");
+  document.getElementById("duree-txt").textContent = unSeulJour ? "une journée" : "2 jours";
+
+  // Sur un chantier d'UN jour, les trois versions donnent le MÊME écran :
+  // celui d'aujourd'hui. C'est la contrainte principale de cette planche.
+  if (unSeulJour) {
+    corps.innerHTML = `
+      <p class="demi"><span class="carre"></span>Matin</p>
+      <div class="pastilles">${P("Julien", "absent")}${P("Antoine", "mis")}${P("Terminé", "or")}</div>
+      <p class="demi"><span class="carre"></span>Après-midi</p>
+      <div class="pastilles">${P("Julien", "absent")}${P("Antoine")}</div>`;
+    document.getElementById("dit").textContent =
+      "Chantier d'un jour : les trois versions donnent cet écran-là, celui d'aujourd'hui. Julien est grisé, il est en congé.";
+    return;
+  }
+
+  if (version === "a") {
+    corps.innerHTML = `
+      <div class="blocjour">
+        <p class="quand">Jeudi 10</p>
+        <p class="demi"><span class="carre"></span>Matin</p>
+        <div class="pastilles">${P("Julien", "absent")}${P("Antoine", "mis")}</div>
+        <p class="demi"><span class="carre"></span>Après-midi</p>
+        <div class="pastilles">${P("Julien", "absent")}${P("Antoine", "mis")}</div>
+      </div>
+      <div class="blocjour">
+        <p class="quand">Vendredi 11</p>
+        <p class="demi"><span class="carre"></span>Matin</p>
+        <div class="pastilles">${P("Julien", "mis")}${P("Antoine", "mis")}</div>
+        <p class="demi"><span class="carre"></span>Après-midi</p>
+        <div class="pastilles">${P("Julien", "mis")}${P("Antoine")}</div>
+      </div>`;
+    document.getElementById("dit").textContent =
+      "A — tout est là, sans rien toucher. Sur trois jours, ça fait six lignes de pastilles.";
+  } else if (version === "b") {
+    corps.innerHTML = `
+      <div class="onglets">
+        <button type="button" aria-pressed="true">Jeu 10<span class="pt">Antoine</span></button>
+        <button type="button" aria-pressed="false">Ven 11<span class="pt">Julien, Antoine</span></button>
+      </div>
+      <p class="demi"><span class="carre"></span>Matin</p>
+      <div class="pastilles">${P("Julien", "absent")}${P("Antoine", "mis")}</div>
+      <p class="demi"><span class="carre"></span>Après-midi</p>
+      <div class="pastilles">${P("Julien", "absent")}${P("Antoine", "mis")}</div>`;
+    document.getElementById("dit").textContent =
+      "B — un jour à la fois. Court, mais le second jour ne se vérifie qu'en y allant.";
+  } else {
+    corps.innerHTML = `
+      <p class="demi"><span class="carre"></span>Matin</p>
+      <div class="pastilles">${P("Julien", "mis")}${P("Antoine", "mis")}${P("Terminé", "or")}</div>
+      <p class="demi"><span class="carre"></span>Après-midi</p>
+      <div class="pastilles">${P("Julien", "mis")}${P("Antoine")}</div>
+      <!-- **UNE fois, pas une par demi-journée.** Écrite sous chacune des deux,
+           la même phrase se répétait à trois centimètres d'écart — sa règle du
+           25 août : « retire les phrases inutiles qui expliquent ». Le congé
+           porte sur la JOURNÉE, pas sur une moitié : il se dit une fois. -->
+      <p class="sauf">Julien : <b>pas le jeudi 10</b>, il est en congé.</p>`;
+    document.getElementById("dit").textContent =
+      "C — vous cochez une fois, comme aujourd'hui. L'application retire le jour du congé, et l'écrit.";
+  }
+}
+
+document.getElementById("choix").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  for (const x of e.currentTarget.querySelectorAll("button")) x.setAttribute("aria-pressed", "false");
+  b.setAttribute("aria-pressed", "true");
+  version = b.dataset.v;
+  rendre();
+});
+
+document.getElementById("duree").addEventListener("click", (e) => {
+  unSeulJour = !unSeulJour;
+  e.currentTarget.setAttribute("aria-pressed", unSeulJour ? "true" : "false");
+  e.currentTarget.textContent = unSeulJour
+    ? "Revenir au chantier de 2 jours"
+    : "Voir sur un chantier d'UN jour";
+  document.getElementById("entete").textContent = unSeulJour
+    ? "Jeudi 10 septembre" : "Jeudi 10 septembre";
+  rendre();
+});
+
+rendre();
+
+/* ── Poser un congé d'une demi-journée ─────────────────────────────────── */
+const DEMI = {
+  d: [`
+    <p class="jour">Jeudi 10 septembre</p>
+    <p class="demi" style="margin-top:4px">Qui n'est pas là ?</p>
+    <div class="pastilles">${P("Julien", "mis")}${P("Antoine")}</div>
+    <p class="demi">Quand ?</p>
+    <div class="pastilles">${P("Matin")}${P("Après-midi")}${P("La journée", "mis")}</div>`,
+    "D — vous dites qui, puis quand. « La journée » est déjà choisi : si vous ne touchez rien, c'est comme aujourd'hui."],
+  e: [`
+    <p class="jour">Réglages · Équipe · Absences</p>
+    <p class="demi" style="margin-top:4px">Julien n'est pas là</p>
+    <div class="pastilles" style="gap:10px">
+      <span style="font-size:14px;color:var(--encre-douce);align-self:center">du</span>
+      ${P("jeu. 10")}
+      <span style="font-size:14px;color:var(--encre-douce);align-self:center">au</span>
+      ${P("jeu. 10")}
+    </div>
+    <p class="demi">Sur ces jours-là</p>
+    <div class="pastilles">${P("Matin", "mis")}${P("Après-midi", "mis")}</div>
+    <p class="sauf">Décochez-en une pour une demi-journée.</p>`,
+    "E — deux cases à décocher. Plus souple sur une longue période, mais deux gestes au lieu d'un pour le cas courant."],
+};
+let volet = "d";
+function rendre2() {
+  document.getElementById("tel2").innerHTML = DEMI[volet][0];
+  document.getElementById("dit2").textContent = DEMI[volet][1];
+}
+document.getElementById("choix2").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  for (const x of e.currentTarget.querySelectorAll("button")) x.setAttribute("aria-pressed", "false");
+  b.setAttribute("aria-pressed", "true");
+  volet = b.dataset.v;
+  rendre2();
+});
+rendre2();
+</script>
+</body>
+</html>
