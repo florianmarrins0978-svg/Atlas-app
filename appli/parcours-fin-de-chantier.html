@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le parcours de bout en bout — tout se touche</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    LE PARCOURS DE BOUT EN BOUT — 8 septembre 2026.
+
+    Sa demande : *« fais-moi une maquette avec liens cliquables »*.
+
+    Les planches d'avant posaient les écrans côte à côte : on voyait les états,
+    jamais le CHEMIN. Ici il n'y a qu'un téléphone, et l'on avance dedans —
+    comme lui, comme son salarié.
+
+    ─────────────────────────────────────────────────────────────────────────
+    DEUX PARCOURS, ET LE MÊME CHANTIER.
+
+    | le salarié | sa journée → la fiche → « Fin de chantier » → c'est envoyé |
+    | le patron  | Terminés → le retour sous le chantier → la facture |
+
+    Le bouton « Salarié / Patron » en haut de l'écran change de personne. **Ce
+    qu'il montre n'est pas décoratif** : c'est là qu'on voit qu'un salarié n'a
+    que deux onglets en bas, et aucun euro nulle part.
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUI EST REPRIS DU PRODUIT, ET NON INVENTÉ.
+
+    · la zone « Planifiés » du planning — titre, semaine, pastille du jour,
+      nom en serif, durée en or, pastille d'équipe ;
+    · la fiche d'intervention — `FeuilleChantier` : titre doré, nom en serif 22,
+      Maps · Waze, Copier l'adresse · Appeler le client, filet, lignes du devis ;
+    · l'écran Terminés — `ListeTermines.tsx` : carte de TVA, onglets à 44 px,
+      navigation du mois, lignes à 24 px sans trait, capsule verte « Facturer ».
+
+    Les noms, dates et montants sont inventés pour la démonstration.
+    MESURÉ POUR SON TÉLÉPHONE : 390 × 664. RIEN N'EST CODÉ dans `src/`.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  body.nuit{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47;
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);
+       -webkit-text-size-adjust:100%;padding:0 0 60px}
+  ::selection{background:rgba(138,101,40,.22)}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+  .mot{max-width:520px;margin:26px auto 0;padding:16px 19px;background:var(--etabli-carte);
+       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
+       font-size:14px;line-height:1.62;color:var(--etabli-doux)}
+  .mot b{color:var(--etabli-encre)}
+  .mot + .mot{margin-top:10px}
+
+  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
+         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
+  .etats .rangee{max-width:640px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;
+                 align-items:center;justify-content:center}
+  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
+                color:var(--etabli-doux);border-radius:999px;padding:11px 17px;
+                font:400 13.5px/1 var(--sans);cursor:pointer;
+                -webkit-tap-highlight-color:transparent}
+  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+  .etats .filet{width:1px;height:26px;background:var(--etabli-trait);margin:0 5px}
+
+  .scene{display:flex;justify-content:center;margin-top:30px;padding:0 20px}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
+       background:var(--fond);color:var(--encre);box-shadow:0 18px 46px rgba(20,18,14,.24)}
+  .vue{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+  .vue[data-ouvert="oui"]{display:flex}
+
+  /* ── Pièces communes ─────────────────────────────────────────────── */
+  .barreHaute{display:flex;align-items:center;gap:12px;padding:20px 22px 0}
+  .retourRond{width:38px;height:38px;border-radius:999px;display:grid;place-items:center;
+              background:var(--tuile);color:var(--doux);border:0;cursor:pointer;flex:0 0 auto;
+              -webkit-tap-highlight-color:transparent}
+  .barreHaute h1{margin:0;font:400 27px/1.06 var(--serif)}
+  .enTeteSeul{padding:24px 26px 0}
+  .enTeteSeul h1{margin:0;font:400 34px/1.02 var(--serif)}
+
+  .pastilleJour{display:block;width:max-content;margin:0 auto;background:var(--tuile);
+                border-radius:999px;padding:7px 14px;font:600 10.5px/1 var(--sans);
+                letter-spacing:.16em;text-transform:uppercase;color:var(--doux)}
+  .titreZone{text-align:center;margin:18px 0 0;font:600 11px/1 var(--sans);
+             letter-spacing:.22em;text-transform:uppercase;color:var(--doux)}
+  .semaine{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:15px}
+  .semaine .fleche{width:36px;height:36px;border-radius:999px;display:grid;place-items:center;
+                   background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux)}
+  .semaine .quand{font:600 15px/1 var(--sans)}
+
+  /* La rangée d'un chantier au planning — elle S'OUVRE. */
+  .rangChantier{display:flex;align-items:flex-start;gap:12px;width:100%;border:0;background:transparent;
+                padding:16px 22px;text-align:left;cursor:pointer;color:inherit;
+                -webkit-tap-highlight-color:transparent}
+  .rangChantier:active{background:var(--tuile)}
+  .rangChantier .qui{min-width:0;flex:1}
+  .rangChantier .nomC{display:block;font:400 19px/1.22 var(--serif)}
+  .rangChantier .duree{display:block;margin-top:5px;font:400 12px/1 var(--sans);color:var(--orTexte)}
+  .equipe{flex:0 0 auto;border-radius:999px;padding:8px 13px;font:400 12.5px/1 var(--sans);
+          color:var(--orTexte);border:1px dashed var(--orTexte)}
+  .chev{flex:0 0 auto;color:var(--gris);padding-top:5px}
+
+  /* ── La fiche d'intervention ─────────────────────────────────────── */
+  .feuille{margin:14px 18px 0;border-radius:10px;padding:15px 16px 14px;
+           background:var(--tuile);box-shadow:inset 0 0 0 1px var(--trait)}
+  .feuille .titre{margin:0;text-align:center;font:700 10.5px/1 var(--sans);
+                  letter-spacing:.24em;text-transform:uppercase;color:var(--or)}
+  .feuille .quiCest{margin:10px 0 0;text-align:center;font:400 22px/1.15 var(--serif)}
+  .gestes{display:flex;gap:6px;margin-top:10px}
+  .gestes + .gestes{margin-top:6px}
+  .geste{flex:1;border-radius:8px;padding:11px 6px;text-align:center;font:400 13px/1 var(--sans);
+         background:var(--plage);border:1px solid var(--trait);color:var(--encre);
+         text-decoration:none;-webkit-tap-highlight-color:transparent}
+  .filet{margin-top:13px;padding-top:12px;border-top:1px solid var(--trait)}
+  .ligneTache{position:relative;margin:0 0 9px;padding-left:14px;font-size:14.5px;line-height:1.45}
+  .ligneTache:last-child{margin-bottom:0}
+  .ligneTache .puce{position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:999px;background:var(--or)}
+  .ligneTache.pasFaite{color:var(--gris)}
+  .ligneTache.pasFaite .puce{background:var(--gris)}
+
+  .tacheCochable{display:flex;align-items:flex-start;gap:11px;width:100%;border:0;background:transparent;
+                 padding:7px 0;text-align:left;cursor:pointer;color:inherit;
+                 -webkit-tap-highlight-color:transparent}
+  .tacheCochable .boite{width:24px;height:24px;flex:0 0 auto;border-radius:6px;display:grid;place-items:center;
+                        background:var(--plage);box-shadow:inset 0 0 0 1.5px var(--trait);color:transparent}
+  .tacheCochable[aria-pressed="true"] .boite{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .tacheCochable .quoi{font-size:14.5px;line-height:1.45;padding-top:2px;min-width:0;flex:1}
+  .tacheCochable[aria-pressed="true"] .quoi{color:var(--gris)}
+
+  .bandePhotos{display:flex;gap:7px;align-items:center;margin-top:10px}
+  .bandePhotos .vignette{width:46px;height:46px;border-radius:9px;background:var(--plage);
+                         box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)}
+  .bandePhotos .plus{color:var(--orTexte);cursor:pointer}
+  .bandePhotos .mot-photos{font:600 10.5px/1.3 var(--sans);letter-spacing:.14em;
+                           text-transform:uppercase;color:var(--gris);margin-right:2px}
+  .aSignaler{width:100%;margin-top:9px;border:0;border-radius:9px;background:var(--plage);
+             box-shadow:inset 0 0 0 1px var(--trait);padding:11px 13px;min-height:54px;
+             font:400 14.5px/1.45 var(--sans);color:var(--encre);resize:none}
+  .aSignaler::placeholder{color:var(--gris)}
+  .aSignaler:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--or)}
+  .deplie{overflow:hidden;max-height:0;transition:max-height .3s cubic-bezier(.22,.9,.3,1)}
+  .deplie[data-ouvert="oui"]{max-height:400px}
+
+  .boutonFeuille{display:block;width:max-content;margin:12px auto 0;border:0;border-radius:999px;
+                 padding:11px 22px;font:400 13.5px/1 var(--sans);cursor:pointer;
+                 background:var(--plein);color:var(--surplein);text-decoration:none;
+                 -webkit-tap-highlight-color:transparent}
+  .boutonFeuille:disabled{opacity:.45;cursor:not-allowed}
+  .manque{margin:8px 0 0;text-align:center;font-size:12.5px;color:var(--gris)}
+  .grosBouton{display:flex;align-items:center;justify-content:center;gap:11px;
+              width:calc(100% - 36px);margin:14px 18px 18px;border:0;border-radius:999px;
+              background:var(--plein);color:var(--surplein);height:56px;
+              font:400 17px/1 var(--serif);cursor:pointer;
+              -webkit-tap-highlight-color:transparent}
+  .grosBouton:active{transform:scale(.99)}
+
+  /* ── Le retour, tel que le patron le lit ─────────────────────────── */
+  .retourBloc{display:flex;align-items:center;gap:10px;margin-top:9px;padding:10px 12px;
+              border-radius:10px;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+  .retourBloc.neuf{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .retourBloc .sceau{width:24px;height:24px;border-radius:999px;flex:0 0 auto;display:grid;
+                     place-items:center;background:var(--tuile);color:var(--orTexte)}
+  .retourBloc .dit{min-width:0;flex:1;font:400 13px/1.45 var(--sans);color:var(--doux)}
+  .retourBloc .dit b{color:var(--encre);font-weight:500}
+  .vign{display:flex;gap:4px;flex:0 0 auto}
+  .vign span{width:22px;height:22px;border-radius:6px;background:var(--tuile);
+             box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris)}
+
+  /* ── Terminés ────────────────────────────────────────────────────── */
+  .carteTva{margin:20px 26px 0;border-radius:14px;padding:15px 17px;background:var(--plage);
+            box-shadow:inset 0 0 0 1px var(--trait);display:flex;align-items:center;
+            justify-content:space-between;gap:12px}
+  .carteTva .quoi{font:700 10.5px/1.35 var(--sans);letter-spacing:.16em;
+                  text-transform:uppercase;color:var(--or)}
+  .carteTva .quand{display:block;margin-top:6px;font:400 14px/1 var(--sans);color:var(--doux)}
+  .carteTva .combien{font:400 22px/1 var(--serif);font-variant-numeric:tabular-nums}
+  .onglets{display:flex;gap:8px;margin:22px 26px 0}
+  .onglet{height:44px;display:inline-flex;align-items:center;border:0;border-radius:999px;
+          padding:0 18px;font:400 14px/1 var(--sans);cursor:pointer;
+          background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux);
+          -webkit-tap-highlight-color:transparent}
+  .onglet[aria-pressed="true"]{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .navMois{display:flex;align-items:center;justify-content:center;gap:16px;margin:22px 26px 0}
+  .navMois .fleche{width:36px;height:36px;border-radius:999px;display:grid;place-items:center;
+                   background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux)}
+  .navMois .quand{font:600 15px/1 var(--sans)}
+  .comptes{margin:14px 26px 6px;font:700 14px/1.6 var(--sans);color:var(--encre)}
+  .comptes .aFacturer{color:var(--orTexte)}
+  .rangTermine{display:flex;flex-direction:column;width:100%;border:0;background:transparent;
+               padding:20px 26px;text-align:left;cursor:pointer;color:inherit;
+               -webkit-tap-highlight-color:transparent}
+  .rangTermine .haut{display:flex;gap:14px;align-items:center;width:100%}
+  .rangTermine:active{background:var(--tuile)}
+  .rangTermine .qui{min-width:0;flex:1}
+  .rangTermine .nomC{display:block;font:400 17px/1.2 var(--serif);white-space:nowrap;
+                     overflow:hidden;text-overflow:ellipsis}
+  .rangTermine .etat{display:block;margin-top:5px;font:400 13px/1.5 var(--sans);color:var(--doux);
+                     font-variant-numeric:tabular-nums}
+  .capsule{flex:0 0 auto;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;
+           padding:0 17px;font:600 12.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+           background:var(--plein);color:var(--surplein)}
+  .pasLu{display:inline-block;width:7px;height:7px;border-radius:999px;background:var(--or);
+         margin-right:8px;vertical-align:2px}
+
+  /* ── C'est envoyé ────────────────────────────────────────────────── */
+  .envoye{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+          gap:14px;padding:0 40px;text-align:center}
+  .envoye .rond{width:74px;height:74px;border-radius:999px;display:grid;place-items:center;
+                background:var(--plein);color:var(--surplein)}
+  .envoye h2{margin:0;font:400 26px/1.15 var(--serif)}
+  .envoye p{margin:0;font-size:14px;line-height:1.55;color:var(--gris)}
+
+  .barre{display:flex;align-items:center;justify-content:space-around;height:60px;
+         background:var(--plage);box-shadow:inset 0 1px 0 var(--trait);margin-top:auto;flex:0 0 auto}
+  .barre i{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;
+           font:500 9.5px/1 var(--sans);font-style:normal;color:var(--gris)}
+  .barre i.actif{color:var(--encre)}
+  .barre i .pastille{position:absolute;top:-3px;right:-9px;min-width:16px;height:16px;border-radius:999px;
+                     background:var(--or);color:var(--fond);font:700 10px/16px var(--sans);
+                     text-align:center;padding:0 4px}
+
+  @media (max-width:900px){ .tel{width:100%} }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Tout se touche.</b> Un seul téléphone, et vous avancez dedans comme votre
+  salarié avancerait. <b>Commencez par toucher le chantier.</b>
+</div>
+
+<div class="etats" role="group" aria-label="Qui êtes-vous">
+  <div class="rangee">
+    <button type="button" id="versSalarie" aria-pressed="true">Le salarié</button>
+    <button type="button" id="versPatron" aria-pressed="false">Vous</button>
+    <span class="filet" aria-hidden="true"></span>
+    <button type="button" id="rejouer">Recommencer</button>
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+  </div>
+</div>
+
+<div class="scene">
+  <div class="tel">
+
+    <!-- ══════════ S1 · SA JOURNÉE ══════════════════════════════════ -->
+    <div class="vue" id="vue-journee" data-ouvert="oui">
+      <div class="enTeteSeul"><h1>Planning</h1></div>
+      <p class="titreZone">Planifiés</p>
+      <div class="semaine">
+        <span class="fleche" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="quand">31 août &ndash; 6 septembre</span>
+        <span class="fleche" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M1.5 1.5l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div style="margin-top:18px"><span class="pastilleJour">Mercredi 2 septembre</span></div>
+      <button type="button" class="rangChantier" data-va="fiche">
+        <span class="qui">
+          <span class="nomC">M. Rialland</span>
+          <span class="duree">une journée</span>
+          <span class="retourBloc" id="retourAuPlanning" hidden>
+            <span class="sceau" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="dit"><b>Fini &middot; Julien</b> &middot; 16 h 40</span>
+          </span>
+        </span>
+        <span class="equipe">Julien, Paul</span>
+        <span class="chev" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M1.5 1.5l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </button>
+      <div style="margin-top:6px"><span class="pastilleJour">Jeudi 3 septembre</span></div>
+      <button type="button" class="rangChantier" data-va="fiche">
+        <span class="qui">
+          <span class="nomC">Résidence des Ormes</span>
+          <span class="duree">une demi-journée</span>
+        </span>
+        <span class="equipe">Julien</span>
+        <span class="chev" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M1.5 1.5l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </button>
+      <div class="barre" data-barre="salarie" aria-hidden="true"></div>
+    </div>
+
+    <!-- ══════════ S2 · LA FICHE D'INTERVENTION ═════════════════════ -->
+    <div class="vue" id="vue-fiche">
+      <div class="barreHaute">
+        <button type="button" class="retourRond" data-va="journee" aria-label="Retour à ma journée">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h1>M. Rialland</h1>
+      </div>
+      <div class="feuille">
+        <p class="titre">Fiche d'intervention</p>
+        <p class="quiCest">M. Rialland</p>
+        <div class="gestes"><span class="geste">Maps</span><span class="geste">Waze</span></div>
+        <div class="gestes"><span class="geste">Copier l'adresse</span><span class="geste">Appeler le client</span></div>
+
+        <div class="filet" id="listeFiche">
+          <p class="ligneTache" data-puce><span class="puce" aria-hidden="true"></span>Débroussaillage du talus</p>
+          <p class="ligneTache" data-puce><span class="puce" aria-hidden="true"></span>Évacuation des déchets verts</p>
+          <p class="ligneTache" data-puce><span class="puce" aria-hidden="true"></span>Taille de la haie de laurier</p>
+          <div id="cases" hidden>
+            <button type="button" class="tacheCochable" aria-pressed="false">
+              <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="quoi">Débroussaillage du talus</span>
+            </button>
+            <button type="button" class="tacheCochable" aria-pressed="false">
+              <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="quoi">Évacuation des déchets verts</span>
+            </button>
+            <button type="button" class="tacheCochable" aria-pressed="false">
+              <span class="boite" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span class="quoi">Taille de la haie de laurier</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="deplie" id="deplie" data-ouvert="non">
+          <div class="bandePhotos" id="bande">
+            <span class="mot-photos">Photos</span>
+            <button type="button" class="vignette plus" aria-label="Ajouter une photo">
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <textarea class="aSignaler" placeholder="À signaler — facultatif"></textarea>
+          <button type="button" class="boutonFeuille" id="cestFini" disabled>C'est fini</button>
+          <p class="manque" id="manque"></p>
+        </div>
+      </div>
+      <button type="button" class="grosBouton" id="ouvrirFin">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Fin de chantier
+      </button>
+    </div>
+
+    <!-- ══════════ S3 · C'EST ENVOYÉ ════════════════════════════════ -->
+    <div class="vue" id="vue-envoye">
+      <div class="envoye">
+        <span class="rond" aria-hidden="true">
+          <svg width="34" height="34" viewBox="0 0 20 20" fill="none"><path d="M4 10.4 8.2 14.6 16 5.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h2>C'est parti chez le patron</h2>
+        <p>M. Rialland &middot; mercredi 2 septembre, 16 h 40</p>
+        <button type="button" class="boutonFeuille" data-va="journee" style="margin-top:6px">Revenir à ma journée</button>
+      </div>
+      <div class="barre" data-barre="salarie" aria-hidden="true"></div>
+    </div>
+
+    <!-- ══════════ P1 · TERMINÉS ════════════════════════════════════ -->
+    <div class="vue" id="vue-termines">
+      <div class="enTeteSeul"><h1>Terminés</h1></div>
+      <div class="carteTva">
+        <span><span class="quoi">Ma TVA à déclarer</span>
+          <span class="quand">Septembre 2026</span></span>
+        <span class="combien">0,00 €</span>
+      </div>
+      <div class="onglets">
+        <button type="button" class="onglet" aria-pressed="true">Tout</button>
+        <button type="button" class="onglet" aria-pressed="false">À facturer</button>
+      </div>
+      <div class="navMois">
+        <span class="fleche" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="quand">Septembre 2026</span>
+        <span class="fleche" aria-hidden="true"><svg width="8" height="13" viewBox="0 0 9 15" fill="none"><path d="M1.5 1.5l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <p class="comptes"><span class="aFacturer">2 à facturer</span> &middot; 8 facturés</p>
+      <button type="button" class="rangTermine" data-va="ficheLue">
+        <span class="haut">
+          <span class="qui">
+            <span class="nomC"><span class="pasLu" id="pastilleNonLu" aria-hidden="true"></span>M. Rialland</span>
+            <span class="etat">2 sept. &middot; 1 240,00 € prévus</span>
+          </span>
+          <span class="capsule">Facturer</span>
+        </span>
+        <span class="retourBloc neuf" id="retourDansTermines" hidden>
+          <span class="sceau" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="dit"><b>Julien</b> &middot; <span id="compteFaites">2 sur 3 faites</span></span>
+          <span class="vign" id="vignTermines"></span>
+        </span>
+      </button>
+      <button type="button" class="rangTermine" data-va="ficheLue">
+        <span class="haut">
+          <span class="qui">
+            <span class="nomC">Mme Costa</span>
+            <span class="etat">30 août &middot; 480,00 € prévus</span>
+          </span>
+          <span class="capsule">Facturer</span>
+        </span>
+      </button>
+      <div class="barre" data-barre="patron" aria-hidden="true"></div>
+    </div>
+
+    <!-- ══════════ P2 · LA FICHE, CÔTÉ PATRON ═══════════════════════ -->
+    <div class="vue" id="vue-ficheLue">
+      <div class="barreHaute">
+        <button type="button" class="retourRond" data-va="termines" aria-label="Retour aux terminés">
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none"><path d="M7.5 1.5 1.5 7.5l6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <h1>M. Rialland</h1>
+      </div>
+      <div class="feuille">
+        <p class="titre">Fiche d'intervention</p>
+        <p class="quiCest">M. Rialland</p>
+        <div class="gestes"><span class="geste">Maps</span><span class="geste">Waze</span></div>
+        <div class="gestes"><span class="geste">Copier l'adresse</span><span class="geste">Appeler le client</span></div>
+        <div class="filet" id="listeLue"></div>
+        <div class="retourBloc" id="retourDansFiche">
+          <span class="sceau" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="dit"><b>Fini &middot; Julien</b> &middot; 2 sept., 16 h 40<br><span id="ditFiche">2 sur 3 faites</span></span>
+          <span class="vign" id="vignFiche"></span>
+        </div>
+        <span class="boutonFeuille">Ouvrir le PDF sans les prix</span>
+      </div>
+      <button type="button" class="grosBouton" data-va="termines">Créer la facture</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="mot">
+  <b>Le parcours du salarié :</b> il touche le chantier, la fiche s'ouvre,
+  « Fin de chantier » déplie les cases et les photos, « C'est fini » l'envoie.
+  <b>Aucun euro n'apparaît</b>, et sa barre du bas n'a que deux entrées.
+</div>
+<div class="mot">
+  <b>Le vôtre :</b> touchez <b>« Vous »</b> en haut. Le retour est sous le chantier,
+  dans Terminés, avec le bouton « Facturer » sur la même rangée. Ce que le
+  salarié vient de cocher s'y retrouve — <b>essayez d'abord son parcours, puis
+  passez du côté patron.</b>
+</div>
+<div class="mot">
+  <b>La pastille d'or</b> à côté de son nom s'éteint dès que vous ouvrez la fiche :
+  elle dit ce qui n'a pas encore été lu.
+</div>
+
+<script>
+/*
+  UN SEUL TÉLÉPHONE, ET DE VRAIS LIENS.
+
+  Sa demande : *« fais-moi une maquette avec liens cliquables »*. Les planches
+  d'avant posaient les états côte à côte ; on y voyait tout sauf le CHEMIN, et
+  c'est le chemin qui casse. Ici on avance, et ce que le salarié coche revient
+  chez le patron — c'est le seul moyen de sentir si la boucle se tient.
+*/
+const qq = (s) => Array.from(document.querySelectorAll(s));
+const vues = qq(".vue");
+
+/** L'état du chantier, partagé par les deux parcours. */
+const etat = { fini: false, faites: 0, photos: 0 };
+
+function aller(nom) {
+  vues.forEach((v) => (v.dataset.ouvert = v.id === "vue-" + nom ? "oui" : "non"));
+  // On remonte en haut : un écran qu'on ouvre au milieu se lit comme un écran
+  // cassé.
+  const ouverte = document.getElementById("vue-" + nom);
+  if (ouverte) ouverte.scrollTop = 0;
+}
+
+qq("[data-va]").forEach((b) => b.addEventListener("click", () => aller(b.dataset.va)));
+
+// ── Le dépliage de la fin de chantier ───────────────────────────────────
+const deplie = document.getElementById("deplie");
+const cases = document.getElementById("cases");
+const puces = qq("#listeFiche [data-puce]");
+const ouvrirFin = document.getElementById("ouvrirFin");
+const taches = qq("#cases .tacheCochable");
+const bande = document.getElementById("bande");
+const cestFini = document.getElementById("cestFini");
+const manque = document.getElementById("manque");
+
+ouvrirFin.addEventListener("click", () => {
+  const ouvert = deplie.dataset.ouvert === "oui";
+  deplie.dataset.ouvert = ouvert ? "non" : "oui";
+  cases.hidden = ouvert;
+  // Les puces s'effacent quand les cases arrivent : la même liste deux fois
+  // fait douter de l'écran plus sûrement qu'une erreur franche.
+  puces.forEach((p) => (p.hidden = !ouvert));
+  ouvrirFin.lastChild.textContent = ouvert ? " Fin de chantier" : " Replier";
+});
+
+function photos() {
+  return bande.querySelectorAll(".vignette:not(.plus)").length;
+}
+
+function redire() {
+  const cochees = taches.filter((t) => t.getAttribute("aria-pressed") === "true").length;
+  const raisons = [];
+  if (cochees === 0) raisons.push("cochez ce que vous avez fait");
+  if (photos() === 0) raisons.push("ajoutez une photo");
+  // Ce qui manque se dit AVANT l'appui : sur un chantier, il n'a personne à
+  // qui demander pourquoi un bouton refuse.
+  cestFini.disabled = raisons.length > 0;
+  manque.textContent = raisons.length === 0 ? "" : raisons.join(" et ");
+}
+
+taches.forEach((t) =>
+  t.addEventListener("click", () => {
+    t.setAttribute("aria-pressed", t.getAttribute("aria-pressed") === "true" ? "false" : "true");
+    redire();
+  })
+);
+
+bande.querySelector(".plus").addEventListener("click", () => {
+  const v = document.createElement("span");
+  v.className = "vignette";
+  v.innerHTML = vignette(18);
+  bande.insertBefore(v, bande.querySelector(".plus"));
+  redire();
+});
+
+function vignette(taille) {
+  return (
+    '<svg width="' + taille + '" height="' + taille + '" viewBox="0 0 22 22" fill="none" aria-hidden="true">' +
+    '<rect x="2.4" y="4" width="17.2" height="14" rx="2.4" stroke="currentColor" stroke-width="1.6"/>' +
+    '<path d="m2.4 14.4 4.6-4 4 3.4 3.4-3 5.2 4.6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'
+  );
+}
+
+// ── « C'est fini » : ce qu'il a coché part chez le patron ───────────────
+cestFini.addEventListener("click", () => {
+  etat.fini = true;
+  etat.faites = taches.filter((t) => t.getAttribute("aria-pressed") === "true").length;
+  etat.photos = photos();
+  poserLeRetour();
+  aller("envoye");
+});
+
+/** Ce que le patron voit, une fois le retour posé. Écrit à UN seul endroit. */
+function poserLeRetour() {
+  const mot = etat.faites + " sur " + taches.length + " faites";
+  document.getElementById("compteFaites").textContent = mot;
+  document.getElementById("ditFiche").textContent = mot;
+
+  const vignettes = new Array(Math.min(etat.photos, 3))
+    .fill(0)
+    .map(() => "<span>" + vignette(12) + "</span>")
+    .join("");
+  document.getElementById("vignTermines").innerHTML = vignettes;
+  document.getElementById("vignFiche").innerHTML = vignettes;
+
+  document.getElementById("retourDansTermines").hidden = !etat.fini;
+  document.getElementById("retourAuPlanning").hidden = !etat.fini;
+  document.getElementById("retourDansFiche").hidden = !etat.fini;
+
+  // La liste que le patron relit : ce qui n'a pas été coché se voit éteint.
+  document.getElementById("listeLue").innerHTML = taches
+    .map((t, i) => {
+      const faite = t.getAttribute("aria-pressed") === "true";
+      const libelle = t.querySelector(".quoi").textContent;
+      return (
+        '<p class="ligneTache' + (faite ? "" : " pasFaite") + '">' +
+        '<span class="puce" aria-hidden="true"></span>' + libelle + "</p>"
+      );
+    })
+    .join("");
+}
+
+// La pastille « pas lu » s'éteint dès qu'il ouvre la fiche — un compte dit
+// combien, une pastille dit lequel.
+qq('[data-va="ficheLue"]').forEach((b) =>
+  b.addEventListener("click", () => {
+    document.getElementById("pastilleNonLu").hidden = true;
+    document.getElementById("retourDansTermines").classList.remove("neuf");
+  })
+);
+
+// ── Qui est-on ? ────────────────────────────────────────────────────────
+const versSalarie = document.getElementById("versSalarie");
+const versPatron = document.getElementById("versPatron");
+function qui(salarie) {
+  versSalarie.setAttribute("aria-pressed", String(salarie));
+  versPatron.setAttribute("aria-pressed", String(!salarie));
+  aller(salarie ? "journee" : "termines");
+}
+versSalarie.addEventListener("click", () => qui(true));
+versPatron.addEventListener("click", () => qui(false));
+
+// ── Les deux barres du bas — écrites une fois, posées deux fois ─────────
+const ONGLETS = {
+  salarie: [["Planning", "calendrier", true], ["Réglages", "roue", false]],
+  patron: [
+    ["Chantiers", "maison", false],
+    ["Planning", "calendrier", false],
+    ["Terminés", "coche", true],
+    ["Paysage", "feuille", false],
+    ["Réglages", "roue", false],
+  ],
+};
+const DESSINS = {
+  maison: '<path d="M3 8.6 10 3l7 5.6V17H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+  calendrier:
+    '<rect x="3" y="4.5" width="14" height="12.5" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M3 8.4h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  coche:
+    '<circle cx="10" cy="10" r="7.2" stroke="currentColor" stroke-width="1.6"/><path d="M6.6 10.2 9 12.6l4.4-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  feuille:
+    '<path d="M10 17c0-6 2.6-9.6 7-10.4C17 12 14 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 17C10 11 7.4 7.4 3 6.6 3 12 6 16 10 17Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+  roue:
+    '<circle cx="10" cy="10" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.6v2.2M10 15.2v2.2M17.4 10h-2.2M4.8 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4 4.8 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+};
+qq("[data-barre]").forEach((barre) => {
+  barre.innerHTML = ONGLETS[barre.dataset.barre]
+    .map(
+      ([mot, dessin, actif]) =>
+        '<i class="' + (actif ? "actif" : "") + '">' +
+        '<svg width="19" height="19" viewBox="0 0 20 20" fill="none">' + DESSINS[dessin] + "</svg>" +
+        mot + "</i>"
+    )
+    .join("");
+});
+
+document.getElementById("rejouer").addEventListener("click", () => {
+  etat.fini = false;
+  etat.faites = 0;
+  etat.photos = 0;
+  taches.forEach((t) => t.setAttribute("aria-pressed", "false"));
+  bande.querySelectorAll(".vignette:not(.plus)").forEach((v) => v.remove());
+  deplie.dataset.ouvert = "non";
+  cases.hidden = true;
+  puces.forEach((p) => (p.hidden = false));
+  ouvrirFin.lastChild.textContent = " Fin de chantier";
+  document.getElementById("pastilleNonLu").hidden = false;
+  document.getElementById("retourDansTermines").classList.add("neuf");
+  document.querySelector("#vue-fiche textarea").value = "";
+  poserLeRetour();
+  redire();
+  qui(true);
+});
+
+const bouton = document.getElementById("charte");
+bouton.addEventListener("click", () => {
+  const nuit = document.body.classList.toggle("nuit");
+  bouton.setAttribute("aria-pressed", String(nuit));
+  bouton.textContent = nuit ? "Origine" : "Nuit";
+});
+
+poserLeRetour();
+redire();
+</script>
+</body>
+</html>
