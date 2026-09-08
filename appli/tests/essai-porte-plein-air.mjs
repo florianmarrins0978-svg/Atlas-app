@@ -182,6 +182,36 @@ const avancerUneFois = async () => {
   await repondre(quoi === "deroulant" ? "EI" : quoi === "liste" ? "Oui" : "essai");
 };
 
+/** Avance jusqu’à la question demandée, quel que soit son RANG.
+ *
+ *  **Ce que la version précédente coûtait, et elle a bloqué la publication du
+ *  site pendant deux commits.** Elle écrivait `for (let i = 0; i < 4; i++)` :
+ *  la forme juridique était la cinquième question. Le 8 septembre, « Vous
+ *  joindre » est passé avant « Votre entreprise » — sa demande —, la forme
+ *  est devenue la septième, et la suite a réclamé un bandeau qui n’était pas
+ *  encore à l’écran. Elle rougissait donc sur une planche JUSTE, et pour une
+ *  demande exaucée (`CLAUDE.md` §5 bis).
+ *
+ *  Un rang se compte ; une question se CHERCHE. Celle-ci survivra au prochain
+ *  remaniement de l’ordre, et elle sait toujours échouer : si la question
+ *  n’est jamais posée, elle refuse en NOMMANT ce qu’elle a vu à la place. */
+const allerJusqua = async (motif) => {
+  const vues = [];
+  for (let garde = 0; garde < 30; garde++) {
+    if (await creation.locator("[data-fini]").isVisible()) break;
+    const q = (await creation.locator("[data-question]").innerText()).replace(/\s+/g, " ");
+    if (motif.test(q)) return true;
+    vues.push(q);
+    await avancerUneFois();
+  }
+  // **Le message désigne le bon coupable**, et c’est tout ce qui manquait la
+  // première fois : un « Timeout » sur un bandeau invisible envoyait chercher
+  // dans le bandeau, alors que c’était l’ORDRE des questions qui avait bougé.
+  throw new Error(
+    "la question " + motif + " n’a jamais été posée. Vues, dans l’ordre : " + vues.join(" · ")
+  );
+};
+
 console.log("\nParcours 1 — micro-entreprise en franchise");
 await ouvrirLaCreation();
 dire(await creation.isVisible(), "« Créer un compte » mène au parcours");
@@ -217,9 +247,7 @@ dire(Number(await page.locator("[data-long]").innerText()) === long.length,
 
 console.log("\nLe bandeau déroulant, et il est à NOUS");
 await repartir();
-for (let i = 0; i < 4; i++) await avancerUneFois();
-dire(/forme juridique/i.test(await creation.locator("[data-question]").innerText()),
-  "on arrive bien sur la forme juridique");
+dire(await allerJusqua(/forme juridique/i), "on arrive bien sur la forme juridique");
 // Sa remarque du 8 septembre : « le bandeau déroulant doit respecter la charte
 // de couleur et de style de l'appli ». Un <select> natif ne le peut pas —
 // c'est le téléphone qui dessine sa roue. Le jour où quelqu'un le remet « pour
@@ -305,17 +333,47 @@ dire(!vues.some((q) => /accompagner vos devis/i.test(q)),
   "le mot pour accompagner les devis est retiré, à sa demande");
 
 console.log("\nCe qui ne se passe pas, et ce qui se passe");
+// **Par le NOM de la question, jamais par son rang.** La version précédente
+// lisait cinq questions d’affilée en tenant pour acquis lesquelles : le
+// 8 septembre, « Vous joindre » est passé avant « Votre entreprise » — sa
+// demande —, et la suite a réclamé qu’on ne puisse pas passer son numéro de
+// téléphone, qui est facultatif. Elle rougissait sur une planche juste, pour
+// une demande exaucée (`CLAUDE.md` §5 bis).
+//
+// Ce qui doit tenir, et qui ne dépend d’aucun ordre : ces six-là ne se passent
+// pas. Sans e-mail on n’ouvre pas Atlas ; sans forme juridique les deux
+// questions qu’elle commande n’ont pas de sens ; et sans le régime de TVA,
+// `entreprises.regimeTva` vaut « assujettie » et fabrique une facture fausse.
+const JAMAIS_PASSABLES = [
+  /identité/i,
+  /adresse e-mail \?/i,
+  /mot de passe/i,
+  /nom de votre entreprise/i,
+  /forme juridique/i,
+  /Facturez-vous la TVA/i,
+];
 await repartir();
-for (const attendu of [true, true, true, true, true]) {
-  dire((await creation.locator("[data-passer]").isHidden()) === attendu,
-    "question obligatoire : « Passer » est absent — " +
-      (await creation.locator("[data-question]").innerText()).replace(/\s+/g, " ").slice(0, 34));
+let obligatoiresVues = 0;
+let facultativesVues = 0;
+for (let garde = 0; garde < 30; garde++) {
+  if (await creation.locator("[data-fini]").isVisible()) break;
+  const q = (await creation.locator("[data-question]").innerText()).replace(/\s+/g, " ");
+  const passable = await creation.locator("[data-passer]").isVisible();
+  if (JAMAIS_PASSABLES.some((m) => m.test(q))) {
+    obligatoiresVues++;
+    dire(!passable, "question obligatoire : « Passer » est absent — " + q.slice(0, 34));
+  } else if (passable) {
+    facultativesVues++;
+  }
   await avancerUneFois();
 }
-// Cinq obligatoires d'affilée : identité, e-mail, mot de passe, nom de
-// l'entreprise, forme juridique. La sixième — le SIRET — se passe.
-dire(await creation.locator("[data-passer]").isVisible(),
-  "question facultative : « Passer » est offert");
+// Un contrôle qui mesure zéro ne mesure rien : si le parcours changeait au
+// point qu’aucune des six ne soit posée, le vert ci-dessus ne prouverait rien.
+dire(obligatoiresVues === JAMAIS_PASSABLES.length,
+  "les six questions qui ne se passent pas ont toutes été posées (" +
+    obligatoiresVues + " sur " + JAMAIS_PASSABLES.length + ")");
+dire(facultativesVues > 0,
+  "question facultative : « Passer » est offert (" + facultativesVues + " fois)");
 
 console.log("\nLa TVA ne se passe JAMAIS");
 await repartir();
