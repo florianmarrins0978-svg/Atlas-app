@@ -6,6 +6,7 @@ import { getEntreprise } from "@/server/repositories/entreprises";
 import { nomFichierSauvegarde } from "@/lib/nom-sauvegarde";
 import RubriqueReservee from "../RubriqueReservee";
 import BoutonTelecharger from "./BoutonTelecharger";
+import { CONTACT_ATLAS } from "@/lib/contact-atlas";
 
 export const dynamic = "force-dynamic";
 
@@ -84,15 +85,23 @@ export default async function DonneesPage() {
           </p>
         </section>
 
-        {/* **Ce qui n'existe pas encore le dit.** L'effacement d'un compte et le
-            registre RGPD sont annoncés par le libellé de la rubrique, sur sa
-            planche du 14 août ; laisser l'écran muet ferait chercher un bouton
-            qui n'y est pas. */}
+        {/* **DIRE COMMENT, PLUTÔT QUE DIRE QUE ÇA NE SE FAIT PAS — 9 septembre 2026.**
+            La phrase d'avant annonçait deux absences : « l'effacement de votre
+            compte et le registre des traitements ne se font pas encore depuis
+            l'application ». Le « registre des traitements » est du vocabulaire de
+            juriste, et il ne concerne pas l'artisan qui lit cet écran ; quant à
+            l'effacement, lui dire qu'il est impossible le laisse sans recours
+            alors qu'il en a un — nous écrire.
+
+            L'adresse vient de `CONTACT_ATLAS` et de nulle part ailleurs : le jour
+            où il en crée une pour l'application, une seule ligne change. */}
         <p className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.7]"
            style={{ borderColor: colors.line, color: colors.muted }}>
-          L&apos;effacement de votre compte et le registre des traitements ne se font pas
-          encore depuis l&apos;application. Les textes qui vous engagent, eux, sont
-          consultables et datés.
+          Pour effacer votre compte, écrivez à{" "}
+          <a href={`mailto:${CONTACT_ATLAS}`} style={{ color: colors.or }}>
+            {CONTACT_ATLAS}
+          </a>
+          .
         </p>
       </div>
     </div>

@@ -311,3 +311,52 @@ export function decrireVision(
     ...(variable ? { variableManquante: variable } : {}),
   };
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CE QUE L'ARTISAN LIT — 9 septembre 2026
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// **Sa consigne du 5 septembre commande cet écran comme les autres :** « la
+// plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal à
+// se servir de leur téléphone ». Or « Mode déterministe — aucun prestataire
+// branché » ne veut rien dire pour eux, et les trois noms de variables qui
+// suivaient encore moins.
+//
+// **Un artisan se pose UNE question devant cet écran : est-ce que ça marche ?**
+// Les trois lignes ci-dessous y répondent, et rien d'autre. Le détail — quel
+// fournisseur, quelle variable, quelle clé — reste dans `EtatFournisseur`, et
+// ne s'affiche que pour l'ÉDITEUR : c'est ce qu'il refusait le 7 août 2026,
+// « est-ce que les utilisateurs auront accès à cette page ? Moi c'est ça que je
+// ne veux pas ».
+//
+// **Pourquoi ici et pas dans l'écran.** C'est une règle — quel rôle technique
+// correspond à quel geste du métier —, pas un dessin. Elle s'éprouve sans
+// navigateur, et le jour où un quatrième rôle apparaît, un seul endroit change
+// (`CLAUDE.md` §3, §4 sexies).
+
+/** Une chose qu'Atlas sait faire, dite comme il la dirait. */
+export type SavoirFaire = {
+  /** Le geste, de son point de vue : « Écouter vos dictées ». */
+  quoi: string;
+  /** Ce que ça donne, en cinq mots. */
+  precision: string;
+  /** Vrai quand un vrai prestataire répond — et lui seul. */
+  marche: boolean;
+};
+
+/**
+ * Les trois rôles techniques, traduits en gestes du métier.
+ *
+ * **`marche` n'est vrai que pour `reel`.** Les trois autres natures — simulé,
+ * clé absente, non raccordé — ne se distinguent pas à ses yeux : dans les trois
+ * cas, la dictée ne sera pas écoutée. Les séparer à l'écran l'obligerait à
+ * comprendre une différence qui ne change rien pour lui.
+ */
+export function ceQuAtlasSaitFaire(etats: EtatFournisseur[]): SavoirFaire[] {
+  const mots: Record<EtatFournisseur["role"], { quoi: string; precision: string }> = {
+    Transcription: { quoi: "Écouter vos dictées", precision: "Vous parlez, Atlas écrit" },
+    Rédaction: { quoi: "Écrire vos devis", precision: "À partir de ce que vous avez dicté" },
+    "Lecture d’image": { quoi: "Lire vos croquis", precision: "Pour le plan d’arrosage" },
+  };
+  return etats.map((e) => ({ ...mots[e.role], marche: e.nature === "reel" }));
+}

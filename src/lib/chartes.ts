@@ -412,7 +412,7 @@ export const CHARTES: Charte[] = [
   {
     nom: "origine",
     libelle: "Origine",
-    dit: "Vos couleurs actuelles : gris-vert, or, et le vert pin pour l'action.",
+    dit: "Le gris-vert et l'or.",
     sombre: false,
     // **RECOPIÉES, PAS DÉRIVÉES.** Une seule valeur qui s'écarterait ferait
     // bouger l'application sans que personne ne l'ait demandé.
@@ -472,7 +472,7 @@ export const CHARTES: Charte[] = [
      */
     nom: "brume",
     libelle: "Brume moderne",
-    dit: "Un blanc froid à reflets bleutés, un bleu marine pour l'action, et les titres dans la police du téléphone.",
+    dit: "Blanc froid, bleu marine. Titres sans empattement.",
     sombre: false,
     jetons: depuisPlanche({
       fond: "#f4f7fb", plage: "#ffffff", encre: "#111823", gris: "#78838f",
@@ -504,7 +504,7 @@ export const CHARTES: Charte[] = [
     libelle: "Pierre",
     // « Aucun or » a été retiré le 31 août 2026 : sa consigne y remet l'or, et
     // une phrase qui décrit la charte d'avant se croit encore.
-    dit: "Gris légèrement vert, encre presque noire, sauge désaturée.",
+    dit: "Gris pierre, encre presque noire.",
     sombre: false,
     jetons: depuisPlanche({
       fond: "#e8e8e3", plage: "#f4f4f0", encre: "#1b1d19", gris: "#83867c",
@@ -514,7 +514,7 @@ export const CHARTES: Charte[] = [
   {
     nom: "beurre",
     libelle: "Beurre",
-    dit: "Le jaune beurre, très pâle, donne une chaleur qu'aucun crème n'atteint.",
+    dit: "Jaune beurre, très pâle.",
     sombre: false,
     jetons: depuisPlanche({
       fond: "#efe7cf", plage: "#f8f3e4", encre: "#26221a", gris: "#8b8368",
@@ -525,7 +525,7 @@ export const CHARTES: Charte[] = [
     nom: "moka",
     libelle: "Moka",
     // L'argile était le second accent, remplacé par l'or le 31 août 2026.
-    dit: "Un moka laiteux, une encre espresso.",
+    dit: "Moka laiteux, encre café.",
     sombre: false,
     jetons: depuisPlanche({
       fond: "#e6ded5", plage: "#f2ece5", encre: "#2b241e", gris: "#8d8175",
@@ -535,7 +535,7 @@ export const CHARTES: Charte[] = [
   {
     nom: "prune",
     libelle: "Prune",
-    dit: "Aubergine, rose poudré, cuivre. La plus habillée — celle qui ressemble le moins à un outil.",
+    dit: "Aubergine, rose poudré, cuivre. La plus habillée.",
     sombre: false,
     jetons: depuisPlanche({
       fond: "#efe6ea", plage: "#f9f2f5", encre: "#23131c", gris: "#8c7481",
@@ -545,7 +545,7 @@ export const CHARTES: Charte[] = [
   {
     nom: "sylve",
     libelle: "Sylve",
-    dit: "Le vert profond passe du bouton au FOND. Un écran de paysagiste.",
+    dit: "Vert profond au fond. Un écran de paysagiste.",
     sombre: true,
     jetons: depuisPlanche({
       fond: "#16241c", plage: "#1e3026", encre: "#e6e6da", gris: "#8ba189",
@@ -555,7 +555,7 @@ export const CHARTES: Charte[] = [
   {
     nom: "nuit",
     libelle: "Nuit",
-    dit: "Noir chaud, laiton doux. La plus spectaculaire — et la moins lisible au soleil.",
+    dit: "Noir chaud, laiton doux. La moins lisible au soleil.",
     sombre: true,
     jetons: depuisPlanche({
       fond: "#101210", plage: "#1a1d19", encre: "#e9e8de", gris: "#84887b",
