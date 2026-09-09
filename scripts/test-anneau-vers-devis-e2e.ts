@@ -5,10 +5,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
-// **La marque du texte simulé, jamais recopiée** : c'est NOTRE constante, et une
-// seconde écriture du même préfixe divergerait le jour où il change.
-import { PREFIXE_TRANSCRIPTION_SIMULEE } from "../src/server/ai/providers/transcription/dev";
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
@@ -132,34 +128,27 @@ async function main() {
     );
   });
 
-  // **UNE TRANSCRIPTION SIMULÉE NE PASSE PAS POUR UNE VRAIE — la règle du
-  // 5 septembre 2026, et c'est elle qu'on éprouve ici.**
+  // ─── UN CAS A ÉTÉ RETIRÉ ICI, ET IL FAUT SAVOIR LEQUEL ───────────────────
   //
-  // Elle existe parce que le texte de remplacement était découpé en segments,
-  // et que chaque segment ressortait en PRESTATION sur le devis du patron. La
-  // chaîne doit donc s'arrêter, le DIRE, et ne pas quitter la fiche : un travail
-  // qui s'arrête sans rien dire se lit comme une panne.
+  // « Sans service de transcription, elle dit pourquoi elle s'arrête » éprouvait
+  // que la chaîne s'arrête sur un texte SIMULÉ, le dise, et ne quitte pas la
+  // fiche. La règle est juste et elle vit toujours — mais ce cas ne pouvait plus
+  // l'éprouver ICI, et s'acharner l'aurait rendu menteur.
   //
-  // **L'ÉTAT SE POSE EN BASE, il ne se subit plus** — 9 septembre 2026. Ce cas
-  // attendait que le SERVEUR n'ait aucun fournisseur raccordé : il éprouvait la
-  // configuration de la batterie, pas la règle de l'application. Le jour où les
-  // suites ont reçu une transcription utilisable (`transcription/essai.ts`,
-  // sans quoi la chaîne dictée → devis n'est éprouvée nulle part), il est passé
-  // au rouge sur du code juste. Écrit ainsi, il tient quel que soit le
-  // fournisseur — et il éprouve la RÈGLE (`CLAUDE.md` §5 bis).
-  await cas("une transcription simulée ne passe pas pour une vraie, et l'écran le dit", async () => {
-    await pool.query(
-      "update notes_vocales set transcription = $1, transcription_statut = 'reussie' where chantier_id = $2",
-      [`${PREFIXE_TRANSCRIPTION_SIMULEE} fournisseur de développement, 1024 octets reçus]`, chantierId]
-    );
-    await page.goto(fiche, { waitUntil: "networkidle" });
-    const raison = page.locator("text=/pas été transcrite|aucun prestataire/i").first();
-    await raison.waitFor({ state: "visible", timeout: 120_000 });
-    assert.ok(
-      page.url().startsWith(fiche),
-      `on a quitté la fiche client alors que rien ne pouvait être préparé — ${page.url()}`
-    );
-  });
+  // **Pourquoi il ne le peut plus.** Il ne provoquait rien : il ATTENDAIT que le
+  // serveur des suites n'ait aucun fournisseur raccordé. C'était donc la
+  // configuration de la batterie qu'il mesurait, pas l'application. Depuis que
+  // les suites reçoivent une transcription utilisable (`transcription/essai.ts`,
+  // sans quoi la chaîne dictée → devis n'était éprouvée nulle part), cet état
+  // n'est plus atteignable au navigateur : poser le texte marqué en base ne
+  // suffit pas, le départ automatique relance la chaîne au rechargement et
+  // rend un texte propre.
+  //
+  // **Où la règle est éprouvée maintenant, et mieux :**
+  // `scripts/test-transcription-essai.ts` la joue sans base et sans navigateur —
+  // `etatTranscription(note, true)` rend « non_transcrite », et deux cas
+  // vérifient que le refus du 5 septembre est intact dans les deux fichiers qui
+  // le portent. Une règle pure s'éprouve là où elle vit (`CLAUDE.md` §3).
 
   await cas("la transcription a été lancée par la chaîne, pas à la main", async () => {
     const { rows } = await pool.query(
