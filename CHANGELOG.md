@@ -18,9 +18,19 @@ choix est dans `ARCHITECTURE.md` §304.
 
 | | |
 |---|---|
-| `src/app/reglages/deconnexion-actions.ts` | `signOut` d'Auth.js — pas `/api/session-perimee`, dont le nom ment et qui tient sa propre liste de cookies |
+| `src/app/login/actions.ts` | `deconnexionAction` — elle **existait déjà, sans appelant** ; elle en a un |
 | `src/app/reglages/SeDeconnecter.tsx` | la ligne et la feuille |
 | `scripts/test-se-deconnecter-e2e.ts` | le geste entier, dans un vrai navigateur |
+
+**J'EN AVAIS ÉCRIT UNE SECONDE, IDENTIQUE, SANS CHERCHER.** `deconnexionAction`
+dort dans `src/app/login/actions.ts` — même corps, `signOut` vers `/login` — et
+n'avait aucun appelant. C'est la faute que `CLAUDE.md` §5 ter nomme : *la
+question n'est jamais « est-ce possible » mais « qui, dans ce dépôt, fait déjà
+quelque chose d'approchant »*. **C'est un contrôle qui l'a révélée**, en exigeant
+une garde de rôle sur ma nouvelle action : l'exemption motivée de l'ancienne
+était là, dans le même fichier de contrôle, sous les yeux. Le doublon est
+retiré ; `signOut` reste préféré à `/api/session-perimee`, dont le nom ment et
+qui tient sa propre liste de six cookies.
 
 **Face ID reste posé sur l'appareil, et la suite l'exige** : c'est ce qui sépare
 ce geste de « Me déconnecter partout ». Elle **pose sa propre clé témoin** avant
