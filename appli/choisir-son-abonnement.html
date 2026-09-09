@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Choisir son abonnement — Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  L'ABONNEMENT — la planche, 9 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  SA DEMANDE : « je voudrais proposer 2 ou 3 abonnements différents avec des
+  prix différents, conseille-moi ». Puis, sur ma proposition à deux formules :
+  « je pense pas qu'il faut de limite d'utilisateur à 5, ou alors limiter à
+  5 commerciaux, et si on veut commerciaux illimités faut payer genre 120 ».
+
+  IL A RAISON, ET LA CORRECTION EST STRUCTURANTE. Ma version comptait « les
+  personnes ». Or les quatre rôles d'Atlas ne se valent pas
+  (`src/lib/acces-roles.ts`) :
+
+    · salarié      — voit son planning, et RIEN d'autre (liste blanche)
+    · commercial   — fait les devis
+    · facturation  — fait les factures
+    · propriétaire — tout
+
+  Un paysagiste avec huit gars sur le terrain n'utilise pas huit fois Atlas :
+  il coche huit cases dans un planning. Compter les salariés, c'est facturer
+  la taille de ses chantiers au lieu de l'usage de l'outil — et punir
+  exactement le client qu'on veut garder.
+
+  **Ce qui se compte, c'est donc QUI FABRIQUE DES DOCUMENTS.** C'est aussi ce
+  qui coûte : chaque devis dicté consomme de l'IA. Un salarié n'en consomme
+  aucune.
+
+  ─────────────────────────────────────────────────────────────────────────
+  CE QUI RESTE VRAI TANT QUE L'OFFRE N'EST PAS ARRÊTÉE : l'écran n'affiche
+  AUCUN montant. Un chiffre inventé sur une page qui parle d'argent finit par
+  être cru. Le premier onglet montre ce que l'écran dit d'ici là.
+
+  Les couleurs viennent de `src/lib/design-tokens.ts`, au caractère près.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.08);
+  --alerte:#9C3B2E; --scene:#e6e3dc;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --alerte:#c07a56; --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:18px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);
+       border-bottom:1px solid var(--trait);padding:12px 16px 13px}
+.etats .quoi{max-width:470px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+             letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+.etats .rangee{max-width:470px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+              border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);cursor:pointer;
+              min-height:44px;-webkit-tap-highlight-color:transparent}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.scene{display:flex;justify-content:center;padding:24px 16px 0}
+.colonne{width:390px;max-width:100%}
+.colonne .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+.colonne .idee{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--encre-douce);min-height:58px}
+.colonne .idee b{color:var(--encre)}
+.tel{position:relative;width:390px;max-width:100%;height:700px;border-radius:26px;overflow:hidden;
+     box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond)}
+.defile{height:100%;overflow-y:auto;padding:24px 24px 60px}
+.regle{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:10px 0 0}
+
+/* ── L'écran ──────────────────────────────────────────────────────────── */
+h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
+.sur{margin:10px 0 0;font:500 11px/1 var(--sans);letter-spacing:.28em;
+     text-transform:uppercase;color:var(--or)}
+.inter{margin:28px 0 10px;font:500 11px/1 var(--sans);letter-spacing:.28em;
+       text-transform:uppercase;color:var(--encre-douce)}
+.chapeau{margin:22px 0 0;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+.chapeau b{color:var(--encre);font-weight:500}
+.note{margin:16px 0 0;font-size:12.5px;line-height:1.6;color:var(--gris)}
+.note b{color:var(--encre);font-weight:500}
+
+/* Une formule : un nom, un prix, ce qu'elle comprend. Pas de colonne à
+   comparer — sur un téléphone, trois colonnes ne se choisissent pas, elles se
+   referment. Elles s'empilent, et la sienne porte le liseré doré. */
+.formule{margin-top:14px;padding:16px 17px;border-radius:12px;background:var(--carte);
+         box-shadow:inset 0 0 0 1px var(--trait)}
+.formule.mienne{box-shadow:inset 0 0 0 1.5px var(--or)}
+.formule .haut{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.formule .n{font:400 22px/1.1 var(--serif)}
+.formule .prix{flex:none;font:400 22px/1.1 var(--serif);font-variant-numeric:tabular-nums}
+.formule .prix span{font:400 12px var(--sans);color:var(--gris)}
+.formule .pour{margin:6px 0 0;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+.formule .an{margin:10px 0 0;font-size:12px;color:var(--gris)}
+.formule .marque{display:inline-block;margin-bottom:8px;font:500 10px/1 var(--sans);
+                 letter-spacing:.18em;text-transform:uppercase;color:var(--or)}
+.formule .bouton{display:block;width:100%;margin-top:12px;border:0;border-radius:999px;
+                 background:var(--plein);color:var(--carte);padding:13px;
+                 font:400 16px var(--sans);cursor:default}
+.formule .bouton.creux{background:none;color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait)}
+
+.compris{margin-top:10px;padding:0;list-style:none}
+.compris li{position:relative;padding:5px 0 5px 20px;font-size:13px;line-height:1.5;color:var(--encre-douce)}
+.compris li::before{content:"";position:absolute;left:2px;top:12px;width:6px;height:6px;
+                    border-radius:50%;background:var(--or)}
+
+.nav{position:absolute;left:0;right:0;bottom:0;height:46px;background:var(--fond);
+     border-top:1px solid var(--trait);display:flex;align-items:center;
+     justify-content:space-around;font:400 9px var(--sans);letter-spacing:.18em;
+     text-transform:uppercase;color:var(--gris)}
+
+.notes{max-width:640px;margin:34px auto 0;padding:0 20px}
+.notes .bloc{padding:16px 20px;background:var(--carte);border-left:3px solid var(--or);
+             font-size:14px;line-height:1.7;color:var(--encre-douce)}
+.notes .bloc + .bloc{margin-top:12px}
+.notes b{color:var(--encre)}
+.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0 4px}
+.notes th,.notes td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--trait);vertical-align:top}
+.notes th{font:600 10px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+.notes td b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Votre écran d'abonnement, avec vos chiffres.</b> Trois formules, séparées par
+  <b>qui fabrique des devis</b> — jamais par les fonctions, et jamais par le nombre
+  de salariés. <b>Rien n'est codé.</b>
+</div>
+
+<div class="etats">
+  <p class="quoi">Voir</p>
+  <div class="rangee">
+    <button type="button" data-v="offre" aria-pressed="true">L'écran, avec l'offre</button>
+    <button type="button" data-v="attente" aria-pressed="false">Tant que rien n'est arrêté</button>
+    <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+  </div>
+</div>
+
+<div class="scene">
+  <div class="colonne">
+    <p class="nom" id="nom"></p>
+    <p class="idee" id="idee"></p>
+    <div class="tel">
+      <div class="defile" id="defile"></div>
+      <div class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+    </div>
+    <p class="regle">Rien ne s'appuie : c'est un dessin.</p>
+  </div>
+</div>
+
+<div class="notes" id="notes"></div>
+
+<script>
+/*
+  UN SEUL JEU DE FORMULES, DEUX RENDUS. Les prix sont écrits une fois : recopiés
+  dans l'écran et dans les notes, ils finiraient par se contredire — et c'est le
+  pire endroit pour ça, une page qui parle d'argent (`CLAUDE.md` §4 bis).
+*/
+var etat = { vue: "offre", nuit: false };
+
+/**
+ * LES TROIS FORMULES.
+ *
+ * `compte` est le nombre de personnes qui FABRIQUENT des documents — le patron,
+ * les commerciaux, la facturation. Les salariés n'y entrent jamais : ils voient
+ * leur planning et rien d'autre (`src/lib/acces-roles.ts`), ils ne consomment
+ * aucune IA, et les facturer reviendrait à facturer la taille de ses chantiers.
+ */
+var FORMULES = [
+  { nom: "Seul", prix: 29, an: 290, mienne: true,
+    pour: "Vous, et personne d'autre sur Atlas.",
+    compris: ["Tout l'outil, sans exception",
+              "Vos dictées et vos devis écrits par Atlas",
+              "Autant de salariés que vous voulez au planning"] },
+  { nom: "Équipe", prix: 59, an: 590, mienne: false,
+    pour: "Jusqu'à 5 personnes qui font des devis ou des factures.",
+    compris: ["Tout ce qu'il y a dans « Seul »",
+              "Le planning à plusieurs, et les absences",
+              "Les retours d'intervention de vos gars"] },
+  { nom: "Sans limite", prix: 120, an: 1200, mienne: false,
+    pour: "Autant de commerciaux que vous voulez.",
+    compris: ["Tout ce qu'il y a dans « Équipe »",
+              "Aucun compte à compter"] }
+];
+
+function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function entete(){ return '<h2 class="titre">Abonnement</h2><p class="sur">Mon entreprise</p>'; }
+
+function ecranAvecOffre(){
+  return entete() +
+    '<p class="inter">Votre formule</p>' +
+    FORMULES.map(function(f){
+      return '<div class="formule' + (f.mienne ? " mienne" : "") + '">' +
+        (f.mienne ? '<span class="marque">La vôtre</span>' : "") +
+        '<div class="haut"><span class="n">' + ech(f.nom) + '</span>' +
+        '<span class="prix">' + f.prix + ' € <span>HT / mois</span></span></div>' +
+        '<p class="pour">' + ech(f.pour) + '</p>' +
+        '<ul class="compris">' + f.compris.map(function(c){
+          return "<li>" + ech(c) + "</li>";
+        }).join("") + '</ul>' +
+        '<p class="an">Ou ' + f.an + ' € l\'année — deux mois offerts.</p>' +
+        (f.mienne
+          ? '<button type="button" class="bouton creux">Changer de formule</button>'
+          : '<button type="button" class="bouton">Passer à « ' + ech(f.nom) + ' »</button>') +
+        '</div>';
+    }).join("") +
+    // **Ce qui rassure, et qui doit être écrit** : un paysagiste avec huit gars
+    // croira sinon qu’il paie huit fois. C’est la phrase qui décide de l’achat.
+    '<p class="note"><b>Vos salariés ne comptent pas.</b> Seuls comptent ceux qui ' +
+    'font des devis ou des factures.</p>' +
+    '<p class="note">Résiliable à tout moment. Vos données restent à vous, et se ' +
+    'téléchargent dans « Mes données ».</p>';
+}
+
+function ecranEnAttente(){
+  return entete() +
+    '<p class="chapeau"><b>Atlas ne vous facture rien.</b> Le jour où ça change, ' +
+    'vous serez prévenu ici, et avant.</p>';
+}
+
+var VUES = {
+  offre: {
+    nom: "L'écran, quand l'offre existe",
+    idee: "Trois formules empilées, la vôtre en haut avec un liseré doré. <b>Pas de colonnes à comparer</b> : sur un téléphone, trois colonnes ne se choisissent pas, elles se referment — et vos clients sont « des vieux qui ont du mal avec leur téléphone ».",
+    rendre: ecranAvecOffre,
+    notes: [
+      "<b>Votre correction commande toute la grille, et elle est juste.</b> Je comptais « les personnes » ; vous avez dit : <i>« limiter à 5 commerciaux, et si on veut commerciaux illimités faut payer genre 120 »</i>. Un paysagiste avec huit gars sur le terrain n'utilise pas huit fois Atlas — il coche huit cases dans un planning. Compter les salariés, c'est facturer la taille de ses chantiers au lieu de l'usage de l'outil, et punir exactement le client qu'on veut garder.",
+      "<b>Ce qui se compte, c'est donc qui FABRIQUE.</b> Le patron, les commerciaux, la facturation — les trois rôles qui produisent des devis et des factures. C'est aussi ce qui coûte : chaque devis dicté consomme de l'IA, un salarié n'en consomme aucune. La grille suit le coût ET la valeur, ce qui est rare.",
+      "<b>Aucune fonction n'est coupée entre les formules, et ça ne se négocie pas.</b> Un artisan qui découvre que « dicter son devis » est réservé aux gros s'en va, et il le raconte. Les trois lignes de chaque formule commencent d'ailleurs par « tout ce qu'il y a dans la précédente ».",
+      "<b>L'IA n'est jamais au compteur.</b> Une dictée transcrite plus un devis rédigé coûtent quelques centimes ; même à soixante devis par mois vous êtes sous 10 €. Mettre un compteur ferait peur pour rien — et un artisan qui a peur de dicter n'a plus de raison de payer Atlas.",
+      "<b>Ce que je ne peux pas garantir :</b> que 29, 59 et 120 soient les bons chiffres du marché cette semaine. La STRUCTURE, je la défends ; les montants se vérifient chez deux concurrents en dix minutes."
+    ]
+  },
+  attente: {
+    nom: "Tant que rien n'est arrêté",
+    idee: "Ce que l'écran dit <b>aujourd'hui</b>, et jusqu'au jour où vous fixez les prix. <b>19 mots</b> au lieu de 141 : trois lignes « Bientôt » qui ne s'appuyaient pas, et deux paragraphes qui expliquaient une confusion créée par ces lignes.",
+    rendre: ecranEnAttente,
+    notes: [
+      "<b>Aucun montant tant que l'offre n'existe pas.</b> Un chiffre inventé sur une page qui parle d'argent finit par être cru — et c'est ce que dit déjà l'écran d'aujourd'hui, en cinq paragraphes. Il le dira en une phrase.",
+      "<b>« Vous serez prévenu ici, et avant. »</b> C'est la seule chose qu'un artisan a besoin de savoir : qu'un prélèvement ne va pas apparaître un matin sans qu'on lui ait rien dit."
+    ]
+  }
+};
+
+var defile = document.getElementById("defile");
+
+function rendre(){
+  var v = VUES[etat.vue];
+  document.getElementById("nom").textContent = v.nom;
+  document.getElementById("idee").innerHTML = v.idee;
+  defile.innerHTML = v.rendre();
+  document.getElementById("notes").innerHTML =
+    v.notes.map(function(n){ return '<div class="bloc">' + n + "</div>"; }).join("");
+}
+
+document.querySelectorAll(".etats button[data-v]").forEach(function(b){
+  b.addEventListener("click", function(){
+    etat.vue = b.dataset.v;
+    document.querySelectorAll(".etats button[data-v]").forEach(function(o){
+      o.setAttribute("aria-pressed", String(o === b));
+    });
+    rendre();
+  });
+});
+
+var pole = document.getElementById("pole");
+pole.addEventListener("click", function(){
+  etat.nuit = !etat.nuit;
+  document.body.classList.toggle("nuit", etat.nuit);
+  pole.setAttribute("aria-pressed", String(etat.nuit));
+  pole.textContent = etat.nuit ? "Revenir sur Terre" : "Voir sur Nuit";
+});
+
+rendre();
+</script>
+</body>
+</html>
