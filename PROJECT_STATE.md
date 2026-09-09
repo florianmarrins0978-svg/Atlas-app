@@ -24,10 +24,19 @@ Aucune migration. Document : `docs/lot-retour-garde-la-place.md` ·
 **Reste ouvert, mesuré, et pas apporté par ce lot :** un retour sert l'écran
 depuis la réserve de Next.js (`TODO.md`).
 
-**Reste à trancher, par lui :** ce que « 8 chantiers » doit dire sur la ligne
-d'un client. Le compte est juste — tous les chantiers rattachés, quel que soit
-leur état — mais il l'a lu comme une promesse de documents. Maquette d'abord
-(`CLAUDE.md` §3 bis).
+## FAIT : « 8 CHANTIERS » CÈDE LA PLACE À CE QUI S'EST PASSÉ — 9 septembre 2026
+
+Sa question, puis sa décision dans la foulée : *« remplace par la dernière chose
+qui s'est produit »*. Le compte était juste et c'est ce qui le rendait trompeur —
+un chantier naît d'une dictée, bien avant le moindre document.
+
+La ligne porte désormais « Devis 7 sept. », « Facture 2 sept. », « Fiche 28
+août » — **les trois registres de la fiche, sous les mêmes conditions**. Rien à
+annoncer : elle se tait.
+
+Trois défauts de mise en page trouvés à la CAPTURE et par aucun test : la date
+coupée sur les adresses longues, une seconde ligne vide, le séparateur collé.
+`ARCHITECTURE.md` §306.
 
 ---
 

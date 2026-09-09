@@ -140,26 +140,55 @@
 <h3 id="donc-sur-son-écran">Donc, sur son écran</h3>
 <blockquote>« 8 chantiers » et « Aucun devis parti » veut dire : <strong>huit chantiers ouverts, aucun devis envoyé.</strong> Rien n'est perdu, rien n'est cassé.</blockquote>
 <p>Le compte est donc juste. Ce qui trompe, c'est qu'il <strong>promet plus qu'il ne dit</strong> : rien sur la ligne n'annonce qu'un chantier peut être vide.</p>
-<h3 id="ce-qui-na-pas-été-fait-et-pourquoi">Ce qui n'a PAS été fait, et pourquoi</h3>
-<p>Aucune ligne n'a été changée sur cet écran. C'est une question d'apparence, et la règle du dépôt est claire : <strong>maquette d'abord, code ensuite</strong>. Trois pistes existent, elles ne coûtent pas la même chose, et c'est à lui de choisir :</p>
+<h3 id="ce-quil-a-tranché-le-soir-même">CE QU'IL A TRANCHÉ, LE SOIR MÊME</h3>
+<p>Trois pistes lui ont été soumises ; il a choisi la troisième, en un mot : <strong>« remplace par la dernière chose qui s'est produit »</strong>. C'est fait.</p>
 <div class="tablewrap"><table><thead><tr>
-<th>Piste</th>
-<th>Ce qu'elle donne</th>
+<th>La règle, en une phrase</th>
+<th><strong>la ligne annonce ce que la FICHE contient</strong></th>
 </tr></thead><tbody>
 <tr>
-<td>garder « 8 chantiers »</td>
-<td>on ne touche à rien ; il sait maintenant ce que ça compte</td>
+<td>les candidats</td>
+<td>les trois registres de sa fiche : Devis, Facture, Fiche</td>
 </tr>
 <tr>
-<td>ne compter que ce qui a produit quelque chose</td>
-<td>le nombre devient une promesse tenue — mais un chantier en cours disparaît du compte</td>
+<td>les conditions</td>
+<td><strong>les mêmes que la fiche</strong> — devis parti, facture émise, fiche envoyée</td>
 </tr>
 <tr>
-<td>remplacer le compte par la dernière chose qui s'est passée</td>
-<td>« Dernier devis · 7 sept. », ou rien du tout</td>
+<td>à jour égal</td>
+<td>le plus avancé du parcours : facture, puis devis, puis fiche</td>
+</tr>
+<tr>
+<td>rien à annoncer</td>
+<td>la ligne se tait ; elle n'écrit pas « aucun document »</td>
 </tr>
 </tbody></table></div>
-<p><strong>Il n'y a pas de bonne réponse sans lui</strong> : le compte sert à distinguer deux clients du même nom autant qu'à dire combien de travail on leur a fait. Une maquette se dessine en une heure dès qu'il dit lequel des trois il veut regarder.</p>
+<p><strong>Un chantier ouvert n'en est PAS un</strong>, et c'est le cœur de la correction : il ne se voit nulle part sur la fiche. L'annoncer aurait recréé le même défaut sous un autre nom.</p>
+<p><strong>Ce que ça donne à l'écran :</strong> « 10 Rue de Nantes 77400 Lagny-sur-Ma… · Devis 7 sept. »</p>
+<h3 id="trois-défauts-sortis-de-la-capture-et-daucun-test">TROIS DÉFAUTS SORTIS DE LA CAPTURE, ET D'AUCUN TEST</h3>
+<p>C'est la cinquième fois dans ce dépôt qu'une image trouve ce qu'un vert cachait.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que l'image a montré</th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td>la date <strong>se coupait</strong> sur les adresses longues — donc elle disparaissait exactement chez les clients où on venait de l'ajouter</td>
+<td>l'adresse et la date sont deux boîtes : <strong>l'adresse se rogne, la date jamais</strong></td>
+</tr>
+<tr>
+<td>un client sans adresse ni document laissait une <strong>seconde ligne vide</strong> sous son nom</td>
+<td>rien à dire, rien à l'écran, et pas même la place</td>
+</tr>
+<tr>
+<td>« 44300 Nantes· Devis 5 sept. » <strong>collé</strong> — une boîte flexible ne garde pas le blanc qui la commence</td>
+<td>le séparateur est une marge, pas un caractère</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et l'année tombe quand c'est celle qui court.</strong> Ce n'est pas un goût : ses quatre caractères sont exactement ce qui faisait déborder la ligne. Sans eux, elle mesure ce que mesurait « · 8 chantiers », qu'elle remplace — <em>rien ne se coupe qui ne se coupait déjà</em>. Elle reparaît dès qu'elle apprend quelque chose : « Devis 12 juin 2025 », c'est le client qu'on n'a pas revu.</p>
+<h3 id="ce-qui-a-été-retiré">Ce qui a été RETIRÉ</h3>
+<p>Le champ <code>chantiers</code> de la fiche : plus personne ne le lisait. Les suites qui s'en servaient pour éprouver l'isolation et la suppression visent maintenant la liste des chantiers elle-même — un repère plus profond qu'un compte.</p>
+<h3 id="un-point-à-savoir-quil-na-pas-demandé">Un point à savoir, qu'il n'a pas demandé</h3>
+<p>Le bouton <strong>« Refaire »</strong> d'une fiche client crée le chantier <strong>au moment où l'on appuie</strong>, même si l'on ne va pas plus loin. C'est probablement une partie de ses huit.</p>
 <hr>
 <h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -168,10 +197,6 @@
 <th>Qui peut le trancher</th>
 </tr></thead><tbody>
 <tr>
-<td>ce que « 8 chantiers » doit dire sur la ligne d'un client</td>
-<td><strong>lui</strong> — maquette d'abord</td>
-</tr>
-<tr>
 <td>un retour sert l'écran depuis la réserve (mesuré, pas apporté par ce lot)</td>
 <td><strong>nous</strong> — à ouvrir seulement s'il signale un écran qui ment au retour</td>
 </tr>
@@ -179,64 +204,61 @@
 <hr>
 <h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><code>npm run verifier:avant-livraison</code>, 9 septembre 2026 :</p>
+<p><code>npm run verifier:avant-livraison</code>, 9 septembre 2026, les deux moitiés du lot ensemble :</p>
 <div class="tablewrap"><table><thead><tr>
 <th>Étape</th>
 <th>Résultat</th>
 </tr></thead><tbody>
 <tr>
-<td>Types · Lint · Mémoire · Construction · Fournisseurs d'IA</td>
+<td>Types · Lint · Atelier · Construction · Mémoire · Fournisseurs d'IA</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Données de démonstration · Connexion derrière un proxy</td>
 <td>✅</td>
 </tr>
 <tr>
 <td>Suites base de données</td>
-<td><strong>1 rouge</strong> — <code>test-acces-roles</code></td>
+<td>❌ — <strong>1 rouge</strong>, <code>test-acces-roles</code></td>
 </tr>
 <tr>
 <td>Suites navigateur</td>
-<td><strong>121 / 137</strong></td>
+<td>❌ — <strong>16 rouges</strong></td>
 </tr>
 <tr>
-<td>Connexion derrière un proxy</td>
-<td>✅</td>
-</tr>
-<tr>
-<td><strong>La suite de ce lot</strong></td>
+<td><strong><code>test-retour-garde-la-place-e2e</code></strong></td>
 <td>✅ <strong>4 / 4</strong></td>
 </tr>
+<tr>
+<td><strong><code>test-ligne-du-client-e2e</code></strong></td>
+<td>✅ <strong>5 / 5</strong></td>
+</tr>
 </tbody></table></div>
-<h3 id="les-seize-rouges-un-par-un--aucun-nest-de-ce-lot">Les seize rouges, un par un — AUCUN n'est de ce lot</h3>
-<p><strong>Onze étaient déjà nommés dans <code>TODO.md</code> au 8 septembre</strong> : <code>adresse-suggestions</code>, <code>anneau-dictee</code>, <code>anneau-vers-devis</code>, <code>carte-reponse-mene-au-geste</code>, <code>devis-client</code>, <code>ia-01</code>, <code>message-au-client</code>, <code>recherche-client</code>, <code>reprise-chantier</code>, <code>reprise-morceau</code>, <code>suivi-devis</code>.</p>
-<p><strong>Six ne l'étaient pas, et chacun a été vérifié plutôt que supposé :</strong></p>
+<h3 id="les-dix-sept-rouges-sont-exactement-les-mêmes-quavant-le-lot">LES DIX-SEPT ROUGES SONT EXACTEMENT LES MÊMES QU'AVANT LE LOT</h3>
+<p>Ce n'est pas une impression : les deux relevés ont été <strong>comparés ligne à ligne</strong>, celui d'avant le lot et celui d'après.</p>
 <div class="tablewrap"><table><thead><tr>
-<th>Suite</th>
-<th>Ce qu'elle dit</th>
-<th>Verdict</th>
+<th></th>
+<th></th>
 </tr></thead><tbody>
 <tr>
-<td><code>acces-roles</code></td>
-<td>une route de plus dans la liste attendue : <code>…/facture/travaux-supplementaires</code></td>
-<td>le lot « travaux supplémentaires », lisible dans l'écart</td>
+<td>rouges avant</td>
+<td><strong>17</strong></td>
 </tr>
 <tr>
-<td><code>reglages</code></td>
-<td>« Sans clé, l'écran doit annoncer le mode déterministe »</td>
-<td><strong>rouge AVEC et SANS ce lot</strong> — rejoué dans les deux sens</td>
+<td>rouges après</td>
+<td><strong>17</strong></td>
 </tr>
 <tr>
-<td><code>fin-de-chantier</code></td>
-<td>aucune <code>ligne-planifiee</code> au planning</td>
-<td><strong>rouge AVEC et SANS ce lot</strong> — rejoué dans les deux sens</td>
+<td>ajoutées par ce lot</td>
+<td><strong>aucune</strong></td>
 </tr>
 <tr>
-<td><code>madame-lucie</code> · <code>pas-la-ce-jour</code> · <code>poser-une-date</code></td>
-<td>dictée, recouvrement, pose d'une date</td>
-<td><strong>vertes AVEC comme SANS</strong>, jouées à conditions égales : leur rouge tient à la batterie entière (une centaine de suites accumulées avant elles), pas à ce lot</td>
+<td>disparues</td>
+<td>aucune</td>
 </tr>
 </tbody></table></div>
-<p><strong>La méthode, et elle vaut d'être dite :</strong> les six ont été rejouées deux fois dans le MÊME filtre, une fois le lot retiré de l'arbre, une fois remis. Deux mêmes résultats, à conditions égales. Comparer un rouge de batterie à un vert joué seul n'aurait rien prouvé — c'est le piège du 20 août 2026, où une suite passait seule et tombait en batterie pour une raison qui n'avait rien à voir.</p>
-<h3 id="un-défaut-de-ma-suite-trouvé-et-corrigé-avant-la-poussée">Un défaut de MA suite, trouvé et corrigé avant la poussée</h3>
-<p>Sa première version posait <strong>trente chantiers planifiés</strong> pour dater ses clients. La base des suites navigateur est commune et s'accumule : trente chantiers de plus au planning, et le rouge serait tombé sur une suite jouée après celle-ci, sur du code juste. Les chantiers ont été retirés — un client sans chantier se range en fin de liste, c'est tout ce qu'il faut ici.</p>
+<p><code>acces-roles</code> · <code>adresse-suggestions</code> · <code>anneau-dictee</code> · <code>anneau-vers-devis</code> · <code>carte-reponse-mene-au-geste</code> · <code>devis-client</code> · <code>fin-de-chantier</code> · <code>ia-01</code> · <code>madame-lucie</code> · <code>message-au-client</code> · <code>pas-la-ce-jour</code> · <code>poser-une-date</code> · <code>recherche-client</code> · <code>reglages</code> · <code>reprise-chantier</code> · <code>reprise-morceau</code> · <code>suivi-devis</code></p>
+<p><strong>Onze d'entre elles sont nommées dans <code>TODO.md</code> depuis le 8 septembre</strong>, et trois y sont décrites comme des contrôles qui réclament ce qu'il a lui-même fait retirer (<code>CLAUDE.md</code> §5 bis). Elles appartiennent à d'autres lots, et ce document ne les revendique pas : il dit seulement que <strong>ce lot-ci n'en a ajouté aucune</strong>.</p>
 </main>
 </body>
 </html>

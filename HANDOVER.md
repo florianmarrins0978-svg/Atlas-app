@@ -8,7 +8,29 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — LA FLÈCHE DE RETOUR REND SA PLACE (9 septembre 2026)
+## Dernier lot — LA LIGNE D'UN CLIENT DIT CE QUI S'EST PASSÉ (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | « 8 chantiers » cède la place à la dernière chose qui s'est produite — « Devis 7 sept. », « Facture 2 sept. », « Fiche 28 août » |
+| la migration | **aucune** |
+| les pièces | `derniereTraceDuClient` et `jourDeLaLigne` (`src/lib/documents-du-client.ts`), `listerFichesClients`, `ListeClients.tsx` |
+| les suites | `test-documents-du-client.ts` (la règle), `test-liste-clients.ts` (la base), `test-ligne-du-client-e2e.ts` (**les boîtes**) |
+| le détail | `ARCHITECTURE.md` §306, `docs/lot-retour-garde-la-place.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** les trois candidats sont exactement les trois
+registres de la FICHE — devis parti, facture émise, fiche envoyée —, et sous les
+mêmes conditions. Y ajouter un chantier ouvert recréerait le défaut qu'on vient
+de retirer : la ligne promettrait ce que la fiche n'a pas.
+
+**ET C'EST L'ADRESSE QUI SE ROGNE, JAMAIS LA DATE.** Écrits d'un seul tenant,
+les deux débordent des 316 px de sa ligne et ce sont les derniers mots qui
+tombent — donc la date, c'est-à-dire ce qu'on venait d'ajouter. Deux boîtes, et
+l'année qui tombe quand c'est celle qui court (`jourDeLaLigne`). Les trois
+défauts de mise en page sont sortis d'une CAPTURE, d'aucun test.
+
+---
+## Lot précédent — LA FLÈCHE DE RETOUR REND SA PLACE (9 septembre 2026)
 
 | | |
 |---|---|

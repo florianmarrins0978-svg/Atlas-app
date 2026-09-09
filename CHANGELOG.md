@@ -8,6 +8,32 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### « 8 chantiers » cède la place à la dernière chose qui s'est produite
+
+**Sa question, puis sa décision :** *« À quoi correspond le nombre de chantier ?
+Certains clients ont 8 chantiers, on s'attend à avoir 8 devis alors qu'il y en a
+0 »*, puis *« remplace par la dernière chose qui s'est produit »*.
+
+Le compte était **juste** — tous les chantiers ouverts, quel que soit leur état
+— et c'est ce qui le rendait trompeur : un chantier naît d'une dictée, bien
+avant le moindre document. La ligne annonçait donc du travail là où la fiche
+n'avait rien à montrer.
+
+Ce qui le remplace tient en une règle : **la ligne annonce ce que la fiche
+contient.** Les trois candidats sont exactement les trois registres de la fiche
+— Devis, Facture, Fiche — et le plus récent se lit avec son jour. Rien à
+annoncer : la ligne se tait, elle n'écrit pas « aucun document ».
+
+**Deux défauts trouvés à la capture, et par aucun test :** la date se coupait
+sur les adresses longues — donc elle disparaissait exactement là où on venait de
+l'ajouter —, et un client sans adresse ni document laissait une seconde ligne
+vide sous son nom. L'adresse se rogne désormais, jamais la date, et une ligne
+sans rien à dire ne prend pas de place. `test-ligne-du-client-e2e.ts` mesure les
+deux.
+
+**Ce qui disparaît :** le champ `chantiers` de la fiche, que plus personne ne
+lisait.
+
 ### La flèche de retour rendait le haut de la liste au lieu de sa place
 
 **Sa remarque, trente-sept clients à l'écran :** *« si je clique sur un client

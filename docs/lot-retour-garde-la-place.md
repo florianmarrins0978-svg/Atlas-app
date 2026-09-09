@@ -119,21 +119,52 @@ définitif, le client ne l'a jamais reçu.
 Le compte est donc juste. Ce qui trompe, c'est qu'il **promet plus qu'il ne
 dit** : rien sur la ligne n'annonce qu'un chantier peut être vide.
 
-### Ce qui n'a PAS été fait, et pourquoi
+### CE QU'IL A TRANCHÉ, LE SOIR MÊME
 
-Aucune ligne n'a été changée sur cet écran. C'est une question d'apparence, et la
-règle du dépôt est claire : **maquette d'abord, code ensuite**. Trois pistes
-existent, elles ne coûtent pas la même chose, et c'est à lui de choisir :
+Trois pistes lui ont été soumises ; il a choisi la troisième, en un mot :
+**« remplace par la dernière chose qui s'est produit »**. C'est fait.
 
-| Piste | Ce qu'elle donne |
+| La règle, en une phrase | **la ligne annonce ce que la FICHE contient** |
 |---|---|
-| garder « 8 chantiers » | on ne touche à rien ; il sait maintenant ce que ça compte |
-| ne compter que ce qui a produit quelque chose | le nombre devient une promesse tenue — mais un chantier en cours disparaît du compte |
-| remplacer le compte par la dernière chose qui s'est passée | « Dernier devis · 7 sept. », ou rien du tout |
+| les candidats | les trois registres de sa fiche : Devis, Facture, Fiche |
+| les conditions | **les mêmes que la fiche** — devis parti, facture émise, fiche envoyée |
+| à jour égal | le plus avancé du parcours : facture, puis devis, puis fiche |
+| rien à annoncer | la ligne se tait ; elle n'écrit pas « aucun document » |
 
-**Il n'y a pas de bonne réponse sans lui** : le compte sert à distinguer deux
-clients du même nom autant qu'à dire combien de travail on leur a fait. Une
-maquette se dessine en une heure dès qu'il dit lequel des trois il veut regarder.
+**Un chantier ouvert n'en est PAS un**, et c'est le cœur de la correction : il ne
+se voit nulle part sur la fiche. L'annoncer aurait recréé le même défaut sous un
+autre nom.
+
+**Ce que ça donne à l'écran :** « 10 Rue de Nantes 77400 Lagny-sur-Ma… · Devis
+7 sept. »
+
+### TROIS DÉFAUTS SORTIS DE LA CAPTURE, ET D'AUCUN TEST
+
+C'est la cinquième fois dans ce dépôt qu'une image trouve ce qu'un vert cachait.
+
+| Ce que l'image a montré | Ce qui a été fait |
+|---|---|
+| la date **se coupait** sur les adresses longues — donc elle disparaissait exactement chez les clients où on venait de l'ajouter | l'adresse et la date sont deux boîtes : **l'adresse se rogne, la date jamais** |
+| un client sans adresse ni document laissait une **seconde ligne vide** sous son nom | rien à dire, rien à l'écran, et pas même la place |
+| « 44300 Nantes· Devis 5 sept. » **collé** — une boîte flexible ne garde pas le blanc qui la commence | le séparateur est une marge, pas un caractère |
+
+**Et l'année tombe quand c'est celle qui court.** Ce n'est pas un goût : ses
+quatre caractères sont exactement ce qui faisait déborder la ligne. Sans eux,
+elle mesure ce que mesurait « · 8 chantiers », qu'elle remplace — *rien ne se
+coupe qui ne se coupait déjà*. Elle reparaît dès qu'elle apprend quelque chose :
+« Devis 12 juin 2025 », c'est le client qu'on n'a pas revu.
+
+### Ce qui a été RETIRÉ
+
+Le champ `chantiers` de la fiche : plus personne ne le lisait. Les suites qui
+s'en servaient pour éprouver l'isolation et la suppression visent maintenant la
+liste des chantiers elle-même — un repère plus profond qu'un compte.
+
+### Un point à savoir, qu'il n'a pas demandé
+
+Le bouton **« Refaire »** d'une fiche client crée le chantier **au moment où l'on
+appuie**, même si l'on ne va pas plus loin. C'est probablement une partie de ses
+huit.
 
 ---
 
@@ -141,49 +172,44 @@ maquette se dessine en une heure dès qu'il dit lequel des trois il veut regarde
 
 | Quoi | Qui peut le trancher |
 |---|---|
-| ce que « 8 chantiers » doit dire sur la ligne d'un client | **lui** — maquette d'abord |
 | un retour sert l'écran depuis la réserve (mesuré, pas apporté par ce lot) | **nous** — à ouvrir seulement s'il signale un écran qui ment au retour |
 
 ---
 
 ## Les chiffres de la batterie
 
-`npm run verifier:avant-livraison`, 9 septembre 2026 :
+`npm run verifier:avant-livraison`, 9 septembre 2026, les deux moitiés du lot
+ensemble :
 
 | Étape | Résultat |
 |---|---|
-| Types · Lint · Mémoire · Construction · Fournisseurs d'IA | ✅ |
-| Suites base de données | **1 rouge** — `test-acces-roles` |
-| Suites navigateur | **121 / 137** |
-| Connexion derrière un proxy | ✅ |
-| **La suite de ce lot** | ✅ **4 / 4** |
+| Types · Lint · Atelier · Construction · Mémoire · Fournisseurs d'IA | ✅ |
+| Données de démonstration · Connexion derrière un proxy | ✅ |
+| Suites base de données | ❌ — **1 rouge**, `test-acces-roles` |
+| Suites navigateur | ❌ — **16 rouges** |
+| **`test-retour-garde-la-place-e2e`** | ✅ **4 / 4** |
+| **`test-ligne-du-client-e2e`** | ✅ **5 / 5** |
 
-### Les seize rouges, un par un — AUCUN n'est de ce lot
+### LES DIX-SEPT ROUGES SONT EXACTEMENT LES MÊMES QU'AVANT LE LOT
 
-**Onze étaient déjà nommés dans `TODO.md` au 8 septembre** : `adresse-suggestions`,
-`anneau-dictee`, `anneau-vers-devis`, `carte-reponse-mene-au-geste`,
-`devis-client`, `ia-01`, `message-au-client`, `recherche-client`,
-`reprise-chantier`, `reprise-morceau`, `suivi-devis`.
+Ce n'est pas une impression : les deux relevés ont été **comparés ligne à
+ligne**, celui d'avant le lot et celui d'après.
 
-**Six ne l'étaient pas, et chacun a été vérifié plutôt que supposé :**
+| | |
+|---|---|
+| rouges avant | **17** |
+| rouges après | **17** |
+| ajoutées par ce lot | **aucune** |
+| disparues | aucune |
 
-| Suite | Ce qu'elle dit | Verdict |
-|---|---|---|
-| `acces-roles` | une route de plus dans la liste attendue : `…/facture/travaux-supplementaires` | le lot « travaux supplémentaires », lisible dans l'écart |
-| `reglages` | « Sans clé, l'écran doit annoncer le mode déterministe » | **rouge AVEC et SANS ce lot** — rejoué dans les deux sens |
-| `fin-de-chantier` | aucune `ligne-planifiee` au planning | **rouge AVEC et SANS ce lot** — rejoué dans les deux sens |
-| `madame-lucie` · `pas-la-ce-jour` · `poser-une-date` | dictée, recouvrement, pose d'une date | **vertes AVEC comme SANS**, jouées à conditions égales : leur rouge tient à la batterie entière (une centaine de suites accumulées avant elles), pas à ce lot |
+`acces-roles` · `adresse-suggestions` · `anneau-dictee` · `anneau-vers-devis` ·
+`carte-reponse-mene-au-geste` · `devis-client` · `fin-de-chantier` · `ia-01` ·
+`madame-lucie` · `message-au-client` · `pas-la-ce-jour` · `poser-une-date` ·
+`recherche-client` · `reglages` · `reprise-chantier` · `reprise-morceau` ·
+`suivi-devis`
 
-**La méthode, et elle vaut d'être dite :** les six ont été rejouées deux fois
-dans le MÊME filtre, une fois le lot retiré de l'arbre, une fois remis. Deux
-mêmes résultats, à conditions égales. Comparer un rouge de batterie à un vert
-joué seul n'aurait rien prouvé — c'est le piège du 20 août 2026, où une suite
-passait seule et tombait en batterie pour une raison qui n'avait rien à voir.
-
-### Un défaut de MA suite, trouvé et corrigé avant la poussée
-
-Sa première version posait **trente chantiers planifiés** pour dater ses
-clients. La base des suites navigateur est commune et s'accumule : trente
-chantiers de plus au planning, et le rouge serait tombé sur une suite jouée
-après celle-ci, sur du code juste. Les chantiers ont été retirés — un client
-sans chantier se range en fin de liste, c'est tout ce qu'il faut ici.
+**Onze d'entre elles sont nommées dans `TODO.md` depuis le 8 septembre**, et
+trois y sont décrites comme des contrôles qui réclament ce qu'il a lui-même fait
+retirer (`CLAUDE.md` §5 bis). Elles appartiennent à d'autres lots, et ce
+document ne les revendique pas : il dit seulement que **ce lot-ci n'en a ajouté
+aucune**.

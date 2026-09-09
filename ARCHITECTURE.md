@@ -26215,3 +26215,80 @@ position de défilement, une adresse. Confronté à la version d'avant, il rougi
 sur deux cas et laisse verts les deux garde-fous. Il pose lui-même ses trente
 clients : sur le jeu de démonstration, la liste tient dans l'écran et le contrôle
 mesurerait zéro.
+
+---
+
+## §306 — La ligne d'un client annonce ce que sa FICHE contient
+
+**Sa question du 9 septembre 2026 :** *« À quoi correspond le nombre de
+chantier ? Certains clients ont 8 chantiers, on s'attend à avoir 8 devis alors
+qu'il y en a 0 »*. Puis, la décision : *« remplace par la dernière chose qui
+s'est produit »*.
+
+### LE COMPTE ÉTAIT JUSTE, ET C'EST BIEN LE PROBLÈME
+
+`listerFichesClients` comptait tous les chantiers rattachés au client, les
+supprimés exclus. Rien de faux. Mais un chantier naît d'une dictée, de « Nouveau
+chantier », du bouton « Refaire » — **avant** qu'il y ait le moindre document.
+Le compte annonçait donc du travail que la fiche n'avait pas à montrer, et c'est
+cette promesse qui l'a envoyé vérifier pour rien.
+
+**Un chiffre exact peut mentir** : ce qu'il annonce compte autant que ce qu'il
+mesure.
+
+### LA RÈGLE QUI REMPLACE, EN UNE PHRASE
+
+**La ligne annonce ce que la fiche contient.** Les trois candidats de
+`derniereTraceDuClient` sont exactement les trois registres de la fiche — Devis,
+Facture, Fiche —, et rien d'autre. Ce qu'il lit dans la liste, il le trouve en
+ouvrant : c'est ce qui rend la déception impossible à refaire.
+
+**Un chantier ouvert n'en est donc pas un** : il ne se voit nulle part sur la
+fiche, et l'annoncer recréerait le défaut sous un autre nom.
+
+| | |
+|---|---|
+| un devis | **parti** (`statut = 'envoye'`) |
+| une facture | **émise** |
+| une fiche d'entretien | **envoyée**, jeton posé |
+
+Les mêmes conditions que la fiche, mot pour mot : deux jeux de conditions
+finiraient par se contredire, et c'est lui qui verrait la différence d'un écran
+à l'autre (`CLAUDE.md` §3).
+
+**À jour égal, le point le plus AVANCÉ du parcours** — facture, puis devis, puis
+fiche. Un chantier fait, facturé et devisé le même jour est un chantier facturé ;
+l'ordre d'arrivée en base, lui, ne promet rien.
+
+### CE QUI A ÉTÉ RETIRÉ
+
+`FicheClient.chantiers` n'existe plus : plus personne ne le lisait
+(`CLAUDE.md` §4 quinquies). Les suites qui s'en servaient pour éprouver
+l'isolation et la suppression visent maintenant `liste`, qui porte les mêmes
+chantiers et d'où tout le reste se déduit — un repère plus profond qu'un compte
+(`CLAUDE.md` §5 bis).
+
+### DEUX DÉFAUTS SORTIS DE LA CAPTURE, ET D'AUCUN TEST
+
+C'est la cinquième fois dans ce dépôt (`CLAUDE.md` §5).
+
+| Ce que l'image a montré | Ce qui a été fait |
+|---|---|
+| « 10 Rue de Nantes 77400 Lagny-sur-Marne · Devis 7 sept. » déborde des 316 px : écrits d'un seul tenant, ce sont les DERNIERS mots qui tombent — la date disparaissait exactement chez les clients à longue adresse | l'adresse et la date sont deux boîtes : l'adresse se rogne, la date jamais |
+| un client sans adresse ni document laissait une seconde ligne VIDE — dix-huit pixels de trou sous son nom | rien à dire, rien à l'écran, et pas même la place |
+| « 44300 Nantes· Devis 5 sept. » collé : une boîte flexible ne garde pas le blanc qui la commence | l'espace de séparation est une marge, pas un caractère |
+
+**L'année tombe quand c'est celle qui court** (`jourDeLaLigne`). Ce n'est pas un
+goût : ses quatre caractères sont exactement ce qui faisait déborder la ligne, et
+sans eux elle mesure ce que mesurait « · 8 chantiers », qu'elle remplace. Elle
+reparaît dès qu'elle apprend quelque chose — « Devis 12 juin 2025 », c'est le
+client qu'on n'a pas revu. Le tableau des mois reste celui de `jourCourt` : un
+second dirait « sept. » d'un côté et « sep. » de l'autre.
+
+### CE QUE LES CONTRÔLES TIENNENT
+
+| Suite | Ce qu'elle éprouve |
+|---|---|
+| `test-documents-du-client.ts` | la règle pure : le plus récent, l'égalité de jour, le silence quand rien n'est parti, l'année |
+| `test-liste-clients.ts` | qu'un chantier sans document n'annonce rien, et qu'un devis parti se lit avec son jour |
+| `test-ligne-du-client-e2e.ts` | **les boîtes** — l'adresse qui se rogne, la date qui ne se coupe pas, la ligne vide qui n'existe plus, et le compte qui ne revient pas |
