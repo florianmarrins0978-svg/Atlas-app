@@ -51,9 +51,45 @@ const PARENT = path.dirname(RACINE);
 function git(...args) {
   const r = spawnSync("git", args, { cwd: RACINE, encoding: "utf8" });
   if (r.status !== 0) {
-    throw new Error(`git ${args.join(" ")} a échoué :\n${(r.stderr || r.stdout || "").trim()}`);
+    const dit = (r.stderr || r.stdout || "").trim();
+    throw new Error(`git ${args.join(" ")} a échoué :\n${dit}\n\n${remede(dit)}`);
   }
   return (r.stdout ?? "").trim();
+}
+
+/**
+ * CE QU'IL FAUT FAIRE, pas seulement ce que git a dit.
+ *
+ * **Payé le 9 septembre 2026 :** *« je viens de le faire, il m'a dit erreur »*.
+ * Le message rendait la phrase de git — « is already used by worktree », « is
+ * already checked out » — et rien d'autre : un message qui NOMME le défaut sans
+ * dire quoi en faire renvoie le patron poser la question, et c'est exactement
+ * ce que ce script existe pour éviter (sa condition du 5 septembre : aucune
+ * manip en plus).
+ *
+ * Les trois refus que git oppose ici sont connus, et chacun a un remède d'une
+ * ligne. Ce qu'on ne reconnaît pas se dit tel quel — inventer un remède serait
+ * pire que d'avouer qu'on n'en a pas.
+ */
+function remede(ditParGit) {
+  const t = ditParGit.toLowerCase();
+  if (t.includes("already used by worktree") || t.includes("missing but already registered")) {
+    return (
+      "Un dossier de travail a été supprimé à la main : git le compte encore.\n" +
+      "   Remède :  git worktree prune   puis relancer cette commande."
+    );
+  }
+  if (t.includes("already checked out")) {
+    return (
+      "Cette branche est déjà sortie dans un autre dossier — git n'en autorise\n" +
+      "   qu'un par branche. Relancer : les dossiers suivants prendront les rangs\n" +
+      "   libres, ou supprimer le dossier qui la tient (git worktree remove)."
+    );
+  }
+  if (t.includes("permission denied") || t.includes("read-only")) {
+    return `Le dossier parent n'accepte pas d'écriture : ${PARENT}`;
+  }
+  return "Cette erreur-là n'est pas connue du script : recopiez-la telle quelle.";
 }
 
 /** Les dossiers de travail que git connaît déjà. */
@@ -97,6 +133,15 @@ function main() {
   }
 
   console.log(`Préparation de ${demande} dossiers de travail (celui-ci compris).\n`);
+
+  // **On émonde d'abord, et c'est la panne la plus probable.** Un dossier de
+  // travail supprimé depuis l'explorateur reste inscrit dans `.git/worktrees` :
+  // `git worktree add` refuse alors le même chemin — « is already used by
+  // worktree » — sur un dossier qui n'existe plus. `prune` retire les fiches
+  // orphelines et ne touche à rien de vivant ; le relancer sur un dépôt sain
+  // ne fait rien du tout.
+  git("worktree", "prune");
+
   const branche = git("rev-parse", "--abbrev-ref", "HEAD");
   /** Ceux qu'on vient de créer, et qui attendent leurs dépendances. */
   const neufs = [];
@@ -137,6 +182,8 @@ function main() {
   // binaires se résolvent depuis la racine du projet, et un lien vers le
   // `node_modules` du voisin ferait servir deux dossiers par la même
   // installation — exactement le partage qu'on vient de supprimer.
+  /** Ceux dont l'installation a échoué — dits ensemble, à la fin. */
+  const rates = [];
   for (const dossier of neufs) {
     console.log(`\nInstallation des dépendances dans ${path.basename(dossier)}…`);
     const r = spawnSync(SOUS_WINDOWS ? "npm.cmd" : "npm", ["install"], {
@@ -145,12 +192,23 @@ function main() {
       shell: SOUS_WINDOWS,
     });
     if (r.status !== 0) {
+      // **On ne s'arrête PAS au premier échec.** Les dossiers sont déjà créés :
+      // sortir ici laissait les suivants sans dépendances, et le patron devait
+      // deviner lesquels. On les fait tous, et l'on dit à la fin ce qui reste.
       console.error(
         `❌ « npm install » a échoué dans ${dossier} (code ${r.status}).\n` +
-          "   Le dossier est créé : relancer l'installation dedans suffit."
+          "   Le dossier existe : il suffit d'y relancer « npm install »."
       );
-      process.exit(1);
+      rates.push(dossier);
     }
+  }
+
+  if (rates.length > 0) {
+    console.error(
+      `\n❌ ${rates.length} dossier(s) sans dépendances. Dans chacun : npm install\n` +
+        rates.map((d) => `   ${d}`).join("\n")
+    );
+    process.exit(1);
   }
 
   console.log(`
