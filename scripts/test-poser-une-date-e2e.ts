@@ -306,7 +306,16 @@ async function main() {
   // où elle vit, au lieu de rester sur un écran qui n'existe plus
   // (`CLAUDE.md` §5 bis).
   await cas("sur deux jours, « Déplacer » n'offre plus « Journée »", async () => {
-    const jour = jourDuPatron(4);
+    // **Un jour OUVRABLE, lu au calendrier** — pas un jour calculé à la main :
+    // la fiche d'un samedi ne porte pas de carte, et le contrôle accuserait
+    // « Déplacer » d'un défaut qu'il vient de fabriquer.
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    const grille = await page.$$eval('[data-atlas="grille-mois"] [data-jour]', (l) =>
+      l.map((e) => e.getAttribute("data-jour"))
+    );
+    const ouvrable4 = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
+    const jour = grille.find((j): j is string => !!j && ouvrable4(j) && j >= jourDuPatron());
+    if (!jour) throw new Error("aucun jour ouvrable à venir au calendrier");
     await pool.query(
       `UPDATE chantiers
           SET date_planifiee = $2, creneau_debut = 'matin', duree_demi_journees = 4
