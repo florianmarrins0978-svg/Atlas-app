@@ -129,6 +129,10 @@
   .ong.actif{background:var(--plein);color:var(--surplein);box-shadow:none}
   .pastille{height:20px;min-width:20px;border-radius:999px;background:var(--or);color:var(--fond);
             display:grid;place-items:center;font:700 11px/1 var(--sans);padding:0 6px}
+  .ligneSeule{margin:8px 26px 0;height:46px;border-radius:14px;background:var(--plage);
+              display:flex;align-items:center;gap:9px;padding:0 16px;color:var(--doux);
+              font-size:14px;box-shadow:inset 0 0 0 1px var(--trait)}
+  .ligneSeule .fleche{margin-left:auto;color:var(--gris)}
   .mesure{font:600 12px/1 var(--sans);color:var(--etabli-or);margin:8px 0 0}
   .deborde{color:#a4442f}
 
@@ -191,6 +195,24 @@
         </div>
       </div></div>
       <p class="mesure" data-largeur="long">—</p>
+    </div>
+    <div class="prop">
+      <p class="nom">Sur sa propre ligne<span class="tenu">Ce que je défends</span></p>
+      <p class="idee">Le nom entier tient, et la ligne dit ce qu’elle est : les deux au-dessus
+        trient la liste, celle-ci OUVRE une page. Le chevron le montre.</p>
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="onglets">
+          <span class="ong actif">Tout</span>
+          <span class="ong">À facturer</span>
+        </div>
+        <div class="ligneSeule" data-mesure="ligne">
+          <span>Retours d’intervention</span>
+          <span class="pastille">3</span>
+          <span class="fleche">›</span>
+        </div>
+        <div style="height:14px"></div>
+      </div></div>
+      <p class="mesure" data-largeur="ligne">—</p>
     </div>
   </div>
 
@@ -371,7 +393,7 @@
           <button class="gros" type="button" data-envoie="E">C’est fini</button>
           <div class="confirme fugace" data-conf="E" hidden>
             <span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <span>C’est parti<span class="ou">Terminés › Retours</span></span>
+            <span>C’est parti<span class="ou">Terminés › Retour d’intervention</span></span>
           </div>
         </div>
       </div></div>
@@ -390,7 +412,7 @@
           <button class="gros" type="button" data-envoie="F">C’est fini</button>
           <div class="confirme" data-conf="F" hidden>
             <span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <span>C’est parti<span class="ou">Terminés › Retours</span></span>
+            <span>C’est parti<span class="ou">Terminés › Retour d’intervention</span></span>
           </div>
         </div>
       </div></div>
@@ -458,8 +480,15 @@
   function mesurer() {
     qq('[data-mesure]').forEach((rangee) => {
       const cle = rangee.dataset.mesure;
-      const dernier = rangee.lastElementChild;
-      const largeur = Math.ceil(dernier.getBoundingClientRect().right - rangee.getBoundingClientRect().left + 26);
+      // Une ligne pleine largeur se mesure ELLE-MÊME ; une rangée se mesure
+      // à son dernier élément. Confondre les deux rendrait un chiffre juste
+      // sur le mauvais objet.
+      const seule = rangee.classList.contains("ligneSeule");
+      const dernier = seule ? rangee : rangee.lastElementChild;
+      const boite = dernier.getBoundingClientRect();
+      const largeur = seule
+        ? Math.ceil(boite.width + 52)
+        : Math.ceil(boite.right - rangee.getBoundingClientRect().left + 26);
       const cible = document.querySelector('[data-largeur="' + cle + '"]');
       const tient = largeur <= 390;
       cible.textContent = tient
