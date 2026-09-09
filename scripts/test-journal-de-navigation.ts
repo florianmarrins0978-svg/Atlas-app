@@ -77,6 +77,31 @@ cas("le paramètre de l'adresse SURVIT — sinon le planning s'ouvre sur le mois
 
 // ─── LA BOUCLE DU 7 SEPTEMBRE, QUI NE DOIT PAS REVENIR ──────────────────────
 
+cas("LA FLÈCHE LIT UN JOURNAL QUI N'A PAS ENCORE SON PAS", () => {
+  // **Deux tours de batterie pour celui-là, et il ne se voit pas en lisant.**
+  // La flèche se calcule pendant le rendu ; le journal se met à jour juste
+  // après. Elle lit donc un journal sans le pas qu'on vient de faire — et une
+  // version qui y cherchait « notre place » trouvait la visite PRÉCÉDENTE du
+  // même écran, puis rendait ce qui la précédait : deux écrans trop tôt.
+  //
+  // C'est la trace exacte qu'a rendue la suite navigateur.
+  const journalDuNavigateur = [
+    "/login",
+    ACCUEIL,
+    "/chantiers/nouveau",
+    DEVIS,
+    ACCUEIL, // il repasse par l'accueil
+    // … et il rouvre le devis : la flèche lit ICI, avant que ce pas ne soit noté.
+  ];
+  assert.equal(
+    pagePrecedente(journalDuNavigateur, DEVIS),
+    ACCUEIL,
+    "elle remonte à la visite d'avant du même écran, et saute deux écrans"
+  );
+  // Et une fois le pas noté, la réponse ne change pas d'un caractère.
+  assert.equal(pagePrecedente([...journalDuNavigateur, DEVIS], DEVIS), ACCUEIL);
+});
+
 cas("ROUVRIR un écran déjà vu n'est PAS reculer — le défaut du 9 septembre", () => {
   // **C'est la suite navigateur qui a attrapé celui-là, et il valait le lot.**
   // La première version dépilait dès que l'adresse d'arrivée était celle
@@ -174,11 +199,13 @@ cas("LE BOUTON DU NAVIGATEUR employé, la flèche ne repart pas en avant", () =>
   // flèche « retour » avancerait.
   let j = journalApresVisite(journalApresVisite([], ACCUEIL), "/clients");
   j = journalApresVisite(j, DEVIS);
-  // Il appuie sur le bouton du navigateur : on est sur `/clients`, et le
-  // journal porte toujours le devis en dernier.
+  // Il appuie sur le bouton du navigateur et atterrit sur `/clients`. Le
+  // journal porte encore le devis, POSTÉRIEUR à sa place : le geste se déclare
+  // sur `popstate` (`JournalDeNavigation.tsx`), et ce qui suit s'en va.
+  j = journalSansCetEcran(j, "/clients");
+  assert.deepEqual(j, [ACCUEIL], "le devis est resté après sa place");
+  j = journalApresVisite(j, "/clients");
   assert.equal(pagePrecedente(j, "/clients"), ACCUEIL, "elle repart vers le devis");
-  // Et le pas suivant nettoie ce qui suivait notre place.
-  assert.deepEqual(journalSansCetEcran(j, "/clients"), [ACCUEIL]);
 });
 
 cas("la flèche ne renvoie JAMAIS sur l'écran où l'on est", () => {

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
@@ -40,6 +41,45 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 
 const chemin = (url: string) => new URL(url).pathname;
 
+const REPERE = '[data-atlas="retour-du-devis"]';
+
+/**
+ * Attendre que la flèche annonce `attendue`, et DIRE ce qu'elle annonçait sinon.
+ *
+ * **Le message doit désigner le bon coupable** (`AGENTS.md`). Un simple
+ * dépassement de délai ne dit pas si le journal est vide, s'il porte le mauvais
+ * écran, ou si la flèche ne s'est simplement pas corrigée : trois défauts très
+ * différents, à chercher à trois endroits. On rend donc les deux — ce que la
+ * flèche annonce, et ce que le journal contient.
+ *
+ * **Et l'on ATTEND, plutôt que de lire tout de suite** : la flèche rendue par
+ * le serveur porte la sortie déclarée, puis se corrige dès que la page est
+ * vivante. C'est ce que le patron voit, lui, à la première image.
+ */
+async function laFlecheAnnonce(page: Page, attendue: string): Promise<void> {
+  const fleche = page.locator(REPERE);
+  await fleche.waitFor({ state: "visible", timeout: 30_000 });
+  try {
+    await page.waitForFunction(
+      ([repere, cible]) => document.querySelector(repere)?.getAttribute("href") === cible,
+      [REPERE, attendue] as const,
+      { timeout: 15_000 }
+    );
+  } catch {
+    const vu = await fleche.getAttribute("href");
+    const journal = await page.evaluate(() => {
+      try {
+        return window.sessionStorage.getItem("atlas:journal-de-navigation");
+      } catch {
+        return "illisible";
+      }
+    });
+    assert.fail(
+      `la flèche annonce « ${vu} » au lieu de « ${attendue} » — journal de l'onglet : ${journal}`
+    );
+  }
+}
+
 async function main() {
   console.log("=== La flèche ramène à la page d'où l'on vient ===\n");
 
@@ -61,15 +101,7 @@ async function main() {
   await cas("SON CAS : venu de l'accueil, le devis renvoie à l'accueil", async () => {
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     await page.goto(devis, { waitUntil: "networkidle" });
-    await fleche.waitFor({ state: "visible", timeout: 30_000 });
-    // La flèche rendue par le serveur porte la sortie déclarée : le journal vit
-    // dans le navigateur. On attend donc qu'elle se soit corrigée — c'est ce
-    // que le patron voit, lui, à la première image.
-    await page.waitForFunction(
-      () => document.querySelector('[data-atlas="retour-du-devis"]')?.getAttribute("href") === "/",
-      undefined,
-      { timeout: 15_000 }
-    );
+    await laFlecheAnnonce(page, "/");
     await fleche.click();
     await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
     assert.equal(chemin(page.url()), "/", `la flèche a déposé sur ${page.url()}`);
@@ -81,14 +113,7 @@ async function main() {
     // signalements (20 août, 31 août, 7, 8 et 9 septembre).
     await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
     await page.goto(devis, { waitUntil: "networkidle" });
-    await fleche.waitFor({ state: "visible", timeout: 30_000 });
-    await page.waitForFunction(
-      () =>
-        document.querySelector('[data-atlas="retour-du-devis"]')?.getAttribute("href") ===
-        "/clients",
-      undefined,
-      { timeout: 15_000 }
-    );
+    await laFlecheAnnonce(page, "/clients");
   });
 
   await cas("deux retours de suite reculent de deux écrans, sans tourner en rond", async () => {
@@ -97,14 +122,7 @@ async function main() {
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
     await page.goto(devis, { waitUntil: "networkidle" });
-    await fleche.waitFor({ state: "visible", timeout: 30_000 });
-    await page.waitForFunction(
-      () =>
-        document.querySelector('[data-atlas="retour-du-devis"]')?.getAttribute("href") ===
-        "/clients",
-      undefined,
-      { timeout: 15_000 }
-    );
+    await laFlecheAnnonce(page, "/clients");
     await fleche.click();
     await page.waitForURL(/\/clients\/?$/, { timeout: 30_000 });
 
@@ -136,12 +154,7 @@ async function main() {
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     await page.goto(devis, { waitUntil: "networkidle" });
     for (let i = 0; i < 3; i++) await page.reload({ waitUntil: "networkidle" });
-    await fleche.waitFor({ state: "visible", timeout: 30_000 });
-    await page.waitForFunction(
-      () => document.querySelector('[data-atlas="retour-du-devis"]')?.getAttribute("href") === "/",
-      undefined,
-      { timeout: 15_000 }
-    );
+    await laFlecheAnnonce(page, "/");
   });
 
   await contexte.close();

@@ -103,12 +103,39 @@ pourquoi elles le disent maintenant en tête, et pourquoi la tâche existe.
 
 ---
 
+## DEUX CHOSES QUE J'AI DITES ET QUI ÉTAIENT FAUSSES
+
+Elles sont écrites ici parce qu'un correctif qui a l'air juste et ne l'est pas
+coûte plus cher qu'un défaut connu. Les deux ont été trouvées par la batterie,
+pas en relisant — et les deux étaient dans MON correctif.
+
+**1. « Le journal sait quand vous reculez. »** Non. Il le devinait à la forme de
+la trace — et rouvrir un écran déjà vu laisse exactement la même trace que
+reculer. Résultat : la flèche sautait deux écrans en arrière, c'est-à-dire la
+panne que je venais de corriger, par l'autre bout.
+
+Reculer ne se devine pas : c'est un geste, et ce sont les trois gestes qui
+reculent qui le disent maintenant — l'appui sur la flèche, l'enregistrement
+d'une fiche client, et le bouton du navigateur.
+
+**2. « L'ordre des choses n'a pas d'importance. »** Non. La flèche se calcule
+avant que le pas ne soit noté : elle lisait donc une trace en retard d'un pas, et
+retombait sur la fois PRÉCÉDENTE où vous aviez ouvert le même écran. C'est
+exactement votre plainte du 9 septembre, reproduite par mon propre correctif.
+
+**Ce que ça dit du reste :** ni l'une ni l'autre ne se voyait en relisant le
+code, et les deux passaient les contrôles « sur papier ». C'est le contrôle qui
+déroule VOTRE geste dans un vrai navigateur qui les a nommées.
+
+---
+
 ## Ce qui a été éprouvé
 
 | | |
 |---|---|
-| la règle, sans navigateur | `scripts/test-journal-de-navigation.ts` — 16 cas |
-| votre geste, dans un navigateur | `scripts/test-retour-page-davant-e2e.ts` — 5 cas : accueil → devis → retour → accueil, la même flèche par une autre porte, deux retours d'affilée, la sortie déclarée à froid, et le rechargement |
+| la règle, sans navigateur | `scripts/test-journal-de-navigation.ts` — 18 cas, tous verts |
+| votre geste, dans un navigateur | `scripts/test-retour-page-davant-e2e.ts` — 5 cas, tous verts : accueil → devis → retour → accueil, la même flèche par une autre porte, deux retours d'affilée, la sortie déclarée à froid, et le rechargement |
+| les six suites adaptées | vertes ensemble (6/6) |
 | la batterie complète | *(les chiffres exacts sont plus bas)* |
 
 **Six batteries de contrôle réclamaient l'ancien comportement** — la flèche du

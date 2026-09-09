@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { noterLaVisite } from "./journal-navigateur";
+import { noterLaVisite, oublierCetEcran } from "./journal-navigateur";
 
 /**
  * Ce qui tient le journal des écrans traversés, pour que la flèche de retour
@@ -27,6 +27,28 @@ function Enregistreur() {
     const question = parametres.toString();
     noterLaVisite(question ? `${chemin}?${question}` : chemin);
   }, [chemin, parametres]);
+
+  // **LE BOUTON DU NAVIGATEUR EST LE SEUL RETOUR QU'ATLAS NE FAIT PAS.**
+  //
+  // Nos flèches déclarent qu'elles reculent (`FlecheRetour`), et
+  // l'enregistrement d'une fiche client aussi. Le geste du navigateur — la
+  // flèche du haut, le balayage vers la droite sur un téléphone — ne passe par
+  // aucun des deux : sans cette ligne, le journal garderait les écrans
+  // POSTÉRIEURS à celui où l'on vient d'atterrir, et la flèche d'Atlas
+  // repartirait EN AVANT.
+  //
+  // `popstate` sert aussi le geste « suivant » du navigateur, et c'est sans
+  // danger : l'écran d'arrivée n'est alors plus dans le journal, et rien n'est
+  // retiré. Il est posé une seule fois, sans dépendance : `window.location` est
+  // déjà à jour quand l'événement arrive, et la visite elle-même est notée par
+  // l'effet du dessus, juste après.
+  useEffect(() => {
+    const surLeRetourDuNavigateur = () =>
+      oublierCetEcran(window.location.pathname + window.location.search);
+    window.addEventListener("popstate", surLeRetourDuNavigateur);
+    return () => window.removeEventListener("popstate", surLeRetourDuNavigateur);
+  }, []);
+
   return null;
 }
 

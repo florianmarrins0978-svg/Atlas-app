@@ -26190,6 +26190,44 @@ annonçait « Retour au devis » en menant au planning (§296, 7 septembre). Nom
 la destination demanderait une table écran par écran — c'est-à-dire la liste
 tenue à la main que ce lot supprime.
 
+### RECULER SE DÉCLARE, IL NE SE DEVINE PAS — deux verdicts corrigés
+
+**Deux affirmations de ce lot se sont révélées fausses en le livrant, et c'est
+la suite navigateur qui l'a dit à chaque fois.** Elles sont écrites ici parce
+qu'un correctif qui paraît juste et ne l'est pas coûte plus cher qu'un défaut
+connu (`CLAUDE.md` §2 bis).
+
+**1. « Le journal dépile quand il revient » — FAUX.** La première version
+reconnaissait un retour à la forme de la trace : si l'adresse d'arrivée était
+celle d'avant-dernière, c'est qu'on avait reculé. Or **rouvrir un écran déjà vu
+laisse exactement la même trace** — ouvrir un devis, passer à l'accueil, rouvrir
+ce devis depuis l'accueil. Le journal dépilait alors l'accueil, et la flèche
+sautait deux écrans : la panne qu'on corrigeait, par l'autre bout.
+
+Reculer n'est pas une forme, c'est un **geste** : les trois seuls qui reculent le
+disent eux-mêmes (`journalSansCetEcran`).
+
+| le geste | où il le dit |
+|---|---|
+| la flèche est appuyée | `FlecheRetour.tsx`, à l'appui |
+| une fiche client enregistrée ramène au devis | `FormulaireNouveauChantier.tsx` |
+| le bouton du navigateur, ou le balayage sur un téléphone | `JournalDeNavigation.tsx`, sur `popstate` |
+
+**2. « La lecture est insensible à l'ordre » — FAUX au premier essai.** La flèche
+se calcule pendant le rendu, le journal se met à jour juste après : elle lit donc
+un journal qui ne porte pas encore le pas qu'on vient de faire. Une version qui y
+cherchait « notre place » trouvait la visite **précédente** du même écran et
+rendait ce qui la précédait — deux écrans trop tôt, exactement la plainte du
+9 septembre. `pagePrecedente` applique désormais la visite courante avant de
+lire : si le journal la porte déjà, c'est sans effet ; sinon elle s'ajoute au
+bout. Notre place est alors toujours la dernière ligne.
+
+**Ce qu'il faut en retenir pour la suite :** aucune de ces deux erreurs ne se
+voyait en relisant, et les deux étaient vertes côté règle pure. C'est le contrôle
+qui déroule SON geste dans un navigateur qui les a nommées — et la seconde ne
+s'est laissé prendre que parce que l'échec disait le journal de l'onglet en
+clair, au lieu d'un simple dépassement de délai.
+
 ### Pourquoi pas `history.back()`
 
 `retour-au-planning.ts` l'avait écarté avec trois raisons, et elles tiennent
@@ -26199,10 +26237,11 @@ toujours. Le journal les tient toutes les trois là où `history.back()` échoua
 |---|---|
 | la flèche est un `<Link>` : on l'ouvre dans un onglet, elle s'annonce | elle garde une VRAIE adresse, lue dans le journal |
 | il ment après un rechargement ou un signet | le journal survit au rechargement, et il est vide sur un signet — la sortie déclarée reprend alors la main |
-| après un enregistrement, il redépose sur le formulaire quitté | enregistrer ramène à la page d'où l'on venait, et le journal la RETIRE au lieu de l'empiler |
+| après un enregistrement, il redépose sur le formulaire quitté | l'enregistrement DÉCLARE qu'il revient d'où il vient, et le formulaire quitte le journal |
 
 Ce dernier point est la boucle du 7 septembre (§296) : deux flèches se pointaient
-l'une l'autre, et aucune ne sortait. Le dépilement l'interdit par construction.
+l'une l'autre, et aucune ne sortait. Le geste déclaré l'interdit par
+construction — et il ne se devine pas, voir ci-dessus.
 
 ### Ce qui a été RETIRÉ avec, et ce qui reste
 
@@ -26226,9 +26265,12 @@ une destination promise, et celle-là ne mène plus à rien.
 
 ### Éprouvé
 
-`scripts/test-journal-de-navigation.ts` — seize cas de règle pure, dont les deux
-qu'aucune suite navigateur ne verrait : le dépilement, et le refus de
-`//ailleurs.example` dans un `href`. `scripts/test-retour-page-davant-e2e.ts`
-déroule SON geste dans un navigateur : accueil → devis → retour → accueil, la
-même flèche par une autre porte, deux retours d'affilée, et la sortie déclarée à
-froid (`scripts/_arriver-a-froid.ts`).
+`scripts/test-journal-de-navigation.ts` — dix-huit cas de règle pure, dont les
+trois qu'aucune suite navigateur ne verrait : le geste déclaré, la lecture d'un
+journal en retard d'un pas, et le refus de `//ailleurs.example` dans un `href`.
+`scripts/test-retour-page-davant-e2e.ts` déroule SON geste dans un navigateur :
+accueil → devis → retour → accueil, la même flèche par une autre porte, deux
+retours d'affilée, le rechargement, et la sortie déclarée à froid
+(`scripts/_arriver-a-froid.ts`). C'est cette suite-là qui a trouvé les deux
+erreurs ci-dessus, et son message rend le journal de l'onglet en clair — sans
+quoi elle n'aurait dit qu'« délai dépassé ».

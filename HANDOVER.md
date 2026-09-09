@@ -18,12 +18,21 @@ sert.
 | les suites | `scripts/test-journal-de-navigation.ts` (16), `scripts/test-retour-page-davant-e2e.ts` (5) |
 | le détail | `ARCHITECTURE.md` §305, `docs/lot-retour-page-davant.md` |
 
-**LE PIÈGE À NE PAS DÉFAIRE :** la flèche rendue par le SERVEUR porte la sortie
+**LE PIÈGE À NE PAS DÉFAIRE — RECULER SE DÉCLARE, IL NE SE DEVINE PAS.** Le
+journal ne reconnaît PAS un retour à la forme de sa trace : rouvrir un écran déjà
+vu laisse exactement la même trace, et une version qui devinait faisait sauter
+deux écrans à la flèche. Trois gestes seulement reculent, et chacun le dit :
+l'appui sur la flèche, l'enregistrement d'une fiche client qui ramène au devis,
+et `popstate` (le bouton du navigateur). En ajouter un quatrième sans le déclarer
+refabrique la panne du 9 septembre.
+
+**Second piège, du même lot :** la flèche rendue par le SERVEUR porte la sortie
 déclarée, puis se corrige dès que la page est vivante — le journal est dans le
-navigateur, et le serveur ne peut rien en savoir. Une suite qui lit son `href`
-à l'instant où l'écran paraît peut donc attraper la valeur d'avant : il faut
-attendre (`page.waitForFunction`), comme le fait
-`test-retour-page-davant-e2e.ts`.
+navigateur. Elle lit donc un journal **en retard d'un pas**, et `pagePrecedente`
+applique la visite courante avant de lire pour cette raison précise. Une suite
+qui lit son `href` à l'instant où l'écran paraît attrape la valeur d'avant : il
+faut attendre, comme le fait `test-retour-page-davant-e2e.ts` — dont l'échec rend
+le journal de l'onglet en clair, sans quoi il ne dirait qu'« délai dépassé ».
 
 **Et pour éprouver la sortie DÉCLARÉE, il faut arriver à froid.** Une suite qui
 s'est connectée puis promenée a forcément un journal : elle ne verra jamais le

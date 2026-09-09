@@ -154,20 +154,25 @@ export function journalApresVisite(journal: readonly string[], chemin: string): 
  * l'écran garde alors la sortie qu'il déclare. C'est le cas d'un onglet neuf,
  * d'un signet, d'une notification ouverte à froid.
  *
- * ─── ON REMONTE DEPUIS L'ÉCRAN COURANT, PAS DEPUIS LA FIN ───────────────────
+ * ─── ON NOTE D'ABORD SA PROPRE VISITE, PUIS ON REMONTE ──────────────────────
  *
- * **Et c'est cette ligne-là qui empêche la flèche de repartir EN AVANT.**
+ * **Et c'est cette ligne-là qui a coûté deux tours de batterie.**
  *
  * La flèche et le journal se posent tous deux à l'arrivée sur un écran, chacun
- * dans son coin : la flèche pendant le rendu, le journal juste après. Le journal
- * peut donc encore porter l'écran qu'on vient de QUITTER, à la ligne d'après la
- * nôtre — c'est exactement le cas quand on vient de reculer.
+ * dans son coin : la flèche pendant le rendu, le journal juste après. La flèche
+ * lit donc un journal qui ne porte pas encore le pas qu'on vient de faire.
  *
- * Une lecture qui partirait de la fin rendrait alors cet écran-là : la flèche
- * repartirait d'où l'on vient de revenir, et deux appuis se renverraient l'un
- * l'autre sans jamais sortir. En partant de NOTRE place dans le journal, la
- * réponse est la même que le journal ait été mis à jour ou non — plus rien ne
- * dépend de l'ordre des effets de React.
+ * Une première version cherchait « notre dernière place » dans ce journal-là.
+ * Elle trouvait alors **la visite PRÉCÉDENTE du même écran** — un devis ouvert
+ * une première fois, puis rouvert depuis l'accueil — et rendait ce qui
+ * précédait celle-ci : deux écrans trop tôt. C'est la panne même qu'on
+ * corrigeait, et aucune relecture ne l'a vue ; c'est la suite navigateur qui
+ * l'a dite, avec le journal sous les yeux.
+ *
+ * On applique donc la visite courante avant de lire. Si le journal la porte
+ * déjà, c'est sans effet (`journalApresVisite`) ; sinon elle s'ajoute au bout.
+ * Dans les deux cas notre place est la DERNIÈRE ligne, et plus rien ne dépend
+ * de l'ordre des effets de React.
  *
  * On saute ensuite les lignes du même écran : un écran qu'on feuillette
  * (`/termines/tva?t=…`) ne se rembobine pas page par page — voir `ecranDe`.
@@ -176,18 +181,9 @@ export function pagePrecedente(
   journal: readonly string[],
   cheminCourant: string
 ): string | null {
-  const propre = journal.map(cheminInterne).filter((c): c is string => c !== null);
   const ici = ecranDe(cheminCourant);
-  // Notre dernière place dans le journal ; absent, on part de la fin — c'est le
-  // cas normal juste avant que la visite ne soit notée.
-  let depart = propre.length;
-  for (let i = propre.length - 1; i >= 0; i--) {
-    if (ecranDe(propre[i]) === ici) {
-      depart = i;
-      break;
-    }
-  }
-  for (let i = depart - 1; i >= 0; i--) {
+  const propre = journalApresVisite(journal, cheminCourant);
+  for (let i = propre.length - 2; i >= 0; i--) {
     if (ecranDe(propre[i]) === ici) continue;
     return propre[i];
   }
