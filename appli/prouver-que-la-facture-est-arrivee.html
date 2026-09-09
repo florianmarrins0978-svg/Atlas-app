@@ -146,6 +146,30 @@ ul.factures li{padding:14px 0;border-top:1px solid var(--filet)}
 .chantiers .o{display:block;font-size:13px;color:var(--gris);margin-top:2px}
 .chantiers .e{font:400 11px var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
 
+/* ── Le dossier du client, onglet « Factures » ─────────────────────────── */
+/* Recopié de l'écran réel (`src/app/clients/[id]/PieceDuDossier.tsx`) : le
+   numéro en serif 19 px à gauche, la date à droite en chiffres alignés, un
+   chevron, et 64 px sous le pouce. */
+.dossier .sur{margin:10px 0 0;font:500 11px/1 var(--sans);letter-spacing:.28em;
+  text-transform:uppercase;color:var(--or)}
+.dossier .qui{margin:26px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
+.dossier .tel{position:static;width:auto;height:auto;overflow:visible;border-radius:0;
+  box-shadow:none;background:none;margin:8px 0 0;font-size:15px;color:var(--gris)}
+.onglets{display:flex;gap:22px;margin:26px 0 0;border-bottom:1px solid var(--trait)}
+.onglets span{padding:0 0 10px;font:400 11px var(--sans);letter-spacing:.2em;
+  text-transform:uppercase;color:var(--gris)}
+.onglets span.pris{color:var(--encre);box-shadow:inset 0 -2px 0 var(--or)}
+.piece{display:grid;grid-template-columns:1fr auto auto;align-items:center;
+  column-gap:14px;min-height:64px;padding:15px 0;border-top:1px solid var(--filet)}
+.piece .num{font:400 19px/1.15 var(--serif)}
+.piece .date{font-size:11.5px;color:var(--gris);font-variant-numeric:tabular-nums}
+.piece .chev{color:var(--chevron);font-size:12px}
+/* La ligne NEUVE, sous le numéro : la même phrase que sur les impayés. */
+.piece .recu{grid-column:1 / -1;margin:3px 0 0;font-size:11.5px;line-height:1.5;
+  color:var(--encre-douce);padding-left:11px;box-shadow:inset 3px 0 0 var(--or)}
+.piece .recu b{color:var(--encre);font-weight:500}
+.piece .recu.muet{color:var(--gris)}
+
 .nav{position:absolute;left:0;right:0;bottom:0;height:48px;background:var(--fond);
      border-top:1px solid var(--trait);display:flex;align-items:center;
      justify-content:space-around;font:400 9.5px var(--sans);letter-spacing:.2em;
@@ -176,6 +200,7 @@ ul.factures li{padding:14px 0;border-top:1px solid var(--filet)}
     <button type="button" data-v="trace" aria-pressed="true">Où l'info se range</button>
     <button type="button" data-v="pasrecu" aria-pressed="false">S'il ne coche jamais</button>
     <button type="button" data-v="carte" aria-pressed="false">La carte, sur l'accueil</button>
+    <button type="button" data-v="dossier" aria-pressed="false">Dans la fiche du client</button>
     <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
   </div>
 </div>
@@ -227,9 +252,10 @@ ul.factures li{padding:14px 0;border-top:1px solid var(--filet)}
     <li><b>Où va la carte.</b> Je la pose sur l'accueil, avec les réponses aux devis —
       le mécanisme et son « J'ai vu » existent déjà, il n'y a rien à inventer. Si
       vous la vouliez sur la fiche du chantier, dites-le.</li>
-    <li><b>Faut-il la même ligne sur l'écran de la facture</b>, dans le chantier ?
-      Elle ne coûte rien de plus, mais deux endroits à regarder valent parfois
-      moins qu'un seul.</li>
+    <li><b>TRANCHÉ le 9 septembre, par vous :</b> <i>« je vais dans mes clients sur
+      la catégorie facture »</i>. La ligne va donc AUSSI dans le dossier du client —
+      c'est l'onglet <b>« Dans la fiche du client »</b> ci-dessus. C'est là que vous
+      chercherez, et une preuve qu'on ne trouve pas ne prouve rien.</li>
     <li><b>Prévenir sur le téléphone</b> — le lot d'à côté. Cette confirmation est
       l'un des deux événements qui mériteraient de sonner, avec « devis accepté ».</li>
   </ul>
@@ -306,6 +332,31 @@ function accueil(){
     '</section>';
 }
 
+/**
+ * Le dossier du client, onglet « Factures » — recopié de l'écran réel.
+ *
+ * **Sa réponse du 9 septembre 2026 :** *« je vais dans mes clients sur la
+ * catégorie facture »*. C'est donc là qu'il cherchera, et la ligne doit y être.
+ */
+function dossierDuClient(){
+  return '<div class="ecran dossier">' +
+    '<p class="sur">Client</p><p class="qui">Mme Durand</p>' +
+    '<p class="tel">06 12 34 56 78</p>' +
+    '<div class="onglets"><span>Devis</span><span class="pris">Factures</span><span>Fiches</span></div>' +
+    FACTURES.map(function(f){
+      var h = '<div class="piece"><span class="num">n° ' + ech(f.numero) + '</span>' +
+        '<span class="date">' + ech(f.emise) + ' 2026</span><span class="chev">›</span>';
+      if (!f.ouverte) {
+        h += '<span class="recu muet">Pas encore ouverte.</span>';
+      } else {
+        h += '<span class="recu">Ouverte <b>' + ech(f.ouverte) + '</b>' +
+          (f.confirmee ? ' · réception confirmée <b>' + ech(f.confirmee) + '</b>' : '') + '</span>';
+      }
+      return h + '</div>';
+    }).join("") +
+    '</div>';
+}
+
 var TEXTES = {
   avant: ["Aujourd'hui",
     "L'écran où vous allez déjà voir qui n'a pas payé. Il dit ce qu'on vous doit — jamais si votre client a seulement ouvert la facture."],
@@ -314,12 +365,15 @@ var TEXTES = {
   pasrecu: ["S'il ne coche jamais",
     "La case reste vide, et vous avez quand même la date d'ouverture — celle-là, Atlas la note tout seul."],
   carte: ["La carte, sur l'accueil",
-    "Ce que vous voyez le jour où il confirme. « J'ai vu » l'efface, comme pour la réponse à un devis."]
+    "Ce que vous voyez le jour où il confirme. « J'ai vu » l'efface, comme pour la réponse à un devis."],
+  dossier: ["Dans la fiche du client",
+    "L’écran qu’il ouvre pour retrouver une facture. La même ligne, sous le numéro."],
 };
 
 function rendre(){
   var v = etat.vue;
-  if (v === "carte") defile.innerHTML = accueil();
+  if (v === "dossier") defile.innerHTML = dossierDuClient();
+  else if (v === "carte") defile.innerHTML = accueil();
   else if (v === "avant") defile.innerHTML = enAttente(false, false);
   else defile.innerHTML = enAttente(true, v === "trace");
   nom.textContent = TEXTES[v][0];
