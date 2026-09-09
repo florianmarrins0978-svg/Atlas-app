@@ -15,6 +15,7 @@ import type { Moment } from "@/lib/disponibilites";
 import type { QuandChantier } from "@/lib/planning-jour";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
+import { retourDuChantier } from "@/server/repositories/retours-intervention";
 
 /**
  * LES ACTIONS DU PLANNING.
@@ -237,8 +238,23 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
  * une panne, et la feuille le dit en toutes lettres — **et n'offre alors pas le
  * bouton du PDF**, qui répondrait 404.
  */
-export async function tachesDuChantierAction(chantierId: string): Promise<FeuilleDuChantier> {
+export async function tachesDuChantierAction(
+  chantierId: string
+): Promise<FeuilleDuChantier & { retourPose: boolean }> {
   const ctx = await getCurrentCtx();
   await exigerChantierDansSaPortee(ctx, chantierId, "ouvrir la feuille de ce chantier");
-  return tachesDuChantier(ctx, chantierId);
+  // **Le retour se demande ICI, avec la feuille — pas à l’ouverture du bandeau.**
+  //
+  // Sa demande du 9 septembre : une fois posé, le bouton se fige. Or le bandeau
+  // ne chargeait son état qu’à l’OUVERTURE : en rouvrant la fiche le lendemain,
+  // il aurait retrouvé un bouton vert et pressable sur un chantier déjà rendu.
+  // Le verrou qu’il demande n’aurait tenu que le temps d’une session.
+  //
+  // C’est une requête de plus sur une lecture qui se fait déjà, jamais une
+  // requête de plus tout court.
+  const [feuille, retour] = await Promise.all([
+    tachesDuChantier(ctx, chantierId),
+    retourDuChantier(ctx, chantierId),
+  ]);
+  return { ...feuille, retourPose: retour !== null };
 }

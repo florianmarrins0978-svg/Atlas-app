@@ -455,12 +455,26 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "planning-semaine",
     ecran: "Planning",
-    ou: "en haut de l'écran Planning",
-    intitule: "Voir une autre semaine",
+    ou: "sous le calendrier, quand les sept jours sont affichés",
+    intitule: "Voir les sept jours d'avant ou d'après",
     motsCles: ["semaine", "suivante", "precedente", "avancer", "reculer", "changer", "planning"],
-    geste: "Appuyez sur les chevrons de part et d'autre de la semaine.",
+    geste: "Appuyez sur les chevrons de part et d'autre des dates.",
     source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Semaine précédente", "Semaine suivante"],
+    preuves: ["Sept jours avant", "Sept jours après"],
+  },
+  {
+    // **Un geste qui ne se voit pas ne s'apprend pas seul** : le balayage a donc
+    // sa fiche, et les deux points sous le calendrier se touchent aussi.
+    id: "planning-journee-ou-semaine",
+    ecran: "Planning",
+    ou: "sous le calendrier du mois",
+    intitule: "Passer de la journée aux sept jours",
+    motsCles: ["journee", "semaine", "aujourdhui", "jour", "liste", "planning", "balayer"],
+    geste:
+      "Balayez la liste du doigt, ou appuyez sur l'un des deux points. " +
+      "L'écran s'ouvre toujours sur la journée du jour.",
+    source: "src/app/planning/PlanningClient.tsx",
+    preuves: ["La journée", "Les sept jours"],
   },
 
   // --- Terminés et TVA ------------------------------------------------------

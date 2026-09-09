@@ -62,6 +62,15 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { lienAppel, liensItineraire } from "@/lib/itineraire";
 import type { FeuilleDuChantier } from "@/server/repositories/devis";
+
+/**
+ * La feuille d’un chantier, et si son retour a déjà été posé.
+ *
+ * **Les deux voyagent ensemble**, parce que le bouton de fin de chantier doit
+ * être figé DÈS L’OUVERTURE de la fiche — pas seulement dans la session où
+ * l’on a appuyé. Sa demande du 9 septembre 2026.
+ */
+type FeuilleEtRetour = FeuilleDuChantier & { retourPose: boolean };
 import { NOTE_MAX } from "@/lib/note-chantier";
 import {
   basculerEquipeAction,
@@ -154,6 +163,16 @@ function lundiDe(iso: JourIso): JourIso {
   d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
   return d.toISOString().slice(0, 10);
 }
+
+/**
+ * Combien de jours la liste montre quand on l ouvre en grand.
+ *
+ * **Sept, et non six.** Ses exemples du 9 septembre en donnaient six — « du 8
+ * au 13 » — mais une fenetre de sept jours porte une semaine entiere : quel
+ * que soit le jour ou il ouvre l appli, il voit le meme jour de la semaine
+ * suivante. A six, le lundi ne voit jamais le lundi.
+ */
+const JOURS_DE_LA_FENETRE = 7;
 
 function plusDeJours(iso: JourIso, n: number): JourIso {
   const d = enDate(iso);
@@ -291,7 +310,43 @@ export default function PlanningClient({
     return { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
   });
   const [jourTouche, setJourTouche] = useState<JourIso | null>(null);
-  const [lundi, setLundi] = useState<JourIso>(() => lundiDe(jourDArrivee as JourIso));
+  /**
+   * ─── LA LISTE PART DU JOUR, ET NON DU LUNDI — sa demande du 9 septembre 2026
+   *
+   * *« Les jours du planning doivent avancer chaque jour : quand on est le 8,
+   * c'est du 8 au 13 ; le 9, du 9 au 14. Et pour voir apparaître les jours
+   * grisés en bas, il faut appuyer sur la flèche retour arrière. »*
+   *
+   * **Ce que cette fenêtre glissante RÉPARE, et c'est lui qui l'a vu :** la
+   * semaine du lundi mettait des journées DÉJÀ FAITES en tête de liste, avec la
+   * même pastille et la même encre que celles à venir. Le salarié qui ouvre
+   * l'appli le matin y lisait un chantier de plus à faire. Une fenêtre qui part
+   * d'aujourd'hui n'en contient aucune ; celles qu'on va chercher avec la
+   * flèche arrivent éteintes.
+   */
+  const [debutFenetre, setDebutFenetre] = useState<JourIso>(jourDArrivee as JourIso);
+  /**
+   * **Ce qu'on regarde : la journée, ou les sept jours.** Sa demande du même
+   * jour : *« qu'on ait seulement la journée d'aujourd'hui, pour avoir moins
+   * d'informations ; néanmoins, en un clic, le visuel de la semaine »*. La
+   * journée est le défaut à chaque arrivée sur l'écran — c'est ce qu'il a
+   * demandé, et c'est ce que le salarié cherche à sept heures du matin.
+   */
+  const [portee, setPortee] = useState<"jour" | "semaine">("jour");
+  /** D'où le doigt est parti — `null` tant qu'aucun balayage n'est en cours. */
+  const departBalayage = useRef<{ x: number; y: number } | null>(null);
+
+  /**
+   * Passer de la journée aux sept jours, et l'inverse.
+   *
+   * **Revenir sur la journée REPART d'aujourd'hui.** Sans cela, celui qui a
+   * reculé de trois fenêtres retomberait sur une journée d'il y a trois
+   * semaines sans comprendre pourquoi — et il la lirait comme la sienne.
+   */
+  function allerVers(quoi: "jour" | "semaine") {
+    setPortee(quoi);
+    if (quoi === "jour") setDebutFenetre(aujourdHui);
+  }
   const [, enTransition] = useTransition();
 
   const grilleRef = useRef<HTMLDivElement>(null);
@@ -639,7 +694,7 @@ export default function PlanningClient({
   const [portes, setPortes] = useState<ChantierPlanning | null>(viseDemande);
 
   /** Ce que porte la feuille de chaque chantier — chargé une fois, jamais deux. */
-  const [taches, setTaches] = useState<Record<string, FeuilleDuChantier>>({});
+  const [taches, setTaches] = useState<Record<string, FeuilleEtRetour>>({});
 
   useEffect(() => {
     if (!feuille) return;
@@ -672,7 +727,7 @@ export default function PlanningClient({
     if (d.getUTCFullYear() !== curseur.annee || d.getUTCMonth() !== curseur.mois) {
       setCurseur({ annee: d.getUTCFullYear(), mois: d.getUTCMonth() });
     }
-    setLundi(lundiDe(jour));
+    setDebutFenetre(jour);
     setJourTouche((cur) => (cur === jour ? null : jour));
   }
 
@@ -772,13 +827,16 @@ export default function PlanningClient({
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, ...r.etat } : c))
       );
-      setLundi(lundiDe(jour));
+      setDebutFenetre(jour);
     });
   }
 
   const joursDeLaSemaine = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => plusDeJours(lundi, i)),
-    [lundi]
+    () =>
+      Array.from({ length: portee === "jour" ? 1 : JOURS_DE_LA_FENETRE }, (_, i) =>
+        plusDeJours(debutFenetre, i)
+      ),
+    [debutFenetre, portee]
   );
 
   /**
@@ -814,8 +872,12 @@ export default function PlanningClient({
   );
 
   const titreSemaine = useMemo(() => {
-    const debut = enDate(joursDeLaSemaine[0]);
-    const fin = enDate(joursDeLaSemaine[6]);
+    const debut = enDate(debutFenetre);
+    // **La fin se calcule, elle ne se lit pas au rang 6** : sur la vue journée
+    // le tableau n'a qu'une case, et `joursDeLaSemaine[6]` y valait `undefined`
+    // — une date invalide dans le titre, sur un écran qu'il regarde tous les
+    // matins.
+    const fin = enDate(plusDeJours(debutFenetre, JOURS_DE_LA_FENETRE - 1));
     const moisDebut = MOIS_LONGS[debut.getUTCMonth()];
     const moisFin = MOIS_LONGS[fin.getUTCMonth()];
     return debut.getUTCMonth() === fin.getUTCMonth()
@@ -923,7 +985,7 @@ export default function PlanningClient({
             // deux navigations cessent de s'ignorer : toucher un jour amenait
             // déjà la liste sur sa semaine, mais changer de semaine ne disait
             // rien au mois, et rien ne montrait d'où venait la liste.
-            semaineLue={lundi}
+            semaineLue={lundiDe(debutFenetre)}
             // ─── LA FICHE DU JOUR, DANS LE MOIS ────────────────────────────
             //
             // **Sa maquette du 3 septembre 2026.** Elle s'ouvre entre la
@@ -950,13 +1012,52 @@ export default function PlanningClient({
           />
         </div>
 
-        {/* ─── PLANIFIÉS, à la semaine ────────────────────────────────────── */}
-        <TitreSection>Planifiés</TitreSection>
-        <div className="mx-[18px] mt-[18px] flex items-center justify-between gap-2.5">
+        {/* ─── LA JOURNÉE, OU LES SEPT JOURS ───────────────────────────────
+            **Le mot « Planifiés » est parti le 9 septembre 2026, à sa demande.**
+            Il titrait une liste qui n'a plus besoin d'être nommée : sous le
+            calendrier, ce qui suit ne peut être que des chantiers posés, et
+            l'écran a déjà « Planning » écrit en tête. Un titre qui répète son
+            écran est du bruit (`CLAUDE.md` §3).
+
+            **On passe de l'une à l'autre AU DOIGT** — son choix du même jour :
+            *« pas en appuyant sur deux gros boutons, quelque chose de plus
+            subtil »*. Les deux points disent où l'on est, et se touchent aussi :
+            un geste qui ne se voit pas ne s'apprend pas seul. */}
+        <div
+          data-atlas="portee-liste"
+          className="mt-[22px] flex items-center justify-center gap-[9px]"
+        >
+          {(["jour", "semaine"] as const).map((quoi) => (
+            <button
+              key={quoi}
+              type="button"
+              data-atlas={`point-${quoi}`}
+              aria-pressed={portee === quoi}
+              aria-label={quoi === "jour" ? "La journée" : "Les sept jours"}
+              onClick={() => allerVers(quoi)}
+              className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center border-0 bg-transparent p-0"
+              style={{ WebkitTapHighlightColor: "transparent" }}
+            >
+              <i
+                className="block h-[6px] w-[6px] rounded-full"
+                style={{
+                  background: portee === quoi ? colors.or : colors.chevron,
+                  transform: portee === quoi ? "scale(1.5)" : "none",
+                  transition: "background 300ms, transform 300ms",
+                }}
+              />
+            </button>
+          ))}
+        </div>
+
+        {/* Les flèches ne servent qu'en grand : sur la journée, il n'y a rien à
+            feuilleter, et deux cibles inertes se touchent quand même. */}
+        {portee === "semaine" && (
+        <div className="mx-[18px] mt-[14px] flex items-center justify-between gap-2.5">
           <Fleche
-            libelle="Semaine précédente"
+            libelle="Sept jours avant"
             signe="‹"
-            onClick={() => setLundi((l) => plusDeJours(l, -7))}
+            onClick={() => setDebutFenetre((d) => plusDeJours(d, -JOURS_DE_LA_FENETRE))}
           />
           <div className="flex-1 text-center">
             <b
@@ -968,15 +1069,36 @@ export default function PlanningClient({
             </b>
           </div>
           <Fleche
-            libelle="Semaine suivante"
+            libelle="Sept jours après"
             signe="›"
-            onClick={() => setLundi((l) => plusDeJours(l, 7))}
+            onClick={() => setDebutFenetre((d) => plusDeJours(d, JOURS_DE_LA_FENETRE))}
           />
         </div>
+        )}
 
+        {/* **Le balayage vit ICI, sur la liste elle-même.** Posé plus haut, il
+            aurait pris le doigt qui fait défiler le calendrier. */}
+        <div
+          data-atlas="liste-planifies"
+          onPointerDown={(e) => {
+            departBalayage.current = { x: e.clientX, y: e.clientY };
+          }}
+          onPointerUp={(e) => {
+            const d = departBalayage.current;
+            departBalayage.current = null;
+            if (!d) return;
+            const dx = e.clientX - d.x;
+            const dy = e.clientY - d.y;
+            // **Plus horizontal que vertical, et quarante pixels au moins** :
+            // sans ces deux conditions, un simple défilement du pouce changerait
+            // de vue sans qu'on comprenne pourquoi.
+            if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
+            allerVers(dx < 0 ? "semaine" : "jour");
+          }}
+        >
         {joursAvecChantiers.length === 0 ? (
           <p className="mx-[18px] mt-3.5 text-center text-[13.5px]" style={{ color: colors.muted }}>
-            Aucun chantier posé cette semaine.
+            {portee === "jour" ? "Rien de posé ce jour-là." : "Aucun chantier posé sur ces sept jours."}
           </p>
         ) : (
           joursAvecChantiers.map((jour) => (
@@ -1008,14 +1130,52 @@ export default function PlanningClient({
                donnant la couleur lue — « la date ne porte aucun fond :
                rgba(0, 0, 0, 0) ». Un contrôle jamais vu rouge ne prouve rien
                (`AGENTS.md`). */
-            <div key={jour} data-atlas="jour-planifie" className="mx-[18px] mt-5">
+            <div
+              key={jour}
+              data-atlas="jour-planifie"
+              data-passe={jour < aujourdHui ? "1" : undefined}
+              className="mx-[18px] mt-5"
+            >
+              {/* ─── « AUJOURD'HUI », EN DORÉ — sa proposition B, choisie ──────
+                  Sa demande du 9 septembre 2026 : *« si on est le 8 septembre
+                  y'a écrit 8 septembre ; ça serait bien que ce soit marqué
+                  aujourd'hui en doré, en premier — comme ça au premier coup
+                  d'œil, le salarié qui ouvre l'appli le matin la tête
+                  enfarinée, il sait que M. Martins sous aujourd'hui c'est le
+                  client qu'il doit faire »*.
+
+                  **`orTexte` et NON `or`, et ce n'est pas une préférence.**
+                  Mesuré sur les huit chartes : l'or plein posé sur ce papier
+                  pâle donne **2,03 à 2,53** de contraste — illisible au soleil,
+                  quelle que soit la taille du mot. `orTexte` donne 3,92 à 5,29,
+                  ce qui passe **parce que le mot est gros** : 19 px en gras,
+                  soit du grand texte, dont le seuil est 3. Écrit en 12 px comme
+                  les autres dates, il ne passerait pas — la taille fait donc
+                  partie du correctif, elle n'est pas un choix d'allure.
+
+                  Les autres journées ne bougent pas : 12 px, encre sur papier,
+                  14,07 de contraste. */}
               <p className="text-center leading-none">
                 <span
                   data-atlas="date-planifiee"
-                  className="inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
-                  style={{ letterSpacing: "0.14em", background: colors.rustTint, color: colors.ink }}
+                  data-aujourdhui={jour === aujourdHui ? "1" : undefined}
+                  className={
+                    jour === aujourdHui
+                      ? "inline-block rounded-full px-[17px] py-[8px] text-[19px] font-bold uppercase"
+                      : "inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
+                  }
+                  style={{
+                    letterSpacing: jour === aujourdHui ? "0.08em" : "0.14em",
+                    background: colors.rustTint,
+                    color:
+                      jour === aujourdHui
+                        ? colors.orTexte
+                        : jour < aujourdHui
+                          ? colors.muted
+                          : colors.ink,
+                  }}
                 >
-                  {jourLisibleCourt(jour)}
+                  {jour === aujourdHui ? "Aujourd’hui" : jourLisibleCourt(jour)}
                 </span>
               </p>
               {chantiersDuJour(jour).map((c) => {
@@ -1063,7 +1223,11 @@ export default function PlanningClient({
                           fontFamily: font.display,
                           fontSize: 19,
                           lineHeight: 1.2,
-                          color: colors.ink,
+                          // **Une journée déjà faite s'éteint.** On ne la voit
+                          // que si l'on est allé la chercher avec la flèche ;
+                          // gardée en pleine encre, elle se lirait comme un
+                          // chantier de plus à faire — c'est lui qui l'a vu.
+                          color: jour < aujourdHui ? colors.muted : colors.ink,
                         }}
                       >
                         <span className="block">{c.nom}</span>
@@ -1083,7 +1247,7 @@ export default function PlanningClient({
                         <span
                           data-atlas="duree-planifiee"
                           className="mt-[3px] block text-[12.5px]"
-                          style={{ color: colors.or }}
+                          style={{ color: jour < aujourdHui ? colors.muted : colors.or }}
                         >
                           {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
                         </span>
@@ -1173,6 +1337,7 @@ export default function PlanningClient({
             </div>
           ))
         )}
+        </div>
 
         {/* ─── CE QUI N'A PAS ENCORE DE JOUR — dans le tiroir du bas ────── */}
         <TiroirDuBas
@@ -1582,7 +1747,7 @@ type GestesCarte = {
   deplacer: (chantierId: string, quand: QuandChantier) => void;
   retirerDuJour: (chantierId: string) => void;
   poser: (chantierId: string, jour: JourIso, quand: QuandChantier) => void;
-  taches: Record<string, FeuilleDuChantier>;
+  taches: Record<string, FeuilleEtRetour>;
 };
 
 /**
@@ -2676,7 +2841,7 @@ function FeuilleChantier({
   dansLeMois = false,
 }: {
   chantier: ChantierPlanning | null;
-  feuille?: FeuilleDuChantier;
+  feuille?: FeuilleEtRetour;
   /** Faux pour un salarié : la note se LIT, elle ne s'écrit pas (30 août 2026). */
   ecriture?: boolean;
   /** Dans le mois, elle suit les marges de la grille et non celles de la liste. */
@@ -2687,6 +2852,16 @@ function FeuilleChantier({
   // remettre à la main — un effet qui appelle `setState` fait un rendu de plus
   // pour rien.
   const [copie, setCopie] = useState<"non" | "faite" | "refusee">("non");
+  /**
+   * La fin de chantier est dépliée : les lignes du devis cèdent la place.
+   *
+   * **Ce n'est qu'un écho**, jamais la source : c'est `FinDeChantier` qui
+   * décide d'être ouvert ou non, parce que c'est lui qui charge son état à
+   * l'ouverture. En tenir une seconde copie ici, c'est deux vérités pour une
+   * question (`CLAUDE.md` §3) — et le jour où elles divergent, l'écran perd
+   * ses lignes sur un bandeau replié.
+   */
+  const [finOuverte, setFinOuverte] = useState(false);
 
   if (!chantier) return null;
   const adresse = chantier.adresseChantier?.trim() || null;
@@ -2752,7 +2927,22 @@ function FeuilleChantier({
 
       <NoteDuChantier chantier={chantier} ecriture={ecriture} />
 
-      <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+      {/* ─── LES LIGNES DU DEVIS — ce qu'il y a à faire ────────────────────
+          **Elles s'effacent quand la fin de chantier s'ouvre — sa proposition
+          A, tranchée le 9 septembre 2026** (`appli/fiche-sans-doublon.html`).
+
+          Vu sur une capture, par aucun test : les mêmes quatre lignes se
+          lisaient deux fois sur le même écran, en liste ici puis en cases à
+          cocher trois centimètres plus bas. Il fallait les comparer une à une,
+          avec des gants, pour comprendre que c'étaient les mêmes.
+
+          Elles ne sont pas perdues : elles SONT devenues les cases, et elles
+          reviennent dès qu'il replie. */}
+      <div
+        className="mt-3.5 pt-3"
+        style={{ borderTop: `1px solid ${colors.line}` }}
+        hidden={finOuverte}
+      >
         {(feuille?.taches ?? []).length === 0 ? (
           <p className="m-0 text-[14.5px] leading-[1.45]" style={{ color: colors.muted }}>
             {feuille === undefined ? "Lecture du devis…" : "Aucune ligne sur le devis."}
@@ -2778,7 +2968,11 @@ function FeuilleChantier({
           se déplie ICI, sous les lignes du devis : il garde sous les yeux ce
           qu'il y avait à faire pendant qu'il coche. Une feuille qui monte
           l'aurait recouverte, et il aurait coché de mémoire. */}
-      <FinDeChantier chantierId={chantier.id} />
+      <FinDeChantier
+        chantierId={chantier.id}
+        dejaRendu={feuille?.retourPose ?? false}
+        onOuvert={setFinOuverte}
+      />
 
       {/* **Le bouton n'existe QUE s'il y a un devis à imprimer.** Sans devis, la
           route répond 404 : un bouton qui ouvre une erreur est pire qu'un bouton

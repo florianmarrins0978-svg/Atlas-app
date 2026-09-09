@@ -185,10 +185,27 @@ async function main() {
       ])
     ).rows[0].jour as string;
     const numero = new Date(`${cible}T12:00:00Z`).getUTCDate();
+    // ─── DEPUIS LE 9 SEPTEMBRE 2026, LA FENÊTRE NE PART PLUS D'UN LUNDI ─────
+    //
+    // Elle part du JOUR, et avance de sept en sept. Ce contrôle visait le titre
+    // — « la fenêtre commence-t-elle le 21 ? » —, et il ne pouvait donc plus
+    // aboutir : la date visée est un lundi, la fenêtre commence un mercredi, et
+    // les deux ne coïncident que si la suite tourne un mercredi. Il a rougi sur
+    // du code juste.
+    //
+    // **On vise donc ce qu'on CHERCHE VRAIMENT** : que la journée visée soit
+    // dans la liste. Cela ne dépend d'aucun libellé de fenêtre et survivra au
+    // prochain remaniement (`CLAUDE.md` §5 bis).
+    if (!(await page.locator('[data-atlas="semaine-titre"]').count())) {
+      await page.click('[data-atlas="point-semaine"]');
+      await page.waitForTimeout(300);
+    }
+    const laJournee = page
+      .locator('[data-atlas="jour-planifie"]')
+      .filter({ has: page.locator(`[data-atlas="date-planifiee"]:text-matches("\\\\b${numero}\\\\b")`) });
     for (let i = 0; i < 8; i++) {
-      const titre = await page.locator('[data-atlas="semaine-titre"]').innerText();
-      if (titre.startsWith(`${numero} `)) return;
-      await page.click('button[aria-label="Semaine suivante"]');
+      if (await laJournee.count()) return;
+      await page.click('button[aria-label="Sept jours après"]');
       await page.waitForTimeout(250);
     }
     throw new Error(`la liste n'atteint pas la semaine du ${cible}`);
@@ -329,7 +346,11 @@ async function main() {
     await allerAuPlanning();
     await amenerSurLaSemaineDesCas();
     const vu = await page.evaluate(() => {
-      const date = document.querySelector('[data-atlas="date-planifiee"]') as HTMLElement | null;
+      // **Une journée ORDINAIRE, jamais celle du jour** : depuis le 9 septembre
+      // 2026 la pastille d'aujourd'hui porte volontairement une autre encre et
+      // une autre taille. La mesurer ici ferait rougir la grammaire commune sur
+      // une différence VOULUE.
+      const date = document.querySelector('[data-atlas="date-planifiee"]:not([data-aujourdhui])') as HTMLElement | null;
       const nom = document.querySelector('[data-atlas="nom-planifie"]') as HTMLElement | null;
       if (!date || !nom) return null;
       const r = date.getBoundingClientRect();

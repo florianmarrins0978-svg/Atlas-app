@@ -863,6 +863,12 @@ async function main() {
   await essai("toucher un jour du mois amène la liste sur SA semaine", async () => {
     await allerAuPlanning();
     await toucherLeJour(JOUR);
+    // **La liste s'ouvre sur la JOURNÉE depuis le 9 septembre 2026** : les sept
+    // jours, et donc leur titre, ne se montrent qu'une fois élargis. Ce
+    // contrôle vise ce qu'il visait — que la liste soit amenée sur le jour
+    // touché — mais il doit désormais ouvrir la fenêtre pour le lire.
+    await page.click('[data-atlas="point-semaine"]');
+    await page.waitForTimeout(300);
     const titre = await page.locator('[data-atlas="semaine-titre"]').innerText();
     const jour = new Date(`${JOUR}T12:00:00Z`).getUTCDate();
     assert.ok(
@@ -958,15 +964,19 @@ async function main() {
   });
 
   await essai("la flèche de la semaine ne change PAS le mois", async () => {
+    // Les chevrons ne se montrent que sur les sept jours : sur la journée, il
+    // n'y a rien à feuilleter.
+    await page.click('[data-atlas="point-semaine"]');
+    await page.waitForTimeout(300);
     const moisAvant = await page.locator('[data-atlas="mois-titre"]').innerText();
-    await page.click('button[aria-label="Semaine suivante"]');
+    await page.click('button[aria-label="Sept jours après"]');
     await page.waitForTimeout(400);
     assert.equal(
       await page.locator('[data-atlas="mois-titre"]').innerText(),
       moisAvant,
       "la flèche de la semaine a fait bouger le calendrier : deux navigations qui se marchent dessus"
     );
-    await page.click('button[aria-label="Semaine précédente"]');
+    await page.click('button[aria-label="Sept jours avant"]');
     await page.waitForTimeout(400);
   });
 
@@ -1221,7 +1231,9 @@ async function main() {
 
   async function mesurerLesDeuxPastilles() {
     const vu = await page.evaluate(() => {
-      const jour = document.querySelector('[data-atlas="date-planifiee"]') as HTMLElement | null;
+      // Une journée ORDINAIRE : celle d'aujourd'hui porte une autre encre et une
+      // autre taille depuis le 9 septembre 2026, et c'est voulu.
+      const jour = document.querySelector('[data-atlas="date-planifiee"]:not([data-aujourdhui])') as HTMLElement | null;
       const titres = [...document.querySelectorAll('[data-atlas="titre-encadre"]')] as HTMLElement[];
       if (!jour || titres.length === 0) return null;
       // **Aucune fonction NOMMÉE dans ce bloc**, et ce n'est pas du style :

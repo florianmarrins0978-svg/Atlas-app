@@ -16,6 +16,7 @@ import {
   redisDeLAtelier,
   suffixeDeLAtelier,
 } from "./_atelier";
+import { prendreLeVerrou } from "./verrou-batterie.mjs";
 
 // La batterie complète, à jouer AVANT de demander au patron d'essayer quoi que
 // ce soit.
@@ -315,6 +316,21 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
     process.exit(130);
   });
 }
+
+/**
+ * ─── LE DOSSIER SE FERME PENDANT QU'ON MESURE — 9 septembre 2026 ───────────
+ *
+ * **Sa colère, et elle était méritée :** *« JE NE VEUX PLUS DE PROBLÈME SUR LA
+ * BATTERIE. Quand une batterie tourne, personne n'y touche. »* Trois verdicts
+ * de dix minutes jetés dans la même journée, tous pour la même raison.
+ *
+ * L'empreinte ci-dessous DIT que l'arbre a bougé ; le verrou EMPÊCHE qu'il
+ * bouge. Les deux se complètent, et aucun ne remplace l'autre : un geste fait
+ * hors de Claude — un enregistrement dans l'éditeur — échappe au verrou, et
+ * c'est alors l'empreinte qui parle.
+ */
+const rendreLeVerrou = prendreLeVerrou("npm run verifier:avant-livraison");
+process.on("exit", rendreLeVerrou);
 
 // L'état des sources AVANT de mesurer. Comparé à la fin : un verdict rendu sur
 // un arbre qui a bougé pendant la mesure ne porte sur rien.

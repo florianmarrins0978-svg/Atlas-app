@@ -103,7 +103,7 @@ export default function ListeTermines({
           Les 44 px ne sont pas un goût : c'est la mesure que tout le reste de
           l'application tient déjà pour un pouce, sur un chantier, parfois avec
           des gants. Ces onglets étaient les seuls à 40. */}
-      <div className="mx-[26px] mt-7 flex gap-2">
+      <div className="mx-[26px] mt-7 flex gap-1.5" data-atlas="onglets-termines">
         <Onglet repere="tout" actif={onglet === "tout"} onClick={() => setOnglet("tout")}>
           Tout
         </Onglet>
@@ -129,7 +129,7 @@ export default function ListeTermines({
           <Link
             href="/termines/retours"
             data-atlas="onglet-retours"
-            className="flex min-h-11 items-center gap-2 rounded-full px-[18px] text-[13px] no-underline"
+            className="flex min-h-11 items-center gap-1.5 rounded-full px-2.5 text-[12.5px] no-underline"
             style={{
               backgroundColor: colors.card,
               color: colors.inkSoft,
@@ -137,7 +137,7 @@ export default function ListeTermines({
               WebkitTapHighlightColor: "transparent",
             }}
           >
-            Retours
+            Retours d&apos;intervention
             <span
               className="grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold"
               style={{ backgroundColor: colors.or, color: colors.cream }}
@@ -379,7 +379,23 @@ function Onglet({
       // aplats côte à côte ne diraient plus lequel des deux on regarde : un
       // onglet ne se distingue que de son voisin. L'éteint garde son cheveu et
       // son gris.
-      className={`min-h-11 rounded-full px-[18px] text-[13px] ${actif ? "atlas-plein" : ""}`}
+      // **Resserré le 9 septembre 2026 pour que les TROIS tiennent sur une
+      // ligne**, le troisième portant désormais son nom entier. Sa demande :
+      // *« tu fais tenir les 3 sur la même ligne, donc rétrécis-les un peu tous
+      // les 3 s’il faut »*.
+      //
+      // **Ce qui a rétréci est le REMBOURRAGE, jamais la hauteur.** Les 44 px
+      // sont la mesure d’un pouce sur un chantier, parfois avec des gants, et
+      // c’est ce que tout le reste de l’application tient déjà. Mesuré :
+      // 440 px avant, 377 sur les 390 de son téléphone après
+      // (`test-onglets-termines-e2e.ts`).
+      // **Une largeur MINIMALE, sinon « Tout » devient un rond** — il l’a vu
+      // le 9 septembre : *« le bouton Tout, on dirait qu’il est rond et pas
+      // ovale comme les autres »*. Un mot court dans un rembourrage resserré
+      // rend une pastille aussi haute que large, et elle ne ressemble plus à
+      // ses voisines. Les 72 px la gardent ovale sans rien coûter à la rangée,
+      // qui tient à 375 px sur les 390 de son téléphone.
+      className={`min-h-11 min-w-[68px] rounded-full px-2.5 text-[12.5px] ${actif ? "atlas-plein" : ""}`}
       style={
         actif
           ? {

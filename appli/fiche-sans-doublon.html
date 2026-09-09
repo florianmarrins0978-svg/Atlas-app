@@ -129,9 +129,30 @@
   .ong.actif{background:var(--plein);color:var(--surplein);box-shadow:none}
   .pastille{height:20px;min-width:20px;border-radius:999px;background:var(--or);color:var(--fond);
             display:grid;place-items:center;font:700 11px/1 var(--sans);padding:0 6px}
+  .ligneSeule{margin:8px 26px 0;height:46px;border-radius:14px;background:var(--plage);
+              display:flex;align-items:center;gap:9px;padding:0 16px;color:var(--doux);
+              font-size:14px;box-shadow:inset 0 0 0 1px var(--trait)}
+  .ligneSeule .fleche{margin-left:auto;color:var(--gris)}
   .mesure{font:600 12px/1 var(--sans);color:var(--etabli-or);margin:8px 0 0}
   .deborde{color:#a4442f}
 
+  .confirme{margin-top:12px;border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:10px;
+            background:var(--tuile);font-size:13.5px;line-height:1.4}
+  .confirme .marque{width:19px;height:19px;flex:none;border-radius:999px;background:var(--plein);
+                    color:var(--surplein);display:grid;place-items:center}
+  .confirme .ou{color:var(--gris);font-size:12.5px;display:block;margin-top:1px}
+  .fige{margin-top:14px;height:52px;border-radius:999px;background:var(--tuile);
+        display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
+        color:var(--gris);cursor:not-allowed}
+  .fige .t{font:500 15px/1.15 var(--serif);color:var(--doux)}
+  .fige .ou{font-size:11.5px;display:block;color:var(--gris);margin-top:1px}
+  .fige .marque{width:19px;height:19px;flex:none;border-radius:999px;background:var(--plein);
+                color:var(--surplein);display:grid;place-items:center}
+  .corriger{margin-top:9px;width:100%;height:40px;border-radius:999px;background:transparent;
+            color:var(--orTexte);box-shadow:inset 0 0 0 1px var(--orTexte);border:0;
+            font-size:13.5px;cursor:pointer}
+  .fugace{transition:opacity .5s}
+  .fugace.parti{opacity:0}
   .note-p{background:var(--etabli-carte);border-radius:16px;padding:16px 18px;margin:26px 0 0;
           box-shadow:inset 0 0 0 1px var(--etabli-trait);max-width:760px}
   .note-p .t{display:block;font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
@@ -184,6 +205,24 @@
         </div>
       </div></div>
       <p class="mesure" data-largeur="long">—</p>
+    </div>
+    <div class="prop">
+      <p class="nom">Sur sa propre ligne<span class="tenu">Ce que je défends</span></p>
+      <p class="idee">Le nom entier tient, et la ligne dit ce qu’elle est : les deux au-dessus
+        trient la liste, celle-ci OUVRE une page. Le chevron le montre.</p>
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="onglets">
+          <span class="ong actif">Tout</span>
+          <span class="ong">À facturer</span>
+        </div>
+        <div class="ligneSeule" data-mesure="ligne">
+          <span>Retours d’intervention</span>
+          <span class="pastille">3</span>
+          <span class="fleche">›</span>
+        </div>
+        <div style="height:14px"></div>
+      </div></div>
+      <p class="mesure" data-largeur="ligne">—</p>
     </div>
   </div>
 
@@ -346,6 +385,101 @@
 
   </div>
 
+  <h2>Une fois qu’il a appuyé : qu’est-ce qu’il voit ?</h2>
+  <p class="dit">Votre idée : une phrase qui dit que c’est parti, et où. Reste à savoir si elle
+    s’efface. Appuyez sur « C’est fini » dans chacun des deux.</p>
+
+  <div class="rangee">
+    <div class="prop">
+      <p class="nom">E. La phrase s’efface</p>
+      <p class="idee">Elle paraît trois secondes, puis s’en va. L’écran reste propre — mais s’il
+        lève les yeux à ce moment-là, il ne saura jamais que c’est parti.</p>
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="carteFiche" style="margin:16px">
+          <div class="coches">
+            <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Dépose carrelage — 8 m²</span></button>
+            <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Pose faïence — 8 m²</span></button>
+          </div>
+          <button class="gros" type="button" data-envoie="E">C’est fini</button>
+          <div class="confirme fugace" data-conf="E" hidden>
+            <span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span>C’est parti<span class="ou">Terminés · Retour d’intervention</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom">F. La phrase reste<span class="tenu">Ce que je défends</span></p>
+      <p class="idee">Elle ne s’en va pas : elle remplace le bouton. Il peut poser le téléphone,
+        le reprendre dix minutes plus tard, et voir que c’est bien parti.</p>
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="carteFiche" style="margin:16px">
+          <div class="coches">
+            <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Dépose carrelage — 8 m²</span></button>
+            <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Pose faïence — 8 m²</span></button>
+          </div>
+          <button class="gros" type="button" data-envoie="F">C’est fini</button>
+          <div class="confirme" data-conf="F" hidden>
+            <span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span>C’est parti<span class="ou">Terminés · Retour d’intervention</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <h2>Et une fois envoyé : le bouton se fige</h2>
+  <p class="dit">Votre demande : la page se replie toute seule, le bouton dit où c’est parti,
+    et il ne s’appuie plus. Appuyez sur « C’est fini » dans les deux.</p>
+
+  <div class="rangee">
+    <div class="prop">
+      <p class="nom">G. Ce que vous demandez</p>
+      <p class="idee">Le bouton devient la preuve : il dit où c’est parti, et rien ne se
+        rouvre. Un retour ne se réécrit plus — mais une case cochée de travers non plus.</p>
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="carteFiche" style="margin:16px">
+          <div data-bloc="G">
+            <div class="coches">
+              <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Dépose carrelage — 8 m²</span></button>
+              <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Pose faïence — 8 m²</span></button>
+            </div>
+            <button class="gros" type="button" data-fige="G">C’est fini</button>
+          </div>
+          <div class="fige" data-apres="G" hidden>
+            <span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span><span class="t">C’est parti</span><span class="ou">Terminés · Retour d’intervention</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom">H. Le même, avec une porte de sortie<span class="tenu">Ce que je défends</span></p>
+      <p class="idee">Le bouton se fige pareil, et une ligne discrète en dessous permet de
+        corriger. Une coche de travers se répare sur place, sans vous appeler.</p>
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="carteFiche" style="margin:16px">
+          <div data-bloc="H">
+            <div class="coches">
+              <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Dépose carrelage — 8 m²</span></button>
+              <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Pose faïence — 8 m²</span></button>
+            </div>
+            <button class="gros" type="button" data-fige="H">C’est fini</button>
+          </div>
+          <div data-apres="H" hidden>
+            <div class="fige">
+              <span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span><span class="t">C’est parti</span><span class="ou">Terminés · Retour d’intervention</span></span>
+            </div>
+            <button class="corriger" type="button">Corriger</button>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
   <div class="note-p">
     <span class="t">Ce que ces écrans ne font pas</span>
     <p>Ils ne touchent <strong>ni à vos données ni à l'application</strong> : rien de ce que vous
@@ -386,6 +520,30 @@
     }
   }));
 
+  // « C'est parti, et où » — son idée du 9 septembre 2026.
+  qq('[data-envoie]').forEach((b) => b.addEventListener('click', () => {
+    const c = document.querySelector('[data-conf="' + b.dataset.envoie + '"]');
+    c.hidden = false;
+    c.classList.remove('parti');
+    b.hidden = true;
+    if (b.dataset.envoie === 'E') {
+      setTimeout(() => c.classList.add('parti'), 3000);
+      setTimeout(() => { c.hidden = true; b.hidden = false; }, 3600);
+    }
+  }));
+
+  // « Ça se replie, le bouton dit où, puis il se fige » — sa demande du 9 septembre.
+  qq('[data-fige]').forEach((b) => b.addEventListener('click', () => {
+    const cle = b.dataset.fige;
+    document.querySelector('[data-bloc="' + cle + '"]').hidden = true;
+    document.querySelector('[data-apres="' + cle + '"]').hidden = false;
+  }));
+
+  qq('.corriger').forEach((b) => b.addEventListener('click', () => {
+    document.querySelector('[data-bloc="H"]').hidden = false;
+    document.querySelector('[data-apres="H"]').hidden = true;
+  }));
+
   qq('.coche').forEach((c) => c.addEventListener('click', () => {
     c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
   }));
@@ -395,8 +553,15 @@
   function mesurer() {
     qq('[data-mesure]').forEach((rangee) => {
       const cle = rangee.dataset.mesure;
-      const dernier = rangee.lastElementChild;
-      const largeur = Math.ceil(dernier.getBoundingClientRect().right - rangee.getBoundingClientRect().left + 26);
+      // Une ligne pleine largeur se mesure ELLE-MÊME ; une rangée se mesure
+      // à son dernier élément. Confondre les deux rendrait un chiffre juste
+      // sur le mauvais objet.
+      const seule = rangee.classList.contains("ligneSeule");
+      const dernier = seule ? rangee : rangee.lastElementChild;
+      const boite = dernier.getBoundingClientRect();
+      const largeur = seule
+        ? Math.ceil(boite.width + 52)
+        : Math.ceil(boite.right - rangee.getBoundingClientRect().left + 26);
       const cible = document.querySelector('[data-largeur="' + cle + '"]');
       const tient = largeur <= 390;
       cible.textContent = tient
