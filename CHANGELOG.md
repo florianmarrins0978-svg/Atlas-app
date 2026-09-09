@@ -52,7 +52,14 @@ qu'on trouve en le cherchant ne se déclenche pas au pouce »* —, une feuille,
 l'application en porte déjà un, c'est la règle du §3 (jamais deux
 implémentations d'une même question) autant que ce qui fait sérieux.
 
-**Une seule chose en diffère, et délibérément : pas de surtitre d'alerte.**
+**ET RIEN SOUS LE TITRE — son retrait du 9 septembre :** *« y'a pas besoin de
+la phrase en gris qui explique »*. Elle disait « votre mot de passe — ou Face ID
+— vous fera revenir ». Comment on rentre dans Atlas n'a pas à se rappeler au
+moment d'en sortir : c'est sa règle du 25 août, et la feuille tient maintenant
+en trois éléments — le nom du compte, le bouton, « Annuler ». La règle de style
+qui portait cette phrase est partie avec elle (§4 quinquies).
+
+**Une autre chose en diffère, et délibérément : pas de surtitre d'alerte.**
 « SUPPRESSION DÉFINITIVE » avertit d'un geste irréversible ; se déconnecter se
 défait en cinq secondes. Le même signal posé sur un geste anodin s'apprend à
 être ignoré, et l'on perd l'avertissement là où il compte (§4 ter).

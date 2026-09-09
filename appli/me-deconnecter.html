@@ -117,9 +117,8 @@ h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
 .feuille .quoi{margin:0;font:500 9.5px/1 var(--sans);letter-spacing:.28em;
                text-transform:uppercase;color:var(--alerte)}
 .feuille h3{margin:0;font:400 26px/1.15 var(--serif)}
-.feuille .dit{margin:12px 0 0;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
 /* Le bouton plein, `rounded-full` et 52 px — sa règle du 12 août 2026. */
-.feuille .agir{margin-top:20px;height:52px;display:flex;align-items:center;justify-content:center;
+.feuille .agir{margin-top:22px;height:52px;display:flex;align-items:center;justify-content:center;
                border-radius:999px;background:var(--alerte);color:var(--surplein);
                font:600 15px/1 var(--sans)}
 /* « Annuler » n'est pas un second bouton, c'est la sortie : deux capsules
@@ -206,7 +205,12 @@ function feuille(){
          perd l'avertissement là où il compte vraiment (`CLAUDE.md` §4 ter).
          Il était aussi redondant avec le bouton juste dessous. */
       '<h3>Eden Nature</h3>' +
-      '<p class="dit">Votre mot de passe — ou Face ID — vous fera revenir.</p>' +
+      /* **AUCUNE phrase sous le titre — sa demande du 9 septembre 2026 : « y'a
+         pas besoin de la phrase en gris qui explique ».** Elle disait « votre
+         mot de passe — ou Face ID — vous fera revenir » : la façon dont on se
+         reconnecte à Atlas n'a pas à se rappeler au moment d'en sortir, et
+         c'est sa règle du 25 août (« retire les phrases inutiles qui
+         expliquent »). Le nom du compte et le bouton suffisent. */
       '<div class="agir">Se déconnecter</div>' +
       '<div class="sortir">Annuler</div>' +
     '</div>';
@@ -232,7 +236,7 @@ var VUES = {
     versLeBas: true, feuilleB: true,
     notes: [
       "<b>Deux appuis, pas un.</b> Une déconnexion au premier toucher se déclenche par mégarde au fond d'un écran de réglages — et l'on se retrouve devant la page de connexion sans comprendre pourquoi. C'est ce que fait votre iPhone, et c'est ce que fait déjà Atlas pour supprimer un client.",
-      "<b>Une seule phrase sous le titre</b>, et elle ne décrit pas le bouton d'à côté : elle dit ce qui vous fera revenir. Il n'y a rien d'autre à dire — se déconnecter n'efface rien, ne prévient personne, et ne touche pas vos salariés.",
+      "<b>Rien sous le titre.</b> J'y avais mis « votre mot de passe — ou Face ID — vous fera revenir » : vous l'avez fait retirer, et vous avez raison. Comment on rentre dans Atlas n'a pas à se rappeler au moment d'en sortir. Le nom du compte dit d'où l'on sort, le bouton dit ce qu'on fait.",
       "<b>Ce que ça fait, techniquement :</b> les cookies s'effacent et vous repartez sur l'écran de connexion <b>tout de suite</b>. Face ID reste posé sur ce téléphone — c'est ce qui sépare ce geste de « Me déconnecter partout », qui, lui, retire les clés."
     ]
   }
