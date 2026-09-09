@@ -101,10 +101,28 @@
   [data-vue="d"] .date.today{background:var(--ink);color:var(--orSurEncre);
                              font-size:19px;letter-spacing:.08em;padding:8px 17px}
 
-  /* Les jours déjà passés de la semaine, repoussés sous la journée du jour. */
+  /* ─── LES JOURS DÉJÀ PASSÉS — sa question du 9 septembre 2026 ─────────────
+     *« La journée d'hier en bas risque de porter à confusion ? »* Oui : posée
+     en bas avec la même pastille et la même encre que les jours à venir, elle
+     se lit comme un chantier de plus à faire. Trois façons de la régler, et le
+     bouton du haut les compare. */
   .plus-tot{margin:26px 18px 0;padding-top:14px;border-top:1px solid var(--line)}
-  .plus-tot p{margin:0;text-align:center;font:600 11.5px/1 ui-sans-serif,sans-serif;
-              letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .plus-tot button{display:block;width:100%;min-height:44px;border:0;background:none;
+                   padding:0;text-align:center;font:600 11.5px/1 ui-sans-serif,sans-serif;
+                   letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+                   cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+  /* ÉTEINT — elle reste, mais elle ne peut plus se confondre : le nom perd son
+     encre, la pastille perd son papier, la durée perd son or. */
+  [data-passe="eteint"] .passe .nom{color:var(--muted)}
+  [data-passe="eteint"] .passe .duree{color:var(--muted)}
+  [data-passe="eteint"] .passe .date{background:none;color:var(--muted);font-weight:600}
+  [data-passe="eteint"] .passe .equipe{background:none;color:var(--muted);
+                                       border:1px solid var(--line)}
+  /* REPLIÉE — le titre reste visible et se touche ; rien ne se devine. */
+  [data-passe="replie"] .passe .jour{display:none}
+  /* RETIRÉE — la semaine commence à aujourd'hui. */
+  [data-passe="retire"] .passe{display:none}
 
   /* ─── CE QUE LA PROPOSITION COÛTE ─────────────────────────────────────────*/
   .verdict{max-width:430px;margin:18px auto 0;padding:0 22px}
@@ -144,9 +162,14 @@
   <button type="button" id="bascule-ordre" aria-pressed="true">En tête</button>
   <button type="button" id="bascule-vide" aria-pressed="false">Rien aujourd’hui</button>
   <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
+  <span class="sep"></span>
+  <button type="button" data-passe="pareil" aria-pressed="false">Hier pareil</button>
+  <button type="button" data-passe="eteint" aria-pressed="true">Hier éteint</button>
+  <button type="button" data-passe="replie" aria-pressed="false">Hier replié</button>
+  <button type="button" data-passe="retire" aria-pressed="false">Hier retiré</button>
 </div>
 
-<div class="tel" id="tel" data-vue="d">
+<div class="tel" id="tel" data-vue="d" data-passe="eteint">
   <p class="titre-section">Planifiés</p>
   <div class="semaine">
     <button class="fleche" type="button" tabindex="-1" aria-hidden="true">‹</button>
@@ -163,12 +186,21 @@
   <p>Le nom du client en serif 19 px, la durée en or sous le nom, la pastille
   d’équipe, le chevron. <b>Seule la pastille de la date change</b> — sans quoi on
   ne saurait pas ce qu’on compare.</p>
-  <h2>Pourquoi une journée passée descend en bas</h2>
-  <p>Avec <b>En tête</b>, les jours <b>déjà passés</b> de la semaine descendent
-  sous « Plus tôt cette semaine ». Ce n’est pas un défaut de la planche : c’est
-  ce que « en tête » veut dire. <b>Ils ne disparaissent pas</b> — vous les
-  retrouvez au même endroit, en bas. Touchez <b>Ordre du calendrier</b> pour
-  revoir la semaine dans l’ordre.</p>
+  <h2>Hier en bas — votre question du 9 septembre</h2>
+  <p><b>Vous avez raison, et c’est un vrai risque</b> : posée en bas avec la
+  même pastille et la même encre que les jours à venir, la journée d’hier se
+  lit comme un chantier de plus à faire. Quatre boutons, en haut, pour
+  comparer :</p>
+  <p><b>Hier pareil</b> — le risque, tel quel. C’est ce que vous avez vu.<br>
+  <b>Hier éteint</b> — elle reste, mais elle perd son encre, son papier et son
+  or. On voit qu’elle est derrière soi sans avoir à lire la date.<br>
+  <b>Hier replié</b> — « Plus tôt cette semaine (1) », qui s’ouvre au toucher.
+  Le plus propre à l’œil, mais il faut un geste de plus, et un écran qui cache
+  n’est pas ce qu’on veut pour quelqu’un qui découvre l’appli.<br>
+  <b>Hier retiré</b> — la semaine commence à aujourd’hui. Le plus simple, mais
+  vous perdez le moyen de retrouver le chantier d’hier pour le facturer.</p>
+  <p><b>Ma préférence : éteint.</b> Rien ne se cache, rien ne se perd, et la
+  confusion tombe — un jour éteint ne se confond avec rien.</p>
   <h2>La planche est à la vraie date</h2>
   <p>Elle est construite sur <b>le jour où vous l’ouvrez</b>. Si vous la rouvrez
   demain, « Aujourd’hui » aura bougé d’une journée : c’est le seul moyen de voir
@@ -252,12 +284,22 @@ function peindre() {
   const passes = SEMAINE.filter((j) => j.passe);
   const reste = SEMAINE.filter((j) => !j.passe);
 
+  const titrePasse = tel.dataset.passe === "replie"
+    ? "Plus tôt cette semaine (" + passes.length + ")"
+    : "Plus tôt cette semaine";
   liste.innerHTML = enTete
     ? reste.map(bloc).join("")
       + (passes.length
-          ? '<div class="plus-tot"><p>Plus tôt cette semaine</p></div>' + passes.map(bloc).join("")
+          ? '<div class="passe"><div class="plus-tot">'
+            + '<button type="button" id="ouvrir-passe">' + titrePasse + "</button></div>"
+            + passes.map(bloc).join("") + "</div>"
           : "")
     : SEMAINE.slice().sort((a, b) => a.quand - b.quand).map(bloc).join("");
+
+  // Le titre replié se touche et ouvre : rien ne se devine, tout se voit.
+  document.getElementById("ouvrir-passe")?.addEventListener("click", () => {
+    if (tel.dataset.passe === "replie") choisirPasse("eteint");
+  });
 }
 
 /* ─── CE QUE CHAQUE PROPOSITION COÛTE ───────────────────────────────────────
@@ -306,6 +348,17 @@ for (const b of document.querySelectorAll(".choix button[data-vue]")) {
     tel.dataset.vue = b.dataset.vue;
     verdict(b.dataset.vue);
   });
+}
+
+function choisirPasse(quoi) {
+  tel.dataset.passe = quoi;
+  for (const b of document.querySelectorAll(".choix button[data-passe]")) {
+    b.setAttribute("aria-pressed", String(b.dataset.passe === quoi));
+  }
+  peindre();
+}
+for (const b of document.querySelectorAll(".choix button[data-passe]")) {
+  b.addEventListener("click", () => choisirPasse(b.dataset.passe));
 }
 
 const bOrdre = document.getElementById("bascule-ordre");

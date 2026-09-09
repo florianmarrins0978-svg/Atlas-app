@@ -40,11 +40,23 @@ ajoutée : la B, avec le vrai `#B98B47` sur une pastille d'encre — le jeton
 `orSurEncre` existe déjà et vaut l'or exactement sur les six chartes claires.
 La planche s'ouvre dessus, avec **En tête**.
 
+**SA QUESTION, dans la foulée :** *« la journée d'hier en bas risque de porter à
+confusion ? comment on peut régler ce problème ? »* — et il a raison : posée en
+bas avec la même pastille et la même encre que les jours à venir, elle se lit
+comme un chantier de plus à faire. Quatre états sont dans la planche
+(`data-passe`) : **pareil** (le risque, tel quel), **éteint** (elle perd son
+encre, son papier, son or), **replié** (« Plus tôt cette semaine (1) », qui
+s'ouvre au toucher), **retiré** (la semaine commence à aujourd'hui).
+
+**Ma recommandation : éteint.** Le repli cache, et `PRODUCT.md` pose que rien ne
+doit se découvrir ; le retrait fait perdre le chantier d'hier, qu'il faut
+retrouver pour le facturer.
+
 **Reste à coder** dans `PlanningClient.tsx` (pastille `date-planifiee`, vers la
-ligne 1014) : le mot « Aujourd'hui », la pastille de la D, et l'ordre — journée
-du jour en tête, jours déjà passés de la semaine sous « Plus tôt cette
-semaine ». **Une question reste ouverte** : ce qu'affiche la pastille quand
-**rien n'est posé** aujourd'hui (la planche propose « Rien de posé »).
+ligne 1014) : le mot « Aujourd'hui », la pastille de la D, l'ordre, et l'état
+retenu pour les jours passés. **Une question reste ouverte** : ce qu'affiche la
+pastille quand **rien n'est posé** aujourd'hui (la planche propose « Rien de
+posé »).
 
 ---
 
