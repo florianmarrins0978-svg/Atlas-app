@@ -16,6 +16,7 @@ import {
   receptionsDesFactures,
 } from "../src/server/repositories/envois-factures";
 import { fermerLimiteur } from "../src/server/rate-limit";
+import { chargerFicheClient } from "../src/server/repositories/fiche-client";
 import { nettoyerBase } from "./_test-db";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -283,6 +284,48 @@ async function main() {
     await noterOuvertureDeLaFacture(second.jeton, { adresseIp: null, agentUtilisateur: null });
     const apres = (await receptionsDesFactures(seul, [facture.id])).get(facture.id);
     assert.ok(apres?.ouverteLe, "le lien en cours n'écrit pas son ouverture");
+  });
+
+  await test("LA TRACE EST DANS LE DOSSIER DU CLIENT — c'est là qu'il cherche", async () => {
+    // **Sa réponse du 9 septembre 2026**, à la question « en cas de litige, tu
+    // vas où ? » : *« je vais dans mes clients sur la catégorie facture »*. Ni
+    // « Terminés », ni la fiche du chantier. Une preuve qu'on ne trouve pas ne
+    // prouve rien : ce contrôle défend l'endroit, pas un libellé.
+    const seul = await contexte("dossier");
+    const client = await clientsRepo.creerClient(seul, { nom: "Mme Roux", telephone: "0612345678" });
+    const chantier = await chantiersRepo.creerChantier(seul, {
+      nom: "Chez Mme Roux",
+      adresseChantier: "5 rue des Lilas",
+      clientId: client.id,
+    });
+    await prixRepo.ajouterLignePrix(seul, chantier.id, "Taille de haies", "1000.00");
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(seul, chantier.id);
+    await devisRepo.envoyerDevis(seul, brouillon.id);
+    const facture = await terminerChantier(seul, chantier.id);
+    await emettreFacture(seul, facture.id);
+
+    // **Avant l'envoi : aucune ligne.** Sans lien, il n'y a rien à ouvrir, et
+    // « pas encore ouverte » accuserait le client d'un envoi qui n'a pas eu lieu.
+    const avant = await chargerFicheClient(seul, client.id);
+    const pieceAvant = avant?.pieces.factures.find((p) => p.id === facture.id);
+    assert.ok(pieceAvant, "la facture n'apparaît pas dans le dossier du client");
+    assert.equal(pieceAvant.reception, undefined, "une facture jamais envoyée porte déjà une trace");
+
+    const envoi = await creerEnvoiFacture(seul, facture.id, "sms");
+    await accuserReceptionDeLaFacture(envoi.jeton, { adresseIp: null, agentUtilisateur: null });
+
+    const apres = await chargerFicheClient(seul, client.id);
+    const piece = apres?.pieces.factures.find((p) => p.id === facture.id);
+    assert.ok(piece?.reception, "la trace n'arrive pas dans le dossier du client");
+    assert.ok(piece.reception.ouverte, "l'ouverture ne se lit pas dans le dossier");
+    assert.ok(piece.reception.confirmee, "la confirmation ne se lit pas dans le dossier");
+
+    // Et les devis, eux, n'en portent pas : un devis parti ne s'ouvre pas, il
+    // se répond — et cette réponse-là vit déjà sur l'accueil.
+    assert.ok(
+      apres.pieces.devis.every((p) => p.reception === undefined),
+      "un devis porte une trace de réception, qui n'a rien à y faire"
+    );
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
