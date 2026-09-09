@@ -34,9 +34,28 @@ cas jusqu'au 7 septembre 2026.
 `deconnecterPartout` ne travaille que sur `ctx.utilisateurId`. Les salariés ne
 sont pas touchés, et aucune donnée n'est effacée.
 
-**Maquette, rien de codé :** `appli/me-deconnecter.html` — trois onglets (la
-ligne de sortie au bas des Réglages, la feuille « cet appareil ou tous », ce qui
-tombe vraiment), plus Nuit.
+**Maquette, rien de codé :** `appli/me-deconnecter.html` — la ligne de sortie
+au bas des Réglages, la confirmation, plus Nuit.
+
+**LA PREMIÈRE VERSION ÉTAIT MAUVAISE, ET IL L'A DIT :** *« ce que tu me
+proposes ne fait pas pro »*. Elle posait une feuille à **deux boutons** — « de
+cet appareil » / « de tous mes appareils » — au moment où l'on veut juste
+sortir. Aucune grande application ne demande ça : une ligne en bas, une
+confirmation, rien à choisir, et la déconnexion générale rangée ailleurs dans
+la sécurité — ce qu'Atlas fait déjà.
+
+**Le motif juste était DANS le dépôt, et il n'a pas été cherché.** C'est celui
+de `src/app/clients/[id]/SupprimerCeClient.tsx`, tranché sur maquette le
+2 septembre : une ligne en capitales espacées qui ne s'annonce pas — *« un geste
+qu'on trouve en le cherchant ne se déclenche pas au pouce »* —, une feuille, et
+« Annuler » en simple mot plutôt qu'en second bouton. Inventer un dessin quand
+l'application en porte déjà un, c'est la règle du §3 (jamais deux
+implémentations d'une même question) autant que ce qui fait sérieux.
+
+**Une seule chose en diffère, et délibérément : pas de surtitre d'alerte.**
+« SUPPRESSION DÉFINITIVE » avertit d'un geste irréversible ; se déconnecter se
+défait en cinq secondes. Le même signal posé sur un geste anodin s'apprend à
+être ignoré, et l'on perd l'avertissement là où il compte (§4 ter).
 
 **Trois défauts trouvés à la capture, par aucun test** : la feuille du « choix »
 restait collée sur l'onglet suivant, l'onglet « Le bas des Réglages » montrait

@@ -16,10 +16,19 @@ que ça me remet à la page de connexion ? »* — et le bouton n'existe pas. Le
 geste est « Me déconnecter partout », au bas de l'écran « Mot de passe ».
 
 `appli/me-deconnecter.html` propose une ligne de sortie tout en bas du sommaire
-des Réglages, et une feuille qui demande **cet appareil, ou tous**.
+des Réglages, puis une confirmation. **Un seul geste, rien à choisir.**
 
-**Rien n'est codé, et rien ne se code avant son choix.** Ce qu'il faut de lui :
-garde-t-on les deux gestes, ou seulement celui de tous les jours ?
+**Sa première version a été refusée le jour même** — *« ça ne fait pas pro »* —
+et elle demandait « cet appareil ou tous » dans une feuille à deux boutons.
+**Ne pas la ressusciter :** la déconnexion générale a déjà sa place, sous « Mot
+de passe », et c'est là que les grandes applications la rangent aussi.
+
+**Le dessin est celui de `SupprimerCeClient.tsx`**, tranché le 2 septembre :
+ligne en capitales espacées 9,5 px couleur `alert`, cible de 44 px, aucune
+capsule ; `BottomSheet`, bouton plein `alert` de 52 px, « Annuler » en simple
+mot. **Sans le surtitre d'alerte** — se déconnecter n'est pas irréversible.
+
+**Rien n'est codé, et rien ne se code avant son accord.**
 
 **Ce que le geste « cet appareil » coûterait**, si retenu : la session vit dans
 un jeton (`session: { strategy: "jwt" }`, `src/auth.ts:36`), donc effacer le
