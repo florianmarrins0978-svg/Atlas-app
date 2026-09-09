@@ -25645,7 +25645,6 @@ bouton unique en aurait ouvert UNE et laissé croire que les trois étaient
 parties.
 
 ---
-
 ## §299 — Le retour d'intervention : la première écriture rendue au salarié
 
 *Lot 2, codé le 8 septembre 2026 après trois maquettes et quatre arbitrages du
@@ -25732,3 +25731,76 @@ facture, mais l'adresse dépend de son état et cette règle vit déjà dans
 `portesDuPlanning`. La recopier ferait la seconde vérité que `CLAUDE.md` §3
 interdit. Un faux lien aurait promis un geste qui ne se passe pas — c'est donc
 un bloc, pas une porte, jusqu'à ce que la règle soit nommée (`TODO.md`).
+
+---
+
+---
+
+## §300. LA BATTERIE EST UNE MACHINE À UN SEUL OCCUPANT — et elle le vérifie
+
+*Posé le 8 septembre 2026, sur sa demande, après une heure perdue devant lui.*
+
+### Ce que la prose ne tenait pas
+
+`CLAUDE.md` §5 disait déjà les deux règles : ne rien jouer à la main pendant
+qu'elle tourne, et la lancer seule. Elles n'ont pas tenu, et la raison est
+toujours la même (`CLAUDE.md` §1 bis) — **une consigne se lit au début d'une
+conversation et s'oublie au bout de trois heures**, or c'est au bout de trois
+heures qu'on arrête une batterie pour en relancer une.
+
+### Les deux garde-fous, et ce qu'ils refusent de faire
+
+| | |
+|---|---|
+| au DÉMARRAGE | elle lit `ps`, cherche les signatures d'une batterie (`verifier-avant-livraison`, `run-all-tests`, `run-e2e-tests`, `verifier-connexion-avec-serveur`) et refuse s'il en reste |
+| au VERDICT | elle compare l'empreinte des sources (`src/`, `scripts/`, `drizzle/`) prise avant, et refuse de conclure si un fichier de code a bougé |
+
+**Ils ne tuent rien, et c'est délibéré** : ce qui tourne peut être la batterie
+d'une AUTRE session, en train de mesurer pour de bon — l'atelier existe
+précisément pour qu'elles cohabitent. On refuse, on nomme, on rend la décision à
+qui sait.
+
+**Le second ne regarde que le CODE** — `.ts`, `.tsx`, `.js`, `.mjs`, `.mts`,
+`.sql`, `.css`. Une note écrite dans un `.md` pendant qu'elle tourne ne change
+rien à ce qu'elle mesure, et faire rougir dessus la rendrait inutilisable.
+
+### La racine, et non sa seule détection
+
+`pkill` tue le père, **jamais les suites qu'il avait lancées**. Le 8 septembre,
+un moteur de suites navigateur a survécu à l'arrêt de sa batterie et a continué à
+jouer des suites qui **vident la base** (`TRUNCATE … CASCADE`) sous la suivante :
+cinq contrôles d'authentification ont rougi d'un coup, sur du code juste — la
+panne du 26 août, réécrite à l'identique.
+
+La batterie emporte donc son **groupe entier** sur `SIGINT` et `SIGTERM`, et
+**dit** quand elle n'y arrive pas (lancée sans groupe à elle) plutôt que de
+laisser croire les enfants emportés.
+
+### Et le défaut de la première SORTIE, qui vaut le premier
+
+Le second garde-fou a jeté le verdict d'une batterie entière parce que deux
+fichiers portaient une date d'écriture neuve. Une session voisine avait joué une
+commande git qui les avait **réécrits à l'identique** : rien n'avait changé.
+
+Le fichier l'annonçait lui-même — *« une écriture qui rend le même contenu ne
+change rien au verdict »* — **en commentaire, et pas en code**. Il relève
+maintenant la date ET le contenu (sha1) ; la date n'est plus qu'un filtre, le
+contenu décide. Le coût a été mesuré plutôt que supposé : **1 406 fichiers en
+65 ms**, contre cinquante minutes qu'un faux refus fait rejouer.
+
+**Les deux défauts se ressemblent, et c'est ce qu'il faut retenir** : un
+garde-fou se trompe d'abord en parlant TROP, jamais en se taisant. C'est aussi
+la seule façon de le découvrir — en le confrontant à du vrai, pas en le
+relisant.
+
+### Le défaut de la première minute, et pourquoi il est écrit ici
+
+Confronté à une vraie batterie, le garde-fou **s'est dénoncé lui-même** : entre
+le terminal et le `node` qui l'exécute, cinq processus portent son nom dans leur
+ligne de commande — `bash`, `timeout`, `npm exec`, `sh -c`, `node`. Écarter le
+père et soi n'en retirait que deux, et le refus partait à tous les coups.
+
+C'est **le pire des garde-fous** : celui qui parle toujours, donc qu'on apprend
+à contourner — sa propre suite l'annonçait sans pouvoir le voir. On remonte
+maintenant toute la lignée, et `scripts/test-batterie-solitaire.ts` garde ce cas
+avec les cinq lignes de `ps` relevées ce soir-là.

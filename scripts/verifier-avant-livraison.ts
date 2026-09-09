@@ -1,5 +1,15 @@
 import { spawnSync } from "node:child_process";
 import { rmSync } from "node:fs";
+import path from "node:path";
+import {
+  empreinteDesSources,
+  fichiersRemues,
+  phraseDuRefus,
+  phraseDuVerdictCaduc,
+  processusDeLaMachine,
+  restesDeBatterie,
+  saPropreLignee,
+} from "./_batterie-solitaire";
 import {
   prendreUnAtelierSync,
   baseDeLAtelier,
@@ -267,6 +277,49 @@ const echecs: Etape[] = [];
  * exclusion qui se remet d'elle-même n'en est pas une. La construction le
  * recrée trois lignes plus bas.
  */
+// ─── ELLE NE DÉMARRE PAS SI UNE AUTRE TOURNE — 8 septembre 2026 ─────────────
+//
+// **Une heure perdue devant le patron.** Une batterie arrêtée laisse ses
+// enfants : `pkill` tue le père, jamais les suites qu'il avait lancées. Elles
+// ont continué à VIDER LA BASE sous la batterie suivante, qui a rougi sur du
+// code juste — la panne du 26 août, réécrite à l'identique.
+//
+// On refuse, on nomme, et on ne tue rien : ce qui tourne peut être la batterie
+// d'une autre session, en train de mesurer pour de bon.
+// **Sa lignée ENTIÈRE est écartée, pas seulement son père** : entre le terminal
+// et le `node` qui exécute ceci, cinq processus portent le nom de ce script dans
+// leur ligne de commande. S'en tenir au père faisait refuser toutes les
+// batteries — trouvé en confrontant le garde-fou à une vraie, dans la minute.
+const processus = processusDeLaMachine();
+const restes = restesDeBatterie(processus, saPropreLignee(processus));
+if (restes.length > 0) {
+  console.error(phraseDuRefus(restes));
+  process.exit(1);
+}
+
+// **Et elle emporte ses enfants quand on l'arrête** — c'est la racine du reste
+// ci-dessus, pas seulement sa détection. Sans ces deux lignes, un `Ctrl-C` ou un
+// `pkill` laisse le moteur des suites en vie, et la panne recommence.
+const RACINE = path.join(__dirname, "..");
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.on(signal, () => {
+    console.error(`\n\x1b[1m→ Arrêt demandé — on emporte les suites en cours.\x1b[0m`);
+    // Le groupe entier, et non le seul processus courant : c'est ce qui manquait.
+    try {
+      process.kill(-process.pid, "SIGTERM");
+    } catch {
+      // Pas de groupe à soi (lancée sans `setsid`) : on part quand même, mais on
+      // le DIT — sinon on croirait les enfants emportés alors qu'ils survivent.
+      console.error("   ⚠️  Impossible d'emporter les suites : vérifiez avec `ps` avant d'en relancer une.");
+    }
+    process.exit(130);
+  });
+}
+
+// L'état des sources AVANT de mesurer. Comparé à la fin : un verdict rendu sur
+// un arbre qui a bougé pendant la mesure ne porte sur rien.
+const empreinteAvant = empreinteDesSources(RACINE);
+
 rmSync(DIST_VERIFICATION, { recursive: true, force: true });
 
 for (const etape of ETAPES) {
@@ -301,6 +354,16 @@ for (const etape of ETAPES) {
 }
 
 console.log("\n─────────────────────────────────────────────────────────────");
+
+// **Un vert rendu sur un arbre qui a bougé est pire qu'un rouge** : on livre en
+// croyant avoir mesuré. Le dire avant le verdict, jamais après.
+const remues = fichiersRemues(empreinteAvant, empreinteDesSources(RACINE));
+if (remues.length > 0) {
+  console.error(phraseDuVerdictCaduc(remues));
+  console.error("─────────────────────────────────────────────────────────────");
+  process.exit(1);
+}
+
 if (echecs.length === 0) {
   console.log("✅ Batterie complète au vert.");
   console.log("   La connexion a été faite pour de vrai, dans un navigateur,");

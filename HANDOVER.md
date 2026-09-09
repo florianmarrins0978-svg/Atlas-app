@@ -8,6 +8,21 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA BATTERIE NE MESURE PLUS À DEUX (8 septembre 2026)
+
+**Décisions :** `ARCHITECTURE.md` §300. **Aucune migration.**
+
+Elle refuse de démarrer si une autre tourne ou si la précédente a laissé des
+restes, et refuse de rendre un verdict si des fichiers de code ont bougé pendant
+qu'elle mesurait. Elle emporte son groupe entier quand on l'arrête — c'était la
+racine : `pkill` tue le père, jamais les suites, qui continuaient à vider la base
+sous la batterie suivante.
+
+**LA LEÇON DU LOT.** Le garde-fou s'est dénoncé lui-même dans la minute qui a
+suivi son écriture, et c'est en le confrontant à une VRAIE batterie qu'on l'a vu,
+pas en le relisant. Un garde-fou qui parle toujours s'apprend à être ignoré.
+
+---
 ## Dernier lot — LA PORTE EN PLEIN AIR (8 septembre 2026)
 
 **Planche :** `appli/la-porte-en-plein-air.html`, écrans 1 et 2 — retenus par

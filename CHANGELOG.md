@@ -597,6 +597,44 @@ Vérifié rouge en forçant 400 px de trop.
 
 ---
 
+### Deux garde-fous sur la batterie, après une heure perdue devant lui
+
+**Corrigé dans la nuit, à leur première sortie.** Le second a jeté le verdict
+d'une batterie entière parce que deux fichiers portaient une date d'écriture
+neuve — une session voisine avait joué une commande git qui les avait réécrits
+**à l'identique**. Rien n'avait changé, et cinquante minutes ont été perdues.
+
+C'est le défaut que le fichier annonçait **dans son propre commentaire** — *« une
+écriture qui rend le même contenu ne change rien au verdict »* — écrit en prose
+et absent du code. Il relève donc les deux, et **c'est le contenu qui décide** ;
+la date n'est plus qu'un filtre. Coût mesuré, pas supposé : 1 406 fichiers en
+65 ms.
+
+
+**Sa demande, le soir même : « oui pose les deux garde-fous ».**
+
+Une batterie tournait ; sa correction est arrivée ; j'ai codé pendant qu'elle
+mesurait, puis je l'ai arrêtée pour la relancer. Deux fautes en une, et les deux
+étaient déjà écrites en prose dans `CLAUDE.md` — ce qui n'a pas suffi, parce
+qu'une consigne se lit au début d'une conversation et s'oublie au bout de trois
+heures. Or c'est au bout de trois heures qu'on arrête une batterie.
+
+| | |
+|---|---|
+| **elle refuse de démarrer** si une autre tourne, ou si la précédente a laissé des restes | elle les NOMME, avec la commande qui débloque, et ne tue rien : ce qui tourne peut être la batterie d'une autre session |
+| **elle refuse de rendre un verdict** si des fichiers ont été écrits pendant qu'elle mesurait | un vert rendu sur un arbre qui a bougé est pire qu'un rouge : on livre en croyant avoir mesuré |
+
+**Et la racine du premier est corrigée, pas seulement détectée** : `pkill` tue le
+père, jamais les suites qu'il avait lancées — elles continuaient à **vider la
+base** sous la batterie suivante. La batterie emporte désormais son groupe entier
+quand on l'arrête, et le dit quand elle n'y arrive pas.
+
+**Le garde-fou s'est dénoncé LUI-MÊME dans la minute qui a suivi son écriture**,
+et c'est le contrôle qui l'a montré : entre le terminal et le `node` qui exécute
+la batterie, cinq processus portent son nom dans leur ligne de commande. Écarter
+le père et soi n'en retirait que deux — le refus partait à tous les coups, et
+plus aucune batterie n'aurait démarré. C'est toute la lignée qu'on remonte.
+
 ### Le retour du devis ramène au planning quand on en vient
 
 Depuis la feuille du planning, ouvrir un devis pas encore envoyé puis reculer
