@@ -9,6 +9,37 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
+
+**Sa correction :** *« chaque session peut prendre un port différent, plusieurs
+sessions tournent en même temps, n'effacez pas les batteries des autres ! »*
+
+Son lot du 8 septembre donne déjà à chaque session son **atelier** — un rang,
+donc un port, une base et un coin de Redis (`scripts/_atelier.ts`). Deux
+batteries dans deux ateliers ne se marchent plus dessus : ni le port 3000, ni
+le `TRUNCATE` de la base, ni le limiteur Redis.
+
+**Mais le verrou du 9 septembre ne le sait pas.** `verrou-batterie.mjs` pose
+**un seul fichier à la racine** et refuse la seconde batterie : *« La machine est
+à un seul occupant : attendez qu'elle finisse. »* L'atelier est pris ligne 112
+de `verifier-avant-livraison.ts`, le verrou ligne 332 — et c'est le verrou qui
+tranche. Les ateliers sont donc neutralisés pour ce qui les motivait.
+
+**Ce qu'il faudrait, et ce qu'il NE faut pas défaire au passage :**
+
+| | |
+|---|---|
+| le verrou | par ATELIER — un fichier par rang. Deux batteries en parallèle deviennent possibles |
+| la garde d'écriture | **inchangée**, et c'est délibéré : ce qu'elle protège — un fichier source qui bouge sous une mesure — est vraiment commun au dossier, et c'est sa colère du 9 septembre |
+| `restesDeBatterie` | à relire : il cherche des restes sans savoir de quel atelier |
+| `test-verrou-batterie.ts` | 27 cas à garder verts, et un cas neuf : deux ateliers, deux batteries, aucune ne refuse l'autre |
+
+**Le piège :** `node scripts/verrou-batterie.mjs rendre --force` efface le verrou
+de CELUI QUI MESURE. Il ne se lance que sur un verrou dont le processus est mort
+— jamais pour se faire de la place.
+
+---
+
 ## ⏳ LA PLANCHE 86 MONTRE ENCORE « QUI PUIS QUAND » (9 septembre 2026)
 
 `appli/planning-simple.html` — retenue par lui le 21 août — demande toujours

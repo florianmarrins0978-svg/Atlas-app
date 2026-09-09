@@ -1602,6 +1602,42 @@ qui tient le port 3000 est **le sien**, jamais celui d'à côté : le chercher c
 les autres fait perdre le temps qu'on croyait gagner. Le seul bien commun, c'est
 `main`.
 
+**CE PARAGRAPHE NE VAUT PAS DANS SON DOSSIER — 9 septembre 2026.** Sa
+correction : *« chaque session peut prendre un port différent, plusieurs
+sessions tournent en même temps, n'effacez pas les batteries des autres ! »*
+Chez lui, les sessions partagent le dossier ET la machine ; ce qu'elles ne
+partagent plus, depuis son lot du 8 septembre, c'est l'**atelier** —
+`scripts/_atelier.ts` donne à chacune son rang, donc son port, sa base et son
+coin de Redis (3000/`atlas_test`, 3001/`atlas_test_a1`, 3002/`atlas_test_a2`…).
+
+| | |
+|---|---|
+| dans le conteneur d'un agent | un seul occupant : ce qui tourne est à soi |
+| **dans SON dossier** | trois ou quatre sessions, chacune dans SON atelier |
+
+**ON NE TUE JAMAIS PAR MOTIF.** `pkill -f next-server`, `pkill -f "next start"`,
+`killall node` : ces trois-là ne visent pas un processus, ils visent un NOM — et
+ils emportent le serveur de la batterie d'à côté, dix minutes de mesure avec.
+Le dépôt l'a déjà payé (`scripts/test-fiche-pendant-relance.ts`) et
+`run-e2e-tests.ts` écrit déjà le bon geste :
+
+```bash
+pgrep -af 'next-server|next dev'   # on REGARDE d'abord
+kill -9 <le pid, le sien>          # on vise UN processus
+```
+
+Un serveur qu'on veut déloger se reconnaît à **son port** — celui de son propre
+atelier —, jamais à son nom. Et quand on ne sait pas lequel est le sien, on ne
+tue rien : on demande son port à `prendreUnAtelierSync`, ou l'on attend.
+
+**Ce que le dépôt ne tient PAS encore, et qu'il ne faut pas croire tenu :** le
+verrou de la batterie est posé sur **un seul fichier à la racine**
+(`.atlas-batterie-en-cours.json`) et refuse la seconde batterie — *« La machine
+est à un seul occupant »*. Les ateliers existent donc, et la batterie les
+ignore : deux sessions ne peuvent pas mesurer en même temps, alors que rien ne
+les en empêcherait. C'est inscrit dans `TODO.md`, et ce n'est pas une raison
+pour forcer le verrou d'une autre session (`rendre --force` efface SA mesure).
+
 **Pourquoi elle a été prise, et ce qu'elle corrige.** Ce soir-là, un écran fini
 et vérifié a mis des heures à parvenir jusqu'à lui — non pas par difficulté,
 mais par une course : `main` a bougé **cinq fois** pendant la vérification (30,
