@@ -234,20 +234,20 @@ soit les réparer, soit les nommer**. Huit rouges permanents deviennent un bruit
 dans lequel un vrai défaut se cache — c'est déjà écrit plus bas dans ce fichier,
 et la liste s'allonge.
 
-### 🔴 `test-pages-legales-uniques` — les CGU publiées ne sont pas celles qu'il signe
+### ~~🔴 `test-pages-legales-uniques` — les CGU publiées ne sont pas celles qu'il signe~~ — **RÉGLÉ le 9 septembre 2026**
 
-**Relevé le 9 septembre 2026 au soir, 334/336 suites base.** Les deux
-exemplaires de `conditions-utilisation.html` ont divergé : `appli/` porte
-l'article 14 rempli — les trois formules, leurs prix — écrit par le lot de
-l'abonnement le même jour ; `public/`, celui que l'application SERT et qu'on
-fait accepter, en est resté à « Prix et abonnement », sans tarifs.
+**Relevé le 9 septembre au soir, 334/336 suites base.** Les deux exemplaires de
+`conditions-utilisation.html` avaient divergé : `appli/` portait l'article 14
+rempli — les trois formules, leurs prix — écrit par le lot de l'abonnement le
+même jour ; `public/`, celui que l'application SERT et qu'on fait accepter, en
+était resté à « Prix et abonnement », sans tarifs.
 
-**Ce n'est pas un défaut de contrôle**, c'est ce qu'il attrape : on fait
-accepter un texte qui n'est pas celui qu'on publie. La correction est de
-recopier `appli/` vers `public/` — mais **elle appartient au lot de
-l'abonnement** : lui seul sait si le document publié doit changer de version
-pour que les acceptations déjà données restent lisibles. À reprendre par la
-session qui a écrit l'article, ou par celle qui passera après elle.
+**Ce n'était pas un défaut de contrôle**, c'est ce qu'il attrape : on faisait
+accepter un texte qui n'est pas celui qu'on publie. Refermé le soir même par la
+session de l'abonnement (`6136cc3`), qui a aussi posé
+`scripts/capture-documents-legaux.mts` pour le voir sur le vrai écran. Gardé ici
+barré : c'est le seul rouge de la batterie du soir, et savoir qu'il a été réglé
+évite de le rouvrir.
 
 ---
 
