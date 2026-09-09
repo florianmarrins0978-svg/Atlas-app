@@ -5,7 +5,6 @@ import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { ACCEPT_PHOTOS } from "@/lib/exif";
 import {
   ceQuiManque,
-  compteDesTaches,
   type ReglesDuRetour,
   type TacheDuRetour,
 } from "@/lib/retour-intervention";
@@ -51,9 +50,19 @@ import {
  */
 export default function FinDeChantier({
   chantierId,
+  dejaRendu,
   onOuvert,
 }: {
   chantierId: string;
+  /**
+   * Ce chantier a DÉJÀ son retour — lu avec la feuille, pas à l’ouverture.
+   *
+   * **Sans lui, le verrou n’aurait tenu qu’une session.** Le bandeau ne
+   * chargeait son état qu’à l’ouverture : en rouvrant la fiche le lendemain,
+   * il aurait retrouvé un bouton vert et pressable sur un chantier déjà
+   * rendu — exactement ce qu’il demandait d’empêcher (9 septembre 2026).
+   */
+  dejaRendu?: boolean;
   /**
    * Le bandeau vient de s’ouvrir ou de se replier.
    *
@@ -155,42 +164,94 @@ export default function FinDeChantier({
 
   return (
     <div data-atlas="fin-de-chantier" className="mt-3.5">
-      {/* Ce qui a déjà été posé se lit AVANT le bouton : sinon il rouvrirait
-          pour vérifier, et croirait avoir perdu son geste. */}
-      {dejaPose && !ouvert && (
-        <p
-          className="mb-2.5 text-center text-[12.5px] leading-[1.45]"
-          style={{ color: colors.muted }}
+      {/* ═══════════════════════════════════════════════════════════════════
+          **UNE FOIS POSÉ, LE BOUTON DEVIENT LA PREUVE — sa demande du
+          9 septembre 2026 :** *« une fois qu'on clique sur c'est fini la page
+          doit se replier toute seule, et à la place de fin de chantier le
+          bouton doit dire où c'est parti ; ensuite il passe en grisé, on ne
+          peut plus appuyer dessus. »*
+
+          **Il dit OÙ, et c'est tout l'objet.** « C'est parti » seul laisse
+          chercher : sur un chantier, savoir que c'est parti ne sert que si
+          l'on sait où le retrouver. La seconde ligne est donc l'adresse, pas
+          un ornement.
+
+          **Ce que ce verrou coûte, et il l'a tranché en connaissance :** une
+          case cochée de travers ne se répare plus depuis le chantier. La
+          planche `appli/fiche-sans-doublon.html` porte la variante avec une
+          ligne « Corriger », qu'il a écartée — un retour vaut preuve, et une
+          preuve ne se réécrit pas (sa décision du 8 septembre).
+
+          Ce n'est pas un bouton grisé qui refuse en silence — le piège que ce
+          dépôt s'interdit : il ne ressemble plus à un bouton du tout, et il
+          porte ce qu'il a à dire. */}
+      {(dejaPose || dejaRendu) && !ouvert ? (
+        <div
           data-atlas="retour-pose"
+          className="flex h-[52px] w-full items-center justify-center gap-2.5 rounded-full px-5"
+          // **`card` et non `rustTint`, et c’est la capture qui l’a dit.** La
+          // carte de la fiche EST déjà en `rustTint` : le bloc s’y fondait
+          // exactement, et ne ressemblait plus à un bouton éteint mais à du
+          // texte flottant au milieu de l’écran. Aucun contrôle ne pouvait le
+          // voir — les deux couleurs sont des jetons justes, c’est leur
+          // rencontre qui ne l’était pas (`CLAUDE.md` §5).
+          style={{
+            backgroundColor: colors.card,
+            boxShadow: `inset 0 0 0 1px ${colors.line}`,
+            cursor: "default",
+          }}
         >
-          {compteDesTaches(taches) || "C'est fini"}
-          {dejaPose.posePar ? ` · ${dejaPose.posePar}` : ""}
-        </p>
+          <span
+            aria-hidden="true"
+            className="grid h-[19px] w-[19px] flex-none place-items-center rounded-full"
+            style={{ backgroundColor: colors.plein, color: surPlein }}
+          >
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M2 6.3 4.7 9 10 3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          <span className="min-w-0">
+            <span
+              className="block text-[15px] leading-[1.15]"
+              style={{ color: colors.inkSoft, fontFamily: font.display }}
+            >
+              C&apos;est parti
+            </span>
+            <span className="mt-[1px] block text-[11.5px] leading-[1.3]" style={{ color: colors.muted }}>
+              Terminés › Retour d&apos;intervention
+            </span>
+          </span>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            const prochain = !ouvert;
+            setOuvert(prochain);
+            onOuvert?.(prochain);
+          }}
+          data-atlas="ouvrir-fin-de-chantier"
+          className="mx-auto flex h-[52px] w-full items-center justify-center gap-2.5 rounded-full px-5"
+          style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display, fontSize: 16 }}
+        >
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path
+              d="M4 10.4 8.2 14.6 16 5.8"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          {ouvert ? "Replier" : "Fin de chantier"}
+        </button>
       )}
-
-      <button
-        type="button"
-        onClick={() => {
-          const prochain = !ouvert;
-          setOuvert(prochain);
-          onOuvert?.(prochain);
-        }}
-        data-atlas="ouvrir-fin-de-chantier"
-        className="mx-auto flex h-[52px] w-full items-center justify-center gap-2.5 rounded-full px-5"
-        style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display, fontSize: 16 }}
-      >
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path
-            d="M4 10.4 8.2 14.6 16 5.8"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        {ouvert ? "Replier" : dejaPose ? "Corriger" : "Fin de chantier"}
-      </button>
-
       {ouvert && (
         <div className="mt-3.5">
           {!charge ? (

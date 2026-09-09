@@ -62,6 +62,15 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { lienAppel, liensItineraire } from "@/lib/itineraire";
 import type { FeuilleDuChantier } from "@/server/repositories/devis";
+
+/**
+ * La feuille d’un chantier, et si son retour a déjà été posé.
+ *
+ * **Les deux voyagent ensemble**, parce que le bouton de fin de chantier doit
+ * être figé DÈS L’OUVERTURE de la fiche — pas seulement dans la session où
+ * l’on a appuyé. Sa demande du 9 septembre 2026.
+ */
+type FeuilleEtRetour = FeuilleDuChantier & { retourPose: boolean };
 import { NOTE_MAX } from "@/lib/note-chantier";
 import {
   basculerEquipeAction,
@@ -685,7 +694,7 @@ export default function PlanningClient({
   const [portes, setPortes] = useState<ChantierPlanning | null>(viseDemande);
 
   /** Ce que porte la feuille de chaque chantier — chargé une fois, jamais deux. */
-  const [taches, setTaches] = useState<Record<string, FeuilleDuChantier>>({});
+  const [taches, setTaches] = useState<Record<string, FeuilleEtRetour>>({});
 
   useEffect(() => {
     if (!feuille) return;
@@ -1738,7 +1747,7 @@ type GestesCarte = {
   deplacer: (chantierId: string, quand: QuandChantier) => void;
   retirerDuJour: (chantierId: string) => void;
   poser: (chantierId: string, jour: JourIso, quand: QuandChantier) => void;
-  taches: Record<string, FeuilleDuChantier>;
+  taches: Record<string, FeuilleEtRetour>;
 };
 
 /**
@@ -2832,7 +2841,7 @@ function FeuilleChantier({
   dansLeMois = false,
 }: {
   chantier: ChantierPlanning | null;
-  feuille?: FeuilleDuChantier;
+  feuille?: FeuilleEtRetour;
   /** Faux pour un salarié : la note se LIT, elle ne s'écrit pas (30 août 2026). */
   ecriture?: boolean;
   /** Dans le mois, elle suit les marges de la grille et non celles de la liste. */
@@ -2959,7 +2968,11 @@ function FeuilleChantier({
           se déplie ICI, sous les lignes du devis : il garde sous les yeux ce
           qu'il y avait à faire pendant qu'il coche. Une feuille qui monte
           l'aurait recouverte, et il aurait coché de mémoire. */}
-      <FinDeChantier chantierId={chantier.id} onOuvert={setFinOuverte} />
+      <FinDeChantier
+        chantierId={chantier.id}
+        dejaRendu={feuille?.retourPose ?? false}
+        onOuvert={setFinOuverte}
+      />
 
       {/* **Le bouton n'existe QUE s'il y a un devis à imprimer.** Sans devis, la
           route répond 404 : un bouton qui ouvre une erreur est pire qu'un bouton

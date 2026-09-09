@@ -25954,3 +25954,64 @@ vert.
 **« Dernier devis »**, avec la flèche qui tourne. La réserve dite noir sur blanc :
 le mot peut se lire « ouvrir mon dernier devis » alors qu'il en crée un neuf —
 l'icône porte le « de nouveau », et l'écran suivant est un devis sans numéro.
+
+## §303 — La fin de chantier : la liste s'efface, puis le bouton devient la preuve
+
+*Ses deux décisions du 9 septembre 2026, prises sur `appli/fiche-sans-doublon.html`.*
+
+### A — la liste du devis s'efface quand le bandeau s'ouvre
+
+**Le défaut a été vu sur une capture, par aucun test.** Les quatre lignes du
+devis se lisaient **deux fois** sur le même écran : en liste au-dessus, puis en
+cases à cocher trois centimètres plus bas. Il fallait les comparer une à une,
+avec des gants, pour comprendre que c'étaient les mêmes.
+
+Elles ne sont pas perdues : **elles SONT devenues les cases**, et reviennent au
+repli comme à l'envoi.
+
+**L'état reste dans `FinDeChantier`**, où il sert déjà à charger le retour ;
+l'écran du dessus n'en est que prévenu (`onOuvert`). Une seconde copie aurait
+fait deux vérités pour une question, et le jour où elles divergent la fiche perd
+ses lignes sur un bandeau replié (`CLAUDE.md` §3).
+
+### Puis le bouton se fige, et dit OÙ c'est parti
+
+*« Une fois qu'on clique sur c'est fini, la page doit se replier toute seule, et
+à la place de fin de chantier le bouton doit dire où c'est parti ; ensuite il
+passe en grisé, on ne peut plus appuyer dessus. »*
+
+**Il dit OÙ, et c'est tout l'objet** — « C'est parti · Terminés › Retour
+d'intervention ». Savoir que c'est parti ne sert que si l'on sait où le
+retrouver.
+
+**Ce n'est pas un bouton grisé qui refuse en silence**, le piège que ce dépôt
+s'interdit ailleurs : il ne ressemble plus à un bouton du tout, et il porte ce
+qu'il a à dire.
+
+### CE QUI A FAILLI RENDRE LE VERROU INUTILE
+
+Le bandeau ne chargeait son état **qu'à l'ouverture** — c'était juste tant qu'il
+ne servait qu'à remplir. Le verrou, lui, doit être visible **dès que la fiche
+s'ouvre** : sans quoi, en rouvrant le lendemain, il aurait retrouvé un bouton
+vert et pressable sur un chantier déjà rendu, et le verrou n'aurait tenu que le
+temps d'une session.
+
+`tachesDuChantierAction` rend donc `retourPose` **avec la feuille** : une
+requête de plus sur une lecture qui se fait déjà, jamais une requête de plus
+tout court. `test-fin-de-chantier-e2e.ts` rejoue le cas, rechargement compris.
+
+### Et ce que la capture a encore attrapé
+
+Le bloc figé était posé en `rustTint` — **exactement la couleur de la carte de
+la fiche**. Il ne ressemblait plus à un bouton éteint mais à du texte flottant
+au milieu de l'écran. Les deux jetons étaient justes ; c'est leur **rencontre**
+qui ne l'était pas, et aucun contrôle de couleur ne pouvait le voir. Le contrôle
+compare désormais les deux fonds rendus.
+
+### Ce qui a été refusé, et il l'a tranché en connaissance
+
+La variante **H** de la planche gardait une ligne « Corriger » sous le bloc
+figé : une case cochée de travers se réparait sur place, sans l'appeler. Il a
+choisi le verrou sec — *un retour vaut preuve, et une preuve ne se réécrit
+pas* (sa décision du 8 septembre). **Le prix est écrit ici** : son salarié qui
+se trompe devra passer par lui.

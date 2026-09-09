@@ -8,6 +8,32 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### La fin de chantier : la liste s'efface, puis le bouton devient la preuve
+
+Sur la fiche du salarié, les quatre lignes du devis se lisaient **deux fois** —
+en liste, puis en cases à cocher trois centimètres plus bas. Vu sur une capture,
+par aucun test. Elles s'effacent maintenant à l'ouverture : **elles SONT**
+devenues les cases, et reviennent au repli.
+
+**Puis le bouton se fige**, à sa demande : la fiche se replie seule, et à la
+place de « Fin de chantier » on lit **« C'est parti · Terminés › Retour
+d'intervention »**. Il dit OÙ — savoir que c'est parti ne sert que si l'on sait
+où le retrouver. Ce n'est pas un bouton grisé qui refuse en silence : il ne
+ressemble plus à un bouton du tout.
+
+**Ce qui a failli rendre le verrou inutile.** Le bandeau ne chargeait son état
+qu'à l'OUVERTURE : en rouvrant la fiche le lendemain, il aurait retrouvé un
+bouton vert sur un chantier déjà rendu. La feuille rend donc `retourPose` avec
+le reste — une requête de plus sur une lecture qui se fait déjà.
+
+**Et la capture a encore parlé** : le bloc figé était posé en `rustTint`,
+exactement la couleur de la carte. Deux jetons justes, une rencontre fausse, et
+aucun contrôle de couleur ne pouvait la voir.
+
+**Ce qu'il a refusé en connaissance** : la variante avec une ligne « Corriger ».
+Un retour vaut preuve, et une preuve ne se réécrit pas — le prix est qu'un
+salarié qui coche de travers devra passer par lui (`ARCHITECTURE.md` §303).
+
 ### Le lot 3 est abandonné : le retour d'intervention ne part pas chez le client
 
 **Sa décision :** *« mais ça c'est juste pour que le patron sache ce que le
