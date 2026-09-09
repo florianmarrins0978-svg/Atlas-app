@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### L'onglet des retours existe toujours, et ses photos se voient enfin
+
+*« L'onglet retour d'intervention doit exister même s'il n'y a aucun retour ! »*
+Il avait raison : un onglet qui paraît un jour et pas l'autre se cherche, et le
+premier retour arriverait dans un endroit dont il ignore l'existence. Le compte
+total, qui ne servait qu'à le faire paraître, s'en va avec la condition.
+
+*« J'ai joint des photos en créant la fiche de Julien, elles n'apparaissent nulle
+part »* — elles étaient visibles dans le seul tiroir « Fin de chantier », parmi
+les preuves à cocher : après le travail, dans un endroit qu'on n'ouvre qu'en
+partant. Elles sont désormais **au-dessus des lignes du devis**, là où il les a
+demandées, et elles ne disparaissent pas quand le bandeau s'ouvre
+(`ARCHITECTURE.md` §307).
+
 ### Les retours non lus se voient d'un coup d'œil
 
 Sa demande : *« comme pour les SMS »*. La pastille de l'onglet ne compte plus le

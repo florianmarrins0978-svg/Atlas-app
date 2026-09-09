@@ -61,6 +61,14 @@ async function main() {
   const chantierId = rows[0].id;
   await pool.query(`UPDATE chantiers SET date_planifiee = CURRENT_DATE WHERE id = $1`, [chantierId]);
   await pool.query(`DELETE FROM retours_intervention WHERE chantier_id = $1`, [chantierId]);
+  // **Ce qu’il a photographié en créant la fiche** : elles n’apparaissaient
+  // nulle part avant le 9 septembre 2026, sinon dans le tiroir des preuves.
+  await pool.query(`DELETE FROM photos WHERE storage_key LIKE $1`, [`chantiers/${chantierId}/photos/e2e-fiche%`]);
+  await pool.query(
+    `INSERT INTO photos (entreprise_id, chantier_id, storage_key, mime_type, taille_octets, checksum)
+     SELECT c.entreprise_id, c.id, $2, 'image/jpeg', 10, $3 FROM chantiers c WHERE c.id = $1`,
+    [chantierId, `chantiers/${chantierId}/photos/e2e-fiche.jpg`, "f".repeat(64)]
+  );
 
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 } });
@@ -90,12 +98,36 @@ async function main() {
     assert.equal(await page.locator(FIGE).count(), 0, "un chantier neuf s'annonce déjà rendu");
   });
 
+  await cas("SES PHOTOS SE VOIENT SUR LA FICHE, au-dessus des lignes du devis", async () => {
+    // *« J’ai joint des photos à la création mais elles n’apparaissent nulle
+    // part »*, puis *« elles devraient être au-dessus de Désherbage gravier »*.
+    const photo = page.locator("[data-atlas='photo-du-chantier']").first();
+    await photo.waitFor({ state: "visible", timeout: 15_000 });
+
+    // **AU-DESSUS des lignes, et c’est sa demande** : on compare les positions
+    // RENDUES, pas l’ordre du code.
+    const hautPhoto = (await photo.boundingBox())?.y ?? 0;
+    const lignes = page.locator(`${FEUILLE} > div:not([hidden])`).last();
+    const hautLignes = (await lignes.boundingBox())?.y ?? 0;
+    assert.ok(hautPhoto > 0 && hautLignes > 0, "rien n’est mesuré : la mise en page n’est pas faite");
+    assert.ok(
+      hautPhoto < hautLignes,
+      `la photo est SOUS les lignes du devis (${Math.round(hautPhoto)} contre ${Math.round(hautLignes)})`
+    );
+  });
+
   await cas("LA LISTE DU DEVIS S'EFFACE À L'OUVERTURE — sa proposition A", async () => {
     const avant = await page.locator(`${FEUILLE} > div:not([hidden])`).count();
     await page.locator(OUVRIR).click();
     await page.locator(TACHE).first().waitFor({ state: "visible", timeout: 20_000 });
     const cache = await page.locator(`${FEUILLE} > div[hidden]`).count();
     assert.ok(cache > 0, `la liste du devis reste affichée sous les cases (${avant} blocs visibles avant)`);
+    // **Les photos, elles, RESTENT** : la liste disparaît parce qu’elle devient
+    // les cases ; les photos sont ce qu’on regarde pendant qu’on coche.
+    assert.ok(
+      await page.locator("[data-atlas='photo-du-chantier']").first().isVisible(),
+      "les photos du chantier disparaissent quand la fin de chantier s’ouvre"
+    );
   });
 
   await cas("il coche, et « C'est fini » devient possible", async () => {
