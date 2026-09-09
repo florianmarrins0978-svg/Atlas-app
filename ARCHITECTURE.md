@@ -26024,7 +26024,8 @@ ligne, donc rétrécis-les un peu tous les 3 s’il faut. »*
 
 **Il avait raison de tiquer : le mot ne fait que 145 px.** Ce qui débordait,
 c’était le REMBOURRAGE — 18 px de chaque côté sur trois pastilles, plus 26 px
-de marge. Mesuré sur son écran : **440 px avant, 375 après**, sur 390.
+de marge. Mesuré : **440 px avant, 308 après**, pour 308 disponibles sur un
+écran de 360.
 
 **Ce qui a rétréci est le rembourrage, jamais la hauteur.** Les 44 px sont la
 mesure d’un pouce sur un chantier, parfois avec des gants.
@@ -26040,3 +26041,29 @@ pas seulement la largeur — c’est ce que l’œil voit
 d’intervention » faisait rougir `test-aucune-fleche` — et plutôt que d’inscrire
 une exception de plus, on emploie le séparateur que l’application utilise déjà
 partout. Une exception qui s’ajoute est une dette qui commence.
+#### ET CE N’EST PAS SEULEMENT SON TÉLÉPHONE
+
+*« N’oublie pas que ça doit être adapté à tous les téléphones. »* La première
+livraison ne mesurait qu’à **390**, la largeur du sien. Sur un Android ordinaire
+— 360 — la rangée passait à deux lignes, et **tous les contrôles restaient au
+vert**. C’est la capture qui l’a montrée : « À / facturer » replié en deux.
+
+**Trois mensonges de mesure, dans le même contrôle, corrigés l’un après l’autre :**
+
+| Ce qu’on mesurait | Pourquoi ça mentait |
+|---|---|
+| la largeur occupée par la rangée | les pastilles sont des enfants de flex : elles SE SERRENT, donc ça « tient » toujours |
+| `scrollWidth` de chaque pastille | il ne voit rien d’un débordement **visible** : il rendait 68 pour un texte de 74 |
+| la hauteur, pour détecter un repli | deux lignes de 12,5 px entrent dans les 44 px du pouce |
+
+**Ce qui se mesure désormais** : la largeur du TEXTE, par un intervalle posé sur
+le contenu, comparée à la place réellement laissée dedans — et la rangée contre
+la place DISPONIBLE, marges déduites, aux quatre largeurs 360 / 375 / 390 / 430.
+
+**Et le défaut a été rendu VISIBLE avant d’être corrigé** : les pastilles portent
+`whitespace-nowrap` et `shrink-0`. Ni repli ni écrasement ne sont plus possibles,
+donc le manque de place devient un débordement que la mesure voit. Un défaut
+visible vaut mieux qu’un défaut absorbé en silence (`AGENTS.md`).
+
+**Le seuil du « presque rond » vient de l’image, pas d’une intuition** : à 1,36
+(60 × 44) la pastille se lit ovale ; le garde-fou est posé à 1,25.

@@ -103,7 +103,7 @@ export default function ListeTermines({
           Les 44 px ne sont pas un goût : c'est la mesure que tout le reste de
           l'application tient déjà pour un pouce, sur un chantier, parfois avec
           des gants. Ces onglets étaient les seuls à 40. */}
-      <div className="mx-[26px] mt-7 flex gap-1.5" data-atlas="onglets-termines">
+      <div className="mx-[26px] mt-7 flex gap-1" data-atlas="onglets-termines">
         <Onglet repere="tout" actif={onglet === "tout"} onClick={() => setOnglet("tout")}>
           Tout
         </Onglet>
@@ -129,7 +129,7 @@ export default function ListeTermines({
           <Link
             href="/termines/retours"
             data-atlas="onglet-retours"
-            className="flex min-h-11 items-center gap-1.5 rounded-full px-2.5 text-[12.5px] no-underline"
+            className="flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 text-[12.5px] no-underline"
             style={{
               backgroundColor: colors.card,
               color: colors.inkSoft,
@@ -394,8 +394,8 @@ function Onglet({
       // ovale comme les autres »*. Un mot court dans un rembourrage resserré
       // rend une pastille aussi haute que large, et elle ne ressemble plus à
       // ses voisines. Les 72 px la gardent ovale sans rien coûter à la rangée,
-      // qui tient à 375 px sur les 390 de son téléphone.
-      className={`min-h-11 min-w-[68px] rounded-full px-2.5 text-[12.5px] ${actif ? "atlas-plein" : ""}`}
+      // qui tient à 300 px sur les 308 disponibles d’un écran de 360 —
+      className={`min-h-11 min-w-[60px] shrink-0 whitespace-nowrap rounded-full px-2 text-[12.5px] ${actif ? "atlas-plein" : ""}`}
       style={
         actif
           ? {

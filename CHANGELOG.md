@@ -49,6 +49,23 @@ Il ne peut pas geler le dossier : PID et signe de vie toutes les vingt secondes 
 processus mort ou silence de plus de quatre-vingt-dix secondes, il ne vaut plus
 rien. Une batterie tuée ne bloque donc personne.
 
+### Les onglets de Terminés tiennent sur une ligne — sur TOUS les téléphones
+
+*« Comment est-ce possible que "retours d’intervention" déborde, il y a beaucoup
+de place ? »* Il avait raison : le mot fait 145 px, c’était le rembourrage qui
+débordait. Resserré, la hauteur du pouce intacte.
+
+*« N’oublie pas que ça doit être adapté à tous les téléphones. »* La première
+version ne mesurait qu’à 390 — la largeur du sien. À 360, sur un Android
+ordinaire, la rangée passait à deux lignes **avec tous les contrôles au vert**.
+Trois mensonges de mesure emboîtés, que la capture a dénoués : la largeur
+occupée (les pastilles se serrent), `scrollWidth` (aveugle à un débordement
+visible), la hauteur (deux lignes tiennent dans 44 px).
+
+La rangée est désormais mesurée à **360, 375, 390 et 430**, texte comparé à la
+place réelle. Et le défaut a été rendu visible avant d’être corrigé : plus de
+repli ni d’écrasement possibles (`ARCHITECTURE.md` §303).
+
 ### La fin de chantier : la liste s'efface, puis le bouton devient la preuve
 
 Sur la fiche du salarié, les quatre lignes du devis se lisaient **deux fois** —

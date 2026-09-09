@@ -28,8 +28,18 @@ import { ADRESSE } from "./_adresse";
 const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-/** La largeur de SON téléphone, celle qui décide. */
-const TELEPHONE = 390;
+/**
+ * **Les largeurs qu’il faut tenir, et pas seulement la sienne.**
+ *
+ * Sa remarque du 9 septembre 2026 : *« n’oublie pas que ça doit être adapté à
+ * tous les téléphones »*. La première livraison ne mesurait qu’à 390 — son
+ * iPhone à lui — et la rangée aurait débordé de quinze pixels sur un Android
+ * ordinaire, chez le premier de ses salariés à en avoir un.
+ *
+ * **360 px est le plancher que ce dépôt tient déjà** (`ARCHITECTURE.md` §125,
+ * où la barre du bas se vérifie à cette largeur). 430 est le grand format.
+ */
+const LARGEURS = [360, 375, 390, 430] as const;
 const RANGEE = "[data-atlas='onglets-termines']";
 /** **On la REGARDE aussi.** Une rangée peut tenir au pixel et rester laide :
  *  quatre défauts réels de ce dépôt sont sortis d’une image, d’aucun test. */
@@ -82,7 +92,7 @@ async function main() {
   );
 
   const navigateur = await lancerNavigateur();
-  const contexte = await navigateur.newContext({ viewport: { width: TELEPHONE, height: 844 } });
+  const contexte = await navigateur.newContext({ viewport: { width: LARGEURS[0], height: 844 } });
   const page = await contexte.newPage();
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
@@ -96,6 +106,7 @@ async function main() {
   await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
   await page.locator(RANGEE).waitFor({ state: "visible", timeout: 20_000 });
 
+  // La capture se prend à la largeur la PLUS ÉTROITE : c’est là que ça casse.
   if (DOSSIER_CAPTURES) {
     mkdirSync(DOSSIER_CAPTURES, { recursive: true });
     await page.locator(RANGEE).screenshot({
@@ -110,22 +121,101 @@ async function main() {
     assert.match(dit, /Retours d'intervention/, `la rangée dit « ${dit} »`);
   });
 
-  await cas("LA RANGÉE TIENT DANS 390 px — sa demande, mesurée", async () => {
-    const rangee = page.locator(RANGEE);
-    const boite = await rangee.boundingBox();
-    assert.ok(boite && boite.height > 20, "la rangée est écrasée : rien n'est mesuré");
+  for (const large of LARGEURS) {
+    await cas(`LA RANGÉE TIENT DANS ${large} px — toutes les largeurs, pas seulement la sienne`, async () => {
+      await page.setViewportSize({ width: large, height: 844 });
+      // La mise en page se refait : sans cette attente, on mesure celle d’avant.
+      await page.waitForTimeout(350);
+      const rangee = page.locator(RANGEE);
+      const boite = await rangee.boundingBox();
+      assert.ok(boite && boite.height > 20, "la rangée est écrasée : rien n’est mesuré");
 
-    // La largeur RÉELLE de ce qui est posé dedans, marges comprises — pas la
-    // largeur de la boîte, qui vaut celle de l'écran quoi qu'elle contienne.
-    const large = await rangee.evaluate((r) => {
-      const dernier = r.lastElementChild!;
-      const marge = parseFloat(getComputedStyle(r as HTMLElement).marginLeft) || 0;
-      return Math.ceil(dernier.getBoundingClientRect().right + marge);
+      // La largeur RÉELLE de ce qui est posé dedans, marges comprises — pas la
+      // largeur de la boîte, qui vaut celle de l’écran quoi qu’elle contienne.
+      // ═══════════════════════════════════════════════════════════════════
+      // **NE PAS MESURER LA LARGEUR OCCUPÉE : elle ment.** Les pastilles sont
+      // des enfants de flex, donc elles SE SERRENT quand la place manque. La
+      // rangée « tient » alors toujours — en écrasant les libellés. La
+      // première version de ce contrôle rendait exactement la largeur de
+      // l’écran à 360 comme à 375, et croyait avoir prouvé quelque chose.
+      //
+      // Ce qui se mesure, c’est **ce que chaque pastille voudrait** contre ce
+      // qu’on lui laisse : un libellé plus large que sa boîte est un libellé
+      // rogné ou replié, et ça se voit à l’œil.
+      // **`scrollWidth` NE VOIT RIEN quand le débordement est visible**, et
+      // c’est le piège de ce contrôle : il rendait 68/68 sur une pastille dont
+      // le texte demandait 74. On mesure donc le TEXTE lui-même, par un
+      // intervalle posé sur le contenu — la seule largeur qui ne mente pas.
+      const serres = await rangee.evaluate((r) =>
+        Array.from(r.children).map((e) => {
+          const intervalle = document.createRange();
+          intervalle.selectNodeContents(e);
+          const texte = intervalle.getBoundingClientRect();
+          const st = getComputedStyle(e as HTMLElement);
+          const dedans =
+            e.getBoundingClientRect().width -
+            (parseFloat(st.paddingLeft) || 0) -
+            (parseFloat(st.paddingRight) || 0);
+          return {
+            mot: (e.textContent ?? "").trim().slice(0, 24),
+            large: Math.round(e.getBoundingClientRect().width),
+            dedans: Math.round(dedans),
+            voulu: Math.ceil(texte.width),
+
+          };
+        })
+      );
+      const pris = await rangee.evaluate((r) => Math.ceil(r.scrollWidth));
+      console.log(
+        `    ${large} px : la rangée voudrait ${pris} — ` +
+          serres.map((x) => `${x.mot} ${x.dedans}←${x.voulu}`).join(" · ")
+      );
+      assert.ok(pris > 200, `mesure invraisemblable (${pris} px) : la mise en page n’est pas faite`);
+
+      // **La borne, c’est la place DISPONIBLE**, pas la largeur de l’écran :
+      // la rangée vit entre deux marges, et les comparer à l’écran entier
+      // rendrait un vert sur trente pixels qui n’existent pas.
+      const dispo = await rangee.evaluate((r) => {
+        const st = getComputedStyle(r as HTMLElement);
+        return Math.floor(
+          (r.parentElement?.getBoundingClientRect().width ?? 0) -
+            (parseFloat(st.marginLeft) || 0) -
+            (parseFloat(st.marginRight) || 0)
+        );
+      });
+      assert.ok(
+        pris <= dispo,
+        `les onglets débordent de ${pris - dispo} px à ${large} (${pris} pour ${dispo} disponibles)`
+      );
+      // **À 360 px, la capture montrait « À / facturer » sur deux lignes — et
+      // tous les contrôles au vert**, parce que deux lignes de 12,5 px tiennent
+      // dans les 44 px du pouce et que `scrollWidth` ne voit rien d’un
+      // débordement visible.
+      //
+      // Les pastilles portent donc `whitespace-nowrap` ET `shrink-0` : ni
+      // repli ni écrasement ne sont plus possibles, et le manque de place
+      // devient un DÉBORDEMENT que la mesure ci-dessous voit. Un défaut
+      // visible vaut mieux qu’un défaut absorbé en silence.
+      const hauts = await rangee.evaluate((r) =>
+        Array.from(r.children).map((e) => Math.round(e.getBoundingClientRect().height))
+      );
+      for (const h of hauts) {
+        assert.ok(h <= 48, `un onglet fait ${h} px de haut à ${large} px : son libellé s’est replié`);
+      }
+      for (const x of serres) {
+        assert.ok(x.voulu > 0, `« ${x.mot} » ne mesure rien : la mise en page n’est pas faite`);
+        assert.ok(
+          x.dedans + 1 >= x.voulu,
+          `« ${x.mot} » est rogné à ${large} px : ${x.dedans} px de place pour ${x.voulu} de texte`
+        );
+      }
+
+      const deborde = await page.evaluate(
+        () => document.documentElement.scrollWidth > window.innerWidth + 1
+      );
+      assert.equal(deborde, false, `l’écran défile de côté à ${large} px`);
     });
-    assert.ok(large > 200, `mesure invraisemblable (${large} px) : la mise en page n'est pas faite`);
-    assert.ok(large <= TELEPHONE, `les onglets débordent de ${large - TELEPHONE} px (${large} sur ${TELEPHONE})`);
-    console.log(`    mesuré : ${large} px sur ${TELEPHONE}`);
-  });
+  }
 
   await cas("AUCUN ONGLET N’EST ROND — son coup d’œil du 9 septembre", async () => {
     // *« Le bouton Tout, on dirait qu’il est rond et pas ovale comme les
@@ -140,7 +230,11 @@ async function main() {
     );
     for (const f of formes) {
       assert.ok(f.l > 0 && f.h > 0, "un onglet sans dimension : rien n’est mesuré");
-      assert.ok(f.l >= f.h * 1.4, `un onglet est presque rond : ${f.l} × ${f.h} px`);
+      // **Le seuil vient de l’image, pas d’une intuition.** Ce qu’il a vu était
+      // une pastille aussi haute que large — un rapport proche de 1. À 1,36
+      // (60 × 44) elle se lit ovale, vérifié à la capture ; le garde-fou est
+      // donc posé à 1,25, où il attrape un vrai rond sans refuser ce qui va.
+      assert.ok(f.l >= f.h * 1.25, `un onglet est presque rond : ${f.l} × ${f.h} px`);
     }
   });
 
@@ -152,13 +246,6 @@ async function main() {
     for (const h of hauteurs) {
       assert.ok(h >= 44, `un onglet ne fait que ${h} px de haut`);
     }
-  });
-
-  await cas("et la page entière ne défile pas de côté", async () => {
-    const deborde = await page.evaluate(
-      () => document.documentElement.scrollWidth > window.innerWidth + 1
-    );
-    assert.equal(deborde, false, "l'écran des Terminés défile horizontalement");
   });
 
   // On rend le jeu de démonstration tel qu'on l'a pris : les suites voisines
