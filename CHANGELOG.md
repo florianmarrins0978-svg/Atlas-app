@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Dire comment faire essayer l'application à quelqu'un d'autre
+
+`docs/ESSAYER.md` était écrit pour un seul essayeur : le patron. Faire essayer
+Atlas à un proche pose deux questions auxquelles il ne répondait pas — sous
+quel compte entre-t-il, et pourquoi la page devient blanche pendant qu'il
+essaie.
+
+Le second point est le piège : le compte à rebours de trente minutes de
+Codespaces regarde si quelqu'un est connecté à l'ESPACE, pas à l'application.
+Un proche peut donc se servir d'Atlas sans interruption et le voir s'éteindre
+sous ses doigts, sans qu'aucun message ne le dise. La section le dit avant, et
+donne les deux gestes qui l'évitent.
+
+Corrigé au passage une phrase devenue fausse du même document — « personne
+d'autre que vous n'y accède » — alors que le port 3000 est public depuis le
+6 août 2026 et que tout ce document repose là-dessus.
+
 ### Le planning s'ouvre sur la journée, et « Aujourd'hui » s'écrit en doré
 
 Le salarié ouvrait l'appli le matin et lisait « Mardi 8 septembre » : il devait
