@@ -25980,7 +25980,7 @@ ses lignes sur un bandeau replié (`CLAUDE.md` §3).
 à la place de fin de chantier le bouton doit dire où c'est parti ; ensuite il
 passe en grisé, on ne peut plus appuyer dessus. »*
 
-**Il dit OÙ, et c'est tout l'objet** — « C'est parti · Terminés › Retour
+**Il dit OÙ, et c'est tout l'objet** — « C'est parti · Terminés · Retour
 d'intervention ». Savoir que c'est parti ne sert que si l'on sait où le
 retrouver.
 
@@ -26015,3 +26015,28 @@ figé : une case cochée de travers se réparait sur place, sans l'appeler. Il a
 choisi le verrou sec — *un retour vaut preuve, et une preuve ne se réécrit
 pas* (sa décision du 8 septembre). **Le prix est écrit ici** : son salarié qui
 se trompe devra passer par lui.
+
+### Et les trois onglets de Terminés tiennent sur une ligne
+
+*« Comment est-ce possible que "retours d’intervention" déborde, il y a beaucoup de
+place ? Tu te débrouilles comme tu veux mais tu fais tenir les 3 sur la même
+ligne, donc rétrécis-les un peu tous les 3 s’il faut. »*
+
+**Il avait raison de tiquer : le mot ne fait que 145 px.** Ce qui débordait,
+c’était le REMBOURRAGE — 18 px de chaque côté sur trois pastilles, plus 26 px
+de marge. Mesuré sur son écran : **440 px avant, 375 après**, sur 390.
+
+**Ce qui a rétréci est le rembourrage, jamais la hauteur.** Les 44 px sont la
+mesure d’un pouce sur un chantier, parfois avec des gants.
+
+**Et son coup d’œil a corrigé le premier essai** : *« le bouton Tout, on
+dirait qu’il est rond et pas ovale comme les autres »*. Un mot court dans un
+rembourrage resserré rend une pastille aussi haute que large. Une largeur
+minimale de 68 px la garde ovale ; le contrôle mesure désormais le **rapport**,
+pas seulement la largeur — c’est ce que l’œil voit
+(`test-onglets-termines-e2e.ts`).
+
+**Le chevron du chemin est devenu un point médian.** « Terminés › Retour
+d’intervention » faisait rougir `test-aucune-fleche` — et plutôt que d’inscrire
+une exception de plus, on emploie le séparateur que l’application utilise déjà
+partout. Une exception qui s’ajoute est une dette qui commence.

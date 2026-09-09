@@ -16,7 +16,7 @@ par aucun test. Elles s'effacent maintenant à l'ouverture : **elles SONT**
 devenues les cases, et reviennent au repli.
 
 **Puis le bouton se fige**, à sa demande : la fiche se replie seule, et à la
-place de « Fin de chantier » on lit **« C'est parti · Terminés › Retour
+place de « Fin de chantier » on lit **« C'est parti · Terminés · Retour
 d'intervention »**. Il dit OÙ — savoir que c'est parti ne sert que si l'on sait
 où le retrouver. Ce n'est pas un bouton grisé qui refuse en silence : il ne
 ressemble plus à un bouton du tout.

@@ -224,7 +224,7 @@ export default function FinDeChantier({
               C&apos;est parti
             </span>
             <span className="mt-[1px] block text-[11.5px] leading-[1.3]" style={{ color: colors.muted }}>
-              Terminés › Retour d&apos;intervention
+              Terminés · Retour d&apos;intervention
             </span>
           </span>
         </div>

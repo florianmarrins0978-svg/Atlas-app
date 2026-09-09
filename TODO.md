@@ -101,14 +101,13 @@ posé » sous la pastille).
 |---|---|
 | **A** — la liste du devis s'efface quand la fin de chantier s'ouvre | **codé** (`ARCHITECTURE.md` §303) |
 | **G** — le bouton se fige et dit où c'est parti, sans retour possible | **codé** |
-| le nom de l'onglet dans Terminés | **attend sa réponse** |
+| le nom de l'onglet dans Terminés | **codé** — « Retours d'intervention » en entier, 375 px sur 390 |
 
-**Le nom, et la mesure qui le décide.** Il a demandé « Retours d'intervention »
-en toutes lettres : mesuré, ce libellé **déborde de 38 px** de la largeur de son
-téléphone, à côté de « Tout » et « À facturer ». La planche porte une troisième
-proposition qui tient à 390 px sur 390 — la ligne pleine largeur, avec le
-chevron d'une page, qui dit en plus que cette entrée OUVRE au lieu de trier.
-**Rien n'est codé tant qu'il n'a pas choisi.**
+**Le nom, tranché.** Il voulait « Retours d'intervention » en entier, et il avait
+raison de tiquer sur les 38 px : ce n'était pas le mot, c'était le rembourrage.
+Les trois pastilles sont resserrées — 375 px sur 390, hauteur du pouce intacte.
+La ligne pleine largeur de la planche est donc **écartée**, et n'a pas à être
+reproposée.
 
 **Et ce qu'il a refusé, pour qu'on ne le repropose pas** : la variante H, une
 ligne « Corriger » sous le bloc figé. Un retour vaut preuve. Le prix en est

@@ -84,7 +84,9 @@ async function main() {
   await cas("un chantier du jour offre « Fin de chantier », et les lignes du devis se lisent", async () => {
     await page.locator(OUVRIR).waitFor({ state: "visible", timeout: 20_000 });
     const texte = await page.locator(FEUILLE).innerText();
-    assert.match(texte, /Fiche d'intervention/);
+    // Insensible à la casse : le surtitre est mis en CAPITALES par la feuille
+    // de style, et `innerText` rend ce qui est AFFICHÉ, pas la source.
+    assert.match(texte, /fiche d'intervention/i);
     assert.equal(await page.locator(FIGE).count(), 0, "un chantier neuf s'annonce déjà rendu");
   });
 
