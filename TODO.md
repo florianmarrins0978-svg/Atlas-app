@@ -327,16 +327,27 @@ choix d'apparence, pas des travaux. Le détail est dans
    fois*~~ — **tranché le 8 septembre 2026 : une question à la fois**, et elle
    pose désormais **toutes** les questions qui remplissent les réglages
    (14 pour une micro-entreprise en franchise, 17 pour une SAS assujettie).
-   Ce qui reste à trancher : **seize questions au plus, est-ce trop ?** Et
-   surtout : **la civilité, le prénom et le nom séparés n'existent pas en
-   base** — les poser à la porte veut dire créer trois colonnes et les ajouter
-   à l'écran « Mon compte ». Son accord d'abord.
-   L'IBAN et le message au client ne servent qu'à la première facture et
-   pourraient retourner dans les réglages ;
+   ~~Ce qui reste à trancher : seize questions au plus, est-ce trop ?~~ —
+   **tranché le 9 septembre 2026 : « non c'est pas trop ».** La liste ne se
+   raccourcit donc pas, et l'IBAN, le titulaire et les moyens de paiement
+   restent à la porte. Ne pas rouvrir sans qu'il le redemande.
+   ~~La civilité, le prénom et le nom séparés n'existent pas en base~~ — les
+   trois colonnes existent depuis la migration 0077, et l'écran « Mon compte »
+   les porte ;
 2. ~~l'accroche sous ATLAS~~ — **tranché le 8 septembre : aucune accroche**, et
    le sceau à l'étoile est retiré lui aussi ;
-3. la phrase des conditions, **ou** une case à cocher ;
-4. la photo reste-t-elle fixe alors que le reste suit la charte choisie ;
+3. **la phrase des conditions, ou une case à cocher** — il a demandé le
+   9 septembre *« quelle est le mieux ? »*. Réponse donnée, et c'est la
+   phrase : les deux ont la même valeur en droit français, et une case de plus
+   est un geste de plus pour un artisan qui se bat déjà avec son téléphone. La
+   case ne devient nécessaire que le jour où il y aura quelque chose de SÉPARÉ
+   à accepter — des e-mails commerciaux, par exemple. **Il n'a pas tranché
+   depuis** : la phrase reste, et c'est l'état actuel de l'écran ;
+4. **la photo reste-t-elle fixe** alors que le reste suit la charte choisie —
+   il a demandé le 9 septembre *« c'est à dire ? »*, et la réponse lui a été
+   donnée : celui qui est devant la porte n'a pas encore de compte, donc pas
+   d'apparence choisie ; il n'y a rien à suivre. **Sans réponse de sa part**,
+   la photo reste fixe ;
 5. « Créer un compte » crée un **patron et son entreprise** — un salarié reçoit
    son accès de son patron dans les réglages. À confirmer.
 

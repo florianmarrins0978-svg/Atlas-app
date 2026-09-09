@@ -109,13 +109,20 @@ Les trois sont ramenées à une seule écriture, employée des deux côtés.
 
 ## Ce qui reste à trancher — et c'est à vous
 
-1. **Seize questions, est-ce trop ?** L'IBAN, le titulaire et les moyens de
-   paiement ne servent qu'à la première facture : ils pourraient retourner dans
-   les réglages et faire descendre à treize.
-2. **La phrase des conditions, ou une case à cocher ?** C'est la phrase pour
-   l'instant.
-3. **La photo reste-t-elle fixe** alors que le reste de l'application suit
-   l'apparence choisie dans les réglages ?
+1. ~~**Seize questions, est-ce trop ?**~~ — **vous avez répondu le 9 septembre :
+   « non c'est pas trop ».** La liste ne bouge pas.
+2. **La phrase des conditions, ou une case à cocher ?** Vous avez demandé
+   laquelle valait mieux : **la phrase**. Les deux ont la même valeur en droit
+   français — appuyer sur un bouton sous une phrase visible vaut acceptation —
+   et une case de plus est un geste de plus. Elle ne deviendra nécessaire que
+   le jour où il y aura quelque chose de **séparé** à accepter, des e-mails
+   commerciaux par exemple. En attendant, c'est la phrase.
+3. **La photo reste-t-elle fixe ?** Vous avez demandé ce que ça voulait dire :
+   l'application a sept apparences que vous choisissez dans Réglages, et tous
+   les écrans les suivent — sauf la porte, qui montre la même forêt à tout le
+   monde. **Ma réponse est qu'elle doit rester fixe** : celui qui est devant la
+   porte n'a pas encore de compte, donc pas d'apparence choisie. Il n'y a rien
+   à suivre. À vous de dire si vous voyez les choses autrement.
 
 Et un rappel qui n'est pas du code : **les deux pages légales sont des
 brouillons**. Elles sont en ligne et lisibles, mais la société éditrice n'existe
