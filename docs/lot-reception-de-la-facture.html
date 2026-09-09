@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « Ah ouais mais j'ai pas vu votre facture »</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="-ah-ouais-mais-jai-pas-vu-votre-facture-">« Ah ouais mais j'ai pas vu votre facture »</h1>
+<p><strong>9 septembre 2026.</strong> Document de retour : un verdict par point, ce qui a été fait autrement, ce qui a été refusé, les chiffres, et ce qui reste.</p>
+<hr>
+<h2 id="en-cinq-lignes">En cinq lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li>Une case <strong>« J'ai bien reçu cette facture »</strong> sur la page que reçoit le client. Elle ne bloque rien, et elle est <strong>tout en bas</strong>.</li>
+<li>Atlas note <strong>tout seul</strong> l'ouverture du lien — c'est la date qui vaut, parce qu'elle ne dépend pas de la bonne volonté du client.</li>
+<li><strong>Sa question a fait la moitié du lot</strong> : <em>« en cas de litige, où est-ce que l'utilisateur va rechercher cette info ? »</em> — nulle part, jusqu'ici.</li>
+<li>« J'ai vu » n'éteint plus que la <strong>carte</strong> ; les deux dates restent sur « Terminés › En attente de paiement ».</li>
+<li>Ce qui a été <strong>refusé</strong> : obliger à cocher pour télécharger — et c'est lui qui l'a écarté, le jour même où il l'a proposé.</li>
+</ol>
+<hr>
+<h2 id="1-ce-quil-a-demandé-et-ce-qui-a-été-livré">1. Ce qu'il a demandé, et ce qui a été livré</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Sa demande</th>
+<th>Verdict</th>
+<th>Le fichier</th>
+</tr></thead><tbody>
+<tr>
+<td>une case d'accusé de réception sur le lien de la facture</td>
+<td><strong>fait</strong></td>
+<td><code>src/app/factures/[jeton]/AccuseDeReception.tsx</code></td>
+</tr>
+<tr>
+<td>qu'elle n'empêche pas le téléchargement</td>
+<td><strong>fait</strong></td>
+<td>rien ne conditionne le bouton ; la case est sous « Pour régler »</td>
+</tr>
+<tr>
+<td>que le message parte au premier appui</td>
+<td><strong>fait</strong></td>
+<td>pas de second bouton « Envoyer »</td>
+</tr>
+<tr>
+<td>une notification chez lui, effaçable d'un « vu »</td>
+<td><strong>fait</strong></td>
+<td><code>src/app/Notifications.tsx</code>, carte « Facture reçue » + <code>marquerReceptionVueAction</code></td>
+</tr>
+<tr>
+<td>qu'Atlas note l'ouverture tout seul</td>
+<td><strong>fait</strong></td>
+<td><code>noterOuvertureDeLaFacture</code>, appelée <strong>par le navigateur</strong></td>
+</tr>
+<tr>
+<td><strong>où retrouver l'info en cas de litige</strong></td>
+<td><strong>fait</strong></td>
+<td><code>src/app/termines/tva/EnAttenteDePaiement.tsx</code>, sous la ligne de chaque facture</td>
+</tr>
+<tr>
+<td>l'IBAN visible sur la page du client</td>
+<td><strong>déjà fait</strong></td>
+<td><code>src/app/factures/[jeton]/page.tsx</code> — il s'affiche dès qu'il est réglé, et rien ne s'affiche sinon</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="2-ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">2. Ce qui a été refusé, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Conditionner le téléchargement à la case.</strong> Il l'a proposé, puis écarté lui-même : <em>« mais ça ne l'empêche pas de télécharger la facture s'il ne coche pas ! »</em>. Quatre raisons, dans l'ordre où elles pèsent :</p>
+<ol>
+<li><strong>Une facture se DONNE.</strong> La retenir tant que le client n'a pas signé quelque chose met l'artisan en tort, pas le client.</li>
+<li><strong>Ça se retourne contre lui.</strong> Le client ne coche pas, donc ne télécharge pas — et là il n'a vraiment pas reçu la facture. On perd exactement ce qu'on voulait gagner.</li>
+<li><strong>Une confirmation arrachée ne vaut rien.</strong> « On m'a obligé pour avoir ma facture » s'annule tout seul.</li>
+<li><strong>C'est inutile</strong> : Atlas note déjà l'ouverture.</li>
+</ol>
+<blockquote>Je ne suis pas juriste. Sur ce point, ce document dit ce qui est <strong>risqué</strong> et pourquoi — l'arbitrage juridique reste à son comptable.</blockquote>
+<hr>
+<h2 id="3-deux-dates-et-elles-ne-se-valent-pas">3. Deux dates, et elles ne se valent pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui l'écrit</th>
+<th>Ce qu'elle vaut</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Ouverte le…</strong></td>
+<td>Atlas, tout seul</td>
+<td><strong>la plus solide</strong> : elle ne dépend pas de la bonne volonté du client</td>
+</tr>
+<tr>
+<td><strong>Réception confirmée le…</strong></td>
+<td>le client, en cochant</td>
+<td>plus parlante, et facultative — elle peut ne jamais venir</td>
+</tr>
+</tbody></table></div>
+<p><strong>Quand le client ne coche jamais</strong>, la ligne dit quand même « Ouverte le 9 septembre à 14 h 12 » — ou « Pas encore ouverte », qui est précisément l'information qu'on cherche quand quelqu'un prétend n'avoir rien reçu.</p>
+<h3 id="la-date-douverture-part-du-navigateur-jamais-du-serveur">La date d'ouverture part du NAVIGATEUR, jamais du serveur</h3>
+<p><strong>C'est le point technique qui compte, et il ne se voit pas à l'écran.</strong> Une messagerie qui déplie l'aperçu d'un lien, un antivirus qui le vérifie, un robot d'indexation : tous demandent l'adresse, <strong>aucun n'exécute de JavaScript</strong>. Notée pendant le rendu du serveur, la date aurait été celle d'une machine — donc fausse le jour précis où elle sert de preuve.</p>
+<p><strong>Et elle ne s'écrit qu'une fois</strong> (garde en base, pas à l'écran) : sans cela, chaque rechargement de la page aurait repoussé la date jusqu'à aujourd'hui, et un client aurait pu la faire glisser lui-même.</p>
+<hr>
+<h2 id="4-ce-qui-a-été-fait-autrement-que-la-maquette">4. Ce qui a été fait autrement que la maquette</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Sur la planche</th>
+<th>Dans l'application</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>un cadre à coins de 12 px</td>
+<td>une <strong>pastille arrondie</strong></td>
+<td>sa règle du 12 août 2026 : la même forme pour tout ce qui s'appuie, tenue par <code>scripts/test-boutons-arrondis.ts</code></td>
+</tr>
+<tr>
+<td>un liseré doré sur les lignes neuves</td>
+<td>rien</td>
+<td>le doré ne servait qu'à <strong>montrer ce qui s'ajoutait</strong> sur la planche ; dans l'écran, c'est une ligne parmi les autres</td>
+</tr>
+<tr>
+<td>la carte mène à « Voir la facture »</td>
+<td>elle mène à <strong>« Voir les factures qui attendent »</strong></td>
+<td>c'est là que vivent les deux dates et le geste suivant. Une carte qui mène ailleurs que là où est la suite fait chercher — il l'avait relevé le 12 août</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="5-un-pansement-retiré-au-passage">5. Un pansement retiré au passage</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>adresseClient</code> — celle qui écrit l'adresse du client sur une preuve — était <strong>recopiée à l'identique</strong> dans <code>devis/[jeton]/actions.ts</code> et <code>documents-legaux/actions.ts</code>. La réception en aurait fait une troisième copie.</p>
+<p>Elle vit maintenant dans <code>src/lib/adresse-client.ts</code>, et <strong>les deux copies ont disparu</strong>. Ce n'est pas du rangement : trois versions de « quelle adresse on garde » seraient trois preuves qui ne se ressemblent pas, sur des documents qu'on relit des mois plus tard.</p>
+<hr>
+<h2 id="6-corrections-noir-sur-blanc">6. Corrections noir sur blanc</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>J'ai failli écrire une contre-vérité dans la migration.</strong> Le premier jet affirmait que le rôle applicatif n'avait pas le droit d'écrire sur <code>envois_factures</code> depuis 2024, et donc que « corriger le canal d'un envoi » ne pouvait pas fonctionner. <strong>C'est faux</strong> : <code>ALTER DEFAULT PRIVILEGES</code> du bootstrap donne déjà ce droit à toute table créée ensuite. Vérifié sur la base avant de l'écrire, pas après :</p>
+<p>``<code> SELECT privilege_type FROM information_schema.role_table_grants WHERE grantee='atlas_app' AND table_name='envois_factures'; → DELETE, INSERT, SELECT, UPDATE </code>``</p>
+<p><strong>Et une heure perdue sur un défaut qui n'en était pas un.</strong> La case ne réagissait pas dans l'application : ni ouverture notée, ni confirmation. Ce n'était pas le code — j'avais ouvert la page sur <code>127.0.0.1</code>, et Next refuse alors de servir le JavaScript de la page. Le dépôt le documentait déjà (<code>scripts/capturer-tva.ts</code>, payé le 3 septembre) ; je l'ai repayé.</p>
+<hr>
+<h2 id="7-les-chiffres">7. Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Batterie complète, jouée le 9 septembre 2026 :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Lint</td>
+<td><strong>rouge</strong>, et pas sur du code : <code>eslint</code> a buté sur <code>voir-planche.tmp.mjs</code>, un fichier temporaire créé puis effacé par une session voisine pendant le scan</td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Suites base</td>
+<td><strong>320 / 333</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>110 / 134</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>vert</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>DEUX ROUGES VENAIENT DE CE LOT. Les deux sont corrigés :</strong></p>
+<ol>
+<li><code>test-actions-gardees-db</code> — <strong>un bon rouge, et il a fait son travail.</strong> Mes deux actions publiques n'avaient aucune garde de rôle. C'est délibéré (le client de l'artisan n'a pas de compte), mais cela doit être <strong>écrit avec sa raison</strong> dans les exemptions, pas laissé au silence. Fait — et la suite est repassée verte, seule.</li>
+<li><code>test-facture-au-client-e2e</code> — il <strong>exigeait le montant</strong> sur la page du client, celui-là même qu'il a fait retirer le 8 septembre. Il rougissait donc sur une demande exaucée. Le contrôle a été adapté, jamais le libellé remis (<code>CLAUDE.md</code> §5 bis) : il vise maintenant le NUMÉRO de la facture, et vérifie <strong>l'absence</strong> du montant — il défend sa décision au lieu de la contredire. Rejoué seul : <strong>1/1</strong>.</li>
+</ol>
+<p><strong>Les autres rouges ne viennent pas de ce lot</strong>, et je le dis sans esquive : <code>test-boutons-arrondis</code> désigne <code>src/app/planning/FinDeChantier.tsx</code> ; <code>test-carte-reponse-mene-au-geste-e2e</code> échoue sur un bouton de calendrier qui intercepte le clic ; <code>test-tva-multiple-e2e</code> sur l'appui long d'un devis. Aucun de ces fichiers n'est touché ici. Le reste est de l'outillage déjà rouge sur <code>HEAD</code> avant ce lot.</p>
+<p><strong>Un premier lancement a été jeté.</strong> Docker s'est arrêté dans les secondes qui ont suivi : 85 erreurs de connexion, et un verdict qui n'accusait personne. C'est lui qui a posé la question — <em>« t'as pas besoin de Docker ? »</em> — et elle a évité de lire des chiffres faux.</p>
+<p>Ce qui est acquis, suite par suite :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>scripts/test-reception-facture-db.ts</code></td>
+<td><strong>12 / 12</strong>, sous <code>atlas_app</code></td>
+</tr>
+<tr>
+<td><code>scripts/test-reception-facture.ts</code></td>
+<td><strong>6 / 6</strong></td>
+</tr>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td>aucune erreur</td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td>0 erreur</td>
+</tr>
+<tr>
+<td><code>npm run verifier:memoire</code></td>
+<td>cohérente</td>
+</tr>
+</tbody></table></div>
+<p><strong>La suite sait échouer</strong>, et sur le bon défaut : garde <code>IS NULL</code> retiré, elle rougit sur « l'ouverture ne se réécrit pas » — et sur elle seule (11/12).</p>
+<p><strong>Et elle est une suite BASE, pas navigateur.</strong> Le client écrit sans session ; les suites navigateur tournent sous un rôle qui traverse la RLS et ne peuvent pas, par construction, voir un défaut d'isolation. C'est la leçon du 8 août 2026, où le lien de facture était mort en production pendant qu'une suite navigateur restait verte.</p>
+<p><strong>Les deux écrans ont été regardés</strong>, pas seulement testés : <code>scripts/capture-reception-facture.mts</code> (la page du client, avant et après l'appui, et après rechargement) et <code>scripts/capture-trace-reception.mts</code> (les trois états côte à côte sur « En attente de paiement », plus la carte).</p>
+<hr>
+<h2 id="8-ce-qui-reste-ouvert">8. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui tranche</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le mot exact de la case</strong> — « J'ai bien reçu cette facture » ou sa formule, « Informer votre artisan de la bonne réception »</td>
+<td>lui</td>
+</tr>
+<tr>
+<td><strong>Faut-il la même ligne sur l'écran de la facture du chantier</strong>, en plus de « En attente de paiement »</td>
+<td>lui</td>
+</tr>
+<tr>
+<td><strong>Prévenir sur le téléphone</strong> (notifications) — cette confirmation est l'un des deux événements qui mériteraient de sonner, avec « devis accepté »</td>
+<td>lot suivant, déjà cadré</td>
+</tr>
+<tr>
+<td><strong>La valeur juridique</strong> de la trace</td>
+<td>son comptable</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

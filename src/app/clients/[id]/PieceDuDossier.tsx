@@ -136,6 +136,41 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
         <svg width="7" height="12" viewBox="0 0 8 14" fill="none" stroke={colors.chevron} strokeWidth="1.5" aria-hidden="true">
           <path d="M1.5 1l5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
+        {/* **CE QUE LE CLIENT A FAIT DE SA FACTURE — sa réponse du 9 septembre
+            2026.** Je lui demandais où il chercherait le jour d'un litige :
+            *« je vais dans mes clients sur la catégorie facture »*. C'est donc
+            ici, et pas seulement sur « En attente de paiement ».
+
+            Sur toute la largeur, SOUS le numéro : à droite, elle se serait
+            battue avec la date pour la même colonne de 118 px — celle-là même
+            où « n° 2026-0031 » ne tenait pas. La ligne passe de 64 à 90 px, et
+            seules les factures la portent.
+
+            **« Pas encore ouverte » S'ÉCRIT**, et ce n'est pas du bruit : c'est
+            justement ce qu'il vient vérifier quand un client prétend n'avoir
+            rien reçu. Ne rien afficher ferait lire l'absence de trace comme une
+            absence de fonctionnalité. */}
+        {piece.reception && (
+          <span
+            data-atlas="piece-reception"
+            className="col-span-3 mt-[3px] block text-[11.5px] leading-[1.5]"
+            style={{ color: piece.reception.ouverte ? colors.inkSoft : colors.muted }}
+          >
+            {piece.reception.ouverte === null ? (
+              "Pas encore ouverte."
+            ) : (
+              <>
+                Ouverte <strong className="font-medium">{piece.reception.ouverte}</strong>
+                {piece.reception.confirmee && (
+                  <>
+                    {" · réception confirmée "}
+                    <strong className="font-medium">{piece.reception.confirmee}</strong>
+                  </>
+                )}
+              </>
+            )}
+          </span>
+        )}
       </button>
 
       <BottomSheet open={feuilleOuverte} onBackdropClick={() => setFeuilleOuverte(false)}>

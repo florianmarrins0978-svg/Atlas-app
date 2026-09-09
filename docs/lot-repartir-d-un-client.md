@@ -1,7 +1,7 @@
 # Repartir d'un client, et finir un chantier avec une preuve
 
-*Lot ouvert le 8 septembre 2026. Ce document est à jour au **stade du code** :
-les lots 1 et 2 sont écrits, éprouvés et livrés. Le lot 3 reste à ouvrir.*
+*Lot ouvert le 8 septembre 2026, CLOS le 9. Les lots 1 et 2 sont écrits,
+éprouvés et livrés ; le lot 3 a été **abandonné par lui** (§15).*
 
 *Sa page consultable vit dans `appli/`, jamais dans `docs/` : le site publié ne
 sert que `appli/`. Posée ailleurs, elle n'a aucune adresse — payé le
@@ -132,10 +132,10 @@ existant fait déjà exactement cela.**
 
 `passages_entretien` (`src/server/db/schema.ts`) porte `client_id`, jamais
 `chantier_id` : c'est l'outil des **tournées d'entretien**, pas la preuve de fin
-d'un chantier. Le lot 3 devra soit l'y rattacher, soit donner au chantier sa
-propre page de preuve.
+d'un chantier.
 
-*Remis au lot 3 par le patron, le 8 septembre.*
+*Remis au lot 3 le 8 septembre — et le lot 3 a été ABANDONNÉ le 9 (§15) :
+cette dette n'a plus d'objet.*
 
 ---
 
@@ -428,11 +428,11 @@ Corrigés quand même, parce qu'ils font perdre du temps à toutes les sessions 
 |---|---|
 | ~~quelle proposition pour le lot 1~~ | **tranché le 8 septembre : E** |
 | ~~« Refaire » : tarifs d'aujourd'hui ou à l'identique~~ | **tranché : aux tarifs d'aujourd'hui** |
-| **quelle proposition pour la partie 1 — A, B ou C** (comment Atlas dit sous quel client il a rangé) | **lui**, sur la première planche |
+| ~~quelle proposition pour la partie 1 — A, B ou C~~ | **tranché le 9 septembre : C**, et codée (§14) |
 | **la carte d'un retour ne mène nulle part** : elle montre, elle n'ouvre pas — pour ne pas dupliquer les règles d'accès du planning | **lui**, s'il veut y entrer |
 | **aucune suite de bout en bout ne joue le chemin du salarié** : le jeu de démonstration n'a pas de compte salarié. C'est exactement le défaut du 28 août (`CLAUDE.md` §5 quater) | **nous** — il faut un salarié dans le jeu de démonstration |
-| le compte rendu du lot 3 : rattacher `passages_entretien` au chantier, ou page propre | **nous**, au lot 3 |
-| le lot 3 — ce que le client reçoit | **lui**, il l'a reporté |
+| ~~rattacher `passages_entretien` au chantier~~ | **sans objet** : il n'y a plus de lot 3 |
+| ~~le lot 3 — ce que le client reçoit~~ | **ABANDONNÉ le 9 septembre** : *« c'est juste pour que le patron sache ce que le salarié a fait, pas besoin d'informer le client »* |
 
 ---
 
@@ -449,6 +449,105 @@ Sous `https://florianmarrins0978-svg.github.io/Atlas-app/` :
 | `termines-et-les-retours.html` | la vraie page Terminés, photographiée, et trois propositions |
 | `parcours-fin-de-chantier.html` | le parcours cliquable, du salarié au patron |
 | `retours-d-intervention.html` | la sous-catégorie et sa page, filtres compris |
+
+---
+
+## 14. La proposition C, codée — 9 septembre 2026
+
+### Sa question, et la réponse qui a décidé du lot
+
+> *« Lorsque je clique sur créer un devis j'écris Martins, il reconnaît et
+> entre les infos de lui-même — mais il ne va donc pas me créer un deuxième
+> client appelé Martins ? »*
+
+**Non.** Atlas réunit les homonymes depuis le 17 août. Ce qui manquait n'était
+pas la règle, c'était de la **voir** : rien à l'écran ne disait qu'il avait
+reconnu quelqu'un, et vous croyiez devoir retaper un client connu.
+
+C'est éprouvé en base, pas déduit : la suite crée deux chantiers sous le même
+nom et vérifie qu'il n'existe **qu'une fiche**, et que les deux chantiers y sont
+accrochés (`scripts/test-client-reconnu-e2e.ts`).
+
+### Ce que vous voyez
+
+| | |
+|---|---|
+| vous tapez un nom connu | un bandeau : **« Repris de sa fiche · Saint-Marc · 3 chantiers »** |
+| les cases | téléphone, e-mail, adresse posés seuls — **les vides seulement**, jamais par-dessus ce que vous avez tapé |
+| un seul geste | **« Ce n'est pas lui »**, qui retire ce qu'Atlas avait posé et **rien d'autre** |
+| personne de reconnu | **rien du tout** — pas de « Nouveau client », qui serait du bruit à chaque frappe |
+
+### CE QUI A DEMANDÉ LE PLUS DE SOIN : SE TAIRE
+
+Le rapprochement tranche à l'enregistrement, quand tout est tapé, et il a le
+droit de départager deux homonymes par le plus récent : au pire le chantier va
+chez le mauvais Martins, et cela se répare.
+
+**Pré-remplir est d'une autre nature.** On écrit le numéro d'un homme sur la
+fiche d'un autre, à l'écran — et vous ne le relirez pas, puisque c'est justement
+pour ne plus retaper que vous avez demandé cet écran. Le devis partirait au
+mauvais numéro, et personne ne saurait d'où ça vient.
+
+**Donc : quatre Martins et aucune coordonnée, Atlas ne pose rien.** Il attend le
+numéro, qui tranche de lui-même. Le contrôle qui tient cette ligne a été **vu
+rouge** en retirant le compte d'homonymes.
+
+### « Ce n'est pas lui » : un mot, pas un geste d'écran
+
+Vider les cases ne suffisait pas. Le nom restant seul, la règle du nom seul
+retrouvait le même homme à la frappe suivante — Atlas aurait répondu « si, c'est
+lui », puis aurait rangé le chantier chez celui qu'on venait d'écarter. Le refus
+entre donc **dans la règle**, et voyage jusqu'à l'enregistrement.
+
+### Trouvé à la capture, par aucune mesure
+
+Le numéro repris sortait **collé** — `0679984514` —, la base le rangeant sans
+espaces. Le seul chiffre illisible de l'écran, à côté de ceux tapés à la main.
+C'est le **septième** défaut de ce dépôt sorti d'une image et d'aucun test vert.
+
+### Le mot du bouton
+
+*« La phrase Refaire, c'est pas bizarre ? »* — c'était juste : cela se lit comme
+*recommencer parce que c'était raté*. C'est **« Dernier devis »**, avec la flèche
+qui tourne.
+
+*La réserve, noir sur blanc* : le mot peut se lire « ouvrir mon dernier devis »
+alors qu'il en crée un neuf. L'icône porte le « de nouveau », et l'écran suivant
+est un devis sans numéro — l'ambiguïté ne survit pas au premier usage.
+
+### Les chiffres de ce lot
+
+| La suite | Résultat |
+|---|---|
+| `test-rapprochement-client.ts` (la règle, sans base) | **14 contrôles, 0 échec** — dont celui des quatre Martins, vu rouge exprès |
+| `test-client-reconnu-e2e.ts` (votre parcours, au navigateur) | **7 contrôles, 0 échec** |
+
+---
+
+## 15. LE LOT 3 EST ABANDONNÉ — sa décision du 9 septembre 2026
+
+> *« Mais ça c'est juste pour que le patron sache ce que le salarié a fait sur
+> le chantier, pas besoin d'informer le client. »*
+
+**Ce qui ne sera donc pas fait :** envoyer les photos de fin de chantier au
+client, lui donner un bouton pour confirmer, horodater cette confirmation.
+
+**Et il a raison, pas seulement parce que c'est son choix.** Le retour
+d'intervention est un outil de **contrôle interne** : il sert à savoir ce qui a
+été fait avant de facturer. L'envoyer au client en aurait changé la nature — un
+salarié qui sait que son client lit sa case cochée ne coche plus pareil. Cela
+aurait aussi ouvert un chemin public vers des photos de propriétés privées,
+pour un besoin que personne n'avait exprimé.
+
+**Ce que cela NE ferme PAS, et la confusion est facile.** La page par lien
+`/entretien/[jeton]` continue d'exister et de partir chez ses clients : elle
+sert ses **tournées d'entretien**, pas ses fins de chantier. Deux outils
+distincts, qui portent le même titre à l'écran depuis un renommage qu'il avait
+demandé. **Ne pas la retirer en croyant appliquer cette décision.**
+
+**Le mur relevé au §4 devient sans objet** : `passages_entretien` porte
+`client_id` et non `chantier_id`. On le notait comme une dette à trancher au
+lot 3 ; il n'y a plus de lot 3, et la table reste ce qu'elle est.
 
 ---
 

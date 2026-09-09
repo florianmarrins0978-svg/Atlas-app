@@ -9,6 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ DEUX MOTS À TRANCHER — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
+
+Le lot est livré et sur `main`. Deux choses n’ont pas été tranchées, et elles
+lui appartiennent :
+
+1. **Le mot exact de la case.** Livré avec « J’ai bien reçu cette facture » ;
+   sa formule à lui était « Informer votre artisan de la bonne réception de la
+   facture ». Les deux disent la même chose — la première parle à la première
+   personne, comme le reste de la page.
+2. **La même ligne sur l’écran de la facture du chantier ?** Les deux dates ne
+   vivent aujourd’hui que sur « Terminés › En attente de paiement ». Les poser
+   aussi sur la facture ne coûte presque rien, mais deux endroits à regarder
+   valent parfois moins qu’un seul.
+
+**Et le lot d’à côté est cadré, pas commencé :** les notifications sur son
+téléphone. La demande d’autorisation se pose **après son premier devis envoyé**,
+jamais au lancement (on n’a le droit de la poser qu’une fois), et un interrupteur
+l’attend dans les Réglages. Deux événements méritent de sonner : « devis
+accepté » et « facture reçue ».
+
+---
 ## ⏳ UNE PLANCHE À REGARDER — « Aujourd'hui » en tête des planifiés
 
 **Sa demande du 9 septembre 2026 :** *« si on est le 8 septembre y'a écrit
@@ -41,25 +62,84 @@ ajoutée : la B, avec le vrai `#B98B47` sur une pastille d'encre — le jeton
 La planche s'ouvre dessus, avec **En tête**.
 
 **SA QUESTION, dans la foulée :** *« la journée d'hier en bas risque de porter à
-confusion ? comment on peut régler ce problème ? »* — et il a raison : posée en
-bas avec la même pastille et la même encre que les jours à venir, elle se lit
-comme un chantier de plus à faire. Quatre états sont dans la planche
-(`data-passe`) : **pareil** (le risque, tel quel), **éteint** (elle perd son
-encre, son papier, son or), **replié** (« Plus tôt cette semaine (1) », qui
-s'ouvre au toucher), **retiré** (la semaine commence à aujourd'hui).
+confusion ? »* — et il a raison : repoussée en bas avec la même pastille et la
+même encre que les jours à venir, elle se lit comme un chantier de plus à faire.
 
-**Ma recommandation : éteint.** Le repli cache, et `PRODUCT.md` pose que rien ne
-doit se découvrir ; le retrait fait perdre le chantier d'hier, qu'il faut
-retrouver pour le facturer.
+**SES DEUX DEMANDES SUIVANTES, LE MÊME JOUR, ET ELLES CHANGENT L'ÉCRAN :**
 
-**Reste à coder** dans `PlanningClient.tsx` (pastille `date-planifiee`, vers la
-ligne 1014) : le mot « Aujourd'hui », la pastille de la D, l'ordre, et l'état
-retenu pour les jours passés. **Une question reste ouverte** : ce qu'affiche la
-pastille quand **rien n'est posé** aujourd'hui (la planche propose « Rien de
-posé »).
+1. *« Ce qu'il faudrait, c'est qu'on ait seulement la journée d'aujourd'hui
+   actuelle, pour avoir moins d'informations. Néanmoins il faut que si on clique
+   sur un bouton, on ait le visuel de la semaine, et qu'on puisse switcher assez
+   rapidement — la journée d'aujourd'hui toujours par défaut quand on arrive sur
+   la page planning. Et au-dessus on a toujours le gros planning du mois. »*
+2. *« Les jours du planning doivent avancer chaque jour : quand on est le 8,
+   c'est du 8 au 13 ; le 9, du 9 au 14. Et pour voir apparaître les jours grisés
+   en bas, il faut que l'utilisateur appuie sur la flèche retour arrière. »*
+
+**La seconde règle DISSOUT le problème d'hier** : une fenêtre qui part
+d'aujourd'hui ne contient aucun jour passé, et un jour passé ne s'obtient qu'en
+reculant. Le grisé ne sert plus qu'à ceux qu'on est allé chercher. Les quatre
+états (« pareil / éteint / replié / retiré ») ont donc été **retirés de la
+planche** plutôt que gardés « au cas où ».
+
+**Ce qui reste à trancher :** ses exemples donnent **six** jours (« du 8 au
+13 ») ; la planche en montre **sept** (aujourd'hui + six). À lui confirmer.
+
+**Reste à coder** dans `PlanningClient.tsx` : la pastille `date-planifiee` (vers
+la ligne 1014) et le mot « Aujourd'hui » ; le commutateur journée/semaine, la
+journée par défaut à l'arrivée ; la fenêtre glissante à la place de
+`lundiDe(...)` (`lundi`, `joursDeLaSemaine`, `titreSemaine`, vers la ligne 816)
+et le grisé des jours passés. **Une question reste ouverte** : ce qu'affiche
+l'écran quand **rien n'est posé** aujourd'hui (la planche propose « Rien de
+posé » sous la pastille).
 
 ---
 
+## ❌ LOT 3 ABANDONNÉ LE 9 SEPTEMBRE 2026 — le client n'a pas à être informé
+
+**Sa décision, en une phrase :** *« mais ça c'est juste pour que le patron sache
+ce que le salarié a fait sur le chantier, pas besoin d'informer le client »*.
+
+**Ce qui est donc REFUSÉ, et ne se repropose pas :**
+
+- envoyer les photos de fin de chantier au client ;
+- lui donner un bouton pour confirmer que le travail est fait ;
+- horodater et garder cette confirmation.
+
+**Pourquoi c'est juste, et pas seulement son droit.** Le retour d'intervention
+est un outil de **contrôle interne** : il sert à savoir ce qui a été fait avant
+de facturer. L'envoyer au client en aurait changé la nature — un salarié qui
+sait que son client lit sa case cochée ne coche plus pareil. Et cela aurait
+ouvert un chemin public vers des photos de propriétés privées pour un besoin
+que personne n'a exprimé.
+
+**Ce que cela NE ferme PAS**, et la confusion est facile : la page par jeton
+`/entretien/[jeton]` continue d'exister et de partir chez ses clients. Elle sert
+ses **tournées d'entretien**, pas ses fins de chantier — deux outils distincts
+qui portent malheureusement le même titre à l'écran depuis le renommage de
+`dc4449dc`. **Ne pas la retirer en croyant appliquer cette décision.**
+
+**Et le mur relevé au lot 1 devient sans objet :** `passages_entretien` porte
+`client_id` et non `chantier_id`. On le notait comme une dette à trancher au
+lot 3 ; il n'y a plus de lot 3, et la table reste ce qu'elle est.
+
+---
+
+## ✅ FAIT LE 9 SEPTEMBRE 2026 — Atlas dit qui il a reconnu (proposition C)
+
+~~À trancher : A, B ou C~~ — **il a choisi la C**, et elle est codée.
+`ARCHITECTURE.md` §302, suite `test-client-reconnu-e2e.ts`.
+
+Le bouton « Refaire » s'appelle désormais **« Dernier devis »**, à sa demande.
+
+**Ce qui reste ouvert de ce lot :**
+
+| Le point | Qui |
+|---|---|
+| **Quatre homonymes sans coordonnée : Atlas ne pose rien, et ne dit rien.** Un jour il tapera « Martins » en attendant que ça se remplisse, et il ne saura pas qu'il manque le numéro. Une ligne le dirait — mais un avertissement qui parle à tort s'apprend à être ignoré, et celui-ci parlerait à chaque homonyme | **lui**, s'il rencontre le cas |
+| **La reconnaissance ne joue pas sur l'écran des coordonnées d'un chantier repris** (`/chantiers/[id]/coordonnees`) : on y arrive avec un chantier déjà rattaché, il n'y a rien à reconnaître. À vérifier s'il y saisit un client pour la première fois | **nous** |
+
+---
 ## Les rouges qui ne sont à personne — relevé du 9 septembre 2026
 
 **Mesuré sur la batterie du lot « retour d'intervention »**, atelier au rang 0,
@@ -5016,7 +5096,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
-| 5 | ~~Fournisseur SMS et e-mail~~ — **tranché le 2026-08-04 : il n'y en aura pas** | Rien de bloqué. Le devis part de la messagerie du patron (`ARCHITECTURE.md` §13). Ne restent suspendus qu'aux conforts : relance automatique, accusé de réception, code SMS |
+| 5 | ~~Fournisseur SMS et e-mail~~ — **tranché le 2026-08-04 : il n'y en aura pas** | Rien de bloqué. Le devis part de la messagerie du patron (`ARCHITECTURE.md` §13). Ne restent suspendus qu'aux conforts : relance automatique et code SMS. **L'accusé de réception, lui, ne l'est plus** — fait le 9 septembre 2026 **sans aucun fournisseur** : c'est le client qui coche sur sa page, et Atlas note l'ouverture du lien tout seul |
 | 6 | Outil comptable choisi — le patron n'en a **aucun** au 2026-08-08 | Brancher son API : envoyer client, lignes, montants, taux et période, récupérer le numéro et le document émis. Quelques jours. **Rien à écrire avant le choix** — chaque outil a son API, ce serait du code à jeter. Ce qui n'est PAS en jeu : qu'Atlas n'émette pas légalement est définitif (`docs/AGENT.md` §6) |
 
 ---

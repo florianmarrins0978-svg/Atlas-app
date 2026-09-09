@@ -6,6 +6,7 @@ import {
   devis,
   factures,
   lignesPassage,
+  envoisFactures,
   lignesPrix,
   paiementsFacture,
   passagesEntretien,
@@ -14,6 +15,7 @@ import {
 import type { Ctx } from "./context";
 import { composerFicheClient, type FicheClient } from "@/lib/fiche-client";
 import { resteDu, type FacturePourTva } from "@/lib/exigibilite-tva";
+import { receptionEnMots, type ReceptionLisible } from "@/lib/reception-facture";
 import {
   dernierePrestation,
   jourCourt,
@@ -219,6 +221,48 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           )
       : [];
 
+    // **CE QUE SES CLIENTS ONT FAIT DE LEURS FACTURES — sa réponse du
+    // 9 septembre 2026.** Je lui demandais où il chercherait le jour d’un
+    // litige : *« je vais dans mes clients sur la catégorie facture »*. C’est
+    // donc ici, et pas seulement sur « En attente de paiement ».
+    //
+    // Une seule requête pour toutes les factures du client, jamais une par
+    // ligne — et le DERNIER envoi de chacune : une facture peut partir deux
+    // fois (le lien expire, le client en redemande un), et mêler les deux
+    // afficherait l’ouverture d’un lien mort à côté d’un lien vivant jamais
+    // ouvert.
+    const envois = sesFactures.length
+      ? await tx
+          .select()
+          .from(envoisFactures)
+          .where(
+            inArray(
+              envoisFactures.factureId,
+              sesFactures.map((f) => f.id)
+            )
+          )
+      : [];
+
+    const receptionParFacture = new Map<string, ReceptionLisible>();
+    {
+      const dernier = new Map<string, (typeof envois)[number]>();
+      for (const e of envois) {
+        const connu = dernier.get(e.factureId);
+        // `envoyeAt` départage, jamais l’ordre rendu par la base : sans
+        // `ORDER BY`, PostgreSQL n’en promet aucun.
+        if (!connu || e.envoyeAt.getTime() > connu.envoyeAt.getTime()) dernier.set(e.factureId, e);
+      }
+      for (const [factureId, e] of dernier) {
+        // **Mis en mots ICI, au serveur** : une heure formatée par le téléphone
+        // changerait selon l’appareil qui la lit, et une preuve qui change
+        // d’heure selon qui la regarde ne prouve rien.
+        receptionParFacture.set(
+          factureId,
+          receptionEnMots({ ouverteLe: e.ouverteAt, accuseLe: e.accuseAt })
+        );
+      }
+    }
+
     const parFacture = new Map<string, { date: string; montant: string }[]>();
     for (const p of paiements) {
       const liste = parFacture.get(p.factureId) ?? [];
@@ -297,6 +341,10 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         precision: jourCourt(f.dateEmission),
         jour: f.dateEmission,
         href: `/api/factures/${f.id}/pdf`,
+        // Absente quand la facture n’est jamais partie : sans lien, il n’y a
+        // rien à ouvrir, et « pas encore ouverte » accuserait le client d’un
+        // envoi qui n’a pas eu lieu.
+        reception: receptionParFacture.get(f.id),
       }))
     );
 

@@ -57,27 +57,29 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
         </p>
       )}
 
+      {/* **UNE LIGNE, ET ELLE NE PARLE QUE DE LUI.**
+          Sa question du 9 septembre 2026, devant la version courte : *« ni SMS
+          ni e-mail, ça sous-entend quoi ? »*. Trois lectures, dont une FAUSSE —
+          qu'Atlas ne saurait pas envoyer un devis par SMS. La phrase mêlait ce
+          que LUI reçoit et ce que ses CLIENTS reçoivent ; sur cet écran, ses
+          clients n'ont rien à faire. */}
       <p className={`mx-[26px] mt-[26px] ${texteSituation}`} style={{ color: colors.inkSoft }}>
-        Tout se passe <b style={{ color: colors.ink, fontWeight: 500 }}>dans l&apos;application</b>, sur
-        l&apos;écran d&apos;accueil. Rien ne part sur votre téléphone ni par e-mail : Atlas n&apos;envoie ni SMS
-        ni courriel.
+        Ces rappels s&apos;affichent sur votre écran d&apos;accueil, quand vous ouvrez Atlas.
       </p>
 
-      <Bloc titre="Ce qui vous est toujours signalé">
-        <Fixe
-          nom="Réponse à un devis"
-          dit="Accepté, corrigé ou refusé — avec le message du client"
-        />
-        <Fixe
-          nom="Lien de devis expiré"
-          dit="Quand le client n'a pas pu l'ouvrir à temps"
-        />
-        <p className={`pt-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
-          Ces deux-là <b style={{ color: colors.ink, fontWeight: 500 }}>ne se coupent pas</b>. Les éteindre, ce
-          serait accepter de ne plus savoir qu&apos;un client vous a refusé.
-        </p>
-      </Bloc>
+      {/* **CE QU'IL RÈGLE D'ABORD — sa proposition B, retenue le 9 septembre 2026.**
+          On ouvre cet écran pour changer quelque chose. Il s'ouvrait sur deux
+          lignes sans interrupteur : on croyait qu'il ne se réglait pas, et il
+          fallait faire défiler pour trouver ce qu'on venait chercher. Les deux
+          alertes qu'on ne peut pas couper sont passées en bas — elles ne
+          perdent rien à y être, puisqu'elles sont *toujours* allumées.
 
+          **Et les trois paragraphes qui expliquaient l'écran sont partis** :
+          celui qui répétait le mot « toujours » du titre juste au-dessus, celui
+          qui décrivait ce que fait l'interrupteur d'à côté, et le bloc « Où se
+          solde une facture » qui ne portait aucun réglage. 241 mots pour quatre
+          réglages ; il en reste la moitié. Sa consigne du 25 août : « le moins
+          de mots possible ». */}
       <Bloc titre="Ce que vous réglez">
         {/* **PREMIÈRE, et son libellé n'est pas indifférent.** Le patron, le
             16 août 2026, devant « Devis pas encore parti » : *« j'ai peur que la
@@ -141,28 +143,31 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
             onChange: (v) => ecrire({ factureImpayeeRythmeJours: v }),
           }}
         />
+        {/* **CE QUI RESTE DU BLOC « OÙ SE SOLDE UNE FACTURE », en une ligne.**
+            Ce bloc portait quatre lignes de prose et AUCUN réglage. Ce qu'il
+            apprenait d'utile — le rappel s'arrête tout seul, et où le noter —
+            ne concerne que ce rappel-ci : il descend donc sous lui, au lieu de
+            faire un chapitre. Le reste (l'acompte, le reste dû) se voit sur
+            l'écran des impayés, qui le montre au lieu de l'expliquer. */}
         <p className={`pt-3 ${texteSituation}`} style={{ color: colors.inkSoft }}>
-          Ceux-là se coupent sans rien perdre : le chantier reste dans votre liste, le devis reste sur sa fiche,
-          et le chantier fini reste dans « Terminés ».
+          S&apos;arrête dès que le règlement est noté dans{" "}
+          <b style={{ color: colors.ink, fontWeight: 500 }}>Terminés, TVA</b>.
         </p>
       </Bloc>
 
-      {/* **CE PARAGRAPHE DISAIT L'INVERSE IL Y A QUELQUES HEURES**, et il avait
-          raison : « facture impayée » était impossible faute de savoir ce qui
-          était payé. « L'endroit en attente » a été codé entre-temps, la donnée
-          existe, le rappel avec. Une documentation périmée est pire qu'absente
-          — on s'y fie encore (`CLAUDE.md` §1). */}
-      <Bloc titre="Où se solde une facture">
-        <p className={texteSituation} style={{ color: colors.inkSoft }}>
-          {/* **Les espaces sont écrits, pas laissés au retour à la ligne.** JSX
-              mange le blanc qui suit une balise en fin de ligne : la capture du
-              16 août 2026 montrait « tout seuldès que » et « reste dûqui ». */}
-          Le rappel s&apos;éteint <b style={{ color: colors.ink, fontWeight: 500 }}>tout seul</b>{" "}
-          dès que le règlement est enregistré, dans « Terminés, TVA, En attente de paiement ». Un acompte ne
-          suffit pas : la facture reste rappelée, et c&apos;est le{" "}
-          <b style={{ color: colors.ink, fontWeight: 500 }}>reste dû</b>{" "}
-          qui s&apos;affiche.
-        </p>
+      {/* **LES DEUX QU'ON NE PEUT PAS COUPER, EN BAS — sa proposition B.**
+          Le titre dit déjà « toujours », et ces deux lignes-là n'ont pas
+          d'interrupteur : l'absence se VOIT, elle n'a pas besoin d'un
+          paragraphe pour se dire. */}
+      <Bloc titre="Ce qui vous est toujours signalé">
+        <Fixe
+          nom="Réponse à un devis"
+          dit="Accepté, corrigé ou refusé — avec le message du client"
+        />
+        <Fixe
+          nom="Lien de devis expiré"
+          dit="Quand le client n'a pas pu l'ouvrir à temps"
+        />
       </Bloc>
     </div>
   );

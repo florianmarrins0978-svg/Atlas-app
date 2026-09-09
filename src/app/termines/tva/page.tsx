@@ -19,6 +19,8 @@ import LigneMontant from "./LigneMontant";
 import DeclarationsTva from "./DeclarationsTva";
 import AchatsTva from "./AchatsTva";
 import EnAttenteDePaiement from "./EnAttenteDePaiement";
+import { receptionsDesFactures } from "@/server/repositories/envois-factures";
+import { receptionEnMots } from "@/lib/reception-facture";
 import { facturesEnAttente } from "@/server/repositories/paiements-facture";
 import { listerAchatsTva, totalTvaDeductible } from "@/server/repositories/achats-tva";
 import { tvaDue } from "@/lib/achat-tva";
@@ -114,6 +116,22 @@ export default async function ReleveTvaPage({
   const collectee = Number(releve.totalTva);
   const reste = tvaDue(collectee, deductible);
 
+  // **Ce que les clients ont fait des factures qui attendent** — sa demande du
+  // 9 septembre 2026. Après le `Promise.all` et non dedans : la liste des
+  // factures à interroger sort de `enAttente`. Une seule requête pour toutes,
+  // jamais une par ligne.
+  //
+  // **Mis en mots ICI, sur le serveur** : une heure formatée par le téléphone
+  // changerait selon l'appareil qui la lit, et une preuve qui change d'heure
+  // selon qui la regarde ne prouve rien (`src/lib/reception-facture.ts`).
+  const receptionsBrutes = await receptionsDesFactures(
+    ctx,
+    enAttente.map((f) => f.id)
+  );
+  const receptions = Object.fromEntries(
+    [...receptionsBrutes].map(([id, r]) => [id, receptionEnMots(r)])
+  );
+
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-16">
@@ -190,6 +208,7 @@ export default async function ReleveTvaPage({
             et ça se lit avant ce qui est fait. */}
         <EnAttenteDePaiement
           aPrevenir={aPrevenir}
+          receptions={receptions}
           regime={releve.regime}
           aujourdHui={jourIso(new Date())}
           factures={enAttente.map((f) => ({

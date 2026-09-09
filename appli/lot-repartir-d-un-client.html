@@ -58,7 +58,7 @@
 <body>
 <main>
 <h1 id="repartir-dun-client-et-finir-un-chantier-avec-une-preuve">Repartir d'un client, et finir un chantier avec une preuve</h1>
-<p><em>Lot ouvert le 8 septembre 2026. Ce document est à jour au <strong>stade du code</strong> : les lots 1 et 2 sont écrits, éprouvés et livrés. Le lot 3 reste à ouvrir.</em></p>
+<p><em>Lot ouvert le 8 septembre 2026, CLOS le 9. Les lots 1 et 2 sont écrits, éprouvés et livrés ; le lot 3 a été <strong>abandonné par lui</strong> (§15).</em></p>
 <p><em>Sa page consultable vit dans <code>appli/</code>, jamais dans <code>docs/</code> : le site publié ne sert que <code>appli/</code>. Posée ailleurs, elle n'a aucune adresse — payé le 8 septembre, un lien mort donné au patron. Régénérer avec <code>node scripts/md-en-page.mjs docs/lot-repartir-d-un-client.md appli/lot-repartir-d-un-client.html</code>.</em></p>
 <hr>
 <h2 id="ce-qui-a-été-fait-en-six-lignes">Ce qui a été fait, en six lignes</h2>
@@ -187,8 +187,8 @@
 <p>Le « c'est fini » du salarié ne peut donc pas être ce geste-là. Il en faut deux, et le patron l'a tranché : <em>« deux gestes séparés pour la fin de chantier : le tien constate, le mien facture. »</em> Le besoin était déjà noté dans <code>TODO.md</code> depuis le 30 août, pour le commercial ; il devient obligatoire.</p>
 <h3 id="le-compte-rendu-par-jeton-nest-pas-rattaché-à-un-chantier">Le compte rendu par jeton n'est PAS rattaché à un chantier</h3>
 <p>Le brief avertissait : <em>« ne crée pas un troisième lien direct entre une intervention et un client »</em>. L'avertissement est juste — <strong>et le compte rendu existant fait déjà exactement cela.</strong></p>
-<p><code>passages_entretien</code> (<code>src/server/db/schema.ts</code>) porte <code>client_id</code>, jamais <code>chantier_id</code> : c'est l'outil des <strong>tournées d'entretien</strong>, pas la preuve de fin d'un chantier. Le lot 3 devra soit l'y rattacher, soit donner au chantier sa propre page de preuve.</p>
-<p><em>Remis au lot 3 par le patron, le 8 septembre.</em></p>
+<p><code>passages_entretien</code> (<code>src/server/db/schema.ts</code>) porte <code>client_id</code>, jamais <code>chantier_id</code> : c'est l'outil des <strong>tournées d'entretien</strong>, pas la preuve de fin d'un chantier.</p>
+<p><em>Remis au lot 3 le 8 septembre — et le lot 3 a été ABANDONNÉ le 9 (§15) : cette dette n'a plus d'objet.</em></p>
 <hr>
 <h2 id="5-la-planche-du-lot-1">5. La planche du lot 1</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -552,8 +552,8 @@
 <td><strong>tranché : aux tarifs d'aujourd'hui</strong></td>
 </tr>
 <tr>
-<td><strong>quelle proposition pour la partie 1 — A, B ou C</strong> (comment Atlas dit sous quel client il a rangé)</td>
-<td><strong>lui</strong>, sur la première planche</td>
+<td>~~quelle proposition pour la partie 1 — A, B ou C~~</td>
+<td><strong>tranché le 9 septembre : C</strong>, et codée (§14)</td>
 </tr>
 <tr>
 <td><strong>la carte d'un retour ne mène nulle part</strong> : elle montre, elle n'ouvre pas — pour ne pas dupliquer les règles d'accès du planning</td>
@@ -564,12 +564,12 @@
 <td><strong>nous</strong> — il faut un salarié dans le jeu de démonstration</td>
 </tr>
 <tr>
-<td>le compte rendu du lot 3 : rattacher <code>passages_entretien</code> au chantier, ou page propre</td>
-<td><strong>nous</strong>, au lot 3</td>
+<td>~~rattacher <code>passages_entretien</code> au chantier~~</td>
+<td><strong>sans objet</strong> : il n'y a plus de lot 3</td>
 </tr>
 <tr>
-<td>le lot 3 — ce que le client reçoit</td>
-<td><strong>lui</strong>, il l'a reporté</td>
+<td>~~le lot 3 — ce que le client reçoit~~</td>
+<td><strong>ABANDONNÉ le 9 septembre</strong> : <em>« c'est juste pour que le patron sache ce que le salarié a fait, pas besoin d'informer le client »</em></td>
 </tr>
 </tbody></table></div>
 <hr>
@@ -609,6 +609,68 @@
 <td>la sous-catégorie et sa page, filtres compris</td>
 </tr>
 </tbody></table></div>
+<hr>
+<h2 id="14-la-proposition-c-codée--9-septembre-2026">14. La proposition C, codée — 9 septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="sa-question-et-la-réponse-qui-a-décidé-du-lot">Sa question, et la réponse qui a décidé du lot</h3>
+<blockquote><em>« Lorsque je clique sur créer un devis j'écris Martins, il reconnaît et entre les infos de lui-même — mais il ne va donc pas me créer un deuxième client appelé Martins ? »</em></blockquote>
+<p><strong>Non.</strong> Atlas réunit les homonymes depuis le 17 août. Ce qui manquait n'était pas la règle, c'était de la <strong>voir</strong> : rien à l'écran ne disait qu'il avait reconnu quelqu'un, et vous croyiez devoir retaper un client connu.</p>
+<p>C'est éprouvé en base, pas déduit : la suite crée deux chantiers sous le même nom et vérifie qu'il n'existe <strong>qu'une fiche</strong>, et que les deux chantiers y sont accrochés (<code>scripts/test-client-reconnu-e2e.ts</code>).</p>
+<h3 id="ce-que-vous-voyez">Ce que vous voyez</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>vous tapez un nom connu</td>
+<td>un bandeau : <strong>« Repris de sa fiche · Saint-Marc · 3 chantiers »</strong></td>
+</tr>
+<tr>
+<td>les cases</td>
+<td>téléphone, e-mail, adresse posés seuls — <strong>les vides seulement</strong>, jamais par-dessus ce que vous avez tapé</td>
+</tr>
+<tr>
+<td>un seul geste</td>
+<td><strong>« Ce n'est pas lui »</strong>, qui retire ce qu'Atlas avait posé et <strong>rien d'autre</strong></td>
+</tr>
+<tr>
+<td>personne de reconnu</td>
+<td><strong>rien du tout</strong> — pas de « Nouveau client », qui serait du bruit à chaque frappe</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-qui-a-demandé-le-plus-de-soin--se-taire">CE QUI A DEMANDÉ LE PLUS DE SOIN : SE TAIRE</h3>
+<p>Le rapprochement tranche à l'enregistrement, quand tout est tapé, et il a le droit de départager deux homonymes par le plus récent : au pire le chantier va chez le mauvais Martins, et cela se répare.</p>
+<p><strong>Pré-remplir est d'une autre nature.</strong> On écrit le numéro d'un homme sur la fiche d'un autre, à l'écran — et vous ne le relirez pas, puisque c'est justement pour ne plus retaper que vous avez demandé cet écran. Le devis partirait au mauvais numéro, et personne ne saurait d'où ça vient.</p>
+<p><strong>Donc : quatre Martins et aucune coordonnée, Atlas ne pose rien.</strong> Il attend le numéro, qui tranche de lui-même. Le contrôle qui tient cette ligne a été <strong>vu rouge</strong> en retirant le compte d'homonymes.</p>
+<h3 id="-ce-nest-pas-lui---un-mot-pas-un-geste-décran">« Ce n'est pas lui » : un mot, pas un geste d'écran</h3>
+<p>Vider les cases ne suffisait pas. Le nom restant seul, la règle du nom seul retrouvait le même homme à la frappe suivante — Atlas aurait répondu « si, c'est lui », puis aurait rangé le chantier chez celui qu'on venait d'écarter. Le refus entre donc <strong>dans la règle</strong>, et voyage jusqu'à l'enregistrement.</p>
+<h3 id="trouvé-à-la-capture-par-aucune-mesure">Trouvé à la capture, par aucune mesure</h3>
+<p>Le numéro repris sortait <strong>collé</strong> — <code>0679984514</code> —, la base le rangeant sans espaces. Le seul chiffre illisible de l'écran, à côté de ceux tapés à la main. C'est le <strong>septième</strong> défaut de ce dépôt sorti d'une image et d'aucun test vert.</p>
+<h3 id="le-mot-du-bouton">Le mot du bouton</h3>
+<p><em>« La phrase Refaire, c'est pas bizarre ? »</em> — c'était juste : cela se lit comme <em>recommencer parce que c'était raté</em>. C'est <strong>« Dernier devis »</strong>, avec la flèche qui tourne.</p>
+<p><em>La réserve, noir sur blanc</em> : le mot peut se lire « ouvrir mon dernier devis » alors qu'il en crée un neuf. L'icône porte le « de nouveau », et l'écran suivant est un devis sans numéro — l'ambiguïté ne survit pas au premier usage.</p>
+<h3 id="les-chiffres-de-ce-lot">Les chiffres de ce lot</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>La suite</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-rapprochement-client.ts</code> (la règle, sans base)</td>
+<td><strong>14 contrôles, 0 échec</strong> — dont celui des quatre Martins, vu rouge exprès</td>
+</tr>
+<tr>
+<td><code>test-client-reconnu-e2e.ts</code> (votre parcours, au navigateur)</td>
+<td><strong>7 contrôles, 0 échec</strong></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="15-le-lot-3-est-abandonné--sa-décision-du-9-septembre-2026">15. LE LOT 3 EST ABANDONNÉ — sa décision du 9 septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote><em>« Mais ça c'est juste pour que le patron sache ce que le salarié a fait sur le chantier, pas besoin d'informer le client. »</em></blockquote>
+<p><strong>Ce qui ne sera donc pas fait :</strong> envoyer les photos de fin de chantier au client, lui donner un bouton pour confirmer, horodater cette confirmation.</p>
+<p><strong>Et il a raison, pas seulement parce que c'est son choix.</strong> Le retour d'intervention est un outil de <strong>contrôle interne</strong> : il sert à savoir ce qui a été fait avant de facturer. L'envoyer au client en aurait changé la nature — un salarié qui sait que son client lit sa case cochée ne coche plus pareil. Cela aurait aussi ouvert un chemin public vers des photos de propriétés privées, pour un besoin que personne n'avait exprimé.</p>
+<p><strong>Ce que cela NE ferme PAS, et la confusion est facile.</strong> La page par lien <code>/entretien/[jeton]</code> continue d'exister et de partir chez ses clients : elle sert ses <strong>tournées d'entretien</strong>, pas ses fins de chantier. Deux outils distincts, qui portent le même titre à l'écran depuis un renommage qu'il avait demandé. <strong>Ne pas la retirer en croyant appliquer cette décision.</strong></p>
+<p><strong>Le mur relevé au §4 devient sans objet</strong> : <code>passages_entretien</code> porte <code>client_id</code> et non <code>chantier_id</code>. On le notait comme une dette à trancher au lot 3 ; il n'y a plus de lot 3, et la table reste ce qu'elle est.</p>
 <hr>
 <p><em>Tenu à jour à chaque avancée du lot. Un document périmé le ferait travailler sur une version disparue.</em></p>
 </main>

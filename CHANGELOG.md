@@ -8,6 +8,73 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Le lot 3 est abandonné : le retour d'intervention ne part pas chez le client
+
+**Sa décision :** *« mais ça c'est juste pour que le patron sache ce que le
+salarié a fait sur le chantier, pas besoin d'informer le client »*.
+
+Le lot devait envoyer les photos de fin de chantier au client et lui donner un
+bouton pour confirmer. **Il a raison, et pas seulement parce que c'est son
+choix** : le retour d'intervention est un outil de CONTRÔLE INTERNE — un
+salarié qui sait que le client lit sa case cochée ne coche plus pareil. Et cela
+ouvrait un chemin public vers des photos de propriétés privées pour un besoin
+que personne n'avait exprimé.
+
+**Ce que cela ne ferme pas**, et la confusion est facile : `/entretien/[jeton]`
+continue de partir chez ses clients. Elle sert ses TOURNÉES D'ENTRETIEN, pas
+ses fins de chantier — deux outils distincts qui portent le même titre à
+l'écran depuis `dc4449dc`. Ne pas la retirer en croyant appliquer cette
+décision (`TODO.md`).
+
+### Atlas dit qui il a reconnu, et se tait quand il ne sait pas
+
+Il tape « Martins » : la fiche se remplit toute seule — téléphone, e-mail,
+adresse — sous un bandeau qui dit **« Repris de sa fiche · Saint-Marc ·
+3 chantiers »**. Un bouton « Ce n'est pas lui » défait tout, et **le refus
+tient** : Atlas ne le lui repropose pas à la frappe suivante.
+
+**Sa question, et elle valait le lot :** *« il ne va donc pas me créer un
+deuxième client appelé Martins ? »* Non — et il ne le faisait déjà pas depuis
+le 17 août. Ce qui manquait n'était pas la règle, c'était de la VOIR : il
+croyait devoir retaper un client qu'Atlas connaissait par cœur.
+
+**Ce qui a demandé le plus de soin, c'est le silence.** Quatre Martins et aucun
+numéro : Atlas ne pose rien. Écrire le téléphone d'un homme sur la fiche d'un
+autre, il ne le relirait pas — c'est justement pour ne plus retaper qu'il a
+demandé cet écran —, et le devis partirait au mauvais numéro. Le contrôle qui
+tient cette ligne a été vu rouge exprès (`ARCHITECTURE.md` §302).
+
+**Trouvé à la capture, par aucune mesure :** le numéro repris sortait collé
+(`0679984514`), la base le rangeant sans espaces. Le seul chiffre illisible de
+l'écran, à côté de ceux qu'il tape lui-même.
+
+**Et le bouton « Refaire » s'appelle « Dernier devis »** — *« ça sonne
+bizarre »*, et c'était juste : « refaire » se lit comme *recommencer parce que
+c'était raté*.
+
+### « Ah ouais mais j’ai pas vu votre facture » — la réception se trace
+
+Sa demande du jour : une case à cocher sur la page de la facture, pour en finir
+avec le client qui prétend n’avoir rien reçu. **Il a écarté lui-même la version
+dure** — obliger à cocher pour télécharger : une facture se donne, et la retenir
+se retourne contre lui, puisqu’un client qui ne coche pas ne télécharge pas non
+plus. La case ne conditionne rien, et elle est tout en bas de la page.
+
+**Deux dates, et la première est la plus solide.** L’OUVERTURE, qu’Atlas note
+tout seul, ne dépend pas de la bonne volonté du client ; l’ACCUSÉ s’ajoute. Elle
+part du navigateur et non du rendu — une messagerie qui déplie un aperçu, un
+antivirus, un robot d’indexation demandent tous l’adresse sans exécuter de
+JavaScript, et une date née là serait fausse le jour où elle sert de preuve.
+
+**Sa question a commandé tout le reste :** *« en cas de litige, où est-ce que
+l’utilisateur va rechercher cette info ? »* — nulle part, jusqu’ici. « J’ai vu »
+n’éteint plus que la carte de l’accueil ; les deux dates restent sous la ligne de
+la facture, sur « Terminés › En attente de paiement », là où il va quand il court
+après l’argent. Une preuve qu’on ne sait pas retrouver ne prouve rien.
+
+Migration 0081. Éprouvé **sous `atlas_app`** — le client écrit sans session, et
+les suites navigateur traversent la RLS.
+
 ### Reprendre les rouges que personne ne reprenait
 
 *« Il faut corriger les rouges, personne ne le fait. »* Cinq défauts réels, tous

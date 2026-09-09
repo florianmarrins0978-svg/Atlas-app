@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>La fiche d'intervention sans le doublon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  body.nuit{
+    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
+    --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b;
+    --etabli-or:#b98b47;
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47;
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+
+  .page{max-width:1120px;margin:0 auto;padding:30px 20px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
+            color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:660px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 6px}
+
+  .barre{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0 6px;align-items:center}
+  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+           letter-spacing:.02em;padding:11px 17px;border-radius:999px;
+           background:var(--etabli-carte);color:var(--etabli-doux);
+           box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .bascule[aria-pressed="true"]{background:var(--etabli-encre);color:var(--etabli-carte);box-shadow:none}
+
+  h2{font:600 22px/1.25 var(--serif);margin:46px 0 4px}
+  .dit{color:var(--etabli-gris);font-size:13.5px;line-height:1.6;margin:0 0 18px;max-width:660px}
+
+  .rangee{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .prop{flex:0 0 auto;width:390px;max-width:100%}
+  .nom{font:600 15.5px/1.3 var(--sans);margin:0 0 3px;display:flex;align-items:center;gap:9px}
+  .tenu{font:700 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+        background:var(--etabli-or);color:var(--etabli-carte);padding:4px 7px;border-radius:999px}
+  .idee{color:var(--etabli-gris);font-size:13px;line-height:1.55;margin:0 0 12px;min-height:56px}
+
+  /* ── Le téléphone ─────────────────────────────────────────────────── */
+  .tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14);
+       background:var(--fond)}
+  .ecran{height:664px;display:flex;flex-direction:column;background:var(--fond);color:var(--encre)}
+  .corps{flex:1;overflow-y:auto;padding:0 0 14px}
+
+  .entete{display:flex;align-items:center;justify-content:space-between;
+          padding:16px 20px 10px}
+  .entete h3{font:600 21px/1.15 var(--serif);margin:0}
+  .rond{width:34px;height:34px;border-radius:999px;background:var(--plage);
+        display:grid;place-items:center;color:var(--doux);
+        box-shadow:inset 0 0 0 1px var(--trait)}
+
+  .carteFiche{margin:6px 16px 0;background:var(--tuile);border-radius:20px;padding:16px 16px 18px}
+  .etiq{font:600 10.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--orTexte)}
+  .client{font:500 22px/1.2 var(--serif);margin:6px 0 13px;text-align:center}
+  .duoBoutons{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+  .bt{height:42px;border-radius:12px;background:var(--plage);display:grid;place-items:center;
+      font-size:13.5px;color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait)}
+  .sep{height:1px;background:var(--trait);margin:14px 0}
+  .libelle{font:600 10.5px/1 var(--sans);letter-spacing:.15em;text-transform:uppercase;color:var(--gris)}
+  .note{margin-top:8px;background:var(--plage);border-radius:12px;padding:11px 12px;
+        color:var(--gris);font-size:13.5px;line-height:1.45;box-shadow:inset 0 0 0 1px var(--trait)}
+
+  .listeDevis{margin:14px 0 0;padding:0;list-style:none}
+  .listeDevis li{position:relative;padding:0 0 0 17px;margin:0 0 9px;font-size:14px;line-height:1.4}
+  .listeDevis li::before{content:"";position:absolute;left:2px;top:7px;width:5px;height:5px;
+                          border-radius:999px;background:var(--or)}
+  .replie{color:var(--gris);font-size:13px;margin:12px 0 0;display:flex;align-items:center;gap:7px}
+
+  .gros{margin-top:14px;height:52px;border-radius:999px;background:var(--plein);color:var(--surplein);
+        display:flex;align-items:center;justify-content:center;gap:9px;
+        font:500 17px/1 var(--serif);width:100%;border:0;cursor:pointer}
+  .creuxLarge{margin-top:9px;height:44px;border-radius:999px;background:transparent;color:var(--orTexte);
+              display:flex;align-items:center;justify-content:center;font-size:14px;
+              box-shadow:inset 0 0 0 1px var(--orTexte);width:100%;border:0;cursor:pointer}
+
+  .coches{margin-top:14px;display:flex;flex-direction:column;gap:2px}
+  .coche{display:flex;align-items:center;gap:12px;padding:9px 0;font-size:14px;line-height:1.35;
+         background:none;border:0;color:inherit;text-align:left;cursor:pointer;width:100%;font-family:inherit}
+  .case{width:24px;height:24px;flex:none;border-radius:7px;background:var(--plage);
+        box-shadow:inset 0 0 0 1.5px var(--trait);display:grid;place-items:center;color:var(--surplein)}
+  .coche[aria-pressed="true"] .case{background:var(--plein);box-shadow:none}
+  .coche[aria-pressed="true"] .txt{color:var(--gris)}
+  .case svg{opacity:0}
+  .coche[aria-pressed="true"] .case svg{opacity:1}
+
+  .photos{margin-top:15px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .vign{width:56px;height:56px;border-radius:12px;background:var(--plage);
+        box-shadow:inset 0 0 0 1px var(--trait);display:grid;place-items:center;color:var(--gris);font-size:11px}
+  .plus{width:56px;height:56px;border-radius:12px;background:var(--plage);display:grid;place-items:center;
+        color:var(--orTexte);font-size:22px;box-shadow:inset 0 0 0 1px var(--orTexte)}
+  .aSignaler{margin-top:13px;width:100%;min-height:64px;border-radius:12px;background:var(--plage);
+             box-shadow:inset 0 0 0 1px var(--trait);padding:11px 12px;color:var(--gris);font-size:13.5px}
+
+  .compte{font:600 12px/1 var(--sans);color:var(--gris);margin-left:auto}
+  .basNav{display:flex;justify-content:space-around;padding:12px 8px 15px;
+          border-top:1px solid var(--trait);background:var(--fond)}
+  .basNav span{font:500 10.5px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+  .basNav .actif{color:var(--encre)}
+
+  /* ── Les onglets de Terminés, pour la question du nom ───────────────── */
+  .onglets{display:flex;gap:8px;padding:14px 26px 6px;background:var(--fond)}
+  .ong{height:44px;padding:0 18px;border-radius:999px;background:var(--plage);color:var(--doux);
+       display:flex;align-items:center;gap:8px;font-size:13px;white-space:nowrap;
+       box-shadow:inset 0 0 0 1px var(--trait)}
+  .ong.actif{background:var(--plein);color:var(--surplein);box-shadow:none}
+  .pastille{height:20px;min-width:20px;border-radius:999px;background:var(--or);color:var(--fond);
+            display:grid;place-items:center;font:700 11px/1 var(--sans);padding:0 6px}
+  .mesure{font:600 12px/1 var(--sans);color:var(--etabli-or);margin:8px 0 0}
+  .deborde{color:#a4442f}
+
+  .note-p{background:var(--etabli-carte);border-radius:16px;padding:16px 18px;margin:26px 0 0;
+          box-shadow:inset 0 0 0 1px var(--etabli-trait);max-width:760px}
+  .note-p .t{display:block;font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
+             color:var(--etabli-or);margin-bottom:8px}
+  .note-p p{margin:0 0 9px;font-size:14px;line-height:1.6;color:var(--etabli-doux)}
+  .note-p p:last-child{margin:0}
+</style>
+</head>
+<body>
+<main class="page">
+
+  <p class="surtitre">Fiche d'intervention · 9 septembre 2026</p>
+  <h1>Les prestations en double, et le nom de l'onglet</h1>
+  <p class="chapeau">Sur la fiche du salarié, les lignes du devis se lisent deux fois : en liste
+    au-dessus, en cases à cocher en dessous. Quatre façons de n'en garder qu'une —
+    toutes essayables, appuyez sur les cases.</p>
+
+  <div class="barre">
+    <button class="bascule" type="button" data-theme="origine" aria-pressed="true">Origine</button>
+    <button class="bascule" type="button" data-theme="nuit" aria-pressed="false">Nuit</button>
+  </div>
+
+  <!-- ═══ LE NOM DE L'ONGLET ═══════════════════════════════════════════ -->
+  <h2>D'abord le nom : « Retours d'intervention » tient-il ?</h2>
+  <p class="dit">Trois onglets sur une largeur de téléphone. Les deux rangées ci-dessous sont à
+    l'échelle réelle : 390 px, et les mêmes tailles que l'application.</p>
+
+  <div class="rangee">
+    <div class="prop">
+      <p class="nom">Aujourd'hui</p>
+      <p class="idee">Ce qui est en ligne. Court, mais le même mot que la page reçue par le client.</p>
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="onglets" data-mesure="court">
+          <span class="ong actif">Tout</span>
+          <span class="ong">À facturer</span>
+          <span class="ong">Retours <span class="pastille">3</span></span>
+        </div>
+      </div></div>
+      <p class="mesure" data-largeur="court">—</p>
+    </div>
+
+    <div class="prop">
+      <p class="nom">Ce que vous demandez</p>
+      <p class="idee">Le nom entier. S'il dépasse les 390 px, la rangée se met à défiler sous le doigt.</p>
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="onglets" data-mesure="long">
+          <span class="ong actif">Tout</span>
+          <span class="ong">À facturer</span>
+          <span class="ong">Retours d'intervention <span class="pastille">3</span></span>
+        </div>
+      </div></div>
+      <p class="mesure" data-largeur="long">—</p>
+    </div>
+  </div>
+
+  <!-- ═══ LE DOUBLON ═══════════════════════════════════════════════════ -->
+  <h2>Ensuite le doublon : quatre façons</h2>
+  <p class="dit">Chaque écran est le vrai, à 390 × 664. Appuyez sur « Fin de chantier », puis sur les cases.</p>
+
+  <div class="rangee">
+
+    <!-- A ─────────────────────────────────────────────────────────── -->
+    <div class="prop">
+      <p class="nom">A. La liste s'efface<span class="tenu">Ce que je défends</span></p>
+      <p class="idee">Quand il ouvre, la liste du haut disparaît : elle est devenue les cases.
+        Un seul endroit où lire, et rien à comparer.</p>
+      <div class="tel"><div class="ecran">
+        <div class="corps">
+          <div class="entete"><span class="rond">‹</span><h3>Planning</h3><span class="rond">☰</span></div>
+          <div class="carteFiche">
+            <p class="etiq" style="text-align:center">Fiche d'intervention</p>
+            <p class="client">M. Faucher</p>
+            <div class="duoBoutons"><span class="bt">Maps</span><span class="bt">Waze</span></div>
+            <div class="duoBoutons"><span class="bt">Copier l'adresse</span><span class="bt">Appeler</span></div>
+            <div class="sep"></div>
+            <p class="libelle">Ma note</p>
+            <div class="note">Penser à prendre le broyeur. Client dispo à partir de 9 h.</div>
+            <div class="sep"></div>
+
+            <ul class="listeDevis" data-r="listeA">
+              <li>Main d'œuvre — 2 hommes × 2 jours</li>
+              <li>Dépose carrelage — 8 m²</li>
+              <li>Pose faïence — 8 m²</li>
+              <li>Forfait déplacement</li>
+            </ul>
+
+            <button class="gros" type="button" data-ouvre="A">Fin de chantier</button>
+
+            <div data-panneau="A" hidden>
+              <div class="coches">
+                <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Main d'œuvre — 2 hommes × 2 jours</span></button>
+                <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Dépose carrelage — 8 m²</span></button>
+                <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Pose faïence — 8 m²</span></button>
+                <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Forfait déplacement</span></button>
+              </div>
+              <div class="photos"><span class="vign">photo</span><span class="vign">photo</span><span class="plus">+</span></div>
+              <div class="aSignaler">À signaler — facultatif</div>
+              <button class="gros" type="button">C'est fini</button>
+            </div>
+          </div>
+        </div>
+        <div class="basNav"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+      </div></div>
+    </div>
+
+    <!-- B ─────────────────────────────────────────────────────────── -->
+    <div class="prop">
+      <p class="nom">B. Les cases dès le départ</p>
+      <p class="idee">Plus de liste du tout : les lignes du devis sont des cases en permanence.
+        Il coche au fil de la journée, sans rien ouvrir.</p>
+      <div class="tel"><div class="ecran">
+        <div class="corps">
+          <div class="entete"><span class="rond">‹</span><h3>Planning</h3><span class="rond">☰</span></div>
+          <div class="carteFiche">
+            <p class="etiq" style="text-align:center">Fiche d'intervention</p>
+            <p class="client">M. Faucher</p>
+            <div class="duoBoutons"><span class="bt">Maps</span><span class="bt">Waze</span></div>
+            <div class="duoBoutons"><span class="bt">Copier l'adresse</span><span class="bt">Appeler</span></div>
+            <div class="sep"></div>
+            <p class="libelle">Ma note</p>
+            <div class="note">Penser à prendre le broyeur. Client dispo à partir de 9 h.</div>
+            <div class="sep"></div>
+
+            <div class="coches" style="margin-top:4px">
+              <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Main d'œuvre — 2 hommes × 2 jours</span></button>
+              <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Dépose carrelage — 8 m²</span></button>
+              <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Pose faïence — 8 m²</span></button>
+              <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Forfait déplacement</span></button>
+            </div>
+
+            <button class="gros" type="button" data-ouvre="B">Fin de chantier</button>
+            <div data-panneau="B" hidden>
+              <div class="photos"><span class="vign">photo</span><span class="vign">photo</span><span class="plus">+</span></div>
+              <div class="aSignaler">À signaler — facultatif</div>
+              <button class="gros" type="button">C'est fini</button>
+            </div>
+          </div>
+        </div>
+        <div class="basNav"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+      </div></div>
+    </div>
+
+    <!-- C ─────────────────────────────────────────────────────────── -->
+    <div class="prop">
+      <p class="nom">C. La liste se replie en une ligne</p>
+      <p class="idee">Elle ne disparaît pas : elle devient « Le devis — 4 lignes », qu'il rouvre
+        d'un doigt s'il veut relire ce qui était prévu.</p>
+      <div class="tel"><div class="ecran">
+        <div class="corps">
+          <div class="entete"><span class="rond">‹</span><h3>Planning</h3><span class="rond">☰</span></div>
+          <div class="carteFiche">
+            <p class="etiq" style="text-align:center">Fiche d'intervention</p>
+            <p class="client">M. Faucher</p>
+            <div class="duoBoutons"><span class="bt">Maps</span><span class="bt">Waze</span></div>
+            <div class="duoBoutons"><span class="bt">Copier l'adresse</span><span class="bt">Appeler</span></div>
+            <div class="sep"></div>
+            <p class="libelle">Ma note</p>
+            <div class="note">Penser à prendre le broyeur. Client dispo à partir de 9 h.</div>
+            <div class="sep"></div>
+
+            <ul class="listeDevis" data-r="listeC">
+              <li>Main d'œuvre — 2 hommes × 2 jours</li>
+              <li>Dépose carrelage — 8 m²</li>
+              <li>Pose faïence — 8 m²</li>
+              <li>Forfait déplacement</li>
+            </ul>
+            <p class="replie" data-r="replieC" hidden>Le devis — 4 lignes</p>
+
+            <button class="gros" type="button" data-ouvre="C">Fin de chantier</button>
+            <div data-panneau="C" hidden>
+              <div class="coches">
+                <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Main d'œuvre — 2 hommes × 2 jours</span></button>
+                <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Dépose carrelage — 8 m²</span></button>
+                <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Pose faïence — 8 m²</span></button>
+                <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Forfait déplacement</span></button>
+              </div>
+              <div class="photos"><span class="vign">photo</span><span class="vign">photo</span><span class="plus">+</span></div>
+              <div class="aSignaler">À signaler — facultatif</div>
+              <button class="gros" type="button">C'est fini</button>
+            </div>
+          </div>
+        </div>
+        <div class="basNav"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+      </div></div>
+    </div>
+
+    <!-- D ─────────────────────────────────────────────────────────── -->
+    <div class="prop">
+      <p class="nom">D. La fin de chantier sur son propre écran</p>
+      <p class="idee">Le bouton n'ouvre plus un bandeau : il ouvre un écran à lui, où il n'y a
+        que ce qu'il a à faire. Rien à côté, rien à comparer.</p>
+      <div class="tel"><div class="ecran">
+        <div class="corps">
+          <div class="entete"><span class="rond">‹</span><h3>Fin de chantier</h3><span class="rond">☰</span></div>
+          <div class="carteFiche" style="background:transparent;padding-top:0">
+            <p class="etiq">M. Faucher · mercredi 9 septembre</p>
+            <div class="coches" style="margin-top:12px">
+              <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Main d'œuvre — 2 hommes × 2 jours</span></button>
+              <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Dépose carrelage — 8 m²</span></button>
+              <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Pose faïence — 8 m²</span></button>
+              <button class="coche" type="button" aria-pressed="false"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Forfait déplacement</span></button>
+            </div>
+            <div class="photos"><span class="vign">photo</span><span class="vign">photo</span><span class="plus">+</span></div>
+            <div class="aSignaler">À signaler — facultatif</div>
+            <button class="gros" type="button">C'est fini</button>
+            <button class="creuxLarge" type="button">Revenir à la fiche</button>
+          </div>
+        </div>
+        <div class="basNav"><span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="note-p">
+    <span class="t">Ce que ces écrans ne font pas</span>
+    <p>Ils ne touchent <strong>ni à vos données ni à l'application</strong> : rien de ce que vous
+      cochez ici n'est enregistré.</p>
+    <p>Les vignettes de photos y sont dessinées vides, exprès. Sur votre téléphone ce sont vos
+      vraies photos — et le cadre brisé que vous avez vu sur la capture est un défaut que je
+      corrige, pas une proposition.</p>
+  </div>
+
+</main>
+
+<script>
+  const qq = (s) => Array.from(document.querySelectorAll(s));
+
+  // Le thème, comme dans l'application : deux chartes, et les pôles s'inversent.
+  qq('.bascule').forEach((b) => b.addEventListener('click', () => {
+    const nuit = b.dataset.theme === 'nuit';
+    document.body.classList.toggle('nuit', nuit);
+    qq('.bascule').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+
+  // Déplier « Fin de chantier ». En A, la liste du devis s'efface au même geste.
+  qq('[data-ouvre]').forEach((b) => b.addEventListener('click', () => {
+    const cle = b.dataset.ouvre;
+    const panneau = document.querySelector('[data-panneau="' + cle + '"]');
+    const ouvert = !panneau.hidden;
+    panneau.hidden = ouvert;
+    b.textContent = ouvert ? 'Fin de chantier' : 'Replier';
+    if (cle === 'A') {
+      const l = document.querySelector('[data-r="listeA"]');
+      if (l) l.hidden = !ouvert;
+    }
+    if (cle === 'C') {
+      const l = document.querySelector('[data-r="listeC"]');
+      const r = document.querySelector('[data-r="replieC"]');
+      if (l) l.hidden = !ouvert;
+      if (r) r.hidden = ouvert;
+    }
+  }));
+
+  qq('.coche').forEach((c) => c.addEventListener('click', () => {
+    c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+  }));
+
+  // **La mesure, et non l'œil.** La question posée est « est-ce que ça tient
+  // dans 390 px » : on mesure ce qui est RENDU, une fois la police chargée.
+  function mesurer() {
+    qq('[data-mesure]').forEach((rangee) => {
+      const cle = rangee.dataset.mesure;
+      const dernier = rangee.lastElementChild;
+      const largeur = Math.ceil(dernier.getBoundingClientRect().right - rangee.getBoundingClientRect().left + 26);
+      const cible = document.querySelector('[data-largeur="' + cle + '"]');
+      const tient = largeur <= 390;
+      cible.textContent = tient
+        ? 'Tient : ' + largeur + ' px sur 390.'
+        : 'Déborde de ' + (largeur - 390) + ' px — la rangée devra défiler.';
+      cible.classList.toggle('deborde', !tient);
+    });
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(mesurer);
+  else window.addEventListener('load', mesurer);
+</script>
+</body>
+</html>

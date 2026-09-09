@@ -3,26 +3,42 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Aujourd’hui en tête — la journée du salarié, au premier coup d’œil</title>
+<title>Aujourd’hui d’abord — le planning qui s’ouvre sur la journée</title>
 <style>
-  /* ─── LES JETONS DES DEUX CHARTES, SORTIS DU CODE ──────────────────────────
+  /* ═══ LES JETONS, SORTIS DU CODE ══════════════════════════════════════════
      `src/lib/chartes.ts`, au caractère près, jamais approchés à l'œil. `or` ne
      bouge sur AUCUNE des huit chartes (sa règle du 31 août) ; `orTexte` est
-     l'or assombri qui sert quand l'or porte un MOT au lieu d'un trait, et
-     `poleSombre` est le bout sombre de la charte — encre sur une charte claire,
-     fond sur une charte sombre. C'est lui qui s'écrit sur un aplat d'or. */
+     l'or assombri quand l'or porte un MOT sur du papier pâle ; `orSurEncre`
+     celui qui sert quand il est posé SUR l'encre — et sur les six chartes
+     claires, il vaut le vrai #B98B47.
+
+     Les `voile(...)` de `design-tokens.ts` sont écrits ici en clair pour les
+     deux chartes montrées : `color-mix` n'existe pas avant iOS 16.2, et une
+     planche qui se dégrade ne prouve rien. */
   :root{
     --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
     --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
     --or:#B98B47; --orTexte:#8b6835; --orSurEncre:#b98b47; --poleSombre:#1c1c1a;
-    --line:rgba(28,28,26,0.12); --chevron:rgba(28,28,26,0.28);
+    --vertPale:#b9c6b4; --bordeaux:#6E2433;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --chevron:rgba(28,28,26,0.28);
+    --weekEndFond:rgba(28,28,26,0.035);   /* voile(ink, .035) */
+    --weekEndEncre:rgba(28,28,26,0.42);   /* voile(ink, .42)  */
+    --weekEndLettre:rgba(28,28,26,0.3);   /* voile(ink, .3)   */
+    --surPlein:#faf9f5;                   /* surPlein = card  */
     --hors:#e6e3dc; --horsTexte:#4a4a44; --horsFort:#1c1c1a;
   }
   body[data-charte="nuit"]{
     --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
     --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
     --or:#B98B47; --orTexte:#b98b47; --orSurEncre:#826231; --poleSombre:#101210;
-    --line:rgba(233,232,222,0.12); --chevron:rgba(233,232,222,0.28);
+    --vertPale:#738b6a; --bordeaux:#b53b54;
+    --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07);
+    --chevron:rgba(233,232,222,0.28);
+    --weekEndFond:rgba(233,232,222,0.035);
+    --weekEndEncre:rgba(233,232,222,0.42);
+    --weekEndLettre:rgba(233,232,222,0.3);
+    --surPlein:#1a1d19;
     --hors:#0a0b0a; --horsTexte:#c1c2b6; --horsFort:#e9e8de;
   }
   *{box-sizing:border-box}
@@ -45,36 +61,167 @@
                 font:600 13px/1 ui-sans-serif,sans-serif;letter-spacing:.06em;
                 cursor:pointer;-webkit-tap-highlight-color:transparent;
                 transition:background .18s,color .18s,border-color .18s}
-  .choix button[aria-pressed="true"]{background:var(--rust);color:var(--card);
+  .choix button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);
                                      border-color:var(--rust)}
   .choix .sep{width:100%;height:0}
 
-  /* ─── LE TÉLÉPHONE ────────────────────────────────────────────────────────*/
+  /* ═══ L'ÉCRAN ═════════════════════════════════════════════════════════════*/
   .tel{max-width:430px;margin:16px auto 0;background:var(--cream);
        border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22);
-       padding:0 0 22px;transition:background .25s}
-  .titre-section{margin:22px 18px 0;text-align:center;
+       transition:background .25s}
+
+  /* L'en-tête : `EnTeteEcran surtitre="Vos journées" titre="Planning"` — le
+     titre en serif 36 px, le surtitre doré EN DESSOUS (sa demande du 26 août). */
+  .entete{padding:34px 26px 0}
+  .entete h1{margin:0;font:400 36px/1.02 ui-serif,Georgia,"Iowan Old Style",serif;
+             letter-spacing:-0.018em;color:var(--ink)}
+  .entete p{margin:12px 0 0;font:500 9.5px/1 ui-sans-serif,sans-serif;
+            letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+
+  /* ─── LE MOIS — repris de `MoisCharge.tsx`, sans y toucher ────────────────
+     Sa consigne du 9 septembre : *« ne touche surtout pas au calendrier du mois
+     qui existe »*. Tout ce qui suit est donc une COPIE : mêmes 42 px de flèche,
+     même écart de 4 px, mêmes cases en 1/1.06, même cercle d'or sur aujourd'hui,
+     mêmes barres de 6 px larges de 24, même légende. Les jours des autres mois
+     disparaissent — ils ne portent rien. */
+  .mois{margin:18px 12px 0}
+  .mois-tete{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .fleche{width:42px;height:42px;flex:none;border-radius:999px;
+          border:1px solid var(--line);background:var(--card);color:var(--ink);
+          font-size:19px;line-height:1;cursor:pointer;
+          -webkit-tap-highlight-color:transparent}
+  .mois-titre{flex:1;text-align:center;font:700 15px/1.2 ui-sans-serif,sans-serif;color:var(--ink)}
+  .lettres{margin:16px 0 6px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;
+           text-align:center;font:600 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .lettres span:nth-child(n+6){color:var(--weekEndLettre)}
+  .grille{display:flex;flex-direction:column;gap:4px}
+  .rangee{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;border-radius:12px}
+  .case{aspect-ratio:1 / 1.06;border:0;padding:0;border-radius:10px;background:transparent;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+        cursor:default;-webkit-tap-highlight-color:transparent}
+  .case[data-etat="week-end"]{background:var(--weekEndFond)}
+  .case.auj{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .case .num{font:400 17px/1 ui-serif,Georgia,"Iowan Old Style",serif;color:var(--ink)}
+  .case[data-etat="week-end"] .num{color:var(--weekEndEncre)}
+  .case.auj .num{color:var(--or);font-weight:600}
+  .marque{display:flex;width:24px;flex-direction:column;gap:2.5px}
+  .case[data-etat="week-end"] .marque{visibility:hidden}
+  .marque i{display:flex;height:6px;border-radius:2px;overflow:hidden;
+            background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+  .marque i span{height:100%}
+  .creux{aspect-ratio:1 / 1.06}
+
+  .legende{margin:14px 0 0;display:flex;flex-wrap:nowrap;align-items:center;
+           justify-content:center;gap:6px;font-size:9px;color:var(--muted)}
+  .legende>span{display:flex;flex:none;align-items:center;gap:5px;white-space:nowrap}
+  .legende .carre{display:block;width:10px;height:10px;flex:none;border-radius:3px;
+                  background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+  .legende .carre[data-etat="dispo"]{background:var(--vertPale);box-shadow:none}
+  .legende .carre[data-etat="plein"]{background:var(--rust);box-shadow:none}
+  .legende .carre[data-etat="dela"]{background:var(--bordeaux);box-shadow:none}
+  .legende .position{gap:7px}
+  .legende .position .barres{display:flex;width:24px;flex:none;flex-direction:column;gap:2.5px}
+  .legende .position .barres i{display:flex;height:6px;border-radius:2px;
+                               background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+  .legende .position .mots{display:flex;flex-direction:column;gap:2.5px;line-height:1}
+  .legende .position .mots b{display:flex;height:6px;align-items:center;
+                             font:600 9.5px/1 ui-sans-serif,sans-serif;color:var(--inkSoft)}
+
+  /* ─── PLANIFIÉS ───────────────────────────────────────────────────────────*/
+  .titre-section{position:relative;margin:26px 18px 0;text-align:center;
                  font:700 13px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
                  text-transform:uppercase;color:var(--ink)}
-  .semaine{margin:14px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .fleche{width:44px;height:44px;border-radius:999px;border:1px solid var(--line);
-          background:var(--card);color:var(--inkSoft);font-size:19px;cursor:default}
-  .semaine .quand{flex:1;text-align:center;font:700 14px/1 ui-sans-serif,sans-serif;color:var(--ink)}
 
-  /* ─── UNE JOURNÉE ET SES CHANTIERS — rien ne bouge ici d'une vue à l'autre.
-     Le nom en serif 19 px, la durée en or dessous, la pastille d'équipe, le
-     chevron : c'est l'écran codé. Seule la PASTILLE DE DATE change. */
-  .jour{margin:18px 18px 0}
+  /* ═══ LE COMMUTATEUR — quatre poids, sa remarque du 9 septembre 2026 ══════
+     *« Le choix pour passer d'aujourd'hui à la semaine est trop gros, faut
+     trouver quelque chose de plus discret. »* Il a raison, et ça se mesure : la
+     paire de pastilles prend 62 px de hauteur pour deux mots — sur un écran où
+     le nom du client est déjà coupé en bas. Les trois autres versions le
+     rendent, en tout ou en partie. */
+  .portee,.rail,.points{display:none}
+  [data-commut="gros"] .portee{display:flex}
+  [data-commut="mot"] .mot{display:inline-flex}
+  [data-commut="rail"] .rail{display:block}
+  [data-commut="balayage"] .points{display:flex}
+
+  /* 0 — LES DEUX PASTILLES : ce qu'il vient de voir, gardé pour comparer. */
+  .portee{margin:18px 18px 0;gap:8px}
+  .portee button{flex:1;min-height:44px;border-radius:999px;border:1px solid var(--line);
+                 background:var(--card);color:var(--ink);
+                 font:600 14px/1 ui-sans-serif,sans-serif;cursor:pointer;
+                 -webkit-tap-highlight-color:transparent;
+                 transition:background .18s,color .18s,border-color .18s}
+  .portee button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);
+                                      border-color:var(--rust)}
+
+  /* 3 — UN SEUL MOT, à droite du titre : la place où l'application met déjà
+     ses actions (« Ouvrir », « Connecter »), et la seule qui ne coûte AUCUNE
+     hauteur. Il nomme ce qu'on obtient, jamais où l'on est. */
+  .mot{display:none;position:absolute;right:0;top:50%;transform:translateY(-50%);
+       align-items:center;min-height:44px;
+       border:0;background:none;padding:0 0 0 14px;cursor:pointer;
+       -webkit-tap-highlight-color:transparent;
+       font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+       text-transform:uppercase;color:var(--or)}
+
+  /* ─── 4 — LE RAIL : deux mots, et un trait d'or QUI GLISSE ────────────────
+     C'est déjà sa grammaire : la barre du bas marque l'onglet ouvert d'un trait
+     doré qui glisse, sur une courbe qu'il a choisie en la voyant — le petit
+     dépassement de `cubic-bezier(0.34, 1.4, 0.5, 1)`. La reprendre ici ne fait
+     rien apprendre de neuf : le geste est déjà connu de sa main. */
+  .rail{position:relative;margin:12px 18px 0;padding-bottom:7px}
+  .rail .mots{display:grid;grid-template-columns:1fr 1fr}
+  .rail button{border:0;background:none;min-height:38px;padding:0;cursor:pointer;
+               -webkit-tap-highlight-color:transparent;
+               font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;
+               text-transform:uppercase;color:var(--muted);
+               transition:color 320ms cubic-bezier(0.22,0.61,0.36,1)}
+  .rail button[aria-pressed="true"]{color:var(--ink)}
+  .rail .curseur{position:absolute;bottom:0;left:0;width:50%;height:1px;
+                 background:var(--or);
+                 transition:transform 540ms cubic-bezier(0.34,1.4,0.5,1)}
+  [data-portee="semaine"] .rail .curseur{transform:translateX(100%)}
+
+  /* ─── 5 — LE BALAYAGE : on pousse la liste du doigt ───────────────────────
+     Deux points sous le titre disent où l'on est, et qu'il y a autre chose à
+     côté. **Ce qu'il coûte est réel** : un geste qui ne se voit pas ne
+     s'apprend pas tout seul, et `PRODUCT.md` refuse ce qui se découvre. Les
+     points sont là pour ça, et ils se touchent aussi. */
+  .points{margin:12px 18px 0;align-items:center;justify-content:center;gap:9px}
+  .points button{width:34px;height:34px;border:0;background:none;padding:0;
+                 cursor:pointer;-webkit-tap-highlight-color:transparent;
+                 display:flex;align-items:center;justify-content:center}
+  .points button::before{content:"";display:block;width:6px;height:6px;border-radius:999px;
+                         background:var(--chevron);
+                         transition:background .3s,transform .3s}
+  .points button[aria-pressed="true"]::before{background:var(--or);transform:scale(1.5)}
+  [data-commut="balayage"] #liste{touch-action:pan-y}
+
+  /* ─── 6 — LA PASTILLE ELLE-MÊME : un seul objet, qui DIT et qui SERT ──────
+     Elle porte déjà ce qu'on regarde ; la toucher élargit à la semaine, et son
+     libellé devient « 9 – 15 sept. ». Rien ne s'ajoute à l'écran — c'est la
+     seule des cinq qui en RETIRE. Son défaut est l'autre face : rien ne dit
+     qu'elle se touche. */
+  [data-commut="pastille"] .date.today{cursor:pointer}
+  [data-commut="pastille"][data-portee="jour"] .fenetre{display:none}
+
+  .fenetre{margin:18px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  [data-portee="jour"] .fenetre{display:none}
+  .fenetre .quand{flex:1;text-align:center;font:700 15px/1.2 ui-sans-serif,sans-serif;color:var(--ink)}
+
+  /* ─── UNE JOURNÉE ET SES CHANTIERS — l'écran codé, inchangé ───────────────*/
+  .jour{margin:20px 18px 0}
   .ligne{margin-top:12px;display:flex;align-items:center;gap:10px}
   .nom{flex:1;min-width:0;font:400 19px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;color:var(--ink)}
   .duree{display:block;margin-top:3px;font:400 12.5px/1.35 ui-sans-serif,sans-serif;color:var(--or)}
-  .equipe{flex:none;border-radius:999px;background:var(--rust);color:var(--card);
+  .equipe{flex:none;border-radius:999px;background:var(--rust);color:var(--surPlein);
           padding:6px 12px;font-size:12.5px;white-space:nowrap}
   .chev{flex:none;color:var(--chevron);font-size:19px;line-height:1}
   .rang{text-align:center;line-height:0;margin:0}
-  .vide{margin:12px 0 0;text-align:center;font-size:13.5px;color:var(--muted)}
+  .vide{margin:14px 18px 0;text-align:center;font-size:13.5px;color:var(--muted)}
 
-  /* La pastille ordinaire : papier pâle, encre. 14,07 de contraste. */
+  /* La pastille de date : papier pâle, encre. 14,07 de contraste. */
   .date{display:inline-block;border-radius:999px;padding:7px 15px;
         font:700 12px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
         text-transform:uppercase;background:var(--rustTint);color:var(--ink);
@@ -82,8 +229,7 @@
 
   /* ═══ CE QUE CHAQUE PROPOSITION FAIT DE LA PASTILLE D'AUJOURD'HUI ═════════
      Le témoin garde la DATE ÉCRITE — c'est ce qu'il a sous les yeux, et une
-     planche dont le témoin dit déjà « Aujourd'hui » ne compare plus rien. Les
-     deux libellés sont dans la page, l'un des deux se montre. */
+     planche dont le témoin dit déjà « Aujourd'hui » ne compare plus rien. */
   .date .mot-auj{display:none}
   [data-vue="a"] .date.today .mot-date,
   [data-vue="b"] .date.today .mot-date,
@@ -101,28 +247,25 @@
   [data-vue="d"] .date.today{background:var(--ink);color:var(--orSurEncre);
                              font-size:19px;letter-spacing:.08em;padding:8px 17px}
 
-  /* ─── LES JOURS DÉJÀ PASSÉS — sa question du 9 septembre 2026 ─────────────
-     *« La journée d'hier en bas risque de porter à confusion ? »* Oui : posée
-     en bas avec la même pastille et la même encre que les jours à venir, elle
-     se lit comme un chantier de plus à faire. Trois façons de la régler, et le
-     bouton du haut les compare. */
-  .plus-tot{margin:26px 18px 0;padding-top:14px;border-top:1px solid var(--line)}
-  .plus-tot button{display:block;width:100%;min-height:44px;border:0;background:none;
-                   padding:0;text-align:center;font:600 11.5px/1 ui-sans-serif,sans-serif;
-                   letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
-                   cursor:pointer;-webkit-tap-highlight-color:transparent}
+  /* ─── UNE JOURNÉE DÉJÀ PASSÉE — éteinte, et jamais là par défaut ──────────
+     Sa règle du 9 septembre : la fenêtre part d'aujourd'hui, donc un jour passé
+     n'apparaît QUE si l'on revient en arrière. Éteint, il ne peut plus se lire
+     comme un chantier de plus à faire. */
+  .jour.passe .nom,.jour.passe .duree{color:var(--muted)}
+  .jour.passe .date{background:none;color:var(--muted);font-weight:600}
+  .jour.passe .equipe{background:none;color:var(--muted);border:1px solid var(--line)}
 
-  /* ÉTEINT — elle reste, mais elle ne peut plus se confondre : le nom perd son
-     encre, la pastille perd son papier, la durée perd son or. */
-  [data-passe="eteint"] .passe .nom{color:var(--muted)}
-  [data-passe="eteint"] .passe .duree{color:var(--muted)}
-  [data-passe="eteint"] .passe .date{background:none;color:var(--muted);font-weight:600}
-  [data-passe="eteint"] .passe .equipe{background:none;color:var(--muted);
-                                       border:1px solid var(--line)}
-  /* REPLIÉE — le titre reste visible et se touche ; rien ne se devine. */
-  [data-passe="replie"] .passe .jour{display:none}
-  /* RETIRÉE — la semaine commence à aujourd'hui. */
-  [data-passe="retire"] .passe{display:none}
+  /* La barre du bas : `AtlasBottomNav` — cinq onglets, le trait doré sous
+     l'onglet ouvert. Elle est là pour juger la place qui reste, rien de plus. */
+  .nav{margin-top:26px;border-top:1px solid var(--line);background:var(--cream);
+       position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+       padding:18px 14px 8px}
+  .nav span{padding-bottom:8px;text-align:center;
+            font:500 8.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--muted)}
+  .nav span.actif{color:var(--ink);transform:translateY(-2px)}
+  .nav .trait{position:absolute;bottom:8px;left:14px;width:calc((100% - 28px) / 5);
+              height:1px;background:var(--or);padding:0;transform:translateX(100%)}
 
   /* ─── CE QUE LA PROPOSITION COÛTE ─────────────────────────────────────────*/
   .verdict{max-width:430px;margin:18px auto 0;padding:0 22px}
@@ -144,12 +287,14 @@
 <body data-charte="origine">
 
 <div class="bandeau">
-  <b>« Aujourd’hui » en tête, et en doré — touchez une lettre, l’écran se refait.</b><br>
-  Votre demande : le salarié ouvre l’appli le matin, et il doit voir <b>tout de
-  suite</b> chez qui il va. Aujourd’hui la journée du jour s’écrit comme les
-  autres, à sa place dans la semaine. <b>Trois façons de la sortir du lot</b>, le
-  témoin d’abord. Et un second bouton pour l’ordre : la journée du jour
-  <b>en tête</b>, ou à sa place dans la semaine.
+  <b>Le planning s’ouvre sur la journée — touchez « La semaine » pour l’élargir.</b><br>
+  Vos trois demandes du 9 septembre, ensemble, sur <b>la page entière</b> : le mot
+  <b>Aujourd’hui</b> en doré, la liste qui ne montre <b>que la journée du jour</b>
+  en arrivant, et la fenêtre qui <b>part d’aujourd’hui</b> — donc plus aucune
+  journée passée sous les yeux, sauf si vous reculez avec la flèche.<br>
+  <b>Le calendrier du mois n’est pas touché</b> : il est recopié de
+  <code>MoisCharge.tsx</code>, mesure pour mesure.<br>
+  Les lettres <b>A B C D</b> comparent les quatre façons d’écrire la pastille.
 </div>
 
 <div class="choix">
@@ -159,57 +304,141 @@
   <button type="button" data-vue="c" aria-pressed="false">C</button>
   <button type="button" data-vue="d" aria-pressed="true">D</button>
   <span class="sep"></span>
-  <button type="button" id="bascule-ordre" aria-pressed="true">En tête</button>
+  <button type="button" data-commut="rail" aria-pressed="true">Rail</button>
+  <button type="button" data-commut="pastille" aria-pressed="false">Pastille</button>
+  <button type="button" data-commut="balayage" aria-pressed="false">Balayage</button>
+  <button type="button" data-commut="mot" aria-pressed="false">Un mot</button>
+  <button type="button" data-commut="gros" aria-pressed="false">Gros</button>
+  <span class="sep"></span>
   <button type="button" id="bascule-vide" aria-pressed="false">Rien aujourd’hui</button>
   <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
-  <span class="sep"></span>
-  <button type="button" data-passe="pareil" aria-pressed="false">Hier pareil</button>
-  <button type="button" data-passe="eteint" aria-pressed="true">Hier éteint</button>
-  <button type="button" data-passe="replie" aria-pressed="false">Hier replié</button>
-  <button type="button" data-passe="retire" aria-pressed="false">Hier retiré</button>
 </div>
 
-<div class="tel" id="tel" data-vue="d" data-passe="eteint">
-  <p class="titre-section">Planifiés</p>
-  <div class="semaine">
-    <button class="fleche" type="button" tabindex="-1" aria-hidden="true">‹</button>
-    <span class="quand" id="quand"></span>
-    <button class="fleche" type="button" tabindex="-1" aria-hidden="true">›</button>
+<div class="tel" id="tel" data-vue="d" data-portee="jour" data-commut="rail">
+  <div class="entete">
+    <h1>Planning</h1>
+    <p>Vos journées</p>
   </div>
+
+  <div class="mois">
+    <div class="mois-tete">
+      <button class="fleche" type="button" tabindex="-1" aria-hidden="true">‹</button>
+      <b class="mois-titre" id="mois-titre"></b>
+      <button class="fleche" type="button" tabindex="-1" aria-hidden="true">›</button>
+    </div>
+    <div class="lettres">
+      <span>lun</span><span>mar</span><span>mer</span><span>jeu</span>
+      <span>ven</span><span>sam</span><span>dim</span>
+    </div>
+    <div class="grille" id="grille"></div>
+    <div class="legende">
+      <span><i class="carre" data-etat="libre"></i>rien</span>
+      <span><i class="carre" data-etat="dispo"></i>incomplet</span>
+      <span><i class="carre" data-etat="plein"></i>complet</span>
+      <span><i class="carre" data-etat="dela"></i>au-delà</span>
+      <span class="position">
+        <span class="barres"><i></i><i></i></span>
+        <span class="mots"><b>matin</b><b>après-midi</b></span>
+      </span>
+    </div>
+  </div>
+
+  <p class="titre-section">Planifiés<button type="button" class="mot" id="mot-portee"></button></p>
+
+  <div class="portee">
+    <button type="button" data-portee="jour" aria-pressed="true">Aujourd’hui</button>
+    <button type="button" data-portee="semaine" aria-pressed="false">La semaine</button>
+  </div>
+
+  <div class="rail">
+    <div class="mots">
+      <button type="button" data-portee="jour" aria-pressed="true">Aujourd’hui</button>
+      <button type="button" data-portee="semaine" aria-pressed="false">La semaine</button>
+    </div>
+    <i class="curseur"></i>
+  </div>
+
+  <div class="points">
+    <button type="button" data-portee="jour" aria-pressed="true" aria-label="La journée"></button>
+    <button type="button" data-portee="semaine" aria-pressed="false" aria-label="La semaine"></button>
+  </div>
+
+  <div class="fenetre">
+    <button class="fleche" type="button" id="reculer" aria-label="Sept jours avant">‹</button>
+    <span class="quand" id="quand"></span>
+    <button class="fleche" type="button" id="avancer" aria-label="Sept jours après">›</button>
+  </div>
+
   <div id="liste"></div>
+
+  <div class="nav">
+    <span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span>
+    <span>Paysage</span><span>Réglages</span>
+    <i class="trait"></i>
+  </div>
 </div>
 
 <div class="verdict" id="verdict"></div>
 
 <div class="pied">
-  <h2>Ce qui ne bouge dans aucune des trois</h2>
+  <h2>Le calendrier du mois n’est pas touché</h2>
+  <p>Il est recopié de <code>MoisCharge.tsx</code> : mêmes flèches de 42 px,
+  même écart de 4 px, cases en 1 / 1,06, <b>cercle d’or sur aujourd’hui</b>,
+  colonne du week-end teintée, jours des autres mois <b>absents</b>, barres de
+  6 px larges de 24 qui se remplissent à la proportion, et la légende avec sa
+  position matin / après-midi. <b>Sa charge est déduite des mêmes chantiers</b>
+  que la liste du bas : aucun des deux ne peut dire autre chose que l’autre.</p>
+  <p><b>Un point à trancher, et il vient de la fenêtre glissante.</b> Le mois
+  teinte aujourd’hui la <b>rangée</b> que lit la liste. Une fenêtre qui part du
+  jour chevauche deux rangées : cette teinte n’a plus de rangée à désigner. Elle
+  est donc <b>retirée ici</b> — dites-moi si elle vous manque, on trouvera autre
+  chose.</p>
+  <h2>Passer de la journée à la semaine — sans deux gros boutons</h2>
+  <p>Votre demande du 9 septembre : <i>« quelque chose de plus subtil et joli »</i>.
+  Cinq gestes, à essayer avec les boutons du haut. La planche s’ouvre sur le
+  <b>rail</b>.</p>
+  <p><b>Rail</b> — deux petits mots, et un <b>trait d’or qui glisse</b> de l’un à
+  l’autre. Ce n’est pas une invention : c’est exactement ce que fait déjà votre
+  barre du bas quand vous changez d’onglet, avec le même petit dépassement au
+  bout de la course. Votre main connaît déjà le geste. Il montre <b>les deux
+  choix</b> et coûte 45 px.<br>
+  <b>Pastille</b> — rien de neuf à l’écran : <b>la pastille « AUJOURD’HUI » se
+  touche</b>. C’est la seule des cinq qui <b>retire</b> quelque chose au lieu
+  d’ajouter. Son défaut est l’autre face de sa qualité : rien ne dit qu’elle se
+  touche.<br>
+  <b>Balayage</b> — on pousse la liste du doigt, vers la gauche pour la semaine.
+  Deux points dorés sous le titre disent où l’on est. Le plus discret de tous,
+  et le plus risqué : un geste qu’on ne voit pas ne s’apprend pas seul.<br>
+  <b>Un mot</b> — « LA SEMAINE » en petites capitales dorées à droite du titre,
+  là où l’application met déjà ses actions. Aucune hauteur.<br>
+  <b>Gros</b> — les deux pastilles que vous avez refusées, gardées pour
+  comparer.</p>
+  <p><b>Ce que ça change, mesuré sur votre iPhone :</b> avec les deux grosses
+  pastilles, le nom du premier client commence à <b>658 px</b> pour <b>664 px</b>
+  d’écran — il est coupé. Avec le rail, la pastille, le balayage ou le mot, il
+  tient.</p>
+  <p><b>Une chose que la capture montre, et qu’il faut trancher :</b> avec le
+  rail, le mot « Aujourd’hui » est écrit <b>deux fois</b> — dans le rail, puis
+  dans la pastille noire juste en dessous. Sur la vue journée, la pastille
+  n’apprend plus rien : elle pourrait disparaître, et ne revenir que dans la vue
+  semaine, où elle sert à séparer les journées. Dites-moi.</p>
+  <h2>La fenêtre part d’aujourd’hui</h2>
+  <p>Votre règle : le 9, c’est <b>9 – 15</b> ; le 10, <b>10 – 16</b>. Un jour
+  passé n’est donc <b>jamais</b> sous les yeux — il n’apparaît, éteint, que si
+  vous touchez la flèche de gauche. <b>Vos exemples donnaient six jours</b>
+  (« du 8 au 13 ») ; j’en ai mis <b>sept</b>, pour qu’une semaine complète
+  tienne. Dites-moi si vous en vouliez six.</p>
+  <h2>Ce qui ne bouge dans aucune des quatre</h2>
   <p>Le nom du client en serif 19 px, la durée en or sous le nom, la pastille
   d’équipe, le chevron. <b>Seule la pastille de la date change</b> — sans quoi on
   ne saurait pas ce qu’on compare.</p>
-  <h2>Hier en bas — votre question du 9 septembre</h2>
-  <p><b>Vous avez raison, et c’est un vrai risque</b> : posée en bas avec la
-  même pastille et la même encre que les jours à venir, la journée d’hier se
-  lit comme un chantier de plus à faire. Quatre boutons, en haut, pour
-  comparer :</p>
-  <p><b>Hier pareil</b> — le risque, tel quel. C’est ce que vous avez vu.<br>
-  <b>Hier éteint</b> — elle reste, mais elle perd son encre, son papier et son
-  or. On voit qu’elle est derrière soi sans avoir à lire la date.<br>
-  <b>Hier replié</b> — « Plus tôt cette semaine (1) », qui s’ouvre au toucher.
-  Le plus propre à l’œil, mais il faut un geste de plus, et un écran qui cache
-  n’est pas ce qu’on veut pour quelqu’un qui découvre l’appli.<br>
-  <b>Hier retiré</b> — la semaine commence à aujourd’hui. Le plus simple, mais
-  vous perdez le moyen de retrouver le chantier d’hier pour le facturer.</p>
-  <p><b>Ma préférence : éteint.</b> Rien ne se cache, rien ne se perd, et la
-  confusion tombe — un jour éteint ne se confond avec rien.</p>
-  <h2>La planche est à la vraie date</h2>
-  <p>Elle est construite sur <b>le jour où vous l’ouvrez</b>. Si vous la rouvrez
-  demain, « Aujourd’hui » aura bougé d’une journée : c’est le seul moyen de voir
-  ce que ça donne un lundi, un mercredi et un vendredi.</p>
   <h2>Le bouton « Rien aujourd’hui »</h2>
   <p>Le cas qu’on ne voit jamais en dessinant : <b>aucun chantier posé
-  aujourd’hui</b>. Sans lui, le salarié ouvre l’appli, ne trouve pas le mot, et
-  ne sait pas s’il n’a rien ou si l’écran n’a pas chargé. La pastille reste, et
-  elle le dit.</p>
+  aujourd’hui</b>. Sans lui, le salarié ouvre l’appli, ne trouve rien, et ne sait
+  pas s’il n’a rien ou si l’écran n’a pas chargé. L’écran le dit.</p>
+  <h2>La planche est à la vraie date</h2>
+  <p>Le mois, la fenêtre et le mot « Aujourd’hui » sont construits sur <b>le jour
+  où vous l’ouvrez</b>. Rouvrez-la demain : tout aura avancé d’une journée.</p>
   <h2>Le bouton « Nuit »</h2>
   <p>Il repeint la planche avec les vraies couleurs de votre charte Nuit.
   <b>Une proposition qui ne tient qu’en clair n’est pas une proposition</b> :
@@ -218,88 +447,129 @@
 </div>
 
 <script>
-/* ─── LA SEMAINE, BÂTIE SUR LE VRAI JOUR ────────────────────────────────────
+/* ─── TOUT EST BÂTI SUR LE VRAI JOUR ────────────────────────────────────────
    Une planche qui écrirait « aujourd'hui » à côté d'une date d'hier ne prouve
-   rien. Elle se construit donc sur la date du téléphone qui l'ouvre. */
+   rien. Le mois, la fenêtre et la pastille partent de la date du téléphone. */
 const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août",
               "septembre","octobre","novembre","décembre"];
 const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
 
-const auj = new Date(); auj.setHours(12,0,0,0);
-const rang = (auj.getDay() + 6) % 7;            // lundi = 0
-const lundi = new Date(auj); lundi.setDate(auj.getDate() - rang);
-
-const jourPlus = (n) => { const d = new Date(lundi); d.setDate(lundi.getDate() + n); return d; };
+const auj = new Date(); auj.setHours(12, 0, 0, 0);
+const jourPlus = (n) => { const d = new Date(auj); d.setDate(auj.getDate() + n); return d; };
 const ecrit = (d) => {
   const t = JOURS[d.getDay()] + " " + d.getDate() + " " + MOIS[d.getMonth()];
   return t.charAt(0).toUpperCase() + t.slice(1);
 };
+const cle = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0")
+                 + "-" + String(d.getDate()).padStart(2, "0");
 
-/* Des chantiers posés autour d'aujourd'hui : la veille quand elle existe, le
-   jour même, et les deux jours qui suivent. */
-const SEMAINE = [];
-if (rang > 0) {
-  SEMAINE.push({ quand: rang - 1, passe: true,
-    lignes: [{ nom: "Mr. Eric", duree: "une journée", equipe: "Julien, Antoine" }] });
-}
-SEMAINE.push({ quand: rang, today: true,
-  lignes: [{ nom: "Mr. Martins", duree: "une journée", equipe: "Julien, Antoine" },
-           { nom: "Chantier test — Abri Pornic", duree: "une demi-journée", equipe: "Julien" }] });
-for (const n of [1, 2]) {
-  if (rang + n <= 6) {
-    SEMAINE.push({ quand: rang + n,
-      lignes: [{ nom: "Mr. Marco", duree: "2 jours", equipe: "Julien, Antoine" }] });
-  }
+/* Des chantiers posés autour d'aujourd'hui, en décalage de jours. Deux sont
+   derrière : ils ne se voient qu'en reculant. */
+const CHANTIERS = [
+  { quand: -5, lignes: [{ nom: "Mr. Marco", duree: "une journée", equipe: "Julien, Antoine" }] },
+  { quand: -1, lignes: [{ nom: "Mr. Eric", duree: "une journée", equipe: "Julien, Antoine" }] },
+  { quand: 0, lignes: [{ nom: "Mr. Martins", duree: "une journée", equipe: "Julien, Antoine" },
+                       { nom: "Chantier test — Abri Pornic", duree: "une demi-journée", equipe: "Julien" }] },
+  { quand: 1, lignes: [{ nom: "Mr. Marco", duree: "2 jours", equipe: "Julien, Antoine" }] },
+  { quand: 2, lignes: [{ nom: "Mr. Marco", duree: "2 jours", equipe: "Julien, Antoine" }] },
+  { quand: 5, lignes: [{ nom: "Mr. Eric", duree: "une demi-journée", equipe: "Julien" }] },
+];
+
+/* La charge du mois se DÉDUIT des mêmes chantiers — un calendrier qui peindrait
+   autre chose que ce que la liste énumère donnerait deux vérités sur la même
+   journée (`CLAUDE.md` §3). Deux équipes : une par chantier, donc deux chantiers
+   remplissent la journée. `etatDemi` : rien / incomplet / complet / au-delà. */
+const EQUIPES = 2;
+const CHARGE = new Map();
+for (const c of CHANTIERS) {
+  const part = c.lignes.length / EQUIPES;
+  CHARGE.set(cle(jourPlus(c.quand)), {
+    etat: part >= 1 ? "plein" : "dispo",
+    part: Math.round(Math.min(part, 1) * 100),
+  });
 }
 
 const tel = document.getElementById("tel");
 const liste = document.getElementById("liste");
-/* La planche s'ouvre sur SON CHOIX du 9 septembre 2026 : la journée du jour en
-   tête, et la B avec le vrai or — c'est la D. « Aujourd'hui » ramène au témoin,
-   c'est-à-dire à ce qu'il a encore sous les yeux. */
-let enTete = true, vide = false;
+const JOURS_MONTRES = 7;     // aujourd'hui + les six suivants
+let depart = 0;              // en jours depuis aujourd'hui
+let vide = false;
 
-function bloc(j) {
-  const estAuj = !!j.today;
-  const date = ecrit(jourPlus(j.quand));
+function bloc(c) {
+  const d = jourPlus(c.quand);
+  const estAuj = c.quand === 0;
+  const date = ecrit(d);
   const mot = estAuj
     ? '<span class="mot-date">' + date + '</span><span class="mot-auj">Aujourd’hui</span>'
     : date;
-  const lignes = (estAuj && vide) ? [] : j.lignes;
+  const lignes = (estAuj && vide) ? [] : c.lignes;
   const corps = lignes.map((l) => '<div class="ligne">'
       + '<span class="nom">' + l.nom + '<span class="duree">' + l.duree + '</span></span>'
       + '<span class="equipe">' + l.equipe + '</span><span class="chev">›</span>'
     + '</div>').join("") || '<p class="vide">Rien de posé.</p>';
-  return '<div class="jour"><p class="rang"><span class="date'
-    + (estAuj ? " today" : "") + '">' + mot + '</span></p>' + corps + '</div>';
+  return '<div class="jour' + (c.quand < 0 ? " passe" : "") + '">'
+    + '<p class="rang"><span class="date' + (estAuj ? " today" : "") + '">' + mot + '</span></p>'
+    + corps + "</div>";
+}
+
+/**
+ * Le mois, en rangées de sept lundi en tête — la géométrie de `MoisCharge`.
+ * Les jours des autres mois ne sont pas des chiffres gris : ils DISPARAISSENT.
+ */
+function peindreLeMois() {
+  document.getElementById("mois-titre").textContent =
+    MOIS[auj.getMonth()] + " " + auj.getFullYear();
+  const premier = new Date(auj.getFullYear(), auj.getMonth(), 1, 12);
+  const dernier = new Date(auj.getFullYear(), auj.getMonth() + 1, 0, 12);
+  const debut = new Date(premier);
+  debut.setDate(premier.getDate() - ((premier.getDay() + 6) % 7));
+  const semaines = Math.ceil((((premier.getDay() + 6) % 7) + dernier.getDate()) / 7);
+
+  let html = "";
+  for (let s = 0; s < semaines; s++) {
+    html += '<div class="rangee">';
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(debut); d.setDate(debut.getDate() + s * 7 + i);
+      if (d.getMonth() !== auj.getMonth()) { html += '<span class="creux"></span>'; continue; }
+      const weekEnd = d.getDay() === 0 || d.getDay() === 6;
+      const charge = CHARGE.get(cle(d));
+      const etat = charge ? charge.etat : "libre";
+      const part = charge ? charge.part : 0;
+      const barre = '<i><span data-etat="' + etat + '" style="width:' + part + "%;background:"
+        + (etat === "dispo" ? "var(--vertPale)" : etat === "plein" ? "var(--rust)"
+           : etat === "dela" ? "var(--bordeaux)" : "transparent") + '"></span></i>';
+      html += '<button type="button" class="case' + (cle(d) === cle(auj) ? " auj" : "") + '"'
+        + ' data-etat="' + (weekEnd ? "week-end" : d < auj ? "passe" : "regardable") + '"'
+        + ' tabindex="-1" aria-hidden="true">'
+        + '<span class="num">' + d.getDate() + "</span>"
+        + '<span class="marque">' + barre + barre + "</span></button>";
+    }
+    html += "</div>";
+  }
+  document.getElementById("grille").innerHTML = html;
 }
 
 function peindre() {
-  const fin = jourPlus(6);
+  const jour = tel.dataset.portee === "jour";
+  const debut = jour ? 0 : depart;
+  const fin = jour ? 0 : depart + JOURS_MONTRES - 1;
+
+  const dDebut = jourPlus(debut), dFin = jourPlus(fin);
   document.getElementById("quand").textContent =
-    lundi.getMonth() === fin.getMonth()
-      ? lundi.getDate() + " – " + fin.getDate() + " " + MOIS[fin.getMonth()]
-      : lundi.getDate() + " " + MOIS[lundi.getMonth()] + " – " + fin.getDate() + " " + MOIS[fin.getMonth()];
+    dDebut.getMonth() === dFin.getMonth()
+      ? dDebut.getDate() + " – " + dFin.getDate() + " " + MOIS[dFin.getMonth()]
+      : dDebut.getDate() + " " + MOIS[dDebut.getMonth()] + " – " + dFin.getDate() + " " + MOIS[dFin.getMonth()];
 
-  const passes = SEMAINE.filter((j) => j.passe);
-  const reste = SEMAINE.filter((j) => !j.passe);
-
-  const titrePasse = tel.dataset.passe === "replie"
-    ? "Plus tôt cette semaine (" + passes.length + ")"
-    : "Plus tôt cette semaine";
-  liste.innerHTML = enTete
-    ? reste.map(bloc).join("")
-      + (passes.length
-          ? '<div class="passe"><div class="plus-tot">'
-            + '<button type="button" id="ouvrir-passe">' + titrePasse + "</button></div>"
-            + passes.map(bloc).join("") + "</div>"
-          : "")
-    : SEMAINE.slice().sort((a, b) => a.quand - b.quand).map(bloc).join("");
-
-  // Le titre replié se touche et ouvre : rien ne se devine, tout se voit.
-  document.getElementById("ouvrir-passe")?.addEventListener("click", () => {
-    if (tel.dataset.passe === "replie") choisirPasse("eteint");
-  });
+  const dedans = CHANTIERS.filter((c) => c.quand >= debut && c.quand <= fin)
+                          .sort((a, b) => a.quand - b.quand);
+  liste.innerHTML = dedans.length
+    ? dedans.map(bloc).join("")
+    : (jour
+        ? '<div class="jour"><p class="rang"><span class="date today">'
+          + '<span class="mot-date">' + ecrit(auj) + '</span>'
+          + '<span class="mot-auj">Aujourd’hui</span></span></p>'
+          + '<p class="vide">Rien de posé.</p></div>'
+        : '<p class="vide">Rien de posé sur ces sept jours.</p>');
 }
 
 /* ─── CE QUE CHAQUE PROPOSITION COÛTE ───────────────────────────────────────
@@ -308,28 +578,28 @@ function peindre() {
 const VERDICTS = {
   temoin: {
     titre: "Aujourd’hui — ce que vous avez sous les yeux",
-    quoi: "La journée du jour s’écrit comme les six autres : <b>« Mardi 8 septembre »</b>, encre sur papier pâle. Elle est à sa place dans la semaine, donc <b>pas forcément en haut</b>.",
+    quoi: "La journée du jour s’écrit comme les six autres : <b>« Mardi 8 septembre »</b>, encre sur papier pâle.",
     defaut: "Le salarié doit lire une date, la comparer à celle de son téléphone, et compter. Trois gestes de tête avant de savoir chez qui il va."
   },
   a: {
     titre: "A — la pastille passe en or plein",
-    quoi: "Le mot <b>AUJOURD’HUI</b> s’écrit à l’intérieur d’un aplat d’or. C’est le seul des trois qui se repère <b>sans lire</b>, en faisant défiler au pouce. Contraste mesuré : <span class=\"mesure\">4,98 à 6,14</span> sur les huit chartes.",
-    defaut: "L’or est aujourd’hui la couleur de ce qu’on LIT — la durée sous le nom en est. Un aplat d’or en fait pour la première fois une <b>couleur de fond</b>, et il faut ajouter au code une teinte pour le mot posé dessus. Une demi-journée de travail, pas dix minutes."
+    quoi: "Le mot <b>AUJOURD’HUI</b> s’écrit à l’intérieur d’un aplat d’or. Contraste mesuré : <span class=\"mesure\">4,98 à 6,14</span> sur les huit chartes.",
+    defaut: "L’or est aujourd’hui la couleur de ce qu’on LIT — la durée sous le nom en est. Un aplat d’or en fait pour la première fois une <b>couleur de fond</b>, et il faut ajouter au code une teinte pour le mot posé dessus."
   },
   b: {
     titre: "B — le mot en doré, et plus gros",
-    quoi: "Le papier ne change pas ; <b>le mot</b> passe en or et grandit de 12 à 19 px. C’est la plus proche de ce que vous avez demandé, et la plus petite dans le code : <b>deux valeurs</b>.",
-    defaut: "<b>Le doré ici n’est PAS celui de l’application</b> : le vrai or sur le papier pâle donne <span class=\"mesure\">2,03</span> de contraste, illisible au soleil, quelle que soit la taille du mot. Celui-ci est un or assombri, et même lui ne tient <span class=\"mesure\">3,92</span> que parce que le mot est gros. <b>Pour garder le vrai or, il faut changer le papier</b> : c’est la D."
-  },
-  d: {
-    titre: "D — la B, avec le vrai or",
-    quoi: "Votre demande du 9 septembre : la B, <b>mais avec la vraie couleur dorée de l’application</b>. Le mot garde ses 19 px ; c’est le <b>papier</b> qui change et passe à l’encre. Sur vos six chartes claires, ce doré est <b>#B98B47 au caractère près</b> — celui de la durée sous le nom, du sceau, des filets. Mesuré : <span class=\"mesure\">4,56 à 5,81</span> sur les huit chartes.",
-    defaut: "La pastille devient <b>sombre</b> : elle pèse plus lourd sur l’écran qu’un papier pâle, et elle se rapproche de la A. Sur Nuit et Sylve, l’encre est claire — l’or y est légèrement foncé pour rester lisible, comme il l’est déjà ailleurs dans l’application."
+    quoi: "Le papier ne change pas ; <b>le mot</b> passe en or et grandit de 12 à 19 px. C’est la plus petite dans le code : <b>deux valeurs</b>.",
+    defaut: "<b>Le doré ici n’est PAS celui de l’application</b> : le vrai or sur le papier pâle donne <span class=\"mesure\">2,03</span> de contraste, illisible au soleil, quelle que soit la taille du mot. Celui-ci est un or assombri. <b>Pour garder le vrai or, il faut changer le papier</b> : c’est la D."
   },
   c: {
     titre: "C — la pastille cerclée d’or",
-    quoi: "Fond clair, un filet d’or d’un pixel, le mot en or foncé. La plus sobre : <span class=\"mesure\">4,55 à 5,55</span> partout, à n’importe quelle taille, sans rien ajouter au code.",
+    quoi: "Fond clair, un filet d’or d’un pixel, le mot en or foncé : <span class=\"mesure\">4,55 à 5,55</span> partout, sans rien ajouter au code.",
     defaut: "Elle se distingue <b>en regardant</b>, pas du coin de l’œil. À bout de bras, sur un écran sale, un cercle pâle cerclé d’or et une pastille pâle ordinaire se ressemblent."
+  },
+  d: {
+    titre: "D — la B, avec le vrai or",
+    quoi: "Votre demande : la B, <b>mais avec la vraie couleur dorée de l’application</b>. Le mot garde ses 19 px ; c’est le <b>papier</b> qui passe à l’encre. Sur vos six chartes claires, ce doré est <b>#B98B47 au caractère près</b> — celui de la durée sous le nom. Mesuré : <span class=\"mesure\">4,56 à 5,81</span> sur les huit chartes.",
+    defaut: "La pastille devient <b>sombre</b> : elle pèse plus lourd sur l’écran qu’un papier pâle. Sur Nuit et Sylve, l’encre est claire — l’or y est légèrement foncé pour rester lisible, comme il l’est déjà ailleurs dans l’application."
   }
 };
 
@@ -350,23 +620,68 @@ for (const b of document.querySelectorAll(".choix button[data-vue]")) {
   });
 }
 
-function choisirPasse(quoi) {
-  tel.dataset.passe = quoi;
-  for (const b of document.querySelectorAll(".choix button[data-passe]")) {
-    b.setAttribute("aria-pressed", String(b.dataset.passe === quoi));
+/* Le commutateur. Revenir sur « Aujourd'hui » REPART d'aujourd'hui : sinon on
+   retrouverait la fenêtre d'il y a trois flèches sans comprendre pourquoi.
+   Les quatre versions pilotent le MÊME état — deux états qui se suivraient
+   auraient fini par se contredire. */
+const motPortee = document.getElementById("mot-portee");
+function portee(quoi) {
+  tel.dataset.portee = quoi;
+  depart = 0;
+  // **`button[...]`, jamais `[data-portee]` seul** : le cadre de l écran porte
+  // lui aussi cet attribut, et tout clic à l intérieur remontait jusqu à lui —
+  // la flèche « sept jours avant » remettait donc la fenêtre à aujourd hui.
+  for (const b of document.querySelectorAll("button[data-portee]")) {
+    b.setAttribute("aria-pressed", String(b.dataset.portee === quoi));
   }
+  // Le mot unique nomme CE QU'ON OBTIENT en le touchant, jamais où l'on est.
+  motPortee.textContent = quoi === "jour" ? "La semaine" : "Aujourd’hui";
   peindre();
 }
-for (const b of document.querySelectorAll(".choix button[data-passe]")) {
-  b.addEventListener("click", () => choisirPasse(b.dataset.passe));
+for (const b of document.querySelectorAll("button[data-portee]")) {
+  b.addEventListener("click", () => portee(b.dataset.portee));
+}
+motPortee.addEventListener("click", () =>
+  portee(tel.dataset.portee === "jour" ? "semaine" : "jour")
+);
+
+/* LA PASTILLE COMME COMMUTATEUR. Elle porte déjà ce qu'on regarde ; la toucher
+   élargit. Le lien est posé sur la LISTE et non sur la pastille : celle-ci est
+   redessinée à chaque peinture, et un détecteur posé dessus disparaîtrait avec
+   elle au premier changement. */
+liste.addEventListener("click", (e) => {
+  if (tel.dataset.commut !== "pastille") return;
+  if (!e.target.closest(".date.today")) return;
+  portee(tel.dataset.portee === "jour" ? "semaine" : "jour");
+});
+
+/* LE BALAYAGE. Quarante pixels de course, et le mouvement doit être plus
+   horizontal que vertical — sans quoi un simple défilement du pouce ferait
+   changer de vue sans qu'on comprenne pourquoi. */
+let depart_x = null, depart_y = null;
+liste.addEventListener("pointerdown", (e) => { depart_x = e.clientX; depart_y = e.clientY; });
+liste.addEventListener("pointerup", (e) => {
+  if (tel.dataset.commut !== "balayage" || depart_x === null) return;
+  const dx = e.clientX - depart_x, dy = e.clientY - depart_y;
+  depart_x = null;
+  if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
+  portee(dx < 0 ? "semaine" : "jour");
+});
+
+for (const b of document.querySelectorAll(".choix button[data-commut]")) {
+  b.addEventListener("click", () => {
+    for (const a of document.querySelectorAll(".choix button[data-commut]")) {
+      a.setAttribute("aria-pressed", String(a === b));
+    }
+    tel.dataset.commut = b.dataset.commut;
+  });
 }
 
-const bOrdre = document.getElementById("bascule-ordre");
-bOrdre.addEventListener("click", () => {
-  enTete = !enTete;
-  bOrdre.setAttribute("aria-pressed", String(enTete));
-  bOrdre.textContent = enTete ? "En tête" : "Ordre du calendrier";
-  peindre();
+document.getElementById("reculer").addEventListener("click", () => {
+  depart -= JOURS_MONTRES; peindre();
+});
+document.getElementById("avancer").addEventListener("click", () => {
+  depart += JOURS_MONTRES; peindre();
 });
 
 const bVide = document.getElementById("bascule-vide");
@@ -384,7 +699,8 @@ bNuit.addEventListener("click", () => {
   bNuit.textContent = n ? "Origine" : "Nuit";
 });
 
-peindre();
+peindreLeMois();
+portee("jour");
 verdict("d");
 </script>
 </body>

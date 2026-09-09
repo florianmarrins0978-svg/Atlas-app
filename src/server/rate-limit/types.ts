@@ -89,6 +89,28 @@ export const LIMITES = {
    */
   reponseDevis: { max: 10, fenetreMs: 60 * 1000 },
   reponseDevisParSource: { max: 60, fenetreMs: 60 * 1000 },
+  /**
+   * OUVRIR ET CONFIRMER SA FACTURE depuis le lien public (9 septembre 2026).
+   *
+   * **Même famille que `reponseDevis`, et pour la même raison :** ce sont les
+   * seules écritures d'Atlas ouvertes SANS session. Ce seuil ne défend aucun
+   * secret — le jeton fait 256 bits tirés au sort et ne se devine pas ; il
+   * borne le COÛT d'un appel qu'on peut marteler sans rien voler.
+   *
+   * **Plus large que la réponse au devis, et c'est voulu.** Ces deux écritures
+   * sont idempotentes en base — l'ouverture ne s'écrit qu'une fois, l'accusé
+   * non plus (`envois-factures.ts`, les gardes `IS NULL`). Marteler ne change
+   * donc rien après le premier appel, là où une réponse à un devis peut poser
+   * une date de chantier à chaque fois.
+   *
+   * **Et le compteur par source ne s'applique QUE si la source est établie** —
+   * la leçon de la revue hostile de F9, qui vaut mot pour mot ici : sans
+   * `ATLAS_PROXY_SAUTS`, tous les visiteurs partagent un seul seau, et ce seuil
+   * deviendrait une arme retournée. Plus aucun client de plus aucun artisan ne
+   * pourrait confirmer sa facture. La condition vit au point d'appel.
+   */
+  receptionFacture: { max: 20, fenetreMs: 60 * 1000 },
+  receptionFactureParSource: { max: 120, fenetreMs: 60 * 1000 },
   assistant: { max: 20, fenetreMs: 60 * 1000 }, // 20 requêtes IA / minute / entreprise
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },

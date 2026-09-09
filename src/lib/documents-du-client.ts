@@ -28,6 +28,21 @@ export type PieceDuClient = {
   /** L'adresse qui ouvre la pièce. */
   href: string;
   /**
+   * **Ce que le client a fait de sa facture** — sa réponse du 9 septembre 2026,
+   * à la question « en cas de litige, tu vas où ? » : *« je vais dans mes
+   * clients sur la catégorie facture »*.
+   *
+   * Ni « Terminés », ni la fiche du chantier : c'est ICI qu'il cherche. Une
+   * preuve qu'on ne trouve pas ne prouve rien.
+   *
+   * **Ne concerne que les factures**, et reste absente partout ailleurs : un
+   * devis parti ne s'ouvre pas, il se répond — et cette réponse-là vit déjà sur
+   * l'accueil. Absente aussi sur une facture jamais envoyée : sans lien, il n'y
+   * a rien à ouvrir, et « pas encore ouverte » accuserait le client d'un envoi
+   * qui n'a pas eu lieu.
+   */
+  reception?: { ouverte: string | null; confirmee: string | null };
+  /**
    * Ce que l'adresse ouvre — un PDF, ou une page.
    *
    * **Le dossier n'a pas que des PDF depuis le 23 août 2026.** Les fiches

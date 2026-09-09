@@ -9,6 +9,7 @@ import { jourLisible } from "@/lib/jour";
 import { suiteDeLaReponse, type SuiteDeLaReponse } from "@/lib/suite-de-la-reponse";
 import {
   marquerReponseVueAction,
+  marquerReceptionVueAction,
   corrigerDevisAction,
   repousserRappelFactureAction,
   marquerRappelVuAction,
@@ -89,6 +90,14 @@ type Carte = {
    * moteur d'origine — deux mécaniques pour une idée se contrediraient.
    */
   vu?: { genre: GenreAcquittable; chantierId: string };
+  /**
+   * Une réception de facture confirmée (9 septembre 2026).
+   *
+   * Un troisième acquittement, parce qu'il écrit ailleurs : `vu_par_patron_at`
+   * sur l'ENVOI de la facture, là où `vu` touche un rappel et `repousser` un
+   * délai. Le doigt, lui, fait le même geste et lit le même mot.
+   */
+  reception?: true;
   chantierId: string;
   chantierNom: string;
   /**
@@ -194,6 +203,49 @@ function versCarte(n: NotificationPatron): Carte {
     texte,
     messageClient: n.precisionClient,
     suite: suiteDeLaReponse(n.chantierId, n.reponse),
+  };
+}
+
+/**
+ * Ce que l'accueil reçoit quand un client confirme avoir reçu sa facture.
+ *
+ * Sa demande du 9 septembre 2026. Le geste d'acquittement est le MÊME que pour
+ * une réponse au devis — « J'ai vu » —, et c'est voulu : nommer autrement un
+ * geste identique ferait chercher une différence là où il n'y en a pas.
+ */
+export type ReceptionAffichee = {
+  envoiId: string;
+  chantierId: string;
+  chantierNom: string;
+  numeroCommercial: string;
+  clientNom: string | null;
+  accuseLe: Date;
+};
+
+function receptionVersCarte(r: ReceptionAffichee): Carte {
+  return {
+    envoiId: r.envoiId,
+    chantierId: r.chantierId,
+    chantierNom: r.chantierNom,
+    // L'instant de la CONFIRMATION, pas celui de l'envoi : c'est elle qui est
+    // la nouvelle, et c'est elle qui doit remonter en tête.
+    quand: r.accuseLe.getTime(),
+    // **Pas urgente, et c'est une bonne nouvelle.** Le fond teinté est réservé
+    // à ce qui réclame un geste ; ici il n'y en a aucun à faire. Une bonne
+    // nouvelle peinte comme une alerte apprend à ignorer les alertes.
+    urgent: false,
+    titre: "Facture reçue",
+    texte: `${r.clientNom ?? "Votre client"} a confirmé avoir reçu la facture ${r.numeroCommercial}.`,
+    reception: true,
+    // **Vers les factures qui attendent, et non vers le document.** C'est là
+    // que vivent les deux dates, et c'est le seul geste qui reste : voir si
+    // elle est payée. Une carte qui mène ailleurs que là où est la suite fait
+    // chercher — le patron l'a relevé le 12 août 2026.
+    suite: {
+      href: "/termines/tva",
+      libelle: "Voir les factures qui attendent",
+      reprendreAvant: false,
+    },
   };
 }
 
@@ -322,11 +374,14 @@ export default function Notifications({
   initiales,
   caducs,
   rappels = [],
+  receptions = [],
 }: {
   initiales: NotificationPatron[];
   caducs: EnvoiCaduc[];
   /** Réglés dans « Notifications » — vide quand les deux sont éteints. */
   rappels?: RappelAffiche[];
+  /** Les clients qui viennent de confirmer avoir reçu leur facture. */
+  receptions?: ReceptionAffichee[];
 }) {
   // Retirée à l'écran dès l'appui, sans attendre le serveur : le patron a fait
   // son geste, lui laisser la carte sous les yeux le ferait douter.
@@ -369,9 +424,13 @@ export default function Notifications({
   // **On range APRÈS avoir retiré les cartes acquittées** : ranger d'abord
   // ferait compter une réponse que le patron vient de marquer « J'ai vu ».
   const lesRappels = rappels.map(rappelVersCarte).filter((n) => !masquees.includes(n.envoiId));
-  const lesReponses = [...initiales.map(versCarte), ...caducs.map(caducVersCarte)].filter(
-    (n) => !masquees.includes(n.envoiId)
-  );
+  // Les réceptions voyagent avec les réponses : ce sont toutes des nouvelles
+  // venues du client, et l'ordre chronologique les départage tout seul.
+  const lesReponses = [
+    ...initiales.map(versCarte),
+    ...caducs.map(caducVersCarte),
+    ...receptions.map(receptionVersCarte),
+  ].filter((n) => !masquees.includes(n.envoiId));
   const restantes = ordonnerLesCartes(lesRappels, lesReponses);
   if (restantes.length === 0) return null;
 
@@ -382,6 +441,20 @@ export default function Notifications({
     setMasquees((v) => [...v, envoiId]);
     demarrer(() => {
       void marquerReponseVueAction(envoiId);
+    });
+  }
+
+  /**
+   * « J'ai vu » sur une réception de facture — le même geste, une autre écriture.
+   *
+   * La carte part de l'écran tout de suite, comme les autres : le doigt a fait
+   * son geste. Ce qui s'écrit derrière, lui, ne le regarde pas — et les deux
+   * dates de la facture, elles, ne bougent pas.
+   */
+  function marquerReception(envoiId: string) {
+    setMasquees((v) => [...v, envoiId]);
+    demarrer(() => {
+      void marquerReceptionVueAction(envoiId);
     });
   }
 
@@ -564,7 +637,15 @@ export default function Notifications({
               <button
                 type="button"
                 data-atlas="j-ai-vu"
-                onClick={() => (n.repousser ? repousser(n) : n.vu ? marquerRappel(n) : marquerVue(n.envoiId))}
+                onClick={() =>
+                  n.reception
+                    ? marquerReception(n.envoiId)
+                    : n.repousser
+                      ? repousser(n)
+                      : n.vu
+                        ? marquerRappel(n)
+                        : marquerVue(n.envoiId)
+                }
                 disabled={enCours !== null}
                 className="min-h-[44px] px-2 text-[14px] font-medium disabled:opacity-60"
                 style={{ color: colors.inkSoft }}

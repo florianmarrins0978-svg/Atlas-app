@@ -9,21 +9,9 @@ import {
   utilisateurExiste,
 } from "@/server/repositories/documents-legaux";
 import { logger } from "@/server/logger";
+import { adresseClient } from "@/lib/adresse-client";
 
 export type EtatAcceptation = { erreur: string } | undefined;
-
-// Première adresse de X-Forwarded-For : celle du client vue par le proxy de
-// tête. Les suivantes sont les proxys traversés et n'identifient personne.
-// Valeur d'appoint, jamais de confiance absolue — elle documente la preuve,
-// elle ne la fonde pas (c'est l'authentification qui la fonde).
-function adresseClient(entetes: Headers): string | null {
-  const transmis = entetes.get("x-forwarded-for");
-  if (transmis) {
-    const premiere = transmis.split(",")[0]?.trim();
-    if (premiere) return premiere;
-  }
-  return entetes.get("x-real-ip");
-}
 
 export async function accepterDocumentsAction(
   _etatPrecedent: EtatAcceptation,

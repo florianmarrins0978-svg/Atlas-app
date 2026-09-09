@@ -1949,6 +1949,28 @@ export const envoisFactures = pgTable(
     expireAt: timestamp("expire_at", { withTimezone: true }).notNull(),
     canal: text("canal", { enum: ["sms", "email"] }).notNull(),
     envoyeAt: timestamp("envoye_at", { withTimezone: true }).notNull().defaultNow(),
+
+    /**
+     * **Quand le client a ouvert son lien** (migration 0081), et Atlas la note
+     * tout seul.
+     *
+     * C'est la date qui vaut, parce qu'elle ne dépend pas de sa bonne volonté :
+     * `accuse_at` ci-dessous peut ne jamais venir. Écrite **une seule fois** —
+     * ce qu'on oppose à « je ne l'ai jamais reçue », c'est la PREMIÈRE fois.
+     */
+    ouverteAt: timestamp("ouverte_at", { withTimezone: true }),
+    /** La case qu'il coche. Un geste volontaire, donc plus parlant, mais facultatif. */
+    accuseAt: timestamp("accuse_at", { withTimezone: true }),
+    adresseIp: text("adresse_ip"),
+    agentUtilisateur: text("agent_utilisateur"),
+    /**
+     * N'efface que la CARTE de l'accueil, jamais les deux dates ci-dessus.
+     *
+     * Sa question du 9 septembre 2026 : *« en cas de litige, où est-ce que
+     * l'utilisateur va rechercher cette info ? »* — une preuve qui disparaît
+     * avec l'alerte qui l'annonçait ne prouve rien.
+     */
+    vuParPatronAt: timestamp("vu_par_patron_at", { withTimezone: true }),
   },
   (t) => [
     unique("envois_factures_jeton_uk").on(t.jeton),

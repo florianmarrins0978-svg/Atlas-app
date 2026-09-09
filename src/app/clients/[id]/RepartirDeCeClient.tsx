@@ -17,7 +17,17 @@ import { refaireLeChantierAction } from "./actions";
  * c'était le chemin.**
  *
  * **Sa proposition retenue, la E** (`appli/le-client-quon-connait.html`) :
- * *« Refaire »* repart de ce qu'on lui a fait la dernière fois ; *« Autre
+ * **LE MOT A CHANGÉ LE 9 SEPTEMBRE 2026, et c'est lui qui l'a entendu :**
+ * *« la phrase "Refaire", c'est pas bizarre ? ça sonne bizarre »*. Il avait
+ * raison — « Refaire » se lit comme « recommencer parce que c'était raté ».
+ * C'est **« Dernier devis »**, avec la flèche qui tourne.
+ *
+ * *Ce qu'on lui a dit et qui reste vrai* : le mot peut se lire « ouvrir mon
+ * dernier devis », alors qu'il en crée un neuf. La flèche circulaire porte le
+ * « de nouveau », et l'écran suivant est un devis vide de tout numéro — il n'y
+ * a pas d'ambiguïté qui survive au premier usage.
+ *
+ * *« Dernier devis »* repart de ce qu'on lui a fait la dernière fois ; *« Autre
  * chantier »* ouvre la fiche client, vierge de prestation mais pleine de ses
  * coordonnées.
  *
@@ -29,7 +39,7 @@ import { refaireLeChantierAction } from "./actions";
  * donc deux boutons et **aucune phrase d'explication** : un bouton n'a pas
  * besoin qu'on décrive ce qu'il fait (`CLAUDE.md` §3).
  *
- * **« Refaire » porte l'aplat, « Autre chantier » est creux.** Neuf fois sur
+ * **« Dernier devis » porte l'aplat, « Autre chantier » est creux.** Neuf fois sur
  * dix il refait la même chose chez le même client ; l'écran doit dire lequel
  * des deux est le geste ordinaire, sinon il faut choisir à chaque fois.
  *
@@ -42,7 +52,7 @@ import { refaireLeChantierAction } from "./actions";
  * appuie puis change d'avis, et il en verrait la trace le soir sans savoir d'où
  * elle vient.
  *
- * « Refaire », lui, crée pour de bon : reprendre un devis n'a de sens que si le
+ * « Dernier devis », lui, crée pour de bon : reprendre un devis n'a de sens que si le
  * devis existe, et c'est un geste qu'on ne fait pas par erreur.
  */
 export default function RepartirDeCeClient({
@@ -98,7 +108,7 @@ export default function RepartirDeCeClient({
                 strokeLinejoin="round"
               />
             </svg>
-            {enCours ? "Un instant" : "Refaire"}
+            {enCours ? "Un instant" : "Dernier devis"}
           </button>
         )}
         <button

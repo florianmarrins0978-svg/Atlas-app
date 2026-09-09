@@ -8,6 +8,29 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | une case « J’ai bien reçu cette facture » sur la page du client, une carte sur l’accueil, et deux dates sous chaque facture de « En attente de paiement » |
+| la migration | `drizzle/0081_reception_de_la_facture.sql` — `ouverte_at`, `accuse_at`, `vu_par_patron_at` sur **l’envoi**, jamais sur la facture |
+| les pièces | `src/app/factures/[jeton]/AccuseDeReception.tsx`, `src/lib/reception-facture.ts`, `envois-factures.ts` |
+| les suites | `scripts/test-reception-facture-db.ts` (12, sous `atlas_app`), `test-reception-facture.ts` (6) |
+| le détail | `ARCHITECTURE.md` §301, `docs/lot-reception-de-la-facture.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** la date d’ouverture part du **navigateur**, pas
+du rendu du serveur. Une messagerie qui déplie l’aperçu d’un lien, un antivirus,
+un robot d’indexation demandent tous l’adresse sans exécuter de JavaScript — une
+date née d’un rendu serait fausse le jour précis où elle sert de preuve. Et elle
+ne s’écrit qu’une fois : sans le garde `IS NULL`, chaque rechargement la
+repousserait.
+
+**Et pour regarder l’écran : `localhost`, JAMAIS `127.0.0.1`.** En
+développement, Next refuse alors de servir le JavaScript de la page, la case ne
+réagit pas, et l’on cherche une heure dans du code juste. Déjà payé le
+3 septembre, repayé le 9.
+
+---
 ## Dernier lot — LA BATTERIE NE MESURE PLUS À DEUX (8 septembre 2026)
 
 **Décisions :** `ARCHITECTURE.md` §300. **Aucune migration.**

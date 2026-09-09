@@ -223,6 +223,15 @@ const EXEMPTIONS: Record<string, string> = {
     "L'écran du devis s'ouvre par un jeton, sans compte : le client de l'artisan n'a pas de rôle. Le jeton EST la garde (chemins-publics.ts).",
   "src/app/documents-legaux/actions.ts#accepterDocumentsAction":
     "Accepter les documents légaux est la porte d'entrée : la fermer par rôle enfermerait dehors le salarié qui n'a pas encore accepté.",
+  "src/app/factures/[jeton]/actions.ts#noterOuvertureAction":
+    "Même porte que la réponse au devis : la page de la facture s'ouvre par un jeton, " +
+    "sans compte. Le jeton EST la garde — 256 bits tirés au sort, une politique RLS " +
+    "d'écriture qui l'exige mot pour mot (migration 0081), et une cadence bornée " +
+    "(LIMITES.receptionFacture). L'écriture est de surcroît idempotente : elle ne pose " +
+    "la date que si elle est absente, donc la marteler ne change rien après le premier appel.",
+  "src/app/factures/[jeton]/actions.ts#accuserReceptionAction":
+    "Même raison, et même serrure. Un porteur du jeton ne peut poser QUE la confirmation " +
+    "de SA facture, une seule fois : le garde IS NULL en base refuse d'écraser la première date.",
 
   // ─── Ses propres réglages : elles n'écrivent que sur la personne ────────
   "src/app/reglages/compte/actions.ts#ecrireIdentiteAction":

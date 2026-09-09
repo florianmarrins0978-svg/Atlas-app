@@ -54,6 +54,13 @@ export type SaisieClient = {
   telephone?: string | null;
   email?: string | null;
   adresse?: string | null;
+  /**
+   * Il a appuyé sur « Ce n'est pas lui ».
+   *
+   * C'est le seul geste qui puisse contredire la reconnaissance, et il gagne
+   * toujours : lui seul sait que ce Martins-là n'est pas celui d'Atlas.
+   */
+  refuseLeRapprochement?: boolean;
 };
 
 export type Rapprochement =
@@ -66,8 +73,9 @@ export type Rapprochement =
   | {
       type: "creer";
       /** `inconnu` : personne de ce nom. `contradiction` : ce nom existe, mais
-       *  avec d'autres coordonnées — c'est quelqu'un d'autre. */
-      motif: "inconnu" | "contradiction";
+       *  avec d'autres coordonnées — c'est quelqu'un d'autre. `refuse` : il a
+       *  dit « ce n'est pas lui », et sa parole passe avant la règle. */
+      motif: "inconnu" | "contradiction" | "refuse";
     };
 
 /** Sans accents ni casse : « Rivière » et « RIVIERE » sont le même homme. */
@@ -140,6 +148,17 @@ export function rapprocherClient(
   saisie: SaisieClient,
   existants: readonly ClientExistant[]
 ): Rapprochement {
+  // **« Ce n'est pas lui » ferme la question, et rien ne la rouvre.**
+  //
+  // Sans cette porte, le refus ne tenait pas : il vide les cases reprises, le
+  // nom reste seul, et la règle du nom seul RETROUVAIT le même homme. Le patron
+  // aurait vu Atlas lui répondre « si, c'est lui » — et son chantier serait
+  // parti chez le voisin qu'il venait d'écarter.
+  //
+  // Le refus est une DONNÉE, pas un cas particulier posé à côté de la règle :
+  // il entre ici, avec le reste de ce qu'il a dit (`CLAUDE.md` §4 quater).
+  if (saisie.refuseLeRapprochement) return { type: "creer", motif: "refuse" };
+
   const nom = nomRapproche(saisie.nom);
   if (!nom) return { type: "creer", motif: "inconnu" };
 
@@ -197,4 +216,59 @@ export function complementsPourFiche(
   if (mail && !existant.email?.trim()) complements.email = mail;
   if (adresse && !existant.adresse?.trim()) complements.adresse = adresse;
   return complements;
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * CE QU'ATLAS OSE POSER SUR LA FICHE PENDANT QU'IL TAPE — proposition C,
+ * tranchée par le patron le 9 septembre 2026.
+ *
+ * *« Si c'est un client déjà enregistré, on ne va pas recréer une fiche
+ * client ! »* Il tape « Martins », Atlas retrouve sa fiche et pose ce qu'il
+ * sait déjà — téléphone, e-mail, adresse. Il ne retape rien.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **POURQUOI CE N'EST PAS `rapprocherClient` TEL QUEL, ET C'EST TOUT L'ENJEU.**
+ *
+ * Le rapprochement tranche AU MOMENT D'ENREGISTRER, quand tout a été tapé, et
+ * il a le droit de départager deux homonymes par le plus récent : au pire, le
+ * chantier va chez le mauvais Martins, et cela se répare.
+ *
+ * Pré-remplir, c'est autre chose : **on ÉCRIT le numéro d'un homme sur la
+ * fiche d'un autre**, à l'écran, avant qu'il ait fini sa phrase. Il ne le
+ * relira pas — c'est justement pour ne pas retaper qu'il a demandé cet écran.
+ * Le devis part alors au mauvais numéro, et personne ne saura d'où il vient.
+ *
+ * Donc : **on ne pose rien tant que l'identification n'est pas certaine.**
+ * Quatre Martins et aucune coordonnée, c'est un doute — pas un défaut, pas un
+ * message : l'écran attend le numéro, qui tranchera de lui-même. « Plausible »
+ * n'est pas une source (`CLAUDE.md` §4).
+ *
+ * Le tableau, et il n'a que trois lignes :
+ *
+ * | Ce que la règle rend | Combien d'homonymes | On pré-remplit ? |
+ * |---|---|---|
+ * | `reutiliser`, motif `coordonnee` | peu importe | **oui** — son numéro le désigne |
+ * | `reutiliser`, motif `nom` | **un seul** | **oui** — il n'y a personne d'autre |
+ * | `reutiliser`, motif `nom` | plusieurs | **non** — on ne devine pas lequel |
+ * | `creer` | — | non, il n'y a rien à reprendre |
+ */
+export function clientAPreremplir(
+  saisie: SaisieClient,
+  existants: readonly ClientExistant[]
+): ClientExistant | null {
+  const trouve = rapprocherClient(saisie, existants);
+  if (trouve.type !== "reutiliser") return null;
+
+  const lui = existants.find((c) => c.id === trouve.id);
+  if (!lui) return null;
+
+  // Son numéro ou son mail le désignent : aucun homonyme ne peut plus s'y
+  // glisser, `rapprocherClient` les a déjà écartés.
+  if (trouve.motif === "coordonnee") return lui;
+
+  // Le nom seul ne suffit que s'il ne désigne qu'une personne.
+  const nom = nomRapproche(saisie.nom);
+  const homonymes = existants.filter((c) => nomRapproche(c.nom) === nom);
+  return homonymes.length === 1 ? lui : null;
 }
