@@ -50,6 +50,83 @@ clés Face ID. Une clé rouvre une session sans mot de passe
 (`signIn("cle-appareil")`), donc l'appareil qu'on voulait couper rentrerait à
 l'instant d'après. C'est le défaut réparé le 7 septembre 2026.
 
+## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
+
+**Sa correction :** *« chaque session peut prendre un port différent, plusieurs
+sessions tournent en même temps, n'effacez pas les batteries des autres ! »*
+
+Son lot du 8 septembre donne déjà à chaque session son **atelier** — un rang,
+donc un port, une base et un coin de Redis (`scripts/_atelier.ts`). Deux
+batteries dans deux ateliers ne se marchent plus dessus : ni le port 3000, ni
+le `TRUNCATE` de la base, ni le limiteur Redis.
+
+**Mais le verrou du 9 septembre ne le sait pas.** `verrou-batterie.mjs` pose
+**un seul fichier à la racine** et refuse la seconde batterie : *« La machine est
+à un seul occupant : attendez qu'elle finisse. »* L'atelier est pris ligne 112
+de `verifier-avant-livraison.ts`, le verrou ligne 332 — et c'est le verrou qui
+tranche. Les ateliers sont donc neutralisés pour ce qui les motivait.
+
+**Ce qu'il faudrait, et ce qu'il NE faut pas défaire au passage :**
+
+| | |
+|---|---|
+| le verrou | par ATELIER — un fichier par rang. Deux batteries en parallèle deviennent possibles |
+| la garde d'écriture | **inchangée**, et c'est délibéré : ce qu'elle protège — un fichier source qui bouge sous une mesure — est vraiment commun au dossier, et c'est sa colère du 9 septembre |
+| `restesDeBatterie` | à relire : il cherche des restes sans savoir de quel atelier |
+| `test-verrou-batterie.ts` | 27 cas à garder verts, et un cas neuf : deux ateliers, deux batteries, aucune ne refuse l'autre |
+
+**Le piège :** `node scripts/verrou-batterie.mjs rendre --force` efface le verrou
+de CELUI QUI MESURE. Il ne se lance que sur un verrou dont le processus est mort
+— jamais pour se faire de la place.
+
+---
+
+## ⏳ LA PLANCHE 86 MONTRE ENCORE « QUI PUIS QUAND » (9 septembre 2026)
+
+`appli/planning-simple.html` — retenue par lui le 21 août — demande toujours
+« Matin · Après-midi · Journée » après avoir touché le nom d'un chantier.
+L'application ne le demande plus depuis le 9 septembre (`ARCHITECTURE.md` §308) :
+la durée est en base, et ces trois boutons la réécrivaient.
+
+**Rien n'a été touché à la planche**, et c'est délibéré : une planche qu'il a
+retenue ne se réécrit pas sans lui. À lui de dire s'il veut la reprendre —
+`scripts/verifier-maquette-planning-simple.mjs` suit la planche, pas
+l'application, et reste vert dans les deux cas.
+
+---
+
+## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
+
+**Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce
+que ça me remet à la page de connexion ? »* — et le bouton n'existe pas. Le seul
+geste est « Me déconnecter partout », au bas de l'écran « Mot de passe ».
+
+`appli/me-deconnecter.html` propose une ligne de sortie tout en bas du sommaire
+des Réglages, puis une confirmation. **Un seul geste, rien à choisir.**
+
+**Sa première version a été refusée le jour même** — *« ça ne fait pas pro »* —
+et elle demandait « cet appareil ou tous » dans une feuille à deux boutons.
+**Ne pas la ressusciter :** la déconnexion générale a déjà sa place, sous « Mot
+de passe », et c'est là que les grandes applications la rangent aussi.
+
+**Le dessin est celui de `SupprimerCeClient.tsx`**, tranché le 2 septembre :
+ligne en capitales espacées 9,5 px couleur `alert`, cible de 44 px, aucune
+capsule ; `BottomSheet`, bouton plein `alert` de 52 px, « Annuler » en simple
+mot. **Sans le surtitre d'alerte** — se déconnecter n'est pas irréversible.
+
+**Rien n'est codé, et rien ne se code avant son accord.**
+
+**Ce que le geste « cet appareil » coûterait**, si retenu : la session vit dans
+un jeton (`session: { strategy: "jwt" }`, `src/auth.ts:36`), donc effacer le
+cookie suffit — `/api/session-perimee` le fait déjà, il n'y a pas de session à
+révoquer côté serveur. **Face ID resterait posé** sur l'appareil, et c'est
+exactement ce qui sépare ce geste du geste « partout ».
+
+**Le piège à ne pas rouvrir :** ne jamais laisser « partout » sans retirer les
+clés Face ID. Une clé rouvre une session sans mot de passe
+(`signIn("cle-appareil")`), donc l'appareil qu'on voulait couper rentrerait à
+l'instant d'après. C'est le défaut réparé le 7 septembre 2026.
+
 ## ⏳ DEUX MOTS À TRANCHER — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
 Le lot est livré et sur `main`. Deux choses n’ont pas été tranchées, et elles
@@ -242,6 +319,21 @@ délibérément (`SANS_CLES_IA`) — `test-anneau-dictee`, `test-anneau-vers-dev
 soit les réparer, soit les nommer**. Huit rouges permanents deviennent un bruit
 dans lequel un vrai défaut se cache — c'est déjà écrit plus bas dans ce fichier,
 et la liste s'allonge.
+
+### ~~🔴 `test-pages-legales-uniques` — les CGU publiées ne sont pas celles qu'il signe~~ — **RÉGLÉ le 9 septembre 2026**
+
+**Relevé le 9 septembre au soir, 334/336 suites base.** Les deux exemplaires de
+`conditions-utilisation.html` avaient divergé : `appli/` portait l'article 14
+rempli — les trois formules, leurs prix — écrit par le lot de l'abonnement le
+même jour ; `public/`, celui que l'application SERT et qu'on fait accepter, en
+était resté à « Prix et abonnement », sans tarifs.
+
+**Ce n'était pas un défaut de contrôle**, c'est ce qu'il attrape : on faisait
+accepter un texte qui n'est pas celui qu'on publie. Refermé le soir même par la
+session de l'abonnement (`6136cc3`), qui a aussi posé
+`scripts/capture-documents-legaux.mts` pour le voir sur le vrai écran. Gardé ici
+barré : c'est le seul rouge de la batterie du soir, et savoir qu'il a été réglé
+évite de le rouvrir.
 
 ---
 
@@ -2088,15 +2180,34 @@ devis ; ce qu'il retient en est la moitié — le supplément vit sur la facture
 une seule pièce. **Son écrit reste le bon signé sur place** (C), tranché le
 4 septembre : ce n'est pas la facture qui protège de la contestation.
 
-**PLUS RIEN N'EMPÊCHE DE CODER.** Ce qu'il reste à écrire, et personne ne l'a
-pris :
+**✅ CODÉ ET ÉPROUVÉ LE 9 SEPTEMBRE 2026**, sur son « oui vas-y ».
 
 | | |
 |---|---|
-| la base | des lignes de facture qui ne viennent pas du devis, avec leur taux propre |
-| `factures.ts` | `terminerChantier` recopie le devis ; il faut qu'une facture en brouillon accepte des lignes en plus, et que l'émission les fige avec le reste |
-| l'écran | le bouton à la place de la phrase, la feuille en lecture seule, la catégorie qui s'écrit |
-| le PDF | les deux blocs, et le récapitulatif par taux |
+| la base | migration **0082** — `lignes_facture.supplement`, et la reprise du devis ne l'emporte plus |
+| `factures.ts` | ajouter, corriger, retirer ; refus sur une facture arrêtée, refus sur toute ligne du devis |
+| l'écran | `/chantiers/[id]/facture/travaux-supplementaires` — lignes du devis en texte, catégorie en champs |
+| le PDF | `lignesParBloc` : le devis, puis « TRAVAUX SUPPLÉMENTAIRES » |
+| la suite | `test-travaux-supplementaires-db.ts` — **9 contrôles, 0 échec** |
+
+**Rien n'a eu besoin d'être écrit pour les totaux ni la TVA** : `emettreFacture`
+recalculait déjà tout depuis les lignes, taux par taux. Le pourquoi de ce choix
+et ce qu'il évite : `ARCHITECTURE.md` §304.
+
+**❌ ÉCARTÉ LE 9 SEPTEMBRE 2026, ET À NE PAS LUI REPROPOSER :** *« oublie ces
+deux planches, je ne les aime pas »* — le bon signé sur place
+(`appli/ts-bon-sur-place.html`, solution C) et l'arrêt qui bloque ou avertit
+(`appli/ts-arret-3.html`, solutions B et D). Les deux planches restent, marquées
+en tête : une planche raconte le chemin, y compris ce qui n'a pas été retenu.
+
+**Ce que cela laisse à découvert, et il faut le savoir sans le lui redire :** le
+supplément sur la facture règle le GESTE qui manquait, jamais le risque
+d'impayé. Rien dans Atlas ne trace l'accord du client sur un travail ajouté —
+c'est la troisième fois qu'il écarte cette question (1ᵉʳ, 4 et 9 septembre), et
+c'est sa décision. En cas de contestation, la preuve reste ce qu'il aura écrit
+lui-même, hors de l'application.
+
+**Le sujet des travaux supplémentaires est donc CLOS.**
 
 **Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
 transmises (`scripts/` non concerné : le parcours a été joué à la main, captures

@@ -141,12 +141,29 @@ export function phraseDuRefus(quoi, fichiers) {
     "autre — le 4 septembre 2026, un lot entier a dû être réécrit de mémoire",
     "parce que personne n'a vu passer le geste qui l'avait effacé.",
     "",
-    "**Ce qui fait la même chose et se défait :**",
+    "**Ce qui fait la même chose et se défait — SUR VOS FICHIERS SEULEMENT :**",
     "",
-    '   git stash push --include-untracked -m "ce que je mets de côté"',
+    '   git stash push --include-untracked -m "ce que je mets de côté" -- <vos fichiers>',
     "",
     "Puis `git stash pop` pour le reprendre. Si le travail est le vôtre et qu'il",
     "est fini, enregistrez-le plutôt : `git add … && git commit`.",
+    "",
+    // **LES CHEMINS NE SONT PAS UN DÉTAIL — sa correction du 9 septembre 2026 :**
+    // *« quand elles tournent en même temps, souvent elle emmène le code de
+    // l'autre ; ça aussi je ne veux plus que ça arrive »*.
+    //
+    // Ce message conseillait un `git stash push --include-untracked` NU. Dans un
+    // arbre partagé par quatre sessions, il emporte l'arbre ENTIER — le travail
+    // des trois autres part dans la remise de celle qui l'a tapé, et il n'en
+    // revient que si elle pense à le rendre. Le geste vanté ici faisait donc
+    // exactement ce que la phrase du dessus reproche.
+    "**Et la vraie réponse n'est pas un geste, c'est un DOSSIER :**",
+    "",
+    "   npm run sessions:preparer 5",
+    "",
+    "Un répertoire de travail par session (`git worktree`, même dépôt, même",
+    "historique). Chacune a alors ses fichiers à elle : plus rien à emporter,",
+    "plus rien à écraser, et les suites navigateur tournent enfin en parallèle.",
   ].join("\n");
 }
 

@@ -338,6 +338,13 @@ export default function FinDeChantier({
                       className="h-[46px] w-[46px] overflow-hidden rounded-[9px]"
                       style={{
                         opacity: prise ? 1 : 0.45,
+                        // **Un fond, pour qu’une photo qui n’arrive pas laisse un
+                        // cadre calme et non une image brisée** — il l’a vu le
+                        // 9 septembre 2026 sur sa capture. Le glyphe du
+                        // navigateur se lit comme une panne de l’application,
+                        // alors que le fichier met parfois une seconde à venir
+                        // depuis un chantier sans réseau.
+                        backgroundColor: colors.rustTint,
                         // Le liseré d'or, pas un fond teinté : il tient sur les
                         // huit chartes, dont les deux sombres.
                         boxShadow: prise

@@ -24,6 +24,47 @@ Avant d'écrire une ligne de code dans une nouvelle conversation, dans cet ordre
 Ne jamais demander au patron de rappeler ce qui a été fait. C'est le rôle de ces
 fichiers, et leur défaillance est une défaillance du dépôt, pas de sa mémoire.
 
+### 0. AVANT MÊME ÇA : est-ce que ce dossier est À MOI ?
+
+**Sa colère du 9 septembre 2026 :** *« quand elles tournent en même temps,
+souvent elle emmène le code de l'autre ; ça aussi je ne veux plus que ça
+arrive »*.
+
+Il fait tourner trois, quatre, cinq sessions. Dans **un seul** dossier, elles
+partagent un seul répertoire de travail et un seul `HEAD` : tout ce qui déplace
+l'arbre le déplace pour tout le monde, et personne ne voit passer le geste.
+
+| Le geste | Ce qu'il emporte dans un arbre partagé |
+|---|---|
+| `git stash push --include-untracked` (sans chemins) | **l'arbre entier** — le travail des autres part dans MA remise |
+| `git checkout <branche>`, `git switch` | le contenu des fichiers change sous les trois autres, en pleine frappe |
+| `git merge`, `git pull` | idem, et un conflit s'ouvre sur du code que je n'ai pas écrit |
+| `pkill -f next-server` | le serveur de la batterie d'à côté (voir §6) |
+
+**LA RÉPONSE EXISTE DÉJÀ DANS LE DÉPÔT, et elle date du 8 septembre :**
+
+```bash
+npm run sessions:preparer 5     # un dossier par session, une fois pour toutes
+npm run sessions:preparer --liste
+```
+
+`scripts/preparer-sessions.mjs` crée un **`git worktree` par session** : même
+dépôt, même historique, mêmes remontées, `main` toujours le seul bien commun —
+seul le répertoire de travail change. Chaque session a alors ses fichiers à
+elle. Plus rien à emporter, plus rien à écraser ; et Next.js 16, qui **refuse un
+second serveur dans le même dossier quel que soit le port**, en laisse enfin
+tourner cinq (`ARCHITECTURE.md`, « l'atelier est nécessaire, il n'est pas
+suffisant »).
+
+**Ce que la session doit faire en arrivant :** vérifier où elle est
+(`git rev-parse --show-toplevel`). Si c'est le dossier principal alors que
+d'autres sessions tournent, le dire — et ne jamais employer les quatre gestes du
+tableau tant qu'on y est.
+
+**Ce qui reste vrai même dans son propre dossier :** on ne jette pas le travail
+non enregistré (`scripts/garde-travail-non-enregistre.mjs`), et l'on ne tue
+jamais un processus par motif (§6).
+
 ## 1 bis. « Ça ne marche pas » : REGARDER sa machine avant de lui parler
 
 **Règle née de la nuit du 11 au 12 août 2026, et elle vaut pour toutes les
@@ -1142,9 +1183,17 @@ journée, tous pour la même raison.
 un `git status`, un `grep`. Pendant dix minutes, c'est la seule chose utile — et
 un verrou qui interdirait aussi cela se ferait contourner dès le deuxième jour.
 
-**Il ne peut pas geler le dossier pour toujours** : le verrou porte un PID et un
-signe de vie rafraîchi toutes les vingt secondes. Processus mort ou silence de
-plus de quatre-vingt-dix secondes, il ne vaut plus rien. En cas de doute :
+**CE QUI PROUVE QU'UNE BATTERIE TOURNE, C'EST SON PROCESSUS** — corrigé le soir
+même, et il l'a payé une fois de plus. La première version tenait la vie du
+verrou à un battement de vingt secondes ; or la batterie enchaîne ses étapes en
+`spawnSync` et **bloque son fil du début à la fin** : aucun timer n'y part
+jamais. Le verrou se déclarait donc mort au bout de quatre-vingt-dix secondes et
+rouvrait le dossier **au milieu de la mesure** — une session voisine a écrit, et
+le verdict est parti à la poubelle sous ses yeux.
+
+Un verrou dont le processus vit tient désormais, muet ou non. Le silence n'est
+plus qu'un plafond de dernier recours — quarante-cinq minutes — contre un PID
+recyclé par le système. En cas de doute :
 `node scripts/verrou-batterie.mjs etat`, et `rendre --force` s'il ment.
 
 **`redis-cli FLUSHALL` VIDE LE LIMITEUR DE TOUTES LES SESSIONS — et ce n'est
@@ -1624,6 +1673,42 @@ a son propre conteneur — sa base, son Redis, son port 3000. Un serveur orpheli
 qui tient le port 3000 est **le sien**, jamais celui d'à côté : le chercher chez
 les autres fait perdre le temps qu'on croyait gagner. Le seul bien commun, c'est
 `main`.
+
+**CE PARAGRAPHE NE VAUT PAS DANS SON DOSSIER — 9 septembre 2026.** Sa
+correction : *« chaque session peut prendre un port différent, plusieurs
+sessions tournent en même temps, n'effacez pas les batteries des autres ! »*
+Chez lui, les sessions partagent le dossier ET la machine ; ce qu'elles ne
+partagent plus, depuis son lot du 8 septembre, c'est l'**atelier** —
+`scripts/_atelier.ts` donne à chacune son rang, donc son port, sa base et son
+coin de Redis (3000/`atlas_test`, 3001/`atlas_test_a1`, 3002/`atlas_test_a2`…).
+
+| | |
+|---|---|
+| dans le conteneur d'un agent | un seul occupant : ce qui tourne est à soi |
+| **dans SON dossier** | trois ou quatre sessions, chacune dans SON atelier |
+
+**ON NE TUE JAMAIS PAR MOTIF.** `pkill -f next-server`, `pkill -f "next start"`,
+`killall node` : ces trois-là ne visent pas un processus, ils visent un NOM — et
+ils emportent le serveur de la batterie d'à côté, dix minutes de mesure avec.
+Le dépôt l'a déjà payé (`scripts/test-fiche-pendant-relance.ts`) et
+`run-e2e-tests.ts` écrit déjà le bon geste :
+
+```bash
+pgrep -af 'next-server|next dev'   # on REGARDE d'abord
+kill -9 <le pid, le sien>          # on vise UN processus
+```
+
+Un serveur qu'on veut déloger se reconnaît à **son port** — celui de son propre
+atelier —, jamais à son nom. Et quand on ne sait pas lequel est le sien, on ne
+tue rien : on demande son port à `prendreUnAtelierSync`, ou l'on attend.
+
+**Ce que le dépôt ne tient PAS encore, et qu'il ne faut pas croire tenu :** le
+verrou de la batterie est posé sur **un seul fichier à la racine**
+(`.atlas-batterie-en-cours.json`) et refuse la seconde batterie — *« La machine
+est à un seul occupant »*. Les ateliers existent donc, et la batterie les
+ignore : deux sessions ne peuvent pas mesurer en même temps, alors que rien ne
+les en empêcherait. C'est inscrit dans `TODO.md`, et ce n'est pas une raison
+pour forcer le verrou d'une autre session (`rendre --force` efface SA mesure).
 
 **Pourquoi elle a été prise, et ce qu'elle corrige.** Ce soir-là, un écran fini
 et vérifié a mis des heures à parvenir jusqu'à lui — non pas par difficulté,

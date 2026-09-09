@@ -329,8 +329,8 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
  * hors de Claude — un enregistrement dans l'éditeur — échappe au verrou, et
  * c'est alors l'empreinte qui parle.
  */
-const rendreLeVerrou = prendreLeVerrou("npm run verifier:avant-livraison");
-process.on("exit", rendreLeVerrou);
+const verrou = prendreLeVerrou("npm run verifier:avant-livraison");
+process.on("exit", verrou.rendre);
 
 // L'état des sources AVANT de mesurer. Comparé à la fin : un verdict rendu sur
 // un arbre qui a bougé pendant la mesure ne porte sur rien.
@@ -339,6 +339,11 @@ const empreinteAvant = empreinteDesSources(RACINE);
 rmSync(DIST_VERIFICATION, { recursive: true, force: true });
 
 for (const etape of ETAPES) {
+  // **Le verrou se signe ICI, entre deux étapes** — jamais par une minuterie.
+  // Ce fil est bloqué par `spawnSync` du début à la fin : un `setInterval` n'y
+  // partirait pas une seule fois, et c'est exactement ce qui a laissé une
+  // session voisine écrire pendant la mesure du 9 septembre 2026.
+  verrou.signer();
   console.log(`\n\x1b[1m→ ${etape.nom}\x1b[0m`);
   const env = { ...process.env, ...(etape.env ?? {}) };
   for (const cle of etape.envSupprime ?? []) delete env[cle];

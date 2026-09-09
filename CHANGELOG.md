@@ -14,7 +14,7 @@ Format : le plus récent en tête.
 en bas du sommaire, une feuille de confirmation, et l'on repart sur l'écran de
 connexion. Le dessin est celui de `SupprimerCeClient` (2 septembre), sans son
 surtitre d'alerte — se déconnecter n'est pas irréversible. Le pourquoi de chaque
-choix est dans `ARCHITECTURE.md` §304.
+choix est dans `ARCHITECTURE.md` §309.
 
 | | |
 |---|---|
@@ -44,6 +44,133 @@ couches, flèches, boutons, couleurs) sont **verts**. La batterie complète
 **n'a pas été jouée** — elle prend le port 3000 et vide la base, et sa règle du
 4 septembre veut qu'on le lui demande d'abord. Tant qu'elle n'a pas tourné,
 `test-se-deconnecter-e2e` n'a jamais été vu ni vert ni rouge.
+
+### L'onglet des retours existe toujours, et ses photos se voient enfin
+
+*« L'onglet retour d'intervention doit exister même s'il n'y a aucun retour ! »*
+Il avait raison : un onglet qui paraît un jour et pas l'autre se cherche, et le
+premier retour arriverait dans un endroit dont il ignore l'existence. Le compte
+total, qui ne servait qu'à le faire paraître, s'en va avec la condition.
+
+*« J'ai joint des photos en créant la fiche de Julien, elles n'apparaissent nulle
+part »* — elles étaient visibles dans le seul tiroir « Fin de chantier », parmi
+les preuves à cocher : après le travail, dans un endroit qu'on n'ouvre qu'en
+partant. Elles sont désormais **au-dessus des lignes du devis**, là où il les a
+demandées, et elles ne disparaissent pas quand le bandeau s'ouvre
+(`ARCHITECTURE.md` §307).
+
+### Les retours non lus se voient d'un coup d'œil
+
+Sa demande : *« comme pour les SMS »*. La pastille de l'onglet ne compte plus le
+total mais **ce qu'il n'a pas ouvert**, et chaque retour non lu porte un point
+doré avant sa date. Ouvrir l'éteint — et ça tient au rechargement.
+
+**Le piège vu à temps** : l'onglet n'existait que « s'il y a des retours ». En y
+mettant le compte des non-lus, il aurait disparu le soir où il aurait tout lu, et
+avec lui le seul chemin vers la page. Le dépôt rend donc les deux comptes.
+
+**Et la lecture est nominative** : `/termines` est ouvert au propriétaire comme à
+la facturation, et une lecture partagée aurait fait disparaître sa pastille parce
+qu'un autre a ouvert le matin (migration 0083, `ARCHITECTURE.md` §307).
+
+### Un retour d'intervention se lit enfin — « tout fait » disparaît
+
+Sa capture : *« il y a marqué tout fait, mais ce n'est pas ce qui a été fait »*.
+Le mot résumait un chiffre qu'il ne pouvait pas vérifier, et les « 2 photos »
+n'existaient qu'en chiffre. C'est **« 1 sur 2 »** partout, et **la carte s'ouvre
+en grand** : chaque ligne avec sa coche, ce qui n'a PAS été fait en toutes
+lettres, les photos sur deux colonnes, son mot. « Replier » la referme.
+
+**Ce qui n'a pas été fait est la seule ligne qui l'arrête** avant de facturer un
+travail qui n'a pas eu lieu — c'est toute la raison d'être de cet écran.
+
+Et l'image brisée qu'il avait vue est partie : une photo qui n'arrive pas laisse
+un cadre calme, pas le glyphe du navigateur, qui se lit comme une panne
+(`ARCHITECTURE.md` §306).
+### Le compteur de TVA ne se remplit pas tout seul — et il le dit enfin
+
+*« Même si c'est tous les mois, ça ne doit pas rentrer au compteur tout seul ;
+il faut que l'utilisateur appuie sur payer. »* C'est déjà le cas depuis le
+14 août, et rien n'a changé au calcul : une facture émise et jamais réglée
+n'apporte rien au relevé, quel que soit le rythme.
+
+**Ce sont les mots qui promettaient le contraire.** « Le jour où vous serez
+payé », « quand votre client vous paie » : deux phrases qui nomment une date que
+le monde décide, donc une application qui apprendrait seule qu'un virement est
+arrivé. Elles nomment maintenant son geste — « quand vous appuierez sur
+"Payée" ».
+
+**Et une facture à 0,00 € n'attend plus rien.** Sa capture en portait une,
+coincée en attente pour toujours : le relevé n'en veut pas, et « Payée » ne
+pouvait pas la solder — un règlement de zéro est refusé, à juste titre. Elle
+occupait l'écran avec un bouton qui ne pouvait qu'échouer.
+
+### « Dernier devis » n'apparaissait presque jamais
+
+**Il l'a vu sur la fiche de Julien** : un devis du 7 septembre à l'écran, et le
+bouton absent. Il tenait au dernier chantier **TERMINÉ** — or un devis envoyé
+n'est pas un chantier fini, et la plupart de ses clients n'en ont aucun. Le
+geste était donc invisible chez presque tout le monde.
+
+Un bouton nommé « Dernier devis » se lit désormais sur le dernier DEVIS, et sur
+**la même liste ordonnée** que la colonne qu'il voit sur la fiche : deux façons
+de dire « le plus récent » finiraient par désigner deux devis différents.
+
+La suite de bout en bout portait la même erreur — elle terminait un chantier
+pour faire apparaître le bouton, et documentait donc une règle fausse. Elle
+envoie maintenant le devis, comme lui.
+
+### Poser un chantier ne demande plus « Matin, Après-midi ou Journée »
+
+*« Si Claudette c'est un chantier 1 journée, deux, ou une demi, ça doit se mettre
+tout seul — je dois pas avoir à choisir »* (9 septembre). Toucher le nom du
+chantier le pose : la durée est déjà en base, et l'application cherche la moitié
+de journée où elle tient.
+
+**Ce que les trois boutons faisaient sans le dire :** ils réécrivaient la durée.
+« Matin » sur un chantier d'une journée le ramenait à une demi-journée, en
+silence — l'après-midi repartait à la vente, et cela ne se voyait que le jour du
+chantier.
+
+**« Déplacer » ne bouge pas** : c'est là qu'on corrige un moment, sur un chantier
+déjà posé, et c'est là que le mot choisi est vraiment une demande.
+
+**La même racine dans l'assistant :** une dictée qui ne disait pas l'heure
+réservait la journée entière. Sans moment dit, plus rien n'est supposé.
+
+Détail et contrôles : `ARCHITECTURE.md` §308.
+
+### Les travaux supplémentaires : le bouton, la feuille, et une seule facture
+
+*« Si on effectue des travaux en plus chez un client, on n'a aucun moyen de
+rajouter les TS sur la facture »* — son constat du 31 août. La facture recopiait
+le devis et ne bougeait plus.
+
+À la place de la phrase **« Rien n'a changé depuis le devis ? »** — qui posait
+une question sans offrir de réponse, et n'était même pas cliquable — un bouton.
+Il ouvre la feuille du devis : ses lignes, ses totaux, et une catégorie
+**« Travaux supplémentaires »** créée d'office, avec sa TVA propre si on veut.
+
+**Le devis ne se réécrit jamais** : ses lignes sont du texte, et l'écriture
+refuse toute ligne qui n'est pas un supplément. Une facture déjà arrêtée ne
+reçoit plus rien.
+
+**Une seule facture**, sa décision : elle additionne les deux blocs, et le PDF
+les montre séparés — ce qu'il avait accepté, puis ce qui s'est ajouté.
+
+**Un défaut rendu impossible en passant :** reprendre le devis effaçait toutes
+les lignes de la facture. Il aurait emporté le travail ajouté sans un mot, au
+moment même où l'on croit ne remettre à jour que des prix.
+
+### Le verrou de la batterie ne dépend plus d'un battement
+
+Il tenait sa vie à un signe rafraîchi toutes les vingt secondes ; or la batterie
+enchaîne ses étapes de façon bloquante et **aucun timer ne partait jamais**. Au
+bout de quatre-vingt-dix secondes il se déclarait mort et rouvrait le dossier au
+milieu de la mesure — une session voisine a écrit, et le verdict a été annulé.
+
+Ce qui prouve qu'une batterie tourne est désormais **son processus**. Sa suite
+sait attraper ce défaut : elle ne l'attrapait pas.
 
 ### Ce que « me déconnecter » fait vraiment, et la maquette d'un geste absent
 

@@ -86,22 +86,23 @@ async function main() {
     [entrepriseId, premier]
   );
 
-  // ── LE CHANTIER EST TERMINÉ : sans ça, « Refaire » n'existe pas ─────────
+  // ── CE QUI ALLUME « DERNIER DEVIS » : un devis, et rien de plus ────────
   //
-  // **Cette suite jouait un cas impossible, et c'est elle qui avait tort.**
-  // Elle visitait la fiche d'un client dont le chantier venait de naître, et
-  // réclamait « Refaire ». Or la fiche ne connaît « la dernière fois » que
-  // pour un chantier TERMINÉ (`fiche-client.ts`) — une règle apprise à l'écran
-  // le 3 septembre : un chantier créé le matin même porte la date du jour, et
-  // s'annonçait comme une prestation où personne n'était encore allé.
+  // **Cette suite exigeait un chantier TERMINÉ jusqu’au 9 septembre 2026**, et
+  // elle avait tort avec le code : le bouton tenait au dernier chantier fini,
+  // et le patron l’a vu manquer sur la fiche d’un client qui portait un devis
+  // de l’avant-veille. Un devis envoyé n’est pas un chantier fini.
   //
-  // Le bouton se tient sous ce bloc et parle de lui : le montrer sans lui
-  // aurait proposé de refaire un travail qui n'a pas eu lieu.
-  //
-  // La fin de chantier se pose ici en base plutôt qu'à l'écran : `terminer`
-  // exige un devis parti et CRÉE la facture — tout un cycle comptable, qui a
-  // ses propres suites. Ce qu'on éprouve ici commence APRÈS.
-  await pool.query(`UPDATE chantiers SET termine_at = now() WHERE id = $1`, [premier]);
+  // Le devis posé ci-dessous suffit donc, et c’est ce qu’on éprouve.
+  // **Le chantier en porte déjà un, en brouillon** : on l’envoie, parce que
+  // seuls les devis ENVOYÉS entrent dans la colonne de sa fiche — et que le
+  // bouton se lit sur cette même liste, pour qu’il n’y ait qu’une vérité.
+  const { rowCount: envoyes } = await pool.query(
+    `UPDATE devis SET statut = 'envoye', date_emission = CURRENT_DATE
+      WHERE chantier_id = $1`,
+    [premier]
+  );
+  assert.ok(envoyes && envoyes > 0, "le chantier n’a aucun devis à envoyer");
 
   // ── LE TARIF MONTE, entre les deux chantiers ────────────────────────────
   await pool.query(`UPDATE tarifs SET prix = '18.20' WHERE entreprise_id = $1 AND intitule = $2`, [

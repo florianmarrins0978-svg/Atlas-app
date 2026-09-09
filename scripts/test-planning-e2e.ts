@@ -349,18 +349,30 @@ async function main() {
     assert.ok(dit.includes("libre"), `la fiche ne dit pas « libre » : « ${dit} »`);
   });
 
-  await essai("poser sur la journée écrit la date ET la durée en base", async () => {
+  // **UN SEUL APPUI POSE LE CHANTIER — sa remarque du 9 septembre 2026.**
+  // Le tiroir offrait « Matin · Ap.-m. · Journée » ; ces trois-là ne comblaient
+  // aucun trou — la durée est en base — et écrasaient ce que le devis avait
+  // fixé. Ce qui est éprouvé ici, c'est donc les DEUX moitiés de sa phrase :
+  // qu'un appui suffise, et que la durée du chantier survive au geste.
+  await essai("un appui pose le chantier, sans demander quand", async () => {
     await ouvrirLeTiroir();
-    await page
-      .locator(`[data-atlas="sans-date"]:has-text("${nom}")`)
-      .first()
-      .locator('[data-poser="journee"]')
-      .click();
+    const ligne = page.locator(`[data-atlas="sans-date"]:has-text("${nom}")`).first();
+    const boutons = ligne.locator("[data-poser]");
+    assert.equal(
+      await boutons.count(),
+      1,
+      "poser un chantier ne doit plus demander de choisir un moment"
+    );
+    await boutons.click();
     await attendre("la date est écrite", async () => (await enBase()).jour === JOUR);
     const c = await enBase();
     assert.equal(c.jour, JOUR, "la date n'est pas celle du jour touché");
-    assert.equal(c.creneau_debut, "matin", "une journée part le matin");
-    assert.equal(c.duree_demi_journees, 2, "une journée fait deux demi-journées");
+    assert.equal(c.creneau_debut, "matin", "une journée vide se prend par le matin");
+    assert.equal(
+      c.duree_demi_journees,
+      2,
+      "la durée du chantier a été réécrite par la pose"
+    );
   });
 
   // ─── LA FICHE DU JOUR — sa correction du 21 août au soir ────────────────
@@ -688,24 +700,37 @@ async function main() {
     });
   });
 
-  // ─── AJOUTER DEPUIS LA FICHE : d'abord QUI, ensuite QUAND ───────────────
+  // ─── AJOUTER DEPUIS LA FICHE : ON TOUCHE LE NOM, C'EST POSÉ ─────────────
 
-  await essai("« Ajouter un chantier » demande d'abord QUI", async () => {
+  await essai("« Ajouter un chantier » demande QUI, et rien d'autre", async () => {
     await toucherLeJour(JOUR);
     await toucherAuCentre(page.locator('[data-atlas="carte-jour"] [data-atlas="ajouter"]'));
     await page.waitForSelector(`[data-qui="${chantierId}"]`, { timeout: 10_000 });
   });
 
-  await essai("puis QUAND — et le geste atteint la base", async () => {
+  // **LA DEMI-JOURNÉE DU DEVIS SURVIT À LA POSE.** Le chantier vaut UNE
+  // demi-journée à ce moment de la suite — l'essai « Déplacer » l'y a mis, et
+  // « Retirer » ne lui a pris que sa date. L'ancienne version touchait ensuite
+  // « Matin », donc écrivait elle-même la durée qu'elle allait vérifier : elle
+  // aurait été verte même sur un chantier d'une journée réduit de moitié en
+  // silence, ce qu'il a signalé le 9 septembre 2026. On ne touche plus qu'un
+  // nom, et c'est la base qui doit avoir gardé la durée.
+  await essai("toucher le nom pose le chantier, et lui laisse sa durée", async () => {
     await toucherAuCentre(page.locator(`[data-qui="${chantierId}"]`));
-    const moments = await page.locator("[data-quand]").allInnerTexts();
-    assert.deepEqual(moments, ["Matin", "Après-midi", "Journée"], `lu : ${JSON.stringify(moments)}`);
-    await toucherAuCentre(page.locator('[data-quand="matin"]'));
     await attendre("le chantier est reposé", async () => (await enBase()).jour === JOUR);
+    assert.equal(
+      await page.locator("[data-quand]").count(),
+      0,
+      "un second choix est réapparu entre le nom et la pose"
+    );
     const c = await enBase();
     assert.equal(c.jour, JOUR);
     assert.equal(c.creneau_debut, "matin");
-    assert.equal(c.duree_demi_journees, 1);
+    assert.equal(
+      c.duree_demi_journees,
+      1,
+      "la demi-journée du chantier est devenue autre chose en le posant"
+    );
   });
 
   // ─── RIEN À POSER : LE GESTE DISPARAÎT ──────────────────────────────────

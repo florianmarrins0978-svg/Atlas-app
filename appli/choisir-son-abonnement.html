@@ -120,7 +120,11 @@ h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
 .compris{margin-top:10px;padding:0;list-style:none}
 .compris li{position:relative;padding:5px 0 5px 20px;font-size:13px;line-height:1.5;color:var(--encre-douce)}
 .compris li::before{content:"";position:absolute;left:2px;top:12px;width:6px;height:6px;
-                    border-radius:50%;background:var(--or)}
+                    border-radius:50%;background:var(--trait)}
+/* Ce qui s’ajoute par rapport à la formule du dessous : à l’encre, pastille
+   dorée. L’œil attrape la différence sans qu’on ait à l’écrire. */
+.compris li.neuf{color:var(--encre);font-weight:500}
+.compris li.neuf::before{background:var(--or)}
 
 .nav{position:absolute;left:0;right:0;bottom:0;height:46px;background:var(--fond);
      border-top:1px solid var(--trait);display:flex;align-items:center;
@@ -186,49 +190,85 @@ var etat = { vue: "offre", nuit: false };
  * aucune IA, et les facturer reviendrait à facturer la taille de ses chantiers.
  */
 var FORMULES = [
-  { nom: "Seul", prix: 29, an: 290, mienne: true,
-    pour: "Vous, et personne d'autre sur Atlas.",
-    compris: ["Tout l'outil, sans exception",
-              "Vos dictées et vos devis écrits par Atlas",
-              "Autant de salariés que vous voulez au planning"] },
-  { nom: "Équipe", prix: 59, an: 590, mienne: false,
-    pour: "Jusqu'à 5 personnes qui font des devis ou des factures.",
-    compris: ["Tout ce qu'il y a dans « Seul »",
-              "Le planning à plusieurs, et les absences",
-              "Les retours d'intervention de vos gars"] },
-  { nom: "Sans limite", prix: 120, an: 1200, mienne: false,
-    pour: "Autant de commerciaux que vous voulez.",
-    compris: ["Tout ce qu'il y a dans « Équipe »",
-              "Aucun compte à compter"] }
+  { nom: "Artisan", prix: 29, an: 290, mienne: true,
+    accroche: "Du devis dicté à la facture, sans rien retaper.",
+    compris: [
+      { texte: "Devis et factures illimités" },
+      { texte: "Vos dictées transcrites et chiffrées" },
+      { texte: "Le planning de vos chantiers" },
+      { texte: "Votre relevé de TVA, tenu tout seul" },
+      { texte: "Le plan d’arrosage" },
+      { texte: "Vos salariés au planning, sans supplément" }
+    ] },
+  { nom: "Entreprise", prix: 59, an: 590, mienne: false,
+    accroche: "Vos gars au planning, et jusqu’à cinq qui facturent.",
+    compris: [
+      { texte: "Devis et factures illimités" },
+      { texte: "Vos dictées transcrites et chiffrées" },
+      { texte: "Le planning de vos chantiers" },
+      { texte: "Votre relevé de TVA, tenu tout seul" },
+      { texte: "Le plan d’arrosage" },
+      { texte: "Vos salariés au planning, sans supplément" },
+      { texte: "Jusqu’à 5 personnes qui font des devis ou des factures", neuf: true },
+      { texte: "Les absences de vos équipes", neuf: true },
+      { texte: "Les retours d’intervention de vos gars", neuf: true }
+    ] },
+  { nom: "Illimité", prix: 120, an: 1200, mienne: false,
+    accroche: "Toute votre équipe sur Atlas.",
+    compris: [
+      { texte: "Devis et factures illimités" },
+      { texte: "Vos dictées transcrites et chiffrées" },
+      { texte: "Le planning de vos chantiers" },
+      { texte: "Votre relevé de TVA, tenu tout seul" },
+      { texte: "Le plan d’arrosage" },
+      { texte: "Vos salariés au planning, sans supplément" },
+      { texte: "Les absences de vos équipes" },
+      { texte: "Les retours d’intervention de vos gars" },
+      { texte: "Autant de personnes que vous voulez aux devis et aux factures", neuf: true }
+    ] }
 ];
 
 function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 function entete(){ return '<h2 class="titre">Abonnement</h2><p class="sur">Mon entreprise</p>'; }
 
 function ecranAvecOffre(){
+  // **LE PRIX S’ÉCRIT COMME CHEZ CEUX QUI EN VIVENT.** Relevé le 9 septembre
+  // 2026 chez Obat, Tolteck et Batappli, à sa demande — « va te renseigner
+  // comment c’est formulé chez les plus grandes applis ». Quatre choses
+  // reviennent partout, et aucune n’y était :
+  //
+  //   · le montant en gros, « /mois HT » en petit à côté ;
+  //   · l’année en seconde ligne avec l’ÉCONOMIE EN EUROS — « économisez 58 € »
+  //     se compare d’un coup d’œil, « deux mois offerts » se calcule ;
+  //   · une accroche par formule, qui dit le BÉNÉFICE et non la limite ;
+  //   · « sans engagement » et « sans carte bancaire », les deux objections d’un
+  //     artisan de soixante ans.
   return entete() +
     '<p class="inter">Votre formule</p>' +
     FORMULES.map(function(f){
+      var economie = f.prix * 12 - f.an;
       return '<div class="formule' + (f.mienne ? " mienne" : "") + '">' +
-        (f.mienne ? '<span class="marque">La vôtre</span>' : "") +
+        (f.mienne ? '<span class="marque">Votre formule</span>' : "") +
         '<div class="haut"><span class="n">' + ech(f.nom) + '</span>' +
-        '<span class="prix">' + f.prix + ' € <span>HT / mois</span></span></div>' +
-        '<p class="pour">' + ech(f.pour) + '</p>' +
+        '<span class="prix">' + f.prix + ' € <span>/mois HT</span></span></div>' +
+        '<p class="pour">' + ech(f.accroche) + '</p>' +
         '<ul class="compris">' + f.compris.map(function(c){
-          return "<li>" + ech(c) + "</li>";
+          return '<li' + (c.neuf ? ' class="neuf"' : "") + '>' + ech(c.texte) + "</li>";
         }).join("") + '</ul>' +
-        '<p class="an">Ou ' + f.an + ' € l\'année — deux mois offerts.</p>' +
+        '<p class="an">Ou ' + f.an.toLocaleString("fr-FR") + ' € par an — économisez ' + economie + ' €.</p>' +
         (f.mienne
-          ? '<button type="button" class="bouton creux">Changer de formule</button>'
-          : '<button type="button" class="bouton">Passer à « ' + ech(f.nom) + ' »</button>') +
+          ? '<button type="button" class="bouton creux">Gérer mon abonnement</button>'
+          : '<button type="button" class="bouton">Passer à ' + ech(f.nom) + '</button>') +
         '</div>';
     }).join("") +
-    // **Ce qui rassure, et qui doit être écrit** : un paysagiste avec huit gars
-    // croira sinon qu’il paie huit fois. C’est la phrase qui décide de l’achat.
-    '<p class="note"><b>Vos salariés ne comptent pas.</b> Seuls comptent ceux qui ' +
-    'font des devis ou des factures.</p>' +
-    '<p class="note">Résiliable à tout moment. Vos données restent à vous, et se ' +
-    'téléchargent dans « Mes données ».</p>';
+    '<p class="note"><b>Sans engagement.</b> Résiliable à tout moment, et vos ' +
+    'données restent à vous.</p>' +
+    // **NOTRE différence, et elle doit être écrite.** Chez les autres,
+    // « utilisateurs illimités » veut dire tout le monde ; ici un salarié au
+    // planning ne compte pas, et un paysagiste avec huit gars croira sinon
+    // qu’il paie huit fois. C’est la phrase qui décide de l’achat.
+    '<p class="note"><b>Vos salariés ne comptent pas.</b> Seules comptent les ' +
+    'personnes qui font des devis ou des factures.</p>';
 }
 
 function ecranEnAttente(){

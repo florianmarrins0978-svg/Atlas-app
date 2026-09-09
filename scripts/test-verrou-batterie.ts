@@ -132,13 +132,26 @@ try {
     );
   });
 
-  // ─── 4. UN VERROU MUET NE VAUT PLUS RIEN ─────────────────────────────────
+  // ─── 4. UN VERROU SILENCIEUX MAIS VIVANT TIENT ENCORE ────────────────────
   //
-  // Une batterie tuée — c'est arrivé trois fois le 9 septembre — laisserait
-  // sinon le dossier gelé jusqu'au lendemain.
+  // **C'est LE contrôle du 9 septembre au soir, et il aurait dû exister
+  // d'emblée.** La première version tenait la vie du verrou à un signe
+  // rafraîchi toutes les vingt secondes ; or la batterie enchaîne ses étapes en
+  // `spawnSync` et bloque sa boucle d'événements — le timer ne partait jamais.
+  // Quatre-vingt-dix secondes après le démarrage, le verrou se déclarait mort
+  // et rouvrait le dossier AU MILIEU de la mesure. Une session voisine a écrit,
+  // et le verdict est parti à la poubelle sous les yeux du patron.
+  //
+  // Ce qui prouve qu'une batterie tourne, c'est que **son processus est
+  // vivant** — pas qu'un fichier a été retouché récemment.
   poserVerrou(200_000);
-  test("un verrou sans signe de vie depuis trois minutes ne bloque plus", () => {
-    assert.equal(demander("Write", { file_path: "src/x.ts", content: "x" }).refuse, false);
+  test("un verrou muet depuis trois minutes TIENT si son processus vit", () => {
+    const r = demander("Write", { file_path: "src/x.ts", content: "x" });
+    assert.ok(
+      r.refuse,
+      "le verrou s'est déclaré mort sur un simple silence : la batterie bloque son fil, " +
+        "aucun battement ne part, et le dossier se rouvre pendant la mesure"
+    );
   });
 
   // ─── 5. UN VERROU DONT LE PROCESSUS EST MORT NON PLUS ────────────────────
@@ -148,6 +161,16 @@ try {
     "utf8"
   );
   test("un verrou dont le processus a disparu ne bloque plus", () => {
+    assert.equal(demander("Write", { file_path: "src/x.ts", content: "x" }).refuse, false);
+  });
+
+  // ─── 5 bis. UN SILENCE DE PLUS D'UNE HEURE NE VAUT PLUS RIEN ─────────────
+  //
+  // Le plafond n'est pas une seconde preuve de vie : c'est le garde-fou contre
+  // un PID que le système aurait recyclé longtemps après. Une batterie ne dure
+  // jamais quarante-cinq minutes.
+  poserVerrou(60 * 60_000);
+  test("un verrou silencieux depuis une heure ne bloque plus, même vivant", () => {
     assert.equal(demander("Write", { file_path: "src/x.ts", content: "x" }).refuse, false);
   });
 

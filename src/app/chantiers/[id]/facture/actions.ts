@@ -7,6 +7,9 @@ import {
   majEcheanceFacture,
   reprendreLeDevisSurLaFacture,
   terminerChantier,
+  ajouterTravauxSupplementaires,
+  majTravauxSupplementaires,
+  retirerTravauxSupplementaires,
   FactureDejaEmiseError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
@@ -160,5 +163,75 @@ export async function preparerLienFactureAction(
     return { succes: true, jeton: envoi.jeton };
   } catch (e) {
     return { succes: false, erreur: e instanceof Error ? e.message : "Le lien n'a pas pu être préparé." };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LES TRAVAUX SUPPLÉMENTAIRES — sa demande du 31 août, tranchée le 9 septembre
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// *« Si on effectue des travaux en plus chez un client, on n'a aucun moyen de
+// rajouter les TS sur la facture. »* Et sa règle du 9 : *« le devis ne se
+// réécrit pas, seulement la case travaux supplémentaires ».*
+//
+// **Le refus se rend en VALEUR, jamais en exception** (`AGENTS.md`) : le
+// message d'une exception d'action serveur n'arrive pas jusqu'à lui — Next.js
+// le remplace en production par un identifiant opaque, et son banc sert une
+// version bâtie. Il lirait « une erreur est survenue » et ne saurait pas que
+// sa facture est simplement déjà partie.
+
+export type ResultatTravaux =
+  | { succes: true; ligneId?: string; montant?: string }
+  | { succes: false; erreur: string };
+
+export async function ajouterTravauxSupplementairesAction(
+  factureId: string,
+  taux?: string | null
+): Promise<ResultatTravaux> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "ajouter des travaux supplémentaires");
+  try {
+    const r = await ajouterTravauxSupplementaires(ctx, factureId, taux);
+    return r.ok ? { succes: true, ligneId: r.ligne.id } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Travaux supplémentaires non ajoutés", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "La ligne n'a pas pu être ajoutée. Réessayez dans un instant." };
+  }
+}
+
+export async function majTravauxSupplementairesAction(
+  factureId: string,
+  ligneId: string,
+  champs: { libelle?: string; quantite?: string; prixUnitaire?: string; tauxTva?: string | null }
+): Promise<ResultatTravaux> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "corriger des travaux supplémentaires");
+  try {
+    const r = await majTravauxSupplementaires(ctx, factureId, ligneId, champs);
+    return r.ok ? { succes: true, montant: r.montant } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Travaux supplémentaires non corrigés", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "La correction n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+export async function retirerTravauxSupplementairesAction(
+  factureId: string,
+  ligneId?: string
+): Promise<ResultatTravaux> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "retirer des travaux supplémentaires");
+  try {
+    const r = await retirerTravauxSupplementaires(ctx, factureId, ligneId);
+    return r.ok ? { succes: true } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Travaux supplémentaires non retirés", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "Le retrait n'a pas pu être enregistré. Réessayez." };
   }
 }

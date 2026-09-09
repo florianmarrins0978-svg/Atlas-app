@@ -8,6 +8,49 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — POSER UN CHANTIER NE DEMANDE PLUS QUAND (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | « Ajouter un chantier » pose le chantier dès qu'on touche son nom ; le tiroir du bas n'offre plus qu'un bouton « Poser ». Plus de « Matin · Ap.-m. · Journée » avant la pose |
+| la migration | **aucune** |
+| les pièces | `src/app/planning/PlanningClient.tsx` (`poser`, `AjoutAuJour`, `TiroirDuBas`), `src/app/chantiers/[id]/informations/actions.ts` |
+| les suites | `test-planning-repo.ts` (2 neuves), `test-planning-e2e.ts`, `test-poser-une-date-e2e.ts` |
+| le détail | `ARCHITECTURE.md` §308, `docs/lot-poser-sans-choisir.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** ces trois boutons n'avaient pas l'air d'écrire
+quoi que ce soit, et ils réécrivaient `dureeDemiJournees`. « Matin » sur un
+chantier d'une JOURNÉE le ramenait à une demi-journée, sans un mot, et
+l'après-midi redevenait vendable. Le remettre pour « laisser le choix », c'est
+remettre ce défaut-là. Le choix d'un moment vit dans **« Déplacer »**, sur un
+chantier déjà posé — là il est une demande, pas une question de passage.
+
+**Ce qui décide à leur place existait déjà :** `planifierChantier` appelé sans
+`choix` lit la durée du chantier et cherche la moitié de journée où elle tient
+(`departPossible`) — la même règle que le jour proposé au client.
+
+## Dernier lot — LE COMPTEUR DE TVA NOMME SON GESTE (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | trois phrases de l'écran TVA, et l'état d'une facture à 0 € |
+| la migration | aucune |
+| les pièces | `src/app/termines/tva/DeclarationsTva.tsx`, `EnAttenteDePaiement.tsx`, `RegimeTva.tsx`, `src/lib/exigibilite-tva.ts` |
+| les suites | `scripts/test-exigibilite-tva.ts` (+2 cas) ; le parcours reste tenu par `test-tva-au-paiement-e2e.ts` |
+| le détail | `ARCHITECTURE.md` §305 |
+
+**CE QU'IL NE FAUT PAS RÉÉCRIRE EN SENS INVERSE.** Il a lu « le jour où vous
+serez payé » et compris qu'Atlas apprend seul qu'un virement est arrivé. Aucune
+phrase de cet écran ne doit plus nommer l'ENCAISSEMENT comme l'événement qui
+remplit le compteur : c'est son appui sur « Payée » qui le fait, et rien
+d'autre. Seul le TITRE du régime garde les mots de la loi — « Le mois où mon
+client me paie » est ce qu'il a déclaré aux impôts.
+
+**Et le calcul n'a pas bougé** : il était déjà juste, depuis le 14 août. Devant
+une plainte de ce genre, vérifier `entreesDuReleve` AVANT de toucher au calcul —
+le défaut peut n'être que dans les mots.
+
+---
 ## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
 | | |

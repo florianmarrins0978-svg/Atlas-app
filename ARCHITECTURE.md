@@ -26067,9 +26067,334 @@ visible vaut mieux qu’un défaut absorbé en silence (`AGENTS.md`).
 
 **Le seuil du « presque rond » vient de l’image, pas d’une intuition** : à 1,36
 (60 × 44) la pastille se lit ovale ; le garde-fou est posé à 1,25.
+## §304 — Les travaux supplémentaires : une colonne, pas une table
+
+**Son constat du 31 août 2026 :** *« si on effectue des travaux en plus chez un
+client, on n'a aucun moyen de rajouter les TS sur la facture »*. Il avait
+raison : `terminerChantier` recopie le devis, et la facture ne se modifiait
+plus.
+
+**Ses trois décisions, du 9 septembre :**
+
+| | |
+|---|---|
+| le geste | un **bouton** à la place de la phrase « Rien n'a changé depuis le devis ? », qui n'était même pas cliquable |
+| l'écran | la feuille du devis, avec une catégorie créée d'office — « comme pour l'ajout d'une TVA » |
+| la pièce | **une seule facture**, qui additionne les deux blocs |
+
+### Pourquoi une colonne et non une table d'avenants
+
+`docs/travaux-supplementaires.md` proposait quatre solutions ; la A créait un
+avenant suivant le parcours du devis — PDF, envoi, page publique, accord. Ce
+qu'il a retenu en est la moitié : le supplément vit **sur la facture**.
+
+Ce choix a une conséquence technique qui a fait tout le lot : `lignes_facture`
+porte DÉJÀ son propre `taux_tva` (migration 0073). **Une ligne de supplément est
+une ligne de facture comme une autre** — seule sa provenance est nouvelle. D'où
+`supplement boolean` (migration 0082), et rien d'autre.
+
+**Ce qui n'a donc PAS eu besoin d'être écrit :** les totaux, la TVA par taux, le
+PDF, le relevé. `emettreFacture` recalcule déjà tout depuis les lignes par
+`totauxAvecReduction`, qui sait grouper par taux depuis le devis à plusieurs
+TVA. Une table d'avenants aurait dupliqué ces quatre chemins.
+
+### Le défaut que cette colonne rend impossible
+
+`reprendreLeDevisSurLaFacture` **efface toutes les lignes** pour recopier le
+dernier devis envoyé. Sans la provenance, reprendre le devis emportait en
+silence le travail ajouté — au moment précis où le patron croit ne remettre à
+jour que ses prix. La suppression est donc bornée à `supplement = false`, et
+c'est le contrôle central de `test-travaux-supplementaires-db.ts`.
+
+### Deux gardes plutôt qu'une, et elles ne disent pas la même chose
+
+Sa règle du même jour : *« le devis ne se réécrit pas, seulement la case travaux
+supplémentaires ; le reste, impossible de les modifier »*.
+
+| | |
+|---|---|
+| à l'écran | les lignes du devis sont des `<span>`, pas des champs en lecture seule — il n'y a pas d'attribut à rouvrir |
+| à l'écriture | `supplement = true` est dans le **WHERE**, jamais dans une vérification préalable : une ligne du devis ne correspond à rien, et l'écriture ne touche rien |
+
+La seconde est celle qui compte : la première évite le geste, la seconde le rend
+impossible. Une facture ÉMISE, elle, ne reçoit plus rien du tout — le refus se
+rend en valeur, parce que le message d'une exception d'action serveur n'arrive
+jamais jusqu'à lui (`AGENTS.md`).
+
+### Le PDF montre deux blocs, et c'est ce qui évite la discussion
+
+`lignesParBloc` (dans `src/lib/`, avec les autres règles pures) groupe d'abord
+par provenance, puis par taux. Le client lit ce qu'il avait accepté, puis
+« TRAVAUX SUPPLÉMENTAIRES ». Une facture qui les mêlerait montrerait un total
+plus haut que le devis signé sans rien pour l'expliquer — et c'est exactement là
+que commence la contestation.
+
+**Ce qui protège vraiment, en revanche, n'est pas la facture** : c'est le bon
+signé sur place avant les travaux (`appli/ts-bon-sur-place.html`), tranché le
+4 septembre. Le supplément sur la facture règle le geste manquant, pas le
+risque d'impayé.
+
 ---
 
-## §304 — Sortir d'Atlas : deux gestes, deux portées, et rien qui se recopie
+## §305 — Le compteur de TVA ne se remplit pas tout seul, et l'écran doit le dire
+
+**Sa correction du 9 septembre 2026, capture à l'appui :** *« même si c'est tous
+les mois, ça ne doit pas rentrer au compteur tout seul ; il faut que
+l'utilisateur appuie sur payer pour qu'elle s'ajoute au compteur ! »*
+
+**Le calcul, lui, était juste depuis le 14 août.** Aux encaissements,
+`entreesDuReleve` ne rend une ligne que par règlement enregistré : une facture
+émise et jamais réglée n'apporte rien, quel que soit le rythme du relevé. C'est
+tenu sans base (`test-exigibilite-tva.ts`) et de bout en bout
+(`test-tva-au-paiement-e2e.ts`, « LA FACTURE ATTEND, ET LE RELEVÉ NE BOUGE
+PAS »).
+
+**Ce qui promettait le contraire, ce sont les mots.** Trois phrases nommaient
+l'ÉVÉNEMENT au lieu du GESTE :
+
+| Où | Ce qui se lisait | Ce qui se lit |
+|---|---|---|
+| la provenance du chiffre (`DeclarationsTva`) | « quand votre client vous paie » | « quand vous marquez la facture payée » |
+| l'endroit en attente (`EnAttenteDePaiement`) | « le jour où vous serez payé » | « quand vous appuierez sur « Payée » » |
+| le régime, sous son titre (`RegimeTva`) | « Une facture pas encore payée n'est pas déclarée » | « Elle entre au relevé quand vous la marquez payée » |
+
+Toutes les trois décrivaient une date que le monde décide — donc une application
+qui apprendrait seule qu'un virement est arrivé, et un compteur qui se remplit
+sans lui. Il les a lues ainsi, et il avait raison de s'en inquiéter : un
+compteur qui déclare une TVA jamais encaissée est exactement ce que le régime
+des encaissements existe pour éviter.
+
+**Le titre du régime, lui, ne bouge pas** : « Le mois où mon client me paie »
+est ce qui a été déclaré aux impôts, et cela ne se réécrit pas pour des raisons
+d'écran. La loi reste dans le titre, le geste passe dans la ligne du dessous.
+
+### La facture à zéro euro, qui attendait un règlement impossible
+
+Sa capture porte « 2 factures » en attente, dont une à **0,00 €**. Elle y serait
+restée pour toujours : `entreesDuReleve` refuse déjà une facture à zéro, et
+« Payée » ne pouvait pas la solder — un règlement de 0 € est refusé, à juste
+titre. Un bouton qui ne peut qu'échouer, sur l'écran même où il vient vérifier
+que rien n'entre tout seul.
+
+`etatPaiement` la dit désormais **soldée** : rien à encaisser, donc rien à
+attendre. La correction est dans la règle pure, là où le reste du domaine le
+disait déjà — pas dans l'écran, qui aurait alors porté une seconde définition de
+« ce qui attend ».
+
+---
+
+## §306 — Un retour se LIT, il ne se résume pas
+
+*Sa proposition A, tranchée le 9 septembre 2026 sur `appli/voir-un-retour.html` :
+« la A c’est bien, mais tu peux faire en sorte qu’elle s’ouvre en grand et qu’elle
+puisse se replier ».*
+
+### Ce que sa capture disait, et qui était faux
+
+La carte annonçait **« tout fait · 2 photos »**. Son verdict : *« il y a marqué
+tout fait, mais ce n’est pas ce qui a été fait »*. Les deux mots étaient un
+problème chacun :
+
+| Le mot | Ce qu’il cachait |
+|---|---|
+| « tout fait » | un résumé **invérifiable** : quatre cochées sur quatre s’écrivait comme un devis d’une seule ligne |
+| « 2 photos » | un **chiffre qu’il ne pouvait pas ouvrir**, sur les seules images qui prouvent le chantier |
+
+**Un compte se vérifie d’un coup d’œil, un résumé se croit.** C’est « 1 sur 2 »
+partout, et le mot « tout fait » a disparu de la règle comme du contrôle qui le
+réclamait — une suite qui exige ce qu’il a fait retirer rend son écran impossible
+à changer (`CLAUDE.md` §5 bis).
+
+### Ce qui n’a PAS été fait s’écrit
+
+En toutes lettres, à côté de la ligne : « Traitement anti-mousse — **pas fait** ».
+Une case vide se déduit d’une soustraction, et ne s’arrête pas sous l’œil.
+**C’est la seule ligne qui l’empêchera de facturer un travail qui n’a pas eu
+lieu** — c’est-à-dire toute la raison d’être de cet écran.
+
+### La carte devient une feuille
+
+Pas une page à part, pas un PDF : **la carte elle-même s’ouvre**, prolongée sans
+couture, et « Replier » la referme. Les photos y font 132 px de haut sur deux
+colonnes au lieu de 62 — des vignettes ne montrent pas si la haie est taillée.
+
+**« Replier » vit au BAS de la feuille** : c’est là que son doigt arrive une fois
+qu’il a tout lu. En haut, il faudrait remonter pour refermer ce qu’on vient de
+parcourir.
+
+**Ce qui a été écarté**, et il l’a vu sur la planche : la page à part (un écran
+de plus à quitter) et le PDF (à fabriquer, et qui ne se relit pas d’un pouce sur
+un chantier).
+
+### Et l’image brisée
+
+Une photo qui n’arrive pas montrait le glyphe du navigateur — qui se lit comme
+une panne de l’application, alors que le fichier met parfois une seconde à venir
+depuis un chantier sans réseau. Les vignettes portent désormais un fond : un
+cadre calme, pas une croix.
+
+**Les images restent en `<img>`**, comme la pellicule des chantiers :
+`next/image` réécrit le `src` via `/_next/image`, or ces fichiers sortent d’une
+route gardée qui vérifie à qui ils appartiennent. Un second chemin vers des
+photos de chantier serait le défaut de plus haute priorité de ce produit.
+
+---
+
+## §307 — Les retours non lus : une pastille qui s'éteint
+
+*Sa demande du 9 septembre 2026, capture à l’appui : « lorsqu’il y a un retour
+que le patron n’a pas vu, il faut que le nombre qui s’affiche soit celui-là, et
+pas combien il y en a à l’intérieur. Et il faut qu’on puisse distinguer du
+premier coup d’œil ceux pas ouverts — comme pour les SMS. »*
+
+### Pourquoi une TABLE, et pas une colonne `vu_le`
+
+Une colonne dirait « ce retour a été vu » **sans dire par qui**. Or `/termines`
+est ouvert au propriétaire ET au rôle facturation : la première personne qui
+ouvre effacerait la pastille de l’autre. Le patron regarderait son téléphone le
+soir, ne verrait rien à lire, et le retour lui serait passé sous le nez parce
+que quelqu’un d’autre l’avait ouvert le matin.
+
+Une ligne par LECTEUR répond exactement à ce qu’il demande — « ceux que LE
+PATRON n’a pas ouverts » — et coûte une jointure (migration 0083).
+
+### LE PIÈGE QUE CETTE DEMANDE OUVRE, et qui a été vu à temps
+
+L’onglet ne s’affichait que `si retours > 0`. En remplaçant ce compte par celui
+des non-lus, **l’onglet aurait disparu le soir où il aurait tout lu** — et avec
+lui le seul chemin vers la page où ses retours se gardent « longtemps ».
+
+Le dépôt rend donc les DEUX comptes : le total fait exister l’onglet, les
+non-lus font paraître la pastille. Une pastille qui ne descend jamais à zéro
+s’apprend à être ignorée ; un onglet qui disparaît emporte une page.
+
+### Ce que l’écran fait, et ce qu’il n’attend pas
+
+**La pastille s’éteint sous le doigt, pas quand le serveur répond.** Ouvrir EST
+la lecture : rien ne peut la refuser. Attendre l’aller-retour la ferait
+clignoter sur un réseau de chantier, et il croirait avoir mal appuyé. Si l’appel
+échoue, le retour reste non lu — le bon côté de l’erreur : il le rouvrira.
+
+**Elle est en `or`, pas en `alert`** : un retour non lu n’est pas un incident,
+c’est du courrier. Et elle vit **avant** le jour, sur la colonne que l’œil
+descend — placée à droite, il faudrait lire chaque ligne en entier pour la
+trouver.
+
+**Une lecture ne se réécrit pas.** Il rouvre le même retour trois fois dans la
+soirée : c’est la même lecture, et l’unicité `(retour, lecteur)` empêche la
+table de devenir un journal que personne n’a demandé.
+### Deux corrections du même soir, et il avait raison sur les deux
+
+**L’onglet existe même vide.** *« L’onglet retour d’intervention doit exister
+même s’il n’y a aucun retour qui existe ! »* Je l’avais caché tant que la liste
+était vide, au motif qu’un onglet qui n’ouvre rien s’apprend à ne plus être
+touché. **Il a raison contre ça** : un onglet qui apparaît un jour et pas
+l’autre se cherche, et le premier retour de son salarié arriverait dans un
+endroit dont il ignore l’existence. La page vide, elle, dit ce qui l’attend.
+
+*Conséquence, et c’est la partie qui s’enlève* : le compte TOTAL ne servait
+qu’à faire paraître l’onglet. Il ne sert plus à personne, et il s’en va —
+`compterLesRetours` ne rend plus qu’un chiffre, celui qu’il regarde.
+
+**Et ses photos n’étaient nulle part.** *« J’ai joint des photos lorsque j’ai
+créé la fiche client de Julien mais elles n’apparaissent nulle part »*, puis,
+les ayant retrouvées dans le bandeau : *« elle apparaît ici mais je ne comprends
+pas pourquoi »*, et *« elle devrait être au-dessus de Désherbage gravier »*.
+
+**Elles existaient, et c’est le pire des cas** : on ne les voyait que dans le
+tiroir « Fin de chantier », parmi les preuves à cocher — c’est-à-dire APRÈS le
+travail, dans un endroit qu’on n’ouvre qu’en partant. Or il les joint pour
+montrer le chantier à celui qui s’y rend : leur place est AVANT, entre la note
+et les lignes du devis, là où il les a demandées.
+
+**Elles ne se cachent PAS quand la fin de chantier s’ouvre**, contrairement aux
+lignes du devis. Celles-ci disparaissent parce qu’elles DEVIENNENT les cases à
+cocher ; les photos, elles, sont ce qu’on regarde pendant qu’on coche.
+
+---
+
+## §308 — Poser un chantier ne demande plus QUAND : la durée est déjà connue
+
+**Sa remarque du 9 septembre 2026, capture du planning à l'appui :** *« quand je
+clique sur "ajouter un chantier", lorsque je clique sur Claudette il me propose
+3 choix, alors que si Claudette c'est un chantier 1 journée, deux, ou une demi,
+ça doit se mettre tout seul — je dois pas avoir à choisir. »*
+
+### Ce que les trois boutons faisaient VRAIMENT
+
+Ils avaient l'air de demander une information manquante. Ils en écrivaient une.
+
+`departEtDuree(quand, duree)` traduit le mot choisi en un DÉPART **et** une
+DURÉE : « Matin » vaut une demi-journée, « Journée » en vaut deux. Poser un
+chantier par ces boutons, c'était donc réécrire `dureeDemiJournees` — la valeur
+que le devis avait fixée, ou que sa dictée avait donnée (« 3 jours » fait six
+demi-journées, `dureeEnDemiJournees`).
+
+| Le chantier | Ce qu'un appui sur « Matin » en faisait |
+|---|---|
+| une demi-journée | rien — le seul cas où les boutons disaient vrai |
+| **une journée** | **une demi-journée**, et l'après-midi repartait à la vente |
+| trois jours | rien : au-delà de deux demi-journées, `departEtDuree` protège déjà la durée et ne change que le départ |
+
+La ligne du milieu est le défaut, et il ne se voyait **nulle part** : ni sur le
+plan, ni sur le devis, ni sur la facture. Il se découvrait le jour du chantier,
+quand la journée réservée n'en était plus une — ou plus tôt, sous la forme d'un
+après-midi proposé à un client alors qu'il était pris.
+
+### Ce qui décide à leur place, et qui existait déjà
+
+`planifierChantier` **sans** `choix` :
+
+1. lit la durée du chantier — `dureeDemiJournees`, sinon la dictée, sinon une
+   journée ;
+2. cherche la moitié de journée où elle tient, par `departPossible` — la même
+   fonction que le jour proposé au client (`jourRetenable`), jamais une seconde
+   (`CLAUDE.md` §3) ;
+3. n'écrit la durée que pour la **conserver**.
+
+Rien n'a été ajouté au serveur : ce chemin était déjà celui du calendrier. Ce
+qui a été retiré, c'est l'écran qui refusait de l'emprunter.
+
+### Où le choix reste, et pourquoi il y reste
+
+**« Déplacer » n'a pas bougé.** Se tromper de moitié de journée se rattrape d'un
+appui, sur le chantier posé, et là le mot choisi EST la demande : « finalement,
+Claudette ce sera l'après-midi ». C'est l'endroit où réécrire la durée a un sens,
+parce qu'on la regarde.
+
+Ce qui distingue les deux : poser répond à « ce chantier, ce jour-là » — la
+durée n'y est pas en question ; déplacer répond à « ce chantier, ce moment-là ».
+
+### La même racine, corrigée dans l'assistant
+
+`donnees.quand` valait `?? "journee"` dans le chemin des propositions
+(`src/app/chantiers/[id]/informations/actions.ts`) : une dictée qui ne disait pas
+l'heure — « pose Claudette jeudi » — réservait donc deux demi-journées. Sans
+moment dit, aucun `choix` n'est plus passé. **Déplacer sans moment est refusé**
+et redemande : le jour ne bouge pas, le moment est tout ce que ce geste écrit,
+et le remplir d'office refaisait le même défaut.
+
+### Ce qui l'éprouve
+
+| | |
+|---|---|
+| `test-planning-repo.ts` | la règle, sans navigateur : poser sans choix garde la demi-journée réservée, et suit la dictée quand rien n'est encore réservé. Les deux ont été mis au rouge contre la règle inverse avant d'être retenus |
+| `test-planning-e2e.ts` | **le geste** : un seul bouton dans le tiroir, aucun second choix après le nom, et la demi-journée du chantier survit à la pose |
+| `test-poser-une-date-e2e.ts` | le même geste par l'autre chemin, sur un chantier ramené à une demi-journée **en base** avant l'appui |
+
+Les suites navigateur sont ici les seules à voir le défaut : la règle de dépôt,
+elle, était juste — c'est l'écran qui lui passait par-dessus (`CLAUDE.md`
+§5 quater, « éprouver le geste du patron, pas la fonction qu'on vient
+d'écrire »).
+
+**Reste ouvert :** la planche 86 (`appli/planning-simple.html`, validée le
+21 août) montre encore les deux temps « QUI puis QUAND ». Elle n'a pas été
+refaite — une planche retenue ne se réécrit pas sans lui.
+
+
+---
+
+## §309 — Sortir d'Atlas : deux gestes, deux portées, et rien qui se recopie
 
 **Sa question du 9 septembre 2026 :** *« si je clique sur me déconnecter dans les
 réglages, est-ce que ça me remet à la page de connexion ? »* Il n'y avait aucun

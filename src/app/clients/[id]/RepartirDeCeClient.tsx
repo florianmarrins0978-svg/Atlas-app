@@ -60,7 +60,15 @@ export default function RepartirDeCeClient({
   dernierChantierId,
 }: {
   clientId: string;
-  /** Absent : il n'a encore rien fait chez ce client, donc rien à refaire. */
+  /**
+   * Le chantier du DERNIER DEVIS de ce client — absent s’il n’en a aucun.
+   *
+   * **Ce n’était pas ça jusqu’au 9 septembre 2026, et il l’a vu sur sa propre
+   * fiche** : le bouton tenait au dernier chantier TERMINÉ. Julien portait un
+   * devis du 7 septembre et le bouton n’était pas là — un devis envoyé n’est
+   * pas un chantier fini, et la plupart de ses clients n’en ont aucun. Le
+   * geste était donc invisible chez presque tout le monde.
+   */
   dernierChantierId: string | null;
 }) {
   const router = useRouter();

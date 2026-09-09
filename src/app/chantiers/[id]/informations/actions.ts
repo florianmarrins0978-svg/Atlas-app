@@ -685,7 +685,20 @@ export async function appliquerPropositionsAction(
         case "deplacer_chantier": {
           const cible = chantierVise;
           const jour = String(donnees.jour ?? "").trim();
-          const quand = String(donnees.quand ?? "journee");
+          // **UN MOMENT QU'IL N'A PAS DIT NE S'INVENTE PLUS** — 9 septembre
+          // 2026, la même racine que les trois boutons du planning.
+          //
+          // Cette ligne valait `String(donnees.quand ?? "journee")` : une
+          // dictée qui ne disait pas l'heure — « pose Claudette jeudi » —
+          // arrivait donc ici avec « journée », et « journée » RÉSERVE deux
+          // demi-journées. Une demi-journée vendue au devis devenait une
+          // journée pleine dans le planning, sans qu'un mot le dise, et
+          // l'après-midi disparaissait des jours qu'il peut encore vendre.
+          //
+          // Sans moment dit, on ne passe pas de choix : `planifierChantier`
+          // garde la durée du chantier et cherche la demi-journée où elle
+          // tient — la même règle que l'écran depuis ce jour.
+          const quandDit = donnees.quand == null ? null : String(donnees.quand).trim();
           // **Le jour et le moment se valident ICI, avec la MÊME règle que
           // l'écran** (`planning-jour.ts`) : une seconde version de la règle
           // finirait par accepter ce que le planning refuse (`CLAUDE.md` §3).
@@ -693,18 +706,26 @@ export async function appliquerPropositionsAction(
             resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Chantier ou jour manquant." });
             break;
           }
-          if (!estUnMomentValide(quand)) {
+          if (quandDit !== null && !estUnMomentValide(quandDit)) {
             resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Moment de la journée inconnu." });
+            break;
+          }
+          // **Déplacer SANS moment ne veut rien dire** : le jour ne bouge pas
+          // — « Déplacer » vit dans la fiche d'un jour —, et le moment est
+          // tout ce que ce geste écrit. Le remplir d'office rendrait une
+          // demi-journée en journée pleine, en silence : on redemande.
+          if (proposition.type === "deplacer_chantier" && quandDit === null) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Le matin, l'après-midi ou la journée ?" });
             break;
           }
           if (!(await getChantier(ctx, cible))) {
             resultats.push({ ...base, statut: "conflit", categorie: "conflit_metier", message: "Ce chantier n'existe plus." });
             break;
           }
-          const choix = { quand: quand as QuandChantier };
+          const choix = quandDit === null ? undefined : { quand: quandDit as QuandChantier };
           const pose =
             proposition.type === "deplacer_chantier"
-              ? await deplacerChantier(ctx, cible, choix.quand)
+              ? await deplacerChantier(ctx, cible, quandDit as QuandChantier)
               : await planifierChantier(ctx, cible, jour, choix);
           if (!pose) {
             // `deplacerChantier` rend `null` quand le chantier n'est posé nulle
