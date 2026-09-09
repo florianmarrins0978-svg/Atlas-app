@@ -26237,3 +26237,49 @@ cadre calme, pas une croix.
 `next/image` réécrit le `src` via `/_next/image`, or ces fichiers sortent d’une
 route gardée qui vérifie à qui ils appartiennent. Un second chemin vers des
 photos de chantier serait le défaut de plus haute priorité de ce produit.
+
+---
+
+## §307 — Les retours non lus : une pastille qui s'éteint
+
+*Sa demande du 9 septembre 2026, capture à l’appui : « lorsqu’il y a un retour
+que le patron n’a pas vu, il faut que le nombre qui s’affiche soit celui-là, et
+pas combien il y en a à l’intérieur. Et il faut qu’on puisse distinguer du
+premier coup d’œil ceux pas ouverts — comme pour les SMS. »*
+
+### Pourquoi une TABLE, et pas une colonne `vu_le`
+
+Une colonne dirait « ce retour a été vu » **sans dire par qui**. Or `/termines`
+est ouvert au propriétaire ET au rôle facturation : la première personne qui
+ouvre effacerait la pastille de l’autre. Le patron regarderait son téléphone le
+soir, ne verrait rien à lire, et le retour lui serait passé sous le nez parce
+que quelqu’un d’autre l’avait ouvert le matin.
+
+Une ligne par LECTEUR répond exactement à ce qu’il demande — « ceux que LE
+PATRON n’a pas ouverts » — et coûte une jointure (migration 0083).
+
+### LE PIÈGE QUE CETTE DEMANDE OUVRE, et qui a été vu à temps
+
+L’onglet ne s’affichait que `si retours > 0`. En remplaçant ce compte par celui
+des non-lus, **l’onglet aurait disparu le soir où il aurait tout lu** — et avec
+lui le seul chemin vers la page où ses retours se gardent « longtemps ».
+
+Le dépôt rend donc les DEUX comptes : le total fait exister l’onglet, les
+non-lus font paraître la pastille. Une pastille qui ne descend jamais à zéro
+s’apprend à être ignorée ; un onglet qui disparaît emporte une page.
+
+### Ce que l’écran fait, et ce qu’il n’attend pas
+
+**La pastille s’éteint sous le doigt, pas quand le serveur répond.** Ouvrir EST
+la lecture : rien ne peut la refuser. Attendre l’aller-retour la ferait
+clignoter sur un réseau de chantier, et il croirait avoir mal appuyé. Si l’appel
+échoue, le retour reste non lu — le bon côté de l’erreur : il le rouvrira.
+
+**Elle est en `or`, pas en `alert`** : un retour non lu n’est pas un incident,
+c’est du courrier. Et elle vit **avant** le jour, sur la colonne que l’œil
+descend — placée à droite, il faudrait lire chaque ligne en entier pour la
+trouver.
+
+**Une lecture ne se réécrit pas.** Il rouvre le même retour trois fois dans la
+soirée : c’est la même lecture, et l’unicité `(retour, lecteur)` empêche la
+table de devenir un journal que personne n’a demandé.

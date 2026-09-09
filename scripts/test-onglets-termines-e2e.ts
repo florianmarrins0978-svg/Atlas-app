@@ -269,8 +269,28 @@ async function main() {
 
   // On rend le jeu de démonstration tel qu'on l'a pris : les suites voisines
   // comptent les retours de cette entreprise, et un de trop les ferait mentir.
-  await cas("LA CARTE S’OUVRE EN GRAND, et se replie — sa proposition A", async () => {
+  await cas("UN RETOUR NON LU PORTE SA PASTILLE, et la barre compte les non-lus", async () => {
+    // **Sa demande du 9 septembre 2026** : *« comme pour les SMS »*. Le
+    // contrôle part de l’onglet, là où son œil tombe en arrivant.
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    const pastille = page.locator("[data-atlas='compte-des-non-lus']");
+    await pastille.waitFor({ state: "visible", timeout: 20_000 });
+    assert.equal((await pastille.innerText()).trim(), "1", "la barre ne compte pas les non-lus");
+
+    // **Et la pastille du retour lui-même**, dans la liste : c’est celle qui
+    // lui dit LEQUEL, quand il en aura vingt.
+    await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
+    const marque = page.locator("[data-atlas='retour-non-lu']");
+    await marque.waitFor({ state: "visible", timeout: 20_000 });
+    const rond = await marque.boundingBox();
+    assert.ok(rond && rond.width >= 8, `la pastille ne fait que ${Math.round(rond?.width ?? 0)} px`);
+    if (DOSSIER_CAPTURES) {
+      await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "retour-non-lu.png") });
+    }
+  });
+
+  await cas("LA CARTE S’OUVRE EN GRAND, et se replie — sa proposition A", async () => {
     await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
     const carte = page.locator("[data-atlas='carte-de-retour']").first();
     await carte.waitFor({ state: "visible", timeout: 20_000 });
@@ -321,6 +341,28 @@ async function main() {
       0,
       "« Replier » ne referme pas la feuille"
     );
+  });
+
+  await cas("L’AVOIR OUVERT L’ÉTEINT — et ça tient au rechargement", async () => {
+    // La pastille s’éteint sous le doigt ; ce qui compte, c’est qu’elle ne
+    // revienne pas le lendemain. On recharge donc, plutôt que de croire
+    // l’écran sur parole.
+    await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
+    assert.equal(
+      await page.locator("[data-atlas='retour-non-lu']").count(),
+      0,
+      "la pastille du retour revient alors qu’il l’a ouvert"
+    );
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    assert.equal(
+      await page.locator("[data-atlas='compte-des-non-lus']").count(),
+      0,
+      "la barre compte encore un non-lu"
+    );
+    // **Et l’onglet RESTE** : sans quoi la page devient inatteignable le soir
+    // où il a tout lu.
+    const dit = await page.locator(RANGEE).innerText();
+    assert.match(dit, /Retours d'intervention/, "l’onglet a disparu avec la pastille");
   });
 
   await pool.query(`DELETE FROM retours_intervention_taches WHERE retour_id = $1`, [pose[0].id]);

@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Les retours non lus se voient d'un coup d'œil
+
+Sa demande : *« comme pour les SMS »*. La pastille de l'onglet ne compte plus le
+total mais **ce qu'il n'a pas ouvert**, et chaque retour non lu porte un point
+doré avant sa date. Ouvrir l'éteint — et ça tient au rechargement.
+
+**Le piège vu à temps** : l'onglet n'existait que « s'il y a des retours ». En y
+mettant le compte des non-lus, il aurait disparu le soir où il aurait tout lu, et
+avec lui le seul chemin vers la page. Le dépôt rend donc les deux comptes.
+
+**Et la lecture est nominative** : `/termines` est ouvert au propriétaire comme à
+la facturation, et une lecture partagée aurait fait disparaître sa pastille parce
+qu'un autre a ouvert le matin (migration 0083, `ARCHITECTURE.md` §307).
+
 ### Un retour d'intervention se lit enfin — « tout fait » disparaît
 
 Sa capture : *« il y a marqué tout fait, mais ce n'est pas ce qui a été fait »*.

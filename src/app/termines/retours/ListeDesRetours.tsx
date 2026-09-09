@@ -9,6 +9,7 @@ import {
   rangerLesRetours,
   type RetourEnListe,
 } from "@/lib/retour-intervention";
+import { marquerLeRetourVuAction } from "./actions";
 
 /**
  * LA LISTE DES RETOURS — rangée par client, filtrée d'un doigt.
@@ -176,6 +177,15 @@ function Pastille({
  */
 function Carte({ retour }: { retour: RetourEnListe }) {
   const [ouvert, setOuvert] = useState(false);
+  /**
+   * **La pastille s’éteint sous le doigt, pas quand le serveur répond.**
+   *
+   * Ouvrir EST la lecture : rien ne peut la refuser. Attendre l’aller-retour
+   * ferait clignoter la pastille sur un réseau de chantier, et il croirait
+   * avoir mal appuyé. Si l’appel échoue, le retour reste non lu — le bon côté
+   * de l’erreur : il le rouvrira.
+   */
+  const [lu, setLu] = useState(retour.vu);
   const compte = compteDesTaches(retour.taches);
   const jour = new Date(retour.poseLe).toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -192,7 +202,14 @@ function Carte({ retour }: { retour: RetourEnListe }) {
           recopier ferait la seconde vérité que `CLAUDE.md` §3 interdit. */}
       <button
         type="button"
-        onClick={() => setOuvert((o) => !o)}
+        onClick={() => {
+          const prochain = !ouvert;
+          setOuvert(prochain);
+          if (prochain && !lu) {
+            setLu(true);
+            void marquerLeRetourVuAction(retour.id);
+          }
+        }}
         data-atlas="carte-de-retour"
         aria-expanded={ouvert}
         className="flex w-full items-start gap-3 px-3.5 py-3 text-left"
@@ -220,7 +237,29 @@ function Carte({ retour }: { retour: RetourEnListe }) {
           </svg>
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[14px] font-medium leading-[1.3]">{jour}</span>
+          <span className="flex items-center gap-2">
+            {/* **LA PASTILLE DES NON-LUS — sa demande du 9 septembre 2026 :**
+                *« comme pour les SMS sur notre téléphone »*. Elle vit AVANT le
+                jour, sur la colonne que l’œil descend : placée à droite, il
+                faudrait lire chaque ligne en entier pour la trouver.
+
+                Elle est en `or` et non en `alert` : un retour non lu n’est pas
+                un incident, c’est du courrier. */}
+            {!lu && (
+              <span
+                aria-hidden="true"
+                data-atlas="retour-non-lu"
+                className="h-[9px] w-[9px] flex-none rounded-full"
+                style={{ backgroundColor: colors.or }}
+              />
+            )}
+            <span
+              className="block text-[14px] leading-[1.3]"
+              style={{ fontWeight: lu ? 500 : 600 }}
+            >
+              {jour}
+            </span>
+          </span>
           <span className="mt-[3px] block text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
             {[retour.posePar, compte, phrasePhotos(retour.photos.length)].filter(Boolean).join(" · ")}
           </span>

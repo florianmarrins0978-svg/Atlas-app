@@ -133,6 +133,15 @@ export type RetourEnListe = {
    */
   photos: readonly { id: string; storageKey: string }[];
   aSignaler: string | null;
+  /**
+   * **LUI** l’a déjà ouvert — pas « quelqu’un ».
+   *
+   * Sa demande du 9 septembre 2026 : *« il faut qu’on puisse distinguer du
+   * premier coup d’œil ceux pas ouverts, comme pour les SMS »*. `/termines`
+   * étant ouvert au propriétaire comme à la facturation, une lecture partagée
+   * ferait disparaître sa pastille parce qu’un autre a ouvert le matin.
+   */
+  vu: boolean;
 };
 
 /** Un client et ses retours, du plus récent au plus ancien. */

@@ -41,6 +41,7 @@ function retour(p: Partial<RetourEnListe> & { clientNom: string; poseLe: string 
     taches: [],
     photos: [],
     aSignaler: null,
+    vu: false,
     ...p,
   };
 }
