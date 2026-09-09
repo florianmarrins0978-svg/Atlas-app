@@ -26067,3 +26067,69 @@ visible vaut mieux qu’un défaut absorbé en silence (`AGENTS.md`).
 
 **Le seuil du « presque rond » vient de l’image, pas d’une intuition** : à 1,36
 (60 × 44) la pastille se lit ovale ; le garde-fou est posé à 1,25.
+## §304 — Les travaux supplémentaires : une colonne, pas une table
+
+**Son constat du 31 août 2026 :** *« si on effectue des travaux en plus chez un
+client, on n'a aucun moyen de rajouter les TS sur la facture »*. Il avait
+raison : `terminerChantier` recopie le devis, et la facture ne se modifiait
+plus.
+
+**Ses trois décisions, du 9 septembre :**
+
+| | |
+|---|---|
+| le geste | un **bouton** à la place de la phrase « Rien n'a changé depuis le devis ? », qui n'était même pas cliquable |
+| l'écran | la feuille du devis, avec une catégorie créée d'office — « comme pour l'ajout d'une TVA » |
+| la pièce | **une seule facture**, qui additionne les deux blocs |
+
+### Pourquoi une colonne et non une table d'avenants
+
+`docs/travaux-supplementaires.md` proposait quatre solutions ; la A créait un
+avenant suivant le parcours du devis — PDF, envoi, page publique, accord. Ce
+qu'il a retenu en est la moitié : le supplément vit **sur la facture**.
+
+Ce choix a une conséquence technique qui a fait tout le lot : `lignes_facture`
+porte DÉJÀ son propre `taux_tva` (migration 0073). **Une ligne de supplément est
+une ligne de facture comme une autre** — seule sa provenance est nouvelle. D'où
+`supplement boolean` (migration 0082), et rien d'autre.
+
+**Ce qui n'a donc PAS eu besoin d'être écrit :** les totaux, la TVA par taux, le
+PDF, le relevé. `emettreFacture` recalcule déjà tout depuis les lignes par
+`totauxAvecReduction`, qui sait grouper par taux depuis le devis à plusieurs
+TVA. Une table d'avenants aurait dupliqué ces quatre chemins.
+
+### Le défaut que cette colonne rend impossible
+
+`reprendreLeDevisSurLaFacture` **efface toutes les lignes** pour recopier le
+dernier devis envoyé. Sans la provenance, reprendre le devis emportait en
+silence le travail ajouté — au moment précis où le patron croit ne remettre à
+jour que ses prix. La suppression est donc bornée à `supplement = false`, et
+c'est le contrôle central de `test-travaux-supplementaires-db.ts`.
+
+### Deux gardes plutôt qu'une, et elles ne disent pas la même chose
+
+Sa règle du même jour : *« le devis ne se réécrit pas, seulement la case travaux
+supplémentaires ; le reste, impossible de les modifier »*.
+
+| | |
+|---|---|
+| à l'écran | les lignes du devis sont des `<span>`, pas des champs en lecture seule — il n'y a pas d'attribut à rouvrir |
+| à l'écriture | `supplement = true` est dans le **WHERE**, jamais dans une vérification préalable : une ligne du devis ne correspond à rien, et l'écriture ne touche rien |
+
+La seconde est celle qui compte : la première évite le geste, la seconde le rend
+impossible. Une facture ÉMISE, elle, ne reçoit plus rien du tout — le refus se
+rend en valeur, parce que le message d'une exception d'action serveur n'arrive
+jamais jusqu'à lui (`AGENTS.md`).
+
+### Le PDF montre deux blocs, et c'est ce qui évite la discussion
+
+`lignesParBloc` (dans `src/lib/`, avec les autres règles pures) groupe d'abord
+par provenance, puis par taux. Le client lit ce qu'il avait accepté, puis
+« TRAVAUX SUPPLÉMENTAIRES ». Une facture qui les mêlerait montrerait un total
+plus haut que le devis signé sans rien pour l'expliquer — et c'est exactement là
+que commence la contestation.
+
+**Ce qui protège vraiment, en revanche, n'est pas la facture** : c'est le bon
+signé sur place avant les travaux (`appli/ts-bon-sur-place.html`), tranché le
+4 septembre. Le supplément sur la facture règle le geste manquant, pas le
+risque d'impayé.

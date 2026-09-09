@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
@@ -620,10 +621,29 @@ export default function FactureClient({
               devis plus récent est parti, et l'écran demandait quatre blocs
               plus bas « Rien n'a changé depuis le devis ? ». Un écran qui se
               contredit lui-même fait douter de tout ce qu'il affiche. */}
+          {/* ─── LES TRAVAUX SUPPLÉMENTAIRES — sa demande du 9 septembre 2026
+              *« À la place de la phrase "rien n'a changé depuis le devis ?", je
+              veux un bouton "ajouter des travaux supplémentaires" ; ça ouvre la
+              vraie page du devis avec toutes les infos du devis en question. »*
+
+              **La phrase méritait de partir pour une raison de plus que son
+              goût : elle n'était même pas cliquable.** Elle posait une question
+              à l'écran — « rien n'a changé ? » — sans offrir la moindre réponse
+              à portée de doigt. Un écran qui demande et n'écoute pas se lit
+              comme une panne.
+
+              **Le geste ne s'offre que sur un BROUILLON**, et la page qu'il
+              ouvre refuse d'elle-même si la facture est partie : une facture
+              arrêtée est inscrite au relevé de TVA, elle ne se complète plus. */}
           {reprise.aJour && (
-            <p className="text-center text-[14px]" style={{ color: colors.muted }}>
-              Rien n&apos;a changé depuis le devis ?
-            </p>
+            <Link
+              href={`/chantiers/${chantierId}/facture/travaux-supplementaires`}
+              data-atlas="ajouter-travaux-supplementaires"
+              className="mx-auto flex min-h-[48px] w-full max-w-[320px] items-center justify-center rounded-full text-[15px] font-semibold"
+              style={{ border: `1px solid ${colors.or}`, color: colors.or }}
+            >
+              Ajouter des travaux supplémentaires
+            </Link>
           )}
 
           {/* **L'encart du canal, à la forme de la fiche client — sa demande du

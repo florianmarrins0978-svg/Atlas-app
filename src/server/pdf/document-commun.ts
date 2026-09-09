@@ -17,7 +17,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "@/server/logger";
 import { avecCivilite } from "@/lib/civilite";
-import { libelleReduction, lignesParCategorie, tauxLisible, totauxAvecReduction } from "@/lib/reduction-devis";
+import { libelleReduction, lignesParBloc, tauxLisible, totauxAvecReduction } from "@/lib/reduction-devis";
 import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
 import { protegerContreModification } from "./proteger-pdf";
 import { pourLePapier } from "@/lib/texte-pdf";
@@ -859,8 +859,21 @@ export async function composerDocument(
   // Un seul taux — tous les documents d'avant, et la plupart des siens — ne
   // dessine AUCUN titre : la feuille sort exactement comme elle sortait. Le
   // groupement ne se voit que là où il apprend quelque chose.
-  const categories = lignesParCategorie(data.lignes, data.tauxTva);
+  // **DEPUIS LE 9 SEPTEMBRE 2026, LE GROUPEMENT PORTE AUSSI LE SUPPLÉMENT.**
+  // Sa décision : une seule facture, en deux blocs — ce qu'il avait accepté,
+  // puis les travaux ajoutés. Sans ce second bloc, le client lit un total plus
+  // haut que son devis sans rien pour l'expliquer, et c'est là que la
+  // discussion commence.
+  const categories = lignesParBloc(data.lignes, data.tauxTva);
   const montrerCategories = categories.length > 1 && !options.sansChiffrage;
+  /**
+   * Le taux ne s'écrit QUE s'il y en a plusieurs.
+   *
+   * Une facture à 20 % avec un supplément à 20 % n'a rien à apprendre en
+   * écrivant « TVA 20 % » deux fois ; ce qu'elle doit dire, c'est où finit le
+   * devis et où commence le reste.
+   */
+  const plusieursTaux = new Set(categories.map((c) => c.taux)).size > 1;
 
   for (const categorie of categories) {
   /**
@@ -876,7 +889,11 @@ export async function composerDocument(
     if (!montrerCategories) return;
     ecrireEspace(
       ctx,
-      `TVA ${tauxLisible(categorie.taux)} %${suite ? " (suite)" : ""}`,
+      `${categorie.supplement ? "TRAVAUX SUPPLÉMENTAIRES" : ""}${
+        categorie.supplement && plusieursTaux ? " — " : ""
+      }${
+        !categorie.supplement || plusieursTaux ? `TVA ${tauxLisible(categorie.taux)} %` : ""
+      }${suite ? " (suite)" : ""}`,
       MARGE,
       y,
       APPROCHE_ETIQUETTE,

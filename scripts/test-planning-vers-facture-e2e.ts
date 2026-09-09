@@ -375,7 +375,12 @@ async function main() {
     await page.waitForSelector("text=Le chantier est réalisé ?", { timeout: 15000 });
 
     await page.click("text=Créer la facture");
-    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    // **Repéré par son ATTRIBUT, jamais par la phrase.** Ces suites attendaient
+    // « Rien n'a changé depuis le devis ? » — un texte que le patron a fait
+    // remplacer par un bouton le 9 septembre 2026. Elles sont alors mortes sur
+    // un délai dépassé, sur du code juste et pour une demande exaucée
+    // (`CLAUDE.md` §5 bis).
+    await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
 
     const { rows } = await inspecter("SELECT statut FROM factures WHERE chantier_id = $1", [chantierId], 1);
     assert.strictEqual(rows[0].statut, "brouillon", "la facture est partie sans confirmation");
@@ -393,7 +398,7 @@ async function main() {
     const { chantierId } = await chantierPlanifie(page, "tva", -8);
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
-    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
     // **UN SEUL APPUI depuis le 22 août 2026** : les deux gestes d'avant —
     // arrêter, puis préparer le lien — n'en font plus qu'un, et la messagerie
     // s'ouvre dans la foulée (`ARCHITECTURE.md` §152). Le message tout prêt
@@ -455,7 +460,7 @@ async function main() {
     ]);
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
-    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
 
     const groupee = await page.locator("li", { hasText: "Abattage d'un chêne mort" }).first().boundingBox();
     const seule = await page.locator("li", { hasText: "Fendage du bois" }).first().boundingBox();
@@ -528,7 +533,7 @@ async function main() {
       return;
     }
     await page.click("text=Créer la facture");
-    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
 
     assert.deepEqual(await ongletsOuIlFigure(page, nom), ["termines"]);
 

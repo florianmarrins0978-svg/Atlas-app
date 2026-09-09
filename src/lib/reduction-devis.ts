@@ -295,6 +295,44 @@ export function tauxLisible(taux: string): string {
  * groupe ; deux tris écrits séparément auraient fini par ranger différemment,
  * et il aurait relu un document qui ne ressemble plus à son écran.
  */
+/**
+ * LES BLOCS D'UN DOCUMENT : ce qui a été accepté, puis ce qui s'est ajouté.
+ *
+ * **Sa décision du 9 septembre 2026 : une seule facture, en deux blocs.** Le
+ * client voit ce qu'il avait accepté, puis les travaux supplémentaires — et
+ * c'est précisément ce qui évite la discussion au moment de payer. Une facture
+ * qui les mêlerait montrerait un total plus haut que le devis signé, sans rien
+ * pour l'expliquer.
+ *
+ * **Le bloc du devis passe toujours en premier**, quel que soit l'ordre des
+ * lignes en base : c'est l'ordre dans lequel on raconte un chantier — ce qui
+ * était prévu, puis ce qui s'est ajouté.
+ *
+ * `supplement` absent vaut `false` : les lignes d'un DEVIS n'ont pas cette
+ * colonne, et ce document-là n'a qu'un seul bloc par construction.
+ */
+export function lignesParBloc<T extends { tauxTva?: string | null; supplement?: boolean | null }>(
+  lignes: readonly T[],
+  tauxDuDocument: string
+): { supplement: boolean; taux: string; lignes: T[] }[] {
+  const blocs: { supplement: boolean; taux: string; lignes: T[] }[] = [];
+  for (const supplement of [false, true]) {
+    const dedans = lignes.filter((l) => Boolean(l.supplement) === supplement);
+    // On ne fabrique pas un bloc vide : un titre « Travaux supplémentaires »
+    // au-dessus de rien ferait chercher au client ce qui n'existe pas.
+    if (dedans.length === 0) continue;
+    for (const groupe of lignesParCategorie(dedans, tauxDuDocument)) {
+      blocs.push({ supplement, taux: groupe.taux, lignes: groupe.lignes });
+    }
+  }
+  // Un document VIDE garde sa catégorie, pour la même raison qu'en dessous :
+  // l'écran dessine son bouton « Ajouter une ligne » dans un bloc.
+  if (blocs.length === 0) {
+    blocs.push({ supplement: false, taux: new Decimal(tauxDuDocument).toFixed(2), lignes: [] });
+  }
+  return blocs;
+}
+
 export function lignesParCategorie<T extends { tauxTva?: string | null }>(
   lignes: readonly T[],
   tauxDuDocument: string

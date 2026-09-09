@@ -8,6 +8,38 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Les travaux supplémentaires : le bouton, la feuille, et une seule facture
+
+*« Si on effectue des travaux en plus chez un client, on n'a aucun moyen de
+rajouter les TS sur la facture »* — son constat du 31 août. La facture recopiait
+le devis et ne bougeait plus.
+
+À la place de la phrase **« Rien n'a changé depuis le devis ? »** — qui posait
+une question sans offrir de réponse, et n'était même pas cliquable — un bouton.
+Il ouvre la feuille du devis : ses lignes, ses totaux, et une catégorie
+**« Travaux supplémentaires »** créée d'office, avec sa TVA propre si on veut.
+
+**Le devis ne se réécrit jamais** : ses lignes sont du texte, et l'écriture
+refuse toute ligne qui n'est pas un supplément. Une facture déjà arrêtée ne
+reçoit plus rien.
+
+**Une seule facture**, sa décision : elle additionne les deux blocs, et le PDF
+les montre séparés — ce qu'il avait accepté, puis ce qui s'est ajouté.
+
+**Un défaut rendu impossible en passant :** reprendre le devis effaçait toutes
+les lignes de la facture. Il aurait emporté le travail ajouté sans un mot, au
+moment même où l'on croit ne remettre à jour que des prix.
+
+### Le verrou de la batterie ne dépend plus d'un battement
+
+Il tenait sa vie à un signe rafraîchi toutes les vingt secondes ; or la batterie
+enchaîne ses étapes de façon bloquante et **aucun timer ne partait jamais**. Au
+bout de quatre-vingt-dix secondes il se déclarait mort et rouvrait le dossier au
+milieu de la mesure — une session voisine a écrit, et le verdict a été annulé.
+
+Ce qui prouve qu'une batterie tourne est désormais **son processus**. Sa suite
+sait attraper ce défaut : elle ne l'attrapait pas.
+
 ### Le planning s'ouvre sur la journée, et « Aujourd'hui » s'écrit en doré
 
 Le salarié ouvrait l'appli le matin et lisait « Mardi 8 septembre » : il devait

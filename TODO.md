@@ -2047,15 +2047,24 @@ devis ; ce qu'il retient en est la moitié — le supplément vit sur la facture
 une seule pièce. **Son écrit reste le bon signé sur place** (C), tranché le
 4 septembre : ce n'est pas la facture qui protège de la contestation.
 
-**PLUS RIEN N'EMPÊCHE DE CODER.** Ce qu'il reste à écrire, et personne ne l'a
-pris :
+**✅ CODÉ ET ÉPROUVÉ LE 9 SEPTEMBRE 2026**, sur son « oui vas-y ».
 
 | | |
 |---|---|
-| la base | des lignes de facture qui ne viennent pas du devis, avec leur taux propre |
-| `factures.ts` | `terminerChantier` recopie le devis ; il faut qu'une facture en brouillon accepte des lignes en plus, et que l'émission les fige avec le reste |
-| l'écran | le bouton à la place de la phrase, la feuille en lecture seule, la catégorie qui s'écrit |
-| le PDF | les deux blocs, et le récapitulatif par taux |
+| la base | migration **0082** — `lignes_facture.supplement`, et la reprise du devis ne l'emporte plus |
+| `factures.ts` | ajouter, corriger, retirer ; refus sur une facture arrêtée, refus sur toute ligne du devis |
+| l'écran | `/chantiers/[id]/facture/travaux-supplementaires` — lignes du devis en texte, catégorie en champs |
+| le PDF | `lignesParBloc` : le devis, puis « TRAVAUX SUPPLÉMENTAIRES » |
+| la suite | `test-travaux-supplementaires-db.ts` — **9 contrôles, 0 échec** |
+
+**Rien n'a eu besoin d'être écrit pour les totaux ni la TVA** : `emettreFacture`
+recalculait déjà tout depuis les lignes, taux par taux. Le pourquoi de ce choix
+et ce qu'il évite : `ARCHITECTURE.md` §304.
+
+**Ce qui reste ouvert, et qui n'est PAS dans ce lot :** le bon signé sur place
+(`appli/ts-bon-sur-place.html`) et l'arrêt qui bloque ou avertit
+(`appli/ts-arret-3.html`). Le supplément sur la facture règle le geste manquant,
+jamais le risque d'impayé.
 
 **Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
 transmises (`scripts/` non concerné : le parcours a été joué à la main, captures

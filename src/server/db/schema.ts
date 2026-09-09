@@ -1914,9 +1914,21 @@ export const lignesFacture = pgTable(
      */
     tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
+    /**
+     * D'où vient cette ligne — du devis accepté, ou du travail ajouté après
+     * (migration 0082).
+     *
+     * **Sans elle, reprendre le devis effacerait les travaux supplémentaires en
+     * silence** : `reprendreLeDevisSurLaFacture` vide les lignes pour recopier
+     * le dernier devis envoyé. C'est le défaut que cette colonne rend
+     * impossible, et c'est sa seule raison d'exister — le montant, le taux et
+     * l'ordre, eux, se portent déjà comme n'importe quelle ligne.
+     */
+    supplement: boolean("supplement").notNull().default(false),
   },
   (t) => [
     index("lignes_facture_facture_idx").on(t.factureId),
+    index("lignes_facture_bloc_idx").on(t.factureId, t.supplement, t.ordre),
     foreignKey({
       columns: [t.factureId, t.entrepriseId],
       foreignColumns: [factures.id, factures.entrepriseId],

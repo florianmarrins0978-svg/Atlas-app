@@ -1,4 +1,4 @@
-import { and, asc, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
@@ -438,7 +438,14 @@ export async function reprendreLeDevisSurLaFacture(
 
     // Les anciennes lignes partent d'abord : les garder ferait une facture qui
     // additionne deux versions du même chantier.
-    await tx.delete(lignesFacture).where(eq(lignesFacture.factureId, f.id));
+    //
+    // **SAUF LES TRAVAUX SUPPLÉMENTAIRES — migration 0082.** Ils ne viennent
+    // pas du devis : les effacer ici ferait disparaître en silence le travail
+    // qu'il a ajouté, au moment même où il croit ne remettre à jour que les
+    // prix. Le supplément survit à toutes les reprises, par construction.
+    await tx
+      .delete(lignesFacture)
+      .where(and(eq(lignesFacture.factureId, f.id), eq(lignesFacture.supplement, false)));
     if (lignes.length > 0) {
       await tx.insert(lignesFacture).values(lignesRecopiees(ctx.entrepriseId, f.id, lignes));
     }
@@ -474,6 +481,213 @@ export async function reprendreLeDevisSurLaFacture(
  * **Elle rend la date RELUE en base**, jamais la saisie : une valeur hors bornes
  * est retombée, et l'écran doit afficher ce qui s'imprimera.
  */
+// ═══════════════════════════════════════════════════════════════════════════
+// LES TRAVAUX SUPPLÉMENTAIRES — sa demande du 31 août, tranchée le 9 septembre
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// *« Si on effectue des travaux en plus chez un client, on n'a aucun moyen de
+// rajouter les TS sur la facture. »* Puis, le 9 septembre : *« à la place de la
+// phrase "rien n'a changé depuis le devis ?", je veux un bouton "ajouter des
+// travaux supplémentaires" ; ça ouvre la vraie page du devis, et une catégorie
+// se crée direct comme pour l'ajout d'une TVA »* — et **une seule facture**.
+//
+// ─── CE QUI N'A PAS EU BESOIN D'ÊTRE ÉCRIT, ET POURQUOI ────────────────────
+//
+// Ni les totaux, ni la TVA par taux, ni le PDF, ni le relevé. `emettreFacture`
+// recalcule déjà tout depuis `lignes_facture` par `totauxAvecReduction`, qui
+// sait grouper par taux depuis le devis à plusieurs TVA. **Une ligne de
+// supplément est une ligne de facture** ; seule sa PROVENANCE est nouvelle.
+//
+// ─── LES DEUX REFUS, ET ILS NE SE NÉGOCIENT PAS ────────────────────────────
+//
+//   1. **une facture ARRÊTÉE ne bouge plus** — elle est partie chez le client et
+//      inscrite au relevé de TVA. Le trigger PostgreSQL le refuserait de toute
+//      façon ; on le dit ici en clair, pour que le refus arrive à l'écran plutôt
+//      que sous la forme d'une panne ;
+//   2. **le devis ne se réécrit jamais** — sa règle du 9 septembre :
+//      *« seulement la case travaux supplémentaires, le reste impossible de les
+//      modifier »*. Ces fonctions ne touchent QUE des lignes `supplement`, et
+//      c'est vérifié à chaque écriture, pas seulement à l'affichage.
+
+/** Une ligne de supplément, telle que l'écran la manipule. */
+export type LigneSupplementaire = {
+  id: string;
+  libelle: string;
+  quantite: string;
+  prixUnitaire: string;
+  montant: string;
+  tauxTva: string | null;
+  ordre: number;
+};
+
+/** Le refus se rend en VALEUR : le message d'une exception n'arrive pas à lui. */
+type Refus = { ok: false; raison: string };
+
+/**
+ * La facture est-elle encore ouverte à l'écriture ?
+ *
+ * **Un seul endroit pour cette question**, appelé par les trois gestes : trois
+ * copies de la même garde finissent par diverger, et c'est celle qu'on aurait
+ * oublié de corriger qui laisserait retoucher une facture partie.
+ */
+async function factureEncoreEnBrouillon(
+  tx: DbOrTx,
+  factureId: string
+): Promise<{ ok: true } | Refus> {
+  const [f] = await tx
+    .select({ statut: factures.statut })
+    .from(factures)
+    .where(eq(factures.id, factureId))
+    .limit(1);
+  // `withEntreprise` borne déjà à son entreprise : une facture d'à côté n'est
+  // pas « refusée », elle n'existe tout simplement pas pour cette requête.
+  if (!f) return { ok: false, raison: "Cette facture est introuvable." };
+  if (f.statut !== "brouillon") {
+    return { ok: false, raison: "La facture est déjà arrêtée : elle ne se réécrit plus." };
+  }
+  return { ok: true };
+}
+
+/** Ce que la ligne pèse — la même règle que le devis, appelée et non réécrite. */
+function montantDeLaLigne(quantite: string, prixUnitaire: string): string {
+  return new Decimal(quantite || "0").times(prixUnitaire || "0").toFixed(2);
+}
+
+/**
+ * Ajoute une ligne vide de travaux supplémentaires.
+ *
+ * **Vide, et non « à remplir plus tard »** : c'est le geste du devis, où
+ * « + Ajouter une ligne » pose une ligne qu'on remplit sur place. Le montant
+ * suit la saisie ; tant qu'il n'y a pas de prix, l'écran écrit « à chiffrer »
+ * plutôt que « 0,00 € » — un zéro se lit « gratuit » (sa correction du 26 août).
+ */
+export async function ajouterTravauxSupplementaires(
+  ctx: Ctx,
+  factureId: string,
+  taux?: string | null
+): Promise<{ ok: true; ligne: LigneSupplementaire } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+
+    // Le rang se prend APRÈS la dernière ligne de la facture, suppléments
+    // compris : deux lignes au même rang se rendraient dans un ordre que la
+    // base choisit, et il changerait d'un affichage à l'autre.
+    const [dernier] = await tx
+      .select({ ordre: lignesFacture.ordre })
+      .from(lignesFacture)
+      .where(eq(lignesFacture.factureId, factureId))
+      .orderBy(desc(lignesFacture.ordre))
+      .limit(1);
+
+    const [ligne] = await tx
+      .insert(lignesFacture)
+      .values({
+        entrepriseId: ctx.entrepriseId,
+        factureId,
+        libelle: "",
+        quantite: "1",
+        prixUnitaire: "0",
+        montant: "0",
+        tauxTva: taux ?? null,
+        ordre: (dernier?.ordre ?? 0) + 1,
+        supplement: true,
+      })
+      .returning();
+
+    return { ok: true, ligne };
+  });
+}
+
+/**
+ * Corrige une ligne de supplément — libellé, quantité, prix, ou son taux.
+ *
+ * **`supplement = true` est dans le WHERE, pas dans une vérification.** Une
+ * garde qui lirait la ligne puis écrirait laisserait passer ce qui se glisse
+ * entre les deux ; ici, une ligne du devis ne correspond simplement à aucune
+ * ligne à écrire, et l'écriture ne touche rien.
+ */
+export async function majTravauxSupplementaires(
+  ctx: Ctx,
+  factureId: string,
+  ligneId: string,
+  champs: { libelle?: string; quantite?: string; prixUnitaire?: string; tauxTva?: string | null }
+): Promise<{ ok: true; montant: string } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+
+    const [avant] = await tx
+      .select()
+      .from(lignesFacture)
+      .where(
+        and(
+          eq(lignesFacture.id, ligneId),
+          eq(lignesFacture.factureId, factureId),
+          eq(lignesFacture.supplement, true)
+        )
+      )
+      .limit(1);
+    if (!avant) {
+      return {
+        ok: false,
+        raison: "Cette ligne ne fait pas partie des travaux supplémentaires : elle vient du devis.",
+      };
+    }
+
+    const quantite = champs.quantite ?? avant.quantite;
+    const prixUnitaire = champs.prixUnitaire ?? avant.prixUnitaire;
+    const montant = montantDeLaLigne(quantite, prixUnitaire);
+
+    await tx
+      .update(lignesFacture)
+      .set({
+        libelle: champs.libelle ?? avant.libelle,
+        quantite,
+        prixUnitaire,
+        montant,
+        // `undefined` : on ne touche pas au taux. `null` : on le RETIRE, et la
+        // ligne retombe sur celui de la facture. Les confondre effacerait le
+        // taux à chaque correction de libellé.
+        ...(champs.tauxTva !== undefined ? { tauxTva: champs.tauxTva } : {}),
+      })
+      .where(eq(lignesFacture.id, ligneId));
+
+    return { ok: true, montant };
+  });
+}
+
+/**
+ * Retire une ligne de supplément — ou toutes, quand il referme la catégorie.
+ *
+ * **Rien de ce qui vient du devis ne peut partir par ici**, et c'est le WHERE
+ * qui le garantit : sa règle du 9 septembre — *« le reste, impossible de les
+ * modifier »* — ne dépend d'aucune vigilance à l'appel.
+ */
+export async function retirerTravauxSupplementaires(
+  ctx: Ctx,
+  factureId: string,
+  ligneId?: string
+): Promise<{ ok: true; retirees: number } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+
+    const retirees = await tx
+      .delete(lignesFacture)
+      .where(
+        and(
+          eq(lignesFacture.factureId, factureId),
+          eq(lignesFacture.supplement, true),
+          ...(ligneId ? [eq(lignesFacture.id, ligneId)] : [])
+        )
+      )
+      .returning({ id: lignesFacture.id });
+
+    return { ok: true, retirees: retirees.length };
+  });
+}
+
 export async function majEcheanceFacture(
   ctx: Ctx,
   factureId: string,

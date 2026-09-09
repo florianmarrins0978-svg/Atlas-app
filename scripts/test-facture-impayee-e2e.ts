@@ -97,7 +97,12 @@ async function chantierFacturable(page: Page): Promise<string> {
 
   await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
   await page.click("text=Créer la facture");
-  await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 30_000 });
+  // **Repéré par son ATTRIBUT, jamais par la phrase.** Ces suites attendaient
+  // « Rien n'a changé depuis le devis ? » — un texte que le patron a fait
+  // remplacer par un bouton le 9 septembre 2026. Elles sont alors mortes sur
+  // un délai dépassé, sur du code juste et pour une demande exaucée
+  // (`CLAUDE.md` §5 bis).
+  await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 30_000 });
   // **UN SEUL APPUI depuis le 22 août 2026** : ce bouton arrête la facture ET
   // ouvre la messagerie (`ARCHITECTURE.md` §152). Repéré par son `data-atlas`,
   // jamais par son libellé — c'est le libellé qui a changé.

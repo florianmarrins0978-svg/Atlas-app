@@ -143,7 +143,12 @@ async function main() {
     const { chantierId } = await chantierRealise(page, "preparer");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
-    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    // **Repéré par son ATTRIBUT, jamais par la phrase.** Ces suites attendaient
+    // « Rien n'a changé depuis le devis ? » — un texte que le patron a fait
+    // remplacer par un bouton le 9 septembre 2026. Elles sont alors mortes sur
+    // un délai dépassé, sur du code juste et pour une demande exaucée
+    // (`CLAUDE.md` §5 bis).
+    await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
 
     assert.ok(
       await page.locator("text=/1\\s?200,00\\s?€/").isVisible(),
@@ -163,7 +168,7 @@ async function main() {
     const { chantierId } = await chantierRealise(page, "emettre");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
-    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
     // **UN SEUL APPUI depuis le 22 août 2026** — il arrête la facture ET ouvre
     // la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
     // jamais par son libellé : c'est justement le libellé qui a changé, et
@@ -210,7 +215,7 @@ async function main() {
     const { chantierId } = await chantierRealise(page, "rejeu");
     await page.goto(`${BASE}/chantiers/${chantierId}/facture`, { waitUntil: "networkidle" });
     await page.click("text=Créer la facture");
-    await page.waitForSelector("text=Rien n'a changé depuis le devis ?", { timeout: 15000 });
+    await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
     // **UN SEUL APPUI depuis le 22 août 2026** — il arrête la facture ET ouvre
     // la messagerie (`ARCHITECTURE.md` §147). Repéré par son `data-atlas`,
     // jamais par son libellé : c'est justement le libellé qui a changé, et
