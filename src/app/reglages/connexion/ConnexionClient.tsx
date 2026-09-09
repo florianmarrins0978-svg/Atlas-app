@@ -104,8 +104,14 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
         className="mx-[26px] mt-[10px] [&>*:last-child]:border-b-0"
         style={{ borderColor: colors.line }}
       >
+        {/* **Une question, pas une étiquette — sa demande du 9 septembre 2026 :**
+            *« rajoute juste un ? à la fin de changer de mdp »*. C'est la même
+            idée qu'il avait retenue sur l'écran Équipe le 8 : un titre qui pose
+            la question à laquelle le bloc répond se lit tout seul, là où une
+            étiquette se survole. Il a écarté le reste de ma proposition — le
+            titre reste, et les libellés restent en capitales. */}
         <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-          Changer de mot de passe
+          Changer de mot de passe&nbsp;?
         </p>
 
         <ChampSecret

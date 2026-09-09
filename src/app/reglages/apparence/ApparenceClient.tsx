@@ -126,9 +126,16 @@ export default function ApparenceClient({ initiale }: { initiale: NomCharte }) {
         </p>
       )}
 
+      {/* **Une ligne, et elle dit les deux choses qui comptent** — sa validation
+          du 9 septembre. La version d'avant en disait trois : que ça change tout,
+          que c'est immédiat, que ça n'appartient qu'à lui, et que ses documents
+          ne bougent pas. « Tout de suite » se VOIT au premier appui ; « elle
+          n'appartient qu'à vous » ne veut rien dire pour un artisan seul. Ce
+          qu'il ne peut PAS deviner, en revanche, c'est que ses devis gardent
+          leur allure — cela reste (`CLAUDE.md` §3, le moins de mots possible). */}
       <p className={`mx-[26px] mt-[26px] ${texteSituation}`} style={{ color: colors.inkSoft }}>
-        La couleur change <b style={{ color: colors.ink, fontWeight: 500 }}>toute l&apos;application</b>, tout de
-        suite. Elle n&apos;appartient qu&apos;à vous : vos devis et vos factures gardent leur apparence.
+        Change <b style={{ color: colors.ink, fontWeight: 500 }}>toute l&apos;application</b>. Vos devis et vos
+        factures ne bougent pas.
       </p>
 
       <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
@@ -146,14 +153,13 @@ export default function ApparenceClient({ initiale }: { initiale: NomCharte }) {
         ))}
       </section>
 
-      <p
-        className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
-        style={{ borderColor: colors.line, color: colors.inkSoft }}
-      >
-        Deux d&apos;entre elles sont sombres — <b style={{ color: colors.ink, fontWeight: 500 }}>Nuit</b> et{" "}
-        <b style={{ color: colors.ink, fontWeight: 500 }}>Sylve</b>. Elles se lisent mal en plein soleil : sur un
-        chantier, à midi, l&apos;écran clair reste le plus sûr.
-      </p>
+      {/* **RETIRÉ le 9 septembre 2026 : le paragraphe qui redisait « sombre ».**
+          Il nommait Nuit et Sylve et prévenait qu'elles se lisent mal au soleil.
+          Or l'étiquette « SOMBRE » est déjà posée à côté de ces deux-là, et leur
+          vignette le montre — c'est trois lignes pour répéter ce que l'écran
+          affiche deux centimètres plus haut. Un écran ne s'explique pas, il se
+          montre. Le risque réel n'a pas disparu pour autant : la lisibilité de
+          chaque charte reste tenue par `test-chartes-lisibles.ts`. */}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
-import { decrireEtatIA, decrireVision, aFaireIA } from "@/lib/etat-ia";
+import { decrireEtatIA, decrireVision, aFaireIA, ceQuAtlasSaitFaire } from "@/lib/etat-ia";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { getConfigIA } from "@/server/ai/config";
@@ -53,6 +53,7 @@ export default async function IAPage() {
     decrireVision(config.visionProvider, clesPresentes),
   ];
   const aFaire = aFaireIA(etatsIA);
+  const savoirs = ceQuAtlasSaitFaire(etatsIA);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -63,46 +64,99 @@ export default async function IAPage() {
           retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
         />
 
+        {/* **CE QU’ATLAS SAIT FAIRE, et rien d’autre — 9 septembre 2026.**
+
+            L’écran affichait « Mode déterministe — aucun prestataire branché »,
+            deux fois, puis les noms de trois variables d’environnement. Écrit
+            pour un développeur, montré à un artisan. Sa consigne du 5 septembre
+            vaut ici comme partout : ces gens-là ont du mal avec leur téléphone.
+
+            Un artisan se pose UNE question devant cet écran — est-ce que ça
+            marche ? La règle qui y répond vit dans `ceQuAtlasSaitFaire`, pas
+            ici : l’écran ne décide de rien. */}
         <section className="mx-[26px] mt-[26px]">
           <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-            Ce que l&apos;application utilise
+            Ce qu&apos;Atlas sait faire
           </p>
 
-          <div className="flex flex-col gap-3">
-            {etatsIA.map((etat) => (
-              <div
-                key={etat.role}
-                className="rounded-[4px] p-4"
-                style={{
-                  backgroundColor: colors.card,
-                  // Un liseré n'apparaît que si quelque chose ne fait pas ce
-                  // qu'on croit : tout va bien doit rester discret.
-                  borderLeft: etat.nature === "reel" ? "none" : `3px solid ${colors.rust}`,
-                }}
+          {savoirs.map((s) => (
+            <div
+              key={s.quoi}
+              className="flex items-start justify-between gap-3 border-b py-[13px] last:border-b-0"
+              style={{ borderColor: colors.line }}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-[17px] leading-[1.25]" style={{ fontFamily: font.display }}>
+                  {s.quoi}
+                </span>
+                <span className="mt-[3px] block text-[13px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+                  {s.precision}
+                </span>
+              </span>
+              {/* **« Pas encore », jamais « non ».** Ce n’est pas un refus : c’est
+                  un branchement qui n’a pas encore été fait, et il n’a rien à
+                  faire pour l’obtenir. */}
+              <span
+                data-atlas="savoir-faire"
+                className={`flex-none pt-[5px] ${libelleCaps}`}
+                style={{ color: s.marche ? colors.plein : colors.muted }}
               >
-                <p className="text-[13px]" style={{ color: colors.muted, marginBottom: 2 }}>
-                  {etat.role}
-                </p>
-                <p className="text-[15px] font-medium" style={{ color: colors.ink }}>
-                  {etat.libelle}
-                </p>
-                <p className="text-[13px] leading-snug" style={{ color: colors.inkSoft, marginTop: 6 }}>
-                  {etat.explication}
-                </p>
-              </div>
-            ))}
-          </div>
+                {s.marche ? "Oui" : "Pas encore"}
+              </span>
+            </div>
+          ))}
 
-          {/* Cette phrase disait l'inverse jusqu'au 6 août 2026 : « jamais par
-              la seule présence d'une clé ». C'est précisément là que le patron
-              s'est arrêté deux fois — clés posées, IA débranchée, et aucune
-              raison affichée. Poser une clé suffit désormais ; les variables ne
-              servent qu'à aller CONTRE (`ARCHITECTURE.md` §26). */}
-          <p className="mt-[10px] text-[12px] leading-snug" style={{ color: colors.muted }}>
-            {aFaire ??
-              "Poser une clé suffit à brancher le fournisseur correspondant. Les variables TRANSCRIPTION_PROVIDER, LLM_PROVIDER et VISION_PROVIDER ne servent qu'à forcer un autre choix — par exemple « dev » pour couper l'IA sans retirer les clés. Sans VISION_PROVIDER, les images vont chez celui qui rédige."}
-          </p>
+          {/* **Ce qu’il peut faire, et c’est RIEN.** Un artisan ne posera jamais
+              une clé d’API : lui dire ce qui manque le renverrait chercher un
+              interlocuteur qui n’existe pas. La phrase le rassure et s’arrête là. */}
+          {savoirs.some((s) => !s.marche) && (
+            <p className="mt-[14px] text-[12px] leading-snug" style={{ color: colors.muted }}>
+              Rien à faire de votre côté : c&apos;est nous qui le branchons.
+            </p>
+          )}
         </section>
+
+        {/* **LE DÉTAIL TECHNIQUE, DERRIÈRE LA PORTE DE L’ÉDITEUR.**
+
+            Il vivait à ciel ouvert : tout propriétaire lisait
+            « TRANSCRIPTION_PROVIDER » et l’exemple « dev ». C’est exactement ce
+            qu’il refusait le 7 août 2026 — « est-ce que les utilisateurs auront
+            accès à cette page ? Moi c’est ça que je ne veux pas. » Il ne disparaît
+            pas pour autant : c’est lui qui répond, en deux secondes, le jour où
+            l’on doute d’un branchement. */}
+        {editeur && (
+          <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
+            <p className={`mb-[10px] ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+              Ce que l&apos;application utilise
+            </p>
+            <div className="flex flex-col gap-3">
+              {etatsIA.map((etat) => (
+                <div
+                  key={etat.role}
+                  className="rounded-[4px] p-4"
+                  style={{
+                    backgroundColor: colors.card,
+                    borderLeft: etat.nature === "reel" ? "none" : `3px solid ${colors.rust}`,
+                  }}
+                >
+                  <p className="text-[13px]" style={{ color: colors.muted, marginBottom: 2 }}>
+                    {etat.role}
+                  </p>
+                  <p className="text-[15px] font-medium" style={{ color: colors.ink }}>
+                    {etat.libelle}
+                  </p>
+                  <p className="text-[13px] leading-snug" style={{ color: colors.inkSoft, marginTop: 6 }}>
+                    {etat.explication}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-[10px] text-[12px] leading-snug" style={{ color: colors.muted }}>
+              {aFaire ??
+                "Poser une clé suffit à brancher le fournisseur correspondant. Les variables TRANSCRIPTION_PROVIDER, LLM_PROVIDER et VISION_PROVIDER ne servent qu’à forcer un autre choix — par exemple « dev » pour couper l’IA sans retirer les clés. Sans VISION_PROVIDER, les images vont chez celui qui rédige."}
+            </p>
+          </section>
+        )}
 
         {/* **Le vocabulaire du métier — l'éditeur seulement.**
             Le patron, le 7 août 2026 : « est-ce que les utilisateurs auront
