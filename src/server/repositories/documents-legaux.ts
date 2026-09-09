@@ -60,7 +60,17 @@ export async function documentsEnVigueur(): Promise<DocumentAAccepter[]> {
   }
 
   // Ordre d'affichage : celui déclaré dans versions.ts, pas celui de la base.
-  const ordre = VERSIONS_DOCUMENTS.map((v) => v.type);
+  //
+  // **Les types DISTINCTS, et c'est une correction du 9 septembre 2026.** Cette
+  // ligne prenait le type de CHAQUE version déclarée. Tant qu'il n'existait
+  // qu'une version par document, cela revenait au même — le défaut dormait
+  // depuis le premier jour. À la seconde version des CGU, l'écran a affiché
+  // **deux fois la même carte**, deux cases pour un seul document.
+  //
+  // Aucun test ne le voyait, et il ne pouvait pas se voir avant qu'une seconde
+  // version existe : c'est la capture de l'écran qui l'a montré
+  // (`CLAUDE.md` §5, et c'est la sixième fois dans ce dépôt).
+  const ordre = [...new Set(VERSIONS_DOCUMENTS.map((v) => v.type))];
   return ordre.map((t) => parType.get(t)).filter((d): d is DocumentAAccepter => d !== undefined);
 }
 
