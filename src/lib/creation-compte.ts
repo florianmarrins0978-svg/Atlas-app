@@ -21,10 +21,14 @@
  * demande jamais le capital d'une entreprise qui n'en a pas.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * **CE QUI RESTE À TRANCHER, ET QUI EST DANS `TODO.md`** : seize questions,
- * est-ce trop ? L'IBAN et les moyens de paiement ne servent qu'à la première
- * facture et pourraient retourner dans les réglages. Tant qu'il n'a pas
- * répondu, la liste est celle de la planche qu'il a choisie.
+ * **SEIZE QUESTIONS, ET IL A DIT QUE CE N'ÉTAIT PAS TROP** — 9 septembre 2026,
+ * en toutes lettres : *« non c'est pas trop »*. La question était posée depuis
+ * la planche : l'IBAN, le titulaire et les moyens de paiement ne servent qu'à
+ * la première facture et pouvaient retourner dans les réglages. Ils restent ici.
+ *
+ * **Ne pas raccourcir cette liste sans qu'il le redemande.** Une session qui la
+ * trouverait longue rouvrirait une question qu'il a déjà tranchée — et c'est
+ * exactement ce que `CLAUDE.md` §1 existe pour empêcher.
  */
 import { FORMES_JURIDIQUES, formeADuCapital } from "@/lib/formes-juridiques";
 import { capitalEnBase } from "@/lib/mentions-legales";
