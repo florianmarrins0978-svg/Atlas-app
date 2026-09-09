@@ -2009,6 +2009,39 @@ Quatre solutions, ce qu'elles coûtent et ce qu'elles protègent :
 **`docs/travaux-supplementaires.md`**. Rien n'est codé — la décision lui revient
 (`CLAUDE.md` §3 bis).
 
+**TRANCHÉ LE 9 SEPTEMBRE 2026 — LE GESTE ET L'ÉCRAN.** Sa demande : *« à la
+place de la phrase "rien n'a changé depuis le devis ?", je veux un bouton
+"ajouter des travaux supplémentaires" ; ça ouvre la vraie page du devis avec
+toutes les infos du devis en question, et une catégorie comme pour l'ajout d'une
+TVA se crée direct, et là on ajoute nos lignes et une TVA différente si on le
+souhaite »*.
+
+Puis, sur ma réserve — un devis parti ne se réécrit pas, la base le refuse
+(`trg_devis_immuable`) : *« oui, le devis ne se réécrit pas, seulement la case
+travaux supplémentaires ; le reste, impossible de les modifier »*.
+
+**Ce qui est donc acquis, et ne se rediscute plus :**
+
+| | |
+|---|---|
+| la phrase « Rien n'a changé depuis le devis ? » | **remplacée par un bouton** — elle n'était même pas cliquable |
+| ce qu'ouvre le bouton | **la feuille du devis**, avec ses lignes et ses totaux |
+| les lignes d'origine | **en lecture seule**, jamais modifiables |
+| la catégorie « Travaux supplémentaires » | **créée d'office**, seule zone qui s'écrit |
+| une TVA différente sur ces lignes | oui — le geste `+ Ajouter une TVA` de l'écran du devis |
+
+La planche essayable qui porte tout cela :
+`appli/travaux-supplementaires-sur-le-devis.html`.
+
+**Et cela prend le contrepied de son choix du 1ᵉʳ septembre** (le bloc déroulé
+sous le bouton de la facture, l'écran à part écarté). Il en a été prévenu et l'a
+maintenu : c'est la page entière.
+
+**CE QUI RESTE, ET QUI SEUL EMPÊCHE DE CODER : une facture, ou deux ?** Le
+client reçoit-il une pièce qui additionne tout, ou celle qu'il avait acceptée
+plus le supplément ? C'est la planche `appli/ts-avenant.html`, et rien dans le
+code ne peut trancher à sa place.
+
 **Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
 transmises (`scripts/` non concerné : le parcours a été joué à la main, captures
 regardées, mode nuit compris) :
