@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### « Dernier devis » n'apparaissait presque jamais
+
+**Il l'a vu sur la fiche de Julien** : un devis du 7 septembre à l'écran, et le
+bouton absent. Il tenait au dernier chantier **TERMINÉ** — or un devis envoyé
+n'est pas un chantier fini, et la plupart de ses clients n'en ont aucun. Le
+geste était donc invisible chez presque tout le monde.
+
+Un bouton nommé « Dernier devis » se lit désormais sur le dernier DEVIS, et sur
+**la même liste ordonnée** que la colonne qu'il voit sur la fiche : deux façons
+de dire « le plus récent » finiraient par désigner deux devis différents.
+
+La suite de bout en bout portait la même erreur — elle terminait un chantier
+pour faire apparaître le bouton, et documentait donc une règle fausse. Elle
+envoie maintenant le devis, comme lui.
+
 ### Les travaux supplémentaires : le bouton, la feuille, et une seule facture
 
 *« Si on effectue des travaux en plus chez un client, on n'a aucun moyen de

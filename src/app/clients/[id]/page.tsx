@@ -173,7 +173,7 @@ export default async function FicheClientPage({
         </div>
       )}
 
-      <RepartirDeCeClient clientId={fiche.client.id} dernierChantierId={fiche.derniere?.id ?? null} />
+      <RepartirDeCeClient clientId={fiche.client.id} dernierChantierId={fiche.chantierDuDernierDevis} />
 
       {/* ─── Le dossier : trois registres, un seul ouvert ───────────────────
           Ses trois catégories et son ordre du 20 août au soir — Devis, Facture,
