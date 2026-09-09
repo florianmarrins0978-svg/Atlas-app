@@ -8,7 +8,9 @@ import {
   trouverOuCreerClient,
   getClient,
   mettreAJourClient,
+  reconnaitreLeClient,
   type CanalClient,
+  type ClientReconnu,
 } from "@/server/repositories/clients";
 import { complementsPourFiche } from "@/lib/rapprochement-client";
 import { nomDuChantier } from "@/lib/nom-chantier";
@@ -42,6 +44,13 @@ export type CreerChantierInput = {
   canal?: CanalClient;
   adresseChantier?: string;
   adresseClient?: string;
+  /**
+   * Il a appuyé sur « Ce n'est pas lui » sous la fiche reconnue.
+   *
+   * Ce n'est pas la même chose qu'un `clientId` absent : là, on ne sait pas ;
+   * ici, on sait que **ce n'est pas** celui qu'Atlas a trouvé.
+   */
+  refuseLeRapprochement?: boolean;
 };
 
 // Ne redirige pas elle-même (garde le comportement de navigation côté client,
@@ -117,6 +126,11 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
       // laisser le champ vide. Il la corrige d'un geste sur le devis si les
       // deux diffèrent.
       adresse: data.adresseClient?.trim() || data.adresseChantier?.trim() || undefined,
+      // **« Ce n'est pas lui » traverse jusqu'ici, et il le faut.** Le refus est
+      // pris à l'écran, mais c'est l'enregistrement qui range le chantier :
+      // sans ce passage, le nom seul aurait retrouvé l'homme qu'il venait
+      // d'écarter, et Atlas lui aurait répondu « si, c'est lui ».
+      refuseLeRapprochement: data.refuseLeRapprochement,
     });
     clientId = client.id;
   }
@@ -208,4 +222,36 @@ export async function reprendreLesPhotosAction(
 
   const creees = await recopierPhotos(ctx, photoIds, chantierId);
   return { ok: true, reprises: creees.length };
+}
+
+/**
+ * RECONNAÎTRE LE CLIENT PENDANT QU'IL TAPE — proposition C, tranchée par le
+ * patron le 9 septembre 2026.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa question, et la réponse qui l'a décidé :** *« lorsque je clique sur
+ * créer un devis j'écris Martins, il reconnaît et entre les infos de lui-même,
+ * mais il ne va donc pas me créer un deuxième client appelé Martins ? »* —
+ * non. `trouverOuCreerClient` réunit déjà les homonymes depuis le 17 août ;
+ * cet écran ne fait que **montrer** ce qu'Atlas faisait en silence.
+ *
+ * **Ce n'est PAS la liste de correspondances qu'il a écartée** le 17 août
+ * (*« non justement, il ne faut pas »*). On ne lui propose rien, on ne lui
+ * demande rien : la fiche se remplit, et un seul bouton permet de dire non.
+ *
+ * **Rien de ce qui sort d'ici n'est un montant, ni une décision.** C'est une
+ * lecture, sous `withEntreprise` comme le reste, et elle rend `null` bien plus
+ * souvent qu'elle ne rend quelqu'un — quatre Martins sans numéro, c'est `null`.
+ */
+export async function reconnaitreLeClientAction(saisie: {
+  nom: string;
+  telephone?: string;
+  email?: string;
+}): Promise<ClientReconnu | null> {
+  const ctx = await getCurrentCtx();
+  // La même porte que la création : reconnaître un client, c'est déjà lire sa
+  // fiche, et un rôle qui n'a pas le droit de créer un chantier n'a pas à
+  // savoir qui est déjà chez lui.
+  await exigerEcran(ctx, "/chantiers", "reconnaître un client");
+  return reconnaitreLeClient(ctx, saisie);
 }

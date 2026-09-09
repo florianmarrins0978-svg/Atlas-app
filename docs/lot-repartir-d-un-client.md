@@ -428,7 +428,7 @@ Corrigés quand même, parce qu'ils font perdre du temps à toutes les sessions 
 |---|---|
 | ~~quelle proposition pour le lot 1~~ | **tranché le 8 septembre : E** |
 | ~~« Refaire » : tarifs d'aujourd'hui ou à l'identique~~ | **tranché : aux tarifs d'aujourd'hui** |
-| **quelle proposition pour la partie 1 — A, B ou C** (comment Atlas dit sous quel client il a rangé) | **lui**, sur la première planche |
+| ~~quelle proposition pour la partie 1 — A, B ou C~~ | **tranché le 9 septembre : C**, et codée (§14) |
 | **la carte d'un retour ne mène nulle part** : elle montre, elle n'ouvre pas — pour ne pas dupliquer les règles d'accès du planning | **lui**, s'il veut y entrer |
 | **aucune suite de bout en bout ne joue le chemin du salarié** : le jeu de démonstration n'a pas de compte salarié. C'est exactement le défaut du 28 août (`CLAUDE.md` §5 quater) | **nous** — il faut un salarié dans le jeu de démonstration |
 | le compte rendu du lot 3 : rattacher `passages_entretien` au chantier, ou page propre | **nous**, au lot 3 |
@@ -449,6 +449,78 @@ Sous `https://florianmarrins0978-svg.github.io/Atlas-app/` :
 | `termines-et-les-retours.html` | la vraie page Terminés, photographiée, et trois propositions |
 | `parcours-fin-de-chantier.html` | le parcours cliquable, du salarié au patron |
 | `retours-d-intervention.html` | la sous-catégorie et sa page, filtres compris |
+
+---
+
+## 14. La proposition C, codée — 9 septembre 2026
+
+### Sa question, et la réponse qui a décidé du lot
+
+> *« Lorsque je clique sur créer un devis j'écris Martins, il reconnaît et
+> entre les infos de lui-même — mais il ne va donc pas me créer un deuxième
+> client appelé Martins ? »*
+
+**Non.** Atlas réunit les homonymes depuis le 17 août. Ce qui manquait n'était
+pas la règle, c'était de la **voir** : rien à l'écran ne disait qu'il avait
+reconnu quelqu'un, et vous croyiez devoir retaper un client connu.
+
+C'est éprouvé en base, pas déduit : la suite crée deux chantiers sous le même
+nom et vérifie qu'il n'existe **qu'une fiche**, et que les deux chantiers y sont
+accrochés (`scripts/test-client-reconnu-e2e.ts`).
+
+### Ce que vous voyez
+
+| | |
+|---|---|
+| vous tapez un nom connu | un bandeau : **« Repris de sa fiche · Saint-Marc · 3 chantiers »** |
+| les cases | téléphone, e-mail, adresse posés seuls — **les vides seulement**, jamais par-dessus ce que vous avez tapé |
+| un seul geste | **« Ce n'est pas lui »**, qui retire ce qu'Atlas avait posé et **rien d'autre** |
+| personne de reconnu | **rien du tout** — pas de « Nouveau client », qui serait du bruit à chaque frappe |
+
+### CE QUI A DEMANDÉ LE PLUS DE SOIN : SE TAIRE
+
+Le rapprochement tranche à l'enregistrement, quand tout est tapé, et il a le
+droit de départager deux homonymes par le plus récent : au pire le chantier va
+chez le mauvais Martins, et cela se répare.
+
+**Pré-remplir est d'une autre nature.** On écrit le numéro d'un homme sur la
+fiche d'un autre, à l'écran — et vous ne le relirez pas, puisque c'est justement
+pour ne plus retaper que vous avez demandé cet écran. Le devis partirait au
+mauvais numéro, et personne ne saurait d'où ça vient.
+
+**Donc : quatre Martins et aucune coordonnée, Atlas ne pose rien.** Il attend le
+numéro, qui tranche de lui-même. Le contrôle qui tient cette ligne a été **vu
+rouge** en retirant le compte d'homonymes.
+
+### « Ce n'est pas lui » : un mot, pas un geste d'écran
+
+Vider les cases ne suffisait pas. Le nom restant seul, la règle du nom seul
+retrouvait le même homme à la frappe suivante — Atlas aurait répondu « si, c'est
+lui », puis aurait rangé le chantier chez celui qu'on venait d'écarter. Le refus
+entre donc **dans la règle**, et voyage jusqu'à l'enregistrement.
+
+### Trouvé à la capture, par aucune mesure
+
+Le numéro repris sortait **collé** — `0679984514` —, la base le rangeant sans
+espaces. Le seul chiffre illisible de l'écran, à côté de ceux tapés à la main.
+C'est le **septième** défaut de ce dépôt sorti d'une image et d'aucun test vert.
+
+### Le mot du bouton
+
+*« La phrase Refaire, c'est pas bizarre ? »* — c'était juste : cela se lit comme
+*recommencer parce que c'était raté*. C'est **« Dernier devis »**, avec la flèche
+qui tourne.
+
+*La réserve, noir sur blanc* : le mot peut se lire « ouvrir mon dernier devis »
+alors qu'il en crée un neuf. L'icône porte le « de nouveau », et l'écran suivant
+est un devis sans numéro — l'ambiguïté ne survit pas au premier usage.
+
+### Les chiffres de ce lot
+
+| La suite | Résultat |
+|---|---|
+| `test-rapprochement-client.ts` (la règle, sans base) | **14 contrôles, 0 échec** — dont celui des quatre Martins, vu rouge exprès |
+| `test-client-reconnu-e2e.ts` (votre parcours, au navigateur) | **7 contrôles, 0 échec** |
 
 ---
 

@@ -1,15 +1,20 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { colors, font, libelleCaps, smallCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, smallCaps, surPlein } from "@/lib/design-tokens";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
 import DicterCoordonnees from "./DicterCoordonnees";
 import { champsARemplir, type CoordonneesDictees } from "@/lib/coordonnees-dictees";
-import { reprendreLesPhotosAction, creerChantierAction } from "./actions";
+import {
+  reprendreLesPhotosAction,
+  creerChantierAction,
+  reconnaitreLeClientAction,
+} from "./actions";
+import type { ClientReconnu } from "@/server/repositories/clients";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
 import {
   apresLesCoordonnees,
@@ -188,6 +193,44 @@ export default function FormulaireNouveauChantier({
    * L'ensemble vide est donc l'état NORMAL, pas un oubli.
    */
   const [photosReprises, setPhotosReprises] = useState<ReadonlySet<string>>(new Set());
+  /**
+   * ═════════════════════════════════════════════════════════════════════════
+   * LE CLIENT QU'ATLAS RECONNAÎT PENDANT QU'IL TAPE — proposition C, tranchée
+   * par le patron le 9 septembre 2026.
+   *
+   * *« J'écris Martins, il reconnaît et entre les infos de lui-même. »*
+   *
+   * **Ce n'est PAS la liste de correspondances qu'il a écartée** le 17 août
+   * (*« non justement, il ne faut pas »*) : rien ne lui est proposé, rien ne
+   * lui est demandé. La fiche se remplit, et un bouton dit non.
+   *
+   * `null` bien plus souvent qu'un homme : quatre Martins sans numéro ne
+   * reconnaissent personne, et c'est la règle qui en décide
+   * (`clientAPreremplir`), jamais cet écran.
+   */
+  const [reconnu, setReconnu] = useState<ClientReconnu | null>(null);
+  /**
+   * Il a dit « ce n'est pas lui », et **rien ne rouvre la question**.
+   *
+   * Sans ce verrou, la reconnaissance repartirait à la frappe suivante et lui
+   * répondrait « si, c'est lui » — puis l'enregistrement rangerait le chantier
+   * chez celui qu'il venait d'écarter. Le refus voyage donc jusqu'au serveur
+   * (`refuseLeRapprochement`).
+   */
+  const [refuse, setRefuse] = useState(false);
+  /**
+   * Ce qu'ATLAS a posé, par opposition à ce que LUI a tapé.
+   *
+   * « Ce n'est pas lui » ne vide que ces cases-là. Tout effacer lui ferait
+   * perdre le numéro qu'il venait de taper à la main — et il ne saurait pas
+   * pourquoi.
+   *
+   * **Une référence, pas un état** : rien à l'écran n'en dépend, et en faire un
+   * état l'aurait mis dans les dépendances de la reconnaissance — qui se serait
+   * relancée juste après s'être servie.
+   */
+  const posesParAtlas = useRef<Set<string>>(new Set());
+
   // **Quel bouton travaille**, et pas seulement « ça travaille ». Les deux
   // capsules sont identiques ; sans cela, « Création… » s'afficherait sur celle
   // qu'il n'a pas touchée, et il croirait s'être trompé de geste.
@@ -217,6 +260,76 @@ export default function FormulaireNouveauChantier({
    * La pastille « Mr / Mme » en fait partie depuis le 7 septembre 2026 : le mot
    * dicté a quitté le nom (`detacherCivilite`) pour venir ici.
    */
+  /**
+   * On demande au serveur QUI c'est, un court instant après qu'il a cessé de
+   * taper.
+   *
+   * **Le délai n'est pas un `setTimeout` de confort** (`CLAUDE.md` §4 quater) :
+   * c'est la frappe elle-même qu'on attend. Interroger à chaque caractère
+   * ferait sept requêtes pour « Martins », dont six sur des noms qui n'existent
+   * pas — et la sixième pourrait revenir APRÈS la septième et poser la fiche
+   * d'un autre. C'est pourquoi la réponse est jetée si la saisie a bougé
+   * entre-temps.
+   *
+   * **Rien ne part quand on vient déjà de sa fiche** (`depart`) : le client est
+   * tenu par son identifiant, il n'y a rien à reconnaître.
+   */
+  useEffect(() => {
+    if (depart || refuse) return;
+    const demande = { nom: nomClient, telephone, email };
+    let abandonne = false;
+    const minuteur = setTimeout(() => {
+      reconnaitreLeClientAction(demande)
+        .then((lui) => {
+          if (abandonne) return;
+          setReconnu(lui);
+          if (!lui) return;
+          // La même règle que la dictée, et c'est voulu : on ne remplit QUE ce
+          // qui est vide. Une seconde façon de « compléter sans écraser »
+          // finirait par diverger (`CLAUDE.md` §3).
+          const aRemplir = champsARemplir(
+            { nom: nomClient, civilite, telephone, email, adresse: adresseChantier },
+            {
+              nom: null,
+              civilite: lui.civilite,
+              telephone: lui.telephone,
+              email: lui.email,
+              adresse: lui.adresse,
+            }
+          );
+          const poses = posesParAtlas.current;
+          if (aRemplir.civilite !== undefined) { setCivilite(aRemplir.civilite); poses.add("civilite"); }
+          // **Le numéro s'écrit comme quand il le tape**, par la même fonction.
+          // Vu à la capture, pas à la mesure : la base le garde collé
+          // (`0679984514`), et la case le rendait tel quel — un numéro qu'on ne
+          // relit pas d'un coup d'œil, à côté de ceux qu'il a saisis lui-même.
+          if (aRemplir.telephone !== undefined) { setTelephone(espacerNumero(aRemplir.telephone).valeur); poses.add("telephone"); }
+          if (aRemplir.email !== undefined) { setEmail(aRemplir.email); poses.add("email"); }
+          if (aRemplir.adresse !== undefined) { setAdresseChantier(aRemplir.adresse); poses.add("adresse"); }
+        })
+        // **Une reconnaissance qui échoue ne fait rien**, et surtout pas une
+        // alerte : elle n'est qu'un confort, et l'écran marche entièrement sans
+        // elle. Ce n'est pas un refus avalé — il n'y avait rien à refuser.
+        .catch(() => undefined);
+    }, 350);
+    return () => {
+      abandonne = true;
+      clearTimeout(minuteur);
+    };
+  }, [nomClient, telephone, email, civilite, adresseChantier, depart, refuse]);
+
+  /** « Ce n'est pas lui » : on retire ce qu'Atlas a posé, et rien d'autre. */
+  function ceNestPasLui() {
+    setRefuse(true);
+    setReconnu(null);
+    const poses = posesParAtlas.current;
+    if (poses.has("civilite")) setCivilite(null);
+    if (poses.has("telephone")) setTelephone("");
+    if (poses.has("email")) setEmail("");
+    if (poses.has("adresse")) setAdresseChantier("");
+    posesParAtlas.current = new Set();
+  }
+
   function appliquerDictee(c: CoordonneesDictees) {
     const aRemplir = champsARemplir(
       { nom: nomClient, civilite, telephone, email, adresse: adresseChantier },
@@ -285,7 +398,11 @@ export default function FormulaireNouveauChantier({
       // **Connu, donc pas cherché.** Venant de sa fiche, on tient
       // l'identifiant : aucun rapprochement n'est joué, et le chantier ne peut
       // pas atterrir chez un homonyme parce qu'un nom aurait été retouché.
-      clientId: depuisClient?.clientId,
+      // **Reconnu à l'écran, donc tenu par son identifiant lui aussi.** Sans
+      // cette ligne, l'écran aurait montré « Repris de sa fiche » et
+      // l'enregistrement serait quand même reparti chercher un homonyme — deux
+      // vérités pour une seule question (`CLAUDE.md` §3).
+      clientId: depuisClient?.clientId ?? reconnu?.id,
       nomClient,
       civilite: civilite ?? undefined,
       telephone: numeroEnregistre(telephone),
@@ -293,6 +410,7 @@ export default function FormulaireNouveauChantier({
       canal: canal ?? undefined,
       adresseChantier,
       adresseClient,
+      refuseLeRapprochement: refuse,
     }).then(({ id }) => {
       setChantierCree(id);
       creationEnCours.current = null;
@@ -556,6 +674,15 @@ export default function FormulaireNouveauChantier({
               puis *« non, remets le Mr et Mme, je voulais juste que tu enlèves
               le TITRE »*. Les deux pastilles se comprennent seules, et c'est
               une ligne de petites capitales de moins en haut de l'écran. */}
+          {/* **CE QU'ATLAS A RECONNU** — proposition C, tranchée le 9 septembre
+              2026. Deux lignes et un bouton : il ne lui est rien demandé.
+
+              **Rien quand personne n'est reconnu**, et surtout pas « Nouveau
+              client » : une ligne qui s'allume à chaque frappe pour dire qu'il
+              ne se passe rien est du bruit (`CLAUDE.md` §3), et il taperait
+              par-dessus sans la lire. */}
+          {reconnu && <FicheReprise lui={reconnu} onRefuser={ceNestPasLui} />}
+
           <ChoixCivilite valeur={civilite} onChange={setCivilite} sansLegende />
 
           {/* **Le nom et le numéro sur la MÊME ligne** — sa demande du 21 août
@@ -1172,4 +1299,78 @@ function FlecheRetour() {
       <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
+}
+
+/**
+ * « Repris de sa fiche » — ce qu'Atlas dit quand il a reconnu quelqu'un.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **CE QUI LE DISTINGUE COMPTE AUTANT QUE SON NOM.** Sa remarque du
+ * 3 septembre 2026 : *« j'ai vingt et un clients, dont QUATRE qui s'appellent
+ * Martins »*. « Repris de sa fiche » tout seul ne lui dit pas LEQUEL. La
+ * seconde ligne porte donc son lieu et ses chantiers — c'est ce qui se
+ * reconnaît d'un coup d'œil, et c'est ce que la planche montrait.
+ *
+ * **Le lieu manque parfois**, et rien n'est inventé pour combler : la ligne se
+ * réduit alors aux chantiers (`CLAUDE.md` §4).
+ */
+function FicheReprise({ lui, onRefuser }: { lui: ClientReconnu; onRefuser: () => void }) {
+  const lieu = villeDe(lui.adresse);
+  const chantiers = `${lui.chantiers} chantier${lui.chantiers > 1 ? "s" : ""}`;
+
+  return (
+    <div
+      className="mb-4 flex items-start gap-3 rounded-[14px] px-3.5 py-3"
+      style={{ backgroundColor: colors.rustTint }}
+      data-atlas="client-reconnu"
+    >
+      <span
+        aria-hidden="true"
+        className="mt-[2px] flex h-[19px] w-[19px] flex-none items-center justify-center rounded-full"
+        style={{ backgroundColor: colors.plein, color: surPlein }}
+      >
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path
+            d="M2 6.3 4.7 9 10 3"
+            stroke="currentColor"
+            strokeWidth="1.9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[14.5px] leading-[1.35]">Repris de sa fiche</span>
+        <span className="mt-[2px] block text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
+          {lieu ? `${lieu} · ${chantiers}` : chantiers}
+        </span>
+        {/* **Le seul geste de tout l'écran**, et il ne se grise jamais : un
+            bouton grisé se touche quand même, et son silence se lit comme une
+            panne. Quand personne n'est reconnu, c'est le bandeau ENTIER qui
+            n'existe pas. */}
+        <button
+          type="button"
+          onClick={onRefuser}
+          data-atlas="ce-n-est-pas-lui"
+          className="mt-[7px] text-[13px] underline underline-offset-2"
+          style={{ color: colors.orTexte }}
+        >
+          Ce n&apos;est pas lui
+        </button>
+      </span>
+    </div>
+  );
+}
+
+/**
+ * La ville d'une adresse, pour la reconnaître à l'œil.
+ *
+ * Le dernier morceau après la virgule : « 12 rue des Lilas, Saint-Marc » rend
+ * « Saint-Marc ». Sans virgule, on ne devine pas — on rend rien plutôt que de
+ * couper un nom de rue en deux et d'afficher « des Lilas ».
+ */
+function villeDe(adresse: string | null): string {
+  if (!adresse) return "";
+  const bouts = adresse.split(",").map((b) => b.trim()).filter(Boolean);
+  return bouts.length > 1 ? bouts[bouts.length - 1] : "";
 }

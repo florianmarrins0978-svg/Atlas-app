@@ -11,6 +11,7 @@ import {
   telephoneRapproche,
   rapprocherClient,
   complementsPourFiche,
+  clientAPreremplir,
   type ClientExistant,
 } from "../src/lib/rapprochement-client";
 
@@ -176,6 +177,86 @@ essai("une case blanche compte comme vide, pas comme remplie", () => {
     telephone: "0612345678",
   });
   assert.deepEqual(c, { telephone: "0612345678" });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CE QU'ATLAS OSE POSER SUR LA FICHE — proposition C, 9 septembre 2026.
+//
+// Chaque cas ci-dessous est un numéro qu'on refuse d'écrire sur la fiche d'un
+// homme qui n'est pas le sien, ou un que le patron a le droit de ne pas
+// retaper. Il n'y a pas de cas de forme ici.
+
+essai("un seul homonyme, et le nom seul suffit : on reprend sa fiche", () => {
+  const lui = client({ id: "a", nom: "Martins", telephone: "0612345678" });
+  const trouve = clientAPreremplir({ nom: "Martins" }, [lui, client({ id: "b", nom: "Bernard" })]);
+  assert.equal(trouve?.id, "a");
+});
+
+essai("QUATRE MARTINS ET RIEN D'AUTRE : ON NE POSE RIEN", () => {
+  // Le cœur de la règle. `rapprocherClient` rendrait le plus récent — c'est
+  // bon pour ranger un chantier, jamais pour ÉCRIRE un numéro à l'écran : il
+  // ne le relira pas, et le devis partirait chez le mauvais.
+  const quatre = [
+    client({ id: "a", nom: "Martins", telephone: "0611111111", creeLe: "2026-01-01" }),
+    client({ id: "b", nom: "Martins", telephone: "0622222222", creeLe: "2026-02-01" }),
+    client({ id: "c", nom: "Martins", telephone: "0633333333", creeLe: "2026-03-01" }),
+    client({ id: "d", nom: "Martins", telephone: "0644444444", creeLe: "2026-04-01" }),
+  ];
+  assert.equal(clientAPreremplir({ nom: "Martins" }, quatre), null);
+});
+
+essai("son numéro le désigne parmi les quatre : on reprend", () => {
+  const quatre = [
+    client({ id: "a", nom: "Martins", telephone: "0611111111" }),
+    client({ id: "b", nom: "Martins", telephone: "0622222222" }),
+    client({ id: "c", nom: "Martins", telephone: "0633333333" }),
+    client({ id: "d", nom: "Martins", telephone: "0644444444" }),
+  ];
+  const trouve = clientAPreremplir({ nom: "Martins", telephone: "06 33 33 33 33" }, quatre);
+  assert.equal(trouve?.id, "c");
+});
+
+essai("un nom inconnu ne pose rien", () => {
+  assert.equal(clientAPreremplir({ nom: "Rivière" }, [client({ id: "a", nom: "Martins" })]), null);
+});
+
+essai("un nom vide ne pose rien — et ne fait pas tomber l'écran", () => {
+  assert.equal(clientAPreremplir({ nom: "" }, [client({ id: "a", nom: "Martins" })]), null);
+  assert.equal(clientAPreremplir({ nom: "   " }, [client({ id: "a", nom: "Martins" })]), null);
+});
+
+essai("un numéro qui CONTREDIT ne pose rien — c'est quelqu'un d'autre", () => {
+  const lui = client({ id: "a", nom: "Martins", telephone: "0612345678" });
+  assert.equal(clientAPreremplir({ nom: "Martins", telephone: "0799999999" }, [lui]), null);
+});
+
+essai("« Ce n'est pas lui » ferme la question, même sur un seul homonyme", () => {
+  const lui = client({ id: "a", nom: "Martins", telephone: "0612345678" });
+  assert.equal(clientAPreremplir({ nom: "Martins", refuseLeRapprochement: true }, [lui]), null);
+});
+
+essai("« Ce n'est pas lui » vaut jusqu'à l'ENREGISTREMENT, pas seulement à l'écran", () => {
+  // Sans cette porte, le refus ne tenait pas : il vide les cases reprises, le
+  // nom reste seul, et la règle du nom seul retrouvait le même homme.
+  const lui = client({ id: "a", nom: "Martins" });
+  assert.deepEqual(rapprocherClient({ nom: "Martins", refuseLeRapprochement: true }, [lui]), {
+    type: "creer",
+    motif: "refuse",
+  });
+});
+
+essai("sans refus, le même nom retrouve bien le même homme — le contrôle sait rougir", () => {
+  const lui = client({ id: "a", nom: "Martins" });
+  assert.deepEqual(rapprocherClient({ nom: "Martins" }, [lui]), {
+    type: "reutiliser",
+    id: "a",
+    motif: "nom",
+  });
+});
+
+essai("la civilité tapée à la volée ne casse pas la reconnaissance", () => {
+  const lui = client({ id: "a", nom: "Martins", telephone: "0612345678" });
+  assert.equal(clientAPreremplir({ nom: "M. Martins" }, [lui])?.id, "a");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Reconnaître un client — ${echecs} échec(s).`);

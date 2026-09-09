@@ -8,6 +8,32 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Atlas dit qui il a reconnu, et se tait quand il ne sait pas
+
+Il tape « Martins » : la fiche se remplit toute seule — téléphone, e-mail,
+adresse — sous un bandeau qui dit **« Repris de sa fiche · Saint-Marc ·
+3 chantiers »**. Un bouton « Ce n'est pas lui » défait tout, et **le refus
+tient** : Atlas ne le lui repropose pas à la frappe suivante.
+
+**Sa question, et elle valait le lot :** *« il ne va donc pas me créer un
+deuxième client appelé Martins ? »* Non — et il ne le faisait déjà pas depuis
+le 17 août. Ce qui manquait n'était pas la règle, c'était de la VOIR : il
+croyait devoir retaper un client qu'Atlas connaissait par cœur.
+
+**Ce qui a demandé le plus de soin, c'est le silence.** Quatre Martins et aucun
+numéro : Atlas ne pose rien. Écrire le téléphone d'un homme sur la fiche d'un
+autre, il ne le relirait pas — c'est justement pour ne plus retaper qu'il a
+demandé cet écran —, et le devis partirait au mauvais numéro. Le contrôle qui
+tient cette ligne a été vu rouge exprès (`ARCHITECTURE.md` §302).
+
+**Trouvé à la capture, par aucune mesure :** le numéro repris sortait collé
+(`0679984514`), la base le rangeant sans espaces. Le seul chiffre illisible de
+l'écran, à côté de ceux qu'il tape lui-même.
+
+**Et le bouton « Refaire » s'appelle « Dernier devis »** — *« ça sonne
+bizarre »*, et c'était juste : « refaire » se lit comme *recommencer parce que
+c'était raté*.
+
 ### « Ah ouais mais j’ai pas vu votre facture » — la réception se trace
 
 Sa demande du jour : une case à cocher sur la page de la facture, pour en finir

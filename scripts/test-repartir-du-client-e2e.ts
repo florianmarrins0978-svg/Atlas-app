@@ -114,8 +114,8 @@ async function main() {
 
   await cas("la fiche du client offre « Refaire » et « Autre chantier »", async () => {
     await assert.doesNotReject(
-      page.getByRole("button", { name: "Refaire" }).waitFor({ state: "visible", timeout: 10_000 }),
-      "le bouton « Refaire » n'est pas sur la fiche du client"
+      page.getByRole("button", { name: "Dernier devis" }).waitFor({ state: "visible", timeout: 10_000 }),
+      "le bouton « Dernier devis » n'est pas sur la fiche du client"
     );
     await assert.doesNotReject(
       page
@@ -129,7 +129,7 @@ async function main() {
   let refait: string | null = null;
 
   await cas("« Refaire » ouvre la VRAIE page du devis, pas un récapitulatif", async () => {
-    await page.getByRole("button", { name: "Refaire" }).click();
+    await page.getByRole("button", { name: "Dernier devis" }).click();
     // Sa règle du 8 septembre : *« si l'utilisateur veut rajouter des lignes,
     // modifier des prix, rajouter une TVA ou faire un prix au client, il peut
     // le faire qu'à partir de la page devis la vraie ! »*

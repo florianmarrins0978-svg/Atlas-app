@@ -74,6 +74,21 @@ posé » sous la pastille).
 
 ---
 
+## ✅ FAIT LE 9 SEPTEMBRE 2026 — Atlas dit qui il a reconnu (proposition C)
+
+~~À trancher : A, B ou C~~ — **il a choisi la C**, et elle est codée.
+`ARCHITECTURE.md` §302, suite `test-client-reconnu-e2e.ts`.
+
+Le bouton « Refaire » s'appelle désormais **« Dernier devis »**, à sa demande.
+
+**Ce qui reste ouvert de ce lot :**
+
+| Le point | Qui |
+|---|---|
+| **Quatre homonymes sans coordonnée : Atlas ne pose rien, et ne dit rien.** Un jour il tapera « Martins » en attendant que ça se remplisse, et il ne saura pas qu'il manque le numéro. Une ligne le dirait — mais un avertissement qui parle à tort s'apprend à être ignoré, et celui-ci parlerait à chaque homonyme | **lui**, s'il rencontre le cas |
+| **La reconnaissance ne joue pas sur l'écran des coordonnées d'un chantier repris** (`/chantiers/[id]/coordonnees`) : on y arrive avec un chantier déjà rattaché, il n'y a rien à reconnaître. À vérifier s'il y saisit un client pour la première fois | **nous** |
+
+---
 ## Les rouges qui ne sont à personne — relevé du 9 septembre 2026
 
 **Mesuré sur la batterie du lot « retour d'intervention »**, atelier au rang 0,

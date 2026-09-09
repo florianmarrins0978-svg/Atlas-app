@@ -25879,3 +25879,78 @@ réception en aurait fait une troisième. Elle vit désormais dans
 `src/lib/adresse-client.ts`, et les deux copies ont disparu. Elle ne se confond
 pas avec `sourceDepuisEntetes` : celle-ci sert à COMPTER et refuse de deviner,
 celle-là sert à DOCUMENTER et écrit ce que le client a dit de lui.
+
+## §302 — Reconnaître le client PENDANT qu'il tape, sans jamais écrire chez le mauvais
+
+*Proposition C, tranchée par le patron le 9 septembre 2026. Aucune migration :
+tout se lit dans ce qui existe déjà.*
+
+**Sa question, et c'est elle qui a décidé du lot :** *« lorsque je clique sur
+créer un devis j'écris Martins, il reconnaît et entre les infos de lui-même —
+mais il ne va donc pas me créer un deuxième client appelé Martins ? »*
+
+Non. `trouverOuCreerClient` réunit les homonymes depuis le 17 août 2026. **Ce
+que cet écran ajoute n'est pas une règle, c'est la vue de la règle** : Atlas
+faisait déjà le rapprochement, et rien à l'écran ne le disait — au point qu'il
+croyait devoir retaper un client qu'Atlas connaissait.
+
+**Ce n'est PAS la liste de correspondances qu'il a écartée** le 17 août
+(*« non justement, il ne faut pas »*). Rien ne lui est proposé, rien ne lui est
+demandé : la fiche se remplit, et un seul bouton dit non.
+
+### LA DIFFICULTÉ N'EST PAS DE RECONNAÎTRE, C'EST DE SE TAIRE
+
+`rapprocherClient` tranche **au moment d'enregistrer**, quand tout a été tapé, et
+il a le droit de départager deux homonymes par le plus récent : au pire le
+chantier va chez le mauvais Martins, et cela se répare d'un geste.
+
+**Pré-remplir est d'une autre nature.** On ÉCRIT le numéro d'un homme sur la
+fiche d'un autre, à l'écran, avant qu'il ait fini sa phrase — et il ne le relira
+pas, puisque c'est justement pour ne pas retaper qu'il a demandé cet écran. Le
+devis part alors au mauvais numéro, et personne ne saura d'où ça vient.
+
+D'où une seconde règle pure, `clientAPreremplir`, qui n'est pas un cas
+particulier posé à côté de la première mais un **resserrement nommé** :
+
+| Ce que `rapprocherClient` rend | Homonymes | On pose ? |
+|---|---|---|
+| `reutiliser`, motif `coordonnee` | peu importe | **oui** — son numéro le désigne |
+| `reutiliser`, motif `nom` | **un seul** | **oui** |
+| `reutiliser`, motif `nom` | plusieurs | **non**, et sans un mot |
+| `creer` | — | non |
+
+Quatre Martins et aucune coordonnée, c'est un doute — pas un défaut, pas un
+message. L'écran attend le numéro, qui tranchera de lui-même. *« Plausible »
+n'est pas une source* (`CLAUDE.md` §4). Le contrôle qui tient cette ligne a été
+**vu rouge** en retirant le compte d'homonymes.
+
+### « CE N'EST PAS LUI » EST UNE DONNÉE, PAS UN GESTE D'ÉCRAN
+
+Le refus vide les cases reprises — **et rien de plus** : ce qu'il avait tapé à la
+main reste, sinon il perdrait un numéro sans savoir pourquoi (une référence, pas
+un état : rien à l'écran n'en dépend).
+
+**Mais vider les cases ne suffisait pas.** Le nom restant seul, la règle du nom
+seul retrouvait le même homme à la frappe suivante : Atlas lui aurait répondu
+« si, c'est lui », puis l'enregistrement aurait rangé le chantier chez celui
+qu'il venait d'écarter. Le refus entre donc **dans la règle**
+(`SaisieClient.refuseLeRapprochement`, motif `refuse`) et voyage jusqu'à
+`trouverOuCreerClient`. Une porte, pas une couche par-dessus (`CLAUDE.md`
+§4 quater).
+
+### CE QUE LA CAPTURE A ATTRAPÉ, ET QU'AUCUNE MESURE NE VOYAIT
+
+Le numéro repris sortait **collé** — `0679984514` —, parce que la base le range
+sans espaces et que la case le rendait tel quel. À côté des numéros qu'il tape
+lui-même, espacés par `espacerNumero`, c'était le seul illisible de l'écran.
+Corrigé par la même fonction : une seule façon d'écrire un numéro
+(`CLAUDE.md` §3). Septième défaut de ce dépôt sorti d'une image et d'aucun test
+vert.
+
+### Et le mot du bouton a changé, parce qu'il l'a entendu
+
+*« La phrase "Refaire", c'est pas bizarre ? ça sonne bizarre. »* Il avait raison :
+« Refaire » se lit comme *recommencer parce que c'était raté*. C'est
+**« Dernier devis »**, avec la flèche qui tourne. La réserve dite noir sur blanc :
+le mot peut se lire « ouvrir mon dernier devis » alors qu'il en crée un neuf —
+l'icône porte le « de nouveau », et l'écran suivant est un devis sans numéro.
