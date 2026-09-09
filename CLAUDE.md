@@ -24,6 +24,47 @@ Avant d'écrire une ligne de code dans une nouvelle conversation, dans cet ordre
 Ne jamais demander au patron de rappeler ce qui a été fait. C'est le rôle de ces
 fichiers, et leur défaillance est une défaillance du dépôt, pas de sa mémoire.
 
+### 0. AVANT MÊME ÇA : est-ce que ce dossier est À MOI ?
+
+**Sa colère du 9 septembre 2026 :** *« quand elles tournent en même temps,
+souvent elle emmène le code de l'autre ; ça aussi je ne veux plus que ça
+arrive »*.
+
+Il fait tourner trois, quatre, cinq sessions. Dans **un seul** dossier, elles
+partagent un seul répertoire de travail et un seul `HEAD` : tout ce qui déplace
+l'arbre le déplace pour tout le monde, et personne ne voit passer le geste.
+
+| Le geste | Ce qu'il emporte dans un arbre partagé |
+|---|---|
+| `git stash push --include-untracked` (sans chemins) | **l'arbre entier** — le travail des autres part dans MA remise |
+| `git checkout <branche>`, `git switch` | le contenu des fichiers change sous les trois autres, en pleine frappe |
+| `git merge`, `git pull` | idem, et un conflit s'ouvre sur du code que je n'ai pas écrit |
+| `pkill -f next-server` | le serveur de la batterie d'à côté (voir §6) |
+
+**LA RÉPONSE EXISTE DÉJÀ DANS LE DÉPÔT, et elle date du 8 septembre :**
+
+```bash
+npm run sessions:preparer 5     # un dossier par session, une fois pour toutes
+npm run sessions:preparer --liste
+```
+
+`scripts/preparer-sessions.mjs` crée un **`git worktree` par session** : même
+dépôt, même historique, mêmes remontées, `main` toujours le seul bien commun —
+seul le répertoire de travail change. Chaque session a alors ses fichiers à
+elle. Plus rien à emporter, plus rien à écraser ; et Next.js 16, qui **refuse un
+second serveur dans le même dossier quel que soit le port**, en laisse enfin
+tourner cinq (`ARCHITECTURE.md`, « l'atelier est nécessaire, il n'est pas
+suffisant »).
+
+**Ce que la session doit faire en arrivant :** vérifier où elle est
+(`git rev-parse --show-toplevel`). Si c'est le dossier principal alors que
+d'autres sessions tournent, le dire — et ne jamais employer les quatre gestes du
+tableau tant qu'on y est.
+
+**Ce qui reste vrai même dans son propre dossier :** on ne jette pas le travail
+non enregistré (`scripts/garde-travail-non-enregistre.mjs`), et l'on ne tue
+jamais un processus par motif (§6).
+
 ## 1 bis. « Ça ne marche pas » : REGARDER sa machine avant de lui parler
 
 **Règle née de la nuit du 11 au 12 août 2026, et elle vaut pour toutes les
