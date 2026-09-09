@@ -11,7 +11,7 @@ langage, et rien n'y entre sans son accord.
 
 ## ⏳ RETIRER LA MOITIÉ DEVENUE REDONDANTE DES RÈGLES `?de=` (9 septembre 2026)
 
-Depuis que la flèche ramène à la page d'où l'on vient (`ARCHITECTURE.md` §305),
+Depuis que la flèche ramène à la page d'où l'on vient (`ARCHITECTURE.md` §308),
 les règles de provenance répondent à **deux** questions au lieu d'une :
 
 | ce qu'elles font | son sort |
@@ -258,6 +258,21 @@ délibérément (`SANS_CLES_IA`) — `test-anneau-dictee`, `test-anneau-vers-dev
 soit les réparer, soit les nommer**. Huit rouges permanents deviennent un bruit
 dans lequel un vrai défaut se cache — c'est déjà écrit plus bas dans ce fichier,
 et la liste s'allonge.
+
+### ~~🔴 `test-pages-legales-uniques` — les CGU publiées ne sont pas celles qu'il signe~~ — **RÉGLÉ le 9 septembre 2026**
+
+**Relevé le 9 septembre au soir, 334/336 suites base.** Les deux exemplaires de
+`conditions-utilisation.html` avaient divergé : `appli/` portait l'article 14
+rempli — les trois formules, leurs prix — écrit par le lot de l'abonnement le
+même jour ; `public/`, celui que l'application SERT et qu'on fait accepter, en
+était resté à « Prix et abonnement », sans tarifs.
+
+**Ce n'était pas un défaut de contrôle**, c'est ce qu'il attrape : on faisait
+accepter un texte qui n'est pas celui qu'on publie. Refermé le soir même par la
+session de l'abonnement (`6136cc3`), qui a aussi posé
+`scripts/capture-documents-legaux.mts` pour le voir sur le vrai écran. Gardé ici
+barré : c'est le seul rouge de la batterie du soir, et savoir qu'il a été réglé
+évite de le rouvrir.
 
 ---
 

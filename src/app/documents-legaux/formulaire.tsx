@@ -80,10 +80,16 @@ export default function FormulaireAcceptation({ documents }: { documents: Docume
         {enCours ? "Enregistrement…" : "Continuer"}
       </button>
 
-      <p className="text-center text-[12px] leading-relaxed text-ink/50">
-        La date, l&apos;heure et la version exacte de ce que vous acceptez sont
-        conservées — c&apos;est ce qui donne sa valeur à votre accord.
-      </p>
+      {/* **RETIRÉ le 9 septembre 2026, à sa demande** : *« la phrase sous
+          continuer, supprime-la »*. Elle disait que la date, l'heure et la
+          version sont conservées — c'est-à-dire qu'elle expliquait le
+          mécanisme de l'écran au lieu de le laisser faire. Sa consigne du
+          25 août : « le moins de mots possible ».
+
+          **Ce qu'elle annonçait n'a pas disparu pour autant** : l'horodatage,
+          l'adresse et l'appareil sont toujours enregistrés
+          (`enregistrerAcceptations`), et c'est toujours ce qui donne sa valeur
+          à l'accord. Ce qui est parti, c'est le commentaire — pas la preuve. */}
     </form>
   );
 }

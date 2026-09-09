@@ -159,10 +159,11 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     "/api/factures/xxxx/pdf",
     "/chantiers/xxxx/facture",
     // **Ajoutée le 9 septembre 2026 par ce contrôle**, comme
-    // `/reglages/equipe/nouveau` et `/termines/retours` avant elle : l'écran des
-    // travaux supplémentaires est né sous `/chantiers/<id>/facture`, et il en
-    // hérite le refus. L'hériter en SILENCE serait le jour où l'on pose, sous
-    // une facture, une page qui ne devait PAS l'hériter.
+    // `/termines/retours` la veille : l'écran des travaux supplémentaires est
+    // né sous `/chantiers/xxxx/facture`, et il en hérite le refus. C'est la
+    // bonne réponse — le commercial n'a rien à faire dans une facture —, mais
+    // l'hériter en silence serait le jour où l'on pose là une page qui, elle,
+    // ne devait pas l'hériter.
     "/chantiers/xxxx/facture/travaux-supplementaires",
     "/reglages/abonnement",
     "/reglages/documents",

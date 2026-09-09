@@ -2964,3 +2964,40 @@ export const retoursInterventionPhotos = pgTable(
     index("retours_intervention_photos_par_photo_idx").on(t.photoId),
   ]
 );
+
+/**
+ * QUI A DÉJÀ OUVERT CE RETOUR — une ligne par lecteur.
+ *
+ * **Sa demande du 9 septembre 2026** : *« il faut qu’on puisse distinguer du
+ * premier coup d’œil ceux pas ouverts — comme pour les SMS »*, et que la
+ * pastille compte **ce qu’il n’a pas lu**, non le total.
+ *
+ * **Une table, et pas une colonne `vu_le` sur le retour.** Une colonne dirait
+ * « vu » sans dire PAR QUI : `/termines` est ouvert au propriétaire ET au rôle
+ * facturation, et la première personne qui ouvre effacerait la pastille de
+ * l’autre. Le patron regarderait son téléphone le soir, ne verrait rien à lire,
+ * et le retour lui serait passé sous le nez.
+ */
+export const retoursInterventionVus = pgTable(
+  "retours_intervention_vus",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    retourId: uuid("retour_id")
+      .notNull()
+      .references(() => retoursIntervention.id, { onDelete: "cascade" }),
+    utilisateurId: uuid("utilisateur_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    vuLe: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Il rouvre le même retour trois fois dans la soirée : c’est la même
+    // lecture, pas trois. Sans cette unicité la table deviendrait un journal
+    // que personne n’a demandé.
+    unique("retours_intervention_vus_uk").on(t.retourId, t.utilisateurId),
+    index("retours_intervention_vus_par_lecteur_idx").on(t.utilisateurId, t.retourId),
+  ]
+);

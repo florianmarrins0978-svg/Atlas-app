@@ -1,8 +1,32 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-09 · branche `claude/back-button-history-0pa6sj`
-· dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
+· dernière migration `drizzle/0083_retour_vu_par.sql`
 (ce lot-ci ne touche que le chemin de retour, sans base)
+
+> **Corrigé le 9 septembre 2026 :** cette ligne annonçait
+> `0077_civilite_et_prenom_du_compte.sql` alors que six migrations étaient
+> appliquées depuis. Le code fait foi (`CLAUDE.md` §1) — et une dernière
+> migration fausse envoie une session neuve appliquer ce qui est déjà là.
+
+---
+
+## FAIT : LE COMPTEUR DE TVA NE SE REMPLIT PAS TOUT SEUL — 9 septembre 2026
+
+Sa correction, capture à l'appui : *« même si c'est tous les mois, ça ne doit pas
+rentrer au compteur tout seul ; il faut que l'utilisateur appuie sur payer »*.
+
+**Le calcul était juste, les mots ne l'étaient pas.** Rien n'entre au relevé
+sans un règlement noté — c'est ainsi depuis le 14 août, et deux suites le
+tiennent. Mais trois phrases nommaient l'événement (« le jour où vous serez
+payé ») au lieu de son geste : elles disent maintenant « quand vous appuierez
+sur "Payée" ».
+
+**Et une facture à 0,00 € n'attend plus rien** : la sienne restait en attente
+avec un bouton « Payée » qui ne pouvait qu'échouer, un règlement de zéro étant
+refusé. `etatPaiement` la dit soldée — rien à encaisser, rien à attendre.
+
+Aucune migration. `ARCHITECTURE.md` §305.
 
 ---
 
@@ -21,7 +45,7 @@ quelle. Aucune migration.
 Retiré avec : « Aucun client rattaché à ce chantier » n'est plus un cul-de-sac —
 le chemin vers la fiche se lit sous la phrase qui annonce le manque.
 
-Document : `docs/lot-retour-page-davant.md` · `ARCHITECTURE.md` §305.
+Document : `docs/lot-retour-page-davant.md` · `ARCHITECTURE.md` §308.
 
 **Reste ouvert :** la retraite de la moitié « devine d'où il vient » des règles
 `?de=` (`TODO.md`) — six écrans et six suites en dépendent.
