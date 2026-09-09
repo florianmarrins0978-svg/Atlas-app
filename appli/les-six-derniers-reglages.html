@@ -115,7 +115,7 @@ h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
 .champ .lib.doux{font:400 13px/1 var(--sans);letter-spacing:0;text-transform:none;color:var(--gris)}
 .champ .val{display:block;padding:8px 0 10px;font:400 17px/1.3 var(--serif);color:var(--encre)}
 .champ .val.vide{color:var(--gris);font-family:var(--sans);font-size:15px}
-.oeil{float:right;color:var(--gris);font-size:14px}
+.oeil{float:right;color:var(--gris)}
 
 .bouton{display:block;width:100%;margin-top:16px;border:0;border-radius:999px;
         background:none;box-shadow:inset 0 0 0 1px var(--trait);color:var(--gris);
@@ -210,6 +210,14 @@ h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
   Le compte de mots se MESURE sur le rendu, il ne se recopie pas — un chiffre
   écrit en dur dit vrai la veille (`CLAUDE.md` §4 bis).
 */
+/**
+ * L’adresse à laquelle on lui écrit — sa demande du 9 septembre 2026 :
+ * *« prépare-le, on changera l’adresse le jour où j’aurai créé une pour
+ * l’appli »*. Elle vit à UN seul endroit, ici : recopiée à deux, elle
+ * divergerait le jour du changement, et l’une des deux enverrait dans le vide.
+ */
+var ADRESSE_CONTACT = "edennature.contact@gmail.com";
+
 var etat = { vue: "ia", nuit: false };
 var avant = document.getElementById("avant");
 var apres = document.getElementById("apres");
@@ -331,7 +339,8 @@ function donneesApres(){
     '<button type="button" class="bouton vert">Télécharger mes données</button>' +
     '<p class="chapeau">Tout ce qu\'Atlas garde pour vous, dans un fichier qui s\'ouvre sans lui.</p>' +
     '<p class="note">Il porte les coordonnées de vos clients : rangez-le comme un dossier client.</p>' +
-    '<p class="note neuf">Pour effacer votre compte, écrivez-nous.</p>';
+    '<p class="note neuf">Pour effacer votre compte, écrivez à ' +
+    '<b>' + ech(ADRESSE_CONTACT) + '</b>.</p>';
 }
 
 /* ─── MOT DE PASSE ─────────────────────────────────────────────────────── */
@@ -340,7 +349,7 @@ function motdepasseAvant(){
     '<p class="inter" style="margin-top:12px">Changer de mot de passe</p>' +
     ['Mot de passe actuel','Nouveau mot de passe','Confirmer le nouveau mot de passe'].map(function(l){
       return '<div class="champ"><span class="lib">' + ech(l) + '</span>' +
-        '<span class="oeil">&#128065;</span><span class="val">&nbsp;</span></div>';
+        '<svg class="oeil" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z"/><circle cx="12" cy="12" r="3.1"/></svg><span class="val">&nbsp;</span></div>';
     }).join("") +
     '<button type="button" class="bouton">Changer mon mot de passe</button>' +
     '<p class="inter">Ouvrir avec Face ID</p>' +
@@ -349,16 +358,16 @@ function motdepasseAvant(){
     '<div class="rang"><span class="g"><span class="n">Me déconnecter partout</span></span></div>';
 }
 function motdepasseApres(){
-  return entete("Mot de passe", "Moi") +
-    ['Mot de passe actuel','Nouveau mot de passe','Confirmez-le'].map(function(l){
-      return '<div class="champ neuf"><span class="lib doux">' + ech(l) + '</span>' +
-        '<span class="oeil">&#128065;</span><span class="val">&nbsp;</span></div>';
-    }).join("") +
-    '<button type="button" class="bouton">Changer mon mot de passe</button>' +
-    '<p class="inter">Ouvrir avec Face ID</p>' +
-    '<button type="button" class="bouton" style="color:var(--encre)">Enregistrer cet appareil</button>' +
-    '<p class="inter">Ailleurs</p>' +
-    '<div class="rang"><span class="g"><span class="n">Me déconnecter partout</span></span></div>';
+  // **Il a tranché le 9 septembre : « je préfère celui qu’on a aujourd’hui ».**
+  // Ma proposition retirait le titre du bloc et passait les étiquettes en
+  // minuscules ; il la refuse, et sa version reste à gauche pour qu’on voie ce
+  // qui est écarté. Le seul changement retenu est le SIEN : un point
+  // d’interrogation, qui fait du titre une question plutôt qu’une étiquette —
+  // exactement comme sur l’écran Équipe, qu’il a retenu le 8 septembre.
+  return motdepasseAvant().replace(
+    "<p class=\"inter\" style=\"margin-top:12px\">Changer de mot de passe</p>",
+    "<p class=\"inter neuf\" style=\"margin-top:12px\">Changer de mot de passe&nbsp;?</p>"
+  );
 }
 
 /* ─── MON COMPTE ───────────────────────────────────────────────────────── */
@@ -396,11 +405,12 @@ var ECRANS = {
   },
   abonnement: {
     nom: "Abonnement",
-    idee: "<b>141 mots pour dire qu'il n'y a rien à faire ici.</b> Trois lignes « Bientôt » qui ne s'appuient pas, un paragraphe qui prévient d'une confusion sur le mot « facture », un autre qui parle de prestataires de paiement. Un écran vide n'a pas besoin de se justifier en cinq paragraphes.",
+    idee: "<b>EN ATTENTE — il veut deux ou trois formules.</b> Sa demande du 9 septembre : <i>« il faut réfléchir à ce qu'on peut faire, je voudrais proposer 2 ou 3 abonnements différents avec des prix différents, conseille-moi »</i>. Le dessin de droite reste vrai <b>tant qu'aucune offre n'existe</b> — mais ce n'est plus la question. Ce qui est certain : les <b>141 mots</b> d'aujourd'hui ne servent à rien dans les deux cas.",
     avant: abonnementAvant, apres: abonnementApres,
     notes: [
-      "<b>Les trois lignes « Bientôt » partent.</b> Elles annoncent des écrans qui n'existent pas, et personne ne peut rien en faire. Le jour où l'offre existe, elles reviennent — avec quelque chose derrière.",
-      "<b>Le paragraphe « Attention au mot » part avec elles :</b> il ne servait qu'à lever une confusion créée par la ligne « Vos factures Atlas ». Plus de ligne, plus de confusion."
+      "<b>Cet écran ne se code pas maintenant.</b> Tant que l'offre n'est pas arrêtée, tout ce qu'on dessinerait serait à refaire — et un montant inventé sur une page qui parle d'argent finit par être cru.",
+      "<b>Ce qu'il faut décider AVANT de dessiner :</b> combien de formules, ce qui les sépare, et ce que coûte une dictée. Ma réponse lui a été donnée dans la conversation, et elle tient en une phrase : <b>deux formules, séparées par le nombre de personnes</b> — pas par les fonctions.",
+      "<b>Les trois lignes « Bientôt » partent quand même</b>, quelle que soit l'offre : elles annoncent des écrans qui n'existent pas. Le paragraphe « Attention au mot » part avec elles — il ne servait qu'à lever une confusion créée par la ligne « Vos factures Atlas »."
     ]
   },
   donnees: {
@@ -408,17 +418,17 @@ var ECRANS = {
     idee: "<b>Le plus court des six déjà</b> (67 mots), et il n'y a qu'une phrase à reprendre : celle du bas. <i>« Le registre des traitements ne se fait pas encore depuis l'application »</i> — c'est du vocabulaire de juriste, et ça annonce une absence.",
     avant: donneesAvant, apres: donneesApres,
     notes: [
-      "<b>Ce qui compte est gardé :</b> effacer son compte doit rester possible. La phrase dit maintenant <b>comment</b> — écrivez-nous — au lieu de dire que ça ne se fait pas.",
+      "<b>L'adresse est celle qu'il a aujourd'hui</b>, et elle ne vit qu'à UN endroit dans le code : le jour où il en crée une pour l'application, une seule ligne change. Recopiée à deux endroits, elle divergerait — et l'une des deux enverrait dans le vide.",
       "<b>Et le « registre des traitements » disparaît de l'écran.</b> C'est une obligation qui vous concerne, vous, pas votre écran de réglages. Elle est dans votre document « à faire »."
     ]
   },
   motdepasse: {
     nom: "Mot de passe",
-    idee: "<b>Un vrai défaut de mise en page, pas des mots en trop.</b> Le titre du bloc « CHANGER DE MOT DE PASSE » et l'étiquette « MOT DE PASSE ACTUEL » sont <b>collés</b> : quatre lignes de capitales espacées d'affilée, qu'on épelle au lieu de lire. Et l'écran s'appelle déjà « Mot de passe ».",
+    idee: "<b>TRANCHÉ le 9 septembre : il garde l'écran d'aujourd'hui.</b> <i>« Je préfère celui qu'on a aujourd'hui, rajoute juste un ? à la fin de changer de mdp. »</i> Ma proposition — retirer le titre du bloc, passer les étiquettes en minuscules — est <b>écartée</b>. Le seul changement est le sien, et il fait du titre une <b>question</b> plutôt qu'une étiquette : la même idée que sur l'écran Équipe, qu'il avait retenue le 8 septembre.",
     avant: motdepasseAvant, apres: motdepasseApres,
     notes: [
-      "<b>Le titre du bloc part</b> — il répète le titre de l'écran, deux centimètres plus haut.",
-      "<b>Et les étiquettes descendent en minuscules.</b> C'est la même raison qui a fait repasser les dates en bas de casse sur la fiche du client : en capitales espacées, un mot cesse d'avoir une forme et l'on épelle. « CONFIRMER LE NOUVEAU MOT DE PASSE » devient <b>« Confirmez-le »</b>."
+      "<b>Une seule chose change : le point d'interrogation.</b> Tout le reste est l'écran d'aujourd'hui, étiquettes en capitales comprises — il les garde.",
+      "<b>Et l'œil est corrigé sur cette planche.</b> Je l'avais dessiné avec un emoji : il change de forme d'un téléphone à l'autre et ne rend ni l'épaisseur ni la couleur. C'est maintenant le vrai dessin de l'application — 21 px, filaire, épaisseur 1,4. Il l'a vu tout de suite."
     ]
   },
   compte: {
