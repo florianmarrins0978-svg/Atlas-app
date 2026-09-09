@@ -26310,3 +26310,84 @@ et les lignes du devis, là où il les a demandées.
 **Elles ne se cachent PAS quand la fin de chantier s’ouvre**, contrairement aux
 lignes du devis. Celles-ci disparaissent parce qu’elles DEVIENNENT les cases à
 cocher ; les photos, elles, sont ce qu’on regarde pendant qu’on coche.
+
+---
+
+## §308 — Poser un chantier ne demande plus QUAND : la durée est déjà connue
+
+**Sa remarque du 9 septembre 2026, capture du planning à l'appui :** *« quand je
+clique sur "ajouter un chantier", lorsque je clique sur Claudette il me propose
+3 choix, alors que si Claudette c'est un chantier 1 journée, deux, ou une demi,
+ça doit se mettre tout seul — je dois pas avoir à choisir. »*
+
+### Ce que les trois boutons faisaient VRAIMENT
+
+Ils avaient l'air de demander une information manquante. Ils en écrivaient une.
+
+`departEtDuree(quand, duree)` traduit le mot choisi en un DÉPART **et** une
+DURÉE : « Matin » vaut une demi-journée, « Journée » en vaut deux. Poser un
+chantier par ces boutons, c'était donc réécrire `dureeDemiJournees` — la valeur
+que le devis avait fixée, ou que sa dictée avait donnée (« 3 jours » fait six
+demi-journées, `dureeEnDemiJournees`).
+
+| Le chantier | Ce qu'un appui sur « Matin » en faisait |
+|---|---|
+| une demi-journée | rien — le seul cas où les boutons disaient vrai |
+| **une journée** | **une demi-journée**, et l'après-midi repartait à la vente |
+| trois jours | rien : au-delà de deux demi-journées, `departEtDuree` protège déjà la durée et ne change que le départ |
+
+La ligne du milieu est le défaut, et il ne se voyait **nulle part** : ni sur le
+plan, ni sur le devis, ni sur la facture. Il se découvrait le jour du chantier,
+quand la journée réservée n'en était plus une — ou plus tôt, sous la forme d'un
+après-midi proposé à un client alors qu'il était pris.
+
+### Ce qui décide à leur place, et qui existait déjà
+
+`planifierChantier` **sans** `choix` :
+
+1. lit la durée du chantier — `dureeDemiJournees`, sinon la dictée, sinon une
+   journée ;
+2. cherche la moitié de journée où elle tient, par `departPossible` — la même
+   fonction que le jour proposé au client (`jourRetenable`), jamais une seconde
+   (`CLAUDE.md` §3) ;
+3. n'écrit la durée que pour la **conserver**.
+
+Rien n'a été ajouté au serveur : ce chemin était déjà celui du calendrier. Ce
+qui a été retiré, c'est l'écran qui refusait de l'emprunter.
+
+### Où le choix reste, et pourquoi il y reste
+
+**« Déplacer » n'a pas bougé.** Se tromper de moitié de journée se rattrape d'un
+appui, sur le chantier posé, et là le mot choisi EST la demande : « finalement,
+Claudette ce sera l'après-midi ». C'est l'endroit où réécrire la durée a un sens,
+parce qu'on la regarde.
+
+Ce qui distingue les deux : poser répond à « ce chantier, ce jour-là » — la
+durée n'y est pas en question ; déplacer répond à « ce chantier, ce moment-là ».
+
+### La même racine, corrigée dans l'assistant
+
+`donnees.quand` valait `?? "journee"` dans le chemin des propositions
+(`src/app/chantiers/[id]/informations/actions.ts`) : une dictée qui ne disait pas
+l'heure — « pose Claudette jeudi » — réservait donc deux demi-journées. Sans
+moment dit, aucun `choix` n'est plus passé. **Déplacer sans moment est refusé**
+et redemande : le jour ne bouge pas, le moment est tout ce que ce geste écrit,
+et le remplir d'office refaisait le même défaut.
+
+### Ce qui l'éprouve
+
+| | |
+|---|---|
+| `test-planning-repo.ts` | la règle, sans navigateur : poser sans choix garde la demi-journée réservée, et suit la dictée quand rien n'est encore réservé. Les deux ont été mis au rouge contre la règle inverse avant d'être retenus |
+| `test-planning-e2e.ts` | **le geste** : un seul bouton dans le tiroir, aucun second choix après le nom, et la demi-journée du chantier survit à la pose |
+| `test-poser-une-date-e2e.ts` | le même geste par l'autre chemin, sur un chantier ramené à une demi-journée **en base** avant l'appui |
+
+Les suites navigateur sont ici les seules à voir le défaut : la règle de dépôt,
+elle, était juste — c'est l'écran qui lui passait par-dessus (`CLAUDE.md`
+§5 quater, « éprouver le geste du patron, pas la fonction qu'on vient
+d'écrire »).
+
+**Reste ouvert :** la planche 86 (`appli/planning-simple.html`, validée le
+21 août) montre encore les deux temps « QUI puis QUAND ». Elle n'a pas été
+refaite — une planche retenue ne se réécrit pas sans lui.
+
