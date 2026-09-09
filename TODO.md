@@ -86,31 +86,28 @@ chaînes plutôt que d'évaluer le motif, il rajoutera sa ligne quand même et l
 aura les deux. À éprouver sur un atelier neuf, machine libre — pas pendant une
 batterie.
 
-## 🔎 UNE SUITE BASE SUR L'AUTHENTIFICATION, ROUGE SANS EXPLICATION
+## ~~🔎 UNE SUITE BASE SUR L'AUTHENTIFICATION, ROUGE SANS EXPLICATION~~ — expliquée le 9 septembre 2026
 
-**Constaté le 8 septembre 2026 au soir**, et écrit ici plutôt que passé sous
-silence : `scripts/test-secret-authentification-db.ts` a été **verte** au
-premier passage de la batterie, puis **rouge aux deux suivants**, sur du code
-que le lot de la porte ne touche pas de ce côté-là.
+~~`scripts/test-secret-authentification-db.ts` verte au premier passage, rouge aux
+deux suivants.~~ **C'ÉTAIT LA BASE, PAS LE CODE**, et le passage suivant l'a
+montré : **329/329 suites base**, celle-ci comprise.
 
-**Le symptôme, et il est unique** : la ligne d'utilisateur que la suite vient
-d'insérer n'est plus lisible par `atlas_app` — cinq contrôles tombent d'un coup,
-tous sur cette absence. C'est exactement la signature d'un `TRUNCATE` joué
-dessous (`CLAUDE.md` §5, payé le 26 août)…
+**Ce qui s'était passé**, dans l'ordre — et aucune de ces trois choses n'accuse
+le produit :
 
-**…et le deuxième passage l'avait pour de bon** : le moteur des suites navigateur
-de la batterie précédente avait survécu à son arrêt et tournait en parallèle.
-Mais **le troisième passage était seul**, vérifié processus par processus, et
-elle a rougi quand même. C'est ce qui reste à comprendre.
+1. un moteur de suites survivant à l'arrêt de sa batterie a vidé la base sous la
+   suivante (`TRUNCATE … CASCADE`) ;
+2. des captures et des essais joués à la main ont écrit dedans par-dessus ;
+3. PostgreSQL est tombé dans la foulée, et la base a été **remontée puis
+   remigrée** (`source scripts/monter-base-locale.sh`) avant le passage suivant.
 
-**Ce qu'il ne faut PAS faire** : la rejouer jusqu'à ce qu'elle passe. Elle garde
-le condensat des mots de passe hors de portée du rôle applicatif — c'est le
-contrôle qu'on veut le moins voir vert par hasard.
+**La leçon, et elle est déjà dans `CLAUDE.md` §5 :** cinq contrôles qui tombent
+d'un coup sur une ligne qu'on vient d'insérer, c'est la signature d'une base
+maltraitée, jamais celle d'un défaut de code. La chercher dans le produit coûte
+une demi-heure — la troisième fois que ce dépôt la paie.
 
-**Par où commencer** : la jouer SEULE sur une base neuve, et regarder si la ligne
-existe encore en base après l'insertion (`psql`, en `postgres`, qui traverse la
-RLS). Si elle y est, c'est une politique de RLS qui la cache ; si elle n'y est
-pas, c'est l'insertion qui a échoué en silence.
+**Ce qui empêche la première cause de revenir** est posé depuis :
+`scripts/_batterie-solitaire.ts` (`ARCHITECTURE.md` §299).
 
 ---
 

@@ -505,6 +505,18 @@ Vérifié rouge en forçant 400 px de trop.
 
 ### Deux garde-fous sur la batterie, après une heure perdue devant lui
 
+**Corrigé dans la nuit, à leur première sortie.** Le second a jeté le verdict
+d'une batterie entière parce que deux fichiers portaient une date d'écriture
+neuve — une session voisine avait joué une commande git qui les avait réécrits
+**à l'identique**. Rien n'avait changé, et cinquante minutes ont été perdues.
+
+C'est le défaut que le fichier annonçait **dans son propre commentaire** — *« une
+écriture qui rend le même contenu ne change rien au verdict »* — écrit en prose
+et absent du code. Il relève donc les deux, et **c'est le contenu qui décide** ;
+la date n'est plus qu'un filtre. Coût mesuré, pas supposé : 1 406 fichiers en
+65 ms.
+
+
 **Sa demande, le soir même : « oui pose les deux garde-fous ».**
 
 Une batterie tournait ; sa correction est arrivée ; j'ai codé pendant qu'elle

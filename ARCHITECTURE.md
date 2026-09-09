@@ -25687,6 +25687,23 @@ La batterie emporte donc son **groupe entier** sur `SIGINT` et `SIGTERM`, et
 **dit** quand elle n'y arrive pas (lancée sans groupe à elle) plutôt que de
 laisser croire les enfants emportés.
 
+### Et le défaut de la première SORTIE, qui vaut le premier
+
+Le second garde-fou a jeté le verdict d'une batterie entière parce que deux
+fichiers portaient une date d'écriture neuve. Une session voisine avait joué une
+commande git qui les avait **réécrits à l'identique** : rien n'avait changé.
+
+Le fichier l'annonçait lui-même — *« une écriture qui rend le même contenu ne
+change rien au verdict »* — **en commentaire, et pas en code**. Il relève
+maintenant la date ET le contenu (sha1) ; la date n'est plus qu'un filtre, le
+contenu décide. Le coût a été mesuré plutôt que supposé : **1 406 fichiers en
+65 ms**, contre cinquante minutes qu'un faux refus fait rejouer.
+
+**Les deux défauts se ressemblent, et c'est ce qu'il faut retenir** : un
+garde-fou se trompe d'abord en parlant TROP, jamais en se taisant. C'est aussi
+la seule façon de le découvrir — en le confrontant à du vrai, pas en le
+relisant.
+
 ### Le défaut de la première minute, et pourquoi il est écrit ici
 
 Confronté à une vraie batterie, le garde-fou **s'est dénoncé lui-même** : entre

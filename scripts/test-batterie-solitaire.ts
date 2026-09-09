@@ -144,13 +144,34 @@ test("un fichier RÉÉCRIT pendant la mesure est vu", () => {
   const racine = atelierJetable();
   try {
     const avant = empreinteDesSources(racine);
+    writeFileSync(path.join(racine, "src", "lib", "regle.ts"), "export const a = 2;\n");
+    assert.deepEqual(fichiersRemues(avant, empreinteDesSources(racine)), ["src/lib/regle.ts"]);
+  } finally {
+    rmSync(racine, { recursive: true, force: true });
+  }
+});
+
+test("un fichier RÉÉCRIT À L'IDENTIQUE ne fait pas jeter le verdict", () => {
+  // **Le défaut de la première sortie, 9 septembre 2026.** Le garde-fou a jeté
+  // le verdict d'une batterie entière parce que deux fichiers portaient une
+  // date neuve : une session voisine avait joué une commande git qui les avait
+  // réécrits à l'identique. Cinquante minutes rejouées pour rien — et un
+  // garde-fou qui parle à tort s'apprend à être ignoré.
+  const racine = atelierJetable();
+  try {
+    const avant = empreinteDesSources(racine);
     const touche = path.join(racine, "src", "lib", "regle.ts");
-    writeFileSync(touche, "export const a = 2;\n");
-    // Les horloges de fichiers ont parfois une seconde de résolution : on pose
-    // la date à la main plutôt que d'attendre, et le contrôle reste instantané.
+    writeFileSync(touche, "export const a = 1;\n"); // le MÊME contenu
+    // Et la date change pour de bon, sinon ce contrôle ne prouverait rien : on
+    // la pose à la main plutôt que d'attendre une seconde d'horloge.
     const plusTard = new Date(Date.now() + 5000);
     utimesSync(touche, plusTard, plusTard);
-    assert.deepEqual(fichiersRemues(avant, empreinteDesSources(racine)), ["src/lib/regle.ts"]);
+    assert.notEqual(
+      empreinteDesSources(racine).get("src/lib/regle.ts")?.date,
+      avant.get("src/lib/regle.ts")?.date,
+      "la date n'a pas bougé : ce contrôle ne mesure rien"
+    );
+    assert.deepEqual(fichiersRemues(avant, empreinteDesSources(racine)), []);
   } finally {
     rmSync(racine, { recursive: true, force: true });
   }

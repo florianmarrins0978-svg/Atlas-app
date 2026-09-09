@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { readdirSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 /**
@@ -141,8 +142,9 @@ export function phraseDuRefus(restes: Reste[]): string {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Ce qu'on relève d'un fichier : son chemin et la date de sa dernière écriture. */
-export type Empreinte = Map<string, number>;
+/** Ce qu'on relève d'un fichier : la date de sa dernière écriture, et son contenu. */
+export type Trace = { date: number; empreinte: string };
+export type Empreinte = Map<string, Trace>;
 
 const SURVEILLES = ["src", "scripts", "drizzle"];
 const IGNORES = new Set(["node_modules", ".git", ".next"]);
@@ -150,9 +152,21 @@ const IGNORES = new Set(["node_modules", ".git", ".next"]);
 /**
  * L'état des sources à un instant — pour savoir, à la fin, si elles ont bougé.
  *
- * On relève la DATE D'ÉCRITURE et non le contenu : lire trois mille fichiers au
- * début et à la fin d'une batterie coûterait plus que ce qu'on cherche à
- * protéger, et une écriture qui rend le même contenu ne change rien au verdict.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **LA DATE NE SUFFIT PAS, ET LE GARDE-FOU L'A PROUVÉ À SA PREMIÈRE SORTIE.**
+ *
+ * Le 9 septembre 2026, il a jeté le verdict d'une batterie entière parce que
+ * deux fichiers portaient une date neuve : une session voisine avait joué une
+ * commande git qui les avait réécrits **à l'identique**. Rien n'avait changé.
+ *
+ * C'est le défaut que ce fichier annonçait lui-même dans son commentaire —
+ * *« une écriture qui rend le même contenu ne change rien au verdict »* — écrit
+ * en prose et absent du code. Un garde-fou qui parle à tort s'apprend à être
+ * ignoré, et l'on perd la protection sans s'en apercevoir.
+ *
+ * **On relève donc les deux**, et c'est le contenu qui décide. Le coût a été
+ * mesuré plutôt que supposé : **1 406 fichiers en 65 ms** sur ce dépôt — contre
+ * cinquante minutes de batterie qu'un faux refus fait rejouer.
  */
 export function empreinteDesSources(racine: string): Empreinte {
   const empreinte: Empreinte = new Map();
@@ -160,10 +174,18 @@ export function empreinteDesSources(racine: string): Empreinte {
     for (const entree of readdirSync(dossier, { withFileTypes: true })) {
       if (IGNORES.has(entree.name) || entree.name.startsWith(".next")) continue;
       const chemin = path.join(dossier, entree.name);
-      if (entree.isDirectory()) parcourir(chemin);
-      else if (/\.(ts|tsx|js|mjs|mts|sql|css)$/.test(entree.name)) {
-        empreinte.set(path.relative(racine, chemin), statSync(chemin).mtimeMs);
+      if (entree.isDirectory()) {
+        parcourir(chemin);
+        continue;
       }
+      if (!/\.(ts|tsx|js|mjs|mts|sql|css)$/.test(entree.name)) continue;
+      empreinte.set(path.relative(racine, chemin), {
+        date: statSync(chemin).mtimeMs,
+        // sha1 et non sha256 : on cherche à distinguer deux versions d'un
+        // fichier qu'on a soi-même sous la main, pas à résister à quelqu'un qui
+        // en fabriquerait une collision exprès.
+        empreinte: createHash("sha1").update(readFileSync(chemin)).digest("hex"),
+      });
     }
   };
   for (const dossier of SURVEILLES) {
@@ -177,15 +199,22 @@ export function empreinteDesSources(racine: string): Empreinte {
 }
 
 /**
- * Ce qui a bougé entre deux empreintes — écrit, ajouté ou supprimé.
+ * Ce qui a VRAIMENT bougé entre deux empreintes — écrit, ajouté ou supprimé.
  *
  * **Fonction pure**, et c'est ce qui permet de l'éprouver sans attendre
  * cinquante minutes qu'une batterie finisse.
  */
 export function fichiersRemues(avant: Empreinte, apres: Empreinte): string[] {
   const remues = new Set<string>();
-  for (const [chemin, date] of apres) {
-    if (avant.get(chemin) !== date) remues.add(chemin);
+  for (const [chemin, trace] of apres) {
+    const trAvant = avant.get(chemin);
+    if (!trAvant) {
+      remues.add(chemin); // neuf
+      continue;
+    }
+    // La date seule ne prouve rien : une fusion ou un changement de branche
+    // réécrit des fichiers à l'identique. C'est le contenu qui tranche.
+    if (trAvant.empreinte !== trace.empreinte) remues.add(chemin);
   }
   for (const chemin of avant.keys()) {
     if (!apres.has(chemin)) remues.add(chemin);
