@@ -7,8 +7,10 @@ import { versionEtRetard } from "@/server/version-executee";
 import { etatVersionLente } from "@/server/etat-banc";
 import { panneauVersionLente } from "@/lib/version-lente";
 import BoutonMiseAJour from "./BoutonMiseAJour";
+import SeDeconnecter from "./SeDeconnecter";
 import Sommaire from "./Sommaire";
 import { derniereIssueMiseAJour } from "./actions";
+import { getEntreprise } from "@/server/repositories/entreprises";
 import { estBancDEssai } from "@/profil-banc";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +39,16 @@ export const dynamic = "force-dynamic";
  */
 export default async function ReglagesPage() {
   const ctx = await getCurrentCtx();
-  const [role, etatVersion] = await Promise.all([getRole(ctx), versionEtRetard()]);
+  // **Le nom de l'entreprise ne sert QU'À la feuille de déconnexion**, qui
+  // nomme d'où l'on sort. Lu ici plutôt que dans le composant : un écran
+  // n'interroge pas la base, il affiche ce qu'on lui donne (`CLAUDE.md` §4
+  // sexies), et cette lecture-ci part avec les deux autres au lieu d'ajouter un
+  // aller-retour.
+  const [role, etatVersion, entreprise] = await Promise.all([
+    getRole(ctx),
+    versionEtRetard(),
+    getEntreprise(ctx),
+  ]);
   const version = etatVersion.ligne;
 
   // Le rôle décide de ce que le SERVEUR rend, pas de ce que la feuille de style
@@ -78,6 +89,17 @@ export default async function ReglagesPage() {
             coordonnées bancaires et les documents appartiennent au patron.
           </p>
         )}
+
+        {/* **LA SORTIE CLÔT LES RUBRIQUES, ET PASSE AVANT LA VERSION.** Le bloc
+            ci-dessous n'est pas un réglage : c'est le pied de page technique,
+            qui répond à « est-ce que mes correctifs sont arrivés ». Poser la
+            déconnexion après lui l'aurait rangée derrière du texte qu'on ne lit
+            pas, et un geste qu'on ne trouve pas n'existe pas.
+
+            **Aucune garde de rôle**, et ce n'en est pas un oubli : sortir de
+            son propre compte n'appartient pas à l'entreprise. Un salarié doit
+            pouvoir fermer sa session sur le téléphone qu'il rend le soir. */}
+        <SeDeconnecter nomEntreprise={entreprise?.nom ?? null} />
 
         {/* La version exécutée, en bas et discrète.
             Elle existe pour une raison précise : le patron a réessayé, un jour

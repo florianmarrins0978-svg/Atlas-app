@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-08 · branche `main`
+**Dernière mise à jour :** 2026-09-09 · branche `main`
 · dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
 (ce lot-ci ne touche que le chemin de retour, sans base)
 
@@ -27,6 +27,28 @@ l'assistant, où un moment non dit valait « journée ».
 **Reste ouvert :** la planche 86 (`appli/planning-simple.html`) montre encore
 « QUI puis QUAND ». Elle a été retenue par lui le 21 août et n'a pas été refaite.
 
+## FAIT : « Matin » posait toute la journée — 9 septembre 2026
+
+Sa panne : *« lorsque je clique sur le matin pour Mr. Julien, ça me met d'office
+toute la journée »*. Le chantier dure deux jours ; quatre demi-journées posées à
+partir du matin prennent forcément la journée entière. **Le calcul était juste,
+la question posée à l'écran ne l'était pas.**
+
+**Ma première réponse a été dépassée le soir même, et il faut le lire ainsi :**
+elle retirait « Journée » des lignes de pose. La session voisine a supprimé la
+question entière (§308) — la durée du devis décide seule —, et c'est sa réponse
+qui vit. Le composant que j'avais écrit pour ces lignes est parti avec elles.
+
+**Ce qui reste, et qui tenait un vrai défaut :** la durée se lisait de deux
+endroits. L'écran prenait `dureeDemiJournees ?? 2` — NULL tant que rien n'est
+posé, donc « une journée » sur un chantier de deux — pendant que le dépôt lisait
+la dictée. `dureeDuChantier` répond aux deux, et `deplacerChantier` la lit aussi.
+« Déplacer » n'offre plus « Journée » quand elle ne changerait rien.
+**Aucune migration.** Détail : `ARCHITECTURE.md` §309.
+
+**Reste ouvert, et c'est à lui de trancher :** couper un chantier en deux poses
+(`TODO.md`).
+
 ## FAIT : LE COMPTEUR DE TVA NE SE REMPLIT PAS TOUT SEUL — 9 septembre 2026
 
 Sa correction, capture à l'appui : *« même si c'est tous les mois, ça ne doit pas
@@ -45,6 +67,7 @@ refusé. `etatPaiement` la dit soldée — rien à encaisser, rien à attendre.
 Aucune migration. `ARCHITECTURE.md` §305.
 
 ---
+
 
 ## FAIT : LA RÉCEPTION D’UNE FACTURE SE TRACE — 9 septembre 2026
 

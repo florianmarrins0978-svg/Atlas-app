@@ -321,6 +321,36 @@ export function departEtDuree(
 }
 
 /**
+ * CE QUE LES TROIS BOUTONS PEUVENT HONORER SUR CE CHANTIER-LÀ.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa panne du 9 septembre 2026 :** *« lorsque je clique sur le matin pour
+ * Mr. Julien, ça me met d'office toute la journée »*. Son chantier dure deux
+ * jours, et c'est exact : quatre demi-journées posées à partir du matin
+ * occupent forcément le matin ET l'après-midi. Ce qui était faux, c'est la
+ * QUESTION que l'écran lui posait.
+ *
+ * Sur un chantier d'une journée ou moins, les trois boutons choisissent
+ * l'ÉTENDUE : « Matin » réserve une demi-journée, « Journée » en réserve deux.
+ * Au-delà, l'étendue vient de la dictée et `departEtDuree` la protège — la
+ * raccourcir lui ferait perdre des jours de travail en silence. Les boutons ne
+ * choisissent alors plus que le DÉPART, et « Journée » écrit exactement le même
+ * état que « Matin » : un bouton mort, qui se retire au lieu de s'expliquer.
+ *
+ * **La règle vivait dans le JSX de l'écran, et elle y était donc muette pour
+ * qui ne le lisait pas.** Les deux autres endroits qui dessinaient ces boutons
+ * — « Sans date » et « + Ajouter un chantier » — ne la portaient pas ; ils ne
+ * demandent plus rien du tout depuis le 9 septembre au soir, la durée du devis
+ * décidant seule. Il ne reste donc qu'un appelant, « Déplacer », et c'est là
+ * qu'un moment se corrige vraiment.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+export function poseOfferte(duree: number): { quands: QuandChantier[] } {
+  if (duree > 2) return { quands: ["matin", "apres"] };
+  return { quands: ["matin", "apres", "journee"] };
+}
+
+/**
  * Comment se lit, en un mot, un chantier déjà posé.
  *
  * **« ½ journée » ne s'écrit plus.** Sa remarque du 21 août : *« il y a marqué

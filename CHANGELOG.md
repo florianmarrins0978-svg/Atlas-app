@@ -8,6 +8,43 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### « Se déconnecter » existe enfin, au bas des Réglages
+
+**Codé après son accord sur la maquette.** Une ligne en capitales espacées tout
+en bas du sommaire, une feuille de confirmation, et l'on repart sur l'écran de
+connexion. Le dessin est celui de `SupprimerCeClient` (2 septembre), sans son
+surtitre d'alerte — se déconnecter n'est pas irréversible. Le pourquoi de chaque
+choix est dans `ARCHITECTURE.md` §310.
+
+| | |
+|---|---|
+| `src/app/login/actions.ts` | `deconnexionAction` — elle **existait déjà, sans appelant** ; elle en a un |
+| `src/app/reglages/SeDeconnecter.tsx` | la ligne et la feuille |
+| `scripts/test-se-deconnecter-e2e.ts` | le geste entier, dans un vrai navigateur |
+
+**J'EN AVAIS ÉCRIT UNE SECONDE, IDENTIQUE, SANS CHERCHER.** `deconnexionAction`
+dort dans `src/app/login/actions.ts` — même corps, `signOut` vers `/login` — et
+n'avait aucun appelant. C'est la faute que `CLAUDE.md` §5 ter nomme : *la
+question n'est jamais « est-ce possible » mais « qui, dans ce dépôt, fait déjà
+quelque chose d'approchant »*. **C'est un contrôle qui l'a révélée**, en exigeant
+une garde de rôle sur ma nouvelle action : l'exemption motivée de l'ancienne
+était là, dans le même fichier de contrôle, sous les yeux. Le doublon est
+retiré ; `signOut` reste préféré à `/api/session-perimee`, dont le nom ment et
+qui tient sa propre liste de six cookies.
+
+**Face ID reste posé sur l'appareil, et la suite l'exige** : c'est ce qui sépare
+ce geste de « Me déconnecter partout ». Elle **pose sa propre clé témoin** avant
+de se déconnecter — le compte de démonstration n'en a aucune, et compter « zéro
+avant, zéro après » aurait rendu un vert qui ne mesure rien (le `0 − 0 = 0` du
+15 août 2026).
+
+**ÉPROUVÉ À MOITIÉ, ET IL FAUT LE DIRE :** `typecheck`, `lint`,
+`verifier:memoire`, et les contrôles de structure (pansement, code mort,
+couches, flèches, boutons, couleurs) sont **verts**. La batterie complète
+**n'a pas été jouée** — elle prend le port 3000 et vide la base, et sa règle du
+4 septembre veut qu'on le lui demande d'abord. Tant qu'elle n'a pas tourné,
+`test-se-deconnecter-e2e` n'a jamais été vu ni vert ni rouge.
+
 ### L'onglet des retours existe toujours, et ses photos se voient enfin
 
 *« L'onglet retour d'intervention doit exister même s'il n'y a aucun retour ! »*
@@ -21,6 +58,29 @@ les preuves à cocher : après le travail, dans un endroit qu'on n'ouvre qu'en
 partant. Elles sont désormais **au-dessus des lignes du devis**, là où il les a
 demandées, et elles ne disparaissent pas quand le bandeau s'ouvre
 (`ARCHITECTURE.md` §307).
+
+### « Matin » posait la journée entière sur un chantier de deux jours
+
+*« Lorsque je clique sur le matin pour Mr. Julien, ça me met d'office toute la
+journée. »* Son chantier dure deux jours : quatre demi-journées posées à partir
+du matin prennent forcément le matin ET l'après-midi. Le calcul était juste ;
+c'est la question posée à l'écran qui ne l'était pas.
+
+Au-delà d'une journée, l'étendue vient de la dictée et les boutons ne
+choisissent plus que le DÉPART — « Journée » y écrivait alors exactement le même
+état que « Matin ». Ce bouton mort avait déjà été retiré le 23 août, mais dans
+« Déplacer » seulement : la règle vivait au milieu du rendu d'un écran sur les
+trois qui dessinent ces boutons. Elle vit maintenant dans `src/lib`, et les
+trois la lisent.
+
+La durée s'écrit désormais à côté des boutons quand ils ne la choisissent plus.
+Sans elle, « Matin » se lit « une demi-journée ».
+
+**Et une seconde divergence, trouvée en chemin :** l'écran lisait la durée
+réservée, NULL tant que rien n'est posé, donc « une journée » sur un chantier de
+deux jours — au moment précis où il choisit où le poser. Le dépôt, lui, lisait la
+dictée. Une seule fonction répond aux deux.
+
 
 ### Les retours non lus se voient d'un coup d'œil
 
@@ -67,6 +127,7 @@ arrivé. Elles nomment maintenant son geste — « quand vous appuierez sur
 coincée en attente pour toujours : le relevé n'en veut pas, et « Payée » ne
 pouvait pas la solder — un règlement de zéro est refusé, à juste titre. Elle
 occupait l'écran avec un bouton qui ne pouvait qu'échouer.
+
 
 ### « Dernier devis » n'apparaissait presque jamais
 
