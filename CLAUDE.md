@@ -48,6 +48,11 @@ npm run sessions:preparer 5     # un dossier par session, une fois pour toutes
 npm run sessions:preparer --liste
 ```
 
+**Le singulier marche aussi** — `npm run session:preparer`. Il a tapé celui-là
+le 9 septembre 2026 et npm lui a rendu « npm error / To see a list of scripts »,
+c'est-à-dire rien : une lettre d'écart, et le seul geste qu'on lui demande
+échoue sans dire pourquoi. Les deux noms pointent le même script.
+
 `scripts/preparer-sessions.mjs` crée un **`git worktree` par session** : même
 dépôt, même historique, mêmes remontées, `main` toujours le seul bien commun —
 seul le répertoire de travail change. Chaque session a alors ses fichiers à

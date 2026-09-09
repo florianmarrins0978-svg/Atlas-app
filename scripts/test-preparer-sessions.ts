@@ -18,7 +18,7 @@
 */
 import assert from "node:assert";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -135,6 +135,28 @@ console.log("=== Un dossier de travail par session ===\n");
     rmSync(parent, { recursive: true, force: true });
   }
 }
+
+// ─── LES DEUX NOMS MÈNENT AU MÊME SCRIPT ──────────────────────────────────
+//
+// **Payé le 9 septembre 2026, capture de son terminal à l'appui.** Il a tapé
+// `npm run session:preparer 5` — singulier — et npm a répondu « npm error / To
+// see a list of scripts, run: npm run », c'est-à-dire rien. Une lettre d'écart
+// entre ce qu'on écrit et ce qui existe, et le seul geste qu'on lui demande
+// échoue sans dire pourquoi.
+//
+// Le remède n'est pas de lui apprendre l'orthographe : c'est que les deux
+// noms marchent. Ils pointent le MÊME script — il n'y a pas deux commandes,
+// il y a deux portes (`CLAUDE.md` §3, jamais de règle dupliquée).
+cas("« session:preparer » et « sessions:preparer » mènent au même script", () => {
+  const paquet = JSON.parse(
+    readFileSync(path.join(RACINE, "package.json"), "utf8")
+  ) as { scripts: Record<string, string> };
+  const singulier = paquet.scripts["session:preparer"];
+  const pluriel = paquet.scripts["sessions:preparer"];
+  assert.ok(pluriel, "« sessions:preparer » a disparu de package.json");
+  assert.ok(singulier, "« session:preparer » manque : il a tapé le singulier et n'a rien eu");
+  assert.equal(singulier, pluriel, "les deux noms ne lancent pas la même chose");
+});
 
 console.log(
   `\n${echecs === 0 ? "✅" : "❌"} Un dossier de travail par session — ${reussis} réussi(s), ${echecs} échec(s).`
