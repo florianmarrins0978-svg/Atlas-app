@@ -9,6 +9,7 @@ import { noterPaiementAction, retirerPaiementAction, soldeFactureAction } from "
 import { MarqueAncienIban } from "@/components/atlas/AlerteAncienIban";
 import { prevenirAction } from "@/app/prevenir-du-nouvel-iban";
 import type { FactureAPrevenir } from "@/server/repositories/factures";
+import type { ReceptionLisible } from "@/lib/reception-facture";
 
 export type FactureAttendue = {
   id: string;
@@ -42,10 +43,20 @@ export type FactureAttendue = {
 export default function EnAttenteDePaiement({
   factures,
   aPrevenir,
+  receptions,
   aujourdHui,
   regime,
 }: {
   factures: FactureAttendue[];
+  /**
+   * **Ce que le client a fait de chaque facture** — sa demande du 9 septembre
+   * 2026, et la réponse à sa question sur le litige.
+   *
+   * Mis en mots par le SERVEUR (`src/lib/reception-facture.ts`) : une heure
+   * calculée sur le téléphone changerait selon l'appareil qui la lit, et une
+   * preuve qui change d'heure selon qui la regarde ne prouve rien.
+   */
+  receptions: Record<string, ReceptionLisible | undefined>;
   /**
    * **Les factures parties avec l'ancien IBAN** — le deuxième des trois
    * endroits qu'il a retenus le 8 septembre 2026. C'est ici qu'il regarde déjà
@@ -148,6 +159,14 @@ export default function EnAttenteDePaiement({
                 facture={aPrevenir.find((p) => p.id === f.id)}
                 onPrevenir={prevenirAction}
               />
+
+              {/* **CE QUE LE CLIENT EN A FAIT — sa question du 9 septembre 2026 :**
+                  *« en cas de litige, où est-ce que l'utilisateur va rechercher
+                  cette info ? »*. Ici, et pas ailleurs : c'est l'écran qu'il
+                  ouvre quand il court après l'argent. Même place que la marque
+                  ci-dessus, et pour la même raison — cela dit quelque chose sur
+                  la facture, pas sur son règlement. */}
+              <CeQueLeClientEnAFait reception={receptions[f.id]} />
 
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 <button
@@ -285,6 +304,43 @@ function SaisieDuReglement({
         Un acompte se note comme un solde : seule la part reçue entre au relevé, le reste attend.
       </p>
     </div>
+  );
+}
+
+/**
+ * Deux dates sous la ligne, et elles ne se valent pas.
+ *
+ * **L'ouverture est la plus forte** : Atlas la note tout seul, sans rien
+ * demander au client, et elle ne dépend donc pas de sa bonne volonté. La
+ * confirmation s'ajoute, elle ne remplace pas.
+ *
+ * **« Pas encore ouverte » S'ÉCRIT.** Ne rien afficher ferait lire l'absence de
+ * trace comme une absence de fonctionnalité — et c'est justement l'information
+ * qu'il cherche quand un client prétend n'avoir rien reçu : personne n'a ouvert
+ * ce lien, ou quelqu'un l'a ouvert le 9 à 14 h 12.
+ *
+ * Aucun trait doré ici, contrairement à la planche : le liseré ne servait qu'à
+ * montrer ce qui s'ajoutait. Sur l'écran, cette ligne est une ligne parmi les
+ * autres.
+ */
+function CeQueLeClientEnAFait({ reception }: { reception: ReceptionLisible | undefined }) {
+  if (!reception) return null;
+  return (
+    <p className="mt-2 text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
+      {reception.ouverte === null ? (
+        "Pas encore ouverte."
+      ) : (
+        <>
+          Ouverte <strong style={{ color: colors.inkSoft }}>{reception.ouverte}</strong>
+          {reception.confirmee && (
+            <>
+              {" · réception confirmée "}
+              <strong style={{ color: colors.inkSoft }}>{reception.confirmee}</strong>
+            </>
+          )}
+        </>
+      )}
+    </p>
   );
 }
 

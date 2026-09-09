@@ -25804,3 +25804,78 @@ C'est **le pire des garde-fous** : celui qui parle toujours, donc qu'on apprend
 à contourner — sa propre suite l'annonçait sans pouvoir le voir. On remonte
 maintenant toute la lignée, et `scripts/test-batterie-solitaire.ts` garde ce cas
 avec les cinq lignes de `ps` relevées ce soir-là.
+
+## §301 — La réception d’une facture : deux dates, et l’endroit où on les retrouve
+
+**Sa demande du 9 septembre 2026 :** *« sur le lien qu’on envoie au client avec
+sa facture, on peut pas mettre une case à cocher qui stipule qu’il accuse bonne
+réception ? ça évite les "ah ouais mais j’ai pas vu votre facture" ».
+
+**Il a écarté lui-même la version dure**, le jour où il l’a proposée : *« mais ça
+ne l’empêche pas de télécharger la facture s’il ne coche pas ! »*. Une facture
+se donne — la retenir se retourne contre l’artisan, puisqu’un client qui ne coche
+pas ne télécharge pas non plus, et là il ne l’a vraiment pas reçue. La case ne
+conditionne donc rien, et elle vit TOUT EN BAS de la page, après « Pour régler » :
+posée sous le bouton, elle se lirait comme une condition pour ouvrir le document.
+
+### Deux dates, et elles ne se valent pas
+
+| | |
+|---|---|
+| `ouverte_at` | Atlas la note **tout seul**. Elle ne dépend pas de la bonne volonté du client : c’est elle qu’on oppose à « je ne l’ai jamais reçue » |
+| `accuse_at` | la case. Un geste volontaire, donc plus parlant — et qui peut ne jamais venir |
+
+Les deux vivent sur **l’ENVOI** (`envois_factures`), jamais sur la facture : une
+facture peut partir deux fois — le premier lien expire, le client redemande. Ce
+qui s’ouvre est un LIEN, et c’est lui qui porte le jeton par lequel la trace
+s’écrit. Posées sur `factures`, il faudrait décider laquelle des deux ouvertures
+compte au moment précis où l’on cherche une preuve. `receptionsDesFactures` ne
+rend donc que le **dernier** envoi de chaque facture.
+
+### L’OUVERTURE PART DU NAVIGATEUR, JAMAIS DU RENDU — et c’est le point dur
+
+Une messagerie qui déplie l’aperçu d’un lien, un antivirus qui le vérifie, un
+robot d’indexation : tous demandent l’adresse, **aucun n’exécute de
+JavaScript**. Notée pendant le rendu du serveur, la date serait celle d’une
+machine — donc fausse le jour précis où elle sert de preuve. L’appel part de
+`AccuseDeReception`, une fois la page affichée.
+
+Elle ne s’écrit qu’**une seule fois** (garde `IS NULL` en base, pas à l’écran) :
+ce qu’on oppose au client, c’est la PREMIÈRE ouverture. Sans ce garde, chaque
+rechargement repousserait la date jusqu’à aujourd’hui.
+
+### Sa question a commandé tout le reste
+
+*« Atlas note l’ouverture seul, mais en cas de litige, où est-ce que
+l’utilisateur va rechercher cette info ? »* — **nulle part**, jusqu’ici. La carte
+de l’accueil s’efface d’un « J’ai vu », et rien n’en gardait la trace. Une preuve
+qu’on ne sait pas retrouver ne prouve rien.
+
+D’où la coupure : `vu_par_patron_at` n’éteint que la CARTE ; les deux dates
+restent sur **« Terminés › En attente de paiement »**, sous la ligne de la
+facture — à la place exacte qu’occupe déjà `MarqueAncienIban`, dont le code
+porte la raison : *« sous la ligne et avant les gestes de paiement : elle dit
+quelque chose sur la facture, pas sur son règlement »*.
+
+### L’écriture par jeton, et pourquoi ce n’est pas un affaiblissement
+
+`envois_factures_reception_par_jeton` ouvre l’UPDATE au porteur d’un jeton exact,
+comme `envois_devis_reponse_par_jeton` le fait depuis la migration 0015. Sans le
+jeton — 256 bits tirés au sort — aucune ligne n’est visible ni modifiable, et
+aucune énumération n’est possible. Les deux actions publiques sont bornées en
+cadence par le mécanisme central (`LIMITES.receptionFacture`), **le compteur par
+source seulement si la source est établie** : sans `ATLAS_PROXY_SAUTS`, tous les
+visiteurs partagent un seul seau et le seuil deviendrait une arme retournée
+(la leçon de F9).
+
+**Éprouvé sous `atlas_app`** (`scripts/test-reception-facture-db.ts`), et non
+seulement au navigateur : les suites navigateur traversent la RLS et ne peuvent
+pas, par construction, voir un défaut d’isolation (`CLAUDE.md` §5).
+
+### Un pansement retiré au passage
+
+`adresseClient` était recopiée à l’identique dans deux fichiers d’actions ; la
+réception en aurait fait une troisième. Elle vit désormais dans
+`src/lib/adresse-client.ts`, et les deux copies ont disparu. Elle ne se confond
+pas avec `sourceDepuisEntetes` : celle-ci sert à COMPTER et refuse de deviner,
+celle-là sert à DOCUMENTER et écrit ce que le client a dit de lui.

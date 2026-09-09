@@ -6,6 +6,7 @@ import { logger } from "@/server/logger";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
 import { SOURCE_NON_ETABLIE } from "@/lib/source-visiteur";
+import { adresseClient } from "@/lib/adresse-client";
 
 export type EtatReponse =
   | { erreur: string }
@@ -17,18 +18,6 @@ export type EtatReponse =
    */
   | { succes: string; devisTelechargeable?: boolean }
   | undefined;
-
-// Première adresse de X-Forwarded-For : celle du client vue par le proxy de
-// tête. Élément de preuve d'appoint — elle documente l'acceptation, elle ne la
-// fonde pas.
-function adresseClient(entetes: Headers): string | null {
-  const transmis = entetes.get("x-forwarded-for");
-  if (transmis) {
-    const premiere = transmis.split(",")[0]?.trim();
-    if (premiere) return premiere;
-  }
-  return entetes.get("x-real-ip");
-}
 
 const MESSAGES: Record<string, string> = {
   introuvable: "Ce lien n'est plus valable. Contactez votre artisan pour en recevoir un nouveau.",

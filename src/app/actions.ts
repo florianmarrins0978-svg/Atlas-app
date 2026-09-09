@@ -5,6 +5,7 @@ import { exigerEcran, exigerFacturation, exigerGestionDevis } from "@/server/gar
 import { getCurrentCtx } from "@/server/session-ctx";
 import { logger } from "@/server/logger";
 import { marquerReponseVue } from "@/server/repositories/envois-devis";
+import { marquerReceptionVue } from "@/server/repositories/envois-factures";
 import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
 import { repousserRappelFacture, marquerRappelVu } from "@/server/repositories/rappels";
 import { estGenreAcquittable } from "@/lib/rappels";
@@ -22,6 +23,23 @@ export async function marquerReponseVueAction(envoiId: string) {
   await exigerEcran(ctx, "/", "marquer une réponse comme vue");
   await marquerReponseVue(ctx, envoiId);
   revalidatePath("/");
+}
+
+/**
+ * Le patron a vu qu'un client confirmait avoir reçu sa facture.
+ *
+ * **La carte s'en va, la trace reste** — c'est toute la réponse à sa question
+ * du 9 septembre 2026 : *« en cas de litige, où est-ce que l'utilisateur va
+ * rechercher cette info ? »*. Une preuve qui disparaît avec l'alerte qui
+ * l'annonçait ne prouve rien. Les deux dates continuent de vivre sur
+ * « Terminés › En attente de paiement », d'où le second `revalidatePath`.
+ */
+export async function marquerReceptionVueAction(envoiId: string) {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/", "marquer une réception comme vue");
+  await marquerReceptionVue(ctx, envoiId);
+  revalidatePath("/");
+  revalidatePath("/termines/tva");
 }
 
 /**

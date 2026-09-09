@@ -14,6 +14,7 @@ import { rappelsEnCours } from "@/server/repositories/rappels";
 import { depuisCombien, joursEcoules } from "@/lib/rappels";
 import { enEuros } from "@/lib/euros";
 import Notifications from "./Notifications";
+import { receptionsASignaler } from "@/server/repositories/envois-factures";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EcranChantiers from "./EcranChantiers";
 import type { BrinChantier } from "./ListeChantiers";
@@ -52,11 +53,15 @@ export default async function ChantiersPage() {
   // pour n'en rien faire coûterait un aller-retour à chaque ouverture de son
   // écran d'accueil, et laisserait croire à la prochaine lecture que la session
   // sert encore à quelque chose ici.
-  const [chantiers, notifications, caducs, rappels] = await Promise.all([
+  const [chantiers, notifications, caducs, rappels, receptions] = await Promise.all([
     listerChantiersPourAffichage(ctx),
     notificationsPatron(ctx),
     envoisCaducs(ctx),
     rappelsEnCours(ctx, maintenant),
+    // Les clients qui viennent de confirmer avoir reçu leur facture — sa
+    // demande du 9 septembre 2026. Vide presque toujours, et rien ne s'affiche
+    // alors.
+    receptionsASignaler(ctx),
   ]);
 
   // **Cette liste ne montre que ce qui reste à préparer.** Un chantier passé au
@@ -126,6 +131,7 @@ export default async function ChantiersPage() {
           <Notifications
             initiales={notifications}
             caducs={caducs}
+            receptions={receptions}
             // Le délai est mis en mots ICI, au serveur : l'écran n'a pas à
             // recalculer une durée et à en donner une seconde version.
             rappels={rappels.map((r) => ({

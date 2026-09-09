@@ -6,6 +6,32 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-09
+
+### « Ah ouais mais j’ai pas vu votre facture » — la réception se trace
+
+Sa demande du jour : une case à cocher sur la page de la facture, pour en finir
+avec le client qui prétend n’avoir rien reçu. **Il a écarté lui-même la version
+dure** — obliger à cocher pour télécharger : une facture se donne, et la retenir
+se retourne contre lui, puisqu’un client qui ne coche pas ne télécharge pas non
+plus. La case ne conditionne rien, et elle est tout en bas de la page.
+
+**Deux dates, et la première est la plus solide.** L’OUVERTURE, qu’Atlas note
+tout seul, ne dépend pas de la bonne volonté du client ; l’ACCUSÉ s’ajoute. Elle
+part du navigateur et non du rendu — une messagerie qui déplie un aperçu, un
+antivirus, un robot d’indexation demandent tous l’adresse sans exécuter de
+JavaScript, et une date née là serait fausse le jour où elle sert de preuve.
+
+**Sa question a commandé tout le reste :** *« en cas de litige, où est-ce que
+l’utilisateur va rechercher cette info ? »* — nulle part, jusqu’ici. « J’ai vu »
+n’éteint plus que la carte de l’accueil ; les deux dates restent sous la ligne de
+la facture, sur « Terminés › En attente de paiement », là où il va quand il court
+après l’argent. Une preuve qu’on ne sait pas retrouver ne prouve rien.
+
+Migration 0081. Éprouvé **sous `atlas_app`** — le client écrit sans session, et
+les suites navigateur traversent la RLS.
+
+---
 ## 2026-09-08
 
 ### Trois skills de `superpowers` entrent, onze restent dehors

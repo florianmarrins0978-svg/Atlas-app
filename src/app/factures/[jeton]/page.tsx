@@ -4,6 +4,7 @@ import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { LIBELLE_AVANT, LIBELLE_APRES, phraseDuCheque } from "@/lib/modalites-paiement";
 import PastilleACopier from "./PastilleACopier";
+import AccuseDeReception from "./AccuseDeReception";
 
 /**
  * LA PAGE QUE VOIT SON CLIENT — refaite le 8 septembre 2026, sur sa capture.
@@ -190,6 +191,16 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
             </p>
           </div>
         </div>
+
+        {/* **La dernière chose de la page, et c'est voulu** — sa demande du
+            9 septembre 2026. Sous « Télécharger ma facture », une case se
+            lirait comme une condition pour ouvrir le document ; ici, personne
+            ne peut s'y tromper. Elle porte aussi la date d'ouverture, notée
+            depuis le navigateur : voir `AccuseDeReception`. */}
+        <AccuseDeReception
+          jeton={jeton}
+          dejaConfirmeLe={facture.accuseLe ? facture.accuseLe.toISOString() : null}
+        />
       </div>
     </div>
   );
