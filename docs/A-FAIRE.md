@@ -41,6 +41,7 @@ qui ne se résoudra pas en codant.
 11. [~~Décider si Atlas peut calculer des trajets par la route~~ — tranché le 16 août 2026](#11-décider-si-atlas-peut-calculer-des-trajets-par-la-route--tranché-le-16-août-2026)
 12. [Demander à votre comptable : TVA sur les encaissements ou sur les débits ?](#12-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-)
 13. [Choisir le prestataire qui lit vos virements](#13-choisir-le-prestataire-qui-lit-vos-virements)
+14. [Demander à votre comptable : ce que vaut l’accusé de réception d’une facture](#14-demander-à-votre-comptable--ce-que-vaut-laccusé-de-réception-dune-facture)
 
 ---
 
@@ -984,3 +985,48 @@ dira au lieu de deviner.
 **Rien.** La saisie à la main (« Noter un paiement ») se code sans attendre, et
 c'est elle qui reste quand l'accès bancaire dort. La banque n'est pas une
 condition : c'est un confort qui supprime un oubli.
+
+---
+
+## 14. Demander à votre comptable : ce que vaut l’accusé de réception d’une facture
+
+**Qui peut le faire : vous, avec votre comptable.** Personne d’autre.
+
+### Ce qui existe depuis le 9 septembre 2026
+
+Quand vous envoyez une facture, deux choses sont enregistrées toutes seules :
+
+| | |
+|---|---|
+| **la date d’ouverture** | le jour et l’heure où votre client a ouvert le lien. Il n’a rien à faire pour ça, et il ne peut pas l’empêcher |
+| **la confirmation** | s’il coche « J’ai bien reçu cette facture ». Un geste volontaire, daté |
+
+Vous les retrouvez dans **Clients › Factures**, et sur **Terminés › En attente
+de paiement**. Elles ne s’effacent jamais.
+
+### La question
+
+**Devant un client qui ne paie pas et qui prétend n’avoir jamais reçu la
+facture, qu’est-ce que ces deux dates valent ?**
+
+Ce qu’on sait déjà, et qui n’a pas besoin d’un juriste :
+
+- **ce n’est pas un recommandé.** Ça ne remplace pas une mise en demeure ;
+- ça remplace « je ne l’ai jamais reçue » par **une date, une heure et un
+  appareil** — le même mécanisme qui sert déjà pour vos devis, et que votre page
+  de confidentialité annonce (« cette trace vaut signature ») ;
+- pour une relance amiable, ça ferme la discussion.
+
+**Ce qu’on ignore, et qu’il faut lui demander :** est-ce que ça pèse devant un
+tribunal de commerce, et faut-il quand même doubler d’un recommandé au-delà
+d’un certain montant ou d’un certain retard.
+
+### Ce qui a déjà été écarté, et par vous
+
+Obliger le client à cocher **pour pouvoir télécharger sa facture**. Vous l’avez
+proposé puis écarté le même jour, et vous aviez raison : une facture se donne,
+et la retenir se retourne contre vous — s’il ne coche pas, il ne télécharge pas,
+et là il ne l’a vraiment pas reçue.
+
+**Si votre comptable dit que ça ne suffit pas**, il n’y a rien à recoder : la
+trace reste utile, et c’est le recommandé qui s’ajoute à côté.
