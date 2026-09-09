@@ -95,6 +95,55 @@ l'application, et reste vert dans les deux cas.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — « Déplacer » (9 septembre 2026)
+
+**Sa remarque :** *« regarde réellement ce qui se passe quand on clique sur
+déplacer, j'ai l'impression que c'est inversé, et en vrai c'est pas intuitif du
+tout, faut trouver quelque chose de plus simple »*.
+
+**CE QUI A ÉTÉ MESURÉ, à l'écran, avant de proposer quoi que ce soit**
+(`scripts/capture-deplacer.ts`, qui rejoue son geste et photographie) :
+
+| | |
+|---|---|
+| la logique | **juste** — chantier posé l'après-midi, « Après-midi » est la pastille allumée ; un appui sur « Matin » écrit bien `creneau_debut = matin` |
+| ce que l'œil lit | **les deux moitiés de la journée changent de place** : chantier l'après-midi → la fiche se lit `APRÈS-MIDI` puis `MATIN` ; chantier le matin → `MATIN` puis `APRÈS-MIDI` |
+
+C'est ce SAUT qu'il lit comme une inversion : le bloc qu'il regardait part là où
+était l'autre. La cause est `blocsDeLaJournee` (`src/lib/planning-jour.ts`), qui
+pose tous les chantiers d'abord et les demi-journées libres ensuite.
+
+**ET CELA ENTRE EN CONFLIT AVEC UNE RÈGLE QU'IL A POSÉE**, le 21 août 2026 :
+*« fais pareil pour les autres, le nom toujours en premier ! »* — il refusait
+qu'une demi-journée vide ouvre la fiche. Mettre le matin en haut, c'est parfois
+ouvrir sur « libre ». **Les deux demandes ne peuvent pas être tenues ensemble,
+et l'arbitrage lui revient** : rien n'a été changé dans `src/`.
+
+**La planche :** `appli/deplacer-plus-simple.html`, liée dans `essais.html`.
+Trois gestes, tous avec le matin en haut :
+
+1. **on appuie sur la moitié libre** — un geste, pas de menu ;
+2. **un interrupteur à deux positions**, toujours visible — un appui de moins ;
+3. **une poignée** qu'on fait glisser.
+
+**Une quatrième question y est posée** : « Déplacer » ne change pas le JOUR,
+seulement la demi-journée. C'est peut-être le vrai malentendu du mot.
+
+**Elle n'a pas d'adresse tant qu'elle n'est pas sur `main`** —
+`.github/workflows/pages.yml` ne publie que depuis là.
+
+## ⏳ UNE DÉCISION QUI LUI APPARTIENT — couper un chantier en deux poses (9 sept. 2026)
+
+Née de sa panne du jour : *« lorsque je clique sur le matin pour Mr. Julien, ça
+me met d'office toute la journée »*. Un chantier de deux jours posé « Matin »
+prend forcément la journée entière — l'application ne sait poser qu'**un bloc
+continu** (`creneau_debut` + `duree_demi_journees`).
+
+S'il veut vraiment faire jeudi matin puis reprendre lundi, il faut deux poses
+pour un chantier : c'est une fonctionnalité, pas un correctif, et **c'est lui
+qui décide** si elle vaut le coup. En attendant, l'écran dit la durée au lieu de
+promettre un découpage qu'il ne sait pas faire (`ARCHITECTURE.md` §309).
+
 ## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
 
 **Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce

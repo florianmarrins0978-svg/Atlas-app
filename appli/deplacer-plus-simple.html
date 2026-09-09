@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Déplacer, en plus simple</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    DÉPLACER, EN PLUS SIMPLE — maquette ESSAYABLE
+    ————————————————————————————————————————————————————————————————
+
+    Sa remarque du 9 septembre 2026 : « regarde réellement ce qui se passe
+    quand on clique sur déplacer, j'ai l'impression que c'est inversé, et en
+    vrai c'est pas intuitif du tout, faut trouver quelque chose de plus
+    simple ».
+
+    CE QUE LES CAPTURES ONT MONTRÉ, et qui lui donne raison :
+
+      · chantier posé l'APRÈS-MIDI → la journée se lit APRÈS-MIDI puis MATIN ;
+      · chantier posé le MATIN     → elle se lit MATIN puis APRÈS-MIDI.
+
+    Les deux moitiés de la journée CHANGENT DE PLACE selon où est le chantier.
+    Quand on appuie sur « Matin », le bloc saute là où était l'autre : c'est ce
+    saut qu'on lit comme une inversion.
+
+    Trois propositions ci-dessous. TOUTES gardent la journée dans le même
+    ordre — matin en haut, après-midi en bas, toujours. Ce qui les distingue,
+    c'est le GESTE.
+
+    Rien n'est codé dans l'application : cette page est une maquette.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --vert:#7D9A6D;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .tel{max-width:430px;margin:18px auto 0;background:var(--fond);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18)}
+  .titre{padding:20px 22px 0}
+  .titre b{display:block;font:700 12px/1.2 ui-sans-serif,sans-serif;letter-spacing:.14em;
+           text-transform:uppercase;color:var(--or)}
+  .titre p{margin:8px 0 0;font-size:13.5px;line-height:1.5;color:var(--encre-douce)}
+
+  .fiche{margin:16px 14px 18px;background:var(--plage);border-radius:18px;padding:16px 16px 14px}
+  .jour{text-align:center;font:700 12px/1.2 ui-sans-serif,sans-serif;letter-spacing:.16em;
+        text-transform:uppercase;padding-bottom:12px;border-bottom:1px solid var(--trait)}
+
+  .nom{margin:14px 0 0;font:400 21px/1.15 ui-serif,Georgia,serif}
+  .duree{margin:3px 0 0;font-size:12.5px;color:var(--or)}
+
+  /* ── Une demi-journée : toujours à la même place ─────────────────────── */
+  .demi{display:flex;align-items:center;gap:10px;margin-top:12px;min-height:38px}
+  .demi .carre{width:13px;height:13px;border-radius:3px;flex:0 0 auto;
+               border:1px solid var(--trait);background:transparent}
+  .demi.prise .carre{background:var(--pin);border-color:var(--pin)}
+  .demi .mot{font:700 11.5px/1.2 ui-sans-serif,sans-serif;letter-spacing:.13em;
+             text-transform:uppercase;flex:0 0 84px}
+  .demi .quoi{flex:1;min-width:0;font-size:14.5px;color:var(--encre)}
+  .demi .quoi .vide{color:var(--gris);font-size:12.5px}
+
+  .pastille{display:inline-block;border-radius:999px;padding:7px 13px;font-size:12px;
+            border:1px solid var(--trait);background:var(--plage);cursor:pointer}
+  .pastille.pleine{background:var(--vert);border-color:var(--vert);color:#fff}
+  .pastille:active{transform:scale(.97)}
+
+  /* ── Proposition 1 : on appuie sur la moitié où l'on veut le mettre ───── */
+  .cible{width:100%;text-align:left;border:1px dashed var(--trait);background:transparent;
+         border-radius:12px;padding:9px 11px;font-size:13px;color:var(--gris);cursor:pointer}
+  .cible:active{background:var(--papier)}
+
+  /* ── Proposition 2 : un seul interrupteur ────────────────────────────── */
+  .bascule{display:flex;border:1px solid var(--trait);border-radius:999px;overflow:hidden;
+           background:var(--plage)}
+  .bascule button{flex:1;border:0;background:transparent;padding:9px 0;font-size:12.5px;
+                  color:var(--encre-douce);cursor:pointer}
+  .bascule button[aria-pressed="true"]{background:var(--vert);color:#fff}
+
+  /* ── Proposition 3 : la poignée ──────────────────────────────────────── */
+  .poignee{border:1px solid var(--trait);background:var(--plage);border-radius:999px;color:var(--or);
+          font-size:12px;cursor:pointer;padding:7px 13px;margin-left:auto;flex:0 0 auto}
+  .demi .quoi.avec-poignee{display:flex;align-items:center;gap:10px}
+
+  .actes{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+
+  .note{margin:0 22px 20px;font-size:12.5px;line-height:1.6;color:var(--encre-douce)}
+  .note b{color:var(--encre)}
+  .quoi-change{margin:14px 14px 0;background:#fff;border:1px solid var(--trait);
+               border-radius:14px;padding:12px 14px;font-size:12.5px;line-height:1.6;color:var(--encre-douce)}
+  h2{max-width:430px;margin:34px auto 0;padding:0 6px;font:400 22px/1.2 ui-serif,Georgia,serif}
+</style>
+
+<div class="bandeau">
+  <b>Ce qui se passe aujourd'hui :</b> les deux moitiés de la journée changent de
+  place selon où est le chantier. Posé l'après-midi, la fiche se lit
+  <b>après-midi puis matin</b>. C'est ce saut qu'on lit comme une inversion.<br><br>
+  Les trois propositions gardent <b>le matin en haut, toujours</b>. Choisissez le geste.
+</div>
+
+<h2>1 · On appuie là où on veut le mettre</h2>
+<div class="tel">
+  <div class="titre">
+    <b>Un seul geste</b>
+    <p>La moitié libre est une case qu'on touche. Le chantier va où le doigt s'est posé — pas de menu, pas de mot à choisir.</p>
+  </div>
+  <div class="fiche" id="f1">
+    <div class="jour">Samedi 12 septembre</div>
+    <div class="nom">M. Rocher</div>
+    <div class="duree">une demi-journée</div>
+
+    <div class="demi" id="d1-matin">
+      <span class="carre"></span><span class="mot">Matin</span>
+      <span class="quoi"></span>
+    </div>
+    <div class="demi" id="d1-aprem">
+      <span class="carre"></span><span class="mot">Après-midi</span>
+      <span class="quoi"></span>
+    </div>
+
+    <div class="actes">
+      <button class="pastille" onclick="alert('Maquette : ici, le chantier quitterait la journée.')">Retirer</button>
+    </div>
+  </div>
+  <p class="note">Le nom reste en haut, comme vous l'aviez demandé le 21 août. Ce qui ne bouge plus, c'est <b>l'ordre des deux moitiés</b>.</p>
+</div>
+
+<h2>2 · Un interrupteur à deux positions</h2>
+<div class="tel">
+  <div class="titre">
+    <b>Rien de caché</b>
+    <p>Le choix est toujours à l'écran, sans passer par « Déplacer ». Ce qui est allumé, c'est là où le chantier est.</p>
+  </div>
+  <div class="fiche">
+    <div class="jour">Samedi 12 septembre</div>
+    <div class="nom">M. Rocher</div>
+    <div class="duree">une demi-journée</div>
+
+    <div class="demi" id="d2-matin">
+      <span class="carre"></span><span class="mot">Matin</span>
+      <span class="quoi"></span>
+    </div>
+    <div class="demi" id="d2-aprem">
+      <span class="carre"></span><span class="mot">Après-midi</span>
+      <span class="quoi"></span>
+    </div>
+
+    <div style="margin-top:14px">
+      <div class="bascule" id="b2">
+        <button type="button" data-ou="matin">Matin</button>
+        <button type="button" data-ou="aprem">Après-midi</button>
+        <button type="button" data-ou="journee">Journée</button>
+      </div>
+    </div>
+    <div class="actes">
+      <button class="pastille" onclick="alert('Maquette : ici, le chantier quitterait la journée.')">Retirer</button>
+    </div>
+  </div>
+  <p class="note">Un appui de moins qu'aujourd'hui : plus besoin d'ouvrir « Déplacer » pour voir le choix.</p>
+</div>
+
+<h2>3 · Une poignée qu'on fait glisser</h2>
+<div class="tel">
+  <div class="titre">
+    <b>Le geste du planning papier</b>
+    <p>On attrape le chantier et on le pose sur l'autre moitié. Ici, un appui sur la poignée suffit à l'essayer.</p>
+  </div>
+  <div class="fiche">
+    <div class="jour">Samedi 12 septembre</div>
+    <div class="nom">M. Rocher</div>
+    <div class="duree">une demi-journée</div>
+
+    <div class="demi" id="d3-matin">
+      <span class="carre"></span><span class="mot">Matin</span>
+      <span class="quoi"></span>
+    </div>
+    <div class="demi" id="d3-aprem">
+      <span class="carre"></span><span class="mot">Après-midi</span>
+      <span class="quoi"></span>
+    </div>
+    <div class="actes">
+      <button class="pastille" onclick="alert('Maquette : ici, le chantier quitterait la journée.')">Retirer</button>
+    </div>
+  </div>
+  <p class="note">Le plus proche du geste réel, mais le moins sûr sur un chantier, avec des gants et une main occupée.</p>
+</div>
+
+<div class="tel" style="background:#fff">
+  <div class="titre">
+    <b>Ce qui reste à trancher</b>
+    <p>Aujourd'hui, « Déplacer » ne change pas le JOUR — seulement la moitié de journée. Pour changer de jour, il faut retirer puis reposer. Est-ce que le mot doit changer, ou est-ce le geste ?</p>
+  </div>
+  <div class="quoi-change">
+    Répondez simplement <b>1</b>, <b>2</b> ou <b>3</b> — et dites si « Déplacer »
+    devrait aussi savoir changer de jour.
+  </div>
+  <div style="height:16px"></div>
+</div>
+
+<script>
+  // Les trois propositions partagent le même état : le chantier occupe une
+  // moitié, et la journée se dessine TOUJOURS dans le même ordre. C'est
+  // exactement ce qui manque à l'écran d'aujourd'hui.
+  function dessiner(prefixe, ou) {
+    const moitiés = { matin: "matin", aprem: "aprem" };
+    for (const clé of Object.keys(moitiés)) {
+      const ligne = document.getElementById(`${prefixe}-${clé}`);
+      const prise = ou === clé || ou === "journee";
+      ligne.classList.toggle("prise", prise);
+      const quoi = ligne.querySelector(".quoi");
+      quoi.innerHTML = prise
+        ? "M. Rocher"
+        : `<span class="vide">libre</span>`;
+    }
+  }
+
+  // ── 1 : la moitié libre est une case qu'on touche ────────────────────
+  let ou1 = "aprem";
+  function dessiner1() {
+    dessiner("d1", ou1);
+    for (const clé of ["matin", "aprem"]) {
+      const quoi = document.querySelector(`#d1-${clé} .quoi`);
+      if (ou1 !== clé) {
+        quoi.innerHTML = "";
+        const b = document.createElement("button");
+        b.className = "cible";
+        b.textContent = "Libre — poser le chantier ici";
+        b.onclick = () => { ou1 = clé; dessiner1(); };
+        quoi.appendChild(b);
+      }
+    }
+  }
+  dessiner1();
+
+  // ── 2 : l'interrupteur ───────────────────────────────────────────────
+  let ou2 = "aprem";
+  function dessiner2() {
+    dessiner("d2", ou2);
+    for (const b of document.querySelectorAll("#b2 button")) {
+      b.setAttribute("aria-pressed", b.dataset.ou === ou2 ? "true" : "false");
+    }
+  }
+  for (const b of document.querySelectorAll("#b2 button")) {
+    b.onclick = () => { ou2 = b.dataset.ou; dessiner2(); };
+  }
+  dessiner2();
+
+  // ── 3 : la poignée ───────────────────────────────────────────────────
+  let ou3 = "aprem";
+  function dessiner3() {
+    dessiner("d3", ou3);
+    const prise = document.querySelector(`#d3-${ou3} .quoi`);
+    prise.classList.add("avec-poignee");
+    const p = document.createElement("button");
+    p.className = "poignee";
+    p.textContent = ou3 === "matin" ? "Descendre l'après-midi" : "Monter au matin";
+    p.onclick = () => { ou3 = ou3 === "matin" ? "aprem" : "matin"; dessiner3(); };
+    prise.appendChild(p);
+  }
+  dessiner3();
+</script>
+</body>
+</html>
