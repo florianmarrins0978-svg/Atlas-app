@@ -6,6 +6,25 @@
 
 ---
 
+## FAIT : LA RÉCEPTION D’UNE FACTURE SE TRACE — 9 septembre 2026
+
+Sa demande : une case « J’ai bien reçu cette facture » sur la page du client,
+contre le « ah ouais mais j’ai pas vu votre facture ». **Elle ne bloque rien** —
+il a écarté lui-même l’idée de conditionner le téléchargement.
+
+**Deux dates, et la première est la plus solide :** l’OUVERTURE, qu’Atlas note
+tout seul depuis le navigateur du client, et l’ACCUSÉ, facultatif. Sa question
+— *« en cas de litige, où est-ce que l’utilisateur va rechercher cette info ? »*
+— a fait la moitié du lot : « J’ai vu » n’éteint plus que la carte de l’accueil,
+et les deux dates restent sur « Terminés › En attente de paiement ».
+
+Migration 0081. Éprouvé **sous `atlas_app`** (le client écrit sans session).
+Document : `docs/lot-reception-de-la-facture.md` · `ARCHITECTURE.md` §301.
+
+**Reste à trancher, par lui :** le mot exact de la case, et si la même ligne
+doit apparaître aussi sur l’écran de la facture du chantier.
+
+---
 ## Le retour du devis — 8 septembre 2026
 
 Depuis la feuille du planning, la flèche d'un devis pas encore envoyé ramène au

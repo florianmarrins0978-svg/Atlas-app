@@ -9,6 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ DEUX MOTS À TRANCHER — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
+
+Le lot est livré et sur `main`. Deux choses n’ont pas été tranchées, et elles
+lui appartiennent :
+
+1. **Le mot exact de la case.** Livré avec « J’ai bien reçu cette facture » ;
+   sa formule à lui était « Informer votre artisan de la bonne réception de la
+   facture ». Les deux disent la même chose — la première parle à la première
+   personne, comme le reste de la page.
+2. **La même ligne sur l’écran de la facture du chantier ?** Les deux dates ne
+   vivent aujourd’hui que sur « Terminés › En attente de paiement ». Les poser
+   aussi sur la facture ne coûte presque rien, mais deux endroits à regarder
+   valent parfois moins qu’un seul.
+
+**Et le lot d’à côté est cadré, pas commencé :** les notifications sur son
+téléphone. La demande d’autorisation se pose **après son premier devis envoyé**,
+jamais au lancement (on n’a le droit de la poser qu’une fois), et un interrupteur
+l’attend dans les Réglages. Deux événements méritent de sonner : « devis
+accepté » et « facture reçue ».
+
+---
 ## ⏳ UNE PLANCHE À REGARDER — « Aujourd'hui » en tête des planifiés
 
 **Sa demande du 9 septembre 2026 :** *« si on est le 8 septembre y'a écrit
@@ -5038,7 +5059,7 @@ ils sont écrits, avec leur coût et leur propriétaire, dans `docs/A-FAIRE.md`.
 | 2 | Contrat de sous-traitance rédigé | Remplacer les canevas sans valeur par les textes réels |
 | 3 | Hébergement européen choisi | Déployer — **sans quoi personne ne peut se servir de l'application** |
 | 4 | Société constituée, assurance souscrite | Rien côté code |
-| 5 | ~~Fournisseur SMS et e-mail~~ — **tranché le 2026-08-04 : il n'y en aura pas** | Rien de bloqué. Le devis part de la messagerie du patron (`ARCHITECTURE.md` §13). Ne restent suspendus qu'aux conforts : relance automatique, accusé de réception, code SMS |
+| 5 | ~~Fournisseur SMS et e-mail~~ — **tranché le 2026-08-04 : il n'y en aura pas** | Rien de bloqué. Le devis part de la messagerie du patron (`ARCHITECTURE.md` §13). Ne restent suspendus qu'aux conforts : relance automatique et code SMS. **L'accusé de réception, lui, ne l'est plus** — fait le 9 septembre 2026 **sans aucun fournisseur** : c'est le client qui coche sur sa page, et Atlas note l'ouverture du lien tout seul |
 | 6 | Outil comptable choisi — le patron n'en a **aucun** au 2026-08-08 | Brancher son API : envoyer client, lignes, montants, taux et période, récupérer le numéro et le document émis. Quelques jours. **Rien à écrire avant le choix** — chaque outil a son API, ce serait du code à jeter. Ce qui n'est PAS en jeu : qu'Atlas n'émette pas légalement est définitif (`docs/AGENT.md` §6) |
 
 ---
