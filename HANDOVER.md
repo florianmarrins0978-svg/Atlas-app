@@ -8,6 +8,28 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LE COMPTEUR DE TVA NOMME SON GESTE (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | trois phrases de l'écran TVA, et l'état d'une facture à 0 € |
+| la migration | aucune |
+| les pièces | `src/app/termines/tva/DeclarationsTva.tsx`, `EnAttenteDePaiement.tsx`, `RegimeTva.tsx`, `src/lib/exigibilite-tva.ts` |
+| les suites | `scripts/test-exigibilite-tva.ts` (+2 cas) ; le parcours reste tenu par `test-tva-au-paiement-e2e.ts` |
+| le détail | `ARCHITECTURE.md` §305 |
+
+**CE QU'IL NE FAUT PAS RÉÉCRIRE EN SENS INVERSE.** Il a lu « le jour où vous
+serez payé » et compris qu'Atlas apprend seul qu'un virement est arrivé. Aucune
+phrase de cet écran ne doit plus nommer l'ENCAISSEMENT comme l'événement qui
+remplit le compteur : c'est son appui sur « Payée » qui le fait, et rien
+d'autre. Seul le TITRE du régime garde les mots de la loi — « Le mois où mon
+client me paie » est ce qu'il a déclaré aux impôts.
+
+**Et le calcul n'a pas bougé** : il était déjà juste, depuis le 14 août. Devant
+une plainte de ce genre, vérifier `entreesDuReleve` AVANT de toucher au calcul —
+le défaut peut n'être que dans les mots.
+
+---
 ## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
 | | |

@@ -234,6 +234,21 @@ soit les réparer, soit les nommer**. Huit rouges permanents deviennent un bruit
 dans lequel un vrai défaut se cache — c'est déjà écrit plus bas dans ce fichier,
 et la liste s'allonge.
 
+### 🔴 `test-pages-legales-uniques` — les CGU publiées ne sont pas celles qu'il signe
+
+**Relevé le 9 septembre 2026 au soir, 334/336 suites base.** Les deux
+exemplaires de `conditions-utilisation.html` ont divergé : `appli/` porte
+l'article 14 rempli — les trois formules, leurs prix — écrit par le lot de
+l'abonnement le même jour ; `public/`, celui que l'application SERT et qu'on
+fait accepter, en est resté à « Prix et abonnement », sans tarifs.
+
+**Ce n'est pas un défaut de contrôle**, c'est ce qu'il attrape : on fait
+accepter un texte qui n'est pas celui qu'on publie. La correction est de
+recopier `appli/` vers `public/` — mais **elle appartient au lot de
+l'abonnement** : lui seul sait si le document publié doit changer de version
+pour que les acceptations déjà données restent lisibles. À reprendre par la
+session qui a écrit l'article, ou par celle qui passera après elle.
+
 ---
 
 ## ✅ FAIT LE 8 SEPTEMBRE 2026 — prévenir des factures parties avec l'ancien IBAN

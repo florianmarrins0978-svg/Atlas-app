@@ -106,6 +106,13 @@ export type EtatPaiement = "en_attente" | "partielle" | "soldee";
  * par une application.
  */
 export function etatPaiement(facture: FacturePourTva, paiements: readonly Paiement[]): EtatPaiement {
+  // **Une facture à zéro n'attend aucun encaissement.** Sans cette ligne, elle
+  // reste « en attente » pour toujours : le relevé n'en veut pas —
+  // `entreesDuReleve` la refuse déjà quelques lignes plus bas —, et « Payée »
+  // ne peut pas la solder, un règlement de 0 € étant refusé à juste titre.
+  // Elle occupait donc l'écran d'attente avec un bouton qui ne pouvait
+  // qu'échouer, et gonflait le compte de factures en retard.
+  if (d(facture.totalTtc).lessThanOrEqualTo(0)) return "soldee";
   const regle = d(totalRegle(paiements));
   if (regle.lessThanOrEqualTo(0)) return "en_attente";
   return regle.greaterThanOrEqualTo(d(facture.totalTtc)) ? "soldee" : "partielle";

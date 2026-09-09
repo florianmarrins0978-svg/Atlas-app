@@ -100,12 +100,20 @@ export default function EnAttenteDePaiement({
           {factures.length === 0 ? "rien" : `${factures.length} facture${factures.length > 1 ? "s" : ""}`}
         </span>
       </div>
+      {/* **LA PHRASE NOMME SON GESTE, PAS L'ÉVÉNEMENT — 9 septembre 2026.**
+          Elle disait « le jour où vous serez payé » : une date que le monde
+          décide, donc une application qui saurait toute seule quand l'argent
+          arrive. Il l'a lue ainsi, et il a dû le corriger — *« ça ne doit pas
+          rentrer au compteur tout seul, il faut que l'utilisateur appuie sur
+          payer »*. Le calcul, lui, était juste depuis le 14 août : rien n'entre
+          au relevé sans un règlement noté. C'est la phrase qui promettait
+          l'inverse. */}
       {/* `inkSoft` et non `muted` : sur le fond crème, le gris secondaire tient
           3,25 de contraste — sous le seuil de 4,5 —, et cette phrase-ci se lit
           debout, au soleil. `inkSoft` en tient 7,98, et vient de la charte. */}
       <p className="mt-1.5 text-[13px] leading-snug" style={{ color: colors.inkSoft }}>
         Ces factures sont parties chez vos clients. Elles entreront au relevé{" "}
-        <strong style={{ color: colors.ink }}>le jour où vous serez payé</strong>, pas avant.
+        <strong style={{ color: colors.ink }}>quand vous appuierez sur « Payée »</strong>, pas avant.
       </p>
 
       {erreur && (

@@ -26133,3 +26133,50 @@ que commence la contestation.
 signé sur place avant les travaux (`appli/ts-bon-sur-place.html`), tranché le
 4 septembre. Le supplément sur la facture règle le geste manquant, pas le
 risque d'impayé.
+
+---
+
+## §305 — Le compteur de TVA ne se remplit pas tout seul, et l'écran doit le dire
+
+**Sa correction du 9 septembre 2026, capture à l'appui :** *« même si c'est tous
+les mois, ça ne doit pas rentrer au compteur tout seul ; il faut que
+l'utilisateur appuie sur payer pour qu'elle s'ajoute au compteur ! »*
+
+**Le calcul, lui, était juste depuis le 14 août.** Aux encaissements,
+`entreesDuReleve` ne rend une ligne que par règlement enregistré : une facture
+émise et jamais réglée n'apporte rien, quel que soit le rythme du relevé. C'est
+tenu sans base (`test-exigibilite-tva.ts`) et de bout en bout
+(`test-tva-au-paiement-e2e.ts`, « LA FACTURE ATTEND, ET LE RELEVÉ NE BOUGE
+PAS »).
+
+**Ce qui promettait le contraire, ce sont les mots.** Trois phrases nommaient
+l'ÉVÉNEMENT au lieu du GESTE :
+
+| Où | Ce qui se lisait | Ce qui se lit |
+|---|---|---|
+| la provenance du chiffre (`DeclarationsTva`) | « quand votre client vous paie » | « quand vous marquez la facture payée » |
+| l'endroit en attente (`EnAttenteDePaiement`) | « le jour où vous serez payé » | « quand vous appuierez sur « Payée » » |
+| le régime, sous son titre (`RegimeTva`) | « Une facture pas encore payée n'est pas déclarée » | « Elle entre au relevé quand vous la marquez payée » |
+
+Toutes les trois décrivaient une date que le monde décide — donc une application
+qui apprendrait seule qu'un virement est arrivé, et un compteur qui se remplit
+sans lui. Il les a lues ainsi, et il avait raison de s'en inquiéter : un
+compteur qui déclare une TVA jamais encaissée est exactement ce que le régime
+des encaissements existe pour éviter.
+
+**Le titre du régime, lui, ne bouge pas** : « Le mois où mon client me paie »
+est ce qui a été déclaré aux impôts, et cela ne se réécrit pas pour des raisons
+d'écran. La loi reste dans le titre, le geste passe dans la ligne du dessous.
+
+### La facture à zéro euro, qui attendait un règlement impossible
+
+Sa capture porte « 2 factures » en attente, dont une à **0,00 €**. Elle y serait
+restée pour toujours : `entreesDuReleve` refuse déjà une facture à zéro, et
+« Payée » ne pouvait pas la solder — un règlement de 0 € est refusé, à juste
+titre. Un bouton qui ne peut qu'échouer, sur l'écran même où il vient vérifier
+que rien n'entre tout seul.
+
+`etatPaiement` la dit désormais **soldée** : rien à encaisser, donc rien à
+attendre. La correction est dans la règle pure, là où le reste du domaine le
+disait déjà — pas dans l'écran, qui aurait alors porté une seconde définition de
+« ce qui attend ».
