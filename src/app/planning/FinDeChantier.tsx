@@ -49,7 +49,25 @@ import {
  * l'ouverture, en une seule requête — c'est déjà ce que fait la feuille pour
  * ses tâches.
  */
-export default function FinDeChantier({ chantierId }: { chantierId: string }) {
+export default function FinDeChantier({
+  chantierId,
+  onOuvert,
+}: {
+  chantierId: string;
+  /**
+   * Le bandeau vient de s’ouvrir ou de se replier.
+   *
+   * **Sa proposition A, tranchée le 9 septembre 2026** : quand il ouvre, la
+   * liste du devis au-dessus s’efface — elle EST devenue les cases. Les deux
+   * se lisaient sinon à trois centimètres l’une de l’autre, et il fallait
+   * comparer deux fois les mêmes lignes avec des gants.
+   *
+   * **L’état reste ICI**, où il sert déjà à charger le retour : le remonter
+   * en ferait deux, et deux vérités pour une seule question finissent par
+   * diverger (`CLAUDE.md` §3). L’écran du dessus n’en est que prévenu.
+   */
+  onOuvert?: (ouvert: boolean) => void;
+}) {
   const [ouvert, setOuvert] = useState(false);
   const [charge, setCharge] = useState(false);
   const [regles, setRegles] = useState<ReglesDuRetour>({ demande: false, photoExigee: false });
@@ -114,6 +132,9 @@ export default function FinDeChantier({ chantierId }: { chantierId: string }) {
     }
     setDejaPose({ poseLe: new Date().toISOString(), posePar: null });
     setOuvert(false);
+    // La liste du devis revient avec le repli : sans cette ligne, elle restait
+    // cachée sur une fiche refermée, et il aurait cru l’avoir perdue.
+    onOuvert?.(false);
   }
 
   async function ajouterUnePhoto(fichier: File) {
@@ -149,7 +170,11 @@ export default function FinDeChantier({ chantierId }: { chantierId: string }) {
 
       <button
         type="button"
-        onClick={() => setOuvert((o) => !o)}
+        onClick={() => {
+          const prochain = !ouvert;
+          setOuvert(prochain);
+          onOuvert?.(prochain);
+        }}
         data-atlas="ouvrir-fin-de-chantier"
         className="mx-auto flex h-[52px] w-full items-center justify-center gap-2.5 rounded-full px-5"
         style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display, fontSize: 16 }}
