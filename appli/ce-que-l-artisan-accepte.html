@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ce que l'artisan accepte vraiment — Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  CE QUE L'ARTISAN ACCEPTE VRAIMENT — la planche, 9 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  SA QUESTION : « ça sera visible où ? », puis « fais-moi une planche de où
+  exactement tu veux le mettre, en reprenant les vraies pages de l'appli ».
+
+  L'écran d'acceptation a donc été PHOTOGRAPHIÉ avant d'écrire une ligne
+  (`scripts/capture-documents-legaux.mts`), et tout ce qui est montré en
+  « Aujourd'hui » en est recopié — les deux cartes, « Version canevas-1 »,
+  « Lire le texte », « J'ai lu et j'accepte », la phrase du bas sur la date et
+  l'heure. C'est la faute qu'il a relevée deux fois : on recopie, on ne
+  réinvente pas.
+
+  ─────────────────────────────────────────────────────────────────────────
+  LE TROU, ET IL EST SÉRIEUX.
+
+  Ce qui est ACCEPTÉ n'est pas ce qui est PUBLIÉ.
+
+    · l'artisan coche « canevas-1 » — quatre paragraphes, dont trois disent
+      « à rédiger » (`src/server/documents-legaux/versions.ts`) ;
+    · le vrai document — dix-neuf articles, dont l'article 14 qui vend
+      l'abonnement — vit dans `conditions-utilisation.html`, et n'est accepté
+      par personne.
+
+  Il a donc de bonnes conditions, et elles n'engagent aucun de ses clients.
+
+  ─────────────────────────────────────────────────────────────────────────
+  LA RÈGLE DU DÉPÔT COMMANDE LA FORME DE LA CORRECTION.
+
+  « Une version publiée ne se modifie JAMAIS » (`versions.ts`) : corriger le
+  texte de `canevas-1` ferait désigner par les acceptations déjà recueillies un
+  texte qui n'existe plus — c'est-à-dire rien. On AJOUTE donc une version, et
+  le mécanisme existant redemande l'accord de lui-même.
+
+  Les couleurs viennent de `src/lib/design-tokens.ts`, au caractère près.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.08);
+  --alerte:#9C3B2E; --scene:#e6e3dc;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --alerte:#c07a56; --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:18px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);
+       border-bottom:1px solid var(--trait);padding:12px 16px 13px}
+.etats .quoi{max-width:470px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+             letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+.etats .rangee{max-width:470px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+              border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);cursor:pointer;
+              min-height:44px;-webkit-tap-highlight-color:transparent}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.tete{max-width:470px;margin:0 auto;padding:26px 20px 0}
+.tete h1{margin:0 0 6px;font:500 22px/1.2 var(--serif)}
+.tete .idee{margin:0;font-size:13.5px;line-height:1.6;color:var(--encre-douce)}
+.tete .idee b{color:var(--encre)}
+
+.scene{display:flex;justify-content:center;padding:20px 16px 0}
+.colonne{width:390px;max-width:100%}
+.tel{position:relative;width:390px;max-width:100%;height:700px;border-radius:26px;overflow:hidden;
+     box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond)}
+.defile{height:100%;overflow-y:auto;padding:30px 20px 40px}
+.regle{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:10px 0 0}
+
+/* ── L'écran « Avant de commencer », recopié ──────────────────────────── */
+h2.titre{margin:0;font:600 22px/1.2 var(--serif)}
+.intro{margin:8px 0 0;font-size:14px;line-height:1.6;color:var(--encre-douce)}
+
+.doc{margin-top:20px;padding:18px 18px 16px;border-radius:10px;background:var(--carte)}
+.doc.neuf{box-shadow:inset 3px 0 0 var(--or)}
+.doc .n{font:400 19px/1.25 var(--serif)}
+.doc .v{margin:6px 0 0;font-size:13px;color:var(--gris)}
+.doc .v b{color:var(--or);font-weight:500}
+.doc .lire{display:inline-block;margin-top:12px;font:500 14px var(--sans);
+           color:var(--or);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.doc .coche{display:flex;align-items:flex-start;gap:12px;margin-top:14px}
+.doc .case{flex:none;width:22px;height:22px;border-radius:4px;background:var(--fond);
+           box-shadow:inset 0 0 0 1.5px var(--trait)}
+.doc .quoi{font-size:14px;line-height:1.45;color:var(--encre-douce)}
+.doc .quoi b{color:var(--encre);font-weight:600}
+
+/* Le texte qui se déplie SUR PLACE — c'est ce que fait l'écran réel : un
+   `<pre>` dans une boîte de 320 px qui défile (`formulaire.tsx`). */
+.texte{margin-top:12px;max-height:230px;overflow-y:auto;border-radius:4px;
+       border:1px solid var(--trait);background:var(--fond);padding:14px}
+.texte pre{margin:0;white-space:pre-wrap;font:400 12.5px/1.6 var(--sans);color:var(--encre-douce)}
+.texte .art{color:var(--encre);font-weight:600}
+
+.continuer{display:block;width:100%;margin-top:22px;border:0;border-radius:999px;
+           background:var(--plein);color:var(--carte);padding:15px;
+           font:600 16px var(--sans);cursor:default}
+.dessous{margin:12px 0 0;text-align:center;font-size:12.5px;line-height:1.55;color:var(--gris)}
+
+.notes{max-width:640px;margin:30px auto 0;padding:0 20px}
+.notes .bloc{padding:16px 20px;background:var(--carte);border-left:3px solid var(--or);
+             font-size:14px;line-height:1.7;color:var(--encre-douce)}
+.notes .bloc + .bloc{margin-top:12px}
+.notes .bloc.rouge{border-left-color:var(--alerte)}
+.notes b{color:var(--encre)}
+.notes ul{margin:8px 0 0;padding-left:18px}
+.notes li{margin:0 0 6px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>L'écran où votre artisan s'engage.</b> Recopié du vrai — les deux cartes,
+  la version, « Lire le texte », la phrase du bas. <b>Le texte qu'il coche n'est
+  pas celui que vous publiez</b>, et c'est ce que cette planche montre.
+</div>
+
+<div class="etats">
+  <p class="quoi">Voir</p>
+  <div class="rangee">
+    <button type="button" data-v="avant" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-v="apres" aria-pressed="false">Ce que je propose</button>
+    <button type="button" data-v="deja" aria-pressed="false">Ceux qui ont déjà accepté</button>
+    <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+  </div>
+</div>
+
+<div class="tete">
+  <h1 id="nom"></h1>
+  <p class="idee" id="idee"></p>
+</div>
+
+<div class="scene">
+  <div class="colonne">
+    <div class="tel"><div class="defile" id="defile"></div></div>
+    <p class="regle">« Lire le texte » se déplie : essayez-le.</p>
+  </div>
+</div>
+
+<div class="notes" id="notes"></div>
+
+<script>
+/*
+  UN SEUL ÉCRAN, TROIS ÉTATS. Les deux cartes, la phrase du bas et le bouton
+  sont écrits une fois : recopiés par vue, ils divergeraient au premier libellé
+  changé et la comparaison serait fausse.
+*/
+var etat = { vue: "avant", nuit: false, ouvert: null };
+var defile = document.getElementById("defile");
+
+function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/** Ce que l'artisan lit derrière « Lire le texte », AUJOURD'HUI. Recopié de
+ *  `src/server/documents-legaux/versions.ts` — les « à rédiger » compris. */
+var CANEVAS = "# Conditions générales d'utilisation\n\n" +
+  "> Canevas non juridique. À remplacer avant toute mise en service réelle.\n\n" +
+  "## 1. Objet\n\nAtlas est un outil d'aide à la préparation de devis pour les artisans…\n\n" +
+  "## 2. Ce qu'Atlas ne fait pas\n\nAtlas n'est pas un logiciel de comptabilité…\n\n" +
+  "## 3. Responsabilité de l'utilisateur\n\nL'utilisateur reste seul responsable…\n\n" +
+  "## 4. Disponibilité\n\nÀ rédiger : engagement de disponibilité, maintenance, évolutions.\n\n" +
+  "## 5. Durée, résiliation, restitution des données\n\nÀ rédiger : conditions de résiliation…";
+
+/** Ce qu'il lirait avec la version 2 : les dix-neuf articles déjà écrits. */
+var VRAI = [
+  "ARTICLE 1 — Qui édite Atlas",
+  "ARTICLE 2 — Ce que ce document engage",
+  "ARTICLE 3 — Ce qu'Atlas fait, et ce qu'il ne fait pas",
+  "ARTICLE 4 — L'assistance par intelligence artificielle",
+  "ARTICLE 5 — Votre compte et vos accès",
+  "ARTICLE 6 — Ce que vous vous engagez à ne pas faire",
+  "ARTICLE 7 — Vos contenus vous appartiennent",
+  "ARTICLE 8 — Données personnelles",
+  "ARTICLE 9 — Disponibilité du service",
+  "ARTICLE 10 — Sauvegarde et perte de données",
+  "ARTICLE 11 — Responsabilité",
+  "ARTICLE 12 — Durée, suspension, résiliation",
+  "ARTICLE 13 — Récupérer vos données",
+  "ARTICLE 14 — Prix, abonnement et paiement",
+  "ARTICLE 15 — Modification des présentes conditions",
+  "ARTICLE 16 — Force majeure",
+  "ARTICLE 17 — Preuve",
+  "ARTICLE 18 — Droit applicable et litiges",
+  "ARTICLE 19 — Dispositions diverses"
+];
+
+function texteVrai(){
+  return VRAI.map(function(a){
+    var vend = a.indexOf("ARTICLE 14") === 0;
+    return (vend ? '<span class="art">' + ech(a) + "  ← celui qui vend l'abonnement</span>" : ech(a));
+  }).join("\n");
+}
+
+function carte(o){
+  var ouvert = etat.ouvert === o.cle;
+  return '<div class="doc' + (o.neuf ? " neuf" : "") + '">' +
+    '<span class="n">' + ech(o.nom) + '</span>' +
+    '<p class="v">Version <b>' + ech(o.version) + '</b></p>' +
+    '<span class="lire" data-lire="' + o.cle + '">' + (ouvert ? "Replier le texte" : "Lire le texte") + '</span>' +
+    (ouvert ? '<div class="texte"><pre>' + o.texte + "</pre></div>" : "") +
+    '<div class="coche"><span class="case"></span>' +
+    '<span class="quoi">J\'ai lu et j\'accepte : <b>' + ech(o.nom) + '</b></span></div>' +
+    '</div>';
+}
+
+function ecran(cgu, sousTraitance, chapeau){
+  return '<h2 class="titre">Avant de commencer</h2>' +
+    '<p class="intro">' + chapeau + '</p>' +
+    carte(cgu) + carte(sousTraitance) +
+    '<button type="button" class="continuer">Continuer</button>' +
+    '<p class="dessous">La date, l\'heure et la version exacte de ce que vous acceptez ' +
+    'sont conservées — c\'est ce qui donne sa valeur à votre accord.</p>';
+}
+
+var SOUS_TRAITANCE = {
+  cle: "st", nom: "Contrat de sous-traitance (article 28 RGPD)", version: "canevas-1",
+  texte: "# Contrat de sous-traitance\n\n> Canevas non juridique…"
+};
+
+var INTRO = "Vos clients vous confient leurs coordonnées&nbsp;; vous nous les confiez à votre " +
+  "tour. Ces documents disent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.";
+
+var VUES = {
+  avant: {
+    nom: "Aujourd'hui",
+    idee: "L'écran est bon, le mécanisme est bon — la date, l'heure et la version sont enregistrées, et c'est ce qui vaut preuve. <b>Mais dépliez « Lire le texte » :</b> ce que votre artisan coche fait quatre paragraphes, dont trois disent « à rédiger ». Il lit même « Version <b>canevas-1</b> » sur l'écran.",
+    rendre: function(){
+      return ecran({ cle: "cgu", nom: "Conditions générales d'utilisation", version: "canevas-1",
+                     texte: ech(CANEVAS) }, SOUS_TRAITANCE, INTRO);
+    },
+    notes: [
+      { rouge: true, html: "<b>Le trou, dit simplement.</b> Vous avez de bonnes conditions — dix-neuf articles, écrits, publiés, lisibles depuis votre téléphone. <b>Elles n'engagent aucun de vos clients</b>, parce que ce n'est pas ce qu'ils cochent." },
+      { html: "<b>Ce qui marche déjà, et qu'il ne faut pas casser :</b> l'écran, l'enregistrement de la date et de l'appareil, et le fait que l'accord se redemande quand le texte change. Tout le mécanisme est là — il ne lui manque que le bon texte." }
+    ]
+  },
+  apres: {
+    nom: "Ce que je propose",
+    idee: "<b>Le même écran, au mot près.</b> Rien ne bouge : ni les deux cartes, ni les cases, ni la phrase du bas. Seule change la <b>version</b> — et derrière « Lire le texte », le vrai document. <b>Dépliez-le.</b>",
+    rendre: function(){
+      return ecran({ cle: "cgu", nom: "Conditions générales d'utilisation", version: "2", neuf: true,
+                     texte: texteVrai() }, SOUS_TRAITANCE, INTRO);
+    },
+    notes: [
+      { html: "<b>On AJOUTE une version, on ne corrige pas l'ancienne.</b> C'est la règle écrite dans votre dépôt : <i>« une version publiée ne se modifie jamais »</i>. Corriger « canevas-1 » ferait désigner, par toutes les acceptations déjà recueillies, un texte qui n'existe plus — c'est-à-dire rien." },
+      { html: "<b>L'article 14 part avec le reste.</b> C'est lui qui vend l'abonnement : les trois formules, la TVA, l'essai sans carte, la tacite reconduction, le défaut de paiement. Tant qu'il n'est pas accepté, <b>vous n'avez pas de conditions de vente</b> — juste un texte publié." },
+      { html: "<b>Le contrat de sous-traitance reste en canevas-1</b>, et c'est volontaire : il n'a pas été réécrit. Le faire changer de version pour rien redemanderait un accord sans raison — et un écran qui redemande sans raison s'apprend à être coché sans lire." }
+    ]
+  },
+  deja: {
+    nom: "Ceux qui ont déjà accepté",
+    idee: "Ils <b>rouvrent Atlas</b>, et cet écran revient de lui-même — avec la seule carte qui a changé. Rien à leur écrire, rien à leur demander : le mécanisme le fait déjà, c'est exactement pour ça qu'il existe.",
+    rendre: function(){
+      return '<h2 class="titre">Avant de commencer</h2>' +
+        '<p class="intro">' + INTRO + "</p>" +
+        carte({ cle: "cgu", nom: "Conditions générales d'utilisation", version: "2", neuf: true,
+                texte: texteVrai() }) +
+        '<button type="button" class="continuer">Continuer</button>' +
+        '<p class="dessous">La date, l\'heure et la version exacte de ce que vous acceptez ' +
+        'sont conservées — c\'est ce qui donne sa valeur à votre accord.</p>';
+    },
+    notes: [
+      { html: "<b>Une seule carte, et c'est le bon comportement.</b> Le contrat de sous-traitance n'a pas changé : son acceptation de canevas-1 tient toujours, et on ne la redemande pas." },
+      { html: "<b>Rien ne se perd.</b> L'ancienne acceptation reste en base avec sa date et sa version : le jour où l'on doit prouver ce qu'un artisan avait accepté en septembre, on le retrouve." },
+      { html: "<b>Et l'écran est BLOQUANT</b> — il faut cocher pour continuer. C'est ce qui donne sa valeur à l'accord, et c'est déjà le cas aujourd'hui." }
+    ]
+  }
+};
+
+function rendre(){
+  var v = VUES[etat.vue];
+  document.getElementById("nom").textContent = v.nom;
+  document.getElementById("idee").innerHTML = v.idee;
+  defile.innerHTML = v.rendre();
+  document.getElementById("notes").innerHTML = v.notes.map(function(n){
+    return '<div class="bloc' + (n.rouge ? " rouge" : "") + '">' + n.html + "</div>";
+  }).join("");
+}
+
+defile.addEventListener("click", function(e){
+  var lien = e.target.closest("[data-lire]");
+  if (!lien) return;
+  var cle = lien.dataset.lire;
+  etat.ouvert = etat.ouvert === cle ? null : cle;
+  rendre();
+});
+
+document.querySelectorAll(".etats button[data-v]").forEach(function(b){
+  b.addEventListener("click", function(){
+    etat.vue = b.dataset.v;
+    etat.ouvert = null;
+    document.querySelectorAll(".etats button[data-v]").forEach(function(o){
+      o.setAttribute("aria-pressed", String(o === b));
+    });
+    rendre();
+  });
+});
+
+var pole = document.getElementById("pole");
+pole.addEventListener("click", function(){
+  etat.nuit = !etat.nuit;
+  document.body.classList.toggle("nuit", etat.nuit);
+  pole.setAttribute("aria-pressed", String(etat.nuit));
+  pole.textContent = etat.nuit ? "Revenir sur Terre" : "Voir sur Nuit";
+});
+
+rendre();
+</script>
+</body>
+</html>
