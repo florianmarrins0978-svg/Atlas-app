@@ -13,13 +13,14 @@ votre compte GitHub, que vous avez déjà.
 
 1. [Ce que vous allez ouvrir, et ce que ce n'est pas](#ce-que-vous-allez-ouvrir-et-ce-que-ce-nest-pas)
 2. [En cinq gestes](#en-cinq-gestes)
-3. [Ce que vous pouvez essayer, du début à la fin](#ce-que-vous-pouvez-essayer-du-début-à-la-fin)
-4. [Ce qui ne marchera pas, et pourquoi](#ce-qui-ne-marchera-pas-et-pourquoi)
-5. [Brancher une vraie IA sur vos essais](#brancher-une-vraie-ia-sur-vos-essais)
-6. [Repartir de zéro](#repartir-de-zéro)
-7. [Fermer proprement](#fermer-proprement)
-8. [**L'application ne s'ouvre plus du tout**](#lapplication-ne-souvre-plus-du-tout)
-9. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
+3. [Le faire essayer à un proche](#le-faire-essayer-à-un-proche)
+4. [Ce que vous pouvez essayer, du début à la fin](#ce-que-vous-pouvez-essayer-du-début-à-la-fin)
+5. [Ce qui ne marchera pas, et pourquoi](#ce-qui-ne-marchera-pas-et-pourquoi)
+6. [Brancher une vraie IA sur vos essais](#brancher-une-vraie-ia-sur-vos-essais)
+7. [Repartir de zéro](#repartir-de-zéro)
+8. [Fermer proprement](#fermer-proprement)
+9. [**L'application ne s'ouvre plus du tout**](#lapplication-ne-souvre-plus-du-tout)
+10. [Si quelque chose ne va pas](#si-quelque-chose-ne-va-pas)
 
 ---
 
@@ -32,8 +33,9 @@ votre compte GitHub, que vous avez déjà.
 | Données | Aucune | Les vôtres, enregistrées |
 | Durée de vie | Permanent | Tant que vous le gardez ouvert |
 
-Ce n'est **pas** une mise en production. C'est un banc d'essai : personne
-d'autre que vous n'y accède, et tout s'efface quand vous le supprimez. Les
+Ce n'est **pas** une mise en production. C'est un banc d'essai : y accèdent
+vous et ceux à qui vous donnez l'adresse, et tout s'efface quand vous le
+supprimez. Les
 véritables décisions d'hébergement restent entières
 (voir [`A-FAIRE.md`](A-FAIRE.md) §3).
 
@@ -121,6 +123,40 @@ vos clients verront.
 >
 > Pour refermer l'accès, une commande dans le terminal :
 > `gh codespace ports visibility 3000:private -c $CODESPACE_NAME`
+
+---
+
+## Le faire essayer à un proche
+
+Vous lui envoyez **la même adresse**, en entier. Il n'a rien à installer, rien à
+créer sur GitHub : il ouvre le lien, c'est tout.
+
+| | |
+|---|---|
+| **Son compte à lui** | sur l'écran de connexion, **« Créer un compte »**. Il repart avec sa propre entreprise et ses propres chantiers ; les vôtres lui restent invisibles |
+| **Le compte de démonstration** | `demo@atlas.local` / `demo1234` entre dans **vos** données d'essai et les modifie. Pour un coup d'œil, pas pour un essai à deux |
+
+> **Prévenez-le : des données inventées, uniquement.** L'adresse est ouvrable
+> par qui la possède, et le mot de passe de démonstration est écrit dans un
+> dépôt public. Pas de vrai client, pas de vrai numéro.
+
+### Ce qui gâche l'essai, et qu'il faut régler avant
+
+**Votre espace de travail doit tourner pendant qu'il essaie** — et son usage à
+lui **ne compte pas comme activité** : le compte à rebours de trente minutes
+regarde si quelqu'un est connecté à l'ESPACE, pas à l'application. Vous fermez
+l'éditeur, il reçoit une page blanche ou une proposition de téléchargement, et
+rien ne lui dit pourquoi.
+
+Deux gestes avant de lui envoyer le lien :
+
+1. sur **github.com/settings/codespaces**, pousser **« Default idle timeout »**
+   à quatre heures (attention : quatre heures allumées consomment quatre heures
+   sur les 60 du mois) ;
+2. garder l'espace ouvert de votre côté pendant qu'il essaie.
+
+S'il tombe quand même sur une page blanche : rallumez l'espace depuis
+`github.com/codespaces`, et faites-lui recharger la page.
 
 ---
 

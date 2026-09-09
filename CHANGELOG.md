@@ -40,6 +40,84 @@ milieu de la mesure — une session voisine a écrit, et le verdict a été annu
 Ce qui prouve qu'une batterie tourne est désormais **son processus**. Sa suite
 sait attraper ce défaut : elle ne l'attrapait pas.
 
+### Ce que « me déconnecter » fait vraiment, et la maquette d'un geste absent
+
+**Sa question du jour :** *« si je clique sur me déconnecter dans les réglages,
+est-ce que ça me remet à la page de connexion ? »* — et **il n'y a aucun « me
+déconnecter » dans les Réglages**. Le seul geste existant est « Me déconnecter
+partout », rangé au bas de l'écran « Mot de passe »
+(`src/app/reglages/connexion/ConnexionClient.tsx:207`). Personne ne le cherche
+là, et il ferme aussi la tablette.
+
+**Ce que le geste existant fait, vérifié dans le code et non supposé :** il
+ferme toutes les sessions du compte (`jetonsValidesDepuis`, lu à chaque
+requête), efface les preuves récentes, **retire toutes les clés Face ID**, puis
+part sur `/api/session-perimee` qui vide les cookies et renvoie 303 vers
+`/login`. La déconnexion est donc bien immédiate, et l'écran de connexion
+arrive tout de suite.
+
+**Pourquoi Face ID tombe avec, et c'est la question qu'il a posée :** une clé
+d'appareil ouvre une session **sans mot de passe** (`signIn("cle-appareil")`,
+`src/auth.ts:112`). Fermer les sessions en laissant les clés laisserait
+l'appareil qu'on voulait couper rouvrir Atlas à l'instant d'après. C'était le
+cas jusqu'au 7 septembre 2026.
+
+**La portée de « tous les appareils » est le COMPTE, pas l'entreprise :**
+`deconnecterPartout` ne travaille que sur `ctx.utilisateurId`. Les salariés ne
+sont pas touchés, et aucune donnée n'est effacée.
+
+**Maquette, rien de codé :** `appli/me-deconnecter.html` — la ligne de sortie
+au bas des Réglages, la confirmation, plus Nuit.
+
+**LA PREMIÈRE VERSION ÉTAIT MAUVAISE, ET IL L'A DIT :** *« ce que tu me
+proposes ne fait pas pro »*. Elle posait une feuille à **deux boutons** — « de
+cet appareil » / « de tous mes appareils » — au moment où l'on veut juste
+sortir. Aucune grande application ne demande ça : une ligne en bas, une
+confirmation, rien à choisir, et la déconnexion générale rangée ailleurs dans
+la sécurité — ce qu'Atlas fait déjà.
+
+**Le motif juste était DANS le dépôt, et il n'a pas été cherché.** C'est celui
+de `src/app/clients/[id]/SupprimerCeClient.tsx`, tranché sur maquette le
+2 septembre : une ligne en capitales espacées qui ne s'annonce pas — *« un geste
+qu'on trouve en le cherchant ne se déclenche pas au pouce »* —, une feuille, et
+« Annuler » en simple mot plutôt qu'en second bouton. Inventer un dessin quand
+l'application en porte déjà un, c'est la règle du §3 (jamais deux
+implémentations d'une même question) autant que ce qui fait sérieux.
+
+**ET RIEN SOUS LE TITRE — son retrait du 9 septembre :** *« y'a pas besoin de
+la phrase en gris qui explique »*. Elle disait « votre mot de passe — ou Face ID
+— vous fera revenir ». Comment on rentre dans Atlas n'a pas à se rappeler au
+moment d'en sortir : c'est sa règle du 25 août, et la feuille tient maintenant
+en trois éléments — le nom du compte, le bouton, « Annuler ». La règle de style
+qui portait cette phrase est partie avec elle (§4 quinquies).
+
+**Une autre chose en diffère, et délibérément : pas de surtitre d'alerte.**
+« SUPPRESSION DÉFINITIVE » avertit d'un geste irréversible ; se déconnecter se
+défait en cinq secondes. Le même signal posé sur un geste anodin s'apprend à
+être ignoré, et l'on perd l'avertissement là où il compte (§4 ter).
+
+**Trois défauts trouvés à la capture, par aucun test** : la feuille du « choix »
+restait collée sur l'onglet suivant, l'onglet « Le bas des Réglages » montrait
+le HAUT — donc pas son objet —, et le bandeau était illisible en Nuit
+(`--fond` devient sombre alors que le bandeau reste noir : c'est le défaut du
+22 août, qui se recopie de planche en planche).
+
+### Dire comment faire essayer l'application à quelqu'un d'autre
+
+`docs/ESSAYER.md` était écrit pour un seul essayeur : le patron. Faire essayer
+Atlas à un proche pose deux questions auxquelles il ne répondait pas — sous
+quel compte entre-t-il, et pourquoi la page devient blanche pendant qu'il
+essaie.
+
+Le second point est le piège : le compte à rebours de trente minutes de
+Codespaces regarde si quelqu'un est connecté à l'ESPACE, pas à l'application.
+Un proche peut donc se servir d'Atlas sans interruption et le voir s'éteindre
+sous ses doigts, sans qu'aucun message ne le dise. La section le dit avant, et
+donne les deux gestes qui l'évitent.
+
+Corrigé au passage une phrase devenue fausse du même document — « personne
+d'autre que vous n'y accède » — alors que le port 3000 est public depuis le
+6 août 2026 et que tout ce document repose là-dessus.
 ### Le planning s'ouvre sur la journée, et « Aujourd'hui » s'écrit en doré
 
 Le salarié ouvrait l'appli le matin et lisait « Mardi 8 septembre » : il devait

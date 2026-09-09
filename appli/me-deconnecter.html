@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Me déconnecter — Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  SE DÉCONNECTER — 9 septembre 2026, SECONDE VERSION
+  ═══════════════════════════════════════════════════════════════════════════
+
+  **La première version était mauvaise, et il l'a dit :** « ce que tu me
+  proposes ne fait pas pro ». Elle posait une feuille à DEUX boutons — « de cet
+  appareil » / « de tous mes appareils » — au moment où l'on veut juste sortir.
+
+  Aucune grande application ne fait ça. WhatsApp, Instagram, Revolut, les
+  Réglages d'iOS : UNE ligne en bas, UNE confirmation, rien à choisir. La
+  déconnexion de tous les appareils, quand elle existe, vit ailleurs, dans la
+  sécurité — et c'est exactement là qu'Atlas la range déjà.
+
+  **Et le motif n'est pas emprunté au dehors : il existe DANS Atlas**, tranché
+  sur maquette le 2 septembre pour « Supprimer ce client »
+  (`src/app/clients/[id]/SupprimerCeClient.tsx`) — une ligne en capitales
+  espacées qui ne s'annonce pas, puis une feuille dont « Annuler » est un mot et
+  non un second bouton. Le reprendre au lieu d'en inventer un, c'est la règle du
+  dépôt (`CLAUDE.md` §3) autant que ce qui fait sérieux.
+
+  Les couleurs viennent de `src/lib/design-tokens.ts`, au caractère près.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.08);
+  --alerte:#9C3B2E; --scene:#e6e3dc; --surplein:#faf9f5;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --alerte:#c07a56; --scene:#070908; --surplein:#101210;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:18px 20px;font-size:14px;line-height:1.6}
+.bandeau b{color:#fff}
+/* En Nuit `--fond` devient sombre alors que le bandeau reste noir : le texte
+   disparaissait sur son propre fond. C'est le défaut du 22 août, et il se
+   recopie de planche en planche — on nomme donc la couleur claire. */
+body.nuit .bandeau{background:#000;color:#c1c2b6}
+body.nuit .bandeau b{color:#fff}
+
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);
+       border-bottom:1px solid var(--trait);padding:12px 16px 13px}
+.etats .quoi{max-width:860px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+             letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+.etats .rangee{max-width:860px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+              border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);cursor:pointer;
+              min-height:44px;-webkit-tap-highlight-color:transparent}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.tete{max-width:860px;margin:0 auto;padding:26px 20px 0}
+.tete h1{margin:0 0 6px;font:500 26px/1.15 var(--serif)}
+.tete .idee{margin:0;font-size:14px;line-height:1.6;color:var(--encre-douce)}
+.tete .idee b{color:var(--encre)}
+
+.paire{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;
+       max-width:900px;margin:24px auto 0;padding:0 20px}
+.colonne{width:390px;max-width:100%}
+.colonne .nom{margin:0 0 10px;font:500 17px/1.2 var(--serif)}
+.tel{position:relative;width:390px;max-width:100%;height:620px;border-radius:26px;overflow:hidden;
+     box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond)}
+.defile{height:100%;overflow-y:auto;padding:24px 24px 60px}
+
+/* ── La grammaire des écrans d'Atlas ──────────────────────────────────── */
+.sur{margin:10px 0 0;font:500 11px/1 var(--sans);letter-spacing:.28em;
+     text-transform:uppercase;color:var(--or)}
+h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
+.inter{margin:26px 0 10px;font:500 11px/1 var(--sans);letter-spacing:.28em;
+       text-transform:uppercase;color:var(--encre-douce)}
+
+.rang{display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:13px 0;border-bottom:1px solid var(--filet)}
+.rang:last-child{border-bottom:0}
+.rang .n{font:400 17px/1.25 var(--serif)}
+.rang .fl{flex:none;width:8px;height:8px;transform:rotate(45deg);
+          border-right:1.5px solid var(--trait);border-top:1.5px solid var(--trait)}
+.rang .ic{flex:none;width:21px;height:21px;margin-right:12px;border-radius:4px;
+          background:var(--papier);box-shadow:inset 0 0 0 1px var(--trait)}
+.rang .g{display:flex;align-items:center;min-width:0;flex:1}
+
+/* LE GESTE NE S'ANNONCE PAS, IL SE TROUVE — le motif de « Supprimer ce
+   client », repris tel quel : 9,5 px en capitales espacées, couleur d'alerte,
+   aucune capsule. Une capsule cernée de rouge serait le seul objet dessiné de
+   l'écran, et elle appellerait l'œil vers la sortie. */
+.sortie{margin-top:40px;display:flex;align-items:center;min-height:44px;
+        font:500 9.5px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;
+        color:var(--alerte)}
+.neuf{box-shadow:inset 3px 0 0 var(--or);padding-left:11px;margin-left:-14px}
+
+/* La feuille du bas, aux mesures de `BottomSheet` : coins de 26 px, 24 px de
+   côté, la poignée de 40 × 4. */
+.voile{position:absolute;inset:0;background:rgba(20,18,14,.34)}
+.feuille{position:absolute;left:0;right:0;bottom:0;background:var(--carte);
+         border-radius:26px 26px 0 0;padding:12px 24px 36px;
+         box-shadow:0 -14px 34px rgba(20,18,14,.16)}
+.feuille .poignee{width:40px;height:4px;border-radius:2px;background:var(--trait);margin:0 auto 22px}
+.feuille .quoi{margin:0;font:500 9.5px/1 var(--sans);letter-spacing:.28em;
+               text-transform:uppercase;color:var(--alerte)}
+.feuille h3{margin:0;font:400 26px/1.15 var(--serif)}
+/* Le bouton plein, `rounded-full` et 52 px — sa règle du 12 août 2026. */
+.feuille .agir{margin-top:22px;height:52px;display:flex;align-items:center;justify-content:center;
+               border-radius:999px;background:var(--alerte);color:var(--surplein);
+               font:600 15px/1 var(--sans)}
+/* « Annuler » n'est pas un second bouton, c'est la sortie : deux capsules
+   empilées se pèsent l'une l'autre, et la plus grave perd de son poids. */
+.feuille .sortir{margin-top:6px;height:46px;display:flex;align-items:center;justify-content:center;
+                 font:400 14px/1 var(--sans);color:var(--gris)}
+
+.nav{position:absolute;left:0;right:0;bottom:0;height:46px;background:var(--fond);
+     border-top:1px solid var(--trait);display:flex;align-items:center;
+     justify-content:space-around;font:400 9px var(--sans);letter-spacing:.18em;
+     text-transform:uppercase;color:var(--gris)}
+
+.notes{max-width:860px;margin:34px auto 0;padding:0 20px}
+.notes .bloc{padding:16px 20px;background:var(--carte);border-left:3px solid var(--or);
+             font-size:14px;line-height:1.7;color:var(--encre-douce)}
+.notes .bloc + .bloc{margin-top:12px}
+.notes b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Se déconnecter.</b> Une ligne en bas, une confirmation, rien à choisir —
+  comme WhatsApp, Instagram ou les Réglages de l'iPhone. <b>Rien n'est codé.</b>
+</div>
+
+<div class="etats">
+  <p class="quoi">Voir</p>
+  <div class="rangee">
+    <button type="button" data-v="reglages" aria-pressed="true">Le bas des Réglages</button>
+    <button type="button" data-v="feuille" aria-pressed="false">L'appui</button>
+    <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+  </div>
+</div>
+
+<div class="tete">
+  <h1 id="nom"></h1>
+  <p class="idee" id="idee"></p>
+</div>
+
+<div class="paire">
+  <div class="colonne">
+    <p class="nom">Aujourd'hui</p>
+    <div class="tel"><div class="defile" id="avant"></div>
+      <div class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div></div>
+  </div>
+  <div class="colonne">
+    <p class="nom">Ce que je propose</p>
+    <div class="tel" id="boiteB"><div class="defile" id="apres"></div>
+      <div class="nav" id="navB"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div></div>
+  </div>
+</div>
+
+<div class="notes" id="notes"></div>
+
+<script>
+var etat = { vue: "reglages", nuit: false };
+
+/* Le sommaire des Réglages, recopié de `rubriques-reglages.ts` : « Moi » ferme
+   la liste, et il ferme sur « Couleurs ». */
+function reglages(avecSortie){
+  return '<p class="sur">Mon entreprise</p>' +
+    '<h2 class="titre">Réglages</h2>' +
+    '<p class="inter">L\'entreprise</p>' +
+    ligne("Mon entreprise") + ligne("Équipe") + ligne("Tarifs & catalogue") +
+    ligne("Devis & factures") + ligne("Atlas IA") + ligne("Mon agenda") +
+    ligne("Abonnement") + ligne("Mes données") +
+    '<p class="inter">Moi</p>' +
+    ligne("Mon compte") + ligne("Notifications") + ligne("Mot de passe") + ligne("Couleurs") +
+    (avecSortie ? '<div class="sortie neuf">Se déconnecter</div>' : "");
+}
+function ligne(nom){
+  return '<div class="rang"><div class="g"><span class="ic"></span><span class="n">' + nom +
+         '</span></div><span class="fl"></span></div>';
+}
+
+function feuille(){
+  return '<div class="voile"></div>' +
+    '<div class="feuille"><div class="poignee"></div>' +
+      /* **PAS de surtitre d'alerte ici, contrairement à « Supprimer ce
+         client ».** Là-bas, « SUPPRESSION DÉFINITIVE » avertit d'un geste
+         irréversible. Se déconnecter se défait en cinq secondes : le même
+         signal, posé sur un geste anodin, s'apprend à être ignoré — et l'on
+         perd l'avertissement là où il compte vraiment (`CLAUDE.md` §4 ter).
+         Il était aussi redondant avec le bouton juste dessous. */
+      '<h3>Eden Nature</h3>' +
+      /* **AUCUNE phrase sous le titre — sa demande du 9 septembre 2026 : « y'a
+         pas besoin de la phrase en gris qui explique ».** Elle disait « votre
+         mot de passe — ou Face ID — vous fera revenir » : la façon dont on se
+         reconnecte à Atlas n'a pas à se rappeler au moment d'en sortir, et
+         c'est sa règle du 25 août (« retire les phrases inutiles qui
+         expliquent »). Le nom du compte et le bouton suffisent. */
+      '<div class="agir">Se déconnecter</div>' +
+      '<div class="sortir">Annuler</div>' +
+    '</div>';
+}
+
+var VUES = {
+  reglages: {
+    nom: "Le bas des Réglages",
+    idee: "<b>Il n'y a pas de « se déconnecter » dans les Réglages.</b> Le seul geste est « Me déconnecter partout », rangé au bas de l'écran <b>Mot de passe</b>. À droite, une ligne en bas de liste — <b>le dessin exact de « Supprimer ce client »</b>, que vous avez retenu le 2 septembre.",
+    avant: function(){ return reglages(false); },
+    apres: function(){ return reglages(true); },
+    versLeBas: true, feuilleB: false,
+    notes: [
+      "<b>Ce n'est pas un bouton, et c'est voulu.</b> Une capsule cernée de rouge serait le seul objet dessiné de l'écran : elle appellerait l'œil vers la sortie. En capitales espacées elle reste parfaitement lisible et cesse d'appeler — la cible fait quand même 44 px de haut. <b>C'est le raisonnement que vous avez validé le 2 septembre</b> pour la suppression d'un client ; il n'y a aucune raison d'en avoir deux.",
+      "<b>Et « Me déconnecter partout » ne bouge pas</b>, sous « Mot de passe ». C'est là que les grandes applications le rangent aussi : la déconnexion de tous les appareils est un geste de sécurité, pas un geste de tous les jours."
+    ]
+  },
+  feuille: {
+    nom: "L'appui",
+    idee: "<b>Un seul geste, rien à choisir.</b> Ma première version posait deux boutons — « cet appareil » ou « tous » — au moment où l'on veut juste sortir : c'est ce qui ne faisait pas sérieux, et vous aviez raison. À droite, la feuille d'Atlas, celle de « Supprimer ce client » : un bouton plein, et <b>« Annuler » en simple mot</b>.",
+    avant: function(){ return reglages(true); },
+    apres: function(){ return reglages(true) + feuille(); },
+    versLeBas: true, feuilleB: true,
+    notes: [
+      "<b>Deux appuis, pas un.</b> Une déconnexion au premier toucher se déclenche par mégarde au fond d'un écran de réglages — et l'on se retrouve devant la page de connexion sans comprendre pourquoi. C'est ce que fait votre iPhone, et c'est ce que fait déjà Atlas pour supprimer un client.",
+      "<b>Rien sous le titre.</b> J'y avais mis « votre mot de passe — ou Face ID — vous fera revenir » : vous l'avez fait retirer, et vous avez raison. Comment on rentre dans Atlas n'a pas à se rappeler au moment d'en sortir. Le nom du compte dit d'où l'on sort, le bouton dit ce qu'on fait.",
+      "<b>Ce que ça fait, techniquement :</b> les cookies s'effacent et vous repartez sur l'écran de connexion <b>tout de suite</b>. Face ID reste posé sur ce téléphone — c'est ce qui sépare ce geste de « Me déconnecter partout », qui, lui, retire les clés."
+    ]
+  }
+};
+
+function rendre(){
+  var v = VUES[etat.vue];
+  document.getElementById("nom").textContent = v.nom;
+  document.getElementById("idee").innerHTML = v.idee;
+  var avantEl = document.getElementById("avant"), apresEl = document.getElementById("apres");
+  avantEl.innerHTML = v.avant();
+  apresEl.innerHTML = v.apres();
+  /* La feuille se pose SUR l'écran, pas dedans : elle sort du cadre défilant.
+     On ne balaie que le PREMIER étage du cadre — `#apres` en est un enfant, et
+     une recherche profonde emporterait la feuille qu'on vient d'y dessiner. */
+  var boite = document.getElementById("boiteB");
+  Array.prototype.slice.call(boite.children).forEach(function(el){
+    if (el.classList.contains("voile") || el.classList.contains("feuille")) el.remove();
+  });
+  apresEl.querySelectorAll(".voile,.feuille").forEach(function(el){ boite.appendChild(el); });
+  document.getElementById("navB").style.display = v.feuilleB ? "none" : "flex";
+  /* « Le bas des Réglages » montrerait le HAUT, donc pas son objet. */
+  [avantEl, apresEl].forEach(function(el){ el.scrollTop = v.versLeBas ? el.scrollHeight : 0; });
+  document.getElementById("notes").innerHTML =
+    v.notes.map(function(n){ return '<div class="bloc">' + n + "</div>"; }).join("");
+}
+
+document.querySelectorAll(".etats button[data-v]").forEach(function(b){
+  b.addEventListener("click", function(){
+    etat.vue = b.dataset.v;
+    document.querySelectorAll(".etats button[data-v]").forEach(function(o){
+      o.setAttribute("aria-pressed", String(o === b));
+    });
+    rendre();
+  });
+});
+
+var pole = document.getElementById("pole");
+pole.addEventListener("click", function(){
+  etat.nuit = !etat.nuit;
+  document.body.classList.toggle("nuit", etat.nuit);
+  pole.setAttribute("aria-pressed", String(etat.nuit));
+  pole.textContent = etat.nuit ? "Revenir sur Terre" : "Voir sur Nuit";
+});
+
+rendre();
+</script>
+</body>
+</html>
