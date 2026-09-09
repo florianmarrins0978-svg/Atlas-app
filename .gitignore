@@ -103,3 +103,6 @@ sauvegarde-atlas-*.json
 # fichier neuf dans l'arbre ferait refuser TOUTES les mises à jour du banc du
 # patron (`mettre-a-jour.sh`), qui n'avance qu'en ligne droite.
 .next-*
+
+# Le verrou de la batterie : il vit le temps d une mesure, jamais dans git.
+.atlas-batterie-en-cours.json

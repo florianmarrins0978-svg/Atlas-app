@@ -1126,6 +1126,31 @@ Une ligne suffit avant de la lancer, et l'on attend sa réponse. Vaut aussi pour
 tout ce qui prend le port 3000 ou vide la base — les suites navigateur, le seed,
 un serveur de développement.
 
+**ET LE DOSSIER SE FERME PENDANT QU'ELLE MESURE — ce n'est plus une consigne,
+c'est un verrou.** Sa colère du 9 septembre 2026 : *« comment ça se fait qu'à
+chaque fois il y a un problème sur la batterie ? Elle est quasi finie et une
+autre session la fait s'arrêter ou envoie des fichiers ! JE NE VEUX PLUS DE
+PROBLÈME SUR LA BATTERIE. »* Trois verdicts de dix minutes jetés dans la même
+journée, tous pour la même raison.
+
+| | |
+|---|---|
+| `scripts/verrou-batterie.mjs` | la batterie pose un verrou en démarrant, le rend en finissant |
+| `scripts/garde-batterie.mjs` | branché sur **chaque** geste de **chaque** session : tant que le verrou tient, rien ne s'écrit dans le dossier |
+
+**Ce qu'il laisse passer, et c'est ce qui le rend tenable :** lire. Un journal,
+un `git status`, un `grep`. Pendant dix minutes, c'est la seule chose utile — et
+un verrou qui interdirait aussi cela se ferait contourner dès le deuxième jour.
+
+**Il ne peut pas geler le dossier pour toujours** : le verrou porte un PID et un
+signe de vie rafraîchi toutes les vingt secondes. Processus mort ou silence de
+plus de quatre-vingt-dix secondes, il ne vaut plus rien. En cas de doute :
+`node scripts/verrou-batterie.mjs etat`, et `rendre --force` s'il ment.
+
+**Le verrou EMPÊCHE, l'empreinte DIT.** Les deux restent : un fichier enregistré
+depuis l'éditeur échappe au verrou, et c'est alors la comparaison d'empreintes
+qui annule le verdict.
+
 **NE RIEN JOUER À LA MAIN PENDANT QU'ELLE TOURNE — surtout pas une suite
 base.** Payé le 26 août 2026. Pendant une batterie, cinq suites navigateur ont
 rougi d'un coup et l'étape « Connexion derrière un proxy » avec elles. Aucune
