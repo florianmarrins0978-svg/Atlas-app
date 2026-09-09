@@ -98,6 +98,15 @@
         color:#f4f3ee;font-size:10px;letter-spacing:.06em}
   .vign.b{background:linear-gradient(135deg,#b9a882,#8b7a55)}
 
+  /* Le dépliage EN GRAND : la carte devient une feuille, et se replie. */
+  .deplie{margin:0 22px;background:var(--plage);border-radius:0 0 13px 13px;
+          box-shadow:inset 0 0 0 1px var(--trait);border-top:0;padding:2px 14px 12px}
+  .carte.ouverte{border-radius:13px 13px 0 0;margin-bottom:0}
+  .grandes{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .grandes .vign{width:100%;height:132px;border-radius:11px}
+  .replier{margin-top:12px;width:100%;height:42px;border-radius:999px;background:transparent;
+           color:var(--orTexte);box-shadow:inset 0 0 0 1px var(--orTexte);border:0;
+           font:inherit;font-size:13.5px;cursor:pointer}
   .fichier{margin:10px 22px 0;display:flex;align-items:center;gap:11px;background:var(--plage);
            border-radius:13px;padding:12px 14px;box-shadow:inset 0 0 0 1px var(--trait);
            width:calc(100% - 44px);border:0;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
@@ -170,9 +179,9 @@
 
     <!-- A ─────────────────────────────────────────────────────────── -->
     <div class="prop">
-      <p class="nom">A. La carte se déplie</p>
-      <p class="idee">Un appui, et le détail descend sous la carte. Rien ne change d'écran, on
-        garde la liste sous les yeux — mais dix retours dépliés font une longue page.</p>
+      <p class="nom">A. La carte s’ouvre en grand<span class="tenu">Ce que vous avez choisi</span></p>
+      <p class="idee">Un appui, et la carte devient une feuille : les lignes une par une, les
+        photos en grand, son mot. « Replier » la referme. Rien ne change d’écran.</p>
       <div class="tel"><div class="ecran">
         <div class="corps">
           <div class="entete"><span class="retour">‹</span><h3>Retours d'intervention</h3></div>
@@ -186,16 +195,19 @@
             </span>
             <span class="chev" data-chev="A">›</span>
           </button>
-          <div data-panneau="A" hidden style="margin:0 22px">
+          <div data-panneau="A" hidden class="deplie">
+            <p class="bloc" style="margin-top:12px">Ce qui a été fait</p>
             <div class="taches">
               <span class="tache faite"><span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Tonte et ébarbage</span></span>
               <span class="tache faite"><span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Taille de la haie — 18 ml</span></span>
               <span class="tache faite"><span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Évacuation des déchets</span></span>
               <span class="tache pasfaite"><span class="marque"></span><span class="txt">Traitement anti-mousse</span></span>
             </div>
-            <div class="vignettes"><span class="vign">PHOTO</span><span class="vign b">PHOTO</span></div>
+            <p class="bloc">Photos</p>
+            <div class="grandes"><span class="vign">PHOTO</span><span class="vign b">PHOTO</span></div>
+            <p class="bloc">À signaler</p>
             <div class="encart">« Chantier fini »</div>
-            <div style="height:14px"></div>
+            <button class="replier" type="button" data-replie="A">Replier</button>
           </div>
         </div>
         <div class="basNav"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Paysage</span><span>Réglages</span></div>
@@ -204,7 +216,7 @@
 
     <!-- B ─────────────────────────────────────────────────────────── -->
     <div class="prop">
-      <p class="nom">B. La carte ouvre sa page<span class="tenu">Ce que je défends</span></p>
+      <p class="nom">B. La carte ouvre sa page</p>
       <p class="idee">Votre idée. La liste reste courte quoi qu'il arrive, et la page a la place
         de tout montrer — les photos en grand, ligne par ligne. Un retour, un écran.</p>
       <div class="tel"><div class="ecran">
@@ -312,12 +324,20 @@
   }));
 
   // A — le détail descend sous la carte.
+  function poserA(cle, ouvert) {
+    const p = document.querySelector('[data-panneau="' + cle + '"]');
+    const b = document.querySelector('[data-ouvre="' + cle + '"]');
+    const chev = document.querySelector('[data-chev="' + cle + '"]');
+    p.hidden = !ouvert;
+    b.classList.toggle('ouverte', ouvert);
+    if (chev) chev.textContent = ouvert ? '⌄' : '›';
+    if (!ouvert) b.scrollIntoView({ block: 'nearest' });
+  }
   qq('[data-ouvre]').forEach((b) => b.addEventListener('click', () => {
     const p = document.querySelector('[data-panneau="' + b.dataset.ouvre + '"]');
-    const chev = document.querySelector('[data-chev="' + b.dataset.ouvre + '"]');
-    p.hidden = !p.hidden;
-    if (chev) chev.textContent = p.hidden ? '›' : '⌄';
+    poserA(b.dataset.ouvre, p.hidden);
   }));
+  qq('[data-replie]').forEach((b) => b.addEventListener('click', () => poserA(b.dataset.replie, false)));
 
   // B — la carte ouvre sa page, et le chevron du haut ramène.
   qq('[data-va]').forEach((b) => b.addEventListener('click', () => {

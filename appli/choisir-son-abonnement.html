@@ -120,7 +120,11 @@ h2.titre{margin:14px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
 .compris{margin-top:10px;padding:0;list-style:none}
 .compris li{position:relative;padding:5px 0 5px 20px;font-size:13px;line-height:1.5;color:var(--encre-douce)}
 .compris li::before{content:"";position:absolute;left:2px;top:12px;width:6px;height:6px;
-                    border-radius:50%;background:var(--or)}
+                    border-radius:50%;background:var(--trait)}
+/* Ce qui s’ajoute par rapport à la formule du dessous : à l’encre, pastille
+   dorée. L’œil attrape la différence sans qu’on ait à l’écrire. */
+.compris li.neuf{color:var(--encre);font-weight:500}
+.compris li.neuf::before{background:var(--or)}
 
 .nav{position:absolute;left:0;right:0;bottom:0;height:46px;background:var(--fond);
      border-top:1px solid var(--trait);display:flex;align-items:center;
@@ -188,18 +192,40 @@ var etat = { vue: "offre", nuit: false };
 var FORMULES = [
   { nom: "Artisan", prix: 29, an: 290, mienne: true,
     accroche: "Du devis dicté à la facture, sans rien retaper.",
-    compris: ["Devis et factures illimités",
-              "Vos dictées transcrites et chiffrées",
-              "Vos salariés au planning, sans supplément"] },
+    compris: [
+      { texte: "Devis et factures illimités" },
+      { texte: "Vos dictées transcrites et chiffrées" },
+      { texte: "Le planning de vos chantiers" },
+      { texte: "Votre relevé de TVA, tenu tout seul" },
+      { texte: "Le plan d’arrosage" },
+      { texte: "Vos salariés au planning, sans supplément" }
+    ] },
   { nom: "Entreprise", prix: 59, an: 590, mienne: false,
     accroche: "Vos gars au planning, et jusqu’à cinq qui facturent.",
-    compris: ["Tout ce que comprend Artisan",
-              "5 personnes qui font des devis ou des factures",
-              "Les absences et les retours d’intervention"] },
+    compris: [
+      { texte: "Devis et factures illimités" },
+      { texte: "Vos dictées transcrites et chiffrées" },
+      { texte: "Le planning de vos chantiers" },
+      { texte: "Votre relevé de TVA, tenu tout seul" },
+      { texte: "Le plan d’arrosage" },
+      { texte: "Vos salariés au planning, sans supplément" },
+      { texte: "Jusqu’à 5 personnes qui font des devis ou des factures", neuf: true },
+      { texte: "Les absences de vos équipes", neuf: true },
+      { texte: "Les retours d’intervention de vos gars", neuf: true }
+    ] },
   { nom: "Illimité", prix: 120, an: 1200, mienne: false,
     accroche: "Toute votre équipe sur Atlas.",
-    compris: ["Tout ce que comprend Entreprise",
-              "Autant de personnes que vous voulez"] }
+    compris: [
+      { texte: "Devis et factures illimités" },
+      { texte: "Vos dictées transcrites et chiffrées" },
+      { texte: "Le planning de vos chantiers" },
+      { texte: "Votre relevé de TVA, tenu tout seul" },
+      { texte: "Le plan d’arrosage" },
+      { texte: "Vos salariés au planning, sans supplément" },
+      { texte: "Les absences de vos équipes" },
+      { texte: "Les retours d’intervention de vos gars" },
+      { texte: "Autant de personnes que vous voulez aux devis et aux factures", neuf: true }
+    ] }
 ];
 
 function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
@@ -227,7 +253,7 @@ function ecranAvecOffre(){
         '<span class="prix">' + f.prix + ' € <span>/mois HT</span></span></div>' +
         '<p class="pour">' + ech(f.accroche) + '</p>' +
         '<ul class="compris">' + f.compris.map(function(c){
-          return "<li>" + ech(c) + "</li>";
+          return '<li' + (c.neuf ? ' class="neuf"' : "") + '>' + ech(c.texte) + "</li>";
         }).join("") + '</ul>' +
         '<p class="an">Ou ' + f.an.toLocaleString("fr-FR") + ' € par an — économisez ' + economie + ' €.</p>' +
         (f.mienne
