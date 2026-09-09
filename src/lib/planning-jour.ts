@@ -302,20 +302,6 @@ export const MOT_QUAND: Record<QuandChantier, string> = {
 };
 
 /**
- * Les mêmes trois moments, pour la ligne la plus serrée de l'écran.
- *
- * La ligne « Sans date » aligne un nom de client et ces boutons dans la largeur
- * d'un téléphone : « Après-midi » y mange le nom. Un `Record` exhaustif plutôt
- * qu'une liste écrite à côté — le compilateur exige alors les trois moments, et
- * les deux registres ne peuvent pas se désaccorder.
- */
-export const MOT_QUAND_COURT: Record<QuandChantier, string> = {
-  matin: "Matin",
-  apres: "Ap.-m.",
-  journee: "Journée",
-};
-
-/**
  * Le départ et la durée qu'écrit chacun des trois boutons.
  *
  * **Un chantier plus long qu'une journée garde sa durée.** « Journée » sur un
@@ -351,22 +337,17 @@ export function departEtDuree(
  * choisissent alors plus que le DÉPART, et « Journée » écrit exactement le même
  * état que « Matin » : un bouton mort, qui se retire au lieu de s'expliquer.
  *
- * **La règle vivait dans le JSX d'un seul des trois endroits qui dessinent ces
- * boutons** — « Déplacer » l'avait, « Sans date » et « + Ajouter un chantier »
- * ne l'avaient pas. C'est pourquoi il l'a rencontrée en posant une date, deux
- * semaines après la même correction ailleurs.
- *
- * `departSeulement` sert l'écran : quand les boutons ne disent que le départ,
- * la durée du chantier doit se lire à côté d'eux, sinon « Matin » se lit
- * « une demi-journée » — exactement le malentendu qu'il signale.
+ * **La règle vivait dans le JSX de l'écran, et elle y était donc muette pour
+ * qui ne le lisait pas.** Les deux autres endroits qui dessinaient ces boutons
+ * — « Sans date » et « + Ajouter un chantier » — ne la portaient pas ; ils ne
+ * demandent plus rien du tout depuis le 9 septembre au soir, la durée du devis
+ * décidant seule. Il ne reste donc qu'un appelant, « Déplacer », et c'est là
+ * qu'un moment se corrige vraiment.
  * ───────────────────────────────────────────────────────────────────────────
  */
-export function poseOfferte(duree: number): {
-  quands: QuandChantier[];
-  departSeulement: boolean;
-} {
-  if (duree > 2) return { quands: ["matin", "apres"], departSeulement: true };
-  return { quands: ["matin", "apres", "journee"], departSeulement: false };
+export function poseOfferte(duree: number): { quands: QuandChantier[] } {
+  if (duree > 2) return { quands: ["matin", "apres"] };
+  return { quands: ["matin", "apres", "journee"] };
 }
 
 /**

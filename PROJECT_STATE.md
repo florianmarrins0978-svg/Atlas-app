@@ -6,6 +6,27 @@
 
 ---
 
+## FAIT : POSER UN CHANTIER NE DEMANDE PLUS QUAND — 9 septembre 2026
+
+Sa remarque : *« si Claudette c'est un chantier 1 journée, deux, ou une demi, ça
+doit se mettre tout seul — je dois pas avoir à choisir »*. On touche le nom du
+chantier, il est posé.
+
+**Ce que les trois boutons faisaient sans le dire :** ils réécrivaient la durée
+du chantier. « Matin » sur une journée entière la ramenait à une demi-journée,
+en silence — et l'après-midi repartait à la vente. Le défaut ne se voyait que le
+jour du chantier.
+
+Aucune migration : `planifierChantier` sans choix savait déjà lire la durée et
+chercher la moitié de journée où elle tient. **« Déplacer » ne bouge pas** —
+c'est là qu'un moment se corrige. La même racine a été retirée du chemin de
+l'assistant, où un moment non dit valait « journée ».
+
+`ARCHITECTURE.md` §308 · `docs/lot-poser-sans-choisir.md`
+
+**Reste ouvert :** la planche 86 (`appli/planning-simple.html`) montre encore
+« QUI puis QUAND ». Elle a été retenue par lui le 21 août et n'a pas été refaite.
+
 ## FAIT : « Matin » posait toute la journée — 9 septembre 2026
 
 Sa panne : *« lorsque je clique sur le matin pour Mr. Julien, ça me met d'office
@@ -13,15 +34,17 @@ toute la journée »*. Le chantier dure deux jours ; quatre demi-journées posé
 partir du matin prennent forcément la journée entière. **Le calcul était juste,
 la question posée à l'écran ne l'était pas.**
 
-Au-delà d'une journée, l'étendue vient de la dictée : les boutons ne choisissent
-plus que le départ, et « Journée » écrivait le même état que « Matin ». Ce bouton
-mort avait déjà été retiré le 23 août — **dans « Déplacer » seulement**, la règle
-étant écrite au milieu du rendu. Les deux autres endroits qui dessinent ces
-boutons ne l'ont jamais portée ; il est entré par « Sans date ».
+**Ma première réponse a été dépassée le soir même, et il faut le lire ainsi :**
+elle retirait « Journée » des lignes de pose. La session voisine a supprimé la
+question entière (§308) — la durée du devis décide seule —, et c'est sa réponse
+qui vit. Le composant que j'avais écrit pour ces lignes est parti avec elles.
 
-`poseOfferte` et `dureeDuChantier` vivent maintenant dans `src/lib/`, et les
-trois endroits les lisent. La durée s'écrit à côté des boutons quand ils ne la
-choisissent plus. **Aucune migration.** Détail : `ARCHITECTURE.md` §308.
+**Ce qui reste, et qui tenait un vrai défaut :** la durée se lisait de deux
+endroits. L'écran prenait `dureeDemiJournees ?? 2` — NULL tant que rien n'est
+posé, donc « une journée » sur un chantier de deux — pendant que le dépôt lisait
+la dictée. `dureeDuChantier` répond aux deux, et `deplacerChantier` la lit aussi.
+« Déplacer » n'offre plus « Journée » quand elle ne changerait rien.
+**Aucune migration.** Détail : `ARCHITECTURE.md` §309.
 
 **Reste ouvert, et c'est à lui de trancher :** couper un chantier en deux poses
 (`TODO.md`).

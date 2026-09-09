@@ -19,7 +19,6 @@ import {
   blocsDeLaJournee,
   departEtDuree,
   MOT_QUAND,
-  MOT_QUAND_COURT,
   poseOfferte,
   quandDuChantier,
   ditLeCompteDemi,
@@ -310,33 +309,15 @@ essai("un chantier de trois jours n'est jamais raccourci", () => {
 // ne l'était pas — trois boutons d'ÉTENDUE sur un chantier dont l'étendue est
 // déjà décidée, dont un qui écrivait le même état que son voisin.
 essai("au-delà d'une journée, les boutons ne choisissent que le départ", () => {
-  const long = poseOfferte(4);
-  assert.deepEqual(long.quands, ["matin", "apres"]);
-  assert.equal(long.departSeulement, true);
+  assert.deepEqual(poseOfferte(4).quands, ["matin", "apres"]);
   // Et les deux qui restent écrivent bien deux états différents.
   assert.notDeepEqual(departEtDuree("matin", 4), departEtDuree("apres", 4));
 });
 
 essai("jusqu'à une journée, les trois boutons disent l'étendue", () => {
   for (const duree of [1, 2]) {
-    const p = poseOfferte(duree);
-    assert.deepEqual(p.quands, ["matin", "apres", "journee"]);
-    assert.equal(p.departSeulement, false);
+    assert.deepEqual(poseOfferte(duree).quands, ["matin", "apres", "journee"]);
   }
-});
-
-// La durée ne s'écrit à côté des boutons QUE là où ils ne la choisissent plus :
-// un mot qui parle à tort s'apprend à être ignoré (`CLAUDE.md` §4 ter).
-essai("la durée ne s'annonce que quand elle n'est plus au choix", () => {
-  for (const duree of [1, 2, 3, 4, 6]) {
-    assert.equal(poseOfferte(duree).departSeulement, duree > 2);
-  }
-});
-
-// Les deux registres du même mot ne peuvent pas se désaccorder : le second sert
-// la ligne « Sans date », la plus étroite de l'écran.
-essai("les libellés courts couvrent exactement les mêmes moments", () => {
-  assert.deepEqual(Object.keys(MOT_QUAND_COURT), Object.keys(MOT_QUAND));
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Règles de la journée — ${echecs} échec(s).`);

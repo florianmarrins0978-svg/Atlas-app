@@ -23,6 +23,24 @@ que l'écran posait.
 
 ---
 
+## ⚠ CE DOCUMENT A ÉTÉ DÉPASSÉ LE SOIR MÊME — à lire avant le reste
+
+Une session voisine travaillait sur la même plainte en parallèle, et elle a
+livré une réponse plus haute : **la pose ne demande plus rien du tout.** Quand
+vous touchez un chantier, il se pose — la durée du devis décide seule de la
+demi-journée. Les trois boutons ont disparu des lignes de pose.
+
+Sa réponse est meilleure que la mienne, et c'est la sienne qui vit. Ce que
+j'avais écrit pour ces lignes a été **supprimé**, pas gardé de côté.
+
+**Ce qui reste de ce lot, et qui tenait un vrai défaut que personne n'avait
+signalé :** la durée d'un chantier se lisait de deux endroits différents. Voir
+le point 4 ci-dessous, et « Déplacer », le seul endroit où un moment se choisit
+encore.
+
+Les points 1, 2 et 3 décrivent donc un écran qui n'existe plus. Ils sont
+conservés parce qu'ils disent ce qui a été mesuré, et pourquoi.
+
 ## Verdict, point par point
 
 ### 1. « Journée » ne servait à rien sur ce chantier — corrigé

@@ -8,17 +8,39 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — POSER UN CHANTIER NE DEMANDE PLUS QUAND (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | « Ajouter un chantier » pose le chantier dès qu'on touche son nom ; le tiroir du bas n'offre plus qu'un bouton « Poser ». Plus de « Matin · Ap.-m. · Journée » avant la pose |
+| la migration | **aucune** |
+| les pièces | `src/app/planning/PlanningClient.tsx` (`poser`, `AjoutAuJour`, `TiroirDuBas`), `src/app/chantiers/[id]/informations/actions.ts` |
+| les suites | `test-planning-repo.ts` (2 neuves), `test-planning-e2e.ts`, `test-poser-une-date-e2e.ts` |
+| le détail | `ARCHITECTURE.md` §308, `docs/lot-poser-sans-choisir.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** ces trois boutons n'avaient pas l'air d'écrire
+quoi que ce soit, et ils réécrivaient `dureeDemiJournees`. « Matin » sur un
+chantier d'une JOURNÉE le ramenait à une demi-journée, sans un mot, et
+l'après-midi redevenait vendable. Le remettre pour « laisser le choix », c'est
+remettre ce défaut-là. Le choix d'un moment vit dans **« Déplacer »**, sur un
+chantier déjà posé — là il est une demande, pas une question de passage.
+
+**Ce qui décide à leur place existait déjà :** `planifierChantier` appelé sans
+`choix` lit la durée du chantier et cherche la moitié de journée où elle tient
+(`departPossible`) — la même règle que le jour proposé au client.
+
 ## Dernier lot — « MATIN » POSAIT TOUTE LA JOURNÉE (9 septembre 2026)
 
 | | |
 |---|---|
 | sa panne | *« lorsque je clique sur le matin pour Mr. Julien, ça me met d'office toute la journée »* |
-| la racine | la règle « au-delà d'une journée, ces boutons ne choisissent que le DÉPART » vivait dans le JSX d'**un seul des trois endroits** qui les dessinent |
-| les pièces | `poseOfferte` (`src/lib/planning-jour.ts`), `dureeDuChantier` (`src/lib/disponibilites.ts`), `BoutonsDePose` (`PlanningClient.tsx`) |
-| retiré | le `.filter()` inline de « Déplacer », les libellés en dur de « Sans date », la déduction de durée recopiée dans `planifierChantier` |
-| les suites | `test-planning-jour.ts` (4 de plus), `test-creneaux.ts` (3), `test-poser-une-date-e2e.ts` (1, par la ligne qu'il touche) |
+| la racine | la durée d'un chantier se lisait de deux endroits : l'écran prenait `dureeDemiJournees ?? 2` — NULL tant que rien n'est posé — pendant que le dépôt lisait la dictée |
+| les pièces | `dureeDuChantier` (`src/lib/disponibilites.ts`), `poseOfferte` (`src/lib/planning-jour.ts`) |
+| retiré | le `.filter()` inline de « Déplacer », et la déduction de durée recopiée dans `planifierChantier` |
+| **corrigé le soir même** | ma première réponse retirait « Journée » des LIGNES DE POSE. La session voisine a supprimé la question entière (§308) : sa réponse vit, la mienne a été retirée avec son composant |
+| les suites | `test-planning-jour.ts` (+2), `test-creneaux.ts` (+3), `test-poser-une-date-e2e.ts` (+1, sur « Déplacer ») |
 | aucune migration | les deux colonnes existent depuis 0019 |
-| le détail | `ARCHITECTURE.md` §308, `docs/lot-poser-le-matin.md` |
+| le détail | `ARCHITECTURE.md` §309, `docs/lot-poser-le-matin.md` |
 
 **LE PIÈGE À NE PAS DÉFAIRE :** `departEtDuree` ne raccourcit JAMAIS un chantier
 de plus d'une journée, et ce n'est pas un oubli. Le faire donnerait à la lettre

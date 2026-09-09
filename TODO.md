@@ -9,6 +9,51 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
+
+**Sa correction :** *« chaque session peut prendre un port différent, plusieurs
+sessions tournent en même temps, n'effacez pas les batteries des autres ! »*
+
+Son lot du 8 septembre donne déjà à chaque session son **atelier** — un rang,
+donc un port, une base et un coin de Redis (`scripts/_atelier.ts`). Deux
+batteries dans deux ateliers ne se marchent plus dessus : ni le port 3000, ni
+le `TRUNCATE` de la base, ni le limiteur Redis.
+
+**Mais le verrou du 9 septembre ne le sait pas.** `verrou-batterie.mjs` pose
+**un seul fichier à la racine** et refuse la seconde batterie : *« La machine est
+à un seul occupant : attendez qu'elle finisse. »* L'atelier est pris ligne 112
+de `verifier-avant-livraison.ts`, le verrou ligne 332 — et c'est le verrou qui
+tranche. Les ateliers sont donc neutralisés pour ce qui les motivait.
+
+**Ce qu'il faudrait, et ce qu'il NE faut pas défaire au passage :**
+
+| | |
+|---|---|
+| le verrou | par ATELIER — un fichier par rang. Deux batteries en parallèle deviennent possibles |
+| la garde d'écriture | **inchangée**, et c'est délibéré : ce qu'elle protège — un fichier source qui bouge sous une mesure — est vraiment commun au dossier, et c'est sa colère du 9 septembre |
+| `restesDeBatterie` | à relire : il cherche des restes sans savoir de quel atelier |
+| `test-verrou-batterie.ts` | 27 cas à garder verts, et un cas neuf : deux ateliers, deux batteries, aucune ne refuse l'autre |
+
+**Le piège :** `node scripts/verrou-batterie.mjs rendre --force` efface le verrou
+de CELUI QUI MESURE. Il ne se lance que sur un verrou dont le processus est mort
+— jamais pour se faire de la place.
+
+---
+
+## ⏳ LA PLANCHE 86 MONTRE ENCORE « QUI PUIS QUAND » (9 septembre 2026)
+
+`appli/planning-simple.html` — retenue par lui le 21 août — demande toujours
+« Matin · Après-midi · Journée » après avoir touché le nom d'un chantier.
+L'application ne le demande plus depuis le 9 septembre (`ARCHITECTURE.md` §308) :
+la durée est en base, et ces trois boutons la réécrivaient.
+
+**Rien n'a été touché à la planche**, et c'est délibéré : une planche qu'il a
+retenue ne se réécrit pas sans lui. À lui de dire s'il veut la reprendre —
+`scripts/verifier-maquette-planning-simple.mjs` suit la planche, pas
+l'application, et reste vert dans les deux cas.
+
+---
+
 ## ⏳ UNE PLANCHE À REGARDER — « Déplacer » (9 septembre 2026)
 
 **Sa remarque :** *« regarde réellement ce qui se passe quand on clique sur
@@ -56,7 +101,7 @@ continu** (`creneau_debut` + `duree_demi_journees`).
 S'il veut vraiment faire jeudi matin puis reprendre lundi, il faut deux poses
 pour un chantier : c'est une fonctionnalité, pas un correctif, et **c'est lui
 qui décide** si elle vaut le coup. En attendant, l'écran dit la durée au lieu de
-promettre un découpage qu'il ne sait pas faire (`ARCHITECTURE.md` §308).
+promettre un découpage qu'il ne sait pas faire (`ARCHITECTURE.md` §309).
 
 ## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
 
