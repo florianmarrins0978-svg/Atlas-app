@@ -4,6 +4,7 @@ import {
   compterOccupation,
   departPossible,
   jourRetenable,
+  dureeDuChantier,
   dureeEnDemiJournees,
   libelleDuree,
   cleCreneau,
@@ -182,6 +183,32 @@ cas("une durée illisible ne produit jamais un chiffre inventé", () => {
 cas("sur une fourchette, c'est le majorant qui compte", () => {
   // Sous-réserver ferait accepter une date où le patron n'a pas la place.
   assert.equal(dureeEnDemiJournees("2 à 4 jours"), 8);
+});
+
+// ─── LA DURÉE D'UN CHANTIER SE LIT D'UN SEUL ENDROIT ───────────────────────
+//
+// **Sa panne du 9 septembre 2026 :** *« lorsque je clique sur le matin pour
+// Mr. Julien, ça me met d'office toute la journée »*. Son chantier n'était pas
+// encore posé : `duree_demi_journees` valait NULL, et seule la dictée disait
+// « 2 jours ». Le dépôt lisait bien la dictée avant d'écrire ; l'écran, lui,
+// lisait `dureeDemiJournees ?? 2` et croyait donc à une journée — au moment
+// précis où le patron choisit où poser le chantier.
+cas("un chantier pas encore posé vaut la durée qu'il a été dicté", () => {
+  assert.equal(dureeDuChantier({ dureeDemiJournees: null, dureePrevue: "2 jours" }), 4);
+  assert.equal(dureeDuChantier({ dureeDemiJournees: null, dureePrevue: "une demi-journée" }), 1);
+});
+
+cas("la durée réservée prime sur la dictée", () => {
+  // Elle a été écrite par un geste du patron ; la dictée n'est qu'une estimation.
+  assert.equal(dureeDuChantier({ dureeDemiJournees: 1, dureePrevue: "3 jours" }), 1);
+});
+
+cas("sans durée d'aucune sorte, c'est la journée entière", () => {
+  // `CLAUDE.md` §4 ter : devant l'inconnu, on retient l'hypothèse qui réserve le
+  // plus — annoncer de la place qu'on n'a pas fait rappeler le client.
+  assert.equal(dureeDuChantier({ dureeDemiJournees: null, dureePrevue: null }), DUREE_PAR_DEFAUT_DEMI_JOURNEES);
+  assert.equal(dureeDuChantier({ dureeDemiJournees: null }), DUREE_PAR_DEFAUT_DEMI_JOURNEES);
+  assert.equal(dureeDuChantier({ dureeDemiJournees: null, dureePrevue: "à voir" }), DUREE_PAR_DEFAUT_DEMI_JOURNEES);
 });
 
 console.log("=== Ce que la fenêtre et le week-end refusent encore ===");

@@ -26313,7 +26313,198 @@ cocher ; les photos, elles, sont ce qu’on regarde pendant qu’on coche.
 
 ---
 
-## §308 — La flèche de retour ramène à la page d'avant, et plus à une adresse écrite d'avance
+## §308 — Poser un chantier ne demande plus QUAND : la durée est déjà connue
+
+**Sa remarque du 9 septembre 2026, capture du planning à l'appui :** *« quand je
+clique sur "ajouter un chantier", lorsque je clique sur Claudette il me propose
+3 choix, alors que si Claudette c'est un chantier 1 journée, deux, ou une demi,
+ça doit se mettre tout seul — je dois pas avoir à choisir. »*
+
+### Ce que les trois boutons faisaient VRAIMENT
+
+Ils avaient l'air de demander une information manquante. Ils en écrivaient une.
+
+`departEtDuree(quand, duree)` traduit le mot choisi en un DÉPART **et** une
+DURÉE : « Matin » vaut une demi-journée, « Journée » en vaut deux. Poser un
+chantier par ces boutons, c'était donc réécrire `dureeDemiJournees` — la valeur
+que le devis avait fixée, ou que sa dictée avait donnée (« 3 jours » fait six
+demi-journées, `dureeEnDemiJournees`).
+
+| Le chantier | Ce qu'un appui sur « Matin » en faisait |
+|---|---|
+| une demi-journée | rien — le seul cas où les boutons disaient vrai |
+| **une journée** | **une demi-journée**, et l'après-midi repartait à la vente |
+| trois jours | rien : au-delà de deux demi-journées, `departEtDuree` protège déjà la durée et ne change que le départ |
+
+La ligne du milieu est le défaut, et il ne se voyait **nulle part** : ni sur le
+plan, ni sur le devis, ni sur la facture. Il se découvrait le jour du chantier,
+quand la journée réservée n'en était plus une — ou plus tôt, sous la forme d'un
+après-midi proposé à un client alors qu'il était pris.
+
+### Ce qui décide à leur place, et qui existait déjà
+
+`planifierChantier` **sans** `choix` :
+
+1. lit la durée du chantier — `dureeDemiJournees`, sinon la dictée, sinon une
+   journée ;
+2. cherche la moitié de journée où elle tient, par `departPossible` — la même
+   fonction que le jour proposé au client (`jourRetenable`), jamais une seconde
+   (`CLAUDE.md` §3) ;
+3. n'écrit la durée que pour la **conserver**.
+
+Rien n'a été ajouté au serveur : ce chemin était déjà celui du calendrier. Ce
+qui a été retiré, c'est l'écran qui refusait de l'emprunter.
+
+### Où le choix reste, et pourquoi il y reste
+
+**« Déplacer » n'a pas bougé.** Se tromper de moitié de journée se rattrape d'un
+appui, sur le chantier posé, et là le mot choisi EST la demande : « finalement,
+Claudette ce sera l'après-midi ». C'est l'endroit où réécrire la durée a un sens,
+parce qu'on la regarde.
+
+Ce qui distingue les deux : poser répond à « ce chantier, ce jour-là » — la
+durée n'y est pas en question ; déplacer répond à « ce chantier, ce moment-là ».
+
+### La même racine, corrigée dans l'assistant
+
+`donnees.quand` valait `?? "journee"` dans le chemin des propositions
+(`src/app/chantiers/[id]/informations/actions.ts`) : une dictée qui ne disait pas
+l'heure — « pose Claudette jeudi » — réservait donc deux demi-journées. Sans
+moment dit, aucun `choix` n'est plus passé. **Déplacer sans moment est refusé**
+et redemande : le jour ne bouge pas, le moment est tout ce que ce geste écrit,
+et le remplir d'office refaisait le même défaut.
+
+### Ce qui l'éprouve
+
+| | |
+|---|---|
+| `test-planning-repo.ts` | la règle, sans navigateur : poser sans choix garde la demi-journée réservée, et suit la dictée quand rien n'est encore réservé. Les deux ont été mis au rouge contre la règle inverse avant d'être retenus |
+| `test-planning-e2e.ts` | **le geste** : un seul bouton dans le tiroir, aucun second choix après le nom, et la demi-journée du chantier survit à la pose |
+| `test-poser-une-date-e2e.ts` | le même geste par l'autre chemin, sur un chantier ramené à une demi-journée **en base** avant l'appui |
+
+Les suites navigateur sont ici les seules à voir le défaut : la règle de dépôt,
+elle, était juste — c'est l'écran qui lui passait par-dessus (`CLAUDE.md`
+§5 quater, « éprouver le geste du patron, pas la fonction qu'on vient
+d'écrire »).
+
+**Reste ouvert :** la planche 86 (`appli/planning-simple.html`, validée le
+21 août) montre encore les deux temps « QUI puis QUAND ». Elle n'a pas été
+refaite — une planche retenue ne se réécrit pas sans lui.
+
+## §309 — La durée d'un chantier ne se lisait pas du même endroit selon qui regardait
+
+**Sa panne du 9 septembre 2026 :** *« lorsque je clique sur le matin pour
+Mr. Julien, ça me met d'office toute la journée. »*
+
+**Le calcul était juste.** Son chantier porte « 2 jours », soit quatre
+demi-journées ; posées à partir du matin, elles occupent le matin ET
+l'après-midi du jeudi, puis le vendredi entier. Rien d'autre n'était possible :
+`departEtDuree` protège délibérément la durée d'un chantier de plus d'une
+journée, parce que la raccourcir lui ferait perdre des jours de travail sans
+qu'un mot le dise.
+
+**CE PARAGRAPHE A D'ABORD CONCLU AUTRE CHOSE, ET C'EST À CORRIGER NOIR SUR
+BLANC.** Il disait que le défaut tenait à la QUESTION posée par les trois
+boutons de pose, et qu'il fallait retirer « Journée » des lignes qui posent un
+chantier. Une session voisine a traité la même plainte le même soir, plus haut :
+**la pose ne demande plus rien du tout** (§308), la durée du devis décidant
+seule. Sa réponse est meilleure que la mienne — elle supprime la question au
+lieu de la corriger — et c'est la sienne qui vit. Le composant que j'avais écrit
+pour ces lignes a été supprimé avec elles, plutôt que gardé « au cas où »
+(`CLAUDE.md` §4 quinquies).
+
+**CE QUI RESTE DE CE LOT, ET QUI TIENT TOUJOURS :**
+
+| | |
+|---|---|
+| `dureeDuChantier(c)` (`src/lib/disponibilites.ts`) | la SEULE lecture de la durée d'un chantier : `dureeDemiJournees`, sinon la dictée, sinon la journée |
+| `poseOfferte(duree)` (`src/lib/planning-jour.ts`) | quels moments écrivent quelque chose de différent — lu par « Déplacer », le seul endroit où un moment se choisit encore |
+| **retiré** | le `.filter()` écrit au milieu du rendu de « Déplacer », et la déduction de durée recopiée dans `planifierChantier` |
+
+**LA DIVERGENCE QUE PERSONNE N'AVAIT SIGNALÉE.** L'écran lisait
+`dureeDemiJournees ?? 2` — or cette colonne est NULL tant que rien n'est posé.
+Il croyait donc à « une journée » sur un chantier de deux, au moment précis où
+le patron choisit où le poser, pendant que le dépôt, lui, lisait la dictée.
+Deux lectures d'une même durée à deux étages (`CLAUDE.md` §3). Une seule
+fonction répond désormais aux deux, et `deplacerChantier` la lit aussi : un
+chantier posé avant la migration 0019 porte `duree_demi_journees` à NULL, et
+« Matin » le raccourcissait en silence par cette porte-là.
+
+**CE QUI N'A PAS ÉTÉ FAIT, ET POURQUOI.** Faire écrire « une demi-journée » au
+bouton « Matin » sur un chantier de deux jours aurait donné à la lettre ce qu'il
+demande — et effacé trois demi-journées de travail de son planning, sans un mot.
+Le modèle ne sait poser qu'un bloc continu : couper un chantier en deux morceaux
+posés à deux endroits est une autre fonctionnalité, et elle se décide avec lui
+(`TODO.md`).
+
+**ET CE QUE LES CAPTURES ONT MONTRÉ, QUI N'EST PAS ENCORE TRAITÉ.** En rejouant
+son geste à l'écran (`scripts/capture-deplacer.ts`), les deux moitiés de la
+journée CHANGENT DE PLACE selon où est le chantier : posé l'après-midi, la fiche
+se lit `APRÈS-MIDI` puis `MATIN`. C'est le saut qu'il a signalé le soir même —
+*« j'ai l'impression que c'est inversé »*. La cause est `blocsDeLaJournee`, qui
+pose les chantiers d'abord et les demi-journées libres ensuite. **Rien n'a été
+changé :** remettre le matin en haut contredit sa règle du 21 août — *« le nom
+toujours en premier ! »* — et l'arbitrage entre ses deux demandes lui appartient
+(`appli/deplacer-plus-simple.html`, `TODO.md`).
+
+---
+
+## §310 — Sortir d'Atlas : deux gestes, deux portées, et rien qui se recopie
+
+**Sa question du 9 septembre 2026 :** *« si je clique sur me déconnecter dans les
+réglages, est-ce que ça me remet à la page de connexion ? »* Il n'y avait aucun
+« me déconnecter » dans les Réglages — seulement « Me déconnecter partout », au
+bas de l'écran « Mot de passe ».
+
+**Les deux gestes existent maintenant, et ils ne servent pas au même moment.**
+
+| | Où | Portée | Face ID |
+|---|---|---|---|
+| **Se déconnecter** | bas des Réglages | **cet appareil** | **reste posé** |
+| **Me déconnecter partout** | sous « Mot de passe » | tout le compte | **retiré partout** |
+
+C'est la répartition des applications grand public — WhatsApp, Instagram, les
+Réglages d'iOS —, et sa correction du 9 septembre l'a imposée : *« va voir
+comment font les grandes applications et fais comme eux, là ce que tu me
+proposes ne fait pas pro »*. **La première version posait les deux choix dans une
+même feuille**, au moment où l'on veut juste sortir. Ne pas la ressusciter : un
+arbitrage technique n'a pas à se poser à celui qui rend son téléphone le soir.
+
+**`signOut` d'Auth.js, jamais `/api/session-perimee`.** La tentation était forte :
+cette route efface déjà les cookies. Deux raisons de ne pas la réemployer. Son
+nom ment — elle existe pour une session dont le COMPTE a disparu (le cookie
+fantôme du 10 août 2026) et renvoie sur `/login?session=perimee`. Et elle tient
+sa propre liste de six noms de cookies, préfixes `__Secure-` et `__Host-`
+compris : la recopier en ferait une seconde, et deux listes divergent (§3 de
+`CLAUDE.md`). `signOut` efface le cookie qu'Auth.js a lui-même posé.
+
+**Rien à fermer côté serveur, et ce n'est pas un oubli.** La session est un jeton
+signé (`session: { strategy: "jwt" }`) : aucune ligne de session en base. La
+preuve récente de M11 reste, délibérément — elle est attachée au `sessionId`, un
+UUID tiré à chaque authentification réelle, donc inutilisable par la session
+suivante ; l'effacer voudrait dire appeler `effacerPreuves`, qui travaille sur
+TOUT l'utilisateur et couperait sa tablette parce qu'il a fermé son téléphone.
+
+**Le dessin n'est pas neuf non plus : c'est celui de `SupprimerCeClient`**,
+tranché sur maquette le 2 septembre — une ligne en capitales espacées de 9,5 px
+qui ne s'annonce pas mais dont la cible fait 44 px, une feuille, et « Annuler »
+en simple mot plutôt qu'en second bouton. **Une seule chose en diffère : pas de
+surtitre d'alerte.** « Suppression définitive » avertit d'un geste irréversible ;
+se déconnecter se défait en cinq secondes, et le même signal posé sur un geste
+anodin s'apprend à être ignoré (`CLAUDE.md` §4 ter).
+
+**Aucune garde de rôle sur ce geste**, et c'en est une décision : sortir de son
+propre compte n'appartient pas à l'entreprise. Un salarié doit pouvoir fermer sa
+session sur le téléphone qu'il rend le soir.
+
+**Et aucun `try/catch` autour de l'action.** `signOut({ redirectTo })` lève le
+`NEXT_REDIRECT` que Next.js attrape pour naviguer : l'avaler effacerait le cookie
+en laissant l'écran en place, chaque geste ensuite refusé — exactement le piège
+du cookie mort payé une soirée le 10 août 2026.
+
+---
+
+## §311 — La flèche de retour ramène à la page d'avant, et plus à une adresse écrite d'avance
 
 **Sa demande du 9 septembre 2026, capture à l'appui :** *« j'ai cliqué sur
 ouvrir le devis, une fois sur le devis je clique sur retour, j'arrive sur la

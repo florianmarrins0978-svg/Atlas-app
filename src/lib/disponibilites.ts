@@ -536,6 +536,32 @@ export function dureeEnDemiJournees(texte: string | null | undefined): number | 
   return null;
 }
 
+/**
+ * COMBIEN DE DEMI-JOURNÉES CE CHANTIER PREND — la seule lecture qui vaille.
+ *
+ * Deux colonnes portent la durée : `dureeDemiJournees`, réservée au moment de
+ * la pose, et `dureePrevue`, la phrase dictée (« 2 jours »). La première prime,
+ * la seconde la remplace tant que rien n'est posé, et la journée entière tranche
+ * quand aucune des deux ne dit rien.
+ *
+ * **Écrit ici parce qu'il était écrit à trois endroits.** Le dépôt le déduisait
+ * avant d'écrire en base (`planifierChantier`) ; l'écran du planning, lui,
+ * lisait `dureeDemiJournees ?? 2` — donc « une journée » sur un chantier de
+ * deux jours pas encore posé, au moment précis où le patron choisit où le
+ * mettre. Deux lectures d'une même durée finissent toujours par diverger
+ * (`CLAUDE.md` §3), et celle-ci divergeait déjà.
+ */
+export function dureeDuChantier(c: {
+  dureeDemiJournees: number | null;
+  dureePrevue?: string | null;
+}): number {
+  return (
+    c.dureeDemiJournees ??
+    dureeEnDemiJournees(c.dureePrevue ?? null) ??
+    DUREE_PAR_DEFAUT_DEMI_JOURNEES
+  );
+}
+
 /** Libellé lisible d'une durée, pour l'écran du patron. */
 export function libelleDuree(demiJournees: number): string {
   if (demiJournees === 1) return "une demi-journée";

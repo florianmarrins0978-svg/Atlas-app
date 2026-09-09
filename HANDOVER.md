@@ -8,6 +8,51 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — POSER UN CHANTIER NE DEMANDE PLUS QUAND (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | « Ajouter un chantier » pose le chantier dès qu'on touche son nom ; le tiroir du bas n'offre plus qu'un bouton « Poser ». Plus de « Matin · Ap.-m. · Journée » avant la pose |
+| la migration | **aucune** |
+| les pièces | `src/app/planning/PlanningClient.tsx` (`poser`, `AjoutAuJour`, `TiroirDuBas`), `src/app/chantiers/[id]/informations/actions.ts` |
+| les suites | `test-planning-repo.ts` (2 neuves), `test-planning-e2e.ts`, `test-poser-une-date-e2e.ts` |
+| le détail | `ARCHITECTURE.md` §308, `docs/lot-poser-sans-choisir.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** ces trois boutons n'avaient pas l'air d'écrire
+quoi que ce soit, et ils réécrivaient `dureeDemiJournees`. « Matin » sur un
+chantier d'une JOURNÉE le ramenait à une demi-journée, sans un mot, et
+l'après-midi redevenait vendable. Le remettre pour « laisser le choix », c'est
+remettre ce défaut-là. Le choix d'un moment vit dans **« Déplacer »**, sur un
+chantier déjà posé — là il est une demande, pas une question de passage.
+
+**Ce qui décide à leur place existait déjà :** `planifierChantier` appelé sans
+`choix` lit la durée du chantier et cherche la moitié de journée où elle tient
+(`departPossible`) — la même règle que le jour proposé au client.
+
+## Dernier lot — « MATIN » POSAIT TOUTE LA JOURNÉE (9 septembre 2026)
+
+| | |
+|---|---|
+| sa panne | *« lorsque je clique sur le matin pour Mr. Julien, ça me met d'office toute la journée »* |
+| la racine | la durée d'un chantier se lisait de deux endroits : l'écran prenait `dureeDemiJournees ?? 2` — NULL tant que rien n'est posé — pendant que le dépôt lisait la dictée |
+| les pièces | `dureeDuChantier` (`src/lib/disponibilites.ts`), `poseOfferte` (`src/lib/planning-jour.ts`) |
+| retiré | le `.filter()` inline de « Déplacer », et la déduction de durée recopiée dans `planifierChantier` |
+| **corrigé le soir même** | ma première réponse retirait « Journée » des LIGNES DE POSE. La session voisine a supprimé la question entière (§308) : sa réponse vit, la mienne a été retirée avec son composant |
+| les suites | `test-planning-jour.ts` (+2), `test-creneaux.ts` (+3), `test-poser-une-date-e2e.ts` (+1, sur « Déplacer ») |
+| aucune migration | les deux colonnes existent depuis 0019 |
+| le détail | `ARCHITECTURE.md` §309, `docs/lot-poser-le-matin.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** `departEtDuree` ne raccourcit JAMAIS un chantier
+de plus d'une journée, et ce n'est pas un oubli. Le faire donnerait à la lettre
+ce qu'il demande — « Matin » = une demi-journée — et effacerait trois
+demi-journées de son planning sans un mot. Le symptôme se corrige en disant la
+durée, jamais en la coupant.
+
+**ET LA DURÉE NE SE LIT QUE D'UN ENDROIT.** L'écran lisait `dureeDemiJournees ?? 2`
+— NULL tant que rien n'est posé, donc « une journée » sur un chantier de deux,
+au moment précis où il choisit où le poser. `dureeDuChantier` répond désormais
+au dépôt comme à l'écran ; ne pas réintroduire de seconde lecture.
+
 ## Dernier lot — LE COMPTEUR DE TVA NOMME SON GESTE (9 septembre 2026)
 
 | | |
@@ -29,6 +74,7 @@ client me paie » est ce qu'il a déclaré aux impôts.
 une plainte de ce genre, vérifier `entreesDuReleve` AVANT de toucher au calcul —
 le défaut peut n'être que dans les mots.
 
+
 ---
 ## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
@@ -40,7 +86,7 @@ le défaut peut n'être que dans les mots.
 | la migration | aucune |
 | les pièces | `src/lib/journal-de-navigation.ts` (la règle, pure), `src/components/atlas/journal-navigateur.ts`, `JournalDeNavigation.tsx` (posé dans `src/app/layout.tsx`), `FlecheRetour.tsx` (LA flèche, pour tous les écrans) |
 | les suites | `scripts/test-journal-de-navigation.ts` (18), `scripts/test-retour-page-davant-e2e.ts` (5) |
-| le détail | `ARCHITECTURE.md` §308, `docs/lot-retour-page-davant.md` |
+| le détail | `ARCHITECTURE.md` §311, `docs/lot-retour-page-davant.md` |
 
 **LE PIÈGE À NE PAS DÉFAIRE — RECULER SE DÉCLARE, IL NE SE DEVINE PAS.** Le
 journal ne reconnaît PAS un retour à la forme de sa trace : rouvrir un écran déjà
