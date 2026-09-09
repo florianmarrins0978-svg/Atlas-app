@@ -199,9 +199,17 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
         .from(retoursInterventionTaches)
         .where(inArray(retoursInterventionTaches.retourId, ids))
         .orderBy(asc(retoursInterventionTaches.ordre)),
+      // **La CLÉ des photos, pas leur nombre — 9 septembre 2026.** La liste
+      // annonçait « 2 photos » et ne les montrait nulle part : un chiffre qu’il
+      // ne pouvait pas ouvrir, sur les seules images qui prouvent le chantier.
       tx
-        .select({ retourId: retoursInterventionPhotos.retourId })
+        .select({
+          retourId: retoursInterventionPhotos.retourId,
+          id: photos.id,
+          storageKey: photos.storageKey,
+        })
         .from(retoursInterventionPhotos)
+        .innerJoin(photos, eq(retoursInterventionPhotos.photoId, photos.id))
         .where(inArray(retoursInterventionPhotos.retourId, ids)),
     ]);
 
@@ -213,9 +221,12 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
       if (siennes) siennes.push({ libelle: t.libelle, faite: t.faite });
       else parRetour.set(t.retourId, [{ libelle: t.libelle, faite: t.faite }]);
     }
-    const photosParRetour = new Map<string, number>();
+    const photosParRetour = new Map<string, { id: string; storageKey: string }[]>();
     for (const p of comptes) {
-      photosParRetour.set(p.retourId, (photosParRetour.get(p.retourId) ?? 0) + 1);
+      const siennes = photosParRetour.get(p.retourId);
+      const photo = { id: p.id, storageKey: p.storageKey };
+      if (siennes) siennes.push(photo);
+      else photosParRetour.set(p.retourId, [photo]);
     }
 
     return lignes.map((l) => ({
@@ -228,7 +239,7 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
       poseLe: new Date(l.poseLe).toISOString(),
       posePar: l.posePrenom?.trim() || l.posePar?.trim() || null,
       taches: parRetour.get(l.id) ?? [],
-      photos: photosParRetour.get(l.id) ?? 0,
+      photos: photosParRetour.get(l.id) ?? [],
       aSignaler: l.aSignaler,
     }));
   });

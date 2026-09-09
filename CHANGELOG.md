@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Un retour d'intervention se lit enfin — « tout fait » disparaît
+
+Sa capture : *« il y a marqué tout fait, mais ce n'est pas ce qui a été fait »*.
+Le mot résumait un chiffre qu'il ne pouvait pas vérifier, et les « 2 photos »
+n'existaient qu'en chiffre. C'est **« 1 sur 2 »** partout, et **la carte s'ouvre
+en grand** : chaque ligne avec sa coche, ce qui n'a PAS été fait en toutes
+lettres, les photos sur deux colonnes, son mot. « Replier » la referme.
+
+**Ce qui n'a pas été fait est la seule ligne qui l'arrête** avant de facturer un
+travail qui n'a pas eu lieu — c'est toute la raison d'être de cet écran.
+
+Et l'image brisée qu'il avait vue est partie : une photo qui n'arrive pas laisse
+un cadre calme, pas le glyphe du navigateur, qui se lit comme une panne
+(`ARCHITECTURE.md` §304).
+
 ### « Dernier devis » n'apparaissait presque jamais
 
 **Il l'a vu sur la fiche de Julien** : un devis du 7 septembre à l'écran, et le

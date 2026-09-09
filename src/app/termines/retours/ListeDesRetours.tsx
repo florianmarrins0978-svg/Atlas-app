@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { colors, font, surPlein } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import {
   anneesDesRetours,
@@ -154,8 +154,28 @@ function Pastille({
   );
 }
 
-/** Un retour, sur la liste — et le chemin vers le chantier qui le porte. */
+/**
+ * UN RETOUR SUR LA LISTE — et ce qu'il contient, quand il l'ouvre.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **SA PROPOSITION A, tranchée le 9 septembre 2026** :
+ * *« la A c'est bien, mais tu peux faire en sorte qu'elle s'ouvre en grand et
+ * qu'elle puisse se replier »* (`appli/voir-un-retour.html`).
+ *
+ * **Ce qu'elle répare.** La carte annonçait « tout fait · 2 photos » : un
+ * résumé qu'il ne pouvait pas vérifier, et deux photos qui n'existaient qu'en
+ * chiffre. Or ce qu'il regarde ici décide s'il facture un travail qui a eu lieu.
+ *
+ * **CE QUI N'A PAS ÉTÉ FAIT S'ÉCRIT**, plutôt que de se déduire d'une
+ * soustraction : c'est la seule ligne qui l'arrêtera avant d'envoyer une
+ * facture de trop.
+ *
+ * **« Replier » vit au BAS de la feuille**, là où son doigt arrive une fois
+ * qu'il a tout lu — en haut, il faudrait remonter pour refermer ce qu'on vient
+ * de parcourir.
+ */
 function Carte({ retour }: { retour: RetourEnListe }) {
+  const [ouvert, setOuvert] = useState(false);
   const compte = compteDesTaches(retour.taches);
   const jour = new Date(retour.poseLe).toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -165,52 +185,182 @@ function Carte({ retour }: { retour: RetourEnListe }) {
   });
 
   return (
-    // **CE N'EST PAS UN LIEN, ET C'EST DÉLIBÉRÉ.** Le chantier d'un retour
-    // s'ouvre sur sa facture — mais l'adresse dépend de son état, et cette règle
-    // vit déjà dans `portesDuPlanning`. La recopier ici ferait la seconde vérité
-    // que `CLAUDE.md` §3 interdit. Un faux lien, lui, promettrait un geste qui
-    // ne se passe pas : une carte qui ne mène nulle part n'a pas à ressembler à
-    // une porte. La question est ouverte dans `TODO.md`.
-    <div
-      data-atlas="carte-de-retour"
-      className="mx-[22px] mt-2.5 flex items-start gap-3 rounded-[13px] px-3.5 py-3"
-      style={{
-        backgroundColor: colors.card,
-        color: colors.ink,
-        boxShadow: `inset 0 0 0 1px ${colors.line}`,
-      }}
-    >
-      <span
-        aria-hidden="true"
-        className="grid h-[26px] w-[26px] flex-none place-items-center rounded-full"
-        style={{ backgroundColor: colors.rustTint, color: colors.orTexte }}
+    <div className="mx-[22px] mt-2.5">
+      {/* **CE N'EST PLUS UN BLOC MUET, ET CE N'EST PAS UN LIEN NON PLUS.** Il
+          ouvre ce qu'il porte, ici même : le chantier, lui, s'atteint par des
+          règles d'accès qui vivent déjà dans `portesDuPlanning`, et les
+          recopier ferait la seconde vérité que `CLAUDE.md` §3 interdit. */}
+      <button
+        type="button"
+        onClick={() => setOuvert((o) => !o)}
+        data-atlas="carte-de-retour"
+        aria-expanded={ouvert}
+        className="flex w-full items-start gap-3 px-3.5 py-3 text-left"
+        style={{
+          backgroundColor: colors.card,
+          color: colors.ink,
+          boxShadow: `inset 0 0 0 1px ${colors.line}`,
+          borderRadius: ouvert ? "13px 13px 0 0" : 13,
+          WebkitTapHighlightColor: "transparent",
+        }}
       >
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M3 8.4 6.3 11.7 13 5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[14px] font-medium leading-[1.3]">{jour}</span>
-        <span className="mt-[3px] block text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
-          {[retour.posePar, compte, phrasePhotos(retour.photos)].filter(Boolean).join(" · ")}
+        <span
+          aria-hidden="true"
+          className="grid h-[26px] w-[26px] flex-none place-items-center rounded-full"
+          style={{ backgroundColor: colors.rustTint, color: colors.orTexte }}
+        >
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M3 8.4 6.3 11.7 13 5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </span>
-        {/* Son mot, quand il en a écrit un. Une case vide intitulée
-            « À signaler » laisserait croire qu'on a perdu ce qu'il a dit. */}
-        {retour.aSignaler && (
-          <span
-            className="mt-1.5 block text-[13px] leading-[1.45]"
-            style={{ color: colors.inkSoft }}
-          >
-            « {retour.aSignaler} »
+        <span className="min-w-0 flex-1">
+          <span className="block text-[14px] font-medium leading-[1.3]">{jour}</span>
+          <span className="mt-[3px] block text-[12.5px] leading-[1.45]" style={{ color: colors.muted }}>
+            {[retour.posePar, compte, phrasePhotos(retour.photos.length)].filter(Boolean).join(" · ")}
           </span>
-        )}
-      </span>
+        </span>
+        <span
+          aria-hidden="true"
+          className="mt-1.5 flex-none"
+          style={{
+            color: colors.muted,
+            transform: ouvert ? "rotate(90deg)" : "none",
+            transition: "transform .18s cubic-bezier(.22,.9,.3,1)",
+          }}
+        >
+          <svg width="9" height="15" viewBox="0 0 9 15" fill="none">
+            <path
+              d="m1.5 1.5 6 6-6 6"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </button>
+
+      {ouvert && (
+        <div
+          data-atlas="retour-deplie"
+          className="px-3.5 pb-3.5 pt-0.5"
+          style={{
+            backgroundColor: colors.card,
+            boxShadow: `inset 0 0 0 1px ${colors.line}`,
+            borderRadius: "0 0 13px 13px",
+          }}
+        >
+          {retour.taches.length > 0 && (
+            <>
+              <p className={`mt-3 ${libelleCaps}`} style={{ color: colors.muted }}>
+                Ce qui a été fait
+              </p>
+              <ul className="m-0 mt-2 list-none p-0">
+                {retour.taches.map((t, rang) => (
+                  <li
+                    key={`${t.libelle}-${rang}`}
+                    className="flex items-start gap-2.5 py-[5px] text-[13.5px] leading-[1.35]"
+                    data-atlas={t.faite ? "tache-faite" : "tache-pas-faite"}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="mt-[1px] grid h-[17px] w-[17px] flex-none place-items-center rounded-[5px]"
+                      style={
+                        t.faite
+                          ? { backgroundColor: colors.plein, color: surPlein }
+                          : { boxShadow: `inset 0 0 0 1.5px ${colors.line}` }
+                      }
+                    >
+                      {t.faite && (
+                        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                          <path
+                            d="M2 6.3 4.7 9 10 3"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </span>
+                    <span style={{ color: t.faite ? colors.ink : colors.muted }}>
+                      {t.libelle}
+                      {/* **Ce qui n'a pas été fait le DIT.** Une case vide se lit
+                          comme un oubli de lecture ; ces deux mots l'arrêtent
+                          avant de facturer un travail qui n'a pas eu lieu. */}
+                      {!t.faite && <span style={{ color: colors.orTexte }}> — pas fait</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {retour.photos.length > 0 && (
+            <>
+              <p className={`mt-4 ${libelleCaps}`} style={{ color: colors.muted }}>
+                Photos
+              </p>
+              {/* **EN GRAND, et c'est sa demande.** Des vignettes de 62 px ne
+                  montrent pas si la haie est taillée ; deux colonnes le font.
+
+                  **Conservé en `<img>`, comme la pellicule des chantiers** :
+                  `next/image` réécrit le `src` via `/_next/image`, or ces
+                  fichiers sortent d'une route gardée qui vérifie à qui ils
+                  appartiennent. Les faire passer par l'optimiseur, c'est
+                  poser un second chemin vers des photos de chantier — et une
+                  photo visible par le mauvais jeton est le défaut de plus
+                  haute priorité de ce produit. */}
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {retour.photos.map((photo) => (
+                  <img
+                    key={photo.id}
+                    src={`/api/fichiers/${photo.storageKey}`}
+                    alt=""
+                    data-atlas="photo-du-retour"
+                    className="h-[132px] w-full rounded-[11px] object-cover"
+                    style={{ backgroundColor: colors.rustTint }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {retour.aSignaler && (
+            <>
+              <p className={`mt-4 ${libelleCaps}`} style={{ color: colors.muted }}>
+                À signaler
+              </p>
+              <p
+                className="mt-2 rounded-[12px] px-3 py-2.5 text-[13.5px] leading-[1.45]"
+                style={{ backgroundColor: colors.rustTint, color: colors.inkSoft }}
+              >
+                « {retour.aSignaler} »
+              </p>
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setOuvert(false)}
+            data-atlas="replier-le-retour"
+            className="mt-3.5 h-[42px] w-full rounded-full text-[13.5px]"
+            style={{
+              color: colors.orTexte,
+              boxShadow: `inset 0 0 0 1px ${colors.orTexte}`,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            Replier
+          </button>
+        </div>
+      )}
     </div>
   );
 }

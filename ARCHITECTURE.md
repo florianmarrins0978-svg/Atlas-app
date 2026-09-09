@@ -26133,3 +26133,58 @@ que commence la contestation.
 signé sur place avant les travaux (`appli/ts-bon-sur-place.html`), tranché le
 4 septembre. Le supplément sur la facture règle le geste manquant, pas le
 risque d'impayé.
+
+## §304 — Un retour se LIT, il ne se résume pas
+
+*Sa proposition A, tranchée le 9 septembre 2026 sur `appli/voir-un-retour.html` :
+« la A c’est bien, mais tu peux faire en sorte qu’elle s’ouvre en grand et qu’elle
+puisse se replier ».*
+
+### Ce que sa capture disait, et qui était faux
+
+La carte annonçait **« tout fait · 2 photos »**. Son verdict : *« il y a marqué
+tout fait, mais ce n’est pas ce qui a été fait »*. Les deux mots étaient un
+problème chacun :
+
+| Le mot | Ce qu’il cachait |
+|---|---|
+| « tout fait » | un résumé **invérifiable** : quatre cochées sur quatre s’écrivait comme un devis d’une seule ligne |
+| « 2 photos » | un **chiffre qu’il ne pouvait pas ouvrir**, sur les seules images qui prouvent le chantier |
+
+**Un compte se vérifie d’un coup d’œil, un résumé se croit.** C’est « 1 sur 2 »
+partout, et le mot « tout fait » a disparu de la règle comme du contrôle qui le
+réclamait — une suite qui exige ce qu’il a fait retirer rend son écran impossible
+à changer (`CLAUDE.md` §5 bis).
+
+### Ce qui n’a PAS été fait s’écrit
+
+En toutes lettres, à côté de la ligne : « Traitement anti-mousse — **pas fait** ».
+Une case vide se déduit d’une soustraction, et ne s’arrête pas sous l’œil.
+**C’est la seule ligne qui l’empêchera de facturer un travail qui n’a pas eu
+lieu** — c’est-à-dire toute la raison d’être de cet écran.
+
+### La carte devient une feuille
+
+Pas une page à part, pas un PDF : **la carte elle-même s’ouvre**, prolongée sans
+couture, et « Replier » la referme. Les photos y font 132 px de haut sur deux
+colonnes au lieu de 62 — des vignettes ne montrent pas si la haie est taillée.
+
+**« Replier » vit au BAS de la feuille** : c’est là que son doigt arrive une fois
+qu’il a tout lu. En haut, il faudrait remonter pour refermer ce qu’on vient de
+parcourir.
+
+**Ce qui a été écarté**, et il l’a vu sur la planche : la page à part (un écran
+de plus à quitter) et le PDF (à fabriquer, et qui ne se relit pas d’un pouce sur
+un chantier).
+
+### Et l’image brisée
+
+Une photo qui n’arrive pas montrait le glyphe du navigateur — qui se lit comme
+une panne de l’application, alors que le fichier met parfois une seconde à venir
+depuis un chantier sans réseau. Les vignettes portent désormais un fond : un
+cadre calme, pas une croix.
+
+**Les images restent en `<img>`**, comme la pellicule des chantiers :
+`next/image` réécrit le `src` via `/_next/image`, or ces fichiers sortent d’une
+route gardée qui vérifie à qui ils appartiennent. Un second chemin vers des
+photos de chantier serait le défaut de plus haute priorité de ce produit.
