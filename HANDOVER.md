@@ -8,6 +8,30 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — « MATIN » POSAIT TOUTE LA JOURNÉE (9 septembre 2026)
+
+| | |
+|---|---|
+| sa panne | *« lorsque je clique sur le matin pour Mr. Julien, ça me met d'office toute la journée »* |
+| la racine | la règle « au-delà d'une journée, ces boutons ne choisissent que le DÉPART » vivait dans le JSX d'**un seul des trois endroits** qui les dessinent |
+| les pièces | `poseOfferte` (`src/lib/planning-jour.ts`), `dureeDuChantier` (`src/lib/disponibilites.ts`), `BoutonsDePose` (`PlanningClient.tsx`) |
+| retiré | le `.filter()` inline de « Déplacer », les libellés en dur de « Sans date », la déduction de durée recopiée dans `planifierChantier` |
+| les suites | `test-planning-jour.ts` (4 de plus), `test-creneaux.ts` (3), `test-poser-une-date-e2e.ts` (1, par la ligne qu'il touche) |
+| aucune migration | les deux colonnes existent depuis 0019 |
+| le détail | `ARCHITECTURE.md` §305, `docs/lot-poser-le-matin.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** `departEtDuree` ne raccourcit JAMAIS un chantier
+de plus d'une journée, et ce n'est pas un oubli. Le faire donnerait à la lettre
+ce qu'il demande — « Matin » = une demi-journée — et effacerait trois
+demi-journées de son planning sans un mot. Le symptôme se corrige en disant la
+durée, jamais en la coupant.
+
+**ET LA DURÉE NE SE LIT QUE D'UN ENDROIT.** L'écran lisait `dureeDemiJournees ?? 2`
+— NULL tant que rien n'est posé, donc « une journée » sur un chantier de deux,
+au moment précis où il choisit où le poser. `dureeDuChantier` répond désormais
+au dépôt comme à l'écran ; ne pas réintroduire de seconde lecture.
+
+---
 ## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
 | | |

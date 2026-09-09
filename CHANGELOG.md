@@ -8,6 +8,28 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### « Matin » posait la journée entière sur un chantier de deux jours
+
+*« Lorsque je clique sur le matin pour Mr. Julien, ça me met d'office toute la
+journée. »* Son chantier dure deux jours : quatre demi-journées posées à partir
+du matin prennent forcément le matin ET l'après-midi. Le calcul était juste ;
+c'est la question posée à l'écran qui ne l'était pas.
+
+Au-delà d'une journée, l'étendue vient de la dictée et les boutons ne
+choisissent plus que le DÉPART — « Journée » y écrivait alors exactement le même
+état que « Matin ». Ce bouton mort avait déjà été retiré le 23 août, mais dans
+« Déplacer » seulement : la règle vivait au milieu du rendu d'un écran sur les
+trois qui dessinent ces boutons. Elle vit maintenant dans `src/lib`, et les
+trois la lisent.
+
+La durée s'écrit désormais à côté des boutons quand ils ne la choisissent plus.
+Sans elle, « Matin » se lit « une demi-journée ».
+
+**Et une seconde divergence, trouvée en chemin :** l'écran lisait la durée
+réservée, NULL tant que rien n'est posé, donc « une journée » sur un chantier de
+deux jours — au moment précis où il choisit où le poser. Le dépôt, lui, lisait la
+dictée. Une seule fonction répond aux deux.
+
 ### « Dernier devis » n'apparaissait presque jamais
 
 **Il l'a vu sur la fiche de Julien** : un devis du 7 septembre à l'écran, et le

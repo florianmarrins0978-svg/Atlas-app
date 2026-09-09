@@ -271,6 +271,70 @@ async function main() {
     if (rows[0].duree !== 1) throw new Error(`un matin fait une demi-journée, pas ${rows[0].duree}`);
   });
 
+  // ─── SON GESTE DU 9 SEPTEMBRE 2026 ────────────────────────────────────────
+  //
+  // *« Lorsque je clique sur le matin pour Mr. Julien, ça me met d'office toute
+  // la journée. »* Son chantier dure deux jours — quatre demi-journées, qui
+  // prennent forcément le matin ET l'après-midi. Le calcul était juste ; la
+  // question posée à l'écran ne l'était pas : trois boutons d'étendue sur un
+  // chantier dont l'étendue vient de la dictée, dont « Journée » qui écrivait
+  // le même état que « Matin ».
+  //
+  // **Il entre par la ligne « Sans date », comme lui.** Construire l'état à la
+  // main puis vérifier le dépôt n'aurait éprouvé que la moitié qu'on vient
+  // d'écrire (`CLAUDE.md` §5 quater) : c'est la ligne qu'il touche qui offrait
+  // le bouton mort.
+  await cas("un chantier de deux jours n'offre plus « Journée », et dit sa durée", async () => {
+    await pool.query(
+      `UPDATE chantiers
+          SET date_planifiee = NULL, duree_demi_journees = NULL, duree_prevue = '2 jours'
+        WHERE id = $1`,
+      [chantierId]
+    );
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    const jours = await page.$$eval('[data-atlas="grille-mois"] [data-jour]', (l) =>
+      l.map((e) => ({
+        jour: e.getAttribute("data-jour"),
+        matin: e.querySelector('[data-demi="matin"]')?.getAttribute("data-etat"),
+      }))
+    );
+    const ouvrable3 = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
+    const libre = jours.find((j) => j.jour && ouvrable3(j.jour) && j.matin === "libre");
+    if (!libre) throw new Error("aucun jour ouvrable libre au calendrier");
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${libre.jour}"]`);
+    await page.waitForTimeout(600);
+    await ouvrirLeTiroirDuPlanning(page);
+
+    const moments = await ligne.locator("[data-poser]").allInnerTexts();
+    if (moments.length !== 2) {
+      throw new Error(
+        `un chantier de deux jours offre ${moments.length} bouton(s) : ${JSON.stringify(moments)}`
+      );
+    }
+    if (moments.some((m) => m.includes("Journée"))) {
+      throw new Error("« Journée » écrit le même état que « Matin » sur un chantier de deux jours");
+    }
+    // Sans la durée écrite à côté, « Matin » se lit « une demi-journée » — le
+    // malentendu exact qu'il signale.
+    const duree = await ligne.locator('[data-atlas="duree-a-poser"]').innerText();
+    if (duree.trim() !== "2 jours") {
+      throw new Error(`la ligne annonce « ${duree.trim()} » au lieu de « 2 jours »`);
+    }
+
+    await ligne.locator('[data-poser="matin"]').click();
+    await page.waitForTimeout(1500);
+    const { rows } = await pool.query(
+      `SELECT creneau_debut AS moment, duree_demi_journees AS duree FROM chantiers WHERE id = $1`,
+      [chantierId]
+    );
+    if (rows[0].moment !== "matin") throw new Error(`parti sur « ${rows[0].moment} » et non le matin`);
+    // La durée dictée ne se raccourcit pas : la perdre lui coûterait un jour de
+    // travail, en silence.
+    if (rows[0].duree !== 4) {
+      throw new Error(`deux jours valent 4 demi-journées, pas ${rows[0].duree}`);
+    }
+  });
+
   await navigateur.close();
   await pool.end();
 

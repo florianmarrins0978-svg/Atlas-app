@@ -302,6 +302,20 @@ export const MOT_QUAND: Record<QuandChantier, string> = {
 };
 
 /**
+ * Les mêmes trois moments, pour la ligne la plus serrée de l'écran.
+ *
+ * La ligne « Sans date » aligne un nom de client et ces boutons dans la largeur
+ * d'un téléphone : « Après-midi » y mange le nom. Un `Record` exhaustif plutôt
+ * qu'une liste écrite à côté — le compilateur exige alors les trois moments, et
+ * les deux registres ne peuvent pas se désaccorder.
+ */
+export const MOT_QUAND_COURT: Record<QuandChantier, string> = {
+  matin: "Matin",
+  apres: "Ap.-m.",
+  journee: "Journée",
+};
+
+/**
  * Le départ et la durée qu'écrit chacun des trois boutons.
  *
  * **Un chantier plus long qu'une journée garde sa durée.** « Journée » sur un
@@ -318,6 +332,41 @@ export function departEtDuree(
   }
   if (quand === "journee") return { moment: "matin", duree: 2 };
   return { moment: quand === "apres" ? "apres_midi" : "matin", duree: 1 };
+}
+
+/**
+ * CE QUE LES TROIS BOUTONS PEUVENT HONORER SUR CE CHANTIER-LÀ.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa panne du 9 septembre 2026 :** *« lorsque je clique sur le matin pour
+ * Mr. Julien, ça me met d'office toute la journée »*. Son chantier dure deux
+ * jours, et c'est exact : quatre demi-journées posées à partir du matin
+ * occupent forcément le matin ET l'après-midi. Ce qui était faux, c'est la
+ * QUESTION que l'écran lui posait.
+ *
+ * Sur un chantier d'une journée ou moins, les trois boutons choisissent
+ * l'ÉTENDUE : « Matin » réserve une demi-journée, « Journée » en réserve deux.
+ * Au-delà, l'étendue vient de la dictée et `departEtDuree` la protège — la
+ * raccourcir lui ferait perdre des jours de travail en silence. Les boutons ne
+ * choisissent alors plus que le DÉPART, et « Journée » écrit exactement le même
+ * état que « Matin » : un bouton mort, qui se retire au lieu de s'expliquer.
+ *
+ * **La règle vivait dans le JSX d'un seul des trois endroits qui dessinent ces
+ * boutons** — « Déplacer » l'avait, « Sans date » et « + Ajouter un chantier »
+ * ne l'avaient pas. C'est pourquoi il l'a rencontrée en posant une date, deux
+ * semaines après la même correction ailleurs.
+ *
+ * `departSeulement` sert l'écran : quand les boutons ne disent que le départ,
+ * la durée du chantier doit se lire à côté d'eux, sinon « Matin » se lit
+ * « une demi-journée » — exactement le malentendu qu'il signale.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+export function poseOfferte(duree: number): {
+  quands: QuandChantier[];
+  departSeulement: boolean;
+} {
+  if (duree > 2) return { quands: ["matin", "apres"], departSeulement: true };
+  return { quands: ["matin", "apres", "journee"], departSeulement: false };
 }
 
 /**

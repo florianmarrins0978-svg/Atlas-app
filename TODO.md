@@ -9,6 +9,18 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE DÉCISION QUI LUI APPARTIENT — couper un chantier en deux poses (9 sept. 2026)
+
+Née de sa panne du jour : *« lorsque je clique sur le matin pour Mr. Julien, ça
+me met d'office toute la journée »*. Un chantier de deux jours posé « Matin »
+prend forcément la journée entière — l'application ne sait poser qu'**un bloc
+continu** (`creneau_debut` + `duree_demi_journees`).
+
+S'il veut vraiment faire jeudi matin puis reprendre lundi, il faut deux poses
+pour un chantier : c'est une fonctionnalité, pas un correctif, et **c'est lui
+qui décide** si elle vaut le coup. En attendant, l'écran dit la durée au lieu de
+promettre un découpage qu'il ne sait pas faire (`ARCHITECTURE.md` §305).
+
 ## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
 
 **Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce

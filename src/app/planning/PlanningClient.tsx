@@ -13,6 +13,7 @@ import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
   cleCreneau,
   creneauxDuChantier,
+  dureeDuChantier,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type JourIso,
 } from "@/lib/disponibilites";
@@ -48,6 +49,8 @@ import {
   etatDemi,
   MOT_DEMI,
   MOT_QUAND,
+  MOT_QUAND_COURT,
+  poseOfferte,
   quandDuChantier,
   occupationDemi,
   type Demi,
@@ -1257,7 +1260,7 @@ export default function PlanningClient({
                           className="mt-[3px] block text-[12.5px]"
                           style={{ color: jour < aujourdHui ? colors.muted : colors.or }}
                         >
-                          {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
+                          {ditLaDuree(dureeDuChantier(c))}
                         </span>
                         {/* **Le lieu, sous la durée.** C'est la deuxième
                             question après « qui » — et sur quatre clients qui
@@ -1759,6 +1762,63 @@ type GestesCarte = {
 };
 
 /**
+ * LES BOUTONS QUI POSENT UN CHANTIER — écrits une fois, posés à deux endroits.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa panne du 9 septembre 2026 :** *« lorsque je clique sur le matin pour
+ * Mr. Julien, ça me met d'office toute la journée »*. Son chantier dure deux
+ * jours ; quatre demi-journées posées à partir du matin prennent forcément la
+ * journée entière, et « Journée » écrivait exactement le même état que
+ * « Matin ». L'écran lui demandait donc de choisir une étendue déjà décidée par
+ * la dictée, avec un bouton mort au bout de la ligne.
+ *
+ * Ce composant ne décide de rien : `poseOfferte` dit quels boutons écrivent
+ * quelque chose de différent, et si ce qu'ils choisissent est le DÉPART plutôt
+ * que l'étendue. Dans ce cas la durée se lit à côté d'eux — sans elle, « Matin »
+ * se lit « une demi-journée », et c'est le malentendu qu'il a signalé.
+ *
+ * **Elle ne s'écrit QUE dans ce cas.** Sur un chantier d'une journée ou moins,
+ * les boutons disent déjà ce qu'ils réservent ; l'écrire deux fois serait du
+ * bruit (`CLAUDE.md` §3), et un mot qui parle à tort s'apprend à être ignoré.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+function BoutonsDePose({
+  chantier,
+  repere,
+  mots,
+  onChoisir,
+}: {
+  chantier: ChantierPlanning | undefined;
+  repere: "data-poser" | "data-quand";
+  mots: Record<QuandChantier, string>;
+  onChoisir: (quand: QuandChantier) => void;
+}) {
+  // Le chantier a été posé ailleurs pendant que le volet était ouvert : poser
+  // ce qu'on ne trouve plus reviendrait à écrire sur un identifiant périmé.
+  if (!chantier) return null;
+  const duree = dureeDuChantier(chantier);
+  const { quands, departSeulement } = poseOfferte(duree);
+  return (
+    <span className="flex flex-shrink-0 items-center gap-[5px]">
+      {departSeulement && (
+        <span
+          data-atlas="duree-a-poser"
+          className="mr-0.5 text-[12.5px]"
+          style={{ color: colors.or }}
+        >
+          {ditLaDuree(duree)}
+        </span>
+      )}
+      {quands.map((v) => (
+        <Petit key={v} {...{ [repere]: v }} onClick={() => onChoisir(v)}>
+          {mots[v]}
+        </Petit>
+      ))}
+    </span>
+  );
+}
+
+/**
  * LE GESTE D'AJOUT D'UNE JOURNÉE — écrit une fois, posé à deux endroits.
  *
  * **Il appartient au JOUR, pas au chantier.** Sur la planche 86 il vit sous la
@@ -1835,17 +1895,12 @@ function AjoutAuJour({
           >
             {sansDate.find((s) => s.id === ouvert.chantierId)?.nom ?? ""}
           </span>
-          <span className="flex flex-shrink-0 gap-1.5">
-            {(Object.keys(MOT_QUAND) as QuandChantier[]).map((v) => (
-              <Petit
-                key={v}
-                data-quand={v}
-                onClick={() => poser(ouvert.chantierId, jour, v)}
-              >
-                {MOT_QUAND[v]}
-              </Petit>
-            ))}
-          </span>
+          <BoutonsDePose
+            chantier={sansDate.find((s) => s.id === ouvert.chantierId)}
+            repere="data-quand"
+            mots={MOT_QUAND}
+            onChoisir={(v) => poser(ouvert.chantierId, jour, v)}
+          />
         </div>
       ) : (
         /* **Plus de filet au-dessus du « + »** — sa demande du 23 août 2026 :
@@ -2475,7 +2530,7 @@ function CarteDuJour({
                     className="mt-[3px] block text-[12.5px]"
                     style={{ color: colors.or }}
                   >
-                    {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
+                    {ditLaDuree(dureeDuChantier(c))}
                   </span>
                   <LieuDuChantier chantier={c} />
                 </button>
@@ -2621,29 +2676,22 @@ function CarteDuJour({
                     // qui déciderait à sa place. C'est la règle qu'il a posée
                     // pour l'équipe, et elle vaut partout.
                     <>
-                      {/* **« Journée » disparaît au-delà d'une journée.** Sur un
-                          chantier de trois jours, elle écrit le même état que
-                          « Matin » — le départ, la durée étant protégée — et
-                          l'une des deux ne faisait donc rien. Un bouton qui
-                          n'écrit rien se retire ; le laisser en expliquant
-                          serait pire, puisqu'il faut le lire pour savoir de ne
-                          pas l'employer. */}
-                      {(Object.keys(MOT_QUAND) as QuandChantier[])
-                        .filter(
-                          (v) =>
-                            v !== "journee" ||
-                            (c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES) <= 2
-                        )
-                        .map((v) => (
-                          <Petit
-                            key={v}
-                            data-vers={v}
-                            retenue={quandDuChantier(c) === v}
-                            onClick={() => deplacer(c.id, v)}
-                          >
-                            {MOT_QUAND[v]}
-                          </Petit>
-                        ))}
+                      {/* **« Journée » disparaît au-delà d'une journée** — la
+                          règle vit dans `poseOfferte`, et non plus ici : elle
+                          manquait aux deux autres endroits qui dessinent ces
+                          mêmes boutons, et c'est par là qu'il est retombé
+                          dessus le 9 septembre. La durée, elle, se lit déjà
+                          au-dessus de ces boutons (« 2 jours »). */}
+                      {poseOfferte(dureeDuChantier(c)).quands.map((v) => (
+                        <Petit
+                          key={v}
+                          data-vers={v}
+                          retenue={quandDuChantier(c) === v}
+                          onClick={() => deplacer(c.id, v)}
+                        >
+                          {MOT_QUAND[v]}
+                        </Petit>
+                      ))}
                     </>
                   ) : (
                     <>
@@ -3311,23 +3359,12 @@ function TiroirDuBas({
                     </span>
                     {portesOuvertes && <ChevronDesPortes chantier={c} onPortes={onPortes} />}
                     {jourTouche ? (
-                      <span className="flex flex-shrink-0 gap-[5px]">
-                        {(
-                          [
-                            ["matin", "Matin"],
-                            ["apres", "Ap.-m."],
-                            ["journee", "Journée"],
-                          ] as [QuandChantier, string][]
-                        ).map(([v, mot]) => (
-                          <Petit
-                            key={v}
-                            data-poser={v}
-                            onClick={() => poser(c.id, jourTouche, v)}
-                          >
-                            {mot}
-                          </Petit>
-                        ))}
-                      </span>
+                      <BoutonsDePose
+                        chantier={c}
+                        repere="data-poser"
+                        mots={MOT_QUAND_COURT}
+                        onChoisir={(v) => poser(c.id, jourTouche, v)}
+                      />
                     ) : (
                       <span className="text-[12.5px]" style={{ color: colors.muted }}>
                         en attente d’un jour

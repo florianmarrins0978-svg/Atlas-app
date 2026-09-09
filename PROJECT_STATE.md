@@ -1,10 +1,30 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-08 · branche `main`
+**Dernière mise à jour :** 2026-09-09 · branche `main`
 · dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
 (ce lot-ci ne touche que le chemin de retour, sans base)
 
 ---
+
+## FAIT : « Matin » posait toute la journée — 9 septembre 2026
+
+Sa panne : *« lorsque je clique sur le matin pour Mr. Julien, ça me met d'office
+toute la journée »*. Le chantier dure deux jours ; quatre demi-journées posées à
+partir du matin prennent forcément la journée entière. **Le calcul était juste,
+la question posée à l'écran ne l'était pas.**
+
+Au-delà d'une journée, l'étendue vient de la dictée : les boutons ne choisissent
+plus que le départ, et « Journée » écrivait le même état que « Matin ». Ce bouton
+mort avait déjà été retiré le 23 août — **dans « Déplacer » seulement**, la règle
+étant écrite au milieu du rendu. Les deux autres endroits qui dessinent ces
+boutons ne l'ont jamais portée ; il est entré par « Sans date ».
+
+`poseOfferte` et `dureeDuChantier` vivent maintenant dans `src/lib/`, et les
+trois endroits les lisent. La durée s'écrit à côté des boutons quand ils ne la
+choisissent plus. **Aucune migration.** Détail : `ARCHITECTURE.md` §305.
+
+**Reste ouvert, et c'est à lui de trancher :** couper un chantier en deux poses
+(`TODO.md`).
 
 ## FAIT : LA RÉCEPTION D’UNE FACTURE SE TRACE — 9 septembre 2026
 

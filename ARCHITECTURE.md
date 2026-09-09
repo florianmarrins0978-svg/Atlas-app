@@ -26133,3 +26133,70 @@ que commence la contestation.
 signé sur place avant les travaux (`appli/ts-bon-sur-place.html`), tranché le
 4 septembre. Le supplément sur la facture règle le geste manquant, pas le
 risque d'impayé.
+
+---
+## §305 — « Matin » sur un chantier de deux jours : la question que l'écran n'avait pas le droit de poser
+
+**Sa panne du 9 septembre 2026 :** *« lorsque je clique sur le matin pour
+Mr. Julien, ça me met d'office toute la journée. »*
+
+**Le calcul était juste.** Son chantier porte « 2 jours », soit quatre
+demi-journées ; posées à partir du matin, elles occupent le matin ET
+l'après-midi du jeudi, puis le vendredi entier. Rien d'autre n'était possible :
+`departEtDuree` protège délibérément la durée d'un chantier de plus d'une
+journée, parce que la raccourcir à une demi-journée lui ferait perdre des jours
+de travail sans qu'un mot le dise (décision du 23 août 2026).
+
+**Ce qui était faux, c'est la QUESTION.** Trois boutons — « Matin »,
+« Ap.-m. », « Journée » — se lisent comme un choix d'ÉTENDUE. Sur un chantier
+d'une journée ou moins, ils le sont : « Matin » réserve une demi-journée,
+« Journée » en réserve deux. Au-delà, l'étendue vient de la dictée et les
+boutons ne choisissent plus que le DÉPART. « Journée » y écrivait alors
+exactement le même état que « Matin » : un bouton mort, au bout d'une ligne qui
+ne disait nulle part que le chantier durait deux jours.
+
+**LA RACINE : une règle qui vivait dans le JSX d'un seul écran sur trois.** Le
+23 août, le même bouton mort avait déjà été retiré — mais dans « Déplacer »
+seulement, par un `.filter()` écrit au milieu du rendu. Les deux autres endroits
+qui dessinent ces mêmes boutons — la ligne « Sans date » et « + Ajouter un
+chantier » — ne l'ont jamais porté. C'est par là qu'il est retombé dessus, deux
+semaines et demie plus tard, et c'est très exactement ce que `CLAUDE.md` §3
+interdit : une règle recopiée finit toujours par ne l'être qu'à moitié.
+
+**Ce qui a été écrit, et ce qui a été retiré :**
+
+| | |
+|---|---|
+| `poseOfferte(duree)` (`src/lib/planning-jour.ts`) | rend les boutons qui écrivent quelque chose de différent, et dit si ce qu'ils choisissent est le DÉPART plutôt que l'étendue |
+| `dureeDuChantier(c)` (`src/lib/disponibilites.ts`) | la seule lecture de la durée : `dureeDemiJournees`, sinon la dictée, sinon la journée |
+| `BoutonsDePose` (`PlanningClient.tsx`) | les boutons, écrits une fois, posés aux deux endroits qui posent un chantier |
+| **retiré** | le `.filter()` inline de « Déplacer », les trois libellés écrits en dur dans « Sans date », et la déduction de durée recopiée dans `planifierChantier` |
+
+**UNE SECONDE DIVERGENCE, TROUVÉE EN CHEMIN.** L'écran lisait
+`dureeDemiJournees ?? 2` — donc « une journée » sur un chantier pas encore posé,
+puisque cette colonne est NULL tant que rien n'est posé. Le dépôt, lui, lisait
+la dictée avant d'écrire. Les deux ne disaient donc pas la même durée **au
+moment précis où le patron choisit où poser le chantier**. Une seule fonction
+répond désormais aux deux, et `deplacerChantier` la lit aussi : un chantier posé
+avant la migration 0019 porte `duree_demi_journees` à NULL, et « Matin » le
+raccourcissait en silence par cette porte-là.
+
+**ET LA DURÉE SE LIT MAINTENANT À CÔTÉ DES BOUTONS** — mais seulement quand ils
+ne la choisissent plus. Sans elle, « Matin » se lit « une demi-journée », et
+c'est le malentendu qu'il signale. L'écrire aussi sur un chantier d'une
+demi-journée serait du bruit : les boutons disent déjà ce qu'ils réservent, et
+un mot qui parle à tort s'apprend à être ignoré (`CLAUDE.md` §4 ter).
+
+**Ce qui n'a pas été fait, et pourquoi.** Faire écrire « une demi-journée » au
+bouton « Matin » sur un chantier de deux jours aurait donné ce qu'il demande à
+la lettre — et effacé trois demi-journées de travail de son planning, sans un
+mot. Le modèle ne sait poser qu'un bloc continu : couper un chantier en deux
+morceaux posés à deux endroits est une autre fonctionnalité, et elle se décide
+avec lui (`TODO.md`).
+
+**Le contrôle qui le tient.** `scripts/test-planning-jour.ts` interroge
+désormais `poseOfferte` au lieu de recopier le filtre de l'écran — l'ancienne
+version prouvait qu'UNE ligne était juste, jamais que les trois endroits la
+portaient. Et `scripts/test-poser-une-date-e2e.ts` entre par la ligne qu'il
+touche, lui : deux boutons, « 2 jours » écrit à côté, et quatre demi-journées en
+base après l'appui (`CLAUDE.md` §5 quater).
