@@ -5,8 +5,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
+// **La marque du texte simulé, jamais recopiée** : c'est NOTRE constante, et une
+// seconde écriture du même préfixe divergerait le jour où il change.
+import { PREFIXE_TRANSCRIPTION_SIMULEE } from "../src/server/ai/providers/transcription/dev";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+
 const MICRO_SIMULE = path.join(__dirname, "fixtures", "fake-mic.wav");
 const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -127,16 +132,27 @@ async function main() {
     );
   });
 
-  // **Sans service de transcription raccordé, la chaîne DIT pourquoi elle
-  // s'arrête.** C'est l'état réel de l'application au 11 août 2026 : aucun
-  // contrat n'est signé (`TODO.md`, décision n°1), et le fournisseur `dev`
-  // recopie une simulation. Ce que le patron verrait aujourd'hui, c'est cette
-  // phrase — et il vaut mieux qu'elle soit éprouvée, parce qu'un travail qui
-  // s'arrête SANS RIEN DIRE se lit comme une panne.
+  // **UNE TRANSCRIPTION SIMULÉE NE PASSE PAS POUR UNE VRAIE — la règle du
+  // 5 septembre 2026, et c'est elle qu'on éprouve ici.**
   //
-  // **Plus rien à toucher, et c'est la seule différence** : la chaîne est
-  // partie seule avec l'avion (sa demande du 30 août). L'attente reste la même.
-  await cas("sans service de transcription, elle dit pourquoi elle s'arrête", async () => {
+  // Elle existe parce que le texte de remplacement était découpé en segments,
+  // et que chaque segment ressortait en PRESTATION sur le devis du patron. La
+  // chaîne doit donc s'arrêter, le DIRE, et ne pas quitter la fiche : un travail
+  // qui s'arrête sans rien dire se lit comme une panne.
+  //
+  // **L'ÉTAT SE POSE EN BASE, il ne se subit plus** — 9 septembre 2026. Ce cas
+  // attendait que le SERVEUR n'ait aucun fournisseur raccordé : il éprouvait la
+  // configuration de la batterie, pas la règle de l'application. Le jour où les
+  // suites ont reçu une transcription utilisable (`transcription/essai.ts`,
+  // sans quoi la chaîne dictée → devis n'est éprouvée nulle part), il est passé
+  // au rouge sur du code juste. Écrit ainsi, il tient quel que soit le
+  // fournisseur — et il éprouve la RÈGLE (`CLAUDE.md` §5 bis).
+  await cas("une transcription simulée ne passe pas pour une vraie, et l'écran le dit", async () => {
+    await pool.query(
+      "update notes_vocales set transcription = $1, transcription_statut = 'reussie' where chantier_id = $2",
+      [`${PREFIXE_TRANSCRIPTION_SIMULEE} fournisseur de développement, 1024 octets reçus]`, chantierId]
+    );
+    await page.goto(fiche, { waitUntil: "networkidle" });
     const raison = page.locator("text=/pas été transcrite|aucun prestataire/i").first();
     await raison.waitFor({ state: "visible", timeout: 120_000 });
     assert.ok(
