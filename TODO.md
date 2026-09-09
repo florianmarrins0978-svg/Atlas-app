@@ -9,6 +9,29 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
+
+**Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce
+que ça me remet à la page de connexion ? »* — et le bouton n'existe pas. Le seul
+geste est « Me déconnecter partout », au bas de l'écran « Mot de passe ».
+
+`appli/me-deconnecter.html` propose une ligne de sortie tout en bas du sommaire
+des Réglages, et une feuille qui demande **cet appareil, ou tous**.
+
+**Rien n'est codé, et rien ne se code avant son choix.** Ce qu'il faut de lui :
+garde-t-on les deux gestes, ou seulement celui de tous les jours ?
+
+**Ce que le geste « cet appareil » coûterait**, si retenu : la session vit dans
+un jeton (`session: { strategy: "jwt" }`, `src/auth.ts:36`), donc effacer le
+cookie suffit — `/api/session-perimee` le fait déjà, il n'y a pas de session à
+révoquer côté serveur. **Face ID resterait posé** sur l'appareil, et c'est
+exactement ce qui sépare ce geste du geste « partout ».
+
+**Le piège à ne pas rouvrir :** ne jamais laisser « partout » sans retirer les
+clés Face ID. Une clé rouvre une session sans mot de passe
+(`signIn("cle-appareil")`), donc l'appareil qu'on voulait couper rentrerait à
+l'instant d'après. C'est le défaut réparé le 7 septembre 2026.
+
 ## ⏳ DEUX MOTS À TRANCHER — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
 Le lot est livré et sur `main`. Deux choses n’ont pas été tranchées, et elles

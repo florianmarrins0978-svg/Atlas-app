@@ -8,6 +8,42 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Ce que « me déconnecter » fait vraiment, et la maquette d'un geste absent
+
+**Sa question du jour :** *« si je clique sur me déconnecter dans les réglages,
+est-ce que ça me remet à la page de connexion ? »* — et **il n'y a aucun « me
+déconnecter » dans les Réglages**. Le seul geste existant est « Me déconnecter
+partout », rangé au bas de l'écran « Mot de passe »
+(`src/app/reglages/connexion/ConnexionClient.tsx:207`). Personne ne le cherche
+là, et il ferme aussi la tablette.
+
+**Ce que le geste existant fait, vérifié dans le code et non supposé :** il
+ferme toutes les sessions du compte (`jetonsValidesDepuis`, lu à chaque
+requête), efface les preuves récentes, **retire toutes les clés Face ID**, puis
+part sur `/api/session-perimee` qui vide les cookies et renvoie 303 vers
+`/login`. La déconnexion est donc bien immédiate, et l'écran de connexion
+arrive tout de suite.
+
+**Pourquoi Face ID tombe avec, et c'est la question qu'il a posée :** une clé
+d'appareil ouvre une session **sans mot de passe** (`signIn("cle-appareil")`,
+`src/auth.ts:112`). Fermer les sessions en laissant les clés laisserait
+l'appareil qu'on voulait couper rouvrir Atlas à l'instant d'après. C'était le
+cas jusqu'au 7 septembre 2026.
+
+**La portée de « tous les appareils » est le COMPTE, pas l'entreprise :**
+`deconnecterPartout` ne travaille que sur `ctx.utilisateurId`. Les salariés ne
+sont pas touchés, et aucune donnée n'est effacée.
+
+**Maquette, rien de codé :** `appli/me-deconnecter.html` — trois onglets (la
+ligne de sortie au bas des Réglages, la feuille « cet appareil ou tous », ce qui
+tombe vraiment), plus Nuit.
+
+**Trois défauts trouvés à la capture, par aucun test** : la feuille du « choix »
+restait collée sur l'onglet suivant, l'onglet « Le bas des Réglages » montrait
+le HAUT — donc pas son objet —, et le bandeau était illisible en Nuit
+(`--fond` devient sombre alors que le bandeau reste noir : c'est le défaut du
+22 août, qui se recopie de planche en planche).
+
 ### Le planning s'ouvre sur la journée, et « Aujourd'hui » s'écrit en doré
 
 Le salarié ouvrait l'appli le matin et lisait « Mardi 8 septembre » : il devait
