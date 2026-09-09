@@ -636,30 +636,55 @@ export default function FactureClient({
               *« refuse l'envoi : ça veut dire qu'il communique avec le client
               par SMS, donc il enverra par SMS »*. Aucun champ de saisie ici —
               il a écarté l'idée. */}
-          <fieldset className="flex flex-col gap-1.5">
-            <legend className={smallCaps} style={{ color: colors.muted }}>
-              Comment lui envoyer sa facture ?
-            </legend>
-            <div className="flex gap-2">
+          {/* ─── LE MÊME RÉGLAGE QUE SUR LA FICHE CLIENT — 9 septembre 2026 ──
+              Sa remarque, capture à l'appui : *« pour envoyer le message SMS ou
+              e-mail, dans la fiche client c'est un trait en dessous, pas une
+              bulle ; mets la même chose ici »*.
+
+              **Les deux écrans avaient DIVERGÉ, et c'est daté.** Sa demande du
+              22 août posait déjà la règle — *« le choix SMS ou e-mail, mais de
+              la même forme que sur la page fiche client »* — et cet écran l'a
+              tenue jusqu'au 4 septembre. Ce jour-là, la planche « A — Épurée »
+              a fait de l'envoi un RÉGLAGE sur la fiche client : une ligne, deux
+              mots, un trait d'or sous celui qui est retenu. La facture est
+              restée aux capsules, et l'on s'est retrouvé avec deux dessins du
+              même geste — ce que `CLAUDE.md` §3 interdit nommément.
+
+              **La question s'en va avec les capsules.** « Comment lui envoyer
+              sa facture ? » était une phrase qui expliquait le bouton d'à côté
+              (§3, « le moins de mots possible ») ; « Envoi » suffit, et c'est
+              le mot qu'il lit déjà sur l'autre écran. */}
+          <fieldset
+            aria-label="Comment lui envoyer sa facture ?"
+            data-atlas="envoi-canal"
+            className="mt-2.5 flex min-h-[34px] items-center justify-between gap-3 pt-2"
+            style={{ borderTop: `1px solid ${colors.lineSoft}` }}
+          >
+            <span className={smallCaps} style={{ color: colors.muted }}>
+              Envoi
+            </span>
+            <span className="flex gap-1">
               <ChoixCanal
-                libelle="Par SMS"
+                apparence="reglage"
+                libelle="SMS"
                 actif={canalEnvoi === "sms"}
                 disponible={Boolean(clientTelephone)}
                 onClick={() => setCanalEnvoi("sms")}
               />
               <ChoixCanal
-                libelle="Par e-mail"
+                apparence="reglage"
+                libelle="E-mail"
                 actif={canalEnvoi === "email"}
                 disponible={Boolean(clientEmail)}
                 onClick={() => setCanalEnvoi("email")}
               />
-            </div>
-            <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
-              {destinataire
-                ? `${canalEnvoi === "sms" ? "Au" : "À"} ${destinataire}`
-                : "Aucune coordonnée pour ce canal."}
-            </p>
+            </span>
           </fieldset>
+          <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
+            {destinataire
+              ? `${canalEnvoi === "sms" ? "Au" : "À"} ${destinataire}`
+              : "Aucune coordonnée pour ce canal."}
+          </p>
 
           {/* **Sans flèche**, et le mot dit l'envoi : *« arrêter la facture, tu
               mets envoyer la facture sans la flèche »*. */}
