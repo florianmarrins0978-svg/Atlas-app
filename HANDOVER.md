@@ -8,6 +8,33 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA FLÈCHE DE RETOUR REND SA PLACE (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | la flèche de retour **recule** dans l'historique au lieu de naviguer vers l'écran d'avant — sur les 49 écrans qui la portent |
+| la migration | **aucune** |
+| les pièces | `src/components/atlas/FlecheRetour.tsx` (la flèche + `MemoireDuChemin`), branché dans `EnTeteEcran` et `src/app/layout.tsx` |
+| la suite | `scripts/test-retour-garde-la-place-e2e.ts` (4 cas ; rouge sur 2 contre la version d'avant) |
+| le détail | `ARCHITECTURE.md` §305, `docs/lot-retour-garde-la-place.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** elle ne recule **que sur preuve**. Chaque entrée
+d'historique est marquée de l'adresse d'où elle a été ouverte (`atlasVenantDe`,
+posé par `MemoireDuChemin`) ; sans marque, la flèche navigue comme avant. Un
+`router.back()` inconditionnel ferait un bouton mort sur une fiche ouverte par
+un signet, ou rendrait la main au site précédent.
+
+**ET `MemoireDuChemin` VIT DANS LA MISE EN PAGE RACINE**, pas dans un écran :
+c'est ce qui lui fait voir les écrans SANS flèche — l'accueil, par exemple —, et
+c'est justement d'eux qu'on vient. Le descendre dans `EnTeteEcran` casserait la
+moitié des cas sans qu'aucun type ne s'en plaigne.
+
+**Ce qui reste ouvert, et c'est mesuré :** un retour sert l'écran depuis la
+réserve de Next.js. Pas apporté par ce lot — le retour du navigateur en souffre
+pareil, et depuis toujours. `TODO.md` porte la mesure et la piste ; ne pas
+remettre un `router.refresh()` sur `popstate`, il remet le défilement à zéro.
+
+---
 ## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
 | | |

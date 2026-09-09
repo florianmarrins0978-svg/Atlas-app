@@ -26133,3 +26133,85 @@ que commence la contestation.
 signé sur place avant les travaux (`appli/ts-bon-sur-place.html`), tranché le
 4 septembre. Le supplément sur la facture règle le geste manquant, pas le
 risque d'impayé.
+
+---
+
+## §305 — Une flèche de retour RECULE ; elle ne navigue pas vers l'écran d'avant
+
+**Sa remarque du 9 septembre 2026 :** *« Si je clique sur un client tout en bas
+de la liste, je fais retour, il me remet en haut de la liste. Je veux rester où
+j'étais ! »* Trente-sept clients ; il redescendait la liste après chaque fiche.
+
+### LE DÉFAUT N'ÉTAIT PAS DANS LA LISTE
+
+`EnTeteEcran` rendait sa flèche avec un `<Link>` — donc une navigation **en
+avant** vers l'adresse de l'écran précédent. Next.js pose une page neuve en
+haut, et il a raison : c'est ce qu'on attend d'un lien. Mais le geste du patron
+est un **retour**, et l'application faisait l'inverse.
+
+Chercher le défaut dans `ListeClients` aurait mené à écrire une mémoire de
+défilement par écran — une seconde vérité à côté de celle que le navigateur
+tient déjà (`CLAUDE.md` §3), et un pansement sur une flèche qui reste fausse.
+
+### LA MESURE, AVANT LE CORRECTIF
+
+Version bâtie, écran du patron, quarante-sept clients descendus jusqu'au bout :
+
+| Le geste | Où l'on retombe |
+|---|---|
+| la flèche de l'écran | **0 px** |
+| le retour du navigateur | **2 941 px** — sa place exacte |
+
+Le navigateur savait déjà le faire. Rien n'était à inventer.
+
+### CE QUI DÉCIDE, ET CE QUI NE DÉCIDE PAS
+
+| | |
+|---|---|
+| **où** la flèche mène | inchangé — `retourFicheClient`, `retourDepuisLePlanning`, `retourDuDevis` (§296) |
+| **comment** elle y va | `FlecheRetour` : elle recule si l'écran d'avant est celui-là, elle navigue sinon |
+
+`MemoireDuChemin`, monté une fois dans la mise en page racine, marque chaque
+entrée d'historique de l'adresse d'où elle a été ouverte (`atlasVenantDe`). La
+flèche ne recule donc **que sur preuve** : une fiche ouverte par un signet ou
+rechargée n'a pas d'écran d'avant connu, et sa flèche continue de mener à la
+liste. Reculer à l'aveugle aurait fait un bouton qui ne fait rien — ou qui rend
+la main au site précédent.
+
+**Posé dans la mise en page racine, et c'est indispensable** : elle n'est pas
+rejouée d'une navigation à l'autre, si bien que ce témoin voit passer TOUS les
+écrans — y compris ceux qui ne portent aucune flèche, et c'est justement d'eux
+qu'on vient parfois (l'accueil).
+
+### CE QUE LE CORRECTIF RETIRE
+
+L'entrée d'historique empilée à chaque aller-retour. Il fallait auparavant
+appuyer sur le retour du navigateur autant de fois qu'on avait ouvert de fiches
+pour ressortir de la liste. Un correctif qui n'enlève rien doit alerter
+(`CLAUDE.md` §4 quater) ; celui-ci enlève une navigation.
+
+### CE QU'IL COÛTE, ET QUI EST MESURÉ
+
+Un retour sert l'écran depuis la réserve de Next.js : une donnée changée en base
+pendant qu'on était sur la fiche n'apparaît pas au retour. **Ce n'est pas ce lot
+qui l'apporte** — le même contrôle joué sur le geste de retour du navigateur, que
+le patron emploie déjà, est stale de la même façon, et depuis toujours. En
+pratique, les soixante-seize `revalidatePath` du dépôt vident la réserve dès
+qu'une modification passe par l'application ; le cas mesuré — écrire en base
+par-dessus — n'est aucun de ses gestes.
+
+**Un rafraîchissement sur `popstate` a été écrit, essayé, puis RETIRÉ** : il
+rendait les données fraîches et remettait le défilement à zéro, c'est-à-dire
+qu'il défaisait ce qu'on venait de corriger. Le faire tenir demandait un
+`setTimeout` calé sur la restauration du navigateur — un pansement au sens exact
+du §4 quater, qui serait revenu sur un téléphone plus lent. Le point ouvert et sa
+mesure sont dans `TODO.md`.
+
+### LE CONTRÔLE SAIT ÉCHOUER
+
+`scripts/test-retour-garde-la-place-e2e.ts` déroule le geste entier — descendre,
+ouvrir, revenir — et vise la RÈGLE, jamais un libellé (`CLAUDE.md` §5 bis) : une
+position de défilement, une adresse. Confronté à la version d'avant, il rougit
+sur deux cas et laisse verts les deux garde-fous. Il pose lui-même ses trente
+clients : sur le jeu de démonstration, la liste tient dans l'écran et le contrôle
+mesurerait zéro.

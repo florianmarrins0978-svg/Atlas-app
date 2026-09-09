@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { colors, font } from "@/lib/design-tokens";
 import BoutonAssistant from "./BoutonAssistant";
+import FlecheRetour from "./FlecheRetour";
 
 /**
  * L'en-tête d'un écran, dans la grammaire retenue le 10 août 2026.
@@ -116,9 +116,13 @@ export default function EnTeteEcran({
       {(retour || actionPlacee === "retour") && (
       <div className="flex items-center justify-between gap-4 px-[26px] pt-7">
         {retour ? (
-          <Link
+          // **Une flèche RECULE, elle n'avance pas vers l'écran d'avant.**
+          // C'était un `<Link>`, donc une page neuve posée en haut : le patron
+          // perdait sa place dans la liste des clients à chaque aller-retour
+          // (9 septembre 2026). Le détail et la mesure sont dans `FlecheRetour`.
+          <FlecheRetour
             href={retour.href}
-            aria-label={retour.libelle}
+            libelle={retour.libelle}
             className="flex h-10 w-10 items-center justify-center rounded-full"
             style={
               ample
@@ -136,7 +140,7 @@ export default function EnTeteEcran({
             >
               <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </Link>
+          </FlecheRetour>
         ) : (
           <span />
         )}

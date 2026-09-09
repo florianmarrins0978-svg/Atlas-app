@@ -9,6 +9,7 @@ import { estPageDuClient } from "@/lib/chemins-publics";
 // s'en sert, la mise en page racine n'étant pas rejouée à chaque navigation.
 import { estEcranSansNavigation } from "@/lib/ecrans-sans-navigation";
 import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
+import { MemoireDuChemin } from "@/components/atlas/FlecheRetour";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
 import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
@@ -209,6 +210,13 @@ export default async function RootLayout({
             retiré n'a jamais fermé une adresse : cette garde refuse au SERVEUR,
             avant que la page ne soit peinte (`docs/QUESTIONS.md` §10). */}
         <GardeAcces />
+        {/* **D'où chaque écran a été ouvert, noté dans l'historique.** C'est ce
+            qui permet à la flèche de retour de RECULER plutôt que d'avancer, et
+            donc de rendre au patron la place qu'il occupait dans la liste
+            (`FlecheRetour`). Posé ici parce que la mise en page racine n'est
+            pas rejouée d'une navigation à l'autre : ce témoin voit passer tous
+            les écrans, y compris ceux qui ne portent aucune flèche. */}
+        <MemoireDuChemin />
         {/* **DANS le flux, avant tout le reste.** Il pousse le contenu de
             quarante pixels au lieu de le couvrir : trois défauts réels de ce
             dépôt viennent d'éléments flottants qui cachaient un geste

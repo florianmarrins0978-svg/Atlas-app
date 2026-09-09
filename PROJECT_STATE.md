@@ -6,6 +6,31 @@
 
 ---
 
+## FAIT : LA FLÈCHE DE RETOUR REND SA PLACE — 9 septembre 2026
+
+Sa remarque : *« si je clique sur un client tout en bas de la liste, je fais
+retour, il me remet en haut de la liste — je veux rester où j'étais ! »*
+
+Le défaut était dans la **flèche**, pas dans la liste : c'était un lien, donc une
+navigation en avant, et une page neuve se pose en haut. Mesuré avant de
+corriger — la flèche déposait à 0 px, le retour du navigateur rendait 2 941 px.
+Elle recule désormais dans l'historique quand l'écran d'avant est bien celui
+qu'elle vise, sur **les 49 écrans** qui la portent. L'entrée d'historique
+empilée à chaque aller-retour disparaît avec.
+
+Aucune migration. Document : `docs/lot-retour-garde-la-place.md` ·
+`ARCHITECTURE.md` §305.
+
+**Reste ouvert, mesuré, et pas apporté par ce lot :** un retour sert l'écran
+depuis la réserve de Next.js (`TODO.md`).
+
+**Reste à trancher, par lui :** ce que « 8 chantiers » doit dire sur la ligne
+d'un client. Le compte est juste — tous les chantiers rattachés, quel que soit
+leur état — mais il l'a lu comme une promesse de documents. Maquette d'abord
+(`CLAUDE.md` §3 bis).
+
+---
+
 ## FAIT : LA RÉCEPTION D’UNE FACTURE SE TRACE — 9 septembre 2026
 
 Sa demande : une case « J’ai bien reçu cette facture » sur la page du client,
