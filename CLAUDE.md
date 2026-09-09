@@ -1147,7 +1147,8 @@ signe de vie rafraîchi toutes les vingt secondes. Processus mort ou silence de
 plus de quatre-vingt-dix secondes, il ne vaut plus rien. En cas de doute :
 `node scripts/verrou-batterie.mjs etat`, et `rendre --force` s'il ment.
 
-**`redis-cli FLUSHALL` VIDE LE LIMITEUR DE TOUTES LES SESSIONS — jamais.**
+**`redis-cli FLUSHALL` VIDE LE LIMITEUR DE TOUTES LES SESSIONS — et ce n'est
+plus une consigne, c'est un refus.**
 Sa consigne du 9 septembre 2026 : *« chaque session peut prendre un port
 différent, plusieurs sessions tournent en même temps, n'effacez pas les
 batteries des autres ! »* Redis tient seize bases numérotées, **une par
@@ -1162,6 +1163,15 @@ Ce qu'on écrit à la place, quand le limiteur bloque un diagnostic :
 `redis-cli -n <rang de l'atelier> FLUSHDB`. Et le rang **ne se devine pas** : la
 batterie l'annonce (« Atelier n° 2 — port 3002 »), et le rang 0 est le port
 3000.
+
+**Sa réponse quand on le lui a avoué :** *« pourquoi une session vide toutes les
+autres, je veux plus ça ! »* — donc `scripts/garde-redis-des-autres.mjs`,
+branché sur **chaque** commande de **chaque** session
+(`.claude/settings.json`) : `FLUSHALL` et `FLUSHDB` sans `-n` sont refusés, et
+le refus dit quoi taper à la place. Il laisse passer tout le reste — lire, une
+clé nommée, et la règle elle-même écrite dans un message de commit, faux positif
+que `scripts/test-garde-redis-des-autres.ts` a attrapé avant qu'il gêne
+personne.
 
 **Et l'on ne force NI le port NI la base à la main.** `prendreUnAtelier()` en
 choisit un libre et pose `ATLAS_ADRESSE` : imposer `DATABASE_URL` par-dessus,
