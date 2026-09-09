@@ -142,13 +142,21 @@ export const config = {
   // application n'en a — vérifié sur `src/app/` —, et un fichier n'a ni session
   // à vérifier ni `x-atlas-pathname` à recevoir.
   //
+  // **ET `api/` EST ÉPARGNÉ, parce que la première version ne l'épargnait pas.**
+  // Écrite sans cette réserve, la règle emportait `/api/fichiers/<clé>.png` —
+  // les clés de stockage portent l'extension du fichier. Le LOGO du patron
+  // n'apparaissait donc plus sur ses devis : l'image était dans la page et ne
+  // se chargeait pas. Trouvé en réparant les rouges des suites, le 9 septembre,
+  // et c'est une régression de ce lot-ci : un fichier SERVI PAR UNE ROUTE n'est
+  // pas un fichier de `public/`, il a une session à vérifier comme les autres.
+  //
   // **Ce que cela n'ouvre PAS** : les jetons du client (`/devis/<jeton>`) n'ont
-  // pas de point, les routes d'API non plus. La garde de session reste entière
-  // sur tout ce qui est un écran.
+  // pas de point, et tout `api/` reste gardé. La garde de session reste entière
+  // sur tout ce qui est un écran ou une route.
   //
   // **`api/health` est ancré à la fin d'un segment** — constat de l'audit final,
   // 29 août 2026. Écrit sans ancrage, le préfixe excluait aussi tout chemin qui
   // COMMENCE par ces lettres : `/api/healthXYZ` n'aurait traversé ni la garde de
   // session, ni la pose de `x-atlas-pathname` dont dépend `exigerOuverture`.
-  matcher: ["/((?!_next/static|_next/image|api/health(?:/|$)|.*\\.[^/]+$).*)"],
+  matcher: ["/((?!_next/static|_next/image|api/health(?:/|$)|(?!api/)[^?]*\\.[^/?]+$).*)"],
 };
