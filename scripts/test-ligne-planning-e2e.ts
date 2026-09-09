@@ -482,15 +482,36 @@ async function main() {
     );
     await page.waitForTimeout(200);
 
-    const avant = await hautDe(longue.id);
-    // **Un contrôle qui ne peut pas se placer refuse de conclure.** Si la page
-    // n'est pas assez haute pour amener ce client sous l'en-tête, le geste
-    // qu'il décrit n'est pas rejoué — et un vert dirait le contraire.
+    // **On pousse jusqu'en bas si la page ne suffit pas — 9 septembre 2026.**
+    //
+    // Ce contrôle exigeait que le second client arrive à moins de 260 px du
+    // haut, et il refusait de conclure sinon. Depuis que la liste s'ouvre sur
+    // la SEULE journée du jour, la page est plus courte : le montage ne pouvait
+    // plus se placer, et la suite rougissait en disant elle-même que ce n'était
+    // pas le produit. Un rouge qui n'accuse personne s'apprend à être ignoré.
+    //
+    // **Ce qui compte n'est pas la hauteur, c'est la SÉQUENCE** : une fiche
+    // ouverte AU-DESSUS, qui se referme, et un client qu'on touche en dessous.
+    // C'est cela qu'on exige désormais — le reste était une commodité de mesure.
+    let avant = await hautDe(longue.id);
     if (avant > 260) {
+      await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" as ScrollBehavior }));
+      await page.waitForTimeout(200);
+      avant = await hautDe(longue.id);
+    }
+    const hautPremier = await hautDe(journee.id);
+    if (!(hautPremier < avant)) {
       throw new Error(
-        `Le second client est à ${Math.round(avant)} px du haut : la page n'est pas assez ` +
-          "longue pour rejouer son geste. Ce n'est pas le produit qui est en cause, c'est " +
-          "ce montage."
+        `La première fiche n'est pas AU-DESSUS du second client (${Math.round(hautPremier)} px ` +
+          `contre ${Math.round(avant)} px) : rien ne remontera en se refermant, et ce contrôle ` +
+          "ne mesurerait rien."
+      );
+    }
+    const hauteurVue = await page.evaluate(() => window.innerHeight);
+    if (avant < 0 || avant > hauteurVue) {
+      throw new Error(
+        `Le second client est hors de l'écran (${Math.round(avant)} px) : son geste n'est pas ` +
+          "rejouable. Ce n'est pas le produit qui est en cause, c'est ce montage."
       );
     }
 

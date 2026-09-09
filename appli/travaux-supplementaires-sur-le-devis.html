@@ -12,7 +12,7 @@
   :root{
     --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
     --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
-    --or:#B98B47; --orTexte:#8b6835;
+    --or:#B98B47;
     --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
     --voileChamp:rgba(28,28,26,0.04);
     --surPlein:#faf9f5;
@@ -21,7 +21,7 @@
   body[data-charte="nuit"]{
     --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
     --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
-    --or:#B98B47; --orTexte:#b98b47;
+    --or:#B98B47;
     --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07);
     --voileChamp:rgba(233,232,222,0.06);
     --surPlein:#1a1d19;
@@ -111,9 +111,8 @@
          border-radius:999px;background:var(--rust);color:var(--surPlein);
          font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer;
          -webkit-tap-highlight-color:transparent}
-  .plein.creux{background:none;border:1px solid var(--or);color:var(--orTexte);
+  .plein.creux{background:none;border:1px solid var(--or);color:var(--or);
                font:600 15px/1 ui-sans-serif,sans-serif}
-  body[data-charte="nuit"] .plein.creux{color:var(--or)}
 
   .sous-bouton{margin:12px 22px 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
 

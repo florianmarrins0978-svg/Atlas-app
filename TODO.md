@@ -2037,10 +2037,25 @@ La planche essayable qui porte tout cela :
 sous le bouton de la facture, l'écran à part écarté). Il en a été prévenu et l'a
 maintenu : c'est la page entière.
 
-**CE QUI RESTE, ET QUI SEUL EMPÊCHE DE CODER : une facture, ou deux ?** Le
-client reçoit-il une pièce qui additionne tout, ou celle qu'il avait acceptée
-plus le supplément ? C'est la planche `appli/ts-avenant.html`, et rien dans le
-code ne peut trancher à sa place.
+**TRANCHÉ LE 9 SEPTEMBRE 2026 : « une seule facture ».** Le client reçoit UNE
+pièce, qui additionne le devis accepté et le supplément, en deux blocs — pas de
+seconde facture, pas de second règlement à relancer.
+
+**Ce que cela ferme, et ce que cela n'ouvre pas.** La solution A du document
+(`docs/travaux-supplementaires.md`) prévoyait un avenant qui suit le parcours du
+devis ; ce qu'il retient en est la moitié — le supplément vit sur la facture, en
+une seule pièce. **Son écrit reste le bon signé sur place** (C), tranché le
+4 septembre : ce n'est pas la facture qui protège de la contestation.
+
+**PLUS RIEN N'EMPÊCHE DE CODER.** Ce qu'il reste à écrire, et personne ne l'a
+pris :
+
+| | |
+|---|---|
+| la base | des lignes de facture qui ne viennent pas du devis, avec leur taux propre |
+| `factures.ts` | `terminerChantier` recopie le devis ; il faut qu'une facture en brouillon accepte des lignes en plus, et que l'émission les fige avec le reste |
+| l'écran | le bouton à la place de la phrase, la feuille en lecture seule, la catégorie qui s'écrit |
+| le PDF | les deux blocs, et le récapitulatif par taux |
 
 **Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
 transmises (`scripts/` non concerné : le parcours a été joué à la main, captures

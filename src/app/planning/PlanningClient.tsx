@@ -1144,14 +1144,22 @@ export default function PlanningClient({
                   enfarinée, il sait que M. Martins sous aujourd'hui c'est le
                   client qu'il doit faire »*.
 
-                  **`orTexte` et NON `or`, et ce n'est pas une préférence.**
-                  Mesuré sur les huit chartes : l'or plein posé sur ce papier
-                  pâle donne **2,03 à 2,53** de contraste — illisible au soleil,
-                  quelle que soit la taille du mot. `orTexte` donne 3,92 à 5,29,
-                  ce qui passe **parce que le mot est gros** : 19 px en gras,
-                  soit du grand texte, dont le seuil est 3. Écrit en 12 px comme
-                  les autres dates, il ne passerait pas — la taille fait donc
-                  partie du correctif, elle n'est pas un choix d'allure.
+                  **`or` ET NON `orTexte` — sa correction du 9 septembre :**
+                  *« utilise le doré qu'on utilise dans l'appli ! »*. Il a
+                  raison, et pas seulement par goût : **la durée du chantier,
+                  trois pixels plus bas, est déjà en `colors.or`**. L'or
+                  assombri posait donc deux dorés différents dans le même bloc,
+                  à se toucher — exactement le genre d'écart qu'on ne voit pas
+                  en codant et qui saute aux yeux sur l'écran.
+
+                  **Ce que ça coûte, et il l'a tranché en connaissance :** l'or
+                  plein sur ce papier pâle donne **2,03 à 2,53** de contraste
+                  selon la charte, là où `orTexte` tenait 3,92. Le mot reste à
+                  19 px en gras — la taille faisait partie du correctif et elle
+                  ne bouge pas. **La façon de garder le VRAI or ET la lisibilité
+                  existe** : c'est la proposition D de
+                  `appli/aujourd-hui-en-tete.html`, la pastille d'encre, qui
+                  donne 4,56 à 5,81. Il l'a vue et a préféré celle-ci.
 
                   Les autres journées ne bougent pas : 12 px, encre sur papier,
                   14,07 de contraste. */}
@@ -1169,7 +1177,7 @@ export default function PlanningClient({
                     background: colors.rustTint,
                     color:
                       jour === aujourdHui
-                        ? colors.orTexte
+                        ? colors.or
                         : jour < aujourdHui
                           ? colors.muted
                           : colors.ink,
