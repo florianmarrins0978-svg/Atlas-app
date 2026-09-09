@@ -105,6 +105,8 @@
          font:500 14px/1 ui-sans-serif,sans-serif;color:var(--rust);
          -webkit-tap-highlight-color:transparent}
   .ajout.or{margin-top:18px;color:var(--or);display:block}
+  /* Le geste dit ce qu il ajoute, et il porte le doré de l application. */
+  .ajout.gros-or{margin-top:18px;color:var(--or);font:600 17px/1 ui-sans-serif,sans-serif}
 
   /* Le bouton plein, celui de l'application. */
   .plein{display:block;width:calc(100% - 36px);margin:20px 18px 0;min-height:52px;border:0;
@@ -223,7 +225,7 @@
       </div>
       <div id="lignes-ts"></div>
       <div class="sous-total" id="sous-total-ts"><span>Sous-total HT</span><b>0,00 €</b></div>
-      <button type="button" class="ajout" id="ajouter-ligne">+ Ajouter une ligne</button>
+      <button type="button" class="ajout gros-or" id="ajouter-ligne">+ Ajouter des travaux supplémentaires</button>
       <button type="button" class="ajout or" id="ajouter-tva">+ Ajouter une TVA</button>
 
       <div class="plage" style="margin:22px 0 0;padding:16px 0 0;border-top:1px solid var(--lineSoft);border-radius:0">

@@ -18,7 +18,7 @@ sert.
 | retiré | le `.filter()` inline de « Déplacer », les libellés en dur de « Sans date », la déduction de durée recopiée dans `planifierChantier` |
 | les suites | `test-planning-jour.ts` (4 de plus), `test-creneaux.ts` (3), `test-poser-une-date-e2e.ts` (1, par la ligne qu'il touche) |
 | aucune migration | les deux colonnes existent depuis 0019 |
-| le détail | `ARCHITECTURE.md` §305, `docs/lot-poser-le-matin.md` |
+| le détail | `ARCHITECTURE.md` §308, `docs/lot-poser-le-matin.md` |
 
 **LE PIÈGE À NE PAS DÉFAIRE :** `departEtDuree` ne raccourcit JAMAIS un chantier
 de plus d'une journée, et ce n'est pas un oubli. Le faire donnerait à la lettre
@@ -30,6 +30,28 @@ durée, jamais en la coupant.
 — NULL tant que rien n'est posé, donc « une journée » sur un chantier de deux,
 au moment précis où il choisit où le poser. `dureeDuChantier` répond désormais
 au dépôt comme à l'écran ; ne pas réintroduire de seconde lecture.
+
+## Dernier lot — LE COMPTEUR DE TVA NOMME SON GESTE (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | trois phrases de l'écran TVA, et l'état d'une facture à 0 € |
+| la migration | aucune |
+| les pièces | `src/app/termines/tva/DeclarationsTva.tsx`, `EnAttenteDePaiement.tsx`, `RegimeTva.tsx`, `src/lib/exigibilite-tva.ts` |
+| les suites | `scripts/test-exigibilite-tva.ts` (+2 cas) ; le parcours reste tenu par `test-tva-au-paiement-e2e.ts` |
+| le détail | `ARCHITECTURE.md` §305 |
+
+**CE QU'IL NE FAUT PAS RÉÉCRIRE EN SENS INVERSE.** Il a lu « le jour où vous
+serez payé » et compris qu'Atlas apprend seul qu'un virement est arrivé. Aucune
+phrase de cet écran ne doit plus nommer l'ENCAISSEMENT comme l'événement qui
+remplit le compteur : c'est son appui sur « Payée » qui le fait, et rien
+d'autre. Seul le TITRE du régime garde les mots de la loi — « Le mois où mon
+client me paie » est ce qu'il a déclaré aux impôts.
+
+**Et le calcul n'a pas bougé** : il était déjà juste, depuis le 14 août. Devant
+une plainte de ce genre, vérifier `entreesDuReleve` AVANT de toucher au calcul —
+le défaut peut n'être que dans les mots.
+
 
 ---
 ## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)

@@ -180,7 +180,12 @@ export default async function TerminesPage() {
               Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
             </p>
           ) : (
-            <ListeTermines lignes={lignes} retours={retours} moisCourant={moisCourant} />
+            <ListeTermines
+              lignes={lignes}
+              retours={retours.total}
+              retoursNonLus={retours.nonLus}
+              moisCourant={moisCourant}
+            />
           )}
         </div>
 

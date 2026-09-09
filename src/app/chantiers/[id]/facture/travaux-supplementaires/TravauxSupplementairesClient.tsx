@@ -330,14 +330,25 @@ export default function TravauxSupplementairesClient({
           </>
         )}
 
+        {/* **Le geste dit CE QU'IL AJOUTE, pas « une ligne »** — sa correction
+            du 9 septembre 2026, l'écran sous les yeux : *« il ne faut pas qu'il
+            y ait marqué "ajouter une ligne" mais "ajouter travaux
+            supplémentaires", en plus gros, le même doré que l'appli, avec
+            le + »*.
+
+            Il a raison au-delà du mot : sur une facture dont la catégorie est
+            encore VIDE, ce bouton est la seule porte d'entrée — et « ajouter
+            une ligne » ne dit pas à quoi. C'est aussi pour cela qu'il n'y a
+            qu'un seul libellé, catégorie vide ou non : deux mots pour un même
+            geste, c'est la règle dupliquée que `CLAUDE.md` §3 refuse. */}
         <button
           type="button"
           data-atlas="ajouter-ligne-supplement"
           onClick={ajouterUneLigne}
-          className="mt-4 text-[14px] font-medium"
-          style={{ color: colors.rust }}
+          className="mt-5 text-[17px] font-semibold"
+          style={{ color: colors.or }}
         >
-          + Ajouter une ligne
+          + Ajouter des travaux supplémentaires
         </button>
 
         {supplements.length > 0 && tauxDuSupplement === null && (

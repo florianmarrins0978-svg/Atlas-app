@@ -85,7 +85,12 @@ export default function RegimeTva({
     {
       valeur: "encaissements",
       titre: "Le mois où mon client me paie",
-      quoi: "Une facture pas encore payée n'est pas déclarée.",
+      // **Le titre dit la LOI, la ligne du dessous dit le GESTE** — 9 septembre
+      // 2026. Le titre reste ce qui a été déclaré aux impôts ; mais lu seul, il
+      // laisse croire qu'Atlas apprend tout seul qu'un virement est arrivé.
+      // Elle disait « Une facture pas encore payée n'est pas déclarée » — vrai,
+      // et muet sur ce qui la fait entrer.
+      quoi: "Elle entre au relevé quand vous la marquez payée.",
     },
     {
       valeur: "debits",
