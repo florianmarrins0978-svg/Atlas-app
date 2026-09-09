@@ -74,6 +74,36 @@ posé » sous la pastille).
 
 ---
 
+## ❌ LOT 3 ABANDONNÉ LE 9 SEPTEMBRE 2026 — le client n'a pas à être informé
+
+**Sa décision, en une phrase :** *« mais ça c'est juste pour que le patron sache
+ce que le salarié a fait sur le chantier, pas besoin d'informer le client »*.
+
+**Ce qui est donc REFUSÉ, et ne se repropose pas :**
+
+- envoyer les photos de fin de chantier au client ;
+- lui donner un bouton pour confirmer que le travail est fait ;
+- horodater et garder cette confirmation.
+
+**Pourquoi c'est juste, et pas seulement son droit.** Le retour d'intervention
+est un outil de **contrôle interne** : il sert à savoir ce qui a été fait avant
+de facturer. L'envoyer au client en aurait changé la nature — un salarié qui
+sait que son client lit sa case cochée ne coche plus pareil. Et cela aurait
+ouvert un chemin public vers des photos de propriétés privées pour un besoin
+que personne n'a exprimé.
+
+**Ce que cela NE ferme PAS**, et la confusion est facile : la page par jeton
+`/entretien/[jeton]` continue d'exister et de partir chez ses clients. Elle sert
+ses **tournées d'entretien**, pas ses fins de chantier — deux outils distincts
+qui portent malheureusement le même titre à l'écran depuis le renommage de
+`dc4449dc`. **Ne pas la retirer en croyant appliquer cette décision.**
+
+**Et le mur relevé au lot 1 devient sans objet :** `passages_entretien` porte
+`client_id` et non `chantier_id`. On le notait comme une dette à trancher au
+lot 3 ; il n'y a plus de lot 3, et la table reste ce qu'elle est.
+
+---
+
 ## ✅ FAIT LE 9 SEPTEMBRE 2026 — Atlas dit qui il a reconnu (proposition C)
 
 ~~À trancher : A, B ou C~~ — **il a choisi la C**, et elle est codée.

@@ -1,7 +1,7 @@
 # Repartir d'un client, et finir un chantier avec une preuve
 
-*Lot ouvert le 8 septembre 2026. Ce document est à jour au **stade du code** :
-les lots 1 et 2 sont écrits, éprouvés et livrés. Le lot 3 reste à ouvrir.*
+*Lot ouvert le 8 septembre 2026, CLOS le 9. Les lots 1 et 2 sont écrits,
+éprouvés et livrés ; le lot 3 a été **abandonné par lui** (§15).*
 
 *Sa page consultable vit dans `appli/`, jamais dans `docs/` : le site publié ne
 sert que `appli/`. Posée ailleurs, elle n'a aucune adresse — payé le
@@ -132,10 +132,10 @@ existant fait déjà exactement cela.**
 
 `passages_entretien` (`src/server/db/schema.ts`) porte `client_id`, jamais
 `chantier_id` : c'est l'outil des **tournées d'entretien**, pas la preuve de fin
-d'un chantier. Le lot 3 devra soit l'y rattacher, soit donner au chantier sa
-propre page de preuve.
+d'un chantier.
 
-*Remis au lot 3 par le patron, le 8 septembre.*
+*Remis au lot 3 le 8 septembre — et le lot 3 a été ABANDONNÉ le 9 (§15) :
+cette dette n'a plus d'objet.*
 
 ---
 
@@ -431,8 +431,8 @@ Corrigés quand même, parce qu'ils font perdre du temps à toutes les sessions 
 | ~~quelle proposition pour la partie 1 — A, B ou C~~ | **tranché le 9 septembre : C**, et codée (§14) |
 | **la carte d'un retour ne mène nulle part** : elle montre, elle n'ouvre pas — pour ne pas dupliquer les règles d'accès du planning | **lui**, s'il veut y entrer |
 | **aucune suite de bout en bout ne joue le chemin du salarié** : le jeu de démonstration n'a pas de compte salarié. C'est exactement le défaut du 28 août (`CLAUDE.md` §5 quater) | **nous** — il faut un salarié dans le jeu de démonstration |
-| le compte rendu du lot 3 : rattacher `passages_entretien` au chantier, ou page propre | **nous**, au lot 3 |
-| le lot 3 — ce que le client reçoit | **lui**, il l'a reporté |
+| ~~rattacher `passages_entretien` au chantier~~ | **sans objet** : il n'y a plus de lot 3 |
+| ~~le lot 3 — ce que le client reçoit~~ | **ABANDONNÉ le 9 septembre** : *« c'est juste pour que le patron sache ce que le salarié a fait, pas besoin d'informer le client »* |
 
 ---
 
@@ -521,6 +521,33 @@ est un devis sans numéro — l'ambiguïté ne survit pas au premier usage.
 |---|---|
 | `test-rapprochement-client.ts` (la règle, sans base) | **14 contrôles, 0 échec** — dont celui des quatre Martins, vu rouge exprès |
 | `test-client-reconnu-e2e.ts` (votre parcours, au navigateur) | **7 contrôles, 0 échec** |
+
+---
+
+## 15. LE LOT 3 EST ABANDONNÉ — sa décision du 9 septembre 2026
+
+> *« Mais ça c'est juste pour que le patron sache ce que le salarié a fait sur
+> le chantier, pas besoin d'informer le client. »*
+
+**Ce qui ne sera donc pas fait :** envoyer les photos de fin de chantier au
+client, lui donner un bouton pour confirmer, horodater cette confirmation.
+
+**Et il a raison, pas seulement parce que c'est son choix.** Le retour
+d'intervention est un outil de **contrôle interne** : il sert à savoir ce qui a
+été fait avant de facturer. L'envoyer au client en aurait changé la nature — un
+salarié qui sait que son client lit sa case cochée ne coche plus pareil. Cela
+aurait aussi ouvert un chemin public vers des photos de propriétés privées,
+pour un besoin que personne n'avait exprimé.
+
+**Ce que cela NE ferme PAS, et la confusion est facile.** La page par lien
+`/entretien/[jeton]` continue d'exister et de partir chez ses clients : elle
+sert ses **tournées d'entretien**, pas ses fins de chantier. Deux outils
+distincts, qui portent le même titre à l'écran depuis un renommage qu'il avait
+demandé. **Ne pas la retirer en croyant appliquer cette décision.**
+
+**Le mur relevé au §4 devient sans objet** : `passages_entretien` porte
+`client_id` et non `chantier_id`. On le notait comme une dette à trancher au
+lot 3 ; il n'y a plus de lot 3, et la table reste ce qu'elle est.
 
 ---
 

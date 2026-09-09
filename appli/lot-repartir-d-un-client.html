@@ -58,7 +58,7 @@
 <body>
 <main>
 <h1 id="repartir-dun-client-et-finir-un-chantier-avec-une-preuve">Repartir d'un client, et finir un chantier avec une preuve</h1>
-<p><em>Lot ouvert le 8 septembre 2026. Ce document est à jour au <strong>stade du code</strong> : les lots 1 et 2 sont écrits, éprouvés et livrés. Le lot 3 reste à ouvrir.</em></p>
+<p><em>Lot ouvert le 8 septembre 2026, CLOS le 9. Les lots 1 et 2 sont écrits, éprouvés et livrés ; le lot 3 a été <strong>abandonné par lui</strong> (§15).</em></p>
 <p><em>Sa page consultable vit dans <code>appli/</code>, jamais dans <code>docs/</code> : le site publié ne sert que <code>appli/</code>. Posée ailleurs, elle n'a aucune adresse — payé le 8 septembre, un lien mort donné au patron. Régénérer avec <code>node scripts/md-en-page.mjs docs/lot-repartir-d-un-client.md appli/lot-repartir-d-un-client.html</code>.</em></p>
 <hr>
 <h2 id="ce-qui-a-été-fait-en-six-lignes">Ce qui a été fait, en six lignes</h2>
@@ -187,8 +187,8 @@
 <p>Le « c'est fini » du salarié ne peut donc pas être ce geste-là. Il en faut deux, et le patron l'a tranché : <em>« deux gestes séparés pour la fin de chantier : le tien constate, le mien facture. »</em> Le besoin était déjà noté dans <code>TODO.md</code> depuis le 30 août, pour le commercial ; il devient obligatoire.</p>
 <h3 id="le-compte-rendu-par-jeton-nest-pas-rattaché-à-un-chantier">Le compte rendu par jeton n'est PAS rattaché à un chantier</h3>
 <p>Le brief avertissait : <em>« ne crée pas un troisième lien direct entre une intervention et un client »</em>. L'avertissement est juste — <strong>et le compte rendu existant fait déjà exactement cela.</strong></p>
-<p><code>passages_entretien</code> (<code>src/server/db/schema.ts</code>) porte <code>client_id</code>, jamais <code>chantier_id</code> : c'est l'outil des <strong>tournées d'entretien</strong>, pas la preuve de fin d'un chantier. Le lot 3 devra soit l'y rattacher, soit donner au chantier sa propre page de preuve.</p>
-<p><em>Remis au lot 3 par le patron, le 8 septembre.</em></p>
+<p><code>passages_entretien</code> (<code>src/server/db/schema.ts</code>) porte <code>client_id</code>, jamais <code>chantier_id</code> : c'est l'outil des <strong>tournées d'entretien</strong>, pas la preuve de fin d'un chantier.</p>
+<p><em>Remis au lot 3 le 8 septembre — et le lot 3 a été ABANDONNÉ le 9 (§15) : cette dette n'a plus d'objet.</em></p>
 <hr>
 <h2 id="5-la-planche-du-lot-1">5. La planche du lot 1</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -564,12 +564,12 @@
 <td><strong>nous</strong> — il faut un salarié dans le jeu de démonstration</td>
 </tr>
 <tr>
-<td>le compte rendu du lot 3 : rattacher <code>passages_entretien</code> au chantier, ou page propre</td>
-<td><strong>nous</strong>, au lot 3</td>
+<td>~~rattacher <code>passages_entretien</code> au chantier~~</td>
+<td><strong>sans objet</strong> : il n'y a plus de lot 3</td>
 </tr>
 <tr>
-<td>le lot 3 — ce que le client reçoit</td>
-<td><strong>lui</strong>, il l'a reporté</td>
+<td>~~le lot 3 — ce que le client reçoit~~</td>
+<td><strong>ABANDONNÉ le 9 septembre</strong> : <em>« c'est juste pour que le patron sache ce que le salarié a fait, pas besoin d'informer le client »</em></td>
 </tr>
 </tbody></table></div>
 <hr>
@@ -663,6 +663,14 @@
 <td><strong>7 contrôles, 0 échec</strong></td>
 </tr>
 </tbody></table></div>
+<hr>
+<h2 id="15-le-lot-3-est-abandonné--sa-décision-du-9-septembre-2026">15. LE LOT 3 EST ABANDONNÉ — sa décision du 9 septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote><em>« Mais ça c'est juste pour que le patron sache ce que le salarié a fait sur le chantier, pas besoin d'informer le client. »</em></blockquote>
+<p><strong>Ce qui ne sera donc pas fait :</strong> envoyer les photos de fin de chantier au client, lui donner un bouton pour confirmer, horodater cette confirmation.</p>
+<p><strong>Et il a raison, pas seulement parce que c'est son choix.</strong> Le retour d'intervention est un outil de <strong>contrôle interne</strong> : il sert à savoir ce qui a été fait avant de facturer. L'envoyer au client en aurait changé la nature — un salarié qui sait que son client lit sa case cochée ne coche plus pareil. Cela aurait aussi ouvert un chemin public vers des photos de propriétés privées, pour un besoin que personne n'avait exprimé.</p>
+<p><strong>Ce que cela NE ferme PAS, et la confusion est facile.</strong> La page par lien <code>/entretien/[jeton]</code> continue d'exister et de partir chez ses clients : elle sert ses <strong>tournées d'entretien</strong>, pas ses fins de chantier. Deux outils distincts, qui portent le même titre à l'écran depuis un renommage qu'il avait demandé. <strong>Ne pas la retirer en croyant appliquer cette décision.</strong></p>
+<p><strong>Le mur relevé au §4 devient sans objet</strong> : <code>passages_entretien</code> porte <code>client_id</code> et non <code>chantier_id</code>. On le notait comme une dette à trancher au lot 3 ; il n'y a plus de lot 3, et la table reste ce qu'elle est.</p>
 <hr>
 <p><em>Tenu à jour à chaque avancée du lot. Un document périmé le ferait travailler sur une version disparue.</em></p>
 </main>

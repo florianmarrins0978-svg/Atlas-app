@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Le lot 3 est abandonné : le retour d'intervention ne part pas chez le client
+
+**Sa décision :** *« mais ça c'est juste pour que le patron sache ce que le
+salarié a fait sur le chantier, pas besoin d'informer le client »*.
+
+Le lot devait envoyer les photos de fin de chantier au client et lui donner un
+bouton pour confirmer. **Il a raison, et pas seulement parce que c'est son
+choix** : le retour d'intervention est un outil de CONTRÔLE INTERNE — un
+salarié qui sait que le client lit sa case cochée ne coche plus pareil. Et cela
+ouvrait un chemin public vers des photos de propriétés privées pour un besoin
+que personne n'avait exprimé.
+
+**Ce que cela ne ferme pas**, et la confusion est facile : `/entretien/[jeton]`
+continue de partir chez ses clients. Elle sert ses TOURNÉES D'ENTRETIEN, pas
+ses fins de chantier — deux outils distincts qui portent le même titre à
+l'écran depuis `dc4449dc`. Ne pas la retirer en croyant appliquer cette
+décision (`TODO.md`).
+
 ### Atlas dit qui il a reconnu, et se tait quand il ne sait pas
 
 Il tape « Martins » : la fiche se remplit toute seule — téléphone, e-mail,
