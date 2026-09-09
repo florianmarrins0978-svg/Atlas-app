@@ -116,8 +116,20 @@ test("les fichiers de public/ ne passent pas par le middleware", () => {
   ]) {
     assert.ok(!motif.test(fichier), `${fichier} passe par le middleware : il recevra une redirection`);
   }
-  // Et la garde reste entière sur ce qui est un écran ou une route.
-  for (const ecran of ["/", "/planning", "/reglages", "/api/devis", "/devis/abc123"]) {
+  // **ET LES FICHIERS SERVIS PAR UNE ROUTE RESTENT GARDÉS** — régression de ce
+  // lot, trouvée le 9 septembre en réparant les rouges : les clés de stockage
+  // portent l'extension du fichier, et la première version de la règle emportait
+  // donc `/api/fichiers/<clé>.png`. Le logo du patron ne s'affichait plus sur
+  // ses devis. Un fichier servi par une route n'est pas un fichier de `public/`.
+  for (const ecran of [
+    "/",
+    "/planning",
+    "/reglages",
+    "/api/devis",
+    "/devis/abc123",
+    "/api/fichiers/logos/abc.png",
+    "/api/fichiers/audio/note.webm",
+  ]) {
     assert.ok(motif.test(ecran), `${ecran} ne passe plus par le middleware : la garde de session a sauté`);
   }
 });

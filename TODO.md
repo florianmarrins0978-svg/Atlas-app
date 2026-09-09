@@ -275,6 +275,43 @@ une demi-heure — la troisième fois que ce dépôt la paie.
 
 ---
 
+## 🔴 CE QUI RESTE ROUGE AU NAVIGATEUR — sept cas, et ce ne sont pas des flottements
+
+**Repris le 9 septembre 2026, à sa demande** — *« il faut corriger les rouges,
+personne ne le fait »*. Cinq défauts réparés, dix suites encore rouges. Ce qui
+suit est ce que la mesure dit, pour que la prochaine session ne recommence pas
+le diagnostic.
+
+**CE QU'IL NE FAUT PLUS SUPPOSER**, chacun mesuré et écarté :
+
+| Hypothèse | Ce que la mesure a montré |
+|---|---|
+| la base meurt pendant la course | PostgreSQL debout, 94 relevés, 15 Go libres |
+| le chemin de création est cassé | n'explique qu'une suite sur dix-sept |
+| le serveur est en erreur | son journal n'en porte aucune |
+| c'est un « flottement » | elles tombent SEULES, à l'identique |
+
+**LES SEPT CAS QUI RESTENT**, et ils sont distincts — il n'y a pas de cause
+unique, et en chercher une a déjà coûté une nuit :
+
+- « l'anneau est redevenu le lecteur, au même endroit » ;
+- « avec une dictée lisible, un appui mène AU DEVIS, sans écran intermédiaire » ;
+- « un devis parti reste joignable, par le planning » ;
+- « et l'écran d'arrivée offre l'envoi, sans étape de plus » ;
+- « les trois messages disent chacun le sien, et rien de l'autre » ;
+- « reprendre ne ferme aucune porte — la flèche mène à la fiche client » ;
+- « SA SÉQUENCE : retour par mégarde, puis la ligne le ramène à l'envoi ».
+
+**PAR OÙ COMMENCER, ET ÇA MARCHE** : jouer UNE suite seule
+(`npm run test:e2e -- --seulement <nom>`, deux minutes), puis écrire une sonde
+Playwright qui refait ses gestes et IMPRIME l'écran. C'est ce qui a fini par
+rendre le défaut bavard, quand trois hypothèses de suite étaient tombées.
+
+**CE QU'IL NE FAUT PAS FAIRE** : les rejouer jusqu'au vert. Elles ne flottent
+pas.
+
+---
+
 ## ⏳ LA PORTE EN PLEIN AIR — CODÉE ; trois points attendent encore sa réponse
 
 **Née le 8 septembre 2026.** `appli/la-porte-en-plein-air.html`, publiée et

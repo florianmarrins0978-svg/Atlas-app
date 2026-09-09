@@ -200,6 +200,23 @@ const HORS_CHARTE: Array<{
     pourquoi: "vignette d'une photo qu'on reprend : un cercle rognerait l'image",
   },
   {
+    // **UNE VIGNETTE DE PHOTO, PAS UN BOUTON** — exactement la même raison que
+    // celle de 62 px trois entrées plus haut, et le même arbitrage : un cercle
+    // rogne les quatre coins d'une photo réduite à 46 px, c'est-à-dire
+    // précisément ce qui permet de reconnaître le chantier qu'elle montre. Une
+    // image n'est pas un geste.
+    //
+    // **Ce qu'elle ne couvre PAS** : la case à cocher de la même liste, à vingt
+    // lignes de là. Celle-là est un geste, elle a été arrondie le 9 septembre
+    // 2026 quand ce contrôle l'a dénoncée.
+    //
+    // Le motif vise la LIGNE — la vignette —, pas le fichier : un vrai bouton
+    // rectangulaire écrit demain dans cet écran serait toujours dénoncé.
+    motif: /^src[/\\]app[/\\]planning[/\\]FinDeChantier\.tsx$/,
+    seulement: /h-\[46px\] w-\[46px\]/,
+    pourquoi: "vignette d'une photo du retour : un cercle rognerait l'image",
+  },
+  {
     // **UNE CASE DU CALENDRIER, PAS UN BOUTON.** La charte est citée deux fois
     // plus haut : la capsule va à ce qu'on APPUIE, les 4 px à ce qu'on remplit —
     // et une case de calendrier n'est ni l'un ni l'autre. C'est une TUILE : un

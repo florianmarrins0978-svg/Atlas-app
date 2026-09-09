@@ -294,10 +294,18 @@ async function main() {
     await p2.waitForURL(`${BASE}/`, { timeout: 30_000 });
     await p2.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await p2.fill('input[placeholder="Bernard"]', `Mme UnSeulTaux ${Date.now()}`);
-    await creerPuisFiche(p2);
-    await p2.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
-    const u2 = p2.url();
-    await p2.goto(`${u2}/devis-complet`, { waitUntil: "networkidle" });
+    // **L'IDENTIFIANT QU'ELLE REND, jamais l'adresse où elle s'arrête** —
+    // 9 septembre 2026. Depuis le 4 septembre, `creerPuisFiche` laisse la page
+    // SUR le devis et n'ouvre plus la fiche du chantier
+    // (`_creer-chantier-e2e.ts`). Lire `p2.url()` rendait donc déjà
+    // « …/devis-complet », et y recoller « /devis-complet » donnait une adresse
+    // doublée : la page n'existait pas, et « Ajouter une ligne » n'arrivait
+    // jamais. Le cas rougissait depuis, sur du code juste.
+    //
+    // La ligne 69 de cette même suite le faisait déjà correctement : deux façons
+    // de retrouver le même chantier, et c'est la seconde qui a vieilli.
+    const id2 = await creerPuisFiche(p2);
+    await p2.goto(`${BASE}/chantiers/${id2}/devis-complet`, { waitUntil: "networkidle" });
     await p2.click('button:has-text("Ajouter une ligne")');
     await p2.waitForTimeout(1200);
     const z = p2.locator('textarea[aria-label*="escription"]').first();

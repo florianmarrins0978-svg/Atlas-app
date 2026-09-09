@@ -315,7 +315,12 @@ async function main() {
     await accuserReceptionDeLaFacture(envoi.jeton, { adresseIp: null, agentUtilisateur: null });
 
     const apres = await chargerFicheClient(seul, client.id);
-    const piece = apres?.pieces.factures.find((p) => p.id === facture.id);
+    // **La fiche se réclame, elle ne se suppose pas.** Sans cette ligne, `apres`
+    // reste peut-être nul et le contrôle ne compilait plus (TS18047) : la
+    // batterie entière s'arrêtait aux types, donc avant la moindre suite.
+    // Un `?.` de plus l'aurait tue — une fiche disparue doit se dire.
+    assert.ok(apres, "la fiche du client a disparu après l'accusé de réception");
+    const piece = apres.pieces.factures.find((p) => p.id === facture.id);
     assert.ok(piece?.reception, "la trace n'arrive pas dans le dossier du client");
     assert.ok(piece.reception.ouverte, "l'ouverture ne se lit pas dans le dossier");
     assert.ok(piece.reception.confirmee, "la confirmation ne se lit pas dans le dossier");

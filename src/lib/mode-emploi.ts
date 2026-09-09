@@ -442,9 +442,15 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     ou: "la fiche d'un chantier du planning",
     intitule: "Donner la feuille de chantier à l'équipe, sans les prix",
     motsCles: ["feuille", "chantier", "equipe", "ouvrier", "papier", "prix", "sans", "pdf", "imprimer"],
-    geste: "Appuyez sur « Feuille de chantier », puis « Ouvrir le PDF sans les prix ».",
+    // **Le bouton « Feuille de chantier » n'existe plus depuis le 9 septembre
+    // 2026** : la feuille EST la fiche du chantier, dépliée dans le planning, et
+    // il ne reste que le PDF au bas de celle-ci. La fiche enseignait donc un
+    // geste mort — c'est exactement ce que ce fichier existe pour empêcher.
+    geste: "Ouvrez le chantier dans le Planning : « Ouvrir le PDF sans les prix » est au bas de sa fiche.",
     source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Feuille de chantier", "Ouvrir le PDF sans les prix"],
+    // Le repère plutôt que le libellé (`CLAUDE.md` §5 bis) : `data-atlas` ne
+    // bouge pas quand le patron fait réécrire un mot à l'écran.
+    preuves: ["pdf-sans-prix", "Ouvrir le PDF sans les prix"],
   },
   {
     id: "planning-semaine",

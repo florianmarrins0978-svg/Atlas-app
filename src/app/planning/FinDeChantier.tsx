@@ -218,10 +218,16 @@ export default function FinDeChantier({
                     className="flex w-full items-start gap-3 py-[7px] text-left"
                   >
                     {/* Vingt-quatre pixels, et la LIGNE ENTIÈRE est la cible :
-                        on vise mal avec des gants, sur un écran sale. */}
+                        on vise mal avec des gants, sur un écran sale.
+
+                        **RONDE, et non carrée** — sa règle du 12 août 2026, la
+                        même forme partout (`test-boutons-arrondis.ts`). C'est
+                        aussi ce que fait déjà la seule autre case du produit,
+                        l'interrupteur de l'écran d'envoi : deux dessins pour le
+                        même geste finiraient par diverger. */}
                     <span
                       aria-hidden="true"
-                      className="grid h-6 w-6 flex-none place-items-center rounded-md"
+                      className="grid h-6 w-6 flex-none place-items-center rounded-full"
                       style={{
                         backgroundColor: t.faite ? colors.plein : colors.card,
                         color: t.faite ? surPlein : "transparent",
