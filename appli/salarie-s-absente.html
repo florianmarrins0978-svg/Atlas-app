@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salarié s’absente — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LE PETIT + PLUTÔT QUE LE GROS BOUTON — 9 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa demande, capture à l'appui : *« Quelqu'un pas là faut le changer par
+  salarié s'absente avec un petit + plutôt que le gros bouton. »*
+
+  **CE QUI EST EN JEU, ET QUI N'EST PAS QU'UNE QUESTION DE TAILLE.** Ce bouton
+  a été GROSSI le 7 septembre, et par lui : *« y'a marqué "quelqu'un pas là"
+  mais comment savoir qu'il faut cliquer dessus ? »* — le texte plat était
+  invisible, et une fonction livrée la veille est restée inutilisée. Le
+  rapetisser sans précaution rejoue cette panne-là.
+
+  **Ce qui sauve les deux demandes à la fois : le +.** Il n'est pas décoratif,
+  il porte la fonction — un « + » se lit « ajouter » sans qu'on l'explique, ce
+  que le mot seul ne faisait pas. On peut donc réduire l'encre sans reperdre le
+  geste. Ce qui NE doit pas rétrécir, c'est la CIBLE : 44 px de haut sous le
+  doigt, même quand le dessin en fait 26.
+
+  RIEN N'EST CODÉ. Les couleurs sont copiées de `src/lib/chartes.ts`, et la
+  scène reprend sa capture du 9 septembre — mardi 15, matin et après-midi
+  libres.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#6f8a5f; --papier:#ece9e1;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#6f8a5f; --papier:#232722;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+.choix{max-width:740px;margin:14px auto 0;padding:0 20px;text-align:center}
+.choix button{font:inherit;font-size:13px;padding:9px 14px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.choix button[aria-pressed=true]{background:var(--accent);color:var(--fond);
+  border-color:var(--accent)}
+
+.scene{display:flex;justify-content:center;padding:18px 16px 6px}
+.tel{width:390px;max-width:100%;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;padding:16px 16px 22px}
+
+/* ─── la fiche d'un jour, telle qu'elle est sur sa capture ──────────────── */
+.carte{background:var(--plage);border:1px solid var(--trait-doux);
+  border-radius:14px;padding:14px 15px;box-shadow:0 6px 20px rgba(28,28,26,.07)}
+.carte .jour{text-align:center;font-size:12.5px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;margin:0 0 14px}
+.zone{border-top:1px solid var(--trait-doux);margin-top:4px;padding-top:2px}
+.marque{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--gris);margin:14px 0 8px}
+.pastilles{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* le gros bouton d'aujourd'hui */
+.past{padding:11px 18px;border-radius:999px;border:0;
+  box-shadow:inset 0 0 0 1px var(--trait);
+  background:var(--plage);color:var(--encre);font:inherit;font-size:14px;
+  cursor:pointer;min-height:48px}
+
+/* A — le + cerclé, et les mots à côté. Encre : 26 px. Cible : 44 px. */
+.geste-a{display:flex;align-items:center;gap:10px;width:100%;
+  background:none;border:0;padding:9px 0;min-height:44px;cursor:pointer;
+  font:inherit;font-size:14px;color:var(--encre);text-align:left}
+.rond{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--trait);
+  color:var(--encre);font-size:17px;line-height:1;padding-bottom:2px}
+
+/* B — la pastille rétrécie, avec son + devant */
+.past.mini{min-height:38px;padding:0 14px;font-size:13.5px;position:relative;
+  display:inline-flex;align-items:center;gap:7px}
+/* **L'ENCRE RÉTRÉCIT, LA CIBLE NON.** Le dessin fait 38 px de haut ; ce
+   débord invisible rend les 44 px que le pouce demande, avec des gants. */
+.past.mini::after{content:"";position:absolute;left:0;right:0;top:-3px;bottom:-3px}
+.past.mini .signe{font-size:16px;line-height:1;padding-bottom:2px;color:var(--gris)}
+
+/* C — le + seul, à droite du titre de section */
+.tete-zone{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tete-zone .marque{margin:14px 0 8px}
+.rond-seul{flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;border:0;background:none;cursor:pointer;
+  color:var(--encre);font:inherit;font-size:19px;line-height:1}
+.rond-seul span{display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--trait);
+  padding-bottom:2px}
+
+/* l'absence déjà posée, et « Plutôt » */
+.posee{display:flex;width:100%;align-items:center;justify-content:space-between;
+  gap:12px;min-height:48px;padding:11px 0;border:0;background:none;
+  font:inherit;font-size:14.5px;color:var(--encre);cursor:pointer;text-align:left}
+.posee .annuler{flex:none;font-size:12px;color:var(--gris)}
+.question{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:8px}
+.question .mot{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--gris);flex:none}
+.past.retenue{background:var(--plein);color:#fff;box-shadow:none}
+
+/* les demi-journées, sous le geste */
+.demi{display:flex;align-items:center;gap:9px;margin-top:14px}
+.demi .case{width:14px;height:14px;border-radius:3px;flex:none;
+  background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait)}
+.demi .mot{flex:1;font-size:10px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase}
+.demi .etat{font-size:13px;color:var(--gris);flex:none}
+
+p.dessous{max-width:740px;margin:12px auto 0;padding:0 20px;text-align:center;
+  font-size:14px;line-height:1.65;color:var(--encre-douce)}
+p.dessous b{color:var(--encre)}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
+  vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+/* Le tableau s'empile sous 430 px : à la largeur de son téléphone, trois
+   colonnes réduisent la dernière à quatre caractères par ligne. */
+@media (max-width:430px){
+  table,tbody,tr,td,th{display:block;width:100%}
+  thead{display:none}
+  tr{border-bottom:1px solid var(--trait);padding:10px 0}
+  td{border:0;padding:3px 0}
+  td:first-child::before{content:"Variante ";color:var(--gris)}
+}
+.reco{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:#fff;background:var(--plein);
+  padding:3px 8px;border-radius:3px;margin-left:8px;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="seul" aria-pressed="false">Voir sans salarié</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">9 septembre — à choisir</span>
+  <h1>Le petit +</h1>
+  <p>« Quelqu’un n’est pas là » devient <b>Salarié s’absente</b>, et le gros
+  bouton devient un <b>+</b>. Trois tailles de + ci-dessous : appuyez dessus,
+  le geste va jusqu’au bout.</p>
+</div>
+
+<div class="choix" id="choix">
+  <button type="button" data-v="0" aria-pressed="true">Aujourd’hui</button>
+  <button type="button" data-v="1" aria-pressed="false">A</button>
+  <button type="button" data-v="2" aria-pressed="false">B</button>
+  <button type="button" data-v="3" aria-pressed="false">C</button>
+</div>
+
+<div class="scene">
+  <div class="tel">
+    <div class="carte">
+      <p class="jour">Mardi 15 septembre</p>
+      <div class="zone" id="zone"></div>
+      <div class="demi"><span class="case"></span><span class="mot">Matin</span><span class="etat">libre</span></div>
+      <div class="demi"><span class="case"></span><span class="mot">Après-midi</span><span class="etat">libre</span></div>
+    </div>
+  </div>
+</div>
+<p class="dessous" id="dessous"></p>
+
+<div class="notes">
+  <h3>Ce que je recommande, et pourquoi</h3>
+  <table>
+    <thead><tr><th>Variante</th><th>Ce que c’est</th><th>La raison</th></tr></thead>
+    <tbody>
+    <tr>
+      <td><b>A</b><span class="reco">recommandé</span></td>
+      <td>Un + cerclé de 26 px, les mots à côté, <b>sans cadre</b> et sans le
+      titre « Ce jour-là ».</td>
+      <td>Le + porte le geste, les mots portent le sens. C’est la ligne la plus
+      légère qui reste <b>reconnaissable sans explication</b>.</td>
+    </tr>
+    <tr>
+      <td><b>B</b></td>
+      <td>La pastille d’aujourd’hui, <b>rétrécie</b> à 38 px de dessin, avec un
+      + devant.</td>
+      <td>Elle garde la forme des autres gestes de l’écran. Mais elle reste un
+      cadre plein de mots : c’est ce que vous trouvez trop gros.</td>
+    </tr>
+    <tr>
+      <td><b>C</b></td>
+      <td>Le + <b>tout seul</b>, à droite du titre. Les mots n’arrivent qu’après.</td>
+      <td>Le plus discret, et le plus risqué : sans mot, rien ne dit ce qu’on
+      ajoute. C’est le défaut du 7 septembre, dans l’autre sens.</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h3>Ce que le petit + ne doit pas emporter</h3>
+  <p><b>La cible du doigt reste à 44 px</b>, dans les trois variantes — y
+  compris B, dont le dessin n’en fait que 38 : la zone qui répond déborde de
+  trois pixels en haut et en bas, sans se voir. Sinon le geste rate une fois
+  sur trois, avec des gants.</p>
+
+  <h3>Deux choses à trancher, et je ne les tranche pas seul</h3>
+  <p><b>1. Le mot exact.</b> « Salarié s’absente » ou « Salarié absent » ?
+  Le premier nomme un geste (c’est un bouton), le second un état. Je propose
+  <b>Salarié s’absente</b>, votre mot.</p>
+  <p><b>2. Quand vous êtes seul.</b> Sans salarié, l’écran dit aujourd’hui
+  « Je ne suis pas là » — et « Salarié s’absente » ne veut alors rien dire.
+  <b>Voir sans salarié</b>, en haut, montre ce que je garde : le même +, votre
+  phrase à vous. Dites-moi si vous préférez un seul mot pour les deux cas.</p>
+
+  <h3>Ce que je n’ai pas proposé</h3>
+  <p><b>Le + sans aucun mot, à la place du bouton.</b> C’est la variante C, et
+  je la montre pour que vous la voyiez, pas pour qu’on la prenne : le
+  7 septembre, un geste sans forme vous avait échappé pendant une journée
+  entière. Un geste sans mot peut vous échapper de la même façon.</p>
+  <p><b>Une flèche, une phrase d’explication.</b> Vos règles du 25 août : un
+  bouton n’a pas besoin d’une flèche, et un écran n’explique pas son propre
+  fonctionnement.</p>
+</div>
+
+<script>
+/* ── Les deux commandes du haut ────────────────────────────────────────── */
+document.getElementById("pole").addEventListener("click", (e) => {
+  const on = document.body.classList.toggle("nuit");
+  e.currentTarget.setAttribute("aria-pressed", on ? "true" : "false");
+});
+
+let variante = 0;
+let salaries = 2;
+/** Où en est le geste : au repos, la question « Qui », ou l'absence posée. */
+let etape = "repos";
+let quiManque = null;
+let plutot = null;
+
+document.getElementById("seul").addEventListener("click", (e) => {
+  salaries = salaries === 2 ? 0 : 2;
+  e.currentTarget.setAttribute("aria-pressed", salaries === 0 ? "true" : "false");
+  e.currentTarget.textContent = salaries === 0 ? "Voir avec 2 salariés" : "Voir sans salarié";
+  etape = "repos"; quiManque = null; plutot = null;
+  dessiner();
+});
+
+document.getElementById("choix").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  for (const x of e.currentTarget.querySelectorAll("button")) x.setAttribute("aria-pressed", "false");
+  b.setAttribute("aria-pressed", "true");
+  variante = Number(b.dataset.v);
+  etape = "repos"; quiManque = null; plutot = null;
+  dessiner();
+});
+
+/* ── Ce que chaque variante dessine ────────────────────────────────────── */
+const NOMS = ["Julien", "Antoine"];
+const NOTES = [
+  "Aujourd’hui. Un bouton de 48 px, plein de mots, en haut de la fiche du jour.",
+  "A — un + cerclé de 26 px et les mots à côté. La zone qui répond au doigt fait toujours 44 px.",
+  "B — la même pastille qu’aujourd’hui, rétrécie à 38 px, avec un + devant.",
+  "C — le + seul, à droite du titre. Le plus discret : rien ne dit ce qu’on ajoute avant d’appuyer.",
+];
+
+/** Le mot du geste — et il change quand il n’a personne sous ses ordres. */
+function mot() {
+  return salaries === 0 ? "Je ne suis pas là" : "Salarié s’absente";
+}
+
+function gesteHtml() {
+  const m = mot();
+  if (variante === 0) {
+    return `<p class="marque">Ce jour-là</p>
+      <div class="pastilles"><button type="button" class="past" data-ouvre="1">${m}</button></div>`;
+  }
+  if (variante === 1) {
+    return `<button type="button" class="geste-a" data-ouvre="1">
+        <span class="rond" aria-hidden="true">+</span><span>${m}</span></button>`;
+  }
+  if (variante === 2) {
+    return `<p class="marque">Ce jour-là</p>
+      <div class="pastilles"><button type="button" class="past mini" data-ouvre="1">
+        <span class="signe" aria-hidden="true">+</span>${m}</button></div>`;
+  }
+  return `<div class="tete-zone">
+      <p class="marque">Ce jour-là</p>
+      <button type="button" class="rond-seul" data-ouvre="1" aria-label="${m}">
+        <span aria-hidden="true">+</span></button>
+    </div>`;
+}
+
+function dessiner() {
+  const zone = document.getElementById("zone");
+  let html = "";
+
+  if (etape === "pose") {
+    html += `<button type="button" class="posee" data-annule="1">
+        <span>${salaries === 0 ? "Vous n’êtes pas là" : quiManque + " n’est pas là"}</span>
+        <span class="annuler">Annuler</span></button>
+      <div class="question">
+        <span class="mot">Plutôt</span>
+        <button type="button" class="past${plutot === "matin" ? " retenue" : ""}" data-plutot="matin">Matin</button>
+        <button type="button" class="past${plutot === "apres" ? " retenue" : ""}" data-plutot="apres">Après-midi</button>
+      </div>`;
+    if (salaries === 2) html += gesteHtml();
+  } else if (etape === "qui") {
+    html += `<div class="question"><span class="mot">Qui</span>` +
+      NOMS.map((n) => `<button type="button" class="past" data-qui="${n}">${n}</button>`).join("") +
+      `</div>`;
+  } else {
+    html += gesteHtml();
+  }
+
+  zone.innerHTML = html;
+  document.getElementById("dessous").innerHTML = NOTES[variante];
+}
+
+document.getElementById("zone").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.ouvre) {
+    // Sans salarié, il n’y a personne à désigner : le jour se ferme d’un appui.
+    if (salaries === 0) { etape = "pose"; } else { etape = "qui"; }
+  } else if (b.dataset.qui) {
+    quiManque = b.dataset.qui; plutot = null; etape = "pose";
+  } else if (b.dataset.plutot) {
+    plutot = plutot === b.dataset.plutot ? null : b.dataset.plutot;
+  } else if (b.dataset.annule) {
+    etape = "repos"; quiManque = null; plutot = null;
+  }
+  dessiner();
+});
+
+dessiner();
+</script>
+</body>
+</html>

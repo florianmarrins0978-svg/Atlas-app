@@ -8,6 +8,27 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Le gros bouton « Quelqu'un n'est pas là » se rejoue en petit — planche
+
+Sa demande, capture à l'appui : *« Quelqu'un pas là faut le changer par salarié
+s'absente avec un petit + plutôt que le gros bouton. »*
+
+**RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis) : `appli/salarie-s-absente.html` montre
+trois tailles de +, essayables du doigt, et le geste va jusqu'au bout — le nom,
+puis « Plutôt Matin / Après-midi ».
+
+**Le piège que la planche existe pour éviter.** Ce bouton a été GROSSI le
+7 septembre, et par lui : le texte plat ne se voyait pas, et fermer un jour est
+resté inutilisé pendant vingt-quatre heures. Rapetisser sans précaution rejoue
+cette panne — sauf que le **+** porte la fonction que le mot seul ne portait
+pas. Ce qui ne rétrécit pas, c'est la CIBLE : 44 px sous le doigt dans les trois
+variantes, y compris celle dont le dessin n'en fait que 38.
+
+**Deux points qu'il doit trancher, et qui n'étaient pas dans sa demande :** le
+mot exact (« Salarié s'absente » ou « Salarié absent »), et le cas où il est
+**seul** — sans salarié l'écran dit « Je ne suis pas là », et « Salarié
+s'absente » n'y veut rien dire.
+
 ### L'onglet des retours existe toujours, et ses photos se voient enfin
 
 *« L'onglet retour d'intervention doit exister même s'il n'y a aucun retour ! »*

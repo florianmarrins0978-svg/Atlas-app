@@ -9,6 +9,32 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ LE PETIT + DU PLANNING ATTEND SON CHOIX (9 septembre 2026)
+
+**Sa demande :** *« Quelqu'un pas là faut le changer par salarié s'absente avec
+un petit + plutôt que le gros bouton. »*
+
+**La planche :** `appli/salarie-s-absente.html`, liée depuis `essais.html`.
+Trois variantes — A (+ cerclé de 26 px et les mots à côté), B (la pastille
+d'aujourd'hui rétrécie), C (le + seul, sans mot).
+
+**RIEN N'EST CODÉ** tant qu'il n'a pas choisi. Ce qui changera alors, à un seul
+endroit : `PasLaCeJour` dans `src/app/planning/PlanningClient.tsx` — le libellé
+et la forme du geste, jamais l'écriture de l'absence.
+
+**Deux questions posées avec la planche**, et le code en dépend :
+
+| | |
+|---|---|
+| le mot | « Salarié s'absente » ou « Salarié absent » |
+| **sans salarié** | l'écran dit « Je ne suis pas là », et « Salarié s'absente » n'y veut rien dire : la planche garde sa phrase, à confirmer |
+
+**Ce qu'il ne faut pas défaire en codant :** la cible du doigt reste à 44 px
+même quand le dessin en fait 38 — sinon le geste rate avec des gants. Et le
+7 septembre a déjà coûté une journée à un geste qu'on ne voyait pas.
+
+---
+
 ## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
 
 **Sa correction :** *« chaque session peut prendre un port différent, plusieurs
