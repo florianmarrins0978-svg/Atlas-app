@@ -8,6 +8,26 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Poser un chantier ne demande plus « Matin, Après-midi ou Journée »
+
+*« Si Claudette c'est un chantier 1 journée, deux, ou une demi, ça doit se mettre
+tout seul — je dois pas avoir à choisir »* (9 septembre). Toucher le nom du
+chantier le pose : la durée est déjà en base, et l'application cherche la moitié
+de journée où elle tient.
+
+**Ce que les trois boutons faisaient sans le dire :** ils réécrivaient la durée.
+« Matin » sur un chantier d'une journée le ramenait à une demi-journée, en
+silence — l'après-midi repartait à la vente, et cela ne se voyait que le jour du
+chantier.
+
+**« Déplacer » ne bouge pas** : c'est là qu'on corrige un moment, sur un chantier
+déjà posé, et c'est là que le mot choisi est vraiment une demande.
+
+**La même racine dans l'assistant :** une dictée qui ne disait pas l'heure
+réservait la journée entière. Sans moment dit, plus rien n'est supposé.
+
+Détail et contrôles : `ARCHITECTURE.md` §305.
+
 ### Les travaux supplémentaires : le bouton, la feuille, et une seule facture
 
 *« Si on effectue des travaux en plus chez un client, on n'a aucun moyen de

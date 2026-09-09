@@ -8,6 +8,28 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — POSER UN CHANTIER NE DEMANDE PLUS QUAND (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | « Ajouter un chantier » pose le chantier dès qu'on touche son nom ; le tiroir du bas n'offre plus qu'un bouton « Poser ». Plus de « Matin · Ap.-m. · Journée » avant la pose |
+| la migration | **aucune** |
+| les pièces | `src/app/planning/PlanningClient.tsx` (`poser`, `AjoutAuJour`, `TiroirDuBas`), `src/app/chantiers/[id]/informations/actions.ts` |
+| les suites | `test-planning-repo.ts` (2 neuves), `test-planning-e2e.ts`, `test-poser-une-date-e2e.ts` |
+| le détail | `ARCHITECTURE.md` §305, `docs/lot-poser-sans-choisir.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** ces trois boutons n'avaient pas l'air d'écrire
+quoi que ce soit, et ils réécrivaient `dureeDemiJournees`. « Matin » sur un
+chantier d'une JOURNÉE le ramenait à une demi-journée, sans un mot, et
+l'après-midi redevenait vendable. Le remettre pour « laisser le choix », c'est
+remettre ce défaut-là. Le choix d'un moment vit dans **« Déplacer »**, sur un
+chantier déjà posé — là il est une demande, pas une question de passage.
+
+**Ce qui décide à leur place existait déjà :** `planifierChantier` appelé sans
+`choix` lit la durée du chantier et cherche la moitié de journée où elle tient
+(`departPossible`) — la même règle que le jour proposé au client.
+
+---
 ## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
 | | |

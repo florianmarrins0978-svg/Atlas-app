@@ -9,6 +9,20 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ LA PLANCHE 86 MONTRE ENCORE « QUI PUIS QUAND » (9 septembre 2026)
+
+`appli/planning-simple.html` — retenue par lui le 21 août — demande toujours
+« Matin · Après-midi · Journée » après avoir touché le nom d'un chantier.
+L'application ne le demande plus depuis le 9 septembre (`ARCHITECTURE.md` §305) :
+la durée est en base, et ces trois boutons la réécrivaient.
+
+**Rien n'a été touché à la planche**, et c'est délibéré : une planche qu'il a
+retenue ne se réécrit pas sans lui. À lui de dire s'il veut la reprendre —
+`scripts/verifier-maquette-planning-simple.mjs` suit la planche, pas
+l'application, et reste vert dans les deux cas.
+
+---
+
 ## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
 
 **Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce
