@@ -141,6 +141,16 @@
   .confirme .marque{width:19px;height:19px;flex:none;border-radius:999px;background:var(--plein);
                     color:var(--surplein);display:grid;place-items:center}
   .confirme .ou{color:var(--gris);font-size:12.5px;display:block;margin-top:1px}
+  .fige{margin-top:14px;height:52px;border-radius:999px;background:var(--tuile);
+        display:flex;align-items:center;justify-content:center;gap:9px;width:100%;
+        color:var(--gris);cursor:not-allowed}
+  .fige .t{font:500 15px/1.15 var(--serif);color:var(--doux)}
+  .fige .ou{font-size:11.5px;display:block;color:var(--gris);margin-top:1px}
+  .fige .marque{width:19px;height:19px;flex:none;border-radius:999px;background:var(--plein);
+                color:var(--surplein);display:grid;place-items:center}
+  .corriger{margin-top:9px;width:100%;height:40px;border-radius:999px;background:transparent;
+            color:var(--orTexte);box-shadow:inset 0 0 0 1px var(--orTexte);border:0;
+            font-size:13.5px;cursor:pointer}
   .fugace{transition:opacity .5s}
   .fugace.parti{opacity:0}
   .note-p{background:var(--etabli-carte);border-radius:16px;padding:16px 18px;margin:26px 0 0;
@@ -419,6 +429,57 @@
     </div>
   </div>
 
+  <h2>Et une fois envoyé : le bouton se fige</h2>
+  <p class="dit">Votre demande : la page se replie toute seule, le bouton dit où c’est parti,
+    et il ne s’appuie plus. Appuyez sur « C’est fini » dans les deux.</p>
+
+  <div class="rangee">
+    <div class="prop">
+      <p class="nom">G. Ce que vous demandez</p>
+      <p class="idee">Le bouton devient la preuve : il dit où c’est parti, et rien ne se
+        rouvre. Un retour ne se réécrit plus — mais une case cochée de travers non plus.</p>
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="carteFiche" style="margin:16px">
+          <div data-bloc="G">
+            <div class="coches">
+              <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Dépose carrelage — 8 m²</span></button>
+              <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Pose faïence — 8 m²</span></button>
+            </div>
+            <button class="gros" type="button" data-fige="G">C’est fini</button>
+          </div>
+          <div class="fige" data-apres="G" hidden>
+            <span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span><span class="t">C’est parti</span><span class="ou">Terminés › Retour d’intervention</span></span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="prop">
+      <p class="nom">H. Le même, avec une porte de sortie<span class="tenu">Ce que je défends</span></p>
+      <p class="idee">Le bouton se fige pareil, et une ligne discrète en dessous permet de
+        corriger. Une coche de travers se répare sur place, sans vous appeler.</p>
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="carteFiche" style="margin:16px">
+          <div data-bloc="H">
+            <div class="coches">
+              <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Dépose carrelage — 8 m²</span></button>
+              <button class="coche" type="button" aria-pressed="true"><span class="case"><svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Pose faïence — 8 m²</span></button>
+            </div>
+            <button class="gros" type="button" data-fige="H">C’est fini</button>
+          </div>
+          <div data-apres="H" hidden>
+            <div class="fige">
+              <span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span><span class="t">C’est parti</span><span class="ou">Terminés › Retour d’intervention</span></span>
+            </div>
+            <button class="corriger" type="button">Corriger</button>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
   <div class="note-p">
     <span class="t">Ce que ces écrans ne font pas</span>
     <p>Ils ne touchent <strong>ni à vos données ni à l'application</strong> : rien de ce que vous
@@ -469,6 +530,18 @@
       setTimeout(() => c.classList.add('parti'), 3000);
       setTimeout(() => { c.hidden = true; b.hidden = false; }, 3600);
     }
+  }));
+
+  // « Ça se replie, le bouton dit où, puis il se fige » — sa demande du 9 septembre.
+  qq('[data-fige]').forEach((b) => b.addEventListener('click', () => {
+    const cle = b.dataset.fige;
+    document.querySelector('[data-bloc="' + cle + '"]').hidden = true;
+    document.querySelector('[data-apres="' + cle + '"]').hidden = false;
+  }));
+
+  qq('.corriger').forEach((b) => b.addEventListener('click', () => {
+    document.querySelector('[data-bloc="H"]').hidden = false;
+    document.querySelector('[data-apres="H"]').hidden = true;
   }));
 
   qq('.coche').forEach((c) => c.addEventListener('click', () => {
