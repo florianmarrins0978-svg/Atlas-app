@@ -85,13 +85,25 @@ planche** plutôt que gardés « au cas où ».
 **Ce qui reste à trancher :** ses exemples donnent **six** jours (« du 8 au
 13 ») ; la planche en montre **sept** (aujourd'hui + six). À lui confirmer.
 
-**Reste à coder** dans `PlanningClient.tsx` : la pastille `date-planifiee` (vers
-la ligne 1014) et le mot « Aujourd'hui » ; le commutateur journée/semaine, la
-journée par défaut à l'arrivée ; la fenêtre glissante à la place de
-`lundiDe(...)` (`lundi`, `joursDeLaSemaine`, `titreSemaine`, vers la ligne 816)
-et le grisé des jours passés. **Une question reste ouverte** : ce qu'affiche
-l'écran quand **rien n'est posé** aujourd'hui (la planche propose « Rien de
-posé » sous la pastille).
+**CODÉ LE 9 SEPTEMBRE 2026**, sur son choix : *« code le B et balayage, et
+retire le mot planifier »*. Dans `PlanningClient.tsx` — la pastille du jour dit
+« Aujourd'hui » en `orTexte` 19 px, la liste s'ouvre sur la seule journée, le
+balayage et deux points mènent aux sept jours, la fenêtre glisse depuis
+aujourd'hui, les jours passés reviennent éteints derrière la flèche, et le titre
+« Planifiés » est parti.
+
+**Les cinq suites du planning : 0 échec** (`test-planning-e2e` 43,
+`test-planning-memoire-e2e` 11, `test-onglet-planning-e2e` 7,
+`test-ligne-planning-e2e` 6, `test-salarie-planning-lecture-seule` 0).
+
+**Ce qui reste ouvert, et qui demande SA réponse :**
+
+| | |
+|---|---|
+| **six ou sept jours** | ses exemples donnent six (« du 8 au 13 »), le code en pose sept — aujourd'hui + six |
+| **le doré** | la B porte `orTexte`, l'or ASSOMBRI : le vrai `#B98B47` donne 2,03 de contraste sur ce papier pâle, illisible au soleil. Il a vu la D qui garde le vrai or sur une pastille d'encre, et il a choisi la B quand même |
+| **la teinte de la semaine lue** | le mois teintait la rangée que lit la liste ; une fenêtre glissante chevauche deux rangées. Elle vise désormais la rangée du DÉBUT de fenêtre, faute de mieux |
+| **la planche** | `appli/aujourd-hui-en-tete.html` s'ouvre encore sur la D et le rail : elle montre ce qui a été COMPARÉ, pas ce qui a été codé |
 
 ---
 

@@ -8,6 +8,47 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Le planning s'ouvre sur la journée, et « Aujourd'hui » s'écrit en doré
+
+Le salarié ouvrait l'appli le matin et lisait « Mardi 8 septembre » : il devait
+comparer cette date à celle de son téléphone avant de savoir chez qui il allait.
+La journée du jour dit maintenant **« Aujourd'hui »**, en doré, plus gros que
+les autres dates.
+
+**Le doré est `orTexte`, l'or assombri, et ce n'est pas une préférence** : l'or
+plein sur ce papier pâle donne 2,03 à 2,53 de contraste selon la charte —
+illisible au soleil, quelle que soit la taille. À 19 px en gras, `orTexte` tient
+3,92 au minimum, ce qui passe pour du grand texte. **La taille fait donc partie
+du correctif** ; écrite en 12 px comme les autres dates, cette version ne
+passerait pas.
+
+**La liste ne montre plus que la journée du jour** à l'arrivée. Un balayage du
+doigt — ou l'un des deux points sous le calendrier — l'élargit à sept jours.
+
+**Et la fenêtre part d'aujourd'hui, plus du lundi** : le 9, c'est 9 – 15 ; le
+10, 10 – 16. Cela dissout un défaut qu'il avait vu la minute d'avant — une
+journée déjà faite, repoussée en bas de liste avec la même encre que les
+suivantes, se lisait comme un chantier de plus à faire. Il n'y en a plus aucune
+sous les yeux ; celles qu'on va chercher avec la flèche arrivent **éteintes**.
+
+Le titre « Planifiés » est parti : sous le calendrier, ce qui suit ne peut être
+que des chantiers posés, et l'écran porte déjà « Planning » en tête.
+
+### Le dossier se ferme pendant qu'une batterie mesure
+
+Trois verdicts de dix minutes jetés dans la même journée : une session voisine
+avait écrit pendant la mesure. Le dépôt savait le **dire** — l'empreinte des
+sources annule le verdict — mais dire après coup ne rend pas les dix minutes.
+
+La batterie pose désormais un **verrou**, et un déclencheur branché sur chaque
+geste de chaque session refuse ce qui écrit dans le dossier. Lire reste
+possible : c'est la seule chose utile pendant une mesure, et un verrou qui
+l'interdirait se ferait contourner dès le deuxième jour.
+
+Il ne peut pas geler le dossier : PID et signe de vie toutes les vingt secondes ;
+processus mort ou silence de plus de quatre-vingt-dix secondes, il ne vaut plus
+rien. Une batterie tuée ne bloque donc personne.
+
 ### La fin de chantier : la liste s'efface, puis le bouton devient la preuve
 
 Sur la fiche du salarié, les quatre lignes du devis se lisaient **deux fois** —
