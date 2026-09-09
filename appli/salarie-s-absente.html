@@ -106,10 +106,8 @@ body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
 .past.mini::after{content:"";position:absolute;left:0;right:0;top:-3px;bottom:-3px}
 .past.mini .signe{font-size:16px;line-height:1;padding-bottom:2px;color:var(--gris)}
 
-/* C — le + seul, à droite du titre de section */
-.tete-zone{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.tete-zone .marque{margin:14px 0 8px}
-.rond-seul{flex:none;display:inline-flex;align-items:center;justify-content:center;
+/* C — le + seul, sans un mot */
+.rond-seul{margin-top:8px;flex:none;display:inline-flex;align-items:center;justify-content:center;
   width:44px;height:44px;border:0;background:none;cursor:pointer;
   color:var(--encre);font:inherit;font-size:19px;line-height:1}
 .rond-seul span{display:inline-flex;align-items:center;justify-content:center;
@@ -171,9 +169,9 @@ td b{color:var(--encre)}
 <div class="tete">
   <span class="sceau">9 septembre — à choisir</span>
   <h1>Le petit +</h1>
-  <p>« Quelqu’un n’est pas là » devient <b>Salarié s’absente</b>, et le gros
-  bouton devient un <b>+</b>. Trois tailles de + ci-dessous : appuyez dessus,
-  le geste va jusqu’au bout.</p>
+  <p>« Quelqu’un n’est pas là » devient <b>Salarié s’absente</b>, le gros bouton
+  devient un <b>+</b>, et le titre « Ce jour-là » s’en va — la date est déjà
+  au-dessus. Trois tailles de + : appuyez dessus, le geste va jusqu’au bout.</p>
 </div>
 
 <div class="choix" id="choix">
@@ -202,8 +200,7 @@ td b{color:var(--encre)}
     <tbody>
     <tr>
       <td><b>A</b><span class="reco">recommandé</span></td>
-      <td>Un + cerclé de 26 px, les mots à côté, <b>sans cadre</b> et sans le
-      titre « Ce jour-là ».</td>
+      <td>Un + cerclé de 26 px, les mots à côté, <b>sans cadre</b>.</td>
       <td>Le + porte le geste, les mots portent le sens. C’est la ligne la plus
       légère qui reste <b>reconnaissable sans explication</b>.</td>
     </tr>
@@ -216,12 +213,17 @@ td b{color:var(--encre)}
     </tr>
     <tr>
       <td><b>C</b></td>
-      <td>Le + <b>tout seul</b>, à droite du titre. Les mots n’arrivent qu’après.</td>
+      <td>Le + <b>tout seul</b>. Les mots n’arrivent qu’après l’appui.</td>
       <td>Le plus discret, et le plus risqué : sans mot, rien ne dit ce qu’on
       ajoute. C’est le défaut du 7 septembre, dans l’autre sens.</td>
     </tr>
     </tbody>
   </table>
+
+  <h3>Le titre « Ce jour-là » est retiré</h3>
+  <p>Votre remarque du 9 septembre. La carte porte déjà <b>MARDI 15 SEPTEMBRE</b>
+  en tête : le redire deux centimètres plus bas ne vous apprend rien. Il ne reste
+  que sur la variante <b>Aujourd’hui</b>, qui montre l’écran tel qu’il est.</p>
 
   <h3>Ce que le petit + ne doit pas emporter</h3>
   <p><b>La cible du doigt reste à 44 px</b>, dans les trois variantes — y
@@ -285,7 +287,7 @@ const NOTES = [
   "Aujourd’hui. Un bouton de 48 px, plein de mots, en haut de la fiche du jour.",
   "A — un + cerclé de 26 px et les mots à côté. La zone qui répond au doigt fait toujours 44 px.",
   "B — la même pastille qu’aujourd’hui, rétrécie à 38 px, avec un + devant.",
-  "C — le + seul, à droite du titre. Le plus discret : rien ne dit ce qu’on ajoute avant d’appuyer.",
+  "C — le + seul. Le plus discret : rien ne dit ce qu’on ajoute avant d’appuyer.",
 ];
 
 /** Le mot du geste — et il change quand il n’a personne sous ses ordres. */
@@ -304,15 +306,12 @@ function gesteHtml() {
         <span class="rond" aria-hidden="true">+</span><span>${m}</span></button>`;
   }
   if (variante === 2) {
-    return `<p class="marque">Ce jour-là</p>
-      <div class="pastilles"><button type="button" class="past mini" data-ouvre="1">
+    return `<div class="pastilles"><button type="button" class="past mini" data-ouvre="1">
         <span class="signe" aria-hidden="true">+</span>${m}</button></div>`;
   }
-  return `<div class="tete-zone">
-      <p class="marque">Ce jour-là</p>
-      <button type="button" class="rond-seul" data-ouvre="1" aria-label="${m}">
-        <span aria-hidden="true">+</span></button>
-    </div>`;
+  // C — le + seul. Le mot ne vit plus que dans `aria-label`, pour la voix.
+  return `<button type="button" class="rond-seul" data-ouvre="1" aria-label="${m}">
+      <span aria-hidden="true">+</span></button>`;
 }
 
 function dessiner() {

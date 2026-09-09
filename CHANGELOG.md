@@ -24,6 +24,10 @@ cette panne — sauf que le **+** porte la fonction que le mot seul ne portait
 pas. Ce qui ne rétrécit pas, c'est la CIBLE : 44 px sous le doigt dans les trois
 variantes, y compris celle dont le dessin n'en fait que 38.
 
+**Le titre « Ce jour-là » disparaît aussi** — *« retire ce jour-là, on sait que
+c'est ce jour »* : la carte porte déjà « MARDI 15 SEPTEMBRE » en tête, et le
+redire deux centimètres plus bas n'apprend rien.
+
 **Deux points qu'il doit trancher, et qui n'étaient pas dans sa demande :** le
 mot exact (« Salarié s'absente » ou « Salarié absent »), et le cas où il est
 **seul** — sans salarié l'écran dit « Je ne suis pas là », et « Salarié

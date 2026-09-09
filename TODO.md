@@ -18,6 +18,11 @@ un petit + plutôt que le gros bouton. »*
 Trois variantes — A (+ cerclé de 26 px et les mots à côté), B (la pastille
 d'aujourd'hui rétrécie), C (le + seul, sans mot).
 
+**Et le titre « Ce jour-là » s'en va**, sa remarque du 9 septembre : *« retire
+ce jour-là, on sait que c'est ce jour »*. La carte porte déjà la date en tête.
+C'est `<p className={libelleCaps}>Ce jour-là</p>` dans `PasLaCeJour` — à
+retirer en même temps que le geste, pas après.
+
 **RIEN N'EST CODÉ** tant qu'il n'a pas choisi. Ce qui changera alors, à un seul
 endroit : `PasLaCeJour` dans `src/app/planning/PlanningClient.tsx` — le libellé
 et la forme du geste, jamais l'écriture de l'absence.
