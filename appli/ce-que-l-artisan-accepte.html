@@ -19,9 +19,12 @@
   L'écran d'acceptation a donc été PHOTOGRAPHIÉ avant d'écrire une ligne
   (`scripts/capture-documents-legaux.mts`), et tout ce qui est montré en
   « Aujourd'hui » en est recopié — les deux cartes, « Version canevas-1 »,
-  « Lire le texte », « J'ai lu et j'accepte », la phrase du bas sur la date et
-  l'heure. C'est la faute qu'il a relevée deux fois : on recopie, on ne
-  réinvente pas.
+  « Lire le texte », « J'ai lu et j'accepte ». C'est la faute qu'il a relevée
+  deux fois : on recopie, on ne réinvente pas.
+
+  **Et la phrase sous « Continuer » a été RETIRÉE le 9 septembre**, à sa demande :
+  elle expliquait que la date et la version sont conservées, c'est-à-dire le
+  mécanisme de l'écran. La preuve, elle, reste enregistrée.
 
   ─────────────────────────────────────────────────────────────────────────
   LE TROU, ET IL EST SÉRIEUX.
@@ -119,7 +122,6 @@ h2.titre{margin:0;font:600 22px/1.2 var(--serif)}
 .continuer{display:block;width:100%;margin-top:22px;border:0;border-radius:999px;
            background:var(--plein);color:var(--carte);padding:15px;
            font:600 16px var(--sans);cursor:default}
-.dessous{margin:12px 0 0;text-align:center;font-size:12.5px;line-height:1.55;color:var(--gris)}
 
 .notes{max-width:640px;margin:30px auto 0;padding:0 20px}
 .notes .bloc{padding:16px 20px;background:var(--carte);border-left:3px solid var(--or);
@@ -135,7 +137,7 @@ h2.titre{margin:0;font:600 22px/1.2 var(--serif)}
 
 <div class="bandeau">
   <b>L'écran où votre artisan s'engage.</b> Recopié du vrai — les deux cartes,
-  la version, « Lire le texte », la phrase du bas. <b>Le texte qu'il coche n'est
+  la version, « Lire le texte », les cases. <b>Le texte qu'il coche n'est
   pas celui que vous publiez</b>, et c'est ce que cette planche montre.
 </div>
 
@@ -230,9 +232,12 @@ function ecran(cgu, sousTraitance, chapeau){
   return '<h2 class="titre">Avant de commencer</h2>' +
     '<p class="intro">' + chapeau + '</p>' +
     carte(cgu) + carte(sousTraitance) +
-    '<button type="button" class="continuer">Continuer</button>' +
-    '<p class="dessous">La date, l\'heure et la version exacte de ce que vous acceptez ' +
-    'sont conservées — c\'est ce qui donne sa valeur à votre accord.</p>';
+    // **RETIRÉE le 9 septembre 2026, à sa demande :** la phrase sous
+    // « Continuer » disait que la date, l'heure et la version sont conservées.
+    // Elle expliquait le mécanisme de l'écran au lieu de le laisser faire. Ce
+    // qu'elle annonçait n'a pas disparu : l'horodatage et l'appareil sont
+    // toujours enregistrés — c'est le commentaire qui part, pas la preuve.
+    '<button type="button" class="continuer">Continuer</button>';
 }
 
 var SOUS_TRAITANCE = {
@@ -241,7 +246,7 @@ var SOUS_TRAITANCE = {
 };
 
 var INTRO = "Vos clients vous confient leurs coordonnées&nbsp;; vous nous les confiez à votre " +
-  "tour. Ces documents disent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.";
+  "tour. Ces documents stipulent ce que nous en faisons, et ce que nous nous engageons à ne pas en faire.";
 
 var VUES = {
   avant: {
@@ -277,9 +282,7 @@ var VUES = {
         '<p class="intro">' + INTRO + "</p>" +
         carte({ cle: "cgu", nom: "Conditions générales d'utilisation", version: "2", neuf: true,
                 texte: texteVrai() }) +
-        '<button type="button" class="continuer">Continuer</button>' +
-        '<p class="dessous">La date, l\'heure et la version exacte de ce que vous acceptez ' +
-        'sont conservées — c\'est ce qui donne sa valeur à votre accord.</p>';
+        '<button type="button" class="continuer">Continuer</button>';
     },
     notes: [
       { html: "<b>Une seule carte, et c'est le bon comportement.</b> Le contrat de sous-traitance n'a pas changé : son acceptation de canevas-1 tient toujours, et on ne la redemande pas." },
