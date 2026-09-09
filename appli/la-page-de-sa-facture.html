@@ -146,6 +146,40 @@
   .copier.fait{box-shadow:inset 0 0 0 1.5px var(--plein)}
   .copier.fait .dit{color:var(--plein)}
 
+  /* ── « J'ai bien reçu cette facture » — 9 septembre 2026 ─────────── */
+  /*
+    Sa demande : « une case à cocher qui stipule qu'il accuse bonne réception,
+    ça évite les "ah ouais mais j'ai pas vu votre facture" ».
+
+    ELLE EST TOUT EN BAS, ET C'EST VOULU. Posée sous « Télécharger ma facture »,
+    une case se lit comme une condition — on croirait devoir cocher pour ouvrir
+    le document. Il l'a écarté lui-même le jour où il l'a proposé : « ça ne
+    l'empêche pas de télécharger la facture s'il ne coche pas ! » Une facture se
+    donne ; la retenir se retourne contre l'artisan, puisqu'un client qui ne
+    coche pas ne télécharge pas non plus — et là il ne l'a vraiment pas reçue.
+
+    Elle emprunte la forme de la pastille à copier — même fond papier, même
+    filet, mêmes 52 px sous le pouce : c'est le même geste, un appui unique sur
+    une bande large. Ce qui change, c'est le carré à gauche, qui dit que ça se
+    coche.
+  */
+  .recu{display:flex;align-items:flex-start;gap:13px;width:100%;margin:0;border:0;
+        border-radius:12px;background:var(--papier);box-shadow:inset 0 0 0 1px var(--trait);
+        padding:13px 14px;min-height:52px;cursor:pointer;text-align:left;font:inherit;
+        color:var(--encre);-webkit-tap-highlight-color:transparent}
+  .recu:active{transform:scale(.995)}
+  .recu .boite{flex:0 0 auto;margin-top:1px;width:22px;height:22px;border-radius:6px;
+               background:var(--carte);box-shadow:inset 0 0 0 1.5px rgba(28,28,26,.28);
+               display:flex;align-items:center;justify-content:center;
+               font-size:13px;line-height:1;color:transparent}
+  .recu .mot{display:block;font:400 14.5px/1.45 var(--sans);color:var(--encre)}
+  .recu .apres{display:block;margin-top:3px;font:400 13px/1.45 var(--sans);color:var(--gris)}
+  /* Cochée, elle ne se décoche plus : une confirmation retirée ne veut rien
+     dire, et laisserait croire qu'une trace s'efface. Le curseur le dit. */
+  .recu.fait{cursor:default;box-shadow:inset 0 0 0 1.5px var(--plein)}
+  .recu.fait .boite{background:var(--plein);box-shadow:none;color:#faf9f5}
+  .recu.fait .apres{color:var(--plein)}
+
   /* ── Le lien périmé ──────────────────────────────────────────────── */
   #apres .perime{display:none}
   body.perime #apres .vivante{display:none}
@@ -244,6 +278,19 @@
                 <p>Par chèque, à l'ordre de : <b>Atlas</b>.</p>
               </div>
             </div>
+
+            <!-- La case, après « Pour régler » : c'est la dernière chose de la
+                 page, elle ne commande rien, et personne ne peut la prendre
+                 pour une condition à remplir avant de télécharger. -->
+            <div class="regler">
+              <button type="button" class="recu">
+                <span class="boite">&#10003;</span>
+                <span>
+                  <span class="mot">J'ai bien reçu cette facture</span>
+                  <span class="apres">Votre artisan en sera informé.</span>
+                </span>
+              </button>
+            </div>
           </div>
 
         </div>
@@ -270,6 +317,22 @@
   <b>L'IBAN : à vous de dire.</b> Le montrer ici évite à votre client d'ouvrir le PDF pour le
   chercher ; le taire garde la page nue. <b>Sans montrer l'IBAN</b>, en haut, montre les deux.
   Dans les deux cas, s'il n'est pas rempli dans vos réglages, rien ne s'affiche — jamais une case vide.
+</div>
+
+<div class="note">
+  <b>La case tout en bas — votre demande du 9 septembre.</b> Elle règle le
+  « ah ouais mais j'ai pas vu votre facture ». <b>Elle ne bloque rien</b> :
+  « Télécharger ma facture » marche cochée ou pas, vous l'avez tranché vous-même.
+  Elle part au premier appui, sans second bouton, et <b>elle ne se décoche pas</b> —
+  une confirmation retirée ne veut rien dire. Essayez-la.
+</div>
+
+<div class="note">
+  <b>Et si votre client ne coche jamais ?</b> Atlas note <b>l'ouverture du lien</b>
+  tout seul, sans rien lui demander : c'est cette date-là qui compte, parce
+  qu'elle ne dépend pas de sa bonne volonté. Où vous la retrouvez le jour où il
+  conteste : <b>sur « Terminés › En attente de paiement »</b>, la planche d'à côté
+  le montre.
 </div>
 
 <div class="note">
@@ -314,6 +377,17 @@
         dit.textContent = 'Copié';
         setTimeout(function () { b.classList.remove('fait'); dit.textContent = 'Copier'; }, 2000);
       });
+    });
+  });
+
+  /* La case se coche pour de vrai, et une seule fois. Une maquette qui ferait
+     semblant ne dirait rien de ce que vivra son client — c'est la même raison
+     que les pastilles à copier juste au-dessus. */
+  document.querySelectorAll('.recu').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (b.classList.contains('fait')) return;
+      b.classList.add('fait');
+      b.querySelector('.apres').textContent = 'Confirmé le 9 septembre. Merci.';
     });
   });
 

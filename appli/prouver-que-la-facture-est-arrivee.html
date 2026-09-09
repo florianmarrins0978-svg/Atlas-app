@@ -2,399 +2,338 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prouver que la facture est arrivée — Atlas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Où se range la réception d'une facture — Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
-  « AH OUAIS MAIS J'AI PAS VU VOTRE FACTURE » — la planche, 9 septembre 2026
+  OÙ SE RANGE LA RÉCEPTION D'UNE FACTURE — la planche, 9 septembre 2026
   ═══════════════════════════════════════════════════════════════════════════
 
-  CE QU'IL A DEMANDÉ, ET CE QU'IL A REFUSÉ LE MÊME JOUR.
+  CETTE PLANCHE NE DESSINE PAS LA PAGE DU CLIENT, ET C'EST VOULU.
 
-  Sa demande : « sur le lien qu'on envoie au client avec sa facture, on peut
-  pas mettre une case à cocher qui stipule qu'il accuse bonne réception ? ça
-  évite les "ah ouais mais j'ai pas vu votre facture" ».
+  Première version : elle en redessinait une à la main. Il l'a relevé le jour
+  même — « c'est pas la vraie planche du message que reçoit la cliente ! » —
+  et il a raison : `appli/la-page-de-sa-facture.html` existe, il l'a validée le
+  8 septembre, et deux dessins d'un même écran divergent au premier libellé
+  changé (`CLAUDE.md` §3, jamais de règle dupliquée). La case à cocher vit donc
+  là-bas. Ici, on ne montre que ce qui revient CHEZ LUI.
 
-  Puis il a posé la vraie question : « sinon on fait en sorte qu'il doive
-  cocher la case pour pouvoir télécharger sa facture ? c'est légal ça ? » — et
-  il a retenu que NON, cocher ne conditionne rien : « mais ça ne l'empêche pas
-  de télécharger la facture s'il ne coche pas ! ». Une facture se donne ; la
-  retenir se retourne contre lui, et une confirmation arrachée ne vaut rien.
+  Puis : « pareil pour l'endroit où tu vas ranger l'info de la réception ».
+  Les deux écrans ci-dessous sont donc recopiés du code, pas réinventés :
 
-  ET SA DERNIÈRE QUESTION EST CELLE QUI A FAIT CETTE PLANCHE :
+    · « En attente de paiement » — src/app/termines/tva/EnAttenteDePaiement.tsx,
+      titre, compte, chapeau, lignes, « Payée » et « Noter un règlement »
+      compris ;
+    · la carte et son « J'ai vu » — src/app/Notifications.tsx.
+
+  ET LA TRACE SE POSE À UNE PLACE QUI EXISTE DÉJÀ. `MarqueAncienIban` occupe
+  exactement ce créneau, avec sa raison écrite dans le code : « sous la ligne
+  et avant les gestes de paiement : elle dit quelque chose sur la facture, pas
+  sur son règlement ». La réception est de la même nature. Rien à inventer.
+
+  ─────────────────────────────────────────────────────────────────────────
+  LA QUESTION QUI A FAIT CETTE PLANCHE, ET SA RÉPONSE HONNÊTE.
+
   « Atlas note l'ouverture seul, mais en cas de litige, où est-ce que
-  l'utilisateur va rechercher cette info ? »
-  Réponse honnête : NULLE PART aujourd'hui. La carte de l'accueil s'efface
-  d'un « J'ai vu » et rien n'en garde la trace. C'est le quatrième onglet.
+  l'utilisateur va rechercher cette info ? » — NULLE PART aujourd'hui. La carte
+  de l'accueil s'efface d'un « J'ai vu » et rien n'en garde la trace. Une preuve
+  qu'on ne sait pas retrouver ne prouve rien.
 
-  Tous les libellés sont recopiés du code, jamais réécrits :
-    - la page du client : src/app/factures/[jeton]/page.tsx
-    - « Par virement, indiquez… », « Par chèque, à l'ordre de : » :
-      LIBELLE_AVANT, LIBELLE_APRES, phraseDuCheque (src/lib/modalites-paiement.ts)
-    - la carte et son « J'ai vu » : src/app/Notifications.tsx
-  Ce qui est NEUF porte un trait doré.
+  Rien n'est codé : `envois_factures` ne porte aujourd'hui ni date d'ouverture
+  ni accusé de réception.
 
-  Les couleurs viennent de `src/lib/chartes.ts`, les deux pôles compris.
+  Les couleurs viennent de `src/lib/design-tokens.ts`, au caractère près.
 */
 :root{
-  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
-  --gris:#8a8578; --or:#B98B47; --pin:#2f3b2f; --rouille:#9c5b3f;
-  --trait:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28); --scene:#e6e3dc;
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.08);
+  --alerte:#9C3B2E; --scene:#e6e3dc;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 body.nuit{
-  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
-  --gris:#84887b; --or:#B98B47; --pin:#8fae86; --rouille:#c07a56;
-  --trait:rgba(233,232,222,.12); --chevron:rgba(233,232,222,.28); --scene:#070908;
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --alerte:#c07a56; --scene:#070908;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--scene)}
-body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
-     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
 
-.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
-  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
-.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
-  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
-  border-radius:999px;cursor:pointer;min-height:44px}
-.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
-  border-color:var(--encre)}
+.bandeau{background:var(--encre);color:var(--fond);padding:18px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000;color:var(--encre)}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
 
-.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
-.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
-  font-size:30px;line-height:1.12;margin:0 0 12px}
-.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
-.tete b{color:var(--encre)}
-.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--fond);background:var(--rouille);
-  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);
+       border-bottom:1px solid var(--trait);padding:12px 16px 13px}
+.etats .quoi{max-width:470px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+             letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+.etats .rangee{max-width:470px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+              border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);cursor:pointer;
+              min-height:44px;-webkit-tap-highlight-color:transparent}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
 
-.scene{display:flex;justify-content:center;padding:22px 16px 6px}
-.colonne{width:390px;max-width:100%}
-.etiquette{text-align:center;font-size:11px;letter-spacing:.24em;
-  text-transform:uppercase;color:var(--encre-douce);margin:0 0 10px;min-height:17px}
-.tel{position:relative;width:390px;max-width:100%;height:700px;overflow:hidden;
-  background:var(--fond);border:1px solid var(--trait);border-radius:10px}
-.defile{height:100%;overflow-y:auto}
-.regle{text-align:center;font-size:12.5px;color:var(--encre-douce);margin:10px 0 0}
+.planches{display:flex;justify-content:center;max-width:1000px;margin:30px auto 0;padding:0 20px}
+.planche{width:390px;max-width:100%}
+.planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+.planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce);min-height:40px}
+.tel{position:relative;width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;
+     box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond)}
+.defile{height:100%;overflow-y:auto;padding-bottom:60px}
 
-/* ─── la page du client ─────────────────────────────────────────────────── */
-.clientEcran{display:flex;min-height:100%;align-items:center;justify-content:center;padding:24px}
-.carte{width:100%;max-width:320px;border-radius:16px;padding:24px;text-align:center;
-  background:var(--plage);border:1px solid var(--trait);box-shadow:0 8px 24px rgba(20,18,14,.08)}
-.carte .caps{font-size:11px;font-weight:500;text-transform:uppercase;
-  letter-spacing:.28em;color:var(--or);margin:0}
-.carte h3{font-family:ui-serif,Georgia,serif;font-size:24px;margin:10px 0 0;font-weight:400}
-.carte .qui{margin:6px 0 0;font-size:14.5px;color:var(--gris)}
-.carte .quand{margin:14px 0 0;font-size:14.5px;color:var(--encre-douce)}
-.plein{display:block;margin-top:20px;border-radius:999px;padding:15px 20px;font-size:17px;
-  font-family:ui-serif,Georgia,serif;background:var(--pin);color:var(--fond);border:0;
-  width:100%;cursor:default}
-.filet{margin-top:20px;padding-top:16px;border-top:1px solid var(--trait);text-align:left}
-.filet .caps{font-size:11px;font-weight:500;text-transform:uppercase;
-  letter-spacing:.28em;color:var(--gris);margin:0 0 12px}
-.filet p{margin:0;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
-.filet b{color:var(--encre);font-weight:500}
-.pastille{display:flex;align-items:center;justify-content:space-between;gap:10px;
-  margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--fond);
-  border:1px solid var(--trait);font-size:14px}
-.pastille .val{font-variant-numeric:tabular-nums}
-.pastille .copier{font-size:12px;color:var(--or)}
+/* ── L'écran, à la grammaire d'Atlas ──────────────────────────────────── */
+.entete{padding:26px 24px 0}
+.entete h1{margin:18px 0 0;font:400 32px/1.04 var(--serif);letter-spacing:-.018em}
+.entete .sur{margin:10px 0 0;font:500 11px/1 var(--sans);letter-spacing:.28em;
+             text-transform:uppercase;color:var(--or)}
 
-/* La case — NEUVE, d'où le trait doré. Elle est sous le bouton : elle ne
-   commande rien, et rien ne doit laisser croire qu'elle ouvre le document. */
-.case{display:flex;align-items:flex-start;gap:11px;margin-top:18px;padding-top:16px;
-  border-top:1px solid var(--trait);text-align:left;cursor:pointer}
-.case .boite{flex:none;margin-top:1px;width:24px;height:24px;border-radius:5px;
-  border:1.5px solid var(--chevron);background:transparent;
-  display:flex;align-items:center;justify-content:center;font-size:14px;color:transparent}
-.case.cochee .boite{background:var(--pin);border-color:var(--pin);color:var(--fond)}
-.case .mot{font-size:14.5px;line-height:1.5;color:var(--encre-douce)}
-.case.cochee .mot{color:var(--encre)}
-.merci{margin:10px 0 0;font-size:13px;color:var(--pin);text-align:left}
+.bloc{margin-top:34px;padding:0 24px}
+.bloc .haut{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.bloc h2{margin:0;font:400 17px var(--serif)}
+.bloc .compte{font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+.bloc .chapo{margin:6px 0 0;font-size:13px;line-height:1.35;color:var(--encre-douce)}
+.bloc .chapo b{color:var(--encre);font-weight:600}
 
-/* ─── les écrans de l'artisan ───────────────────────────────────────────── */
-.ecran{padding:26px 26px 74px}
-h2.titre{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:36px;
-  line-height:1.02;letter-spacing:-.018em;margin:20px 0 0}
-.surtitre{margin:12px 0 0;font-size:11px;font-weight:500;text-transform:uppercase;
-  letter-spacing:.28em;color:var(--or)}
-.inter{margin:26px 0 10px;font-size:11px;font-weight:500;text-transform:uppercase;
-  letter-spacing:.28em;color:var(--encre-douce)}
+ul.factures{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column}
+ul.factures li{padding:14px 0;border-top:1px solid var(--filet)}
+.ligne{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+/* Deux LIGNES, pas deux morceaux de phrase : dans le code ce sont deux <p>
+   empilés, et sans `display:block` on lisait « Mme Durand F2026-000002 · émise
+   le 5 septembre » d'un seul tenant. Vu sur l'image, jamais dans une mesure. */
+.ligne .gauche{min-width:0;flex:1}
+.ligne .cli{display:block;font-size:14.5px}
+.ligne .meta{display:block;margin:1px 0 0;font-size:11.5px;line-height:1.45;color:var(--gris)}
+.ligne .eur{font:400 15.5px var(--serif);font-variant-numeric:tabular-nums;flex:none}
 
-.alerte{margin-top:18px;border-radius:10px;padding:15px 16px;background:var(--plage);
-  border:1px solid var(--trait)}
-.alerte .h{font-family:ui-serif,Georgia,serif;font-size:18px}
+/* La trace — NEUVE. Elle prend la place de `MarqueAncienIban` : sous la ligne,
+   avant les gestes de paiement. Le trait doré ne sera pas dans l'application ;
+   il n'est là que pour montrer ce qui s'ajoute. */
+.trace{margin-top:8px;padding-left:11px;box-shadow:inset 3px 0 0 var(--or)}
+.trace .t{font-size:11.5px;line-height:1.5;color:var(--encre-douce)}
+.trace .t b{color:var(--encre);font-weight:500}
+.trace .muet{color:var(--gris)}
+
+.gestes{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.gestes .payee{border:0;border-radius:999px;background:var(--plein);color:var(--carte);
+               min-height:40px;padding:0 20px;font:500 14px var(--sans);cursor:default}
+.gestes .noter{border:0;background:none;color:var(--gris);min-height:40px;padding:0 8px;
+               font:400 14px var(--sans);cursor:default}
+
+/* ── La carte de l'accueil ────────────────────────────────────────────── */
+.alerte{margin:18px 24px 0;border-radius:12px;padding:15px 16px;background:var(--carte);
+        border:1px solid var(--trait)}
+.alerte.neuve{box-shadow:inset 3px 0 0 var(--or)}
+.alerte .h{font:400 18px var(--serif)}
 .alerte .t{margin:5px 0 0;font-size:14px;line-height:1.55;color:var(--encre-douce)}
-.alerte .bas{display:flex;align-items:center;justify-content:space-between;
-  gap:12px;margin-top:12px}
+.alerte .bas{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
 .alerte .lien{font-size:14px;color:var(--or)}
-.alerte .vu{font-size:14px;font-weight:500;color:var(--encre-douce);
-  background:none;border:0;font-family:inherit;padding:8px 2px;cursor:default}
+.alerte .vu{font:500 14px var(--sans);color:var(--encre-douce);background:none;border:0;
+            padding:8px 2px;cursor:default}
 
-.chantier{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
-  padding:13px 0;border-bottom:1px solid var(--trait)}
-.chantier .n{font-family:ui-serif,Georgia,serif;font-size:17px}
-.chantier .o{display:block;font-size:13px;color:var(--gris);margin-top:2px}
-.chantier .e{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
-
-/* La trace — NEUVE. Trois dates sur une ligne, là où il se dispute. */
-.trace{margin-top:14px;padding:13px 14px;border-radius:8px;background:var(--plage);
-  border:1px solid var(--trait)}
-.trace .l{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
-  padding:6px 0;font-size:14px}
-.trace .l + .l{border-top:1px solid var(--trait)}
-.trace .q{color:var(--encre-douce)}
-.trace .d{color:var(--encre);font-variant-numeric:tabular-nums}
-.trace .d.vide{color:var(--gris)}
-
-.neuf{box-shadow:inset 3px 0 0 var(--or);padding-left:13px;margin-left:-16px}
+.chantiers{margin-top:26px;padding:0 24px}
+.chantiers .l{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+              padding:13px 0;border-bottom:1px solid var(--filet)}
+.chantiers .n{font:400 17px var(--serif)}
+.chantiers .o{display:block;font-size:13px;color:var(--gris);margin-top:2px}
+.chantiers .e{font:400 11px var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
 
 .nav{position:absolute;left:0;right:0;bottom:0;height:48px;background:var(--fond);
-  border-top:1px solid var(--trait);display:flex;align-items:center;
-  justify-content:space-around;font-size:9.5px;letter-spacing:.2em;
-  text-transform:uppercase;color:var(--gris)}
+     border-top:1px solid var(--trait);display:flex;align-items:center;
+     justify-content:space-around;font:400 9.5px var(--sans);letter-spacing:.2em;
+     text-transform:uppercase;color:var(--gris)}
 
-/* ─── les notes ─────────────────────────────────────────────────────────── */
-.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
-.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
-.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
-.notes b{color:var(--encre)}
-.notes li{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 7px}
-table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
-th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
-  vertical-align:top;color:var(--encre-douce)}
-th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
-td b{color:var(--encre)}
+/* ── Les notes ────────────────────────────────────────────────────────── */
+.note{max-width:470px;margin:32px auto 0;padding:16px 20px;background:var(--carte);
+      border-left:3px solid var(--or);font-size:14px;line-height:1.6;color:var(--encre-douce)}
+.note b{color:var(--encre)}
+.note + .note{margin-top:12px}
+.note a{color:var(--or)}
+.note ul{margin:8px 0 0;padding-left:18px}
+.note li{margin:0 0 6px}
 </style>
 </head>
-<body>
+<body class="trace">
 
-<div class="commandes">
-  <button type="button" data-v="aujourdhui" aria-pressed="true">Aujourd'hui</button>
-  <button type="button" data-v="client" aria-pressed="false">1 · La case, chez le client</button>
-  <button type="button" data-v="carte" aria-pressed="false">2 · Ce que vous recevez</button>
-  <button type="button" data-v="litige" aria-pressed="false">3 · En cas de litige</button>
-  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+<div class="bandeau">
+  <b>Ce qui revient CHEZ VOUS quand votre client confirme.</b> La case à cocher, elle,
+  est sur la planche de sa page — <b>« Sa facture, et comment vous régler »</b>, celle
+  que vous avez validée le 8 septembre. <b>Rien n'est codé.</b>
 </div>
 
-<div class="tete">
-  <span class="sceau">Maquette — rien n'est codé</span>
-  <h1>« Ah ouais mais j'ai pas vu votre facture »</h1>
-  <p><b>Regardez « Aujourd'hui » d'abord.</b> La page que reçoit votre client
-  affiche la facture et de quoi vous payer — et <b>rien ne revient vers vous</b>.
-  Vous ne savez ni s'il l'a ouverte, ni quand.</p>
-  <p><b>Trois onglets, dans l'ordre où ça se passe :</b> ce que votre client
-  voit, ce qui arrive chez vous, et — votre question — <b>où vous retrouvez la
-  date le jour où il conteste</b>. Ce qui est neuf porte un trait doré.</p>
-</div>
-
-<div class="scene">
-  <div class="colonne">
-    <p class="etiquette" id="etiquette">Aujourd'hui</p>
-    <div class="tel">
-      <div class="defile" id="defile"></div>
-      <div class="nav" id="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
-    </div>
-    <p class="regle" id="regle">La case se coche : essayez-la.</p>
+<div class="etats">
+  <p class="quoi">Voir</p>
+  <div class="rangee">
+    <button type="button" data-v="avant" aria-pressed="false">Aujourd'hui</button>
+    <button type="button" data-v="trace" aria-pressed="true">Où l'info se range</button>
+    <button type="button" data-v="pasrecu" aria-pressed="false">S'il ne coche jamais</button>
+    <button type="button" data-v="carte" aria-pressed="false">La carte, sur l'accueil</button>
+    <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
   </div>
 </div>
 
-<div class="notes">
+<div class="planches">
+  <div class="planche">
+    <p class="nom" id="nom">Où l'info se range</p>
+    <p class="idee" id="idee"></p>
+    <div class="tel">
+      <div class="defile" id="defile"></div>
+      <div class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span><span>Réglages</span></div>
+    </div>
+  </div>
+</div>
 
-  <h3>Ce que la case fait, et ce qu'elle ne fait pas</h3>
-  <table>
-    <tr><th></th><th></th></tr>
-    <tr><td><b>Elle ne bloque rien</b></td>
-      <td>« Télécharger ma facture » marche coché ou pas. Vous l'avez tranché,
-      et vous avez eu raison : une facture se donne. La retenir se retournerait
-      contre vous — il ne coche pas, ne télécharge pas, et là il ne l'a
-      vraiment pas reçue</td></tr>
-    <tr><td><b>Elle est sous le bouton</b></td>
-      <td>et séparée par un filet. Au-dessus, elle aurait l'air d'une condition
-      à remplir pour ouvrir le document</td></tr>
-    <tr><td><b>Elle part au premier appui</b></td>
-      <td>pas de second bouton « Envoyer ». Un client qui coche et s'en va
-      aurait coché pour rien</td></tr>
-    <tr><td><b>Elle ne se décoche pas</b></td>
-      <td>une confirmation retirée ne veut rien dire, et laisserait croire
-      qu'on peut effacer une trace</td></tr>
-  </table>
+<div class="note">
+  <b>Votre question : en cas de litige, où je vais chercher ?</b> Aujourd'hui,
+  <b>nulle part</b> — et c'est le vrai trou. La carte de l'accueil s'efface d'un
+  « J'ai vu », et il ne reste rien. Une preuve qu'on ne sait pas retrouver ne
+  prouve rien.
+</div>
 
-  <h3>Votre question : en cas de litige, où je vais chercher ?</h3>
-  <p><b>Aujourd'hui, nulle part — et c'est le vrai trou.</b> La carte de
-  l'accueil s'efface d'un « J'ai vu », et plus rien n'en garde la trace. Une
-  preuve qu'on ne sait pas retrouver ne prouve rien.</p>
-  <p><b>Elle va donc sur la facture elle-même</b>, en trois lignes qui ne
-  s'effacent jamais — c'est l'écran que vous ouvrez quand vous en discutez :</p>
-  <table>
-    <tr><td><b>Envoyée</b></td><td>vous le savez déjà, la date est enregistrée</td></tr>
-    <tr><td><b>Ouverte</b></td><td>notée toute seule, sans rien demander au client.
-      <b>C'est celle qui compte</b> : elle ne dépend pas de sa bonne volonté</td></tr>
-    <tr><td><b>Réception confirmée</b></td><td>la case. Quand elle est vide, les
-      deux premières lignes parlent quand même</td></tr>
-  </table>
-  <p><b>Et la même ligne se pose sur « Terminés › En attente de paiement »</b> :
-  c'est là que vous allez quand vous courez après l'argent, et c'est là que la
-  question se pose vraiment.</p>
+<div class="note">
+  <b>Donc ça se range sur « Terminés › En attente de paiement »</b>, sous la ligne
+  de la facture. C'est là que vous allez quand vous courez après l'argent, et
+  c'est exactement la place qu'occupe déjà la marque de l'ancien IBAN : elle dit
+  quelque chose <b>sur la facture</b>, pas sur son règlement. Deux dates, sur une
+  ligne de plus, qui ne s'effacent jamais.
+</div>
 
-  <h3>Ce que ça vaut, et ce que ça ne vaut pas</h3>
-  <p><b>Ce n'est pas un recommandé.</b> Ça ne remplace pas une mise en demeure,
-  et je ne suis pas juriste. Ce que ça fait : remplacer « je ne l'ai jamais
-  reçue » par une date, une heure et un appareil — le même mécanisme qui sert
-  déjà pour vos devis, et que votre page de confidentialité annonce déjà
-  (<i>« cette trace vaut signature »</i>).</p>
+<div class="note">
+  <b>La ligne du milieu est la plus forte, et c'est « ouverte ».</b> Atlas la note
+  tout seul, sans rien demander à votre client : elle ne dépend pas de sa bonne
+  volonté. Regardez <b>« S'il ne coche jamais »</b> — vous avez encore une date à
+  opposer.
+</div>
 
-  <h3>Ce que je n'ai pas tranché</h3>
+<div class="note">
+  <b>Ce que ça vaut, et ce que ça ne vaut pas.</b> Ce n'est pas un recommandé, ça
+  ne remplace pas une mise en demeure, et je ne suis pas juriste. Ce que ça fait :
+  remplacer « je ne l'ai jamais reçue » par une date, une heure et un appareil —
+  le mécanisme qui sert déjà pour vos devis, et que votre page de confidentialité
+  annonce déjà (<i>« cette trace vaut signature »</i>).
+</div>
+
+<div class="note">
+  <b>Ce que je n'ai pas tranché :</b>
   <ul>
-    <li><b>Le mot exact de la case.</b> J'ai mis <i>« J'informe mon artisan que
-      j'ai bien reçu cette facture »</i> — le client parle de lui, pas de vous.
-      Votre formule était <i>« Informer votre artisan de la bonne réception de
-      la facture »</i> : plus administrative, et elle dit la même chose. Dites
-      celle que vous voulez.</li>
-    <li><b>Où va la carte.</b> Elle se pose sur l'accueil, avec les réponses aux
-      devis — le mécanisme et son « J'ai vu » existent déjà, il n'y a rien à
-      inventer. Si vous la vouliez plutôt sur la fiche du chantier, c'est un
-      autre écran et je le redessine.</li>
-    <li><b>Prévenir sur le téléphone.</b> C'est le lot d'à côté : cette
-      confirmation est l'un des deux événements qui mériteraient de sonner,
-      avec « devis accepté ».</li>
+    <li><b>Où va la carte.</b> Je la pose sur l'accueil, avec les réponses aux devis —
+      le mécanisme et son « J'ai vu » existent déjà, il n'y a rien à inventer. Si
+      vous la vouliez sur la fiche du chantier, dites-le.</li>
+    <li><b>Faut-il la même ligne sur l'écran de la facture</b>, dans le chantier ?
+      Elle ne coûte rien de plus, mais deux endroits à regarder valent parfois
+      moins qu'un seul.</li>
+    <li><b>Prévenir sur le téléphone</b> — le lot d'à côté. Cette confirmation est
+      l'un des deux événements qui mériteraient de sonner, avec « devis accepté ».</li>
   </ul>
-
 </div>
 
 <script>
 /*
-  UN SEUL JEU DE DONNÉES, QUATRE RENDUS. La page du client, la carte et la
-  trace sortent des mêmes valeurs : trois dessins écrits à la main
-  divergeraient au premier libellé changé, et la comparaison serait fausse.
+  UN SEUL JEU DE DONNÉES, QUATRE RENDUS. Les quatre vues sortent des mêmes
+  factures : quatre dessins écrits à la main divergeraient au premier libellé
+  changé, et la comparaison serait fausse.
 */
-var etat = { vue: "aujourdhui", cochee: false, nuit: false };
+var etat = { vue: "trace", nuit: false };
 
 var defile = document.getElementById("defile");
-var etiquette = document.getElementById("etiquette");
-var regle = document.getElementById("regle");
-var nav = document.getElementById("nav");
+var nom = document.getElementById("nom");
+var idee = document.getElementById("idee");
 
-var F = {
-  numero: "F-2026-0184",
-  entreprise: "Eden Nature",
-  echeance: "24 septembre",
-  client: "Mme Durand",
-  chantier: "Taille de haies · Rue des Écoles",
-  envoyee: "5 sept.",
-  ouverte: "9 sept. à 14 h 12",
-};
+/* Les deux factures. « ouverte » et « confirmee » valent null quand ça n'a pas
+   eu lieu : une date absente se TAIT, elle ne s'invente pas (`CLAUDE.md` §4). */
+var FACTURES = [
+  { client: "Mme Durand", numero: "F2026-000002", emise: "5 septembre", reste: "1 480,00 €",
+    ouverte: "le 9 septembre à 14 h 12", confirmee: "le 9 septembre" },
+  { client: "M. Leroy", numero: "F2026-000003", emise: "8 septembre", reste: "680,00 €",
+    ouverte: null, confirmee: null }
+];
 
-/** La page du client — recopiée de `src/app/factures/[jeton]/page.tsx`. */
-function pageDuClient(avecCase){
-  var h = '<div class="clientEcran"><div class="carte">' +
-    '<p class="caps">Facture</p>' +
-    '<h3>' + F.numero + '</h3>' +
-    '<p class="qui">' + F.entreprise + '</p>' +
-    '<p class="quand">À régler avant le ' + F.echeance + '</p>' +
-    '<button type="button" class="plein">Télécharger ma facture</button>';
+function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-  if (avecCase) {
-    h += '<div class="case neuf' + (etat.cochee ? " cochee" : "") + '" data-case>' +
-      '<span class="boite">&#10003;</span>' +
-      '<span class="mot">J\'informe mon artisan que j\'ai bien reçu cette facture</span>' +
-      '</div>';
-    if (etat.cochee) h += '<p class="merci">Merci, c\'est noté — le 9 septembre.</p>';
+/** La trace, telle qu'elle se lira sous la ligne de la facture. */
+function trace(f, avecCoche){
+  if (!f.ouverte) {
+    return '<div class="trace"><p class="t muet">Pas encore ouverte.</p></div>';
   }
+  var t = 'Ouverte <b>' + ech(f.ouverte) + '</b>';
+  if (avecCoche && f.confirmee) t += ' · réception confirmée <b>' + ech(f.confirmee) + '</b>';
+  return '<div class="trace"><p class="t">' + t + '</p></div>';
+}
 
-  h += '<div class="filet"><p class="caps">Pour régler</p>' +
-    '<p>Par virement, indiquez <b>' + F.numero + '</b> dans le libellé. ' +
-    'Sans ce numéro, votre règlement ne peut pas être rattaché à cette facture.</p>' +
-    '<div class="pastille"><span>Numéro de facture</span>' +
-      '<span class="val">' + F.numero + '</span><span class="copier">Copier</span></div>' +
-    '<div class="pastille"><span>IBAN</span>' +
-      '<span class="val">FR76 3000 …</span><span class="copier">Copier</span></div>' +
-    '<div class="filet"><p>Par chèque, à l\'ordre de : ' + F.entreprise + '.</p></div>' +
-    '</div></div></div>';
-  return h;
+/** « En attente de paiement » — recopié de `EnAttenteDePaiement.tsx`. */
+function enAttente(avecTrace, avecCoche){
+  var h = '<div class="entete"><h1>Terminés</h1><p class="sur">TVA</p></div>' +
+    '<section class="bloc"><div class="haut">' +
+      '<h2>En attente de paiement</h2>' +
+      '<span class="compte">' + FACTURES.length + ' factures</span></div>' +
+    '<p class="chapo">Ces factures sont parties chez vos clients. Elles entreront au relevé ' +
+      '<b>le jour où vous serez payé</b>, pas avant.</p>' +
+    '<ul class="factures">';
+
+  h += FACTURES.map(function(f){
+    return '<li><div class="ligne"><span class="gauche"><span class="cli">' + ech(f.client) + '</span>' +
+      '<span class="meta">' + ech(f.numero) + ' · émise le ' + ech(f.emise) + '</span></span>' +
+      '<span class="eur">' + ech(f.reste) + '</span></div>' +
+      (avecTrace ? trace(f, avecCoche) : "") +
+      '<div class="gestes"><button type="button" class="payee">Payée</button>' +
+      '<button type="button" class="noter">Noter un règlement</button></div></li>';
+  }).join("");
+
+  return h + '</ul></section>';
 }
 
 /** L'accueil, avec la carte — `src/app/Notifications.tsx`, « J'ai vu » compris. */
 function accueil(){
-  return '<div class="ecran">' +
-    '<h2 class="titre">Vos chantiers</h2><p class="surtitre">Aujourd\'hui</p>' +
-    '<div class="alerte neuf">' +
-      '<span class="h">Facture reçue</span>' +
-      '<p class="t">' + F.client + ' a confirmé avoir reçu la facture ' + F.numero + '.</p>' +
+  var f = FACTURES[0];
+  return '<div class="entete"><h1>Vos chantiers</h1><p class="sur">Aujourd\'hui</p></div>' +
+    '<div class="alerte neuve"><span class="h">Facture reçue</span>' +
+      '<p class="t">' + ech(f.client) + ' a confirmé avoir reçu la facture ' + ech(f.numero) + '.</p>' +
       '<div class="bas"><span class="lien">Voir la facture</span>' +
-      '<button type="button" class="vu">J\'ai vu</button></div>' +
-    '</div>' +
-    '<p class="inter">Vos chantiers</p>' +
-    '<div class="chantier"><span class="n">' + F.client +
-      '<span class="o">' + F.chantier + '</span></span><span class="e">Facturé</span></div>' +
-    '<div class="chantier"><span class="n">M. Leroy<span class="o">Élagage · Chemin du Bois</span></span>' +
-      '<span class="e">Devis parti</span></div>' +
-    '</div>';
+      '<button type="button" class="vu">J\'ai vu</button></div></div>' +
+    '<section class="chantiers">' +
+      '<div class="l"><span class="n">Mme Durand<span class="o">Taille de haies · Rue des Écoles</span></span>' +
+        '<span class="e">Facturé</span></div>' +
+      '<div class="l"><span class="n">M. Leroy<span class="o">Élagage · Chemin du Bois</span></span>' +
+        '<span class="e">Devis parti</span></div>' +
+    '</section>';
 }
 
-/** L'écran de la facture, côté patron — avec la trace qui ne s'efface pas. */
-function factureDuPatron(){
-  return '<div class="ecran">' +
-    '<h2 class="titre">Facture</h2><p class="surtitre">' + F.client + '</p>' +
-    '<p class="inter">Le document</p>' +
-    '<div class="chantier"><span class="n">' + F.numero +
-      '<span class="o">1 240,00 € · à régler avant le ' + F.echeance + '</span></span>' +
-      '<span class="e">Émise</span></div>' +
-    '<p class="inter">Ce que le client en a fait</p>' +
-    '<div class="trace neuf">' +
-      '<div class="l"><span class="q">Envoyée</span><span class="d">' + F.envoyee + '</span></div>' +
-      '<div class="l"><span class="q">Ouverte</span><span class="d">' + F.ouverte + '</span></div>' +
-      '<div class="l"><span class="q">Réception confirmée</span>' +
-        '<span class="d' + (etat.cochee ? "" : " vide") + '">' +
-        (etat.cochee ? "9 sept." : "pas encore") + '</span></div>' +
-    '</div>' +
-    '</div>';
-}
+var TEXTES = {
+  avant: ["Aujourd'hui",
+    "L'écran où vous allez déjà voir qui n'a pas payé. Il dit ce qu'on vous doit — jamais si votre client a seulement ouvert la facture."],
+  trace: ["Où l'info se range",
+    "Deux dates de plus, sous la ligne, à la place exacte qu'occupe déjà la marque de l'ancien IBAN. Elles ne s'effacent jamais."],
+  pasrecu: ["S'il ne coche jamais",
+    "La case reste vide, et vous avez quand même la date d'ouverture — celle-là, Atlas la note tout seul."],
+  carte: ["La carte, sur l'accueil",
+    "Ce que vous voyez le jour où il confirme. « J'ai vu » l'efface, comme pour la réponse à un devis."]
+};
 
 function rendre(){
   var v = etat.vue;
-  if (v === "aujourdhui") {
-    defile.innerHTML = pageDuClient(false);
-    etiquette.textContent = "Aujourd'hui — la page de votre client";
-    regle.textContent = "Rien ne revient vers vous.";
-    nav.style.display = "none";
-  } else if (v === "client") {
-    defile.innerHTML = pageDuClient(true);
-    etiquette.textContent = "1 · La case, chez le client";
-    regle.textContent = "La case se coche : essayez-la.";
-    nav.style.display = "none";
-  } else if (v === "carte") {
-    defile.innerHTML = accueil();
-    etiquette.textContent = "2 · Ce que vous recevez";
-    regle.textContent = "« J'ai vu » efface la carte, comme pour un devis.";
-    nav.style.display = "flex";
-  } else {
-    defile.innerHTML = factureDuPatron();
-    etiquette.textContent = "3 · En cas de litige";
-    // La trace suit l'état de la case : c'est tout l'intérêt de l'onglet, on
-    // voit ce qu'elle dit quand le client N'A PAS coché.
-    regle.textContent = etat.cochee
-      ? "Cochée sur l'onglet 1 : les trois lignes parlent."
-      : "Non cochée : les deux premières lignes parlent quand même.";
-    nav.style.display = "flex";
-  }
+  if (v === "carte") defile.innerHTML = accueil();
+  else if (v === "avant") defile.innerHTML = enAttente(false, false);
+  else defile.innerHTML = enAttente(true, v === "trace");
+  nom.textContent = TEXTES[v][0];
+  idee.textContent = TEXTES[v][1];
 }
 
-document.querySelectorAll(".commandes button[data-v]").forEach(function(b){
+document.querySelectorAll(".etats button[data-v]").forEach(function(b){
   b.addEventListener("click", function(){
     etat.vue = b.dataset.v;
-    document.querySelectorAll(".commandes button[data-v]").forEach(function(o){
+    document.querySelectorAll(".etats button[data-v]").forEach(function(o){
       o.setAttribute("aria-pressed", String(o === b));
     });
     rendre();
   });
-});
-
-// La case ne se DÉCOCHE pas : une confirmation retirée ne veut rien dire, et
-// laisserait croire qu'on peut effacer une trace.
-defile.addEventListener("click", function(e){
-  if (e.target.closest("[data-case]") && !etat.cochee) { etat.cochee = true; rendre(); }
 });
 
 var pole = document.getElementById("pole");
