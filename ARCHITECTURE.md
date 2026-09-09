@@ -26067,3 +26067,57 @@ visible vaut mieux qu’un défaut absorbé en silence (`AGENTS.md`).
 
 **Le seuil du « presque rond » vient de l’image, pas d’une intuition** : à 1,36
 (60 × 44) la pastille se lit ovale ; le garde-fou est posé à 1,25.
+---
+
+## §304 — Sortir d'Atlas : deux gestes, deux portées, et rien qui se recopie
+
+**Sa question du 9 septembre 2026 :** *« si je clique sur me déconnecter dans les
+réglages, est-ce que ça me remet à la page de connexion ? »* Il n'y avait aucun
+« me déconnecter » dans les Réglages — seulement « Me déconnecter partout », au
+bas de l'écran « Mot de passe ».
+
+**Les deux gestes existent maintenant, et ils ne servent pas au même moment.**
+
+| | Où | Portée | Face ID |
+|---|---|---|---|
+| **Se déconnecter** | bas des Réglages | **cet appareil** | **reste posé** |
+| **Me déconnecter partout** | sous « Mot de passe » | tout le compte | **retiré partout** |
+
+C'est la répartition des applications grand public — WhatsApp, Instagram, les
+Réglages d'iOS —, et sa correction du 9 septembre l'a imposée : *« va voir
+comment font les grandes applications et fais comme eux, là ce que tu me
+proposes ne fait pas pro »*. **La première version posait les deux choix dans une
+même feuille**, au moment où l'on veut juste sortir. Ne pas la ressusciter : un
+arbitrage technique n'a pas à se poser à celui qui rend son téléphone le soir.
+
+**`signOut` d'Auth.js, jamais `/api/session-perimee`.** La tentation était forte :
+cette route efface déjà les cookies. Deux raisons de ne pas la réemployer. Son
+nom ment — elle existe pour une session dont le COMPTE a disparu (le cookie
+fantôme du 10 août 2026) et renvoie sur `/login?session=perimee`. Et elle tient
+sa propre liste de six noms de cookies, préfixes `__Secure-` et `__Host-`
+compris : la recopier en ferait une seconde, et deux listes divergent (§3 de
+`CLAUDE.md`). `signOut` efface le cookie qu'Auth.js a lui-même posé.
+
+**Rien à fermer côté serveur, et ce n'est pas un oubli.** La session est un jeton
+signé (`session: { strategy: "jwt" }`) : aucune ligne de session en base. La
+preuve récente de M11 reste, délibérément — elle est attachée au `sessionId`, un
+UUID tiré à chaque authentification réelle, donc inutilisable par la session
+suivante ; l'effacer voudrait dire appeler `effacerPreuves`, qui travaille sur
+TOUT l'utilisateur et couperait sa tablette parce qu'il a fermé son téléphone.
+
+**Le dessin n'est pas neuf non plus : c'est celui de `SupprimerCeClient`**,
+tranché sur maquette le 2 septembre — une ligne en capitales espacées de 9,5 px
+qui ne s'annonce pas mais dont la cible fait 44 px, une feuille, et « Annuler »
+en simple mot plutôt qu'en second bouton. **Une seule chose en diffère : pas de
+surtitre d'alerte.** « Suppression définitive » avertit d'un geste irréversible ;
+se déconnecter se défait en cinq secondes, et le même signal posé sur un geste
+anodin s'apprend à être ignoré (`CLAUDE.md` §4 ter).
+
+**Aucune garde de rôle sur ce geste**, et c'en est une décision : sortir de son
+propre compte n'appartient pas à l'entreprise. Un salarié doit pouvoir fermer sa
+session sur le téléphone qu'il rend le soir.
+
+**Et aucun `try/catch` autour de l'action.** `signOut({ redirectTo })` lève le
+`NEXT_REDIRECT` que Next.js attrape pour naviguer : l'avaler effacerait le cookie
+en laissant l'écran en place, chaque geste ensuite refusé — exactement le piège
+du cookie mort payé une soirée le 10 août 2026.

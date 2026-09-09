@@ -9,7 +9,7 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
+## ⏳ UNE BATTERIE À JOUER — « Se déconnecter » est codé (9 septembre 2026)
 
 **Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce
 que ça me remet à la page de connexion ? »* — et le bouton n'existe pas. Le seul
@@ -28,7 +28,16 @@ ligne en capitales espacées 9,5 px couleur `alert`, cible de 44 px, aucune
 capsule ; `BottomSheet`, bouton plein `alert` de 52 px, « Annuler » en simple
 mot. **Sans le surtitre d'alerte** — se déconnecter n'est pas irréversible.
 
-**Rien n'est codé, et rien ne se code avant son accord.**
+**C'EST CODÉ** — il a validé la maquette le jour même. Reste **la batterie**,
+qui n'a pas pu être jouée : elle prend le port 3000 et vide la base, et sa règle
+du 4 septembre veut qu'on le lui demande avant. Sont verts : `typecheck`,
+`lint`, `verifier:memoire`, et les contrôles de structure.
+
+**La suite à surveiller au premier passage :** `scripts/test-se-deconnecter-e2e.ts`.
+Elle n'a jamais été vue ni verte ni rouge, et elle pose une clé témoin en base
+(`cles_appareil`) qu'elle retire dans un `finally` — si une batterie est
+interrompue en plein milieu, chercher un `identifiant_cle` commençant par
+`temoin-deconnexion-`.
 
 **Ce que le geste « cet appareil » coûterait**, si retenu : la session vit dans
 un jeton (`session: { strategy: "jwt" }`, `src/auth.ts:36`), donc effacer le

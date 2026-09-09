@@ -8,6 +8,33 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### « Se déconnecter » existe enfin, au bas des Réglages
+
+**Codé après son accord sur la maquette.** Une ligne en capitales espacées tout
+en bas du sommaire, une feuille de confirmation, et l'on repart sur l'écran de
+connexion. Le dessin est celui de `SupprimerCeClient` (2 septembre), sans son
+surtitre d'alerte — se déconnecter n'est pas irréversible. Le pourquoi de chaque
+choix est dans `ARCHITECTURE.md` §304.
+
+| | |
+|---|---|
+| `src/app/reglages/deconnexion-actions.ts` | `signOut` d'Auth.js — pas `/api/session-perimee`, dont le nom ment et qui tient sa propre liste de cookies |
+| `src/app/reglages/SeDeconnecter.tsx` | la ligne et la feuille |
+| `scripts/test-se-deconnecter-e2e.ts` | le geste entier, dans un vrai navigateur |
+
+**Face ID reste posé sur l'appareil, et la suite l'exige** : c'est ce qui sépare
+ce geste de « Me déconnecter partout ». Elle **pose sa propre clé témoin** avant
+de se déconnecter — le compte de démonstration n'en a aucune, et compter « zéro
+avant, zéro après » aurait rendu un vert qui ne mesure rien (le `0 − 0 = 0` du
+15 août 2026).
+
+**ÉPROUVÉ À MOITIÉ, ET IL FAUT LE DIRE :** `typecheck`, `lint`,
+`verifier:memoire`, et les contrôles de structure (pansement, code mort,
+couches, flèches, boutons, couleurs) sont **verts**. La batterie complète
+**n'a pas été jouée** — elle prend le port 3000 et vide la base, et sa règle du
+4 septembre veut qu'on le lui demande d'abord. Tant qu'elle n'a pas tourné,
+`test-se-deconnecter-e2e` n'a jamais été vu ni vert ni rouge.
+
 ### Ce que « me déconnecter » fait vraiment, et la maquette d'un geste absent
 
 **Sa question du jour :** *« si je clique sur me déconnecter dans les réglages,
