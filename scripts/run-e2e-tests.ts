@@ -505,6 +505,21 @@ async function main() {
        * parole ; c'est exactement le cas que ce drapeau existe pour couvrir.
        */
       AUTH_TRUST_HOST: "true",
+      /**
+       * **LA TRANSCRIPTION DES SUITES — 9 septembre 2026, et quatorze rouges.**
+       *
+       * Rien n'était posé ici, donc `dev` s'appliquait : son texte porte une
+       * marque, et l'application le refuse depuis le 5 septembre — à raison, il
+       * remplissait les devis de prestations que personne n'avait dictées.
+       * Résultat, la chaîne dictée → devis s'arrêtait sur *« aucun prestataire
+       * de transcription n'est encore raccordé »*, et quatorze suites
+       * rougissaient depuis quatre jours en passant pour un « flottement ».
+       *
+       * `essai` rend un texte ordinaire, sans appel réseau
+       * (`transcription/essai.ts`). La règle de sécurité ne bouge pas : `dev`
+       * marque toujours le sien, et la production refuse `essai`.
+       */
+      TRANSCRIPTION_PROVIDER: "essai",
     },
     stdio: ["ignore", journalFd, journalFd],
     detached: true,
