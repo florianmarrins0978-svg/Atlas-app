@@ -5,13 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Aujourd’hui d’abord — le planning qui s’ouvre sur la journée</title>
 <style>
-  /* ─── LES JETONS DES DEUX CHARTES, SORTIS DU CODE ──────────────────────────
+  /* ═══ LES JETONS, SORTIS DU CODE ══════════════════════════════════════════
      `src/lib/chartes.ts`, au caractère près, jamais approchés à l'œil. `or` ne
      bouge sur AUCUNE des huit chartes (sa règle du 31 août) ; `orTexte` est
-     l'or assombri qui sert quand l'or porte un MOT sur du papier pâle ;
-     `orSurEncre` est celui qui sert quand il est posé SUR l'encre — et sur les
-     six chartes claires, il vaut le vrai #B98B47. Les couleurs des barres du
-     mois viennent de `MoisCharge.tsx` : vertPale, rust, bordeaux. */
+     l'or assombri quand l'or porte un MOT sur du papier pâle ; `orSurEncre`
+     celui qui sert quand il est posé SUR l'encre — et sur les six chartes
+     claires, il vaut le vrai #B98B47.
+
+     Les `voile(...)` de `design-tokens.ts` sont écrits ici en clair pour les
+     deux chartes montrées : `color-mix` n'existe pas avant iOS 16.2, et une
+     planche qui se dégrade ne prouve rien. */
   :root{
     --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
     --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
@@ -19,6 +22,10 @@
     --vertPale:#b9c6b4; --bordeaux:#6E2433;
     --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
     --chevron:rgba(28,28,26,0.28);
+    --weekEndFond:rgba(28,28,26,0.035);   /* voile(ink, .035) */
+    --weekEndEncre:rgba(28,28,26,0.42);   /* voile(ink, .42)  */
+    --weekEndLettre:rgba(28,28,26,0.3);   /* voile(ink, .3)   */
+    --surPlein:#faf9f5;                   /* surPlein = card  */
     --hors:#e6e3dc; --horsTexte:#4a4a44; --horsFort:#1c1c1a;
   }
   body[data-charte="nuit"]{
@@ -28,6 +35,10 @@
     --vertPale:#738b6a; --bordeaux:#b53b54;
     --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07);
     --chevron:rgba(233,232,222,0.28);
+    --weekEndFond:rgba(233,232,222,0.035);
+    --weekEndEncre:rgba(233,232,222,0.42);
+    --weekEndLettre:rgba(233,232,222,0.3);
+    --surPlein:#1a1d19;
     --hors:#0a0b0a; --horsTexte:#c1c2b6; --horsFort:#e9e8de;
   }
   *{box-sizing:border-box}
@@ -50,100 +61,107 @@
                 font:600 13px/1 ui-sans-serif,sans-serif;letter-spacing:.06em;
                 cursor:pointer;-webkit-tap-highlight-color:transparent;
                 transition:background .18s,color .18s,border-color .18s}
-  .choix button[aria-pressed="true"]{background:var(--rust);color:var(--card);
+  .choix button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);
                                      border-color:var(--rust)}
   .choix .sep{width:100%;height:0}
 
-  /* ─── LE TÉLÉPHONE ────────────────────────────────────────────────────────*/
+  /* ═══ L'ÉCRAN ═════════════════════════════════════════════════════════════*/
   .tel{max-width:430px;margin:16px auto 0;background:var(--cream);
        border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22);
-       padding:0 0 0;transition:background .25s}
+       transition:background .25s}
 
-  /* L'en-tête de l'écran, et la barre du bas : ils encadrent la page réelle, et
-     sans eux on juge une liste flottant dans le vide. */
-  .entete{padding:16px 18px 14px;text-align:center;border-bottom:1px solid var(--lineSoft)}
-  .entete b{display:block;font:400 21px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;color:var(--ink)}
-  .corps{padding:18px 0 6px}
-  .nav{display:flex;border-top:1px solid var(--line);background:var(--card)}
-  .nav span{flex:1;padding:12px 2px 16px;text-align:center;
-            font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.04em;color:var(--muted)}
-  .nav span.actif{color:var(--rust);font-weight:800}
-  body[data-charte="nuit"] .nav span.actif{color:var(--or)}
+  /* L'en-tête : `EnTeteEcran surtitre="Vos journées" titre="Planning"` — le
+     titre en serif 36 px, le surtitre doré EN DESSOUS (sa demande du 26 août). */
+  .entete{padding:34px 26px 0}
+  .entete h1{margin:0;font:400 36px/1.02 ui-serif,Georgia,"Iowan Old Style",serif;
+             letter-spacing:-0.018em;color:var(--ink)}
+  .entete p{margin:12px 0 0;font:500 9.5px/1 ui-sans-serif,sans-serif;
+            letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
 
-  /* La légende du mois — les quatre états, avec leur carré, comme dans l'appli. */
-  .legende{margin:12px 0 0;display:flex;flex-wrap:nowrap;align-items:center;
+  /* ─── LE MOIS — repris de `MoisCharge.tsx`, sans y toucher ────────────────
+     Sa consigne du 9 septembre : *« ne touche surtout pas au calendrier du mois
+     qui existe »*. Tout ce qui suit est donc une COPIE : mêmes 42 px de flèche,
+     même écart de 4 px, mêmes cases en 1/1.06, même cercle d'or sur aujourd'hui,
+     mêmes barres de 6 px larges de 24, même légende. Les jours des autres mois
+     disparaissent — ils ne portent rien. */
+  .mois{margin:18px 12px 0}
+  .mois-tete{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .fleche{width:42px;height:42px;flex:none;border-radius:999px;
+          border:1px solid var(--line);background:var(--card);color:var(--ink);
+          font-size:19px;line-height:1;cursor:pointer;
+          -webkit-tap-highlight-color:transparent}
+  .mois-titre{flex:1;text-align:center;font:700 15px/1.2 ui-sans-serif,sans-serif;color:var(--ink)}
+  .lettres{margin:16px 0 6px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;
+           text-align:center;font:600 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .lettres span:nth-child(n+6){color:var(--weekEndLettre)}
+  .grille{display:flex;flex-direction:column;gap:4px}
+  .rangee{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;border-radius:12px}
+  .case{aspect-ratio:1 / 1.06;border:0;padding:0;border-radius:10px;background:transparent;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+        cursor:default;-webkit-tap-highlight-color:transparent}
+  .case[data-etat="week-end"]{background:var(--weekEndFond)}
+  .case.auj{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .case .num{font:400 17px/1 ui-serif,Georgia,"Iowan Old Style",serif;color:var(--ink)}
+  .case[data-etat="week-end"] .num{color:var(--weekEndEncre)}
+  .case.auj .num{color:var(--or);font-weight:600}
+  .marque{display:flex;width:24px;flex-direction:column;gap:2.5px}
+  .case[data-etat="week-end"] .marque{visibility:hidden}
+  .marque i{display:flex;height:6px;border-radius:2px;overflow:hidden;
+            background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+  .marque i span{height:100%}
+  .creux{aspect-ratio:1 / 1.06}
+
+  .legende{margin:14px 0 0;display:flex;flex-wrap:nowrap;align-items:center;
            justify-content:center;gap:6px;font-size:9px;color:var(--muted)}
-  .legende i{display:inline-block;width:10px;height:10px;border-radius:3px;
-             background:var(--card);box-shadow:inset 0 0 0 1px var(--line);
-             vertical-align:-1px;margin-right:3px}
-  .legende i[data-etat="dispo"]{background:var(--vertPale);box-shadow:none}
-  .legende i[data-etat="plein"]{background:var(--rust);box-shadow:none}
-  .legende i[data-etat="dela"]{background:var(--bordeaux);box-shadow:none}
+  .legende>span{display:flex;flex:none;align-items:center;gap:5px;white-space:nowrap}
+  .legende .carre{display:block;width:10px;height:10px;flex:none;border-radius:3px;
+                  background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+  .legende .carre[data-etat="dispo"]{background:var(--vertPale);box-shadow:none}
+  .legende .carre[data-etat="plein"]{background:var(--rust);box-shadow:none}
+  .legende .carre[data-etat="dela"]{background:var(--bordeaux);box-shadow:none}
+  .legende .position{gap:7px}
+  .legende .position .barres{display:flex;width:24px;flex:none;flex-direction:column;gap:2.5px}
+  .legende .position .barres i{display:flex;height:6px;border-radius:2px;
+                               background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+  .legende .position .mots{display:flex;flex-direction:column;gap:2.5px;line-height:1}
+  .legende .position .mots b{display:flex;height:6px;align-items:center;
+                             font:600 9.5px/1 ui-sans-serif,sans-serif;color:var(--inkSoft)}
 
-  /* Le titre de section, comme dans l'écran codé. */
-  .titre-section{margin:24px 18px 0;text-align:center;
+  /* ─── PLANIFIÉS ───────────────────────────────────────────────────────────*/
+  .titre-section{margin:26px 18px 0;text-align:center;
                  font:700 13px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
                  text-transform:uppercase;color:var(--ink)}
 
-  /* ─── LE MOIS — il reste au-dessus, c'est sa demande du 9 septembre ───────
-     Les quatre états des barres viennent de `MoisCharge.tsx` : rien (creux
-     cerclé), incomplet (vert pâle), complet (l'accent), au-delà (bordeaux). */
-  .mois{margin:0 18px}
-  .titre-mois{margin:0 0 10px;text-align:center;font:700 13px/1 ui-sans-serif,sans-serif;
-              letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
-  .entetes,.grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-  .entetes span{text-align:center;font:600 10px/1 ui-sans-serif,sans-serif;
-                letter-spacing:.08em;color:var(--muted);padding-bottom:7px}
-  .case{border-radius:9px;padding:5px 0 6px;background:var(--card);
-        border:1px solid var(--lineSoft)}
-  .case b{display:block;text-align:center;font:600 12px/1 ui-sans-serif,sans-serif;
-          color:var(--inkSoft)}
-  .case.hors b{color:var(--muted)}
-  .case.auj{border-color:var(--or)}
-  .case.auj b{color:var(--or);font-weight:800}
-  .barres{margin:5px 5px 0;display:flex;flex-direction:column;gap:2px}
-  .barres i{display:block;height:4px;border-radius:2px;background:var(--card);
-            box-shadow:inset 0 0 0 1px var(--line)}
-  .barres i[data-etat="dispo"]{background:var(--vertPale);box-shadow:none}
-  .barres i[data-etat="plein"]{background:var(--rust);box-shadow:none}
-  .barres i[data-etat="dela"]{background:var(--bordeaux);box-shadow:none}
-
-  /* ─── LE COMMUTATEUR — sa demande du 9 septembre 2026 ─────────────────────
-     *« Ce qu'il faudrait, c'est qu'on ait seulement la journée d'aujourd'hui.
-     Néanmoins, si on clique sur un bouton, on a le visuel de la semaine, et on
-     switch assez rapidement. »* Deux cibles pleine largeur, rien à découvrir. */
+  /* LE COMMUTATEUR — sa demande du 9 septembre 2026 : *« qu'on ait seulement la
+     journée d'aujourd'hui ; néanmoins, si on clique sur un bouton, on a le
+     visuel de la semaine, et on switche assez rapidement »*. Deux cibles pleine
+     largeur, rien à découvrir. */
   .portee{margin:18px 18px 0;display:flex;gap:8px}
-  .portee button{flex:1;min-height:46px;border-radius:999px;border:1px solid var(--line);
+  .portee button{flex:1;min-height:44px;border-radius:999px;border:1px solid var(--line);
                  background:var(--card);color:var(--ink);
                  font:600 14px/1 ui-sans-serif,sans-serif;cursor:pointer;
                  -webkit-tap-highlight-color:transparent;
                  transition:background .18s,color .18s,border-color .18s}
-  .portee button[aria-pressed="true"]{background:var(--rust);color:var(--card);
+  .portee button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);
                                       border-color:var(--rust)}
 
-  /* La barre des jours ne sert que dans la semaine. */
-  .quinzaine{margin:14px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
-  [data-portee="jour"] .quinzaine{display:none}
-  .fleche{width:44px;height:44px;flex:none;border-radius:999px;border:1px solid var(--line);
-          background:var(--card);color:var(--inkSoft);font-size:19px;cursor:pointer;
-          -webkit-tap-highlight-color:transparent}
-  .quinzaine .quand{flex:1;text-align:center;font:700 14px/1 ui-sans-serif,sans-serif;color:var(--ink)}
+  .fenetre{margin:18px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  [data-portee="jour"] .fenetre{display:none}
+  .fenetre .quand{flex:1;text-align:center;font:700 15px/1.2 ui-sans-serif,sans-serif;color:var(--ink)}
 
-  /* ─── UNE JOURNÉE ET SES CHANTIERS ────────────────────────────────────────
-     Le nom en serif 19 px, la durée en or dessous, la pastille d'équipe, le
-     chevron : c'est l'écran codé. Seule la PASTILLE DE DATE change d'une
-     proposition à l'autre. */
-  .jour{margin:18px 18px 0}
+  /* ─── UNE JOURNÉE ET SES CHANTIERS — l'écran codé, inchangé ───────────────*/
+  .jour{margin:20px 18px 0}
   .ligne{margin-top:12px;display:flex;align-items:center;gap:10px}
   .nom{flex:1;min-width:0;font:400 19px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;color:var(--ink)}
   .duree{display:block;margin-top:3px;font:400 12.5px/1.35 ui-sans-serif,sans-serif;color:var(--or)}
-  .equipe{flex:none;border-radius:999px;background:var(--rust);color:var(--card);
+  .equipe{flex:none;border-radius:999px;background:var(--rust);color:var(--surPlein);
           padding:6px 12px;font-size:12.5px;white-space:nowrap}
   .chev{flex:none;color:var(--chevron);font-size:19px;line-height:1}
   .rang{text-align:center;line-height:0;margin:0}
   .vide{margin:14px 18px 0;text-align:center;font-size:13.5px;color:var(--muted)}
 
-  /* La pastille ordinaire : papier pâle, encre. 14,07 de contraste. */
+  /* La pastille de date : papier pâle, encre. 14,07 de contraste. */
   .date{display:inline-block;border-radius:999px;padding:7px 15px;
         font:700 12px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
         text-transform:uppercase;background:var(--rustTint);color:var(--ink);
@@ -170,13 +188,24 @@
                              font-size:19px;letter-spacing:.08em;padding:8px 17px}
 
   /* ─── UNE JOURNÉE DÉJÀ PASSÉE — éteinte, et jamais là par défaut ──────────
-     Sa règle du 9 septembre : la semaine part d'aujourd'hui, donc un jour
-     passé n'apparaît QUE si l'on revient en arrière avec la flèche. Éteint, il
-     ne peut plus se lire comme un chantier de plus à faire. */
-  .jour.passe .nom{color:var(--muted)}
-  .jour.passe .duree{color:var(--muted)}
+     Sa règle du 9 septembre : la fenêtre part d'aujourd'hui, donc un jour passé
+     n'apparaît QUE si l'on revient en arrière. Éteint, il ne peut plus se lire
+     comme un chantier de plus à faire. */
+  .jour.passe .nom,.jour.passe .duree{color:var(--muted)}
   .jour.passe .date{background:none;color:var(--muted);font-weight:600}
   .jour.passe .equipe{background:none;color:var(--muted);border:1px solid var(--line)}
+
+  /* La barre du bas : `AtlasBottomNav` — cinq onglets, le trait doré sous
+     l'onglet ouvert. Elle est là pour juger la place qui reste, rien de plus. */
+  .nav{margin-top:26px;border-top:1px solid var(--line);background:var(--cream);
+       position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+       padding:18px 14px 8px}
+  .nav span{padding-bottom:8px;text-align:center;
+            font:500 8.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--muted)}
+  .nav span.actif{color:var(--ink);transform:translateY(-2px)}
+  .nav .trait{position:absolute;bottom:8px;left:14px;width:calc((100% - 28px) / 5);
+              height:1px;background:var(--or);padding:0;transform:translateX(100%)}
 
   /* ─── CE QUE LA PROPOSITION COÛTE ─────────────────────────────────────────*/
   .verdict{max-width:430px;margin:18px auto 0;padding:0 22px}
@@ -199,11 +228,12 @@
 
 <div class="bandeau">
   <b>Le planning s’ouvre sur la journée — touchez « La semaine » pour l’élargir.</b><br>
-  Vos trois demandes du 9 septembre, ensemble : le mot <b>Aujourd’hui</b> en
-  doré, la liste qui ne montre <b>que la journée du jour</b> en arrivant, et la
-  semaine qui <b>part d’aujourd’hui</b> — donc plus aucune journée passée sous
-  les yeux, sauf si vous revenez en arrière avec la flèche. Le mois reste
-  au-dessus.<br>
+  Vos trois demandes du 9 septembre, ensemble, sur <b>la page entière</b> : le mot
+  <b>Aujourd’hui</b> en doré, la liste qui ne montre <b>que la journée du jour</b>
+  en arrivant, et la fenêtre qui <b>part d’aujourd’hui</b> — donc plus aucune
+  journée passée sous les yeux, sauf si vous reculez avec la flèche.<br>
+  <b>Le calendrier du mois n’est pas touché</b> : il est recopié de
+  <code>MoisCharge.tsx</code>, mesure pour mesure.<br>
   Les lettres <b>A B C D</b> comparent les quatre façons d’écrire la pastille.
 </div>
 
@@ -219,59 +249,77 @@
 </div>
 
 <div class="tel" id="tel" data-vue="d" data-portee="jour">
-  <div class="entete"><b>Planning</b></div>
-
-  <div class="corps">
-    <div class="mois">
-      <p class="titre-mois" id="titre-mois"></p>
-      <div class="entetes"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
-      <div class="grille" id="grille"></div>
-      <p class="legende">
-        <span><i data-etat="libre"></i>rien</span>
-        <span><i data-etat="dispo"></i>incomplet</span>
-        <span><i data-etat="plein"></i>complet</span>
-        <span><i data-etat="dela"></i>au-delà</span>
-      </p>
-    </div>
-
-    <p class="titre-section">Planifiés</p>
-
-    <div class="portee">
-      <button type="button" id="voir-jour" aria-pressed="true">Aujourd’hui</button>
-      <button type="button" id="voir-semaine" aria-pressed="false">La semaine</button>
-    </div>
-
-    <div class="quinzaine">
-      <button class="fleche" type="button" id="reculer" aria-label="Sept jours avant">‹</button>
-      <span class="quand" id="quand"></span>
-      <button class="fleche" type="button" id="avancer" aria-label="Sept jours après">›</button>
-    </div>
-
-    <div id="liste"></div>
+  <div class="entete">
+    <h1>Planning</h1>
+    <p>Vos journées</p>
   </div>
+
+  <div class="mois">
+    <div class="mois-tete">
+      <button class="fleche" type="button" tabindex="-1" aria-hidden="true">‹</button>
+      <b class="mois-titre" id="mois-titre"></b>
+      <button class="fleche" type="button" tabindex="-1" aria-hidden="true">›</button>
+    </div>
+    <div class="lettres">
+      <span>lun</span><span>mar</span><span>mer</span><span>jeu</span>
+      <span>ven</span><span>sam</span><span>dim</span>
+    </div>
+    <div class="grille" id="grille"></div>
+    <div class="legende">
+      <span><i class="carre" data-etat="libre"></i>rien</span>
+      <span><i class="carre" data-etat="dispo"></i>incomplet</span>
+      <span><i class="carre" data-etat="plein"></i>complet</span>
+      <span><i class="carre" data-etat="dela"></i>au-delà</span>
+      <span class="position">
+        <span class="barres"><i></i><i></i></span>
+        <span class="mots"><b>matin</b><b>après-midi</b></span>
+      </span>
+    </div>
+  </div>
+
+  <p class="titre-section">Planifiés</p>
+
+  <div class="portee">
+    <button type="button" id="voir-jour" aria-pressed="true">Aujourd’hui</button>
+    <button type="button" id="voir-semaine" aria-pressed="false">La semaine</button>
+  </div>
+
+  <div class="fenetre">
+    <button class="fleche" type="button" id="reculer" aria-label="Sept jours avant">‹</button>
+    <span class="quand" id="quand"></span>
+    <button class="fleche" type="button" id="avancer" aria-label="Sept jours après">›</button>
+  </div>
+
+  <div id="liste"></div>
 
   <div class="nav">
     <span>Chantiers</span><span class="actif">Planning</span><span>Terminés</span>
     <span>Paysage</span><span>Réglages</span>
+    <i class="trait"></i>
   </div>
 </div>
 
 <div class="verdict" id="verdict"></div>
 
 <div class="pied">
-  <h2>La semaine part d’aujourd’hui</h2>
-  <p>Votre règle du 9 septembre : le 9, c’est <b>9 – 15</b> ; le 10, c’est
-  <b>10 – 16</b>. Un jour passé n’est donc <b>jamais</b> sous les yeux — il
-  n’apparaît, éteint, que si vous touchez la flèche de gauche. <b>Vos exemples
-  donnaient six jours</b> (« du 8 au 13 ») ; j’en ai mis <b>sept</b>, pour qu’une
-  semaine complète tienne. Dites-moi si vous en vouliez six.</p>
-  <h2>Ce qui n’a pas bougé, et qui n’est pas en question</h2>
-  <p>Le mois est celui de l’application — mêmes barres, mêmes quatre états,
-  mêmes couleurs, et la charge y est <b>déduite des mêmes chantiers</b> que la
-  liste dessous. <b>Toucher un jour du mois ouvre déjà sa fiche</b> dans
-  l’application ; cette planche ne le rejoue pas et n’y touche pas. L’en-tête et
-  la barre du bas sont là pour juger la <b>place qui reste</b> à la liste, rien
-  de plus.</p>
+  <h2>Le calendrier du mois n’est pas touché</h2>
+  <p>Il est recopié de <code>MoisCharge.tsx</code> : mêmes flèches de 42 px,
+  même écart de 4 px, cases en 1 / 1,06, <b>cercle d’or sur aujourd’hui</b>,
+  colonne du week-end teintée, jours des autres mois <b>absents</b>, barres de
+  6 px larges de 24 qui se remplissent à la proportion, et la légende avec sa
+  position matin / après-midi. <b>Sa charge est déduite des mêmes chantiers</b>
+  que la liste du bas : aucun des deux ne peut dire autre chose que l’autre.</p>
+  <p><b>Un point à trancher, et il vient de la fenêtre glissante.</b> Le mois
+  teinte aujourd’hui la <b>rangée</b> que lit la liste. Une fenêtre qui part du
+  jour chevauche deux rangées : cette teinte n’a plus de rangée à désigner. Elle
+  est donc <b>retirée ici</b> — dites-moi si elle vous manque, on trouvera autre
+  chose.</p>
+  <h2>La fenêtre part d’aujourd’hui</h2>
+  <p>Votre règle : le 9, c’est <b>9 – 15</b> ; le 10, <b>10 – 16</b>. Un jour
+  passé n’est donc <b>jamais</b> sous les yeux — il n’apparaît, éteint, que si
+  vous touchez la flèche de gauche. <b>Vos exemples donnaient six jours</b>
+  (« du 8 au 13 ») ; j’en ai mis <b>sept</b>, pour qu’une semaine complète
+  tienne. Dites-moi si vous en vouliez six.</p>
   <h2>Ce qui ne bouge dans aucune des quatre</h2>
   <p>Le nom du client en serif 19 px, la durée en or sous le nom, la pastille
   d’équipe, le chevron. <b>Seule la pastille de la date change</b> — sans quoi on
@@ -281,7 +329,7 @@
   aujourd’hui</b>. Sans lui, le salarié ouvre l’appli, ne trouve rien, et ne sait
   pas s’il n’a rien ou si l’écran n’a pas chargé. L’écran le dit.</p>
   <h2>La planche est à la vraie date</h2>
-  <p>Le mois, la semaine et le mot « Aujourd’hui » sont construits sur <b>le jour
+  <p>Le mois, la fenêtre et le mot « Aujourd’hui » sont construits sur <b>le jour
   où vous l’ouvrez</b>. Rouvrez-la demain : tout aura avancé d’une journée.</p>
   <h2>Le bouton « Nuit »</h2>
   <p>Il repeint la planche avec les vraies couleurs de votre charte Nuit.
@@ -293,7 +341,7 @@
 <script>
 /* ─── TOUT EST BÂTI SUR LE VRAI JOUR ────────────────────────────────────────
    Une planche qui écrirait « aujourd'hui » à côté d'une date d'hier ne prouve
-   rien. Le mois, la semaine et la pastille partent de la date du téléphone. */
+   rien. Le mois, la fenêtre et la pastille partent de la date du téléphone. */
 const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août",
               "septembre","octobre","novembre","décembre"];
 const JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
@@ -304,9 +352,11 @@ const ecrit = (d) => {
   const t = JOURS[d.getDay()] + " " + d.getDate() + " " + MOIS[d.getMonth()];
   return t.charAt(0).toUpperCase() + t.slice(1);
 };
+const cle = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0")
+                 + "-" + String(d.getDate()).padStart(2, "0");
 
 /* Des chantiers posés autour d'aujourd'hui, en décalage de jours. Deux sont
-   derrière : ils ne se voient qu'en revenant en arrière. */
+   derrière : ils ne se voient qu'en reculant. */
 const CHANTIERS = [
   { quand: -5, lignes: [{ nom: "Mr. Marco", duree: "une journée", equipe: "Julien, Antoine" }] },
   { quand: -1, lignes: [{ nom: "Mr. Eric", duree: "une journée", equipe: "Julien, Antoine" }] },
@@ -318,12 +368,17 @@ const CHANTIERS = [
 ];
 
 /* La charge du mois se DÉDUIT des mêmes chantiers — un calendrier qui peindrait
-   autre chose que ce que la liste dessous énumère donnerait deux vérités sur la
-   même journée (`CLAUDE.md` §3). Deux chantiers : complet. Un : incomplet. */
-const cle = (d) => d.toISOString().slice(0, 10);
+   autre chose que ce que la liste énumère donnerait deux vérités sur la même
+   journée (`CLAUDE.md` §3). Deux équipes : une par chantier, donc deux chantiers
+   remplissent la journée. `etatDemi` : rien / incomplet / complet / au-delà. */
+const EQUIPES = 2;
 const CHARGE = new Map();
 for (const c of CHANTIERS) {
-  CHARGE.set(cle(jourPlus(c.quand)), c.lignes.length >= 2 ? "plein" : "dispo");
+  const part = c.lignes.length / EQUIPES;
+  CHARGE.set(cle(jourPlus(c.quand)), {
+    etat: part >= 1 ? "plein" : "dispo",
+    part: Math.round(Math.min(part, 1) * 100),
+  });
 }
 
 const tel = document.getElementById("tel");
@@ -349,23 +404,39 @@ function bloc(c) {
     + corps + "</div>";
 }
 
-/** Le mois complet, du lundi d'avant le 1er au dimanche d'après le dernier. */
+/**
+ * Le mois, en rangées de sept lundi en tête — la géométrie de `MoisCharge`.
+ * Les jours des autres mois ne sont pas des chiffres gris : ils DISPARAISSENT.
+ */
 function peindreLeMois() {
-  document.getElementById("titre-mois").textContent =
+  document.getElementById("mois-titre").textContent =
     MOIS[auj.getMonth()] + " " + auj.getFullYear();
   const premier = new Date(auj.getFullYear(), auj.getMonth(), 1, 12);
+  const dernier = new Date(auj.getFullYear(), auj.getMonth() + 1, 0, 12);
   const debut = new Date(premier);
   debut.setDate(premier.getDate() - ((premier.getDay() + 6) % 7));
+  const semaines = Math.ceil((((premier.getDay() + 6) % 7) + dernier.getDate()) / 7);
+
   let html = "";
-  for (let i = 0; i < 42; i++) {
-    const d = new Date(debut); d.setDate(debut.getDate() + i);
-    const etat = CHARGE.get(cle(d)) ?? "libre";
-    const classes = ["case"];
-    if (d.getMonth() !== auj.getMonth()) classes.push("hors");
-    if (cle(d) === cle(auj)) classes.push("auj");
-    html += '<div class="' + classes.join(" ") + '"><b>' + d.getDate() + "</b>"
-      + '<span class="barres"><i data-etat="' + etat + '"></i>'
-      + '<i data-etat="' + etat + '"></i></span></div>';
+  for (let s = 0; s < semaines; s++) {
+    html += '<div class="rangee">';
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(debut); d.setDate(debut.getDate() + s * 7 + i);
+      if (d.getMonth() !== auj.getMonth()) { html += '<span class="creux"></span>'; continue; }
+      const weekEnd = d.getDay() === 0 || d.getDay() === 6;
+      const charge = CHARGE.get(cle(d));
+      const etat = charge ? charge.etat : "libre";
+      const part = charge ? charge.part : 0;
+      const barre = '<i><span data-etat="' + etat + '" style="width:' + part + "%;background:"
+        + (etat === "dispo" ? "var(--vertPale)" : etat === "plein" ? "var(--rust)"
+           : etat === "dela" ? "var(--bordeaux)" : "transparent") + '"></span></i>';
+      html += '<button type="button" class="case' + (cle(d) === cle(auj) ? " auj" : "") + '"'
+        + ' data-etat="' + (weekEnd ? "week-end" : d < auj ? "passe" : "regardable") + '"'
+        + ' tabindex="-1" aria-hidden="true">'
+        + '<span class="num">' + d.getDate() + "</span>"
+        + '<span class="marque">' + barre + barre + "</span></button>";
+    }
+    html += "</div>";
   }
   document.getElementById("grille").innerHTML = html;
 }
@@ -442,7 +513,7 @@ for (const b of document.querySelectorAll(".choix button[data-vue]")) {
 }
 
 /* Le commutateur. Revenir sur « Aujourd'hui » REPART d'aujourd'hui : sinon on
-   retrouverait la semaine d'il y a trois flèches sans comprendre pourquoi. */
+   retrouverait la fenêtre d'il y a trois flèches sans comprendre pourquoi. */
 const bJour = document.getElementById("voir-jour");
 const bSemaine = document.getElementById("voir-semaine");
 function portee(quoi) {
