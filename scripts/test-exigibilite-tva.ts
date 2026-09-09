@@ -250,6 +250,34 @@ cas("une facture à zéro n'apporte rien, et ne divise pas par zéro", () => {
   assert.equal(enAttenteDeReglement([{ facture: gratuite, paiements: [] }], "encaissements").tva, "0.00");
 });
 
+cas("UNE FACTURE À ZÉRO N'ATTEND AUCUN RÈGLEMENT — vu sur son écran", () => {
+  // Le 9 septembre 2026, sa capture porte « 2 factures » en attente dont une à
+  // 0,00 €. Elle y serait restée pour toujours : le relevé n'en veut pas, et
+  // « Payée » ne pouvait pas la solder — un règlement de 0 € est refusé, à
+  // juste titre. Un bouton qui ne peut qu'échouer, sur l'écran même où il vient
+  // vérifier que rien n'entre tout seul.
+  const gratuite: FacturePourTva = { dateEmission: "2026-08-05", totalHt: "0.00", totalTva: "0.00", totalTtc: "0.00" };
+  assert.equal(etatPaiement(gratuite, []), "soldee");
+  assert.equal(refusDuPaiement(gratuite, [], { date: "2026-09-09", montant: "0.00" }) === null, false);
+  assert.deepEqual(enAttenteDeReglement([{ facture: gratuite, paiements: [] }], "encaissements"), {
+    nombre: 0,
+    ttc: "0.00",
+    tva: "0.00",
+  });
+});
+
+cas("UNE FACTURE ÉMISE N'ENTRE AU RELEVÉ QU'APRÈS UN RÈGLEMENT NOTÉ", () => {
+  // **Sa règle du 9 septembre 2026 :** *« ça ne doit pas rentrer au compteur
+  // tout seul, il faut que l'utilisateur appuie sur payer »*. Le rythme du
+  // relevé n'y change rien — c'est un découpage de périodes, pas une échéance
+  // qui déclarerait à sa place. Tenu ici sur la règle pure ; le parcours entier
+  // l'est par `test-tva-au-paiement-e2e.ts`.
+  assert.deepEqual(entreesDuReleve(FACTURE, [], "encaissements"), []);
+  const [entree] = entreesDuReleve(FACTURE, [{ date: "2026-09-30", montant: "1440.00" }], "encaissements");
+  assert.equal(entree.tva, "240.00");
+  assert.equal(entree.motif, "paiement");
+});
+
 cas("une facture en franchise de TVA passe sans encombre", () => {
   const franchise: FacturePourTva = { dateEmission: "2026-08-05", totalHt: "500.00", totalTva: "0.00", totalTtc: "500.00" };
   const [entree] = entreesDuReleve(franchise, [{ date: "2026-09-01", montant: "500.00" }], "encaissements");

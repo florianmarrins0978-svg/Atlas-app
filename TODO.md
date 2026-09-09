@@ -13,7 +13,7 @@ langage, et rien n'y entre sans son accord.
 
 `appli/planning-simple.html` — retenue par lui le 21 août — demande toujours
 « Matin · Après-midi · Journée » après avoir touché le nom d'un chantier.
-L'application ne le demande plus depuis le 9 septembre (`ARCHITECTURE.md` §305) :
+L'application ne le demande plus depuis le 9 septembre (`ARCHITECTURE.md` §308) :
 la durée est en base, et ces trois boutons la réécrivaient.
 
 **Rien n'a été touché à la planche**, et c'est délibéré : une planche qu'il a
@@ -247,6 +247,21 @@ délibérément (`SANS_CLES_IA`) — `test-anneau-dictee`, `test-anneau-vers-dev
 soit les réparer, soit les nommer**. Huit rouges permanents deviennent un bruit
 dans lequel un vrai défaut se cache — c'est déjà écrit plus bas dans ce fichier,
 et la liste s'allonge.
+
+### ~~🔴 `test-pages-legales-uniques` — les CGU publiées ne sont pas celles qu'il signe~~ — **RÉGLÉ le 9 septembre 2026**
+
+**Relevé le 9 septembre au soir, 334/336 suites base.** Les deux exemplaires de
+`conditions-utilisation.html` avaient divergé : `appli/` portait l'article 14
+rempli — les trois formules, leurs prix — écrit par le lot de l'abonnement le
+même jour ; `public/`, celui que l'application SERT et qu'on fait accepter, en
+était resté à « Prix et abonnement », sans tarifs.
+
+**Ce n'était pas un défaut de contrôle**, c'est ce qu'il attrape : on faisait
+accepter un texte qui n'est pas celui qu'on publie. Refermé le soir même par la
+session de l'abonnement (`6136cc3`), qui a aussi posé
+`scripts/capture-documents-legaux.mts` pour le voir sur le vrai écran. Gardé ici
+barré : c'est le seul rouge de la batterie du soir, et savoir qu'il a été réglé
+évite de le rouvrir.
 
 ---
 
@@ -2107,10 +2122,20 @@ une seule pièce. **Son écrit reste le bon signé sur place** (C), tranché le
 recalculait déjà tout depuis les lignes, taux par taux. Le pourquoi de ce choix
 et ce qu'il évite : `ARCHITECTURE.md` §304.
 
-**Ce qui reste ouvert, et qui n'est PAS dans ce lot :** le bon signé sur place
-(`appli/ts-bon-sur-place.html`) et l'arrêt qui bloque ou avertit
-(`appli/ts-arret-3.html`). Le supplément sur la facture règle le geste manquant,
-jamais le risque d'impayé.
+**❌ ÉCARTÉ LE 9 SEPTEMBRE 2026, ET À NE PAS LUI REPROPOSER :** *« oublie ces
+deux planches, je ne les aime pas »* — le bon signé sur place
+(`appli/ts-bon-sur-place.html`, solution C) et l'arrêt qui bloque ou avertit
+(`appli/ts-arret-3.html`, solutions B et D). Les deux planches restent, marquées
+en tête : une planche raconte le chemin, y compris ce qui n'a pas été retenu.
+
+**Ce que cela laisse à découvert, et il faut le savoir sans le lui redire :** le
+supplément sur la facture règle le GESTE qui manquait, jamais le risque
+d'impayé. Rien dans Atlas ne trace l'accord du client sur un travail ajouté —
+c'est la troisième fois qu'il écarte cette question (1ᵉʳ, 4 et 9 septembre), et
+c'est sa décision. En cas de contestation, la preuve reste ce qu'il aura écrit
+lui-même, hors de l'application.
+
+**Le sujet des travaux supplémentaires est donc CLOS.**
 
 **Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
 transmises (`scripts/` non concerné : le parcours a été joué à la main, captures

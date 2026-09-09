@@ -84,11 +84,30 @@ async function main() {
     [chantierId]
   );
   await pool.query(`UPDATE chantiers SET termine_at = now() WHERE id = $1`, [chantierId]);
-  await pool.query(
-    `INSERT INTO retours_intervention (entreprise_id, chantier_id, pose_le)
-     VALUES ($1, $2, now())
-     ON CONFLICT (chantier_id) DO NOTHING`,
+  const { rows: pose } = await pool.query<{ id: string }>(
+    `INSERT INTO retours_intervention (entreprise_id, chantier_id, pose_le, a_signaler)
+     VALUES ($1, $2, now(), 'Chantier fini')
+     ON CONFLICT (chantier_id) DO UPDATE SET a_signaler = EXCLUDED.a_signaler
+     RETURNING id`,
     [entrepriseId, chantierId]
+  );
+  // **Une faite et une PAS faite** : c’est la seconde qui compte, et le
+  // dépliage doit l’écrire en toutes lettres.
+  await pool.query(`DELETE FROM retours_intervention_taches WHERE retour_id = $1`, [pose[0].id]);
+  const { rows: laPhoto } = await pool.query<{ id: string }>(
+    `INSERT INTO photos (entreprise_id, chantier_id, storage_key, mime_type, taille_octets, checksum)
+     VALUES ($1, $2, $3, 'image/jpeg', 10, $4) RETURNING id`,
+    [entrepriseId, chantierId, `chantiers/${chantierId}/photos/e2e-onglets.jpg`, "e".repeat(64)]
+  );
+  await pool.query(
+    `INSERT INTO retours_intervention_photos (entreprise_id, retour_id, photo_id)
+     VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
+    [entrepriseId, pose[0].id, laPhoto[0].id]
+  );
+  await pool.query(
+    `INSERT INTO retours_intervention_taches (entreprise_id, retour_id, libelle, faite, ordre)
+     VALUES ($1, $2, 'Tonte et ébarbage', true, 0), ($1, $2, 'Traitement anti-mousse', false, 1)`,
+    [entrepriseId, pose[0].id]
   );
 
   const navigateur = await lancerNavigateur();
@@ -250,7 +269,106 @@ async function main() {
 
   // On rend le jeu de démonstration tel qu'on l'a pris : les suites voisines
   // comptent les retours de cette entreprise, et un de trop les ferait mentir.
+  await cas("UN RETOUR NON LU PORTE SA PASTILLE, et la barre compte les non-lus", async () => {
+    // **Sa demande du 9 septembre 2026** : *« comme pour les SMS »*. Le
+    // contrôle part de l’onglet, là où son œil tombe en arrivant.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    const pastille = page.locator("[data-atlas='compte-des-non-lus']");
+    await pastille.waitFor({ state: "visible", timeout: 20_000 });
+    assert.equal((await pastille.innerText()).trim(), "1", "la barre ne compte pas les non-lus");
+
+    // **Et la pastille du retour lui-même**, dans la liste : c’est celle qui
+    // lui dit LEQUEL, quand il en aura vingt.
+    await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
+    const marque = page.locator("[data-atlas='retour-non-lu']");
+    await marque.waitFor({ state: "visible", timeout: 20_000 });
+    const rond = await marque.boundingBox();
+    assert.ok(rond && rond.width >= 8, `la pastille ne fait que ${Math.round(rond?.width ?? 0)} px`);
+    if (DOSSIER_CAPTURES) {
+      await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "retour-non-lu.png") });
+    }
+  });
+
+  await cas("LA CARTE S’OUVRE EN GRAND, et se replie — sa proposition A", async () => {
+    await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
+    const carte = page.locator("[data-atlas='carte-de-retour']").first();
+    await carte.waitFor({ state: "visible", timeout: 20_000 });
+
+    // **Le compte, et non un résumé** : « tout fait » a été retiré le
+    // 9 septembre, parce qu’il ne pouvait pas le vérifier.
+    const dit = await carte.innerText();
+    assert.match(dit, /1 sur 2/, "la carte ne porte pas le compte des tâches");
+    assert.doesNotMatch(dit, /tout fait/);
+
+    assert.equal(await page.locator("[data-atlas='retour-deplie']").count(), 0, "la carte est déjà ouverte");
+    await carte.click();
+    const feuille = page.locator("[data-atlas='retour-deplie']").first();
+    await feuille.waitFor({ state: "visible", timeout: 10_000 });
+
+    // **CE QUI N’A PAS ÉTÉ FAIT S’ÉCRIT** — la ligne qui l’arrête avant de
+    // facturer un travail qui n’a pas eu lieu.
+    const dedans = await feuille.innerText();
+    assert.match(dedans, /Tonte et ébarbage/);
+    assert.match(dedans, /pas fait/, "ce qui reste à faire ne se lit pas");
+    assert.match(dedans, /Chantier fini/, "son mot n’est pas rendu");
+    assert.equal(await page.locator("[data-atlas='tache-pas-faite']").count(), 1);
+
+    // **Les photos sont POSÉES, en grand.** Elles n’existaient qu’en chiffre
+    // sur sa capture ; leur fichier peut manquer sur ce poste, mais l’image
+    // doit être là, à la bonne adresse et à la bonne taille.
+    const image = page.locator("[data-atlas='photo-du-retour']").first();
+    assert.equal(await page.locator("[data-atlas='photo-du-retour']").count(), 1);
+    const src = await image.getAttribute("src");
+    assert.ok(src?.startsWith("/api/fichiers/"), `la photo pointe vers ${src}`);
+    const cadre = await image.boundingBox();
+    assert.ok(cadre && cadre.height > 100, `la photo ne fait que ${Math.round(cadre?.height ?? 0)} px de haut`);
+
+    if (DOSSIER_CAPTURES) {
+      await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "retour-deplie.png") });
+    }
+
+    const tourne = await carte
+      .locator("svg")
+      .last()
+      .evaluate((e) => getComputedStyle(e.parentElement as HTMLElement).transform);
+    assert.notEqual(tourne, "none", "le chevron ne tourne pas : rien ne dit que la carte est ouverte");
+
+    await page.locator("[data-atlas='replier-le-retour']").click();
+    await page.waitForTimeout(400);
+    assert.equal(
+      await page.locator("[data-atlas='retour-deplie']").count(),
+      0,
+      "« Replier » ne referme pas la feuille"
+    );
+  });
+
+  await cas("L’AVOIR OUVERT L’ÉTEINT — et ça tient au rechargement", async () => {
+    // La pastille s’éteint sous le doigt ; ce qui compte, c’est qu’elle ne
+    // revienne pas le lendemain. On recharge donc, plutôt que de croire
+    // l’écran sur parole.
+    await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
+    assert.equal(
+      await page.locator("[data-atlas='retour-non-lu']").count(),
+      0,
+      "la pastille du retour revient alors qu’il l’a ouvert"
+    );
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    assert.equal(
+      await page.locator("[data-atlas='compte-des-non-lus']").count(),
+      0,
+      "la barre compte encore un non-lu"
+    );
+    // **Et l’onglet RESTE** : sans quoi la page devient inatteignable le soir
+    // où il a tout lu.
+    const dit = await page.locator(RANGEE).innerText();
+    assert.match(dit, /Retours d'intervention/, "l’onglet a disparu avec la pastille");
+  });
+
+  await pool.query(`DELETE FROM retours_intervention_taches WHERE retour_id = $1`, [pose[0].id]);
+  await pool.query(`DELETE FROM retours_intervention_photos WHERE retour_id = $1`, [pose[0].id]);
   await pool.query(`DELETE FROM retours_intervention WHERE chantier_id = $1`, [chantierId]);
+  await pool.query(`DELETE FROM photos WHERE id = $1`, [laPhoto[0].id]);
   await pool.query(`UPDATE chantiers SET termine_at = $2 WHERE id = $1`, [
     chantierId,
     avant[0]?.termine_at ?? null,

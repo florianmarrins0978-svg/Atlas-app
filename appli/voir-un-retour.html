@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voir un retour d'intervention</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835;
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  body.nuit{
+    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
+    --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b;
+    --etabli-or:#b98b47;
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47;
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+
+  .page{max-width:1240px;margin:0 auto;padding:30px 20px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
+            color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:680px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 6px}
+
+  .barre{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0 6px;align-items:center}
+  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+           letter-spacing:.02em;padding:11px 17px;border-radius:999px;
+           background:var(--etabli-carte);color:var(--etabli-doux);
+           box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .bascule[aria-pressed="true"]{background:var(--etabli-encre);color:var(--etabli-carte);box-shadow:none}
+
+  h2{font:600 22px/1.25 var(--serif);margin:46px 0 4px}
+  .dit{color:var(--etabli-gris);font-size:13.5px;line-height:1.6;margin:0 0 18px;max-width:680px}
+
+  .rangee{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .prop{flex:0 0 auto;width:390px;max-width:100%}
+  .nom{font:600 15.5px/1.3 var(--sans);margin:0 0 3px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .tenu{font:700 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+        background:var(--etabli-or);color:var(--etabli-carte);padding:4px 7px;border-radius:999px}
+  .idee{color:var(--etabli-gris);font-size:13px;line-height:1.55;margin:0 0 12px;min-height:74px}
+
+  .tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       box-shadow:0 1px 2px rgba(20,18,14,.16),0 14px 34px rgba(20,18,14,.14);background:var(--fond)}
+  .ecran{height:664px;display:flex;flex-direction:column;background:var(--fond);color:var(--encre)}
+  .corps{flex:1;overflow-y:auto;padding:0 0 14px}
+
+  .entete{padding:18px 22px 4px}
+  .entete .retour{width:34px;height:34px;border-radius:999px;background:var(--plage);
+                  display:grid;place-items:center;color:var(--doux);
+                  box-shadow:inset 0 0 0 1px var(--trait);font-size:16px}
+  .entete h3{font:600 25px/1.15 var(--serif);margin:12px 0 0}
+  .chercher{margin:14px 22px 0;height:46px;border-radius:999px;background:var(--plage);
+            box-shadow:inset 0 0 0 1px var(--trait);display:flex;align-items:center;
+            gap:9px;padding:0 16px;color:var(--gris);font-size:14px}
+  .client{margin:20px 22px 0;font:500 19px/1.2 var(--serif)}
+
+  .carte{margin:10px 22px 0;background:var(--plage);border-radius:13px;padding:12px 14px;
+         box-shadow:inset 0 0 0 1px var(--trait);display:flex;gap:12px;align-items:flex-start;
+         width:calc(100% - 44px);border:0;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
+  .sceau{width:26px;height:26px;flex:none;border-radius:999px;background:var(--tuile);
+         color:var(--orTexte);display:grid;place-items:center}
+  .jour{font:500 14px/1.3 var(--sans)}
+  .sous{margin-top:3px;font-size:12.5px;line-height:1.45;color:var(--gris)}
+  .mot{margin-top:6px;font-size:13px;line-height:1.45;color:var(--doux)}
+  .chev{margin-left:auto;color:var(--gris);font-size:17px;align-self:center}
+
+  .taches{margin-top:10px;display:flex;flex-direction:column;gap:1px}
+  .tache{display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:13.5px;line-height:1.35}
+  .marque{width:17px;height:17px;flex:none;border-radius:5px;display:grid;place-items:center;margin-top:1px}
+  .faite .marque{background:var(--plein);color:var(--surplein)}
+  .pasfaite .marque{background:transparent;box-shadow:inset 0 0 0 1.5px var(--trait);color:transparent}
+  .pasfaite .txt{color:var(--gris)}
+  .pasfaite .txt::after{content:" — pas fait";color:var(--orTexte);font-size:12px}
+
+  .vignettes{margin-top:11px;display:flex;gap:7px;flex-wrap:wrap}
+  .vign{width:62px;height:62px;border-radius:10px;box-shadow:inset 0 0 0 1px var(--trait);
+        background:linear-gradient(135deg,#8ea67e,#5f7a52);display:grid;place-items:center;
+        color:#f4f3ee;font-size:10px;letter-spacing:.06em}
+  .vign.b{background:linear-gradient(135deg,#b9a882,#8b7a55)}
+
+  /* Le dépliage EN GRAND : la carte devient une feuille, et se replie. */
+  .deplie{margin:0 22px;background:var(--plage);border-radius:0 0 13px 13px;
+          box-shadow:inset 0 0 0 1px var(--trait);border-top:0;padding:2px 14px 12px}
+  .carte.ouverte{border-radius:13px 13px 0 0;margin-bottom:0}
+  .grandes{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .grandes .vign{width:100%;height:132px;border-radius:11px}
+  .replier{margin-top:12px;width:100%;height:42px;border-radius:999px;background:transparent;
+           color:var(--orTexte);box-shadow:inset 0 0 0 1px var(--orTexte);border:0;
+           font:inherit;font-size:13.5px;cursor:pointer}
+  .fichier{margin:10px 22px 0;display:flex;align-items:center;gap:11px;background:var(--plage);
+           border-radius:13px;padding:12px 14px;box-shadow:inset 0 0 0 1px var(--trait);
+           width:calc(100% - 44px);border:0;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
+  .pdf{width:34px;height:40px;flex:none;border-radius:5px;background:var(--tuile);
+       display:grid;place-items:center;color:var(--orTexte);font:700 9px/1 var(--sans);letter-spacing:.04em}
+
+  .detail{padding:0 22px}
+  .titreDetail{font:600 21px/1.2 var(--serif);margin:14px 0 2px}
+  .sousDetail{font-size:12.5px;color:var(--gris);margin-bottom:14px}
+  .bloc{font:600 10.5px/1 var(--sans);letter-spacing:.15em;text-transform:uppercase;
+        color:var(--gris);margin-top:18px}
+  .encart{margin-top:9px;background:var(--plage);border-radius:12px;padding:11px 13px;
+          box-shadow:inset 0 0 0 1px var(--trait);font-size:13.5px;line-height:1.45;color:var(--doux)}
+
+  .basNav{display:flex;justify-content:space-around;padding:12px 8px 15px;
+          border-top:1px solid var(--trait);background:var(--fond)}
+  .basNav span{font:500 10.5px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+  .basNav .actif{color:var(--encre)}
+
+  .note-p{background:var(--etabli-carte);border-radius:16px;padding:16px 18px;margin:30px 0 0;
+          box-shadow:inset 0 0 0 1px var(--etabli-trait);max-width:780px}
+  .note-p .t{display:block;font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
+             color:var(--etabli-or);margin-bottom:8px}
+  .note-p p{margin:0 0 9px;font-size:14px;line-height:1.6;color:var(--etabli-doux)}
+  .note-p p:last-child{margin:0}
+</style>
+</head>
+<body>
+<main class="page">
+
+  <p class="surtitre">Retours d'intervention · 9 septembre 2026</p>
+  <h1>Voir ce qui a vraiment été fait</h1>
+  <p class="chapeau">Aujourd'hui la carte annonce « tout fait · 2 photos » — un résumé qu'on ne peut
+    pas vérifier, et des photos qu'on ne voit jamais. Trois façons de les montrer.
+    Appuyez sur les cartes.</p>
+
+  <div class="barre">
+    <button class="bascule" type="button" data-theme="origine" aria-pressed="true">Origine</button>
+    <button class="bascule" type="button" data-theme="nuit" aria-pressed="false">Nuit</button>
+  </div>
+
+  <h2>Ce qui est en ligne aujourd'hui</h2>
+  <p class="dit">Trois lignes, et rien à ouvrir. « tout fait » ne dit pas QUOI, et les deux photos
+    n'existent qu'en chiffre.</p>
+
+  <div class="rangee">
+    <div class="prop">
+      <div class="tel"><div class="ecran" style="height:auto">
+        <div class="entete"><span class="retour">‹</span><h3>Retours d'intervention</h3></div>
+        <div class="chercher"><span>⌕</span><span>Un nom de client</span></div>
+        <p class="client">Claudette</p>
+        <div class="carte" style="cursor:default">
+          <span class="sceau"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span style="min-width:0">
+            <span class="jour">mercredi 9 septembre 2026</span>
+            <span class="sous">Compte de demo · tout fait · 2 photos</span>
+            <span class="mot">« Chantier fini »</span>
+          </span>
+        </div>
+        <div style="height:16px"></div>
+      </div></div>
+    </div>
+  </div>
+
+  <h2>Trois façons de montrer le détail</h2>
+  <p class="dit">Les trois portent la même chose : chaque ligne du devis avec sa coche, ce qui n'a
+    PAS été fait, les photos, et son mot.</p>
+
+  <div class="rangee">
+
+    <!-- A ─────────────────────────────────────────────────────────── -->
+    <div class="prop">
+      <p class="nom">A. La carte s’ouvre en grand<span class="tenu">Ce que vous avez choisi</span></p>
+      <p class="idee">Un appui, et la carte devient une feuille : les lignes une par une, les
+        photos en grand, son mot. « Replier » la referme. Rien ne change d’écran.</p>
+      <div class="tel"><div class="ecran">
+        <div class="corps">
+          <div class="entete"><span class="retour">‹</span><h3>Retours d'intervention</h3></div>
+          <div class="chercher"><span>⌕</span><span>Un nom de client</span></div>
+          <p class="client">Claudette</p>
+          <button class="carte" type="button" data-ouvre="A">
+            <span class="sceau"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span style="min-width:0">
+              <span class="jour">mercredi 9 septembre 2026</span>
+              <span class="sous">Compte de demo · 3 sur 4 · 2 photos</span>
+            </span>
+            <span class="chev" data-chev="A">›</span>
+          </button>
+          <div data-panneau="A" hidden class="deplie">
+            <p class="bloc" style="margin-top:12px">Ce qui a été fait</p>
+            <div class="taches">
+              <span class="tache faite"><span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Tonte et ébarbage</span></span>
+              <span class="tache faite"><span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Taille de la haie — 18 ml</span></span>
+              <span class="tache faite"><span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Évacuation des déchets</span></span>
+              <span class="tache pasfaite"><span class="marque"></span><span class="txt">Traitement anti-mousse</span></span>
+            </div>
+            <p class="bloc">Photos</p>
+            <div class="grandes"><span class="vign">PHOTO</span><span class="vign b">PHOTO</span></div>
+            <p class="bloc">À signaler</p>
+            <div class="encart">« Chantier fini »</div>
+            <button class="replier" type="button" data-replie="A">Replier</button>
+          </div>
+        </div>
+        <div class="basNav"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Paysage</span><span>Réglages</span></div>
+      </div></div>
+    </div>
+
+    <!-- B ─────────────────────────────────────────────────────────── -->
+    <div class="prop">
+      <p class="nom">B. La carte ouvre sa page</p>
+      <p class="idee">Votre idée. La liste reste courte quoi qu'il arrive, et la page a la place
+        de tout montrer — les photos en grand, ligne par ligne. Un retour, un écran.</p>
+      <div class="tel"><div class="ecran">
+        <div class="corps" data-vue="liste-B">
+          <div class="entete"><span class="retour">‹</span><h3>Retours d'intervention</h3></div>
+          <div class="chercher"><span>⌕</span><span>Un nom de client</span></div>
+          <p class="client">Claudette</p>
+          <button class="carte" type="button" data-va="B">
+            <span class="sceau"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span style="min-width:0">
+              <span class="jour">mercredi 9 septembre 2026</span>
+              <span class="sous">Compte de demo · 3 sur 4 · 2 photos</span>
+            </span>
+            <span class="chev">›</span>
+          </button>
+          <button class="carte" type="button" style="cursor:default">
+            <span class="sceau"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span style="min-width:0">
+              <span class="jour">jeudi 21 août 2026</span>
+              <span class="sous">Julien · tout fait · 1 photo</span>
+            </span>
+            <span class="chev">›</span>
+          </button>
+        </div>
+        <div class="corps" data-vue="detail-B" hidden>
+          <div class="entete"><span class="retour" data-revient="B" style="cursor:pointer">‹</span></div>
+          <div class="detail">
+            <p class="titreDetail">Claudette</p>
+            <p class="sousDetail">mercredi 9 septembre 2026 · Compte de demo</p>
+            <p class="bloc">Ce qui a été fait</p>
+            <div class="taches">
+              <span class="tache faite"><span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Tonte et ébarbage</span></span>
+              <span class="tache faite"><span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Taille de la haie — 18 ml</span></span>
+              <span class="tache faite"><span class="marque"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.3 4.7 9 10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Évacuation des déchets</span></span>
+              <span class="tache pasfaite"><span class="marque"></span><span class="txt">Traitement anti-mousse</span></span>
+            </div>
+            <p class="bloc">Photos</p>
+            <div class="vignettes" style="gap:8px">
+              <span class="vign" style="width:calc(50% - 4px);height:118px">PHOTO</span>
+              <span class="vign b" style="width:calc(50% - 4px);height:118px">PHOTO</span>
+            </div>
+            <p class="bloc">À signaler</p>
+            <div class="encart">« Chantier fini »</div>
+            <div style="height:18px"></div>
+          </div>
+        </div>
+        <div class="basNav"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Paysage</span><span>Réglages</span></div>
+      </div></div>
+    </div>
+
+    <!-- C ─────────────────────────────────────────────────────────── -->
+    <div class="prop">
+      <p class="nom">C. Un fichier, rangé chez le client</p>
+      <p class="idee">Le retour devient une pièce comme un devis : un PDF, qui s'ouvre et
+        s'envoie. Il se retrouve aussi dans le dossier du client — mais il faut le fabriquer,
+        et un PDF ne se relit pas d'un pouce sur un chantier.</p>
+      <div class="tel"><div class="ecran">
+        <div class="corps">
+          <div class="entete"><span class="retour">‹</span><h3>Retours d'intervention</h3></div>
+          <div class="chercher"><span>⌕</span><span>Un nom de client</span></div>
+          <p class="client">Claudette</p>
+          <div class="carte" style="cursor:default">
+            <span class="sceau"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8.4 6.3 11.7 13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span style="min-width:0">
+              <span class="jour">mercredi 9 septembre 2026</span>
+              <span class="sous">Compte de demo · 3 sur 4 · 2 photos</span>
+            </span>
+          </div>
+          <button class="fichier" type="button">
+            <span class="pdf">PDF</span>
+            <span style="min-width:0">
+              <span class="jour">Retour du 9 septembre</span>
+              <span class="sous">4 lignes · 2 photos · 2 pages</span>
+            </span>
+            <span class="chev">›</span>
+          </button>
+          <div style="height:16px"></div>
+        </div>
+        <div class="basNav"><span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span><span>Paysage</span><span>Réglages</span></div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="note-p">
+    <span class="t">Ce qui change dans les trois</span>
+    <p><strong>« tout fait » devient « 3 sur 4 »</strong> partout. Le mot d'avant résumait un
+      chiffre qu'on ne pouvait pas vérifier ; celui-ci se lit d'un coup d'œil et dit s'il reste
+      quelque chose.</p>
+    <p><strong>Ce qui n'a PAS été fait se voit</strong>, en toutes lettres, plutôt que de se
+      déduire d'une soustraction. C'est ce qui vous empêche de facturer un travail qui n'a pas
+      eu lieu.</p>
+    <p style="margin:0">Ces écrans ne touchent <strong>ni à vos données ni à l'application</strong> :
+      les photos y sont dessinées, rien n'est enregistré.</p>
+  </div>
+
+</main>
+
+<script>
+  const qq = (s) => Array.from(document.querySelectorAll(s));
+
+  qq('.bascule').forEach((b) => b.addEventListener('click', () => {
+    document.body.classList.toggle('nuit', b.dataset.theme === 'nuit');
+    qq('.bascule').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+
+  // A — le détail descend sous la carte.
+  function poserA(cle, ouvert) {
+    const p = document.querySelector('[data-panneau="' + cle + '"]');
+    const b = document.querySelector('[data-ouvre="' + cle + '"]');
+    const chev = document.querySelector('[data-chev="' + cle + '"]');
+    p.hidden = !ouvert;
+    b.classList.toggle('ouverte', ouvert);
+    if (chev) chev.textContent = ouvert ? '⌄' : '›';
+    if (!ouvert) b.scrollIntoView({ block: 'nearest' });
+  }
+  qq('[data-ouvre]').forEach((b) => b.addEventListener('click', () => {
+    const p = document.querySelector('[data-panneau="' + b.dataset.ouvre + '"]');
+    poserA(b.dataset.ouvre, p.hidden);
+  }));
+  qq('[data-replie]').forEach((b) => b.addEventListener('click', () => poserA(b.dataset.replie, false)));
+
+  // B — la carte ouvre sa page, et le chevron du haut ramène.
+  qq('[data-va]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelector('[data-vue="liste-' + b.dataset.va + '"]').hidden = true;
+    document.querySelector('[data-vue="detail-' + b.dataset.va + '"]').hidden = false;
+  }));
+  qq('[data-revient]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelector('[data-vue="detail-' + b.dataset.revient + '"]').hidden = true;
+    document.querySelector('[data-vue="liste-' + b.dataset.revient + '"]').hidden = false;
+  }));
+</script>
+</body>
+</html>

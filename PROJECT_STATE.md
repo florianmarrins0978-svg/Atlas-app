@@ -22,10 +22,27 @@ chercher la moitié de journée où elle tient. **« Déplacer » ne bouge pas**
 c'est là qu'un moment se corrige. La même racine a été retirée du chemin de
 l'assistant, où un moment non dit valait « journée ».
 
-`ARCHITECTURE.md` §305 · `docs/lot-poser-sans-choisir.md`
+`ARCHITECTURE.md` §308 · `docs/lot-poser-sans-choisir.md`
 
 **Reste ouvert :** la planche 86 (`appli/planning-simple.html`) montre encore
 « QUI puis QUAND ». Elle a été retenue par lui le 21 août et n'a pas été refaite.
+
+## FAIT : LE COMPTEUR DE TVA NE SE REMPLIT PAS TOUT SEUL — 9 septembre 2026
+
+Sa correction, capture à l'appui : *« même si c'est tous les mois, ça ne doit pas
+rentrer au compteur tout seul ; il faut que l'utilisateur appuie sur payer »*.
+
+**Le calcul était juste, les mots ne l'étaient pas.** Rien n'entre au relevé
+sans un règlement noté — c'est ainsi depuis le 14 août, et deux suites le
+tiennent. Mais trois phrases nommaient l'événement (« le jour où vous serez
+payé ») au lieu de son geste : elles disent maintenant « quand vous appuierez
+sur "Payée" ».
+
+**Et une facture à 0,00 € n'attend plus rien** : la sienne restait en attente
+avec un bouton « Payée » qui ne pouvait qu'échouer, un règlement de zéro étant
+refusé. `etatPaiement` la dit soldée — rien à encaisser, rien à attendre.
+
+Aucune migration. `ARCHITECTURE.md` §305.
 
 ---
 

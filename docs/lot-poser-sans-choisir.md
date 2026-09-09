@@ -75,4 +75,4 @@ Dis-moi si tu veux que je la reprenne.
 chantier savait déjà lire sa durée et chercher la moitié de journée où elle
 tient. C'est l'écran qui refusait de l'employer.
 
-Détail technique : `ARCHITECTURE.md` §305.
+Détail technique : `ARCHITECTURE.md` §308.

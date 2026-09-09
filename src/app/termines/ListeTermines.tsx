@@ -41,7 +41,7 @@ import {
  */
 export default function ListeTermines({
   lignes,
-  retours,
+  retoursNonLus,
   moisCourant,
 }: {
   lignes: LigneAffichee[];
@@ -52,7 +52,16 @@ export default function ListeTermines({
    * Le compte ignore donc le mois affiché, exactement comme « À facturer »
    * l'ignore déjà : un retour de 2024 compte toujours.
    */
-  retours: number;
+  /**
+   * Combien il n’a pas encore ouverts — c’est ce que la pastille montre.
+   *
+   * **Sa correction du 9 septembre 2026** : *« il faut que le nombre qui
+   * s’affiche soit celui-là, et pas combien il y en a à l’intérieur »*. Un
+   * total ne descend jamais à zéro, et une pastille qui ne s’éteint pas
+   * s’apprend à être ignorée — le jour où un retour compte vraiment, elle
+   * ressemble à celle de la veille.
+   */
+  retoursNonLus: number;
   /**
    * `AAAA-MM` du jour, calculé sur le SERVEUR.
    *
@@ -122,10 +131,18 @@ export default function ListeTermines({
             le geste, et le chevron d'une page ne se dessine pas ici — la page
             porte déjà son retour.
 
-            **Il ne s'affiche QUE s'il y a des retours.** Un onglet qui ouvre
-            une liste vide s'apprend à ne plus être touché, et l'on perd le seul
-            endroit où ils vivent. */}
-        {retours > 0 && (
+            **IL EST TOUJOURS LÀ, même quand il n'y a aucun retour — sa
+            correction du 9 septembre 2026 :** *« l'onglet retour
+            d'intervention doit exister même s'il n'y a aucun retour qui
+            existe ! »*
+
+            Je l'avais caché tant que la liste était vide, au motif qu'un
+            onglet qui n'ouvre rien s'apprend à ne plus être touché. Il a
+            raison contre ça : un onglet qui apparaît un jour et pas l'autre
+            se cherche, et le premier retour de son salarié arriverait dans un
+            endroit dont il ignore l'existence. **La page vide, elle, dit ce
+            qui l'attend** — c'est ce que fait `ListeDesRetours`. */}
+        {(
           <Link
             href="/termines/retours"
             data-atlas="onglet-retours"
@@ -138,12 +155,22 @@ export default function ListeTermines({
             }}
           >
             Retours d&apos;intervention
-            <span
-              className="grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold"
-              style={{ backgroundColor: colors.or, color: colors.cream }}
-            >
-              {retours}
-            </span>
+            {/* **La pastille ne compte QUE ce qu’il n’a pas lu, et disparaît
+                quand il a tout vu** — sa correction du 9 septembre 2026. Un
+                nombre qui reste allumé pour toujours ne dit plus rien : le
+                jour où un retour compte vraiment, il ressemble à la veille.
+
+                **L’onglet, lui, reste** tant qu’il existe des retours : sans
+                quoi la page devient inatteignable le soir où il a tout lu. */}
+            {retoursNonLus > 0 && (
+              <span
+                data-atlas="compte-des-non-lus"
+                className="grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold"
+                style={{ backgroundColor: colors.or, color: colors.cream }}
+              >
+                {retoursNonLus}
+              </span>
+            )}
           </Link>
         )}
       </div>

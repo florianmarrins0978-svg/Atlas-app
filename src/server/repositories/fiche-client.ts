@@ -50,6 +50,13 @@ export type FicheClientComplete = FicheClient & {
    */
   derniere: DerniereePrestation | null;
   /**
+   * Le chantier que rouvre « Dernier devis » — celui du devis le plus récent.
+   *
+   * **Absent quand il n’a encore aucun devis chez ce client** : le bouton
+   * disparaît alors, plutôt que de promettre de reprendre ce qui n’existe pas.
+   */
+  chantierDuDernierDevis: string | null;
+  /**
    * Les trois colonnes de PDF — devis, fiches de chantier, factures —, chacune
    * du plus récent au plus ancien.
    *
@@ -163,6 +170,8 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
           email: client.email,
         },
         derniere: null,
+        // Aucun chantier, donc aucun devis : rien à reprendre.
+        chantierDuDernierDevis: null,
         // **Un client peut n'avoir AUCUN chantier et une fiche d'entretien.**
         // La fiche s'ouvre depuis Paysage, se nomme, s'envoie — sans qu'aucun
         // chantier n'existe. Rendre `AUCUNE_PIECE` ici l'aurait fait
@@ -334,6 +343,25 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
       }))
     );
 
+    /**
+     * **Le chantier du DERNIER DEVIS — ce qui allume « Dernier devis ».**
+     *
+     * **Il l’a vu manquer sur sa propre fiche, le 9 septembre 2026** : Julien
+     * porte un devis du 7 septembre, et le bouton n’était pas là. Il tenait
+     * à `derniere`, c’est-à-dire au dernier chantier TERMINÉ — or un devis
+     * envoyé n’est pas un chantier fini, et la plupart de ses clients n’en
+     * ont aucun. Le bouton était donc invisible chez presque tout le monde.
+     *
+     * **Un bouton nommé « Dernier devis » se lit sur le dernier DEVIS**, et
+     * la même liste ordonnée sert aux deux : la colonne qu’il voit et le
+     * chantier qu’on rouvre. Deux façons de dire « le plus récent »
+     * finiraient par désigner deux devis différents (`CLAUDE.md` §3).
+     */
+    const chantierParDevis = new Map(sesDevis.map((d) => [d.id, d.chantierId]));
+    const chantierDuDernierDevis = piecesDevis[0]
+      ? (chantierParDevis.get(piecesDevis[0].id) ?? null)
+      : null;
+
     const piecesFactures = rangerDuPlusRecent(
       sesFactures.map((f) => ({
         id: f.id,
@@ -389,6 +417,7 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
         faits,
         new Map(idDernier ? [[idDernier, prestationsDuDernier.map((p) => p.libelle)]] : [])
       ),
+      chantierDuDernierDevis,
       pieces: { devis: piecesDevis, fiches: piecesFiches, factures: piecesFactures },
     };
   });

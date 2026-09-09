@@ -8,6 +8,81 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### L'onglet des retours existe toujours, et ses photos se voient enfin
+
+*« L'onglet retour d'intervention doit exister même s'il n'y a aucun retour ! »*
+Il avait raison : un onglet qui paraît un jour et pas l'autre se cherche, et le
+premier retour arriverait dans un endroit dont il ignore l'existence. Le compte
+total, qui ne servait qu'à le faire paraître, s'en va avec la condition.
+
+*« J'ai joint des photos en créant la fiche de Julien, elles n'apparaissent nulle
+part »* — elles étaient visibles dans le seul tiroir « Fin de chantier », parmi
+les preuves à cocher : après le travail, dans un endroit qu'on n'ouvre qu'en
+partant. Elles sont désormais **au-dessus des lignes du devis**, là où il les a
+demandées, et elles ne disparaissent pas quand le bandeau s'ouvre
+(`ARCHITECTURE.md` §307).
+
+### Les retours non lus se voient d'un coup d'œil
+
+Sa demande : *« comme pour les SMS »*. La pastille de l'onglet ne compte plus le
+total mais **ce qu'il n'a pas ouvert**, et chaque retour non lu porte un point
+doré avant sa date. Ouvrir l'éteint — et ça tient au rechargement.
+
+**Le piège vu à temps** : l'onglet n'existait que « s'il y a des retours ». En y
+mettant le compte des non-lus, il aurait disparu le soir où il aurait tout lu, et
+avec lui le seul chemin vers la page. Le dépôt rend donc les deux comptes.
+
+**Et la lecture est nominative** : `/termines` est ouvert au propriétaire comme à
+la facturation, et une lecture partagée aurait fait disparaître sa pastille parce
+qu'un autre a ouvert le matin (migration 0083, `ARCHITECTURE.md` §307).
+
+### Un retour d'intervention se lit enfin — « tout fait » disparaît
+
+Sa capture : *« il y a marqué tout fait, mais ce n'est pas ce qui a été fait »*.
+Le mot résumait un chiffre qu'il ne pouvait pas vérifier, et les « 2 photos »
+n'existaient qu'en chiffre. C'est **« 1 sur 2 »** partout, et **la carte s'ouvre
+en grand** : chaque ligne avec sa coche, ce qui n'a PAS été fait en toutes
+lettres, les photos sur deux colonnes, son mot. « Replier » la referme.
+
+**Ce qui n'a pas été fait est la seule ligne qui l'arrête** avant de facturer un
+travail qui n'a pas eu lieu — c'est toute la raison d'être de cet écran.
+
+Et l'image brisée qu'il avait vue est partie : une photo qui n'arrive pas laisse
+un cadre calme, pas le glyphe du navigateur, qui se lit comme une panne
+(`ARCHITECTURE.md` §306).
+### Le compteur de TVA ne se remplit pas tout seul — et il le dit enfin
+
+*« Même si c'est tous les mois, ça ne doit pas rentrer au compteur tout seul ;
+il faut que l'utilisateur appuie sur payer. »* C'est déjà le cas depuis le
+14 août, et rien n'a changé au calcul : une facture émise et jamais réglée
+n'apporte rien au relevé, quel que soit le rythme.
+
+**Ce sont les mots qui promettaient le contraire.** « Le jour où vous serez
+payé », « quand votre client vous paie » : deux phrases qui nomment une date que
+le monde décide, donc une application qui apprendrait seule qu'un virement est
+arrivé. Elles nomment maintenant son geste — « quand vous appuierez sur
+"Payée" ».
+
+**Et une facture à 0,00 € n'attend plus rien.** Sa capture en portait une,
+coincée en attente pour toujours : le relevé n'en veut pas, et « Payée » ne
+pouvait pas la solder — un règlement de zéro est refusé, à juste titre. Elle
+occupait l'écran avec un bouton qui ne pouvait qu'échouer.
+
+### « Dernier devis » n'apparaissait presque jamais
+
+**Il l'a vu sur la fiche de Julien** : un devis du 7 septembre à l'écran, et le
+bouton absent. Il tenait au dernier chantier **TERMINÉ** — or un devis envoyé
+n'est pas un chantier fini, et la plupart de ses clients n'en ont aucun. Le
+geste était donc invisible chez presque tout le monde.
+
+Un bouton nommé « Dernier devis » se lit désormais sur le dernier DEVIS, et sur
+**la même liste ordonnée** que la colonne qu'il voit sur la fiche : deux façons
+de dire « le plus récent » finiraient par désigner deux devis différents.
+
+La suite de bout en bout portait la même erreur — elle terminait un chantier
+pour faire apparaître le bouton, et documentait donc une règle fausse. Elle
+envoie maintenant le devis, comme lui.
+
 ### Poser un chantier ne demande plus « Matin, Après-midi ou Journée »
 
 *« Si Claudette c'est un chantier 1 journée, deux, ou une demi, ça doit se mettre
@@ -26,7 +101,7 @@ déjà posé, et c'est là que le mot choisi est vraiment une demande.
 **La même racine dans l'assistant :** une dictée qui ne disait pas l'heure
 réservait la journée entière. Sans moment dit, plus rien n'est supposé.
 
-Détail et contrôles : `ARCHITECTURE.md` §305.
+Détail et contrôles : `ARCHITECTURE.md` §308.
 
 ### Les travaux supplémentaires : le bouton, la feuille, et une seule facture
 

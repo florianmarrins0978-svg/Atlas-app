@@ -26136,7 +26136,184 @@ risque d'impayé.
 
 ---
 
-## §305 — Poser un chantier ne demande plus QUAND : la durée est déjà connue
+## §305 — Le compteur de TVA ne se remplit pas tout seul, et l'écran doit le dire
+
+**Sa correction du 9 septembre 2026, capture à l'appui :** *« même si c'est tous
+les mois, ça ne doit pas rentrer au compteur tout seul ; il faut que
+l'utilisateur appuie sur payer pour qu'elle s'ajoute au compteur ! »*
+
+**Le calcul, lui, était juste depuis le 14 août.** Aux encaissements,
+`entreesDuReleve` ne rend une ligne que par règlement enregistré : une facture
+émise et jamais réglée n'apporte rien, quel que soit le rythme du relevé. C'est
+tenu sans base (`test-exigibilite-tva.ts`) et de bout en bout
+(`test-tva-au-paiement-e2e.ts`, « LA FACTURE ATTEND, ET LE RELEVÉ NE BOUGE
+PAS »).
+
+**Ce qui promettait le contraire, ce sont les mots.** Trois phrases nommaient
+l'ÉVÉNEMENT au lieu du GESTE :
+
+| Où | Ce qui se lisait | Ce qui se lit |
+|---|---|---|
+| la provenance du chiffre (`DeclarationsTva`) | « quand votre client vous paie » | « quand vous marquez la facture payée » |
+| l'endroit en attente (`EnAttenteDePaiement`) | « le jour où vous serez payé » | « quand vous appuierez sur « Payée » » |
+| le régime, sous son titre (`RegimeTva`) | « Une facture pas encore payée n'est pas déclarée » | « Elle entre au relevé quand vous la marquez payée » |
+
+Toutes les trois décrivaient une date que le monde décide — donc une application
+qui apprendrait seule qu'un virement est arrivé, et un compteur qui se remplit
+sans lui. Il les a lues ainsi, et il avait raison de s'en inquiéter : un
+compteur qui déclare une TVA jamais encaissée est exactement ce que le régime
+des encaissements existe pour éviter.
+
+**Le titre du régime, lui, ne bouge pas** : « Le mois où mon client me paie »
+est ce qui a été déclaré aux impôts, et cela ne se réécrit pas pour des raisons
+d'écran. La loi reste dans le titre, le geste passe dans la ligne du dessous.
+
+### La facture à zéro euro, qui attendait un règlement impossible
+
+Sa capture porte « 2 factures » en attente, dont une à **0,00 €**. Elle y serait
+restée pour toujours : `entreesDuReleve` refuse déjà une facture à zéro, et
+« Payée » ne pouvait pas la solder — un règlement de 0 € est refusé, à juste
+titre. Un bouton qui ne peut qu'échouer, sur l'écran même où il vient vérifier
+que rien n'entre tout seul.
+
+`etatPaiement` la dit désormais **soldée** : rien à encaisser, donc rien à
+attendre. La correction est dans la règle pure, là où le reste du domaine le
+disait déjà — pas dans l'écran, qui aurait alors porté une seconde définition de
+« ce qui attend ».
+
+---
+
+## §306 — Un retour se LIT, il ne se résume pas
+
+*Sa proposition A, tranchée le 9 septembre 2026 sur `appli/voir-un-retour.html` :
+« la A c’est bien, mais tu peux faire en sorte qu’elle s’ouvre en grand et qu’elle
+puisse se replier ».*
+
+### Ce que sa capture disait, et qui était faux
+
+La carte annonçait **« tout fait · 2 photos »**. Son verdict : *« il y a marqué
+tout fait, mais ce n’est pas ce qui a été fait »*. Les deux mots étaient un
+problème chacun :
+
+| Le mot | Ce qu’il cachait |
+|---|---|
+| « tout fait » | un résumé **invérifiable** : quatre cochées sur quatre s’écrivait comme un devis d’une seule ligne |
+| « 2 photos » | un **chiffre qu’il ne pouvait pas ouvrir**, sur les seules images qui prouvent le chantier |
+
+**Un compte se vérifie d’un coup d’œil, un résumé se croit.** C’est « 1 sur 2 »
+partout, et le mot « tout fait » a disparu de la règle comme du contrôle qui le
+réclamait — une suite qui exige ce qu’il a fait retirer rend son écran impossible
+à changer (`CLAUDE.md` §5 bis).
+
+### Ce qui n’a PAS été fait s’écrit
+
+En toutes lettres, à côté de la ligne : « Traitement anti-mousse — **pas fait** ».
+Une case vide se déduit d’une soustraction, et ne s’arrête pas sous l’œil.
+**C’est la seule ligne qui l’empêchera de facturer un travail qui n’a pas eu
+lieu** — c’est-à-dire toute la raison d’être de cet écran.
+
+### La carte devient une feuille
+
+Pas une page à part, pas un PDF : **la carte elle-même s’ouvre**, prolongée sans
+couture, et « Replier » la referme. Les photos y font 132 px de haut sur deux
+colonnes au lieu de 62 — des vignettes ne montrent pas si la haie est taillée.
+
+**« Replier » vit au BAS de la feuille** : c’est là que son doigt arrive une fois
+qu’il a tout lu. En haut, il faudrait remonter pour refermer ce qu’on vient de
+parcourir.
+
+**Ce qui a été écarté**, et il l’a vu sur la planche : la page à part (un écran
+de plus à quitter) et le PDF (à fabriquer, et qui ne se relit pas d’un pouce sur
+un chantier).
+
+### Et l’image brisée
+
+Une photo qui n’arrive pas montrait le glyphe du navigateur — qui se lit comme
+une panne de l’application, alors que le fichier met parfois une seconde à venir
+depuis un chantier sans réseau. Les vignettes portent désormais un fond : un
+cadre calme, pas une croix.
+
+**Les images restent en `<img>`**, comme la pellicule des chantiers :
+`next/image` réécrit le `src` via `/_next/image`, or ces fichiers sortent d’une
+route gardée qui vérifie à qui ils appartiennent. Un second chemin vers des
+photos de chantier serait le défaut de plus haute priorité de ce produit.
+
+---
+
+## §307 — Les retours non lus : une pastille qui s'éteint
+
+*Sa demande du 9 septembre 2026, capture à l’appui : « lorsqu’il y a un retour
+que le patron n’a pas vu, il faut que le nombre qui s’affiche soit celui-là, et
+pas combien il y en a à l’intérieur. Et il faut qu’on puisse distinguer du
+premier coup d’œil ceux pas ouverts — comme pour les SMS. »*
+
+### Pourquoi une TABLE, et pas une colonne `vu_le`
+
+Une colonne dirait « ce retour a été vu » **sans dire par qui**. Or `/termines`
+est ouvert au propriétaire ET au rôle facturation : la première personne qui
+ouvre effacerait la pastille de l’autre. Le patron regarderait son téléphone le
+soir, ne verrait rien à lire, et le retour lui serait passé sous le nez parce
+que quelqu’un d’autre l’avait ouvert le matin.
+
+Une ligne par LECTEUR répond exactement à ce qu’il demande — « ceux que LE
+PATRON n’a pas ouverts » — et coûte une jointure (migration 0083).
+
+### LE PIÈGE QUE CETTE DEMANDE OUVRE, et qui a été vu à temps
+
+L’onglet ne s’affichait que `si retours > 0`. En remplaçant ce compte par celui
+des non-lus, **l’onglet aurait disparu le soir où il aurait tout lu** — et avec
+lui le seul chemin vers la page où ses retours se gardent « longtemps ».
+
+Le dépôt rend donc les DEUX comptes : le total fait exister l’onglet, les
+non-lus font paraître la pastille. Une pastille qui ne descend jamais à zéro
+s’apprend à être ignorée ; un onglet qui disparaît emporte une page.
+
+### Ce que l’écran fait, et ce qu’il n’attend pas
+
+**La pastille s’éteint sous le doigt, pas quand le serveur répond.** Ouvrir EST
+la lecture : rien ne peut la refuser. Attendre l’aller-retour la ferait
+clignoter sur un réseau de chantier, et il croirait avoir mal appuyé. Si l’appel
+échoue, le retour reste non lu — le bon côté de l’erreur : il le rouvrira.
+
+**Elle est en `or`, pas en `alert`** : un retour non lu n’est pas un incident,
+c’est du courrier. Et elle vit **avant** le jour, sur la colonne que l’œil
+descend — placée à droite, il faudrait lire chaque ligne en entier pour la
+trouver.
+
+**Une lecture ne se réécrit pas.** Il rouvre le même retour trois fois dans la
+soirée : c’est la même lecture, et l’unicité `(retour, lecteur)` empêche la
+table de devenir un journal que personne n’a demandé.
+### Deux corrections du même soir, et il avait raison sur les deux
+
+**L’onglet existe même vide.** *« L’onglet retour d’intervention doit exister
+même s’il n’y a aucun retour qui existe ! »* Je l’avais caché tant que la liste
+était vide, au motif qu’un onglet qui n’ouvre rien s’apprend à ne plus être
+touché. **Il a raison contre ça** : un onglet qui apparaît un jour et pas
+l’autre se cherche, et le premier retour de son salarié arriverait dans un
+endroit dont il ignore l’existence. La page vide, elle, dit ce qui l’attend.
+
+*Conséquence, et c’est la partie qui s’enlève* : le compte TOTAL ne servait
+qu’à faire paraître l’onglet. Il ne sert plus à personne, et il s’en va —
+`compterLesRetours` ne rend plus qu’un chiffre, celui qu’il regarde.
+
+**Et ses photos n’étaient nulle part.** *« J’ai joint des photos lorsque j’ai
+créé la fiche client de Julien mais elles n’apparaissent nulle part »*, puis,
+les ayant retrouvées dans le bandeau : *« elle apparaît ici mais je ne comprends
+pas pourquoi »*, et *« elle devrait être au-dessus de Désherbage gravier »*.
+
+**Elles existaient, et c’est le pire des cas** : on ne les voyait que dans le
+tiroir « Fin de chantier », parmi les preuves à cocher — c’est-à-dire APRÈS le
+travail, dans un endroit qu’on n’ouvre qu’en partant. Or il les joint pour
+montrer le chantier à celui qui s’y rend : leur place est AVANT, entre la note
+et les lignes du devis, là où il les a demandées.
+
+**Elles ne se cachent PAS quand la fin de chantier s’ouvre**, contrairement aux
+lignes du devis. Celles-ci disparaissent parce qu’elles DEVIENNENT les cases à
+cocher ; les photos, elles, sont ce qu’on regarde pendant qu’on coche.
+
+---
+
+## §308 — Poser un chantier ne demande plus QUAND : la durée est déjà connue
 
 **Sa remarque du 9 septembre 2026, capture du planning à l'appui :** *« quand je
 clique sur "ajouter un chantier", lorsque je clique sur Claudette il me propose
@@ -26213,3 +26390,4 @@ d'écrire »).
 **Reste ouvert :** la planche 86 (`appli/planning-simple.html`, validée le
 21 août) montre encore les deux temps « QUI puis QUAND ». Elle n'a pas été
 refaite — une planche retenue ne se réécrit pas sans lui.
+

@@ -7,6 +7,7 @@ import {
   retoursIntervention,
   retoursInterventionPhotos,
   retoursInterventionTaches,
+  retoursInterventionVus,
   users,
 } from "../db/schema";
 import type { Ctx } from "./context";
@@ -189,7 +190,7 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
     if (lignes.length === 0) return [];
     const ids = lignes.map((l) => l.id);
 
-    const [taches, comptes] = await Promise.all([
+    const [taches, comptes, lus] = await Promise.all([
       tx
         .select({
           retourId: retoursInterventionTaches.retourId,
@@ -199,10 +200,29 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
         .from(retoursInterventionTaches)
         .where(inArray(retoursInterventionTaches.retourId, ids))
         .orderBy(asc(retoursInterventionTaches.ordre)),
+      // **La CLÉ des photos, pas leur nombre — 9 septembre 2026.** La liste
+      // annonçait « 2 photos » et ne les montrait nulle part : un chiffre qu’il
+      // ne pouvait pas ouvrir, sur les seules images qui prouvent le chantier.
       tx
-        .select({ retourId: retoursInterventionPhotos.retourId })
+        .select({
+          retourId: retoursInterventionPhotos.retourId,
+          id: photos.id,
+          storageKey: photos.storageKey,
+        })
         .from(retoursInterventionPhotos)
+        .innerJoin(photos, eq(retoursInterventionPhotos.photoId, photos.id))
         .where(inArray(retoursInterventionPhotos.retourId, ids)),
+      // **Ce que LUI a déjà ouvert**, et pas ce que quelqu’un a ouvert : la
+      // pastille est la sienne (`retours_intervention_vus`).
+      tx
+        .select({ retourId: retoursInterventionVus.retourId })
+        .from(retoursInterventionVus)
+        .where(
+          and(
+            inArray(retoursInterventionVus.retourId, ids),
+            eq(retoursInterventionVus.utilisateurId, ctx.utilisateurId)
+          )
+        ),
     ]);
 
     // **Deux requêtes, pas une par retour.** Cent retours en donneraient deux
@@ -213,9 +233,13 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
       if (siennes) siennes.push({ libelle: t.libelle, faite: t.faite });
       else parRetour.set(t.retourId, [{ libelle: t.libelle, faite: t.faite }]);
     }
-    const photosParRetour = new Map<string, number>();
+    const dejaLus = new Set(lus.map((l) => l.retourId));
+    const photosParRetour = new Map<string, { id: string; storageKey: string }[]>();
     for (const p of comptes) {
-      photosParRetour.set(p.retourId, (photosParRetour.get(p.retourId) ?? 0) + 1);
+      const siennes = photosParRetour.get(p.retourId);
+      const photo = { id: p.id, storageKey: p.storageKey };
+      if (siennes) siennes.push(photo);
+      else photosParRetour.set(p.retourId, [photo]);
     }
 
     return lignes.map((l) => ({
@@ -228,19 +252,77 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
       poseLe: new Date(l.poseLe).toISOString(),
       posePar: l.posePrenom?.trim() || l.posePar?.trim() || null,
       taches: parRetour.get(l.id) ?? [],
-      photos: photosParRetour.get(l.id) ?? 0,
+      photos: photosParRetour.get(l.id) ?? [],
       aSignaler: l.aSignaler,
+      vu: dejaLus.has(l.id),
     }));
   });
 }
 
-/** Combien de retours l'entreprise porte — pour la pastille de la barre du bas. */
+/**
+ * Combien de retours il N’A PAS ENCORE OUVERTS — la pastille de l’onglet.
+ *
+ * ────────────────────────────────────────────────────────────────
+ * **La pastille comptait le TOTAL jusqu’au 9 septembre 2026**, et il l’a
+ * corrigé : *« il faut que le nombre qui s’affiche soit celui-là, et pas
+ * combien il y en a à l’intérieur »*. Un total ne bouge pas quand il lit, et
+ * grossit pour toujours — une pastille qui ne descend jamais à zéro s’apprend
+ * à être ignorée.
+ *
+ * **UN SEUL COMPTE, depuis sa correction du 9 septembre 2026 :** *« l’onglet
+ * retour d’intervention doit exister même s’il n’y a aucun retour »*. Le total
+ * ne servait qu’à faire apparaître l’onglet ; l’onglet étant toujours là, il
+ * ne sert plus à personne et il s’en va (`CLAUDE.md` §4 quinquies).
+ *
+ * **Non lu PAR LUI**, jamais « par quelqu’un » : `/termines` est ouvert au
+ * propriétaire comme au rôle facturation (`retours_intervention_vus`).
+ */
 export async function compterLesRetours(ctx: Ctx): Promise<number> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const lignes = await tx
+      .select({ vu: retoursInterventionVus.id })
+      .from(retoursIntervention)
+      .leftJoin(
+        retoursInterventionVus,
+        and(
+          eq(retoursInterventionVus.retourId, retoursIntervention.id),
+          eq(retoursInterventionVus.utilisateurId, ctx.utilisateurId)
+        )
+      );
+    return lignes.filter((l) => l.vu === null).length;
+  });
+}
+
+/**
+ * Il vient d'ouvrir ce retour : on s'en souvient, une fois.
+ *
+ * **Rien ne se passe s'il l'avait déjà ouvert** — le second appui ne réécrit
+ * pas la date. C'est une lecture, pas un journal de consultations ; et une date
+ * qui se déplace ferait remonter un retour lu la semaine dernière.
+ *
+ * **Le retour est relu ici, jamais cru sur parole.** Un identifiant qui voyage
+ * est un identifiant qu'on peut changer en chemin, et la RLS rend
+ * indiscernables « d'une autre entreprise » et « inexistant » — ce qui est
+ * exactement ce qu'on veut.
+ */
+export async function marquerLeRetourVu(ctx: Ctx, retourId: string): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [sien] = await tx
       .select({ id: retoursIntervention.id })
-      .from(retoursIntervention);
-    return lignes.length;
+      .from(retoursIntervention)
+      .where(eq(retoursIntervention.id, retourId))
+      .limit(1);
+    if (!sien) return false;
+
+    await tx
+      .insert(retoursInterventionVus)
+      .values({
+        entrepriseId: ctx.entrepriseId,
+        retourId: sien.id,
+        utilisateurId: ctx.utilisateurId,
+      })
+      .onConflictDoNothing();
+    return true;
   });
 }
 
