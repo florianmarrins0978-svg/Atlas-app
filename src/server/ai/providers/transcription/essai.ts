@@ -43,8 +43,13 @@ export const TEXTE_DE_LESSAI =
 
 export const fournisseurTranscriptionEssai: FournisseurTranscription = {
   nom: "essai",
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async transcrire(octets: Buffer, _mimeType: string): Promise<ResultatTranscription> {
+  // **Le type de l'audio ne se déclare pas ici, il se TAIT** : ce fournisseur ne
+  // le regarde pas, et une signature qui le nomme pour l'ignorer oblige à
+  // éteindre la règle du linter juste au-dessus — ce que le voisin `dev.ts`
+  // fait, et ce que la batterie refuse à juste titre. Un paramètre de moins est
+  // accepté par le type de l'interface : c'est la règle de TypeScript, et elle
+  // dit ici la vérité — il n'en a pas besoin.
+  async transcrire(octets: Buffer): Promise<ResultatTranscription> {
     // **Un fichier vide reste un échec**, comme chez `dev` et chez les vrais :
     // une suite qui envoie zéro octet doit voir ce que le patron verrait.
     if (octets.length === 0) {

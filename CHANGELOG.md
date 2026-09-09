@@ -6,6 +6,48 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-09
+
+### Reprendre les rouges que personne ne reprenait
+
+*« Il faut corriger les rouges, personne ne le fait. »* Cinq défauts réels, tous
+vieux de plusieurs jours, tous pris pour un « flottement » — et la CI de `main`
+en était barrée.
+
+| Ce qui était rouge | Depuis quoi |
+|---|---|
+| une case à cocher carrée dans la fin de chantier | sa règle du 12 août : la même forme partout |
+| le mode d'emploi enseignait « appuyez sur Feuille de chantier » | ce bouton n'existe plus : la feuille EST la fiche |
+| la chaîne dictée → devis s'arrêtait dans toutes les suites | le 5 septembre, l'application a cessé — à raison — de prendre une transcription simulée pour une vraie, et les suites n'avaient que celle-là |
+| **le logo ne s'affichait plus sur les devis** | **une régression de la veille, la mienne** |
+| l'appui long sur la TVA ouvrait une adresse doublée | le 4 septembre, la création a cessé d'ouvrir la fiche du chantier |
+
+**17 suites rouges → 10 ; 10 cas → 7 ; les deux rouges base → zéro.**
+
+### Ce qui a été ÉLIMINÉ avant d'être réparé — trois hypothèses fausses
+
+Elles sont écrites parce qu'elles ont coûté du temps, et qu'une seule d'entre
+elles répétée demain en coûterait autant :
+
+1. **« la base meurt pendant la course »** — un mouchard toutes les dix secondes,
+   94 relevés : PostgreSQL debout, 15 Go libres ;
+2. **« le chemin de création est cassé »** — il n'expliquait qu'une suite sur
+   dix-sept ;
+3. **« le serveur est en erreur »** — son journal n'en portait aucune, et la
+   chaîne de dictée s'y terminait en 53 ms.
+
+C'est une **sonde** qui a fini par rendre le défaut bavard, en allant lire
+l'écran : *« aucun prestataire de transcription n'est encore raccordé »*.
+Personne ne l'avait lu.
+
+### Un contrôle retiré parce qu'il éprouvait la batterie, pas l'application
+
+« Sans service de transcription, elle dit pourquoi elle s'arrête » ne provoquait
+rien : il ATTENDAIT que le serveur des suites n'ait aucun fournisseur. Il rendait
+donc cet environnement impossible à corriger. La règle qu'il défendait est
+mieux gardée depuis, sans base ni navigateur.
+
+---
 ## 2026-09-08
 
 ### Trois skills de `superpowers` entrent, onze restent dehors
