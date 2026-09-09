@@ -8,7 +8,35 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
+## Dernier lot — LE RETOUR EST UN VRAI RETOUR (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | **toute** flèche de retour ramène à la page d'où l'on vient. L'onglet tient le journal des écrans traversés ; la sortie déclarée par l'écran devient le repli |
+| la migration | aucune |
+| les pièces | `src/lib/journal-de-navigation.ts` (la règle, pure), `src/components/atlas/journal-navigateur.ts`, `JournalDeNavigation.tsx` (posé dans `src/app/layout.tsx`), `FlecheRetour.tsx` (LA flèche, pour tous les écrans) |
+| les suites | `scripts/test-journal-de-navigation.ts` (16), `scripts/test-retour-page-davant-e2e.ts` (5) |
+| le détail | `ARCHITECTURE.md` §305, `docs/lot-retour-page-davant.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** la flèche rendue par le SERVEUR porte la sortie
+déclarée, puis se corrige dès que la page est vivante — le journal est dans le
+navigateur, et le serveur ne peut rien en savoir. Une suite qui lit son `href`
+à l'instant où l'écran paraît peut donc attraper la valeur d'avant : il faut
+attendre (`page.waitForFunction`), comme le fait
+`test-retour-page-davant-e2e.ts`.
+
+**Et pour éprouver la sortie DÉCLARÉE, il faut arriver à froid.** Une suite qui
+s'est connectée puis promenée a forcément un journal : elle ne verra jamais le
+repli. `scripts/_arriver-a-froid.ts` vide le journal de l'onglet et recharge —
+c'est l'état d'un signet, sans ouvrir un contexte ni se reconnecter.
+
+**Ce qui reste des règles `?de=` :** elles servent de repli, et décident encore
+où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`). Leur
+moitié « devine d'où il vient » est redondante avec le journal — sa retraite est
+dans `TODO.md`, délibérément pas faite dans ce lot.
+
+---
+## Lot précédent — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
 | | |
 |---|---|

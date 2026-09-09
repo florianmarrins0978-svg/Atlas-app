@@ -8,6 +8,28 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
+### Le bouton retour est enfin un bouton retour
+
+*« J'ai cliqué sur ouvrir le devis, une fois sur le devis je clique sur retour,
+j'arrive sur la page de la fiche client — or le bouton retour doit marcher comme
+un vrai bouton marche arrière. »* Il venait de l'accueil.
+
+C'était le **cinquième** signalement de la même racine (20 août, 31 août, 7, 8
+et 9 septembre) : chaque écran déclarait sa sortie, et chaque porte d'entrée
+neuve la démentait. Les quatre correctifs précédents avaient ajouté une porte
+reconnue à la fois.
+
+L'onglet tient désormais le journal des écrans traversés, et **toute** flèche y
+lit la page d'avant. La sortie déclarée par l'écran reste, comme repli : sur la
+première page d'un onglet — un signet, une notification ouverte à froid — il n'y
+a pas de page d'avant, et sa règle du 31 août s'applique alors telle quelle.
+
+Ce qui a été retiré avec : « Aucun client rattaché à ce chantier » n'est plus un
+cul-de-sac — le chemin vers la fiche se lit sous la phrase qui dit le manque,
+au lieu d'être caché derrière une flèche qui prétendait reculer.
+
+Détail et décisions : `ARCHITECTURE.md` §305 · `docs/lot-retour-page-davant.md`.
+
 ### « Dernier devis » n'apparaissait presque jamais
 
 **Il l'a vu sur la fiche de Julien** : un devis du 7 septembre à l'écran, et le

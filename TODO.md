@@ -9,6 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ RETIRER LA MOITIÉ DEVENUE REDONDANTE DES RÈGLES `?de=` (9 septembre 2026)
+
+Depuis que la flèche ramène à la page d'où l'on vient (`ARCHITECTURE.md` §305),
+les règles de provenance répondent à **deux** questions au lieu d'une :
+
+| ce qu'elles font | son sort |
+|---|---|
+| dire où sortir quand il n'y a PAS de page d'avant | **à garder** : c'est le repli, et il sert pour de bon |
+| dire où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`) | **à garder** : ce n'est pas un retour |
+| **deviner d'où l'on vient** pour la flèche | **à retirer** : le journal le sait, et deux réponses à la même question finissent par diverger (`CLAUDE.md` §3) |
+
+Ce qui tombe alors, nommément : `retourDepuisLePlanning` (deux écrans —
+`/chantiers/[id]/export`, `/chantiers/[id]/facture`), la branche planning de
+`retourDuDevis`, la branche `?de=` de `retourFicheClient`, et le `?de=` que
+`portes-du-planning.ts` pose sur les portes qui n'enregistrent rien.
+
+**Pourquoi ce n'est PAS fait dans le lot du 9 septembre :** six écrans et six
+suites en dépendent (`test-retour-au-planning.ts`, `test-retour-du-devis.ts`,
+`test-retour-fiche-client.ts`, `test-portes-du-planning.ts`, plus deux suites
+navigateur), et un lot qui les réécrit la même nuit se livre rouge. La couche
+n'est pas un pansement oublié : elle est nommée ici, et elle a cessé de grandir.
+
+**À faire quand le journal aura tenu quelques jours chez lui** — c'est la seule
+chose qui manque pour trancher.
+
 ## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
 
 **Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce

@@ -287,7 +287,15 @@ async function main() {
     // verte tout du long : ce qui manquait, c'était le paramètre que la PORTE
     // pose et que l'ÉCRAN relit — deux moitiés qu'aucun contrôle ne faisait se
     // rencontrer (`CLAUDE.md` §5 quater).
-    await page.getByRole("link", { name: "Retour au planning" }).click();
+    //
+    // **Le REPÈRE plutôt que le libellé — 9 septembre 2026** (`CLAUDE.md`
+    // §5 bis). La flèche ramène désormais à la page d'où l'on vient, lue dans
+    // le journal de l'onglet (`src/lib/journal-de-navigation.ts`), et elle
+    // annonce alors « Retour » : elle connaît l'adresse, pas le nom de l'écran.
+    // Ce que ce cas défend n'a pas bougé d'un pouce — c'est la DESTINATION,
+    // vérifiée deux lignes plus bas, et elle est atteinte par la règle générale
+    // au lieu d'un paramètre reconnu au cas par cas.
+    await page.locator('header a[aria-label^="Retour"]').first().click();
     await page.waitForSelector('[data-atlas="porte-devis"]', { timeout: 15000 });
     assert.equal(
       new URL(page.url()).pathname,
