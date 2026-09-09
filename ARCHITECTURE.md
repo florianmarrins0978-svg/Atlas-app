@@ -26283,6 +26283,34 @@ trouver.
 **Une lecture ne se réécrit pas.** Il rouvre le même retour trois fois dans la
 soirée : c’est la même lecture, et l’unicité `(retour, lecteur)` empêche la
 table de devenir un journal que personne n’a demandé.
+### Deux corrections du même soir, et il avait raison sur les deux
+
+**L’onglet existe même vide.** *« L’onglet retour d’intervention doit exister
+même s’il n’y a aucun retour qui existe ! »* Je l’avais caché tant que la liste
+était vide, au motif qu’un onglet qui n’ouvre rien s’apprend à ne plus être
+touché. **Il a raison contre ça** : un onglet qui apparaît un jour et pas
+l’autre se cherche, et le premier retour de son salarié arriverait dans un
+endroit dont il ignore l’existence. La page vide, elle, dit ce qui l’attend.
+
+*Conséquence, et c’est la partie qui s’enlève* : le compte TOTAL ne servait
+qu’à faire paraître l’onglet. Il ne sert plus à personne, et il s’en va —
+`compterLesRetours` ne rend plus qu’un chiffre, celui qu’il regarde.
+
+**Et ses photos n’étaient nulle part.** *« J’ai joint des photos lorsque j’ai
+créé la fiche client de Julien mais elles n’apparaissent nulle part »*, puis,
+les ayant retrouvées dans le bandeau : *« elle apparaît ici mais je ne comprends
+pas pourquoi »*, et *« elle devrait être au-dessus de Désherbage gravier »*.
+
+**Elles existaient, et c’est le pire des cas** : on ne les voyait que dans le
+tiroir « Fin de chantier », parmi les preuves à cocher — c’est-à-dire APRÈS le
+travail, dans un endroit qu’on n’ouvre qu’en partant. Or il les joint pour
+montrer le chantier à celui qui s’y rend : leur place est AVANT, entre la note
+et les lignes du devis, là où il les a demandées.
+
+**Elles ne se cachent PAS quand la fin de chantier s’ouvre**, contrairement aux
+lignes du devis. Celles-ci disparaissent parce qu’elles DEVIENNENT les cases à
+cocher ; les photos, elles, sont ce qu’on regarde pendant qu’on coche.
+
 ## §308 — « Matin » sur un chantier de deux jours : la question que l'écran n'avait pas le droit de poser
 
 **Sa panne du 9 septembre 2026 :** *« lorsque je clique sur le matin pour

@@ -260,8 +260,7 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
 }
 
 /**
- * Ce que porte l’onglet « Retours d’intervention » : combien il y en a, et
- * combien il N’A PAS ENCORE OUVERTS.
+ * Combien de retours il N’A PAS ENCORE OUVERTS — la pastille de l’onglet.
  *
  * ────────────────────────────────────────────────────────────────
  * **La pastille comptait le TOTAL jusqu’au 9 septembre 2026**, et il l’a
@@ -270,15 +269,15 @@ export async function listerLesRetours(ctx: Ctx, maximum = 2000): Promise<Retour
  * grossit pour toujours — une pastille qui ne descend jamais à zéro s’apprend
  * à être ignorée.
  *
- * **LES DEUX COMPTES SONT RENDUS, et ce n’est pas un luxe.** L’onglet existe
- * tant qu’il y a des retours ; la pastille, elle, ne paraît que s’il en reste
- * à lire. Ne rendre que les non-lus ferait disparaître l’onglet le jour où il
- * a tout lu — et avec lui le seul chemin vers la page.
+ * **UN SEUL COMPTE, depuis sa correction du 9 septembre 2026 :** *« l’onglet
+ * retour d’intervention doit exister même s’il n’y a aucun retour »*. Le total
+ * ne servait qu’à faire apparaître l’onglet ; l’onglet étant toujours là, il
+ * ne sert plus à personne et il s’en va (`CLAUDE.md` §4 quinquies).
  *
  * **Non lu PAR LUI**, jamais « par quelqu’un » : `/termines` est ouvert au
  * propriétaire comme au rôle facturation (`retours_intervention_vus`).
  */
-export async function compterLesRetours(ctx: Ctx): Promise<{ total: number; nonLus: number }> {
+export async function compterLesRetours(ctx: Ctx): Promise<number> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const lignes = await tx
       .select({ vu: retoursInterventionVus.id })
@@ -290,10 +289,7 @@ export async function compterLesRetours(ctx: Ctx): Promise<{ total: number; nonL
           eq(retoursInterventionVus.utilisateurId, ctx.utilisateurId)
         )
       );
-    return {
-      total: lignes.length,
-      nonLus: lignes.filter((l) => l.vu === null).length,
-    };
+    return lignes.filter((l) => l.vu === null).length;
   });
 }
 

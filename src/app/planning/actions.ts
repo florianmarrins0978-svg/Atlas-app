@@ -16,6 +16,7 @@ import type { QuandChantier } from "@/lib/planning-jour";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
 import { retourDuChantier } from "@/server/repositories/retours-intervention";
+import { listerPhotos } from "@/server/repositories/photos";
 
 /**
  * LES ACTIONS DU PLANNING.
@@ -240,7 +241,9 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
  */
 export async function tachesDuChantierAction(
   chantierId: string
-): Promise<FeuilleDuChantier & { retourPose: boolean }> {
+): Promise<
+  FeuilleDuChantier & { retourPose: boolean; photos: { id: string; storageKey: string }[] }
+> {
   const ctx = await getCurrentCtx();
   await exigerChantierDansSaPortee(ctx, chantierId, "ouvrir la feuille de ce chantier");
   // **Le retour se demande ICI, avec la feuille — pas à l’ouverture du bandeau.**
@@ -252,9 +255,22 @@ export async function tachesDuChantierAction(
   //
   // C’est une requête de plus sur une lecture qui se fait déjà, jamais une
   // requête de plus tout court.
-  const [feuille, retour] = await Promise.all([
+  // **Et les PHOTOS du chantier, celles qu’il a jointes en créant la fiche.**
+  //
+  // Sa remarque du 9 septembre 2026 : *« j’ai joint des photos lorsque j’ai
+  // créé la fiche client de Julien, mais elles n’apparaissent nulle part »*.
+  // Elles n’étaient visibles QUE dans le bandeau « Fin de chantier », où le
+  // salarié coche ses preuves — c’est-à-dire APRÈS le travail, dans un tiroir
+  // qu’il n’ouvre qu’en partant. Or elles sont là pour être vues AVANT : c’est
+  // ce qu’il montre du chantier à celui qui s’y rend.
+  const [feuille, retour, sesPhotos] = await Promise.all([
     tachesDuChantier(ctx, chantierId),
     retourDuChantier(ctx, chantierId),
+    listerPhotos(ctx, chantierId),
   ]);
-  return { ...feuille, retourPose: retour !== null };
+  return {
+    ...feuille,
+    retourPose: retour !== null,
+    photos: sesPhotos.map((p) => ({ id: p.id, storageKey: p.storageKey })),
+  };
 }

@@ -182,8 +182,7 @@ export default async function TerminesPage() {
           ) : (
             <ListeTermines
               lignes={lignes}
-              retours={retours.total}
-              retoursNonLus={retours.nonLus}
+              retoursNonLus={retours}
               moisCourant={moisCourant}
             />
           )}

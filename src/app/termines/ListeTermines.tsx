@@ -41,7 +41,6 @@ import {
  */
 export default function ListeTermines({
   lignes,
-  retours,
   retoursNonLus,
   moisCourant,
 }: {
@@ -53,8 +52,6 @@ export default function ListeTermines({
    * Le compte ignore donc le mois affiché, exactement comme « À facturer »
    * l'ignore déjà : un retour de 2024 compte toujours.
    */
-  /** Combien de retours existent — c’est ce qui fait exister l’onglet. */
-  retours: number;
   /**
    * Combien il n’a pas encore ouverts — c’est ce que la pastille montre.
    *
@@ -134,10 +131,18 @@ export default function ListeTermines({
             le geste, et le chevron d'une page ne se dessine pas ici — la page
             porte déjà son retour.
 
-            **Il ne s'affiche QUE s'il y a des retours.** Un onglet qui ouvre
-            une liste vide s'apprend à ne plus être touché, et l'on perd le seul
-            endroit où ils vivent. */}
-        {retours > 0 && (
+            **IL EST TOUJOURS LÀ, même quand il n'y a aucun retour — sa
+            correction du 9 septembre 2026 :** *« l'onglet retour
+            d'intervention doit exister même s'il n'y a aucun retour qui
+            existe ! »*
+
+            Je l'avais caché tant que la liste était vide, au motif qu'un
+            onglet qui n'ouvre rien s'apprend à ne plus être touché. Il a
+            raison contre ça : un onglet qui apparaît un jour et pas l'autre
+            se cherche, et le premier retour de son salarié arriverait dans un
+            endroit dont il ignore l'existence. **La page vide, elle, dit ce
+            qui l'attend** — c'est ce que fait `ListeDesRetours`. */}
+        {(
           <Link
             href="/termines/retours"
             data-atlas="onglet-retours"

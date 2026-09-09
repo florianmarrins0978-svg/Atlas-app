@@ -73,7 +73,11 @@ import type { FeuilleDuChantier } from "@/server/repositories/devis";
  * être figé DÈS L’OUVERTURE de la fiche — pas seulement dans la session où
  * l’on a appuyé. Sa demande du 9 septembre 2026.
  */
-type FeuilleEtRetour = FeuilleDuChantier & { retourPose: boolean };
+type FeuilleEtRetour = FeuilleDuChantier & {
+  retourPose: boolean;
+  /** Ce qu’il a photographié du chantier — vu AVANT le travail, pas après. */
+  photos: { id: string; storageKey: string }[];
+};
 import { NOTE_MAX } from "@/lib/note-chantier";
 import {
   basculerEquipeAction,
@@ -2982,6 +2986,48 @@ function FeuilleChantier({
       </div>
 
       <NoteDuChantier chantier={chantier} ecriture={ecriture} />
+
+      {/* ─── CE QU'IL A PHOTOGRAPHIÉ DU CHANTIER ──────────────────────────
+          **Sa remarque du 9 septembre 2026 :** *« j'ai joint des photos lorsque
+          j'ai créé la fiche client de Julien, mais elles n'apparaissent nulle
+          part »*, puis : *« elles devraient être au-dessus de Désherbage
+          gravier »*.
+
+          **Elles existaient**, et c'est le pire des cas : on ne les voyait que
+          dans le tiroir « Fin de chantier », parmi les preuves à cocher —
+          c'est-à-dire APRÈS le travail, dans un endroit qu'on n'ouvre qu'en
+          partant. Or il les joint pour montrer le chantier à celui qui s'y
+          rend : leur place est AVANT, avec la note et les lignes du devis.
+
+          **Elles ne se cachent pas quand la fin de chantier s'ouvre.** La liste
+          du devis, elle, disparaît parce qu'elle DEVIENT les cases à cocher ;
+          les photos, non — elles restent ce qu'il faut regarder pendant qu'on
+          coche. */}
+      {(feuille?.photos ?? []).length > 0 && (
+        <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+          <div className="flex flex-wrap gap-2">
+            {(feuille?.photos ?? []).map((photo) => (
+              <a
+                key={photo.id}
+                href={`/api/fichiers/${photo.storageKey}`}
+                target="_blank"
+                rel="noreferrer"
+                data-atlas="photo-du-chantier"
+                className="h-[74px] w-[74px] overflow-hidden rounded-[11px]"
+                style={{
+                  // **Un fond, pour qu'une photo qui n'arrive pas laisse un cadre
+                  // calme et non une image brisée** — le glyphe du navigateur se
+                  // lit comme une panne de l'application.
+                  backgroundColor: colors.rustTint,
+                  boxShadow: `inset 0 0 0 1px ${colors.line}`,
+                }}
+              >
+                <img src={`/api/fichiers/${photo.storageKey}`} alt="" className="h-full w-full object-cover" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ─── LES LIGNES DU DEVIS — ce qu'il y a à faire ────────────────────
           **Elles s'effacent quand la fin de chantier s'ouvre — sa proposition
