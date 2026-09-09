@@ -21,7 +21,24 @@ travail qui n'a pas eu lieu — c'est toute la raison d'être de cet écran.
 
 Et l'image brisée qu'il avait vue est partie : une photo qui n'arrive pas laisse
 un cadre calme, pas le glyphe du navigateur, qui se lit comme une panne
-(`ARCHITECTURE.md` §304).
+(`ARCHITECTURE.md` §306).
+### Le compteur de TVA ne se remplit pas tout seul — et il le dit enfin
+
+*« Même si c'est tous les mois, ça ne doit pas rentrer au compteur tout seul ;
+il faut que l'utilisateur appuie sur payer. »* C'est déjà le cas depuis le
+14 août, et rien n'a changé au calcul : une facture émise et jamais réglée
+n'apporte rien au relevé, quel que soit le rythme.
+
+**Ce sont les mots qui promettaient le contraire.** « Le jour où vous serez
+payé », « quand votre client vous paie » : deux phrases qui nomment une date que
+le monde décide, donc une application qui apprendrait seule qu'un virement est
+arrivé. Elles nomment maintenant son geste — « quand vous appuierez sur
+"Payée" ».
+
+**Et une facture à 0,00 € n'attend plus rien.** Sa capture en portait une,
+coincée en attente pour toujours : le relevé n'en veut pas, et « Payée » ne
+pouvait pas la solder — un règlement de zéro est refusé, à juste titre. Elle
+occupait l'écran avec un bouton qui ne pouvait qu'échouer.
 
 ### « Dernier devis » n'apparaissait presque jamais
 
