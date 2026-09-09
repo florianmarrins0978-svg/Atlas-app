@@ -129,15 +129,23 @@
                              font:600 9.5px/1 ui-sans-serif,sans-serif;color:var(--inkSoft)}
 
   /* ─── PLANIFIÉS ───────────────────────────────────────────────────────────*/
-  .titre-section{margin:26px 18px 0;text-align:center;
+  .titre-section{position:relative;margin:26px 18px 0;text-align:center;
                  font:700 13px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
                  text-transform:uppercase;color:var(--ink)}
 
-  /* LE COMMUTATEUR — sa demande du 9 septembre 2026 : *« qu'on ait seulement la
-     journée d'aujourd'hui ; néanmoins, si on clique sur un bouton, on a le
-     visuel de la semaine, et on switche assez rapidement »*. Deux cibles pleine
-     largeur, rien à découvrir. */
-  .portee{margin:18px 18px 0;display:flex;gap:8px}
+  /* ═══ LE COMMUTATEUR — quatre poids, sa remarque du 9 septembre 2026 ══════
+     *« Le choix pour passer d'aujourd'hui à la semaine est trop gros, faut
+     trouver quelque chose de plus discret. »* Il a raison, et ça se mesure : la
+     paire de pastilles prend 62 px de hauteur pour deux mots — sur un écran où
+     le nom du client est déjà coupé en bas. Les trois autres versions le
+     rendent, en tout ou en partie. */
+  .portee,.duo{display:none}
+  [data-commut="gros"] .portee{display:flex}
+  [data-commut="duo"] .duo,[data-commut="souligne"] .duo{display:flex}
+  [data-commut="mot"] .mot{display:inline-flex}
+
+  /* 0 — LES DEUX PASTILLES : ce qu'il vient de voir, gardé pour comparer. */
+  .portee{margin:18px 18px 0;gap:8px}
   .portee button{flex:1;min-height:44px;border-radius:999px;border:1px solid var(--line);
                  background:var(--card);color:var(--ink);
                  font:600 14px/1 ui-sans-serif,sans-serif;cursor:pointer;
@@ -145,6 +153,32 @@
                  transition:background .18s,color .18s,border-color .18s}
   .portee button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);
                                       border-color:var(--rust)}
+
+  /* 1 et 2 — DEUX MOTS SOUS LE TITRE. Le doigt garde ses 44 px de haut, mais
+     l'œil ne voit que deux mots : la cible et le dessin sont deux choses. */
+  .duo{margin:2px 18px 0;align-items:center;justify-content:center;gap:10px}
+  .duo button{border:0;background:none;min-height:44px;padding:0 6px;cursor:pointer;
+              -webkit-tap-highlight-color:transparent;
+              font:600 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.06em;
+              color:var(--muted);transition:color .18s}
+  .duo button[aria-pressed="true"]{color:var(--ink);font-weight:700}
+  .duo .point{color:var(--chevron);font-size:12.5px}
+  /* 2 — le même, mais l'actif est SOULIGNÉ d'or : la grammaire de la barre du
+     bas, qui marque déjà l'onglet ouvert de cette façon. */
+  [data-commut="souligne"] .duo button[aria-pressed="true"]{
+    box-shadow:inset 0 -1px 0 0 var(--or)}
+  [data-commut="souligne"] .duo .point{display:none}
+  [data-commut="souligne"] .duo{gap:20px}
+
+  /* 3 — UN SEUL MOT, à droite du titre : la place où l'application met déjà
+     ses actions (« Ouvrir », « Connecter »), et la seule qui ne coûte AUCUNE
+     hauteur. Il nomme ce qu'on obtient, jamais où l'on est. */
+  .mot{display:none;position:absolute;right:0;top:50%;transform:translateY(-50%);
+       align-items:center;min-height:44px;
+       border:0;background:none;padding:0 0 0 14px;cursor:pointer;
+       -webkit-tap-highlight-color:transparent;
+       font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+       text-transform:uppercase;color:var(--or)}
 
   .fenetre{margin:18px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
   [data-portee="jour"] .fenetre{display:none}
@@ -244,11 +278,16 @@
   <button type="button" data-vue="c" aria-pressed="false">C</button>
   <button type="button" data-vue="d" aria-pressed="true">D</button>
   <span class="sep"></span>
+  <button type="button" data-commut="gros" aria-pressed="false">Gros</button>
+  <button type="button" data-commut="duo" aria-pressed="false">Deux mots</button>
+  <button type="button" data-commut="souligne" aria-pressed="false">Souligné</button>
+  <button type="button" data-commut="mot" aria-pressed="true">Un mot</button>
+  <span class="sep"></span>
   <button type="button" id="bascule-vide" aria-pressed="false">Rien aujourd’hui</button>
   <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
 </div>
 
-<div class="tel" id="tel" data-vue="d" data-portee="jour">
+<div class="tel" id="tel" data-vue="d" data-portee="jour" data-commut="mot">
   <div class="entete">
     <h1>Planning</h1>
     <p>Vos journées</p>
@@ -277,12 +316,18 @@
     </div>
   </div>
 
-  <p class="titre-section">Planifiés</p>
+  <p class="titre-section">Planifiés<button type="button" class="mot" id="mot-portee"></button></p>
 
   <div class="portee">
-    <button type="button" id="voir-jour" aria-pressed="true">Aujourd’hui</button>
-    <button type="button" id="voir-semaine" aria-pressed="false">La semaine</button>
+    <button type="button" data-portee="jour" aria-pressed="true">Aujourd’hui</button>
+    <button type="button" data-portee="semaine" aria-pressed="false">La semaine</button>
   </div>
+
+  <p class="duo">
+    <button type="button" data-portee="jour" aria-pressed="true">Aujourd’hui</button>
+    <span class="point">·</span>
+    <button type="button" data-portee="semaine" aria-pressed="false">La semaine</button>
+  </p>
 
   <div class="fenetre">
     <button class="fleche" type="button" id="reculer" aria-label="Sept jours avant">‹</button>
@@ -314,6 +359,29 @@
   jour chevauche deux rangées : cette teinte n’a plus de rangée à désigner. Elle
   est donc <b>retirée ici</b> — dites-moi si elle vous manque, on trouvera autre
   chose.</p>
+  <h2>Le commutateur — « trop gros », et ça se mesure</h2>
+  <p>Votre remarque du 9 septembre. La paire de pastilles prend <b>62 px</b> de
+  hauteur pour deux mots, sur un écran où le nom du client est déjà coupé en
+  bas. Quatre poids, à comparer avec les boutons du haut :</p>
+  <p><b>Gros</b> — ce que vous venez de voir.<br>
+  <b>Deux mots</b> — « Aujourd’hui · La semaine » sous le titre, l’actif en
+  encre. Le doigt garde ses 44 px, mais l’œil ne voit que deux mots.<br>
+  <b>Souligné</b> — les mêmes deux mots, l’actif <b>souligné d’or</b> : c’est
+  déjà la façon dont la barre du bas marque l’onglet ouvert.<br>
+  <b>Un mot</b> — à droite du titre « Planifiés », en petites capitales dorées,
+  là où l’application met déjà ses actions. Il nomme <b>ce qu’on obtient</b> et
+  jamais où l’on est : « La semaine », puis « Aujourd’hui ». <b>C’est le seul qui
+  ne coûte aucune hauteur</b> — et c’est celui sur lequel la planche s’ouvre.</p>
+  <p>Ce qu’il coûte, et il faut le dire : un mot seul se remarque moins qu’une
+  paire. Quelqu’un qui n’a jamais vu l’écran peut mettre un jour à comprendre
+  qu’il peut élargir. Les deux mots, eux, montrent <b>les deux choix</b> d’un
+  coup. Et son doré sur le papier pâle est <b>le même 2,77 de contraste</b> que
+  je vous signalais pour la pastille : c’est la grammaire déjà en place dans
+  l’application — « Ouvrir », « Connecter », « Vos journées » —, mais si ce mot
+  vous paraît pâle au soleil, il se met en encre.</p>
+  <p><b>Ce que ça change, mesuré sur votre iPhone :</b> avec les deux pastilles,
+  le nom du premier client commence à <b>658 px</b> pour <b>664 px</b> d’écran —
+  il est coupé. Avec un mot, il commence à <b>596 px</b> : <b>il tient</b>.</p>
   <h2>La fenêtre part d’aujourd’hui</h2>
   <p>Votre règle : le 9, c’est <b>9 – 15</b> ; le 10, <b>10 – 16</b>. Un jour
   passé n’est donc <b>jamais</b> sous les yeux — il n’apparaît, éteint, que si
@@ -513,18 +581,38 @@ for (const b of document.querySelectorAll(".choix button[data-vue]")) {
 }
 
 /* Le commutateur. Revenir sur « Aujourd'hui » REPART d'aujourd'hui : sinon on
-   retrouverait la fenêtre d'il y a trois flèches sans comprendre pourquoi. */
-const bJour = document.getElementById("voir-jour");
-const bSemaine = document.getElementById("voir-semaine");
+   retrouverait la fenêtre d'il y a trois flèches sans comprendre pourquoi.
+   Les quatre versions pilotent le MÊME état — deux états qui se suivraient
+   auraient fini par se contredire. */
+const motPortee = document.getElementById("mot-portee");
 function portee(quoi) {
   tel.dataset.portee = quoi;
   depart = 0;
-  bJour.setAttribute("aria-pressed", String(quoi === "jour"));
-  bSemaine.setAttribute("aria-pressed", String(quoi === "semaine"));
+  // **`button[...]`, jamais `[data-portee]` seul** : le cadre de l écran porte
+  // lui aussi cet attribut, et tout clic à l intérieur remontait jusqu à lui —
+  // la flèche « sept jours avant » remettait donc la fenêtre à aujourd hui.
+  for (const b of document.querySelectorAll("button[data-portee]")) {
+    b.setAttribute("aria-pressed", String(b.dataset.portee === quoi));
+  }
+  // Le mot unique nomme CE QU'ON OBTIENT en le touchant, jamais où l'on est.
+  motPortee.textContent = quoi === "jour" ? "La semaine" : "Aujourd’hui";
   peindre();
 }
-bJour.addEventListener("click", () => portee("jour"));
-bSemaine.addEventListener("click", () => portee("semaine"));
+for (const b of document.querySelectorAll("button[data-portee]")) {
+  b.addEventListener("click", () => portee(b.dataset.portee));
+}
+motPortee.addEventListener("click", () =>
+  portee(tel.dataset.portee === "jour" ? "semaine" : "jour")
+);
+
+for (const b of document.querySelectorAll(".choix button[data-commut]")) {
+  b.addEventListener("click", () => {
+    for (const a of document.querySelectorAll(".choix button[data-commut]")) {
+      a.setAttribute("aria-pressed", String(a === b));
+    }
+    tel.dataset.commut = b.dataset.commut;
+  });
+}
 
 document.getElementById("reculer").addEventListener("click", () => {
   depart -= JOURS_MONTRES; peindre();
@@ -549,7 +637,7 @@ bNuit.addEventListener("click", () => {
 });
 
 peindreLeMois();
-peindre();
+portee("jour");
 verdict("d");
 </script>
 </body>
