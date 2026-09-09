@@ -330,8 +330,28 @@ async function main() {
   await pageClient.goto(`${BASE}/factures/${jeton}`, { waitUntil: "networkidle" });
   const vueClient = await pageClient.locator("body").innerText();
   assert.match(vueClient, /Facture/i, `Le client ne voit pas sa facture :\n${vueClient.slice(0, 300)}`);
-  assert.match(vueClient, /960,00|1 ?200|€/, "Le client ne voit aucun montant.");
-  console.log("  ✓ le client ouvre sa facture sans compte, et la reconnaît");
+  // **LE MONTANT NE DOIT PLUS Y ÊTRE, et ce contrôle disait l'inverse.**
+  //
+  // Sa demande du 8 septembre 2026 : *« le montant ne doit pas apparaître, ça
+  // incitera le client à ouvrir sa facture »*. Cette ligne exigeait « 960,00 »
+  // ou un « € » — elle rougissait donc sur une demande EXAUCÉE, et sur du code
+  // juste. C'est exactement le cas que `CLAUDE.md` §5 bis décrit : on adapte le
+  // contrôle, on ne remet pas le libellé.
+  //
+  // Ce qu'on vise à la place ne dépend d'aucun mot d'écran : le NUMÉRO de la
+  // facture, qui prouve que le jeton mène à la bonne pièce, et l'absence du
+  // montant, qui défend sa décision au lieu de la contredire.
+  assert.match(
+    vueClient,
+    new RegExp(String(envoi.rows[0].numero_commercial).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+    `Le client ne reconnaît pas SA facture :\n${vueClient.slice(0, 300)}`
+  );
+  assert.doesNotMatch(
+    vueClient,
+    /960,00|1 ?200,00|\d\s?€/,
+    "Le montant est revenu sur la page du client — il a demandé qu'il n'y soit pas."
+  );
+  console.log("  ✓ le client ouvre sa facture sans compte, la reconnaît, et n'y lit aucun montant");
 
   const pdf = await pageClient.request.get(`${BASE}/factures/${jeton}/pdf`);
   assert.equal(pdf.status(), 200, "Le PDF de la facture n'est pas servi au client.");
