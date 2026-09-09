@@ -139,10 +139,11 @@
      paire de pastilles prend 62 px de hauteur pour deux mots — sur un écran où
      le nom du client est déjà coupé en bas. Les trois autres versions le
      rendent, en tout ou en partie. */
-  .portee,.duo{display:none}
+  .portee,.rail,.points{display:none}
   [data-commut="gros"] .portee{display:flex}
-  [data-commut="duo"] .duo,[data-commut="souligne"] .duo{display:flex}
   [data-commut="mot"] .mot{display:inline-flex}
+  [data-commut="rail"] .rail{display:block}
+  [data-commut="balayage"] .points{display:flex}
 
   /* 0 — LES DEUX PASTILLES : ce qu'il vient de voir, gardé pour comparer. */
   .portee{margin:18px 18px 0;gap:8px}
@@ -154,22 +155,6 @@
   .portee button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);
                                       border-color:var(--rust)}
 
-  /* 1 et 2 — DEUX MOTS SOUS LE TITRE. Le doigt garde ses 44 px de haut, mais
-     l'œil ne voit que deux mots : la cible et le dessin sont deux choses. */
-  .duo{margin:2px 18px 0;align-items:center;justify-content:center;gap:10px}
-  .duo button{border:0;background:none;min-height:44px;padding:0 6px;cursor:pointer;
-              -webkit-tap-highlight-color:transparent;
-              font:600 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.06em;
-              color:var(--muted);transition:color .18s}
-  .duo button[aria-pressed="true"]{color:var(--ink);font-weight:700}
-  .duo .point{color:var(--chevron);font-size:12.5px}
-  /* 2 — le même, mais l'actif est SOULIGNÉ d'or : la grammaire de la barre du
-     bas, qui marque déjà l'onglet ouvert de cette façon. */
-  [data-commut="souligne"] .duo button[aria-pressed="true"]{
-    box-shadow:inset 0 -1px 0 0 var(--or)}
-  [data-commut="souligne"] .duo .point{display:none}
-  [data-commut="souligne"] .duo{gap:20px}
-
   /* 3 — UN SEUL MOT, à droite du titre : la place où l'application met déjà
      ses actions (« Ouvrir », « Connecter »), et la seule qui ne coûte AUCUNE
      hauteur. Il nomme ce qu'on obtient, jamais où l'on est. */
@@ -179,6 +164,47 @@
        -webkit-tap-highlight-color:transparent;
        font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
        text-transform:uppercase;color:var(--or)}
+
+  /* ─── 4 — LE RAIL : deux mots, et un trait d'or QUI GLISSE ────────────────
+     C'est déjà sa grammaire : la barre du bas marque l'onglet ouvert d'un trait
+     doré qui glisse, sur une courbe qu'il a choisie en la voyant — le petit
+     dépassement de `cubic-bezier(0.34, 1.4, 0.5, 1)`. La reprendre ici ne fait
+     rien apprendre de neuf : le geste est déjà connu de sa main. */
+  .rail{position:relative;margin:12px 18px 0;padding-bottom:7px}
+  .rail .mots{display:grid;grid-template-columns:1fr 1fr}
+  .rail button{border:0;background:none;min-height:38px;padding:0;cursor:pointer;
+               -webkit-tap-highlight-color:transparent;
+               font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;
+               text-transform:uppercase;color:var(--muted);
+               transition:color 320ms cubic-bezier(0.22,0.61,0.36,1)}
+  .rail button[aria-pressed="true"]{color:var(--ink)}
+  .rail .curseur{position:absolute;bottom:0;left:0;width:50%;height:1px;
+                 background:var(--or);
+                 transition:transform 540ms cubic-bezier(0.34,1.4,0.5,1)}
+  [data-portee="semaine"] .rail .curseur{transform:translateX(100%)}
+
+  /* ─── 5 — LE BALAYAGE : on pousse la liste du doigt ───────────────────────
+     Deux points sous le titre disent où l'on est, et qu'il y a autre chose à
+     côté. **Ce qu'il coûte est réel** : un geste qui ne se voit pas ne
+     s'apprend pas tout seul, et `PRODUCT.md` refuse ce qui se découvre. Les
+     points sont là pour ça, et ils se touchent aussi. */
+  .points{margin:12px 18px 0;align-items:center;justify-content:center;gap:9px}
+  .points button{width:34px;height:34px;border:0;background:none;padding:0;
+                 cursor:pointer;-webkit-tap-highlight-color:transparent;
+                 display:flex;align-items:center;justify-content:center}
+  .points button::before{content:"";display:block;width:6px;height:6px;border-radius:999px;
+                         background:var(--chevron);
+                         transition:background .3s,transform .3s}
+  .points button[aria-pressed="true"]::before{background:var(--or);transform:scale(1.5)}
+  [data-commut="balayage"] #liste{touch-action:pan-y}
+
+  /* ─── 6 — LA PASTILLE ELLE-MÊME : un seul objet, qui DIT et qui SERT ──────
+     Elle porte déjà ce qu'on regarde ; la toucher élargit à la semaine, et son
+     libellé devient « 9 – 15 sept. ». Rien ne s'ajoute à l'écran — c'est la
+     seule des cinq qui en RETIRE. Son défaut est l'autre face : rien ne dit
+     qu'elle se touche. */
+  [data-commut="pastille"] .date.today{cursor:pointer}
+  [data-commut="pastille"][data-portee="jour"] .fenetre{display:none}
 
   .fenetre{margin:18px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
   [data-portee="jour"] .fenetre{display:none}
@@ -278,16 +304,17 @@
   <button type="button" data-vue="c" aria-pressed="false">C</button>
   <button type="button" data-vue="d" aria-pressed="true">D</button>
   <span class="sep"></span>
+  <button type="button" data-commut="rail" aria-pressed="true">Rail</button>
+  <button type="button" data-commut="pastille" aria-pressed="false">Pastille</button>
+  <button type="button" data-commut="balayage" aria-pressed="false">Balayage</button>
+  <button type="button" data-commut="mot" aria-pressed="false">Un mot</button>
   <button type="button" data-commut="gros" aria-pressed="false">Gros</button>
-  <button type="button" data-commut="duo" aria-pressed="false">Deux mots</button>
-  <button type="button" data-commut="souligne" aria-pressed="false">Souligné</button>
-  <button type="button" data-commut="mot" aria-pressed="true">Un mot</button>
   <span class="sep"></span>
   <button type="button" id="bascule-vide" aria-pressed="false">Rien aujourd’hui</button>
   <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
 </div>
 
-<div class="tel" id="tel" data-vue="d" data-portee="jour" data-commut="mot">
+<div class="tel" id="tel" data-vue="d" data-portee="jour" data-commut="rail">
   <div class="entete">
     <h1>Planning</h1>
     <p>Vos journées</p>
@@ -323,11 +350,18 @@
     <button type="button" data-portee="semaine" aria-pressed="false">La semaine</button>
   </div>
 
-  <p class="duo">
-    <button type="button" data-portee="jour" aria-pressed="true">Aujourd’hui</button>
-    <span class="point">·</span>
-    <button type="button" data-portee="semaine" aria-pressed="false">La semaine</button>
-  </p>
+  <div class="rail">
+    <div class="mots">
+      <button type="button" data-portee="jour" aria-pressed="true">Aujourd’hui</button>
+      <button type="button" data-portee="semaine" aria-pressed="false">La semaine</button>
+    </div>
+    <i class="curseur"></i>
+  </div>
+
+  <div class="points">
+    <button type="button" data-portee="jour" aria-pressed="true" aria-label="La journée"></button>
+    <button type="button" data-portee="semaine" aria-pressed="false" aria-label="La semaine"></button>
+  </div>
 
   <div class="fenetre">
     <button class="fleche" type="button" id="reculer" aria-label="Sept jours avant">‹</button>
@@ -359,29 +393,35 @@
   jour chevauche deux rangées : cette teinte n’a plus de rangée à désigner. Elle
   est donc <b>retirée ici</b> — dites-moi si elle vous manque, on trouvera autre
   chose.</p>
-  <h2>Le commutateur — « trop gros », et ça se mesure</h2>
-  <p>Votre remarque du 9 septembre. La paire de pastilles prend <b>62 px</b> de
-  hauteur pour deux mots, sur un écran où le nom du client est déjà coupé en
-  bas. Quatre poids, à comparer avec les boutons du haut :</p>
-  <p><b>Gros</b> — ce que vous venez de voir.<br>
-  <b>Deux mots</b> — « Aujourd’hui · La semaine » sous le titre, l’actif en
-  encre. Le doigt garde ses 44 px, mais l’œil ne voit que deux mots.<br>
-  <b>Souligné</b> — les mêmes deux mots, l’actif <b>souligné d’or</b> : c’est
-  déjà la façon dont la barre du bas marque l’onglet ouvert.<br>
-  <b>Un mot</b> — à droite du titre « Planifiés », en petites capitales dorées,
-  là où l’application met déjà ses actions. Il nomme <b>ce qu’on obtient</b> et
-  jamais où l’on est : « La semaine », puis « Aujourd’hui ». <b>C’est le seul qui
-  ne coûte aucune hauteur</b> — et c’est celui sur lequel la planche s’ouvre.</p>
-  <p>Ce qu’il coûte, et il faut le dire : un mot seul se remarque moins qu’une
-  paire. Quelqu’un qui n’a jamais vu l’écran peut mettre un jour à comprendre
-  qu’il peut élargir. Les deux mots, eux, montrent <b>les deux choix</b> d’un
-  coup. Et son doré sur le papier pâle est <b>le même 2,77 de contraste</b> que
-  je vous signalais pour la pastille : c’est la grammaire déjà en place dans
-  l’application — « Ouvrir », « Connecter », « Vos journées » —, mais si ce mot
-  vous paraît pâle au soleil, il se met en encre.</p>
-  <p><b>Ce que ça change, mesuré sur votre iPhone :</b> avec les deux pastilles,
-  le nom du premier client commence à <b>658 px</b> pour <b>664 px</b> d’écran —
-  il est coupé. Avec un mot, il commence à <b>596 px</b> : <b>il tient</b>.</p>
+  <h2>Passer de la journée à la semaine — sans deux gros boutons</h2>
+  <p>Votre demande du 9 septembre : <i>« quelque chose de plus subtil et joli »</i>.
+  Cinq gestes, à essayer avec les boutons du haut. La planche s’ouvre sur le
+  <b>rail</b>.</p>
+  <p><b>Rail</b> — deux petits mots, et un <b>trait d’or qui glisse</b> de l’un à
+  l’autre. Ce n’est pas une invention : c’est exactement ce que fait déjà votre
+  barre du bas quand vous changez d’onglet, avec le même petit dépassement au
+  bout de la course. Votre main connaît déjà le geste. Il montre <b>les deux
+  choix</b> et coûte 45 px.<br>
+  <b>Pastille</b> — rien de neuf à l’écran : <b>la pastille « AUJOURD’HUI » se
+  touche</b>. C’est la seule des cinq qui <b>retire</b> quelque chose au lieu
+  d’ajouter. Son défaut est l’autre face de sa qualité : rien ne dit qu’elle se
+  touche.<br>
+  <b>Balayage</b> — on pousse la liste du doigt, vers la gauche pour la semaine.
+  Deux points dorés sous le titre disent où l’on est. Le plus discret de tous,
+  et le plus risqué : un geste qu’on ne voit pas ne s’apprend pas seul.<br>
+  <b>Un mot</b> — « LA SEMAINE » en petites capitales dorées à droite du titre,
+  là où l’application met déjà ses actions. Aucune hauteur.<br>
+  <b>Gros</b> — les deux pastilles que vous avez refusées, gardées pour
+  comparer.</p>
+  <p><b>Ce que ça change, mesuré sur votre iPhone :</b> avec les deux grosses
+  pastilles, le nom du premier client commence à <b>658 px</b> pour <b>664 px</b>
+  d’écran — il est coupé. Avec le rail, la pastille, le balayage ou le mot, il
+  tient.</p>
+  <p><b>Une chose que la capture montre, et qu’il faut trancher :</b> avec le
+  rail, le mot « Aujourd’hui » est écrit <b>deux fois</b> — dans le rail, puis
+  dans la pastille noire juste en dessous. Sur la vue journée, la pastille
+  n’apprend plus rien : elle pourrait disparaître, et ne revenir que dans la vue
+  semaine, où elle sert à séparer les journées. Dites-moi.</p>
   <h2>La fenêtre part d’aujourd’hui</h2>
   <p>Votre règle : le 9, c’est <b>9 – 15</b> ; le 10, <b>10 – 16</b>. Un jour
   passé n’est donc <b>jamais</b> sous les yeux — il n’apparaît, éteint, que si
@@ -604,6 +644,29 @@ for (const b of document.querySelectorAll("button[data-portee]")) {
 motPortee.addEventListener("click", () =>
   portee(tel.dataset.portee === "jour" ? "semaine" : "jour")
 );
+
+/* LA PASTILLE COMME COMMUTATEUR. Elle porte déjà ce qu'on regarde ; la toucher
+   élargit. Le lien est posé sur la LISTE et non sur la pastille : celle-ci est
+   redessinée à chaque peinture, et un détecteur posé dessus disparaîtrait avec
+   elle au premier changement. */
+liste.addEventListener("click", (e) => {
+  if (tel.dataset.commut !== "pastille") return;
+  if (!e.target.closest(".date.today")) return;
+  portee(tel.dataset.portee === "jour" ? "semaine" : "jour");
+});
+
+/* LE BALAYAGE. Quarante pixels de course, et le mouvement doit être plus
+   horizontal que vertical — sans quoi un simple défilement du pouce ferait
+   changer de vue sans qu'on comprenne pourquoi. */
+let depart_x = null, depart_y = null;
+liste.addEventListener("pointerdown", (e) => { depart_x = e.clientX; depart_y = e.clientY; });
+liste.addEventListener("pointerup", (e) => {
+  if (tel.dataset.commut !== "balayage" || depart_x === null) return;
+  const dx = e.clientX - depart_x, dy = e.clientY - depart_y;
+  depart_x = null;
+  if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
+  portee(dx < 0 ? "semaine" : "jour");
+});
 
 for (const b of document.querySelectorAll(".choix button[data-commut]")) {
   b.addEventListener("click", () => {
