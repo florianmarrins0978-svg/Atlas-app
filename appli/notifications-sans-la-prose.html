@@ -149,6 +149,9 @@ td b{color:var(--encre)}
   dit deux fois la même chose, un paragraphe qui répète le mot « toujours » du
   titre juste au-dessus, un autre qui décrit ce que font les interrupteurs — et
   tout en bas un bloc entier, « Où se solde une facture », qui ne règle rien.</p>
+  <p><b>La phrase d'accueil a changé le 9 septembre</b>, sur votre question :
+  <i>« ni SMS ni e-mail, ça sous-entend quoi ? »</i> — elle mêlait ce que vous
+  recevez et ce que vos clients reçoivent. Elle ne parle plus que de vous.</p>
   <p>Ce que chaque proposition retire est <b>barré en rouge</b>, ce qu'elle
   ajoute porte un <b>trait doré</b>. Le bouton « Montrer ce qui part » les
   cache si vous voulez voir l'écran net.</p>
@@ -171,10 +174,13 @@ td b{color:var(--encre)}
   <h3>Ce qui part, et pourquoi</h3>
   <table>
     <tr><th>La phrase</th><th>Pourquoi elle part</th></tr>
-    <tr><td><b>« Rien ne part sur votre téléphone ni par e-mail : Atlas n'envoie
-      ni SMS ni courriel. »</b></td>
-      <td>elle redit la phrase d'avant. Il reste : <b>« Tout se passe sur
-      l'écran d'accueil. Ni SMS, ni e-mail. »</b> — même chose, en huit mots</td></tr>
+    <tr><td><b>Toute la phrase d'accueil : « Tout se passe dans l'application…
+      Atlas n'envoie ni SMS ni courriel. »</b></td>
+      <td>elle se redit, et sa seconde moitié mêle ce que <b>vous</b> recevez et
+      ce que vos <b>clients</b> reçoivent — on peut y lire qu'Atlas ne sait pas
+      envoyer un devis par SMS, ce qui est faux. Il reste une ligne, sur vous
+      seul : <b>« Ces rappels s'affichent sur votre écran d'accueil, quand vous
+      ouvrez Atlas. »</b></td></tr>
     <tr><td><b>« Ces deux-là ne se coupent pas… »</b></td>
       <td>le titre au-dessus dit déjà <b>toujours</b>, et les deux lignes n'ont
       pas d'interrupteur : l'absence se voit</td></tr>
@@ -193,7 +199,7 @@ td b{color:var(--encre)}
     <tr><td><b>A · on retire ce qui explique</b></td>
       <td>les quatre passages ci-dessus s'en vont, et rien d'autre ne bouge.
       L'ordre reste : ce qui est toujours signalé, puis ce que vous réglez.
-      <b>240 mots, puis 146</b> — le compte sous le téléphone se mesure tout
+      <b>240 mots, puis 147</b> — le compte sous le téléphone se mesure tout
       seul, il n'est pas recopié</td></tr>
     <tr><td><b>B · A, et les réglages d'abord</b><br><i>celle que je vous conseille</i></td>
       <td>tout A, et les deux alertes qu'on ne peut pas couper passent
@@ -341,7 +347,12 @@ function rendre(){
         'rappelée, et c\'est le <b>reste dû</b> qui s\'affiche.</p></section>';
     }
   } else {
-    h += '<p class="chapeau">Tout se passe sur l\'écran d\'accueil. Ni SMS, ni e-mail.</p>';
+    // **Sa question du 9 septembre :** « ni SMS ni e-mail, ça sous-entend
+    // quoi ? » — trois lectures, dont une FAUSSE : qu'Atlas ne saurait pas
+    // envoyer un devis par SMS. La phrase mêlait ce que LUI reçoit et ce que
+    // ses CLIENTS reçoivent. Elle ne parle plus que de lui.
+    h += '<p class="chapeau">Ces rappels s\'affichent sur votre écran d\'accueil, ' +
+      'quand vous ouvrez Atlas.</p>';
     if (v === "A") {
       h += blocFixes("absent");
       h += blocRappels("absent", true);

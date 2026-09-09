@@ -41,9 +41,18 @@ import {
  */
 export default function ListeTermines({
   lignes,
+  retours,
   moisCourant,
 }: {
   lignes: LigneAffichee[];
+  /**
+   * Combien de retours d'intervention l'entreprise porte — TOUS mois confondus.
+   *
+   * Sa règle du 8 septembre 2026 : *« il faut pouvoir les garder longtemps »*.
+   * Le compte ignore donc le mois affiché, exactement comme « À facturer »
+   * l'ignore déjà : un retour de 2024 compte toujours.
+   */
+  retours: number;
   /**
    * `AAAA-MM` du jour, calculé sur le SERVEUR.
    *
@@ -101,6 +110,42 @@ export default function ListeTermines({
         <Onglet repere="attente" actif={onglet === "attente"} onClick={() => setOnglet("attente")}>
           À facturer
         </Onglet>
+        {/* ─── LES RETOURS D'INTERVENTION — sa décision du 8 septembre 2026 ───
+            *« Dans la catégorie terminé il faut rajouter une sous-catégorie,
+            comme tu as fait, à côté de "à facturer" : mettre la sous-catégorie
+            retour d'intervention. On clique dessus et on arrive sur une page
+            où seront listés tous les retours par client. »*
+
+            **Ce n'est PAS un onglet comme les deux autres, et c'est voulu** :
+            ceux-là filtrent la liste en dessous, celui-ci ouvre une page. Il en
+            a la forme parce que c'est là qu'il le cherche ; il en diffère par
+            le geste, et le chevron d'une page ne se dessine pas ici — la page
+            porte déjà son retour.
+
+            **Il ne s'affiche QUE s'il y a des retours.** Un onglet qui ouvre
+            une liste vide s'apprend à ne plus être touché, et l'on perd le seul
+            endroit où ils vivent. */}
+        {retours > 0 && (
+          <Link
+            href="/termines/retours"
+            data-atlas="onglet-retours"
+            className="flex min-h-11 items-center gap-2 rounded-full px-[18px] text-[13px] no-underline"
+            style={{
+              backgroundColor: colors.card,
+              color: colors.inkSoft,
+              boxShadow: `inset 0 0 0 1px ${colors.line}`,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            Retours
+            <span
+              className="grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold"
+              style={{ backgroundColor: colors.or, color: colors.cream }}
+            >
+              {retours}
+            </span>
+          </Link>
+        )}
       </div>
 
       {onglet === "attente" ? (
@@ -311,7 +356,7 @@ function Onglet({
    * « À facturer » — et le jour où il le fera changer, elle rougira sur du code
    * juste (`CLAUDE.md` §5 bis). Un repère survit au mot.
    */
-  repere: "tout" | "attente";
+  repere: "tout" | "attente" | "retours";
   actif: boolean;
   onClick: () => void;
   children: React.ReactNode;

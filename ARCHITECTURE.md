@@ -25645,9 +25645,98 @@ bouton unique en aurait ouvert UNE et laissé croire que les trois étaient
 parties.
 
 ---
+## §299 — Le retour d'intervention : la première écriture rendue au salarié
+
+*Lot 2, codé le 8 septembre 2026 après trois maquettes et quatre arbitrages du
+patron. Migration 0080.*
+
+### Ce qu'il a tranché, et dans quel ordre
+
+| Sa phrase | Ce que ça décide |
+|---|---|
+| *« le salarié dépose photos et "c'est fini" sur les chantiers de sa journée »* | la brèche dans le modèle des rôles, et sa borne |
+| *« ça devrait plutôt se trouver dans la feuille de chantier »* | pas de ligne à part sur la journée |
+| *« qui d'ailleurs devrait s'appeler fiche d'intervention »* | le renommage |
+| *« le bandeau déroulant […] fais pas un truc trop gros »* | l'allure C : déplier DANS la fiche |
+| *« une sous-catégorie retour d'intervention […] listés par client […] un filtre »* | l'onglet de Terminés et sa page |
+| *« il faut pouvoir les garder longtemps »* | aucune purge, aucune fenêtre glissante |
+
+### La brèche, et pourquoi elle tient
+
+`docs/modele-des-roles.md` §E disait mot pour mot *« aucun droit d'écriture ne
+lui a été rouvert »*. Ce n'est plus vrai, et c'est délibéré. **Ce qui rend la
+brèche acceptable, c'est qu'elle est nommée** : `peutPoserUnRetour`, une
+fonction à elle, et non un `!== "salarie"` retourné quelque part.
+
+Trois gardes se cumulent dans `src/app/planning/retour-actions.ts` :
+
+| `exigerEcran(ctx, "/planning")` | le planning reste sa SEULE porte |
+| `peutPoserUnRetour(role)` | la permission nommée — celle qui bougera un jour |
+| `exigerChantierDansSaPortee` | « de SA journée », et c'est celle qui a manqué ailleurs |
+
+La troisième renvoie au défaut du 29 août 2026 : sept actions du planning
+laissaient un salarié resserré agir sur des chantiers qu'il ne voyait même pas.
+Le patron croyait avoir restreint ; il n'avait restreint que ce qui s'affiche.
+
+**Aucun montant ne traverse ce chemin, et c'est structurel** : la table n'a pas
+de colonne d'argent, et `tachesDuChantier` rend le devis sans ses prix — c'est
+le même chargement que la feuille, déjà ouverte au salarié.
+
+### Trois tables, et pourquoi pas une colonne
+
+Un retour porte une LISTE. Rangée en texte, elle se relirait pour compter
+« 2 sur 3 faites » — or c'est ce que le patron lit en premier. Et **les tâches
+sont recopiées du devis, jamais référencées** : le devis change, et un retour
+qui pointerait dessus raconterait un chantier qui n'a pas eu lieu. Même raison
+que les lignes d'un passage d'entretien (migration 0055).
+
+**Ce qui n'a pas été fait reste, à `faite = false`.** Ne garder que les cochées
+donnerait un chantier qui paraît complet — et c'est sur cette impression qu'une
+facture part pour un travail qui n'a pas eu lieu.
+
+### « Les garder longtemps » — et le piège des photos
+
+Rien dans la migration ne prévoit d'effacement : ni `deleted_at`, ni purge, ni
+fenêtre. Un retour disparaît **avec son chantier**, pas autrement.
+
+**Le piège était ailleurs.** Les photos d'un retour ne sont pas des copies : ce
+sont celles du chantier. `supprimerPhoto` met la clé de rangement en file de
+purge — effacer une photo depuis la pellicule aurait donc détruit le fichier que
+le retour montre encore, **des mois plus tard**, sur un écran que personne ne
+regardait ce jour-là. Le lien ne se serait jamais fait.
+
+`retours_intervention_photos` existe pour que `supprimerPhoto` puisse poser la
+question avant d'écrire dans `fichiers_a_purger`. La ligne disparaît quand même
+de la pellicule — c'est son geste, et il reste vrai ; c'est le FICHIER qui
+survit, parce qu'un autre écran en dépend.
+
+**C'est le même piège que la reprise des photos du lot 1, retourné.** Là-bas on
+recopie pour que deux dossiers soient indépendants ; ici on partage, et l'on
+protège. Les deux réponses sont justes parce que les deux questions diffèrent :
+une photo reprise appartient au nouveau chantier, une photo de retour appartient
+au retour.
+
+### Ce que je défendais et qu'il a corrigé
+
+Je défendais le retour posé **sous chaque chantier** dans Terminés, pour lire et
+facturer sur la même rangée. Il a choisi l'onglet à part, et sa raison valait
+mieux : **un retour se garde des années**. Sous les chantiers du mois, retrouver
+ce qu'on a fait chez quelqu'un en 2024 aurait demandé de remonter mois par mois.
+Rangés par client, les deux passages se lisent côte à côte.
+
+### Ce qui reste ouvert
+
+La carte d'un retour **ne mène nulle part** : le chantier s'ouvre sur sa
+facture, mais l'adresse dépend de son état et cette règle vit déjà dans
+`portesDuPlanning`. La recopier ferait la seconde vérité que `CLAUDE.md` §3
+interdit. Un faux lien aurait promis un geste qui ne se passe pas — c'est donc
+un bloc, pas une porte, jusqu'à ce que la règle soit nommée (`TODO.md`).
+
 ---
 
-## §299. LA BATTERIE EST UNE MACHINE À UN SEUL OCCUPANT — et elle le vérifie
+---
+
+## §300. LA BATTERIE EST UNE MACHINE À UN SEUL OCCUPANT — et elle le vérifie
 
 *Posé le 8 septembre 2026, sur sa demande, après une heure perdue devant lui.*
 

@@ -58,12 +58,19 @@
 <body>
 <main>
 <h1 id="repartir-dun-client-et-finir-un-chantier-avec-une-preuve">Repartir d'un client, et finir un chantier avec une preuve</h1>
-<p><em>Lot ouvert le 8 septembre 2026. Ce document est à jour au <strong>stade des maquettes</strong> : rien n'est codé dans <code>src/</code>.</em></p>
+<p><em>Lot ouvert le 8 septembre 2026. Ce document est à jour au <strong>stade du code</strong> : les lots 1 et 2 sont écrits, éprouvés et livrés. Le lot 3 reste à ouvrir.</em></p>
 <p><em>Sa page consultable vit dans <code>appli/</code>, jamais dans <code>docs/</code> : le site publié ne sert que <code>appli/</code>. Posée ailleurs, elle n'a aucune adresse — payé le 8 septembre, un lien mort donné au patron. Régénérer avec <code>node scripts/md-en-page.mjs docs/lot-repartir-d-un-client.md appli/lot-repartir-d-un-client.html</code>.</em></p>
 <hr>
-<h2 id="ce-qui-a-été-fait-en-une-ligne">Ce qui a été fait, en une ligne</h2>
+<h2 id="ce-qui-a-été-fait-en-six-lignes">Ce qui a été fait, en six lignes</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p>Le brief a été lu et confronté au code <strong>avant</strong> d'écrire quoi que ce soit. Deux questions ont été posées au patron, il les a tranchées, et <strong>la première proposition du lot 1 a dû être corrigée</strong> : elle demandait exactement ce qu'il avait écarté le 17 août. La planche des cinq propositions est publiée.</p>
+<ol>
+<li>Le brief a été lu et confronté au code <strong>avant</strong> d'écrire quoi que ce soit — et <strong>la première proposition du lot 1 a dû être refusée</strong> : elle demandait exactement ce qu'il avait écarté le 17 août.</li>
+<li>Depuis la fiche d'un client : <strong>« Refaire »</strong> recharge sa dernière prestation <strong>aux tarifs d'aujourd'hui</strong>, <strong>« Autre chantier »</strong> rouvre sa vraie fiche préremplie, avec ses anciennes photos à cocher.</li>
+<li>La feuille de chantier s'appelle désormais <strong>Fiche d'intervention</strong>.</li>
+<li>Dedans, un <strong>bandeau déroulant « Fin de chantier »</strong> : le salarié coche ce qu'il a fait, ajoute des photos, écrit un mot, appuie sur « C'est fini ».</li>
+<li>Ce qu'il pose remonte dans <strong>Terminés → Retours</strong>, listé <strong>par client</strong>, avec un filtre en haut — et <strong>ça se garde longtemps</strong>.</li>
+<li><strong>Sa confirmation ne bloque rien</strong> : elle vaut preuve en plus, jamais permission.</li>
+</ol>
 <hr>
 <h2 id="1-les-deux-questions-posées-avant-de-coder-et-ses-réponses">1. Les deux questions posées avant de coder, et ses réponses</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -245,7 +252,7 @@
 </tr>
 <tr>
 <td>la batterie complète</td>
-<td><strong>non jouée, et elle n'a pas lieu d'être</strong> : aucun fichier de <code>src/</code> n'est touché</td>
+<td><strong>au stade des maquettes, non jouée et sans objet</strong> : aucun fichier de <code>src/</code> n'était touché. Les chiffres du code sont au §11</td>
 </tr>
 </tbody></table></div>
 <h3 id="deux-défauts-trouvés-sur-la-capture-et-par-aucune-mesure">Deux défauts trouvés sur la CAPTURE, et par aucune mesure</h3>
@@ -267,28 +274,270 @@
 <h3 id="les-anciennes-photos-et-le-point-quil-navait-pas-dit">Les anciennes photos, et le point qu'il n'avait pas dit</h3>
 <p>Son idée est retenue telle quelle : les photos de la dernière fois s'affichent éteintes, non cochées elles ne partent nulle part, cochées elles sont reprises.</p>
 <p><strong>Ce qu'il faut ajouter, et qui n'est pas un détail :</strong> une photo cochée doit être <strong>RECOPIÉE</strong> sur le nouveau chantier, jamais partagée avec l'ancien. <code>photos.chantier_id</code> rattache une photo à un seul chantier (<code>src/server/db/schema.ts:809</code>) : partagée, elle disparaîtrait de la fiche d'intervention du salarié le jour où l'ancien chantier est effacé.</p>
-<h3 id="-refaire---la-seule-chose-qui-reste-à-trancher">« Refaire » : la seule chose qui reste à trancher</h3>
-<p><strong>Non, pas l'ancien devis tel quel</strong> — ce serait facturer aux prix de l'an dernier, et c'est son argent.</p>
+<h3 id="-refaire---tranché--aux-tarifs-daujourdhui">« Refaire » : tranché — <strong>aux tarifs d'aujourd'hui</strong></h3>
+<p><strong>Non, pas l'ancien devis tel quel</strong> — ce serait facturer aux prix de l'an dernier, et c'est son argent. Sur l'exemple de la planche, l'identique coûtait <strong>28 € perdus sans les voir</strong> sur la haie.</p>
+<h4 id="ce-que-je-lui-ai-dit-et-qui-était-faux">CE QUE JE LUI AI DIT ET QUI ÉTAIT FAUX</h4>
+<p>J'ai écrit qu'une ligne <strong>dont le tarif a disparu reviendrait « à chiffrer »</strong>. <strong>C'est faux, et il faut le lire avant de croire le reste.</strong></p>
+<p><code>lignes_prix</code> ne porte <strong>aucun renvoi vers un tarif</strong> : rien, en base, ne distingue « son tarif a été supprimé » de « ce prix a été mis à la main ». Or il en met à la main constamment. Rendre ces lignes vides aurait effacé des prix justes, et l'aurait obligé à re-chiffrer un devis qui n'avait aucun problème.</p>
+<p><strong>Ce qui a été codé à la place</strong> (<code>src/lib/reprise-des-prix.ts</code>) — quatre sorts, et un seul efface quelque chose :</p>
 <div class="tablewrap"><table><thead><tr>
-<th></th>
-<th>Ce que ça donne</th>
-<th>Ce que ça coûte</th>
+<th>Le sort</th>
+<th>Quand</th>
+<th>Ce qui arrive au prix</th>
 </tr></thead><tbody>
 <tr>
-<td><strong>aux tarifs d'aujourd'hui</strong> <em>(défendu)</em></td>
-<td>les lignes reviennent, les prix se refont sur sa grille actuelle ; l'ancien prix apparaît barré quand il a bougé ; une ligne dont le tarif a disparu revient <strong>« à chiffrer »</strong></td>
-<td>une ligne à chiffrer avant d'envoyer</td>
+<td><code>retarife</code></td>
+<td>un tarif du jour porte le même intitulé, à un autre prix</td>
+<td>il prend le prix d'aujourd'hui, <strong>l'ancien s'affiche barré</strong></td>
 </tr>
 <tr>
-<td><strong>à l'identique</strong></td>
-<td>l'ancien devis revient tel quel</td>
-<td>sur l'exemple de la planche : <strong>28 € perdus sans les voir</strong> sur la haie, et 120 € facturés sur un tarif supprimé</td>
+<td><code>inchange</code></td>
+<td>le tarif existe, au même prix</td>
+<td>rien</td>
+</tr>
+<tr>
+<td><code>prix-garde</code></td>
+<td><strong>aucun tarif ne correspond</strong></td>
+<td><strong>le prix est gardé</strong>, et signalé</td>
+</tr>
+<tr>
+<td><code>attend-son-prix</code></td>
+<td>la ligne était déjà <code>aChiffrer</code></td>
+<td>elle le reste</td>
 </tr>
 </tbody></table></div>
-<p>La colonne <code>aChiffrer</code> existe déjà en base (<code>lignes_devis</code>, migration 0070) : une ligne sait dire qu'elle n'est pas chiffrée, et le devis ne part pas tant qu'elle attend.</p>
+<p>La reconnaissance des intitulés réutilise <code>memeMot</code> (<code>src/lib/mots-catalogue.ts</code>) plutôt qu'une seconde normalisation — deux façons de comparer deux mots finiraient par diverger (<code>CLAUDE.md</code> §3).</p>
 <p><strong>Planche :</strong> <code>https://florianmarrins0978-svg.github.io/Atlas-app/repartir-de-son-chantier.html</code></p>
 <hr>
-<h2 id="8-ce-qui-reste-ouvert-et-qui-peut-le-trancher">8. Ce qui reste ouvert, et qui peut le trancher</h2>
+<h2 id="8-le-lot-1-codé---refaire--et--autre-chantier-">8. Le lot 1, codé — « Refaire » et « Autre chantier »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui a été écrit</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>la règle pure de reprise des prix, sans base</td>
+<td><code>src/lib/reprise-des-prix.ts</code></td>
+</tr>
+<tr>
+<td>les deux boutons sur la fiche du client</td>
+<td><code>src/app/clients/[id]/RepartirDeCeClient.tsx</code></td>
+</tr>
+<tr>
+<td>« Refaire » : recopie le chantier, ses lignes et ses photos</td>
+<td><code>src/app/clients/[id]/actions.ts</code></td>
+</tr>
+<tr>
+<td>« Autre chantier » : rouvre la <strong>vraie</strong> fiche, préremplie</td>
+<td><code>src/app/chantiers/nouveau/page.tsx</code> (lit <code>?client=&lt;id&gt;</code>)</td>
+</tr>
+<tr>
+<td>les anciennes photos, éteintes et cochables</td>
+<td><code>src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx</code></td>
+</tr>
+<tr>
+<td>la recopie des photos, <strong>fichier compris</strong></td>
+<td><code>src/server/repositories/photos.ts</code> — <code>recopierPhotos</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Deux choses que le code a dû trancher, et qui ne sont pas des détails :</strong></p>
+<ol>
+<li><strong>Quand on part d'un client connu, aucun rapprochement n'est joué.</strong> <code>CreerChantierInput.clientId</code> court-circuite <code>trouverOuCreerClient</code> : rejouer la reconnaissance sur un client qu'on vient de désigner, c'est lui offrir une chance de se tromper pour rien.</li>
+<li><strong>Les lignes de prix se réinsèrent en série</strong>, pas en parallèle : leur champ <code>ordre</code> est ce qui tient l'ordre du devis, et des insertions concurrentes le rendraient au hasard.</li>
+</ol>
+<hr>
+<h2 id="9-le-lot-2-codé--la-fiche-dintervention-et-ses-retours">9. Le lot 2, codé — la fiche d'intervention et ses retours</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="ce-quil-a-demandé-ligne-par-ligne">Ce qu'il a demandé, ligne par ligne</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Sa demande</th>
+<th>Verdict</th>
+<th>Le fichier</th>
+</tr></thead><tbody>
+<tr>
+<td>renommer la feuille en <strong>Fiche d'intervention</strong></td>
+<td><strong>fait</strong></td>
+<td><code>src/app/planning/PlanningClient.tsx</code></td>
+</tr>
+<tr>
+<td>un <strong>bandeau déroulant</strong> dedans : cocher, photo, écrire</td>
+<td><strong>fait</strong></td>
+<td><code>src/app/planning/FinDeChantier.tsx</code></td>
+</tr>
+<tr>
+<td>une sous-catégorie <strong>« Retours »</strong> à côté d'« À facturer »</td>
+<td><strong>fait</strong></td>
+<td><code>src/app/termines/ListeTermines.tsx</code></td>
+</tr>
+<tr>
+<td>une page qui les liste <strong>par client</strong>, filtre en haut</td>
+<td><strong>fait</strong></td>
+<td><code>src/app/termines/retours/ListeDesRetours.tsx</code></td>
+</tr>
+<tr>
+<td><strong>« il faut pouvoir les garder longtemps »</strong></td>
+<td><strong>fait</strong></td>
+<td>aucune fenêtre de temps, et la photo est protégée de la purge (§10)</td>
+</tr>
+<tr>
+<td>le patron décide si la preuve est demandée, et si la photo est exigée</td>
+<td><strong>fait</strong></td>
+<td><code>src/app/reglages/equipe/FinDeChantierReglage.tsx</code></td>
+</tr>
+</tbody></table></div>
+<h3 id="-que-le-contrôle-le-prouve---trois-gardes-pas-une">« Que le contrôle le prouve » — trois gardes, pas une</h3>
+<p>Le salarié pose un retour sur les chantiers de <strong>sa journée</strong>, et rien d'autre. Dans <code>src/app/planning/retour-actions.ts</code>, trois gardes <strong>cumulatives</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>La garde</th>
+<th>Ce qu'elle arrête</th>
+</tr></thead><tbody>
+<tr>
+<td><code>exigerEcran(ctx, "/planning")</code></td>
+<td>un rôle qui n'a pas cet écran</td>
+</tr>
+<tr>
+<td><code>peutPoserUnRetour(role)</code></td>
+<td>un rôle qui n'a pas le droit d'écrire</td>
+</tr>
+<tr>
+<td><code>exigerChantierDansSaPortee</code></td>
+<td><strong>un chantier qui n'est pas le sien</strong></td>
+</tr>
+</tbody></table></div>
+<p>Et <code>scripts/test-acces-roles.ts</code> vérifie que cette écriture n'ouvre <strong>rien d'autre</strong> : ni les montants, ni le planning complet, ni la facture, ni <code>/termines</code>, ni <code>/chantiers/…/devis-complet</code>, ni <code>/chantiers/…/facture</code>.</p>
+<h3 id="trois-décisions-décran-et-leur-raison">Trois décisions d'écran, et leur raison</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui a été fait</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>les deux réglages partent <strong>éteints</strong></td>
+<td>les allumer d'office aurait bloqué, dès la mise à jour, un salarié dont le téléphone est mort à 18 h — sur un chantier, sans personne à qui demander</td>
+</tr>
+<tr>
+<td>le second interrupteur <strong>disparaît</strong> quand le premier est éteint</td>
+<td>un interrupteur grisé se touche quand même, et son silence se lit comme une panne</td>
+</tr>
+<tr>
+<td>le refus s'affiche <strong>avant</strong> l'appui, pas après</td>
+<td>« il manque une photo » sur un bouton déjà pressé se lit comme une panne du produit</td>
+</tr>
+</tbody></table></div>
+<h3 id="son-raisonnement-a-battu-le-mien">SON RAISONNEMENT A BATTU LE MIEN</h3>
+<blockquote><em>« vu que les chantiers, une fois la date d'intervention passée, finissent dans terminé, je risque de pas avoir le temps de tout voir ? »</em></blockquote>
+<p>Je proposais de garder les retours <strong>visibles dans le planning</strong>. C'était faux : un chantier terminé quitte le planning, et le retour serait parti avec lui. Sa seconde option — <strong>une catégorie à part</strong> — est celle qui a été codée, et c'est la seule qui tienne dans le temps.</p>
+<hr>
+<h2 id="10-ce-que-personne-navait-vu--la-photo-qui-disparaît">10. CE QUE PERSONNE N'AVAIT VU : la photo qui disparaît</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Une photo supprimée d'un chantier partait en <strong>file de purge</strong> : le fichier est effacé du rangement, des mois plus tard, sur un écran que personne ne regardait ce jour-là.</p>
+<p>Une photo posée sur un retour d'intervention est une <strong>preuve</strong>. La purger, c'est vider la preuve de son contenu — et le défaut ne se verrait qu'au moment où il compte.</p>
+<p><code>supprimerPhoto</code> demande donc d'abord <code>photoTenueParUnRetour</code> : la ligne est marquée supprimée, mais <strong>la clé n'entre pas dans la file</strong> si un retour la tient. Éprouvé <strong>dans les deux sens</strong> — une photo de retour ne part pas, <strong>et une photo ordinaire part bien</strong>. Sans ce second cas, une garde qui retiendrait tout passerait au vert.</p>
+<p><strong>Le même piège existait à l'autre bout</strong>, pour « Autre chantier » : reprendre une ancienne photo en <strong>partageant son fichier</strong> l'aurait fait disparaître du nouveau chantier le jour où l'ancien est nettoyé. <code>recopierPhotos</code> relit l'objet et le <strong>réécrit</strong> : les deux fichiers sont indépendants.</p>
+<hr>
+<h2 id="11-les-chiffres">11. Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Suites propres à ces deux lots :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>La suite</th>
+<th>Ce qu'elle tient</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>scripts/test-retour-intervention.ts</code></td>
+<td>la règle pure : ce qui manque, ce qui autorise « C'est fini », le rangement par client, les années</td>
+<td><strong>21 contrôles, 0 échec</strong></td>
+</tr>
+<tr>
+<td><code>scripts/test-retour-intervention-db.ts</code></td>
+<td>isolation entre entreprises, un seul retour par chantier, <strong>la photo protégée dans les deux sens</strong></td>
+<td><strong>6 contrôles, 0 échec</strong></td>
+</tr>
+<tr>
+<td><code>scripts/test-reprise-des-prix.ts</code></td>
+<td>reprendre un devis aux tarifs du jour</td>
+<td><strong>16 contrôles, 0 échec</strong></td>
+</tr>
+<tr>
+<td><code>scripts/test-acces-roles.ts</code></td>
+<td>le salarié pose un retour, <strong>et rien d'autre</strong></td>
+<td><strong>3 contrôles neufs, 0 échec</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Et les contrôles savent rougir</strong> : la règle de reprise des prix a été cassée volontairement deux fois pour le vérifier, et la garde de purge est éprouvée par un cas qui <strong>doit</strong> partir en purge.</p>
+<p><strong>La batterie complète</strong>, jouée en entier le 9 septembre 2026 :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Types</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Lint</td>
+<td><strong>vert</strong> — 0 erreur</td>
+</tr>
+<tr>
+<td>Atelier</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Construction</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td><strong>vert</strong> — 8 fichiers vérifiés</td>
+</tr>
+<tr>
+<td>Fournisseurs d'IA</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td><strong>314 / 325</strong></td>
+</tr>
+<tr>
+<td>Données de démonstration</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>115 / 133</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>vert</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun des rouges n'appartient à ce lot</strong>, et c'est vérifiable : les onze rouges base sont d'infrastructure (des suites qui ouvrent des ports ou relancent des serveurs, et se gênent entre elles) ou d'un lot voisin déjà sur <code>main</code>. Ils sont nommés un par un dans <code>TODO.md</code>, avec ce qui reste à en faire.</p>
+<h3 id="trois-défauts-de-ce-lot-que-la-batterie-a-attrapés">TROIS DÉFAUTS DE CE LOT, QUE LA BATTERIE A ATTRAPÉS</h3>
+<p>Aucun n'aurait été vu à la relecture, et les trois sont corrigés :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le défaut</th>
+<th>Ce qu'il aurait coûté</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>la sauvegarde RGPD ignorait les trois tables des retours</strong></td>
+<td>un client qui demande ses données n'aurait pas reçu ce qu'on a constaté chez lui ; une base restaurée aurait rendu des chantiers sans preuve</td>
+</tr>
+<tr>
+<td><code>/termines/retours</code> manquait aux adresses refusées au commercial</td>
+<td>l'adresse héritait bien du refus, mais <strong>en silence</strong> — le jour où l'on pose sous <code>/termines</code> une page qui ne doit PAS l'hériter, rien ne le dirait</td>
+</tr>
+<tr>
+<td>ma suite de bout en bout réclamait « Refaire » sur un chantier <strong>pas terminé</strong></td>
+<td>elle éprouvait un cas que l'application ne produit pas</td>
+</tr>
+</tbody></table></div>
+<h3 id="et-deux-défauts-qui-nétaient-pas-de-ce-lot">ET DEUX DÉFAUTS QUI N'ÉTAIENT PAS DE CE LOT</h3>
+<p>Corrigés quand même, parce qu'ils font perdre du temps à toutes les sessions :</p>
+<ol>
+<li><strong>L'atelier ne migrait jamais une base déjà existante.</strong> Une base créée avant une migration neuve restait périmée pour toujours : la batterie annonçait <strong>222/325</strong>, et une centaine de suites accusaient le code sur une colonne jamais posée. Le défaut se déguise en régression du lot en cours, et il se déplace — le rang de l'atelier change d'une session à l'autre. Confronté à la base fautive, le correctif a rattrapé <strong>cinq migrations de retard</strong>.</li>
+<li><strong>Une suite réclamait le mot que vous aviez fait enlever</strong> : <code>test-fiche-chantier-e2e</code> exigeait « compte rendu de passage » alors que la page du client s'appelle « retour d'intervention » depuis un renommage que vous aviez demandé. Deux rouges permanents sur du code juste.</li>
+</ol>
+<hr>
+<h2 id="12-ce-qui-reste-ouvert-et-qui-peut-le-trancher">12. Ce qui reste ouvert, et qui peut le trancher</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
 <th>Ce qui reste</th>
@@ -299,20 +548,65 @@
 <td><strong>tranché le 8 septembre : E</strong></td>
 </tr>
 <tr>
-<td><strong>« Refaire » : tarifs d'aujourd'hui ou à l'identique</strong></td>
-<td><strong>lui</strong>, sur la planche du §7</td>
+<td>~~« Refaire » : tarifs d'aujourd'hui ou à l'identique~~</td>
+<td><strong>tranché : aux tarifs d'aujourd'hui</strong></td>
 </tr>
 <tr>
-<td>quelle proposition pour la partie 1 — A, B ou C</td>
+<td><strong>quelle proposition pour la partie 1 — A, B ou C</strong> (comment Atlas dit sous quel client il a rangé)</td>
 <td><strong>lui</strong>, sur la première planche</td>
 </tr>
 <tr>
-<td>le compte rendu du lot 3 : rattacher <code>passages_entretien</code> au chantier, ou page propre</td>
-<td><strong>nous</strong>, au lot 3, une fois le lot 2 posé</td>
+<td><strong>la carte d'un retour ne mène nulle part</strong> : elle montre, elle n'ouvre pas — pour ne pas dupliquer les règles d'accès du planning</td>
+<td><strong>lui</strong>, s'il veut y entrer</td>
 </tr>
 <tr>
-<td>le lot 2 (fiche d'intervention) et le lot 3 (ce que le client reçoit)</td>
-<td><strong>nous</strong>, dans cet ordre, après son choix</td>
+<td><strong>aucune suite de bout en bout ne joue le chemin du salarié</strong> : le jeu de démonstration n'a pas de compte salarié. C'est exactement le défaut du 28 août (<code>CLAUDE.md</code> §5 quater)</td>
+<td><strong>nous</strong> — il faut un salarié dans le jeu de démonstration</td>
+</tr>
+<tr>
+<td>le compte rendu du lot 3 : rattacher <code>passages_entretien</code> au chantier, ou page propre</td>
+<td><strong>nous</strong>, au lot 3</td>
+</tr>
+<tr>
+<td>le lot 3 — ce que le client reçoit</td>
+<td><strong>lui</strong>, il l'a reporté</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="13-les-planches-toutes-en-ligne">13. Les planches, toutes en ligne</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sous <code>https://florianmarrins0978-svg.github.io/Atlas-app/</code> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>La planche</th>
+<th>Ce qu'elle montre</th>
+</tr></thead><tbody>
+<tr>
+<td><code>le-client-quon-connait.html</code></td>
+<td>comment Atlas dit sous quel client il a rangé — <strong>A, B ou C, sans réponse</strong></td>
+</tr>
+<tr>
+<td><code>repartir-de-son-chantier.html</code></td>
+<td>« Autre chantier » et « Refaire »</td>
+</tr>
+<tr>
+<td><code>fiche-d-intervention.html</code></td>
+<td>la feuille renommée, et où vont les retours</td>
+</tr>
+<tr>
+<td><code>fin-de-chantier.html</code></td>
+<td>trois façons de poser la fin de chantier</td>
+</tr>
+<tr>
+<td><code>termines-et-les-retours.html</code></td>
+<td>la vraie page Terminés, photographiée, et trois propositions</td>
+</tr>
+<tr>
+<td><code>parcours-fin-de-chantier.html</code></td>
+<td>le parcours cliquable, du salarié au patron</td>
+</tr>
+<tr>
+<td><code>retours-d-intervention.html</code></td>
+<td>la sous-catégorie et sa page, filtres compris</td>
 </tr>
 </tbody></table></div>
 <hr>

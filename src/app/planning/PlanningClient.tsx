@@ -55,6 +55,7 @@ import {
   type QuandChantier,
 } from "@/lib/planning-jour";
 import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
+import FinDeChantier from "./FinDeChantier";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import PortesDuChantier from "./PortesDuChantier";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
@@ -2707,7 +2708,12 @@ function FeuilleChantier({
         className="m-0 text-center text-[10.5px] font-bold uppercase leading-none"
         style={{ letterSpacing: "0.24em", color: colors.or }}
       >
-        Feuille de chantier
+        {/* **« Fiche d'intervention » depuis le 8 septembre 2026** — sa demande,
+            capture à l'appui : *« qui d'ailleurs devrait s'appeler fiche
+            d'intervention, change le nom »*. Le mot a changé le jour où la
+            feuille a cessé d'être un document à lire pour devenir ce que le
+            salarié REMPLIT. */}
+        Fiche d&apos;intervention
       </p>
       <p
         className="mb-0 mt-2.5 text-center"
@@ -2767,6 +2773,12 @@ function FeuilleChantier({
           ))
         )}
       </div>
+
+      {/* **LA FIN DE CHANTIER — sa décision du 8 septembre 2026.** Le bandeau
+          se déplie ICI, sous les lignes du devis : il garde sous les yeux ce
+          qu'il y avait à faire pendant qu'il coche. Une feuille qui monte
+          l'aurait recouverte, et il aurait coché de mémoire. */}
+      <FinDeChantier chantierId={chantier.id} />
 
       {/* **Le bouton n'existe QUE s'il y a un devis à imprimer.** Sans devis, la
           route répond 404 : un bouton qui ouvre une erreur est pire qu'un bouton

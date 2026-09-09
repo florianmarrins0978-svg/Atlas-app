@@ -8,6 +8,100 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-08
 
+### Trois skills de `superpowers` entrent, onze restent dehors
+
+Sa demande : *« gh repo clone obra/superpowers »*, puis *« ne télécharge que ce
+qui te semble bien »*. Le dépôt est cloné **hors** de l'arbre d'Atlas ; trois
+skills sur quatorze entrent dans `.claude/skills/`.
+
+| | Ce qu'il apporte |
+|---|---|
+| `systematic-debugging` | la racine avant le correctif — sa règle d'or du 7 septembre, en plus détaillé : les quatre phases, et la façon de reproduire un défaut avant d'y toucher |
+| `verification-before-completion` | aucune annonce sans preuve fraîche, avec une table de ce qui compte comme preuve — ce qu'`AGENTS.md` exige déjà, mieux outillé |
+| `using-git-worktrees` | un dossier de travail par session, qu'il a validé ; il détecte d'abord s'il est DÉJÀ isolé, ce qui évite d'empiler les arbres |
+
+**Chacun porte une note en français** disant ce qu'il fait, d'où il vient, et
+que **`CLAUDE.md` prime en cas de désaccord** : ces textes viennent de
+l'extérieur, les règles du dépôt ont été payées ici une par une.
+
+**CE QUI EST REFUSÉ, ET C'EST LE POINT.** Le hook `SessionStart` de
+`using-superpowers` s'injecte à **chaque** session avec un texte impérieux —
+*« vous n'avez pas le choix, ce n'est pas négociable, vous ne pouvez pas
+rationaliser pour y échapper »*. Deux autorités qui se disputent une session :
+la plus bruyante gagne, et ce ne serait pas la sienne. Aucun hook n'est installé.
+
+Les onze autres font doublon (revue de code, plans, écriture de skills) ou vont
+à contresens de ses usages : `brainstorming` impose une phase d'exploration
+avant tout travail créatif là où le dépôt impose la **maquette d'abord**, et
+l'orchestration multi-agents arrive le jour où ses sessions parallèles ont fait
+tomber Claude Code sur son poste.
+
+**Et la poussée a servi de démonstration au troisième.** La fusion de `main` a
+été refusée : l'arbre partagé portait cinquante et un fichiers non enregistrés
+de sessions voisines. Elle a été faite dans un **dossier isolé**, poussée de là,
+puis le dossier a été retiré — sans toucher une ligne de leur travail.
+
+### Le retour d'intervention — lot 2
+
+La feuille de chantier s'appelle **Fiche d'intervention**, et porte le bandeau
+« Fin de chantier » : le salarié coche ce qu'il a fait, photographie, écrit s'il
+en a besoin, et appuie. Sa décision, prise sur trois maquettes.
+
+**La première écriture rendue au salarié depuis que le modèle des rôles a été
+figé** (30 août). Elle est nommée — `peutPoserUnRetour` — et bornée par trois
+gardes cumulées, dont « le chantier de SA journée ». Aucun montant ne traverse
+ce chemin : la table n'a pas de colonne d'argent.
+
+**Chez le patron** : un onglet « Retours » dans Terminés, et une page rangée par
+client, avec recherche par nom et pastilles d'années. Plus deux interrupteurs
+dans Réglages → Équipe — *« ça sera au patron de décider »* —, **éteints par
+défaut** : les allumer d'office bloquerait un salarié dont le téléphone est mort
+à 18 h.
+
+**Le piège tenu, et il était différé de plusieurs mois** : une photo montrée par
+un retour ne part plus à la file de purge. Sans cela, effacer la photo depuis la
+pellicule du chantier aurait détruit le fichier que le retour montre encore — et
+personne n'aurait fait le lien. La suite base l'éprouve dans les deux sens :
+celle du retour reste, une photo ordinaire s'en va (`ARCHITECTURE.md` §299).
+
+**Ce que je défendais et qu'il a corrigé** : je voulais le retour sous chaque
+chantier, pour lire et facturer d'un seul geste. Il a choisi l'onglet à part, et
+sa raison valait mieux — un retour se garde des années, et sous les chantiers du
+mois il aurait fallu remonter mois par mois.
+
+**Trois défauts que la batterie a attrapés, et qu'aucune relecture n'aurait
+vus :**
+
+| Le défaut | Ce qu'il aurait coûté |
+|---|---|
+| la **sauvegarde RGPD** ignorait les trois tables des retours | un client qui demande ses données n'aurait pas reçu ce qu'on a constaté chez lui — et une base restaurée aurait rendu des chantiers sans preuve |
+| `/termines/retours` manquait aux adresses **refusées au commercial** | l'adresse héritait bien du refus de `/termines`, mais **en silence** : le jour où l'on pose sous `/termines` une page qui ne doit PAS l'hériter, rien ne le dirait |
+| ma suite de bout en bout réclamait « Refaire » sur un chantier **pas terminé** | elle éprouvait un cas que l'application ne produit pas : la fiche ne connaît « la dernière fois » que d'un chantier terminé, et c'est voulu depuis le 3 septembre |
+
+### L'atelier migrait la base neuve, jamais celle qui existait déjà
+
+**Deux batteries perdues pour le voir, le 8 septembre 2026 au soir.** Une base
+d'atelier créée avant une migration neuve restait périmée pour toujours :
+`preparer-atelier.ts` rendait la main sur un « ✅ en place » sans rien migrer.
+La batterie annonçait alors **222/325**, et une centaine de suites accusaient le
+code sur un `column "retour_demande" does not exist` qui ne venait que d'une
+colonne jamais posée.
+
+**Le défaut se déguise en régression du lot en cours, et il se déplace** : le
+rang de l'atelier change d'une session à l'autre, donc une batterie verte le
+matin rougit l'après-midi sans qu'une ligne ait bougé. Confronté à la base
+fautive, le correctif a rattrapé **cinq migrations de retard**.
+
+Migrer est idempotent (`_migrations` retient ce qui est passé) et ne touche
+aucune donnée : il n'y avait rien à protéger en s'abstenant.
+
+### Une suite réclamait le mot que le patron avait fait enlever
+
+`test-fiche-chantier-e2e` exigeait « compte rendu de passage » à deux endroits,
+alors que la page du client s'appelle **retour d'intervention** depuis
+`dc4449dc` — un renommage qu'il a demandé. Deux rouges permanents sur du code
+juste, exactement le §5 bis de `CLAUDE.md` : **on adapte le contrôle, on ne
+remet pas le libellé.**
 ### Prévenir ses clients quand l'IBAN change, aux trois endroits
 
 Suite directe de la correction de racine du même jour : une facture prend
