@@ -22,7 +22,7 @@ import { ADRESSE } from "./_adresse";
 // | 1 | la ligne existe, et sa cible fait 44 px — le mot est petit, pas le bouton |
 // | 2 | UN appui ne déconnecte pas : c'est la mégarde qu'on refuse |
 // | 3 | « Annuler » referme sans rien casser |
-// | 4 | confirmer mène à l'écran de connexion, et le cookie est bien mort |
+// | 4 | confirmer mène dehors, et le cookie est bien mort |
 // | 5 | **Face ID reste posé** — c'est ce qui sépare ce geste de « partout » |
 //
 // ─── LE CAS 5 POSE SON PROPRE TÉMOIN, ET CE N'EST PAS DU ZÈLE ───────────────
@@ -80,15 +80,32 @@ async function idDuPatron(): Promise<string> {
   return rows[0].id;
 }
 
+/**
+ * **DEUX SESSIONS POUR QUATRE CAS, ET C'EST UNE CORRECTION.**
+ *
+ * La première version se connectait au début de chaque cas — quatre fois de
+ * suite avec le même compte. Le limiteur de connexion refuse la quatrième, et
+ * la suite rougissait alors sur « Timeout waiting for navigation to / » : un
+ * message qui accuse la connexion d'Atlas alors qu'elle fonctionne exactement
+ * comme prévu. Elle passait dans la batterie complète, où Redis venait d'être
+ * vidé, et échouait rejouée seule — le pire des deux, puisqu'on ne peut plus la
+ * jouer pour diagnostiquer.
+ *
+ * Une session sert donc les trois cas qui ne déconnectent pas, une seconde le
+ * cas qui déconnecte. C'est aussi la séquence du patron : il ne se reconnecte
+ * pas entre deux gestes.
+ */
 async function main() {
   const navigateur = await lancerNavigateur();
   const utilisateurId = await idDuPatron();
 
+  // ── Session 1 : les trois cas qui laissent la session ouverte ────────────
+  const contexte = await navigateur.newContext({ ...ECRAN_DU_PATRON });
+  const page = await contexte.newPage();
+  await connecter(page);
+
   // ── 1 · La ligne se trouve, et elle se touche ────────────────────────────
   await test("La sortie est au bas des Réglages, et sa cible fait au moins 44 px", async () => {
-    const contexte = await navigateur.newContext({ ...ECRAN_DU_PATRON });
-    const page = await contexte.newPage();
-    await connecter(page);
     await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
 
     const sortie = page.locator('[data-atlas="se-deconnecter"]');
@@ -114,16 +131,11 @@ async function main() {
       return s.getBoundingClientRect().top > derniere.getBoundingClientRect().top;
     });
     assert.equal(apres, true, "la sortie doit venir après la dernière rubrique");
-    await contexte.close();
   });
 
   // ── 2 · Un seul appui ne déconnecte pas ──────────────────────────────────
   await test("Un seul appui ouvre la feuille et ne déconnecte personne", async () => {
-    const contexte = await navigateur.newContext({ ...ECRAN_DU_PATRON });
-    const page = await contexte.newPage();
-    await connecter(page);
     await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
-
     await page.click('[data-atlas="se-deconnecter"]');
     await page.locator('[data-atlas="confirmer-deconnexion"]').waitFor({ state: "visible" });
 
@@ -135,16 +147,11 @@ async function main() {
     // Et la session tient toujours : un écran gardé s'ouvre encore.
     await page.goto(`${BASE}/reglages/compte`, { waitUntil: "networkidle" });
     assert.equal(new URL(page.url()).pathname, "/reglages/compte", "la session a été fermée trop tôt");
-    await contexte.close();
   });
 
   // ── 3 · « Annuler » ne casse rien ────────────────────────────────────────
   await test("« Annuler » referme la feuille et laisse la session ouverte", async () => {
-    const contexte = await navigateur.newContext({ ...ECRAN_DU_PATRON });
-    const page = await contexte.newPage();
-    await connecter(page);
     await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
-
     await page.click('[data-atlas="se-deconnecter"]');
     await page.locator('[data-atlas="confirmer-deconnexion"]').waitFor({ state: "visible" });
     await page.getByRole("button", { name: "Annuler" }).click();
@@ -152,11 +159,11 @@ async function main() {
 
     await page.goto(`${BASE}/reglages/compte`, { waitUntil: "networkidle" });
     assert.equal(new URL(page.url()).pathname, "/reglages/compte", "« Annuler » a quand même déconnecté");
-    await contexte.close();
   });
+  await contexte.close();
 
   // ── 4 et 5 · Le geste complet, et ce qu'il laisse derrière lui ───────────
-  await test("Confirmer ramène à l'écran de connexion, et Face ID reste posé", async () => {
+  await test("Confirmer ferme bien la session, et Face ID reste posé", async () => {
     // **Le témoin est posé AVANT**, et retiré quoi qu'il arrive : sans lui, le
     // cas 5 comparerait zéro à zéro.
     const identifiant = `temoin-deconnexion-${Date.now()}`;
@@ -167,23 +174,35 @@ async function main() {
     );
 
     try {
-      const contexte = await navigateur.newContext({ ...ECRAN_DU_PATRON });
-      const page = await contexte.newPage();
-      await connecter(page);
-      await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
+      const sortant = await navigateur.newContext({ ...ECRAN_DU_PATRON });
+      const ecran = await sortant.newPage();
+      await connecter(ecran);
+      await ecran.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
 
-      await page.click('[data-atlas="se-deconnecter"]');
-      await page.click('[data-atlas="confirmer-deconnexion"]');
-      await page.waitForURL(`${BASE}/login`, { timeout: 30_000 });
+      await ecran.click('[data-atlas="se-deconnecter"]');
+      await ecran.click('[data-atlas="confirmer-deconnexion"]');
+      await ecran.waitForURL(`${BASE}/login`, { timeout: 30_000 });
 
       // **Le cookie doit être MORT, pas seulement la page changée.** Revenir
       // sur un écran gardé est la seule preuve qui vaille : une redirection
       // côté client se contournerait en tapant l'adresse.
-      await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
-      assert.equal(
-        new URL(page.url()).pathname,
-        "/login",
-        "la session survit : l'écran des réglages s'ouvre encore"
+      //
+      // **On exige « plus les réglages », pas une adresse précise — corrigé le
+      // 9 septembre 2026, et c'est une faute payée.** La première version
+      // attendait `/login` ; le middleware renvoie un visiteur sans session vers
+      // `/bienvenue`, la porte ouverte le 8 septembre. La suite rougissait donc
+      // sur un geste qui MARCHAIT, avec un message — « la session survit » — qui
+      // disait exactement le contraire de ce qui se passait. Une erreur qui
+      // désigne le mauvais coupable coûte plus cher que pas d'erreur
+      // (`AGENTS.md`), et il a fallu monter un serveur pour s'en apercevoir.
+      //
+      // Ce qui est éprouvé ici est la RÈGLE — l'écran gardé ne s'ouvre plus —,
+      // pas le chemin par lequel Atlas la fait respecter (`CLAUDE.md` §5 bis).
+      await ecran.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
+      assert.notEqual(
+        new URL(ecran.url()).pathname,
+        "/reglages",
+        "la session survit : l'écran des réglages s'ouvre encore après la déconnexion"
       );
 
       const { rows } = await pool.query<{ n: string }>(
@@ -195,7 +214,7 @@ async function main() {
         "1",
         "Face ID a été retiré : ce geste ne doit toucher que CET appareil, pas les clés du compte"
       );
-      await contexte.close();
+      await sortant.close();
     } finally {
       await pool.query("DELETE FROM cles_appareil WHERE identifiant_cle = $1", [identifiant]);
     }

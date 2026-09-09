@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font, surPlein } from "@/lib/design-tokens";
-import { seDeconnecterAction } from "./deconnexion-actions";
+import { deconnexionAction } from "@/app/login/actions";
 
 /**
  * SE DÉCONNECTER — la sortie, au bas des Réglages.
@@ -51,6 +51,15 @@ import { seDeconnecterAction } from "./deconnexion-actions";
  * explique »*. Comment on rentre dans Atlas n'a pas à se rappeler au moment
  * d'en sortir. Le nom du compte dit d'où l'on sort, le bouton dit ce qu'on
  * fait.
+ *
+ * ─── L'ACTION EXISTAIT DÉJÀ, ET ELLE DORMAIT ────────────────────────────────
+ *
+ * `deconnexionAction` vit dans `src/app/login/actions.ts` depuis longtemps,
+ * **sans aucun appelant**. J'en ai écrit une seconde, identique, avant de la
+ * trouver — la faute que `CLAUDE.md` §5 ter nomme : chercher qui fait déjà
+ * quelque chose d'approchant AVANT d'écrire. Le doublon a été retiré. Elle
+ * reste où elle est, avec ses sœurs qui ouvrent la session, et où le contrôle
+ * des actions gardées porte déjà son exemption motivée.
  */
 export default function SeDeconnecter({ nomEntreprise }: { nomEntreprise: string | null }) {
   const [ouverte, setOuverte] = useState(false);
@@ -61,7 +70,7 @@ export default function SeDeconnecter({ nomEntreprise }: { nomEntreprise: string
     // qui remonte jusqu'au routeur ; l'avaler laisserait l'écran en place avec
     // un cookie déjà effacé, donc figé.
     demarrer(async () => {
-      await seDeconnecterAction();
+      await deconnexionAction();
     });
   }
 
