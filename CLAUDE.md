@@ -1142,9 +1142,17 @@ journée, tous pour la même raison.
 un `git status`, un `grep`. Pendant dix minutes, c'est la seule chose utile — et
 un verrou qui interdirait aussi cela se ferait contourner dès le deuxième jour.
 
-**Il ne peut pas geler le dossier pour toujours** : le verrou porte un PID et un
-signe de vie rafraîchi toutes les vingt secondes. Processus mort ou silence de
-plus de quatre-vingt-dix secondes, il ne vaut plus rien. En cas de doute :
+**CE QUI PROUVE QU'UNE BATTERIE TOURNE, C'EST SON PROCESSUS** — corrigé le soir
+même, et il l'a payé une fois de plus. La première version tenait la vie du
+verrou à un battement de vingt secondes ; or la batterie enchaîne ses étapes en
+`spawnSync` et **bloque son fil du début à la fin** : aucun timer n'y part
+jamais. Le verrou se déclarait donc mort au bout de quatre-vingt-dix secondes et
+rouvrait le dossier **au milieu de la mesure** — une session voisine a écrit, et
+le verdict est parti à la poubelle sous ses yeux.
+
+Un verrou dont le processus vit tient désormais, muet ou non. Le silence n'est
+plus qu'un plafond de dernier recours — quarante-cinq minutes — contre un PID
+recyclé par le système. En cas de doute :
 `node scripts/verrou-batterie.mjs etat`, et `rendre --force` s'il ment.
 
 **Le verrou EMPÊCHE, l'empreinte DIT.** Les deux restent : un fichier enregistré

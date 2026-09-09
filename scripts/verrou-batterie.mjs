@@ -35,10 +35,10 @@
  *
  * **Il ne peut pas bloquer pour toujours.** Une batterie tuée — c'est arrivé
  * trois fois aujourd'hui — laisserait sinon le dossier gelé jusqu'au
- * lendemain. Deux issues : le verrou porte un PID, et il porte un SIGNE de vie
- * rafraîchi toutes les vingt secondes. Un verrou dont le processus est mort, ou
- * qui n'a plus donné signe depuis quatre-vingt-dix secondes, ne vaut plus rien
- * et se laisse écraser.
+ * lendemain. Ce qui prouve sa vie est SON PROCESSUS : un verrou dont le
+ * processus a disparu ne vaut plus rien. Le signe de vie, rafraîchi entre deux
+ * étapes, n'est qu'un garde-fou de dernier recours contre un PID recyclé — d'où
+ * son plafond très large.
  *
  * **Il ne tue rien.** Il refuse, il nomme ce qui tourne, et il rend la décision
  * à qui sait — comme `_batterie-solitaire.ts`.
@@ -52,14 +52,32 @@ const RACINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export const CHEMIN_VERROU = path.join(RACINE, ".atlas-batterie-en-cours.json");
 
 /**
- * Au-delà de ce silence, le verrou ne vaut plus rien.
+ * ─── CE QUI PROUVE QU'UN VERROU VIT : SON PROCESSUS, PAS SON BATTEMENT ──────
  *
- * **Quatre-vingt-dix secondes, et non dix :** une étape de la batterie peut
- * bloquer le fil quelques dizaines de secondes — une compilation, un serveur
- * qui démarre. Un seuil trop court rouvrirait le dossier au milieu de la
- * mesure, c'est-à-dire exactement quand il faut qu'il reste fermé.
+ * **Payé le 9 septembre 2026 au soir, deux heures après avoir écrit ce
+ * fichier — et c'est le patron qui a vu passer une écriture voisine pendant
+ * une mesure censée être protégée.**
+ *
+ * La première version tenait la vie du verrou à un signe rafraîchi toutes les
+ * vingt secondes par un `setInterval`. Or `verifier-avant-livraison.ts`
+ * enchaîne ses étapes en **`spawnSync`** : la boucle d'événements est bloquée
+ * du début à la fin de la batterie, et **aucun timer ne part jamais**. Le signe
+ * restait donc à l'heure du démarrage ; quatre-vingt-dix secondes plus tard, le
+ * verrou se déclarait mort et rouvrait le dossier — au milieu de la mesure,
+ * c'est-à-dire exactement quand il devait rester fermé.
+ *
+ * **Sa propre suite ne pouvait pas le voir** : elle écrivait des verrous à la
+ * main, avec le signe qu'elle voulait. Elle éprouvait la lecture, jamais
+ * l'écriture — c'est `CLAUDE.md` §5 quater, « éprouver le geste, pas la
+ * fonction qu'on vient d'écrire ».
+ *
+ * **La correction est de changer la PREUVE, pas d'allonger le délai.** Ce qui
+ * dit qu'une batterie tourne, c'est que son processus est vivant : `kill(pid, 0)`
+ * le demande au système, et aucun timer n'a besoin de partir pour cela. Le
+ * silence ne sert plus que de garde-fou contre un PID recyclé par le système
+ * bien plus tard — d'où un plafond large, jamais un seuil serré.
  */
-export const SILENCE_MAX_MS = 90_000;
+export const SILENCE_MAX_MS = 45 * 60_000;
 
 /** Ce processus est-il encore là ? `kill(pid, 0)` ne tue rien, il interroge. */
 export function vivant(pid) {
@@ -119,7 +137,9 @@ function ecrire(verrou) {
  * haut ».
  */
 export function prendreLeVerrou(quoi) {
-  if (process.env.ATLAS_VERROU_BATTERIE === "1") return () => {};
+  // Un enfant de la batterie ne reprend pas le verrou de son père : il rend un
+  // couple inerte, pour que l'appelant n'ait pas à savoir lequel il est.
+  if (process.env.ATLAS_VERROU_BATTERIE === "1") return { rendre: () => {}, signer: () => {} };
 
   const existant = lireVerrou();
   if (existant && existant.pid !== process.pid) {
@@ -134,21 +154,27 @@ export function prendreLeVerrou(quoi) {
   ecrire({ pid: process.pid, quoi, debut, dernierSigne: debut });
   process.env.ATLAS_VERROU_BATTERIE = "1";
 
-  const battement = setInterval(() => {
+  /**
+   * Rafraîchir le signe de vie — appelé ENTRE les étapes, jamais par un timer.
+   *
+   * La batterie bloque sa boucle d'événements du début à la fin (`spawnSync`) :
+   * un `setInterval` n'y part jamais. C'est le défaut du 9 septembre 2026, et
+   * c'est pour cela que ce rafraîchissement est une fonction qu'on appelle,
+   * pas une minuterie qu'on espère.
+   */
+  const signer = () => {
     try {
       ecrire({ pid: process.pid, quoi, debut, dernierSigne: Date.now() });
     } catch {
-      // Le disque peut refuser une seconde ; le silence sera rattrapé au
-      // battement suivant, et le seuil de quatre-vingt-dix secondes le tolère.
+      // Le disque peut refuser une seconde. Le verrou tient quand même : ce
+      // qui prouve sa vie est le processus, pas ce fichier.
     }
-  }, 20_000);
-  battement.unref?.();
+  };
 
   let rendu = false;
   const rendre = () => {
     if (rendu) return;
     rendu = true;
-    clearInterval(battement);
     try {
       const v = existsSync(CHEMIN_VERROU) ? JSON.parse(readFileSync(CHEMIN_VERROU, "utf8")) : null;
       // On ne retire QUE le sien : une batterie qui a débordé son silence a pu
@@ -166,7 +192,8 @@ export function prendreLeVerrou(quoi) {
       process.exit(130);
     });
   }
-  return rendre;
+  // Deux gestes, nommés : rendre à la fin, signer entre deux étapes.
+  return { rendre, signer };
 }
 
 // ─── En ligne de commande : dire, ou rendre ────────────────────────────────
