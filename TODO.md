@@ -2093,10 +2093,20 @@ une seule pièce. **Son écrit reste le bon signé sur place** (C), tranché le
 recalculait déjà tout depuis les lignes, taux par taux. Le pourquoi de ce choix
 et ce qu'il évite : `ARCHITECTURE.md` §304.
 
-**Ce qui reste ouvert, et qui n'est PAS dans ce lot :** le bon signé sur place
-(`appli/ts-bon-sur-place.html`) et l'arrêt qui bloque ou avertit
-(`appli/ts-arret-3.html`). Le supplément sur la facture règle le geste manquant,
-jamais le risque d'impayé.
+**❌ ÉCARTÉ LE 9 SEPTEMBRE 2026, ET À NE PAS LUI REPROPOSER :** *« oublie ces
+deux planches, je ne les aime pas »* — le bon signé sur place
+(`appli/ts-bon-sur-place.html`, solution C) et l'arrêt qui bloque ou avertit
+(`appli/ts-arret-3.html`, solutions B et D). Les deux planches restent, marquées
+en tête : une planche raconte le chemin, y compris ce qui n'a pas été retenu.
+
+**Ce que cela laisse à découvert, et il faut le savoir sans le lui redire :** le
+supplément sur la facture règle le GESTE qui manquait, jamais le risque
+d'impayé. Rien dans Atlas ne trace l'accord du client sur un travail ajouté —
+c'est la troisième fois qu'il écarte cette question (1ᵉʳ, 4 et 9 septembre), et
+c'est sa décision. En cas de contestation, la preuve reste ce qu'il aura écrit
+lui-même, hors de l'application.
+
+**Le sujet des travaux supplémentaires est donc CLOS.**
 
 **Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
 transmises (`scripts/` non concerné : le parcours a été joué à la main, captures
