@@ -41,22 +41,36 @@ ajoutée : la B, avec le vrai `#B98B47` sur une pastille d'encre — le jeton
 La planche s'ouvre dessus, avec **En tête**.
 
 **SA QUESTION, dans la foulée :** *« la journée d'hier en bas risque de porter à
-confusion ? comment on peut régler ce problème ? »* — et il a raison : posée en
-bas avec la même pastille et la même encre que les jours à venir, elle se lit
-comme un chantier de plus à faire. Quatre états sont dans la planche
-(`data-passe`) : **pareil** (le risque, tel quel), **éteint** (elle perd son
-encre, son papier, son or), **replié** (« Plus tôt cette semaine (1) », qui
-s'ouvre au toucher), **retiré** (la semaine commence à aujourd'hui).
+confusion ? »* — et il a raison : repoussée en bas avec la même pastille et la
+même encre que les jours à venir, elle se lit comme un chantier de plus à faire.
 
-**Ma recommandation : éteint.** Le repli cache, et `PRODUCT.md` pose que rien ne
-doit se découvrir ; le retrait fait perdre le chantier d'hier, qu'il faut
-retrouver pour le facturer.
+**SES DEUX DEMANDES SUIVANTES, LE MÊME JOUR, ET ELLES CHANGENT L'ÉCRAN :**
 
-**Reste à coder** dans `PlanningClient.tsx` (pastille `date-planifiee`, vers la
-ligne 1014) : le mot « Aujourd'hui », la pastille de la D, l'ordre, et l'état
-retenu pour les jours passés. **Une question reste ouverte** : ce qu'affiche la
-pastille quand **rien n'est posé** aujourd'hui (la planche propose « Rien de
-posé »).
+1. *« Ce qu'il faudrait, c'est qu'on ait seulement la journée d'aujourd'hui
+   actuelle, pour avoir moins d'informations. Néanmoins il faut que si on clique
+   sur un bouton, on ait le visuel de la semaine, et qu'on puisse switcher assez
+   rapidement — la journée d'aujourd'hui toujours par défaut quand on arrive sur
+   la page planning. Et au-dessus on a toujours le gros planning du mois. »*
+2. *« Les jours du planning doivent avancer chaque jour : quand on est le 8,
+   c'est du 8 au 13 ; le 9, du 9 au 14. Et pour voir apparaître les jours grisés
+   en bas, il faut que l'utilisateur appuie sur la flèche retour arrière. »*
+
+**La seconde règle DISSOUT le problème d'hier** : une fenêtre qui part
+d'aujourd'hui ne contient aucun jour passé, et un jour passé ne s'obtient qu'en
+reculant. Le grisé ne sert plus qu'à ceux qu'on est allé chercher. Les quatre
+états (« pareil / éteint / replié / retiré ») ont donc été **retirés de la
+planche** plutôt que gardés « au cas où ».
+
+**Ce qui reste à trancher :** ses exemples donnent **six** jours (« du 8 au
+13 ») ; la planche en montre **sept** (aujourd'hui + six). À lui confirmer.
+
+**Reste à coder** dans `PlanningClient.tsx` : la pastille `date-planifiee` (vers
+la ligne 1014) et le mot « Aujourd'hui » ; le commutateur journée/semaine, la
+journée par défaut à l'arrivée ; la fenêtre glissante à la place de
+`lundiDe(...)` (`lundi`, `joursDeLaSemaine`, `titreSemaine`, vers la ligne 816)
+et le grisé des jours passés. **Une question reste ouverte** : ce qu'affiche
+l'écran quand **rien n'est posé** aujourd'hui (la planche propose « Rien de
+posé » sous la pastille).
 
 ---
 
