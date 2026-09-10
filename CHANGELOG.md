@@ -58,6 +58,32 @@ revient sur sa règle du 21 août, et il l'a tranché lui-même le jour même.
 ---
 ## 2026-09-09
 
+### Un seul « Télécharger » sur la page du client, et il est aux couleurs de l'appli
+
+*« Ce n'est pas aux couleurs de l'appli, et il y a marqué deux fois télécharger.
+Garde celui sous le TTC, mais mets-le en plein. »*
+
+**Le doublon venait de deux écrans superposés.** La carte du devis portait son
+geste sous le TTC ; l'écran de réponse en reposait un autre, à deux centimètres,
+juste après l'accord. Deux boutons identiques sur une même vue font hésiter — le
+second donne-t-il le même fichier ? — et celui du haut ne bougeait pas quand on
+répondait. Celui du formulaire s'en va, et avec lui le drapeau
+`devisTelechargeable` qui ne servait qu'à le faire paraître : un correctif qui
+n'enlève rien recouvre au lieu de corriger (`CLAUDE.md` §4 quater).
+
+**L'écran de RETOUR le garde**, et c'est sa demande du 31 août : quand le client
+rouvre son SMS le lendemain, la carte du devis n'est plus là, et le lien serait
+un cul-de-sac sans ce geste.
+
+**Les couleurs viennent des jetons, plus du code.** `bg-[#2F3B2F]` et
+`text-white` écrits en clair sont justes sur cinq chartes et illisibles sur les
+deux sombres (`CLAUDE.md` §3) — et hors de la sienne partout, ce qu'il a vu tout
+de suite. Le geste passe en plein : c'est le seul de cet écran avant de
+répondre, et le creux le mettait au même rang que le texte autour.
+
+**Le contrôle tolérait le doublon**, `>= 1` : il n'aurait jamais rougi. Il exige
+désormais exactement un geste, à l'accord comme au retour.
+
 ### « Se déconnecter » existe enfin, au bas des Réglages
 
 **Codé après son accord sur la maquette.** Une ligne en capitales espacées tout
