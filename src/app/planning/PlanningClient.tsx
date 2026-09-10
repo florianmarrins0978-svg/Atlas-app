@@ -95,6 +95,7 @@ import {
   reposerDemiJourneeAction,
   chercherDesClientsAction,
   poserUnClientAction,
+  poserDuTempsAction,
   ecrireNoteChantierAction,
   deplanifierChantierAction,
   planifierChantierAction,
@@ -258,7 +259,10 @@ export type OuvertDansLaCarte =
   // écrasait ce que le devis avait fixé (voir `poser`).
   | { quoi: "ajout-voies"; cle: string }
   | { quoi: "ajout-qui"; cle: string }
-  | { quoi: "ajout-client"; cle: string };
+  | { quoi: "ajout-client"; cle: string }
+  // **La banque, une livraison, une formation** — sa réponse du 10 septembre
+  // 2026 à la question que sa propre correction avait ouverte.
+  | { quoi: "ajout-temps"; cle: string };
 
 /**
  * CE QUE LE CHANTIER OCCUPE ENCORE — et non ce qu'il demande.
@@ -2161,6 +2165,15 @@ function AjoutAuJour({
             >
               Un client
             </VoieDAjout>
+            {/* **Ce qui n'est pas un client** — sa réponse du 10 septembre :
+                un rendez-vous à la banque, une livraison, une formation
+                prennent une demi-journée comme le reste. */}
+            <VoieDAjout
+              data-atlas="voie-temps"
+              onClick={() => setOuvert({ quoi: "ajout-temps", cle })}
+            >
+              Autre chose
+            </VoieDAjout>
           </div>
           <div className="mt-2 flex justify-end">
             <Petit data-atlas="annuler-ajout" onClick={() => setOuvert(null)}>
@@ -2200,6 +2213,15 @@ function AjoutAuJour({
             poserUnClient(chantier);
           }}
         />
+      ) : ici === "ajout-temps" ? (
+        <AjoutDeTemps
+          jour={jour}
+          onAnnuler={() => setOuvert({ quoi: "ajout-voies", cle })}
+          onPose={(chantier) => {
+            setOuvert(null);
+            poserUnClient(chantier);
+          }}
+        />
       ) : (
         /* **Plus de filet au-dessus du « + »** — sa demande du 23 août 2026 :
            *« la ligne qui se trouve entre le nom et le "+ Ajouter un chantier",
@@ -2232,7 +2254,25 @@ function AjoutAuJour({
   );
 }
 
-/** L'une des deux voies de « Ajouter » — même dessin, deux destinations. */
+/**
+ * LE DESSIN DES CHAMPS DE CET ÉCRAN, écrit une fois pour les trois voies.
+ *
+ * **Repris du pense-bête du chantier**, qui vit dans la même carte : même
+ * rayon, même filet, même fond. Un second style aurait donné deux façons de
+ * dessiner un champ à trois centimètres d'écart.
+ */
+const CHAMP = "mt-2 w-full rounded-[9px] border-0 px-3 py-3 outline-none";
+const STYLE_CHAMP = {
+  boxShadow: `inset 0 0 0 1px ${colors.line}`,
+  background: colors.card,
+  color: colors.ink,
+  minHeight: 48,
+  // **16 px au moins.** En dessous, iOS grossit la page à la mise au point et
+  // l'écran saute sous le doigt — un piège déjà payé sur le pense-bête.
+  fontSize: 16,
+} as const;
+
+/** L'une des voies de « Ajouter » — même dessin, trois destinations. */
 function VoieDAjout({
   children,
   onClick,
@@ -2260,6 +2300,71 @@ function VoieDAjout({
     >
       {children}
     </button>
+  );
+}
+
+/**
+ * DU TEMPS QUI N'EST PAS UN CLIENT — la banque, une livraison, une formation.
+ *
+ * **Sa réponse du 10 septembre 2026**, à la question que sa propre correction
+ * avait ouverte : la troisième entrée existe.
+ *
+ * **Un seul champ, et rien d'autre.** Il n'y a personne à reconnaître, aucune
+ * fiche à créer, aucune adresse à rejoindre : ce qu'on écrit EST le nom de ce
+ * qui prend la place. Passer par le chemin du client aurait fait chercher un
+ * homonyme à « Banque », et proposé de lui créer une fiche.
+ */
+function AjoutDeTemps({
+  jour,
+  onAnnuler,
+  onPose,
+}: {
+  jour: JourIso;
+  onAnnuler: () => void;
+  onPose: (chantier: ChantierPlanning) => void;
+}) {
+  const [quoi, setQuoi] = useState("");
+  const [quand, setQuand] = useState<QuandPoser>("matin");
+  const [enCours, setEnCours] = useState(false);
+  const pret = quoi.trim().length >= 2 && !enCours;
+
+  return (
+    <div className="mt-3.5 pt-3">
+      <input
+        data-atlas="quoi-cest"
+        autoFocus
+        value={quoi}
+        onChange={(e) => setQuoi(e.target.value)}
+        placeholder="Rendez-vous à la banque, livraison…"
+        className={CHAMP}
+        style={STYLE_CHAMP}
+      />
+      <BasculeDuMoment retenu={quand} onChoisir={setQuand} repere="quand-poser" />
+      <div className="mt-2.5 flex items-center justify-between gap-2">
+        <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
+          Annuler
+        </Petit>
+      </div>
+      <div className="mt-2 flex justify-end">
+        <Petit
+          data-atlas="poser-le-temps"
+          retenue={pret}
+          onClick={() => {
+            if (!pret) return;
+            setEnCours(true);
+            poserDuTempsAction(jour, quand, quoi).then((r) => {
+              setEnCours(false);
+              if (r.succes) onPose(r.chantier);
+              // Un refus avalé est un défaut muet (`AGENTS.md`) : le message
+              // d'une action serveur n'arrive jamais jusqu'à lui.
+              else console.error("Temps refusé", { jour, quand, erreur: r.erreur });
+            });
+          }}
+        >
+          {enCours ? "…" : "Poser"}
+        </Petit>
+      </div>
+    </div>
   );
 }
 
@@ -2363,21 +2468,6 @@ function AjoutDunClient({
     });
   }
 
-  // **Le dessin des champs de CET écran, pas un nouveau.** Le pense-bête du
-  // chantier vit deux blocs plus bas : même rayon, même filet, même fond. Un
-  // second style aurait donné deux façons de dessiner un champ dans la même
-  // carte, et la première divergence serait passée inaperçue.
-  const champ = "mt-2 w-full rounded-[9px] border-0 px-3 py-3 outline-none";
-  const styleChamp = {
-    boxShadow: `inset 0 0 0 1px ${colors.line}`,
-    background: colors.card,
-    color: colors.ink,
-    minHeight: 48,
-    // **16 px au moins.** En dessous, iOS grossit la page à la mise au point et
-    // l'écran saute sous le doigt — un piège déjà payé sur le pense-bête, et
-    // ces quatre champs-ci se remplissent l'un après l'autre.
-    fontSize: 16,
-  } as const;
 
   return (
     <div className="mt-3.5 pt-3">
@@ -2390,8 +2480,8 @@ function AjoutDunClient({
           setRetenu(null);
         }}
         placeholder="Nom du client"
-        className={champ}
-        style={styleChamp}
+        className={CHAMP}
+        style={STYLE_CHAMP}
       />
 
       {retenu ? (
@@ -2437,49 +2527,21 @@ function AjoutDunClient({
               value={fiche[champName]}
               onChange={(e) => setFiche((f) => ({ ...f, [champName]: e.target.value }))}
               placeholder={mot}
-              className={champ}
-              style={styleChamp}
+              className={CHAMP}
+              style={STYLE_CHAMP}
             />
           ))}
         </>
       ) : null}
 
-      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
+      {/* **Le même interrupteur que « qui n'est pas là »**, à un repère près :
+          la question est la même — matin, après-midi, ou la journée. */}
+      <BasculeDuMoment retenu={quand} onChoisir={setQuand} repere="quand-poser" />
+
+      <div className="mt-2.5 flex items-center justify-between gap-2">
         <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
           Annuler
         </Petit>
-        <span
-          data-atlas="quand-poser"
-          className="flex overflow-hidden rounded-full"
-          style={{ border: `1px solid ${colors.line}`, background: colors.card }}
-        >
-          {(
-            [
-              ["matin", "Matin"],
-              ["apres_midi", "Après-midi"],
-              ["journee", "Journée"],
-            ] as const
-          ).map(([valeur, mot]) => {
-            const tenue = quand === valeur;
-            return (
-              <button
-                key={valeur}
-                type="button"
-                data-quand={valeur}
-                aria-pressed={tenue}
-                onClick={() => setQuand(valeur)}
-                className="cursor-pointer px-3 py-[7px] text-[12px]"
-                style={{
-                  border: 0,
-                  background: tenue ? colors.plein : "transparent",
-                  color: tenue ? surPlein : colors.inkSoft,
-                }}
-              >
-                {mot}
-              </button>
-            );
-          })}
-        </span>
       </div>
 
       <div className="mt-2 flex justify-end">
@@ -2532,9 +2594,18 @@ function AjoutDunClient({
  * pastilles ci-dessous ne servent qu'à RESTREINDRE ce qui vient d'être posé —
  * le jour où ça compte.
  */
-type MomentAbsence = "matin" | "apres_midi" | "journee";
+type MomentEntier = "matin" | "apres_midi" | "journee";
 
-const MOMENTS_ABSENCE: { cle: MomentAbsence; mot: string; dit: string }[] = [
+/**
+ * LES TROIS MOMENTS, ÉCRITS UNE FOIS — l'absence les emploie, la pose aussi.
+ *
+ * **Renommés le 10 septembre 2026** : ils s'appelaient « moments d'absence », et
+ * poser un client ou du temps sur une journée pose exactement la même question.
+ * Un second tableau aurait donné deux listes de trois mots dans le même écran,
+ * et la première divergence — « Aprem » d'un côté, « Après-midi » de l'autre —
+ * serait passée inaperçue.
+ */
+const LES_TROIS_MOMENTS: { cle: MomentEntier; mot: string; dit: string }[] = [
   { cle: "matin", mot: "Matin", dit: "matin" },
   { cle: "apres_midi", mot: "Après-midi", dit: "après-midi" },
   { cle: "journee", mot: "Journée", dit: "journée" },
@@ -2547,7 +2618,7 @@ const MOMENTS_ABSENCE: { cle: MomentAbsence; mot: string; dit: string }[] = [
  * c'est délibéré côté dépôt. Ici on ne garde que ce qu'on sait dessiner : une
  * borne inconnue vaut la journée, comme partout ailleurs dans ce fichier.
  */
-function momentDe(a: AbsenceDuPlanning): MomentAbsence {
+function momentDe(a: AbsenceDuPlanning): MomentEntier {
   if (a.premierDemi !== a.dernierDemi) return "journee";
   if (a.premierDemi === "matin" || a.premierDemi === "apres_midi") return a.premierDemi;
   return "journee";
@@ -2617,22 +2688,30 @@ function GesteAbsence({
 function BasculeDuMoment({
   retenu,
   onChoisir,
+  repere = "quand-absent",
 }: {
-  retenu: MomentAbsence;
-  onChoisir: (moment: MomentAbsence) => void;
+  retenu: MomentEntier;
+  onChoisir: (moment: MomentEntier) => void;
+  /**
+   * **Le repère des suites, et il change avec le GESTE.** Deux gestes de cet
+   * écran posent la même question — qui n'est pas là, et quand poser — et
+   * partagent donc ce dessin. Leur donner le même repère ferait viser à une
+   * suite l'interrupteur de l'autre, ouvert dans la même carte.
+   */
+  repere?: string;
 }) {
   return (
     <div
       className="mt-2 flex overflow-hidden rounded-full"
       style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
     >
-      {MOMENTS_ABSENCE.map((m) => {
+      {LES_TROIS_MOMENTS.map((m) => {
         const allume = m.cle === retenu;
         return (
           <button
             key={m.cle}
             type="button"
-            data-atlas="quand-absent"
+            data-atlas={repere}
             data-quand={m.cle}
             aria-pressed={allume}
             onClick={() => onChoisir(m.cle)}
@@ -2699,7 +2778,7 @@ function PasLaCeJour({
    * troisième endroit où la réconciliation des affectations pourrait être
    * oubliée (`ARCHITECTURE.md` §294). Reposer traverse celle qui existe déjà.
    */
-  function poserLeMoment(rang: number, moment: MomentAbsence) {
+  function poserLeMoment(rang: number, moment: MomentEntier) {
     const a = absentsParRang.get(rang);
     if (!a) return;
     if (momentDe(a) === moment) {
@@ -2802,7 +2881,7 @@ function PasLaCeJour({
               {nombreSalaries > 0 ? `${nomEquipe(a.rang)} absent` : "Vous êtes absent"}
             </span>
             <span className={texteSituation} style={{ color: colors.muted, flex: "none" }}>
-              {MOMENTS_ABSENCE.find((m) => m.cle === momentDe(a))?.dit}
+              {LES_TROIS_MOMENTS.find((m) => m.cle === momentDe(a))?.dit}
             </span>
           </div>
         ))

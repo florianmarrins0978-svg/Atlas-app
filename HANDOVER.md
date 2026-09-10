@@ -8,6 +8,30 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA SORTIE RENVOYAIT SUR `localhost` (10 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | `deconnexionAction` ne confie plus la redirection à Auth.js : `signOut({ redirect: false })`, puis notre `redirect("/login")` |
+| la migration | **aucune** |
+| les pièces | `src/app/login/actions.ts` |
+| les suites | `scripts/test-sortie-sans-hote.ts` (3), mise au rouge contre les trois défauts |
+| le détail | `CHANGELOG.md` du 10 septembre |
+
+**LE PIÈGE À NE PAS « RÉPARER ».** `alignerHoteSurOrigine` (`src/middleware.ts`)
+réécrit `x-forwarded-host` sur l'`Origin` du navigateur — c'est ce qui rend les
+actions serveur possibles derrière le mandataire d'un espace de travail. Auth.js
+lisait cet en-tête et en faisait une adresse absolue : `http://localhost:3000/login`,
+morte sur un téléphone. **Défaire l'alignement rouvrirait « Invalid Server
+Actions request. »** et personne ne pourrait plus entrer du tout. La réponse est
+de ne rien laisser deviner : un chemin RELATIF ne porte aucun hôte.
+
+**Et ce qui n'a pas pu être éprouvé ici :** la reproduction au navigateur.
+`verifier-connexion.mjs` pose son hôte étranger sur chaque requête, ressources
+comprises — la page ne s'hydrate pas. Sur un hôte ordinaire, l'hôte deviné se
+trouve être le bon, donc rien ne rougit. Le contrôle vise le mécanisme.
+
+---
 ## Dernier lot — POSER UN CLIENT SUR UN JOUR, SANS DEVIS (10 septembre 2026)
 
 | | |

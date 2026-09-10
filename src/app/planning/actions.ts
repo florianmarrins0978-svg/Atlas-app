@@ -433,3 +433,57 @@ export async function poserUnClientAction(
   }
   return { succes: true, chantier: ligne, ficheCreee: !reutilise };
 }
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * DU TEMPS QUI N'EST PAS UN CLIENT — la banque, une livraison, une formation
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * **Sa réponse du 10 septembre 2026**, à la question que sa propre correction
+ * avait ouverte : *« ok fais ça »* — une troisième entrée, à côté de « Un
+ * chantier en attente » et « Un client ».
+ *
+ * **Un rendez-vous à la banque prend une demi-journée comme un chantier.** Il
+ * ne se distingue de celui d'un client que par ce qui lui manque : personne à
+ * facturer, aucune adresse à rejoindre. C'est donc un chantier **sans client**,
+ * portant pour nom ce qu'il a écrit — et non une nouvelle sorte d'objet.
+ *
+ * **Pourquoi pas une table à part.** Une « occupation » qui ne serait pas un
+ * chantier obligerait à la compter une seconde fois dans la capacité, à la
+ * dessiner une seconde fois au calendrier, à la retirer par un second geste, et
+ * à la sortir des terminés par une seconde règle. Quatre endroits où deux
+ * vérités finiraient par diverger, pour une ligne qui prend une demi-journée
+ * exactement comme les autres.
+ *
+ * **CE QUE ÇA COÛTE, ET IL FAUT LE DIRE** : ce temps-là apparaît dans la liste
+ * des chantiers, puisque c'en est un. Sans prix, sans devis, sans client.
+ */
+export async function poserDuTempsAction(
+  jour: JourIso,
+  quand: QuandPoser,
+  quoi: string
+): Promise<ResultatPoseClient> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "bloquer du temps sur ce jour");
+
+  const nom = quoi.trim();
+  if (nom.length < 2) return { succes: false, erreur: "Écrivez ce que c'est." };
+
+  // **Aucun client, et c'est tout ce qui le distingue.** `nomDuChantier` sait
+  // déjà nommer un chantier sans client — mais ici le nom est écrit par lui, et
+  // c'est le seul qui dise de quoi il s'agit : « Banque », « Livraison ».
+  const chantier = await creerChantier(ctx, {
+    nom: nom.slice(0, 120),
+    dureeDemiJournees: quand === "journee" ? 2 : 1,
+  });
+  await planifierChantier(ctx, chantier.id, jour, {
+    demi: quand === "apres_midi" ? "apres_midi" : "matin",
+  });
+  await porterChantierDansAgenda(ctx, chantier.id);
+
+  const ligne = (await listerChantiersPourPlanning(ctx)).find((c) => c.id === chantier.id);
+  if (!ligne) {
+    return { succes: false, erreur: "Le temps a été bloqué mais reste introuvable au planning." };
+  }
+  return { succes: true, chantier: ligne, ficheCreee: false };
+}

@@ -5,6 +5,7 @@ import {
   audiosAPurger,
   brouillonsInformations,
   chantiers,
+  creneauxChantier,
   clients,
   devis,
   documents,
@@ -168,6 +169,7 @@ export async function exporterEntreprise(
       sesRetoursLus,
       sonAbonnement,
       sesEvenementsDePaiement,
+      sesCreneauxPoses,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -340,6 +342,12 @@ export async function exporterEntreprise(
       // Le journal des événements de paiement : ce qui est arrivé, et quand.
       // C'est la trace qu'on relit le jour où un prélèvement est contesté.
       tx.select().from(evenementsPaiement).where(eq(evenementsPaiement.entrepriseId, e)),
+      // **OÙ chaque chantier est posé, demi-journée par demi-journée**
+      // (migration 0085). Sans elles, une reprise rendrait les chantiers et
+      // leur durée demandée, mais plus rien ne dirait QUAND ils tiennent : le
+      // planning d'une saison entière serait à refaire à la main. Le contrôle
+      // d'exhaustivité les a réclamées le soir même de leur arrivée.
+      tx.select().from(creneauxChantier).where(eq(creneauxChantier.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -423,6 +431,7 @@ export async function exporterEntreprise(
       // Son abonnement, et le journal de ce que le prestataire en a dit.
       abonnements: sonAbonnement,
       evenements_paiement: sesEvenementsDePaiement,
+      creneaux_chantier: sesCreneauxPoses,
     };
 
     const compte: Record<string, number> = {};

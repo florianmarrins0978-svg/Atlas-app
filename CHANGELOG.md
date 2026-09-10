@@ -8,6 +8,44 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### La déconnexion renvoyait sur `localhost` — donc nulle part, depuis un téléphone
+
+Sa capture : *« Safari ne peut pas ouvrir la page car la connexion au serveur
+est impossible »*, sur `localhost`, juste après s'être déconnecté depuis les
+Réglages.
+
+**La chaîne, et elle n'a rien d'évident.** `signOut({ redirectTo })` ne redirige
+pas vers ce qu'on lui donne : `createActionURL` fabrique une adresse **absolue**
+à partir de `AUTH_URL` ou, à défaut, de l'en-tête `x-forwarded-host`. Et cet
+en-tête vaut `localhost:3000` **parce qu'on l'a voulu** —
+`alignerHoteSurOrigine` le réécrit délibérément sur l'`Origin` du navigateur,
+sans quoi Next.js refuserait toute action serveur derrière le mandataire de son
+espace (« Invalid Server Actions request. », vingt échanges le 24 août). Le
+chemin était juste ; c'est l'hôte collé devant qui ne valait rien.
+
+**Corrigé en cessant de laisser deviner**, pas en défaisant l'alignement — le
+défaire rouvrirait la panne d'à côté, et plus personne ne pourrait entrer. La
+sortie fait désormais ce que font déjà les trois chemins qui ENTRENT :
+`signOut({ redirect: false })`, puis notre propre `redirect("/login")`. Un
+chemin relatif ne porte aucun hôte : le navigateur le résout contre l'adresse
+par laquelle Atlas a été ouvert, quelle qu'elle soit.
+
+**Ce que le contrôle ne peut PAS faire, et il faut le dire.** La reproduction au
+navigateur a été tentée dans `verifier-connexion.mjs` — la seule suite qui pose
+un hôte étranger — et retirée : elle le pose sur chaque requête, ressources
+comprises, donc la page ne s'hydrate pas et aucune feuille ne s'ouvre. Sur un
+hôte ordinaire, le défaut est invisible : l'hôte deviné se trouve être le bon.
+`scripts/test-sortie-sans-hote.ts` fixe donc le MÉCANISME — aucune sortie ne
+laisse Auth.js composer l'adresse d'arrivée —, et il a été mis au rouge contre
+les trois défauts qu'il défend : le code d'avant, le cookie mort sans
+redirection, et une adresse écrite en dur.
+
+**Et un rouge de plus, ramassé à la fusion et qui n'était pas de ce lot :**
+`creneaux_chantier` (migration 0085, arrivée le soir même avec le lot planning)
+ne figurait dans aucun export d'entreprise. Sans elle, un artisan qui emporte
+ses données récupérerait ses chantiers et leur durée demandée, mais plus rien ne
+dirait QUAND ils tiennent — un planning de saison à refaire à la main. Elle est
+ajoutée à `export-entreprise.ts` plutôt qu'exclue : ce sont ses données.
 ### La fiche d'intervention se colle sous SON chantier
 
 *« Quand il y a plusieurs chantiers le même jour on a un problème ! Quand je
@@ -73,6 +111,7 @@ voies, à chaque étape.**
 | la reconnaissance | `trouverOuCreerClient`, celle de la voie normale — un client connu ne se dédouble pas, un autre numéro fait une autre fiche |
 | « Journée » | n'existe QUE là : le chantier naît du geste, le choix EST sa durée et ne recouvre aucun devis |
 | ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
+| **une troisième voie** | *« Autre chose »* — un rendez-vous à la banque, une livraison, une formation : un chantier **sans client**, portant ce qu'on écrit |
 
 **Le geste ne disparaît plus quand rien n'attend**, et c'est sa règle du 23 août
 qui le veut : il ne menait nulle part, il mène maintenant quelque part. Ce qui

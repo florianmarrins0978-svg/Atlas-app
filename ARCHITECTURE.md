@@ -27643,6 +27643,31 @@ Il crée désormais. Un jour vide n'est plus un cul-de-sac, et **c'est la même
 règle** qui commande de le montrer. Ce qui disparaît, c'est la VOIE qui ne mène
 nulle part : « Un chantier en attente » ne s'offre pas quand aucun n'attend.
 
+### LA TROISIÈME VOIE : DU TEMPS QUI N'EST PAS UN CLIENT
+
+**Sa réponse du 10 septembre 2026**, à la question que sa propre correction avait
+ouverte — un rendez-vous à la banque, une livraison, une formation prennent une
+demi-journée comme le reste, et « Un client » ne les couvrait plus.
+
+**C'est un chantier SANS client**, portant pour nom ce qu'il écrit, et non une
+nouvelle sorte d'objet. Une « occupation » à part obligerait à la compter une
+seconde fois dans la capacité, à la dessiner une seconde fois au calendrier, à
+la retirer par un second geste et à la sortir des terminés par une seconde
+règle : quatre endroits où deux vérités finiraient par diverger, pour une ligne
+qui prend une demi-journée exactement comme les autres.
+
+**Ce que ça coûte, et il faut le dire :** ce temps-là apparaît dans la liste des
+chantiers, puisque c'en est un. Sans prix, sans devis, sans client.
+
+**Un seul champ, et aucune recherche.** Chercher un homonyme à « Banque », puis
+proposer de lui créer une fiche, serait le chemin de la voie d'à côté.
+
+**L'interrupteur des trois moments est celui de l'absence** (`BasculeDuMoment`,
+`LES_TROIS_MOMENTS`) : la question est la même, et deux listes de trois mots
+dans le même écran auraient divergé au premier « Aprem ». Il porte un repère
+différent par geste — sans quoi une suite viserait l'interrupteur de l'autre,
+ouvert dans la même carte.
+
 ### LE TIROIR DU BAS PUBLIE SA HAUTEUR (`--atlas-tiroir`)
 
 `.atlas-contenu` réservait la hauteur de la **barre** (`--atlas-barre`) et rien
@@ -27666,8 +27691,8 @@ dans `TODO.md`.
 
 | | |
 |---|---|
-| les actions | `chercherDesClientsAction`, `poserUnClientAction` — `src/app/planning/actions.ts` |
-| l'écran | `AjoutAuJour`, `VoieDAjout`, `AjoutDunClient` — `src/app/planning/PlanningClient.tsx` |
+| les actions | `chercherDesClientsAction`, `poserUnClientAction`, `poserDuTempsAction` — `src/app/planning/actions.ts` |
+| l'écran | `AjoutAuJour`, `VoieDAjout`, `AjoutDunClient`, `AjoutDeTemps` — `src/app/planning/PlanningClient.tsx` |
 | la planche | `appli/bloquer-sans-devis.html`, essayée puis retenue |
 | les règles | `scripts/test-poser-un-client-db.ts` (9 cas) |
-| **son geste** | `scripts/test-bloquer-sans-devis-e2e.ts` (5 cas, de bout en bout) |
+| **son geste** | `scripts/test-bloquer-sans-devis-e2e.ts` (6 cas, de bout en bout) |

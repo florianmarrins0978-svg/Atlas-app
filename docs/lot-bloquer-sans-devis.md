@@ -11,6 +11,7 @@ réponse.
 
 | Votre demande | Ce qui est fait |
 |---|---|
+| *« Ok fais ça »* — la troisième entrée | **« Autre chose »** : un champ libre, les trois moments, sans client |
 | *« Que je puisse le faire sans devoir passer par la fiche client et le devis »* | « Ajouter » propose **deux voies** : un chantier qui attend une date, comme avant — ou **un client** |
 | *« À côté de Bernard il faut une touche annuler si on veut retourner sur les deux propositions »* | « Annuler » ramène aux deux voies, **à chaque étape** |
 | *« Change le nom en un client »* | c'est le libellé de la seconde voie |
@@ -73,7 +74,7 @@ rien ne se retrouve coincé dessous.
 | types, lint, mémoire | **verts** |
 | pansement, code mort, couches, flèches | **verts** |
 | les règles du geste, sans navigateur (9 cas) | **verts** |
-| **votre geste, du début à la fin, dans un navigateur** (5 cas) | **verts** |
+| **votre geste, du début à la fin, dans un navigateur** (6 cas) | **verts** |
 | un salarié ne peut ni chercher un client, ni poser | **vert** |
 | formes des boutons, barres du bas, chartes, textes coupés | **verts** |
 
@@ -93,15 +94,20 @@ qu'aucun devis n'est parti.
 
 ---
 
-## Ce qui attend votre réponse
+## La troisième entrée — vous l'avez demandée, elle est là
 
-**Et le temps qui n'est PAS un client ?** Un rendez-vous à la banque, une
-livraison, une formation prennent aussi une demi-journée. La première version de
-la planche les couvrait ; votre correction — « change le nom en un client » — ne
-les couvre plus.
+**Le temps qui n'est PAS un client** : un rendez-vous à la banque, une
+livraison, une formation. C'est la troisième voie, **« Autre chose »** : un seul
+champ, les trois moments, et c'est posé. Aucun client, aucune fiche créée.
 
-**Dites-moi si vous voulez une troisième entrée** pour ça, ou si vous préférez
-que tout soit un client. Rien ne sera codé avant.
+**Ce que ça crée, et il faut que vous le sachiez : un chantier sans client.**
+Donc il apparaîtra dans votre liste des chantiers, sans prix et sans devis.
+C'est le prix de ne pas inventer une seconde sorte de chose qui prend du temps —
+elle aurait dû être comptée, dessinée, retirée et rangée par des règles
+séparées, et deux de ces règles auraient fini par ne plus dire la même chose.
+
+**Si ça vous gêne à l'usage, dites-le** : c'est à cet endroit-là qu'il faudra
+regarder.
 
 ---
 

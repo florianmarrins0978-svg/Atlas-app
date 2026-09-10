@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faire rentrer les quatre — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  FAIRE RENTRER LES QUATRE PASTILLES — sa demande du 11 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  *« Je veux la 4, mais resserre tout pour que ça rentre, dessine-moi ça. »*
+
+  Il a tranché : la porte sera la 4ᵉ pastille de Terminés. Je lui avais dit que
+  ça débordait — c'était vrai du dessin d'AUJOURD'HUI, pas de tout dessin
+  possible. Il a raison de demander : il y a de la place à trouver.
+
+  ─── CETTE PLANCHE SE MESURE ELLE-MÊME, ET C'EST TOUT SON OBJET ────────────
+
+  Un dessin qui affirme « ça rentre » sans le prouver est exactement ce qui a
+  coûté un aller-retour la dernière fois. Chaque proposition affiche donc sa
+  LARGEUR RÉELLE, relevée dans la page, face à la place disponible — et le
+  verdict change sous ses yeux quand il change de téléphone.
+
+  Les mesures sont fidèles parce que le dessin l'est : mêmes 44 px de hauteur,
+  même corps de 12,5 px, mêmes 8 px de rembourrage, même écart de 4 px, mêmes
+  marges de 26 px, même police que l'application (`globals.css`, --font-body).
+
+  ─── CE QUI NE SE NÉGOCIE PAS, QUOI QU'ON RESSERRE ─────────────────────────
+
+  **Les 44 px de hauteur.** C'est la mesure d'un pouce sur un chantier, parfois
+  avec des gants, et c'est ce que tout le reste de l'application tient déjà.
+  Le 2 septembre, ces onglets étaient les seuls à 40 et sont passés à 44. On
+  resserre le REMBOURRAGE et les MOTS, jamais la hauteur.
+
+  ─── LA 4ᵉ EST DORÉE, ET CE N'EST PAS UN ORNEMENT ──────────────────────────
+
+  Les trois premières FILTRENT la liste en dessous ; la quatrième CRÉE quelque
+  chose. Du même gris, elle se lirait comme un quatrième filtre — et il
+  chercherait pourquoi la liste ne change pas. L'or est déjà, partout dans
+  l'application, ce qui attend un geste de lui.
+
+  Les couleurs viennent de src/lib/chartes.ts.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#6f8a5f; --surPlein:#fff; --papier:#ece9e1;
+  --vert-dit:#3f6b3f; --rouge-dit:#9c3b2e;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#6f8a5f; --surPlein:#101210; --papier:#232722;
+  --vert-dit:#9ec08f; --rouge-dit:#e0857a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+body.nuit .sceau{color:var(--scene)}
+
+.bloc{max-width:740px;margin:0 auto;padding:6px 20px 0}
+.bloc h2{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:23px;margin:32px 0 4px;font-weight:400}
+.bloc .numero{font-size:10px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--or);display:block;margin-top:30px}
+.bloc>p{font-size:14.5px;line-height:1.65;color:var(--encre-douce);margin:0 0 14px}
+.bloc>p b{color:var(--encre)}
+
+/* ── les commandes de la planche ────────────────────────────────────────── */
+.reglages{max-width:740px;margin:18px auto 0;padding:0 20px}
+.rangee-choix{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-bottom:10px}
+.rangee-choix button{font:inherit;font-size:13px;padding:11px 15px;min-height:44px;border:0;
+  box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage);color:var(--encre-douce);
+  border-radius:999px;cursor:pointer}
+.rangee-choix button[aria-pressed=true]{background:var(--plein);color:var(--surPlein);
+  box-shadow:none;font-weight:600}
+.mot-cle{display:block;text-align:center;font-size:10px;font-weight:700;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--gris);margin:14px 0 8px}
+
+/* ── le verdict, relevé dans la page ────────────────────────────────────── */
+.verdict{max-width:740px;margin:16px auto 0;padding:0 20px;text-align:center}
+.verdict .chiffres{font-size:15px;line-height:1.6;font-variant-numeric:tabular-nums}
+.verdict .chiffres b{font-size:19px}
+.verdict.rentre .chiffres b{color:var(--vert-dit)}
+.verdict.deborde .chiffres b{color:var(--rouge-dit)}
+.verdict .dit{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;padding:6px 12px;border-radius:999px}
+.verdict.rentre .dit{color:var(--vert-dit);box-shadow:inset 0 0 0 1px var(--vert-dit)}
+.verdict.deborde .dit{color:var(--rouge-dit);box-shadow:inset 0 0 0 1px var(--rouge-dit)}
+.verdict .reste{display:block;margin-top:9px;font-size:13px;color:var(--gris)}
+
+.scene{display:flex;justify-content:center;padding:16px 16px 6px}
+/* La largeur du téléphone est PILOTÉE : c'est elle qu'on éprouve. Le cadre ne
+   déborde pas de la page sur un petit écran — mais la mesure, elle, porte sur
+   la largeur choisie, jamais sur celle de l'écran qui regarde. */
+.tel{width:var(--large,390px);max-width:100%;min-height:560px;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column}
+
+.ter .entete{padding:26px 26px 0}
+.ter h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:34px;
+  line-height:1.02;letter-spacing:-.018em;margin:6px 0 0}
+.carte-tva{margin:22px 26px 0;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;border-radius:4px;padding:20px 18px;background:var(--plage);
+  box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.55)}
+.carte-tva .quoi{display:block;font-size:11px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--or)}
+.carte-tva .periode{display:block;margin-top:5px;font-size:17px;font-family:ui-serif,Georgia,serif}
+.carte-tva .mt{font-size:21px;font-family:ui-serif,Georgia,serif;white-space:nowrap}
+
+/* ── LA RANGÉE — les mesures de l'application, à la virgule ─────────────── */
+.onglets{display:flex;margin-top:28px}
+.pastille{flex:none;white-space:nowrap;border-radius:999px;border:0;cursor:pointer;
+  min-height:44px;display:flex;align-items:center;justify-content:center;
+  background:transparent;color:var(--gris);box-shadow:inset 0 0 0 1px var(--trait);
+  font-family:inherit}
+.pastille[aria-pressed=true]{background:var(--plein);color:var(--surPlein);box-shadow:none}
+/* La quatrième CRÉE, elle ne filtre pas — d'où l'or, et jamais l'aplat vert
+   qui dit « c'est ce que vous regardez ». */
+.pastille.geste{color:var(--or);box-shadow:inset 0 0 0 1px var(--or)}
+
+.mois{display:flex;align-items:center;justify-content:space-between;margin:30px 26px 0;font-size:15px}
+.mois .feuillet{background:none;border:0;font:inherit;font-size:17px;color:var(--gris);
+  cursor:pointer;min-width:44px;min-height:44px}
+.compte{margin:14px 26px 12px;font-size:14px;font-weight:700;color:var(--encre)}
+.compte .or{color:var(--or)}
+.lignes{margin:0 26px}
+.brin{border-top:1px solid var(--trait-doux);padding:12px 0}
+.brin .nom{font-size:16px;margin:0}
+.brin .etat{font-size:12.5px;color:var(--gris);margin:2px 0 0}
+.brin .etat.or{color:var(--or)}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px;font-weight:400}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes .cadre{overflow-x:auto}
+.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
+.notes th,.notes td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--trait-doux);
+  color:var(--encre-douce);vertical-align:top}
+.notes th{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+.notes td b{color:var(--encre)}
+.notes td.ok{color:var(--vert-dit);font-weight:700}
+.notes td.non{color:var(--rouge-dit);font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">11 septembre — ce que vous avez demandé</span>
+  <h1>Faire rentrer les quatre</h1>
+  <p>Vous voulez la <b>quatrième pastille</b>. Je vous avais dit qu'elle
+  débordait : c'était vrai du dessin d'aujourd'hui, pas de tout dessin possible.
+  <b>Cette planche se mesure elle-même</b> — changez de téléphone, le verdict
+  change sous vos yeux.</p>
+</div>
+
+<div class="reglages">
+  <span class="mot-cle">Sur quel téléphone</span>
+  <div class="rangee-choix" id="largeurs"></div>
+  <span class="mot-cle">Ce qu'on resserre</span>
+  <div class="rangee-choix" id="options"></div>
+</div>
+
+<div class="verdict" id="verdict"></div>
+
+<div class="scene">
+  <div class="tel" id="tel"></div>
+</div>
+
+<div class="notes">
+
+  <h3>Les quatre façons de gagner la place</h3>
+  <div class="cadre">
+    <table id="tableau"></table>
+  </div>
+
+  <h3>Ce que je ne resserre pas</h3>
+  <p><b>Les 44 px de hauteur.</b> C'est la mesure d'un pouce sur un chantier,
+  parfois avec des gants — le 2 septembre, ces onglets étaient les seuls à 40 et
+  sont passés à 44. On resserre le rembourrage et les mots, jamais la cible.</p>
+
+  <h3>Pourquoi la quatrième est dorée</h3>
+  <p>Les trois premières <b>filtrent</b> la liste en dessous. La quatrième
+  <b>crée</b>. Du même gris, elle se lirait comme un filtre de plus, et vous
+  chercheriez pourquoi la liste ne change pas.</p>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var pole = document.getElementById("pole");
+  pole.addEventListener("click", function(){
+    var nuit = document.body.classList.toggle("nuit");
+    pole.setAttribute("aria-pressed", String(nuit));
+    pole.textContent = nuit ? "Voir sur Arborea" : "Voir sur Nuit";
+  });
+
+  var tel      = document.getElementById("tel");
+  var verdict  = document.getElementById("verdict");
+  var elLarges = document.getElementById("largeurs");
+  var elOpts   = document.getElementById("options");
+  var tableau  = document.getElementById("tableau");
+
+  /** Les mesures de l'application, telles quelles. */
+  var AUJOURDHUI = { corps:12.5, remb:8, ecart:4, marge:26, mini:60 };
+
+  var LARGEURS = [
+    { px:360, mot:"360 px — le petit" },
+    { px:390, mot:"390 px — le vôtre" },
+    { px:430, mot:"430 px — le grand" }
+  ];
+
+  var OPTIONS = [
+    {
+      cle:"tel-quel",
+      mot:"Tel quel",
+      resume:"Rien n'est resserré",
+      mots:["Tout","À facturer","Retours d’intervention","Créer une facture"],
+      style:AUJOURDHUI,
+      quoi:"Le dessin d’aujourd’hui, la quatrième ajoutée telle quelle.",
+      perd:"Rien — mais elle sort de l’écran."
+    },
+    {
+      cle:"quatrieme",
+      mot:"A · Le 4ᵉ mot court",
+      resume:"« Facturer »",
+      mots:["Tout","À facturer","Retours d’intervention","Facturer"],
+      style:AUJOURDHUI,
+      quoi:"Vos trois onglets ne bougent pas d’un pixel. Seul le mot neuf est court.",
+      perd:"Rien de ce qui existe."
+    },
+    {
+      cle:"troisieme",
+      mot:"B · Le 3ᵉ raccourci",
+      resume:"« Retours »",
+      mots:["Tout","À facturer","Retours","Créer une facture"],
+      style:AUJOURDHUI,
+      quoi:"La porte porte son nom entier ; « Retours d’intervention » perd son second mot.",
+      perd:"Le nom entier que vous aviez demandé le 9 septembre."
+    },
+    {
+      cle:"dessin",
+      mot:"C · Le dessin resserré",
+      resume:"Corps 11,5 · marges 20",
+      mots:["Tout","À facturer","Retours d’intervention","Créer une facture"],
+      style:{ corps:11.5, remb:6, ecart:3, marge:20, mini:52 },
+      quoi:"Tous les mots entiers. C’est le rembourrage, l’écart et les marges qui cèdent.",
+      perd:"Un demi-point de corps, et la marge commune à tout l’écran."
+    },
+    {
+      cle:"mots-courts",
+      mot:"D · Les mots seuls",
+      resume:"Dessin intact",
+      mots:["Tout","À facturer","Retours","Facturer"],
+      style:AUJOURDHUI,
+      quoi:"Les deux mots raccourcis, et le dessin ne bouge pas d’un pixel : mêmes 44 px, même corps, mêmes marges qu’aujourd’hui.",
+      perd:"Deux mots. Rien du dessin."
+    },
+    {
+      cle:"les-deux",
+      mot:"E · Les deux",
+      resume:"Mots courts + dessin",
+      mots:["Tout","À facturer","Retours","Facturer"],
+      style:{ corps:11.5, remb:6, ecart:3, marge:20, mini:52 },
+      quoi:"La ceinture et les bretelles : mots courts ET dessin resserré.",
+      perd:"Les mots ET le dessin, pour de la marge qu’on n’utilise pas."
+    }
+  ];
+
+  var large  = 390;
+  var choisie = "quatrieme";
+
+  function opt(){
+    return OPTIONS.filter(function(o){ return o.cle === choisie; })[0];
+  }
+
+  function brins(){
+    var L = [
+      { nom:"M. Aubert",   etat:"Facturé · 1 240,00 €",                 or:false },
+      { nom:"Mme Chaix",   etat:"Pas encore facturé · 360,00 € prévus", or:true  },
+      { nom:"M. Sabatier", etat:"Facturé · 890,00 €",                   or:false }
+    ];
+    return L.map(function(c){
+      return '<div class="brin"><p class="nom">' + c.nom + '</p>'
+           + '<p class="etat' + (c.or ? ' or' : '') + '">' + c.etat + '</p></div>';
+    }).join("");
+  }
+
+  /** La rangée, aux mesures de l'option — c'est ce qu'on mesurera. */
+  function rangee(o){
+    var s = o.style;
+    var pastilles = o.mots.map(function(mot, i){
+      var geste = (i === 3);
+      return '<button class="pastille' + (geste ? ' geste' : '') + '" type="button"'
+        + ' aria-pressed="' + (i === 0 && !geste) + '"'
+        + ' style="font-size:' + s.corps + 'px;padding:0 ' + s.remb + 'px;'
+        +   'min-width:' + (i === 0 ? s.mini : 0) + 'px">' + mot + '</button>';
+    }).join("");
+    return '<div class="onglets" id="rangee" style="gap:' + s.ecart + 'px;'
+      + 'margin-left:' + s.marge + 'px;margin-right:' + s.marge + 'px">' + pastilles + '</div>';
+  }
+
+  function dessiner(){
+    var o = opt();
+    tel.style.setProperty("--large", large + "px");
+
+    tel.innerHTML = '<div class="ter">'
+      + '<div class="entete"><h1>Terminés</h1></div>'
+      + '<div class="carte-tva"><span><span class="quoi">Ma TVA à déclarer</span>'
+      +   '<span class="periode">3ᵉ trimestre 2026</span></span>'
+      +   '<span class="mt">412,80 €</span></div>'
+      + rangee(o)
+      + '<div class="mois"><button class="feuillet" type="button" aria-label="Mois précédent">‹</button>'
+      +   '<span>Septembre 2026</span>'
+      +   '<button class="feuillet" type="button" aria-label="Mois suivant">›</button></div>'
+      + '<p class="compte"><span class="or">1 à facturer</span> · 2 facturés</p>'
+      + '<div class="lignes">' + brins() + '</div>'
+      + '</div>';
+
+    mesurer(o);
+    marquer();
+  }
+
+  /**
+   * LA MESURE — relevée dans la page, jamais estimée.
+   *
+   * On additionne la largeur RÉELLE de chaque pastille plus les écarts, et on
+   * la compare à la place que les marges laissent. Lire `scrollWidth` du
+   * conteneur ne suffirait pas : un conteneur de flex rend la largeur de son
+   * parent dès qu'il est contraint, et l'on croirait mesurer alors qu'on ne
+   * mesure rien (le défaut du 15 août 2026, « 0 − 0 = 0 »).
+   */
+  function mesurer(o){
+    var r = document.getElementById("rangee");
+    var pastilles = r.querySelectorAll(".pastille");
+    var prise = 0;
+    for (var i = 0; i < pastilles.length; i++) {
+      prise += pastilles[i].getBoundingClientRect().width;
+    }
+    prise += o.style.ecart * (pastilles.length - 1);
+    prise = Math.round(prise);
+
+    // Le cadre du téléphone porte un cheveu de chaque côté.
+    var dispo = large - 2 - o.style.marge * 2;
+
+    if (prise === 0 || dispo <= 0) {
+      verdict.className = "verdict";
+      verdict.innerHTML = '<p class="chiffres">Rien à mesurer : la rangée fait zéro.</p>';
+      return;
+    }
+
+    var rentre = prise <= dispo;
+    var ecart = Math.abs(dispo - prise);
+    verdict.className = "verdict " + (rentre ? "rentre" : "deborde");
+    verdict.innerHTML = '<p class="chiffres"><b>' + prise + ' px</b> pour <b>' + dispo
+      + ' px</b> disponibles</p>'
+      + '<span class="dit">' + (rentre ? "Ça rentre" : "Ça déborde") + '</span>'
+      + '<span class="reste">' + (rentre
+          ? ecart + " px de marge — " + o.resume
+          : "Il manque " + ecart + " px — " + o.resume) + '</span>';
+  }
+
+  function marquer(){
+    Array.prototype.forEach.call(elLarges.children, function(b){
+      b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-large")) === large));
+    });
+    Array.prototype.forEach.call(elOpts.children, function(b){
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-opt") === choisie));
+    });
+  }
+
+  /** Le tableau du bas, rempli des MÊMES mesures — jamais recopiées à la main. */
+  function remplirLeTableau(){
+    var lignes = ['<tr><th>Ce qu’on resserre</th><th>Ce que ça donne</th>'
+      + '<th>360</th><th>390</th><th>430</th><th>Ce que ça coûte</th></tr>'];
+
+    OPTIONS.forEach(function(o){
+      var cases = LARGEURS.map(function(L){
+        var m = mesureSeche(o, L.px);
+        return '<td class="' + (m.rentre ? "ok" : "non") + '">'
+             + (m.rentre ? "oui" : "non") + '</td>';
+      }).join("");
+      lignes.push('<tr><td><b>' + o.mot + '</b></td><td>' + o.quoi + '</td>'
+        + cases + '<td>' + o.perd + '</td></tr>');
+    });
+
+    tableau.innerHTML = lignes.join("");
+  }
+
+  /**
+   * La même mesure, hors écran, pour remplir le tableau.
+   *
+   * Elle passe par le VRAI rendu — une boîte posée dans la page puis retirée —
+   * plutôt que par un calcul de largeur de texte : deux façons de mesurer
+   * finiraient par se contredire, et c'est le tableau qu'on croirait.
+   */
+  function mesureSeche(o, largeurEcran){
+    var boite = document.createElement("div");
+    boite.style.cssText = "position:absolute;left:-9999px;top:0;width:" + largeurEcran + "px";
+    boite.innerHTML = rangee(o).replace('id="rangee"', "");
+    document.body.appendChild(boite);
+    var pastilles = boite.querySelectorAll(".pastille");
+    var prise = 0;
+    for (var i = 0; i < pastilles.length; i++) prise += pastilles[i].getBoundingClientRect().width;
+    prise += o.style.ecart * (pastilles.length - 1);
+    document.body.removeChild(boite);
+    var dispo = largeurEcran - 2 - o.style.marge * 2;
+    return { prise: Math.round(prise), dispo: dispo, rentre: Math.round(prise) <= dispo };
+  }
+
+  elLarges.innerHTML = LARGEURS.map(function(L){
+    return '<button type="button" data-large="' + L.px + '" aria-pressed="false">' + L.mot + '</button>';
+  }).join("");
+  Array.prototype.forEach.call(elLarges.children, function(b){
+    b.addEventListener("click", function(){
+      large = Number(b.getAttribute("data-large"));
+      dessiner();
+    });
+  });
+
+  elOpts.innerHTML = OPTIONS.map(function(o){
+    return '<button type="button" data-opt="' + o.cle + '" aria-pressed="false">' + o.mot + '</button>';
+  }).join("");
+  Array.prototype.forEach.call(elOpts.children, function(b){
+    b.addEventListener("click", function(){
+      choisie = b.getAttribute("data-opt");
+      dessiner();
+    });
+  });
+
+  dessiner();
+  remplirLeTableau();
+})();
+</script>
+
+</body>
+</html>
