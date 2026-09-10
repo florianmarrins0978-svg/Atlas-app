@@ -15,7 +15,21 @@
    `:root` — et non sur `<body>` : une variable définie sur le corps ne serait
    pas visible d'une déclaration faite à la racine, et ces sept lignes
    retomberaient silencieusement sur leur repli. */
-:root {
+/* **ET AUSSI `.atlas-charte-locale`, pour une charte posée PLUS BAS DANS
+   L'ARBRE** — la porte de nuit, qui s'affiche avant que quiconque soit connu
+   (`src/components/atlas/PorteDeNuit.tsx`).
+
+   **Le piège, mesuré le 10 septembre 2026.** Ces alias sont *calculés* là où
+   ils sont déclarés, puis hérités comme valeur figée. Déclarés seulement sur
+   `:root`, où aucun `--atlas-*` n'existe, ils valent leur repli CLAIR pour
+   toute la page — et un enfant qui repose les `--atlas-*` ne les recalcule
+   pas. Le fond de la porte passait donc en nuit pendant que les champs
+   restaient crème.
+
+   **Deux sélecteurs, UN SEUL bloc** : recopier ces neuf lignes ailleurs, ce
+   serait deux dérivations pour une seule question (`CLAUDE.md` §3). */
+:root,
+.atlas-charte-locale {
   --ink: var(--atlas-ink, #1c1c1a);            /* --charcoal */
   --paper: var(--atlas-cream, #f5f3ee);        /* --bone : fond de page */
   --card: var(--atlas-card, #faf9f5);          /* --cream : cartes et tuiles */
@@ -23,6 +37,7 @@
   --accent-deep: var(--atlas-rustDeep, #4f5f4c); /* --pine-light */
   --line: var(--atlas-line, rgba(28, 28, 26, 0.12));
   --or: var(--atlas-or, #b98b47);              /* le second accent, celui de ce qu'on LIT */
+  --muted: var(--atlas-muted, #8a8578);        /* texte secondaire, invites de saisie */
   --ok: #7d9a6d;           /* --sage : ne change pas d'une charte à l'autre */
   --warn: #b8860b;
 }
@@ -1114,63 +1129,41 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   }
 }
 
-/* ─── La porte : le sceau qui tourne pendant qu'on vérifie ────────────────────
- *
- * Retenu par le patron le 12 août 2026 (maquettes 33 et 34) : « un logo
- * dynamique qui s'enclenche au moment où on valide l'adresse et le mdp ».
- *
- * **`infinite` n'est pas un excès de zèle.** Une demi-seconde est la durée d'UN
- * tour, pas celle de l'attente : le serveur répond quand il répond, et sur un
- * réseau de chantier cela peut prendre deux secondes. Une marque qui s'arrête
- * au bout d'un demi-tour pendant que la page attend encore ressemble à une
- * application plantée — c'est écrit sur la maquette, et c'est ce qui a décidé
- * du choix entre les six animations.
- *
- * **Ce qui n'est PAS tenu, et il faut le savoir avant de s'en étonner :** le
- * tour n'a pas de plancher. Si la vérification répond en cent millisecondes, le
- * geste est coupé en son milieu. Le tenir vraiment supposerait de retarder la
- * navigation côté client, alors que `connexionAction` redirige côté serveur —
- * on paierait un demi-seconde d'attente réelle à chaque connexion pour une
- * question d'allure. Arbitrage assumé, pas oubli. */
-.atlas-sceau-en-marche {
-  animation: atlas-sceau-tour 0.5s cubic-bezier(0.55, 0, 0.25, 1) infinite;
-}
-@keyframes atlas-sceau-tour {
-  to { transform: rotate(360deg); }
+@media (prefers-reduced-motion: reduce) {
+  .atlas-champ-gelule { transition: none; }
 }
 
-/* Le champ de la porte : une ligne d'imprimé, pas une plage.
+/* ===========================================================================
+ * LA GÉLULE DE LA PORTE — écran 3 de `appli/la-porte-en-plein-air.html`
  *
- * **16 px, et cela ne se négocie pas** : en dessous, iOS agrandit la page dès
- * que le champ prend le focus — le patron tapait son adresse et l'écran lui
- * sautait au visage. Cet écran était en 15 px depuis toujours.
+ * Sa demande du 10 septembre 2026, photo à l'appui : la connexion n'a plus de
+ * libellés au-dessus des champs, mais deux gélules sombres avec le mot dedans.
  *
- * La ligne passe à l'or sous le champ qu'on remplit : c'est la seule réponse à
- * « ça n'a pas l'air cliquable » qui ne remette pas une plage sous le texte
- * (`HANDOVER.md`, piège 18). Sans elle, la proposition retenue serait un
- * formulaire sans affordance. */
-.atlas-champ-ligne {
+ * **Pourquoi une classe et non un style en ligne.** Le texte d'invite se peint
+ * par `::placeholder`, qu'aucun style en ligne ne peut atteindre. Et parce
+ * qu'elle lit les variables de la charte, elle devient nuit d'elle-même à
+ * l'intérieur de `PorteDeNuit` — aucune couleur n'est écrite ici.
+ *
+ * **16 px, jamais moins** : en dessous, iOS agrandit la page dès qu'un champ
+ * prend le focus, et il devait la rétablir à la main (`test-porte-e2e.ts`).
+ * =========================================================================== */
+.atlas-champ-gelule {
   width: 100%;
   font-size: 16px;
-  line-height: 1.4;
+  line-height: 1.2;
   color: var(--ink);
-  background: transparent;
+  background: var(--card);
   border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
-  padding: 0 0 10px;
+  border-radius: 999px;
+  padding: 15px 20px;
   outline: none;
   appearance: none;
   -webkit-appearance: none;
-  transition: border-color 0.22s ease;
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: box-shadow 0.22s ease;
 }
-.atlas-champ-ligne:focus {
-  border-bottom-color: var(--or);
-}
-@media (prefers-reduced-motion: reduce) {
-  .atlas-sceau-en-marche { animation: none; }
-  .atlas-champ-ligne { transition: none; }
-}
+.atlas-champ-gelule::placeholder { color: var(--muted); }
+.atlas-champ-gelule:focus { box-shadow: inset 0 0 0 1.4px var(--or); }
 
 /* ===========================================================================
  * L'ATTENTE QUI SOUFFLE — les trois points de la dictée

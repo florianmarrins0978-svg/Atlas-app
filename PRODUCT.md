@@ -136,7 +136,9 @@ ouvert » — ni le nom, ni la marque.**
 Ce qui existe aujourd'hui est donc de l'**existant**, pas un engagement :
 
 - le nom **Atlas**, employé partout dans le dépôt ;
-- la **feuille dessinée au trait** (`src/components/atlas/MarqueAtlas.tsx`) ;
+- la **feuille dessinée au trait** — retirée du code le 10 septembre 2026 avec
+  `MarqueAtlas.tsx`, la porte étant son dernier usage ; elle reste dans
+  l'historique git ;
 - la charte reprise d'**Arborea** — son propre site —, relevée au navigateur et
   non approchée à l'œil : vert pin `#2f3b2f` en accent d'action, or `#B98B47`
   en accent de lecture, fond crème, polices du système.

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le prompt `/impeccable` : repartir d'un client, et la fiche d'intervention</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-prompt-impeccable--repartir-dun-client-et-la-fiche-dintervention">Le prompt <code>/impeccable</code> : repartir d'un client, et la fiche d'intervention</h1>
+<p>À coller après <code>/impeccable</code> dans une session neuve. Il tient seul.</p>
+<p>Écrit le 7 septembre 2026, sur deux demandes du patron le même jour.</p>
+<blockquote><em>« Aujourd'hui si je veux faire un devis à un client qui existe déjà dans ma base de données je ne peux pas, je ne vais pas recréer des fiches client à chaque fois si le client c'est le même ! »</em></blockquote>
+<blockquote><em>« Il faut une fiche d'intervention pour le client pour qu'il puisse dire oui le chantier est fini et avoir accès aux photos du chantier. Fiche client → devis → fiche d'intervention pour le salarié avec photos, qui iront dans la catégorie client. Le salarié doit avoir accès à cette fiche dans le planning, elle doit être rattachée au client. Et sur la feuille de route de sa journée il doit pouvoir créer une preuve de fin de chantier, photo à l'appui. »</em></blockquote>
+<p><strong>Trois vérifications faites avant d'écrire ce prompt — elles changent le travail.</strong> Elles sont dans le corps du prompt ; ne les redécouvre pas.</p>
+<hr>
+<p>``` Deux demandes du patron, un seul parcours : REPARTIR D'UN CLIENT QUI EXISTE, et FINIR UN CHANTIER AVEC UNE PREUVE. Elles se tiennent, et elles se traitent ensemble.</p>
+<p>═══ CE QUI EXISTE DÉJÀ, ET QU'IL NE FAUT PAS RÉÉCRIRE ═══════════════════</p>
+<p>Trois choses ont été vérifiées dans le code le 7 septembre 2026. Ne repars pas de zéro sur elles.</p>
+<ol>
+<li><strong>LE RAPPROCHEMENT DE CLIENTS EXISTE, ET IL MARCHE.</strong> <code>trouverOuCreerClient</code> (repositories/clients.ts:46) appelle <code>rapprocherClient</code> (lib/rapprochement-client.ts), une règle pure : même nom + une coordonnée qui concorde (téléphone ou e-mail) → le client est RÉUTILISÉ, pas recréé. Une coordonnée qui CONTREDIT interdit le rapprochement — c'est ce qui distingue quatre Martins.</li>
+</ol>
+<p><strong>Donc sa base n'a pas de doublons. Ce qui manque est un GESTE, pas une règle</strong> — et c'est pour cela qu'il croit devoir tout retaper :</p>
+<p>· rien à l'écran ne lui dit « ce client existe déjà, je le reprends » ; · depuis la fiche d'un client (<code>/clients/[id]</code>), <strong>aucun lien ne mène à un nouveau chantier</strong> — vérifié : cette page ne porte que les pièces du dossier.</p>
+<ol>
+<li><strong>LA FEUILLE DE CHANTIER DU SALARIÉ EXISTE</strong>, en PDF, sans aucun montant (<code>server/pdf/fiche-chantier-pdf.ts</code>), atteinte depuis le planning (<code>/api/chantiers/[id]/feuille/pdf</code>). Ce qui manque : qu'elle soit VIVANTE dans l'application, et qu'on puisse y déposer quelque chose.</li>
+</ol>
+<ol>
+<li><strong>LE COMPTE RENDU AU CLIENT EXISTE</strong> : <code>/entretien/[jeton]</code>, page publique par jeton. Il porte l'horodatage et l'empreinte du contenu — sa décision du 16 août 2026, quand il a demandé les signatures électroniques puis constaté lui-même : <em>« s'il n'est pas là, on ne peut pas le faire signer. »</em> <strong>Il ne porte pas de photos.</strong></li>
+</ol>
+<p>═══ DEUX CHOSES QU'IL FAUT LUI DIRE AVANT DE CODER ══════════════════════</p>
+<p><strong>A. « Le client dit oui, le chantier est fini » entre en collision avec deux de ses propres décisions.</strong></p>
+<p>· le 16 août, il a constaté que <strong>le client n'est pas là</strong> quand on finit : « on tond pendant que le client est au travail ». Une fiche qui attend son « oui » attendra souvent dans le vide ; · le parcours n'a que <strong>DEUX arrêts</strong> — avant l'envoi du devis, avant le départ de la facture. Un troisième a été retiré parce qu'il ne pouvait mener qu'à « oui ».</p>
+<p><strong>La question à lui poser, en une ligne :</strong> la validation du client BLOQUE-t-elle la facture, ou l'accompagne-t-elle ? Recommandation à défendre : elle ne bloque pas. Le client PEUT confirmer — et sa confirmation vaut preuve renforcée, comme l'acceptation d'un devis —, mais son silence n'empêche pas de facturer un chantier réellement fait. Sinon il attendra un clic qui ne viendra jamais, et c'est SA trésorerie.</p>
+<p><strong>B. Donner au salarié le droit de déposer une preuve ROUVRE le modèle des rôles, figé le 30 août 2026.</strong> Aujourd'hui un salarié voit le planning en lecture seule et sa feuille sans un montant. Écrire une photo et clore un chantier, c'est de l'écriture.</p>
+<p>Ce n'est pas un obstacle — c'est SA décision à prendre, et elle se pose clairement : le salarié peut-il déposer des photos et déclarer « c'est fini », sans jamais voir un prix ? Recommandation à défendre : <strong>oui, et rien d'autre</strong> — un droit d'écriture étroit, limité aux chantiers de SA journée, qui ne donne accès ni aux montants, ni au devis, ni à la facture. Le contrôle doit prouver qu'un salarié qui tente d'ouvrir un prix se fait refuser.</p>
+<p>═══ LE PARCOURS QU'IL DÉCRIT, ET CE QU'IL FAUT EN FAIRE ═════════════════</p>
+<p>fiche client ──▶ devis ──▶ fiche d'intervention (salarié, photos) │ └──▶ rangée chez le CLIENT</p>
+<p>client déjà créé ──▶ devis ──▶ fiche d'intervention</p>
+<p>Il est juste. Ce qu'il implique, et qu'aucune des deux moitiés ne peut ignorer :</p>
+<p>la fiche d'intervention est rattachée au CHANTIER, et le chantier au CLIENT. C'est déjà le modèle de la base : ne crée pas un troisième lien direct entre une intervention et un client, il divergerait le jour où un chantier change de main.</p>
+<p>═══ LE TRAVAIL, EN TROIS LOTS — ne les mélange pas ══════════════════════</p>
+<p><strong>LOT 1 — repartir d'un client (le plus urgent, et le plus simple)</strong></p>
+<p><strong>ATTENTION — IL A DÉJÀ ÉCARTÉ LA SOLUTION ÉVIDENTE.</strong> Le 17 août 2026, devant l'idée qu'Atlas lui propose une liste de correspondances à choisir : <em>« non justement, il ne faut pas »</em> (écrit en tête de <code>lib/rapprochement-client.ts</code>). Le rapprochement est <strong>automatique, sans geste de sa part</strong>, et cela ne se rouvre pas. Une première version de ce prompt demandait exactement ce qu'il a refusé ; la session du 7 septembre l'a relevé, code à l'appui.</p>
+<p>Ce qui reste à faire, et qui respecte sa décision :</p>
+<p>· Atlas reprend le bon client <strong>tout seul, comme aujourd'hui</strong>, et le DIT après coup — « repris chez M. Martins, Saint-Marc, 3 chantiers ». Il ne choisit rien : il voit ce qui a été fait ; · <strong>un moyen de séparer</strong> si le rapprochement est faux. C'est le seul risque de cette fonctionnalité, et il ne se répare pas d'un clic aujourd'hui : verser le chiffre d'affaires d'un homme sur la fiche d'un autre ; · depuis la fiche d'un client, un chemin vers un nouveau chantier POUR LUI, déjà rempli — cette page ne porte aujourd'hui que les pièces du dossier ; · rien ne se retape : ce qu'Atlas sait déjà, il l'écrit.</p>
+<p>Le rapprochement serveur ne change pas — c'est son résultat qu'on rend VISIBLE, au lieu de l'appliquer en silence.</p>
+<p><strong>LOT 2 — la fiche d'intervention, côté salarié</strong></p>
+<p>· vivante dans l'application, atteinte depuis SA journée au planning ; · elle porte ce qu'il y a à faire (la feuille de chantier existe : reprends-la, ne la réécris pas), et permet de déposer des PHOTOS ; · un geste « c'est fini », avec photo à l'appui — horodaté, et qui dit qui l'a posé ; · les photos rejoignent le dossier du CLIENT (la pellicule existe : <code>Pellicule.tsx</code>).</p>
+<p><strong>LOT 3 — ce que le client reçoit</strong></p>
+<p>· le compte rendu par jeton existe (<code>/entretien/[jeton]</code>) : il gagne les photos, et un moyen de confirmer ; · sa confirmation est horodatée et gardée, comme l'acceptation d'un devis ; · elle ne bloque rien (voir A ci-dessus, à lui faire trancher).</p>
+<p>═══ CE QUI NE SE NÉGOCIE PAS ════════════════════════════════════════════</p>
+<ul>
+<li>Toute lecture passe par withEntreprise(utilisateurId, entrepriseId, fn).</li>
+<li><strong>La page par jeton est PUBLIQUE</strong> : lien non devinable, lecture seule, expiration. Elle s'éprouve avec une suite BASE sous le rôle <code>atlas_app</code> — les suites navigateur traversent la RLS et ne voient pas les défauts d'isolation. Le 8 août 2026, un lien de facture était mort en production pendant que la suite navigateur était verte.</li>
+<li><strong>Des photos de chantier partent chez un client</strong> : ce sont des données. Rien ne doit fuir d'un chantier à l'autre, ni d'un client à l'autre. Une photo visible par le mauvais jeton est un défaut de priorité haute.</li>
+<li>Les rôles : un salarié ne voit jamais un montant, même sur une fiche qu'il remplit.</li>
+<li>Français partout, règles pures dans src/lib/, aucune couleur écrite en clair, aucune flèche décorative.</li>
+</ul>
+<p>═══ LA CONTRAINTE QUI PRIME SUR TOUT LE RESTE ═══════════════════════════</p>
+<p>Sa consigne du 5 septembre 2026 (PRODUCT.md, « Accessibility &amp; Inclusion ») : « la plupart des patrons qui vont utiliser l'app sont des vieux qui ont du mal à se servir de leur téléphone ; il faut que ce soit hyper intuitif et simple ».</p>
+<p>Et le salarié, lui, est sur un chantier : gants, écran sale, une main. « Poser une photo » doit être <strong>un appui</strong>, pas un parcours.</p>
+<p>═══ LA MÉTHODE ══════════════════════════════════════════════════════════</p>
+<ol>
+<li>Lis PRODUCT.md, CLAUDE.md, docs/AGENT.md, <code>docs/modele-des-roles.md</code>, puis git log -20.</li>
+<li><strong>Réponds-lui d'abord sur A et B</strong> — la validation qui bloque ou non, et le droit d'écriture du salarié. Rien ne se code avant.</li>
+<li><strong>Dessine avant de coder</strong> : une planche par lot dans appli/, un lien dans appli/essais.html, l'adresse ENTIÈRE une fois qu'elle répond 200 — jamais une capture de la maquette.</li>
+<li>Regarde les écrans en capture, à 390 × 664, Origine ET Nuit, <strong>y compris vus par un salarié</strong>.</li>
+<li>Une migration se joue AVANT la batterie, et la batterie complète est obligatoire : ce lot touche les rôles et une page publique.</li>
+</ol>
+<p>═══ LA BATTERIE, SUR SON POSTE WINDOWS ══════════════════════════════════</p>
+<ul>
+<li><strong>Préviens-le AVANT de la lancer</strong> ; son accord vaut ensuite pour toute la séquence.</li>
+<li>Sa base vit dans Docker : <code>docker start atlas-postgres atlas-redis</code>.</li>
+</ul>
+<p>``<code>bash export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test" npm run verifier:avant-livraison </code>``</p>
+<p>═══ LE RENDU ════════════════════════════════════════════════════════════</p>
+<p>Un document dans docs/, commité avec le code, plus sa page : node scripts/md-en-page.mjs docs/&lt;nom&gt;.md Il porte : un verdict par point, le fichier qui le fonde, ce qui a été fait autrement et pourquoi, ce qui a été refusé et ce que ça aurait coûté, les chiffres exacts de la batterie, et ce qui reste ouvert. ```</p>
+<hr>
+<h2 id="le-diagnostic-en-une-phrase">Le diagnostic, en une phrase</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sa base <strong>n'a pas de doublons</strong> — Atlas retrouve déjà un client au nom et à la coordonnée. Ce qui lui manque, c'est de le <strong>voir</strong> : rien ne lui dit que le client a été reconnu, et aucun chemin ne part de la fiche d'un client.</p>
+</main>
+</body>
+</html>

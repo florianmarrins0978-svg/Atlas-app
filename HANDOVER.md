@@ -123,7 +123,7 @@ au dépôt comme à l'écran ; ne pas réintroduire de seconde lecture.
 | la migration | `drizzle/0084_abonnement.sql` — `abonnements` (une ligne par entreprise) et `evenements_paiement` (l'idempotence du crochet) |
 | les pièces | `src/lib/abonnements.ts` (les règles), `src/lib/signature-stripe.ts`, `src/server/paiement/stripe.ts`, `src/server/repositories/abonnements.ts`, `src/app/reglages/abonnement/`, `src/app/api/paiement/route.ts` |
 | les suites | `test-abonnements.ts` (22), `test-signature-stripe.ts` (16), `test-abonnement-db.ts` (15, sous `atlas_app`), `test-paiement-stripe.ts` (31, faux prestataire local) |
-| le détail | `ARCHITECTURE.md` §317, `docs/lot-abonnement-stripe.md` |
+| le détail | `ARCHITECTURE.md` §318, `docs/lot-abonnement-stripe.md` |
 
 **CE QU'IL NE FAUT PAS « SIMPLIFIER », et c'est le cœur du lot.** Le prix ne
 vient PAS de Stripe. On ne crée pas de tarifs à la main dans son tableau de bord

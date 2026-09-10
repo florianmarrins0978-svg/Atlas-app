@@ -26992,8 +26992,70 @@ contrôles neufs ont été mis au rouge contre le code d'avant avant d'être
 retenus, et la sonde a été retirée — ce qu'elle savait faire vit maintenant dans
 `scripts/test-retour-page-davant-e2e.ts`.
 
+---
 
-## §317 — L'abonnement : le prix ne vit qu'à UN endroit, et Stripe le recopie
+## §317 — `next start` n'impose PAS `NODE_ENV=production`, et le bandeau du banc l'a payé
+
+**Le défaut, tel qu'il se voyait :** vingt-six suites navigateur rouges dans la
+batterie complète — et **vertes** jouées seules ou par groupes de quatre. Le
+message qui a fini par tout expliquer venait d'une seule d'entre elles : *« le
+bandeau du banc apparaît sur un serveur qui n'en est pas un »*.
+
+**La règle disait ceci**, et le commentaire au-dessus l'affirmait :
+
+```ts
+// « next start impose NODE_ENV=production »
+return env.NODE_ENV !== "production";
+```
+
+**C'est faux.** `next start` pose `NODE_ENV=production` **seulement si la
+variable est absente** ; il respecte celle qu'on lui donne. La batterie sert
+donc du code BÂTI dans un environnement où `NODE_ENV` vaut `development`, et la
+règle y répondait « la version rapide se construit encore ».
+
+| | Ce qui se passait |
+|---|---|
+| le serveur des suites | version bâtie, profil banc, `NODE_ENV=development` dans son environnement |
+| la règle | lisait cette variable **à l'exécution** et croyait le serveur en développement |
+| l'écran | portait « version rapide en construction », qui pousse tout le contenu vers le bas |
+| les suites | mesuraient des écrans décalés, et accusaient chacune un écran différent |
+
+**Le piège d'empaquetage, et c'est lui la racine.** L'empaqueteur remplace
+`process.env.NODE_ENV` par sa valeur **au moment de la construction** — mais
+seulement écrit ainsi, littéralement. Passer par une variable
+(`env.NODE_ENV`, où `env = process.env`) défait ce remplacement et rend une
+lecture à l'exécution. Deux formes qui se ressemblent, deux moments
+différents ; et celle qui lit à l'exécution peut être trompée par
+l'environnement.
+
+**Vérifié dans le code compilé**, pas déduit : la fonction sortait de
+l'empaqueteur en `"production"!==e.NODE_ENV`, tandis que la même lecture écrite
+en toutes lettres à côté sortait figée en `"production"`.
+
+**Ce qui remplace la lecture : un fait de compilation.**
+
+```ts
+const SERVIE_BATIE = process.env.NODE_ENV === "production";
+```
+
+Le code servi SAIT désormais s'il a été bâti, et aucune variable d'environnement
+ne peut lui faire dire le contraire. C'est déjà la forme qu'emploie
+`src/server/version-executee.ts` pour la même question — une seule façon de
+répondre, à deux endroits.
+
+**Éprouvé sur la panne elle-même** : un serveur bâti, profil banc,
+`NODE_ENV=development` posé exprès, avec un fichier d'avancement sur le disque.
+Avant : `{faits:2,total:40,…}` et le bandeau. Après : `null`.
+
+| | |
+|---|---|
+| la règle | `laVersionRapideSeConstruit` dans `src/server/etat-banc.ts` |
+| le contrôle | `scripts/test-etat-banc.ts` — un cas neuf : une version bâtie se tait même quand l'environnement dit « development » |
+| ce qui le voit en vrai | `scripts/test-bandeau-banc-e2e.ts`, deux dernières assertions |
+
+
+
+## §318 — L'abonnement : le prix ne vit qu'à UN endroit, et Stripe le recopie
 
 **Sa demande du 9 septembre 2026** : *« et que si on clique sur s'abonner qu'on
 puisse payer, mets tout le système en place »*, puis *« fais-moi Stripe »*.
@@ -27112,7 +27174,7 @@ l'adresse de retour ne se déduit **jamais** de la requête : l'hôte annoncé e
 du paiement, vers une page choisie par un tiers — la faute que ce dépôt a fermée
 sur `x-forwarded-for`.
 
-## §318 — La porte est en NUIT, et une charte peut se poser au milieu de l'arbre
+## §319 — La porte est en NUIT, et une charte peut se poser au milieu de l'arbre
 
 **Sa remarque du 10 septembre 2026, photo à l'appui :** *« toi tu me montres un
 écran blanc, regarde la photo que je t'ai jointe, elle est noire, c'est celle-là

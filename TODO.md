@@ -272,7 +272,7 @@ chiffre, une migration ajoute l'état — ne pas l'inventer d'ici là.
 
 ### 4. Le portail ne sait pas changer de formule, et c'est Atlas qui le fait
 
-Conséquence assumée du choix de tarif (`ARCHITECTURE.md` §317) : le portail
+Conséquence assumée du choix de tarif (`ARCHITECTURE.md` §318) : le portail
 client de Stripe ne propose un changement de formule que parmi des tarifs
 déclarés à la main, ce qui serait une seconde grille tarifaire. Le changement se
 fait donc dans Atlas, au prorata. **Ne pas « simplifier » en le renvoyant au
@@ -1726,20 +1726,33 @@ et le 8 je choisis la B ».** Tout est codé — `ARCHITECTURE.md` §252,
 
 ## HUIT SUITES NAVIGATEUR SONT ROUGES SUR CE POSTE, ET LE PRODUIT N'Y EST POUR RIEN (4 sept. 2026)
 
-**Elles sont VINGT-DEUX le 9 septembre 2026**, mesurées sur une batterie
-complète dans un conteneur d'agent — et la famille s'explique par une seule
-ligne du journal : *« le bandeau du banc apparaît sur un serveur qui n'en est
-pas un »* (`test-bandeau-banc-e2e`). Ce bandeau est une **bande fixe** : tout
-ce qui se mesure « recouvert » ou « tient dans un écran » tombe avec lui —
-`test-connexion-figee`, `test-face-id`, `test-devis-client`,
-`test-pas-la-ce-jour`, et le reste.
+**Elles étaient VINGT-SIX le 10 septembre 2026**, et la cause du bandeau a été
+trouvée puis corrigée le jour même (`ARCHITECTURE.md` §317) : `next start`
+n'impose pas `NODE_ENV=production`, et la règle du bandeau lisait cette variable
+à l'exécution.
 
-**Vérifié arbre remis à nu** (`git stash` du seul fichier touché) :
-`test-pas-la-ce-jour-e2e` rend le MÊME échec avant et après le lot du
-9 septembre. Ce n'est donc pas un lot qui les allume — mais tant que ce
-bandeau paraît hors banc, **la batterie ne peut plus rendre un vert ici**, et
-c'est elle qui autorise une livraison (`CLAUDE.md` §5). À reprendre en
-premier, avant tout lot qui compte sur elle.
+**CE QUE J'AVAIS ÉCRIT ICI ÉTAIT FAUX SUR UN POINT, et c'est le genre d'erreur
+qui fait chercher au mauvais endroit :** j'avais conclu « le produit n'y est
+pour rien, c'est ce poste ». Le bandeau était bien un **défaut du produit** —
+il aurait paru de la même façon sur le banc du patron servi avec un `NODE_ENV`
+posé à la main.
+
+**MESURÉ APRÈS LE CORRECTIF, le 10 septembre :** 26 rouges deviennent **19**
+(114/140 puis 121/140). Sept suites s'éteignent avec le bandeau — bandeau banc,
+connexion figée, Face ID, fiche client, grille des prix, cases réglables,
+onglets des terminés.
+
+**Les dix-neuf qui restent n'ont plus de cause commune**, et c'est ce qui change
+tout : chacune la sienne, à ouvrir une par une. Trois échantillons lus dans le
+journal du 10 septembre :
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-reglages-e2e` | *« Sans clé, l'écran doit annoncer le mode déterministe. Écran : Atlas IA »* |
+| `test-recherche-client-e2e` | *« taper un nom réduit la liste à ce nom »* |
+| `test-pas-la-ce-jour-e2e` | *« le geste passe sous une bande fixe »* — le bandeau n'y est plus, la bande est donc une autre |
+
+La liste ci-dessous, elle, tient toujours pour les suites de dates.
 
 
 

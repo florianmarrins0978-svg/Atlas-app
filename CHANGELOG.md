@@ -31,6 +31,30 @@ geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
 maintenant dans la suite navigateur, qui refait le geste quatre fois.
 
 
+### Le bandeau « en construction » se taisait mal — vingt-six suites en payaient le prix
+
+*« Répare le bandeau du banc. »* La règle croyait que `next start` impose
+`NODE_ENV=production` : c'est faux, il ne le pose que si la variable manque. Un
+serveur qui sert du code **bâti** avec `NODE_ENV=development` dans son
+environnement — celui de la batterie — s'entendait donc dire « la version rapide
+se construit encore », et le bandeau paraissait sur tous ses écrans, poussant le
+contenu vers le bas.
+
+**La racine est un piège d'empaquetage** : `process.env.NODE_ENV` est remplacé
+par sa valeur à la construction, mais seulement écrit littéralement. La règle le
+lisait à travers une variable, ce qui rendait la lecture à l'exécution — donc
+trompable. Elle reçoit désormais un **fait de compilation** (`ARCHITECTURE.md`
+§317), la forme qu'employait déjà l'écran des réglages.
+
+**Éprouvé sur la panne elle-même**, pas sur une panne imaginée : serveur bâti,
+profil banc, `NODE_ENV=development` posé exprès. Avant, l'adresse d'état rendait
+un avancement ; après, `null`.
+
+**ET CE QUE J'AI DIT HIER ÉTAIT FAUX SUR UN POINT.** J'ai écrit que les vingt-deux
+suites rouges tenaient à ce bandeau « et que le produit n'y était pour rien ».
+Le bandeau était bien en cause — mais c'était **un vrai défaut du produit**, pas
+un artefact de ce poste.
+
 ### L'ordre de l'absence : une planche, rien de codé
 
 Ses corrections du 10 septembre, sur l'écran qu'il venait d'essayer : *« l'ordre

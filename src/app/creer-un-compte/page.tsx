@@ -15,7 +15,7 @@ import {
   typographie,
   type Question,
 } from "@/lib/creation-compte";
-import { charte } from "@/lib/chartes";
+import PorteDeNuit, { CHAMP, NUIT, SERIF } from "@/components/atlas/PorteDeNuit";
 import OeilMotDePasse from "@/components/atlas/OeilMotDePasse";
 import { creerLeCompteAction } from "./actions";
 import type { SaisieCompte } from "@/server/repositories/creation-compte";
@@ -45,14 +45,12 @@ import type { SaisieCompte } from "@/server/repositories/creation-compte";
  * remplie sans que personne l'ait retapée.
  */
 
-const NUIT = charte("nuit").jetons;
-const FOND = `radial-gradient(120% 62% at 8% 4%, ${NUIT.rustTint} 0%, ${NUIT.card} 40%, ${NUIT.cream} 78%)`;
-const SERIF = { fontFamily: "ui-serif, Georgia, serif" } as const;
-const CHAMP = {
-  background: NUIT.card,
-  color: NUIT.ink,
-  boxShadow: `inset 0 0 0 1px ${NUIT.line}`,
-} as const;
+/**
+ * **La nuit vit désormais dans `PorteDeNuit`**, partagée avec la connexion —
+ * 10 septembre 2026. Elle était écrite ici et nulle part ailleurs, si bien que
+ * l'autre moitié de la même porte était restée en crème pendant deux jours
+ * (`CLAUDE.md` §3 : jamais de règle dupliquée, jamais de règle solitaire).
+ */
 
 export default function CreerUnComptePage() {
   const router = useRouter();
@@ -139,10 +137,7 @@ export default function CreerUnComptePage() {
   const manque = fini ? phraseDeCeQuiManque(resteAFaire(reponses)) : null;
 
   return (
-    <div
-      className="atlas-bas-sans-barre flex min-h-[100dvh] flex-col px-[22px]"
-      style={{ background: FOND, color: NUIT.ink }}
-    >
+    <PorteDeNuit className="atlas-bas-sans-barre flex min-h-[100dvh] flex-col px-[22px]">
       {!fini && question && (
         <>
           <button
@@ -420,7 +415,7 @@ export default function CreerUnComptePage() {
           </Link>
         </div>
       )}
-    </div>
+    </PorteDeNuit>
   );
 }
 
