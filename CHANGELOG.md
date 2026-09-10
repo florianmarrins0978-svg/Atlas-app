@@ -39,6 +39,57 @@ désormais sa hauteur (`--atlas-tiroir`), comme la barre publie la sienne.
 
 Détail : `ARCHITECTURE.md` §323.
 
+### Rendre bavard le silence de Google et d'Apple, et tenir à jour le fichier de clés
+
+*« Voilà l'écran que je veux quand je clique sur se connecter. Voilà l'écran
+que j'ai ! »*, la planche et sa capture côte à côte. L'écran servi n'avait ni
+Google, ni Apple, ni le « ou » qui les sépare des champs.
+
+**Le code était juste, et vérifié en le regardant.** Avec des clés d'essai
+posées, `/login` rend exactement la planche — les deux gélules de marque, le
+séparateur, puis les champs. Ce qui manquait était sur sa machine : la porte
+n'affiche un fournisseur que si SES DEUX clés sont posées
+(`src/lib/fournisseurs-connexion.ts`), et aucune ne l'était.
+
+**Deux racines, corrigées, et la seconde comptait davantage.**
+
+1. *Le fichier de secours ne suivait plus Atlas.* `demarrer.sh` écrivait
+   `.env.local` sous un `if [ ! -f ]` : né au premier démarrage avec les deux
+   clés d'IA de l'époque, il gardait ces deux noms pour toujours. Une clé
+   ajoutée ensuite n'avait **aucun moyen d'atteindre un espace déjà allumé** —
+   le fichier créé pour lui épargner un geste était devenu la raison pour
+   laquelle le geste revenait. Il se complète désormais à chaque allumage,
+   sans jamais toucher une valeur déjà collée
+   (`.devcontainer/completer-env-local.sh`, `scripts/test-completer-env-local.ts`,
+   qui sait rougir contre l'ancienne version).
+
+2. *L'écran se taisait.* Deux boutons manquants ressemblent exactement à une
+   application en retard sur sa maquette : rien ne distinguait les deux cas, et
+   c'est ce qui lui a coûté la question. Le démarrage dit maintenant « Entrer
+   avec Google : le bouton ne s'affiche pas — clés absentes », **et écrit
+   l'adresse de retour à déclarer chez Google** — la seule valeur qui ne se
+   devine pas, puisqu'elle dépend de l'espace et que Google la compare au
+   caractère près.
+
+**Ce qui reste à lui, et que personne ne peut faire ici :** ouvrir l'identifiant
+OAuth chez Google (gratuit, un quart d'heure) — marche à suivre dans
+`docs/entrer-avec-google.md`. Apple demande le compte développeur payant : son
+bouton reste absent d'ici là, et c'est la bonne réponse plutôt qu'un bouton qui
+mène à une erreur.
+
+**Et DEUX ROUGES DORMAIENT SUR `main`, laissés par le lot de la veille.** La
+batterie les a sortis, et ils sont réparés ici :
+
+- `entrerAvecAction` — l'action qui envoie chez Google — n'avait ni garde de
+  rôle ni exemption écrite. Elle appartient à la première famille, celle d'avant
+  la session : la raison est désormais inscrite dans `EXEMPTIONS`, et elle nomme
+  ce qui la borne réellement (`estNomFournisseur`, la liste fermée) ;
+- le « ——— ou ——— » de la porte faisait rougir le contrôle des filets
+  d'intertitre. C'est un **séparateur de blocs**, de ceux qu'il a laissés le
+  25 août : deux traits autour d'un mot, pas un trait qui file d'un mot au bord.
+  Le contrôle sait maintenant les distinguer — et il rougit toujours sur la
+  forme solitaire, vérifié en la lui montrant.
+
 ### Une demi-journée se libère, attend en bas, et se repose ailleurs
 
 **Sa planche, essayée puis retenue** (`appli/liberer-une-demi-journee.html`) :

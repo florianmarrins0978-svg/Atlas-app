@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Où poser « Créer une facture » — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  OÙ POSER « CRÉER UNE FACTURE » — sa question du 11 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  *« Je pensais, est-ce que c'est pas plus logique de mettre la porte dans la
+  catégorie Terminés, à côté de retour d'intervention on met un bouton créer
+  facture ? »*
+
+  SON INSTINCT EST JUSTE SUR LA CATÉGORIE, et c'est ce que cette planche
+  retient : un dépannage réglé sur place est du travail FINI. Il n'a rien à
+  faire dans « Vos chantiers », qui liste ce qui est en cours — et le chantier
+  qu'on crée part de toute façon droit dans Terminés (sa décision du 10).
+
+  CE QUI EST IMPOSSIBLE, EN REVANCHE, C'EST LA 4ᵉ PASTILLE — et ce n'est pas
+  un avis, c'est une mesure déjà au dépôt. La rangée « Tout · À facturer ·
+  Retours d'intervention » occupe 377 px sur les 390 de son téléphone, et
+  300 sur les 308 d'un écran de 360. Elle a été resserrée le 9 septembre à SA
+  demande — « tu fais tenir les 3 sur la même ligne, donc rétrécis-les un peu
+  tous les 3 s'il faut » — et `test-onglets-termines-e2e.ts` le vérifie à
+  quatre largeurs. Une pastille de plus sort de l'écran.
+
+  RIEN N'EST RECODÉ SI LA PLACE CHANGE. Ce qui est écrit — la migration, la
+  règle des lignes saisissables, l'éditeur, les refus — ne dépend pas de la
+  porte. Seule la porte se déplace.
+
+  Les couleurs viennent de src/lib/chartes.ts.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#6f8a5f; --surPlein:#fff; --papier:#ece9e1;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#6f8a5f; --surPlein:#101210; --papier:#232722;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+body.nuit .sceau{color:var(--scene)}
+
+.bloc{max-width:740px;margin:0 auto;padding:6px 20px 0}
+.bloc h2{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:23px;
+  margin:34px 0 4px;font-weight:400}
+.bloc .numero{font-size:10px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--or);display:block;margin-top:30px}
+.bloc>p{font-size:14.5px;line-height:1.65;color:var(--encre-douce);margin:0 0 14px}
+.bloc>p b{color:var(--encre)}
+.alerte{border-left:3px solid var(--or);padding-left:13px}
+
+/* ── le choix des places ────────────────────────────────────────────────── */
+.places{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;
+  max-width:740px;margin:20px auto 0;padding:0 20px}
+.places button{font:inherit;font-size:13px;padding:11px 15px;min-height:44px;
+  border:0;box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage);
+  color:var(--encre-douce);border-radius:999px;cursor:pointer}
+.places button[aria-pressed=true]{background:var(--plein);color:var(--surPlein);
+  box-shadow:none;font-weight:600}
+
+.scene{display:flex;justify-content:center;padding:14px 16px 6px}
+/* Hauteur fixe : les trois écrans n'ont pas la même longueur, et sans plancher
+   la page saute sous le doigt au changement de place. Vu à la capture sur la
+   planche d'hier. */
+.tel{width:390px;max-width:100%;min-height:640px;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column}
+
+/* ── l'accueil ──────────────────────────────────────────────────────────── */
+.acc{padding:26px 20px 0;flex:1;display:flex;flex-direction:column}
+.acc .haut{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.acc h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:34px;
+  line-height:1.02;letter-spacing:-.018em;margin:6px 0 0;white-space:nowrap}
+.assistant{width:44px;height:44px;border-radius:50%;flex:none;background:var(--plein);
+  color:var(--surPlein);display:flex;align-items:center;justify-content:center;
+  font-size:17px;margin-top:6px}
+.acc .clients{display:block;font-size:11px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--or);margin:10px 0 0}
+.acc .encours{display:flex;align-items:baseline;gap:11px;font-size:11px;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--gris);padding:18px 0 0}
+.acc .encours b{font-size:15px;color:var(--encre);letter-spacing:0}
+.brin{border-top:1px solid var(--trait-doux);padding:12px 0}
+.brin .nom{font-size:16px;margin:0}
+.brin .etat{font-size:12.5px;color:var(--gris);margin:2px 0 0}
+.brin .etat.or{color:var(--or)}
+
+/* ── le geste : le mot et l'anneau ──────────────────────────────────────── */
+.gestes{padding:22px 0 2px}
+.rang{display:flex;justify-content:center}
+.rang.decale{justify-content:flex-start;margin-top:8px}
+.geste{display:inline-flex;align-items:center;justify-content:center;gap:13px;padding:6px 0;
+  font:inherit;color:var(--encre);background:none;border:0;cursor:pointer}
+.geste .rond{width:32px;height:32px;border-radius:50%;flex:none;position:relative;
+  box-shadow:inset 0 0 0 1.5px var(--or)}
+.geste .rond::after{content:"";position:absolute;inset:0;margin:auto;width:11px;height:1.5px;background:var(--or)}
+.geste .rond::before{content:"";position:absolute;inset:0;margin:auto;width:1.5px;height:11px;background:var(--or)}
+.geste .mot{font-size:13px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;white-space:nowrap}
+
+/* ── l'écran Terminés ───────────────────────────────────────────────────── */
+.ter{padding:0 0 0;flex:1;display:flex;flex-direction:column}
+.ter .entete{padding:26px 20px 0}
+.ter h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:34px;
+  line-height:1.02;letter-spacing:-.018em;margin:6px 0 0}
+.carte-tva{margin:22px 20px 0;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;border-radius:4px;padding:20px 18px;background:var(--plage);
+  box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.55)}
+.carte-tva .quoi{display:block;font-size:11px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--or)}
+.carte-tva .periode{display:block;margin-top:5px;font-size:17px;font-family:ui-serif,Georgia,serif}
+.carte-tva .mt{font-size:21px;font-family:ui-serif,Georgia,serif;white-space:nowrap}
+
+.onglets{display:flex;gap:4px;margin:26px 20px 0}
+.pastille{min-height:44px;min-width:60px;flex:none;white-space:nowrap;border-radius:999px;
+  padding:0 8px;font:inherit;font-size:12.5px;background:transparent;color:var(--gris);
+  box-shadow:inset 0 0 0 1px var(--trait);border:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.pastille[aria-pressed=true]{background:var(--plein);color:var(--surPlein);box-shadow:none}
+/* Ce qui déborde : la 4ᵉ pastille, dessinée seulement pour qu'il le VOIE. */
+.pastille.detrop{box-shadow:inset 0 0 0 1px var(--or);color:var(--or)}
+
+.mois{display:flex;align-items:center;justify-content:space-between;
+  margin:30px 20px 0;font-size:15px}
+.mois .feuillet{background:none;border:0;font:inherit;font-size:17px;color:var(--gris);
+  cursor:pointer;min-width:44px;min-height:44px}
+.compte{margin:14px 20px 12px;font-size:14px;font-weight:700;color:var(--encre)}
+.compte .or{color:var(--or)}
+.lignes{margin:0 20px}
+
+.sous-onglets{margin:22px 20px 0}
+.dedans{margin:26px 20px 0}
+.dedans p{margin:0;font-size:13.5px;color:var(--gris)}
+
+.debord{position:absolute;right:0;top:0;bottom:0;width:0;pointer-events:none}
+
+p.dessous{max-width:740px;margin:14px auto 0;padding:0 20px;text-align:center;
+  font-size:14px;line-height:1.65;color:var(--encre-douce)}
+p.dessous b{color:var(--encre)}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px;font-weight:400}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes .cadre{overflow-x:auto}
+.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
+.notes th,.notes td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--trait-doux);
+  color:var(--encre-douce);vertical-align:top}
+.notes th{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+.notes td b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">11 septembre — votre question</span>
+  <h1>Où poser « Créer une facture »</h1>
+  <p><b>Vous avez raison sur la catégorie.</b> Un dépannage réglé sur place,
+  c'est du travail fini : ça vit avec Terminés, pas avec vos chantiers en
+  cours. Reste à choisir la place exacte — <b>touchez les trois</b>.</p>
+</div>
+
+<div class="bloc">
+  <span class="numero">Ce qui n'est pas possible</span>
+  <h2>Une quatrième pastille déborde</h2>
+  <p class="alerte">La rangée <b>Tout · À facturer · Retours d'intervention</b>
+  prend déjà <b>377 px sur les 390</b> de votre téléphone. Vous l'aviez fait
+  resserrer le 9 septembre pour que les trois tiennent sur une ligne. Une
+  quatrième sort de l'écran — <b>la place 4 vous le montre</b>.</p>
+</div>
+
+<div class="places" id="places"></div>
+
+<div class="scene">
+  <div class="tel" id="tel"></div>
+</div>
+<p class="dessous" id="dit"></p>
+
+<div class="notes">
+
+  <h3>Ce que chaque place coûte</h3>
+  <div class="cadre">
+  <table>
+    <tr><th>La place</th><th>Ce qu'elle donne</th><th>Ce qu'elle coûte</th></tr>
+    <tr>
+      <td><b>1 · Accueil</b><br>(ce qui est codé)</td>
+      <td>C'est l'écran que vous ouvrez en premier</td>
+      <td>Deux gestes se disputent l'accueil, où « Créer un devis » était seul</td>
+    </tr>
+    <tr>
+      <td><b>2 · Terminés, sous le titre</b></td>
+      <td>Un geste par écran, au même endroit et du même dessin</td>
+      <td>La carte de TVA descend d'une cinquantaine de pixels</td>
+    </tr>
+    <tr>
+      <td><b>3 · Terminés, dans « À facturer »</b></td>
+      <td>Exactement là où vous allez quand vous voulez facturer</td>
+      <td>Il faut deux appuis pour l'atteindre, et on ne le voit pas d'emblée</td>
+    </tr>
+    <tr>
+      <td><b>4 · La 4ᵉ pastille</b></td>
+      <td>Rien</td>
+      <td>Sort de l'écran, et fait rougir la suite qui tient la rangée</td>
+    </tr>
+  </table>
+  </div>
+
+  <h3>Ce que je recommande, et pourquoi</h3>
+  <p><b>La place 2.</b> Chaque écran porte alors son propre geste, au même
+  endroit et du même dessin : « Créer un devis » sous <i>Vos chantiers</i>,
+  « Créer une facture » sous <i>Terminés</i>. L'accueil retrouve son geste
+  unique, et la porte se trouve là où le chantier atterrit.</p>
+
+  <h3>Changer de place ne recode rien</h3>
+  <p>Ce qui est déjà écrit — la base qui accepte enfin une facture sans devis,
+  les lignes que vous saisissez, les refus — <b>ne dépend pas de la porte</b>.
+  Seule la porte se déplace. Dites-moi laquelle.</p>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var pole = document.getElementById("pole");
+  pole.addEventListener("click", function(){
+    var nuit = document.body.classList.toggle("nuit");
+    pole.setAttribute("aria-pressed", String(nuit));
+    pole.textContent = nuit ? "Voir sur Arborea" : "Voir sur Nuit";
+  });
+
+  var tel    = document.getElementById("tel");
+  var places = document.getElementById("places");
+  var dit    = document.getElementById("dit");
+
+  var CHANTIERS = [
+    { nom:"Mme Berger",   etat:"Devis parti il y a 3 jours", or:false },
+    { nom:"M. Julien",    etat:"Le client a répondu",        or:true  },
+    { nom:"Les Tilleuls", etat:"À chiffrer",                 or:false }
+  ];
+
+  var FAITS = [
+    { nom:"M. Aubert",   etat:"Facturé · 1 240,00 €",              or:false },
+    { nom:"Mme Chaix",   etat:"Pas encore facturé · 360,00 € prévus", or:true },
+    { nom:"M. Sabatier", etat:"Facturé · 890,00 €",                or:false }
+  ];
+
+  function geste(mot){
+    return '<span class="geste"><span class="mot">' + mot + '</span>'
+         + '<span class="rond"></span></span>';
+  }
+
+  function brins(liste){
+    return liste.map(function(c){
+      return '<div class="brin"><p class="nom">' + c.nom + '</p>'
+           + '<p class="etat' + (c.or ? ' or' : '') + '">' + c.etat + '</p></div>';
+    }).join("");
+  }
+
+  /** L'en-tête de Terminés : le titre, puis la carte de TVA. */
+  function teteTermines(avecGeste){
+    return '<div class="entete"><h1>Terminés</h1></div>'
+      + (avecGeste
+          ? '<div class="gestes" style="padding:18px 20px 2px">'
+            + '<div class="rang">' + geste("Créer une facture") + '</div></div>'
+          : '')
+      + '<div class="carte-tva">'
+      +   '<span><span class="quoi">Ma TVA à déclarer</span>'
+      +   '<span class="periode">3ᵉ trimestre 2026</span></span>'
+      +   '<span class="mt">412,80 €</span>'
+      + '</div>';
+  }
+
+  /** La rangée d'onglets. `quatre` ajoute celle qui déborde. */
+  function onglets(actif, quatre){
+    var p = [
+      { cle:"tout",    mot:"Tout" },
+      { cle:"attente", mot:"À facturer" },
+      { cle:"retours", mot:"Retours d’intervention" }
+    ];
+    var html = p.map(function(x){
+      return '<button class="pastille" type="button" aria-pressed="'
+        + (x.cle === actif) + '">' + x.mot + '</button>';
+    }).join("");
+    if (quatre) {
+      html += '<button class="pastille detrop" type="button" aria-pressed="false">'
+            + 'Créer une facture</button>';
+    }
+    return '<div class="onglets"' + (quatre ? ' style="overflow:visible"' : '') + '>' + html + '</div>';
+  }
+
+  function moisEtListe(){
+    return '<div class="mois"><button class="feuillet" type="button" aria-label="Mois précédent">‹</button>'
+      +   '<span>Septembre 2026</span>'
+      +   '<button class="feuillet" type="button" aria-label="Mois suivant">›</button></div>'
+      + '<p class="compte"><span class="or">1 à facturer</span> · 2 facturés</p>'
+      + '<div class="lignes">' + brins(FAITS) + '</div>';
+  }
+
+  var PLACES = [
+    {
+      cle: "accueil",
+      mot: "1 · Accueil",
+      dit: "Ce qui est <b>codé aujourd’hui</b> : les deux anneaux sur l’accueil, « Créer une facture » décalé à gauche.",
+      rendu: function(){
+        return '<div class="acc">'
+          +   '<div class="haut"><h1>Vos chantiers</h1>'
+          +     '<span class="assistant" aria-hidden="true">&#9679;</span></div>'
+          +   '<span class="clients">Vos clients</span>'
+          +   '<div class="gestes">'
+          +     '<div class="rang">' + geste("Créer un devis") + '</div>'
+          +     '<div class="rang decale">' + geste("Créer une facture") + '</div>'
+          +   '</div>'
+          +   '<div class="encours"><span>En cours</span><b>3</b></div>'
+          +   '<div>' + brins(CHANTIERS) + '</div>'
+          + '</div>';
+      }
+    },
+    {
+      cle: "sous-titre",
+      mot: "2 · Terminés, sous le titre",
+      dit: "Un geste par écran, <b>au même endroit et du même dessin</b> que « Créer un devis ». C’est ce que je recommande.",
+      rendu: function(){
+        return '<div class="ter">' + teteTermines(true) + onglets("tout", false) + moisEtListe() + '</div>';
+      }
+    },
+    {
+      cle: "a-facturer",
+      mot: "3 · Dans « À facturer »",
+      dit: "Le geste vit <b>dans l’onglet</b> où vous allez pour facturer. Il faut deux appuis pour l’atteindre.",
+      rendu: function(){
+        return '<div class="ter">' + teteTermines(false) + onglets("attente", false)
+          + '<div class="gestes" style="padding:26px 20px 2px">'
+          +   '<div class="rang">' + geste("Créer une facture") + '</div></div>'
+          + '<div class="dedans"><p>1 chantier à facturer, tous mois confondus.</p></div>'
+          + '<div class="lignes" style="margin-top:6px">' + brins([FAITS[1]]) + '</div>'
+          + '</div>';
+      }
+    },
+    {
+      cle: "pastille",
+      mot: "4 · La 4ᵉ pastille",
+      dit: "<b>Elle sort de l’écran</b> — la rangée en prend déjà 377 sur 390. C’est la seule place impossible.",
+      rendu: function(){
+        return '<div class="ter">' + teteTermines(false) + onglets("tout", true) + moisEtListe() + '</div>';
+      }
+    }
+  ];
+
+  var choisie = "accueil";
+
+  function dessiner(){
+    var p = PLACES.filter(function(x){ return x.cle === choisie; })[0];
+    tel.innerHTML = p.rendu();
+    dit.innerHTML = p.dit;
+    Array.prototype.forEach.call(places.children, function(b){
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-place") === choisie));
+    });
+  }
+
+  places.innerHTML = PLACES.map(function(p){
+    return '<button type="button" data-place="' + p.cle + '" aria-pressed="false">' + p.mot + '</button>';
+  }).join("");
+
+  Array.prototype.forEach.call(places.children, function(b){
+    b.addEventListener("click", function(){
+      choisie = b.getAttribute("data-place");
+      dessiner();
+    });
+  });
+
+  dessiner();
+})();
+</script>
+
+</body>
+</html>

@@ -192,12 +192,25 @@ essai("plus aucun écran ne règle ce filet — le réglage n'existe plus", () =
 // seconde forme, et laisser tomber les séparateurs le ferait mentir sur ce
 // qu'il défend.
 
+// **CE QU'IL A FALLU APPRENDRE À CE CONTRÔLE, le 10 septembre 2026.** Il
+// rougissait sur la porte de connexion, qui pose « ——— ou ——— » entre les
+// boutons de marque et les champs — un trait de chaque côté du mot. C'est la
+// planche qu'il a validée le jour même, et c'est un SÉPARATEUR DE BLOCS : il
+// dit que deux façons d'entrer sont distinctes. Exactement ce qu'il a laissé.
+//
+// Ce qu'il a fait retirer n'a qu'UN trait, qui part d'un mot et file au bord.
+// La forme symétrique — trait, mot, trait — est donc reconnue et laissée
+// passer ; le trait solitaire, lui, reste refusé.
+const FILET = String.raw`<span[^<>]*(?:h-px[^<>]*flex-1|flex-1[^<>]*h-px)[^<>]*/>`;
+const SEPARATEUR_CENTRE = new RegExp(`${FILET}[^<>]{1,80}${FILET}`, "g");
+
 essai("aucun filet ne prolonge un intertitre", () => {
   const coupables: string[] = [];
   for (const f of fichiersTsx("src")) {
-    const t = sansCommentaires(readFileSync(f, "utf8"));
+    const t = sansCommentaires(readFileSync(f, "utf8")).replace(SEPARATEUR_CENTRE, "");
     // La forme exacte : un filet d'un pixel qui PREND LA PLACE RESTANTE à côté
-    // d'un mot. Un séparateur, lui, ne porte jamais `flex-1`.
+    // d'un mot. Un séparateur, lui, ne porte jamais `flex-1` — sauf en paire
+    // autour d'un mot, retirée juste au-dessus.
     if (/h-px[^"']*flex-1|flex-1[^"']*h-px/.test(t)) coupables.push(f);
   }
   assert.deepEqual(

@@ -34,7 +34,31 @@ sert.
    défaut que la barre a déjà payé.
 
 ---
+## Le même jour — LES BOUTONS GOOGLE ET APPLE NE MANQUAIENT PAS, ILS SE TAISAIENT (10 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | `.env.local` se **complète** à chaque allumage au lieu de n'être écrit qu'une fois ; le démarrage dit si Google et Apple sont branchés, et écrit l'adresse de retour à déclarer chez Google |
+| la migration | **aucune** |
+| les pièces | `.devcontainer/completer-env-local.sh` (neuf), `.devcontainer/demarrer.sh`, `docs/entrer-avec-google.md` |
+| les suites | `scripts/test-completer-env-local.ts` (6) |
+| le détail | `CHANGELOG.md` du 10 septembre, `TODO.md` en tête |
+
+**Le défaut n'était PAS dans l'écran.** Sa capture montrait la porte sans
+Google, sans Apple et sans le « ou ». Avec des clés d'essai, `/login` rend
+exactement la planche — vérifié en le regardant. La porte n'affiche un
+fournisseur que si SES DEUX clés sont posées, et c'est une règle qu'on ne
+défait pas (`src/lib/fournisseurs-connexion.ts`).
+
+**LE PIÈGE À NE PAS REFAIRE, et il vaut pour toute clé future :** un fichier de
+secours écrit sous un `if [ ! -f ]` fige les noms du jour de sa naissance. Une
+clé ajoutée ensuite n'atteint jamais un espace déjà allumé, et le symptôme est
+un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc à
+`completer-env-local.sh`, pas seulement à `src/server/env.ts`.
+
+---
 ## Lot précédent — UNE DEMI-JOURNÉE SE LIBÈRE ET SE REPOSE (10 septembre 2026)
+
 
 | | |
 |---|---|

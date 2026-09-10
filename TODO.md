@@ -29,6 +29,20 @@ posées : le trajet complet jusqu'à Google et le retour. Ce qui l'est déjà : 
 règle d'affichage, le refus d'une adresse non vérifiée, l'aiguillage vers la
 création de compte (`scripts/test-fournisseurs-connexion.ts`).
 
+**Mise à jour du 10 septembre 2026, après sa capture** — *« voilà l'écran que
+j'ai ! »*. Deux choses ont changé de son côté, et elles n'attendent plus rien
+de nous :
+
+- **les quatre lignes existent dans son `.env.local`**, ajoutées d'elles-mêmes
+  au démarrage (`.devcontainer/completer-env-local.sh`). Il n'a qu'à coller
+  après le signe `=` ;
+- **le démarrage dit ce qui manque, et écrit l'adresse de retour toute faite** —
+  c'est la seule valeur qui ne se devine pas, et Google la compare au caractère
+  près.
+
+La marche à suivre est dans [`docs/entrer-avec-google.md`](docs/entrer-avec-google.md).
+**Reste à lui, et à personne d'autre :** ouvrir l'identifiant OAuth chez Google.
+
 ---
 
 ## ⏳ UNE BATTERIE À JOUER — « Se déconnecter » est codé (9 septembre 2026)
@@ -160,22 +174,16 @@ une planche écartée se garde (`CLAUDE.md` §3 bis).
 
 ---
 
-## 🔴 TROIS ROUGES ARRIVÉS AVEC LA PORTE DE CONNEXION (10 septembre 2026)
+## ~~TROIS ROUGES ARRIVÉS AVEC LA PORTE DE CONNEXION~~ — RÉGLÉS LE 10 SEPTEMBRE 2026
 
-**Mesurés, pas supposés** : batterie complète du 10 septembre au soir, comparée
-à celle du matin. Ces trois-là sont apparus **avec la fusion de `main`** qui
-apporte la porte Google/Apple, et aucun ne touche au planning.
+Relevés le soir même, en comparant deux batteries : `test-accueil-en-tete`,
+`test-porte-bienvenue` et `test-actions-gardees-db`, tous les trois sur
+`src/app/login/`. **La session qui avait livré la porte les a corrigés dans la
+foulée** (« Rendre bavard le silence de Google et d'Apple »).
 
-| La suite | Ce qu'elle dit |
-|---|---|
-| `test-accueil-en-tete.ts` | *« un filet d'intertitre est revenu : `src/app/login/BoutonsFournisseurs.tsx` »* — il les a fait retirer le 25 août |
-| `test-porte-bienvenue.ts` | *« on ne peut plus revenir à la porte depuis /login »* |
-| `test-actions-gardees-db.ts` | `src/app/login/actions.ts#entrerAvecAction` n'a aucune garde de rôle — à exempter avec sa raison, une porte de connexion ne peut pas en avoir |
-
-**À la session qui a livré la porte.** Le troisième est le plus simple : une
-action de connexion ne PEUT pas exiger un rôle, puisqu'on n'est pas encore
-entré. Elle se déclare dans `EXEMPTIONS` avec cette raison, ce que le contrôle
-prévoit déjà.
+Ce qui reste de l'épisode, et qui vaut d'être gardé : comparer la liste des
+rouges AVANT et APRÈS un lot dit en trois secondes ce qui est à soi. Sans cette
+comparaison, ces trois-là auraient été portés au compte du planning.
 
 ---
 
