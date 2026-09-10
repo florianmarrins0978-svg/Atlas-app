@@ -179,6 +179,20 @@ prévoit déjà.
 
 ---
 
+## ⏳ ET LE TEMPS QUI N'EST PAS UN CLIENT ? — à lui de dire (10 septembre 2026)
+
+« Ajouter » propose deux voies depuis ce soir : un chantier en attente, ou un
+client. **Un rendez-vous à la banque, une livraison, une formation prennent
+aussi une demi-journée**, et aucune des deux ne les couvre — la première version
+de la planche le faisait, sa correction (« change le nom en un client ») ne le
+fait plus.
+
+**La question est posée sur la planche** (`appli/bloquer-sans-devis.html`,
+section « Une question que votre correction ouvre ») et attend sa réponse : une
+troisième entrée, ou tout est un client. **Ne rien coder avant.**
+
+---
+
 ## ⏳ « DÉPLACER » N'A PAS D'ANNULER — à lui de dire (10 septembre 2026)
 
 Une fois l'interrupteur ouvert, « Déplacer » et « Retirer » s'effacent : il n'y
@@ -205,14 +219,23 @@ un « Annuler » à chaque étape sur une AUTRE planche
 | le tiroir « À poser sur… » | **566** → 616 px, `fixed`, z-19 |
 
 Un pixel de recouvrement, et `test-pas-la-ce-jour-e2e` le refuse à juste titre
-(*« il est ATTEIGNABLE — rien ne le recouvre »*). **Rouge AVANT ce lot comme
-après** : ce n'est pas le nouvel ordre qui l'a créé, et le geste, lui, se touche
-en son centre.
+(*« il est ATTEIGNABLE — rien ne le recouvre »*). **Rouge avant les deux lots du
+10 septembre comme après** : le geste, lui, se touche en son centre.
 
-**La racine est de placement, pas de dessin** : la carte du jour naît sous le
-doigt, et rien ne réserve la hauteur du tiroir sous elle. Le tiroir publie
-pourtant la sienne (`--atlas-barre`, `AtlasBottomNav`) — c'est de ce côté qu'il
-faut chercher, pas en poussant la carte à la main.
+**LA MOITIÉ DE LA RACINE A ÉTÉ TRAITÉE LE 10 SEPTEMBRE AU SOIR, ET PAS
+CELLE-CI.** Le tiroir publie désormais sa hauteur (`--atlas-tiroir`) et
+`.atlas-contenu` la réserve (`ARCHITECTURE.md` §323) : plus rien n'est
+DÉFINITIVEMENT hors d'atteinte au bas d'une carte — c'est ce qui a sauvé le
+« Poser » du lot « un client ».
+
+**Ce qui reste est un défaut de PLACEMENT**, et la réserve n'y peut rien : la
+carte naît sous le doigt, et quand le jour touché est dans la dernière rangée du
+mois, son HAUT tombe déjà dans les cinquante derniers pixels. Une réserve permet
+de faire défiler jusqu'en bas ; elle ne remonte pas ce qui est déjà à l'écran.
+
+**Ne pas « corriger » en poussant la carte à la main**, et ne pas ajouter de
+défilement forcé — le dépôt en a retiré un le 3 septembre pour cette raison
+exacte. Ce qu'il faut regarder, c'est le rang de la carte dans la rangée.
 
 ---
 

@@ -5,6 +5,21 @@
 
 ---
 
+## FAIT : POSER UN CLIENT SUR UN JOUR, SANS DEVIS — 10 septembre 2026
+
+Sa planche retenue (`appli/bloquer-sans-devis.html`). « Ajouter » propose deux
+voies : un chantier qui attend une date, ou **un client** qu'on écrit au
+clavier. Connu, il apparaît avec son numéro ; **inconnu, sa fiche se crée** avec
+ce qu'on saisit. Puis matin, après-midi ou la journée. « Annuler » ramène aux
+deux voies à chaque étape.
+
+**Ni prix, ni devis, ni équipe** : le temps est pris, c'est tout. Le chantier se
+chiffre ensuite, ou jamais. **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §323.
+
+---
+
 ## FAIT : UNE DEMI-JOURNÉE SE LIBÈRE, ATTEND, ET SE REPOSE — 10 septembre 2026
 
 Sa planche retenue (`appli/liberer-une-demi-journee.html`) : *« je clique sur le
