@@ -64,6 +64,27 @@ d'ouvert sur ce geste.
 
 ---
 
+## ⏳ LE GESTE D'ABSENCE PASSE SOUS LE TIROIR DU BAS — D'UN PIXEL (10 septembre 2026)
+
+**Mesuré**, écran de 390 × 664, cinq jours devant, compte de démonstration :
+
+| | |
+|---|---|
+| le geste « + Absent ? » | 523 → **567** px |
+| le tiroir « À poser sur… » | **566** → 616 px, `fixed`, z-19 |
+
+Un pixel de recouvrement, et `test-pas-la-ce-jour-e2e` le refuse à juste titre
+(*« il est ATTEIGNABLE — rien ne le recouvre »*). **Rouge AVANT ce lot comme
+après** : ce n'est pas le nouvel ordre qui l'a créé, et le geste, lui, se touche
+en son centre.
+
+**La racine est de placement, pas de dessin** : la carte du jour naît sous le
+doigt, et rien ne réserve la hauteur du tiroir sous elle. Le tiroir publie
+pourtant la sienne (`--atlas-barre`, `AtlasBottomNav`) — c'est de ce côté qu'il
+faut chercher, pas en poussant la carte à la main.
+
+---
+
 ## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
 
 **Sa correction :** *« chaque session peut prendre un port différent, plusieurs
@@ -1655,20 +1676,33 @@ et le 8 je choisis la B ».** Tout est codé — `ARCHITECTURE.md` §252,
 
 ## HUIT SUITES NAVIGATEUR SONT ROUGES SUR CE POSTE, ET LE PRODUIT N'Y EST POUR RIEN (4 sept. 2026)
 
-**Elles sont VINGT-DEUX le 9 septembre 2026**, mesurées sur une batterie
-complète dans un conteneur d'agent — et la famille s'explique par une seule
-ligne du journal : *« le bandeau du banc apparaît sur un serveur qui n'en est
-pas un »* (`test-bandeau-banc-e2e`). Ce bandeau est une **bande fixe** : tout
-ce qui se mesure « recouvert » ou « tient dans un écran » tombe avec lui —
-`test-connexion-figee`, `test-face-id`, `test-devis-client`,
-`test-pas-la-ce-jour`, et le reste.
+**Elles étaient VINGT-SIX le 10 septembre 2026**, et la cause du bandeau a été
+trouvée puis corrigée le jour même (`ARCHITECTURE.md` §317) : `next start`
+n'impose pas `NODE_ENV=production`, et la règle du bandeau lisait cette variable
+à l'exécution.
 
-**Vérifié arbre remis à nu** (`git stash` du seul fichier touché) :
-`test-pas-la-ce-jour-e2e` rend le MÊME échec avant et après le lot du
-9 septembre. Ce n'est donc pas un lot qui les allume — mais tant que ce
-bandeau paraît hors banc, **la batterie ne peut plus rendre un vert ici**, et
-c'est elle qui autorise une livraison (`CLAUDE.md` §5). À reprendre en
-premier, avant tout lot qui compte sur elle.
+**CE QUE J'AVAIS ÉCRIT ICI ÉTAIT FAUX SUR UN POINT, et c'est le genre d'erreur
+qui fait chercher au mauvais endroit :** j'avais conclu « le produit n'y est
+pour rien, c'est ce poste ». Le bandeau était bien un **défaut du produit** —
+il aurait paru de la même façon sur le banc du patron servi avec un `NODE_ENV`
+posé à la main.
+
+**MESURÉ APRÈS LE CORRECTIF, le 10 septembre :** 26 rouges deviennent **19**
+(114/140 puis 121/140). Sept suites s'éteignent avec le bandeau — bandeau banc,
+connexion figée, Face ID, fiche client, grille des prix, cases réglables,
+onglets des terminés.
+
+**Les dix-neuf qui restent n'ont plus de cause commune**, et c'est ce qui change
+tout : chacune la sienne, à ouvrir une par une. Trois échantillons lus dans le
+journal du 10 septembre :
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-reglages-e2e` | *« Sans clé, l'écran doit annoncer le mode déterministe. Écran : Atlas IA »* |
+| `test-recherche-client-e2e` | *« taper un nom réduit la liste à ce nom »* |
+| `test-pas-la-ce-jour-e2e` | *« le geste passe sous une bande fixe »* — le bandeau n'y est plus, la bande est donc une autre |
+
+La liste ci-dessous, elle, tient toujours pour les suites de dates.
 
 
 

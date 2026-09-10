@@ -36,6 +36,87 @@ contre le défaut qu'il vise, jamais contre l'autre.
 
 Le pourquoi de chaque choix est dans `ARCHITECTURE.md` §304.
 
+### Deux fois « client → retour » ramenait à l'accueil
+
+*« Quand je fais deux fois le geste client → retour puis client → retour, je
+reviens à la page d'accueil. »*
+
+Deux pièces du lot de la veille se marchaient dessus. La flèche recule
+désormais par le navigateur — c'est ce qui rend sa place dans la liste — et ce
+recul déclenchait l'écoute écrite pour le bouton DU navigateur, laquelle
+retirait du journal l'écran d'ARRIVÉE : la destination même qu'on venait
+d'atteindre. Un pas perdu à chaque retour.
+
+Une seule fonction répondait à deux questions différentes — « je quitte cet
+écran » et « je viens d'atterrir ici ». Elles sont séparées.
+
+**Et une seconde moitié, déjà là avant :** après le bouton du navigateur, la
+flèche proposait de retourner sur l'écran qu'on venait de quitter. Elle
+s'abonnait à l'événement plutôt qu'au journal, qui ne change qu'après lui.
+
+Le défaut a été rendu bavard avant d'être corrigé : une sonde a rejoué son
+geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
+maintenant dans la suite navigateur, qui refait le geste quatre fois.
+
+
+### L'absence se pose dans son ordre : le + en tête, « Annuler » derrière lui
+
+Sa validation du 10 septembre, planche à l'appui. Le + reste en haut, les noms
+s'ouvrent dessous, l'interrupteur **Matin · Après-midi · Journée** — celui de
+« Déplacer » — s'allume sur ce qui vient d'être écrit et s'efface au premier
+choix. La ligne dit alors « Julien absent · matin ».
+
+**« Annuler » ne reste plus sous les yeux** à côté d'une absence qu'on vient de
+poser : il se retrouve derrière le même +, avec la liste des gens du jour. Le
+geste le plus rare n'occupe plus la place la plus visible (`ARCHITECTURE.md`
+§318).
+
+**Deux composants s'en vont avec les rangées qu'ils dessinaient** —
+`PastilleDuJour`, `LigneQuestion` : ce qui ne sert plus se supprime.
+
+**Regardé à l'écran, pas seulement mesuré** : le geste joué en entier dans un
+vrai navigateur, à la largeur de son téléphone.
+
+### Le bandeau « en construction » se taisait mal — vingt-six suites en payaient le prix
+
+*« Répare le bandeau du banc. »* La règle croyait que `next start` impose
+`NODE_ENV=production` : c'est faux, il ne le pose que si la variable manque. Un
+serveur qui sert du code **bâti** avec `NODE_ENV=development` dans son
+environnement — celui de la batterie — s'entendait donc dire « la version rapide
+se construit encore », et le bandeau paraissait sur tous ses écrans, poussant le
+contenu vers le bas.
+
+**La racine est un piège d'empaquetage** : `process.env.NODE_ENV` est remplacé
+par sa valeur à la construction, mais seulement écrit littéralement. La règle le
+lisait à travers une variable, ce qui rendait la lecture à l'exécution — donc
+trompable. Elle reçoit désormais un **fait de compilation** (`ARCHITECTURE.md`
+§317), la forme qu'employait déjà l'écran des réglages.
+
+**Éprouvé sur la panne elle-même**, pas sur une panne imaginée : serveur bâti,
+profil banc, `NODE_ENV=development` posé exprès. Avant, l'adresse d'état rendait
+un avancement ; après, `null`.
+
+**ET CE QUE J'AI DIT HIER ÉTAIT FAUX SUR UN POINT.** J'ai écrit que les vingt-deux
+suites rouges tenaient à ce bandeau « et que le produit n'y était pour rien ».
+Le bandeau était bien en cause — mais c'était **un vrai défaut du produit**, pas
+un artefact de ce poste.
+
+### L'ordre de l'absence : une planche, rien de codé
+
+Ses corrections du 10 septembre, sur l'écran qu'il venait d'essayer : *« l'ordre
+devrait être + salarié absent ? puis Julien »*, *« remets le bouton matin /
+aprem / journée, et une fois choisi il se cache »*, *« Julien absent, et à côté
+on marque matin, aprem ou journée »*, *« pour annuler on reclique sur + salarié
+absent »*. Puis, capture à l'appui : *« utilise le bouton pour déplacer un
+chantier »* — l'interrupteur à trois positions.
+
+**RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis) : `appli/absence-l-ordre.html` joue le
+geste entier — poser, choisir le moment, annuler — et l'interrupteur est celui
+d'`appli/deplacer-plus-simple.html`, recopié plutôt que redessiné.
+
+**Une seule chose y change, et c'est délibéré :** 44 px de haut au lieu de 36.
+Celui-là se touche sur un chantier, avec des gants.
+
 ### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
 
 *« Fais celui-là, juste tu retires la journée. Il faut garder le bouton
@@ -62,6 +143,32 @@ revient sur sa règle du 21 août, et il l'a tranché lui-même le jour même.
 
 ---
 ## 2026-09-09
+
+### Un seul « Télécharger » sur la page du client, et il est aux couleurs de l'appli
+
+*« Ce n'est pas aux couleurs de l'appli, et il y a marqué deux fois télécharger.
+Garde celui sous le TTC, mais mets-le en plein. »*
+
+**Le doublon venait de deux écrans superposés.** La carte du devis portait son
+geste sous le TTC ; l'écran de réponse en reposait un autre, à deux centimètres,
+juste après l'accord. Deux boutons identiques sur une même vue font hésiter — le
+second donne-t-il le même fichier ? — et celui du haut ne bougeait pas quand on
+répondait. Celui du formulaire s'en va, et avec lui le drapeau
+`devisTelechargeable` qui ne servait qu'à le faire paraître : un correctif qui
+n'enlève rien recouvre au lieu de corriger (`CLAUDE.md` §4 quater).
+
+**L'écran de RETOUR le garde**, et c'est sa demande du 31 août : quand le client
+rouvre son SMS le lendemain, la carte du devis n'est plus là, et le lien serait
+un cul-de-sac sans ce geste.
+
+**Les couleurs viennent des jetons, plus du code.** `bg-[#2F3B2F]` et
+`text-white` écrits en clair sont justes sur cinq chartes et illisibles sur les
+deux sombres (`CLAUDE.md` §3) — et hors de la sienne partout, ce qu'il a vu tout
+de suite. Le geste passe en plein : c'est le seul de cet écran avant de
+répondre, et le creux le mettait au même rang que le texte autour.
+
+**Le contrôle tolérait le doublon**, `>= 1` : il n'aurait jamais rougi. Il exige
+désormais exactement un geste, à l'accord comme au retour.
 
 ### « Se déconnecter » existe enfin, au bas des Réglages
 

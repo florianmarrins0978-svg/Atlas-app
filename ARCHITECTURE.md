@@ -26973,3 +26973,171 @@ second dirait « sept. » d'un côté et « sep. » de l'autre.
 | `test-documents-du-client.ts` | la règle pure : le plus récent, l'égalité de jour, le silence quand rien n'est parti, l'année |
 | `test-liste-clients.ts` | qu'un chantier sans document n'annonce rien, et qu'un devis parti se lit avec son jour |
 | `test-ligne-du-client-e2e.ts` | **les boîtes** — l'adresse qui se rogne, la date qui ne se coupe pas, la ligne vide qui n'existe plus, et le compte qui ne revient pas |
+
+---
+## §316 — Deux fois « client → retour » : la destination sortait du journal
+
+**Sa panne du 10 septembre 2026 :** *« quand je fais deux fois le geste
+client → retour puis client → retour, je reviens à la page d'accueil. »*
+
+**Rien n'a été deviné : le défaut a été rendu bavard d'abord.** Une sonde a
+rejoué son geste dans un navigateur en imprimant, à chaque pas, le journal de
+l'onglet ET la marque de l'entrée d'historique. La ligne qui accuse :
+
+```
+1 · client ouvert   journal=["/login","/","/clients","/clients/8f82…"]
+1 · après RETOUR    journal=["/login","/"]        ← « /clients » a disparu
+```
+
+On est DEBOUT sur `/clients`, et le journal ne le porte plus. La flèche du
+client suivant annonce donc `/`, et le second retour sort de la liste.
+
+**LA RACINE : deux pièces du même lot se marchaient dessus.** §314 a appris à la
+flèche à reculer par `router.back()` — c'est ce qui rend au patron sa place dans
+la liste. Or `router.back()` déclenche un `popstate`, et le `popstate` était
+écouté pour le bouton DU NAVIGATEUR avec `journalSansCetEcran`, qui RETIRE
+l'écran nommé. Il retirait donc l'écran d'ARRIVÉE, c'est-à-dire la destination
+que la flèche venait de choisir. Chaque pièce était juste seule.
+
+**Et la racine n'est pas dans le mécanisme, elle est dans la QUESTION** — une
+seule fonction répondait à deux questions différentes :
+
+| ce qui vient de se passer | ce que le journal garde | qui appelle |
+|---|---|---|
+| *je quitte cet écran en arrière* | tout ce qui le précède (`journalSansCetEcran`) | la flèche à l'appui, une fiche client effacée |
+| *je viens d'atterrir ici* | **jusqu'à cet écran INCLUS** (`journalJusquACetEcran`) | tout `popstate` — la flèche comme le bouton du navigateur |
+
+**UNE SECONDE MOITIÉ, TROUVÉE EN POUSSANT LA SONDE PLUS LOIN**, et elle était
+déjà là avant ce lot : après le bouton du navigateur, la flèche annonçait
+l'écran qu'on venait de QUITTER — elle repartait en avant. Deux causes, toutes
+deux d'ordonnancement :
+
+1. **la visite se note AVANT que l'événement n'arrive.** Le journal porte donc
+   deux fois l'écran d'arrivée — sa vraie place, et le pas ajouté au bout. Une
+   troncature qui prenait la dernière ligne ne coupait rien. `journalJusquACetEcran`
+   écarte donc la dernière ligne de sa recherche ;
+2. **la flèche s'abonnait au `popstate`, pas au journal.** Le journal ne change
+   qu'APRÈS l'événement : elle relisait une version périmée et n'était jamais
+   prévenue du ménage. Elle s'abonne désormais à ce qu'elle LIT
+   (`sAbonnerAuJournal`), et l'abonnement au `popstate` a disparu avec.
+
+**Ce que ce lot retire :** l'appel qui effaçait le sol sous les pieds, et
+l'abonnement au mauvais signal. Rien n'a été ajouté par-dessus.
+
+**Le contrôle refait son geste QUATRE fois**, pas deux : une version qui ne
+perdrait un pas qu'un tour sur deux passerait un aller-retour. Les deux
+contrôles neufs ont été mis au rouge contre le code d'avant avant d'être
+retenus, et la sonde a été retirée — ce qu'elle savait faire vit maintenant dans
+`scripts/test-retour-page-davant-e2e.ts`.
+
+---
+
+## §317 — `next start` n'impose PAS `NODE_ENV=production`, et le bandeau du banc l'a payé
+
+**Le défaut, tel qu'il se voyait :** vingt-six suites navigateur rouges dans la
+batterie complète — et **vertes** jouées seules ou par groupes de quatre. Le
+message qui a fini par tout expliquer venait d'une seule d'entre elles : *« le
+bandeau du banc apparaît sur un serveur qui n'en est pas un »*.
+
+**La règle disait ceci**, et le commentaire au-dessus l'affirmait :
+
+```ts
+// « next start impose NODE_ENV=production »
+return env.NODE_ENV !== "production";
+```
+
+**C'est faux.** `next start` pose `NODE_ENV=production` **seulement si la
+variable est absente** ; il respecte celle qu'on lui donne. La batterie sert
+donc du code BÂTI dans un environnement où `NODE_ENV` vaut `development`, et la
+règle y répondait « la version rapide se construit encore ».
+
+| | Ce qui se passait |
+|---|---|
+| le serveur des suites | version bâtie, profil banc, `NODE_ENV=development` dans son environnement |
+| la règle | lisait cette variable **à l'exécution** et croyait le serveur en développement |
+| l'écran | portait « version rapide en construction », qui pousse tout le contenu vers le bas |
+| les suites | mesuraient des écrans décalés, et accusaient chacune un écran différent |
+
+**Le piège d'empaquetage, et c'est lui la racine.** L'empaqueteur remplace
+`process.env.NODE_ENV` par sa valeur **au moment de la construction** — mais
+seulement écrit ainsi, littéralement. Passer par une variable
+(`env.NODE_ENV`, où `env = process.env`) défait ce remplacement et rend une
+lecture à l'exécution. Deux formes qui se ressemblent, deux moments
+différents ; et celle qui lit à l'exécution peut être trompée par
+l'environnement.
+
+**Vérifié dans le code compilé**, pas déduit : la fonction sortait de
+l'empaqueteur en `"production"!==e.NODE_ENV`, tandis que la même lecture écrite
+en toutes lettres à côté sortait figée en `"production"`.
+
+**Ce qui remplace la lecture : un fait de compilation.**
+
+```ts
+const SERVIE_BATIE = process.env.NODE_ENV === "production";
+```
+
+Le code servi SAIT désormais s'il a été bâti, et aucune variable d'environnement
+ne peut lui faire dire le contraire. C'est déjà la forme qu'emploie
+`src/server/version-executee.ts` pour la même question — une seule façon de
+répondre, à deux endroits.
+
+**Éprouvé sur la panne elle-même** : un serveur bâti, profil banc,
+`NODE_ENV=development` posé exprès, avec un fichier d'avancement sur le disque.
+Avant : `{faits:2,total:40,…}` et le bandeau. Après : `null`.
+
+| | |
+|---|---|
+| la règle | `laVersionRapideSeConstruit` dans `src/server/etat-banc.ts` |
+| le contrôle | `scripts/test-etat-banc.ts` — un cas neuf : une version bâtie se tait même quand l'environnement dit « development » |
+| ce qui le voit en vrai | `scripts/test-bandeau-banc-e2e.ts`, deux dernières assertions |
+
+---
+
+## §318 — L'absence d'un jour : le + en tête, et « Annuler » derrière lui
+
+**Ses quatre corrections du 10 septembre 2026**, sur l'écran qu'il venait
+d'essayer, et la planche `appli/absence-l-ordre.html` qu'il a validée :
+
+| Ce qu'il a demandé | Ce que l'écran fait |
+|---|---|
+| *« l'ordre devrait être + salarié absent ? puis Julien »* | le + est en tête de la carte, les noms s'ouvrent dessous |
+| *« remets le bouton matin / aprem / journée »* | un interrupteur à trois positions, celui de « Déplacer » |
+| *« une fois choisi, le bouton se cache »* | il disparaît au premier appui |
+| *« Julien absent, et à côté on marque matin, aprem ou journée »* | la ligne porte le moment, plus « Annuler » |
+| *« pour annuler on reclique sur + salarié absent »* | la liste rouvre, chaque absent y porte « Annuler » |
+
+**CE QUE CET ORDRE CORRIGE, ET CE N'EST PAS QU'UNE QUESTION DE GOÛT.** « Annuler »
+vivait à demeure à côté de chaque absence posée : le geste **le plus rare** de
+l'écran occupait la place **la plus visible**, à deux centimètres du nom qu'on
+vient d'écrire. Ce qui reste sous les yeux est désormais ce qu'il a besoin de
+LIRE — qui manque, et quand. Ce qui se défait se retrouve **là où on l'a fait**,
+derrière le même +.
+
+**Une seule porte pour poser ET pour défaire**, donc, et c'est ce qui rend
+l'écran lisible : le + n'est plus « ajouter une absence » mais « les gens de ce
+jour ».
+
+**L'interrupteur est recopié de la planche « Déplacer »**, pas redessiné : trois
+pastilles séparées ne disaient pas qu'elles s'excluent, un interrupteur le
+montre par sa forme. **44 px et non 36** — c'est la seule chose qui change du
+dessin d'origine, parce que celui-ci se touche avec des gants.
+
+**Il s'allume sur ce qui vient d'être écrit** (« Journée », puisque toucher un
+nom pose la journée entière) : il montre où l'on est, il ne redemande pas de
+choisir.
+
+**Ce que ce lot a SUPPRIMÉ**, et c'est le signe qu'il corrige à la racine plutôt
+que d'empiler : `PastilleDuJour` et `LigneQuestion` n'ont plus d'emploi — les
+rangées « Qui » et « Plutôt » qu'elles dessinaient ont disparu avec ce flux.
+
+**Le prix à connaître :** changer d'avis sur le moment demande d'annuler puis de
+reposer, puisque l'interrupteur s'efface. C'est sa demande, mot pour mot ; si
+cela le gêne à l'usage, la porte reste ouverte (toucher la ligne posée le
+rouvrirait).
+
+| | |
+|---|---|
+| l'écran | `PasLaCeJour` et `BasculeDuMoment` dans `src/app/planning/PlanningClient.tsx` |
+| la planche | `appli/absence-l-ordre.html`, validée le 10 septembre |
+| le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` — l'interrupteur, son effacement, et « Annuler » derrière le + |
+

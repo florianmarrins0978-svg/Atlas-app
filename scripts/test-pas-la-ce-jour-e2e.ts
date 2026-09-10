@@ -77,8 +77,17 @@ async function main() {
    */
   const rendreLeJourOuvert = async () => {
     await ouvrirLeJour(dansCinqJours);
+    // **On annule PAR OÙ IL ANNULE** — depuis le 10 septembre 2026, « Annuler »
+    // vit derrière le +, jamais à demeure à côté d'une absence posée. Entrer
+    // par une autre porte laisserait ce chemin-là sans contrôle.
     const rouvrirIci = page.locator('[data-atlas="rouvrir-le-jour"]');
-    for (let garde = 0; garde < 6 && (await rouvrirIci.count()) > 0; garde++) {
+    const posees = page.locator('[data-atlas="absence-posee"]');
+    for (let garde = 0; garde < 6 && (await posees.count()) > 0; garde++) {
+      if ((await rouvrirIci.count()) === 0) {
+        await page.locator('[data-atlas="fermer-le-jour"]').first().click();
+        await page.waitForTimeout(400);
+      }
+      if ((await rouvrirIci.count()) === 0) break;
       await rouvrirIci.first().click();
       await page.waitForTimeout(900);
     }
@@ -87,6 +96,8 @@ async function main() {
   const fermer = page.locator('[data-atlas="fermer-le-jour"]');
   const rouvrir = page.locator('[data-atlas="rouvrir-le-jour"]');
   const qui = page.locator('[data-atlas="qui-nest-pas-la"]');
+  /** La ligne d'une absence déjà écrite : « Julien absent · matin ». */
+  const posee = page.locator('[data-atlas="absence-posee"]');
 
   await rendreLeJourOuvert();
 
@@ -187,24 +198,98 @@ async function main() {
       await qui.first().click();
     }
     await page.waitForTimeout(1200);
-    assert.equal(await rouvrir.count(), 1, "le jour ne s'annonce pas fermé après l'appui");
+    assert.equal(
+      await posee.count(),
+      1,
+      "le jour ne s'annonce pas fermé après l'appui"
+    );
     idFerme = true;
 
     // LE point : on recharge, et la fermeture tient.
     await ouvrirLeJour(dansCinqJours);
     assert.equal(
-      await rouvrir.count(),
+      await posee.count(),
       1,
       "rechargé, le jour est rouvert : l'écran l'avait barré sans que le serveur l'écrive"
     );
   });
 
-  await cas("et il se rouvre du même geste", async () => {
+  // ─── L'INTERRUPTEUR, ET CE QU'IL ÉCRIT — 10 septembre 2026 ───────────────
+  //
+  // Sa demande : *« remets le bouton matin / aprem / journée ; une fois choisi,
+  // le bouton se cache »*, et *« à côté de Julien absent on marque matin, aprem
+  // ou journée en fonction de la sélection »*.
+  //
+  // **On entre par SA porte** (`CLAUDE.md` §5 quater) : on repose l'absence
+  // depuis le +, comme lui, plutôt que d'appeler la fonction qui restreint.
+  await cas("l'interrupteur restreint l'absence à une demi-journée, puis s'efface", async () => {
+    // **On repart d'un jour ouvert, puis on refait SON geste en entier.**
+    // L'interrupteur ne vit qu'à côté de l'absence qu'il vient de poser : le
+    // rouvrir demande donc de reposer, comme lui.
+    await rendreLeJourOuvert();
+    // **On recharge avant de refaire le geste.** Le ménage ci-dessus a ouvert
+    // la liste pour y trouver « Annuler » : appuyer sur le + la refermerait au
+    // lieu de poser, et l'on mesurerait un écran qu'il ne voit jamais.
+    await ouvrirLeJour(dansCinqJours);
+    await fermer.click();
+    await page.waitForTimeout(500);
+    // **Avec des salariés, le + ouvre la liste et c'est le nom qui pose ; seul,
+    // le + pose directement.** Les deux chemins mènent au même interrupteur,
+    // et cette suite doit tenir sur les deux — le compte de démonstration n'a
+    // aucun salarié, celui du patron en a deux.
+    if ((await qui.count()) > 0) {
+      await qui.first().click();
+      await page.waitForTimeout(1200);
+    }
+
+    const bascule = page.locator('[data-atlas="quand-absent"]');
+    assert.equal(await bascule.count(), 3, "l'interrupteur ne propose pas ses trois positions");
+    assert.equal(
+      await page.locator('[data-atlas="quand-absent"][data-quand="journee"]').getAttribute("aria-pressed"),
+      "true",
+      "l'interrupteur n'est pas allumé sur ce qui vient d'être écrit"
+    );
+
+    await page.locator('[data-atlas="quand-absent"][data-quand="matin"]').click();
+    await page.waitForTimeout(1400);
+
+    // **Il s'efface une fois choisi** : c'est sa demande, mot pour mot.
+    assert.equal(await bascule.count(), 0, "l'interrupteur reste après le choix");
+    // **Et la ligne DIT quand** — sinon le choix n'est visible nulle part.
+    assert.equal(
+      await posee.first().getAttribute("data-quand"),
+      "matin",
+      "la ligne de l'absence n'annonce pas la demi-journée choisie"
+    );
+    assert.match(
+      (await posee.first().innerText()).trim(),
+      /matin/,
+      "le moment n'est pas écrit à côté du nom"
+    );
+
+    // Et le serveur l'a écrit : on recharge.
+    await ouvrirLeJour(dansCinqJours);
+    assert.equal(
+      await posee.first().getAttribute("data-quand"),
+      "matin",
+      "rechargé, l'absence a repris la journée entière"
+    );
+  });
+
+  // **ANNULER SE TROUVE DERRIÈRE LE +, et nulle part ailleurs** — sa demande du
+  // 10 septembre. Le mot ne reste plus sous les yeux à côté d'une absence
+  // posée ; ce contrôle prouve qu'on peut quand même défaire.
+  await cas("annuler se retrouve derrière le +, et le jour se rouvre", async () => {
     if (!idFerme) throw new Error("le jour n'a jamais été fermé : rien à rouvrir");
-    await rouvrir.click();
+    await ouvrirLeJour(dansCinqJours);
+    assert.equal(await rouvrir.count(), 0, "« Annuler » traîne à l'écran sans qu'on ait ouvert le +");
+    await fermer.click();
+    await page.waitForTimeout(400);
+    assert.ok((await rouvrir.count()) >= 1, "le + n'ouvre pas la liste où l'on annule");
+    await rouvrir.first().click();
     await page.waitForTimeout(1200);
     await ouvrirLeJour(dansCinqJours);
-    assert.equal(await rouvrir.count(), 0, "rechargé, le jour est toujours fermé");
+    assert.equal(await posee.count(), 0, "rechargé, le jour est toujours fermé");
     assert.equal(await fermer.count(), 1, "le geste de fermeture n'est pas revenu");
   });
 
