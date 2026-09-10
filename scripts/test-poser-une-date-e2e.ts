@@ -339,19 +339,34 @@ async function main() {
       throw new Error("« Journée » n'est pas un départ : elle réécrivait la durée du chantier");
     }
 
-    // Et le moment qui reste écrit bien quelque chose de NEUF, sans jamais
+    // Et le départ qui reste écrit bien quelque chose de NEUF, sans jamais
     // raccourcir le chantier : la durée dictée vaut des jours de travail.
     await carte.locator('[data-vers="apres_midi"]').click();
-    await page.waitForTimeout(1500);
-    const { rows } = await pool.query(
-      `SELECT creneau_debut AS moment, duree_demi_journees AS duree FROM chantiers WHERE id = $1`,
-      [chantierId]
-    );
-    if (rows[0].moment !== "apres_midi") {
-      throw new Error(`parti sur « ${rows[0].moment} » et non l'après-midi`);
+
+    // **ATTENDRE QUE LA BASE LE DISE, JAMAIS UN DÉLAI FIXE.** Ce contrôle
+    // patientait 1,5 s puis lisait : joué seul il passait, mais dans la
+    // batterie — où plusieurs ateliers se partagent la machine — l'action
+    // serveur n'avait pas toujours atterri, et il accusait « Déplacer » d'un
+    // défaut qu'il venait de fabriquer. C'est la règle que `test-planning-e2e`
+    // porte déjà, et elle vaut ici aussi.
+    const lu = async () =>
+      (
+        await pool.query(
+          `SELECT creneau_debut AS moment, duree_demi_journees AS duree
+             FROM chantiers WHERE id = $1`,
+          [chantierId]
+        )
+      ).rows[0];
+    let rows = await lu();
+    for (let i = 0; i < 60 && rows.moment !== "apres_midi"; i++) {
+      await page.waitForTimeout(250);
+      rows = await lu();
     }
-    if (rows[0].duree !== 4) {
-      throw new Error(`deux jours valent 4 demi-journées, pas ${rows[0].duree}`);
+    if (rows.moment !== "apres_midi") {
+      throw new Error(`parti sur « ${rows.moment} » et non l'après-midi`);
+    }
+    if (rows.duree !== 4) {
+      throw new Error(`deux jours valent 4 demi-journées, pas ${rows.duree}`);
     }
   });
 
