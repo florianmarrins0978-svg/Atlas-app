@@ -48,6 +48,13 @@ fiche pour un appelant qui n'existe pas — les deux passent `attache`. La fiche
 vit désormais DANS la carte du jour, et c'est le retrait de la carte qui
 l'aligne.
 
+**Et un contrôle qui rougissait au hasard a été rendu précis.** « Un samedi
+offre les mêmes gestes qu'un mardi » visait « la première carte du document »
+plutôt que le samedi : quand une ligne des planifiés restait dépliée plus haut,
+il mesurait la mauvaise et annonçait « le samedi n'affiche pas ses deux
+demi-journées » — sur du code juste, une fois sur deux. Il vise désormais la
+carte par son jour. Un garde-fou qui parle à tort s'apprend à être ignoré.
+
 ### Poser un client sur un jour, sans passer par le devis
 
 **Sa demande, planche `appli/bloquer-sans-devis.html` retenue :** *« si j'ai un

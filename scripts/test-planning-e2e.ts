@@ -1337,8 +1337,17 @@ async function main() {
   await essai("un samedi offre les mêmes gestes qu'un mardi", async () => {
     const samedi = new Date(`${JOUR}T12:00:00Z`);
     samedi.setUTCDate(samedi.getUTCDate() + 5);
-    await toucherLeJour(samedi.toISOString().slice(0, 10));
-    const carte = page.locator('[data-atlas="carte-jour"]').first();
+    const jourSamedi = samedi.toISOString().slice(0, 10);
+    await toucherLeJour(jourSamedi);
+    // **LE SAMEDI, PAS « LA PREMIÈRE CARTE ».** `.first()` prenait la carte la
+    // plus haute du document — celle d'une ligne des planifiés restée dépliée
+    // par un contrôle précédent, quand il y en avait une. Le contrôle rougissait
+    // alors une fois sur deux, sur du code juste, en annonçant « le samedi
+    // n'affiche pas ses deux demi-journées » : payé le 11 septembre 2026, une
+    // suite entière rejouée pour l'apprendre. Un contrôle qui rougit au hasard
+    // s'apprend à être ignoré, et l'on perd le garde-fou sans s'en apercevoir.
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${jourSamedi}"]`).first();
+    await carte.waitFor({ state: "visible", timeout: 15_000 });
     const dit = await carte.innerText();
     assert.ok(!/Jamais proposé/.test(dit), `le samedi est encore un cul-de-sac : « ${dit} »`);
     assert.equal(
