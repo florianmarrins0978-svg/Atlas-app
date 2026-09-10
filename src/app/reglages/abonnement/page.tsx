@@ -1,28 +1,35 @@
+import { redirect } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
+import { abonnementDeLEntreprise, enregistrerLAbonnement } from "@/server/repositories/abonnements";
+import { lireLaSessionDePaiement, paiementConfigure } from "@/server/paiement/stripe";
+import { retourConfigure } from "@/server/paiement/retour";
+import { etatAffiche } from "@/lib/abonnements";
+import { logger } from "@/server/logger";
+import AbonnementClient from "./AbonnementClient";
 
 export const dynamic = "force-dynamic";
 
 /**
- * « Abonnement » — d'après `maquettes/atlas-reglages-reste.html`, écran 5.
+ * « Abonnement » — les trois formules, et où en est la sienne.
  *
- * **RIEN N'EST DÉCIDÉ ICI, et l'écran le dit en premier.** Ni le prix, ni ce
- * que comprend l'offre, ni le prestataire de paiement : ce sont des décisions
- * du patron, pas des lots de code (`docs/A-FAIRE.md`). Un écran qui montrerait
- * une formule inventée serait exactement ce que `docs/AGENT.md` §3 interdit —
- * un chiffre sans source, sur une page qui parle d'argent.
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE QUE CET ÉCRAN NE FAIT PAS.** Il ne bloque rien. Une entreprise sans
+ * abonnement se sert d'Atlas exactement comme avant : aucun écran ne se ferme,
+ * aucun plafond ne s'applique (`src/lib/abonnements.ts`, `placePourUnFabricant`).
+ * Couper l'application de ceux qui s'en servent déjà, le jour où l'offre naît,
+ * serait la pire façon de la lancer — et ce n'est pas une décision de code.
  *
- * **L'AVERTISSEMENT SUR LE MOT « FACTURES » N'EST PAS UN DÉTAIL.** Ici, il
- * désigne celles qu'Atlas enverrait au patron ; celles de ses clients sont dans
- * « Terminés ». Les confondre serait le premier appel au secours — c'était déjà
- * écrit sur la planche du 13 août.
- *
- * **Réservé au propriétaire** : ce qui touche au paiement de l'entreprise ne
- * sort pas du serveur pour un salarié (`docs/QUESTIONS.md` §10).
+ * **Réservé au propriétaire** : ce qui engage l'entreprise ne s'ouvre pas à un
+ * commercial (`docs/QUESTIONS.md` §10).
  */
-export default async function AbonnementPage() {
+export default async function AbonnementPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ paiement?: string }>;
+}) {
   const ctx = await getCurrentCtx();
 
   if (!(await estProprietaire(ctx))) {
@@ -40,6 +47,38 @@ export default async function AbonnementPage() {
     );
   }
 
+  const { paiement } = await searchParams;
+
+  /**
+   * ─── LE RETOUR DU PAIEMENT ─────────────────────────────────────────────
+   *
+   * **Pourquoi l'enregistrement se fait ICI et pas seulement dans le crochet.**
+   * Le crochet peut n'être pas encore configuré, ou arriver quelques secondes
+   * plus tard. Le patron, lui, revient tout de suite : sans cette lecture, il
+   * lirait « Aucun abonnement » juste après avoir payé — et il rappuierait.
+   *
+   * **Ce n'est pas une seconde règle** : les deux chemins écrivent la même
+   * ligne par la même fonction, et un second passage écrase le même état.
+   *
+   * **L'entreprise est VÉRIFIÉE.** Sans cette comparaison, coller dans la
+   * barre d'adresse l'identifiant de session d'un autre y accrocherait son
+   * abonnement — l'écran est réservé au patron, mais il y a plus d'un patron.
+   */
+  if (paiement && paiement !== "abandon") {
+    const lu = await lireLaSessionDePaiement(paiement);
+    if (lu.ok && lu.entrepriseId === ctx.entrepriseId) {
+      await enregistrerLAbonnement(ctx, lu.etat);
+    } else if (lu.ok) {
+      logger.warn("Retour de paiement pour une autre entreprise", { entrepriseId: ctx.entrepriseId });
+    }
+    // On repart sans le paramètre : sans quoi un rafraîchissement — ou le
+    // bouton « précédent » — relancerait la lecture à chaque fois.
+    redirect("/reglages/abonnement");
+  }
+
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  const etat = etatAffiche(abonnement, new Date());
+
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <EnTeteEcran
@@ -48,56 +87,34 @@ export default async function AbonnementPage() {
         retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
       />
 
-      <div className="pb-24">
-        <p className={`mx-[26px] mt-[26px] ${texteSituation}`} style={{ color: colors.inkSoft }}>
-          <b style={{ color: colors.ink, fontWeight: 500 }}>Atlas ne vous facture rien aujourd&apos;hui.</b> Ni
-          le prix ni le contenu de l&apos;offre ne sont arrêtés — et tant qu&apos;ils ne le sont pas, cet écran
-          n&apos;affichera aucun montant : un chiffre inventé sur une page qui parle d&apos;argent finirait par
-          être cru.
+      <section className="mx-[26px] mt-[26px]">
+        <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
+          Votre abonnement
         </p>
-
-        <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-          <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.inkSoft }}>
-            Ce qu&apos;il y aura ici
+        <p style={{ fontFamily: font.display, fontSize: 22, lineHeight: 1.2, color: etat.ton === "attention" ? colors.alert : colors.ink }}>
+          {etat.titre}
+        </p>
+        {etat.detail && (
+          <p className={`mt-1 ${texteSituation}`} style={{ color: colors.inkSoft }}>
+            {etat.detail}
           </p>
-          <Ligne nom="Formule" dit="Ce qu'elle comprend, et jusqu'où" />
-          <Ligne nom="Moyen de paiement" dit="La carte qui sera débitée" />
-          <Ligne nom="Vos factures Atlas" dit="Celles que vous recevez, pas celles que vous émettez" derniere />
-        </section>
+        )}
+      </section>
 
-        {/* **Le mot « factures » désigne deux choses opposées**, et la confusion
-            se paierait par un appel affolé un soir de trimestre. */}
-        <p
-          className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
-          style={{ borderColor: colors.line, color: colors.inkSoft }}
-        >
-          <b style={{ color: colors.ink, fontWeight: 500 }}>Attention au mot.</b> Ici, « factures » désigne
-          celles qu&apos;Atlas vous enverrait. Celles de vos clients sont dans « Terminés », et elles ne
-          bougeront jamais d&apos;ici.
-        </p>
+      <AbonnementClient
+        formuleActuelle={abonnement && abonnement.statut !== "resilie" ? abonnement.formule : null}
+        periodiciteActuelle={abonnement && abonnement.statut !== "resilie" ? abonnement.periodicite : null}
+        paiementBranche={paiementConfigure() && retourConfigure()}
+      />
 
-        <p className={`mx-[26px] mt-5 ${texteSituation}`} style={{ color: colors.inkSoft }}>
-          Ce qui bloque n&apos;est pas du code : il faut choisir une offre et un prestataire de paiement. Ces
-          points sont dans votre document « à faire ».
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function Ligne({ nom, dit, derniere }: { nom: string; dit: string; derniere?: boolean }) {
-  return (
-    <div className={derniere ? "py-[13px]" : "border-b py-[13px]"} style={{ borderColor: colors.line }}>
-      <div className="flex items-baseline gap-3">
-        <span className="min-w-0 flex-1" style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25 }}>
-          {nom}
-        </span>
-        <span className={libelleCaps} style={{ color: colors.or }}>
-          Bientôt
-        </span>
-      </div>
-      <p className={`mt-1 ${texteSituation}`} style={{ color: colors.inkSoft }}>
-        {dit}
+      {/* **Le mot « factures » désigne deux choses opposées**, et la confusion
+          se paierait par un appel affolé un soir de trimestre. */}
+      <p
+        className={`mx-[26px] mt-[30px] border-t pb-24 pt-[18px] ${texteSituation}`}
+        style={{ borderColor: colors.line, color: colors.inkSoft }}
+      >
+        <b style={{ color: colors.ink, fontWeight: 500 }}>Attention au mot.</b> Ici, « factures » désigne
+        celles qu&apos;Atlas vous envoie. Celles de vos clients sont dans « Terminés ».
       </p>
     </div>
   );

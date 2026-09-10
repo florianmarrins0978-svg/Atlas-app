@@ -3001,3 +3001,61 @@ export const retoursInterventionVus = pgTable(
     index("retours_intervention_vus_par_lecteur_idx").on(t.utilisateurId, t.retourId),
   ]
 );
+
+/**
+ * L'ABONNEMENT DE L'ENTREPRISE — migration 0084.
+ *
+ * **Les prix ne sont PAS ici.** Ils vivent dans `src/lib/abonnements.ts`, avec
+ * les trois formules : une seule source, sans quoi ce que l'écran affiche et
+ * ce que le prestataire débite finiraient par différer, sur le seul écran où
+ * cela ne se pardonne pas.
+ *
+ * **Les colonnes du prestataire sont nommées « prestataire », pas « stripe ».**
+ * Le jour où l'on en change, c'est le contenu qui change et non le schéma — un
+ * nom de fournisseur dans une colonne finit toujours par mentir.
+ */
+export const abonnements = pgTable(
+  "abonnements",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    formule: text("formule", { enum: ["artisan", "entreprise", "illimite"] }).notNull(),
+    periodicite: text("periodicite", { enum: ["mensuelle", "annuelle"] }).notNull(),
+    statut: text("statut", { enum: ["actif", "impaye", "resilie"] }).notNull(),
+    periodeFin: timestamp("periode_fin", { withTimezone: true }),
+    annulationDemandee: boolean("annulation_demandee").notNull().default(false),
+    clientPrestataire: text("client_prestataire"),
+    abonnementPrestataire: text("abonnement_prestataire"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Un seul abonnement par entreprise : deux lignes donneraient deux
+    // prélèvements et deux plafonds contradictoires.
+    unique("abonnements_entreprise_uk").on(t.entrepriseId),
+  ]
+);
+
+/**
+ * LES ÉVÉNEMENTS DÉJÀ TRAITÉS — ce qui empêche de compter deux fois le même
+ * paiement.
+ *
+ * Stripe RÉPÈTE ses notifications tant qu'il n'a pas reçu un 200 : c'est une
+ * garantie « au moins une fois », jamais « exactement une fois ». Sans cette
+ * table, un réseau lent prolongerait trois fois la période payée d'un seul
+ * prélèvement.
+ */
+export const evenementsPaiement = pgTable(
+  "evenements_paiement",
+  {
+    id: text("id").primaryKey(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    recuAt: timestamp("recu_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("evenements_paiement_entreprise_idx").on(t.entrepriseId, t.recuAt)]
+);

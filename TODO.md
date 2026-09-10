@@ -9,6 +9,28 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ LES CLÉS DE GOOGLE ET D'APPLE — la porte les attend (10 septembre 2026)
+
+Le code est en place et éprouvé ; **les deux boutons ne s'afficheront pas tant
+que les clés ne sont pas posées**, et c'est délibéré : un bouton qui ne peut pas
+aboutir est pire qu'un bouton absent.
+
+| Variable | Où l'obtenir | Coût |
+|---|---|---|
+| `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | Google Cloud Console → identifiants OAuth 2.0, type « application Web » | gratuit |
+| `AUTH_APPLE_ID`, `AUTH_APPLE_SECRET` | Apple Developer → Service ID + clé signée | compte développeur, 99 €/an |
+
+**L'adresse de retour à déclarer chez eux :** `<adresse publique>/api/auth/callback/google`
+et `…/callback/apple`. Elle ne se déduit pas de la requête — l'hôte annoncé est
+écrit par celui qui frappe.
+
+**Ce qui n'est pas éprouvable ici**, et doit l'être chez lui une fois les clés
+posées : le trajet complet jusqu'à Google et le retour. Ce qui l'est déjà : la
+règle d'affichage, le refus d'une adresse non vérifiée, l'aiguillage vers la
+création de compte (`scripts/test-fournisseurs-connexion.ts`).
+
+---
+
 ## ⏳ UNE BATTERIE À JOUER — « Se déconnecter » est codé (9 septembre 2026)
 
 **Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce
@@ -206,6 +228,55 @@ la moins chère et la plus sûre.
 
 **Qui peut le trancher :** nous — c'est du code. À ouvrir seulement s'il
 signale un écran qui ment au retour ; sinon, la place rendue vaut mieux.
+## ⏳ L'ABONNEMENT EST CODÉ — quatre choses restent, et trois sont pour LUI
+
+*Lot du 9 septembre 2026, `docs/lot-abonnement-stripe.md`. Le paiement marche de
+bout en bout dans le code ; ce qui suit ne s'écrit pas en codant.*
+
+### 1. Le premier essai avec une vraie clé — POUR LUI, puis pour nous
+
+Aucun compte Stripe n'existe. Tant qu'il n'en a pas créé un, l'écran
+« Abonnement » **dit** que le paiement n'est pas branché et n'offre aucun bouton
+actif — c'est voulu, jamais un bouton qui échoue.
+
+Ce qu'il faut poser, ensuite, sur son espace :
+
+    ATLAS_PAIEMENT_CLE=sk_test_…            (Stripe › Développeurs › Clés)
+    ATLAS_PAIEMENT_SECRET_CROCHET=whsec_…   (Stripe › Webhooks, adresse /api/paiement)
+    ATLAS_URL_PUBLIQUE=https://…            (l'adresse de son Atlas, sans / final)
+
+**Et le premier paiement d'essai se fait avec une clé de TEST**, carte
+`4242 4242 4242 4242`. C'est là, et seulement là, qu'on saura que Stripe accepte
+les paramètres qu'Atlas envoie : ici, seul un faux prestataire local répond
+(`scripts/test-paiement-stripe.ts`). Ne pas présenter ce chemin comme éprouvé
+avant.
+
+### 2. LES FONCTIONS NE SONT PAS CLOISONNÉES PAR FORMULE — à trancher par lui
+
+La planche annonce « les absences de vos équipes » et « les retours
+d'intervention » comme un plus d'« Entreprise ». **Ce n'est PAS appliqué**, et
+c'est délibéré : le poser en silence retirerait à un artisan des écrans dont il
+se sert déjà aujourd'hui.
+
+Seul le plafond de personnes mord. La question à lui poser : *veut-il vraiment
+fermer les absences et les retours à un abonné « Artisan » ?* Tant qu'il n'a pas
+répondu, la carte promet un peu moins que ce que l'application donne — dans son
+sens à lui, jamais l'inverse.
+
+### 3. La durée de l'essai gratuit n'est pas décidée
+
+Il n'y a donc **pas d'état « essai »** : ni en base (la contrainte `CHECK` de la
+migration 0084 le refuse), ni dans `src/lib/abonnements.ts`. C'est l'une des
+seize cases `[À COMPLÉTER]` des conditions générales. Le jour où il donne le
+chiffre, une migration ajoute l'état — ne pas l'inventer d'ici là.
+
+### 4. Le portail ne sait pas changer de formule, et c'est Atlas qui le fait
+
+Conséquence assumée du choix de tarif (`ARCHITECTURE.md` §316) : le portail
+client de Stripe ne propose un changement de formule que parmi des tarifs
+déclarés à la main, ce qui serait une seconde grille tarifaire. Le changement se
+fait donc dans Atlas, au prorata. **Ne pas « simplifier » en le renvoyant au
+portail** sans avoir relu ce paragraphe.
 
 ---
 
@@ -8907,11 +8978,15 @@ toucher le jour où un nom est arrêté, pour ne pas le rechercher :
 
 | Où | Quoi |
 |---|---|
-| `src/components/atlas/MarqueAtlas.tsx` | `MotAtlas` — le mot sous le sceau |
 | `public/manifest.json` | `name` et `short_name` — l'écran d'accueil |
 | `src/app/layout.tsx` | le titre de l'onglet et la carte de partage |
 | `public/icone-source.svg` | l'icône, qui est un A — voir ci-dessus |
 | `src/server/documents-legaux/versions.ts` | les CGU citent le nom, et **une version acceptée ne se modifie jamais** : renommer y fait naître une version de plus, à réaccepter |
+
+*(Le sceau et son mot ont été supprimés le 10 septembre 2026 avec
+`MarqueAtlas` — plus rien ne l'importait après la refonte de la porte. Une
+ligne de ce tableau est donc partie ; le nom se voit désormais à **deux**
+endroits de code, plus le manifeste et l'icône.)*
 
 **Ce que la planche a établi, et qui n'était pas su :** le nom ne se voit qu'à
 **trois endroits** dans tout le produit, et **le client de l'artisan ne le voit

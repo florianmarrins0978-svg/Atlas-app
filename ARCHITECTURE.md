@@ -2929,7 +2929,11 @@ trouvées à l'écran, pas au raisonnement.
 
 ### Deux dessins, et pas une image
 
-Le sceau (`MarqueAtlas`) et la branche (`BrancheEucalyptus`) sont **tracés**.
+Le sceau et la branche (`BrancheEucalyptus`) étaient **tracés**, jamais
+photographiés. *(Le sceau — `MarqueAtlas.tsx` — a été supprimé le 10 septembre
+2026 : la porte, son dernier usage, ne le porte plus. Il vit dans l'historique
+git, et ce paragraphe garde le raisonnement, qui vaut toujours pour la
+branche.)*
 Une photo détourée aurait pesé des centaines de kilo-octets, se serait affichée
 floue sur un écran dense et aurait fait clignoter la page à chaque ouverture.
 La branche définit **une** foliole dans `<defs>` et la rappelle onze fois : la
@@ -5187,8 +5191,10 @@ Trois maquettes, trois décisions, dans cet ordre (`docs/maquettes/`) :
 
 **La rose des vents ne remplace pas la feuille ailleurs.** L'en-tête et la barre
 basse gardent la feuille : c'est une décision de marque, elle n'a pas été prise,
-et `SceauAtlas` porte donc un `motif` dont la valeur par défaut reste la
-feuille.
+et `SceauAtlas` portait donc un `motif` dont la valeur par défaut restait la
+feuille. *(Périmé depuis le 10 septembre 2026 : la porte a pris l'allure de
+`appli/la-porte-en-plein-air.html`, qui n'a plus de sceau, et `MarqueAtlas.tsx`
+est parti avec — plus rien ne l'importait.)*
 
 ### Le tour n'a pas de plancher, et c'est un arbitrage
 
@@ -26929,3 +26935,189 @@ second dirait « sept. » d'un côté et « sep. » de l'autre.
 | `test-documents-du-client.ts` | la règle pure : le plus récent, l'égalité de jour, le silence quand rien n'est parti, l'année |
 | `test-liste-clients.ts` | qu'un chantier sans document n'annonce rien, et qu'un devis parti se lit avec son jour |
 | `test-ligne-du-client-e2e.ts` | **les boîtes** — l'adresse qui se rogne, la date qui ne se coupe pas, la ligne vide qui n'existe plus, et le compte qui ne revient pas |
+
+---
+
+## §316 — L'abonnement : le prix ne vit qu'à UN endroit, et Stripe le recopie
+
+**Sa demande du 9 septembre 2026** : *« et que si on clique sur s'abonner qu'on
+puisse payer, mets tout le système en place »*, puis *« fais-moi Stripe »*.
+
+### La décision qui commande tout le reste
+
+Brancher Stripe se fait d'ordinaire ainsi : on crée trois tarifs à la main dans
+son tableau de bord, on en copie les identifiants (`price_1Abc…`) dans la
+configuration, et l'application les cite. C'est ce que montrent tous ses guides.
+
+**Ce dépôt l'a refusé**, et c'est le choix structurant de ce lot. Ce serait une
+**seconde grille tarifaire** : le prix affiché vivrait dans le code, le prix
+prélevé chez le prestataire, et le jour où l'un change sans l'autre, l'écran
+annonce 29 € pendant que la banque prélève autre chose. C'est très exactement ce
+qu'interdit `CLAUDE.md` §3 — *« jamais de règle dupliquée »* — et sur le seul
+écran d'Atlas où l'erreur se compte en euros.
+
+**Ce qui se fait à la place.** `src/lib/abonnements.ts` porte les trois formules
+et leurs montants ; au moment de payer, Atlas demande au prestataire un tarif à
+cette image, sous une **clé de recherche qui contient le montant** —
+`atlas_entreprise_mensuelle_5900`. Tant que le prix ne bouge pas, le même objet
+est réemployé ; le jour où il bouge, un objet neuf naît tout seul, et l'ancien
+reste attaché aux abonnements qui le portaient. Personne n'est jamais reprélevé
+d'un montant qu'il n'a pas accepté.
+
+**Conséquence à connaître :** le portail client de Stripe ne sait proposer un
+changement de formule que parmi des tarifs déclarés à la main. Le changement de
+formule se fait donc **dans Atlas** (`changerDeFormuleAction`), au prorata, en
+remplaçant la ligne existante de l'abonnement — jamais en ouvrant un second
+paiement, ce qui donnerait deux abonnements vivants et deux prélèvements.
+
+### Ce qui se compte, c'est qui FABRIQUE
+
+Sa correction, le même jour : *« je pense pas qu'il faut de limite d'utilisateur
+à 5, ou alors limiter à 5 commerciaux, et si on veut commerciaux illimités faut
+payer genre 120 »*.
+
+Les quatre rôles d'Atlas ne se valent pas (`src/lib/acces-roles.ts`) : un salarié
+voit son planning et rien d'autre, il ne produit aucun document et ne consomme
+aucune IA. Compter les salariés reviendrait à facturer la **taille de ses
+chantiers** au lieu de l'usage de l'outil — et à punir exactement le client qu'on
+veut garder. Le plafond ne compte donc que le patron, la facturation et les
+commerciaux, et `roleFabrique` est un `switch` exhaustif : un cinquième rôle
+ferait rougir la compilation plutôt que de tomber en silence du bon côté.
+
+**Deux portes, pas une.** Ajouter quelqu'un est la porte évidente ; **promouvoir
+un salarié en commercial** est celle par laquelle on franchirait le plafond sans
+s'en apercevoir — personne ne s'ajoute, un rôle change. Les deux sont gardées
+(`donnerUnAcces`, `changerLeRole`).
+
+### Rien ne se ferme aujourd'hui
+
+**Sans abonnement, aucun plafond ne s'applique** (`placePourUnFabricant` rend
+`ok` pour un code nul). Ce n'est pas un trou : un plafond est la conséquence
+d'une formule choisie, jamais un état par défaut. L'appliquer d'office fermerait
+l'équipe des artisans qui se servent d'Atlas avant que la moindre offre existe.
+
+**Et il n'y a pas d'état « essai ».** La durée de l'essai gratuit est l'une des
+seize cases `[À COMPLÉTER]` des conditions générales : elle n'est pas arrêtée.
+L'écrire dans le code en aurait fait un engagement contractuel décidé par une
+session. La contrainte `CHECK` de la migration 0084 refuse donc `'essai'` — un
+refus franc plutôt qu'une valeur qui dort.
+
+### Le crochet, et pourquoi il n'affaiblit pas la RLS
+
+Le prestataire frappe `/api/paiement` sans session : il n'y a ni utilisateur ni
+entreprise, donc l'isolation ordinaire ne peut pas s'appliquer. La tentation
+serait un rôle qui traverse la RLS derrière une adresse publique ; `CLAUDE.md`
+§4 l'interdit, à raison.
+
+La serrure employée est **celle de la page publique d'une facture** (migration
+0081) : une politique qui exige, mot pour mot, l'identifiant d'abonnement posé
+par le code juste avant la requête. Sans lui, aucune ligne n'est visible ni
+modifiable, et aucune énumération n'est possible. Les politiques PERMISSIVE se
+combinent en OR : celle-ci s'ajoute à l'isolation, elle ne la remplace pas.
+
+**Ce qui rend la serrure sûre, c'est ce qui la précède** : l'identifiant n'est
+posé qu'après vérification de la **signature** de l'événement
+(`src/lib/signature-stripe.ts`). Un identifiant deviné ne sert à rien — il
+faudrait d'abord savoir signer comme le prestataire.
+
+**Et `evenements_paiement` empêche de compter deux fois.** Stripe RÉPÈTE ses
+notifications tant qu'il n'a pas reçu un 200 : c'est une garantie « au moins une
+fois », jamais « exactement une fois ». Sans cette table, un réseau lent
+prolongerait trois fois la période payée d'un seul prélèvement.
+
+### Deux chemins d'écriture, une seule règle
+
+L'abonnement s'écrit au **retour du paiement** (l'écran, sous la session du
+patron) et par le **crochet** (sans session). Ce n'est pas une règle dupliquée :
+les deux passent par la même fonction de traduction (`lireUnAbonnement`) et la
+même forme de ligne (`versLaLigne`). Le premier existe parce que le crochet peut
+n'être pas encore configuré, ou arriver quelques secondes plus tard — et que le
+patron, lui, revient tout de suite sur son écran. Sans lui, il y lirait « Aucun
+abonnement » juste après avoir payé, et il rappuierait.
+
+### Aucune bibliothèque, et ce qui a été éprouvé
+
+Trois appels REST suffisent : la bibliothèque officielle de Stripe aurait
+apporté une dépendance entière pour cela. Ce qu'elle apporte d'irremplaçable —
+la vérification de signature — est écrit ici et **éprouvé sans compte, sans clé
+et sans réseau** (`scripts/test-signature-stripe.ts`, seize contrefaçons).
+
+**Ce qui n'a PAS pu être éprouvé, et il faut le lire :** aucun compte Stripe
+n'existe encore. `scripts/test-paiement-stripe.ts` monte un faux prestataire en
+local et vérifie ce qu'Atlas ENVOIE, paramètre par paramètre, et ce qu'il en
+relit. Que Stripe accepte ces paramètres se vérifie avec une clé d'essai, sur
+son espace — c'est écrit dans `docs/lot-abonnement-stripe.md`.
+
+### Trois variables, toutes optionnelles
+
+`ATLAS_PAIEMENT_CLE`, `ATLAS_PAIEMENT_SECRET_CROCHET`, `ATLAS_URL_PUBLIQUE`.
+Sans elles, l'écran **le dit** et n'offre pas un bouton qui échouerait. Et
+l'adresse de retour ne se déduit **jamais** de la requête : l'hôte annoncé est
+écrit par celui qui frappe, et le déduire ferait renvoyer le patron, au sortir
+du paiement, vers une page choisie par un tiers — la faute que ce dépôt a fermée
+sur `x-forwarded-for`.
+
+## §317 — La porte est en NUIT, et une charte peut se poser au milieu de l'arbre
+
+**Sa remarque du 10 septembre 2026, photo à l'appui :** *« toi tu me montres un
+écran blanc, regarde la photo que je t'ai jointe, elle est noire, c'est celle-là
+que je veux »*, puis, devant la seule couleur corrigée : *« ça va au-delà de
+ça ! C'est cet écran que je veux, regarde celui que j'ai aujourd'hui, ça n'a
+rien à voir — je veux pouvoir me connecter avec Google ou Apple »*.
+
+### Ce qui divergeait, et pourquoi personne ne l'avait vu
+
+`appli/la-porte-en-plein-air.html` porte **deux** écrans sombres, choisis le
+même jour : la création de compte (écran 2) et la connexion (écran 3). Seul le
+premier a été codé. La nuit y était écrite **dans son propre fichier** — la
+connexion, l'autre moitié de la même porte, retombait donc sur Origine, qui est
+claire. Une règle qui ne vit que dans un fichier sur deux n'est pas une règle :
+c'est un doublon en attente (`CLAUDE.md` §3).
+
+`src/components/atlas/PorteDeNuit.tsx` la porte désormais pour les deux.
+
+### Le piège des alias CSS, mesuré et non supposé
+
+Poser les `--atlas-*` d'une charte sur un conteneur ne suffisait pas : le fond
+passait en nuit et **les champs restaient crème**.
+
+`globals.css` déclare sur `:root` une couche d'alias courts —
+`--ink: var(--atlas-ink, #1c1c1a)`, et huit autres. Une variable CSS est
+**calculée là où elle est déclarée**, puis héritée comme valeur figée. Déclarés
+à la racine, où aucun `--atlas-*` n'existe, ces alias valent leur **repli
+clair** pour toute la page, et un enfant qui repose les `--atlas-*` ne les
+recalcule pas.
+
+| Ce qui marche seul | Ce qui ne marchait pas |
+|---|---|
+| `colors.ink` etc., qui sont **déjà** des `var(--atlas-…)` | tout ce qui lit `var(--ink)`, `var(--card)`, `var(--line)`, `var(--or)` |
+
+**Le correctif est un sélecteur, pas une copie** : le bloc d'alias vaut
+maintenant pour `:root` **et** pour `.atlas-charte-locale`, que `PorteDeNuit`
+pose. Recopier ces neuf lignes ailleurs aurait fait deux dérivations pour une
+seule question. Toute pièce future qui repose une charte plus bas dans l'arbre
+n'a qu'à porter cette classe.
+
+### Google et Apple : ce que le produit décide, et ce qu'il refuse de décider
+
+| | |
+|---|---|
+| **un bouton ne s'affiche que s'il peut aboutir** | `fournisseursDisponibles` — la moitié d'une paire de clés ne compte pas, ni une ligne vide restée dans un `.env`. Même règle que « Ouvrir avec Face ID », qui ne se montre que si l'appareil sait le faire |
+| **la même fonction sert à l'écran ET à Auth.js** | `page.tsx` décide quoi dessiner, `auth.ts` décide quoi déclarer. Deux rédactions auraient donné un bouton menant à une page d'erreur d'Auth.js |
+| **aucun adaptateur de base** | même raisonnement que Face ID (§ « Face ID sans adaptateur ») : la session est un JWT sans table, en brancher un remettrait en jeu le contexte d'entreprise, le middleware et « me déconnecter partout » |
+| **l'adresse est donc le SEUL lien** | d'où `emailProuve`, et le refus de toute adresse dont `email_verified` n'est pas vrai. Une valeur absente n'est pas une valeur vraie |
+| **on ne crée PAS le compte au vol** | un Atlas sans entreprise, sans forme juridique et sans TVA ne peut pas émettre son premier devis, et l'artisan le découvrirait devant un client. Sans compte, on part sur la création, l'adresse déjà prouvée |
+| **`user.id` est réécrit dans `signIn`** | ce qu'Auth.js y met pour un fournisseur OAuth est l'identifiant du compte **chez Google**. Laissé tel quel, il partirait dans le jeton et `getCurrentCtx` ne trouverait aucune entreprise — une session vide, sans un mot |
+
+**Ce qui reste à faire et que le code ne peut pas faire :** ouvrir l'identifiant
+OAuth chez Google (gratuit) et le Service ID chez Apple (compte développeur
+payant, 99 €/an). Tant qu'ils manquent, la porte est exactement celle d'avant,
+moins les deux boutons.
+
+### Ce que ce lot a supprimé
+
+Le composant du sceau — la feuille, la rose des vents, le mot — qui vivait sous
+`src/components/atlas/`. La porte était son dernier usage ; plus rien ne l'importait
+(`CLAUDE.md` §4 quinquies). Sont partis avec lui l'animation
+`.atlas-sceau-en-marche` et la classe `.atlas-champ-ligne`, le champ souligné
+que les gélules remplacent. L'historique git les garde.

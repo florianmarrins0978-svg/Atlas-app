@@ -44,6 +44,12 @@ export const CHEMINS_PUBLICS = [
   // middleware, donc rien à déclarer ici pour elles.
   "/api/auth",
   "/api/cron",
+  // **Le crochet du prestataire de paiement.** Il frappe depuis l'extérieur,
+  // donc sans session — c'est la nature même d'un crochet. Ce n'est pas une
+  // porte ouverte pour autant : rien n'y passe sans une SIGNATURE que seul le
+  // secret partagé permet de produire (`src/lib/signature-stripe.ts`), et
+  // aucune réponse ne dit jamais si l'abonnement visé existe.
+  "/api/paiement",
   "/api/session-perimee",
   // La page de réponse du client au devis. Elle n'est pas « ouverte » pour
   // autant : son seul accès est un jeton imprévisible, contrôlé en base par une

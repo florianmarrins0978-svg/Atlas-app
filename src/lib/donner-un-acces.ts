@@ -31,7 +31,17 @@ export type RefusAcces =
   /** On ne se retire pas soi-même : ce serait s'enfermer dehors. */
   | "soi-meme"
   /** Une portée resserrée sans équipe rattachée ne montrerait rien. */
-  | "equipe-manquante";
+  | "equipe-manquante"
+  /**
+   * La formule souscrite ne comprend pas une personne de plus qui FABRIQUE des
+   * documents — sa règle du 9 septembre 2026 : *« limiter à 5 commerciaux, et
+   * si on veut commerciaux illimités faut payer genre 120 »*.
+   *
+   * **Ne concerne jamais les salariés** : ils ne fabriquent rien, et les
+   * compter reviendrait à facturer la taille de ses chantiers au lieu de
+   * l'usage de l'outil (`src/lib/abonnements.ts`).
+   */
+  | "plafond-atteint";
 
 /**
  * L'adresse est-elle envoyable ?
@@ -189,5 +199,9 @@ export function messageRefusAcces(refus: RefusAcces): string {
       return "Vous ne pouvez pas retirer votre propre accès.";
     case "equipe-manquante":
       return "Choisissez l'équipe dont il voit les chantiers.";
+    // **La phrase dit quoi faire ensuite**, et c'est le point : un refus qui ne
+    // mène nulle part se lit comme une panne, et il appellerait.
+    case "plafond-atteint":
+      return "Votre formule ne comprend pas une personne de plus aux devis et aux factures. Changez de formule dans Réglages, Abonnement.";
   }
 }

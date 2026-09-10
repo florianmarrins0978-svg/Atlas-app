@@ -177,14 +177,30 @@ async function main() {
     /Atlas IA/i,
     "L'écran ne dit plus quels fournisseurs d'IA tournent."
   );
-  // La batterie retire délibérément les clés d'IA de cette étape : l'état
-  // attendu ici est donc le mode déterministe, annoncé sans détour.
+  /**
+   * **CE CONTRÔLE RÉCLAMAIT UN MOT QUE LE PATRON A FAIT RETIRER — corrigé le
+   * 9 septembre 2026.**
+   *
+   * Il exigeait « déterministe ». C'est un mot d'informaticien, et l'écran a
+   * été réécrit le jour même (`cab142f2`, *« cesser de parler en développeur à
+   * un artisan »*) : il énumère désormais ce qu'Atlas sait faire — écouter,
+   * écrire, lire un croquis — et marque chaque ligne « Pas encore » tant que
+   * rien n'est branché.
+   *
+   * **On adapte le contrôle, on ne remet pas le libellé** (`CLAUDE.md` §5 bis) :
+   * écrire une suite qui réclame ce qu'il a fait enlever rend son écran
+   * impossible à changer.
+   *
+   * Ce qu'on défend ici n'est donc plus un mot mais la RÈGLE : la batterie
+   * coupe délibérément les clés d'IA, et l'écran doit le DIRE — jamais laisser
+   * croire qu'une dictée sera transcrite alors que personne n'écoute.
+   */
   assert.match(
     ecran,
-    /déterministe/i,
-    `Sans clé, l'écran doit annoncer le mode déterministe. Écran : ${ecran.slice(-400)}`
+    /pas encore/i,
+    `Sans clé, l'écran doit dire que rien n'est branché. Écran : ${ecran.slice(-400)}`
   );
-  console.log("  ✓ l'écran dit quels fournisseurs d'IA tournent réellement");
+  console.log("  ✓ sans clé, l'écran dit que rien n'est encore branché");
 
   await browser.close();
   console.log("✅ Test bout-en-bout Tarifs réussi.");

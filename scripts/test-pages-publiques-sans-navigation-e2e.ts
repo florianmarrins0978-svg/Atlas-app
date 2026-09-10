@@ -200,6 +200,11 @@ async function main() {
       "/api/auth",
       "/api/cron",
       "/api/session-perimee",
+      // Le crochet du prestataire de paiement (migration 0084) : une adresse
+      // que seul Stripe frappe, en POST et signé. Elle n'a aucune page, donc
+      // aucune barre de navigation à cacher — c'est le même cas que les trois
+      // adresses ci-dessus.
+      "/api/paiement",
     ];
     const oublies = CHEMINS_PUBLICS.filter((p) => !couverts.includes(p));
     if (oublies.length > 0) {

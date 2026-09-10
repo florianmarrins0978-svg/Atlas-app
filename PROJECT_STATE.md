@@ -4,6 +4,46 @@
 · dernière migration `drizzle/0083_retour_vu_par.sql`
 (ce lot-ci ne touche que le chemin de retour, sans base)
 
+---
+
+## FAIT : LA PORTE DE CONNEXION SUIT SA PLANCHE — 10 septembre 2026
+
+*« C'est cet écran que je veux […] je veux pouvoir me connecter avec Google ou
+Apple »*. L'écran 3 de `appli/la-porte-en-plein-air.html`, choisi le
+8 septembre et jamais codé : nuit, titre serif, Google, Apple, Face ID, gélules.
+
+| | |
+|---|---|
+| la nuit, partagée avec la création de compte | `src/components/atlas/PorteDeNuit.tsx` |
+| qui a le droit d'apparaître | `src/lib/fournisseurs-connexion.ts` — 19 cas, sans base ni réseau |
+| le rattachement d'une identité extérieure | `src/server/identite-externe.ts` + le rappel `signIn` de `src/auth.ts` |
+| **en attente de LUI** | l'identifiant OAuth Google (gratuit) et le Service ID Apple (99 €/an) — sans eux, les deux boutons ne s'affichent pas |
+
+---
+
+## FAIT : L'ABONNEMENT SE PAIE — 9 septembre 2026
+
+*« Et que si on clique sur s'abonner qu'on puisse payer, mets tout le système en
+place »*, puis *« fais-moi Stripe »*.
+
+| | |
+|---|---|
+| les formules | Artisan 29 · Entreprise 59 · Illimité 120 € HT/mois, l'année à dix mois |
+| ce qui se compte | qui FABRIQUE des devis et des factures — 1, 5, illimité. **Jamais les salariés** |
+| le prestataire | Stripe, et lui seul le sait (`src/server/paiement/stripe.ts`) |
+| ce qui marche | s'abonner, voir son état, changer de formule au prorata, gérer sa carte et résilier au guichet |
+| ce qui ne se ferme pas | tout. Sans abonnement, aucun plafond, aucun écran retiré |
+
+**Le prix ne vit qu'à un endroit** — `src/lib/abonnements.ts` — et le tarif est
+fabriqué chez le prestataire à son image. Aucun identifiant de tarif à recopier
+à la main : ce serait une seconde grille, et l'écart se compterait en euros
+(`ARCHITECTURE.md` §316).
+
+**Ce qui reste, et trois points sur quatre sont pour LUI** (`TODO.md`, en tête) :
+le premier essai avec une vraie clé Stripe, le cloisonnement des fonctions par
+formule qu'il doit trancher, la durée de l'essai gratuit, et les seize
+`[À COMPLÉTER]` des conditions générales.
+
 > **Corrigé le 9 septembre 2026 :** cette ligne annonçait
 > `0077_civilite_et_prenom_du_compte.sql` alors que six migrations étaient
 > appliquées depuis. Le code fait foi (`CLAUDE.md` §1) — et une dernière
