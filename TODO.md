@@ -9,6 +9,206 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE BATTERIE À JOUER — « Se déconnecter » est codé (9 septembre 2026)
+
+**Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce
+que ça me remet à la page de connexion ? »* — et le bouton n'existe pas. Le seul
+geste est « Me déconnecter partout », au bas de l'écran « Mot de passe ».
+
+`appli/me-deconnecter.html` propose une ligne de sortie tout en bas du sommaire
+des Réglages, puis une confirmation. **Un seul geste, rien à choisir.**
+
+**Sa première version a été refusée le jour même** — *« ça ne fait pas pro »* —
+et elle demandait « cet appareil ou tous » dans une feuille à deux boutons.
+**Ne pas la ressusciter :** la déconnexion générale a déjà sa place, sous « Mot
+de passe », et c'est là que les grandes applications la rangent aussi.
+
+**Le dessin est celui de `SupprimerCeClient.tsx`**, tranché le 2 septembre :
+ligne en capitales espacées 9,5 px couleur `alert`, cible de 44 px, aucune
+capsule ; `BottomSheet`, bouton plein `alert` de 52 px, « Annuler » en simple
+mot. **Sans le surtitre d'alerte** — se déconnecter n'est pas irréversible.
+
+**C'EST CODÉ** — il a validé la maquette le jour même. Reste **la batterie**,
+qui n'a pas pu être jouée : elle prend le port 3000 et vide la base, et sa règle
+du 4 septembre veut qu'on le lui demande avant. Sont verts : `typecheck`,
+`lint`, `verifier:memoire`, et les contrôles de structure.
+
+**La suite à surveiller au premier passage :** `scripts/test-se-deconnecter-e2e.ts`.
+Elle n'a jamais été vue ni verte ni rouge, et elle pose une clé témoin en base
+(`cles_appareil`) qu'elle retire dans un `finally` — si une batterie est
+interrompue en plein milieu, chercher un `identifiant_cle` commençant par
+`temoin-deconnexion-`.
+
+**Ce que le geste « cet appareil » coûterait**, si retenu : la session vit dans
+un jeton (`session: { strategy: "jwt" }`, `src/auth.ts:36`), donc effacer le
+cookie suffit — `/api/session-perimee` le fait déjà, il n'y a pas de session à
+révoquer côté serveur. **Face ID resterait posé** sur l'appareil, et c'est
+exactement ce qui sépare ce geste du geste « partout ».
+
+**Le piège à ne pas rouvrir :** ne jamais laisser « partout » sans retirer les
+clés Face ID. Une clé rouvre une session sans mot de passe
+(`signIn("cle-appareil")`), donc l'appareil qu'on voulait couper rentrerait à
+l'instant d'après. C'est le défaut réparé le 7 septembre 2026.
+
+## ~~LE PETIT + DU PLANNING~~ — TRANCHÉ LE 9 SEPTEMBRE 2026
+
+~~Trois tailles de + à choisir sur `appli/salarie-s-absente.html`.~~ **Son
+choix, le jour même :** la variante A, « Salarié absent ? », **sans contour**, et
+le titre « Ce jour-là » retiré. **Codé** — `GesteAbsence` dans
+`src/app/planning/PlanningClient.tsx`, `ARCHITECTURE.md` §312.
+
+**Et sans aucun salarié : « + Absent ? »**, tranché le soir même. Le mot
+« salarié » tomberait à faux quand il n'en a aucun, et « Je ne suis pas là »
+était une phrase là où le reste de l'écran pose une question. Plus rien
+d'ouvert sur ce geste.
+
+---
+
+## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
+
+**Sa correction :** *« chaque session peut prendre un port différent, plusieurs
+sessions tournent en même temps, n'effacez pas les batteries des autres ! »*
+
+Son lot du 8 septembre donne déjà à chaque session son **atelier** — un rang,
+donc un port, une base et un coin de Redis (`scripts/_atelier.ts`). Deux
+batteries dans deux ateliers ne se marchent plus dessus : ni le port 3000, ni
+le `TRUNCATE` de la base, ni le limiteur Redis.
+
+**Mais le verrou du 9 septembre ne le sait pas.** `verrou-batterie.mjs` pose
+**un seul fichier à la racine** et refuse la seconde batterie : *« La machine est
+à un seul occupant : attendez qu'elle finisse. »* L'atelier est pris ligne 112
+de `verifier-avant-livraison.ts`, le verrou ligne 332 — et c'est le verrou qui
+tranche. Les ateliers sont donc neutralisés pour ce qui les motivait.
+
+**Ce qu'il faudrait, et ce qu'il NE faut pas défaire au passage :**
+
+| | |
+|---|---|
+| le verrou | par ATELIER — un fichier par rang. Deux batteries en parallèle deviennent possibles |
+| la garde d'écriture | **inchangée**, et c'est délibéré : ce qu'elle protège — un fichier source qui bouge sous une mesure — est vraiment commun au dossier, et c'est sa colère du 9 septembre |
+| `restesDeBatterie` | à relire : il cherche des restes sans savoir de quel atelier |
+| `test-verrou-batterie.ts` | 27 cas à garder verts, et un cas neuf : deux ateliers, deux batteries, aucune ne refuse l'autre |
+
+**Le piège :** `node scripts/verrou-batterie.mjs rendre --force` efface le verrou
+de CELUI QUI MESURE. Il ne se lance que sur un verrou dont le processus est mort
+— jamais pour se faire de la place.
+
+---
+
+## ⏳ LA PLANCHE 86 MONTRE ENCORE « QUI PUIS QUAND » (9 septembre 2026)
+
+`appli/planning-simple.html` — retenue par lui le 21 août — demande toujours
+« Matin · Après-midi · Journée » après avoir touché le nom d'un chantier.
+L'application ne le demande plus depuis le 9 septembre (`ARCHITECTURE.md` §308) :
+la durée est en base, et ces trois boutons la réécrivaient.
+
+**Rien n'a été touché à la planche**, et c'est délibéré : une planche qu'il a
+retenue ne se réécrit pas sans lui. À lui de dire s'il veut la reprendre —
+`scripts/verifier-maquette-planning-simple.mjs` suit la planche, pas
+l'application, et reste vert dans les deux cas.
+
+---
+
+## ~~L'ordre des deux moitiés du jour~~ — tranché le 10 septembre 2026
+
+**Sa réponse :** *« oui, matin puis aprèm »*. La journée se lit désormais dans
+son ordre, quelle que soit l'heure du chantier. Cela revient sur sa règle du
+21 août — *« le nom toujours en premier ! »* — et le pourquoi est écrit dans
+`ARCHITECTURE.md` §313, pour qu'on ne la défasse pas une troisième fois.
+
+---|---|
+| la logique | **juste** — chantier posé l'après-midi, « Après-midi » est la pastille allumée ; un appui sur « Matin » écrit bien `creneau_debut = matin` |
+| ce que l'œil lit | **les deux moitiés de la journée changent de place** : chantier l'après-midi → la fiche se lit `APRÈS-MIDI` puis `MATIN` ; chantier le matin → `MATIN` puis `APRÈS-MIDI` |
+
+C'est ce SAUT qu'il lit comme une inversion : le bloc qu'il regardait part là où
+était l'autre. La cause est `blocsDeLaJournee` (`src/lib/planning-jour.ts`), qui
+pose tous les chantiers d'abord et les demi-journées libres ensuite.
+
+**ET CELA ENTRE EN CONFLIT AVEC UNE RÈGLE QU'IL A POSÉE**, le 21 août 2026 :
+*« fais pareil pour les autres, le nom toujours en premier ! »* — il refusait
+qu'une demi-journée vide ouvre la fiche. Mettre le matin en haut, c'est parfois
+ouvrir sur « libre ». **Les deux demandes ne peuvent pas être tenues ensemble,
+et l'arbitrage lui revient** : rien n'a été changé dans `src/`.
+
+**La planche :** `appli/deplacer-plus-simple.html`, liée dans `essais.html`.
+Trois gestes, tous avec le matin en haut :
+
+1. **on appuie sur la moitié libre** — un geste, pas de menu ;
+2. **un interrupteur à deux positions**, toujours visible — un appui de moins ;
+3. **une poignée** qu'on fait glisser.
+
+**Une quatrième question y est posée** : « Déplacer » ne change pas le JOUR,
+seulement la demi-journée. C'est peut-être le vrai malentendu du mot.
+
+**Elle n'a pas d'adresse tant qu'elle n'est pas sur `main`** —
+`.github/workflows/pages.yml` ne publie que depuis là.
+
+## ⏳ UNE DÉCISION QUI LUI APPARTIENT — couper un chantier en deux poses (9 sept. 2026)
+
+Née de sa panne du jour : *« lorsque je clique sur le matin pour Mr. Julien, ça
+me met d'office toute la journée »*. Un chantier de deux jours posé « Matin »
+prend forcément la journée entière — l'application ne sait poser qu'**un bloc
+continu** (`creneau_debut` + `duree_demi_journees`).
+
+S'il veut vraiment faire jeudi matin puis reprendre lundi, il faut deux poses
+pour un chantier : c'est une fonctionnalité, pas un correctif, et **c'est lui
+qui décide** si elle vaut le coup. En attendant, l'écran dit la durée au lieu de
+promettre un découpage qu'il ne sait pas faire (`ARCHITECTURE.md` §309).
+
+## ⏳ RETIRER LA MOITIÉ DEVENUE REDONDANTE DES RÈGLES `?de=` (9 septembre 2026)
+
+Depuis que la flèche ramène à la page d'où l'on vient (`ARCHITECTURE.md` §311),
+les règles de provenance répondent à **deux** questions au lieu d'une :
+
+| ce qu'elles font | son sort |
+|---|---|
+| dire où sortir quand il n'y a PAS de page d'avant | **à garder** : c'est le repli, et il sert pour de bon |
+| dire où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`) | **à garder** : ce n'est pas un retour |
+| **deviner d'où l'on vient** pour la flèche | **à retirer** : le journal le sait, et deux réponses à la même question finissent par diverger (`CLAUDE.md` §3) |
+
+Ce qui tombe alors, nommément : `retourDepuisLePlanning` (deux écrans —
+`/chantiers/[id]/export`, `/chantiers/[id]/facture`), la branche planning de
+`retourDuDevis`, la branche `?de=` de `retourFicheClient`, et le `?de=` que
+`portes-du-planning.ts` pose sur les portes qui n'enregistrent rien.
+
+**Pourquoi ce n'est PAS fait dans le lot du 9 septembre :** six écrans et six
+suites en dépendent (`test-retour-au-planning.ts`, `test-retour-du-devis.ts`,
+`test-retour-fiche-client.ts`, `test-portes-du-planning.ts`, plus deux suites
+navigateur), et un lot qui les réécrit la même nuit se livre rouge. La couche
+n'est pas un pansement oublié : elle est nommée ici, et elle a cessé de grandir.
+
+**À faire quand le journal aura tenu quelques jours chez lui** — c'est la seule
+chose qui manque pour trancher.
+
+## ⏳ UN RETOUR SERT L'ÉCRAN DEPUIS LA RÉSERVE — mesuré le 9 septembre 2026
+
+**Trouvé en corrigeant la flèche de retour** (`ARCHITECTURE.md` §305), et
+**pas apporté par ce lot** : un client créé en base pendant qu'on est sur une
+fiche n'apparaît pas au retour. Le contrôle a été joué sur les DEUX gestes —
+la flèche de l'écran et le retour du navigateur — et les deux servent la
+réserve de Next.js. C'est le comportement de la plateforme, et l'application le
+porte depuis toujours.
+
+**Pourquoi ça n'a jamais mordu, et pourquoi ça pourrait :** les
+soixante-seize `revalidatePath` du dépôt vident la réserve dès qu'une
+modification passe par l'application. Le trou est ailleurs — une action qui
+modifie un écran SANS revalider le chemin de l'écran d'où l'on vient.
+
+**Ce qui a été essayé puis retiré**, et il ne faut pas le refaire tel quel : un
+`router.refresh()` sur `popstate`. Il rendait les données fraîches et remettait
+le défilement à ZÉRO — donc il défaisait le correctif. Le faire tenir demandait
+un `setTimeout` de 400 ms calé sur la restauration du navigateur : un pansement
+au sens du §4 quater, qui reviendrait sur un téléphone plus lent.
+
+**La bonne piste** : garder le défilement soi-même de bout en bout, ou vérifier
+que chaque action revalide le chemin de l'écran d'où l'on vient. La seconde est
+la moins chère et la plus sûre.
+
+**Qui peut le trancher :** nous — c'est du code. À ouvrir seulement s'il
+signale un écran qui ment au retour ; sinon, la place rendue vaut mieux.
+
+---
+
 ## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
 
 **Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce
@@ -1454,6 +1654,23 @@ et le 8 je choisis la B ».** Tout est codé — `ARCHITECTURE.md` §252,
   les dix-sept écrans qui emploient `PrimaryButton`.
 
 ## HUIT SUITES NAVIGATEUR SONT ROUGES SUR CE POSTE, ET LE PRODUIT N'Y EST POUR RIEN (4 sept. 2026)
+
+**Elles sont VINGT-DEUX le 9 septembre 2026**, mesurées sur une batterie
+complète dans un conteneur d'agent — et la famille s'explique par une seule
+ligne du journal : *« le bandeau du banc apparaît sur un serveur qui n'en est
+pas un »* (`test-bandeau-banc-e2e`). Ce bandeau est une **bande fixe** : tout
+ce qui se mesure « recouvert » ou « tient dans un écran » tombe avec lui —
+`test-connexion-figee`, `test-face-id`, `test-devis-client`,
+`test-pas-la-ce-jour`, et le reste.
+
+**Vérifié arbre remis à nu** (`git stash` du seul fichier touché) :
+`test-pas-la-ce-jour-e2e` rend le MÊME échec avant et après le lot du
+9 septembre. Ce n'est donc pas un lot qui les allume — mais tant que ce
+bandeau paraît hors banc, **la batterie ne peut plus rendre un vert ici**, et
+c'est elle qui autorise une livraison (`CLAUDE.md` §5). À reprendre en
+premier, avant tout lot qui compte sur elle.
+
+
 
 **Mesuré**, arbre remis à nu (`git stash`) : `test-bandeau-banc-e2e`,
 `test-carte-reponse-mene-au-geste-e2e`, `test-date-lointaine-e2e`,

@@ -8,6 +8,81 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — « DÉPLACER », UN INTERRUPTEUR À DEUX POSITIONS (10 septembre 2026)
+
+| | |
+|---|---|
+| sa décision | *« fais celui-là, juste tu retires la journée. Il faut garder le bouton déplacer ; on clique sur matin ou aprem et le bouton disparaît »* |
+| la planche | `appli/deplacer-plus-simple.html`, proposition 2 |
+| ce que ça RETIRE | `QuandChantier`, `departEtDuree`, `quandDuChantier`, `poseOfferte`, `MOT_QUAND`, `estUnMomentValide` — six pièces qui n'existaient que pour rattraper un mot |
+| les pièces | `BasculeDemi` (`PlanningClient.tsx`), `departDuChantier` et `estUnDemiValide` (`src/lib/planning-jour.ts`) |
+| aucune migration | le vocabulaire retenu est celui que la base porte depuis 0019 |
+| le détail | `ARCHITECTURE.md` §313 |
+
+**LE PIÈGE QUE CE LOT A FERMÉ.** « Journée » ne décrivait pas un départ mais une
+ÉTENDUE : la choisir réécrivait `dureeDemiJournees`. « Matin » sur un chantier
+d'une journée le ramenait donc à une demi-journée, en silence — l'après-midi
+redevenait vendable, et le défaut ne se voyait que le jour du chantier. **Ne
+jamais laisser un geste du planning écrire une durée** : elle vient du devis.
+
+**ET LA JOURNÉE SE LIT DANS SON ORDRE — matin puis après-midi, toujours.** Sa
+réponse du même jour : *« oui, matin puis aprèm »*. Les deux moitiés
+échangeaient leur place selon l'heure du chantier, et l'appui sur « Matin » les
+faisait sauter.
+
+**ET SA RÈGLE DU 21 AOÛT TIENT TOUJOURS** — *« le nom doit rester en premier,
+ensuite matin et ensuite aprèm »*. Une moitié libre qui précède un chantier
+descend DANS son bloc (`libresAvant`), sous son nom, au lieu d'ouvrir la fiche.
+**Les deux règles se tenaient ensemble** : la première version de ce lot les
+avait crues incompatibles et lui avait présenté un arbitrage qu'il n'avait pas à
+trancher. Le pourquoi est dans `ARCHITECTURE.md` §313.
+
+---
+## Dernier lot — POSER UN CHANTIER NE DEMANDE PLUS QUAND (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | « Ajouter un chantier » pose le chantier dès qu'on touche son nom ; le tiroir du bas n'offre plus qu'un bouton « Poser ». Plus de « Matin · Ap.-m. · Journée » avant la pose |
+| la migration | **aucune** |
+| les pièces | `src/app/planning/PlanningClient.tsx` (`poser`, `AjoutAuJour`, `TiroirDuBas`), `src/app/chantiers/[id]/informations/actions.ts` |
+| les suites | `test-planning-repo.ts` (2 neuves), `test-planning-e2e.ts`, `test-poser-une-date-e2e.ts` |
+| le détail | `ARCHITECTURE.md` §308, `docs/lot-poser-sans-choisir.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** ces trois boutons n'avaient pas l'air d'écrire
+quoi que ce soit, et ils réécrivaient `dureeDemiJournees`. « Matin » sur un
+chantier d'une JOURNÉE le ramenait à une demi-journée, sans un mot, et
+l'après-midi redevenait vendable. Le remettre pour « laisser le choix », c'est
+remettre ce défaut-là. Le choix d'un moment vit dans **« Déplacer »**, sur un
+chantier déjà posé — là il est une demande, pas une question de passage.
+
+**Ce qui décide à leur place existait déjà :** `planifierChantier` appelé sans
+`choix` lit la durée du chantier et cherche la moitié de journée où elle tient
+(`departPossible`) — la même règle que le jour proposé au client.
+
+## Dernier lot — « MATIN » POSAIT TOUTE LA JOURNÉE (9 septembre 2026)
+
+| | |
+|---|---|
+| sa panne | *« lorsque je clique sur le matin pour Mr. Julien, ça me met d'office toute la journée »* |
+| la racine | la durée d'un chantier se lisait de deux endroits : l'écran prenait `dureeDemiJournees ?? 2` — NULL tant que rien n'est posé — pendant que le dépôt lisait la dictée |
+| les pièces | `dureeDuChantier` (`src/lib/disponibilites.ts`), `poseOfferte` (`src/lib/planning-jour.ts`) |
+| retiré | le `.filter()` inline de « Déplacer », et la déduction de durée recopiée dans `planifierChantier` |
+| **corrigé le soir même** | ma première réponse retirait « Journée » des LIGNES DE POSE. La session voisine a supprimé la question entière (§308) : sa réponse vit, la mienne a été retirée avec son composant |
+| les suites | `test-planning-jour.ts` (+2), `test-creneaux.ts` (+3), `test-poser-une-date-e2e.ts` (+1, sur « Déplacer ») |
+| aucune migration | les deux colonnes existent depuis 0019 |
+| le détail | `ARCHITECTURE.md` §309, `docs/lot-poser-le-matin.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** `departEtDuree` ne raccourcit JAMAIS un chantier
+de plus d'une journée, et ce n'est pas un oubli. Le faire donnerait à la lettre
+ce qu'il demande — « Matin » = une demi-journée — et effacerait trois
+demi-journées de son planning sans un mot. Le symptôme se corrige en disant la
+durée, jamais en la coupant.
+
+**ET LA DURÉE NE SE LIT QUE D'UN ENDROIT.** L'écran lisait `dureeDemiJournees ?? 2`
+— NULL tant que rien n'est posé, donc « une journée » sur un chantier de deux,
+au moment précis où il choisit où le poser. `dureeDuChantier` répond désormais
+au dépôt comme à l'écran ; ne pas réintroduire de seconde lecture.
+
 ## Dernier lot — LE COMPTEUR DE TVA NOMME SON GESTE (9 septembre 2026)
 
 | | |
@@ -29,8 +104,96 @@ client me paie » est ce qu'il a déclaré aux impôts.
 une plainte de ce genre, vérifier `entreesDuReleve` AVANT de toucher au calcul —
 le défaut peut n'être que dans les mots.
 
+## Dernier lot — LA LIGNE D'UN CLIENT DIT CE QUI S'EST PASSÉ (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | « 8 chantiers » cède la place à la dernière chose qui s'est produite — « Devis 7 sept. », « Facture 2 sept. », « Fiche 28 août » |
+| la migration | **aucune** |
+| les pièces | `derniereTraceDuClient` et `jourDeLaLigne` (`src/lib/documents-du-client.ts`), `listerFichesClients`, `ListeClients.tsx` |
+| les suites | `test-documents-du-client.ts` (la règle), `test-liste-clients.ts` (la base), `test-ligne-du-client-e2e.ts` (**les boîtes**) |
+| le détail | `ARCHITECTURE.md` §315, `docs/lot-retour-garde-la-place.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** les trois candidats sont exactement les trois
+registres de la FICHE — devis parti, facture émise, fiche envoyée —, et sous les
+mêmes conditions. Y ajouter un chantier ouvert recréerait le défaut qu'on vient
+de retirer : la ligne promettrait ce que la fiche n'a pas.
+
+**ET C'EST L'ADRESSE QUI SE ROGNE, JAMAIS LA DATE.** Écrits d'un seul tenant,
+les deux débordent des 316 px de sa ligne et ce sont les derniers mots qui
+tombent — donc la date, c'est-à-dire ce qu'on venait d'ajouter. Deux boîtes, et
+l'année qui tombe quand c'est celle qui court (`jourDeLaLigne`). Les trois
+défauts de mise en page sont sortis d'une CAPTURE, d'aucun test.
+
+---
+## Lot précédent — LA FLÈCHE DE RETOUR REND SA PLACE (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | la flèche de retour **recule** dans l'historique au lieu de naviguer vers l'écran d'avant — sur les 49 écrans qui la portent |
+| la migration | **aucune** |
+| les pièces | `marquerLaProvenance` / `onPeutReculerVers` (`src/components/atlas/journal-navigateur.ts`), lues par `FlecheRetour`, posées par `JournalDeNavigation` |
+| la suite | `scripts/test-retour-garde-la-place-e2e.ts` (4 cas ; rouge sur 2 contre la version d'avant) |
+| le détail | `ARCHITECTURE.md` §314, `docs/lot-retour-garde-la-place.md` |
+
+**DEUX MÉCANISMES, DEUX QUESTIONS — et ne pas les confondre.** Le §311, écrit le
+même soir par une autre session, décide **où** la flèche mène (le journal de
+l'onglet). Ce lot-ci décide **par quel chemin** elle y va. Le premier jet était
+une seconde flèche complète, avec son propre souvenir : elle a été **jetée** à la
+fusion, parce que deux pièces pour un même bouton, c'est le §3.
+
+**LE PIÈGE À NE PAS DÉFAIRE :** elle ne recule **que sur preuve**. Chaque entrée
+d'historique porte l'adresse d'où elle a été ouverte ; sans marque, le lien fait
+son travail comme avant. Un `router.back()` inconditionnel ferait un bouton mort
+sur une fiche ouverte par un signet, et redéposerait sur un formulaire qu'on
+vient d'enregistrer — c'est la troisième objection du §311, et elle tient.
+
+**Ce qui reste ouvert, et c'est mesuré :** un retour sert l'écran depuis la
+réserve de Next.js. Pas apporté par ce lot — le retour du navigateur en souffre
+pareil, et depuis toujours. `TODO.md` porte la mesure et la piste ; ne pas
+remettre un `router.refresh()` sur `popstate`, il remet le défilement à zéro.
+
 ---
 ## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
+
+## Dernier lot — LE RETOUR EST UN VRAI RETOUR (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | **toute** flèche de retour ramène à la page d'où l'on vient. L'onglet tient le journal des écrans traversés ; la sortie déclarée par l'écran devient le repli |
+| la migration | aucune |
+| les pièces | `src/lib/journal-de-navigation.ts` (la règle, pure), `src/components/atlas/journal-navigateur.ts`, `JournalDeNavigation.tsx` (posé dans `src/app/layout.tsx`), `FlecheRetour.tsx` (LA flèche, pour tous les écrans) |
+| les suites | `scripts/test-journal-de-navigation.ts` (18), `scripts/test-retour-page-davant-e2e.ts` (5) |
+| le détail | `ARCHITECTURE.md` §311, `docs/lot-retour-page-davant.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE — RECULER SE DÉCLARE, IL NE SE DEVINE PAS.** Le
+journal ne reconnaît PAS un retour à la forme de sa trace : rouvrir un écran déjà
+vu laisse exactement la même trace, et une version qui devinait faisait sauter
+deux écrans à la flèche. Trois gestes seulement reculent, et chacun le dit :
+l'appui sur la flèche, l'enregistrement d'une fiche client qui ramène au devis,
+et `popstate` (le bouton du navigateur). En ajouter un quatrième sans le déclarer
+refabrique la panne du 9 septembre.
+
+**Second piège, du même lot :** la flèche rendue par le SERVEUR porte la sortie
+déclarée, puis se corrige dès que la page est vivante — le journal est dans le
+navigateur. Elle lit donc un journal **en retard d'un pas**, et `pagePrecedente`
+applique la visite courante avant de lire pour cette raison précise. Une suite
+qui lit son `href` à l'instant où l'écran paraît attrape la valeur d'avant : il
+faut attendre, comme le fait `test-retour-page-davant-e2e.ts` — dont l'échec rend
+le journal de l'onglet en clair, sans quoi il ne dirait qu'« délai dépassé ».
+
+**Et pour éprouver la sortie DÉCLARÉE, il faut arriver à froid.** Une suite qui
+s'est connectée puis promenée a forcément un journal : elle ne verra jamais le
+repli. `scripts/_arriver-a-froid.ts` vide le journal de l'onglet et recharge —
+c'est l'état d'un signet, sans ouvrir un contexte ni se reconnecter.
+
+**Ce qui reste des règles `?de=` :** elles servent de repli, et décident encore
+où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`). Leur
+moitié « devine d'où il vient » est redondante avec le journal — sa retraite est
+dans `TODO.md`, délibérément pas faite dans ce lot.
+
+---
+## Lot précédent — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
 | | |
 |---|---|

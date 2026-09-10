@@ -80,7 +80,12 @@ async function main() {
 
     const [vu] = await listerFichesClients(ctx);
     assert.ok(vu, "le client n'apparaît pas dans la liste");
-    assert.equal(vu.chantiers, 1);
+    // **Un chantier ouvert n'est PAS « la dernière chose qui s'est produite ».**
+    // Sa demande du 9 septembre 2026 : la ligne annonce ce que la FICHE
+    // contient — un devis parti, une facture émise, une fiche envoyée. Un
+    // chantier qui n'a rien produit ne se voit nulle part sur la fiche ;
+    // l'annoncer recréerait le compte trompeur qu'on vient de retirer.
+    assert.equal(vu.derniere, null, "un chantier sans document s'annonce quand même");
     assert.equal(vu.facture, null, "« 0 € » se lirait comme un client qui n'a rien rapporté");
     assert.equal(vu.du, null);
   });
@@ -105,7 +110,10 @@ async function main() {
 
     const [vu] = await listerFichesClients(ctx);
     assert.ok(vu);
-    assert.equal(vu.chantiers, 1);
+    // Devis parti, chantier terminé, facture émise le même jour : c'est le
+    // point le plus AVANCÉ du parcours qui se lit, jamais l'ordre d'arrivée en
+    // base — celui-là ne promet rien.
+    assert.equal(vu.derniere?.quoi, "Facture", `la ligne annonce « ${vu.derniere?.quoi} »`);
     assert.ok(vu.facture && Number(vu.facture) > 0, `rien n'est facturé (vu : ${vu.facture})`);
     assert.ok(
       vu.du && Number(vu.du) > 0 && Number(vu.du) < Number(vu.facture),
@@ -183,7 +191,7 @@ async function main() {
     );
   });
 
-  await essai("un chantier supprimé ne compte plus", async () => {
+  await essai("un chantier supprimé ne laisse rien derrière lui", async () => {
     await nettoyerBase();
     const ctx = await monterEntreprise("Essai retrait");
     const client = await creerClient(ctx, { nom: "M. Bernard" });
@@ -192,7 +200,28 @@ async function main() {
 
     const [vu] = await listerFichesClients(ctx);
     assert.ok(vu, "le client disparaît alors qu'il existe toujours");
-    assert.equal(vu.chantiers, 0, "un chantier retiré pèse encore dans la liste");
+    // **Le client RESTE, et c'est voulu** : un chantier retiré n'efface pas la
+    // personne. Ce qui doit disparaître, c'est ce que ce chantier annonçait.
+    assert.equal(vu.derniere, null, "un chantier retiré pèse encore dans la liste");
+    assert.equal(vu.facture, null);
+  });
+
+  await essai("un devis parti se lit sur la ligne, avec son jour", async () => {
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai devis");
+    const client = await creerClient(ctx, { nom: "Mme Lelièvre" });
+    const c = await creerChantier(ctx, { nom: "Taille", clientId: client.id });
+    await ajouterLignePrix(ctx, c.id, "Taille de haie", "300.00");
+    const d = await getOuCreerDevisBrouillon(ctx, c.id);
+    await envoyerDevis(ctx, d.id);
+
+    const [vu] = await listerFichesClients(ctx);
+    assert.ok(vu);
+    assert.equal(vu.derniere?.quoi, "Devis");
+    // **Le JOUR compte autant que le mot** : « Devis » sans date ne dit pas si
+    // c'est de la semaine dernière ou de l'an dernier, et c'est exactement ce
+    // qu'il vient chercher sur cette ligne.
+    assert.match(vu.derniere?.jour ?? "", /^\d{4}-\d{2}-\d{2}$/, "le jour du devis manque");
   });
 
   console.log(`\n${echecs === 0 ? "✅" : "❌"} La liste des clients — ${echecs} échec(s).`);

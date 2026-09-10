@@ -91,7 +91,7 @@ async function main() {
     await nettoyerBase();
     const ctx = await monter(2);
     const c = await creerChantier(ctx, { nom: "Mr. Leroy" });
-    await planifierChantier(ctx, c.id, JOUR, { quand: "matin" });
+    await planifierChantier(ctx, c.id, JOUR, { demi: "matin" });
 
     // Paul (rang 2) le matin ; Julien (1) ET Paul (2) l'après-midi.
     await basculerEquipeDuChantier(ctx, c.id, "matin", 2);
@@ -106,7 +106,7 @@ async function main() {
     await nettoyerBase();
     const ctx = await monter(5);
     const c = await creerChantier(ctx, { nom: "Gros chantier" });
-    await planifierChantier(ctx, c.id, JOUR, { quand: "matin" });
+    await planifierChantier(ctx, c.id, JOUR, { demi: "matin" });
     for (const rang of [1, 2, 3, 4, 5]) {
       await basculerEquipeDuChantier(ctx, c.id, "matin", rang);
     }
@@ -119,7 +119,7 @@ async function main() {
     await nettoyerBase();
     const ctx = await monter(2);
     const c = await creerChantier(ctx, { nom: "Haie" });
-    await planifierChantier(ctx, c.id, JOUR, { quand: "matin" });
+    await planifierChantier(ctx, c.id, JOUR, { demi: "matin" });
     const pose = await basculerEquipeDuChantier(ctx, c.id, "matin", 1);
     assert.deepEqual(pose?.matin, [1]);
     const retire = await basculerEquipeDuChantier(ctx, c.id, "matin", 1);
@@ -134,8 +134,8 @@ async function main() {
     const ctx = await monter(2);
     const a = await creerChantier(ctx, { nom: "Chantier A" });
     const b = await creerChantier(ctx, { nom: "Chantier B" });
-    await planifierChantier(ctx, a.id, JOUR, { quand: "matin" });
-    await planifierChantier(ctx, b.id, JOUR, { quand: "matin" });
+    await planifierChantier(ctx, a.id, JOUR, { demi: "matin" });
+    await planifierChantier(ctx, b.id, JOUR, { demi: "matin" });
     await basculerEquipeDuChantier(ctx, a.id, "matin", 1);
     const etat = await basculerEquipeDuChantier(ctx, b.id, "matin", 1);
     assert.deepEqual(etat?.matin, [1], "le second chantier n'a pas eu l'équipe");
@@ -144,7 +144,12 @@ async function main() {
   // **Les trois boutons ne font pas la même chose** — « Matin » réserve une
   // demi-journée, « Journée » en réserve deux. Sans cela, poser « Matin »
   // bloquerait l'après-midi sans qu'un mot le dise.
-  await essai("« Matin », « Après-midi » et « Journée » réservent ce qu'ils disent", async () => {
+  // **CE CONTRÔLE DÉFENDAIT EXACTEMENT CE QU'IL A FAIT RETIRER.** Il fixait que
+  // « Matin » réserve une demi-journée et « Journée » deux — c'est-à-dire que le
+  // moment choisi RÉÉCRIT la durée. Sa décision du 10 septembre 2026 : la durée
+  // vient du devis, et le moment ne dit qu'un départ. Le contrôle vise donc la
+  // règle qui remplace, et non le libellé disparu (`CLAUDE.md` §5 bis).
+  await essai("le départ choisi s'écrit, et la durée du devis ne bouge pas", async () => {
     await nettoyerBase();
     const ctx = await monter(2);
     const lu = async (id: string) => {
@@ -152,23 +157,24 @@ async function main() {
       return (await listerChantiersPourPlanning(ctx)).find((x) => x.id === id)!;
     };
 
-    const m = await creerChantier(ctx, { nom: "Matin" });
-    await planifierChantier(ctx, m.id, JOUR, { quand: "matin" });
-    const lm = await lu(m.id);
-    assert.equal(lm.creneauDebut, "matin");
-    assert.equal(lm.dureeDemiJournees, 1, "« Matin » a réservé la journée entière");
+    // Une demi-journée VENDUE reste une demi-journée, quel que soit le départ.
+    for (const demi of ["matin", "apres_midi"] as const) {
+      const c = await creerChantier(ctx, { nom: `Départ ${demi}` });
+      await mettreAJourDureeEquipe(ctx, c.id, { dureePrevue: "une demi-journée" });
+      await planifierChantier(ctx, c.id, JOUR, { demi });
+      const lc = await lu(c.id);
+      assert.equal(lc.creneauDebut, demi, "le départ choisi n'a pas été écrit");
+      assert.equal(lc.dureeDemiJournees, 1, `« ${demi} » a réécrit la durée du devis`);
+    }
 
-    const a = await creerChantier(ctx, { nom: "Après-midi" });
-    await planifierChantier(ctx, a.id, JOUR, { quand: "apres" });
-    const la = await lu(a.id);
-    assert.equal(la.creneauDebut, "apres_midi");
-    assert.equal(la.dureeDemiJournees, 1);
-
-    const j = await creerChantier(ctx, { nom: "Journée" });
-    await planifierChantier(ctx, j.id, JOUR, { quand: "journee" });
+    // Et une journée VENDUE en reste une, même posée sur l'après-midi : c'est
+    // le devis qui décide de l'étendue, pas le doigt qui pose.
+    const j = await creerChantier(ctx, { nom: "Journée vendue" });
+    await mettreAJourDureeEquipe(ctx, j.id, { dureePrevue: "1 jour" });
+    await planifierChantier(ctx, j.id, JOUR, { demi: "apres_midi" });
     const lj = await lu(j.id);
-    assert.equal(lj.creneauDebut, "matin");
-    assert.equal(lj.dureeDemiJournees, 2, "« Journée » n'a réservé qu'une moitié");
+    assert.equal(lj.creneauDebut, "apres_midi");
+    assert.equal(lj.dureeDemiJournees, 2, "la journée vendue a été raccourcie par la pose");
   });
 
   await essai("un chantier de trois jours garde sa durée quel que soit le bouton", async () => {
@@ -176,7 +182,7 @@ async function main() {
     const ctx = await monter(2);
     const c = await creerChantier(ctx, { nom: "Terrassement" });
     await mettreAJourDureeEquipe(ctx, c.id, { dureePrevue: "3 jours" });
-    await planifierChantier(ctx, c.id, JOUR, { quand: "matin" });
+    await planifierChantier(ctx, c.id, JOUR, { demi: "matin" });
     await marquerDevisEnvoye(ctx, c.id);
     const lu = (await listerChantiersPourPlanning(ctx)).find((x) => x.id === c.id);
     assert.ok(
@@ -189,7 +195,7 @@ async function main() {
     await nettoyerBase();
     const ctx = await monter(2);
     const c = await creerChantier(ctx, { nom: "Tonte" });
-    await planifierChantier(ctx, c.id, JOUR, { quand: "apres" });
+    await planifierChantier(ctx, c.id, JOUR, { demi: "apres_midi" });
     await basculerEquipeDuChantier(ctx, c.id, "apres_midi", 1);
     await marquerDevisEnvoye(ctx, c.id);
     const [lu] = (await listerChantiersPourPlanning(ctx)).filter((x) => x.id === c.id);
@@ -205,18 +211,25 @@ async function main() {
     // La durée dictée décide du nombre de demi-journées réservées : trois jours
     // font six demi-journées, donc plus qu'une journée — le cas qui compte ici.
     await mettreAJourDureeEquipe(ctx, c.id, { dureePrevue: "3 jours" });
-    await planifierChantier(ctx, c.id, JOUR, { quand: "matin" });
+    await planifierChantier(ctx, c.id, JOUR, { demi: "matin" });
     await marquerDevisEnvoye(ctx, c.id);
     const avant = (await listerChantiersPourPlanning(ctx)).find((x) => x.id === c.id);
     assert.ok((avant?.dureeDemiJournees ?? 0) > 2, "le chantier n'est pas assez long pour le cas");
 
-    await deplacerChantier(ctx, c.id, "journee");
-    const apres = (await listerChantiersPourPlanning(ctx)).find((x) => x.id === c.id);
-    assert.equal(
-      apres?.dureeDemiJournees,
-      avant?.dureeDemiJournees,
-      "« Journée » a raccourci un chantier de trois jours — en silence"
-    );
+    // **Aucun départ n'écrit une durée** — sa décision du 10 septembre 2026.
+    // Le contrôle interrogeait « Journée », qui n'existe plus ; il interroge
+    // maintenant les DEUX départs, et défend une règle plus large : la durée
+    // vient du devis, et « Déplacer » n'y touche jamais.
+    for (const demi of ["apres_midi", "matin"] as const) {
+      await deplacerChantier(ctx, c.id, demi);
+      const apres = (await listerChantiersPourPlanning(ctx)).find((x) => x.id === c.id);
+      assert.equal(
+        apres?.dureeDemiJournees,
+        avant?.dureeDemiJournees,
+        `« ${demi} » a raccourci un chantier de trois jours — en silence`
+      );
+      assert.equal(apres?.creneauDebut, demi, "le départ n'a pas été écrit");
+    }
   });
 
   // **L'isolation ne se suppose pas.** Une entreprise ne coche rien chez
@@ -226,7 +239,7 @@ async function main() {
     const a = await monter(2);
     const b = await monter(2);
     const chantier = await creerChantier(a, { nom: "Chez A" });
-    await planifierChantier(a, chantier.id, JOUR, { quand: "matin" });
+    await planifierChantier(a, chantier.id, JOUR, { demi: "matin" });
     await basculerEquipeDuChantier(a, chantier.id, "matin", 1);
 
     const refus = await basculerEquipeDuChantier(b, chantier.id, "matin", 2);

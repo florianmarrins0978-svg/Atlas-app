@@ -6,6 +6,33 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-10
+
+### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
+
+*« Fais celui-là, juste tu retires la journée. Il faut garder le bouton
+déplacer ; on clique sur matin ou aprem et le bouton disparaît. »*
+
+**Retirer « Journée » n'était pas cosmétique.** Ce mot ne décrivait pas un
+départ mais une étendue, et le choisir réécrivait la durée du chantier :
+« Matin » sur un chantier d'une journée le ramenait à une demi-journée, en
+silence. L'après-midi redevenait vendable, et cela ne se voyait ni au plan, ni
+au devis, ni à la facture — seulement le jour du chantier.
+
+Six pièces disparaissent avec le mot, dont trois fonctions qui n'existaient que
+pour rattraper le mélange. Le planning parle maintenant le vocabulaire de la
+base : matin, ou après-midi.
+
+**Et l'interrupteur répond à « j'ai l'impression que c'est inversé »** : trois
+pastilles dont une est allumée ne disent pas si l'allumée est là où le chantier
+est ou là où il ira. Un interrupteur ne se lit que dans un sens.
+
+**Et la journée se lit dans son ordre** — matin, puis après-midi, toujours.
+Elles échangeaient leur place selon l'heure du chantier, et l'appui sur
+« Matin » les faisait sauter : c'est ce qu'il lisait comme une inversion. Cela
+revient sur sa règle du 21 août, et il l'a tranché lui-même le jour même.
+
+---
 ## 2026-09-09
 
 ### Un seul « Télécharger » sur la page du client, et il est aux couleurs de l'appli
@@ -34,6 +61,85 @@ répondre, et le creux le mettait au même rang que le texte autour.
 **Le contrôle tolérait le doublon**, `>= 1` : il n'aurait jamais rougi. Il exige
 désormais exactement un geste, à l'accord comme au retour.
 
+### « Se déconnecter » existe enfin, au bas des Réglages
+
+**Codé après son accord sur la maquette.** Une ligne en capitales espacées tout
+en bas du sommaire, une feuille de confirmation, et l'on repart sur l'écran de
+connexion. Le dessin est celui de `SupprimerCeClient` (2 septembre), sans son
+surtitre d'alerte — se déconnecter n'est pas irréversible. Le pourquoi de chaque
+choix est dans `ARCHITECTURE.md` §310.
+
+| | |
+|---|---|
+| `src/app/login/actions.ts` | `deconnexionAction` — elle **existait déjà, sans appelant** ; elle en a un |
+| `src/app/reglages/SeDeconnecter.tsx` | la ligne et la feuille |
+| `scripts/test-se-deconnecter-e2e.ts` | le geste entier, dans un vrai navigateur |
+
+**J'EN AVAIS ÉCRIT UNE SECONDE, IDENTIQUE, SANS CHERCHER.** `deconnexionAction`
+dort dans `src/app/login/actions.ts` — même corps, `signOut` vers `/login` — et
+n'avait aucun appelant. C'est la faute que `CLAUDE.md` §5 ter nomme : *la
+question n'est jamais « est-ce possible » mais « qui, dans ce dépôt, fait déjà
+quelque chose d'approchant »*. **C'est un contrôle qui l'a révélée**, en exigeant
+une garde de rôle sur ma nouvelle action : l'exemption motivée de l'ancienne
+était là, dans le même fichier de contrôle, sous les yeux. Le doublon est
+retiré ; `signOut` reste préféré à `/api/session-perimee`, dont le nom ment et
+qui tient sa propre liste de six cookies.
+
+**Face ID reste posé sur l'appareil, et la suite l'exige** : c'est ce qui sépare
+ce geste de « Me déconnecter partout ». Elle **pose sa propre clé témoin** avant
+de se déconnecter — le compte de démonstration n'en a aucune, et compter « zéro
+avant, zéro après » aurait rendu un vert qui ne mesure rien (le `0 − 0 = 0` du
+15 août 2026).
+
+**ÉPROUVÉ À MOITIÉ, ET IL FAUT LE DIRE :** `typecheck`, `lint`,
+`verifier:memoire`, et les contrôles de structure (pansement, code mort,
+couches, flèches, boutons, couleurs) sont **verts**. La batterie complète
+**n'a pas été jouée** — elle prend le port 3000 et vide la base, et sa règle du
+4 septembre veut qu'on le lui demande d'abord. Tant qu'elle n'a pas tourné,
+`test-se-deconnecter-e2e` n'a jamais été vu ni vert ni rouge.
+
+### Deux salariés se lisent « Julien / Antoine », plus « Julien, Antoine »
+
+Sa demande du 9 septembre : *« à la place de noter les salariés avec une
+virgule, mets un / entre chaque salarié »*. Sur une pastille pleine, la virgule
+tombe sous la ligne de base et se colle au nom suivant : deux noms courts
+finissent par se lire comme un seul.
+
+**Une seule fonction l'écrit** — `ditQuiPart` dans `src/lib/planning-jour.ts` —,
+donc le planning ET la fiche de chantier changent ensemble. Le comptage au-delà
+de deux noms ne bouge pas : « Julien +2 » reste ce qui tient sur un téléphone.
+
+### « Salarié absent ? », un + sans contour — et « Ce jour-là » s'en va
+
+*« Quelqu'un pas là faut le changer par salarié absent avec un petit + plutôt
+que le gros bouton »*, puis, devant la planche : *« Salarié absent + sans
+contour ! »* et *« retire ce jour-là, on sait que c'est ce jour »*.
+
+**Ce qui remplace le cerne, c'est le +.** Ce même geste était une phrase nue le
+6 septembre et lui a échappé une journée entière ; on avait répondu par une
+pastille, qu'il trouve trop grosse. Retirer le cadre ET laisser du texte nu
+aurait rejoué le défaut du 6 — le + dit « ceci s'appuie, et ça ajoute »
+(`ARCHITECTURE.md` §312).
+
+**Sans aucun salarié, le geste dit « + Absent ? »** — sa réponse quand la
+question lui a été posée : le mot « salarié » tomberait à faux quand il n'en a
+aucun.
+
+**Le point d'interrogation est de lui aussi**, et il dit vrai de ce que le
+bouton fait : il ne note rien, il ouvre la question « Qui ? » — la grammaire de
+la pastille d'équipe juste en dessous.
+
+**La cible du doigt ne rétrécit pas avec l'encre :** 44 px de haut, pleine
+largeur.
+
+**Le contrôle a suivi la règle, pas le dessin.** `test-pas-la-ce-jour-e2e.ts`
+exigeait « un cerne, une ombre ou un fond » : il aurait réclamé ce que le
+patron venait de faire enlever (`CLAUDE.md` §5 bis). Il accepte désormais le +
+comme quatrième signe, et refuse toujours les quatre absents à la fois.
+
+**La planche reste** — `appli/salarie-s-absente.html`, trois tailles de + à
+essayer, A retenu : elle raconte ce qui a été écarté, dont le + tout seul, sans
+mot, qui aurait rejoué le 6 septembre pour la troisième fois.
 
 ### L'onglet des retours existe toujours, et ses photos se voient enfin
 
@@ -48,6 +154,29 @@ les preuves à cocher : après le travail, dans un endroit qu'on n'ouvre qu'en
 partant. Elles sont désormais **au-dessus des lignes du devis**, là où il les a
 demandées, et elles ne disparaissent pas quand le bandeau s'ouvre
 (`ARCHITECTURE.md` §307).
+
+### « Matin » posait la journée entière sur un chantier de deux jours
+
+*« Lorsque je clique sur le matin pour Mr. Julien, ça me met d'office toute la
+journée. »* Son chantier dure deux jours : quatre demi-journées posées à partir
+du matin prennent forcément le matin ET l'après-midi. Le calcul était juste ;
+c'est la question posée à l'écran qui ne l'était pas.
+
+Au-delà d'une journée, l'étendue vient de la dictée et les boutons ne
+choisissent plus que le DÉPART — « Journée » y écrivait alors exactement le même
+état que « Matin ». Ce bouton mort avait déjà été retiré le 23 août, mais dans
+« Déplacer » seulement : la règle vivait au milieu du rendu d'un écran sur les
+trois qui dessinent ces boutons. Elle vit maintenant dans `src/lib`, et les
+trois la lisent.
+
+La durée s'écrit désormais à côté des boutons quand ils ne la choisissent plus.
+Sans elle, « Matin » se lit « une demi-journée ».
+
+**Et une seconde divergence, trouvée en chemin :** l'écran lisait la durée
+réservée, NULL tant que rien n'est posé, donc « une journée » sur un chantier de
+deux jours — au moment précis où il choisit où le poser. Le dépôt, lui, lisait la
+dictée. Une seule fonction répond aux deux.
+
 
 ### Les retours non lus se voient d'un coup d'œil
 
@@ -95,6 +224,80 @@ coincée en attente pour toujours : le relevé n'en veut pas, et « Payée » ne
 pouvait pas la solder — un règlement de zéro est refusé, à juste titre. Elle
 occupait l'écran avec un bouton qui ne pouvait qu'échouer.
 
+
+
+### Le bouton retour est enfin un bouton retour
+
+*« J'ai cliqué sur ouvrir le devis, une fois sur le devis je clique sur retour,
+j'arrive sur la page de la fiche client — or le bouton retour doit marcher comme
+un vrai bouton marche arrière. »* Il venait de l'accueil.
+
+C'était le **cinquième** signalement de la même racine (20 août, 31 août, 7, 8
+et 9 septembre) : chaque écran déclarait sa sortie, et chaque porte d'entrée
+neuve la démentait. Les quatre correctifs précédents avaient ajouté une porte
+reconnue à la fois.
+
+L'onglet tient désormais le journal des écrans traversés, et **toute** flèche y
+lit la page d'avant. La sortie déclarée par l'écran reste, comme repli : sur la
+première page d'un onglet — un signet, une notification ouverte à froid — il n'y
+a pas de page d'avant, et sa règle du 31 août s'applique alors telle quelle.
+
+Ce qui a été retiré avec : « Aucun client rattaché à ce chantier » n'est plus un
+cul-de-sac — le chemin vers la fiche se lit sous la phrase qui dit le manque,
+au lieu d'être caché derrière une flèche qui prétendait reculer.
+
+Détail et décisions : `ARCHITECTURE.md` §311 · `docs/lot-retour-page-davant.md`.
+
+### « 8 chantiers » cède la place à la dernière chose qui s'est produite
+
+**Sa question, puis sa décision :** *« À quoi correspond le nombre de chantier ?
+Certains clients ont 8 chantiers, on s'attend à avoir 8 devis alors qu'il y en a
+0 »*, puis *« remplace par la dernière chose qui s'est produit »*.
+
+Le compte était **juste** — tous les chantiers ouverts, quel que soit leur état
+— et c'est ce qui le rendait trompeur : un chantier naît d'une dictée, bien
+avant le moindre document. La ligne annonçait donc du travail là où la fiche
+n'avait rien à montrer.
+
+Ce qui le remplace tient en une règle : **la ligne annonce ce que la fiche
+contient.** Les trois candidats sont exactement les trois registres de la fiche
+— Devis, Facture, Fiche — et le plus récent se lit avec son jour. Rien à
+annoncer : la ligne se tait, elle n'écrit pas « aucun document ».
+
+**Deux défauts trouvés à la capture, et par aucun test :** la date se coupait
+sur les adresses longues — donc elle disparaissait exactement là où on venait de
+l'ajouter —, et un client sans adresse ni document laissait une seconde ligne
+vide sous son nom. L'adresse se rogne désormais, jamais la date, et une ligne
+sans rien à dire ne prend pas de place. `test-ligne-du-client-e2e.ts` mesure les
+deux.
+
+**Ce qui disparaît :** le champ `chantiers` de la fiche, que plus personne ne
+lisait.
+
+### La flèche de retour rendait le haut de la liste au lieu de sa place
+
+**Sa remarque, trente-sept clients à l'écran :** *« si je clique sur un client
+tout en bas de la liste, je fais retour, il me remet en haut de la liste — je
+veux rester où j'étais ! »*
+
+Le défaut n'était pas dans la liste : il était dans la **flèche**. Elle était un
+lien, c'est-à-dire une navigation en AVANT vers l'écran précédent — et une page
+neuve se pose en haut, à raison. Son geste, lui, est un RETOUR.
+
+Mesuré sur la version bâtie avant de corriger : la flèche déposait à **0 px**,
+le retour du navigateur rendait **2 941 px**. Le navigateur savait donc déjà le
+faire ; il fallait cesser de l'en empêcher. La flèche RECULE désormais dans
+l'historique quand l'écran d'avant est bien celui qu'elle vise — sinon elle
+navigue comme avant, pour ne jamais devenir un bouton qui ne fait rien.
+
+**Ce qui disparaît par la même occasion :** l'entrée d'historique empilée à
+chaque aller-retour. Il fallait auparavant appuyer autant de fois qu'on avait
+ouvert de fiches pour ressortir de la liste.
+
+Vaut pour **les quarante-neuf écrans** qui portent cette flèche, pas seulement
+pour les clients : la corriger dans le seul écran signalé aurait été un
+pansement (`CLAUDE.md` §4 quater).
+
 ### « Dernier devis » n'apparaissait presque jamais
 
 **Il l'a vu sur la fiche de Julien** : un devis du 7 septembre à l'écran, et le
@@ -109,6 +312,26 @@ de dire « le plus récent » finiraient par désigner deux devis différents.
 La suite de bout en bout portait la même erreur — elle terminait un chantier
 pour faire apparaître le bouton, et documentait donc une règle fausse. Elle
 envoie maintenant le devis, comme lui.
+
+### Poser un chantier ne demande plus « Matin, Après-midi ou Journée »
+
+*« Si Claudette c'est un chantier 1 journée, deux, ou une demi, ça doit se mettre
+tout seul — je dois pas avoir à choisir »* (9 septembre). Toucher le nom du
+chantier le pose : la durée est déjà en base, et l'application cherche la moitié
+de journée où elle tient.
+
+**Ce que les trois boutons faisaient sans le dire :** ils réécrivaient la durée.
+« Matin » sur un chantier d'une journée le ramenait à une demi-journée, en
+silence — l'après-midi repartait à la vente, et cela ne se voyait que le jour du
+chantier.
+
+**« Déplacer » ne bouge pas** : c'est là qu'on corrige un moment, sur un chantier
+déjà posé, et c'est là que le mot choisi est vraiment une demande.
+
+**La même racine dans l'assistant :** une dictée qui ne disait pas l'heure
+réservait la journée entière. Sans moment dit, plus rien n'est supposé.
+
+Détail et contrôles : `ARCHITECTURE.md` §308.
 
 ### Les travaux supplémentaires : le bouton, la feuille, et une seule facture
 

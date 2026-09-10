@@ -1,10 +1,75 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-08 · branche `main`
-· dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
+**Dernière mise à jour :** 2026-09-09 · branche `claude/back-button-history-0pa6sj`
+· dernière migration `drizzle/0083_retour_vu_par.sql`
 (ce lot-ci ne touche que le chemin de retour, sans base)
 
+> **Corrigé le 9 septembre 2026 :** cette ligne annonçait
+> `0077_civilite_et_prenom_du_compte.sql` alors que six migrations étaient
+> appliquées depuis. Le code fait foi (`CLAUDE.md` §1) — et une dernière
+> migration fausse envoie une session neuve appliquer ce qui est déjà là.
+
 ---
+
+## FAIT : « Déplacer », un interrupteur à deux positions — 10 septembre 2026
+
+Sa décision après la planche : *« fais celui-là, juste tu retires la journée »*.
+« Déplacer » reste, il ouvre un interrupteur Matin / Après-midi, et se referme
+dès qu'on choisit.
+
+**Retirer « Journée » a fermé un vrai piège :** ce mot disait une étendue, pas
+un départ, et le choisir réécrivait la durée du chantier — « Matin » sur une
+journée vendue la ramenait à une demi-journée, en silence. Six pièces
+disparaissent avec lui. **Aucune migration.** Détail : `ARCHITECTURE.md` §313.
+
+**Et la journée se lit dans son ordre** — matin puis après-midi, toujours
+(*« oui, matin puis aprèm »*). Elles échangeaient leur place selon l'heure du
+chantier. Cela revient sur sa règle du 21 août, et il l'a tranché lui-même.
+
+---
+
+## FAIT : POSER UN CHANTIER NE DEMANDE PLUS QUAND — 9 septembre 2026
+
+Sa remarque : *« si Claudette c'est un chantier 1 journée, deux, ou une demi, ça
+doit se mettre tout seul — je dois pas avoir à choisir »*. On touche le nom du
+chantier, il est posé.
+
+**Ce que les trois boutons faisaient sans le dire :** ils réécrivaient la durée
+du chantier. « Matin » sur une journée entière la ramenait à une demi-journée,
+en silence — et l'après-midi repartait à la vente. Le défaut ne se voyait que le
+jour du chantier.
+
+Aucune migration : `planifierChantier` sans choix savait déjà lire la durée et
+chercher la moitié de journée où elle tient. **« Déplacer » ne bouge pas** —
+c'est là qu'un moment se corrige. La même racine a été retirée du chemin de
+l'assistant, où un moment non dit valait « journée ».
+
+`ARCHITECTURE.md` §308 · `docs/lot-poser-sans-choisir.md`
+
+**Reste ouvert :** la planche 86 (`appli/planning-simple.html`) montre encore
+« QUI puis QUAND ». Elle a été retenue par lui le 21 août et n'a pas été refaite.
+
+## FAIT : « Matin » posait toute la journée — 9 septembre 2026
+
+Sa panne : *« lorsque je clique sur le matin pour Mr. Julien, ça me met d'office
+toute la journée »*. Le chantier dure deux jours ; quatre demi-journées posées à
+partir du matin prennent forcément la journée entière. **Le calcul était juste,
+la question posée à l'écran ne l'était pas.**
+
+**Ma première réponse a été dépassée le soir même, et il faut le lire ainsi :**
+elle retirait « Journée » des lignes de pose. La session voisine a supprimé la
+question entière (§308) — la durée du devis décide seule —, et c'est sa réponse
+qui vit. Le composant que j'avais écrit pour ces lignes est parti avec elles.
+
+**Ce qui reste, et qui tenait un vrai défaut :** la durée se lisait de deux
+endroits. L'écran prenait `dureeDemiJournees ?? 2` — NULL tant que rien n'est
+posé, donc « une journée » sur un chantier de deux — pendant que le dépôt lisait
+la dictée. `dureeDuChantier` répond aux deux, et `deplacerChantier` la lit aussi.
+« Déplacer » n'offre plus « Journée » quand elle ne changerait rien.
+**Aucune migration.** Détail : `ARCHITECTURE.md` §309.
+
+**Reste ouvert, et c'est à lui de trancher :** couper un chantier en deux poses
+(`TODO.md`).
 
 ## FAIT : LE COMPTEUR DE TVA NE SE REMPLIT PAS TOUT SEUL — 9 septembre 2026
 
@@ -22,6 +87,65 @@ avec un bouton « Payée » qui ne pouvait qu'échouer, un règlement de zéro �
 refusé. `etatPaiement` la dit soldée — rien à encaisser, rien à attendre.
 
 Aucune migration. `ARCHITECTURE.md` §305.
+
+---
+
+
+
+## FAIT : LE BOUTON RETOUR EST UN VRAI BOUTON RETOUR — 9 septembre 2026
+
+Sa demande : *« le bouton retour doit marcher comme un vrai bouton marche
+arrière, il doit toujours renvoyer à la page d'où l'on vient juste avant. »*
+Cinquième signalement de la même racine (20 août, 31 août, 7, 8 et 9 septembre)
+— chaque écran déclarait sa sortie, et chaque porte d'entrée neuve la démentait.
+
+**L'onglet tient le journal des écrans traversés**, et toute flèche y lit la
+page d'avant. La sortie déclarée reste, comme repli : sur la première page d'un
+onglet, il n'y a pas de page d'avant, et sa règle du 31 août s'applique telle
+quelle. Aucune migration.
+
+Retiré avec : « Aucun client rattaché à ce chantier » n'est plus un cul-de-sac —
+le chemin vers la fiche se lit sous la phrase qui annonce le manque.
+
+Document : `docs/lot-retour-page-davant.md` · `ARCHITECTURE.md` §311.
+
+**Reste ouvert :** la retraite de la moitié « devine d'où il vient » des règles
+`?de=` (`TODO.md`) — six écrans et six suites en dépendent.
+
+---
+
+## FAIT : LA FLÈCHE DE RETOUR REND SA PLACE — 9 septembre 2026
+
+Sa remarque : *« si je clique sur un client tout en bas de la liste, je fais
+retour, il me remet en haut de la liste — je veux rester où j'étais ! »*
+
+Le défaut était dans la **flèche**, pas dans la liste : c'était un lien, donc une
+navigation en avant, et une page neuve se pose en haut. Mesuré avant de
+corriger — la flèche déposait à 0 px, le retour du navigateur rendait 2 941 px.
+Elle recule désormais dans l'historique quand l'écran d'avant est bien celui
+qu'elle vise, sur **les 49 écrans** qui la portent. L'entrée d'historique
+empilée à chaque aller-retour disparaît avec.
+
+Aucune migration. Document : `docs/lot-retour-garde-la-place.md` ·
+`ARCHITECTURE.md` §314 — le §311 d'une session voisine décide **où** la flèche
+mène, celui-ci **par quel chemin** elle y va.
+
+**Reste ouvert, mesuré, et pas apporté par ce lot :** un retour sert l'écran
+depuis la réserve de Next.js (`TODO.md`).
+
+## FAIT : « 8 CHANTIERS » CÈDE LA PLACE À CE QUI S'EST PASSÉ — 9 septembre 2026
+
+Sa question, puis sa décision dans la foulée : *« remplace par la dernière chose
+qui s'est produit »*. Le compte était juste et c'est ce qui le rendait trompeur —
+un chantier naît d'une dictée, bien avant le moindre document.
+
+La ligne porte désormais « Devis 7 sept. », « Facture 2 sept. », « Fiche 28
+août » — **les trois registres de la fiche, sous les mêmes conditions**. Rien à
+annoncer : elle se tait.
+
+Trois défauts de mise en page trouvés à la CAPTURE et par aucun test : la date
+coupée sur les adresses longues, une seconde ligne vide, le séparateur collé.
+`ARCHITECTURE.md` §315.
 
 ---
 

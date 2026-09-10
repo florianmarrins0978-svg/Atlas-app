@@ -128,8 +128,14 @@ async function main() {
      * bouton qu'on ne reconnaît pas se clique très bien depuis un script.
      *
      * Ce qu'on mesure donc : le geste se DISTINGUE-t-il du texte qui l'entoure ?
-     * Un cerne, une ombre, ou un fond différent de celui de la carte — n'importe
-     * lequel des trois suffit ; aucun des trois, et c'est une phrase.
+     *
+     * **LE 9 SEPTEMBRE, IL A FAIT RETIRER LE CERNE** — *« Salarié absent + sans
+     * contour ! »* —, et ce contrôle serait alors devenu un contrôle qui
+     * réclame ce qu'il vient de faire enlever (`CLAUDE.md` §5 bis). On vise
+     * donc plus profond : ce qui compte n'est pas le cadre, c'est qu'un SIGNE
+     * distingue le geste d'une phrase. Un cerne, une ombre, un fond propre —
+     * ou un **+**, qui dit « ceci s'appuie et ça ajoute » aussi bien qu'un
+     * cadre. Aucun des quatre, et c'est une phrase : le défaut du 7 revient.
      *
      * **Il refuse de conclure sur une boîte de zéro pixel** (`CLAUDE.md` §5) :
      * un élément non mis en page rendrait « aucune bordure » en vert, ce qui
@@ -150,15 +156,18 @@ async function main() {
           parent !== null &&
           s.backgroundColor !== parent.backgroundColor &&
           s.backgroundColor !== "rgba(0, 0, 0, 0)",
+        signe: (cible.textContent ?? "").includes("+"),
         hauteur: b.height,
       };
     });
     assert.ok(allure, "le geste n'a pas de boîte mesurable : rien n'est mesuré");
     assert.ok(
-      allure.bordure || allure.ombre || allure.fond,
-      "le geste n'a ni cerne, ni ombre, ni fond propre : il se lit comme une phrase"
+      allure.bordure || allure.ombre || allure.fond || allure.signe,
+      "le geste n'a ni cerne, ni ombre, ni fond, ni + : il se lit comme une phrase"
     );
-    // La cible du pouce, tant qu'on y est — 48 px est la mesure de l'écran.
+    // **La cible du pouce ne suit PAS l'encre.** Le dessin a rétréci le
+    // 9 septembre ; 44 px reste le plancher, sinon le geste se rate avec des
+    // gants — et un geste raté coûte autant qu'un geste invisible.
     assert.ok(allure.hauteur >= 44, `le geste ne fait que ${Math.round(allure.hauteur)} px de haut`);
   });
 

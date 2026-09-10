@@ -200,6 +200,21 @@ const HORS_CHARTE: Array<{
     pourquoi: "vignette d'une photo qu'on reprend : un cercle rognerait l'image",
   },
   {
+    // **UNE VIGNETTE DE PHOTO, PAS UN BOUTON** — la troisième, arrivée le
+    // 9 septembre 2026 avec les photos d'un retour d'intervention sur la fiche
+    // du jour. Même arbitrage que les deux autres : un cercle rogne les quatre
+    // coins d'une photo réduite à 74 px, c'est-à-dire ce qui permet de
+    // reconnaître ce qu'elle montre. Une image n'est pas un geste.
+    //
+    // **Déclarée ici parce qu'elle ne l'avait pas été**, et que ce contrôle
+    // rougissait donc sur `main` pour tout le monde. Le motif vise la LIGNE :
+    // un vrai bouton rectangulaire écrit demain dans cet écran serait toujours
+    // dénoncé.
+    motif: /^src[/\\]app[/\\]planning[/\\]PlanningClient\.tsx$/,
+    seulement: /h-\[74px\] w-\[74px\]/,
+    pourquoi: "vignette d'une photo de retour : un cercle rognerait l'image",
+  },
+  {
     // **UNE VIGNETTE DE PHOTO, PAS UN BOUTON** — exactement la même raison que
     // celle de 62 px trois entrées plus haut, et le même arbitrage : un cercle
     // rogne les quatre coins d'une photo réduite à 46 px, c'est-à-dire

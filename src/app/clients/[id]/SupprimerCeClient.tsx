@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import { supprimerClientAction } from "./actions";
+import { oublierCetEcran } from "@/components/atlas/journal-navigateur";
 
 /**
  * SUPPRIMER UN CLIENT — sa proposition C, tranchée le 27 août 2026.
@@ -63,6 +64,12 @@ export default function SupprimerCeClient({
         setRefus(issue.message);
         return;
       }
+      // **La fiche disparaît DU JOURNAL avant qu'on la quitte — 9 septembre
+      // 2026.** Depuis que la flèche de retour ramène à la page d'où l'on
+      // vient (`src/lib/journal-de-navigation.ts`), une adresse laissée dans
+      // le journal est une destination promise. Celle-ci ne mène plus à rien :
+      // la flèche de l'écran suivant déposerait sur une fiche effacée.
+      oublierCetEcran(window.location.pathname);
       // La fiche n'existe plus : y rester montrerait un écran vide.
       router.replace("/clients");
       router.refresh();

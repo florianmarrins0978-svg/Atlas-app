@@ -17,10 +17,8 @@
 import assert from "node:assert/strict";
 import {
   blocsDeLaJournee,
-  departEtDuree,
-  MOT_QUAND,
-  quandDuChantier,
-  type QuandChantier,
+  departDuChantier,
+  estUnDemiValide,
   ditLeCompteDemi,
   ditLeCompteDuJour,
   ditLeQuand,
@@ -107,7 +105,9 @@ essai("la pastille compte au-delà de deux équipes", () => {
   assert.equal(ditQuiPart([]), "Qui ?");
   assert.ok(!/[ÉE]quipe/i.test(ditQuiPart([])), "la pastille vide dit encore « équipe »");
   assert.equal(ditQuiPart(["Julien"]), "Julien");
-  assert.equal(ditQuiPart(["Julien", "Paul"]), "Julien, Paul");
+  // **Une barre oblique, pas une virgule** — sa demande du 9 septembre 2026.
+  assert.equal(ditQuiPart(["Julien", "Paul"]), "Julien / Paul");
+  assert.ok(!ditQuiPart(["Julien", "Paul"]).includes(","), "la pastille énumère encore à la virgule");
   assert.equal(ditQuiPart(["Julien", "Paul", "Marc"]), "Julien +2");
 });
 
@@ -122,48 +122,40 @@ essai("un chantier se lit matin, après-midi, journée — ou en jours", () => {
   assert.equal(ditLeQuand("apres_midi", 5), "3 jours");
 });
 
-// ─── « DÉPLACER » NE DOIT JAMAIS OFFRIR UN CHOIX SANS EFFET ──────────────
+// ─── « DÉPLACER » NE CHOISIT QU'UN DÉPART ────────────────────────────────
 //
-// **Sa panne du 23 août 2026 :** *« cliquer sur Déplacer ne déplace pas le
-// chantier, ça ne fait rien du tout »*.
+// **Sa décision du 10 septembre 2026 :** *« fais celui-là, juste tu retires la
+// journée »*, après avoir essayé la planche `deplacer-plus-simple.html`.
 //
-// Sur un chantier de plus d'une journée, `departEtDuree` protège la durée — la
-// raccourcir lui ferait perdre des jours de travail en silence. « Matin » et
-// « Journée » y écrivent donc le MÊME état. Mais `quandDuChantier` rendait
-// « journee » dès deux demi-journées : la pastille se posait sur « Journée », et
-// « Matin » restait éteint tout en n'écrivant rien.
-essai("un chantier de plusieurs jours est décrit par son DÉPART", () => {
-  const troisJours = { dureeDemiJournees: 6, creneauDebut: "matin" } as never;
-  assert.equal(quandDuChantier(troisJours), "matin");
-  const partiApres = { dureeDemiJournees: 6, creneauDebut: "apres_midi" } as never;
-  assert.equal(quandDuChantier(partiApres), "apres");
+// **Ce que ces contrôles remplacent, et pourquoi.** Ils défendaient un
+// vocabulaire à TROIS mots — matin, après-midi, journée — dont le troisième ne
+// décrivait pas un départ mais une ÉTENDUE. Il fallait donc une fonction pour
+// traduire ces mots en départ ET durée (`departEtDuree`), une deuxième pour
+// dire lequel décrivait un chantier donné (`quandDuChantier`), et une troisième
+// pour retirer celui qui n'écrivait rien (`poseOfferte`). Les trois ont disparu
+// avec le mot : un départ n'a que deux valeurs, celles que la base porte depuis
+// la migration 0019.
+essai("un chantier est décrit par son départ, quelle que soit sa durée", () => {
+  assert.equal(departDuChantier({ creneauDebut: "matin" }), "matin");
+  assert.equal(departDuChantier({ creneauDebut: "apres_midi" }), "apres_midi");
 });
 
-// La journée pleine, elle, se dit bien « Journée » : c'est le seul cas où le mot
-// décrit la réalité.
-essai("une journée pleine se dit « Journée »", () => {
-  assert.equal(quandDuChantier({ dureeDemiJournees: 2, creneauDebut: "matin" } as never), "journee");
-  assert.equal(quandDuChantier({ dureeDemiJournees: 1, creneauDebut: "matin" } as never), "matin");
+// **Un chantier posé avant la migration 0019 n'a pas de créneau** : il se lit
+// comme partant du matin, jamais comme une valeur absente qui laisserait
+// l'interrupteur sans position tenue.
+essai("sans créneau écrit, le chantier part du matin", () => {
+  assert.equal(departDuChantier({ creneauDebut: null }), "matin");
+  assert.equal(departDuChantier({ creneauDebut: "n'importe quoi" }), "matin");
 });
 
-// **Et le choix affiché doit toujours pouvoir CHANGER quelque chose.** C'est le
-// contrôle qui tient sa panne : pour chaque durée, aucun bouton offert ne doit
-// écrire l'état déjà en place.
-essai("aucun bouton de « Déplacer » n'est sans effet", () => {
-  for (const duree of [1, 2, 4, 6]) {
-    const courant = quandDuChantier({ dureeDemiJournees: duree, creneauDebut: "matin" } as never);
-    const offerts = (Object.keys(MOT_QUAND) as QuandChantier[]).filter(
-      (v) => v !== "journee" || duree <= 2
-    );
-    for (const v of offerts) {
-      if (v === courant) continue;
-      const r = departEtDuree(v, duree);
-      assert.ok(
-        !(r.moment === "matin" && r.duree === duree),
-        `à ${duree} demi-journée(s), « ${MOT_QUAND[v]} » n'écrit rien de neuf`
-      );
-    }
-  }
+// **Et l'assistant ne peut plus dire « journee ».** Le mot valait une étendue :
+// une dictée sans heure réservait la journée entière.
+essai("seuls les deux départs de la base sont acceptés", () => {
+  assert.ok(estUnDemiValide("matin"));
+  assert.ok(estUnDemiValide("apres_midi"));
+  assert.ok(!estUnDemiValide("journee"));
+  assert.ok(!estUnDemiValide("apres"));
+  assert.ok(!estUnDemiValide(""));
 });
 
 // ─── COMPTER LES ÉQUIPES, ET NON LES CHANTIERS ────────────────────────────
@@ -248,12 +240,29 @@ essai("un chantier à la journée n'apparaît QU'UNE fois", () => {
   );
 });
 
-essai("le nom passe AVANT la demi-journée restée libre", () => {
+// **CE CONTRÔLE DÉFENDAIT L'INVERSE, ET C'EST LUI QUI L'A RETOURNÉ.** Il fixait
+// sa règle du 21 août 2026 — *« le nom toujours en premier ! »* —, donc qu'un
+// chantier de l'après-midi ouvre la fiche AVANT le matin resté libre. Personne
+// n'avait vu ce que cela produisait : les deux moitiés du jour échangeaient
+// leur place selon l'heure du chantier, et l'appui sur « Matin » les faisait
+// sauter. Sa décision du 10 septembre : *« oui, matin puis aprèm »*.
+essai("le nom reste en tête, et la journée garde son ordre", () => {
   const rocher: Faux = { id: "rocher", demis: ["apres_midi"] };
   const blocs = blocsDeLaJournee([rocher], occupePar);
-  assert.equal(blocs[0].type, "chantier", "« libre » ouvre la fiche");
-  assert.equal(blocs[1].type, "libre");
-  assert.equal(blocs[1].type === "libre" ? blocs[1].demi : null, "matin");
+  // Le nom ouvre la fiche — sa règle du 21 août, qu'il a maintenue le
+  // 10 septembre : *« le nom doit rester en premier »*.
+  assert.equal(blocs.length, 1, "le matin libre a été émis comme un bloc à part");
+  assert.equal(blocs[0].type, "chantier");
+  // …et le matin se lit SOUS son nom, avant l'après-midi qu'il occupe.
+  assert.deepEqual(blocs[0].type === "chantier" ? blocs[0].libresAvant : null, ["matin"]);
+
+  // Un chantier du matin, lui, n'a rien avant lui : l'après-midi libre reste
+  // une ligne à part, après.
+  const leroy: Faux = { id: "leroy", demis: ["matin"] };
+  const matin = blocsDeLaJournee([leroy], occupePar);
+  assert.equal(matin[0].type, "chantier");
+  assert.deepEqual(matin[0].type === "chantier" ? matin[0].libresAvant : null, []);
+  assert.equal(matin[1].type === "libre" ? matin[1].demi : null, "apres_midi");
 });
 
 essai("deux chantiers différents gardent chacun leur nom", () => {
@@ -261,7 +270,10 @@ essai("deux chantiers différents gardent chacun leur nom", () => {
   const b: Faux = { id: "b", demis: ["apres_midi"] };
   const blocs = blocsDeLaJournee([a, b], occupePar);
   assert.equal(blocs.filter((x) => x.type === "chantier").length, 2);
-  assert.equal(blocs[2].type, "libre", "le matin libre n'est plus annoncé");
+  // Le matin reste annoncé libre — sous le nom du PREMIER des deux, et pas du
+  // second : il ne s'écrit qu'une fois.
+  assert.deepEqual(blocs[0].type === "chantier" ? blocs[0].libresAvant : null, ["matin"]);
+  assert.deepEqual(blocs[1].type === "chantier" ? blocs[1].libresAvant : null, []);
 });
 
 essai("une journée vide annonce ses deux demi-journées, dans l'ordre", () => {
@@ -278,23 +290,6 @@ essai("le chantier du matin passe avant celui de l'après-midi", () => {
   const blocs = blocsDeLaJournee([aprem, matin], occupePar);
   assert.equal(blocs[0].type === "chantier" ? blocs[0].chantier.id : null, "matin");
   assert.equal(blocs[1].type === "chantier" ? blocs[1].chantier.id : null, "aprem");
-});
-
-// ─── DÉPLACER ──────────────────────────────────────────────────────────────
-essai("« Déplacer » écrit le bon départ et la bonne durée", () => {
-  assert.deepEqual(departEtDuree("matin", 1), { moment: "matin", duree: 1 });
-  assert.deepEqual(departEtDuree("apres", 1), { moment: "apres_midi", duree: 1 });
-  assert.deepEqual(departEtDuree("journee", 1), { moment: "matin", duree: 2 });
-  assert.deepEqual(departEtDuree("journee", 2), { moment: "matin", duree: 2 });
-});
-
-// **Un chantier plus long qu'une journée garde sa durée.** « Journée » sur un
-// chantier de trois jours le raccourcirait à deux demi-journées, sans qu'un mot
-// le dise : le patron perdrait deux jours de travail en silence.
-essai("un chantier de trois jours n'est jamais raccourci", () => {
-  assert.deepEqual(departEtDuree("journee", 6), { moment: "matin", duree: 6 });
-  assert.deepEqual(departEtDuree("matin", 6), { moment: "matin", duree: 6 });
-  assert.deepEqual(departEtDuree("apres", 6), { moment: "apres_midi", duree: 6 });
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Règles de la journée — ${echecs} échec(s).`);

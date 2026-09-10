@@ -26310,3 +26310,622 @@ et les lignes du devis, là où il les a demandées.
 **Elles ne se cachent PAS quand la fin de chantier s’ouvre**, contrairement aux
 lignes du devis. Celles-ci disparaissent parce qu’elles DEVIENNENT les cases à
 cocher ; les photos, elles, sont ce qu’on regarde pendant qu’on coche.
+
+---
+
+## §308 — Poser un chantier ne demande plus QUAND : la durée est déjà connue
+
+**Sa remarque du 9 septembre 2026, capture du planning à l'appui :** *« quand je
+clique sur "ajouter un chantier", lorsque je clique sur Claudette il me propose
+3 choix, alors que si Claudette c'est un chantier 1 journée, deux, ou une demi,
+ça doit se mettre tout seul — je dois pas avoir à choisir. »*
+
+### Ce que les trois boutons faisaient VRAIMENT
+
+Ils avaient l'air de demander une information manquante. Ils en écrivaient une.
+
+`departEtDuree(quand, duree)` traduit le mot choisi en un DÉPART **et** une
+DURÉE : « Matin » vaut une demi-journée, « Journée » en vaut deux. Poser un
+chantier par ces boutons, c'était donc réécrire `dureeDemiJournees` — la valeur
+que le devis avait fixée, ou que sa dictée avait donnée (« 3 jours » fait six
+demi-journées, `dureeEnDemiJournees`).
+
+| Le chantier | Ce qu'un appui sur « Matin » en faisait |
+|---|---|
+| une demi-journée | rien — le seul cas où les boutons disaient vrai |
+| **une journée** | **une demi-journée**, et l'après-midi repartait à la vente |
+| trois jours | rien : au-delà de deux demi-journées, `departEtDuree` protège déjà la durée et ne change que le départ |
+
+La ligne du milieu est le défaut, et il ne se voyait **nulle part** : ni sur le
+plan, ni sur le devis, ni sur la facture. Il se découvrait le jour du chantier,
+quand la journée réservée n'en était plus une — ou plus tôt, sous la forme d'un
+après-midi proposé à un client alors qu'il était pris.
+
+### Ce qui décide à leur place, et qui existait déjà
+
+`planifierChantier` **sans** `choix` :
+
+1. lit la durée du chantier — `dureeDemiJournees`, sinon la dictée, sinon une
+   journée ;
+2. cherche la moitié de journée où elle tient, par `departPossible` — la même
+   fonction que le jour proposé au client (`jourRetenable`), jamais une seconde
+   (`CLAUDE.md` §3) ;
+3. n'écrit la durée que pour la **conserver**.
+
+Rien n'a été ajouté au serveur : ce chemin était déjà celui du calendrier. Ce
+qui a été retiré, c'est l'écran qui refusait de l'emprunter.
+
+### Où le choix reste, et pourquoi il y reste
+
+**« Déplacer » n'a pas bougé.** Se tromper de moitié de journée se rattrape d'un
+appui, sur le chantier posé, et là le mot choisi EST la demande : « finalement,
+Claudette ce sera l'après-midi ». C'est l'endroit où réécrire la durée a un sens,
+parce qu'on la regarde.
+
+Ce qui distingue les deux : poser répond à « ce chantier, ce jour-là » — la
+durée n'y est pas en question ; déplacer répond à « ce chantier, ce moment-là ».
+
+### La même racine, corrigée dans l'assistant
+
+`donnees.quand` valait `?? "journee"` dans le chemin des propositions
+(`src/app/chantiers/[id]/informations/actions.ts`) : une dictée qui ne disait pas
+l'heure — « pose Claudette jeudi » — réservait donc deux demi-journées. Sans
+moment dit, aucun `choix` n'est plus passé. **Déplacer sans moment est refusé**
+et redemande : le jour ne bouge pas, le moment est tout ce que ce geste écrit,
+et le remplir d'office refaisait le même défaut.
+
+### Ce qui l'éprouve
+
+| | |
+|---|---|
+| `test-planning-repo.ts` | la règle, sans navigateur : poser sans choix garde la demi-journée réservée, et suit la dictée quand rien n'est encore réservé. Les deux ont été mis au rouge contre la règle inverse avant d'être retenus |
+| `test-planning-e2e.ts` | **le geste** : un seul bouton dans le tiroir, aucun second choix après le nom, et la demi-journée du chantier survit à la pose |
+| `test-poser-une-date-e2e.ts` | le même geste par l'autre chemin, sur un chantier ramené à une demi-journée **en base** avant l'appui |
+
+Les suites navigateur sont ici les seules à voir le défaut : la règle de dépôt,
+elle, était juste — c'est l'écran qui lui passait par-dessus (`CLAUDE.md`
+§5 quater, « éprouver le geste du patron, pas la fonction qu'on vient
+d'écrire »).
+
+**Reste ouvert :** la planche 86 (`appli/planning-simple.html`, validée le
+21 août) montre encore les deux temps « QUI puis QUAND ». Elle n'a pas été
+refaite — une planche retenue ne se réécrit pas sans lui.
+
+## §309 — La durée d'un chantier ne se lisait pas du même endroit selon qui regardait
+
+**Sa panne du 9 septembre 2026 :** *« lorsque je clique sur le matin pour
+Mr. Julien, ça me met d'office toute la journée. »*
+
+**Le calcul était juste.** Son chantier porte « 2 jours », soit quatre
+demi-journées ; posées à partir du matin, elles occupent le matin ET
+l'après-midi du jeudi, puis le vendredi entier. Rien d'autre n'était possible :
+`departEtDuree` protège délibérément la durée d'un chantier de plus d'une
+journée, parce que la raccourcir lui ferait perdre des jours de travail sans
+qu'un mot le dise.
+
+**CE PARAGRAPHE A D'ABORD CONCLU AUTRE CHOSE, ET C'EST À CORRIGER NOIR SUR
+BLANC.** Il disait que le défaut tenait à la QUESTION posée par les trois
+boutons de pose, et qu'il fallait retirer « Journée » des lignes qui posent un
+chantier. Une session voisine a traité la même plainte le même soir, plus haut :
+**la pose ne demande plus rien du tout** (§308), la durée du devis décidant
+seule. Sa réponse est meilleure que la mienne — elle supprime la question au
+lieu de la corriger — et c'est la sienne qui vit. Le composant que j'avais écrit
+pour ces lignes a été supprimé avec elles, plutôt que gardé « au cas où »
+(`CLAUDE.md` §4 quinquies).
+
+**CE QUI RESTE DE CE LOT, ET QUI TIENT TOUJOURS :**
+
+| | |
+|---|---|
+| `dureeDuChantier(c)` (`src/lib/disponibilites.ts`) | la SEULE lecture de la durée d'un chantier : `dureeDemiJournees`, sinon la dictée, sinon la journée |
+| `poseOfferte(duree)` (`src/lib/planning-jour.ts`) | quels moments écrivent quelque chose de différent — lu par « Déplacer », le seul endroit où un moment se choisit encore |
+| **retiré** | le `.filter()` écrit au milieu du rendu de « Déplacer », et la déduction de durée recopiée dans `planifierChantier` |
+
+**LA DIVERGENCE QUE PERSONNE N'AVAIT SIGNALÉE.** L'écran lisait
+`dureeDemiJournees ?? 2` — or cette colonne est NULL tant que rien n'est posé.
+Il croyait donc à « une journée » sur un chantier de deux, au moment précis où
+le patron choisit où le poser, pendant que le dépôt, lui, lisait la dictée.
+Deux lectures d'une même durée à deux étages (`CLAUDE.md` §3). Une seule
+fonction répond désormais aux deux, et `deplacerChantier` la lit aussi : un
+chantier posé avant la migration 0019 porte `duree_demi_journees` à NULL, et
+« Matin » le raccourcissait en silence par cette porte-là.
+
+**CE QUI N'A PAS ÉTÉ FAIT, ET POURQUOI.** Faire écrire « une demi-journée » au
+bouton « Matin » sur un chantier de deux jours aurait donné à la lettre ce qu'il
+demande — et effacé trois demi-journées de travail de son planning, sans un mot.
+Le modèle ne sait poser qu'un bloc continu : couper un chantier en deux morceaux
+posés à deux endroits est une autre fonctionnalité, et elle se décide avec lui
+(`TODO.md`).
+
+**ET CE QUE LES CAPTURES ONT MONTRÉ, QUI N'EST PAS ENCORE TRAITÉ.** En rejouant
+son geste à l'écran (`scripts/capture-deplacer.ts`), les deux moitiés de la
+journée CHANGENT DE PLACE selon où est le chantier : posé l'après-midi, la fiche
+se lit `APRÈS-MIDI` puis `MATIN`. C'est le saut qu'il a signalé le soir même —
+*« j'ai l'impression que c'est inversé »*. La cause est `blocsDeLaJournee`, qui
+pose les chantiers d'abord et les demi-journées libres ensuite. **Rien n'a été
+changé :** remettre le matin en haut contredit sa règle du 21 août — *« le nom
+toujours en premier ! »* — et l'arbitrage entre ses deux demandes lui appartient
+(`appli/deplacer-plus-simple.html`, `TODO.md`).
+
+---
+
+## §310 — Sortir d'Atlas : deux gestes, deux portées, et rien qui se recopie
+
+**Sa question du 9 septembre 2026 :** *« si je clique sur me déconnecter dans les
+réglages, est-ce que ça me remet à la page de connexion ? »* Il n'y avait aucun
+« me déconnecter » dans les Réglages — seulement « Me déconnecter partout », au
+bas de l'écran « Mot de passe ».
+
+**Les deux gestes existent maintenant, et ils ne servent pas au même moment.**
+
+| | Où | Portée | Face ID |
+|---|---|---|---|
+| **Se déconnecter** | bas des Réglages | **cet appareil** | **reste posé** |
+| **Me déconnecter partout** | sous « Mot de passe » | tout le compte | **retiré partout** |
+
+C'est la répartition des applications grand public — WhatsApp, Instagram, les
+Réglages d'iOS —, et sa correction du 9 septembre l'a imposée : *« va voir
+comment font les grandes applications et fais comme eux, là ce que tu me
+proposes ne fait pas pro »*. **La première version posait les deux choix dans une
+même feuille**, au moment où l'on veut juste sortir. Ne pas la ressusciter : un
+arbitrage technique n'a pas à se poser à celui qui rend son téléphone le soir.
+
+**`signOut` d'Auth.js, jamais `/api/session-perimee`.** La tentation était forte :
+cette route efface déjà les cookies. Deux raisons de ne pas la réemployer. Son
+nom ment — elle existe pour une session dont le COMPTE a disparu (le cookie
+fantôme du 10 août 2026) et renvoie sur `/login?session=perimee`. Et elle tient
+sa propre liste de six noms de cookies, préfixes `__Secure-` et `__Host-`
+compris : la recopier en ferait une seconde, et deux listes divergent (§3 de
+`CLAUDE.md`). `signOut` efface le cookie qu'Auth.js a lui-même posé.
+
+**Rien à fermer côté serveur, et ce n'est pas un oubli.** La session est un jeton
+signé (`session: { strategy: "jwt" }`) : aucune ligne de session en base. La
+preuve récente de M11 reste, délibérément — elle est attachée au `sessionId`, un
+UUID tiré à chaque authentification réelle, donc inutilisable par la session
+suivante ; l'effacer voudrait dire appeler `effacerPreuves`, qui travaille sur
+TOUT l'utilisateur et couperait sa tablette parce qu'il a fermé son téléphone.
+
+**Le dessin n'est pas neuf non plus : c'est celui de `SupprimerCeClient`**,
+tranché sur maquette le 2 septembre — une ligne en capitales espacées de 9,5 px
+qui ne s'annonce pas mais dont la cible fait 44 px, une feuille, et « Annuler »
+en simple mot plutôt qu'en second bouton. **Une seule chose en diffère : pas de
+surtitre d'alerte.** « Suppression définitive » avertit d'un geste irréversible ;
+se déconnecter se défait en cinq secondes, et le même signal posé sur un geste
+anodin s'apprend à être ignoré (`CLAUDE.md` §4 ter).
+
+**Aucune garde de rôle sur ce geste**, et c'en est une décision : sortir de son
+propre compte n'appartient pas à l'entreprise. Un salarié doit pouvoir fermer sa
+session sur le téléphone qu'il rend le soir.
+
+**Et aucun `try/catch` autour de l'action.** `signOut({ redirectTo })` lève le
+`NEXT_REDIRECT` que Next.js attrape pour naviguer : l'avaler effacerait le cookie
+en laissant l'écran en place, chaque geste ensuite refusé — exactement le piège
+du cookie mort payé une soirée le 10 août 2026.
+
+---
+
+## §311 — La flèche de retour ramène à la page d'avant, et plus à une adresse écrite d'avance
+
+**Sa demande du 9 septembre 2026, capture à l'appui :** *« j'ai cliqué sur
+ouvrir le devis, une fois sur le devis je clique sur retour, j'arrive sur la
+page de la fiche client — or le bouton retour doit marcher comme un vrai bouton
+marche arrière : il doit toujours renvoyer à la page d'où l'on vient juste
+avant. »*
+
+### Ce qui a été corrigé, et ce n'est pas la flèche du devis
+
+C'est le **cinquième** signalement de la même racine :
+
+| quand | ce qu'il a signalé | ce qui a été fait alors |
+|---|---|---|
+| 20 août | la fiche client sautait deux écrans | `retour-fiche-client.ts` : une porte reconnue |
+| 31 août | le devis le déposait sur la fiche du chantier | `retour-du-devis.ts` : une destination écrite |
+| 7 sept. | venu du planning, il atterrissait sur l'accueil | `retour-au-planning.ts` : une porte de plus |
+| 8 sept. | venu du planning, le devis menait à la fiche client | une branche de plus dans `retourDuDevis` |
+| 9 sept. | venu de l'accueil, le devis menait à la fiche client | **ceci** |
+
+Chaque écran **déclarait** sa sortie, et chaque porte d'entrée neuve la
+démentait. Les quatre correctifs précédents ont ajouté une porte reconnue à la
+fois — c'est la superposition de couches que `CLAUDE.md` §4 quater refuse :
+chacune était juste, et la suivante était déjà nécessaire au moment de la poser.
+
+**Ce qui change, c'est la question posée.** On ne cherche plus à DEVINER d'où il
+vient : on s'en souvient. L'onglet tient le journal des écrans traversés, et
+chaque flèche y lit la dernière page qui n'est pas celle-ci.
+
+### Les pièces, et pourquoi elles sont là où elles sont
+
+| | |
+|---|---|
+| `src/lib/journal-de-navigation.ts` | la règle : ce qui s'empile, ce qui se dépile, ce qu'on refuse d'y lire. **Aucune ligne de navigateur** — donc éprouvable sans en démarrer un (`CLAUDE.md` §4 sexies) |
+| `src/components/atlas/journal-navigateur.ts` | le rangement dans `sessionStorage`, et rien d'autre |
+| `src/components/atlas/JournalDeNavigation.tsx` | posé UNE fois dans la mise en page racine, il note chaque visite. Écran par écran, ce serait une liste à tenir à la main — le défaut même qu'on corrige |
+| `src/components/atlas/FlecheRetour.tsx` | LA flèche, pour tous les écrans. `EnTeteEcran` et la feuille du devis s'en servent : deux dessins de flèche auraient fini par répondre deux choses |
+
+### Trois décisions qui ne se devinent pas
+
+**`sessionStorage`, pas un état de React ni `localStorage`.** Un état se perd au
+rechargement, or son onglet reste ouvert des heures et son banc redémarre
+plusieurs fois par soirée (`HANDOVER.md`, piège 0). `localStorage` est partagé
+entre onglets : deux onglets ouverts se mélangeraient les fils.
+
+**L'ÉCRAN compte, pas l'adresse entière.** L'écran de TVA se feuillette par
+trimestre (`/termines/tva?annee=2026&t=2`) : si chaque trimestre comptait pour
+une page, la flèche rembobinerait les trimestres un à un avant de sortir.
+Reculer, c'est quitter l'écran où l'on est.
+
+**Le libellé devient « Retour » quand le journal décide.** La flèche connaît
+l'adresse, pas le nom de l'écran, et le dépôt a déjà payé une flèche qui
+annonçait « Retour au devis » en menant au planning (§296, 7 septembre). Nommer
+la destination demanderait une table écran par écran — c'est-à-dire la liste
+tenue à la main que ce lot supprime.
+
+### RECULER SE DÉCLARE, IL NE SE DEVINE PAS — deux verdicts corrigés
+
+**Deux affirmations de ce lot se sont révélées fausses en le livrant, et c'est
+la suite navigateur qui l'a dit à chaque fois.** Elles sont écrites ici parce
+qu'un correctif qui paraît juste et ne l'est pas coûte plus cher qu'un défaut
+connu (`CLAUDE.md` §2 bis).
+
+**1. « Le journal dépile quand il revient » — FAUX.** La première version
+reconnaissait un retour à la forme de la trace : si l'adresse d'arrivée était
+celle d'avant-dernière, c'est qu'on avait reculé. Or **rouvrir un écran déjà vu
+laisse exactement la même trace** — ouvrir un devis, passer à l'accueil, rouvrir
+ce devis depuis l'accueil. Le journal dépilait alors l'accueil, et la flèche
+sautait deux écrans : la panne qu'on corrigeait, par l'autre bout.
+
+Reculer n'est pas une forme, c'est un **geste** : les trois seuls qui reculent le
+disent eux-mêmes (`journalSansCetEcran`).
+
+| le geste | où il le dit |
+|---|---|
+| la flèche est appuyée | `FlecheRetour.tsx`, à l'appui |
+| une fiche client enregistrée ramène au devis | `FormulaireNouveauChantier.tsx` |
+| le bouton du navigateur, ou le balayage sur un téléphone | `JournalDeNavigation.tsx`, sur `popstate` |
+
+**2. « La lecture est insensible à l'ordre » — FAUX au premier essai.** La flèche
+se calcule pendant le rendu, le journal se met à jour juste après : elle lit donc
+un journal qui ne porte pas encore le pas qu'on vient de faire. Une version qui y
+cherchait « notre place » trouvait la visite **précédente** du même écran et
+rendait ce qui la précédait — deux écrans trop tôt, exactement la plainte du
+9 septembre. `pagePrecedente` applique désormais la visite courante avant de
+lire : si le journal la porte déjà, c'est sans effet ; sinon elle s'ajoute au
+bout. Notre place est alors toujours la dernière ligne.
+
+**Ce qu'il faut en retenir pour la suite :** aucune de ces deux erreurs ne se
+voyait en relisant, et les deux étaient vertes côté règle pure. C'est le contrôle
+qui déroule SON geste dans un navigateur qui les a nommées — et la seconde ne
+s'est laissé prendre que parce que l'échec disait le journal de l'onglet en
+clair, au lieu d'un simple dépassement de délai.
+
+### Pourquoi pas `history.back()`
+
+`retour-au-planning.ts` l'avait écarté avec trois raisons, et elles tiennent
+toujours. Le journal les tient toutes les trois là où `history.back()` échouait :
+
+| l'objection | ce que le journal en fait |
+|---|---|
+| la flèche est un `<Link>` : on l'ouvre dans un onglet, elle s'annonce | elle garde une VRAIE adresse, lue dans le journal |
+| il ment après un rechargement ou un signet | le journal survit au rechargement, et il est vide sur un signet — la sortie déclarée reprend alors la main |
+| après un enregistrement, il redépose sur le formulaire quitté | l'enregistrement DÉCLARE qu'il revient d'où il vient, et le formulaire quitte le journal |
+
+Ce dernier point est la boucle du 7 septembre (§296) : deux flèches se pointaient
+l'une l'autre, et aucune ne sortait. Le geste déclaré l'interdit par
+construction — et il ne se devine pas, voir ci-dessus.
+
+### Ce qui a été RETIRÉ avec, et ce qui reste
+
+**« Aucun client rattaché à ce chantier » n'est plus un cul-de-sac.** Le 31 août,
+la flèche du devis avait été détournée vers le formulaire de fiche client parce
+que cette phrase disait le manque sans dire où le réparer. Le chemin se pose
+désormais **là où le manque se lit**, et il s'annonce — le pansement se retire
+avec la correction (`CLAUDE.md` §4 quater).
+
+**Les règles `?de=` restent, comme REPLI et pour l'après-enregistrement.** Elles
+répondent maintenant à une autre question que la flèche : où sortir quand il n'y
+a pas de page d'avant (signet, notification à froid), et où aller une fois un
+formulaire enregistré (`apresLesCoordonnees`). Leur moitié « devine d'où il
+vient » est en revanche devenue redondante avec le journal ; sa retraite est
+nommée dans `TODO.md`, et elle n'a pas été faite dans ce lot — six écrans et six
+suites en dépendent, et un lot qui les réécrit la même nuit se livre rouge.
+
+**La fiche d'un client SUPPRIMÉE quitte le journal** (`journalSansCetEcran`,
+appelé par `SupprimerCeClient.tsx`) : une adresse laissée dans le journal est
+une destination promise, et celle-là ne mène plus à rien.
+
+### Éprouvé
+
+`scripts/test-journal-de-navigation.ts` — dix-huit cas de règle pure, dont les
+trois qu'aucune suite navigateur ne verrait : le geste déclaré, la lecture d'un
+journal en retard d'un pas, et le refus de `//ailleurs.example` dans un `href`.
+`scripts/test-retour-page-davant-e2e.ts` déroule SON geste dans un navigateur :
+accueil → devis → retour → accueil, la même flèche par une autre porte, deux
+retours d'affilée, le rechargement, et la sortie déclarée à froid
+(`scripts/_arriver-a-froid.ts`). C'est cette suite-là qui a trouvé les deux
+erreurs ci-dessus, et son message rend le journal de l'onglet en clair — sans
+quoi elle n'aurait dit qu'« délai dépassé ».
+
+
+---
+
+## §312 — Le geste d'une absence : ce qui remplace le cerne, c'est le +
+
+**Trois décisions du patron en trois jours, sur le même geste**, et la
+troisième contredit la deuxième sans annuler ce qu'elle avait appris :
+
+| Le jour | Ce qu'il a dit | Ce que l'écran portait |
+|---|---|---|
+| 6 sept. | (rien) | une phrase nue, cliquable — invisible, la fonction n'a pas servi |
+| 7 sept. | *« comment savoir qu'il faut cliquer dessus ? »* | une pastille cerclée de 48 px |
+| 9 sept. | *« un petit + plutôt que le gros bouton »*, *« Salarié absent + sans contour ! »*, puis *« rajoute un ? à la fin »* | « + Salarié absent ? », aucun contour |
+
+**Le piège, et c'est lui qui rend ce paragraphe nécessaire.** Retirer le cerne
+sans rien mettre à la place, c'est revenir au 6 septembre — le jour où le geste
+existait et où personne ne le voyait. Ce qui distingue un geste d'une phrase
+n'est pas le cadre : c'est **un signe qui annonce qu'il se passera quelque
+chose**. Le **+** en est un, et il en dit même plus qu'un cerne (« ceci
+ajoute »). Le cadre s'en va, la reconnaissance reste.
+
+**Ce qui NE bouge pas quand l'encre rétrécit : la cible.** 44 px de haut,
+pleine largeur. Un geste raté avec des gants coûte exactement ce que coûte un
+geste invisible — il faut recommencer, et sur un chantier on ne recommence pas.
+
+**Le contrôle a suivi la règle, pas le dessin** (`CLAUDE.md` §5 bis).
+`test-pas-la-ce-jour-e2e.ts` exigeait « un cerne, une ombre ou un fond » : il
+aurait réclamé ce que le patron venait de faire retirer. Il accepte désormais
+**un quatrième signe, le +**, et refuse toujours les quatre absents à la fois.
+
+**Et le mot suit ce qu'il a sous ses ordres** : « Salarié absent ? » quand il
+a une équipe, **« Absent ? »** quand il travaille seul. Nommer un salarié à un
+artisan qui n'en a aucun décrit une organisation qu'il n'a pas — c'est la même
+faute que « Équipe ? » sur une case qui coche une personne (26 août 2026).
+
+**Le point d'interrogation dit ce que le bouton fait** : il ne note aucune
+absence, il ouvre la question « Qui ? ». C'est la grammaire que l'écran emploie
+déjà deux lignes plus bas, sur la pastille d'équipe.
+
+**Et le titre « Ce jour-là » a disparu** — *« on sait que c'est ce jour »* : la
+carte porte la date en tête, deux centimètres plus haut.
+
+| | |
+|---|---|
+| le geste | `GesteAbsence` dans `src/app/planning/PlanningClient.tsx` |
+| la planche | `appli/salarie-s-absente.html` — trois tailles de +, A retenu |
+| le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` |
+
+## §313 — « Déplacer » choisit un départ, et plus jamais une étendue
+
+**Sa décision du 10 septembre 2026**, après avoir essayé la planche
+`appli/deplacer-plus-simple.html` : *« fais celui-là, juste tu retires la
+journée. Il faut garder le bouton déplacer ; lorsque l'on clique dessus on
+arrive sur ce bouton matin - aprem, on clique sur l'un ou l'autre et le bouton
+disparaît, la sélection s'est faite et le bouton déplacer réapparaît. »*
+
+**« Retirer la journée » n'était pas un retrait cosmétique.** Ce troisième mot
+ne décrivait pas un départ mais une ÉTENDUE, et le choisir **réécrivait
+`dureeDemiJournees`**. La conséquence, jamais signalée par personne : « Matin »
+sur un chantier d'une journée le ramenait à une demi-journée, en silence.
+L'après-midi redevenait vendable, et cela ne se voyait ni au plan, ni au devis,
+ni à la facture — seulement le jour du chantier. §308 avait retiré ce défaut du
+chemin de la POSE ; il vivait encore dans celui du déplacement.
+
+**Ce qui a disparu, et c'est le cœur de ce lot :**
+
+| Ce qui existait | Pourquoi c'est parti |
+|---|---|
+| `QuandChantier` — « matin \| apres \| journee » | trois mots pour deux départs et une étendue mélangés |
+| `departEtDuree(quand, duree)` | traduisait ces trois mots en départ ET durée : il n'y a plus rien à traduire |
+| `quandDuChantier(c)` | disait lequel des trois décrivait un chantier ; la question devient « d'où part-il » |
+| `poseOfferte(duree)` | retirait celui des trois qui n'écrivait rien ; aucun des deux restants n'est mort |
+| `MOT_QUAND` | faisait doublon avec `MOT_DEMI`, qui dit déjà ces deux mots-là |
+| `estUnMomentValide` | acceptait « journee » de l'assistant — une dictée sans heure réservait la journée |
+
+**Le vocabulaire est désormais celui de la BASE** — `Moment` / `Demi`, « matin »
+ou « apres_midi », les deux valeurs que porte `creneau_debut` depuis la
+migration 0019. Une couche de traduction disparaît, et avec elle l'endroit où
+les deux vocabulaires pouvaient diverger (`CLAUDE.md` §3).
+
+**L'INTERRUPTEUR PLUTÔT QUE TROIS PASTILLES, et ce n'est pas un choix de
+style.** Sa remarque de la veille : *« j'ai l'impression que c'est inversé »*.
+Trois pastilles rondes dont une est allumée ne disent pas si l'allumée est là où
+le chantier EST ou là où il IRA — l'œil peut lire les deux. Un interrupteur ne
+se lit que dans un sens : la position tenue est l'état courant. `BasculeDemi`
+emploie `colors.plein` et `surPlein`, le couple des pastilles retenues de cet
+écran, pour rester lisible sur les deux chartes sombres.
+
+**ET LA JOURNÉE SE LIT DÉSORMAIS DANS SON ORDRE — matin, puis après-midi,
+toujours.** Sa réponse, le même jour : *« oui, matin puis aprèm »*.
+
+**Cette décision REVIENT sur sa règle du 21 août 2026**, et il faut le savoir
+avant de la défaire une troisième fois. Il avait alors demandé *« le nom
+toujours en premier ! »*, et `blocsDeLaJournee` posait donc les chantiers
+d'abord, les moitiés libres ensuite. Personne n'avait mesuré ce que cela
+produisait : sur un chantier posé l'APRÈS-MIDI, la fiche se lisait `APRÈS-MIDI`
+puis `MATIN`. Les deux lignes échangeaient leur place selon l'heure du chantier,
+et l'appui sur « Matin » les faisait sauter — c'est ce qu'il a lu comme une
+inversion. **Le défaut ne s'est vu ni dans un test, ni dans une relecture : il
+s'est vu en photographiant l'écran** (`scripts/capture-deplacer.ts`), la
+cinquième fois dans ce dépôt (`CLAUDE.md` §5).
+
+**Ce que cela coûte, et qu'il a accepté :** sur une journée dont seul
+l'après-midi est pris, la fiche s'ouvre sur « libre ». Une place stable vaut
+mieux qu'un nom en tête — une place stable se retrouve sans lire.
+
+Les deux passes de `blocsDeLaJournee` n'en font plus qu'une, et deux contrôles
+qui fixaient la règle d'août ont été retournés plutôt que contournés.
+
+**CE QUE LES CONTRÔLES ONT DÛ DÉSAPPRENDRE.** Trois suites fixaient exactement
+ce qu'il fait retirer — « Matin réserve une demi-journée, Journée en réserve
+deux » — et l'une d'elles s'en servait pour INSTALLER une durée avant de la
+vérifier. Elles visent maintenant la règle qui remplace : le départ s'écrit, la
+durée du devis ne bouge pas, et cela vaut pour toutes les durées au lieu du seul
+cas au-delà d'un jour (`CLAUDE.md` §5 bis).
+
+## §314 — La flèche recule dans l'historique, et c'est ce qui rend sa place
+
+**Sa remarque du 9 septembre 2026 :** *« Si je clique sur un client tout en bas
+de la liste, je fais retour, il me remet en haut de la liste. Je veux rester où
+j'étais ! »* Trente-sept clients ; il redescendait la liste après chaque fiche.
+
+### DEUX SESSIONS, DEUX MOITIÉS DU MÊME BOUTON
+
+Le §311 a été écrit le même soir, par une autre session, et il corrige **où** la
+flèche mène — le journal de l'onglet, à la place d'une adresse écrite d'avance.
+Ce paragraphe-ci corrige **comment** elle y va. Les deux se complètent ; ils ne
+se remplacent pas.
+
+| | |
+|---|---|
+| §311 — le journal | **où** la flèche mène |
+| §312 — la marque d'historique | **par quel chemin** elle y va, et donc si la place est rendue |
+
+**Le premier jet de ce lot était une seconde flèche complète**, avec son propre
+souvenir du chemin. Elle a été **jetée** à la fusion : deux pièces pour un même
+bouton, c'est exactement ce que le §3 interdit. Ce qui en reste tient en une
+question de plus, posée à l'endroit où l'autre session avait déjà mis la sienne.
+
+### CHERCHER LE DÉFAUT DANS LA LISTE AURAIT ÉTÉ UN PANSEMENT
+
+La flèche est un `<Link>` : une navigation **en avant** vers l'écran précédent.
+Next.js pose une page neuve en haut, et il a raison — c'est ce qu'on attend d'un
+lien. Mais le geste, lui, est un **retour**.
+
+Écrire une mémoire de défilement pour la liste des clients aurait fabriqué une
+seconde vérité à côté de celle que le navigateur tient déjà, et laissé la flèche
+fausse sur les quarante-huit autres écrans (`CLAUDE.md` §4 quater).
+
+### LA MESURE, AVANT LE CORRECTIF
+
+Version bâtie, écran du patron, quarante-sept clients descendus jusqu'au bout :
+
+| Le geste | Où l'on retombe |
+|---|---|
+| la flèche de l'écran | **0 px** |
+| le retour du navigateur | **2 941 px** — sa place exacte |
+
+Le navigateur savait déjà le faire. Il n'y avait rien à inventer : il fallait
+cesser de l'en empêcher.
+
+### ON NE RECULE QUE SUR PREUVE
+
+`marquerLaProvenance` pose sur chaque entrée d'historique l'adresse d'où elle a
+été ouverte ; `onPeutReculerVers` la relit. La flèche ne recule que si l'entrée
+d'avant est **littéralement** la destination que le journal a choisie. Sinon, le
+lien fait son travail comme avant.
+
+**LES TROIS OBJECTIONS À `history.back()` DU §311 TIENNENT TOUJOURS**, et aucune
+n'est contournée — c'est la condition pour que les deux mécanismes cohabitent :
+
+| l'objection | pourquoi elle ne mord pas ici |
+|---|---|
+| *« la flèche est un `<Link>`, on l'ouvre dans un onglet »* | elle en reste un, avec sa vraie adresse ; seul l'appui simple est intercepté |
+| *« `history.back()` ment après un rechargement ou un signet »* | une page rechargée ne porte aucune marque : sans marque, on ne recule pas |
+| *« après un enregistrement, il redéposerait sur le formulaire quitté »* | c'est le journal qui choisit la destination, et il a retiré ce formulaire ; la marque ne peut pas correspondre |
+
+**La marque ne choisit jamais où l'on va.** Elle autorise seulement à y aller par
+le chemin qui rend sa place.
+
+### CE QUE LE CORRECTIF RETIRE
+
+L'entrée d'historique empilée à chaque aller-retour. Il fallait auparavant
+appuyer sur le retour du navigateur autant de fois qu'on avait ouvert de fiches
+pour ressortir de la liste.
+
+### CE QU'IL COÛTE, ET QUI EST MESURÉ
+
+Un retour sert l'écran depuis la réserve de Next.js : une donnée changée en base
+pendant qu'on était sur la fiche n'apparaît pas au retour. **Ce n'est pas ce lot
+qui l'apporte** — le geste de retour du navigateur, que le patron emploie déjà,
+est stale de la même façon, et depuis toujours. Les soixante-seize
+`revalidatePath` du dépôt vident la réserve dès qu'une modification passe par
+l'application ; le cas mesuré — écrire en base par-dessus — n'est aucun de ses
+gestes.
+
+**Un rafraîchissement sur `popstate` a été écrit, essayé, puis RETIRÉ** : il
+rendait les données fraîches et remettait le défilement à zéro, donc il défaisait
+le correctif. Le faire tenir demandait un `setTimeout` calé sur la restauration
+du navigateur — un pansement au sens exact du §4 quater, qui serait revenu sur un
+téléphone plus lent. Le point ouvert et sa mesure sont dans `TODO.md`.
+
+### LE CONTRÔLE SAIT ÉCHOUER
+
+`scripts/test-retour-garde-la-place-e2e.ts` déroule le geste entier — descendre,
+ouvrir un client, revenir — et vise la RÈGLE, jamais un libellé : une position de
+défilement, une adresse. Confronté à la version d'avant, il rougit sur deux cas
+et laisse verts les deux garde-fous. Il pose lui-même ses trente clients : sur le
+jeu de démonstration, la liste tient dans l'écran et le contrôle mesurerait zéro.
+
+## §315 — La ligne d'un client annonce ce que sa FICHE contient
+
+**Sa question du 9 septembre 2026 :** *« À quoi correspond le nombre de
+chantier ? Certains clients ont 8 chantiers, on s'attend à avoir 8 devis alors
+qu'il y en a 0 »*. Puis, la décision : *« remplace par la dernière chose qui
+s'est produit »*.
+
+### LE COMPTE ÉTAIT JUSTE, ET C'EST BIEN LE PROBLÈME
+
+`listerFichesClients` comptait tous les chantiers rattachés au client, les
+supprimés exclus. Rien de faux. Mais un chantier naît d'une dictée, de « Nouveau
+chantier », du bouton « Refaire » — **avant** qu'il y ait le moindre document.
+Le compte annonçait donc du travail que la fiche n'avait pas à montrer, et c'est
+cette promesse qui l'a envoyé vérifier pour rien.
+
+**Un chiffre exact peut mentir** : ce qu'il annonce compte autant que ce qu'il
+mesure.
+
+### LA RÈGLE QUI REMPLACE, EN UNE PHRASE
+
+**La ligne annonce ce que la fiche contient.** Les trois candidats de
+`derniereTraceDuClient` sont exactement les trois registres de la fiche — Devis,
+Facture, Fiche —, et rien d'autre. Ce qu'il lit dans la liste, il le trouve en
+ouvrant : c'est ce qui rend la déception impossible à refaire.
+
+**Un chantier ouvert n'en est donc pas un** : il ne se voit nulle part sur la
+fiche, et l'annoncer recréerait le défaut sous un autre nom.
+
+| | |
+|---|---|
+| un devis | **parti** (`statut = 'envoye'`) |
+| une facture | **émise** |
+| une fiche d'entretien | **envoyée**, jeton posé |
+
+Les mêmes conditions que la fiche, mot pour mot : deux jeux de conditions
+finiraient par se contredire, et c'est lui qui verrait la différence d'un écran
+à l'autre (`CLAUDE.md` §3).
+
+**À jour égal, le point le plus AVANCÉ du parcours** — facture, puis devis, puis
+fiche. Un chantier fait, facturé et devisé le même jour est un chantier facturé ;
+l'ordre d'arrivée en base, lui, ne promet rien.
+
+### CE QUI A ÉTÉ RETIRÉ
+
+`FicheClient.chantiers` n'existe plus : plus personne ne le lisait
+(`CLAUDE.md` §4 quinquies). Les suites qui s'en servaient pour éprouver
+l'isolation et la suppression visent maintenant `liste`, qui porte les mêmes
+chantiers et d'où tout le reste se déduit — un repère plus profond qu'un compte
+(`CLAUDE.md` §5 bis).
+
+### DEUX DÉFAUTS SORTIS DE LA CAPTURE, ET D'AUCUN TEST
+
+C'est la cinquième fois dans ce dépôt (`CLAUDE.md` §5).
+
+| Ce que l'image a montré | Ce qui a été fait |
+|---|---|
+| « 10 Rue de Nantes 77400 Lagny-sur-Marne · Devis 7 sept. » déborde des 316 px : écrits d'un seul tenant, ce sont les DERNIERS mots qui tombent — la date disparaissait exactement chez les clients à longue adresse | l'adresse et la date sont deux boîtes : l'adresse se rogne, la date jamais |
+| un client sans adresse ni document laissait une seconde ligne VIDE — dix-huit pixels de trou sous son nom | rien à dire, rien à l'écran, et pas même la place |
+| « 44300 Nantes· Devis 5 sept. » collé : une boîte flexible ne garde pas le blanc qui la commence | l'espace de séparation est une marge, pas un caractère |
+
+**L'année tombe quand c'est celle qui court** (`jourDeLaLigne`). Ce n'est pas un
+goût : ses quatre caractères sont exactement ce qui faisait déborder la ligne, et
+sans eux elle mesure ce que mesurait « · 8 chantiers », qu'elle remplace. Elle
+reparaît dès qu'elle apprend quelque chose — « Devis 12 juin 2025 », c'est le
+client qu'on n'a pas revu. Le tableau des mois reste celui de `jourCourt` : un
+second dirait « sept. » d'un côté et « sep. » de l'autre.
+
+### CE QUE LES CONTRÔLES TIENNENT
+
+| Suite | Ce qu'elle éprouve |
+|---|---|
+| `test-documents-du-client.ts` | la règle pure : le plus récent, l'égalité de jour, le silence quand rien n'est parti, l'année |
+| `test-liste-clients.ts` | qu'un chantier sans document n'annonce rien, et qu'un devis parti se lit avec son jour |
+| `test-ligne-du-client-e2e.ts` | **les boîtes** — l'adresse qui se rogne, la date qui ne se coupe pas, la ligne vide qui n'existe plus, et le compte qui ne revient pas |
