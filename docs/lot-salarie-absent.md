@@ -45,11 +45,11 @@ signe, et refuse toujours les quatre absents à la fois.
 
 ---
 
-## Ce qui reste ouvert, et que je n'ai pas tranché
+## Ce qui a été tranché après coup
 
-**Quand vous n'avez aucun salarié**, l'écran garde votre phrase — « Je ne suis
-pas là ». « Salarié absent ? » n'y voudrait rien dire. Vous ne vous êtes pas
-prononcé : dites-le si vous voulez un seul mot pour les deux cas.
+**Quand vous n'avez aucun salarié**, le geste dit **« + Absent ? »** — votre
+réponse du 9 septembre. Le mot « salarié » tomberait à faux quand vous n'en avez
+aucun. Rien ne reste ouvert sur ce geste.
 
 ---
 

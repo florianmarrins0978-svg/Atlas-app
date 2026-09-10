@@ -26645,6 +26645,7 @@ retours d'affilée, le rechargement, et la sortie déclarée à froid
 erreurs ci-dessus, et son message rend le journal de l'onglet en clair — sans
 quoi elle n'aurait dit qu'« délai dépassé ».
 
+
 ---
 
 ## §312 — Le geste d'une absence : ce qui remplace le cerne, c'est le +
@@ -26673,6 +26674,11 @@ geste invisible — il faut recommencer, et sur un chantier on ne recommence pas
 `test-pas-la-ce-jour-e2e.ts` exigeait « un cerne, une ombre ou un fond » : il
 aurait réclamé ce que le patron venait de faire retirer. Il accepte désormais
 **un quatrième signe, le +**, et refuse toujours les quatre absents à la fois.
+
+**Et le mot suit ce qu'il a sous ses ordres** : « Salarié absent ? » quand il
+a une équipe, **« Absent ? »** quand il travaille seul. Nommer un salarié à un
+artisan qui n'en a aucun décrit une organisation qu'il n'a pas — c'est la même
+faute que « Équipe ? » sur une case qui coche une personne (26 août 2026).
 
 **Le point d'interrogation dit ce que le bouton fait** : il ne note aucune
 absence, il ouvre la question « Qui ? ». C'est la grammaire que l'écran emploie
@@ -26754,3 +26760,172 @@ deux » — et l'une d'elles s'en servait pour INSTALLER une durée avant de la
 vérifier. Elles visent maintenant la règle qui remplace : le départ s'écrit, la
 durée du devis ne bouge pas, et cela vaut pour toutes les durées au lieu du seul
 cas au-delà d'un jour (`CLAUDE.md` §5 bis).
+
+## §314 — La flèche recule dans l'historique, et c'est ce qui rend sa place
+
+**Sa remarque du 9 septembre 2026 :** *« Si je clique sur un client tout en bas
+de la liste, je fais retour, il me remet en haut de la liste. Je veux rester où
+j'étais ! »* Trente-sept clients ; il redescendait la liste après chaque fiche.
+
+### DEUX SESSIONS, DEUX MOITIÉS DU MÊME BOUTON
+
+Le §311 a été écrit le même soir, par une autre session, et il corrige **où** la
+flèche mène — le journal de l'onglet, à la place d'une adresse écrite d'avance.
+Ce paragraphe-ci corrige **comment** elle y va. Les deux se complètent ; ils ne
+se remplacent pas.
+
+| | |
+|---|---|
+| §311 — le journal | **où** la flèche mène |
+| §312 — la marque d'historique | **par quel chemin** elle y va, et donc si la place est rendue |
+
+**Le premier jet de ce lot était une seconde flèche complète**, avec son propre
+souvenir du chemin. Elle a été **jetée** à la fusion : deux pièces pour un même
+bouton, c'est exactement ce que le §3 interdit. Ce qui en reste tient en une
+question de plus, posée à l'endroit où l'autre session avait déjà mis la sienne.
+
+### CHERCHER LE DÉFAUT DANS LA LISTE AURAIT ÉTÉ UN PANSEMENT
+
+La flèche est un `<Link>` : une navigation **en avant** vers l'écran précédent.
+Next.js pose une page neuve en haut, et il a raison — c'est ce qu'on attend d'un
+lien. Mais le geste, lui, est un **retour**.
+
+Écrire une mémoire de défilement pour la liste des clients aurait fabriqué une
+seconde vérité à côté de celle que le navigateur tient déjà, et laissé la flèche
+fausse sur les quarante-huit autres écrans (`CLAUDE.md` §4 quater).
+
+### LA MESURE, AVANT LE CORRECTIF
+
+Version bâtie, écran du patron, quarante-sept clients descendus jusqu'au bout :
+
+| Le geste | Où l'on retombe |
+|---|---|
+| la flèche de l'écran | **0 px** |
+| le retour du navigateur | **2 941 px** — sa place exacte |
+
+Le navigateur savait déjà le faire. Il n'y avait rien à inventer : il fallait
+cesser de l'en empêcher.
+
+### ON NE RECULE QUE SUR PREUVE
+
+`marquerLaProvenance` pose sur chaque entrée d'historique l'adresse d'où elle a
+été ouverte ; `onPeutReculerVers` la relit. La flèche ne recule que si l'entrée
+d'avant est **littéralement** la destination que le journal a choisie. Sinon, le
+lien fait son travail comme avant.
+
+**LES TROIS OBJECTIONS À `history.back()` DU §311 TIENNENT TOUJOURS**, et aucune
+n'est contournée — c'est la condition pour que les deux mécanismes cohabitent :
+
+| l'objection | pourquoi elle ne mord pas ici |
+|---|---|
+| *« la flèche est un `<Link>`, on l'ouvre dans un onglet »* | elle en reste un, avec sa vraie adresse ; seul l'appui simple est intercepté |
+| *« `history.back()` ment après un rechargement ou un signet »* | une page rechargée ne porte aucune marque : sans marque, on ne recule pas |
+| *« après un enregistrement, il redéposerait sur le formulaire quitté »* | c'est le journal qui choisit la destination, et il a retiré ce formulaire ; la marque ne peut pas correspondre |
+
+**La marque ne choisit jamais où l'on va.** Elle autorise seulement à y aller par
+le chemin qui rend sa place.
+
+### CE QUE LE CORRECTIF RETIRE
+
+L'entrée d'historique empilée à chaque aller-retour. Il fallait auparavant
+appuyer sur le retour du navigateur autant de fois qu'on avait ouvert de fiches
+pour ressortir de la liste.
+
+### CE QU'IL COÛTE, ET QUI EST MESURÉ
+
+Un retour sert l'écran depuis la réserve de Next.js : une donnée changée en base
+pendant qu'on était sur la fiche n'apparaît pas au retour. **Ce n'est pas ce lot
+qui l'apporte** — le geste de retour du navigateur, que le patron emploie déjà,
+est stale de la même façon, et depuis toujours. Les soixante-seize
+`revalidatePath` du dépôt vident la réserve dès qu'une modification passe par
+l'application ; le cas mesuré — écrire en base par-dessus — n'est aucun de ses
+gestes.
+
+**Un rafraîchissement sur `popstate` a été écrit, essayé, puis RETIRÉ** : il
+rendait les données fraîches et remettait le défilement à zéro, donc il défaisait
+le correctif. Le faire tenir demandait un `setTimeout` calé sur la restauration
+du navigateur — un pansement au sens exact du §4 quater, qui serait revenu sur un
+téléphone plus lent. Le point ouvert et sa mesure sont dans `TODO.md`.
+
+### LE CONTRÔLE SAIT ÉCHOUER
+
+`scripts/test-retour-garde-la-place-e2e.ts` déroule le geste entier — descendre,
+ouvrir un client, revenir — et vise la RÈGLE, jamais un libellé : une position de
+défilement, une adresse. Confronté à la version d'avant, il rougit sur deux cas
+et laisse verts les deux garde-fous. Il pose lui-même ses trente clients : sur le
+jeu de démonstration, la liste tient dans l'écran et le contrôle mesurerait zéro.
+
+## §315 — La ligne d'un client annonce ce que sa FICHE contient
+
+**Sa question du 9 septembre 2026 :** *« À quoi correspond le nombre de
+chantier ? Certains clients ont 8 chantiers, on s'attend à avoir 8 devis alors
+qu'il y en a 0 »*. Puis, la décision : *« remplace par la dernière chose qui
+s'est produit »*.
+
+### LE COMPTE ÉTAIT JUSTE, ET C'EST BIEN LE PROBLÈME
+
+`listerFichesClients` comptait tous les chantiers rattachés au client, les
+supprimés exclus. Rien de faux. Mais un chantier naît d'une dictée, de « Nouveau
+chantier », du bouton « Refaire » — **avant** qu'il y ait le moindre document.
+Le compte annonçait donc du travail que la fiche n'avait pas à montrer, et c'est
+cette promesse qui l'a envoyé vérifier pour rien.
+
+**Un chiffre exact peut mentir** : ce qu'il annonce compte autant que ce qu'il
+mesure.
+
+### LA RÈGLE QUI REMPLACE, EN UNE PHRASE
+
+**La ligne annonce ce que la fiche contient.** Les trois candidats de
+`derniereTraceDuClient` sont exactement les trois registres de la fiche — Devis,
+Facture, Fiche —, et rien d'autre. Ce qu'il lit dans la liste, il le trouve en
+ouvrant : c'est ce qui rend la déception impossible à refaire.
+
+**Un chantier ouvert n'en est donc pas un** : il ne se voit nulle part sur la
+fiche, et l'annoncer recréerait le défaut sous un autre nom.
+
+| | |
+|---|---|
+| un devis | **parti** (`statut = 'envoye'`) |
+| une facture | **émise** |
+| une fiche d'entretien | **envoyée**, jeton posé |
+
+Les mêmes conditions que la fiche, mot pour mot : deux jeux de conditions
+finiraient par se contredire, et c'est lui qui verrait la différence d'un écran
+à l'autre (`CLAUDE.md` §3).
+
+**À jour égal, le point le plus AVANCÉ du parcours** — facture, puis devis, puis
+fiche. Un chantier fait, facturé et devisé le même jour est un chantier facturé ;
+l'ordre d'arrivée en base, lui, ne promet rien.
+
+### CE QUI A ÉTÉ RETIRÉ
+
+`FicheClient.chantiers` n'existe plus : plus personne ne le lisait
+(`CLAUDE.md` §4 quinquies). Les suites qui s'en servaient pour éprouver
+l'isolation et la suppression visent maintenant `liste`, qui porte les mêmes
+chantiers et d'où tout le reste se déduit — un repère plus profond qu'un compte
+(`CLAUDE.md` §5 bis).
+
+### DEUX DÉFAUTS SORTIS DE LA CAPTURE, ET D'AUCUN TEST
+
+C'est la cinquième fois dans ce dépôt (`CLAUDE.md` §5).
+
+| Ce que l'image a montré | Ce qui a été fait |
+|---|---|
+| « 10 Rue de Nantes 77400 Lagny-sur-Marne · Devis 7 sept. » déborde des 316 px : écrits d'un seul tenant, ce sont les DERNIERS mots qui tombent — la date disparaissait exactement chez les clients à longue adresse | l'adresse et la date sont deux boîtes : l'adresse se rogne, la date jamais |
+| un client sans adresse ni document laissait une seconde ligne VIDE — dix-huit pixels de trou sous son nom | rien à dire, rien à l'écran, et pas même la place |
+| « 44300 Nantes· Devis 5 sept. » collé : une boîte flexible ne garde pas le blanc qui la commence | l'espace de séparation est une marge, pas un caractère |
+
+**L'année tombe quand c'est celle qui court** (`jourDeLaLigne`). Ce n'est pas un
+goût : ses quatre caractères sont exactement ce qui faisait déborder la ligne, et
+sans eux elle mesure ce que mesurait « · 8 chantiers », qu'elle remplace. Elle
+reparaît dès qu'elle apprend quelque chose — « Devis 12 juin 2025 », c'est le
+client qu'on n'a pas revu. Le tableau des mois reste celui de `jourCourt` : un
+second dirait « sept. » d'un côté et « sep. » de l'autre.
+
+### CE QUE LES CONTRÔLES TIENNENT
+
+| Suite | Ce qu'elle éprouve |
+|---|---|
+| `test-documents-du-client.ts` | la règle pure : le plus récent, l'égalité de jour, le silence quand rien n'est parti, l'année |
+| `test-liste-clients.ts` | qu'un chantier sans document n'annonce rien, et qu'un devis parti se lit avec son jour |
+| `test-ligne-du-client-e2e.ts` | **les boîtes** — l'adresse qui se rogne, la date qui ne se coupe pas, la ligne vide qui n'existe plus, et le compte qui ne revient pas |

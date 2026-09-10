@@ -178,7 +178,7 @@ async function main() {
 
     const fiche = await chargerFicheClient(ctx, client.id);
     assert.ok(fiche, "la fiche est introuvable");
-    assert.equal(fiche.chantiers, 2);
+    assert.equal(fiche.liste.length, 2);
     // 450 + 300 = 750 HT, TVA 20 % → 900 TTC.
     assert.equal(fiche.facture, "900.00", "le total ne correspond pas aux factures émises");
     assert.equal(fiche.du, "900.00", "rien n'est réglé : tout est encore dû");
@@ -483,7 +483,7 @@ async function main() {
     await getOuCreerDevisBrouillon(ctx, c.id);
 
     const fiche = await chargerFicheClient(ctx, client.id);
-    assert.equal(fiche!.chantiers, 1, "le chantier compte, lui");
+    assert.equal(fiche!.liste.length, 1, "le chantier compte, lui");
     assert.equal(fiche!.facture, null, "« 0 € » se lirait comme un mauvais client");
     assert.equal(fiche!.du, null);
   });
@@ -532,7 +532,7 @@ async function main() {
     await supprimerChantier(ctx, jete.id);
 
     const fiche = await chargerFicheClient(ctx, client.id);
-    assert.equal(fiche!.chantiers, 1, "le chantier supprimé compte encore");
+    assert.equal(fiche!.liste.length, 1, "le chantier supprimé compte encore");
     assert.ok(!fiche!.liste.some((c) => c.nom === "Jeté"), "le chantier supprimé s'affiche encore");
   });
 
@@ -563,7 +563,7 @@ async function main() {
     await chantierFacture(b, clientDeB.id, "Chez B", [["Élagage", "900.00"]]);
 
     const fiche = await chargerFicheClient(a, clientDeA.id);
-    assert.equal(fiche!.chantiers, 1, "un chantier d'une autre entreprise s'est glissé dans la fiche");
+    assert.equal(fiche!.liste.length, 1, "un chantier d'une autre entreprise s'est glissé dans la fiche");
     assert.equal(fiche!.facture, "600.00", "500 HT → 600 TTC : le chantier de B ne doit rien y ajouter");
   });
 
@@ -574,7 +574,7 @@ async function main() {
 
     const fiche = await chargerFicheClient(ctx, client.id);
     assert.ok(fiche, "une fiche vide vaut mieux qu'une page introuvable");
-    assert.equal(fiche.chantiers, 0);
+    assert.equal(fiche.liste.length, 0);
     assert.equal(fiche.facture, null);
     assert.deepEqual(fiche.prestations, []);
     assert.equal(fiche.client.nom, "M. Tout Neuf");

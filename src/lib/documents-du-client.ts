@@ -192,3 +192,100 @@ export function nomDuFichierDeLaPiece(piece: PieceDuClient): string {
   // Ni numéro ni jour : on ne fabrique pas un nom qui ferait croire à une date.
   return `${genre}.pdf`;
 }
+
+/**
+ * LA DERNIÈRE CHOSE QUI S'EST PRODUITE CHEZ UN CLIENT.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa demande du 9 septembre 2026 :** *« Remplace par la dernière chose qui
+ * s'est produit »*, après avoir demandé à quoi correspondait le compte de
+ * chantiers de la liste — *« certains clients ont 8 chantiers, on s'attend à
+ * avoir 8 devis alors qu'il y en a 0 »*.
+ *
+ * **Le compte était juste, et c'est bien le problème.** Il comptait tous les
+ * chantiers ouverts, quel que soit leur état : un chantier naît d'une dictée,
+ * bien avant qu'il y ait le moindre devis. La ligne annonçait donc du travail
+ * là où la fiche n'avait rien à montrer, et c'est cette promesse-là qui l'a
+ * envoyé vérifier.
+ *
+ * **LA RÈGLE QUI REMPLACE, ET ELLE TIENT EN UNE PHRASE : la ligne annonce ce
+ * que la fiche contient.** Les trois candidats sont exactement les trois
+ * registres de la fiche — Devis, Facture, Fiche — et rien d'autre. Ce qu'il lit
+ * dans la liste, il le trouve en ouvrant ; c'est ce qui rend la déception
+ * impossible à refaire.
+ *
+ * **Un chantier ouvert n'en est donc PAS un.** Il ne se voit nulle part sur la
+ * fiche, et l'annoncer recréerait le défaut sous un autre nom.
+ *
+ * **À égalité de jour, le plus AVANCÉ du parcours gagne** — facture, puis
+ * devis, puis fiche. Un devis envoyé et facturé le même jour est un chantier
+ * facturé : c'est l'état le plus récent des deux, et l'ordre du parcours le dit
+ * mieux que l'ordre d'arrivée en base, qui ne promet rien.
+ */
+export type TraceDuClient = {
+  /** Le mot qu'on lit sur la ligne — celui du registre de la fiche. */
+  quoi: "Devis" | "Facture" | "Fiche";
+  jour: string;
+};
+
+/** Du plus avancé au moins avancé : ce qui départage deux dates identiques. */
+const PARCOURS = ["Facture", "Devis", "Fiche"] as const;
+
+export function derniereTraceDuClient(jours: {
+  /** Le jour du dernier devis PARTI. `null` : aucun n'est parti. */
+  devis: string | null;
+  /** Le jour de la dernière facture ÉMISE. */
+  facture: string | null;
+  /** Le jour de la dernière fiche d'entretien ENVOYÉE. */
+  fiche: string | null;
+}): TraceDuClient | null {
+  const candidats: TraceDuClient[] = [];
+  if (jours.facture) candidats.push({ quoi: "Facture", jour: jours.facture });
+  if (jours.devis) candidats.push({ quoi: "Devis", jour: jours.devis });
+  if (jours.fiche) candidats.push({ quoi: "Fiche", jour: jours.fiche });
+  if (candidats.length === 0) return null;
+
+  return candidats.reduce((garde, essai) => {
+    const ecart = essai.jour.localeCompare(garde.jour);
+    if (ecart > 0) return essai;
+    if (ecart < 0) return garde;
+    return PARCOURS.indexOf(essai.quoi) < PARCOURS.indexOf(garde.quoi) ? essai : garde;
+  });
+}
+
+/**
+ * La date telle qu'elle s'écrit sur UNE LIGNE DE LISTE : sans l'année quand
+ * c'est celle qui court.
+ *
+ * **Née d'une mesure, pas d'un goût — 9 septembre 2026.** La ligne d'un client
+ * porte son adresse ET la dernière chose qui s'est produite. Sur son téléphone,
+ * la deuxième ligne dispose de 316 px : « 4 Clos Moutier 78200
+ * Fontenay-Mauvoisin · Devis 2 sept. 2026 » n'y tient pas, et se coupe. Or
+ * l'adresse est ce qui sépare quatre clients du même nom (sa demande du
+ * 3 septembre) — la rogner pour afficher une année qu'on connaît déjà, c'est
+ * échanger ce qui sert contre ce qui ne sert pas.
+ *
+ * **Les quatre caractères de l'année suffisent à faire la différence** : sans
+ * eux, la ligne mesure exactement ce que mesurait « · 8 chantiers », qu'elle
+ * remplace. Rien ne se coupe qui ne se coupait déjà.
+ *
+ * **Et l'année reparaît dès qu'elle apprend quelque chose.** Un devis de l'an
+ * dernier s'écrit « 12 juin 2025 » : c'est précisément le client qu'on n'a pas
+ * revu, et l'omettre laisserait croire à un document récent.
+ *
+ * **Le même mois, la même abréviation, la même source** que `jourCourt` — un
+ * second tableau de mois finirait par dire « sept. » d'un côté et « sep. » de
+ * l'autre (`CLAUDE.md` §3).
+ *
+ * @param aujourdHui Le jour tel que l'application le compte, **posé au
+ * serveur** : lu dans le navigateur, il donnerait l'horloge du téléphone, et
+ * l'année changerait de valeur entre minuit et deux heures du matin.
+ */
+export function jourDeLaLigne(iso: string, aujourdHui: string): string {
+  const complet = jourCourt(iso);
+  const anneeDuJour = aujourdHui.slice(0, 4);
+  // `jourCourt` rend la date telle quelle quand il ne sait pas la lire : on ne
+  // rogne alors rien du tout, plutôt que d'amputer une chaîne inconnue.
+  if (!complet.endsWith(` ${anneeDuJour}`)) return complet;
+  return complet.slice(0, -(anneeDuJour.length + 1));
+}
