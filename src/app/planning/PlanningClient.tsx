@@ -130,6 +130,15 @@ export type ChantierPlanning = {
   datePlanifiee: string | null;
   creneauDebut: string | null;
   dureeDemiJournees: number | null;
+  /**
+   * LES DEMI-JOURNÉES OÙ IL EST POSÉ, quand il ne tient plus en un bloc
+   * (migration 0085, sa demande du 10 septembre 2026).
+   *
+   * **Vide vaut le bloc calculé de `datePlanifiee` + `creneauDebut` + la
+   * durée** : rien n'a été recopié à la migration, et lire « aucun créneau »
+   * comme « rien d'occupé » viderait le calendrier de tout ce qui est déjà pris.
+   */
+  creneaux?: readonly { jour: string; moment: "matin" | "apres_midi" }[] | null;
   dureePrevue?: string | null;
   /** Les rangs d'équipe cochés, demi-journée par demi-journée (migration 0058). */
   equipes: EquipesParDemi;

@@ -10,8 +10,11 @@ import {
   supprimerChantier,
   SuppressionChantierRefusee,
   basculerEquipeDuChantier,
+  libererDemiJournee,
+  reposerDemiJournee,
+  creneauxDunChantier,
 } from "@/server/repositories/chantiers";
-import type { Moment } from "@/lib/disponibilites";
+import type { JourIso, Moment } from "@/lib/disponibilites";
 // (le départ se dit avec le vocabulaire de la base : `Moment`)
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
@@ -162,6 +165,58 @@ export async function deplacerChantierAction(
       dureeDemiJournees: row.dureeDemiJournees ?? null,
     },
   };
+}
+
+/** Ce qu'un chantier occupe après le geste — l'écran repeint avec ça. */
+export type ResultatCreneaux =
+  | { succes: true; creneaux: { jour: string; moment: Moment }[] }
+  | { succes: false; erreur: string };
+
+async function creneauxApres(ctx: Awaited<ReturnType<typeof getCurrentCtx>>, chantierId: string) {
+  const poses = await creneauxDunChantier(ctx, chantierId);
+  return poses.map((c) => ({ jour: c.jour, moment: c.moment }));
+}
+
+/**
+ * LIBÉRER UNE DEMI-JOURNÉE — sa demande du 10 septembre 2026.
+ *
+ * *« Je clique sur le matin, il devient vert et le matin du vendredi devient
+ * libre, et une demi-journée de Mr Julien sort. »* Le chantier garde sa durée :
+ * il annonce aussitôt qu'il lui manque une demi-journée, et elle se repose où
+ * il veut.
+ */
+export async function libererDemiJourneeAction(
+  chantierId: string,
+  jour: string,
+  demi: Moment
+): Promise<ResultatCreneaux> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "libérer une demi-journée");
+  await exigerChantierDansSaPortee(ctx, chantierId, "libérer une demi-journée");
+  const r = await libererDemiJournee(ctx, chantierId, jour as JourIso, demi);
+  if (!r) return { succes: false, erreur: "Cette demi-journée n'est pas celle de ce chantier." };
+  await porterChantierDansAgenda(ctx, chantierId);
+  return { succes: true, creneaux: await creneauxApres(ctx, chantierId) };
+}
+
+/**
+ * REPOSER LA DEMI-JOURNÉE qui attendait une place.
+ *
+ * *« La demi-journée de Mr Julien qui a été retirée peut être replacée. »* Elle
+ * se pose où il veut — un autre jour, un autre moment.
+ */
+export async function reposerDemiJourneeAction(
+  chantierId: string,
+  jour: string,
+  demi: Moment
+): Promise<ResultatCreneaux> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "reposer une demi-journée");
+  await exigerChantierDansSaPortee(ctx, chantierId, "reposer une demi-journée");
+  const r = await reposerDemiJournee(ctx, chantierId, jour as JourIso, demi);
+  if (!r) return { succes: false, erreur: "Ce chantier n'attend plus de demi-journée." };
+  await porterChantierDansAgenda(ctx, chantierId);
+  return { succes: true, creneaux: await creneauxApres(ctx, chantierId) };
 }
 
 /**

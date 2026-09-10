@@ -616,6 +616,21 @@ async function lirePose(
 }
 
 /**
+ * CE QU'UN CHANTIER OCCUPE, tel que l'écran doit le repeindre.
+ *
+ * **Le repli compris** : un chantier jamais morcelé n'a aucune ligne, et rendre
+ * une liste vide ferait disparaître ses demi-journées de l'écran juste après le
+ * geste — puis réapparaître au rechargement.
+ */
+export async function creneauxDunChantier(ctx: Ctx, chantierId: string): Promise<Creneau[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const pose = await lirePose(tx, ctx, chantierId);
+    if (!pose) return [];
+    return creneauxOccupes(pose, await lireLesCreneaux(tx, chantierId));
+  });
+}
+
+/**
  * LIBÉRER UNE DEMI-JOURNÉE — sa demande du 10 septembre 2026.
  *
  * *« Je clique sur le matin, il devient vert et le matin du vendredi devient
@@ -1000,9 +1015,15 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
       parChantier.set(a.chantierId, siennes);
     }
 
+    // **Où chacun est POSÉ** — sans quoi l'écran repeindrait le bloc d'origine
+    // d'un chantier dont une demi-journée a été libérée, et montrerait pris un
+    // moment qu'il vient de rendre (migration 0085).
+    const creneauxPoses = await creneauxParChantier(tx, ctx.entrepriseId);
+
     return lignes.map((l) => ({
       ...l,
       equipes: rangerParDemi(parChantier.get(l.id) ?? []),
+      creneaux: creneauxPoses.get(l.id) ?? null,
     }));
   });
 }
