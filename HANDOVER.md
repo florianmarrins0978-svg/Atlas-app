@@ -8,7 +8,80 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
+## Dernier lot — LES BOUTONS GOOGLE ET APPLE NE MANQUAIENT PAS, ILS SE TAISAIENT (10 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | `.env.local` se **complète** à chaque allumage au lieu de n'être écrit qu'une fois ; le démarrage dit si Google et Apple sont branchés, et écrit l'adresse de retour à déclarer chez Google |
+| la migration | **aucune** |
+| les pièces | `.devcontainer/completer-env-local.sh` (neuf), `.devcontainer/demarrer.sh`, `docs/entrer-avec-google.md` |
+| les suites | `scripts/test-completer-env-local.ts` (6) |
+| le détail | `CHANGELOG.md` du 10 septembre, `TODO.md` en tête |
+
+**Le défaut n'était PAS dans l'écran.** Sa capture montrait la porte sans
+Google, sans Apple et sans le « ou ». Avec des clés d'essai, `/login` rend
+exactement la planche — vérifié en le regardant. La porte n'affiche un
+fournisseur que si SES DEUX clés sont posées, et c'est une règle qu'on ne
+défait pas (`src/lib/fournisseurs-connexion.ts`).
+
+**LE PIÈGE À NE PAS REFAIRE, et il vaut pour toute clé future :** un fichier de
+secours écrit sous un `if [ ! -f ]` fige les noms du jour de sa naissance. Une
+clé ajoutée ensuite n'atteint jamais un espace déjà allumé, et le symptôme est
+un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc à
+`completer-env-local.sh`, pas seulement à `src/server/env.ts`.
+
+---
+## Dernier lot — UNE DEMI-JOURNÉE SE LIBÈRE ET SE REPOSE (10 septembre 2026)
+
+| | |
+|---|---|
+| sa planche | `appli/liberer-une-demi-journee.html`, essayée puis retenue — *« je clique sur le matin, le matin du vendredi devient libre, et une demi-journée de Mr Julien sort ; la demi-journée retirée peut être replacée »* |
+| ce qui manquait | un chantier posé était un **bloc d'un seul tenant** : aucun endroit où écrire « le matin est rendu, l'après-midi tient » |
+| la table | `creneaux_chantier` (migration 0085) — une ligne par demi-journée occupée |
+| la règle | `duree_demi_journees` = ce qu'il **demande** · les créneaux = où il est **posé** · l'écart = ce qui **attend** en bas |
+| retiré | `deplacerChantierAction` — plus personne ne l'appelait |
+| les suites | `test-creneaux-chantier.ts` (12 cas), `test-liberer-une-demi-journee-e2e.ts` (8, **son geste de bout en bout**) |
+| le détail | `ARCHITECTURE.md` §322 |
+
+**LES DEUX PIÈGES À NE PAS REFABRIQUER.**
+
+1. **`ecrireLesCreneaux` est le SEUL écrivain** de `date_planifiee` et
+   `creneau_debut`, qu'il dérive des créneaux. Écrire l'un sans l'autre fait
+   diverger deux vérités, et un chantier finit posé deux fois.
+2. **Aucun créneau écrit vaut le BLOC calculé**, jamais « rien d'occupé » — la
+   migration n'a rien repris, délibérément. Le repli vit dans `creneauxPoses`
+   (`src/lib/disponibilites.ts`) et nulle part ailleurs : le contourner libère
+   d'un coup toutes les demi-journées déjà prises, et l'écran d'envoi propose au
+   client un jour où quelqu'un travaille.
+
+**Et trois défauts se sont vus À L'ÉCRAN, pas en suites** : le lendemain
+noirci au calendrier, « une journée » écrit sous un chantier qui n'occupe plus
+qu'une moitié, et le tiroir du bas qui ne s'ouvrait pas pour un morceau seul.
+Regarder une capture fait partie du travail (`CLAUDE.md` §5).
+
+---
+## Le même jour — UNE SESSION PREND SON DOSSIER TOUTE SEULE (10 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | `npm run session` remplace `claude` : le lanceur prend le premier dossier de travail libre et y ouvre la session. `npm run session 2` désigne un dossier précis |
+| la migration | **aucune** |
+| les pièces | `scripts/ouvrir-session.mjs`, `scripts/preparer-sessions.mjs` (racine par git, importable) |
+| les suites | `scripts/test-ouvrir-session.ts` (5), `test-preparer-sessions.ts` (7) |
+| le détail | `ARCHITECTURE.md` §321, `CLAUDE.md` §1.0 |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** un dossier est occupé par un PROCESSUS vivant,
+jamais par un fichier. Le lanceur attend sa session — son PID est la preuve. Le
+remplacer par un horodatage ou un battement, c'est refaire le défaut du verrou
+de la batterie du 9 septembre, dans un sens ou dans l'autre : un dossier libéré
+au milieu du travail, ou condamné pour toujours.
+
+**Et il ne crée aucun dossier** : quand tout est pris il refuse et donne la
+commande. Créer, c'est le métier de `sessions:preparer`, seul à savoir installer
+les dépendances et recopier le `.env`.
+
+---
+## Lot précédent — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
 
 | | |
 |---|---|

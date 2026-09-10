@@ -48,6 +48,103 @@ fiche pour un appelant qui n'existe pas — les deux passent `attache`. La fiche
 vit désormais DANS la carte du jour, et c'est le retrait de la carte qui
 l'aligne.
 
+### Rendre bavard le silence de Google et d'Apple, et tenir à jour le fichier de clés
+
+*« Voilà l'écran que je veux quand je clique sur se connecter. Voilà l'écran
+que j'ai ! »*, la planche et sa capture côte à côte. L'écran servi n'avait ni
+Google, ni Apple, ni le « ou » qui les sépare des champs.
+
+**Le code était juste, et vérifié en le regardant.** Avec des clés d'essai
+posées, `/login` rend exactement la planche — les deux gélules de marque, le
+séparateur, puis les champs. Ce qui manquait était sur sa machine : la porte
+n'affiche un fournisseur que si SES DEUX clés sont posées
+(`src/lib/fournisseurs-connexion.ts`), et aucune ne l'était.
+
+**Deux racines, corrigées, et la seconde comptait davantage.**
+
+1. *Le fichier de secours ne suivait plus Atlas.* `demarrer.sh` écrivait
+   `.env.local` sous un `if [ ! -f ]` : né au premier démarrage avec les deux
+   clés d'IA de l'époque, il gardait ces deux noms pour toujours. Une clé
+   ajoutée ensuite n'avait **aucun moyen d'atteindre un espace déjà allumé** —
+   le fichier créé pour lui épargner un geste était devenu la raison pour
+   laquelle le geste revenait. Il se complète désormais à chaque allumage,
+   sans jamais toucher une valeur déjà collée
+   (`.devcontainer/completer-env-local.sh`, `scripts/test-completer-env-local.ts`,
+   qui sait rougir contre l'ancienne version).
+
+2. *L'écran se taisait.* Deux boutons manquants ressemblent exactement à une
+   application en retard sur sa maquette : rien ne distinguait les deux cas, et
+   c'est ce qui lui a coûté la question. Le démarrage dit maintenant « Entrer
+   avec Google : le bouton ne s'affiche pas — clés absentes », **et écrit
+   l'adresse de retour à déclarer chez Google** — la seule valeur qui ne se
+   devine pas, puisqu'elle dépend de l'espace et que Google la compare au
+   caractère près.
+
+**Ce qui reste à lui, et que personne ne peut faire ici :** ouvrir l'identifiant
+OAuth chez Google (gratuit, un quart d'heure) — marche à suivre dans
+`docs/entrer-avec-google.md`. Apple demande le compte développeur payant : son
+bouton reste absent d'ici là, et c'est la bonne réponse plutôt qu'un bouton qui
+mène à une erreur.
+
+**Et DEUX ROUGES DORMAIENT SUR `main`, laissés par le lot de la veille.** La
+batterie les a sortis, et ils sont réparés ici :
+
+- `entrerAvecAction` — l'action qui envoie chez Google — n'avait ni garde de
+  rôle ni exemption écrite. Elle appartient à la première famille, celle d'avant
+  la session : la raison est désormais inscrite dans `EXEMPTIONS`, et elle nomme
+  ce qui la borne réellement (`estNomFournisseur`, la liste fermée) ;
+- le « ——— ou ——— » de la porte faisait rougir le contrôle des filets
+  d'intertitre. C'est un **séparateur de blocs**, de ceux qu'il a laissés le
+  25 août : deux traits autour d'un mot, pas un trait qui file d'un mot au bord.
+  Le contrôle sait maintenant les distinguer — et il rougit toujours sur la
+  forme solitaire, vérifié en la lui montrant.
+### Une demi-journée se libère, attend en bas, et se repose ailleurs
+
+**Sa planche, essayée puis retenue** (`appli/liberer-une-demi-journee.html`) :
+*« quand je clique sur déplacer, le bouton matin/aprem apparaît mais les deux
+sont vides, blancs. Je clique sur le matin, il devient vert et le matin du
+vendredi devient libre, et une demi-journée de Mr Julien sort ; à la place on
+ajoute un chantier comme d'habitude, et la demi-journée retirée peut être
+replacée. »*
+
+Le dépôt n'avait **aucun endroit** où écrire « le matin est rendu, l'après-midi
+tient » : un chantier posé était un bloc d'un seul tenant. D'où la table
+`creneaux_chantier` (migration 0085) — une ligne par demi-journée occupée. La
+durée, elle, ne bouge pas : c'est ce que le devis a vendu, et l'écart entre ce
+qu'il demande et ce qu'il occupe est justement ce qui attend une place.
+
+| | |
+|---|---|
+| `duree_demi_journees` | ce qu'il **demande** |
+| `creneaux_chantier` | où il est **posé** |
+| l'écart | ce qui **attend**, dans le tiroir du bas |
+
+**Rien n'a été repris pour les chantiers déjà posés, délibérément** : le repli
+« aucun créneau écrit vaut le bloc calculé » vit dans une seule fonction
+(`creneauxPoses`). Lire « aucune ligne » comme « rien d'occupé » aurait libéré
+d'un coup toutes les demi-journées déjà prises, et l'écran d'envoi aurait
+proposé au client un jour où quelqu'un travaille.
+
+**UN QUATRIÈME, ET C'EST LE PLUS CHER : la date acceptée par le client ne
+posait pas le chantier.** Le lot affirmait « un seul écrivain » ; c'était faux.
+`envois-devis.ts` pose lui aussi un chantier — quand le client retient une date
+— et il écrivait `date_planifiee` sans toucher aux créneaux : le chantier
+restait affiché à son ancienne place, et la date du client n'apparaissait nulle
+part au planning. La fonction est passée dans
+`src/server/repositories/creneaux-poses.ts`, que les deux importent, et un
+contrôle la tient (`test-correction-devis.ts`), vu rouge contre l'ancien code.
+
+**Trois défauts que les suites ne voyaient pas, et qui sont corrigés à la
+racine :** le calendrier noircissait le **lendemain** (l'écran recalculait le
+bloc au lieu de lire les créneaux) ; la carte annonçait « une journée » là où
+la planche compte ce qui est **occupé** ; et le tiroir du bas ne s'ouvrait pas
+pour une demi-journée rendue seule — le morceau n'existait alors nulle part.
+
+Les deux premiers viennent d'une **capture regardée**, le troisième de la suite
+navigateur qui rejoue son geste en entier
+(`scripts/test-liberer-une-demi-journee-e2e.ts`, 8 contrôles). Le pourquoi de
+chaque choix est dans `ARCHITECTURE.md` §322.
+
 ### Planche — facturer sans passer par la case devis
 
 *« Il faut que l'on puisse facturer sans avoir besoin de passer par la case
@@ -333,6 +430,22 @@ servait encore la porte du 12 août, en crème, pendant que la création de comp
   `.atlas-champ-ligne`.
 - `ARCHITECTURE.md` §317. Contrôles : `scripts/test-fournisseurs-connexion.ts`
   (19 cas, sans base ni réseau).
+
+### Une session ouvre son dossier toute seule
+
+*« Je veux qu'elle se débrouille, qu'elle aille dans un dossier à chaque fois,
+seule »* (10 septembre). `npm run session` remplace `claude` : il prend le
+premier dossier de travail libre et y lance la session. Plus de choix à faire,
+plus rien à retenir.
+
+Un dossier est occupé tant que le processus de sa session vit — un jeton laissé
+par un terminal fermé brutalement ne condamne rien. Tous pris : il le dit et
+donne la commande, plutôt que de fabriquer un dossier de plus en silence.
+
+Un numéro se donne aussi — `npm run session 2` —, et un dossier demandé qui est
+occupé se refuse plutôt que d'ouvrir la session ailleurs sans le dire.
+
+Détail : `ARCHITECTURE.md` §321.
 
 ### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
 

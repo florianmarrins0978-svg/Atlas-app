@@ -550,39 +550,43 @@ async function main() {
     }
   });
 
-  await essai("« Déplacer » propose les trois moments, et écrit le choix", async () => {
+  // ─── « DÉPLACER » LIBÈRE, IL NE DÉPLACE PLUS — 10 septembre 2026 ────────
+  //
+  // **Ce contrôle défendait le geste d'avant**, et il aurait réclamé ce que le
+  // patron venait de faire retirer (`CLAUDE.md` §5 bis) : « Déplacer » écrivait
+  // un DÉPART, donc faisait glisser le bloc entier. Sa planche
+  // `appli/liberer-une-demi-journee.html`, retenue, dit autre chose — *« je
+  // clique sur le matin, il devient vert et le matin du vendredi devient
+  // libre »*.
+  //
+  // **Ce qu'il tient ici, c'est la place du geste dans le parcours** : il
+  // s'ouvre, il rend, il se referme. Ce que la base écrit alors est tenu par
+  // `test-liberer-une-demi-journee-e2e.ts`, qui parcourt le geste en entier —
+  // le redire ici en ferait deux écritures d'une même règle.
+  await essai("« Déplacer » ouvre l'interrupteur ÉTEINT, et rend la moitié touchée", async () => {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
-    // **« Déplacer » appartient au CHANTIER depuis le 3 septembre 2026**, plus à
-    // une de ses demi-journées (`ARCHITECTURE.md` §243) : il agissait déjà sur
-    // le chantier entier, et un chantier à la journée l'écrivait deux fois. Le
-    // contrôle vise donc le bloc du chantier, pas la ligne du matin — c'est le
-    // geste qu'il fixe, pas la ligne où il se trouvait (`CLAUDE.md` §5 bis).
     await carte.locator('[data-atlas="bloc-chantier"] [data-atlas="deplacer"]').first().click();
-    // **DEUX positions, pas trois** — sa décision du 10 septembre 2026 :
-    // *« juste tu retires la journée »*. « Journée » ne décrivait pas un départ
-    // mais une étendue, et la choisir réécrivait la durée du chantier.
+    // **Les deux moitiés du chantier, et rien d'allumé** : ce n'est pas un
+    // état à lire, c'est une question — quelle demi-journée je rends ?
     const moments = await carte.locator("[data-vers]").allInnerTexts();
     assert.deepEqual(moments, ["Matin", "Après-midi"], `lu : ${JSON.stringify(moments)}`);
+    const allumes = await carte.locator('[data-vers][aria-pressed="true"]').count();
+    assert.equal(allumes, 0, "une position est allumée : l'interrupteur décrit un état");
+
     const avantDuree = (await enBase()).duree_demi_journees;
-    await carte.locator('[data-vers="apres_midi"]').click();
-    await attendre("le chantier passe l'après-midi", async () =>
-      (await enBase()).creneau_debut === "apres_midi"
-    );
-    const c = await enBase();
-    assert.equal(c.creneau_debut, "apres_midi");
-    // **La durée ne bouge pas** : elle vient du devis, et « Déplacer » n'y
-    // touche plus. C'est la règle qui remplace l'ancienne, et elle est plus
-    // large — elle vaut pour toutes les durées, pas seulement au-delà d'un jour.
-    assert.equal(c.duree_demi_journees, avantDuree);
-    // **Et le geste se referme** : *« le bouton disparaît, la sélection s'est
-    // faite et le bouton déplacer réapparaît »*.
+    await carte.locator('[data-vers="matin"]').click();
+    await attendre("le matin est rendu", async () => (await enBase()).creneau_debut === "apres_midi");
+    // **La durée ne bouge pas** : elle vient du devis, et c'est l'écart entre
+    // ce que le chantier demande et ce qu'il occupe qui attend une place.
+    assert.equal((await enBase()).duree_demi_journees, avantDuree);
+    // **Et le geste se referme** : *« le bouton déplacer réapparaît »*.
     await attendre("« Déplacer » est revenu", async () =>
       (await carte.locator('[data-atlas="deplacer"]').count()) > 0
     );
     assert.equal(await carte.locator("[data-vers]").count(), 0, "l'interrupteur est resté ouvert");
   });
 
-  await essai("déplacé sur l'après-midi, le matin redevient libre", async () => {
+  await essai("le matin rendu, la journée le montre LIBRE", async () => {
     await allerAuPlanning();
     await toucherLeJour(JOUR);
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
@@ -915,6 +919,7 @@ async function main() {
     const boutons = await page.locator('[data-atlas="ajouter"]').count();
     assert.ok(boutons >= 1, "le geste d'ajout n'est pas revenu alors qu'un chantier attend un jour");
     // On rend le chantier à sa journée pour la suite du parcours.
+    await pool.query(`DELETE FROM creneaux_chantier WHERE chantier_id = $1`, [chantierId]);
     await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [chantierId, JOUR]);
   });
 
@@ -1248,6 +1253,13 @@ async function main() {
       return d.toISOString().slice(0, 10);
     })();
 
+    // **LE DÉCOR POSE COMME LE PRODUIT POSE — 10 septembre 2026.** Depuis que
+    // le chantier porte OÙ chacune de ses demi-journées est posée
+    // (`ARCHITECTURE.md` §322), écrire `date_planifiee` seule ne le déplace
+    // plus : ses créneaux le tiennent encore à son ancien jour, et l'écran les
+    // croit — à raison. On efface donc les créneaux, ce qui rend le chantier à
+    // son bloc calculé, exactement comme un chantier d'avant la migration.
+    await pool.query(`DELETE FROM creneaux_chantier WHERE chantier_id = $1`, [chantierId]);
     const r = await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [
       chantierId,
       samedi,

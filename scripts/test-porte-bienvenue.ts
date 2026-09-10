@@ -31,6 +31,12 @@ import { estEcranSansNavigation } from "../src/lib/ecrans-sans-navigation";
 const RACINE = path.join(__dirname, "..");
 const lire = (relatif: string) => readFileSync(path.join(RACINE, relatif), "utf8");
 
+/** Les fichiers d'un écran, quel que soit le nombre de morceaux qu'il porte. */
+const fichiersDe = (dossier: string) =>
+  readdirSync(path.join(RACINE, dossier))
+    .filter((f) => f.endsWith(".tsx") || f.endsWith(".ts"))
+    .map((f) => `${dossier}/${f}`);
+
 let passed = 0;
 let failed = 0;
 function test(nom: string, fn: () => void) {
@@ -90,20 +96,17 @@ test("les deux gestes de la porte mènent quelque part", () => {
   assert.match(CODE, /href="\/login"/);
   // Et le retour existe dans les deux sens : sans lui, « Se connecter » est un
   // aller simple pour qui découvre qu'il n'a pas de compte.
-  /**
-   * **TOUT le dossier de la porte, et non son seul `page.tsx`.** La regle
-   * defendue est « depuis /login on revient a la porte et l'on va a la
-   * creation » — elle ne dit rien de la LIGNE ou le lien est ecrit. Le
-   * 10 septembre 2026 la porte s'est scindee en `page.tsx` (serveur) et
-   * `FormulaireConnexion.tsx` (ecran) : cette suite a rougi sur un
-   * deplacement de fichier, alors que les deux liens etaient la. Une suite
-   * qui fige un fichier rend l'ecran impossible a rearranger
-   * (`CLAUDE.md` §5 bis).
-   */
-  const login = readdirSync("src/app/login")
-    .filter((f) => f.endsWith(".tsx"))
-    .map((f) => sansCommentaires(lire(`src/app/login/${f}`)))
-    .join("\n");
+  //
+  // **On lit TOUT l'écran, pas un fichier.** Le 10 septembre 2026, la porte a
+  // été coupée en trois — `page.tsx` lit les clés, `FormulaireConnexion` dessine,
+  // `PorteDeNuit` pose la charte — et le lien de retour a suivi le dessin. Ce
+  // contrôle, lui, ne regardait que `page.tsx` : il a rougi sur un retour qui
+  // marchait, et c'est exactement le défaut que `CLAUDE.md` §5 bis nomme —
+  // fixer la RÈGLE, jamais l'endroit où elle est écrite. Un remaniement de plus
+  // ne le fera plus mentir.
+  const login = sansCommentaires(
+    fichiersDe("src/app/login").map(lire).join("\n")
+  );
   assert.match(login, /href="\/bienvenue"/, "on ne peut plus revenir à la porte depuis /login");
   assert.match(login, /href="\/creer-un-compte"/, "/login ne mène pas à la création");
 });

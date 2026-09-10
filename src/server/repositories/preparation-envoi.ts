@@ -3,7 +3,11 @@ import { withEntreprise } from "../db/with-entreprise";
 import { fusionnerOccupationExterne } from "../../lib/agenda-externe";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { periodesOccupeesExterieures } from "./agendas-externes";
-import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers";
+import {
+  creneauxParChantier,
+  encoreEnCoursDepuis,
+  equipesParChantier,
+} from "./occupation-chantiers";
 import { absencesEquipe, chantiers, clients, devis, entreprises, lignesDevis } from "../db/schema";
 import { devisEnvoyable } from "../../lib/devis-envoyable";
 import type { Ctx } from "./context";
@@ -190,6 +194,8 @@ export async function preparerEnvoi(
         )
       );
     const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
+    // **Où chacun est POSÉ** — un chantier morcelé n'occupe plus son bloc.
+    const creneauxPoses = await creneauxParChantier(tx, ctx.entrepriseId);
     const planifies: ChantierPlanifie[] = occupesRows
       .filter((r) => r.jour !== null && r.id !== chantierId)
       .map((r) => ({
@@ -197,6 +203,7 @@ export async function preparerEnvoi(
         moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
         dureeDemiJournees: r.duree,
         equipesParDemi: equipesPosees.get(r.id) ?? null,
+        creneaux: creneauxPoses.get(r.id) ?? null,
       }));
     const [entreprise] = await tx
       .select({ nombreEquipes: entreprises.nombreEquipes })
@@ -587,6 +594,8 @@ async function contrainteSurHorizon(
         )
       );
     const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
+    // **Où chacun est POSÉ** — un chantier morcelé n'occupe plus son bloc.
+    const creneauxPoses = await creneauxParChantier(tx, ctx.entrepriseId);
     return compterOccupation(
       rows
         .filter((r) => r.jour !== null && r.id !== chantierId)
@@ -595,6 +604,7 @@ async function contrainteSurHorizon(
           moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
           dureeDemiJournees: r.duree,
           equipesParDemi: equipesPosees.get(r.id) ?? null,
+          creneaux: creneauxPoses.get(r.id) ?? null,
         })),
       nombreEquipes
     );

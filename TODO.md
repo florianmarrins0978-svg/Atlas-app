@@ -29,6 +29,20 @@ posées : le trajet complet jusqu'à Google et le retour. Ce qui l'est déjà : 
 règle d'affichage, le refus d'une adresse non vérifiée, l'aiguillage vers la
 création de compte (`scripts/test-fournisseurs-connexion.ts`).
 
+**Mise à jour du 10 septembre 2026, après sa capture** — *« voilà l'écran que
+j'ai ! »*. Deux choses ont changé de son côté, et elles n'attendent plus rien
+de nous :
+
+- **les quatre lignes existent dans son `.env.local`**, ajoutées d'elles-mêmes
+  au démarrage (`.devcontainer/completer-env-local.sh`). Il n'a qu'à coller
+  après le signe `=` ;
+- **le démarrage dit ce qui manque, et écrit l'adresse de retour toute faite** —
+  c'est la seule valeur qui ne se devine pas, et Google la compare au caractère
+  près.
+
+La marche à suivre est dans [`docs/entrer-avec-google.md`](docs/entrer-avec-google.md).
+**Reste à lui, et à personne d'autre :** ouvrir l'identifiant OAuth chez Google.
+
 ---
 
 ## ⏳ UNE BATTERIE À JOUER — « Se déconnecter » est codé (9 septembre 2026)
@@ -126,43 +140,72 @@ entre dans les terminés et la TVA (non).
 
 ---
 
-## ⏳ « DÉPLACER » AGIT SUR UN JOUR QU'IL NE REGARDE PAS (10 septembre 2026)
+## ~~« DÉPLACER » AGIT SUR UN JOUR QU'IL NE REGARDE PAS~~ — RÉGLÉ LE 10 SEPTEMBRE 2026
 
 **Sa question, captures à l'appui :** *« quand je clique sur déplacer l'aprem,
 c'est le 15 et le 11 qui bougent, je comprends pas pourquoi. »*
 
-**Le code fait ce qu'il annonce ; c'est l'écran qui ment par omission.** Son
-chantier « Mr. Julien — 2 jours » est posé **vendredi 11, départ après-midi**.
-Quatre demi-journées, week-end sauté :
+**Le code faisait ce qu'il annonçait ; c'est l'écran qui mentait par omission.**
+Son chantier « Mr. Julien — 2 jours » était posé **vendredi 11, départ
+après-midi**. Quatre demi-journées, week-end sauté :
 
-| départ | ce qu'il occupe |
+| départ | ce qu'il occupait |
 |---|---|
 | 11 après-midi (avant) | 11 aprem · **14 matin · 14 aprem** · 15 matin |
 | 11 matin (après son appui) | **11 matin** · 11 aprem · 14 matin · 14 aprem |
 
-Il ouvre la carte du **14**, où le chantier apparaît — et l'interrupteur qu'il y
-trouve déplace le **départ**, qui est le 11. D'où les deux jours qui bougent
-sous ses yeux (le 11 passe « au-delà » parce qu'un autre chantier y était déjà,
-le 15 se vide) pendant que le 14, lui, ne change pas.
+Il ouvrait la carte du **14**, où le chantier apparaît — et l'interrupteur qu'il
+y trouvait déplaçait le **départ**, qui est le 11.
 
-**Vérifié par le calcul**, pas déduit : `creneauxDuChantier` rend exactement ces
-deux listes (`src/lib/disponibilites.ts`).
+**Deux réponses avaient été posées sur planche (A : « Déplacer » seulement sur
+le premier jour ; B : l'interrupteur porte le jour qu'il déplace). Il n'a
+retenu ni l'une ni l'autre** — il a demandé autre chose, et c'est plus juste :
+« Déplacer » ne déplace plus rien, il **libère la demi-journée qu'on regarde**
+(`appli/liberer-une-demi-journee.html`, `ARCHITECTURE.md` §322). La question du
+jour de départ ne se pose donc plus : le geste agit là où l'œil est.
 
-**Ce qui manque à l'écran :** la carte d'un jour dit la DURÉE (« 2 jours ») mais
-jamais le JOUR DE DÉPART. Sur le premier jour d'un chantier, l'interrupteur est
-juste ; sur les suivants, il agit ailleurs sans le dire.
+**Ce qui reste vrai, et n'est PAS une tâche** : la carte d'un jour annonce ce
+que le chantier occupe, jamais son jour de départ. Sur un chantier de plusieurs
+jours, rien ne dit d'où il part. Aucun geste n'en dépend plus ; à rouvrir
+seulement s'il le signale.
 
-**Deux réponses possibles, à trancher par lui** (maquette d'abord, `CLAUDE.md`
-§3 bis) :
+**`appli/deplacer-quel-jour.html` reste en ligne** : elle raconte le chemin, et
+une planche écartée se garde (`CLAUDE.md` §3 bis).
 
-| | |
+---
+
+## 🔴 TROIS ROUGES ARRIVÉS AVEC LA PORTE DE CONNEXION (10 septembre 2026)
+
+**Mesurés, pas supposés** : batterie complète du 10 septembre au soir, comparée
+à celle du matin. Ces trois-là sont apparus **avec la fusion de `main`** qui
+apporte la porte Google/Apple, et aucun ne touche au planning.
+
+| La suite | Ce qu'elle dit |
 |---|---|
-| **A** | « Déplacer » ne paraît que sur le **premier jour** du chantier ; ailleurs, la carte écrit « commence vendredi 11 » |
-| **B** | « Déplacer » reste partout, et l'interrupteur porte le jour qu'il déplace — « départ : ven. 11 » |
+| `test-accueil-en-tete.ts` | *« un filet d'intertitre est revenu : `src/app/login/BoutonsFournisseurs.tsx` »* — il les a fait retirer le 25 août |
+| `test-porte-bienvenue.ts` | *« on ne peut plus revenir à la porte depuis /login »* |
+| `test-actions-gardees-db.ts` | `src/app/login/actions.ts#entrerAvecAction` n'a aucune garde de rôle — à exempter avec sa raison, une porte de connexion ne peut pas en avoir |
 
-**Ne rien coder avant son choix.** Et ne pas « corriger » `deplacerChantier` :
-il écrit le départ, ce qui est juste — le défaut est dans ce que l'écran laisse
-croire.
+**À la session qui a livré la porte.** Le troisième est le plus simple : une
+action de connexion ne PEUT pas exiger un rôle, puisqu'on n'est pas encore
+entré. Elle se déclare dans `EXEMPTIONS` avec cette raison, ce que le contrôle
+prévoit déjà.
+
+---
+
+## ⏳ « DÉPLACER » N'A PAS D'ANNULER — à lui de dire (10 septembre 2026)
+
+Une fois l'interrupteur ouvert, « Déplacer » et « Retirer » s'effacent : il n'y
+a **aucun geste pour refermer sans choisir**. On sort en fermant la carte du
+jour, ce que rien n'indique.
+
+**Sa planche 1 ne montre pas d'Annuler**, et il l'a validée telle quelle — on
+n'ajoute donc rien de son propre chef. Deux choses rendent l'attente tenable :
+libérer se **défait** (le morceau se repose depuis le tiroir), et il a demandé
+un « Annuler » à chaque étape sur une AUTRE planche
+(`appli/bloquer-sans-devis.html`), donc la question l'intéresse.
+
+**À lui poser quand il rouvrira cet écran.** Ne pas coder avant.
 
 ---
 
@@ -266,17 +309,24 @@ seulement la demi-journée. C'est peut-être le vrai malentendu du mot.
 **Elle n'a pas d'adresse tant qu'elle n'est pas sur `main`** —
 `.github/workflows/pages.yml` ne publie que depuis là.
 
-## ⏳ UNE DÉCISION QUI LUI APPARTIENT — couper un chantier en deux poses (9 sept. 2026)
+## ~~UNE DÉCISION QUI LUI APPARTIENT — couper un chantier en deux poses~~ — FAIT LE 10 SEPTEMBRE 2026
 
-Née de sa panne du jour : *« lorsque je clique sur le matin pour Mr. Julien, ça
-me met d'office toute la journée »*. Un chantier de deux jours posé « Matin »
-prend forcément la journée entière — l'application ne sait poser qu'**un bloc
-continu** (`creneau_debut` + `duree_demi_journees`).
+Née de sa panne du 9 : *« lorsque je clique sur le matin pour Mr. Julien, ça me
+met d'office toute la journée »*. Un chantier de deux jours posé « Matin »
+prenait forcément la journée entière — l'application ne savait poser qu'**un
+bloc continu** (`creneau_debut` + `duree_demi_journees`).
 
-S'il veut vraiment faire jeudi matin puis reprendre lundi, il faut deux poses
-pour un chantier : c'est une fonctionnalité, pas un correctif, et **c'est lui
-qui décide** si elle vaut le coup. En attendant, l'écran dit la durée au lieu de
-promettre un découpage qu'il ne sait pas faire (`ARCHITECTURE.md` §309).
+**Il a tranché en le dessinant** : « Déplacer » libère la demi-journée qu'on
+regarde, elle attend dans le tiroir du bas, et se repose où il veut
+(`appli/liberer-une-demi-journee.html`, retenue). Le découpage existe donc,
+sans jamais avoir à ressaisir une durée : la table `creneaux_chantier` porte où
+chaque demi-journée est posée, `duree_demi_journees` reste ce que le devis a
+vendu (`ARCHITECTURE.md` §322).
+
+**Ce qui reste ouvert, et qui est un vrai manque :** un chantier ne se pose
+toujours pas en deux morceaux **d'un seul geste**. Il faut le poser entier, puis
+rendre ce qui ne va pas. Suffisant pour ce qu'il décrivait ; à rouvrir s'il le
+signale.
 
 ## ⏳ RETIRER LA MOITIÉ DEVENUE REDONDANTE DES RÈGLES `?de=` (9 septembre 2026)
 

@@ -53,6 +53,35 @@ le 9 septembre 2026 et npm lui a rendu « npm error / To see a list of scripts �
 c'est-à-dire rien : une lettre d'écart, et le seul geste qu'on lui demande
 échoue sans dire pourquoi. Les deux noms pointent le même script.
 
+**ET ON N'OUVRE PLUS UNE SESSION À LA MAIN — 10 septembre 2026.** Sa demande,
+après avoir vu les cinq dossiers : *« non mais je veux qu'elle se débrouille,
+qu'elle aille dans un dossier à chaque fois, seule »*. Il avait raison : lui
+faire choisir le dossier, y aller, et se souvenir duquel est pris, c'est trois
+gestes à répéter cinq fois par soirée — et une erreur possible à chaque fois,
+qui remet deux sessions dans le même dossier.
+
+```bash
+npm run session      # au lieu de « claude », où qu'on soit dans le dépôt
+npm run session 2    # ou CE dossier-là, dans les rangs de « --liste »
+```
+
+`scripts/ouvrir-session.mjs` prend le premier dossier libre et y lance `claude`.
+**Un dossier est « pris » par un PROCESSUS vivant, jamais par un fichier laissé
+là** : le lanceur attend sa session, donc son propre PID est la preuve, et un
+jeton dont le processus a disparu est ignoré. C'est la leçon du verrou de la
+batterie, dans les deux sens (§5).
+
+Quand tous les dossiers sont occupés, il **refuse et donne la commande** — il ne
+fabrique pas un sixième worktree ni un `npm install` de trois minutes sous les
+yeux de quelqu'un qui attendait une session.
+
+**Un NUMÉRO se donne aussi** — sa demande du même jour : *« je peux leur dire
+prend le dossier numéro 2 ? »*. Les rangs sont ceux de
+`sessions:preparer --liste`, 1 étant le dossier principal. **Et un dossier
+demandé qui est occupé se refuse, il ne se remplace pas** : sans numéro, prendre
+le suivant est le service rendu ; avec un numéro, ce serait ouvrir la session
+ailleurs qu'où il l'a dit, sans qu'il le voie.
+
 `scripts/preparer-sessions.mjs` crée un **`git worktree` par session** : même
 dépôt, même historique, mêmes remontées, `main` toujours le seul bien commun —
 seul le répertoire de travail change. Chaque session a alors ses fichiers à

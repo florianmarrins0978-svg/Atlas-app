@@ -211,7 +211,10 @@ const EXEMPTIONS: Record<string, string> = {
   "src/app/login/actions.ts#connexionParCleAction":
     "Même famille : elle ouvre la session par la clé d'appareil, donc elle s'appelle sans session.",
   "src/app/login/actions.ts#entrerAvecAction":
-    "Même famille que les trois du dessus : elle part vers Google ou Apple pour OUVRIR une session, donc elle s'appelle sans rôle. Ce qu'elle laisse passer est borné ailleurs — estNomFournisseur refuse tout nom hors des deux, et c'est le rappel signIn d'Auth.js qui décide qui entre.",
+    "Elle envoie chez Google ou chez Apple pour PROUVER une adresse : c'est ce qui " +
+    "précède la session, exactement comme le défi Face ID. Ce qui la borne n'est donc " +
+    "pas un rôle mais la liste fermée d'`estNomFournisseur` — sans elle, une chaîne " +
+    "quelconque venue du navigateur atteindrait Auth.js.",
   "src/app/login/actions.ts#deconnexionAction":
     "Se déconnecter est ouvert à qui est connecté, quel que soit son rôle — et refuser reviendrait à retenir les gens dedans.",
   "src/app/creer-un-compte/actions.ts#creerLeCompteAction":
