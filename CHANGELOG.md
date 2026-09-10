@@ -113,6 +113,10 @@ voies, à chaque étape.**
 | ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
 | **une troisième voie** | *« Autre chose »* — un rendez-vous à la banque, une livraison, une formation : un chantier **sans client**, portant ce qu'on écrit |
 
+**Et le tiroir du bas se voit enfin quand il est ouvert** — *« on ne la voit
+pas »* : il portait le fond de la page. Il prend celui des cartes, et son ombre
+se creuse à l'ouverture.
+
 **Deux défauts qu'il a signalés le soir même, corrigés :** la voie « Un chantier
 en attente » disparaissait quand seule une **demi-journée rendue** attendait —
 elle compte désormais comme le reste, et se prend au doigt depuis la journée. Et

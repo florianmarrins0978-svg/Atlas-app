@@ -27709,6 +27709,27 @@ n'est parti. Rechargez la page. »* C'est la première question du dépôt devan
 défaut qui ne se reproduit pas (`HANDOVER.md`, piège 0), et la seule chose qui
 répare une page vieillie.
 
+### ET ON DOIT VOIR OÙ IL COMMENCE
+
+**Sa remarque du 11 septembre 2026, capture à l'appui :** *« il faut rendre plus
+visible la fenêtre qui s'ouvre "1 sans date" — quand elle est ouverte, on ne la
+voit pas »*.
+
+Elle portait le fond de la PAGE (`cream`). Ouverte, rien ne disait où la page
+finissait et où le tiroir commençait : ses listes semblaient flotter au bas de
+l'écran, sans cadre.
+
+| | |
+|---|---|
+| le fond | `card` — celui des cartes, y compris la fiche du jour deux centimètres plus haut. C'est ce qui, dans cet écran, dit « ceci est posé par-dessus » |
+| l'ombre | se creuse **quand il est ouvert** seulement : fermé, il n'est qu'une poignée, et une ombre soutenue en permanence salirait le bas de tous les écrans du planning |
+| le voile du dessus | suit la même couleur, sinon il redessine la coupure que le fond vient d'effacer |
+
+**Aucune couleur neuve**, et c'est la condition : sept chartes cohabitent, dont
+deux sombres où les pôles s'inversent (`CLAUDE.md` §3). `card` et `cream` sont
+définis dans chacune ; un gris écrit en clair aurait été juste cinq fois sur
+sept.
+
 ### LE TIROIR DU BAS PUBLIE SA HAUTEUR (`--atlas-tiroir`)
 
 `.atlas-contenu` réservait la hauteur de la **barre** (`--atlas-barre`) et rien

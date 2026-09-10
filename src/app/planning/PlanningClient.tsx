@@ -4211,9 +4211,25 @@ function TiroirDuBas({
         // (`globals.css`) : la recopier ici serait s'assurer qu'un jour l'une
         // bougera sans l'autre.
         bottom: "var(--atlas-barre)",
-        background: colors.cream,
+        // ─── ON DOIT VOIR OÙ IL COMMENCE — 11 septembre 2026 ──────────────
+        //
+        // **Sa remarque, capture à l'appui :** *« il faut rendre plus visible
+        // la fenêtre qui s'ouvre "1 sans date" — quand elle est ouverte, on ne
+        // la voit pas »*. Elle portait le fond de la PAGE (`cream`) : ouverte,
+        // rien ne disait où la page finissait et où le tiroir commençait, et
+        // ses listes semblaient flotter au bas de l'écran.
+        //
+        // **Le fond des cartes** (`card`), comme la fiche d'un jour deux
+        // centimètres plus haut : c'est ce qui, dans cet écran, dit « ceci est
+        // posé par-dessus ». Aucune couleur neuve, aucun trait de plus.
+        background: colors.card,
         borderTop: `1px solid ${colors.line}`,
-        boxShadow: `0 -10px 28px ${voile(colors.ink, 0.08)}`,
+        // **Et l'ombre se creuse quand il est OUVERT.** Fermé, il n'est qu'une
+        // poignée : une ombre soutenue en permanence salirait le bas de tous
+        // les écrans du planning pour une liste que personne ne regarde.
+        boxShadow: ouvert
+          ? `0 -14px 34px ${voile(colors.ink, 0.18)}`
+          : `0 -10px 28px ${voile(colors.ink, 0.08)}`,
       }}
     >
       {/* Le voile : sans lui, la poignée tranche net la rangée du mois qui
@@ -4223,7 +4239,10 @@ function TiroirDuBas({
         className="pointer-events-none absolute inset-x-0 h-6"
         style={{
           top: -24,
-          background: `linear-gradient(to top, ${colors.cream}, ${voile(colors.cream, 0)})`,
+          // **Il fond la rangée du mois dans le tiroir, donc il porte SA
+          // couleur.** Resté sur le fond de page, il aurait redessiné la
+          // coupure que le nouveau fond vient d'effacer.
+          background: `linear-gradient(to top, ${colors.card}, ${voile(colors.card, 0)})`,
         }}
       />
       <button
