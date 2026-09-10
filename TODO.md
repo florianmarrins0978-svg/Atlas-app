@@ -1666,9 +1666,22 @@ pour rien, c'est ce poste ». Le bandeau était bien un **défaut du produit** �
 il aurait paru de la même façon sur le banc du patron servi avec un `NODE_ENV`
 posé à la main.
 
-**Ce qui reste à mesurer :** combien de ces vingt-six suites le correctif
-éteint, et ce que les autres ont comme cause propre. La liste ci-dessous, elle,
-tient toujours pour les suites de dates.
+**MESURÉ APRÈS LE CORRECTIF, le 10 septembre :** 26 rouges deviennent **19**
+(114/140 puis 121/140). Sept suites s'éteignent avec le bandeau — bandeau banc,
+connexion figée, Face ID, fiche client, grille des prix, cases réglables,
+onglets des terminés.
+
+**Les dix-neuf qui restent n'ont plus de cause commune**, et c'est ce qui change
+tout : chacune la sienne, à ouvrir une par une. Trois échantillons lus dans le
+journal du 10 septembre :
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-reglages-e2e` | *« Sans clé, l'écran doit annoncer le mode déterministe. Écran : Atlas IA »* |
+| `test-recherche-client-e2e` | *« taper un nom réduit la liste à ce nom »* |
+| `test-pas-la-ce-jour-e2e` | *« le geste passe sous une bande fixe »* — le bandeau n'y est plus, la bande est donc une autre |
+
+La liste ci-dessous, elle, tient toujours pour les suites de dates.
 
 
 
