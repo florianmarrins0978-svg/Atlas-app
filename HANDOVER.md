@@ -8,6 +8,29 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — « DÉPLACER », UN INTERRUPTEUR À DEUX POSITIONS (10 septembre 2026)
+
+| | |
+|---|---|
+| sa décision | *« fais celui-là, juste tu retires la journée. Il faut garder le bouton déplacer ; on clique sur matin ou aprem et le bouton disparaît »* |
+| la planche | `appli/deplacer-plus-simple.html`, proposition 2 |
+| ce que ça RETIRE | `QuandChantier`, `departEtDuree`, `quandDuChantier`, `poseOfferte`, `MOT_QUAND`, `estUnMomentValide` — six pièces qui n'existaient que pour rattraper un mot |
+| les pièces | `BasculeDemi` (`PlanningClient.tsx`), `departDuChantier` et `estUnDemiValide` (`src/lib/planning-jour.ts`) |
+| aucune migration | le vocabulaire retenu est celui que la base porte depuis 0019 |
+| le détail | `ARCHITECTURE.md` §313 |
+
+**LE PIÈGE QUE CE LOT A FERMÉ.** « Journée » ne décrivait pas un départ mais une
+ÉTENDUE : la choisir réécrivait `dureeDemiJournees`. « Matin » sur un chantier
+d'une journée le ramenait donc à une demi-journée, en silence — l'après-midi
+redevenait vendable, et le défaut ne se voyait que le jour du chantier. **Ne
+jamais laisser un geste du planning écrire une durée** : elle vient du devis.
+
+**CE QUI RESTE OUVERT, ET QUI LUI APPARTIENT.** Les deux moitiés de la journée
+changent de place selon où est le chantier (`scripts/capture-deplacer.ts` le
+photographie). Les remettre dans l'ordre ferait parfois ouvrir la fiche sur
+« libre », ce qu'il a refusé le 21 août. Voir `TODO.md`.
+
+---
 ## Dernier lot — POSER UN CHANTIER NE DEMANDE PLUS QUAND (9 septembre 2026)
 
 | | |
@@ -77,6 +100,45 @@ le défaut peut n'être que dans les mots.
 
 ---
 ## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
+
+## Dernier lot — LE RETOUR EST UN VRAI RETOUR (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | **toute** flèche de retour ramène à la page d'où l'on vient. L'onglet tient le journal des écrans traversés ; la sortie déclarée par l'écran devient le repli |
+| la migration | aucune |
+| les pièces | `src/lib/journal-de-navigation.ts` (la règle, pure), `src/components/atlas/journal-navigateur.ts`, `JournalDeNavigation.tsx` (posé dans `src/app/layout.tsx`), `FlecheRetour.tsx` (LA flèche, pour tous les écrans) |
+| les suites | `scripts/test-journal-de-navigation.ts` (18), `scripts/test-retour-page-davant-e2e.ts` (5) |
+| le détail | `ARCHITECTURE.md` §311, `docs/lot-retour-page-davant.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE — RECULER SE DÉCLARE, IL NE SE DEVINE PAS.** Le
+journal ne reconnaît PAS un retour à la forme de sa trace : rouvrir un écran déjà
+vu laisse exactement la même trace, et une version qui devinait faisait sauter
+deux écrans à la flèche. Trois gestes seulement reculent, et chacun le dit :
+l'appui sur la flèche, l'enregistrement d'une fiche client qui ramène au devis,
+et `popstate` (le bouton du navigateur). En ajouter un quatrième sans le déclarer
+refabrique la panne du 9 septembre.
+
+**Second piège, du même lot :** la flèche rendue par le SERVEUR porte la sortie
+déclarée, puis se corrige dès que la page est vivante — le journal est dans le
+navigateur. Elle lit donc un journal **en retard d'un pas**, et `pagePrecedente`
+applique la visite courante avant de lire pour cette raison précise. Une suite
+qui lit son `href` à l'instant où l'écran paraît attrape la valeur d'avant : il
+faut attendre, comme le fait `test-retour-page-davant-e2e.ts` — dont l'échec rend
+le journal de l'onglet en clair, sans quoi il ne dirait qu'« délai dépassé ».
+
+**Et pour éprouver la sortie DÉCLARÉE, il faut arriver à froid.** Une suite qui
+s'est connectée puis promenée a forcément un journal : elle ne verra jamais le
+repli. `scripts/_arriver-a-froid.ts` vide le journal de l'onglet et recharge —
+c'est l'état d'un signet, sans ouvrir un contexte ni se reconnecter.
+
+**Ce qui reste des règles `?de=` :** elles servent de repli, et décident encore
+où l'on va après avoir ENREGISTRÉ un formulaire (`apresLesCoordonnees`). Leur
+moitié « devine d'où il vient » est redondante avec le journal — sa retraite est
+dans `TODO.md`, délibérément pas faite dans ce lot.
+
+---
+## Lot précédent — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
 
 | | |
 |---|---|

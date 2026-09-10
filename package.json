@@ -38,6 +38,7 @@
     "verifier:connexion": "tsx scripts/verifier-connexion-avec-serveur.mts",
     "banc": "node scripts/banc.mjs",
     "sessions:preparer": "node scripts/preparer-sessions.mjs",
+    "session:preparer": "node scripts/preparer-sessions.mjs",
     "diagnostiquer:espace": "node scripts/diagnostiquer-espace.mjs",
     "rapporter:espace": "node scripts/rapporter-espace.mjs",
     "mesurer:poids-planning": "node scripts/mesurer-poids-planning.mjs"

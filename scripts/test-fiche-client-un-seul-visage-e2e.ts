@@ -40,8 +40,12 @@ const BASE = ADRESSE;
 // **Ce que cette suite ne peut pas rejouer ici**, et il faut le dire : après
 // l'avion, la chaîne du devis démarre seule et le dépose sur le devis. Sans clé
 // d'IA sur ce poste, elle s'arrête et personne ne fait le chemin. On ouvre donc
-// le devis à l'adresse, puis **on appuie sur SA flèche de retour** — celle-là
-// est bien la sienne, et c'est elle qui ramène sur la fiche.
+// le devis à l'adresse, puis la fiche à la sienne.
+//
+// **Et plus par la flèche du devis, depuis le 9 septembre 2026** : elle ramène
+// à la page d'où l'on vient (`src/lib/journal-de-navigation.ts`), donc ici à
+// l'écran que la suite venait de quitter. Le sujet de cette suite est le VISAGE
+// de la fiche rouverte, jamais le chemin qui y mène.
 
 let echecs = 0;
 async function cas(nom: string, verifier: () => Promise<void>) {
@@ -117,15 +121,23 @@ async function main() {
   }
   assert.ok(chantierId, "la dictée ne s'est pas enregistrée : le reste de cette suite n'éprouverait rien");
 
-  // ── SECONDE VISITE : il ouvre son devis, puis fait retour. ────────────────
+  // ── SECONDE VISITE : il rouvre la fiche du chantier qu'il a dicté. ───────
+  //
+  // **Elle s'ouvre par son adresse, plus par la flèche du devis — 9 septembre
+  // 2026.** La flèche ramène désormais à la page d'où l'on vient
+  // (`src/lib/journal-de-navigation.ts`) : passer par elle ferait dépendre
+  // cette suite du chemin parcouru juste avant, alors que son sujet est le
+  // VISAGE de la fiche — ce qu'elle montre quand on la rouvre, et rien d'autre
+  // (`CLAUDE.md` §5 bis : viser plus profond qu'un chemin d'écran).
+  //
+  // Ce que la flèche fait, elle, est éprouvé là où c'est le sujet
+  // (`test-retour-page-davant-e2e.ts`).
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
-  const retour = page.locator('[data-atlas="retour-du-devis"]');
-  await retour.waitFor({ state: "visible", timeout: 45_000 });
-  await retour.click();
-  await page.waitForURL(/\/coordonnees/, { timeout: 45_000 });
+  await page.locator('[data-atlas="retour-du-devis"]').waitFor({ state: "visible", timeout: 45_000 });
+  await page.goto(`${BASE}/chantiers/${chantierId}/coordonnees`, { waitUntil: "networkidle" });
   await page.locator("form").first().waitFor({ state: "visible", timeout: 30_000 });
 
-  await cas("AU RETOUR DU DEVIS : c'est le MÊME objet, pas le lecteur", async () => {
+  await cas("ROUVERTE APRÈS LA DICTÉE : c'est le MÊME objet, pas le lecteur", async () => {
     assert.equal(
       await page.locator(ECOUTER).count(),
       0,

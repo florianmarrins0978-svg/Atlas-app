@@ -34,6 +34,82 @@ du 21 août — c'est à lui de trancher.
 ---
 ## 2026-09-09
 
+### « Se déconnecter » existe enfin, au bas des Réglages
+
+**Codé après son accord sur la maquette.** Une ligne en capitales espacées tout
+en bas du sommaire, une feuille de confirmation, et l'on repart sur l'écran de
+connexion. Le dessin est celui de `SupprimerCeClient` (2 septembre), sans son
+surtitre d'alerte — se déconnecter n'est pas irréversible. Le pourquoi de chaque
+choix est dans `ARCHITECTURE.md` §310.
+
+| | |
+|---|---|
+| `src/app/login/actions.ts` | `deconnexionAction` — elle **existait déjà, sans appelant** ; elle en a un |
+| `src/app/reglages/SeDeconnecter.tsx` | la ligne et la feuille |
+| `scripts/test-se-deconnecter-e2e.ts` | le geste entier, dans un vrai navigateur |
+
+**J'EN AVAIS ÉCRIT UNE SECONDE, IDENTIQUE, SANS CHERCHER.** `deconnexionAction`
+dort dans `src/app/login/actions.ts` — même corps, `signOut` vers `/login` — et
+n'avait aucun appelant. C'est la faute que `CLAUDE.md` §5 ter nomme : *la
+question n'est jamais « est-ce possible » mais « qui, dans ce dépôt, fait déjà
+quelque chose d'approchant »*. **C'est un contrôle qui l'a révélée**, en exigeant
+une garde de rôle sur ma nouvelle action : l'exemption motivée de l'ancienne
+était là, dans le même fichier de contrôle, sous les yeux. Le doublon est
+retiré ; `signOut` reste préféré à `/api/session-perimee`, dont le nom ment et
+qui tient sa propre liste de six cookies.
+
+**Face ID reste posé sur l'appareil, et la suite l'exige** : c'est ce qui sépare
+ce geste de « Me déconnecter partout ». Elle **pose sa propre clé témoin** avant
+de se déconnecter — le compte de démonstration n'en a aucune, et compter « zéro
+avant, zéro après » aurait rendu un vert qui ne mesure rien (le `0 − 0 = 0` du
+15 août 2026).
+
+**ÉPROUVÉ À MOITIÉ, ET IL FAUT LE DIRE :** `typecheck`, `lint`,
+`verifier:memoire`, et les contrôles de structure (pansement, code mort,
+couches, flèches, boutons, couleurs) sont **verts**. La batterie complète
+**n'a pas été jouée** — elle prend le port 3000 et vide la base, et sa règle du
+4 septembre veut qu'on le lui demande d'abord. Tant qu'elle n'a pas tourné,
+`test-se-deconnecter-e2e` n'a jamais été vu ni vert ni rouge.
+
+### Deux salariés se lisent « Julien / Antoine », plus « Julien, Antoine »
+
+Sa demande du 9 septembre : *« à la place de noter les salariés avec une
+virgule, mets un / entre chaque salarié »*. Sur une pastille pleine, la virgule
+tombe sous la ligne de base et se colle au nom suivant : deux noms courts
+finissent par se lire comme un seul.
+
+**Une seule fonction l'écrit** — `ditQuiPart` dans `src/lib/planning-jour.ts` —,
+donc le planning ET la fiche de chantier changent ensemble. Le comptage au-delà
+de deux noms ne bouge pas : « Julien +2 » reste ce qui tient sur un téléphone.
+
+### « Salarié absent ? », un + sans contour — et « Ce jour-là » s'en va
+
+*« Quelqu'un pas là faut le changer par salarié absent avec un petit + plutôt
+que le gros bouton »*, puis, devant la planche : *« Salarié absent + sans
+contour ! »* et *« retire ce jour-là, on sait que c'est ce jour »*.
+
+**Ce qui remplace le cerne, c'est le +.** Ce même geste était une phrase nue le
+6 septembre et lui a échappé une journée entière ; on avait répondu par une
+pastille, qu'il trouve trop grosse. Retirer le cadre ET laisser du texte nu
+aurait rejoué le défaut du 6 — le + dit « ceci s'appuie, et ça ajoute »
+(`ARCHITECTURE.md` §312).
+
+**Le point d'interrogation est de lui aussi**, et il dit vrai de ce que le
+bouton fait : il ne note rien, il ouvre la question « Qui ? » — la grammaire de
+la pastille d'équipe juste en dessous.
+
+**La cible du doigt ne rétrécit pas avec l'encre :** 44 px de haut, pleine
+largeur.
+
+**Le contrôle a suivi la règle, pas le dessin.** `test-pas-la-ce-jour-e2e.ts`
+exigeait « un cerne, une ombre ou un fond » : il aurait réclamé ce que le
+patron venait de faire enlever (`CLAUDE.md` §5 bis). Il accepte désormais le +
+comme quatrième signe, et refuse toujours les quatre absents à la fois.
+
+**La planche reste** — `appli/salarie-s-absente.html`, trois tailles de + à
+essayer, A retenu : elle raconte ce qui a été écarté, dont le + tout seul, sans
+mot, qui aurait rejoué le 6 septembre pour la troisième fois.
+
 ### L'onglet des retours existe toujours, et ses photos se voient enfin
 
 *« L'onglet retour d'intervention doit exister même s'il n'y a aucun retour ! »*
@@ -117,6 +193,29 @@ coincée en attente pour toujours : le relevé n'en veut pas, et « Payée » ne
 pouvait pas la solder — un règlement de zéro est refusé, à juste titre. Elle
 occupait l'écran avec un bouton qui ne pouvait qu'échouer.
 
+
+
+### Le bouton retour est enfin un bouton retour
+
+*« J'ai cliqué sur ouvrir le devis, une fois sur le devis je clique sur retour,
+j'arrive sur la page de la fiche client — or le bouton retour doit marcher comme
+un vrai bouton marche arrière. »* Il venait de l'accueil.
+
+C'était le **cinquième** signalement de la même racine (20 août, 31 août, 7, 8
+et 9 septembre) : chaque écran déclarait sa sortie, et chaque porte d'entrée
+neuve la démentait. Les quatre correctifs précédents avaient ajouté une porte
+reconnue à la fois.
+
+L'onglet tient désormais le journal des écrans traversés, et **toute** flèche y
+lit la page d'avant. La sortie déclarée par l'écran reste, comme repli : sur la
+première page d'un onglet — un signet, une notification ouverte à froid — il n'y
+a pas de page d'avant, et sa règle du 31 août s'applique alors telle quelle.
+
+Ce qui a été retiré avec : « Aucun client rattaché à ce chantier » n'est plus un
+cul-de-sac — le chemin vers la fiche se lit sous la phrase qui dit le manque,
+au lieu d'être caché derrière une flèche qui prétendait reculer.
+
+Détail et décisions : `ARCHITECTURE.md` §311 · `docs/lot-retour-page-davant.md`.
 
 ### « Dernier devis » n'apparaissait presque jamais
 

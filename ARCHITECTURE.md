@@ -26448,7 +26448,246 @@ toujours en premier ! »* — et l'arbitrage entre ses deux demandes lui apparti
 (`appli/deplacer-plus-simple.html`, `TODO.md`).
 
 ---
-## §310 — « Déplacer » choisit un départ, et plus jamais une étendue
+
+## §310 — Sortir d'Atlas : deux gestes, deux portées, et rien qui se recopie
+
+**Sa question du 9 septembre 2026 :** *« si je clique sur me déconnecter dans les
+réglages, est-ce que ça me remet à la page de connexion ? »* Il n'y avait aucun
+« me déconnecter » dans les Réglages — seulement « Me déconnecter partout », au
+bas de l'écran « Mot de passe ».
+
+**Les deux gestes existent maintenant, et ils ne servent pas au même moment.**
+
+| | Où | Portée | Face ID |
+|---|---|---|---|
+| **Se déconnecter** | bas des Réglages | **cet appareil** | **reste posé** |
+| **Me déconnecter partout** | sous « Mot de passe » | tout le compte | **retiré partout** |
+
+C'est la répartition des applications grand public — WhatsApp, Instagram, les
+Réglages d'iOS —, et sa correction du 9 septembre l'a imposée : *« va voir
+comment font les grandes applications et fais comme eux, là ce que tu me
+proposes ne fait pas pro »*. **La première version posait les deux choix dans une
+même feuille**, au moment où l'on veut juste sortir. Ne pas la ressusciter : un
+arbitrage technique n'a pas à se poser à celui qui rend son téléphone le soir.
+
+**`signOut` d'Auth.js, jamais `/api/session-perimee`.** La tentation était forte :
+cette route efface déjà les cookies. Deux raisons de ne pas la réemployer. Son
+nom ment — elle existe pour une session dont le COMPTE a disparu (le cookie
+fantôme du 10 août 2026) et renvoie sur `/login?session=perimee`. Et elle tient
+sa propre liste de six noms de cookies, préfixes `__Secure-` et `__Host-`
+compris : la recopier en ferait une seconde, et deux listes divergent (§3 de
+`CLAUDE.md`). `signOut` efface le cookie qu'Auth.js a lui-même posé.
+
+**Rien à fermer côté serveur, et ce n'est pas un oubli.** La session est un jeton
+signé (`session: { strategy: "jwt" }`) : aucune ligne de session en base. La
+preuve récente de M11 reste, délibérément — elle est attachée au `sessionId`, un
+UUID tiré à chaque authentification réelle, donc inutilisable par la session
+suivante ; l'effacer voudrait dire appeler `effacerPreuves`, qui travaille sur
+TOUT l'utilisateur et couperait sa tablette parce qu'il a fermé son téléphone.
+
+**Le dessin n'est pas neuf non plus : c'est celui de `SupprimerCeClient`**,
+tranché sur maquette le 2 septembre — une ligne en capitales espacées de 9,5 px
+qui ne s'annonce pas mais dont la cible fait 44 px, une feuille, et « Annuler »
+en simple mot plutôt qu'en second bouton. **Une seule chose en diffère : pas de
+surtitre d'alerte.** « Suppression définitive » avertit d'un geste irréversible ;
+se déconnecter se défait en cinq secondes, et le même signal posé sur un geste
+anodin s'apprend à être ignoré (`CLAUDE.md` §4 ter).
+
+**Aucune garde de rôle sur ce geste**, et c'en est une décision : sortir de son
+propre compte n'appartient pas à l'entreprise. Un salarié doit pouvoir fermer sa
+session sur le téléphone qu'il rend le soir.
+
+**Et aucun `try/catch` autour de l'action.** `signOut({ redirectTo })` lève le
+`NEXT_REDIRECT` que Next.js attrape pour naviguer : l'avaler effacerait le cookie
+en laissant l'écran en place, chaque geste ensuite refusé — exactement le piège
+du cookie mort payé une soirée le 10 août 2026.
+
+---
+
+## §311 — La flèche de retour ramène à la page d'avant, et plus à une adresse écrite d'avance
+
+**Sa demande du 9 septembre 2026, capture à l'appui :** *« j'ai cliqué sur
+ouvrir le devis, une fois sur le devis je clique sur retour, j'arrive sur la
+page de la fiche client — or le bouton retour doit marcher comme un vrai bouton
+marche arrière : il doit toujours renvoyer à la page d'où l'on vient juste
+avant. »*
+
+### Ce qui a été corrigé, et ce n'est pas la flèche du devis
+
+C'est le **cinquième** signalement de la même racine :
+
+| quand | ce qu'il a signalé | ce qui a été fait alors |
+|---|---|---|
+| 20 août | la fiche client sautait deux écrans | `retour-fiche-client.ts` : une porte reconnue |
+| 31 août | le devis le déposait sur la fiche du chantier | `retour-du-devis.ts` : une destination écrite |
+| 7 sept. | venu du planning, il atterrissait sur l'accueil | `retour-au-planning.ts` : une porte de plus |
+| 8 sept. | venu du planning, le devis menait à la fiche client | une branche de plus dans `retourDuDevis` |
+| 9 sept. | venu de l'accueil, le devis menait à la fiche client | **ceci** |
+
+Chaque écran **déclarait** sa sortie, et chaque porte d'entrée neuve la
+démentait. Les quatre correctifs précédents ont ajouté une porte reconnue à la
+fois — c'est la superposition de couches que `CLAUDE.md` §4 quater refuse :
+chacune était juste, et la suivante était déjà nécessaire au moment de la poser.
+
+**Ce qui change, c'est la question posée.** On ne cherche plus à DEVINER d'où il
+vient : on s'en souvient. L'onglet tient le journal des écrans traversés, et
+chaque flèche y lit la dernière page qui n'est pas celle-ci.
+
+### Les pièces, et pourquoi elles sont là où elles sont
+
+| | |
+|---|---|
+| `src/lib/journal-de-navigation.ts` | la règle : ce qui s'empile, ce qui se dépile, ce qu'on refuse d'y lire. **Aucune ligne de navigateur** — donc éprouvable sans en démarrer un (`CLAUDE.md` §4 sexies) |
+| `src/components/atlas/journal-navigateur.ts` | le rangement dans `sessionStorage`, et rien d'autre |
+| `src/components/atlas/JournalDeNavigation.tsx` | posé UNE fois dans la mise en page racine, il note chaque visite. Écran par écran, ce serait une liste à tenir à la main — le défaut même qu'on corrige |
+| `src/components/atlas/FlecheRetour.tsx` | LA flèche, pour tous les écrans. `EnTeteEcran` et la feuille du devis s'en servent : deux dessins de flèche auraient fini par répondre deux choses |
+
+### Trois décisions qui ne se devinent pas
+
+**`sessionStorage`, pas un état de React ni `localStorage`.** Un état se perd au
+rechargement, or son onglet reste ouvert des heures et son banc redémarre
+plusieurs fois par soirée (`HANDOVER.md`, piège 0). `localStorage` est partagé
+entre onglets : deux onglets ouverts se mélangeraient les fils.
+
+**L'ÉCRAN compte, pas l'adresse entière.** L'écran de TVA se feuillette par
+trimestre (`/termines/tva?annee=2026&t=2`) : si chaque trimestre comptait pour
+une page, la flèche rembobinerait les trimestres un à un avant de sortir.
+Reculer, c'est quitter l'écran où l'on est.
+
+**Le libellé devient « Retour » quand le journal décide.** La flèche connaît
+l'adresse, pas le nom de l'écran, et le dépôt a déjà payé une flèche qui
+annonçait « Retour au devis » en menant au planning (§296, 7 septembre). Nommer
+la destination demanderait une table écran par écran — c'est-à-dire la liste
+tenue à la main que ce lot supprime.
+
+### RECULER SE DÉCLARE, IL NE SE DEVINE PAS — deux verdicts corrigés
+
+**Deux affirmations de ce lot se sont révélées fausses en le livrant, et c'est
+la suite navigateur qui l'a dit à chaque fois.** Elles sont écrites ici parce
+qu'un correctif qui paraît juste et ne l'est pas coûte plus cher qu'un défaut
+connu (`CLAUDE.md` §2 bis).
+
+**1. « Le journal dépile quand il revient » — FAUX.** La première version
+reconnaissait un retour à la forme de la trace : si l'adresse d'arrivée était
+celle d'avant-dernière, c'est qu'on avait reculé. Or **rouvrir un écran déjà vu
+laisse exactement la même trace** — ouvrir un devis, passer à l'accueil, rouvrir
+ce devis depuis l'accueil. Le journal dépilait alors l'accueil, et la flèche
+sautait deux écrans : la panne qu'on corrigeait, par l'autre bout.
+
+Reculer n'est pas une forme, c'est un **geste** : les trois seuls qui reculent le
+disent eux-mêmes (`journalSansCetEcran`).
+
+| le geste | où il le dit |
+|---|---|
+| la flèche est appuyée | `FlecheRetour.tsx`, à l'appui |
+| une fiche client enregistrée ramène au devis | `FormulaireNouveauChantier.tsx` |
+| le bouton du navigateur, ou le balayage sur un téléphone | `JournalDeNavigation.tsx`, sur `popstate` |
+
+**2. « La lecture est insensible à l'ordre » — FAUX au premier essai.** La flèche
+se calcule pendant le rendu, le journal se met à jour juste après : elle lit donc
+un journal qui ne porte pas encore le pas qu'on vient de faire. Une version qui y
+cherchait « notre place » trouvait la visite **précédente** du même écran et
+rendait ce qui la précédait — deux écrans trop tôt, exactement la plainte du
+9 septembre. `pagePrecedente` applique désormais la visite courante avant de
+lire : si le journal la porte déjà, c'est sans effet ; sinon elle s'ajoute au
+bout. Notre place est alors toujours la dernière ligne.
+
+**Ce qu'il faut en retenir pour la suite :** aucune de ces deux erreurs ne se
+voyait en relisant, et les deux étaient vertes côté règle pure. C'est le contrôle
+qui déroule SON geste dans un navigateur qui les a nommées — et la seconde ne
+s'est laissé prendre que parce que l'échec disait le journal de l'onglet en
+clair, au lieu d'un simple dépassement de délai.
+
+### Pourquoi pas `history.back()`
+
+`retour-au-planning.ts` l'avait écarté avec trois raisons, et elles tiennent
+toujours. Le journal les tient toutes les trois là où `history.back()` échouait :
+
+| l'objection | ce que le journal en fait |
+|---|---|
+| la flèche est un `<Link>` : on l'ouvre dans un onglet, elle s'annonce | elle garde une VRAIE adresse, lue dans le journal |
+| il ment après un rechargement ou un signet | le journal survit au rechargement, et il est vide sur un signet — la sortie déclarée reprend alors la main |
+| après un enregistrement, il redépose sur le formulaire quitté | l'enregistrement DÉCLARE qu'il revient d'où il vient, et le formulaire quitte le journal |
+
+Ce dernier point est la boucle du 7 septembre (§296) : deux flèches se pointaient
+l'une l'autre, et aucune ne sortait. Le geste déclaré l'interdit par
+construction — et il ne se devine pas, voir ci-dessus.
+
+### Ce qui a été RETIRÉ avec, et ce qui reste
+
+**« Aucun client rattaché à ce chantier » n'est plus un cul-de-sac.** Le 31 août,
+la flèche du devis avait été détournée vers le formulaire de fiche client parce
+que cette phrase disait le manque sans dire où le réparer. Le chemin se pose
+désormais **là où le manque se lit**, et il s'annonce — le pansement se retire
+avec la correction (`CLAUDE.md` §4 quater).
+
+**Les règles `?de=` restent, comme REPLI et pour l'après-enregistrement.** Elles
+répondent maintenant à une autre question que la flèche : où sortir quand il n'y
+a pas de page d'avant (signet, notification à froid), et où aller une fois un
+formulaire enregistré (`apresLesCoordonnees`). Leur moitié « devine d'où il
+vient » est en revanche devenue redondante avec le journal ; sa retraite est
+nommée dans `TODO.md`, et elle n'a pas été faite dans ce lot — six écrans et six
+suites en dépendent, et un lot qui les réécrit la même nuit se livre rouge.
+
+**La fiche d'un client SUPPRIMÉE quitte le journal** (`journalSansCetEcran`,
+appelé par `SupprimerCeClient.tsx`) : une adresse laissée dans le journal est
+une destination promise, et celle-là ne mène plus à rien.
+
+### Éprouvé
+
+`scripts/test-journal-de-navigation.ts` — dix-huit cas de règle pure, dont les
+trois qu'aucune suite navigateur ne verrait : le geste déclaré, la lecture d'un
+journal en retard d'un pas, et le refus de `//ailleurs.example` dans un `href`.
+`scripts/test-retour-page-davant-e2e.ts` déroule SON geste dans un navigateur :
+accueil → devis → retour → accueil, la même flèche par une autre porte, deux
+retours d'affilée, le rechargement, et la sortie déclarée à froid
+(`scripts/_arriver-a-froid.ts`). C'est cette suite-là qui a trouvé les deux
+erreurs ci-dessus, et son message rend le journal de l'onglet en clair — sans
+quoi elle n'aurait dit qu'« délai dépassé ».
+
+---
+
+## §312 — Le geste d'une absence : ce qui remplace le cerne, c'est le +
+
+**Trois décisions du patron en trois jours, sur le même geste**, et la
+troisième contredit la deuxième sans annuler ce qu'elle avait appris :
+
+| Le jour | Ce qu'il a dit | Ce que l'écran portait |
+|---|---|---|
+| 6 sept. | (rien) | une phrase nue, cliquable — invisible, la fonction n'a pas servi |
+| 7 sept. | *« comment savoir qu'il faut cliquer dessus ? »* | une pastille cerclée de 48 px |
+| 9 sept. | *« un petit + plutôt que le gros bouton »*, *« Salarié absent + sans contour ! »*, puis *« rajoute un ? à la fin »* | « + Salarié absent ? », aucun contour |
+
+**Le piège, et c'est lui qui rend ce paragraphe nécessaire.** Retirer le cerne
+sans rien mettre à la place, c'est revenir au 6 septembre — le jour où le geste
+existait et où personne ne le voyait. Ce qui distingue un geste d'une phrase
+n'est pas le cadre : c'est **un signe qui annonce qu'il se passera quelque
+chose**. Le **+** en est un, et il en dit même plus qu'un cerne (« ceci
+ajoute »). Le cadre s'en va, la reconnaissance reste.
+
+**Ce qui NE bouge pas quand l'encre rétrécit : la cible.** 44 px de haut,
+pleine largeur. Un geste raté avec des gants coûte exactement ce que coûte un
+geste invisible — il faut recommencer, et sur un chantier on ne recommence pas.
+
+**Le contrôle a suivi la règle, pas le dessin** (`CLAUDE.md` §5 bis).
+`test-pas-la-ce-jour-e2e.ts` exigeait « un cerne, une ombre ou un fond » : il
+aurait réclamé ce que le patron venait de faire retirer. Il accepte désormais
+**un quatrième signe, le +**, et refuse toujours les quatre absents à la fois.
+
+**Le point d'interrogation dit ce que le bouton fait** : il ne note aucune
+absence, il ouvre la question « Qui ? ». C'est la grammaire que l'écran emploie
+déjà deux lignes plus bas, sur la pastille d'équipe.
+
+**Et le titre « Ce jour-là » a disparu** — *« on sait que c'est ce jour »* : la
+carte porte la date en tête, deux centimètres plus haut.
+
+| | |
+|---|---|
+| le geste | `GesteAbsence` dans `src/app/planning/PlanningClient.tsx` |
+| la planche | `appli/salarie-s-absente.html` — trois tailles de +, A retenu |
+| le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` |
+
+## §313 — « Déplacer » choisit un départ, et plus jamais une étendue
 
 **Sa décision du 10 septembre 2026**, après avoir essayé la planche
 `appli/deplacer-plus-simple.html` : *« fais celui-là, juste tu retires la

@@ -272,6 +272,53 @@ function identifiantDeLaCle(reponse: string): string {
   }
 }
 
+/**
+ * SE DÉCONNECTER DE CET APPAREIL.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **Elle existait sans appelant jusqu'au 9 septembre 2026**, et c'est ce qui l'a
+ * rendue dangereuse : ce jour-là, faute de l'avoir cherchée, une seconde action
+ * identique a été écrite dans `src/app/reglages/`. Deux façons de sortir
+ * d'Atlas, c'est exactement ce que `CLAUDE.md` §3 interdit — et `§5 ter` le dit
+ * déjà : *la question n'est jamais « est-ce possible ? » mais « qui, dans ce
+ * dépôt, fait déjà quelque chose d'approchant ? »*. Le doublon a été retiré,
+ * celle-ci a reçu son appelant : `src/app/reglages/SeDeconnecter.tsx`.
+ *
+ * ─── POURQUOI `signOut` ET NON `/api/session-perimee` ───────────────────────
+ *
+ * Cette route efface bien les cookies, et la tentation de la réemployer est
+ * réelle. Deux raisons de s'en abstenir :
+ *
+ * 1. **Son nom ment.** Elle existe pour une session dont le COMPTE a disparu
+ *    (le cookie fantôme du 10 août 2026) et renvoie sur `/login?session=perimee`.
+ *    Rien de cela n'est vrai d'un patron qui sort volontairement.
+ * 2. **Elle tient sa propre liste de six noms de cookies**, préfixes
+ *    `__Secure-` et `__Host-` compris. La recopier en ferait une seconde, et
+ *    deux listes divergent. `signOut` efface le cookie qu'Auth.js a posé.
+ *
+ * ─── RIEN À FERMER CÔTÉ SERVEUR, ET CE N'EST PAS UN OUBLI ───────────────────
+ *
+ * La session est un jeton signé (`session: { strategy: "jwt" }`) : aucune ligne
+ * de session en base. La preuve récente de M11 reste, délibérément — attachée
+ * au `sessionId`, un UUID tiré à chaque authentification réelle, elle est
+ * inutilisable par la session suivante ; l'effacer voudrait dire appeler
+ * `effacerPreuves`, qui travaille sur TOUT l'utilisateur et couperait la
+ * tablette parce qu'on a fermé le téléphone.
+ *
+ * ─── ET FACE ID RESTE POSÉ SUR L'APPAREIL ───────────────────────────────────
+ *
+ * C'est toute la différence avec « Me déconnecter partout », qui, lui, retire
+ * les clés — sans quoi l'appareil qu'on voulait couper rouvrirait Atlas d'un
+ * regard, `signIn("cle-appareil")` ouvrant une session sans mot de passe. Ici,
+ * on ne coupe rien à distance : on sort d'un appareil qu'on tient.
+ *
+ * ─── AUCUN `try/catch` AUTOUR DE CET APPEL ──────────────────────────────────
+ *
+ * `signOut({ redirectTo })` lève délibérément le `NEXT_REDIRECT` que Next.js
+ * attrape pour naviguer. L'entourer d'un `catch` avalerait la redirection : le
+ * cookie serait effacé et l'écran resterait là, chaque geste ensuite refusé —
+ * exactement le piège du cookie mort payé une soirée le 10 août 2026.
+ */
 export async function deconnexionAction() {
   await signOut({ redirectTo: "/login" });
 }

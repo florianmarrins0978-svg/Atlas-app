@@ -1,8 +1,13 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-10 · branche `main`
-· dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
+**Dernière mise à jour :** 2026-09-09 · branche `claude/back-button-history-0pa6sj`
+· dernière migration `drizzle/0083_retour_vu_par.sql`
 (ce lot-ci ne touche que le chemin de retour, sans base)
+
+> **Corrigé le 9 septembre 2026 :** cette ligne annonçait
+> `0077_civilite_et_prenom_du_compte.sql` alors que six migrations étaient
+> appliquées depuis. Le code fait foi (`CLAUDE.md` §1) — et une dernière
+> migration fausse envoie une session neuve appliquer ce qui est déjà là.
 
 ---
 
@@ -15,7 +20,7 @@ dès qu'on choisit.
 **Retirer « Journée » a fermé un vrai piège :** ce mot disait une étendue, pas
 un départ, et le choisir réécrivait la durée du chantier — « Matin » sur une
 journée vendue la ramenait à une demi-journée, en silence. Six pièces
-disparaissent avec lui. **Aucune migration.** Détail : `ARCHITECTURE.md` §310.
+disparaissent avec lui. **Aucune migration.** Détail : `ARCHITECTURE.md` §313.
 
 **Reste ouvert, et c'est à lui de trancher :** l'ordre des deux moitiés de la
 journée (`TODO.md`).
@@ -85,6 +90,28 @@ Aucune migration. `ARCHITECTURE.md` §305.
 ---
 
 
+
+## FAIT : LE BOUTON RETOUR EST UN VRAI BOUTON RETOUR — 9 septembre 2026
+
+Sa demande : *« le bouton retour doit marcher comme un vrai bouton marche
+arrière, il doit toujours renvoyer à la page d'où l'on vient juste avant. »*
+Cinquième signalement de la même racine (20 août, 31 août, 7, 8 et 9 septembre)
+— chaque écran déclarait sa sortie, et chaque porte d'entrée neuve la démentait.
+
+**L'onglet tient le journal des écrans traversés**, et toute flèche y lit la
+page d'avant. La sortie déclarée reste, comme repli : sur la première page d'un
+onglet, il n'y a pas de page d'avant, et sa règle du 31 août s'applique telle
+quelle. Aucune migration.
+
+Retiré avec : « Aucun client rattaché à ce chantier » n'est plus un cul-de-sac —
+le chemin vers la fiche se lit sous la phrase qui annonce le manque.
+
+Document : `docs/lot-retour-page-davant.md` · `ARCHITECTURE.md` §311.
+
+**Reste ouvert :** la retraite de la moitié « devine d'où il vient » des règles
+`?de=` (`TODO.md`) — six écrans et six suites en dépendent.
+
+---
 ## FAIT : LA RÉCEPTION D’UNE FACTURE SE TRACE — 9 septembre 2026
 
 Sa demande : une case « J’ai bien reçu cette facture » sur la page du client,

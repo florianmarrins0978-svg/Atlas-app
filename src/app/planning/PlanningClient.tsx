@@ -2060,6 +2060,52 @@ function PastilleDuJour({
   );
 }
 
+/**
+ * LE GESTE D'UNE ABSENCE — un +, deux mots, aucun contour.
+ *
+ * **Sa décision du 9 septembre 2026**, planche `appli/salarie-s-absente.html` :
+ * *« Quelqu'un pas là faut le changer par salarié absent avec un petit +
+ * plutôt que le gros bouton »*, puis *« Salarié absent + sans contour ! »*.
+ *
+ * **CE QUI REMPLACE LE CERNE, C'EST LE +, ET CE N'EST PAS UN ORNEMENT.** Le
+ * 7 septembre, ce même geste était une phrase nue et lui a échappé une journée
+ * entière : *« comment savoir qu'il faut cliquer dessus ? »*. On y avait
+ * répondu par une pastille ; il la trouve trop grosse, et il a raison — mais
+ * on ne peut pas retirer la pastille ET laisser du texte nu, ce serait
+ * remettre le défaut du 7. Le + porte ce que le cerne portait : « ceci
+ * s'appuie, et ça ajoute quelque chose ».
+ *
+ * **L'ENCRE RÉTRÉCIT, LA CIBLE NON** : 44 px de haut, pleine largeur. Un geste
+ * qu'on rate avec des gants ne vaut pas mieux qu'un geste qu'on ne voit pas.
+ */
+function GesteAbsence({
+  children,
+  onClick,
+  ...reste
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+} & Record<string, unknown>) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      {...reste}
+      className="flex min-h-[44px] w-full items-center gap-2.5 py-[9px] text-left text-[14.5px]"
+      style={{ color: colors.ink, WebkitTapHighlightColor: "transparent" }}
+    >
+      <span
+        aria-hidden="true"
+        className="text-[19px] leading-none"
+        style={{ flex: "none", marginTop: -2 }}
+      >
+        +
+      </span>
+      <span>{children}</span>
+    </button>
+  );
+}
+
 function PasLaCeJour({
   jour,
   absences,
@@ -2139,14 +2185,15 @@ function PasLaCeJour({
           l'allure d'une phrase posée là, si bien qu'une fonction livrée le
           6 septembre était restée invisible.
 
-          **Son choix du 7 septembre** (planche « Deux mots du planning »,
-          variante A) : une pastille, comme TOUS les autres gestes de cette
-          feuille — « Terminé », les noms d'équipe, « Déplacer », « Retirer ».
-          Le geste se reconnaît alors sans qu'on l'explique.
+          **Sa réponse du 7 septembre** était une pastille, comme les autres
+          gestes de la feuille. **Le 9, il l'a trouvée trop grosse** — *« un
+          petit + plutôt que le gros bouton »*, puis *« sans contour »*. Ce qui
+          reconnaît le geste n'est donc plus le cerne mais le **+** (voir
+          `GesteAbsence` : le pourquoi y est écrit en entier).
 
           **Pas de flèche au bout, et ce n'est pas un oubli** : sa règle du
           25 août. Un bouton n'a pas besoin d'une flèche pour dire qu'on
-          l'appuie — il a besoin d'avoir la forme d'un bouton.
+          l'appuie.
 
           **La ligne d'une absence DÉJÀ posée, elle, ne change pas.** Elle
           porte « Annuler » à droite, un mot qui nomme son geste : elle n'a
@@ -2173,25 +2220,33 @@ function PasLaCeJour({
         </LigneQuestion>
       )}
 
+      {/* ─── PLUS DE TITRE « CE JOUR-LÀ » — 9 septembre 2026 ──────────────
+          *« Retire ce jour-là, on sait que c'est ce jour. »* La carte porte la
+          date en tête, à deux centimètres au-dessus : le redire n'apprend rien
+          et coûte une ligne sur un téléphone (`CLAUDE.md` §3). */}
       {!tousAbsents && (
         <div className="py-2">
-          <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
-            Ce jour-là
-          </p>
           {nombreSalaries === 0 ? (
-            <PastilleDuJour
+            <GesteAbsence
               data-atlas="fermer-le-jour"
               onClick={() => fermer(jour, 1)}
             >
               Je ne suis pas là
-            </PastilleDuJour>
+            </GesteAbsence>
           ) : !demande ? (
-            <PastilleDuJour
+            /* **« Salarié absent ? », et le point d'interrogation est de lui**
+               — son choix du 9 septembre, en trois fois : le mot, puis « sans
+               contour », puis *« rajoute un ? à la fin »*.
+
+               **Il dit vrai de ce que le geste fait :** ce bouton ne note rien,
+               il ouvre la question « Qui ? » — la même grammaire que la
+               pastille d'équipe juste en dessous. */
+            <GesteAbsence
               data-atlas="fermer-le-jour"
               onClick={() => setDemande(true)}
             >
-              Quelqu&apos;un n&apos;est pas là
-            </PastilleDuJour>
+              Salarié absent&nbsp;?
+            </GesteAbsence>
           ) : (
             /* ─── SON CHOIX D2, LE 8 SEPTEMBRE 2026 ────────────────────────
                Sa question : *« lorsque je note les congés, je peux les mettre
