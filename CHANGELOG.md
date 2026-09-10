@@ -8,6 +8,46 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### La fiche d'intervention se colle sous SON chantier
+
+*« Quand il y a plusieurs chantiers le même jour on a un problème ! Quand je
+clique sur sa fiche d'intervention, ça doit se coller en dessous, pas en dessous
+de Frédéric, ça porte à confusion. »*
+
+La fiche était rendue **après la boucle des blocs**, donc toujours au bas de la
+journée. Sur un jour à deux chantiers, toucher « Mr. Julien » ouvrait une fiche
+posée sous « Mr. Frédéric » — et la fiche porte le nom du client en gros : deux
+noms qui se contredisent à trois centimètres, sur l'écran qui dit à une équipe
+où elle va.
+
+**Corrigé à la racine, pas déplacé d'un cran :** la place se calcule dans
+`rangDeLaFiche` (`src/lib/planning-jour.ts`), à côté de `blocsDeLaJournee` qui
+ordonne déjà la journée. L'écran ne fait que la poser au rang qu'on lui rend, et
+il n'y a **qu'un seul endroit** dans l'arbre où elle se dessine.
+
+**Ce que la règle concilie**, et c'est pour cela qu'elle ne tient pas en une
+ligne : sous le **dernier** chantier du jour, la fiche repasse **après** les
+moitiés restées libres — sa correction du 22 août 2026, *« l'après-midi de libre
+doit rester en dessous du matin même s'il est libre »*. Une moitié libre
+appartient à la journée, pas au chantier. Les deux règles ne se croisent qu'en
+queue, parce que `blocsDeLaJournee` ne pose des blocs « libre » que là.
+
+**Éprouvé sans navigateur** (`scripts/test-planning-jour.ts`, cinq essais de
+plus) : le défaut ne se voyait qu'à **deux chantiers dans la même journée**, un
+cas qu'aucune capture ni aucune suite ne montrait. Les nouveaux essais ont été
+confrontés à l'ancien comportement — deux rougissent, dont celui qui porte son
+mot : « elle est passée sous Frédéric ».
+
+**Et le chemin qu'il emprunte, lui, est éprouvé à l'écran** : un essai de plus
+dans `scripts/test-planning-e2e.ts` pose DEUX chantiers sur la même journée,
+touche le nom du premier, et mesure que la fiche tombe entre les deux. La suite
+du planning rend 44 réussis, 0 échec.
+
+**Et du code mort est parti avec :** `dansLeMois` posait `mx-[18px]` sur la
+fiche pour un appelant qui n'existe pas — les deux passent `attache`. La fiche
+vit désormais DANS la carte du jour, et c'est le retrait de la carte qui
+l'aligne.
+
 ### Planche — facturer sans passer par la case devis
 
 *« Il faut que l'on puisse facturer sans avoir besoin de passer par la case
