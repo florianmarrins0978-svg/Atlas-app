@@ -26391,3 +26391,45 @@ d'écrire »).
 21 août) montre encore les deux temps « QUI puis QUAND ». Elle n'a pas été
 refaite — une planche retenue ne se réécrit pas sans lui.
 
+---
+
+## §309 — Le geste d'une absence : ce qui remplace le cerne, c'est le +
+
+**Trois décisions du patron en trois jours, sur le même geste**, et la
+troisième contredit la deuxième sans annuler ce qu'elle avait appris :
+
+| Le jour | Ce qu'il a dit | Ce que l'écran portait |
+|---|---|---|
+| 6 sept. | (rien) | une phrase nue, cliquable — invisible, la fonction n'a pas servi |
+| 7 sept. | *« comment savoir qu'il faut cliquer dessus ? »* | une pastille cerclée de 48 px |
+| 9 sept. | *« un petit + plutôt que le gros bouton »*, *« Salarié absent + sans contour ! »*, puis *« rajoute un ? à la fin »* | « + Salarié absent ? », aucun contour |
+
+**Le piège, et c'est lui qui rend ce paragraphe nécessaire.** Retirer le cerne
+sans rien mettre à la place, c'est revenir au 6 septembre — le jour où le geste
+existait et où personne ne le voyait. Ce qui distingue un geste d'une phrase
+n'est pas le cadre : c'est **un signe qui annonce qu'il se passera quelque
+chose**. Le **+** en est un, et il en dit même plus qu'un cerne (« ceci
+ajoute »). Le cadre s'en va, la reconnaissance reste.
+
+**Ce qui NE bouge pas quand l'encre rétrécit : la cible.** 44 px de haut,
+pleine largeur. Un geste raté avec des gants coûte exactement ce que coûte un
+geste invisible — il faut recommencer, et sur un chantier on ne recommence pas.
+
+**Le contrôle a suivi la règle, pas le dessin** (`CLAUDE.md` §5 bis).
+`test-pas-la-ce-jour-e2e.ts` exigeait « un cerne, une ombre ou un fond » : il
+aurait réclamé ce que le patron venait de faire retirer. Il accepte désormais
+**un quatrième signe, le +**, et refuse toujours les quatre absents à la fois.
+
+**Le point d'interrogation dit ce que le bouton fait** : il ne note aucune
+absence, il ouvre la question « Qui ? ». C'est la grammaire que l'écran emploie
+déjà deux lignes plus bas, sur la pastille d'équipe.
+
+**Et le titre « Ce jour-là » a disparu** — *« on sait que c'est ce jour »* : la
+carte porte la date en tête, deux centimètres plus haut.
+
+| | |
+|---|---|
+| le geste | `GesteAbsence` dans `src/app/planning/PlanningClient.tsx` |
+| la planche | `appli/salarie-s-absente.html` — trois tailles de +, A retenu |
+| le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` |
+

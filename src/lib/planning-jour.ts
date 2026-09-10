@@ -205,10 +205,20 @@ export function ditLeCompteDuJour(nombreChantiers: number, chargeMax: number): s
  * lui manquait sur un téléphone.
  *
  * Au-delà de deux noms on compte, sinon la ligne déborde sur un téléphone.
+ *
+ * **La barre oblique sépare, la virgule énumérait** — sa demande du 9 septembre
+ * 2026 : *« à la place de noter les salariés avec une virgule, mets Julien /
+ * Antoine, un / entre chaque salarié »*. Sur une pastille pleine, la virgule
+ * se lit mal : elle tombe sous la ligne de base, presque contre le nom
+ * suivant, et deux noms courts finissent par se lire comme un seul.
+ *
+ * Une seule fonction l'écrit, pour le planning comme pour la fiche de chantier
+ * (`CLAUDE.md` §3) : deux façons d'énumérer les mêmes personnes auraient
+ * divergé au premier ajustement.
  */
 export function ditQuiPart(noms: readonly string[]): string {
   if (noms.length === 0) return "Qui ?";
-  if (noms.length <= 2) return noms.join(", ");
+  if (noms.length <= 2) return noms.join(" / ");
   return `${noms[0]} +${noms.length - 1}`;
 }
 

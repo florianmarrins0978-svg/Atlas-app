@@ -9,34 +9,16 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ LE PETIT + DU PLANNING ATTEND SON CHOIX (9 septembre 2026)
+## ~~LE PETIT + DU PLANNING~~ — TRANCHÉ LE 9 SEPTEMBRE 2026
 
-**Sa demande :** *« Quelqu'un pas là faut le changer par salarié s'absente avec
-un petit + plutôt que le gros bouton. »*
+~~Trois tailles de + à choisir sur `appli/salarie-s-absente.html`.~~ **Son
+choix, le jour même :** la variante A, « Salarié absent ? », **sans contour**, et
+le titre « Ce jour-là » retiré. **Codé** — `GesteAbsence` dans
+`src/app/planning/PlanningClient.tsx`, `ARCHITECTURE.md` §309.
 
-**La planche :** `appli/salarie-s-absente.html`, liée depuis `essais.html`.
-Trois variantes — A (+ cerclé de 26 px et les mots à côté), B (la pastille
-d'aujourd'hui rétrécie), C (le + seul, sans mot).
-
-**Et le titre « Ce jour-là » s'en va**, sa remarque du 9 septembre : *« retire
-ce jour-là, on sait que c'est ce jour »*. La carte porte déjà la date en tête.
-C'est `<p className={libelleCaps}>Ce jour-là</p>` dans `PasLaCeJour` — à
-retirer en même temps que le geste, pas après.
-
-**RIEN N'EST CODÉ** tant qu'il n'a pas choisi. Ce qui changera alors, à un seul
-endroit : `PasLaCeJour` dans `src/app/planning/PlanningClient.tsx` — le libellé
-et la forme du geste, jamais l'écriture de l'absence.
-
-**Deux questions posées avec la planche**, et le code en dépend :
-
-| | |
-|---|---|
-| le mot | « Salarié s'absente » ou « Salarié absent » |
-| **sans salarié** | l'écran dit « Je ne suis pas là », et « Salarié s'absente » n'y veut rien dire : la planche garde sa phrase, à confirmer |
-
-**Ce qu'il ne faut pas défaire en codant :** la cible du doigt reste à 44 px
-même quand le dessin en fait 38 — sinon le geste rate avec des gants. Et le
-7 septembre a déjà coûté une journée à un geste qu'on ne voyait pas.
+**Ce qui reste ouvert, et qui n'a pas été tranché :** quand il n'a **aucun
+salarié**, l'écran garde sa phrase à lui — « Je ne suis pas là ». Il ne s'est
+pas prononcé ; ne pas y mettre « Salarié absent » sans le lui demander.
 
 ---
 
@@ -1530,6 +1512,23 @@ et le 8 je choisis la B ».** Tout est codé — `ARCHITECTURE.md` §252,
   les dix-sept écrans qui emploient `PrimaryButton`.
 
 ## HUIT SUITES NAVIGATEUR SONT ROUGES SUR CE POSTE, ET LE PRODUIT N'Y EST POUR RIEN (4 sept. 2026)
+
+**Elles sont VINGT-DEUX le 9 septembre 2026**, mesurées sur une batterie
+complète dans un conteneur d'agent — et la famille s'explique par une seule
+ligne du journal : *« le bandeau du banc apparaît sur un serveur qui n'en est
+pas un »* (`test-bandeau-banc-e2e`). Ce bandeau est une **bande fixe** : tout
+ce qui se mesure « recouvert » ou « tient dans un écran » tombe avec lui —
+`test-connexion-figee`, `test-face-id`, `test-devis-client`,
+`test-pas-la-ce-jour`, et le reste.
+
+**Vérifié arbre remis à nu** (`git stash` du seul fichier touché) :
+`test-pas-la-ce-jour-e2e` rend le MÊME échec avant et après le lot du
+9 septembre. Ce n'est donc pas un lot qui les allume — mais tant que ce
+bandeau paraît hors banc, **la batterie ne peut plus rendre un vert ici**, et
+c'est elle qui autorise une livraison (`CLAUDE.md` §5). À reprendre en
+premier, avant tout lot qui compte sur elle.
+
+
 
 **Mesuré**, arbre remis à nu (`git stash`) : `test-bandeau-banc-e2e`,
 `test-carte-reponse-mene-au-geste-e2e`, `test-date-lointaine-e2e`,

@@ -8,30 +8,44 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-09
 
-### Le gros bouton « Quelqu'un n'est pas là » se rejoue en petit — planche
+### Deux salariés se lisent « Julien / Antoine », plus « Julien, Antoine »
 
-Sa demande, capture à l'appui : *« Quelqu'un pas là faut le changer par salarié
-s'absente avec un petit + plutôt que le gros bouton. »*
+Sa demande du 9 septembre : *« à la place de noter les salariés avec une
+virgule, mets un / entre chaque salarié »*. Sur une pastille pleine, la virgule
+tombe sous la ligne de base et se colle au nom suivant : deux noms courts
+finissent par se lire comme un seul.
 
-**RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis) : `appli/salarie-s-absente.html` montre
-trois tailles de +, essayables du doigt, et le geste va jusqu'au bout — le nom,
-puis « Plutôt Matin / Après-midi ».
+**Une seule fonction l'écrit** — `ditQuiPart` dans `src/lib/planning-jour.ts` —,
+donc le planning ET la fiche de chantier changent ensemble. Le comptage au-delà
+de deux noms ne bouge pas : « Julien +2 » reste ce qui tient sur un téléphone.
 
-**Le piège que la planche existe pour éviter.** Ce bouton a été GROSSI le
-7 septembre, et par lui : le texte plat ne se voyait pas, et fermer un jour est
-resté inutilisé pendant vingt-quatre heures. Rapetisser sans précaution rejoue
-cette panne — sauf que le **+** porte la fonction que le mot seul ne portait
-pas. Ce qui ne rétrécit pas, c'est la CIBLE : 44 px sous le doigt dans les trois
-variantes, y compris celle dont le dessin n'en fait que 38.
+### « Salarié absent ? », un + sans contour — et « Ce jour-là » s'en va
 
-**Le titre « Ce jour-là » disparaît aussi** — *« retire ce jour-là, on sait que
-c'est ce jour »* : la carte porte déjà « MARDI 15 SEPTEMBRE » en tête, et le
-redire deux centimètres plus bas n'apprend rien.
+*« Quelqu'un pas là faut le changer par salarié absent avec un petit + plutôt
+que le gros bouton »*, puis, devant la planche : *« Salarié absent + sans
+contour ! »* et *« retire ce jour-là, on sait que c'est ce jour »*.
 
-**Deux points qu'il doit trancher, et qui n'étaient pas dans sa demande :** le
-mot exact (« Salarié s'absente » ou « Salarié absent »), et le cas où il est
-**seul** — sans salarié l'écran dit « Je ne suis pas là », et « Salarié
-s'absente » n'y veut rien dire.
+**Ce qui remplace le cerne, c'est le +.** Ce même geste était une phrase nue le
+6 septembre et lui a échappé une journée entière ; on avait répondu par une
+pastille, qu'il trouve trop grosse. Retirer le cadre ET laisser du texte nu
+aurait rejoué le défaut du 6 — le + dit « ceci s'appuie, et ça ajoute »
+(`ARCHITECTURE.md` §309).
+
+**Le point d'interrogation est de lui aussi**, et il dit vrai de ce que le
+bouton fait : il ne note rien, il ouvre la question « Qui ? » — la grammaire de
+la pastille d'équipe juste en dessous.
+
+**La cible du doigt ne rétrécit pas avec l'encre :** 44 px de haut, pleine
+largeur.
+
+**Le contrôle a suivi la règle, pas le dessin.** `test-pas-la-ce-jour-e2e.ts`
+exigeait « un cerne, une ombre ou un fond » : il aurait réclamé ce que le
+patron venait de faire enlever (`CLAUDE.md` §5 bis). Il accepte désormais le +
+comme quatrième signe, et refuse toujours les quatre absents à la fois.
+
+**La planche reste** — `appli/salarie-s-absente.html`, trois tailles de + à
+essayer, A retenu : elle raconte ce qui a été écarté, dont le + tout seul, sans
+mot, qui aurait rejoué le 6 septembre pour la troisième fois.
 
 ### L'onglet des retours existe toujours, et ses photos se voient enfin
 

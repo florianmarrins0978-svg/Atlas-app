@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Salarié s’absente — Atlas</title>
+<title>Salarié absent — Atlas</title>
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
@@ -95,8 +95,7 @@ body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
   background:none;border:0;padding:9px 0;min-height:44px;cursor:pointer;
   font:inherit;font-size:14px;color:var(--encre);text-align:left}
 .rond{flex:none;display:inline-flex;align-items:center;justify-content:center;
-  width:26px;height:26px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--trait);
-  color:var(--encre);font-size:17px;line-height:1;padding-bottom:2px}
+  color:var(--encre);font-size:19px;line-height:1;padding-bottom:2px}
 
 /* B — la pastille rétrécie, avec son + devant */
 .past.mini{min-height:38px;padding:0 14px;font-size:13.5px;position:relative;
@@ -167,16 +166,16 @@ td b{color:var(--encre)}
 </div>
 
 <div class="tete">
-  <span class="sceau">9 septembre — à choisir</span>
+  <span class="sceau">Retenu le 9 septembre — A, sans contour</span>
   <h1>Le petit +</h1>
-  <p>« Quelqu’un n’est pas là » devient <b>Salarié s’absente</b>, le gros bouton
-  devient un <b>+</b>, et le titre « Ce jour-là » s’en va — la date est déjà
-  au-dessus. Trois tailles de + : appuyez dessus, le geste va jusqu’au bout.</p>
+  <p>Votre choix : <b>A</b>, « Salarié absent ? », <b>sans contour</b>, et le
+  titre « Ce jour-là » retiré. <b>C’est ce qui est codé.</b> Les autres
+  variantes restent ici : elles racontent ce qui a été écarté.</p>
 </div>
 
 <div class="choix" id="choix">
-  <button type="button" data-v="0" aria-pressed="true">Aujourd’hui</button>
-  <button type="button" data-v="1" aria-pressed="false">A</button>
+  <button type="button" data-v="0" aria-pressed="false">Aujourd’hui</button>
+  <button type="button" data-v="1" aria-pressed="true">A</button>
   <button type="button" data-v="2" aria-pressed="false">B</button>
   <button type="button" data-v="3" aria-pressed="false">C</button>
 </div>
@@ -199,10 +198,11 @@ td b{color:var(--encre)}
     <thead><tr><th>Variante</th><th>Ce que c’est</th><th>La raison</th></tr></thead>
     <tbody>
     <tr>
-      <td><b>A</b><span class="reco">recommandé</span></td>
-      <td>Un + cerclé de 26 px, les mots à côté, <b>sans cadre</b>.</td>
-      <td>Le + porte le geste, les mots portent le sens. C’est la ligne la plus
-      légère qui reste <b>reconnaissable sans explication</b>.</td>
+      <td><b>A</b><span class="reco">retenu</span></td>
+      <td>Un + nu, les mots à côté. Aucun contour, aucun cadre.</td>
+      <td><b>Votre choix du 9 septembre.</b> Le + porte le geste, les mots
+      portent le sens : la ligne la plus légère qui reste reconnaissable sans
+      explication.</td>
     </tr>
     <tr>
       <td><b>B</b></td>
@@ -232,11 +232,11 @@ td b{color:var(--encre)}
   sur trois, avec des gants.</p>
 
   <h3>Deux choses à trancher, et je ne les tranche pas seul</h3>
-  <p><b>1. Le mot exact.</b> « Salarié s’absente » ou « Salarié absent » ?
-  Le premier nomme un geste (c’est un bouton), le second un état. Je propose
-  <b>Salarié s’absente</b>, votre mot.</p>
+  <p><b>1. Le mot exact.</b> Tranché le 9 septembre : <b>« Salarié absent ? »</b>,
+  avec le point d’interrogation — le bouton ne note rien, il ouvre la question
+  « Qui ? ».</p>
   <p><b>2. Quand vous êtes seul.</b> Sans salarié, l’écran dit aujourd’hui
-  « Je ne suis pas là » — et « Salarié s’absente » ne veut alors rien dire.
+  « Je ne suis pas là » — et « Salarié absent » ne veut alors rien dire.
   <b>Voir sans salarié</b>, en haut, montre ce que je garde : le même +, votre
   phrase à vous. Dites-moi si vous préférez un seul mot pour les deux cas.</p>
 
@@ -257,7 +257,7 @@ document.getElementById("pole").addEventListener("click", (e) => {
   e.currentTarget.setAttribute("aria-pressed", on ? "true" : "false");
 });
 
-let variante = 0;
+let variante = 1;
 let salaries = 2;
 /** Où en est le geste : au repos, la question « Qui », ou l'absence posée. */
 let etape = "repos";
@@ -285,14 +285,14 @@ document.getElementById("choix").addEventListener("click", (e) => {
 const NOMS = ["Julien", "Antoine"];
 const NOTES = [
   "Aujourd’hui. Un bouton de 48 px, plein de mots, en haut de la fiche du jour.",
-  "A — un + cerclé de 26 px et les mots à côté. La zone qui répond au doigt fait toujours 44 px.",
+  "A — retenu. Un + nu et les mots à côté, sans contour. La zone qui répond au doigt fait toujours 44 px.",
   "B — la même pastille qu’aujourd’hui, rétrécie à 38 px, avec un + devant.",
   "C — le + seul. Le plus discret : rien ne dit ce qu’on ajoute avant d’appuyer.",
 ];
 
 /** Le mot du geste — et il change quand il n’a personne sous ses ordres. */
 function mot() {
-  return salaries === 0 ? "Je ne suis pas là" : "Salarié s’absente";
+  return salaries === 0 ? "Je ne suis pas là" : "Salarié absent\u00a0?";
 }
 
 function gesteHtml() {
