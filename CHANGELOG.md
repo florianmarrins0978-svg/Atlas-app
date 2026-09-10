@@ -59,6 +59,25 @@ geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
 maintenant dans la suite navigateur, qui refait le geste quatre fois.
 
 
+### « Déplacer » agit sur le jour de DÉPART — deux façons de le dire, à essayer
+
+Sa question, deux captures à l'appui : *« quand je clique sur déplacer l'aprem,
+c'est le 15 et le 11 qui bougent, je comprends pas pourquoi. »*
+
+**Le calcul est juste** : son chantier de 2 jours commence le vendredi 11
+après-midi et occupe 11 aprem · 14 matin · 14 aprem · 15 matin. La carte du 14
+le montre — et l'interrupteur qu'elle porte déplace le DÉPART, qui est le 11.
+Reculer d'une demi-journée remplit le 11 et vide le 15, sans toucher au 14.
+Vérifié par `creneauxDuChantier`, pas déduit.
+
+**Ce qui manque à l'écran :** la carte dit la durée (« 2 jours »), jamais le
+jour de départ.
+
+**RIEN N'EST CODÉ** : `appli/deplacer-quel-jour.html` porte les deux réponses —
+A, « Déplacer » ne paraît que sur le premier jour ; B, il reste et l'interrupteur
+dit quel jour il déplace. La planche montre aussi, sous le téléphone, les quatre
+demi-journées qui glissent : c'est ce ruban qui répond à sa question.
+
 ### L'absence se pose dans son ordre : le + en tête, « Annuler » derrière lui
 
 Sa validation du 10 septembre, planche à l'appui. Le + reste en haut, les noms
