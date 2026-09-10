@@ -36,10 +36,15 @@ export default async function DocumentsLegauxPage() {
           >
             Avant de commencer
           </h1>
+          {/* **« Stipulent », et non « disent » — sa correction du 9 septembre
+              2026.** Ce n'est pas de l'ornement : cet écran est le seul de
+              l'application qui ENGAGE, et « dire » n'engage à rien. Un document
+              qui stipule pose une obligation ; c'est le mot du contrat, et
+              c'est le registre que la page doit tenir. */}
           <p className="mt-2 text-[14px] leading-relaxed text-ink/70">
             Vos clients vous confient leurs coordonnées&nbsp;; vous nous les
-            confiez à votre tour. Ces documents disent ce que nous en faisons,
-            et ce que nous nous engageons à ne pas en faire.
+            confiez à votre tour. Ces documents stipulent ce que nous en
+            faisons, et ce que nous nous engageons à ne pas en faire.
           </p>
         </header>
 

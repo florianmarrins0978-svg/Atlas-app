@@ -57,7 +57,14 @@ export default function EnTeteEcran({
    * grammaire commune reste.
    */
   precisionPlacee?: "sous" | "avant";
-  /** Où revient la flèche. Absente sur les écrans de la barre du bas. */
+  /**
+   * La sortie DÉCLARÉE de l'écran. Absente sur les écrans de la barre du bas.
+   *
+   * **Ce n'est plus où va la flèche, c'est son repli** — depuis le 9 septembre
+   * 2026, elle ramène à la page d'où l'on vient, et ne prend celle-ci que
+   * lorsqu'il n'y en a pas : premier écran d'un onglet, signet, notification
+   * ouverte à froid (`src/lib/journal-de-navigation.ts`).
+   */
   retour?: { href: string; libelle: string };
   /** Ce qui se pose à droite du titre — un bouton de dictée, par exemple. */
   action?: React.ReactNode;
@@ -116,31 +123,11 @@ export default function EnTeteEcran({
       {(retour || actionPlacee === "retour") && (
       <div className="flex items-center justify-between gap-4 px-[26px] pt-7">
         {retour ? (
-          // **Une flèche RECULE, elle n'avance pas vers l'écran d'avant.**
-          // C'était un `<Link>`, donc une page neuve posée en haut : le patron
-          // perdait sa place dans la liste des clients à chaque aller-retour
-          // (9 septembre 2026). Le détail et la mesure sont dans `FlecheRetour`.
-          <FlecheRetour
-            href={retour.href}
-            libelle={retour.libelle}
-            className="flex h-10 w-10 items-center justify-center rounded-full"
-            style={
-              ample
-                ? { border: `1px solid ${colors.line}` }
-                : { backgroundColor: colors.rustTint }
-            }
-          >
-            <svg
-              width={ample ? "15" : "16"}
-              height={ample ? "15" : "16"}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={ample ? colors.inkSoft : colors.rust}
-              strokeWidth={ample ? "1.8" : "2.4"}
-            >
-              <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </FlecheRetour>
+          // **Le dessin est ici, la DESTINATION est ailleurs — 9 septembre
+          // 2026.** `retour` ne dit plus où va la flèche : il dit où elle va
+          // quand on ne sait pas d'où l'on vient. Le reste du temps, elle
+          // ramène à la page d'avant (`src/lib/journal-de-navigation.ts`).
+          <FlecheRetour repli={retour} allure={ample ? "cerne" : "plein"} fleche={ample ? 15 : 16} />
         ) : (
           <span />
         )}

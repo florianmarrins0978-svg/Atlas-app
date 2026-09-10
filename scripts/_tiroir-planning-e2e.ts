@@ -47,3 +47,34 @@ export async function ouvrirLeTiroirDuPlanning(page: Page): Promise<boolean> {
   await page.waitForTimeout(450);
   return true;
 }
+
+/**
+ * REFERMER LE TIROIR DU BAS — pour éprouver ce qu'il recouvre.
+ *
+ * **Il est cloué au bord bas, en `fixed`.** Ouvert, il passe DEVANT le bas de
+ * la carte du jour : le « + Ajouter un chantier » d'une journée qui tombe
+ * dessous n'est alors plus visable, et le clic échoue au bout de
+ * quarante-cinq secondes en accusant le produit d'un défaut que le décor vient
+ * de fabriquer. Vu le 9 septembre 2026, dans la batterie seulement — la suite
+ * jouée seule tombait sur un jour placé plus haut, et passait.
+ *
+ * Une suite qui éprouve le chemin PAR LA CARTE DU JOUR commence donc par
+ * refermer ce que la précédente a ouvert. Idempotent, comme son jumeau : la
+ * poignée bascule.
+ */
+export async function fermerLeTiroirDuPlanning(page: Page): Promise<void> {
+  const poignee = page.locator('[data-atlas="poignee-tiroir"]');
+  if ((await poignee.count()) === 0) return;
+  if ((await poignee.getAttribute("aria-expanded")) !== "true") return;
+  await poignee.click();
+  await page.waitForFunction(
+    () =>
+      document.querySelector('[data-atlas="poignee-tiroir"]')?.getAttribute("aria-expanded") !==
+      "true",
+    undefined,
+    { timeout: 5_000 }
+  );
+  // Le repli dure 420 ms : mesurer pendant l'animation rend des boîtes qui ne
+  // sont celles de rien (`CLAUDE.md` §5).
+  await page.waitForTimeout(450);
+}

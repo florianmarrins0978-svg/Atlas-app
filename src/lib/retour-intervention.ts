@@ -40,6 +40,7 @@ export type ReglesDuRetour = {
 /** Ce que le salarié a sous les doigts au moment d'appuyer. */
 export type CeQuIlAPose = {
   taches: readonly TacheDuRetour[];
+  /** Combien de photos il a cochées — le nombre suffit à décider. */
   photos: number;
 };
 
@@ -97,12 +98,21 @@ export function peutPoserLeRetour(pose: CeQuIlAPose, regles: ReglesDuRetour): bo
  * Un retour sans aucune tâche — le chantier n'avait pas de devis détaillé —
  * rend la chaîne vide : il n'y a rien à compter, et « 0 sur 0 » ferait croire
  * à une perte.
+ *
+ * ---------------------------------------------------------------------------
+ * **« TOUT FAIT » A ÉTÉ RETIRÉ LE 9 SEPTEMBRE 2026, et c'est lui qui l'a vu.**
+ * Sa capture portait « tout fait · 2 photos », et son verdict : *« il y a
+ * marqué tout fait, mais ce n'est pas ce qui a été fait »*.
+ *
+ * Le mot résumait un chiffre qu'il ne pouvait pas vérifier : quatre cochées
+ * sur quatre s'écrivait pareil qu'un devis d'une seule ligne. **Un compte se
+ * vérifie d'un coup d'œil, un résumé se croit** — et ce qu'il regarde ici
+ * décide s'il facture un travail qui a eu lieu.
  */
 export function compteDesTaches(taches: readonly TacheDuRetour[]): string {
   if (taches.length === 0) return "";
   const faites = taches.filter((t) => t.faite).length;
-  if (faites === taches.length) return "tout fait";
-  return `${faites} sur ${taches.length} faites`;
+  return `${faites} sur ${taches.length}`;
 }
 
 /** Un retour, tel que la page du patron le reçoit. */
@@ -114,8 +124,24 @@ export type RetourEnListe = {
   poseLe: string;
   posePar: string | null;
   taches: readonly TacheDuRetour[];
-  photos: number;
+  /**
+   * Ses photos, avec de quoi les AFFICHER — et non leur seul nombre.
+   *
+   * La liste annonçait « 2 photos » sans jamais les montrer : un chiffre qu’il
+   * ne pouvait pas ouvrir, sur les seules images qui prouvent le chantier
+   * (sa capture du 9 septembre 2026).
+   */
+  photos: readonly { id: string; storageKey: string }[];
   aSignaler: string | null;
+  /**
+   * **LUI** l’a déjà ouvert — pas « quelqu’un ».
+   *
+   * Sa demande du 9 septembre 2026 : *« il faut qu’on puisse distinguer du
+   * premier coup d’œil ceux pas ouverts, comme pour les SMS »*. `/termines`
+   * étant ouvert au propriétaire comme à la facturation, une lecture partagée
+   * ferait disparaître sa pastille parce qu’un autre a ouvert le matin.
+   */
+  vu: boolean;
 };
 
 /** Un client et ses retours, du plus récent au plus ancien. */

@@ -16,6 +16,7 @@ import {
 } from "./actions";
 import type { ClientReconnu } from "@/server/repositories/clients";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
+import { oublierCetEcran } from "@/components/atlas/journal-navigateur";
 import {
   apresLesCoordonnees,
   libelleRetourDesCoordonnees,
@@ -473,11 +474,18 @@ export default function FormulaireNouveauChantier({
       // depuis un devis sans client, il retrouve son devis, qui porte
       // désormais la fiche qui lui manquait ; entré depuis l'accueil, la fiche
       // du chantier, comme depuis le 17 août.
-      router.push(
+      const destination =
         vers === "devis"
           ? `/chantiers/${reprise.id}/devis-complet`
-          : apresLesCoordonnees(reprise.id, reprise.provenance)
-      );
+          : apresLesCoordonnees(reprise.id, reprise.provenance);
+      // **REVENIR D'OÙ L'ON VIENT SE DÉCLARE — 9 septembre 2026.** Cet
+      // enregistrement ne va pas « quelque part » : il RETOURNE à l'écran qui
+      // l'a envoyé ici. Le journal de navigation ne peut pas le deviner — un
+      // retour et une réouverture laissent la même trace
+      // (`src/lib/journal-de-navigation.ts`) —, et sans cette ligne la flèche
+      // du devis renverrait ensuite sur le formulaire qu'il vient de valider.
+      if (destination === reprise.provenance) oublierCetEcran(window.location.pathname);
+      router.push(destination);
       return;
     }
 

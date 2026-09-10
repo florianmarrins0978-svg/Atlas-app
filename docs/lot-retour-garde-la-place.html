@@ -102,6 +102,26 @@
 <p>Le navigateur savait donc déjà le faire. Il n'y avait rien à inventer : il fallait cesser de l'en empêcher.</p>
 <h3 id="ce-qui-a-été-fait">Ce qui a été fait</h3>
 <p>La flèche <strong>recule</strong> dans l'historique — mais seulement quand l'écran d'avant est bien celui qu'elle vise. Chaque entrée d'historique est marquée de l'adresse d'où elle a été ouverte ; sans marque, la flèche navigue comme avant.</p>
+<p><strong>UNE AUTRE SESSION TRAVAILLAIT LE MÊME BOUTON LE MÊME SOIR, et il faut le dire.</strong> Elle a livré sur <code>main</code> un journal des écrans traversés, qui corrige <strong>où</strong> la flèche mène (<code>ARCHITECTURE.md</code> §311). Ce lot-ci corrige <strong>par quel chemin</strong> elle y va.</p>
+<p>Le premier jet était une flèche complète, avec son propre souvenir du chemin — donc une seconde pièce pour le même bouton. <strong>Elle a été jetée à la fusion</strong> : ce qui reste est une question de plus, posée à l'endroit où l'autre session avait déjà mis la sienne. Deux règles pour une même question finissent toujours par diverger, et c'est le patron qui verrait la différence.</p>
+<p>Leur paragraphe écarte explicitement <code>history.back()</code>, avec trois objections. Elles tiennent toutes les trois, et aucune n'est contournée :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>leur objection</th>
+<th>pourquoi elle ne mord pas ici</th>
+</tr></thead><tbody>
+<tr>
+<td>la flèche est un lien, on l'ouvre dans un onglet</td>
+<td>elle en reste un ; seul l'appui simple est intercepté</td>
+</tr>
+<tr>
+<td>un retour d'historique ment après un rechargement ou un signet</td>
+<td>sans marque, on ne recule pas</td>
+</tr>
+<tr>
+<td>après un enregistrement, il redéposerait sur le formulaire quitté</td>
+<td>c'est leur journal qui choisit la destination, et il a retiré ce formulaire</td>
+</tr>
+</tbody></table></div>
 <p><strong>Pourquoi cette prudence :</strong> une fiche ouverte depuis un signet, ou rechargée, n'a pas d'écran d'avant. Y reculer à l'aveugle ferait un bouton qui ne fait rien — ou qui rendrait la main au site précédent.</p>
 <p><strong>Où la flèche mène n'a pas bougé d'un pouce</strong> : c'est toujours la règle de provenance qui le décide (<code>ARCHITECTURE.md</code> §296). Ce lot ne change que le <strong>sens</strong> dans lequel on parcourt le chemin.</p>
 <h3 id="ce-que-le-correctif-retire">Ce que le correctif RETIRE</h3>

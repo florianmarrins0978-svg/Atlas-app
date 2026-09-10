@@ -9,11 +9,11 @@ import { estPageDuClient } from "@/lib/chemins-publics";
 // s'en sert, la mise en page racine n'étant pas rejouée à chaque navigation.
 import { estEcranSansNavigation } from "@/lib/ecrans-sans-navigation";
 import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
-import { MemoireDuChemin } from "@/components/atlas/FlecheRetour";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
 import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 import GardeAcces from "@/components/atlas/GardeAcces";
+import JournalDeNavigation from "@/components/atlas/JournalDeNavigation";
 import BandeauBanc from "@/components/atlas/BandeauBanc";
 import { leBandeauDoitParler } from "@/server/etat-banc";
 import { roleDeLaSession } from "@/server/autorisation";
@@ -210,13 +210,20 @@ export default async function RootLayout({
             retiré n'a jamais fermé une adresse : cette garde refuse au SERVEUR,
             avant que la page ne soit peinte (`docs/QUESTIONS.md` §10). */}
         <GardeAcces />
-        {/* **D'où chaque écran a été ouvert, noté dans l'historique.** C'est ce
-            qui permet à la flèche de retour de RECULER plutôt que d'avancer, et
-            donc de rendre au patron la place qu'il occupait dans la liste
-            (`FlecheRetour`). Posé ici parce que la mise en page racine n'est
-            pas rejouée d'une navigation à l'autre : ce témoin voit passer tous
-            les écrans, y compris ceux qui ne portent aucune flèche. */}
-        <MemoireDuChemin />
+        {/* **Ce qui permet à la flèche de retour d'être un vrai retour.** Il
+            tient le journal des écrans traversés dans l'onglet, et chaque
+            flèche y lit la page d'où l'on vient — c'est sa demande du
+            9 septembre 2026, et le cinquième signalement d'une flèche qui le
+            déposait ailleurs (`src/lib/journal-de-navigation.ts`).
+
+            **Ici et pas dans les écrans** : posé écran par écran, ce serait une
+            liste à tenir à la main, donc une liste en retard au premier écran
+            neuf — le défaut même que ce lot corrige. Il ne dessine rien.
+
+            Jamais sur les deux pages que son CLIENT reçoit : elles ne portent
+            aucune flèche, et rien n'a à être rangé dans le navigateur de
+            quelqu'un qui ne fait que lire son devis. */}
+        {!pageDuClient && <JournalDeNavigation />}
         {/* **DANS le flux, avant tout le reste.** Il pousse le contenu de
             quarante pixels au lieu de le couvrir : trois défauts réels de ce
             dépôt viennent d'éléments flottants qui cachaient un geste

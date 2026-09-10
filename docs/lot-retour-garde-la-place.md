@@ -46,6 +46,26 @@ La flèche **recule** dans l'historique — mais seulement quand l'écran d'avan
 bien celui qu'elle vise. Chaque entrée d'historique est marquée de l'adresse d'où
 elle a été ouverte ; sans marque, la flèche navigue comme avant.
 
+**UNE AUTRE SESSION TRAVAILLAIT LE MÊME BOUTON LE MÊME SOIR, et il faut le
+dire.** Elle a livré sur `main` un journal des écrans traversés, qui corrige
+**où** la flèche mène (`ARCHITECTURE.md` §311). Ce lot-ci corrige **par quel
+chemin** elle y va.
+
+Le premier jet était une flèche complète, avec son propre souvenir du chemin —
+donc une seconde pièce pour le même bouton. **Elle a été jetée à la fusion** :
+ce qui reste est une question de plus, posée à l'endroit où l'autre session avait
+déjà mis la sienne. Deux règles pour une même question finissent toujours par
+diverger, et c'est le patron qui verrait la différence.
+
+Leur paragraphe écarte explicitement `history.back()`, avec trois objections.
+Elles tiennent toutes les trois, et aucune n'est contournée :
+
+| leur objection | pourquoi elle ne mord pas ici |
+|---|---|
+| la flèche est un lien, on l'ouvre dans un onglet | elle en reste un ; seul l'appui simple est intercepté |
+| un retour d'historique ment après un rechargement ou un signet | sans marque, on ne recule pas |
+| après un enregistrement, il redéposerait sur le formulaire quitté | c'est leur journal qui choisit la destination, et il a retiré ce formulaire |
+
 **Pourquoi cette prudence :** une fiche ouverte depuis un signet, ou rechargée,
 n'a pas d'écran d'avant. Y reculer à l'aveugle ferait un bouton qui ne fait rien
 — ou qui rendrait la main au site précédent.

@@ -1,168 +1,141 @@
 "use client";
 
 import Link from "next/link";
+import { useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { colors } from "@/lib/design-tokens";
+import { pagePrecedente } from "@/lib/journal-de-navigation";
+import { journalDeCetOnglet, oublierCetEcran, onPeutReculerVers } from "./journal-navigateur";
 
 /**
- * La flèche de retour des écrans — et pourquoi elle RECULE au lieu d'avancer.
+ * LA flèche de retour d'Atlas — une seule, pour tous les écrans.
  *
- * ─────────────────────────────────────────────────────────────────────────────
- * **Sa remarque du 9 septembre 2026 :** *« Si je clique sur un client tout en
- * bas de la liste, je fais retour, il me remet en haut de la liste. Je veux
- * rester où j'étais ! »*
+ * **Elle ramène à la page d'où l'on vient**, lue dans le journal de l'onglet, et
+ * c'est sa demande du 9 septembre 2026 : *« le bouton retour doit marcher comme
+ * un vrai bouton marche arrière, il doit toujours renvoyer à la page d'où l'on
+ * vient juste avant »*. Le pourquoi, et les cinq signalements qu'il a fallu pour
+ * y arriver, sont dans `src/lib/journal-de-navigation.ts`.
  *
- * **Le défaut n'était pas dans la liste des clients : il était dans la
- * flèche.** Elle était un `<Link>`, c'est-à-dire une navigation en AVANT vers
- * l'adresse de l'écran précédent. Next.js a raison de poser une page neuve en
- * haut — c'est ce qu'on attend d'un lien. Mais son geste, lui, est un RETOUR :
- * l'application faisait donc l'inverse de ce qu'il demandait, et par-dessus le
- * marché elle empilait une entrée d'historique de plus à chaque aller-retour.
+ * **`repli` reste, et ce n'est pas une précaution de style.** Sur la première
+ * page d'un onglet, il n'y a aucune page d'avant : un signet, une notification
+ * ouverte à froid, l'application relancée depuis l'écran d'accueil du
+ * téléphone. La flèche prend alors la sortie que l'écran déclare — c'est-à-dire
+ * exactement ce qu'elle faisait avant ce lot. Une flèche muette serait un piège
+ * sur un téléphone.
  *
- * **Mesuré avant de corriger** (`CLAUDE.md` §5, `AGENTS.md`), sur la version
- * bâtie, liste de 47 clients descendue jusqu'au bout :
- *
- * | Le geste | Où l'on retombe |
- * |---|---|
- * | la flèche de l'écran | **0 px** — tout en haut |
- * | le retour du navigateur | **2 941 px** — exactement où il était |
- *
- * Le navigateur savait donc déjà le faire. Rien n'était à inventer : il fallait
- * cesser de l'en empêcher. C'est ce qui rend ce correctif conforme au §4 quater
- * — il RETIRE la navigation en trop plutôt que d'ajouter une mémoire de
- * défilement par-dessus, laquelle aurait fait une seconde vérité à côté de
- * celle du navigateur (`CLAUDE.md` §3).
- *
- * ─────────────────────────────────────────────────────────────────────────────
- * **CE QUE LA FLÈCHE NE DÉCIDE PAS : où elle mène.** Cela reste le travail des
- * règles de provenance — `retourFicheClient`, `retourDepuisLePlanning`,
- * `retourDuDevis` (`ARCHITECTURE.md` §296). Elle reçoit une adresse déjà
- * choisie et ne fait que la parcourir dans le bon sens.
- *
- * **Et elle ne recule QUE si l'écran d'avant est bien celui-là.** Reculer à
- * l'aveugle ferait sortir de l'application celui qui a ouvert la fiche depuis
- * un signet ou l'a rechargée — un bouton qui ne fait rien, ou pire, qui rend la
- * main au site précédent. On ne recule donc que sur preuve, et l'absence de
- * preuve retombe sur l'ancien comportement, qui n'a jamais rien cassé.
- *
- * ─────────────────────────────────────────────────────────────────────────────
- * **CE QUE CE CHOIX COÛTE, ET IL FAUT LE SAVOIR : un retour sert l'écran depuis
- * la réserve de Next.js.** Mesuré le 9 septembre 2026 — une donnée changée en
- * base pendant qu'on était sur la fiche n'apparaît pas au retour.
- *
- * **Ce n'est PAS ce correctif qui l'apporte** : le même contrôle a été joué sur
- * le geste de retour du navigateur, celui qu'il emploie déjà sur son téléphone,
- * et il est stale de la même façon — c'est le comportement de la plateforme, et
- * l'application le porte depuis toujours.
- *
- * **Ce qui l'annule en pratique, et qui existe déjà :** `revalidatePath`, appelé
- * par soixante-seize actions serveur de ce dépôt. Une modification faite DANS
- * l'application vide la réserve du chemin concerné ; c'est le chemin réel du
- * patron. Le cas mesuré — écrire en base par-dessus l'application — n'arrive
- * dans aucun de ses gestes.
- *
- * **Un rafraîchissement systématique sur `popstate` a été écrit, essayé, puis
- * RETIRÉ** : il redonnait les données fraîches, mais il repartait à zéro le
- * défilement, c'est-à-dire précisément ce qu'on venait de rendre. Le faire
- * tenir demandait un `setTimeout` calé sur la restauration du navigateur — un
- * pansement au sens exact du §4 quater, qui serait revenu sur un téléphone plus
- * lent. `TODO.md` porte le point ouvert et sa mesure.
+ * **Et son libellé change avec sa destination.** Quand le journal décide, elle
+ * annonce « Retour » : elle connaît l'adresse, pas le nom de l'écran, et le
+ * dépôt a déjà payé une flèche qui annonçait « Retour au devis » en menant au
+ * planning (`retour-du-devis.ts`, 7 septembre 2026). Nommer la destination
+ * demanderait une table écran par écran — c'est-à-dire la liste tenue à la main
+ * que ce lot supprime. « Retour » est ce que dit le bouton du navigateur, et il
+ * ne ment jamais.
  */
-
 /**
- * La clé posée dans l'état d'historique de chaque entrée : l'adresse d'où l'on
- * venait au moment où elle a été créée.
- *
- * **Dans l'HISTORIQUE, et non dans une variable de module.** Une variable ne
- * survivrait pas au rechargement, et surtout elle ne saurait rien dire des
- * entrées qu'on retraverse : reculer de trois écrans puis avancer de deux la
- * rendrait fausse sans que rien ne le signale.
+ * Ce qui peut changer le journal sous les pieds de la flèche : le bouton du
+ * navigateur, qui recule sans forcément changer d'écran. Les navigations
+ * d'Atlas, elles, rejouent la flèche par `usePathname`.
  */
-const VENANT_DE = "atlasVenantDe";
-
-type EtatMarque = { [VENANT_DE]?: string | null };
-
-/** L'adresse quittée par la dernière navigation de CE document. */
-let precedente: string | null = null;
-
-/** L'adresse courante, telle qu'on la compare : chemin et paramètres. */
-function adresseCourante(): string {
-  return window.location.pathname + window.location.search;
-}
-
-/**
- * Marque chaque entrée d'historique de l'adresse d'où elle a été ouverte.
- *
- * Monté une seule fois, dans la mise en page racine : elle n'est pas rejouée
- * d'une navigation à l'autre, si bien que ce composant reste en place et voit
- * passer tous les écrans — y compris ceux qui ne portent aucune flèche, et
- * c'est justement d'eux qu'on vient parfois (l'accueil, par exemple).
- */
-export function MemoireDuChemin() {
-  const chemin = usePathname();
-
-  useEffect(() => {
-    const etat: unknown = window.history.state;
-    // Sans état, l'entrée n'a pas été posée par Next : on ne la marque pas, et
-    // la flèche retombera sur la navigation ordinaire.
-    if (etat && typeof etat === "object") {
-      const marque = etat as EtatMarque;
-      // Déjà marquée : c'est une entrée qu'on RETRAVERSE (recul ou avance).
-      // La réécrire lui ferait dire d'où l'on vient MAINTENANT, alors qu'elle
-      // doit dire d'où elle a été ouverte la première fois.
-      if (!(VENANT_DE in marque)) {
-        window.history.replaceState({ ...marque, [VENANT_DE]: precedente }, "");
-      }
-    }
-    precedente = adresseCourante();
-    // `usePathname` suffit : deux adresses qui ne diffèrent que par leurs
-    // paramètres laissent l'entrée neuve sans marque, donc la flèche avance —
-    // le repli sûr, jamais un recul hasardeux.
-  }, [chemin]);
-
-  return null;
-}
-
-/** L'écran d'avant est-il exactement celui que la flèche vise ? */
-function laPageDAvantEst(href: string): boolean {
-  const etat: unknown = window.history.state;
-  if (!etat || typeof etat !== "object") return false;
-  return (etat as EtatMarque)[VENANT_DE] === href;
+function souscrire(prevenir: () => void): () => void {
+  window.addEventListener("popstate", prevenir);
+  return () => window.removeEventListener("popstate", prevenir);
 }
 
 export default function FlecheRetour({
-  href,
-  libelle,
-  className,
-  style,
-  children,
+  repli,
+  allure = "plein",
+  diametre = 40,
+  fleche = 16,
+  marque,
 }: {
-  href: string;
-  libelle: string;
-  className?: string;
-  style?: React.CSSProperties;
-  children: React.ReactNode;
+  /** Où mène la flèche quand on ne sait pas d'où l'on vient. */
+  repli: { href: string; libelle: string };
+  /** `plein` : posée sur un aplat. `cerne` : cernée d'un cheveu (allure ample). */
+  allure?: "plein" | "cerne";
+  /** Le diamètre du rond, en pixels — 40 partout, 36 sur la feuille du devis. */
+  diametre?: number;
+  /** La taille du chevron, en pixels. */
+  fleche?: number;
+  /** Le repère que les suites navigateur cherchent, là où il en existait un. */
+  marque?: string;
 }) {
+  const chemin = usePathname();
   const router = useRouter();
+  // **`useSyncExternalStore` et non un état posé dans un effet.** Le journal est
+  // un rangement du navigateur, extérieur à React : c'est le seul crochet qui
+  // sache le lire sans provoquer un second rendu en cascade, et React s'y
+  // charge lui-même de rejouer la flèche quand la version du serveur — qui ne
+  // peut rien savoir du navigateur — diffère de celle de la page vivante.
+  //
+  // La flèche rendue par le serveur porte donc la sortie déclarée, puis se
+  // corrige : elle est utilisable dès la première image, sans attendre.
+  const precedente = useSyncExternalStore(
+    souscrire,
+    () => pagePrecedente(journalDeCetOnglet(), chemin),
+    () => null
+  );
 
+  const cerne = allure === "cerne";
   return (
     <Link
-      href={href}
-      aria-label={libelle}
-      className={className}
-      style={style}
+      href={precedente ?? repli.href}
+      aria-label={precedente ? "Retour" : repli.libelle}
+      // **RECULER SE DÉCLARE ICI, ET C'EST TOUT LE MÉCANISME.** Le journal ne
+      // peut pas deviner qu'on recule : rouvrir un écran déjà vu laisse
+      // exactement la même trace (`journal-de-navigation.ts`). Celui qui sait,
+      // c'est celui qui appuie — cet écran sort donc du journal au moment de
+      // l'appui, avec tout ce qui le suivait.
+      //
+      // Sans cette ligne, deux appuis se renvoient l'un à l'autre sans jamais
+      // sortir : c'est la boucle du 7 septembre 2026 (`retour-du-devis.ts`),
+      // qu'un journal seul aurait refabriquée.
       onClick={(e) => {
-        // Un appui avec une touche de commande ouvre ailleurs : c'est le geste
-        // du navigateur, pas le nôtre. On n'y touche pas.
+        oublierCetEcran(chemin);
+        // ── ET ON Y VA EN RECULANT, QUAND C'EST VRAIMENT L'ÉCRAN D'AVANT ──
+        //
+        // **Sa remarque du 9 septembre 2026 :** *« si je clique sur un client
+        // tout en bas de la liste, je fais retour, il me remet en haut de la
+        // liste — je veux rester où j'étais ! »*
+        //
+        // Un lien pose une page NEUVE, donc en haut : mesuré, la flèche
+        // déposait à 0 px là où le retour du navigateur rendait 2 941 px. Le
+        // navigateur sait déjà rendre sa place ; il suffit de ne plus l'en
+        // empêcher.
+        //
+        // **La destination ne change pas d'un pouce** : c'est toujours celle
+        // que le journal a choisie. Seul le CHEMIN pour y aller change, et
+        // uniquement si l'entrée d'historique d'avant est littéralement
+        // celle-là (`onPeutReculerVers`). Sans preuve — signet, rechargement,
+        // écran retiré du journal après un enregistrement — le lien fait son
+        // travail comme avant.
+        //
+        // **Un appui avec une touche de commande n'est pas notre geste** : il
+        // ouvre ailleurs, et on n'y touche pas.
         if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-        if (!laPageDAvantEst(href)) return;
-        // `preventDefault` avant `back()` : sans lui, le lien naviguerait AUSSI,
+        if (!precedente || !onPeutReculerVers(precedente)) return;
+        // `preventDefault` AVANT `back()` : sans lui le lien naviguerait aussi,
         // et l'on empilerait l'entrée qu'on vient de retirer.
         e.preventDefault();
         router.back();
       }}
+      data-atlas={marque}
+      className="flex items-center justify-center rounded-full"
+      style={{
+        height: diametre,
+        width: diametre,
+        ...(cerne ? { border: `1px solid ${colors.line}` } : { backgroundColor: colors.rustTint }),
+      }}
     >
-      {children}
+      <svg
+        width={fleche}
+        height={fleche}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={cerne ? colors.inkSoft : colors.rust}
+        strokeWidth={cerne ? "1.8" : "2.4"}
+      >
+        <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
     </Link>
   );
 }

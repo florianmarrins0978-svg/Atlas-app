@@ -64,7 +64,17 @@ export default function DeclarationsTva({
   const [ouverte, setOuverte] = useState(false);
 
   const rythme = periodicite === "mensuelle" ? "tous les mois" : "tous les trois mois";
-  const quand = regime === "encaissements" ? "quand votre client vous paie" : "quand vous envoyez la facture";
+  // **« quand vous la marquez payée », et non « quand votre client vous paie ».**
+  // Sa correction du 9 septembre 2026, lue sur cette ligne-ci : *« même si c'est
+  // tous les mois, ça ne doit pas rentrer au compteur tout seul »*. L'ancienne
+  // formule nommait un événement du monde — elle laissait croire qu'Atlas
+  // apprend seul qu'un virement est arrivé, et donc que le compteur se remplit
+  // sans lui. C'est son geste qui fait entrer la facture, et la provenance du
+  // chiffre doit le dire. Le régime déclaré aux impôts, lui, garde ses mots
+  // dans la feuille (`RegimeTva`) : c'est là qu'il est question de la loi.
+  // Et « la facture » plutôt que « la » : la phrase commence par « Calculé », le
+  // pronom n'aurait rien à reprendre.
+  const quand = regime === "encaissements" ? "quand vous marquez la facture payée" : "quand vous envoyez la facture";
 
   const phrase = (
     <>

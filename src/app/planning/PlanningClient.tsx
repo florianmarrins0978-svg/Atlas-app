@@ -13,6 +13,7 @@ import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
   cleCreneau,
   creneauxDuChantier,
+  dureeDuChantier,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type JourIso,
 } from "@/lib/disponibilites";
@@ -48,6 +49,7 @@ import {
   etatDemi,
   MOT_DEMI,
   MOT_QUAND,
+  poseOfferte,
   quandDuChantier,
   occupationDemi,
   type Demi,
@@ -70,7 +72,11 @@ import type { FeuilleDuChantier } from "@/server/repositories/devis";
  * être figé DÈS L’OUVERTURE de la fiche — pas seulement dans la session où
  * l’on a appuyé. Sa demande du 9 septembre 2026.
  */
-type FeuilleEtRetour = FeuilleDuChantier & { retourPose: boolean };
+type FeuilleEtRetour = FeuilleDuChantier & {
+  retourPose: boolean;
+  /** Ce qu’il a photographié du chantier — vu AVANT le travail, pas après. */
+  photos: { id: string; storageKey: string }[];
+};
 import { NOTE_MAX } from "@/lib/note-chantier";
 import {
   basculerEquipeAction,
@@ -669,8 +675,12 @@ export default function PlanningClient({
     // chantier : il n'y a plus qu'une place où les ouvrir, et une donnée qui ne
     // décide plus de rien se retire plutôt que de se traîner.
     | { quoi: "deplacer"; cle: string; chantierId: string }
-    | { quoi: "ajout-qui"; cle: string }
-    | { quoi: "ajout-quand"; cle: string; chantierId: string };
+    // **« ajout-quand » a disparu le 9 septembre 2026**, et c'est le même
+    // nettoyage : un second temps qui demandait « Matin, Après-midi ou
+    // Journée » après avoir touché le nom du chantier. La durée étant déjà en
+    // base, cette question n'ajoutait rien et écrasait ce que le devis avait
+    // fixé (voir `poser`). L'état qui la portait s'en va avec elle.
+    | { quoi: "ajout-qui"; cle: string };
   const [ouvert, setOuvert] = useState<Ouvert | null>(null);
 
   /** La feuille de chantier ouverte, et dans quelle carte. */
@@ -816,13 +826,36 @@ export default function PlanningClient({
   }
 
   /**
-   * Poser un chantier sur un jour — même règle : on repeint avec ce que la base
-   * rend, jamais avec ce que l'écran a supposé (voir `deplacer`).
+   * Poser un chantier sur un jour — SANS lui demander quand.
+   *
+   * ───────────────────────────────────────────────────────────────────────────
+   * **Sa remarque du 9 septembre 2026 :** *« quand je clique sur Claudette il me
+   * propose 3 choix, alors que si Claudette c'est un chantier 1 journée, deux,
+   * ou une demi, ça doit se mettre tout seul — je dois pas avoir à choisir »*.
+   *
+   * **Et les trois boutons ne demandaient rien qui manquait.** La durée est déjà
+   * en base : elle vient du devis, ou de sa dictée — « 3 jours » fait six
+   * demi-journées. Ce qu'ils proposaient, c'était d'ÉCRASER cette durée-là :
+   * « Matin » sur un chantier d'une journée le raccourcissait à une
+   * demi-journée, en silence, et l'après-midi repartait à la vente.
+   *
+   * Sans choix, `planifierChantier` garde la durée du chantier et cherche la
+   * demi-journée où elle tient (`departPossible`) — la même règle que le jour
+   * proposé au client, jamais une seconde (`CLAUDE.md` §3).
+   *
+   * **La moitié de journée se rattrape, la durée ne se voyait pas.** Un chantier
+   * posé le matin qu'il voulait l'après-midi se déplace d'un appui — « Déplacer »
+   * est là pour ça, et n'a pas bougé. Une journée devenue demi-journée, elle, ne
+   * se lisait nulle part avant le jour du chantier.
+   * ───────────────────────────────────────────────────────────────────────────
+   *
+   * On repeint avec ce que la base rend, jamais avec ce que l'écran a supposé
+   * (voir `deplacer`).
    */
-  function poser(chantierId: string, jour: JourIso, quand: QuandChantier) {
+  function poser(chantierId: string, jour: JourIso) {
     setOuvert(null);
     enTransition(async () => {
-      const r = await planifierChantierAction(chantierId, jour, { quand });
+      const r = await planifierChantierAction(chantierId, jour);
       if (!r.succes) return;
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, ...r.etat } : c))
@@ -1257,7 +1290,7 @@ export default function PlanningClient({
                           className="mt-[3px] block text-[12.5px]"
                           style={{ color: jour < aujourdHui ? colors.muted : colors.or }}
                         >
-                          {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
+                          {ditLaDuree(dureeDuChantier(c))}
                         </span>
                         {/* **Le lieu, sous la durée.** C'est la deuxième
                             question après « qui » — et sur quatre clients qui
@@ -1741,7 +1774,6 @@ type GestesCarte = {
     | { quoi: "equipe"; cle: string; chantierId: string; demi: Demi }
     | { quoi: "deplacer"; cle: string; chantierId: string }
     | { quoi: "ajout-qui"; cle: string }
-    | { quoi: "ajout-quand"; cle: string; chantierId: string }
     | null;
   setOuvert: (o: GestesCarte["ouvert"]) => void;
   feuille: { chantierId: string; cle: string } | null;
@@ -1754,7 +1786,7 @@ type GestesCarte = {
   basculerEquipe: (chantierId: string, demi: Demi, rang: number) => void;
   deplacer: (chantierId: string, quand: QuandChantier) => void;
   retirerDuJour: (chantierId: string) => void;
-  poser: (chantierId: string, jour: JourIso, quand: QuandChantier) => void;
+  poser: (chantierId: string, jour: JourIso) => void;
   taches: Record<string, FeuilleEtRetour>;
 };
 
@@ -1807,45 +1839,19 @@ function AjoutAuJour({
               arrive plus, puisque le geste lui-même n'existe pas dans ce cas.
               Le laisser aurait été une branche morte — et surtout la promesse
               qu'on peut encore tomber sur ce cul-de-sac. */}
+          {/* **LE NOM POSE LE CHANTIER, ET C'EST TOUT** — sa remarque du
+              9 septembre 2026. Il y avait ici un second temps : on touchait le
+              nom, et trois boutons demandaient « Matin, Après-midi ou
+              Journée ». La durée du chantier étant déjà en base, cette
+              question-là ne comblait aucun trou — elle proposait d'écraser ce
+              que le devis avait fixé (voir `poser`). Un geste, une pose. */}
           <Choisir>
             {sansDate.map((s) => (
-              <Petit
-                key={s.id}
-                data-qui={s.id}
-                onClick={() => setOuvert({ quoi: "ajout-quand", cle, chantierId: s.id })}
-              >
+              <Petit key={s.id} data-qui={s.id} onClick={() => poser(s.id, jour)}>
                 {s.nom}
               </Petit>
             ))}
           </Choisir>
-        </div>
-      ) : ouvert?.quoi === "ajout-quand" && ouvert.cle === cle ? (
-        // **Le nom choisi prend la forme des autres lignes** — sa demande du
-        // 21 août : « j'aimerais que le nom se mette au même niveau que ceux
-        // qui sont déjà sélectionnés ». En petit gris à côté des boutons, il
-        // se lisait comme une étiquette ; en serif, il se lit comme le
-        // chantier qu'il va devenir.
-        <div
-          data-atlas="en-attente"
-          className="mt-3.5 flex flex-wrap items-center gap-2 pt-3"
-        >
-          <span
-            className="flex-1"
-            style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2, color: colors.ink }}
-          >
-            {sansDate.find((s) => s.id === ouvert.chantierId)?.nom ?? ""}
-          </span>
-          <span className="flex flex-shrink-0 gap-1.5">
-            {(Object.keys(MOT_QUAND) as QuandChantier[]).map((v) => (
-              <Petit
-                key={v}
-                data-quand={v}
-                onClick={() => poser(ouvert.chantierId, jour, v)}
-              >
-                {MOT_QUAND[v]}
-              </Petit>
-            ))}
-          </span>
         </div>
       ) : (
         /* **Plus de filet au-dessus du « + »** — sa demande du 23 août 2026 :
@@ -2475,7 +2481,7 @@ function CarteDuJour({
                     className="mt-[3px] block text-[12.5px]"
                     style={{ color: colors.or }}
                   >
-                    {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
+                    {ditLaDuree(dureeDuChantier(c))}
                   </span>
                   <LieuDuChantier chantier={c} />
                 </button>
@@ -2621,29 +2627,22 @@ function CarteDuJour({
                     // qui déciderait à sa place. C'est la règle qu'il a posée
                     // pour l'équipe, et elle vaut partout.
                     <>
-                      {/* **« Journée » disparaît au-delà d'une journée.** Sur un
-                          chantier de trois jours, elle écrit le même état que
-                          « Matin » — le départ, la durée étant protégée — et
-                          l'une des deux ne faisait donc rien. Un bouton qui
-                          n'écrit rien se retire ; le laisser en expliquant
-                          serait pire, puisqu'il faut le lire pour savoir de ne
-                          pas l'employer. */}
-                      {(Object.keys(MOT_QUAND) as QuandChantier[])
-                        .filter(
-                          (v) =>
-                            v !== "journee" ||
-                            (c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES) <= 2
-                        )
-                        .map((v) => (
-                          <Petit
-                            key={v}
-                            data-vers={v}
-                            retenue={quandDuChantier(c) === v}
-                            onClick={() => deplacer(c.id, v)}
-                          >
-                            {MOT_QUAND[v]}
-                          </Petit>
-                        ))}
+                      {/* **« Journée » disparaît au-delà d'une journée** — la
+                          règle vit dans `poseOfferte`, et non plus ici : elle
+                          manquait aux deux autres endroits qui dessinent ces
+                          mêmes boutons, et c'est par là qu'il est retombé
+                          dessus le 9 septembre. La durée, elle, se lit déjà
+                          au-dessus de ces boutons (« 2 jours »). */}
+                      {poseOfferte(dureeDuChantier(c)).quands.map((v) => (
+                        <Petit
+                          key={v}
+                          data-vers={v}
+                          retenue={quandDuChantier(c) === v}
+                          onClick={() => deplacer(c.id, v)}
+                        >
+                          {MOT_QUAND[v]}
+                        </Petit>
+                      ))}
                     </>
                   ) : (
                     <>
@@ -2935,6 +2934,48 @@ function FeuilleChantier({
 
       <NoteDuChantier chantier={chantier} ecriture={ecriture} />
 
+      {/* ─── CE QU'IL A PHOTOGRAPHIÉ DU CHANTIER ──────────────────────────
+          **Sa remarque du 9 septembre 2026 :** *« j'ai joint des photos lorsque
+          j'ai créé la fiche client de Julien, mais elles n'apparaissent nulle
+          part »*, puis : *« elles devraient être au-dessus de Désherbage
+          gravier »*.
+
+          **Elles existaient**, et c'est le pire des cas : on ne les voyait que
+          dans le tiroir « Fin de chantier », parmi les preuves à cocher —
+          c'est-à-dire APRÈS le travail, dans un endroit qu'on n'ouvre qu'en
+          partant. Or il les joint pour montrer le chantier à celui qui s'y
+          rend : leur place est AVANT, avec la note et les lignes du devis.
+
+          **Elles ne se cachent pas quand la fin de chantier s'ouvre.** La liste
+          du devis, elle, disparaît parce qu'elle DEVIENT les cases à cocher ;
+          les photos, non — elles restent ce qu'il faut regarder pendant qu'on
+          coche. */}
+      {(feuille?.photos ?? []).length > 0 && (
+        <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+          <div className="flex flex-wrap gap-2">
+            {(feuille?.photos ?? []).map((photo) => (
+              <a
+                key={photo.id}
+                href={`/api/fichiers/${photo.storageKey}`}
+                target="_blank"
+                rel="noreferrer"
+                data-atlas="photo-du-chantier"
+                className="h-[74px] w-[74px] overflow-hidden rounded-[11px]"
+                style={{
+                  // **Un fond, pour qu'une photo qui n'arrive pas laisse un cadre
+                  // calme et non une image brisée** — le glyphe du navigateur se
+                  // lit comme une panne de l'application.
+                  backgroundColor: colors.rustTint,
+                  boxShadow: `inset 0 0 0 1px ${colors.line}`,
+                }}
+              >
+                <img src={`/api/fichiers/${photo.storageKey}`} alt="" className="h-full w-full object-cover" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ─── LES LIGNES DU DEVIS — ce qu'il y a à faire ────────────────────
           **Elles s'effacent quand la fin de chantier s'ouvre — sa proposition
           A, tranchée le 9 septembre 2026** (`appli/fiche-sans-doublon.html`).
@@ -3105,7 +3146,7 @@ function TiroirDuBas({
   sansDate: ChantierPlanning[];
   attenteClient: ChantierPlanning[];
   jourTouche: JourIso | null;
-  poser: (chantierId: string, jour: JourIso, quand: QuandChantier) => void;
+  poser: (chantierId: string, jour: JourIso) => void;
   /**
    * **Le type vient de la source, jamais recopié.** Une liste de champs écrite
    * ici aurait divergé au premier champ ajouté à `useRetraits` — et le tiroir
@@ -3311,23 +3352,16 @@ function TiroirDuBas({
                     </span>
                     {portesOuvertes && <ChevronDesPortes chantier={c} onPortes={onPortes} />}
                     {jourTouche ? (
-                      <span className="flex flex-shrink-0 gap-[5px]">
-                        {(
-                          [
-                            ["matin", "Matin"],
-                            ["apres", "Ap.-m."],
-                            ["journee", "Journée"],
-                          ] as [QuandChantier, string][]
-                        ).map(([v, mot]) => (
-                          <Petit
-                            key={v}
-                            data-poser={v}
-                            onClick={() => poser(c.id, jourTouche, v)}
-                          >
-                            {mot}
-                          </Petit>
-                        ))}
-                      </span>
+                      /* **UN SEUL BOUTON, ET LE JOUR EST DÉJÀ ÉCRIT AU-DESSUS.**
+                         Les trois moments vivaient ici aussi — même question,
+                         même défaut : ils écrasaient la durée que le devis avait
+                         fixée (voir `poser`). Les laisser dans ce tiroir après
+                         les avoir retirés de la carte du jour aurait fait deux
+                         façons de poser un chantier, et c'est exactement ce que
+                         `CLAUDE.md` §3 interdit : elles auraient divergé. */
+                      <Petit data-poser="1" onClick={() => poser(c.id, jourTouche)}>
+                        Poser
+                      </Petit>
                     ) : (
                       <span className="text-[12.5px]" style={{ color: colors.muted }}>
                         en attente d’un jour

@@ -39,8 +39,9 @@ function retour(p: Partial<RetourEnListe> & { clientNom: string; poseLe: string 
     chantierNom: "Un chantier",
     posePar: "Julien",
     taches: [],
-    photos: 0,
+    photos: [],
     aSignaler: null,
+    vu: false,
     ...p,
   };
 }
@@ -91,21 +92,26 @@ essai("rien ne manque : la phrase est vide", () => {
 });
 
 // ── Ce que le patron lit ───────────────────────────────────────────────
-essai("« 2 sur 3 faites »", () => {
+essai("« 2 sur 3 » — ce qui reste se lit dans le compte", () => {
   assert.equal(
     compteDesTaches([
       { libelle: "a", faite: true },
       { libelle: "b", faite: true },
       { libelle: "c", faite: false },
     ]),
-    "2 sur 3 faites"
+    "2 sur 3"
   );
 });
 
-essai("tout fait se dit « tout fait », pas « 3 sur 3 »", () => {
+// **« TOUT FAIT » A ÉTÉ RETIRÉ LE 9 SEPTEMBRE 2026**, et ce contrôle disait
+// l’inverse la veille. Sa capture : *« il y a marqué tout fait, mais ce n’est
+// pas ce qui a été fait »*. Un compte se vérifie, un résumé se croit — et une
+// suite qui réclame le mot qu’il a fait retirer rend son écran impossible à
+// changer (`CLAUDE.md` §5 bis).
+essai("tout coché se dit « 2 sur 2 », jamais « tout fait »", () => {
   assert.equal(
     compteDesTaches([{ libelle: "a", faite: true }, { libelle: "b", faite: true }]),
-    "tout fait"
+    "2 sur 2"
   );
 });
 
