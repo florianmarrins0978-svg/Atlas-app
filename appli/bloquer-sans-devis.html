@@ -138,9 +138,9 @@ p.dessous b{color:var(--encre)}
   <span class="sceau">10 septembre — à essayer</span>
   <h1>Bloquer sans devis</h1>
   <p>« Ajouter » propose deux choses : <b>un chantier qui attend une date</b>,
-  comme aujourd'hui — ou <b>écrire ce que c'est</b> et prendre le matin,
-  l'après-midi ou la journée. <b>Essayez</b> : écrivez « Rendez-vous banque »,
-  prenez le matin.</p>
+  comme aujourd'hui — ou <b>un client</b>, qu'on écrit au clavier. S'il n'est pas
+  connu, <b>sa fiche se crée</b> avec ce qu'on saisit. <b>Essayez</b> : tapez
+  « Roche », puis « Mme Renard » qui n'existe pas.</p>
 </div>
 
 <div class="scene">
@@ -157,11 +157,20 @@ p.dessous b{color:var(--encre)}
   <ol>
     <li>On touche <b>+ Ajouter</b> sur le jour.</li>
     <li>Deux entrées : <b>Un chantier en attente</b> (ce qui existe aujourd'hui)
-    ou <b>Écrire ce que c'est</b>.</li>
-    <li>On écrit — « Rendez-vous banque », « Livraison », « Formation » — on
-    choisit <b>Matin · Après-midi · Journée</b>, et c'est pris.</li>
+    ou <b>Un client</b>. <b>« Annuler » ramène aux deux</b>, à chaque étape.</li>
+    <li>On tape son nom. <b>Connu</b>, il apparaît et l'on touche son nom :
+    numéro et adresse sont déjà là. <b>Inconnu</b>, sa fiche se crée — téléphone,
+    e-mail, adresse du chantier, comme par la voie normale.</li>
+    <li>On choisit <b>Matin · Après-midi · Journée</b>, et c'est posé.</li>
     <li>Ça se retire du même geste que le reste.</li>
   </ol>
+
+  <h3>Une question que votre correction ouvre</h3>
+  <p><b>Et ce qui n'est PAS un client ?</b> Un rendez-vous à la banque, une
+  livraison, une formation prennent aussi une demi-journée. La première version
+  de cette planche les couvrait ; « Un client » ne les couvre plus.
+  <b>Dites-moi si vous voulez une troisième entrée</b> pour ça — ou si vous
+  préférez que tout soit un client.</p>
 
   <h3>Trois questions à trancher, et je ne les tranche pas seul</h3>
   <p><b>1. Est-ce que ça ferme le jour pour vos clients ?</b> Je propose
@@ -171,14 +180,15 @@ p.dessous b{color:var(--encre)}
   défaut : ça prend VOTRE temps. Si vous voulez pouvoir dire « Julien est en
   formation », c'est l'absence qui le dit déjà.</p>
   <p><b>3. Est-ce que ça se retrouve dans les terminés, les factures, le
-  chiffre ?</b> Je propose <b>non</b> : il n'y a ni client, ni prix, ni devis.
-  C'est du temps réservé, pas du travail vendu.</p>
+  chiffre ?</b> Le client existe désormais, mais <b>il n'y a toujours ni devis
+  ni prix</b> : le chantier posé ainsi vaut zéro tant que vous n'avez rien
+  chiffré. Il se termine et se facture ensuite, comme les autres.</p>
 
-  <h3>Ce que ça n'est pas</h3>
-  <p><b>Ce n'est pas un chantier au rabais.</b> Un chantier a un client, un
-  devis, un prix et une fiche ; celui-ci n'a qu'un mot et un moment. Les
-  mélanger ferait apparaître des lignes sans prix dans vos terminés et dans
-  votre TVA.</p>
+  <h3>Ce que ça change par rapport à la voie normale</h3>
+  <p>La voie normale part du <b>client</b> et descend vers le planning : fiche,
+  devis, envoi, puis une date. Celle-ci part du <b>jour</b> et remonte : on pose
+  d'abord, la fiche se crée au passage, et le devis vient plus tard — ou
+  jamais.</p>
 </div>
 
 <script>
@@ -192,12 +202,23 @@ const JOURS = [
   { cle: "16", nom: "Mercredi 16 septembre" },
   { cle: "17", nom: "Jeudi 17 septembre" },
 ];
+/** Les clients déjà connus — ceux dont la fiche existe. */
+const CLIENTS = [
+  { nom: "M. Rocher", tel: "06 21 44 90 12", adresse: "8 allée des Charmes, Mantes" },
+  { nom: "Mme Grospiron", tel: "06 78 12 03 44", adresse: "3 rue du Pont, Limay" },
+  { nom: "Mr. Alicanter", tel: "07 60 55 21 09", adresse: "14 av. de la Gare, Bordeaux" },
+];
+
 let pose = {};
 let jourVu = "15";
-/** null · "voies" · "ecrire" · "liste" */
+/** null · "voies" · "liste" · "client" */
 let etape = null;
 let texte = "";
 let moment = "matin";
+/** Le client retenu : { nom, tel, adresse, neuf } */
+let retenu = null;
+/** Les champs de la fiche à créer. */
+let fiche = { tel: "", email: "", adresse: "" };
 
 function depart() {
   pose = {};
@@ -205,10 +226,18 @@ function depart() {
   pose["16-matin"] = { nom: "Mme Grospiron", chantier: true };
   pose["16-aprem"] = { nom: "Mme Grospiron", chantier: true };
   jourVu = "15"; etape = null; texte = ""; moment = "matin";
+  retenu = null; fiche = { tel: "", email: "", adresse: "" };
   dire("");
 }
 document.getElementById("rejouer").addEventListener("click", () => { depart(); dessiner(); });
 function dire(t) { document.getElementById("dessous").innerHTML = t; }
+
+/** Ceux dont le nom contient ce qu'il tape — la recherche de l'écran clients. */
+function trouves() {
+  const q = texte.trim().toLowerCase();
+  if (q.length < 2) return [];
+  return CLIENTS.filter((c) => c.nom.toLowerCase().includes(q));
+}
 
 function dessiner() {
   document.getElementById("mois").innerHTML = JOURS.map((j) => {
@@ -232,19 +261,18 @@ function dessiner() {
         <span class="quoi">libre</span></div>`;
       continue;
     }
-    if (p.chantier) {
-      if (!dejaEcrit.has(p.nom)) {
-        dejaEcrit.add(p.nom);
-        html += `<h3 style="margin-top:14px">${p.nom}</h3><p class="duree">1 jour</p>
-          <p class="lieu">Mantes-la-Jolie</p>`;
-      }
-      html += `<div class="demi"><span class="case pris"></span><span class="mot">${mot}</span>
-        <span class="equipe">Julien / Antoine</span></div>`;
-    } else {
-      html += `<div class="demi"><span class="case autre"></span><span class="mot">${mot}</span>
-        <span class="blocage">${p.nom}</span>
-        <button type="button" class="past" data-retirer="${d}" style="margin-left:auto">Retirer</button></div>`;
+    if (!dejaEcrit.has(p.nom)) {
+      dejaEcrit.add(p.nom);
+      html += `<h3 style="margin-top:14px">${p.nom}</h3>
+        <p class="duree">${p.neuf ? "fiche créée" : "1 jour"}</p>
+        <p class="lieu">${p.lieu ?? "Mantes-la-Jolie"}</p>`;
     }
+    // **Pas de pastille d'équipe vide** : un chantier posé depuis le planning
+    // n'a encore personne dessus, et une pastille verte sans nom ne dit rien.
+    const equipe = p.equipe ?? "Julien / Antoine";
+    html += `<div class="demi"><span class="case pris"></span><span class="mot">${mot}</span>
+      ${equipe ? `<span class="equipe">${equipe}</span>` : `<span class="quoi">personne encore</span>`}
+      <button type="button" class="past" data-retirer="${d}" style="margin-left:auto">Retirer</button></div>`;
   }
 
   if (etape === null) {
@@ -252,23 +280,48 @@ function dessiner() {
   } else if (etape === "voies") {
     html += `<div class="deuxVoies">
       <button type="button" data-etape="liste">Un chantier en attente</button>
-      <button type="button" data-etape="ecrire">Écrire ce que c'est</button>
-    </div>`;
+      <button type="button" data-etape="client">Un client</button>
+    </div>
+    <div class="actes"><button type="button" class="past" data-annuler="1">Annuler</button></div>`;
   } else if (etape === "liste") {
+    // **« Annuler » revient aux deux propositions**, sa demande du 10 septembre :
+    // sans elle, on ne peut plus changer d'avis sans refermer le geste entier.
     html += `<div class="actes" style="justify-content:flex-start">
       <button type="button" class="past" data-poser-chantier="Mme Fauvel">Mme Fauvel</button>
       <button type="button" class="past" data-poser-chantier="M. Bernard">M. Bernard</button>
+      <button type="button" class="past" data-retour="1" style="margin-left:auto">Annuler</button>
     </div>`;
-  } else if (etape === "ecrire") {
-    html += `<input class="champ" id="quoi" placeholder="Ce que c'est" value="${texte}">
-      <div class="actes" style="justify-content:space-between">
+  } else if (etape === "client") {
+    html += `<input class="champ" id="quoi" placeholder="Nom du client" value="${texte}">`;
+    const liste = trouves();
+    if (retenu === null) {
+      if (liste.length) {
+        html += `<div class="actes" style="justify-content:flex-start">` +
+          liste.map((c) => `<button type="button" class="past" data-client="${c.nom}">${c.nom}</button>`).join("") +
+          `</div>`;
+      } else if (texte.trim().length >= 2) {
+        // **Inconnu : on ne refuse pas, on ouvre sa fiche.** Sa demande du
+        // 10 septembre — le numéro et l'adresse s'écrivent ici, une fois.
+        html += `<p class="blocage" style="margin-top:10px">Inconnu — <b>sa fiche sera créée</b></p>
+          <input class="champ" data-fiche="tel" placeholder="Téléphone" value="${fiche.tel}">
+          <input class="champ" data-fiche="email" placeholder="E-mail" value="${fiche.email}">
+          <input class="champ" data-fiche="adresse" placeholder="Adresse du chantier" value="${fiche.adresse}">`;
+      }
+    } else {
+      html += `<p class="blocage" style="margin-top:10px">${retenu.nom}${retenu.neuf ? " — fiche créée" : ""}<br>
+        <span style="color:var(--gris)">${retenu.tel || "sans numéro"} · ${retenu.adresse || "sans adresse"}</span></p>`;
+    }
+
+    const prêt = retenu !== null || texte.trim().length >= 2;
+    html += `<div class="actes" style="justify-content:space-between">
+        <button type="button" class="past" data-retour="1">Annuler</button>
         <span class="bascule">
           <button type="button" data-moment="matin" aria-pressed="${moment === "matin"}">Matin</button>
           <button type="button" data-moment="aprem" aria-pressed="${moment === "aprem"}">Après-midi</button>
           <button type="button" data-moment="journee" aria-pressed="${moment === "journee"}">Journée</button>
         </span>
-        <button type="button" class="past or" data-bloquer="1">Bloquer</button>
-      </div>`;
+      </div>
+      <div class="actes"><button type="button" class="past or" data-bloquer="1" ${prêt ? "" : "disabled"}>Poser</button></div>`;
   }
   document.getElementById("carte").innerHTML = html;
 
@@ -280,31 +333,39 @@ function dessiner() {
   const champ = document.getElementById("quoi");
   if (champ) {
     champ.focus();
-    champ.addEventListener("input", (e) => { texte = e.target.value; });
+    champ.setSelectionRange(champ.value.length, champ.value.length);
+    champ.addEventListener("input", (e) => { texte = e.target.value; retenu = null; dessiner(); });
+  }
+  for (const f of document.querySelectorAll("[data-fiche]")) {
+    f.addEventListener("input", (e) => { fiche[e.target.dataset.fiche] = e.target.value; });
   }
 }
 
 document.querySelector(".tel").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
   const d = b.dataset;
-  if (d.jour) { jourVu = d.jour; etape = null; texte = ""; }
+  if (d.jour) { jourVu = d.jour; etape = null; texte = ""; retenu = null; }
   else if (d.etape) {
     etape = d.etape;
-    dire(d.etape === "ecrire"
-      ? "Écrivez ce que c'est — aucun client, aucun devis, aucun prix."
+    dire(d.etape === "client"
+      ? "Tapez son nom. S'il est connu, il apparaît ; sinon, sa fiche se crée avec ce que vous écrivez."
       : "");
+  }
+  else if (d.retour) { etape = "voies"; texte = ""; retenu = null; fiche = { tel: "", email: "", adresse: "" }; dire(""); }
+  else if (d.annuler) { etape = null; dire(""); }
+  else if (d.client) {
+    const c = CLIENTS.find((x) => x.nom === d.client);
+    retenu = { ...c, neuf: false }; texte = c.nom;
+    dire("Client connu : son numéro et son adresse sont déjà là.");
   }
   else if (d.moment) { moment = d.moment; }
   else if (d.bloquer) {
-    const mot = (texte || "").trim() || "Pris";
-    if (moment === "journee") {
-      pose[`${jourVu}-matin`] = { nom: mot, chantier: false };
-      pose[`${jourVu}-aprem`] = { nom: mot, chantier: false };
-    } else {
-      pose[`${jourVu}-${moment}`] = { nom: mot, chantier: false };
-    }
-    etape = null; texte = "";
-    dire("Pris. Ce moment ne part plus chez vos clients.");
+    const c = retenu ?? { nom: texte.trim(), tel: fiche.tel, adresse: fiche.adresse, neuf: true };
+    const bloc = { nom: c.nom, chantier: true, neuf: c.neuf, lieu: c.adresse || "adresse à compléter", equipe: "" };
+    if (moment === "journee") { pose[`${jourVu}-matin`] = bloc; pose[`${jourVu}-aprem`] = bloc; }
+    else pose[`${jourVu}-${moment}`] = bloc;
+    etape = null; texte = ""; retenu = null; fiche = { tel: "", email: "", adresse: "" };
+    dire(c.neuf ? "Posé — et sa fiche client est créée, avec son numéro et son adresse." : "Posé.");
   }
   else if (d.poserChantier) {
     pose[`${jourVu}-matin`] = { nom: d.poserChantier, chantier: true };
