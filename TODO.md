@@ -109,17 +109,21 @@ l'application, et reste vert dans les deux cas.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — « Déplacer » (9 septembre 2026)
+## ⏳ UNE DÉCISION QUI LUI APPARTIENT — l'ordre des deux moitiés du jour
 
-**Sa remarque :** *« regarde réellement ce qui se passe quand on clique sur
-déplacer, j'ai l'impression que c'est inversé, et en vrai c'est pas intuitif du
-tout, faut trouver quelque chose de plus simple »*.
+**Sa remarque du 9 septembre 2026 :** *« j'ai l'impression que c'est inversé »*.
+Mesuré à l'écran (`scripts/capture-deplacer.ts`) : les deux moitiés de la
+journée **changent de place** selon où est le chantier — posé l'après-midi, la
+fiche se lit `APRÈS-MIDI` puis `MATIN`. La cause est `blocsDeLaJournee`, qui
+pose les chantiers d'abord et les demi-journées libres ensuite.
 
-**CE QUI A ÉTÉ MESURÉ, à l'écran, avant de proposer quoi que ce soit**
-(`scripts/capture-deplacer.ts`, qui rejoue son geste et photographie) :
+**Le geste, lui, est réglé** — il a choisi l'interrupteur à deux positions le
+10 septembre (`ARCHITECTURE.md` §313). L'ordre ne l'est pas, et il ne peut pas
+l'être sans lui : le remettre chronologique ferait parfois ouvrir la fiche sur
+« libre », ce qu'il a refusé le 21 août 2026 — *« le nom toujours en premier ! »*.
+**Ses deux demandes ne tiennent pas ensemble ; l'arbitrage est le sien.**
 
-| | |
-|---|---|
+---|---|
 | la logique | **juste** — chantier posé l'après-midi, « Après-midi » est la pastille allumée ; un appui sur « Matin » écrit bien `creneau_debut = matin` |
 | ce que l'œil lit | **les deux moitiés de la journée changent de place** : chantier l'après-midi → la fiche se lit `APRÈS-MIDI` puis `MATIN` ; chantier le matin → `MATIN` puis `APRÈS-MIDI` |
 
@@ -182,6 +186,35 @@ n'est pas un pansement oublié : elle est nommée ici, et elle a cessé de grand
 
 **À faire quand le journal aura tenu quelques jours chez lui** — c'est la seule
 chose qui manque pour trancher.
+
+## ⏳ UN RETOUR SERT L'ÉCRAN DEPUIS LA RÉSERVE — mesuré le 9 septembre 2026
+
+**Trouvé en corrigeant la flèche de retour** (`ARCHITECTURE.md` §305), et
+**pas apporté par ce lot** : un client créé en base pendant qu'on est sur une
+fiche n'apparaît pas au retour. Le contrôle a été joué sur les DEUX gestes —
+la flèche de l'écran et le retour du navigateur — et les deux servent la
+réserve de Next.js. C'est le comportement de la plateforme, et l'application le
+porte depuis toujours.
+
+**Pourquoi ça n'a jamais mordu, et pourquoi ça pourrait :** les
+soixante-seize `revalidatePath` du dépôt vident la réserve dès qu'une
+modification passe par l'application. Le trou est ailleurs — une action qui
+modifie un écran SANS revalider le chemin de l'écran d'où l'on vient.
+
+**Ce qui a été essayé puis retiré**, et il ne faut pas le refaire tel quel : un
+`router.refresh()` sur `popstate`. Il rendait les données fraîches et remettait
+le défilement à ZÉRO — donc il défaisait le correctif. Le faire tenir demandait
+un `setTimeout` de 400 ms calé sur la restauration du navigateur : un pansement
+au sens du §4 quater, qui reviendrait sur un téléphone plus lent.
+
+**La bonne piste** : garder le défilement soi-même de bout en bout, ou vérifier
+que chaque action revalide le chemin de l'écran d'où l'on vient. La seconde est
+la moins chère et la plus sûre.
+
+**Qui peut le trancher :** nous — c'est du code. À ouvrir seulement s'il
+signale un écran qui ment au retour ; sinon, la place rendue vaut mieux.
+
+---
 
 ## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
 

@@ -11,6 +11,22 @@
 
 ---
 
+## FAIT : « Déplacer », un interrupteur à deux positions — 10 septembre 2026
+
+Sa décision après la planche : *« fais celui-là, juste tu retires la journée »*.
+« Déplacer » reste, il ouvre un interrupteur Matin / Après-midi, et se referme
+dès qu'on choisit.
+
+**Retirer « Journée » a fermé un vrai piège :** ce mot disait une étendue, pas
+un départ, et le choisir réécrivait la durée du chantier — « Matin » sur une
+journée vendue la ramenait à une demi-journée, en silence. Six pièces
+disparaissent avec lui. **Aucune migration.** Détail : `ARCHITECTURE.md` §313.
+
+**Reste ouvert, et c'est à lui de trancher :** l'ordre des deux moitiés de la
+journée (`TODO.md`).
+
+---
+
 ## FAIT : POSER UN CHANTIER NE DEMANDE PLUS QUAND — 9 septembre 2026
 
 Sa remarque : *« si Claudette c'est un chantier 1 journée, deux, ou une demi, ça
@@ -96,6 +112,42 @@ Document : `docs/lot-retour-page-davant.md` · `ARCHITECTURE.md` §311.
 `?de=` (`TODO.md`) — six écrans et six suites en dépendent.
 
 ---
+
+## FAIT : LA FLÈCHE DE RETOUR REND SA PLACE — 9 septembre 2026
+
+Sa remarque : *« si je clique sur un client tout en bas de la liste, je fais
+retour, il me remet en haut de la liste — je veux rester où j'étais ! »*
+
+Le défaut était dans la **flèche**, pas dans la liste : c'était un lien, donc une
+navigation en avant, et une page neuve se pose en haut. Mesuré avant de
+corriger — la flèche déposait à 0 px, le retour du navigateur rendait 2 941 px.
+Elle recule désormais dans l'historique quand l'écran d'avant est bien celui
+qu'elle vise, sur **les 49 écrans** qui la portent. L'entrée d'historique
+empilée à chaque aller-retour disparaît avec.
+
+Aucune migration. Document : `docs/lot-retour-garde-la-place.md` ·
+`ARCHITECTURE.md` §314 — le §311 d'une session voisine décide **où** la flèche
+mène, celui-ci **par quel chemin** elle y va.
+
+**Reste ouvert, mesuré, et pas apporté par ce lot :** un retour sert l'écran
+depuis la réserve de Next.js (`TODO.md`).
+
+## FAIT : « 8 CHANTIERS » CÈDE LA PLACE À CE QUI S'EST PASSÉ — 9 septembre 2026
+
+Sa question, puis sa décision dans la foulée : *« remplace par la dernière chose
+qui s'est produit »*. Le compte était juste et c'est ce qui le rendait trompeur —
+un chantier naît d'une dictée, bien avant le moindre document.
+
+La ligne porte désormais « Devis 7 sept. », « Facture 2 sept. », « Fiche 28
+août » — **les trois registres de la fiche, sous les mêmes conditions**. Rien à
+annoncer : elle se tait.
+
+Trois défauts de mise en page trouvés à la CAPTURE et par aucun test : la date
+coupée sur les adresses longues, une seconde ligne vide, le séparateur collé.
+`ARCHITECTURE.md` §315.
+
+---
+
 ## FAIT : LA RÉCEPTION D’UNE FACTURE SE TRACE — 9 septembre 2026
 
 Sa demande : une case « J’ai bien reçu cette facture » sur la page du client,

@@ -13,7 +13,6 @@ import {
 import { absencesEquipe, equipes } from "../db/schema";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { cocheRefusee } from "../../lib/equipe-absente";
-import { departEtDuree, type QuandChantier } from "../../lib/planning-jour";
 import { seuilMemoireCalendrier } from "../../lib/onglet-chantier";
 import type { Ctx } from "./context";
 
@@ -320,12 +319,13 @@ export const marquerPrixValide = (ctx: Ctx, chantierId: string) => marquerJalon(
  * ensuite, sur la ligne de la demi-journée, où elle est indépendante du matin
  * et de l'après-midi (`basculerEquipeDuChantier`).
  *
- * **Le moment est l'un des TROIS de l'écran** — matin, après-midi, journée — et
- * non un simple départ : « Matin » réserve une demi-journée, « Journée » en
- * réserve deux. C'est `departEtDuree` qui traduit, une fois pour toutes, et qui
- * protège au passage les chantiers de plusieurs jours (voir plus bas).
+ * **Le moment est un DÉPART, jamais une étendue** — sa décision du 10 septembre
+ * 2026, *« tu retires la journée »*. Un troisième mot vivait ici et réécrivait
+ * la durée : « Matin » sur un chantier d'une journée le ramenait à une
+ * demi-journée, en silence. La durée vient du devis (§308) et ne se choisit
+ * plus nulle part.
  */
-export type ChoixDePose = { quand: QuandChantier };
+export type ChoixDePose = { demi: Moment };
 
 /**
  * Coche ou décoche une équipe sur UNE demi-journée d'un chantier.
@@ -497,34 +497,27 @@ export function rangerParDemi(
 }
 
 /**
- * Déplace un chantier posé : matin, après-midi, ou la journée.
+ * Déplace un chantier posé : il part le matin, ou l'après-midi.
  *
  * **Le jour ne bouge pas**, et c'est ce que l'écran promet — « Déplacer » vit
  * dans la fiche d'UN jour. Changer de jour se fait en retirant puis en reposant
  * ailleurs, ce qui est le même nombre de gestes et ne ment pas.
  *
- * **Un chantier plus long qu'une journée garde sa durée** (`departEtDuree`) :
- * « Journée » sur un chantier de trois jours le raccourcirait à deux
- * demi-journées, en silence, et il perdrait deux jours de travail sans qu'un
- * mot le lui dise.
+ * **ET LA DURÉE NE BOUGE PLUS DU TOUT** — sa décision du 10 septembre 2026,
+ * *« tu retires la journée »*. Cette fonction écrivait `dureeDemiJournees` :
+ * choisir « Matin » sur un chantier d'une journée le ramenait à une
+ * demi-journée, sans un mot, et l'après-midi redevenait vendable. Le défaut ne
+ * se voyait ni au plan, ni au devis, ni à la facture — seulement le jour du
+ * chantier. La durée vient du devis (§308) ; ici, on ne choisit qu'un départ.
  */
 export async function deplacerChantier(
   ctx: Ctx,
   chantierId: string,
-  quand: QuandChantier
+  demi: Moment
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [courant] = await tx
-      .select({
-        jour: chantiers.datePlanifiee,
-        duree: chantiers.dureeDemiJournees,
-        // **La durée dictée descend ici aussi.** Un chantier posé avant la
-        // migration 0019 porte `duree_demi_journees` à NULL : sans elle, il
-        // passait pour une journée, et « Matin » raccourcissait en silence un
-        // chantier de deux jours — le défaut même que ce lot corrige, par
-        // l'autre porte.
-        dureePrevue: chantiers.dureePrevue,
-      })
+      .select({ jour: chantiers.datePlanifiee })
       .from(chantiers)
       .where(
         and(
@@ -538,19 +531,10 @@ export async function deplacerChantier(
     // le mettre. On rend `null` plutôt que d'inventer une date.
     if (!courant?.jour) return null;
 
-    const { moment, duree } = departEtDuree(
-      quand,
-      dureeDuChantier({
-        dureeDemiJournees: courant.duree ?? null,
-        dureePrevue: courant.dureePrevue ?? null,
-      })
-    );
-
     const [row] = await tx
       .update(chantiers)
       .set({
-        creneauDebut: moment,
-        dureeDemiJournees: duree,
+        creneauDebut: demi,
         updatedBy: ctx.utilisateurId,
         updatedAt: new Date(),
       })
@@ -651,15 +635,11 @@ export async function planifierChantier(
     );
     const automatique = departPossible(datePlanifiee, duree, occupation, nombreEquipes) ?? "matin";
 
-    // **Le moment choisi décide AUSSI de la durée réservée.** « Matin » réserve
-    // une demi-journée, « Journée » en réserve deux — sans quoi les trois
-    // boutons de l'écran feraient tous la même chose, et poser « Matin »
-    // bloquerait l'après-midi sans qu'un mot le dise.
-    //
-    // **Sauf sur un chantier plus long qu'une journée**, qui garde la sienne :
-    // elle vient de la dictée (« 3 jours » → six demi-journées), et la
-    // raccourcir ici lui ferait perdre deux jours de travail en silence.
-    const choisi = choix ? departEtDuree(choix.quand, duree) : null;
+    // **Le moment choisi ne décide QUE du départ.** Il décidait aussi de la
+    // durée réservée, et c'est ce qui la faisait fondre : « Matin » sur un
+    // chantier d'une journée réservait une demi-journée, sans un mot. La durée
+    // vient du devis et ne se choisit plus (§308, et sa décision du
+    // 10 septembre 2026).
 
     // ═══════════════════════════════════════════════════════════════════
     // **LE CHOIX DU PATRON N'EST PLUS REFUSÉ.** Il le posait, ce créneau était
@@ -675,14 +655,14 @@ export async function planifierChantier(
     // sa date garde ses limites (`jourRetenable`, `premiersJoursLibres`). Un
     // client n'a pas à forcer une journée, ni même à savoir qu'on le peut.
     // ═══════════════════════════════════════════════════════════════════
-    const creneauDebut: Moment = choisi ? choisi.moment : automatique;
+    const creneauDebut: Moment = choix ? choix.demi : automatique;
 
     const [row] = await tx
       .update(chantiers)
       .set({
         datePlanifiee,
         creneauDebut,
-        dureeDemiJournees: choisi ? choisi.duree : duree,
+        dureeDemiJournees: duree,
         updatedBy: ctx.utilisateurId,
         updatedAt: new Date(),
       })

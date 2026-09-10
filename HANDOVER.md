@@ -8,6 +8,29 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — « DÉPLACER », UN INTERRUPTEUR À DEUX POSITIONS (10 septembre 2026)
+
+| | |
+|---|---|
+| sa décision | *« fais celui-là, juste tu retires la journée. Il faut garder le bouton déplacer ; on clique sur matin ou aprem et le bouton disparaît »* |
+| la planche | `appli/deplacer-plus-simple.html`, proposition 2 |
+| ce que ça RETIRE | `QuandChantier`, `departEtDuree`, `quandDuChantier`, `poseOfferte`, `MOT_QUAND`, `estUnMomentValide` — six pièces qui n'existaient que pour rattraper un mot |
+| les pièces | `BasculeDemi` (`PlanningClient.tsx`), `departDuChantier` et `estUnDemiValide` (`src/lib/planning-jour.ts`) |
+| aucune migration | le vocabulaire retenu est celui que la base porte depuis 0019 |
+| le détail | `ARCHITECTURE.md` §313 |
+
+**LE PIÈGE QUE CE LOT A FERMÉ.** « Journée » ne décrivait pas un départ mais une
+ÉTENDUE : la choisir réécrivait `dureeDemiJournees`. « Matin » sur un chantier
+d'une journée le ramenait donc à une demi-journée, en silence — l'après-midi
+redevenait vendable, et le défaut ne se voyait que le jour du chantier. **Ne
+jamais laisser un geste du planning écrire une durée** : elle vient du devis.
+
+**CE QUI RESTE OUVERT, ET QUI LUI APPARTIENT.** Les deux moitiés de la journée
+changent de place selon où est le chantier (`scripts/capture-deplacer.ts` le
+photographie). Les remettre dans l'ordre ferait parfois ouvrir la fiche sur
+« libre », ce qu'il a refusé le 21 août. Voir `TODO.md`.
+
+---
 ## Dernier lot — POSER UN CHANTIER NE DEMANDE PLUS QUAND (9 septembre 2026)
 
 | | |
@@ -74,6 +97,54 @@ client me paie » est ce qu'il a déclaré aux impôts.
 une plainte de ce genre, vérifier `entreesDuReleve` AVANT de toucher au calcul —
 le défaut peut n'être que dans les mots.
 
+## Dernier lot — LA LIGNE D'UN CLIENT DIT CE QUI S'EST PASSÉ (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | « 8 chantiers » cède la place à la dernière chose qui s'est produite — « Devis 7 sept. », « Facture 2 sept. », « Fiche 28 août » |
+| la migration | **aucune** |
+| les pièces | `derniereTraceDuClient` et `jourDeLaLigne` (`src/lib/documents-du-client.ts`), `listerFichesClients`, `ListeClients.tsx` |
+| les suites | `test-documents-du-client.ts` (la règle), `test-liste-clients.ts` (la base), `test-ligne-du-client-e2e.ts` (**les boîtes**) |
+| le détail | `ARCHITECTURE.md` §315, `docs/lot-retour-garde-la-place.md` |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** les trois candidats sont exactement les trois
+registres de la FICHE — devis parti, facture émise, fiche envoyée —, et sous les
+mêmes conditions. Y ajouter un chantier ouvert recréerait le défaut qu'on vient
+de retirer : la ligne promettrait ce que la fiche n'a pas.
+
+**ET C'EST L'ADRESSE QUI SE ROGNE, JAMAIS LA DATE.** Écrits d'un seul tenant,
+les deux débordent des 316 px de sa ligne et ce sont les derniers mots qui
+tombent — donc la date, c'est-à-dire ce qu'on venait d'ajouter. Deux boîtes, et
+l'année qui tombe quand c'est celle qui court (`jourDeLaLigne`). Les trois
+défauts de mise en page sont sortis d'une CAPTURE, d'aucun test.
+
+---
+## Lot précédent — LA FLÈCHE DE RETOUR REND SA PLACE (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | la flèche de retour **recule** dans l'historique au lieu de naviguer vers l'écran d'avant — sur les 49 écrans qui la portent |
+| la migration | **aucune** |
+| les pièces | `marquerLaProvenance` / `onPeutReculerVers` (`src/components/atlas/journal-navigateur.ts`), lues par `FlecheRetour`, posées par `JournalDeNavigation` |
+| la suite | `scripts/test-retour-garde-la-place-e2e.ts` (4 cas ; rouge sur 2 contre la version d'avant) |
+| le détail | `ARCHITECTURE.md` §314, `docs/lot-retour-garde-la-place.md` |
+
+**DEUX MÉCANISMES, DEUX QUESTIONS — et ne pas les confondre.** Le §311, écrit le
+même soir par une autre session, décide **où** la flèche mène (le journal de
+l'onglet). Ce lot-ci décide **par quel chemin** elle y va. Le premier jet était
+une seconde flèche complète, avec son propre souvenir : elle a été **jetée** à la
+fusion, parce que deux pièces pour un même bouton, c'est le §3.
+
+**LE PIÈGE À NE PAS DÉFAIRE :** elle ne recule **que sur preuve**. Chaque entrée
+d'historique porte l'adresse d'où elle a été ouverte ; sans marque, le lien fait
+son travail comme avant. Un `router.back()` inconditionnel ferait un bouton mort
+sur une fiche ouverte par un signet, et redéposerait sur un formulaire qu'on
+vient d'enregistrer — c'est la troisième objection du §311, et elle tient.
+
+**Ce qui reste ouvert, et c'est mesuré :** un retour sert l'écran depuis la
+réserve de Next.js. Pas apporté par ce lot — le retour du navigateur en souffre
+pareil, et depuis toujours. `TODO.md` porte la mesure et la piste ; ne pas
+remettre un `router.refresh()` sur `popstate`, il remet le défilement à zéro.
 
 ---
 ## Dernier lot — LA RÉCEPTION D’UNE FACTURE (9 septembre 2026)
