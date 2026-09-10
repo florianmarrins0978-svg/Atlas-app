@@ -734,9 +734,16 @@ async function main() {
 
   // ─── AJOUTER DEPUIS LA FICHE : ON TOUCHE LE NOM, C'EST POSÉ ─────────────
 
-  await essai("« Ajouter un chantier » demande QUI, et rien d'autre", async () => {
+  await essai("« Ajouter » demande D'ABORD la voie, puis QUI — et rien d'autre", async () => {
+    // **Un temps de plus depuis le 10 septembre 2026**, et c'est sa planche
+    // `appli/bloquer-sans-devis.html` : « Ajouter » propose un chantier qui
+    // attend une date, ou un client à écrire. Ce contrôle passe donc par la
+    // première voie — celle qui existait déjà — et vérifie qu'après elle, la
+    // liste des noms suffit à poser (`CLAUDE.md` §5 bis).
     await toucherLeJour(JOUR);
     await toucherAuCentre(page.locator('[data-atlas="carte-jour"] [data-atlas="ajouter"]'));
+    await page.waitForSelector('[data-atlas="voie-chantier"]', { timeout: 10_000 });
+    await toucherAuCentre(page.locator('[data-atlas="voie-chantier"]').first());
     await page.waitForSelector(`[data-qui="${chantierId}"]`, { timeout: 10_000 });
   });
 
@@ -755,6 +762,9 @@ async function main() {
     // durée vient du devis, et aucun geste du planning n'y touche
     // (`CLAUDE.md` §5 bis).
     const dureeAvant = (await enBase()).duree_demi_journees;
+    // **La liste est déjà ouverte** : le cas précédent l'a laissée là, par la
+    // voie « Un chantier en attente ». On ne rouvre donc rien — appuyer sur le
+    // « + » la refermerait, et l'on mesurerait un écran qu'il ne voit jamais.
     await toucherAuCentre(page.locator(`[data-qui="${chantierId}"]`));
     await attendre("le chantier est reposé", async () => (await enBase()).jour === JOUR);
     assert.equal(
@@ -787,7 +797,7 @@ async function main() {
   // chantiers le temps d'une mesure est le seul moyen d'atteindre le cas zéro
   // sans dépendre de ce qu'une autre suite y a laissé. Les dates retirées sont
   // relevées AVANT, et remises après, y compris si la mesure échoue.
-  await essai("aucun chantier en attente : plus de « Ajouter un chantier »", async () => {
+  await essai("aucun chantier en attente : « Ajouter » ne mène plus qu'au client", async () => {
     // ─── POURQUOI LA PORTÉE N'EST PAS « CETTE ENTREPRISE » ────────────────
     //
     // **Vérifié dans le code, pas supposé.** Une première version datait les
@@ -860,13 +870,40 @@ async function main() {
       const carte = await page.locator('[data-atlas="carte-jour"]').count();
       assert.ok(carte >= 1, "la fiche du jour ne s'est pas ouverte : il n'y a rien à mesurer");
 
+      // ─── CE CONTRÔLE A CHANGÉ DE CIBLE LE 10 SEPTEMBRE 2026 ───────────
+      //
+      // **Sa règle du 23 août reste, et c'est ELLE qui commande le changement :**
+      // *« lorsqu'aucun chantier n'attend de jour, il ne faudrait pas que le
+      // bouton apparaisse, car il peut nous induire en erreur »*. Le geste ne
+      // créait alors rien — sans chantier en attente, il ne menait qu'à un
+      // cul-de-sac.
+      //
+      // Depuis sa planche `appli/bloquer-sans-devis.html`, il CRÉE : « Un
+      // client » pose un chantier neuf sur la journée, sans devis. Un jour vide
+      // n'est plus un cul-de-sac. Exiger l'absence du bouton reviendrait à
+      // réclamer ce qu'il vient de faire ajouter (`CLAUDE.md` §5 bis).
+      //
+      // **Ce qui se mesure, c'est donc la règle elle-même** : aucune voie qui
+      // ne mène nulle part. Le geste est là, et il n'offre PAS « Un chantier en
+      // attente » quand aucun n'attend.
       const boutons = await page.locator('[data-atlas="ajouter"]').count();
-      assert.equal(
-        boutons,
-        0,
-        `${boutons} bouton(s) « Ajouter un chantier » sur un écran où rien n'attend de jour : ` +
-          "il promet un chantier de plus et ne rend qu'une phrase"
+      assert.ok(
+        boutons >= 1,
+        "« Ajouter » a disparu alors qu'il mène toujours quelque part : poser un client"
       );
+      await page.locator('[data-atlas="ajouter"]').first().click();
+      await page.waitForTimeout(400);
+      assert.equal(
+        await page.locator('[data-atlas="voie-chantier"]').count(),
+        0,
+        "« Un chantier en attente » s'offre alors qu'aucun n'attend : un cul-de-sac de plus"
+      );
+      assert.ok(
+        (await page.locator('[data-atlas="voie-client"]').count()) >= 1,
+        "« Un client » manque : le geste ne mène alors nulle part, et devrait disparaître"
+      );
+      await page.locator('[data-atlas="annuler-ajout"]').first().click();
+      await page.waitForTimeout(300);
 
       // ─── ET LA SECTION ELLE-MÊME S'EFFACE ─────────────────────────────
       //

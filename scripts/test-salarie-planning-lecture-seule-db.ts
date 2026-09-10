@@ -60,11 +60,28 @@ const ECRITURES = [
   ["planifierChantierAction", "poser un chantier à une date"],
   ["basculerEquipeAction", "changer l'équipe d'une demi-journée"],
   ["libererDemiJourneeAction", "libérer une demi-journée d'un chantier"],
+  ["chercherDesClientsAction", "chercher un client depuis le planning"],
+  ["poserUnClientAction", "poser un client sur un jour, sans devis"],
   ["reposerDemiJourneeAction", "reposer une demi-journée qui attendait"],
   ["ecrireNoteChantierAction", "écrire le pense-bête"],
   ["deplanifierChantierAction", "retirer un chantier du planning"],
   ["supprimerChantierAction", "supprimer un chantier"],
 ] as const;
+
+/**
+ * CELLES QUI NE VISENT AUCUN CHANTIER EXISTANT — 10 septembre 2026.
+ *
+ * **Elles écrivent, donc elles portent la garde d'écriture comme les autres.**
+ * Ce qu'elles ne peuvent pas porter, c'est la PORTÉE : `exigerChantierDansSaPortee`
+ * demande l'identifiant d'un chantier, et celui-ci n'existe pas encore —
+ * `poserUnClientAction` le crée, `chercherDesClientsAction` ne touche à aucun.
+ *
+ * **Exiger la portée ici la rendrait creuse** : il faudrait inventer un
+ * identifiant pour satisfaire un contrôle, et le contrôle cesserait de dire
+ * quoi que ce soit. Ce qu'un salarié ne doit pas faire est tenu par la garde
+ * d'écriture, qui refuse AVANT toute requête.
+ */
+const SANS_CHANTIER = new Set(["chercherDesClientsAction", "poserUnClientAction"]);
 
 /** La seule qui LIT — la feuille de chantier sans un montant, son document. */
 const LECTURE = "tachesDuChantierAction";
@@ -262,6 +279,7 @@ async function main() {
     const corps = corpsDesActions(SOURCE);
     const mauvaises: string[] = [];
     for (const [nom] of ECRITURES) {
+      if (SANS_CHANTIER.has(nom)) continue;
       const c = corps.get(nom)!;
       const ecriture = c.indexOf("exigerEcritureSurLePlanning(");
       const portee = c.indexOf("exigerChantierDansSaPortee(");
@@ -289,8 +307,18 @@ async function main() {
     const corps = corpsDesActions(SOURCE);
     const sansPortee: string[] = [];
     for (const nom of [...ECRITURES.map(([n]) => n), LECTURE]) {
+      if (SANS_CHANTIER.has(nom)) continue;
       const c = corps.get(nom);
       if (!c || !c.includes("exigerChantierDansSaPortee(")) sansPortee.push(nom);
+    }
+    // **Et l'exemption ne doit désigner que des actions VIVANTES.** Un nom qui
+    // s'y attarderait après un renommage dispenserait de la portée une action
+    // qui n'existe plus — et couvrirait la suivante qui reprendrait son nom.
+    for (const nom of SANS_CHANTIER) {
+      assert.ok(
+        corps.has(nom),
+        `${nom} est exemptée de portée mais n'existe plus : l'exemption dort et couvrira autre chose`
+      );
     }
     assert.deepEqual(sansPortee, [], `la portée a été perdue sur : ${sansPortee.join(", ")}`);
   });

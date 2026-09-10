@@ -32,7 +32,6 @@ import { seuilMemoireCalendrier } from "../../lib/onglet-chantier";
 import {
   avecLaDemi,
   creneauxOccupes,
-  resumeDesCreneaux,
   sansLaDemi,
 } from "../../lib/creneaux-chantier";
 import type { Ctx } from "./context";
@@ -231,7 +230,22 @@ export async function getChantierPourCoordonnees(ctx: Ctx, id: string) {
 
 export async function creerChantier(
   ctx: Ctx,
-  data: { nom: string; adresseChantier?: string; clientId?: string | null }
+  data: {
+    nom: string;
+    adresseChantier?: string;
+    clientId?: string | null;
+    /**
+     * COMBIEN DE DEMI-JOURNÉES IL DEMANDE, quand on le sait déjà.
+     *
+     * **Le seul chemin qui le sait, c'est « Un client » depuis le planning**
+     * (10 septembre 2026) : le patron y choisit matin, après-midi ou la
+     * journée, et ce choix EST la durée — il n'y a pas de devis pour la dire.
+     *
+     * Partout ailleurs elle reste absente : la durée vient de la dictée ou du
+     * devis, et l'écrire à la création la figerait avant qu'on la connaisse.
+     */
+    dureeDemiJournees?: number;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [row] = await tx
@@ -241,6 +255,7 @@ export async function creerChantier(
         nom: data.nom,
         adresseChantier: data.adresseChantier,
         clientId: data.clientId ?? null,
+        dureeDemiJournees: data.dureeDemiJournees,
         createdBy: ctx.utilisateurId,
         updatedBy: ctx.utilisateurId,
       })

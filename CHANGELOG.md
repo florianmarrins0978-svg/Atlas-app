@@ -48,6 +48,37 @@ fiche pour un appelant qui n'existe pas — les deux passent `attache`. La fiche
 vit désormais DANS la carte du jour, et c'est le retrait de la carte qui
 l'aligne.
 
+### Poser un client sur un jour, sans passer par le devis
+
+**Sa demande, planche `appli/bloquer-sans-devis.html` retenue :** *« si j'ai un
+chantier à rajouter, que je puisse le faire sans devoir passer par la fiche
+client et le devis »*, puis *« si le client n'est pas reconnu, il faut qu'il
+ajoute aussi sa fiche client automatiquement »*.
+
+« Ajouter » propose désormais **deux voies** — un chantier qui attend une date,
+comme avant, ou **un client** qu'on écrit au clavier. Connu, il apparaît et son
+numéro est déjà là ; inconnu, **sa fiche se crée** avec ce qu'on saisit. Puis
+matin, après-midi ou la journée, et c'est posé. **« Annuler » ramène aux deux
+voies, à chaque étape.**
+
+| | |
+|---|---|
+| la reconnaissance | `trouverOuCreerClient`, celle de la voie normale — un client connu ne se dédouble pas, un autre numéro fait une autre fiche |
+| « Journée » | n'existe QUE là : le chantier naît du geste, le choix EST sa durée et ne recouvre aucun devis |
+| ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
+
+**Le geste ne disparaît plus quand rien n'attend**, et c'est sa règle du 23 août
+qui le veut : il ne menait nulle part, il mène maintenant quelque part. Ce qui
+disparaît, c'est la voie qui ne mène nulle part — « Un chantier en attente »
+quand aucun n'attend.
+
+**Un défaut de placement corrigé au passage :** le tiroir du bas est `fixed` et
+posé sur la barre, mais seul l'espace de la barre était réservé. « Poser »
+atterrissait dessous dès que la fiche d'un inconnu s'ouvrait. Le tiroir publie
+désormais sa hauteur (`--atlas-tiroir`), comme la barre publie la sienne.
+
+Détail : `ARCHITECTURE.md` §323.
+
 ### Rendre bavard le silence de Google et d'Apple, et tenir à jour le fichier de clés
 
 *« Voilà l'écran que je veux quand je clique sur se connecter. Voilà l'écran
@@ -98,6 +129,7 @@ batterie les a sortis, et ils sont réparés ici :
   25 août : deux traits autour d'un mot, pas un trait qui file d'un mot au bord.
   Le contrôle sait maintenant les distinguer — et il rougit toujours sur la
   forme solitaire, vérifié en la lui montrant.
+
 ### Une demi-journée se libère, attend en bas, et se repose ailleurs
 
 **Sa planche, essayée puis retenue** (`appli/liberer-une-demi-journee.html`) :

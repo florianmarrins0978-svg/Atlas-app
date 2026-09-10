@@ -8,7 +8,33 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — LES BOUTONS GOOGLE ET APPLE NE MANQUAIENT PAS, ILS SE TAISAIENT (10 septembre 2026)
+## Dernier lot — POSER UN CLIENT SUR UN JOUR, SANS DEVIS (10 septembre 2026)
+
+| | |
+|---|---|
+| sa planche | `appli/bloquer-sans-devis.html`, essayée puis retenue |
+| le geste | « Ajouter » propose deux voies : un chantier en attente, ou **un client** écrit au clavier. Inconnu, **sa fiche se crée**. Puis matin, après-midi ou la journée |
+| la migration | **aucune** — `creerChantier` accepte seulement `dureeDemiJournees` |
+| les pièces | `chercherDesClientsAction`, `poserUnClientAction`, `AjoutDunClient` |
+| les suites | `test-poser-un-client-db.ts` (9), `test-bloquer-sans-devis-e2e.ts` (5, **son geste**) |
+| le détail | `ARCHITECTURE.md` §323 |
+
+**LES TROIS PIÈGES À NE PAS REFABRIQUER.**
+
+1. **« Journée » n'existe QUE sur cette voie.** Ailleurs, choisir un moment
+   réécrivait la durée vendue au devis (le défaut du 9 septembre). Ici le
+   chantier naît du geste : le choix EST sa durée. `creerChantier` accepte
+   `dureeDemiJournees` pour cela, et pour rien d'autre.
+2. **La recherche de clients reste au SERVEUR.** Descendre le carnet dans le
+   navigateur à chaque ouverture du planning, pour un geste qui sert deux fois
+   par mois, c'est ce que cette action évite — et elle porte la garde
+   d'écriture bien qu'elle lise, parce que ce chemin n'existe que pour poser.
+3. **Le tiroir du bas publie sa hauteur** (`--atlas-tiroir`), et
+   `.atlas-contenu` la réserve. Y écrire un nombre en dur, c'est refaire le
+   défaut que la barre a déjà payé.
+
+---
+## Le même jour — LES BOUTONS GOOGLE ET APPLE NE MANQUAIENT PAS, ILS SE TAISAIENT (10 septembre 2026)
 
 | | |
 |---|---|
@@ -31,7 +57,8 @@ un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc 
 `completer-env-local.sh`, pas seulement à `src/server/env.ts`.
 
 ---
-## Dernier lot — UNE DEMI-JOURNÉE SE LIBÈRE ET SE REPOSE (10 septembre 2026)
+## Lot précédent — UNE DEMI-JOURNÉE SE LIBÈRE ET SE REPOSE (10 septembre 2026)
+
 
 | | |
 |---|---|
