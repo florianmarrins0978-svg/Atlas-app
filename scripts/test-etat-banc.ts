@@ -30,9 +30,12 @@ console.log("=== L'état de construction du banc ===\n");
 // ─── Quand le bandeau existe, et quand il n'existe pas ──────────────────────
 
 cas("hors banc d'essai, il n'y a rien à montrer", () => {
-  assert.equal(laVersionRapideSeConstruit({ NODE_ENV: "development" } as NodeJS.ProcessEnv), false);
   assert.equal(
-    laVersionRapideSeConstruit({ NODE_ENV: "production" } as NodeJS.ProcessEnv),
+    laVersionRapideSeConstruit({ NODE_ENV: "development" } as NodeJS.ProcessEnv, false),
+    false
+  );
+  assert.equal(
+    laVersionRapideSeConstruit({ NODE_ENV: "production" } as NodeJS.ProcessEnv, true),
     false,
     "une application déployée n'a rien à bâtir"
   );
@@ -40,17 +43,17 @@ cas("hors banc d'essai, il n'y a rien à montrer", () => {
 
 cas("sur le banc, en mode développement : la version rapide se construit encore", () => {
   assert.equal(
-    laVersionRapideSeConstruit({ ATLAS_PROFIL: "banc", NODE_ENV: "development" } as NodeJS.ProcessEnv),
+    laVersionRapideSeConstruit({ ATLAS_PROFIL: "banc", NODE_ENV: "development" } as NodeJS.ProcessEnv, false),
     true
   );
 });
 
-// **`next start` impose `NODE_ENV=production`.** Servir en production SUR un
-// banc EST la preuve que la bascule a eu lieu : tout est compilé, le bandeau
+// **Servir du code BÂTI sur un banc EST la preuve que la bascule a eu lieu** :
+// tout est compilé, le bandeau
 // n'a plus rien à dire.
 cas("sur le banc, une fois la version rapide en place : plus de bandeau", () => {
   assert.equal(
-    laVersionRapideSeConstruit({ ATLAS_PROFIL: "banc", NODE_ENV: "production" } as NodeJS.ProcessEnv),
+    laVersionRapideSeConstruit({ ATLAS_PROFIL: "banc", NODE_ENV: "production" } as NodeJS.ProcessEnv, true),
     false
   );
 });
@@ -59,8 +62,26 @@ cas("l'ancien nom du profil est reconnu aussi", () => {
   // Un espace créé avant `ATLAS_PROFIL` ne connaît que celui-ci — deux
   // correctifs de suite sont restés inertes pour l'avoir oublié.
   assert.equal(
-    laVersionRapideSeConstruit({ ATLAS_BANC_ESSAI: "1", NODE_ENV: "development" } as NodeJS.ProcessEnv),
+    laVersionRapideSeConstruit({ ATLAS_BANC_ESSAI: "1", NODE_ENV: "development" } as NodeJS.ProcessEnv, false),
     true
+  );
+
+  // ─── CE QUE L'ENVIRONNEMENT NE PEUT PLUS FAIRE DIRE — 10 septembre 2026 ────
+  //
+  // **Le défaut mesuré ce jour-là :** `next start` respecte un `NODE_ENV` qu'on
+  // lui donne — il ne l'impose que s'il manque. La batterie servait donc du code
+  // BÂTI avec `NODE_ENV=development` dans son environnement, et le bandeau
+  // « version rapide en construction » paraissait sur ses vingt-six écrans.
+  //
+  // La règle ne lit plus cette variable : elle reçoit un FAIT de compilation.
+  // Ce contrôle le fixe — une version bâtie se tait, quoi que dise l'environnement.
+  assert.equal(
+    laVersionRapideSeConstruit(
+      { ATLAS_PROFIL: "banc", NODE_ENV: "development" } as NodeJS.ProcessEnv,
+      true
+    ),
+    false,
+    "une version BÂTIE se remet à parler dès que l'environnement dit « development »"
   );
 });
 

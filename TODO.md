@@ -1655,20 +1655,20 @@ et le 8 je choisis la B ».** Tout est codé — `ARCHITECTURE.md` §252,
 
 ## HUIT SUITES NAVIGATEUR SONT ROUGES SUR CE POSTE, ET LE PRODUIT N'Y EST POUR RIEN (4 sept. 2026)
 
-**Elles sont VINGT-DEUX le 9 septembre 2026**, mesurées sur une batterie
-complète dans un conteneur d'agent — et la famille s'explique par une seule
-ligne du journal : *« le bandeau du banc apparaît sur un serveur qui n'en est
-pas un »* (`test-bandeau-banc-e2e`). Ce bandeau est une **bande fixe** : tout
-ce qui se mesure « recouvert » ou « tient dans un écran » tombe avec lui —
-`test-connexion-figee`, `test-face-id`, `test-devis-client`,
-`test-pas-la-ce-jour`, et le reste.
+**Elles étaient VINGT-SIX le 10 septembre 2026**, et la cause du bandeau a été
+trouvée puis corrigée le jour même (`ARCHITECTURE.md` §317) : `next start`
+n'impose pas `NODE_ENV=production`, et la règle du bandeau lisait cette variable
+à l'exécution.
 
-**Vérifié arbre remis à nu** (`git stash` du seul fichier touché) :
-`test-pas-la-ce-jour-e2e` rend le MÊME échec avant et après le lot du
-9 septembre. Ce n'est donc pas un lot qui les allume — mais tant que ce
-bandeau paraît hors banc, **la batterie ne peut plus rendre un vert ici**, et
-c'est elle qui autorise une livraison (`CLAUDE.md` §5). À reprendre en
-premier, avant tout lot qui compte sur elle.
+**CE QUE J'AVAIS ÉCRIT ICI ÉTAIT FAUX SUR UN POINT, et c'est le genre d'erreur
+qui fait chercher au mauvais endroit :** j'avais conclu « le produit n'y est
+pour rien, c'est ce poste ». Le bandeau était bien un **défaut du produit** —
+il aurait paru de la même façon sur le banc du patron servi avec un `NODE_ENV`
+posé à la main.
+
+**Ce qui reste à mesurer :** combien de ces vingt-six suites le correctif
+éteint, et ce que les autres ont comme cause propre. La liste ci-dessous, elle,
+tient toujours pour les suites de dates.
 
 
 
