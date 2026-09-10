@@ -12,7 +12,11 @@ import { periodesOccupeesExterieures } from "./agendas-externes";
 import { absencesEquipe, chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
 import { datesHorsFenetre, type RefusDate } from "../../lib/dates-envoi";
 import type { Ctx } from "./context";
-import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers";
+import {
+  creneauxParChantier,
+  encoreEnCoursDepuis,
+  equipesParChantier,
+} from "./occupation-chantiers";
 import { lireObjet } from "../storage";
 import {
   compterOccupation,
@@ -133,6 +137,7 @@ async function contrainteDuPlanning(
   // Les équipes cochées comptent dans la place prise : sans elles, un jour où
   // ses deux équipes travaillent déjà partirait chez un client (22 août 2026).
   const equipes = await equipesParChantier(tx, entrepriseId);
+  const creneauxPoses = await creneauxParChantier(tx, entrepriseId);
   const planifies: ChantierPlanifie[] = lignes
     .filter((l) => l.jour !== null && l.id !== exclureChantierId)
     .map((l) => ({
@@ -140,6 +145,7 @@ async function contrainteDuPlanning(
       moment: l.moment === "matin" || l.moment === "apres_midi" ? l.moment : null,
       dureeDemiJournees: l.duree,
       equipesParDemi: equipes.get(l.id) ?? null,
+      creneaux: creneauxPoses.get(l.id) ?? null,
     }));
 
   const [entreprise] = await tx

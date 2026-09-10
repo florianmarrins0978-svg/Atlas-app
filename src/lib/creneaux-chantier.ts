@@ -1,5 +1,5 @@
 import {
-  creneauxDuChantier,
+  creneauxPoses,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type Creneau,
   type JourIso,
@@ -56,13 +56,17 @@ export function cleDuCreneau(c: Creneau): string {
  * a validé le 24 »).
  */
 export function creneauxOccupes(chantier: ChantierPose, poses: readonly Creneau[]): Creneau[] {
-  if (poses.length > 0) return [...poses];
-  if (!chantier.jour) return [];
+  if (!chantier.jour) return poses.length > 0 ? [...poses] : [];
   const moment: Moment = chantier.moment === "apres_midi" ? "apres_midi" : "matin";
-  return creneauxDuChantier(
-    { jour: chantier.jour, moment },
-    chantier.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES
-  );
+  // **La règle du repli vit dans `creneauxPoses`**, et une seule fois : c'est
+  // elle que l'occupation emploie de son côté, et deux façons de répondre à
+  // « quelles demi-journées prend-il » finiraient par se contredire.
+  return creneauxPoses({
+    jour: chantier.jour,
+    moment,
+    dureeDemiJournees: chantier.dureeDemiJournees,
+    creneaux: poses,
+  });
 }
 
 /**

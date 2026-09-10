@@ -369,7 +369,40 @@ export type ChantierPlanifie = {
    * travail à faire : le compter zéro rendrait la journée vide.
    */
   equipesParDemi?: Partial<Record<Moment, number>> | null;
+  /**
+   * LES DEMI-JOURNÉES RÉELLEMENT POSÉES, quand le chantier n'est plus d'un seul
+   * tenant (migration 0085, sa demande du 10 septembre 2026).
+   *
+   * **Absent ou vide vaut le bloc calculé de `jour` + `moment` + `duree`**, et
+   * ce repli n'est pas une commodité : rien n'a été recopié à la migration, et
+   * lire « aucun créneau » comme « rien d'occupé » libérerait d'un coup toutes
+   * les demi-journées déjà prises. L'écran d'envoi proposerait alors au client
+   * un jour où quelqu'un travaille — la panne du 22 août 2026, en pire.
+   */
+  creneaux?: readonly Creneau[] | null;
 };
+
+/**
+ * OÙ CE CHANTIER EST POSÉ — ses créneaux s'il en a, son bloc sinon.
+ *
+ * **Écrite ici, et une seule fois.** Trois chemins comptent l'occupation —
+ * l'écran d'envoi, la revérification de la réponse du client, le planning — et
+ * deux façons de répondre à « quelles demi-journées prend-il » finiraient par
+ * se contredire, ce que `CLAUDE.md` §3 interdit précisément pour ce genre de
+ * question.
+ */
+export function creneauxPoses(p: {
+  jour: JourIso;
+  moment: Moment | null;
+  dureeDemiJournees: number | null;
+  creneaux?: readonly Creneau[] | null;
+}): Creneau[] {
+  if (p.creneaux && p.creneaux.length > 0) return [...p.creneaux];
+  return creneauxDuChantier(
+    { jour: p.jour, moment: p.moment ?? "matin" },
+    p.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES
+  );
+}
 
 /**
  * Combien d'équipes ce chantier prend sur cette demi-journée — **au moins une**.
@@ -408,9 +441,9 @@ export function compterOccupation(
 ): Map<string, number> {
   const compte = new Map<string, number>();
   for (const p of planifies) {
-    const depart: Creneau = { jour: p.jour, moment: p.moment ?? "matin" };
-    const duree = p.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
-    for (const c of creneauxDuChantier(depart, duree)) {
+    // **Ses créneaux s'il en a, son bloc sinon** — la règle vit dans
+    // `creneauxPoses`, jamais recopiée ici (`CLAUDE.md` §3).
+    for (const c of creneauxPoses(p)) {
       const cle = cleCreneau(c);
       // **On compte les GENS mobilisés, plus les chantiers.** Sa question du
       // 22 août : ses deux gars étaient chez Mr. Eric et le planning annonçait
