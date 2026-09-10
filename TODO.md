@@ -96,10 +96,24 @@ d'ouvert sur ce geste.
 **CE QUE LA PREMIÈRE COÛTE, ET IL FAUT LE DIRE AVANT DE CODER.** Un chantier
 porte un jour, un départ et une durée (`datePlanifiee`, `creneauDebut`,
 `dureeDemiJournees`) : il est **d'un seul tenant par construction**. Le poser en
-morceaux demande **une pose par morceau** — donc une table de créneaux, et tout
-ce qui lit aujourd'hui « le jour du chantier » à revoir : la fiche de chantier,
-le jour proposé au client (`disponibilites.ts`), la charge du calendrier, les
-retours d'intervention.
+morceaux demande **une pose par morceau** — donc une table de créneaux.
+
+**SA QUESTION DU 10 SEPTEMBRE A CORRIGÉ CETTE LISTE, et elle avait raison :**
+*« pourquoi le devis, la fiche chantier et la facture devraient être
+impactés ? »* Mesuré, fichier par fichier, sur les vingt qui lisent
+`datePlanifiee` :
+
+| Ce que je nommais | Ce que le code dit |
+|---|---|
+| la **facture** | **NON** — elle porte sa propre date d'émission ; `factures.ts` ne lit le jour du chantier que pour l'afficher dans une liste, et le commentaire le dit déjà |
+| le **devis** | **NON** pour le document, ses lignes et ses prix. **OUI** pour les **dates proposées au client** (`preparation-envoi.ts`, `envois-devis.ts`), qui se calculent sur jour + moment + durée |
+| les **retours d'intervention** | **NON** — ils ne lisent pas la date |
+| la **fiche de chantier** | **OUI** — `fiche-chantier-pdf.ts` imprime jour, créneau et durée |
+
+**La vraie liste de ce qui lit « quels jours sont pris » :** la charge du
+calendrier (`occupation-chantiers.ts`, `useOccupation.ts`), les dates proposées
+au client, la fiche de chantier, l'export d'agenda (`agenda-apple.ts`), les
+absences (`equipe-absente.ts`), le classement des terminés par mois.
 
 C'est exactement la fonctionnalité déjà nommée plus bas dans ce fichier
 (« deux poses pour un chantier »), et c'est LUI qui décide si elle vaut le coup.

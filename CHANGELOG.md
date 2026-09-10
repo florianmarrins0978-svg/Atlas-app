@@ -59,6 +59,24 @@ geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
 maintenant dans la suite navigateur, qui refait le geste quatre fois.
 
 
+### Sa question redresse ma liste : ni le devis ni la facture ne lisent le jour du chantier
+
+*« Pourquoi le devis, la fiche chantier et la facture devraient être
+impactés ? »* — et il a raison de demander. Mesuré sur les vingt fichiers qui
+lisent `datePlanifiee` :
+
+| Ce que j'avais nommé | Ce que le code dit |
+|---|---|
+| la facture | **non** : elle porte sa propre date d'émission (`factures.ts` le commente déjà) |
+| le devis | **non** pour le document ; **oui** pour les dates proposées au client (`preparation-envoi.ts`) |
+| la fiche de chantier | **oui** : elle imprime jour, créneau et durée |
+
+Ce qui lit vraiment « quels jours sont pris » : la charge du calendrier, les
+dates proposées au client, la fiche de chantier, l'export d'agenda, les absences
+et le classement des terminés par mois. La planche et `TODO.md` portent la
+correction — une estimation trop large fait renoncer à une fonctionnalité pour
+un prix qu'elle ne coûte pas.
+
 ### Deux planches : libérer une demi-journée, et bloquer du temps sans devis
 
 **Sa vraie demande derrière « Déplacer » :** *« je clique sur le matin, il
