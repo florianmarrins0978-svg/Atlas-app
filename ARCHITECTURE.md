@@ -26644,7 +26644,106 @@ retours d'affilée, le rechargement, et la sortie déclarée à froid
 (`scripts/_arriver-a-froid.ts`). C'est cette suite-là qui a trouvé les deux
 erreurs ci-dessus, et son message rend le journal de l'onglet en clair — sans
 quoi elle n'aurait dit qu'« délai dépassé ».
-## §312 — La flèche recule dans l'historique, et c'est ce qui rend sa place
+
+
+---
+
+## §312 — Le geste d'une absence : ce qui remplace le cerne, c'est le +
+
+**Trois décisions du patron en trois jours, sur le même geste**, et la
+troisième contredit la deuxième sans annuler ce qu'elle avait appris :
+
+| Le jour | Ce qu'il a dit | Ce que l'écran portait |
+|---|---|---|
+| 6 sept. | (rien) | une phrase nue, cliquable — invisible, la fonction n'a pas servi |
+| 7 sept. | *« comment savoir qu'il faut cliquer dessus ? »* | une pastille cerclée de 48 px |
+| 9 sept. | *« un petit + plutôt que le gros bouton »*, *« Salarié absent + sans contour ! »*, puis *« rajoute un ? à la fin »* | « + Salarié absent ? », aucun contour |
+
+**Le piège, et c'est lui qui rend ce paragraphe nécessaire.** Retirer le cerne
+sans rien mettre à la place, c'est revenir au 6 septembre — le jour où le geste
+existait et où personne ne le voyait. Ce qui distingue un geste d'une phrase
+n'est pas le cadre : c'est **un signe qui annonce qu'il se passera quelque
+chose**. Le **+** en est un, et il en dit même plus qu'un cerne (« ceci
+ajoute »). Le cadre s'en va, la reconnaissance reste.
+
+**Ce qui NE bouge pas quand l'encre rétrécit : la cible.** 44 px de haut,
+pleine largeur. Un geste raté avec des gants coûte exactement ce que coûte un
+geste invisible — il faut recommencer, et sur un chantier on ne recommence pas.
+
+**Le contrôle a suivi la règle, pas le dessin** (`CLAUDE.md` §5 bis).
+`test-pas-la-ce-jour-e2e.ts` exigeait « un cerne, une ombre ou un fond » : il
+aurait réclamé ce que le patron venait de faire retirer. Il accepte désormais
+**un quatrième signe, le +**, et refuse toujours les quatre absents à la fois.
+
+**Le point d'interrogation dit ce que le bouton fait** : il ne note aucune
+absence, il ouvre la question « Qui ? ». C'est la grammaire que l'écran emploie
+déjà deux lignes plus bas, sur la pastille d'équipe.
+
+**Et le titre « Ce jour-là » a disparu** — *« on sait que c'est ce jour »* : la
+carte porte la date en tête, deux centimètres plus haut.
+
+| | |
+|---|---|
+| le geste | `GesteAbsence` dans `src/app/planning/PlanningClient.tsx` |
+| la planche | `appli/salarie-s-absente.html` — trois tailles de +, A retenu |
+| le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` |
+
+## §313 — « Déplacer » choisit un départ, et plus jamais une étendue
+
+**Sa décision du 10 septembre 2026**, après avoir essayé la planche
+`appli/deplacer-plus-simple.html` : *« fais celui-là, juste tu retires la
+journée. Il faut garder le bouton déplacer ; lorsque l'on clique dessus on
+arrive sur ce bouton matin - aprem, on clique sur l'un ou l'autre et le bouton
+disparaît, la sélection s'est faite et le bouton déplacer réapparaît. »*
+
+**« Retirer la journée » n'était pas un retrait cosmétique.** Ce troisième mot
+ne décrivait pas un départ mais une ÉTENDUE, et le choisir **réécrivait
+`dureeDemiJournees`**. La conséquence, jamais signalée par personne : « Matin »
+sur un chantier d'une journée le ramenait à une demi-journée, en silence.
+L'après-midi redevenait vendable, et cela ne se voyait ni au plan, ni au devis,
+ni à la facture — seulement le jour du chantier. §308 avait retiré ce défaut du
+chemin de la POSE ; il vivait encore dans celui du déplacement.
+
+**Ce qui a disparu, et c'est le cœur de ce lot :**
+
+| Ce qui existait | Pourquoi c'est parti |
+|---|---|
+| `QuandChantier` — « matin \| apres \| journee » | trois mots pour deux départs et une étendue mélangés |
+| `departEtDuree(quand, duree)` | traduisait ces trois mots en départ ET durée : il n'y a plus rien à traduire |
+| `quandDuChantier(c)` | disait lequel des trois décrivait un chantier ; la question devient « d'où part-il » |
+| `poseOfferte(duree)` | retirait celui des trois qui n'écrivait rien ; aucun des deux restants n'est mort |
+| `MOT_QUAND` | faisait doublon avec `MOT_DEMI`, qui dit déjà ces deux mots-là |
+| `estUnMomentValide` | acceptait « journee » de l'assistant — une dictée sans heure réservait la journée |
+
+**Le vocabulaire est désormais celui de la BASE** — `Moment` / `Demi`, « matin »
+ou « apres_midi », les deux valeurs que porte `creneau_debut` depuis la
+migration 0019. Une couche de traduction disparaît, et avec elle l'endroit où
+les deux vocabulaires pouvaient diverger (`CLAUDE.md` §3).
+
+**L'INTERRUPTEUR PLUTÔT QUE TROIS PASTILLES, et ce n'est pas un choix de
+style.** Sa remarque de la veille : *« j'ai l'impression que c'est inversé »*.
+Trois pastilles rondes dont une est allumée ne disent pas si l'allumée est là où
+le chantier EST ou là où il IRA — l'œil peut lire les deux. Un interrupteur ne
+se lit que dans un sens : la position tenue est l'état courant. `BasculeDemi`
+emploie `colors.plein` et `surPlein`, le couple des pastilles retenues de cet
+écran, pour rester lisible sur les deux chartes sombres.
+
+**CE QUI N'EST PAS CORRIGÉ, ET QUI ATTEND SON ARBITRAGE.** Les deux moitiés de
+la journée changent toujours de place selon où est le chantier : posé
+l'après-midi, la fiche se lit `APRÈS-MIDI` puis `MATIN`
+(`scripts/capture-deplacer.ts` le photographie). Les remettre dans l'ordre ferait
+parfois ouvrir la fiche sur « libre » — ce qu'il a refusé le 21 août 2026,
+*« le nom toujours en premier ! »*. Sa demande du 10 septembre ne parle que du
+geste ; l'ordre reste posé dans `TODO.md`.
+
+**CE QUE LES CONTRÔLES ONT DÛ DÉSAPPRENDRE.** Trois suites fixaient exactement
+ce qu'il fait retirer — « Matin réserve une demi-journée, Journée en réserve
+deux » — et l'une d'elles s'en servait pour INSTALLER une durée avant de la
+vérifier. Elles visent maintenant la règle qui remplace : le départ s'écrit, la
+durée du devis ne bouge pas, et cela vaut pour toutes les durées au lieu du seul
+cas au-delà d'un jour (`CLAUDE.md` §5 bis).
+
+## §314 — La flèche recule dans l'historique, et c'est ce qui rend sa place
 
 **Sa remarque du 9 septembre 2026 :** *« Si je clique sur un client tout en bas
 de la liste, je fais retour, il me remet en haut de la liste. Je veux rester où
@@ -26738,7 +26837,7 @@ défilement, une adresse. Confronté à la version d'avant, il rougit sur deux c
 et laisse verts les deux garde-fous. Il pose lui-même ses trente clients : sur le
 jeu de démonstration, la liste tient dans l'écran et le contrôle mesurerait zéro.
 
-## §313 — La ligne d'un client annonce ce que sa FICHE contient
+## §315 — La ligne d'un client annonce ce que sa FICHE contient
 
 **Sa question du 9 septembre 2026 :** *« À quoi correspond le nombre de
 chantier ? Certains clients ont 8 chantiers, on s'attend à avoir 8 devis alors

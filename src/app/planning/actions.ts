@@ -12,7 +12,7 @@ import {
   basculerEquipeDuChantier,
 } from "@/server/repositories/chantiers";
 import type { Moment } from "@/lib/disponibilites";
-import type { QuandChantier } from "@/lib/planning-jour";
+// (le départ se dit avec le vocabulaire de la base : `Moment`)
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
 import { retourDuChantier } from "@/server/repositories/retours-intervention";
@@ -88,7 +88,7 @@ export type ResultatPose =
 export async function planifierChantierAction(
   chantierId: string,
   datePlanifiee: string,
-  choix?: { quand: QuandChantier }
+  choix?: { demi: Moment }
 ): Promise<ResultatPose> {
   const ctx = await getCurrentCtx();
   await exigerEcritureSurLePlanning(ctx, "poser ce chantier au planning");
@@ -138,19 +138,20 @@ export async function basculerEquipeAction(
 }
 
 /**
- * Déplace un chantier posé : matin, après-midi, ou la journée.
+ * Déplace un chantier posé : il part le matin, ou l'après-midi.
  *
  * Le jour ne bouge pas — « Déplacer » vit dans la fiche d'UN jour, et c'est ce
- * que l'écran promet.
+ * que l'écran promet. **Et la durée ne bouge plus** : sa décision du
+ * 10 septembre 2026, *« tu retires la journée »*.
  */
 export async function deplacerChantierAction(
   chantierId: string,
-  quand: QuandChantier
+  demi: Moment
 ): Promise<ResultatPose> {
   const ctx = await getCurrentCtx();
   await exigerEcritureSurLePlanning(ctx, "déplacer ce chantier");
   await exigerChantierDansSaPortee(ctx, chantierId, "déplacer ce chantier");
-  const row = await deplacerChantier(ctx, chantierId, quand);
+  const row = await deplacerChantier(ctx, chantierId, demi);
   if (!row) return { succes: false, erreur: "Ce chantier n'est pas posé sur un jour." };
   await porterChantierDansAgenda(ctx, chantierId);
   return {

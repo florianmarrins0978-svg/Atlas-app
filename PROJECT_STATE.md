@@ -11,6 +11,22 @@
 
 ---
 
+## FAIT : « Déplacer », un interrupteur à deux positions — 10 septembre 2026
+
+Sa décision après la planche : *« fais celui-là, juste tu retires la journée »*.
+« Déplacer » reste, il ouvre un interrupteur Matin / Après-midi, et se referme
+dès qu'on choisit.
+
+**Retirer « Journée » a fermé un vrai piège :** ce mot disait une étendue, pas
+un départ, et le choisir réécrivait la durée du chantier — « Matin » sur une
+journée vendue la ramenait à une demi-journée, en silence. Six pièces
+disparaissent avec lui. **Aucune migration.** Détail : `ARCHITECTURE.md` §313.
+
+**Reste ouvert, et c'est à lui de trancher :** l'ordre des deux moitiés de la
+journée (`TODO.md`).
+
+---
+
 ## FAIT : POSER UN CHANTIER NE DEMANDE PLUS QUAND — 9 septembre 2026
 
 Sa remarque : *« si Claudette c'est un chantier 1 journée, deux, ou une demi, ça
@@ -110,7 +126,7 @@ qu'elle vise, sur **les 49 écrans** qui la portent. L'entrée d'historique
 empilée à chaque aller-retour disparaît avec.
 
 Aucune migration. Document : `docs/lot-retour-garde-la-place.md` ·
-`ARCHITECTURE.md` §312 — le §311 d'une session voisine décide **où** la flèche
+`ARCHITECTURE.md` §314 — le §311 d'une session voisine décide **où** la flèche
 mène, celui-ci **par quel chemin** elle y va.
 
 **Reste ouvert, mesuré, et pas apporté par ce lot :** un retour sert l'écran
@@ -128,7 +144,7 @@ annoncer : elle se tait.
 
 Trois défauts de mise en page trouvés à la CAPTURE et par aucun test : la date
 coupée sur les adresses longues, une seconde ligne vide, le séparateur collé.
-`ARCHITECTURE.md` §313.
+`ARCHITECTURE.md` §315.
 
 ---
 

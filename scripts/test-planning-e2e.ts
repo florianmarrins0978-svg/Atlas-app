@@ -558,15 +558,28 @@ async function main() {
     // contrôle vise donc le bloc du chantier, pas la ligne du matin — c'est le
     // geste qu'il fixe, pas la ligne où il se trouvait (`CLAUDE.md` §5 bis).
     await carte.locator('[data-atlas="bloc-chantier"] [data-atlas="deplacer"]').first().click();
+    // **DEUX positions, pas trois** — sa décision du 10 septembre 2026 :
+    // *« juste tu retires la journée »*. « Journée » ne décrivait pas un départ
+    // mais une étendue, et la choisir réécrivait la durée du chantier.
     const moments = await carte.locator("[data-vers]").allInnerTexts();
-    assert.deepEqual(moments, ["Matin", "Après-midi", "Journée"], `lu : ${JSON.stringify(moments)}`);
-    await carte.locator('[data-vers="apres"]').click();
+    assert.deepEqual(moments, ["Matin", "Après-midi"], `lu : ${JSON.stringify(moments)}`);
+    const avantDuree = (await enBase()).duree_demi_journees;
+    await carte.locator('[data-vers="apres_midi"]').click();
     await attendre("le chantier passe l'après-midi", async () =>
       (await enBase()).creneau_debut === "apres_midi"
     );
     const c = await enBase();
     assert.equal(c.creneau_debut, "apres_midi");
-    assert.equal(c.duree_demi_journees, 1);
+    // **La durée ne bouge pas** : elle vient du devis, et « Déplacer » n'y
+    // touche plus. C'est la règle qui remplace l'ancienne, et elle est plus
+    // large — elle vaut pour toutes les durées, pas seulement au-delà d'un jour.
+    assert.equal(c.duree_demi_journees, avantDuree);
+    // **Et le geste se referme** : *« le bouton disparaît, la sélection s'est
+    // faite et le bouton déplacer réapparaît »*.
+    await attendre("« Déplacer » est revenu", async () =>
+      (await carte.locator('[data-atlas="deplacer"]').count()) > 0
+    );
+    assert.equal(await carte.locator("[data-vers]").count(), 0, "l'interrupteur est resté ouvert");
   });
 
   await essai("déplacé sur l'après-midi, le matin redevient libre", async () => {
@@ -716,6 +729,13 @@ async function main() {
   // silence, ce qu'il a signalé le 9 septembre 2026. On ne touche plus qu'un
   // nom, et c'est la base qui doit avoir gardé la durée.
   await essai("toucher le nom pose le chantier, et lui laisse sa durée", async () => {
+    // **Ce que la durée vaut AVANT le geste, plutôt qu'un chiffre écrit ici.**
+    // Le contrôle attendait « 1 » — un chiffre qu'il tenait du raccourcissement
+    // silencieux de « Déplacer », retiré le 10 septembre 2026. Fixer le chiffre
+    // revenait à réclamer le défaut ; ce qu'il faut fixer, c'est la RÈGLE : la
+    // durée vient du devis, et aucun geste du planning n'y touche
+    // (`CLAUDE.md` §5 bis).
+    const dureeAvant = (await enBase()).duree_demi_journees;
     await toucherAuCentre(page.locator(`[data-qui="${chantierId}"]`));
     await attendre("le chantier est reposé", async () => (await enBase()).jour === JOUR);
     assert.equal(
@@ -728,8 +748,8 @@ async function main() {
     assert.equal(c.creneau_debut, "matin");
     assert.equal(
       c.duree_demi_journees,
-      1,
-      "la demi-journée du chantier est devenue autre chose en le posant"
+      dureeAvant,
+      "la durée du chantier est devenue autre chose en le posant"
     );
   });
 

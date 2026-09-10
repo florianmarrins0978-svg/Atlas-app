@@ -105,12 +105,21 @@ async function main() {
   // **Ce contrôle vit ici, sans navigateur**, parce que c'est une règle de
   // dépôt et non un dessin : la suite navigateur éprouve le geste, celle-ci
   // éprouve ce que la base garde.
-  await test("poser sans choix garde la durée du chantier — une demi-journée", async () => {
-    // Une demi-journée, écrite par le seul chemin qui a le droit de l'écrire.
-    await chantiersRepo.planifierChantier(A, c1.id, "2026-09-21", { quand: "matin" });
-    await chantiersRepo.deplanifierChantier(A, c1.id);
+  await test("poser garde la durée du chantier — une demi-journée", async () => {
+    // **La durée vient de la DICTÉE, et de nulle part ailleurs.** Elle était
+    // installée ici en posant le chantier sur « matin » — c'est-à-dire par le
+    // geste même que ce contrôle prétend surveiller. Depuis le 10 septembre
+    // 2026, aucun geste du planning n'écrit une durée : le montage passe donc
+    // par la seule source qui en soit une, sur un chantier NEUF — `c1` porte
+    // déjà une durée réservée des contrôles précédents, et elle primerait.
+    const demiJournee = await chantiersRepo.creerChantier(A, { nom: "Taille — une demi-journée" });
+    await chantiersRepo.mettreAJourDureeEquipe(A, demiJournee.id, {
+      dureePrevue: "une demi-journée",
+    });
 
-    const maj = await chantiersRepo.planifierChantier(A, c1.id, "2026-09-22");
+    const maj = await chantiersRepo.planifierChantier(A, demiJournee.id, "2026-09-22", {
+      demi: "matin",
+    });
     assert.equal(maj.datePlanifiee, "2026-09-22");
     assert.equal(
       maj.dureeDemiJournees,

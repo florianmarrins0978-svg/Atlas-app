@@ -97,7 +97,7 @@ async function main() {
   await essai("SA CAPTURE : Julien en congé ce jour-là ne se coche pas", async () => {
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Chez Mr. Julien" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "matin" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     await noterAbsenceEquipe(ctx, {
       rang: 1,
       premierJour: JOUR,
@@ -113,7 +113,7 @@ async function main() {
   await essai("le refus ne déborde pas : Antoine, lui, se coche", async () => {
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Chez Mr. Julien" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "matin" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     await noterAbsenceEquipe(ctx, {
       rang: 1,
       premierJour: JOUR,
@@ -131,7 +131,7 @@ async function main() {
     // toujours — il n'existe aucun autre chemin pour l'en retirer.
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Chez Mr. Julien" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "matin" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     const avant = await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
     assert.deepEqual(avant?.matin, [1], "la coche d'avant le congé n'a pas pris");
 
@@ -160,7 +160,7 @@ async function main() {
      */
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Deux jours" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     await etalerSurDeuxJours(ctx.entrepriseId, chantier.id);
     // Absent le SECOND jour seulement : le premier reste à faire.
     await noterAbsenceEquipe(ctx, {
@@ -180,7 +180,7 @@ async function main() {
     // avec un nom qui n'y sera jamais.
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Deux jours couverts" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     await etalerSurDeuxJours(ctx.entrepriseId, chantier.id);
     await noterAbsenceEquipe(ctx, {
       rang: 1, premierJour: JOUR, dernierJour: LENDEMAIN, motif: null,
@@ -193,7 +193,7 @@ async function main() {
   await essai("le congé RETIRÉ rend la coche possible", async () => {
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Chez Mr. Julien" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "matin" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     const absence = await noterAbsenceEquipe(ctx, {
       rang: 1,
       premierJour: JOUR,
@@ -223,7 +223,7 @@ async function main() {
     // un seul est couvert, elle RESTE — c'est le cas juste en dessous.
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Chez Mr. Julien" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     const avant = await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
     assert.deepEqual(avant?.matin, [1], "le décor n'est pas celui qu'on croit");
 
@@ -252,7 +252,7 @@ async function main() {
   await essai("elle est retirée des DEUX demi-journées, pas d'une seule", async () => {
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Journée entière" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
     await basculerEquipeDuChantier(ctx, chantier.id, "apres_midi", 1);
 
@@ -266,7 +266,7 @@ async function main() {
   await essai("le congé ne touche QUE la personne concernée", async () => {
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "À deux" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
     await basculerEquipeDuChantier(ctx, chantier.id, "matin", 2);
 
@@ -279,7 +279,7 @@ async function main() {
   await essai("un congé qui ne touche AUCUN chantier ne défait rien", async () => {
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Loin du congé" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
 
     const posee = await noterAbsenceEquipe(ctx, {
@@ -299,7 +299,7 @@ async function main() {
     // le posera. La défaire serait lui faire perdre un choix déjà fait.
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Sans date" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
     await deplanifierChantier(ctx, chantier.id);
 
@@ -317,7 +317,7 @@ async function main() {
     // les jours restants sur la pastille.
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Deux jours, un congé" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     await etalerSurDeuxJours(ctx.entrepriseId, chantier.id);
     await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
 
@@ -336,7 +336,7 @@ async function main() {
     // que celui qu'on pose laisserait la coche sur un chantier vide.
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Couvert en deux fois" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     await etalerSurDeuxJours(ctx.entrepriseId, chantier.id);
     await basculerEquipeDuChantier(ctx, chantier.id, "matin", 1);
 
@@ -354,7 +354,7 @@ async function main() {
   await essai("sans aucun congé, rien ne change — le cas de tous les jours", async () => {
     const ctx = await monter();
     const chantier = await creerChantier(ctx, { nom: "Ordinaire" });
-    await planifierChantier(ctx, chantier.id, JOUR, { quand: "journee" });
+    await planifierChantier(ctx, chantier.id, JOUR, { demi: "matin" });
     const etat = await basculerEquipeDuChantier(ctx, chantier.id, "apres_midi", 1);
     assert.deepEqual(etat?.apres_midi, [1], "une règle qui déborde sur le cas normal");
   });

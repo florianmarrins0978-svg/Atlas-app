@@ -48,7 +48,7 @@ elle a été ouverte ; sans marque, la flèche navigue comme avant.
 
 **UNE AUTRE SESSION TRAVAILLAIT LE MÊME BOUTON LE MÊME SOIR, et il faut le
 dire.** Elle a livré sur `main` un journal des écrans traversés, qui corrige
-**où** la flèche mène (`ARCHITECTURE.md` §311). Ce lot-ci corrige **par quel
+**où** la flèche mène (`ARCHITECTURE.md` §311 ; ce lot-ci est le §314). Ce lot-ci corrige **par quel
 chemin** elle y va.
 
 Le premier jet était une flèche complète, avec son propre souvenir du chemin —

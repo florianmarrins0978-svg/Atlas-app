@@ -6,6 +6,32 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-10
+
+### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
+
+*« Fais celui-là, juste tu retires la journée. Il faut garder le bouton
+déplacer ; on clique sur matin ou aprem et le bouton disparaît. »*
+
+**Retirer « Journée » n'était pas cosmétique.** Ce mot ne décrivait pas un
+départ mais une étendue, et le choisir réécrivait la durée du chantier :
+« Matin » sur un chantier d'une journée le ramenait à une demi-journée, en
+silence. L'après-midi redevenait vendable, et cela ne se voyait ni au plan, ni
+au devis, ni à la facture — seulement le jour du chantier.
+
+Six pièces disparaissent avec le mot, dont trois fonctions qui n'existaient que
+pour rattraper le mélange. Le planning parle maintenant le vocabulaire de la
+base : matin, ou après-midi.
+
+**Et l'interrupteur répond à « j'ai l'impression que c'est inversé »** : trois
+pastilles dont une est allumée ne disent pas si l'allumée est là où le chantier
+est ou là où il ira. Un interrupteur ne se lit que dans un sens.
+
+**Ce qui n'est pas corrigé :** les deux moitiés de la journée changent toujours
+de place selon où est le chantier. Les remettre dans l'ordre contredit sa règle
+du 21 août — c'est à lui de trancher.
+
+---
 ## 2026-09-09
 
 ### « Se déconnecter » existe enfin, au bas des Réglages
@@ -44,6 +70,45 @@ couches, flèches, boutons, couleurs) sont **verts**. La batterie complète
 **n'a pas été jouée** — elle prend le port 3000 et vide la base, et sa règle du
 4 septembre veut qu'on le lui demande d'abord. Tant qu'elle n'a pas tourné,
 `test-se-deconnecter-e2e` n'a jamais été vu ni vert ni rouge.
+
+### Deux salariés se lisent « Julien / Antoine », plus « Julien, Antoine »
+
+Sa demande du 9 septembre : *« à la place de noter les salariés avec une
+virgule, mets un / entre chaque salarié »*. Sur une pastille pleine, la virgule
+tombe sous la ligne de base et se colle au nom suivant : deux noms courts
+finissent par se lire comme un seul.
+
+**Une seule fonction l'écrit** — `ditQuiPart` dans `src/lib/planning-jour.ts` —,
+donc le planning ET la fiche de chantier changent ensemble. Le comptage au-delà
+de deux noms ne bouge pas : « Julien +2 » reste ce qui tient sur un téléphone.
+
+### « Salarié absent ? », un + sans contour — et « Ce jour-là » s'en va
+
+*« Quelqu'un pas là faut le changer par salarié absent avec un petit + plutôt
+que le gros bouton »*, puis, devant la planche : *« Salarié absent + sans
+contour ! »* et *« retire ce jour-là, on sait que c'est ce jour »*.
+
+**Ce qui remplace le cerne, c'est le +.** Ce même geste était une phrase nue le
+6 septembre et lui a échappé une journée entière ; on avait répondu par une
+pastille, qu'il trouve trop grosse. Retirer le cadre ET laisser du texte nu
+aurait rejoué le défaut du 6 — le + dit « ceci s'appuie, et ça ajoute »
+(`ARCHITECTURE.md` §312).
+
+**Le point d'interrogation est de lui aussi**, et il dit vrai de ce que le
+bouton fait : il ne note rien, il ouvre la question « Qui ? » — la grammaire de
+la pastille d'équipe juste en dessous.
+
+**La cible du doigt ne rétrécit pas avec l'encre :** 44 px de haut, pleine
+largeur.
+
+**Le contrôle a suivi la règle, pas le dessin.** `test-pas-la-ce-jour-e2e.ts`
+exigeait « un cerne, une ombre ou un fond » : il aurait réclamé ce que le
+patron venait de faire enlever (`CLAUDE.md` §5 bis). Il accepte désormais le +
+comme quatrième signe, et refuse toujours les quatre absents à la fois.
+
+**La planche reste** — `appli/salarie-s-absente.html`, trois tailles de + à
+essayer, A retenu : elle raconte ce qui a été écarté, dont le + tout seul, sans
+mot, qui aurait rejoué le 6 septembre pour la troisième fois.
 
 ### L'onglet des retours existe toujours, et ses photos se voient enfin
 
