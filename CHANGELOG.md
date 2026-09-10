@@ -8,6 +8,45 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### Planche — facturer sans passer par la case devis
+
+*« Il faut que l'on puisse facturer sans avoir besoin de passer par la case
+devis. »* La planche est dans `appli/facturer-sans-devis.html` ; **rien n'est
+codé**, et ce qui suit est ce que la lecture du code a établi.
+
+**Trois quarts de la demande existent déjà** : la reconnaissance du client au
+nom (`reconnaitreLeClientAction`), l'éditeur de lignes de facture avec sa TVA
+(l'écran « Travaux en plus » EST cet éditeur), et l'ouverture du SMS ou de
+l'e-mail avec le message tout prêt (`composerMessageFacture`,
+`lienTransmission`). Le PDF sait déjà taire la mention du devis quand il n'y en
+a pas (`facture-pdf.ts:118`).
+
+**Ce qui manque est en base, et c'est la racine :** `factures.devis_id` est
+`NOT NULL` (`schema.ts:1726`). Une facture sans devis est aujourd'hui
+impossible. **Le faux devis caché est écarté** : il ferait apparaître des
+numéros de devis inexistants dans les listes et dans le relevé de TVA. La
+correction est une migration, et les six lectures de `factures.devisId`
+tolèrent déjà l'absence (`d?.numero ?? null`).
+
+**Ses décisions du jour :** le chantier créé part directement dans
+« Terminés » ; on ne lève pas le refus « devis absent » sur les chantiers
+existants ; deux anneaux sur l'accueil, style identique, « Créer une facture »
+sous le devis et **collé au bord gauche**, « En cours » dessous ; liste vide,
+les deux descendent.
+
+**Le geste d'envoi ne change pas**, et c'est un refus assumé de sa demande
+initiale : il voulait un bouton flottant « Envoyer par » ouvrant deux choix. Le
+4 septembre, il avait fait retirer ces mêmes capsules au profit du réglage
+« Envoi · SMS | E-mail ». Le remettre aurait dessiné le même geste de trois
+façons dans l'application. Il l'a accepté.
+
+**Deux défauts trouvés à la capture, pas par un contrôle :** l'écran changeait
+de hauteur d'un pas à l'autre — le téléphone sortait du champ sous le doigt —,
+et le décalage du second geste, écrit en dur à 78 px, **coupait le libellé**
+(« RÉER UNE FACTURE »). Le décalage ne se compte plus : le geste s'aligne sur le
+bord gauche, ce qui est le maximum et ne peut plus déborder quelle que soit la
+longueur du mot.
+
 ### Le devis et la facture téléchargés s'ouvrent de nouveau — page blanche corrigée à sa racine
 
 *« J'ai essayé de télécharger la facture. Une fois que je l'ouvre, page
