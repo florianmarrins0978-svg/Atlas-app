@@ -17,6 +17,13 @@
  * et inscrite au relevé : lui reprocher de ne pas suivre un devis postérieur
  * serait un avertissement qu'aucun geste ne peut lever, c'est-à-dire du bruit
  * qu'on apprend à ignorer (`CLAUDE.md` §4 ter).
+ *
+ * **Et une facture DIRECTE non plus** (migration 0086). Elle n'a jamais eu de
+ * devis : le seul cas où elle en croiserait un est celui d'un devis écrit APRÈS
+ * coup sur le même chantier — et « reprendre » voudrait alors dire remplacer
+ * les lignes qu'il vient de saisir par celles d'un document qu'il a écrit
+ * ensuite. C'est un effacement, pas une mise à jour. La porte reste fermée, et
+ * `creerFactureSansDevis` refuse d'ailleurs déjà un chantier qui porte un devis.
  */
 
 /** Le devis dont le client a vu le prix — la dernière version ENVOYÉE. */
@@ -36,10 +43,12 @@ export type EtatDeReprise =
     };
 
 export function repriseDuDevis(
-  facture: { devisId: string; statut: "brouillon" | "emise" },
+  facture: { devisId: string | null; statut: "brouillon" | "emise" },
   devisQuiFaitFoi: DevisQuiFaitFoi
 ): EtatDeReprise {
   if (facture.statut === "emise") return { aJour: true };
+  // Une facture directe n'a rien à suivre : elle n'est en retard sur aucun devis.
+  if (facture.devisId === null) return { aJour: true };
   if (!devisQuiFaitFoi) return { aJour: true };
   if (devisQuiFaitFoi.id === facture.devisId) return { aJour: true };
   return {

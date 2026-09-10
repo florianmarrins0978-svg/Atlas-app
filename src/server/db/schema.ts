@@ -1723,7 +1723,20 @@ export const factures = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     entrepriseId: uuid("entreprise_id").notNull(),
     chantierId: uuid("chantier_id").notNull(),
-    devisId: uuid("devis_id").notNull(),
+    /**
+     * Le devis dont la facture reprend les lignes.
+     *
+     * **NUL = facture directe (migration 0086)**, faite sans devis — sa demande
+     * du 10 septembre 2026 : un dépannage réglé sur place n'en a pas, et n'en
+     * aura jamais. Il n'y a alors rien à reprendre, et toutes les lignes se
+     * saisissent à la main (`src/lib/lignes-corrigeables.ts`).
+     *
+     * Le nul n'est pas un trou dans les données : c'est le fait qu'il n'y a pas
+     * eu de devis. L'alternative — un devis fantôme derrière chaque facture
+     * directe — aurait consommé un numéro de la suite commerciale et fait
+     * apparaître au relevé de TVA des références que personne ne peut produire.
+     */
+    devisId: uuid("devis_id"),
 
     numeroCommercial: text("numero_commercial").notNull(),
     statut: text("statut", { enum: ["brouillon", "emise"] }).notNull().default("brouillon"),

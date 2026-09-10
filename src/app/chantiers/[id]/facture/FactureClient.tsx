@@ -56,6 +56,16 @@ export type FacturePourEcran = {
   /** Le devis dont ces lignes viennent — le PDF le nomme, l'écran doit le nommer aussi. */
   numeroDevis: string | null;
   versionDevis: number | null;
+  /**
+   * **`null` : elle a été faite SANS devis** (migration 0086).
+   *
+   * Ce n'est pas la même chose qu'un `numeroDevis` absent, et les confondre
+   * était le défaut : une facture née d'un devis qu'on n'arrive pas à relire
+   * porte quand même « Reprise du devis » — c'est vrai, on ne sait juste pas
+   * lequel. Une facture directe, elle, ne reprend RIEN, et l'écrire ferait
+   * chercher au client un document qui n'existe pas.
+   */
+  devisId: string | null;
   tauxTva: string;
   /** Le prix accordé au client, recopié du devis. `null` : aucun. */
   reductionPourcent: string | null;
@@ -510,6 +520,13 @@ export default function FactureClient({
               <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
                 {bloc.supplement ? (
                   TITRE_TRAVAUX_SUPPLEMENTAIRES
+                ) : initialFacture.devisId === null ? (
+                  /* **Rien à écrire au-dessus d'une facture faite sans devis**
+                     (migration 0086). « Reprise du devis » y nommerait un
+                     document qui n'existe pas — et c'est l'écran que le patron
+                     photographie pour vérifier avant que la pièce parte. Les
+                     taux, eux, se lisent dans les totaux juste en dessous. */
+                  ""
                 ) : initialFacture.numeroDevis ? (
                   <>
                     Reprise du devis <NumeroDeDocument valeur={initialFacture.numeroDevis} />
@@ -712,7 +729,15 @@ export default function FactureClient({
               className="mx-auto flex min-h-[48px] w-full max-w-[320px] items-center justify-center rounded-full text-[15px] font-semibold"
               style={{ border: `1px solid ${colors.or}`, color: colors.or }}
             >
-              Ajouter des travaux supplémentaires
+              {/* **Le mot dit ce qu'on va faire, et il change avec la pièce.**
+                  Sur une facture née d'un devis, ce qu'on ajoute EST un travail
+                  supplémentaire. Sur une facture directe, il n'y a pas de
+                  supplément : il y a les lignes, et c'est le seul endroit où on
+                  les saisit — le point 1 des trois qu'il a acceptés sur la
+                  planche du 10 septembre 2026. */}
+              {initialFacture.devisId === null
+                ? "Remplir la facture"
+                : "Ajouter des travaux supplémentaires"}
             </Link>
           )}
 

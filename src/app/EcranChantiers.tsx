@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, texteSituation } from "@/lib/design-tokens";
 import { vibrer } from "@/lib/vibration";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
+import GesteAnneau from "@/components/atlas/GesteAnneau";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import FormulaireNouveauChantier from "./chantiers/nouveau/FormulaireNouveauChantier";
@@ -42,27 +43,18 @@ import ListeChantiers, { type BrinChantier } from "./ListeChantiers";
 // la base. La maquette ne fixe que la présentation.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Les onze grains d'or projetés à l'appui : leur point d'arrivée, leur taille
- *  et leur retard.
+/**
+ * **LE DESSIN DU GESTE A DÉMÉNAGÉ le 10 septembre 2026** — il vit désormais
+ * dans `src/components/atlas/GesteAnneau.tsx`, et les onze grains avec lui.
  *
- *  **Ces nombres sont ceux de la maquette retenue**, repris tels quels
- *  (`docs/maquettes/24-le-bouton-retenu.html`). Ils sont volontairement
- *  irréguliers : onze grains à la même distance dessinent une roue de vélo, pas
- *  une gerbe. Le patron a lui-même ramené leur nombre de seize à onze et leur
- *  portée de 58 à 46 px — ne pas les « arrondir ». */
-const GRAINS = [
-  { x: 7.7, y: -36.9, l: 2.3, t: 9 },
-  { x: 17.0, y: -44.8, l: 1.6, t: 43 },
-  { x: 34.9, y: -22.6, l: 1.7, t: 22 },
-  { x: 35.2, y: 2.1, l: 1.8, t: 0 },
-  { x: 35.0, y: 29.0, l: 1.9, t: 34 },
-  { x: 9.5, y: 38.0, l: 2.0, t: 13 },
-  { x: -18.7, y: 45.7, l: 2.2, t: 47 },
-  { x: -36.7, y: 22.4, l: 2.3, t: 26 },
-  { x: -36.5, y: -3.1, l: 2.4, t: 5 },
-  { x: -45.5, y: -11.3, l: 1.6, t: 39 },
-  { x: -25.9, y: -31.2, l: 1.8, t: 18 },
-] as const;
+ * La raison : cet écran en porte DEUX depuis sa demande de facturer sans devis,
+ * et sa consigne sur la planche est *« l'anneau vraiment tout pareil »*. Deux
+ * copies du même dessin auraient divergé au premier ajustement — sur le seul
+ * écran qu'il ouvre vingt fois par jour.
+ */
+
+/** Ce que l'appui ouvre : la feuille du devis, ou celle de la facture. */
+type Feuille = "devis" | "facture";
 
 export default function EcranChantiers({
   chantiers,
@@ -74,6 +66,16 @@ export default function EcranChantiers({
 }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(false);
+  /**
+   * LAQUELLE DES DEUX FEUILLES MONTE — sa demande du 10 septembre 2026.
+   *
+   * *« Il faut que l'on puisse facturer sans avoir besoin de passer par la case
+   * devis. »* Les deux gestes ouvrent la MÊME fiche client ; seule change ce
+   * qu'on fait en sortant. Un second composant de feuille aurait recopié
+   * l'animation, le voile, la touche Échap et le rafraîchissement — et le
+   * premier ajustement ne serait allé que sur l'un des deux.
+   */
+  const [feuille, setFeuille] = useState<Feuille>("devis");
 
   // ── Le geste du bouton ─────────────────────────────────────────────────
   //
@@ -94,8 +96,12 @@ export default function EcranChantiers({
     return () => encours.forEach((m) => window.clearTimeout(m));
   }, []);
 
-  function ouvrirAvecLeGeste() {
+  function ouvrirAvecLeGeste(laquelle: Feuille) {
     if (anime) return;
+    // **Le choix est posé AVANT l'animation, pas à son terme.** Posé après, un
+    // appui sur « Créer une facture » aurait fait monter la feuille du devis
+    // pendant un demi-tour — et c'est le premier mot qu'il lit en haut.
+    setFeuille(laquelle);
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setOuvert(true);
       return;
@@ -373,57 +379,68 @@ export default function EcranChantiers({
             nouvel onglet, elle mène à l'écran entier. Le clic ordinaire est
             détourné pour jouer le geste puis faire monter la feuille — la route
             ne disparaît pas, elle change de porte. */}
-        <div className="flex justify-center px-[26px] pb-0.5 pt-[22px]">
-          <Link
-            href="/chantiers/nouveau"
-            data-atlas="nouveau-chantier"
-            data-geste={anime ? "part" : undefined}
-            onClick={(e) => {
-              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-              e.preventDefault();
-              // **Sa demande du 31 août : un seul bouton pour essayer.** Le
-              // retour part AVANT l'ouverture de la feuille, pas après : ce
-              // qu'il veut sentir, c'est que l'appui est pris, et une feuille
-              // qui monte se voit déjà toute seule.
-              //
-              // **Sur son iPhone, cela ne fera rien** tant qu'Atlas est servi
-              // dans Safari — l'API n'y existe pas (`src/lib/vibration.ts`).
-              // C'est délibéré : il a demandé à essayer plutôt qu'à attendre.
-              vibrer();
-              ouvrirAvecLeGeste();
-            }}
-            className="atlas-geste-nouveau"
-          >
-            <span className="atlas-mot">Créer un devis</span>
-            <span className="atlas-rond">
-              {/* **Trois ondes depuis le 6 septembre 2026** — sa décision sur
-                  la planche, « le 2, l'anneau resserré ». Les deux suivantes ne
-                  diffèrent que du retard (`globals.css`) : une seule règle
-                  d'animation pour les trois, donc une seule à corriger. */}
-              <span className="atlas-pouls" aria-hidden="true" />
-              <span className="atlas-pouls atlas-pouls-2" aria-hidden="true" />
-              <span className="atlas-pouls atlas-pouls-3" aria-hidden="true" />
-              <span className="atlas-cerne" aria-hidden="true" />
-              <span className="atlas-gerbe" aria-hidden="true">
-                {GRAINS.map(({ x, y, l, t }) => (
-                  <i
-                    key={`${x}-${y}`}
-                    style={
-                      {
-                        "--x": `${x}px`,
-                        "--y": `${y}px`,
-                        "--l": `${l}px`,
-                        "--t": `${t}ms`,
-                      } as CSSProperties
-                    }
-                  />
-                ))}
-              </span>
-              <svg className="atlas-signe" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                <path d="M16 9.6v12.8M9.6 16h12.8" stroke={colors.or} strokeWidth="1.25" />
-              </svg>
-            </span>
-          </Link>
+        <div
+          data-atlas="les-deux-gestes"
+          className={`px-[26px] pb-0.5 pt-[22px] ${restants.length === 0 ? "mt-auto pb-[52px]" : ""}`}
+        >
+          {/* **« CRÉER UN DEVIS » GARDE EXACTEMENT SA PLACE** dès que la liste
+              porte des chantiers — sa condition, mot pour mot, sur la planche
+              du 10 septembre 2026. C'est ce que fait le rang centré : rien ne
+              bouge pour lui tant qu'il a du travail en cours.
+
+              **Liste vide, les deux DESCENDENT** (`mt-auto`) : c'est l'autre
+              moitié de sa condition, et elle referme le grand vide qu'un écran
+              sans chantier laissait sous le titre. */}
+          <div className="flex justify-center">
+            <GesteAnneau
+              href="/chantiers/nouveau"
+              mot="Créer un devis"
+              repere="nouveau-chantier"
+              anime={anime && feuille === "devis"}
+              onAppui={() => {
+                // **Sa demande du 31 août : un seul bouton pour essayer.** Le
+                // retour part AVANT l'ouverture de la feuille, pas après : ce
+                // qu'il veut sentir, c'est que l'appui est pris, et une feuille
+                // qui monte se voit déjà toute seule.
+                //
+                // **Sur son iPhone, cela ne fera rien** tant qu'Atlas est servi
+                // dans Safari — l'API n'y existe pas (`src/lib/vibration.ts`).
+                // C'est délibéré : il a demandé à essayer plutôt qu'à attendre.
+                vibrer();
+                ouvrirAvecLeGeste("devis");
+              }}
+            />
+          </div>
+
+          {/* ── LE SECOND GESTE, COLLÉ AU BORD GAUCHE ─────────────────────
+              **Sa correction du 10 septembre 2026 :** *« tu peux encore plus
+              décaler créer une facture sur la gauche »*.
+
+              **Il s'ALIGNE sur le bord, il ne recule pas d'un nombre de
+              pixels** — et c'est la planche qui l'a payé. Un décalage écrit en
+              dur à 78 px coupait le libellé (« RÉER UNE FACTURE », vu à la
+              capture) : « Créer une facture » est plus long que « Créer un
+              devis », et le même chiffre ne va pas aux deux. Aligné, le
+              décalage est maximal ET ne peut plus déborder, quelle que soit la
+              largeur de l'écran ou la longueur du mot.
+
+              **L'adresse porte `?facture=1`**, et ce n'est pas un ornement :
+              sans JavaScript, ou ouvert dans un nouvel onglet, ce lien doit
+              mener à la fiche client qui FACTURE, pas à celle qui devise. Un
+              lien qui ment sur sa destination dès que le geste ne joue pas est
+              un cul-de-sac silencieux. */}
+          <div className="mt-2 flex justify-start">
+            <GesteAnneau
+              href="/chantiers/nouveau?facture=1"
+              mot="Créer une facture"
+              repere="facture-sans-devis"
+              anime={anime && feuille === "facture"}
+              onAppui={() => {
+                vibrer();
+                ouvrirAvecLeGeste("facture");
+              }}
+            />
+          </div>
         </div>
 
         {/* **Le mot, puis le chiffre — et plus rien à droite.** Sa demande du
@@ -523,7 +540,11 @@ export default function EcranChantiers({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Créer un devis"
+        // **Le nom de la feuille suit le geste qui l'a ouverte.** Un lecteur
+        // d'écran annonce ce mot-là en premier : « Créer un devis » sur ce
+        // qu'on vient de demander à facturer serait le même mensonge que le
+        // titre « devis » qu'il a fait retirer de la planche.
+        aria-label={feuille === "facture" ? "Créer une facture" : "Créer un devis"}
         // `fixed`, et non `absolute` : la feuille doit RECOUVRIR le bandeau du
         // bas et la bulle de l'assistant, qui sont fixés au-dessus de l'écran.
         // En absolu elle passait dessous, et sa dernière ligne — celle qui
@@ -550,6 +571,7 @@ export default function EcranChantiers({
           {ouvert && (
             <FormulaireNouveauChantier
               enFeuille
+              pour={feuille}
               onFermer={() => {
                 setOuvert(false);
                 // La liste peut avoir changé pendant que la feuille était

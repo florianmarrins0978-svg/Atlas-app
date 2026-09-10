@@ -11,6 +11,7 @@ import DicterCoordonnees from "./DicterCoordonnees";
 import { champsARemplir, type CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import {
   reprendreLesPhotosAction,
+  creerFactureSansDevisAction,
   creerChantierAction,
   reconnaitreLeClientAction,
 } from "./actions";
@@ -55,10 +56,11 @@ import { espacerNumero, numeroEnregistre } from "@/lib/numero-telephone";
  * avant d'agir : depuis le 18 août 2026, chaque bouton porte sa destination.
  *
  * `fiche` mène à la fiche du chantier, là où l'on dicte. `devis` mène au devis
- * entier, à remplir soi-même. Les deux passent par la MÊME création : voir
+ * entier, à remplir soi-même. `facture` mène droit à la facture, sans devis —
+ * sa demande du 10 septembre 2026. Toutes passent par la MÊME création : voir
  * `creerPuisAller`.
  */
-type Destination = "fiche" | "devis";
+type Destination = "fiche" | "devis" | "facture";
 
 /**
  * Un chantier DÉJÀ LÀ, que cet écran rouvre au lieu d'en créer un.
@@ -155,6 +157,7 @@ export default function FormulaireNouveauChantier({
   onFermer,
   reprise,
   depuisClient,
+  pour = "devis",
 }: {
   enFeuille?: boolean;
   onFermer?: () => void;
@@ -162,11 +165,38 @@ export default function FormulaireNouveauChantier({
   reprise?: ChantierRepris;
   /** Présent : le client est connu d'avance, ses cases sont déjà posées. */
   depuisClient?: ClientDeDepart;
+  /**
+   * CE QU'ON VA FAIRE EN SORTANT — sa demande du 10 septembre 2026 :
+   * *« il faut que l'on puisse facturer sans avoir besoin de passer par la case
+   * devis »*.
+   *
+   * **Pourquoi le même écran, et pas un second.** C'est la fiche client : le
+   * nom, la civilité, le numéro, l'e-mail, l'adresse, et surtout la
+   * reconnaissance du client pendant qu'il tape. Un jumeau « pour la facture »
+   * aurait recopié tout cela, et les deux auraient divergé au premier
+   * ajustement — c'est exactement ce que `CLAUDE.md` §3 refuse, et c'est déjà
+   * l'argument qui a fait garder UN seul écran pour la création et la reprise.
+   *
+   * **Ce que `facture` retire, et il ne retire que cela :** la note vocale, les
+   * photos et la dictée des coordonnées. Sa planche l'écrit — *« on ne dicte
+   * pas une facture qu'on tape »* — et c'est vrai au-delà du geste : ces trois
+   * pièces existent pour préparer un DEVIS (elles nourrissent le chiffrage), et
+   * il n'y a pas de devis ici.
+   */
+  pour?: "devis" | "facture";
 } = {}) {
   const router = useRouter();
   // **La reprise l'emporte sur le client de départ**, et les deux n'arrivent
   // jamais ensemble : on rouvre un chantier, ou on en ouvre un pour quelqu'un.
   const depart = reprise ?? depuisClient;
+  /**
+   * On prépare un devis — le cas ordinaire, et celui qui porte la dictée.
+   *
+   * **Une seule constante plutôt qu'un `pour === "devis"` répété six fois** :
+   * le jour où un troisième cas apparaît, c'est ici qu'il se lit, et non dans
+   * six conditions dont on aurait corrigé cinq.
+   */
+  const pourLeDevis = pour === "devis";
   const [nomClient, setNomClient] = useState(depart?.nomClient ?? "");
   const [civilite, setCivilite] = useState<Civilite | null>(depart?.civilite ?? null);
   const [telephone, setTelephone] = useState(depart?.telephone ?? "");
@@ -509,6 +539,26 @@ export default function FormulaireNouveauChantier({
         const r = await reprendreLesPhotosAction(id, [...photosReprises]);
         if (!r.ok) setErreur(r.raison);
       }
+      // **LA FACTURE DIRECTE NAÎT ICI, avant qu'on l'affiche.** Le chantier
+      // existe et il n'a pas de devis : c'est le seul instant où la facture
+      // peut être posée sans que rien ne soit à reprendre. L'écran d'arrivée
+      // ne la crée PAS lui-même — il attend un geste (« Créer la facture »),
+      // et ce geste-ci vient d'être fait, ici, sur le bouton d'à côté.
+      //
+      // **Un refus n'est pas une panne** : le chantier est enregistré quoi
+      // qu'il arrive, et on le dit plutôt que d'aller sur un écran qui
+      // n'expliquerait rien (`AGENTS.md` — un défaut muet coûte deux fois).
+      if (vers === "facture") {
+        const r = await creerFactureSansDevisAction(id);
+        if (!r.succes) {
+          setErreur(r.erreur);
+          setEnCoursVers(null);
+          return;
+        }
+        router.push(`/chantiers/${id}/facture`);
+        return;
+      }
+
       // **UN CHANTIER NEUF VA TOUJOURS AU DEVIS**, et le ternaire qui
       // envoyait vers la fiche du chantier était déjà mort : depuis le
       // 21 août 2026, la création ne porte plus qu'un bouton, et il vaut
@@ -650,8 +700,11 @@ export default function FormulaireNouveauChantier({
           </div>
           {/* Le raccourci pour qui a les mains prises — jamais l'action
               principale de cet écran, d'où le rond discret plutôt qu'un
-              bouton. */}
-          <DicterCoordonnees onCoordonnees={appliquerDictee} />
+              bouton.
+
+              **Absent quand on vient facturer** : *« on ne dicte pas une
+              facture qu'on tape »* (sa planche du 10 septembre 2026). */}
+          {pourLeDevis && <DicterCoordonnees onCoordonnees={appliquerDictee} />}
         </div>
 
         <form
@@ -662,8 +715,9 @@ export default function FormulaireNouveauChantier({
           className={`flex flex-col gap-[4px] px-6 pt-1.5 pb-2`}
           onSubmit={(e) => {
             e.preventDefault();
-            // « Entrée » fait ce que fait le bouton, et il n'y en a plus qu'un.
-            creerPuisAller("devis");
+            // « Entrée » fait ce que fait le bouton, et il n'y en a qu'un —
+            // celui de la voie qu'on a prise pour arriver ici.
+            creerPuisAller(pourLeDevis ? "devis" : "facture");
           }}
         >
           {/* 1 — Nom du client.
@@ -981,6 +1035,13 @@ export default function FormulaireNouveauChantier({
               en pointillé doré, sans un mot — le seul objet « brouillon » d'un
               écran par ailleurs net. Son intitulé le fait rentrer dans le
               rythme des quatre cases au-dessus. */}
+          {/* **Rien de tout cela quand on vient FACTURER — 10 septembre 2026.**
+              Les photos, l'anneau et la chaîne du devis ne sont pas des
+              agréments : ils nourrissent le CHIFFRAGE, et une facture directe
+              n'en a pas. Les laisser aurait posé sur l'écran trois gestes dont
+              aucun n'aboutit à quoi que ce soit ici — le pire des ornements,
+              celui qui a l'air de faire quelque chose. */}
+          {pourLeDevis && (
           <div aria-label="Photos du chantier" role="group">
             <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
               Photos
@@ -991,6 +1052,7 @@ export default function FormulaireNouveauChantier({
               initiales={reprise?.photos ?? []}
             />
           </div>
+          )}
 
           {/* ─── CE QU'ON AVAIT FAIT LA DERNIÈRE FOIS — 8 septembre 2026 ─────
               Sa règle, dans ses mots : *« si ce n'est pas le premier devis les
@@ -1007,7 +1069,7 @@ export default function FormulaireNouveauChantier({
               **Rien quand il n'y en a pas** — un titre « La dernière fois »
               au-dessus du vide sur le premier chantier d'un client serait du
               bruit (`CLAUDE.md` §3). */}
-          {(depuisClient?.anciennesPhotos.length ?? 0) > 0 && (
+          {pourLeDevis && (depuisClient?.anciennesPhotos.length ?? 0) > 0 && (
             <div role="group" aria-label="Les photos de la dernière fois">
               <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
                 La dernière fois
@@ -1064,6 +1126,7 @@ export default function FormulaireNouveauChantier({
               purgé après transcription : l'ancienne garde faisait disparaître
               l'anneau entier de la fiche au bout de quelques jours, sans que
               rien ne le dise. */}
+          {pourLeDevis && (
           <div>
             <AnneauNoteVocale
               chantierId={reprise?.id ?? chantierCree}
@@ -1083,6 +1146,7 @@ export default function FormulaireNouveauChantier({
               dureeSecondes={null}
             />
           </div>
+          )}
 
           {/* **L'AVION FAIT TOUT : envoyer, préparer, arriver sur le devis.**
               Sa demande du 30 août 2026 : *« appuyer sur la flèche pour envoyer
@@ -1106,7 +1170,20 @@ export default function FormulaireNouveauChantier({
           )}
 
           <div className="flex flex-col gap-3">
-            {reprise ? (
+            {!pourLeDevis ? (
+              /* **« Faire la facture » — le geste de sa planche, et il est
+                 PRINCIPAL.** Sur la fiche d'un devis, le bouton est secondaire
+                 parce que la voie recommandée est la note vocale juste
+                 au-dessus. Ici il n'y a pas d'autre voie : le secondariser
+                 laisserait un écran dont l'unique issue a l'air d'un repli. */
+              <PrimaryButton
+                disabled={!peutCreer}
+                onClick={() => creerPuisAller("facture")}
+                repere="action-facture-directe"
+              >
+                {enCoursVers === "facture" ? "Préparation…" : "Faire la facture"}
+              </PrimaryButton>
+            ) : reprise ? (
               <PrimaryButton
                 disabled={!peutCreer}
                 onClick={() => creerPuisAller("fiche")}

@@ -28,8 +28,17 @@ export default async function NouveauChantierPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const brut = (await searchParams).client;
+  const parametres = await searchParams;
+  const brut = parametres.client;
   const clientId = Array.isArray(brut) ? brut[0] : brut;
+
+  // **`?facture=1` — facturer sans passer par la case devis (10 septembre
+  // 2026).** L'accueil fait monter cet écran en feuille ; ce paramètre est ce
+  // qui le rend atteignable AUTREMENT — sans JavaScript, dans un nouvel onglet,
+  // depuis un signet. Sans lui, l'anneau « Créer une facture » aurait mené à la
+  // fiche qui prépare un DEVIS dès que le geste ne joue pas, et rien n'aurait
+  // dit pourquoi (`AGENTS.md` : un cul-de-sac muet coûte deux fois).
+  const pour = parametres.facture ? "facture" : "devis";
 
   let depuisClient: ClientDeDepart | undefined;
   if (clientId) {
@@ -57,5 +66,5 @@ export default async function NouveauChantierPage({
     }
   }
 
-  return <FormulaireNouveauChantier depuisClient={depuisClient} />;
+  return <FormulaireNouveauChantier depuisClient={depuisClient} pour={pour} />;
 }
