@@ -8,6 +8,26 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
+
+| | |
+|---|---|
+| sa panne | *« deux fois le geste client → retour, et je reviens à la page d'accueil »* |
+| la racine | `router.back()` de la flèche déclenche un `popstate` ; l'écoute écrite pour le bouton du navigateur RETIRAIT alors l'écran d'arrivée — la destination elle-même |
+| les pièces | `journalJusquACetEcran` (`src/lib/journal-de-navigation.ts`), `atterrirIci` et `sAbonnerAuJournal` (`journal-navigateur.ts`) |
+| retiré | l'appel qui effaçait le sol sous les pieds, et l'abonnement de la flèche au `popstate` |
+| les suites | `test-journal-de-navigation.ts` (+4), `test-retour-page-davant-e2e.ts` (+2, son geste refait quatre fois) |
+| le détail | `ARCHITECTURE.md` §316 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** « Je quitte cet écran en arrière » et « je
+viens d'atterrir ici » ne sont pas la même question : la première retire
+l'écran, la seconde le GARDE et ne coupe que ce qui le suit. Une seule fonction
+répondait aux deux.
+
+**ET L'ORDRE DES DEUX EFFETS COMPTE** : la visite se note AVANT que le
+`popstate` n'arrive, donc le journal porte deux fois l'écran d'arrivée. Toute
+troncature qui viserait la dernière ligne ne couperait rien.
+
 ## Dernier lot — LA PORTE DE CONNEXION, EN NUIT, AVEC GOOGLE ET APPLE (10 septembre 2026)
 
 | | |
@@ -103,7 +123,7 @@ au dépôt comme à l'écran ; ne pas réintroduire de seconde lecture.
 | la migration | `drizzle/0084_abonnement.sql` — `abonnements` (une ligne par entreprise) et `evenements_paiement` (l'idempotence du crochet) |
 | les pièces | `src/lib/abonnements.ts` (les règles), `src/lib/signature-stripe.ts`, `src/server/paiement/stripe.ts`, `src/server/repositories/abonnements.ts`, `src/app/reglages/abonnement/`, `src/app/api/paiement/route.ts` |
 | les suites | `test-abonnements.ts` (22), `test-signature-stripe.ts` (16), `test-abonnement-db.ts` (15, sous `atlas_app`), `test-paiement-stripe.ts` (31, faux prestataire local) |
-| le détail | `ARCHITECTURE.md` §316, `docs/lot-abonnement-stripe.md` |
+| le détail | `ARCHITECTURE.md` §317, `docs/lot-abonnement-stripe.md` |
 
 **CE QU'IL NE FAUT PAS « SIMPLIFIER », et c'est le cœur du lot.** Le prix ne
 vient PAS de Stripe. On ne crée pas de tarifs à la main dans son tableau de bord

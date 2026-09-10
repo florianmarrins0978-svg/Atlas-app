@@ -272,7 +272,7 @@ chiffre, une migration ajoute l'état — ne pas l'inventer d'ici là.
 
 ### 4. Le portail ne sait pas changer de formule, et c'est Atlas qui le fait
 
-Conséquence assumée du choix de tarif (`ARCHITECTURE.md` §316) : le portail
+Conséquence assumée du choix de tarif (`ARCHITECTURE.md` §317) : le portail
 client de Stripe ne propose un changement de formule que parmi des tarifs
 déclarés à la main, ce qui serait une seconde grille tarifaire. Le changement se
 fait donc dans Atlas, au prorata. **Ne pas « simplifier » en le renvoyant au

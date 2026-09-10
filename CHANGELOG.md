@@ -8,6 +8,45 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### Deux fois « client → retour » ramenait à l'accueil
+
+*« Quand je fais deux fois le geste client → retour puis client → retour, je
+reviens à la page d'accueil. »*
+
+Deux pièces du lot de la veille se marchaient dessus. La flèche recule
+désormais par le navigateur — c'est ce qui rend sa place dans la liste — et ce
+recul déclenchait l'écoute écrite pour le bouton DU navigateur, laquelle
+retirait du journal l'écran d'ARRIVÉE : la destination même qu'on venait
+d'atteindre. Un pas perdu à chaque retour.
+
+Une seule fonction répondait à deux questions différentes — « je quitte cet
+écran » et « je viens d'atterrir ici ». Elles sont séparées.
+
+**Et une seconde moitié, déjà là avant :** après le bouton du navigateur, la
+flèche proposait de retourner sur l'écran qu'on venait de quitter. Elle
+s'abonnait à l'événement plutôt qu'au journal, qui ne change qu'après lui.
+
+Le défaut a été rendu bavard avant d'être corrigé : une sonde a rejoué son
+geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
+maintenant dans la suite navigateur, qui refait le geste quatre fois.
+
+
+### L'ordre de l'absence : une planche, rien de codé
+
+Ses corrections du 10 septembre, sur l'écran qu'il venait d'essayer : *« l'ordre
+devrait être + salarié absent ? puis Julien »*, *« remets le bouton matin /
+aprem / journée, et une fois choisi il se cache »*, *« Julien absent, et à côté
+on marque matin, aprem ou journée »*, *« pour annuler on reclique sur + salarié
+absent »*. Puis, capture à l'appui : *« utilise le bouton pour déplacer un
+chantier »* — l'interrupteur à trois positions.
+
+**RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis) : `appli/absence-l-ordre.html` joue le
+geste entier — poser, choisir le moment, annuler — et l'interrupteur est celui
+d'`appli/deplacer-plus-simple.html`, recopié plutôt que redessiné.
+
+**Une seule chose y change, et c'est délibéré :** 44 px de haut au lieu de 36.
+Celui-là se touche sur un chantier, avec des gants.
+
 ### La porte de connexion : la planche du 8 septembre, enfin servie
 
 Sa remarque, photo à l'appui : *« ça n'a rien à voir, c'est cet écran que je

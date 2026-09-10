@@ -20,6 +20,7 @@
  */
 import {
   journalApresVisite,
+  journalJusquACetEcran,
   journalSansCetEcran,
   lireLeJournal,
 } from "@/lib/journal-de-navigation";
@@ -35,6 +36,26 @@ export function journalDeCetOnglet(): string[] {
   }
 }
 
+/**
+ * Qui veut savoir quand le journal change — la flèche de retour, et elle seule.
+ *
+ * **Elle s'abonnait au `popstate`, et c'était le mauvais signal.** Le journal ne
+ * change pas AVEC l'événement mais APRÈS lui : la flèche relisait donc un
+ * journal d'avant le ménage, et gardait l'adresse de l'écran qu'on venait de
+ * quitter — elle repartait en avant. Mesuré à l'écran le 10 septembre 2026.
+ *
+ * On s'abonne à ce qu'on lit : ce rangement-ci, quel que soit le geste qui l'a
+ * provoqué.
+ */
+const abonnes = new Set<() => void>();
+
+export function sAbonnerAuJournal(prevenir: () => void): () => void {
+  abonnes.add(prevenir);
+  return () => {
+    abonnes.delete(prevenir);
+  };
+}
+
 function ranger(journal: string[]): void {
   try {
     window.sessionStorage.setItem(CLE, JSON.stringify(journal));
@@ -43,6 +64,7 @@ function ranger(journal: string[]): void {
     // flèches gardent la sortie déclarée par leur écran.
     return;
   }
+  for (const prevenir of abonnes) prevenir();
 }
 
 /** On vient de poser le pied sur un écran. */
@@ -58,6 +80,18 @@ export function noterLaVisite(chemin: string): void {
  */
 export function oublierCetEcran(chemin: string): void {
   ranger(journalSansCetEcran(journalDeCetOnglet(), chemin));
+}
+
+/**
+ * On vient d'ATTERRIR ici en reculant — cet écran reste, ce qui le suit part.
+ *
+ * **Ce n'est pas `oublierCetEcran`, et les confondre a coûté sa panne du
+ * 10 septembre 2026** : le journal perdait la destination même qu'on venait
+ * d'atteindre, et la flèche suivante sautait un écran de trop. Le pourquoi et
+ * la table des deux questions sont dans `journalJusquACetEcran`.
+ */
+export function atterrirIci(chemin: string): void {
+  ranger(journalJusquACetEcran(journalDeCetOnglet(), chemin));
 }
 
 /**

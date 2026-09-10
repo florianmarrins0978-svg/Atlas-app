@@ -37,7 +37,7 @@ place »*, puis *« fais-moi Stripe »*.
 **Le prix ne vit qu'à un endroit** — `src/lib/abonnements.ts` — et le tarif est
 fabriqué chez le prestataire à son image. Aucun identifiant de tarif à recopier
 à la main : ce serait une seconde grille, et l'écart se compterait en euros
-(`ARCHITECTURE.md` §316).
+(`ARCHITECTURE.md` §317).
 
 **Ce qui reste, et trois points sur quatre sont pour LUI** (`TODO.md`, en tête) :
 le premier essai avec une vraie clé Stripe, le cloisonnement des fonctions par
@@ -48,6 +48,16 @@ formule qu'il doit trancher, la durée de l'essai gratuit, et les seize
 > `0077_civilite_et_prenom_du_compte.sql` alors que six migrations étaient
 > appliquées depuis. Le code fait foi (`CLAUDE.md` §1) — et une dernière
 > migration fausse envoie une session neuve appliquer ce qui est déjà là.
+
+---
+
+## FAIT : le retour perdait un pas à chaque fois — 10 septembre 2026
+
+*« Deux fois le geste client → retour, et je reviens à la page d'accueil. »*
+Deux pièces du lot de la veille se marchaient dessus : la flèche recule par le
+navigateur, et ce recul déclenchait l'écoute qui retirait du journal l'écran
+d'ARRIVÉE. Une seule fonction répondait à deux questions différentes ; elles
+sont séparées. **Aucune migration.** Détail : `ARCHITECTURE.md` §316.
 
 ---
 

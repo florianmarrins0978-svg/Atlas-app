@@ -26937,8 +26937,63 @@ second dirait « sept. » d'un côté et « sep. » de l'autre.
 | `test-ligne-du-client-e2e.ts` | **les boîtes** — l'adresse qui se rogne, la date qui ne se coupe pas, la ligne vide qui n'existe plus, et le compte qui ne revient pas |
 
 ---
+## §316 — Deux fois « client → retour » : la destination sortait du journal
 
-## §316 — L'abonnement : le prix ne vit qu'à UN endroit, et Stripe le recopie
+**Sa panne du 10 septembre 2026 :** *« quand je fais deux fois le geste
+client → retour puis client → retour, je reviens à la page d'accueil. »*
+
+**Rien n'a été deviné : le défaut a été rendu bavard d'abord.** Une sonde a
+rejoué son geste dans un navigateur en imprimant, à chaque pas, le journal de
+l'onglet ET la marque de l'entrée d'historique. La ligne qui accuse :
+
+```
+1 · client ouvert   journal=["/login","/","/clients","/clients/8f82…"]
+1 · après RETOUR    journal=["/login","/"]        ← « /clients » a disparu
+```
+
+On est DEBOUT sur `/clients`, et le journal ne le porte plus. La flèche du
+client suivant annonce donc `/`, et le second retour sort de la liste.
+
+**LA RACINE : deux pièces du même lot se marchaient dessus.** §314 a appris à la
+flèche à reculer par `router.back()` — c'est ce qui rend au patron sa place dans
+la liste. Or `router.back()` déclenche un `popstate`, et le `popstate` était
+écouté pour le bouton DU NAVIGATEUR avec `journalSansCetEcran`, qui RETIRE
+l'écran nommé. Il retirait donc l'écran d'ARRIVÉE, c'est-à-dire la destination
+que la flèche venait de choisir. Chaque pièce était juste seule.
+
+**Et la racine n'est pas dans le mécanisme, elle est dans la QUESTION** — une
+seule fonction répondait à deux questions différentes :
+
+| ce qui vient de se passer | ce que le journal garde | qui appelle |
+|---|---|---|
+| *je quitte cet écran en arrière* | tout ce qui le précède (`journalSansCetEcran`) | la flèche à l'appui, une fiche client effacée |
+| *je viens d'atterrir ici* | **jusqu'à cet écran INCLUS** (`journalJusquACetEcran`) | tout `popstate` — la flèche comme le bouton du navigateur |
+
+**UNE SECONDE MOITIÉ, TROUVÉE EN POUSSANT LA SONDE PLUS LOIN**, et elle était
+déjà là avant ce lot : après le bouton du navigateur, la flèche annonçait
+l'écran qu'on venait de QUITTER — elle repartait en avant. Deux causes, toutes
+deux d'ordonnancement :
+
+1. **la visite se note AVANT que l'événement n'arrive.** Le journal porte donc
+   deux fois l'écran d'arrivée — sa vraie place, et le pas ajouté au bout. Une
+   troncature qui prenait la dernière ligne ne coupait rien. `journalJusquACetEcran`
+   écarte donc la dernière ligne de sa recherche ;
+2. **la flèche s'abonnait au `popstate`, pas au journal.** Le journal ne change
+   qu'APRÈS l'événement : elle relisait une version périmée et n'était jamais
+   prévenue du ménage. Elle s'abonne désormais à ce qu'elle LIT
+   (`sAbonnerAuJournal`), et l'abonnement au `popstate` a disparu avec.
+
+**Ce que ce lot retire :** l'appel qui effaçait le sol sous les pieds, et
+l'abonnement au mauvais signal. Rien n'a été ajouté par-dessus.
+
+**Le contrôle refait son geste QUATRE fois**, pas deux : une version qui ne
+perdrait un pas qu'un tour sur deux passerait un aller-retour. Les deux
+contrôles neufs ont été mis au rouge contre le code d'avant avant d'être
+retenus, et la sonde a été retirée — ce qu'elle savait faire vit maintenant dans
+`scripts/test-retour-page-davant-e2e.ts`.
+
+
+## §317 — L'abonnement : le prix ne vit qu'à UN endroit, et Stripe le recopie
 
 **Sa demande du 9 septembre 2026** : *« et que si on clique sur s'abonner qu'on
 puisse payer, mets tout le système en place »*, puis *« fais-moi Stripe »*.
@@ -27057,7 +27112,7 @@ l'adresse de retour ne se déduit **jamais** de la requête : l'hôte annoncé e
 du paiement, vers une page choisie par un tiers — la faute que ce dépôt a fermée
 sur `x-forwarded-for`.
 
-## §317 — La porte est en NUIT, et une charte peut se poser au milieu de l'arbre
+## §318 — La porte est en NUIT, et une charte peut se poser au milieu de l'arbre
 
 **Sa remarque du 10 septembre 2026, photo à l'appui :** *« toi tu me montres un
 écran blanc, regarde la photo que je t'ai jointe, elle est noire, c'est celle-là
