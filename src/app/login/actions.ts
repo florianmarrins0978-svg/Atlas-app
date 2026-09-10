@@ -10,6 +10,7 @@ import { messageAttente as messageTemporisation, porteeTemporisation } from "@/l
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
 import { attenteAvantEssai, noterEchec, oublierEchecs } from "@/server/repositories/tentatives-connexion";
 import { messageRefusCle } from "@/lib/cle-appareil";
+import { estNomFournisseur } from "@/lib/fournisseurs-connexion";
 import { optionsConnexion } from "@/server/cle-appareil";
 import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
 
@@ -321,4 +322,49 @@ function identifiantDeLaCle(reponse: string): string {
  */
 export async function deconnexionAction() {
   await signOut({ redirectTo: "/login" });
+}
+
+/**
+ * ENTRER PAR GOOGLE OU PAR APPLE — sa demande du 10 septembre 2026.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE QUE CETTE ACTION NE FAIT PAS, ET POURQUOI C'EST L'ESSENTIEL.** Elle ne
+ * vérifie rien : ni que le fournisseur est ouvert, ni que l'adresse rendue est
+ * prouvée, ni qu'un compte Atlas existe. Tout cela vit dans `src/auth.ts` et
+ * dans `src/lib/fournisseurs-connexion.ts`, **une seule fois** — c'est le même
+ * choix qu'« Ouvrir avec Face ID », dont l'action ne pré-vérifie rien non plus.
+ * Deux rédactions de la même règle divergeraient, et ici la divergence
+ * s'appellerait « accepté d'un côté, refusé de l'autre » (`CLAUDE.md` §3).
+ *
+ * **Le nom du fournisseur ne vient PAS du navigateur en confiance.** Il arrive
+ * d'un bouton, donc de dehors : `estNomFournisseur` le confronte à la liste
+ * fermée avant qu'il n'atteigne Auth.js. Sans quoi n'importe quelle chaîne
+ * partirait dans `signIn`.
+ *
+ * **`redirect` reste à sa valeur par défaut**, contrairement aux deux autres
+ * chemins : le propre d'OAuth est de sortir de l'application. La levée de
+ * redirection doit donc traverser — elle est ce que Next attend.
+ */
+export async function entrerAvecAction(nom: string): Promise<{ erreur?: string }> {
+  if (!estNomFournisseur(nom)) {
+    logger.warn("[connexion] fournisseur inconnu refusé", { nom });
+    return { erreur: "Ce moyen de connexion n'existe pas." };
+  }
+
+  try {
+    await signIn(nom, { redirectTo: "/" });
+    return {};
+  } catch (erreur) {
+    // Une action serveur qui redirige le fait en LEVANT — c'est la réussite
+    // qui passe par ici, et Next doit la recevoir. Le piège est exactement
+    // celui de `LigneFaceId`, payé le 26 août 2026.
+    if (
+      typeof (erreur as { digest?: unknown })?.digest === "string" &&
+      (erreur as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+    ) {
+      throw erreur;
+    }
+    logger.error("[connexion] le fournisseur n'a pas abouti", { nom, erreur });
+    return { erreur: "Ce service ne répond pas. Réessayez dans un instant." };
+  }
 }

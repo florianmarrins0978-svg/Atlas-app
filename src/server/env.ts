@@ -71,8 +71,56 @@ export type Env = {
    * `src/lib/origine-webauthn.ts`.
    */
   rpId?: string;
+
+  // ── Entrer par Google ou par Apple (10 septembre 2026) ───────────────────
+  //
+  // **Les quatre sont OPTIONNELLES, et la porte le sait.** Tant qu'une paire
+  // n'est pas posée, son bouton ne s'affiche pas : un bouton qui ne peut pas
+  // aboutir est pire qu'un bouton absent (`src/lib/fournisseurs-connexion.ts`).
+  // Rien n'est deviné, rien ne casse — la connexion par mot de passe et par
+  // Face ID est inchangée.
+  //
+  // Elles ne peuvent pas naître ici : elles s'ouvrent chez Google (gratuit) et
+  // chez Apple (compte développeur payant). Voir `docs/A-FAIRE.md`.
+  googleClientId?: string;
+  googleClientSecret?: string;
+  appleClientId?: string;
+  appleClientSecret?: string;
+
   redisUrl?: string;
   cronSecret?: string;
+
+  // ── Le paiement de l'abonnement (9 septembre 2026) ───────────────────────
+  //
+  // **Les trois sont OPTIONNELLES, et c'est délibéré.** Le compte Stripe
+  // n'existe pas encore : sans elles, l'écran « Abonnement » le DIT — il
+  // n'offre pas un bouton qui échouerait. Un écran qui promet un paiement
+  // impossible est pire qu'un écran qui annonce qu'il n'est pas branché.
+  //
+  // **Aucune ne porte le mot « stripe » dans le type**, seulement dans le nom
+  // de la variable : le jour où l'on change de prestataire, c'est
+  // `src/server/paiement/` qui change, pas tout ce qui lit `getEnv()`.
+
+  /** `ATLAS_PAIEMENT_CLE` — la clé secrète (`sk_…`). Ne sort JAMAIS du serveur. */
+  paiementCleSecrete?: string;
+  /**
+   * `ATLAS_PAIEMENT_SECRET_CROCHET` — le secret du crochet (`whsec_…`).
+   *
+   * **Ce n'est pas la même chose que la clé**, et les confondre ouvrirait
+   * l'adresse publique du crochet à qui possède la clé publique. Elles sont
+   * donc distinctes ici, comme chez Stripe.
+   */
+  paiementSecretCrochet?: string;
+  /**
+   * `ATLAS_URL_PUBLIQUE` — l'adresse à laquelle le patron revient après avoir
+   * payé.
+   *
+   * **Elle ne se déduit PAS de la requête.** L'hôte annoncé est écrit par
+   * celui qui frappe : le déduire ferait renvoyer le patron, après paiement,
+   * vers une adresse choisie par un tiers. C'est le même raisonnement que
+   * `ATLAS_RP_ID` juste au-dessus.
+   */
+  urlPublique?: string;
   sentryDsn?: string;
   sentryEnvironment: string;
   releaseVersion?: string;
@@ -575,8 +623,18 @@ function construireEnv(): Env {
     // franchissait le refus ci-dessus, puis le magasin échouait à chaque appel
     // et la limitation retombait sur un compteur en mémoire, par instance —
     // exactement l'état que ce refus déclare « jamais autorisé en production ».
+    googleClientId: optionnel("AUTH_GOOGLE_ID"),
+    googleClientSecret: optionnel("AUTH_GOOGLE_SECRET"),
+    appleClientId: optionnel("AUTH_APPLE_ID"),
+    appleClientSecret: optionnel("AUTH_APPLE_SECRET"),
     redisUrl: optionnel("REDIS_URL"),
     cronSecret,
+    paiementCleSecrete: optionnel("ATLAS_PAIEMENT_CLE"),
+    paiementSecretCrochet: optionnel("ATLAS_PAIEMENT_SECRET_CROCHET"),
+    // La barre oblique finale se retire ici, une fois : ailleurs, chaque
+    // appelant devrait s'en souvenir, et le premier oubli fabrique un
+    // « https://…//reglages » que certains hébergeurs refusent.
+    urlPublique: optionnel("ATLAS_URL_PUBLIQUE")?.replace(/\/+$/, ""),
     sentryDsn: process.env.SENTRY_DSN,
     sentryEnvironment: process.env.SENTRY_ENVIRONMENT ?? nodeEnv,
     releaseVersion: process.env.RELEASE_VERSION,

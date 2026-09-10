@@ -324,7 +324,13 @@ async function main() {
      * un `finally`, puis comparé à l'octet près : un contrôle qui laisserait le
      * dépôt entamé serait pire que le défaut qu'il traque.
      */
-    const ampute = SOURCE.replace(/^ +await exigerEcritureSurLePlanning\(.*\);\n/gm, "");
+    // **`\r?\n`, et non `\n` — 9 septembre 2026.** Les fichiers du dépôt sont
+    // en CRLF sur la machine du patron : la coupure ne trouvait aucune ligne,
+    // et ce contrôle rougissait sur du code sain, **chez lui seulement**. Même
+    // faute que la séparation des chemins de `test-actions-gardees-db` — une
+    // erreur qui désigne le mauvais coupable coûte plus cher que pas d'erreur
+    // (`CLAUDE.md` §5).
+    const ampute = SOURCE.replace(/^ +await exigerEcritureSurLePlanning\(.*\);\r?\n/gm, "");
     assert.notEqual(ampute, SOURCE, "aucune garde n'a été retirée : l'essai négatif ne mesurerait rien");
 
     try {

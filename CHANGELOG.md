@@ -8,6 +8,34 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### Le travail supplémentaire se voit enfin — et le PDF cesse d'écrire trois totaux qui ne s'accordent pas
+
+**Il a essayé le lendemain de la livraison, photos à l'appui :** *« j'ai rajouté
+un TS mais ça n'apparaît nulle part, ni sur la facture ni dans la case reprise
+devis ; le client pense simplement que j'ai rajouté une ligne »*.
+
+**Un troisième défaut n'était pas dans son message, et il partait chez son
+client** : son PDF écrivait **Total HT 1 750 €** sous des lignes qui font
+**4 450 €**, avec une TVA de 890 € et un TTC de 2 100 €. Trois chiffres, trois
+bases, aucun d'accord avec les autres. Le PDF du brouillon recopiait les
+colonnes de la facture pendant que son bloc de totaux recalculait la TVA depuis
+les lignes — la duplication que le §3 interdit.
+
+| | |
+|---|---|
+| `factures.ts` | `donneesFacture` **calcule** les totaux depuis les lignes, et `emettreFacture` a cessé de les lui passer |
+| `document-commun.ts` | `LigneDocument` porte enfin `supplement` : le titre était écrit, il ne pouvait jamais s'afficher |
+| `FactureClient.tsx` | deux blocs, avec `lignesParBloc` — celle du papier |
+| `reduction-devis.ts` | `TITRE_TRAVAUX_SUPPLEMENTAIRES`, à un seul endroit |
+
+**Les contrôles n'avaient rien vu parce qu'ils entraient par la porte de
+service** : ils éprouvaient `emettreFacture`, qui recalculait déjà. Le PDF du
+BROUILLON — celui qu'il relit avant d'envoyer — n'était éprouvé nulle part.
+Deux cas y sont entrés (**11 contrôles, 0 échec**), et chacun a été vu rougir
+contre le défaut qu'il vise, jamais contre l'autre.
+
+Le pourquoi de chaque choix est dans `ARCHITECTURE.md` §304.
+
 ### Deux fois « client → retour » ramenait à l'accueil
 
 *« Quand je fais deux fois le geste client → retour puis client → retour, je
@@ -88,6 +116,38 @@ d'`appli/deplacer-plus-simple.html`, recopié plutôt que redessiné.
 
 **Une seule chose y change, et c'est délibéré :** 44 px de haut au lieu de 36.
 Celui-là se touche sur un chantier, avec des gants.
+
+### La porte de connexion : la planche du 8 septembre, enfin servie
+
+Sa remarque, photo à l'appui : *« ça n'a rien à voir, c'est cet écran que je
+veux — je veux pouvoir me connecter avec Google ou Apple »*. L'application
+servait encore la porte du 12 août, en crème, pendant que la création de compte
+— l'autre moitié de la même planche — était bien en nuit depuis deux jours.
+
+- **La nuit est partagée** : `src/components/atlas/PorteDeNuit.tsx`. Elle était
+  écrite dans le seul fichier de la création de compte, et la connexion ne
+  pouvait donc pas la suivre.
+- **Un piège d'alias CSS, mesuré et corrigé à la racine** : les alias courts de
+  `globals.css` (`--ink`, `--card`, `--line`, `--or`…) sont calculés sur
+  `:root` et hérités figés — une charte posée plus bas dans l'arbre ne les
+  recalculait pas, si bien que le fond passait en nuit et les champs restaient
+  crème. Le bloc vaut désormais aussi pour `.atlas-charte-locale`. **Un seul
+  bloc, deux sélecteurs** : le recopier aurait fait deux dérivations.
+- **L'écran suit la planche** : titre « Connexion » en serif, Google et Apple,
+  le trait « ou », Face ID centré, deux gélules avec le mot dedans, « Entrer »
+  en clair. Plus de sceau, plus de mot ATLAS, plus de libellés au-dessus des
+  champs (`aria-label` à la place — un texte d'invite s'efface à la frappe).
+- **Google et Apple sont branchés pour de bon**, et ne s'affichent que si leurs
+  clés sont posées : `src/lib/fournisseurs-connexion.ts` répond, à l'écran comme
+  à Auth.js. Une adresse n'est acceptée que **prouvée** (`email_verified`) —
+  sans adaptateur de base, elle est le seul lien entre les deux mondes. Sans
+  compte Atlas, on part sur la création plutôt que d'ouvrir un compte sans
+  entreprise ni TVA. **Il reste à ouvrir les deux comptes chez Google et Apple.**
+- **Supprimés** (`CLAUDE.md` §4 quinquies) : `MarqueAtlas.tsx` — plus rien ne
+  l'importait —, l'animation `.atlas-sceau-en-marche` et la classe
+  `.atlas-champ-ligne`.
+- `ARCHITECTURE.md` §317. Contrôles : `scripts/test-fournisseurs-connexion.ts`
+  (19 cas, sans base ni réseau).
 
 ### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
 
@@ -221,6 +281,37 @@ comme quatrième signe, et refuse toujours les quatre absents à la fois.
 **La planche reste** — `appli/salarie-s-absente.html`, trois tailles de + à
 essayer, A retenu : elle raconte ce qui a été écarté, dont le + tout seul, sans
 mot, qui aurait rejoué le 6 septembre pour la troisième fois.
+
+### Payer son abonnement — Stripe, et les trois formules
+
+*« Et que si on clique sur s’abonner qu’on puisse payer, mets tout le système
+en place »*, puis *« fais-moi Stripe »*. L’écran « Abonnement » ne disait plus
+que ce qu’il y aurait un jour ; il porte désormais les trois formules de sa
+planche — Artisan 29, Entreprise 59, Illimité 120 € HT —, l’état de son
+abonnement, et de quoi le régler.
+
+**Le prix n’existe qu’à UN endroit.** La façon ordinaire de brancher Stripe est
+de créer les tarifs à la main dans son tableau de bord et d’en coller les
+identifiants dans la configuration : ce serait une seconde grille tarifaire, et
+le jour où l’une change sans l’autre, l’écran affiche 29 € pendant que la banque
+prélève autre chose. Atlas fabrique donc le tarif chez le prestataire, à l’image
+de `src/lib/abonnements.ts`, et le réemploie tant qu’il ne bouge pas.
+
+**Sa correction commande toute la grille :** *« limiter à 5 commerciaux, et si on
+veut commerciaux illimités faut payer genre 120 »*. Ce qui se compte, c’est qui
+FABRIQUE des devis et des factures — jamais les salariés, qui ne voient que leur
+planning. Compter huit gars sur le terrain reviendrait à facturer la taille de
+ses chantiers, et à punir le client qu’on veut garder.
+
+**Rien ne se ferme aujourd’hui.** Sans abonnement, aucun plafond ne s’applique et
+aucun écran ne disparaît : couper l’application de ceux qui s’en servent déjà, le
+jour où l’offre naît, serait la pire façon de la lancer.
+
+**Ce qui n’a pas pu être éprouvé ici, et qui est écrit noir sur blanc :** aucun
+compte Stripe n’existe encore. La signature du crochet, la lecture des réponses
+et les trois refus sont éprouvés contre un faux prestataire monté en local ; que
+Stripe accepte ces paramètres se vérifie avec une clé d’essai, sur son espace.
+
 
 ### L'onglet des retours existe toujours, et ses photos se voient enfin
 

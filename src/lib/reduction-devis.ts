@@ -311,6 +311,16 @@ export function tauxLisible(taux: string): string {
  * `supplement` absent vaut `false` : les lignes d'un DEVIS n'ont pas cette
  * colonne, et ce document-là n'a qu'un seul bloc par construction.
  */
+/**
+ * Le titre du second bloc — **écrit ICI, et nulle part ailleurs**.
+ *
+ * Il vivait en dur dans le PDF. L'écran de la facture en aurait posé un second,
+ * et deux libellés pour un même bloc finissent par diverger : le client aurait
+ * lu un mot sur son papier et le patron un autre sur son téléphone, sur la
+ * seule ligne qui explique pourquoi la facture dépasse le devis signé.
+ */
+export const TITRE_TRAVAUX_SUPPLEMENTAIRES = "TRAVAUX SUPPLÉMENTAIRES";
+
 export function lignesParBloc<T extends { tauxTva?: string | null; supplement?: boolean | null }>(
   lignes: readonly T[],
   tauxDuDocument: string

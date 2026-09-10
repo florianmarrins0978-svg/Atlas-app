@@ -28,6 +28,17 @@ répondait aux deux.
 `popstate` n'arrive, donc le journal porte deux fois l'écran d'arrivée. Toute
 troncature qui viserait la dernière ligne ne couperait rien.
 
+## Dernier lot — LA PORTE DE CONNEXION, EN NUIT, AVEC GOOGLE ET APPLE (10 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« ça n'a rien à voir, c'est cet écran que je veux — je veux pouvoir me connecter avec Google ou Apple »*, photo de la planche à l'appui |
+| la planche | `appli/la-porte-en-plein-air.html`, écran 3 (choisi le 8 septembre, jamais codé) |
+| les pièces | `src/components/atlas/PorteDeNuit.tsx`, `src/app/login/{page,FormulaireConnexion,BoutonsFournisseurs}.tsx`, `src/lib/fournisseurs-connexion.ts`, `src/server/identite-externe.ts` |
+| ce que ça RETIRE | `MarqueAtlas.tsx` (plus rien ne l'importait), `.atlas-sceau-en-marche`, `.atlas-champ-ligne` |
+| le piège à connaître | les alias de `globals.css` (`--ink`, `--card`…) sont **calculés sur `:root`** et hérités figés : une charte posée plus bas ne les recalcule pas. D'où `.atlas-charte-locale`, et `ARCHITECTURE.md` §317 |
+| **ce qui BLOQUE** | les deux boutons ne s'afficheront chez lui **qu'une fois les clés posées** : `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` (gratuit) et `AUTH_APPLE_ID`/`AUTH_APPLE_SECRET` (compte développeur payant). Lui seul peut ouvrir ces comptes |
+
 ---
 ## Dernier lot — « DÉPLACER », UN INTERRUPTEUR À DEUX POSITIONS (10 septembre 2026)
 
@@ -104,6 +115,39 @@ durée, jamais en la coupant.
 au moment précis où il choisit où le poser. `dureeDuChantier` répond désormais
 au dépôt comme à l'écran ; ne pas réintroduire de seconde lecture.
 
+## Dernier lot — L'ABONNEMENT SE PAIE, PAR STRIPE (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | l'écran « Abonnement » porte les trois formules, l'état, et de quoi régler ; le plafond de personnes aux devis mord |
+| la migration | `drizzle/0084_abonnement.sql` — `abonnements` (une ligne par entreprise) et `evenements_paiement` (l'idempotence du crochet) |
+| les pièces | `src/lib/abonnements.ts` (les règles), `src/lib/signature-stripe.ts`, `src/server/paiement/stripe.ts`, `src/server/repositories/abonnements.ts`, `src/app/reglages/abonnement/`, `src/app/api/paiement/route.ts` |
+| les suites | `test-abonnements.ts` (22), `test-signature-stripe.ts` (16), `test-abonnement-db.ts` (15, sous `atlas_app`), `test-paiement-stripe.ts` (31, faux prestataire local) |
+| le détail | `ARCHITECTURE.md` §319, `docs/lot-abonnement-stripe.md` |
+
+**CE QU'IL NE FAUT PAS « SIMPLIFIER », et c'est le cœur du lot.** Le prix ne
+vient PAS de Stripe. On ne crée pas de tarifs à la main dans son tableau de bord
+pour en coller les identifiants dans la configuration : ce serait une seconde
+grille tarifaire, et le jour où l'une change sans l'autre, l'écran affiche 29 €
+pendant que la banque prélève autre chose. `src/lib/abonnements.ts` décide, et
+le tarif est fabriqué à son image sous une clé qui porte le montant.
+
+**Conséquence à connaître avant de toucher au guichet :** le portail client de
+Stripe ne sait changer de formule que parmi des tarifs déclarés à la main. Le
+changement se fait donc DANS Atlas, au prorata, en remplaçant la ligne de
+l'abonnement — jamais en rouvrant un paiement, ce qui donnerait deux
+abonnements vivants et deux prélèvements.
+
+**RIEN NE SE FERME AUJOURD'HUI.** Sans abonnement, aucun plafond, aucun écran
+retiré. Et il n'y a pas d'état « essai » : sa durée n'est pas décidée, la
+contrainte `CHECK` de la migration le refuse exprès.
+
+**CE QUI N'A PAS ÉTÉ ÉPROUVÉ ICI** — à ne pas présenter comme acquis : aucun
+compte Stripe n'existe. Les suites vérifient ce qu'Atlas ENVOIE contre un faux
+prestataire local ; que Stripe accepte ces paramètres se vérifie avec une clé
+d'essai, sur son espace (`TODO.md`, premier point).
+
+---
 ## Dernier lot — LE COMPTEUR DE TVA NOMME SON GESTE (9 septembre 2026)
 
 | | |

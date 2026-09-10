@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { colors, font, texteSituation } from "@/lib/design-tokens";
+import { colors, font, texteSituation, voile } from "@/lib/design-tokens";
 import { estAbandon, messageRefusCle } from "@/lib/cle-appareil";
 import { connexionParCleAction, defiConnexionAction } from "./actions";
 
@@ -101,32 +101,24 @@ export default function LigneFaceId() {
   if (!disponible) return null;
 
   return (
-    <div className="mb-[22px]">
+    <div className="mb-[14px]">
       <button
         type="button"
         onClick={ouvrir}
         disabled={enCours}
-        // `rounded-full` : sa demande du 12 août 2026, la même forme partout.
-        // `test-boutons-arrondis.ts` l'a attrapé — cette ligne était née en
-        // 12 px, recopiée de la planche, où aucune règle du produit ne
-        // s'applique.
-        className="flex w-full items-center gap-3 rounded-full px-[18px] py-[12px] text-left transition-transform active:scale-[0.99] disabled:opacity-60"
-        style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}`, minHeight: 56 }}
+        /**
+         * **La ligne a changé d'allure le 10 septembre 2026**, écran 3 de
+         * `appli/la-porte-en-plein-air.html` : centrée, sans pictogramme, sur
+         * un voile plutôt que sur la carte. Sa proposition B du 24 août
+         * — « rien ne change de place » — tient toujours : la ligne est au
+         * même endroit, c'est la porte entière qui est passée en nuit.
+         *
+         * `rounded-full` : sa demande du 12 août 2026, la même forme partout,
+         * et `test-boutons-arrondis.ts` la garde.
+         */
+        className="flex w-full items-center justify-center rounded-full px-[18px] py-[13px] transition-transform active:scale-[0.985] disabled:opacity-60"
+        style={{ backgroundColor: voile(colors.ink, 0.08), minHeight: 48 }}
       >
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={colors.rust}
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          aria-hidden="true"
-          className="flex-none"
-        >
-          <path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3" />
-          <path d="M9 10v1.5M15 10v1.5M12 10v3.2h-1M9 15.6c1.6 1.2 4.4 1.2 6 0" />
-        </svg>
         <span style={{ fontFamily: font.body, fontSize: 15, color: colors.ink }}>
           {enCours ? "Ouverture…" : "Ouvrir avec Face ID"}
         </span>
@@ -134,8 +126,8 @@ export default function LigneFaceId() {
 
       {/* **La place n'est PAS réservée ici, contrairement au refus du mot de
           passe en dessous — et la capture du 24 août a tranché.** Réservée, elle
-          creusait un trou de soixante-quinze pixels entre cette ligne et
-          « Adresse », sur le seul écran qu'on voit avant d'être connecté.
+          creusait un trou de soixante-quinze pixels entre cette ligne et le
+          champ suivant, sur le seul écran qu'on voit avant d'être connecté.
           La raison de réserver ne s'applique pas : ce message naît SOUS le
           bouton qu'on vient de toucher, jamais sous celui qu'on s'apprête à
           toucher. Rien ne bouge sous le doigt. */}

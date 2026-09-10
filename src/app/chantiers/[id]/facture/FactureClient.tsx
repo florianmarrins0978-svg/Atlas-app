@@ -23,7 +23,13 @@ import {
 import { avecCivilite } from "@/lib/civilite";
 import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
 import { jourIso } from "@/lib/jour";
-import { libelleReduction, tauxLisible, totauxAvecReduction } from "@/lib/reduction-devis";
+import {
+  libelleReduction,
+  lignesParBloc,
+  tauxLisible,
+  totauxAvecReduction,
+  TITRE_TRAVAUX_SUPPLEMENTAIRES,
+} from "@/lib/reduction-devis";
 import type { EtatDeReprise } from "@/lib/facture-face-au-devis";
 
 // Arrêt 3 (docs/AGENT.md §2.3). Cet écran EST le contrôle : les montants du
@@ -61,8 +67,47 @@ export type FacturePourEcran = {
    * PARTIRA, jamais une colonne de base qui aurait pu prendre du retard sur ses
    * lignes. Une seule règle pour l'affichage et pour l'émission (`CLAUDE.md` §3).
    */
-  lignes: { id: string; libelle: string; montant: string; tauxTva: string | null }[];
+  lignes: {
+    id: string;
+    libelle: string;
+    montant: string;
+    tauxTva: string | null;
+    /**
+     * **Un travail ajouté APRÈS le devis (migration 0082).** Sans lui, l'écran
+     * rangeait un supplément sous « Reprise du devis » : le patron l'a vu le
+     * 10 septembre 2026 — *« ça n'apparaît nulle part, le client pense
+     * simplement que j'ai rajouté une ligne »*.
+     */
+    supplement: boolean | null;
+  }[];
 };
+
+/**
+ * Les blocs de l'écran : le devis, puis les travaux supplémentaires.
+ *
+ * **Le TRI vient de `lignesParBloc`, celui du papier** — c'est lui qui garantit
+ * que le devis passe toujours en premier, quel que soit l'ordre en base.
+ *
+ * **Mais les taux se REFONDENT ici, et c'est la différence avec le PDF.**
+ * `lignesParBloc` rend un groupe par (bloc, taux) parce que le papier imprime
+ * un sous-total par catégorie de TVA. L'écran, lui, ventile ses taux plus bas,
+ * dans le bloc des totaux : garder le découpage y aurait écrit « Reprise du
+ * devis » deux fois de suite sur une facture à deux taux, sans que rien ne dise
+ * pourquoi. Vu en relisant, avant que le patron ne le voie.
+ */
+function blocsDeLEcran<T extends { tauxTva: string | null; supplement: boolean | null }>(
+  lignes: T[],
+  tauxDuDocument: string
+): { supplement: boolean; lignes: T[] }[] {
+  const blocs: { supplement: boolean; lignes: T[] }[] = [];
+  for (const groupe of lignesParBloc(lignes, tauxDuDocument)) {
+    if (groupe.lignes.length === 0) continue;
+    const deja = blocs.find((b) => b.supplement === groupe.supplement);
+    if (deja) deja.lignes.push(...groupe.lignes);
+    else blocs.push({ supplement: groupe.supplement, lignes: [...groupe.lignes] });
+  }
+  return blocs;
+}
 
 export default function FactureClient({
   chantierId,
@@ -436,52 +481,77 @@ export default function FactureClient({
         </div>
       )}
 
-      {initialFacture.lignes.length > 0 && (
-        <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
-          {/* **Le devis se NOMME.** Le papier écrit « Établie à partir du devis
-              n° … » depuis toujours ; l'écran disait « Reprise du devis » sans
-              dire lequel — c'est-à-dire sans rien dire du tout le jour où il y
-              en a deux. */}
-          <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
-            {initialFacture.numeroDevis ? (
-              <>
-                Reprise du devis <NumeroDeDocument valeur={initialFacture.numeroDevis} />
-                {/* **La version s'écrit TOUJOURS, même la première.** Vu sur la
-                    capture du 4 septembre : les deux versions d'un devis portent
-                    le MÊME numéro commercial, si bien que l'écran affichait
-                    « Reprise du devis 2026-000003 » juste au-dessus de « Le devis
-                    2026-000003 est parti depuis ». Deux fois le même numéro, l'un
-                    dit périmé et l'autre pas : c'est illisible. Trois caractères
-                    lèvent toute l'ambiguïté. */}
-                {initialFacture.versionDevis ? ` v${initialFacture.versionDevis}` : ""}
-              </>
-            ) : (
-              "Reprise du devis"
-            )}
-          </p>
-          <ul className="flex flex-col gap-2">
-            {initialFacture.lignes.map((l) => (
-              <li key={l.id} className="flex items-baseline justify-between gap-4 text-[15px]">
-                {/* **Les travaux réunis s'empilent, un par ligne.** Depuis que
-                    le devis sépare ses prestations par un retour à la ligne
-                    (7 août, `src/lib/lignes-vendables.ts`), un `truncate`
-                    affichait « Abattage d'un chêne mort Br… » : les lignes
-                    fondues en une seule, puis coupées. Et c'est à cet écran-là
-                    que le patron est censé vérifier avant que la facture parte
-                    (arrêt 3) — lui cacher la moitié de ce qu'il facture est
-                    exactement ce qu'il ne faut pas faire. Le PDF du client,
-                    lui, a toujours respecté les retours à la ligne. */}
-                <span className="min-w-0 whitespace-pre-line break-words" style={{ color: colors.ink }}>
-                  {l.libelle}
-                </span>
-                <span className="flex-shrink-0" style={{ color: colors.muted }}>
-                  {formatEuros.format(Number(l.montant))}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {/* ── DEUX BLOCS, PARCE QUE LE PAPIER EN A DEUX ─────────────────────
+          **Sa demande du 10 septembre 2026, photos à l'appui :** il ajoute un
+          travail supplémentaire, et l'écran le range sous « Reprise du devis ».
+          *« Il faut le rajouter comme on avait dit, sinon le client pense
+          simplement que j'ai rajouté une ligne. »*
+
+          C'est aussi ce qui évite la discussion au moment de payer : une
+          facture qui les mêlerait montrerait un total plus haut que le devis
+          signé, sans rien pour l'expliquer (`ARCHITECTURE.md` §304).
+
+          **La séparation vient de `lignesParBloc`, celle du PDF** — et le titre
+          de `TITRE_TRAVAUX_SUPPLEMENTAIRES`, au même endroit. Refaire le tri
+          ici aurait mis deux règles pour une question, et c'est le client qui
+          aurait vu la différence entre son papier et l'écran du patron. */}
+      {initialFacture.lignes.length > 0 &&
+        blocsDeLEcran(initialFacture.lignes, initialFacture.tauxTva).map((bloc) => (
+            <div
+              key={bloc.supplement ? "supplement" : "devis"}
+              data-atlas={bloc.supplement ? "bloc-supplement" : "bloc-devis"}
+              className="rounded-[4px] px-5 py-5"
+              style={{ backgroundColor: colors.card }}
+            >
+              {/* **Le devis se NOMME.** Le papier écrit « Établie à partir du
+                  devis n° … » depuis toujours ; l'écran disait « Reprise du
+                  devis » sans dire lequel — c'est-à-dire sans rien dire du tout
+                  le jour où il y en a deux. */}
+              <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
+                {bloc.supplement ? (
+                  TITRE_TRAVAUX_SUPPLEMENTAIRES
+                ) : initialFacture.numeroDevis ? (
+                  <>
+                    Reprise du devis <NumeroDeDocument valeur={initialFacture.numeroDevis} />
+                    {/* **La version s'écrit TOUJOURS, même la première.** Vu sur
+                        la capture du 4 septembre : les deux versions d'un devis
+                        portent le MÊME numéro commercial, si bien que l'écran
+                        affichait « Reprise du devis 2026-000003 » juste au-dessus
+                        de « Le devis 2026-000003 est parti depuis ». Deux fois le
+                        même numéro, l'un dit périmé et l'autre pas : c'est
+                        illisible. Trois caractères lèvent toute l'ambiguïté. */}
+                    {initialFacture.versionDevis ? ` v${initialFacture.versionDevis}` : ""}
+                  </>
+                ) : (
+                  "Reprise du devis"
+                )}
+              </p>
+              <ul className="flex flex-col gap-2">
+                {bloc.lignes.map((l) => (
+                  <li key={l.id} className="flex items-baseline justify-between gap-4 text-[15px]">
+                    {/* **Les travaux réunis s'empilent, un par ligne.** Depuis que
+                        le devis sépare ses prestations par un retour à la ligne
+                        (7 août, `src/lib/lignes-vendables.ts`), un `truncate`
+                        affichait « Abattage d'un chêne mort Br… » : les lignes
+                        fondues en une seule, puis coupées. Et c'est à cet écran-là
+                        que le patron est censé vérifier avant que la facture parte
+                        (arrêt 3) — lui cacher la moitié de ce qu'il facture est
+                        exactement ce qu'il ne faut pas faire. Le PDF du client,
+                        lui, a toujours respecté les retours à la ligne. */}
+                    <span
+                      className="min-w-0 whitespace-pre-line break-words"
+                      style={{ color: colors.ink }}
+                    >
+                      {l.libelle}
+                    </span>
+                    <span className="flex-shrink-0" style={{ color: colors.muted }}>
+                      {formatEuros.format(Number(l.montant))}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+          </div>
+        ))}
 
       <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
         {/* ── LE TOTAL SE RECOMPOSE À LA MAIN, LIGNE À LIGNE ─────────────────
