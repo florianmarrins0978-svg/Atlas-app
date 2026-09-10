@@ -6,8 +6,8 @@ import { chantiers, clients, entreprises, equipesDuChantier, factures } from "..
 import {
   compterOccupation,
   departPossible,
+  dureeDuChantier,
   dureeEnDemiJournees,
-  DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type Moment,
 } from "@/lib/disponibilites";
 import { absencesEquipe, equipes } from "../db/schema";
@@ -515,7 +515,16 @@ export async function deplacerChantier(
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [courant] = await tx
-      .select({ jour: chantiers.datePlanifiee, duree: chantiers.dureeDemiJournees })
+      .select({
+        jour: chantiers.datePlanifiee,
+        duree: chantiers.dureeDemiJournees,
+        // **La durée dictée descend ici aussi.** Un chantier posé avant la
+        // migration 0019 porte `duree_demi_journees` à NULL : sans elle, il
+        // passait pour une journée, et « Matin » raccourcissait en silence un
+        // chantier de deux jours — le défaut même que ce lot corrige, par
+        // l'autre porte.
+        dureePrevue: chantiers.dureePrevue,
+      })
       .from(chantiers)
       .where(
         and(
@@ -531,7 +540,10 @@ export async function deplacerChantier(
 
     const { moment, duree } = departEtDuree(
       quand,
-      courant.duree ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES
+      dureeDuChantier({
+        dureeDemiJournees: courant.duree ?? null,
+        dureePrevue: courant.dureePrevue ?? null,
+      })
     );
 
     const [row] = await tx
@@ -583,10 +595,10 @@ export async function planifierChantier(
       .from(chantiers)
       .where(eq(chantiers.id, chantierId))
       .limit(1);
-    const duree =
-      courant?.duree ??
-      dureeEnDemiJournees(courant?.dureePrevue ?? null) ??
-      DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+    const duree = dureeDuChantier({
+      dureeDemiJournees: courant?.duree ?? null,
+      dureePrevue: courant?.dureePrevue ?? null,
+    });
 
     const nombreEquipes = entreprise?.nombreEquipes ?? 1;
 

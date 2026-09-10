@@ -13,6 +13,7 @@ import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
   cleCreneau,
   creneauxDuChantier,
+  dureeDuChantier,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   type JourIso,
 } from "@/lib/disponibilites";
@@ -48,6 +49,7 @@ import {
   etatDemi,
   MOT_DEMI,
   MOT_QUAND,
+  poseOfferte,
   quandDuChantier,
   occupationDemi,
   type Demi,
@@ -1288,7 +1290,7 @@ export default function PlanningClient({
                           className="mt-[3px] block text-[12.5px]"
                           style={{ color: jour < aujourdHui ? colors.muted : colors.or }}
                         >
-                          {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
+                          {ditLaDuree(dureeDuChantier(c))}
                         </span>
                         {/* **Le lieu, sous la durée.** C'est la deuxième
                             question après « qui » — et sur quatre clients qui
@@ -2534,7 +2536,7 @@ function CarteDuJour({
                     className="mt-[3px] block text-[12.5px]"
                     style={{ color: colors.or }}
                   >
-                    {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
+                    {ditLaDuree(dureeDuChantier(c))}
                   </span>
                   <LieuDuChantier chantier={c} />
                 </button>
@@ -2680,29 +2682,22 @@ function CarteDuJour({
                     // qui déciderait à sa place. C'est la règle qu'il a posée
                     // pour l'équipe, et elle vaut partout.
                     <>
-                      {/* **« Journée » disparaît au-delà d'une journée.** Sur un
-                          chantier de trois jours, elle écrit le même état que
-                          « Matin » — le départ, la durée étant protégée — et
-                          l'une des deux ne faisait donc rien. Un bouton qui
-                          n'écrit rien se retire ; le laisser en expliquant
-                          serait pire, puisqu'il faut le lire pour savoir de ne
-                          pas l'employer. */}
-                      {(Object.keys(MOT_QUAND) as QuandChantier[])
-                        .filter(
-                          (v) =>
-                            v !== "journee" ||
-                            (c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES) <= 2
-                        )
-                        .map((v) => (
-                          <Petit
-                            key={v}
-                            data-vers={v}
-                            retenue={quandDuChantier(c) === v}
-                            onClick={() => deplacer(c.id, v)}
-                          >
-                            {MOT_QUAND[v]}
-                          </Petit>
-                        ))}
+                      {/* **« Journée » disparaît au-delà d'une journée** — la
+                          règle vit dans `poseOfferte`, et non plus ici : elle
+                          manquait aux deux autres endroits qui dessinent ces
+                          mêmes boutons, et c'est par là qu'il est retombé
+                          dessus le 9 septembre. La durée, elle, se lit déjà
+                          au-dessus de ces boutons (« 2 jours »). */}
+                      {poseOfferte(dureeDuChantier(c)).quands.map((v) => (
+                        <Petit
+                          key={v}
+                          data-vers={v}
+                          retenue={quandDuChantier(c) === v}
+                          onClick={() => deplacer(c.id, v)}
+                        >
+                          {MOT_QUAND[v]}
+                        </Petit>
+                      ))}
                     </>
                   ) : (
                     <>

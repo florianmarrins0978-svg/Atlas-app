@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { arriverAFroid } from "./_arriver-a-froid";
 import { ADRESSE } from "./_adresse";
 
-// **Le retour du devis mène à la fiche client — avec ou sans client.**
+// **Un devis sans client dit ce qui manque, ET où le réparer.**
 //
 // ─────────────────────────────────────────────────────────────────────────────
 // Le patron, le 31 août 2026, deux captures à l'appui : *« j'ai oublié de
@@ -15,11 +16,23 @@ import { ADRESSE } from "./_adresse";
 // retour le déposait, et qui ne dit ni ce qui manque ni où le réparer.
 //
 // ─────────────────────────────────────────────────────────────────────────────
-// **CE QUE CETTE SUITE TIENT, ET QUE `test-retour-du-devis` NE PEUT PAS VOIR.**
-// La règle est éprouvée sans base à côté ; ici on éprouve qu'elle est BRANCHÉE :
-// que la flèche mène là où la règle dit, que la fiche s'ouvre pour de bon, et
-// que le chemin se REFERME — enregistrer ramène au devis, qui porte alors le
-// client. Une règle juste et débranchée serait verte des deux côtés sauf ici.
+// **CE QUI A CHANGÉ LE 9 SEPTEMBRE 2026, ET POURQUOI CE N'EST PAS UN RECUL.**
+//
+// Sa demande : *« le bouton retour doit marcher comme un vrai bouton marche
+// arrière, il doit toujours renvoyer à la page d'où l'on vient juste avant. »*
+// La flèche ne peut donc plus être le chemin vers la fiche client — elle recule.
+//
+// Le manque, lui, doit toujours se réparer : le chemin se pose **là où il se
+// lit**, sous « Aucun client rattaché à ce chantier », et il s'annonce. C'est le
+// pansement retiré (`CLAUDE.md` §4 quater) : la flèche avait été détournée le
+// 31 août parce que cette phrase était un cul-de-sac, et elle n'a plus à
+// l'être.
+//
+// **CE QUE CETTE SUITE TIENT, ET QUE LES SUITES PURES NE PEUVENT PAS VOIR :**
+// que le chemin est BRANCHÉ — qu'il existe là où le manque se lit, qu'il ouvre
+// la fiche pour de bon, et que le chemin se REFERME : enregistrer ramène au
+// devis, qui porte alors le client. Une règle juste et débranchée serait verte
+// partout sauf ici (`CLAUDE.md` §5 quater).
 
 const BASE = ADRESSE;
 
@@ -59,6 +72,8 @@ async function main() {
   const versLaFiche =
     `/chantiers/${chantierId}/coordonnees` +
     `?de=${encodeURIComponent(`/chantiers/${chantierId}/devis-complet`)}`;
+  // Le chemin qui répare le manque, posé sous la phrase qui l'annonce.
+  const lienFiche = page.locator(`a[href="${versLaFiche}"]`);
 
   await cas("SON CAS : le devis dit qu'aucun client n'est rattaché", async () => {
     await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
@@ -70,17 +85,28 @@ async function main() {
     );
   });
 
-  await cas("la flèche de retour mène à la fiche client de CE chantier", async () => {
+  await cas("le devis garde une sortie — une page nue sans retour est un piège", async () => {
     assert.equal(await retour.count(), 1, "le devis n'a plus de sortie : un piège sur un téléphone");
+  });
+
+  await cas("ET LE CHEMIN VERS LA FICHE SE LIT LÀ OÙ LE MANQUE SE LIT", async () => {
+    // C'est ce qui remplace le détour de la flèche : un chemin nommé, à côté de
+    // la phrase qui dit ce qui manque. Sans lui, « Aucun client rattaché à ce
+    // chantier » redeviendrait le cul-de-sac de sa capture du 31 août.
     assert.equal(
-      await retour.getAttribute("href"),
-      versLaFiche,
-      "elle le repose sur la fiche du chantier — la page qu'il a dit ne pas vouloir"
+      await lienFiche.count(),
+      1,
+      "rien ne mène à la fiche client : le devis dit le manque sans dire où le réparer"
+    );
+    assert.match(
+      (await lienFiche.innerText()).trim(),
+      /fiche client/i,
+      "le chemin ne s'annonce pas : il faut deviner où il mène"
     );
   });
 
-  await cas("elle ouvre pour de bon la fiche client, et son champ est vide", async () => {
-    await retour.click();
+  await cas("il ouvre pour de bon la fiche client, et son champ est vide", async () => {
+    await lienFiche.click();
     await page.waitForURL(/\/coordonnees/, { timeout: 30_000 });
     const nom = page.locator('input[placeholder="Bernard"]');
     await nom.waitFor({ state: "visible", timeout: 30_000 });
@@ -125,26 +151,58 @@ async function main() {
     assert.ok(!ecran.includes("Aucun client rattaché"), "le devis dit encore qu'il n'y a pas de client");
   });
 
-  await cas("LE CLIENT POSÉ, LA FLÈCHE MÈNE ENCORE À LA FICHE CLIENT", async () => {
-    // **Sa décision du 31 août au soir :** *« je veux tout le temps revenir à
-    // cette page et seulement celle-là ! La page fiche client »*. Le matin, le
-    // détour ne valait que faute de client — et l'autre moitié de ses retours
-    // le déposait sur la fiche du chantier, où il n'a rien à faire.
-    //
+  await cas("LE CLIENT POSÉ, LE CHEMIN S'EFFACE — il n'y a plus rien à réparer", async () => {
     // **Ce cas est le seul qui puisse le voir** : le chantier vient d'acquérir
     // son client à la ligne du dessus, dans l'application et non en base. Une
     // suite qui poserait le client à la main éprouverait un état fabriqué.
+    //
+    // Le client posé, ses quatre champs s'éditent sur la feuille elle-même
+    // (`majClientDuDevisAction`) : un lien vers un autre écran n'aurait plus
+    // qu'à faire sortir de son document pour rien.
+    assert.equal(
+      await lienFiche.count(),
+      0,
+      "le chemin vers la fiche est resté alors que le client est là : deux endroits pour le même geste"
+    );
+    const nom = page.locator('input[aria-label="Nom du client"]');
+    assert.equal(await nom.count(), 1, "le client n'est plus corrigible sur la feuille");
+  });
+
+  await cas("et SA plainte du 9 septembre : la flèche ramène d'où il vient", async () => {
+    // *« J'ai cliqué sur ouvrir le devis, une fois sur le devis je clique sur
+    // retour, j'arrive sur la page de la fiche client. »* Il venait de
+    // l'accueil. Le détour du 31 août ne s'impose plus dès qu'on sait d'où il
+    // vient (`src/lib/journal-de-navigation.ts`).
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
+    await retour.waitFor({ state: "visible", timeout: 30_000 });
+    await page.waitForFunction(
+      () => document.querySelector('[data-atlas="retour-du-devis"]')?.getAttribute("href") === "/",
+      undefined,
+      { timeout: 15_000 }
+    );
+  });
+
+  await cas("MAIS À FROID, sa règle du 31 août tient toujours", async () => {
+    // *« Je veux tout le temps revenir à cette page et seulement celle-là ! La
+    // page fiche client »*. Elle n'est pas abandonnée : elle est la sortie
+    // déclarée de cet écran, celle qui sert quand il n'y a pas de page d'avant
+    // — un signet, une notification ouverte à froid.
+    await arriverAFroid(page, `${BASE}/chantiers/${chantierId}/devis-complet`);
+    await retour.waitFor({ state: "visible", timeout: 30_000 });
     assert.equal(
       await retour.getAttribute("href"),
       versLaFiche,
-      "elle le repose sur la fiche du chantier — la page vide qu'il a fait retirer du chemin"
+      "à froid, la flèche ne mène plus à la fiche client : sa règle du 31 août a disparu"
     );
   });
 
   await cas("la fiche ouverte SANS provenance garde sa sortie du 17 août 2026", async () => {
     // Le chemin de l'accueil (« Adresse non renseignée ») entre par la même
     // porte : sa flèche rend la liste, et rien de ce lot ne doit la détourner.
-    await page.goto(`${BASE}/chantiers/${chantierId}/coordonnees`, { waitUntil: "networkidle" });
+    // **À FROID** : la sortie déclarée ne se lit que sans page d'avant
+    // (9 septembre 2026, `scripts/_arriver-a-froid.ts`).
+    await arriverAFroid(page, `${BASE}/chantiers/${chantierId}/coordonnees`);
     const flecheFiche = page.locator('a[aria-label="Retour à la liste des chantiers"]');
     assert.equal(await flecheFiche.count(), 1, "la fiche client n'a plus sa sortie vers la liste");
     assert.equal(await flecheFiche.getAttribute("href"), "/");
@@ -153,9 +211,11 @@ async function main() {
   await cas("UNE PROVENANCE ÉTRANGÈRE NE FAIT PAS SORTIR D'ATLAS", async () => {
     // La valeur vient de l'adresse : sans le contrôle, la flèche « retour »
     // deviendrait une porte de sortie vers un site étranger.
-    await page.goto(
-      `${BASE}/chantiers/${chantierId}/coordonnees?de=${encodeURIComponent("https://ailleurs.example")}`,
-      { waitUntil: "networkidle" }
+    // À froid : c'est le filtre du paramètre `?de=` qu'on éprouve ici, et il ne
+    // répond que lorsqu'il n'y a pas de page d'avant.
+    await arriverAFroid(
+      page,
+      `${BASE}/chantiers/${chantierId}/coordonnees?de=${encodeURIComponent("https://ailleurs.example")}`
     );
     const cible = await page.locator('a[aria-label^="Retour"]').first().getAttribute("href");
     assert.equal(cible, "/", `la flèche pointe vers « ${cible} » : elle quitterait Atlas`);

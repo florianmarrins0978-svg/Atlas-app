@@ -293,6 +293,68 @@ async function main() {
     }
   });
 
+  // ─── SON GESTE DU 9 SEPTEMBRE 2026 ────────────────────────────────────────
+  //
+  // *« Lorsque je clique sur le matin pour Mr. Julien, ça me met d'office toute
+  // la journée. »* Son chantier dure deux jours — quatre demi-journées, qui
+  // prennent forcément le matin ET l'après-midi.
+  //
+  // **La pose ne demande plus rien** depuis le soir même : la durée du devis
+  // décide seule. Le seul endroit où un moment se choisit encore est
+  // « Déplacer », sur un chantier DÉJÀ posé — et c'est là que « Journée »
+  // écrivait le même état que « Matin ». Le contrôle a donc suivi la règle là
+  // où elle vit, au lieu de rester sur un écran qui n'existe plus
+  // (`CLAUDE.md` §5 bis).
+  await cas("sur deux jours, « Déplacer » n'offre plus « Journée »", async () => {
+    // **Un jour OUVRABLE, lu au calendrier** — pas un jour calculé à la main :
+    // la fiche d'un samedi ne porte pas de carte, et le contrôle accuserait
+    // « Déplacer » d'un défaut qu'il vient de fabriquer.
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    const grille = await page.$$eval('[data-atlas="grille-mois"] [data-jour]', (l) =>
+      l.map((e) => e.getAttribute("data-jour"))
+    );
+    const ouvrable4 = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
+    const jour = grille.find((j): j is string => !!j && ouvrable4(j) && j >= jourDuPatron());
+    if (!jour) throw new Error("aucun jour ouvrable à venir au calendrier");
+    await pool.query(
+      `UPDATE chantiers
+          SET date_planifiee = $2, creneau_debut = 'matin', duree_demi_journees = 4
+        WHERE id = $1`,
+      [chantierId, jour]
+    );
+    await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    await page.click(`[data-atlas="grille-mois"] [data-jour="${jour}"]`);
+    await page.waitForTimeout(800);
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${jour}"]`);
+    await carte.locator('[data-atlas="deplacer"]').first().click();
+    await page.waitForTimeout(500);
+
+    const moments = await carte.locator("[data-vers]").allInnerTexts();
+    if (moments.length !== 2) {
+      throw new Error(
+        `un chantier de deux jours offre ${moments.length} moment(s) : ${JSON.stringify(moments)}`
+      );
+    }
+    if (moments.some((m) => m.includes("Journée"))) {
+      throw new Error("« Journée » écrit le même état que « Matin » sur un chantier de deux jours");
+    }
+
+    // Et le moment qui reste écrit bien quelque chose de NEUF, sans jamais
+    // raccourcir le chantier : la durée dictée vaut des jours de travail.
+    await carte.locator('[data-vers="apres"]').click();
+    await page.waitForTimeout(1500);
+    const { rows } = await pool.query(
+      `SELECT creneau_debut AS moment, duree_demi_journees AS duree FROM chantiers WHERE id = $1`,
+      [chantierId]
+    );
+    if (rows[0].moment !== "apres_midi") {
+      throw new Error(`parti sur « ${rows[0].moment} » et non l'après-midi`);
+    }
+    if (rows[0].duree !== 4) {
+      throw new Error(`deux jours valent 4 demi-journées, pas ${rows[0].duree}`);
+    }
+  });
+
   await navigateur.close();
   await pool.end();
 

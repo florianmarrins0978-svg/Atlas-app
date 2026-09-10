@@ -1,8 +1,13 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-08 · branche `main`
-· dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
+**Dernière mise à jour :** 2026-09-09 · branche `claude/back-button-history-0pa6sj`
+· dernière migration `drizzle/0083_retour_vu_par.sql`
 (ce lot-ci ne touche que le chemin de retour, sans base)
+
+> **Corrigé le 9 septembre 2026 :** cette ligne annonçait
+> `0077_civilite_et_prenom_du_compte.sql` alors que six migrations étaient
+> appliquées depuis. Le code fait foi (`CLAUDE.md` §1) — et une dernière
+> migration fausse envoie une session neuve appliquer ce qui est déjà là.
 
 ---
 
@@ -27,6 +32,28 @@ l'assistant, où un moment non dit valait « journée ».
 **Reste ouvert :** la planche 86 (`appli/planning-simple.html`) montre encore
 « QUI puis QUAND ». Elle a été retenue par lui le 21 août et n'a pas été refaite.
 
+## FAIT : « Matin » posait toute la journée — 9 septembre 2026
+
+Sa panne : *« lorsque je clique sur le matin pour Mr. Julien, ça me met d'office
+toute la journée »*. Le chantier dure deux jours ; quatre demi-journées posées à
+partir du matin prennent forcément la journée entière. **Le calcul était juste,
+la question posée à l'écran ne l'était pas.**
+
+**Ma première réponse a été dépassée le soir même, et il faut le lire ainsi :**
+elle retirait « Journée » des lignes de pose. La session voisine a supprimé la
+question entière (§308) — la durée du devis décide seule —, et c'est sa réponse
+qui vit. Le composant que j'avais écrit pour ces lignes est parti avec elles.
+
+**Ce qui reste, et qui tenait un vrai défaut :** la durée se lisait de deux
+endroits. L'écran prenait `dureeDemiJournees ?? 2` — NULL tant que rien n'est
+posé, donc « une journée » sur un chantier de deux — pendant que le dépôt lisait
+la dictée. `dureeDuChantier` répond aux deux, et `deplacerChantier` la lit aussi.
+« Déplacer » n'offre plus « Journée » quand elle ne changerait rien.
+**Aucune migration.** Détail : `ARCHITECTURE.md` §309.
+
+**Reste ouvert, et c'est à lui de trancher :** couper un chantier en deux poses
+(`TODO.md`).
+
 ## FAIT : LE COMPTEUR DE TVA NE SE REMPLIT PAS TOUT SEUL — 9 septembre 2026
 
 Sa correction, capture à l'appui : *« même si c'est tous les mois, ça ne doit pas
@@ -46,6 +73,29 @@ Aucune migration. `ARCHITECTURE.md` §305.
 
 ---
 
+
+
+## FAIT : LE BOUTON RETOUR EST UN VRAI BOUTON RETOUR — 9 septembre 2026
+
+Sa demande : *« le bouton retour doit marcher comme un vrai bouton marche
+arrière, il doit toujours renvoyer à la page d'où l'on vient juste avant. »*
+Cinquième signalement de la même racine (20 août, 31 août, 7, 8 et 9 septembre)
+— chaque écran déclarait sa sortie, et chaque porte d'entrée neuve la démentait.
+
+**L'onglet tient le journal des écrans traversés**, et toute flèche y lit la
+page d'avant. La sortie déclarée reste, comme repli : sur la première page d'un
+onglet, il n'y a pas de page d'avant, et sa règle du 31 août s'applique telle
+quelle. Aucune migration.
+
+Retiré avec : « Aucun client rattaché à ce chantier » n'est plus un cul-de-sac —
+le chemin vers la fiche se lit sous la phrase qui annonce le manque.
+
+Document : `docs/lot-retour-page-davant.md` · `ARCHITECTURE.md` §311.
+
+**Reste ouvert :** la retraite de la moitié « devine d'où il vient » des règles
+`?de=` (`TODO.md`) — six écrans et six suites en dépendent.
+
+---
 ## FAIT : LA RÉCEPTION D’UNE FACTURE SE TRACE — 9 septembre 2026
 
 Sa demande : une case « J’ai bien reçu cette facture » sur la page du client,

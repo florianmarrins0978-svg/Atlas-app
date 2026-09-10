@@ -19,8 +19,8 @@ import {
   blocsDeLaJournee,
   departEtDuree,
   MOT_QUAND,
+  poseOfferte,
   quandDuChantier,
-  type QuandChantier,
   ditLeCompteDemi,
   ditLeCompteDuJour,
   ditLeQuand,
@@ -151,13 +151,16 @@ essai("une journée pleine se dit « Journée »", () => {
 // **Et le choix affiché doit toujours pouvoir CHANGER quelque chose.** C'est le
 // contrôle qui tient sa panne : pour chaque durée, aucun bouton offert ne doit
 // écrire l'état déjà en place.
-essai("aucun bouton de « Déplacer » n'est sans effet", () => {
+//
+// **Il interroge `poseOfferte`, et non plus une copie du filtre.** Il recopiait
+// la condition de l'écran (« sauf "journee" au-delà de deux demi-journées ») :
+// il prouvait donc que CETTE ligne-là était juste, jamais que les trois endroits
+// qui dessinent ces boutons la portaient. Deux d'entre eux ne la portaient pas,
+// et c'est par là qu'il est retombé sur la panne le 9 septembre 2026.
+essai("aucun bouton de pose n'est sans effet", () => {
   for (const duree of [1, 2, 4, 6]) {
     const courant = quandDuChantier({ dureeDemiJournees: duree, creneauDebut: "matin" } as never);
-    const offerts = (Object.keys(MOT_QUAND) as QuandChantier[]).filter(
-      (v) => v !== "journee" || duree <= 2
-    );
-    for (const v of offerts) {
+    for (const v of poseOfferte(duree).quands) {
       if (v === courant) continue;
       const r = departEtDuree(v, duree);
       assert.ok(
@@ -297,6 +300,26 @@ essai("un chantier de trois jours n'est jamais raccourci", () => {
   assert.deepEqual(departEtDuree("journee", 6), { moment: "matin", duree: 6 });
   assert.deepEqual(departEtDuree("matin", 6), { moment: "matin", duree: 6 });
   assert.deepEqual(departEtDuree("apres", 6), { moment: "apres_midi", duree: 6 });
+});
+
+// ─── CE QUE LES BOUTONS PEUVENT HONORER ────────────────────────────────────
+//
+// **Sa panne du 9 septembre 2026 :** *« lorsque je clique sur le matin pour
+// Mr. Julien, ça me met d'office toute la journée »*. Deux jours dictés valent
+// quatre demi-journées : posées à partir du matin, elles prennent le matin ET
+// l'après-midi. Le calcul était juste ; c'est la question posée à l'écran qui
+// ne l'était pas — trois boutons d'ÉTENDUE sur un chantier dont l'étendue est
+// déjà décidée, dont un qui écrivait le même état que son voisin.
+essai("au-delà d'une journée, les boutons ne choisissent que le départ", () => {
+  assert.deepEqual(poseOfferte(4).quands, ["matin", "apres"]);
+  // Et les deux qui restent écrivent bien deux états différents.
+  assert.notDeepEqual(departEtDuree("matin", 4), departEtDuree("apres", 4));
+});
+
+essai("jusqu'à une journée, les trois boutons disent l'étendue", () => {
+  for (const duree of [1, 2]) {
+    assert.deepEqual(poseOfferte(duree).quands, ["matin", "apres", "journee"]);
+  }
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Règles de la journée — ${echecs} échec(s).`);

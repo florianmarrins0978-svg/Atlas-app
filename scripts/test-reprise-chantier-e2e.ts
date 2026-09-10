@@ -200,21 +200,32 @@ async function main() {
     );
   });
 
-  await cas("reprendre ne ferme aucune porte — la flèche mène à la fiche client", async () => {
-    // **Depuis le 31 août 2026 au soir, elle mène à la fiche CLIENT** et non
-    // plus à celle du chantier : *« je veux tout le temps revenir à cette page
-    // et seulement celle-là »* (`ARCHITECTURE.md` §230).
+  await cas("reprendre ne ferme aucune porte — le devis garde une sortie qui SORT", async () => {
+    // **Ce que ce cas défend, et ce qu'il a cessé de défendre — 9 septembre
+    // 2026.** Il exigeait une destination écrite d'avance, la fiche client de
+    // sa règle du 31 août. Depuis que la flèche ramène à la page d'où l'on
+    // vient (`src/lib/journal-de-navigation.ts`), cette destination dépend du
+    // chemin parcouru : l'exiger ici reviendrait à réclamer le détour qu'il a
+    // fait retirer (`CLAUDE.md` §5 bis).
     //
-    // Ce que ce cas défend n'a pas changé pour autant : que le devis ait une
-    // sortie, et qu'elle rouvre ce qu'il avait sous la main. La fiche client
-    // porte ses photos et son anneau depuis §226 — reprendre ne ferme donc
-    // toujours aucune porte, et la fiche du chantier reste à la barre du bas.
+    // Reste ce qui n'a jamais dépendu du chemin, et qui est le vrai sujet de
+    // cette suite : reprendre un chantier ne doit pas fabriquer un cul-de-sac.
+    // La flèche existe, elle mène dans Atlas, et elle QUITTE le devis — une
+    // page nue sans retour possible est le geste le plus coûteux de
+    // l'application. Où elle mène est éprouvé là où c'est le sujet
+    // (`test-retour-page-davant-e2e.ts`).
     const retour = page.locator('[data-atlas="retour-du-devis"]').first();
     await retour.waitFor({ state: "visible", timeout: 15000 });
     const cible = await retour.getAttribute("href");
     assert.ok(
-      cible?.startsWith(`/chantiers/${id}/coordonnees`),
-      `la flèche du devis mène à « ${cible} » : ce n'est pas la fiche client de ce chantier`
+      cible?.startsWith("/") && !cible.startsWith("//"),
+      `la flèche du devis mène à « ${cible} » : ce n'est pas un écran d'Atlas`
+    );
+    await retour.click();
+    await page.waitForURL((u) => !u.pathname.endsWith("/devis-complet"), { timeout: 30_000 });
+    assert.ok(
+      !new URL(page.url()).pathname.endsWith("/devis-complet"),
+      `la flèche a laissé sur le devis : ${page.url()}`
     );
   });
 

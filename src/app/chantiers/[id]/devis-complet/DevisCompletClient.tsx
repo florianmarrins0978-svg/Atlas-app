@@ -38,6 +38,8 @@ import {
 } from "@/lib/reduction-devis";
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
+import FlecheRetour from "@/components/atlas/FlecheRetour";
+import { coordonneesDepuisLeDevis } from "@/lib/retour-du-devis";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { useAppuiLong } from "@/components/atlas/useAppuiLong";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
@@ -636,27 +638,21 @@ export default function DevisCompletClient(props: Props) {
           promesse fausse. L'assistant, lui, reste utile même figé — relire un
           prix passé ne modifie rien.
 
-          **LE RETOUR MÈNE À LA FICHE CLIENT — 31 août 2026, le soir.** *« Je
-          veux tout le temps revenir à cette page et seulement celle-là ! La
-          page fiche client »*. Le matin même, le détour n'avait été posé que
-          pour un devis SANS client ; l'autre moitié le déposait sur la fiche du
-          chantier, où il n'a rien à faire. Et depuis le 8 septembre, la flèche
-          ramène au PLANNING quand on en vient — deux retours pour retrouver sa
-          journée, c'était un de trop. La règle est ailleurs, sans écran ni base
-          (`src/lib/retour-du-devis.ts`) — et elle referme le chemin :
-          enregistrer la fiche ramène ici. */}
+          **LE RETOUR RAMÈNE OÙ IL ÉTAIT — 9 septembre 2026.** *« J'ai cliqué
+          sur ouvrir le devis, une fois sur le devis je clique sur retour,
+          j'arrive sur la page de la fiche client — or le bouton retour doit
+          marcher comme un vrai bouton marche arrière. »* C'est cet écran-là
+          qu'il regardait, et c'est le cinquième signalement de la même racine
+          (`src/lib/journal-de-navigation.ts`).
+
+          **Sa règle du 31 août 2026 devient le repli**, et elle n'est pas
+          abandonnée : *« je veux tout le temps revenir à cette page et
+          seulement celle-là ! La page fiche client »*. Quand il n'y a pas de
+          page d'avant — l'application ouverte droit sur ce devis —, la flèche y
+          va toujours (`src/lib/retour-du-devis.ts`). Ce qui a disparu, c'est le
+          détour imposé alors qu'il venait d'ailleurs. */}
       <div className="mx-auto mb-3 flex w-full max-w-[820px] items-start justify-between sm:mb-4">
-        <a
-          href={props.retour.href}
-          aria-label={props.retour.libelle}
-          data-atlas="retour-du-devis"
-          className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ backgroundColor: colors.rustTint }}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="2.4">
-            <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </a>
+        <FlecheRetour repli={props.retour} diametre={36} fleche={15} marque="retour-du-devis" />
         <div className="flex items-start gap-2">
           <BoutonAssistant />
           {!fige && <DicterDansLeDevis chantierId={props.chantierId} onApplique={appliquerRetouches} />}
@@ -858,9 +854,30 @@ export default function DevisCompletClient(props: Props) {
                 onFini={() => majClientDuDevisAction(props.clientId!, { telephone: client.telephone })} />
             </>
           ) : (
-            <p className="text-[13px]" style={{ color: colors.muted }}>
-              Aucun client rattaché à ce chantier.
-            </p>
+            <>
+              <p className="text-[13px]" style={{ color: colors.muted }}>
+                Aucun client rattaché à ce chantier.
+              </p>
+              {/* **LE CHEMIN VERS LA FICHE VIT ICI, PLUS DANS LA FLÈCHE —
+                  9 septembre 2026.** Le 31 août, la flèche de retour avait été
+                  détournée vers le formulaire de fiche client parce que cette
+                  phrase était un cul-de-sac : elle disait ce qui manquait sans
+                  dire où le réparer. La flèche est redevenue un retour ; le
+                  chemin, lui, se pose là où le manque se lit — et il s'annonce,
+                  au lieu de se cacher derrière un chevron qui dit « reculer ».
+
+                  Sur un devis figé, rien : le document ne se modifie plus, et
+                  remplir la fiche ne le changerait pas. */}
+              {!fige && (
+                <Link
+                  href={coordonneesDepuisLeDevis(props.chantierId)}
+                  className="mt-2 inline-block text-[13px] underline"
+                  style={{ color: colors.rust }}
+                >
+                  Renseigner la fiche client
+                </Link>
+              )}
+            </>
           )}
           {/* **L'adresse des travaux ne s'affiche que si elle diffère.**
               Sinon elle réapparaissait plus bas, sans étiquette, comme une
