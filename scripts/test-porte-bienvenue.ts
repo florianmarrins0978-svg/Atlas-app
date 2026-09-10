@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { CHEMINS_PUBLICS } from "../src/lib/chemins-publics";
 import { estEcranSansNavigation } from "../src/lib/ecrans-sans-navigation";
@@ -90,7 +90,20 @@ test("les deux gestes de la porte mènent quelque part", () => {
   assert.match(CODE, /href="\/login"/);
   // Et le retour existe dans les deux sens : sans lui, « Se connecter » est un
   // aller simple pour qui découvre qu'il n'a pas de compte.
-  const login = sansCommentaires(lire("src/app/login/page.tsx"));
+  /**
+   * **TOUT le dossier de la porte, et non son seul `page.tsx`.** La regle
+   * defendue est « depuis /login on revient a la porte et l'on va a la
+   * creation » — elle ne dit rien de la LIGNE ou le lien est ecrit. Le
+   * 10 septembre 2026 la porte s'est scindee en `page.tsx` (serveur) et
+   * `FormulaireConnexion.tsx` (ecran) : cette suite a rougi sur un
+   * deplacement de fichier, alors que les deux liens etaient la. Une suite
+   * qui fige un fichier rend l'ecran impossible a rearranger
+   * (`CLAUDE.md` §5 bis).
+   */
+  const login = readdirSync("src/app/login")
+    .filter((f) => f.endsWith(".tsx"))
+    .map((f) => sansCommentaires(lire(`src/app/login/${f}`)))
+    .join("\n");
   assert.match(login, /href="\/bienvenue"/, "on ne peut plus revenir à la porte depuis /login");
   assert.match(login, /href="\/creer-un-compte"/, "/login ne mène pas à la création");
 });
