@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Libérer une demi-journée, et la reposer ailleurs</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="libérer-une-demi-journée-et-la-reposer-ailleurs">Libérer une demi-journée, et la reposer ailleurs</h1>
+<p><strong>10 septembre 2026.</strong> Votre planche <code>liberer-une-demi-journee.html</code>, essayée puis retenue : <em>« La planche 1 est bonne tu peux la coder »</em>. Ce document dit ce qui est fait, ce qui a été corrigé en cours de route, ce qui a été mesuré, et ce qui reste ouvert.</p>
+<hr>
+<h2 id="ce-que-vous-avez-demandé-et-ce-qui-est-codé">Ce que vous avez demandé, et ce qui est codé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Votre demande</th>
+<th>Ce qui est fait</th>
+</tr></thead><tbody>
+<tr>
+<td><em>« Quand je clique sur déplacer, le bouton matin/aprem apparaît mais les deux sont vides, blancs »</em></td>
+<td>l'interrupteur s'ouvre <strong>éteint des deux côtés</strong> — il pose une question, il ne décrit pas un état</td>
+</tr>
+<tr>
+<td><em>« Je clique sur le matin, il devient vert et le matin du vendredi devient libre »</em></td>
+<td>la demi-journée sort du chantier ; la journée se rouvre, pastille comprise</td>
+</tr>
+<tr>
+<td><em>« Une demi-journée de Mr Julien sort »</em></td>
+<td>elle attend dans le tiroir du bas, sous « Sans date »</td>
+</tr>
+<tr>
+<td><em>« À la place on ajoute un chantier comme d'habitude »</em></td>
+<td>le moment libéré reçoit n'importe quel autre chantier, par le geste habituel</td>
+</tr>
+<tr>
+<td><em>« La demi-journée retirée peut être replacée »</em></td>
+<td>on la touche en bas, puis on touche la demi-journée qui l'accueille — deux gestes, comme poser un chantier</td>
+</tr>
+</tbody></table></div>
+<p><strong>Seules les demi-journées que le chantier occupe CE jour-là sont offertes.</strong> Un chantier qui n'a que le matin n'a pas d'après-midi à rendre.</p>
+<hr>
+<h2 id="ce-que-ça-a-demandé-sous-le-capot-et-pourquoi-cétait-inévitable">Ce que ça a demandé sous le capot, et pourquoi c'était inévitable</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Un chantier posé se décrivait par trois nombres : un jour, un moment de départ, une durée. Trois nombres qui ne savent dire qu'<strong>un bloc d'un seul tenant</strong> — aucun endroit où écrire « le matin est rendu, l'après-midi tient ».</p>
+<p>C'est d'ailleurs ce qui produisait votre question de la veille : <em>« quand je clique sur déplacer l'aprem, c'est le 15 et le 11 qui bougent »</em>. Le bouton ne pouvait que faire glisser le bloc entier.</p>
+<p>Le chantier porte désormais <strong>où chacune de ses demi-journées est posée</strong>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>ce que le chantier <strong>demande</strong></td>
+<td>la durée vendue au devis — elle ne bouge pas</td>
+</tr>
+<tr>
+<td>où il est <strong>posé</strong></td>
+<td>demi-journée par demi-journée</td>
+</tr>
+<tr>
+<td>l'écart entre les deux</td>
+<td>ce qui <strong>attend une place</strong>, en bas</td>
+</tr>
+</tbody></table></div>
+<p><strong>Rien n'a été recopié pour vos chantiers déjà posés, et c'est voulu</strong> : un chantier sans détail garde son bloc calculé. Faire l'inverse — lire « aucun détail » comme « rien d'occupé » — aurait libéré d'un coup toutes vos demi-journées déjà prises, et l'écran d'envoi aurait proposé à un client un jour où quelqu'un travaille.</p>
+<hr>
+<h2 id="trois-défauts-trouvés-en-regardant-lécran-pas-en-lançant-des-contrôles">Trois défauts trouvés en REGARDANT l'écran, pas en lançant des contrôles</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Les trois étaient verts en tests. Ils sont corrigés, et à la racine.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'on lisait</th>
+<th>Ce qui n'allait pas</th>
+</tr></thead><tbody>
+<tr>
+<td>le <strong>lendemain</strong> se noircissait au calendrier</td>
+<td>l'écran recalculait le bloc au lieu de lire où le chantier est posé : une journée qui repart de l'après-midi débordait sur le matin suivant</td>
+</tr>
+<tr>
+<td>« une journée » sous le nom, « ½ journée à poser » en bas</td>
+<td>ça faisait une journée et demie pour un chantier d'un jour. La carte annonce désormais ce que le chantier <strong>occupe</strong>, comme votre planche le compte</td>
+</tr>
+<tr>
+<td>le tiroir du bas restait <strong>fermé</strong></td>
+<td>il ne s'ouvrait que pour « Sans date » et « En attente du client ». Une demi-journée rendue toute seule n'apparaissait donc <strong>nulle part</strong> — le geste marchait, et rien ne permettait de le finir</td>
+</tr>
+</tbody></table></div>
+<p>Le troisième aurait rendu votre demande inutilisable le jour où vous n'auriez rien d'autre en attente. Il a été trouvé par la suite qui rejoue votre geste en entier, et non par les contrôles écrits autour du code.</p>
+<hr>
+<h2 id="le-défaut-le-plus-cher-et-il-ne-venait-pas-de-vous">Le défaut le plus cher, et il ne venait pas de vous</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La date que votre client accepte ne posait pas le chantier au bon endroit.</strong></p>
+<p>Quand un client retient une date, Atlas planifie le chantier tout seul. Cette partie-là écrivait le jour sans écrire le détail des demi-journées : un chantier déjà posé ailleurs y restait affiché, et la date choisie par le client n'apparaissait <strong>nulle part</strong> sur votre planning.</p>
+<p>Trouvé en cherchant pourquoi une suite rougissait, corrigé à la racine — les deux chemins qui posent un chantier passent désormais par la même porte — et tenu par un contrôle que j'ai vu rougir contre l'ancien code : <em>« le chantier occupe encore le 5 mars au lieu du 10 mars choisi par le client »</em>.</p>
+<hr>
+<h2 id="ce-qui-a-été-supprimé">Ce qui a été supprimé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>deplacerChantierAction</code> — l'ancien « Déplacer » du planning. Plus personne ne l'appelait une fois le nouveau geste en place, et un code mort se lit encore : la prochaine correction pourrait y être faite pour rien.</p>
+<p>La fonction reste employée à un seul endroit, l'assistant : quand vous dites « mets Mr. Julien l'après-midi », c'est elle qui répond.</p>
+<hr>
+<h2 id="ce-qui-a-été-mesuré">Ce qui a été mesuré</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>types, lint, mémoire</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td>pansement, code mort, couches, flèches</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td>les règles de la pose demi-journée par demi-journée (12 cas)</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td><strong>votre geste, du début à la fin, dans un navigateur</strong> (8 cas)</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td>la batterie complète</td>
+<td><em>voir plus bas</em></td>
+</tr>
+</tbody></table></div>
+<p>Le contrôle de votre geste part du planning, pose un chantier d'une journée, rend son matin, le retrouve en bas, et le repose sur un autre jour — en vérifiant la base après chaque appui, parce que l'écran repeint avant que le serveur ait répondu.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>« Déplacer » n'a pas d'« Annuler ».</strong> Une fois l'interrupteur ouvert, il n'y a pas de geste pour refermer sans choisir : on sort en fermant la journée. Votre planche n'en montrait pas, donc rien n'a été ajouté de mon propre chef — et libérer se défait de toute façon, puisque le morceau se repose. <strong>Dites-moi si vous le voulez.</strong></p>
+<p><strong>Poser un chantier en deux morceaux d'un seul geste</strong> n'existe toujours pas : il faut le poser entier, puis rendre ce qui ne va pas. Suffisant pour ce que vous décriviez ; à rouvrir si ça vous gêne.</p>
+<hr>
+<p><strong>Pour voir le changement dans l'application</strong>, votre espace doit redémarrer : l'écran <strong>Réglages</strong> dit quelle version est servie.</p>
+</main>
+</body>
+</html>

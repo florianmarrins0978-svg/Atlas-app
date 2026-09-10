@@ -1,7 +1,12 @@
 import { eq, sql } from "drizzle-orm";
 import type { DbOrTx } from "../db/client";
-import { chantiers, equipesDuChantier } from "../db/schema";
-import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, type JourIso, type Moment } from "@/lib/disponibilites";
+import { chantiers, creneauxChantier, equipesDuChantier } from "../db/schema";
+import {
+  DUREE_PAR_DEFAUT_DEMI_JOURNEES,
+  type Creneau,
+  type JourIso,
+  type Moment,
+} from "@/lib/disponibilites";
 
 /**
  * Quels chantiers peuvent encore occuper une fenêtre qui commence à `debut`.
@@ -69,6 +74,43 @@ export async function equipesParChantier(
     const siennes = par.get(l.chantierId) ?? {};
     siennes[l.demi] = (siennes[l.demi] ?? 0) + 1;
     par.set(l.chantierId, siennes);
+  }
+  return par;
+}
+
+/**
+ * OÙ CHAQUE CHANTIER EST POSÉ, quand il ne tient plus en un seul bloc.
+ *
+ * **Écrite à côté de `equipesParChantier`, et pour la même raison :** les trois
+ * chemins d'occupation — l'écran d'envoi, la revérification de la réponse du
+ * client, le planning — doivent répondre la même chose à « quelles
+ * demi-journées sont prises ». Deux façons de le demander finiraient par
+ * diverger (`CLAUDE.md` §3), et le prix serait un client qui retient un jour
+ * déjà pris.
+ *
+ * **Une entrée absente n'est pas un chantier libre** : c'est un chantier qui
+ * n'a jamais été morcelé, et il vaut le bloc que ses trois colonnes décrivent
+ * (`creneauxPoses`). Rien n'a été recopié à la migration 0085.
+ */
+export async function creneauxParChantier(
+  tx: DbOrTx,
+  entrepriseId: string
+): Promise<Map<string, Creneau[]>> {
+  const lignes = await tx
+    .select({
+      chantierId: creneauxChantier.chantierId,
+      jour: creneauxChantier.jour,
+      demi: creneauxChantier.demi,
+    })
+    .from(creneauxChantier)
+    .where(eq(creneauxChantier.entrepriseId, entrepriseId));
+
+  const par = new Map<string, Creneau[]>();
+  for (const l of lignes) {
+    if (l.demi !== "matin" && l.demi !== "apres_midi") continue;
+    const siens = par.get(l.chantierId) ?? [];
+    siens.push({ jour: l.jour, moment: l.demi } as Creneau);
+    par.set(l.chantierId, siens);
   }
   return par;
 }

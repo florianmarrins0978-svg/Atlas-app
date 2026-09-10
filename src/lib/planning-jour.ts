@@ -12,7 +12,7 @@
  * peindre une couleur qui contredit le compte écrit juste à côté.
  */
 
-import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, type Moment } from "@/lib/disponibilites";
+import { type Moment } from "@/lib/disponibilites";
 
 /**
  * Une demi-journée. Le même vocabulaire que `creneauDebut` en base et que

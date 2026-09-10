@@ -31,7 +31,36 @@ un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc 
 `completer-env-local.sh`, pas seulement à `src/server/env.ts`.
 
 ---
-## Dernier lot — UNE SESSION PREND SON DOSSIER TOUTE SEULE (10 septembre 2026)
+## Dernier lot — UNE DEMI-JOURNÉE SE LIBÈRE ET SE REPOSE (10 septembre 2026)
+
+| | |
+|---|---|
+| sa planche | `appli/liberer-une-demi-journee.html`, essayée puis retenue — *« je clique sur le matin, le matin du vendredi devient libre, et une demi-journée de Mr Julien sort ; la demi-journée retirée peut être replacée »* |
+| ce qui manquait | un chantier posé était un **bloc d'un seul tenant** : aucun endroit où écrire « le matin est rendu, l'après-midi tient » |
+| la table | `creneaux_chantier` (migration 0085) — une ligne par demi-journée occupée |
+| la règle | `duree_demi_journees` = ce qu'il **demande** · les créneaux = où il est **posé** · l'écart = ce qui **attend** en bas |
+| retiré | `deplacerChantierAction` — plus personne ne l'appelait |
+| les suites | `test-creneaux-chantier.ts` (12 cas), `test-liberer-une-demi-journee-e2e.ts` (8, **son geste de bout en bout**) |
+| le détail | `ARCHITECTURE.md` §322 |
+
+**LES DEUX PIÈGES À NE PAS REFABRIQUER.**
+
+1. **`ecrireLesCreneaux` est le SEUL écrivain** de `date_planifiee` et
+   `creneau_debut`, qu'il dérive des créneaux. Écrire l'un sans l'autre fait
+   diverger deux vérités, et un chantier finit posé deux fois.
+2. **Aucun créneau écrit vaut le BLOC calculé**, jamais « rien d'occupé » — la
+   migration n'a rien repris, délibérément. Le repli vit dans `creneauxPoses`
+   (`src/lib/disponibilites.ts`) et nulle part ailleurs : le contourner libère
+   d'un coup toutes les demi-journées déjà prises, et l'écran d'envoi propose au
+   client un jour où quelqu'un travaille.
+
+**Et trois défauts se sont vus À L'ÉCRAN, pas en suites** : le lendemain
+noirci au calendrier, « une journée » écrit sous un chantier qui n'occupe plus
+qu'une moitié, et le tiroir du bas qui ne s'ouvrait pas pour un morceau seul.
+Regarder une capture fait partie du travail (`CLAUDE.md` §5).
+
+---
+## Le même jour — UNE SESSION PREND SON DOSSIER TOUTE SEULE (10 septembre 2026)
 
 | | |
 |---|---|
@@ -51,7 +80,8 @@ au milieu du travail, ou condamné pour toujours.
 commande. Créer, c'est le métier de `sessions:preparer`, seul à savoir installer
 les dépendances et recopier le `.env`.
 
-## Dernier lot — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
+---
+## Lot précédent — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
 
 | | |
 |---|---|

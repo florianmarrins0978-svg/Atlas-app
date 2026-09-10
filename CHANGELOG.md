@@ -58,6 +58,52 @@ batterie les a sortis, et ils sont réparés ici :
   25 août : deux traits autour d'un mot, pas un trait qui file d'un mot au bord.
   Le contrôle sait maintenant les distinguer — et il rougit toujours sur la
   forme solitaire, vérifié en la lui montrant.
+### Une demi-journée se libère, attend en bas, et se repose ailleurs
+
+**Sa planche, essayée puis retenue** (`appli/liberer-une-demi-journee.html`) :
+*« quand je clique sur déplacer, le bouton matin/aprem apparaît mais les deux
+sont vides, blancs. Je clique sur le matin, il devient vert et le matin du
+vendredi devient libre, et une demi-journée de Mr Julien sort ; à la place on
+ajoute un chantier comme d'habitude, et la demi-journée retirée peut être
+replacée. »*
+
+Le dépôt n'avait **aucun endroit** où écrire « le matin est rendu, l'après-midi
+tient » : un chantier posé était un bloc d'un seul tenant. D'où la table
+`creneaux_chantier` (migration 0085) — une ligne par demi-journée occupée. La
+durée, elle, ne bouge pas : c'est ce que le devis a vendu, et l'écart entre ce
+qu'il demande et ce qu'il occupe est justement ce qui attend une place.
+
+| | |
+|---|---|
+| `duree_demi_journees` | ce qu'il **demande** |
+| `creneaux_chantier` | où il est **posé** |
+| l'écart | ce qui **attend**, dans le tiroir du bas |
+
+**Rien n'a été repris pour les chantiers déjà posés, délibérément** : le repli
+« aucun créneau écrit vaut le bloc calculé » vit dans une seule fonction
+(`creneauxPoses`). Lire « aucune ligne » comme « rien d'occupé » aurait libéré
+d'un coup toutes les demi-journées déjà prises, et l'écran d'envoi aurait
+proposé au client un jour où quelqu'un travaille.
+
+**UN QUATRIÈME, ET C'EST LE PLUS CHER : la date acceptée par le client ne
+posait pas le chantier.** Le lot affirmait « un seul écrivain » ; c'était faux.
+`envois-devis.ts` pose lui aussi un chantier — quand le client retient une date
+— et il écrivait `date_planifiee` sans toucher aux créneaux : le chantier
+restait affiché à son ancienne place, et la date du client n'apparaissait nulle
+part au planning. La fonction est passée dans
+`src/server/repositories/creneaux-poses.ts`, que les deux importent, et un
+contrôle la tient (`test-correction-devis.ts`), vu rouge contre l'ancien code.
+
+**Trois défauts que les suites ne voyaient pas, et qui sont corrigés à la
+racine :** le calendrier noircissait le **lendemain** (l'écran recalculait le
+bloc au lieu de lire les créneaux) ; la carte annonçait « une journée » là où
+la planche compte ce qui est **occupé** ; et le tiroir du bas ne s'ouvrait pas
+pour une demi-journée rendue seule — le morceau n'existait alors nulle part.
+
+Les deux premiers viennent d'une **capture regardée**, le troisième de la suite
+navigateur qui rejoue son geste en entier
+(`scripts/test-liberer-une-demi-journee-e2e.ts`, 8 contrôles). Le pourquoi de
+chaque choix est dans `ARCHITECTURE.md` §322.
 
 ### Planche — facturer sans passer par la case devis
 

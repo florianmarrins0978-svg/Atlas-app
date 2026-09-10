@@ -12,11 +12,12 @@ import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/li
 import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
   cleCreneau,
-  creneauxDuChantier,
+  creneauxPoses,
   dureeDuChantier,
-  DUREE_PAR_DEFAUT_DEMI_JOURNEES,
+  type Creneau,
   type JourIso,
 } from "@/lib/disponibilites";
+import { demiJourneesAPoser } from "@/lib/creneaux-chantier";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
 import {
   joursAbsentsDuChantier,
@@ -48,7 +49,6 @@ import {
   ditQuiPart,
   etatDemi,
   MOT_DEMI,
-  departDuChantier,
   occupationDemi,
   type Demi,
   type EtatDemi,
@@ -77,7 +77,8 @@ type FeuilleEtRetour = FeuilleDuChantier & {
 import { NOTE_MAX } from "@/lib/note-chantier";
 import {
   basculerEquipeAction,
-  deplacerChantierAction,
+  libererDemiJourneeAction,
+  reposerDemiJourneeAction,
   ecrireNoteChantierAction,
   deplanifierChantierAction,
   planifierChantierAction,
@@ -130,6 +131,15 @@ export type ChantierPlanning = {
   datePlanifiee: string | null;
   creneauDebut: string | null;
   dureeDemiJournees: number | null;
+  /**
+   * LES DEMI-JOURNÉES OÙ IL EST POSÉ, quand il ne tient plus en un bloc
+   * (migration 0085, sa demande du 10 septembre 2026).
+   *
+   * **Vide vaut le bloc calculé de `datePlanifiee` + `creneauDebut` + la
+   * durée** : rien n'a été recopié à la migration, et lire « aucun créneau »
+   * comme « rien d'occupé » viderait le calendrier de tout ce qui est déjà pris.
+   */
+  creneaux?: readonly { jour: string; moment: "matin" | "apres_midi" }[] | null;
   dureePrevue?: string | null;
   /** Les rangs d'équipe cochés, demi-journée par demi-journée (migration 0058). */
   equipes: EquipesParDemi;
@@ -183,16 +193,48 @@ function plusDeJours(iso: JourIso, n: number): JourIso {
   return d.toISOString().slice(0, 10);
 }
 
-/** Les créneaux qu'occupe un chantier posé — week-ends sautés. */
+/**
+ * Les créneaux qu'occupe un chantier posé — **ceux qu'il porte**, sinon son bloc.
+ *
+ * **Il recalculait le bloc, et c'est la capture qui l'a montré** (10 septembre
+ * 2026) : un chantier d'une journée dont on rend le matin garde sa durée et
+ * repart de l'après-midi — le bloc de deux demi-journées débordait alors sur le
+ * MATIN DU LENDEMAIN, qui se noircissait au calendrier. Le jour d'après passait
+ * pour occupé par un chantier qui n'y est pas, et l'écran d'envoi le retirait
+ * des dates proposées au client.
+ *
+ * `creneauxPoses` est la seule réponse à « quelles demi-journées prend-il »
+ * (`src/lib/disponibilites.ts`) : le repli sur le bloc y vit déjà, pour les
+ * chantiers d'avant la migration 0085 qui n'ont pas de créneaux écrits.
+ */
 function creneauxDe(c: ChantierPlanning) {
   if (!c.datePlanifiee) return [];
-  return creneauxDuChantier(
-    {
-      jour: c.datePlanifiee,
-      moment: c.creneauDebut === "apres_midi" ? "apres_midi" : "matin",
-    },
-    c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES
-  );
+  return creneauxPoses({
+    jour: c.datePlanifiee,
+    moment: c.creneauDebut === "apres_midi" ? "apres_midi" : "matin",
+    dureeDemiJournees: c.dureeDemiJournees,
+    creneaux: c.creneaux as Creneau[] | undefined,
+  });
+}
+
+/**
+ * CE QUE LE CHANTIER OCCUPE ENCORE — et non ce qu'il demande.
+ *
+ * **La planche `appli/liberer-une-demi-journee.html` compte les demi-journées
+ * POSÉES**, et elle a raison : une fois le matin rendu, lire « une journée »
+ * sous le nom pendant que le tiroir annonce « ½ journée à poser » fait une
+ * journée et demie pour un chantier d'un jour. Deux vérités à trois
+ * centimètres, c'est ce qu'il a photographié le 7 septembre 2026.
+ *
+ * **Sa durée, elle, ne bouge pas** : c'est ce que le devis a vendu, et c'est
+ * l'écart entre les deux qui fait apparaître le morceau en bas.
+ *
+ * Tant qu'aucune date n'est posée, il n'occupe rien : c'est alors sa durée
+ * qu'on annonce, faute d'autre chose à dire.
+ */
+function ditCeQuIlOccupe(c: ChantierPlanning): string {
+  const poses = creneauxDe(c).length;
+  return ditLaDuree(poses > 0 ? poses : dureeDuChantier(c));
 }
 
 export default function PlanningClient({
@@ -410,6 +452,32 @@ export default function PlanningClient({
    */
   const sansDate = useMemo(
     () => visibles.filter((c) => getPlanificationEtat(c) === "a_planifier"),
+    [visibles]
+  );
+
+  /**
+   * LES DEMI-JOURNÉES QUI ATTENDENT UNE PLACE — sa demande du 10 septembre 2026.
+   *
+   * Un chantier posé sur MOINS de demi-journées qu'il n'en demande a rendu le
+   * reste : c'est ce qu'il voit dans « Sans date », et ce qu'il repose où il
+   * veut. La règle vit dans `demiJourneesAPoser`, jamais recopiée ici.
+   */
+  const morceaux = useMemo(
+    () =>
+      visibles
+        .filter((c) => c.datePlanifiee)
+        .map((c) => ({
+          chantier: c,
+          combien: demiJourneesAPoser(
+            {
+              jour: c.datePlanifiee,
+              moment: c.creneauDebut,
+              dureeDemiJournees: c.dureeDemiJournees,
+            },
+            (c.creneaux ?? []) as Creneau[]
+          ),
+        }))
+        .filter((m) => m.combien > 0),
     [visibles]
   );
 
@@ -679,6 +747,15 @@ export default function PlanningClient({
     // fixé (voir `poser`). L'état qui la portait s'en va avec elle.
     | { quoi: "ajout-qui"; cle: string };
   const [ouvert, setOuvert] = useState<Ouvert | null>(null);
+  /**
+   * LE MORCEAU QU'IL TIENT AU DOIGT — une demi-journée qui attend sa place.
+   *
+   * Sa demande du 10 septembre : *« la demi-journée de Mr Julien qui a été
+   * retirée peut être replacée »*. On la touche dans « Sans date », puis on
+   * touche la demi-journée qui l'accueille — deux gestes, comme poser un
+   * chantier.
+   */
+  const [morceauEnMain, setMorceauEnMain] = useState<string | null>(null);
 
   /** La feuille de chantier ouverte, et dans quelle carte. */
   const [feuille, setFeuille] = useState<{ chantierId: string; cle: string } | null>(null);
@@ -783,25 +860,64 @@ export default function PlanningClient({
    * rechargement, et sur un chantier de trois jours ce sont deux jours de
    * travail qui disparaîtraient de l'affichage.
    */
-  function deplacer(chantierId: string, demi: Demi) {
+  /**
+   * CE QUE LE SERVEUR REND, dans la forme que l'écran repeint.
+   *
+   * `datePlanifiee` et `creneauDebut` restent le premier créneau : vingt
+   * endroits les lisent encore, et l'écran ne doit pas les laisser diverger de
+   * ce que la base vient d'écrire (`resumeDesCreneaux`, côté dépôt).
+   */
+  function etatDesCreneaux(creneaux: { jour: string; moment: Demi }[]) {
+    const ordre = [...creneaux].sort((a, b) =>
+      a.jour === b.jour ? (a.moment === b.moment ? 0 : a.moment === "matin" ? -1 : 1) : a.jour < b.jour ? -1 : 1
+    );
+    return {
+      creneaux: ordre,
+      datePlanifiee: ordre[0]?.jour ?? null,
+      creneauDebut: ordre[0]?.moment ?? null,
+    };
+  }
+
+  /**
+   * LIBÉRER UNE DEMI-JOURNÉE — et repeindre avec ce que la base rend.
+   *
+   * **Sa demande du 10 septembre 2026**, planche retenue : la demi-journée sort
+   * du chantier, le jour se libère, et le morceau attend une place en bas.
+   *
+   * **La durée du chantier ne bouge pas**, et c'est ce qui rend le morceau
+   * visible : le chantier demande toujours autant, il est simplement posé sur
+   * moins. L'écart s'affiche dans « Sans date ».
+   */
+  function liberer(chantierId: string, jour: JourIso, demi: Demi) {
     setOuvert(null);
     enTransition(async () => {
-      const r = await deplacerChantierAction(chantierId, demi);
+      const r = await libererDemiJourneeAction(chantierId, jour, demi);
       if (!r.succes) {
-        // **Un refus avalé est un défaut muet**, et le dépôt l'a déjà payé le
-        // 11 août 2026 : « Impossible d'enregistrer la note » sans que personne
-        // puisse savoir laquelle des quatre causes s'appliquait. Ici le `return`
-        // seul rendait « Déplacer » indistinguable d'un bouton mort — c'est
-        // précisément ce qu'il a signalé le 23 août.
-        //
-        // Journalisé plutôt que levé : le message d'une exception d'action
-        // serveur n'arrive jamais jusqu'à lui (`AGENTS.md`).
-        console.error("Déplacement refusé", { chantierId, demi, erreur: r.erreur });
+        // Un refus avalé est un défaut muet (`AGENTS.md`) : le message d'une
+        // action serveur n'arrive jamais jusqu'à lui, on le journalise donc.
+        console.error("Libération refusée", { chantierId, jour, demi, erreur: r.erreur });
         return;
       }
-      setChantiers((liste) =>
-        liste.map((c) => (c.id === chantierId ? { ...c, ...r.etat } : c))
-      );
+      setChantiers((liste) => liste.map((c) => (c.id === chantierId ? { ...c, ...etatDesCreneaux(r.creneaux) } : c)));
+    });
+  }
+
+  /**
+   * REPOSER LE MORCEAU qu'il tient au doigt, sur la demi-journée touchée.
+   *
+   * *« La demi-journée de Mr Julien qui a été retirée peut être replacée. »*
+   * Elle se pose où il veut — un autre jour, un autre moment ; le serveur
+   * refuse seulement de poser plus que le chantier ne demande.
+   */
+  function reposer(chantierId: string, jour: JourIso, demi: Demi) {
+    setMorceauEnMain(null);
+    enTransition(async () => {
+      const r = await reposerDemiJourneeAction(chantierId, jour, demi);
+      if (!r.succes) {
+        console.error("Repose refusée", { chantierId, jour, demi, erreur: r.erreur });
+        return;
+      }
+      setChantiers((liste) => liste.map((c) => (c.id === chantierId ? { ...c, ...etatDesCreneaux(r.creneaux) } : c)));
     });
   }
 
@@ -936,7 +1052,9 @@ export default function PlanningClient({
     occupationDe,
     chantiersDuJour,
     basculerEquipe,
-    deplacer,
+    liberer,
+    reposer,
+    morceauEnMain,
     retirerDuJour,
     poser,
     taches,
@@ -1287,7 +1405,7 @@ export default function PlanningClient({
                           className="mt-[3px] block text-[12.5px]"
                           style={{ color: jour < aujourdHui ? colors.muted : colors.or }}
                         >
-                          {ditLaDuree(dureeDuChantier(c))}
+                          {ditCeQuIlOccupe(c)}
                         </span>
                         {/* **Le lieu, sous la durée.** C'est la deuxième
                             question après « qui » — et sur quatre clients qui
@@ -1381,6 +1499,9 @@ export default function PlanningClient({
         <TiroirDuBas
           ecriture={ouvertes.ecriture}
           sansDate={sansDate}
+          morceaux={morceaux}
+          morceauEnMain={morceauEnMain}
+          onPrendreMorceau={(id) => setMorceauEnMain((tenu) => (tenu === id ? null : id))}
           attenteClient={attenteClient}
           jourTouche={jourTouche}
           poser={poser}
@@ -1781,7 +1902,12 @@ type GestesCarte = {
   occupationDe: (jour: JourIso, demi: Demi) => { pris: readonly ChantierPlanning[]; charge: number };
   chantiersDuJour: (jour: JourIso) => ChantierPlanning[];
   basculerEquipe: (chantierId: string, demi: Demi, rang: number) => void;
-  deplacer: (chantierId: string, demi: Demi) => void;
+  /** Rendre une demi-journée que ce chantier occupait (10 septembre 2026). */
+  liberer: (chantierId: string, jour: JourIso, demi: Demi) => void;
+  /** Reposer le morceau tenu au doigt sur la demi-journée touchée. */
+  reposer: (chantierId: string, jour: JourIso, demi: Demi) => void;
+  /** Le chantier dont une demi-journée attend une place, s'il en tient une. */
+  morceauEnMain: string | null;
   retirerDuJour: (chantierId: string) => void;
   poser: (chantierId: string, jour: JourIso) => void;
   taches: Record<string, FeuilleEtRetour>;
@@ -1799,10 +1925,19 @@ function LigneLibre({
   demi,
   occupation,
   marge = 16,
+  onPoser,
 }: {
   demi: Demi;
   occupation: { pris: readonly ChantierPlanning[]; charge: number };
   marge?: number;
+  /**
+   * OÙ REPOSER LE MORCEAU qu'il tient au doigt — absent le reste du temps.
+   *
+   * **Le geste ne s'offre que quand il tient quelque chose** : un « Poser ici »
+   * qui vivrait sur chaque demi-journée libre ferait un bouton par ligne pour
+   * un geste qu'il fait deux fois par mois.
+   */
+  onPoser?: () => void;
 }) {
   return (
     <div
@@ -1822,6 +1957,17 @@ function LigneLibre({
       <span data-atlas="compte" className="ml-auto text-[12px]" style={{ color: colors.muted }}>
         {ditLeCompteDemi(occupation)}
       </span>
+      {onPoser && (
+        <button
+          type="button"
+          data-atlas="poser-le-morceau"
+          onClick={onPoser}
+          className="min-h-[44px] rounded-full px-3.5 text-[12.5px]"
+          style={{ color: colors.or, boxShadow: `inset 0 0 0 1px ${colors.or}` }}
+        >
+          Poser ici
+        </button>
+      )}
     </div>
   );
 }
@@ -1850,9 +1996,21 @@ function LigneLibre({
  */
 function BasculeDemi({
   depart,
+  demis = DEMIS,
   onChoisir,
 }: {
-  depart: Demi;
+  /**
+   * La position tenue, ou `null` quand la question n'a pas encore de réponse.
+   *
+   * **`null` est le cas de « libérer » — sa demande du 10 septembre 2026 :**
+   * *« le bouton matin/aprem apparaît mais les deux sont vides, blancs. Je
+   * clique sur le matin, il devient vert et le matin du vendredi devient
+   * libre. »* Un interrupteur allumé dirait où le chantier EST ; ici on ne
+   * décrit pas un état, on pose une question — quelle demi-journée je rends ?
+   */
+  depart: Demi | null;
+  /** Les demi-journées à offrir — celles que le chantier occupe ce jour-là. */
+  demis?: readonly Demi[];
   onChoisir: (demi: Demi) => void;
 }) {
   return (
@@ -1861,7 +2019,7 @@ function BasculeDemi({
       className="flex overflow-hidden rounded-full"
       style={{ border: `1px solid ${colors.line}`, background: colors.card }}
     >
-      {DEMIS.map((d) => {
+      {demis.map((d) => {
         const tenue = d === depart;
         return (
           <button
@@ -2348,7 +2506,9 @@ function CarteDuJour({
   occupationDe,
   chantiersDuJour,
   basculerEquipe,
-  deplacer,
+  liberer,
+  reposer,
+  morceauEnMain,
   retirerDuJour,
   poser,
   taches,
@@ -2551,6 +2711,11 @@ function CarteDuJour({
                 demi={bloc.demi}
                 occupation={occupationDe(jour, bloc.demi)}
                 marge={rang === 0 ? 8 : 16}
+                onPoser={
+                  ecriture && morceauEnMain
+                    ? () => reposer(morceauEnMain, jour, bloc.demi)
+                    : undefined
+                }
               />
             );
           }
@@ -2562,6 +2727,8 @@ function CarteDuJour({
           // sa ligne, et il en ouvrait alors deux à la fois.
           const choixDeplacer =
             ouvert?.quoi === "deplacer" && ouvert.cle === cle && ouvert.chantierId === c.id;
+          /** Ce que CE chantier occupe CE jour-là : le reste ne se rend pas. */
+          const demisDeCeJour = bloc.demis;
 
           return (
             <div
@@ -2605,7 +2772,7 @@ function CarteDuJour({
                     className="mt-[3px] block text-[12.5px]"
                     style={{ color: colors.or }}
                   >
-                    {ditLaDuree(dureeDuChantier(c))}
+                    {ditCeQuIlOccupe(c)}
                   </span>
                   <LieuDuChantier chantier={c} />
                 </button>
@@ -2757,9 +2924,25 @@ function CarteDuJour({
                   className="mt-2.5 flex flex-wrap items-center justify-end gap-1.5"
                 >
                   {choixDeplacer ? (
+                    /* ─── LIBÉRER, ET NON DÉPLACER — 10 septembre 2026 ─────
+                       *« Je clique sur le matin, il devient vert et le matin
+                       du vendredi devient libre, et une demi-journée de
+                       Mr Julien sort ; à la place on ajoute un chantier comme
+                       d'habitude, et la demi-journée retirée peut être
+                       replacée. »* (planche `appli/liberer-une-demi-journee`,
+                       essayée puis retenue.)
+
+                       **Rien n'est allumé, et ce n'est pas un oubli** : les
+                       deux positions posent une question — quelle demi-journée
+                       je rends — au lieu de décrire où le chantier est.
+
+                       **Seules SES demi-journées de CE jour sont offertes.**
+                       Un chantier qui n'occupe que le matin n'a pas d'après-midi
+                       à rendre, et l'offrir ferait un bouton qui n'écrit rien. */
                     <BasculeDemi
-                      depart={departDuChantier(c)}
-                      onChoisir={(demi) => deplacer(c.id, demi)}
+                      depart={null}
+                      demis={demisDeCeJour}
+                      onChoisir={(demi) => liberer(c.id, jour, demi)}
                     />
                   ) : (
                     <>
@@ -3252,6 +3435,9 @@ const EN_ATTENTE_DU_CLIENT = "En attente du client";
 function TiroirDuBas({
   ecriture,
   sansDate,
+  morceaux,
+  morceauEnMain,
+  onPrendreMorceau,
   attenteClient,
   jourTouche,
   poser,
@@ -3261,6 +3447,15 @@ function TiroirDuBas({
 }: {
   ecriture: boolean;
   sansDate: ChantierPlanning[];
+  /**
+   * LES DEMI-JOURNÉES RENDUES qui attendent une place (10 septembre 2026).
+   *
+   * Elles vivent sous le même titre que « Sans date », et c'est voulu : pour
+   * lui, ce sont deux formes de la même chose — du travail qui attend un jour.
+   */
+  morceaux: { chantier: ChantierPlanning; combien: number }[];
+  morceauEnMain: string | null;
+  onPrendreMorceau: (chantierId: string) => void;
   attenteClient: ChantierPlanning[];
   jourTouche: JourIso | null;
   poser: (chantierId: string, jour: JourIso) => void;
@@ -3297,7 +3492,24 @@ function TiroirDuBas({
   // salarié, et une liste accompagnée de boutons morts se lit comme une panne.
   const aSansDate = ecriture && sansDate.length > 0;
   const aAttente = attenteClient.length > 0;
-  if (!aSansDate && !aAttente) return null;
+  /**
+   * **LES DEMI-JOURNÉES RENDUES COMPTENT DANS CETTE PORTE — 10 sept. 2026.**
+   *
+   * Trouvé par la suite navigateur, à l'écran : un chantier dont on rend une
+   * moitié alors que rien d'autre n'attend faisait un tiroir vide, donc ABSENT
+   * — et le morceau n'existait plus nulle part. Le geste marchait, et il
+   * n'était joignable qu'au hasard d'une autre liste (`CLAUDE.md` §5 quater).
+   *
+   * Comme « Sans date », elles ne s'offrent qu'à qui peut écrire : les reposer
+   * est refusé au serveur pour un salarié, et une liste aux boutons morts se
+   * lit comme une panne.
+   */
+  const aMorceaux = ecriture && morceaux.length > 0;
+  if (!aSansDate && !aAttente && !aMorceaux) return null;
+
+  /** Ce qui attend une place, morceaux compris — un seul compte, un seul mot. */
+  const combienEnAttente =
+    sansDate.length + morceaux.reduce((t, m) => t + m.combien, 0);
 
   /**
    * Ce que dit la poignée, et rien de plus.
@@ -3305,11 +3517,15 @@ function TiroirDuBas({
    * **Un jour touché change tout** : la question n'est plus « qu'ai-je en
    * attente » mais « qu'est-ce que je pose ici ». Le mot suit le geste.
    */
-  const aPoser = aSansDate && jourTouche !== null;
+  const aPoser = (aSansDate || aMorceaux) && jourTouche !== null;
   const resume = aPoser
     ? `À poser sur ${jourLisibleCourt(jourTouche).toLowerCase()}`
     : [
-        aSansDate ? `${sansDate.length} sans date` : null,
+        // **Un seul compte pour les deux**, et c'est son mot : une moitié
+        // rendue et un chantier sans date sont la même chose — du travail qui
+        // attend un jour. Deux comptes côte à côte auraient demandé de choisir
+        // lequel est « sans date », question qui ne se pose pas pour lui.
+        aSansDate || aMorceaux ? `${combienEnAttente} sans date` : null,
         // **Le TITRE de la liste, pas un raccourci** — son choix du 7 septembre
         // 2026 (planche « Deux mots du planning », variante B). « 1 chez le
         // client » ne disait ni ce qui est chez lui, ni ce qu'on attend : il
@@ -3421,7 +3637,7 @@ function TiroirDuBas({
             La laisser afficherait une liste de chantiers sans date accompagnée
             de boutons morts — sa propre règle du 23 août : un geste qui ne peut
             mener nulle part se retire au lieu de s'annoncer. */}
-        {ecriture && sansDate.length > 0 && (
+        {ecriture && (sansDate.length > 0 || morceaux.length > 0) && (
           <>
             <TitreSection encadre data-atlas="titre-sans-date">Sans date</TitreSection>
             <p
@@ -3487,6 +3703,53 @@ function TiroirDuBas({
                   </div>
                 </LigneRetirable>
               ))}
+
+              {/* ─── LES DEMI-JOURNÉES RENDUES — 10 septembre 2026 ─────────
+                  *« La demi-journée de Mr Julien qui a été retirée peut être
+                  replacée. »* On la touche ici, puis on touche la demi-journée
+                  qui l'accueille : deux gestes, comme poser un chantier.
+
+                  **Pas de « Retirer » sur ces lignes-là**, et ce n'est pas un
+                  oubli : le chantier, lui, n'est pas sans date — c'est une
+                  moitié de lui qui attend. Le retirer entier se fait depuis sa
+                  journée, où il est encore posé. */}
+              {morceaux.map((m, i) => {
+                const tenu = morceauEnMain === m.chantier.id;
+                return (
+                  <button
+                    key={`morceau-${m.chantier.id}`}
+                    type="button"
+                    data-atlas="morceau-a-poser"
+                    data-chantier={m.chantier.id}
+                    aria-pressed={tenu}
+                    onClick={() => onPrendreMorceau(m.chantier.id)}
+                    className="flex w-full items-center justify-between gap-2.5 py-[11px] text-left"
+                    style={{
+                      borderBottom:
+                        i === morceaux.length - 1 ? "none" : `1px solid ${colors.line}`,
+                    }}
+                  >
+                    <span
+                      className="min-w-0 flex-1 truncate"
+                      style={{
+                        fontFamily: font.display,
+                        fontSize: 19,
+                        lineHeight: 1.2,
+                        color: tenu ? colors.or : colors.ink,
+                      }}
+                    >
+                      {m.chantier.nom}
+                    </span>
+                    <span className="flex-none text-[12.5px]" style={{ color: colors.muted }}>
+                      {tenu
+                        ? "touchez une demi-journée"
+                        : m.combien === 1
+                          ? "½ journée à poser"
+                          : `${m.combien} demi-journées à poser`}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </>
         )}

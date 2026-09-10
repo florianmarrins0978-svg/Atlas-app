@@ -27362,6 +27362,7 @@ Le composant du sceau — la feuille, la rose des vents, le mot — qui vivait s
 `.atlas-sceau-en-marche` et la classe `.atlas-champ-ligne`, le champ souligné
 que les gélules remplacent. L'historique git les garde.
 
+
 ---
 
 ## §321 — Une session prend son dossier toute seule
@@ -27438,4 +27439,132 @@ le refus quand tout est pris, et le jeton mort qui ne bloque rien.
 
 Les deux qui portent sa demande ont été mis au rouge contre un lanceur qui rend
 toujours le premier dossier.
+
+## §322 — Un chantier n'est plus un BLOC : il porte où chacune de ses demi-journées est posée
+
+**Sa demande du 10 septembre 2026**, planche `appli/liberer-une-demi-journee.html`
+qu'il a essayée puis retenue : *« quand je clique sur déplacer, le bouton
+matin/aprem apparaît mais les deux sont vides, blancs. Je clique sur le matin,
+il devient vert et le matin du vendredi devient libre, et une demi-journée de
+Mr Julien sort ; à la place on ajoute un chantier comme d'habitude, et la
+demi-journée retirée peut être replacée. »*
+
+### Ce que le dépôt n'avait pas, et pourquoi rien ne pouvait marcher sans
+
+Un chantier posé se décrivait par trois colonnes : `date_planifiee`,
+`creneau_debut`, `duree_demi_journees`. Trois nombres qui ne savent dire qu'une
+chose — **un bloc d'un seul tenant**, qui commence quelque part et court sur N
+demi-journées, week-ends sautés (`creneauxDuChantier`).
+
+Cette forme n'a **aucun endroit** où écrire « le matin est rendu, l'après-midi
+tient ». C'est ce qui a produit la question du patron la veille — *« quand je
+clique sur déplacer l'aprem, c'est le 15 et le 11 qui bougent, je comprends
+pas »* : « Déplacer » ne pouvait que faire glisser le bloc entier, et un bloc
+qui glisse d'une demi-journée déborde sur le lendemain.
+
+**D'où la table `creneaux_chantier`** (migration 0085) : une ligne par
+demi-journée occupée, `(chantier_id, jour, demi)` unique, RLS forcée comme le
+reste.
+
+| | |
+|---|---|
+| `duree_demi_journees` | ce que le chantier **demande** — ce que le devis a vendu, et il ne bouge pas |
+| `creneaux_chantier` | où il est **posé**, demi-journée par demi-journée |
+| l'écart entre les deux | ce qui **attend une place**, et s'affiche dans le tiroir du bas |
+
+### Les deux colonnes d'avant restent, et elles sont DÉRIVÉES
+
+`date_planifiee` et `creneau_debut` sont lues par une vingtaine d'endroits —
+l'agenda, l'écran d'envoi, les relances, la fiche du chantier. Les retirer
+aurait fait un lot de trois cents lignes pour un geste qui en demande dix.
+
+Elles ne sont donc plus écrites à la main nulle part : **`ecrireLesCreneaux` est
+le seul écrivain**, et il les recalcule depuis les créneaux (le premier, dans
+l'ordre). Deux écrivains pour une même vérité, c'est la divergence garantie que
+`CLAUDE.md` §3 interdit — ici elle aurait fait poser un chantier deux fois.
+
+**Il ne touche jamais `duree_demi_journees`**, et c'est le cœur du lot : si
+libérer une demi-journée réduisait la durée, le morceau rendu cesserait
+d'exister — le chantier « demanderait » exactement ce qu'il occupe, et la moitié
+vendue disparaîtrait sans un mot.
+
+### AUCUNE REPRISE DE L'EXISTANT, ET C'EST DÉLIBÉRÉ
+
+La migration ne remplit pas la table pour les chantiers déjà posés. Le repli vit
+dans une seule fonction, `creneauxPoses` (`src/lib/disponibilites.ts`) : **aucun
+créneau écrit vaut le bloc calculé**.
+
+C'est l'inverse du choix naïf. Lire « aucune ligne » comme « rien d'occupé »
+aurait libéré d'un coup toutes les demi-journées déjà prises : l'écran d'envoi
+aurait proposé au client un jour où quelqu'un travaille, et personne n'aurait vu
+passer le geste. Une reprise en masse, elle, aurait figé dans des lignes des
+blocs que le code sait recalculer — et il aurait fallu la rejouer à chaque
+correction de `creneauxDuChantier`.
+
+### Ce que « Déplacer » fait désormais, et ce qu'il ne fait plus
+
+Il **libère**. L'interrupteur s'ouvre avec ses **deux positions éteintes** — ce
+n'est pas un oubli : elles posent une question (*quelle demi-journée je rends ?*)
+au lieu de décrire un état. Un interrupteur allumé se lit comme « le chantier est
+là », et c'est exactement le malentendu qu'il a signalé le 9 septembre (*« j'ai
+l'impression que c'est inversé »*).
+
+Seules les demi-journées que le chantier occupe **ce jour-là** sont offertes :
+un chantier qui n'a que le matin n'a pas d'après-midi à rendre, et l'offrir
+ferait un bouton qui n'écrit rien.
+
+**`deplacerChantierAction` a disparu** — plus personne ne l'appelait
+(`CLAUDE.md` §4 quinquies). La fonction de dépôt `deplacerChantier`, elle, reste :
+l'assistant s'en sert pour déplacer un chantier à la voix, et elle réécrit les
+créneaux en gardant le nombre de demi-journées **occupées**, jamais demandées.
+
+### « UN SEUL ÉCRIVAIN » ÉTAIT FAUX — et c'est la batterie qui l'a dit
+
+Le lot affirmait que `ecrireLesCreneaux` était le seul à poser un chantier.
+`envois-devis.ts` en pose un aussi — **quand le client accepte une date** — et
+il écrivait `date_planifiee` sans toucher aux créneaux. Un chantier qui en
+portait déjà restait affiché à son ancienne place, et la date choisie par le
+client n'apparaissait **nulle part** au planning.
+
+La fonction a donc quitté `chantiers.ts` pour
+`src/server/repositories/creneaux-poses.ts`, que les deux importent. Elle
+accepte un `utilisateurId` **facultatif** : le client répond depuis un lien
+public, sans compte, et lui attribuer un `updated_by` de l'entreprise serait
+faux.
+
+**Le contrôle qui le tient** : `scripts/test-correction-devis.ts`, cas *« la
+date acceptée pose le chantier LÀ, même s'il était posé ailleurs »*. Il part
+d'un chantier **déjà posé** — sinon il ne mesure rien, un chantier sans créneau
+se lisant par son bloc — et il a été vu rouge contre l'ancien code : *« le
+chantier occupe encore 2026-03-05 au lieu du 2026-03-10 choisi par le client »*.
+
+**Sa première version rendait un faux vert**, et c'est le piège du §5 de
+`CLAUDE.md` : elle lisait `creneaux_chantier` par `pool`, sans contexte
+d'entreprise. La RLS rendait une liste **vide**, et `[].every(…)` vaut `true`.
+Les lectures passent désormais par `creneauxDunChantier`, sous l'entreprise.
+
+### Deux défauts que seule la CAPTURE a montrés
+
+Les deux étaient verts en suites, et se voient en une image (`CLAUDE.md` §5) :
+
+| Ce qu'on lisait | La racine |
+|---|---|
+| le **lendemain** se noircissait au calendrier | `creneauxDe`, dans l'écran du planning, recalculait le bloc au lieu de lire les créneaux : une journée qui repart de l'après-midi déborde sur le matin suivant |
+| « une journée » sous le nom, « ½ journée à poser » en bas | l'écran annonçait ce que le chantier **demande** là où la planche compte ce qu'il **occupe** — une journée et demie affichée pour un chantier d'un jour |
+
+Un troisième s'est vu par la suite navigateur, et il rendait le geste
+inatteignable : le tiroir du bas ne s'ouvrait que pour « Sans date » et
+« En attente du client ». Un chantier dont on rendait une moitié alors que rien
+d'autre n'attendait faisait un tiroir **vide, donc absent** — et le morceau
+n'existait plus nulle part.
+
+| | |
+|---|---|
+| la table | `drizzle/0085_creneaux_chantier.sql`, `src/server/db/schema.ts` |
+| les règles pures | `src/lib/creneaux-chantier.ts` — `demiJourneesAPoser`, `sansLaDemi`, `avecLaDemi` |
+| le repli, à un seul endroit | `creneauxPoses`, `src/lib/disponibilites.ts` |
+| l'écrivain unique | `ecrireLesCreneaux` — `src/server/repositories/creneaux-poses.ts`, partagé par le planning et l'acceptation du client |
+| le dépôt | `libererDemiJournee`, `reposerDemiJournee` — `src/server/repositories/chantiers.ts` |
+| l'écran | `BasculeDemi`, `LigneLibre`, `TiroirDuBas` — `src/app/planning/PlanningClient.tsx` |
+| les contrôles | `scripts/test-creneaux-chantier.ts` (les règles), `scripts/test-liberer-une-demi-journee-e2e.ts` (**son geste**, de bout en bout) |
 

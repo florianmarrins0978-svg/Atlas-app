@@ -6,12 +6,14 @@ import {
   planifierChantier,
   deplanifierChantier,
   ecrireNoteChantier,
-  deplacerChantier,
   supprimerChantier,
   SuppressionChantierRefusee,
   basculerEquipeDuChantier,
+  libererDemiJournee,
+  reposerDemiJournee,
+  creneauxDunChantier,
 } from "@/server/repositories/chantiers";
-import type { Moment } from "@/lib/disponibilites";
+import type { JourIso, Moment } from "@/lib/disponibilites";
 // (le départ se dit avec le vocabulaire de la base : `Moment`)
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
@@ -137,31 +139,56 @@ export async function basculerEquipeAction(
   return etat;
 }
 
+/** Ce qu'un chantier occupe après le geste — l'écran repeint avec ça. */
+export type ResultatCreneaux =
+  | { succes: true; creneaux: { jour: string; moment: Moment }[] }
+  | { succes: false; erreur: string };
+
+async function creneauxApres(ctx: Awaited<ReturnType<typeof getCurrentCtx>>, chantierId: string) {
+  const poses = await creneauxDunChantier(ctx, chantierId);
+  return poses.map((c) => ({ jour: c.jour, moment: c.moment }));
+}
+
 /**
- * Déplace un chantier posé : il part le matin, ou l'après-midi.
+ * LIBÉRER UNE DEMI-JOURNÉE — sa demande du 10 septembre 2026.
  *
- * Le jour ne bouge pas — « Déplacer » vit dans la fiche d'UN jour, et c'est ce
- * que l'écran promet. **Et la durée ne bouge plus** : sa décision du
- * 10 septembre 2026, *« tu retires la journée »*.
+ * *« Je clique sur le matin, il devient vert et le matin du vendredi devient
+ * libre, et une demi-journée de Mr Julien sort. »* Le chantier garde sa durée :
+ * il annonce aussitôt qu'il lui manque une demi-journée, et elle se repose où
+ * il veut.
  */
-export async function deplacerChantierAction(
+export async function libererDemiJourneeAction(
   chantierId: string,
+  jour: string,
   demi: Moment
-): Promise<ResultatPose> {
+): Promise<ResultatCreneaux> {
   const ctx = await getCurrentCtx();
-  await exigerEcritureSurLePlanning(ctx, "déplacer ce chantier");
-  await exigerChantierDansSaPortee(ctx, chantierId, "déplacer ce chantier");
-  const row = await deplacerChantier(ctx, chantierId, demi);
-  if (!row) return { succes: false, erreur: "Ce chantier n'est pas posé sur un jour." };
+  await exigerEcritureSurLePlanning(ctx, "libérer une demi-journée");
+  await exigerChantierDansSaPortee(ctx, chantierId, "libérer une demi-journée");
+  const r = await libererDemiJournee(ctx, chantierId, jour as JourIso, demi);
+  if (!r) return { succes: false, erreur: "Cette demi-journée n'est pas celle de ce chantier." };
   await porterChantierDansAgenda(ctx, chantierId);
-  return {
-    succes: true,
-    etat: {
-      datePlanifiee: row.datePlanifiee ?? null,
-      creneauDebut: row.creneauDebut ?? null,
-      dureeDemiJournees: row.dureeDemiJournees ?? null,
-    },
-  };
+  return { succes: true, creneaux: await creneauxApres(ctx, chantierId) };
+}
+
+/**
+ * REPOSER LA DEMI-JOURNÉE qui attendait une place.
+ *
+ * *« La demi-journée de Mr Julien qui a été retirée peut être replacée. »* Elle
+ * se pose où il veut — un autre jour, un autre moment.
+ */
+export async function reposerDemiJourneeAction(
+  chantierId: string,
+  jour: string,
+  demi: Moment
+): Promise<ResultatCreneaux> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "reposer une demi-journée");
+  await exigerChantierDansSaPortee(ctx, chantierId, "reposer une demi-journée");
+  const r = await reposerDemiJournee(ctx, chantierId, jour as JourIso, demi);
+  if (!r) return { succes: false, erreur: "Ce chantier n'attend plus de demi-journée." };
+  await porterChantierDansAgenda(ctx, chantierId);
+  return { succes: true, creneaux: await creneauxApres(ctx, chantierId) };
 }
 
 /**

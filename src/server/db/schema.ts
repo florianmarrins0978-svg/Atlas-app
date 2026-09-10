@@ -503,6 +503,49 @@ export const equipesDuChantier = pgTable(
  * (`ARCHITECTURE.md` §88). Le motif ne sert qu'à ce que le patron se
  * souvienne ; aucun calcul ne le lit.
  */
+/**
+ * OÙ UN CHANTIER EST POSÉ — une ligne par demi-journée (10 septembre 2026).
+ *
+ * **Sa demande, devant la planche `appli/liberer-une-demi-journee.html` :**
+ * *« je clique sur le matin, il devient vert et le matin du vendredi devient
+ * libre, et une demi-journée de Mr Julien sort ; à la place on ajoute un
+ * chantier comme d'habitude, et la demi-journée retirée peut être replacée. »*
+ *
+ * **Les trois colonnes de `chantiers` ne savent décrire qu'un bloc d'un seul
+ * tenant** — « deux jours à partir du vendredi après-midi ». Libérer une
+ * demi-journée au milieu casse cette forme, et aucune colonne de plus ne la
+ * réparerait : ce n'est pas une valeur qui manque, c'est un ENSEMBLE.
+ *
+ * **`dureeDemiJournees` garde son sens : ce que le chantier DEMANDE**, lu de la
+ * dictée ou du devis. Cette table dit où il est POSÉ. Leur écart est exactement
+ * ce qui attend une place dans « Sans date ».
+ *
+ * **Aucune ligne = le chantier d'avant**, calculé de ses trois colonnes
+ * (`creneauxDuChantier`). Rien n'a été recopié à la migration : le lire
+ * autrement libérerait d'un coup des demi-journées déjà prises
+ * (migration 0085).
+ */
+export const creneauxChantier = pgTable(
+  "creneaux_chantier",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id")
+      .notNull()
+      .references(() => chantiers.id, { onDelete: "cascade" }),
+    jour: date("jour").notNull(),
+    /** `matin` ou `apres_midi` — le même vocabulaire que `creneauDebut`. */
+    demi: text("demi").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("creneaux_chantier_unique").on(t.chantierId, t.jour, t.demi),
+    index("creneaux_chantier_entreprise_jour_idx").on(t.entrepriseId, t.jour),
+  ]
+);
+
 export const absencesEquipe = pgTable("absences_equipe", {
   id: uuid("id").primaryKey().defaultRandom(),
   entrepriseId: uuid("entreprise_id")
