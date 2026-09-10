@@ -113,7 +113,13 @@ voies, à chaque étape.**
 | ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
 | **une troisième voie** | *« Autre chose »* — un rendez-vous à la banque, une livraison, une formation : un chantier **sans client**, portant ce qu'on écrit |
 
-**Et le tiroir du bas se voit enfin quand il est ouvert** — *« on ne la voit
+**Et son bord passe en or — sa version C**, choisie sur planche
+(`appli/tiroir-en-or.html`, quatre bords côte à côte) : deux pixels d'or, les
+coins levés, un trait entre la poignée et le dedans, et les titres alignés à
+gauche sur la marge du contenu. Le cadre doré complet a été écarté : joli une
+fois, lourd tous les jours.
+
+**Le tiroir du bas se voit enfin quand il est ouvert** — *« on ne la voit
 pas »* : il portait le fond de la page. Il prend celui des cartes, et son ombre
 se creuse à l'ouverture.
 

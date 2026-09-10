@@ -27709,6 +27709,28 @@ n'est parti. Rechargez la page. »* C'est la première question du dépôt devan
 défaut qui ne se reproduit pas (`HANDOVER.md`, piège 0), et la seule chose qui
 répare une page vieillie.
 
+### SON BORD EST EN OR, ET LES COINS SE LÈVENT — sa version C
+
+**Sa réponse du 11 septembre 2026**, après la planche `appli/tiroir-en-or.html`
+où les quatre bords étaient posés côte à côte : *« j'aime bien la C »*.
+
+Deux pixels d'or (`colors.or`) et des angles de 14 px en haut. L'or dit « ceci
+s'ouvre » sans cerner tout le bas de l'écran ; les coins levés montrent que le
+tiroir passe **par-dessus** le calendrier, ce que le fond seul ne faisait pas.
+
+**D — le cadre doré complet — a été écartée, et la planche le dit** : joli une
+fois, lourd tous les jours, sur un tiroir présent à chaque ouverture du planning
+et jusque fermé.
+
+**Et sa disposition suit la planche, à la ligne près** (*« exactement celle de la
+maquette »*) :
+
+| | |
+|---|---|
+| un trait sépare la poignée du dedans | il vit DANS le contenu qui se replie — posé sur le cadre, il resterait visible sous la poignée fermée |
+| les deux titres passent à GAUCHE | centrés, ils ne s'alignaient sur rien : ni sur la poignée au-dessus, ni sur les noms en dessous, qui commencent tous deux à 18 px du bord |
+| la phrase sous le titre suit | une phrase centrée sous un titre à gauche fait deux marges en trois centimètres |
+
 ### ET ON DOIT VOIR OÙ IL COMMENCE
 
 **Sa remarque du 11 septembre 2026, capture à l'appui :** *« il faut rendre plus

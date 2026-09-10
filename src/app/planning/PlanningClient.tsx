@@ -1705,16 +1705,29 @@ function Fleche({
 function TitreSection({
   children,
   encadre = false,
+  aGauche = false,
   ...reste
 }: {
   children: React.ReactNode;
   encadre?: boolean;
+  /**
+   * **À GAUCHE, sur la marge du contenu** — sa demande du 11 septembre 2026 :
+   * *« le sans date à gauche »*, planche `appli/tiroir-en-or.html` à l'appui.
+   *
+   * Centré, le titre du tiroir ne s'alignait sur rien : ni sur la poignée
+   * au-dessus, ni sur les noms en dessous, qui commencent tous deux à 18 px du
+   * bord. Les deux titres du tiroir le prennent — un seul des deux aurait fait
+   * deux façons de titrer dans le même panneau.
+   */
+  aGauche?: boolean;
 } & React.HTMLAttributes<HTMLParagraphElement>) {
   if (!encadre) {
     return (
       <p
         {...reste}
-        className="mx-[18px] mt-[26px] text-center text-[13px] font-bold uppercase leading-none"
+        className={`mx-[18px] mt-[26px] text-[13px] font-bold uppercase leading-none ${
+          aGauche ? "text-left" : "text-center"
+        }`}
         style={{ letterSpacing: "0.16em", color: colors.ink }}
       >
         {children}
@@ -1722,7 +1735,10 @@ function TitreSection({
     );
   }
   return (
-    <p {...reste} className="mx-[18px] mt-[26px] text-center leading-none">
+    <p
+      {...reste}
+      className={`mx-[18px] mt-[26px] leading-none ${aGauche ? "text-left" : "text-center"}`}
+    >
       <span
         data-atlas="titre-encadre"
         className="inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
@@ -4223,7 +4239,19 @@ function TiroirDuBas({
         // centimètres plus haut : c'est ce qui, dans cet écran, dit « ceci est
         // posé par-dessus ». Aucune couleur neuve, aucun trait de plus.
         background: colors.card,
-        borderTop: `1px solid ${colors.line}`,
+        // ─── SA VERSION C, CHOISIE LE 11 SEPTEMBRE 2026 ───────────────────
+        //
+        // Planche `appli/tiroir-en-or.html`, quatre bords côte à côte : *« j'aime
+        // bien la C »*. Deux pixels d'or et les angles qui se lèvent — l'or dit
+        // « ceci s'ouvre » sans cerner tout le bas de l'écran, et les coins
+        // montrent que le tiroir passe PAR-DESSUS le calendrier, ce que le fond
+        // seul ne faisait pas.
+        //
+        // **D a été écartée, et c'est écrit sur la planche** : un cadre doré
+        // complet est joli une fois et lourd tous les jours, sur un tiroir
+        // présent à chaque ouverture du planning.
+        borderTop: `2px solid ${colors.or}`,
+        borderRadius: "14px 14px 0 0",
         // **Et l'ombre se creuse quand il est OUVERT.** Fermé, il n'est qu'une
         // poignée : une ombre soutenue en permanence salirait le bas de tous
         // les écrans du planning pour une liste que personne ne regarde.
@@ -4322,10 +4350,20 @@ function TiroirDuBas({
             mener nulle part se retire au lieu de s'annoncer. */}
         {ecriture && (sansDate.length > 0 || morceaux.length > 0) && (
           <>
-            <TitreSection encadre data-atlas="titre-sans-date">Sans date</TitreSection>
+            {/* **Le trait qui sépare la poignée du dedans** — sa demande du
+                11 septembre 2026, planche à l'appui : *« avec le trait qui
+                sépare 1 sans date de sans date »*. Il vit ICI, dans le contenu
+                qui se replie : posé sur le cadre, il resterait visible sous la
+                poignée quand le tiroir est fermé. */}
+            <div style={{ borderTop: `1px solid ${colors.line}` }} />
+            <TitreSection encadre aGauche data-atlas="titre-sans-date">
+              Sans date
+            </TitreSection>
             <p
               data-atlas="ou-poser"
-              className="mx-[18px] mt-2 text-center text-[12.5px]"
+              // **Elle suit le titre, à gauche** : une phrase centrée sous un
+              // titre aligné à gauche fait deux marges dans trois centimètres.
+              className="mx-[18px] mt-2 text-[12.5px]"
               style={{ color: colors.muted }}
             >
               {/* **Un samedi touché est un jour comme un autre** — sa règle
@@ -4453,7 +4491,7 @@ function TiroirDuBas({
         {/* ─── EN ATTENTE DU CLIENT ───────────────────────────────────────── */}
         {attenteClient.length > 0 && (
           <>
-            <TitreSection encadre data-atlas="titre-attente-client">
+            <TitreSection encadre aGauche data-atlas="titre-attente-client">
               {EN_ATTENTE_DU_CLIENT}
             </TitreSection>
             <div className="mx-[18px] mt-3">
