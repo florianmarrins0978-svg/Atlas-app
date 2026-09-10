@@ -86,6 +86,32 @@ d'ouvert sur ce geste.
 
 ---
 
+## ⏳ DEUX DEMANDES POSÉES SUR PLANCHE, EN ATTENTE DE SON CHOIX (10 septembre 2026)
+
+| | |
+|---|---|
+| `appli/liberer-une-demi-journee.html` | « Déplacer » devient « libérer la demi-journée qu'on désigne » ; le morceau part en attente et se repose ailleurs |
+| `appli/bloquer-sans-devis.html` | « Ajouter » permet d'écrire ce que c'est et de prendre matin / après-midi / journée, sans client ni devis |
+
+**CE QUE LA PREMIÈRE COÛTE, ET IL FAUT LE DIRE AVANT DE CODER.** Un chantier
+porte un jour, un départ et une durée (`datePlanifiee`, `creneauDebut`,
+`dureeDemiJournees`) : il est **d'un seul tenant par construction**. Le poser en
+morceaux demande **une pose par morceau** — donc une table de créneaux, et tout
+ce qui lit aujourd'hui « le jour du chantier » à revoir : la fiche de chantier,
+le jour proposé au client (`disponibilites.ts`), la charge du calendrier, les
+retours d'intervention.
+
+C'est exactement la fonctionnalité déjà nommée plus bas dans ce fichier
+(« deux poses pour un chantier »), et c'est LUI qui décide si elle vaut le coup.
+
+**La seconde est plus légère mais pas gratuite :** un blocage n'est pas un
+chantier — pas de client, pas de prix, pas de devis. Trois questions posées sur
+la planche, à trancher par lui : est-ce que cela ferme le jour pour ses clients
+(je propose oui), est-ce que cela mobilise une équipe (non), est-ce que cela
+entre dans les terminés et la TVA (non).
+
+---
+
 ## ⏳ « DÉPLACER » AGIT SUR UN JOUR QU'IL NE REGARDE PAS (10 septembre 2026)
 
 **Sa question, captures à l'appui :** *« quand je clique sur déplacer l'aprem,

@@ -59,6 +59,25 @@ geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
 maintenant dans la suite navigateur, qui refait le geste quatre fois.
 
 
+### Deux planches : libérer une demi-journée, et bloquer du temps sans devis
+
+**Sa vraie demande derrière « Déplacer » :** *« je clique sur le matin, il
+devient vert et le matin du vendredi devient libre, une demi-journée de
+Mr. Julien sort ; à la place on pose autre chose, et la demi-journée retirée
+peut être replacée. »* Ce n'est plus un déplacement, c'est une **libération**.
+`appli/liberer-une-demi-journee.html` joue le geste entier — l'interrupteur
+s'ouvre **vide**, puisque c'est une question et non un état.
+
+**Et une seconde :** *« si j'ai un chantier à rajouter, que je puisse le faire
+sans passer par la fiche client et le devis »*.
+`appli/bloquer-sans-devis.html` ajoute une seconde entrée sous « Ajouter » :
+écrire ce que c'est, choisir matin / après-midi / journée, et le temps est pris.
+
+**RIEN N'EST CODÉ, et la première coûte plus qu'un écran :** un chantier tient
+aujourd'hui en un jour, un départ et une durée — il est d'un seul tenant par
+construction. Le poser en morceaux demande une pose par morceau, ce que la base
+ne sait pas écrire. C'est dit sur la planche, en clair, avant qu'il choisisse.
+
 ### « Déplacer » agit sur le jour de DÉPART — deux façons de le dire, à essayer
 
 Sa question, deux captures à l'appui : *« quand je clique sur déplacer l'aprem,
