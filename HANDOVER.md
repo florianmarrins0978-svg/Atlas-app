@@ -53,7 +53,12 @@ trouve être le bon, donc rien ne rougit. Le contrôle vise le mécanisme.
    navigateur à chaque ouverture du planning, pour un geste qui sert deux fois
    par mois, c'est ce que cette action évite — et elle porte la garde
    d'écriture bien qu'elle lise, parce que ce chemin n'existe que pour poser.
-3. **Le tiroir du bas publie sa hauteur** (`--atlas-tiroir`), et
+3. **Un `.then()` seul n'attrape pas un refus.** Une action serveur postée
+   depuis une page qui a survécu à son serveur REJETTE : sans `.catch()`, le
+   geste ne fait rien et ne dit rien. Trois gestes de cet écran l'ont payé le
+   11 septembre 2026, et le pire tenait la fiche d'un client inconnu fermée
+   pour toujours.
+4. **Le tiroir du bas publie sa hauteur** (`--atlas-tiroir`), et
    `.atlas-contenu` la réserve. Y écrire un nombre en dur, c'est refaire le
    défaut que la barre a déjà payé.
 

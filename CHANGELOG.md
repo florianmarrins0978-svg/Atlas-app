@@ -167,6 +167,24 @@ voies, à chaque étape.**
 | ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
 | **une troisième voie** | *« Autre chose »* — un rendez-vous à la banque, une livraison, une formation : un chantier **sans client**, portant ce qu'on écrit |
 
+**Et son bord passe en or — sa version C**, choisie sur planche
+(`appli/tiroir-en-or.html`, quatre bords côte à côte) : deux pixels d'or, les
+coins levés, un trait entre la poignée et le dedans, et les titres alignés à
+gauche sur la marge du contenu. Le cadre doré complet a été écarté : joli une
+fois, lourd tous les jours.
+
+**Le tiroir du bas se voit enfin quand il est ouvert** — *« on ne la voit
+pas »* : il portait le fond de la page. Il prend celui des cartes, et son ombre
+se creuse à l'ouverture.
+
+**Deux défauts qu'il a signalés le soir même, corrigés :** la voie « Un chantier
+en attente » disparaissait quand seule une **demi-journée rendue** attendait —
+elle compte désormais comme le reste, et se prend au doigt depuis la journée. Et
+un geste qui part dans le vide — sa page avait survécu à son serveur — ne se
+taisait plus : l'écran écrit *« Rien n'est parti. Rechargez la page. »* au lieu
+de ne rien faire. La recherche de clients, elle, rendait la fiche d'un inconnu
+**définitivement** inatteignable dans ce cas.
+
 **Le geste ne disparaît plus quand rien n'attend**, et c'est sa règle du 23 août
 qui le veut : il ne menait nulle part, il mène maintenant quelque part. Ce qui
 disparaît, c'est la voie qui ne mène nulle part — « Un chantier en attente »
