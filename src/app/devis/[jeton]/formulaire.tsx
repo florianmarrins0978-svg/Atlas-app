@@ -7,7 +7,6 @@ import { jourLisible, dansDelaiRetractation } from "@/lib/jour";
 import { libelleAutreDate } from "@/lib/libelle-dates";
 import Calendrier from "@/components/atlas/Calendrier";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import BoutonTelechargerDevis from "./BoutonTelechargerDevis";
 import { colors, font, voile } from "@/lib/design-tokens";
 
 export default function FormulaireReponse({
@@ -128,11 +127,15 @@ export default function FormulaireReponse({
         <p className="mt-2 text-[14px]" style={{ color: colors.muted }}>
           Vous pouvez fermer cette page.
         </p>
-        {/* **Le devis accepté s'emporte tout de suite.** C'est l'instant où le
-            client le cherche — et s'il ferme la page sans l'avoir pris, l'écran
-            de retour le lui redonne (`page.tsx`). Après un refus, non : on ne
-            propose pas d'emporter un devis auquel on vient de renoncer. */}
-        {etat.devisTelechargeable && <BoutonTelechargerDevis jeton={envoi.jeton} />}
+        {/* **PLUS DE BOUTON ICI — sa correction du 9 septembre 2026 :** *« il y
+            a marqué deux fois télécharger, garde celui sous le TTC »*.
+
+            Il en portait un, à deux centimètres de celui du devis juste
+            au-dessus : deux boutons identiques sur un même écran font hésiter
+            — est-ce le même fichier ? — et celui du haut ne bouge pas quand
+            on répond. **L’écran de RETOUR, lui, le garde** : quand le client
+            rouvre son SMS le lendemain, la carte du devis n’est plus là
+            (`page.tsx`, le cadre « C’est noté »). */}
       </div>
     );
   }

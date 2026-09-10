@@ -616,14 +616,18 @@ async function main() {
     await page.click('button:has-text("J\'accepte ce devis")');
     await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 10000 });
 
-    // **Le compte n'est pas fixé à un**, et c'est voulu : depuis le 31 août
-    // 2026, l'en-tête du devis porte lui aussi « Télécharger mon devis (PDF) ».
-    // Ce qui est vérifié est ce qui compte — qu'il existe un geste pour emporter
-    // la pièce, et qu'il rende vraiment le fichier.
+    // **UN SEUL GESTE, ET C'EST SA CORRECTION DU 9 SEPTEMBRE 2026 :** *« il y
+    // a marqué deux fois télécharger, garde celui sous le TTC »*.
+    //
+    // Ce contrôle tolérait le doublon — `>= 1` — et c'est ce qui l'a laissé
+    // vivre : deux boutons identiques à deux centimètres l'un de l'autre font
+    // hésiter, est-ce le même fichier ? Un contrôle qui accepte les deux ne
+    // défend rien.
     const geste = 'a:has-text("Télécharger mon devis")';
-    assert.ok(
-      (await page.locator(geste).count()) >= 1,
-      "aucun geste pour emporter le devis juste après l'avoir accepté"
+    assert.strictEqual(
+      await page.locator(geste).count(),
+      1,
+      "l'écran d'après l'accord porte deux fois le même bouton"
     );
 
     // **Et surtout au RETOUR, des jours plus tard, par le lien du SMS** : c'est
