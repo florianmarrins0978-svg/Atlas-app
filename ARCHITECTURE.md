@@ -27398,6 +27398,17 @@ septembre, `CLAUDE.md` §5) : un jeton qui se fie à un battement se déclare mo
 au milieu du travail ; un jeton auquel on se fie sans regarder condamne un
 dossier pour toujours.
 
+### Et l'on peut lui désigner un dossier
+
+**Sa demande du même jour :** *« je peux leur dire prend le dossier numéro 2 ? »*
+— `npm run session 2`. Les rangs sont ceux de `sessions:preparer --liste`, 1
+étant le dossier principal ; ce qui suit le numéro part à `claude` tel quel.
+
+**Un dossier demandé qui est occupé se REFUSE.** Sans numéro, prendre le suivant
+est le service rendu ; avec un numéro, ce serait ouvrir la session ailleurs qu'où
+il l'a dit — et il ne le verrait qu'en cherchant son travail dans le mauvais
+dossier une heure plus tard. Le refus montre alors l'état des cinq.
+
 ### Ce qu'il refuse de faire
 
 Quand tous les dossiers sont occupés, il **s'arrête et donne la commande**. Il

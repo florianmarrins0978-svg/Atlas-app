@@ -62,9 +62,9 @@ function decor() {
   return { parent, racine, binaire, trace };
 }
 
-function lancer(racine: string, binaire: string): Promise<number> {
+function lancer(racine: string, binaire: string, ...args: string[]): Promise<number> {
   return new Promise((resoudre) => {
-    const e = spawn(process.execPath, [LANCEUR], {
+    const e = spawn(process.execPath, [LANCEUR, ...args], {
       cwd: racine,
       env: { ...process.env, PATH: `${binaire}:${process.env.PATH}` },
       stdio: "ignore",
@@ -135,6 +135,62 @@ try {
       assert.notEqual(sortie.status, 0, "il a ouvert une session dans un dossier occupé");
       assert.match(sortie.stderr, /sessions:preparer/, `lu :\n${sortie.stderr}`);
       assert.ok(!existsSync(d.trace), "« claude » a quand même été lancé");
+    });
+  }
+
+  // ─── « PREND LE DOSSIER NUMÉRO 2 » ──────────────────────────────────────
+  //
+  // **Sa demande du 10 septembre 2026 :** *« je peux leur dire prend le dossier
+  // numéro 2 ? »*. Les rangs sont ceux qu'affiche `sessions:preparer --liste`.
+  {
+    for (const dossier of [d.racine, path.join(d.parent, "projet-s2")]) {
+      rmSync(cheminDuJeton(dossier), { force: true });
+    }
+    rmSync(d.trace, { force: true });
+
+    const code = await lancer(d.racine, d.binaire, "2");
+    cas("un numéro donne CE dossier-là, même si le premier est libre", () => {
+      assert.equal(code, 0, `le lanceur a rendu ${code}`);
+      const ou = readFileSync(d.trace, "utf8").trim();
+      assert.equal(
+        path.resolve(ou),
+        path.resolve(path.join(d.parent, "projet-s2")),
+        `la session s'est ouverte dans ${ou}`
+      );
+    });
+  }
+
+  // **Un dossier demandé et occupé se REFUSE.** Sans numéro, prendre le suivant
+  // est le service rendu ; avec un numéro, ce serait ouvrir la session ailleurs
+  // qu'où il l'a dit, sans qu'il le voie.
+  {
+    mkdirSync(JETONS, { recursive: true });
+    writeFileSync(cheminDuJeton(path.join(d.parent, "projet-s2")), `${process.pid}\n`, "utf8");
+    rmSync(d.trace, { force: true });
+
+    const sortie = spawnSync(process.execPath, [LANCEUR, "2"], {
+      cwd: d.racine,
+      env: { ...process.env, PATH: `${d.binaire}:${process.env.PATH}` },
+      encoding: "utf8",
+    });
+    cas("le dossier demandé est occupé : il refuse, il ne va pas ailleurs", () => {
+      assert.notEqual(sortie.status, 0, "il a ouvert la session dans un autre dossier");
+      assert.match(sortie.stderr, /occupé/, `lu :\n${sortie.stderr}`);
+      assert.ok(!existsSync(d.trace), "« claude » a quand même été lancé");
+    });
+    rmSync(cheminDuJeton(path.join(d.parent, "projet-s2")), { force: true });
+  }
+
+  {
+    const sortie = spawnSync(process.execPath, [LANCEUR, "9"], {
+      cwd: d.racine,
+      env: { ...process.env, PATH: `${d.binaire}:${process.env.PATH}` },
+      encoding: "utf8",
+    });
+    cas("un numéro qui n'existe pas : il le dit et montre la liste", () => {
+      assert.notEqual(sortie.status, 0);
+      assert.match(sortie.stderr, /pas de dossier n° 9/, `lu :\n${sortie.stderr}`);
+      assert.match(sortie.stderr, /projet-s2/, `la liste des dossiers manque :\n${sortie.stderr}`);
     });
   }
 

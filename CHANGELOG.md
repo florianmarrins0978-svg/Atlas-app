@@ -305,6 +305,9 @@ Un dossier est occupé tant que le processus de sa session vit — un jeton lais
 par un terminal fermé brutalement ne condamne rien. Tous pris : il le dit et
 donne la commande, plutôt que de fabriquer un dossier de plus en silence.
 
+Un numéro se donne aussi — `npm run session 2` —, et un dossier demandé qui est
+occupé se refuse plutôt que d'ouvrir la session ailleurs sans le dire.
+
 Détail : `ARCHITECTURE.md` §321.
 
 ### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus

@@ -62,6 +62,7 @@ qui remet deux sessions dans le même dossier.
 
 ```bash
 npm run session      # au lieu de « claude », où qu'on soit dans le dépôt
+npm run session 2    # ou CE dossier-là, dans les rangs de « --liste »
 ```
 
 `scripts/ouvrir-session.mjs` prend le premier dossier libre et y lance `claude`.
@@ -73,6 +74,13 @@ batterie, dans les deux sens (§5).
 Quand tous les dossiers sont occupés, il **refuse et donne la commande** — il ne
 fabrique pas un sixième worktree ni un `npm install` de trois minutes sous les
 yeux de quelqu'un qui attendait une session.
+
+**Un NUMÉRO se donne aussi** — sa demande du même jour : *« je peux leur dire
+prend le dossier numéro 2 ? »*. Les rangs sont ceux de
+`sessions:preparer --liste`, 1 étant le dossier principal. **Et un dossier
+demandé qui est occupé se refuse, il ne se remplace pas** : sans numéro, prendre
+le suivant est le service rendu ; avec un numéro, ce serait ouvrir la session
+ailleurs qu'où il l'a dit, sans qu'il le voie.
 
 `scripts/preparer-sessions.mjs` crée un **`git worktree` par session** : même
 dépôt, même historique, mêmes remontées, `main` toujours le seul bien commun —

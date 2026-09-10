@@ -12,7 +12,7 @@ sert.
 
 | | |
 |---|---|
-| ce qui a changé | `npm run session` remplace `claude` : le lanceur prend le premier dossier de travail libre et y ouvre la session |
+| ce qui a changé | `npm run session` remplace `claude` : le lanceur prend le premier dossier de travail libre et y ouvre la session. `npm run session 2` désigne un dossier précis |
 | la migration | **aucune** |
 | les pièces | `scripts/ouvrir-session.mjs`, `scripts/preparer-sessions.mjs` (racine par git, importable) |
 | les suites | `scripts/test-ouvrir-session.ts` (5), `test-preparer-sessions.ts` (7) |

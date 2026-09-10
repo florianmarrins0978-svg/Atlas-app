@@ -72,19 +72,66 @@ function pris(dossier) {
   }
 }
 
-function main() {
-  const dossiers = worktreesExistants();
+/** Ce que valent les dossiers en ce moment : leur rang, et qui les tient. */
+function etatDesDossiers() {
+  return worktreesExistants().map((dossier, i) => ({
+    rang: i + 1,
+    dossier,
+    pris: pris(dossier),
+  }));
+}
 
-  const libre = dossiers.find((d) => !pris(d));
-  if (!libre) {
+/** « 1. …  libre » — la même liste pour dire et pour refuser. */
+function ditLesDossiers(etat) {
+  return etat
+    .map(
+      (d) =>
+        `   ${d.rang}. ${d.dossier}${d.pris ? "   (occupé)" : "   libre"}` +
+        (path.resolve(d.dossier) === path.resolve(RACINE) ? "   ← le principal" : "")
+    )
+    .join("\n");
+}
+
+function main() {
+  const args = process.argv.slice(2);
+
+  // **UN NUMÉRO EN PREMIER, ET C'EST LE DOSSIER — sa demande du 10 septembre
+  // 2026 :** *« je peux leur dire prend le dossier numéro 2 ? »*. Les rangs
+  // sont ceux que `sessions:preparer --liste` affiche : 1 est le dossier
+  // principal. Tout le reste part à `claude` tel quel.
+  const demande = /^\d+$/.test(args[0] ?? "") ? Number(args[0]) : null;
+  const pourClaude = demande === null ? args : args.slice(1);
+
+  const etat = etatDesDossiers();
+
+  if (demande !== null && (demande < 1 || demande > etat.length)) {
     console.error(
-      `❌ Les ${dossiers.length} dossiers de travail sont occupés.\n\n` +
-        "   Pour en ajouter :  npm run sessions:preparer " +
-        `${Math.min(8, dossiers.length + 1)}\n` +
-        "   Pour voir qui tient quoi :  npm run sessions:preparer --liste"
+      `❌ Il n'y a pas de dossier n° ${demande}. Ceux qui existent :\n\n${ditLesDossiers(etat)}\n\n` +
+        `   Pour en ajouter :  npm run sessions:preparer ${Math.min(8, etat.length + 1)}`
     );
     process.exit(1);
   }
+
+  // **Un dossier demandé et occupé se REFUSE, il ne se remplace pas.** Sans
+  // choix, prendre le suivant est le service rendu ; avec un numéro, ce serait
+  // ouvrir la session ailleurs qu'où il l'a dit, sans qu'il le voie.
+  if (demande !== null && etat[demande - 1].pris) {
+    console.error(
+      `❌ Le dossier n° ${demande} est déjà occupé par une session.\n\n${ditLesDossiers(etat)}\n\n` +
+        "   Sans numéro, « npm run session » prend le premier libre."
+    );
+    process.exit(1);
+  }
+
+  const choisi = demande !== null ? etat[demande - 1] : etat.find((d) => !d.pris);
+  if (!choisi) {
+    console.error(
+      `❌ Les ${etat.length} dossiers de travail sont occupés :\n\n${ditLesDossiers(etat)}\n\n` +
+        `   Pour en ajouter :  npm run sessions:preparer ${Math.min(8, etat.length + 1)}`
+    );
+    process.exit(1);
+  }
+  const libre = choisi.dossier;
 
   mkdirSync(JETONS, { recursive: true });
   const jeton = cheminDuJeton(libre);
@@ -111,13 +158,13 @@ function main() {
   }
 
   const marque = path.resolve(libre) === path.resolve(RACINE) ? " (le dossier principal)" : "";
-  console.log(`Session dans ${libre}${marque}\n`);
+  console.log(`Session n° ${choisi.rang} — ${libre}${marque}\n`);
 
   // **`shell` sous Windows, et nulle part ailleurs.** Claude Code s'y installe
   // en `.cmd`, que Node refuse de lancer directement depuis la CVE-2024-27980 ;
   // le shell, lui, sait le résoudre. Ailleurs, l'ajouter rouvrirait une porte
   // sur les arguments qu'on transmet.
-  const enfant = spawn("claude", process.argv.slice(2), {
+  const enfant = spawn("claude", pourClaude, {
     cwd: libre,
     stdio: "inherit",
     shell: SOUS_WINDOWS,
