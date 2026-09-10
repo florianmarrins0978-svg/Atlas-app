@@ -68,6 +68,10 @@ pastille, qu'il trouve trop grosse. Retirer le cadre ET laisser du texte nu
 aurait rejoué le défaut du 6 — le + dit « ceci s'appuie, et ça ajoute »
 (`ARCHITECTURE.md` §312).
 
+**Sans aucun salarié, le geste dit « + Absent ? »** — sa réponse quand la
+question lui a été posée : le mot « salarié » tomberait à faux quand il n'en a
+aucun.
+
 **Le point d'interrogation est de lui aussi**, et il dit vrai de ce que le
 bouton fait : il ne note rien, il ouvre la question « Qui ? » — la grammaire de
 la pastille d'équipe juste en dessous.

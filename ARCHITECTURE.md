@@ -26674,6 +26674,11 @@ geste invisible — il faut recommencer, et sur un chantier on ne recommence pas
 aurait réclamé ce que le patron venait de faire retirer. Il accepte désormais
 **un quatrième signe, le +**, et refuse toujours les quatre absents à la fois.
 
+**Et le mot suit ce qu'il a sous ses ordres** : « Salarié absent ? » quand il
+a une équipe, **« Absent ? »** quand il travaille seul. Nommer un salarié à un
+artisan qui n'en a aucun décrit une organisation qu'il n'a pas — c'est la même
+faute que « Équipe ? » sur une case qui coche une personne (26 août 2026).
+
 **Le point d'interrogation dit ce que le bouton fait** : il ne note aucune
 absence, il ouvre la question « Qui ? ». C'est la grammaire que l'écran emploie
 déjà deux lignes plus bas, sur la pastille d'équipe.

@@ -235,10 +235,9 @@ td b{color:var(--encre)}
   <p><b>1. Le mot exact.</b> Tranché le 9 septembre : <b>« Salarié absent ? »</b>,
   avec le point d’interrogation — le bouton ne note rien, il ouvre la question
   « Qui ? ».</p>
-  <p><b>2. Quand vous êtes seul.</b> Sans salarié, l’écran dit aujourd’hui
-  « Je ne suis pas là » — et « Salarié absent » ne veut alors rien dire.
-  <b>Voir sans salarié</b>, en haut, montre ce que je garde : le même +, votre
-  phrase à vous. Dites-moi si vous préférez un seul mot pour les deux cas.</p>
+  <p><b>2. Quand vous êtes seul.</b> Tranché le 9 septembre : <b>« Absent ? »</b>
+  — le mot « salarié » tomberait à faux quand vous n’en avez aucun.
+  <b>Voir sans salarié</b>, en haut, le montre.</p>
 
   <h3>Ce que je n’ai pas proposé</h3>
   <p><b>Le + sans aucun mot, à la place du bouton.</b> C’est la variante C, et
@@ -292,7 +291,7 @@ const NOTES = [
 
 /** Le mot du geste — et il change quand il n’a personne sous ses ordres. */
 function mot() {
-  return salaries === 0 ? "Je ne suis pas là" : "Salarié absent\u00a0?";
+  return salaries === 0 ? "Absent\u00a0?" : "Salarié absent\u00a0?";
 }
 
 function gesteHtml() {

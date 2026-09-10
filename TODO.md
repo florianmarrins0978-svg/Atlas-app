@@ -57,9 +57,10 @@ choix, le jour même :** la variante A, « Salarié absent ? », **sans contour*
 le titre « Ce jour-là » retiré. **Codé** — `GesteAbsence` dans
 `src/app/planning/PlanningClient.tsx`, `ARCHITECTURE.md` §312.
 
-**Ce qui reste ouvert, et qui n'a pas été tranché :** quand il n'a **aucun
-salarié**, l'écran garde sa phrase à lui — « Je ne suis pas là ». Il ne s'est
-pas prononcé ; ne pas y mettre « Salarié absent » sans le lui demander.
+**Et sans aucun salarié : « + Absent ? »**, tranché le soir même. Le mot
+« salarié » tomberait à faux quand il n'en a aucun, et « Je ne suis pas là »
+était une phrase là où le reste de l'écran pose une question. Plus rien
+d'ouvert sur ce geste.
 
 ---
 

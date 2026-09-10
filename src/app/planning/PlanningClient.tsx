@@ -2165,11 +2165,15 @@ function PasLaCeJour({
       {!tousAbsents && (
         <div className="py-2">
           {nombreSalaries === 0 ? (
+            /* **SEUL, LE GESTE DIT « Absent ? »** — sa réponse du 9 septembre
+               2026. Le mot « salarié » tomberait à faux quand il n'en a aucun,
+               et « Je ne suis pas là » était une phrase là où les deux autres
+               moitiés de cet écran posent une question. */
             <GesteAbsence
               data-atlas="fermer-le-jour"
               onClick={() => fermer(jour, 1)}
             >
-              Je ne suis pas là
+              Absent&nbsp;?
             </GesteAbsence>
           ) : !demande ? (
             /* **« Salarié absent ? », et le point d'interrogation est de lui**
