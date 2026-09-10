@@ -208,6 +208,10 @@ async function main() {
 
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${libre.jour}"]`);
     await carte.locator('[data-atlas="ajouter"]').click();
+    // **Un temps de plus depuis le 10 septembre 2026** : « Ajouter » demande
+    // d'abord la voie — un chantier en attente, un client, ou autre chose
+    // (`appli/bloquer-sans-devis.html`). On prend celle que ce contrôle vise.
+    await carte.locator('[data-atlas="voie-chantier"]').click();
     // **QUI, et c'est tout** — sa remarque du 9 septembre 2026 : *« si Claudette
     // c'est un chantier 1 journée, deux, ou une demi, ça doit se mettre tout
     // seul »*. Le moment se déduit de la durée que porte le chantier ; le

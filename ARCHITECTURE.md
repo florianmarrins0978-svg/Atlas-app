@@ -27668,6 +27668,47 @@ dans le même écran auraient divergé au premier « Aprem ». Il porte un repè
 différent par geste — sans quoi une suite viserait l'interrupteur de l'autre,
 ouvert dans la même carte.
 
+### CE QUI ATTEND UN JOUR, CE N'EST PAS SEULEMENT « SANS DATE »
+
+**Sa panne du 11 septembre 2026, capture à l'appui :** *« j'en ai que deux […]
+ça devait être un chantier en attente et un client »*. Une demi-journée de
+M. Julien attendait sous « Sans date », et la voie qui mène aux chantiers en
+attente avait **disparu** — elle ne comptait que les chantiers sans date, et le
+sien en a une.
+
+Le tiroir du bas, lui, comptait déjà les deux ensemble (§321). C'est ici que la
+règle manquait, et elle est la même : **du travail qui attend un jour**, quelle
+que soit la forme.
+
+**Une demi-journée rendue se PREND, elle ne se pose pas d'un coup.** Le jour a
+deux moitiés ; choisir laquelle à sa place serait décider de son chantier. Elle
+se met au doigt — le geste du tiroir, écrit une fois — et les « Poser ici » de
+la journée s'allument juste au-dessus.
+
+### UN GESTE QUI PART DANS LE VIDE LE DIT
+
+**Sa panne du même soir, et elle valait pour trois gestes à la fois :** *« il ne
+se pose sur aucune demi-journée ! »*, *« quand c'est un client je ne peux pas
+remplir sa fiche »*. Les gestes marchaient ; c'est sa **page** qui avait survécu
+à son serveur — son espace venait de basculer d'une version à l'autre —, et une
+action serveur postée depuis la page d'avant n'atteint plus rien.
+
+**L'écran ne disait RIEN**, et c'est le vrai défaut : un `.then()` seul
+n'attrape pas un refus, puisque la promesse est REJETÉE. Un appui sans effet et
+sans message se lit comme une application cassée, et rien n'indique qu'un
+rechargement répare tout.
+
+**La pire des trois était muette ET durable** : la recherche de clients ne
+répondant jamais, « on cherche encore » restait vrai pour toujours, et les trois
+cases de la fiche ne s'ouvraient **plus jamais**. Elle rend désormais une liste
+vide sur un échec — il est alors traité comme inconnu, ce qui est le cas le plus
+utile, et il peut écrire.
+
+**Ce qu'on écrit est ce qu'il doit FAIRE**, pas ce qui s'est passé : *« Rien
+n'est parti. Rechargez la page. »* C'est la première question du dépôt devant un
+défaut qui ne se reproduit pas (`HANDOVER.md`, piège 0), et la seule chose qui
+répare une page vieillie.
+
 ### LE TIROIR DU BAS PUBLIE SA HAUTEUR (`--atlas-tiroir`)
 
 `.atlas-contenu` réservait la hauteur de la **barre** (`--atlas-barre`) et rien
@@ -27695,4 +27736,4 @@ dans `TODO.md`.
 | l'écran | `AjoutAuJour`, `VoieDAjout`, `AjoutDunClient`, `AjoutDeTemps` — `src/app/planning/PlanningClient.tsx` |
 | la planche | `appli/bloquer-sans-devis.html`, essayée puis retenue |
 | les règles | `scripts/test-poser-un-client-db.ts` (9 cas) |
-| **son geste** | `scripts/test-bloquer-sans-devis-e2e.ts` (6 cas, de bout en bout) |
+| **son geste** | `scripts/test-bloquer-sans-devis-e2e.ts` (7 cas, de bout en bout) |

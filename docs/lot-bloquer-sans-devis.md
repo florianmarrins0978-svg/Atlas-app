@@ -67,6 +67,31 @@ rien ne se retrouve coincé dessous.
 
 ---
 
+## Ce que vous avez signalé le soir même, et qui est corrigé
+
+**1. « Un chantier en attente » avait disparu.** Vous n'aviez que deux voies.
+Une demi-journée de M. Julien attendait sous « Sans date » — mais la voie ne
+comptait que les chantiers **sans date**, et le sien en a une. Pour vous, les
+deux sont la même chose : du travail qui attend un jour. C'est corrigé, et la
+demi-journée apparaît dans la liste : vous la touchez, puis vous touchez la
+demi-journée qui l'accueille.
+
+**2. « Il ne se pose sur aucune demi-journée », et la fiche du client ne
+s'ouvrait pas.** Les deux gestes marchaient. **C'est votre page qui avait
+survécu à votre serveur** : votre espace venait de basculer d'une version à
+l'autre, et une page ouverte avant la bascule poste dans le vide.
+
+**Le vrai défaut, c'est que l'écran ne disait RIEN.** Un appui, aucun effet,
+aucun message — impossible de deviner qu'un simple rechargement répare tout.
+L'écran écrit maintenant **« Rien n'est parti. Rechargez la page. »**
+
+Et la recherche de client était pire : quand elle ne répondait pas, l'écran
+restait persuadé de « chercher encore », et les trois cases de la fiche ne
+s'ouvraient **plus jamais**. Elle traite désormais un silence comme un inconnu :
+vous pouvez écrire.
+
+---
+
 ## Ce qui a été mesuré
 
 | | |
@@ -74,7 +99,7 @@ rien ne se retrouve coincé dessous.
 | types, lint, mémoire | **verts** |
 | pansement, code mort, couches, flèches | **verts** |
 | les règles du geste, sans navigateur (9 cas) | **verts** |
-| **votre geste, du début à la fin, dans un navigateur** (6 cas) | **verts** |
+| **votre geste, du début à la fin, dans un navigateur** (7 cas) | **verts** |
 | un salarié ne peut ni chercher un client, ni poser | **vert** |
 | formes des boutons, barres du bas, chartes, textes coupés | **verts** |
 

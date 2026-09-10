@@ -44,6 +44,8 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 const INCONNUE = `Mme Renard ${Date.now() % 100000}`;
 /** Ce qui n'est PAS un client, et prend quand même la demi-journée. */
 const BANQUE = `Banque ${Date.now() % 100000}`;
+/** Une journée entière, qu'on cassera en deux pour faire attendre un morceau. */
+const JOURNEE = `Formation ${Date.now() % 100000}`;
 
 async function main() {
   console.log("=== Poser un client sur un jour, sans devis ===\n");
@@ -59,7 +61,7 @@ async function main() {
   await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
   /** Un jour ouvrable à venir, entièrement libre — et l'on feuillette. */
-  const jourLibre = async (): Promise<string> => {
+  const jourLibre = async (sauf?: string): Promise<string> => {
     const aujourdHui = jourDuPatron();
     const ouvrable = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
     for (let mois = 0; mois < 4; mois++) {
@@ -76,7 +78,12 @@ async function main() {
       );
       const libre = jours.find(
         (j) =>
-          j.jour && j.jour > aujourdHui && ouvrable(j.jour) && j.matin === "libre" && j.apres === "libre"
+          j.jour &&
+          j.jour > aujourdHui &&
+          j.jour !== sauf &&
+          ouvrable(j.jour) &&
+          j.matin === "libre" &&
+          j.apres === "libre"
       );
       if (libre?.jour) return libre.jour;
     }
@@ -102,6 +109,11 @@ async function main() {
   await page.waitForTimeout(700);
   const jour = await jourLibre();
   console.log(`  · jour visé : ${jour}`);
+  // Un second jour libre, pour le décor de la demi-journée en attente.
+  await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(700);
+  const jourB = await jourLibre(jour);
+  console.log(`  · second jour : ${jourB}`);
 
   await cas("« + Ajouter » propose ses voies, et « Annuler » les referme", async () => {
     const carte = await ouvrirLeJour(jour);
@@ -257,6 +269,69 @@ async function main() {
     assert.equal(await compte(), 1, "une seconde fiche a été créée pour le même client");
   });
 
+  await cas("UNE DEMI-JOURNÉE RENDUE compte comme un chantier en attente", async () => {
+    /*
+     * **Sa panne du 11 septembre 2026, capture à l'appui :** *« j'en ai que
+     * deux […] ça devait être un chantier en attente et un client »*. Une
+     * demi-journée de M. Julien attendait sous « Sans date », et la voie qui
+     * mène aux chantiers en attente avait DISPARU — elle ne comptait que les
+     * chantiers sans date, et le sien en a une.
+     *
+     * **On installe l'état par la base**, puis on refait SON geste : c'est le
+     * seul moyen d'atteindre « rien sous Sans date, mais un morceau en
+     * attente » sans dépendre de ce qu'une autre suite a laissé.
+     */
+    // **Le décor se pose PAR L'ÉCRAN, puis se casse en base.** Chercher un
+    // chantier d'une journée déjà là ferait dépendre ce contrôle de ce qu'une
+    // autre suite a laissé — et il n'a rien mesuré du tout le premier soir.
+    const carteJ = await ouvrirLeJour(jourB);
+    await carteJ.locator('[data-atlas="ajouter"]').click();
+    await page.waitForTimeout(300);
+    await carteJ.locator('[data-atlas="voie-temps"]').click();
+    await page.waitForTimeout(300);
+    await carteJ.locator('[data-atlas="quoi-cest"]').fill(JOURNEE);
+    await carteJ.locator('[data-atlas="quand-poser"][data-quand="journee"]').click();
+    await carteJ.locator('[data-atlas="poser-le-temps"]').click();
+
+    const sien = async () =>
+      (await pool.query(`SELECT id FROM chantiers WHERE nom = $1 AND deleted_at IS NULL`, [JOURNEE]))
+        .rows[0]?.id as string | undefined;
+    let lui = await sien();
+    for (let i = 0; i < 40 && !lui; i++) {
+      await page.waitForTimeout(250);
+      lui = await sien();
+    }
+    assert.ok(lui, "le décor n'a pas pu poser une journée entière : rien n'est mesuré");
+    // On lui rend une demi-journée, comme « Déplacer » le ferait.
+    const efface = await pool.query(
+      `DELETE FROM creneaux_chantier WHERE chantier_id = $1 AND demi = 'apres_midi'`,
+      [lui]
+    );
+    assert.equal(efface.rowCount, 1, "la demi-journée n'a pas pu être rendue : rien n'est mesuré");
+
+    const carte = await ouvrirLeJour(jourB);
+    await carte.locator('[data-atlas="ajouter"]').click();
+    await page.waitForTimeout(400);
+    assert.ok(
+      (await carte.locator('[data-atlas="voie-chantier"]').count()) >= 1,
+      "la voie des chantiers en attente a disparu alors qu'une demi-journée attend"
+    );
+    await carte.locator('[data-atlas="voie-chantier"]').click();
+    await page.waitForTimeout(400);
+    const enMain = carte.locator(`[data-qui-morceau="${lui}"]`);
+    assert.equal(await enMain.count(), 1, "la demi-journée rendue n'est pas dans la liste");
+    await enMain.click();
+    await page.waitForTimeout(400);
+    // **Prise au doigt, la liste se referme et la journée s'allume.**
+    assert.ok(
+      (await carte.locator('[data-atlas="poser-le-morceau"]').count()) >= 1,
+      "le morceau pris ne rend aucune demi-journée posable"
+    );
+    // On la remet où elle était : cette suite ne salit pas la base.
+    await carte.locator('[data-atlas="poser-le-morceau"]').first().click();
+    await page.waitForTimeout(1600);
+  });
+
   await cas("« Autre chose » bloque du temps qui n'est pas un client", async () => {
     // **Sa réponse du 10 septembre 2026** à la question que sa correction avait
     // ouverte : un rendez-vous à la banque, une livraison, une formation
@@ -303,16 +378,17 @@ async function main() {
     assert.equal(Number(clients.rows[0].n), 0, "un client porte le nom du rendez-vous");
   });
 
-  await pool.query(
-    `UPDATE chantiers SET date_planifiee = NULL, creneau_debut = NULL, deleted_at = now()
-      WHERE nom = $1`,
-    [BANQUE]
-  );
-  await pool.query(
-    `DELETE FROM creneaux_chantier WHERE chantier_id IN (SELECT id FROM chantiers WHERE nom = $1)`,
-    [BANQUE]
-  );
-
+  for (const nom of [BANQUE, JOURNEE]) {
+    await pool.query(
+      `DELETE FROM creneaux_chantier WHERE chantier_id IN (SELECT id FROM chantiers WHERE nom = $1)`,
+      [nom]
+    );
+    await pool.query(
+      `UPDATE chantiers SET date_planifiee = NULL, creneau_debut = NULL, deleted_at = now()
+        WHERE nom = $1`,
+      [nom]
+    );
+  }
   // **On rend la base comme on l'a trouvée** : ces deux chantiers occupent un
   // jour que les autres suites cherchent libre (`CLAUDE.md` §5).
   await pool.query(

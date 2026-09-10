@@ -75,6 +75,14 @@ voies, à chaque étape.**
 | ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
 | **une troisième voie** | *« Autre chose »* — un rendez-vous à la banque, une livraison, une formation : un chantier **sans client**, portant ce qu'on écrit |
 
+**Deux défauts qu'il a signalés le soir même, corrigés :** la voie « Un chantier
+en attente » disparaissait quand seule une **demi-journée rendue** attendait —
+elle compte désormais comme le reste, et se prend au doigt depuis la journée. Et
+un geste qui part dans le vide — sa page avait survécu à son serveur — ne se
+taisait plus : l'écran écrit *« Rien n'est parti. Rechargez la page. »* au lieu
+de ne rien faire. La recherche de clients, elle, rendait la fiche d'un inconnu
+**définitivement** inatteignable dans ce cas.
+
 **Le geste ne disparaît plus quand rien n'attend**, et c'est sa règle du 23 août
 qui le veut : il ne menait nulle part, il mène maintenant quelque part. Ce qui
 disparaît, c'est la voie qui ne mène nulle part — « Un chantier en attente »

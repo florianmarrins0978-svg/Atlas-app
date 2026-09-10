@@ -916,6 +916,31 @@ export default function PlanningClient({
   }
 
   /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * CE QUI N'A PAS PU PARTIR, ÉCRIT À L'ÉCRAN — 11 septembre 2026
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * **Sa panne, captures à l'appui :** *« il ne se pose sur aucune demi-journée
+   * ! »*, et *« quand c'est un client je ne peux pas remplir sa fiche »*. Les
+   * deux gestes marchaient ; c'est sa PAGE qui avait survécu à son serveur —
+   * son espace venait de basculer d'une version à l'autre, et une action
+   * serveur postée depuis la page d'avant n'atteint plus rien.
+   *
+   * **Et l'écran ne disait RIEN.** Un appui, aucun effet, aucun message : le
+   * défaut muet que `AGENTS.md` interdit — *« devant un défaut muet, la
+   * première livraison n'est pas un correctif, c'est de rendre le défaut
+   * bavard »*. Le `.then()` seul n'attrape pas un refus : la promesse est
+   * REJETÉE, et rien ne s'exécute.
+   *
+   * **Ce qu'on écrit alors est ce qu'il doit FAIRE**, pas ce qui s'est passé :
+   * recharger la page. C'est la seule chose qui répare une page vieillie, et
+   * c'est la première question du dépôt devant un défaut qui ne se reproduit
+   * pas (`HANDOVER.md`, piège 0).
+   */
+  const [refus, setRefus] = useState<string | null>(null);
+  const PAGE_VIEILLIE = "Rien n'est parti. Rechargez la page.";
+
+  /**
    * LIBÉRER UNE DEMI-JOURNÉE — et repeindre avec ce que la base rend.
    *
    * **Sa demande du 10 septembre 2026**, planche retenue : la demi-journée sort
@@ -927,9 +952,16 @@ export default function PlanningClient({
    */
   function liberer(chantierId: string, jour: JourIso, demi: Demi) {
     setOuvert(null);
+    setRefus(null);
     enTransition(async () => {
-      const r = await libererDemiJourneeAction(chantierId, jour, demi);
+      const r = await libererDemiJourneeAction(chantierId, jour, demi).catch((e) => {
+        console.error("Libération partie dans le vide", e);
+        setRefus(PAGE_VIEILLIE);
+        return null;
+      });
+      if (!r) return;
       if (!r.succes) {
+        setRefus("Cette demi-journée n'a pas pu être rendue.");
         // Un refus avalé est un défaut muet (`AGENTS.md`) : le message d'une
         // action serveur n'arrive jamais jusqu'à lui, on le journalise donc.
         console.error("Libération refusée", { chantierId, jour, demi, erreur: r.erreur });
@@ -948,9 +980,16 @@ export default function PlanningClient({
    */
   function reposer(chantierId: string, jour: JourIso, demi: Demi) {
     setMorceauEnMain(null);
+    setRefus(null);
     enTransition(async () => {
-      const r = await reposerDemiJourneeAction(chantierId, jour, demi);
+      const r = await reposerDemiJourneeAction(chantierId, jour, demi).catch((e) => {
+        console.error("Repose partie dans le vide", e);
+        setRefus(PAGE_VIEILLIE);
+        return null;
+      });
+      if (!r) return;
       if (!r.succes) {
+        setRefus("Cette demi-journée n'a pas pu être reposée.");
         console.error("Repose refusée", { chantierId, jour, demi, erreur: r.erreur });
         return;
       }
@@ -1106,6 +1145,9 @@ export default function PlanningClient({
     retirerDuJour,
     poser,
     poserUnClient,
+    morceaux,
+    onPrendreMorceau: (id: string) => setMorceauEnMain((tenu) => (tenu === id ? null : id)),
+    refus,
     taches,
   };
 
@@ -1538,6 +1580,11 @@ export default function PlanningClient({
                 sansDate={sansDate}
                 poser={poser}
                 poserUnClient={poserUnClient}
+                morceaux={morceaux}
+                morceauEnMain={morceauEnMain}
+                onPrendreMorceau={(id) =>
+                  setMorceauEnMain((tenu) => (tenu === id ? null : id))
+                }
               />
               )}
             </div>
@@ -1951,6 +1998,19 @@ type GestesCarte = {
    * de « Poser », qui déplace un chantier déjà là.
    */
   poserUnClient: (chantier: ChantierPlanning) => void;
+  /** Les demi-journées rendues qui attendent une place — voir le tiroir du bas. */
+  morceaux: { chantier: ChantierPlanning; combien: number }[];
+  /** Le chantier dont une demi-journée attend une place, s'il en tient une. */
+  morceauEnMain: string | null;
+  onPrendreMorceau: (chantierId: string) => void;
+  /**
+   * CE QUI N'A PAS PU PARTIR — écrit en tête de la journée, ou rien.
+   *
+   * **Un geste sans effet et sans message est un défaut muet** (`AGENTS.md`) :
+   * sa panne du 11 septembre 2026, où sa page avait survécu à son serveur et
+   * où plus rien ne répondait, en silence.
+   */
+  refus: string | null;
   nomEquipe: (rang: number) => string;
   lignesEquipes: { rang: number; nom?: string | null }[];
   occupationDe: (jour: JourIso, demi: Demi) => { pris: readonly ChantierPlanning[]; charge: number };
@@ -1960,8 +2020,6 @@ type GestesCarte = {
   liberer: (chantierId: string, jour: JourIso, demi: Demi) => void;
   /** Reposer le morceau tenu au doigt sur la demi-journée touchée. */
   reposer: (chantierId: string, jour: JourIso, demi: Demi) => void;
-  /** Le chantier dont une demi-journée attend une place, s'il en tient une. */
-  morceauEnMain: string | null;
   retirerDuJour: (chantierId: string) => void;
   poser: (chantierId: string, jour: JourIso) => void;
   taches: Record<string, FeuilleEtRetour>;
@@ -2123,12 +2181,38 @@ function AjoutAuJour({
   sansDate,
   poser,
   poserUnClient,
+  morceaux,
+  morceauEnMain,
+  onPrendreMorceau,
 }: {
   cle: string;
   jour: JourIso;
-} & Pick<GestesCarte, "ouvert" | "setOuvert" | "sansDate" | "poser" | "poserUnClient">) {
+} & Pick<
+  GestesCarte,
+  | "ouvert"
+  | "setOuvert"
+  | "sansDate"
+  | "poser"
+  | "poserUnClient"
+  | "morceaux"
+  | "morceauEnMain"
+  | "onPrendreMorceau"
+>) {
   const ici = ouvert?.cle === cle ? ouvert.quoi : null;
-  const aEnAttente = sansDate.length > 0;
+  /**
+   * **CE QUI ATTEND UN JOUR, ET PAS SEULEMENT « SANS DATE » — 11 sept. 2026.**
+   *
+   * Sa panne, capture à l'appui : *« j'en ai que deux […] ça devait être un
+   * chantier en attente et un client »*. Une demi-journée de M. Julien
+   * attendait sous « Sans date », et la voie qui mène aux chantiers en attente
+   * avait DISPARU — parce qu'elle ne comptait que les chantiers sans date, et
+   * qu'un morceau rendu n'en est pas un : son chantier, lui, a une date.
+   *
+   * Pour lui, les deux sont la même chose — du travail qui attend un jour —, et
+   * le tiroir du bas les compte déjà ensemble depuis la veille. C'est ici que
+   * la règle manquait.
+   */
+  const aEnAttente = sansDate.length > 0 || morceaux.length > 0;
 
   // ─── LE GESTE NE DISPARAÎT PLUS, PARCE QU'IL MÈNE QUELQUE PART ───────────
   //
@@ -2193,6 +2277,24 @@ function AjoutAuJour({
             {sansDate.map((s) => (
               <Petit key={s.id} data-qui={s.id} onClick={() => poser(s.id, jour)}>
                 {s.nom}
+              </Petit>
+            ))}
+            {/* **Une demi-journée rendue se prend, elle ne se pose pas d'un
+                coup** : le jour a deux moitiés, et choisir laquelle à sa place
+                serait décider de son chantier. On la met au doigt — le geste du
+                tiroir, écrit une fois — et les « Poser ici » de la journée
+                s'allument juste au-dessus. */}
+            {morceaux.map((m) => (
+              <Petit
+                key={`morceau-${m.chantier.id}`}
+                data-qui-morceau={m.chantier.id}
+                retenue={morceauEnMain === m.chantier.id}
+                onClick={() => {
+                  onPrendreMorceau(m.chantier.id);
+                  setOuvert(null);
+                }}
+              >
+                {m.chantier.nom} · ½
               </Petit>
             ))}
           </Choisir>
@@ -2326,6 +2428,7 @@ function AjoutDeTemps({
   const [quoi, setQuoi] = useState("");
   const [quand, setQuand] = useState<QuandPoser>("matin");
   const [enCours, setEnCours] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
   const pret = quoi.trim().length >= 2 && !enCours;
 
   return (
@@ -2340,6 +2443,11 @@ function AjoutDeTemps({
         style={STYLE_CHAMP}
       />
       <BasculeDuMoment retenu={quand} onChoisir={setQuand} repere="quand-poser" />
+      {refus && (
+        <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
+          {refus}
+        </p>
+      )}
       <div className="mt-2.5 flex items-center justify-between gap-2">
         <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
           Annuler
@@ -2352,13 +2460,20 @@ function AjoutDeTemps({
           onClick={() => {
             if (!pret) return;
             setEnCours(true);
-            poserDuTempsAction(jour, quand, quoi).then((r) => {
-              setEnCours(false);
-              if (r.succes) onPose(r.chantier);
-              // Un refus avalé est un défaut muet (`AGENTS.md`) : le message
-              // d'une action serveur n'arrive jamais jusqu'à lui.
-              else console.error("Temps refusé", { jour, quand, erreur: r.erreur });
-            });
+            poserDuTempsAction(jour, quand, quoi)
+              .then((r) => {
+                setEnCours(false);
+                if (r.succes) onPose(r.chantier);
+                else {
+                  console.error("Temps refusé", { jour, quand, erreur: r.erreur });
+                  setRefus(r.erreur);
+                }
+              })
+              .catch((e) => {
+                console.error("Temps parti dans le vide", e);
+                setEnCours(false);
+                setRefus("Rien n'est parti. Rechargez la page.");
+              });
           }}
         >
           {enCours ? "…" : "Poser"}
@@ -2415,6 +2530,7 @@ function AjoutDunClient({
   const [fiche, setFiche] = useState({ telephone: "", email: "", adresse: "" });
   const [quand, setQuand] = useState<QuandPoser>("matin");
   const [enCours, setEnCours] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
 
   /**
    * **La recherche part au SERVEUR, et elle attend qu'il s'arrête d'écrire.**
@@ -2430,9 +2546,20 @@ function AjoutDunClient({
     if (mot.length < 2) return;
     let vivant = true;
     const minuteur = setTimeout(() => {
-      chercherDesClientsAction(mot).then((clients) => {
-        if (vivant) setReponse({ mot, clients });
-      });
+      chercherDesClientsAction(mot)
+        .then((clients) => {
+          if (vivant) setReponse({ mot, clients });
+        })
+        // **UNE RECHERCHE QUI TOMBE NE DOIT PAS FERMER LA FICHE.** Sans ce
+        // rattrapage, la réponse n'arrivait jamais, « on cherche encore »
+        // restait vrai pour toujours, et les trois cases de la fiche ne
+        // s'ouvraient PLUS JAMAIS — sa panne du 11 septembre 2026, sur une page
+        // qui avait survécu à son serveur. On rend alors une liste vide : il
+        // est inconnu, ce qui est le cas le plus utile, et il peut écrire.
+        .catch((e) => {
+          console.error("Recherche de client partie dans le vide", e);
+          if (vivant) setReponse({ mot, clients: [] });
+        });
     }, 250);
     return () => {
       vivant = false;
@@ -2459,13 +2586,24 @@ function AjoutDunClient({
       // reconnu, ces cases ne sont pas à l'écran : envoyer leur contenu
       // reviendrait à écrire dans sa fiche ce qu'il n'a pas relu.
       ...(inconnu ? fiche : {}),
-    }).then((r) => {
-      setEnCours(false);
-      if (r.succes) onPose(r.chantier);
-      // Un refus avalé est un défaut muet (`AGENTS.md`) : le message d'une
-      // action serveur n'arrive jamais jusqu'à lui, on le journalise donc.
-      else console.error("Pose d'un client refusée", { jour, quand, erreur: r.erreur });
-    });
+    })
+      .then((r) => {
+        setEnCours(false);
+        if (r.succes) onPose(r.chantier);
+        else {
+          console.error("Pose d'un client refusée", { jour, quand, erreur: r.erreur });
+          setRefus(r.erreur);
+        }
+      })
+      // **Un appui sans effet et sans message est un défaut muet** : c'est ce
+      // qu'il a vu le 11 septembre 2026. Le `.then()` seul n'attrape rien quand
+      // la promesse est REJETÉE — une page qui a survécu à son serveur poste
+      // dans le vide.
+      .catch((e) => {
+        console.error("Pose d'un client partie dans le vide", e);
+        setEnCours(false);
+        setRefus("Rien n'est parti. Rechargez la page.");
+      });
   }
 
 
@@ -2537,6 +2675,12 @@ function AjoutDunClient({
       {/* **Le même interrupteur que « qui n'est pas là »**, à un repère près :
           la question est la même — matin, après-midi, ou la journée. */}
       <BasculeDuMoment retenu={quand} onChoisir={setQuand} repere="quand-poser" />
+
+      {refus && (
+        <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
+          {refus}
+        </p>
+      )}
 
       <div className="mt-2.5 flex items-center justify-between gap-2">
         <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
@@ -2938,6 +3082,9 @@ function CarteDuJour({
   retirerDuJour,
   poser,
   poserUnClient,
+  morceaux,
+  onPrendreMorceau,
+  refus,
   taches,
   absencesDuJour,
   joursAbsentsDe,
@@ -3132,6 +3279,27 @@ function CarteDuJour({
             soignait le symptôme et non la place. La carte naît sous le doigt,
             donc son HAUT est visible par construction — c'est là que le geste
             va. */}
+        {/* ─── CE QUI N'A PAS PU PARTIR — 11 septembre 2026 ────────────────
+            Sa panne : *« il ne se pose sur aucune demi-journée ! »*. Le geste
+            partait dans le vide — sa page avait survécu à son serveur — et
+            l'écran ne disait rien. Un appui qui n'a aucun effet et aucun
+            message se lit comme une application cassée, et il n'a alors aucun
+            moyen de savoir qu'un rechargement répare tout. */}
+        {refus && (
+          /* **Une phrase, pas un bouton.** Elle n'a rien à faire faire : le
+             geste suivant l'efface de lui-même (`setRefus(null)` en tête de
+             chaque). Un bouton qui ne sert qu'à effacer un message demande un
+             appui de plus pour rien — et il porterait un rayon carré, que sa
+             règle du 12 août interdit. */
+          <p
+            data-atlas="refus-du-geste"
+            className="mb-2 mt-1 rounded-[9px] px-3 py-2.5 text-[13px]"
+            style={{ background: voile(colors.bordeaux, 0.1), color: colors.bordeaux }}
+          >
+            {refus}
+          </p>
+        )}
+
         {ecriture && !seulement && (
           <PasLaCeJour
             jour={jour}
@@ -3421,6 +3589,9 @@ function CarteDuJour({
             sansDate={sansDate}
             poser={poser}
             poserUnClient={poserUnClient}
+            morceaux={morceaux}
+            morceauEnMain={morceauEnMain}
+            onPrendreMorceau={onPrendreMorceau}
           />
         )}
 
