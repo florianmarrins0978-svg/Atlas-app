@@ -25,10 +25,15 @@ d'une journée le ramenait donc à une demi-journée, en silence — l'après-mi
 redevenait vendable, et le défaut ne se voyait que le jour du chantier. **Ne
 jamais laisser un geste du planning écrire une durée** : elle vient du devis.
 
-**CE QUI RESTE OUVERT, ET QUI LUI APPARTIENT.** Les deux moitiés de la journée
-changent de place selon où est le chantier (`scripts/capture-deplacer.ts` le
-photographie). Les remettre dans l'ordre ferait parfois ouvrir la fiche sur
-« libre », ce qu'il a refusé le 21 août. Voir `TODO.md`.
+**ET LA JOURNÉE SE LIT DANS SON ORDRE — matin puis après-midi, toujours.** Sa
+réponse du même jour : *« oui, matin puis aprèm »*. Les deux moitiés
+échangeaient leur place selon l'heure du chantier, et l'appui sur « Matin » les
+faisait sauter.
+
+**Cela REVIENT sur sa règle du 21 août** — *« le nom toujours en premier ! »* :
+sur une journée dont seul l'après-midi est pris, la fiche s'ouvre désormais sur
+« libre », et c'est le prix qu'il a accepté. Ne pas le défaire une troisième
+fois sans lui : le pourquoi est dans `ARCHITECTURE.md` §313.
 
 ---
 ## Dernier lot — POSER UN CHANTIER NE DEMANDE PLUS QUAND (9 septembre 2026)

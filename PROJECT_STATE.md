@@ -22,8 +22,9 @@ un départ, et le choisir réécrivait la durée du chantier — « Matin » sur
 journée vendue la ramenait à une demi-journée, en silence. Six pièces
 disparaissent avec lui. **Aucune migration.** Détail : `ARCHITECTURE.md` §313.
 
-**Reste ouvert, et c'est à lui de trancher :** l'ordre des deux moitiés de la
-journée (`TODO.md`).
+**Et la journée se lit dans son ordre** — matin puis après-midi, toujours
+(*« oui, matin puis aprèm »*). Elles échangeaient leur place selon l'heure du
+chantier. Cela revient sur sa règle du 21 août, et il l'a tranché lui-même.
 
 ---
 

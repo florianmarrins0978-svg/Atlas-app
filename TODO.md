@@ -108,19 +108,12 @@ l'application, et reste vert dans les deux cas.
 
 ---
 
-## ⏳ UNE DÉCISION QUI LUI APPARTIENT — l'ordre des deux moitiés du jour
+## ~~L'ordre des deux moitiés du jour~~ — tranché le 10 septembre 2026
 
-**Sa remarque du 9 septembre 2026 :** *« j'ai l'impression que c'est inversé »*.
-Mesuré à l'écran (`scripts/capture-deplacer.ts`) : les deux moitiés de la
-journée **changent de place** selon où est le chantier — posé l'après-midi, la
-fiche se lit `APRÈS-MIDI` puis `MATIN`. La cause est `blocsDeLaJournee`, qui
-pose les chantiers d'abord et les demi-journées libres ensuite.
-
-**Le geste, lui, est réglé** — il a choisi l'interrupteur à deux positions le
-10 septembre (`ARCHITECTURE.md` §313). L'ordre ne l'est pas, et il ne peut pas
-l'être sans lui : le remettre chronologique ferait parfois ouvrir la fiche sur
-« libre », ce qu'il a refusé le 21 août 2026 — *« le nom toujours en premier ! »*.
-**Ses deux demandes ne tiennent pas ensemble ; l'arbitrage est le sien.**
+**Sa réponse :** *« oui, matin puis aprèm »*. La journée se lit désormais dans
+son ordre, quelle que soit l'heure du chantier. Cela revient sur sa règle du
+21 août — *« le nom toujours en premier ! »* — et le pourquoi est écrit dans
+`ARCHITECTURE.md` §313, pour qu'on ne la défasse pas une troisième fois.
 
 ---|---|
 | la logique | **juste** — chantier posé l'après-midi, « Après-midi » est la pastille allumée ; un appui sur « Matin » écrit bien `creneau_debut = matin` |

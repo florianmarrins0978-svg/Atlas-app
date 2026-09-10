@@ -26727,13 +26727,26 @@ se lit que dans un sens : la position tenue est l'état courant. `BasculeDemi`
 emploie `colors.plein` et `surPlein`, le couple des pastilles retenues de cet
 écran, pour rester lisible sur les deux chartes sombres.
 
-**CE QUI N'EST PAS CORRIGÉ, ET QUI ATTEND SON ARBITRAGE.** Les deux moitiés de
-la journée changent toujours de place selon où est le chantier : posé
-l'après-midi, la fiche se lit `APRÈS-MIDI` puis `MATIN`
-(`scripts/capture-deplacer.ts` le photographie). Les remettre dans l'ordre ferait
-parfois ouvrir la fiche sur « libre » — ce qu'il a refusé le 21 août 2026,
-*« le nom toujours en premier ! »*. Sa demande du 10 septembre ne parle que du
-geste ; l'ordre reste posé dans `TODO.md`.
+**ET LA JOURNÉE SE LIT DÉSORMAIS DANS SON ORDRE — matin, puis après-midi,
+toujours.** Sa réponse, le même jour : *« oui, matin puis aprèm »*.
+
+**Cette décision REVIENT sur sa règle du 21 août 2026**, et il faut le savoir
+avant de la défaire une troisième fois. Il avait alors demandé *« le nom
+toujours en premier ! »*, et `blocsDeLaJournee` posait donc les chantiers
+d'abord, les moitiés libres ensuite. Personne n'avait mesuré ce que cela
+produisait : sur un chantier posé l'APRÈS-MIDI, la fiche se lisait `APRÈS-MIDI`
+puis `MATIN`. Les deux lignes échangeaient leur place selon l'heure du chantier,
+et l'appui sur « Matin » les faisait sauter — c'est ce qu'il a lu comme une
+inversion. **Le défaut ne s'est vu ni dans un test, ni dans une relecture : il
+s'est vu en photographiant l'écran** (`scripts/capture-deplacer.ts`), la
+cinquième fois dans ce dépôt (`CLAUDE.md` §5).
+
+**Ce que cela coûte, et qu'il a accepté :** sur une journée dont seul
+l'après-midi est pris, la fiche s'ouvre sur « libre ». Une place stable vaut
+mieux qu'un nom en tête — une place stable se retrouve sans lire.
+
+Les deux passes de `blocsDeLaJournee` n'en font plus qu'une, et deux contrôles
+qui fixaient la règle d'août ont été retournés plutôt que contournés.
 
 **CE QUE LES CONTRÔLES ONT DÛ DÉSAPPRENDRE.** Trois suites fixaient exactement
 ce qu'il fait retirer — « Matin réserve une demi-journée, Journée en réserve

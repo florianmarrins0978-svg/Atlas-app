@@ -591,18 +591,33 @@ async function main() {
     assert.equal(await libres.first().getAttribute("data-bloc"), "matin");
   });
 
-  // **Le nom passe devant ce qui reste libre** — *« fais pareil pour les
-  // autres, le nom toujours en premier ! »*
-  await essai("le nom du client passe AVANT la demi-journée libre", async () => {
+  // **LA JOURNÉE SE LIT DANS SON ORDRE — matin, puis après-midi.** Sa décision
+  // du 10 septembre 2026 : *« oui, matin puis aprèm »*.
+  //
+  // **Ce contrôle défendait exactement l'inverse**, et c'est lui qui l'a
+  // retourné : il fixait sa règle du 21 août — *« le nom toujours en premier ! »*
+  // — sans que personne ait mesuré ce qu'elle produisait. Les chantiers passant
+  // avant les moitiés libres, un chantier de l'APRÈS-MIDI faisait lire la fiche
+  // « après-midi puis matin » : les deux lignes échangeaient leur place selon
+  // l'heure du chantier, et l'appui sur « Matin » les faisait sauter. *« J'ai
+  // l'impression que c'est inversé »*, le 9 septembre.
+  //
+  // On mesure donc la PLACE des deux moitiés, et non celle du nom : c'est la
+  // règle qu'il a tranchée, et elle ne dépend d'aucun libellé
+  // (`CLAUDE.md` §5 bis).
+  await essai("le matin se lit AU-DESSUS de l'après-midi, chantier ou pas", async () => {
+    // **Aucune fonction imbriquée ici** : `tsx` les instrumente, et le corps
+    // envoyé au navigateur appelle alors un `__name` qui n'y existe pas — le
+    // contrôle rougit sur son propre outillage, jamais sur le produit.
     const ordre = await page.evaluate((jour) => {
       const carte = document.querySelector(`[data-atlas="carte-jour"][data-jour="${jour}"]`)!;
-      const nom = carte.querySelector('[data-atlas="nom-du-jour"]')!.getBoundingClientRect().top;
-      const libre = carte.querySelector('[data-sans-chantier="1"]')!.getBoundingClientRect().top;
-      return { nom: Math.round(nom), libre: Math.round(libre) };
+      const matin = carte.querySelector('[data-bloc="matin"]')!.getBoundingClientRect().top;
+      const apres = carte.querySelector('[data-bloc="apres_midi"]')!.getBoundingClientRect().top;
+      return { matin: Math.round(matin), apres: Math.round(apres) };
     }, JOUR);
     assert.ok(
-      ordre.nom < ordre.libre,
-      `« libre » (${ordre.libre} px) ouvre la fiche avant le nom (${ordre.nom} px)`
+      ordre.matin < ordre.apres,
+      `l'après-midi (${ordre.apres} px) passe avant le matin (${ordre.matin} px)`
     );
   });
 

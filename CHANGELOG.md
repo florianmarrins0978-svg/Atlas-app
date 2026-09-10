@@ -27,9 +27,10 @@ base : matin, ou après-midi.
 pastilles dont une est allumée ne disent pas si l'allumée est là où le chantier
 est ou là où il ira. Un interrupteur ne se lit que dans un sens.
 
-**Ce qui n'est pas corrigé :** les deux moitiés de la journée changent toujours
-de place selon où est le chantier. Les remettre dans l'ordre contredit sa règle
-du 21 août — c'est à lui de trancher.
+**Et la journée se lit dans son ordre** — matin, puis après-midi, toujours.
+Elles échangeaient leur place selon l'heure du chantier, et l'appui sur
+« Matin » les faisait sauter : c'est ce qu'il lisait comme une inversion. Cela
+revient sur sa règle du 21 août, et il l'a tranché lui-même le jour même.
 
 ---
 ## 2026-09-09

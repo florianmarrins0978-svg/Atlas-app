@@ -240,10 +240,22 @@ export type BlocJour<C> = BlocChantier<C> | BlocLibre;
  * écrivait deux fois — l'écran FABRIQUAIT deux chantiers là où il n'y en a
  * qu'un.
  *
- * **Et le nom passe devant ce qui reste libre :** *« fais pareil pour les
- * autres, le nom toujours en premier ! »*. Une demi-journée vide ouvrait la
- * fiche, et l'on lisait ce qui MANQUE avant de savoir de qui il s'agit — alors
- * que c'est le client qu'il cherche.
+ * **LA JOURNÉE SE LIT DANS SON ORDRE — matin, puis après-midi, TOUJOURS.** Sa
+ * décision du 10 septembre 2026 : *« oui, matin puis aprèm »*.
+ *
+ * **Elle revient sur sa règle du 21 août**, et il faut le savoir avant de la
+ * défaire à nouveau. Il avait alors demandé *« le nom toujours en premier ! »* :
+ * une demi-journée vide ouvrait la fiche, et l'on lisait ce qui MANQUE avant de
+ * savoir de qui il s'agit. La conséquence n'était visible sur aucune capture de
+ * l'époque : les chantiers passant d'abord et les moitiés libres ensuite, un
+ * chantier posé l'APRÈS-MIDI faisait lire la fiche « après-midi puis matin ».
+ * Les deux lignes échangeaient donc leur place selon l'heure du chantier, et
+ * l'appui sur « Matin » les faisait sauter — *« j'ai l'impression que c'est
+ * inversé »*, le 9 septembre 2026.
+ *
+ * **Ce que cela coûte, et qu'il a accepté :** sur une journée dont seul
+ * l'après-midi est pris, la fiche s'ouvre sur « libre ». Une place stable vaut
+ * mieux qu'un nom en tête, parce qu'une place stable se retrouve sans lire.
  *
  * Une demi-journée que personne n'occupe garde sa ligne : la cacher ferait
  * croire que la journée entière est prise.
@@ -257,15 +269,15 @@ export function blocsDeLaJournee<C>(
     .filter((g) => g.demis.length > 0);
 
   const blocs: BlocJour<C>[] = [];
-  // Les chantiers d'abord, dans l'ordre où ils commencent.
+  // **UNE SEULE PASSE, DANS L'ORDRE DE LA JOURNÉE.** Il y en avait deux — les
+  // chantiers, puis ce qui restait libre —, et c'est ce qui faisait échanger
+  // leurs places aux deux moitiés du jour.
   for (const demi of DEMIS) {
     for (const g of groupes.filter((g) => g.demis[0] === demi)) {
       blocs.push({ type: "chantier", chantier: g.chantier, demis: g.demis });
     }
-  }
-  // Puis ce qui reste libre, avant le bouton d'ajout — qui est justement le
-  // geste qu'appelle une demi-journée vide.
-  for (const demi of DEMIS) {
+    // Une moitié que personne n'occupe garde sa ligne, à SA place : la cacher
+    // ferait croire que la journée entière est prise.
     if (!groupes.some((g) => g.demis.includes(demi))) blocs.push({ type: "libre", demi });
   }
   return blocs;

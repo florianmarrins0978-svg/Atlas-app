@@ -240,12 +240,24 @@ essai("un chantier à la journée n'apparaît QU'UNE fois", () => {
   );
 });
 
-essai("le nom passe AVANT la demi-journée restée libre", () => {
+// **CE CONTRÔLE DÉFENDAIT L'INVERSE, ET C'EST LUI QUI L'A RETOURNÉ.** Il fixait
+// sa règle du 21 août 2026 — *« le nom toujours en premier ! »* —, donc qu'un
+// chantier de l'après-midi ouvre la fiche AVANT le matin resté libre. Personne
+// n'avait vu ce que cela produisait : les deux moitiés du jour échangeaient
+// leur place selon l'heure du chantier, et l'appui sur « Matin » les faisait
+// sauter. Sa décision du 10 septembre : *« oui, matin puis aprèm »*.
+essai("la journée se lit dans son ordre, quelle que soit l'heure du chantier", () => {
   const rocher: Faux = { id: "rocher", demis: ["apres_midi"] };
   const blocs = blocsDeLaJournee([rocher], occupePar);
-  assert.equal(blocs[0].type, "chantier", "« libre » ouvre la fiche");
-  assert.equal(blocs[1].type, "libre");
-  assert.equal(blocs[1].type === "libre" ? blocs[1].demi : null, "matin");
+  assert.equal(blocs[0].type, "libre", "l'après-midi est passé devant le matin");
+  assert.equal(blocs[0].type === "libre" ? blocs[0].demi : null, "matin");
+  assert.equal(blocs[1].type, "chantier");
+
+  // Et l'autre sens ne bouge pas : un chantier du matin ouvre toujours la fiche.
+  const leroy: Faux = { id: "leroy", demis: ["matin"] };
+  const matin = blocsDeLaJournee([leroy], occupePar);
+  assert.equal(matin[0].type, "chantier");
+  assert.equal(matin[1].type === "libre" ? matin[1].demi : null, "apres_midi");
 });
 
 essai("deux chantiers différents gardent chacun leur nom", () => {
@@ -253,7 +265,10 @@ essai("deux chantiers différents gardent chacun leur nom", () => {
   const b: Faux = { id: "b", demis: ["apres_midi"] };
   const blocs = blocsDeLaJournee([a, b], occupePar);
   assert.equal(blocs.filter((x) => x.type === "chantier").length, 2);
-  assert.equal(blocs[2].type, "libre", "le matin libre n'est plus annoncé");
+  // Le matin reste annoncé libre, et À SA PLACE — en tête, puisque c'est
+  // l'ordre de la journée.
+  assert.equal(blocs[0].type, "libre", "le matin libre n'est plus annoncé");
+  assert.equal(blocs[0].type === "libre" ? blocs[0].demi : null, "matin");
 });
 
 essai("une journée vide annonce ses deux demi-journées, dans l'ordre", () => {
