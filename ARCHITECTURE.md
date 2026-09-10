@@ -26134,6 +26134,50 @@ signé sur place avant les travaux (`appli/ts-bon-sur-place.html`), tranché le
 4 septembre. Le supplément sur la facture règle le geste manquant, pas le
 risque d'impayé.
 
+### CE PARAGRAPHE A ÉTÉ ÉCRIT AVANT D'ÊTRE VRAI — corrigé le 10 septembre 2026
+
+**Le patron a essayé le lendemain de la livraison**, sur sa facture
+F2026-000006, et il a photographié trois choses : *« j'ai rajouté un TS mais ça
+n'apparaît nulle part, ni sur la facture ni dans la case reprise devis ; le
+client pense simplement que j'ai rajouté une ligne »*.
+
+| Ce qu'il a vu | Ce qui manquait |
+|---|---|
+| le supplément rangé sous « Reprise du devis », à l'écran | `FactureClient` ne recevait pas la colonne, et n'avait aucun second bloc |
+| aucun bloc sur le PDF non plus | **`LigneDocument` n'avait pas de champ `supplement`** : le titre était écrit dans le moteur, mais `Boolean(undefined)` vaut `false`, donc tout retombait dans le premier bloc — sans une erreur nulle part |
+| **Total HT 1 750 €** sous des lignes qui font 4 450 € | et c'est le pire des trois |
+
+**Le troisième n'était pas dans son message, et il partait chez son client.**
+Le PDF du BROUILLON recopiait `totalHt` et `totalTtc` des colonnes de la
+facture, pendant que son bloc de totaux **recalculait la TVA depuis les
+lignes**. Les colonnes datant d'avant l'ajout, la pièce écrivait trois chiffres
+sur trois bases : 1 750 de HT, 890 de TVA (soit 20 % de 4 450) et 2 100 de TTC
+(soit 1 750 × 1,2). Aucun ne s'accordait aux deux autres.
+
+**C'était une DUPLICATION, pas un calcul faux** — le §3 de `CLAUDE.md`, mot pour
+mot. `donneesFacture` calcule désormais les quatre totaux depuis les lignes
+qu'elle reçoit déjà, avec la fonction de l'émission ; et `emettreFacture` a
+CESSÉ de les lui passer par-dessus, puisqu'ils se retrouvent identiques. La
+correction enlève du code à l'appelant : c'est le signe que la racine a été
+touchée (§4 quater).
+
+**L'écran, lui, avait déjà tiré la leçon** — son commentaire dit depuis
+longtemps *« les totaux ne sont PLUS transmis […] une seule règle pour
+l'affichage et pour l'émission »*. C'est pourquoi il affichait 5 340 € juste
+pendant que le papier en écrivait 2 100. Une moitié du dépôt avait appris, pas
+l'autre.
+
+**Et le titre du bloc vit maintenant à UN endroit**
+(`TITRE_TRAVAUX_SUPPLEMENTAIRES`, avec `lignesParBloc`) : il était en dur dans
+le moteur PDF, et l'écran en aurait posé un second.
+
+**Pourquoi les contrôles n'ont rien vu :** `test-travaux-supplementaires-db.ts`
+éprouvait les totaux par `emettreFacture` — la facture ÉMISE, qui recalculait
+déjà. Le PDF du brouillon, celui que le patron relit avant d'envoyer, n'était
+éprouvé nulle part. C'est la faute du §5 quater : *un contrôle entré par la
+porte de service ne dit rien de la porte d'entrée*. Deux cas y sont entrés, et
+chacun a été vu rougir contre le défaut qu'il vise.
+
 ---
 
 ## §305 — Le compteur de TVA ne se remplit pas tout seul, et l'écran doit le dire

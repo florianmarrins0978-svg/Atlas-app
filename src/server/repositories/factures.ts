@@ -733,12 +733,41 @@ export class FactureDejaEmiseError extends Error {
  * Une seule construction pour l'aperçu et pour l'émission : deux finiraient par
  * ne plus décrire la même pièce, et l'écart n'apparaîtrait que chez le client.
  */
+/**
+ * Ce qui part sur le papier — et **les totaux s'y CALCULENT**, ils ne s'y
+ * recopient plus.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **LE DÉFAUT DU 10 SEPTEMBRE 2026, et il est parti chez un client.** Le patron
+ * ajoute un travail supplémentaire de 2 700 € ; son PDF liste bien les trois
+ * lignes (4 450 €), écrit **Total HT 1 750 €**, **TVA 890 €** et **Total TTC
+ * 2 100 €**. Trois chiffres, trois bases — et aucun ne tombe juste.
+ *
+ * **La cause était une DUPLICATION**, pas un calcul faux : cette fonction
+ * recopiait `f.totalHt` et `f.totalTtc` des colonnes de la facture, pendant que
+ * le bloc de totaux du PDF **recalculait la TVA depuis les lignes**
+ * (`document-commun.ts`, `totauxAvecReduction`). Les colonnes datant d'avant
+ * l'ajout, elles décrivaient une facture qui n'existait plus. C'est très
+ * exactement ce que `CLAUDE.md` §3 interdit — *jamais de règle dupliquée entre
+ * l'affichage et la vérification* —, et le §4 bis le redit pour l'arrosage :
+ * *un récapitulatif se RECALCULE, il ne se recopie pas*.
+ *
+ * **Une seule source, donc : les lignes.** La même fonction qu'à l'émission,
+ * appelée ici — et `emettreFacture` a cessé de passer ses trois totaux par
+ * dessus, puisqu'ils se retrouvent identiques.
+ *
+ * **Ce que cela ne change PAS pour une facture émise.** Elle est immuable
+ * (trigger PostgreSQL), ses lignes ne bougent plus : recalculer depuis elles
+ * rend exactement ce que ses colonnes portent. Et son PDF, lui, est figé à
+ * l'émission et jamais régénéré.
+ */
 function donneesFacture(
   f: typeof factures.$inferSelect,
   lignes: (typeof lignesFacture.$inferSelect)[],
   numeroDevis: string | null
 ): FacturePdfData {
   const modalites = modalitesDeLaFacture(f);
+  const totaux = totauxAvecReduction(lignes, f.tauxTva, f.reductionPourcent);
   return {
     numeroCommercial: f.numeroCommercial,
     statut: f.statut as "brouillon" | "emise",
@@ -771,11 +800,14 @@ function donneesFacture(
     conditionsPaiement: f.conditionsPaiement,
     devise: f.devise,
     tauxTva: f.tauxTva,
-    totalHt: f.totalHt,
-    totalTva: f.totalTva,
-    totalTtc: f.totalTtc,
+    totalHt: totaux.totalHt,
+    totalTva: totaux.totalTva,
+    totalTtc: totaux.totalTtc,
     reductionPourcent: f.reductionPourcent,
-    reductionMontant: f.reductionMontant,
+    // **Le montant retiré suit les totaux, jamais la colonne.** Un montant resté
+    // sur l'ancien HT donnerait un « Total HT après remise » qui ne serait la
+    // différence de rien — le raisonnement était déjà écrit à l'émission.
+    reductionMontant: totaux.reductionMontant,
     lignes: lignes
       .slice()
       .sort((a, b) => a.ordre - b.ordre)
@@ -787,6 +819,10 @@ function donneesFacture(
         // Le taux de sa catégorie voyage jusqu'au papier : sans lui, la facture
         // ventilerait tout sur le taux du document (migration 0073).
         tauxTva: l.tauxTva,
+        // **Et son bloc avec lui (migration 0082).** Sans cette ligne, le titre
+        // « TRAVAUX SUPPLÉMENTAIRES » du PDF ne s'affichait JAMAIS : les lignes
+        // arrivaient sans la colonne, et tout retombait dans le bloc du devis.
+        supplement: l.supplement,
       })),
   };
 }
@@ -846,24 +882,16 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
       .limit(1);
 
     const habillage2 = await allureDesDocuments(tx, ctx.entrepriseId);
+    // **Les quatre totaux ne se repassent plus ici — 10 septembre 2026.**
+    // `donneesFacture` les calcule elle-même depuis ces mêmes lignes, avec cette
+    // même fonction. Les lui imposer était la moitié d'une duplication dont
+    // l'autre moitié — le PDF brouillon, qui recopiait les colonnes — a sorti
+    // une facture aux totaux faux. Seul le STATUT reste forcé : la pièce
+    // archivée doit dire « émise » alors que la ligne ne le sera qu'après.
     const pdfBytes = await genererPdfFacture(
-      donneesFacture(
-        {
-          ...avant,
-          statut: "emise",
-          totalHt: totalHt.toFixed(2),
-          totalTva: totalTva.toFixed(2),
-          totalTtc: totalTtc.toFixed(2),
-          // **Le montant retiré se recalcule avec les totaux, jamais séparément.**
-          // Les lignes peuvent avoir bougé depuis la création de la facture ; un
-          // montant resté sur l'ancien HT donnerait un « Total HT après remise »
-          // qui ne serait la différence de rien.
-          reductionMontant: t.reductionMontant,
-        },
-        lignes,
-        d?.numero ?? null
-      )
-    , habillage2);
+      donneesFacture({ ...avant, statut: "emise" }, lignes, d?.numero ?? null),
+      habillage2
+    );
 
     const objet = await enregistrerObjet(
       `chantiers/${avant.chantierId}/factures`,

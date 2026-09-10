@@ -17,7 +17,13 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "@/server/logger";
 import { avecCivilite } from "@/lib/civilite";
-import { libelleReduction, lignesParBloc, tauxLisible, totauxAvecReduction } from "@/lib/reduction-devis";
+import {
+  libelleReduction,
+  lignesParBloc,
+  tauxLisible,
+  totauxAvecReduction,
+  TITRE_TRAVAUX_SUPPLEMENTAIRES,
+} from "@/lib/reduction-devis";
 import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
 import { protegerContreModification } from "./proteger-pdf";
 import { pourLePapier } from "@/lib/texte-pdf";
@@ -414,6 +420,21 @@ export type LigneDocument = {
    * les documents émis avant, qui sortent identiques à eux-mêmes.
    */
   tauxTva?: string | null;
+  /**
+   * Un TRAVAIL SUPPLÉMENTAIRE, ajouté après le devis (migration 0082).
+   *
+   * **Ce champ manquait, et c'est ce qui rendait le bloc invisible.** Le titre
+   * « TRAVAUX SUPPLÉMENTAIRES » est écrit plus bas depuis le 9 septembre 2026,
+   * et `lignesParBloc` sait déjà séparer — mais les lignes qui lui arrivaient
+   * ne portaient pas la colonne : `Boolean(undefined)` vaut `false`, donc tout
+   * retombait dans le premier bloc, **sans une erreur nulle part**. Le patron
+   * l'a vu le lendemain sur sa propre facture : *« j'ai rajouté un TS mais ça
+   * n'apparaît nulle part, le client pense que j'ai rajouté une ligne »*.
+   *
+   * Absent ou nul : la ligne vient du devis — c'est le cas de tous les
+   * documents d'avant, et d'un devis, qui n'a qu'un bloc par construction.
+   */
+  supplement?: boolean | null;
 };
 
 export type DonneesDocument = {
@@ -889,7 +910,7 @@ export async function composerDocument(
     if (!montrerCategories) return;
     ecrireEspace(
       ctx,
-      `${categorie.supplement ? "TRAVAUX SUPPLÉMENTAIRES" : ""}${
+      `${categorie.supplement ? TITRE_TRAVAUX_SUPPLEMENTAIRES : ""}${
         categorie.supplement && plusieursTaux ? " — " : ""
       }${
         !categorie.supplement || plusieursTaux ? `TVA ${tauxLisible(categorie.taux)} %` : ""

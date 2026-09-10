@@ -141,6 +141,12 @@ export default async function FacturePage({
                     // (migration 0073) : sans lui, l'écran ventilait tout sur
                     // le taux du document.
                     tauxTva: l.tauxTva,
+                    // **Et son bloc (migration 0082).** Sans lui, l'écran
+                    // rangeait un travail supplémentaire sous « Reprise du
+                    // devis » — le patron l'a vu le 10 septembre 2026 : *« ça
+                    // n'apparaît nulle part, le client pense simplement que
+                    // j'ai rajouté une ligne »*.
+                    supplement: l.supplement,
                   })),
                 }
               : null

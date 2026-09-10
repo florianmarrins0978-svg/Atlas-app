@@ -8,6 +8,34 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### Le travail supplémentaire se voit enfin — et le PDF cesse d'écrire trois totaux qui ne s'accordent pas
+
+**Il a essayé le lendemain de la livraison, photos à l'appui :** *« j'ai rajouté
+un TS mais ça n'apparaît nulle part, ni sur la facture ni dans la case reprise
+devis ; le client pense simplement que j'ai rajouté une ligne »*.
+
+**Un troisième défaut n'était pas dans son message, et il partait chez son
+client** : son PDF écrivait **Total HT 1 750 €** sous des lignes qui font
+**4 450 €**, avec une TVA de 890 € et un TTC de 2 100 €. Trois chiffres, trois
+bases, aucun d'accord avec les autres. Le PDF du brouillon recopiait les
+colonnes de la facture pendant que son bloc de totaux recalculait la TVA depuis
+les lignes — la duplication que le §3 interdit.
+
+| | |
+|---|---|
+| `factures.ts` | `donneesFacture` **calcule** les totaux depuis les lignes, et `emettreFacture` a cessé de les lui passer |
+| `document-commun.ts` | `LigneDocument` porte enfin `supplement` : le titre était écrit, il ne pouvait jamais s'afficher |
+| `FactureClient.tsx` | deux blocs, avec `lignesParBloc` — celle du papier |
+| `reduction-devis.ts` | `TITRE_TRAVAUX_SUPPLEMENTAIRES`, à un seul endroit |
+
+**Les contrôles n'avaient rien vu parce qu'ils entraient par la porte de
+service** : ils éprouvaient `emettreFacture`, qui recalculait déjà. Le PDF du
+BROUILLON — celui qu'il relit avant d'envoyer — n'était éprouvé nulle part.
+Deux cas y sont entrés (**11 contrôles, 0 échec**), et chacun a été vu rougir
+contre le défaut qu'il vise, jamais contre l'autre.
+
+Le pourquoi de chaque choix est dans `ARCHITECTURE.md` §304.
+
 ### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
 
 *« Fais celui-là, juste tu retires la journée. Il faut garder le bouton
