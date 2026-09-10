@@ -3,6 +3,8 @@
 import { exigerChantierDansSaPortee, exigerEcritureSurLePlanning } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
+  creerChantier,
+  listerChantiersPourPlanning,
   planifierChantier,
   deplanifierChantier,
   ecrireNoteChantier,
@@ -19,6 +21,9 @@ import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
 import { retourDuChantier } from "@/server/repositories/retours-intervention";
 import { listerPhotos } from "@/server/repositories/photos";
+import { listerClients, trouverOuCreerClient } from "@/server/repositories/clients";
+import { filtrerClientsParNom } from "@/lib/recherche-client";
+import { nomDuChantier } from "@/lib/nom-chantier";
 
 /**
  * LES ACTIONS DU PLANNING.
@@ -301,4 +306,184 @@ export async function tachesDuChantierAction(
     retourPose: retour !== null,
     photos: sesPhotos.map((p) => ({ id: p.id, storageKey: p.storageKey })),
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// POSER UN CLIENT SUR UN JOUR, SANS DEVIS — sa demande du 10 septembre 2026
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// *« Si j'ai un chantier à rajouter ou quelque chose, que je puisse le faire
+// sans devoir passer par la fiche client et le devis — donc en appuyant sur
+// ajouter, il faut pouvoir bloquer une demi-journée ou la journée juste en
+// écrivant ce que c'est. »* Puis sa correction, planche
+// `appli/bloquer-sans-devis.html` : *« change le nom en un client, et si le
+// client n'est pas reconnu il faut qu'il ajoute aussi sa fiche client
+// automatiquement, comme quand on ajoute un client par la voie normale. »*
+//
+// **La voie normale part du client et descend vers le planning** — fiche,
+// devis, envoi, puis une date. Celle-ci part du JOUR et remonte : on pose
+// d'abord, la fiche se crée au passage, le devis vient plus tard ou jamais.
+
+/** Un client que la recherche a retrouvé — ce que l'écran propose au doigt. */
+export type ClientProposé = {
+  id: string;
+  nom: string;
+  telephone: string | null;
+  adresse: string | null;
+};
+
+/**
+ * LES CLIENTS DONT LE NOM CONTIENT CE QU'IL TAPE.
+ *
+ * **La recherche se fait au SERVEUR, et le carnet ne descend pas.** L'écran des
+ * clients, lui, filtre dans le navigateur — il a déjà la liste, puisqu'il
+ * l'affiche. Le planning ne l'a pas, et la lui envoyer ferait descendre les
+ * noms, numéros et adresses de tout le carnet dans le téléphone à chaque
+ * ouverture du planning, pour un geste qui sert deux fois par mois.
+ *
+ * **La règle, elle, ne bouge pas** : `filtrerClientsParNom` est celle de
+ * l'écran des clients (`src/lib/recherche-client.ts`). Deux façons de chercher
+ * un client finiraient par ne plus trouver le même (`CLAUDE.md` §3).
+ */
+export async function chercherDesClientsAction(saisie: string): Promise<ClientProposé[]> {
+  const ctx = await getCurrentCtx();
+  // Chercher, c'est lire — mais ce geste-ci n'existe que pour POSER, et poser
+  // est refusé à un salarié. Lui rendre le carnet de son patron par la porte
+  // de service serait le contournement que la garde existe pour fermer.
+  await exigerEcritureSurLePlanning(ctx, "chercher un client");
+  // **Deux lettres ne reconnaissent personne** — la même borne que
+  // `reconnaitreLeClient`, et elle évite une requête par frappe.
+  if (saisie.trim().length < 2) return [];
+  const tous = await listerClients(ctx);
+  return filtrerClientsParNom(tous, saisie)
+    .slice(0, 6)
+    .map((c) => ({ id: c.id, nom: c.nom, telephone: c.telephone, adresse: c.adresse }));
+}
+
+/** Ce que le jour reçoit : une moitié, ou la journée entière. */
+export type QuandPoser = "matin" | "apres_midi" | "journee";
+
+export type ResultatPoseClient =
+  | { succes: true; chantier: ChantierDuPlanning; ficheCreee: boolean }
+  | { succes: false; erreur: string };
+
+/** La forme exacte que l'écran repeint — jamais recopiée à la main. */
+type ChantierDuPlanning = Awaited<ReturnType<typeof listerChantiersPourPlanning>>[number];
+
+/**
+ * POSER UN CLIENT SUR UNE DEMI-JOURNÉE, OU SUR LA JOURNÉE.
+ *
+ * **La fiche du client se crée si elle n'existe pas**, et c'est sa demande mot
+ * pour mot. La reconnaissance est celle de la voie normale
+ * (`trouverOuCreerClient`, qui porte la règle du 17 août 2026) : un M. Martins
+ * déjà connu ne se dédouble pas, et ce qu'on saisit complète ce qui manque
+ * dans sa fiche sans jamais écraser ce qui y est.
+ *
+ * **LA DURÉE SE CHOISIT ICI, et c'est le seul endroit où cela reste vrai.**
+ * Ailleurs, choisir un moment réécrivait ce que le devis avait vendu — le
+ * défaut du 9 septembre 2026. Ici, il n'y a pas de devis : le chantier naît de
+ * ce geste, et « Journée » ne recouvre rien.
+ *
+ * **Ni prix, ni devis, ni équipe.** Le temps est pris, c'est tout ce qui est
+ * promis. Le chantier se chiffre ensuite comme les autres, ou jamais.
+ */
+export async function poserUnClientAction(
+  jour: JourIso,
+  quand: QuandPoser,
+  saisie: { nom: string; telephone?: string; email?: string; adresse?: string }
+): Promise<ResultatPoseClient> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "poser un client sur ce jour");
+
+  const nom = saisie.nom.trim();
+  if (nom.length < 2) return { succes: false, erreur: "Écrivez le nom du client." };
+
+  const { client, reutilise } = await trouverOuCreerClient(ctx, {
+    nom,
+    telephone: saisie.telephone?.trim() || undefined,
+    email: saisie.email?.trim() || undefined,
+    adresse: saisie.adresse?.trim() || undefined,
+  });
+
+  // **Le nom du chantier ne s'invente pas ici** : `nomDuChantier` le fabrique
+  // pour toute l'application, et le recopier à la main donnerait un jour deux
+  // façons de nommer la même chose (`CLAUDE.md` §3).
+  // **La durée naît AVEC le chantier** : `planifierChantier` la lit pour savoir
+  // combien de demi-journées poser, et un chantier sans durée vaudrait la
+  // journée entière — donc « Matin » prendrait aussi l'après-midi.
+  const chantier = await creerChantier(ctx, {
+    nom: nomDuChantier({ nomClient: client.nom, adresseChantier: client.adresse, jour }),
+    adresseChantier: client.adresse ?? undefined,
+    clientId: client.id,
+    dureeDemiJournees: quand === "journee" ? 2 : 1,
+  });
+
+  await planifierChantier(ctx, chantier.id, jour, {
+    demi: quand === "apres_midi" ? "apres_midi" : "matin",
+  });
+  await porterChantierDansAgenda(ctx, chantier.id);
+
+  // **On relit par la requête du planning**, plutôt que de fabriquer la ligne :
+  // elle porte une quinzaine de champs — l'adresse, le dernier envoi, les
+  // équipes, les créneaux — et une seconde rédaction en oublierait un, qui
+  // manquerait à l'écran sans que rien ne le dise.
+  const ligne = (await listerChantiersPourPlanning(ctx)).find((c) => c.id === chantier.id);
+  if (!ligne) {
+    return { succes: false, erreur: "Le chantier a été créé mais reste introuvable au planning." };
+  }
+  return { succes: true, chantier: ligne, ficheCreee: !reutilise };
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * DU TEMPS QUI N'EST PAS UN CLIENT — la banque, une livraison, une formation
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * **Sa réponse du 10 septembre 2026**, à la question que sa propre correction
+ * avait ouverte : *« ok fais ça »* — une troisième entrée, à côté de « Un
+ * chantier en attente » et « Un client ».
+ *
+ * **Un rendez-vous à la banque prend une demi-journée comme un chantier.** Il
+ * ne se distingue de celui d'un client que par ce qui lui manque : personne à
+ * facturer, aucune adresse à rejoindre. C'est donc un chantier **sans client**,
+ * portant pour nom ce qu'il a écrit — et non une nouvelle sorte d'objet.
+ *
+ * **Pourquoi pas une table à part.** Une « occupation » qui ne serait pas un
+ * chantier obligerait à la compter une seconde fois dans la capacité, à la
+ * dessiner une seconde fois au calendrier, à la retirer par un second geste, et
+ * à la sortir des terminés par une seconde règle. Quatre endroits où deux
+ * vérités finiraient par diverger, pour une ligne qui prend une demi-journée
+ * exactement comme les autres.
+ *
+ * **CE QUE ÇA COÛTE, ET IL FAUT LE DIRE** : ce temps-là apparaît dans la liste
+ * des chantiers, puisque c'en est un. Sans prix, sans devis, sans client.
+ */
+export async function poserDuTempsAction(
+  jour: JourIso,
+  quand: QuandPoser,
+  quoi: string
+): Promise<ResultatPoseClient> {
+  const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "bloquer du temps sur ce jour");
+
+  const nom = quoi.trim();
+  if (nom.length < 2) return { succes: false, erreur: "Écrivez ce que c'est." };
+
+  // **Aucun client, et c'est tout ce qui le distingue.** `nomDuChantier` sait
+  // déjà nommer un chantier sans client — mais ici le nom est écrit par lui, et
+  // c'est le seul qui dise de quoi il s'agit : « Banque », « Livraison ».
+  const chantier = await creerChantier(ctx, {
+    nom: nom.slice(0, 120),
+    dureeDemiJournees: quand === "journee" ? 2 : 1,
+  });
+  await planifierChantier(ctx, chantier.id, jour, {
+    demi: quand === "apres_midi" ? "apres_midi" : "matin",
+  });
+  await porterChantierDansAgenda(ctx, chantier.id);
+
+  const ligne = (await listerChantiersPourPlanning(ctx)).find((c) => c.id === chantier.id);
+  if (!ligne) {
+    return { succes: false, erreur: "Le temps a été bloqué mais reste introuvable au planning." };
+  }
+  return { succes: true, chantier: ligne, ficheCreee: false };
 }

@@ -114,6 +114,29 @@ async function main() {
     // appuie, rien ne se passe, et on croit l'application cassée.
     const contexte = await navigateur.newContext();
     const page = await contexte.newPage();
+
+    /**
+     * **ON FABRIQUE L'APPAREIL INCAPABLE, ON NE L'ESPÈRE PLUS.**
+     *
+     * Ce cas supposait qu'un Chromium sans écran ne sache jamais faire de
+     * WebAuthn de plateforme. **C'est faux sur Windows**, mesuré le
+     * 10 septembre 2026 sur le poste du patron :
+     * `isUserVerifyingPlatformAuthenticatorAvailable()` y répond `true` —
+     * Windows Hello est là. La porte proposait donc Face ID à juste titre, et
+     * la suite accusait le produit pour une propriété de la machine.
+     *
+     * Un contrôle qui dépend de l'hôte ne prouve rien : vert sur la CI,
+     * rouge chez lui, et personne ne sait lequel des deux a raison. On impose
+     * donc la réponse — c'est la seule façon d'éprouver « un appareil qui ne
+     * sait pas le faire » partout pareil.
+     */
+    await page.addInitScript(() => {
+      const pkc = (window as unknown as { PublicKeyCredential?: unknown }).PublicKeyCredential as
+        | { isUserVerifyingPlatformAuthenticatorAvailable?: () => Promise<boolean> }
+        | undefined;
+      if (pkc) pkc.isUserVerifyingPlatformAuthenticatorAvailable = async () => false;
+    });
+
     await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
     // On laisse le temps au test de disponibilité de répondre.
     await page.waitForTimeout(800);

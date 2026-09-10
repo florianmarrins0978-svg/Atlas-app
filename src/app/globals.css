@@ -202,9 +202,19 @@ body {
 }
 
 /* Le contenu réserve la hauteur de la barre, sinon la dernière carte de chaque
- * liste passe dessous. */
+ * liste passe dessous.
+ *
+ * **ET CELLE DU TIROIR DU PLANNING — 10 septembre 2026.** Ce tiroir est `fixed`
+ * lui aussi, posé SUR la barre : il mangeait cinquante pixels de plus que ce
+ * qui était réservé ici, et ce qui tombait dessous cessait d'être visable. Deux
+ * gestes l'ont payé — « + Absent ? », qui passait dessous d'un pixel, et le
+ * « Poser » d'un client, qui atterrissait dessous dès que sa fiche s'ouvrait.
+ *
+ * **Zéro partout ailleurs** : la variable n'existe que pendant que le tiroir
+ * est à l'écran, et il la retire en partant (`TiroirDuBas`). Le repli garde
+ * donc les autres écrans exactement comme ils sont. */
 .atlas-contenu {
-  padding-bottom: var(--atlas-barre);
+  padding-bottom: calc(var(--atlas-barre) + var(--atlas-tiroir, 0px));
 }
 
 /* **Et la réserve se retire quand la barre n'est pas là — 5 septembre 2026.**

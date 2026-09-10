@@ -174,22 +174,28 @@ une planche écartée se garde (`CLAUDE.md` §3 bis).
 
 ---
 
-## 🔴 TROIS ROUGES ARRIVÉS AVEC LA PORTE DE CONNEXION (10 septembre 2026)
+## ~~TROIS ROUGES ARRIVÉS AVEC LA PORTE DE CONNEXION~~ — RÉGLÉS LE 10 SEPTEMBRE 2026
 
-**Mesurés, pas supposés** : batterie complète du 10 septembre au soir, comparée
-à celle du matin. Ces trois-là sont apparus **avec la fusion de `main`** qui
-apporte la porte Google/Apple, et aucun ne touche au planning.
+Relevés le soir même, en comparant deux batteries : `test-accueil-en-tete`,
+`test-porte-bienvenue` et `test-actions-gardees-db`, tous les trois sur
+`src/app/login/`. **La session qui avait livré la porte les a corrigés dans la
+foulée** (« Rendre bavard le silence de Google et d'Apple »).
 
-| La suite | Ce qu'elle dit |
-|---|---|
-| `test-accueil-en-tete.ts` | *« un filet d'intertitre est revenu : `src/app/login/BoutonsFournisseurs.tsx` »* — il les a fait retirer le 25 août |
-| `test-porte-bienvenue.ts` | *« on ne peut plus revenir à la porte depuis /login »* |
-| `test-actions-gardees-db.ts` | `src/app/login/actions.ts#entrerAvecAction` n'a aucune garde de rôle — à exempter avec sa raison, une porte de connexion ne peut pas en avoir |
+Ce qui reste de l'épisode, et qui vaut d'être gardé : comparer la liste des
+rouges AVANT et APRÈS un lot dit en trois secondes ce qui est à soi. Sans cette
+comparaison, ces trois-là auraient été portés au compte du planning.
 
-**À la session qui a livré la porte.** Le troisième est le plus simple : une
-action de connexion ne PEUT pas exiger un rôle, puisqu'on n'est pas encore
-entré. Elle se déclare dans `EXEMPTIONS` avec cette raison, ce que le contrôle
-prévoit déjà.
+---
+
+## ~~ET LE TEMPS QUI N'EST PAS UN CLIENT ?~~ — TRANCHÉ LE 10 SEPTEMBRE 2026
+
+Sa réponse, le soir même : *« ok fais ça »*. La troisième voie existe —
+« Autre chose », un champ libre, les trois moments, et c'est posé.
+
+**Ce que ça crée est un chantier SANS client**, et il apparaît donc dans la
+liste des chantiers. C'est le prix de ne pas inventer une seconde sorte
+d'occupation ; s'il le signale, c'est là qu'il faudra regarder
+(`ARCHITECTURE.md` §323).
 
 ---
 
@@ -219,14 +225,23 @@ un « Annuler » à chaque étape sur une AUTRE planche
 | le tiroir « À poser sur… » | **566** → 616 px, `fixed`, z-19 |
 
 Un pixel de recouvrement, et `test-pas-la-ce-jour-e2e` le refuse à juste titre
-(*« il est ATTEIGNABLE — rien ne le recouvre »*). **Rouge AVANT ce lot comme
-après** : ce n'est pas le nouvel ordre qui l'a créé, et le geste, lui, se touche
-en son centre.
+(*« il est ATTEIGNABLE — rien ne le recouvre »*). **Rouge avant les deux lots du
+10 septembre comme après** : le geste, lui, se touche en son centre.
 
-**La racine est de placement, pas de dessin** : la carte du jour naît sous le
-doigt, et rien ne réserve la hauteur du tiroir sous elle. Le tiroir publie
-pourtant la sienne (`--atlas-barre`, `AtlasBottomNav`) — c'est de ce côté qu'il
-faut chercher, pas en poussant la carte à la main.
+**LA MOITIÉ DE LA RACINE A ÉTÉ TRAITÉE LE 10 SEPTEMBRE AU SOIR, ET PAS
+CELLE-CI.** Le tiroir publie désormais sa hauteur (`--atlas-tiroir`) et
+`.atlas-contenu` la réserve (`ARCHITECTURE.md` §323) : plus rien n'est
+DÉFINITIVEMENT hors d'atteinte au bas d'une carte — c'est ce qui a sauvé le
+« Poser » du lot « un client ».
+
+**Ce qui reste est un défaut de PLACEMENT**, et la réserve n'y peut rien : la
+carte naît sous le doigt, et quand le jour touché est dans la dernière rangée du
+mois, son HAUT tombe déjà dans les cinquante derniers pixels. Une réserve permet
+de faire défiler jusqu'en bas ; elle ne remonte pas ce qui est déjà à l'écran.
+
+**Ne pas « corriger » en poussant la carte à la main**, et ne pas ajouter de
+défilement forcé — le dépôt en a retiré un le 3 septembre pour cette raison
+exacte. Ce qu'il faut regarder, c'est le rang de la carte dans la rangée.
 
 ---
 

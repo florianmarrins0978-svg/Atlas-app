@@ -46,6 +46,84 @@ ne figurait dans aucun export d'entreprise. Sans elle, un artisan qui emporte
 ses données récupérerait ses chantiers et leur durée demandée, mais plus rien ne
 dirait QUAND ils tiennent — un planning de saison à refaire à la main. Elle est
 ajoutée à `export-entreprise.ts` plutôt qu'exclue : ce sont ses données.
+### La fiche d'intervention se colle sous SON chantier
+
+*« Quand il y a plusieurs chantiers le même jour on a un problème ! Quand je
+clique sur sa fiche d'intervention, ça doit se coller en dessous, pas en dessous
+de Frédéric, ça porte à confusion. »*
+
+La fiche était rendue **après la boucle des blocs**, donc toujours au bas de la
+journée. Sur un jour à deux chantiers, toucher « Mr. Julien » ouvrait une fiche
+posée sous « Mr. Frédéric » — et la fiche porte le nom du client en gros : deux
+noms qui se contredisent à trois centimètres, sur l'écran qui dit à une équipe
+où elle va.
+
+**Corrigé à la racine, pas déplacé d'un cran :** la place se calcule dans
+`rangDeLaFiche` (`src/lib/planning-jour.ts`), à côté de `blocsDeLaJournee` qui
+ordonne déjà la journée. L'écran ne fait que la poser au rang qu'on lui rend, et
+il n'y a **qu'un seul endroit** dans l'arbre où elle se dessine.
+
+**Ce que la règle concilie**, et c'est pour cela qu'elle ne tient pas en une
+ligne : sous le **dernier** chantier du jour, la fiche repasse **après** les
+moitiés restées libres — sa correction du 22 août 2026, *« l'après-midi de libre
+doit rester en dessous du matin même s'il est libre »*. Une moitié libre
+appartient à la journée, pas au chantier. Les deux règles ne se croisent qu'en
+queue, parce que `blocsDeLaJournee` ne pose des blocs « libre » que là.
+
+**Éprouvé sans navigateur** (`scripts/test-planning-jour.ts`, cinq essais de
+plus) : le défaut ne se voyait qu'à **deux chantiers dans la même journée**, un
+cas qu'aucune capture ni aucune suite ne montrait. Les nouveaux essais ont été
+confrontés à l'ancien comportement — deux rougissent, dont celui qui porte son
+mot : « elle est passée sous Frédéric ».
+
+**Et le chemin qu'il emprunte, lui, est éprouvé à l'écran** : un essai de plus
+dans `scripts/test-planning-e2e.ts` pose DEUX chantiers sur la même journée,
+touche le nom du premier, et mesure que la fiche tombe entre les deux. La suite
+du planning rend 44 réussis, 0 échec.
+
+**Et du code mort est parti avec :** `dansLeMois` posait `mx-[18px]` sur la
+fiche pour un appelant qui n'existe pas — les deux passent `attache`. La fiche
+vit désormais DANS la carte du jour, et c'est le retrait de la carte qui
+l'aligne.
+
+**Et un contrôle qui rougissait au hasard a été rendu précis.** « Un samedi
+offre les mêmes gestes qu'un mardi » visait « la première carte du document »
+plutôt que le samedi : quand une ligne des planifiés restait dépliée plus haut,
+il mesurait la mauvaise et annonçait « le samedi n'affiche pas ses deux
+demi-journées » — sur du code juste, une fois sur deux. Il vise désormais la
+carte par son jour. Un garde-fou qui parle à tort s'apprend à être ignoré.
+
+### Poser un client sur un jour, sans passer par le devis
+
+**Sa demande, planche `appli/bloquer-sans-devis.html` retenue :** *« si j'ai un
+chantier à rajouter, que je puisse le faire sans devoir passer par la fiche
+client et le devis »*, puis *« si le client n'est pas reconnu, il faut qu'il
+ajoute aussi sa fiche client automatiquement »*.
+
+« Ajouter » propose désormais **deux voies** — un chantier qui attend une date,
+comme avant, ou **un client** qu'on écrit au clavier. Connu, il apparaît et son
+numéro est déjà là ; inconnu, **sa fiche se crée** avec ce qu'on saisit. Puis
+matin, après-midi ou la journée, et c'est posé. **« Annuler » ramène aux deux
+voies, à chaque étape.**
+
+| | |
+|---|---|
+| la reconnaissance | `trouverOuCreerClient`, celle de la voie normale — un client connu ne se dédouble pas, un autre numéro fait une autre fiche |
+| « Journée » | n'existe QUE là : le chantier naît du geste, le choix EST sa durée et ne recouvre aucun devis |
+| ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
+| **une troisième voie** | *« Autre chose »* — un rendez-vous à la banque, une livraison, une formation : un chantier **sans client**, portant ce qu'on écrit |
+
+**Le geste ne disparaît plus quand rien n'attend**, et c'est sa règle du 23 août
+qui le veut : il ne menait nulle part, il mène maintenant quelque part. Ce qui
+disparaît, c'est la voie qui ne mène nulle part — « Un chantier en attente »
+quand aucun n'attend.
+
+**Un défaut de placement corrigé au passage :** le tiroir du bas est `fixed` et
+posé sur la barre, mais seul l'espace de la barre était réservé. « Poser »
+atterrissait dessous dès que la fiche d'un inconnu s'ouvrait. Le tiroir publie
+désormais sa hauteur (`--atlas-tiroir`), comme la barre publie la sienne.
+
+Détail : `ARCHITECTURE.md` §323.
 
 ### Rendre bavard le silence de Google et d'Apple, et tenir à jour le fichier de clés
 
@@ -97,6 +175,7 @@ batterie les a sortis, et ils sont réparés ici :
   25 août : deux traits autour d'un mot, pas un trait qui file d'un mot au bord.
   Le contrôle sait maintenant les distinguer — et il rougit toujours sur la
   forme solitaire, vérifié en la lui montrant.
+
 ### Une demi-journée se libère, attend en bas, et se repose ailleurs
 
 **Sa planche, essayée puis retenue** (`appli/liberer-une-demi-journee.html`) :
