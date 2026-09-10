@@ -6,6 +6,60 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-11
+
+### Le calendrier du planning se pousse du doigt
+
+*« Ce qui serait bien c'est de pouvoir déplacer les mois du planning en slidant
+soit à droite soit à gauche »*, puis, dans la foulée : *« en plus des 2
+flèches »*.
+
+**Cette précision décide tout, et elle n'est pas un détail de politesse.**
+`PRODUCT.md` interdit qu'un geste caché porte une fonction à lui seul — *« pas
+de geste à découvrir : un glissement, un appui long, un double appui ne
+s'apprennent pas tout seuls »* —, parce que ceux qui s'en serviront ne sont pas
+à l'aise avec un téléphone. Les deux flèches restent donc à leur place, à leur
+taille : le glissement est un raccourci pour qui le connaît.
+
+**La planche d'abord** (`CLAUDE.md` §3 bis) : `appli/glisser-les-mois.html`,
+essayée du doigt, deux façons proposées. Il a retenu **A — le mois suit le
+doigt**.
+
+**Ce que le code garde de la planche, et pourquoi chaque point compte :**
+
+| | |
+|---|---|
+| le geste ne prend la main que s'il part **de côté** | un doigt qui descend fait défiler la page ; le retenir bloquerait l'écran sous celui qui voulait seulement lire plus bas |
+| un doigt qui a **glissé** n'ouvre pas la journée sous lui | sans quoi chaque glissement ouvrirait une fiche au hasard |
+| un glissement **trop court** ramène le mois en place | on ne change pas de mois pour un frôlement |
+| le **titre suit** le glissement | sinon l'on voit octobre arriver pendant que l'en-tête dit encore septembre — deux vérités à deux centimètres, sur l'écran qui sert à savoir où l'on est. Trouvé en REGARDANT la planche |
+| les mois voisins sont **hors d'atteinte** | ils se montrent, ils ne se touchent pas : ni le doigt ni le clavier ne les atteignent, sinon une case à moitié sortie de l'écran ouvrirait une journée |
+
+**La règle vit dans `src/lib/glissement.ts`** (`CLAUDE.md` §4 sexies) : de quel
+côté part le doigt, et combien de mois il fait franchir. Elle s'éprouve sans
+navigateur — `scripts/test-glissement.ts`, quatorze essais — et l'écran ne fait
+que suivre ce qu'elle répond.
+
+**Deux choses ont été RETIRÉES au passage, et c'est le signe d'une correction à
+la racine :** le passage de décembre à janvier était écrit en clair dans chacune
+des deux flèches, avec sa bascule d'année ; il tient maintenant dans
+`moisDecale` (`src/lib/mois.ts`), une fois. Et `caseDuJour` est sortie du corps
+du composant : imbriquée, elle se recréait à chaque rendu et empêchait de garder
+les trois mois en mémoire — sans quoi glisser aurait redessiné cent vingt-six
+cases par pixel parcouru, et le mois aurait traîné derrière le doigt sur un
+vieux téléphone.
+
+**Ce qui a été refusé :** un `eslint-disable` sur la liste de dépendances, qui
+aurait fait passer le contrôle sans rien régler. `test-pas-de-pansement.ts` le
+refuse, et il avait raison : la vraie cause était la fonction imbriquée.
+
+**Éprouvé en jouant le geste dans l'application**, pas seulement en la
+regardant : le glissement change de mois, le titre suit, le frôlement ne change
+rien, les deux flèches marchent toujours, toucher une journée ouvre sa fiche, et
+un glissement n'en ouvre aucune.
+
+---
+
 ## 2026-09-10
 
 ### La déconnexion renvoyait sur `localhost` — donc nulle part, depuis un téléphone
