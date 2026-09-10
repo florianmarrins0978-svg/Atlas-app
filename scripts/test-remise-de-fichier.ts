@@ -29,16 +29,22 @@ function essai(nom: string, fn: () => void) {
 
 console.log("=== Télécharger, c'est ranger le fichier — pas le montrer ===\n");
 
-// ─── LA RÈGLE QUI PRIME : rien d'affichable quand on télécharge ─────────────
+// ─── LA RÈGLE QUI PRIME : on ne ment jamais sur le type d'un fichier ────────
 
-essai("télécharger ne sert JAMAIS un type que le navigateur sait peindre", () => {
-  // Tous les types que ce dépôt sert : chacun a un lecteur intégré sur iPhone.
+essai("télécharger sert le VRAI type — un fichier rangé garde son identité", () => {
+  // **Ce contrôle exigeait l'inverse jusqu'au 10 septembre 2026**, et c'est ce
+  // qui a laissé passer le défaut : il réclamait `application/octet-stream`
+  // pour empêcher iPhone d'afficher au lieu d'enregistrer. Le type annoncé
+  // colle au fichier ENREGISTRÉ : rouvert depuis les téléchargements, le PDF
+  // n'avait plus de lecteur, et le patron n'a eu qu'une page blanche — sur un
+  // fichier intact. Ce qui range un fichier, c'est `attachment`, et rien
+  // d'autre.
   for (const type of ["application/pdf", "image/jpeg", "image/png", "image/heic", "audio/mpeg"]) {
     const en = enTetesDeRemise({ telecharger: true, nom: "F2026-000001.pdf", type });
     assert.equal(
       en["Content-Type"],
-      "application/octet-stream",
-      `servi en « ${en["Content-Type"]} » : le navigateur a un lecteur pour ce type, et il l'affichera`
+      type,
+      `servi en « ${en["Content-Type"]} » au lieu de « ${type} » : le fichier enregistré perd son identité`
     );
   }
 });

@@ -24471,18 +24471,46 @@ nom de la page. Un navigateur qui ne lit pas le nom de l'en-tête n'a aucune
 raison d'en respecter la disposition — et la sauvegarde descendait quand même,
 parce qu'un `.zip` ne s'affiche pas.
 
-D'où la règle, écrite une seule fois (`src/lib/remise-de-fichier.ts`) :
-**télécharger sert `application/octet-stream`.** Le navigateur n'a plus de
-lecteur à proposer, il ne lui reste qu'à enregistrer. C'est ce que
-`src/lib/type-de-fichier.ts` disait déjà de son côté depuis le 23 août — « une
-extension inconnue rend `application/octet-stream` : le navigateur propose alors
-de télécharger plutôt que d'afficher ». La moitié de la règle vivait dans le
-dépôt, et l'autre moitié manquait.
+D'où la règle posée ce jour-là, écrite une seule fois
+(`src/lib/remise-de-fichier.ts`) : **télécharger sert
+`application/octet-stream`.**
 
-`X-Content-Type-Options: nosniff` est posé sur toutes les routes
-(`next.config.ts`) : aucun navigateur ne peut redevenir malin et deviner le PDF
-derrière ce type générique. **L'aperçu, lui, ne bouge pas** — sans
-`?telecharger=1`, c'est toujours `application/pdf` et `inline`.
+### ET CETTE RÈGLE ÉTAIT FAUSSE — elle a rendu tous les documents illisibles
+
+**Sa capture du 10 septembre 2026, deux fois de suite :** *« j'ai essayé de
+télécharger la facture. Une fois que je l'ouvre, page blanche »*, puis *« même
+problème avec le devis »*.
+
+Le fichier était **intact** : téléchargé par la vraie route et relu par un
+lecteur écrit d'après la norme, il portait le document entier — 9,6 ko, toutes
+ses lignes. Ce qui manquait n'était pas dans les octets.
+
+**Le type annoncé ne s'arrête pas à la réponse : il colle au fichier
+ENREGISTRÉ.** iOS retient ce que le serveur a déclaré, et
+`X-Content-Type-Options: nosniff` — posé sur toutes les routes
+(`next.config.ts`) — lui **interdit** ensuite de deviner qu'il tient un PDF.
+Rouvert depuis les téléchargements (`file:///facture-F2026-000005.pdf`), le
+document n'a plus de lecteur : page blanche, sans le moindre message. La
+garantie que le 7 septembre invoquait pour se rassurer est exactement ce qui a
+fermé la porte.
+
+| | |
+|---|---|
+| **la règle qui reste** | on ne ment jamais sur le type d'un fichier — `Content-Type` dit le vrai type dans les deux cas |
+| **ce qui fait descendre un fichier** | `Content-Disposition: attachment`, la norme, et rien d'autre |
+
+Un type générique n'est pas un levier de plus : c'est une **identité** qu'on
+retire au document, et elle lui manque plus tard, ailleurs, chez le client.
+
+**Et ce que le 7 septembre croyait savoir d'iOS était une déduction, pas un
+relevé** : elle partait du `filename` ignoré sur un `.zip` le 7 août. Un `.zip`
+descend de toute façon, faute de lecteur — il ne prouvait rien de la
+disposition. Trois contrôles ont ensuite **exigé** le type générique
+(`test-remise-de-fichier.ts`, `test-devis-e2e.ts`, la suite du devis du client) :
+ils ont figé le défaut pendant trois jours, et c'est le patron qui l'a trouvé.
+
+**L'aperçu n'a jamais bougé** — sans `?telecharger=1`, c'est `application/pdf` et
+`inline`, comme avant.
 
 ### Cinq routes servaient la même règle, et elles avaient déjà divergé
 

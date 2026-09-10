@@ -80,12 +80,16 @@ async function main() {
   // existe, il est servi, et c'en est bien un.
   const reponsePdf = await page.request.get(`${BASE}${apercuHref}?telecharger=1`);
   assert.equal(reponsePdf.status(), 200);
-  // **Et il est servi À ENREGISTRER, pas à lire** — 7 septembre 2026. Cette
-  // ligne exigeait `application/pdf` : c'est précisément le type qui faisait
-  // que Safari peignait la facture au lieu de la ranger (`CLAUDE.md` §5 bis —
-  // on adapte le contrôle, on ne remet pas le défaut). Que ce soit un vrai PDF
-  // reste prouvé deux lignes plus bas, par ses premiers octets.
-  assert.equal(reponsePdf.headers()["content-type"], "application/octet-stream");
+  // **Il est servi À ENREGISTRER, et il reste un PDF** — 10 septembre 2026.
+  // Cette ligne a exigé `application/octet-stream` trois jours durant : ce
+  // type-là est retenu par iOS et suit le fichier enregistré, qui n'a plus de
+  // lecteur quand on le rouvre. Ce qui range le fichier est la disposition,
+  // vérifiée juste après.
+  assert.equal(reponsePdf.headers()["content-type"], "application/pdf");
+  assert.ok(
+    (reponsePdf.headers()["content-disposition"] ?? "").startsWith("attachment"),
+    `le fichier s'ouvre au lieu de descendre : ${reponsePdf.headers()["content-disposition"]}`
+  );
   const octetsPdf = await reponsePdf.body();
   assert.equal(octetsPdf.slice(0, 5).toString("ascii"), "%PDF-");
 

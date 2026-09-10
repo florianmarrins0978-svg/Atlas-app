@@ -482,7 +482,19 @@ Le détail : `ARCHITECTURE.md` §287 (l'atelier) et §288 (le dossier).
 
 ---
 
-## Dernier lot — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
+## ⚠ CE LOT A ÉTÉ DÉFAIT LE 10 SEPTEMBRE 2026 — le type générique est parti
+
+Son verdict, celui qu'on attendait : *« page blanche »*, sur la facture puis sur
+le devis. `application/octet-stream` colle au fichier ENREGISTRÉ ; avec
+`nosniff`, iOS n'a plus le droit d'y reconnaître un PDF, et le document rouvert
+depuis les téléchargements n'a plus de lecteur.
+
+`Content-Type` dit désormais le **vrai** type dans les deux cas ; seule
+`Content-Disposition: attachment` range le fichier. Détail et raisons :
+`ARCHITECTURE.md` §275. **Ce qui reste à vérifier chez lui : qu'un appui sur
+« Télécharger » range bien le fichier, et non qu'il l'affiche.**
+
+## Lot défait — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
 
 **Document du lot :** `docs/lot-telecharger-la-facture.md`.
 **Décisions :** `ARCHITECTURE.md` §275.

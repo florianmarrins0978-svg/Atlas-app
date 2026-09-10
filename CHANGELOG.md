@@ -8,6 +8,39 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### Le devis et la facture téléchargés s'ouvrent de nouveau — page blanche corrigée à sa racine
+
+*« J'ai essayé de télécharger la facture. Une fois que je l'ouvre, page
+blanche »*, puis *« même problème avec le devis »*.
+
+**Le fichier était intact.** Téléchargé par la vraie route et relu par un
+lecteur écrit d'après la norme, il portait le document entier. Rien n'était
+cassé dans la génération, ni dans le stockage, ni dans la protection
+anti-retouche.
+
+**Ce qui l'a rendu illisible, c'est un correctif du 7 septembre.** Pour forcer
+l'enregistrement sur iPhone, le serveur s'était mis à annoncer les
+téléchargements comme des fichiers sans type (`application/octet-stream`) au
+lieu de PDF. Or ce type-là **suit le fichier enregistré** : rouvert depuis les
+téléchargements, le document n'avait plus de lecteur — et `nosniff`, posé sur
+toutes les routes, interdisait au téléphone de deviner qu'il tenait un PDF. Page
+blanche, sans message.
+
+**La règle qui remplace l'ancienne : on ne ment jamais sur le type d'un
+fichier.** Ce qui range un fichier, c'est `Content-Disposition: attachment`, la
+norme, et rien d'autre. Un type générique n'est pas un levier de plus : c'est une
+identité qu'on retire au document, et elle lui manque plus tard, chez le client.
+
+**La protection anti-retouche n'a pas bougé** — *« le client ne doit pas pouvoir
+modifier son devis »*. Elle avait été soupçonnée à tort ; c'est lui qui a
+redressé la recherche : *« avant ça fonctionnait, donc il y a quelque chose qui a
+buggé »*.
+
+**Ce qui reste à vérifier chez lui, et qui ne l'est nulle part ici :** qu'un
+appui sur « Télécharger » range bien le fichier sur son iPhone plutôt que de
+l'afficher. Aucun moteur de Safari n'est disponible sur le poste de l'agent.
+
+
 ### Le travail supplémentaire se voit enfin — et le PDF cesse d'écrire trois totaux qui ne s'accordent pas
 
 **Il a essayé le lendemain de la livraison, photos à l'appui :** *« j'ai rajouté

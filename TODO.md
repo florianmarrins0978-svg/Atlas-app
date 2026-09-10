@@ -975,26 +975,33 @@ téléphone, barre d'adresse comprise (`scripts/e2e-browser.ts`).
 
 ---
 
-## ⏳ UNE RÉPONSE ATTENDUE — la facture se télécharge-t-elle, sur SON iPhone ?
+## ⏳ SUR SON IPHONE : « Télécharger » range-t-il le fichier ?
 
-**Posée le 7 septembre 2026**, après son *« quand je clique sur télécharger ça
-ne la télécharge pas »*. Le correctif est parti (`ARCHITECTURE.md` §275) : une
-adresse `?telecharger=1` sert désormais un type que le navigateur ne peut
-qu'enregistrer.
+**Rouverte le 10 septembre 2026, et la question n'est plus la même.** Le
+correctif du 7 septembre — annoncer un type que le navigateur ne sait pas
+peindre — **a été défait** : il rendait les documents illisibles une fois
+enregistrés (*« page blanche »*, sur la facture puis sur le devis). Le type
+annoncé colle au fichier enregistré, et `nosniff` interdit ensuite d'y
+reconnaître un PDF (`ARCHITECTURE.md` §275).
 
-**Il ne se prouve pas ici, et cela ne changera pas** : aucun WebKit n'est
-installable dans l'environnement de l'agent, et Chromium rangeait déjà le
-fichier avant le correctif. Ce qui a été éprouvé : la règle sur les cinq
-routes, l'aperçu inchangé, et un appui réel qui fait descendre un fichier.
+Le serveur sert donc de nouveau `application/pdf`, avec
+`Content-Disposition: attachment` — la norme, et rien d'autre.
 
-**Ce qu'il faut lui demander s'il redit que ça ne marche pas** — et une seule
-question suffit : *que se passe-t-il quand tu appuies ?*
+**Ce qui est prouvé ici :** un appui réel fait descendre le fichier (Chromium,
+`test-facture-au-client-e2e.ts`), le fichier reste un PDF valide, l'aperçu n'a
+pas bougé.
+
+**Ce qui ne se prouve pas ici, et ne le sera jamais :** aucun WebKit n'est
+installable dans l'environnement de l'agent. Il n'y a donc pas de Safari.
+
+**S'il redit que ça ne télécharge pas** — une seule question, et elle tranche :
+*que se passe-t-il quand tu appuies ?*
 
 | Sa réponse | Ce que ça veut dire |
 |---|---|
-| la facture s'ouvre | le type n'est pas arrivé jusqu'à lui — regarder la version servie (Réglages) |
-| une feuille demande de confirmer | c'est iOS, et c'est le geste normal ; il n'y a rien à corriger |
-| rien du tout | la requête n'aboutit pas — et **l'écran ne dit rien** : la prochaine livraison est de rendre ce refus bavard, pas de deviner |
+| le devis s'ouvre dans le lecteur | iOS ignore `attachment` pour un PDF. **Ne PAS remettre le type générique** : il rend le fichier illisible. La voie qui reste est un partage explicite depuis la page |
+| une feuille demande de confirmer | c'est iOS, et c'est le geste normal — rien à corriger |
+| rien du tout | la requête n'aboutit pas, et **l'écran ne dit rien** : rendre ce refus bavard d'abord, deviner ensuite |
 
 ## ✅ ~~Comment retirer une note vocale déjà partie ?~~ — **2, le 7 septembre 2026**
 
