@@ -26,6 +26,7 @@ voies, à chaque étape.**
 | la reconnaissance | `trouverOuCreerClient`, celle de la voie normale — un client connu ne se dédouble pas, un autre numéro fait une autre fiche |
 | « Journée » | n'existe QUE là : le chantier naît du geste, le choix EST sa durée et ne recouvre aucun devis |
 | ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
+| **une troisième voie** | *« Autre chose »* — un rendez-vous à la banque, une livraison, une formation : un chantier **sans client**, portant ce qu'on écrit |
 
 **Le geste ne disparaît plus quand rien n'attend**, et c'est sa règle du 23 août
 qui le veut : il ne menait nulle part, il mène maintenant quelque part. Ce qui

@@ -42,6 +42,8 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 
 /** Un nom que personne ne porte : ce lot doit lui créer une fiche. */
 const INCONNUE = `Mme Renard ${Date.now() % 100000}`;
+/** Ce qui n'est PAS un client, et prend quand même la demi-journée. */
+const BANQUE = `Banque ${Date.now() % 100000}`;
 
 async function main() {
   console.log("=== Poser un client sur un jour, sans devis ===\n");
@@ -101,7 +103,7 @@ async function main() {
   const jour = await jourLibre();
   console.log(`  · jour visé : ${jour}`);
 
-  await cas("« + Ajouter » propose DEUX voies, et « Annuler » les referme", async () => {
+  await cas("« + Ajouter » propose ses voies, et « Annuler » les referme", async () => {
     const carte = await ouvrirLeJour(jour);
     await carte.locator('[data-atlas="ajouter"]').click();
     await page.waitForTimeout(300);
@@ -177,7 +179,7 @@ async function main() {
     assert.ok(!vise.recouvert, "« Poser » passe sous une bande fixe : il ne se vise pas");
     assert.ok(vise.hauteur >= 34, `« Poser » ne fait que ${Math.round(vise.hauteur)} px de haut`);
 
-    await carte.locator('[data-atlas="quand-poser"] [data-quand="apres_midi"]').click();
+    await carte.locator('[data-atlas="quand-poser"][data-quand="apres_midi"]').click();
     await carte.locator('[data-atlas="poser-le-client"]').click();
 
     // **Ce que la BASE porte, et non ce que l'écran espère.**
@@ -254,6 +256,62 @@ async function main() {
     for (let i = 0; i < 40 && (await compte()) === 1; i++) await page.waitForTimeout(250);
     assert.equal(await compte(), 1, "une seconde fiche a été créée pour le même client");
   });
+
+  await cas("« Autre chose » bloque du temps qui n'est pas un client", async () => {
+    // **Sa réponse du 10 septembre 2026** à la question que sa correction avait
+    // ouverte : un rendez-vous à la banque, une livraison, une formation
+    // prennent une demi-journée comme le reste. Aucun client, aucune fiche.
+    const carte = await ouvrirLeJour(jour);
+    await carte.locator('[data-atlas="ajouter"]').click();
+    await page.waitForTimeout(300);
+    assert.ok(
+      (await carte.locator('[data-atlas="voie-temps"]').count()) >= 1,
+      "la troisième voie manque : ce qui n'est pas un client n'a nulle part où aller"
+    );
+    await carte.locator('[data-atlas="voie-temps"]').click();
+    await page.waitForTimeout(300);
+    // **Aucune recherche de client ici** : chercher un homonyme à « Banque »,
+    // puis proposer de lui créer une fiche, serait le chemin de l'autre voie.
+    assert.equal(
+      await carte.locator('[data-atlas="nom-du-client"]').count(),
+      0,
+      "la voie du temps demande un client : c'est le chemin d'à côté"
+    );
+    await carte.locator('[data-atlas="quoi-cest"]').fill(BANQUE);
+    await carte.locator('[data-atlas="quand-poser"][data-quand="matin"]').click();
+    await carte.locator('[data-atlas="poser-le-temps"]').click();
+
+    const lu = async () => {
+      const { rows } = await pool.query(
+        `SELECT id, date_planifiee::text AS jour, client_id, duree_demi_journees AS duree
+           FROM chantiers WHERE nom = $1 AND deleted_at IS NULL`,
+        [BANQUE]
+      );
+      return rows[0];
+    };
+    let ligne = await lu();
+    for (let i = 0; i < 40 && !ligne; i++) {
+      await page.waitForTimeout(250);
+      ligne = await lu();
+    }
+    assert.ok(ligne, "rien n'a été bloqué : le geste n'a rien écrit");
+    assert.equal(ligne.jour, jour, "le temps n'est pas pris sur le jour touché");
+    assert.equal(ligne.client_id, null, "une fiche client a été créée pour un rendez-vous à la banque");
+    assert.equal(ligne.duree, 1, "« Matin » a pris autre chose qu'une demi-journée");
+
+    const clients = await pool.query(`SELECT count(*) AS n FROM clients WHERE nom = $1`, [BANQUE]);
+    assert.equal(Number(clients.rows[0].n), 0, "un client porte le nom du rendez-vous");
+  });
+
+  await pool.query(
+    `UPDATE chantiers SET date_planifiee = NULL, creneau_debut = NULL, deleted_at = now()
+      WHERE nom = $1`,
+    [BANQUE]
+  );
+  await pool.query(
+    `DELETE FROM creneaux_chantier WHERE chantier_id IN (SELECT id FROM chantiers WHERE nom = $1)`,
+    [BANQUE]
+  );
 
   // **On rend la base comme on l'a trouvée** : ces deux chantiers occupent un
   // jour que les autres suites cherchent libre (`CLAUDE.md` §5).

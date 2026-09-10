@@ -187,17 +187,15 @@ comparaison, ces trois-là auraient été portés au compte du planning.
 
 ---
 
-## ⏳ ET LE TEMPS QUI N'EST PAS UN CLIENT ? — à lui de dire (10 septembre 2026)
+## ~~ET LE TEMPS QUI N'EST PAS UN CLIENT ?~~ — TRANCHÉ LE 10 SEPTEMBRE 2026
 
-« Ajouter » propose deux voies depuis ce soir : un chantier en attente, ou un
-client. **Un rendez-vous à la banque, une livraison, une formation prennent
-aussi une demi-journée**, et aucune des deux ne les couvre — la première version
-de la planche le faisait, sa correction (« change le nom en un client ») ne le
-fait plus.
+Sa réponse, le soir même : *« ok fais ça »*. La troisième voie existe —
+« Autre chose », un champ libre, les trois moments, et c'est posé.
 
-**La question est posée sur la planche** (`appli/bloquer-sans-devis.html`,
-section « Une question que votre correction ouvre ») et attend sa réponse : une
-troisième entrée, ou tout est un client. **Ne rien coder avant.**
+**Ce que ça crée est un chantier SANS client**, et il apparaît donc dans la
+liste des chantiers. C'est le prix de ne pas inventer une seconde sorte
+d'occupation ; s'il le signale, c'est là qu'il faudra regarder
+(`ARCHITECTURE.md` §323).
 
 ---
 

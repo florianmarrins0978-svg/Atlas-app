@@ -62,6 +62,7 @@ const ECRITURES = [
   ["libererDemiJourneeAction", "libérer une demi-journée d'un chantier"],
   ["chercherDesClientsAction", "chercher un client depuis le planning"],
   ["poserUnClientAction", "poser un client sur un jour, sans devis"],
+  ["poserDuTempsAction", "bloquer du temps qui n'est pas un client"],
   ["reposerDemiJourneeAction", "reposer une demi-journée qui attendait"],
   ["ecrireNoteChantierAction", "écrire le pense-bête"],
   ["deplanifierChantierAction", "retirer un chantier du planning"],
@@ -81,7 +82,11 @@ const ECRITURES = [
  * quoi que ce soit. Ce qu'un salarié ne doit pas faire est tenu par la garde
  * d'écriture, qui refuse AVANT toute requête.
  */
-const SANS_CHANTIER = new Set(["chercherDesClientsAction", "poserUnClientAction"]);
+const SANS_CHANTIER = new Set([
+  "chercherDesClientsAction",
+  "poserUnClientAction",
+  "poserDuTempsAction",
+]);
 
 /** La seule qui LIT — la feuille de chantier sans un montant, son document. */
 const LECTURE = "tachesDuChantierAction";
