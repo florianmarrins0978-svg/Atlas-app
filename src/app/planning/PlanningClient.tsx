@@ -1788,6 +1788,45 @@ type GestesCarte = {
 };
 
 /**
+ * UNE MOITIÉ DE JOURNÉE QUE PERSONNE N'OCCUPE.
+ *
+ * **Écrite une fois, dessinée à deux endroits** : seule, quand plus aucun
+ * chantier ne la suit ; sous le nom d'un chantier, quand elle le précède dans
+ * la journée (`libresAvant`). Deux copies de cette ligne auraient divergé au
+ * premier changement de pastille (`CLAUDE.md` §3).
+ */
+function LigneLibre({
+  demi,
+  occupation,
+  marge = 16,
+}: {
+  demi: Demi;
+  occupation: { pris: readonly ChantierPlanning[]; charge: number };
+  marge?: number;
+}) {
+  return (
+    <div
+      data-atlas="demi"
+      data-bloc={demi}
+      data-sans-chantier="1"
+      className="flex flex-wrap items-center gap-2"
+      style={{ marginTop: marge }}
+    >
+      <Pastille etat={etatDemi(occupation)} />
+      <span
+        className="w-[70px] flex-shrink-0 whitespace-nowrap text-[10px] font-semibold uppercase leading-[1.15]"
+        style={{ letterSpacing: "0.06em", color: colors.ink }}
+      >
+        {MOT_DEMI[demi]}
+      </span>
+      <span data-atlas="compte" className="ml-auto text-[12px]" style={{ color: colors.muted }}>
+        {ditLeCompteDemi(occupation)}
+      </span>
+    </div>
+  );
+}
+
+/**
  * L'INTERRUPTEUR À DEUX POSITIONS DE « DÉPLACER ».
  *
  * ───────────────────────────────────────────────────────────────────────────
@@ -2524,31 +2563,13 @@ function CarteDuJour({
 
         {blocs.map((bloc, rang) => {
           if (bloc.type === "libre") {
-            const o = occupationDe(jour, bloc.demi);
             return (
-              <div
+              <LigneLibre
                 key={`libre-${bloc.demi}`}
-                data-atlas="demi"
-                data-bloc={bloc.demi}
-                data-sans-chantier="1"
-                className="flex flex-wrap items-center gap-2"
-                style={{ marginTop: rang === 0 ? 8 : 16 }}
-              >
-                <Pastille etat={etatDemi(o)} />
-                <span
-                  className="w-[70px] flex-shrink-0 whitespace-nowrap text-[10px] font-semibold uppercase leading-[1.15]"
-                  style={{ letterSpacing: "0.06em", color: colors.ink }}
-                >
-                  {MOT_DEMI[bloc.demi]}
-                </span>
-                <span
-                  data-atlas="compte"
-                  className="ml-auto text-[12px]"
-                  style={{ color: colors.muted }}
-                >
-                  {ditLeCompteDemi(o)}
-                </span>
-              </div>
+                demi={bloc.demi}
+                occupation={occupationDe(jour, bloc.demi)}
+                marge={rang === 0 ? 8 : 16}
+              />
             );
           }
 
@@ -2607,6 +2628,16 @@ function CarteDuJour({
                   <LieuDuChantier chantier={c} />
                 </button>
               )}
+
+              {/* **LES MOITIÉS LIBRES QUI PRÉCÈDENT, SOUS SON NOM.** Sa
+                  précision du 10 septembre 2026 : *« le nom doit rester en
+                  premier, ensuite matin et ensuite aprèm »*. Émises comme des
+                  blocs à part, elles ouvraient la fiche sur « libre » — on
+                  lisait ce qui manque avant de savoir de qui il s'agit. Ici,
+                  l'ordre du jour est tenu ET le nom reste en tête. */}
+              {bloc.libresAvant.map((demi) => (
+                <LigneLibre key={`avant-${demi}`} demi={demi} occupation={occupationDe(jour, demi)} />
+              ))}
 
               {bloc.demis.map((demi) => {
                 const o = occupationDe(jour, demi);

@@ -5,7 +5,12 @@ import { useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { colors } from "@/lib/design-tokens";
 import { pagePrecedente } from "@/lib/journal-de-navigation";
-import { journalDeCetOnglet, oublierCetEcran, onPeutReculerVers } from "./journal-navigateur";
+import {
+  journalDeCetOnglet,
+  oublierCetEcran,
+  onPeutReculerVers,
+  sAbonnerAuJournal,
+} from "./journal-navigateur";
 
 /**
  * LA flèche de retour d'Atlas — une seule, pour tous les écrans.
@@ -31,16 +36,6 @@ import { journalDeCetOnglet, oublierCetEcran, onPeutReculerVers } from "./journa
  * que ce lot supprime. « Retour » est ce que dit le bouton du navigateur, et il
  * ne ment jamais.
  */
-/**
- * Ce qui peut changer le journal sous les pieds de la flèche : le bouton du
- * navigateur, qui recule sans forcément changer d'écran. Les navigations
- * d'Atlas, elles, rejouent la flèche par `usePathname`.
- */
-function souscrire(prevenir: () => void): () => void {
-  window.addEventListener("popstate", prevenir);
-  return () => window.removeEventListener("popstate", prevenir);
-}
-
 export default function FlecheRetour({
   repli,
   allure = "plein",
@@ -69,8 +64,15 @@ export default function FlecheRetour({
   //
   // La flèche rendue par le serveur porte donc la sortie déclarée, puis se
   // corrige : elle est utilisable dès la première image, sans attendre.
+  //
+  // **ELLE S'ABONNE AU JOURNAL, PAS AU `popstate`.** C'était le mauvais signal :
+  // le journal ne change pas avec l'événement mais APRÈS lui, quand
+  // `atterrirIci` a fait le ménage. La flèche relisait donc un journal périmé,
+  // et gardait l'adresse de l'écran qu'on venait de quitter — après un retour
+  // du navigateur, elle repartait EN AVANT. Sa panne du 10 septembre 2026 avait
+  // cette moitié-là en plus de l'autre.
   const precedente = useSyncExternalStore(
-    souscrire,
+    sAbonnerAuJournal,
     () => pagePrecedente(journalDeCetOnglet(), chemin),
     () => null
   );

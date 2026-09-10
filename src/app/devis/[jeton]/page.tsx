@@ -4,7 +4,7 @@ import FormulaireReponse from "./formulaire";
 import { jourLisible } from "@/lib/jour";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { avecCivilite } from "@/lib/civilite";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
 import BoutonTelechargerDevis from "./BoutonTelechargerDevis";
 
 // Seule page publique du produit avec celle de la facture : consultée sans
@@ -244,8 +244,11 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
               ne l'est pas, un `mailto:` ne porte aucune pièce. */}
           <a
             href={`/devis/${envoi.jeton}/pdf?telecharger=1`}
+            /* **En PLEIN depuis le 9 septembre 2026, à sa demande** : c’est le
+               seul geste de cet écran avant de répondre, et le creux le mettait
+               au même rang que le texte qui l’entoure. */
             className="mt-1.5 block rounded-full py-2.5 text-center text-[14.5px] font-medium"
-            style={{ color: colors.rust, boxShadow: `inset 0 0 0 1.5px ${colors.rust}` }}
+            style={{ backgroundColor: colors.plein, color: surPlein }}
           >
             Télécharger mon devis
           </a>

@@ -246,17 +246,22 @@ essai("un chantier à la journée n'apparaît QU'UNE fois", () => {
 // n'avait vu ce que cela produisait : les deux moitiés du jour échangeaient
 // leur place selon l'heure du chantier, et l'appui sur « Matin » les faisait
 // sauter. Sa décision du 10 septembre : *« oui, matin puis aprèm »*.
-essai("la journée se lit dans son ordre, quelle que soit l'heure du chantier", () => {
+essai("le nom reste en tête, et la journée garde son ordre", () => {
   const rocher: Faux = { id: "rocher", demis: ["apres_midi"] };
   const blocs = blocsDeLaJournee([rocher], occupePar);
-  assert.equal(blocs[0].type, "libre", "l'après-midi est passé devant le matin");
-  assert.equal(blocs[0].type === "libre" ? blocs[0].demi : null, "matin");
-  assert.equal(blocs[1].type, "chantier");
+  // Le nom ouvre la fiche — sa règle du 21 août, qu'il a maintenue le
+  // 10 septembre : *« le nom doit rester en premier »*.
+  assert.equal(blocs.length, 1, "le matin libre a été émis comme un bloc à part");
+  assert.equal(blocs[0].type, "chantier");
+  // …et le matin se lit SOUS son nom, avant l'après-midi qu'il occupe.
+  assert.deepEqual(blocs[0].type === "chantier" ? blocs[0].libresAvant : null, ["matin"]);
 
-  // Et l'autre sens ne bouge pas : un chantier du matin ouvre toujours la fiche.
+  // Un chantier du matin, lui, n'a rien avant lui : l'après-midi libre reste
+  // une ligne à part, après.
   const leroy: Faux = { id: "leroy", demis: ["matin"] };
   const matin = blocsDeLaJournee([leroy], occupePar);
   assert.equal(matin[0].type, "chantier");
+  assert.deepEqual(matin[0].type === "chantier" ? matin[0].libresAvant : null, []);
   assert.equal(matin[1].type === "libre" ? matin[1].demi : null, "apres_midi");
 });
 
@@ -265,10 +270,10 @@ essai("deux chantiers différents gardent chacun leur nom", () => {
   const b: Faux = { id: "b", demis: ["apres_midi"] };
   const blocs = blocsDeLaJournee([a, b], occupePar);
   assert.equal(blocs.filter((x) => x.type === "chantier").length, 2);
-  // Le matin reste annoncé libre, et À SA PLACE — en tête, puisque c'est
-  // l'ordre de la journée.
-  assert.equal(blocs[0].type, "libre", "le matin libre n'est plus annoncé");
-  assert.equal(blocs[0].type === "libre" ? blocs[0].demi : null, "matin");
+  // Le matin reste annoncé libre — sous le nom du PREMIER des deux, et pas du
+  // second : il ne s'écrit qu'une fois.
+  assert.deepEqual(blocs[0].type === "chantier" ? blocs[0].libresAvant : null, ["matin"]);
+  assert.deepEqual(blocs[1].type === "chantier" ? blocs[1].libresAvant : null, []);
 });
 
 essai("une journée vide annonce ses deux demi-journées, dans l'ordre", () => {

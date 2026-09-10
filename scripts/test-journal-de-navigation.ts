@@ -5,6 +5,7 @@ import {
   PLAFOND_JOURNAL,
   cheminInterne,
   journalApresVisite,
+  journalJusquACetEcran,
   journalSansCetEcran,
   lireLeJournal,
   pagePrecedente,
@@ -293,6 +294,83 @@ cas("aucune ligne de navigateur dans la règle", () => {
       `« ${interdit} » est entré dans la règle pure`
     );
   }
+});
+
+// ─── DEUX FOIS LE MÊME GESTE, ET IL RETOMBE SUR L'ACCUEIL ──────────────────
+//
+// **Sa panne du 10 septembre 2026 :** *« quand je fais deux fois le geste
+// client → retour puis client → retour, je reviens à la page d'accueil. »*
+//
+// **Deux pièces du même lot se marchaient dessus.** La flèche recule désormais
+// par `router.back()` quand elle le peut — c'est ce qui rend au patron sa place
+// dans la liste. Or `router.back()` déclenche un `popstate`, et le `popstate`
+// était écouté pour le bouton DU NAVIGATEUR : il retirait alors du journal
+// l'écran d'ARRIVÉE, c'est-à-dire la destination que la flèche venait de
+// choisir. Un pas de trop, à chaque retour.
+//
+// **La confusion est dans la QUESTION, pas dans le mécanisme** : « je quitte
+// cet écran en arrière » (on le retire) et « je viens d'atterrir ici » (on le
+// GARDE, on ne retire que ce qui le suit) ne sont pas la même chose. Une seule
+// fonction répondait aux deux.
+cas("deux fois client → retour laisse la liste sous les pieds", () => {
+  const LISTE = "/clients";
+  const UN = "/clients/aaa";
+  const DEUX = "/clients/bbb";
+  let j = ["/", LISTE];
+
+  for (const client of [UN, DEUX]) {
+    j = journalApresVisite(j, client);
+    // La flèche annonce la liste, et c'est déjà le cas aujourd'hui.
+    assert.equal(pagePrecedente(j, client), LISTE, `depuis ${client}`);
+
+    // On appuie : l'écran quitté sort du journal…
+    j = journalSansCetEcran(j, client);
+    // …puis `router.back()` fait parler le `popstate`, qui ne doit RIEN retirer
+    // de plus — on vient d'atterrir sur la liste.
+    j = journalJusquACetEcran(j, LISTE);
+    j = journalApresVisite(j, LISTE);
+
+    assert.ok(
+      j.includes(LISTE),
+      `la liste a disparu du journal alors qu'on est dessus : ${JSON.stringify(j)}`
+    );
+  }
+});
+
+// **Et le bouton DU NAVIGATEUR garde ce pour quoi cette écoute existe** : après
+// un vrai retour du navigateur, les écrans POSTÉRIEURS s'en vont, sinon la
+// flèche d'Atlas repartirait en avant.
+cas("le retour du navigateur retire ce qui SUIT, pas l'écran d'arrivée", () => {
+  // **Le journal porte DEUX fois l'écran d'arrivée**, et ce n'est pas un
+  // artifice de contrôle : la visite se note avant que l'événement n'arrive.
+  // Une version qui prenait la dernière ligne ne coupait rien, et la flèche
+  // annonçait l'écran qu'on venait de quitter.
+  const j = ["/", "/clients", "/clients/aaa", "/clients/aaa/devis", "/clients"];
+  assert.deepEqual(journalJusquACetEcran(j, "/clients"), ["/", "/clients"]);
+  // Et depuis cette place, la flèche annonce bien l'accueil — jamais la fiche.
+  assert.equal(pagePrecedente(journalJusquACetEcran(j, "/clients"), "/clients"), "/");
+});
+
+// **Rien à couper quand la flèche d'Atlas a déjà fait le ménage** : elle retire
+// l'écran qu'elle quitte au moment de l'appui, et l'arrivée n'a alors pas de
+// jumelle plus haut.
+cas("après la flèche d'Atlas, l'atterrissage ne retire plus rien", () => {
+  const j = ["/", "/clients"];
+  assert.deepEqual(journalJusquACetEcran(j, "/clients"), j);
+});
+
+// Un écran qui n'est pas dans le journal — le bouton « suivant » du navigateur,
+// un onglet neuf — ne retire rien : il n'y a rien à tronquer.
+cas("un écran absent du journal ne tronque rien", () => {
+  const j = ["/", "/clients"];
+  assert.deepEqual(journalJusquACetEcran(j, "/paysage"), j);
+});
+
+// Et l'écran se reconnaît sans son interrogation : `/termines/tva?t=2` et
+// `/termines/tva?t=3` sont le MÊME écran feuilleté.
+cas("l'interrogation ne fait pas un écran différent", () => {
+  const j = ["/", "/termines/tva?t=2", "/clients", "/termines/tva?t=3"];
+  assert.deepEqual(journalJusquACetEcran(j, "/termines/tva"), ["/", "/termines/tva?t=2"]);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le journal de navigation — ${echecs} échec(s).`);
