@@ -31,6 +31,24 @@ geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
 maintenant dans la suite navigateur, qui refait le geste quatre fois.
 
 
+### L'absence se pose dans son ordre : le + en tête, « Annuler » derrière lui
+
+Sa validation du 10 septembre, planche à l'appui. Le + reste en haut, les noms
+s'ouvrent dessous, l'interrupteur **Matin · Après-midi · Journée** — celui de
+« Déplacer » — s'allume sur ce qui vient d'être écrit et s'efface au premier
+choix. La ligne dit alors « Julien absent · matin ».
+
+**« Annuler » ne reste plus sous les yeux** à côté d'une absence qu'on vient de
+poser : il se retrouve derrière le même +, avec la liste des gens du jour. Le
+geste le plus rare n'occupe plus la place la plus visible (`ARCHITECTURE.md`
+§318).
+
+**Deux composants s'en vont avec les rangées qu'ils dessinaient** —
+`PastilleDuJour`, `LigneQuestion` : ce qui ne sert plus se supprime.
+
+**Regardé à l'écran, pas seulement mesuré** : le geste joué en entier dans un
+vrai navigateur, à la largeur de son téléphone.
+
 ### Le bandeau « en construction » se taisait mal — vingt-six suites en payaient le prix
 
 *« Répare le bandeau du banc. »* La règle croyait que `next start` impose

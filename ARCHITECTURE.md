@@ -27047,3 +27047,53 @@ Avant : `{faits:2,total:40,…}` et le bandeau. Après : `null`.
 | le contrôle | `scripts/test-etat-banc.ts` — un cas neuf : une version bâtie se tait même quand l'environnement dit « development » |
 | ce qui le voit en vrai | `scripts/test-bandeau-banc-e2e.ts`, deux dernières assertions |
 
+---
+
+## §318 — L'absence d'un jour : le + en tête, et « Annuler » derrière lui
+
+**Ses quatre corrections du 10 septembre 2026**, sur l'écran qu'il venait
+d'essayer, et la planche `appli/absence-l-ordre.html` qu'il a validée :
+
+| Ce qu'il a demandé | Ce que l'écran fait |
+|---|---|
+| *« l'ordre devrait être + salarié absent ? puis Julien »* | le + est en tête de la carte, les noms s'ouvrent dessous |
+| *« remets le bouton matin / aprem / journée »* | un interrupteur à trois positions, celui de « Déplacer » |
+| *« une fois choisi, le bouton se cache »* | il disparaît au premier appui |
+| *« Julien absent, et à côté on marque matin, aprem ou journée »* | la ligne porte le moment, plus « Annuler » |
+| *« pour annuler on reclique sur + salarié absent »* | la liste rouvre, chaque absent y porte « Annuler » |
+
+**CE QUE CET ORDRE CORRIGE, ET CE N'EST PAS QU'UNE QUESTION DE GOÛT.** « Annuler »
+vivait à demeure à côté de chaque absence posée : le geste **le plus rare** de
+l'écran occupait la place **la plus visible**, à deux centimètres du nom qu'on
+vient d'écrire. Ce qui reste sous les yeux est désormais ce qu'il a besoin de
+LIRE — qui manque, et quand. Ce qui se défait se retrouve **là où on l'a fait**,
+derrière le même +.
+
+**Une seule porte pour poser ET pour défaire**, donc, et c'est ce qui rend
+l'écran lisible : le + n'est plus « ajouter une absence » mais « les gens de ce
+jour ».
+
+**L'interrupteur est recopié de la planche « Déplacer »**, pas redessiné : trois
+pastilles séparées ne disaient pas qu'elles s'excluent, un interrupteur le
+montre par sa forme. **44 px et non 36** — c'est la seule chose qui change du
+dessin d'origine, parce que celui-ci se touche avec des gants.
+
+**Il s'allume sur ce qui vient d'être écrit** (« Journée », puisque toucher un
+nom pose la journée entière) : il montre où l'on est, il ne redemande pas de
+choisir.
+
+**Ce que ce lot a SUPPRIMÉ**, et c'est le signe qu'il corrige à la racine plutôt
+que d'empiler : `PastilleDuJour` et `LigneQuestion` n'ont plus d'emploi — les
+rangées « Qui » et « Plutôt » qu'elles dessinaient ont disparu avec ce flux.
+
+**Le prix à connaître :** changer d'avis sur le moment demande d'annuler puis de
+reposer, puisque l'interrupteur s'efface. C'est sa demande, mot pour mot ; si
+cela le gêne à l'usage, la porte reste ouverte (toucher la ligne posée le
+rouvrirait).
+
+| | |
+|---|---|
+| l'écran | `PasLaCeJour` et `BasculeDuMoment` dans `src/app/planning/PlanningClient.tsx` |
+| la planche | `appli/absence-l-ordre.html`, validée le 10 septembre |
+| le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` — l'interrupteur, son effacement, et « Annuler » derrière le + |
+

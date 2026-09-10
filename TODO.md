@@ -64,6 +64,27 @@ d'ouvert sur ce geste.
 
 ---
 
+## ⏳ LE GESTE D'ABSENCE PASSE SOUS LE TIROIR DU BAS — D'UN PIXEL (10 septembre 2026)
+
+**Mesuré**, écran de 390 × 664, cinq jours devant, compte de démonstration :
+
+| | |
+|---|---|
+| le geste « + Absent ? » | 523 → **567** px |
+| le tiroir « À poser sur… » | **566** → 616 px, `fixed`, z-19 |
+
+Un pixel de recouvrement, et `test-pas-la-ce-jour-e2e` le refuse à juste titre
+(*« il est ATTEIGNABLE — rien ne le recouvre »*). **Rouge AVANT ce lot comme
+après** : ce n'est pas le nouvel ordre qui l'a créé, et le geste, lui, se touche
+en son centre.
+
+**La racine est de placement, pas de dessin** : la carte du jour naît sous le
+doigt, et rien ne réserve la hauteur du tiroir sous elle. Le tiroir publie
+pourtant la sienne (`--atlas-barre`, `AtlasBottomNav`) — c'est de ce côté qu'il
+faut chercher, pas en poussant la carte à la main.
+
+---
+
 ## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
 
 **Sa correction :** *« chaque session peut prendre un port différent, plusieurs
