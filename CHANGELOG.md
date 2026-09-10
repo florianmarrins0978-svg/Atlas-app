@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### L'ordre de l'absence : une planche, rien de codé
+
+Ses corrections du 10 septembre, sur l'écran qu'il venait d'essayer : *« l'ordre
+devrait être + salarié absent ? puis Julien »*, *« remets le bouton matin /
+aprem / journée, et une fois choisi il se cache »*, *« Julien absent, et à côté
+on marque matin, aprem ou journée »*, *« pour annuler on reclique sur + salarié
+absent »*. Puis, capture à l'appui : *« utilise le bouton pour déplacer un
+chantier »* — l'interrupteur à trois positions.
+
+**RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis) : `appli/absence-l-ordre.html` joue le
+geste entier — poser, choisir le moment, annuler — et l'interrupteur est celui
+d'`appli/deplacer-plus-simple.html`, recopié plutôt que redessiné.
+
+**Une seule chose y change, et c'est délibéré :** 44 px de haut au lieu de 36.
+Celui-là se touche sur un chantier, avec des gants.
+
 ### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
 
 *« Fais celui-là, juste tu retires la journée. Il faut garder le bouton
