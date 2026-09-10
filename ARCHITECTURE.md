@@ -26916,3 +26916,69 @@ second dirait « sept. » d'un côté et « sep. » de l'autre.
 | `test-documents-du-client.ts` | la règle pure : le plus récent, l'égalité de jour, le silence quand rien n'est parti, l'année |
 | `test-liste-clients.ts` | qu'un chantier sans document n'annonce rien, et qu'un devis parti se lit avec son jour |
 | `test-ligne-du-client-e2e.ts` | **les boîtes** — l'adresse qui se rogne, la date qui ne se coupe pas, la ligne vide qui n'existe plus, et le compte qui ne revient pas |
+
+---
+
+## §316 — Une session prend son dossier toute seule
+
+**Sa demande du 10 septembre 2026**, une fois les cinq dossiers créés : *« non
+mais je veux qu'elle se débrouille, qu'elle aille dans un dossier à chaque fois,
+seule »*.
+
+### Ce qui manquait, et pourquoi ce n'était pas un confort
+
+`npm run sessions:preparer` (8 septembre, §1.0 de `CLAUDE.md`) crée les
+répertoires de travail. Il restait à LUI de faire trois gestes, cinq fois par
+soirée : choisir un dossier, y aller, et se souvenir duquel était déjà pris.
+
+Le troisième est celui qui coûte. Une erreur de mémoire remet deux sessions dans
+le même dossier — c'est-à-dire exactement la panne que les dossiers venaient
+supprimer, avec en plus la conviction d'en être protégé.
+
+### Ce qui décide, et pourquoi c'est un PROCESSUS
+
+`scripts/ouvrir-session.mjs` prend le premier dossier libre et y lance `claude`.
+
+| | |
+|---|---|
+| ce qui prouve qu'un dossier est pris | **le processus du lanceur**, qui vit tant que la session vit |
+| ce qui ne le prouve pas | un fichier posé sur le disque |
+
+Le lanceur attend son enfant : son PID est donc la preuve, et le signal 0 la
+question. Un jeton laissé par un terminal fermé d'un coup, ou par une machine
+éteinte, désigne un processus mort — il est ignoré, puis réécrit.
+
+**C'est la leçon du verrou de la batterie, prise dans ses deux sens** (9
+septembre, `CLAUDE.md` §5) : un jeton qui se fie à un battement se déclare mort
+au milieu du travail ; un jeton auquel on se fie sans regarder condamne un
+dossier pour toujours.
+
+### Ce qu'il refuse de faire
+
+Quand tous les dossiers sont occupés, il **s'arrête et donne la commande**. Il
+serait facile de créer un worktree de plus — et l'on infligerait un `npm
+install` de trois minutes à quelqu'un qui attendait une session, sans qu'il l'ait
+demandé. Créer les dossiers reste le métier de `sessions:preparer`, qui seul
+sait installer les dépendances et recopier le `.env`.
+
+### Un défaut latent corrigé au passage
+
+`preparer-sessions.mjs` prenait sa racine dans `process.cwd()`. C'était juste
+tant qu'on ne l'appelait que depuis la racine ; le lanceur l'importe et peut
+partir de n'importe où. Depuis un sous-dossier, il aurait créé les répertoires
+**dans le dépôt lui-même**, nommés `scripts-s2`. La racine se demande désormais
+à git, qui sait toujours où l'arbre commence.
+
+Le script ne fait plus rien à l'import non plus : sans ce garde, l'importer
+aurait préparé cinq worktrees et lancé quatre installations.
+
+### Ce qui l'éprouve
+
+`scripts/test-ouvrir-session.ts` monte un dépôt jetable, ses deux dossiers de
+travail, et un **faux `claude`** qui écrit son répertoire puis s'en va — le vrai
+ouvrirait une session que rien ne fermerait. Cinq cas : le dossier principal
+pour une session seule, le jeton rendu en partant, **le dossier occupé sauté**,
+le refus quand tout est pris, et le jeton mort qui ne bloque rien.
+
+Les deux qui portent sa demande ont été mis au rouge contre un lanceur qui rend
+toujours le premier dossier.

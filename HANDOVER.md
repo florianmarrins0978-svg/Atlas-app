@@ -8,6 +8,27 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — UNE SESSION PREND SON DOSSIER TOUTE SEULE (10 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | `npm run session` remplace `claude` : le lanceur prend le premier dossier de travail libre et y ouvre la session |
+| la migration | **aucune** |
+| les pièces | `scripts/ouvrir-session.mjs`, `scripts/preparer-sessions.mjs` (racine par git, importable) |
+| les suites | `scripts/test-ouvrir-session.ts` (5), `test-preparer-sessions.ts` (7) |
+| le détail | `ARCHITECTURE.md` §316, `CLAUDE.md` §1.0 |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** un dossier est occupé par un PROCESSUS vivant,
+jamais par un fichier. Le lanceur attend sa session — son PID est la preuve. Le
+remplacer par un horodatage ou un battement, c'est refaire le défaut du verrou
+de la batterie du 9 septembre, dans un sens ou dans l'autre : un dossier libéré
+au milieu du travail, ou condamné pour toujours.
+
+**Et il ne crée aucun dossier** : quand tout est pris il refuse et donne la
+commande. Créer, c'est le métier de `sessions:preparer`, seul à savoir installer
+les dépendances et recopier le `.env`.
+
+---
 ## Dernier lot — « DÉPLACER », UN INTERRUPTEUR À DEUX POSITIONS (10 septembre 2026)
 
 | | |

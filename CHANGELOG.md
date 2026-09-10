@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### Une session ouvre son dossier toute seule
+
+*« Je veux qu'elle se débrouille, qu'elle aille dans un dossier à chaque fois,
+seule »* (10 septembre). `npm run session` remplace `claude` : il prend le
+premier dossier de travail libre et y lance la session. Plus de choix à faire,
+plus rien à retenir.
+
+Un dossier est occupé tant que le processus de sa session vit — un jeton laissé
+par un terminal fermé brutalement ne condamne rien. Tous pris : il le dit et
+donne la commande, plutôt que de fabriquer un dossier de plus en silence.
+
+Détail : `ARCHITECTURE.md` §316.
+
 ### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
 
 *« Fais celui-là, juste tu retires la journée. Il faut garder le bouton

@@ -11,6 +11,24 @@
 
 ---
 
+## FAIT : UNE SESSION PREND SON DOSSIER TOUTE SEULE — 10 septembre 2026
+
+Sa demande : *« je veux qu'elle se débrouille, qu'elle aille dans un dossier à
+chaque fois, seule »*. `npm run session` au lieu de `claude` : le lanceur prend
+le premier dossier de travail libre et y ouvre la session.
+
+Un dossier est occupé tant que le processus de sa session vit — un jeton laissé
+par un terminal fermé brutalement ne condamne rien. Tous pris : il refuse et
+donne la commande, il ne fabrique pas un worktree de plus en silence.
+
+Aucune migration. `ARCHITECTURE.md` §316 · `CLAUDE.md` §1.0
+
+**Reste ouvert :** il tape encore `npm run session`. Une fonction dans son
+profil PowerShell rendrait le mot `claude` lui-même suffisant — à lui de dire
+s'il la veut.
+
+---
+
 ## FAIT : « Déplacer », un interrupteur à deux positions — 10 septembre 2026
 
 Sa décision après la planche : *« fais celui-là, juste tu retires la journée »*.
