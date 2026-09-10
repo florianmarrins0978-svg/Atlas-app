@@ -313,15 +313,44 @@ function identifiantDeLaCle(reponse: string): string {
  * regard, `signIn("cle-appareil")` ouvrant une session sans mot de passe. Ici,
  * on ne coupe rien à distance : on sort d'un appareil qu'on tient.
  *
- * ─── AUCUN `try/catch` AUTOUR DE CET APPEL ──────────────────────────────────
+ * ─── LA REDIRECTION EST À NOUS, PAS À AUTH.JS ───────────────────────────────
  *
- * `signOut({ redirectTo })` lève délibérément le `NEXT_REDIRECT` que Next.js
- * attrape pour naviguer. L'entourer d'un `catch` avalerait la redirection : le
- * cookie serait effacé et l'écran resterait là, chaque geste ensuite refusé —
- * exactement le piège du cookie mort payé une soirée le 10 août 2026.
+ * **Sa capture du 10 septembre 2026 : « Safari ne peut pas ouvrir la page »,
+ * sur `localhost`.** Il se déconnecte depuis son téléphone, et l'application
+ * l'envoie sur une adresse qui, sur un téléphone, désigne le téléphone.
+ *
+ * `signOut({ redirectTo })` ne redirige pas vers ce qu'on lui donne : il rend
+ * une adresse **absolue**, fabriquée par `createActionURL` à partir de
+ * `AUTH_URL` ou, à défaut, de l'en-tête `x-forwarded-host`. Le chemin était
+ * juste ; c'est l'hôte collé devant qui ne valait rien.
+ *
+ * **Et cet en-tête vaut `localhost:3000` PARCE QU'ON L'A VOULU.**
+ * `alignerHoteSurOrigine` (`src/middleware.ts`) le réécrit délibérément sur
+ * l'`Origin` du navigateur : sans cela, Next.js refuse toute action serveur
+ * derrière le mandataire d'un espace de travail — c'est « Invalid Server
+ * Actions request. », vingt échanges perdus le 24 août 2026. **Ne pas défaire
+ * cet alignement pour réparer ceci** : on rouvrirait la panne d'à côté, et
+ * personne ne pourrait plus se connecter du tout.
+ *
+ * **Ce qui tient, c'est de ne plus laisser deviner l'adresse.** Un `redirect`
+ * de Next.js sur un chemin RELATIF ne porte aucun hôte : le navigateur le
+ * résout contre celui par lequel Atlas a été ouvert, quel qu'il soit. Il ne
+ * peut donc pas se tromper — là où toute valeur devinée finit par l'être.
+ *
+ * **C'est déjà ce que font les trois chemins qui ENTRENT** (`redirect: false`,
+ * puis notre redirection) : cette sortie-là était la seule à faire autrement.
+ * Une seule façon de naviguer, et le §3 est tenu.
+ *
+ * ─── AUCUN `try/catch` AUTOUR DU `redirect` ─────────────────────────────────
+ *
+ * Il lève délibérément le `NEXT_REDIRECT` que Next.js attrape pour naviguer.
+ * L'entourer d'un `catch` avalerait la redirection : le cookie serait effacé et
+ * l'écran resterait là, chaque geste ensuite refusé — exactement le piège du
+ * cookie mort payé une soirée le 10 août 2026.
  */
 export async function deconnexionAction() {
-  await signOut({ redirectTo: "/login" });
+  await signOut({ redirect: false });
+  redirect("/login");
 }
 
 /**
