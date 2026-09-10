@@ -64,6 +64,46 @@ d'ouvert sur ce geste.
 
 ---
 
+## ⏳ « DÉPLACER » AGIT SUR UN JOUR QU'IL NE REGARDE PAS (10 septembre 2026)
+
+**Sa question, captures à l'appui :** *« quand je clique sur déplacer l'aprem,
+c'est le 15 et le 11 qui bougent, je comprends pas pourquoi. »*
+
+**Le code fait ce qu'il annonce ; c'est l'écran qui ment par omission.** Son
+chantier « Mr. Julien — 2 jours » est posé **vendredi 11, départ après-midi**.
+Quatre demi-journées, week-end sauté :
+
+| départ | ce qu'il occupe |
+|---|---|
+| 11 après-midi (avant) | 11 aprem · **14 matin · 14 aprem** · 15 matin |
+| 11 matin (après son appui) | **11 matin** · 11 aprem · 14 matin · 14 aprem |
+
+Il ouvre la carte du **14**, où le chantier apparaît — et l'interrupteur qu'il y
+trouve déplace le **départ**, qui est le 11. D'où les deux jours qui bougent
+sous ses yeux (le 11 passe « au-delà » parce qu'un autre chantier y était déjà,
+le 15 se vide) pendant que le 14, lui, ne change pas.
+
+**Vérifié par le calcul**, pas déduit : `creneauxDuChantier` rend exactement ces
+deux listes (`src/lib/disponibilites.ts`).
+
+**Ce qui manque à l'écran :** la carte d'un jour dit la DURÉE (« 2 jours ») mais
+jamais le JOUR DE DÉPART. Sur le premier jour d'un chantier, l'interrupteur est
+juste ; sur les suivants, il agit ailleurs sans le dire.
+
+**Deux réponses possibles, à trancher par lui** (maquette d'abord, `CLAUDE.md`
+§3 bis) :
+
+| | |
+|---|---|
+| **A** | « Déplacer » ne paraît que sur le **premier jour** du chantier ; ailleurs, la carte écrit « commence vendredi 11 » |
+| **B** | « Déplacer » reste partout, et l'interrupteur porte le jour qu'il déplace — « départ : ven. 11 » |
+
+**Ne rien coder avant son choix.** Et ne pas « corriger » `deplacerChantier` :
+il écrit le départ, ce qui est juste — le défaut est dans ce que l'écran laisse
+croire.
+
+---
+
 ## ⏳ LE GESTE D'ABSENCE PASSE SOUS LE TIROIR DU BAS — D'UN PIXEL (10 septembre 2026)
 
 **Mesuré**, écran de 390 × 664, cinq jours devant, compte de démonstration :
