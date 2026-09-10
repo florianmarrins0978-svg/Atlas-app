@@ -177,20 +177,40 @@ async function principal() {
     );
   });
 
-  await cas("une fiche ouverte SANS écran d'avant garde une flèche qui mène quelque part", async () => {
-    // **Le garde-fou du correctif.** Reculer à l'aveugle depuis une fiche
-    // ouverte par un signet, ou rechargée, ferait un bouton qui ne fait rien —
-    // ou qui rend la main au site précédent. Sans écran d'avant connu, la
-    // flèche doit continuer de MENER à la liste.
+  await cas("une fiche ouverte À FROID garde une flèche qui mène quelque part", async () => {
+    // **Le garde-fou du correctif, et il ne fixe PAS la destination.**
+    //
+    // Ce qu'il défend : reculer à l'aveugle depuis une fiche ouverte par un
+    // signet, ou rechargée, ferait un bouton qui ne fait rien — ou qui rendrait
+    // la main au site précédent. Sans preuve que l'écran d'avant est bien celui
+    // visé, la flèche doit MENER quelque part, dans Atlas.
+    //
+    // **Il exigeait `/clients`, et c'était faux** — rougi en batterie le
+    // 10 septembre 2026, après la fusion. Où la flèche mène est le travail du
+    // journal de l'onglet (`ARCHITECTURE.md` §311), qui survit au rechargement
+    // et peut légitimement désigner un autre écran. Un contrôle qui fixe une
+    // destination réclame ce qu'une session voisine a le droit de changer
+    // (`CLAUDE.md` §5 bis) : on vise plus profond — une adresse interne, et pas
+    // celle d'où l'on part.
     const href = await page.locator('[data-atlas="nom-client"]').first()
       .locator("xpath=ancestor::a[1]")
       .getAttribute("href");
     assert.ok(href, "aucune fiche à ouvrir");
     await page.goto(`${BASE}${href}`, { waitUntil: "domcontentloaded" });
     await attendreVivante(page);
+
     await page.locator("header a[aria-label]").first().click();
-    await page.waitForURL(`${BASE}/clients`, { timeout: DELAI_PAR_DEFAUT_MS });
-    assert.equal(new URL(page.url()).pathname, "/clients");
+    await page.waitForFunction(
+      (depart: string) => window.location.pathname !== depart,
+      new URL(`${BASE}${href}`).pathname,
+      { timeout: DELAI_PAR_DEFAUT_MS }
+    );
+    const arrivee = new URL(page.url());
+    assert.equal(arrivee.origin, new URL(BASE).origin, "la flèche a rendu la main hors d'Atlas");
+    assert.ok(
+      !/^\/clients\/[0-9a-f-]{36}$/.test(arrivee.pathname),
+      `la flèche n'a pas quitté la fiche (${arrivee.pathname}) : le bouton ne fait rien`
+    );
   });
 
   await cas("l'aller-retour n'empile plus d'historique", async () => {
