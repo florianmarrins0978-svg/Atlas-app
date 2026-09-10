@@ -11,6 +11,16 @@
 
 ---
 
+## FAIT : le retour perdait un pas à chaque fois — 10 septembre 2026
+
+*« Deux fois le geste client → retour, et je reviens à la page d'accueil. »*
+Deux pièces du lot de la veille se marchaient dessus : la flèche recule par le
+navigateur, et ce recul déclenchait l'écoute qui retirait du journal l'écran
+d'ARRIVÉE. Une seule fonction répondait à deux questions différentes ; elles
+sont séparées. **Aucune migration.** Détail : `ARCHITECTURE.md` §316.
+
+---
+
 ## FAIT : « Déplacer », un interrupteur à deux positions — 10 septembre 2026
 
 Sa décision après la planche : *« fais celui-là, juste tu retires la journée »*.

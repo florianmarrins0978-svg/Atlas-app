@@ -28,6 +28,9 @@ import { ADRESSE } from "./_adresse";
 
 const BASE = ADRESSE;
 
+/** La flèche de retour, quel que soit l'écran — elle porte toujours ce libellé. */
+const FLECHE = 'a[aria-label^="Retour"]';
+
 let echecs = 0;
 async function cas(nom: string, verifier: () => Promise<void>) {
   try {
@@ -56,17 +59,23 @@ const REPERE = '[data-atlas="retour-du-devis"]';
  * le serveur porte la sortie déclarée, puis se corrige dès que la page est
  * vivante. C'est ce que le patron voit, lui, à la première image.
  */
-async function laFlecheAnnonce(page: Page, attendue: string): Promise<void> {
-  const fleche = page.locator(REPERE);
-  await fleche.waitFor({ state: "visible", timeout: 30_000 });
+/**
+ * **Le repère se choisit, et par défaut c'est celui du devis.** Il était écrit
+ * en dur : la flèche de la fiche client et celle de la liste ne le portent pas,
+ * et le contrôle attendait alors trente secondes un élément qui n'existe nulle
+ * part — il accusait le produit d'un défaut qu'il venait de fabriquer.
+ */
+async function laFlecheAnnonce(page: Page, attendue: string, repere = REPERE): Promise<void> {
+  const fleche = page.locator(repere);
+  await fleche.first().waitFor({ state: "visible", timeout: 30_000 });
   try {
     await page.waitForFunction(
-      ([repere, cible]) => document.querySelector(repere)?.getAttribute("href") === cible,
-      [REPERE, attendue] as const,
+      ([ou, cible]) => document.querySelector(ou)?.getAttribute("href") === cible,
+      [repere, attendue] as const,
       { timeout: 15_000 }
     );
   } catch {
-    const vu = await fleche.getAttribute("href");
+    const vu = await fleche.first().getAttribute("href");
     const journal = await page.evaluate(() => {
       try {
         return window.sessionStorage.getItem("atlas:journal-de-navigation");
@@ -131,6 +140,66 @@ async function main() {
     await suivante.click();
     await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
     assert.equal(chemin(page.url()), "/", `le second retour a mené à ${page.url()}`);
+  });
+
+  await cas("SON CAS DU 10 SEPT. : deux fois client → retour, sans quitter la liste", async () => {
+    // *« Quand je fais deux fois le geste client → retour puis client → retour,
+    // je reviens à la page d'accueil. »*
+    //
+    // **Deux pièces du même lot se marchaient dessus.** La flèche recule par
+    // `router.back()` pour rendre sa place dans la liste ; ce `router.back()`
+    // déclenche un `popstate`, et le `popstate` était écouté pour le bouton DU
+    // NAVIGATEUR, avec la fonction qui RETIRE un écran. Le journal perdait donc
+    // la destination qu'on venait d'atteindre — un pas de trop à chaque retour.
+    //
+    // **Le contrôle refait le geste QUATRE fois**, pas deux : une version qui
+    // ne perdrait un pas qu'une fois sur deux passerait un aller-retour.
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    const clients = await page
+      .locator('a[href^="/clients/"]')
+      .evaluateAll((liens) =>
+        liens
+          .map((l) => l.getAttribute("href") ?? "")
+          .filter((h) => h.split("/").length === 3)
+      );
+    if (clients.length < 2) throw new Error(`il faut deux clients, vu ${clients.length}`);
+
+    for (const [rang, href] of [clients[0], clients[1], clients[0], clients[1]].entries()) {
+      await page.locator(`a[href="${href}"]`).first().click();
+      await page.waitForURL(`${BASE}${href}`, { timeout: 30_000 });
+      await laFlecheAnnonce(page, "/clients", FLECHE);
+
+      await page.locator(FLECHE).first().click();
+      await page.waitForURL(/\/clients\/?$/, { timeout: 30_000 });
+      assert.equal(
+        chemin(page.url()),
+        "/clients",
+        `au tour ${rang + 1}, le retour a déposé sur ${page.url()}`
+      );
+      // **Et la liste reste sous les pieds** : c'est ce que le journal perdait.
+      // Sans ce contrôle-ci, le tour suivant seul dirait qu'il manque un pas.
+      await laFlecheAnnonce(page, "/", FLECHE);
+    }
+  });
+
+  await cas("le bouton DU NAVIGATEUR ne fait pas repartir la flèche en avant", async () => {
+    // C'est ce pour quoi l'écoute du `popstate` existe. Elle avait sa moitié de
+    // défaut elle aussi : la flèche s'abonnait à l'ÉVÉNEMENT, alors que le
+    // journal ne change qu'APRÈS lui — elle gardait donc l'adresse de l'écran
+    // qu'on venait de quitter, et proposait d'y retourner.
+    await page.goto(`${BASE}/clients`, { waitUntil: "networkidle" });
+    const premier = await page
+      .locator('a[href^="/clients/"]')
+      .evaluateAll((liens) =>
+        liens.map((l) => l.getAttribute("href") ?? "").find((h) => h.split("/").length === 3)
+      );
+    if (!premier) throw new Error("aucun client dans la liste");
+    await page.locator(`a[href="${premier}"]`).first().click();
+    await page.waitForURL(`${BASE}${premier}`, { timeout: 30_000 });
+
+    await page.goBack();
+    await page.waitForURL(/\/clients\/?$/, { timeout: 30_000 });
+    await laFlecheAnnonce(page, "/", FLECHE);
   });
 
   await cas("SANS page d'avant, l'écran garde la sortie qu'il déclare", async () => {

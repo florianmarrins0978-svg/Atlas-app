@@ -200,6 +200,10 @@ export function pagePrecedente(
  * | **la flèche de retour est appuyée** | on quitte cet écran en arrière : il ne doit plus servir de destination, sinon deux appuis se renverraient l'un l'autre |
  * | **la fiche d'un client est supprimée** | son adresse ne mène plus à rien ; laissée dans le journal, elle serait la « page d'avant » de l'écran suivant |
  *
+ * **CE N'EST PAS LA QUESTION QUE POSE UNE ARRIVÉE** — voir
+ * `journalJusquACetEcran` juste en dessous. Les deux ont été confondues, et
+ * cela a coûté sa panne du 10 septembre 2026.
+ *
  * **Reculer se DÉCLARE, il ne se devine pas.** C'est toute la leçon du
  * 9 septembre 2026 : une version qui reconnaissait un retour à la forme de la
  * trace confondait « il recule » avec « il rouvre un écran déjà vu ». Le seul
@@ -214,6 +218,61 @@ export function journalSansCetEcran(journal: readonly string[], chemin: string):
   const propre = journal.map(cheminInterne).filter((c): c is string => c !== null);
   for (let i = propre.length - 1; i >= 0; i--) {
     if (ecranDe(propre[i]) === ici) return propre.slice(0, i);
+  }
+  return propre;
+}
+
+/**
+ * Le journal tronqué APRÈS l'écran où l'on vient d'atterrir — qui, lui, RESTE.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa panne du 10 septembre 2026 :** *« quand je fais deux fois le geste
+ * client → retour puis client → retour, je reviens à la page d'accueil. »*
+ *
+ * **Deux pièces du même lot se marchaient dessus.** La flèche recule désormais
+ * par `router.back()` quand l'entrée d'historique le permet — c'est ce qui rend
+ * au patron sa place dans la liste. Or `router.back()` déclenche un `popstate`,
+ * et le `popstate` était écouté pour le bouton DU NAVIGATEUR, avec
+ * `journalSansCetEcran` : le journal perdait alors l'écran d'ARRIVÉE,
+ * c'est-à-dire la destination que la flèche venait de choisir. Un pas de trop à
+ * chaque retour, et l'on sortait de la liste au deuxième.
+ *
+ * **La racine n'est pas dans le mécanisme, elle est dans la QUESTION.** Une
+ * seule fonction répondait aux deux, et ce ne sont pas les mêmes :
+ *
+ * | ce qui vient de se passer | ce que le journal doit garder |
+ * |---|---|
+ * | *je quitte cet écran en arrière* (la flèche, une fiche effacée) | tout ce qui le précède — `journalSansCetEcran` |
+ * | *je viens d'atterrir ici* (le bouton du navigateur, `router.back()`) | **jusqu'à cet écran INCLUS** : on est dessus |
+ *
+ * Ce qui SUIT part dans les deux cas — sans quoi la flèche repartirait en avant
+ * après un retour du navigateur, et c'est pour cela que cette écoute existe.
+ *
+ * **Un écran absent du journal ne tronque rien** : c'est le bouton « suivant »
+ * du navigateur, ou un onglet neuf. Il n'y a alors rien à couper, et la visite
+ * s'ajoute normalement juste après (`journalApresVisite`).
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+export function journalJusquACetEcran(journal: readonly string[], chemin: string): string[] {
+  const ici = ecranDe(chemin);
+  const propre = journal.map(cheminInterne).filter((c): c is string => c !== null);
+  // **ON CHERCHE NOTRE PLACE D'AVANT, JAMAIS LE PAS QU'ON VIENT DE NOTER.**
+  //
+  // Les deux pièces se posent à l'arrivée, et l'ordre est celui-ci : la visite
+  // s'ajoute d'abord (`journalApresVisite`, dans l'effet de React), puis cet
+  // événement arrive. Le journal porte donc DEUX fois l'écran d'arrivée — sa
+  // vraie place, et le pas ajouté au bout.
+  //
+  // Une version qui prenait le dernier ne coupait donc rien, et la flèche
+  // repartait EN AVANT après un retour du navigateur : elle annonçait l'écran
+  // qu'on venait de quitter. Mesuré à l'écran le 10 septembre 2026, et ce
+  // défaut-là était déjà présent avant ce lot, par l'autre bout.
+  //
+  // La dernière ligne est donc écartée de la recherche. Sans jumelle plus haut,
+  // c'est qu'il n'y a rien à couper : la flèche d'Atlas vient de retirer
+  // elle-même l'écran qu'elle quittait, ou l'on avance vers un écran neuf.
+  for (let i = propre.length - 2; i >= 0; i--) {
+    if (ecranDe(propre[i]) === ici) return propre.slice(0, i + 1);
   }
   return propre;
 }

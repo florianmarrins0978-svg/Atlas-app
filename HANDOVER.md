@@ -8,6 +8,27 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
+
+| | |
+|---|---|
+| sa panne | *« deux fois le geste client → retour, et je reviens à la page d'accueil »* |
+| la racine | `router.back()` de la flèche déclenche un `popstate` ; l'écoute écrite pour le bouton du navigateur RETIRAIT alors l'écran d'arrivée — la destination elle-même |
+| les pièces | `journalJusquACetEcran` (`src/lib/journal-de-navigation.ts`), `atterrirIci` et `sAbonnerAuJournal` (`journal-navigateur.ts`) |
+| retiré | l'appel qui effaçait le sol sous les pieds, et l'abonnement de la flèche au `popstate` |
+| les suites | `test-journal-de-navigation.ts` (+4), `test-retour-page-davant-e2e.ts` (+2, son geste refait quatre fois) |
+| le détail | `ARCHITECTURE.md` §316 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** « Je quitte cet écran en arrière » et « je
+viens d'atterrir ici » ne sont pas la même question : la première retire
+l'écran, la seconde le GARDE et ne coupe que ce qui le suit. Une seule fonction
+répondait aux deux.
+
+**ET L'ORDRE DES DEUX EFFETS COMPTE** : la visite se note AVANT que le
+`popstate` n'arrive, donc le journal porte deux fois l'écran d'arrivée. Toute
+troncature qui viserait la dernière ligne ne couperait rien.
+
+---
 ## Dernier lot — « DÉPLACER », UN INTERRUPTEUR À DEUX POSITIONS (10 septembre 2026)
 
 | | |

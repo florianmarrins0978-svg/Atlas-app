@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { marquerLaProvenance, noterLaVisite, oublierCetEcran } from "./journal-navigateur";
+import { atterrirIci, marquerLaProvenance, noterLaVisite } from "./journal-navigateur";
 
 /**
  * Ce qui tient le journal des écrans traversés, pour que la flèche de retour
@@ -36,25 +36,30 @@ function Enregistreur() {
     noterLaVisite(ici);
   }, [chemin, parametres]);
 
-  // **LE BOUTON DU NAVIGATEUR EST LE SEUL RETOUR QU'ATLAS NE FAIT PAS.**
+  // ─── ON VIENT D'ATTERRIR EN RECULANT ──────────────────────────────────────
   //
-  // Nos flèches déclarent qu'elles reculent (`FlecheRetour`), et
-  // l'enregistrement d'une fiche client aussi. Le geste du navigateur — la
-  // flèche du haut, le balayage vers la droite sur un téléphone — ne passe par
-  // aucun des deux : sans cette ligne, le journal garderait les écrans
-  // POSTÉRIEURS à celui où l'on vient d'atterrir, et la flèche d'Atlas
-  // repartirait EN AVANT.
+  // Le journal garderait sinon les écrans POSTÉRIEURS à celui où l'on se
+  // trouve, et la flèche d'Atlas repartirait EN AVANT.
   //
-  // `popstate` sert aussi le geste « suivant » du navigateur, et c'est sans
-  // danger : l'écran d'arrivée n'est alors plus dans le journal, et rien n'est
-  // retiré. Il est posé une seule fois, sans dépendance : `window.location` est
-  // déjà à jour quand l'événement arrive, et la visite elle-même est notée par
-  // l'effet du dessus, juste après.
+  // **`atterrirIci` et non `oublierCetEcran`, et c'est toute sa panne du
+  // 10 septembre 2026 :** *« quand je fais deux fois le geste client → retour
+  // puis client → retour, je reviens à la page d'accueil »*. Le second retirait
+  // du journal l'écran d'ARRIVÉE — la destination que la flèche venait de
+  // choisir —, et l'on perdait un pas à chaque retour.
+  //
+  // **`popstate` n'est plus seulement le geste du navigateur** : la flèche
+  // d'Atlas recule elle aussi par `router.back()` depuis le 9 septembre, pour
+  // rendre au patron sa place dans la liste. Les deux passent donc ici, et les
+  // deux veulent la même chose — garder le sol sous les pieds.
+  //
+  // Le geste « suivant » du navigateur y passe aussi, sans danger : l'écran
+  // d'arrivée n'est pas dans le journal, et rien n'est alors tronqué. Posé une
+  // seule fois, sans dépendance : `window.location` est déjà à jour quand
+  // l'événement arrive, et la visite est notée par l'effet du dessus.
   useEffect(() => {
-    const surLeRetourDuNavigateur = () =>
-      oublierCetEcran(window.location.pathname + window.location.search);
-    window.addEventListener("popstate", surLeRetourDuNavigateur);
-    return () => window.removeEventListener("popstate", surLeRetourDuNavigateur);
+    const surUnRetour = () => atterrirIci(window.location.pathname + window.location.search);
+    window.addEventListener("popstate", surUnRetour);
+    return () => window.removeEventListener("popstate", surUnRetour);
   }, []);
 
   return null;

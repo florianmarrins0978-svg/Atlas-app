@@ -8,6 +8,29 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### Deux fois « client → retour » ramenait à l'accueil
+
+*« Quand je fais deux fois le geste client → retour puis client → retour, je
+reviens à la page d'accueil. »*
+
+Deux pièces du lot de la veille se marchaient dessus. La flèche recule
+désormais par le navigateur — c'est ce qui rend sa place dans la liste — et ce
+recul déclenchait l'écoute écrite pour le bouton DU navigateur, laquelle
+retirait du journal l'écran d'ARRIVÉE : la destination même qu'on venait
+d'atteindre. Un pas perdu à chaque retour.
+
+Une seule fonction répondait à deux questions différentes — « je quitte cet
+écran » et « je viens d'atterrir ici ». Elles sont séparées.
+
+**Et une seconde moitié, déjà là avant :** après le bouton du navigateur, la
+flèche proposait de retourner sur l'écran qu'on venait de quitter. Elle
+s'abonnait à l'événement plutôt qu'au journal, qui ne change qu'après lui.
+
+Le défaut a été rendu bavard avant d'être corrigé : une sonde a rejoué son
+geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
+maintenant dans la suite navigateur, qui refait le geste quatre fois.
+
+
 ### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
 
 *« Fais celui-là, juste tu retires la journée. Il faut garder le bouton
