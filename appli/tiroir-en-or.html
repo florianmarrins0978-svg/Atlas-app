@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le tiroir en doré — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LE BORD DU TIROIR EN DORÉ — 11 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa demande, après avoir vu le tiroir prendre le fond des cartes : *« je
+  pensais mettre les bords en doré, celui de l'appli. Fais une maquette voir
+  comment ça rend. »*
+
+  Les quatre versions sont posées côte à côte, ouvertes et fermées, sur les deux
+  fonds — le clair et Nuit, où l'or reste le même. RIEN N'EST CODÉ.
+
+  Les couleurs viennent de `src/lib/chartes.ts` : or #B98B47, or clair #C9A15E.
+*/
+:root{
+  --fond:#f5f3ee; --card:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --orClair:#C9A15E;
+  --trait:rgba(28,28,26,.12); --scene:#e6e3dc; --ombre:rgba(28,28,26,.18);
+}
+body.nuit{
+  --fond:#101210; --card:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --orClair:#C9A15E;
+  --trait:rgba(233,232,222,.12); --scene:#070908; --ombre:rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--card);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+.tete{max-width:760px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:#2f3b2f;
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+body.nuit .sceau{background:var(--encre);color:var(--fond)}
+
+.planches{display:flex;flex-wrap:wrap;gap:26px;justify-content:center;padding:20px 16px}
+.bloc{width:340px;max-width:100%}
+.bloc h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 4px;color:var(--or)}
+.bloc p.quoi{margin:0 0 10px;font-size:13px;color:var(--encre-douce);min-height:38px}
+
+/* Le téléphone : le bas du planning, calendrier + tiroir + barre */
+.tel{position:relative;height:420px;overflow:hidden;border-radius:12px;
+  background:var(--fond);border:1px solid var(--trait)}
+.mois{padding:14px 12px 0}
+.rangee{display:flex;gap:6px;margin-bottom:6px}
+.jour{flex:1;border-radius:9px;padding:7px 0 6px;text-align:center;background:transparent}
+.jour.week{background:rgba(128,128,128,.10)}
+.jour .n{font-family:ui-serif,Georgia,serif;font-size:16px;line-height:1}
+.jour .b{height:4px;border-radius:2px;background:rgba(128,128,128,.18);margin:4px 6px 0}
+.jour .b.plein{background:#2f3b2f}
+.rien{text-align:center;color:var(--gris);font-size:13px;padding:18px 0 0}
+
+.tiroir{position:absolute;left:0;right:0;bottom:46px;background:var(--card);
+  border-top:1px solid var(--trait);box-shadow:0 -10px 28px rgba(28,28,26,.08);
+  transition:box-shadow .25s}
+.tiroir .poignee{display:flex;align-items:center;gap:10px;padding:15px 18px;
+  font-size:13px;color:var(--encre-douce)}
+.tiroir .poignee .chev{margin-left:auto;color:var(--gris)}
+.tiroir .dedans{padding:0 18px 16px;border-top:1px solid var(--trait)}
+.tiroir .titre{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;background:rgba(128,128,128,.12);padding:6px 14px;border-radius:999px;margin:12px 0 8px}
+.tiroir .ligne{display:flex;align-items:center;justify-content:space-between;padding:10px 0;font-size:13px}
+.tiroir .ligne .nom{font-family:ui-serif,Georgia,serif;font-size:18px;color:var(--or)}
+.barre{position:absolute;left:0;right:0;bottom:0;height:46px;display:flex;
+  align-items:center;justify-content:space-around;background:var(--fond);
+  border-top:1px solid var(--trait);font-size:10px;letter-spacing:.08em;color:var(--gris)}
+.barre b{color:var(--encre);font-weight:600}
+
+/* ─── LES QUATRE VERSIONS ─────────────────────────────────────────────── */
+/* A : ce qui est en ligne depuis ce soir — un filet gris */
+.v-a.ouvert{box-shadow:0 -14px 34px var(--ombre)}
+/* B : un filet DORÉ en haut, rien d'autre */
+.v-b{border-top:1px solid var(--or)}
+.v-b.ouvert{box-shadow:0 -14px 34px var(--ombre)}
+/* C : le filet doré s'ÉPAISSIT et les coins se lèvent */
+.v-c{border-top:2px solid var(--or);border-radius:14px 14px 0 0}
+.v-c.ouvert{box-shadow:0 -14px 34px var(--ombre)}
+/* D : un cadre doré complet, comme une carte posée */
+.v-d{border:1px solid var(--or);border-radius:14px 14px 0 0}
+.v-d.ouvert{box-shadow:0 -14px 34px var(--ombre)}
+.notes{max-width:760px;margin:8px auto 0;padding:0 20px}
+.notes h3{font-size:14px;margin:22px 0 6px}
+.notes p,.notes li{font-size:14px;line-height:1.6;color:var(--encre-douce);margin:0 0 8px}
+.notes b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="etat" aria-pressed="true">Fermer les tiroirs</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">11 septembre — à regarder</span>
+  <h1>Le bord du tiroir en doré</h1>
+  <p>Quatre façons, côte à côte. <b>A</b> est ce qui est en ligne depuis ce
+  soir. <b>Touchez « Fermer les tiroirs »</b> pour voir les deux états, et
+  <b>« Voir sur Nuit »</b> pour le fond sombre.</p>
+</div>
+
+<div class="planches" id="planches"></div>
+
+<div class="notes">
+  <h3>Ce que chacune fait</h3>
+  <ul>
+    <li><b>A — le filet gris.</b> Ce qui est en ligne. Le tiroir se distingue
+    par son fond plus clair et son ombre, rien de plus.</li>
+    <li><b>B — un filet doré.</b> Le même trait, en or. Il se voit fermé comme
+    ouvert, et ne coûte rien à l'œil.</li>
+    <li><b>C — le filet épaissi, coins levés.</b> Deux pixels d'or et des angles
+    arrondis : le tiroir devient une carte qui monte.</li>
+    <li><b>D — le cadre entier.</b> L'or fait le tour. C'est le plus visible —
+    et le plus présent en permanence.</li>
+  </ul>
+
+  <h3>Ce que j'en dis</h3>
+  <p><b>C.</b> L'or dit « ceci s'ouvre » sans cerner tout le bas de l'écran, et
+  les coins levés font ce que le fond seul ne fait pas : ils montrent que le
+  tiroir passe <b>par-dessus</b> le calendrier.</p>
+  <p><b>D est joli une fois, lourd tous les jours</b> : ce tiroir est présent sur
+  chaque ouverture du planning, y compris fermé. Un cadre doré permanent au bas
+  de l'écran finit par se voir plus que ce qu'il contient.</p>
+  <p><b>Rien n'est codé.</b> Dites-moi la lettre.</p>
+</div>
+
+<script>
+const VERSIONS = [
+  { cle: "a", titre: "A · en ligne", quoi: "Filet gris, fond plus clair, ombre à l'ouverture." },
+  { cle: "b", titre: "B · filet doré", quoi: "Le même trait, en or." },
+  { cle: "c", titre: "C · filet épais, coins levés", quoi: "Deux pixels d'or, et les angles se lèvent." },
+  { cle: "d", titre: "D · cadre entier", quoi: "L'or fait tout le tour du tiroir." },
+];
+let ouvert = true;
+
+function jour(n, plein, week) {
+  return `<div class="jour${week ? " week" : ""}">
+    <div class="n">${n}</div>
+    <div class="b${plein ? " plein" : ""}"></div><div class="b"></div></div>`;
+}
+
+function dessiner() {
+  document.getElementById("planches").innerHTML = VERSIONS.map((v) => `
+    <div class="bloc">
+      <h2>${v.titre}</h2>
+      <p class="quoi">${v.quoi}</p>
+      <div class="tel">
+        <div class="mois">
+          <div class="rangee">${[7, 8, 9, 10, 11].map((n) => jour(n, n === 8)).join("")}${jour(12, false, true)}${jour(13, false, true)}</div>
+          <div class="rangee">${[14, 15, 16, 17, 18].map((n) => jour(n, n === 14)).join("")}${jour(19, false, true)}${jour(20, false, true)}</div>
+        </div>
+        <p class="rien">Rien de posé ce jour-là.</p>
+        <div class="tiroir v-${v.cle}${ouvert ? " ouvert" : ""}">
+          <div class="poignee"><span>1 sans date</span><span class="chev">${ouvert ? "⌄" : "⌃"}</span></div>
+          ${ouvert ? `<div class="dedans">
+            <span class="titre">Sans date</span>
+            <div class="ligne"><span class="nom">Mr. Julien</span><span style="color:var(--gris)">½ journée à poser</span></div>
+          </div>` : ""}
+        </div>
+        <div class="barre"><span>CHANTIERS</span><b>PLANNING</b><span>TERMINÉS</span><span>RÉGLAGES</span></div>
+      </div>
+    </div>`).join("");
+}
+
+document.getElementById("pole").addEventListener("click", (e) => {
+  const on = document.body.classList.toggle("nuit");
+  e.currentTarget.setAttribute("aria-pressed", on ? "true" : "false");
+});
+document.getElementById("etat").addEventListener("click", (e) => {
+  ouvert = !ouvert;
+  e.currentTarget.setAttribute("aria-pressed", ouvert ? "true" : "false");
+  e.currentTarget.textContent = ouvert ? "Fermer les tiroirs" : "Ouvrir les tiroirs";
+  dessiner();
+});
+dessiner();
+</script>
+</body>
+</html>
