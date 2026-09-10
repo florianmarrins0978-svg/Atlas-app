@@ -5,6 +5,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { equipes, membresEntreprise, users } from "../db/schema";
 import type { Ctx } from "./context";
 import type { PorteePlanning, Role } from "@/lib/acces-roles";
+import { nomAffiche } from "@/lib/identite-personne";
 import {
   adresseNormalisee,
   refusDeLAcces,
@@ -13,6 +14,36 @@ import {
   refusDuRetrait,
   type RefusAcces,
 } from "@/lib/donner-un-acces";
+import { placePourUnFabricant, roleFabrique } from "@/lib/abonnements";
+import { abonnementDeLEntreprise, compterLesFabricants } from "./abonnements";
+
+/**
+ * RESTE-T-IL UNE PLACE POUR UNE PERSONNE DE PLUS QUI FABRIQUE ?
+ *
+ * **Elle rend `true` pour un salarié, toujours**, et ce n'est pas une
+ * exception : le plafond ne compte que ceux qui font des devis ou des factures
+ * — sa correction du 9 septembre 2026. Un paysagiste avec huit gars sur le
+ * terrain n'utilise pas huit fois Atlas, il coche huit cases dans un planning.
+ *
+ * **Et elle rend `true` quand il n'y a PAS d'abonnement.** Un plafond est la
+ * conséquence d'une formule choisie, jamais un état par défaut : l'appliquer
+ * sans abonnement fermerait aujourd'hui l'équipe des artisans qui se servent
+ * d'Atlas avant que la moindre offre existe. La règle vit dans
+ * `placePourUnFabricant`, pas ici.
+ *
+ * **Aucun verrou, et c'est assumé.** Deux ajouts simultanés pourraient franchir
+ * le plafond d'une unité. Cela suppose deux patrons ajoutant un commercial dans
+ * la même seconde — un cas qui ne se produit pas sur le téléphone d'un artisan,
+ * et dont le pire effet est un commercial de trop, qui se retire d'un geste.
+ * C'est le même raisonnement que le compteur de patrons, juste en dessous.
+ */
+async function placeDisponible(ctx: Ctx, role: Role): Promise<boolean> {
+  if (!roleFabrique(role)) return true;
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  if (!abonnement) return true;
+  const fabricants = await compterLesFabricants(ctx);
+  return placePourUnFabricant(abonnement.formule, fabricants).ok;
+}
 
 /** Une personne qui a un accès à cette entreprise, telle que l'écran la lit. */
 export type Acces = {
@@ -47,6 +78,7 @@ export async function listerAcces(ctx: Ctx): Promise<Acces[]> {
       .select({
         id: membresEntreprise.id,
         utilisateurId: membresEntreprise.utilisateurId,
+        prenom: users.prenom,
         nom: users.nom,
         email: users.email,
         role: membresEntreprise.role,
@@ -63,7 +95,16 @@ export async function listerAcces(ctx: Ctx): Promise<Acces[]> {
       // par ancienneté : l'ordre d'arrivée est celui qu'on a en tête.
       .orderBy(membresEntreprise.createdAt);
 
-    return lignes.sort((a, b) =>
+    // **Le nom se compose ICI, par la fonction du dépôt.** Depuis la
+    // migration 0077, `users.nom` est le nom de FAMILLE : l'afficher seul
+    // amputerait chaque compte neuf de son prénom. `nomAffiche` sait aussi
+    // retomber sur les comptes d'avant, dont `nom` porte encore le tout.
+    const composees = lignes.map(({ prenom, ...reste }) => ({
+      ...reste,
+      nom: nomAffiche({ prenom, nom: reste.nom }) || reste.nom,
+    }));
+
+    return composees.sort((a, b) =>
       a.role === b.role ? 0 : a.role === "proprietaire" ? -1 : b.role === "proprietaire" ? 1 : 0
     );
   });
@@ -123,6 +164,12 @@ export async function donnerUnAcces(
   });
   if (refus) return { ok: false, refus };
 
+  // **Le plafond de la formule, vérifié AVANT de créer le compte.** Le créer
+  // puis refuser l'adhésion laisserait un compte orphelin, avec une adresse
+  // désormais « déjà prise » que le patron ne pourrait plus réemployer.
+  const place = await placeDisponible(ctx, saisie.role);
+  if (!place) return { ok: false, refus: "plafond-atteint" };
+
   // Coût 10 : celui d'`authorize`, du changement de mot de passe et du jeu de
   // démonstration. En changer ici rendrait ce chemin plus lent ou plus faible
   // que les autres, sans que rien ne le dise.
@@ -168,6 +215,14 @@ export async function changerLeRole(ctx: Ctx, accesId: string, roleVoulu: string
     nombreDePatrons: liste.filter((l) => l.role === "proprietaire").length,
   });
   if (refus) return { ok: false, refus };
+
+  // **Promouvoir un salarié en commercial le fait ENTRER dans le plafond**, et
+  // c'est exactement le chemin par lequel on le franchirait sans s'en
+  // apercevoir : personne ne s'ajoute, un rôle change. Ne garder que
+  // `donnerUnAcces` aurait laissé cette porte grande ouverte.
+  if (roleFabrique(roleVoulu as Role) && !roleFabrique(cible.role)) {
+    if (!(await placeDisponible(ctx, roleVoulu as Role))) return { ok: false, refus: "plafond-atteint" };
+  }
 
   await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     await tx

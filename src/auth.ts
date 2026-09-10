@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import Apple from "next-auth/providers/apple";
 import { eq } from "drizzle-orm";
 import { db } from "./server/db/client";
 import { users } from "./server/db/schema";
@@ -8,6 +10,8 @@ import { authConfig } from "./auth.config";
 import { ouvrirAvecCle } from "./server/cle-appareil";
 import { identifiantSiMotDePasseJuste } from "./server/secret-authentification";
 import { marquerSession } from "./lib/identite-session";
+import { emailProuve, fournisseursDisponibles, ouAllerSansCompte } from "./lib/fournisseurs-connexion";
+import { identifiantPourEmailProuve } from "./server/identite-externe";
 import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
 
 // Provider Credentials : aucun accès réseau externe requis (contrairement à
@@ -130,9 +134,89 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return { id: compte.id, email: compte.email, name: compte.nom ?? undefined };
       },
     }),
+
+    /**
+     * GOOGLE ET APPLE — sa demande du 10 septembre 2026, planche à l'appui :
+     * *« je veux pouvoir me connecter avec Google ou Apple »*.
+     *
+     * ─────────────────────────────────────────────────────────────────────────
+     * **DÉCLARÉS SEULEMENT SI LEURS CLÉS SONT POSÉES**, et la question ne se
+     * tranche pas ici : `fournisseursDisponibles` répond, et le même appel sert
+     * à l'écran pour décider quoi dessiner. Deux rédactions divergeraient, et
+     * la divergence s'appellerait « un bouton qui mène à une page d'erreur
+     * d'Auth.js » (`CLAUDE.md` §3).
+     *
+     * **AUCUN ADAPTATEUR DE BASE N'EST BRANCHÉ, et c'est délibéré** — même
+     * raisonnement que pour Face ID, quinze lignes plus haut : la session
+     * d'Atlas est un JWT sans table, et en brancher un remettrait en jeu le
+     * contexte d'entreprise, le middleware et « me déconnecter partout ». Ce
+     * qui rattache une identité Google à un compte d'ici est donc **l'adresse
+     * prouvée**, et rien d'autre (`emailProuve`, puis le rappel `signIn`).
+     */
+    ...fournisseursDisponibles({
+      googleId: getEnv().googleClientId,
+      googleSecret: getEnv().googleClientSecret,
+      appleId: getEnv().appleClientId,
+      appleSecret: getEnv().appleClientSecret,
+    }).map((f) =>
+      f.nom === "google"
+        ? Google({
+            clientId: getEnv().googleClientId,
+            clientSecret: getEnv().googleClientSecret,
+            /**
+             * `consent` refusé, `select_account` retenu : il fait choisir le
+             * compte à chaque fois. Un artisan et son salarié partagent parfois
+             * le même téléphone, et sans cela le second entrerait chez le
+             * premier sans jamais voir de choix.
+             */
+            authorization: { params: { prompt: "select_account" } },
+          })
+        : Apple({
+            clientId: getEnv().appleClientId,
+            clientSecret: getEnv().appleClientSecret,
+          })
+    ),
   ],
   callbacks: {
     ...authConfig.callbacks,
+
+    /**
+     * **QUI ENTRE PAR GOOGLE OU PAR APPLE — et qui va d'abord créer son compte.**
+     *
+     * Ce rappel ne concerne QUE les fournisseurs extérieurs : les deux
+     * `Credentials` ont déjà rendu un identifiant Atlas, il n'y a rien à
+     * rattacher.
+     *
+     * ─────────────────────────────────────────────────────────────────────────
+     * **POURQUOI ON NE CRÉE PAS LE COMPTE AU VOL.** C'est la décision qui
+     * compte dans ce lot, et elle a un coût visible : celui qui appuie sur
+     * Google sans compte Atlas ne rentre pas, il est envoyé sur la création.
+     * L'inverse donnerait un Atlas **sans entreprise, sans forme juridique et
+     * sans TVA** — le premier devis serait impossible à émettre, et l'artisan
+     * le découvrirait devant un client. Le parcours de création pose ces
+     * questions ; on y va, avec l'adresse déjà prouvée.
+     *
+     * **`user.id` est réécrit ici**, et il le faut : ce qu'Auth.js y met pour
+     * un fournisseur OAuth est l'identifiant du compte CHEZ GOOGLE. Laissé tel
+     * quel, il partirait dans le jeton et `getCurrentCtx` ne trouverait aucune
+     * entreprise — une session vide, sans un mot.
+     */
+    async signIn({ user, account, profile }) {
+      if (!account || account.type !== "oidc") return true;
+
+      const email = emailProuve(profile);
+      // Une adresse non prouvée n'ouvre rien. Voir `emailProuve` : sans
+      // adaptateur, l'adresse est le SEUL lien entre les deux mondes.
+      if (!email) return "/login?refus=adresse-non-verifiee";
+
+      const utilisateurId = await identifiantPourEmailProuve(email);
+      if (!utilisateurId) return ouAllerSansCompte(email);
+
+      user.id = utilisateurId;
+      user.email = email;
+      return true;
+    },
+
     // Le jeton ne porte que l'id utilisateur — jamais entrepriseId/rôle, qui
     // sont toujours résolus server-side depuis la base à chaque requête (voir
     // session-ctx.ts), jamais fait confiance depuis le jeton lui-même.

@@ -124,6 +124,21 @@ export const LIMITES = {
   // protège pas Atlas, il évite que l'adresse publique du banc d'essai serve de
   // relais vers un service public qui, lui, nous couperait.
   rechercheAdresse: { max: 120, fenetreMs: 60 * 1000 },
+  /**
+   * Ouvrir la page de paiement — comptée PAR ENTREPRISE, et serrée.
+   *
+   * **Chaque appui crée un objet chez le prestataire**, et il y reste. Un
+   * double appui nerveux sur un réseau lent — le geste ordinaire d'un artisan
+   * sur un chantier — fabriquerait autant de sessions de paiement qu'il y a
+   * d'appuis, et elles encombreraient son tableau de bord le jour où il
+   * cherche la bonne.
+   *
+   * **Six par minute, pas moins :** il a le droit d'hésiter entre trois
+   * formules et deux périodicités avant de se décider, et un refus au
+   * quatrième essai se lirait comme une panne. Ce seuil borne le gaspillage,
+   * il n'arbitre pas son choix.
+   */
+  ouvrirLePaiement: { max: 6, fenetreMs: 60 * 1000 },
 } as const;
 
 export type ResultatLimite = { autorise: true } | { autorise: false; retryAfterMs: number };

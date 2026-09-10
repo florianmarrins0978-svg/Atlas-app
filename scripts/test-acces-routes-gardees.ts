@@ -59,6 +59,13 @@ const EXEMPTEES: Record<string, string> = {
     "LE devis sans un seul montant : c'est le document du salarié, ouvert à tous les rôles.",
   "agenda/google/retour":
     "Retour d'autorisation Google, reconnu par un témoin posé à l'aller — il n'y a pas encore de chemin à garder.",
+  paiement:
+    "Le crochet du prestataire de paiement : il frappe depuis l'extérieur, donc sans " +
+    "session ni rôle — c'est la nature d'un crochet. Sa garde est la SIGNATURE de " +
+    "l'événement (src/lib/signature-stripe.ts), vérifiée avant toute lecture, sur le " +
+    "corps exact reçu ; et l'écriture qui s'ensuit est bornée à un seul abonnement par " +
+    "une politique RLS dédiée (migration 0084). Aucune réponse ne dit jamais si " +
+    "l'abonnement visé existe.",
 };
 
 function routes(dossier: string, prefixe = ""): { cle: string; fichier: string }[] {

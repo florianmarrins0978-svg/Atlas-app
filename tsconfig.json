@@ -99,7 +99,15 @@
     ".next-verification-a2/types/**/*.ts",
     ".next-verification-a2/dev/types/**/*.ts",
     ".next-a2/types/**/*.ts",
-    ".next-a2/dev/types/**/*.ts"
+    ".next-a2/dev/types/**/*.ts",
+    ".next-capture-c/types/**/*.ts",
+    ".next-capture-c/dev/types/**/*.ts",
+    ".next-a3/types/**/*.ts",
+    ".next-a3/dev/types/**/*.ts",
+    ".next-voir/types/**/*.ts",
+    ".next-voir/dev/types/**/*.ts",
+    ".next-voir2/types/**/*.ts",
+    ".next-voir2/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

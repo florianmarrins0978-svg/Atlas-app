@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Déplacer : quel jour ? — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  « DÉPLACER » AGIT SUR UN JOUR QU'IL NE REGARDE PAS — 10 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa question, deux captures à l'appui : *« quand je clique sur déplacer
+  l'aprem, c'est le 15 et le 11 qui bougent, je comprends pas pourquoi. »*
+
+  **Le calcul est juste ; c'est l'écran qui ment par omission.** Son chantier
+  « Mr. Julien — 2 jours » est posé le VENDREDI 11, départ après-midi. Quatre
+  demi-journées, week-end sauté : 11 aprem · 14 matin · 14 aprem · 15 matin.
+  Il ouvre la carte du 14 — le chantier y est, puisqu'il déborde dessus — et
+  l'interrupteur qu'il y trouve déplace le DÉPART, qui est le 11.
+
+  Vérifié par `creneauxDuChantier` (`src/lib/disponibilites.ts`), pas déduit.
+
+  RIEN N'EST CODÉ. Les couleurs viennent de `src/lib/chartes.ts`, et la scène
+  reprend ses captures.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#6f8a5f; --surPlein:#fff; --papier:#ece9e1; --rouge:#7a2230;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#6f8a5f; --surPlein:#101210; --papier:#232722; --rouge:#a8404f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+.choix{max-width:740px;margin:14px auto 0;padding:0 20px;text-align:center}
+.choix button{font:inherit;font-size:13px;padding:9px 14px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.choix button[aria-pressed=true]{background:var(--accent);color:var(--fond);
+  border-color:var(--accent)}
+
+.scene{display:flex;justify-content:center;padding:18px 16px 6px}
+.tel{width:390px;max-width:100%;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;padding:16px 16px 22px}
+
+.carte{background:var(--plage);border:1px solid var(--trait-doux);
+  border-radius:14px;padding:14px 15px;box-shadow:0 6px 20px rgba(28,28,26,.07)}
+.carte .jour{text-align:center;font-size:12.5px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;margin:0 0 14px}
+.carte h3{margin:0 0 2px;font-family:ui-serif,Georgia,serif;font-size:21px;font-weight:400}
+.carte .duree{margin:0;font-size:13.5px;color:var(--or)}
+.carte .lieu{margin:0 0 12px;font-size:13.5px;color:var(--gris)}
+/* Le mot qui manque aujourd'hui : d'où part ce chantier. */
+.depart{margin:0 0 12px;font-size:13.5px;color:var(--encre-douce)}
+.depart b{color:var(--encre)}
+
+.demi{display:flex;align-items:center;gap:9px;margin-top:10px}
+.demi .case{width:14px;height:14px;border-radius:3px;flex:none;background:var(--accent)}
+.demi .mot{width:88px;flex:none;font-size:10px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase}
+.equipe{border-radius:999px;background:var(--plein);color:var(--surPlein);
+  font-size:13px;padding:8px 14px}
+
+.actes{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;
+  gap:8px;margin-top:16px}
+.past{padding:9px 15px;border-radius:999px;border:0;
+  box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage);
+  color:var(--encre);font:inherit;font-size:13px;cursor:pointer;min-height:44px}
+.bascule{display:flex;overflow:hidden;border-radius:999px;
+  border:1px solid var(--trait);background:var(--plage)}
+.bascule button{border:0;background:transparent;min-height:44px;padding:9px 16px;
+  font:inherit;font-size:12.5px;color:var(--encre-douce);cursor:pointer}
+.bascule button[aria-pressed=true]{background:var(--plein);color:var(--surPlein)}
+.etiquette{font-size:11.5px;color:var(--gris);flex:none}
+
+/* ─── ce que l'appui déplace : hors du téléphone, exprès ────────────────── */
+.ruban{max-width:740px;margin:16px auto 0;padding:0 20px}
+.ruban h4{margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gris)}
+.jours{display:flex;gap:8px;flex-wrap:wrap}
+.jourCase{flex:1 1 90px;background:var(--plage);border:1px solid var(--trait);
+  border-radius:12px;padding:9px 10px}
+.jourCase .nom{font-size:12px;color:var(--encre-douce);margin-bottom:6px}
+.barre{height:10px;border-radius:3px;background:var(--papier);margin-bottom:4px}
+.barre.pris{background:var(--accent)}
+.barre.trop{background:var(--rouge)}
+.jourCase .fin{font-size:10.5px;color:var(--gris)}
+
+p.dessous{max-width:740px;margin:14px auto 0;padding:0 20px;text-align:center;
+  font-size:14px;line-height:1.65;color:var(--encre-douce)}
+p.dessous b{color:var(--encre)}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
+  vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+@media (max-width:430px){
+  table,tbody,tr,td,th{display:block;width:100%}
+  thead{display:none}
+  tr{border-bottom:1px solid var(--trait);padding:10px 0}
+  td{border:0;padding:3px 0}
+}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="quelJour" aria-pressed="false">Voir le 11 (son premier jour)</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">10 septembre — à essayer</span>
+  <h1>Déplacer : quel jour&nbsp;?</h1>
+  <p>Votre chantier de 2 jours <b>commence le vendredi 11 après-midi</b> et
+  déborde sur le lundi 14. La carte du 14 le montre — et « Déplacer » y déplace
+  le départ, qui est le 11. <b>Deux façons de le dire</b>, à essayer du doigt.</p>
+</div>
+
+<div class="choix" id="choix">
+  <button type="button" data-v="0" aria-pressed="true">Aujourd’hui</button>
+  <button type="button" data-v="1" aria-pressed="false">A</button>
+  <button type="button" data-v="2" aria-pressed="false">B</button>
+</div>
+
+<div class="scene">
+  <div class="tel">
+    <div class="carte">
+      <p class="jour" id="titreJour">Lundi 14 septembre</p>
+      <h3>Mr. Julien</h3>
+      <p class="duree">2 jours</p>
+      <p class="lieu">Mantes-la-Jolie</p>
+      <div id="depart"></div>
+      <div class="demi"><span class="case"></span><span class="mot">Matin</span><span class="equipe">Julien / Antoine</span></div>
+      <div class="demi"><span class="case"></span><span class="mot">Après-midi</span><span class="equipe">Julien / Antoine</span></div>
+      <div class="actes" id="actes"></div>
+    </div>
+  </div>
+</div>
+<p class="dessous" id="dessous"></p>
+
+<div class="ruban">
+  <h4>Ce que l’appui déplace</h4>
+  <div class="jours" id="ruban"></div>
+</div>
+
+<div class="notes">
+  <h3>Les deux propositions</h3>
+  <table>
+    <thead><tr><th>Variante</th><th>Sur un jour qui n’est pas le premier</th><th>Ce que ça coûte</th></tr></thead>
+    <tbody>
+    <tr>
+      <td><b>A</b></td>
+      <td>« Déplacer » <b>disparaît</b>. La carte écrit « commence vendredi 11 ».</td>
+      <td>Pour déplacer, il faut aller sur le 11. Un geste de plus, mais jamais
+      un geste qui surprend.</td>
+    </tr>
+    <tr>
+      <td><b>B</b></td>
+      <td>« Déplacer » <b>reste</b>, et l’interrupteur dit le jour qu’il déplace :
+      « départ : ven. 11 ».</td>
+      <td>Le geste reste à portée, mais il faut lire l’étiquette pour comprendre
+      que ce n’est pas le jour qu’on regarde.</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h3>Pourquoi deux jours bougent, et pas celui qu’on regarde</h3>
+  <p>Deux jours font <b>quatre demi-journées</b>, et le week-end ne compte pas.
+  Départ le vendredi après-midi : 11 aprem, 14 matin, 14 aprem, 15 matin.
+  Reculer le départ d’une demi-journée fait glisser toute la suite —
+  le 11 se remplit, le 15 se vide, et le 14 ne bouge pas.</p>
+  <p><b>Le calcul est juste.</b> Ce qui manque, c’est le mot qui dit d’où part
+  le chantier : la carte annonce sa durée, jamais son départ.</p>
+
+  <h3>Ce qui ne change dans aucune des deux</h3>
+  <p><b>« Retirer » reste partout.</b> Il rend le chantier à « Sans date », et
+  cela ne dépend d’aucun jour — il n’y a rien à confondre.</p>
+</div>
+
+<script>
+document.getElementById("pole").addEventListener("click", (e) => {
+  const on = document.body.classList.toggle("nuit");
+  e.currentTarget.setAttribute("aria-pressed", on ? "true" : "false");
+});
+
+let variante = 0;
+/** Regarde-t-on le premier jour du chantier (le 11) ou un jour suivant (le 14) ? */
+let surLePremier = false;
+/** Où part le chantier : "matin" ou "aprem" du vendredi 11. */
+let depart = "aprem";
+/** Le bouton « Déplacer » est-il déplié en interrupteur ? */
+let deplie = false;
+
+const NOTES = [
+  "Aujourd’hui. Rien ne dit que « Déplacer » agit sur le vendredi 11.",
+  "A — sur un jour qui n’est pas le premier, « Déplacer » s’efface et la carte dit d’où part le chantier.",
+  "B — « Déplacer » reste, et l’interrupteur porte le jour qu’il déplace.",
+];
+
+document.getElementById("choix").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  for (const x of e.currentTarget.querySelectorAll("button")) x.setAttribute("aria-pressed", "false");
+  b.setAttribute("aria-pressed", "true");
+  variante = Number(b.dataset.v); deplie = false; dessiner();
+});
+
+document.getElementById("quelJour").addEventListener("click", (e) => {
+  surLePremier = !surLePremier;
+  e.currentTarget.setAttribute("aria-pressed", surLePremier ? "true" : "false");
+  e.currentTarget.textContent = surLePremier ? "Voir le 14 (jour suivant)" : "Voir le 11 (son premier jour)";
+  deplie = false; dessiner();
+});
+
+function dessiner() {
+  document.getElementById("titreJour").textContent =
+    surLePremier ? "Vendredi 11 septembre" : "Lundi 14 septembre";
+
+  // ── la ligne qui dit d'où part le chantier (A seulement, hors premier jour)
+  const zoneDepart = document.getElementById("depart");
+  zoneDepart.innerHTML =
+    variante === 1 && !surLePremier
+      ? `<p class="depart">Commence <b>vendredi 11</b>, après-midi</p>`
+      : "";
+
+  // ── les gestes du bas
+  const actes = document.getElementById("actes");
+  let html = "";
+  const montrerDeplacer = surLePremier || variante !== 1;
+
+  if (montrerDeplacer && deplie) {
+    if (variante === 2 && !surLePremier) {
+      html += `<span class="etiquette">départ&nbsp;: ven.&nbsp;11</span>`;
+    }
+    html += `<span class="bascule">
+        <button type="button" data-vers="matin" aria-pressed="${depart === "matin"}">Matin</button>
+        <button type="button" data-vers="aprem" aria-pressed="${depart === "aprem"}">Après-midi</button>
+      </span>`;
+  } else {
+    if (montrerDeplacer) html += `<button type="button" class="past" data-deplier="1">Déplacer</button>`;
+    html += `<button type="button" class="past">Retirer</button>`;
+  }
+  actes.innerHTML = html;
+
+  document.getElementById("dessous").textContent = NOTES[variante];
+  dessinerRuban();
+}
+
+/**
+ * Les quatre demi-journées, jour par jour — la même règle que
+ * `creneauxDuChantier` : on avance d'une demi-journée, et le week-end saute.
+ */
+function dessinerRuban() {
+  const suite = [];
+  let jour = 11, moment = depart;
+  for (let i = 0; i < 4; i++) {
+    suite.push(`${jour}-${moment}`);
+    if (moment === "matin") moment = "aprem";
+    else { moment = "matin"; jour = jour === 11 ? 14 : jour + 1; }
+  }
+  const cases = [11, 14, 15].map((j) => {
+    const matin = suite.includes(`${j}-matin`);
+    const aprem = suite.includes(`${j}-aprem`);
+    // Le 11 au matin porte DÉJÀ un autre chantier : deux à la fois, c'est
+    // « au-delà » — c'est le rouge qu'il a vu apparaître sur sa capture.
+    const trop = j === 11 && matin;
+    return `<div class="jourCase">
+      <div class="nom">${j === 11 ? "vendredi 11" : j === 14 ? "lundi 14" : "mardi 15"}</div>
+      <div class="barre ${trop ? "trop" : matin ? "pris" : ""}"></div>
+      <div class="barre ${aprem ? "pris" : ""}"></div>
+      <div class="fin">${matin || aprem ? (matin && aprem ? "journée" : matin ? "matin" : "après-midi") : "libre"}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("ruban").innerHTML = cases;
+}
+
+document.getElementById("actes").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.deplier) { deplie = true; dessiner(); return; }
+  if (b.dataset.vers) { depart = b.dataset.vers; deplie = false; dessiner(); }
+});
+
+dessiner();
+</script></body></html>

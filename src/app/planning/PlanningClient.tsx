@@ -1788,6 +1788,45 @@ type GestesCarte = {
 };
 
 /**
+ * UNE MOITIÉ DE JOURNÉE QUE PERSONNE N'OCCUPE.
+ *
+ * **Écrite une fois, dessinée à deux endroits** : seule, quand plus aucun
+ * chantier ne la suit ; sous le nom d'un chantier, quand elle le précède dans
+ * la journée (`libresAvant`). Deux copies de cette ligne auraient divergé au
+ * premier changement de pastille (`CLAUDE.md` §3).
+ */
+function LigneLibre({
+  demi,
+  occupation,
+  marge = 16,
+}: {
+  demi: Demi;
+  occupation: { pris: readonly ChantierPlanning[]; charge: number };
+  marge?: number;
+}) {
+  return (
+    <div
+      data-atlas="demi"
+      data-bloc={demi}
+      data-sans-chantier="1"
+      className="flex flex-wrap items-center gap-2"
+      style={{ marginTop: marge }}
+    >
+      <Pastille etat={etatDemi(occupation)} />
+      <span
+        className="w-[70px] flex-shrink-0 whitespace-nowrap text-[10px] font-semibold uppercase leading-[1.15]"
+        style={{ letterSpacing: "0.06em", color: colors.ink }}
+      >
+        {MOT_DEMI[demi]}
+      </span>
+      <span data-atlas="compte" className="ml-auto text-[12px]" style={{ color: colors.muted }}>
+        {ditLeCompteDemi(occupation)}
+      </span>
+    </div>
+  );
+}
+
+/**
  * L'INTERRUPTEUR À DEUX POSITIONS DE « DÉPLACER ».
  *
  * ───────────────────────────────────────────────────────────────────────────
@@ -1988,76 +2027,25 @@ function AjoutAuJour({
  * pastilles ci-dessous ne servent qu'à RESTREINDRE ce qui vient d'être posé —
  * le jour où ça compte.
  */
-const MOMENTS_ABSENCE: { cle: "matin" | "apres_midi"; mot: string }[] = [
-  { cle: "matin", mot: "Matin" },
-  { cle: "apres_midi", mot: "Après-midi" },
+type MomentAbsence = "matin" | "apres_midi" | "journee";
+
+const MOMENTS_ABSENCE: { cle: MomentAbsence; mot: string; dit: string }[] = [
+  { cle: "matin", mot: "Matin", dit: "matin" },
+  { cle: "apres_midi", mot: "Après-midi", dit: "après-midi" },
+  { cle: "journee", mot: "Journée", dit: "journée" },
 ];
 
 /**
- * Une question et ses pastilles, sur la MÊME ligne.
+ * Ce que porte une absence déjà écrite : une moitié, ou la journée.
  *
- * **Sa demande du 8 septembre 2026 :** *« Qui n'est pas là ? et Quand ? doivent
- * tenir sur la même ligne. »* C'est déjà la grammaire de sa carte du jour —
- * « APRÈS-MIDI [Qui ?] » — et le libellé n'a pas à prendre une ligne pour lui :
- * il annonce, il n'occupe pas.
+ * **Les deux bornes sont des chaînes libres en base** (`AbsenceEquipe`), et
+ * c'est délibéré côté dépôt. Ici on ne garde que ce qu'on sait dessiner : une
+ * borne inconnue vaut la journée, comme partout ailleurs dans ce fichier.
  */
-function LigneQuestion({
-  libelle,
-  children,
-}: {
-  libelle: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-2">
-      <span className={libelleCaps} style={{ color: colors.muted, flex: "none" }}>
-        {libelle}
-      </span>
-      {children}
-    </div>
-  );
-}
-
-/**
- * La pastille des gestes d'une journée.
- *
- * **Elle existe parce que le même dessin était déjà écrit en dur** pour les
- * noms d'équipe, et qu'il fallait l'écrire une seconde fois le 7 septembre
- * 2026 pour « Quelqu'un n'est pas là » (son choix, variante A de la planche
- * « Deux mots du planning »). Deux copies du même bouton auraient divergé au
- * premier ajustement — c'est exactement ce que `CLAUDE.md` §3 interdit.
- *
- * **Le cerne est un `inset`, pas une bordure**, et c'est la mesure d'origine :
- * une bordure ajoute un pixel de chaque côté et décale la pastille de ses
- * voisines d'une demi-ligne. `min-h-[48px]` est la cible du pouce.
- */
-function PastilleDuJour({
-  children,
-  onClick,
-  retenue,
-  ...reste
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  /** Le choix par défaut, montré comme tel — « la journée », le cas courant. */
-  retenue?: boolean;
-} & Record<string, unknown>) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      {...reste}
-      className="min-h-[48px] rounded-full px-4 text-[14px]"
-      style={{
-        backgroundColor: retenue ? colors.plein : colors.card,
-        color: retenue ? surPlein : colors.ink,
-        boxShadow: retenue ? "none" : `inset 0 0 0 1px ${colors.line}`,
-        WebkitTapHighlightColor: "transparent",
-      }}
-    >
-      {children}
-    </button>
-  );
+function momentDe(a: AbsenceDuPlanning): MomentAbsence {
+  if (a.premierDemi !== a.dernierDemi) return "journee";
+  if (a.premierDemi === "matin" || a.premierDemi === "apres_midi") return a.premierDemi;
+  return "journee";
 }
 
 /**
@@ -2106,6 +2094,58 @@ function GesteAbsence({
   );
 }
 
+/**
+ * L'INTERRUPTEUR DU MOMENT — un seul bouton, trois positions.
+ *
+ * **Sa demande du 10 septembre 2026, capture à l'appui :** *« pour le choix
+ * matin aprem journée utilise le bouton pour déplacer un chantier »*. Le dessin
+ * vient de la planche `appli/deplacer-plus-simple.html` ; il est recopié, pas
+ * réinventé.
+ *
+ * **Ce qu'il remplace :** trois pastilles séparées, où rien ne disait qu'elles
+ * s'excluent. Un interrupteur le montre par sa forme — une seule position est
+ * allumée, et c'est celle où l'on est.
+ *
+ * **44 px, et non 36.** C'est la seule chose qui change par rapport à la
+ * planche : celui-ci se touche sur un chantier, avec des gants.
+ */
+function BasculeDuMoment({
+  retenu,
+  onChoisir,
+}: {
+  retenu: MomentAbsence;
+  onChoisir: (moment: MomentAbsence) => void;
+}) {
+  return (
+    <div
+      className="mt-2 flex overflow-hidden rounded-full"
+      style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+    >
+      {MOMENTS_ABSENCE.map((m) => {
+        const allume = m.cle === retenu;
+        return (
+          <button
+            key={m.cle}
+            type="button"
+            data-atlas="quand-absent"
+            data-quand={m.cle}
+            aria-pressed={allume}
+            onClick={() => onChoisir(m.cle)}
+            className="min-h-[44px] flex-1 text-[12.5px]"
+            style={{
+              background: allume ? colors.plein : "transparent",
+              color: allume ? surPlein : colors.inkSoft,
+              WebkitTapHighlightColor: "transparent",
+            }}
+          >
+            {m.mot}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function PasLaCeJour({
   jour,
   absences,
@@ -2123,176 +2163,157 @@ function PasLaCeJour({
   fermer: (jour: JourIso, rang: number, quand?: "matin" | "apres_midi" | null) => void;
   rouvrir: (id: string) => void;
 }) {
-  const [demande, setDemande] = useState(false);
-  /** Qui il vient de poser absent — le seul à qui « Plutôt » s'adresse (D2). */
+  /**
+   * LA LISTE EST-ELLE OUVERTE ?
+   *
+   * **Son ordre du 10 septembre 2026 :** *« l'ordre devrait être + salarié
+   * absent ? puis Julien »*, et *« si on veut annuler on reclique sur + salarié
+   * absent, et on verrait Julien / Annuler, puis Antoine ? »*.
+   *
+   * Une seule porte, donc, pour poser ET pour défaire : le + ouvre la liste des
+   * gens du jour, chacun avec ce qu'on peut lui faire. Ce qui reste sous les
+   * yeux le reste du temps est ce qu'il a besoin de LIRE — qui manque, et quand.
+   */
+  const [ouverte, setOuverte] = useState(false);
+  /** Qui il vient de poser absent — le seul à qui l'interrupteur s'adresse. */
   const [quiManque, setQuiManque] = useState<number | null>(null);
 
   // **Le rang 1, c'est LUI.** Sans salarié, la seule ligne d'équipe qui existe
   // est la sienne : fermer le jour revient à noter son absence à ce rang-là.
   const rangs = nombreSalaries > 0 ? lignesEquipes.map((e) => e.rang) : [1];
   const absentsParRang = new Map(absences.map((a) => [a.rang, a]));
-  const tousAbsents = rangs.every((r) => absentsParRang.has(r));
 
-  /** Ce que porte l'absence qu'il vient de poser : la journée, ou une moitié. */
-  const posee = quiManque === null ? undefined : absentsParRang.get(quiManque);
-  const demiPosee =
-    posee && posee.premierDemi === posee.dernierDemi ? (posee.premierDemi ?? null) : null;
+  /** Le nom qu'on écrit sur une ligne — le sien quand il travaille seul. */
+  const nomDuRang = (rang: number) => (nombreSalaries > 0 ? nomEquipe(rang) : "Vous");
 
   /**
-   * Ramener une absence du jour à une seule demi-journée.
+   * Poser une absence, ou la ramener à une moitié de journée.
    *
    * **On retire et on repose**, plutôt que de modifier. Une action de mise à
    * jour aurait ajouté un troisième chemin d'écriture sur cette table — donc un
    * troisième endroit où la réconciliation des affectations pourrait être
    * oubliée (`ARCHITECTURE.md` §294). Reposer traverse celle qui existe déjà.
    */
-  function restreindre(rang: number, quand: "matin" | "apres_midi") {
+  function poserLeMoment(rang: number, moment: MomentAbsence) {
     const a = absentsParRang.get(rang);
     if (!a) return;
+    if (momentDe(a) === moment) {
+      // Déjà là où il veut : ne rien réécrire, et refermer l'interrupteur.
+      setQuiManque(null);
+      return;
+    }
     rouvrir(a.id);
-    fermer(jour, rang, quand);
+    fermer(jour, rang, moment === "journee" ? null : moment);
+    // **L'interrupteur s'efface une fois choisi** — sa demande du 10 septembre.
+    setQuiManque(null);
   }
 
   const ligne = "flex min-h-[48px] w-full items-center justify-between gap-3 py-[11px] text-left";
 
   return (
     <div className="mt-1 border-t pt-1" style={{ borderColor: colors.lineSoft }}>
-      {/* Ce qui est déjà fermé se DIT, et se défait du même geste. */}
-      {absences.map((a) => (
-        <button
-          key={a.id}
-          type="button"
-          data-atlas="rouvrir-le-jour"
-          onClick={() => rouvrir(a.id)}
-          className={ligne}
+      {/* ─── LE + EN TÊTE, LES NOMS DESSOUS — 10 septembre 2026 ────────────
+          *« L'ordre devrait être + salarié absent ? puis Julien. »* Il ouvre la
+          liste et la referme ; c'est aussi par lui qu'on annule, ce qui libère
+          la ligne d'une absence posée du mot « Annuler » qu'elle portait à
+          demeure — le geste le plus rare occupait la place la plus visible.
+
+          **Le geste se reconnaît au +, pas à un cerne** (voir `GesteAbsence`) :
+          sa décision du 9 septembre, et le pourquoi y est écrit en entier. */}
+      <div className="py-1">
+        <GesteAbsence
+          data-atlas="fermer-le-jour"
+          onClick={() => {
+            // **Seul et pas encore absent : un seul appui suffit.** Il n'y a
+            // personne à désigner, et lui demander de se choisir dans une liste
+            // d'un nom serait un geste pour rien.
+            if (nombreSalaries === 0 && !absentsParRang.has(1)) {
+              fermer(jour, 1);
+              setQuiManque(1);
+              return;
+            }
+            setOuverte((o) => !o);
+            setQuiManque(null);
+          }}
         >
-          <span className="min-w-0 flex-1 text-[14.5px]" style={{ color: colors.ink }}>
-            {nombreSalaries > 0
-              ? `${nomEquipe(a.rang)} n\u2019est pas là`
-              : "Vous n\u2019êtes pas là"}
-          </span>
-          <span className={texteSituation} style={{ color: colors.muted, flex: "none" }}>
-            Annuler
-          </span>
-        </button>
-      ))}
+          {nombreSalaries === 0 ? "Absent ?" : "Salarié absent ?"}
+        </GesteAbsence>
+      </div>
 
-      {/* ─── LE GESTE SE VOIT, IL NE SE DEVINE PLUS — 7 septembre 2026 ──────
-          **Sa remarque, capture à l'appui :** *« y'a marqué "quelqu'un pas là"
-          mais comment savoir qu'il faut cliquer dessus ? On comprend pas
-          bien ! »* — et il avait raison : ce texte était un bouton depuis la
-          veille, sans cerne, sans couleur, sans forme. Il avait exactement
-          l'allure d'une phrase posée là, si bien qu'une fonction livrée le
-          6 septembre était restée invisible.
-
-          **Sa réponse du 7 septembre** était une pastille, comme les autres
-          gestes de la feuille. **Le 9, il l'a trouvée trop grosse** — *« un
-          petit + plutôt que le gros bouton »*, puis *« sans contour »*. Ce qui
-          reconnaît le geste n'est donc plus le cerne mais le **+** (voir
-          `GesteAbsence` : le pourquoi y est écrit en entier).
-
-          **Pas de flèche au bout, et ce n'est pas un oubli** : sa règle du
-          25 août. Un bouton n'a pas besoin d'une flèche pour dire qu'on
-          l'appuie.
-
-          **La ligne d'une absence DÉJÀ posée, elle, ne change pas.** Elle
-          porte « Annuler » à droite, un mot qui nomme son geste : elle n'a
-          jamais eu le défaut que celle-ci avait. */}
-      {/* **Restreindre à une demi-journée, juste après l'avoir posée.**
-          Son choix D2 : la journée est le geste courant, et ces deux pastilles
-          ne servent qu'au jour où un rendez-vous ne prend qu'une matinée.
-          Elles ne s'affichent QUE sur l'absence qu'il vient de poser — les
-          faire vivre sous chaque ligne remettrait deux gestes là où il n'en
-          faut qu'un. */}
-      {quiManque !== null && absentsParRang.has(quiManque) && (
-        <LigneQuestion libelle="Plutôt">
-          {MOMENTS_ABSENCE.map((m) => (
-            <PastilleDuJour
-              key={m.cle}
-              data-atlas="quand-absent"
-              data-quand={m.cle}
-              retenue={demiPosee === m.cle}
-              onClick={() => restreindre(quiManque, m.cle)}
-            >
-              {m.mot}
-            </PastilleDuJour>
-          ))}
-        </LigneQuestion>
+      {ouverte ? (
+        /* ─── OUVERT : CHACUN SUR SA LIGNE, AVEC CE QU'ON PEUT LUI FAIRE ───
+           Ceux qui manquent portent « Annuler » ; les autres attendent d'être
+           touchés, et leur nom porte le point d'interrogation de l'écran. */
+        <>
+          {rangs.map((r) => {
+            const absente = absentsParRang.get(r);
+            return absente ? (
+              <button
+                key={r}
+                type="button"
+                data-atlas="rouvrir-le-jour"
+                onClick={() => {
+                  rouvrir(absente.id);
+                  if (quiManque === r) setQuiManque(null);
+                }}
+                className={ligne}
+              >
+                <span className="min-w-0 flex-1 text-[14.5px]" style={{ color: colors.ink }}>
+                  {nomDuRang(r)}
+                </span>
+                <span className={texteSituation} style={{ color: colors.muted, flex: "none" }}>
+                  Annuler
+                </span>
+              </button>
+            ) : (
+              <button
+                key={r}
+                type="button"
+                data-atlas="qui-nest-pas-la"
+                onClick={() => {
+                  // **La journée entière, tout de suite.** Le cas courant reste
+                  // à un appui : il touche un nom, c'est posé. L'interrupteur
+                  // ne sert qu'à restreindre, le jour où ça compte.
+                  fermer(jour, r);
+                  setQuiManque(r);
+                  setOuverte(false);
+                }}
+                className={ligne}
+              >
+                <span className="min-w-0 flex-1 text-[14.5px]" style={{ color: colors.ink }}>
+                  {nomDuRang(r)}&nbsp;?
+                </span>
+              </button>
+            );
+          })}
+        </>
+      ) : (
+        /* ─── FERMÉ : ON NE LIT QUE CE QUI EST POSÉ, ET QUAND ──────────────
+           *« Julien absent, et là on marque soit matin, soit aprem, soit
+           journée en fonction de la sélection ; le Annuler disparaît. »* */
+        absences.map((a) => (
+          <div key={a.id} data-atlas="absence-posee" data-quand={momentDe(a)} className={ligne}>
+            <span className="min-w-0 flex-1 text-[14.5px]" style={{ color: colors.ink }}>
+              {nombreSalaries > 0 ? `${nomEquipe(a.rang)} absent` : "Vous êtes absent"}
+            </span>
+            <span className={texteSituation} style={{ color: colors.muted, flex: "none" }}>
+              {MOMENTS_ABSENCE.find((m) => m.cle === momentDe(a))?.dit}
+            </span>
+          </div>
+        ))
       )}
 
-      {/* ─── PLUS DE TITRE « CE JOUR-LÀ » — 9 septembre 2026 ──────────────
-          *« Retire ce jour-là, on sait que c'est ce jour. »* La carte porte la
-          date en tête, à deux centimètres au-dessus : le redire n'apprend rien
-          et coûte une ligne sur un téléphone (`CLAUDE.md` §3). */}
-      {!tousAbsents && (
-        <div className="py-2">
-          {nombreSalaries === 0 ? (
-            /* **SEUL, LE GESTE DIT « Absent ? »** — sa réponse du 9 septembre
-               2026. Le mot « salarié » tomberait à faux quand il n'en a aucun,
-               et « Je ne suis pas là » était une phrase là où les deux autres
-               moitiés de cet écran posent une question. */
-            <GesteAbsence
-              data-atlas="fermer-le-jour"
-              onClick={() => fermer(jour, 1)}
-            >
-              Absent&nbsp;?
-            </GesteAbsence>
-          ) : !demande ? (
-            /* **« Salarié absent ? », et le point d'interrogation est de lui**
-               — son choix du 9 septembre, en trois fois : le mot, puis « sans
-               contour », puis *« rajoute un ? à la fin »*.
-
-               **Il dit vrai de ce que le geste fait :** ce bouton ne note rien,
-               il ouvre la question « Qui ? » — la même grammaire que la
-               pastille d'équipe juste en dessous. */
-            <GesteAbsence
-              data-atlas="fermer-le-jour"
-              onClick={() => setDemande(true)}
-            >
-              Salarié absent&nbsp;?
-            </GesteAbsence>
-          ) : (
-            /* ─── SON CHOIX D2, LE 8 SEPTEMBRE 2026 ────────────────────────
-               Sa question : *« lorsque je note les congés, je peux les mettre
-               seulement le matin ou seulement l'après-midi ? Sinon il faut
-               corriger ça. »* Non — une absence prenait la journée entière, et
-               un rendez-vous d'une heure lui coûtait la journée de son gars.
-
-               **Deux lignes, « Qui » puis « Quand »**, chacune sur la ligne de
-               ses pastilles : sa demande du même jour. Mesuré sur la planche,
-               trois pastilles plus le mot ne tenaient QUE sur son téléphone —
-               d'où deux pastilles, et rien de coché valant la journée.
-
-               **Le cas courant reste en un appui** : il touche un nom, et
-               c'est la journée. « Matin » et « Après-midi » n'existent que
-               pour le jour où ça compte.
-
-               **La question ne s'ouvre QUE s'il a quelqu'un.** Fermer la
-               journée entière quand une seule personne manque lui coûterait un
-               chantier que l'autre pouvait faire. */
-            <>
-              <LigneQuestion libelle="Qui">
-                {rangs
-                  .filter((r) => !absentsParRang.has(r))
-                  .map((r) => (
-                    <PastilleDuJour
-                      key={r}
-                      data-atlas="qui-nest-pas-la"
-                      onClick={() => {
-                        // **La journée entière, tout de suite.** Le cas courant
-                        // reste à un appui : il touche un nom, c'est posé.
-                        fermer(jour, r);
-                        setQuiManque(r);
-                        setDemande(false);
-                      }}
-                    >
-                      {nomEquipe(r)}
-                    </PastilleDuJour>
-                  ))}
-              </LigneQuestion>
-            </>
-          )}
-        </div>
+      {/* ─── L'INTERRUPTEUR, SUR CELUI QU'IL VIENT DE POSER ───────────────
+          Son choix D2 du 8 septembre — une absence peut ne prendre qu'une
+          demi-journée — dans la forme qu'il a demandée le 10 : le bouton de
+          « Déplacer », allumé sur ce qui vient d'être écrit, et qui s'efface
+          dès qu'il a choisi. Le faire vivre sous chaque ligne remettrait un
+          geste là où il n'en faut plus. */}
+      {quiManque !== null && !ouverte && absentsParRang.has(quiManque) && (
+        <BasculeDuMoment
+          retenu={momentDe(absentsParRang.get(quiManque)!)}
+          onChoisir={(m) => poserLeMoment(quiManque, m)}
+        />
       )}
     </div>
   );
@@ -2524,31 +2545,13 @@ function CarteDuJour({
 
         {blocs.map((bloc, rang) => {
           if (bloc.type === "libre") {
-            const o = occupationDe(jour, bloc.demi);
             return (
-              <div
+              <LigneLibre
                 key={`libre-${bloc.demi}`}
-                data-atlas="demi"
-                data-bloc={bloc.demi}
-                data-sans-chantier="1"
-                className="flex flex-wrap items-center gap-2"
-                style={{ marginTop: rang === 0 ? 8 : 16 }}
-              >
-                <Pastille etat={etatDemi(o)} />
-                <span
-                  className="w-[70px] flex-shrink-0 whitespace-nowrap text-[10px] font-semibold uppercase leading-[1.15]"
-                  style={{ letterSpacing: "0.06em", color: colors.ink }}
-                >
-                  {MOT_DEMI[bloc.demi]}
-                </span>
-                <span
-                  data-atlas="compte"
-                  className="ml-auto text-[12px]"
-                  style={{ color: colors.muted }}
-                >
-                  {ditLeCompteDemi(o)}
-                </span>
-              </div>
+                demi={bloc.demi}
+                occupation={occupationDe(jour, bloc.demi)}
+                marge={rang === 0 ? 8 : 16}
+              />
             );
           }
 
@@ -2607,6 +2610,16 @@ function CarteDuJour({
                   <LieuDuChantier chantier={c} />
                 </button>
               )}
+
+              {/* **LES MOITIÉS LIBRES QUI PRÉCÈDENT, SOUS SON NOM.** Sa
+                  précision du 10 septembre 2026 : *« le nom doit rester en
+                  premier, ensuite matin et ensuite aprèm »*. Émises comme des
+                  blocs à part, elles ouvraient la fiche sur « libre » — on
+                  lisait ce qui manque avant de savoir de qui il s'agit. Ici,
+                  l'ordre du jour est tenu ET le nom reste en tête. */}
+              {bloc.libresAvant.map((demi) => (
+                <LigneLibre key={`avant-${demi}`} demi={demi} occupation={occupationDe(jour, demi)} />
+              ))}
 
               {bloc.demis.map((demi) => {
                 const o = occupationDe(jour, demi);

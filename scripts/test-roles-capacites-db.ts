@@ -469,23 +469,41 @@ async function main() {
    */
   await essai("ESSAI NÉGATIF SUR DISQUE : capacité élargie, le commercial facture ; rétablie, il est refusé", async () => {
     const original = readFileSync(FICHIER_CAPACITES, "utf8");
-    const cible = `export function peutFacturer(role: Role): boolean {
+
+    /**
+     * **LES FINS DE LIGNE DU FICHIER, PAS CELLES DE CE SCRIPT — 9 septembre
+     * 2026, et c'est un rouge qui n'accusait personne.**
+     *
+     * Les gabarits ci-dessous portent des `\n` ; les fichiers du dépôt sont en
+     * **CRLF** sur la machine du patron. `includes` ne trouvait donc rien, et
+     * ce contrôle rougissait sur du code parfaitement sain — **chez lui
+     * seulement, jamais sur la CI**, dont les fichiers sont en LF.
+     *
+     * C'est la deuxième fois que ce dépôt paie cette faute : la première était
+     * la séparation des chemins dans `test-actions-gardees-db`, qui accusait
+     * treize actions gardées de ne pas l'être. *« Une erreur qui désigne le
+     * mauvais coupable coûte plus cher que pas d'erreur »* (`CLAUDE.md` §5).
+     */
+    const eol = original.includes("\r\n") ? "\r\n" : "\n";
+    const auxFinsDeLigneDuFichier = (gabarit: string) => gabarit.split("\n").join(eol);
+
+    const cible = auxFinsDeLigneDuFichier(`export function peutFacturer(role: Role): boolean {
   return role === "proprietaire" || role === "facturation";
-}`;
+}`);
     assert.ok(original.includes(cible), "la capacité n'a pas la forme attendue : l'essai ne prouverait rien");
     try {
       writeFileSync(
         FICHIER_CAPACITES,
-        original.replace(cible, `export function peutFacturer(role: Role): boolean {
+        original.replace(cible, auxFinsDeLigneDuFichier(`export function peutFacturer(role: Role): boolean {
   return role !== "salarie";
-}`)
+}`))
       );
       // Relu depuis le disque, hors du cache de modules : c'est bien la source
       // amputée qu'on interroge.
       const source = readFileSync(FICHIER_CAPACITES, "utf8");
       assert.ok(source.includes('role !== "salarie"'), "l'amputation n'a pas pris");
       assert.ok(
-        !/export function peutFacturer\(role: Role\): boolean \{\n  return role === "proprietaire"/.test(source),
+        !/export function peutFacturer\(role: Role\): boolean \{\r?\n  return role === "proprietaire"/.test(source),
         "la capacité saine est encore là"
       );
     } finally {

@@ -10,13 +10,7 @@ import { adresseClient } from "@/lib/adresse-client";
 
 export type EtatReponse =
   | { erreur: string }
-  /**
-   * `devisTelechargeable` n'est vrai qu'après une acceptation : c'est là que le
-   * client cherche sa pièce. On ne propose pas d'emporter un devis auquel on
-   * vient de renoncer, ni celui qu'on vient de renvoyer en correction — celui-là
-   * va changer.
-   */
-  | { succes: string; devisTelechargeable?: boolean }
+  | { succes: string }
   | undefined;
 
 const MESSAGES: Record<string, string> = {
@@ -164,5 +158,5 @@ export async function repondreAction(
   if (!r.succes) return { erreur: MESSAGES[r.motif] ?? "Impossible d'enregistrer votre réponse." };
 
   logger.info("Devis accepté par le client", { contreProposee: r.contreProposee });
-  return { succes: "C'est noté. Votre artisan est prévenu.", devisTelechargeable: true };
+  return { succes: "C'est noté. Votre artisan est prévenu." };
 }

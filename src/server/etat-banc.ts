@@ -117,19 +117,53 @@ export function lireEtatConstruction(brut: string | null): EtatConstructionBanc 
 }
 
 /**
+ * SERT-ON UNE VERSION BÂTIE ? — figé À LA CONSTRUCTION, jamais lu à l'exécution.
+ *
+ * **Ce que cette constante répare, mesuré le 10 septembre 2026.** `next start`
+ * n'impose PAS `NODE_ENV=production` : il le pose seulement quand la variable
+ * est absente, et respecte celle qu'on lui donne. Un serveur qui sert du code
+ * BÂTI avec `NODE_ENV=development` dans son environnement existe donc — c'est
+ * exactement celui de la batterie —, et la règle d'en dessous, qui lisait cette
+ * variable **à l'exécution**, y répondait « ça bâtit encore ». Le bandeau
+ * « version rapide en construction » paraissait alors sur un serveur qui
+ * n'avait plus rien à bâtir, et vingt-six suites navigateur mesuraient un écran
+ * poussé vers le bas.
+ *
+ * **Écrit ainsi, ce n'est plus une lecture mais un fait de compilation** :
+ * l'empaqueteur remplace `process.env.NODE_ENV` par sa valeur au moment de la
+ * construction. Le code servi SAIT donc s'il a été bâti, et aucune variable
+ * d'environnement ne peut lui faire dire le contraire. C'est déjà la forme
+ * qu'emploie `src/server/version-executee.ts` pour la même question.
+ *
+ * **Le piège à ne pas refaire :** passer par une variable
+ * (`const e = process.env; e.NODE_ENV`) défait le remplacement et rend la
+ * lecture au moment de l'exécution — c'est-à-dire le défaut ci-dessus.
+ */
+const SERVIE_BATIE = process.env.NODE_ENV === "production";
+
+/**
  * La version rapide est-elle encore en construction, ici et maintenant ?
  *
  * **Deux conditions, et les deux comptent.** Le banc d'essai (`ATLAS_PROFIL`),
  * parce qu'il n'y a rien à bâtir ailleurs — une application déployée ne montre
- * jamais ce bandeau. Et le mode développement, parce que `next start` impose
- * `NODE_ENV=production` : servir en production SUR un banc, c'est précisément
- * la preuve que la bascule a eu lieu et que tout est compilé.
+ * jamais ce bandeau. Et le fait d'être servi en mode développement : servir du
+ * code BÂTI sur un banc, c'est précisément la preuve que la bascule a eu lieu
+ * et que tout est compilé.
+ *
+ * **Les deux entrées n'ont pas la même nature**, et c'est pourquoi elles sont
+ * séparées : le profil est une variable d'environnement, qui se lit au moment
+ * où l'on demande ; « bâtie ou non » est un fait de compilation, figé
+ * (`SERVIE_BATIE`). Les mélanger dans le même objet a coûté le bandeau du
+ * 10 septembre.
  */
-export function laVersionRapideSeConstruit(env: NodeJS.ProcessEnv = process.env): boolean {
+export function laVersionRapideSeConstruit(
+  env: NodeJS.ProcessEnv = process.env,
+  servieBatie: boolean = SERVIE_BATIE
+): boolean {
   if (!estBancDEssai({ ATLAS_PROFIL: env.ATLAS_PROFIL, ATLAS_BANC_ESSAI: env.ATLAS_BANC_ESSAI })) {
     return false;
   }
-  return env.NODE_ENV !== "production";
+  return !servieBatie;
 }
 
 /** Où `scripts/banc.mjs` dit qu'une construction est en cours, et laquelle. */

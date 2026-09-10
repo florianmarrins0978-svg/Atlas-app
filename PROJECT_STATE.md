@@ -4,6 +4,46 @@
 · dernière migration `drizzle/0083_retour_vu_par.sql`
 (ce lot-ci ne touche que le chemin de retour, sans base)
 
+---
+
+## FAIT : LA PORTE DE CONNEXION SUIT SA PLANCHE — 10 septembre 2026
+
+*« C'est cet écran que je veux […] je veux pouvoir me connecter avec Google ou
+Apple »*. L'écran 3 de `appli/la-porte-en-plein-air.html`, choisi le
+8 septembre et jamais codé : nuit, titre serif, Google, Apple, Face ID, gélules.
+
+| | |
+|---|---|
+| la nuit, partagée avec la création de compte | `src/components/atlas/PorteDeNuit.tsx` |
+| qui a le droit d'apparaître | `src/lib/fournisseurs-connexion.ts` — 19 cas, sans base ni réseau |
+| le rattachement d'une identité extérieure | `src/server/identite-externe.ts` + le rappel `signIn` de `src/auth.ts` |
+| **en attente de LUI** | l'identifiant OAuth Google (gratuit) et le Service ID Apple (99 €/an) — sans eux, les deux boutons ne s'affichent pas |
+
+---
+
+## FAIT : L'ABONNEMENT SE PAIE — 9 septembre 2026
+
+*« Et que si on clique sur s'abonner qu'on puisse payer, mets tout le système en
+place »*, puis *« fais-moi Stripe »*.
+
+| | |
+|---|---|
+| les formules | Artisan 29 · Entreprise 59 · Illimité 120 € HT/mois, l'année à dix mois |
+| ce qui se compte | qui FABRIQUE des devis et des factures — 1, 5, illimité. **Jamais les salariés** |
+| le prestataire | Stripe, et lui seul le sait (`src/server/paiement/stripe.ts`) |
+| ce qui marche | s'abonner, voir son état, changer de formule au prorata, gérer sa carte et résilier au guichet |
+| ce qui ne se ferme pas | tout. Sans abonnement, aucun plafond, aucun écran retiré |
+
+**Le prix ne vit qu'à un endroit** — `src/lib/abonnements.ts` — et le tarif est
+fabriqué chez le prestataire à son image. Aucun identifiant de tarif à recopier
+à la main : ce serait une seconde grille, et l'écart se compterait en euros
+(`ARCHITECTURE.md` §319).
+
+**Ce qui reste, et trois points sur quatre sont pour LUI** (`TODO.md`, en tête) :
+le premier essai avec une vraie clé Stripe, le cloisonnement des fonctions par
+formule qu'il doit trancher, la durée de l'essai gratuit, et les seize
+`[À COMPLÉTER]` des conditions générales.
+
 > **Corrigé le 9 septembre 2026 :** cette ligne annonçait
 > `0077_civilite_et_prenom_du_compte.sql` alors que six migrations étaient
 > appliquées depuis. Le code fait foi (`CLAUDE.md` §1) — et une dernière
@@ -21,11 +61,19 @@ Un dossier est occupé tant que le processus de sa session vit — un jeton lais
 par un terminal fermé brutalement ne condamne rien. Tous pris : il refuse et
 donne la commande, il ne fabrique pas un worktree de plus en silence.
 
-Aucune migration. `ARCHITECTURE.md` §316 · `CLAUDE.md` §1.0
+Aucune migration. `ARCHITECTURE.md` §321 · `CLAUDE.md` §1.0
 
 **Reste ouvert :** il tape encore `npm run session`. Une fonction dans son
 profil PowerShell rendrait le mot `claude` lui-même suffisant — à lui de dire
 s'il la veut.
+
+## FAIT : le retour perdait un pas à chaque fois — 10 septembre 2026
+
+*« Deux fois le geste client → retour, et je reviens à la page d'accueil. »*
+Deux pièces du lot de la veille se marchaient dessus : la flèche recule par le
+navigateur, et ce recul déclenchait l'écoute qui retirait du journal l'écran
+d'ARRIVÉE. Une seule fonction répondait à deux questions différentes ; elles
+sont séparées. **Aucune migration.** Détail : `ARCHITECTURE.md` §316.
 
 ---
 
@@ -40,8 +88,9 @@ un départ, et le choisir réécrivait la durée du chantier — « Matin » sur
 journée vendue la ramenait à une demi-journée, en silence. Six pièces
 disparaissent avec lui. **Aucune migration.** Détail : `ARCHITECTURE.md` §313.
 
-**Reste ouvert, et c'est à lui de trancher :** l'ordre des deux moitiés de la
-journée (`TODO.md`).
+**Et la journée se lit dans son ordre** — matin puis après-midi, toujours
+(*« oui, matin puis aprèm »*). Elles échangeaient leur place selon l'heure du
+chantier. Cela revient sur sa règle du 21 août, et il l'a tranché lui-même.
 
 ---
 

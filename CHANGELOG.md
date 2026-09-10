@@ -8,6 +8,292 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### Planche — facturer sans passer par la case devis
+
+*« Il faut que l'on puisse facturer sans avoir besoin de passer par la case
+devis. »* La planche est dans `appli/facturer-sans-devis.html` ; **rien n'est
+codé**, et ce qui suit est ce que la lecture du code a établi.
+
+**Trois quarts de la demande existent déjà** : la reconnaissance du client au
+nom (`reconnaitreLeClientAction`), l'éditeur de lignes de facture avec sa TVA
+(l'écran « Travaux en plus » EST cet éditeur), et l'ouverture du SMS ou de
+l'e-mail avec le message tout prêt (`composerMessageFacture`,
+`lienTransmission`). Le PDF sait déjà taire la mention du devis quand il n'y en
+a pas (`facture-pdf.ts:118`).
+
+**Ce qui manque est en base, et c'est la racine :** `factures.devis_id` est
+`NOT NULL` (`schema.ts:1726`). Une facture sans devis est aujourd'hui
+impossible. **Le faux devis caché est écarté** : il ferait apparaître des
+numéros de devis inexistants dans les listes et dans le relevé de TVA. La
+correction est une migration, et les six lectures de `factures.devisId`
+tolèrent déjà l'absence (`d?.numero ?? null`).
+
+**Ses décisions du jour :** le chantier créé part directement dans
+« Terminés » ; on ne lève pas le refus « devis absent » sur les chantiers
+existants ; deux anneaux sur l'accueil, style identique, « Créer une facture »
+sous le devis et **collé au bord gauche**, « En cours » dessous ; liste vide,
+les deux descendent.
+
+**Le geste d'envoi ne change pas**, et c'est un refus assumé de sa demande
+initiale : il voulait un bouton flottant « Envoyer par » ouvrant deux choix. Le
+4 septembre, il avait fait retirer ces mêmes capsules au profit du réglage
+« Envoi · SMS | E-mail ». Le remettre aurait dessiné le même geste de trois
+façons dans l'application. Il l'a accepté.
+
+**Deux défauts trouvés à la capture, pas par un contrôle :** l'écran changeait
+de hauteur d'un pas à l'autre — le téléphone sortait du champ sous le doigt —,
+et le décalage du second geste, écrit en dur à 78 px, **coupait le libellé**
+(« RÉER UNE FACTURE »). Le décalage ne se compte plus : le geste s'aligne sur le
+bord gauche, ce qui est le maximum et ne peut plus déborder quelle que soit la
+longueur du mot.
+
+### Le devis et la facture téléchargés s'ouvrent de nouveau — page blanche corrigée à sa racine
+
+*« J'ai essayé de télécharger la facture. Une fois que je l'ouvre, page
+blanche »*, puis *« même problème avec le devis »*.
+
+**Le fichier était intact.** Téléchargé par la vraie route et relu par un
+lecteur écrit d'après la norme, il portait le document entier. Rien n'était
+cassé dans la génération, ni dans le stockage, ni dans la protection
+anti-retouche.
+
+**Ce qui l'a rendu illisible, c'est un correctif du 7 septembre.** Pour forcer
+l'enregistrement sur iPhone, le serveur s'était mis à annoncer les
+téléchargements comme des fichiers sans type (`application/octet-stream`) au
+lieu de PDF. Or ce type-là **suit le fichier enregistré** : rouvert depuis les
+téléchargements, le document n'avait plus de lecteur — et `nosniff`, posé sur
+toutes les routes, interdisait au téléphone de deviner qu'il tenait un PDF. Page
+blanche, sans message.
+
+**La règle qui remplace l'ancienne : on ne ment jamais sur le type d'un
+fichier.** Ce qui range un fichier, c'est `Content-Disposition: attachment`, la
+norme, et rien d'autre. Un type générique n'est pas un levier de plus : c'est une
+identité qu'on retire au document, et elle lui manque plus tard, chez le client.
+
+**La protection anti-retouche n'a pas bougé** — *« le client ne doit pas pouvoir
+modifier son devis »*. Elle avait été soupçonnée à tort ; c'est lui qui a
+redressé la recherche : *« avant ça fonctionnait, donc il y a quelque chose qui a
+buggé »*.
+
+**Ce qui reste à vérifier chez lui, et qui ne l'est nulle part ici :** qu'un
+appui sur « Télécharger » range bien le fichier sur son iPhone plutôt que de
+l'afficher. Aucun moteur de Safari n'est disponible sur le poste de l'agent.
+
+
+### Le travail supplémentaire se voit enfin — et le PDF cesse d'écrire trois totaux qui ne s'accordent pas
+
+**Il a essayé le lendemain de la livraison, photos à l'appui :** *« j'ai rajouté
+un TS mais ça n'apparaît nulle part, ni sur la facture ni dans la case reprise
+devis ; le client pense simplement que j'ai rajouté une ligne »*.
+
+**Un troisième défaut n'était pas dans son message, et il partait chez son
+client** : son PDF écrivait **Total HT 1 750 €** sous des lignes qui font
+**4 450 €**, avec une TVA de 890 € et un TTC de 2 100 €. Trois chiffres, trois
+bases, aucun d'accord avec les autres. Le PDF du brouillon recopiait les
+colonnes de la facture pendant que son bloc de totaux recalculait la TVA depuis
+les lignes — la duplication que le §3 interdit.
+
+| | |
+|---|---|
+| `factures.ts` | `donneesFacture` **calcule** les totaux depuis les lignes, et `emettreFacture` a cessé de les lui passer |
+| `document-commun.ts` | `LigneDocument` porte enfin `supplement` : le titre était écrit, il ne pouvait jamais s'afficher |
+| `FactureClient.tsx` | deux blocs, avec `lignesParBloc` — celle du papier |
+| `reduction-devis.ts` | `TITRE_TRAVAUX_SUPPLEMENTAIRES`, à un seul endroit |
+
+**Les contrôles n'avaient rien vu parce qu'ils entraient par la porte de
+service** : ils éprouvaient `emettreFacture`, qui recalculait déjà. Le PDF du
+BROUILLON — celui qu'il relit avant d'envoyer — n'était éprouvé nulle part.
+Deux cas y sont entrés (**11 contrôles, 0 échec**), et chacun a été vu rougir
+contre le défaut qu'il vise, jamais contre l'autre.
+
+Le pourquoi de chaque choix est dans `ARCHITECTURE.md` §304.
+
+### Deux fois « client → retour » ramenait à l'accueil
+
+*« Quand je fais deux fois le geste client → retour puis client → retour, je
+reviens à la page d'accueil. »*
+
+Deux pièces du lot de la veille se marchaient dessus. La flèche recule
+désormais par le navigateur — c'est ce qui rend sa place dans la liste — et ce
+recul déclenchait l'écoute écrite pour le bouton DU navigateur, laquelle
+retirait du journal l'écran d'ARRIVÉE : la destination même qu'on venait
+d'atteindre. Un pas perdu à chaque retour.
+
+Une seule fonction répondait à deux questions différentes — « je quitte cet
+écran » et « je viens d'atterrir ici ». Elles sont séparées.
+
+**Et une seconde moitié, déjà là avant :** après le bouton du navigateur, la
+flèche proposait de retourner sur l'écran qu'on venait de quitter. Elle
+s'abonnait à l'événement plutôt qu'au journal, qui ne change qu'après lui.
+
+Le défaut a été rendu bavard avant d'être corrigé : une sonde a rejoué son
+geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
+maintenant dans la suite navigateur, qui refait le geste quatre fois.
+
+
+### « Un client », et sa fiche se crée en passant — planche mise à jour
+
+Ses trois corrections du 10 septembre sur `appli/bloquer-sans-devis.html` :
+**« Annuler » à chaque étape** pour revenir aux deux propositions ; l'entrée
+« Écrire ce que c'est » devient **« Un client »** ; et surtout — *« si le nom
+n'est pas reconnu, il faut qu'il ajoute aussi sa fiche client automatiquement,
+comme quand on ajoute un client par la voie normale »*.
+
+La planche joue les deux cas : un nom connu remonte avec **son numéro et son
+adresse**, un nom inconnu ouvre **téléphone, e-mail, adresse du chantier** et la
+fiche se crée en posant.
+
+**Ce que sa correction referme, et je le lui demande :** l'entrée d'origine
+permettait de bloquer du temps qui n'est PAS un client — banque, livraison,
+formation. « Un client » ne le couvre plus. La question est posée sur la
+planche, sans y répondre à sa place.
+
+### Sa question redresse ma liste : ni le devis ni la facture ne lisent le jour du chantier
+
+*« Pourquoi le devis, la fiche chantier et la facture devraient être
+impactés ? »* — et il a raison de demander. Mesuré sur les vingt fichiers qui
+lisent `datePlanifiee` :
+
+| Ce que j'avais nommé | Ce que le code dit |
+|---|---|
+| la facture | **non** : elle porte sa propre date d'émission (`factures.ts` le commente déjà) |
+| le devis | **non** pour le document ; **oui** pour les dates proposées au client (`preparation-envoi.ts`) |
+| la fiche de chantier | **oui** : elle imprime jour, créneau et durée |
+
+Ce qui lit vraiment « quels jours sont pris » : la charge du calendrier, les
+dates proposées au client, la fiche de chantier, l'export d'agenda, les absences
+et le classement des terminés par mois. La planche et `TODO.md` portent la
+correction — une estimation trop large fait renoncer à une fonctionnalité pour
+un prix qu'elle ne coûte pas.
+
+### Deux planches : libérer une demi-journée, et bloquer du temps sans devis
+
+**Sa vraie demande derrière « Déplacer » :** *« je clique sur le matin, il
+devient vert et le matin du vendredi devient libre, une demi-journée de
+Mr. Julien sort ; à la place on pose autre chose, et la demi-journée retirée
+peut être replacée. »* Ce n'est plus un déplacement, c'est une **libération**.
+`appli/liberer-une-demi-journee.html` joue le geste entier — l'interrupteur
+s'ouvre **vide**, puisque c'est une question et non un état.
+
+**Et une seconde :** *« si j'ai un chantier à rajouter, que je puisse le faire
+sans passer par la fiche client et le devis »*.
+`appli/bloquer-sans-devis.html` ajoute une seconde entrée sous « Ajouter » :
+écrire ce que c'est, choisir matin / après-midi / journée, et le temps est pris.
+
+**RIEN N'EST CODÉ, et la première coûte plus qu'un écran :** un chantier tient
+aujourd'hui en un jour, un départ et une durée — il est d'un seul tenant par
+construction. Le poser en morceaux demande une pose par morceau, ce que la base
+ne sait pas écrire. C'est dit sur la planche, en clair, avant qu'il choisisse.
+
+### « Déplacer » agit sur le jour de DÉPART — deux façons de le dire, à essayer
+
+Sa question, deux captures à l'appui : *« quand je clique sur déplacer l'aprem,
+c'est le 15 et le 11 qui bougent, je comprends pas pourquoi. »*
+
+**Le calcul est juste** : son chantier de 2 jours commence le vendredi 11
+après-midi et occupe 11 aprem · 14 matin · 14 aprem · 15 matin. La carte du 14
+le montre — et l'interrupteur qu'elle porte déplace le DÉPART, qui est le 11.
+Reculer d'une demi-journée remplit le 11 et vide le 15, sans toucher au 14.
+Vérifié par `creneauxDuChantier`, pas déduit.
+
+**Ce qui manque à l'écran :** la carte dit la durée (« 2 jours »), jamais le
+jour de départ.
+
+**RIEN N'EST CODÉ** : `appli/deplacer-quel-jour.html` porte les deux réponses —
+A, « Déplacer » ne paraît que sur le premier jour ; B, il reste et l'interrupteur
+dit quel jour il déplace. La planche montre aussi, sous le téléphone, les quatre
+demi-journées qui glissent : c'est ce ruban qui répond à sa question.
+
+### L'absence se pose dans son ordre : le + en tête, « Annuler » derrière lui
+
+Sa validation du 10 septembre, planche à l'appui. Le + reste en haut, les noms
+s'ouvrent dessous, l'interrupteur **Matin · Après-midi · Journée** — celui de
+« Déplacer » — s'allume sur ce qui vient d'être écrit et s'efface au premier
+choix. La ligne dit alors « Julien absent · matin ».
+
+**« Annuler » ne reste plus sous les yeux** à côté d'une absence qu'on vient de
+poser : il se retrouve derrière le même +, avec la liste des gens du jour. Le
+geste le plus rare n'occupe plus la place la plus visible (`ARCHITECTURE.md`
+§318).
+
+**Deux composants s'en vont avec les rangées qu'ils dessinaient** —
+`PastilleDuJour`, `LigneQuestion` : ce qui ne sert plus se supprime.
+
+**Regardé à l'écran, pas seulement mesuré** : le geste joué en entier dans un
+vrai navigateur, à la largeur de son téléphone.
+
+### Le bandeau « en construction » se taisait mal — vingt-six suites en payaient le prix
+
+*« Répare le bandeau du banc. »* La règle croyait que `next start` impose
+`NODE_ENV=production` : c'est faux, il ne le pose que si la variable manque. Un
+serveur qui sert du code **bâti** avec `NODE_ENV=development` dans son
+environnement — celui de la batterie — s'entendait donc dire « la version rapide
+se construit encore », et le bandeau paraissait sur tous ses écrans, poussant le
+contenu vers le bas.
+
+**La racine est un piège d'empaquetage** : `process.env.NODE_ENV` est remplacé
+par sa valeur à la construction, mais seulement écrit littéralement. La règle le
+lisait à travers une variable, ce qui rendait la lecture à l'exécution — donc
+trompable. Elle reçoit désormais un **fait de compilation** (`ARCHITECTURE.md`
+§317), la forme qu'employait déjà l'écran des réglages.
+
+**Éprouvé sur la panne elle-même**, pas sur une panne imaginée : serveur bâti,
+profil banc, `NODE_ENV=development` posé exprès. Avant, l'adresse d'état rendait
+un avancement ; après, `null`.
+
+**ET CE QUE J'AI DIT HIER ÉTAIT FAUX SUR UN POINT.** J'ai écrit que les vingt-deux
+suites rouges tenaient à ce bandeau « et que le produit n'y était pour rien ».
+Le bandeau était bien en cause — mais c'était **un vrai défaut du produit**, pas
+un artefact de ce poste.
+
+### L'ordre de l'absence : une planche, rien de codé
+
+Ses corrections du 10 septembre, sur l'écran qu'il venait d'essayer : *« l'ordre
+devrait être + salarié absent ? puis Julien »*, *« remets le bouton matin /
+aprem / journée, et une fois choisi il se cache »*, *« Julien absent, et à côté
+on marque matin, aprem ou journée »*, *« pour annuler on reclique sur + salarié
+absent »*. Puis, capture à l'appui : *« utilise le bouton pour déplacer un
+chantier »* — l'interrupteur à trois positions.
+
+**RIEN N'EST CODÉ** (`CLAUDE.md` §3 bis) : `appli/absence-l-ordre.html` joue le
+geste entier — poser, choisir le moment, annuler — et l'interrupteur est celui
+d'`appli/deplacer-plus-simple.html`, recopié plutôt que redessiné.
+
+**Une seule chose y change, et c'est délibéré :** 44 px de haut au lieu de 36.
+Celui-là se touche sur un chantier, avec des gants.
+
+### La porte de connexion : la planche du 8 septembre, enfin servie
+
+Sa remarque, photo à l'appui : *« ça n'a rien à voir, c'est cet écran que je
+veux — je veux pouvoir me connecter avec Google ou Apple »*. L'application
+servait encore la porte du 12 août, en crème, pendant que la création de compte
+— l'autre moitié de la même planche — était bien en nuit depuis deux jours.
+
+- **La nuit est partagée** : `src/components/atlas/PorteDeNuit.tsx`. Elle était
+  écrite dans le seul fichier de la création de compte, et la connexion ne
+  pouvait donc pas la suivre.
+- **Un piège d'alias CSS, mesuré et corrigé à la racine** : les alias courts de
+  `globals.css` (`--ink`, `--card`, `--line`, `--or`…) sont calculés sur
+  `:root` et hérités figés — une charte posée plus bas dans l'arbre ne les
+  recalculait pas, si bien que le fond passait en nuit et les champs restaient
+  crème. Le bloc vaut désormais aussi pour `.atlas-charte-locale`. **Un seul
+  bloc, deux sélecteurs** : le recopier aurait fait deux dérivations.
+- **L'écran suit la planche** : titre « Connexion » en serif, Google et Apple,
+  le trait « ou », Face ID centré, deux gélules avec le mot dedans, « Entrer »
+  en clair. Plus de sceau, plus de mot ATLAS, plus de libellés au-dessus des
+  champs (`aria-label` à la place — un texte d'invite s'efface à la frappe).
+- **Google et Apple sont branchés pour de bon**, et ne s'affichent que si leurs
+  clés sont posées : `src/lib/fournisseurs-connexion.ts` répond, à l'écran comme
+  à Auth.js. Une adresse n'est acceptée que **prouvée** (`email_verified`) —
+  sans adaptateur de base, elle est le seul lien entre les deux mondes. Sans
+  compte Atlas, on part sur la création plutôt que d'ouvrir un compte sans
+  entreprise ni TVA. **Il reste à ouvrir les deux comptes chez Google et Apple.**
+- **Supprimés** (`CLAUDE.md` §4 quinquies) : `MarqueAtlas.tsx` — plus rien ne
+  l'importait —, l'animation `.atlas-sceau-en-marche` et la classe
+  `.atlas-champ-ligne`.
+- `ARCHITECTURE.md` §317. Contrôles : `scripts/test-fournisseurs-connexion.ts`
+  (19 cas, sans base ni réseau).
+
 ### Une session ouvre son dossier toute seule
 
 *« Je veux qu'elle se débrouille, qu'elle aille dans un dossier à chaque fois,
@@ -19,7 +305,7 @@ Un dossier est occupé tant que le processus de sa session vit — un jeton lais
 par un terminal fermé brutalement ne condamne rien. Tous pris : il le dit et
 donne la commande, plutôt que de fabriquer un dossier de plus en silence.
 
-Détail : `ARCHITECTURE.md` §316.
+Détail : `ARCHITECTURE.md` §321.
 
 ### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
 
@@ -40,12 +326,39 @@ base : matin, ou après-midi.
 pastilles dont une est allumée ne disent pas si l'allumée est là où le chantier
 est ou là où il ira. Un interrupteur ne se lit que dans un sens.
 
-**Ce qui n'est pas corrigé :** les deux moitiés de la journée changent toujours
-de place selon où est le chantier. Les remettre dans l'ordre contredit sa règle
-du 21 août — c'est à lui de trancher.
+**Et la journée se lit dans son ordre** — matin, puis après-midi, toujours.
+Elles échangeaient leur place selon l'heure du chantier, et l'appui sur
+« Matin » les faisait sauter : c'est ce qu'il lisait comme une inversion. Cela
+revient sur sa règle du 21 août, et il l'a tranché lui-même le jour même.
 
 ---
 ## 2026-09-09
+
+### Un seul « Télécharger » sur la page du client, et il est aux couleurs de l'appli
+
+*« Ce n'est pas aux couleurs de l'appli, et il y a marqué deux fois télécharger.
+Garde celui sous le TTC, mais mets-le en plein. »*
+
+**Le doublon venait de deux écrans superposés.** La carte du devis portait son
+geste sous le TTC ; l'écran de réponse en reposait un autre, à deux centimètres,
+juste après l'accord. Deux boutons identiques sur une même vue font hésiter — le
+second donne-t-il le même fichier ? — et celui du haut ne bougeait pas quand on
+répondait. Celui du formulaire s'en va, et avec lui le drapeau
+`devisTelechargeable` qui ne servait qu'à le faire paraître : un correctif qui
+n'enlève rien recouvre au lieu de corriger (`CLAUDE.md` §4 quater).
+
+**L'écran de RETOUR le garde**, et c'est sa demande du 31 août : quand le client
+rouvre son SMS le lendemain, la carte du devis n'est plus là, et le lien serait
+un cul-de-sac sans ce geste.
+
+**Les couleurs viennent des jetons, plus du code.** `bg-[#2F3B2F]` et
+`text-white` écrits en clair sont justes sur cinq chartes et illisibles sur les
+deux sombres (`CLAUDE.md` §3) — et hors de la sienne partout, ce qu'il a vu tout
+de suite. Le geste passe en plein : c'est le seul de cet écran avant de
+répondre, et le creux le mettait au même rang que le texte autour.
+
+**Le contrôle tolérait le doublon**, `>= 1` : il n'aurait jamais rougi. Il exige
+désormais exactement un geste, à l'accord comme au retour.
 
 ### « Se déconnecter » existe enfin, au bas des Réglages
 
@@ -126,6 +439,37 @@ comme quatrième signe, et refuse toujours les quatre absents à la fois.
 **La planche reste** — `appli/salarie-s-absente.html`, trois tailles de + à
 essayer, A retenu : elle raconte ce qui a été écarté, dont le + tout seul, sans
 mot, qui aurait rejoué le 6 septembre pour la troisième fois.
+
+### Payer son abonnement — Stripe, et les trois formules
+
+*« Et que si on clique sur s’abonner qu’on puisse payer, mets tout le système
+en place »*, puis *« fais-moi Stripe »*. L’écran « Abonnement » ne disait plus
+que ce qu’il y aurait un jour ; il porte désormais les trois formules de sa
+planche — Artisan 29, Entreprise 59, Illimité 120 € HT —, l’état de son
+abonnement, et de quoi le régler.
+
+**Le prix n’existe qu’à UN endroit.** La façon ordinaire de brancher Stripe est
+de créer les tarifs à la main dans son tableau de bord et d’en coller les
+identifiants dans la configuration : ce serait une seconde grille tarifaire, et
+le jour où l’une change sans l’autre, l’écran affiche 29 € pendant que la banque
+prélève autre chose. Atlas fabrique donc le tarif chez le prestataire, à l’image
+de `src/lib/abonnements.ts`, et le réemploie tant qu’il ne bouge pas.
+
+**Sa correction commande toute la grille :** *« limiter à 5 commerciaux, et si on
+veut commerciaux illimités faut payer genre 120 »*. Ce qui se compte, c’est qui
+FABRIQUE des devis et des factures — jamais les salariés, qui ne voient que leur
+planning. Compter huit gars sur le terrain reviendrait à facturer la taille de
+ses chantiers, et à punir le client qu’on veut garder.
+
+**Rien ne se ferme aujourd’hui.** Sans abonnement, aucun plafond ne s’applique et
+aucun écran ne disparaît : couper l’application de ceux qui s’en servent déjà, le
+jour où l’offre naît, serait la pire façon de la lancer.
+
+**Ce qui n’a pas pu être éprouvé ici, et qui est écrit noir sur blanc :** aucun
+compte Stripe n’existe encore. La signature du crochet, la lecture des réponses
+et les trois refus sont éprouvés contre un faux prestataire monté en local ; que
+Stripe accepte ces paramètres se vérifie avec une clé d’essai, sur son espace.
+
 
 ### L'onglet des retours existe toujours, et ses photos se voient enfin
 

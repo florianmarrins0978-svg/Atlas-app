@@ -255,17 +255,18 @@ async function main() {
     `${envoi.rows[0].numero_commercial}.pdf`,
     `Nom de fichier inexploitable : « ${nomPropose} » pour la facture ${envoi.rows[0].numero_commercial}`
   );
-  // **CE QUE LE SERVEUR SERT, ET NON CE QU'IL ANNONCE — 7 septembre 2026.**
+  // **LA FACTURE RANGÉE RESTE UNE FACTURE — 10 septembre 2026.**
   //
-  // Le patron : *« quand je clique sur télécharger ça ne la télécharge pas »*.
-  // Cette suite était pourtant verte : elle lisait `attachment` et s'arrêtait
-  // là. Servi en `application/pdf`, un PDF reste un document que Safari sait
-  // peindre — il l'ouvrait dans son lecteur, et rien n'était enregistré. La
-  // règle est dans `src/lib/remise-de-fichier.ts`, ce contrôle en tient l'effet.
+  // Cette ligne exigeait l'inverse : tout SAUF `application/pdf`, pour empêcher
+  // Safari d'afficher au lieu d'enregistrer. Le type annoncé colle au fichier
+  // ENREGISTRÉ, et `nosniff` interdit ensuite de deviner : rouverte depuis les
+  // téléchargements, la facture n'avait plus de lecteur — *« page blanche »*,
+  // sur un fichier intact. Ce qui la fait descendre est la disposition, lue
+  // juste au-dessus (`src/lib/remise-de-fichier.ts`).
   const type = range.headers()["content-type"] ?? "";
   assert.ok(
-    !/^application\/pdf/.test(type),
-    `Le serveur sert « ${type} » : Safari a un lecteur pour ce type et affichera la facture au lieu de l'enregistrer.`
+    /^application\/pdf/.test(type),
+    `Le serveur sert « ${type} » : le fichier enregistré perd son identité, et ne se rouvre plus.`
   );
 
   // **ET LE GESTE LUI-MÊME, APPUYÉ POUR DE BON.** Tout ce qui précède interroge

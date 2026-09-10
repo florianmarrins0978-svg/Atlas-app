@@ -2929,7 +2929,11 @@ trouvées à l'écran, pas au raisonnement.
 
 ### Deux dessins, et pas une image
 
-Le sceau (`MarqueAtlas`) et la branche (`BrancheEucalyptus`) sont **tracés**.
+Le sceau et la branche (`BrancheEucalyptus`) étaient **tracés**, jamais
+photographiés. *(Le sceau — `MarqueAtlas.tsx` — a été supprimé le 10 septembre
+2026 : la porte, son dernier usage, ne le porte plus. Il vit dans l'historique
+git, et ce paragraphe garde le raisonnement, qui vaut toujours pour la
+branche.)*
 Une photo détourée aurait pesé des centaines de kilo-octets, se serait affichée
 floue sur un écran dense et aurait fait clignoter la page à chaque ouverture.
 La branche définit **une** foliole dans `<defs>` et la rappelle onze fois : la
@@ -5187,8 +5191,10 @@ Trois maquettes, trois décisions, dans cet ordre (`docs/maquettes/`) :
 
 **La rose des vents ne remplace pas la feuille ailleurs.** L'en-tête et la barre
 basse gardent la feuille : c'est une décision de marque, elle n'a pas été prise,
-et `SceauAtlas` porte donc un `motif` dont la valeur par défaut reste la
-feuille.
+et `SceauAtlas` portait donc un `motif` dont la valeur par défaut restait la
+feuille. *(Périmé depuis le 10 septembre 2026 : la porte a pris l'allure de
+`appli/la-porte-en-plein-air.html`, qui n'a plus de sceau, et `MarqueAtlas.tsx`
+est parti avec — plus rien ne l'importait.)*
 
 ### Le tour n'a pas de plancher, et c'est un arbitrage
 
@@ -24465,18 +24471,46 @@ nom de la page. Un navigateur qui ne lit pas le nom de l'en-tête n'a aucune
 raison d'en respecter la disposition — et la sauvegarde descendait quand même,
 parce qu'un `.zip` ne s'affiche pas.
 
-D'où la règle, écrite une seule fois (`src/lib/remise-de-fichier.ts`) :
-**télécharger sert `application/octet-stream`.** Le navigateur n'a plus de
-lecteur à proposer, il ne lui reste qu'à enregistrer. C'est ce que
-`src/lib/type-de-fichier.ts` disait déjà de son côté depuis le 23 août — « une
-extension inconnue rend `application/octet-stream` : le navigateur propose alors
-de télécharger plutôt que d'afficher ». La moitié de la règle vivait dans le
-dépôt, et l'autre moitié manquait.
+D'où la règle posée ce jour-là, écrite une seule fois
+(`src/lib/remise-de-fichier.ts`) : **télécharger sert
+`application/octet-stream`.**
 
-`X-Content-Type-Options: nosniff` est posé sur toutes les routes
-(`next.config.ts`) : aucun navigateur ne peut redevenir malin et deviner le PDF
-derrière ce type générique. **L'aperçu, lui, ne bouge pas** — sans
-`?telecharger=1`, c'est toujours `application/pdf` et `inline`.
+### ET CETTE RÈGLE ÉTAIT FAUSSE — elle a rendu tous les documents illisibles
+
+**Sa capture du 10 septembre 2026, deux fois de suite :** *« j'ai essayé de
+télécharger la facture. Une fois que je l'ouvre, page blanche »*, puis *« même
+problème avec le devis »*.
+
+Le fichier était **intact** : téléchargé par la vraie route et relu par un
+lecteur écrit d'après la norme, il portait le document entier — 9,6 ko, toutes
+ses lignes. Ce qui manquait n'était pas dans les octets.
+
+**Le type annoncé ne s'arrête pas à la réponse : il colle au fichier
+ENREGISTRÉ.** iOS retient ce que le serveur a déclaré, et
+`X-Content-Type-Options: nosniff` — posé sur toutes les routes
+(`next.config.ts`) — lui **interdit** ensuite de deviner qu'il tient un PDF.
+Rouvert depuis les téléchargements (`file:///facture-F2026-000005.pdf`), le
+document n'a plus de lecteur : page blanche, sans le moindre message. La
+garantie que le 7 septembre invoquait pour se rassurer est exactement ce qui a
+fermé la porte.
+
+| | |
+|---|---|
+| **la règle qui reste** | on ne ment jamais sur le type d'un fichier — `Content-Type` dit le vrai type dans les deux cas |
+| **ce qui fait descendre un fichier** | `Content-Disposition: attachment`, la norme, et rien d'autre |
+
+Un type générique n'est pas un levier de plus : c'est une **identité** qu'on
+retire au document, et elle lui manque plus tard, ailleurs, chez le client.
+
+**Et ce que le 7 septembre croyait savoir d'iOS était une déduction, pas un
+relevé** : elle partait du `filename` ignoré sur un `.zip` le 7 août. Un `.zip`
+descend de toute façon, faute de lecteur — il ne prouvait rien de la
+disposition. Trois contrôles ont ensuite **exigé** le type générique
+(`test-remise-de-fichier.ts`, `test-devis-e2e.ts`, la suite du devis du client) :
+ils ont figé le défaut pendant trois jours, et c'est le patron qui l'a trouvé.
+
+**L'aperçu n'a jamais bougé** — sans `?telecharger=1`, c'est `application/pdf` et
+`inline`, comme avant.
 
 ### Cinq routes servaient la même règle, et elles avaient déjà divergé
 
@@ -26134,6 +26168,50 @@ signé sur place avant les travaux (`appli/ts-bon-sur-place.html`), tranché le
 4 septembre. Le supplément sur la facture règle le geste manquant, pas le
 risque d'impayé.
 
+### CE PARAGRAPHE A ÉTÉ ÉCRIT AVANT D'ÊTRE VRAI — corrigé le 10 septembre 2026
+
+**Le patron a essayé le lendemain de la livraison**, sur sa facture
+F2026-000006, et il a photographié trois choses : *« j'ai rajouté un TS mais ça
+n'apparaît nulle part, ni sur la facture ni dans la case reprise devis ; le
+client pense simplement que j'ai rajouté une ligne »*.
+
+| Ce qu'il a vu | Ce qui manquait |
+|---|---|
+| le supplément rangé sous « Reprise du devis », à l'écran | `FactureClient` ne recevait pas la colonne, et n'avait aucun second bloc |
+| aucun bloc sur le PDF non plus | **`LigneDocument` n'avait pas de champ `supplement`** : le titre était écrit dans le moteur, mais `Boolean(undefined)` vaut `false`, donc tout retombait dans le premier bloc — sans une erreur nulle part |
+| **Total HT 1 750 €** sous des lignes qui font 4 450 € | et c'est le pire des trois |
+
+**Le troisième n'était pas dans son message, et il partait chez son client.**
+Le PDF du BROUILLON recopiait `totalHt` et `totalTtc` des colonnes de la
+facture, pendant que son bloc de totaux **recalculait la TVA depuis les
+lignes**. Les colonnes datant d'avant l'ajout, la pièce écrivait trois chiffres
+sur trois bases : 1 750 de HT, 890 de TVA (soit 20 % de 4 450) et 2 100 de TTC
+(soit 1 750 × 1,2). Aucun ne s'accordait aux deux autres.
+
+**C'était une DUPLICATION, pas un calcul faux** — le §3 de `CLAUDE.md`, mot pour
+mot. `donneesFacture` calcule désormais les quatre totaux depuis les lignes
+qu'elle reçoit déjà, avec la fonction de l'émission ; et `emettreFacture` a
+CESSÉ de les lui passer par-dessus, puisqu'ils se retrouvent identiques. La
+correction enlève du code à l'appelant : c'est le signe que la racine a été
+touchée (§4 quater).
+
+**L'écran, lui, avait déjà tiré la leçon** — son commentaire dit depuis
+longtemps *« les totaux ne sont PLUS transmis […] une seule règle pour
+l'affichage et pour l'émission »*. C'est pourquoi il affichait 5 340 € juste
+pendant que le papier en écrivait 2 100. Une moitié du dépôt avait appris, pas
+l'autre.
+
+**Et le titre du bloc vit maintenant à UN endroit**
+(`TITRE_TRAVAUX_SUPPLEMENTAIRES`, avec `lignesParBloc`) : il était en dur dans
+le moteur PDF, et l'écran en aurait posé un second.
+
+**Pourquoi les contrôles n'ont rien vu :** `test-travaux-supplementaires-db.ts`
+éprouvait les totaux par `emettreFacture` — la facture ÉMISE, qui recalculait
+déjà. Le PDF du brouillon, celui que le patron relit avant d'envoyer, n'était
+éprouvé nulle part. C'est la faute du §5 quater : *un contrôle entré par la
+porte de service ne dit rien de la porte d'entrée*. Deux cas y sont entrés, et
+chacun a été vu rougir contre le défaut qu'il vise.
+
 ---
 
 ## §305 — Le compteur de TVA ne se remplit pas tout seul, et l'écran doit le dire
@@ -26733,13 +26811,26 @@ se lit que dans un sens : la position tenue est l'état courant. `BasculeDemi`
 emploie `colors.plein` et `surPlein`, le couple des pastilles retenues de cet
 écran, pour rester lisible sur les deux chartes sombres.
 
-**CE QUI N'EST PAS CORRIGÉ, ET QUI ATTEND SON ARBITRAGE.** Les deux moitiés de
-la journée changent toujours de place selon où est le chantier : posé
-l'après-midi, la fiche se lit `APRÈS-MIDI` puis `MATIN`
-(`scripts/capture-deplacer.ts` le photographie). Les remettre dans l'ordre ferait
-parfois ouvrir la fiche sur « libre » — ce qu'il a refusé le 21 août 2026,
-*« le nom toujours en premier ! »*. Sa demande du 10 septembre ne parle que du
-geste ; l'ordre reste posé dans `TODO.md`.
+**ET LA JOURNÉE SE LIT DÉSORMAIS DANS SON ORDRE — matin, puis après-midi,
+toujours.** Sa réponse, le même jour : *« oui, matin puis aprèm »*.
+
+**Cette décision REVIENT sur sa règle du 21 août 2026**, et il faut le savoir
+avant de la défaire une troisième fois. Il avait alors demandé *« le nom
+toujours en premier ! »*, et `blocsDeLaJournee` posait donc les chantiers
+d'abord, les moitiés libres ensuite. Personne n'avait mesuré ce que cela
+produisait : sur un chantier posé l'APRÈS-MIDI, la fiche se lisait `APRÈS-MIDI`
+puis `MATIN`. Les deux lignes échangeaient leur place selon l'heure du chantier,
+et l'appui sur « Matin » les faisait sauter — c'est ce qu'il a lu comme une
+inversion. **Le défaut ne s'est vu ni dans un test, ni dans une relecture : il
+s'est vu en photographiant l'écran** (`scripts/capture-deplacer.ts`), la
+cinquième fois dans ce dépôt (`CLAUDE.md` §5).
+
+**Ce que cela coûte, et qu'il a accepté :** sur une journée dont seul
+l'après-midi est pris, la fiche s'ouvre sur « libre ». Une place stable vaut
+mieux qu'un nom en tête — une place stable se retrouve sans lire.
+
+Les deux passes de `blocsDeLaJournee` n'en font plus qu'une, et deux contrôles
+qui fixaient la règle d'août ont été retournés plutôt que contournés.
 
 **CE QUE LES CONTRÔLES ONT DÛ DÉSAPPRENDRE.** Trois suites fixaient exactement
 ce qu'il fait retirer — « Matin réserve une demi-journée, Journée en réserve
@@ -26918,8 +27009,362 @@ second dirait « sept. » d'un côté et « sep. » de l'autre.
 | `test-ligne-du-client-e2e.ts` | **les boîtes** — l'adresse qui se rogne, la date qui ne se coupe pas, la ligne vide qui n'existe plus, et le compte qui ne revient pas |
 
 ---
+## §316 — Deux fois « client → retour » : la destination sortait du journal
 
-## §316 — Une session prend son dossier toute seule
+**Sa panne du 10 septembre 2026 :** *« quand je fais deux fois le geste
+client → retour puis client → retour, je reviens à la page d'accueil. »*
+
+**Rien n'a été deviné : le défaut a été rendu bavard d'abord.** Une sonde a
+rejoué son geste dans un navigateur en imprimant, à chaque pas, le journal de
+l'onglet ET la marque de l'entrée d'historique. La ligne qui accuse :
+
+```
+1 · client ouvert   journal=["/login","/","/clients","/clients/8f82…"]
+1 · après RETOUR    journal=["/login","/"]        ← « /clients » a disparu
+```
+
+On est DEBOUT sur `/clients`, et le journal ne le porte plus. La flèche du
+client suivant annonce donc `/`, et le second retour sort de la liste.
+
+**LA RACINE : deux pièces du même lot se marchaient dessus.** §314 a appris à la
+flèche à reculer par `router.back()` — c'est ce qui rend au patron sa place dans
+la liste. Or `router.back()` déclenche un `popstate`, et le `popstate` était
+écouté pour le bouton DU NAVIGATEUR avec `journalSansCetEcran`, qui RETIRE
+l'écran nommé. Il retirait donc l'écran d'ARRIVÉE, c'est-à-dire la destination
+que la flèche venait de choisir. Chaque pièce était juste seule.
+
+**Et la racine n'est pas dans le mécanisme, elle est dans la QUESTION** — une
+seule fonction répondait à deux questions différentes :
+
+| ce qui vient de se passer | ce que le journal garde | qui appelle |
+|---|---|---|
+| *je quitte cet écran en arrière* | tout ce qui le précède (`journalSansCetEcran`) | la flèche à l'appui, une fiche client effacée |
+| *je viens d'atterrir ici* | **jusqu'à cet écran INCLUS** (`journalJusquACetEcran`) | tout `popstate` — la flèche comme le bouton du navigateur |
+
+**UNE SECONDE MOITIÉ, TROUVÉE EN POUSSANT LA SONDE PLUS LOIN**, et elle était
+déjà là avant ce lot : après le bouton du navigateur, la flèche annonçait
+l'écran qu'on venait de QUITTER — elle repartait en avant. Deux causes, toutes
+deux d'ordonnancement :
+
+1. **la visite se note AVANT que l'événement n'arrive.** Le journal porte donc
+   deux fois l'écran d'arrivée — sa vraie place, et le pas ajouté au bout. Une
+   troncature qui prenait la dernière ligne ne coupait rien. `journalJusquACetEcran`
+   écarte donc la dernière ligne de sa recherche ;
+2. **la flèche s'abonnait au `popstate`, pas au journal.** Le journal ne change
+   qu'APRÈS l'événement : elle relisait une version périmée et n'était jamais
+   prévenue du ménage. Elle s'abonne désormais à ce qu'elle LIT
+   (`sAbonnerAuJournal`), et l'abonnement au `popstate` a disparu avec.
+
+**Ce que ce lot retire :** l'appel qui effaçait le sol sous les pieds, et
+l'abonnement au mauvais signal. Rien n'a été ajouté par-dessus.
+
+**Le contrôle refait son geste QUATRE fois**, pas deux : une version qui ne
+perdrait un pas qu'un tour sur deux passerait un aller-retour. Les deux
+contrôles neufs ont été mis au rouge contre le code d'avant avant d'être
+retenus, et la sonde a été retirée — ce qu'elle savait faire vit maintenant dans
+`scripts/test-retour-page-davant-e2e.ts`.
+
+---
+
+## §317 — `next start` n'impose PAS `NODE_ENV=production`, et le bandeau du banc l'a payé
+
+**Le défaut, tel qu'il se voyait :** vingt-six suites navigateur rouges dans la
+batterie complète — et **vertes** jouées seules ou par groupes de quatre. Le
+message qui a fini par tout expliquer venait d'une seule d'entre elles : *« le
+bandeau du banc apparaît sur un serveur qui n'en est pas un »*.
+
+**La règle disait ceci**, et le commentaire au-dessus l'affirmait :
+
+```ts
+// « next start impose NODE_ENV=production »
+return env.NODE_ENV !== "production";
+```
+
+**C'est faux.** `next start` pose `NODE_ENV=production` **seulement si la
+variable est absente** ; il respecte celle qu'on lui donne. La batterie sert
+donc du code BÂTI dans un environnement où `NODE_ENV` vaut `development`, et la
+règle y répondait « la version rapide se construit encore ».
+
+| | Ce qui se passait |
+|---|---|
+| le serveur des suites | version bâtie, profil banc, `NODE_ENV=development` dans son environnement |
+| la règle | lisait cette variable **à l'exécution** et croyait le serveur en développement |
+| l'écran | portait « version rapide en construction », qui pousse tout le contenu vers le bas |
+| les suites | mesuraient des écrans décalés, et accusaient chacune un écran différent |
+
+**Le piège d'empaquetage, et c'est lui la racine.** L'empaqueteur remplace
+`process.env.NODE_ENV` par sa valeur **au moment de la construction** — mais
+seulement écrit ainsi, littéralement. Passer par une variable
+(`env.NODE_ENV`, où `env = process.env`) défait ce remplacement et rend une
+lecture à l'exécution. Deux formes qui se ressemblent, deux moments
+différents ; et celle qui lit à l'exécution peut être trompée par
+l'environnement.
+
+**Vérifié dans le code compilé**, pas déduit : la fonction sortait de
+l'empaqueteur en `"production"!==e.NODE_ENV`, tandis que la même lecture écrite
+en toutes lettres à côté sortait figée en `"production"`.
+
+**Ce qui remplace la lecture : un fait de compilation.**
+
+```ts
+const SERVIE_BATIE = process.env.NODE_ENV === "production";
+```
+
+Le code servi SAIT désormais s'il a été bâti, et aucune variable d'environnement
+ne peut lui faire dire le contraire. C'est déjà la forme qu'emploie
+`src/server/version-executee.ts` pour la même question — une seule façon de
+répondre, à deux endroits.
+
+**Éprouvé sur la panne elle-même** : un serveur bâti, profil banc,
+`NODE_ENV=development` posé exprès, avec un fichier d'avancement sur le disque.
+Avant : `{faits:2,total:40,…}` et le bandeau. Après : `null`.
+
+| | |
+|---|---|
+| la règle | `laVersionRapideSeConstruit` dans `src/server/etat-banc.ts` |
+| le contrôle | `scripts/test-etat-banc.ts` — un cas neuf : une version bâtie se tait même quand l'environnement dit « development » |
+| ce qui le voit en vrai | `scripts/test-bandeau-banc-e2e.ts`, deux dernières assertions |
+
+---
+
+## §318 — L'absence d'un jour : le + en tête, et « Annuler » derrière lui
+
+**Ses quatre corrections du 10 septembre 2026**, sur l'écran qu'il venait
+d'essayer, et la planche `appli/absence-l-ordre.html` qu'il a validée :
+
+| Ce qu'il a demandé | Ce que l'écran fait |
+|---|---|
+| *« l'ordre devrait être + salarié absent ? puis Julien »* | le + est en tête de la carte, les noms s'ouvrent dessous |
+| *« remets le bouton matin / aprem / journée »* | un interrupteur à trois positions, celui de « Déplacer » |
+| *« une fois choisi, le bouton se cache »* | il disparaît au premier appui |
+| *« Julien absent, et à côté on marque matin, aprem ou journée »* | la ligne porte le moment, plus « Annuler » |
+| *« pour annuler on reclique sur + salarié absent »* | la liste rouvre, chaque absent y porte « Annuler » |
+
+**CE QUE CET ORDRE CORRIGE, ET CE N'EST PAS QU'UNE QUESTION DE GOÛT.** « Annuler »
+vivait à demeure à côté de chaque absence posée : le geste **le plus rare** de
+l'écran occupait la place **la plus visible**, à deux centimètres du nom qu'on
+vient d'écrire. Ce qui reste sous les yeux est désormais ce qu'il a besoin de
+LIRE — qui manque, et quand. Ce qui se défait se retrouve **là où on l'a fait**,
+derrière le même +.
+
+**Une seule porte pour poser ET pour défaire**, donc, et c'est ce qui rend
+l'écran lisible : le + n'est plus « ajouter une absence » mais « les gens de ce
+jour ».
+
+**L'interrupteur est recopié de la planche « Déplacer »**, pas redessiné : trois
+pastilles séparées ne disaient pas qu'elles s'excluent, un interrupteur le
+montre par sa forme. **44 px et non 36** — c'est la seule chose qui change du
+dessin d'origine, parce que celui-ci se touche avec des gants.
+
+**Il s'allume sur ce qui vient d'être écrit** (« Journée », puisque toucher un
+nom pose la journée entière) : il montre où l'on est, il ne redemande pas de
+choisir.
+
+**Ce que ce lot a SUPPRIMÉ**, et c'est le signe qu'il corrige à la racine plutôt
+que d'empiler : `PastilleDuJour` et `LigneQuestion` n'ont plus d'emploi — les
+rangées « Qui » et « Plutôt » qu'elles dessinaient ont disparu avec ce flux.
+
+**Le prix à connaître :** changer d'avis sur le moment demande d'annuler puis de
+reposer, puisque l'interrupteur s'efface. C'est sa demande, mot pour mot ; si
+cela le gêne à l'usage, la porte reste ouverte (toucher la ligne posée le
+rouvrirait).
+
+| | |
+|---|---|
+| l'écran | `PasLaCeJour` et `BasculeDuMoment` dans `src/app/planning/PlanningClient.tsx` |
+| la planche | `appli/absence-l-ordre.html`, validée le 10 septembre |
+| le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` — l'interrupteur, son effacement, et « Annuler » derrière le + |
+
+
+
+
+## §319 — L'abonnement : le prix ne vit qu'à UN endroit, et Stripe le recopie
+
+**Sa demande du 9 septembre 2026** : *« et que si on clique sur s'abonner qu'on
+puisse payer, mets tout le système en place »*, puis *« fais-moi Stripe »*.
+
+### La décision qui commande tout le reste
+
+Brancher Stripe se fait d'ordinaire ainsi : on crée trois tarifs à la main dans
+son tableau de bord, on en copie les identifiants (`price_1Abc…`) dans la
+configuration, et l'application les cite. C'est ce que montrent tous ses guides.
+
+**Ce dépôt l'a refusé**, et c'est le choix structurant de ce lot. Ce serait une
+**seconde grille tarifaire** : le prix affiché vivrait dans le code, le prix
+prélevé chez le prestataire, et le jour où l'un change sans l'autre, l'écran
+annonce 29 € pendant que la banque prélève autre chose. C'est très exactement ce
+qu'interdit `CLAUDE.md` §3 — *« jamais de règle dupliquée »* — et sur le seul
+écran d'Atlas où l'erreur se compte en euros.
+
+**Ce qui se fait à la place.** `src/lib/abonnements.ts` porte les trois formules
+et leurs montants ; au moment de payer, Atlas demande au prestataire un tarif à
+cette image, sous une **clé de recherche qui contient le montant** —
+`atlas_entreprise_mensuelle_5900`. Tant que le prix ne bouge pas, le même objet
+est réemployé ; le jour où il bouge, un objet neuf naît tout seul, et l'ancien
+reste attaché aux abonnements qui le portaient. Personne n'est jamais reprélevé
+d'un montant qu'il n'a pas accepté.
+
+**Conséquence à connaître :** le portail client de Stripe ne sait proposer un
+changement de formule que parmi des tarifs déclarés à la main. Le changement de
+formule se fait donc **dans Atlas** (`changerDeFormuleAction`), au prorata, en
+remplaçant la ligne existante de l'abonnement — jamais en ouvrant un second
+paiement, ce qui donnerait deux abonnements vivants et deux prélèvements.
+
+### Ce qui se compte, c'est qui FABRIQUE
+
+Sa correction, le même jour : *« je pense pas qu'il faut de limite d'utilisateur
+à 5, ou alors limiter à 5 commerciaux, et si on veut commerciaux illimités faut
+payer genre 120 »*.
+
+Les quatre rôles d'Atlas ne se valent pas (`src/lib/acces-roles.ts`) : un salarié
+voit son planning et rien d'autre, il ne produit aucun document et ne consomme
+aucune IA. Compter les salariés reviendrait à facturer la **taille de ses
+chantiers** au lieu de l'usage de l'outil — et à punir exactement le client qu'on
+veut garder. Le plafond ne compte donc que le patron, la facturation et les
+commerciaux, et `roleFabrique` est un `switch` exhaustif : un cinquième rôle
+ferait rougir la compilation plutôt que de tomber en silence du bon côté.
+
+**Deux portes, pas une.** Ajouter quelqu'un est la porte évidente ; **promouvoir
+un salarié en commercial** est celle par laquelle on franchirait le plafond sans
+s'en apercevoir — personne ne s'ajoute, un rôle change. Les deux sont gardées
+(`donnerUnAcces`, `changerLeRole`).
+
+### Rien ne se ferme aujourd'hui
+
+**Sans abonnement, aucun plafond ne s'applique** (`placePourUnFabricant` rend
+`ok` pour un code nul). Ce n'est pas un trou : un plafond est la conséquence
+d'une formule choisie, jamais un état par défaut. L'appliquer d'office fermerait
+l'équipe des artisans qui se servent d'Atlas avant que la moindre offre existe.
+
+**Et il n'y a pas d'état « essai ».** La durée de l'essai gratuit est l'une des
+seize cases `[À COMPLÉTER]` des conditions générales : elle n'est pas arrêtée.
+L'écrire dans le code en aurait fait un engagement contractuel décidé par une
+session. La contrainte `CHECK` de la migration 0084 refuse donc `'essai'` — un
+refus franc plutôt qu'une valeur qui dort.
+
+### Le crochet, et pourquoi il n'affaiblit pas la RLS
+
+Le prestataire frappe `/api/paiement` sans session : il n'y a ni utilisateur ni
+entreprise, donc l'isolation ordinaire ne peut pas s'appliquer. La tentation
+serait un rôle qui traverse la RLS derrière une adresse publique ; `CLAUDE.md`
+§4 l'interdit, à raison.
+
+La serrure employée est **celle de la page publique d'une facture** (migration
+0081) : une politique qui exige, mot pour mot, l'identifiant d'abonnement posé
+par le code juste avant la requête. Sans lui, aucune ligne n'est visible ni
+modifiable, et aucune énumération n'est possible. Les politiques PERMISSIVE se
+combinent en OR : celle-ci s'ajoute à l'isolation, elle ne la remplace pas.
+
+**Ce qui rend la serrure sûre, c'est ce qui la précède** : l'identifiant n'est
+posé qu'après vérification de la **signature** de l'événement
+(`src/lib/signature-stripe.ts`). Un identifiant deviné ne sert à rien — il
+faudrait d'abord savoir signer comme le prestataire.
+
+**Et `evenements_paiement` empêche de compter deux fois.** Stripe RÉPÈTE ses
+notifications tant qu'il n'a pas reçu un 200 : c'est une garantie « au moins une
+fois », jamais « exactement une fois ». Sans cette table, un réseau lent
+prolongerait trois fois la période payée d'un seul prélèvement.
+
+### Deux chemins d'écriture, une seule règle
+
+L'abonnement s'écrit au **retour du paiement** (l'écran, sous la session du
+patron) et par le **crochet** (sans session). Ce n'est pas une règle dupliquée :
+les deux passent par la même fonction de traduction (`lireUnAbonnement`) et la
+même forme de ligne (`versLaLigne`). Le premier existe parce que le crochet peut
+n'être pas encore configuré, ou arriver quelques secondes plus tard — et que le
+patron, lui, revient tout de suite sur son écran. Sans lui, il y lirait « Aucun
+abonnement » juste après avoir payé, et il rappuierait.
+
+### Aucune bibliothèque, et ce qui a été éprouvé
+
+Trois appels REST suffisent : la bibliothèque officielle de Stripe aurait
+apporté une dépendance entière pour cela. Ce qu'elle apporte d'irremplaçable —
+la vérification de signature — est écrit ici et **éprouvé sans compte, sans clé
+et sans réseau** (`scripts/test-signature-stripe.ts`, seize contrefaçons).
+
+**Ce qui n'a PAS pu être éprouvé, et il faut le lire :** aucun compte Stripe
+n'existe encore. `scripts/test-paiement-stripe.ts` monte un faux prestataire en
+local et vérifie ce qu'Atlas ENVOIE, paramètre par paramètre, et ce qu'il en
+relit. Que Stripe accepte ces paramètres se vérifie avec une clé d'essai, sur
+son espace — c'est écrit dans `docs/lot-abonnement-stripe.md`.
+
+### Trois variables, toutes optionnelles
+
+`ATLAS_PAIEMENT_CLE`, `ATLAS_PAIEMENT_SECRET_CROCHET`, `ATLAS_URL_PUBLIQUE`.
+Sans elles, l'écran **le dit** et n'offre pas un bouton qui échouerait. Et
+l'adresse de retour ne se déduit **jamais** de la requête : l'hôte annoncé est
+écrit par celui qui frappe, et le déduire ferait renvoyer le patron, au sortir
+du paiement, vers une page choisie par un tiers — la faute que ce dépôt a fermée
+sur `x-forwarded-for`.
+
+## §320 — La porte est en NUIT, et une charte peut se poser au milieu de l'arbre
+
+**Sa remarque du 10 septembre 2026, photo à l'appui :** *« toi tu me montres un
+écran blanc, regarde la photo que je t'ai jointe, elle est noire, c'est celle-là
+que je veux »*, puis, devant la seule couleur corrigée : *« ça va au-delà de
+ça ! C'est cet écran que je veux, regarde celui que j'ai aujourd'hui, ça n'a
+rien à voir — je veux pouvoir me connecter avec Google ou Apple »*.
+
+### Ce qui divergeait, et pourquoi personne ne l'avait vu
+
+`appli/la-porte-en-plein-air.html` porte **deux** écrans sombres, choisis le
+même jour : la création de compte (écran 2) et la connexion (écran 3). Seul le
+premier a été codé. La nuit y était écrite **dans son propre fichier** — la
+connexion, l'autre moitié de la même porte, retombait donc sur Origine, qui est
+claire. Une règle qui ne vit que dans un fichier sur deux n'est pas une règle :
+c'est un doublon en attente (`CLAUDE.md` §3).
+
+`src/components/atlas/PorteDeNuit.tsx` la porte désormais pour les deux.
+
+### Le piège des alias CSS, mesuré et non supposé
+
+Poser les `--atlas-*` d'une charte sur un conteneur ne suffisait pas : le fond
+passait en nuit et **les champs restaient crème**.
+
+`globals.css` déclare sur `:root` une couche d'alias courts —
+`--ink: var(--atlas-ink, #1c1c1a)`, et huit autres. Une variable CSS est
+**calculée là où elle est déclarée**, puis héritée comme valeur figée. Déclarés
+à la racine, où aucun `--atlas-*` n'existe, ces alias valent leur **repli
+clair** pour toute la page, et un enfant qui repose les `--atlas-*` ne les
+recalcule pas.
+
+| Ce qui marche seul | Ce qui ne marchait pas |
+|---|---|
+| `colors.ink` etc., qui sont **déjà** des `var(--atlas-…)` | tout ce qui lit `var(--ink)`, `var(--card)`, `var(--line)`, `var(--or)` |
+
+**Le correctif est un sélecteur, pas une copie** : le bloc d'alias vaut
+maintenant pour `:root` **et** pour `.atlas-charte-locale`, que `PorteDeNuit`
+pose. Recopier ces neuf lignes ailleurs aurait fait deux dérivations pour une
+seule question. Toute pièce future qui repose une charte plus bas dans l'arbre
+n'a qu'à porter cette classe.
+
+### Google et Apple : ce que le produit décide, et ce qu'il refuse de décider
+
+| | |
+|---|---|
+| **un bouton ne s'affiche que s'il peut aboutir** | `fournisseursDisponibles` — la moitié d'une paire de clés ne compte pas, ni une ligne vide restée dans un `.env`. Même règle que « Ouvrir avec Face ID », qui ne se montre que si l'appareil sait le faire |
+| **la même fonction sert à l'écran ET à Auth.js** | `page.tsx` décide quoi dessiner, `auth.ts` décide quoi déclarer. Deux rédactions auraient donné un bouton menant à une page d'erreur d'Auth.js |
+| **aucun adaptateur de base** | même raisonnement que Face ID (§ « Face ID sans adaptateur ») : la session est un JWT sans table, en brancher un remettrait en jeu le contexte d'entreprise, le middleware et « me déconnecter partout » |
+| **l'adresse est donc le SEUL lien** | d'où `emailProuve`, et le refus de toute adresse dont `email_verified` n'est pas vrai. Une valeur absente n'est pas une valeur vraie |
+| **on ne crée PAS le compte au vol** | un Atlas sans entreprise, sans forme juridique et sans TVA ne peut pas émettre son premier devis, et l'artisan le découvrirait devant un client. Sans compte, on part sur la création, l'adresse déjà prouvée |
+| **`user.id` est réécrit dans `signIn`** | ce qu'Auth.js y met pour un fournisseur OAuth est l'identifiant du compte **chez Google**. Laissé tel quel, il partirait dans le jeton et `getCurrentCtx` ne trouverait aucune entreprise — une session vide, sans un mot |
+
+**Ce qui reste à faire et que le code ne peut pas faire :** ouvrir l'identifiant
+OAuth chez Google (gratuit) et le Service ID chez Apple (compte développeur
+payant, 99 €/an). Tant qu'ils manquent, la porte est exactement celle d'avant,
+moins les deux boutons.
+
+### Ce que ce lot a supprimé
+
+Le composant du sceau — la feuille, la rose des vents, le mot — qui vivait sous
+`src/components/atlas/`. La porte était son dernier usage ; plus rien ne l'importait
+(`CLAUDE.md` §4 quinquies). Sont partis avec lui l'animation
+`.atlas-sceau-en-marche` et la classe `.atlas-champ-ligne`, le champ souligné
+que les gélules remplacent. L'historique git les garde.
+
+---
+
+## §321 — Une session prend son dossier toute seule
 
 **Sa demande du 10 septembre 2026**, une fois les cinq dossiers créés : *« non
 mais je veux qu'elle se débrouille, qu'elle aille dans un dossier à chaque fois,
@@ -26982,3 +27427,4 @@ le refus quand tout est pris, et le jeton mort qui ne bloque rien.
 
 Les deux qui portent sa demande ont été mis au rouge contre un lanceur qui rend
 toujours le premier dossier.
+

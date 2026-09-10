@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Facturer sans devis — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  FACTURER SANS PASSER PAR LA CASE DEVIS — sa demande du 10 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  SES DÉCISIONS, prises le soir même sur la première version de cette planche :
+
+  · « Ok pour les 3 » — les trois points où je ne le suivais pas sont acceptés
+  · « oui sur l'écran d'accueil » — la touche s'y pose
+  · la disposition A : DEUX ANNEAUX, « exactement le même style en gras avec
+    l'anneau vraiment tout pareil », et le même geste à l'appui que le devis
+  · « en cours 0 » passe SOUS « créer une facture »
+  · liste vide : les deux gestes descendent · liste pleine : ils remontent, et
+    « créer un devis » retrouve exactement la place qu'il a aujourd'hui
+  · « tu peux encore plus décaler créer une facture sur la gauche »
+
+  CE QUI EXISTE DÉJÀ, ET QU'ON NE REFERA PAS
+  · la reconnaissance du client au nom : reconnaitreLeClientAction
+  · l'éditeur de lignes de facture avec sa TVA : l'écran « Travaux en plus »
+    (TravauxSupplementairesClient.tsx) est déjà exactement cela
+  · l'ouverture du SMS et de l'e-mail avec le message tout prêt :
+    composerMessageFacture + lienTransmission, partagés avec le devis
+  · le PDF sait déjà se taire quand il n'y a pas de devis à citer
+    (facture-pdf.ts:118 — la mention n'est écrite que s'il y a un numéro)
+
+  CE QUI MANQUE VRAIMENT, ET C'EST LA RACINE
+  factures.devis_id est NOT NULL (src/server/db/schema.ts:1726). Aucune facture
+  ne peut exister sans devis. La corriger, c'est une migration — pas un faux
+  devis caché, qui polluerait la numérotation, les listes et la TVA.
+
+  RIEN N'EST CODÉ. Les couleurs viennent de src/lib/chartes.ts.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#6f8a5f; --surPlein:#fff; --papier:#ece9e1; --pale:#b9c9ad;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#6f8a5f; --surPlein:#101210; --papier:#232722; --pale:#3d5136;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+body.nuit .sceau{color:var(--scene)}
+
+.bloc{max-width:740px;margin:0 auto;padding:6px 20px 0}
+.bloc h2{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:23px;
+  margin:38px 0 4px;font-weight:400}
+.bloc .numero{font-size:10px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--or);display:block;margin-top:34px}
+.bloc>p{font-size:14.5px;line-height:1.65;color:var(--encre-douce);margin:0 0 14px}
+.bloc>p b{color:var(--encre)}
+
+.scene{display:flex;justify-content:center;padding:16px 16px 6px}
+/* LA HAUTEUR EST FIXE, et ce n'est pas cosmétique. Les trois pas n'ont pas la
+   même longueur : sans plancher, le téléphone rétrécit à l'appui sur « Aller à
+   l'envoi », la page remonte sous le doigt, et l'on se retrouve à lire les
+   notes du bas au lieu du résultat de son geste. Vu à la capture. */
+.tel{width:390px;max-width:100%;min-height:620px;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column}
+.tel .dedans{padding:16px 16px 0;flex:1}
+
+/* ── l'accueil, à SA disposition ───────────────────────────────────────── */
+.acc{padding:26px 20px 0;flex:1;display:flex;flex-direction:column}
+.acc .haut{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.acc h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:34px;
+  line-height:1.02;letter-spacing:-.018em;margin:6px 0 0;white-space:nowrap}
+.acc .assistant{width:44px;height:44px;border-radius:50%;flex:none;background:var(--plein);
+  color:var(--surPlein);display:flex;align-items:center;justify-content:center;
+  font-size:17px;margin-top:6px}
+.acc .clients{display:block;font-size:11px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--or);margin:10px 0 0}
+/* « PLUS COLLÉ AU BORD » — sa correction du 10 septembre, et c'est le mot
+   qu'il faut lire : le second geste ne recule pas d'un nombre de pixels, il
+   s'ALIGNE SUR LE BORD GAUCHE. Un décalage écrit en dur coupait le libellé
+   (« RÉER UNE FACTURE », vu à la capture) : « Créer une facture » est plus
+   long que « Créer un devis », et le même chiffre ne leur va pas. Aligné, le
+   décalage est maximal et ne peut plus déborder, quelle que soit la largeur
+   de l'écran ou la longueur du mot. */
+.acc .gestes{padding:22px 0 2px}
+.acc .gestes.bas{margin-top:auto;padding-bottom:52px}
+.acc .rang{display:flex;justify-content:center}
+.acc .rang.decale{justify-content:flex-start;margin-top:8px}
+.acc .encours{display:flex;align-items:baseline;gap:11px;font-size:11px;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--gris);padding:18px 0 0}
+.acc .encours b{font-size:15px;color:var(--encre);letter-spacing:0}
+.acc .brin{border-top:1px solid var(--trait-doux);padding:12px 0}
+.acc .brin .nom{font-size:16px;margin:0}
+.acc .brin .etat{font-size:12.5px;color:var(--gris);margin:2px 0 0}
+.acc .brin .etat.or{color:var(--or)}
+.bascule{display:block;margin:14px auto 0;min-height:44px;padding:9px 18px;border-radius:999px;
+  font:inherit;font-size:13.5px;background:var(--plage);color:var(--encre);
+  border:0;box-shadow:inset 0 0 0 1px var(--trait);cursor:pointer}
+
+.geste{display:flex;align-items:center;justify-content:center;gap:13px;padding:6px 0;
+  font:inherit;color:var(--encre)}
+.geste .rond{width:32px;height:32px;border-radius:50%;flex:none;position:relative;
+  box-shadow:inset 0 0 0 1.5px var(--or)}
+.geste .rond::after{content:"";position:absolute;inset:0;margin:auto;width:11px;height:1.5px;
+  background:var(--or)}
+.geste .rond::before{content:"";position:absolute;inset:0;margin:auto;width:1.5px;height:11px;
+  background:var(--or)}
+.geste .mot{font-size:13px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;white-space:nowrap}
+
+/* ── l'écran joué ─────────────────────────────────────────────────────── */
+.entete{display:flex;align-items:center;gap:10px;padding:4px 0 12px}
+.entete .fleche{background:none;border:0;font:inherit;font-size:19px;color:var(--encre-douce);
+  cursor:pointer;min-width:44px;min-height:44px;text-align:left}
+.entete .titres{min-width:0}
+.entete .sur{font-size:9.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--gris);display:block}
+.entete .quoi{font-family:ui-serif,Georgia,serif;font-size:20px;display:block}
+
+.champ{margin:0 0 13px}
+.champ label{display:block;font-size:9.5px;font-weight:700;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--gris);margin:0 0 5px}
+.champ input{width:100%;font:inherit;font-size:16px;color:var(--encre);
+  background:var(--plage);border:1px solid var(--trait);border-radius:9px;padding:11px 12px;min-height:46px}
+.champ input::placeholder{color:var(--gris)}
+
+.reconnu{display:flex;align-items:flex-start;gap:11px;background:var(--papier);
+  border-radius:14px;padding:11px 13px;margin:0 0 14px}
+.reconnu .coche{width:19px;height:19px;border-radius:50%;flex:none;background:var(--plein);
+  color:var(--surPlein);display:flex;align-items:center;justify-content:center;font-size:11px;margin-top:2px}
+.reconnu .quoi{font-size:14.5px;line-height:1.35}
+.reconnu .ou{font-size:12.5px;color:var(--gris);margin-top:2px;display:block}
+.reconnu .refus{background:none;border:0;font:inherit;font-size:13px;color:var(--or);
+  text-decoration:underline;cursor:pointer;padding:7px 0 0;min-height:44px;display:block}
+
+.plein{width:100%;min-height:52px;border:0;border-radius:999px;background:var(--plein);
+  color:var(--surPlein);font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.plein[disabled]{opacity:.4;cursor:default}
+
+.doc{background:var(--plage);border:1px solid var(--trait-doux);border-radius:12px;
+  padding:15px 15px 4px;margin:0 0 4px}
+.bloc-tva{border-top:1px solid var(--trait-doux);padding:11px 0 4px}
+.bloc-tva:first-of-type{border-top:0;padding-top:2px}
+.bloc-tva .taux{font-size:9.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--or);margin:0 0 7px}
+.ligne{display:flex;align-items:baseline;gap:10px;padding:6px 0;font-size:14.5px}
+.ligne .lib{flex:1;min-width:0;line-height:1.4}
+.ligne .sous{font-size:12px;color:var(--gris);display:block}
+.ligne .mt{font-variant-numeric:tabular-nums;white-space:nowrap}
+.ligne .oter{background:none;border:0;color:var(--gris);font:inherit;font-size:17px;
+  cursor:pointer;min-width:34px;min-height:34px;flex:none}
+.ajouter{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  background:none;border:0;font:inherit;font-size:13px;color:var(--or);cursor:pointer;
+  min-height:44px;margin:2px 0 6px}
+.totaux{border-top:1px solid var(--trait);margin-top:8px;padding:10px 0 12px}
+.tot{display:flex;justify-content:space-between;font-size:13.5px;color:var(--encre-douce);padding:3px 0}
+.tot.gros{font-size:17px;color:var(--encre);padding-top:8px}
+.tot .mt{font-variant-numeric:tabular-nums}
+
+.barre{position:sticky;bottom:0;background:linear-gradient(to top,var(--fond) 68%,transparent);
+  padding:26px 16px 14px;margin:0 -16px}
+.reglage{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border-top:1px solid var(--trait-doux);padding:9px 0 4px;margin:0 0 4px}
+.reglage .mot{font-size:9.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+.reglage .choix{display:flex;gap:4px}
+.canal{background:none;border:0;font:inherit;font-size:14px;color:var(--encre-douce);
+  cursor:pointer;padding:8px 9px;min-height:44px;border-bottom:2px solid transparent}
+.canal[aria-pressed=true]{color:var(--encre);border-bottom-color:var(--or)}
+.destinataire{text-align:center;font-size:12.5px;color:var(--gris);margin:0 0 9px}
+
+.messagerie{position:absolute;inset:0;background:var(--scene);z-index:12;display:none;
+  padding:16px;overflow:auto}
+.messagerie.la{display:block}
+.messagerie .barre-appli{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gris);text-align:center;padding:4px 0 14px;margin:0}
+.messagerie .a{font-size:13.5px;color:var(--encre-douce);border-bottom:1px solid var(--trait);
+  padding:0 0 10px;margin:0 0 14px}
+.bulle{background:var(--plein);color:var(--surPlein);border-radius:16px 16px 4px 16px;
+  padding:12px 14px;font-size:14.5px;line-height:1.5;white-space:pre-line;margin-left:34px}
+.messagerie .revenir{width:100%;margin-top:16px;min-height:48px;border-radius:999px;font:inherit;
+  font-size:14px;background:var(--plage);color:var(--encre);border:0;box-shadow:inset 0 0 0 1px var(--trait);cursor:pointer}
+
+.pastilles{display:flex;justify-content:center;gap:7px;padding:12px 0 0}
+.pastilles span{width:7px;height:7px;border-radius:50%;background:var(--trait)}
+.pastilles span.la{background:var(--or)}
+
+p.dessous{max-width:740px;margin:12px auto 0;padding:0 20px;text-align:center;
+  font-size:14px;line-height:1.65;color:var(--encre-douce)}
+p.dessous b{color:var(--encre)}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:32px 0 10px;font-weight:400}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes ol,.notes ul{padding-left:20px;color:var(--encre-douce);font-size:14px;line-height:1.7}
+.notes li{margin-bottom:7px}
+.notes .alerte{border-left:3px solid var(--or);padding-left:13px}
+.notes .cadre{overflow-x:auto}
+.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
+.notes th,.notes td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--trait-doux);
+  color:var(--encre-douce);vertical-align:top}
+.notes th{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+.notes td b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Repartir de zéro</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">10 septembre — votre disposition</span>
+  <h1>Facturer sans passer par le devis</h1>
+  <p>Un dépannage fait dans la journée, réglé sur place : pas de devis, une
+  facture tout de suite. <b>Tout est tranché</b> — cette planche montre ce que
+  vous avez demandé, pour que vous le voyiez avant que ce soit codé.</p>
+</div>
+
+<div class="bloc">
+  <span class="numero">Ce que vous avez demandé</span>
+  <h2>L'accueil, avec les deux anneaux</h2>
+  <p>Même style, même graisse, même anneau. « Créer une facture » se pose
+  <b>sous</b> « Créer un devis », décalé à gauche, et <b>« En cours » passe
+  dessous</b>. Touchez le bouton pour voir les deux états.</p>
+</div>
+
+<div class="scene">
+  <div class="tel" id="accueil"></div>
+</div>
+<button class="bascule" type="button" id="bascule">Voir avec des chantiers</button>
+<p class="dessous" id="ditAccueil"></p>
+
+<div class="bloc">
+  <span class="numero">Le parcours</span>
+  <h2>Du nom du client au SMS parti</h2>
+  <p><b>Faites-le en entier.</b> Tapez « Jul » dans le nom : la fiche se
+  remplit toute seule. Puis les lignes, puis l'envoi.</p>
+</div>
+
+<div class="scene">
+  <div class="tel" id="tel">
+    <div class="dedans" id="ecran"></div>
+    <div class="messagerie" id="messagerie"></div>
+  </div>
+</div>
+<div class="pastilles" id="pastilles"><span class="la"></span><span></span><span></span></div>
+<p class="dessous" id="ditPas"></p>
+
+<div class="notes">
+
+  <h3>Ce qui existe déjà, et qu'on ne refera pas</h3>
+  <div class="cadre">
+  <table>
+    <tr><th>Ce que vous demandez</th><th>Où c'est déjà écrit</th></tr>
+    <tr><td>reconnaître le client au nom, remplir ses infos</td><td><b>Déjà fait</b> — la fiche client le fait pour le devis</td></tr>
+    <tr><td>des lignes avec des TVA différentes</td><td><b>Déjà fait</b> — l'écran « Travaux en plus » est un éditeur de lignes de facture</td></tr>
+    <tr><td>ouvrir le SMS ou l'e-mail avec le message tout prêt</td><td><b>Déjà fait</b> — le même code que pour le devis</td></tr>
+    <tr><td>une facture sans devis</td><td><b>Rien.</b> La base l'interdit aujourd'hui</td></tr>
+  </table>
+  </div>
+
+  <h3>Ce qu'il faut vraiment changer</h3>
+  <p class="alerte">En base, une facture est <b>obligée</b> de désigner un devis.
+  C'est là que ça bloque, et c'est là que ça se corrige. La solution facile
+  serait de fabriquer un devis invisible derrière chaque facture directe : elle
+  ferait apparaître des numéros de devis qui n'existent pas, dans vos listes et
+  dans votre TVA. Elle est écartée.</p>
+
+  <h3>Trois points où je ne vous suivais pas — vous les avez acceptés</h3>
+  <ol>
+    <li><b>« Les TS ».</b> Un travail supplémentaire, c'est ce qui s'ajoute à ce
+    qu'un devis annonçait. Sans devis, il n'y a rien à quoi s'ajouter : toutes
+    les lignes sont des lignes, chacune avec sa TVA. L'écran « Travaux en
+    plus » sert d'éditeur, sans le mot.</li>
+    <li><b>« Ça ouvre la page du devis ».</b> Ça ouvre une page de
+    <b>facture</b>, du même dessin. Un écran qui dit « devis » sur ce qu'on
+    facture se photographie et s'envoie au client.</li>
+    <li><b>« Un bouton flottant Envoyer par ».</b> On garde le réglage
+    « Envoi &middot; SMS | E-mail » que vous aviez retenu le 4 septembre. Le
+    refaire en feuille aurait obligé à le refaire partout, sinon le même geste
+    se serait dessiné de trois façons dans l'application.</li>
+  </ol>
+
+  <h3>Ce qui est tranché</h3>
+  <ul>
+    <li>Deux anneaux sur l'accueil, style identique, même geste à l'appui.</li>
+    <li>« Créer une facture » sous le devis, <b>décalé à gauche</b> ; « En
+    cours » passe dessous.</li>
+    <li>Liste vide : les deux descendent. Liste pleine : ils remontent, et
+    « Créer un devis » retrouve sa place d'aujourd'hui.</li>
+    <li>Le chantier créé part <b>directement dans « Terminés »</b>.</li>
+    <li>On ne touche pas aux chantiers existants : un chantier ouvert sans
+    devis continuera de refuser la facture.</li>
+    <li>Le geste d'envoi ne change pas.</li>
+  </ul>
+
+  <h3>Ce qui reste à dire</h3>
+  <p>Rien, sauf si le décalage vers la gauche ne vous va pas encore : il se
+  règle d'un chiffre. Sinon, je code.</p>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var SAUT = String.fromCharCode(10);
+
+  var pole = document.getElementById("pole");
+  pole.addEventListener("click", function(){
+    var nuit = document.body.classList.toggle("nuit");
+    pole.setAttribute("aria-pressed", String(nuit));
+    pole.textContent = nuit ? "Voir sur Arborea" : "Voir sur Nuit";
+  });
+
+  function echapper(s){
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function euros(n){
+    return n.toLocaleString("fr-FR", { minimumFractionDigits:2, maximumFractionDigits:2 }) + " €";
+  }
+
+  // ══ L'ACCUEIL ═══════════════════════════════════════════════════════════
+  var accueil    = document.getElementById("accueil");
+  var bascule    = document.getElementById("bascule");
+  var ditAccueil = document.getElementById("ditAccueil");
+  var plein = false;
+
+  var CHANTIERS = [
+    { nom:"Mme Berger", etat:"Devis parti il y a 3 jours", or:false },
+    { nom:"M. Julien",  etat:"Le client a répondu",        or:true  },
+    { nom:"Les Tilleuls", etat:"À chiffrer",               or:false }
+  ];
+
+  function unGeste(mot){
+    return '<span class="geste"><span class="mot">' + mot + '</span>'
+      + '<span class="rond"></span></span>';
+  }
+
+  function dessinerAccueil(){
+    var liste = plein ? CHANTIERS.map(function(c){
+      return '<div class="brin"><p class="nom">' + c.nom + '</p>'
+        + '<p class="etat' + (c.or ? ' or' : '') + '">' + c.etat + '</p></div>';
+    }).join("") : "";
+
+    accueil.innerHTML = ''
+      + '<div class="acc">'
+      +   '<div class="haut"><h1>Vos chantiers</h1>'
+      +     '<span class="assistant" aria-hidden="true">&#9679;</span></div>'
+      +   '<span class="clients">Vos clients &rsaquo;</span>'
+      // Vide : les deux gestes descendent dans le vide (classe « bas »).
+      // Pleine : ils remontent, et « Créer un devis » retrouve sa place.
+      +   '<div class="gestes' + (plein ? '' : ' bas') + '">'
+      +     '<div class="rang">' + unGeste("Créer un devis") + '</div>'
+      +     '<div class="rang decale">' + unGeste("Créer une facture") + '</div>'
+      +   '</div>'
+      +   '<div class="encours"><span>En cours</span><b>' + (plein ? CHANTIERS.length : 0) + '</b></div>'
+      +   '<div class="liste">' + liste + '</div>'
+      + '</div>';
+
+    bascule.textContent = plein ? "Voir la liste vide" : "Voir avec des chantiers";
+    ditAccueil.innerHTML = plein
+      ? "Avec des chantiers : les deux gestes <b>remontent</b>, et « Créer un devis » est exactement là où il est aujourd'hui."
+      : "Liste vide : les deux gestes <b>descendent</b> dans l'espace libre.";
+  }
+  bascule.addEventListener("click", function(){ plein = !plein; dessinerAccueil(); });
+  dessinerAccueil();
+
+  // ══ LE PARCOURS ═════════════════════════════════════════════════════════
+  var ecran      = document.getElementById("ecran");
+  var messagerie = document.getElementById("messagerie");
+  var pastilles  = document.getElementById("pastilles");
+  var ditPas     = document.getElementById("ditPas");
+
+  var pas = 0;                 // 0 fiche client · 1 facture · 2 envoi
+  var nom = "";
+  var reconnu = false;
+  var refuse = false;
+  var canal = "sms";
+  var lignes, enPlus;
+
+  function garnir(){
+    // Chaque ligne porte SA TVA : c'est ce que « les différentes TVA » veut
+    // dire, et l'application les range par taux, comme sur le devis.
+    lignes = [
+      { lib:"Dépannage arrosage — remplacement électrovanne", qte:1, pu:145, tva:"10" },
+      { lib:"Électrovanne 9 V",                               qte:1, pu:38,  tva:"20" }
+    ];
+    enPlus = [
+      { lib:"Main-d'oeuvre supplémentaire", qte:1.5, pu:52,  tva:"10" },
+      { lib:"Raccord PE Ø25",               qte:2,   pu:4.6, tva:"20" }
+    ];
+  }
+  garnir();
+
+  function totalHt(){
+    return lignes.reduce(function(s, l){ return s + l.qte * l.pu; }, 0);
+  }
+  function parTaux(){
+    var m = {};
+    lignes.forEach(function(l){ m[l.tva] = (m[l.tva] || 0) + l.qte * l.pu; });
+    return m;
+  }
+  function tvaDue(){
+    var m = parTaux(), t = 0;
+    Object.keys(m).forEach(function(k){ t += m[k] * (parseFloat(k) / 100); });
+    return t;
+  }
+
+  // ── Écran 1 : la fiche client, SANS la note vocale ──────────────────────
+  function ficheClient(){
+    var vu = reconnu && !refuse;
+    return ''
+      + '<div class="entete">'
+      +   '<button class="fleche" type="button" aria-label="Retour">&lsaquo;</button>'
+      +   '<span class="titres"><span class="sur">Nouvelle facture</span>'
+      +   '<span class="quoi">Fiche client</span></span>'
+      + '</div>'
+      + (vu ?
+          '<div class="reconnu">'
+        +   '<span class="coche" aria-hidden="true">&#10003;</span>'
+        +   '<span><span class="quoi">Repris de sa fiche</span>'
+        +   '<span class="ou">Saint-Marc &middot; 3 chantiers</span>'
+        +   '<button class="refus" type="button" id="pasLui">Ce n&rsquo;est pas lui</button></span>'
+        + '</div>' : '')
+      + '<div class="champ"><label for="nom">Nom du client</label>'
+      +   '<input id="nom" type="text" placeholder="Tapez « Jul »" value="' + echapper(nom) + '" autocomplete="off"></div>'
+      + '<div class="champ"><label for="adr">Adresse du chantier</label>'
+      +   '<input id="adr" type="text" placeholder="Rue, ville" value="' + (vu ? '12 rue des Lilas, Saint-Marc' : '') + '"></div>'
+      + '<div class="champ"><label for="tel2">Téléphone</label>'
+      +   '<input id="tel2" type="tel" placeholder="06…" value="' + (vu ? '06 14 22 87 30' : '') + '"></div>'
+      + '<div class="champ"><label for="ml">E-mail</label>'
+      +   '<input id="ml" type="email" placeholder="client@…" value="' + (vu ? 'j.julien@exemple.fr' : '') + '"></div>'
+      + '<div style="padding:8px 0 18px">'
+      +   '<button class="plein" type="button" id="versFacture"' + (nom.trim() ? '' : ' disabled') + '>Faire la facture</button>'
+      + '</div>';
+  }
+
+  // ── Écran 2 : la facture à remplir ──────────────────────────────────────
+  function laFacture(){
+    var m = parTaux();
+    var taux = Object.keys(m).sort(function(a, b){ return parseFloat(b) - parseFloat(a); });
+
+    var blocs = taux.map(function(t){
+      var dedans = lignes.map(function(l, i){
+        if (l.tva !== t) return "";
+        return '<div class="ligne">'
+          + '<span class="lib">' + echapper(l.lib)
+          +   '<span class="sous">' + l.qte + ' &times; ' + euros(l.pu) + '</span></span>'
+          + '<span class="mt">' + euros(l.qte * l.pu) + '</span>'
+          + '<button class="oter" type="button" data-oter="' + i + '" aria-label="Retirer cette ligne">&times;</button>'
+          + '</div>';
+      }).join("");
+      return '<div class="bloc-tva"><p class="taux">TVA ' + t + ' %</p>' + dedans + '</div>';
+    }).join("");
+
+    var ht = totalHt(), tva = tvaDue();
+
+    return ''
+      + '<div class="entete">'
+      +   '<button class="fleche" type="button" id="retourFiche" aria-label="Retour">&lsaquo;</button>'
+      +   '<span class="titres"><span class="sur">M. Julien</span>'
+      +   '<span class="quoi">Facture</span></span>'
+      + '</div>'
+      + '<div class="doc">' + blocs
+      +   (enPlus.length ? '<button class="ajouter" type="button" id="ajouter"><span>+</span> Ajouter une ligne</button>' : '')
+      +   '<div class="totaux">'
+      +     '<div class="tot"><span>Total HT</span><span class="mt">' + euros(ht) + '</span></div>'
+      +     taux.map(function(t){
+              return '<div class="tot"><span>TVA ' + t + ' % sur ' + euros(m[t]) + '</span>'
+                + '<span class="mt">' + euros(m[t] * parseFloat(t) / 100) + '</span></div>';
+            }).join("")
+      +     '<div class="tot gros"><span>Total TTC</span><span class="mt">' + euros(ht + tva) + '</span></div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="champ" style="margin-top:12px"><label for="ech">À régler avant le</label>'
+      +   '<input id="ech" type="text" value="10 octobre 2026"></div>'
+      + '<div style="padding:2px 0 18px">'
+      +   '<button class="plein" type="button" id="versEnvoi">Aller à l&rsquo;envoi</button>'
+      + '</div>';
+  }
+
+  // ── Écran 3 : l'envoi — son dessin du 4 septembre, confirmé le 10 ───────
+  function lEnvoi(){
+    var ttc = totalHt() + tvaDue();
+    var qui = canal === "sms" ? "06 14 22 87 30" : "j.julien@exemple.fr";
+
+    return ''
+      + '<div class="entete">'
+      +   '<button class="fleche" type="button" id="retourFacture" aria-label="Retour">&lsaquo;</button>'
+      +   '<span class="titres"><span class="sur">M. Julien</span>'
+      +   '<span class="quoi">Facture</span></span>'
+      + '</div>'
+      + '<div class="doc">'
+      +   '<div class="tot" style="font-size:13px"><span>Facture n&deg; F-2026-041</span><span></span></div>'
+      +   '<div class="tot gros" style="padding-top:4px"><span>Total TTC</span><span class="mt">' + euros(ttc) + '</span></div>'
+      +   '<div style="padding:6px 0 12px;font-size:12.5px;color:var(--gris)">'
+      +     lignes.length + ' lignes &middot; à régler avant le 10 octobre</div>'
+      + '</div>'
+      + '<div style="height:30px"></div>'
+      + '<div class="barre">'
+      +   '<div class="reglage"><span class="mot">Envoi</span><span class="choix">'
+      +     '<button class="canal" type="button" data-canal="sms" aria-pressed="' + (canal === "sms") + '">SMS</button>'
+      +     '<button class="canal" type="button" data-canal="email" aria-pressed="' + (canal === "email") + '">E-mail</button>'
+      +   '</span></div>'
+      +   '<p class="destinataire">' + (canal === "sms" ? "Au " : "À ") + qui + '</p>'
+      +   '<button class="plein" type="button" id="partir">Envoyer la facture</button>'
+      + '</div>';
+  }
+
+  function ouvrirMessagerie(){
+    var ttc = totalHt() + tvaDue();
+    var texte = [
+      "Bonjour M. Julien,", "",
+      "Votre facture n° F-2026-041 d'un montant de " + euros(ttc) + " est disponible ici :",
+      "atlas.fr/f/9c3e7a", "",
+      "À régler avant le 10 octobre 2026.", "",
+      "Arborea"
+    ].join(SAUT);
+
+    messagerie.innerHTML = ''
+      + '<p class="barre-appli">' + (canal === "sms" ? "Messages" : "Mail") + '</p>'
+      + '<p class="a">' + (canal === "sms" ? "À : 06 14 22 87 30" : "À : j.julien@exemple.fr")
+      +   (canal === "email" ? '<br>Objet : Votre facture F-2026-041' : '') + '</p>'
+      + '<div class="bulle">' + echapper(texte) + '</div>'
+      + '<button class="revenir" type="button" id="revenir">Revenir à Atlas</button>';
+
+    messagerie.classList.add("la");
+    messagerie.querySelector("#revenir").addEventListener("click", function(){
+      messagerie.classList.remove("la");
+    });
+  }
+
+  var PHRASES = [
+    "La note vocale n'est pas là : on ne dicte pas une facture qu'on tape.",
+    "Chaque ligne porte sa TVA. L'application les range par taux, toute seule.",
+    "L'appui ouvre votre messagerie, le message déjà écrit."
+  ];
+
+  function dessiner(){
+    ecran.innerHTML = pas === 0 ? ficheClient() : pas === 1 ? laFacture() : lEnvoi();
+
+    Array.prototype.forEach.call(pastilles.children, function(p, i){
+      p.classList.toggle("la", i === pas);
+    });
+    ditPas.textContent = PHRASES[pas];
+
+    if (pas === 0) {
+      var champNom = ecran.querySelector("#nom");
+      champNom.addEventListener("input", function(){
+        nom = champNom.value;
+        var vu = /jul/i.test(nom);
+        if (vu !== reconnu) {
+          reconnu = vu;
+          if (vu) refuse = false;
+          var ou = champNom.selectionStart;
+          dessiner();
+          var neuf = ecran.querySelector("#nom");
+          neuf.focus();
+          try { neuf.setSelectionRange(ou, ou); } catch (e) {}
+          return;
+        }
+        var b = ecran.querySelector("#versFacture");
+        if (b) b.disabled = !nom.trim();
+      });
+      var pasLui = ecran.querySelector("#pasLui");
+      if (pasLui) pasLui.addEventListener("click", function(){ refuse = true; dessiner(); });
+      ecran.querySelector("#versFacture").addEventListener("click", function(){ pas = 1; dessiner(); });
+    }
+
+    if (pas === 1) {
+      ecran.querySelector("#retourFiche").addEventListener("click", function(){ pas = 0; dessiner(); });
+      ecran.querySelector("#versEnvoi").addEventListener("click", function(){ pas = 2; dessiner(); });
+      var plus = ecran.querySelector("#ajouter");
+      if (plus) plus.addEventListener("click", function(){ lignes.push(enPlus.shift()); dessiner(); });
+      Array.prototype.forEach.call(ecran.querySelectorAll("[data-oter]"), function(b){
+        b.addEventListener("click", function(){
+          var i = parseInt(b.getAttribute("data-oter"), 10);
+          enPlus.unshift(lignes.splice(i, 1)[0]);
+          dessiner();
+        });
+      });
+    }
+
+    if (pas === 2) {
+      ecran.querySelector("#retourFacture").addEventListener("click", function(){ pas = 1; dessiner(); });
+      var p = ecran.querySelector("#partir");
+      if (p) p.addEventListener("click", ouvrirMessagerie);
+      Array.prototype.forEach.call(ecran.querySelectorAll("[data-canal]"), function(b){
+        b.addEventListener("click", function(){ canal = b.getAttribute("data-canal"); dessiner(); });
+      });
+    }
+  }
+
+  document.getElementById("rejouer").addEventListener("click", function(){
+    pas = 0; nom = ""; reconnu = false; refuse = false; canal = "sms";
+    plein = false;
+    garnir();
+    messagerie.classList.remove("la");
+    dessinerAccueil();
+    dessiner();
+  });
+
+  dessiner();
+})();
+</script>
+
+</body>
+</html>

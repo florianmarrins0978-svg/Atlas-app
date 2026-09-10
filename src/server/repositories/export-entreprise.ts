@@ -49,6 +49,9 @@ import {
   retoursIntervention,
   retoursInterventionTaches,
   retoursInterventionPhotos,
+  retoursInterventionVus,
+  abonnements,
+  evenementsPaiement,
   tarifs,
   motsCatalogue,
 } from "../db/schema";
@@ -162,6 +165,9 @@ export async function exporterEntreprise(
       sesRetours,
       sesTachesDeRetour,
       sesPhotosDeRetour,
+      sesRetoursLus,
+      sonAbonnement,
+      sesEvenementsDePaiement,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -316,6 +322,24 @@ export async function exporterEntreprise(
       tx.select().from(retoursIntervention).where(eq(retoursIntervention.entrepriseId, e)),
       tx.select().from(retoursInterventionTaches).where(eq(retoursInterventionTaches.entrepriseId, e)),
       tx.select().from(retoursInterventionPhotos).where(eq(retoursInterventionPhotos.entrepriseId, e)),
+      // **Qui a déjà ouvert quel retour (migration 0083).** Ce sont ses
+      // lectures : sans elles, une base restaurée rallumerait la pastille sur
+      // tout ce qu'il avait déjà lu, et il relirait la soirée entière.
+      tx.select().from(retoursInterventionVus).where(eq(retoursInterventionVus.entrepriseId, e)),
+      // **SON ABONNEMENT, ET CE QUE LE PRESTATAIRE EN A DIT (migration 0084).**
+      //
+      // Sans lui, une base restaurée dirait « Aucun abonnement » à quelqu'un
+      // qui paie — et l'écran lui proposerait de s'abonner une seconde fois.
+      //
+      // **Les identifiants du prestataire partent AUSSI**, et c'est voulu : ce
+      // sont eux qui rattachent la ligne à ce qui est réellement prélevé sur
+      // son compte. Les taire rendrait l'export joli et inutile le jour où il
+      // sert. Ils n'ouvrent rien par eux-mêmes — sans la clé secrète, un
+      // identifiant d'abonnement ne permet aucun appel.
+      tx.select().from(abonnements).where(eq(abonnements.entrepriseId, e)),
+      // Le journal des événements de paiement : ce qui est arrivé, et quand.
+      // C'est la trace qu'on relit le jour où un prélèvement est contesté.
+      tx.select().from(evenementsPaiement).where(eq(evenementsPaiement.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -395,6 +419,10 @@ export async function exporterEntreprise(
       retours_intervention: sesRetours,
       retours_intervention_taches: sesTachesDeRetour,
       retours_intervention_photos: sesPhotosDeRetour,
+      retours_intervention_vus: sesRetoursLus,
+      // Son abonnement, et le journal de ce que le prestataire en a dit.
+      abonnements: sonAbonnement,
+      evenements_paiement: sesEvenementsDePaiement,
     };
 
     const compte: Record<string, number> = {};

@@ -8,6 +8,7 @@ import * as prixRepo from "../src/server/repositories/lignes-prix";
 import {
   ajouterTravauxSupplementaires,
   emettreFacture,
+  genererPdfFacturePourApercu,
   majTravauxSupplementaires,
   reprendreLeDevisSurLaFacture,
   retirerTravauxSupplementaires,
@@ -17,6 +18,8 @@ import { withEntreprise } from "../src/server/db/with-entreprise";
 import { lignesFacture } from "../src/server/db/schema";
 import { asc, eq } from "drizzle-orm";
 import { nettoyerBase } from "./_test-db";
+import { texteDuPdf } from "./_lecteur-pdf-protege";
+import { TITRE_TRAVAUX_SUPPLEMENTAIRES } from "../src/lib/reduction-devis";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LES TRAVAUX SUPPLÉMENTAIRES — sa demande du 31 août 2026, codée le 9
@@ -237,6 +240,90 @@ async function main() {
     assert.equal(emise.totalHt, "1300.00", `HT : ${emise.totalHt}`);
     assert.equal(emise.totalTva, "230.00", `TVA : ${emise.totalTva} — les deux taux ne sont pas séparés`);
     assert.equal(emise.totalTtc, "1530.00", `TTC : ${emise.totalTtc}`);
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // LE PDF DU BROUILLON — la porte par laquelle le patron est passé.
+  //
+  // **Les deux cas ci-dessous manquaient, et il l'a payé le 10 septembre 2026.**
+  // Le contrôle des totaux juste au-dessus éprouve `emettreFacture`, qui
+  // recalculait déjà : il ne pouvait donc RIEN dire du PDF qu'on relit avant
+  // d'émettre. Or c'est celui-là que le patron a ouvert, et il portait
+  // « Total HT 1 750 € » sous des lignes qui font 4 450 €.
+  //
+  // C'est la faute que `CLAUDE.md` §5 quater nomme : un contrôle entré par la
+  // porte de service ne dit rien de la porte d'entrée.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /**
+   * Le titre du bloc est-il sur le papier ?
+   *
+   * **On efface les blancs avant de chercher, et ce n'est pas du confort.** Les
+   * intertitres du document sont écrits en capitales ESPACÉES — `ecrireEspace`
+   * pose les lettres une à une —, si bien que le texte extrait rend
+   * « T R A V A U X … » avec des retours à la ligne au milieu. Un `includes`
+   * naïf n'y trouve donc jamais rien : ce contrôle a d'abord rougi sur un PDF
+   * qui portait parfaitement son titre, en accusant le produit
+   * (`CLAUDE.md` §5 — un message qui désigne le mauvais coupable coûte plus
+   * cher que pas de message).
+   */
+  const porteLeTitreDuSupplement = (pdf: Uint8Array) =>
+    texteDuPdf(pdf).replace(/[\s\u00a0]/g, "").includes(
+      TITRE_TRAVAUX_SUPPLEMENTAIRES.replace(/\s/g, "")
+    );
+
+  await test("LE PDF DU BROUILLON COMPTE LE SUPPLÉMENT — ses chiffres du 10 septembre", async () => {
+    const { facture } = await factureEnBrouillon(ctx, "1750.00");
+    const a = await ajouterTravauxSupplementaires(ctx, facture.id, null);
+    assert.ok(a.ok);
+    await majTravauxSupplementaires(ctx, facture.id, a.ligne.id, {
+      libelle: "Pennisetum arracher",
+      quantite: "6",
+      prixUnitaire: "450.00",
+    });
+
+    const texte = texteDuPdf(await genererPdfFacturePourApercu(ctx, facture.id));
+    const sansEspaces = texte.replace(/[\s\u00a0]/g, "");
+
+    // 1 750 + 2 700 = 4 450 ; TVA 20 % = 890 ; TTC 5 340. Ce sont les chiffres
+    // de SA facture, et le PDF en écrivait trois qui ne s'accordaient pas.
+    assert.ok(
+      sansEspaces.includes("4450,00"),
+      `le Total HT du PDF ignore le supplément — il devrait valoir 4 450,00 €`
+    );
+    assert.ok(
+      sansEspaces.includes("5340,00"),
+      `le Total TTC du PDF ne suit pas ses propres lignes — il devrait valoir 5 340,00 €`
+    );
+    // **Et les trois doivent s'ACCORDER** : c'est ce qui manquait, pas un
+    // chiffre isolé. Un PDF qui écrit 1 750 + 890 = 2 100 se contredit tout
+    // seul, et c'est le client qui refait l'addition.
+    assert.ok(sansEspaces.includes("890,00"), "la TVA a disparu du PDF");
+  });
+
+  await test("LE PDF DU BROUILLON SÉPARE LES DEUX BLOCS — sa demande, en toutes lettres", async () => {
+    const { facture } = await factureEnBrouillon(ctx, "1750.00");
+
+    // **Sans supplément, le titre ne doit PAS s'écrire** — un bloc « travaux
+    // supplémentaires » au-dessus de rien ferait chercher au client ce qui
+    // n'existe pas. On le vérifie AVANT, sinon le cas d'après ne prouverait
+    // rien : le titre pourrait être écrit sur toutes les factures.
+    assert.ok(
+      !porteLeTitreDuSupplement(await genererPdfFacturePourApercu(ctx, facture.id)),
+      "le titre s'écrit sur une facture qui n'a aucun supplément"
+    );
+
+    const a = await ajouterTravauxSupplementaires(ctx, facture.id, null);
+    assert.ok(a.ok);
+    await majTravauxSupplementaires(ctx, facture.id, a.ligne.id, {
+      libelle: "Pennisetum arracher",
+      prixUnitaire: "450.00",
+    });
+
+    assert.ok(
+      porteLeTitreDuSupplement(await genererPdfFacturePourApercu(ctx, facture.id)),
+      "le PDF ne sépare pas le supplément : le client croit lire une ligne du devis"
+    );
   });
 
   await test("UNE FACTURE ARRÊTÉE NE REÇOIT PLUS RIEN — et le refus se dit", async () => {

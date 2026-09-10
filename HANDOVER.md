@@ -16,7 +16,7 @@ sert.
 | la migration | **aucune** |
 | les pièces | `scripts/ouvrir-session.mjs`, `scripts/preparer-sessions.mjs` (racine par git, importable) |
 | les suites | `scripts/test-ouvrir-session.ts` (5), `test-preparer-sessions.ts` (7) |
-| le détail | `ARCHITECTURE.md` §316, `CLAUDE.md` §1.0 |
+| le détail | `ARCHITECTURE.md` §321, `CLAUDE.md` §1.0 |
 
 **LE PIÈGE À NE PAS DÉFAIRE :** un dossier est occupé par un PROCESSUS vivant,
 jamais par un fichier. Le lanceur attend sa session — son PID est la preuve. Le
@@ -27,6 +27,37 @@ au milieu du travail, ou condamné pour toujours.
 **Et il ne crée aucun dossier** : quand tout est pris il refuse et donne la
 commande. Créer, c'est le métier de `sessions:preparer`, seul à savoir installer
 les dépendances et recopier le `.env`.
+
+## Dernier lot — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
+
+| | |
+|---|---|
+| sa panne | *« deux fois le geste client → retour, et je reviens à la page d'accueil »* |
+| la racine | `router.back()` de la flèche déclenche un `popstate` ; l'écoute écrite pour le bouton du navigateur RETIRAIT alors l'écran d'arrivée — la destination elle-même |
+| les pièces | `journalJusquACetEcran` (`src/lib/journal-de-navigation.ts`), `atterrirIci` et `sAbonnerAuJournal` (`journal-navigateur.ts`) |
+| retiré | l'appel qui effaçait le sol sous les pieds, et l'abonnement de la flèche au `popstate` |
+| les suites | `test-journal-de-navigation.ts` (+4), `test-retour-page-davant-e2e.ts` (+2, son geste refait quatre fois) |
+| le détail | `ARCHITECTURE.md` §316 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** « Je quitte cet écran en arrière » et « je
+viens d'atterrir ici » ne sont pas la même question : la première retire
+l'écran, la seconde le GARDE et ne coupe que ce qui le suit. Une seule fonction
+répondait aux deux.
+
+**ET L'ORDRE DES DEUX EFFETS COMPTE** : la visite se note AVANT que le
+`popstate` n'arrive, donc le journal porte deux fois l'écran d'arrivée. Toute
+troncature qui viserait la dernière ligne ne couperait rien.
+
+## Dernier lot — LA PORTE DE CONNEXION, EN NUIT, AVEC GOOGLE ET APPLE (10 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« ça n'a rien à voir, c'est cet écran que je veux — je veux pouvoir me connecter avec Google ou Apple »*, photo de la planche à l'appui |
+| la planche | `appli/la-porte-en-plein-air.html`, écran 3 (choisi le 8 septembre, jamais codé) |
+| les pièces | `src/components/atlas/PorteDeNuit.tsx`, `src/app/login/{page,FormulaireConnexion,BoutonsFournisseurs}.tsx`, `src/lib/fournisseurs-connexion.ts`, `src/server/identite-externe.ts` |
+| ce que ça RETIRE | `MarqueAtlas.tsx` (plus rien ne l'importait), `.atlas-sceau-en-marche`, `.atlas-champ-ligne` |
+| le piège à connaître | les alias de `globals.css` (`--ink`, `--card`…) sont **calculés sur `:root`** et hérités figés : une charte posée plus bas ne les recalcule pas. D'où `.atlas-charte-locale`, et `ARCHITECTURE.md` §317 |
+| **ce qui BLOQUE** | les deux boutons ne s'afficheront chez lui **qu'une fois les clés posées** : `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` (gratuit) et `AUTH_APPLE_ID`/`AUTH_APPLE_SECRET` (compte développeur payant). Lui seul peut ouvrir ces comptes |
 
 ---
 ## Dernier lot — « DÉPLACER », UN INTERRUPTEUR À DEUX POSITIONS (10 septembre 2026)
@@ -46,10 +77,17 @@ d'une journée le ramenait donc à une demi-journée, en silence — l'après-mi
 redevenait vendable, et le défaut ne se voyait que le jour du chantier. **Ne
 jamais laisser un geste du planning écrire une durée** : elle vient du devis.
 
-**CE QUI RESTE OUVERT, ET QUI LUI APPARTIENT.** Les deux moitiés de la journée
-changent de place selon où est le chantier (`scripts/capture-deplacer.ts` le
-photographie). Les remettre dans l'ordre ferait parfois ouvrir la fiche sur
-« libre », ce qu'il a refusé le 21 août. Voir `TODO.md`.
+**ET LA JOURNÉE SE LIT DANS SON ORDRE — matin puis après-midi, toujours.** Sa
+réponse du même jour : *« oui, matin puis aprèm »*. Les deux moitiés
+échangeaient leur place selon l'heure du chantier, et l'appui sur « Matin » les
+faisait sauter.
+
+**ET SA RÈGLE DU 21 AOÛT TIENT TOUJOURS** — *« le nom doit rester en premier,
+ensuite matin et ensuite aprèm »*. Une moitié libre qui précède un chantier
+descend DANS son bloc (`libresAvant`), sous son nom, au lieu d'ouvrir la fiche.
+**Les deux règles se tenaient ensemble** : la première version de ce lot les
+avait crues incompatibles et lui avait présenté un arbitrage qu'il n'avait pas à
+trancher. Le pourquoi est dans `ARCHITECTURE.md` §313.
 
 ---
 ## Dernier lot — POSER UN CHANTIER NE DEMANDE PLUS QUAND (9 septembre 2026)
@@ -97,6 +135,39 @@ durée, jamais en la coupant.
 au moment précis où il choisit où le poser. `dureeDuChantier` répond désormais
 au dépôt comme à l'écran ; ne pas réintroduire de seconde lecture.
 
+## Dernier lot — L'ABONNEMENT SE PAIE, PAR STRIPE (9 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | l'écran « Abonnement » porte les trois formules, l'état, et de quoi régler ; le plafond de personnes aux devis mord |
+| la migration | `drizzle/0084_abonnement.sql` — `abonnements` (une ligne par entreprise) et `evenements_paiement` (l'idempotence du crochet) |
+| les pièces | `src/lib/abonnements.ts` (les règles), `src/lib/signature-stripe.ts`, `src/server/paiement/stripe.ts`, `src/server/repositories/abonnements.ts`, `src/app/reglages/abonnement/`, `src/app/api/paiement/route.ts` |
+| les suites | `test-abonnements.ts` (22), `test-signature-stripe.ts` (16), `test-abonnement-db.ts` (15, sous `atlas_app`), `test-paiement-stripe.ts` (31, faux prestataire local) |
+| le détail | `ARCHITECTURE.md` §319, `docs/lot-abonnement-stripe.md` |
+
+**CE QU'IL NE FAUT PAS « SIMPLIFIER », et c'est le cœur du lot.** Le prix ne
+vient PAS de Stripe. On ne crée pas de tarifs à la main dans son tableau de bord
+pour en coller les identifiants dans la configuration : ce serait une seconde
+grille tarifaire, et le jour où l'une change sans l'autre, l'écran affiche 29 €
+pendant que la banque prélève autre chose. `src/lib/abonnements.ts` décide, et
+le tarif est fabriqué à son image sous une clé qui porte le montant.
+
+**Conséquence à connaître avant de toucher au guichet :** le portail client de
+Stripe ne sait changer de formule que parmi des tarifs déclarés à la main. Le
+changement se fait donc DANS Atlas, au prorata, en remplaçant la ligne de
+l'abonnement — jamais en rouvrant un paiement, ce qui donnerait deux
+abonnements vivants et deux prélèvements.
+
+**RIEN NE SE FERME AUJOURD'HUI.** Sans abonnement, aucun plafond, aucun écran
+retiré. Et il n'y a pas d'état « essai » : sa durée n'est pas décidée, la
+contrainte `CHECK` de la migration le refuse exprès.
+
+**CE QUI N'A PAS ÉTÉ ÉPROUVÉ ICI** — à ne pas présenter comme acquis : aucun
+compte Stripe n'existe. Les suites vérifient ce qu'Atlas ENVOIE contre un faux
+prestataire local ; que Stripe accepte ces paramètres se vérifie avec une clé
+d'essai, sur son espace (`TODO.md`, premier point).
+
+---
 ## Dernier lot — LE COMPTEUR DE TVA NOMME SON GESTE (9 septembre 2026)
 
 | | |
@@ -431,7 +502,19 @@ Le détail : `ARCHITECTURE.md` §287 (l'atelier) et §288 (le dossier).
 
 ---
 
-## Dernier lot — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
+## ⚠ CE LOT A ÉTÉ DÉFAIT LE 10 SEPTEMBRE 2026 — le type générique est parti
+
+Son verdict, celui qu'on attendait : *« page blanche »*, sur la facture puis sur
+le devis. `application/octet-stream` colle au fichier ENREGISTRÉ ; avec
+`nosniff`, iOS n'a plus le droit d'y reconnaître un PDF, et le document rouvert
+depuis les téléchargements n'a plus de lecteur.
+
+`Content-Type` dit désormais le **vrai** type dans les deux cas ; seule
+`Content-Disposition: attachment` range le fichier. Détail et raisons :
+`ARCHITECTURE.md` §275. **Ce qui reste à vérifier chez lui : qu'un appui sur
+« Télécharger » range bien le fichier, et non qu'il l'affiche.**
+
+## Lot défait — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
 
 **Document du lot :** `docs/lot-telecharger-la-facture.md`.
 **Décisions :** `ARCHITECTURE.md` §275.

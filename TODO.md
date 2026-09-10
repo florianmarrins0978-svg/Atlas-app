@@ -9,6 +9,28 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ LES CLÉS DE GOOGLE ET D'APPLE — la porte les attend (10 septembre 2026)
+
+Le code est en place et éprouvé ; **les deux boutons ne s'afficheront pas tant
+que les clés ne sont pas posées**, et c'est délibéré : un bouton qui ne peut pas
+aboutir est pire qu'un bouton absent.
+
+| Variable | Où l'obtenir | Coût |
+|---|---|---|
+| `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | Google Cloud Console → identifiants OAuth 2.0, type « application Web » | gratuit |
+| `AUTH_APPLE_ID`, `AUTH_APPLE_SECRET` | Apple Developer → Service ID + clé signée | compte développeur, 99 €/an |
+
+**L'adresse de retour à déclarer chez eux :** `<adresse publique>/api/auth/callback/google`
+et `…/callback/apple`. Elle ne se déduit pas de la requête — l'hôte annoncé est
+écrit par celui qui frappe.
+
+**Ce qui n'est pas éprouvable ici**, et doit l'être chez lui une fois les clés
+posées : le trajet complet jusqu'à Google et le retour. Ce qui l'est déjà : la
+règle d'affichage, le refus d'une adresse non vérifiée, l'aiguillage vers la
+création de compte (`scripts/test-fournisseurs-connexion.ts`).
+
+---
+
 ## ⏳ UNE BATTERIE À JOUER — « Se déconnecter » est codé (9 septembre 2026)
 
 **Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce
@@ -64,6 +86,107 @@ d'ouvert sur ce geste.
 
 ---
 
+## ⏳ DEUX DEMANDES POSÉES SUR PLANCHE, EN ATTENTE DE SON CHOIX (10 septembre 2026)
+
+| | |
+|---|---|
+| `appli/liberer-une-demi-journee.html` | « Déplacer » devient « libérer la demi-journée qu'on désigne » ; le morceau part en attente et se repose ailleurs |
+| `appli/bloquer-sans-devis.html` | « Ajouter » permet d'écrire ce que c'est et de prendre matin / après-midi / journée, sans client ni devis |
+
+**CE QUE LA PREMIÈRE COÛTE, ET IL FAUT LE DIRE AVANT DE CODER.** Un chantier
+porte un jour, un départ et une durée (`datePlanifiee`, `creneauDebut`,
+`dureeDemiJournees`) : il est **d'un seul tenant par construction**. Le poser en
+morceaux demande **une pose par morceau** — donc une table de créneaux.
+
+**SA QUESTION DU 10 SEPTEMBRE A CORRIGÉ CETTE LISTE, et elle avait raison :**
+*« pourquoi le devis, la fiche chantier et la facture devraient être
+impactés ? »* Mesuré, fichier par fichier, sur les vingt qui lisent
+`datePlanifiee` :
+
+| Ce que je nommais | Ce que le code dit |
+|---|---|
+| la **facture** | **NON** — elle porte sa propre date d'émission ; `factures.ts` ne lit le jour du chantier que pour l'afficher dans une liste, et le commentaire le dit déjà |
+| le **devis** | **NON** pour le document, ses lignes et ses prix. **OUI** pour les **dates proposées au client** (`preparation-envoi.ts`, `envois-devis.ts`), qui se calculent sur jour + moment + durée |
+| les **retours d'intervention** | **NON** — ils ne lisent pas la date |
+| la **fiche de chantier** | **OUI** — `fiche-chantier-pdf.ts` imprime jour, créneau et durée |
+
+**La vraie liste de ce qui lit « quels jours sont pris » :** la charge du
+calendrier (`occupation-chantiers.ts`, `useOccupation.ts`), les dates proposées
+au client, la fiche de chantier, l'export d'agenda (`agenda-apple.ts`), les
+absences (`equipe-absente.ts`), le classement des terminés par mois.
+
+C'est exactement la fonctionnalité déjà nommée plus bas dans ce fichier
+(« deux poses pour un chantier »), et c'est LUI qui décide si elle vaut le coup.
+
+**La seconde est plus légère mais pas gratuite :** un blocage n'est pas un
+chantier — pas de client, pas de prix, pas de devis. Trois questions posées sur
+la planche, à trancher par lui : est-ce que cela ferme le jour pour ses clients
+(je propose oui), est-ce que cela mobilise une équipe (non), est-ce que cela
+entre dans les terminés et la TVA (non).
+
+---
+
+## ⏳ « DÉPLACER » AGIT SUR UN JOUR QU'IL NE REGARDE PAS (10 septembre 2026)
+
+**Sa question, captures à l'appui :** *« quand je clique sur déplacer l'aprem,
+c'est le 15 et le 11 qui bougent, je comprends pas pourquoi. »*
+
+**Le code fait ce qu'il annonce ; c'est l'écran qui ment par omission.** Son
+chantier « Mr. Julien — 2 jours » est posé **vendredi 11, départ après-midi**.
+Quatre demi-journées, week-end sauté :
+
+| départ | ce qu'il occupe |
+|---|---|
+| 11 après-midi (avant) | 11 aprem · **14 matin · 14 aprem** · 15 matin |
+| 11 matin (après son appui) | **11 matin** · 11 aprem · 14 matin · 14 aprem |
+
+Il ouvre la carte du **14**, où le chantier apparaît — et l'interrupteur qu'il y
+trouve déplace le **départ**, qui est le 11. D'où les deux jours qui bougent
+sous ses yeux (le 11 passe « au-delà » parce qu'un autre chantier y était déjà,
+le 15 se vide) pendant que le 14, lui, ne change pas.
+
+**Vérifié par le calcul**, pas déduit : `creneauxDuChantier` rend exactement ces
+deux listes (`src/lib/disponibilites.ts`).
+
+**Ce qui manque à l'écran :** la carte d'un jour dit la DURÉE (« 2 jours ») mais
+jamais le JOUR DE DÉPART. Sur le premier jour d'un chantier, l'interrupteur est
+juste ; sur les suivants, il agit ailleurs sans le dire.
+
+**Deux réponses possibles, à trancher par lui** (maquette d'abord, `CLAUDE.md`
+§3 bis) :
+
+| | |
+|---|---|
+| **A** | « Déplacer » ne paraît que sur le **premier jour** du chantier ; ailleurs, la carte écrit « commence vendredi 11 » |
+| **B** | « Déplacer » reste partout, et l'interrupteur porte le jour qu'il déplace — « départ : ven. 11 » |
+
+**Ne rien coder avant son choix.** Et ne pas « corriger » `deplacerChantier` :
+il écrit le départ, ce qui est juste — le défaut est dans ce que l'écran laisse
+croire.
+
+---
+
+## ⏳ LE GESTE D'ABSENCE PASSE SOUS LE TIROIR DU BAS — D'UN PIXEL (10 septembre 2026)
+
+**Mesuré**, écran de 390 × 664, cinq jours devant, compte de démonstration :
+
+| | |
+|---|---|
+| le geste « + Absent ? » | 523 → **567** px |
+| le tiroir « À poser sur… » | **566** → 616 px, `fixed`, z-19 |
+
+Un pixel de recouvrement, et `test-pas-la-ce-jour-e2e` le refuse à juste titre
+(*« il est ATTEIGNABLE — rien ne le recouvre »*). **Rouge AVANT ce lot comme
+après** : ce n'est pas le nouvel ordre qui l'a créé, et le geste, lui, se touche
+en son centre.
+
+**La racine est de placement, pas de dessin** : la carte du jour naît sous le
+doigt, et rien ne réserve la hauteur du tiroir sous elle. Le tiroir publie
+pourtant la sienne (`--atlas-barre`, `AtlasBottomNav`) — c'est de ce côté qu'il
+faut chercher, pas en poussant la carte à la main.
+
+---
+
 ## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
 
 **Sa correction :** *« chaque session peut prendre un port différent, plusieurs
@@ -109,19 +232,12 @@ l'application, et reste vert dans les deux cas.
 
 ---
 
-## ⏳ UNE DÉCISION QUI LUI APPARTIENT — l'ordre des deux moitiés du jour
+## ~~L'ordre des deux moitiés du jour~~ — tranché le 10 septembre 2026
 
-**Sa remarque du 9 septembre 2026 :** *« j'ai l'impression que c'est inversé »*.
-Mesuré à l'écran (`scripts/capture-deplacer.ts`) : les deux moitiés de la
-journée **changent de place** selon où est le chantier — posé l'après-midi, la
-fiche se lit `APRÈS-MIDI` puis `MATIN`. La cause est `blocsDeLaJournee`, qui
-pose les chantiers d'abord et les demi-journées libres ensuite.
-
-**Le geste, lui, est réglé** — il a choisi l'interrupteur à deux positions le
-10 septembre (`ARCHITECTURE.md` §313). L'ordre ne l'est pas, et il ne peut pas
-l'être sans lui : le remettre chronologique ferait parfois ouvrir la fiche sur
-« libre », ce qu'il a refusé le 21 août 2026 — *« le nom toujours en premier ! »*.
-**Ses deux demandes ne tiennent pas ensemble ; l'arbitrage est le sien.**
+**Sa réponse :** *« oui, matin puis aprèm »*. La journée se lit désormais dans
+son ordre, quelle que soit l'heure du chantier. Cela revient sur sa règle du
+21 août — *« le nom toujours en premier ! »* — et le pourquoi est écrit dans
+`ARCHITECTURE.md` §313, pour qu'on ne la défasse pas une troisième fois.
 
 ---|---|
 | la logique | **juste** — chantier posé l'après-midi, « Après-midi » est la pastille allumée ; un appui sur « Matin » écrit bien `creneau_debut = matin` |
@@ -213,6 +329,55 @@ la moins chère et la plus sûre.
 
 **Qui peut le trancher :** nous — c'est du code. À ouvrir seulement s'il
 signale un écran qui ment au retour ; sinon, la place rendue vaut mieux.
+## ⏳ L'ABONNEMENT EST CODÉ — quatre choses restent, et trois sont pour LUI
+
+*Lot du 9 septembre 2026, `docs/lot-abonnement-stripe.md`. Le paiement marche de
+bout en bout dans le code ; ce qui suit ne s'écrit pas en codant.*
+
+### 1. Le premier essai avec une vraie clé — POUR LUI, puis pour nous
+
+Aucun compte Stripe n'existe. Tant qu'il n'en a pas créé un, l'écran
+« Abonnement » **dit** que le paiement n'est pas branché et n'offre aucun bouton
+actif — c'est voulu, jamais un bouton qui échoue.
+
+Ce qu'il faut poser, ensuite, sur son espace :
+
+    ATLAS_PAIEMENT_CLE=sk_test_…            (Stripe › Développeurs › Clés)
+    ATLAS_PAIEMENT_SECRET_CROCHET=whsec_…   (Stripe › Webhooks, adresse /api/paiement)
+    ATLAS_URL_PUBLIQUE=https://…            (l'adresse de son Atlas, sans / final)
+
+**Et le premier paiement d'essai se fait avec une clé de TEST**, carte
+`4242 4242 4242 4242`. C'est là, et seulement là, qu'on saura que Stripe accepte
+les paramètres qu'Atlas envoie : ici, seul un faux prestataire local répond
+(`scripts/test-paiement-stripe.ts`). Ne pas présenter ce chemin comme éprouvé
+avant.
+
+### 2. LES FONCTIONS NE SONT PAS CLOISONNÉES PAR FORMULE — à trancher par lui
+
+La planche annonce « les absences de vos équipes » et « les retours
+d'intervention » comme un plus d'« Entreprise ». **Ce n'est PAS appliqué**, et
+c'est délibéré : le poser en silence retirerait à un artisan des écrans dont il
+se sert déjà aujourd'hui.
+
+Seul le plafond de personnes mord. La question à lui poser : *veut-il vraiment
+fermer les absences et les retours à un abonné « Artisan » ?* Tant qu'il n'a pas
+répondu, la carte promet un peu moins que ce que l'application donne — dans son
+sens à lui, jamais l'inverse.
+
+### 3. La durée de l'essai gratuit n'est pas décidée
+
+Il n'y a donc **pas d'état « essai »** : ni en base (la contrainte `CHECK` de la
+migration 0084 le refuse), ni dans `src/lib/abonnements.ts`. C'est l'une des
+seize cases `[À COMPLÉTER]` des conditions générales. Le jour où il donne le
+chiffre, une migration ajoute l'état — ne pas l'inventer d'ici là.
+
+### 4. Le portail ne sait pas changer de formule, et c'est Atlas qui le fait
+
+Conséquence assumée du choix de tarif (`ARCHITECTURE.md` §319) : le portail
+client de Stripe ne propose un changement de formule que parmi des tarifs
+déclarés à la main, ce qui serait une seconde grille tarifaire. Le changement se
+fait donc dans Atlas, au prorata. **Ne pas « simplifier » en le renvoyant au
+portail** sans avoir relu ce paragraphe.
 
 ---
 
@@ -890,26 +1055,33 @@ téléphone, barre d'adresse comprise (`scripts/e2e-browser.ts`).
 
 ---
 
-## ⏳ UNE RÉPONSE ATTENDUE — la facture se télécharge-t-elle, sur SON iPhone ?
+## ⏳ SUR SON IPHONE : « Télécharger » range-t-il le fichier ?
 
-**Posée le 7 septembre 2026**, après son *« quand je clique sur télécharger ça
-ne la télécharge pas »*. Le correctif est parti (`ARCHITECTURE.md` §275) : une
-adresse `?telecharger=1` sert désormais un type que le navigateur ne peut
-qu'enregistrer.
+**Rouverte le 10 septembre 2026, et la question n'est plus la même.** Le
+correctif du 7 septembre — annoncer un type que le navigateur ne sait pas
+peindre — **a été défait** : il rendait les documents illisibles une fois
+enregistrés (*« page blanche »*, sur la facture puis sur le devis). Le type
+annoncé colle au fichier enregistré, et `nosniff` interdit ensuite d'y
+reconnaître un PDF (`ARCHITECTURE.md` §275).
 
-**Il ne se prouve pas ici, et cela ne changera pas** : aucun WebKit n'est
-installable dans l'environnement de l'agent, et Chromium rangeait déjà le
-fichier avant le correctif. Ce qui a été éprouvé : la règle sur les cinq
-routes, l'aperçu inchangé, et un appui réel qui fait descendre un fichier.
+Le serveur sert donc de nouveau `application/pdf`, avec
+`Content-Disposition: attachment` — la norme, et rien d'autre.
 
-**Ce qu'il faut lui demander s'il redit que ça ne marche pas** — et une seule
-question suffit : *que se passe-t-il quand tu appuies ?*
+**Ce qui est prouvé ici :** un appui réel fait descendre le fichier (Chromium,
+`test-facture-au-client-e2e.ts`), le fichier reste un PDF valide, l'aperçu n'a
+pas bougé.
+
+**Ce qui ne se prouve pas ici, et ne le sera jamais :** aucun WebKit n'est
+installable dans l'environnement de l'agent. Il n'y a donc pas de Safari.
+
+**S'il redit que ça ne télécharge pas** — une seule question, et elle tranche :
+*que se passe-t-il quand tu appuies ?*
 
 | Sa réponse | Ce que ça veut dire |
 |---|---|
-| la facture s'ouvre | le type n'est pas arrivé jusqu'à lui — regarder la version servie (Réglages) |
-| une feuille demande de confirmer | c'est iOS, et c'est le geste normal ; il n'y a rien à corriger |
-| rien du tout | la requête n'aboutit pas — et **l'écran ne dit rien** : la prochaine livraison est de rendre ce refus bavard, pas de deviner |
+| le devis s'ouvre dans le lecteur | iOS ignore `attachment` pour un PDF. **Ne PAS remettre le type générique** : il rend le fichier illisible. La voie qui reste est un partage explicite depuis la page |
+| une feuille demande de confirmer | c'est iOS, et c'est le geste normal — rien à corriger |
+| rien du tout | la requête n'aboutit pas, et **l'écran ne dit rien** : rendre ce refus bavard d'abord, deviner ensuite |
 
 ## ✅ ~~Comment retirer une note vocale déjà partie ?~~ — **2, le 7 septembre 2026**
 
@@ -1662,20 +1834,33 @@ et le 8 je choisis la B ».** Tout est codé — `ARCHITECTURE.md` §252,
 
 ## HUIT SUITES NAVIGATEUR SONT ROUGES SUR CE POSTE, ET LE PRODUIT N'Y EST POUR RIEN (4 sept. 2026)
 
-**Elles sont VINGT-DEUX le 9 septembre 2026**, mesurées sur une batterie
-complète dans un conteneur d'agent — et la famille s'explique par une seule
-ligne du journal : *« le bandeau du banc apparaît sur un serveur qui n'en est
-pas un »* (`test-bandeau-banc-e2e`). Ce bandeau est une **bande fixe** : tout
-ce qui se mesure « recouvert » ou « tient dans un écran » tombe avec lui —
-`test-connexion-figee`, `test-face-id`, `test-devis-client`,
-`test-pas-la-ce-jour`, et le reste.
+**Elles étaient VINGT-SIX le 10 septembre 2026**, et la cause du bandeau a été
+trouvée puis corrigée le jour même (`ARCHITECTURE.md` §317) : `next start`
+n'impose pas `NODE_ENV=production`, et la règle du bandeau lisait cette variable
+à l'exécution.
 
-**Vérifié arbre remis à nu** (`git stash` du seul fichier touché) :
-`test-pas-la-ce-jour-e2e` rend le MÊME échec avant et après le lot du
-9 septembre. Ce n'est donc pas un lot qui les allume — mais tant que ce
-bandeau paraît hors banc, **la batterie ne peut plus rendre un vert ici**, et
-c'est elle qui autorise une livraison (`CLAUDE.md` §5). À reprendre en
-premier, avant tout lot qui compte sur elle.
+**CE QUE J'AVAIS ÉCRIT ICI ÉTAIT FAUX SUR UN POINT, et c'est le genre d'erreur
+qui fait chercher au mauvais endroit :** j'avais conclu « le produit n'y est
+pour rien, c'est ce poste ». Le bandeau était bien un **défaut du produit** —
+il aurait paru de la même façon sur le banc du patron servi avec un `NODE_ENV`
+posé à la main.
+
+**MESURÉ APRÈS LE CORRECTIF, le 10 septembre :** 26 rouges deviennent **19**
+(114/140 puis 121/140). Sept suites s'éteignent avec le bandeau — bandeau banc,
+connexion figée, Face ID, fiche client, grille des prix, cases réglables,
+onglets des terminés.
+
+**Les dix-neuf qui restent n'ont plus de cause commune**, et c'est ce qui change
+tout : chacune la sienne, à ouvrir une par une. Trois échantillons lus dans le
+journal du 10 septembre :
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-reglages-e2e` | *« Sans clé, l'écran doit annoncer le mode déterministe. Écran : Atlas IA »* |
+| `test-recherche-client-e2e` | *« taper un nom réduit la liste à ce nom »* |
+| `test-pas-la-ce-jour-e2e` | *« le geste passe sous une bande fixe »* — le bandeau n'y est plus, la bande est donc une autre |
+
+La liste ci-dessous, elle, tient toujours pour les suites de dates.
 
 
 
@@ -8914,11 +9099,15 @@ toucher le jour où un nom est arrêté, pour ne pas le rechercher :
 
 | Où | Quoi |
 |---|---|
-| `src/components/atlas/MarqueAtlas.tsx` | `MotAtlas` — le mot sous le sceau |
 | `public/manifest.json` | `name` et `short_name` — l'écran d'accueil |
 | `src/app/layout.tsx` | le titre de l'onglet et la carte de partage |
 | `public/icone-source.svg` | l'icône, qui est un A — voir ci-dessus |
 | `src/server/documents-legaux/versions.ts` | les CGU citent le nom, et **une version acceptée ne se modifie jamais** : renommer y fait naître une version de plus, à réaccepter |
+
+*(Le sceau et son mot ont été supprimés le 10 septembre 2026 avec
+`MarqueAtlas` — plus rien ne l'importait après la refonte de la porte. Une
+ligne de ce tableau est donc partie ; le nom se voit désormais à **deux**
+endroits de code, plus le manifeste et l'icône.)*
 
 **Ce que la planche a établi, et qui n'était pas su :** le nom ne se voit qu'à
 **trois endroits** dans tout le produit, et **le client de l'artisan ne le voit
