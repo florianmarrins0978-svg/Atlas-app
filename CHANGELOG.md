@@ -59,6 +59,23 @@ geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
 maintenant dans la suite navigateur, qui refait le geste quatre fois.
 
 
+### « Un client », et sa fiche se crée en passant — planche mise à jour
+
+Ses trois corrections du 10 septembre sur `appli/bloquer-sans-devis.html` :
+**« Annuler » à chaque étape** pour revenir aux deux propositions ; l'entrée
+« Écrire ce que c'est » devient **« Un client »** ; et surtout — *« si le nom
+n'est pas reconnu, il faut qu'il ajoute aussi sa fiche client automatiquement,
+comme quand on ajoute un client par la voie normale »*.
+
+La planche joue les deux cas : un nom connu remonte avec **son numéro et son
+adresse**, un nom inconnu ouvre **téléphone, e-mail, adresse du chantier** et la
+fiche se crée en posant.
+
+**Ce que sa correction referme, et je le lui demande :** l'entrée d'origine
+permettait de bloquer du temps qui n'est PAS un client — banque, livraison,
+formation. « Un client » ne le couvre plus. La question est posée sur la
+planche, sans y répondre à sa place.
+
 ### Sa question redresse ma liste : ni le devis ni la facture ne lisent le jour du chantier
 
 *« Pourquoi le devis, la fiche chantier et la facture devraient être
