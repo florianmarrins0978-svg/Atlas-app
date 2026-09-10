@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Libérer une demi-journée — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LIBÉRER UNE DEMI-JOURNÉE — sa demande du 10 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Ses mots : *« le vendredi, on clique sur déplacer, le bouton matin/aprem
+  apparaît mais les deux sont vides, blancs. Je clique sur le matin, il devient
+  vert et le matin du vendredi devient libre, et une demi-journée de Mr Julien
+  [sort]. À la place on clique sur le jour qu'on souhaite et on ajoute un
+  chantier comme d'habitude, et la demi-journée de Mr Julien qui a été retirée
+  peut être replacée. »*
+
+  **CE QUE CELA CHANGE, ET IL FAUT LE SAVOIR AVANT DE CODER.** Aujourd'hui un
+  chantier tient en trois colonnes : un jour, un départ, une durée — il est donc
+  D'UN SEUL TENANT par construction. Ce que cette planche dessine, c'est un
+  chantier posé en MORCEAUX : vendredi après-midi ici, lundi là. La base ne sait
+  pas l'écrire ; c'est une fonctionnalité, pas un réglage d'écran, et elle est
+  déjà nommée dans `TODO.md`.
+
+  RIEN N'EST CODÉ. Les couleurs viennent de `src/lib/chartes.ts`.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#6f8a5f; --surPlein:#fff; --papier:#ece9e1; --pale:#b9c9ad;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#6f8a5f; --surPlein:#101210; --papier:#232722; --pale:#3d5136;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+.scene{display:flex;justify-content:center;padding:18px 16px 6px}
+.tel{width:390px;max-width:100%;background:var(--fond);border:1px solid var(--trait);
+  border-radius:10px;padding:14px 14px 0;overflow:hidden}
+/* la bande des jours, comme le calendrier de l'écran */
+.mois{display:flex;gap:6px;margin-bottom:12px}
+.caseJour{flex:1;background:transparent;border:0;border-radius:10px;padding:8px 4px 9px;
+  cursor:pointer;font:inherit;color:var(--encre);text-align:center}
+.caseJour[aria-pressed=true]{box-shadow:inset 0 0 0 1.5px var(--encre)}
+.caseJour .num{font-size:17px}
+.caseJour .barres{margin-top:5px}
+.caseJour .b{height:7px;border-radius:2px;background:var(--papier);margin:2px 6px}
+.caseJour .b.pris{background:var(--accent)}
+.caseJour .b.autre{background:var(--pale)}
+.carte{background:var(--plage);border:1px solid var(--trait-doux);border-radius:14px;
+  padding:14px 15px;box-shadow:0 6px 20px rgba(28,28,26,.07)}
+.carte .jour{text-align:center;font-size:12.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;margin:0 0 14px}
+.carte h3{margin:0 0 2px;font-family:ui-serif,Georgia,serif;font-size:20px;font-weight:400}
+.carte .duree{margin:0;font-size:13px;color:var(--or)}
+.carte .lieu{margin:0 0 10px;font-size:13px;color:var(--gris)}
+.demi{display:flex;align-items:center;gap:9px;margin-top:10px}
+.demi .case{width:14px;height:14px;border-radius:3px;flex:none;background:var(--papier);
+  box-shadow:inset 0 0 0 1px var(--trait)}
+.demi .case.pris{background:var(--accent);box-shadow:none}
+.demi .case.autre{background:var(--pale);box-shadow:none}
+.demi .mot{width:84px;flex:none;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.demi .quoi{font-size:13px;color:var(--gris)}
+.equipe{border-radius:999px;background:var(--plein);color:var(--surPlein);font-size:12.5px;padding:7px 13px}
+.actes{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;margin-top:14px}
+.past{padding:9px 15px;border-radius:999px;border:0;box-shadow:inset 0 0 0 1px var(--trait);
+  background:var(--plage);color:var(--encre);font:inherit;font-size:13px;cursor:pointer;min-height:44px}
+.past.or{color:var(--or);box-shadow:inset 0 0 0 1px var(--or)}
+.bascule{display:flex;overflow:hidden;border-radius:999px;border:1px solid var(--trait);background:var(--plage)}
+.bascule button{border:0;background:transparent;min-height:44px;padding:9px 16px;font:inherit;
+  font-size:12.5px;color:var(--encre-douce);cursor:pointer}
+.bascule button[aria-pressed=true]{background:var(--plein);color:var(--surPlein)}
+.etiquette{font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--gris);flex:none}
+.ajout{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;
+  padding:12px 0 4px;font-size:12.5px;color:var(--encre-douce);background:none;border:0;
+  width:100%;cursor:pointer;min-height:44px}
+.ajout .plus{font-size:17px;line-height:1}
+/* le tiroir du bas, comme l'écran */
+.tiroir{margin:14px -14px 0;border-top:1px solid var(--trait);background:var(--plage);padding:12px 16px 16px}
+.tiroir .titre{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--gris);margin:0 0 8px}
+.tiroir .ligne{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  width:100%;padding:10px 0;border:0;background:none;font:inherit;font-size:14.5px;
+  color:var(--encre);cursor:pointer;text-align:left;min-height:44px}
+.tiroir .ligne .quoi{font-size:12px;color:var(--gris);flex:none}
+.tiroir .ligne[aria-pressed=true]{color:var(--or)}
+p.dessous{max-width:740px;margin:14px auto 0;padding:0 20px;text-align:center;
+  font-size:14px;line-height:1.65;color:var(--encre-douce)}
+p.dessous b{color:var(--encre)}
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes ol{padding-left:20px;color:var(--encre-douce);font-size:14px;line-height:1.7}
+.notes li{margin-bottom:6px}
+.notes .alerte{border-left:3px solid var(--or);padding-left:12px}
+
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+  <button type="button" id="rejouer">Repartir de zéro</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">10 septembre — à essayer</span>
+  <h1>Libérer une demi-journée</h1>
+  <p>« Déplacer » ne déplace plus le chantier : il <b>libère la demi-journée
+  qu'on désigne</b>. Les deux positions sont vides tant qu'on n'a rien choisi.
+  <b>Faites le geste entier</b> : libérez le vendredi matin, posez-y autre
+  chose, puis reposez la demi-journée de Mr. Julien.</p>
+</div>
+
+<div class="scene">
+  <div class="tel">
+    <div class="mois" id="mois"></div>
+    <div class="carte" id="carte"></div>
+    <div class="tiroir" id="tiroir"></div>
+  </div>
+</div>
+<p class="dessous" id="dessous"></p>
+
+<div class="notes">
+  <h3>Le geste, dans l'ordre</h3>
+  <ol>
+    <li>Sur <b>vendredi 11</b>, « Déplacer » ouvre l'interrupteur — <b>rien
+    n'est allumé</b> : c'est une question, pas un état.</li>
+    <li>On touche <b>Matin</b> : il s'allume, le matin du vendredi redevient
+    libre, et une demi-journée de Mr. Julien part <b>en attente</b>, dans le
+    tiroir du bas.</li>
+    <li>On pose ce qu'on veut sur ce matin libéré — « Ajouter un chantier »,
+    comme d'habitude.</li>
+    <li>La demi-journée en attente se repose ensuite <b>où l'on veut</b> : on la
+    touche dans le tiroir, puis on touche la demi-journée qui l'accueille.</li>
+  </ol>
+
+  <h3 class="alerte">Ce que ça coûte, et je préfère le dire avant</h3>
+  <p class="alerte"><b>Un chantier est aujourd'hui d'un seul tenant.</b> Il porte
+  un jour, un départ et une durée : « deux jours à partir du vendredi
+  après-midi ». Il n'a pas d'endroit où écrire « une demi-journée ici, une autre
+  là-bas ».</p>
+  <p class="alerte">Poser un chantier en morceaux demande donc de changer la
+  façon dont il est enregistré — <b>une pose par morceau</b>. Ce n'est pas un
+  réglage d'écran : c'est le devis, la fiche de chantier, la facture et le jour
+  proposé au client qui liront ensuite plusieurs morceaux au lieu d'un.</p>
+  <p class="alerte">La planche montre le geste pour que vous le jugiez.
+  <b>Dites-moi si ça vaut le coup</b>, et je vous dirai ce que ça touche avant
+  d'écrire une ligne.</p>
+
+  <h3>Ce que j'ai ajouté, et qu'on peut retirer</h3>
+  <p>Le mot <b>« Libérer »</b> à gauche de l'interrupteur. Sans lui, deux
+  positions vides ne disent pas ce qu'elles font — et un geste qui ne se devine
+  pas, c'est le défaut du 7 septembre. Si vous le trouvez de trop, il part.</p>
+</div>
+
+<script>
+document.getElementById("pole").addEventListener("click", (e) => {
+  const on = document.body.classList.toggle("nuit");
+  e.currentTarget.setAttribute("aria-pressed", on ? "true" : "false");
+});
+
+/* ─── LA JOURNÉE EN DEMI-JOURNÉES, comme la base la tient ────────────────── */
+const JOURS = [
+  { cle: "11", nom: "Vendredi 11 septembre", court: "ven. 11" },
+  { cle: "14", nom: "Lundi 14 septembre", court: "lun. 14" },
+  { cle: "15", nom: "Mardi 15 septembre", court: "mar. 15" },
+];
+/** Ce qui occupe chaque demi-journée : null, ou { nom, equipe }. */
+let pose = {};
+/** Ce qui attend un jour, en bas. */
+let attente = [];
+/** Le jour regardé. */
+let jourVu = "11";
+/** L'interrupteur de « Déplacer » est-il ouvert, et sur quel chantier ? */
+let libere = null;
+/** Le morceau qu'on tient au doigt, pris dans le tiroir. */
+let enMain = null;
+/** La liste des chantiers à poser est-elle ouverte ? */
+let ajoutOuvert = false;
+
+function depart() {
+  pose = {
+    "11-matin": { nom: "Mr. Julien", equipe: "Julien / Antoine" },
+    "11-aprem": { nom: "Mr. Julien", equipe: "Julien / Antoine" },
+    "14-matin": { nom: "Mr. Julien", equipe: "Julien / Antoine" },
+    "14-aprem": { nom: "Mr. Julien", equipe: "Julien / Antoine" },
+    "15-matin": null,
+    "15-aprem": null,
+  };
+  attente = [{ id: "grospiron", nom: "Mme Grospiron", quoi: "à poser" }];
+  jourVu = "11"; libere = null; enMain = null; ajoutOuvert = false;
+  dire("");
+}
+document.getElementById("rejouer").addEventListener("click", () => { depart(); dessiner(); });
+
+function dire(t) { document.getElementById("dessous").innerHTML = t; }
+
+function dessiner() {
+  // ── la bande des jours
+  document.getElementById("mois").innerHTML = JOURS.map((j) => {
+    const b = (demi) => {
+      const p = pose[`${j.cle}-${demi}`];
+      return `<div class="b ${p ? (p.nom === "Mr. Julien" ? "pris" : "autre") : ""}"></div>`;
+    };
+    return `<button type="button" class="caseJour" data-jour="${j.cle}" aria-pressed="${jourVu === j.cle}">
+      <div class="num">${j.cle}</div><div class="barres">${b("matin")}${b("aprem")}</div></button>`;
+  }).join("");
+
+  // ── la carte du jour regardé
+  //
+  // **LA JOURNÉE SE LIT DANS SON ORDRE — matin, puis après-midi** (sa règle du
+  // 10 septembre). On parcourt donc les deux moitiés dans l'ordre : celle qui
+  // porte un chantier écrit son nom la première fois qu'il paraît, celle qui
+  // est libre le dit.
+  const j = JOURS.find((x) => x.cle === jourVu);
+  let html = `<p class="jour">${j.nom}</p>`;
+  const dejaEcrit = new Set();
+
+  for (const d of ["matin", "aprem"]) {
+    const p = pose[`${jourVu}-${d}`];
+    const mot = d === "matin" ? "Matin" : "Après-midi";
+
+    if (!p) {
+      html += `<div class="demi"><span class="case"></span>
+        <span class="mot">${mot}</span><span class="quoi">libre</span>`;
+      if (enMain) html += `<button type="button" class="past or" data-poser="${d}" style="margin-left:auto">Poser ici</button>`;
+      html += `</div>`;
+      continue;
+    }
+
+    if (!dejaEcrit.has(p.nom)) {
+      dejaEcrit.add(p.nom);
+      html += `<h3 style="margin-top:14px">${p.nom}</h3>
+        <p class="duree">${compteDe(p.nom)}</p><p class="lieu">Mantes-la-Jolie</p>`;
+    }
+    html += `<div class="demi"><span class="case pris"></span>
+      <span class="mot">${mot}</span><span class="equipe">${p.equipe ?? ""}</span></div>`;
+
+    // Les gestes du chantier, une seule fois, après sa dernière moitié du jour.
+    const derniere = d === "aprem" || pose[`${jourVu}-aprem`]?.nom !== p.nom;
+    if (derniere) {
+      html += `<div class="actes">`;
+      if (libere === p.nom) {
+        const siennes = ["matin", "aprem"].filter((x) => pose[`${jourVu}-${x}`]?.nom === p.nom);
+        html += `<span class="etiquette">Libérer</span><span class="bascule">` +
+          siennes.map((x) => `<button type="button" data-libere="${x}" aria-pressed="false">${x === "matin" ? "Matin" : "Après-midi"}</button>`).join("") +
+          `</span>`;
+      } else {
+        html += `<button type="button" class="past" data-deplacer="${p.nom}">Déplacer</button>
+          <button type="button" class="past">Retirer</button>`;
+      }
+      html += `</div>`;
+    }
+  }
+
+  if (!enMain) {
+    html += ajoutOuvert
+      ? `<div class="actes" style="justify-content:flex-start">` +
+        attente.map((a) => `<button type="button" class="past" data-prendre="${a.id}">${a.nom}</button>`).join("") +
+        `</div>`
+      : (attente.length
+          ? `<button type="button" class="ajout" data-ajout="1"><span class="plus">+</span>Ajouter un chantier</button>`
+          : "");
+  }
+  document.getElementById("carte").innerHTML = html;
+
+  // ── le tiroir du bas
+  document.getElementById("tiroir").innerHTML =
+    `<p class="titre">Sans date</p>` +
+    (attente.length === 0
+      ? `<p style="margin:0;font-size:13px;color:var(--gris)">Rien n'attend de jour.</p>`
+      : attente.map((a) => `<button type="button" class="ligne" data-prendre="${a.id}" aria-pressed="${enMain === a.id}">
+          <span>${a.nom}</span><span class="quoi">${enMain === a.id ? "touchez une demi-journée" : a.quoi}</span></button>`).join(""));
+}
+
+/** « 2 jours », « 1 jour ½ » — ce que le chantier occupe encore. */
+function compteDe(nom) {
+  const n = Object.values(pose).filter((p) => p?.nom === nom).length;
+  const jours = Math.floor(n / 2);
+  const demi = n % 2 ? " ½" : "";
+  if (jours === 0) return "½ journée";
+  return `${jours} jour${jours > 1 ? "s" : ""}${demi}`;
+}
+
+document.querySelector(".tel").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  if (d.jour) { jourVu = d.jour; libere = null; ajoutOuvert = false; }
+  else if (d.deplacer) { libere = d.deplacer; dire("Les deux positions sont vides : c'est une question — <b>quelle demi-journée je libère ?</b>"); }
+  else if (d.libere) {
+    // **Une demi-journée sort du chantier et va en attente.**
+    const clef = `${jourVu}-${d.libere}`;
+    const nom = pose[clef].nom;
+    pose[clef] = null;
+    attente.push({ id: `${nom}-${clef}`, nom, quoi: "½ journée à poser" });
+    libere = null;
+    dire("Libéré. La demi-journée de Mr. Julien attend en bas — et ce moment-là peut recevoir autre chose.");
+  }
+  else if (d.ajout) { ajoutOuvert = true; }
+  else if (d.prendre) {
+    enMain = enMain === d.prendre ? null : d.prendre;
+    ajoutOuvert = false;
+    dire(enMain ? "Touchez la demi-journée qui l'accueille." : "");
+  }
+  else if (d.poser && enMain) {
+    const morceau = attente.find((a) => a.id === enMain);
+    pose[`${jourVu}-${d.poser}`] = { nom: morceau.nom, equipe: morceau.nom === "Mr. Julien" ? "Julien / Antoine" : "" };
+    attente = attente.filter((a) => a.id !== enMain);
+    enMain = null;
+    dire("Posé.");
+  }
+  dessiner();
+});
+
+depart();
+dessiner();
+</script>
+</body>
+</html>
