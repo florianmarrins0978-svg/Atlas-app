@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L'essai de 15 jours, et ce qui se ferme — Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  L'ESSAI DE 15 JOURS, ET CE QUI SE FERME — la planche, 10 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  SES TROIS DÉCISIONS DU JOUR :
+
+    · « essai gratuit 15 jours » ;
+    · « oui bloqué pour l'abonnement artisan » — les absences d'équipe et les
+      retours d'intervention deviennent un plus d'« Entreprise » ;
+    · au bout des 15 jours : « la B, mais il ne doit plus rien pouvoir faire à
+      part enregistrer ses documents, ses clients » — donc LECTURE SEULE, plus
+      la sortie de ses données.
+
+  CE QUI A COMMANDÉ CETTE PLANCHE. Ses conditions générales, DÉJÀ PUBLIÉES
+  (version 2, article 14.2), disent :
+
+    « L'abonnement peut être précédé d'un essai gratuit de […], SANS SAISIE DE
+      MOYEN DE PAIEMENT. À son terme, L'ACCÈS EST SUSPENDU sauf souscription. »
+
+  Deux conséquences qu'il n'avait jamais vues à l'écran :
+
+    1. l'essai ne passe PAS par Stripe — Stripe réclame la carte d'avance ;
+       c'est Atlas qui compte les quinze jours ;
+    2. au 16e jour, l'application se referme. Il a tranché : elle se referme
+       en LECTURE SEULE, jamais en écran noir.
+
+  ET SON ATLAS À LUI NE BOUGE PAS. L'essai ne vaut que pour les comptes créés
+  ensuite : une entreprise déjà en place n'a pas de ligne d'abonnement, et l'on
+  ne lui en invente pas.
+
+  Les couleurs et les mesures viennent de `src/lib/design-tokens.ts` ; les
+  écrans reprennent les vrais — en-tête `EnTeteEcran`, capsule `PrimaryButton`,
+  libellés relevés dans `AbsencesEquipe.tsx` et `ListeDesRetours.tsx`.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.08);
+  --alerte:#9C3B2E; --scene:#e6e3dc;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --alerte:#c07a56; --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:18px 20px;font-size:14px;line-height:1.6}
+/* **Le bandeau, en nuit — vu à la capture, par aucun test.** Il posait
+   `color:var(--fond)` sur un fond noir : en nuit, `--fond` EST sombre, donc du
+   texte sombre sur du noir. C'est la faute que le patron a signalée le 22 août
+   2026 (« le mode nuit est illisible »), refaite ici. */
+body.nuit .bandeau{background:#000;color:var(--encre)}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);
+       border-bottom:1px solid var(--trait);padding:12px 16px 13px}
+.etats .quoi{max-width:470px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+             letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+.etats .rangee{max-width:470px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+              border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);cursor:pointer;
+              min-height:44px;-webkit-tap-highlight-color:transparent}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.scene{display:flex;justify-content:center;padding:24px 16px 0}
+.tel{width:390px;max-width:100%;background:var(--fond);border:1px solid var(--trait);
+     border-radius:22px;overflow:hidden;box-shadow:0 18px 44px rgba(0,0,0,.10)}
+
+.ecran{padding:0 0 26px}
+.entete{padding:26px 26px 0}
+.fleche{width:38px;height:38px;border-radius:999px;background:var(--papier);
+        display:flex;align-items:center;justify-content:center;color:var(--encre-douce);
+        font-size:19px;margin-bottom:16px}
+.titre{font:400 30px/1.1 var(--serif);margin:0}
+.sur{font:600 10px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;
+     color:var(--or);margin:9px 0 0}
+
+.bloc{margin:26px 26px 0}
+.caps{font:500 11px/1 var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--encre-douce);margin:0 0 8px}
+.situation{font:400 13px/1.5 var(--sans);color:var(--encre-douce);margin:6px 0 0}
+
+.capsule{display:inline-flex;align-items:center;justify-content:center;
+         background:var(--plein);color:#faf9f5;border-radius:999px;
+         padding:0 26px;height:52px;font:400 17px/1 var(--serif);border:0}
+body.nuit .capsule{color:#1a1d19}
+.capsule.pale{background:var(--papier);color:var(--gris)}
+.capsule.pleine{width:100%}
+
+.trait{border-top:1px solid var(--trait);margin:26px 26px 0;padding-top:18px}
+
+/* Le ruban d'essai, en tête de l'accueil */
+.ruban{margin:0;padding:13px 26px;background:var(--papier);
+       display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.ruban .j{font:400 15px/1.2 var(--serif)}
+.ruban .lien{font:500 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--or)}
+.ruban.chaud{background:rgba(156,59,46,.10)}
+.ruban.chaud .j{color:var(--alerte)}
+body.nuit .ruban.chaud{background:rgba(192,122,86,.14)}
+
+.ligne{border-top:1px solid var(--filet);padding:13px 0}
+.ligne:first-of-type{border-top:0}
+.ligne .nom{font:400 17px/1.25 var(--serif);display:block}
+.ligne.pale .nom,.ligne.pale .situation{color:var(--gris)}
+
+/* Un écran refermé */
+.ferme{margin:26px;padding:24px 20px;background:var(--carte);border:1px solid var(--trait);
+       border-radius:4px;text-align:center}
+.ferme .cadenas{line-height:0;margin-bottom:12px;color:var(--gris);display:flex;justify-content:center}
+.ferme h3{font:400 20px/1.2 var(--serif);margin:0 0 8px}
+.ferme p{font:400 13px/1.5 var(--sans);color:var(--encre-douce);margin:0 0 18px}
+
+.note{max-width:470px;margin:22px auto 0;padding:0 18px}
+.note h2{font:400 19px/1.25 var(--serif);margin:26px 0 8px}
+.note p{font:400 14px/1.65 var(--sans);color:var(--encre-douce);margin:0 0 11px}
+.note b{color:var(--encre);font-weight:500}
+.note i{color:var(--encre-douce)}
+.note ul{margin:0 0 11px;padding-left:20px}
+.note li{font:400 14px/1.6 var(--sans);color:var(--encre-douce);margin:0 0 7px}
+.note li b{color:var(--encre)}
+.note .encadre{background:var(--carte);border:1px solid var(--trait);border-radius:4px;
+               padding:15px 17px;margin:0 0 11px}
+.note .encadre h3{font:400 17px/1.2 var(--serif);margin:0 0 6px}
+.note .encadre .q{font:500 11px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;
+                  color:var(--or);margin:0 0 8px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Ce que vous avez décidé, mis à l'écran.</b> Quinze jours d'essai, la lecture
+  seule au bout, et deux écrans réservés à « Entreprise ». Touchez les onglets.
+</div>
+
+<div class="etats">
+  <p class="quoi">Ce qu'on regarde</p>
+  <div class="rangee" id="onglets"></div>
+</div>
+
+<div class="scene"><div class="tel" id="tel"></div></div>
+<div class="note" id="note"></div>
+
+<script>
+var ETATS = [
+  ["j1",       "Jour 1"],
+  ["j13",      "Jour 13"],
+  ["j16",      "Jour 16 — lecture seule"],
+  ["geste",    "Il essaie d’écrire"],
+  ["absences", "Artisan ouvre Absences"],
+  ["retours",  "Artisan ouvre Retours"],
+  ["nuit",     "Mode nuit"]
+];
+
+var etat = { vue: "j1", nuit: false };
+
+function ech(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/**
+ * L'en-tête réelle (`EnTeteEcran`). **La flèche de retour ne se met QUE sur un
+ * écran d'où l'on revient** : l'accueil n'en a pas, et lui en dessiner une —
+ * ce que faisait la première version de cette planche, vu à la capture — donne
+ * à croire qu'il y a un écran au-dessus.
+ */
+function entete(titre, sur, avecRetour){
+  return '<div class="entete">' +
+         (avecRetour ? '<div class="fleche">‹</div>' : '') +
+         '<h2 class="titre">' + ech(titre) + '</h2>' +
+         (sur ? '<p class="sur">' + ech(sur) + '</p>' : '') + '</div>';
+}
+
+/**
+ * LE CADENAS, DESSINÉ — jamais un emoji.
+ *
+ * Sa correction du 9 septembre 2026, sur l'œil du mot de passe : *« ne mets pas
+ * l'emoji, remets ce que c'était »*. Un emoji change de dessin d'un téléphone à
+ * l'autre, ignore la charte, et jure au milieu d'un écran tracé au trait. Le
+ * trait suit `currentColor`, donc il se lit aussi en nuit.
+ */
+var CADENAS =
+  '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+  'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<rect x="4.5" y="10.5" width="15" height="10" rx="2"></rect>' +
+  '<path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path></svg>';
+
+var CHANTIERS =
+  '<div class="ligne"><span class="nom">Mme Durand — taille de haies</span>' +
+    '<p class="situation">5 rue des Lilas · matin</p></div>' +
+  '<div class="ligne"><span class="nom">M. Petit — tonte</span>' +
+    '<p class="situation">12 chemin du Moulin · après-midi</p></div>';
+
+/**
+ * L'ACCUEIL PENDANT L'ESSAI.
+ *
+ * Le ruban se pose en TÊTE de l'accueil, au-dessus de tout : c'est le seul
+ * écran qu'il ouvre tous les matins. Une carte au milieu se ferait dépasser par
+ * les chantiers du jour, et il découvrirait la fin de son essai le matin où
+ * tout se referme.
+ */
+function accueilEnEssai(jours){
+  var chaud = jours <= 3;
+  return '<div class="ecran">' +
+    '<div class="ruban' + (chaud ? " chaud" : "") + '">' +
+      '<span class="j">' + (jours > 1 ? "Essai gratuit — " + jours + " jours restants"
+                                      : "Essai gratuit — dernier jour") + '</span>' +
+      '<span class="lien">S’abonner</span>' +
+    '</div>' +
+    entete("Aujourd’hui", "", false) +
+    '<div class="bloc"><p class="caps">Vos chantiers</p>' + CHANTIERS + '</div>' +
+  '</div>';
+}
+
+/** Le 16e jour : tout se lit, rien ne s'écrit. */
+function lectureSeule(){
+  return '<div class="ecran">' +
+    '<div class="ruban chaud">' +
+      '<span class="j">Essai terminé — lecture seule</span>' +
+      '<span class="lien">S’abonner</span>' +
+    '</div>' +
+    entete("Aujourd’hui", "", false) +
+    '<div class="bloc"><p class="caps">Vos chantiers</p>' + CHANTIERS + '</div>' +
+    '<div class="trait">' +
+      '<p class="caps">Ce que vous pouvez encore faire</p>' +
+      '<div class="ligne"><span class="nom">Tout relire</span>' +
+        '<p class="situation">Vos chantiers, vos clients, vos devis, vos factures.</p></div>' +
+      '<div class="ligne"><span class="nom">Emporter une copie</span>' +
+        '<p class="situation">Réglages, puis Mes données.</p></div>' +
+    '</div>' +
+  '</div>';
+}
+
+/** Ce qui se passe quand il appuie quand même sur un bouton qui écrit. */
+function gesteRefuse(){
+  return '<div class="ecran">' +
+    entete("Nouveau chantier", "", true) +
+    '<div class="bloc">' +
+      '<div class="ligne pale"><span class="nom">Mme Durand</span>' +
+        '<p class="situation">5 rue des Lilas</p></div>' +
+      '<div class="ligne pale"><span class="nom">Taille de haies</span>' +
+        '<p class="situation">Prévu le 14 septembre</p></div>' +
+    '</div>' +
+    '<div class="bloc"><button class="capsule pale pleine">Créer le chantier</button>' +
+      '<p class="situation">Votre essai est terminé. Choisissez une formule pour ' +
+      'créer de nouveau.</p></div>' +
+  '</div>';
+}
+
+/**
+ * LES DEUX ÉCRANS RÉSERVÉS À « ENTREPRISE ».
+ *
+ * Ce sont les VRAIS écrans : même en-tête, même titre, même flèche de retour.
+ * Seul le contenu change — c'est exactement ce que verra l'artisan.
+ */
+function ecranReserve(titre, sur, quoi, pourquoi){
+  return '<div class="ecran">' +
+    entete(titre, sur, true) +
+    '<div class="ferme">' +
+      '<div class="cadenas">' + CADENAS + '</div>' +
+      '<h3>' + ech(quoi) + '</h3>' +
+      '<p>' + ech(pourquoi) + '</p>' +
+      '<button class="capsule">Voir la formule Entreprise</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function rendre(){
+  document.body.classList.toggle("nuit", etat.nuit);
+  var tel = "", note = "";
+
+  if (etat.vue === "j1" || etat.vue === "nuit") {
+    tel = accueilEnEssai(15);
+    note =
+      '<h2>Jour 1 — l’essai commence tout seul</h2>' +
+      '<p><b>Aucune carte bancaire n’est demandée</b>, et c’est ce que vos conditions ' +
+      'promettent déjà (article 14.2). L’essai n’est donc pas géré par Stripe — Stripe, lui, ' +
+      'réclame la carte d’avance. C’est Atlas qui compte les quinze jours.</p>' +
+      '<p><b>Le compteur se pose en tête de l’accueil</b>, pas ailleurs : c’est le seul écran ' +
+      'qu’il ouvre tous les matins. Une carte posée au milieu se ferait dépasser par les ' +
+      'chantiers du jour.</p>' +
+      '<p><b>Et votre Atlas à vous ne bouge pas.</b> L’essai ne vaut que pour les comptes créés ' +
+      'ensuite : une entreprise déjà en place n’a pas de ligne d’abonnement, et je ne lui en ' +
+      'invente pas.</p>';
+  }
+
+  else if (etat.vue === "j13") {
+    tel = accueilEnEssai(2);
+    note =
+      '<h2>Jour 13 — le ruban change de couleur</h2>' +
+      '<p>À trois jours de la fin, le compteur passe au <b>rouge d’alerte</b>. Rien d’autre ne ' +
+      'bouge : pas de fenêtre qui s’ouvre, pas de message à fermer. Un artisan sur un chantier ' +
+      'n’a pas à écarter une boîte pour voir son planning.</p>' +
+      '<p>C’est la règle du dépôt : <b>un avertissement qui parle trop tôt s’apprend à être ' +
+      'ignoré</b>, et l’on perd le garde-fou sans s’en apercevoir.</p>';
+  }
+
+  else if (etat.vue === "j16") {
+    tel = lectureSeule();
+    note =
+      '<h2>Jour 16 — il lit tout, il n’écrit plus</h2>' +
+      '<p>Votre choix, mot pour mot : <i>« la B, mais il ne doit plus rien pouvoir faire à part ' +
+      'enregistrer ses documents, ses clients »</i>.</p>' +
+      '<p><b>Rien ne disparaît de l’écran.</b> Ses chantiers sont là, ses clients aussi, ses ' +
+      'devis et ses factures s’ouvrent. C’est ce qui le sépare d’une application qui l’a mis ' +
+      'dehors — et c’est ce qui fait qu’il reviendra s’abonner.</p>' +
+      '<ul>' +
+        '<li><b>Ce qui reste ouvert :</b> tout relire, et emporter une copie de tout ' +
+        '(Réglages, puis Mes données).</li>' +
+        '<li><b>Ce qui se ferme :</b> créer un client, un chantier, un devis, une facture ; ' +
+        'les modifier ; les envoyer.</li>' +
+      '</ul>' +
+      '<p><b>Le ruban reste en tête</b>, en rouge, avec le seul geste qui rouvre tout.</p>';
+  }
+
+  else if (etat.vue === "geste") {
+    tel = gesteRefuse();
+    note =
+      '<h2>Ce qui se passe s’il appuie quand même</h2>' +
+      '<p><b>Le bouton est éteint, et la phrase dit pourquoi.</b> Un bouton gris sans explication ' +
+      'se lit comme une panne — il rappuierait, puis il appellerait.</p>' +
+      '<p><b>Et le refus ne tient pas qu’à l’écran.</b> L’application compte 176 gestes qui ' +
+      'écrivent : les fermer un par un finirait par diverger, et il suffirait d’un oubli pour ' +
+      'que l’un d’eux reste ouvert. La fermeture se pose à <b>un seul endroit</b>, là où passent ' +
+      'déjà toutes les gardes de l’application.</p>';
+  }
+
+  else if (etat.vue === "absences") {
+    tel = ecranReserve(
+      "Équipe", "Réglages",
+      "Les absences sont dans « Entreprise »",
+      "Noter qui n’est pas là, et voir vos équipes se réorganiser toutes seules."
+    );
+    note =
+      '<h2>Ce que voit un abonné « Artisan »</h2>' +
+      '<p>L’écran <b>reste atteignable</b> : même en-tête, même titre, même flèche de retour. ' +
+      'Ce qui change, c’est ce qu’il y a dedans.</p>' +
+      '<p><b>Pourquoi on ne le RETIRE pas du sommaire :</b> une rubrique qui disparaît se ' +
+      'cherche. Il l’a vue hier, il ne la trouve plus, il appelle. Une rubrique qui s’ouvre sur ' +
+      '« c’est dans Entreprise » répond en une seconde — et elle vend.</p>' +
+      '<p><b>Ce que ça coûte, et il faut le dire :</b> un artisan qui se sert des absences ' +
+      'aujourd’hui les perdra le jour où il prendra « Artisan » à 29&nbsp;€. Ses absences déjà ' +
+      'saisies ne s’effacent pas — elles reparaissent s’il monte de formule.</p>';
+  }
+
+  else if (etat.vue === "retours") {
+    tel = ecranReserve(
+      "Retours d’intervention", "",
+      "Les retours sont dans « Entreprise »",
+      "Ce que vos gars ont constaté en fin de chantier : ce qui est fait, ce qui ne l’est pas, et leurs photos."
+    );
+    note =
+      '<h2>Le même écran, pour les retours</h2>' +
+      '<p>Même dessin, même phrase, même bouton. <b>Deux écrans fermés qui ne se ressemblent pas ' +
+      'donnent l’impression de deux pannes différentes</b> — ici c’est la même raison, donc ' +
+      'c’est le même écran.</p>' +
+      '<p><b>L’onglet reste en place</b> dans « Terminés » : votre demande du 9 septembre — ' +
+      '<i>« l’onglet retour d’intervention doit exister même s’il n’y a aucun retour »</i> — ' +
+      'vaut d’autant plus ici.</p>' +
+      '<p><b>La pastille des non-lus s’éteint</b> tant que la formule ne les ouvre pas : un point ' +
+      'rouge sur un écran qu’on ne peut pas ouvrir est une agression, pas une information.</p>';
+  }
+
+  if (etat.vue === "nuit") {
+    note = '<h2>Le même écran, en nuit</h2>' +
+      '<p>Deux chartes du produit sont sombres. Le ruban d’essai, le rouge d’alerte et le ' +
+      'cadenas doivent s’y lire — c’est ce que cet onglet vérifie.</p>' + note;
+  }
+
+  document.getElementById("tel").innerHTML = tel;
+  document.getElementById("note").innerHTML = note;
+
+  var b = document.querySelectorAll("#onglets button");
+  for (var i = 0; i < b.length; i++) {
+    var v = b[i].getAttribute("data-vue");
+    b[i].setAttribute("aria-pressed", String(v === etat.vue || (v === "nuit" && etat.nuit)));
+  }
+}
+
+var html = "";
+for (var i = 0; i < ETATS.length; i++) {
+  html += '<button data-vue="' + ETATS[i][0] + '">' + ech(ETATS[i][1]) + "</button>";
+}
+document.getElementById("onglets").innerHTML = html;
+
+document.getElementById("onglets").addEventListener("click", function (e) {
+  var b = e.target.closest("button");
+  if (!b) return;
+  var v = b.getAttribute("data-vue");
+  if (v === "nuit") { etat.nuit = !etat.nuit; etat.vue = etat.nuit ? "nuit" : "j1"; }
+  else { etat.vue = v; etat.nuit = false; }
+  rendre();
+});
+
+rendre();
+</script>
+</body>
+</html>
