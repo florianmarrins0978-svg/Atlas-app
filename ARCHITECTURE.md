@@ -26140,6 +26140,50 @@ signé sur place avant les travaux (`appli/ts-bon-sur-place.html`), tranché le
 4 septembre. Le supplément sur la facture règle le geste manquant, pas le
 risque d'impayé.
 
+### CE PARAGRAPHE A ÉTÉ ÉCRIT AVANT D'ÊTRE VRAI — corrigé le 10 septembre 2026
+
+**Le patron a essayé le lendemain de la livraison**, sur sa facture
+F2026-000006, et il a photographié trois choses : *« j'ai rajouté un TS mais ça
+n'apparaît nulle part, ni sur la facture ni dans la case reprise devis ; le
+client pense simplement que j'ai rajouté une ligne »*.
+
+| Ce qu'il a vu | Ce qui manquait |
+|---|---|
+| le supplément rangé sous « Reprise du devis », à l'écran | `FactureClient` ne recevait pas la colonne, et n'avait aucun second bloc |
+| aucun bloc sur le PDF non plus | **`LigneDocument` n'avait pas de champ `supplement`** : le titre était écrit dans le moteur, mais `Boolean(undefined)` vaut `false`, donc tout retombait dans le premier bloc — sans une erreur nulle part |
+| **Total HT 1 750 €** sous des lignes qui font 4 450 € | et c'est le pire des trois |
+
+**Le troisième n'était pas dans son message, et il partait chez son client.**
+Le PDF du BROUILLON recopiait `totalHt` et `totalTtc` des colonnes de la
+facture, pendant que son bloc de totaux **recalculait la TVA depuis les
+lignes**. Les colonnes datant d'avant l'ajout, la pièce écrivait trois chiffres
+sur trois bases : 1 750 de HT, 890 de TVA (soit 20 % de 4 450) et 2 100 de TTC
+(soit 1 750 × 1,2). Aucun ne s'accordait aux deux autres.
+
+**C'était une DUPLICATION, pas un calcul faux** — le §3 de `CLAUDE.md`, mot pour
+mot. `donneesFacture` calcule désormais les quatre totaux depuis les lignes
+qu'elle reçoit déjà, avec la fonction de l'émission ; et `emettreFacture` a
+CESSÉ de les lui passer par-dessus, puisqu'ils se retrouvent identiques. La
+correction enlève du code à l'appelant : c'est le signe que la racine a été
+touchée (§4 quater).
+
+**L'écran, lui, avait déjà tiré la leçon** — son commentaire dit depuis
+longtemps *« les totaux ne sont PLUS transmis […] une seule règle pour
+l'affichage et pour l'émission »*. C'est pourquoi il affichait 5 340 € juste
+pendant que le papier en écrivait 2 100. Une moitié du dépôt avait appris, pas
+l'autre.
+
+**Et le titre du bloc vit maintenant à UN endroit**
+(`TITRE_TRAVAUX_SUPPLEMENTAIRES`, avec `lignesParBloc`) : il était en dur dans
+le moteur PDF, et l'écran en aurait posé un second.
+
+**Pourquoi les contrôles n'ont rien vu :** `test-travaux-supplementaires-db.ts`
+éprouvait les totaux par `emettreFacture` — la facture ÉMISE, qui recalculait
+déjà. Le PDF du brouillon, celui que le patron relit avant d'envoyer, n'était
+éprouvé nulle part. C'est la faute du §5 quater : *un contrôle entré par la
+porte de service ne dit rien de la porte d'entrée*. Deux cas y sont entrés, et
+chacun a été vu rougir contre le défaut qu'il vise.
+
 ---
 
 ## §305 — Le compteur de TVA ne se remplit pas tout seul, et l'écran doit le dire
@@ -27053,9 +27097,60 @@ Avant : `{faits:2,total:40,…}` et le bandeau. Après : `null`.
 | le contrôle | `scripts/test-etat-banc.ts` — un cas neuf : une version bâtie se tait même quand l'environnement dit « development » |
 | ce qui le voit en vrai | `scripts/test-bandeau-banc-e2e.ts`, deux dernières assertions |
 
+---
+
+## §318 — L'absence d'un jour : le + en tête, et « Annuler » derrière lui
+
+**Ses quatre corrections du 10 septembre 2026**, sur l'écran qu'il venait
+d'essayer, et la planche `appli/absence-l-ordre.html` qu'il a validée :
+
+| Ce qu'il a demandé | Ce que l'écran fait |
+|---|---|
+| *« l'ordre devrait être + salarié absent ? puis Julien »* | le + est en tête de la carte, les noms s'ouvrent dessous |
+| *« remets le bouton matin / aprem / journée »* | un interrupteur à trois positions, celui de « Déplacer » |
+| *« une fois choisi, le bouton se cache »* | il disparaît au premier appui |
+| *« Julien absent, et à côté on marque matin, aprem ou journée »* | la ligne porte le moment, plus « Annuler » |
+| *« pour annuler on reclique sur + salarié absent »* | la liste rouvre, chaque absent y porte « Annuler » |
+
+**CE QUE CET ORDRE CORRIGE, ET CE N'EST PAS QU'UNE QUESTION DE GOÛT.** « Annuler »
+vivait à demeure à côté de chaque absence posée : le geste **le plus rare** de
+l'écran occupait la place **la plus visible**, à deux centimètres du nom qu'on
+vient d'écrire. Ce qui reste sous les yeux est désormais ce qu'il a besoin de
+LIRE — qui manque, et quand. Ce qui se défait se retrouve **là où on l'a fait**,
+derrière le même +.
+
+**Une seule porte pour poser ET pour défaire**, donc, et c'est ce qui rend
+l'écran lisible : le + n'est plus « ajouter une absence » mais « les gens de ce
+jour ».
+
+**L'interrupteur est recopié de la planche « Déplacer »**, pas redessiné : trois
+pastilles séparées ne disaient pas qu'elles s'excluent, un interrupteur le
+montre par sa forme. **44 px et non 36** — c'est la seule chose qui change du
+dessin d'origine, parce que celui-ci se touche avec des gants.
+
+**Il s'allume sur ce qui vient d'être écrit** (« Journée », puisque toucher un
+nom pose la journée entière) : il montre où l'on est, il ne redemande pas de
+choisir.
+
+**Ce que ce lot a SUPPRIMÉ**, et c'est le signe qu'il corrige à la racine plutôt
+que d'empiler : `PastilleDuJour` et `LigneQuestion` n'ont plus d'emploi — les
+rangées « Qui » et « Plutôt » qu'elles dessinaient ont disparu avec ce flux.
+
+**Le prix à connaître :** changer d'avis sur le moment demande d'annuler puis de
+reposer, puisque l'interrupteur s'efface. C'est sa demande, mot pour mot ; si
+cela le gêne à l'usage, la porte reste ouverte (toucher la ligne posée le
+rouvrirait).
+
+| | |
+|---|---|
+| l'écran | `PasLaCeJour` et `BasculeDuMoment` dans `src/app/planning/PlanningClient.tsx` |
+| la planche | `appli/absence-l-ordre.html`, validée le 10 septembre |
+| le contrôle | `scripts/test-pas-la-ce-jour-e2e.ts` — l'interrupteur, son effacement, et « Annuler » derrière le + |
 
 
-## §318 — L'abonnement : le prix ne vit qu'à UN endroit, et Stripe le recopie
+
+
+## §319 — L'abonnement : le prix ne vit qu'à UN endroit, et Stripe le recopie
 
 **Sa demande du 9 septembre 2026** : *« et que si on clique sur s'abonner qu'on
 puisse payer, mets tout le système en place »*, puis *« fais-moi Stripe »*.
@@ -27174,7 +27269,7 @@ l'adresse de retour ne se déduit **jamais** de la requête : l'hôte annoncé e
 du paiement, vers une page choisie par un tiers — la faute que ce dépôt a fermée
 sur `x-forwarded-for`.
 
-## §319 — La porte est en NUIT, et une charte peut se poser au milieu de l'arbre
+## §320 — La porte est en NUIT, et une charte peut se poser au milieu de l'arbre
 
 **Sa remarque du 10 septembre 2026, photo à l'appui :** *« toi tu me montres un
 écran blanc, regarde la photo que je t'ai jointe, elle est noire, c'est celle-là

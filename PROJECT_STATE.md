@@ -37,7 +37,7 @@ place »*, puis *« fais-moi Stripe »*.
 **Le prix ne vit qu'à un endroit** — `src/lib/abonnements.ts` — et le tarif est
 fabriqué chez le prestataire à son image. Aucun identifiant de tarif à recopier
 à la main : ce serait une seconde grille, et l'écart se compterait en euros
-(`ARCHITECTURE.md` §318).
+(`ARCHITECTURE.md` §319).
 
 **Ce qui reste, et trois points sur quatre sont pour LUI** (`TODO.md`, en tête) :
 le premier essai avec une vraie clé Stripe, le cloisonnement des fonctions par

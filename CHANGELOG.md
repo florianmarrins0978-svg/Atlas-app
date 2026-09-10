@@ -8,6 +8,34 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-10
 
+### Le travail supplémentaire se voit enfin — et le PDF cesse d'écrire trois totaux qui ne s'accordent pas
+
+**Il a essayé le lendemain de la livraison, photos à l'appui :** *« j'ai rajouté
+un TS mais ça n'apparaît nulle part, ni sur la facture ni dans la case reprise
+devis ; le client pense simplement que j'ai rajouté une ligne »*.
+
+**Un troisième défaut n'était pas dans son message, et il partait chez son
+client** : son PDF écrivait **Total HT 1 750 €** sous des lignes qui font
+**4 450 €**, avec une TVA de 890 € et un TTC de 2 100 €. Trois chiffres, trois
+bases, aucun d'accord avec les autres. Le PDF du brouillon recopiait les
+colonnes de la facture pendant que son bloc de totaux recalculait la TVA depuis
+les lignes — la duplication que le §3 interdit.
+
+| | |
+|---|---|
+| `factures.ts` | `donneesFacture` **calcule** les totaux depuis les lignes, et `emettreFacture` a cessé de les lui passer |
+| `document-commun.ts` | `LigneDocument` porte enfin `supplement` : le titre était écrit, il ne pouvait jamais s'afficher |
+| `FactureClient.tsx` | deux blocs, avec `lignesParBloc` — celle du papier |
+| `reduction-devis.ts` | `TITRE_TRAVAUX_SUPPLEMENTAIRES`, à un seul endroit |
+
+**Les contrôles n'avaient rien vu parce qu'ils entraient par la porte de
+service** : ils éprouvaient `emettreFacture`, qui recalculait déjà. Le PDF du
+BROUILLON — celui qu'il relit avant d'envoyer — n'était éprouvé nulle part.
+Deux cas y sont entrés (**11 contrôles, 0 échec**), et chacun a été vu rougir
+contre le défaut qu'il vise, jamais contre l'autre.
+
+Le pourquoi de chaque choix est dans `ARCHITECTURE.md` §304.
+
 ### Deux fois « client → retour » ramenait à l'accueil
 
 *« Quand je fais deux fois le geste client → retour puis client → retour, je
@@ -30,6 +58,24 @@ Le défaut a été rendu bavard avant d'être corrigé : une sonde a rejoué son
 geste en imprimant le journal à chaque pas. Ce qu'elle savait faire vit
 maintenant dans la suite navigateur, qui refait le geste quatre fois.
 
+
+### L'absence se pose dans son ordre : le + en tête, « Annuler » derrière lui
+
+Sa validation du 10 septembre, planche à l'appui. Le + reste en haut, les noms
+s'ouvrent dessous, l'interrupteur **Matin · Après-midi · Journée** — celui de
+« Déplacer » — s'allume sur ce qui vient d'être écrit et s'efface au premier
+choix. La ligne dit alors « Julien absent · matin ».
+
+**« Annuler » ne reste plus sous les yeux** à côté d'une absence qu'on vient de
+poser : il se retrouve derrière le même +, avec la liste des gens du jour. Le
+geste le plus rare n'occupe plus la place la plus visible (`ARCHITECTURE.md`
+§318).
+
+**Deux composants s'en vont avec les rangées qu'ils dessinaient** —
+`PastilleDuJour`, `LigneQuestion` : ce qui ne sert plus se supprime.
+
+**Regardé à l'écran, pas seulement mesuré** : le geste joué en entier dans un
+vrai navigateur, à la largeur de son téléphone.
 
 ### Le bandeau « en construction » se taisait mal — vingt-six suites en payaient le prix
 
