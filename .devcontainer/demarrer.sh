@@ -59,37 +59,21 @@ sleep 1
 
 cd "$CD" || exit 0
 
-# **Le chemin de secours pour les clés d'IA — et il est créé d'avance.**
+# **Le chemin de secours pour les clés — écrit d'avance, et TENU À JOUR.**
 #
 # Un secret d'espace de travail n'entre dans le conteneur qu'après une
 # reconstruction : geste introuvable sur un téléphone. Un fichier `.env.local`
 # à la racine, lui, est pris en compte au prochain allumage, sans rien
 # reconstruire.
 #
-# Il est **écrit ici, vide, dès le premier démarrage**, parce que « créez un
-# fichier nommé .env.local à la racine du projet » n'a pas été compris — et
-# c'était une consigne mal posée : demander de créer un fichier caché, au bon
-# endroit, avec le bon nom, sur six pouces. Le fichier existe donc déjà ; il
-# n'y a qu'à coller une clé après le signe égal.
+# Il naît ici, vide, parce que « créez un fichier nommé .env.local à la racine
+# du projet » n'a pas été compris — et c'était une consigne mal posée : demander
+# de créer un fichier caché, au bon endroit, avec le bon nom, sur six pouces.
 #
-# Jamais réécrit s'il existe : une clé déjà collée ne doit pas disparaître à
-# l'allumage suivant. Ignoré par git (`.gitignore` : `.env*`) — une clé ne se
-# versionne pas.
-if [ ! -f "$CD/.env.local" ]; then
-  cat > "$CD/.env.local" <<'MODELE'
-# Collez vos clés après le signe = , puis rechargez la page de l'éditeur.
-# Rien d'autre à faire : Atlas les prend en compte au démarrage suivant.
-#
-# Sans clé, la dictée est recopiée mot à mot au lieu d'être comprise.
-# Ce fichier n'est jamais envoyé sur GitHub.
-
-# Pour que votre voix devienne du texte :
-OPENAI_API_KEY=
-
-# Pour que ce texte devienne un devis structuré :
-ANTHROPIC_API_KEY=
-MODELE
-fi
+# **Et il se COMPLÈTE à chaque allumage**, sans quoi une clé ajoutée à Atlas
+# après la naissance du fichier n'aurait aucun moyen de l'atteindre. Le
+# raisonnement, et ce qu'il a coûté, vivent dans `completer-env-local.sh`.
+bash "$(dirname "$0")/completer-env-local.sh" "$CD/.env.local"
 
 # Chargé ICI plutôt que laissé à Next.js seul : le bandeau ci-dessous et
 # `npm run verifier:ia` doivent voir exactement ce que voit l'application.
@@ -401,6 +385,33 @@ case "$ETAT_IA" in
     [ "$ETAT_IA" = "neutralise" ] && echo "       (réglage figé d'un ancien conteneur neutralisé)"
     ;;
 esac
+
+# **CE QUI MANQUE POUR ENTRER PAR GOOGLE OU PAR APPLE, dit ici et pas ailleurs.**
+#
+# Payé le 10 septembre 2026 : *« voilà l'écran que je veux, voilà l'écran que
+# j'ai »*, capture de la planche à l'appui. La porte n'affiche Google et Apple
+# que si leurs clés sont posées — un bouton qui ne peut pas aboutir est pire
+# qu'un bouton absent (`src/lib/fournisseurs-connexion.ts`). Mais l'écran, lui,
+# se taisait : deux boutons manquants ressemblent exactement à une application
+# en retard sur sa maquette, et il n'y avait aucun moyen de savoir.
+#
+# **L'adresse de retour est écrite en toutes lettres**, parce que c'est le seul
+# endroit où elle se sait sans se deviner : elle dépend de l'espace de travail,
+# et Google refuse le raccordement au caractère près.
+if [ -n "${AUTH_GOOGLE_ID:-}" ] && [ -n "${AUTH_GOOGLE_SECRET:-}" ]; then
+  echo "  Entrer avec Google : branché."
+else
+  echo "  Entrer avec Google : le bouton ne s'affiche pas — clés absentes."
+  echo "       Marche à suivre : docs/entrer-avec-google.md"
+  [ -n "$ADRESSE" ] && echo "       Adresse de retour à déclarer chez Google :"
+  [ -n "$ADRESSE" ] && echo "       $ADRESSE/api/auth/callback/google"
+fi
+if [ -n "${AUTH_APPLE_ID:-}" ] && [ -n "${AUTH_APPLE_SECRET:-}" ]; then
+  echo "  Entrer avec Apple  : branché."
+else
+  echo "  Entrer avec Apple  : le bouton ne s'affiche pas — clés absentes."
+  echo "       (compte développeur Apple payant ; voir docs/A-FAIRE.md)"
+fi
 case "$MISE_A_JOUR" in
   faite) echo "  Le code a été mis à jour au démarrage." ;;
   impossible*) echo "  ⚠ MISE À JOUR $MISE_A_JOUR" ;;

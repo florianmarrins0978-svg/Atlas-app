@@ -29,6 +29,20 @@ posées : le trajet complet jusqu'à Google et le retour. Ce qui l'est déjà : 
 règle d'affichage, le refus d'une adresse non vérifiée, l'aiguillage vers la
 création de compte (`scripts/test-fournisseurs-connexion.ts`).
 
+**Mise à jour du 10 septembre 2026, après sa capture** — *« voilà l'écran que
+j'ai ! »*. Deux choses ont changé de son côté, et elles n'attendent plus rien
+de nous :
+
+- **les quatre lignes existent dans son `.env.local`**, ajoutées d'elles-mêmes
+  au démarrage (`.devcontainer/completer-env-local.sh`). Il n'a qu'à coller
+  après le signe `=` ;
+- **le démarrage dit ce qui manque, et écrit l'adresse de retour toute faite** —
+  c'est la seule valeur qui ne se devine pas, et Google la compare au caractère
+  près.
+
+La marche à suivre est dans [`docs/entrer-avec-google.md`](docs/entrer-avec-google.md).
+**Reste à lui, et à personne d'autre :** ouvrir l'identifiant OAuth chez Google.
+
 ---
 
 ## ⏳ UNE BATTERIE À JOUER — « Se déconnecter » est codé (9 septembre 2026)

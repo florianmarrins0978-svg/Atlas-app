@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { CHEMINS_PUBLICS } from "../src/lib/chemins-publics";
 import { estEcranSansNavigation } from "../src/lib/ecrans-sans-navigation";
@@ -30,6 +30,12 @@ import { estEcranSansNavigation } from "../src/lib/ecrans-sans-navigation";
 
 const RACINE = path.join(__dirname, "..");
 const lire = (relatif: string) => readFileSync(path.join(RACINE, relatif), "utf8");
+
+/** Les fichiers d'un écran, quel que soit le nombre de morceaux qu'il porte. */
+const fichiersDe = (dossier: string) =>
+  readdirSync(path.join(RACINE, dossier))
+    .filter((f) => f.endsWith(".tsx") || f.endsWith(".ts"))
+    .map((f) => `${dossier}/${f}`);
 
 let passed = 0;
 let failed = 0;
@@ -90,7 +96,17 @@ test("les deux gestes de la porte mènent quelque part", () => {
   assert.match(CODE, /href="\/login"/);
   // Et le retour existe dans les deux sens : sans lui, « Se connecter » est un
   // aller simple pour qui découvre qu'il n'a pas de compte.
-  const login = sansCommentaires(lire("src/app/login/page.tsx"));
+  //
+  // **On lit TOUT l'écran, pas un fichier.** Le 10 septembre 2026, la porte a
+  // été coupée en trois — `page.tsx` lit les clés, `FormulaireConnexion` dessine,
+  // `PorteDeNuit` pose la charte — et le lien de retour a suivi le dessin. Ce
+  // contrôle, lui, ne regardait que `page.tsx` : il a rougi sur un retour qui
+  // marchait, et c'est exactement le défaut que `CLAUDE.md` §5 bis nomme —
+  // fixer la RÈGLE, jamais l'endroit où elle est écrite. Un remaniement de plus
+  // ne le fera plus mentir.
+  const login = sansCommentaires(
+    fichiersDe("src/app/login").map(lire).join("\n")
+  );
   assert.match(login, /href="\/bienvenue"/, "on ne peut plus revenir à la porte depuis /login");
   assert.match(login, /href="\/creer-un-compte"/, "/login ne mène pas à la création");
 });

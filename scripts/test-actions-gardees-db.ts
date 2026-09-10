@@ -210,6 +210,11 @@ const EXEMPTIONS: Record<string, string> = {
     "Le défi Face ID se demande avant d'être connecté — c'est ce qui permet de se connecter sans mot de passe.",
   "src/app/login/actions.ts#connexionParCleAction":
     "Même famille : elle ouvre la session par la clé d'appareil, donc elle s'appelle sans session.",
+  "src/app/login/actions.ts#entrerAvecAction":
+    "Elle envoie chez Google ou chez Apple pour PROUVER une adresse : c'est ce qui " +
+    "précède la session, exactement comme le défi Face ID. Ce qui la borne n'est donc " +
+    "pas un rôle mais la liste fermée d'`estNomFournisseur` — sans elle, une chaîne " +
+    "quelconque venue du navigateur atteindrait Auth.js.",
   "src/app/login/actions.ts#deconnexionAction":
     "Se déconnecter est ouvert à qui est connecté, quel que soit son rôle — et refuser reviendrait à retenir les gens dedans.",
   "src/app/creer-un-compte/actions.ts#creerLeCompteAction":
