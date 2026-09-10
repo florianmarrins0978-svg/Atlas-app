@@ -53,7 +53,79 @@ pour une demi-journée rendue seule — le morceau n'existait alors nulle part.
 Les deux premiers viennent d'une **capture regardée**, le troisième de la suite
 navigateur qui rejoue son geste en entier
 (`scripts/test-liberer-une-demi-journee-e2e.ts`, 8 contrôles). Le pourquoi de
-chaque choix est dans `ARCHITECTURE.md` §321.
+chaque choix est dans `ARCHITECTURE.md` §322.
+
+### Planche — facturer sans passer par la case devis
+
+*« Il faut que l'on puisse facturer sans avoir besoin de passer par la case
+devis. »* La planche est dans `appli/facturer-sans-devis.html` ; **rien n'est
+codé**, et ce qui suit est ce que la lecture du code a établi.
+
+**Trois quarts de la demande existent déjà** : la reconnaissance du client au
+nom (`reconnaitreLeClientAction`), l'éditeur de lignes de facture avec sa TVA
+(l'écran « Travaux en plus » EST cet éditeur), et l'ouverture du SMS ou de
+l'e-mail avec le message tout prêt (`composerMessageFacture`,
+`lienTransmission`). Le PDF sait déjà taire la mention du devis quand il n'y en
+a pas (`facture-pdf.ts:118`).
+
+**Ce qui manque est en base, et c'est la racine :** `factures.devis_id` est
+`NOT NULL` (`schema.ts:1726`). Une facture sans devis est aujourd'hui
+impossible. **Le faux devis caché est écarté** : il ferait apparaître des
+numéros de devis inexistants dans les listes et dans le relevé de TVA. La
+correction est une migration, et les six lectures de `factures.devisId`
+tolèrent déjà l'absence (`d?.numero ?? null`).
+
+**Ses décisions du jour :** le chantier créé part directement dans
+« Terminés » ; on ne lève pas le refus « devis absent » sur les chantiers
+existants ; deux anneaux sur l'accueil, style identique, « Créer une facture »
+sous le devis et **collé au bord gauche**, « En cours » dessous ; liste vide,
+les deux descendent.
+
+**Le geste d'envoi ne change pas**, et c'est un refus assumé de sa demande
+initiale : il voulait un bouton flottant « Envoyer par » ouvrant deux choix. Le
+4 septembre, il avait fait retirer ces mêmes capsules au profit du réglage
+« Envoi · SMS | E-mail ». Le remettre aurait dessiné le même geste de trois
+façons dans l'application. Il l'a accepté.
+
+**Deux défauts trouvés à la capture, pas par un contrôle :** l'écran changeait
+de hauteur d'un pas à l'autre — le téléphone sortait du champ sous le doigt —,
+et le décalage du second geste, écrit en dur à 78 px, **coupait le libellé**
+(« RÉER UNE FACTURE »). Le décalage ne se compte plus : le geste s'aligne sur le
+bord gauche, ce qui est le maximum et ne peut plus déborder quelle que soit la
+longueur du mot.
+
+### Le devis et la facture téléchargés s'ouvrent de nouveau — page blanche corrigée à sa racine
+
+*« J'ai essayé de télécharger la facture. Une fois que je l'ouvre, page
+blanche »*, puis *« même problème avec le devis »*.
+
+**Le fichier était intact.** Téléchargé par la vraie route et relu par un
+lecteur écrit d'après la norme, il portait le document entier. Rien n'était
+cassé dans la génération, ni dans le stockage, ni dans la protection
+anti-retouche.
+
+**Ce qui l'a rendu illisible, c'est un correctif du 7 septembre.** Pour forcer
+l'enregistrement sur iPhone, le serveur s'était mis à annoncer les
+téléchargements comme des fichiers sans type (`application/octet-stream`) au
+lieu de PDF. Or ce type-là **suit le fichier enregistré** : rouvert depuis les
+téléchargements, le document n'avait plus de lecteur — et `nosniff`, posé sur
+toutes les routes, interdisait au téléphone de deviner qu'il tenait un PDF. Page
+blanche, sans message.
+
+**La règle qui remplace l'ancienne : on ne ment jamais sur le type d'un
+fichier.** Ce qui range un fichier, c'est `Content-Disposition: attachment`, la
+norme, et rien d'autre. Un type générique n'est pas un levier de plus : c'est une
+identité qu'on retire au document, et elle lui manque plus tard, chez le client.
+
+**La protection anti-retouche n'a pas bougé** — *« le client ne doit pas pouvoir
+modifier son devis »*. Elle avait été soupçonnée à tort ; c'est lui qui a
+redressé la recherche : *« avant ça fonctionnait, donc il y a quelque chose qui a
+buggé »*.
+
+**Ce qui reste à vérifier chez lui, et qui ne l'est nulle part ici :** qu'un
+appui sur « Télécharger » range bien le fichier sur son iPhone plutôt que de
+l'afficher. Aucun moteur de Safari n'est disponible sur le poste de l'agent.
+
 
 ### Le travail supplémentaire se voit enfin — et le PDF cesse d'écrire trois totaux qui ne s'accordent pas
 
@@ -268,6 +340,22 @@ servait encore la porte du 12 août, en crème, pendant que la création de comp
   `.atlas-champ-ligne`.
 - `ARCHITECTURE.md` §317. Contrôles : `scripts/test-fournisseurs-connexion.ts`
   (19 cas, sans base ni réseau).
+
+### Une session ouvre son dossier toute seule
+
+*« Je veux qu'elle se débrouille, qu'elle aille dans un dossier à chaque fois,
+seule »* (10 septembre). `npm run session` remplace `claude` : il prend le
+premier dossier de travail libre et y lance la session. Plus de choix à faire,
+plus rien à retenir.
+
+Un dossier est occupé tant que le processus de sa session vit — un jeton laissé
+par un terminal fermé brutalement ne condamne rien. Tous pris : il le dit et
+donne la commande, plutôt que de fabriquer un dossier de plus en silence.
+
+Un numéro se donne aussi — `npm run session 2` —, et un dossier demandé qui est
+occupé se refuse plutôt que d'ouvrir la session ailleurs sans le dire.
+
+Détail : `ARCHITECTURE.md` §321.
 
 ### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
 

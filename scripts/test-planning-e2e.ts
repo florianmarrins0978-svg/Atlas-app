@@ -1166,7 +1166,7 @@ async function main() {
 
     // **LE DÉCOR POSE COMME LE PRODUIT POSE — 10 septembre 2026.** Depuis que
     // le chantier porte OÙ chacune de ses demi-journées est posée
-    // (`ARCHITECTURE.md` §321), écrire `date_planifiee` seule ne le déplace
+    // (`ARCHITECTURE.md` §322), écrire `date_planifiee` seule ne le déplace
     // plus : ses créneaux le tiennent encore à son ancien jour, et l'écran les
     // croit — à raison. On efface donc les créneaux, ce qui rend le chantier à
     // son bloc calculé, exactement comme un chantier d'avant la migration.

@@ -406,7 +406,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     motsCles: ["deplacer", "bouger", "changer", "jour", "reporter", "decaler", "planning", "liberer", "demi"],
     // **« Déplacer » ne déplace plus rien depuis le 10 septembre 2026** : il
     // rend la demi-journée qu'on touche, et elle attend en bas
-    // (`ARCHITECTURE.md` §321). Enseigner l'ancien geste, c'est envoyer le
+    // (`ARCHITECTURE.md` §322). Enseigner l'ancien geste, c'est envoyer le
     // patron appuyer sur un bouton qui fait autre chose.
     geste:
       "Ouvrez le jour, appuyez sur « Déplacer », puis touchez le matin ou l'après-midi à libérer. " +

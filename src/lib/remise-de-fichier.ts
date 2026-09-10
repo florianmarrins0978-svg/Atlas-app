@@ -13,22 +13,31 @@
  * peindre : sur iPhone, il l'ouvre dans son lecteur et n'enregistre rien. Le
  * geste paraît sans effet — il ne l'est pas, il montre au lieu de ranger.
  *
- * **Ce n'est pas une supposition sur iOS, c'est un écart déjà relevé ICI.** Le
- * 7 août 2026, `scripts/test-mes-donnees-e2e.ts` a consigné que son Safari
- * ignore le `filename` de cet en-tête (le fichier arrivait nommé « reglages »,
- * d'après la page). Un navigateur qui ne lit pas le nom de l'en-tête n'a aucune
- * raison d'en respecter la disposition. La sauvegarde, elle, descendait quand
- * même — parce qu'un `.zip` ne s'affiche pas.
+ * ─── ET CE CORRECTIF-LÀ ÉTAIT FAUX : IL A RENDU LES PDF ILLISIBLES ─────────
  *
- * D'où la règle : **quand on télécharge, on sert `application/octet-stream`.**
- * Le navigateur n'a alors plus de lecteur à proposer, et il ne lui reste qu'à
- * enregistrer. C'est exactement ce que `src/lib/type-de-fichier.ts` dit déjà de
- * son côté : « une extension inconnue rend `application/octet-stream` : le
- * navigateur propose alors de télécharger plutôt que d'afficher ».
+ * **Sa capture du 10 septembre 2026, deux fois :** *« j'ai essayé de télécharger
+ * la facture. Une fois que je l'ouvre, page blanche »*, puis *« même problème
+ * avec le devis »*. Le fichier, lui, était intact — téléchargé par la vraie
+ * route et relu ici, il portait le document entier.
  *
- * `X-Content-Type-Options: nosniff` est posé pour toutes les routes
- * (`next.config.ts`) : aucun navigateur ne peut deviner le vrai type derrière
- * ce type générique, ni décider de l'afficher quand même.
+ * Le 7 septembre, pour forcer l'enregistrement, cette fonction s'était mise à
+ * **mentir sur le type** : `application/octet-stream` au lieu de
+ * `application/pdf`. Le mensonge ne s'arrête pas à la réponse — **il colle au
+ * fichier enregistré**. iOS retient le type annoncé, et
+ * `X-Content-Type-Options: nosniff` lui interdit ensuite de deviner qu'il tient
+ * un PDF : rouvert depuis les téléchargements, le document n'a plus de lecteur.
+ * Page blanche, sans le moindre message.
+ *
+ * **La règle qui reste : on ne ment jamais sur le type d'un fichier.** Ce qui
+ * fait descendre un fichier, c'est `Content-Disposition: attachment` — la
+ * norme, et rien d'autre. Un type générique n'est pas un levier de plus : c'est
+ * une identité qu'on retire au document, et elle lui manque plus tard, ailleurs,
+ * chez le client.
+ *
+ * *(Ce que le 7 septembre croyait savoir d'iOS était une déduction, pas un
+ * relevé : elle partait du `filename` ignoré sur un `.zip` le 7 août. Un `.zip`
+ * descend de toute façon, faute de lecteur — il ne prouvait rien de la
+ * disposition.)*
  *
  * ─── POURQUOI UN SEUL ENDROIT ──────────────────────────────────────────────
  *
@@ -56,9 +65,9 @@ export function veutTelecharger(url: string): boolean {
 /**
  * Les deux en-têtes qui décident du sort du fichier.
  *
- * `type` est le type RÉEL — celui qu'on sert quand on ouvre. Il n'est employé
- * que dans ce cas : télécharger le remplace par le type générique, pour la
- * raison dite en tête de fichier.
+ * `type` est le type RÉEL, et il est servi **dans les deux cas** : c'est la
+ * disposition, seule, qui dit s'il faut ouvrir ou ranger. Un fichier rangé
+ * garde ainsi son identité, et se rouvre.
  */
 export function enTetesDeRemise({
   telecharger,
@@ -70,7 +79,7 @@ export function enTetesDeRemise({
   type: string;
 }): { "Content-Type": string; "Content-Disposition": string } {
   return {
-    "Content-Type": telecharger ? "application/octet-stream" : type,
+    "Content-Type": type,
     "Content-Disposition": `${telecharger ? "attachment" : "inline"}; ${nomDansLEnTete(nom)}`,
   };
 }

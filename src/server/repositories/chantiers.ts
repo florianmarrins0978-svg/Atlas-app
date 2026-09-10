@@ -4,7 +4,7 @@ import { NOTE_MAX } from "../../lib/note-chantier";
 import { creneauxParChantier, equipesParChantier } from "./occupation-chantiers";
 // **Le seul écrivain de « où le chantier est posé »**, partagé avec
 // `envois-devis.ts` depuis le 10 septembre 2026 : deux rédactions de cette
-// écriture ont déjà divergé une fois (`ARCHITECTURE.md` §321).
+// écriture ont déjà divergé une fois (`ARCHITECTURE.md` §322).
 import { ecrireLesCreneaux } from "./creneaux-poses";
 import {
   chantiers,

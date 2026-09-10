@@ -24,7 +24,7 @@ type Tx = Parameters<Parameters<typeof withEntreprise>[2]>[0];
  *
  * **Ce qu'elle n'écrit JAMAIS : `duree_demi_journees`.** C'est ce que le devis
  * a vendu ; l'écart entre cette durée et le nombre de créneaux est précisément
- * ce qui attend une place (`ARCHITECTURE.md` §321). Le réduire au passage
+ * ce qui attend une place (`ARCHITECTURE.md` §322). Le réduire au passage
  * ferait disparaître la demi-journée rendue sans un mot.
  *
  * `date_planifiee` et `creneau_debut` sont **dérivées** du premier créneau :

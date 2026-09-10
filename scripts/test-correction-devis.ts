@@ -176,7 +176,7 @@ async function main() {
   //
   // **Le défaut que ce contrôle existe pour rendre impossible.** Depuis que le
   // chantier porte OÙ chacune de ses demi-journées est posée
-  // (`ARCHITECTURE.md` §321), cette route écrivait `date_planifiee` sans
+  // (`ARCHITECTURE.md` §322), cette route écrivait `date_planifiee` sans
   // toucher aux créneaux : un chantier qui en portait déjà restait affiché à
   // son ANCIENNE place, et la date que le client venait de choisir
   // n'apparaissait nulle part au planning.

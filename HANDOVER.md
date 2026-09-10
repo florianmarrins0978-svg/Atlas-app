@@ -18,7 +18,7 @@ sert.
 | la règle | `duree_demi_journees` = ce qu'il **demande** · les créneaux = où il est **posé** · l'écart = ce qui **attend** en bas |
 | retiré | `deplacerChantierAction` — plus personne ne l'appelait |
 | les suites | `test-creneaux-chantier.ts` (12 cas), `test-liberer-une-demi-journee-e2e.ts` (8, **son geste de bout en bout**) |
-| le détail | `ARCHITECTURE.md` §321 |
+| le détail | `ARCHITECTURE.md` §322 |
 
 **LES DEUX PIÈGES À NE PAS REFABRIQUER.**
 
@@ -35,6 +35,27 @@ sert.
 noirci au calendrier, « une journée » écrit sous un chantier qui n'occupe plus
 qu'une moitié, et le tiroir du bas qui ne s'ouvrait pas pour un morceau seul.
 Regarder une capture fait partie du travail (`CLAUDE.md` §5).
+
+---
+## Le même jour — UNE SESSION PREND SON DOSSIER TOUTE SEULE (10 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | `npm run session` remplace `claude` : le lanceur prend le premier dossier de travail libre et y ouvre la session. `npm run session 2` désigne un dossier précis |
+| la migration | **aucune** |
+| les pièces | `scripts/ouvrir-session.mjs`, `scripts/preparer-sessions.mjs` (racine par git, importable) |
+| les suites | `scripts/test-ouvrir-session.ts` (5), `test-preparer-sessions.ts` (7) |
+| le détail | `ARCHITECTURE.md` §321, `CLAUDE.md` §1.0 |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** un dossier est occupé par un PROCESSUS vivant,
+jamais par un fichier. Le lanceur attend sa session — son PID est la preuve. Le
+remplacer par un horodatage ou un battement, c'est refaire le défaut du verrou
+de la batterie du 9 septembre, dans un sens ou dans l'autre : un dossier libéré
+au milieu du travail, ou condamné pour toujours.
+
+**Et il ne crée aucun dossier** : quand tout est pris il refuse et donne la
+commande. Créer, c'est le métier de `sessions:preparer`, seul à savoir installer
+les dépendances et recopier le `.env`.
 
 ---
 ## Lot précédent — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
@@ -511,7 +532,19 @@ Le détail : `ARCHITECTURE.md` §287 (l'atelier) et §288 (le dossier).
 
 ---
 
-## Dernier lot — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
+## ⚠ CE LOT A ÉTÉ DÉFAIT LE 10 SEPTEMBRE 2026 — le type générique est parti
+
+Son verdict, celui qu'on attendait : *« page blanche »*, sur la facture puis sur
+le devis. `application/octet-stream` colle au fichier ENREGISTRÉ ; avec
+`nosniff`, iOS n'a plus le droit d'y reconnaître un PDF, et le document rouvert
+depuis les téléchargements n'a plus de lecteur.
+
+`Content-Type` dit désormais le **vrai** type dans les deux cas ; seule
+`Content-Disposition: attachment` range le fichier. Détail et raisons :
+`ARCHITECTURE.md` §275. **Ce qui reste à vérifier chez lui : qu'un appui sur
+« Télécharger » range bien le fichier, et non qu'il l'affiche.**
+
+## Lot défait — « ÇA NE LA TÉLÉCHARGE PAS » (7 septembre 2026)
 
 **Document du lot :** `docs/lot-telecharger-la-facture.md`.
 **Décisions :** `ARCHITECTURE.md` §275.

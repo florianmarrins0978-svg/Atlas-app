@@ -862,7 +862,7 @@ export async function enregistrerReponse(
     // portait déjà restait affiché à son ANCIENNE place, et la date que le
     // client venait de choisir n'apparaissait nulle part au planning. C'est
     // exactement la divergence que `ecrireLesCreneaux` existe pour rendre
-    // impossible (`ARCHITECTURE.md` §321).
+    // impossible (`ARCHITECTURE.md` §322).
     await tx
       .update(chantiers)
       .set({ dureeDemiJournees: duree, updatedAt: maintenant })

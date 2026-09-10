@@ -1,5 +1,26 @@
 # « Quand je clique sur télécharger, ça ne la télécharge pas »
 
+> ## ⚠ CORRECTION DU 10 SEPTEMBRE 2026 — ce correctif était faux
+>
+> Ce qui est écrit plus bas a **cassé l'ouverture de vos documents**. Vos deux
+> captures : *« j'ai essayé de télécharger la facture. Une fois que je l'ouvre,
+> page blanche »*, puis *« même problème avec le devis »*.
+>
+> Le fichier, lui, était bon — nous l'avons téléchargé et relu entièrement.
+>
+> **Ce qui n'allait pas :** pour forcer l'enregistrement, le serveur annonçait
+> vos téléchargements comme des fichiers **sans type**, au lieu de PDF. Ce type
+> reste collé au fichier une fois enregistré : en le rouvrant, votre iPhone ne
+> savait plus qu'il tenait un PDF, et n'avait plus rien pour l'afficher.
+>
+> **C'est réparé** : un fichier annonce désormais toujours ce qu'il est. Ce qui
+> le fait descendre plutôt que s'ouvrir, c'est l'autre en-tête (`attachment`),
+> et lui seul.
+>
+> **Ce qui n'a PAS changé :** la protection anti-retouche de vos devis. Elle
+> avait été soupçonnée à tort, et c'est vous qui avez redressé la recherche —
+> *« avant ça fonctionnait, donc il y a quelque chose qui a buggé »*.
+
 **7 septembre 2026.** Votre message du matin, sous votre facture
 F2026-000001.
 

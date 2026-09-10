@@ -302,7 +302,7 @@ async function main() {
   // **La pose ne demande plus rien** depuis le soir même : la durée du devis
   // décide seule. Restait « Déplacer », où « Journée » écrivait le même état
   // que « Matin » — et le 10 septembre, « Déplacer » a cessé de déplacer : il
-  // **libère** la demi-journée qu'on touche (`ARCHITECTURE.md` §321).
+  // **libère** la demi-journée qu'on touche (`ARCHITECTURE.md` §322).
   //
   // **Ce que ce contrôle défend n'a pas changé pour autant**, et c'est pour ça
   // qu'il reste ici plutôt que d'être jeté : aucun geste du planning ne

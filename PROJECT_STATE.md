@@ -25,7 +25,7 @@ d'avant sont **dérivées**, jamais écrites à la main.
 **Rien n'a été repris pour les chantiers déjà posés**, délibérément : « aucun
 créneau écrit » vaut le bloc calculé, dans une seule fonction (`creneauxPoses`).
 
-Détail : `ARCHITECTURE.md` §321.
+Détail : `ARCHITECTURE.md` §322.
 
 ---
 
@@ -73,6 +73,22 @@ formule qu'il doit trancher, la durée de l'essai gratuit, et les seize
 > migration fausse envoie une session neuve appliquer ce qui est déjà là.
 
 ---
+
+## FAIT : UNE SESSION PREND SON DOSSIER TOUTE SEULE — 10 septembre 2026
+
+Sa demande : *« je veux qu'elle se débrouille, qu'elle aille dans un dossier à
+chaque fois, seule »*. `npm run session` au lieu de `claude` : le lanceur prend
+le premier dossier de travail libre et y ouvre la session.
+
+Un dossier est occupé tant que le processus de sa session vit — un jeton laissé
+par un terminal fermé brutalement ne condamne rien. Tous pris : il refuse et
+donne la commande, il ne fabrique pas un worktree de plus en silence.
+
+Aucune migration. `ARCHITECTURE.md` §321 · `CLAUDE.md` §1.0
+
+**Reste ouvert :** il tape encore `npm run session`. Une fonction dans son
+profil PowerShell rendrait le mot `claude` lui-même suffisant — à lui de dire
+s'il la veut.
 
 ## FAIT : le retour perdait un pas à chaque fois — 10 septembre 2026
 
