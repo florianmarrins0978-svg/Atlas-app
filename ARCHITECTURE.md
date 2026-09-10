@@ -26446,3 +26446,59 @@ pose les chantiers d'abord et les demi-journées libres ensuite. **Rien n'a ét�
 changé :** remettre le matin en haut contredit sa règle du 21 août — *« le nom
 toujours en premier ! »* — et l'arbitrage entre ses deux demandes lui appartient
 (`appli/deplacer-plus-simple.html`, `TODO.md`).
+
+---
+## §310 — « Déplacer » choisit un départ, et plus jamais une étendue
+
+**Sa décision du 10 septembre 2026**, après avoir essayé la planche
+`appli/deplacer-plus-simple.html` : *« fais celui-là, juste tu retires la
+journée. Il faut garder le bouton déplacer ; lorsque l'on clique dessus on
+arrive sur ce bouton matin - aprem, on clique sur l'un ou l'autre et le bouton
+disparaît, la sélection s'est faite et le bouton déplacer réapparaît. »*
+
+**« Retirer la journée » n'était pas un retrait cosmétique.** Ce troisième mot
+ne décrivait pas un départ mais une ÉTENDUE, et le choisir **réécrivait
+`dureeDemiJournees`**. La conséquence, jamais signalée par personne : « Matin »
+sur un chantier d'une journée le ramenait à une demi-journée, en silence.
+L'après-midi redevenait vendable, et cela ne se voyait ni au plan, ni au devis,
+ni à la facture — seulement le jour du chantier. §308 avait retiré ce défaut du
+chemin de la POSE ; il vivait encore dans celui du déplacement.
+
+**Ce qui a disparu, et c'est le cœur de ce lot :**
+
+| Ce qui existait | Pourquoi c'est parti |
+|---|---|
+| `QuandChantier` — « matin \| apres \| journee » | trois mots pour deux départs et une étendue mélangés |
+| `departEtDuree(quand, duree)` | traduisait ces trois mots en départ ET durée : il n'y a plus rien à traduire |
+| `quandDuChantier(c)` | disait lequel des trois décrivait un chantier ; la question devient « d'où part-il » |
+| `poseOfferte(duree)` | retirait celui des trois qui n'écrivait rien ; aucun des deux restants n'est mort |
+| `MOT_QUAND` | faisait doublon avec `MOT_DEMI`, qui dit déjà ces deux mots-là |
+| `estUnMomentValide` | acceptait « journee » de l'assistant — une dictée sans heure réservait la journée |
+
+**Le vocabulaire est désormais celui de la BASE** — `Moment` / `Demi`, « matin »
+ou « apres_midi », les deux valeurs que porte `creneau_debut` depuis la
+migration 0019. Une couche de traduction disparaît, et avec elle l'endroit où
+les deux vocabulaires pouvaient diverger (`CLAUDE.md` §3).
+
+**L'INTERRUPTEUR PLUTÔT QUE TROIS PASTILLES, et ce n'est pas un choix de
+style.** Sa remarque de la veille : *« j'ai l'impression que c'est inversé »*.
+Trois pastilles rondes dont une est allumée ne disent pas si l'allumée est là où
+le chantier EST ou là où il IRA — l'œil peut lire les deux. Un interrupteur ne
+se lit que dans un sens : la position tenue est l'état courant. `BasculeDemi`
+emploie `colors.plein` et `surPlein`, le couple des pastilles retenues de cet
+écran, pour rester lisible sur les deux chartes sombres.
+
+**CE QUI N'EST PAS CORRIGÉ, ET QUI ATTEND SON ARBITRAGE.** Les deux moitiés de
+la journée changent toujours de place selon où est le chantier : posé
+l'après-midi, la fiche se lit `APRÈS-MIDI` puis `MATIN`
+(`scripts/capture-deplacer.ts` le photographie). Les remettre dans l'ordre ferait
+parfois ouvrir la fiche sur « libre » — ce qu'il a refusé le 21 août 2026,
+*« le nom toujours en premier ! »*. Sa demande du 10 septembre ne parle que du
+geste ; l'ordre reste posé dans `TODO.md`.
+
+**CE QUE LES CONTRÔLES ONT DÛ DÉSAPPRENDRE.** Trois suites fixaient exactement
+ce qu'il fait retirer — « Matin réserve une demi-journée, Journée en réserve
+deux » — et l'une d'elles s'en servait pour INSTALLER une durée avant de la
+vérifier. Elles visent maintenant la règle qui remplace : le départ s'écrit, la
+durée du devis ne bouge pas, et cela vaut pour toutes les durées au lieu du seul
+cas au-delà d'un jour (`CLAUDE.md` §5 bis).

@@ -6,6 +6,32 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-10
+
+### « Déplacer » : un interrupteur à deux positions, et une durée qui ne fond plus
+
+*« Fais celui-là, juste tu retires la journée. Il faut garder le bouton
+déplacer ; on clique sur matin ou aprem et le bouton disparaît. »*
+
+**Retirer « Journée » n'était pas cosmétique.** Ce mot ne décrivait pas un
+départ mais une étendue, et le choisir réécrivait la durée du chantier :
+« Matin » sur un chantier d'une journée le ramenait à une demi-journée, en
+silence. L'après-midi redevenait vendable, et cela ne se voyait ni au plan, ni
+au devis, ni à la facture — seulement le jour du chantier.
+
+Six pièces disparaissent avec le mot, dont trois fonctions qui n'existaient que
+pour rattraper le mélange. Le planning parle maintenant le vocabulaire de la
+base : matin, ou après-midi.
+
+**Et l'interrupteur répond à « j'ai l'impression que c'est inversé »** : trois
+pastilles dont une est allumée ne disent pas si l'allumée est là où le chantier
+est ou là où il ira. Un interrupteur ne se lit que dans un sens.
+
+**Ce qui n'est pas corrigé :** les deux moitiés de la journée changent toujours
+de place selon où est le chantier. Les remettre dans l'ordre contredit sa règle
+du 21 août — c'est à lui de trancher.
+
+---
 ## 2026-09-09
 
 ### L'onglet des retours existe toujours, et ses photos se voient enfin

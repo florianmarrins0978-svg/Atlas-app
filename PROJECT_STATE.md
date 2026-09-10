@@ -1,8 +1,24 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-09 · branche `main`
+**Dernière mise à jour :** 2026-09-10 · branche `main`
 · dernière migration `drizzle/0077_civilite_et_prenom_du_compte.sql`
 (ce lot-ci ne touche que le chemin de retour, sans base)
+
+---
+
+## FAIT : « Déplacer », un interrupteur à deux positions — 10 septembre 2026
+
+Sa décision après la planche : *« fais celui-là, juste tu retires la journée »*.
+« Déplacer » reste, il ouvre un interrupteur Matin / Après-midi, et se referme
+dès qu'on choisit.
+
+**Retirer « Journée » a fermé un vrai piège :** ce mot disait une étendue, pas
+un départ, et le choisir réécrivait la durée du chantier — « Matin » sur une
+journée vendue la ramenait à une demi-journée, en silence. Six pièces
+disparaissent avec lui. **Aucune migration.** Détail : `ARCHITECTURE.md` §310.
+
+**Reste ouvert, et c'est à lui de trancher :** l'ordre des deux moitiés de la
+journée (`TODO.md`).
 
 ---
 

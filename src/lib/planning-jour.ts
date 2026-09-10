@@ -262,17 +262,6 @@ export function blocsDeLaJournee<C>(
 }
 
 /**
- * Le moment d'un chantier, tel qu'il se choisit et se lit : matin,
- * après-midi, ou la journée.
- *
- * **Trois mots, parce que ce sont les trois boutons de « Déplacer ».** La base,
- * elle, porte un départ et une durée en demi-journées : c'est plus riche — un
- * chantier peut durer trois jours — et c'est pourquoi la traduction se fait ici
- * une fois pour toutes, plutôt que dans chaque écran.
- */
-export type QuandChantier = "matin" | "apres" | "journee";
-
-/**
  * Un jour écrit « 2026-08-31 », et rien d'autre.
  *
  * **Écrit ici, avec le reste de la règle du planning.** L'agent conversationnel
@@ -290,65 +279,19 @@ export function estUnJourValide(jour: string): boolean {
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === jour;
 }
 
-/** « matin », « apres » ou « journee » — les trois seuls moments de pose. */
-export function estUnMomentValide(quand: string): quand is QuandChantier {
-  return quand === "matin" || quand === "apres" || quand === "journee";
-}
-
-export const MOT_QUAND: Record<QuandChantier, string> = {
-  matin: "Matin",
-  apres: "Après-midi",
-  journee: "Journée",
-};
-
 /**
- * Le départ et la durée qu'écrit chacun des trois boutons.
+ * « matin » ou « apres_midi » — les deux seuls départs possibles.
  *
- * **Un chantier plus long qu'une journée garde sa durée.** « Journée » sur un
- * chantier de trois jours le raccourcirait à deux demi-journées sans que rien
- * ne le dise : le patron déplacerait son chantier et perdrait deux jours de
- * travail en silence. Le bouton ne fait alors que changer le DÉPART.
+ * **Ils portent les mots de la BASE, et c'est le lot du 10 septembre 2026 qui
+ * l'a ramené là.** Un troisième mot vivait ici, « journee », et il ne décrivait
+ * pas un départ mais une ÉTENDUE : le choisir réécrivait la durée du chantier.
+ * Sa décision — *« tu retires la journée »* — supprime le mélange, et avec lui
+ * la traduction qui existait pour le rattraper.
  */
-export function departEtDuree(
-  quand: QuandChantier,
-  dureeActuelle: number
-): { moment: Demi; duree: number } {
-  if (dureeActuelle > 2) {
-    return { moment: quand === "apres" ? "apres_midi" : "matin", duree: dureeActuelle };
-  }
-  if (quand === "journee") return { moment: "matin", duree: 2 };
-  return { moment: quand === "apres" ? "apres_midi" : "matin", duree: 1 };
+export function estUnDemiValide(demi: string): demi is Demi {
+  return demi === "matin" || demi === "apres_midi";
 }
 
-/**
- * CE QUE LES TROIS BOUTONS PEUVENT HONORER SUR CE CHANTIER-LÀ.
- *
- * ───────────────────────────────────────────────────────────────────────────
- * **Sa panne du 9 septembre 2026 :** *« lorsque je clique sur le matin pour
- * Mr. Julien, ça me met d'office toute la journée »*. Son chantier dure deux
- * jours, et c'est exact : quatre demi-journées posées à partir du matin
- * occupent forcément le matin ET l'après-midi. Ce qui était faux, c'est la
- * QUESTION que l'écran lui posait.
- *
- * Sur un chantier d'une journée ou moins, les trois boutons choisissent
- * l'ÉTENDUE : « Matin » réserve une demi-journée, « Journée » en réserve deux.
- * Au-delà, l'étendue vient de la dictée et `departEtDuree` la protège — la
- * raccourcir lui ferait perdre des jours de travail en silence. Les boutons ne
- * choisissent alors plus que le DÉPART, et « Journée » écrit exactement le même
- * état que « Matin » : un bouton mort, qui se retire au lieu de s'expliquer.
- *
- * **La règle vivait dans le JSX de l'écran, et elle y était donc muette pour
- * qui ne le lisait pas.** Les deux autres endroits qui dessinaient ces boutons
- * — « Sans date » et « + Ajouter un chantier » — ne la portaient pas ; ils ne
- * demandent plus rien du tout depuis le 9 septembre au soir, la durée du devis
- * décidant seule. Il ne reste donc qu'un appelant, « Déplacer », et c'est là
- * qu'un moment se corrige vraiment.
- * ───────────────────────────────────────────────────────────────────────────
- */
-export function poseOfferte(duree: number): { quands: QuandChantier[] } {
-  if (duree > 2) return { quands: ["matin", "apres"] };
-  return { quands: ["matin", "apres", "journee"] };
-}
 
 /**
  * Comment se lit, en un mot, un chantier déjà posé.
@@ -397,28 +340,22 @@ export function ditLeQuand(moment: Demi, duree: number): string {
 }
 
 /**
- * Comment ce chantier se lit dans les boutons de « Déplacer ».
+ * D'OÙ PART CE CHANTIER — la seule question que « Déplacer » pose encore.
  *
- * **Vit ici, et non dans l'écran** : c'est une règle, pas un dessin, et une
- * règle enfermée dans un composant ne s'éprouve qu'au navigateur (`CLAUDE.md`
- * §3).
+ * **Sa décision du 10 septembre 2026 :** *« il faut garder le bouton déplacer ;
+ * quand on clique dessus on arrive sur ce bouton matin - aprem, on clique sur
+ * l'un ou l'autre et le bouton disparaît »*. Un interrupteur à deux positions,
+ * et rien d'autre.
+ *
+ * **Ce que cela retire, et qui était un vrai piège :** le troisième mot,
+ * « Journée », ne décrivait pas un départ mais une ÉTENDUE. Le choisir
+ * réécrivait `dureeDemiJournees` — « Matin » sur un chantier d'une journée le
+ * ramenait donc à une demi-journée, en silence, et l'après-midi redevenait
+ * vendable. La durée vient du devis (§308) ; « Déplacer » n'y touche plus, et
+ * la traduction qui existait pour rattraper ce mélange a disparu avec lui.
  */
-export function quandDuChantier(c: {
-  dureeDemiJournees: number | null;
-  creneauDebut: string | null;
-}): QuandChantier {
-  const duree = c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
-  // **« Journée » ne décrit QUE la journée pleine.** Un chantier de trois jours
-  // rendait « journee » lui aussi : la pastille se posait donc sur « Journée »,
-  // et « Matin » — qui écrit exactement le même état pour lui — restait éteint
-  // et sans effet. C'est ce qu'il a signalé le 23 août 2026 : *« cliquer sur
-  // Déplacer ne déplace pas le chantier, ça ne fait rien du tout »*.
-  //
-  // Au-delà d'une journée, ce qu'il choisit est le DÉPART, jamais la durée
-  // (`departEtDuree` protège les jours de travail) : l'état courant est donc
-  // « matin » ou « après-midi », et la pastille tombe juste.
-  if (duree === 2) return "journee";
-  return c.creneauDebut === "apres_midi" ? "apres" : "matin";
+export function departDuChantier(c: { creneauDebut: string | null }): Demi {
+  return c.creneauDebut === "apres_midi" ? "apres_midi" : "matin";
 }
 
 /**

@@ -549,7 +549,7 @@ async function main() {
 
     const eric = await chantiersRepo.creerChantier(ctx, { nom: "Mr. Eric" });
     await chantiersRepo.mettreAJourDureeEquipe(ctx, eric.id, { dureePrevue: "1 journée" });
-    await chantiersRepo.planifierChantier(ctx, eric.id, dans(10), { quand: "journee" });
+    await chantiersRepo.planifierChantier(ctx, eric.id, dans(10), { demi: "matin" });
     // Ses deux équipes, matin ET après-midi : c'est sa capture du 22 août.
     for (const demi of ["matin", "apres_midi"] as const) {
       for (const rang of [1, 2]) {
@@ -583,7 +583,7 @@ async function main() {
 
     const eric = await chantiersRepo.creerChantier(ctx, { nom: "Mr. Eric" });
     await chantiersRepo.mettreAJourDureeEquipe(ctx, eric.id, { dureePrevue: "une demi-journée" });
-    await chantiersRepo.planifierChantier(ctx, eric.id, dans(10), { quand: "matin" });
+    await chantiersRepo.planifierChantier(ctx, eric.id, dans(10), { demi: "matin" });
     for (const rang of [1, 2]) {
       await chantiersRepo.basculerEquipeDuChantier(ctx, eric.id, "matin", rang);
     }

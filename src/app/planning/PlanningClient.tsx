@@ -48,13 +48,10 @@ import {
   ditQuiPart,
   etatDemi,
   MOT_DEMI,
-  MOT_QUAND,
-  poseOfferte,
-  quandDuChantier,
+  departDuChantier,
   occupationDemi,
   type Demi,
   type EtatDemi,
-  type QuandChantier,
 } from "@/lib/planning-jour";
 import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
 import FinDeChantier from "./FinDeChantier";
@@ -786,10 +783,10 @@ export default function PlanningClient({
    * rechargement, et sur un chantier de trois jours ce sont deux jours de
    * travail qui disparaîtraient de l'affichage.
    */
-  function deplacer(chantierId: string, quand: QuandChantier) {
+  function deplacer(chantierId: string, demi: Demi) {
     setOuvert(null);
     enTransition(async () => {
-      const r = await deplacerChantierAction(chantierId, quand);
+      const r = await deplacerChantierAction(chantierId, demi);
       if (!r.succes) {
         // **Un refus avalé est un défaut muet**, et le dépôt l'a déjà payé le
         // 11 août 2026 : « Impossible d'enregistrer la note » sans que personne
@@ -799,7 +796,7 @@ export default function PlanningClient({
         //
         // Journalisé plutôt que levé : le message d'une exception d'action
         // serveur n'arrive jamais jusqu'à lui (`AGENTS.md`).
-        console.error("Déplacement refusé", { chantierId, quand, erreur: r.erreur });
+        console.error("Déplacement refusé", { chantierId, demi, erreur: r.erreur });
         return;
       }
       setChantiers((liste) =>
@@ -1784,11 +1781,76 @@ type GestesCarte = {
   occupationDe: (jour: JourIso, demi: Demi) => { pris: readonly ChantierPlanning[]; charge: number };
   chantiersDuJour: (jour: JourIso) => ChantierPlanning[];
   basculerEquipe: (chantierId: string, demi: Demi, rang: number) => void;
-  deplacer: (chantierId: string, quand: QuandChantier) => void;
+  deplacer: (chantierId: string, demi: Demi) => void;
   retirerDuJour: (chantierId: string) => void;
   poser: (chantierId: string, jour: JourIso) => void;
   taches: Record<string, FeuilleEtRetour>;
 };
+
+/**
+ * L'INTERRUPTEUR À DEUX POSITIONS DE « DÉPLACER ».
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa demande du 10 septembre 2026**, après avoir essayé la planche
+ * `appli/deplacer-plus-simple.html` : *« fais celui-là, juste tu retires la
+ * journée. Il faut garder le bouton déplacer ; lorsque l'on clique dessus on
+ * arrive sur ce bouton matin - aprem, on clique sur l'un ou l'autre et le
+ * bouton disparaît, la sélection s'est faite et le bouton déplacer
+ * réapparaît. »*
+ *
+ * **Pourquoi un interrupteur et non trois pastilles** — sa remarque de la
+ * veille : *« j'ai l'impression que c'est inversé »*. Trois pastilles rondes
+ * dont une est allumée ne disent pas si l'allumée est là où le chantier EST ou
+ * là où il IRA. Un interrupteur, lui, ne se lit que dans un sens : la position
+ * tenue est l'état courant.
+ *
+ * **Et « Journée » n'est plus une position**, parce que ce n'en était pas une :
+ * elle ne décrivait pas un départ mais une étendue, et la choisir réécrivait la
+ * durée du chantier (`deplacerChantier`).
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+function BasculeDemi({
+  depart,
+  onChoisir,
+}: {
+  depart: Demi;
+  onChoisir: (demi: Demi) => void;
+}) {
+  return (
+    <span
+      data-atlas="bascule-demi"
+      className="flex overflow-hidden rounded-full"
+      style={{ border: `1px solid ${colors.line}`, background: colors.card }}
+    >
+      {DEMIS.map((d) => {
+        const tenue = d === depart;
+        return (
+          <button
+            key={d}
+            type="button"
+            data-vers={d}
+            aria-pressed={tenue}
+            onClick={() => onChoisir(d)}
+            className="cursor-pointer px-3.5 py-[7px] text-[12px]"
+            style={{
+              border: 0,
+              // L'aplat porte la position tenue ; `surPlein` donne l'encre qui
+              // s'y lit, sur les sept chartes — dont les deux sombres, où les
+              // pôles s'inversent (`CLAUDE.md` §3).
+              // `colors.plein` et `surPlein` : le même couple que les pastilles
+              // retenues de cet écran. Une couleur écrite en clair serait juste
+              // cinq chartes sur sept, et illisible sur les deux sombres.
+              background: tenue ? colors.plein : "transparent",
+              color: tenue ? surPlein : colors.inkSoft,
+            }}
+          >
+            {MOT_DEMI[d]}
+          </button>
+        );
+      })}
+    </span>
+  );
+}
 
 /**
  * LE GESTE D'AJOUT D'UNE JOURNÉE — écrit une fois, posé à deux endroits.
@@ -2623,27 +2685,10 @@ function CarteDuJour({
                   className="mt-2.5 flex flex-wrap items-center justify-end gap-1.5"
                 >
                   {choixDeplacer ? (
-                    // **Déplacer se CHOISIT** : une liste, jamais une rotation
-                    // qui déciderait à sa place. C'est la règle qu'il a posée
-                    // pour l'équipe, et elle vaut partout.
-                    <>
-                      {/* **« Journée » disparaît au-delà d'une journée** — la
-                          règle vit dans `poseOfferte`, et non plus ici : elle
-                          manquait aux deux autres endroits qui dessinent ces
-                          mêmes boutons, et c'est par là qu'il est retombé
-                          dessus le 9 septembre. La durée, elle, se lit déjà
-                          au-dessus de ces boutons (« 2 jours »). */}
-                      {poseOfferte(dureeDuChantier(c)).quands.map((v) => (
-                        <Petit
-                          key={v}
-                          data-vers={v}
-                          retenue={quandDuChantier(c) === v}
-                          onClick={() => deplacer(c.id, v)}
-                        >
-                          {MOT_QUAND[v]}
-                        </Petit>
-                      ))}
-                    </>
+                    <BasculeDemi
+                      depart={departDuChantier(c)}
+                      onChoisir={(demi) => deplacer(c.id, demi)}
+                    />
                   ) : (
                     <>
                       <Petit

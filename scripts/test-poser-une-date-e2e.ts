@@ -336,12 +336,12 @@ async function main() {
       );
     }
     if (moments.some((m) => m.includes("Journée"))) {
-      throw new Error("« Journée » écrit le même état que « Matin » sur un chantier de deux jours");
+      throw new Error("« Journée » n'est pas un départ : elle réécrivait la durée du chantier");
     }
 
     // Et le moment qui reste écrit bien quelque chose de NEUF, sans jamais
     // raccourcir le chantier : la durée dictée vaut des jours de travail.
-    await carte.locator('[data-vers="apres"]').click();
+    await carte.locator('[data-vers="apres_midi"]').click();
     await page.waitForTimeout(1500);
     const { rows } = await pool.query(
       `SELECT creneau_debut AS moment, duree_demi_journees AS duree FROM chantiers WHERE id = $1`,

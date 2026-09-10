@@ -42,7 +42,8 @@ import {
   retirerPrestation as retirerPrestationEntretien,
 } from "@/server/repositories/prestations-entretien";
 import { terminerChantier } from "@/server/repositories/factures";
-import { estUnJourValide, estUnMomentValide, type QuandChantier } from "@/lib/planning-jour";
+import { estUnJourValide, estUnDemiValide } from "@/lib/planning-jour";
+import type { Moment } from "@/lib/disponibilites";
 import { ajouterLignePrixDirectAction } from "@/app/chantiers/[id]/prix/actions";
 import { chargerDevisAction } from "@/app/chantiers/[id]/export/actions";
 import { extraire } from "@/server/ai/services/extraction-service";
@@ -706,7 +707,7 @@ export async function appliquerPropositionsAction(
             resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Chantier ou jour manquant." });
             break;
           }
-          if (quandDit !== null && !estUnMomentValide(quandDit)) {
+          if (quandDit !== null && !estUnDemiValide(quandDit)) {
             resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Moment de la journée inconnu." });
             break;
           }
@@ -722,10 +723,10 @@ export async function appliquerPropositionsAction(
             resultats.push({ ...base, statut: "conflit", categorie: "conflit_metier", message: "Ce chantier n'existe plus." });
             break;
           }
-          const choix = quandDit === null ? undefined : { quand: quandDit as QuandChantier };
+          const choix = quandDit === null ? undefined : { demi: quandDit as Moment };
           const pose =
             proposition.type === "deplacer_chantier"
-              ? await deplacerChantier(ctx, cible, quandDit as QuandChantier)
+              ? await deplacerChantier(ctx, cible, quandDit as Moment)
               : await planifierChantier(ctx, cible, jour, choix);
           if (!pose) {
             // `deplacerChantier` rend `null` quand le chantier n'est posé nulle
