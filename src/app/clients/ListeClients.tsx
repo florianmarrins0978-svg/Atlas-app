@@ -5,6 +5,7 @@ import Link from "next/link";
 import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import { enEuros } from "@/lib/euros";
 import { grouperEnBandes } from "@/lib/bandes-clients";
+import { jourDeLaLigne, type TraceDuClient } from "@/lib/documents-du-client";
 import {
   filtrerClientsParNom,
   aucunClientTrouve,
@@ -52,7 +53,14 @@ export type FicheClientListee = {
   nom: string;
   /** Ce qui distingue quatre Martins. `null` : jamais renseignée. */
   adresse: string | null;
-  chantiers: number;
+  /**
+   * **La dernière chose qui s'est produite chez lui** — un devis parti, une
+   * facture émise, une fiche envoyée. `null` : rien n'est encore parti.
+   *
+   * Elle a remplacé le compte de chantiers le 9 septembre 2026, à sa demande.
+   * Le pourquoi est dans `derniereTraceDuClient`.
+   */
+  derniere: TraceDuClient | null;
   facture: string | number | null;
   du: string | number | null;
   /** Le jour du chantier le plus récent : c'est l'ordre, et c'est la bande. */
@@ -285,6 +293,7 @@ export default function ListeClients() {
                     <LigneClient
                       client={c}
                       saisie={saisie}
+                      aujourdHui={aujourdHui}
                       // Le filet ferme chaque ligne sauf la toute dernière de
                       // l'écran : un trait au ras du vide n'y sépare rien.
                       dernier={
@@ -306,23 +315,30 @@ export default function ListeClients() {
 function LigneClient({
   client,
   saisie,
+  aujourdHui,
   dernier,
 }: {
   client: FicheClientListee;
   saisie: string;
+  /** Le jour tel que le SERVEUR le compte — voir `FournisseurClients`. */
+  aujourdHui: string;
   dernier: boolean;
 }) {
   const morceaux = morceauxSurlignes(client.nom, saisie);
-  const chantiers =
-    client.chantiers === 0
-      ? "aucun chantier"
-      : client.chantiers === 1
-        ? "1 chantier"
-        : `${client.chantiers} chantiers`;
-  // Le lieu d'abord, parce que c'est lui qu'on cherche du regard ; le compte
-  // ensuite, parce qu'il tient en deux mots. Sans adresse, la ligne se contente
-  // du compte plutôt que d'annoncer un manque qu'il n'a pas demandé à combler.
-  const dit = client.adresse ? `${client.adresse} · ${chantiers}` : chantiers;
+  // **Le compte de chantiers a quitté cette ligne le 9 septembre 2026.** Il
+  // était juste — tous les chantiers ouverts — et c'est ce qui le rendait
+  // trompeur : *« certains clients ont 8 chantiers, on s'attend à avoir 8 devis
+  // alors qu'il y en a 0 »*. Un chantier naît d'une dictée, bien avant le
+  // moindre document. Ce qui le remplace annonce ce que la fiche CONTIENT.
+  //
+  // Le lieu d'abord, parce que c'est lui qu'on cherche du regard quand quatre
+  // clients s'appellent Martins ; ce qui s'est passé ensuite. **L'un ou l'autre
+  // peut manquer** — un client saisi à la volée n'a pas d'adresse, un client
+  // tout neuf n'a rien envoyé —, et la ligne se tait alors plutôt que
+  // d'annoncer un manque qu'il n'a pas demandé à combler.
+  const quandQuoi = client.derniere
+    ? `${client.derniere.quoi} ${jourDeLaLigne(client.derniere.jour, aujourdHui)}`
+    : null;
   const du = client.du !== null && Number(client.du) > 0 ? client.du : null;
 
   return (
@@ -358,15 +374,43 @@ function LigneClient({
             )
           )}
         </span>
-        <span
-          className="mt-[3px] block truncate text-[12.5px] leading-[1.45]"
-          data-atlas="situation-client"
-          // Voir plus haut : `muted` ne tient pas la lecture au soleil, et
-          // c'est cette ligne-ci qui répond à « lequel des quatre Martins ? ».
-          style={{ color: colors.inkSoft }}
-        >
-          {dit}
-        </span>
+        {/* **Rien à dire, rien à l'écran — et pas même la place.** Un client
+            sans adresse ET sans document laissait une seconde ligne VIDE sous
+            son nom : un trou de dix-huit pixels qui se lit comme un défaut
+            d'affichage. Trouvé à la capture le 9 septembre 2026, jamais par un
+            test — la cinquième fois dans ce dépôt (`CLAUDE.md` §5). */}
+        {(client.adresse || quandQuoi) && (
+          <span
+            className="mt-[3px] flex items-baseline text-[12.5px] leading-[1.45]"
+            data-atlas="situation-client"
+            // Voir plus haut : `muted` ne tient pas la lecture au soleil, et
+            // c'est cette ligne-ci qui répond à « lequel des quatre Martins ? ».
+            style={{ color: colors.inkSoft }}
+          >
+            {/* **C'EST L'ADRESSE QUI SE ROGNE, JAMAIS LA DATE — mesuré, pas
+                supposé.** Sur les 316 px de sa ligne, « 10 Rue de Nantes 77400
+                Lagny-sur-Marne · Devis 7 sept. » déborde de trois caractères.
+                Écrits d'un seul tenant, ce sont les DERNIERS mots qui tombent :
+                la date disparaîtrait exactement chez les clients dont l'adresse
+                est longue, c'est-à-dire là où l'on ajoutait quelque chose.
+                Séparés, l'adresse perd sa fin — sa ville — et garde son numéro
+                et sa rue, qui sont ce qui distingue quatre Martins. */}
+            {client.adresse && <span className="min-w-0 truncate">{client.adresse}</span>}
+            {quandQuoi && (
+              // **L'espace de séparation est une MARGE, pas un caractère.** Vu
+              // à la capture : écrit « ` · ` » en tête du texte, l'espace du
+              // début tombe — une boîte flexible ne garde pas le blanc qui la
+              // commence —, et l'on lisait « 44300 Nantes· Devis 5 sept. »
+              // collé. Il tenait par accident sur les adresses coupées, jamais
+              // sur les autres.
+              <span
+                className={`flex-none whitespace-nowrap${client.adresse ? " ml-[5px]" : ""}`}
+              >
+                {client.adresse ? `· ${quandQuoi}` : quandQuoi}
+              </span>
+            )}
+          </span>
+        )}
       </span>
 
       {/* Ce qui reste dû passe avant tout le reste : c'est la seule chose qui

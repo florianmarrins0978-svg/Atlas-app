@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { noterLaVisite, oublierCetEcran } from "./journal-navigateur";
+import { marquerLaProvenance, noterLaVisite, oublierCetEcran } from "./journal-navigateur";
 
 /**
  * Ce qui tient le journal des écrans traversés, pour que la flèche de retour
@@ -25,7 +25,15 @@ function Enregistreur() {
   const parametres = useSearchParams();
   useEffect(() => {
     const question = parametres.toString();
-    noterLaVisite(question ? `${chemin}?${question}` : chemin);
+    const ici = question ? `${chemin}?${question}` : chemin;
+    // **La provenance se marque AVANT la visite.** Elle dit d'où cette entrée
+    // d'historique a été ouverte — c'est ce qui autorise la flèche à RECULER
+    // plutôt qu'à poser une page neuve, et donc à rendre au patron sa place
+    // dans la liste (`journal-navigateur.ts`). Deux questions distinctes, deux
+    // mécanismes : le journal dit OÙ l'on va, la marque dit si l'on peut y
+    // reculer.
+    marquerLaProvenance(ici);
+    noterLaVisite(ici);
   }, [chemin, parametres]);
 
   // **LE BOUTON DU NAVIGATEUR EST LE SEUL RETOUR QU'ATLAS NE FAIT PAS.**

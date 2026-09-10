@@ -18,10 +18,12 @@ import { resteDu, type FacturePourTva } from "@/lib/exigibilite-tva";
 import { receptionEnMots, type ReceptionLisible } from "@/lib/reception-facture";
 import {
   dernierePrestation,
+  derniereTraceDuClient,
   jourCourt,
   rangerDuPlusRecent,
   type DerniereePrestation,
   type PieceDuClient,
+  type TraceDuClient,
 } from "@/lib/documents-du-client";
 
 /**
@@ -441,7 +443,18 @@ export type ClientEnListe = {
    * plus —, et la ligne se contente alors de ses chantiers.
    */
   adresse: string | null;
-  chantiers: number;
+  /**
+   * **La dernière chose qui s'est produite chez lui** — sa demande du
+   * 9 septembre 2026, en remplacement du compte de chantiers.
+   *
+   * `null` est un état normal et fréquent : un client dont aucun document n'est
+   * encore parti. La ligne se contente alors de son adresse, plutôt que
+   * d'annoncer un manque qu'il n'a pas demandé à combler.
+   *
+   * La règle vit dans `src/lib/documents-du-client.ts` : ce fichier lit, il ne
+   * décide pas (`CLAUDE.md` §4 sexies).
+   */
+  derniere: TraceDuClient | null;
   /** `null` : rien n'a encore été facturé — ce n'est pas « zéro euro ». */
   facture: string | null;
   /** Ce qui reste dû. `null` quand rien n'est facturé. */
@@ -522,6 +535,49 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
           )
       : [];
 
+    // ─── CE QUI S'EST PRODUIT CHEZ CHAQUE CLIENT ─────────────────────────
+    //
+    // **Deux requêtes pour toute la liste, jamais deux par client** : c'est la
+    // règle de ce dépôt depuis que cette fonction existe, et elle vaut plus
+    // encore ici — il a trente-sept clients, et cette page est celle qu'il
+    // ouvre en arrivant.
+    //
+    // **Les mêmes conditions que la FICHE, mot pour mot** : un devis compte
+    // s'il est parti, une facture si elle est émise, une fiche si elle a été
+    // envoyée. C'est ce qui permet à la ligne d'annoncer ce que la fiche
+    // contient — deux jeux de conditions finiraient par se contredire, et
+    // c'est lui qui verrait la différence d'un écran à l'autre.
+    const [sesDevis, sesFiches] = await Promise.all([
+      ids.length
+        ? tx
+            .select({ chantierId: devis.chantierId, jour: devis.dateEmission })
+            .from(devis)
+            .where(and(inArray(devis.chantierId, ids), eq(devis.statut, "envoye")))
+        : Promise.resolve([] as { chantierId: string; jour: string }[]),
+      tx
+        .select({ clientId: passagesEntretien.clientId, jour: passagesEntretien.jour })
+        .from(passagesEntretien)
+        .where(
+          and(
+            eq(passagesEntretien.entrepriseId, ctx.entrepriseId),
+            isNotNull(passagesEntretien.envoyeLe),
+            isNotNull(passagesEntretien.jeton)
+          )
+        ),
+    ]);
+
+    const clientDuChantier = new Map(sesChantiers.map((c) => [c.id, c.clientId]));
+    /** Le jour le plus récent par client, pour un genre de document donné. */
+    const plusRecent = new Map<string, string>();
+    const retenir = (cle: string, jour: string | null) => {
+      if (!jour) return;
+      const connu = plusRecent.get(cle);
+      if (!connu || jour > connu) plusRecent.set(cle, jour);
+    };
+    for (const d of sesDevis) retenir(`devis:${clientDuChantier.get(d.chantierId) ?? ""}`, d.jour);
+    for (const f of sesFactures) retenir(`facture:${clientDuChantier.get(f.chantierId) ?? ""}`, f.dateEmission);
+    for (const f of sesFiches) retenir(`fiche:${f.clientId ?? ""}`, f.jour);
+
     const parFacture = new Map<string, { date: string; montant: string }[]>();
     for (const p of paiements) {
       const liste = parFacture.get(p.factureId) ?? [];
@@ -565,7 +621,11 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
         id: client.id,
         nom: client.nom,
         adresse: client.adresse,
-        chantiers: fiche.chantiers,
+        derniere: derniereTraceDuClient({
+          devis: plusRecent.get(`devis:${client.id}`) ?? null,
+          facture: plusRecent.get(`facture:${client.id}`) ?? null,
+          fiche: plusRecent.get(`fiche:${client.id}`) ?? null,
+        }),
         facture: fiche.facture,
         du: fiche.du,
         dernierJour: fiche.liste[0]?.jour ?? null,

@@ -217,6 +217,56 @@ au lieu d'être caché derrière une flèche qui prétendait reculer.
 
 Détail et décisions : `ARCHITECTURE.md` §311 · `docs/lot-retour-page-davant.md`.
 
+### « 8 chantiers » cède la place à la dernière chose qui s'est produite
+
+**Sa question, puis sa décision :** *« À quoi correspond le nombre de chantier ?
+Certains clients ont 8 chantiers, on s'attend à avoir 8 devis alors qu'il y en a
+0 »*, puis *« remplace par la dernière chose qui s'est produit »*.
+
+Le compte était **juste** — tous les chantiers ouverts, quel que soit leur état
+— et c'est ce qui le rendait trompeur : un chantier naît d'une dictée, bien
+avant le moindre document. La ligne annonçait donc du travail là où la fiche
+n'avait rien à montrer.
+
+Ce qui le remplace tient en une règle : **la ligne annonce ce que la fiche
+contient.** Les trois candidats sont exactement les trois registres de la fiche
+— Devis, Facture, Fiche — et le plus récent se lit avec son jour. Rien à
+annoncer : la ligne se tait, elle n'écrit pas « aucun document ».
+
+**Deux défauts trouvés à la capture, et par aucun test :** la date se coupait
+sur les adresses longues — donc elle disparaissait exactement là où on venait de
+l'ajouter —, et un client sans adresse ni document laissait une seconde ligne
+vide sous son nom. L'adresse se rogne désormais, jamais la date, et une ligne
+sans rien à dire ne prend pas de place. `test-ligne-du-client-e2e.ts` mesure les
+deux.
+
+**Ce qui disparaît :** le champ `chantiers` de la fiche, que plus personne ne
+lisait.
+
+### La flèche de retour rendait le haut de la liste au lieu de sa place
+
+**Sa remarque, trente-sept clients à l'écran :** *« si je clique sur un client
+tout en bas de la liste, je fais retour, il me remet en haut de la liste — je
+veux rester où j'étais ! »*
+
+Le défaut n'était pas dans la liste : il était dans la **flèche**. Elle était un
+lien, c'est-à-dire une navigation en AVANT vers l'écran précédent — et une page
+neuve se pose en haut, à raison. Son geste, lui, est un RETOUR.
+
+Mesuré sur la version bâtie avant de corriger : la flèche déposait à **0 px**,
+le retour du navigateur rendait **2 941 px**. Le navigateur savait donc déjà le
+faire ; il fallait cesser de l'en empêcher. La flèche RECULE désormais dans
+l'historique quand l'écran d'avant est bien celui qu'elle vise — sinon elle
+navigue comme avant, pour ne jamais devenir un bouton qui ne fait rien.
+
+**Ce qui disparaît par la même occasion :** l'entrée d'historique empilée à
+chaque aller-retour. Il fallait auparavant appuyer autant de fois qu'on avait
+ouvert de fiches pour ressortir de la liste.
+
+Vaut pour **les quarante-neuf écrans** qui portent cette flèche, pas seulement
+pour les clients : la corriger dans le seul écran signalé aurait été un
+pansement (`CLAUDE.md` §4 quater).
+
 ### « Dernier devis » n'apparaissait presque jamais
 
 **Il l'a vu sur la fiche de Julien** : un devis du 7 septembre à l'écran, et le

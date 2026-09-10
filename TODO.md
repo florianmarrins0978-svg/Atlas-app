@@ -186,6 +186,35 @@ n'est pas un pansement oublié : elle est nommée ici, et elle a cessé de grand
 **À faire quand le journal aura tenu quelques jours chez lui** — c'est la seule
 chose qui manque pour trancher.
 
+## ⏳ UN RETOUR SERT L'ÉCRAN DEPUIS LA RÉSERVE — mesuré le 9 septembre 2026
+
+**Trouvé en corrigeant la flèche de retour** (`ARCHITECTURE.md` §305), et
+**pas apporté par ce lot** : un client créé en base pendant qu'on est sur une
+fiche n'apparaît pas au retour. Le contrôle a été joué sur les DEUX gestes —
+la flèche de l'écran et le retour du navigateur — et les deux servent la
+réserve de Next.js. C'est le comportement de la plateforme, et l'application le
+porte depuis toujours.
+
+**Pourquoi ça n'a jamais mordu, et pourquoi ça pourrait :** les
+soixante-seize `revalidatePath` du dépôt vident la réserve dès qu'une
+modification passe par l'application. Le trou est ailleurs — une action qui
+modifie un écran SANS revalider le chemin de l'écran d'où l'on vient.
+
+**Ce qui a été essayé puis retiré**, et il ne faut pas le refaire tel quel : un
+`router.refresh()` sur `popstate`. Il rendait les données fraîches et remettait
+le défilement à ZÉRO — donc il défaisait le correctif. Le faire tenir demandait
+un `setTimeout` de 400 ms calé sur la restauration du navigateur : un pansement
+au sens du §4 quater, qui reviendrait sur un téléphone plus lent.
+
+**La bonne piste** : garder le défilement soi-même de bout en bout, ou vérifier
+que chaque action revalide le chemin de l'écran d'où l'on vient. La seconde est
+la moins chère et la plus sûre.
+
+**Qui peut le trancher :** nous — c'est du code. À ouvrir seulement s'il
+signale un écran qui ment au retour ; sinon, la place rendue vaut mieux.
+
+---
+
 ## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
 
 **Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce

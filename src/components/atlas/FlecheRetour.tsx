@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { colors } from "@/lib/design-tokens";
 import { pagePrecedente } from "@/lib/journal-de-navigation";
-import { journalDeCetOnglet, oublierCetEcran } from "./journal-navigateur";
+import { journalDeCetOnglet, oublierCetEcran, onPeutReculerVers } from "./journal-navigateur";
 
 /**
  * LA flèche de retour d'Atlas — une seule, pour tous les écrans.
@@ -60,6 +60,7 @@ export default function FlecheRetour({
   marque?: string;
 }) {
   const chemin = usePathname();
+  const router = useRouter();
   // **`useSyncExternalStore` et non un état posé dans un effet.** Le journal est
   // un rangement du navigateur, extérieur à React : c'est le seul crochet qui
   // sache le lire sans provoquer un second rendu en cascade, et React s'y
@@ -88,7 +89,35 @@ export default function FlecheRetour({
       // Sans cette ligne, deux appuis se renvoient l'un à l'autre sans jamais
       // sortir : c'est la boucle du 7 septembre 2026 (`retour-du-devis.ts`),
       // qu'un journal seul aurait refabriquée.
-      onClick={() => oublierCetEcran(chemin)}
+      onClick={(e) => {
+        oublierCetEcran(chemin);
+        // ── ET ON Y VA EN RECULANT, QUAND C'EST VRAIMENT L'ÉCRAN D'AVANT ──
+        //
+        // **Sa remarque du 9 septembre 2026 :** *« si je clique sur un client
+        // tout en bas de la liste, je fais retour, il me remet en haut de la
+        // liste — je veux rester où j'étais ! »*
+        //
+        // Un lien pose une page NEUVE, donc en haut : mesuré, la flèche
+        // déposait à 0 px là où le retour du navigateur rendait 2 941 px. Le
+        // navigateur sait déjà rendre sa place ; il suffit de ne plus l'en
+        // empêcher.
+        //
+        // **La destination ne change pas d'un pouce** : c'est toujours celle
+        // que le journal a choisie. Seul le CHEMIN pour y aller change, et
+        // uniquement si l'entrée d'historique d'avant est littéralement
+        // celle-là (`onPeutReculerVers`). Sans preuve — signet, rechargement,
+        // écran retiré du journal après un enregistrement — le lien fait son
+        // travail comme avant.
+        //
+        // **Un appui avec une touche de commande n'est pas notre geste** : il
+        // ouvre ailleurs, et on n'y touche pas.
+        if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        if (!precedente || !onPeutReculerVers(precedente)) return;
+        // `preventDefault` AVANT `back()` : sans lui le lien naviguerait aussi,
+        // et l'on empilerait l'entrée qu'on vient de retirer.
+        e.preventDefault();
+        router.back();
+      }}
       data-atlas={marque}
       className="flex items-center justify-center rounded-full"
       style={{

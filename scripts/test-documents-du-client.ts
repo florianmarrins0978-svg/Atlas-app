@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import {
   rangerDuPlusRecent,
   dernierePrestation,
+  derniereTraceDuClient,
   jourCourt,
+  jourDeLaLigne,
   nomDuFichierDeLaPiece,
   type PieceDuClient,
 } from "../src/lib/documents-du-client";
@@ -202,6 +204,73 @@ dire(
     nomDuFichierDeLaPiece(p).endsWith(".pdf")
   ),
   "un nom de fichier porte toujours son extension",
+);
+
+// ─── LA DERNIÈRE CHOSE QUI S'EST PRODUITE CHEZ UN CLIENT ────────────────────
+//
+// **Sa demande du 9 septembre 2026 :** *« Remplace par la dernière chose qui
+// s'est produit »*, en remplacement du compte de chantiers de la liste, qui
+// annonçait du travail là où la fiche n'avait rien à montrer.
+
+// Le plus récent gagne, quel que soit son genre.
+dire(
+  derniereTraceDuClient({ devis: "2026-09-07", facture: "2026-08-02", fiche: null })?.quoi === "Devis",
+  "le document le plus récent est celui qu'on annonce",
+);
+dire(
+  derniereTraceDuClient({ devis: "2026-06-01", facture: "2026-09-02", fiche: null })?.jour === "2026-09-02",
+  "le jour annoncé est celui du document retenu",
+);
+dire(
+  derniereTraceDuClient({ devis: null, facture: null, fiche: "2026-05-12" })?.quoi === "Fiche",
+  "une fiche d'entretien compte autant que le reste — elle est sur la fiche du client",
+);
+
+// **RIEN ne s'invente quand rien n'est parti** (`CLAUDE.md` §4). La ligne se
+// tait ; elle n'annonce pas un « aucun document » que personne n'a demandé.
+dire(
+  derniereTraceDuClient({ devis: null, facture: null, fiche: null }) === null,
+  "un client sans aucun document ne fait dire à la ligne que ce qu'elle sait",
+);
+
+// **À égalité de jour, le point le plus AVANCÉ du parcours.** Un devis envoyé
+// puis facturé le même jour — c'est le cas d'un chantier fait dans la journée —
+// est un chantier facturé. L'ordre d'arrivée en base ne promet rien.
+dire(
+  derniereTraceDuClient({ devis: "2026-09-09", facture: "2026-09-09", fiche: "2026-09-09" })?.quoi ===
+    "Facture",
+  "à jour égal, la facture passe devant le devis, qui passe devant la fiche",
+);
+dire(
+  derniereTraceDuClient({ devis: "2026-09-09", facture: null, fiche: "2026-09-09" })?.quoi === "Devis",
+  "à jour égal, le devis passe devant la fiche",
+);
+
+// **Une date PLUS ANCIENNE ne remonte pas parce qu'elle est plus avancée** :
+// c'est la chronologie qui commande, le parcours ne fait que départager.
+dire(
+  derniereTraceDuClient({ devis: "2026-09-09", facture: "2026-01-02", fiche: null })?.quoi === "Devis",
+  "une vieille facture ne recouvre pas un devis d'hier",
+);
+
+
+// ─── LA DATE D'UNE LIGNE DE LISTE ───────────────────────────────────────────
+//
+// **Mesurée sur son téléphone, pas choisie** : la deuxième ligne d'un client
+// dispose de 316 px, et l'année de trop y coupait l'adresse — celle qui sépare
+// quatre clients du même nom.
+dire(
+  jourDeLaLigne("2026-09-05", "2026-09-09") === "5 sept.",
+  "l'année qui court ne s'écrit pas : elle prend la place de l'adresse",
+);
+dire(
+  jourDeLaLigne("2025-06-12", "2026-09-09") === "12 juin 2025",
+  "une autre année s'écrit — c'est le client qu'on n'a pas revu",
+);
+// Une date illisible se rend telle quelle plutôt que d'être amputée au hasard.
+dire(
+  jourDeLaLigne("pas-une-date", "2026-09-09") === "pas-une-date",
+  "ce qui n'est pas une date ne se rogne pas",
 );
 
 console.log(echecs === 0 ? "\n✅ 0 échec." : `\n❌ ${echecs} échec(s).`);
