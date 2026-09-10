@@ -1,8 +1,31 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-09 · branche `claude/back-button-history-0pa6sj`
-· dernière migration `drizzle/0083_retour_vu_par.sql`
-(ce lot-ci ne touche que le chemin de retour, sans base)
+**Dernière mise à jour :** 2026-09-10 · branche `claude/employee-absence-mockup-ayfv45`
+· dernière migration `drizzle/0085_creneaux_chantier.sql`
+
+---
+
+## FAIT : UNE DEMI-JOURNÉE SE LIBÈRE, ATTEND, ET SE REPOSE — 10 septembre 2026
+
+Sa planche retenue (`appli/liberer-une-demi-journee.html`) : *« je clique sur le
+matin, il devient vert et le matin du vendredi devient libre, et une demi-journée
+de Mr Julien sort ; la demi-journée retirée peut être replacée. »*
+
+**« Déplacer » ne déplace plus rien** — il libère la demi-journée qu'on regarde,
+avec un interrupteur dont les **deux positions sont éteintes** : ce n'est pas un
+état à lire, c'est une question. Le morceau rendu attend dans le tiroir du bas,
+sous « Sans date », et se repose sur n'importe quelle demi-journée libre.
+
+**Ce que ça a demandé en base :** un chantier posé n'était qu'un bloc d'un seul
+tenant. La table `creneaux_chantier` (migration **0085**) porte désormais où
+chaque demi-journée est posée ; `duree_demi_journees` reste ce que le devis a
+vendu, et l'écart entre les deux est ce qui attend une place. Les deux colonnes
+d'avant sont **dérivées**, jamais écrites à la main.
+
+**Rien n'a été repris pour les chantiers déjà posés**, délibérément : « aucun
+créneau écrit » vaut le bloc calculé, dans une seule fonction (`creneauxPoses`).
+
+Détail : `ARCHITECTURE.md` §321.
 
 ---
 

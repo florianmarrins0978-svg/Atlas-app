@@ -391,20 +391,29 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     ou: "l'écran Planning",
     intitule: "Poser un chantier sur un jour",
     motsCles: ["planning", "planifier", "poser", "jour", "date", "semaine", "ajouter", "chantier", "calendrier"],
-    geste: "Touchez le jour, puis « Ajouter un chantier », et choisissez matin, après-midi ou journée.",
+    // **Le second temps a disparu le 9 septembre 2026** — *« si Claudette c'est
+    // un chantier 1 journée, deux, ou une demi, ça doit se mettre tout seul »*.
+    // La durée vient du devis ; la pose ne redemande plus rien.
+    geste: "Touchez le jour, puis « Ajouter un chantier », et touchez le nom : sa durée fait le reste.",
     source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Ajouter un chantier", "Matin", "Journée"],
+    preuves: ["Ajouter un chantier"],
   },
   {
     id: "planning-deplacer",
     ecran: "Planning",
     ou: "la fiche d'un chantier du planning",
-    intitule: "Déplacer un chantier planifié",
-    motsCles: ["deplacer", "bouger", "changer", "jour", "reporter", "decaler", "planning"],
-    geste: "Ouvrez la fiche du chantier dans le planning, puis appuyez sur « Déplacer ».",
-    reserve: "Un chantier dont le client a retenu la date refuse d'être déplacé, et le dit.",
+    intitule: "Libérer une demi-journée d'un chantier",
+    motsCles: ["deplacer", "bouger", "changer", "jour", "reporter", "decaler", "planning", "liberer", "demi"],
+    // **« Déplacer » ne déplace plus rien depuis le 10 septembre 2026** : il
+    // rend la demi-journée qu'on touche, et elle attend en bas
+    // (`ARCHITECTURE.md` §321). Enseigner l'ancien geste, c'est envoyer le
+    // patron appuyer sur un bouton qui fait autre chose.
+    geste:
+      "Ouvrez le jour, appuyez sur « Déplacer », puis touchez le matin ou l'après-midi à libérer. " +
+      "La demi-journée rendue attend en bas : touchez-la, puis touchez la demi-journée qui l'accueille.",
+    reserve: "Changer un chantier de jour entier se fait avec « Retirer », puis en le reposant.",
     source: "src/app/planning/PlanningClient.tsx",
-    preuves: ["Déplacer", "Déplacement refusé"],
+    preuves: ["Déplacer", "Poser ici"],
   },
   {
     id: "planning-retirer",

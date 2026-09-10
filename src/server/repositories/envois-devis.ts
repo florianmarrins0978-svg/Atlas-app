@@ -18,6 +18,8 @@ import {
   equipesParChantier,
 } from "./occupation-chantiers";
 import { lireObjet } from "../storage";
+// Le seul écrivain de « où le chantier est posé » — partagé avec le planning.
+import { ecrireLesCreneaux } from "./creneaux-poses";
 import {
   compterOccupation,
   departPossible,
@@ -28,6 +30,7 @@ import {
   jourRetenable,
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
   versJourIso,
+  creneauxDuChantier,
   type ChantierPlanifie,
   type FenetreProposition,
   type JourIso,
@@ -852,12 +855,29 @@ export async function enregistrerReponse(
 
     // Le chantier est débloqué et planifié à la date retenue, sur le créneau
     // que le planning vient de lui trouver.
+    //
+    // **La DURÉE d'abord, la PLACE ensuite — et par la même porte que le
+    // planning.** Jusqu'au 10 septembre 2026, cette ligne écrivait
+    // `date_planifiee` sans toucher aux créneaux du chantier : celui qui en
+    // portait déjà restait affiché à son ANCIENNE place, et la date que le
+    // client venait de choisir n'apparaissait nulle part au planning. C'est
+    // exactement la divergence que `ecrireLesCreneaux` existe pour rendre
+    // impossible (`ARCHITECTURE.md` §321).
     await tx
       .update(chantiers)
-      .set({ datePlanifiee: date, creneauDebut: moment, dureeDemiJournees: duree, updatedAt: maintenant })
+      .set({ dureeDemiJournees: duree, updatedAt: maintenant })
       .where(
         and(eq(chantiers.id, envoi.chantierId), eq(chantiers.entrepriseId, envoi.entrepriseId))
       );
+    // **Un bloc d'un seul tenant, et c'est juste ici** : le client accepte un
+    // jour, pas un morcellement. Ce que le patron rendra ensuite depuis son
+    // planning se réécrira par la même fonction.
+    await ecrireLesCreneaux(
+      tx,
+      { entrepriseId: envoi.entrepriseId },
+      envoi.chantierId,
+      creneauxDuChantier({ jour: date as JourIso, moment }, duree)
+    );
 
     return { succes: true as const, dateRetenue: date, contreProposee };
   });

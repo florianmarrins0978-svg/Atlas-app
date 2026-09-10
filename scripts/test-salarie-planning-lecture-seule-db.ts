@@ -59,7 +59,8 @@ const FICHIER_ACTIONS = join(process.cwd(), "src/app/planning/actions.ts");
 const ECRITURES = [
   ["planifierChantierAction", "poser un chantier à une date"],
   ["basculerEquipeAction", "changer l'équipe d'une demi-journée"],
-  ["deplacerChantierAction", "déplacer un chantier dans la journée"],
+  ["libererDemiJourneeAction", "libérer une demi-journée d'un chantier"],
+  ["reposerDemiJourneeAction", "reposer une demi-journée qui attendait"],
   ["ecrireNoteChantierAction", "écrire le pense-bête"],
   ["deplanifierChantierAction", "retirer un chantier du planning"],
   ["supprimerChantierAction", "supprimer un chantier"],

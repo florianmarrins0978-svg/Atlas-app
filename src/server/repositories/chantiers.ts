@@ -2,6 +2,10 @@ import { and, eq, gte, isNull, isNotNull, or, sql, desc } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { NOTE_MAX } from "../../lib/note-chantier";
 import { creneauxParChantier, equipesParChantier } from "./occupation-chantiers";
+// **Le seul écrivain de « où le chantier est posé »**, partagé avec
+// `envois-devis.ts` depuis le 10 septembre 2026 : deux rédactions de cette
+// écriture ont déjà divergé une fois (`ARCHITECTURE.md` §321).
+import { ecrireLesCreneaux } from "./creneaux-poses";
 import {
   chantiers,
   clients,
@@ -527,57 +531,6 @@ export function rangerParDemi(
  * se voyait ni au plan, ni au devis, ni à la facture — seulement le jour du
  * chantier. La durée vient du devis (§308) ; ici, on ne choisit qu'un départ.
  */
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * ÉCRIRE OÙ UN CHANTIER EST POSÉ — le seul endroit qui touche à ces lignes
- * ═══════════════════════════════════════════════════════════════════════════
- *
- * **Trois colonnes deviennent DÉRIVÉES ici, et nulle part ailleurs.**
- * `date_planifiee` et `creneau_debut` sont le PREMIER créneau ; vingt fichiers
- * les lisent encore — la fiche de chantier, l'export d'agenda, le classement
- * des terminés. Les laisser diverger des créneaux, ce serait deux vérités sur
- * la même question (`CLAUDE.md` §3) : une seule fonction les réécrit donc, et
- * c'est celle-ci.
- *
- * **`duree_demi_journees` n'est PAS touchée**, et c'est le cœur du modèle : elle
- * dit ce que le chantier DEMANDE, lu de la dictée ou du devis. Ce qu'on écrit
- * ici dit où il est POSÉ. Leur écart est ce qui attend une place dans « Sans
- * date » — le remettre à jour effacerait justement l'information qu'il veut
- * voir.
- *
- * **On remplace, on n'ajoute pas** : recalculer l'ensemble et le réécrire
- * entier laisse la table dans un état qui se lit seul. Une insertion de plus
- * après un appui répété donnerait deux places à une demi-journée.
- */
-async function ecrireLesCreneaux(
-  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
-  ctx: Ctx,
-  chantierId: string,
-  poses: readonly Creneau[]
-) {
-  await tx.delete(creneauxChantier).where(eq(creneauxChantier.chantierId, chantierId));
-  if (poses.length > 0) {
-    await tx.insert(creneauxChantier).values(
-      poses.map((c) => ({
-        entrepriseId: ctx.entrepriseId,
-        chantierId,
-        jour: c.jour,
-        demi: c.moment,
-      }))
-    );
-  }
-  const resume = resumeDesCreneaux(poses);
-  await tx
-    .update(chantiers)
-    .set({
-      datePlanifiee: resume.jour,
-      creneauDebut: resume.moment,
-      updatedBy: ctx.utilisateurId,
-      updatedAt: new Date(),
-    })
-    .where(eq(chantiers.id, chantierId));
-}
-
 /** Ce qu'un chantier occupe en base — vide s'il n'a jamais été morcelé. */
 async function lireLesCreneaux(
   tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
@@ -743,7 +696,6 @@ export async function deplacerChantier(
     return row ?? null;
   });
 }
-
 
 export async function planifierChantier(
   ctx: Ctx,
@@ -1309,7 +1261,6 @@ function enNombre(v: string | null): number | null {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
-
 
 /**
  * LES CHANTIERS D'UNE FILE DU PLANNING — pour la portée resserrée d'un salarié.

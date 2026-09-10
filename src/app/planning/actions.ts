@@ -6,7 +6,6 @@ import {
   planifierChantier,
   deplanifierChantier,
   ecrireNoteChantier,
-  deplacerChantier,
   supprimerChantier,
   SuppressionChantierRefusee,
   basculerEquipeDuChantier,
@@ -138,33 +137,6 @@ export async function basculerEquipeAction(
   // report, son téléphone garderait l'ancienne.
   if (etat) await porterChantierDansAgenda(ctx, chantierId);
   return etat;
-}
-
-/**
- * Déplace un chantier posé : il part le matin, ou l'après-midi.
- *
- * Le jour ne bouge pas — « Déplacer » vit dans la fiche d'UN jour, et c'est ce
- * que l'écran promet. **Et la durée ne bouge plus** : sa décision du
- * 10 septembre 2026, *« tu retires la journée »*.
- */
-export async function deplacerChantierAction(
-  chantierId: string,
-  demi: Moment
-): Promise<ResultatPose> {
-  const ctx = await getCurrentCtx();
-  await exigerEcritureSurLePlanning(ctx, "déplacer ce chantier");
-  await exigerChantierDansSaPortee(ctx, chantierId, "déplacer ce chantier");
-  const row = await deplacerChantier(ctx, chantierId, demi);
-  if (!row) return { succes: false, erreur: "Ce chantier n'est pas posé sur un jour." };
-  await porterChantierDansAgenda(ctx, chantierId);
-  return {
-    succes: true,
-    etat: {
-      datePlanifiee: row.datePlanifiee ?? null,
-      creneauDebut: row.creneauDebut ?? null,
-      dureeDemiJournees: row.dureeDemiJournees ?? null,
-    },
-  };
 }
 
 /** Ce qu'un chantier occupe après le geste — l'écran repeint avec ça. */
