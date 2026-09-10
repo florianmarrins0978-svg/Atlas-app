@@ -222,7 +222,21 @@ export function ditQuiPart(noms: readonly string[]): string {
   return `${noms[0]} +${noms.length - 1}`;
 }
 
-export type BlocChantier<C> = { type: "chantier"; chantier: C; demis: Demi[] };
+export type BlocChantier<C> = {
+  type: "chantier";
+  chantier: C;
+  demis: Demi[];
+  /**
+   * Les moitiés libres qui PRÉCÈDENT ce chantier dans la journée.
+   *
+   * **Elles vivent dans son bloc, sous son nom** — sa précision du 10 septembre
+   * 2026 : *« le nom doit rester en premier, ensuite matin et ensuite
+   * aprèm »*. Émises comme des blocs à part, elles passaient AVANT le nom : la
+   * fiche s'ouvrait sur « libre », et l'on lisait ce qui manque avant de savoir
+   * de qui il s'agit — ce qu'il refuse depuis le 21 août.
+   */
+  libresAvant: Demi[];
+};
 export type BlocLibre = { type: "libre"; demi: Demi };
 export type BlocJour<C> = BlocChantier<C> | BlocLibre;
 
@@ -272,14 +286,28 @@ export function blocsDeLaJournee<C>(
   // **UNE SEULE PASSE, DANS L'ORDRE DE LA JOURNÉE.** Il y en avait deux — les
   // chantiers, puis ce qui restait libre —, et c'est ce qui faisait échanger
   // leurs places aux deux moitiés du jour.
+  //
+  // **Une moitié libre attend le chantier qui la suit** plutôt que d'ouvrir la
+  // fiche : elle se dessine sous son nom (`libresAvant`). Sans cette attente,
+  // tenir l'ordre du jour obligeait à faire passer « libre » devant le client.
+  let enAttente: Demi[] = [];
   for (const demi of DEMIS) {
     for (const g of groupes.filter((g) => g.demis[0] === demi)) {
-      blocs.push({ type: "chantier", chantier: g.chantier, demis: g.demis });
+      blocs.push({
+        type: "chantier",
+        chantier: g.chantier,
+        demis: g.demis,
+        libresAvant: enAttente,
+      });
+      enAttente = [];
     }
-    // Une moitié que personne n'occupe garde sa ligne, à SA place : la cacher
-    // ferait croire que la journée entière est prise.
-    if (!groupes.some((g) => g.demis.includes(demi))) blocs.push({ type: "libre", demi });
+    // Une moitié que personne n'occupe garde sa ligne : la cacher ferait croire
+    // que la journée entière est prise.
+    if (!groupes.some((g) => g.demis.includes(demi))) enAttente.push(demi);
   }
+  // Ce qui reste libre APRÈS le dernier chantier n'a personne sous qui se
+  // ranger : il garde sa ligne, à la fin, comme avant.
+  for (const demi of enAttente) blocs.push({ type: "libre", demi });
   return blocs;
 }
 

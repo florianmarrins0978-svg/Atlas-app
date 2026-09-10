@@ -30,10 +30,12 @@ réponse du même jour : *« oui, matin puis aprèm »*. Les deux moitiés
 échangeaient leur place selon l'heure du chantier, et l'appui sur « Matin » les
 faisait sauter.
 
-**Cela REVIENT sur sa règle du 21 août** — *« le nom toujours en premier ! »* :
-sur une journée dont seul l'après-midi est pris, la fiche s'ouvre désormais sur
-« libre », et c'est le prix qu'il a accepté. Ne pas le défaire une troisième
-fois sans lui : le pourquoi est dans `ARCHITECTURE.md` §313.
+**ET SA RÈGLE DU 21 AOÛT TIENT TOUJOURS** — *« le nom doit rester en premier,
+ensuite matin et ensuite aprèm »*. Une moitié libre qui précède un chantier
+descend DANS son bloc (`libresAvant`), sous son nom, au lieu d'ouvrir la fiche.
+**Les deux règles se tenaient ensemble** : la première version de ce lot les
+avait crues incompatibles et lui avait présenté un arbitrage qu'il n'avait pas à
+trancher. Le pourquoi est dans `ARCHITECTURE.md` §313.
 
 ---
 ## Dernier lot — POSER UN CHANTIER NE DEMANDE PLUS QUAND (9 septembre 2026)
