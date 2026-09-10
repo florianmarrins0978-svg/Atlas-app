@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { useAncrageDuGeste } from "@/components/atlas/useAncrageDuGeste";
 import Link from "next/link";
 import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
@@ -43,6 +51,7 @@ import {
 } from "@/lib/mois";
 import {
   blocsDeLaJournee,
+  rangDeLaFiche,
   DEMIS,
   ditLeCompteDemi,
   ditLaDuree,
@@ -3026,6 +3035,20 @@ function CarteDuJour({
     (b) => !seulement || b.type === "libre" || b.chantier.id === seulement
   );
 
+  // ─── LA FICHE SE COLLE SOUS SON CHANTIER — sa correction du 10 septembre
+  // 2026. La règle, et ce qu'elle concilie, vivent dans `rangDeLaFiche` : elle
+  // s'éprouve sans navigateur, là où le défaut, lui, ne se voyait qu'à deux
+  // chantiers dans la même journée.
+  const apresLaFiche = rangDeLaFiche(blocs, feuilleIci);
+  const laFiche = feuilleIci ? (
+    <FeuilleChantier
+      key={feuilleIci}
+      chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
+      feuille={taches[feuilleIci]}
+      ecriture={ecriture}
+    />
+  ) : null;
+
   return (
     <>
       {/* ─── ELLE SE RATTACHE À CE QU'IL A TOUCHÉ ───────────────────────────
@@ -3122,19 +3145,25 @@ function CarteDuJour({
         )}
 
         {blocs.map((bloc, rang) => {
+          // La fiche se glisse ICI quand c'est le rang qu'on a calculé — un
+          // seul endroit dans l'arbre, donc une seule règle de placement.
+          const suite = rang === apresLaFiche ? laFiche : null;
+
           if (bloc.type === "libre") {
             return (
-              <LigneLibre
-                key={`libre-${bloc.demi}`}
-                demi={bloc.demi}
-                occupation={occupationDe(jour, bloc.demi)}
-                marge={rang === 0 ? 8 : 16}
-                onPoser={
-                  ecriture && morceauEnMain
-                    ? () => reposer(morceauEnMain, jour, bloc.demi)
-                    : undefined
-                }
-              />
+              <Fragment key={`libre-${bloc.demi}`}>
+                <LigneLibre
+                  demi={bloc.demi}
+                  occupation={occupationDe(jour, bloc.demi)}
+                  marge={rang === 0 ? 8 : 16}
+                  onPoser={
+                    ecriture && morceauEnMain
+                      ? () => reposer(morceauEnMain, jour, bloc.demi)
+                      : undefined
+                  }
+                />
+                {suite}
+              </Fragment>
             );
           }
 
@@ -3149,8 +3178,8 @@ function CarteDuJour({
           const demisDeCeJour = bloc.demis;
 
           return (
+            <Fragment key={c.id}>
             <div
-              key={c.id}
               data-atlas="bloc-chantier"
               style={{ marginTop: rang === 0 ? 0 : 16 }}
             >
@@ -3378,6 +3407,8 @@ function CarteDuJour({
                 </div>
               )}
             </div>
+            {suite}
+            </Fragment>
           );
         })}
 
@@ -3395,16 +3426,6 @@ function CarteDuJour({
 
       </div>
       </div>
-
-      {feuilleIci && (
-        <FeuilleChantier
-          key={feuilleIci}
-          chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
-          feuille={taches[feuilleIci]}
-          ecriture={ecriture}
-          dansLeMois={Boolean(attache)}
-        />
-      )}
     </>
   );
 }
@@ -3564,14 +3585,11 @@ function FeuilleChantier({
   chantier,
   feuille,
   ecriture = true,
-  dansLeMois = false,
 }: {
   chantier: ChantierPlanning | null;
   feuille?: FeuilleEtRetour;
   /** Faux pour un salarié : la note se LIT, elle ne s'écrit pas (30 août 2026). */
   ecriture?: boolean;
-  /** Dans le mois, elle suit les marges de la grille et non celles de la liste. */
-  dansLeMois?: boolean;
 }) {
   // **`key={chantier.id}` là où elle est rendue** : changer de chantier remonte
   // le composant, et « Adresse copiée » repart à zéro sans qu'un effet ait à le
@@ -3599,10 +3617,14 @@ function FeuilleChantier({
   const liens = liensItineraire(adresse);
   const tel = lienAppel(chantier.clientTelephone);
 
+  // **Aucune marge à elle** : elle vit DANS la carte du jour, entre les
+  // chantiers, et c'est le retrait de la carte qui l'aligne. Le drapeau
+  // `dansLeMois` qui posait `mx-[18px]` est parti avec la seule place où il
+  // aurait servi — les deux appelants passent `attache`, il était déjà mort.
   return (
     <div
       data-atlas="feuille"
-      className={`${dansLeMois ? "" : "mx-[18px] "}mt-3 rounded-[10px] px-4 pb-[18px] pt-4`}
+      className="mt-3 rounded-[10px] px-4 pb-[18px] pt-4"
       style={{ background: colors.rustTint, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
     >
       <p
