@@ -8,6 +8,34 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### La photo d’un retour ne prend plus l’écran : une bibliothèque
+
+Il a choisi dans l’heure, planche en main — *« Voilà je veux ça ! »*, la
+variante avec la rangée — et ajouté : *« si on touche un endroit hors de la
+photo ça ferme aussi »*.
+
+`VisionneusePhoto` reçoit désormais **la liste et le rang**, plus une seule
+clé : l’écran reste derrière un voile d’encre, la photo vient dans un cadre au
+milieu (60 % de la hauteur au plus), la croix passe **à droite**, un chevron de
+chaque côté — éteint au bout plutôt que retiré —, « 2 / 3 » dessous et la rangée
+des vignettes en bas, celle qu’on regarde cerclée d’or. Le doigt glisse, le
+voile ferme, Échap et les flèches marchent sur un ordinateur. Avec une seule
+photo : ni chevrons, ni compte, ni rangée.
+
+**Un jeton neuf, `surPhoto`** (`design-tokens.ts`) : les chevrons sont posés
+sur la photo, et une photo ne suit aucune charte — en `surPlein` ils se
+retournaient avec Nuit pendant que l’image, elle, restait la même. C’est la
+seule couleur du produit qui a le droit de ne pas suivre la charte, et elle vit
+dans les jetons pour que la règle garde son sens ailleurs.
+
+**La suite éprouve ses gestes, pas la fonction** : `test-onglets-termines-e2e`
+pose désormais DEUX fichiers réels dans le stockage local — sans fichier, une
+image mesure zéro pixel, et l’on ne saurait pas dire si elle couvre l’écran. Elle
+mesure une photo plus petite que l’écran, la croix à droite, le chevron qui
+passe à « 2 / 2 » et s’éteint au bout, la vignette de la rangée qui ramène à la
+première, et la fermeture en touchant le voile. Sa version d’avant exigeait
+l’inverse — « la visionneuse couvre l’écran » — et aurait rougi sur sa demande.
+
 ### Dessiner la photo d’un retour en bibliothèque, avant d’y toucher
 
 Sa capture du soir, sur la visionneuse livrée le matin : *« c’est trop gros,

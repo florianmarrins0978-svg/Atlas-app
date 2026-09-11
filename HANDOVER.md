@@ -8,6 +8,22 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA PHOTO D'UN RETOUR EN BIBLIOTHÈQUE (11 septembre 2026)
+
+| | |
+|---|---|
+| sa décision | planche `appli/photo-en-bibliotheque.html`, variante **avec la rangée** — *« Voilà je veux ça ! »* —, et toucher hors de la photo ferme |
+| la migration | **aucune** |
+| les pièces | `src/components/atlas/VisionneusePhoto.tsx` (liste + rang), `ListeDesRetours.tsx`, `Pellicule.tsx`, `surPhoto` dans `design-tokens.ts` |
+| les suites | `test-onglets-termines-e2e.ts` (deux fichiers réels posés dans `.storage`, photo mesurée PLUS PETITE que l'écran, croix à droite, chevron, rangée, voile qui ferme) ; `test-boutons-arrondis.ts` borne la rangée |
+| le détail | `CHANGELOG.md` du 11 septembre |
+
+**LE PIÈGE.** `data-atlas="photo-en-grand"` reste le VOILE, qui couvre tout
+l'écran — c'est lui qu'on touche pour fermer. Ce qui ne doit pas couvrir
+l'écran, c'est `photo-ouverte`. Une suite qui mesurerait le premier en croyant
+mesurer la photo rendrait un vert sur un plein écran.
+
+---
 ## Dernier lot — LA FACTURE TÉLÉCHARGÉE S'OUVRAIT BLANCHE (11 septembre 2026)
 
 | | |

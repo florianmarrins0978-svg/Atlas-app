@@ -18,12 +18,13 @@
 // matière à mesurer n'est pas un succès, c'est une mesure impossible
 // (`CLAUDE.md` §5, payé le 15 août 2026).
 
-import { mkdirSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
+import { RACINE_STOCKAGE } from "../src/server/storage/local-storage";
 
 const BASE = ADRESSE;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -94,23 +95,45 @@ async function main() {
   // **Une faite et une PAS faite** : c’est la seconde qui compte, et le
   // dépliage doit l’écrire en toutes lettres.
   await pool.query(`DELETE FROM retours_intervention_taches WHERE retour_id = $1`, [pose[0].id]);
-  const { rows: laPhoto } = await pool.query<{ id: string }>(
-    `INSERT INTO photos (entreprise_id, chantier_id, storage_key, mime_type, taille_octets, checksum)
-     VALUES ($1, $2, $3, 'image/jpeg', 10, $4) RETURNING id`,
-    [entrepriseId, chantierId, `chantiers/${chantierId}/photos/e2e-onglets.jpg`, "e".repeat(64)]
-  );
-  await pool.query(
-    `INSERT INTO retours_intervention_photos (entreprise_id, retour_id, photo_id)
-     VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
-    [entrepriseId, pose[0].id, laPhoto[0].id]
-  );
+  // **DEUX photos, et leurs FICHIERS.** Une seule ne dit rien du chevron —
+  // sa demande du 11 septembre au soir : *« des flèches de chaque côté pour
+  // aller voir les suivantes »*. Et sans fichier, l’image mesure zéro pixel :
+  // on ne saurait pas dire si elle couvre l’écran ou non — or c’est
+  // précisément ce qu’il a refusé. Deux PNG de 300 × 400 sont donc posés
+  // dans le stockage local, là où la route les lira.
+  const clesPhotos = [1, 2].map((n) => `chantiers/${chantierId}/photos/e2e-onglets-${n}.png`);
+  const navigateur = await lancerNavigateur();
+  {
+    const atelier = await navigateur.newPage();
+    for (const cle of clesPhotos) {
+      await atelier.setContent(`<div style="width:300px;height:400px;background:#4c6b3f"></div>`);
+      const png = await atelier.locator("div").screenshot();
+      const chemin = path.join(RACINE_STOCKAGE, cle);
+      mkdirSync(path.dirname(chemin), { recursive: true });
+      writeFileSync(chemin, png);
+    }
+    await atelier.close();
+  }
+  const lesPhotos: { id: string }[] = [];
+  for (const cle of clesPhotos) {
+    const { rows } = await pool.query<{ id: string }>(
+      `INSERT INTO photos (entreprise_id, chantier_id, storage_key, mime_type, taille_octets, checksum)
+       VALUES ($1, $2, $3, 'image/png', 10, $4) RETURNING id`,
+      [entrepriseId, chantierId, cle, "e".repeat(64)]
+    );
+    lesPhotos.push(rows[0]);
+    await pool.query(
+      `INSERT INTO retours_intervention_photos (entreprise_id, retour_id, photo_id)
+       VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
+      [entrepriseId, pose[0].id, rows[0].id]
+    );
+  }
   await pool.query(
     `INSERT INTO retours_intervention_taches (entreprise_id, retour_id, libelle, faite, ordre)
      VALUES ($1, $2, 'Tonte et ébarbage', true, 0), ($1, $2, 'Traitement anti-mousse', false, 1)`,
     [entrepriseId, pose[0].id]
   );
 
-  const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext({ viewport: { width: LARGEURS[0], height: 844 } });
   const page = await contexte.newPage();
 
@@ -318,7 +341,7 @@ async function main() {
     // sur sa capture ; leur fichier peut manquer sur ce poste, mais l’image
     // doit être là, à la bonne adresse et à la bonne taille.
     const image = page.locator("[data-atlas='photo-du-retour']").first();
-    assert.equal(await page.locator("[data-atlas='photo-du-retour']").count(), 1);
+    assert.equal(await page.locator("[data-atlas='photo-du-retour']").count(), 2);
     const src = await image.getAttribute("src");
     assert.ok(src?.startsWith("/api/fichiers/"), `la photo pointe vers ${src}`);
     const cadre = await image.boundingBox();
@@ -328,28 +351,49 @@ async function main() {
       await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "retour-deplie.png") });
     }
 
-    // **ON APPUIE SUR LA PHOTO, ET ELLE S'OUVRE EN GRAND.** Sa demande du
-    // 11 septembre 2026. C'est le geste du patron qui est éprouvé ici, pas la
-    // fonction qu'on vient d'écrire (`CLAUDE.md` §5 quater) : on clique là où
-    // son doigt se pose, et l'on mesure ce qui couvre l'écran.
+    // **ON APPUIE SUR LA PHOTO, ET ELLE S'OUVRE — SANS PRENDRE L'ÉCRAN.** Sa
+    // demande du 11 septembre 2026, puis sa capture du soir : *« c'est trop
+    // gros, faut pas qu'elle prenne tout l'écran »*. C'est le geste du patron
+    // qui est éprouvé ici, pas la fonction qu'on vient d'écrire (`CLAUDE.md`
+    // §5 quater) : on clique là où son doigt se pose, on feuillette, on ferme
+    // comme il ferme.
     await page.locator("[data-atlas='ouvrir-la-photo']").first().click();
     const enGrand = page.locator("[data-atlas='photo-en-grand']");
     await enGrand.waitFor({ state: "visible", timeout: 10_000 });
+    const ouverte = page.locator("[data-atlas='photo-ouverte']");
+    await ouverte.waitFor({ state: "visible", timeout: 10_000 });
 
-    // **Le fichier peut manquer sur ce poste** : ce qui se mesure est donc le
-    // cadre de la visionneuse, jamais l'image. Et une boîte de zéro pixel ne
-    // vaut pas un vert — c'est la leçon du 15 août.
     if (DOSSIER_CAPTURES) {
       await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "photo-en-grand.png") });
     }
 
-    const plein = await enGrand.boundingBox();
+    // Le VOILE couvre l'écran — c'est lui qu'on touche pour fermer — mais la
+    // PHOTO, non. Une boîte de zéro pixel ne vaut pas un vert (15 août) : le
+    // fichier est posé exprès pour qu'elle ait une taille.
+    const voile = await enGrand.boundingBox();
     const ecran = page.viewportSize();
-    assert.ok(plein && plein.width > 0 && plein.height > 0, "boîte de zéro pixel : rien n'est mesuré");
+    assert.ok(voile && ecran && voile.width >= ecran.width - 1 && voile.height >= ecran.height - 1, "le voile ne couvre pas l'écran");
+    const photo = await ouverte.boundingBox();
+    assert.ok(photo && photo.width > 100 && photo.height > 100, "la photo mesure zéro pixel : rien n'est mesuré");
     assert.ok(
-      ecran && plein.width >= ecran.width - 1 && plein.height >= ecran.height - 1,
-      `la visionneuse ne couvre pas l'écran : ${Math.round(plein?.width ?? 0)} × ${Math.round(plein?.height ?? 0)}`
+      photo.width < ecran.width - 16 && photo.height < ecran.height * 0.7,
+      `la photo prend l'écran : ${Math.round(photo.width)} × ${Math.round(photo.height)} sur ${ecran.width} × ${ecran.height}`
     );
+
+    // **La croix est en haut à DROITE** — *« surtout une croix en haut à droite
+    // pour fermer »*. Elle était à gauche.
+    const croix = await page.locator('button[aria-label="Fermer"]').boundingBox();
+    assert.ok(croix && croix.x > ecran.width / 2 && croix.y < 120, "la croix n'est pas en haut à droite");
+
+    // **La suivante, puis la rangée**, et le compte qui suit.
+    const rang = page.locator("[data-atlas='rang-de-la-photo']");
+    assert.equal((await rang.innerText()).replace(/\s/g, ""), "1/2");
+    await page.locator('button[aria-label="Photo suivante"]').click();
+    assert.equal((await rang.innerText()).replace(/\s/g, ""), "2/2");
+    assert.ok(await page.locator('button[aria-label="Photo suivante"]').isDisabled(), "au bout, le chevron n'est pas éteint");
+    assert.equal(await page.locator("[data-atlas='vignette-de-la-rangee']").count(), 2, "la rangée du bas ne porte pas les deux photos");
+    await page.locator("[data-atlas='vignette-de-la-rangee']").first().click();
+    assert.equal((await rang.innerText()).replace(/\s/g, ""), "1/2", "la vignette de la rangée ne mène pas à sa photo");
 
     // **Pas de « Retirer » ici, et c'est délibéré** : un retour est le compte
     // rendu d'un salarié, il ne s'efface pas depuis l'écran qui le vérifie.
@@ -359,6 +403,13 @@ async function main() {
       "on peut retirer une photo depuis un compte rendu"
     );
 
+    // **Toucher HORS de la photo ferme aussi** — sa demande, planche en main.
+    // On vise le voile au-dessus du cadre, loin de la croix et des chevrons.
+    await page.mouse.click(ecran.width / 2, Math.max(8, photo.y - 40));
+    await enGrand.waitFor({ state: "detached", timeout: 10_000 });
+    // Et la croix ferme toujours.
+    await page.locator("[data-atlas='ouvrir-la-photo']").first().click();
+    await enGrand.waitFor({ state: "visible", timeout: 10_000 });
     await page.locator('button[aria-label="Fermer"]').click();
     await enGrand.waitFor({ state: "detached", timeout: 10_000 });
 
@@ -402,7 +453,8 @@ async function main() {
   await pool.query(`DELETE FROM retours_intervention_taches WHERE retour_id = $1`, [pose[0].id]);
   await pool.query(`DELETE FROM retours_intervention_photos WHERE retour_id = $1`, [pose[0].id]);
   await pool.query(`DELETE FROM retours_intervention WHERE chantier_id = $1`, [chantierId]);
-  await pool.query(`DELETE FROM photos WHERE id = $1`, [laPhoto[0].id]);
+  for (const p of lesPhotos) await pool.query(`DELETE FROM photos WHERE id = $1`, [p.id]);
+  for (const cle of clesPhotos) rmSync(path.join(RACINE_STOCKAGE, cle), { force: true });
   await pool.query(`UPDATE chantiers SET termine_at = $2 WHERE id = $1`, [
     chantierId,
     avant[0]?.termine_at ?? null,

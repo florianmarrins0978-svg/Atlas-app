@@ -193,8 +193,12 @@ function Carte({ retour }: { retour: RetourEnListe }) {
    * dessus pour qu'elle apparaisse en grand »*. Deux colonnes de 132 pixels
    * disent qu'il y a eu une photo ; elles ne disent pas si la haie est taillée
    * droit — et c'est sur cette image qu'il décide de facturer.
+   *
+   * **Le RANG, pas la clé** : la visionneuse feuillette les photos du retour
+   * (sa demande du soir même — *« des flèches de chaque côté pour aller voir
+   * les suivantes »*), et il lui faut la liste pour connaître la suivante.
    */
-  const [enGrand, setEnGrand] = useState<string | null>(null);
+  const [enGrand, setEnGrand] = useState<number | null>(null);
   const compte = compteDesTaches(retour.taches);
   const jour = new Date(retour.poseLe).toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -366,11 +370,11 @@ function Carte({ retour }: { retour: RetourEnListe }) {
                   photo visible par le mauvais jeton est le défaut de plus
                   haute priorité de ce produit. */}
               <div className="mt-2 grid grid-cols-2 gap-2">
-                {retour.photos.map((photo) => (
+                {retour.photos.map((photo, rang) => (
                   <button
                     key={photo.id}
                     type="button"
-                    onClick={() => setEnGrand(photo.storageKey)}
+                    onClick={() => setEnGrand(rang)}
                     aria-label="Voir la photo en grand"
                     data-atlas="ouvrir-la-photo"
                     className="block h-[132px] w-full overflow-hidden rounded-[11px] p-0"
@@ -425,7 +429,14 @@ function Carte({ retour }: { retour: RetourEnListe }) {
           **Sans « Retirer » ici, et c'est délibéré** : un retour est le compte
           rendu d'un salarié. Ce qu'il a photographié n'est pas à effacer depuis
           l'écran qui sert à le vérifier. */}
-      {enGrand && <VisionneusePhoto storageKey={enGrand} onFermer={() => setEnGrand(null)} />}
+      {enGrand !== null && (
+        <VisionneusePhoto
+          photos={retour.photos.map((p) => p.storageKey)}
+          rang={enGrand}
+          onRang={setEnGrand}
+          onFermer={() => setEnGrand(null)}
+        />
+      )}
     </div>
   );
 }

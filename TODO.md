@@ -156,17 +156,13 @@ en passant, au milieu d'un autre lot.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — LA PHOTO EN BIBLIOTHÈQUE (11 septembre 2026)
+## ~~UNE PLANCHE À REGARDER — LA PHOTO EN BIBLIOTHÈQUE~~ — CHOISIE ET CODÉE LE SOIR MÊME (11 septembre 2026)
 
-`appli/photo-en-bibliotheque.html`. Sa demande du soir : la photo d’un retour ne
-doit plus couvrir l’écran — cadre au milieu, croix à droite, chevrons, suivante.
-Deux variantes sur la planche : sans ou avec la rangée des vignettes. **Rien
-n’est codé** ; ce qui changera quand il aura choisi :
-`src/components/atlas/VisionneusePhoto.tsx` (prend une LISTE et un rang, plus
-une seule clé), ses deux appelants (`ListeDesRetours.tsx`, `Pellicule.tsx`),
-et `test-onglets-termines-e2e.ts` qui mesure aujourd’hui « ce qui couvre
-l’écran » — il devra mesurer un cadre qui ne le couvre PAS. **Qui :** lui pour
-le choix, nous pour le reste.
+Il a répondu dans l’heure, planche en main — *« Voilà je veux ça ! »*, la
+variante **avec la rangée**, plus : *« si on touche un endroit hors de la photo
+ça ferme aussi »*. Codé : `VisionneusePhoto.tsx` prend la liste et le rang, ses
+deux appelants suivent, `test-onglets-termines-e2e.ts` mesure désormais une
+photo qui ne couvre PAS l’écran, feuillette, et ferme en touchant le voile.
 
 ---
 
