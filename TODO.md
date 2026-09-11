@@ -95,7 +95,15 @@ chemin, comme le veilleur remesure le port au lieu de le croire. Et que
 là » — c'est la leçon du verrou de la batterie, un jeton que personne ne
 ramasse ment dès la deuxième soirée.
 
-## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
+## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026) — 31 le 12 au matin
+
+**Relevé du 12 septembre 2026** (batterie de la bibliothèque de photos, `main`
+fusionné) : 112/143. Aux dix-huit s’ajoutent `bloquer-sans-devis`,
+`date-lointaine`, `deux-dates-calendrier`, `fin-de-chantier`, `grille-prix`,
+`ia-03`, `ia-04`, `liberer-une-demi-journee`, `ligne-du-client`, `pas-la-ce-jour`,
+`poser-une-date`, `reduction-devis`, `reste-equipes`, `tva-multiple` — et
+`onglets-termines` en est SORTI. Pas de « avant » joué ce matin-là : à départager.
+
 
 **Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
 jouée deux fois le 11 septembre, avant et après le lot des polices embarquées.
@@ -222,17 +230,23 @@ en passant, au milieu d'un autre lot.
 
 ---
 
-## ⏳ UNE BATTERIE À JOUER — la photo en bibliothèque est codée (11 septembre 2026)
+## ~~UNE BATTERIE À JOUER — la photo en bibliothèque est codée~~ — JOUÉE ET LIVRÉE le 12 septembre 2026
 
-`39a1dc68` sur `session-2`, pas encore sur `main`. La batterie a été coupée par un
-redémarrage de session : base **346/354** (les 8 rouges sont des scripts
-d’outillage — verrou, ports, lanceur —, aucun ne touche les photos), suites
-navigateur **sans verdict**. Elle n’a pas été rejouée : une autre session
-écrivait dans `atlas-app-s2` (visionneuse PDF), et il a dit *« ne lance pas de
-batterie pour l’instant »*. **À faire :** la rejouer dans un dossier où personne
-n’écrit, avec `ATLAS_BASE_SUPER` de `HANDOVER.md`, puis fusionner sur `main`
-avec son accord. **Qui :** nous, quand il le dit.
+Rejouée dans un dossier à part (`.claude/worktrees/livraison-photos`, `main`
+fusionné avant), avec `ATLAS_BASE_SUPER` : base **350/358**, navigateur
+**112/143**, connexion derrière proxy verte.
 
+| | |
+|---|---|
+| les 8 rouges de base | les mêmes scripts d’outillage que la veille — verrou, ports, lanceur, seed — aucun ne touche les photos |
+| les 31 rouges navigateur | les dix-huit connus de `main`, plus des suites planning / devis / IA / outillage — **aucune ne cite la visionneuse, les retours ni la pellicule** (vérifié par `grep`) |
+| les suites du lot | `onglets-termines` (photo plus petite que l’écran, croix à droite, chevron, rangée, voile qui ferme), `photos-e2e`, `retrait-differe-e2e` : **vertes** — et `onglets-termines` était dans les dix-huit rouges de `main` |
+
+**Ce qui n’a PAS été comparé :** la batterie n’a été jouée qu’APRÈS le lot, pas
+avant sur ce `main`-là — les treize rouges hors des dix-huit connus restent
+donc à rejouer sur `main` nu pour savoir s’ils sont du jour (12 septembre :
+plusieurs visent une date) ou d’un lot voisin. Entrée mise à jour sous
+« DIX-HUIT SUITES NAVIGATEUR ». **Qui :** nous.
 ---
 ## ~~UNE PLANCHE À REGARDER — LA PHOTO EN BIBLIOTHÈQUE~~ — CHOISIE ET CODÉE LE SOIR MÊME (11 septembre 2026)
 
