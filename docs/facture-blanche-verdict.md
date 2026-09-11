@@ -61,8 +61,9 @@ moment de l'arrêt, jamais un document refait — c'est ce qui garantit que votr
 client garde exactement la pièce reçue. Tout ce qui a été composé entre le 8 et
 le 11 septembre reste sans l'entrée, F2026-000007 comprise.
 
-Les recomposer est possible et donnerait le même document au pixel près. Mais ce
-sont des pièces comptables : **c'est vous qui décidez**, et rien n'a été touché.
+Les recomposer est possible et donnerait le même document au pixel près. **Vous
+avez tranché le 11 septembre : on n'y touche pas.** Rien n'a été modifié, et
+rien ne le sera.
 
 ## Ce qui avait été dit le 10 septembre, et qui était faux
 

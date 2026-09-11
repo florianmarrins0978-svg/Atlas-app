@@ -29,9 +29,11 @@ embarquée le 8 septembre, première page blanche le 10). Deux documents témoin
 lui ont été envoyés le 11 pour trancher ; **sa réponse est à chercher avant de
 conclure**.
 
-**ET LE CORRECTIF NE TOUCHE PAS SES FACTURES DÉJÀ ARCHIVÉES** (`TODO.md`) : le
-lien du client sert le fichier composé à l'arrêt, jamais un document régénéré.
-Une facture du 10 septembre restera blanche chez un lecteur strict.
+**ET LES FACTURES DÉJÀ ARRÊTÉES NE SE TOUCHENT PAS — sa décision du
+11 septembre 2026 :** *« oui touche pas celles déjà arrêtées »*. Le lien du
+client sert le fichier composé à l'arrêt, jamais un document régénéré : sa
+F2026-000007 restera blanche chez un lecteur strict, et c'est voulu. Ne pas
+reproposer de « réparer les anciennes ».
 
 ---
 

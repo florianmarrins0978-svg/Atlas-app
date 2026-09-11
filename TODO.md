@@ -24,12 +24,18 @@ fichier mais son trajet : le mandataire de son espace, ou le chiffrement
 anti-retouche (`proteger-pdf.ts`), qu'aucun lecteur d'Apple n'a jamais été vu
 ouvrir ici.
 
-**2. Les documents déjà archivés restent tels quels.** Le lien du client sert le
-fichier composé à l'arrêt (`envois-factures.ts`) — jamais un document régénéré,
-et c'est ce qui garantit que le client garde la pièce reçue. Tout ce qui a été
-composé entre le 8 et le 11 septembre est donc sans `/Length1`, sa facture
-F2026-000007 comprise : **la recomposer ne se décide pas sans lui**, ce sont des
-pièces comptables. À lui demander quand le point 1 aura tranché.
+**2. ~~Les documents déjà archivés~~ — TRANCHÉ PAR LUI, 11 septembre 2026 :
+*« oui touche pas celles déjà arrêtées »*.**
+
+Une facture arrêtée garde le fichier composé à l'arrêt (`envois-factures.ts`),
+`/Length1` manquant compris — sa F2026-000007 restera blanche chez un lecteur
+strict, et c'est **sa décision**, pas un oubli. Ne pas rouvrir, ne pas proposer
+de « réparer les anciennes » : une pièce comptable ne se recompose pas pour
+faire joli.
+
+Ce qui reste vrai, et qui se dit s'il revient dessus : le correctif ne vaut que
+pour ce qui se compose APRÈS lui. Un document ancien qu'il veut lisible se
+refait en émettant la pièce à neuf, pas en retouchant l'archive.
 
 ---
 
