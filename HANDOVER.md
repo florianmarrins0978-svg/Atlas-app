@@ -8,6 +8,35 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA FACTURE TÉLÉCHARGÉE S'OUVRAIT BLANCHE (11 septembre 2026)
+
+| | |
+|---|---|
+| la plainte | *« lorsque je télécharge la facture je ne peux toujours pas la lire »* — page blanche, 3ᵉ fois |
+| la racine | `/Length1` absent du programme TrueType embarqué — requis par la norme, jamais écrit par `pdf-lib` |
+| la migration | **aucune** |
+| les pièces | `src/server/pdf/polices-embarquees.ts` (neuf), `src/server/pdf/document-commun.ts` |
+| les suites | `scripts/test-polices-embarquees.ts` (8), vue rouge contre le code d'avant |
+| le détail | `ARCHITECTURE.md` §328 |
+
+**CE QUI N'EST PAS PROUVÉ, ET QU'IL NE FAUT PAS PRÉSENTER COMME ACQUIS.** Aucun
+moteur Apple ici, et les trois moteurs disponibles — `pypdf`, `qpdf`, PDFium —
+sont justement ceux qui se passent de l'entrée : ils peignaient déjà le document
+entier AVANT la correction. Ce qui est mesuré, c'est que l'entrée manquait,
+que la norme l'exige, et qu'elle est désormais juste. Que ce soit **la** cause
+de sa page blanche est une déduction — appuyée par la chronologie (typographie
+embarquée le 8 septembre, première page blanche le 10). Deux documents témoins
+lui ont été envoyés le 11 pour trancher ; **sa réponse est à chercher avant de
+conclure**.
+
+**ET LES FACTURES DÉJÀ ARRÊTÉES NE SE TOUCHENT PAS — sa décision du
+11 septembre 2026 :** *« oui touche pas celles déjà arrêtées »*. Le lien du
+client sert le fichier composé à l'arrêt, jamais un document régénéré : sa
+F2026-000007 restera blanche chez un lecteur strict, et c'est voulu. Ne pas
+reproposer de « réparer les anciennes ».
+
+---
+
 ## Dernier lot — LE MICRO SUR LA FICHE QUI FACTURE, ET LA FICHE QUI APPREND (11 septembre 2026)
 
 **Deux demandes dans un message, sur la fiche client qui mène à « Faire la
@@ -47,7 +76,7 @@ Les deux suites ont été vues **rouges** contre la version d'avant.
 | la migration | **aucune** |
 | les pièces | `src/app/termines/retours/actions.ts` — `revalidatePath("/termines")` et `("/termines/retours")` |
 | les suites | `scripts/test-onglets-termines-e2e.ts`, un cas de plus qui ne recharge JAMAIS |
-| le détail | `ARCHITECTURE.md` §328 |
+| le détail | `ARCHITECTURE.md` §329 |
 
 **CE QU'IL NE FAUT PAS CHERCHER AILLEURS.** Le compte était juste en base, et la
 pastille ne compte que les non-lus depuis le 9 septembre. Ce qui mentait, c'est

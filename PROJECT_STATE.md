@@ -5,6 +5,24 @@
 
 ---
 
+## FAIT (sous réserve de SA réponse) : LA POLICE DU DOCUMENT ANNONCE SA LONGUEUR — 11 septembre 2026
+
+Sa facture téléchargée s'ouvrait blanche, pour la troisième fois. Le programme
+TrueType embarqué depuis le 8 septembre ne portait pas `/Length1`, entrée que la
+norme exige et que `pdf-lib` n'écrit jamais : un lecteur strict refuse alors la
+police, et tout le texte disparaît avec elle.
+
+`src/server/pdf/polices-embarquees.ts` la pose entre la composition et le
+scellé, avec la longueur mesurée du programme décompressé. **Aucune migration.**
+
+**Sous réserve** : aucun moteur Apple ici, donc rien ne prouve que c'était SA
+panne. Deux documents témoins lui ont été envoyés ; `TODO.md` garde le point
+ouvert, et les documents déjà archivés ne sont pas repris.
+
+Détail : `ARCHITECTURE.md` §328.
+
+---
+
 ## FAIT : LE MICRO REVIENT SUR LA FICHE QUI FACTURE — 11 septembre 2026
 
 *« Il faut rajouter la petite note vocale comme sur la fiche client si on veut
@@ -28,7 +46,7 @@ arrière qui montrait l'image d'avant la lecture. L'action qui enregistre la
 lecture périme désormais `/termines` et `/termines/retours`, comme le fait déjà
 celle qui pose un retour. Un contrôle parcourt son chemin sans recharger —
 onglet, carte, flèche — et il a été vu rouge contre l'ancien code
-(`ARCHITECTURE.md` §328).
+(`ARCHITECTURE.md` §329).
 
 ---
 

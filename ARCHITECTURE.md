@@ -28074,7 +28074,85 @@ taper le nom, voir la fiche reprise, ajouter l'e-mail, faire la facture.
 
 ---
 
-## §328 — Une écriture qui change un AUTRE écran doit le périmer : sinon la flèche rejoue l'ancien
+## §328 — Une police embarquée doit annoncer la longueur de son programme
+
+**Sa capture du 11 septembre 2026, la troisième d'affilée sur le même
+écran :** *« lorsque je télécharge la facture je ne peux toujours pas la
+lire »* — un PDF de 64 ko ouvert depuis ses téléchargements, et une page
+entièrement blanche. Aucun message.
+
+### Ce que le fichier avait, et ce qui lui manquait
+
+Les octets étaient sains, et trois moteurs indépendants l'ont dit ici :
+`pypdf` le déchiffre, `qpdf` lit ses autorisations, **PDFium — le moteur de
+Chrome — le peint entier**. Le défaut ne tient pas dans le dessin : il tient
+dans une entrée du dictionnaire.
+
+Depuis le 8 septembre, ses documents embarquent une vraie typographie
+(`src/server/pdf/polices/`). `pdf-lib` écrit le
+programme TrueType dans un flux `/FontFile2` **sans jamais poser `/Length1`** —
+aucune occurrence dans toute la bibliothèque. Or la norme l'exige : ISO 32000-1,
+tableau 127, « la longueur en octets du programme de police **non compressé** ».
+
+| Le lecteur | Ce qu'il fait de l'entrée absente |
+|---|---|
+| Chrome, Acrobat, `qpdf`, `pypdf` | il mesure le flux lui-même et charge la police |
+| **strict** | il refuse le programme, donc la police |
+
+Et comme **tout** le texte du document emploie cette police, un lecteur strict
+ne dessine plus un seul glyphe : il reste le papier. Blanc.
+
+### Pourquoi la correction vit ici et pas dans `pdf-lib`
+
+La racine est dans la bibliothèque, hors de portée d'un correctif de ce dépôt.
+`src/server/pdf/polices-embarquees.ts` **complète** donc le dictionnaire là où
+il naît — après `pdfDoc.flush()`, qui matérialise les polices dans le contexte,
+et avant le scellé. Ce n'est pas une couche posée sur une autre : il n'existait
+rien à retirer, et la valeur n'est pas estimée — le flux est décompressé pour la
+mesurer, et le contrôle vérifie qu'elle vaut **exactement** la taille du fichier
+de police sur le disque.
+
+**Une longueur fausse serait pire qu'absente** : elle ferait refuser la police
+par les lecteurs qui, eux, lisent vraiment l'entrée. Devant un filtre qu'on ne
+sait pas défaire, rien n'est posé.
+
+### Ce qui est éprouvé, et ce qui ne l'est pas
+
+`scripts/test-polices-embarquees.ts` tient la moitié mesurable : l'entrée est
+posée sur chacune des cinq typographies embarquées, elle vaut la taille du
+fichier, elle n'apparaît pas quand aucune police n'est embarquée, et elle ne
+s'invente pas. Il **sait échouer** — l'appel retiré, cinq pièces rougissent avec
+le bon coupable nommé.
+
+**Et la racine amont, elle, est dans `pdf-lib` — hors de portée.** La question
+s'est posée de la patcher : un patch de dépendance se réapplique en silence à
+chaque installation, saute à la première mise à jour, et le développeur qu'il
+paiera un jour ne le trouvera pas. La pose vit donc dans nos couches, **au seul
+goulot par lequel tout document sort** — `composerDocument`, là même où le
+scellé a été mis le 31 août pour la même raison : un document oublié ne se
+verrait pas, on l'apprendrait chez le client. Devis et facture y passent tous
+les deux, la fiche de chantier aussi.
+
+**Ce qu'aucun contrôle de ce dépôt ne peut dire :** qu'un iPhone réclame cette
+entrée. Ce poste n'a aucun moteur Apple, et les moteurs qu'il a sont justement
+ceux qui s'en passent. La déduction repose sur la chronologie — la typographie
+est arrivée le 8 septembre, la première page blanche le 10 — et sur la stricte
+conformité des lecteurs d'Apple. **C'est le patron qui la tranche**, deux
+documents identiques sous les yeux : un avant, un après.
+
+### Ce que cela ne répare PAS : les documents déjà archivés
+
+Un devis envoyé et une facture arrêtée servent le fichier **archivé**, jamais un
+document régénéré (`envois-factures.ts`) — c'est ce qui garantit que le client
+garde la pièce qu'il a reçue. Les documents composés entre le 8 et le
+11 septembre restent donc tels quels, `/Length1` manquant compris : la
+correction ne vaut que pour ce qui se compose après elle. Reprendre les
+archives touche des pièces comptables, et cela ne se décide pas sans lui
+(`TODO.md`).
+
+---
+
+## §329 — Une écriture qui change un AUTRE écran doit le périmer : sinon la flèche rejoue l'ancien
 
 **Payé le 11 septembre 2026**, sur la pastille des retours d'intervention :
 *« je viens d'aller regarder le retour d'inter mais le petit 1 est resté

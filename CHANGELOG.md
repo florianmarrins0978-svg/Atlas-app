@@ -8,6 +8,36 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### La facture téléchargée s'ouvrait blanche : la police n'annonçait pas sa longueur
+
+*« Lorsque je télécharge la facture je ne peux toujours pas la lire. »*
+Troisième capture d'affilée sur le même geste, et la deuxième explication était
+fausse elle aussi.
+
+Le fichier n'avait rien de cassé : `pypdf` le déchiffre, `qpdf` lit ses
+autorisations, PDFium — le moteur de Chrome — le peint entier. Ce qui lui
+manquait tient en une entrée : `/Length1` sur le programme TrueType embarqué,
+que la norme exige (ISO 32000-1, tableau 127) et que `pdf-lib` n'écrit jamais.
+Les lecteurs tolérants mesurent le flux eux-mêmes ; un lecteur strict refuse la
+police — et comme tout le texte l'emploie, il ne reste que la page. Blanche,
+sans un message.
+
+La typographie embarquée est arrivée le 8 septembre, la première page blanche
+le 10 : c'est la variable qui a changé entre les deux.
+
+`polices-embarquees.ts` pose l'entrée là où elle naît, entre la composition et
+le scellé, avec la longueur **mesurée** du programme décompressé — jamais
+estimée. `test-polices-embarquees.ts` la vérifie sur les cinq typographies et
+sait rougir : l'appel retiré, cinq pièces tombent.
+
+**Ce qui n'est pas éprouvé, et qui s'écrit comme tel :** aucun moteur Apple sur
+ce poste, donc rien ici ne prouve qu'un iPhone réclame cette entrée. Deux
+documents identiques — un avant, un après — lui ont été envoyés pour trancher.
+
+**Ce que cela ne répare pas :** les devis et factures déjà archivés sont servis
+tels qu'ils ont été composés. Ceux du 8 au 11 septembre restent sans `/Length1`
+(`TODO.md`).
+
 ### La photo d'un retour s'ouvre en grand — et il n'y a qu'une visionneuse
 
 Sa demande, capture à l'appui : *« ce qui serait bien, c'est qu'on puisse

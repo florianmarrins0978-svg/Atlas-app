@@ -26,6 +26,7 @@ import {
 } from "@/lib/reduction-devis";
 import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
 import { protegerContreModification } from "./proteger-pdf";
+import { annoncerLaLongueurDesPolices } from "./polices-embarquees";
 import { pourLePapier } from "@/lib/texte-pdf";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
@@ -1222,6 +1223,14 @@ export async function composerDocument(
       });
     });
   }
+
+  // **La typographie embarquée doit dire la longueur de son programme**, sans
+  // quoi un lecteur strict ne charge pas la police et rend une page blanche —
+  // ce que le patron a eu trois fois sous les yeux (`polices-embarquees.ts`).
+  // `flush` matérialise les polices dans le contexte ; l'entrée se pose donc
+  // ici, entre la composition et le scellé.
+  await pdfDoc.flush();
+  annoncerLaLongueurDesPolices(pdfDoc.context);
 
   // **Tout ce qui sort d'ici part protégé contre la retouche.** Le devis, la
   // facture, la feuille de chantier : un seul endroit, parce qu'un document
