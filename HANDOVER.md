@@ -41,6 +41,24 @@ règle est rouge, ce n'est pas elle qu'on touche. Puis
 avec le cas à quatre réseaux et un couloir. Détail : `ARCHITECTURE.md` §333 ;
 document de retour : `docs/lot-arrosage-impeccable.md`.
 
+## Dernier lot — LES ÉCRITURES D'UNE MÊME DONNÉE SE SUIVENT (11 septembre 2026)
+
+| | |
+|---|---|
+| le défaut | poser une remise juste après l'avoir effacée la laissait à `null` — deux écritures, un ordre d'arrivée choisi par le réseau |
+| la pièce | `src/lib/file-d-ecritures.ts` (pure), `src/components/atlas/useEcrituresALaSuite.ts` (le support) |
+| la migration | **aucune** |
+| les suites | `scripts/test-ecritures-a-la-suite.ts` (4, témoin compris) |
+| le détail | `ARCHITECTURE.md` §334 |
+
+**LE PIÈGE DE LA PREMIÈRE VERSION.** La règle vivait dans le hook : `useRef`
+hors d'un rendu lève « Cannot read properties of null », et rien ne pouvait
+l'éprouver sans monter un écran. Elle est descendue dans `lib` — et le hook
+garde la file dans un `useRef`, jamais un `useMemo` : React peut rejouer
+celui-ci, et une file recréée laisserait repartir deux écritures ensemble.
+
+---
+
 ## Dernier lot — LE PRIX ACCORDÉ AU CLIENT SUR UNE FACTURE (11 septembre 2026)
 
 | | |

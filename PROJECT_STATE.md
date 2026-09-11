@@ -18,6 +18,16 @@ réécrire. **Aucune migration.** Détail : `ARCHITECTURE.md` §333 ; retour :
 `docs/lot-arrosage-impeccable.md`.
 
 ---
+## FAIT : LES ÉCRITURES D'UNE MÊME DONNÉE SE SUIVENT — 11 septembre 2026
+
+Effacer une remise puis la reposer aussitôt pouvait la faire disparaître : deux
+écritures parties ensemble, un ordre d'arrivée choisi par le réseau. Une file
+les enchaîne désormais, sur le devis comme sur la facture. **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §334.
+
+---
+
 ## FAIT : LE PRIX ACCORDÉ AU CLIENT SUR UNE FACTURE — 11 septembre 2026
 
 Le geste du devis — ligne dorée, « − », 5 % d'emblée — est désormais une pièce

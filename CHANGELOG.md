@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Deux écritures de la même donnée ne partent plus ensemble
+
+La batterie a rendu systématique ce qui était noté comme intermittent : le
+« + Prix accordé au client » posait 5 %, et la base rendait null. Le champ
+quitté lançait son écriture, le bouton la sienne, et leur ordre d'arrivée
+dépendait du réseau — effacer une remise puis la reposer dans la seconde
+pouvait la faire disparaître.
+
+`file-d-ecritures.ts` fait attendre chaque écriture que la précédente soit
+finie : le dernier geste a le dernier mot. Rien d'autre — ni annulation, ni
+regroupement ; un refus revient intact à l'appelant.
+
+La règle vit dans `lib` et non dans le hook : sa première version, portée par
+`useRef`, ne pouvait pas être jouée hors d'un écran. Son témoin rejoue le défaut
+avec les mêmes durées. Trois exécutions de `test-reduction-devis-e2e` sans un
+échec, là où c'était deux sur trois.
+
 ### Le plan d'arrosage repris — et deux de ses règles retrouvées
 
 *« Rends impeccable le plan d'arrosage. »* Puis, en cours de route : *« à quoi

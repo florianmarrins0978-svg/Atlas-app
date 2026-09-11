@@ -42,6 +42,7 @@ import {
   LignePrixAccorde,
   REMISE_PAR_DEFAUT,
 } from "@/components/atlas/PrixAccordeAuClient";
+import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import FlecheRetour from "@/components/atlas/FlecheRetour";
@@ -244,6 +245,8 @@ export default function DevisCompletClient(props: Props) {
    * referme qu'une fois le retrait enregistré.
    */
   const [remiseOuverte, setRemiseOuverte] = useState(props.reductionPourcent !== null);
+  /** Les écritures de la remise se suivent : voir `enregistrerRemise`. */
+  const aLaSuite = useEcrituresALaSuite();
 
   /**
    * **L'UNIQUE écriture du prix accordé.** Elle prend la valeur en argument
@@ -256,7 +259,11 @@ export default function DevisCompletClient(props: Props) {
    */
   async function enregistrerRemise(valeurBrute: string = reduction) {
     const valeur = valeurBrute.trim() || null;
-    await majEnTeteDevisAction(props.devisId, { reductionPourcent: valeur });
+    // **À LA SUITE, jamais en même temps** — mesuré le 11 septembre 2026 :
+    // effacer la remise puis la reposer aussitôt laissait la base à `null`, une
+    // fois sur trois. Le champ quitté et le bouton lançaient deux écritures
+    // dont l'ordre d'arrivée n'était pas garanti (`useEcrituresALaSuite`).
+    await aLaSuite(() => majEnTeteDevisAction(props.devisId, { reductionPourcent: valeur }));
     // **On se referme sur ce que le serveur a RETENU, pas sur ce qu'il a tapé.**
     // La case vide n'est pas le seul moyen d'annuler : « 0 », « 0,00 », ou une
     // saisie illisible valent tous « aucune réduction » (`reduction-devis.ts`).
