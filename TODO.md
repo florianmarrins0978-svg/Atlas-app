@@ -637,7 +637,7 @@ aujourd'hui, les jours passés reviennent éteints derrière la flèche, et le t
 
 | | |
 |---|---|
-| **six ou sept jours** | ses exemples donnent six (« du 8 au 13 »), le code en pose sept — aujourd'hui + six |
+| ~~**six ou sept jours**~~ | **tranché le 11 septembre 2026 : SEPT, « comme c'est aujourd'hui ».** Ses exemples donnaient six (« du 8 au 13 ») ; il a confirmé les sept déjà codés — aujourd'hui + six, soit une semaine entière (`JOURS_DE_LA_FENETRE`). **Ne pas rouvrir** |
 | ~~**le doré**~~ | **tranché le 9 septembre** : *« utilise le doré qu'on utilise dans l'appli ! »*. Le code porte `colors.or`, le vrai. Le prix — 2,03 à 2,53 de contraste — est assumé en connaissance de cause, et la sortie existe si le soleil le gêne : la D de la planche |
 | **la teinte de la semaine lue** | le mois teintait la rangée que lit la liste ; une fenêtre glissante chevauche deux rangées. Elle vise désormais la rangée du DÉBUT de fenêtre, faute de mieux |
 | **la planche** | `appli/aujourd-hui-en-tete.html` s'ouvre encore sur la D et le rail : elle montre ce qui a été COMPARÉ, pas ce qui a été codé |
