@@ -28062,6 +28062,15 @@ fichier, elle n'apparaît pas quand aucune police n'est embarquée, et elle ne
 s'invente pas. Il **sait échouer** — l'appel retiré, cinq pièces rougissent avec
 le bon coupable nommé.
 
+**Et la racine amont, elle, est dans `pdf-lib` — hors de portée.** La question
+s'est posée de la patcher : un patch de dépendance se réapplique en silence à
+chaque installation, saute à la première mise à jour, et le développeur qu'il
+paiera un jour ne le trouvera pas. La pose vit donc dans nos couches, **au seul
+goulot par lequel tout document sort** — `composerDocument`, là même où le
+scellé a été mis le 31 août pour la même raison : un document oublié ne se
+verrait pas, on l'apprendrait chez le client. Devis et facture y passent tous
+les deux, la fiche de chantier aussi.
+
 **Ce qu'aucun contrôle de ce dépôt ne peut dire :** qu'un iPhone réclame cette
 entrée. Ce poste n'a aucun moteur Apple, et les moteurs qu'il a sont justement
 ceux qui s'en passent. La déduction repose sur la chronologie — la typographie

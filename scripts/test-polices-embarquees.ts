@@ -5,6 +5,7 @@ import { PDFDocument, PDFDict, PDFName, PDFNumber, PDFRawStream, PDFRef } from "
 import fontkit from "@pdf-lib/fontkit";
 import { TYPOGRAPHIES } from "../src/lib/allure-documents";
 import { genererPdfFacture, type FacturePdfData } from "../src/server/pdf/facture-pdf";
+import { composerDevisPdf, type DevisPdfData } from "../src/server/pdf/devis-pdf";
 import { annoncerLaLongueurDesPolices } from "../src/server/pdf/polices-embarquees";
 
 /**
@@ -35,6 +36,22 @@ const FACTURE: FacturePdfData = {
   numeroCommercial: "F2026-000007",
   statut: "emise",
   dateEmission: "2026-09-11",
+  entrepriseNom: "Atlas",
+  clientNom: "Huguette Groupiron",
+  devise: "EUR",
+  tauxTva: "20.00",
+  totalHt: "550.00",
+  totalTva: "110.00",
+  totalTtc: "660.00",
+  lignes: [{ libelle: "Taille de haies 40 ml", quantite: "1", prixUnitaire: "550.00", montant: "550.00" }],
+};
+
+const DEVIS: DevisPdfData = {
+  numeroCommercial: "2026-000029",
+  numeroVersion: 1,
+  statut: "envoye",
+  dateEmission: "2026-09-11",
+  validiteJours: 30,
   entrepriseNom: "Atlas",
   clientNom: "Huguette Groupiron",
   devise: "EUR",
@@ -121,6 +138,25 @@ async function main() {
       }
     });
   }
+
+  await essai("le DEVIS l'annonce aussi — c'est la pièce que le client garde", async () => {
+    // **Les deux pièces, pas une.** Elles partagent leur moteur
+    // (`document-commun.ts`), et c'est précisément ce qui rend l'oubli
+    // invisible : un contrôle qui ne regarde qu'une des deux laisserait passer
+    // le jour où l'autre prendrait un chemin à elle.
+    const { pdf } = await composerDevisPdf(DEVIS, {
+      allure: { typographie: "eb-garamond", fond: "#faf9f5", accent: "#b08d57" },
+    });
+    const programmes = await programmesDe(pdf);
+    assert.equal(programmes.length, 2, "la typographie n'est pas partie dans le devis");
+    for (const programme of programmes) {
+      assert.notEqual(
+        programme.longueur,
+        null,
+        `${programme.nom} n'annonce aucune longueur : le devis du client sortira blanc`
+      );
+    }
+  });
 
   await essai("sans typographie réglée, il n'y a aucun programme à annoncer", async () => {
     // Le réglage par défaut du patron reste Times et Helvetica : le format les
