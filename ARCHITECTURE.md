@@ -28298,3 +28298,30 @@ répétition, c'est le mot en trop qui part — ici la date dorée, retirée d'u
 Le jour de la facture vit donc là où il a toujours été : sur la ligne du numéro,
 à gauche, et écrit court (`jourCourt`) comme la trace de réception juste en
 dessous — une seule façon d'écrire un jour sur cet écran.
+
+### La planche n° 1, choisie et codée — et le défaut que sa capture a révélé
+
+*« Je choisis la 1. »* Deux cases, chacune nommée au-dessus : « Payé le » et
+« Montant reçu ». Elles existaient déjà, nues — leur nom vivait dans
+`aria-label`, donc pour les lecteurs d'écran seulement, invisible à l'œil.
+
+**LE CHAMP DE DATE NATIF SE FORMATE SELON LA LANGUE DU TÉLÉPHONE, PAS SELON LA
+PAGE.** Sa capture du 11 septembre 2026 montre « 09/11/2026 » sous « Payé le »
+pour un 11 septembre : sur son appareil, `<input type="date">` rend l'ordre
+américain. Il lisait novembre sur un paiement de septembre — et aucun contrôle
+de ce dépôt ne pouvait le voir, puisque chacun lit la VALEUR (`2026-09-11`),
+jamais ce que le navigateur en dessine.
+
+Le champ reste natif : lui seul ouvre le rouleau de l'iPhone, et le remplacer
+par trois cases à taper serait un recul. Il est posé **transparent par-dessus
+notre propre texte**, qui passe par `jourNumerique` — la seule façon d'écrire
+une date dans ce dépôt. Le calendrier que le champ dessinait lui-même est
+redessiné à côté : c'est la seule chose qui dit que la case s'ouvre.
+
+La suite du relevé vise désormais le motif `jj/mm/aaaa` **dans un navigateur qui
+n'est pas en français** : c'est exactement le cas qu'il faut éprouver.
+
+**Et la case du montant part vide**, le bouton éteint tant que rien n'est tapé :
+elle arrivait remplie du solde entier, si bien qu'il lisait un chiffre qu'il
+n'avait pas posé. Solder d'un doigt reste possible — c'est « Payée », juste
+au-dessus, et c'est le geste de cinquante factures par an.

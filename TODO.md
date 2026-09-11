@@ -9,42 +9,25 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — « Noter un règlement » (11 septembre 2026)
+## ✅ CHOISIE ET CODÉE — « Noter un règlement », planche n° 1 (11 septembre 2026)
 
-https://florianmarrins0978-svg.github.io/Atlas-app/noter-un-reglement.html
+*« Je choisis la 1. »* Codé le soir même dans `EnAttenteDePaiement.tsx` :
 
-Ce qu'il a dit, le même soir : *« lorsque l'on note un règlement on doit pouvoir
-rentrer la date à laquelle le client a payé »*, *« le chiffre à droite doit être
-le chiffre qu'on a écrit »*, et *« la phrase sous Enregistrer ce règlement est
-trop longue, synthétise-la ! On comprend rien là »*.
-
-**Rien n'est codé, et c'est voulu** (`CLAUDE.md` §3 bis) : il a demandé les
-maquettes AVANT tout changement. Trois propositions, à choisir et à corriger :
-
-| | |
+| Ce qu'il a demandé | Ce qui est fait |
 |---|---|
-| 1 | deux cases nommées — « Payé le » / « Montant reçu » |
-| 2 | la phrase à trous — « Le client a payé … € le … » |
-| 3 | les cases nommées, plus un bouton « Tout le reste · 1 476,00 € » |
+| les deux cases nommées | « Payé le » et « Montant reçu », au-dessus de chacune |
+| « le montant doit être le chiffre qu'on a écrit » | la case part **vide**, et le bouton reste éteint tant que rien n'est tapé |
+| « 11/09/2026 » | le jour s'écrit par `jourNumerique`, plus par le champ natif |
+| la phrase trop longue | « Seule la part reçue entre au relevé. » — six mots |
 
-La phrase du bas passe à six mots dans les trois : « Seule la part reçue entre
-au relevé. »
+**LE DÉFAUT QUE SA CAPTURE A RÉVÉLÉ, et qu'aucun contrôle ne voyait :** le champ
+`<input type="date">` se formate selon la **langue du téléphone**, pas selon la
+page. Sur le sien il rendait « 09/11/2026 » pour un 11 septembre — il lisait
+novembre. Le champ natif reste (lui seul ouvre le rouleau de l'iPhone), mais il
+est posé **transparent par-dessus notre propre texte**.
 
-**Ce que la planche a établi, et qui vaut d'être su avant de coder :** la case
-de date EXISTE déjà et porte bien le jour du paiement — elle n'a simplement
-aucun nom visible. Le montant, lui, arrive rempli du solde entier : c'est ce
-qui lui faisait lire un chiffre qu'il n'avait pas tapé.
-
-**Et sa question, à laquelle la planche répond noir sur blanc :** *« la date
-correspond bien à la date à laquelle on a enregistré le règlement ? »* — non,
-c'est le jour où le CLIENT a payé, et c'est ce qui décide du trimestre de TVA.
-Un chèque reçu le 30 juin et noté le 2 juillet appartient au trimestre d'avant.
-
-**La planche montre les DEUX moments** (« Je saisis » / « Une fois
-enregistré »), parce que la première version les dessinait en même temps : case
-de montant vide au-dessus d'une ligne qui annonçait déjà « 300,00 € le 11/09 ».
-C'est lui qui l'a relevé.
-
+La planche reste en ligne, elle montre les deux autres propositions :
+https://florianmarrins0978-svg.github.io/Atlas-app/noter-un-reglement.html
 
 ## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
 

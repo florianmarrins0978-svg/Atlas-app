@@ -8,6 +8,25 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — « NOTER UN RÈGLEMENT » : LES CASES ONT UN NOM (11 septembre 2026)
+
+| | |
+|---|---|
+| son choix | la planche n° 1 de `appli/noter-un-reglement.html` — deux cases nommées |
+| ce qui change | « Payé le » / « Montant reçu » ; montant **vide** ; bouton éteint sans montant ; six mots sous le bouton |
+| la racine | `<input type="date">` se formate selon la LANGUE DU TÉLÉPHONE : le sien écrivait « 09/11/2026 » pour un 11 septembre |
+| la migration | **aucune** |
+| les pièces | `src/app/termines/tva/EnAttenteDePaiement.tsx` |
+| les suites | `scripts/test-tva-au-paiement-e2e.ts` — le motif `jj/mm/aaaa` visé dans un navigateur qui n'est PAS en français |
+| le détail | `ARCHITECTURE.md` §330 |
+
+**NE PAS REMETTRE LE CHAMP NATIF SEUL.** Le texte de la date est écrit par
+l'application et le champ natif est transparent par-dessus : c'est ce qui rend
+le jour lisible pareil sur tous les téléphones. Un contrôle qui lit la valeur
+(`2026-09-11`) ne verra jamais revenir ce défaut — seul le texte affiché le dit.
+
+---
+
 ## Dernier lot — LA TRACE DE RÉCEPTION TIENT EN UNE DATE (11 septembre 2026)
 
 | | |

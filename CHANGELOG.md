@@ -8,6 +8,19 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### « Noter un règlement » : les cases portent leur nom, et la date se lit à la française
+
+*« Je choisis la 1. »* Les deux cases s'appellent « Payé le » et « Montant
+reçu ». Le montant part vide — le chiffre affiché est celui qu'il a tapé — et le
+bouton reste éteint tant que rien n'est posé. Sous le bouton, six mots au lieu
+de dix-huit : « Seule la part reçue entre au relevé. »
+
+**Le défaut que sa capture a révélé :** le champ de date natif se formate selon
+la langue du TÉLÉPHONE, pas selon la page. Sur le sien, un 11 septembre
+s'affichait « 09/11/2026 » — il lisait novembre. Le jour est maintenant écrit
+par l'application (`jourNumerique`), le champ natif restant dessous pour ouvrir
+le rouleau (`ARCHITECTURE.md` §330).
+
 ### Une planche pour « Noter un règlement », et rien de codé
 
 *« Avant de changer quoi que ce soit fais-moi des maquettes, qu'on corrige. »*
