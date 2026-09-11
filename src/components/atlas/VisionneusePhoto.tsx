@@ -74,7 +74,6 @@ export default function VisionneusePhoto({
             or ces fichiers sortent d'une route gardée qui vérifie à qui ils
             appartiennent : ce serait un second chemin vers des photos de
             chantier. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`/api/fichiers/${storageKey}`} alt="" className="max-h-full max-w-full object-contain" />
       </div>
     </div>,

@@ -17,7 +17,7 @@ droit — et c'est sur cette image qu'il décide de facturer.
 
 **Rien n'a été dessiné, et c'est une décision** : le geste existe déjà dans le
 produit, sur la pellicule d'un chantier. Ce qui aurait été recopié a été
-**sorti** dans `components/atlas/VisionneusePhoto.tsx` : le portail, le fond
+**sorti** dans `src/components/atlas/VisionneusePhoto.tsx` : le portail, le fond
 d'encre et les pôles retournés des deux chartes sombres vivent là une fois pour
 toutes, et la pellicule s'en sert comme les retours. Deux visionneuses auraient
 fini par avoir deux façons de fermer.

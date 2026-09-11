@@ -57,6 +57,23 @@ chacune, si c'est le produit ou le contrôle qui a vieilli.
 
 ---
 
+## ⚠️ CINQ NUMÉROS D'`ARCHITECTURE.md` SONT PRIS DEUX FOIS (constaté le 11 sept. 2026)
+
+Sur `main` : **§134, §135, §136, §164 et §165** désignent chacun DEUX
+paragraphes sans rapport — le §135 est à la fois « un écran atteint depuis deux
+endroits » (l. 11264) et « le diagnostic végétal » (l. 11744). C'est la
+collision que `CLAUDE.md` §6 B décrit, restée en place.
+
+**Conséquence tout de suite :** un renvoi « §135 » mène à un texte plausible et
+faux. Citer le TITRE avec le numéro, tant que ce n'est pas réglé.
+
+**Ce qui n'a PAS été fait, et pourquoi :** renuméroter détourne les renvois des
+sessions voisines, qui portent les mêmes numéros (payé trois fois le 26 août).
+Ça se fait d'un coup, par quelqu'un qui relit ensuite CHAQUE renvoi touché — pas
+en passant, au milieu d'un autre lot.
+
+---
+
 ## ~~LA PLANCHE DE LA PORTE N'A PAS SUIVI L'AÉRATION~~ — réglé autrement, 11 septembre 2026
 
 **Ce point était mal posé, et le corriger vaut mieux que de le faire.** Il
