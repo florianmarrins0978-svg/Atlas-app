@@ -61,7 +61,7 @@
 <p><em>Document de retour du lot du 11 septembre 2026. Il se tient à jour ; la version consultable est <code>docs/lot-arrosage-impeccable.html</code>.</em></p>
 <h2 id="en-cinq-lignes">En cinq lignes</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p>Le plan d'arrosage n'avait pas été repris depuis le 20 août. La lecture a trouvé trois endroits où il rendait un plan faux, et <strong>deux de vos règles perdues</strong> — le quinconce du couloir (18 août) et l'antenne Ø16 de 2 m au plus. Tout est corrigé à la racine, l'écran est refait sur la maquette que vous avez vue, et <strong>dix-sept de vos règles vivent désormais dans une suite qu'aucune session ne peut réécrire</strong>. Trois points restent à trancher par vous, en bas.</p>
+<p>Le plan d'arrosage n'avait pas été repris depuis le 20 août. La lecture a trouvé trois endroits où il rendait un plan faux, et <strong>deux de vos règles perdues</strong> — le quinconce du couloir (18 août) et l'antenne Ø16 de 2 m au plus. Tout est corrigé à la racine, l'écran est refait sur la maquette que vous avez vue, et <strong>dix-sept de vos règles vivent désormais dans une suite qu'aucune session ne peut réécrire</strong>. Un point reste à trancher par vous, en bas.</p>
 <h2 id="ce-qui-a-été-trouvé-et-le-verdict">Ce qui a été trouvé, et le verdict</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -97,8 +97,8 @@
 <tr>
 <td>L'amenée comptée pour 30 m sans un mot</td>
 <td>le chiffre entrait dans la pression au dernier arroseur ; « 0,27 bar dans l'amenée » s'affichait comme un fait</td>
-<td><strong>dit à l'écran</strong> : « L'amenée est comptée pour 30 m : mesurez-la » — la vraie longueur reste ouverte (plus bas)</td>
-<td><code>actions.ts</code></td>
+<td><strong>corrigé, sur votre réponse « calculée, ni lue ni supposée »</strong> : la place du piquage se lit sur le croquis comme celle de la nourrice, et la longueur se calcule entre les deux à l'échelle des cotes. Sans piquage dessiné, pas de plan</td>
+<td><code>geometrie-croquis.ts</code> <code>longueurDeLAmenee</code>, <code>lire-croquis.ts</code>, <code>croquis-complet.ts</code></td>
 </tr>
 <tr>
 <td>Les réserves disparaissaient après une discussion</td>
@@ -159,7 +159,7 @@
 <ul>
 <li><strong>Le damier reste réservé aux tuyères.</strong> Avec la bonne mesure, il devient possible sur les turbines : votre carré de 12 × 12 tomberait à <strong>6 turbines</strong> au lieu des 9 que vous avez dessinées le 23 août. Je n'ai pas tranché à votre place : vos 9 sont gardées (question plus bas).</li>
 <li><strong>Le calcul n'a pas été réécrit en TypeScript</strong> pour lire le tracé : ce serait une seconde façon de calculer un plan. Les pièces se lisent à la frontière, une fois, dans <code>pieces.ts</code>. Le comptage par rangées de la page publiée reste pour elle seule, et part avec elle.</li>
-<li><strong>Le piquage</strong> vient toujours du déroulant de l'écran, pas du croquis : le croquis doit le porter (c'est l'avertissement au-dessus de la photo), mais c'est votre choix « compteur / robinet » qui commande le calcul.</li>
+<li><strong>Le piquage se lit désormais sur le croquis</strong>, comme la nourrice — c'est sa place qui donne l'amenée. Le déroulant « compteur / robinet » reste : lui commande le débit.</li>
 </ul>
 <h2 id="ce-qui-a-été-dit-et-qui-sest-révélé-inexact">Ce qui a été dit et qui s'est révélé inexact</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -221,9 +221,9 @@
 <td><strong>vous</strong></td>
 </tr>
 <tr>
-<td><strong>La longueur d'amenée</strong> — 30 m écrits sous le plan</td>
-<td>la lire sur le croquis (la place du piquage y est obligatoire) donnerait la vraie longueur ; à éprouver sur votre espace, ce poste n'a pas de clé de vision</td>
-<td><strong>vous</strong>, puis votre espace</td>
+<td>~~<strong>La longueur d'amenée</strong>~~ — <strong>tranchée le 11 septembre : calculée</strong> sur le croquis, du piquage à la nourrice</td>
+<td>la lecture de la place du piquage se vérifie sur votre espace, comme celle de la nourrice (<code>npm run verifier:croquis</code>)</td>
+<td><strong>votre espace</strong></td>
 </tr>
 <tr>
 <td><strong>Les positions sur une vraie photo</strong></td>

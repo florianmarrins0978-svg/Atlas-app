@@ -4,6 +4,7 @@ import { dessinerPlan, type ZoneDessinee } from "../src/lib/arrosage/plan-dessin
 import { ANTENNE_MAX, distance } from "../src/lib/arrosage/trace";
 import { piecesDuPlan } from "../src/lib/arrosage/pieces";
 import { etatDuCroquis } from "../src/lib/arrosage/croquis-complet";
+import { longueurDeLAmenee } from "../src/lib/arrosage/geometrie-croquis";
 import { debitRetenu } from "../src/lib/arrosage/mesure-debit";
 
 /**
@@ -137,7 +138,7 @@ regle("21 août 2026", "« tés + coudes = arroseurs, pour chaque réseau » —
   const p = plan(DEUX_PELOUSES);
   const d = dessine(p, { x: 13, y: 10 });
   for (const r of d.reseaux) exige(r.tes + r.coudes === r.tetes.length, `réseau ${r.numero + 1} : ${r.tes} + ${r.coudes} ≠ ${r.tetes.length}`);
-  const pieces = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25 });
+  const pieces = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: p.amenee.longueurMax25, amenee: null });
   const q = (ref: string, ou: string) => pieces.filter((x) => x.ref === ref && x.ou === ou).reduce((t, x) => t + (x.q ?? 0), 0);
   const somme = (f: (r: (typeof d.reseaux)[number]) => number) => d.reseaux.reduce((t, r) => t + f(r), 0);
   exige(q("te-taraude-25-34-25", "jardin") === somme((r) => r.tes), "les tés de la liste ne sont pas ceux du dessin");
@@ -156,15 +157,15 @@ regle("11 septembre 2026", "« il faut un té égal à côté du premier arroseu
 regle("21 août 2026", "« on va devoir couper la ligne et mettre un té égal » — au compteur, un 25×25×25 dans l'amenée ; au robinet, aucun", () => {
   const p = plan(DEUX_PELOUSES);
   const d = dessine(p, { x: 13, y: 10 });
-  const auCompteur = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: 50 }).filter((x) => x.ou === "amenee" && x.ref === "te-25-25-25");
-  const auRobinet = piecesDuPlan(p.materiel, d, { compteur: false, seuil25: 50 }).filter((x) => x.ou === "amenee" && x.ref === "te-25-25-25");
+  const auCompteur = piecesDuPlan(p.materiel, d, { compteur: true, seuil25: 50, amenee: null }).filter((x) => x.ou === "amenee" && x.ref === "te-25-25-25");
+  const auRobinet = piecesDuPlan(p.materiel, d, { compteur: false, seuil25: 50, amenee: null }).filter((x) => x.ou === "amenee" && x.ref === "te-25-25-25");
   exige(auCompteur.length === 1 && auCompteur[0].q === 1, "le té du compteur manque dans l'amenée");
   exige(auRobinet.length === 0, "un té du compteur est facturé sur un piquage au robinet");
 });
 
 regle("21 août 2026", "« trois zones, jamais mélangées » — compteur → nourrice, regard, jardin, et rien en dehors", () => {
   const p = plan(DEUX_PELOUSES);
-  const pieces = piecesDuPlan(p.materiel, dessine(p, { x: 13, y: 10 }), { compteur: true, seuil25: 50 });
+  const pieces = piecesDuPlan(p.materiel, dessine(p, { x: 13, y: 10 }), { compteur: true, seuil25: 50, amenee: null });
   for (const ou of ["amenee", "regard", "jardin"]) exige(pieces.some((x) => x.ou === ou), `la zone « ${ou} » est vide`);
   exige(pieces.some((x) => x.ou === "regard" && /lectrovanne/i.test(x.nom)), "l'électrovanne n'est pas dans le regard");
   exige(pieces.some((x) => x.ou === "jardin" && /PEBD/.test(x.nom)), "le PEBD Ø16 n'est pas au jardin");
@@ -173,10 +174,10 @@ regle("21 août 2026", "« trois zones, jamais mélangées » — compteur → n
 
 // ── Sans croquis complet, aucun plan ───────────────────────────────────────
 regle("21 août 2026", "« sans ça il ne doit rien proposer » — pas de nourrice, pas de plan ; pas de métrés, pas de plan", () => {
-  exige(!etatDuCroquis({ zonesMesurees: 3, nourrice: false, piquage: "compteur" }).complet, "un croquis sans nourrice passe");
-  exige(!etatDuCroquis({ zonesMesurees: 0, nourrice: true, piquage: "compteur" }).complet, "un croquis sans métrés passe");
-  exige(etatDuCroquis({ zonesMesurees: 1, nourrice: true, piquage: "ailleurs" }).complet, "un croquis complet est refusé");
-  exige(etatDuCroquis({ zonesMesurees: 3, nourrice: false, piquage: "compteur" }).manque.includes("nourrice"), "le manque n'est pas nommé");
+  exige(!etatDuCroquis({ zonesMesurees: 3, nourrice: false, piquage: true, branchement: "compteur" }).complet, "un croquis sans nourrice passe");
+  exige(!etatDuCroquis({ zonesMesurees: 0, nourrice: true, piquage: true, branchement: "compteur" }).complet, "un croquis sans métrés passe");
+  exige(etatDuCroquis({ zonesMesurees: 1, nourrice: true, piquage: true, branchement: "ailleurs" }).complet, "un croquis complet est refusé");
+  exige(etatDuCroquis({ zonesMesurees: 3, nourrice: false, piquage: true, branchement: "compteur" }).manque.includes("nourrice"), "le manque n'est pas nommé");
 });
 
 // ── Le débit et la pression ────────────────────────────────────────────────
@@ -212,7 +213,7 @@ regle("20 août 2026", "« la pression ne donne pas le débit » — hors compte
 
 regle("23 août 2026", "« là, il y a tous les métrés » — l'agencement n'est pas obligatoire : sans dessin, le plan et ses pièces sortent quand même", () => {
   const p = plan(DEUX_PELOUSES);
-  const pieces = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50 });
+  const pieces = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: null });
   exige(pieces.some((x) => x.ou === "jardin" && /Turbine/.test(x.nom)), "sans dessin, plus d'arroseurs dans la liste");
   exige(pieces.some((x) => x.ref === "pe25" && x.q === null), "sans dessin, le tuyau Ø25 doit être « à mesurer », pas chiffré");
 });
@@ -231,6 +232,22 @@ regle("11 septembre 2026", "« même au même endroit, ne superpose pas les rond
   const bleu = d.reseaux[0];
   for (const j of bleu.jonctions)
     for (const t of bleu.tetes) exige(Math.hypot(j.x - t.x - t.decalage.x, j.y - t.y - t.decalage.y) > 1, "un losange chevauche la tête qu'il accompagne");
+});
+
+regle("11 septembre 2026", "« l'amenée doit être calculée, ni lue ni supposée » — du piquage à la nourrice, à l'échelle des cotes", () => {
+  // Une pelouse de 16 m qui occupe 0,40 du croquis : 40 m par unité. Le piquage
+  // à 0,10 du bord, la nourrice à 0,30 : 0,20 × 40 = 8 m d'amenée. Rien n'est lu
+  // en mètres, rien n'est supposé.
+  const zones = [{ position: { x: 0.5, y: 0.5 }, largeurFraction: 0.4, hauteurFraction: 0.15, L: 16, l: 6, ml: null }];
+  const a = longueurDeLAmenee({ x: 0.1, y: 0.5 }, { x: 0.3, y: 0.5 }, zones);
+  exige(a.ok && Math.abs(a.metres - 8) < 0.01, `8 m attendus, ${a.ok ? a.metres : a.raison}`);
+  exige(!longueurDeLAmenee(null, { x: 0.3, y: 0.5 }, zones).ok, "sans piquage sur le croquis, aucune amenée n'est comptée — et surtout pas 30 m");
+  exige(!etatDuCroquis({ zonesMesurees: 3, nourrice: true, piquage: false, branchement: "compteur" }).complet, "sans piquage sur le croquis, pas de plan : c'est le troisième élément obligatoire");
+  const p = plan(DEUX_PELOUSES);
+  const avec = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: 8 }).find((x) => x.ref === "pe25-amenee");
+  const sans = piecesDuPlan(p.materiel, null, { compteur: true, seuil25: 50, amenee: null }).find((x) => x.ref === "pe25-amenee");
+  exige(avec?.q === 8, "la ligne d'amenée porte les 8 m calculés");
+  exige(sans?.q === null, "sans calcul possible, la ligne d'amenée reste « à mesurer » — jamais un chiffre plausible");
 });
 
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────

@@ -43,6 +43,13 @@ refuse de réécrire une entrée existante — on ne peut qu'ajouter, sous le re
 
 Maquette : `appli/arrosage-plan-et-pieces.html`. Détail : `ARCHITECTURE.md`
 §333. Document de retour : `docs/lot-arrosage-impeccable.md`.
+
+**Le soir même, l'amenée :** *« elle doit être calculée, ni lue ni supposée »*.
+La place du piquage se lit sur le croquis comme celle de la nourrice, et la
+longueur du compteur à la nourrice se calcule entre les deux à l'échelle des
+cotes (`longueurDeLAmenee`). Sans piquage dessiné, pas de plan. Les 30 m par
+défaut ne servent plus qu'à la page publiée. Planche des choix restants :
+`appli/arrosage-a-trancher.html`.
 ### Le prix accordé au client, enfin cliquable sur une facture
 
 *« On n'a pas mis la réduction client cliquable comme sur le devis »*, puis

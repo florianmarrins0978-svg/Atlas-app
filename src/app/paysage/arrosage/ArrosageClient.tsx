@@ -321,7 +321,7 @@ export default function ArrosageClient({
               quoi="Les métrés"
               lu={etat.croquis.lu.zonesMesurees > 0 ? `${etat.croquis.lu.zonesMesurees} zone${etat.croquis.lu.zonesMesurees > 1 ? "s" : ""} lue${etat.croquis.lu.zonesMesurees > 1 ? "s" : ""}` : null}
             />
-            <Element ok quoi="Le piquage" lu={etat.croquis.lu.piquage === "compteur" ? "au compteur" : "au robinet"} />
+            <Element ok={etat.croquis.lu.piquage} quoi="Le piquage" lu={etat.croquis.lu.piquage ? (etat.croquis.lu.branchement === "compteur" ? "au compteur" : "au robinet") : null} />
             <Element ok={etat.croquis.lu.nourrice} quoi="La nourrice" lu={null} />
           </ul>
           <p className="mt-4 text-[15px] leading-[1.5]" style={{ color: colors.inkSoft }}>

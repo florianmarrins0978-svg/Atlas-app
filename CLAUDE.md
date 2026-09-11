@@ -1111,6 +1111,18 @@ rigide. »*
 | un couloir jusqu'à **4 m** de large | une tranchée au milieu, des antennes des deux côtés |
 | au-delà de 4 m | une tranchée ne suffit plus : la ligne doit repasser assez près de chaque tête |
 
+**L'AMENÉE SE CALCULE — « NI LUE, NI SUPPOSÉE ».** Sa règle du 11 septembre
+2026, devant une planche qui lui proposait de la « lire » ou de garder 30 m :
+*« pour la 2, elle doit être calculée, ni lue ni supposée »*. Le croquis porte
+le piquage et la nourrice — deux des trois éléments obligatoires —, les cotes
+donnent l'échelle : la longueur du compteur à la nourrice se calcule entre les
+deux places, en Manhattan, comme le trajet du regard
+(`longueurDeLAmenee`, `geometrie-croquis.ts`). Le modèle ne rend jamais des
+mètres ; il rend des places. Et **sans piquage dessiné, aucun plan** — c'est le
+troisième élément, et il se lit désormais sur le croquis, pas seulement dans le
+déroulant (qui, lui, ne commande que le débit). Quand l'échelle ne se déduit
+pas, l'amenée n'est pas comptée et l'écran le dit — jamais 30 m tus.
+
 **Pourquoi 2 m et pas « environ 2 m ».** La nomenclature du 17 août comptait
 *« environ 2 m de PEBD rigide Ø16 par arroseur »* — une règle de COMPTE, qu'on
 a prise pour la seule règle. Celle-ci est une règle de POSE : au-delà, ce n'est

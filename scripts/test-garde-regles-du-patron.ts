@@ -40,6 +40,8 @@ const A_REFUSER: [string, Record<string, unknown>, string][] = [
   ["Write", { file_path: `C:\\Users\\x\\atlas-app\\${CHEMIN.replace("/", "\\")}`, content: "" }, "l'écraser par un chemin Windows absolu"],
   ["Edit", { file_path: CHEMIN, old_string: `regle("18 août 2026", "…", () => {`, new_string: "" }, "toucher l'en-tête d'une règle"],
   ["Edit", { file_path: CHEMIN, old_string: `exige(z.points.length === 7, "…");`, new_string: `exige(z.points.length === 12, "…");` }, "changer un chiffre attendu — le geste exact du 24 août"],
+  ["Edit", { file_path: CHEMIN, old_string: `  exige(a.length === 1, "…");\n  exige(b.length === 0, "…");`, new_string: `  exige(a.length === 1, "…");` }, "retirer une ligne exigée"],
+  ["Edit", { file_path: CHEMIN, old_string: `regle("18 août 2026", "son couloir : 7 tuyères", () => {\n  exige(n === 7, "…");`, new_string: `regle("18 août 2026", "son couloir : 12 tuyères", () => {\n  exige(n === 7, "…");` }, "reformuler l'en-tête d'une règle"],
   ["MultiEdit", { file_path: CHEMIN, edits: [{ old_string: "console.log", new_string: "console.log" }, { old_string: "exige(a", new_string: "" }] }, "une édition multiple dont l'une touche une règle"],
   ["Edit", { file_path: CHEMIN, old_string: "// ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────", new_string: "" }, "retirer le repère d'ajout"],
   ["Bash", { command: `sed -i 's/=== 7/=== 12/' ${CHEMIN}` }, "corriger le chiffre par sed"],
@@ -55,6 +57,8 @@ const A_REFUSER: [string, Record<string, unknown>, string][] = [
 const A_LAISSER: [string, Record<string, unknown>, string][] = [
   ["Edit", { file_path: CHEMIN, old_string: "// ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────", new_string: `regle("12 septembre 2026", "…", () => {});\n\n// ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────` }, "ajouter une règle sous le repère"],
   ["Edit", { file_path: CHEMIN, old_string: "console.log(`\\n=== Les règles", new_string: "console.log(`\\n=== Les règles" }, "toucher une ligne qui n'est pas une règle"],
+  ["Edit", { file_path: CHEMIN, old_string: `  exige(q("te-25-25-25", "amenee") === 1 && piecesDuPlan(p.materiel, d, { compteur: true, seuil25: 50 }).length > 0, "…");`, new_string: `  exige(q("te-25-25-25", "amenee") === 1 && piecesDuPlan(p.materiel, d, { compteur: true, seuil25: 50, amenee: null }).length > 0, "…");` }, "suivre une signature qui change, sans toucher un chiffre attendu"],
+  ["Edit", { file_path: CHEMIN, old_string: `  exige(!etatDuCroquis({ zonesMesurees: 3, nourrice: false, piquage: "compteur" }).complet, "…");`, new_string: `  exige(!etatDuCroquis({ zonesMesurees: 3, nourrice: false, piquage: true, branchement: "compteur" }).complet, "…");` }, "idem, avec un champ de plus dans l'appel"],
   ["Write", { file_path: "scripts/test-regles-du-patron-voisin.ts", content: "" }, "écrire un AUTRE fichier au nom proche"],
   ["Write", { file_path: "src/lib/arrosage/pieces.ts", content: "" }, "écrire n'importe quel autre fichier"],
   ["Edit", { file_path: "scripts/test-arrosage-calcul.ts", old_string: "exige(", new_string: "exige(" }, "éditer une autre suite, même avec le mot exige("],

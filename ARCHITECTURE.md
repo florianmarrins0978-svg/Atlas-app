@@ -28584,9 +28584,24 @@ gêne quelqu'un — le nom du fichier dans un message de commit.
 - **Lire la longueur d'amenée sur le croquis** : demande la clé de vision, que
   ce poste n'a pas ; le 30 m est gardé en majorant **écrit à l'écran**. Ouvert.
 
+### L'amenée, tranchée le soir même : « calculée, ni lue ni supposée »
+
+Devant la planche qui lui proposait de « lire » l'amenée sur le croquis ou de
+garder 30 m écrits, sa réponse a été plus juste que les deux : *« elle doit
+être calculée, ni lue ni supposée »*. Le modèle ne rend jamais des mètres — il
+rend la PLACE du piquage, en fraction, comme celle de la nourrice ; les cotes
+donnent l'échelle ; `longueurDeLAmenee` (`geometrie-croquis.ts`) fait la
+distance en Manhattan, à l'échelle sévère du trajet du regard puisque le
+résultat entre dans la même pression. Le piquage devient le troisième élément
+lu sur le croquis (`croquis-complet.ts`) : sans lui, aucun plan. Quand
+l'échelle ne se déduit pas, l'amenée n'est pas comptée et l'écran le dit —
+plus jamais 30 m tus. La ligne de pièces porte le chiffre calculé, arrondi au
+mètre supérieur, et dit Ø25 ou Ø32 selon le seuil.
+
 ### Ce qui reste ouvert
 
-Le trajet du regard à la première tête (inchangé, dit à l'écran) · l'amenée
-lue sur le croquis · les positions sur une vraie photo (banc du patron) · la
-page publiée `appli/arrosage.html` et ses deux scripts, en sursis jusqu'à ce
-qu'il valide l'écran.
+Le trajet du regard à la première tête (inchangé, dit à l'écran) · le damier
+pour les turbines des grandes pelouses (planche `appli/arrosage-a-trancher.html`,
+question posée) · les positions sur une vraie photo, piquage compris (banc du
+patron) · la page publiée `appli/arrosage.html` et ses deux scripts, en sursis
+jusqu'à ce qu'il valide l'écran.
