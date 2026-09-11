@@ -51,6 +51,7 @@ relues à chaque session) :
 26. [Combien d'heures avons-nous passé à créer Atlas ?](#26-combien-dheures-avons-nous-passé-à-créer-atlas-)
 27. [Le format de mes numéros de facture, c'est obligatoire ?](#27-le-format-de-mes-numéros-de-facture-cest-obligatoire-)
 28. [Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?](#28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-)
+29. [Mon client peut-il modifier le devis ou la facture qu'il reçoit ?](#29-mon-client-peut-il-modifier-le-devis-ou-la-facture-quil-reçoit-)
 
 ---
 
@@ -1918,3 +1919,47 @@ C'est une demi-journée, pas plus : la page passerait par le même endroit que l
 PDF. Mais tant que vous ne le demandez pas, **personne ne doit le faire « pour
 faire propre »** — c'est écrit dans le dépôt (`ARCHITECTURE.md` §248), pour
 qu'une session ne défasse pas votre choix en croyant bien faire.
+
+---
+
+## 29. Mon client peut-il modifier le devis ou la facture qu'il reçoit ?
+
+**Posée le 11 septembre 2026**, juste après le correctif du téléchargement :
+*« mais si on ouvre le PDF avec un logiciel, on ne peut pas le modifier ? »*
+
+### La réponse courte : non, pas avec un lecteur ordinaire
+
+Vos documents sortent **chiffrés**. Le lecteur les ouvre sans rien demander,
+mais ses outils d'écriture sont éteints — Acrobat affiche « SÉCURISÉ » en haut.
+
+| Ce que votre client peut faire | Ce qu'il ne peut plus |
+|---|---|
+| ouvrir, lire, faire défiler | **modifier un montant, un texte** |
+| imprimer, même en pleine définition | **annoter, surligner, écrire par-dessus** |
+| recopier une adresse, un numéro | **remplir un champ** |
+| | **retirer une page** |
+
+Il n'a **aucun mot de passe à taper** : c'est voulu. Un mot de passe d'ouverture
+coûterait un coup de fil par devis, et la moitié des chantiers.
+
+### Ce que ça ne fait pas, et je préfère l'écrire
+
+**Ce n'est pas un coffre-fort.** Le format PDF est public : un outil spécialisé
+réécrit n'importe quel fichier, quoi qu'on y mette. Aucun format au monde ne
+tient cette promesse-là, et vous la vendre serait mentir.
+
+Ce que ça garantit, c'est l'essentiel au quotidien : **personne ne change un
+montant d'un doigt, par mégarde ou par facilité.** Et la pièce qui fait foi
+reste celle qu'Atlas archive au moment de l'envoi — c'est elle qu'on ressort en
+cas de litige, pas le fichier qui traîne dans les téléchargements d'un client.
+
+### Sur quoi ça vaut
+
+Les trois documents, par un seul endroit du code : **le devis, la facture, et la
+feuille de chantier**. Un document oublié ne se verrait pas — on l'apprendrait
+chez le client.
+
+Vérifié le 11 septembre 2026 sur la version en ligne
+(`scripts/test-devis-non-modifiable.ts`, six contrôles) : le chiffrement est
+réel, pas une simple étiquette, et le contrôle le prouve sur le devis **et** sur
+la facture.
