@@ -16,7 +16,7 @@ import {
 } from "./actions";
 import PropositionPrixSection from "./PropositionPrixSection";
 import type { PropositionPrix } from "@/server/chiffrage/proposition-prix";
-import { ligneAttendSonPrix, peutPreparerDevis } from "@/lib/preparation-devis";
+import { ligneAttendSonPrix, peutPreparerLaPiece } from "@/lib/preparation-devis";
 import { montantEcrivable } from "@/lib/montant-ecrivable";
 import { enEuros, enMontant } from "@/lib/euros";
 
@@ -101,7 +101,7 @@ export default function PrixClient({
 
   // La même règle que celle appliquée côté serveur : un écran plus permissif
   // que le serveur laisse le patron devant un bouton qui échoue sans raison.
-  const verdict = peutPreparerDevis(aJour);
+  const verdict = peutPreparerLaPiece(aJour);
 
   // **Combien de lignes attendent encore, comptées par la règle partagée.**
   // `ligneAttendSonPrix` est celle que le serveur, le PDF et l'envoi emploient

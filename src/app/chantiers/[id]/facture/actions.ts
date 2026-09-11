@@ -7,9 +7,9 @@ import {
   majEcheanceFacture,
   reprendreLeDevisSurLaFacture,
   terminerChantier,
-  ajouterTravauxSupplementaires,
-  majTravauxSupplementaires,
-  retirerTravauxSupplementaires,
+  ajouterLigneDeFacture,
+  majLigneDeFacture,
+  retirerLignesDeFacture,
   FactureDejaEmiseError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
@@ -181,55 +181,81 @@ export async function preparerLienFactureAction(
 // sa facture est simplement déjà partie.
 
 export type ResultatTravaux =
-  | { succes: true; ligneId?: string; montant?: string }
+  | { succes: true; montant?: string }
   | { succes: false; erreur: string };
 
-export async function ajouterTravauxSupplementairesAction(
+/**
+ * CE QUE REND UNE LIGNE AJOUTÉE — et pourquoi ce n'est plus `ResultatTravaux`.
+ *
+ * Les trois gestes ne rapportent pas la même chose : l'ajout rend une ligne, la
+ * correction un montant, le retrait rien. Un type commun les rendait tous
+ * FACULTATIFS — si bien que l'écran devait se débrouiller quand ils manquaient,
+ * et « se débrouiller » voulait dire redéduire de son côté la règle du dépôt
+ * (`CLAUDE.md` §3). Trois gestes, deux formes : chacune promet ce qu'elle porte
+ * vraiment, et l'écran n'a plus rien à supposer.
+ */
+export type ResultatLigneAjoutee =
+  | {
+      succes: true;
+      ligneId: string;
+      /**
+       * **Dans quel bloc le SERVEUR vient de ranger la ligne** (migration
+       * 0085) : ordinaire sur une facture directe, supplément sur une facture
+       * née d'un devis. C'est lui qui l'a écrite en base — c'est à lui de dire
+       * où elle est.
+       */
+      supplement: boolean;
+    }
+  | { succes: false; erreur: string };
+
+export async function ajouterLigneDeFactureAction(
   factureId: string,
   taux?: string | null
-): Promise<ResultatTravaux> {
+): Promise<ResultatLigneAjoutee> {
   const ctx = await getCurrentCtx();
-  await exigerFacturation(ctx, "ajouter des travaux supplémentaires");
+  await exigerFacturation(ctx, "ajouter une ligne de facture");
   try {
-    const r = await ajouterTravauxSupplementaires(ctx, factureId, taux);
-    return r.ok ? { succes: true, ligneId: r.ligne.id } : { succes: false, erreur: r.raison };
+    const r = await ajouterLigneDeFacture(ctx, factureId, taux);
+    return r.ok
+      ? { succes: true, ligneId: r.ligne.id, supplement: r.ligne.supplement }
+      : { succes: false, erreur: r.raison };
   } catch (err) {
-    logger.error("Travaux supplémentaires non ajoutés", {
+    logger.error("Ligne de facture non ajoutée", {
       erreur: err instanceof Error ? err.message : String(err),
     });
     return { succes: false, erreur: "La ligne n'a pas pu être ajoutée. Réessayez dans un instant." };
   }
 }
 
-export async function majTravauxSupplementairesAction(
+export async function majLigneDeFactureAction(
   factureId: string,
   ligneId: string,
   champs: { libelle?: string; quantite?: string; prixUnitaire?: string; tauxTva?: string | null }
 ): Promise<ResultatTravaux> {
   const ctx = await getCurrentCtx();
-  await exigerFacturation(ctx, "corriger des travaux supplémentaires");
+  await exigerFacturation(ctx, "corriger une ligne de facture");
   try {
-    const r = await majTravauxSupplementaires(ctx, factureId, ligneId, champs);
+    const r = await majLigneDeFacture(ctx, factureId, ligneId, champs);
     return r.ok ? { succes: true, montant: r.montant } : { succes: false, erreur: r.raison };
   } catch (err) {
-    logger.error("Travaux supplémentaires non corrigés", {
+    logger.error("Ligne de facture non corrigée", {
       erreur: err instanceof Error ? err.message : String(err),
     });
     return { succes: false, erreur: "La correction n'a pas pu être enregistrée. Réessayez." };
   }
 }
 
-export async function retirerTravauxSupplementairesAction(
+export async function retirerLignesDeFactureAction(
   factureId: string,
   ligneId?: string
 ): Promise<ResultatTravaux> {
   const ctx = await getCurrentCtx();
-  await exigerFacturation(ctx, "retirer des travaux supplémentaires");
+  await exigerFacturation(ctx, "retirer des lignes de facture");
   try {
-    const r = await retirerTravauxSupplementaires(ctx, factureId, ligneId);
+    const r = await retirerLignesDeFacture(ctx, factureId, ligneId);
     return r.ok ? { succes: true } : { succes: false, erreur: r.raison };
   } catch (err) {
-    logger.error("Travaux supplémentaires non retirés", {
+    logger.error("Lignes de facture non retirées", {
       erreur: err instanceof Error ? err.message : String(err),
     });
     return { succes: false, erreur: "Le retrait n'a pas pu être enregistré. Réessayez." };

@@ -6,12 +6,12 @@ import * as clientsRepo from "../src/server/repositories/clients";
 import * as devisRepo from "../src/server/repositories/devis";
 import * as prixRepo from "../src/server/repositories/lignes-prix";
 import {
-  ajouterTravauxSupplementaires,
+  ajouterLigneDeFacture,
   emettreFacture,
   genererPdfFacturePourApercu,
-  majTravauxSupplementaires,
+  majLigneDeFacture,
   reprendreLeDevisSurLaFacture,
-  retirerTravauxSupplementaires,
+  retirerLignesDeFacture,
   terminerChantier,
 } from "../src/server/repositories/factures";
 import { withEntreprise } from "../src/server/db/with-entreprise";
@@ -130,10 +130,10 @@ async function main() {
 
   await test("on ajoute un travail en plus, et il porte son propre taux", async () => {
     const { facture } = await factureEnBrouillon(ctx);
-    const r = await ajouterTravauxSupplementaires(ctx, facture.id, "10.00");
+    const r = await ajouterLigneDeFacture(ctx, facture.id, "10.00");
     assert.ok(r.ok, `l'ajout est refusé : ${r.ok ? "" : r.raison}`);
 
-    const maj = await majTravauxSupplementaires(ctx, facture.id, r.ligne.id, {
+    const maj = await majLigneDeFacture(ctx, facture.id, r.ligne.id, {
       libelle: "Dessouchage de la haie",
       quantite: "1",
       prixUnitaire: "300.00",
@@ -159,9 +159,9 @@ async function main() {
     // lignes pour recopier la dernière version envoyée ; sans la colonne
     // `supplement`, il emportait le travail ajouté sans un mot.
     const { chantier, facture } = await factureEnBrouillon(ctx, "1000.00");
-    const ajout = await ajouterTravauxSupplementaires(ctx, facture.id);
+    const ajout = await ajouterLigneDeFacture(ctx, facture.id);
     assert.ok(ajout.ok);
-    await majTravauxSupplementaires(ctx, facture.id, ajout.ligne.id, {
+    await majLigneDeFacture(ctx, facture.id, ajout.ligne.id, {
       libelle: "Broyage sur place",
       prixUnitaire: "150.00",
     });
@@ -190,7 +190,7 @@ async function main() {
     // d'écran — la garde est dans l'écriture.
     const { facture } = await factureEnBrouillon(ctx);
     const duDevis = await ligneDuDevis(ctx, facture.id);
-    const r = await majTravauxSupplementaires(ctx, facture.id, duDevis.id, { prixUnitaire: "1.00" });
+    const r = await majLigneDeFacture(ctx, facture.id, duDevis.id, { prixUnitaire: "1.00" });
     assert.equal(r.ok, false, "une ligne du devis a pu être corrigée depuis la facture");
 
     const apres = await lignesDe(ctx, facture.id);
@@ -200,7 +200,7 @@ async function main() {
   await test("…et elle refuse aussi d'être retirée", async () => {
     const { facture } = await factureEnBrouillon(ctx);
     const duDevis = await ligneDuDevis(ctx, facture.id);
-    const r = await retirerTravauxSupplementaires(ctx, facture.id, duDevis.id);
+    const r = await retirerLignesDeFacture(ctx, facture.id, duDevis.id);
     assert.ok(r.ok, "le geste devrait aboutir, sans rien retirer");
     assert.equal(r.retirees, 0, "une ligne du devis a été retirée de la facture");
     assert.equal((await lignesDe(ctx, facture.id)).length, 1, "la ligne du devis a disparu");
@@ -209,13 +209,13 @@ async function main() {
   await test("le « − » referme la catégorie : tous les suppléments partent, le devis reste", async () => {
     const { facture } = await factureEnBrouillon(ctx);
     for (const prix of ["100.00", "200.00"]) {
-      const a = await ajouterTravauxSupplementaires(ctx, facture.id);
+      const a = await ajouterLigneDeFacture(ctx, facture.id);
       assert.ok(a.ok);
-      await majTravauxSupplementaires(ctx, facture.id, a.ligne.id, { libelle: "Extra", prixUnitaire: prix });
+      await majLigneDeFacture(ctx, facture.id, a.ligne.id, { libelle: "Extra", prixUnitaire: prix });
     }
     assert.equal((await lignesDe(ctx, facture.id)).filter((l) => l.supplement).length, 2);
 
-    const r = await retirerTravauxSupplementaires(ctx, facture.id);
+    const r = await retirerLignesDeFacture(ctx, facture.id);
     assert.ok(r.ok);
     assert.equal(r.retirees, 2, "le retrait n'a pas emporté les deux lignes");
     const lignes = await lignesDe(ctx, facture.id);
@@ -228,9 +228,9 @@ async function main() {
     // lignes par `totauxAvecReduction`, qui sait déjà grouper par taux. Ce
     // contrôle existe pour que ça reste vrai.
     const { facture } = await factureEnBrouillon(ctx, "1000.00");
-    const a = await ajouterTravauxSupplementaires(ctx, facture.id, "10.00");
+    const a = await ajouterLigneDeFacture(ctx, facture.id, "10.00");
     assert.ok(a.ok);
-    await majTravauxSupplementaires(ctx, facture.id, a.ligne.id, {
+    await majLigneDeFacture(ctx, facture.id, a.ligne.id, {
       libelle: "Dessouchage",
       prixUnitaire: "300.00",
     });
@@ -274,9 +274,9 @@ async function main() {
 
   await test("LE PDF DU BROUILLON COMPTE LE SUPPLÉMENT — ses chiffres du 10 septembre", async () => {
     const { facture } = await factureEnBrouillon(ctx, "1750.00");
-    const a = await ajouterTravauxSupplementaires(ctx, facture.id, null);
+    const a = await ajouterLigneDeFacture(ctx, facture.id, null);
     assert.ok(a.ok);
-    await majTravauxSupplementaires(ctx, facture.id, a.ligne.id, {
+    await majLigneDeFacture(ctx, facture.id, a.ligne.id, {
       libelle: "Pennisetum arracher",
       quantite: "6",
       prixUnitaire: "450.00",
@@ -313,9 +313,9 @@ async function main() {
       "le titre s'écrit sur une facture qui n'a aucun supplément"
     );
 
-    const a = await ajouterTravauxSupplementaires(ctx, facture.id, null);
+    const a = await ajouterLigneDeFacture(ctx, facture.id, null);
     assert.ok(a.ok);
-    await majTravauxSupplementaires(ctx, facture.id, a.ligne.id, {
+    await majLigneDeFacture(ctx, facture.id, a.ligne.id, {
       libelle: "Pennisetum arracher",
       prixUnitaire: "450.00",
     });
@@ -330,7 +330,7 @@ async function main() {
     const { facture } = await factureEnBrouillon(ctx);
     await emettreFacture(ctx, facture.id);
 
-    const a = await ajouterTravauxSupplementaires(ctx, facture.id);
+    const a = await ajouterLigneDeFacture(ctx, facture.id);
     assert.equal(a.ok, false, "on a pu ajouter un travail à une facture partie");
     assert.match(
       a.ok ? "" : a.raison,
@@ -345,7 +345,7 @@ async function main() {
     // « refusé », c'est introuvable (`withEntreprise`).
     const voisin = await contexte("voisin");
     const { facture } = await factureEnBrouillon(voisin);
-    const r = await ajouterTravauxSupplementaires(ctx, facture.id);
+    const r = await ajouterLigneDeFacture(ctx, facture.id);
     assert.equal(r.ok, false, "une facture d'à côté a accepté un supplément");
     assert.match(r.ok ? "" : r.raison, /introuvable/);
   });

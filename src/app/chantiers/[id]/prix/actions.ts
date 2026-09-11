@@ -6,7 +6,7 @@ import { ajouterLignePrix, listerLignesPrix, modifierLignePrix, supprimerLignePr
 import { marquerPrixValide } from "@/server/repositories/chantiers";
 import { preparerPropositionPrix } from "@/server/chiffrage/proposition-prix";
 import { appliquerPropositionPrix, type ResultatApplicationPrix } from "@/server/chiffrage/appliquer-proposition";
-import { peutPreparerDevis, PrixNonPreparableError } from "@/lib/preparation-devis";
+import { peutPreparerLaPiece, PrixNonPreparableError } from "@/lib/preparation-devis";
 
 export async function ajouterLignePrixAction(chantierId: string) {
   const ctx = await getCurrentCtx();
@@ -50,7 +50,7 @@ export async function validerPrixAction(chantierId: string) {
   // lignes en base et on applique **la même fonction** que l'écran
   // (`CLAUDE.md` §3) — jamais une seconde version de la règle.
   const lignes = await listerLignesPrix(ctx, chantierId);
-  const verdict = peutPreparerDevis(lignes);
+  const verdict = peutPreparerLaPiece(lignes);
   if (!verdict.possible) {
     throw new PrixNonPreparableError(`${verdict.probleme} ${verdict.marcheASuivre}`);
   }

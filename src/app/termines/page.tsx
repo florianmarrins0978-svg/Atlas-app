@@ -174,18 +174,17 @@ export default async function TerminesPage() {
             un repère sur la liste, le contrôle comparait la carte à sa propre
             mention et restait vert la carte remise en pied d'écran — vert sur
             le défaut même dont il portait le nom. */}
+        {/* **La liste se rend même vide — 11 septembre 2026.** L'état « aucun
+            chantier terminé » remplaçait la liste entière, et emportait avec
+            elle les onglets, « Retours d'intervention » et la porte « Créer une
+            facture ». La phrase vit désormais DANS `ListeTermines`, sous les
+            onglets, là où elle laisse les portes ouvertes. */}
         <div data-atlas="contenu-termines">
-          {chantiers.length === 0 ? (
-            <p className="mt-8 px-[26px] text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
-              Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
-            </p>
-          ) : (
-            <ListeTermines
-              lignes={lignes}
-              retoursNonLus={retours}
-              moisCourant={moisCourant}
-            />
-          )}
+          <ListeTermines
+            lignes={lignes}
+            retoursNonLus={retours}
+            moisCourant={moisCourant}
+          />
         </div>
 
       </div>

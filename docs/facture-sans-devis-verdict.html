@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Facturer sans passer par la case devis — ce qui a été fait</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="facturer-sans-passer-par-la-case-devis--ce-qui-a-été-fait">Facturer sans passer par la case devis — ce qui a été fait</h1>
+<p><em>11 septembre 2026. Document de clôture du lot, à transmettre tel quel.</em></p>
+<hr>
+<h2 id="ce-que-vous-aviez-demandé-et-où-ça-en-est">Ce que vous aviez demandé, et où ça en est</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote><em>« Il faut que l'on puisse facturer sans avoir besoin de passer par la case devis. »</em> (10 septembre)</blockquote>
+<blockquote><em>« Sous retour d'intervention, collé à droite, tu mets créer une facture en doré, comme tu as fait le bouton vide contour doré. »</em> (11 septembre)</blockquote>
+<blockquote><em>« Reprends un maximum la façon et le style qui existe déjà pour faire et envoyer les devis — je parle dans la disposition des boutons, des tailles. »</em></blockquote>
+<p><strong>Le parcours entier est codé.</strong> Cinq gestes, et rien d'inventé au milieu :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td><strong>Créer une facture</strong>, dans Terminés</td>
+</tr>
+<tr>
+<td>2</td>
+<td>La <strong>fiche client</strong> s'ouvre — nom, téléphone, e-mail, adresse</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Faire la facture</strong> → le client, le chantier et la facture existent</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Remplir la facture</strong> → vos lignes, chacune avec sa TVA</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Envoyer la facture</strong> → votre SMS ou votre e-mail, message déjà écrit</td>
+</tr>
+</tbody></table></div>
+<p>Le chantier part <strong>directement dans Terminés</strong>, comme vous l'aviez demandé.</p>
+<hr>
+<h2 id="un-verdict-par-point">Un verdict par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Votre point</th>
+<th>Verdict</th>
+<th>Ce qui le fonde</th>
+</tr></thead><tbody>
+<tr>
+<td>Facturer sans devis</td>
+<td><strong>fait</strong></td>
+<td><code>drizzle/0086_facture_sans_devis.sql</code></td>
+</tr>
+<tr>
+<td>La porte dans Terminés</td>
+<td><strong>fait</strong></td>
+<td><code>src/app/termines/ListeTermines.tsx</code></td>
+</tr>
+<tr>
+<td>Bouton doré, collé à droite, contour vide</td>
+<td><strong>fait</strong></td>
+<td>mesuré à 26 px du bord, 44 px de haut</td>
+</tr>
+<tr>
+<td>Reprendre le style des devis</td>
+<td><strong>fait</strong></td>
+<td>mêmes pièces, pas des copies — voir plus bas</td>
+</tr>
+<tr>
+<td>La 4ᵉ pastille sur la même ligne</td>
+<td><strong>refusé, mesures à l'appui</strong></td>
+<td>elle déborde de 75 px sur votre téléphone</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-que-jai-fait-autrement-que-demandé-et-pourquoi">Ce que j'ai fait AUTREMENT que demandé, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="la-quatrième-pastille-ne-pouvait-pas-tenir">La quatrième pastille ne pouvait pas tenir</h3>
+<p>Vous vouliez « Créer une facture » à côté de « Retours d'intervention », sur la même ligne. <strong>Ce n'était pas un avis, c'est une mesure :</strong> cette rangée prend déjà <strong>300 px sur les 306</strong> d'un écran de 360 — et c'est vous qui l'aviez fait resserrer le 9 septembre pour que les trois y tiennent.</p>
+<p>J'ai cherché la place plutôt que de vous dire non : <strong>cinq resserrements différents, mesurés aux trois largeurs</strong> (<code>appli/faire-rentrer-les-quatre.html</code>, la planche se mesure elle-même). Tous achetaient la place en coupant un mot.</p>
+<p><strong>C'est vous qui avez trouvé la sortie</strong> — la seconde rangée. Elle ne coûte qu'un peu de hauteur, et les deux noms restent entiers. Je cherchais à faire tenir quatre pastilles sur une ligne parce que j'avais borné la question ainsi.</p>
+<h3 id="ce-qui-a-été-retiré-de-la-fiche-client-quand-elle-facture">Ce qui a été RETIRÉ de la fiche client quand elle facture</h3>
+<p>La note vocale, les photos et la dictée des coordonnées. Ce n'est pas un oubli : ces trois pièces nourrissent le <strong>chiffrage</strong>, et il n'y a pas de devis ici. <em>« On ne dicte pas une facture qu'on tape. »</em></p>
+<hr>
+<h2 id="ce-que-jai-ajouté-et-que-personne-navait-demandé">Ce que j'ai ajouté et que personne n'avait demandé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="une-facture-vide-ne-peut-plus-partir">Une facture vide ne peut plus partir</h3>
+<p>Née d'un devis, une facture arrive avec ses lignes. <strong>Née sans devis, elle naît vide</strong> — et rien n'empêchait de l'envoyer telle quelle. Votre client aurait reçu une pièce comptable à <strong>0,00 €</strong>, immuable, qui ne se corrige que par un avoir.</p>
+<p>L'envoi est donc fermé tant que la facture ne porte rien, <strong>et le refus nomme le geste qui le lève</strong> : un bouton grisé sans un mot se lit comme une application en panne.</p>
+<h3 id="-reprendre-le-devis--est-refusé-sur-une-facture-directe">« Reprendre le devis » est refusé sur une facture directe</h3>
+<p>C'est le refus qui coûtait le plus cher. Ce geste efface les lignes pour recopier le devis — sur une facture faite sans devis, <strong>c'est toute la facture</strong>. Un devis écrit après coup sur le même chantier vous aurait fait perdre votre saisie entière d'un seul appui.</p>
+<hr>
+<h2 id="ce-que-jai-dit-et-qui-était-faux">Ce que j'ai dit et qui était FAUX</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>« La quatrième pastille est impossible. »</strong> C'était vrai du dessin d'aujourd'hui, pas de tout dessin possible. Vous avez eu raison de me faire chercher : il y avait bien une solution, et c'est la vôtre.</p>
+<p><strong>Mon premier contrôle a accusé du code juste.</strong> Il lisait l'écran de la facture avant que celui-ci ait fini de s'afficher, et concluait « l'écran ne parle pas de facture » — sur un produit qui marchait. Corrigé : il attend désormais la chose qu'il va lire.</p>
+<p><strong>Un de mes contrôles était vert sans rien prouver.</strong> Il annonçait vérifier qu'un chantier avec devis est refusé ; en réalité il déclenchait un autre refus (« déjà facturé »), qui passe en premier. Le cas qu'il prétendait tenir n'était jamais atteint.</p>
+<hr>
+<h2 id="ce-qui-a-été-repris-du-devis-plutôt-que-recopié">Ce qui a été repris du devis, plutôt que recopié</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Vous avez demandé de reprendre au maximum ce qui existe. <strong>Ce sont les mêmes pièces, pas des copies</strong> — c'est ce qui les empêche de diverger :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>la fiche client</td>
+<td><strong>le même écran</strong>, avec un réglage — pas un jumeau</td>
+</tr>
+<tr>
+<td>les champs de saisie des lignes</td>
+<td>ceux du devis (<code>ChampsDuDevis</code>)</td>
+</tr>
+<tr>
+<td>le choix SMS / e-mail</td>
+<td>la même capsule (<code>ChoixCanal</code>)</td>
+</tr>
+<tr>
+<td>les boutons</td>
+<td><code>PrimaryButton</code>, mêmes tailles, même disposition</td>
+</tr>
+<tr>
+<td>la règle « ça ne peut pas partir vide »</td>
+<td>celle du devis, élargie — pas une seconde</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-que-ça-a-obligé-à-renommer">Ce que ça a obligé à renommer</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Trois fonctions mentaient sur ce qu'elles font, depuis qu'elles servent aussi la facture : elles s'appellent désormais <code>ajouterLigneDeFacture</code>, <code>majLigneDeFacture</code>, <code>retirerLignesDeFacture</code>. Et la règle du devis vide est devenue <code>peutPreparerLaPiece</code> — elle prend le nom de la pièce, pour qu'un écran de facture ne dise <strong>jamais</strong> « devis ».</p>
+<hr>
+<h2 id="la-tva--rien-de-nouveau-et-cest-voulu">La TVA : rien de nouveau, et c'est voulu</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Vous avez tranché le 11 septembre : <strong>le schéma des factures normales, sans exception</strong>. Une facture sans devis part par SMS ou e-mail, puis entre dans la TVA selon votre réglage — à l'émission, ou quand le client paie. Le réglage « Réglée sur place » dessiné sur la planche est écarté, à votre demande (<em>« généralement les factures sont envoyées et non réglées direct »</em>).</p>
+<p>Deux contrôles le tiennent, pour que ça reste vrai : aux débits, elle est au relevé le jour même ; aux encaissements, elle attend « Payée », puis y entre.</p>
+<hr>
+<h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Cette machine n'a pas les clés IA : <strong>38 suites sont rouges sur <code>main</code> seule</strong> (dictée, transcription, banc d'essai). J'ai donc joué la même batterie sur <code>main</code> sans mon lot, pour comparer rouge à rouge.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>batterie complète, mon lot</td>
+<td>35 rouges — <strong>aucun nouveau</strong> par rapport à <code>main</code></td>
+</tr>
+<tr>
+<td>suites base de mon domaine (18)</td>
+<td><strong>18 vertes</strong></td>
+</tr>
+<tr>
+<td>suites navigateur de mon domaine (8)</td>
+<td>7 vertes ; la huitième est rouge sur <code>main</code> aussi</td>
+</tr>
+<tr>
+<td><code>test-facture-sans-devis-db</code></td>
+<td><strong>16 / 16</strong></td>
+</tr>
+<tr>
+<td><code>test-facture-sans-devis-e2e</code> — votre chemin, depuis Terminés</td>
+<td><strong>9 / 9</strong>, sur une base vierge</td>
+</tr>
+<tr>
+<td><code>test-lignes-corrigeables</code></td>
+<td>4 / 4</td>
+</tr>
+</tbody></table></div>
+<p><strong>Deux défauts sont sortis d'une capture, pas d'un test :</strong> sur une base neuve, la porte disparaissait avec la liste vide de Terminés (corrigé : les portes restent) ; et un bouton éteint perdait son repère (corrigé dans la pièce partagée).</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>La hauteur que la seconde rangée pousse vers le bas (54 px)</td>
+<td><strong>vous</strong>, si ça vous gêne à l'usage</td>
+</tr>
+<tr>
+<td>Les suites qui dépendent des clés IA ne peuvent pas être jouées ici</td>
+<td>se vérifient sur <strong>votre espace</strong></td>
+</tr>
+<tr>
+<td>Le SMS et l'e-mail qui s'ouvrent vraiment, et la facture reçue par le client</td>
+<td><strong>votre espace</strong>, sur votre téléphone</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

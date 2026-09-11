@@ -37,6 +37,26 @@ débordement) ; rien ne le rejouera au prochain changement d'espacement.
 
 **Ce qu'il faut :** la même mesure dans une suite navigateur sur `/login`, aux
 deux hauteurs qui comptent — son iPhone, et un écran plus court. **Qui :** nous.
+## ⏳ LA FACTURE SANS DEVIS, À ESSAYER CHEZ LUI (11 septembre 2026)
+
+Le parcours entier est codé et éprouvé ici — de « Créer une facture » dans
+Terminés jusqu'au SMS tout prêt. Ce qui **ne peut pas** l'être sur ce poste, et
+qui l'attend sur son espace :
+
+| Ce qui reste à voir | Pourquoi pas ici |
+|---|---|
+| le SMS et l'e-mail qui s'ouvrent vraiment | la messagerie du téléphone, pas celle d'un navigateur d'essai |
+| la facture **reçue** par le client, à son adresse publique | son espace la sert, cette machine non |
+
+**Ce qui EST éprouvé ici**, et n'a pas besoin de lui : la migration sur une base
+neuve, les deux refus (facture vide, reprise du devis), la porte depuis
+Terminés, la saisie des lignes, le PDF sans mention de devis, et les deux
+contrôles de régression qui protègent le prix accepté par le client
+(`test-facture-sans-devis-db`, `test-facture-sans-devis-e2e`).
+
+**Un point d'usage à lui laisser juger** : la seconde rangée pousse le mois et
+la liste **54 px** vers le bas. C'est le seul prix de la disposition qu'il a
+choisie, et il ne se voit qu'à l'usage.
 
 ---
 

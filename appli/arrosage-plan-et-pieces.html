@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan d’arrosage — le plan et ses pièces, refaits</title>
+<!--
+  MAQUETTE. Rien n'est codé dans l'application tant qu'il n'a pas choisi.
+  Aucun JavaScript : les onglets et la charte sont des boutons radio et du CSS.
+
+  ── D'OÙ VIENNENT LES CHIFFRES ───────────────────────────────────────────────
+  Tous du calcul de l'application (src/lib/arrosage/calcul.js + plan-dessine.ts),
+  joué sur son jardin d'exemple — pelouse arrière 18 × 12, pelouse avant 12 × 8,
+  couloir 10 × 2, piquage au compteur, nourrice entre les deux pelouses. Le SVG
+  est celui que l'écran rend ; rien n'a été dessiné à la main. Générée le
+  11 septembre 2026.
+
+  ── CE QUE LA PLANCHE PROPOSE, ET POURQUOI ──────────────────────────────────
+  1. LE REFUS (onglet « Sans nourrice ») : aujourd'hui, un croquis sans nourrice
+     rend quand même une liste de pièces, avec une réserve rouge tout en bas.
+     Ici : aucun plan, les trois éléments obligatoires cochés un par un, le
+     manquant nommé, et le seul geste qui débloque.
+  2. UNE CARTE PAR RÉSEAU au lieu de deux listes : la vanne, la pelouse qu'elle
+     sert, la buse, ce qu'elle consomme, ce qu'elle emporte en pièces.
+  3. LES RÉSERVES SOUS LE DESSIN, pas sous vingt-trois lignes de pièces.
+  4. LA LISTE EN TROIS ZONES (compteur → nourrice · regard · jardin), les
+     tés/coudes comptés SUR LE TRACÉ (aujourd'hui la liste et le dessin
+     divergent : 8 + 4 + 2 contre 7 + 5 + 0 sur ses deux pelouses), le tuyau
+     Ø25 qui manquait, le té du compteur qui manquait, et chaque quantité
+     recomposable — « par réseau : 5 · 3 · 3 · 11 ».
+  5. LES DEUX CHARTES SOMBRES lisibles : plus une couleur écrite en clair.
+-->
+<style>
+  :root{
+    --creme:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre2:#4a4a44; --gris:#8a8578;
+    --or:#B98B47; --orTexte:#8b6835; --ligne:rgba(28,28,26,0.12); --alerte:#9C3B2E;
+    --plein:#7d9a6d; --surPlein:#faf9f5; --teinte:#ece9e1;
+    --pelouse:#E9ECE0; --contour:#7C8271; --terre:#B7AC97;
+  }
+  /* La charte Nuit : les pôles s'inversent. Ces valeurs sont celles de
+     src/lib/chartes.ts, pas approchées à l'œil. */
+  #nuit:checked ~ .ecran{
+    --creme:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre2:#c1c2b6; --gris:#84887b;
+    --orTexte:#b98b47; --ligne:rgba(233,232,222,0.12); --alerte:#cd6456;
+    --plein:#e9e8de; --surPlein:#1a1d19; --teinte:#1f211e;
+    --pelouse:#26302a; --contour:#8ba189; --terre:#4a4740;
+  }
+  *{box-sizing:border-box}
+  html{background:#e8e5dd}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;max-width:390px;margin-inline:auto}
+  input[type=radio]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .barre{display:flex;gap:6px;padding:10px 12px;background:#e8e5dd;position:sticky;top:0;z-index:2}
+  .barre label{flex:1;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:#f5f3ee;color:#8a8578;font-size:13px;border:1px solid rgba(28,28,26,.12);cursor:pointer}
+  .barre .sep{flex:0 0 1px;background:rgba(28,28,26,.2);margin:6px 2px}
+  #refus:checked ~ .barre label[for=refus], #plan:checked ~ .barre label[for=plan],
+  #origine:checked ~ .barre label[for=origine], #nuit:checked ~ .barre label[for=nuit]{background:#1c1c1a;color:#faf9f5;border-color:#1c1c1a}
+
+  .ecran{background:var(--creme);color:var(--encre);min-height:100vh;padding-bottom:96px}
+  #refus:checked ~ .ecran .vue-plan, #plan:checked ~ .ecran .vue-refus{display:none}
+
+  /* L'en-tête de l'application, tel quel. */
+  .retour{margin:28px 26px 0;width:40px;height:40px;border-radius:50%;background:var(--plein);color:var(--surPlein);display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1}
+  h1{margin:20px 26px 0;font:400 36px/1.02 Georgia,"Times New Roman",serif;letter-spacing:-.018em}
+  .surtitre{margin:12px 26px 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .caps{font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+  .carte{background:var(--carte);border-radius:12px;margin:12px 22px 0;padding:14px 16px}
+  .champ{display:block;color:var(--or)}
+  .select{margin-top:7px;min-height:52px;border-radius:11px;background:var(--creme);box-shadow:inset 0 0 0 1px var(--ligne);padding:15px 14px;font-size:16px;display:flex;align-items:center;justify-content:space-between}
+  .select i{width:8px;height:8px;border-right:1.5px solid var(--gris);border-bottom:1.5px solid var(--gris);transform:rotate(45deg);margin-top:-4px}
+  h2{margin:0;font:400 21px/1.2 Georgia,"Times New Roman",serif}
+  .imperatif{margin:10px 0 0;font-size:13.5px;font-weight:700;line-height:1.55}
+  .photo{margin-top:14px;min-height:64px;border-radius:12px;border:1.5px dashed var(--ligne);background:var(--creme);color:var(--encre2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase}
+  .photo.lue{border-style:solid;color:var(--gris)}
+
+  /* ── Le refus : rien en dessous, et le geste qui débloque ─────────────── */
+  .refus{margin:20px 22px 0;background:var(--carte);border-radius:14px;padding:18px 16px 16px}
+  .refus h3{margin:0;font:400 22px/1.2 Georgia,"Times New Roman",serif}
+  .refus .trois{margin:14px 0 0;padding:0;list-style:none}
+  .refus .trois li{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--ligne);font-size:15px}
+  .refus .trois li:first-child{border-top:0}
+  .refus .coche{flex:none;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .refus .ok{background:var(--teinte);color:var(--encre)}
+  .refus .ok::after{content:"";width:6px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-3px}
+  .refus .ko{background:var(--alerte);color:var(--surPlein)}
+  .refus .ko::after{content:"";width:9px;height:2px;background:currentColor}
+  .refus .trois .quoi{flex:1}
+  .refus .trois .lu{color:var(--gris);font-size:13px}
+  .refus .manque{color:var(--alerte);font-weight:600}
+  .refus .geste{margin:16px 0 0;font-size:15px;line-height:1.5;color:var(--encre2)}
+  .bouton{margin:14px 0 0;min-height:56px;border-radius:12px;background:var(--plein);color:var(--surPlein);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600}
+
+  /* ── Le plan ──────────────────────────────────────────────────────────── */
+  .titre-bloc{margin:28px 22px 0;color:var(--gris)}
+  .plan{margin:8px 22px 0;background:var(--carte);border-radius:12px;padding:12px}
+  .plan svg{display:block;width:100%;height:auto}
+  .legende{margin:12px 22px 0;background:var(--carte);border-radius:12px;padding:10px 16px}
+  .legende p{display:flex;align-items:center;gap:10px;margin:0;padding:5px 0;font-size:13.5px}
+  .legende svg{flex:none;width:15px;height:15px}
+  .legende b{font-weight:600}
+
+  /* Les réserves, SOUS le dessin : c'est là qu'il les lit. */
+  .reserves{margin:12px 22px 0;padding:0;list-style:none}
+  .reserves li{display:flex;gap:10px;padding:6px 0;font-size:14px;line-height:1.5;color:var(--encre)}
+  .reserves li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--alerte);margin-top:8px}
+
+  .reseau .tete{display:flex;align-items:center;gap:10px;margin:0}
+  .pastille{flex:none;width:11px;height:11px;border-radius:3px}
+  .reseau .nom{flex:1;font:400 17.5px/1.2 Georgia,"Times New Roman",serif}
+  .reseau .debit{font-size:12.5px;color:var(--gris);font-variant-numeric:tabular-nums}
+  .reseau .ou{margin:6px 0 0;font-size:15px}
+  .reseau .part{color:var(--gris);font-size:12.5px}
+  .reseau .mat{margin:4px 0 0;font-size:13px;color:var(--encre2)}
+  .reseau .compte{margin:6px 0 0;font-size:12.5px;color:var(--gris)}
+
+  .zone{margin:22px 22px 0;font:400 19px/1.2 Georgia,"Times New Roman",serif;color:var(--encre)}
+  .liste{padding:2px 16px}
+  .piece{display:flex;align-items:baseline;gap:12px;margin:0;padding:9px 0;border-top:1px solid var(--ligne);font-size:14.5px}
+  .piece:first-child{border-top:0}
+  .piece .q{flex:none;width:64px;font-size:13.5px;font-weight:600;color:var(--orTexte);font-variant-numeric:tabular-nums}
+  .piece .n{flex:1;min-width:0}
+  .piece .d{display:block;font-size:12px;color:var(--gris);margin-top:2px}
+
+  .discussion{margin:32px 22px 0;color:var(--gris)}
+  .champ-libre{margin:12px 22px 0;background:var(--carte);border-radius:14px;padding:8px;display:flex;align-items:flex-end;gap:8px}
+  .champ-libre span{flex:1;padding:11px 8px;font-size:16px;color:var(--gris)}
+  .champ-libre i{flex:none;width:44px;height:44px;border-radius:50%;background:var(--teinte)}
+  .note{margin:8px 22px 0;font-size:12.5px;line-height:1.5;color:var(--gris)}
+</style>
+
+<input type="radio" name="vue" id="refus">
+<input type="radio" name="vue" id="plan" checked>
+<input type="radio" name="charte" id="origine" checked>
+<input type="radio" name="charte" id="nuit">
+<div class="barre">
+  <label for="refus">Sans nourrice</label>
+  <label for="plan">Le plan</label>
+  <span class="sep"></span>
+  <label for="origine">Origine</label>
+  <label for="nuit">Nuit</label>
+</div>
+
+<div class="ecran">
+  <div class="retour">‹</div>
+  <h1>Plan d’arrosage</h1>
+  <p class="surtitre">Paysage</p>
+
+  <div class="carte">
+    <span class="caps champ">Le piquage se fait…</span>
+    <div class="select">Juste après le compteur d’eau <i></i></div>
+  </div>
+
+  <div class="carte">
+    <h2>Le croquis et ses métrés</h2>
+    <p class="imperatif">Votre croquis doit impérativement contenir les métrés, l’endroit définitif de la nourrice, et l’endroit où le piquage se fait.</p>
+    <div class="photo lue">Croquis lu · reprendre la photo</div>
+  </div>
+
+  <!-- ══ VUE 1 : LE REFUS ═══════════════════════════════════════════════ -->
+  <div class="vue-refus">
+    <div class="refus">
+      <h3>Pas de plan : il manque la nourrice.</h3>
+      <ul class="trois">
+        <li><span class="coche ok"></span><span class="quoi">Les métrés <span class="lu">· 3 zones lues</span></span></li>
+        <li><span class="coche ok"></span><span class="quoi">Le piquage <span class="lu">· au compteur</span></span></li>
+        <li><span class="coche ko"></span><span class="quoi manque">La nourrice</span></li>
+      </ul>
+      <p class="geste">Dessinez son emplacement définitif sur le croquis, puis reprenez la photo.</p>
+      <div class="bouton">Reprendre la photo</div>
+    </div>
+  </div>
+
+  <!-- ══ VUE 2 : LE PLAN ════════════════════════════════════════════════ -->
+  <div class="vue-plan">
+    <p class="titre-bloc caps">Le plan · 120 ml de tranchée</p>
+    <div class="plan"><svg viewBox="-3.2 -3.2 34.4 28.4" class="block w-full" role="img" aria-label="Plan du jardin : la nourrice, la tranchée et les réseaux"><defs><clipPath id="pelouse-plan"><polygon points="28,0 28,2 18,2 18,12 0,12 0,0"></polygon><polygon points="12,14 12,22 0,22 0,14"></polygon></clipPath></defs><polygon points="28,0 28,2 18,2 18,12 0,12 0,0" fill="var(--pelouse)" stroke="none"></polygon><polygon points="12,14 12,22 0,22 0,14" fill="var(--pelouse)" stroke="none"></polygon><line x1="0" y1="12" x2="0" y2="6" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="6" x2="0" y2="2" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="2" x2="0" y2="0" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="0" x2="6" y2="0" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="6" y1="0" x2="12" y2="0" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="12" y1="0" x2="18" y2="0" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="6" x2="6" y2="6" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="6" y1="6" x2="12" y2="6" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="12" x2="6" y2="12" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="6" y1="12" x2="12" y2="12" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="12" y1="12" x2="18" y2="12" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="18" y1="12" x2="18" y2="6" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="18" y1="0" x2="20" y2="0" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="20" y1="0" x2="22" y2="0" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="22" y1="0" x2="24" y2="0" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="24" y1="0" x2="26" y2="0" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="26" y1="0" x2="28" y2="0" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="28" y1="0" x2="28" y2="2" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="28" y1="2" x2="26" y2="2" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="26" y1="2" x2="24" y2="2" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="24" y1="2" x2="22" y2="2" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="22" y1="2" x2="20" y2="2" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="20" y1="2" x2="18" y2="2" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="14" x2="6" y2="14" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="6" y1="14" x2="12" y2="14" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="14" x2="0" y2="22" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="22" x2="6" y2="22" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="6" y1="22" x2="12" y2="22" stroke="var(--terre)" stroke-opacity="0.62" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><polygon points="28,0 28,2 18,2 18,12 0,12 0,0" fill="none" stroke="var(--contour)" stroke-width="0.26"></polygon><polygon points="12,14 12,22 0,22 0,14" fill="none" stroke="var(--contour)" stroke-width="0.26"></polygon><text x="29.35" y="1.3" text-anchor="start" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">2 m</text><text x="23" y="3.65" text-anchor="middle" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">10 m</text><text x="19.35" y="7.3" text-anchor="start" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">10 m</text><text x="9" y="13.65" text-anchor="middle" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">18 m</text><text x="-1.35" y="6.3" text-anchor="end" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">12 m</text><text x="14" y="-1.05" text-anchor="middle" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">28 m</text><text x="13.35" y="18.3" text-anchor="start" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">8 m</text><text x="6" y="23.650000000000002" text-anchor="middle" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">12 m</text><text x="-1.35" y="18.3" text-anchor="end" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">8 m</text><line x1="0" y1="13" x2="0" y2="12" stroke="var(--encre)" stroke-width="0.2" stroke-dasharray="0.5 0.4" data-atlas="liaison"></line><line x1="0" y1="13" x2="0" y2="14" stroke="var(--encre)" stroke-width="0.2" stroke-dasharray="0.5 0.4" data-atlas="liaison"></line><circle cx="0" cy="6" r="5.09" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="0" cy="0" r="5.09" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="6" cy="0" r="5.09" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="12" cy="0" r="5.09" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="18" cy="0" r="5.09" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="6" cy="6" r="5.09" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="12" cy="6" r="5.09" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="0" cy="12" r="5.09" fill="#3E8F4E" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="6" cy="12" r="5.09" fill="#3E8F4E" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="12" cy="12" r="5.09" fill="#3E8F4E" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="18" cy="12" r="5.09" fill="#3E8F4E" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="18" cy="6" r="5.09" fill="#3E8F4E" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="0" cy="14" r="6.85" fill="#3E8F4E" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="6" cy="14" r="6.85" fill="#D9A520" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="12" cy="14" r="6.85" fill="#D9A520" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="0" cy="22" r="6.85" fill="#D9A520" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="6" cy="22" r="6.85" fill="#D9A520" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="12" cy="22" r="6.85" fill="#D9A520" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="18" cy="0" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="20" cy="0" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="22" cy="0" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="24" cy="0" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="26" cy="0" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="28" cy="0" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="28" cy="2" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="26" cy="2" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="24" cy="2" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="22" cy="2" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="20" cy="2" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="18" cy="2" r="1.8" fill="#B5502F" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><g data-atlas="reseau" data-reseau="0"><line x1="-0.17" y1="12.17" x2="-0.17" y2="5.83" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="-0.17" y1="6.17" x2="-0.17" y2="1.83" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="-0.17" y1="2.17" x2="-0.17" y2="-0.17" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="-0.17" y1="-0.17" x2="6.17" y2="-0.17" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="5.83" y1="-0.17" x2="12.17" y2="-0.17" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="11.83" y1="-0.17" x2="18.17" y2="-0.17" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="6" x2="6" y2="6" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="6" y1="6" x2="12" y2="6" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><circle cx="0" cy="6" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="0" cy="0" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="6" cy="0" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="12" cy="0" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="18" cy="0" r="0.42" fill="var(--carte)" stroke="#2F6FB5" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle><circle cx="6" cy="6" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="12" cy="6" r="0.42" fill="var(--carte)" stroke="#2F6FB5" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle></g><g data-atlas="reseau" data-reseau="1"><line x1="0" y1="12" x2="6" y2="12" stroke="#3E8F4E" stroke-width="0.26" stroke-linecap="round"></line><line x1="6" y1="12" x2="12" y2="12" stroke="#3E8F4E" stroke-width="0.26" stroke-linecap="round"></line><line x1="12" y1="12" x2="18" y2="12" stroke="#3E8F4E" stroke-width="0.26" stroke-linecap="round"></line><line x1="18" y1="12" x2="18" y2="6" stroke="#3E8F4E" stroke-width="0.26" stroke-linecap="round"></line><circle cx="0" cy="12" r="0.42" fill="var(--carte)" stroke="#3E8F4E" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle><circle cx="6" cy="12" r="0.5" fill="#3E8F4E" stroke="#3E8F4E" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="12" cy="12" r="0.5" fill="#3E8F4E" stroke="#3E8F4E" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="18" cy="12" r="0.5" fill="#3E8F4E" stroke="#3E8F4E" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="18" cy="6" r="0.42" fill="var(--carte)" stroke="#3E8F4E" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle><circle cx="0" cy="14" r="0.42" fill="var(--carte)" stroke="#3E8F4E" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle></g><g data-atlas="reseau" data-reseau="2"><line x1="0" y1="14" x2="6" y2="14" stroke="#D9A520" stroke-width="0.26" stroke-linecap="round"></line><line x1="6" y1="14" x2="12" y2="14" stroke="#D9A520" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="14" x2="0" y2="22" stroke="#D9A520" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="22" x2="6" y2="22" stroke="#D9A520" stroke-width="0.26" stroke-linecap="round"></line><line x1="6" y1="22" x2="12" y2="22" stroke="#D9A520" stroke-width="0.26" stroke-linecap="round"></line><circle cx="6" cy="14" r="0.5" fill="#D9A520" stroke="#D9A520" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="12" cy="14" r="0.42" fill="var(--carte)" stroke="#D9A520" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle><circle cx="0" cy="22" r="0.5" fill="#D9A520" stroke="#D9A520" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="6" cy="22" r="0.5" fill="#D9A520" stroke="#D9A520" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="12" cy="22" r="0.42" fill="var(--carte)" stroke="#D9A520" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle></g><g data-atlas="reseau" data-reseau="3"><line x1="0.17" y1="12.17" x2="0.17" y2="5.83" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="0.17" y1="6.17" x2="0.17" y2="1.83" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="0.17" y1="2.17" x2="0.17" y2="-0.17" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="-0.17" y1="0.17" x2="6.17" y2="0.17" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="5.83" y1="0.17" x2="12.17" y2="0.17" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="11.83" y1="0.17" x2="18.17" y2="0.17" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="18" y1="0" x2="20" y2="0" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="20" y1="0" x2="22" y2="0" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="22" y1="0" x2="24" y2="0" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="24" y1="0" x2="26" y2="0" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="26" y1="0" x2="28" y2="0" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="28" y1="0" x2="28" y2="2" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="28" y1="2" x2="26" y2="2" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="26" y1="2" x2="24" y2="2" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="24" y1="2" x2="22" y2="2" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="22" y1="2" x2="20" y2="2" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><line x1="20" y1="2" x2="18" y2="2" stroke="#B5502F" stroke-width="0.26" stroke-linecap="round"></line><rect x="17.56" y="-0.44" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="19.56" y="-0.44" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="21.56" y="-0.44" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="23.56" y="-0.44" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="25.56" y="-0.44" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="27.56" y="-0.44" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="27.56" y="1.56" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="25.56" y="1.56" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="23.56" y="1.56" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="21.56" y="1.56" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="19.56" y="1.56" width="0.88" height="0.88" rx="0.12" fill="#B5502F" stroke="#B5502F" stroke-width="0.2" data-famille="tuyere" data-piece="te"></rect><rect x="17.56" y="1.56" width="0.88" height="0.88" rx="0.12" fill="var(--carte)" stroke="#B5502F" stroke-width="0.34" data-famille="tuyere" data-piece="coude"></rect></g><g data-atlas="nourrice"><rect x="-0.75" y="11.6" width="1.5" height="2.8" rx="0.3" fill="var(--carte)" stroke="var(--encre)" stroke-width="0.22"></rect><text x="1.452220367417402" y="12.974425767047224" text-anchor="start" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--encre)">nourrice</text></g></svg></div>
+
+    <div class="legende">
+      <p><svg viewBox="-1 -1 2 2"><circle r=".72" fill="var(--encre)"/></svg><span><b>rond</b> : une turbine</span></p>
+      <p><svg viewBox="-1 -1 2 2"><rect x="-.66" y="-.66" width="1.32" height="1.32" rx=".18" fill="var(--encre)"/></svg><span><b>carré</b> : une tuyère</span></p>
+      <p><svg viewBox="-1 -1 2 2"><circle r=".72" fill="var(--encre)"/></svg><span><b>plein</b> : la ligne continue · té taraudé 25×3/4″×25</span></p>
+      <p><svg viewBox="-1 -1 2 2"><circle r=".6" fill="var(--carte)" stroke="var(--encre)" stroke-width=".3"/></svg><span><b>creux</b> : la ligne s’arrête là · coude taraudé 25×3/4″</span></p>
+      <p><svg viewBox="-1 -1 2 2"><rect x="-.56" y="-.56" width="1.12" height="1.12" transform="rotate(45)" fill="var(--carte)" stroke="var(--encre)" stroke-width=".3"/></svg><span><b>losange</b> : la ligne se sépare · té égal 25×25×25</span></p>
+      <p><svg viewBox="-1 -1 2 2"><line x1="-.85" x2=".85" stroke="var(--terre)" stroke-width=".9"/></svg><span>la tranchée</span></p>
+    </div>
+
+    <ul class="reserves">
+      <li>2,3 bar au dernier arroseur — 0,41 bar perdus dans le réseau, 0,27 dans l’amenée.</li>
+      <li>L’amenée est comptée pour 30 m : mesurez-la du compteur à la nourrice.</li>
+      <li>« Pelouse arrière + Couloir » n’est pas d’un seul tenant avec la nourrice : le cheminement entre les deux passe hors de la pelouse et reste à mesurer sur place</li>
+      <li>« Pelouse avant » n’est pas d’un seul tenant avec la nourrice : le cheminement entre les deux passe hors de la pelouse et reste à mesurer sur place</li>
+      <li>deux arroseurs de réseaux différents tombent au même endroit (18,0 ; 0,0 m) : à décaler de part et d’autre de la limite, sur place</li>
+    </ul>
+
+    <p class="titre-bloc caps">4 réseaux · 1,80 m³/h au compteur</p>
+
+<div class="carte reseau">
+  <p class="tete"><span class="pastille" style="background:#2F6FB5"></span><span class="nom">Réseau 1</span><span class="debit">1,08 m³/h</span></p>
+  <p class="ou">Pelouse arrière <span class="part">1 sur 3</span></p>
+  <p class="mat">7× Turbine 3504 · buse 0,75 · portée 5,09 m</p>
+  <p class="compte">7 arroseurs · 5 tés · 2 coudes · 1 té égal · 42 ml Ø25</p>
+</div>
+
+<div class="carte reseau">
+  <p class="tete"><span class="pastille" style="background:#3E8F4E"></span><span class="nom">Réseau 2</span><span class="debit">1,06 m³/h</span></p>
+  <p class="ou">Pelouse arrière + Pelouse avant <span class="part">2 sur 3</span></p>
+  <p class="mat">5× Turbine 3504 · buse 0,75 · portée 5,09 m</p>
+  <p class="mat">1× Turbine 3504 · buse 1,5 · portée 6,85 m</p>
+  <p class="compte">6 arroseurs · 3 tés · 3 coudes · 24 ml Ø25</p>
+</div>
+
+<div class="carte reseau">
+  <p class="tete"><span class="pastille" style="background:#D9A520"></span><span class="nom">Réseau 3</span><span class="debit">1,45 m³/h</span></p>
+  <p class="ou">Pelouse avant <span class="part">3 sur 3</span></p>
+  <p class="mat">5× Turbine 3504 · buse 1,5 · portée 6,85 m</p>
+  <p class="compte">5 arroseurs · 3 tés · 2 coudes · 32 ml Ø25</p>
+</div>
+
+<div class="carte reseau">
+  <p class="tete"><span class="pastille" style="background:#B5502F"></span><span class="nom">Réseau 4</span><span class="debit">1,48 m³/h</span></p>
+  <p class="ou">Couloir</p>
+  <p class="mat">12× Tuyère 6-VAN · portée 1,80 m</p>
+  <p class="compte">12 arroseurs · 11 tés · 1 coude · 52 ml Ø25</p>
+</div>
+
+    <p class="titre-bloc caps">Le détail des pièces</p>
+
+<p class="zone">Du compteur à la nourrice</p>
+<div class="carte liste">
+<p class="piece"><span class="q">à mesurer</span><span class="n">PEHD Ø25<span class="d">Ø25 jusqu’à 56 m, Ø32 au-delà</span></span></p>
+<p class="piece"><span class="q">1x</span><span class="n">Dura Té 90° 25×25×25<span class="d">coupe la ligne au compteur</span></span></p>
+</div>
+
+<p class="zone">Dans le regard</p>
+<div class="carte liste">
+<p class="piece"><span class="q">1x</span><span class="n">Dura Clarinette taraudée 1" — 3 vannes</span></p>
+<p class="piece"><span class="q">5x</span><span class="n">Dura Union droite taraudée MM 1"</span></p>
+<p class="piece"><span class="q">4x</span><span class="n">Rain Bird Électrovanne 100 DV 1" MM 9V</span></p>
+<p class="piece"><span class="q">5x</span><span class="n">Dura Raccord mâle 25 1"</span></p>
+<p class="piece"><span class="q">1x</span><span class="n">Dura Coude 90° taraudé MM 1"</span></p>
+<p class="piece"><span class="q">1x</span><span class="n">Dura Coude 90° taraudé/fileté MF 1"</span></p>
+<p class="piece"><span class="q">2x</span><span class="n">Dura Mamelon réduit fileté MM 1"-3/4"</span></p>
+<p class="piece"><span class="q">1x</span><span class="n">Dura Vanne avec vis de purge 3/4"</span></p>
+<p class="piece"><span class="q">1x</span><span class="n">Dura Regard jumbo RG17106</span></p>
+<p class="piece"><span class="q">1x</span><span class="n">Programmateur BL-IP 4 stations 9V</span></p>
+<p class="piece"><span class="q">1x</span><span class="n">Pile alcaline 9V</span></p>
+<p class="piece"><span class="q">8x</span><span class="n">Connexion étanche<span class="d">2 par électrovanne</span></span></p>
+</div>
+
+<p class="zone">Au jardin</p>
+<div class="carte liste">
+<p class="piece"><span class="q">12x</span><span class="n">Rain Bird Turbines 3504 · buse 0,75 — par 20</span></p>
+<p class="piece"><span class="q">6x</span><span class="n">Rain Bird Turbines 3504 · buse 1,5 — par 20</span></p>
+<p class="piece"><span class="q">12x</span><span class="n">Rain Bird Tuyères 6-VAN — par 25</span></p>
+<p class="piece"><span class="q">18x</span><span class="n">Turbine 3504 — un seul modèle réglable 40°-360°, livré avec 6 buses</span></p>
+<p class="piece"><span class="q">12x</span><span class="n">Tuyère 1800 — escamotable 10 cm</span></p>
+<p class="piece"><span class="q">30x</span><span class="n">Coude SBE 075 — 16 x 3/4" coudé<span class="d">en bas de chaque arroseur, sur la ligne</span></span></p>
+<p class="piece"><span class="q">18x</span><span class="n">Coude SBE 075 — 16 x 3/4" coudé<span class="d">en haut des 18 turbines</span></span></p>
+<p class="piece"><span class="q">12x</span><span class="n">Coude SBE 050 — 16 x 1/2" coudé<span class="d">en haut des 12 tuyères</span></span></p>
+<p class="piece"><span class="q">60 ml</span><span class="n">PEBD rigide Ø16 (tube de reprise)<span class="d">2 m par arroseur</span></span></p>
+<p class="piece"><span class="q">22x</span><span class="n">Dura Té 90° taraudé 25×3/4"×25<span class="d">par réseau : 5 · 3 · 3 · 11</span></span></p>
+<p class="piece"><span class="q">8x</span><span class="n">Dura Coude 90° taraudé 25×3/4"<span class="d">par réseau : 2 · 3 · 2 · 1</span></span></p>
+<p class="piece"><span class="q">1x</span><span class="n">Dura Té 90° 25×25×25<span class="d">par réseau : 1 · 0 · 0 · 0</span></span></p>
+<p class="piece"><span class="q">150 ml</span><span class="n">PEHD Ø25<span class="d">par réseau : 42 · 24 · 32 · 52</span></span></p>
+</div>
+
+    <p class="discussion caps">Demander une modification</p>
+    <div class="champ-libre"><span>Écrire à Atlas…</span><i></i></div>
+    <p class="note">Pour changer un métré ou l’endroit de la nourrice, corrigez le croquis et reprenez la photo.</p>
+  </div>
+</div>
+</html>

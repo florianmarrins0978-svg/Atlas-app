@@ -284,6 +284,50 @@ rien, les deux flèches marchent toujours, toucher une journée ouvre sa fiche, 
 un glissement n'en ouvre aucune.
 
 ---
+
+### Facturer sans passer par la case devis — codé, de la base à l'envoi
+
+Sa demande du 10 septembre : *« il faut que l'on puisse facturer sans avoir
+besoin de passer par la case devis »*. Le parcours entier existe désormais :
+**Terminés → Créer une facture → fiche client → la facture → l'envoi.**
+
+**La racine était UNE colonne.** `factures.devis_id` était `NOT NULL` : aucune
+facture ne pouvait exister sans devis (migration `0086`). Le faux devis caché a
+été écarté — il aurait consommé un numéro de la suite commerciale et fait
+apparaître au relevé de TVA des références que personne ne peut produire.
+
+**La porte est dans Terminés, pas sur l'accueil.** Elle y avait d'abord été
+codée ; il s'est ravisé le 11 — *« est-ce que c'est pas plus logique de mettre
+la porte dans la catégorie Terminés ? »* L'accueil a été rendu à l'identique.
+La quatrième pastille qu'il voulait déborde (300 px déjà pris sur 306 à 360 px,
+mesuré) : le bouton doré prend donc une seconde rangée, collé à droite, et les
+deux noms restent entiers.
+
+**Deux refus qui coûtaient cher, et qui n'existaient pas :**
+
+- une facture **vide** ne part plus — elle serait partie à 0,00 €, immuable, à
+  corriger par un avoir. La règle est celle du devis (`peutPreparerLaPiece`), et
+  le refus nomme le geste qui le lève ;
+- **« Reprendre le devis »** est refusé sur une facture directe : la reprise
+  efface les lignes non-supplément pour recopier le devis, c'est-à-dire TOUTE
+  une facture directe. Un devis écrit après coup lui aurait fait perdre sa
+  saisie d'un seul appui.
+
+**Ce que `supplement` disait vraiment.** Pas « c'est un supplément », mais
+« cette ligne ne vient pas d'un devis ». La règle vit dans
+`src/lib/lignes-corrigeables.ts` et sert DEUX fois : l'écran pour dessiner un
+champ, le dépôt dans le `WHERE` de ses écritures. Les factures d'avant la
+migration 0082 (`supplement = null`) restent protégées — l'inverse les aurait
+toutes rouvertes.
+
+**Trois renommages, parce que les noms mentaient** : `ajouterLigneDeFacture`,
+`majLigneDeFacture`, `retirerLignesDeFacture` (elles posent aussi des lignes
+ordinaires), et `peutPreparerLaPiece` (elle sert aussi la facture, et prend le
+nom de la pièce pour qu'un écran de facture ne dise jamais « devis »).
+
+Détail et pourquoi : `ARCHITECTURE.md` §326.
+
+---
 ## 2026-09-10
 
 ### La déconnexion renvoyait sur `localhost` — donc nulle part, depuis un téléphone

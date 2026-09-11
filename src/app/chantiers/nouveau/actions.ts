@@ -1,8 +1,13 @@
 "use server";
 
-import { exigerEcran } from "@/server/garde-action";
+import { exigerEcran, exigerFacturation } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { logger } from "@/server/logger";
 import { creerChantier, getChantier } from "@/server/repositories/chantiers";
+import {
+  creerFactureSansDevis,
+  FactureDirecteImpossibleError,
+} from "@/server/repositories/factures";
 import { recopierPhotos } from "@/server/repositories/photos";
 import {
   trouverOuCreerClient,
@@ -254,4 +259,59 @@ export async function reconnaitreLeClientAction(saisie: {
   // savoir qui est déjà chez lui.
   await exigerEcran(ctx, "/chantiers", "reconnaître un client");
   return reconnaitreLeClient(ctx, saisie);
+}
+
+/**
+ * FACTURER SANS PASSER PAR LA CASE DEVIS — sa demande du 10 septembre 2026.
+ *
+ * *« Il faut que l'on puisse facturer sans avoir besoin de passer par la case
+ * devis. »* Le chantier vient d'être créé par la fiche client ; cette action
+ * pose la facture, vide, et l'écran d'après sert à la remplir.
+ *
+ * ─── LES DEUX PORTES SE FRANCHISSENT TOUTES LES DEUX ───────────────────────
+ *
+ * `exigerEcran(/chantiers)` **et** `exigerFacturation`, et ce n'est pas de la
+ * ceinture-bretelles : le geste fait deux choses que des rôles différents
+ * peuvent avoir le droit de faire. Un salarié autorisé à ouvrir des chantiers
+ * mais pas à facturer passerait la première porte ; sans la seconde, il
+ * créerait des factures et consommerait des numéros de la suite commerciale.
+ *
+ * **Le refus se rend en VALEUR, jamais en exception** (`AGENTS.md`, piège
+ * 0 ter) : le message d'une exception d'action serveur n'arrive jamais jusqu'au
+ * patron — Next.js le remplace en production par un identifiant opaque, et son
+ * banc sert une version bâtie.
+ */
+export type ResultatFactureDirecte =
+  | { succes: true; factureId: string }
+  | { succes: false; erreur: string };
+
+const REFUS_FACTURE_DIRECTE: Record<FactureDirecteImpossibleError["motif"], string> = {
+  chantier_absent: "Ce chantier n'existe plus.",
+  deja_facture: "Ce chantier porte déjà une facture.",
+  // Le geste que ce refus désigne : passer par la fin de chantier, qui reprend
+  // le prix que le client a accepté. Le taire enverrait chercher un défaut.
+  chantier_avec_devis:
+    "Ce chantier a un devis : sa facture se prépare depuis la fin de chantier, pour reprendre le prix accepté.",
+};
+
+export async function creerFactureSansDevisAction(
+  chantierId: string
+): Promise<ResultatFactureDirecte> {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "créer une facture sans devis");
+  await exigerFacturation(ctx, "créer une facture sans devis");
+  try {
+    const facture = await creerFactureSansDevis(ctx, chantierId);
+    return { succes: true, factureId: facture.id };
+  } catch (err) {
+    if (err instanceof FactureDirecteImpossibleError) {
+      return { succes: false, erreur: REFUS_FACTURE_DIRECTE[err.motif] };
+    }
+    // Une panne imprévue se JOURNALISE avant d'être rendue muette à l'écran :
+    // sans cette ligne, personne ne peut savoir pourquoi (`AGENTS.md`).
+    logger.error("Facture sans devis non créée", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "La facture n'a pas pu être préparée. Réessayez dans un instant." };
+  }
 }

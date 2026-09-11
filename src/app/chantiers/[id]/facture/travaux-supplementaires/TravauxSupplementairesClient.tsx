@@ -11,23 +11,37 @@ import { ligneAttendSonPrix } from "@/lib/preparation-devis";
 import { lignesParBloc, tauxLisible, totauxAvecReduction } from "@/lib/reduction-devis";
 import { Cellule, ChiffreSaisi, Colonne, ZoneQuiGrandit } from "../../devis-complet/ChampsDuDevis";
 import {
-  ajouterTravauxSupplementairesAction,
-  majTravauxSupplementairesAction,
-  retirerTravauxSupplementairesAction,
+  ajouterLigneDeFactureAction,
+  majLigneDeFactureAction,
+  retirerLignesDeFactureAction,
 } from "../actions";
+import { ligneSeCorrige } from "@/lib/lignes-corrigeables";
 
 /**
- * ─── LA FEUILLE DES TRAVAUX SUPPLÉMENTAIRES ────────────────────────────────
+ * ─── LA FEUILLE OÙ IL SAISIT SES LIGNES ────────────────────────────────────
  *
  * Sa demande du 9 septembre 2026, et sa règle dans la foulée : *« le devis ne
  * se réécrit pas, seulement la case travaux supplémentaires ; le reste,
  * impossible de les modifier »*.
  *
+ * ─── LE MÊME ÉCRAN SERT LES FACTURES SANS DEVIS — 10 septembre 2026 ────────
+ *
+ * *« Il faut que l'on puisse facturer sans avoir besoin de passer par la case
+ * devis. »* Sa planche le dit d'un mot : **l'écran « Travaux en plus » EST cet
+ * éditeur**, et il sert ici sans le mot. Un second écran de saisie aurait
+ * recopié les champs du devis, le calcul des blocs, les totaux et la grammaire
+ * de la TVA — et le premier ajustement ne serait allé que sur l'un des deux.
+ *
+ * **Ce qui change quand il n'y a pas de devis, et rien d'autre :** il n'y a
+ * aucune ligne à protéger (donc aucun bloc de texte figé), la catégorie ne
+ * s'appelle plus « travaux supplémentaires » (supplémentaires à quoi ?), et le
+ * titre dit « Facture ». Les gestes, eux, sont exactement les mêmes.
+ *
  * **Les lignes du devis sont donc du TEXTE, pas des champs.** Ce n'est pas un
  * champ « en lecture seule » qu'on pourrait rouvrir d'un attribut : ce sont des
- * `<span>`. Le refus vit aussi dans l'écriture (`majTravauxSupplementaires` ne
- * touche que `supplement = true`), et les deux gardes valent mieux qu'une : la
- * première évite le geste, la seconde le rend impossible.
+ * `<span>`. Le refus vit aussi dans l'écriture — `majLigneDeFacture` ne touche
+ * que les lignes que `ligneSeCorrige` désigne —, et les deux gardes valent mieux
+ * qu'une : la première évite le geste, la seconde le rend impossible.
  *
  * **Les champs de la catégorie sont CEUX DU DEVIS**, importés et non recopiés
  * (`ChampsDuDevis`) : deux façons de saisir un prix auraient divergé au premier
@@ -61,6 +75,7 @@ export default function TravauxSupplementairesClient({
   clientNom,
   clientCivilite,
   numeroDevis,
+  devisId,
   tauxTvaFacture,
   reductionPourcent,
   lignes: lignesInitiales,
@@ -73,6 +88,9 @@ export default function TravauxSupplementairesClient({
   clientNom: string | null;
   clientCivilite: "mr" | "mme" | null;
   numeroDevis: string | null;
+  /** Le devis dont elle vient. `null` : faite SANS devis (migration 0086) —
+   *  aucune de ses lignes n'a été acceptée d'avance, donc aucune à protéger. */
+  devisId: string | null;
   tauxTvaFacture: string;
   reductionPourcent: string | null;
   lignes: LigneEcran[];
@@ -82,8 +100,22 @@ export default function TravauxSupplementairesClient({
   const [erreur, setErreur] = useState<string | null>(null);
   const [, enTransition] = useTransition();
 
-  const duDevis = lignes.filter((l) => !l.supplement);
-  const supplements = lignes.filter((l) => l.supplement);
+  /**
+   * QUI EST DU TEXTE, ET QUI EST UN CHAMP.
+   *
+   * **La règle n'est pas écrite ici** : c'est `ligneSeCorrige`, celle-là même
+   * que le dépôt applique dans le WHERE de ses écritures (`CLAUDE.md` §3). Deux
+   * rédactions auraient divergé, et c'est celle de l'écriture qu'on aurait
+   * oublié de corriger — celle qui, seule, empêche vraiment de réécrire un prix
+   * que le client a accepté.
+   *
+   * Sur une facture SANS devis, `duDevis` est vide : tout est saisissable, et
+   * le bloc de texte figé ne se dessine simplement pas.
+   */
+  const saisies = lignes.filter((l) => ligneSeCorrige({ devisId }, l));
+  const duDevis = lignes.filter((l) => !ligneSeCorrige({ devisId }, l));
+  /** Faite sans devis : les mots de l'écran changent, les gestes non. */
+  const sansDevis = devisId === null;
 
   /**
    * Le taux de la catégorie — celui de ses lignes, ou aucun.
@@ -91,7 +123,7 @@ export default function TravauxSupplementairesClient({
    * `null` : elles suivent le taux de la facture, et le geste « + Ajouter une
    * TVA » est encore proposé. C'est exactement la grammaire du devis.
    */
-  const tauxDuSupplement = supplements.find((l) => l.tauxTva !== null)?.tauxTva ?? null;
+  const tauxDesSaisies = saisies.find((l) => l.tauxTva !== null)?.tauxTva ?? null;
 
   const totaux = useMemo(
     () => totauxAvecReduction(lignes, tauxTvaFacture, reductionPourcent),
@@ -108,18 +140,24 @@ export default function TravauxSupplementairesClient({
 
   function ajouterUneLigne() {
     enTransition(async () => {
-      const r = await ajouterTravauxSupplementairesAction(factureId, tauxDuSupplement);
-      if (!porter(r) || !r.succes || !r.ligneId) return;
+      const r = await ajouterLigneDeFactureAction(factureId, tauxDesSaisies);
+      if (!porter(r) || !r.succes) return;
       setLignes((l) => [
         ...l,
         {
-          id: r.ligneId!,
+          id: r.ligneId,
           libelle: "",
           quantite: "1",
           prixUnitaire: "0",
           montant: "0",
-          tauxTva: tauxDuSupplement,
-          supplement: true,
+          tauxTva: tauxDesSaisies,
+          // **CE QUE LE SERVEUR VIENT D'ÉCRIRE, et non ce qu'on en déduit.**
+          // Le redéduire ici — « supplément si la facture a un devis » — aurait
+          // été une seconde rédaction de la règle du dépôt, et c'est celle-ci
+          // qui aurait eu tort le jour où l'autre change : l'écran aurait
+          // montré un bloc « Travaux supplémentaires » là où la base a rangé
+          // une ligne ordinaire, jusqu'au prochain rechargement.
+          supplement: r.supplement,
         },
       ]);
     });
@@ -136,9 +174,9 @@ export default function TravauxSupplementairesClient({
     );
   }
 
-  function persister(id: string, champs: Parameters<typeof majTravauxSupplementairesAction>[2]) {
+  function persister(id: string, champs: Parameters<typeof majLigneDeFactureAction>[2]) {
     enTransition(async () => {
-      porter(await majTravauxSupplementairesAction(factureId, id, champs));
+      porter(await majLigneDeFactureAction(factureId, id, champs));
     });
   }
 
@@ -146,36 +184,40 @@ export default function TravauxSupplementairesClient({
     // Le second taux se pose sur TOUTES les lignes de la catégorie : c'est une
     // catégorie, pas une ligne — la même règle que sur le devis (1er septembre).
     const taux = "10.00";
-    setLignes((l) => l.map((x) => (x.supplement ? { ...x, tauxTva: taux } : x)));
+    setLignes((l) => l.map((x) => (ligneSeCorrige({ devisId }, x) ? { ...x, tauxTva: taux } : x)));
     enTransition(async () => {
-      for (const l of supplements) {
-        porter(await majTravauxSupplementairesAction(factureId, l.id, { tauxTva: taux }));
+      for (const l of saisies) {
+        porter(await majLigneDeFactureAction(factureId, l.id, { tauxTva: taux }));
       }
     });
   }
 
   function changerLeTaux(valeur: string) {
     const taux = new Decimal(valeur.replace(",", ".") || "0").toFixed(2);
-    setLignes((l) => l.map((x) => (x.supplement ? { ...x, tauxTva: taux } : x)));
+    setLignes((l) => l.map((x) => (ligneSeCorrige({ devisId }, x) ? { ...x, tauxTva: taux } : x)));
     enTransition(async () => {
-      for (const l of supplements) {
-        porter(await majTravauxSupplementairesAction(factureId, l.id, { tauxTva: taux }));
+      for (const l of saisies) {
+        porter(await majLigneDeFactureAction(factureId, l.id, { tauxTva: taux }));
       }
     });
   }
 
   function retirerLaCategorie() {
-    setLignes((l) => l.filter((x) => !x.supplement));
+    setLignes((l) => l.filter((x) => !ligneSeCorrige({ devisId }, x)));
     enTransition(async () => {
-      porter(await retirerTravauxSupplementairesAction(factureId));
+      porter(await retirerLignesDeFactureAction(factureId));
     });
   }
 
   return (
     <main className="min-h-screen pb-24" style={{ backgroundColor: colors.cream }}>
+      {/* **« Facture » quand il n'y a pas de devis** — le point 2 des trois
+          qu'il a acceptés sur la planche : *« ça ouvre une page de FACTURE, du
+          même dessin »*. Un écran qui dit « travaux en plus » sur la seule
+          chose qu'on facture se photographie et s'envoie au client. */}
       <EnTeteEcran
         surtitre={numeroFacture}
-        titre="Travaux en plus"
+        titre={sansDevis ? "Facture" : "Travaux en plus"}
         retour={{ href: `/chantiers/${chantierId}/facture`, libelle: "Retour à la facture" }}
       />
 
@@ -232,30 +274,37 @@ export default function TravauxSupplementairesClient({
             Sa demande : *« une catégorie comme pour l'ajout d'une TVA se crée
             direct »*. C'est le même dessin — la plage teintée, les petites
             capitales, le « − » cerclé d'or de 26 px —, seul le mot change. */}
-        {supplements.length > 0 && (
+        {saisies.length > 0 && (
           <>
+            {/* **Sans devis, la plage teintée disparaît — mais pas le réglage
+                de TVA qu'elle portait.** « Travaux supplémentaires » au-dessus
+                de la seule chose qu'on facture ne veut rien dire (point 1 des
+                trois qu'il a acceptés), et une catégorie qui n'en distingue
+                aucune autre est une boîte autour de rien. Le taux, lui, reste
+                réglable : il commande TOUTES les lignes, exactement comme sur
+                le devis. */}
             <div
-              data-atlas="categorie-supplement"
+              data-atlas={sansDevis ? "categorie-lignes" : "categorie-supplement"}
               className="mt-5 flex items-center justify-between gap-3 rounded-md px-3 py-1.5"
-              style={{ backgroundColor: colors.rustTint }}
+              style={{ backgroundColor: sansDevis ? "transparent" : colors.rustTint }}
             >
               <span
                 className="text-[11px] font-semibold uppercase tracking-[0.12em]"
                 style={{ color: colors.rust }}
               >
-                Travaux supplémentaires
+                {sansDevis ? "" : "Travaux supplémentaires"}
               </span>
               <span className="flex items-center gap-2">
-                {tauxDuSupplement !== null && (
+                {tauxDesSaisies !== null && (
                   <span
                     className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em]"
                     style={{ color: colors.rust }}
                   >
                     TVA
                     <input
-                      defaultValue={tauxLisible(tauxDuSupplement)}
+                      defaultValue={tauxLisible(tauxDesSaisies)}
                       inputMode="decimal"
-                      aria-label="Taux de TVA des travaux supplémentaires"
+                      aria-label={sansDevis ? "Taux de TVA des lignes" : "Taux de TVA des travaux supplémentaires"}
                       onBlur={(e) => changerLeTaux(e.target.value)}
                       className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[var(--voile-champ-teinte)]"
                       style={{ color: colors.ink, fontSize: "16px" }}
@@ -265,7 +314,7 @@ export default function TravauxSupplementairesClient({
                 )}
                 <button
                   type="button"
-                  aria-label="Retirer les travaux supplémentaires"
+                  aria-label={sansDevis ? "Retirer toutes les lignes" : "Retirer les travaux supplémentaires"}
                   data-atlas="retirer-supplement"
                   onClick={retirerLaCategorie}
                   className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
@@ -276,7 +325,7 @@ export default function TravauxSupplementairesClient({
               </span>
             </div>
 
-            {supplements.map((l, i) => (
+            {saisies.map((l, i) => (
               <div
                 key={l.id}
                 data-atlas="ligne-supplement"
@@ -285,7 +334,7 @@ export default function TravauxSupplementairesClient({
               >
                 <ZoneQuiGrandit
                   valeur={l.libelle}
-                  aria={`Description du travail supplémentaire ${i + 1}`}
+                  aria={`${sansDevis ? "Description de la ligne" : "Description du travail supplémentaire"} ${i + 1}`}
                   fige={false}
                   placeholder="Ex : dessouchage de la haie"
                   onChange={(v) => majLocale(l.id, "libelle", v)}
@@ -296,7 +345,7 @@ export default function TravauxSupplementairesClient({
                 <Cellule libelle="Qté">
                   <ChiffreSaisi
                     valeur={l.quantite}
-                    aria={`Quantité du travail supplémentaire ${i + 1}`}
+                    aria={`${sansDevis ? "Quantité de la ligne" : "Quantité du travail supplémentaire"} ${i + 1}`}
                     fige={false}
                     placeholder="1"
                     onChange={(v) => majLocale(l.id, "quantite", v)}
@@ -306,7 +355,7 @@ export default function TravauxSupplementairesClient({
                 <Cellule libelle="Prix unitaire HT">
                   <ChiffreSaisi
                     valeur={l.prixUnitaire}
-                    aria={`Prix unitaire du travail supplémentaire ${i + 1}`}
+                    aria={`${sansDevis ? "Prix unitaire de la ligne" : "Prix unitaire du travail supplémentaire"} ${i + 1}`}
                     fige={false}
                     placeholder="0,00"
                     onChange={(v) => majLocale(l.id, "prixUnitaire", v)}
@@ -348,10 +397,10 @@ export default function TravauxSupplementairesClient({
           className="mt-5 text-[17px] font-semibold"
           style={{ color: colors.or }}
         >
-          + Ajouter des travaux supplémentaires
+          {sansDevis ? "+ Ajouter une ligne" : "+ Ajouter des travaux supplémentaires"}
         </button>
 
-        {supplements.length > 0 && tauxDuSupplement === null && (
+        {saisies.length > 0 && tauxDesSaisies === null && (
           <button
             type="button"
             data-atlas="ajouter-tva-supplement"
@@ -403,9 +452,16 @@ export default function TravauxSupplementairesClient({
         <PrimaryButton onClick={() => router.push(`/chantiers/${chantierId}/facture`)} repere="revenir-a-la-facture">
           Revenir à la facture
         </PrimaryButton>
-        <p className={`mt-3 text-center ${smallCaps}`} style={{ color: colors.muted }}>
-          Le devis d’origine ne bouge pas
-        </p>
+        {/* **Rien à rassurer quand il n'y a pas de devis.** Cette ligne existe
+            pour lever une inquiétude précise — celle de réécrire ce que le
+            client a accepté. Sans devis, elle nommerait un document qui
+            n'existe pas, et c'est le genre de phrase qui apprend à ne plus lire
+            les autres (`CLAUDE.md` §3 : le moins de mots possible). */}
+        {!sansDevis && (
+          <p className={`mt-3 text-center ${smallCaps}`} style={{ color: colors.muted }}>
+            Le devis d’origine ne bouge pas
+          </p>
+        )}
       </div>
     </main>
   );

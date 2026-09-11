@@ -123,6 +123,10 @@ export default async function FacturePage({
                   // toujours ; l'écran du patron, non.
                   numeroDevis: existante.numeroDevis,
                   versionDevis: existante.versionDevis,
+                  // **Nul = faite SANS devis** (migration 0086), et l'écran ne
+                  // doit alors écrire « Reprise du devis » nulle part : c'est
+                  // la pièce qu'il vérifie avant qu'elle parte chez le client.
+                  devisId: existante.facture.devisId,
                   clientNom: existante.facture.clientNom,
                   clientCivilite: existante.facture.clientCivilite,
                   dateEmission: existante.facture.dateEmission,
