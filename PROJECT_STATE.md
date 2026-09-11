@@ -1,7 +1,18 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-10 · branche `claude/employee-absence-mockup-ayfv45`
+**Dernière mise à jour :** 2026-09-11 · branche `claude/employee-absence-mockup-ayfv45`
 · dernière migration `drizzle/0085_creneaux_chantier.sql`
+
+---
+
+## FAIT : LES SUITES VISENT LE MOIS QUI EST À L'ÉCRAN — 11 septembre 2026
+
+Le glissement des mois monte trois mois ; les deux voisins sont inertes pour le
+patron, pas pour un sélecteur. Cinq suites tombaient sur un produit sain. Une
+portée commune (`MOIS_A_L_ECRAN`), un geste de retenue écrit une seule fois, et
+l'occupation lue dans `creneaux_chantier` plutôt qu'extrapolée d'un bloc.
+
+**Aucun changement sous `src/`.** Détail : `ARCHITECTURE.md` §324.
 
 ---
 
@@ -41,6 +52,32 @@ d'avant sont **dérivées**, jamais écrites à la main.
 créneau écrit » vaut le bloc calculé, dans une seule fonction (`creneauxPoses`).
 
 Détail : `ARCHITECTURE.md` §322.
+**Dernière mise à jour :** 2026-09-11 · branche `session-2`
+· dernière migration `drizzle/0086_facture_sans_devis.sql`
+
+---
+
+## FAIT : FACTURER SANS PASSER PAR LA CASE DEVIS — 11 septembre 2026
+
+*« Il faut que l'on puisse facturer sans avoir besoin de passer par la case
+devis. »* Un dépannage réglé sur place : pas de devis, une facture tout de suite.
+Le parcours entier — **Terminés → Créer une facture → fiche client → la facture
+→ l'envoi**.
+
+| | |
+|---|---|
+| la racine | `factures.devis_id` était `NOT NULL` — migration `0086`. Le faux devis caché a été écarté : il aurait consommé un numéro de la suite commerciale |
+| quelles lignes il peut saisir | `src/lib/lignes-corrigeables.ts` — une règle pure, appelée par l'écran ET par le `WHERE` du dépôt |
+| la porte | le bouton doré de `src/app/termines/ListeTermines.tsx`, seconde rangée, collé à droite |
+| la fiche client | `FormulaireNouveauChantier` avec `pour="facture"` — le même écran, sans la note vocale ni les photos |
+| la facture naît vide | `creerFactureSansDevis` — aucune ligne inventée |
+| **elle ne part pas vide** | `peutPreparerLaPiece` — la règle du devis, élargie et renommée |
+| les suites | `test-lignes-corrigeables` (4), `test-facture-sans-devis-db` (14), `test-facture-sans-devis-e2e` (le chemin qu'IL prend) |
+| le détail | `ARCHITECTURE.md` §326 · le document pour lui : `docs/facture-sans-devis-verdict.md` |
+
+**La porte a changé de place en cours de route** : codée sur l'accueil le
+10 septembre (deux anneaux), déplacée dans Terminés le 11 à sa demande.
+L'accueil a été rendu à l'identique.
 
 ---
 

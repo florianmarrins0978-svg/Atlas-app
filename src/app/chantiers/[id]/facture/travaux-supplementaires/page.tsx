@@ -53,6 +53,11 @@ export default async function TravauxSupplementairesPage({
       clientNom={existante.facture.clientNom}
       clientCivilite={existante.facture.clientCivilite}
       numeroDevis={existante.numeroDevis}
+      // **Nul = faite sans devis (migration 0086), et TOUT s'y saisit.** La
+      // règle n'est pas ici — elle est dans `ligneSeCorrige`, la même que le
+      // dépôt applique dans le WHERE de ses écritures. L'écran transporte le
+      // fait, il n'en tire aucune conclusion de son côté.
+      devisId={existante.facture.devisId}
       tauxTvaFacture={existante.facture.tauxTva}
       reductionPourcent={existante.facture.reductionPourcent}
       lignes={existante.lignes.map((l) => ({

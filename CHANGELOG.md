@@ -8,6 +8,124 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Aérer la porte — et le premier essai lisait sa demande à l'envers
+
+*« Je les trouve trop collés en haut, aère la page et prends plus d'espace. »*
+
+**Ma première version a mis le vide AU MILIEU**, en écartant « Entrer » des
+champs d'une centaine de pixels. Il l'a refusée sèchement — *« mais ça n'a rien
+à voir ! »* —, puis a renvoyé sa planche en photo : *« c'est ça que je veux »*.
+
+**Ce que la planche disait et que je n'avais pas lu :** « Entrer » est **collé
+sous le mot de passe** — c'est le même geste, on le lit d'un trait — et tout le
+vide est **dessous**, avant « Créer un compte ». Aérer voulait dire « donne de
+l'air entre les éléments », pas « étire le bloc sur toute la hauteur ».
+
+Les écarts sont maintenant **relevés sur sa planche** (390 × 664) plutôt
+qu'inventés : 32 au-dessus du titre, 21 dessous, 28 de part et d'autre du
+« ou », 24 sous Face ID, 23 entre les champs. Une seule part flexible reste,
+**après le bouton** : elle absorbe la place libre et tient le pied en bas sur
+n'importe quelle hauteur — mesuré, 121 px sous « Entrer » contre 123 sur la
+planche, et rien ne déborde.
+
+**Et le point de `TODO.md` qui demandait de repeindre la planche est corrigé
+plutôt que fait** : elle est le relevé du choix à trois du 7 septembre, pas un
+miroir de l'application. La repeindre aurait effacé les deux propositions
+écartées. Son bandeau dit désormais qu'elle est tranchée et codée — il affirmait
+encore « rien n'est codé », faux depuis trois jours.
+
+### Montrer Google et Apple avant de pouvoir les ouvrir — sa décision
+
+*« Je veux que lorsque l'utilisateur clique sur se déconnecter qu'il arrive
+direct sur cet écran »*, sa maquette remise en photo pour la troisième fois. La
+déconnexion arrivait déjà sur le bon écran : ce qui manquait, c'étaient les deux
+marques.
+
+Le choix lui a été posé avec son coût — les cacher jusqu'aux clés, les afficher
+quand même, ou les afficher grisées. **Il a retenu « les afficher quand même ».**
+
+**Ce que ça renverse, et ce qui le rend tenable.** Le dépôt tenait l'inverse la
+veille : *« un bouton qui ne peut pas aboutir est pire qu'un bouton absent »*.
+La raison — on appuie dans le vide, `signIn` sort vers la page d'Auth.js — a
+cessé d'être vraie : `entrerAvecAction` refuse un fournisseur non branché AVANT
+Auth.js et rend une phrase qui nomme ce qui manque et ce qui marche. La règle
+tient toujours pour Face ID, qui n'a personne à qui poser la question.
+
+**Deux questions séparées, et ce n'est pas une règle dupliquée** :
+`fournisseursAAfficher` (ce que l'écran dessine) et `fournisseursDisponibles`
+(ce qu'Auth.js déclare). Elles avaient l'air d'une seule parce qu'elles
+coïncidaient ; la seconde dérive de la première, et un seul endroit décide ce
+qu'est « branché ». Déclarer un fournisseur sans clé ferait lever la
+configuration au démarrage — plus personne n'entrerait, pas même par mot de
+passe.
+
+Les quatre clés se lisent désormais **en un seul endroit**
+(`src/server/cles-fournisseurs.ts`) : le même objet se recomposait à trois
+endroits, chacun retapant les quatre noms. Le détail est dans
+`ARCHITECTURE.md` §325.
+
+Regardé à l'écran, à la largeur de son téléphone : l'écran au repos, et le refus
+lu après un appui sur Google.
+
+---
+
+---
+
+### Trois planches lui ont été redemandées alors qu'elles étaient codées
+
+*« La planche déconnecter est déjà faite, va vérifier ! La 2ᵉ aussi ! Et la
+3ᵉ aussi ! »* — et il avait raison sur les trois. « Se déconnecter » est au bas
+des Réglages depuis le 9 septembre, « Aujourd'hui » en doré et en tête depuis le
+9 aussi, et « Dernier devis » sur la fiche client depuis le 8, sur son choix E.
+
+**La cause n'est pas l'oubli, c'est la lecture.** `TODO.md` portait trois titres
+« ⏳ UNE PLANCHE À REGARDER » jamais barrés, dont un au-dessus d'un corps qui
+disait « CODÉ LE 9 SEPTEMBRE ». `CLAUDE.md` §1 dit depuis toujours que le code
+fait foi ; il n'a pas été appliqué — j'ai lu des titres.
+
+Les trois entrées sont corrigées avec la preuve (le fichier, l'endroit où il est
+monté, sa suite). `scripts/test-todo-sans-titre-menteur.ts` tient désormais la
+moitié mécanique : il a été vu ROUGE sur la version qui m'a trompé, et il barre
+la batterie. L'autre moitié est un `grep` de trente secondes, écrit dans
+`CLAUDE.md` §1.
+
+**Lui redemander un choix qu'il a déjà donné n'est pas une question de plus :
+c'est lui faire refaire un travail qu'il a fait.**
+
+### Cinq rouges de la nuit : le calendrier gardait trois mois, les suites n'en visaient aucun
+
+Le glissement des mois monte trois mois à la fois — le précédent et le suivant
+attendent hors du cadre pour suivre le doigt. Inertes pour le patron ; pas pour
+un sélecteur. Quatre suites cliquaient une case d'août ou du mois d'après,
+Playwright la voyait, et c'est le cadre qui recevait le doigt : quarante-cinq
+secondes d'attente, puis un rouge sur un produit sain.
+
+**Le composant avait posé la parade dès le premier jour** — seul le mois du
+milieu porte son repère. Ce qui manquait était du côté des suites : une portée
+commune (`MOIS_A_L_ECRAN`), et un geste de retenue écrit **une seule fois**.
+Deux suites le recopiaient ; une troisième cliquait le RANG d'un bouton, et ce
+rang a changé de mois.
+
+**Un jour déjà proposé ne se retouche pas** : l'écran d'envoi marque de
+lui-même les premiers jours libres, et le second appui les enlève. Le geste
+commun regarde l'état avant d'appuyer.
+
+**Et ce qui est posé se lit dans les créneaux, plus dans un bloc déduit.**
+`test-reste-equipes-e2e` cherchait un jour libre en extrapolant
+`date_planifiee + durée` : un chantier dont une demi-journée a déménagé
+occupait pour lui des jours vides, et laissait libre celui où il travaille.
+C'est ce qui lui faisait lire « Plus d'équipe libre sur 2 » et accuser un écran
+qui comptait juste.
+
+**Correction d'un verdict de la veille, noir sur blanc :** `test-reste-equipes-e2e`
+avait été rangée avec les rouges du carrousel des mois. C'était faux — son
+rouge était celui-ci, et il tenait à deux causes, dont une de mon propre lot des
+créneaux. Restent attribués au lot du prix : `test-devis-papier-e2e` et
+`test-devis-complet-e2e`.
+
+Mesuré : 8 suites du calendrier et du planning au vert, dont les cinq qui
+étaient rouges (`test-envoi-client` 11/11, `test-planning` 44/44).
+
 ### La case du prix portait un vrai zéro, et le curseur tombait devant le chiffre
 
 *« Quand je clique sur la case de la quantité, je veux que le petit trait qui
@@ -103,6 +221,49 @@ un glissement n'en ouvre aucune.
 
 ---
 
+### Facturer sans passer par la case devis — codé, de la base à l'envoi
+
+Sa demande du 10 septembre : *« il faut que l'on puisse facturer sans avoir
+besoin de passer par la case devis »*. Le parcours entier existe désormais :
+**Terminés → Créer une facture → fiche client → la facture → l'envoi.**
+
+**La racine était UNE colonne.** `factures.devis_id` était `NOT NULL` : aucune
+facture ne pouvait exister sans devis (migration `0086`). Le faux devis caché a
+été écarté — il aurait consommé un numéro de la suite commerciale et fait
+apparaître au relevé de TVA des références que personne ne peut produire.
+
+**La porte est dans Terminés, pas sur l'accueil.** Elle y avait d'abord été
+codée ; il s'est ravisé le 11 — *« est-ce que c'est pas plus logique de mettre
+la porte dans la catégorie Terminés ? »* L'accueil a été rendu à l'identique.
+La quatrième pastille qu'il voulait déborde (300 px déjà pris sur 306 à 360 px,
+mesuré) : le bouton doré prend donc une seconde rangée, collé à droite, et les
+deux noms restent entiers.
+
+**Deux refus qui coûtaient cher, et qui n'existaient pas :**
+
+- une facture **vide** ne part plus — elle serait partie à 0,00 €, immuable, à
+  corriger par un avoir. La règle est celle du devis (`peutPreparerLaPiece`), et
+  le refus nomme le geste qui le lève ;
+- **« Reprendre le devis »** est refusé sur une facture directe : la reprise
+  efface les lignes non-supplément pour recopier le devis, c'est-à-dire TOUTE
+  une facture directe. Un devis écrit après coup lui aurait fait perdre sa
+  saisie d'un seul appui.
+
+**Ce que `supplement` disait vraiment.** Pas « c'est un supplément », mais
+« cette ligne ne vient pas d'un devis ». La règle vit dans
+`src/lib/lignes-corrigeables.ts` et sert DEUX fois : l'écran pour dessiner un
+champ, le dépôt dans le `WHERE` de ses écritures. Les factures d'avant la
+migration 0082 (`supplement = null`) restent protégées — l'inverse les aurait
+toutes rouvertes.
+
+**Trois renommages, parce que les noms mentaient** : `ajouterLigneDeFacture`,
+`majLigneDeFacture`, `retirerLignesDeFacture` (elles posent aussi des lignes
+ordinaires), et `peutPreparerLaPiece` (elle sert aussi la facture, et prend le
+nom de la pièce pour qu'un écran de facture ne dise jamais « devis »).
+
+Détail et pourquoi : `ARCHITECTURE.md` §326.
+
+---
 ## 2026-09-10
 
 ### La déconnexion renvoyait sur `localhost` — donc nulle part, depuis un téléphone
@@ -209,6 +370,13 @@ voies, à chaque étape.**
 | « Journée » | n'existe QUE là : le chantier naît du geste, le choix EST sa durée et ne recouvre aucun devis |
 | ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
 | **une troisième voie** | *« Autre chose »* — un rendez-vous à la banque, une livraison, une formation : un chantier **sans client**, portant ce qu'on écrit |
+
+**Le geste « + Absent ? » ne passe plus sous le tiroir.** Deux pixels, mesurés
+sur son écran, et `test-pas-la-ce-jour-e2e` les refusait à juste titre. La carte
+naît au milieu de la page : la réserve du bas n'y peut rien, elle permet de
+défiler, pas de remonter. Toucher un jour rend maintenant exactement ce que les
+deux bandes fixes prennent — jamais plus, et rien du tout quand le geste est
+déjà dégagé.
 
 **Et son bord passe en or — sa version C**, choisie sur planche
 (`appli/tiroir-en-or.html`, quatre bords côte à côte) : deux pixels d'or, les

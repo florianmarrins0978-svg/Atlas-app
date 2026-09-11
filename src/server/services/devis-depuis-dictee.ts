@@ -14,7 +14,7 @@ import { getNoteVocale } from "../repositories/notes-vocales";
 import { getOuCreerDevisBrouillon } from "../repositories/devis";
 import { preparerPropositionPrix, type OriginePrix } from "../chiffrage/proposition-prix";
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
-import { peutPreparerDevis } from "../../lib/preparation-devis";
+import { peutPreparerLaPiece } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
 import { listerPrestations, renommerPrestation, completerPrestation } from "../repositories/prestations";
 import { structureDepuisPrecisions } from "../../lib/prestation-structuree";
@@ -462,7 +462,7 @@ async function chiffrerEtPreparer(
   const lignes = await listerLignesPrix(ctx, chantierId);
   // La même fonction que l'écran Prix : un devis sans ligne exploitable ne se
   // déclare pas « prêt », et son jalon de prix n'est pas posé.
-  if (peutPreparerDevis(lignes).possible) {
+  if (peutPreparerLaPiece(lignes).possible) {
     await marquerPrixValide(ctx, chantierId);
   }
   const devis = await getOuCreerDevisBrouillon(ctx, chantierId);

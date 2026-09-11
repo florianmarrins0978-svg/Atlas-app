@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { peutPreparerDevis } from "../src/lib/preparation-devis";
+import { peutPreparerLaPiece } from "../src/lib/preparation-devis";
 
 // « Préparer le devis → » ne doit pas mener à un devis à 0,00 €.
 //
@@ -25,12 +25,12 @@ function cas(nom: string, verifier: () => void) {
 console.log("=== Préparer le devis : ce qui est refusé, et ce qui passe ===");
 
 cas("aucune ligne : refusé", () => {
-  const v = peutPreparerDevis([]);
+  const v = peutPreparerLaPiece([]);
   assert.equal(v.possible, false, "Un devis sans ligne partirait à 0,00 €.");
 });
 
 cas("aucune ligne : le refus dit quoi faire, pas seulement ce qui cloche", () => {
-  const v = peutPreparerDevis([]);
+  const v = peutPreparerLaPiece([]);
   assert.ok(!v.possible);
   // Un message qui constate sans orienter se lit comme une panne. Les deux
   // issues réelles doivent y figurer : ajouter une ligne, ou enregistrer un tarif.
@@ -41,7 +41,7 @@ cas("aucune ligne : le refus dit quoi faire, pas seulement ce qui cloche", () =>
 
 cas("des lignes qui totalisent zéro : refusé aussi", () => {
   // Le piège avec un visage rassurant : l'écran paraît rempli.
-  const v = peutPreparerDevis([
+  const v = peutPreparerLaPiece([
     { libelle: "Élagage", montant: "0" },
     { libelle: "Broyage", montant: "0.00" },
   ]);
@@ -49,17 +49,17 @@ cas("des lignes qui totalisent zéro : refusé aussi", () => {
 });
 
 cas("un montant vide compte pour zéro, il ne fait pas planter", () => {
-  const v = peutPreparerDevis([{ libelle: "Élagage", montant: "" }]);
+  const v = peutPreparerLaPiece([{ libelle: "Élagage", montant: "" }]);
   assert.equal(v.possible, false, "Une ligne au montant vide ne rend pas le devis préparable.");
 });
 
 cas("un montant négatif ne passe pas pour un devis valable", () => {
-  const v = peutPreparerDevis([{ libelle: "Remise", montant: "-100" }]);
+  const v = peutPreparerLaPiece([{ libelle: "Remise", montant: "-100" }]);
   assert.equal(v.possible, false, "Un total négatif n'est pas un devis.");
 });
 
 cas("une remise qui ne mange pas tout : accepté", () => {
-  const v = peutPreparerDevis([
+  const v = peutPreparerLaPiece([
     { libelle: "Élagage", montant: "800" },
     { libelle: "Remise fidélité", montant: "-100" },
   ]);
@@ -67,20 +67,20 @@ cas("une remise qui ne mange pas tout : accepté", () => {
 });
 
 cas("une ligne chiffrée : accepté", () => {
-  const v = peutPreparerDevis([{ libelle: "Élagage d'un tilleul", montant: "1400.00" }]);
+  const v = peutPreparerLaPiece([{ libelle: "Élagage d'un tilleul", montant: "1400.00" }]);
   assert.equal(v.possible, true, "Un devis chiffré doit passer.");
 });
 
 cas("un libellé vide ne bloque pas — c'est au patron de juger", () => {
   // On ne bloque que ce qui produit un document faux. Une description
   // manquante se corrige encore sur l'écran du devis ; un total nul, non.
-  const v = peutPreparerDevis([{ libelle: "", montant: "500" }]);
+  const v = peutPreparerLaPiece([{ libelle: "", montant: "500" }]);
   assert.equal(v.possible, true, "Un libellé vide ne rend pas le devis impossible.");
 });
 
 cas("les centimes ne se perdent pas dans un flottant", () => {
   // Trois lignes qui, additionnées en `number`, ne tomberaient pas juste.
-  const v = peutPreparerDevis([
+  const v = peutPreparerLaPiece([
     { libelle: "a", montant: "0.10" },
     { libelle: "b", montant: "0.20" },
     { libelle: "c", montant: "-0.30" },
@@ -100,7 +100,7 @@ console.log("\n=== Une ligne « à chiffrer » n'est pas un devis prêt ===\n");
 // le devis partait, et le client lisait un travail à zéro euro.
 
 cas("un travail qui attend son prix arrête le devis", () => {
-  const v = peutPreparerDevis([
+  const v = peutPreparerLaPiece([
     { libelle: "Abattage d'un chêne", montant: "840" },
     { libelle: "Tonte de la pelouse", montant: "0", aChiffrer: true },
   ]);
@@ -111,7 +111,7 @@ cas("un travail qui attend son prix arrête le devis", () => {
 });
 
 cas("plusieurs lignes en attente sont toutes nommées", () => {
-  const v = peutPreparerDevis([
+  const v = peutPreparerLaPiece([
     { libelle: "Abattage d'un chêne", montant: "840" },
     { libelle: "Tonte", montant: "0", aChiffrer: true },
     { libelle: "Haie", montant: "0", aChiffrer: true },
@@ -124,7 +124,7 @@ cas("plusieurs lignes en attente sont toutes nommées", () => {
 
 cas("une ligne qui a REÇU son prix ne bloque plus rien", () => {
   // L'autre sens : le garde-fou ne doit pas se refermer sur un devis complet.
-  const v = peutPreparerDevis([
+  const v = peutPreparerLaPiece([
     { libelle: "Abattage d'un chêne", montant: "840", aChiffrer: false },
     { libelle: "Tonte de la pelouse", montant: "200", aChiffrer: false },
   ]);
@@ -134,14 +134,14 @@ cas("une ligne qui a REÇU son prix ne bloque plus rien", () => {
 cas("les lignes d'AVANT, qui ne portent pas l'état, passent comme avant", () => {
   // Aucune ligne écrite avant le 27 août ne porte ce drapeau. Le traiter comme
   // « à chiffrer » bloquerait d'un coup tous ses devis en cours.
-  const v = peutPreparerDevis([{ libelle: "Élagage d'un tilleul", montant: "1400.00" }]);
+  const v = peutPreparerLaPiece([{ libelle: "Élagage d'un tilleul", montant: "1400.00" }]);
   assert.equal(v.possible, true);
 });
 
 cas("le message ne nomme qu'un travail par ligne empilée", () => {
   // Une ligne réunit « Abattage / Broyage / Évacuation » : les trois dans le
   // message rendraient la phrase illisible sur un téléphone.
-  const v = peutPreparerDevis([
+  const v = peutPreparerLaPiece([
     { libelle: "Abattage d'un chêne\nBroyage des branches", montant: "0", aChiffrer: true },
     { libelle: "Haie", montant: "500" },
   ]);
@@ -164,7 +164,7 @@ cas("un drapeau resté levé sur une ligne CHIFFRÉE ne bloque plus", () => {
   // **Effet de bord voulu :** les devis déjà bloqués dans sa base se rouvrent
   // sans qu'il ait à retaper quoi que ce soit.
   // ═════════════════════════════════════════════════════════════════════════
-  const v = peutPreparerDevis([
+  const v = peutPreparerLaPiece([
     { libelle: "Dessouchage", montant: "1720.00", aChiffrer: true },
     { libelle: "Démontage en rétention d'un érable", montant: "560.00" },
   ]);
@@ -174,7 +174,7 @@ cas("un drapeau resté levé sur une ligne CHIFFRÉE ne bloque plus", () => {
 cas("un montant à ZÉRO sous le drapeau bloque toujours", () => {
   // L'assouplissement ci-dessus ne doit pas emporter la règle du 27 août : une
   // ligne sans prix n'est pas une ligne gratuite.
-  const v = peutPreparerDevis([
+  const v = peutPreparerLaPiece([
     { libelle: "Abattage", montant: "840" },
     { libelle: "Tonte de la pelouse", montant: "0.00", aChiffrer: true },
   ]);
@@ -184,7 +184,7 @@ cas("un montant à ZÉRO sous le drapeau bloque toujours", () => {
 cas("un montant NÉGATIF ne compte pas pour un prix posé", () => {
   // Une remise saisie en négatif ne répond pas à « combien vaut ce travail ».
   // Le contrôle lit « strictement positif », jamais « différent de zéro ».
-  const v = peutPreparerDevis([
+  const v = peutPreparerLaPiece([
     { libelle: "Abattage", montant: "840" },
     { libelle: "Tonte", montant: "-50.00", aChiffrer: true },
   ]);

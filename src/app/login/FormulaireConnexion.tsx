@@ -80,8 +80,34 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
         Retour
       </Link>
 
+      {/* **LE VIDE VA SOUS « ENTRER », PAS AU MILIEU — 11 septembre 2026.**
+
+          Première version fausse, et c'est lui qui l'a redressé, sa maquette en
+          photo : *« c'est ça que je veux »*. J'avais lu « aère » comme « étire
+          le bloc », et posé trois parts de vide qui écartaient « Entrer » des
+          champs de cent pixels. Sur sa planche, « Entrer » est **collé sous le
+          mot de passe** — c'est le même geste, on le lit d'un trait — et tout
+          le vide est DESSOUS.
+
+          Les écarts ci-dessous sont relevés sur sa planche (390 × 664) :
+          32 au-dessus du titre, 21 dessous — **puis 31 de plus le 11 septembre
+          au matin**. Il a d'abord demandé *« descends tout le bloc sans le
+          Connexion d'un cm, juste de Google à Entrer »* — un centimètre fait
+          61 px sur son écran (390 px pour 6,42 cm de large) —, puis, en
+          regardant : *« c'est trop, remonte de la moitié »*. D'où 21 + 31.
+
+          **C'est le TITRE qui porte cet écart**, et c'est ce qui le rend juste :
+          lui seul reste en place, tout ce qui le suit descend d'autant, et la
+          part flexible d'en bas rend la place — le pied ne bouge pas non plus. 28 de part et d'autre du « ou »,
+          24 sous Face ID, 23 entre les champs. Rien n'est inventé.
+
+          Une seule part flexible reste, **après le bouton** : c'est elle qui
+          absorbe toute la place libre et tient le pied en bas, quelle que soit
+          la hauteur de l'écran. */}
+      <div className="h-[32px] flex-none" aria-hidden="true" />
+
       <h1
-        className="mb-4 mt-3 text-[30px] leading-[1.1]"
+        className="mb-[52px] text-center text-[34px] leading-[1.1]"
         style={{ ...({ fontFamily: "ui-serif, Georgia, serif" } as const), letterSpacing: "-0.01em" }}
       >
         Connexion
@@ -106,7 +132,7 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
           if (champ) champ.defaultValue = adresse;
         }}
         onChange={(e) => setAdresse(e.target.value)}
-        className="atlas-champ-gelule mb-[10px]"
+        className="atlas-champ-gelule mb-[23px]"
       />
 
       <input
@@ -124,7 +150,7 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
           apparaît pousse le bouton d'une ligne, et l'appui suivant tombe à
           côté. `test-porte-e2e.ts` exige au moins 15 px. */}
       <p
-        className="mb-1 mt-3 min-h-[19px] text-[13px] leading-[19px]"
+        className="mb-[6px] mt-[8px] min-h-[19px] text-[13px] leading-[19px]"
         style={{ color: colors.alert }}
         role="alert"
         aria-live="polite"
@@ -135,7 +161,7 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
       <button
         type="submit"
         disabled={enCours}
-        className="atlas-plein w-full rounded-full py-4 text-[17px] transition-transform active:scale-[0.985] disabled:opacity-60"
+        className="atlas-plein w-full rounded-full py-[18px] text-[17px] transition-transform active:scale-[0.985] disabled:opacity-60"
         /**
          * **Le dégradé de la planche, en jetons.** Elle va du crème au doré
          * (#e9e8de → #d9cba8) ; la seconde valeur n'existe dans aucune charte,
@@ -155,7 +181,9 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
         {enCours ? "Ouverture…" : "Entrer"}
       </button>
 
-      <div className="mt-auto pt-6 text-center">
+      <div className="min-h-[24px] flex-1" aria-hidden="true" />
+
+      <div className="pb-[6px] text-center">
         <Link href="/creer-un-compte" className="inline-block py-[10px] text-[13.5px]" style={{ color: colors.muted }}>
           Pas de compte&nbsp;? <b style={{ color: colors.or, fontWeight: 600 }}>Créer un compte</b>
         </Link>

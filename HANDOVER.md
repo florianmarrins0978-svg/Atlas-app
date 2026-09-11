@@ -4,8 +4,29 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-08 · `main`
+**Point de reprise :** 2026-09-11 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## Dernier lot — GOOGLE ET APPLE SE MONTRENT AVANT D'OUVRIR (11 septembre 2026)
+
+| | |
+|---|---|
+| sa décision | les deux marques se dessinent même sans clé — choix posé avec son coût, il l'a retenu |
+| la migration | **aucune** |
+| les pièces | `src/lib/fournisseurs-connexion.ts`, `src/server/cles-fournisseurs.ts` (neuf), `src/app/login/{page,actions,BoutonsFournisseurs}.tsx` |
+| les suites | `scripts/test-fournisseurs-connexion.ts` (19) |
+| le détail | `ARCHITECTURE.md` §325 |
+
+**CE QUI NE SE DÉFAIT PAS SANS L'AUTRE.** L'affichage n'est tenable QUE parce
+que `entrerAvecAction` refuse un fournisseur non branché **avant** Auth.js, avec
+une phrase qui nomme ce qui manque et ce qui marche. Retirer ce refus rendrait
+les boutons muets : `signIn("google")` sortirait vers la page d'Auth.js, et l'on
+quitterait Atlas sans comprendre. Les deux vont ensemble, et une suite le tient.
+
+**LA RÈGLE INVERSE EST MORTE, MAIS PAS PARTOUT.** *« Un bouton qui ne peut pas
+aboutir est pire qu'un bouton absent »* tient toujours pour **Face ID** : il n'y
+a personne à qui poser la question, donc aucune phrase utile à rendre.
 
 ---
 ## Dernier lot — LA SORTIE RENVOYAIT SUR `localhost` (10 septembre 2026)
@@ -32,7 +53,32 @@ comprises — la page ne s'hydrate pas. Sur un hôte ordinaire, l'hôte deviné 
 trouve être le bon, donc rien ne rougit. Le contrôle vise le mécanisme.
 
 ---
-## Dernier lot — POSER UN CLIENT SUR UN JOUR, SANS DEVIS (10 septembre 2026)
+## Dernier lot — LE CALENDRIER GARDE TROIS MOIS : LES SUITES VISENT CELUI DE L'ÉCRAN (11 septembre 2026)
+
+| | |
+|---|---|
+| ce que ça règle | 5 rouges de la nuit, tous sur un produit sain |
+| la portée | `MOIS_A_L_ECRAN` (`scripts/_calendrier-e2e.ts`) — `[data-atlas$="grille-mois"]` |
+| le geste commun | `retenirAuCalendrier`, remonté là : il **ne retouche pas** un jour déjà proposé |
+| le détail | `ARCHITECTURE.md` §324 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** Le glissement des mois monte le précédent et
+le suivant hors du cadre. Ils sont inertes pour le patron (`aria-hidden`,
+`tabindex="-1"`, `pointer-events: none`) — **pas pour un sélecteur** : une case
+cherchée dans toute la page peut être hors de l'écran, Playwright la clique quand
+même, et c'est le cadre qui reçoit le doigt. Toute recherche de `[data-jour]` au
+calendrier passe par `MOIS_A_L_ECRAN`.
+
+**Et le second piège :** un jour déjà proposé par l'écran se RETIRE au clic
+suivant. Une suite qui choisit son jour dans la base doit regarder son état avant
+d'appuyer — c'est ce que fait le geste commun.
+
+**Ce qui est POSÉ se lit dans `creneaux_chantier`**, plus dans `date_planifiee +
+durée` (§322). Une suite qui extrapole le bloc voit libre un jour où le chantier
+travaille vraiment, et son rouge accuse alors un écran qui compte juste.
+
+---
+## Lot précédent — POSER UN CLIENT SUR UN JOUR, SANS DEVIS (10 septembre 2026)
 
 | | |
 |---|---|
@@ -138,6 +184,26 @@ les dépendances et recopier le `.env`.
 
 ---
 ## Lot précédent — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
+## Dernier lot — FACTURER SANS PASSER PAR LA CASE DEVIS (11 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« il faut que l'on puisse facturer sans avoir besoin de passer par la case devis »* (10), puis *« sous retour d'intervention, collé à droite, tu mets créer une facture en doré »* (11) |
+| la racine | `factures.devis_id` était `NOT NULL` : aucune facture ne pouvait exister sans devis. Migration `drizzle/0086_facture_sans_devis.sql` |
+| la règle neuve | `src/lib/lignes-corrigeables.ts` — quelles lignes se corrigent. Appelée par l'écran ET par le `WHERE` du dépôt, jamais écrite deux fois |
+| la porte | `src/app/termines/ListeTermines.tsx`, seconde rangée sous les onglets. **Pas** une 4ᵉ pastille : elle déborde de 75 px, mesuré |
+| renommé | `ajouterLigneDeFacture`/`majLigneDeFacture`/`retirerLignesDeFacture` (ex-« travaux supplémentaires »), et `peutPreparerLaPiece` (ex-`peutPreparerDevis`) |
+| supprimé | le composant d'anneau extrait pour porter DEUX gestes sur l'accueil — la porte a déménagé dans Terminés, l'accueil n'en a plus qu'un, et un fichier que rien n'importe se supprime (`CLAUDE.md` §4 quinquies). `git log` le retrouve |
+| les deux refus qui comptent | une facture VIDE ne part pas ; « Reprendre le devis » est fermé sur une facture directe (il effacerait toute la saisie) |
+| le détail | `ARCHITECTURE.md` §326 |
+
+**Le piège si vous reprenez à froid :** `supplement = null` (factures d'avant la
+migration 0082) veut dire « jamais marquée », PAS « c'est un supplément ». Les
+traiter comme saisissables rouvrirait toutes les anciennes factures.
+
+---
+
+## Dernier lot — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
 
 | | |
 |---|---|

@@ -161,7 +161,12 @@ async function cequiDoitRester(
     );
   for (const f of facturesEmises) {
     chantiersAConserver.add(f.chantierId);
-    devisAConserver.add(f.devisId);
+    // **Nul sur une facture directe** (migration 0086) : il n'y a pas de devis
+    // à retenir, seulement la facture elle-même — déjà inscrite juste en
+    // dessous. Sans cette garde, un `null` entrait dans l'ensemble des devis à
+    // conserver, et le premier effacement qui l'aurait comparé aurait retenu, ou
+    // laissé partir, un devis au hasard.
+    if (f.devisId) devisAConserver.add(f.devisId);
     pieces.push({
       quoi: "facture",
       numero: f.numero,

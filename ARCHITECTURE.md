@@ -27766,12 +27766,24 @@ mentirait au premier changement de la poignée. La variable n'existe que pendant
 qu'il est à l'écran ; il la retire en partant, et les autres écrans ne bougent
 pas.
 
-**Ce que cela NE règle pas**, et qu'il ne faut pas croire réglé : le geste
-« + Absent ? », en TÊTE de la carte, passe toujours sous le tiroir d'un pixel
-quand la journée touchée est dans la dernière rangée du mois. Celui-là est un
-défaut de PLACEMENT de la carte, pas de réserve — la réserve permet de faire
-défiler jusqu'au bas, elle ne remonte pas ce qui est déjà à l'écran. Il reste
-dans `TODO.md`.
+**Et ce que la réserve ne réglait PAS, réglé le 11 septembre 2026 :** le geste
+« + Absent ? », en TÊTE de la carte, passait sous le tiroir de deux pixels.
+Mesuré sur son écran (390 × 664) : carte ouverte à 472, geste 523 → 567, tiroir
+à 565.
+
+La réserve permet de faire défiler jusqu'au bas ; elle ne remonte pas ce qui est
+déjà à l'écran, et la carte naît au MILIEU de la page. `rendreLesPixelsDesBandes`
+rend donc exactement ce que les deux bandes prennent — jamais plus —, et ne fait
+rien quand le geste est déjà dégagé.
+
+**Il vit sur LE GESTE, pas sur la carte, et deux contrôles l'ont imposé.** Le
+`scrollIntoView` retiré le 3 septembre ramenait une fiche née hors du champ, à
+deux cents pixels de là : il déplaçait la case qu'on venait de toucher. Une
+première version de ce rattrapage vivait dans la carte, et
+`test-ligne-planning-e2e` l'a refusée dans la minute — *« le client touché a
+bougé de 956 px, il disparaît sous mes yeux »* : la MÊME carte se déplie aussi
+sous une ligne des planifiés, où la règle est que le nom touché ne bouge pas.
+Accroché à `toucherLeJour`, rien d'autre ne le déclenche.
 
 | | |
 |---|---|
@@ -27780,3 +27792,220 @@ dans `TODO.md`.
 | la planche | `appli/bloquer-sans-devis.html`, essayée puis retenue |
 | les règles | `scripts/test-poser-un-client-db.ts` (9 cas) |
 | **son geste** | `scripts/test-bloquer-sans-devis-e2e.ts` (7 cas, de bout en bout) |
+
+---
+
+## §324 — Le calendrier garde trois mois montés : une suite doit viser celui qui est à l'écran
+
+**Une nuit de quatre rouges, sur un produit sain (11 septembre 2026).** Le
+glissement des mois (§ du même jour, `MoisCharge`) monte désormais **trois**
+mois : le précédent et le suivant vivent hors du cadre, pour suivre le doigt.
+Ils sont inertes pour le patron — `aria-hidden`, `tabindex="-1"`,
+`pointer-events: none` — et **le composant a posé la parade dès le premier
+jour** : seul le mois du milieu porte son repère `data-atlas`.
+
+**Ce qui est inerte pour un doigt ne l'est pas pour un sélecteur.** Un
+`[data-jour]` cherché dans toute la page en ramène un sur trois hors du cadre :
+Playwright le voit — il a bien une boîte —, le clique, et c'est le cadre qui
+reçoit le doigt. Quarante-cinq secondes, puis « intercepts pointer events ».
+Quatre suites sont tombées ainsi, et une cinquième s'arrêtait trop tôt dans sa
+navigation, le jour visé étant déjà monté dans le mois d'après.
+
+| | |
+|---|---|
+| la portée | `MOIS_A_L_ECRAN` — `[data-atlas$="grille-mois"]`, dans `scripts/_calendrier-e2e.ts` |
+| le suffixe | les deux écrans préfixent leur repère (`grille-mois`, `envoi-grille-mois`) ; les voisins n'en portent aucun |
+| le geste | `retenirAuCalendrier`, remonté là depuis `test-envoi-client-e2e` : deux suites le recopiaient, une troisième cliquait le **rang** d'un bouton |
+
+**Et un jour DÉJÀ retenu ne se retouche pas.** L'écran d'envoi propose de
+lui-même les premiers jours libres : le jour qu'une suite a choisi dans la base
+peut être marqué avant qu'elle y touche, et le clic l'enlève. `test-reste-equipes-e2e`
+attendait ensuite un « retenu » qui ne revenait jamais. Le geste commun regarde
+l'état avant d'appuyer.
+
+**Enfin, ce qui est POSÉ se lit dans `creneaux_chantier`, plus dans un bloc
+déduit** (§322). `test-reste-equipes-e2e` cherchait un jour libre en
+extrapolant `date_planifiee + durée` : un chantier dont une demi-journée a
+déménagé occupait pour lui des jours vides, et laissait libre le jour où il
+travaille vraiment. La suite y posait son essai, l'écran comptait juste, et le
+rouge accusait l'écran — le pire des rouges. Le repli sur le bloc reste, pour
+les chantiers qu'aucun créneau ne décrit.
+
+---
+
+## §325 — La porte montre Google et Apple avant de pouvoir les ouvrir
+
+**Sa décision du 11 septembre 2026**, après trois messages et sa maquette remise
+en photo : *« je veux que lorsque l'utilisateur clique sur se déconnecter qu'il
+arrive direct sur cet écran »* — celui qui porte les deux marques. Le choix lui
+a été posé en toutes lettres, avec ce qu'il coûte ; il a retenu **« les afficher
+quand même, dès maintenant »**.
+
+**CE QUE ÇA RENVERSE.** Le dépôt tenait la règle inverse, écrite la veille :
+*« un bouton qui ne peut pas aboutir est pire qu'un bouton absent »*. Elle
+n'était pas fausse — elle reposait sur un fait qui a cessé d'être vrai : on
+appuyait dans le vide, et `signIn("google")` sortait vers la page d'Auth.js.
+
+**CE QUI LA REMPLACE, ET POURQUOI C'EST TENABLE.** `entrerAvecAction` refuse un
+fournisseur non branché **avant** Auth.js et rend une phrase qui nomme ce qui
+manque *et* ce qui marche : « Google n'est pas encore branché. Entrez avec votre
+adresse et votre mot de passe. » On ne tombe donc plus dans le vide — on lit une
+réponse, sur le seul écran qu'on voit avant d'être entré.
+
+**LA RÈGLE TIENT TOUJOURS POUR FACE ID**, et ce n'est pas une exception de
+confort : il n'y a personne à qui poser la question. L'appareil sait le faire ou
+non, et un bouton qui échoue là n'a aucune phrase utile à rendre.
+
+### Deux questions qui ne se confondent plus
+
+| | |
+|---|---|
+| `fournisseursAAfficher` | ce que l'ÉCRAN dessine — les deux marques, toujours, chacune disant si elle est branchée |
+| `fournisseursDisponibles` | ce que `src/auth.ts` DÉCLARE à Auth.js — le branché, et lui seul |
+
+Elles avaient l'air d'une seule parce qu'elles **coïncidaient**, tant qu'on
+n'affichait que le branché. Les séparer n'est donc pas dupliquer une règle
+(`CLAUDE.md` §3) : c'est cesser de répondre à deux questions différentes avec la
+même phrase. La seconde **dérive** de la première — un seul endroit décide ce
+qu'est « branché » (`estBranche`), et une suite le vérifie.
+
+**Et déclarer à Auth.js un fournisseur sans clé n'est PAS une option** : la
+configuration lèverait au démarrage, et plus personne n'entrerait — pas même par
+mot de passe. C'est ce que la seconde liste protège.
+
+### Le refus vit au serveur, jamais dans l'écran
+
+C'est le serveur qui voit les clés, et l'adresse de l'action reste postable sans
+passer par le bouton. Un `if` dans l'écran serait à la fois contournable et
+condamné à diverger de ce que `auth.ts` déclare.
+
+### Ce que ça coûte, et qui est réel
+
+L'écran montre deux chemins dont aucun n'ouvre encore. C'est ce qu'il a choisi de
+voir, plutôt qu'un écran qui ne ressemble pas à ce qu'il a dessiné. **Le jour où
+les clés sont posées, rien ne change dans le code** : les mêmes boutons se
+mettent à ouvrir des sessions.
+---
+
+## §326 — Facturer sans devis : la racine était une colonne, la porte est dans Terminés
+
+**Sa demande du 10 septembre 2026 :** *« il faut que l'on puisse facturer sans
+avoir besoin de passer par la case devis »*. Un dépannage fait dans la journée,
+réglé sur place : il n'y a jamais eu de devis, et il n'y en aura pas.
+
+### Ce qui existait déjà, et qu'on n'a pas refait
+
+Trois quarts de la demande étaient écrits. La lecture du code AVANT d'écrire une
+ligne est ce qui l'a montré, et c'est la moitié de la valeur de ce lot :
+
+| Ce qu'il demandait | Où c'était déjà |
+|---|---|
+| reconnaître le client au nom | `reconnaitreLeClientAction` |
+| des lignes avec des TVA différentes | l'écran « Travaux en plus » EST cet éditeur |
+| ouvrir le SMS ou l'e-mail tout prêt | `composerMessageFacture`, `lienTransmission` |
+| taire la mention du devis sur le PDF | `facture-pdf.ts` ne l'écrit que s'il y a un numéro |
+
+### La racine, et le pansement écarté
+
+`factures.devis_id` était `NOT NULL`. **Aucune facture ne pouvait exister sans
+devis** — c'était là, et nulle part ailleurs (migration `0086_facture_sans_devis.sql`).
+
+**Le faux devis caché a été écarté**, et c'est le fond de la décision. Il
+suffisait de fabriquer un devis invisible derrière chaque facture directe pour
+satisfaire la colonne sans y toucher : un pansement au sens exact du §4 quater —
+il n'enlève rien, il recouvre. Et il coûtait cher : le devis fantôme aurait
+consommé un numéro de la suite commerciale, serait apparu dans les listes, et le
+relevé de TVA aurait porté des références que personne ne peut produire — à
+commencer par l'administration, le jour d'un contrôle.
+
+La clé étrangère composite `factures_devis_entreprise_fk` **reste** et reste
+utile : PostgreSQL applique MATCH SIMPLE, donc elle ne contrôle rien quand la
+colonne est nulle, et contrôle tout — existence du devis ET appartenance à la
+même entreprise — dès qu'elle porte une valeur.
+
+### Ce que `supplement` disait vraiment
+
+Sa règle du 9 septembre — *« le devis ne se réécrit pas, seulement la case
+travaux supplémentaires »* — était codée `supplement = true`, et c'était juste
+tant que toute facture naissait d'un devis. **Sa demande du 10 l'a rendue fausse
+d'un coup :** une facture sans devis n'a pas de « reste », et lui interdire de
+saisir ses lignes au motif qu'elles ne sont pas des « travaux supplémentaires »
+donnait une facture qu'on ne peut pas remplir.
+
+Ce que la colonne disait n'était donc pas « c'est un supplément » mais **« cette
+ligne ne vient pas d'un devis »**. La règle vit dans `src/lib/lignes-corrigeables.ts`,
+fonction pure, et sert **deux fois** : l'écran pour dessiner un champ plutôt
+qu'un texte, le dépôt dans le `WHERE` de ses écritures. Deux rédactions auraient
+divergé, et c'est celle de l'écriture qu'on aurait oublié de corriger — la seule
+qui empêche vraiment de réécrire un prix accepté.
+
+**Le cas limite qui compte :** `supplement = null` (les factures d'avant la
+migration 0082) reste **protégé**. « Jamais marquée » ne veut pas dire « c'est un
+supplément » ; l'inverse aurait rouvert rétroactivement toutes les anciennes
+factures. `scripts/test-lignes-corrigeables.ts` le tient, et il a été vu ROUGE
+sur ce cas précis avant d'être cru.
+
+### Deux renommages, et pourquoi ils n'étaient pas cosmétiques
+
+`ajouterTravauxSupplementaires` / `maj…` / `retirer…` posent désormais aussi des
+lignes ordinaires : elles s'appellent `ajouterLigneDeFacture`,
+`majLigneDeFacture`, `retirerLignesDeFacture`. Et `peutPreparerDevis` sert aussi
+la facture : elle s'appelle `peutPreparerLaPiece`, et prend le nom de la pièce
+pour que l'écran d'une facture ne dise jamais « devis » (son point 2 du
+10 septembre). Un nom qui annonce autre chose que ce que la fonction fait est
+exactement ce qui coûte une heure au développeur qu'il appellera un jour (§4
+sexies).
+
+Dans la foulée, `ResultatTravaux` a été scindé : il rendait `ligneId` et
+`montant` tous deux **facultatifs**, si bien que l'écran devait « se
+débrouiller » quand ils manquaient — et se débrouiller voulait dire redéduire de
+son côté la règle du dépôt. `ResultatLigneAjoutee` promet ce qu'il porte, dont
+le bloc où le SERVEUR vient de ranger la ligne.
+
+### Les deux refus qui valent le plus cher
+
+**« Reprendre le devis » est refusé sur une facture directe.** La reprise
+commence par effacer les lignes non-supplément pour recopier le devis — sur une
+facture directe, c'est TOUTE la facture. Sans ce refus, un devis écrit après
+coup sur le même chantier lui faisait perdre sa saisie entière d'un seul appui.
+
+**Une facture VIDE ne part pas.** Née d'un devis, elle arrive avec ses lignes ;
+née directe, elle naît vide, et rien n'empêchait de l'envoyer à 0,00 € — une
+pièce comptable immuable, à corriger par un avoir. La règle est celle du devis
+(`peutPreparerLaPiece`), et le refus **nomme son geste** : un bouton grisé sans
+un mot se lit comme une application en panne.
+
+### La porte : Terminés, et non l'accueil
+
+Elle a d'abord été codée sur l'écran des chantiers — deux anneaux, sa
+disposition du 10 septembre. **Il s'est ravisé le 11 :** *« est-ce que c'est pas
+plus logique de mettre la porte dans la catégorie Terminés ? »* Il a raison : un
+dépannage réglé sur place est du travail FINI, « Vos chantiers » liste ce qui est
+en cours, et le chantier créé part de toute façon droit dans Terminés. L'accueil
+a donc été **rendu à l'identique** à ce qu'il était, et `GesteAnneau` — extrait
+pour porter deux anneaux — a été supprimé avec eux (§4 quinquies).
+
+**Une seconde rangée, et non une quatrième pastille.** C'est ce qu'il voulait
+d'abord ; c'était impossible, et mesuré : la rangée `Tout · À facturer · Retours
+d'intervention` prend 300 px sur les 306 d'un écran de 360, resserrée le
+9 septembre à SA demande pour que les trois y tiennent. Cinq resserrements ont
+été éprouvés (`appli/faire-rentrer-les-quatre.html`) et **tous** achetaient la
+place en coupant un mot. Une ligne de plus ne coûte qu'un peu de hauteur, et les
+deux noms restent entiers.
+
+**À droite et en or, et ce n'est pas de l'ornement :** les trois onglets
+FILTRENT la liste, ce bouton CRÉE. Aligné à gauche sous eux, il se lirait comme
+un quatrième filtre passé à la ligne.
+
+### Un seul écran de fiche client, pas deux
+
+`FormulaireNouveauChantier` prend un `pour: "devis" | "facture"`. Un jumeau
+aurait recopié les champs, la civilité, l'adresse et surtout la reconnaissance
+du client pendant qu'il tape — l'argument qui avait déjà fait garder UN seul
+écran pour la création et la reprise.
+
+`facture` **retire** la note vocale, les photos et la dictée des coordonnées :
+ces trois pièces nourrissent le CHIFFRAGE, et il n'y a pas de devis ici. Sa
+planche le dit d'un mot — *« on ne dicte pas une facture qu'on tape »*.
+L'adresse porte `?facture=1` : sans JavaScript ou dans un nouvel onglet, le lien
+doit mener à la fiche qui FACTURE, sinon c'est un cul-de-sac silencieux.

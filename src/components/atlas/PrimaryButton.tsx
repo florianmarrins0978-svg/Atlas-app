@@ -165,6 +165,13 @@ export default function PrimaryButton({
         type="button"
         disabled
         aria-disabled="true"
+        // **Le repère survit à l'extinction — 11 septembre 2026.** Il manquait
+        // ici, et seulement ici : un bouton éteint n'était plus visable par les
+        // suites, c'est-à-dire précisément dans l'état où l'on veut prouver
+        // qu'il est éteint. La suite de la facture sans devis a rougi sur « le
+        // bouton d'envoi est absent » alors qu'il était là, gris — un rouge qui
+        // accuse du code juste (`AGENTS.md`).
+        data-atlas={repere}
         className={`${className} cursor-not-allowed`}
         // **Une capsule secondaire éteinte reste CREUSE.** Sinon, appuyer sur
         // « Je rédige à la main » la remplirait d'un aplat gris le temps de la

@@ -24,6 +24,35 @@ Avant d'écrire une ligne de code dans une nouvelle conversation, dans cet ordre
 Ne jamais demander au patron de rappeler ce qui a été fait. C'est le rôle de ces
 fichiers, et leur défaillance est une défaillance du dépôt, pas de sa mémoire.
 
+**ET SURTOUT : UNE PLANCHE QU'ON S'APPRÊTE À LUI REDEMANDER SE VÉRIFIE DANS LE
+CODE D'ABORD — 11 septembre 2026.** Trois planches lui ont été présentées comme
+attendant sa réponse ; **les trois étaient codées**, deux depuis deux jours, et
+c'est lui qui l'a vu : *« la planche déconnecter est déjà faite, va vérifier !
+La 2ᵉ aussi ! Et la 3ᵉ aussi ! »*
+
+Les trois portaient dans `TODO.md` un titre « ⏳ UNE PLANCHE À REGARDER » qui
+n'avait jamais été barré. Le point 4 ci-dessus le disait déjà — *le code fait
+foi* — et il n'avait pas été appliqué : j'ai lu des titres.
+
+**Le geste coûte trente secondes, et il n'y en a qu'un** : le repère de l'écran
+cherché dans `src/`, et l'endroit où il est MONTÉ.
+
+```bash
+grep -rn "SeDeconnecter\|RepartirDeCeClient" src/ | grep -v "\.tsx:"   # monté où ?
+```
+
+Un fichier qui existe ne suffit pas : c'est d'être **importé par un écran** qui
+prouve que le patron peut l'atteindre — la leçon du 28 août (§5 quater), où six
+gestes étaient écrits, éprouvés, et inatteignables.
+
+`scripts/test-todo-sans-titre-menteur.ts` tient la moitié mécanique : un titre
+qui attend une réponse au-dessus d'un corps qui dit « CODÉ LE… ». L'autre
+moitié — une entrée qui ne se contredit pas elle-même, mais que le code
+contredit — reste ce `grep`, et rien d'autre.
+
+**Lui redemander un choix qu'il a déjà donné n'est pas une question de plus :
+c'est lui faire refaire un travail qu'il a fait.**
+
 ### 0. AVANT MÊME ÇA : est-ce que ce dossier est À MOI ?
 
 **Sa colère du 9 septembre 2026 :** *« quand elles tournent en même temps,

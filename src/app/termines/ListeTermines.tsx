@@ -175,7 +175,71 @@ export default function ListeTermines({
         )}
       </div>
 
-      {onglet === "attente" ? (
+      {/* ─── CRÉER UNE FACTURE SANS DEVIS — sa demande du 11 septembre 2026 ──
+          *« Sous retour d'intervention, collé à droite, tu mets créer une
+          facture en doré, comme tu as fait le bouton vide contour doré. »*
+
+          **Pourquoi ici, et pas sur l'accueil.** Il l'avait d'abord posée sur
+          l'écran des chantiers, puis s'est ravisé le lendemain : *« est-ce que
+          c'est pas plus logique de mettre la porte dans la catégorie
+          Terminés ? »* — et il a raison. Un dépannage réglé sur place est du
+          travail FINI ; « Vos chantiers » liste ce qui est en cours, et le
+          chantier créé par ce bouton part de toute façon droit dans Terminés.
+
+          **POURQUOI UNE SECONDE RANGÉE, ET NON UNE QUATRIÈME PASTILLE.** C'est
+          ce qu'il voulait au départ, et c'était impossible : la rangée
+          au-dessus prend déjà 300 px sur les 306 d'un écran de 360 — il l'avait
+          lui-même fait resserrer le 9 septembre pour que les trois y tiennent.
+          Cinq resserrements ont été mesurés (`appli/faire-rentrer-les-quatre.html`)
+          et tous achetaient la place en coupant un mot. Une ligne de plus ne
+          coûte rien à personne : les deux noms restent entiers.
+
+          **À DROITE ET EN OR, et ce n'est pas de l'ornement.** Les trois
+          onglets FILTRENT la liste en dessous ; celui-ci CRÉE. Aligné à gauche
+          sous eux, il se lirait comme un quatrième filtre passé à la ligne, et
+          il chercherait pourquoi la liste ne change pas. Le contour vide plutôt
+          qu'un aplat : le vert plein dit « c'est ce que vous regardez »
+          (l'onglet actif), ce qui n'est pas ce qu'on veut dire ici.
+
+          **C'est un LIEN, comme « Vos clients ».** Il mène à la fiche client,
+          qui prépare la facture au lieu du devis — le même écran, le même
+          geste, `?facture=1` en décidant (`chantiers/nouveau/page.tsx`).
+
+          Les mesures viennent de `appli/creer-une-facture-sous-les-onglets.html`,
+          où elles sont relevées aux trois largeurs : 44 px de haut comme tout ce
+          qu'on appuie ici, et le bord droit sur la marge de 26 px. */}
+      <div className="mx-[26px] mt-2.5 flex justify-end">
+        <Link
+          href="/chantiers/nouveau?facture=1"
+          data-atlas="creer-une-facture"
+          className="flex min-h-11 flex-none items-center justify-center whitespace-nowrap rounded-full px-3.5 text-[12.5px] no-underline"
+          style={{
+            color: colors.or,
+            boxShadow: `inset 0 0 0 1px ${colors.or}`,
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          Créer une facture
+        </Link>
+      </div>
+
+      {/* ─── AUCUN CHANTIER TERMINÉ, ET LES PORTES RESTENT — 11 septembre 2026
+          Cet état vivait dans `page.tsx`, À LA PLACE de cette liste entière :
+          sans un seul chantier terminé, ni les onglets, ni « Retours
+          d'intervention », ni « Créer une facture » n'existaient. Vu à la
+          capture, sur une base neuve — c'est-à-dire chez tout artisan qui ouvre
+          Atlas pour la première fois, et dont le premier geste est justement un
+          dépannage réglé sur place, sans devis.
+
+          Un écran qui cache sa porte tant qu'on n'a jamais rien fini est un
+          cul-de-sac : c'est la règle qu'il a posée le 9 septembre pour les
+          retours (*« l'onglet doit exister même s'il n'y a aucun retour »*),
+          appliquée ici pour la même raison. La phrase, elle, ne change pas. */}
+      {lignes.length === 0 ? (
+        <p className="mt-8 px-[26px] text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
+          Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
+        </p>
+      ) : onglet === "attente" ? (
         <section className="mx-[26px] mt-8" data-atlas="tout-ce-qui-attend">
           {attente.length === 0 ? (
             <p className="text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>

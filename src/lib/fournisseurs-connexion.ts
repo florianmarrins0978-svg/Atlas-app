@@ -5,17 +5,25 @@
  * veux pouvoir me connecter avec Google ou Apple »*.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * **UN BOUTON QUI NE PEUT PAS ABOUTIR EST PIRE QU'UN BOUTON ABSENT.** C'est la
- * règle déjà appliquée à « Ouvrir avec Face ID », qui ne se montre que si
- * l'appareil sait le faire : on appuie, rien ne se passe, et l'on croit
- * l'application cassée. Google et Apple ne s'affichent donc que lorsque LEURS
- * DEUX valeurs sont posées — l'identifiant sans le secret ne mène nulle part.
+ * **DEUX QUESTIONS, ET ELLES NE SE CONFONDENT PLUS — 11 septembre 2026.**
  *
- * **POURQUOI C'EST UNE RÈGLE PURE, ET NON UN `if` DANS L'ÉCRAN.** La même
- * question se pose à deux endroits qui ne se voient pas : l'écran, qui décide
- * quoi dessiner, et `src/auth.ts`, qui décide quels fournisseurs déclarer.
- * Deux rédactions divergeraient, et la divergence s'appellerait ici « un bouton
- * qui mène à une page d'erreur d'Auth.js » (`CLAUDE.md` §3).
+ *   · `fournisseursAAfficher` : ce que l'ÉCRAN dessine — les deux marques,
+ *     toujours. **Sa décision**, prise en connaissance du coût ;
+ *   · `fournisseursDisponibles` : ce qui peut RÉELLEMENT ouvrir une session —
+ *     ce que `src/auth.ts` déclare à Auth.js, et lui seul.
+ *
+ * **Elles avaient l'air d'une seule parce qu'elles COÏNCIDAIENT**, tant qu'on
+ * n'affichait que le branché. Les séparer n'est donc pas dupliquer une règle
+ * (`CLAUDE.md` §3) : c'est cesser de répondre à deux questions différentes avec
+ * la même phrase. La seconde reste dérivée de la première — un seul endroit dit
+ * ce qu'est « branché ».
+ *
+ * **CE QUI REMPLACE L'ANCIENNE RÈGLE.** Ce fichier portait : *« un bouton qui
+ * ne peut pas aboutir est pire qu'un bouton absent »*, parce qu'on appuyait
+ * dans le vide. Ce n'est plus le cas : `entrerAvecAction` refuse un fournisseur
+ * non branché AVANT Auth.js et rend une phrase qui nomme ce qui manque et ce
+ * qui marche. **La règle tient toujours pour Face ID**, qui n'a personne à qui
+ * poser la question — l'appareil sait, ou ne sait pas.
  *
  * **CE QUI RESTE À FAIRE, ET QUE PERSONNE ICI NE PEUT FAIRE À SA PLACE :**
  * ouvrir un identifiant OAuth chez Google (gratuit) et un Service ID chez
@@ -29,11 +37,13 @@ export type Fournisseur = {
   nom: NomFournisseur;
   /** Le mot sur le bouton — c'est la marque, elle ne se traduit pas. */
   libelle: string;
+  /** Ses DEUX clés sont-elles posées ? Faux = le bouton se dessine, mais refuse. */
+  branche: boolean;
 };
 
-const CATALOGUE: Record<NomFournisseur, Fournisseur> = {
-  google: { nom: "google", libelle: "Google" },
-  apple: { nom: "apple", libelle: "Apple" },
+const LIBELLES: Record<NomFournisseur, string> = {
+  google: "Google",
+  apple: "Apple",
 };
 
 /** L'ordre de la planche : Google à gauche, Apple à droite. */
@@ -57,11 +67,66 @@ function posee(valeur: string | undefined): boolean {
   return typeof valeur === "string" && valeur.trim().length > 0;
 }
 
+/** Ses deux clés sont-elles posées ? La moitié d'une paire ne compte pas. */
+export function estBranche(nom: NomFournisseur, cles: ClesFournisseurs): boolean {
+  return nom === "google"
+    ? posee(cles.googleId) && posee(cles.googleSecret)
+    : posee(cles.appleId) && posee(cles.appleSecret);
+}
+
+/**
+ * **CE QUI PEUT RÉELLEMENT OUVRIR UNE SESSION** — et rien d'autre.
+ *
+ * C'est `src/auth.ts` qui s'en sert, pour ne déclarer à Auth.js que des
+ * fournisseurs dont les clés existent. Déclarer Google sans son identifiant
+ * ferait lever la configuration au démarrage : plus personne n'entrerait, pas
+ * même par mot de passe.
+ *
+ * **Ne pas confondre avec `fournisseursAAfficher`.** Ce sont deux questions
+ * distinctes, et elles ne l'étaient devenues qu'en coïncidant — voir l'en-tête
+ * de ce fichier, et `ARCHITECTURE.md` §325.
+ */
 export function fournisseursDisponibles(cles: ClesFournisseurs): Fournisseur[] {
-  const ouverts: Fournisseur[] = [];
-  if (posee(cles.googleId) && posee(cles.googleSecret)) ouverts.push(CATALOGUE.google);
-  if (posee(cles.appleId) && posee(cles.appleSecret)) ouverts.push(CATALOGUE.apple);
-  return ouverts;
+  return fournisseursAAfficher(cles).filter((f) => f.branche);
+}
+
+/**
+ * **CE QUE L'ÉCRAN DESSINE** — les deux marques, toujours, branchées ou non.
+ *
+ * **Sa décision du 11 septembre 2026**, après trois messages et sa maquette
+ * remise en photo : *« je veux que lorsque l'utilisateur clique sur se
+ * déconnecter qu'il arrive direct sur cet écran »* — celui qui porte Google et
+ * Apple. Le choix lui a été posé en toutes lettres, avec son coût : il a
+ * retenu « les afficher quand même, dès maintenant ».
+ *
+ * **Ce que cela renverse, et il faut le dire.** Ce fichier portait l'inverse —
+ * *« un bouton qui ne peut pas aboutir est pire qu'un bouton absent »*. La
+ * raison invoquée était qu'on appuie, que rien ne se passe, et qu'on croit
+ * l'application cassée. **Elle n'est plus vraie ici** : `entrerAvecAction`
+ * refuse un fournisseur non branché AVANT Auth.js et rend une phrase qui dit
+ * ce qui manque. On n'appuie donc plus dans le vide — on lit une réponse.
+ *
+ * Reste ce que la décision coûte, et qui est réel : l'écran montre deux
+ * chemins dont aucun n'ouvre encore. C'est ce qu'il a choisi de voir, plutôt
+ * qu'un écran qui ne ressemble pas à ce qu'il a dessiné.
+ */
+export function fournisseursAAfficher(cles: ClesFournisseurs): Fournisseur[] {
+  return ORDRE.map((nom) => ({
+    nom,
+    libelle: LIBELLES[nom],
+    branche: estBranche(nom, cles),
+  }));
+}
+
+/**
+ * Ce qu'on répond à qui appuie sur une marque dont les clés ne sont pas posées.
+ *
+ * **La phrase nomme ce qui manque et ce qui marche**, parce que c'est le seul
+ * écran qu'on voit avant d'être entré : y lire « une erreur » ferait conclure
+ * que l'application est cassée, et fermer l'onglet.
+ */
+export function messageNonBranche(nom: NomFournisseur): string {
+  return `${LIBELLES[nom]} n'est pas encore branché. Entrez avec votre adresse et votre mot de passe.`;
 }
 
 /**

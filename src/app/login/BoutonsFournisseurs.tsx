@@ -13,9 +13,13 @@ import { entrerAvecAction } from "./actions";
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * **CE COMPOSANT NE DÉCIDE PAS QUI S'AFFICHE.** Il dessine ce qu'on lui donne.
- * La liste se calcule au serveur, où vivent les clés (`page.tsx`) — un écran
- * ne peut pas lire l'environnement, et lui faire deviner produirait un bouton
- * qui mène à une page d'erreur d'Auth.js.
+ * La liste se calcule au serveur, où vivent les clés (`page.tsx`) — un écran ne
+ * peut pas lire l'environnement.
+ *
+ * **Depuis le 11 septembre 2026, les deux marques sont toujours là** : sa
+ * décision, prise en connaissance du coût. Une marque dont les clés manquent se
+ * dessine comme les autres et REFUSE à l'appui, en disant ce qui manque
+ * (`entrerAvecAction`). C'est le refus qui porte la vérité, pas un bouton gris.
  *
  * **Les logos sont recopiés de la planche, chemin pour chemin.** Ils portent
  * les couleurs des deux marques, qui ne suivent aucune charte : un Google
@@ -52,7 +56,7 @@ export default function BoutonsFournisseurs({ fournisseurs }: { fournisseurs: Fo
 
   return (
     <>
-      <div className="flex gap-[10px]">
+      <div className="flex gap-[12px]">
         {fournisseurs.map((f) => (
           <button
             key={f.nom}
@@ -65,7 +69,14 @@ export default function BoutonsFournisseurs({ fournisseurs }: { fournisseurs: Fo
                 if (r?.erreur) setRefus(r.erreur);
               })
             }
-            className="flex flex-1 items-center justify-center gap-2 rounded-full px-2 py-[14px] text-[14.5px] font-medium transition-transform active:scale-[0.985] disabled:opacity-60"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full px-2 py-[16px] text-[14.5px] font-medium transition-transform active:scale-[0.985] disabled:opacity-60"
+            /**
+             * **Une marque non branchée se dessine PAREIL.** Elle ne se grise
+             * pas : un bouton éteint sur le seul écran d'avant la connexion se
+             * lit comme une application en panne, et c'est justement ce qu'il
+             * ne voulait plus voir. Ce qui dit la vérité, c'est la RÉPONSE à
+             * l'appui — une phrase qui nomme ce qui manque et ce qui marche.
+             */
             style={{
               backgroundColor: colors.card,
               color: colors.ink,
@@ -88,7 +99,7 @@ export default function BoutonsFournisseurs({ fournisseurs }: { fournisseurs: Fo
         </p>
       )}
 
-      <div className="my-[14px] flex items-center gap-3 text-[13px]" style={{ color: colors.muted }} aria-hidden="true">
+      <div className="my-[28px] flex items-center gap-3 text-[13px]" style={{ color: colors.muted }} aria-hidden="true">
         <span className="h-px flex-1" style={{ backgroundColor: colors.line }} />
         ou
         <span className="h-px flex-1" style={{ backgroundColor: colors.line }} />

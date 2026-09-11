@@ -9,6 +9,57 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~LA PLANCHE DE LA PORTE N'A PAS SUIVI L'AÉRATION~~ — réglé autrement, 11 septembre 2026
+
+**Ce point était mal posé, et le corriger vaut mieux que de le faire.** Il
+demandait de reporter l'aération dans `appli/la-porte-d-atlas.html`. Or cette
+planche n'est pas un miroir de l'application : c'est le relevé du choix à TROIS
+du 7 septembre, et la repeindre aurait effacé les deux propositions écartées —
+donc le chemin qui l'a amené à la troisième.
+
+**Ce qui a été fait à la place :** la planche DIT son état. Son bandeau annonce
+que la C est tranchée et codée, et que l'application a été aérée depuis. La
+ligne d'avant affirmait *« rien n'est codé dans l'application »* — fausse depuis
+trois jours, et c'est exactement la faute que `CLAUDE.md` §1 nomme : un état
+périmé sur une planche lui fait redemander ce qu'il a déjà donné.
+
+---
+
+## ⏳ AUCUN CONTRÔLE NE DIT QUE LA PORTE DE L'APPLICATION TIENT EN UN ÉCRAN (11 septembre 2026)
+
+`test-porte-tient-en-une-page.mts` mesure la **planche**
+(`appli/la-porte-d-atlas.html`), pas l'écran servi. Sa contrainte du 31 août —
+*« je veux qu'elle tienne sur une seule page »* — n'est donc défendue que sur le
+dessin, alors que c'est l'application qu'il ouvre.
+
+L'aération du 11 septembre a été mesurée à la main (390 × 664, zéro
+débordement) ; rien ne le rejouera au prochain changement d'espacement.
+
+**Ce qu'il faut :** la même mesure dans une suite navigateur sur `/login`, aux
+deux hauteurs qui comptent — son iPhone, et un écran plus court. **Qui :** nous.
+## ⏳ LA FACTURE SANS DEVIS, À ESSAYER CHEZ LUI (11 septembre 2026)
+
+Le parcours entier est codé et éprouvé ici — de « Créer une facture » dans
+Terminés jusqu'au SMS tout prêt. Ce qui **ne peut pas** l'être sur ce poste, et
+qui l'attend sur son espace :
+
+| Ce qui reste à voir | Pourquoi pas ici |
+|---|---|
+| le SMS et l'e-mail qui s'ouvrent vraiment | la messagerie du téléphone, pas celle d'un navigateur d'essai |
+| la facture **reçue** par le client, à son adresse publique | son espace la sert, cette machine non |
+
+**Ce qui EST éprouvé ici**, et n'a pas besoin de lui : la migration sur une base
+neuve, les deux refus (facture vide, reprise du devis), la porte depuis
+Terminés, la saisie des lignes, le PDF sans mention de devis, et les deux
+contrôles de régression qui protègent le prix accepté par le client
+(`test-facture-sans-devis-db`, `test-facture-sans-devis-e2e`).
+
+**Un point d'usage à lui laisser juger** : la seconde rangée pousse le mois et
+la liste **54 px** vers le bas. C'est le seul prix de la disposition qu'il a
+choisie, et il ne se voit qu'à l'usage.
+
+---
+
 ## ⏳ LES CLÉS DE GOOGLE ET D'APPLE — la porte les attend (10 septembre 2026)
 
 Le code est en place et éprouvé ; **les deux boutons ne s'afficheront pas tant
@@ -172,6 +223,12 @@ seulement s'il le signale.
 **`appli/deplacer-quel-jour.html` reste en ligne** : elle raconte le chemin, et
 une planche écartée se garde (`CLAUDE.md` §3 bis).
 
+**TRANCHÉ LE 11 SEPTEMBRE 2026 : « Déplacer » RESTE SANS « Annuler ».** Sa
+réponse, mot pour mot : *« la 1, laisser comme c'est aujourd'hui »*. La bascule
+Matin / Aprem s'ouvre avec ses deux positions vides et l'on en sort en touchant
+ailleurs. **Ne pas rouvrir la question, et ne pas ajouter le bouton** : ce qui
+passe pour un oubli est une décision.
+
 ---
 
 ## ~~TROIS ROUGES ARRIVÉS AVEC LA PORTE DE CONNEXION~~ — RÉGLÉS LE 10 SEPTEMBRE 2026
@@ -215,33 +272,74 @@ un « Annuler » à chaque étape sur une AUTRE planche
 
 ---
 
-## ⏳ LE GESTE D'ABSENCE PASSE SOUS LE TIROIR DU BAS — D'UN PIXEL (10 septembre 2026)
+## ~~LE GESTE D'ABSENCE PASSE SOUS LE TIROIR DU BAS~~ — RÉGLÉ LE 11 SEPTEMBRE 2026
 
-**Mesuré**, écran de 390 × 664, cinq jours devant, compte de démonstration :
+Sa décision : *« corrige la 2, laisse la 1 »*.
 
-| | |
-|---|---|
-| le geste « + Absent ? » | 523 → **567** px |
-| le tiroir « À poser sur… » | **566** → 616 px, `fixed`, z-19 |
+**Mesuré**, écran de 390 × 664 : la carte s'ouvrait à 472 px, « + Absent ? »
+occupait 523 → 567, et le tiroir commençait à 565. Deux pixels.
 
-Un pixel de recouvrement, et `test-pas-la-ce-jour-e2e` le refuse à juste titre
-(*« il est ATTEIGNABLE — rien ne le recouvre »*). **Rouge avant les deux lots du
-10 septembre comme après** : le geste, lui, se touche en son centre.
+**Ni un défaut de dessin, ni un défaut de réserve.** La réserve du bas
+(`--atlas-tiroir`) permet de défiler jusqu'en bas ; elle ne remonte pas ce qui
+est déjà à l'écran, et la carte naît au milieu de la page. `toucherLeJour` rend
+désormais exactement ce que les deux bandes prennent, jamais plus, et rien du
+tout quand le geste est dégagé (`ARCHITECTURE.md` §323).
 
-**LA MOITIÉ DE LA RACINE A ÉTÉ TRAITÉE LE 10 SEPTEMBRE AU SOIR, ET PAS
-CELLE-CI.** Le tiroir publie désormais sa hauteur (`--atlas-tiroir`) et
-`.atlas-contenu` la réserve (`ARCHITECTURE.md` §323) : plus rien n'est
-DÉFINITIVEMENT hors d'atteinte au bas d'une carte — c'est ce qui a sauvé le
-« Poser » du lot « un client ».
+**Le piège, et un contrôle l'a attrapé dans la minute :** la même carte se
+déplie aussi sous une ligne des planifiés, où la règle est que le nom touché ne
+bouge PAS. Une version de ce rattrapage posée dans la carte a fait bouger le
+client de 956 px. Il vit sur le geste du calendrier, et nulle part ailleurs.
 
-**Ce qui reste est un défaut de PLACEMENT**, et la réserve n'y peut rien : la
-carte naît sous le doigt, et quand le jour touché est dans la dernière rangée du
-mois, son HAUT tombe déjà dans les cinquante derniers pixels. Une réserve permet
-de faire défiler jusqu'en bas ; elle ne remonte pas ce qui est déjà à l'écran.
+---
 
-**Ne pas « corriger » en poussant la carte à la main**, et ne pas ajouter de
-défilement forcé — le dépôt en a retiré un le 3 septembre pour cette raison
-exacte. Ce qu'il faut regarder, c'est le rang de la carte dans la rangée.
+## ✅ LES SIX ROUGES DE LA NUIT — QUATRE CORRIGÉS, DEUX AU LOT DU PRIX (11 septembre 2026)
+
+Batterie complète sur `7cbbb26` : **120 suites navigateur vertes sur 142**, base
+au vert. Six rouges étaient apparus depuis la veille ; aucun ne venait du
+planning.
+
+### ~~Quatre venaient du calendrier à trois mois~~ — corrigés le 11 septembre
+
+`test-envoi-client-e2e` (2 cas), `test-facture-au-client-e2e`,
+`test-date-lointaine-e2e`, `test-reste-equipes-e2e`. Tous la même racine : le
+glissement des mois monte trois mois, les suites cherchaient une case dans toute
+la page et en visaient une hors du cadre. Portée commune `MOIS_A_L_ECRAN` et
+geste de retenue écrit une seule fois (`ARCHITECTURE.md` §324). **Mesuré : 8
+suites au vert, dont les cinq qui étaient rouges.**
+
+### ❗ UN VERDICT DE LA VEILLE ÉTAIT FAUX, et le voici corrigé
+
+`test-reste-equipes-e2e` avait été rangée ici avec les rouges du carrousel — au
+motif que les deux suites voisines tombaient sur « `<div class="flex w-[300%]">`
+intercepts pointer events ». **Elle, non** : son message disait « l'écran écrit
+"Plus d'équipe libre sur 2" », ce qui n'a rien à voir. L'attribution avait été
+faite sur la voisine plutôt que sur son propre message.
+
+Sa vraie cause, mesurée le lendemain, tient à **deux** choses, et l'une est de
+mon lot des créneaux : la suite cherchait un jour libre en extrapolant
+`date_planifiee + durée`, alors que ce qui est posé se lit désormais dans
+`creneaux_chantier` (§322) — un chantier dont une demi-journée a déménagé lui
+paraissait occuper des jours vides. Et le jour qu'elle visait était **déjà
+proposé** par l'écran : son clic le retirait.
+
+### ~~Le lot du glissement des mois~~ — deux rouges, corrigés avec les précédents
+
+`test-date-lointaine-e2e` et `test-reste-equipes-e2e` étaient cités ici. Le
+premier relevait bien du calendrier à trois mois ; le second non (ci-dessus).
+
+**Ce qui reste vrai et qu'il faut lui redire : son doigt n'est pas touché.**
+Mesuré trois fois sur son écran — après zéro, un et deux appuis sur « Mois
+suivant », toucher un jour ouvre bien sa journée.
+
+### 🔴 Deux rouges restants, au lot du prix
+
+`test-devis-papier-e2e` (5 400 ≠ 900) et `test-devis-complet-e2e` (*« le total
+de la ligne 3 × 250 € ne s'affiche pas »*).
+
+**Vérifié en défaisant le lot localement** (`git revert --no-commit 770b769`,
+« Vider la case du prix tant qu'aucun prix n'est posé ») : `test-devis-papier`
+repasse au **vert**, et rouge à nouveau une fois le lot remis. Le revert n'a
+jamais quitté ce poste. **À la session qui a livré ce lot.**
 
 ---
 
@@ -446,7 +544,21 @@ portail** sans avoir relu ce paragraphe.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — « Me déconnecter » (9 septembre 2026)
+## ~~UNE PLANCHE À REGARDER — « Me déconnecter »~~ — CODÉE, et ce titre mentait
+
+**Corrigé le 11 septembre 2026, et c'est LUI qui l'a relevé :** *« la planche
+déconnecter est déjà faite, va vérifier ! »* Elle l'était. Le code fait foi
+(`CLAUDE.md` §1) :
+
+| | |
+|---|---|
+| la ligne | `src/app/reglages/SeDeconnecter.tsx`, montée dans `src/app/reglages/page.tsx:102` |
+| les commits | `afb3fcc` puis `8ad769d` |
+| la suite | `scripts/test-se-deconnecter-e2e.ts` |
+
+**Ce qui suit décrit donc ce qui EST, plus ce qui reste à faire.** Le paragraphe
+« Rien n'est codé » a été retiré : c'est lui qui m'a fait lui redemander un
+choix qu'il avait déjà donné.
 
 **Sa question :** *« si je clique sur me déconnecter dans les réglages, est-ce
 que ça me remet à la page de connexion ? »* — et le bouton n'existe pas. Le seul
@@ -464,8 +576,6 @@ de passe », et c'est là que les grandes applications la rangent aussi.
 ligne en capitales espacées 9,5 px couleur `alert`, cible de 44 px, aucune
 capsule ; `BottomSheet`, bouton plein `alert` de 52 px, « Annuler » en simple
 mot. **Sans le surtitre d'alerte** — se déconnecter n'est pas irréversible.
-
-**Rien n'est codé, et rien ne se code avant son accord.**
 
 **Ce que le geste « cet appareil » coûterait**, si retenu : la session vit dans
 un jeton (`session: { strategy: "jwt" }`, `src/auth.ts:36`), donc effacer le
@@ -499,7 +609,16 @@ l’attend dans les Réglages. Deux événements méritent de sonner : « devis
 accepté » et « facture reçue ».
 
 ---
-## ⏳ UNE PLANCHE À REGARDER — « Aujourd'hui » en tête des planifiés
+## ~~UNE PLANCHE À REGARDER~~ — « Aujourd'hui » EN TÊTE EST CODÉ (une seule question reste)
+
+**Le titre mentait, et c'est LUI qui l'a relevé le 11 septembre 2026** — *« la
+2ᵉ aussi ! »*. Le corps de cette entrée disait déjà « CODÉ LE 9 SEPTEMBRE », mais
+personne ne lit un corps quand le titre annonce une planche à regarder. **Une
+entrée dont le titre et le corps se contredisent est pire qu'absente** : elle
+m'a fait lui redemander un choix qu'il avait donné deux jours plus tôt.
+
+Ce qui est à l'écran : `PlanningClient.tsx` vers la ligne 1454, pastille
+`data-atlas="date-planifiee"` avec `data-aujourdhui`.
 
 **Sa demande du 9 septembre 2026 :** *« si on est le 8 septembre y'a écrit
 8 septembre ; ça serait bien que ce soit marqué aujourd'hui en doré, en premier
@@ -569,8 +688,8 @@ aujourd'hui, les jours passés reviennent éteints derrière la flèche, et le t
 
 | | |
 |---|---|
-| **six ou sept jours** | ses exemples donnent six (« du 8 au 13 »), le code en pose sept — aujourd'hui + six |
-| **le doré** | la B porte `orTexte`, l'or ASSOMBRI : le vrai `#B98B47` donne 2,03 de contraste sur ce papier pâle, illisible au soleil. Il a vu la D qui garde le vrai or sur une pastille d'encre, et il a choisi la B quand même |
+| ~~**six ou sept jours**~~ | **tranché le 11 septembre 2026 : SEPT, « comme c'est aujourd'hui ».** Ses exemples donnaient six (« du 8 au 13 ») ; il a confirmé les sept déjà codés — aujourd'hui + six, soit une semaine entière (`JOURS_DE_LA_FENETRE`). **Ne pas rouvrir** |
+| ~~**le doré**~~ | **tranché le 9 septembre** : *« utilise le doré qu'on utilise dans l'appli ! »*. Le code porte `colors.or`, le vrai. Le prix — 2,03 à 2,53 de contraste — est assumé en connaissance de cause, et la sortie existe si le soleil le gêne : la D de la planche |
 | **la teinte de la semaine lue** | le mois teintait la rangée que lit la liste ; une fenêtre glissante chevauche deux rangées. Elle vise désormais la rangée du DÉBUT de fenêtre, faute de mieux |
 | **la planche** | `appli/aujourd-hui-en-tete.html` s'ouvre encore sur la D et le rail : elle montre ce qui a été COMPARÉ, pas ce qui a été codé |
 
@@ -912,16 +1031,20 @@ une case `[À COMPLÉTER]`, et refuse qu'il reste quand il n'y en a plus.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — repartir d'un client (lot 1)
+## ~~UNE PLANCHE À REGARDER — repartir d'un client~~ — TRANCHÉE **E**, ET CODÉE
 
-**Née le 8 septembre 2026.** `appli/le-client-quon-connait.html`, cinq
-propositions, publiée et listée dans `appli/essais.html`.
+**Corrigé le 11 septembre 2026, et c'est LUI qui l'a relevé** — *« et la
+3ᵉ aussi ! »*. Il avait choisi la **E** le 8 septembre, et le mot a même été
+corrigé le 9 : *« la phrase "Refaire", c'est pas bizarre ? »* → **« Dernier
+devis »**.
 
-**Rien ne se code tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Ce qu'on
-défend : **C** (la fiche se remplit de ce qu'Atlas sait déjà) et **E** (« Refaire »
-depuis la dernière prestation, qui reprend aussi le contenu du chantier).
+| | |
+|---|---|
+| l'écran | `src/app/clients/[id]/RepartirDeCeClient.tsx`, monté dans `src/app/clients/[id]/page.tsx:176` |
+| les deux gestes | « Dernier devis » (aplat) et « Autre chantier » (creux) |
+| la suite | `scripts/test-repartir-du-client-e2e.ts` |
 
-**Ce que le lot 1 touchera quand il aura tranché :**
+**Ce qui reste vraiment ouvert sur ce lot :**
 
 - ~~**`main` ne compile pas pour qui le récupère à neuf**~~ — **réparé le
   8 septembre 2026, et la cause était MOI.**
@@ -945,8 +1068,9 @@ depuis la dernière prestation, qui reprend aussi le contenu du chantier).
 - `src/app/clients/[id]/page.tsx` — un chemin vers un chantier pour lui. Attention :
   cet écran a été délibérément vidé le 2 septembre (*« c'est du trop »*). On ajoute
   **un geste, aucun mot** ;
-- « Ce n'est pas lui » doit **séparer pour de bon** : c'est le geste qui répare un
-  rapprochement, et il n'existe nulle part aujourd'hui.
+- ~~« Ce n'est pas lui » doit **séparer pour de bon**~~ — le geste existe, sur le
+  formulaire du nouveau chantier (`FormulaireNouveauChantier.tsx:322`) : il
+  retire ce qu'Atlas a posé, et rien d'autre.
 
 ## ~~LOT 2 — la fiche d’intervention du salarié~~ — CODÉ LE 8 SEPTEMBRE 2026
 

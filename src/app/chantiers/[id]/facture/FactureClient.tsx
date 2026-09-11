@@ -21,6 +21,7 @@ import {
   reprendreLeDevisAction,
 } from "./actions";
 import { avecCivilite } from "@/lib/civilite";
+import { peutPreparerLaPiece } from "@/lib/preparation-devis";
 import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
 import { jourIso } from "@/lib/jour";
 import {
@@ -56,6 +57,16 @@ export type FacturePourEcran = {
   /** Le devis dont ces lignes viennent — le PDF le nomme, l'écran doit le nommer aussi. */
   numeroDevis: string | null;
   versionDevis: number | null;
+  /**
+   * **`null` : elle a été faite SANS devis** (migration 0086).
+   *
+   * Ce n'est pas la même chose qu'un `numeroDevis` absent, et les confondre
+   * était le défaut : une facture née d'un devis qu'on n'arrive pas à relire
+   * porte quand même « Reprise du devis » — c'est vrai, on ne sait juste pas
+   * lequel. Une facture directe, elle, ne reprend RIEN, et l'écrire ferait
+   * chercher au client un document qui n'existe pas.
+   */
+  devisId: string | null;
   tauxTva: string;
   /** Le prix accordé au client, recopié du devis. `null` : aucun. */
   reductionPourcent: string | null;
@@ -389,6 +400,16 @@ export default function FactureClient({
   );
   const libelleRemise = libelleReduction(totaux.reductionPourcent);
 
+  /**
+   * Cette facture a-t-elle de quoi partir ?
+   *
+   * **La même règle que le devis**, nommée pour la pièce qu'on regarde — c'est
+   * ce qui lui évite de lire le mot « devis » sur ce qu'il facture (sa règle du
+   * 11 septembre). Les lignes de l'écran portent déjà ce qu'elle demande : un
+   * libellé et un montant.
+   */
+  const verdictEnvoi = peutPreparerLaPiece(initialFacture.lignes, "facture");
+
   // La borne haute du sélecteur : un an après la facture (au-delà, c'est
   // l'année mal tapée). La borne basse est la date de la facture elle-même.
   const maxEcheance = jourIso(
@@ -510,6 +531,13 @@ export default function FactureClient({
               <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
                 {bloc.supplement ? (
                   TITRE_TRAVAUX_SUPPLEMENTAIRES
+                ) : initialFacture.devisId === null ? (
+                  /* **Rien à écrire au-dessus d'une facture faite sans devis**
+                     (migration 0086). « Reprise du devis » y nommerait un
+                     document qui n'existe pas — et c'est l'écran que le patron
+                     photographie pour vérifier avant que la pièce parte. Les
+                     taux, eux, se lisent dans les totaux juste en dessous. */
+                  ""
                 ) : initialFacture.numeroDevis ? (
                   <>
                     Reprise du devis <NumeroDeDocument valeur={initialFacture.numeroDevis} />
@@ -712,7 +740,15 @@ export default function FactureClient({
               className="mx-auto flex min-h-[48px] w-full max-w-[320px] items-center justify-center rounded-full text-[15px] font-semibold"
               style={{ border: `1px solid ${colors.or}`, color: colors.or }}
             >
-              Ajouter des travaux supplémentaires
+              {/* **Le mot dit ce qu'on va faire, et il change avec la pièce.**
+                  Sur une facture née d'un devis, ce qu'on ajoute EST un travail
+                  supplémentaire. Sur une facture directe, il n'y a pas de
+                  supplément : il y a les lignes, et c'est le seul endroit où on
+                  les saisit — le point 1 des trois qu'il a acceptés sur la
+                  planche du 10 septembre 2026. */}
+              {initialFacture.devisId === null
+                ? "Remplir la facture"
+                : "Ajouter des travaux supplémentaires"}
             </Link>
           )}
 
@@ -776,10 +812,40 @@ export default function FactureClient({
               : "Aucune coordonnée pour ce canal."}
           </p>
 
+          {/* ─── UNE FACTURE VIDE NE PART PAS — 11 septembre 2026 ────────────
+              **Le trou qu'ouvrait la facture sans devis.** Une facture née d'un
+              devis arrive avec ses lignes ; une facture directe naît VIDE, et
+              rien n'empêchait de l'envoyer telle quelle — son client aurait reçu
+              une pièce comptable à 0,00 €, immuable, à corriger par un avoir.
+
+              **La règle est celle du devis, appelée et non réécrite**
+              (`peutPreparerLaPiece`) : aucune ligne, un total nul, une ligne qui
+              attend encore son prix. Elle a été généralisée plutôt que recopiée
+              — deux rédactions auraient divergé, et c'est celle de la facture,
+              la plus récente, qu'on aurait oublié de corriger (`CLAUDE.md` §3).
+
+              **Le refus NOMME son geste**, et le bouton doré juste au-dessus
+              l'exécute : un bouton grisé sans un mot se lit comme une
+              application en panne, et c'est déjà arrivé sur l'écran de dictée. */}
+          {!verdictEnvoi.possible && (
+            <div
+              className="py-1 pl-[13px]"
+              style={{ borderLeft: `1px solid ${colors.or}` }}
+              data-atlas="facture-pas-prete"
+            >
+              <p className="text-[13px] leading-[1.4]" style={{ color: colors.ink }}>
+                {verdictEnvoi.probleme}
+              </p>
+              <p className="mt-[3px] text-[12px]" style={{ color: colors.muted }}>
+                {verdictEnvoi.marcheASuivre}
+              </p>
+            </div>
+          )}
+
           {/* **Sans flèche**, et le mot dit l'envoi : *« arrêter la facture, tu
               mets envoyer la facture sans la flèche »*. */}
           <PrimaryButton
-            disabled={enCours || !destinataire}
+            disabled={enCours || !destinataire || !verdictEnvoi.possible}
             onClick={envoyerLaFacture}
             // **Un repère stable, pour que le contrôle accuse le bon coupable.**
             // Attendu par son LIBELLÉ, il mourait sur un délai dépassé dès que le
