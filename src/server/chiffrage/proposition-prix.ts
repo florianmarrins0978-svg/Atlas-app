@@ -587,7 +587,7 @@ async function decouperEnLignes(
     const aChiffrer = lignes.filter((l) => l.montant === null);
     if (aChiffrer.length === 0) return;
     // **Ni gratuit, ni oublié.** Le devis ne partira pas tant que ces lignes-là
-    // n'ont pas de prix (`peutPreparerDevis`), et l'écran dit lesquelles.
+    // n'ont pas de prix (`peutPreparerLaPiece`), et l'écran dit lesquelles.
     calcul.push({
       libelle: "À chiffrer",
       detail:

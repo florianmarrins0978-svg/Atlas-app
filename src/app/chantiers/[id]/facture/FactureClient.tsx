@@ -21,6 +21,7 @@ import {
   reprendreLeDevisAction,
 } from "./actions";
 import { avecCivilite } from "@/lib/civilite";
+import { peutPreparerLaPiece } from "@/lib/preparation-devis";
 import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
 import { jourIso } from "@/lib/jour";
 import {
@@ -398,6 +399,16 @@ export default function FactureClient({
     initialFacture.reductionPourcent
   );
   const libelleRemise = libelleReduction(totaux.reductionPourcent);
+
+  /**
+   * Cette facture a-t-elle de quoi partir ?
+   *
+   * **La même règle que le devis**, nommée pour la pièce qu'on regarde — c'est
+   * ce qui lui évite de lire le mot « devis » sur ce qu'il facture (sa règle du
+   * 11 septembre). Les lignes de l'écran portent déjà ce qu'elle demande : un
+   * libellé et un montant.
+   */
+  const verdictEnvoi = peutPreparerLaPiece(initialFacture.lignes, "facture");
 
   // La borne haute du sélecteur : un an après la facture (au-delà, c'est
   // l'année mal tapée). La borne basse est la date de la facture elle-même.
@@ -801,10 +812,40 @@ export default function FactureClient({
               : "Aucune coordonnée pour ce canal."}
           </p>
 
+          {/* ─── UNE FACTURE VIDE NE PART PAS — 11 septembre 2026 ────────────
+              **Le trou qu'ouvrait la facture sans devis.** Une facture née d'un
+              devis arrive avec ses lignes ; une facture directe naît VIDE, et
+              rien n'empêchait de l'envoyer telle quelle — son client aurait reçu
+              une pièce comptable à 0,00 €, immuable, à corriger par un avoir.
+
+              **La règle est celle du devis, appelée et non réécrite**
+              (`peutPreparerLaPiece`) : aucune ligne, un total nul, une ligne qui
+              attend encore son prix. Elle a été généralisée plutôt que recopiée
+              — deux rédactions auraient divergé, et c'est celle de la facture,
+              la plus récente, qu'on aurait oublié de corriger (`CLAUDE.md` §3).
+
+              **Le refus NOMME son geste**, et le bouton doré juste au-dessus
+              l'exécute : un bouton grisé sans un mot se lit comme une
+              application en panne, et c'est déjà arrivé sur l'écran de dictée. */}
+          {!verdictEnvoi.possible && (
+            <div
+              className="py-1 pl-[13px]"
+              style={{ borderLeft: `1px solid ${colors.or}` }}
+              data-atlas="facture-pas-prete"
+            >
+              <p className="text-[13px] leading-[1.4]" style={{ color: colors.ink }}>
+                {verdictEnvoi.probleme}
+              </p>
+              <p className="mt-[3px] text-[12px]" style={{ color: colors.muted }}>
+                {verdictEnvoi.marcheASuivre}
+              </p>
+            </div>
+          )}
+
           {/* **Sans flèche**, et le mot dit l'envoi : *« arrêter la facture, tu
               mets envoyer la facture sans la flèche »*. */}
           <PrimaryButton
-            disabled={enCours || !destinataire}
+            disabled={enCours || !destinataire || !verdictEnvoi.possible}
             onClick={envoyerLaFacture}
             // **Un repère stable, pour que le contrôle accuse le bon coupable.**
             // Attendu par son LIBELLÉ, il mourait sur un délai dépassé dès que le

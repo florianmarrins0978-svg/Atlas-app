@@ -927,7 +927,7 @@ export const lignesPrix = pgTable(
      * **Ni gratuit, ni oublié.** Une ligne qu'on ne savait pas chiffrer
      * s'écrivait « 0 € » — un montant, donc une décision, là où il n'y a qu'une
      * ignorance. Tant que ce drapeau est vrai, le devis ne peut pas être
-     * préparé ni envoyé (`peutPreparerDevis`).
+     * préparé ni envoyé (`peutPreparerLaPiece`).
      */
     aChiffrer: boolean("a_chiffrer").notNull().default(false),
     /**

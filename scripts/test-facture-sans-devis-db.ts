@@ -265,7 +265,22 @@ async function main() {
     // Sa décision, portée sur la planche : « on ne touche pas aux chantiers
     // existants ». Le laisser passer facturerait à côté du prix que le client a
     // accepté, sans que rien ne le dise.
-    const { chantier } = await avecDevis(ctx);
+    //
+    // **LE DEVIS EST ENVOYÉ, MAIS LA FIN DE CHANTIER N'EST PAS DÉCLARÉE — et
+    // ce détail EST le contrôle.** La première version passait par `avecDevis`,
+    // qui va jusqu'à `terminerChantier` : celui-ci pose déjà la facture, si
+    // bien que le refus rendu était `deja_facture`, qui vient en premier. La
+    // suite était donc verte sur un refus qui n'était pas celui qu'elle
+    // prétendait éprouver, et `chantier_avec_devis` n'était jamais atteint.
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Delorme" });
+    const chantier = await chantiersRepo.creerChantier(ctx, {
+      nom: "Chez M. Delorme",
+      clientId: client.id,
+    });
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Taille d'une haie", "450.00");
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await devisRepo.envoyerDevis(ctx, brouillon.id);
+
     assert.equal(await refus(() => creerFactureSansDevis(ctx, chantier.id)), "chantier_avec_devis");
   });
 

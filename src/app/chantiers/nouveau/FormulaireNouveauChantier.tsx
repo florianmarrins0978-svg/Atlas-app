@@ -660,10 +660,23 @@ export default function FormulaireNouveauChantier({
                `src/lib/retour-du-devis.ts`. Revenir au devis reste le
                comportement de l'ENREGISTREMENT, qui, lui, rapporte quelque
                chose. */
+            /* **La fiche qui FACTURE repart d'où elle vient : Terminés.**
+               Ce n'est pas une supposition — c'est le seul chemin qui mène
+               ici : `?facture=1` n'est écrit qu'à un endroit, le bouton doré
+               de l'écran Terminés (`ListeTermines.tsx`). La règle générale ne
+               peut pas le savoir : `retourDesCoordonnees` rendrait « / »
+               faute de provenance, et il se retrouverait à l'accueil après
+               avoir appuyé sur retour depuis un écran qu'il vient de quitter. */
             <Link
-              href={retourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)}
+              href={
+                pourLeDevis
+                  ? retourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
+                  : "/termines"
+              }
               aria-label={
-                libelleRetourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
+                pourLeDevis
+                  ? libelleRetourDesCoordonnees(reprise?.id ?? "", reprise?.provenance ?? null)
+                  : "Retour aux chantiers terminés"
               }
               className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >

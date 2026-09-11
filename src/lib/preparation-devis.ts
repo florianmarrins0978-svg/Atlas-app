@@ -53,14 +53,39 @@ export type VerdictPreparation =
       marcheASuivre: string;
     };
 
-export function peutPreparerDevis(lignes: readonly LignePrix[]): VerdictPreparation {
+/**
+ * DE QUELLE PIÈCE ON PARLE — et pourquoi cette fonction a dû l'apprendre.
+ *
+ * **Sa règle du 11 septembre 2026, sur la planche de la facture sans devis :**
+ * *« ça ouvre une page de FACTURE, du même dessin. Un écran qui dit "devis" sur
+ * ce qu'on facture se photographie et s'envoie au client. »*
+ *
+ * Une facture faite sans devis peut partir vide exactement comme un devis, et
+ * pour les mêmes raisons — aucune ligne, un total nul, une ligne « à chiffrer ».
+ * La RÈGLE est donc la même ; seul le NOM de la pièce change. Écrire une
+ * seconde fonction « peutPreparerFacture » aurait mis deux règles pour une
+ * question, et c'est celle qu'on aurait oublié de corriger qui aurait laissé
+ * partir une facture à 0,00 € (`CLAUDE.md` §3).
+ */
+export type PieceAPreparer = "devis" | "facture";
+
+export function peutPreparerLaPiece(
+  lignes: readonly LignePrix[],
+  piece: PieceAPreparer = "devis"
+): VerdictPreparation {
+  const cette = piece === "facture" ? "Cette facture" : "Ce devis";
+  const leLa = piece === "facture" ? "la facture" : "le devis";
+  const preteA = piece === "facture" ? "prête" : "prêt";
+
   if (lignes.length === 0) {
     return {
       possible: false,
-      probleme: "Ce devis n'a aucune ligne : il partirait à 0,00 €.",
+      probleme: `${cette} n'a aucune ligne : ${piece === "facture" ? "elle" : "il"} partirait à 0,00 €.`,
       marcheASuivre:
-        "Ajoutez une ligne ci-dessus avec son montant, ou enregistrez un tarif dans " +
-        "Réglages pour que ce type de prestation soit chiffré tout seul la prochaine fois.",
+        piece === "facture"
+          ? "Appuyez sur « Remplir la facture » et posez ce que vous avez fait, avec son montant."
+          : "Ajoutez une ligne ci-dessus avec son montant, ou enregistrez un tarif dans " +
+            "Réglages pour que ce type de prestation soit chiffré tout seul la prochaine fois.",
     };
   }
 
@@ -70,8 +95,11 @@ export function peutPreparerDevis(lignes: readonly LignePrix[]): VerdictPreparat
   if (total.lessThanOrEqualTo(0)) {
     return {
       possible: false,
-      probleme: "Le total de ce devis est de 0,00 € : il n'y a rien à facturer.",
-      marcheASuivre: "Renseignez le montant de chaque ligne avant de préparer le devis.",
+      probleme: `Le total de ${leLa} est de 0,00 € : il n'y a rien à facturer.`,
+      marcheASuivre:
+        piece === "facture"
+          ? "Renseignez le montant de chaque ligne avant d'envoyer la facture."
+          : "Renseignez le montant de chaque ligne avant de préparer le devis.",
     };
   }
 
@@ -89,7 +117,7 @@ export function peutPreparerDevis(lignes: readonly LignePrix[]): VerdictPreparat
     return {
       possible: false,
       probleme: attente,
-      marcheASuivre: "Posez leur montant ci-dessus. Le devis sera prêt dès qu'aucune ligne n'attend plus rien.",
+      marcheASuivre: `Posez leur montant ci-dessus. ${cette} sera ${preteA} dès qu'aucune ligne n'attend plus rien.`,
     };
   }
 
