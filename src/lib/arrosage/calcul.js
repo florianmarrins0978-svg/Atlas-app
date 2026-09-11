@@ -407,6 +407,8 @@ var DEFAUTS = {
   // Du regard à la première tête, en mètres. Lu sur le croquis quand il montre
   // la nourrice (`geometrie-croquis.ts`) ; zéro sinon, et l'écran le dit.
   regardVersZone:0,
+  // Le damier sur les turbines : non tant qu'il ne l'a pas tranché (voir `poser`).
+  damierTurbines:false,
   zones:[
     { id:1, nom:'Pelouse arrière', type:'gazon',   L:18, l:12, materiel:'auto' },
     // **Plus de tuyères imposées sur une grande pelouse (17 août).** Les deux
@@ -914,7 +916,13 @@ function poser(z, refImposee){
     // le carré de 12 × 12 qu'il a dessiné le 23 août, neuf têtes, et qu'il n'a
     // pas rouvert. Tenter le damier sur les turbines aurait remplacé ses neuf
     // par six, sans qu'il l'ait demandé.
-    var quinconceVoulu = cle === 'tuyere' && (nx * ny) > QUINCONCE_AU_DELA_DE;
+    //
+    // **`damierTurbines` est une question qui lui est POSÉE, pas une règle** —
+    // planche `appli/arrosage-a-trancher.html`, 11 septembre 2026. Tant qu'il
+    // n'a pas répondu, elle vaut faux et ses neuf turbines restent ; la planche
+    // la pose à vrai pour lui montrer les six du damier, calculées par ce même
+    // code et non dessinées à la main (`CLAUDE.md` §4 bis).
+    var quinconceVoulu = (cle === 'tuyere' || etat.damierTurbines === true) && (nx * ny) > QUINCONCE_AU_DELA_DE;
     var alignes = pointsDeLaPose(nx, ny, ecartX, ecartY, false);
     var points = alignes;
     if (quinconceVoulu){
