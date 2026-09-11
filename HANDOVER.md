@@ -29,12 +29,12 @@ recréerait la divergence que ce lot vient de retirer.
 quand vous appuierez sur « Payée ». », en gras, entière. Les deux moitiés
 retirées redisaient le titre de l'écran et le « quand ».
 
-**« RESTE À PAYER » EST À DROITE, PAS DANS LE FORMULAIRE.** Les deux lignes —
-« Reste à payer 1 476,00 € » et « Sur les 1 776,00 € du 11/09 » — remplacent
-« reste sur … » dans la colonne de droite, et ne s'affichent que lorsqu'un
-acompte est passé. Posées d'abord en tête du formulaire de saisie, elles lui ont
-valu un aller-retour : *« pourquoi tu as changé les lignes de place ? »*. Le
-formulaire est revenu tel qu'il était.
+**ON NE DÉPLACE RIEN, ON RÉÉCRIT SUR PLACE — et cela a coûté deux allers-retours
+le 11 septembre 2026 :** *« il fallait laisser les phrases où elles étaient,
+juste les modifier »*. Les deux lignes « Reste à payer 1 476,00 € / Sur les
+1 776,00 € » remplacent « reste sur … » **dans la colonne de droite**, là où
+elle vivait, et seulement quand un acompte est passé. Le formulaire de saisie et
+la ligne « émise le … » sont revenus tels qu'ils étaient.
 
 ---
 

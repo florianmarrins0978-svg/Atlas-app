@@ -40,10 +40,12 @@ entière.
 *« Lorsqu'on note un règlement la phrase était à droite, c'est là que je voulais
 reste à payer. »* La ligne d'un acompte, dans la colonne de droite, demandait de
 deviner que le gros chiffre au-dessus était le solde. Elle le nomme, et donne la
-facture entière avec son jour.
+facture entière — sans sa date : *« à droite retire la date en doré »*.
 
-Le formulaire de saisie est revenu tel qu'il était : ces deux lignes y avaient
-d'abord été posées, et ce n'est pas là qu'il les voulait.
+Le formulaire de saisie est revenu tel qu'il était, et « émise le … » avec lui.
+Sa règle, en une phrase : *« il fallait laisser les phrases où elles étaient,
+juste les modifier »* — une demande d'affichage vaut pour le texte, pas pour la
+place.
 
 ### La facture téléchargée s'ouvrait blanche : la police n'annonçait pas sa longueur
 

@@ -20,7 +20,7 @@ Le chapô de l'écran ne garde qu'une moitié de phrase, en gras : « Elles
 entreront au relevé quand vous appuierez sur « Payée ». »
 
 Même écran, à droite : « reste sur 1 776,00 € » devient « Reste à payer
-1 476,00 € / Sur les 1 776,00 € du 11/09 ». **Aucune migration.**
+1 476,00 € / Sur les 1 776,00 € ». **Aucune migration.**
 
 Détail : `ARCHITECTURE.md` §330.
 

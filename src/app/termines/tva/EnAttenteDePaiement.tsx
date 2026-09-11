@@ -147,18 +147,17 @@ export default function EnAttenteDePaiement({
                   <p className="truncate text-[14.5px]" style={{ color: colors.ink }}>
                     {f.clientNom ?? "Client"}
                   </p>
-                  {/* **LE JOUR NE S'ÉCRIT PAS DEUX FOIS SUR LA MÊME LIGNE.**
-                      Dès qu'un acompte est passé, la colonne de droite porte
-                      « Sur les 1 776,00 € du 11/09 » : répéter « émise le
-                      11 septembre 2026 » ici pousserait le numéro sur deux
-                      lignes pour redire la même date.
+                  {/* **LA LIGNE RESTE À SA PLACE, ON NE FAIT QUE L'ÉCRIRE PLUS
+                      COURT — sa correction du 11 septembre 2026 :** *« il
+                      fallait laisser les phrases où elles étaient, juste les
+                      modifier »*. Elle avait disparu des factures entamées, au
+                      motif que la droite portait la même date ; c'est la date
+                      de droite qui est partie, pas celle-ci.
 
-                      Et la date courte partout ailleurs, comme la trace de
-                      réception juste en dessous — une seule façon d'écrire un
-                      jour sur cet écran. */}
+                      Le jour court, comme la trace de réception juste en
+                      dessous : une seule façon d'écrire un jour sur cet écran. */}
                   <p className="text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
-                    {f.numeroCommercial}
-                    {f.etat !== "partielle" && ` · émise le ${jourCourt(f.dateEmission, aujourdHui)}`}
+                    {f.numeroCommercial} · émise le {jourCourt(f.dateEmission, aujourdHui)}
                   </p>
                 </div>
                 <div className="flex-shrink-0 text-right">
@@ -182,13 +181,17 @@ export default function EnAttenteDePaiement({
                       voulais reste à payer »*.
 
                       « reste sur 1 776,00 € » demandait de deviner que le gros
-                      chiffre au-dessus était le solde. La ligne le nomme, et
-                      donne la facture entière avec son jour : sans elle,
-                      « 1 476 € » sur une facture de 1 776 € se lit comme une
-                      erreur de montant. */}
+                      chiffre au-dessus était le solde. La ligne le nomme : sans
+                      elle, « 1 476 € » sur une facture de 1 776 € se lit comme
+                      une erreur de montant.
+
+                      **Sans sa date — 11 septembre 2026 :** *« à droite retire
+                      la date en doré »*. Le jour de la facture est déjà sur la
+                      ligne du numéro, à gauche ; c'est le MONTANT entier qu'on
+                      vient chercher ici. */}
                   {f.etat === "partielle" && (
                     <p className="text-[11px] leading-[1.45]" style={{ color: colors.or }}>
-                      Sur les {euros(f.totalTtc)} du {jourCourt(f.dateEmission, aujourdHui)}
+                      Sur les {euros(f.totalTtc)}
                     </p>
                   )}
                 </div>
