@@ -28149,3 +28149,64 @@ garde la pièce qu'il a reçue. Les documents composés entre le 8 et le
 correction ne vaut que pour ce qui se compose après elle. Reprendre les
 archives touche des pièces comptables, et cela ne se décide pas sans lui
 (`TODO.md`).
+
+---
+
+## §329 — Plusieurs TVA sur une facture, et un champ de prix qui ne porte pas de zéro
+
+**Ses deux captures du 11 septembre 2026, dans le même message :** *« je ne peux
+pas ajouter plusieurs TVA ; lorsque j'en mets une le bouton disparaît »* et *« le
+problème pour rentrer les montants n'a pas été résolu, regarde le 0 est toujours
+présent »*.
+
+Deux défauts distincts, une seule cause commune : **une règle du devis écrite une
+seconde fois pour la facture, en plus pauvre** (`CLAUDE.md` §3).
+
+### La TVA : le geste posait un taux, il n'ouvrait pas de catégorie
+
+| | Le devis (1er septembre) | La facture (avant) |
+|---|---|---|
+| « Ajouter une TVA » | ouvre une CATÉGORIE au taux suivant | posait `10.00` **sur toutes les lignes** |
+| le taux proposé | le premier des quatre usuels encore libre | `"10.00"`, en dur |
+| après le premier taux | le geste reste offert | **le bouton disparaissait** |
+
+La troisième ligne est celle qu'il a payée : le second taux n'était pas
+difficile à poser, il était **impossible**. Le bouton se cachait sur
+`tauxDesSaisies === null`, c'est-à-dire dès qu'un taux existait.
+
+L'écran reprend maintenant la grammaire du devis avec **ses fonctions** :
+`lignesParCategorie` pour les groupes, `tauxTvaPropose` pour le taux suivant —
+cette dernière sortie dans `src/lib/reduction-devis.ts`, où le devis la prend
+aussi : sa liste en dur a disparu. Le taux d'un groupe ne commande plus que ses
+lignes, et le « − » ne retire que les siennes — l'appel sans identifiant vidait
+la facture entière, ce qui ne se voyait pas tant qu'il n'y avait qu'un groupe.
+
+**Chaque taux se nomme dès qu'il y en a deux**, la première catégorie comprise :
+sans cela, les lignes restées au taux de la facture seraient les seules sans
+étiquette, et l'on lirait un montant sans savoir sous quel taux il tombe.
+
+### Le prix : « 0250 », et la règle n'avait été branchée que sur le devis
+
+`prixAEcrire` avait été écrite le matin même pour ce défaut exact — le champ
+portait le zéro de la base, et ce qu'il tapait se collait derrière. Elle ne
+servait qu'au devis. La facture emploie pourtant **les mêmes champs**
+(`ChampsDuDevis`) : c'est la moitié invisible de la duplication.
+
+**Ce qui remplace ici le drapeau « à chiffrer », absent de `lignes_facture` :
+le zéro lui-même.** On ne facture pas 0 € — un prix nul est un prix qui n'a pas
+encore été saisi. Le champ reste vide, le gris du placeholder invite à écrire,
+et le montant, lui, dit ce qu'il calcule.
+
+**Et c'est une valeur de DÉPART, jamais un affichage recalculé à chaque frappe.**
+Dérivé au rendu, le champ se viderait au premier « 0 » tapé : « 0,50 » serait
+devenu impossible à écrire. C'est pour cela que la transformation vit à
+l'initialisation de l'état — comme sur le devis.
+
+### Ce qui l'éprouve
+
+`test-facture-sans-devis-e2e.ts` entre **par sa porte** : il appuie sur le
+bouton, comme lui, au lieu de poser les taux en base. Les deux moitiés ont été
+vues rouges contre le code d'avant — « Ajouter une TVA a disparu après le
+premier taux », puis « le champ du prix porte un zéro ». Ce que le contrôle
+retient de la base, ce sont les **taux distincts** de la facture, pas un libellé
+d'écran (`CLAUDE.md` §5 bis).

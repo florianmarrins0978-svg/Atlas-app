@@ -8,6 +8,27 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — PLUSIEURS TVA SUR UNE FACTURE, ET LE ZÉRO DU PRIX (11 septembre 2026)
+
+| | |
+|---|---|
+| ses mots | *« je ne peux pas ajouter plusieurs TVA »* · *« le 0 est toujours présent »* |
+| la racine | la grammaire TVA du devis réécrite en plus pauvre pour la facture, et `prixAEcrire` branchée sur un seul des deux écrans |
+| la migration | **aucune** |
+| les pièces | `TravauxSupplementairesClient.tsx`, `src/lib/reduction-devis.ts` (`tauxTvaPropose`), `DevisCompletClient.tsx` (sa liste en dur retirée) |
+| les suites | `test-facture-sans-devis-e2e.ts` (11), les deux moitiés vues rouges |
+| le détail | `ARCHITECTURE.md` §329 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** Le champ du prix se vide à
+l'INITIALISATION de l'état, jamais au rendu. Dérivé à chaque frappe, il se
+viderait au premier « 0 » tapé — et « 0,50 » deviendrait impossible à écrire.
+
+**Et le « − » d'une catégorie ne retire QUE ses lignes** : `retirerLignesDeFacture`
+sans identifiant vide la facture entière. C'était sans conséquence tant qu'il
+n'y avait qu'un groupe ; avec deux taux, cela emporterait l'autre.
+
+---
+
 ## Dernier lot — LA FACTURE TÉLÉCHARGÉE S'OUVRAIT BLANCHE (11 septembre 2026)
 
 | | |

@@ -33,6 +33,7 @@ import {
   pourcentValide,
   tauxDeLaLigne,
   tauxLisible,
+  tauxTvaPropose,
   tauxTvaValide,
   totauxAvecReduction,
 } from "@/lib/reduction-devis";
@@ -409,8 +410,7 @@ export default function DevisCompletClient(props: Props) {
    * TVA » et la feuille de déplacement doivent proposer LE MÊME, sinon le même
    * geste ouvre deux catégories différentes selon la porte empruntée.
    */
-  const tauxNeuf =
-    ["10.00", "5.50", "20.00", "0.00"].find((t) => !categories.some((c) => c.taux === t)) ?? "10.00";
+  const tauxNeuf = tauxTvaPropose(categories.map((c) => c.taux));
 
   function majLigneLocale(id: string, champ: keyof Ligne, valeur: string) {
     setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, [champ]: valeur } : l)));

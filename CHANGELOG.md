@@ -8,6 +8,36 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Plusieurs TVA sur une facture, et un champ de prix sans zéro
+
+*« Je ne peux pas ajouter plusieurs TVA ; lorsque j'en mets une le bouton
+disparaît »*, et dans le même message : *« le problème pour rentrer les montants
+n'a pas été résolu, regarde le 0 est toujours présent »*.
+
+Deux défauts, une cause : la grammaire du devis avait été réécrite en plus
+pauvre pour la facture. « Ajouter une TVA » posait 10 % sur toutes les lignes au
+lieu d'ouvrir une catégorie, puis se cachait — le second taux n'était pas
+difficile à poser, il était impossible. Et `prixAEcrire`, écrite le matin même
+pour le « 0250 » qu'il a photographié, n'avait été branchée que sur le devis,
+alors que les deux écrans emploient les mêmes champs.
+
+L'écran de facture prend maintenant les fonctions du devis : `lignesParCategorie`
+pour les groupes, `tauxTvaPropose` pour le taux suivant — celle-ci sortie dans
+`src/lib/reduction-devis.ts`, où le devis la prend aussi : sa liste en dur a
+disparu. Le taux d'un groupe ne commande plus que ses lignes, et le « − » ne
+retire que les siennes : l'appel sans identifiant vidait la facture entière, ce
+qui ne se voyait pas tant qu'il n'y avait qu'un groupe.
+
+Sur une facture, un prix nul est un prix qui n'a pas été saisi — on ne facture
+pas 0 €. Le champ reste vide, et c'est une valeur de départ, jamais un affichage
+recalculé : dérivé à chaque frappe, il se viderait au premier « 0 » tapé et
+« 0,50 » deviendrait impossible à écrire.
+
+Éprouvé par sa porte (`test-facture-sans-devis-e2e.ts`, 11 pièces) : les deux
+moitiés ont été vues rouges contre le code d'avant. Et regardé à l'écran, trois
+taux sur une même facture — 250 € à 20 %, 80 € à 10 %, 30 € à 5,5 %, total TTC
+419,65 €.
+
 ### La facture téléchargée s'ouvrait blanche : la police n'annonçait pas sa longueur
 
 *« Lorsque je télécharge la facture je ne peux toujours pas la lire. »*

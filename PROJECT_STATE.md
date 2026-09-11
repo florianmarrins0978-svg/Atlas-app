@@ -5,6 +5,19 @@
 
 ---
 
+## FAIT : PLUSIEURS TVA SUR UNE FACTURE, ET LE PRIX SANS ZÉRO — 11 septembre 2026
+
+« Ajouter une TVA » ouvre une catégorie au lieu de repeindre toutes les lignes,
+et ne disparaît plus : le second taux était impossible à poser. Le champ du prix
+ne porte plus le zéro de la base, qui se collait devant ce qu'il tapait.
+
+La grammaire et les fonctions sont celles du devis — `tauxTvaPropose` est
+désormais commune, et la liste en dur du devis a disparu. **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §329.
+
+---
+
 ## FAIT (sous réserve de SA réponse) : LA POLICE DU DOCUMENT ANNONCE SA LONGUEUR — 11 septembre 2026
 
 Sa facture téléchargée s'ouvrait blanche, pour la troisième fois. Le programme

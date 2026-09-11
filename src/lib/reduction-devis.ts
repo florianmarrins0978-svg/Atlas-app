@@ -276,6 +276,25 @@ export function tauxOuverts(
   return vus;
 }
 
+/**
+ * LE TAUX QUE PROPOSE « AJOUTER UNE TVA ».
+ *
+ * **10 % d'abord, et ce n'est pas un chiffre au hasard** : c'est l'exemple que
+ * le patron a donné deux fois le 1er septembre 2026, et le taux des végétaux
+ * qu'il achète. Viennent ensuite les autres taux français usuels. Un taux déjà
+ * ouvert n'est jamais reproposé — sans quoi le geste rouvrirait la catégorie
+ * qui existe, et rien ne se passerait à l'écran.
+ *
+ * **Elle vit ici parce qu'elle était écrite dans le devis, et NULLE PART sur la
+ * facture** : là-bas « Ajouter une TVA » posait 10 % en dur sur toutes les
+ * lignes. Deux rédactions d'un même geste, dont une appauvrie — c'est ce que
+ * `CLAUDE.md` §3 refuse, et c'est ce qui a coûté au patron de ne pas pouvoir
+ * poser deux TVA sur une facture (11 septembre 2026).
+ */
+export function tauxTvaPropose(dejaOuverts: readonly string[]): string {
+  return ["10.00", "5.50", "20.00", "0.00"].find((t) => !dejaOuverts.includes(t)) ?? "10.00";
+}
+
 /** « 20 » plutôt que « 20.00 » — personne n'écrit deux décimales sur un taux rond. */
 export function tauxLisible(taux: string): string {
   return new Decimal(taux).toDecimalPlaces(2).toString().replace(".", ",");
