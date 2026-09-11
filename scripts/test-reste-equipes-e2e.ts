@@ -26,6 +26,7 @@ import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { jourIso } from "../src/lib/jour";
+import { MOIS_A_L_ECRAN, retenirAuCalendrier } from "./_calendrier-e2e";
 import { ADRESSE } from "./_adresse";
 
 const BASE = ADRESSE;
@@ -80,14 +81,44 @@ async function nettoyer() {
  * une base ; ce qui n'est pas posé par soi ne s'invente pas.
  */
 async function joursLibresDEssai(): Promise<string[]> {
+  const pris = new Set<string>();
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // **CE QUI EST POSÉ SE LIT DANS `creneaux_chantier`, PLUS DANS UN BLOC
+  // DÉDUIT — corrigé le 11 septembre 2026, et c'est ce qui a fait rougir cette
+  // suite dans la nuit.**
+  //
+  // Depuis la migration 0085, un chantier dit demi-journée par demi-journée où
+  // il est posé, et ses demi-journées n'ont plus à se suivre : une libérée puis
+  // reposée ailleurs emmène l'occupation avec elle. Or ce contrôle la déduisait
+  // de `date_planifiee + durée`, c'est-à-dire du bloc d'ORIGINE. Un chantier
+  // dont un morceau a déménagé occupait donc, pour lui, des jours vides — et
+  // laissait libre le jour où il travaille vraiment.
+  //
+  // Il choisissait alors ce jour-là, l'écran comptait juste, et le rouge
+  // disait « Plus d'équipe libre sur 2 » en accusant l'écran. Le pire des
+  // rouges : il envoie corriger du code juste (`AGENTS.md`).
+  //
+  // **Le repli reste le bloc**, pour les chantiers qu'aucun créneau ne décrit :
+  // c'est mot pour mot la règle de `creneauxPoses`, et lire « aucun créneau »
+  // comme « rien d'occupé » libérerait d'un coup toutes les demi-journées déjà
+  // prises.
+  // ═══════════════════════════════════════════════════════════════════════
+  const { rows: poses } = await pool.query<{ jour: string }>(
+    `SELECT DISTINCT jour::text AS jour FROM creneaux_chantier`
+  );
+  for (const r of poses) pris.add(r.jour);
+
   const { rows } = await pool.query<{ jour: string; duree: number | null }>(
     `SELECT date_planifiee::text AS jour, duree_demi_journees AS duree
-       FROM chantiers WHERE date_planifiee IS NOT NULL AND deleted_at IS NULL`
+       FROM chantiers c
+      WHERE date_planifiee IS NOT NULL
+        AND deleted_at IS NULL
+        AND NOT EXISTS (SELECT 1 FROM creneaux_chantier k WHERE k.chantier_id = c.id)`
   );
   // Un chantier de plusieurs jours occupe aussi les suivants : compter son seul
   // jour de départ laisserait passer exactement le cas qu'il a signalé le
   // 22 août — « un chantier commencé avant et encore en cours ».
-  const pris = new Set<string>();
   for (const r of rows) {
     const d = new Date(r.jour);
     const jours = Math.max(1, Math.ceil((r.duree ?? 2) / 2));
@@ -164,7 +195,7 @@ async function joursLibresDEssai(): Promise<string[]> {
  */
 async function caseDuJour(page: import("playwright").Page, jour: string) {
   for (let i = 0; i < 4; i++) {
-    const c = page.locator(`[data-jour="${jour}"]`);
+    const c = page.locator(`${MOIS_A_L_ECRAN} [data-jour="${jour}"]`);
     if (await c.count()) return c.first();
     await page.getByRole("button", { name: "Mois suivant" }).click();
     await page.waitForTimeout(350);
@@ -256,13 +287,20 @@ async function main() {
     // dans la page même feuille refermée. Le contrôle croyait donc la feuille
     // ouverte, cliquait dans le vide, et concluait plus loin qu'une mention
     // manquait — alors qu'aucune date n'avait été posée.
-    const grille = page.locator("[data-jour]").first();
+    const grille = page.locator(`${MOIS_A_L_ECRAN} [data-jour]`).first();
     if (!(await grille.isVisible().catch(() => false))) {
       await page.click("text=Choisir la date");
-      await page.waitForSelector("[data-jour]", { state: "visible", timeout: 30_000 });
+      await page.waitForSelector(`${MOIS_A_L_ECRAN} [data-jour]`, {
+        state: "visible",
+        timeout: 30_000,
+      });
     }
-    const c = await caseDuJour(page, quand);
-    await c.click();
+    await caseDuJour(page, quand);
+    // **Le geste est celui de tout le monde** (`_calendrier-e2e.ts`) : il sait
+    // ne PAS retoucher un jour que l'écran propose déjà de lui-même — un second
+    // appui le retirerait, et la suite attendrait un « retenu » qui ne revient
+    // jamais.
+    await retenirAuCalendrier(page, quand);
     await page
       .locator("text=Vérification de votre planning…")
       .waitFor({ state: "hidden", timeout: 20_000 })
@@ -272,10 +310,13 @@ async function main() {
     // bon coupable — la date a été refusée — au lieu de laisser le contrôle
     // conclure plus loin qu'une mention manque.
     await page
-      .locator(`[data-jour="${quand}"][data-etat="retenu"]`)
+      .locator(`${MOIS_A_L_ECRAN} [data-jour="${quand}"][data-etat="retenu"]`)
       .waitFor({ state: "visible", timeout: 20_000 })
       .catch(async () => {
-        const etat = await page.locator(`[data-jour="${quand}"]`).first().getAttribute("data-etat");
+        const etat = await page
+          .locator(`${MOIS_A_L_ECRAN} [data-jour="${quand}"]`)
+          .first()
+          .getAttribute("data-etat");
         const txt = (await page.locator("body").innerText()).replace(/\s+/g, " ");
         const apres = txt.indexOf("Choisir la date");
         throw new Error(
@@ -322,26 +363,11 @@ async function main() {
   // Ce qui reste ICI est ce qu'aucune règle pure ne peut voir : **que l'écran
   // appelle vraiment la règle.** C'est la leçon du 25 août — un contrôle qui
   // éprouve la règle ne voit pas une pièce débranchée (`ARCHITECTURE.md` §175).
-  const case_ = await caseDuJour(page, jour);
-  await case_.click();
-  await page
-    .locator("text=Vérification de votre planning…")
-    .waitFor({ state: "hidden", timeout: 20_000 })
-    .catch(() => undefined);
-  // **On attend que la case se MARQUE.** Un délai ne dit pas si le serveur a
-  // accepté le jour : rougir ici nomme le bon coupable — la date a été refusée
-  // — au lieu de laisser conclure plus loin qu'une mention manque.
-  await page
-    .locator(`[data-jour="${jour}"][data-etat="retenu"]`)
-    .waitFor({ state: "visible", timeout: 20_000 })
-    .catch(async () => {
-      const etat = await page.locator(`[data-jour="${jour}"]`).first().getAttribute("data-etat");
-      throw new Error(
-        `le ${jour} n'a pas été retenu (état « ${etat} ») : la date a été refusée, ` +
-          "et rien de ce qui suit ne mesurerait ce qu'il annonce"
-      );
-    });
-  await page.waitForTimeout(500);
+  // **C'est `retenir` qui retient, ici comme ailleurs.** Ce geste était recopié
+  // en dessous, sans la réouverture de la feuille ni le message qui cite
+  // l'écran : un refus n'y disait que l'état de la case — « regardable » —, et
+  // pas la raison que le serveur affiche juste à côté.
+  await retenir(jour);
 
   await cas("le jour à moitié pris annonce ce qu'il reste", async () => {
     const mention = page.locator('[data-atlas="reste-equipes"]');
@@ -404,7 +430,9 @@ async function main() {
         .waitFor({ state: "hidden", timeout: 20_000 })
         .catch(() => undefined);
       await page.waitForTimeout(700);
-      if (await page.locator(`[data-jour="${candidat}"][data-etat="retenu"]`).count()) {
+      if (
+        await page.locator(`${MOIS_A_L_ECRAN} [data-jour="${candidat}"][data-etat="retenu"]`).count()
+      ) {
         jourLibre = candidat;
         break;
       }

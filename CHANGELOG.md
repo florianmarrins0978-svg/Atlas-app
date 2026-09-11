@@ -8,6 +8,40 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Cinq rouges de la nuit : le calendrier gardait trois mois, les suites n'en visaient aucun
+
+Le glissement des mois monte trois mois à la fois — le précédent et le suivant
+attendent hors du cadre pour suivre le doigt. Inertes pour le patron ; pas pour
+un sélecteur. Quatre suites cliquaient une case d'août ou du mois d'après,
+Playwright la voyait, et c'est le cadre qui recevait le doigt : quarante-cinq
+secondes d'attente, puis un rouge sur un produit sain.
+
+**Le composant avait posé la parade dès le premier jour** — seul le mois du
+milieu porte son repère. Ce qui manquait était du côté des suites : une portée
+commune (`MOIS_A_L_ECRAN`), et un geste de retenue écrit **une seule fois**.
+Deux suites le recopiaient ; une troisième cliquait le RANG d'un bouton, et ce
+rang a changé de mois.
+
+**Un jour déjà proposé ne se retouche pas** : l'écran d'envoi marque de
+lui-même les premiers jours libres, et le second appui les enlève. Le geste
+commun regarde l'état avant d'appuyer.
+
+**Et ce qui est posé se lit dans les créneaux, plus dans un bloc déduit.**
+`test-reste-equipes-e2e` cherchait un jour libre en extrapolant
+`date_planifiee + durée` : un chantier dont une demi-journée a déménagé
+occupait pour lui des jours vides, et laissait libre celui où il travaille.
+C'est ce qui lui faisait lire « Plus d'équipe libre sur 2 » et accuser un écran
+qui comptait juste.
+
+**Correction d'un verdict de la veille, noir sur blanc :** `test-reste-equipes-e2e`
+avait été rangée avec les rouges du carrousel des mois. C'était faux — son
+rouge était celui-ci, et il tenait à deux causes, dont une de mon propre lot des
+créneaux. Restent attribués au lot du prix : `test-devis-papier-e2e` et
+`test-devis-complet-e2e`.
+
+Mesuré : 8 suites du calendrier et du planning au vert, dont les cinq qui
+étaient rouges (`test-envoi-client` 11/11, `test-planning` 44/44).
+
 ### La case du prix portait un vrai zéro, et le curseur tombait devant le chiffre
 
 *« Quand je clique sur la case de la quantité, je veux que le petit trait qui
@@ -143,7 +177,7 @@ toutes rouvertes.
 ordinaires), et `peutPreparerLaPiece` (elle sert aussi la facture, et prend le
 nom de la pièce pour qu'un écran de facture ne dise jamais « devis »).
 
-Détail et pourquoi : `ARCHITECTURE.md` §324.
+Détail et pourquoi : `ARCHITECTURE.md` §325.
 
 ---
 ## 2026-09-10

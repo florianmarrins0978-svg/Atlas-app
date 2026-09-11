@@ -195,6 +195,12 @@ seulement s'il le signale.
 **`appli/deplacer-quel-jour.html` reste en ligne** : elle raconte le chemin, et
 une planche écartée se garde (`CLAUDE.md` §3 bis).
 
+**TRANCHÉ LE 11 SEPTEMBRE 2026 : « Déplacer » RESTE SANS « Annuler ».** Sa
+réponse, mot pour mot : *« la 1, laisser comme c'est aujourd'hui »*. La bascule
+Matin / Aprem s'ouvre avec ses deux positions vides et l'on en sort en touchant
+ailleurs. **Ne pas rouvrir la question, et ne pas ajouter le bouton** : ce qui
+passe pour un oubli est une décision.
+
 ---
 
 ## ~~TROIS ROUGES ARRIVÉS AVEC LA PORTE DE CONNEXION~~ — RÉGLÉS LE 10 SEPTEMBRE 2026
@@ -255,6 +261,57 @@ tout quand le geste est dégagé (`ARCHITECTURE.md` §323).
 déplie aussi sous une ligne des planifiés, où la règle est que le nom touché ne
 bouge PAS. Une version de ce rattrapage posée dans la carte a fait bouger le
 client de 956 px. Il vit sur le geste du calendrier, et nulle part ailleurs.
+
+---
+
+## ✅ LES SIX ROUGES DE LA NUIT — QUATRE CORRIGÉS, DEUX AU LOT DU PRIX (11 septembre 2026)
+
+Batterie complète sur `7cbbb26` : **120 suites navigateur vertes sur 142**, base
+au vert. Six rouges étaient apparus depuis la veille ; aucun ne venait du
+planning.
+
+### ~~Quatre venaient du calendrier à trois mois~~ — corrigés le 11 septembre
+
+`test-envoi-client-e2e` (2 cas), `test-facture-au-client-e2e`,
+`test-date-lointaine-e2e`, `test-reste-equipes-e2e`. Tous la même racine : le
+glissement des mois monte trois mois, les suites cherchaient une case dans toute
+la page et en visaient une hors du cadre. Portée commune `MOIS_A_L_ECRAN` et
+geste de retenue écrit une seule fois (`ARCHITECTURE.md` §324). **Mesuré : 8
+suites au vert, dont les cinq qui étaient rouges.**
+
+### ❗ UN VERDICT DE LA VEILLE ÉTAIT FAUX, et le voici corrigé
+
+`test-reste-equipes-e2e` avait été rangée ici avec les rouges du carrousel — au
+motif que les deux suites voisines tombaient sur « `<div class="flex w-[300%]">`
+intercepts pointer events ». **Elle, non** : son message disait « l'écran écrit
+"Plus d'équipe libre sur 2" », ce qui n'a rien à voir. L'attribution avait été
+faite sur la voisine plutôt que sur son propre message.
+
+Sa vraie cause, mesurée le lendemain, tient à **deux** choses, et l'une est de
+mon lot des créneaux : la suite cherchait un jour libre en extrapolant
+`date_planifiee + durée`, alors que ce qui est posé se lit désormais dans
+`creneaux_chantier` (§322) — un chantier dont une demi-journée a déménagé lui
+paraissait occuper des jours vides. Et le jour qu'elle visait était **déjà
+proposé** par l'écran : son clic le retirait.
+
+### ~~Le lot du glissement des mois~~ — deux rouges, corrigés avec les précédents
+
+`test-date-lointaine-e2e` et `test-reste-equipes-e2e` étaient cités ici. Le
+premier relevait bien du calendrier à trois mois ; le second non (ci-dessus).
+
+**Ce qui reste vrai et qu'il faut lui redire : son doigt n'est pas touché.**
+Mesuré trois fois sur son écran — après zéro, un et deux appuis sur « Mois
+suivant », toucher un jour ouvre bien sa journée.
+
+### 🔴 Deux rouges restants, au lot du prix
+
+`test-devis-papier-e2e` (5 400 ≠ 900) et `test-devis-complet-e2e` (*« le total
+de la ligne 3 × 250 € ne s'affiche pas »*).
+
+**Vérifié en défaisant le lot localement** (`git revert --no-commit 770b769`,
+« Vider la case du prix tant qu'aucun prix n'est posé ») : `test-devis-papier`
+repasse au **vert**, et rouge à nouveau une fois le lot remis. Le revert n'a
+jamais quitté ce poste. **À la session qui a livré ce lot.**
 
 ---
 

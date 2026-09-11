@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
+import { joursAProposer, retenirAuCalendrier } from "./_calendrier-e2e";
 
 // **« La facture s'affiche partie, mais le client ne la reçoit pas. »**
 //
@@ -65,7 +66,13 @@ async function main() {
   await page.goto(`${BASE}/chantiers/${chantierId}/devis-complet`, { waitUntil: "networkidle" });
   await page.click("text=Choisir la date");
   await page.waitForTimeout(800);
-  await page.locator("button[aria-pressed]").nth(1).click();
+  // **La date se prend au calendrier, par le geste du patron.** Elle se prenait
+  // par le RANG d'un bouton — le nº 2 de `button[aria-pressed]` —, et ce rang a
+  // changé de mois le 11 septembre 2026, quand le calendrier s'est mis à garder
+  // trois mois montés pour suivre le doigt : la case visée était hors de
+  // l'écran, et le clic partait dans le cadre (`_calendrier-e2e.ts`).
+  const [jourRetenu] = await joursAProposer(page, 1);
+  await retenirAuCalendrier(page, jourRetenu);
   await page.getByRole("button", { name: "Envoyer le devis" }).click();
 
   // **Attendre l'ÉTAT, jamais un délai fixe** — la règle que ce fichier énonce
