@@ -3,6 +3,7 @@ import { devices } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { ADRESSE } from "./_adresse";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 
 /**
  * Enregistrer une pièce depuis la fiche du client.
@@ -115,10 +116,17 @@ async function main() {
       !href.includes("telecharger=1"),
       `« Ouvrir » demande un téléchargement (« ${href} ») : les deux gestes font la même chose`
     );
+    // Plus d'onglet à part depuis le 11 septembre 2026 — *« j'ai pas de touche
+    // retour »* : le PDF se peint dans la visionneuse de l'application, dont
+    // la flèche ramène à cette fiche.
     assert.equal(
       await ouvrir.getAttribute("target"),
-      "_blank",
-      "« Ouvrir » remplace la fiche du client : il faudrait y revenir à la main"
+      null,
+      "« Ouvrir » ouvre un onglet du navigateur : il n'y a pas de flèche de retour là-bas"
+    );
+    assert.ok(
+      fichierDemandeALaVisionneuse(href),
+      `« Ouvrir » (« ${href} ») ne mène pas à la visionneuse de l'application`
     );
   });
 

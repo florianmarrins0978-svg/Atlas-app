@@ -8,6 +8,24 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LE PDF SE REGARDE DANS L'APPLICATION, AVEC SA FLÈCHE (11 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« quand j'ouvre le pdf pour voir la facture j'ai pas de touche retour »* — capture iPhone, le PDF peint par Safari dans un onglet neuf |
+| la racine | les trois liens (`Voir la facture en PDF`, `Aperçu du PDF`, `Ouvrir`) remettaient le fichier au navigateur, `target="_blank"` |
+| la migration | **aucune** ; une dépendance neuve, `pdfjs-dist` |
+| les pièces | `src/app/documents/pdf/` (page + `VisionneusePdf.tsx`), `src/lib/visionneuse-pdf.ts`, `src/types/pdfjs-dist-webpack.d.ts` |
+| les suites | `test-visionneuse-pdf.ts` (7), `test-visionneuse-pdf-e2e.ts` (son geste, gabarit iPhone, encre mesurée sur la toile) |
+| le détail | `ARCHITECTURE.md` §335 |
+
+**LE PIÈGE.** Le fil de travail de pdf.js vient de l'entrée `webpack.mjs` de `pdfjs-dist`
+(`new URL(…, import.meta.url)`). Ne pas le remplacer par une copie dans
+`public/` : pdf.js refuse un fil dont la version n'est pas la sienne, et la
+copie ne suit pas le paquet. Et les pièces « page » du dossier client gardent
+leur onglet — c'est l'adresse publique du client, sans en-tête d'application.
+
+---
 ## Dernier lot — LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU (11 septembre 2026)
 
 **Ce qui est fait :** le calcul rend 7 tuyères en quinconce sur son couloir de
