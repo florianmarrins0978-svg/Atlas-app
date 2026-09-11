@@ -328,6 +328,40 @@ async function main() {
       await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "retour-deplie.png") });
     }
 
+    // **ON APPUIE SUR LA PHOTO, ET ELLE S'OUVRE EN GRAND.** Sa demande du
+    // 11 septembre 2026. C'est le geste du patron qui est éprouvé ici, pas la
+    // fonction qu'on vient d'écrire (`CLAUDE.md` §5 quater) : on clique là où
+    // son doigt se pose, et l'on mesure ce qui couvre l'écran.
+    await page.locator("[data-atlas='ouvrir-la-photo']").first().click();
+    const enGrand = page.locator("[data-atlas='photo-en-grand']");
+    await enGrand.waitFor({ state: "visible", timeout: 10_000 });
+
+    // **Le fichier peut manquer sur ce poste** : ce qui se mesure est donc le
+    // cadre de la visionneuse, jamais l'image. Et une boîte de zéro pixel ne
+    // vaut pas un vert — c'est la leçon du 15 août.
+    if (DOSSIER_CAPTURES) {
+      await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "photo-en-grand.png") });
+    }
+
+    const plein = await enGrand.boundingBox();
+    const ecran = page.viewportSize();
+    assert.ok(plein && plein.width > 0 && plein.height > 0, "boîte de zéro pixel : rien n'est mesuré");
+    assert.ok(
+      ecran && plein.width >= ecran.width - 1 && plein.height >= ecran.height - 1,
+      `la visionneuse ne couvre pas l'écran : ${Math.round(plein?.width ?? 0)} × ${Math.round(plein?.height ?? 0)}`
+    );
+
+    // **Pas de « Retirer » ici, et c'est délibéré** : un retour est le compte
+    // rendu d'un salarié, il ne s'efface pas depuis l'écran qui le vérifie.
+    assert.equal(
+      await page.locator('button[aria-label="Retirer cette photo"]').count(),
+      0,
+      "on peut retirer une photo depuis un compte rendu"
+    );
+
+    await page.locator('button[aria-label="Fermer"]').click();
+    await enGrand.waitFor({ state: "detached", timeout: 10_000 });
+
     const tourne = await carte
       .locator("svg")
       .last()

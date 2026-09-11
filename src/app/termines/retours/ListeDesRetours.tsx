@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import {
   anneesDesRetours,
   compteDesTaches,
@@ -186,6 +187,14 @@ function Carte({ retour }: { retour: RetourEnListe }) {
    * de l’erreur : il le rouvrira.
    */
   const [lu, setLu] = useState(retour.vu);
+  /**
+   * **La photo qu'il regarde en grand.** Sa demande du 11 septembre 2026,
+   * capture à l'appui : *« ce qui serait bien, c'est qu'on puisse cliquer
+   * dessus pour qu'elle apparaisse en grand »*. Deux colonnes de 132 pixels
+   * disent qu'il y a eu une photo ; elles ne disent pas si la haie est taillée
+   * droit — et c'est sur cette image qu'il décide de facturer.
+   */
+  const [enGrand, setEnGrand] = useState<string | null>(null);
   const compte = compteDesTaches(retour.taches);
   const jour = new Date(retour.poseLe).toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -358,14 +367,22 @@ function Carte({ retour }: { retour: RetourEnListe }) {
                   haute priorité de ce produit. */}
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {retour.photos.map((photo) => (
-                  <img
+                  <button
                     key={photo.id}
-                    src={`/api/fichiers/${photo.storageKey}`}
-                    alt=""
-                    data-atlas="photo-du-retour"
-                    className="h-[132px] w-full rounded-[11px] object-cover"
-                    style={{ backgroundColor: colors.rustTint }}
-                  />
+                    type="button"
+                    onClick={() => setEnGrand(photo.storageKey)}
+                    aria-label="Voir la photo en grand"
+                    data-atlas="ouvrir-la-photo"
+                    className="block h-[132px] w-full overflow-hidden rounded-[11px] p-0"
+                    style={{ backgroundColor: colors.rustTint, WebkitTapHighlightColor: "transparent" }}
+                  >
+                    <img
+                      src={`/api/fichiers/${photo.storageKey}`}
+                      alt=""
+                      data-atlas="photo-du-retour"
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
                 ))}
               </div>
             </>
@@ -400,6 +417,15 @@ function Carte({ retour }: { retour: RetourEnListe }) {
           </button>
         </div>
       )}
+
+      {/* **La visionneuse est celle de la pellicule des chantiers**, sortie
+          dans `components/atlas/VisionneusePhoto.tsx` plutôt que recopiée : une
+          seule façon de regarder une photo, une seule façon d'en sortir.
+
+          **Sans « Retirer » ici, et c'est délibéré** : un retour est le compte
+          rendu d'un salarié. Ce qu'il a photographié n'est pas à effacer depuis
+          l'écran qui sert à le vérifier. */}
+      {enGrand && <VisionneusePhoto storageKey={enGrand} onFermer={() => setEnGrand(null)} />}
     </div>
   );
 }

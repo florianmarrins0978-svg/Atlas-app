@@ -7,6 +7,7 @@ import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 // Recopié ici, ce contrôle est passé au rouge le 13 août 2026, le jour où le
 // patron a fait retirer ce mot.
 import { avecCivilite } from "../src/lib/civilite";
+import { jourLisible } from "../src/lib/jour";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
@@ -137,9 +138,23 @@ async function main() {
     );
     // Et la date d'envoi, en clair, sous l'état : c'est ce qu'il a demandé de
     // voir. Sans elle, il ne sait pas depuis combien de temps il attend.
+    //
+    // **Ce contrôle cherchait « Envoyé le » — un texte que le patron a fait
+    // RETIRER le 6 septembre 2026** (*« l'ancienneté du devis est écrite deux
+    // fois »*), et il rougissait depuis sur un écran juste. On vise donc la
+    // ligne elle-même, et la date qu'elle doit porter : cela survivra au
+    // prochain changement de mots (`CLAUDE.md` §5 bis).
+    const precision = carte.locator('[data-atlas="precision-chantier"]');
     assert.ok(
-      (await carte.locator("text=/Envoyé le /").count()) > 0,
-      "la liste ne dit pas QUAND le devis est parti"
+      (await precision.count()) > 0,
+      "la liste ne dit pas QUAND le devis est parti : aucune ligne de précision sous l'état"
+    );
+    const jourEcrit = ((await precision.first().textContent()) ?? "").trim();
+    const attendu = jourLisible(new Date().toISOString().slice(0, 10));
+    assert.equal(
+      jourEcrit.toLowerCase(),
+      attendu.toLowerCase(),
+      `la ligne sous l'état porte « ${jourEcrit} » au lieu du jour de l'envoi, « ${attendu} »`
     );
 
     // Planifier soi-même une date que le client s'apprête à choisir préparerait

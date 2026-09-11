@@ -9,6 +9,128 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
+
+**Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
+jouée deux fois le 11 septembre, avant et après le lot des polices embarquées.
+**Les dix-huit mêmes suites tombent, à la suite près** — 125/143 les deux fois.
+Aucune n'est PDF.
+
+    adresse-suggestions · anneau-dictee · anneau-vers-devis
+    carte-reponse-mene-au-geste · catalogue-mes-mots · devis-client
+    devis-complet · devis-papier · fiche-entretien · ia-01 · madame-lucie
+    message-au-client · onglets-termines · planning-vers-facture
+    recherche-client · reprise-chantier · reprise-morceau · suivi-devis
+
+Trois familles de causes, relevées à l'échantillon :
+
+| | |
+|---|---|
+| **une clé d'IA absente** — dictée, `ia-01`, Madame Lucie | attendu sur un poste d'agent (`CLAUDE.md` §1 ter), à jouer sur SON espace |
+| **un écran qui a changé** — « aucune flèche de retour », « tout tient dans un écran » | à trancher : le contrôle est-il périmé, ou l'écran a-t-il dérivé ? |
+| **un décor accumulé** — `suivi-devis` : « 30 en attente du client », deux éléments pour un même texte | une base qui grossit d'une batterie à l'autre ; la suite vise un texte au lieu d'un repère |
+
+**Ce qui en découle, et il faut le dire :** aucun lot ne peut plus se donner
+« batterie au vert » tant que ces dix-huit-là tombent. On compare donc AVANT et
+APRÈS, et l'on dit ce qu'on a comparé — c'est ce qu'a fait le lot des polices.
+Laisser dix-huit rouges dormir finit par cacher le dix-neuvième, qui, lui, sera
+vrai.
+
+---
+
+## ⏳ DEUX CHOSES RESTENT OUVERTES SUR LA FACTURE BLANCHE (11 septembre 2026)
+
+**1. Sa réponse aux deux documents témoins.** `/Length1` manquait vraiment et la
+norme l'exige : c'est mesuré. Que ce soit LA cause de sa page blanche ne l'est
+pas — aucun moteur Apple sur ce poste, et les trois moteurs disponibles
+peignaient déjà le document sans l'entrée. Deux factures identiques, un avant et
+un après, lui ont été envoyées le 11 septembre. **Tant qu'il n'a pas répondu,
+ne pas écrire que la panne est corrigée** (`AGENTS.md` : « ne pas annoncer une
+panne corrigée quand seul le silence l'a été »).
+
+Si sa réponse est « les deux sont blanches », la piste suivante n'est pas le
+fichier mais son trajet : le mandataire de son espace, ou le chiffrement
+anti-retouche (`proteger-pdf.ts`), qu'aucun lecteur d'Apple n'a jamais été vu
+ouvrir ici.
+
+**2. ~~Les documents déjà archivés~~ — TRANCHÉ PAR LUI, 11 septembre 2026 :
+*« oui touche pas celles déjà arrêtées »*.**
+
+Une facture arrêtée garde le fichier composé à l'arrêt (`envois-factures.ts`),
+`/Length1` manquant compris — sa F2026-000007 restera blanche chez un lecteur
+strict, et c'est **sa décision**, pas un oubli. Ne pas rouvrir, ne pas proposer
+de « réparer les anciennes » : une pièce comptable ne se recompose pas pour
+faire joli.
+
+Ce qui reste vrai, et qui se dit s'il revient dessus : le correctif ne vaut que
+pour ce qui se compose APRÈS lui. Un document ancien qu'il veut lisible se
+refait en émettant la pièce à neuf, pas en retouchant l'archive.
+
+## SEIZE SUITES NAVIGATEUR SONT ROUGES SUR `main` — mesuré le 11 septembre 2026
+
+**Ce n'est pas une régression d'un lot : c'est l'état de `main`**, vérifié en
+rejouant les mêmes suites sur la version d'avant. Écrit ici pour que la
+prochaine session ne repaie pas les quarante minutes qu'il a fallu pour
+l'apprendre — et surtout, pour qu'elle ne cherche pas la cause dans son
+propre travail.
+
+| Verdict de la batterie | |
+|---|---|
+| types, lint, mémoire | ✅ |
+| suites base (`npm test`) | ✅ |
+| **suites navigateur** | **124/143** |
+| connexion derrière un proxy | ✅ |
+
+**Les seize, et ce qu'elles disent :**
+
+```
+adresse-suggestions · anneau-dictee · anneau-vers-devis
+carte-reponse-mene-au-geste · catalogue-mes-mots
+devis-client · devis-complet · devis-papier · fiche-entretien
+ia-01 · message-au-client · planning-vers-facture
+recherche-client · reprise-chantier · reprise-morceau · suivi-devis
+```
+
+**Deux sont des contrôles PÉRIMÉS, et se corrigent sans rien toucher au
+produit** (`CLAUDE.md` §5 bis — un contrôle ne doit pas réclamer ce qu'il a fait
+retirer) :
+
+- `adresse-suggestions` attend `/chantiers/<id>$`, la fiche du chantier
+  **retirée le 4 septembre** (`ARCHITECTURE.md` §254). `creerPuisFiche` laisse
+  désormais sur le devis : l'attente ne peut plus aboutir, jamais ;
+- `anneau-dictee` exige l'indice « **Poussez** » après une dictée. Le mot
+  n'existe plus dans `src/` : sur la fiche client, l'anneau ne devient jamais le
+  lecteur (`storageKey={null}`), et l'invite se tait dès qu'une note existe —
+  **sa règle du 1ᵉʳ septembre**.
+
+**Trois autres ne sont rouges QUE dans la batterie entière**, et vertes seules :
+`devis-fige-porte` et `madame-lucie` (délais dépassés sur un conteneur lent),
+`onglets-termines` (« `'2' !== '1'` » : le compte des retours non lus est pollué
+par les suites qui ont tourné avant, dans la même base).
+
+**Ce qu'il reste à trancher :** les onze autres. Chacune se rejoue seule en une
+commande — `npm run test:e2e -- --seulement <nom>` — et il faut savoir, pour
+chacune, si c'est le produit ou le contrôle qui a vieilli.
+
+---
+
+## ⚠️ CINQ NUMÉROS D'`ARCHITECTURE.md` SONT PRIS DEUX FOIS (constaté le 11 sept. 2026)
+
+Sur `main` : **§134, §135, §136, §164 et §165** désignent chacun DEUX
+paragraphes sans rapport — le §135 est à la fois « un écran atteint depuis deux
+endroits » (l. 11264) et « le diagnostic végétal » (l. 11744). C'est la
+collision que `CLAUDE.md` §6 B décrit, restée en place.
+
+**Conséquence tout de suite :** un renvoi « §135 » mène à un texte plausible et
+faux. Citer le TITRE avec le numéro, tant que ce n'est pas réglé.
+
+**Ce qui n'a PAS été fait, et pourquoi :** renuméroter détourne les renvois des
+sessions voisines, qui portent les mêmes numéros (payé trois fois le 26 août).
+Ça se fait d'un coup, par quelqu'un qui relit ensuite CHAQUE renvoi touché — pas
+en passant, au milieu d'un autre lot.
+
+---
+
 ## ~~LA PLANCHE DE LA PORTE N'A PAS SUIVI L'AÉRATION~~ — réglé autrement, 11 septembre 2026
 
 **Ce point était mal posé, et le corriger vaut mieux que de le faire.** Il

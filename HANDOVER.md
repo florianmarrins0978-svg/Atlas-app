@@ -8,6 +8,66 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA FACTURE TÉLÉCHARGÉE S'OUVRAIT BLANCHE (11 septembre 2026)
+
+| | |
+|---|---|
+| la plainte | *« lorsque je télécharge la facture je ne peux toujours pas la lire »* — page blanche, 3ᵉ fois |
+| la racine | `/Length1` absent du programme TrueType embarqué — requis par la norme, jamais écrit par `pdf-lib` |
+| la migration | **aucune** |
+| les pièces | `src/server/pdf/polices-embarquees.ts` (neuf), `src/server/pdf/document-commun.ts` |
+| les suites | `scripts/test-polices-embarquees.ts` (8), vue rouge contre le code d'avant |
+| le détail | `ARCHITECTURE.md` §328 |
+
+**CE QUI N'EST PAS PROUVÉ, ET QU'IL NE FAUT PAS PRÉSENTER COMME ACQUIS.** Aucun
+moteur Apple ici, et les trois moteurs disponibles — `pypdf`, `qpdf`, PDFium —
+sont justement ceux qui se passent de l'entrée : ils peignaient déjà le document
+entier AVANT la correction. Ce qui est mesuré, c'est que l'entrée manquait,
+que la norme l'exige, et qu'elle est désormais juste. Que ce soit **la** cause
+de sa page blanche est une déduction — appuyée par la chronologie (typographie
+embarquée le 8 septembre, première page blanche le 10). Deux documents témoins
+lui ont été envoyés le 11 pour trancher ; **sa réponse est à chercher avant de
+conclure**.
+
+**ET LES FACTURES DÉJÀ ARRÊTÉES NE SE TOUCHENT PAS — sa décision du
+11 septembre 2026 :** *« oui touche pas celles déjà arrêtées »*. Le lien du
+client sert le fichier composé à l'arrêt, jamais un document régénéré : sa
+F2026-000007 restera blanche chez un lecteur strict, et c'est voulu. Ne pas
+reproposer de « réparer les anciennes ».
+
+---
+
+## Dernier lot — LE MICRO SUR LA FICHE QUI FACTURE, ET LA FICHE QUI APPREND (11 septembre 2026)
+
+**Deux demandes dans un message, sur la fiche client qui mène à « Faire la
+facture ».**
+
+**1. Le petit micro est de retour.** *« Il faut rajouter la petite note vocale
+comme sur la fiche client si on veut dicter les infos de la facture ! »* Il
+était tombé la veille avec l'anneau et les photos ; seuls ces deux-là
+nourrissaient le chiffrage. Une ligne : `FormulaireNouveauChantier.tsx`, le
+`pourLeDevis &&` devant `<DicterCoordonnees>`. **L'anneau et les photos restent
+dehors** — la raison qui les écarte n'a pas changé.
+
+**2. Ce qu'il tape sur cet écran entre dans la fiche du client.** L'e-mail y
+entrait **déjà** (c'est la moitié de sa demande qui marchait). La civilité, le
+canal d'envoi et l'adresse du chantier, **non** — et sa capture porte les trois.
+
+**La racine, et c'est ce qu'il faut retenir :** la règle « compléter le vide,
+n'écraser jamais » était écrite **deux fois**, une par chemin menant à une fiche
+connue. La copie de `creerChantierAction` — le chemin du client qu'Atlas vient
+de reconnaître à l'écran, donc celui de sa demande — avait divergé en silence.
+Une seule fonction désormais : `completerLaFiche`, dans
+`src/server/repositories/clients.ts`. Détail et tableau : `ARCHITECTURE.md`
+§327.
+
+**Où c'est éprouvé :** `scripts/test-rapprochement-client-db.ts` (les deux
+chemins côte à côte, et le refus d'écraser) et
+`scripts/test-facture-sans-devis-e2e.ts` — celui-ci par SA porte : taper le nom,
+voir « Repris de sa fiche », ajouter l'e-mail, faire la facture, relire la fiche.
+Les deux suites ont été vues **rouges** contre la version d'avant.
+
+---
 ## Dernier lot — GOOGLE ET APPLE SE MONTRENT AVANT D'OUVRIR (11 septembre 2026)
 
 | | |

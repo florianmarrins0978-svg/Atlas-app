@@ -11,13 +11,12 @@ import {
 import { recopierPhotos } from "@/server/repositories/photos";
 import {
   trouverOuCreerClient,
+  completerLaFiche,
   getClient,
-  mettreAJourClient,
   reconnaitreLeClient,
   type CanalClient,
   type ClientReconnu,
 } from "@/server/repositories/clients";
-import { complementsPourFiche } from "@/lib/rapprochement-client";
 import { nomDuChantier } from "@/lib/nom-chantier";
 import type { Civilite } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
@@ -72,43 +71,40 @@ export async function creerChantierAction(data: CreerChantierInput): Promise<{ i
   // qu'on peut changer en chemin, et la RLS rend indiscernables « effacé » et
   // « d'une autre entreprise », ce qui est exactement ce qu'on veut.
   const clientConnu = data.clientId ? await getClient(ctx, data.clientId) : null;
+  const telephone = data.telephone?.trim() || undefined;
+  const email = data.email?.trim() || undefined;
+
+  // Un canal sans la coordonnée correspondante est un cul-de-sac : l'envoi
+  // s'annoncerait possible puis échouerait au dernier moment. On préfère ne
+  // rien enregistrer et laisser l'écran d'envoi le dire clairement.
+  //
+  // **Il se calcule AVANT la fourche**, et c'est la moitié de sa demande du
+  // 11 septembre 2026 : le client reconnu à l'écran passe par la branche du
+  // haut, qui l'ignorait. Il choisissait « SMS » sur la fiche qui facture, et
+  // sa fiche ne le retenait jamais.
+  const canal =
+    data.canal === "sms" && telephone ? "sms" : data.canal === "email" && email ? "email" : undefined;
+
   if (clientConnu) {
     clientId = clientConnu.id;
-    // Ce qu'il tape à la volée complète les cases VIDES, il n'écrase rien
-    // (`complementsPourFiche`, même règle que le rapprochement).
-    const complements = complementsPourFiche(
+    // **CE QU'IL TAPE ENTRE DANS SA FICHE, et par la MÊME porte que partout
+    // ailleurs.** Sa demande du 11 septembre 2026 : l'e-mail ajouté à la main
+    // sur la fiche qui facture doit être là la prochaine fois qu'il tape le
+    // nom. La règle — que du vide, jamais d'écrasement — vit dans
+    // `completerLaFiche`, et une seule fois : recopiée ici, elle avait déjà
+    // oublié la civilité et le canal d'envoi (`CLAUDE.md` §3).
+    await completerLaFiche(
+      ctx,
+      { ...clientConnu, creeLe: clientConnu.createdAt },
       {
-        id: clientConnu.id,
-        nom: clientConnu.nom,
-        telephone: clientConnu.telephone,
-        email: clientConnu.email,
-        adresse: clientConnu.adresse,
-        creeLe: clientConnu.createdAt,
-      },
-      {
-        nom: nomClient ?? clientConnu.nom,
-        telephone: data.telephone,
-        email: data.email,
-        adresse: data.adresseClient ?? data.adresseChantier,
+        civilite: data.civilite,
+        telephone,
+        email,
+        adresse: data.adresseClient?.trim() || data.adresseChantier?.trim() || undefined,
+        canalCommunication: canal,
       }
     );
-    if (Object.keys(complements).length > 0) {
-      await mettreAJourClient(ctx, clientConnu.id, complements);
-    }
   } else if (nomClient) {
-    const telephone = data.telephone?.trim() || undefined;
-    const email = data.email?.trim() || undefined;
-
-    // Un canal sans la coordonnée correspondante est un cul-de-sac : l'envoi
-    // s'annoncerait possible puis échouerait au dernier moment. On préfère ne
-    // rien enregistrer et laisser l'écran d'envoi le dire clairement.
-    const canal =
-      data.canal === "sms" && telephone
-        ? "sms"
-        : data.canal === "email" && email
-          ? "email"
-          : undefined;
-
     // **Retrouvé plutôt que recréé.** Le patron, le 17 août 2026 : *« si c'est
     // monsieur Martins et qu'on a déjà une fiche client monsieur Martins, le
     // devis, la facture s'ajoute à la fiche de monsieur Martins »*. La règle de

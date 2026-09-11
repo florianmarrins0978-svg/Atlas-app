@@ -28,6 +28,9 @@ import { ADRESSE } from "./_adresse";
 
 const BASE = ADRESSE;
 
+/** L'adresse de sa capture du 11 septembre 2026, chez Frédéric. */
+const ADRESSE_CHANTIER = "Rue Denfert Rochereau 78200 Mantes-la-Jolie";
+
 let passed = 0;
 let failed = 0;
 async function test(nom: string, fn: () => Promise<void>) {
@@ -140,18 +143,107 @@ async function main() {
     );
   });
 
-  await test("la fiche qui facture ne propose PAS de dicter", async () => {
+  await test("la fiche qui facture porte le micro, et pas l'anneau du devis", async () => {
     await page.goto(`${BASE}/chantiers/nouveau?facture=1`, { waitUntil: "networkidle" });
-    // Sa planche : « on ne dicte pas une facture qu'on tape ». Ces trois pièces
-    // nourrissent le CHIFFRAGE, et il n'y a pas de devis ici.
+
+    // **LE PETIT MICRO EST LÀ — sa demande du 11 septembre 2026** : *« il faut
+    // rajouter la petite note vocale comme sur la fiche client si on veut
+    // dicter les infos de la facture »*. Il remplit le nom, le numéro,
+    // l'e-mail, l'adresse — les mêmes cases qu'au devis, sur le même écran.
+    assert.strictEqual(
+      await page.locator('button[aria-label="Dicter les informations du client"]').count(),
+      1,
+      "le micro des coordonnées manque sur la fiche qui facture"
+    );
+
+    // **L'ANNEAU, LUI, RESTE DEHORS**, et la raison n'a pas changé : il dicte
+    // le CHANTIER pour le faire chiffrer, et il n'y a pas de devis ici. Un
+    // geste qui n'aboutit à rien est le pire des ornements.
     assert.strictEqual(
       await page.locator('[data-atlas="anneau-note-vocale"]').count(),
       0,
       "l'anneau de la note vocale est resté sur la fiche qui facture"
     );
+
     const bouton = page.locator('[data-atlas="action-facture-directe"]');
     assert.strictEqual(await bouton.count(), 1, "le geste « Faire la facture » est absent");
     assert.match((await bouton.innerText()).trim(), /Faire la facture/);
+  });
+
+  await test("L'E-MAIL TAPÉ ICI EST SUR SA FICHE LA FOIS D'APRÈS", async () => {
+    // ── SA DEMANDE DU 11 SEPTEMBRE 2026 ───────────────────────────────────
+    //
+    // *« Là j'ai tapé Frédéric, il a reconnu le nom et a ajouté les infos seul,
+    // c'est très bien ! Mais il n'avait pas l'info de l'adresse e-mail, donc
+    // là je l'ai rajoutée, et ce qu'il faut faire c'est que maintenant il a
+    // l'info et il doit la rajouter dans la catégorie client, comme ça la
+    // prochaine fois que je taperai Frédéric l'adresse e-mail pourra être
+    // ajoutée automatiquement aussi. »*
+    //
+    // **Le contrôle entre par SA porte** (`CLAUDE.md` §5 quater) : rien n'est
+    // écrit en base à la main, le client naît du premier passage sur cet écran
+    // et l'e-mail est tapé au clavier sur le second. Poser le client par le
+    // dépôt aurait éprouvé `completerLaFiche`, que je viens d'écrire — jamais
+    // le chemin où l'écran tient son identifiant et le lui passe.
+    const nom = `Frederic ${Date.now()}`;
+    const mail = `flo-speed-${Date.now()}@hotmail.test`;
+
+    // 1ᵉʳ passage : il le crée SANS e-mail, comme le Frédéric de sa capture.
+    await depuisTerminesJusquALaFacture(page, nom);
+
+    // 2ᵉ passage : il retape le nom, Atlas le reconnaît, il ajoute l'e-mail.
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    await page.click('[data-atlas="creer-une-facture"]');
+    await page.waitForURL(/\/chantiers\/nouveau/, { timeout: 15000 });
+    await page.waitForLoadState("networkidle");
+    await page.fill('input[placeholder="Bernard"]', nom);
+
+    // **On attend la RECONNAISSANCE, pas un délai.** Elle part 350 ms après la
+    // frappe et revient quand elle revient : un `waitForTimeout` rendrait la
+    // suite verte ou rouge selon la charge de la machine.
+    await page.waitForSelector('[data-atlas="client-reconnu"]', { timeout: 15000 });
+    const repris = await page.inputValue('input[placeholder="06 12 34 56 78"]');
+    assert.ok(repris.replace(/\D/g, "").length > 0, "Atlas n'a pas reposé le numéro qu'il connaît");
+
+    await page.fill('input[placeholder="bernard@exemple.fr"]', mail);
+    // **TOUT CE QU'IL POSE SUR CET ÉCRAN, pas seulement l'e-mail.** Sa capture
+    // porte « Mr » choisi, une adresse de chantier et « SMS » souligné : ces
+    // trois-là n'entraient PAS dans sa fiche, et il les rechoisissait à chaque
+    // passage sans jamais savoir pourquoi (`completerLaFiche`).
+    await page.click('[data-atlas="civilite-mr"]');
+    await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', ADRESSE_CHANTIER);
+    await page.click('[data-atlas="action-facture-directe"]');
+    await page.waitForURL(/\/chantiers\/[^/]+\/facture$/, { timeout: 20000 });
+    await page.waitForSelector('[data-atlas="envoyer-la-facture"]', { timeout: 20000 });
+
+    // **UNE SEULE FICHE, et elle porte l'e-mail.** Deux lignes voudraient dire
+    // qu'il a appris sur un doublon : son e-mail serait bien en base, et le
+    // Frédéric qu'il retrouve en tapant son nom ne l'aurait toujours pas.
+    const { rows } = await pool.query(
+      `SELECT id, email, telephone, civilite, adresse, canal_communication
+         FROM clients WHERE nom = $1 AND deleted_at IS NULL`,
+      [nom]
+    );
+    assert.strictEqual(rows.length, 1, `${rows.length} fiches pour un seul client`);
+    assert.strictEqual(rows[0].email, mail, "l'e-mail tapé n'est pas entré dans sa fiche client");
+    assert.strictEqual(rows[0].civilite, "mr", "la civilité choisie n'est pas entrée dans sa fiche");
+    assert.strictEqual(
+      rows[0].adresse,
+      ADRESSE_CHANTIER,
+      "l'adresse du chantier n'est pas devenue la sienne, ce que l'écran promet sous le champ"
+    );
+    assert.strictEqual(
+      rows[0].canal_communication,
+      "sms",
+      "le canal d'envoi n'est pas entré dans sa fiche"
+    );
+    // Le numéro que le premier passage a posé (`depuisTerminesJusquALaFacture`),
+    // en chiffres comme la base le garde. Apprendre, oui — écraser, jamais.
+    assert.strictEqual(
+      rows[0].telephone,
+      "0614228730",
+      "le numéro qu'il avait déjà a été réécrit au passage"
+    );
   });
 
   // ── LE PARCOURS ──────────────────────────────────────────────────────────

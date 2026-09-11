@@ -1,9 +1,43 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-11 · branche `claude/employee-absence-mockup-ayfv45`
+**Dernière mise à jour :** 2026-09-11 · branche `claude/invoice-download-readability-40dtq1`
 · dernière migration `drizzle/0085_creneaux_chantier.sql`
 
 ---
+
+## FAIT (sous réserve de SA réponse) : LA POLICE DU DOCUMENT ANNONCE SA LONGUEUR — 11 septembre 2026
+
+Sa facture téléchargée s'ouvrait blanche, pour la troisième fois. Le programme
+TrueType embarqué depuis le 8 septembre ne portait pas `/Length1`, entrée que la
+norme exige et que `pdf-lib` n'écrit jamais : un lecteur strict refuse alors la
+police, et tout le texte disparaît avec elle.
+
+`src/server/pdf/polices-embarquees.ts` la pose entre la composition et le
+scellé, avec la longueur mesurée du programme décompressé. **Aucune migration.**
+
+**Sous réserve** : aucun moteur Apple ici, donc rien ne prouve que c'était SA
+panne. Deux documents témoins lui ont été envoyés ; `TODO.md` garde le point
+ouvert, et les documents déjà archivés ne sont pas repris.
+
+Détail : `ARCHITECTURE.md` §328.
+
+---
+
+## FAIT : LE MICRO REVIENT SUR LA FICHE QUI FACTURE — 11 septembre 2026
+
+*« Il faut rajouter la petite note vocale comme sur la fiche client si on veut
+dicter les infos de la facture ! »* Retiré la veille avec l'anneau et les
+photos, sous une raison qui ne valait que pour ces deux-là. `<DicterCoordonnees>`
+n'est plus conditionné à `pourLeDevis` ; l'anneau et les photos restent dehors.
+
+## FAIT : LA FICHE DU CLIENT APPREND CE QU'IL TAPE — 11 septembre 2026
+
+*« Il n'avait pas l'info de l'adresse e-mail, donc là je l'ai rajoutée […] il
+doit la rajouter dans la catégorie client. »* L'e-mail entrait déjà ; **la
+civilité, le canal d'envoi et l'adresse du chantier, non**. Racine : la règle
+était écrite deux fois, une par chemin, et la copie de `creerChantierAction` —
+celle du client reconnu à l'écran — avait divergé. `completerLaFiche` la porte
+maintenant seule (`ARCHITECTURE.md` §327). Rien n'est jamais écrasé.
 
 ## FAIT : LES SUITES VISENT LE MOIS QUI EST À L'ÉCRAN — 11 septembre 2026
 
