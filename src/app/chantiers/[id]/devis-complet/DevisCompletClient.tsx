@@ -228,7 +228,7 @@ export default function DevisCompletClient(props: Props) {
       quantite: sansZerosInutiles(l.quantite),
       // Un prix jamais posé n'arrive PAS dans le champ : la règle est celle
       // du montant « à chiffrer », et elle n'est écrite qu'une fois.
-      prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire), l.aChiffrer),
+      prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
     }))
   );
   const [tauxTva, setTauxTva] = useState(sansZerosInutiles(props.tauxTva));
@@ -615,7 +615,7 @@ export default function DevisCompletClient(props: Props) {
       apres.lignes.map((l) => ({
         ...l,
         quantite: sansZerosInutiles(l.quantite),
-        prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire), l.aChiffrer),
+        prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
       }))
     );
     // **Le prix accordé se recale lui aussi**, et il ne s'en déduit pas : il ne

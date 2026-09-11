@@ -16,7 +16,7 @@ import {
 } from "./actions";
 import PropositionPrixSection from "./PropositionPrixSection";
 import type { PropositionPrix } from "@/server/chiffrage/proposition-prix";
-import { ligneAttendSonPrix, peutPreparerLaPiece } from "@/lib/preparation-devis";
+import { ligneAttendSonPrix, peutPreparerLaPiece, prixAEcrire } from "@/lib/preparation-devis";
 import { montantEcrivable } from "@/lib/montant-ecrivable";
 import { enEuros, enMontant } from "@/lib/euros";
 
@@ -356,8 +356,14 @@ export default function PrixClient({
                       inputMode="decimal"
                       data-prix-ligne={ligne.id}
                       aria-label="Montant de la ligne, en euros"
-                      placeholder={attend ? "à chiffrer" : ""}
-                      value={saisies[ligne.id] ?? (attend ? "" : enMontant(ligne.montant))}
+                      // **Un repère gris, jamais un zéro écrit** — sa règle du
+                      // 11 septembre 2026 : *« il y ait marqué 0 en gris pour
+                      // qu'on sache que c'est là qu'il faut écrire, mais que
+                      // lorsqu'on clique dessus ça soit vide »*. « À chiffrer »
+                      // reste sur les lignes qui le portent : il dit la même
+                      // chose, et il dit en plus pourquoi la case est vide.
+                      placeholder={attend ? "à chiffrer" : "0,00"}
+                      value={saisies[ligne.id] ?? prixAEcrire(enMontant(ligne.montant))}
                       onChange={(e) => setSaisies((cur) => ({ ...cur, [ligne.id]: e.target.value }))}
                       onBlur={(e) => persisterMontant(ligne.id, e.currentTarget.value)}
                       className={`w-[108px] flex-shrink-0 border-0 px-3 py-3 text-right outline-none ${classePlage}`}

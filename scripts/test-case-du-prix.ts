@@ -257,25 +257,35 @@ essai("le refus ne renvoie aux réglages que s'il n'y a aucune ligne", () => {
 // portait un `0` réel, venu du zéro que la base met par défaut. Il a tapé 450
 // derrière, et la case a affiché **0450**. Ce coup-ci le nombre tombait juste ;
 // un zéro de plus au mauvais endroit part chez le client.
-essai("une ligne qui attend son prix arrive avec un champ VIDE", () => {
-  assert.equal(prixAEcrire("0", true), "");
-  assert.equal(prixAEcrire("0,00", true), "");
-  assert.equal(prixAEcrire("", true), "");
+essai("une case sans montant arrive VIDE — c'est le zéro qu'il ne veut plus effacer", () => {
+  assert.equal(prixAEcrire("0"), "");
+  assert.equal(prixAEcrire("0,00"), "");
+  assert.equal(prixAEcrire("0.00"), "");
+  assert.equal(prixAEcrire(""), "");
 });
 
-// **Un zéro VOULU n'est pas touché.** Une ligne offerte ne porte pas le
-// drapeau, son montant s'écrit « 0,00 € » : vider son champ ferait passer une
-// gratuité décidée pour un oubli.
-essai("un zéro voulu reste écrit — une gratuité n'est pas un oubli", () => {
-  assert.equal(prixAEcrire("0", false), "0");
-  assert.equal(prixAEcrire("0", undefined), "0");
-  assert.equal(prixAEcrire("0", null), "0");
+// ─── CE CONTRÔLE EXIGEAIT L'INVERSE CE MATIN, ET C'EST LUI QUI A TRANCHÉ ───
+//
+// La première version gardait le zéro d'une ligne OFFERTE — « une gratuité
+// décidée n'est pas un oubli ». C'était défendable ; sa règle du soir ne l'est
+// pas moins, et elle vient de lui : *« les cases pour les montants […] lorsqu'on
+// clique dessus ça soit vide, on peut direct écrire le chiffre sans avoir à
+// supprimer des 0 »*. Une case de saisie ne porte donc plus jamais de zéro.
+//
+// **Ce que la réserve craignait ne se perd pas** : le montant calculé reste
+// affiché à côté de la case, et une gratuité continue de s'écrire « 0,00 € »
+// là où elle se lit. Réclamer ici ce qu'il a fait retirer rendrait son écran
+// impossible à changer (`CLAUDE.md` §5 bis).
+essai("un zéro ne s'écrit JAMAIS dans une case de saisie, gratuité comprise", () => {
+  assert.equal(prixAEcrire("0"), "", "le zéro d'une ligne offerte se retrouve à effacer");
+  assert.equal(prixAEcrire("0,00"), "");
 });
 
-essai("un prix posé s'écrit, drapeau ou pas", () => {
-  assert.equal(prixAEcrire("450", true), "450");
-  assert.equal(prixAEcrire("1200,50", true), "1200,50");
-  assert.equal(prixAEcrire("450", false), "450");
+essai("un prix posé s'écrit tel quel", () => {
+  assert.equal(prixAEcrire("450"), "450");
+  assert.equal(prixAEcrire("1200,50"), "1200,50");
+  assert.equal(prixAEcrire("0,50"), "0,50", "un demi-euro n'est pas un zéro");
+  assert.equal(prixAEcrire("-30"), "-30");
 });
 
 // **L'ANCIEN COMPORTEMENT, REJOUÉ** — un contrôle qui n'a jamais échoué ne
@@ -286,8 +296,8 @@ essai("un prix posé s'écrit, drapeau ou pas", () => {
 essai("TÉMOIN — l'ancienne case gardait le zéro, et 450 tapé derrière faisait 0450", () => {
   const ancienChamp = "0";
   assert.equal(ancienChamp + "450", "0450", "le décor du témoin ne reproduit plus le défaut");
-  assert.notEqual(prixAEcrire("0", true) + "450", "0450");
-  assert.equal(prixAEcrire("0", true) + "450", "450");
+  assert.notEqual(prixAEcrire("0") + "450", "0450");
+  assert.equal(prixAEcrire("0") + "450", "450");
 });
 
 // **LE CURSEUR ARRIVE AU BOUT DU CHIFFRE.** Sa seconde correction du même

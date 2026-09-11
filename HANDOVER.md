@@ -23,6 +23,11 @@ sert.
 l'INITIALISATION de l'état, jamais au rendu. Dérivé à chaque frappe, il se
 viderait au premier « 0 » tapé — et « 0,50 » deviendrait impossible à écrire.
 
+**ET LA RÈGLE N'A PLUS D'EXCEPTION — sa décision du soir :** une case de saisie
+ne porte jamais de zéro, devis, facture et écran des prix compris. `prixAEcrire`
+ne prend plus de drapeau. Ne pas rétablir le zéro d'une ligne offerte : le
+montant calculé, lui, reste affiché à côté et dit la gratuité.
+
 **Et le « − » d'une catégorie ne retire QUE ses lignes** : `retirerLignesDeFacture`
 sans identifiant vide la facture entière. C'était sans conséquence tant qu'il
 n'y avait qu'un groupe ; avec deux taux, cela emporterait l'autre.

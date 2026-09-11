@@ -28,10 +28,17 @@ disparu. Le taux d'un groupe ne commande plus que ses lignes, et le « − » ne
 retire que les siennes : l'appel sans identifiant vidait la facture entière, ce
 qui ne se voyait pas tant qu'il n'y avait qu'un groupe.
 
-Sur une facture, un prix nul est un prix qui n'a pas été saisi — on ne facture
-pas 0 €. Le champ reste vide, et c'est une valeur de départ, jamais un affichage
+Le champ reste vide, et c'est une valeur de départ, jamais un affichage
 recalculé : dérivé à chaque frappe, il se viderait au premier « 0 » tapé et
 « 0,50 » deviendrait impossible à écrire.
+
+**Puis il a tranché l'exception qui restait**, le soir même : *« les cases pour
+les montants, il y ait marqué 0 en gris […] mais que lorsqu'on clique dessus ça
+soit vide »*. La règle du matin épargnait le zéro d'une ligne offerte ; elle
+n'en épargne plus aucun, sur les trois écrans où l'on tape un montant — l'écran
+des prix affichait encore « 0,00 » sur toute ligne non marquée « à chiffrer ».
+Rien ne se perd : le montant calculé reste affiché à côté, et une gratuité
+s'écrit toujours « 0,00 € » là où elle se lit.
 
 Éprouvé par sa porte (`test-facture-sans-devis-e2e.ts`, 11 pièces) : les deux
 moitiés ont été vues rouges contre le code d'avant. Et regardé à l'écran, trois

@@ -122,10 +122,9 @@ export default function TravauxSupplementairesClient({
    * les mêmes champs, recevait le zéro de la base tel quel : c'est la règle
    * appliquée à un seul des deux écrans que `CLAUDE.md` §3 refuse.
    *
-   * **Ce qui remplace ici le drapeau « à chiffrer » du devis, absent de
-   * `lignes_facture` : le zéro lui-même.** On ne facture pas 0 € — un prix nul
-   * sur une facture est un prix qui n'a pas encore été saisi, jamais une
-   * gratuité décidée. Le montant, lui, reste affiché tel qu'il est calculé.
+   * **La règle ne connaît plus d'exception** — sa décision du 11 septembre au
+   * soir : une case de montant ne porte jamais de zéro, ici comme ailleurs. Le
+   * montant calculé, lui, reste affiché à côté.
    *
    * **Et c'est une VALEUR DE DÉPART, pas un affichage recalculé à chaque
    * frappe** : dérivé au rendu, le champ se viderait au premier « 0 » tapé, et
@@ -135,7 +134,7 @@ export default function TravauxSupplementairesClient({
     lignesInitiales.map((l) => ({
       ...l,
       quantite: sansZerosInutiles(l.quantite),
-      prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire), true),
+      prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
     }))
   );
   const [erreur, setErreur] = useState<string | null>(null);

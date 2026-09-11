@@ -28192,10 +28192,22 @@ portait le zéro de la base, et ce qu'il tapait se collait derrière. Elle ne
 servait qu'au devis. La facture emploie pourtant **les mêmes champs**
 (`ChampsDuDevis`) : c'est la moitié invisible de la duplication.
 
-**Ce qui remplace ici le drapeau « à chiffrer », absent de `lignes_facture` :
-le zéro lui-même.** On ne facture pas 0 € — un prix nul est un prix qui n'a pas
-encore été saisi. Le champ reste vide, le gris du placeholder invite à écrire,
-et le montant, lui, dit ce qu'il calcule.
+**Et la règle ne connaît plus d'exception — sa décision du même soir**, après
+avoir lu la première version : *« ce que je veux, c'est que les cases pour les
+montants, il y ait marqué 0 en gris pour qu'on sache que c'est là qu'il faut
+écrire, mais que lorsqu'on clique dessus ça soit vide : on peut direct écrire le
+chiffre sans avoir à supprimer des 0 »*.
+
+`prixAEcrire` ne prend donc plus de drapeau : **une case de saisie ne porte
+jamais de zéro**, sur les trois écrans où l'on tape un montant — le devis, la
+facture, et l'écran des prix, qui affichait encore `0,00` sur toute ligne non
+marquée « à chiffrer ».
+
+| | |
+|---|---|
+| ce qui a été écarté | garder le zéro d'une ligne OFFERTE, pour qu'une gratuité décidée ne passe pas pour un oubli |
+| pourquoi c'est sans perte | le MONTANT calculé reste affiché à côté de la case : une gratuité continue de s'écrire « 0,00 € » là où elle se lit. C'est la case de saisie qui se tait, pas le document |
+| ce qui reste | « à chiffrer » sur les lignes qui le portent — il dit la même chose, et il dit en plus POURQUOI la case est vide |
 
 **Et c'est une valeur de DÉPART, jamais un affichage recalculé à chaque frappe.**
 Dérivé au rendu, le champ se viderait au premier « 0 » tapé : « 0,50 » serait
