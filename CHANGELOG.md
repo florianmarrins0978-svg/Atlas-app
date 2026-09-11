@@ -8,6 +8,90 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Aérer la porte — et le premier essai lisait sa demande à l'envers
+
+*« Je les trouve trop collés en haut, aère la page et prends plus d'espace. »*
+
+**Ma première version a mis le vide AU MILIEU**, en écartant « Entrer » des
+champs d'une centaine de pixels. Il l'a refusée sèchement — *« mais ça n'a rien
+à voir ! »* —, puis a renvoyé sa planche en photo : *« c'est ça que je veux »*.
+
+**Ce que la planche disait et que je n'avais pas lu :** « Entrer » est **collé
+sous le mot de passe** — c'est le même geste, on le lit d'un trait — et tout le
+vide est **dessous**, avant « Créer un compte ». Aérer voulait dire « donne de
+l'air entre les éléments », pas « étire le bloc sur toute la hauteur ».
+
+Les écarts sont maintenant **relevés sur sa planche** (390 × 664) plutôt
+qu'inventés : 32 au-dessus du titre, 21 dessous, 28 de part et d'autre du
+« ou », 24 sous Face ID, 23 entre les champs. Une seule part flexible reste,
+**après le bouton** : elle absorbe la place libre et tient le pied en bas sur
+n'importe quelle hauteur — mesuré, 121 px sous « Entrer » contre 123 sur la
+planche, et rien ne déborde.
+
+**Et le point de `TODO.md` qui demandait de repeindre la planche est corrigé
+plutôt que fait** : elle est le relevé du choix à trois du 7 septembre, pas un
+miroir de l'application. La repeindre aurait effacé les deux propositions
+écartées. Son bandeau dit désormais qu'elle est tranchée et codée — il affirmait
+encore « rien n'est codé », faux depuis trois jours.
+
+### Montrer Google et Apple avant de pouvoir les ouvrir — sa décision
+
+*« Je veux que lorsque l'utilisateur clique sur se déconnecter qu'il arrive
+direct sur cet écran »*, sa maquette remise en photo pour la troisième fois. La
+déconnexion arrivait déjà sur le bon écran : ce qui manquait, c'étaient les deux
+marques.
+
+Le choix lui a été posé avec son coût — les cacher jusqu'aux clés, les afficher
+quand même, ou les afficher grisées. **Il a retenu « les afficher quand même ».**
+
+**Ce que ça renverse, et ce qui le rend tenable.** Le dépôt tenait l'inverse la
+veille : *« un bouton qui ne peut pas aboutir est pire qu'un bouton absent »*.
+La raison — on appuie dans le vide, `signIn` sort vers la page d'Auth.js — a
+cessé d'être vraie : `entrerAvecAction` refuse un fournisseur non branché AVANT
+Auth.js et rend une phrase qui nomme ce qui manque et ce qui marche. La règle
+tient toujours pour Face ID, qui n'a personne à qui poser la question.
+
+**Deux questions séparées, et ce n'est pas une règle dupliquée** :
+`fournisseursAAfficher` (ce que l'écran dessine) et `fournisseursDisponibles`
+(ce qu'Auth.js déclare). Elles avaient l'air d'une seule parce qu'elles
+coïncidaient ; la seconde dérive de la première, et un seul endroit décide ce
+qu'est « branché ». Déclarer un fournisseur sans clé ferait lever la
+configuration au démarrage — plus personne n'entrerait, pas même par mot de
+passe.
+
+Les quatre clés se lisent désormais **en un seul endroit**
+(`src/server/cles-fournisseurs.ts`) : le même objet se recomposait à trois
+endroits, chacun retapant les quatre noms. Le détail est dans
+`ARCHITECTURE.md` §325.
+
+Regardé à l'écran, à la largeur de son téléphone : l'écran au repos, et le refus
+lu après un appui sur Google.
+
+---
+
+---
+
+### Trois planches lui ont été redemandées alors qu'elles étaient codées
+
+*« La planche déconnecter est déjà faite, va vérifier ! La 2ᵉ aussi ! Et la
+3ᵉ aussi ! »* — et il avait raison sur les trois. « Se déconnecter » est au bas
+des Réglages depuis le 9 septembre, « Aujourd'hui » en doré et en tête depuis le
+9 aussi, et « Dernier devis » sur la fiche client depuis le 8, sur son choix E.
+
+**La cause n'est pas l'oubli, c'est la lecture.** `TODO.md` portait trois titres
+« ⏳ UNE PLANCHE À REGARDER » jamais barrés, dont un au-dessus d'un corps qui
+disait « CODÉ LE 9 SEPTEMBRE ». `CLAUDE.md` §1 dit depuis toujours que le code
+fait foi ; il n'a pas été appliqué — j'ai lu des titres.
+
+Les trois entrées sont corrigées avec la preuve (le fichier, l'endroit où il est
+monté, sa suite). `scripts/test-todo-sans-titre-menteur.ts` tient désormais la
+moitié mécanique : il a été vu ROUGE sur la version qui m'a trompé, et il barre
+la batterie. L'autre moitié est un `grep` de trente secondes, écrit dans
+`CLAUDE.md` §1.
+
+**Lui redemander un choix qu'il a déjà donné n'est pas une question de plus :
+c'est lui faire refaire un travail qu'il a fait.**
+
 ### Cinq rouges de la nuit : le calendrier gardait trois mois, les suites n'en visaient aucun
 
 Le glissement des mois monte trois mois à la fois — le précédent et le suivant
@@ -177,7 +261,7 @@ toutes rouvertes.
 ordinaires), et `peutPreparerLaPiece` (elle sert aussi la facture, et prend le
 nom de la pièce pour qu'un écran de facture ne dise jamais « devis »).
 
-Détail et pourquoi : `ARCHITECTURE.md` §325.
+Détail et pourquoi : `ARCHITECTURE.md` §326.
 
 ---
 ## 2026-09-10

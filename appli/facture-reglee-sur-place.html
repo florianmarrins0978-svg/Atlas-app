@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Réglée sur place — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  LA FACTURE SANS DEVIS ENTRE-T-ELLE TOUT DE SUITE DANS LA TVA ? — 11 sept. 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa demande : *« il faut qu'une fois la facture envoyée, elle apparaisse
+  directement dans la case TVA, vu qu'elle vient d'être facturée. »*
+
+  CE QUI EST DÉJÀ TRANCHÉ, PAR LUI, LE 14 AOÛT (docs/QUESTIONS.md §20) : une
+  facture envoyée ATTEND, et n'entre dans la TVA que le jour où il appuie sur
+  « Payée ». Il l'a demandé parce qu'un client qui ne paie pas ne doit pas lui
+  faire déclarer une TVA qu'il n'a pas encaissée — et la loi dit la même chose
+  pour un prestataire de services (régime des encaissements).
+
+  Une facture sans devis, c'est un dépannage RÉGLÉ SUR PLACE : l'argent est là.
+  Elle a donc sa place dans la TVA tout de suite — à condition que ce soit LUI
+  qui le dise, d'un geste, et non l'application qui le suppose (CLAUDE.md §4 :
+  rien ne se facture ni ne se valide sans un geste du patron).
+
+  Trois façons. La planche montre chacune sur l'écran réel de la facture, et ce
+  que la carte de TVA affiche ensuite. RIEN N'EST CODÉ.
+
+  Les couleurs viennent de src/lib/chartes.ts.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f; --rouille:#9c5a3c;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#6f8a5f; --surPlein:#fff; --papier:#ece9e1; --alerte:#9c3b2e;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de; --rouille:#d09a7c;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#6f8a5f; --surPlein:#101210; --papier:#232722; --alerte:#e0857a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+body.nuit .sceau{color:var(--scene)}
+
+.bloc{max-width:740px;margin:0 auto;padding:6px 20px 0}
+.bloc h2{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:23px;margin:30px 0 4px;font-weight:400}
+.bloc .numero{font-size:10px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--or);display:block;margin-top:30px}
+.bloc>p{font-size:14.5px;line-height:1.65;color:var(--encre-douce);margin:0 0 14px}
+.bloc>p b{color:var(--encre)}
+.alerte{border-left:3px solid var(--or);padding-left:13px}
+
+.choix{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;max-width:740px;margin:18px auto 0;padding:0 20px}
+.choix button{font:inherit;font-size:13px;padding:11px 15px;min-height:44px;border:0;
+  box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage);color:var(--encre-douce);
+  border-radius:999px;cursor:pointer}
+.choix button[aria-pressed=true]{background:var(--plein);color:var(--surPlein);box-shadow:none;font-weight:600}
+
+.pas{display:flex;justify-content:center;gap:7px;margin:14px 0 0}
+.pas button{font:inherit;font-size:12.5px;padding:8px 13px;min-height:40px;border:0;
+  background:none;color:var(--gris);border-bottom:2px solid transparent;cursor:pointer}
+.pas button[aria-pressed=true]{color:var(--encre);border-bottom-color:var(--or)}
+
+.scene{display:flex;justify-content:center;padding:14px 16px 6px}
+.tel{width:390px;max-width:100%;min-height:640px;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column}
+.dedans{padding:16px 16px 0;flex:1;display:flex;flex-direction:column}
+
+.entete{display:flex;align-items:center;gap:10px;padding:4px 0 12px}
+.entete .fleche{font-size:19px;color:var(--encre-douce);min-width:44px;min-height:44px;display:flex;align-items:center}
+.entete .sur{font-size:9.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--gris);display:block}
+.entete .quoi{font-family:ui-serif,Georgia,serif;font-size:20px;display:block}
+
+.doc{background:var(--plage);border:1px solid var(--trait-doux);border-radius:12px;padding:15px 15px 12px;margin:0 0 12px}
+.tot{display:flex;justify-content:space-between;font-size:13.5px;color:var(--encre-douce);padding:3px 0}
+.tot.gros{font-size:17px;color:var(--encre);padding-top:6px}
+.tot .mt{font-variant-numeric:tabular-nums}
+.petit{font-size:12.5px;color:var(--gris);padding:6px 0 0}
+
+.reglage{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border-top:1px solid var(--trait-doux);padding:9px 0 4px;margin:4px 0}
+.reglage .mot{font-size:9.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gris)}
+.reglage .lesdeux{display:flex;gap:4px}
+.canal{background:none;border:0;font:inherit;font-size:14px;color:var(--encre-douce);
+  cursor:pointer;padding:8px 9px;min-height:44px;border-bottom:2px solid transparent}
+.canal[aria-pressed=true]{color:var(--encre);border-bottom-color:var(--or)}
+.destinataire{text-align:center;font-size:12.5px;color:var(--gris);margin:0 0 9px}
+
+.plein{width:100%;min-height:52px;border:0;border-radius:999px;background:var(--plein);
+  color:var(--surPlein);font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.creux{width:100%;min-height:52px;border:0;border-radius:999px;background:transparent;
+  color:var(--encre);box-shadow:inset 0 0 0 1.5px var(--trait);font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.sous{border-left:1px solid var(--or);padding:4px 0 4px 13px;margin:12px 0 0}
+.sous p{margin:0;font-size:13px;line-height:1.4}
+.sous p.g{margin-top:3px;font-size:12px;color:var(--gris)}
+
+.arrete{background:var(--papier);border-radius:14px;padding:12px 14px;margin:0 0 12px}
+.arrete .t{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--or);margin:0 0 6px}
+.arrete .m{font-size:13.5px;line-height:1.5;white-space:pre-line;margin:0;color:var(--encre)}
+
+.carte-tva{margin:14px 0 0;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;border-radius:4px;padding:16px 18px;background:var(--plage);
+  box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.55)}
+.carte-tva .quoi{display:block;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+.carte-tva .periode{display:block;margin-top:5px;font-size:15px;font-family:ui-serif,Georgia,serif}
+.carte-tva .mt{font-size:21px;font-family:ui-serif,Georgia,serif;white-space:nowrap}
+.carte-tva .mt.bouge{color:var(--rouille)}
+.legende{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin:18px 0 0}
+
+.attente{margin:10px 0 0;font-size:13px;color:var(--gris)}
+.attente b{color:var(--encre)}
+
+p.dessous{max-width:740px;margin:12px auto 0;padding:0 20px;text-align:center;
+  font-size:14px;line-height:1.65;color:var(--encre-douce)}
+p.dessous b{color:var(--encre)}
+.mise-en-garde{color:var(--alerte)}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px;font-weight:400}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes .cadre{overflow-x:auto}
+.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
+.notes th,.notes td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--trait-doux);color:var(--encre-douce);vertical-align:top}
+.notes th{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+.notes td b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">11 septembre — votre question</span>
+  <h1>Réglée sur place : dans la TVA tout de suite ?</h1>
+  <p>Un dépannage sans devis se règle sur place. Vous voulez que la facture
+  entre <b>directement dans la TVA</b> une fois envoyée. Trois façons de le
+  faire — <b>touchez chacune</b>, puis avancez dans le parcours.</p>
+</div>
+
+<div class="bloc">
+  <span class="numero">Ce que vous aviez tranché le 14 août</span>
+  <p class="alerte">Une facture envoyée <b>attend</b>, et n'entre dans la TVA que
+  quand vous appuyez sur « Payée » — parce qu'un client qui ne paie pas ne doit
+  pas vous faire déclarer une TVA que vous n'avez pas touchée. C'est aussi la
+  loi pour une prestation de services. Ici l'argent est là : il faut juste que
+  ce soit <b>vous</b> qui le disiez, d'un geste.</p>
+</div>
+
+<div class="choix" id="choix"></div>
+<div class="pas" id="pas"></div>
+
+<div class="scene"><div class="tel"><div class="dedans" id="ecran"></div></div></div>
+<p class="dessous" id="dit"></p>
+
+<div class="notes">
+  <h3>Les trois, côte à côte</h3>
+  <div class="cadre">
+  <table>
+    <tr><th></th><th>Le geste</th><th>Ce que ça coûte</th><th>Ce que ça risque</th></tr>
+    <tr><td><b>A · « Payée » après l'envoi</b></td><td>un appui de plus, sur l'écran de la facture</td><td>un appui</td><td>l'oublier — et la facture attend pour rien</td></tr>
+    <tr><td><b>B · « Réglée sur place » avant l'envoi</b></td><td>un réglage à côté du choix SMS / e-mail ; envoyer note aussi le paiement</td><td>rien : c'est le même geste</td><td>le laisser coché quand le client n'a pas payé</td></tr>
+    <tr><td><b>C · Automatique</b></td><td>aucun</td><td>rien</td><td>déclarer de la TVA sur de l'argent pas reçu — <b>contraire à votre règle du 14 août</b></td></tr>
+  </table>
+  </div>
+
+  <h3>Ce que je recommande</h3>
+  <p><b>B.</b> Un dépannage réglé sur place l'est neuf fois sur dix : le réglage
+  est proposé à <b>oui</b> sur une facture sans devis, et vous le décochez la
+  fois où le client vous doit encore. Envoyer fait alors les deux — la facture
+  part, et elle entre dans la TVA. Rien n'est supposé : c'est vous qui l'avez
+  laissé coché.</p>
+  <p>Sur une facture née d'un <b>devis</b>, rien ne change : elle attend
+  « Payée », comme vous l'aviez demandé.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var SAUT = String.fromCharCode(10);
+
+  var pole = document.getElementById("pole");
+  pole.addEventListener("click", function(){
+    var nuit = document.body.classList.toggle("nuit");
+    pole.setAttribute("aria-pressed", String(nuit));
+    pole.textContent = nuit ? "Voir sur Arborea" : "Voir sur Nuit";
+  });
+
+  var elChoix = document.getElementById("choix");
+  var elPas   = document.getElementById("pas");
+  var ecran   = document.getElementById("ecran");
+  var dit     = document.getElementById("dit");
+
+  var TTC = "199,10 €", TVA = "22,10 €";
+
+  var OPTIONS = [
+    { cle:"A", mot:"A · « Payée » après l'envoi",   pas:["Avant l'envoi","Envoyée","Payée"] },
+    { cle:"B", mot:"B · « Réglée sur place »",       pas:["Avant l'envoi","Envoyée"] },
+    { cle:"C", mot:"C · Automatique",                pas:["Avant l'envoi","Envoyée"] }
+  ];
+  var choisie = "B";
+  var etape = 0;
+  var regleeSurPlace = true;   // B : proposé à oui
+  var canal = "sms";
+
+  function entete(){
+    return '<div class="entete"><span class="fleche">‹</span>'
+      + '<span><span class="sur">M. Julien</span><span class="quoi">Facture</span></span></div>';
+  }
+  function doc(){
+    return '<div class="doc">'
+      + '<div class="tot" style="font-size:13px"><span>Facture n° F-2026-041</span><span></span></div>'
+      + '<div class="tot gros"><span>Total TTC</span><span class="mt">' + TTC + '</span></div>'
+      + '<div class="petit">2 lignes · à régler avant le 10 octobre</div></div>';
+  }
+  function reglageEnvoi(){
+    return '<div class="reglage"><span class="mot">Envoi</span><span class="lesdeux">'
+      + '<button class="canal" type="button" data-canal="sms" aria-pressed="' + (canal==="sms") + '">SMS</button>'
+      + '<button class="canal" type="button" data-canal="email" aria-pressed="' + (canal==="email") + '">E-mail</button>'
+      + '</span></div>'
+      + '<p class="destinataire">' + (canal==="sms" ? "Au 06 14 22 87 30" : "À j.julien@exemple.fr") + '</p>';
+  }
+  function reglageReglee(){
+    return '<div class="reglage" id="reglee"><span class="mot">Réglée sur place</span><span class="lesdeux">'
+      + '<button class="canal" type="button" data-reglee="oui" aria-pressed="' + regleeSurPlace + '">Oui</button>'
+      + '<button class="canal" type="button" data-reglee="non" aria-pressed="' + !regleeSurPlace + '">Non</button>'
+      + '</span></div>';
+  }
+  function carte(dansLaTva){
+    return '<p class="legende">Ce que dit Terminés ensuite</p>'
+      + '<div class="carte-tva"><span><span class="quoi">Ma TVA à déclarer</span>'
+      + '<span class="periode">Septembre 2026 · reste à payer</span></span>'
+      + '<span class="mt' + (dansLaTva ? ' bouge' : '') + '">' + (dansLaTva ? TVA : "0,00 €") + '</span></div>'
+      + (dansLaTva ? '' : '<p class="attente">Et dans <b>en attente de paiement</b> : F-2026-041 · ' + TTC + '</p>');
+  }
+  function arretee(){
+    return '<div class="arrete"><p class="t">Facture arrêtée</p><p class="m">'
+      + ["Bonjour M. Julien,", "", "Votre facture n° F-2026-041 d'un montant de " + TTC + " est disponible ici :",
+         "atlas.fr/f/9c3e7a", "", "Arborea"].join(SAUT) + '</p></div>';
+  }
+
+  function rendre(){
+    var o = OPTIONS.filter(function(x){ return x.cle === choisie; })[0];
+    var html = entete() + doc();
+    var texte = "";
+
+    if (choisie === "A") {
+      if (etape === 0) {
+        html += reglageEnvoi() + '<button class="plein" type="button" id="envoyer">Envoyer la facture</button>'
+          + '<div class="sous"><p>En l’envoyant, vous l’arrêtez : elle attend son règlement.</p></div>';
+        texte = "Rien de nouveau avant l’envoi : c’est l’écran d’aujourd’hui.";
+      } else if (etape === 1) {
+        html += arretee() + '<button class="creux" type="button" id="payee">Payée</button>'
+          + carte(false);
+        texte = "Envoyée, elle <b>attend</b>. Un bouton « Payée » est là — <b>c’est l’appui de plus</b>.";
+      } else {
+        html += arretee() + carte(true);
+        texte = "Après « Payée » : elle est dans la TVA.";
+      }
+    }
+
+    if (choisie === "B") {
+      if (etape === 0) {
+        html += reglageEnvoi() + reglageReglee()
+          + '<button class="plein" type="button" id="envoyer">Envoyer la facture</button>'
+          + '<div class="sous"><p>' + (regleeSurPlace
+              ? "En l’envoyant, vous l’arrêtez et vous notez son règlement : elle entre dans votre TVA."
+              : "En l’envoyant, vous l’arrêtez : elle attend son règlement.") + '</p></div>';
+        texte = "Un réglage de plus, <b>du même dessin</b> que SMS / E-mail, proposé à <b>oui</b>. Touchez-le, puis envoyez.";
+      } else {
+        html += arretee() + carte(regleeSurPlace);
+        texte = regleeSurPlace
+          ? "<b>Un seul geste</b> : envoyée ET dans la TVA."
+          : "Vous aviez décoché : elle attend « Payée », comme une facture avec devis.";
+      }
+    }
+
+    if (choisie === "C") {
+      if (etape === 0) {
+        html += reglageEnvoi() + '<button class="plein" type="button" id="envoyer">Envoyer la facture</button>'
+          + '<div class="sous"><p>En l’envoyant, vous l’arrêtez : elle entre dans votre TVA.</p></div>';
+        texte = "Rien à toucher.";
+      } else {
+        html += arretee() + carte(true);
+        texte = "<span class=\"mise-en-garde\">Dans la TVA sans que personne ait dit que l’argent est reçu.</span> Si le client n’a pas payé, vous déclarez quand même — c’est ce que vous refusiez le 14 août.";
+      }
+    }
+
+    ecran.innerHTML = html;
+    dit.innerHTML = texte;
+
+    elChoix.innerHTML = OPTIONS.map(function(x){
+      return '<button type="button" data-opt="' + x.cle + '" aria-pressed="' + (x.cle===choisie) + '">' + x.mot + '</button>';
+    }).join("");
+    elPas.innerHTML = o.pas.map(function(p, i){
+      return '<button type="button" data-pas="' + i + '" aria-pressed="' + (i===etape) + '">' + p + '</button>';
+    }).join("");
+
+    Array.prototype.forEach.call(elChoix.children, function(b){
+      b.addEventListener("click", function(){ choisie = b.getAttribute("data-opt"); etape = 0; rendre(); });
+    });
+    Array.prototype.forEach.call(elPas.children, function(b){
+      b.addEventListener("click", function(){ etape = Number(b.getAttribute("data-pas")); rendre(); });
+    });
+    Array.prototype.forEach.call(ecran.querySelectorAll("[data-canal]"), function(b){
+      b.addEventListener("click", function(){ canal = b.getAttribute("data-canal"); rendre(); });
+    });
+    Array.prototype.forEach.call(ecran.querySelectorAll("[data-reglee]"), function(b){
+      b.addEventListener("click", function(){ regleeSurPlace = b.getAttribute("data-reglee") === "oui"; rendre(); });
+    });
+    var envoyer = ecran.querySelector("#envoyer");
+    if (envoyer) envoyer.addEventListener("click", function(){ etape = 1; rendre(); });
+    var payee = ecran.querySelector("#payee");
+    if (payee) payee.addEventListener("click", function(){ etape = 2; rendre(); });
+  }
+
+  rendre();
+})();
+</script>
+
+</body>
+</html>

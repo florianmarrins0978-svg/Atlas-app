@@ -10,7 +10,8 @@ import { messageAttente as messageTemporisation, porteeTemporisation } from "@/l
 import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
 import { attenteAvantEssai, noterEchec, oublierEchecs } from "@/server/repositories/tentatives-connexion";
 import { messageRefusCle } from "@/lib/cle-appareil";
-import { estNomFournisseur } from "@/lib/fournisseurs-connexion";
+import { estBranche, estNomFournisseur, messageNonBranche } from "@/lib/fournisseurs-connexion";
+import { clesFournisseurs } from "@/server/cles-fournisseurs";
 import { optionsConnexion } from "@/server/cle-appareil";
 import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
 
@@ -378,6 +379,22 @@ export async function entrerAvecAction(nom: string): Promise<{ erreur?: string }
   if (!estNomFournisseur(nom)) {
     logger.warn("[connexion] fournisseur inconnu refusé", { nom });
     return { erreur: "Ce moyen de connexion n'existe pas." };
+  }
+
+  /**
+   * **LE REFUS QUI REND L'AFFICHAGE TENABLE — 11 septembre 2026.**
+   *
+   * Les deux marques se dessinent désormais même sans clé (sa décision, voir
+   * `fournisseursAAfficher`). Sans ce refus-ci, appuyer partirait dans
+   * `signIn("google")`, qu'Auth.js ne connaît pas : il renvoie alors sur SA
+   * page de connexion à lui, et l'on sort d'Atlas sans comprendre.
+   *
+   * **Il est ICI et pas dans l'écran** : c'est le serveur qui voit les clés, et
+   * l'adresse de cette action reste postable sans passer par le bouton.
+   */
+  if (!estBranche(nom, clesFournisseurs())) {
+    logger.warn("[connexion] fournisseur non branché", { nom });
+    return { erreur: messageNonBranche(nom) };
   }
 
   try {

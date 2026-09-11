@@ -73,7 +73,7 @@ Le parcours entier — **Terminés → Créer une facture → fiche client → l
 | la facture naît vide | `creerFactureSansDevis` — aucune ligne inventée |
 | **elle ne part pas vide** | `peutPreparerLaPiece` — la règle du devis, élargie et renommée |
 | les suites | `test-lignes-corrigeables` (4), `test-facture-sans-devis-db` (14), `test-facture-sans-devis-e2e` (le chemin qu'IL prend) |
-| le détail | `ARCHITECTURE.md` §325 · le document pour lui : `docs/facture-sans-devis-verdict.md` |
+| le détail | `ARCHITECTURE.md` §326 · le document pour lui : `docs/facture-sans-devis-verdict.md` |
 
 **La porte a changé de place en cours de route** : codée sur l'accueil le
 10 septembre (deux anneaux), déplacée dans Terminés le 11 à sa demande.

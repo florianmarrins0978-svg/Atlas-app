@@ -11,6 +11,7 @@ import { ouvrirAvecCle } from "./server/cle-appareil";
 import { identifiantSiMotDePasseJuste } from "./server/secret-authentification";
 import { marquerSession } from "./lib/identite-session";
 import { emailProuve, fournisseursDisponibles, ouAllerSansCompte } from "./lib/fournisseurs-connexion";
+import { clesFournisseurs } from "./server/cles-fournisseurs";
 import { identifiantPourEmailProuve } from "./server/identite-externe";
 import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
 
@@ -153,12 +154,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
      * qui rattache une identité Google à un compte d'ici est donc **l'adresse
      * prouvée**, et rien d'autre (`emailProuve`, puis le rappel `signIn`).
      */
-    ...fournisseursDisponibles({
-      googleId: getEnv().googleClientId,
-      googleSecret: getEnv().googleClientSecret,
-      appleId: getEnv().appleClientId,
-      appleSecret: getEnv().appleClientSecret,
-    }).map((f) =>
+    ...fournisseursDisponibles(clesFournisseurs()).map((f) =>
       f.nom === "google"
         ? Google({
             clientId: getEnv().googleClientId,
