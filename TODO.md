@@ -9,6 +9,35 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
+
+**Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
+jouée deux fois le 11 septembre, avant et après le lot des polices embarquées.
+**Les dix-huit mêmes suites tombent, à la suite près** — 125/143 les deux fois.
+Aucune n'est PDF.
+
+    adresse-suggestions · anneau-dictee · anneau-vers-devis
+    carte-reponse-mene-au-geste · catalogue-mes-mots · devis-client
+    devis-complet · devis-papier · fiche-entretien · ia-01 · madame-lucie
+    message-au-client · onglets-termines · planning-vers-facture
+    recherche-client · reprise-chantier · reprise-morceau · suivi-devis
+
+Trois familles de causes, relevées à l'échantillon :
+
+| | |
+|---|---|
+| **une clé d'IA absente** — dictée, `ia-01`, Madame Lucie | attendu sur un poste d'agent (`CLAUDE.md` §1 ter), à jouer sur SON espace |
+| **un écran qui a changé** — « aucune flèche de retour », « tout tient dans un écran » | à trancher : le contrôle est-il périmé, ou l'écran a-t-il dérivé ? |
+| **un décor accumulé** — `suivi-devis` : « 30 en attente du client », deux éléments pour un même texte | une base qui grossit d'une batterie à l'autre ; la suite vise un texte au lieu d'un repère |
+
+**Ce qui en découle, et il faut le dire :** aucun lot ne peut plus se donner
+« batterie au vert » tant que ces dix-huit-là tombent. On compare donc AVANT et
+APRÈS, et l'on dit ce qu'on a comparé — c'est ce qu'a fait le lot des polices.
+Laisser dix-huit rouges dormir finit par cacher le dix-neuvième, qui, lui, sera
+vrai.
+
+---
+
 ## ⏳ DEUX CHOSES RESTENT OUVERTES SUR LA FACTURE BLANCHE (11 septembre 2026)
 
 **1. Sa réponse aux deux documents témoins.** `/Length1` manquait vraiment et la

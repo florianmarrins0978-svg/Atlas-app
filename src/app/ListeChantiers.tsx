@@ -352,7 +352,17 @@ export default function ListeChantiers({
               /* En clair, et non en petites capitales : deux lignes espacées
                  à 0.28em se liraient comme un pavé. L'œil doit accrocher
                  l'état, puis lire la date s'il la cherche. */
-              <p className="mt-[4px] truncate text-[13px]" style={{ color: colors.inkSoft }}>
+              <p
+                // **Un repère, parce que le TEXTE a déjà changé une fois.** La
+                // ligne disait « Envoyé le lundi 10 août. » jusqu'au
+                // 6 septembre ; il a fait retirer le verbe, et la suite qui le
+                // cherchait rougit depuis sur un écran juste (`CLAUDE.md`
+                // §5 bis). Ce qu'un contrôle doit tenir, c'est qu'une date
+                // existe sous l'état — pas les mots qui l'accompagnent.
+                data-atlas="precision-chantier"
+                className="mt-[4px] truncate text-[13px]"
+                style={{ color: colors.inkSoft }}
+              >
                 {c.precision}
               </p>
             )}
