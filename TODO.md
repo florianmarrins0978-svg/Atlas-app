@@ -156,6 +156,18 @@ en passant, au milieu d'un autre lot.
 
 ---
 
+## ⏳ UNE BATTERIE À JOUER — la photo en bibliothèque est codée (11 septembre 2026)
+
+`39a1dc68` sur `session-2`, pas encore sur `main`. La batterie a été coupée par un
+redémarrage de session : base **346/354** (les 8 rouges sont des scripts
+d’outillage — verrou, ports, lanceur —, aucun ne touche les photos), suites
+navigateur **sans verdict**. Elle n’a pas été rejouée : une autre session
+écrivait dans `atlas-app-s2` (visionneuse PDF), et il a dit *« ne lance pas de
+batterie pour l’instant »*. **À faire :** la rejouer dans un dossier où personne
+n’écrit, avec `ATLAS_BASE_SUPER` de `HANDOVER.md`, puis fusionner sur `main`
+avec son accord. **Qui :** nous, quand il le dit.
+
+---
 ## ~~UNE PLANCHE À REGARDER — LA PHOTO EN BIBLIOTHÈQUE~~ — CHOISIE ET CODÉE LE SOIR MÊME (11 septembre 2026)
 
 Il a répondu dans l’heure, planche en main — *« Voilà je veux ça ! »*, la
