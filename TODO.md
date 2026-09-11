@@ -9,20 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ LA PLANCHE DE LA PORTE N'A PAS SUIVI L'AÉRATION (11 septembre 2026)
+## ~~LA PLANCHE DE LA PORTE N'A PAS SUIVI L'AÉRATION~~ — réglé autrement, 11 septembre 2026
 
-Sa demande : *« je les trouve trop collés en haut, aère la page et prends plus
-d'espace »*. L'application a été aérée — trois parts de vide qui se partagent la
-hauteur (`src/app/login/FormulaireConnexion.tsx`). **La planche
-`appli/la-porte-d-atlas.html`, elle, porte encore l'ancien espacement.**
+**Ce point était mal posé, et le corriger vaut mieux que de le faire.** Il
+demandait de reporter l'aération dans `appli/la-porte-d-atlas.html`. Or cette
+planche n'est pas un miroir de l'application : c'est le relevé du choix à TROIS
+du 7 septembre, et la repeindre aurait effacé les deux propositions écartées —
+donc le chemin qui l'a amené à la troisième.
 
-**Pourquoi ça compte :** c'est la planche qui fait référence. Une session qui la
-rouvrira demain verra l'écran serré et croira l'application en retard sur elle —
-et pourra « corriger » dans le mauvais sens.
-
-**Qui peut le faire :** nous, dès qu'il aura dit que l'aération lui va. Reporter
-les mêmes parts dans la planche, puis rejouer
-`scripts/test-porte-tient-en-une-page.mts`.
+**Ce qui a été fait à la place :** la planche DIT son état. Son bandeau annonce
+que la C est tranchée et codée, et que l'application a été aérée depuis. La
+ligne d'avant affirmait *« rien n'est codé dans l'application »* — fausse depuis
+trois jours, et c'est exactement la faute que `CLAUDE.md` §1 nomme : un état
+périmé sur une planche lui fait redemander ce qu'il a déjà donné.
 
 ---
 
