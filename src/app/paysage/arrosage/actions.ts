@@ -5,7 +5,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCroquis } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
 import { calculerPlan } from "@/lib/arrosage/calcul.js";
-import { trajetLePlusLong, poserSurLeTerrain } from "@/lib/arrosage/geometrie-croquis";
+import { trajetLePlusLong, poserSurLeTerrain, longueurDeLAmenee } from "@/lib/arrosage/geometrie-croquis";
 import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 import { dessinerPlan, type Dessin, type ZoneDessinee } from "@/lib/arrosage/plan-dessine";
 import { piecesDuPlan, type Piece } from "@/lib/arrosage/pieces";
@@ -89,11 +89,9 @@ export type LePlan = {
   pieces: Piece[];
   /**
    * **À PARTIR DE COMBIEN DE MÈTRES IL FAUT DU Ø32** — sa demande du
-   * 22 août 2026. **Ce sont des SEUILS, pas un verdict** : cet écran ne
-   * demande pas la longueur de l'amenée, et le calcul en prendrait une par
-   * défaut. Un « il vous faut du Ø32 » tiré d'une longueur que personne n'a
-   * saisie serait un chiffre inventé (`CLAUDE.md` §4). Le seuil, lui, ne
-   * dépend d'aucune saisie : il se compare au mètre ruban sur place.
+   * 22 août 2026. Le seuil se compare au mètre ruban sur place ; et depuis
+   * le 11 septembre, l'amenée elle-même est calculée sur le croquis, du
+   * piquage à la nourrice — la ligne de pièces dit alors Ø25 ou Ø32.
    */
   tuyau: {
     /** Mètres de Ø25 admissibles. **Zéro quand le débit l'interdit.** */
@@ -110,7 +108,7 @@ export type LePlan = {
   };
   /** Ce qui arrive au pied du DERNIER arroseur, en bar. */
   pressionAuxArroseurs: number;
-  /** Ce que le calcul dit de lui-même : la pression, la portée, l'amenée supposée. */
+  /** Ce que le calcul dit de lui-même : la pression, la portée, l'amenée calculée. */
   reserves: string[];
 };
 
@@ -174,7 +172,8 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   const croquis = etatDuCroquis({
     zonesMesurees: mesurees.length,
     nourrice: lu.croquis.nourrice !== null,
-    piquage,
+    piquage: lu.croquis.piquage !== null,
+    branchement: piquage,
   });
   if (!croquis.complet) {
     const premier = LIBELLES[croquis.manque[0]];
@@ -229,6 +228,11 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   }));
   const trajet = trajetLePlusLong(lu.croquis.nourrice, places);
   const terrain = poserSurLeTerrain(lu.croquis.nourrice, places);
+  // **L'AMENÉE SE CALCULE, NI LUE NI SUPPOSÉE** — sa règle du 11 septembre
+  // 2026. Du piquage à la nourrice, à l'échelle des cotes. Quand l'échelle ne
+  // se déduit pas, elle n'est pas comptée — et l'écran le dit, comme pour le
+  // trajet du regard : un zéro annoncé vaut mieux que 30 m tus.
+  const amenee = longueurDeLAmenee(lu.croquis.piquage, lu.croquis.nourrice, places);
 
   // **LES PARAMÈTRES SONT UNE VALEUR, ET ILS REPARTENT VERS L'ÉCRAN.**
   //
@@ -240,6 +244,7 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // bord.
   const parametres: ParametresPlan = {
     regardVersZone: trajet.ok ? trajet.metres : 0,
+    amenee: amenee.ok ? amenee.metres : 0,
     // Le calcul raisonne en seau et temps : on lui rend le débit retenu sous
     // cette forme, sans repasser par la saisie — une seule source du débit.
     seau: SEAU_LITRES,
@@ -273,6 +278,9 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   if (mesure.reserve) reserves.push(mesure.reserve);
   if (!trajet.ok) {
     reserves.push(`${trajet.raison} : le trajet du regard jusqu'au premier arroseur n'est pas compté`);
+  }
+  if (!amenee.ok) {
+    reserves.push(`${amenee.raison} : l'amenée du piquage à la nourrice n'est pas comptée`);
   }
   if (terrain.ok && terrain.terrain.reserve) reserves.push(terrain.terrain.reserve);
 
@@ -353,12 +361,11 @@ function lePlan(
         "."
     );
   }
-  // **L'AMENÉE EST COMPTÉE POUR 30 M, ET CELA SE DIT — 11 septembre 2026.** Le
-  // calcul prend cette longueur par défaut faute de saisie ; elle entrait dans
-  // la pression au dernier arroseur sans qu'un mot ne le dise. Un chiffre
-  // muet se croit ; un chiffre annoncé se mesure (`CLAUDE.md` §4 ter).
-  if (plan.pressionRaffinee || plan.pressionTropBasse) {
-    reserves.push(`L’amenée est comptée pour ${plan.amenee.longueur} m : mesurez-la du compteur à la nourrice.`);
+  // **L'amenée est CALCULÉE sur le croquis** (sa règle du 11 septembre 2026),
+  // et son chiffre s'écrit à côté de la perte qu'elle coûte. Zéro quand elle
+  // n'a pas pu l'être — la réserve du croquis le dit alors, plus haut.
+  if ((plan.pressionRaffinee || plan.pressionTropBasse) && parametres.amenee > 0) {
+    reserves.push(`Amenée de ${bar(parametres.amenee, 1)} m, du piquage à la nourrice, calculée sur le croquis.`);
   }
   // **Une portée réduite est une ESTIMATION, et elle se dit.** Le débit des
   // buses est ramené à la pression du chantier par la loi de l'orifice — de la
@@ -380,6 +387,7 @@ function lePlan(
     pieces: piecesDuPlan(plan.materiel, dessin, {
       compteur: parametres.compteur === "oui",
       seuil25: plan.amenee.longueurMax25,
+      amenee: parametres.amenee > 0 ? parametres.amenee : null,
     }),
     tuyau: {
       seuil25: plan.amenee.longueurMax25,

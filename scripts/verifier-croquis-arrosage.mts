@@ -81,6 +81,10 @@ const CROQUIS = `
   <div style="margin-top:52px; font-size:20px">HAIE le long du mur — 18 ml</div>
   <div style="margin-top:14px; font-size:20px">MASSIF devant la maison — 7 ml</div>
   <div style="margin-top:22px; font-size:20px">Point d'eau : compteur</div>
+  <div style="margin-top:8px; display:flex; align-items:center; gap:10px">
+    <div style="width:22px; height:22px; border-radius:50%; border:3px solid #222"></div>
+    <div style="font-size:18px">COMPTEUR (piquage), en bas à gauche du gazon</div>
+  </div>
 </div>`;
 
 let echecs = 0;
@@ -184,6 +188,13 @@ async function main() {
   // permanent ferait croire que l'outil ne marche pas.
   await cas("la nourrice dessinée est lue", () => {
     assert.notEqual(lu.croquis.nourrice, null, "la nourrice est sur le croquis et n'a pas été lue");
+  });
+
+  // **Le piquage aussi, depuis le 11 septembre 2026** — sa règle : l'amenée se
+  // calcule du piquage à la nourrice, ni lue ni supposée. Sans sa place, aucun
+  // plan ; ce croquis d'essai le porte donc, marqué « COMPTEUR (piquage) ».
+  await cas("le piquage dessiné est lu, en fraction", () => {
+    assert.notEqual(lu.croquis.piquage, null, "le piquage est sur le croquis et n'a pas été lu");
   });
 
   await cas("aucune zone n'a été inventée", () => {

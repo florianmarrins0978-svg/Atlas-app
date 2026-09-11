@@ -35,6 +35,7 @@ const PARAM: ParametresPlan = {
   pression: 3,
   compteur: "oui",
   regardVersZone: 0,
+  amenee: 0,
   zones: [
     { id: 1, type: "gazon", nom: "Carré", L: 12, l: 12, x: 0, y: 0 },
     { id: 2, type: "gazon", nom: "Bande", L: 8, l: 4, x: 12, y: 0 },

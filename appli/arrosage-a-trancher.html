@@ -4,8 +4,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Plan d’arrosage — deux choses à trancher</title>
 <!--
-  MAQUETTE. Deux questions restées ouvertes par le lot du 11 septembre 2026
-  (docs/lot-arrosage-impeccable.md), chacune avec ses deux réponses possibles.
+  MAQUETTE — TRANCHÉE. Deux questions posées par le lot du 11 septembre 2026
+  (docs/lot-arrosage-impeccable.md), et ses deux réponses le soir même : les
+  turbines alignées (« la A »), l'amenée calculée. La page reste pour mémoire
+  de ce qui a été écarté ; le paramètre damierTurbines qui a servi à dessiner
+  la B a été retiré du calcul une fois la réponse donnée.
   Aucun JavaScript : les onglets sont des boutons radio et du CSS.
 
   TOUT EST CALCULÉ par l'application — calculerPlan + dessinerPlan + le composant
@@ -28,12 +31,10 @@
   .choix label{flex:1;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;background:var(--carte);color:var(--gris);border:1px solid var(--ligne);cursor:pointer;padding:8px 6px;text-align:center}
   .choix label b{font-weight:600;color:var(--encre);font-size:15px}
   .choix label span{font-size:12px;margin-top:2px}
-  #d9:checked ~ .choix label[for=d9], #d6:checked ~ .choix label[for=d6],
-  #a30:checked ~ .choix label[for=a30], #a14:checked ~ .choix label[for=a14]{background:var(--encre);border-color:var(--encre)}
-  #d9:checked ~ .choix label[for=d9] *, #d6:checked ~ .choix label[for=d6] *,
-  #a30:checked ~ .choix label[for=a30] *, #a14:checked ~ .choix label[for=a14] *{color:var(--surPlein)}
+  #d9:checked ~ .choix label[for=d9], #d6:checked ~ .choix label[for=d6]{background:var(--encre);border-color:var(--encre)}
+  #d9:checked ~ .choix label[for=d9] *, #d6:checked ~ .choix label[for=d6] *{color:var(--surPlein)}
   section{position:relative}
-  #d9:checked ~ .vue-d6, #d6:checked ~ .vue-d9, #a30:checked ~ .vue-a14, #a14:checked ~ .vue-a30{display:none}
+  #d9:checked ~ .vue-d6, #d6:checked ~ .vue-d9{display:none}
   .caps{font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--gris);margin:22px 22px 0}
   .plan{margin:8px 22px 0;background:var(--carte);border-radius:12px;padding:12px}
   .plan svg{display:block;width:100%;height:auto}
@@ -62,18 +63,18 @@
   .croquis svg{display:block;width:100%;height:auto}
 </style>
 
-<h1>Deux choses à trancher</h1>
+<h1>Tranché</h1>
 <p class="surtitre">Plan d’arrosage</p>
 
 <!-- ══ 1. Le damier sur les turbines ═══════════════════════════════════════ -->
 <section>
-  <h2 class="question">1. Les turbines des grandes pelouses : alignées, ou en damier ?</h2>
-  <p class="contexte">Le 18 août vous disiez « pour les grands espaces, faire la même ». Le 23 vous avez dessiné 9 turbines alignées sur un 12 × 12. Les deux, calculées :</p>
+  <h2 class="question">1. Les turbines des grandes pelouses : alignées — votre réponse du 11 septembre, « la A ».</h2>
+  <p class="contexte">Le damier reste aux tuyères des couloirs. Les deux options restent visibles ici, pour mémoire de ce qui a été écarté :</p>
   <input type="radio" name="damier" id="d9" checked>
   <input type="radio" name="damier" id="d6">
   <div class="choix">
-    <label for="d9"><b>A · alignées</b><span>9 turbines — aujourd’hui</span></label>
-    <label for="d6"><b>B · en damier</b><span>6 turbines</span></label>
+    <label for="d9"><b>A · alignées</b><span>9 turbines — retenue</span></label>
+    <label for="d6"><b>B · en damier</b><span>6 turbines — écartée</span></label>
   </div>
   
   <div class="vue-d9">
@@ -108,44 +109,22 @@
   </div>
 </section>
 
-<!-- ══ 2. L'amenée ════════════════════════════════════════════════════════ -->
+<!-- ══ 2. L'amenée — TRANCHÉE le 11 septembre : calculée ═════════════════ -->
 <section>
-  <h2 class="question">2. L’amenée, du compteur à la nourrice : supposée, ou lue sur le croquis ?</h2>
-  <p class="contexte">Le calcul compte 30 m faute de mesure. Le croquis porte le piquage : sa place pourrait donner la vraie longueur — ici, un exemple à 14 m.</p>
-  <input type="radio" name="amenee" id="a30" checked>
-  <input type="radio" name="amenee" id="a14">
-  <div class="choix">
-    <label for="a30"><b>A · 30 m, écrits</b><span>aujourd’hui</span></label>
-    <label for="a14"><b>B · lue sur le croquis</b><span>exemple : 14 m</span></label>
-  </div>
+  <h2 class="question">2. L’amenée : tranchée — calculée.</h2>
+  <p class="contexte">Votre réponse : « ni lue, ni supposée ». Le croquis porte le piquage et la nourrice, les cotes donnent l’échelle : la longueur se calcule entre les deux, comme le trajet du regard. Sans piquage dessiné, pas de plan.</p>
   
-  <div class="vue-a30">
-    <ul class="reserves">
-      <li>2,3 bar au dernier arroseur — 0,41 bar perdus dans le réseau, 0,26 dans l’amenée.</li>
-      <li>L’amenée est comptée pour 30 m : mesurez-la du compteur à la nourrice.</li>
-    </ul>
-    <p class="zone">Du compteur à la nourrice</p>
-    <div class="carte liste">
-      <p class="piece"><span class="q">à mesurer</span><span class="n">PEHD Ø25<span class="d">Ø25 jusqu’à 58 m, Ø32 au-delà</span></span></p>
-      <p class="piece"><span class="q">1x</span><span class="n">Dura Té 90° 25×25×25<span class="d">coupe la ligne au compteur</span></span></p>
-    </div>
-    <ul class="cout">
-      <li>Rien à lire de plus sur le croquis. Mais 30 m est une supposition : si votre amenée fait 50 m, la pression au dernier arroseur est plus basse que ce que le plan dit.</li>
-    </ul>
-  </div>
-  <div class="vue-a14">
     <ul class="reserves">
       <li>2,5 bar au dernier arroseur — 0,41 bar perdus dans le réseau, 0,13 dans l’amenée.</li>
-      <li>Amenée de 14 m, lue sur le croquis entre le piquage et la nourrice.</li>
+      <li>Amenée de 14 m, du piquage à la nourrice, calculée sur le croquis.</li>
     </ul>
     <p class="zone">Du compteur à la nourrice</p>
     <div class="carte liste">
-      <p class="piece"><span class="q">14 ml</span><span class="n">PEHD Ø25<span class="d">Ø25 : 14 m sur 55 m possibles</span></span></p>
+      <p class="piece"><span class="q">14 ml</span><span class="n">PEHD Ø25<span class="d">du piquage à la nourrice, calculé sur le croquis · Ø25 jusqu’à 55 m, Ø32 au-delà</span></span></p>
       <p class="piece"><span class="q">1x</span><span class="n">Dura Té 90° 25×25×25<span class="d">coupe la ligne au compteur</span></span></p>
     </div>
     <ul class="cout">
-      <li>Le chiffre vient du croquis, comme la nourrice : plus de supposition. Il faut que le piquage y soit dessiné au bon endroit — et c’est la lecture d’image, à éprouver sur votre espace.</li>
+      <li>Exemple à 14 m. Codé le 11 septembre ; la lecture de la place du piquage se vérifie sur votre espace, comme celle de la nourrice.</li>
     </ul>
-  </div>
 </section>
 </html>

@@ -82,6 +82,16 @@ export type CroquisLu = {
    * l'hivernage. Absente du croquis, elle reste absente ici.
    */
   nourrice: { x: number; y: number } | null;
+  /**
+   * Où le piquage est dessiné, en fraction du croquis. `null` si absent.
+   *
+   * **Sa règle du 11 septembre 2026 : l'amenée se CALCULE, ni lue ni
+   * supposée.** Le croquis porte le piquage et la nourrice (ce sont deux des
+   * trois éléments obligatoires) ; les cotes donnent l'échelle ; la longueur
+   * du compteur à la nourrice s'en déduit (`geometrie-croquis.ts`), comme le
+   * trajet du regard. Plus de 30 m posés d'office.
+   */
+  piquage: { x: number; y: number } | null;
   /** Ce que la lecture n'a pas su faire, dit en français au patron. */
   reserves: string[];
 };
@@ -93,12 +103,13 @@ export type ResultatCroquis =
 const SYSTEME = `Tu lis des croquis de jardin dessinés à la main par un paysagiste français, avec leurs métrés.
 Tu réponds UNIQUEMENT par un objet JSON, sans phrase avant ni après, sans balises de code.
 Forme attendue :
-{"zones":[{"type":"gazon|massif|haie|potager","nom":string|null,"longueur_m":number|null,"largeur_m":number|null,"metres_lineaires":number|null,"x":number|null,"y":number|null,"largeur_fraction":number|null,"hauteur_fraction":number|null}],"point_d_eau":"compteur|robinet|puits|null","nourrice":{"x":number|null,"y":number|null}}
+{"zones":[{"type":"gazon|massif|haie|potager","nom":string|null,"longueur_m":number|null,"largeur_m":number|null,"metres_lineaires":number|null,"x":number|null,"y":number|null,"largeur_fraction":number|null,"hauteur_fraction":number|null}],"point_d_eau":"compteur|robinet|puits|null","nourrice":{"x":number|null,"y":number|null},"piquage":{"x":number|null,"y":number|null}}
 Règles :
 - Tu ne DEVINES jamais. Une cote illisible vaut null. Une zone sans aucune cote se rend quand même, avec ses champs à null.
 - LES PLACES SE DONNENT EN FRACTION DU DESSIN, de 0 à 1. x=0 est le bord gauche, x=1 le bord droit ; y=0 le haut, y=1 le bas. « x » et « y » sont le CENTRE de la zone ; « largeur_fraction » et « hauteur_fraction » sont ce qu'elle occupe. Ne convertis JAMAIS ces places en mètres : les mètres se déduisent des cotes.
 - « Tu ne devines jamais » NE S'APPLIQUE PAS AUX PLACES. Une cote se LIT (illisible = null) ; une place se MESURE SUR L'IMAGE, et tu la vois toujours dès que la zone est dessinée. Rends donc x, y, largeur_fraction et hauteur_fraction pour CHAQUE zone visible, même approximativement : le croquis est fait à main levée et n'est pas à l'échelle, personne n'attend d'exactitude. Ne les laisse à null que si la zone est citée par écrit sans être dessinée.
 - La nourrice est le regard d'où partent les réseaux (souvent un rectangle marqué « nourrice », « regard » ou « vannes »). Si elle n'est pas dessinée, rends x et y à null — ne la place pas au point d'eau pour dépanner.
+- Le piquage est l'endroit où l'arrosage se branche sur l'eau (le compteur, le robinet — souvent marqué « compteur », « piquage », « arrivée d'eau », ou un rond avec un robinet). Rends sa place en fraction du dessin, comme la nourrice ; s'il n'est pas dessiné, x et y à null — ne le place pas à la nourrice pour dépanner.
 - Les pelouses et potagers se mesurent en longueur x largeur. Les haies et massifs se mesurent en mètres linéaires.
 - Les mesures sont en MÈTRES, en nombre décimal à point. Un « 1200 » à côté d'une haie est probablement 12,00 m : rends 12.
 - N'invente aucune zone qui ne figure pas sur le dessin.
@@ -245,8 +256,18 @@ export function lireReponseCroquis(texte: string): ResultatCroquis {
   if (nourrice === null) {
     reserves.push("le croquis ne montre pas où la nourrice est posée");
   }
+  // **Le piquage se LIT, il ne se déduit pas** — même règle que la nourrice,
+  // pour la même raison : c'est sa place qui donne la longueur de l'amenée, et
+  // une amenée posée au jugé entre dans la pression au dernier arroseur.
+  const piquageBrut = (brut.piquage ?? {}) as Record<string, unknown>;
+  const px = fraction(piquageBrut.x);
+  const py = fraction(piquageBrut.y);
+  const piquage = px !== null && py !== null ? { x: px, y: py } : null;
+  if (piquage === null) {
+    reserves.push("le croquis ne montre pas où le piquage se fait");
+  }
 
-  return { ok: true, croquis: { zones, pointDEau, nourrice, reserves } };
+  return { ok: true, croquis: { zones, pointDEau, nourrice, piquage, reserves } };
 }
 
 /**

@@ -13,27 +13,35 @@
  * avec cette nouvelle règle »*).
  *
  * **Pure, et à un seul endroit** : l'écran du refus et la garde de l'action
- * lisent la même réponse. Le piquage vient du déroulant de l'écran, jamais du
- * croquis — le croquis le PORTE (c'est l'avertissement au-dessus de la photo),
- * mais c'est le choix « compteur / robinet » qui commande le calcul.
+ * lisent la même réponse. Les trois éléments se lisent sur le croquis ; le
+ * déroulant « compteur / robinet » de l'écran, lui, ne commande que le débit.
  */
 
-export type Manque = "metres" | "nourrice";
+export type Manque = "metres" | "nourrice" | "piquage";
 
 export type EtatDuCroquis = {
   complet: boolean;
   manque: Manque[];
   /** Ce qui a été lu, pour le dire à l'écran — coché ou barré, un par un. */
-  lu: { zonesMesurees: number; nourrice: boolean; piquage: "compteur" | "ailleurs" };
+  lu: { zonesMesurees: number; nourrice: boolean; piquage: boolean; branchement: "compteur" | "ailleurs" };
 };
 
+/**
+ * **Le piquage se lit sur le croquis, depuis le 11 septembre 2026.** Jusque-là
+ * le déroulant de l'écran suffisait à le tenir pour acquis ; mais c'est sa
+ * PLACE qui donne la longueur de l'amenée (*« elle doit être calculée, ni lue
+ * ni supposée »*), et le déroulant ne dit que compteur ou robinet. Les deux
+ * restent : le déroulant commande le débit, le croquis commande la longueur.
+ */
 export function etatDuCroquis(croquis: {
   zonesMesurees: number;
   nourrice: boolean;
-  piquage: string;
+  piquage: boolean;
+  branchement: string;
 }): EtatDuCroquis {
   const manque: Manque[] = [];
   if (croquis.zonesMesurees === 0) manque.push("metres");
+  if (!croquis.piquage) manque.push("piquage");
   if (!croquis.nourrice) manque.push("nourrice");
   return {
     complet: manque.length === 0,
@@ -41,7 +49,8 @@ export function etatDuCroquis(croquis: {
     lu: {
       zonesMesurees: croquis.zonesMesurees,
       nourrice: croquis.nourrice,
-      piquage: croquis.piquage === "compteur" ? "compteur" : "ailleurs",
+      piquage: croquis.piquage,
+      branchement: croquis.branchement === "compteur" ? "compteur" : "ailleurs",
     },
   };
 }
@@ -55,5 +64,9 @@ export const LIBELLES: Record<Manque, { titre: string; geste: string }> = {
   metres: {
     titre: "Pas de plan : il manque les métrés.",
     geste: "Écrivez la longueur et la largeur de chaque partie du jardin, puis reprenez la photo.",
+  },
+  piquage: {
+    titre: "Pas de plan : il manque le piquage.",
+    geste: "Marquez sur le croquis l’endroit où l’arrosage se branche sur l’eau, puis reprenez la photo.",
   },
 };

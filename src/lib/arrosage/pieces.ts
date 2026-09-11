@@ -92,27 +92,26 @@ function nomDe(ref: string): string {
 export function piecesDuPlan(
   materiel: LigneCalcul[],
   dessin: Dessin | null,
-  options: { compteur: boolean; seuil25: number }
+  options: { compteur: boolean; seuil25: number; amenee: number | null }
 ): Piece[] {
   const parReseau = (f: (r: Dessin["reseaux"][number]) => number) =>
     dessin ? `par réseau : ${dessin.reseaux.map((r) => f(r)).join(" · ")}` : undefined;
 
   // ── Du compteur à la nourrice ─────────────────────────────────────────────
   //
-  // **La longueur ne se devine pas** : l'application ne la demande pas et le
-  // croquis ne la donne pas encore. Elle s'écrit « à mesurer », avec le seuil
-  // qui dit jusqu'où le Ø25 tient — c'est ce chiffre qui se compare au mètre.
+  // **La longueur est CALCULÉE sur le croquis** (sa règle du 11 septembre
+  // 2026 : ni lue, ni supposée), du piquage à la nourrice ; arrondie au mètre
+  // supérieur, un tuyau se coupe. Quand elle n'a pas pu l'être, « à mesurer » —
+  // jamais un chiffre plausible. Le seuil dit jusqu'où le Ø25 tient.
+  const seuil = options.seuil25 > 0 ? `Ø25 jusqu’à ${Math.floor(options.seuil25)} m, Ø32 au-delà` : "Ø32 d’office : le débit passe trop vite en Ø25";
   const amenee: Piece[] = [
     {
       ref: "pe25-amenee",
-      nom: "PEHD Ø25",
-      q: null,
+      nom: options.amenee !== null && options.seuil25 > 0 && options.amenee > options.seuil25 ? "PEHD Ø32" : "PEHD Ø25",
+      q: options.amenee !== null ? Math.ceil(options.amenee) : null,
       u: "ml",
       ou: "amenee",
-      detail:
-        options.seuil25 > 0
-          ? `Ø25 jusqu’à ${Math.floor(options.seuil25)} m, Ø32 au-delà`
-          : "Ø32 d’office : le débit passe trop vite en Ø25",
+      detail: options.amenee !== null ? `du piquage à la nourrice, calculé sur le croquis · ${seuil}` : seuil,
     },
   ];
   if (options.compteur) {

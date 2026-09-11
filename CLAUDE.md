@@ -807,6 +807,17 @@ programmateur, sa tranchée et son créneau d'arrosage.
 **Et le quinconce ne se resserre JAMAIS sous la portée** — sa règle du 17 août.
 Quand le damier ne couvre pas à cet écart-là, on garde la grille alignée. Le
 resserrement sans plancher disqualifiait la seule pose qui tenait sur une vanne.
+**La portée se mesure ENTRE DEUX TÊTES, pas sur le pas des colonnes** (corrigé
+le 11 septembre 2026) : sur un damier, deux têtes voisines sont à deux pas sur
+un même bord, ou en diagonale — mesurer le pas refusait son couloir de 10 × 2 à
+sept tuyères (§127), et c'est ainsi que sa règle du 18 août était morte.
+
+**LE DAMIER EST POUR LES TUYÈRES DES COULOIRS ; LES TURBINES SE POSENT
+ALIGNÉES — « la A », sa réponse du 11 septembre 2026** devant la planche
+`appli/arrosage-a-trancher.html` qui lui montrait les deux poses calculées sur
+son 12 × 12 : neuf turbines alignées, ou six en damier (où le recouvrement
+entre deux têtes voisines tombe à 72 %). Il a gardé ses neuf. Ne pas rouvrir :
+`test-regles-du-patron.ts` tient les deux.
 
 **UN CROQUIS À MAIN LEVÉE SE LIT QUAND MÊME — sa correction du 23 août 2026 :**
 *« les utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à
@@ -1110,6 +1121,18 @@ rigide. »*
 | l'antenne Ø16 rigide | du té de la ligne à l'arroseur, **2 m au plus** |
 | un couloir jusqu'à **4 m** de large | une tranchée au milieu, des antennes des deux côtés |
 | au-delà de 4 m | une tranchée ne suffit plus : la ligne doit repasser assez près de chaque tête |
+
+**L'AMENÉE SE CALCULE — « NI LUE, NI SUPPOSÉE ».** Sa règle du 11 septembre
+2026, devant une planche qui lui proposait de la « lire » ou de garder 30 m :
+*« pour la 2, elle doit être calculée, ni lue ni supposée »*. Le croquis porte
+le piquage et la nourrice — deux des trois éléments obligatoires —, les cotes
+donnent l'échelle : la longueur du compteur à la nourrice se calcule entre les
+deux places, en Manhattan, comme le trajet du regard
+(`longueurDeLAmenee`, `geometrie-croquis.ts`). Le modèle ne rend jamais des
+mètres ; il rend des places. Et **sans piquage dessiné, aucun plan** — c'est le
+troisième élément, et il se lit désormais sur le croquis, pas seulement dans le
+déroulant (qui, lui, ne commande que le débit). Quand l'échelle ne se déduit
+pas, l'amenée n'est pas comptée et l'écran le dit — jamais 30 m tus.
 
 **Pourquoi 2 m et pas « environ 2 m ».** La nomenclature du 17 août comptait
 *« environ 2 m de PEBD rigide Ø16 par arroseur »* — une règle de COMPTE, qu'on

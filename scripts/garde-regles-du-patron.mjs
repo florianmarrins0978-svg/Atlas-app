@@ -72,6 +72,40 @@ export function phraseDuRefus(quoi) {
   );
 }
 
+/**
+ * Une règle peut changer de FORME sans changer de FOND — et c'est la seule
+ * modification admise sur une entrée existante.
+ *
+ * Le jour même de sa naissance, cette suite a dû suivre une fonction dont la
+ * signature changeait (`piecesDuPlan` a pris un paramètre de plus) : sans
+ * cette porte, la seule issue aurait été de rendre la suite rouge ou de
+ * contourner le garde-fou, ce qui est pire. Ce qui reste interdit, c'est
+ * exactement le geste du 24 août : **toucher un chiffre attendu, ou retirer
+ * ce qu'une règle exige, ou renommer une règle.** Donc :
+ *
+ *   · chaque ligne `regle(` de l'ancien texte se retrouve telle quelle ;
+ *   · il n'y a pas moins de `exige(` après qu'avant ;
+ *   · chaque nombre écrit sur une ligne `exige(` avant s'y retrouve après,
+ *     au moins autant de fois — 7 tuyères ne deviennent pas 12.
+ */
+export function gardeLesChiffres(ancien, nouveau) {
+  const lignes = (t) => t.split("\n");
+  const entetes = (t) => lignes(t).filter((l) => /\bregle\(/.test(l)).map((l) => l.trim());
+  const nouvellesLignes = lignes(nouveau).map((l) => l.trim());
+  if (!entetes(ancien).every((l) => nouvellesLignes.includes(l))) return false;
+  const exiges = (t) => lignes(t).filter((l) => /\bexige\(/.test(l));
+  if (exiges(nouveau).length < exiges(ancien).length) return false;
+  const chiffres = (t) => {
+    const compte = new Map();
+    for (const l of exiges(t)) for (const n of l.match(/\d+(?:[.,]\d+)?/g) ?? []) compte.set(n, (compte.get(n) ?? 0) + 1);
+    return compte;
+  };
+  const avant = chiffres(ancien);
+  const apres = chiffres(nouveau);
+  for (const [n, k] of avant) if ((apres.get(n) ?? 0) < k) return false;
+  return true;
+}
+
 /** La décision pure : `null` pour laisser passer, une phrase pour refuser. */
 export function decider(outil, entree) {
   if (OUTILS_QUI_ECRASENT.has(outil) && viseLeFichier(entree?.file_path ?? entree?.notebook_path)) {
@@ -81,7 +115,10 @@ export function decider(outil, entree) {
     const modifications = Array.isArray(entree?.edits) ? entree.edits : [entree];
     for (const m of modifications) {
       const ancien = String(m?.old_string ?? "");
-      if (CORPS_DUNE_REGLE.test(ancien)) return phraseDuRefus("Modifier une règle existante");
+      const nouveau = String(m?.new_string ?? "");
+      if (CORPS_DUNE_REGLE.test(ancien) && !gardeLesChiffres(ancien, nouveau)) {
+        return phraseDuRefus("Modifier une règle existante");
+      }
       // Retirer le repère lui-même fermerait la porte aux règles suivantes.
       if (ancien.includes(REPERE) && !String(m?.new_string ?? "").includes(REPERE)) {
         return phraseDuRefus("Retirer le repère d'ajout");
