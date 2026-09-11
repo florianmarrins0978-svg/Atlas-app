@@ -183,9 +183,44 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Trois fonctions mentaient sur ce qu'elles font, depuis qu'elles servent aussi la facture : elles s'appellent désormais <code>ajouterLigneDeFacture</code>, <code>majLigneDeFacture</code>, <code>retirerLignesDeFacture</code>. Et la règle du devis vide est devenue <code>peutPreparerLaPiece</code> — elle prend le nom de la pièce, pour qu'un écran de facture ne dise <strong>jamais</strong> « devis ».</p>
 <hr>
+<h2 id="la-tva--rien-de-nouveau-et-cest-voulu">La TVA : rien de nouveau, et c'est voulu</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Vous avez tranché le 11 septembre : <strong>le schéma des factures normales, sans exception</strong>. Une facture sans devis part par SMS ou e-mail, puis entre dans la TVA selon votre réglage — à l'émission, ou quand le client paie. Le réglage « Réglée sur place » dessiné sur la planche est écarté, à votre demande (<em>« généralement les factures sont envoyées et non réglées direct »</em>).</p>
+<p>Deux contrôles le tiennent, pour que ça reste vrai : aux débits, elle est au relevé le jour même ; aux encaissements, elle attend « Payée », puis y entre.</p>
+<hr>
 <h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><em>À compléter à la clôture — voir la section ci-dessous.</em></p>
+<p>Cette machine n'a pas les clés IA : <strong>38 suites sont rouges sur <code>main</code> seule</strong> (dictée, transcription, banc d'essai). J'ai donc joué la même batterie sur <code>main</code> sans mon lot, pour comparer rouge à rouge.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>batterie complète, mon lot</td>
+<td>35 rouges — <strong>aucun nouveau</strong> par rapport à <code>main</code></td>
+</tr>
+<tr>
+<td>suites base de mon domaine (18)</td>
+<td><strong>18 vertes</strong></td>
+</tr>
+<tr>
+<td>suites navigateur de mon domaine (8)</td>
+<td>7 vertes ; la huitième est rouge sur <code>main</code> aussi</td>
+</tr>
+<tr>
+<td><code>test-facture-sans-devis-db</code></td>
+<td><strong>16 / 16</strong></td>
+</tr>
+<tr>
+<td><code>test-facture-sans-devis-e2e</code> — votre chemin, depuis Terminés</td>
+<td><strong>9 / 9</strong>, sur une base vierge</td>
+</tr>
+<tr>
+<td><code>test-lignes-corrigeables</code></td>
+<td>4 / 4</td>
+</tr>
+</tbody></table></div>
+<p><strong>Deux défauts sont sortis d'une capture, pas d'un test :</strong> sur une base neuve, la porte disparaissait avec la liste vide de Terminés (corrigé : les portes restent) ; et un bouton éteint perdait son repère (corrigé dans la pièce partagée).</p>
 <hr>
 <h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -200,6 +235,10 @@
 <tr>
 <td>Les suites qui dépendent des clés IA ne peuvent pas être jouées ici</td>
 <td>se vérifient sur <strong>votre espace</strong></td>
+</tr>
+<tr>
+<td>Le SMS et l'e-mail qui s'ouvrent vraiment, et la facture reçue par le client</td>
+<td><strong>votre espace</strong>, sur votre téléphone</td>
 </tr>
 </tbody></table></div>
 </main>

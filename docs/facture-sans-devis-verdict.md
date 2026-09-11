@@ -130,9 +130,38 @@ de facture ne dise **jamais** « devis ».
 
 ---
 
+## La TVA : rien de nouveau, et c'est voulu
+
+Vous avez tranché le 11 septembre : **le schéma des factures normales, sans
+exception**. Une facture sans devis part par SMS ou e-mail, puis entre dans la
+TVA selon votre réglage — à l'émission, ou quand le client paie. Le réglage
+« Réglée sur place » dessiné sur la planche est écarté, à votre demande
+(*« généralement les factures sont envoyées et non réglées direct »*).
+
+Deux contrôles le tiennent, pour que ça reste vrai : aux débits, elle est au
+relevé le jour même ; aux encaissements, elle attend « Payée », puis y entre.
+
+---
+
 ## Les chiffres de la batterie
 
-*À compléter à la clôture — voir la section ci-dessous.*
+Cette machine n'a pas les clés IA : **38 suites sont rouges sur `main` seule**
+(dictée, transcription, banc d'essai). J'ai donc joué la même batterie sur
+`main` sans mon lot, pour comparer rouge à rouge.
+
+| | |
+|---|---|
+| batterie complète, mon lot | 35 rouges — **aucun nouveau** par rapport à `main` |
+| suites base de mon domaine (18) | **18 vertes** |
+| suites navigateur de mon domaine (8) | 7 vertes ; la huitième est rouge sur `main` aussi |
+| `test-facture-sans-devis-db` | **16 / 16** |
+| `test-facture-sans-devis-e2e` — votre chemin, depuis Terminés | **9 / 9**, sur une base vierge |
+| `test-lignes-corrigeables` | 4 / 4 |
+
+**Deux défauts sont sortis d'une capture, pas d'un test :** sur une base neuve,
+la porte disparaissait avec la liste vide de Terminés (corrigé : les portes
+restent) ; et un bouton éteint perdait son repère (corrigé dans la pièce
+partagée).
 
 ---
 
@@ -142,3 +171,4 @@ de facture ne dise **jamais** « devis ».
 |---|---|
 | La hauteur que la seconde rangée pousse vers le bas (54 px) | **vous**, si ça vous gêne à l'usage |
 | Les suites qui dépendent des clés IA ne peuvent pas être jouées ici | se vérifient sur **votre espace** |
+| Le SMS et l'e-mail qui s'ouvrent vraiment, et la facture reçue par le client | **votre espace**, sur votre téléphone |
