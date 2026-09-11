@@ -52,6 +52,24 @@ est posé **transparent par-dessus notre propre texte**.
 La planche reste en ligne, elle montre les deux autres propositions :
 https://florianmarrins0978-svg.github.io/Atlas-app/noter-un-reglement.html
 
+## ⏳ « CE QUI RESTE D'ÉQUIPES » REND UNE PHRASE QUE LA RÈGLE NE DIT PAS (11 septembre 2026)
+
+`test-reste-equipes-e2e.ts`, relevé le 11 septembre au soir :
+
+    attendu : « Reste 1 équipe sur 2 »
+    lu      : « Plus d'équipe libre sur 2 »
+
+Sur un jour à moitié pris, l'écran annonce qu'il ne reste plus rien. **Soit la
+règle est juste et l'écran la réécrit à sa façon, soit c'est la règle qui
+compte mal** — dans les deux cas, c'est une phrase que le patron lit avant de
+poser un chantier.
+
+**Ce n'est pas le lot des factures du 11 septembre** : il ne touche ni le
+planning, ni les équipes, ni les créneaux. Le rouge est apparu après la fusion
+des lots voisins du jour (créneaux, « poser un client sur un jour »).
+
+---
+
 ## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
 
 **Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
