@@ -15,9 +15,11 @@ import {
   getFacturePourChantier,
   majLigneDeFacture,
   reprendreLeDevisSurLaFacture,
+  releveTvaCollectee,
   retirerLignesDeFacture,
   terminerChantier,
 } from "../src/server/repositories/factures";
+import { reglerExigibilite, soldera } from "../src/server/repositories/paiements-facture";
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import { chantiers, lignesFacture } from "../src/server/db/schema";
 import { nettoyerBase } from "./_test-db";
@@ -247,6 +249,64 @@ async function main() {
       !texte.includes(TITRE_TRAVAUX_SUPPLEMENTAIRES),
       "le PDF titre « travaux supplémentaires » sur la seule chose qu'on facture"
     );
+  });
+
+  // ── ELLE ENTRE DANS LA TVA COMME LES AUTRES — sa règle du 11 septembre ───
+  //
+  // *« Il faut garder le schéma qui existe déjà pour les factures normales : on
+  // envoie, et ensuite elle arrive dans la TVA comme une facture normale — soit
+  // quand le client paie, soit quand la facture est émise, selon ce que
+  // l'utilisateur a choisi. »*
+  //
+  // Rien n'a été codé pour cela, et c'est le point : une facture directe passe
+  // par `emettreFacture` comme toute facture, et le relevé la lit par le même
+  // régime. Ce contrôle existe pour que cela reste vrai — le jour où quelqu'un
+  // donnerait aux factures directes un chemin à part, c'est ici qu'on l'apprend.
+
+  async function factureDirecteEmise(ctx: Ctx, nom: string, prix: string) {
+    const { chantier } = await commeSurLaFiche(ctx, nom);
+    const facture = await creerFactureSansDevis(ctx, chantier.id);
+    const l = await ajouterLigneDeFacture(ctx, facture.id, "20.00");
+    assert.ok(l.ok);
+    await majLigneDeFacture(ctx, facture.id, l.ligne.id, { libelle: "Dépannage", quantite: "1", prixUnitaire: prix });
+    return emettreFacture(ctx, facture.id);
+  }
+
+  await test("aux DÉBITS, une facture directe émise est au relevé le jour même", async () => {
+    const ctx2 = await contexte("debits");
+    await reglerExigibilite(ctx2, "debits");
+    const emise = await factureDirecteEmise(ctx2, "M. Roux", "100.00");
+
+    const releve = await releveTvaCollectee(ctx2, emise.dateEmission, emise.dateEmission);
+    assert.equal(releve.regime, "debits");
+    const ligne = releve.lignes.find((x) => x.numeroCommercial === emise.numeroCommercial);
+    assert.ok(ligne, "la facture directe émise n'est pas au relevé alors que le régime est aux débits");
+    assert.equal(ligne.totalTva, "20.00");
+    assert.equal(releve.enAttente.nombre, 0, "aux débits, rien n'attend");
+  });
+
+  await test("aux ENCAISSEMENTS, elle attend « Payée », puis entre au relevé", async () => {
+    const ctx2 = await contexte("encaissements");
+    await reglerExigibilite(ctx2, "encaissements");
+    const emise = await factureDirecteEmise(ctx2, "Mme Faure", "100.00");
+
+    const avant = await releveTvaCollectee(ctx2, emise.dateEmission, emise.dateEmission);
+    assert.equal(avant.regime, "encaissements");
+    assert.ok(
+      !avant.lignes.some((x) => x.numeroCommercial === emise.numeroCommercial),
+      "aux encaissements, une facture pas encore payée est déjà au relevé"
+    );
+    assert.equal(avant.enAttente.nombre, 1, "la facture directe n'est pas dans « en attente de paiement »");
+
+    // Son geste du 14 août : « je clique sur Payée, et boum, elle va dans le relevé ».
+    const r = await soldera(ctx2, emise.id, emise.dateEmission);
+    assert.ok(r.ok, `« Payée » refusé : ${r.ok ? "" : r.raison}`);
+
+    const apres = await releveTvaCollectee(ctx2, emise.dateEmission, emise.dateEmission);
+    const ligne = apres.lignes.find((x) => x.numeroCommercial === emise.numeroCommercial);
+    assert.ok(ligne, "payée, la facture directe n'est toujours pas au relevé");
+    assert.equal(ligne.totalTva, "20.00");
+    assert.equal(apres.enAttente.nombre, 0);
   });
 
   // ── CE QU'ELLE REFUSE, ET LE GESTE QUE CHAQUE REFUS DÉSIGNE ──────────────
