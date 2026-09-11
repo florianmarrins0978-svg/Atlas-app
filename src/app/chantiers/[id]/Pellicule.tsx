@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
-import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { colors, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
+import VisionneusePhoto from "@/components/atlas/VisionneusePhoto";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -211,82 +211,32 @@ export default function Pellicule({
         className="mb-3"
       />
 
-      {/* **La visionneuse sort du tiroir par un portail, et il le faut.** Le
-          tiroir de la fiche porte un `z-index`, donc il ouvre son propre
-          contexte d'empilement : une visionneuse « plein écran » rendue à
-          l'intérieur reste plafonnée au niveau du tiroir, et la barre de
-          navigation — posée plus loin dans le document, au même niveau — se
-          peint par-dessus. On verrait « Chantiers / Planning » en travers de la
-          photo. */}
-      {/* `document` n'existe pas au rendu serveur. Le garde ne masque aucun
-          écart d'hydratation : au premier rendu, aucune photo n'est ouverte —
-          des deux côtés. */}
-      {/* ─── CET ÉCRAN RETOURNE LES PÔLES, ET C'EST TOUT LE PIÈGE ──────────
-          La visionneuse prend `ink` pour FOND, pour qu'on ne voie que la photo.
-          Sur les six chartes claires l'encre est presque noire ; sur Nuit et
-          Sylve elle est CLAIRE. Rien de ce qu'on pose dessus ne peut donc être
-          écrit en clair — la croix était `#F6F1E6` et les pastilles
-          `rgba(255,255,255,0.12)`, soit un crème sur un crème : 1,09 sur Nuit,
-          1,12 sur Sylve. On ne voyait plus comment sortir de la photo.
+      {/* **La visionneuse est celle de toute l'application**
+          (`components/atlas/VisionneusePhoto.tsx`) : elle sort par un portail,
+          et elle retourne les pôles de la charte. Le raisonnement des deux vit
+          là-bas, avec elle — il a été payé deux fois ici.
 
-          C'est la faute du 22 août 2026 — celle de la pastille d'équipe, qui a
-          fait naître `surPlein` (`design-tokens.ts`) —, écrite ici le 11 août
-          et oubliée par la passe qui a corrigé les huit autres endroits.
-          Pourquoi elle a survécu : **aucune capture ne la montrait**, la
-          visionneuse demandant qu'une photo soit ouverte, et aucune suite ne
-          l'ouvre. Trouvée le 5 septembre 2026 par l'audit de santé, sur les
-          valeurs de `chartes.ts` — pas à l'écran.
-
-          `orSurEncre` plutôt que `surPlein` pour le mot « Retirer » : il garde
-          son doré. Voir le jeton dans `chartes.ts`. */}
-      {photoOuverte && typeof document !== "undefined"
-        ? createPortal(
-            <div className="fixed inset-0 z-50 flex flex-col" style={{ backgroundColor: colors.ink }}>
-              <div className="flex items-center justify-between px-[26px] pt-8">
-                <button
-                  onClick={() => setOuverte(null)}
-                  aria-label="Fermer"
-                  className="flex h-11 w-11 items-center justify-center rounded-full"
-                  style={{ backgroundColor: voile(surPlein, 0.12) }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={surPlein} strokeWidth="2.2">
-                    <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                  </svg>
-                </button>
-                {/* La photo se retire d'où on la regarde : le mot « Retirer »,
-                    sa couleur, et le tiroir qui rattrape.
-                    **`orSurEncre`, et non `orClair`.** `orClair` sert les traits
-                    posés sur le vert pin ; ici l'or porte un MOT, sur l'encre.
-                    Sur les six claires il vaut l'or d'Origine au caractère
-                    près — son doré ne bouge pas (sa consigne du 31 août). */}
-                <button
-                  onClick={() => {
-                    const id = photoOuverte.id;
-                    setOuverte(null);
-                    retraits.retirer(id, "cette photo");
-                  }}
-                  aria-label="Retirer cette photo"
-                  className={`flex h-11 items-center justify-center rounded-full px-4 ${libelleCaps}`}
-                  style={{ backgroundColor: voile(surPlein, 0.12), color: colors.orSurEncre, letterSpacing: "0.26em" }}
-                >
-                  Retirer
-                </button>
-              </div>
-              <div className="flex flex-1 items-center justify-center">
-                {/* Conservé en <img> : dimensions intrinsèques inconnues à
-                    l'avance (photos de tailles arbitraires) dans un conteneur
-                    flexible non dimensionné. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/fichiers/${photoOuverte.storageKey}`}
-                  alt=""
-                  className="max-h-full max-w-full object-contain"
-                />
-              </div>
-            </div>,
-            document.body
-          )
-        : null}
+          Ne reste que ce qui est PROPRE à la pellicule : on retire une photo
+          d'où on la regarde. **`orSurEncre`, et non `orClair`.** `orClair` sert
+          les traits posés sur le vert pin ; ici l'or porte un MOT, sur l'encre.
+          Sur les six claires il vaut l'or d'Origine au caractère près — son
+          doré ne bouge pas (sa consigne du 31 août). */}
+      {photoOuverte && (
+        <VisionneusePhoto storageKey={photoOuverte.storageKey} onFermer={() => setOuverte(null)}>
+          <button
+            onClick={() => {
+              const id = photoOuverte.id;
+              setOuverte(null);
+              retraits.retirer(id, "cette photo");
+            }}
+            aria-label="Retirer cette photo"
+            className={`flex h-11 items-center justify-center rounded-full px-4 ${libelleCaps}`}
+            style={{ backgroundColor: voile(surPlein, 0.12), color: colors.orSurEncre, letterSpacing: "0.26em" }}
+          >
+            Retirer
+          </button>
+        </VisionneusePhoto>
+      )}
     </>
   );
 }
