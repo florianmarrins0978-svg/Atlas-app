@@ -1,5 +1,46 @@
 # État du projet
 
+**Dernière mise à jour :** 2026-09-10 · branche `claude/employee-absence-mockup-ayfv45`
+· dernière migration `drizzle/0085_creneaux_chantier.sql`
+
+---
+
+## FAIT : POSER UN CLIENT SUR UN JOUR, SANS DEVIS — 10 septembre 2026
+
+Sa planche retenue (`appli/bloquer-sans-devis.html`). « Ajouter » propose deux
+voies : un chantier qui attend une date, ou **un client** qu'on écrit au
+clavier. Connu, il apparaît avec son numéro ; **inconnu, sa fiche se crée** avec
+ce qu'on saisit. Puis matin, après-midi ou la journée. « Annuler » ramène aux
+deux voies à chaque étape.
+
+**Ni prix, ni devis, ni équipe** : le temps est pris, c'est tout. Le chantier se
+chiffre ensuite, ou jamais. **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §323.
+
+---
+
+## FAIT : UNE DEMI-JOURNÉE SE LIBÈRE, ATTEND, ET SE REPOSE — 10 septembre 2026
+
+Sa planche retenue (`appli/liberer-une-demi-journee.html`) : *« je clique sur le
+matin, il devient vert et le matin du vendredi devient libre, et une demi-journée
+de Mr Julien sort ; la demi-journée retirée peut être replacée. »*
+
+**« Déplacer » ne déplace plus rien** — il libère la demi-journée qu'on regarde,
+avec un interrupteur dont les **deux positions sont éteintes** : ce n'est pas un
+état à lire, c'est une question. Le morceau rendu attend dans le tiroir du bas,
+sous « Sans date », et se repose sur n'importe quelle demi-journée libre.
+
+**Ce que ça a demandé en base :** un chantier posé n'était qu'un bloc d'un seul
+tenant. La table `creneaux_chantier` (migration **0085**) porte désormais où
+chaque demi-journée est posée ; `duree_demi_journees` reste ce que le devis a
+vendu, et l'écart entre les deux est ce qui attend une place. Les deux colonnes
+d'avant sont **dérivées**, jamais écrites à la main.
+
+**Rien n'a été repris pour les chantiers déjà posés**, délibérément : « aucun
+créneau écrit » vaut le bloc calculé, dans une seule fonction (`creneauxPoses`).
+
+Détail : `ARCHITECTURE.md` §322.
 **Dernière mise à jour :** 2026-09-11 · branche `session-2`
 · dernière migration `drizzle/0086_facture_sans_devis.sql`
 
@@ -21,7 +62,7 @@ Le parcours entier — **Terminés → Créer une facture → fiche client → l
 | la facture naît vide | `creerFactureSansDevis` — aucune ligne inventée |
 | **elle ne part pas vide** | `peutPreparerLaPiece` — la règle du devis, élargie et renommée |
 | les suites | `test-lignes-corrigeables` (4), `test-facture-sans-devis-db` (14), `test-facture-sans-devis-e2e` (le chemin qu'IL prend) |
-| le détail | `ARCHITECTURE.md` §321 · le document pour lui : `docs/facture-sans-devis-verdict.md` |
+| le détail | `ARCHITECTURE.md` §324 · le document pour lui : `docs/facture-sans-devis-verdict.md` |
 
 **La porte a changé de place en cours de route** : codée sur l'accueil le
 10 septembre (deux anneaux), déplacée dans Terminés le 11 à sa demande.
@@ -73,6 +114,22 @@ formule qu'il doit trancher, la durée de l'essai gratuit, et les seize
 > migration fausse envoie une session neuve appliquer ce qui est déjà là.
 
 ---
+
+## FAIT : UNE SESSION PREND SON DOSSIER TOUTE SEULE — 10 septembre 2026
+
+Sa demande : *« je veux qu'elle se débrouille, qu'elle aille dans un dossier à
+chaque fois, seule »*. `npm run session` au lieu de `claude` : le lanceur prend
+le premier dossier de travail libre et y ouvre la session.
+
+Un dossier est occupé tant que le processus de sa session vit — un jeton laissé
+par un terminal fermé brutalement ne condamne rien. Tous pris : il refuse et
+donne la commande, il ne fabrique pas un worktree de plus en silence.
+
+Aucune migration. `ARCHITECTURE.md` §321 · `CLAUDE.md` §1.0
+
+**Reste ouvert :** il tape encore `npm run session`. Une fonction dans son
+profil PowerShell rendrait le mot `claude` lui-même suffisant — à lui de dire
+s'il la veut.
 
 ## FAIT : le retour perdait un pas à chaque fois — 10 septembre 2026
 

@@ -208,6 +208,10 @@ async function main() {
 
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${libre.jour}"]`);
     await carte.locator('[data-atlas="ajouter"]').click();
+    // **Un temps de plus depuis le 10 septembre 2026** : « Ajouter » demande
+    // d'abord la voie — un chantier en attente, un client, ou autre chose
+    // (`appli/bloquer-sans-devis.html`). On prend celle que ce contrôle vise.
+    await carte.locator('[data-atlas="voie-chantier"]').click();
     // **QUI, et c'est tout** — sa remarque du 9 septembre 2026 : *« si Claudette
     // c'est un chantier 1 journée, deux, ou une demi, ça doit se mettre tout
     // seul »*. Le moment se déduit de la durée que porte le chantier ; le
@@ -293,19 +297,22 @@ async function main() {
     }
   });
 
-  // ─── SON GESTE DU 9 SEPTEMBRE 2026 ────────────────────────────────────────
+  // ─── SON GESTE DU 9 SEPTEMBRE 2026, ET CE QU'IL EST DEVENU LE 10 ────────
   //
   // *« Lorsque je clique sur le matin pour Mr. Julien, ça me met d'office toute
   // la journée. »* Son chantier dure deux jours — quatre demi-journées, qui
   // prennent forcément le matin ET l'après-midi.
   //
   // **La pose ne demande plus rien** depuis le soir même : la durée du devis
-  // décide seule. Le seul endroit où un moment se choisit encore est
-  // « Déplacer », sur un chantier DÉJÀ posé — et c'est là que « Journée »
-  // écrivait le même état que « Matin ». Le contrôle a donc suivi la règle là
-  // où elle vit, au lieu de rester sur un écran qui n'existe plus
-  // (`CLAUDE.md` §5 bis).
-  await cas("sur deux jours, « Déplacer » n'offre plus « Journée »", async () => {
+  // décide seule. Restait « Déplacer », où « Journée » écrivait le même état
+  // que « Matin » — et le 10 septembre, « Déplacer » a cessé de déplacer : il
+  // **libère** la demi-journée qu'on touche (`ARCHITECTURE.md` §322).
+  //
+  // **Ce que ce contrôle défend n'a pas changé pour autant**, et c'est pour ça
+  // qu'il reste ici plutôt que d'être jeté : aucun geste du planning ne
+  // raccourcit un chantier. « Journée » ne revient pas, et rendre une moitié ne
+  // touche pas à ce que le devis a vendu.
+  await cas("sur deux jours, aucun geste du planning ne raccourcit le chantier", async () => {
     // **Un jour OUVRABLE, lu au calendrier** — pas un jour calculé à la main :
     // la fiche d'un samedi ne porte pas de carte, et le contrôle accuserait
     // « Déplacer » d'un défaut qu'il vient de fabriquer.
@@ -316,6 +323,11 @@ async function main() {
     const ouvrable4 = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
     const jour = grille.find((j): j is string => !!j && ouvrable4(j) && j >= jourDuPatron());
     if (!jour) throw new Error("aucun jour ouvrable à venir au calendrier");
+    // **Le décor pose comme le produit pose.** Depuis la migration 0085, les
+    // créneaux disent où le chantier est : écrire `date_planifiee` seule le
+    // laisserait à son ancien jour, et l'écran aurait raison contre le décor.
+    // Les effacer le rend à son bloc calculé — l'état d'un chantier d'avant.
+    await pool.query(`DELETE FROM creneaux_chantier WHERE chantier_id = $1`, [chantierId]);
     await pool.query(
       `UPDATE chantiers
           SET date_planifiee = $2, creneau_debut = 'matin', duree_demi_journees = 4
@@ -339,34 +351,36 @@ async function main() {
       throw new Error("« Journée » n'est pas un départ : elle réécrivait la durée du chantier");
     }
 
-    // Et le départ qui reste écrit bien quelque chose de NEUF, sans jamais
-    // raccourcir le chantier : la durée dictée vaut des jours de travail.
     await carte.locator('[data-vers="apres_midi"]').click();
 
     // **ATTENDRE QUE LA BASE LE DISE, JAMAIS UN DÉLAI FIXE.** Ce contrôle
     // patientait 1,5 s puis lisait : joué seul il passait, mais dans la
     // batterie — où plusieurs ateliers se partagent la machine — l'action
     // serveur n'avait pas toujours atterri, et il accusait « Déplacer » d'un
-    // défaut qu'il venait de fabriquer. C'est la règle que `test-planning-e2e`
-    // porte déjà, et elle vaut ici aussi.
-    const lu = async () =>
-      (
-        await pool.query(
-          `SELECT creneau_debut AS moment, duree_demi_journees AS duree
-             FROM chantiers WHERE id = $1`,
-          [chantierId]
-        )
-      ).rows[0];
-    let rows = await lu();
-    for (let i = 0; i < 60 && rows.moment !== "apres_midi"; i++) {
+    // défaut qu'il venait de fabriquer.
+    const lu = async () => {
+      const { rows } = await pool.query(
+        `SELECT c.duree_demi_journees AS duree,
+                (SELECT count(*) FROM creneaux_chantier k
+                  WHERE k.chantier_id = c.id AND k.jour = $2 AND k.demi = 'apres_midi') AS encore
+           FROM chantiers c WHERE c.id = $1`,
+        [chantierId, jour]
+      );
+      return rows[0];
+    };
+    let etat = await lu();
+    for (let i = 0; i < 60 && Number(etat.encore) > 0; i++) {
       await page.waitForTimeout(250);
-      rows = await lu();
+      etat = await lu();
     }
-    if (rows.moment !== "apres_midi") {
-      throw new Error(`parti sur « ${rows.moment} » et non l'après-midi`);
+    if (Number(etat.encore) > 0) {
+      throw new Error("l'après-midi touché n'a pas été rendu : il occupe toujours la journée");
     }
-    if (rows.duree !== 4) {
-      throw new Error(`deux jours valent 4 demi-journées, pas ${rows.duree}`);
+    // **LE POINT** : la moitié est rendue, la durée vendue ne bouge pas — c'est
+    // l'écart entre les deux qui attend une place, et le raccourcissement
+    // silencieux qu'il a signalé le 9 septembre ne peut plus revenir.
+    if (etat.duree !== 4) {
+      throw new Error(`deux jours valent 4 demi-journées, pas ${etat.duree}`);
     }
   });
 

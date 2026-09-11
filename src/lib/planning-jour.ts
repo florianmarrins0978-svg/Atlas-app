@@ -12,7 +12,7 @@
  * peindre une couleur qui contredit le compte écrit juste à côté.
  */
 
-import { DUREE_PAR_DEFAUT_DEMI_JOURNEES, type Moment } from "@/lib/disponibilites";
+import { type Moment } from "@/lib/disponibilites";
 
 /**
  * Une demi-journée. Le même vocabulaire que `creneauDebut` en base et que
@@ -309,6 +309,46 @@ export function blocsDeLaJournee<C>(
   // ranger : il garde sa ligne, à la fin, comme avant.
   for (const demi of enAttente) blocs.push({ type: "libre", demi });
   return blocs;
+}
+
+/**
+ * APRÈS QUEL BLOC LA FICHE D'INTERVENTION SE DESSINE — son rang, ou −1.
+ *
+ * **Sa correction du 10 septembre 2026**, capture à l'appui : *« quand il y a
+ * plusieurs chantiers le même jour on a un problème ! Quand je clique sur sa
+ * fiche d'intervention, ça doit se coller en dessous, pas en dessous de
+ * Frédéric, ça porte à confusion. »*
+ *
+ * L'écran la rendait après la boucle entière, donc toujours au BAS de la
+ * journée. Sur un jour à deux chantiers, toucher le nom du premier ouvrait une
+ * fiche sous le second — et la fiche porte le nom du client en gros : deux noms
+ * qui se contredisent à trois centimètres, sur l'écran qui dit à une équipe où
+ * elle va.
+ *
+ * **Elle repasse SOUS les moitiés restées libres quand son chantier est le
+ * dernier du jour**, et c'est sa correction du 22 août 2026 : *« l'après-midi de
+ * libre passe sous la feuille de chantier, or il doit rester en dessous du matin
+ * même s'il est libre »*. Une moitié libre appartient à la journée, pas au
+ * chantier ; un panneau qu'on déplie ne la repousse pas à trois écrans du matin
+ * qu'elle complète. Les deux règles ne se croisent qu'à la fin, parce que
+ * `blocsDeLaJournee` ne pose des blocs « libre » qu'en queue.
+ *
+ * **Écrit ici plutôt que dans l'écran** : c'est la règle qui vient de régresser,
+ * et elle s'éprouve sans monter un navigateur (`CLAUDE.md` §4 sexies).
+ */
+export function rangDeLaFiche<C extends { id: string }>(
+  blocs: readonly BlocJour<C>[],
+  chantierOuvert: string | null
+): number {
+  if (!chantierOuvert) return -1;
+  const sien = blocs.findIndex(
+    (b) => b.type === "chantier" && b.chantier.id === chantierOuvert
+  );
+  const dernier = blocs.reduce((r, b, i) => (b.type === "chantier" ? i : r), -1);
+  // Chantier introuvable parmi les blocs — il n'occupe aucune demi-journée :
+  // la fiche garde alors la queue, plutôt que de disparaître sans un mot.
+  if (sien < 0 || sien === dernier) return blocs.length - 1;
+  return sien;
 }
 
 /**

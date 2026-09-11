@@ -122,6 +122,56 @@ async function main() {
   );
   console.log("  ✓ « Poser le prix » ouvre le champ de la ligne qui manque");
 
+  // --- 2 bis. LE CHAMP EST VIDE, PAS À ZÉRO ------------------------------
+  //
+  // **Sa correction du 11 septembre 2026, capture à l'appui :** *« pour le prix
+  // unitaire HT il faudrait que lorsque l'on clique il n'y ait rien de
+  // réellement écrit quand aucun prix n'est affiché [...] ils doivent être
+  // fictifs pour qu'on comprenne qu'on peut écrire dans la case, mais pas
+  // vraiment là »*.
+  //
+  // Le champ portait un `0` RÉEL, venu du zéro que la base met par défaut. Il a
+  // tapé 450 derrière, et sa capture montre **0450**. Ce coup-ci le nombre
+  // tombait juste ; un zéro de plus au mauvais endroit part chez le client.
+  //
+  // **C'est ICI que ça se mesure** : le décor de cette suite pose exactement son
+  // cas — `a_chiffrer = true`, `prix_unitaire = '0'`.
+  const dansLeChamp = await page.getByLabel("Prix unitaire 1").inputValue();
+  assert.equal(
+    dansLeChamp,
+    "",
+    `la case du prix porte « ${dansLeChamp} » au lieu d'être vide : ce qu'il tapera se collera derrière`
+  );
+  console.log("  ✓ une ligne qui attend son prix ouvre une case VIDE, pas un zéro");
+
+  // --- 2 ter. LE CURSEUR ARRIVE AU BOUT DU CHIFFRE ------------------------
+  //
+  // **Sa seconde correction du même message :** *« quand je clique sur la case
+  // de la quantité, je veux que le petit trait qui clignote [...] soit toujours
+  // à droite ; comme ça, si la quantité par défaut n'est pas bonne, on a juste à
+  // supprimer. Or des fois il se met à gauche. »*
+  //
+  // **Le « des fois » s'explique, et c'est ce qu'on reproduit :** le champ est
+  // aligné à DROITE dans une case large. On appuie donc volontairement dans le
+  // VIDE qui précède le chiffre — là où le doigt tombe le plus souvent —, et
+  // c'est exactement l'appui qui posait le curseur devant.
+  const qte = page.getByLabel("Quantité 1");
+  const boite = await qte.boundingBox();
+  assert.ok(boite && boite.width > 20, "la case de la quantité est introuvable : rien à mesurer");
+  await qte.click({ position: { x: 6, y: boite!.height / 2 } });
+  await page.waitForTimeout(250);
+  const ou = await qte.evaluate((n) => {
+    const champ = n as HTMLInputElement;
+    return { curseur: champ.selectionStart, longueur: champ.value.length, valeur: champ.value };
+  });
+  assert.ok(ou.longueur > 0, "la quantité est vide : le curseur n'a nulle part où se tromper");
+  assert.equal(
+    ou.curseur,
+    ou.longueur,
+    `le curseur est retombé en ${ou.curseur} devant « ${ou.valeur} » : il faut le déplacer avant de pouvoir effacer`
+  );
+  console.log("  ✓ le curseur de la quantité arrive DERRIÈRE le chiffre, même si l'on appuie à gauche");
+
   // --- 3. Le prix posé, le bouton revient de lui-même ---------------------
   await page.getByLabel("Prix unitaire 1").fill("480");
   await page.getByLabel("Prix unitaire 1").blur();

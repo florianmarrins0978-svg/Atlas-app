@@ -1,19 +1,39 @@
 import { and, eq, gte, isNull, isNotNull, or, sql, desc } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { NOTE_MAX } from "../../lib/note-chantier";
-import { equipesParChantier } from "./occupation-chantiers";
-import { chantiers, clients, entreprises, equipesDuChantier, factures } from "../db/schema";
+import { creneauxParChantier, equipesParChantier } from "./occupation-chantiers";
+// **Le seul écrivain de « où le chantier est posé »**, partagé avec
+// `envois-devis.ts` depuis le 10 septembre 2026 : deux rédactions de cette
+// écriture ont déjà divergé une fois (`ARCHITECTURE.md` §322).
+import { ecrireLesCreneaux } from "./creneaux-poses";
+import {
+  chantiers,
+  clients,
+  creneauxChantier,
+  entreprises,
+  equipesDuChantier,
+  factures,
+} from "../db/schema";
 import {
   compterOccupation,
+  creneauxDuChantier,
   departPossible,
   dureeDuChantier,
   dureeEnDemiJournees,
+  DUREE_PAR_DEFAUT_DEMI_JOURNEES,
+  type Creneau,
+  type JourIso,
   type Moment,
 } from "@/lib/disponibilites";
 import { absencesEquipe, equipes } from "../db/schema";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
 import { cocheRefusee } from "../../lib/equipe-absente";
 import { seuilMemoireCalendrier } from "../../lib/onglet-chantier";
+import {
+  avecLaDemi,
+  creneauxOccupes,
+  sansLaDemi,
+} from "../../lib/creneaux-chantier";
 import type { Ctx } from "./context";
 
 /**
@@ -210,7 +230,22 @@ export async function getChantierPourCoordonnees(ctx: Ctx, id: string) {
 
 export async function creerChantier(
   ctx: Ctx,
-  data: { nom: string; adresseChantier?: string; clientId?: string | null }
+  data: {
+    nom: string;
+    adresseChantier?: string;
+    clientId?: string | null;
+    /**
+     * COMBIEN DE DEMI-JOURNÉES IL DEMANDE, quand on le sait déjà.
+     *
+     * **Le seul chemin qui le sait, c'est « Un client » depuis le planning**
+     * (10 septembre 2026) : le patron y choisit matin, après-midi ou la
+     * journée, et ce choix EST la durée — il n'y a pas de devis pour la dire.
+     *
+     * Partout ailleurs elle reste absente : la durée vient de la dictée ou du
+     * devis, et l'écrire à la création la figerait avant qu'on la connaisse.
+     */
+    dureeDemiJournees?: number;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [row] = await tx
@@ -220,6 +255,7 @@ export async function creerChantier(
         nom: data.nom,
         adresseChantier: data.adresseChantier,
         clientId: data.clientId ?? null,
+        dureeDemiJournees: data.dureeDemiJournees,
         createdBy: ctx.utilisateurId,
         updatedBy: ctx.utilisateurId,
       })
@@ -510,6 +546,120 @@ export function rangerParDemi(
  * se voyait ni au plan, ni au devis, ni à la facture — seulement le jour du
  * chantier. La durée vient du devis (§308) ; ici, on ne choisit qu'un départ.
  */
+/** Ce qu'un chantier occupe en base — vide s'il n'a jamais été morcelé. */
+async function lireLesCreneaux(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  chantierId: string
+): Promise<Creneau[]> {
+  const lignes = await tx
+    .select({ jour: creneauxChantier.jour, demi: creneauxChantier.demi })
+    .from(creneauxChantier)
+    .where(eq(creneauxChantier.chantierId, chantierId));
+  return lignes.map((l) => ({ jour: l.jour, moment: l.demi }) as Creneau);
+}
+
+/** Le chantier tel que les règles pures le demandent. */
+async function lirePose(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  ctx: Ctx,
+  chantierId: string
+) {
+  const [c] = await tx
+    .select({
+      jour: chantiers.datePlanifiee,
+      moment: chantiers.creneauDebut,
+      duree: chantiers.dureeDemiJournees,
+    })
+    .from(chantiers)
+    .where(
+      and(
+        eq(chantiers.id, chantierId),
+        eq(chantiers.entrepriseId, ctx.entrepriseId),
+        isNull(chantiers.deletedAt)
+      )
+    )
+    .limit(1);
+  if (!c) return null;
+  return { jour: c.jour, moment: c.moment, dureeDemiJournees: c.duree };
+}
+
+/**
+ * CE QU'UN CHANTIER OCCUPE, tel que l'écran doit le repeindre.
+ *
+ * **Le repli compris** : un chantier jamais morcelé n'a aucune ligne, et rendre
+ * une liste vide ferait disparaître ses demi-journées de l'écran juste après le
+ * geste — puis réapparaître au rechargement.
+ */
+export async function creneauxDunChantier(ctx: Ctx, chantierId: string): Promise<Creneau[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const pose = await lirePose(tx, ctx, chantierId);
+    if (!pose) return [];
+    return creneauxOccupes(pose, await lireLesCreneaux(tx, chantierId));
+  });
+}
+
+/**
+ * LIBÉRER UNE DEMI-JOURNÉE — sa demande du 10 septembre 2026.
+ *
+ * *« Je clique sur le matin, il devient vert et le matin du vendredi devient
+ * libre, et une demi-journée de Mr Julien sort. »* Elle ne disparaît pas : la
+ * durée demandée ne bouge pas, si bien que le chantier annonce aussitôt qu'il
+ * lui manque une demi-journée, et le patron la repose où il veut.
+ *
+ * **Rend `null` quand il n'y a rien à libérer** plutôt que de lever : l'appelant
+ * est un écran, et une exception d'action serveur n'arrive jamais jusqu'à lui
+ * (`AGENTS.md`).
+ */
+export async function libererDemiJournee(
+  ctx: Ctx,
+  chantierId: string,
+  jour: JourIso,
+  demi: Moment
+) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const pose = await lirePose(tx, ctx, chantierId);
+    if (!pose) return null;
+    const actuels = await lireLesCreneaux(tx, chantierId);
+    const occupes = creneauxOccupes(pose, actuels);
+    const restants = sansLaDemi(pose, actuels, { jour, moment: demi } as Creneau);
+    // Rien n'a bougé : la demi-journée demandée n'était pas la sienne.
+    if (restants.length === occupes.length) return null;
+    await ecrireLesCreneaux(tx, ctx, chantierId, restants);
+    return { restants: restants.length };
+  });
+}
+
+/**
+ * REPOSER UNE DEMI-JOURNÉE qui attendait une place.
+ *
+ * *« La demi-journée de Mr Julien qui a été retirée peut être replacée. »* Elle
+ * se pose où il veut — y compris sur un autre jour, y compris à côté de ce que
+ * le chantier occupe déjà.
+ *
+ * **On ne repose que ce qui manque** : reposer alors que tout est déjà placé
+ * ferait occuper une demi-journée de plus que le devis n'en vend, et le
+ * calendrier compterait une charge que personne ne fait.
+ */
+export async function reposerDemiJournee(
+  ctx: Ctx,
+  chantierId: string,
+  jour: JourIso,
+  demi: Moment
+) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const pose = await lirePose(tx, ctx, chantierId);
+    if (!pose) return null;
+    const actuels = await lireLesCreneaux(tx, chantierId);
+    const occupes = creneauxOccupes(pose, actuels);
+    const demande = pose.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+    if (occupes.length >= demande) return null;
+    const suivants = avecLaDemi(pose, actuels, { jour, moment: demi } as Creneau);
+    if (suivants.length === occupes.length) return null; // déjà là
+    await ecrireLesCreneaux(tx, ctx, chantierId, suivants);
+    return { poses: suivants.length };
+  });
+}
+
 export async function deplacerChantier(
   ctx: Ctx,
   chantierId: string,
@@ -517,7 +667,7 @@ export async function deplacerChantier(
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [courant] = await tx
-      .select({ jour: chantiers.datePlanifiee })
+      .select({ jour: chantiers.datePlanifiee, moment: chantiers.creneauDebut })
       .from(chantiers)
       .where(
         and(
@@ -540,10 +690,27 @@ export async function deplacerChantier(
       })
       .where(and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
       .returning();
+
+    // **Le bloc glisse, et il garde SA taille.** On repose autant de
+    // demi-journées qu'il en occupait — pas autant qu'il en demande : un
+    // chantier dont une demi-journée attend une place ne doit pas la retrouver
+    // posée d'office parce qu'on a déplacé le reste.
+    const pose = await lirePose(tx, ctx, chantierId);
+    if (pose?.jour) {
+      const combien = creneauxOccupes(
+        { ...pose, moment: courant.moment },
+        await lireLesCreneaux(tx, chantierId)
+      ).length;
+      await ecrireLesCreneaux(
+        tx,
+        ctx,
+        chantierId,
+        creneauxDuChantier({ jour: pose.jour, moment: demi }, combien)
+      );
+    }
     return row ?? null;
   });
 }
-
 
 export async function planifierChantier(
   ctx: Ctx,
@@ -618,6 +785,8 @@ export async function planifierChantier(
     // rangerait un chantier sur un matin que les trois autres tiennent pour
     // plein (`CLAUDE.md` §3).
     const equipesPosees = await equipesParChantier(tx, ctx.entrepriseId);
+    // **Où chacun est POSÉ** — un chantier morcelé n'occupe plus son bloc.
+    const creneauxPoses = await creneauxParChantier(tx, ctx.entrepriseId);
     const occupation = fusionnerAbsences(
       compterOccupation(
         autres
@@ -627,6 +796,7 @@ export async function planifierChantier(
             moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
             dureeDemiJournees: a.duree,
             equipesParDemi: equipesPosees.get(a.id) ?? null,
+            creneaux: creneauxPoses.get(a.id) ?? null,
           })),
         nombreEquipes
       ),
@@ -668,6 +838,17 @@ export async function planifierChantier(
       })
       .where(eq(chantiers.id, chantierId))
       .returning();
+
+    // **Poser écrit désormais OÙ l'on pose** (migration 0085). Un chantier posé
+    // depuis ce lot porte donc ses demi-journées ; les anciens n'en ont pas, et
+    // valent leur bloc calculé — c'est le repli de `creneauxPoses`, et il est
+    // ce qui empêche de libérer d'un coup tout ce qui est déjà pris.
+    await ecrireLesCreneaux(
+      tx,
+      ctx,
+      chantierId,
+      creneauxDuChantier({ jour: datePlanifiee, moment: creneauDebut }, duree)
+    );
     return row;
   });
 }
@@ -676,6 +857,11 @@ export async function planifierChantier(
 // chantier redevient "à planifier" si un devis a déjà été envoyé.
 export async function deplanifierChantier(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Un chantier rendu à « Sans date » n'occupe plus rien.** Laisser ses
+    // créneaux derrière lui, c'est garder des demi-journées prises par un
+    // chantier qui n'est plus posé — et un jour qui ne partirait jamais chez
+    // le client.
+    await tx.delete(creneauxChantier).where(eq(creneauxChantier.chantierId, chantierId));
     const [row] = await tx
       .update(chantiers)
       .set({ datePlanifiee: null, updatedBy: ctx.utilisateurId, updatedAt: new Date() })
@@ -796,9 +982,15 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
       parChantier.set(a.chantierId, siennes);
     }
 
+    // **Où chacun est POSÉ** — sans quoi l'écran repeindrait le bloc d'origine
+    // d'un chantier dont une demi-journée a été libérée, et montrerait pris un
+    // moment qu'il vient de rendre (migration 0085).
+    const creneauxPoses = await creneauxParChantier(tx, ctx.entrepriseId);
+
     return lignes.map((l) => ({
       ...l,
       equipes: rangerParDemi(parChantier.get(l.id) ?? []),
+      creneaux: creneauxPoses.get(l.id) ?? null,
     }));
   });
 }
@@ -1084,7 +1276,6 @@ function enNombre(v: string | null): number | null {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
-
 
 /**
  * LES CHANTIERS D'UNE FILE DU PLANNING — pour la portée resserrée d'un salarié.

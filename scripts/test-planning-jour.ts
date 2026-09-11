@@ -27,6 +27,7 @@ import {
   etatDemi,
   occupationDemi,
   partDeLaBarre,
+  rangDeLaFiche,
   type Demi,
 } from "../src/lib/planning-jour";
 
@@ -290,6 +291,59 @@ essai("le chantier du matin passe avant celui de l'après-midi", () => {
   const blocs = blocsDeLaJournee([aprem, matin], occupePar);
   assert.equal(blocs[0].type === "chantier" ? blocs[0].chantier.id : null, "matin");
   assert.equal(blocs[1].type === "chantier" ? blocs[1].chantier.id : null, "aprem");
+});
+
+// ─── OÙ SE COLLE LA FICHE D'INTERVENTION ───────────────────────────────────
+//
+// **Sa correction du 10 septembre 2026**, capture à l'appui : *« quand il y a
+// plusieurs chantiers le même jour on a un problème ! Quand je clique sur sa
+// fiche d'intervention, ça doit se coller en dessous, pas en dessous de
+// Frédéric, ça porte à confusion. »*
+//
+// Le défaut ne se voyait qu'à DEUX chantiers dans la même journée — un cas
+// qu'aucune capture ni aucune suite ne montrait. Il tient en une ligne ici.
+essai("la fiche se colle sous SON chantier, pas sous le dernier du jour", () => {
+  const julien: Faux = { id: "julien", demis: ["matin", "apres_midi"] };
+  const frederic: Faux = { id: "frederic", demis: ["matin", "apres_midi"] };
+  const blocs = blocsDeLaJournee([julien, frederic], occupePar);
+  assert.equal(rangDeLaFiche(blocs, "julien"), 0, "elle est passée sous Frédéric");
+  assert.equal(rangDeLaFiche(blocs, "frederic"), 1);
+});
+
+// **Sa correction du 22 août 2026 :** *« l'après-midi de libre passe sous la
+// feuille de chantier, or il doit rester en dessous du matin même s'il est
+// libre »*. Une moitié libre appartient à la journée, pas au chantier.
+essai("sous le dernier chantier, elle repasse après les moitiés libres", () => {
+  const matin: Faux = { id: "matin", demis: ["matin"] };
+  const blocs = blocsDeLaJournee([matin], occupePar);
+  assert.deepEqual(
+    blocs.map((b) => (b.type === "libre" ? b.demi : b.chantier.id)),
+    ["matin", "apres_midi"]
+  );
+  assert.equal(rangDeLaFiche(blocs, "matin"), 1, "l'après-midi libre est retombé sous la fiche");
+});
+
+// Les deux règles se croisent ici, et c'est le seul cas où elles pourraient se
+// contredire : un premier chantier ouvert, un second, puis rien de libre.
+essai("le premier de deux garde sa place quand le jour est plein", () => {
+  const matin: Faux = { id: "matin", demis: ["matin"] };
+  const aprem: Faux = { id: "aprem", demis: ["apres_midi"] };
+  const blocs = blocsDeLaJournee([matin, aprem], occupePar);
+  assert.equal(rangDeLaFiche(blocs, "matin"), 0);
+  assert.equal(rangDeLaFiche(blocs, "aprem"), 1);
+});
+
+essai("aucune fiche ouverte : aucun rang", () => {
+  const a: Faux = { id: "a", demis: ["matin"] };
+  assert.equal(rangDeLaFiche(blocsDeLaJournee([a], occupePar), null), -1);
+});
+
+// Un chantier du jour qui n'occupe aucune demi-journée n'a pas de bloc : la
+// fiche garde la queue plutôt que de disparaître sans un mot.
+essai("un chantier sans demi-journée laisse la fiche en queue", () => {
+  const a: Faux = { id: "a", demis: ["matin"] };
+  const blocs = blocsDeLaJournee([a], occupePar);
+  assert.equal(rangDeLaFiche(blocs, "fantome"), blocs.length - 1);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Règles de la journée — ${echecs} échec(s).`);

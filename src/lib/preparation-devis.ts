@@ -165,6 +165,36 @@ export function ligneAttendSonPrix(ligne: LignePrix): boolean {
 }
 
 /**
+ * CE QUE LE CHAMP DU PRIX PORTE VRAIMENT — et ce n'est pas « 0 ».
+ *
+ * **Sa correction du 11 septembre 2026, capture à l'appui :** *« pour le prix
+ * unitaire HT il faudrait que lorsque l'on clique il n'y ait rien de réellement
+ * écrit quand aucun prix n'est affiché, comme ça on tape notre prix direct sans
+ * avoir à supprimer les 0 ; ils doivent être fictifs pour qu'on comprenne qu'on
+ * peut écrire dans la case, mais pas vraiment là »*.
+ *
+ * **Le défaut se voit sur sa capture, et il coûte de l'argent :** le champ
+ * portait un `0` RÉEL, venu du zéro que la base met par défaut. Il a tapé 450
+ * derrière, et la case a affiché **0450**. Ce coup-ci le nombre tombait juste ;
+ * un zéro de plus au mauvais endroit part chez le client.
+ *
+ * **La règle n'est pas neuve, elle est la même** que celle du montant juste
+ * au-dessus : une ligne qui ATTEND son prix ne porte rien. Là où le montant
+ * écrit « à chiffrer », le champ reste vide et c'est l'exemple en gris qui
+ * invite à écrire. En écrire une seconde version ferait diverger les deux
+ * (`CLAUDE.md` §3), et l'on verrait un jour « à chiffrer » à côté d'un zéro.
+ *
+ * **Un zéro VOULU n'est pas touché** : une ligne offerte ne porte pas le
+ * drapeau, son montant s'écrit « 0,00 € », et son champ garde son zéro. Vider
+ * celui-là ferait passer une gratuité décidée pour un oubli.
+ */
+export function prixAEcrire(prixUnitaire: string, aChiffrer?: boolean | null): string {
+  const n = Number(String(prixUnitaire).replace(",", ".").trim());
+  const zero = !Number.isFinite(n) || n === 0;
+  return aChiffrer && zero ? "" : prixUnitaire;
+}
+
+/**
  * Les lignes qui attendent encore leur prix, nommées — ou `null` s'il n'y en a
  * aucune.
  *

@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glisser les mois — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  GLISSER LE CALENDRIER D'UN MOIS À L'AUTRE — 11 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa demande : *« ce qui serait bien c'est de pouvoir déplacer les mois du
+  planning en slidant soit à droite soit à gauche »*, puis, dans la foulée :
+  *« en plus des 2 flèches »*.
+
+  **Cette précision décide tout.** `PRODUCT.md` interdit qu'un geste caché
+  porte une fonction à lui seul — *« pas de geste à découvrir : un glissement,
+  un appui long, un double appui ne s'apprennent pas tout seuls »* —, parce que
+  ceux qui s'en serviront ne sont pas à l'aise avec un téléphone. Les deux
+  flèches restent donc là, inchangées : le glissement est un raccourci pour qui
+  le connaît, jamais le seul chemin.
+
+  RIEN N'EST CODÉ. Les couleurs viennent de `src/lib/chartes.ts`, la grille de
+  `src/components/atlas/MoisCharge.tsx`. La charge des journées est un DÉCOR :
+  elle ne vient d'aucune base.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#6f8a5f; --surPlein:#fff; --papier:#ece9e1; --rouge:#7a2230;
+  --weekend:rgba(28,28,26,.035); --chiffreWeekend:rgba(28,28,26,.42);
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#6f8a5f; --surPlein:#101210; --papier:#232722; --rouge:#a8404f;
+  --weekend:rgba(233,232,222,.05); --chiffreWeekend:rgba(233,232,222,.42);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+.choix{max-width:740px;margin:14px auto 0;padding:0 20px;text-align:center}
+.choix button{font:inherit;font-size:13px;padding:9px 14px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.choix button[aria-pressed=true]{background:var(--accent);color:var(--fond);
+  border-color:var(--accent)}
+
+.scene{display:flex;justify-content:center;padding:18px 16px 6px}
+.tel{width:390px;max-width:100%;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;padding:16px 16px 22px}
+
+/* ─── l'en-tête du mois : les deux flèches ne bougent pas ────────────────── */
+.entete{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fleche{width:44px;height:44px;flex:none;border-radius:999px;border:0;
+  background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);
+  color:var(--encre);font-size:20px;line-height:1;cursor:pointer}
+.fleche:active{background:var(--papier)}
+.titre{flex:1;text-align:center;font-size:15px;font-weight:700;line-height:1.2}
+
+.semaine-mots{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;
+  margin:16px 0 6px;text-align:center;font-size:10px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--gris)}
+.semaine-mots span:nth-child(n+6){color:var(--chiffreWeekend)}
+
+/* ─── la fenêtre où le mois glisse ──────────────────────────────────────── */
+.hublot{overflow:hidden;touch-action:pan-y}
+.rail{display:flex;width:300%}
+.rail.anime{transition:transform .26s cubic-bezier(.22,.61,.36,1)}
+.mois{width:33.3333%;flex:none;padding:0 1px}
+
+.grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.case{aspect-ratio:1/1.06;border:0;border-radius:10px;background:transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;padding:0;cursor:pointer;color:var(--encre)}
+.case.weekend{background:var(--weekend)}
+.case.weekend .chiffre{color:var(--chiffreWeekend)}
+.case.creux{visibility:hidden}
+.case.aujourdhui{box-shadow:inset 0 0 0 1.5px var(--or)}
+.case.aujourdhui .chiffre{color:var(--or);font-weight:600}
+.case.touche{background:var(--papier);box-shadow:inset 0 0 0 1.5px var(--encre)}
+.chiffre{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:17px;line-height:1}
+.marques{display:flex;flex-direction:column;gap:2px;width:60%}
+.marques i{display:block;height:3px;border-radius:2px;background:var(--papier)}
+.marques i.dispo{background:linear-gradient(to right,var(--plein) 50%,var(--papier) 50%)}
+.marques i.plein{background:var(--plein)}
+.marques i.dela{background:var(--rouge)}
+.case.weekend .marques{visibility:hidden}
+
+.aujourdhui-retour{display:block;margin:14px auto 0;border:0;background:transparent;
+  font:inherit;font-size:11px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--or);cursor:pointer;min-height:44px}
+
+.sous{max-width:740px;margin:10px auto 0;padding:0 20px;text-align:center;
+  font-size:14px;line-height:1.65;color:var(--encre-douce)}
+.sous b{color:var(--encre)}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);
+  vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+@media (max-width:430px){
+  table,tbody,tr,td,th{display:block;width:100%}
+  thead{display:none}
+  tr{border-bottom:1px solid var(--trait);padding:10px 0}
+  td{border:0;padding:3px 0}
+}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">Maquette — rien n'est codé</span>
+  <h1>Glisser d'un mois à l'autre</h1>
+  <p>Le calendrier se pousse du doigt, à droite ou à gauche. <b>Les deux flèches
+  restent</b> : le glissement est un raccourci, jamais le seul chemin.</p>
+  <p>Essaie les deux façons, et dis-moi laquelle.</p>
+</div>
+
+<div class="choix">
+  <button type="button" data-variante="suit" aria-pressed="true">A — Le mois suit le doigt</button>
+  <button type="button" data-variante="relache" aria-pressed="false">B — Il bascule au relâcher</button>
+</div>
+
+<div class="scene">
+  <div class="tel">
+    <div class="entete">
+      <button type="button" class="fleche" id="avant" aria-label="Mois précédent">‹</button>
+      <b class="titre" id="titre">—</b>
+      <button type="button" class="fleche" id="apres" aria-label="Mois suivant">›</button>
+    </div>
+
+    <div class="semaine-mots" aria-hidden="true">
+      <span>Lu</span><span>Ma</span><span>Me</span><span>Je</span><span>Ve</span><span>Sa</span><span>Di</span>
+    </div>
+
+    <div class="hublot" id="hublot">
+      <div class="rail" id="rail"></div>
+    </div>
+
+    <button type="button" class="aujourdhui-retour" id="retour" hidden>← Aujourd'hui</button>
+  </div>
+</div>
+
+<p class="sous" id="sous">Pousse le calendrier vers la gauche pour aller au mois suivant.</p>
+
+<div class="notes">
+  <h3>Ce que la maquette tranche</h3>
+  <table>
+    <thead><tr><th>La question</th><th>Ce qui est retenu</th></tr></thead>
+    <tbody>
+      <tr><td><b>Les flèches</b></td><td>Elles restent, à leur place, à leur taille. Sa demande le dit : « en plus des 2 flèches ».</td></tr>
+      <tr><td><b>Le défilement de la page</b></td><td>Le geste ne prend la main que s'il part clairement de côté. Un doigt qui descend fait défiler la page, comme avant.</td></tr>
+      <tr><td><b>Toucher une journée</b></td><td>Un doigt qui a glissé n'ouvre plus la journée sous lui. Sans ça, chaque glissement ouvrirait une fiche au hasard.</td></tr>
+      <tr><td><b>Un glissement trop court</b></td><td>Le mois revient en place. On ne change pas de mois pour huit pixels.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Ce qui reste à décider — par lui</h3>
+  <p><b>A ou B.</b> En A, le mois suit le doigt et l'on voit arriver le suivant ;
+  c'est ce que font les applications qu'il a déjà dans la main. En B, rien ne
+  bouge tant qu'on n'a pas lâché : moins vivant, mais rien ne tremble sous le
+  doigt de qui vise une case.</p>
+  <p>Mon avis : <b>A</b>. Voir le mois suivant arriver pendant qu'on pousse, c'est
+  ce qui apprend le geste sans qu'on l'explique — et le geste s'annule en
+  ramenant le doigt, ce que B ne permet pas.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août",
+              "septembre","octobre","novembre","décembre"];
+  var aujourdhui = new Date();
+  var ANNEE0 = aujourdhui.getFullYear(), MOIS0 = aujourdhui.getMonth();
+  var curseur = { annee: ANNEE0, mois: MOIS0 };
+  var variante = "suit";
+
+  var rail = document.getElementById("rail");
+  var hublot = document.getElementById("hublot");
+  var titre = document.getElementById("titre");
+  var retour = document.getElementById("retour");
+  var sous = document.getElementById("sous");
+
+  // ─── LE DÉCOR : une charge par demi-journée, stable d'un rendu à l'autre ──
+  // Ce n'est PAS une donnée : c'est un dessin. Un tirage au hasard changerait
+  // à chaque glissement, et l'on croirait que le calendrier s'affole.
+  function etatDuJour(annee, mois, jour, demi) {
+    var graine = (annee * 372 + mois * 31 + jour) * (demi === "matin" ? 7 : 13);
+    var r = (graine * 9301 + 49297) % 233280 / 233280;
+    if (r < 0.52) return "";
+    if (r < 0.78) return "dispo";
+    if (r < 0.95) return "plein";
+    return "dela";
+  }
+
+  function decale(c, pas) {
+    var m = c.mois + pas, a = c.annee;
+    while (m < 0) { m += 12; a -= 1; }
+    while (m > 11) { m -= 12; a += 1; }
+    return { annee: a, mois: m };
+  }
+
+  function grilleDuMois(c) {
+    var premier = new Date(c.annee, c.mois, 1);
+    // Lundi = 0 : la semaine commence un lundi, comme dans l'application.
+    var vide = (premier.getDay() + 6) % 7;
+    var combien = new Date(c.annee, c.mois + 1, 0).getDate();
+    var cases = [];
+    for (var i = 0; i < vide; i++) cases.push(null);
+    for (var j = 1; j <= combien; j++) cases.push(j);
+    while (cases.length % 7 !== 0) cases.push(null);
+    return cases;
+  }
+
+  function dessinerMois(c) {
+    var bloc = document.createElement("div");
+    bloc.className = "mois";
+    var grille = document.createElement("div");
+    grille.className = "grille";
+    grilleDuMois(c).forEach(function (jour, rang) {
+      var cell = document.createElement("button");
+      cell.type = "button";
+      if (jour === null) { cell.className = "case creux"; grille.appendChild(cell); return; }
+      var weekEnd = rang % 7 >= 5;
+      var estAujourdhui = c.annee === ANNEE0 && c.mois === MOIS0 && jour === aujourdhui.getDate();
+      cell.className = "case" + (weekEnd ? " weekend" : "") + (estAujourdhui ? " aujourdhui" : "");
+      cell.setAttribute("aria-label", jour + " " + MOIS[c.mois]);
+      cell.innerHTML =
+        '<span class="chiffre">' + jour + '</span>' +
+        '<span class="marques">' +
+          '<i class="' + etatDuJour(c.annee, c.mois, jour, "matin") + '"></i>' +
+          '<i class="' + etatDuJour(c.annee, c.mois, jour, "apres") + '"></i>' +
+        '</span>';
+      cell.addEventListener("click", function () {
+        // Un doigt qui a glissé n'ouvre pas la journée sous lui : sans cela,
+        // chaque glissement ouvrirait une fiche au hasard.
+        if (aGlisse) return;
+        Array.prototype.forEach.call(
+          rail.querySelectorAll(".case.touche"),
+          function (n) { n.classList.remove("touche"); }
+        );
+        cell.classList.add("touche");
+      });
+      grille.appendChild(cell);
+    });
+    bloc.appendChild(grille);
+    return bloc;
+  }
+
+  function peindre() {
+    rail.classList.remove("anime");
+    rail.innerHTML = "";
+    rail.appendChild(dessinerMois(decale(curseur, -1)));
+    rail.appendChild(dessinerMois(curseur));
+    rail.appendChild(dessinerMois(decale(curseur, 1)));
+    poser(0);
+    titre.textContent = MOIS[curseur.mois] + " " + curseur.annee;
+    retour.hidden = curseur.annee === ANNEE0 && curseur.mois === MOIS0;
+  }
+
+  // Le rail porte trois mois : le centre est à -33,3333 %.
+  function poser(dx) {
+    rail.style.transform = "translateX(calc(-33.3333% + " + dx + "px))";
+  }
+
+  function allerA(pas) {
+    if (pas === 0) { rail.classList.add("anime"); poser(0); return; }
+    rail.classList.add("anime");
+    poser(-pas * hublot.clientWidth);
+    window.setTimeout(function () {
+      curseur = decale(curseur, pas);
+      peindre();
+    }, 260);
+  }
+
+  // ─── LE GESTE ────────────────────────────────────────────────────────────
+  //
+  // **On ne prend la main que si le geste part de CÔTÉ.** Le calendrier vit au
+  // milieu d'une page qui se fait défiler : un doigt qui descend doit continuer
+  // à faire défiler, sinon la page se bloque sous le doigt de celui qui voulait
+  // seulement lire plus bas.
+  var depart = null, aGlisse = false, sens = null;
+
+  hublot.addEventListener("pointerdown", function (e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    depart = { x: e.clientX, y: e.clientY };
+    aGlisse = false;
+    sens = null;
+    rail.classList.remove("anime");
+  });
+
+  hublot.addEventListener("pointermove", function (e) {
+    if (!depart) return;
+    var dx = e.clientX - depart.x, dy = e.clientY - depart.y;
+    if (!sens) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      sens = Math.abs(dx) > Math.abs(dy) ? "cote" : "bas";
+      if (sens === "bas") { depart = null; return; }
+    }
+    aGlisse = true;
+    e.preventDefault();
+    if (variante === "suit") {
+      // **LE TITRE SUIT, LUI AUSSI.** Sans cela on voit octobre arriver sous
+      // le doigt pendant que le titre dit encore « septembre » : deux vérités
+      // à deux centimètres, sur l'écran qui sert à savoir où l'on est. Il
+      // bascule au franchissement de la moitié — là où le mois qui arrive
+      // occupe plus de place que celui qui part.
+      var vu = decale(curseur, dx < -hublot.clientWidth / 2 ? 1 : dx > hublot.clientWidth / 2 ? -1 : 0);
+      titre.textContent = MOIS[vu.mois] + " " + vu.annee;
+      // On freine aux bornes ? Non : il n'y a pas de borne, les mois
+      // s'enchaînent dans les deux sens sans fin.
+      poser(dx);
+    }
+  }, { passive: false });
+
+  function relacher(e) {
+    if (!depart) { return; }
+    var dx = e.clientX - depart.x;
+    depart = null;
+    if (sens !== "cote") return;
+    // Un quart de la largeur : en dessous, on ne change pas de mois pour un
+    // frôlement, et le mois revient en place.
+    var seuil = hublot.clientWidth * 0.25;
+    if (dx <= -seuil) allerA(1);
+    else if (dx >= seuil) allerA(-1);
+    else allerA(0);
+    window.setTimeout(function () { aGlisse = false; }, 0);
+  }
+  hublot.addEventListener("pointerup", relacher);
+  hublot.addEventListener("pointercancel", function () { depart = null; allerA(0); });
+
+  document.getElementById("avant").addEventListener("click", function () { allerA(-1); });
+  document.getElementById("apres").addEventListener("click", function () { allerA(1); });
+  retour.addEventListener("click", function () {
+    curseur = { annee: ANNEE0, mois: MOIS0 };
+    peindre();
+  });
+
+  document.getElementById("pole").addEventListener("click", function () {
+    var nuit = document.body.classList.toggle("nuit");
+    this.setAttribute("aria-pressed", String(nuit));
+    this.textContent = nuit ? "Voir sur Arborea" : "Voir sur Nuit";
+  });
+
+  Array.prototype.forEach.call(
+    document.querySelectorAll(".choix button"),
+    function (b) {
+      b.addEventListener("click", function () {
+        variante = b.dataset.variante;
+        Array.prototype.forEach.call(
+          document.querySelectorAll(".choix button"),
+          function (x) { x.setAttribute("aria-pressed", String(x === b)); }
+        );
+        sous.innerHTML = variante === "suit"
+          ? "Le mois <b>suit le doigt</b> : on voit le suivant arriver, et l'on peut revenir en arrière sans lâcher."
+          : "Rien ne bouge tant qu'on n'a pas <b>lâché</b> : le mois bascule d'un coup.";
+        rail.classList.remove("anime");
+        poser(0);
+      });
+    }
+  );
+
+  peindre();
+})();
+</script>
+
+</body>
+</html>

@@ -44,7 +44,7 @@ import { readFileSync } from "node:fs";
 import Decimal from "decimal.js";
 import { montantEcrivable } from "../src/lib/montant-ecrivable";
 import { enMontant } from "../src/lib/euros";
-import { ligneAttendSonPrix, lignesEnAttenteDePrix } from "../src/lib/preparation-devis";
+import { ligneAttendSonPrix, lignesEnAttenteDePrix, prixAEcrire } from "../src/lib/preparation-devis";
 
 let echecs = 0;
 function essai(nom: string, fn: () => void) {
@@ -204,6 +204,12 @@ const SOURCE_ECRAN = readFileSync(
  * mauvais endroit (`AGENTS.md`) — et pousserait, pour se taire, à effacer
  * l'explication qui a le plus de valeur.
  */
+/** Le champ lui-même : c'est lui qui replace le curseur au bout du chiffre. */
+const CHAMPS = readFileSync(
+  "src/app/chantiers/[id]/devis-complet/ChampsDuDevis.tsx",
+  "utf8"
+);
+
 const ECRAN = SOURCE_ECRAN.replace(/\/\*[\s\S]*?\*\//g, "")
   .split("\n")
   .filter((l) => !/^\s*(\/\/|\*)/.test(l))
@@ -237,6 +243,70 @@ essai("le refus ne renvoie aux réglages que s'il n'y a aucune ligne", () => {
     "la porte du refus ne suit plus sa raison : « Ouvrir mes tarifs » doit être réservé au cas sans ligne"
   );
   assert.ok(/data-prix-ligne/.test(ECRAN), "le refus doit pouvoir emmener le doigt sur la case en attente");
+});
+
+
+// ─── CE QUE LE CHAMP PORTE QUAND AUCUN PRIX N'EST POSÉ ─────────────────────
+//
+// **Sa correction du 11 septembre 2026, capture à l'appui :** *« pour le prix
+// unitaire HT il faudrait que lorsque l'on clique il n'y ait rien de réellement
+// écrit quand aucun prix n'est affiché [...] ils doivent être fictifs pour qu'on
+// comprenne qu'on peut écrire dans la case, mais pas vraiment là »*.
+//
+// **Le défaut se voyait sur sa capture, et il coûte de l'argent :** le champ
+// portait un `0` réel, venu du zéro que la base met par défaut. Il a tapé 450
+// derrière, et la case a affiché **0450**. Ce coup-ci le nombre tombait juste ;
+// un zéro de plus au mauvais endroit part chez le client.
+essai("une ligne qui attend son prix arrive avec un champ VIDE", () => {
+  assert.equal(prixAEcrire("0", true), "");
+  assert.equal(prixAEcrire("0,00", true), "");
+  assert.equal(prixAEcrire("", true), "");
+});
+
+// **Un zéro VOULU n'est pas touché.** Une ligne offerte ne porte pas le
+// drapeau, son montant s'écrit « 0,00 € » : vider son champ ferait passer une
+// gratuité décidée pour un oubli.
+essai("un zéro voulu reste écrit — une gratuité n'est pas un oubli", () => {
+  assert.equal(prixAEcrire("0", false), "0");
+  assert.equal(prixAEcrire("0", undefined), "0");
+  assert.equal(prixAEcrire("0", null), "0");
+});
+
+essai("un prix posé s'écrit, drapeau ou pas", () => {
+  assert.equal(prixAEcrire("450", true), "450");
+  assert.equal(prixAEcrire("1200,50", true), "1200,50");
+  assert.equal(prixAEcrire("450", false), "450");
+});
+
+// **L'ANCIEN COMPORTEMENT, REJOUÉ** — un contrôle qui n'a jamais échoué ne
+// prouve rien (`AGENTS.md`). Voilà ce que la case faisait de sa frappe avant
+// cette correction : elle gardait le zéro, et « 450 » tapé derrière donnait
+// « 0450 ». Le jour où quelqu'un remettra la valeur brute dans le champ, cette
+// ligne le lui dira.
+essai("TÉMOIN — l'ancienne case gardait le zéro, et 450 tapé derrière faisait 0450", () => {
+  const ancienChamp = "0";
+  assert.equal(ancienChamp + "450", "0450", "le décor du témoin ne reproduit plus le défaut");
+  assert.notEqual(prixAEcrire("0", true) + "450", "0450");
+  assert.equal(prixAEcrire("0", true) + "450", "450");
+});
+
+// **LE CURSEUR ARRIVE AU BOUT DU CHIFFRE.** Sa seconde correction du même
+// message : *« je veux que le petit trait qui clignote [...] soit toujours à
+// droite [...] or des fois il se met à gauche »*. La raison n'est pas un
+// caprice du téléphone : le champ est aligné à droite dans une case large, et
+// le doigt tombe dans le vide qui précède le chiffre.
+//
+// Le geste lui-même ne s'éprouve qu'au navigateur ; ce qu'on tient ici, c'est
+// que le champ le TENTE — et qu'on ne l'a pas retiré par mégarde.
+essai("le champ remet le curseur au bout quand on y entre", () => {
+  assert.ok(
+    /setSelectionRange/.test(CHAMPS),
+    "le champ ne replace plus le curseur : il retombera devant le chiffre"
+  );
+  assert.ok(
+    /onSelect/.test(CHAMPS),
+    "sans rattrapage après l'appui, le navigateur repose le curseur où le doigt s'est posé"
+  );
 });
 
 console.log("");

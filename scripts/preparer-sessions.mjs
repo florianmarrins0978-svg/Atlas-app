@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, copyFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 /**
  * UN DOSSIER DE TRAVAIL PAR SESSION.
@@ -43,8 +44,24 @@ import path from "node:path";
  *     npm run sessions:preparer --liste
  */
 
-const SOUS_WINDOWS = process.platform === "win32";
-const RACINE = process.cwd();
+export const SOUS_WINDOWS = process.platform === "win32";
+
+/**
+ * LA RACINE DU DÉPÔT, demandée à git — pas le dossier où l'on se trouve.
+ *
+ * **Elle valait `process.cwd()` jusqu'au 10 septembre 2026**, et c'était juste
+ * tant qu'on ne lançait la commande que depuis la racine. `ouvrir-session.mjs`
+ * l'appelle depuis n'importe où : avec `cwd()`, un lancement depuis
+ * `scripts/` aurait créé les dossiers de travail **dans le dépôt lui-même**,
+ * nommés `scripts-s2`. Git, lui, sait toujours où commence l'arbre.
+ */
+function racineDuDepot() {
+  const r = spawnSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" });
+  const dit = (r.stdout ?? "").trim();
+  return r.status === 0 && dit ? path.resolve(dit) : process.cwd();
+}
+
+export const RACINE = racineDuDepot();
 const NOM = path.basename(RACINE);
 const PARENT = path.dirname(RACINE);
 
@@ -93,7 +110,7 @@ function remede(ditParGit) {
 }
 
 /** Les dossiers de travail que git connaît déjà. */
-function worktreesExistants() {
+export function worktreesExistants() {
   const sortie = git("worktree", "list", "--porcelain");
   return sortie
     .split("\n")
@@ -111,7 +128,7 @@ function lister() {
   console.log("");
 }
 
-function main() {
+export function main() {
   const args = process.argv.slice(2);
   if (args.includes("--liste")) {
     lister();
@@ -220,9 +237,14 @@ chaque session prend son port, sa base et son coin de Redis toute seule, et
 `);
 }
 
-try {
-  main();
-} catch (erreur) {
-  console.error(`❌ ${erreur.message}`);
-  process.exit(1);
+// **Il ne fait rien à l'import.** `ouvrir-session.mjs` a besoin de sa liste de
+// dossiers ; sans ce garde, le seul fait de l'importer aurait préparé cinq
+// worktrees et lancé quatre `npm install`.
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  try {
+    main();
+  } catch (erreur) {
+    console.error(`❌ ${erreur.message}`);
+    process.exit(1);
+  }
 }

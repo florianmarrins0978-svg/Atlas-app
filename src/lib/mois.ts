@@ -112,3 +112,23 @@ export function estWeekEndIso(jour: JourIso): boolean {
 // rang. La fiche du jour est désormais bâtie sur le CHANTIER — son nom une fois,
 // ses demi-journées dessous — et une équipe n'est plus une file : un chantier
 // peut en porter plusieurs sur la même moitié (migration 0058).
+
+/**
+ * LE MOIS D'À CÔTÉ — écrit une seule fois.
+ *
+ * Le passage de décembre à janvier vivait en clair dans chacune des deux
+ * flèches du calendrier, avec sa bascule d'année à chaque fois. Le glissement du
+ * 11 septembre 2026 en réclamait un troisième et un quatrième usage — le mois
+ * qui arrive à droite, celui qui part à gauche —, et quatre copies d'une même
+ * arithmétique finissent par diverger sur le seul cas qui compte : le
+ * changement d'année (`CLAUDE.md` §3).
+ *
+ * Le pas n'est pas borné à ±1 : rien ici ne dit combien de mois l'on saute.
+ */
+export function moisDecale(
+  c: { annee: number; mois: number },
+  pas: number
+): { annee: number; mois: number } {
+  const total = c.annee * 12 + c.mois + pas;
+  return { annee: Math.floor(total / 12), mois: ((total % 12) + 12) % 12 };
+}

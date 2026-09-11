@@ -8,6 +8,136 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA SORTIE RENVOYAIT SUR `localhost` (10 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | `deconnexionAction` ne confie plus la redirection à Auth.js : `signOut({ redirect: false })`, puis notre `redirect("/login")` |
+| la migration | **aucune** |
+| les pièces | `src/app/login/actions.ts` |
+| les suites | `scripts/test-sortie-sans-hote.ts` (3), mise au rouge contre les trois défauts |
+| le détail | `CHANGELOG.md` du 10 septembre |
+
+**LE PIÈGE À NE PAS « RÉPARER ».** `alignerHoteSurOrigine` (`src/middleware.ts`)
+réécrit `x-forwarded-host` sur l'`Origin` du navigateur — c'est ce qui rend les
+actions serveur possibles derrière le mandataire d'un espace de travail. Auth.js
+lisait cet en-tête et en faisait une adresse absolue : `http://localhost:3000/login`,
+morte sur un téléphone. **Défaire l'alignement rouvrirait « Invalid Server
+Actions request. »** et personne ne pourrait plus entrer du tout. La réponse est
+de ne rien laisser deviner : un chemin RELATIF ne porte aucun hôte.
+
+**Et ce qui n'a pas pu être éprouvé ici :** la reproduction au navigateur.
+`verifier-connexion.mjs` pose son hôte étranger sur chaque requête, ressources
+comprises — la page ne s'hydrate pas. Sur un hôte ordinaire, l'hôte deviné se
+trouve être le bon, donc rien ne rougit. Le contrôle vise le mécanisme.
+
+---
+## Dernier lot — POSER UN CLIENT SUR UN JOUR, SANS DEVIS (10 septembre 2026)
+
+| | |
+|---|---|
+| sa planche | `appli/bloquer-sans-devis.html`, essayée puis retenue |
+| le geste | « Ajouter » propose deux voies : un chantier en attente, ou **un client** écrit au clavier. Inconnu, **sa fiche se crée**. Puis matin, après-midi ou la journée |
+| la migration | **aucune** — `creerChantier` accepte seulement `dureeDemiJournees` |
+| les pièces | `chercherDesClientsAction`, `poserUnClientAction`, `AjoutDunClient` |
+| les suites | `test-poser-un-client-db.ts` (9), `test-bloquer-sans-devis-e2e.ts` (5, **son geste**) |
+| le détail | `ARCHITECTURE.md` §323 |
+
+**LES TROIS PIÈGES À NE PAS REFABRIQUER.**
+
+1. **« Journée » n'existe QUE sur cette voie.** Ailleurs, choisir un moment
+   réécrivait la durée vendue au devis (le défaut du 9 septembre). Ici le
+   chantier naît du geste : le choix EST sa durée. `creerChantier` accepte
+   `dureeDemiJournees` pour cela, et pour rien d'autre.
+2. **La recherche de clients reste au SERVEUR.** Descendre le carnet dans le
+   navigateur à chaque ouverture du planning, pour un geste qui sert deux fois
+   par mois, c'est ce que cette action évite — et elle porte la garde
+   d'écriture bien qu'elle lise, parce que ce chemin n'existe que pour poser.
+3. **Un `.then()` seul n'attrape pas un refus.** Une action serveur postée
+   depuis une page qui a survécu à son serveur REJETTE : sans `.catch()`, le
+   geste ne fait rien et ne dit rien. Trois gestes de cet écran l'ont payé le
+   11 septembre 2026, et le pire tenait la fiche d'un client inconnu fermée
+   pour toujours.
+4. **Le tiroir du bas publie sa hauteur** (`--atlas-tiroir`), et
+   `.atlas-contenu` la réserve. Y écrire un nombre en dur, c'est refaire le
+   défaut que la barre a déjà payé.
+
+---
+## Le même jour — LES BOUTONS GOOGLE ET APPLE NE MANQUAIENT PAS, ILS SE TAISAIENT (10 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | `.env.local` se **complète** à chaque allumage au lieu de n'être écrit qu'une fois ; le démarrage dit si Google et Apple sont branchés, et écrit l'adresse de retour à déclarer chez Google |
+| la migration | **aucune** |
+| les pièces | `.devcontainer/completer-env-local.sh` (neuf), `.devcontainer/demarrer.sh`, `docs/entrer-avec-google.md` |
+| les suites | `scripts/test-completer-env-local.ts` (6) |
+| le détail | `CHANGELOG.md` du 10 septembre, `TODO.md` en tête |
+
+**Le défaut n'était PAS dans l'écran.** Sa capture montrait la porte sans
+Google, sans Apple et sans le « ou ». Avec des clés d'essai, `/login` rend
+exactement la planche — vérifié en le regardant. La porte n'affiche un
+fournisseur que si SES DEUX clés sont posées, et c'est une règle qu'on ne
+défait pas (`src/lib/fournisseurs-connexion.ts`).
+
+**LE PIÈGE À NE PAS REFAIRE, et il vaut pour toute clé future :** un fichier de
+secours écrit sous un `if [ ! -f ]` fige les noms du jour de sa naissance. Une
+clé ajoutée ensuite n'atteint jamais un espace déjà allumé, et le symptôme est
+un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc à
+`completer-env-local.sh`, pas seulement à `src/server/env.ts`.
+
+---
+## Lot précédent — UNE DEMI-JOURNÉE SE LIBÈRE ET SE REPOSE (10 septembre 2026)
+
+
+| | |
+|---|---|
+| sa planche | `appli/liberer-une-demi-journee.html`, essayée puis retenue — *« je clique sur le matin, le matin du vendredi devient libre, et une demi-journée de Mr Julien sort ; la demi-journée retirée peut être replacée »* |
+| ce qui manquait | un chantier posé était un **bloc d'un seul tenant** : aucun endroit où écrire « le matin est rendu, l'après-midi tient » |
+| la table | `creneaux_chantier` (migration 0085) — une ligne par demi-journée occupée |
+| la règle | `duree_demi_journees` = ce qu'il **demande** · les créneaux = où il est **posé** · l'écart = ce qui **attend** en bas |
+| retiré | `deplacerChantierAction` — plus personne ne l'appelait |
+| les suites | `test-creneaux-chantier.ts` (12 cas), `test-liberer-une-demi-journee-e2e.ts` (8, **son geste de bout en bout**) |
+| le détail | `ARCHITECTURE.md` §322 |
+
+**LES DEUX PIÈGES À NE PAS REFABRIQUER.**
+
+1. **`ecrireLesCreneaux` est le SEUL écrivain** de `date_planifiee` et
+   `creneau_debut`, qu'il dérive des créneaux. Écrire l'un sans l'autre fait
+   diverger deux vérités, et un chantier finit posé deux fois.
+2. **Aucun créneau écrit vaut le BLOC calculé**, jamais « rien d'occupé » — la
+   migration n'a rien repris, délibérément. Le repli vit dans `creneauxPoses`
+   (`src/lib/disponibilites.ts`) et nulle part ailleurs : le contourner libère
+   d'un coup toutes les demi-journées déjà prises, et l'écran d'envoi propose au
+   client un jour où quelqu'un travaille.
+
+**Et trois défauts se sont vus À L'ÉCRAN, pas en suites** : le lendemain
+noirci au calendrier, « une journée » écrit sous un chantier qui n'occupe plus
+qu'une moitié, et le tiroir du bas qui ne s'ouvrait pas pour un morceau seul.
+Regarder une capture fait partie du travail (`CLAUDE.md` §5).
+
+---
+## Le même jour — UNE SESSION PREND SON DOSSIER TOUTE SEULE (10 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | `npm run session` remplace `claude` : le lanceur prend le premier dossier de travail libre et y ouvre la session. `npm run session 2` désigne un dossier précis |
+| la migration | **aucune** |
+| les pièces | `scripts/ouvrir-session.mjs`, `scripts/preparer-sessions.mjs` (racine par git, importable) |
+| les suites | `scripts/test-ouvrir-session.ts` (5), `test-preparer-sessions.ts` (7) |
+| le détail | `ARCHITECTURE.md` §321, `CLAUDE.md` §1.0 |
+
+**LE PIÈGE À NE PAS DÉFAIRE :** un dossier est occupé par un PROCESSUS vivant,
+jamais par un fichier. Le lanceur attend sa session — son PID est la preuve. Le
+remplacer par un horodatage ou un battement, c'est refaire le défaut du verrou
+de la batterie du 9 septembre, dans un sens ou dans l'autre : un dossier libéré
+au milieu du travail, ou condamné pour toujours.
+
+**Et il ne crée aucun dossier** : quand tout est pris il refuse et donne la
+commande. Créer, c'est le métier de `sessions:preparer`, seul à savoir installer
+les dépendances et recopier le `.env`.
+
+---
+## Lot précédent — LE RETOUR PERDAIT UN PAS À CHAQUE FOIS (10 septembre 2026)
 ## Dernier lot — FACTURER SANS PASSER PAR LA CASE DEVIS (11 septembre 2026)
 
 | | |
@@ -19,7 +149,7 @@ sert.
 | renommé | `ajouterLigneDeFacture`/`majLigneDeFacture`/`retirerLignesDeFacture` (ex-« travaux supplémentaires »), et `peutPreparerLaPiece` (ex-`peutPreparerDevis`) |
 | supprimé | le composant d'anneau extrait pour porter DEUX gestes sur l'accueil — la porte a déménagé dans Terminés, l'accueil n'en a plus qu'un, et un fichier que rien n'importe se supprime (`CLAUDE.md` §4 quinquies). `git log` le retrouve |
 | les deux refus qui comptent | une facture VIDE ne part pas ; « Reprendre le devis » est fermé sur une facture directe (il effacerait toute la saisie) |
-| le détail | `ARCHITECTURE.md` §321 |
+| le détail | `ARCHITECTURE.md` §324 |
 
 **Le piège si vous reprenez à froid :** `supplement = null` (factures d'avant la
 migration 0082) veut dire « jamais marquée », PAS « c'est un supplément ». Les
