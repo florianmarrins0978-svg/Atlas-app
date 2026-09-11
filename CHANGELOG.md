@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Un prompt `/impeccable` pour le plan d'arrosage — et le rangement était déjà fait
+
+Sa demande : un prompt pour « passer la page arrosage automatique dans la
+catégorie paysage ». **Le code disait que c'était fait depuis le 20 août** —
+route `/paysage/arrosage`, entrée « Plan d'arrosage automatique » dans
+`src/app/paysage/page.tsx`, onglet « Paysage » monté par `layout.tsx`. Trente
+secondes de vérification ont évité un lot entier refait (`CLAUDE.md` §1).
+
+`docs/prompt-impeccable-paysage-arrosage.md` vise donc ce qui n'a réellement
+jamais été repris : l'écran lui-même. Il porte les deux contraintes qui priment
+ici — l'arrosage n'a pas le droit à l'erreur, et « des vieux qui ont du mal avec
+leur téléphone » —, les arbitrages déjà tranchés qu'aucune session ne doit
+rouvrir (la nourrice placée par lui, la pluviométrie retirée le 23 août, le
+calcul en une seule source), ce qui reste ouvert, et le piège du dessin qui ne
+se montre qu'à partir de trois réseaux.
+
 ### Aérer la porte — et le premier essai lisait sa demande à l'envers
 
 *« Je les trouve trop collés en haut, aère la page et prends plus d'espace. »*
