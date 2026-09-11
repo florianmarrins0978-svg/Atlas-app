@@ -282,7 +282,13 @@ async function main() {
     // deux mêmes choses, dans l'autre sens et dans un autre format.
     const enregistre = ligne.locator("ul li").first();
     const parts = (await enregistre.innerText()).split("\n").map((t) => t.trim());
-    assert.match(parts[0] ?? "", /^\d{2}\/\d{2}\/\d{4}$/, `la ligne commence par « ${parts[0]} » au lieu du jour`);
+    // « Acompte payé le … » depuis le 11 septembre 2026 : un jour et un montant
+    // posés seuls ne disaient pas de quoi ils parlaient.
+    assert.match(
+      parts[0] ?? "",
+      /^Acompte payé le \d{2}\/\d{2}\/\d{4}$/,
+      `la ligne dit « ${parts[0]} » au lieu de « Acompte payé le jj/mm/aaaa »`
+    );
     assert.match(parts[1] ?? "", /600,00\s*€/, `le montant ne suit pas la date : « ${parts[1]} »`);
   });
 

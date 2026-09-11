@@ -20,8 +20,10 @@ sert.
 | les suites | `scripts/test-tva-au-paiement-e2e.ts` — le motif `jj/mm/aaaa` visé dans un navigateur qui n'est PAS en français |
 | le détail | `ARCHITECTURE.md` §330 |
 
-**ET LA LIGNE ENREGISTRÉE A LA FORME DES CASES** : le jour à gauche, le montant
-à droite, aux mêmes places — on relit ce qu'on a tapé là où on l'a tapé.
+**ET LA LIGNE ENREGISTRÉE A LA FORME DES CASES** : « Acompte payé le
+11/09/2026 » à gauche, le montant à droite, aux mêmes places — on relit ce qu'on
+a tapé là où on l'a tapé. Les règlements repris par la migration gardent
+« Supposé réglé le … » : eux n'ont jamais été constatés.
 
 **NE PAS REMETTRE LE CHAMP NATIF SEUL.** Le texte de la date est écrit par
 l'application et le champ natif est transparent par-dessus : c'est ce qui rend

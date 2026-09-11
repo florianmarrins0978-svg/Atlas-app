@@ -260,14 +260,25 @@ export default function EnAttenteDePaiement({
                           L'étiquette de lecture d'écran, elle, garde la date en
                           toutes lettres — dite à voix haute, « 11/09 » ne
                           s'entend pas. */}
+                      {/* **« ACOMPTE PAYÉ LE » — sa demande du 11 septembre 2026 :**
+                          *« une fois l'acompte enregistré il faut marquer
+                          acompte payé le »*. Un jour et un montant posés seuls
+                          ne disent pas de quoi ils parlent : c'est la seule
+                          ligne de la carte qui raconte un geste passé, et elle
+                          se lisait comme une deuxième date d'émission.
+
+                          **Et c'est toujours un acompte, ici.** Un règlement
+                          qui solde fait sortir la facture de cet écran : ce qui
+                          reste visible est forcément une part.
+
+                          **Ce que la migration a SUPPOSÉ garde ses mots à
+                          elle.** Ces règlements-là n'ont jamais été constatés :
+                          ils existent pour que le relevé du trimestre passé ne
+                          bouge pas. Les dire « payés » ferait passer une
+                          supposition pour une observation. */}
                       <span className="flex-1 tabular-nums">
+                        {p.origine === "reprise" ? "Supposé réglé le " : "Acompte payé le "}
                         {jourNumerique(p.date)}
-                        {/* **Ce que la migration a SUPPOSÉ se dit.** Ces
-                            règlements-là n'ont jamais été constatés : ils
-                            existent pour que le relevé du trimestre passé ne
-                            bouge pas. Les taire ferait passer une supposition
-                            pour une observation. */}
-                        {p.origine === "reprise" && " · supposé réglé à l'émission"}
                       </span>
                       <span className="flex-none tabular-nums" style={{ color: colors.inkSoft }}>
                         {euros(p.montant)}
