@@ -263,13 +263,30 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   },
   {
     id: "devis-remise",
-    ecran: "Devis",
-    ou: "sous le total du devis",
+    // **Sur la facture AUSSI, depuis le 11 septembre 2026** — sa demande :
+    // *« on n'a pas mis la réduction client cliquable comme sur le devis »*. La
+    // fiche qui ne nommerait que le devis l'enverrait chercher là où il n'a
+    // pas besoin d'aller.
+    ecran: "Devis et facture",
+    ou: "sous le total",
     intitule: "Faire une remise au client",
-    motsCles: ["remise", "reduction", "geste", "pourcentage", "rabais", "prix", "accorde"],
-    geste: "Renseignez le pourcentage dans « Prix accordé au client, en pourcentage ».",
-    source: "src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx",
-    preuves: ["Prix accordé au client, en pourcentage"],
+    motsCles: [
+      "remise",
+      "reduction",
+      "geste",
+      "pourcentage",
+      "rabais",
+      "prix",
+      "accorde",
+      "facture",
+    ],
+    geste: "Appuyez sur « + Prix accordé au client », puis renseignez le pourcentage.",
+    // **La pièce commune, et non plus l'écran du devis** : le geste est monté
+    // par les deux écrans depuis qu'il l'a demandé sur la facture. Ancrée sur
+    // un seul des deux, cette fiche rougirait au premier déménagement — c'est
+    // ce qui vient d'arriver.
+    source: "src/components/atlas/PrixAccordeAuClient.tsx",
+    preuves: ["Prix accordé au client, en pourcentage", "+ {LIBELLE_REDUCTION}"],
   },
   {
     id: "devis-tva",

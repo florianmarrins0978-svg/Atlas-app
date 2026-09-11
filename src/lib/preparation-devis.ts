@@ -192,10 +192,21 @@ export function ligneAttendSonPrix(ligne: LignePrix): boolean {
  * **Et c'est une valeur de DÉPART, jamais un affichage recalculé à chaque
  * frappe** : dérivée au rendu, la case se viderait au premier « 0 » tapé, et
  * « 0,50 » deviendrait impossible à écrire.
+ *
+ * **`montantEstNul` porte la question, `prixAEcrire` la réponse**, et la
+ * séparation vient d'un défaut réel : l'écran des prix affiche ses montants
+ * FORMATÉS (« 1 120,50 »), et `prixAEcrire` appliquée à ce texte-là le lisait
+ * comme illisible, donc comme nul — elle vidait une case qui portait mille cent
+ * vingt euros. La question se pose donc sur la valeur BRUTE, et le formatage
+ * vient après (`test-prix-e2e.ts` l'a attrapé).
  */
+export function montantEstNul(valeur: string): boolean {
+  const n = Number(String(valeur).replace(",", ".").trim());
+  return !Number.isFinite(n) || n === 0;
+}
+
 export function prixAEcrire(prixUnitaire: string): string {
-  const n = Number(String(prixUnitaire).replace(",", ".").trim());
-  return !Number.isFinite(n) || n === 0 ? "" : prixUnitaire;
+  return montantEstNul(prixUnitaire) ? "" : prixUnitaire;
 }
 
 /**

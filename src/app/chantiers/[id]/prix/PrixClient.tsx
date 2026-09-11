@@ -16,7 +16,7 @@ import {
 } from "./actions";
 import PropositionPrixSection from "./PropositionPrixSection";
 import type { PropositionPrix } from "@/server/chiffrage/proposition-prix";
-import { ligneAttendSonPrix, peutPreparerLaPiece, prixAEcrire } from "@/lib/preparation-devis";
+import { ligneAttendSonPrix, montantEstNul, peutPreparerLaPiece } from "@/lib/preparation-devis";
 import { montantEcrivable } from "@/lib/montant-ecrivable";
 import { enEuros, enMontant } from "@/lib/euros";
 
@@ -363,7 +363,14 @@ export default function PrixClient({
                       // reste sur les lignes qui le portent : il dit la même
                       // chose, et il dit en plus pourquoi la case est vide.
                       placeholder={attend ? "à chiffrer" : "0,00"}
-                      value={saisies[ligne.id] ?? prixAEcrire(enMontant(ligne.montant))}
+                      // **La question se pose sur la valeur BRUTE**, et le
+                      // formatage vient après : « 1 120,50 » passé à la règle
+                      // se lisait comme illisible, donc comme nul, et la case
+                      // se vidait sur un montant bien réel.
+                      value={
+                        saisies[ligne.id] ??
+                        (montantEstNul(ligne.montant) ? "" : enMontant(ligne.montant))
+                      }
                       onChange={(e) => setSaisies((cur) => ({ ...cur, [ligne.id]: e.target.value }))}
                       onBlur={(e) => persisterMontant(ligne.id, e.currentTarget.value)}
                       className={`w-[108px] flex-shrink-0 border-0 px-3 py-3 text-right outline-none ${classePlage}`}
