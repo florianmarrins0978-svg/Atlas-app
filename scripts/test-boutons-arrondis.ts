@@ -253,6 +253,19 @@ const HORS_CHARTE: Array<{
     pourquoi: "photo d'un retour qu'on ouvre en grand : un cercle rognerait l'image",
   },
   {
+    // **LA RANGÉE DE LA VISIONNEUSE — la « bibliothèque » qu'il a retenue le
+    // 11 septembre 2026 au soir**, planche en main (*« Voilà je veux ça ! »*,
+    // `appli/photo-en-bibliotheque.html`, variante avec la rangée). Cinq
+    // vignettes de 56 px sous la photo ; celle qu'on regarde est cerclée d'or.
+    //
+    // Même arbitrage que les quatre autres : ce sont des IMAGES qu'on touche,
+    // et un cercle rognerait ce qu'elles montrent. La croix et les chevrons du
+    // même écran, eux, sont de vrais boutons — et bien ronds.
+    motif: /^src[/\\]components[/\\]atlas[/\\]VisionneusePhoto\.tsx$/,
+    seulement: /data-atlas="vignette-de-la-rangee"/,
+    pourquoi: "vignette de la rangée sous la photo : un cercle rognerait l'image",
+  },
+  {
     // **UNE CASE DU CALENDRIER, PAS UN BOUTON.** La charte est citée deux fois
     // plus haut : la capsule va à ce qu'on APPUIE, les 4 px à ce qu'on remplit —
     // et une case de calendrier n'est ni l'un ni l'autre. C'est une TUILE : un

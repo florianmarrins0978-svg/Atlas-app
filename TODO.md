@@ -70,6 +70,31 @@ des lots voisins du jour (créneaux, « poser un client sur un jour »).
 
 ---
 
+## ⏳ LE LANCEUR NE VOIT PAS UNE SESSION OUVERTE DEPUIS L'ÉDITEUR (11 septembre 2026)
+
+**Constaté à 18:01, dans `atlas-app-s2`** : deux sessions dans le même
+dossier, sur la même branche — l'une ouverte depuis VS Code, l'autre envoyée
+là par `npm run session`. Le patron : *« normalement c'est pas possible, vous
+avez chacun un dossier »*. Il a raison sur la règle ; c'est le lanceur qui a
+un angle mort.
+
+`scripts/ouvrir-session.mjs` ne tient un dossier pour « pris » que par le
+processus **qu'il a lui-même lancé** (son PID est le jeton). Une session
+ouverte autrement — l'extension VS Code, un `claude` tapé à la main dans le
+dossier — n'a aucun jeton : le dossier paraît libre, et la suivante y est
+envoyée. Ce que ça coûte : un `merge origin/main` sous les commits de l'autre,
+et un `git status` qui porte les fichiers de quelqu'un d'autre.
+
+**Ce qu'il faut** : que « pris » se lise aussi à ce qui tourne réellement dans
+le dossier — un processus `claude` dont le répertoire courant est ce
+worktree —, pas seulement au jeton du lanceur. `pgrep`/`Get-Process` avec le
+chemin, comme le veilleur remesure le port au lieu de le croire. Et que
+`sessions:preparer --liste` le montre.
+
+**Ce qu'il ne faut PAS** : un fichier posé dans le dossier pour dire « je suis
+là » — c'est la leçon du verrou de la batterie, un jeton que personne ne
+ramasse ment dès la deuxième soirée.
+
 ## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
 
 **Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
@@ -194,6 +219,28 @@ faux. Citer le TITRE avec le numéro, tant que ce n'est pas réglé.
 sessions voisines, qui portent les mêmes numéros (payé trois fois le 26 août).
 Ça se fait d'un coup, par quelqu'un qui relit ensuite CHAQUE renvoi touché — pas
 en passant, au milieu d'un autre lot.
+
+---
+
+## ⏳ UNE BATTERIE À JOUER — la photo en bibliothèque est codée (11 septembre 2026)
+
+`39a1dc68` sur `session-2`, pas encore sur `main`. La batterie a été coupée par un
+redémarrage de session : base **346/354** (les 8 rouges sont des scripts
+d’outillage — verrou, ports, lanceur —, aucun ne touche les photos), suites
+navigateur **sans verdict**. Elle n’a pas été rejouée : une autre session
+écrivait dans `atlas-app-s2` (visionneuse PDF), et il a dit *« ne lance pas de
+batterie pour l’instant »*. **À faire :** la rejouer dans un dossier où personne
+n’écrit, avec `ATLAS_BASE_SUPER` de `HANDOVER.md`, puis fusionner sur `main`
+avec son accord. **Qui :** nous, quand il le dit.
+
+---
+## ~~UNE PLANCHE À REGARDER — LA PHOTO EN BIBLIOTHÈQUE~~ — CHOISIE ET CODÉE LE SOIR MÊME (11 septembre 2026)
+
+Il a répondu dans l’heure, planche en main — *« Voilà je veux ça ! »*, la
+variante **avec la rangée**, plus : *« si on touche un endroit hors de la photo
+ça ferme aussi »*. Codé : `VisionneusePhoto.tsx` prend la liste et le rang, ses
+deux appelants suivent, `test-onglets-termines-e2e.ts` mesure désormais une
+photo qui ne couvre PAS l’écran, feuillette, et ferme en touchant le voile.
 
 ---
 
