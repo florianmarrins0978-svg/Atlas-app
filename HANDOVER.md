@@ -8,6 +8,31 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA TRACE DE RÉCEPTION TIENT EN UNE DATE (11 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« les phrases sont trop longues… Ouverte 11/09, la date en gras, l'heure tu supprimes ; et s'il coche la case, seulement réception confirmée le 11/09 »* |
+| ce qui change | une seule date à l'écran, en gras, au format `11/09` — l'heure quitte l'affichage, elle reste en base (`ouverte_at`) |
+| la migration | **aucune** |
+| les pièces | `src/lib/reception-facture.ts`, `src/lib/jour.ts` (`jourCourt`), `src/lib/documents-du-client.ts`, `src/app/termines/tva/EnAttenteDePaiement.tsx`, `src/app/clients/[id]/PieceDuDossier.tsx` |
+| les suites | `scripts/test-reception-facture.ts` (6), `scripts/test-reception-facture-db.ts` |
+| la capture | `npx tsx scripts/capture-trace-reception.mts <dossier>` — quatre états, plus le formulaire ouvert |
+| le détail | `ARCHITECTURE.md` §329 |
+
+**LA PHRASE NE SE DÉCIDE PLUS DANS LES ÉCRANS.** `receptionEnMots` rend
+`{ avant, date }` — la phrase déjà choisie, plus le jour à mettre en gras. Les
+deux écrans qui la montrent ne portent aucune condition. Y remettre un `if`
+recréerait la divergence que ce lot vient de retirer.
+
+**ET LE FORMULAIRE DE RÈGLEMENT DONNE DEUX CHIFFRES** : « Reste à payer
+1 476,00 € / Sur les 1 776,00 € du 11/09 ». Le second est la facture entière
+avec son jour d'émission ; c'est une lecture de sa demande — il a écrit deux
+fois le même chiffre, ce qui est le cas d'une facture sans acompte. **À
+confirmer avec lui s'il revient dessus.**
+
+---
+
 ## Dernier lot — LA FACTURE TÉLÉCHARGÉE S'OUVRAIT BLANCHE (11 septembre 2026)
 
 | | |

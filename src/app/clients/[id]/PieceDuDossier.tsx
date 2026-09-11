@@ -149,26 +149,23 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
             **« Pas encore ouverte » S'ÉCRIT**, et ce n'est pas du bruit : c'est
             justement ce qu'il vient vérifier quand un client prétend n'avoir
             rien reçu. Ne rien afficher ferait lire l'absence de trace comme une
-            absence de fonctionnalité. */}
+            absence de fonctionnalité.
+
+            **La phrase se décide dans `src/lib/reception-facture.ts`**, pas
+            ici : l'écran des impayés la montre aussi, et le choix « confirmée
+            plutôt qu'ouverte » y était écrit une seconde fois (`CLAUDE.md`
+            §3). */}
         {piece.reception && (
           <span
             data-atlas="piece-reception"
             className="col-span-3 mt-[3px] block text-[11.5px] leading-[1.5]"
-            style={{ color: piece.reception.ouverte ? colors.inkSoft : colors.muted }}
+            style={{ color: piece.reception.date ? colors.inkSoft : colors.muted }}
           >
-            {piece.reception.ouverte === null ? (
-              "Pas encore ouverte."
-            ) : (
-              <>
-                Ouverte <strong className="font-medium">{piece.reception.ouverte}</strong>
-                {piece.reception.confirmee && (
-                  <>
-                    {" · réception confirmée "}
-                    <strong className="font-medium">{piece.reception.confirmee}</strong>
-                  </>
-                )}
-              </>
-            )}
+            {piece.reception.avant}
+            {/* Le gras, et non le demi-gras d'avant : c'est la date qu'il cherche
+                dans la ligne, et il l'a demandée « en gras » le 11 septembre
+                2026. À 11,5 px, un 500 ne se distingue pas du texte autour. */}
+            {piece.reception.date && <strong>{piece.reception.date}</strong>}
           </span>
         )}
       </button>

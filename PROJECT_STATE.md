@@ -1,7 +1,26 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-11 · branche `claude/invoice-download-readability-40dtq1`
+**Dernière mise à jour :** 2026-09-11 · branche `claude/dates-reglements-affichage-f1q9ah`
 · dernière migration `drizzle/0085_creneaux_chantier.sql`
+
+---
+
+## FAIT : LA TRACE DE RÉCEPTION TIENT EN UNE DATE — 11 septembre 2026
+
+*« Les phrases sont trop longues… Ouverte 11/09, la date en gras, l'heure tu
+supprimes ; et s'il coche la case, marque seulement réception confirmée le
+11/09. »* Les deux événements s'écrivaient l'un derrière l'autre, sur deux
+lignes de téléphone, alors que cocher la case suppose d'avoir ouvert.
+
+La phrase entière sort maintenant de `receptionEnMots` — les deux écrans qui la
+montrent ne décident plus rien —, et la date s'écrit `11/09` (`jourCourt`, avec
+l'année seulement si ce n'est pas la nôtre). L'heure reste en base.
+
+Même écran : « Noter un règlement » ouvre sur deux chiffres — « Reste à payer
+1 476,00 € / Sur les 1 776,00 € du 11/09 » — à la place de la phrase qui
+expliquait comment fonctionne un acompte. **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §329.
 
 ---
 

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
-import { jourEtMois } from "@/lib/jour";
+import { jourCourt, jourEtMois } from "@/lib/jour";
 import { enEuros } from "@/lib/euros";
 import { noterPaiementAction, retirerPaiementAction, soldeFactureAction } from "./actions";
 import { MarqueAncienIban } from "@/components/atlas/AlerteAncienIban";
@@ -265,6 +265,32 @@ function SaisieDuReglement({
 
   return (
     <div className="mt-2.5 flex flex-col gap-2">
+      {/* **CE QU'IL RESTE, AVANT LA SAISIE — sa demande du 11 septembre 2026 :**
+          *« lorsqu'on note un règlement, marque : Reste à payer 150 €, sur les
+          150 € du… »*. À la place tenait une phrase qui expliquait comment
+          fonctionne un acompte — un écran ne décrit pas son propre mécanisme
+          (`CLAUDE.md` §3), et celle-là prenait deux lignes pour ne donner aucun
+          chiffre.
+
+          **Deux chiffres, et ils ne disent pas la même chose :** ce qui reste
+          dû (la case « Montant » en est déjà remplie), et la facture entière
+          avec son jour — sans quoi « reste 150 € » ne se rattache à rien quand
+          un acompte est déjà passé.
+
+          `inkSoft` et non `muted` : ce sont deux chiffres qu'il LIT avant de
+          taper, et le gris secondaire tient 3,25 de contraste sur le crème —
+          sous le seuil de 4,5. Même raison qu'au chapô de l'écran. */}
+      <p className="text-[12px] leading-snug" style={{ color: colors.inkSoft }}>
+        Reste à payer{" "}
+        <strong className="font-medium" style={{ color: colors.ink }}>
+          {euros(facture.reste)}
+        </strong>
+        <br />
+        Sur les {euros(facture.totalTtc)} du{" "}
+        <strong className="font-medium" style={{ color: colors.inkSoft }}>
+          {jourCourt(facture.dateEmission, aujourdHui)}
+        </strong>
+      </p>
       <div className="flex items-center gap-2">
         <input
           type="date"
@@ -308,24 +334,17 @@ function SaisieDuReglement({
       >
         Enregistrer ce règlement
       </button>
-      <p className="text-[12px] leading-snug" style={{ color: colors.muted }}>
-        Un acompte se note comme un solde : seule la part reçue entre au relevé, le reste attend.
-      </p>
     </div>
   );
 }
 
 /**
- * Deux dates sous la ligne, et elles ne se valent pas.
+ * La trace de réception, sous la ligne de la facture.
  *
- * **L'ouverture est la plus forte** : Atlas la note tout seul, sans rien
- * demander au client, et elle ne dépend donc pas de sa bonne volonté. La
- * confirmation s'ajoute, elle ne remplace pas.
- *
- * **« Pas encore ouverte » S'ÉCRIT.** Ne rien afficher ferait lire l'absence de
- * trace comme une absence de fonctionnalité — et c'est justement l'information
- * qu'il cherche quand un client prétend n'avoir rien reçu : personne n'a ouvert
- * ce lien, ou quelqu'un l'a ouvert le 9 à 14 h 12.
+ * **Aucune décision ici :** la phrase entière — « Ouverte 11/09 », « Réception
+ * confirmée le 11/09 », « Pas encore ouverte. » — se décide dans
+ * `src/lib/reception-facture.ts`, parce que le dossier du client la montre
+ * aussi et que deux copies finissent toujours par diverger (`CLAUDE.md` §3).
  *
  * Aucun trait doré ici, contrairement à la planche : le liseré ne servait qu'à
  * montrer ce qui s'ajoutait. Sur l'écran, cette ligne est une ligne parmi les
@@ -335,19 +354,8 @@ function CeQueLeClientEnAFait({ reception }: { reception: ReceptionLisible | und
   if (!reception) return null;
   return (
     <p className="mt-2 text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
-      {reception.ouverte === null ? (
-        "Pas encore ouverte."
-      ) : (
-        <>
-          Ouverte <strong style={{ color: colors.inkSoft }}>{reception.ouverte}</strong>
-          {reception.confirmee && (
-            <>
-              {" · réception confirmée "}
-              <strong style={{ color: colors.inkSoft }}>{reception.confirmee}</strong>
-            </>
-          )}
-        </>
-      )}
+      {reception.avant}
+      {reception.date && <strong style={{ color: colors.inkSoft }}>{reception.date}</strong>}
     </p>
   );
 }

@@ -28149,3 +28149,73 @@ garde la pièce qu'il a reçue. Les documents composés entre le 8 et le
 correction ne vaut que pour ce qui se compose après elle. Reprendre les
 archives touche des pièces comptables, et cela ne se décide pas sans lui
 (`TODO.md`).
+
+---
+
+## §329 — La trace de réception dit UNE date, et la phrase se décide dans `lib/`
+
+**Sa demande du 11 septembre 2026**, capture à l'appui, sur « En attente de
+paiement » : *« les phrases sont trop longues. Il faut marquer Ouverte 11/09
+(la date en gras), l'heure tu supprimes lorsque le client n'a pas coché la
+case. Et s'il coche la case, marque seulement réception confirmée le 11/09 —
+pas besoin d'avoir les deux infos. »*
+
+La ligne écrivait les deux événements l'un derrière l'autre : « Ouverte le
+11 septembre à 17 h 57 · réception confirmée le 11 septembre ». Sur un
+téléphone, elle prenait deux lignes pleines — et la seconde moitié rend la
+première inutile : **un client qui coche la case a forcément ouvert**.
+
+### Ce que la minute prouvait, et pourquoi elle peut quitter l'écran
+
+Elle était arrivée le 9 septembre comme preuve contre « je n'ai jamais reçu
+cette facture », et l'argument tenait. Il tient toujours : `ouverte_at` porte
+l'instant complet en base, à la seconde, et c'est là qu'on ira le chercher le
+jour d'un litige. Ce qui change, c'est **où** cela se lit — l'écran est un
+repère qu'il survole en courant après l'argent, pas une pièce de procédure.
+
+### La phrase entière vit dans `src/lib/reception-facture.ts`
+
+Deux écrans la montrent : les impayés, et le dossier du client. Le choix
+« confirmée plutôt qu'ouverte » y aurait été écrit **deux fois**, en JSX — deux
+règles pour une seule question, ce que `CLAUDE.md` §3 refuse. `receptionEnMots`
+ne rend donc plus deux dates à assembler, mais la phrase déjà décidée :
+
+| | |
+|---|---|
+| `avant` | « Ouverte », « Réception confirmée le », ou « Pas encore ouverte. » |
+| `date` | « 11/09 », mis en gras par l'écran — `null` quand rien n'a été ouvert |
+
+Les écrans n'ont plus de condition : ils posent `avant`, puis la date en gras
+s'il y en a une. Le jour où la phrase change encore, un seul endroit bouge, et
+`test-reception-facture.ts` le dit sans monter un navigateur.
+
+**Et `documents-du-client.ts` ne recopie plus la forme** : son champ
+`reception` porte `ReceptionLisible`, plutôt qu'un jumeau écrit à la main qui
+aurait survécu à ce changement en annonçant encore deux dates.
+
+### `jourCourt` — « 11/09 », et l'année seulement si ce n'est pas la nôtre
+
+La règle vient de `jourLisible`, et pour la même raison : « 11/09 » sur une
+facture de l'an dernier désigne deux jours à un an d'écart — or c'est
+précisément une vieille impayée qu'on vient regarder. Le jour et le mois
+gardent leur zéro (« 01/09 »), pour que les colonnes tombent au même endroit
+d'une ligne à l'autre.
+
+**L'aujourd'hui se donne en JOUR, pas en instant** : celui que le serveur a
+calculé dans le fuseau de l'atelier. Le prendre de l'horloge du téléphone
+ferait dépendre l'affichage de l'appareil, le 31 décembre au soir.
+
+### Le formulaire de règlement montre deux chiffres, plus une explication
+
+Même demande, même jour : *« lorsqu'on note un règlement, marque : Reste à
+payer 150 €, sur les 150 € du… »*. À cette place tenait une phrase qui
+expliquait comment fonctionne un acompte — un écran ne décrit pas son propre
+mécanisme (`CLAUDE.md` §3), et celle-là prenait deux lignes sans donner un seul
+chiffre.
+
+Les deux chiffres ne disent pas la même chose : **ce qui reste dû** — dont la
+case « Montant » est déjà remplie — et **la facture entière avec son jour**,
+sans quoi « reste 150 € » ne se rattache à rien lorsqu'un acompte est déjà
+passé. C'est pourquoi `capture-trace-reception.mts` pose désormais une
+quatrième facture, déjà entamée : sur trois factures neuves, les deux chiffres
+seraient égaux et la capture ne montrerait pas ce qu'on vient d'écrire.
