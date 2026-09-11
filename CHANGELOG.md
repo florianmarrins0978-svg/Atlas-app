@@ -28,6 +28,13 @@ Les deux écrans qui la montrent — les impayés et le dossier du client — ne
 décident plus rien : la phrase entière sort de `receptionEnMots`
 (`ARCHITECTURE.md` §329).
 
+### Le chapô des impayés tenait en deux moitiés : il n'en garde qu'une
+
+*« Garde seulement : elles entreront au relevé quand vous appuierez sur
+Payée. »* « Ces factures sont parties chez vos clients » redisait le titre de
+l'écran, et « pas avant » redisait « quand ». La ligne restante est en gras,
+entière.
+
 ### « Noter un règlement » donne les chiffres au lieu d'expliquer l'acompte
 
 En tête du formulaire tenait une phrase qui décrivait le mécanisme — *« un

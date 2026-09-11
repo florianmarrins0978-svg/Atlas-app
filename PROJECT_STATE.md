@@ -16,6 +16,9 @@ La phrase entière sort maintenant de `receptionEnMots` — les deux écrans qui
 montrent ne décident plus rien —, et la date s'écrit `11/09` (`jourCourt`, avec
 l'année seulement si ce n'est pas la nôtre). L'heure reste en base.
 
+Le chapô de l'écran ne garde qu'une moitié de phrase, en gras : « Elles
+entreront au relevé quand vous appuierez sur « Payée ». »
+
 Même écran : « Noter un règlement » ouvre sur deux chiffres — « Reste à payer
 1 476,00 € / Sur les 1 776,00 € du 11/09 » — à la place de la phrase qui
 expliquait comment fonctionne un acompte. **Aucune migration.**

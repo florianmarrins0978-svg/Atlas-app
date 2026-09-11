@@ -28205,6 +28205,14 @@ d'une ligne à l'autre.
 calculé dans le fuseau de l'atelier. Le prendre de l'horloge du téléphone
 ferait dépendre l'affichage de l'appareil, le 31 décembre au soir.
 
+### Le chapô de l'écran ne garde qu'une moitié de phrase
+
+Même jour, même raison : *« garde seulement : elles entreront au relevé quand
+vous appuierez sur Payée »*, en gras. Les deux moitiés qui l'encadraient ne
+portaient rien — « ces factures sont parties chez vos clients » redit le titre
+de l'écran, et « pas avant » redit « quand ». La ligne entière passe en `ink` :
+elle est l'avertie, et non plus une phrase dont un morceau est appuyé.
+
 ### Le formulaire de règlement montre deux chiffres, plus une explication
 
 Même demande, même jour : *« lorsqu'on note un règlement, marque : Reste à

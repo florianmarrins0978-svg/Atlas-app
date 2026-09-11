@@ -25,6 +25,10 @@ sert.
 deux écrans qui la montrent ne portent aucune condition. Y remettre un `if`
 recréerait la divergence que ce lot vient de retirer.
 
+**ET LE CHAPÔ NE GARDE QU'UNE MOITIÉ DE PHRASE** — « Elles entreront au relevé
+quand vous appuierez sur « Payée ». », en gras, entière. Les deux moitiés
+retirées redisaient le titre de l'écran et le « quand ».
+
 **ET LE FORMULAIRE DE RÈGLEMENT DONNE DEUX CHIFFRES** : « Reste à payer
 1 476,00 € / Sur les 1 776,00 € du 11/09 ». Le second est la facture entière
 avec son jour d'émission ; c'est une lecture de sa demande — il a écrit deux
