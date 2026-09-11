@@ -8,6 +8,21 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Le diagnostic végétal refuse aussi le coude à coude après la relance
+
+Le seul chemin du moteur où un nom sortait malgré un concurrent égal : la
+relance consommée, l'écart sous 0,15, `arbitrer` concluait « incertaine » dès
+que la première valait 0,5 — et sans qu'aucune photo de confusion ait été
+posée, la relance unique pouvant avoir servi à l'essence. **Sa décision :
+bloquer.** Le coût n'est pas symétrique — une photo de plus contre un
+traitement appliqué pour rien. `scripts/test-diagnostic-vegetal.ts` l'épingle,
+avec le témoin qui garde la conclusion sur un écart net.
+
+**Et la planche du refus est dessinée**, avant tout code d'écran
+(`appli/diagnostic-le-refus-est-l-ecran.html`) : les quatre issues en
+Aujourd'hui / Proposé, sur Origine et Nuit. Ce qu'elle corrige, et pourquoi,
+est dans `docs/diagnostic-vegetal-impeccable.md`.
+
 ### La facture téléchargée s'ouvrait blanche : la police n'annonçait pas sa longueur
 
 *« Lorsque je télécharge la facture je ne peux toujours pas la lire. »*
