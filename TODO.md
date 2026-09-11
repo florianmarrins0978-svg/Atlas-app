@@ -23,7 +23,7 @@ maquettes AVANT tout changement. Trois propositions, à choisir et à corriger :
 
 | | |
 |---|---|
-| 1 | deux cases nommées — « Payé le » / « Montant reçu », montant **vide** |
+| 1 | deux cases nommées — « Payé le » / « Montant reçu » |
 | 2 | la phrase à trous — « Le client a payé … € le … » |
 | 3 | les cases nommées, plus un bouton « Tout le reste · 1 476,00 € » |
 
@@ -34,6 +34,16 @@ au relevé. »
 de date EXISTE déjà et porte bien le jour du paiement — elle n'a simplement
 aucun nom visible. Le montant, lui, arrive rempli du solde entier : c'est ce
 qui lui faisait lire un chiffre qu'il n'avait pas tapé.
+
+**Et sa question, à laquelle la planche répond noir sur blanc :** *« la date
+correspond bien à la date à laquelle on a enregistré le règlement ? »* — non,
+c'est le jour où le CLIENT a payé, et c'est ce qui décide du trimestre de TVA.
+Un chèque reçu le 30 juin et noté le 2 juillet appartient au trimestre d'avant.
+
+**La planche montre les DEUX moments** (« Je saisis » / « Une fois
+enregistré »), parce que la première version les dessinait en même temps : case
+de montant vide au-dessus d'une ligne qui annonçait déjà « 300,00 € le 11/09 ».
+C'est lui qui l'a relevé.
 
 
 ## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
