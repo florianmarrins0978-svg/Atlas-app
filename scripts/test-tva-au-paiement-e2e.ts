@@ -228,8 +228,28 @@ async function main() {
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: numero });
     await ligne.getByRole("button", { name: "Noter un règlement" }).click();
-    await ligne.getByLabel("Montant reçu, en euros").fill("600");
-    await ligne.getByRole("button", { name: "Enregistrer ce règlement" }).click();
+
+    // **LA DATE S'ÉCRIT À LA FRANÇAISE, ET C'EST NOUS QUI L'ÉCRIVONS.**
+    // Sa capture du 11 septembre 2026 montrait « 09/11/2026 » pour un
+    // 11 septembre : le champ natif se formate selon la langue du TÉLÉPHONE. Ce
+    // navigateur-ci n'est pas en français, et c'est exactement le cas qu'on
+    // veut éprouver — le jour doit se lire pareil partout.
+    const jour = await ligne.locator("span[aria-hidden]").first().innerText();
+    assert.match(
+      jour.trim(),
+      /^\d{2}\/\d{2}\/\d{4}$/,
+      `la date du paiement se lit « ${jour.trim()} » au lieu de jj/mm/aaaa`
+    );
+
+    // **La case part vide, et le bouton attend** — sa demande du même jour : le
+    // chiffre affiché doit être celui qu'il a tapé, jamais un solde proposé.
+    const caseMontant = ligne.getByLabel("Montant reçu, en euros");
+    assert.strictEqual(await caseMontant.inputValue(), "", "le montant arrive rempli d'un chiffre qu'il n'a pas tapé");
+    const bouton = ligne.getByRole("button", { name: "Enregistrer ce règlement" });
+    assert.ok(!(await bouton.isEnabled()), "on peut enregistrer un règlement sans montant");
+
+    await caseMontant.fill("600");
+    await bouton.click();
 
     // 600 € sur 1 200 € TTC : la moitié, donc 100 € de TVA sur 200.
     await page.waitForFunction(

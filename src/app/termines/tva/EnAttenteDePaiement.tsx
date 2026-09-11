@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
-import { jourCourt, jourEtMois } from "@/lib/jour";
+import { jourCourt, jourEtMois, jourNumerique } from "@/lib/jour";
 import { enEuros } from "@/lib/euros";
 import { noterPaiementAction, retirerPaiementAction, soldeFactureAction } from "./actions";
 import { MarqueAncienIban } from "@/components/atlas/AlerteAncienIban";
@@ -289,7 +289,15 @@ export default function EnAttenteDePaiement({
   );
 }
 
-/** Un acompte : une date, un montant. Rien de plus n'entre au calcul. */
+/**
+ * Un acompte : une date, un montant. Rien de plus n'entre au calcul.
+ *
+ * **LA PLANCHE N° 1, choisie par lui le 11 septembre 2026** — deux cases, et
+ * chacune porte son nom au-dessus (`appli/noter-un-reglement.html`). Elles
+ * existaient déjà, nues : une date et un nombre posés côte à côte, sans un mot.
+ * Le nom vivait dans `aria-label`, donc pour les lecteurs d'écran seulement —
+ * invisible à l'œil, et c'est l'œil qui saisit.
+ */
 function SaisieDuReglement({
   facture,
   aujourdHui,
@@ -302,36 +310,88 @@ function SaisieDuReglement({
   onFini: () => void;
 }) {
   const [date, setDate] = useState(aujourdHui < facture.dateEmission ? facture.dateEmission : aujourdHui);
-  const [montant, setMontant] = useState(facture.reste);
+  // **La case part VIDE — sa demande du 11 septembre 2026 :** *« le montant doit
+  // être le chiffre qu'on a écrit »*. Elle arrivait remplie du solde entier, si
+  // bien qu'il lisait un chiffre qu'il n'avait pas tapé. Solder d'un doigt reste
+  // possible : c'est « Payée », juste au-dessus.
+  const [montant, setMontant] = useState("");
   const [enCours, setEnCours] = useState(false);
+  // La virgule du clavier français compte autant que le point.
+  const rien = !(Number(montant.replace(",", ".")) > 0);
 
   return (
     <div className="mt-2.5 flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <input
-          type="date"
-          value={date}
-          min={facture.dateEmission}
-          onChange={(e) => setDate(e.target.value)}
-          aria-label="Date du règlement"
-          className="min-w-0 flex-1 rounded-[4px] border-0 px-3 py-2.5 outline-none"
-          style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
-        />
-        <input
-          value={montant}
-          onChange={(e) => setMontant(e.target.value)}
-          inputMode="decimal"
-          aria-label="Montant reçu, en euros"
-          className="w-28 rounded-[4px] border-0 px-3 py-2.5 text-right outline-none"
-          style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
-        />
-        <span className="text-[13px]" style={{ color: colors.muted }}>
+      <div className="flex items-end gap-2">
+        <label className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <span
+            className="text-[10px] font-medium uppercase tracking-[0.14em]"
+            style={{ color: colors.muted }}
+          >
+            Payé le
+          </span>
+          {/* **LE JOUR S'ÉCRIT À LA FRANÇAISE, ET C'EST NOUS QUI L'ÉCRIVONS.**
+              Payé le 11 septembre 2026 : sa capture montre « 09/11/2026 » pour
+              un 11 septembre. Le champ natif se formate selon la LANGUE DU
+              TÉLÉPHONE, pas selon la page — sur le sien, il rend l'ordre
+              américain, et il lit novembre.
+              Le champ reste natif : lui seul ouvre le rouleau de l'iPhone, et
+              le remplacer par trois cases à taper serait un recul. Il est donc
+              posé transparent PAR-DESSUS notre propre texte, qui, lui, passe
+              par `jourNumerique` — la seule façon d'écrire une date dans ce
+              dépôt. */}
+          <span className="relative block rounded-[4px]" style={{ backgroundColor: colors.cream }}>
+            <span
+              aria-hidden
+              className="flex items-center justify-between gap-2 px-3 py-2.5"
+              style={{ color: colors.ink, fontSize: "16px" }}
+            >
+              <span className="tabular-nums">{jourNumerique(date)}</span>
+              {/* Le calendrier que le champ natif dessinait lui-même : il est
+                  redevenu invisible avec lui, et c'est la seule chose qui dit
+                  que la case s'ouvre. Il montre une fonction, il ne décore pas
+                  (`CLAUDE.md` §3). */}
+              <svg width="15" height="16" viewBox="0 0 15 16" fill="none" stroke={colors.muted} strokeWidth="1.3">
+                <rect x="1" y="2.5" width="13" height="12" rx="2" />
+                <path d="M1 6.5h13M4.5 1v3M10.5 1v3" strokeLinecap="round" />
+              </svg>
+            </span>
+            <input
+              type="date"
+              value={date}
+              min={facture.dateEmission}
+              onChange={(e) => setDate(e.target.value)}
+              aria-label="Date du paiement"
+              className="absolute inset-0 h-full w-full opacity-0"
+              style={{ fontSize: "16px" }}
+            />
+          </span>
+        </label>
+        <label className="flex flex-none flex-col gap-1.5">
+          <span
+            className="text-[10px] font-medium uppercase tracking-[0.14em]"
+            style={{ color: colors.muted }}
+          >
+            Montant reçu
+          </span>
+          <input
+            value={montant}
+            onChange={(e) => setMontant(e.target.value)}
+            inputMode="decimal"
+            placeholder="0,00"
+            aria-label="Montant reçu, en euros"
+            className="w-28 rounded-[4px] border-0 px-3 py-2.5 text-right outline-none"
+            style={{ backgroundColor: colors.cream, color: colors.ink, fontSize: "16px" }}
+          />
+        </label>
+        <span className="pb-3 text-[13px]" style={{ color: colors.muted }}>
           €
         </span>
       </div>
       <button
         type="button"
-        disabled={enCours}
+        // Rien de tapé, rien à enregistrer : le refus se voit AVANT l'appui,
+        // plutôt que de revenir en message une seconde plus tard.
+        disabled={enCours || rien}
         onClick={async () => {
           setEnCours(true);
           onErreur(null);
@@ -350,8 +410,14 @@ function SaisieDuReglement({
       >
         Enregistrer ce règlement
       </button>
+      {/* **SIX MOTS, CONTRE DIX-HUIT — sa demande du 11 septembre 2026 :**
+          *« la phrase sous Enregistrer ce règlement est trop longue,
+          synthétise-la, on comprend rien là »*. Elle expliquait le mécanisme de
+          l'acompte ; il n'a pas besoin qu'on lui explique un acompte. Ce qui
+          reste est la seule chose qu'il ne peut pas deviner : c'est la part
+          REÇUE qui entre au relevé, pas la facture. */}
       <p className="text-[12px] leading-snug" style={{ color: colors.muted }}>
-        Un acompte se note comme un solde : seule la part reçue entre au relevé, le reste attend.
+        Seule la part reçue entre au relevé.
       </p>
     </div>
   );

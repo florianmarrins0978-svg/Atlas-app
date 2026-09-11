@@ -5,6 +5,19 @@
 
 ---
 
+## FAIT : « NOTER UN RÈGLEMENT », LA PLANCHE N° 1 — 11 septembre 2026
+
+*« Je choisis la 1. »* Deux cases nommées — « Payé le », « Montant reçu » —, le
+montant vide et le bouton éteint tant que rien n'est tapé, et six mots sous le
+bouton. **Aucune migration.**
+
+Le défaut de fond venait de sa capture : `<input type="date">` se formate selon
+la langue du téléphone, et le sien affichait « 09/11/2026 » pour un
+11 septembre. Le jour s'écrit maintenant par `jourNumerique`, le champ natif
+posé transparent dessous (`ARCHITECTURE.md` §330).
+
+---
+
 ## FAIT : LA TRACE DE RÉCEPTION TIENT EN UNE DATE — 11 septembre 2026
 
 *« Les phrases sont trop longues… Ouverte 11/09, la date en gras, l'heure tu
