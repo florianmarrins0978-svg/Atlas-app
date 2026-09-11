@@ -131,6 +131,20 @@ en passant, au milieu d'un autre lot.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — LA PHOTO EN BIBLIOTHÈQUE (11 septembre 2026)
+
+`appli/photo-en-bibliotheque.html`. Sa demande du soir : la photo d’un retour ne
+doit plus couvrir l’écran — cadre au milieu, croix à droite, chevrons, suivante.
+Deux variantes sur la planche : sans ou avec la rangée des vignettes. **Rien
+n’est codé** ; ce qui changera quand il aura choisi :
+`src/components/atlas/VisionneusePhoto.tsx` (prend une LISTE et un rang, plus
+une seule clé), ses deux appelants (`ListeDesRetours.tsx`, `Pellicule.tsx`),
+et `test-onglets-termines-e2e.ts` qui mesure aujourd’hui « ce qui couvre
+l’écran » — il devra mesurer un cadre qui ne le couvre PAS. **Qui :** lui pour
+le choix, nous pour le reste.
+
+---
+
 ## ~~LA PLANCHE DE LA PORTE N'A PAS SUIVI L'AÉRATION~~ — réglé autrement, 11 septembre 2026
 
 **Ce point était mal posé, et le corriger vaut mieux que de le faire.** Il

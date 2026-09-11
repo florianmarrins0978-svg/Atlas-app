@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Dessiner la photo d’un retour en bibliothèque, avant d’y toucher
+
+Sa capture du soir, sur la visionneuse livrée le matin : *« c’est trop gros,
+faut pas qu’elle prenne tout l’écran. Comme sur les sites internet : des
+flèches de chaque côté pour aller voir les suivantes, et surtout une croix en
+haut à droite pour fermer. Une sorte de bibliothèque. »*
+
+`appli/photo-en-bibliotheque.html` — la fiche reste derrière un voile, la
+photo vient dans un cadre au milieu, croix à droite, un chevron de chaque côté,
+« 2 / 3 », le doigt glisse ; une variante ajoute la rangée des vignettes en
+bas. Origine et Nuit. **Rien n’est codé** : `VisionneusePhoto.tsx` ne bouge
+pas tant qu’il n’a pas choisi (`CLAUDE.md` §3 bis).
+
+Vu en la rendant : les chevrons posés en clair sur une photo claire ne se
+voyaient pas. Ils sont sur la PHOTO, pas sur le voile — leur contraste ne suit
+donc pas la charte, contrairement à la croix.
+
+
 ### Le diagnostic végétal refuse aussi le coude à coude après la relance
 
 Le seul chemin du moteur où un nom sortait malgré un concurrent égal : la
