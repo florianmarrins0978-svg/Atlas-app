@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ma TVA, une seule logique — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  MA TVA, UNE SEULE LOGIQUE — 12 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Son brief (transmis de ChatGPT, lu contre le code avant de dessiner) :
+  *« TVA encaissée − TVA récupérable = TVA à payer. L'utilisateur enregistre
+  les règlements de ses clients, Atlas calcule la TVA correspondante. Pas
+  d'explications, des montants, des intitulés très clairs. »*
+
+  CE QUE LA LECTURE A CORRIGÉ. Le brief demandait de « supprimer le choix
+  entre un mode manuel et un mode automatique ». Ce choix n'existe pas : les
+  deux « modes » sont ENCAISSEMENTS / DÉBITS, un régime fiscal posé le 14 août
+  2026 à sa demande (`docs/QUESTIONS.md`, « s'il ne me paie pas »). Le retirer
+  ferait une TVA fausse pour qui a opté pour les débits. Il SORT de la page et
+  rejoint le rythme dans Réglages : la page n'a plus qu'une logique, un
+  règlement noté → une TVA comptée.
+
+  LES CHIFFRES SE RECOUPENT AU CENTIME, comme il l'exige : les règlements de la
+  section « TVA collectée » font 978,02 € ; les achats font 46,80 € ; le
+  résumé du haut les soustrait. Une bascule montre le mois où la déductible
+  dépasse la collectée : on n'écrit jamais un montant négatif, on écrit
+  « Crédit de TVA ».
+
+  RIEN N'EST CODÉ. Chiffres de SES captures pour la collectée (978,02 €) et
+  l'attente (150 € sur 300 €) ; règlements et achats sont un DÉCOR qui se
+  recoupe.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#6f8a5f; --surPlein:#fff; --papier:#ece9e1;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#6f8a5f; --surPlein:#101210; --papier:#232722;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:5;background:var(--scene);
+  padding:10px 12px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13px;padding:8px 13px;margin:3px 2px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);
+  border-color:var(--encre)}
+.commandes .groupe{display:inline-block;margin:0 6px}
+.commandes .mot{display:block;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--gris);margin:6px 0 2px}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;
+  font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+
+.scene{display:flex;justify-content:center;padding:18px 12px 6px}
+.tel{width:390px;max-width:100%;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;padding:14px 0 24px;transition:width .2s}
+.tel[data-largeur="375"]{width:375px}
+.tel[data-largeur="320"]{width:320px}
+.px{padding-left:24px;padding-right:24px}
+
+/* ─── l'en-tête, inchangé : c'est l'identité ────────────────────────────── */
+.barre{display:flex;justify-content:space-between;align-items:center}
+.rond{width:44px;height:44px;border-radius:999px;border:0;background:var(--papier);
+  color:var(--encre);font-size:18px}
+.rond.vert{background:var(--plein);color:var(--surPlein)}
+h2.mois{font-family:ui-serif,Georgia,"Times New Roman",serif;font-weight:400;
+  font-size:34px;line-height:1.1;margin:22px 0 4px}
+.caps{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--or);margin:0}
+.caps.gris{color:var(--gris)}
+
+.frise{display:flex;align-items:center;margin:18px 0 0;overflow:hidden;
+  font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+.frise .annee{display:flex;align-items:center;gap:8px;padding-right:12px;
+  border-right:1px solid var(--trait);color:var(--encre);text-transform:none;
+  letter-spacing:0;font-size:15px;font-weight:400;flex:none}
+.frise .mois-liste{display:flex;gap:22px;padding-left:14px;white-space:nowrap}
+.frise .actif{color:var(--encre);border-bottom:2px solid var(--or);padding-bottom:6px}
+/* Le régime reste, mais SECONDAIRE : une ligne grise, réglable ailleurs. */
+.regime{margin:10px 0 0;font-size:12px;color:var(--gris)}
+.regime u{text-decoration:none;border-bottom:1px solid var(--trait);color:var(--gris)}
+
+/* ─── LE RÉSUMÉ : trois montants, une soustraction qu'on lit d'un coup ───── */
+.resume{margin:26px 0 0}
+.resume .rang{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:10px 0}
+.resume .rang + .rang{border-top:1px solid var(--trait-doux)}
+.resume .quoi{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);font-weight:600}
+.resume .combien{display:flex;align-items:baseline;gap:10px;white-space:nowrap;flex:none;
+  font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:26px;font-variant-numeric:tabular-nums}
+.resume .combien .signe{font-size:20px;color:var(--gris);width:18px;text-align:center;font-family:ui-sans-serif,system-ui,sans-serif}
+.resume .combien i{font-style:normal;font-size:13px;color:var(--or)}
+.resume .rang.final{border-top:1.5px solid var(--encre);margin-top:4px;padding-top:14px}
+.resume .rang.final .quoi{color:var(--or)}
+.resume .rang.final .combien{font-size:38px}
+.tel[data-largeur="320"] .resume .rang.final .combien{font-size:30px}
+.tel[data-largeur="320"] .resume .combien{font-size:22px}
+.resume .rang.final .credit{display:none}
+.tel[data-mois="credit"] .resume .rang.final .apayer{display:none}
+.tel[data-mois="credit"] .resume .rang.final .credit{display:inline}
+.tel[data-mois="credit"] .resume .rang.final .quoi{color:var(--plein)}
+.sous{margin:12px 0 0;font-size:12.5px;line-height:1.5;color:var(--gris)}
+
+/* ─── les sections ──────────────────────────────────────────────────────── */
+section.bloc{margin-top:34px}
+section.bloc .entete{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+section.bloc h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-weight:400;font-size:19px;margin:0}
+section.bloc .compte{font-size:12px;color:var(--gris);font-variant-numeric:tabular-nums}
+
+ul.liste{list-style:none;margin:8px 0 0;padding:0}
+ul.liste li{padding:13px 0;border-top:1px solid var(--trait-doux)}
+.fiche{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.fiche .nom{font-size:15px;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fiche .num{font-size:11.5px;color:var(--gris);margin:2px 0 0}
+/* Deux lignes « intitulé : montant », jamais un chiffre sans son mot. */
+.paire{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:7px;font-size:13px}
+.paire .k{color:var(--gris)}
+.paire .v{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.paire.forte .k{color:var(--encre)}
+.paire.forte .v{font-size:18px}
+.paire.tva .v{color:var(--encre)}
+.geste{margin-top:10px}
+.geste button{font:inherit;font-size:14.5px;min-height:44px;padding:0 18px;border-radius:999px;
+  border:0;background:var(--plein);color:var(--surPlein);cursor:pointer}
+.lien{display:block;margin-top:12px;font-size:14px;color:var(--or);background:none;border:0;
+  padding:10px 0;font:inherit;min-height:44px;cursor:pointer;text-align:left}
+.lien b{color:var(--or);font-weight:600}
+
+ul.liste li.total-ligne{display:flex;justify-content:flex-end;align-items:baseline;gap:14px;
+  padding:12px 0 0;border-top:1px solid var(--trait)}
+ul.liste li.total-ligne .quoi{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+ul.liste li.total-ligne .v{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:18px;font-variant-numeric:tabular-nums}
+
+/* ─── + Ajouter un achat : un seul bouton, puis deux voies ──────────────── */
+.ajouter{margin-top:14px}
+.ajouter > button{width:100%;min-height:52px;border:1px solid var(--trait);background:var(--plage);
+  border-radius:999px;font:inherit;font-size:15px;color:var(--encre);cursor:pointer}
+.ajouter .voies{display:none;gap:10px;margin-top:10px}
+.ajouter.ouvert .voies{display:flex}
+.ajouter.ouvert > button{display:none}
+.ajouter .voies button{flex:1;min-height:60px;border:1px solid var(--trait);background:var(--plage);
+  border-radius:16px;font:inherit;font-size:14px;color:var(--encre);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.ajouter .voies svg{color:var(--or)}
+
+.mention{margin:40px 8px 0;font-size:12px;line-height:1.55;color:var(--gris);text-align:center}
+
+.onglets{display:flex;justify-content:space-between;margin:26px 0 0;padding:14px 12px 0;
+  border-top:1px solid var(--trait);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+.onglets .ici{color:var(--encre);border-bottom:2px solid var(--or);padding-bottom:6px}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--trait);vertical-align:top;color:var(--encre-douce)}
+th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+td b{color:var(--encre)}
+@media (max-width:430px){
+  table,tbody,tr,td,th{display:block;width:100%}
+  thead{display:none}
+  tr{border-bottom:1px solid var(--trait);padding:10px 0}
+  td{border:0;padding:3px 0}
+}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <span class="groupe">
+    <span class="mot">Le mois</span>
+    <button type="button" data-mois="apayer" aria-pressed="true">À payer</button>
+    <button type="button" data-mois="credit" aria-pressed="false">En crédit</button>
+  </span>
+  <span class="groupe">
+    <span class="mot">Le téléphone</span>
+    <button type="button" data-largeur="390" aria-pressed="true">Le tien</button>
+    <button type="button" data-largeur="375" aria-pressed="false">Petit</button>
+    <button type="button" data-largeur="320" aria-pressed="false">Très petit</button>
+  </span>
+  <span class="groupe">
+    <span class="mot">La charte</span>
+    <button type="button" id="pole" aria-pressed="false">Nuit</button>
+  </span>
+</div>
+
+<div class="tete">
+  <span class="sceau">Maquette — rien n'est codé</span>
+  <h1>Ma TVA, une seule logique</h1>
+  <p><b>Encaissée − récupérable = à payer.</b> Un règlement noté, une TVA
+  comptée. Le régime sort de la page et va dans Réglages.</p>
+</div>
+
+<div class="scene">
+  <div class="tel" id="tel" data-largeur="390" data-mois="apayer">
+    <div class="px">
+      <div class="barre">
+        <button type="button" class="rond" aria-label="Retour">‹</button>
+        <button type="button" class="rond vert" aria-label="Assistant">○</button>
+      </div>
+      <h2 class="mois">Septembre 2026</h2>
+      <p class="caps">Ma TVA</p>
+
+      <div class="frise">
+        <span class="annee">📅 2026</span>
+        <span class="mois-liste"><span>Août</span><span class="actif">Septembre</span><span>Octobre</span><span>Novembre</span></span>
+      </div>
+      <p class="regime">Déclaration <u>mensuelle</u> · Réglages</p>
+
+      <!-- ─── LE RÉSUMÉ ──────────────────────────────────────────────────── -->
+      <div class="resume" aria-label="Le relevé du mois">
+        <div class="rang"><span class="quoi">TVA collectée</span><span class="combien"><span class="signe"></span>978,02 € <i>⧉</i></span></div>
+        <div class="rang"><span class="quoi">TVA déductible</span><span class="combien"><span class="signe">−</span><span class="ded-apayer">46,80 €</span><span class="ded-credit" hidden>2 000,00 €</span> <i>⧉</i></span></div>
+        <div class="rang final">
+          <span class="quoi"><span class="apayer">TVA à payer</span><span class="credit">Crédit de TVA</span></span>
+          <span class="combien"><span class="signe">=</span><span class="apayer">931,22 €</span><span class="credit">1 021,98 €</span> <i>⧉</i></span>
+        </div>
+      </div>
+      <p class="sous">Calculée automatiquement à partir de vos règlements et de vos achats enregistrés.</p>
+
+      <!-- ─── FACTURES EN ATTENTE ────────────────────────────────────────── -->
+      <section class="bloc">
+        <div class="entete"><h3>Factures en attente</h3><span class="compte">3 factures</span></div>
+        <ul class="liste">
+          <li>
+            <div class="fiche"><div style="min-width:0"><p class="nom">Frédéric Dupont</p><p class="num">Facture n° F2026-000008 · émise le 11/09</p></div></div>
+            <div class="paire forte"><span class="k">Reste à encaisser</span><span class="v">150,00 €</span></div>
+            <div class="geste"><button type="button">Noter un règlement</button></div>
+          </li>
+          <li>
+            <div class="fiche"><div style="min-width:0"><p class="nom">Frédéric Dupont</p><p class="num">Facture n° F2026-000007 · émise le 11/09</p></div></div>
+            <div class="paire forte"><span class="k">Reste à encaisser</span><span class="v">210,00 €</span></div>
+            <div class="geste"><button type="button">Noter un règlement</button></div>
+          </li>
+        </ul>
+        <button type="button" class="lien">Voir toutes les factures en attente <b>(3)</b></button>
+      </section>
+
+      <!-- ─── TVA COLLECTÉE : les règlements déjà comptés ────────────────── -->
+      <section class="bloc">
+        <div class="entete"><h3>TVA collectée</h3><span class="compte">3 règlements</span></div>
+        <ul class="liste">
+          <li>
+            <div class="fiche"><div style="min-width:0"><p class="nom">Martins</p><p class="num">Facture n° F2026-000006 · réglée le 9/09</p></div></div>
+            <div class="paire"><span class="k">Règlement encaissé</span><span class="v">4 200,00 € TTC</span></div>
+            <div class="paire tva"><span class="k">TVA collectée</span><span class="v">700,00 €</span></div>
+          </li>
+          <li>
+            <div class="fiche"><div style="min-width:0"><p class="nom">Frédéric Dupont</p><p class="num">Facture n° F2026-000005 · acompte du 6/09</p></div></div>
+            <div class="paire"><span class="k">Règlement encaissé</span><span class="v">750,00 € TTC</span></div>
+            <div class="paire tva"><span class="k">TVA collectée</span><span class="v">125,00 €</span></div>
+          </li>
+          <li>
+            <div class="fiche"><div style="min-width:0"><p class="nom">Julien</p><p class="num">Facture n° F2026-000004 · réglée le 2/09</p></div></div>
+            <div class="paire"><span class="k">Règlement encaissé</span><span class="v">918,12 € TTC</span></div>
+            <div class="paire tva"><span class="k">TVA collectée</span><span class="v">153,02 €</span></div>
+          </li>
+          <li class="total-ligne"><span class="quoi">Total collectée</span><span class="v">978,02 €</span></li>
+        </ul>
+      </section>
+
+      <!-- ─── TVA DÉDUCTIBLE : les achats ────────────────────────────────── -->
+      <section class="bloc">
+        <div class="entete"><h3>TVA déductible</h3><span class="compte"><span class="ded-apayer">2 achats</span><span class="ded-credit" hidden>3 achats</span></span></div>
+        <ul class="liste">
+          <li>
+            <div class="fiche"><div style="min-width:0"><p class="nom">Carburant — TotalEnergies</p><p class="num">4 sept.</p></div></div>
+            <div class="paire"><span class="k">Montant</span><span class="v">184,80 € TTC</span></div>
+            <div class="paire tva"><span class="k">TVA déductible</span><span class="v">30,80 €</span></div>
+          </li>
+          <li>
+            <div class="fiche"><div style="min-width:0"><p class="nom">Fournitures — Point P</p><p class="num">2 sept.</p></div></div>
+            <div class="paire"><span class="k">Montant</span><span class="v">96,00 € TTC</span></div>
+            <div class="paire tva"><span class="k">TVA déductible</span><span class="v">16,00 €</span></div>
+          </li>
+          <li class="ded-credit" hidden>
+            <div class="fiche"><div style="min-width:0"><p class="nom">Tondeuse autoportée — Kubota</p><p class="num">1 sept.</p></div></div>
+            <div class="paire"><span class="k">Montant</span><span class="v">11 700,00 € TTC</span></div>
+            <div class="paire tva"><span class="k">TVA déductible</span><span class="v">1 950,00 €</span></div>
+          </li>
+          <li class="total-ligne"><span class="quoi">Total déductible</span><span class="v"><span class="ded-apayer">46,80 €</span><span class="ded-credit" hidden>2 000,00 €</span></span></li>
+        </ul>
+        <div class="ajouter" id="ajouter">
+          <button type="button">+ Ajouter un achat</button>
+          <div class="voies">
+            <button type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16" stroke-linecap="round"/></svg>Scanner un justificatif</button>
+            <button type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20h4.2L19 9.2a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8V20z" stroke-linejoin="round"/></svg>Saisir manuellement</button>
+          </div>
+        </div>
+      </section>
+
+      <p class="mention">Ce relevé est préparé par Atlas à partir de vos règlements. Il ne vaut pas déclaration : celle-ci reste à faire par votre outil comptable.</p>
+    </div>
+
+    <div class="onglets"><span>Chantiers</span><span>Planning</span><span class="ici">Terminés</span><span>Paysage</span><span>Réglages</span></div>
+  </div>
+</div>
+
+<div class="notes">
+  <h3>Ce que la maquette tranche</h3>
+  <table>
+    <thead><tr><th>Le brief</th><th>Ce qui est fait</th></tr></thead>
+    <tbody>
+      <tr><td><b>Une seule logique</b></td><td>Un règlement noté, une TVA comptée. Le choix encaissements / débits <b>sort de la page</b> : il reste dans Réglages, avec le rythme, parce que c'est un régime fiscal qu'on a posé le 14 août à ta demande.</td></tr>
+      <tr><td><b>Le résumé</b></td><td>Trois montants, la soustraction se lit d'un coup. Les chiffres du haut sont <b>exactement</b> les totaux des deux listes du bas. En crédit, on écrit « Crédit de TVA », jamais un moins.</td></tr>
+      <tr><td><b>« Noter un règlement »</b></td><td>Un seul bouton par facture, avec le reste à encaisser pré-rempli : payer en entier reste à deux appuis.</td></tr>
+      <tr><td><b>TTC ou TVA</b></td><td>Chaque ligne porte les deux, avec leur mot : « Règlement encaissé … € TTC » puis « TVA collectée … € ». Pareil pour les achats.</td></tr>
+      <tr><td><b>Ajouter un achat</b></td><td>Un bouton, puis deux voies. C'est un appui de plus qu'aujourd'hui pour scanner un ticket.</td></tr>
+      <tr><td><b>Le régime</b></td><td>Une ligne grise sous les mois — « Déclaration mensuelle » — lue dans Réglages, jamais écrite en dur.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Ce qui reste à décider — par lui</h3>
+  <p><b>Le régime encaissements / débits quitte cette page pour Réglages</b> — c'est la seule
+  chose que je n'ai pas faite comme le brief le disait, et c'est pour ne pas
+  fausser la TVA de qui a opté pour les débits. Si tu veux le retirer tout à
+  fait, dis-le : ça se retire, mais en sachant ce que ça coûte.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var tel = document.getElementById("tel");
+  function presser(sel, actif) {
+    Array.prototype.forEach.call(document.querySelectorAll(sel), function (b) {
+      b.setAttribute("aria-pressed", String(b === actif));
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".commandes [data-mois]"), function (b) {
+    b.addEventListener("click", function () {
+      var m = b.getAttribute("data-mois");
+      tel.setAttribute("data-mois", m);
+      Array.prototype.forEach.call(document.querySelectorAll(".ded-apayer"), function (n) { n.hidden = m !== "apayer"; });
+      Array.prototype.forEach.call(document.querySelectorAll(".ded-credit"), function (n) { n.hidden = m !== "credit"; });
+      presser(".commandes [data-mois]", b);
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".commandes [data-largeur]"), function (b) {
+    b.addEventListener("click", function () {
+      tel.setAttribute("data-largeur", b.getAttribute("data-largeur"));
+      presser(".commandes [data-largeur]", b);
+    });
+  });
+  document.getElementById("pole").addEventListener("click", function () {
+    var nuit = document.body.classList.toggle("nuit");
+    this.setAttribute("aria-pressed", String(nuit));
+    this.textContent = nuit ? "Arborea" : "Nuit";
+  });
+  var ajouter = document.getElementById("ajouter");
+  ajouter.querySelector("button").addEventListener("click", function () { ajouter.classList.add("ouvert"); });
+})();
+</script>
+
+</body>
+</html>
