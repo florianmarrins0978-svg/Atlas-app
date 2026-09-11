@@ -172,6 +172,12 @@ seulement s'il le signale.
 **`appli/deplacer-quel-jour.html` reste en ligne** : elle raconte le chemin, et
 une planche écartée se garde (`CLAUDE.md` §3 bis).
 
+**TRANCHÉ LE 11 SEPTEMBRE 2026 : « Déplacer » RESTE SANS « Annuler ».** Sa
+réponse, mot pour mot : *« la 1, laisser comme c'est aujourd'hui »*. La bascule
+Matin / Aprem s'ouvre avec ses deux positions vides et l'on en sort en touchant
+ailleurs. **Ne pas rouvrir la question, et ne pas ajouter le bouton** : ce qui
+passe pour un oubli est une décision.
+
 ---
 
 ## ~~TROIS ROUGES ARRIVÉS AVEC LA PORTE DE CONNEXION~~ — RÉGLÉS LE 10 SEPTEMBRE 2026
