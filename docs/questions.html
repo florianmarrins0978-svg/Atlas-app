@@ -100,6 +100,7 @@
 <li><a href="#26-combien-dheures-avons-nous-passé-à-créer-atlas-">Combien d'heures avons-nous passé à créer Atlas ?</a></li>
 <li><a href="#27-le-format-de-mes-numéros-de-facture-cest-obligatoire-">Le format de mes numéros de facture, c'est obligatoire ?</a></li>
 <li><a href="#28-pourquoi-la-page-que-reçoit-mon-client-na-pas-les-couleurs-de-mon-devis-">Pourquoi la page que reçoit mon client n'a pas les couleurs de mon devis ?</a></li>
+<li><a href="#29-mon-client-peut-il-modifier-le-devis-ou-la-facture-quil-reçoit-">Mon client peut-il modifier le devis ou la facture qu'il reçoit ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -1274,7 +1275,7 @@
 <td>plus large que l'écran : on n'y choisit que des couleurs</td>
 </tr>
 </tbody></table></div>
-<p><strong>Ce qui n'a pas été touché :</strong> « Tarifs &amp; catalogue » et « Devis &amp; factures ». Ce sont vos mots, ils sont justes, et onze contrôles les lisent.</p>
+<p><strong>Ce qui n'a pas été touché :</strong> « Tarifs &amp; catalogue » et « Devis &amp; factures ». Ce sont vos mots, ils sont justes, et neuf contrôles les lisent.</p>
 <p><strong>Mesuré sur votre écran</strong>, à 390 × 664 : 1 310 px de haut → <strong>1 145</strong>, six rubriques atteintes sans défiler → <strong>huit</strong>, 89 mots → <strong>30</strong>. L'écran ne tient toujours pas en une seule fenêtre, et il ne le tiendra pas — douze rubriques à 56 px de haut, plus la version en bas, font davantage que 664. Serrer les lignes rendrait au pouce ce qu'on gagnerait à l'œil.</p>
 <p><strong>Les deux autres écrans de la maquette « Moins de mots » — la fiche client et l'accueil — ne sont pas faits.</strong> Ils appartiennent à des zones reprises entre le 2 et le 5 septembre par d'autres lots ; les refaire au jugé serait exactement l'erreur que cette question cherchait à arrêter.</p>
 <p><strong>Et le compteur de mots qui empêche de regrossir n'existe toujours pas.</strong> C'était la vraie réponse à « il y aura une quatrième fois ». Il reste à écrire.</p>
@@ -1468,6 +1469,40 @@
 <p><strong>Votre charte de couleurs à vous ne part pas chez le client, et n'a jamais risqué de partir.</strong> Si vous mettez Atlas en « Nuit », votre devis ne devient pas noir chez lui : l'application coupe délibérément la charte sur les deux pages que votre client reçoit. C'est vérifié, et ce n'est pas ce dont il s'agissait ici.</p>
 <h3 id="si-vous-changez-davis">Si vous changez d'avis</h3>
 <p>C'est une demi-journée, pas plus : la page passerait par le même endroit que le PDF. Mais tant que vous ne le demandez pas, <strong>personne ne doit le faire « pour faire propre »</strong> — c'est écrit dans le dépôt (<code>ARCHITECTURE.md</code> §248), pour qu'une session ne défasse pas votre choix en croyant bien faire.</p>
+<hr>
+<h2 id="29-mon-client-peut-il-modifier-le-devis-ou-la-facture-quil-reçoit-">29. Mon client peut-il modifier le devis ou la facture qu'il reçoit ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Posée le 11 septembre 2026</strong>, juste après le correctif du téléchargement : <em>« mais si on ouvre le PDF avec un logiciel, on ne peut pas le modifier ? »</em></p>
+<h3 id="la-réponse-courte--non-pas-avec-un-lecteur-ordinaire">La réponse courte : non, pas avec un lecteur ordinaire</h3>
+<p>Vos documents sortent <strong>chiffrés</strong>. Le lecteur les ouvre sans rien demander, mais ses outils d'écriture sont éteints — Acrobat affiche « SÉCURISÉ » en haut.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que votre client peut faire</th>
+<th>Ce qu'il ne peut plus</th>
+</tr></thead><tbody>
+<tr>
+<td>ouvrir, lire, faire défiler</td>
+<td><strong>modifier un montant, un texte</strong></td>
+</tr>
+<tr>
+<td>imprimer, même en pleine définition</td>
+<td><strong>annoter, surligner, écrire par-dessus</strong></td>
+</tr>
+<tr>
+<td>recopier une adresse, un numéro</td>
+<td><strong>remplir un champ</strong></td>
+</tr>
+<tr>
+<td></td>
+<td><strong>retirer une page</strong></td>
+</tr>
+</tbody></table></div>
+<p>Il n'a <strong>aucun mot de passe à taper</strong> : c'est voulu. Un mot de passe d'ouverture coûterait un coup de fil par devis, et la moitié des chantiers.</p>
+<h3 id="ce-que-ça-ne-fait-pas-et-je-préfère-lécrire">Ce que ça ne fait pas, et je préfère l'écrire</h3>
+<p><strong>Ce n'est pas un coffre-fort.</strong> Le format PDF est public : un outil spécialisé réécrit n'importe quel fichier, quoi qu'on y mette. Aucun format au monde ne tient cette promesse-là, et vous la vendre serait mentir.</p>
+<p>Ce que ça garantit, c'est l'essentiel au quotidien : <strong>personne ne change un montant d'un doigt, par mégarde ou par facilité.</strong> Et la pièce qui fait foi reste celle qu'Atlas archive au moment de l'envoi — c'est elle qu'on ressort en cas de litige, pas le fichier qui traîne dans les téléchargements d'un client.</p>
+<h3 id="sur-quoi-ça-vaut">Sur quoi ça vaut</h3>
+<p>Les trois documents, par un seul endroit du code : <strong>le devis, la facture, et la feuille de chantier</strong>. Un document oublié ne se verrait pas — on l'apprendrait chez le client.</p>
+<p>Vérifié le 11 septembre 2026 sur la version en ligne (<code>scripts/test-devis-non-modifiable.ts</code>, six contrôles) : le chiffrement est réel, pas une simple étiquette, et le contrôle le prouve sur le devis <strong>et</strong> sur la facture.</p>
 </main>
 </body>
 </html>
