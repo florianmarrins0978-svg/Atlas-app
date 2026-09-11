@@ -27766,12 +27766,24 @@ mentirait au premier changement de la poignée. La variable n'existe que pendant
 qu'il est à l'écran ; il la retire en partant, et les autres écrans ne bougent
 pas.
 
-**Ce que cela NE règle pas**, et qu'il ne faut pas croire réglé : le geste
-« + Absent ? », en TÊTE de la carte, passe toujours sous le tiroir d'un pixel
-quand la journée touchée est dans la dernière rangée du mois. Celui-là est un
-défaut de PLACEMENT de la carte, pas de réserve — la réserve permet de faire
-défiler jusqu'au bas, elle ne remonte pas ce qui est déjà à l'écran. Il reste
-dans `TODO.md`.
+**Et ce que la réserve ne réglait PAS, réglé le 11 septembre 2026 :** le geste
+« + Absent ? », en TÊTE de la carte, passait sous le tiroir de deux pixels.
+Mesuré sur son écran (390 × 664) : carte ouverte à 472, geste 523 → 567, tiroir
+à 565.
+
+La réserve permet de faire défiler jusqu'au bas ; elle ne remonte pas ce qui est
+déjà à l'écran, et la carte naît au MILIEU de la page. `rendreLesPixelsDesBandes`
+rend donc exactement ce que les deux bandes prennent — jamais plus —, et ne fait
+rien quand le geste est déjà dégagé.
+
+**Il vit sur LE GESTE, pas sur la carte, et deux contrôles l'ont imposé.** Le
+`scrollIntoView` retiré le 3 septembre ramenait une fiche née hors du champ, à
+deux cents pixels de là : il déplaçait la case qu'on venait de toucher. Une
+première version de ce rattrapage vivait dans la carte, et
+`test-ligne-planning-e2e` l'a refusée dans la minute — *« le client touché a
+bougé de 956 px, il disparaît sous mes yeux »* : la MÊME carte se déplie aussi
+sous une ligne des planifiés, où la règle est que le nom touché ne bouge pas.
+Accroché à `toucherLeJour`, rien d'autre ne le déclenche.
 
 | | |
 |---|---|

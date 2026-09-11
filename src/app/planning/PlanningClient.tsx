@@ -840,6 +840,54 @@ export default function PlanningClient({
    * affichait « Lundi 27 juillet » sous un calendrier titré « août » : les deux
    * se contredisaient, et rien ne disait lequel croire.
    */
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * RENDRE À LA CARTE LES PIXELS QUE LES BANDES DU BAS LUI PRENNENT
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * **Le défaut, mesuré sur son écran** (390 × 664, compte de démonstration) :
+   * la carte s'ouvre à 472 px, « + Absent ? » occupe 523 → 567, et le tiroir
+   * commence à 565. **Deux pixels**, et `test-pas-la-ce-jour-e2e` refuse à
+   * juste titre un geste qu'une bande fixe recouvre — c'est ce contrôle qui
+   * avait attrapé, le 6 septembre, un geste entièrement caché dessous.
+   *
+   * **Ce n'est pas un défaut de réserve.** `.atlas-contenu` réserve déjà la
+   * barre ET le tiroir (§323) : cela permet de faire défiler jusqu'au bas,
+   * cela ne remonte pas ce qui est déjà à l'écran. La carte naît au MILIEU de
+   * la page, sous le doigt, et rien ne garantit que les cent derniers pixels
+   * soient libres à cet endroit-là.
+   *
+   * **CE QUE CE N'EST PAS, et deux contrôles l'ont prouvé dans la minute.** Le
+   * `scrollIntoView` retiré le 3 septembre 2026 ramenait une fiche née HORS du
+   * champ, à deux cents pixels de là : il déplaçait la case qu'on venait de
+   * toucher. Une première version de ce rattrapage-ci vivait dans la CARTE, et
+   * `test-ligne-planning-e2e` l'a refusée aussitôt — *« le client touché a
+   * bougé de 956 px, il disparaît sous mes yeux »* : la même carte se déplie
+   * aussi sous une ligne des planifiés, où la règle est que le nom touché ne
+   * bouge PAS.
+   *
+   * Il vit donc sur **le geste**, pas sur la carte : on touche un jour du
+   * calendrier, et rien d'autre ne le déclenche. Il rend exactement ce que les
+   * bandes prennent, jamais plus, et ne fait rien quand le geste est déjà
+   * dégagé — c'est-à-dire dans la plupart des journées.
+   */
+  function rendreLesPixelsDesBandes() {
+    // Après la peinture : la carte n'existe pas encore au moment de l'appel.
+    requestAnimationFrame(() => {
+      const carte = document.querySelector<HTMLElement>('[data-atlas="carte-jour"]');
+      const premier = carte?.querySelector<HTMLElement>("button");
+      if (!premier) return;
+      const style = getComputedStyle(document.documentElement);
+      // Les deux bandes publient leur hauteur ; les recopier ici serait
+      // s'assurer qu'un jour l'une bougera sans l'autre (`AtlasBottomNav`,
+      // `TiroirDuBas`).
+      const haut = (nom: string) => parseFloat(style.getPropertyValue(nom)) || 0;
+      const plancher = window.innerHeight - haut("--atlas-barre") - haut("--atlas-tiroir");
+      const manque = Math.round(premier.getBoundingClientRect().bottom - plancher);
+      if (manque > 0) window.scrollBy({ top: manque, behavior: "smooth" });
+    });
+  }
+
   function toucherLeJour(jour: JourIso) {
     setOuvert(null);
     setFeuille(null);
@@ -850,6 +898,7 @@ export default function PlanningClient({
     }
     setDebutFenetre(jour);
     setJourTouche((cur) => (cur === jour ? null : jour));
+    rendreLesPixelsDesBandes();
   }
 
   /**

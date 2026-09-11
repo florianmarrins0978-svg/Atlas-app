@@ -113,6 +113,13 @@ voies, à chaque étape.**
 | ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
 | **une troisième voie** | *« Autre chose »* — un rendez-vous à la banque, une livraison, une formation : un chantier **sans client**, portant ce qu'on écrit |
 
+**Le geste « + Absent ? » ne passe plus sous le tiroir.** Deux pixels, mesurés
+sur son écran, et `test-pas-la-ce-jour-e2e` les refusait à juste titre. La carte
+naît au milieu de la page : la réserve du bas n'y peut rien, elle permet de
+défiler, pas de remonter. Toucher un jour rend maintenant exactement ce que les
+deux bandes fixes prennent — jamais plus, et rien du tout quand le geste est
+déjà dégagé.
+
 **Et son bord passe en or — sa version C**, choisie sur planche
 (`appli/tiroir-en-or.html`, quatre bords côte à côte) : deux pixels d'or, les
 coins levés, un trait entre la poignée et le dedans, et les titres alignés à

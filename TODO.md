@@ -215,33 +215,23 @@ un « Annuler » à chaque étape sur une AUTRE planche
 
 ---
 
-## ⏳ LE GESTE D'ABSENCE PASSE SOUS LE TIROIR DU BAS — D'UN PIXEL (10 septembre 2026)
+## ~~LE GESTE D'ABSENCE PASSE SOUS LE TIROIR DU BAS~~ — RÉGLÉ LE 11 SEPTEMBRE 2026
 
-**Mesuré**, écran de 390 × 664, cinq jours devant, compte de démonstration :
+Sa décision : *« corrige la 2, laisse la 1 »*.
 
-| | |
-|---|---|
-| le geste « + Absent ? » | 523 → **567** px |
-| le tiroir « À poser sur… » | **566** → 616 px, `fixed`, z-19 |
+**Mesuré**, écran de 390 × 664 : la carte s'ouvrait à 472 px, « + Absent ? »
+occupait 523 → 567, et le tiroir commençait à 565. Deux pixels.
 
-Un pixel de recouvrement, et `test-pas-la-ce-jour-e2e` le refuse à juste titre
-(*« il est ATTEIGNABLE — rien ne le recouvre »*). **Rouge avant les deux lots du
-10 septembre comme après** : le geste, lui, se touche en son centre.
+**Ni un défaut de dessin, ni un défaut de réserve.** La réserve du bas
+(`--atlas-tiroir`) permet de défiler jusqu'en bas ; elle ne remonte pas ce qui
+est déjà à l'écran, et la carte naît au milieu de la page. `toucherLeJour` rend
+désormais exactement ce que les deux bandes prennent, jamais plus, et rien du
+tout quand le geste est dégagé (`ARCHITECTURE.md` §323).
 
-**LA MOITIÉ DE LA RACINE A ÉTÉ TRAITÉE LE 10 SEPTEMBRE AU SOIR, ET PAS
-CELLE-CI.** Le tiroir publie désormais sa hauteur (`--atlas-tiroir`) et
-`.atlas-contenu` la réserve (`ARCHITECTURE.md` §323) : plus rien n'est
-DÉFINITIVEMENT hors d'atteinte au bas d'une carte — c'est ce qui a sauvé le
-« Poser » du lot « un client ».
-
-**Ce qui reste est un défaut de PLACEMENT**, et la réserve n'y peut rien : la
-carte naît sous le doigt, et quand le jour touché est dans la dernière rangée du
-mois, son HAUT tombe déjà dans les cinquante derniers pixels. Une réserve permet
-de faire défiler jusqu'en bas ; elle ne remonte pas ce qui est déjà à l'écran.
-
-**Ne pas « corriger » en poussant la carte à la main**, et ne pas ajouter de
-défilement forcé — le dépôt en a retiré un le 3 septembre pour cette raison
-exacte. Ce qu'il faut regarder, c'est le rang de la carte dans la rangée.
+**Le piège, et un contrôle l'a attrapé dans la minute :** la même carte se
+déplie aussi sous une ligne des planifiés, où la règle est que le nom touché ne
+bouge PAS. Une version de ce rattrapage posée dans la carte a fait bouger le
+client de 956 px. Il vit sur le geste du calendrier, et nulle part ailleurs.
 
 ---
 
