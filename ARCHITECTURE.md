@@ -28325,3 +28325,14 @@ n'est pas en français** : c'est exactement le cas qu'il faut éprouver.
 elle arrivait remplie du solde entier, si bien qu'il lisait un chiffre qu'il
 n'avait pas posé. Solder d'un doigt reste possible — c'est « Payée », juste
 au-dessus, et c'est le geste de cinquante factures par an.
+
+### Et la ligne enregistrée reprend la forme de la saisie
+
+*« Donc : 11/09/2026, le montant qui vient d'être rentré »*, photo de la saisie
+à l'appui. La ligne d'un règlement noté s'écrivait « 300,00 € le 11/09 » : les
+deux mêmes choses que les cases juste au-dessus, dans l'autre sens et dans un
+autre format. Elle porte maintenant le jour à gauche et le montant à droite, aux
+places exactes des deux cases — on relit ce qu'on a tapé là où on l'a tapé.
+
+L'étiquette de lecture d'écran du « × » garde, elle, la date en toutes lettres :
+« 11/09 » dite à voix haute ne s'entend pas.

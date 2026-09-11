@@ -249,20 +249,28 @@ export default function EnAttenteDePaiement({
                 <ul className="mt-2.5 flex flex-col gap-1.5">
                   {f.paiements.map((p) => (
                     <li key={p.id} className="flex items-center gap-2 text-[12px]" style={{ color: colors.muted }}>
-                      <span className="flex-1">
-                        {/* Le jour court, comme partout ailleurs sur cet écran
-                            depuis le 11 septembre 2026 : « le 11 septembre
-                            2026 » prenait la moitié de la ligne d'un règlement
-                            de trois mots. L'étiquette de lecture d'écran, elle,
-                            garde la date entière — dite à voix haute, « 11/09 »
-                            ne s'entend pas. */}
-                        {euros(p.montant)} le {jourCourt(p.date, aujourdHui)}
+                      {/* **LA LIGNE ENREGISTRÉE PREND LA FORME DE LA SAISIE —
+                          sa demande du 11 septembre 2026 :** *« donc :
+                          11/09/2026, le montant qui vient d'être rentré »*, la
+                          photo de la saisie à l'appui. Elle s'écrivait
+                          « 300,00 € le 11/09 » : les deux mêmes choses, dans
+                          l'autre sens et dans un autre format, juste sous les
+                          cases qu'on venait de remplir. On relit ce qu'on a
+                          tapé à la place où on l'a tapé.
+                          L'étiquette de lecture d'écran, elle, garde la date en
+                          toutes lettres — dite à voix haute, « 11/09 » ne
+                          s'entend pas. */}
+                      <span className="flex-1 tabular-nums">
+                        {jourNumerique(p.date)}
                         {/* **Ce que la migration a SUPPOSÉ se dit.** Ces
                             règlements-là n'ont jamais été constatés : ils
                             existent pour que le relevé du trimestre passé ne
                             bouge pas. Les taire ferait passer une supposition
                             pour une observation. */}
                         {p.origine === "reprise" && " · supposé réglé à l'émission"}
+                      </span>
+                      <span className="flex-none tabular-nums" style={{ color: colors.inkSoft }}>
+                        {euros(p.montant)}
                       </span>
                       <button
                         type="button"

@@ -274,6 +274,16 @@ async function main() {
     // facture de 1 200 € se lit comme une erreur de montant.
     assert.ok(/600,00\s*€/.test(ecran), "le solde qui reste dû ne s'affiche pas");
     assert.ok(/1\s*200,00\s*€/.test(ecran), "rien ne rattache ce solde à la facture entière");
+
+    // **Le règlement enregistré se relit COMME IL A ÉTÉ TAPÉ** — sa demande du
+    // 11 septembre 2026 : « donc : 11/09/2026, le montant qui vient d'être
+    // rentré ». La date à gauche, le montant à droite, aux mêmes places que les
+    // deux cases juste au-dessus. La ligne disait « 600,00 € le 11/09 » : les
+    // deux mêmes choses, dans l'autre sens et dans un autre format.
+    const enregistre = ligne.locator("ul li").first();
+    const parts = (await enregistre.innerText()).split("\n").map((t) => t.trim());
+    assert.match(parts[0] ?? "", /^\d{2}\/\d{2}\/\d{4}$/, `la ligne commence par « ${parts[0]} » au lieu du jour`);
+    assert.match(parts[1] ?? "", /600,00\s*€/, `le montant ne suit pas la date : « ${parts[1]} »`);
   });
 
   await test("UN MONTANT TROP GRAND EST REFUSÉ, et le refus lui parvient", async () => {
