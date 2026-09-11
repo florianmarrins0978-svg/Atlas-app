@@ -246,7 +246,14 @@ async function main() {
     // Et elle attend toujours son solde : c'est ce qui empêche de l'oublier.
     const ecran = await page.locator("body").innerText();
     assert.ok(ecran.includes(numero), "la facture partiellement réglée a quitté l'attente");
-    assert.ok(/reste sur/.test(ecran), "rien ne dit qu'il s'agit d'un reste");
+    // **Ce qu'on vise, c'est LE CHIFFRE, pas le libellé** (`CLAUDE.md` §5 bis) :
+    // « reste sur » a été remplacé par « Reste à payer … / Sur les … du … » le
+    // 11 septembre 2026, et ce contrôle tombait sur un écran juste. Ce qui doit
+    // rester vrai quel que soit le mot choisi : le solde ET le total de la
+    // facture sont tous les deux à l'écran — sans le second, « 600 € » sur une
+    // facture de 1 200 € se lit comme une erreur de montant.
+    assert.ok(/600,00\s*€/.test(ecran), "le solde qui reste dû ne s'affiche pas");
+    assert.ok(/1\s*200,00\s*€/.test(ecran), "rien ne rattache ce solde à la facture entière");
   });
 
   await test("UN MONTANT TROP GRAND EST REFUSÉ, et le refus lui parvient", async () => {

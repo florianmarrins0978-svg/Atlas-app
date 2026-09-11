@@ -28264,17 +28264,26 @@ portaient rien — « ces factures sont parties chez vos clients » redit le tit
 de l'écran, et « pas avant » redit « quand ». La ligne entière passe en `ink` :
 elle est l'avertie, et non plus une phrase dont un morceau est appuyé.
 
-### Le formulaire de règlement montre deux chiffres, plus une explication
+### « Reste à payer » se lit À DROITE, là où la ligne d'un acompte vivait déjà
 
-Même demande, même jour : *« lorsqu'on note un règlement, marque : Reste à
-payer 150 €, sur les 150 € du… »*. À cette place tenait une phrase qui
-expliquait comment fonctionne un acompte — un écran ne décrit pas son propre
-mécanisme (`CLAUDE.md` §3), et celle-là prenait deux lignes sans donner un seul
-chiffre.
+Sa demande du 11 septembre 2026 : *« lorsqu'on note un règlement, marque :
+Reste à payer 150 €, sur les 150 € du… »*. Ces deux lignes ont d'abord été
+posées **en tête du formulaire de saisie**, et il l'a corrigé le jour même :
+*« pourquoi tu as changé les lignes de place ? La phrase était à droite, c'est
+là que je voulais reste à payer. »*
 
-Les deux chiffres ne disent pas la même chose : **ce qui reste dû** — dont la
-case « Montant » est déjà remplie — et **la facture entière avec son jour**,
-sans quoi « reste 150 € » ne se rattache à rien lorsqu'un acompte est déjà
-passé. C'est pourquoi `capture-trace-reception.mts` pose désormais une
-quatrième facture, déjà entamée : sur trois factures neuves, les deux chiffres
-seraient égaux et la capture ne montrerait pas ce qu'on vient d'écrire.
+La colonne de droite portait « reste sur 1 776,00 € », qui demandait de deviner
+que le gros chiffre au-dessus était le solde. Elle porte maintenant :
+
+    Reste à payer 1 476,00 €
+    Sur les 1 776,00 € du 11/09
+
+Le formulaire, lui, est **revenu tel qu'il était** — il n'avait rien demandé
+dessus. Une demande d'affichage se lit là où il la fait, et déplacer ce qu'il
+n'a pas cité coûte un aller-retour.
+
+**Et le jour ne s'écrit pas deux fois sur la même ligne :** dès qu'un acompte
+est passé, « émise le … » disparaît de la ligne du numéro, puisque la droite
+porte déjà « du 11/09 ». Sans cela le numéro passait sur deux lignes pour
+redire la même date. Le reste de l'écran est passé au jour court (`jourCourt`)
+pour la même raison qu'au-dessus : une seule façon d'écrire un jour ici.
