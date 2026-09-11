@@ -9,6 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — « Noter un règlement » (11 septembre 2026)
+
+https://florianmarrins0978-svg.github.io/Atlas-app/noter-un-reglement.html
+
+Ce qu'il a dit, le même soir : *« lorsque l'on note un règlement on doit pouvoir
+rentrer la date à laquelle le client a payé »*, *« le chiffre à droite doit être
+le chiffre qu'on a écrit »*, et *« la phrase sous Enregistrer ce règlement est
+trop longue, synthétise-la ! On comprend rien là »*.
+
+**Rien n'est codé, et c'est voulu** (`CLAUDE.md` §3 bis) : il a demandé les
+maquettes AVANT tout changement. Trois propositions, à choisir et à corriger :
+
+| | |
+|---|---|
+| 1 | deux cases nommées — « Payé le » / « Montant reçu », montant **vide** |
+| 2 | la phrase à trous — « Le client a payé … € le … » |
+| 3 | les cases nommées, plus un bouton « Tout le reste · 1 476,00 € » |
+
+La phrase du bas passe à six mots dans les trois : « Seule la part reçue entre
+au relevé. »
+
+**Ce que la planche a établi, et qui vaut d'être su avant de coder :** la case
+de date EXISTE déjà et porte bien le jour du paiement — elle n'a simplement
+aucun nom visible. Le montant, lui, arrive rempli du solde entier : c'est ce
+qui lui faisait lire un chiffre qu'il n'avait pas tapé.
+
+
 ## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
 
 **Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été

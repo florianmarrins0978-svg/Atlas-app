@@ -8,6 +8,13 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Une planche pour « Noter un règlement », et rien de codé
+
+*« Avant de changer quoi que ce soit fais-moi des maquettes, qu'on corrige. »*
+Trois façons de remplir les deux cases — nommées, en phrase à trous, ou avec
+« Tout le reste » —, et six mots à la place de dix-huit sous le bouton.
+`appli/noter-un-reglement.html`, en attente de son choix (`TODO.md`).
+
 ### La trace de réception tenait en deux lignes : une seule date, et pas d'heure
 
 *« Les phrases sont trop longues. Il faut marquer Ouverte 11/09, l'heure tu
