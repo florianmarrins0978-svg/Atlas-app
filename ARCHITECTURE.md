@@ -28598,12 +28598,20 @@ l'échelle ne se déduit pas, l'amenée n'est pas comptée et l'écran le dit �
 plus jamais 30 m tus. La ligne de pièces porte le chiffre calculé, arrondi au
 mètre supérieur, et dit Ø25 ou Ø32 selon le seuil.
 
+### Le damier des turbines, tranché aussi : « la A »
+
+La planche `appli/arrosage-a-trancher.html` lui a montré les deux poses
+calculées par le même code — neuf turbines alignées, six en damier — avec ce
+que la seconde coûte (72 % de recouvrement entre deux têtes voisines). Il a
+gardé les neuf. Le paramètre `damierTurbines` qui a servi à dessiner la B a
+été retiré du calcul le soir même : un paramètre qui ne sert plus qu'à une
+planche est du code mort (`CLAUDE.md` §4 quinquies). La page reste, pour
+mémoire de ce qui a été écarté.
+
 ### Ce qui reste ouvert
 
-Le trajet du regard à la première tête (inchangé, dit à l'écran) · le damier
-pour les turbines des grandes pelouses (planche `appli/arrosage-a-trancher.html`,
-question posée) · les positions sur une vraie photo, piquage compris (banc du
-patron) · la page publiée `appli/arrosage.html` et ses deux scripts, en sursis
+Le trajet du regard à la première tête (inchangé, dit à l'écran) · les
+positions sur une vraie photo, piquage compris (banc du patron) · la page publiée `appli/arrosage.html` et ses deux scripts, en sursis
 jusqu'à ce qu'il valide l'écran.
 
 ## §334 — Deux écritures de la même donnée ne partent pas ensemble

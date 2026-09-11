@@ -4,8 +4,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Plan d’arrosage — deux choses à trancher</title>
 <!--
-  MAQUETTE. Deux questions restées ouvertes par le lot du 11 septembre 2026
-  (docs/lot-arrosage-impeccable.md), chacune avec ses deux réponses possibles.
+  MAQUETTE — TRANCHÉE. Deux questions posées par le lot du 11 septembre 2026
+  (docs/lot-arrosage-impeccable.md), et ses deux réponses le soir même : les
+  turbines alignées (« la A »), l'amenée calculée. La page reste pour mémoire
+  de ce qui a été écarté ; le paramètre damierTurbines qui a servi à dessiner
+  la B a été retiré du calcul une fois la réponse donnée.
   Aucun JavaScript : les onglets sont des boutons radio et du CSS.
 
   TOUT EST CALCULÉ par l'application — calculerPlan + dessinerPlan + le composant
@@ -60,18 +63,18 @@
   .croquis svg{display:block;width:100%;height:auto}
 </style>
 
-<h1>Une chose à trancher</h1>
+<h1>Tranché</h1>
 <p class="surtitre">Plan d’arrosage</p>
 
 <!-- ══ 1. Le damier sur les turbines ═══════════════════════════════════════ -->
 <section>
-  <h2 class="question">1. Les turbines des grandes pelouses : alignées, ou en damier ?</h2>
-  <p class="contexte">Le 18 août vous disiez « pour les grands espaces, faire la même ». Le 23 vous avez dessiné 9 turbines alignées sur un 12 × 12. Les deux, calculées :</p>
+  <h2 class="question">1. Les turbines des grandes pelouses : alignées — votre réponse du 11 septembre, « la A ».</h2>
+  <p class="contexte">Le damier reste aux tuyères des couloirs. Les deux options restent visibles ici, pour mémoire de ce qui a été écarté :</p>
   <input type="radio" name="damier" id="d9" checked>
   <input type="radio" name="damier" id="d6">
   <div class="choix">
-    <label for="d9"><b>A · alignées</b><span>9 turbines — aujourd’hui</span></label>
-    <label for="d6"><b>B · en damier</b><span>6 turbines</span></label>
+    <label for="d9"><b>A · alignées</b><span>9 turbines — retenue</span></label>
+    <label for="d6"><b>B · en damier</b><span>6 turbines — écartée</span></label>
   </div>
   
   <div class="vue-d9">

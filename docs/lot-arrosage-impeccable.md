@@ -10,7 +10,7 @@ trois endroits où il rendait un plan faux, et **deux de vos règles perdues** �
 le quinconce du couloir (18 août) et l'antenne Ø16 de 2 m au plus. Tout est
 corrigé à la racine, l'écran est refait sur la maquette que vous avez vue, et
 **dix-sept de vos règles vivent désormais dans une suite qu'aucune session ne
-peut réécrire**. Un point reste à trancher par vous, en bas.
+peut réécrire**. Les deux points ouverts ont été tranchés par vous le soir même, en bas.
 
 ## Ce qui a été trouvé, et le verdict
 
@@ -53,10 +53,9 @@ votre couloir de 10 × 3 : une tranchée de 10 m, sept antennes de 1,50 m.
 
 ## Ce qui a été fait autrement, et pourquoi
 
-- **Le damier reste réservé aux tuyères.** Avec la bonne mesure, il devient
-  possible sur les turbines : votre carré de 12 × 12 tomberait à **6 turbines**
-  au lieu des 9 que vous avez dessinées le 23 août. Je n'ai pas tranché à votre
-  place : vos 9 sont gardées (question plus bas).
+- **Le damier reste réservé aux tuyères.** Avec la bonne mesure, il devenait
+  possible sur les turbines : votre carré de 12 × 12 tomberait à 6 turbines au
+  lieu de vos 9. La planche vous a montré les deux ; vous avez retenu la A.
 - **Le calcul n'a pas été réécrit en TypeScript** pour lire le tracé : ce serait
   une seconde façon de calculer un plan. Les pièces se lisent à la frontière,
   une fois, dans `pieces.ts`. Le comptage par rangées de la page publiée reste
@@ -111,7 +110,7 @@ Journaux : `batterie.log`, `batterie-s5-2.log`, `e2e-temoin.log`,
 
 | | Aujourd'hui | Qui |
 |---|---|---|
-| **Le damier pour les turbines des grandes pelouses** — le 18 août vous disiez « pour les grands espaces, faire la même » ; le 23 vous avez dessiné 9 alignées sur 12 × 12 | tuyères seulement ; le 12 × 12 donnerait 6 en damier | **vous** |
+| ~~**Le damier pour les turbines**~~ — **tranché le 11 septembre : « la A »**, alignées ; le damier reste aux tuyères des couloirs | vos 9 turbines, tenues par la suite des règles | — |
 | ~~**La longueur d'amenée**~~ — **tranchée le 11 septembre : calculée** sur le croquis, du piquage à la nourrice | la lecture de la place du piquage se vérifie sur votre espace, comme celle de la nourrice (`npm run verifier:croquis`) | **votre espace** |
 | **Les positions sur une vraie photo** | jamais éprouvées ici | **votre espace** |
 | **La page publiée `arrosage.html`** — en sursis depuis le 20 août | une fois l'écran validé, elle n'a plus de raison d'être | **vous** |

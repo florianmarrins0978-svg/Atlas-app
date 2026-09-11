@@ -65,8 +65,9 @@ Maquette : `appli/arrosage-plan-et-pieces.html`. Détail : `ARCHITECTURE.md`
 La place du piquage se lit sur le croquis comme celle de la nourrice, et la
 longueur du compteur à la nourrice se calcule entre les deux à l'échelle des
 cotes (`longueurDeLAmenee`). Sans piquage dessiné, pas de plan. Les 30 m par
-défaut ne servent plus qu'à la page publiée. Planche des choix restants :
-`appli/arrosage-a-trancher.html`.
+défaut ne servent plus qu'à la page publiée. Planche des choix :
+`appli/arrosage-a-trancher.html` — et le second, tranché aussi : les turbines
+des grandes pelouses restent alignées (« la A »), le damier aux tuyères.
 ### Le prix accordé au client, enfin cliquable sur une facture
 
 *« On n'a pas mis la réduction client cliquable comme sur le devis »*, puis

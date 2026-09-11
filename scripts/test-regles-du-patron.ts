@@ -250,6 +250,22 @@ regle("11 septembre 2026", "« l'amenée doit être calculée, ni lue ni suppos�
   exige(sans?.q === null, "sans calcul possible, la ligne d'amenée reste « à mesurer » — jamais un chiffre plausible");
 });
 
+regle("11 septembre 2026", "« la A » — les turbines des grandes pelouses se posent alignées ; le damier reste aux tuyères des couloirs", () => {
+  // Devant la planche qui montrait les deux poses calculées (9 alignées, 6 en
+  // damier), il a retenu la A. Une turbine ne se pose donc jamais en damier,
+  // quelle que soit la pelouse ; une tuyère de couloir, si.
+  for (const [L, l] of [[12, 12], [18, 12], [30, 22]]) {
+    const z = plan([{ id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L, l }]).dessin[0];
+    exige(z.cle === "turbine", `${L} × ${l} prend des turbines`);
+    const rangees = new Set(z.points.map((p: { y: number }) => p.y.toFixed(2)));
+    for (const y of rangees) {
+      const surLaRangee = z.points.filter((p: { y: number }) => p.y.toFixed(2) === y).length;
+      exige(surLaRangee === z.points.length / rangees.size, `${L} × ${l} : une rangée porte ${surLaRangee} têtes — ce n'est plus une grille alignée`);
+    }
+  }
+  exige(plan([{ id: 1, type: "gazon", nom: "Pelouse", x: 0, y: 0, L: 12, l: 12 }]).dessin[0].points.length === 9, "ses 9 turbines sur le 12 × 12");
+});
+
 // ── LA PROCHAINE RÈGLE S'AJOUTE ICI, sous ce repère — jamais au-dessus ──────
 
 console.log(`\n${failed === 0 ? "✅" : "❌"} Les règles du patron — ${passed} tenue(s), ${failed} rompue(s).`);

@@ -807,6 +807,17 @@ programmateur, sa tranchée et son créneau d'arrosage.
 **Et le quinconce ne se resserre JAMAIS sous la portée** — sa règle du 17 août.
 Quand le damier ne couvre pas à cet écart-là, on garde la grille alignée. Le
 resserrement sans plancher disqualifiait la seule pose qui tenait sur une vanne.
+**La portée se mesure ENTRE DEUX TÊTES, pas sur le pas des colonnes** (corrigé
+le 11 septembre 2026) : sur un damier, deux têtes voisines sont à deux pas sur
+un même bord, ou en diagonale — mesurer le pas refusait son couloir de 10 × 2 à
+sept tuyères (§127), et c'est ainsi que sa règle du 18 août était morte.
+
+**LE DAMIER EST POUR LES TUYÈRES DES COULOIRS ; LES TURBINES SE POSENT
+ALIGNÉES — « la A », sa réponse du 11 septembre 2026** devant la planche
+`appli/arrosage-a-trancher.html` qui lui montrait les deux poses calculées sur
+son 12 × 12 : neuf turbines alignées, ou six en damier (où le recouvrement
+entre deux têtes voisines tombe à 72 %). Il a gardé ses neuf. Ne pas rouvrir :
+`test-regles-du-patron.ts` tient les deux.
 
 **UN CROQUIS À MAIN LEVÉE SE LIT QUAND MÊME — sa correction du 23 août 2026 :**
 *« les utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à
