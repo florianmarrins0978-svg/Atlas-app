@@ -8,6 +8,39 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### La trace de réception tenait en deux lignes : une seule date, et pas d'heure
+
+*« Les phrases sont trop longues. Il faut marquer Ouverte 11/09, l'heure tu
+supprimes… et s'il coche la case, marque seulement réception confirmée le
+11/09, pas besoin d'avoir les deux infos. »*
+
+Sous chaque facture qui attend son paiement s'écrivaient les deux événements :
+« Ouverte le 11 septembre à 17 h 57 · réception confirmée le 11 septembre ».
+Deux lignes de téléphone pour dire deux fois la même chose — cocher la case
+suppose d'avoir ouvert.
+
+La ligne dit désormais **une** date, en gras : « Ouverte 11/09 », ou
+« Réception confirmée le 11/09 » dès que la case est cochée. L'heure quitte
+l'écran ; elle reste en base à la seconde (`ouverte_at`), et c'est là qu'on ira
+la chercher le jour d'un litige.
+
+Les deux écrans qui la montrent — les impayés et le dossier du client — ne
+décident plus rien : la phrase entière sort de `receptionEnMots`
+(`ARCHITECTURE.md` §330).
+
+### Le chapô des impayés tenait en deux moitiés : il n'en garde qu'une
+
+*« Garde seulement : elles entreront au relevé quand vous appuierez sur
+Payée. »* « Ces factures sont parties chez vos clients » redisait le titre de
+l'écran, et « pas avant » redisait « quand ». La ligne restante est en gras,
+entière.
+
+### « Noter un règlement » donne les chiffres au lieu d'expliquer l'acompte
+
+En tête du formulaire tenait une phrase qui décrivait le mécanisme — *« un
+acompte se note comme un solde… »*. À sa place, ce qu'il vient chercher :
+« Reste à payer 1 476,00 € / Sur les 1 776,00 € du 11/09 ».
+
 ### La facture téléchargée s'ouvrait blanche : la police n'annonçait pas sa longueur
 
 *« Lorsque je télécharge la facture je ne peux toujours pas la lire. »*

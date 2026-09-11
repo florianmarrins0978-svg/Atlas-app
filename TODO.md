@@ -103,10 +103,15 @@ retirer) :
   lecteur (`storageKey={null}`), et l'invite se tait dès qu'une note existe —
   **sa règle du 1ᵉʳ septembre**.
 
-**Trois autres ne sont rouges QUE dans la batterie entière**, et vertes seules :
+**Quatre autres ne sont rouges QUE dans la batterie entière**, et vertes seules :
 `devis-fige-porte` et `madame-lucie` (délais dépassés sur un conteneur lent),
 `onglets-termines` (« `'2' !== '1'` » : le compte des retours non lus est pollué
-par les suites qui ont tourné avant, dans la même base).
+par les suites qui ont tourné avant, dans la même base), et — relevé le
+11 septembre 2026 — `ligne-planning`, dont le contrôle « le client touché ne
+remonte pas » **refuse de conclure** quand la première fiche n'est pas au-dessus
+de la seconde (153 px contre 100 px) : les chantiers laissés par les suites
+précédentes changent l'ordre de la liste. Rejouée seule :
+`npm run test:e2e -- --seulement ligne-planning` → 6/6.
 
 **Ce qu'il reste à trancher :** les onze autres. Chacune se rejoue seule en une
 commande — `npm run test:e2e -- --seulement <nom>` — et il faut savoir, pour

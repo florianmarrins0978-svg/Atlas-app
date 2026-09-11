@@ -84,6 +84,30 @@ export function jourEtMois(iso: string): string {
   return `${j === 1 ? "1er" : j} ${MOIS[m - 1]}`;
 }
 
+/**
+ * « 11/09 » — le jour et le mois en chiffres, pour une trace qu'on lit d'un
+ * coup d'œil.
+ *
+ * **Sa demande du 11 septembre 2026**, devant la ligne de réception d'une
+ * facture : *« les phrases sont trop longues, il faut marquer Ouverte 11/09 »*.
+ * « le 11 septembre à 17 h 57 » prenait la largeur d'une ligne entière pour un
+ * repère qu'il ne fait que survoler.
+ *
+ * **L'année ne s'écrit que si ce n'est pas la nôtre** — la règle de
+ * `jourLisible`, et pour la même raison : « 11/09 » sur une facture de l'an
+ * dernier désignerait deux jours à un an d'écart, et c'est précisément une
+ * vieille facture impayée qu'on vient regarder.
+ *
+ * **L'aujourd'hui se donne en JOUR, pas en instant** : celui que le serveur a
+ * calculé dans le fuseau de l'atelier. Le prendre de l'horloge du téléphone
+ * ferait dépendre l'affichage de l'appareil, le 31 décembre au soir.
+ */
+export function jourCourt(iso: string, aujourdHui: string = jourIso(new Date())): string {
+  const [a, m, j] = iso.split("-");
+  if (!a || !m || !j) return iso;
+  return a === aujourdHui.slice(0, 4) ? `${j}/${m}` : `${j}/${m}/${a}`;
+}
+
 /** Le fuseau du patron. Ses journées se comptent chez lui, pas à Greenwich. */
 export const FUSEAU_DU_PATRON = "Europe/Paris";
 

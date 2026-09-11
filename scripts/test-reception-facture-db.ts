@@ -322,8 +322,14 @@ async function main() {
     assert.ok(apres, "la fiche du client a disparu après l'accusé de réception");
     const piece = apres.pieces.factures.find((p) => p.id === facture.id);
     assert.ok(piece?.reception, "la trace n'arrive pas dans le dossier du client");
-    assert.ok(piece.reception.ouverte, "l'ouverture ne se lit pas dans le dossier");
-    assert.ok(piece.reception.confirmee, "la confirmation ne se lit pas dans le dossier");
+    // **La case cochée efface l'ouverture** — sa demande du 11 septembre 2026 :
+    // cocher suppose d'avoir ouvert, et dire les deux, c'est dire deux fois.
+    assert.match(
+      piece.reception.avant,
+      /Réception confirmée/,
+      "la confirmation ne se lit pas dans le dossier"
+    );
+    assert.ok(piece.reception.date, "la trace arrive sans son jour");
 
     // Et les devis, eux, n'en portent pas : un devis parti ne s'ouvre pas, il
     // se répond — et cette réponse-là vit déjà sur l'accueil.

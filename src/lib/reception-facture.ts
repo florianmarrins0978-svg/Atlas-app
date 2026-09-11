@@ -1,68 +1,66 @@
-import { FUSEAU_DU_PATRON, jourEtMois, jourIso } from "./jour";
+import { jourCourt, jourIso } from "./jour";
 
 /**
  * CE QUE LE CLIENT A FAIT DE SA FACTURE, mis en mots.
  *
  * Sa question du 9 septembre 2026 : *« Atlas note l'ouverture seul, mais en cas
  * de litige, où est-ce que l'utilisateur va rechercher cette info ? »* — nulle
- * part, jusqu'ici. La réponse tient dans deux dates posées sous la ligne de la
- * facture, sur « En attente de paiement », à la place exacte qu'occupe déjà la
- * marque de l'ancien IBAN.
+ * part, jusqu'ici. La réponse tient dans une ligne posée sous la facture, sur
+ * « En attente de paiement » et dans le dossier du client.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * **POURQUOI C'EST UNE FONCTION PURE, ET NON DU TEXTE DANS L'ÉCRAN.**
+ * **UNE SEULE DATE, ET PAS D'HEURE — sa demande du 11 septembre 2026 :** *« les
+ * phrases sont trop longues… l'heure tu supprimes… et s'il coche la case,
+ * marque seulement réception confirmée le 11/09, pas besoin d'avoir les deux
+ * infos »*.
  *
- * Cette phrase-là se relira le jour d'un litige. Elle doit dire exactement la
- * même chose partout où elle apparaît — l'écran des impayés aujourd'hui, la
- * fiche de la facture demain —, et elle doit s'éprouver sans monter un
- * navigateur (`CLAUDE.md` §3, et §4 sexies : les règles vivent dans `lib/`).
+ * Les deux dates s'écrivaient côte à côte — « Ouverte le 11 septembre à 17 h 57
+ * · réception confirmée le 11 septembre » —, et la seconde rend la première
+ * inutile : un client qui coche a forcément ouvert. La ligne disait donc deux
+ * fois la même chose sur deux lignes de téléphone.
  *
- * **ET L'HEURE SE CALCULE SUR LE SERVEUR, dans le fuseau de l'atelier.** Mise
- * en mots par le téléphone, elle changerait selon l'appareil qui la lit : la
- * même ouverture s'afficherait à 14 h 12 chez lui et à 12 h 12 ailleurs. Une
- * preuve qui change d'heure selon qui la regarde ne prouve rien.
+ * **Ce que la minute prouvait en plus, elle ne le prouve qu'à nous.** Le
+ * dépôt la gardait comme preuve contre « je n'ai jamais reçu cette facture » ;
+ * elle reste écrite en base (`envois_factures.ouverte_at`), et c'est là qu'on
+ * ira la chercher le jour d'un litige. À l'écran, c'est le JOUR qu'il regarde.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **POURQUOI LA PHRASE ENTIÈRE VIT ICI, ET NON DANS LES ÉCRANS.**
+ *
+ * Deux écrans la montrent — les impayés et le dossier du client. Le choix
+ * « confirmée plutôt qu'ouverte » y était écrit deux fois : deux règles pour
+ * une seule question, et c'est exactement ce que `CLAUDE.md` §3 refuse. Elle se
+ * décide donc une fois, et s'éprouve sans monter un navigateur (§4 sexies : les
+ * règles vivent dans `lib/`).
  */
 export type ReceptionLisible = {
-  /** « le 9 septembre à 14 h 12 », ou `null` si le lien n'a jamais été ouvert. */
-  ouverte: string | null;
-  /** « le 9 septembre », ou `null` si le client n'a pas coché. */
-  confirmee: string | null;
+  /**
+   * Ce qui précède la date — « Ouverte », « Réception confirmée le », ou la
+   * phrase entière quand il n'y a pas de date.
+   *
+   * L'espace de fin est voulu : il sépare le mot du gras qui suit, et le
+   * mettre dans les écrans le ferait écrire deux fois.
+   */
+  avant: string;
+  /** Le jour, en gras à l'écran — « 11/09 » —, ou `null` si rien n'a été ouvert. */
+  date: string | null;
 };
 
-export function receptionEnMots(reception: {
-  ouverteLe: Date | null;
-  accuseLe: Date | null;
-}): ReceptionLisible {
-  return {
-    ouverte: reception.ouverteLe ? jourEtHeure(reception.ouverteLe) : null,
-    // **Le jour seul pour la confirmation, et l'heure pour l'ouverture.**
-    // L'heure d'ouverture est ce qu'on oppose à « je ne l'ai jamais reçue » :
-    // elle situe le geste dans la journée. La confirmation, elle, est déjà un
-    // aveu — la minute n'y ajoute rien, et deux heures côte à côte sur la même
-    // ligne se lisent comme deux événements distincts.
-    confirmee: reception.accuseLe ? `le ${jourEtMois(jourIso(reception.accuseLe))}` : null,
-  };
-}
-
-/**
- * « le 9 septembre à 14 h 12 ».
- *
- * **L’heure est RECOMPOSÉE à partir des parties, jamais prise telle quelle.**
- * `format()` en `fr-FR` rend « 14:12 » sur certains moteurs et « 14 h 12 » sur
- * d’autres, avec des espaces fines insécables invisibles à la lecture d’un diff.
- * La même trace se serait donc écrite de deux façons selon la machine qui sert
- * la page — sur une preuve, c’est exactement ce qu’il ne faut pas.
- */
-function jourEtHeure(instant: Date): string {
-  const parties = new Intl.DateTimeFormat("fr-FR", {
-    timeZone: FUSEAU_DU_PATRON,
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(instant);
-  const heure = parties.find((p) => p.type === "hour")?.value ?? "";
-  const minute = parties.find((p) => p.type === "minute")?.value ?? "";
-  // `Number` retire le zéro de tête : on écrit « 1 h 30 », pas « 01 h 30 ». Les
-  // minutes, elles, le gardent — « 14 h 5 » ne se lit pas.
-  return `le ${jourEtMois(jourIso(instant))} à ${Number(heure)} h ${minute}`;
+export function receptionEnMots(
+  reception: { ouverteLe: Date | null; accuseLe: Date | null },
+  /** Le jour de l'atelier, pour décider si l'année doit s'écrire. */
+  aujourdHui: string = jourIso(new Date())
+): ReceptionLisible {
+  // **La confirmation efface l'ouverture, elle ne s'y ajoute plus.** Cocher la
+  // case suppose d'avoir ouvert : dire les deux, c'est dire deux fois.
+  if (reception.accuseLe) {
+    return { avant: "Réception confirmée le ", date: jourCourt(jourIso(reception.accuseLe), aujourdHui) };
+  }
+  if (reception.ouverteLe) {
+    return { avant: "Ouverte ", date: jourCourt(jourIso(reception.ouverteLe), aujourdHui) };
+  }
+  // **« Pas encore ouverte » S'ÉCRIT.** Ne rien afficher ferait lire l'absence
+  // de trace comme une absence de fonctionnalité — et c'est justement ce qu'il
+  // vient vérifier quand un client prétend n'avoir rien reçu.
+  return { avant: "Pas encore ouverte.", date: null };
 }
