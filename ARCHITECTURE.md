@@ -28276,14 +28276,25 @@ La colonne de droite portait « reste sur 1 776,00 € », qui demandait de devi
 que le gros chiffre au-dessus était le solde. Elle porte maintenant :
 
     Reste à payer 1 476,00 €
-    Sur les 1 776,00 € du 11/09
+    Sur les 1 776,00 €
 
 Le formulaire, lui, est **revenu tel qu'il était** — il n'avait rien demandé
-dessus. Une demande d'affichage se lit là où il la fait, et déplacer ce qu'il
-n'a pas cité coûte un aller-retour.
+dessus.
 
-**Et le jour ne s'écrit pas deux fois sur la même ligne :** dès qu'un acompte
-est passé, « émise le … » disparaît de la ligne du numéro, puisque la droite
-porte déjà « du 11/09 ». Sans cela le numéro passait sur deux lignes pour
-redire la même date. Le reste de l'écran est passé au jour court (`jourCourt`)
-pour la même raison qu'au-dessus : une seule façon d'écrire un jour ici.
+### ON NE DÉPLACE RIEN : on réécrit sur place
+
+Sa règle, dite le même jour et d'une phrase : *« il fallait laisser les phrases
+où elles étaient, juste les modifier »*. Elle a coûté deux allers-retours dans
+la même soirée — les deux lignes posées dans le formulaire au lieu de la droite,
+puis « émise le … » effacée de la ligne du numéro parce que la droite portait la
+même date.
+
+**Une demande d'affichage vaut pour le TEXTE, jamais pour la place.** Il
+reconnaît son écran par la position de ce qu'il lit ; un mot qui change se lit
+en une seconde, une ligne qui bouge se cherche. Quand une réécriture crée une
+répétition, c'est le mot en trop qui part — ici la date dorée, retirée d'un
+« à droite retire la date en doré » —, jamais la ligne entière.
+
+Le jour de la facture vit donc là où il a toujours été : sur la ligne du numéro,
+à gauche, et écrit court (`jourCourt`) comme la trace de réception juste en
+dessous — une seule façon d'écrire un jour sur cet écran.
