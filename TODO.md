@@ -9,6 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ DEUX ÉCRITURES DE LA REMISE PEUVENT SE DOUBLER (11 septembre 2026)
+
+**Mesuré, pas supposé.** `test-reduction-devis-e2e.ts` a rougi deux fois sur
+trois sur la pièce « le « − » existe » : le « + Prix accordé au client » pose
+5 %, et la base rend `null`. Avec deux `console.log` de plus dans la suite —
+donc quelques millisecondes — elle passe 11/11. Ce n'est pas le contrôle qui
+est fragile, **c'est le produit** : `enregistrerRemise` lance une écriture sans
+attendre la précédente, et rien ne garantit leur ordre d'arrivée. Effacer une
+remise puis la reposer aussitôt peut donc la faire disparaître.
+
+**Le défaut est ANTÉRIEUR au lot du 11 septembre** — le même code asynchrone
+existait avant la pièce commune (vérifié : la version d'avant passe, mais elle
+joue sur les mêmes millisecondes). Ce que le lot a changé, c'est la fréquence.
+
+**Ce qu'il faut faire, et ce qu'il ne faut pas faire :** sérialiser les
+écritures (chaîner sur la promesse en cours, des deux côtés — devis et
+facture). **Ne pas** faire attendre le contrôle : ce serait masquer une course
+que le patron peut vivre.
+
+---
+
 ## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
 
 **Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
