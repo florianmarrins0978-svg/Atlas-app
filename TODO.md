@@ -235,6 +235,50 @@ client de 956 px. Il vit sur le geste du calendrier, et nulle part ailleurs.
 
 ---
 
+## 🔴 SIX ROUGES ARRIVÉS DANS LA NUIT — À QUI ILS SONT, MESURÉ (11 septembre 2026)
+
+Batterie complète sur `7cbbb26`, lancée à sa demande une fois `main` calme :
+**120 suites navigateur vertes sur 142**, et les suites base de données au
+**vert** — les trois rouges de la porte sont réglés.
+
+Six rouges sont apparus depuis la batterie de la veille. **Aucun ne vient du
+planning**, et l'attribution n'est pas supposée : elle est mesurée.
+
+### Le lot du prix — deux rouges, et la preuve
+
+`test-devis-papier-e2e` (5 400 ≠ 900) et `test-devis-complet-e2e` (*« le total
+de la ligne 3 × 250 € ne s'affiche pas »*).
+
+**Vérifié en défaisant le lot localement** (`git revert --no-commit 770b769`,
+« Vider la case du prix tant qu'aucun prix n'est posé ») : `test-devis-papier`
+repasse au **vert**, et rouge à nouveau une fois le lot remis. Le revert n'a
+jamais quitté ce poste.
+
+### Le lot du glissement des mois — deux rouges, et ce qui NE le touche PAS
+
+`test-date-lointaine-e2e` et `test-reste-equipes-e2e` tombent tous les deux sur
+la même ligne : *« `<div class="flex w-[300%] items-start">` intercepts pointer
+events »* — le carrousel des trois mois de `MoisCharge`.
+
+**Ce qui le RASSURE, et il faut le lui dire : son doigt n'est pas touché.**
+Mesuré, trois fois de suite, sur son écran : après zéro, un et deux appuis sur
+« Mois suivant », toucher un jour ouvre bien sa journée. Les deux suites, elles,
+cliquent pendant le glissement — c'est leur cadence qui casse, pas le geste.
+
+**Ce qu'il reste à faire, et c'est au lot qui l'a livré** : soit le carrousel
+cesse d'intercepter le doigt quand il ne glisse pas, soit les deux suites
+attendent la fin du glissement. La première est une correction, la seconde un
+rattrapage.
+
+### Deux rouges non encore attribués
+
+`test-facture-au-client-e2e` (une feuille du bas intercepte le doigt :
+`rounded-t-[26px]`) et `test-envoi-client-e2e` (deux cas, `button[aria-pressed]`
+introuvable). Ni l'un ni l'autre ne touche au planning ; à confronter au lot de
+la facture et à celui du prix, par la même méthode.
+
+---
+
 ## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
 
 **Sa correction :** *« chaque session peut prendre un port différent, plusieurs
