@@ -9,7 +9,7 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ DEUX ÉCRITURES DE LA REMISE PEUVENT SE DOUBLER (11 septembre 2026)
+## ~~DEUX ÉCRITURES DE LA REMISE PEUVENT SE DOUBLER~~ — CORRIGÉ le 11 septembre 2026
 
 **Mesuré, pas supposé.** `test-reduction-devis-e2e.ts` a rougi deux fois sur
 trois sur la pièce « le « − » existe » : le « + Prix accordé au client » pose
@@ -23,10 +23,12 @@ remise puis la reposer aussitôt peut donc la faire disparaître.
 existait avant la pièce commune (vérifié : la version d'avant passe, mais elle
 joue sur les mêmes millisecondes). Ce que le lot a changé, c'est la fréquence.
 
-**Ce qu'il faut faire, et ce qu'il ne faut pas faire :** sérialiser les
-écritures (chaîner sur la promesse en cours, des deux côtés — devis et
-facture). **Ne pas** faire attendre le contrôle : ce serait masquer une course
-que le patron peut vivre.
+**Fait le soir même**, après que la batterie l'a rendue systématique :
+`src/lib/file-d-ecritures.ts` fait attendre chaque écriture que la précédente
+soit finie, et les deux écrans l'emploient. Le contrôle n'a PAS été rallongé —
+c'était la course qu'il fallait retirer, pas le rouge qu'il fallait taire.
+Trois exécutions d'affilée sans un échec, là où c'était deux sur trois.
+Détail : `ARCHITECTURE.md` §334.
 
 ---
 

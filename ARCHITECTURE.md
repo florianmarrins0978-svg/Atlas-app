@@ -28605,3 +28605,45 @@ pour les turbines des grandes pelouses (planche `appli/arrosage-a-trancher.html`
 question posée) · les positions sur une vraie photo, piquage compris (banc du
 patron) · la page publiée `appli/arrosage.html` et ses deux scripts, en sursis
 jusqu'à ce qu'il valide l'écran.
+
+## §334 — Deux écritures de la même donnée ne partent pas ensemble
+
+**Mesuré le 11 septembre 2026, et d'abord consigné sans être corrigé.**
+`test-reduction-devis-e2e.ts` rougissait deux fois sur trois : le
+« + Prix accordé au client » posait 5 %, et la base rendait `null`.
+
+Ce n'était pas le contrôle qui était fragile. Le champ quitté lançait son
+écriture — « aucune remise » —, le bouton lançait la sienne dans la foulée, et
+**rien ne garantissait leur ordre d'arrivée**. Effacer une remise puis la
+reposer dans la seconde pouvait donc la faire disparaître, chez le patron comme
+en batterie ; le résultat dépendait du réseau.
+
+### La correction, et ce qu'elle refuse de faire
+
+`src/lib/file-d-ecritures.ts` retient l'écriture en cours et fait attendre la
+suivante : les appels partent dans l'ordre où le doigt les a déclenchés, et
+**le dernier geste a le dernier mot**. Rien d'autre — ni annulation, ni
+regroupement, ni rejeu : une écriture refusée ne bloque pas les suivantes, et
+son refus revient intact à l'appelant, qui seul sait quoi en dire au patron.
+
+Les deux écrans de la remise l'emploient, par le hook
+`useEcrituresALaSuite` — un `useRef`, et non un `useMemo` : React peut rejouer
+celui-ci, et une file recréée en cours de route laisserait repartir deux
+écritures ensemble, c'est-à-dire exactement le défaut visé.
+
+### Pourquoi la règle vit dans `lib` et non dans le hook
+
+**Sa première version portait la règle dans le hook, et ne pouvait pas être
+éprouvée** : `useRef` hors d'un rendu lève « Cannot read properties of null ».
+Monter un écran pour mesurer une mise en file aurait mesuré React
+(`CLAUDE.md` §4 sexies : les règles pures descendent). Sortie dans `lib`, elle
+se joue en quelques millisecondes — et son **témoin** rejoue le défaut avec les
+mêmes durées : sans file, la lente doublait la rapide.
+
+### Ce qui reste vrai ailleurs
+
+Le dépôt porte d'autres écrans qui écrivent au fil du doigt — les lignes d'un
+devis, les taux d'une catégorie. Ceux-là écrivent chacun leur propre donnée : la
+course décrite ici demande **deux gestes sur la MÊME valeur**, et c'est ce que
+la remise rendait facile (une case et un bouton). Généraliser la file sans ce
+cas précis serait ajouter du code pour une panne imaginée.

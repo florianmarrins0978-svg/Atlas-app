@@ -35,6 +35,7 @@ import {
   LignePrixAccorde,
   REMISE_PAR_DEFAUT,
 } from "@/components/atlas/PrixAccordeAuClient";
+import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 // Le formateur du dépôt, au lieu de la copie qui vivait ici : deux façons
 // d'écrire un euro finissent par s'écrire différemment (`CLAUDE.md` §3).
 import { enEuros } from "@/lib/euros";
@@ -199,6 +200,8 @@ export default function TravauxSupplementairesClient({
    */
   const [reduction, setReduction] = useState(reductionPourcent ?? "");
   const [remiseOuverte, setRemiseOuverte] = useState(reductionPourcent !== null);
+  /** Les écritures de la remise se suivent : voir `enregistrerLaRemise`. */
+  const aLaSuite = useEcrituresALaSuite();
 
   const totaux = useMemo(
     () => totauxAvecReduction(lignes, tauxTvaFacture, remiseOuverte ? reduction : null),
@@ -277,7 +280,10 @@ export default function TravauxSupplementairesClient({
   function enregistrerLaRemise(valeurBrute: string = reduction) {
     const valeur = valeurBrute.trim() || null;
     enTransition(async () => {
-      const r = await majReductionFactureAction(factureId, valeur);
+      // **À LA SUITE, jamais en même temps** — le champ quitté et le bouton
+      // lancent deux écritures de la même donnée, et leur ordre d'arrivée
+      // n'est pas garanti (`useEcrituresALaSuite`, mesuré sur le devis).
+      const r = await aLaSuite(() => majReductionFactureAction(factureId, valeur));
       if (!porter(r) || !r.succes) return;
       if (r.reductionPourcent === null) {
         setReduction("");
