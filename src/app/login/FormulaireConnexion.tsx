@@ -99,7 +99,7 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
       <div className="h-[32px] flex-none" aria-hidden="true" />
 
       <h1
-        className="mb-[21px] text-[34px] leading-[1.1]"
+        className="mb-[21px] text-center text-[34px] leading-[1.1]"
         style={{ ...({ fontFamily: "ui-serif, Georgia, serif" } as const), letterSpacing: "-0.01em" }}
       >
         Connexion
