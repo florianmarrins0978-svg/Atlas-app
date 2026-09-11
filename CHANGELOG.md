@@ -8,6 +8,27 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Trois planches lui ont été redemandées alors qu'elles étaient codées
+
+*« La planche déconnecter est déjà faite, va vérifier ! La 2ᵉ aussi ! Et la
+3ᵉ aussi ! »* — et il avait raison sur les trois. « Se déconnecter » est au bas
+des Réglages depuis le 9 septembre, « Aujourd'hui » en doré et en tête depuis le
+9 aussi, et « Dernier devis » sur la fiche client depuis le 8, sur son choix E.
+
+**La cause n'est pas l'oubli, c'est la lecture.** `TODO.md` portait trois titres
+« ⏳ UNE PLANCHE À REGARDER » jamais barrés, dont un au-dessus d'un corps qui
+disait « CODÉ LE 9 SEPTEMBRE ». `CLAUDE.md` §1 dit depuis toujours que le code
+fait foi ; il n'a pas été appliqué — j'ai lu des titres.
+
+Les trois entrées sont corrigées avec la preuve (le fichier, l'endroit où il est
+monté, sa suite). `scripts/test-todo-sans-titre-menteur.ts` tient désormais la
+moitié mécanique : il a été vu ROUGE sur la version qui m'a trompé, et il barre
+la batterie. L'autre moitié est un `grep` de trente secondes, écrit dans
+`CLAUDE.md` §1.
+
+**Lui redemander un choix qu'il a déjà donné n'est pas une question de plus :
+c'est lui faire refaire un travail qu'il a fait.**
+
 ### Cinq rouges de la nuit : le calendrier gardait trois mois, les suites n'en visaient aucun
 
 Le glissement des mois monte trois mois à la fois — le précédent et le suivant
