@@ -51,11 +51,12 @@ document de retour : `docs/lot-arrosage-impeccable.md`.
 | les suites | `scripts/test-ecritures-a-la-suite.ts` (4, témoin compris) |
 | le détail | `ARCHITECTURE.md` §334 |
 
-**LE PIÈGE DE LA PREMIÈRE VERSION.** La règle vivait dans le hook : `useRef`
-hors d'un rendu lève « Cannot read properties of null », et rien ne pouvait
-l'éprouver sans monter un écran. Elle est descendue dans `lib` — et le hook
-garde la file dans un `useRef`, jamais un `useMemo` : React peut rejouer
-celui-ci, et une file recréée laisserait repartir deux écritures ensemble.
+**LE PIÈGE DE LA PREMIÈRE VERSION, deux fois.** La règle vivait dans le hook :
+`useRef` hors d'un rendu lève « Cannot read properties of null », et rien ne
+pouvait l'éprouver sans monter un écran. Descendue dans `lib`, elle se joue en
+millisecondes. Puis le hook a gardé la file dans un `useRef` posé **pendant le
+rendu** — ce que React interdit, et que le lint du dépôt a refusé. C'est
+`useState(() => …)` qu'il faut : joué une fois, jamais rejoué.
 
 ---
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import { fileDEcritures } from "@/lib/file-d-ecritures";
 
 /**
@@ -11,12 +11,18 @@ import { fileDEcritures } from "@/lib/file-d-ecritures";
  * c'est ainsi qu'une remise reposée disparaissait.
  *
  * **La règle est pure et vit dans `lib`** ; ce hook ne fait que la retenir d'un
- * rendu à l'autre. Un `useRef` plutôt qu'un `useMemo` : celui-ci peut être
- * rejoué par React, et une file recréée en cours de route laisserait repartir
- * deux écritures ensemble — exactement le défaut visé.
+ * rendu à l'autre.
+ *
+ * **`useState` avec sa fonction d'initialisation, et ni `useRef` ni `useMemo`.**
+ * Les trois « marchent » à l'essai, et deux sont des pièges :
+ *
+ * | | |
+ * |---|---|
+ * | `useRef` posé pendant le rendu | React l'interdit — *« Cannot access refs during render »*, et le lint du dépôt le refuse. Un rendu peut être joué deux fois puis jeté : la file changerait sous les écritures en vol |
+ * | `useMemo` | React a le droit de le rejouer quand il veut. Une file recréée en cours de route laisserait repartir deux écritures ensemble, c'est-à-dire exactement le défaut visé |
+ * | `useState(() => …)` | l'initialisation n'est jouée qu'une fois, et la valeur ne bouge plus |
  */
 export function useEcrituresALaSuite(): <T>(ecrire: () => Promise<T>) => Promise<T> {
-  const file = useRef<ReturnType<typeof fileDEcritures> | null>(null);
-  file.current ??= fileDEcritures();
-  return file.current;
+  const [aLaSuite] = useState(fileDEcritures);
+  return aLaSuite;
 }

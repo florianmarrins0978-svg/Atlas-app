@@ -28614,14 +28614,22 @@ regroupement, ni rejeu : une écriture refusée ne bloque pas les suivantes, et
 son refus revient intact à l'appelant, qui seul sait quoi en dire au patron.
 
 Les deux écrans de la remise l'emploient, par le hook
-`useEcrituresALaSuite` — un `useRef`, et non un `useMemo` : React peut rejouer
-celui-ci, et une file recréée en cours de route laisserait repartir deux
-écritures ensemble, c'est-à-dire exactement le défaut visé.
+`useEcrituresALaSuite`. **Il tient la file dans un `useState(() => …)`, et ni
+dans un `useRef` ni dans un `useMemo`** — les trois « marchent » à l'essai, et
+deux sont des pièges :
+
+| | |
+|---|---|
+| `useRef` posé pendant le rendu | React l'interdit — *« Cannot access refs during render »*, refusé par le lint du dépôt, et c'est ce que la première version faisait |
+| `useMemo` | React a le droit de le rejouer : une file recréée en cours de route laisse repartir deux écritures ensemble, soit le défaut visé |
+| `useState(() => …)` | l'initialisation n'est jouée qu'une fois, et la valeur ne bouge plus |
 
 ### Pourquoi la règle vit dans `lib` et non dans le hook
 
 **Sa première version portait la règle dans le hook, et ne pouvait pas être
-éprouvée** : `useRef` hors d'un rendu lève « Cannot read properties of null ».
+éprouvée** : `useRef` hors d'un rendu lève « Cannot read properties of null » —
+et, DANS un rendu, écrire cette même ref est ce que React interdit. Deux
+symptômes, une seule cause : la règle n'avait rien à faire dans un hook.
 Monter un écran pour mesurer une mise en file aurait mesuré React
 (`CLAUDE.md` §4 sexies : les règles pures descendent). Sortie dans `lib`, elle
 se joue en quelques millisecondes — et son **témoin** rejoue le défaut avec les
