@@ -8,6 +8,49 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### La case du prix portait un vrai zéro, et le curseur tombait devant le chiffre
+
+*« Quand je clique sur la case de la quantité, je veux que le petit trait qui
+clignote soit toujours à droite ; comme ça, si la quantité par défaut n'est pas
+bonne, on a juste à supprimer. Or des fois il se met à gauche. »* Et : *« pour le
+prix unitaire HT il faudrait que lorsque l'on clique il n'y ait rien de
+réellement écrit quand aucun prix n'est affiché [...] ils doivent être fictifs
+pour qu'on comprenne qu'on peut écrire dans la case, mais pas vraiment là. »*
+
+**Le second défaut se voyait sur sa capture, et il coûte de l'argent :** le champ
+portait un `0` RÉEL, venu du zéro que la base met par défaut. Il a tapé 450
+derrière, et la case a affiché **0450**. Ce coup-ci le nombre tombait juste ; un
+zéro de plus au mauvais endroit part chez le client.
+
+**Corrigé par la règle qui existait déjà**, pas par une seconde : là où le
+montant écrit « à chiffrer », le champ reste vide et c'est l'exemple en gris qui
+invite à écrire (`prixAEcrire`, à côté de `ligneAttendSonPrix`). **Un zéro voulu
+n'est pas touché** — une ligne offerte garde son zéro, sinon une gratuité décidée
+passerait pour un oubli.
+
+**Le « des fois » du curseur s'explique, et ce n'est pas un caprice du
+téléphone :** le champ est aligné à DROITE dans une case large. Le chiffre occupe
+quelques pixels au bout ; tout le reste est du vide, et c'est là que le doigt
+tombe. Le navigateur pose alors le curseur au plus près de l'appui, donc AVANT le
+chiffre — « 1 » dans 96 pixels, c'est presque à coup sûr. Le champ le remet au
+bout en deux temps, parce que le navigateur décide en second : à l'entrée, puis
+une fois à la sélection qui suit l'appui. Après quoi le curseur lui appartient.
+
+**UN TROISIÈME DÉFAUT A ÉTÉ TROUVÉ EN CHEMIN, et il était plus grave que les
+deux qu'il signalait.** En branchant le champ sur le drapeau « à chiffrer », le
+compilateur a montré que `appliquerRetouchesAction` ne le rendait PAS. Or l'écran
+se recale entièrement sur ce que cette action rend : après la moindre dictée,
+toutes les lignes perdaient leur drapeau, et « à chiffrer » devenait « 0,00 € »
+sous ses yeux — **une ligne non chiffrée présentée comme gratuite**, sur le
+document qui part chez son client. Le garde-fou de l'envoi tenait encore, lui :
+il relit la base, pas l'écran.
+
+**Éprouvé des deux côtés, et confronté à l'ancien comportement avant d'être
+cru** : quatre essais purs dont un TÉMOIN qui rejoue le « 0450 »
+(`scripts/test-case-du-prix.ts`), et deux mesures au navigateur sur exactement
+son cas — la case ouvre vide, et le curseur arrive derrière le chiffre même
+quand on appuie tout à gauche (`scripts/test-devis-refus-a-chiffrer-e2e.ts`).
+
 ### Le calendrier du planning se pousse du doigt
 
 *« Ce qui serait bien c'est de pouvoir déplacer les mois du planning en slidant
