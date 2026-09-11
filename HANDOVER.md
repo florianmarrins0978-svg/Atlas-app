@@ -8,6 +8,27 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — GOOGLE ET APPLE SE MONTRENT AVANT D'OUVRIR (11 septembre 2026)
+
+| | |
+|---|---|
+| sa décision | les deux marques se dessinent même sans clé — choix posé avec son coût, il l'a retenu |
+| la migration | **aucune** |
+| les pièces | `src/lib/fournisseurs-connexion.ts`, `src/server/cles-fournisseurs.ts` (neuf), `src/app/login/{page,actions,BoutonsFournisseurs}.tsx` |
+| les suites | `scripts/test-fournisseurs-connexion.ts` (19) |
+| le détail | `ARCHITECTURE.md` §324 |
+
+**CE QUI NE SE DÉFAIT PAS SANS L'AUTRE.** L'affichage n'est tenable QUE parce
+que `entrerAvecAction` refuse un fournisseur non branché **avant** Auth.js, avec
+une phrase qui nomme ce qui manque et ce qui marche. Retirer ce refus rendrait
+les boutons muets : `signIn("google")` sortirait vers la page d'Auth.js, et l'on
+quitterait Atlas sans comprendre. Les deux vont ensemble, et une suite le tient.
+
+**LA RÈGLE INVERSE EST MORTE, MAIS PAS PARTOUT.** *« Un bouton qui ne peut pas
+aboutir est pire qu'un bouton absent »* tient toujours pour **Face ID** : il n'y
+a personne à qui poser la question, donc aucune phrase utile à rendre.
+
+---
 ## Dernier lot — LA SORTIE RENVOYAIT SUR `localhost` (10 septembre 2026)
 
 | | |

@@ -15,8 +15,11 @@
 import assert from "node:assert/strict";
 import {
   emailProuve,
+  estBranche,
   estNomFournisseur,
+  fournisseursAAfficher,
   fournisseursDisponibles,
+  messageNonBranche,
   ouAllerSansCompte,
 } from "../src/lib/fournisseurs-connexion";
 
@@ -35,6 +38,58 @@ function test(nom: string, fn: () => void) {
 }
 
 console.log("=== Qui peut ouvrir la porte ===\n");
+
+// ─── 0 · CE QUE L'ÉCRAN DESSINE, ET CE QUI OUVRE VRAIMENT ──────────────────
+//
+// **Sa décision du 11 septembre 2026 :** les deux marques se voient, branchées
+// ou non. Ce qui l'a rendue tenable est le refus qui va avec — sans lui, appuyer
+// sortirait d'Atlas vers la page d'Auth.js. Ces cas défendent la PAIRE : si un
+// jour l'un des deux part sans l'autre, la porte redevient un piège.
+
+test("**LES DEUX MARQUES SE DESSINENT, MÊME SANS AUCUNE CLÉ** — sa décision", () => {
+  assert.deepEqual(
+    fournisseursAAfficher({}).map((f) => f.nom),
+    ["google", "apple"],
+    "l'écran a cessé de montrer ce qu'il a demandé à voir."
+  );
+});
+
+test("… et chacune DIT si elle est branchée — c'est ce qui évite le piège", () => {
+  const affiches = fournisseursAAfficher({ googleId: "abc.apps", googleSecret: "s3cr3t" });
+  assert.deepEqual(
+    affiches.map((f) => [f.nom, f.branche]),
+    [["google", true], ["apple", false]]
+  );
+});
+
+test("ce qui est DÉCLARÉ à Auth.js reste le branché, et lui seul", () => {
+  // Déclarer Google sans identifiant ferait lever la configuration au
+  // démarrage : plus personne n'entrerait, pas même par mot de passe.
+  assert.deepEqual(fournisseursDisponibles({}), []);
+  assert.deepEqual(
+    fournisseursDisponibles({ googleId: "abc.apps", googleSecret: "s3cr3t" }).map((f) => f.nom),
+    ["google"]
+  );
+});
+
+test("« branché » se décide en UN seul endroit — l'affichage en dérive", () => {
+  const cles = { appleId: "fr.atlas", appleSecret: "p8" };
+  const depuisLaffichage = fournisseursAAfficher(cles).filter((f) => f.branche).map((f) => f.nom);
+  const depuisLesDisponibles = fournisseursDisponibles(cles).map((f) => f.nom);
+  assert.deepEqual(depuisLaffichage, depuisLesDisponibles, "les deux réponses ont divergé.");
+});
+
+test("le refus NOMME la marque et dit par où entrer quand même", () => {
+  const phrase = messageNonBranche("google");
+  assert.match(phrase, /Google/, "on ne sait pas laquelle refuse.");
+  assert.match(phrase, /mot de passe/i, "le refus ne dit pas ce qui marche : on croit l'appli cassée.");
+});
+
+test("la moitié d'une paire de clés ne branche rien", () => {
+  assert.equal(estBranche("google", { googleId: "abc.apps" }), false);
+  assert.equal(estBranche("google", { googleSecret: "s3cr3t" }), false);
+  assert.equal(estBranche("apple", { appleId: " ", appleSecret: "p8" }), false);
+});
 
 // ─── 1 · Un bouton qui ne peut pas aboutir ne s'affiche pas ─────────────────
 

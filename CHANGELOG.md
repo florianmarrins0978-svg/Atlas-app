@@ -6,6 +6,42 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-11
+
+### Montrer Google et Apple avant de pouvoir les ouvrir — sa décision
+
+*« Je veux que lorsque l'utilisateur clique sur se déconnecter qu'il arrive
+direct sur cet écran »*, sa maquette remise en photo pour la troisième fois. La
+déconnexion arrivait déjà sur le bon écran : ce qui manquait, c'étaient les deux
+marques.
+
+Le choix lui a été posé avec son coût — les cacher jusqu'aux clés, les afficher
+quand même, ou les afficher grisées. **Il a retenu « les afficher quand même ».**
+
+**Ce que ça renverse, et ce qui le rend tenable.** Le dépôt tenait l'inverse la
+veille : *« un bouton qui ne peut pas aboutir est pire qu'un bouton absent »*.
+La raison — on appuie dans le vide, `signIn` sort vers la page d'Auth.js — a
+cessé d'être vraie : `entrerAvecAction` refuse un fournisseur non branché AVANT
+Auth.js et rend une phrase qui nomme ce qui manque et ce qui marche. La règle
+tient toujours pour Face ID, qui n'a personne à qui poser la question.
+
+**Deux questions séparées, et ce n'est pas une règle dupliquée** :
+`fournisseursAAfficher` (ce que l'écran dessine) et `fournisseursDisponibles`
+(ce qu'Auth.js déclare). Elles avaient l'air d'une seule parce qu'elles
+coïncidaient ; la seconde dérive de la première, et un seul endroit décide ce
+qu'est « branché ». Déclarer un fournisseur sans clé ferait lever la
+configuration au démarrage — plus personne n'entrerait, pas même par mot de
+passe.
+
+Les quatre clés se lisent désormais **en un seul endroit**
+(`src/server/cles-fournisseurs.ts`) : le même objet se recomposait à trois
+endroits, chacun retapant les quatre noms. Le détail est dans
+`ARCHITECTURE.md` §324.
+
+Regardé à l'écran, à la largeur de son téléphone : l'écran au repos, et le refus
+lu après un appui sur Google.
+
+---
 ## 2026-09-10
 
 ### La déconnexion renvoyait sur `localhost` — donc nulle part, depuis un téléphone

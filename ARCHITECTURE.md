@@ -27696,3 +27696,58 @@ dans `TODO.md`.
 | la planche | `appli/bloquer-sans-devis.html`, essayée puis retenue |
 | les règles | `scripts/test-poser-un-client-db.ts` (9 cas) |
 | **son geste** | `scripts/test-bloquer-sans-devis-e2e.ts` (6 cas, de bout en bout) |
+
+---
+
+## §324 — La porte montre Google et Apple avant de pouvoir les ouvrir
+
+**Sa décision du 11 septembre 2026**, après trois messages et sa maquette remise
+en photo : *« je veux que lorsque l'utilisateur clique sur se déconnecter qu'il
+arrive direct sur cet écran »* — celui qui porte les deux marques. Le choix lui
+a été posé en toutes lettres, avec ce qu'il coûte ; il a retenu **« les afficher
+quand même, dès maintenant »**.
+
+**CE QUE ÇA RENVERSE.** Le dépôt tenait la règle inverse, écrite la veille :
+*« un bouton qui ne peut pas aboutir est pire qu'un bouton absent »*. Elle
+n'était pas fausse — elle reposait sur un fait qui a cessé d'être vrai : on
+appuyait dans le vide, et `signIn("google")` sortait vers la page d'Auth.js.
+
+**CE QUI LA REMPLACE, ET POURQUOI C'EST TENABLE.** `entrerAvecAction` refuse un
+fournisseur non branché **avant** Auth.js et rend une phrase qui nomme ce qui
+manque *et* ce qui marche : « Google n'est pas encore branché. Entrez avec votre
+adresse et votre mot de passe. » On ne tombe donc plus dans le vide — on lit une
+réponse, sur le seul écran qu'on voit avant d'être entré.
+
+**LA RÈGLE TIENT TOUJOURS POUR FACE ID**, et ce n'est pas une exception de
+confort : il n'y a personne à qui poser la question. L'appareil sait le faire ou
+non, et un bouton qui échoue là n'a aucune phrase utile à rendre.
+
+### Deux questions qui ne se confondent plus
+
+| | |
+|---|---|
+| `fournisseursAAfficher` | ce que l'ÉCRAN dessine — les deux marques, toujours, chacune disant si elle est branchée |
+| `fournisseursDisponibles` | ce que `src/auth.ts` DÉCLARE à Auth.js — le branché, et lui seul |
+
+Elles avaient l'air d'une seule parce qu'elles **coïncidaient**, tant qu'on
+n'affichait que le branché. Les séparer n'est donc pas dupliquer une règle
+(`CLAUDE.md` §3) : c'est cesser de répondre à deux questions différentes avec la
+même phrase. La seconde **dérive** de la première — un seul endroit décide ce
+qu'est « branché » (`estBranche`), et une suite le vérifie.
+
+**Et déclarer à Auth.js un fournisseur sans clé n'est PAS une option** : la
+configuration lèverait au démarrage, et plus personne n'entrerait — pas même par
+mot de passe. C'est ce que la seconde liste protège.
+
+### Le refus vit au serveur, jamais dans l'écran
+
+C'est le serveur qui voit les clés, et l'adresse de l'action reste postable sans
+passer par le bouton. Un `if` dans l'écran serait à la fois contournable et
+condamné à diverger de ce que `auth.ts` déclare.
+
+### Ce que ça coûte, et qui est réel
+
+L'écran montre deux chemins dont aucun n'ouvre encore. C'est ce qu'il a choisi de
+voir, plutôt qu'un écran qui ne ressemble pas à ce qu'il a dessiné. **Le jour où
+les clés sont posées, rien ne change dans le code** : les mêmes boutons se
+mettent à ouvrir des sessions.

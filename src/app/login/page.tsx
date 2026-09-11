@@ -1,6 +1,6 @@
 import PorteDeNuit from "@/components/atlas/PorteDeNuit";
-import { fournisseursDisponibles } from "@/lib/fournisseurs-connexion";
-import { getEnv } from "@/server/env";
+import { fournisseursAAfficher } from "@/lib/fournisseurs-connexion";
+import { clesFournisseurs } from "@/server/cles-fournisseurs";
 import FormulaireConnexion from "./FormulaireConnexion";
 
 /**
@@ -12,21 +12,16 @@ import FormulaireConnexion from "./FormulaireConnexion";
  *
  *   · `PorteDeNuit` pose la charte sombre, partagée avec la création de compte ;
  *   · `FormulaireConnexion` dessine et envoie ;
- *   · `src/lib/fournisseurs-connexion.ts` décide qui a le droit d'apparaître.
+ *   · `src/lib/fournisseurs-connexion.ts` dit qui se dessine, et qui est branché.
  *
- * **Pourquoi la question des clés se pose ici et pas dans le formulaire.**
- * `getEnv()` n'existe qu'au serveur. Un composant client qui devinerait la
- * réponse afficherait un bouton menant à une page d'erreur d'Auth.js — et le
- * seul écran qu'on voit avant d'être connecté est le pire endroit pour ça.
+ * **Pourquoi la question des clés se pose ici et pas dans le formulaire.** Les
+ * clés ne se lisent qu'au serveur (`clesFournisseurs`). Les deux marques se
+ * dessinent désormais dans tous les cas — sa décision du 11 septembre 2026 —,
+ * mais l'écran doit savoir LESQUELLES sont branchées : une qui ne l'est pas
+ * refuse, en le disant, au lieu de sortir d'Atlas.
  */
 export default function LoginPage() {
-  const env = getEnv();
-  const fournisseurs = fournisseursDisponibles({
-    googleId: env.googleClientId,
-    googleSecret: env.googleClientSecret,
-    appleId: env.appleClientId,
-    appleSecret: env.appleClientSecret,
-  });
+  const fournisseurs = fournisseursAAfficher(clesFournisseurs());
 
   return (
     <PorteDeNuit className="atlas-bas-sans-barre flex min-h-[100dvh] flex-col px-[22px] pb-5">
