@@ -28336,3 +28336,13 @@ places exactes des deux cases — on relit ce qu'on a tapé là où on l'a tapé
 
 L'étiquette de lecture d'écran du « × » garde, elle, la date en toutes lettres :
 « 11/09 » dite à voix haute ne s'entend pas.
+
+**Et elle dit ce qu'elle est : « Acompte payé le 11/09/2026 ».** Un jour et un
+montant posés seuls ne racontent rien — c'est la seule ligne de la carte qui
+parle d'un geste passé, et elle se lisait comme une seconde date d'émission. Le
+mot est juste quoi qu'il arrive : un règlement qui solde fait sortir la facture
+de cet écran, donc ce qui reste visible est forcément une part.
+
+Sauf pour les règlements que la migration a SUPPOSÉS, qui gardent leurs mots à
+eux — « Supposé réglé le … ». Les dire « payés » ferait passer une supposition
+pour une observation.
