@@ -235,16 +235,46 @@ client de 956 px. Il vit sur le geste du calendrier, et nulle part ailleurs.
 
 ---
 
-## 🔴 SIX ROUGES ARRIVÉS DANS LA NUIT — À QUI ILS SONT, MESURÉ (11 septembre 2026)
+## ✅ LES SIX ROUGES DE LA NUIT — QUATRE CORRIGÉS, DEUX AU LOT DU PRIX (11 septembre 2026)
 
-Batterie complète sur `7cbbb26`, lancée à sa demande une fois `main` calme :
-**120 suites navigateur vertes sur 142**, et les suites base de données au
-**vert** — les trois rouges de la porte sont réglés.
+Batterie complète sur `7cbbb26` : **120 suites navigateur vertes sur 142**, base
+au vert. Six rouges étaient apparus depuis la veille ; aucun ne venait du
+planning.
 
-Six rouges sont apparus depuis la batterie de la veille. **Aucun ne vient du
-planning**, et l'attribution n'est pas supposée : elle est mesurée.
+### ~~Quatre venaient du calendrier à trois mois~~ — corrigés le 11 septembre
 
-### Le lot du prix — deux rouges, et la preuve
+`test-envoi-client-e2e` (2 cas), `test-facture-au-client-e2e`,
+`test-date-lointaine-e2e`, `test-reste-equipes-e2e`. Tous la même racine : le
+glissement des mois monte trois mois, les suites cherchaient une case dans toute
+la page et en visaient une hors du cadre. Portée commune `MOIS_A_L_ECRAN` et
+geste de retenue écrit une seule fois (`ARCHITECTURE.md` §324). **Mesuré : 8
+suites au vert, dont les cinq qui étaient rouges.**
+
+### ❗ UN VERDICT DE LA VEILLE ÉTAIT FAUX, et le voici corrigé
+
+`test-reste-equipes-e2e` avait été rangée ici avec les rouges du carrousel — au
+motif que les deux suites voisines tombaient sur « `<div class="flex w-[300%]">`
+intercepts pointer events ». **Elle, non** : son message disait « l'écran écrit
+"Plus d'équipe libre sur 2" », ce qui n'a rien à voir. L'attribution avait été
+faite sur la voisine plutôt que sur son propre message.
+
+Sa vraie cause, mesurée le lendemain, tient à **deux** choses, et l'une est de
+mon lot des créneaux : la suite cherchait un jour libre en extrapolant
+`date_planifiee + durée`, alors que ce qui est posé se lit désormais dans
+`creneaux_chantier` (§322) — un chantier dont une demi-journée a déménagé lui
+paraissait occuper des jours vides. Et le jour qu'elle visait était **déjà
+proposé** par l'écran : son clic le retirait.
+
+### ~~Le lot du glissement des mois~~ — deux rouges, corrigés avec les précédents
+
+`test-date-lointaine-e2e` et `test-reste-equipes-e2e` étaient cités ici. Le
+premier relevait bien du calendrier à trois mois ; le second non (ci-dessus).
+
+**Ce qui reste vrai et qu'il faut lui redire : son doigt n'est pas touché.**
+Mesuré trois fois sur son écran — après zéro, un et deux appuis sur « Mois
+suivant », toucher un jour ouvre bien sa journée.
+
+### 🔴 Deux rouges restants, au lot du prix
 
 `test-devis-papier-e2e` (5 400 ≠ 900) et `test-devis-complet-e2e` (*« le total
 de la ligne 3 × 250 € ne s'affiche pas »*).
@@ -252,30 +282,7 @@ de la ligne 3 × 250 € ne s'affiche pas »*).
 **Vérifié en défaisant le lot localement** (`git revert --no-commit 770b769`,
 « Vider la case du prix tant qu'aucun prix n'est posé ») : `test-devis-papier`
 repasse au **vert**, et rouge à nouveau une fois le lot remis. Le revert n'a
-jamais quitté ce poste.
-
-### Le lot du glissement des mois — deux rouges, et ce qui NE le touche PAS
-
-`test-date-lointaine-e2e` et `test-reste-equipes-e2e` tombent tous les deux sur
-la même ligne : *« `<div class="flex w-[300%] items-start">` intercepts pointer
-events »* — le carrousel des trois mois de `MoisCharge`.
-
-**Ce qui le RASSURE, et il faut le lui dire : son doigt n'est pas touché.**
-Mesuré, trois fois de suite, sur son écran : après zéro, un et deux appuis sur
-« Mois suivant », toucher un jour ouvre bien sa journée. Les deux suites, elles,
-cliquent pendant le glissement — c'est leur cadence qui casse, pas le geste.
-
-**Ce qu'il reste à faire, et c'est au lot qui l'a livré** : soit le carrousel
-cesse d'intercepter le doigt quand il ne glisse pas, soit les deux suites
-attendent la fin du glissement. La première est une correction, la seconde un
-rattrapage.
-
-### Deux rouges non encore attribués
-
-`test-facture-au-client-e2e` (une feuille du bas intercepte le doigt :
-`rounded-t-[26px]`) et `test-envoi-client-e2e` (deux cas, `button[aria-pressed]`
-introuvable). Ni l'un ni l'autre ne touche au planning ; à confronter au lot de
-la facture et à celui du prix, par la même méthode.
+jamais quitté ce poste. **À la session qui a livré ce lot.**
 
 ---
 

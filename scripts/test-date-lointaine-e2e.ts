@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS } from "../src/lib/disponibilites";
+import { MOIS_A_L_ECRAN } from "./_calendrier-e2e";
 import { jourLisible } from "../src/lib/jour";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
@@ -62,7 +63,7 @@ async function main() {
   // regardait `min` et `max` ; il navigue désormais comme le patron navigue.
   const aujourdHui = new Date();
   assert.equal(
-    await page.locator("[data-jour]").count() > 0,
+    await page.locator(`${MOIS_A_L_ECRAN} [data-jour]`).count() > 0,
     true,
     "Aucun calendrier : le patron ne peut proposer que la semaine qui vient."
   );
@@ -81,7 +82,7 @@ async function main() {
   // serait le délai supprimé plutôt que rendu franchissable.
   // ═══════════════════════════════════════════════════════════════════════
   const demain = versJourIso(ajouterJours(aujourdHui, 1));
-  const caseDemain = page.locator(`[data-jour="${demain}"]`);
+  const caseDemain = page.locator(`${MOIS_A_L_ECRAN} [data-jour="${demain}"]`);
   if ((await caseDemain.count()) > 0) {
     await caseDemain.first().click();
     const fiche = page.locator('[data-atlas="journee-regardee"]');
@@ -91,7 +92,7 @@ async function main() {
       undefined,
       { timeout: 30_000 }
     );
-    await page.locator(`[data-jour="${demain}"][data-etat="retenu"]`).waitFor({
+    await page.locator(`${MOIS_A_L_ECRAN} [data-jour="${demain}"][data-etat="retenu"]`).waitFor({
       state: "attached",
       timeout: 30_000,
     });
@@ -106,7 +107,7 @@ async function main() {
     );
     // On le retire : la suite éprouve une date lointaine, pas un cumul.
     await caseDemain.first().click();
-    await page.locator(`[data-jour="${demain}"][data-etat="retenu"]`).waitFor({
+    await page.locator(`${MOIS_A_L_ECRAN} [data-jour="${demain}"][data-etat="retenu"]`).waitFor({
       state: "detached",
       timeout: 30_000,
     });
@@ -121,7 +122,16 @@ async function main() {
   // On avance de mois en mois, comme lui. Vingt appuis couvrent largement les
   // six mois visés ; au-delà, c'est que la navigation est bornée trop tôt — et
   // le message le dit plutôt que de laisser un délai d'attente s'écouler.
-  for (let i = 0; i < 20 && (await page.locator(`[data-jour="${dansSixMois}"]`).count()) === 0; i++) {
+  // **On cherche le jour DANS LE MOIS QUI EST À L'ÉCRAN.** Sans cela, la boucle
+  // s'arrêtait dès que le jour visé apparaissait dans le mois d'APRÈS — monté
+  // hors du cadre depuis le glissement du 11 septembre 2026 —, et le clic qui
+  // suit partait dans le cadre : quarante-cinq secondes, puis un rouge qui
+  // accusait un calendrier sain (`_calendrier-e2e.ts`).
+  for (
+    let i = 0;
+    i < 20 && (await page.locator(`${MOIS_A_L_ECRAN} [data-jour="${dansSixMois}"]`).count()) === 0;
+    i++
+  ) {
     const suivant = page.getByRole("button", { name: /^Mois suivant/ });
     assert.ok(
       await suivant.isEnabled(),
@@ -131,7 +141,7 @@ async function main() {
     await suivant.click();
     await page.waitForTimeout(120);
   }
-  const cible = page.locator(`[data-jour="${dansSixMois}"]`);
+  const cible = page.locator(`${MOIS_A_L_ECRAN} [data-jour="${dansSixMois}"]`);
   assert.equal(await cible.count(), 1, `${dansSixMois} reste introuvable dans le calendrier.`);
   // **Un seul geste depuis le 25 août 2026** : la case s'ouvre ET s'engage.
   await cible.click();
@@ -142,7 +152,7 @@ async function main() {
     { timeout: 60_000 }
   );
   await page
-    .locator(`[data-jour="${dansSixMois}"][data-etat="retenu"]`)
+    .locator(`${MOIS_A_L_ECRAN} [data-jour="${dansSixMois}"][data-etat="retenu"]`)
     .waitFor({ state: "visible", timeout: 20_000 })
     .catch(() => {
       throw new Error(`${dansSixMois} n'est pas proposé alors qu'il est libre.`);

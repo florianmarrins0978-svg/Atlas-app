@@ -27792,3 +27792,41 @@ Accroché à `toucherLeJour`, rien d'autre ne le déclenche.
 | la planche | `appli/bloquer-sans-devis.html`, essayée puis retenue |
 | les règles | `scripts/test-poser-un-client-db.ts` (9 cas) |
 | **son geste** | `scripts/test-bloquer-sans-devis-e2e.ts` (7 cas, de bout en bout) |
+
+---
+
+## §324 — Le calendrier garde trois mois montés : une suite doit viser celui qui est à l'écran
+
+**Une nuit de quatre rouges, sur un produit sain (11 septembre 2026).** Le
+glissement des mois (§ du même jour, `MoisCharge`) monte désormais **trois**
+mois : le précédent et le suivant vivent hors du cadre, pour suivre le doigt.
+Ils sont inertes pour le patron — `aria-hidden`, `tabindex="-1"`,
+`pointer-events: none` — et **le composant a posé la parade dès le premier
+jour** : seul le mois du milieu porte son repère `data-atlas`.
+
+**Ce qui est inerte pour un doigt ne l'est pas pour un sélecteur.** Un
+`[data-jour]` cherché dans toute la page en ramène un sur trois hors du cadre :
+Playwright le voit — il a bien une boîte —, le clique, et c'est le cadre qui
+reçoit le doigt. Quarante-cinq secondes, puis « intercepts pointer events ».
+Quatre suites sont tombées ainsi, et une cinquième s'arrêtait trop tôt dans sa
+navigation, le jour visé étant déjà monté dans le mois d'après.
+
+| | |
+|---|---|
+| la portée | `MOIS_A_L_ECRAN` — `[data-atlas$="grille-mois"]`, dans `scripts/_calendrier-e2e.ts` |
+| le suffixe | les deux écrans préfixent leur repère (`grille-mois`, `envoi-grille-mois`) ; les voisins n'en portent aucun |
+| le geste | `retenirAuCalendrier`, remonté là depuis `test-envoi-client-e2e` : deux suites le recopiaient, une troisième cliquait le **rang** d'un bouton |
+
+**Et un jour DÉJÀ retenu ne se retouche pas.** L'écran d'envoi propose de
+lui-même les premiers jours libres : le jour qu'une suite a choisi dans la base
+peut être marqué avant qu'elle y touche, et le clic l'enlève. `test-reste-equipes-e2e`
+attendait ensuite un « retenu » qui ne revenait jamais. Le geste commun regarde
+l'état avant d'appuyer.
+
+**Enfin, ce qui est POSÉ se lit dans `creneaux_chantier`, plus dans un bloc
+déduit** (§322). `test-reste-equipes-e2e` cherchait un jour libre en
+extrapolant `date_planifiee + durée` : un chantier dont une demi-journée a
+déménagé occupait pour lui des jours vides, et laissait libre le jour où il
+travaille vraiment. La suite y posait son essai, l'écran comptait juste, et le
+rouge accusait l'écran — le pire des rouges. Le repli sur le bloc reste, pour
+les chantiers qu'aucun créneau ne décrit.

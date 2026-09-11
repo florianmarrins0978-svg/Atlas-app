@@ -32,7 +32,32 @@ comprises — la page ne s'hydrate pas. Sur un hôte ordinaire, l'hôte deviné 
 trouve être le bon, donc rien ne rougit. Le contrôle vise le mécanisme.
 
 ---
-## Dernier lot — POSER UN CLIENT SUR UN JOUR, SANS DEVIS (10 septembre 2026)
+## Dernier lot — LE CALENDRIER GARDE TROIS MOIS : LES SUITES VISENT CELUI DE L'ÉCRAN (11 septembre 2026)
+
+| | |
+|---|---|
+| ce que ça règle | 5 rouges de la nuit, tous sur un produit sain |
+| la portée | `MOIS_A_L_ECRAN` (`scripts/_calendrier-e2e.ts`) — `[data-atlas$="grille-mois"]` |
+| le geste commun | `retenirAuCalendrier`, remonté là : il **ne retouche pas** un jour déjà proposé |
+| le détail | `ARCHITECTURE.md` §324 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** Le glissement des mois monte le précédent et
+le suivant hors du cadre. Ils sont inertes pour le patron (`aria-hidden`,
+`tabindex="-1"`, `pointer-events: none`) — **pas pour un sélecteur** : une case
+cherchée dans toute la page peut être hors de l'écran, Playwright la clique quand
+même, et c'est le cadre qui reçoit le doigt. Toute recherche de `[data-jour]` au
+calendrier passe par `MOIS_A_L_ECRAN`.
+
+**Et le second piège :** un jour déjà proposé par l'écran se RETIRE au clic
+suivant. Une suite qui choisit son jour dans la base doit regarder son état avant
+d'appuyer — c'est ce que fait le geste commun.
+
+**Ce qui est POSÉ se lit dans `creneaux_chantier`**, plus dans `date_planifiee +
+durée` (§322). Une suite qui extrapole le bloc voit libre un jour où le chantier
+travaille vraiment, et son rouge accuse alors un écran qui compte juste.
+
+---
+## Lot précédent — POSER UN CLIENT SUR UN JOUR, SANS DEVIS (10 septembre 2026)
 
 | | |
 |---|---|

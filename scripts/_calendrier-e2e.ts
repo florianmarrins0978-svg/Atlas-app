@@ -4,6 +4,66 @@ import { DELAI_MINIMAL_JOURS } from "../src/lib/disponibilites";
 import { jourIso } from "../src/lib/jour";
 
 /**
+ * **LE MOIS QUI EST À L'ÉCRAN, ET LUI SEUL.**
+ *
+ * Depuis le 11 septembre 2026, le calendrier garde TROIS mois montés pour que
+ * le mois suive le doigt : le précédent et le suivant sont rendus hors du
+ * cadre, inertes au doigt comme au clavier (`MoisCharge`). Une suite qui
+ * cherche `[data-jour]` dans toute la page en attrape donc un sur trois **hors
+ * de l'écran** : Playwright le voit — il a bien une boîte —, le clique, et
+ * c'est le cadre qui reçoit le doigt.
+ *
+ * **Quatre suites sont tombées ainsi dans la nuit du 11 septembre 2026**, sur
+ * un produit sain : « intercepts pointer events », quarante-cinq secondes, sur
+ * une case d'août ou du mois d'après. Le composant avait prévu la parade — seul
+ * le mois du milieu porte le repère —, les suites ne s'en servaient pas.
+ *
+ * **Le suffixe plutôt que l'égalité** : les deux écrans qui montrent ce
+ * calendrier préfixent leur repère (`grille-mois` au planning,
+ * `envoi-grille-mois` à l'envoi). Les voisins, eux, n'en portent aucun.
+ */
+export const MOIS_A_L_ECRAN = '[data-atlas$="grille-mois"]';
+
+/**
+ * Retenir un jour au calendrier — un seul geste depuis le 25 août 2026.
+ *
+ * *« Je dois pouvoir sélectionner les jours juste en les touchant, pas besoin
+ * de cliquer sur proposer. »* Toucher la case OUVRE la fiche — il voit qui est
+ * déjà là — et engage la date du même doigt.
+ *
+ * **On n'appuie plus une seconde fois pour refermer** : ce second appui
+ * retirerait la date qu'on vient de poser.
+ *
+ * Elle vivait dans `test-envoi-client-e2e.ts` ; `test-facture-au-client-e2e.ts`
+ * en avait besoin aussi et cliquait à la main, sur un bouton qu'elle désignait
+ * par son rang. C'est ce rang qui l'a fait tomber le 11 septembre.
+ */
+export async function retenirAuCalendrier(page: Page, jour: string) {
+  const case_ = page.locator(`${MOIS_A_L_ECRAN} [data-jour="${jour}"]`);
+  // **UN JOUR DÉJÀ RETENU NE SE RETOUCHE PAS — il se retirerait.**
+  //
+  // L'écran d'envoi propose de lui-même les premiers jours libres : le jour
+  // qu'une suite a choisi dans la BASE peut donc être marqué avant qu'elle y
+  // touche. Le clic suivant l'enlève, et la suite attend ensuite un état
+  // « retenu » qui ne reviendra jamais — quarante secondes, puis un rouge qui
+  // accuse un écran ayant fait exactement ce qu'on lui demandait. Mesuré le
+  // 11 septembre 2026 sur `test-reste-equipes-e2e`, la case étant « retenu »
+  // avant le premier geste.
+  if ((await case_.first().getAttribute("data-etat")) === "retenu") return;
+  await case_.click();
+  await page
+    .locator("text=Vérification de votre planning…")
+    .waitFor({ state: "hidden", timeout: 20_000 })
+    .catch(() => undefined);
+  // La case se peint quand le serveur a dit oui : l'attendre vaut mieux qu'un
+  // délai, et rougir ici désigne le bon coupable — le jour a été refusé.
+  await page
+    .locator(`${MOIS_A_L_ECRAN} [data-jour="${jour}"][data-etat="retenu"]`)
+    .waitFor({ state: "visible", timeout: 20_000 });
+  await page.waitForTimeout(150);
+}
+
+/**
  * Trouver, au calendrier du patron, assez de jours qu'on puisse lui proposer —
  * **en tournant la page du mois quand celui-ci est trop entamé.**
  *
@@ -57,8 +117,11 @@ export async function joursAProposer(page: Page, combien: number): Promise<strin
     await suivant.click();
     // Le mois se repeint côté client : on attend que la grille ait changé,
     // plutôt qu'un délai fixe qui échouerait au hasard sous la batterie.
+    // **Détaché DE L'ÉCRAN, pas de la page** : le mois qu'on quitte reste monté
+    // en voisin depuis le glissement du 11 septembre 2026, donc l'attendre
+    // ailleurs qu'ici ne finissait jamais — dix secondes brûlées à chaque tour.
     await page
-      .locator(`[data-jour="${trouves[0] ?? "aucun"}"]`)
+      .locator(`${MOIS_A_L_ECRAN} [data-jour="${trouves[0] ?? "aucun"}"]`)
       .waitFor({ state: "detached", timeout: 10_000 })
       .catch(() => undefined);
   }
@@ -85,7 +148,7 @@ export async function joursAProposer(page: Page, combien: number): Promise<strin
  */
 async function joursDuMoisAffiche(page: Page): Promise<string[]> {
   const tous = await page
-    .locator('[data-jour][data-etat="regardable"]')
+    .locator(`${MOIS_A_L_ECRAN} [data-jour][data-etat="regardable"]`)
     .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean));
 
   const plancher = new Date();
