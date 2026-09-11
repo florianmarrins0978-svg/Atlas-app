@@ -11938,16 +11938,20 @@ en cours disparaîtrait au bout de trois mois sans que personne l'ait demandé.
 **Le diagnostic survit à sa photo**, comme une note vocale survit à son audio :
 il garde son nom de problème, sa date, sa fiche et sa traçabilité.
 
-### 135.10 Ce qui reste vide, et pourquoi c'est le bon état
+### 135.10 Ce qui reste à écrire, et pourquoi une base presque vide est le bon état
 
-**La base phytosanitaire ne contient aucune fiche réelle.** Sa règle : *« ne
-constitue pas toi-même une liste fictive de maladies pour remplir la base »* et
-*« ne remplis pas artificiellement la base avec de fausses données pour faire
-fonctionner la démonstration »*.
+**La base phytosanitaire ne porte que TROIS fiches réelles** — le fomès des
+résineux et les deux anthracnoses, écrites le 20 août 2026
+(`donnees/phyto/fiches/`), sur la cinquantaine visée. Sa règle : *« ne constitue
+pas toi-même une liste fictive de maladies pour remplir la base »* et *« ne
+remplis pas artificiellement la base avec de fausses données pour faire
+fonctionner la démonstration »*. **Ce qui manque est donc la BIBLIOTHÈQUE, pas le
+moteur** — `TODO.md` tient la liste de ce qui reste à écrire.
 
-Le module fonctionne parfaitement dans cet état : il répond « la base ne contient
-encore aucune fiche validée », ce qui est vrai — plutôt qu'un diagnostic qui ne
-l'est pas.
+Le module fonctionne parfaitement dans cet état : une base qui n'a reçu aucun
+import répond « la base ne contient encore aucune fiche validée », ce qui est
+vrai ; au-delà, il refuse de conclure sur tout ce que les fiches présentes ne
+couvrent pas — plutôt qu'un diagnostic qui n'est pas vrai.
 
 Ce qu'il faut pour l'alimenter est prêt et éprouvé : le schéma d'import avec ses
 six refus, les contrôles de sources champ par champ, le versionnement, la

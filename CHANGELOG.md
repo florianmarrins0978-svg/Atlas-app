@@ -8,6 +8,25 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Un prompt `/impeccable` pour la reconnaissance des maladies, et un §135.10 périmé
+
+Même demande que pour l'arrosage, sur le **diagnostic végétal**
+(`/paysage/diagnostic`) — l'outil qu'il appelle « reconnaissance des maladies ».
+`docs/prompt-impeccable-paysage-diagnostic.md` porte ce qu'une session neuve ne
+peut pas deviner : le principe qui commande tout (*le modèle observe, la base
+décide*, et ses trois barrières), les quatre issues dont les trois dernières
+comptent autant que la première, l'interdiction d'inventer des fiches pour faire
+tourner la démonstration, et ce qui reste ouvert — la licence INRAE, la clé de
+vision jamais éprouvée sur une vraie photo, les seuils non mesurés.
+
+**Trouvé en écrivant :** `ARCHITECTURE.md` §135.10 affirmait encore que la base
+phytosanitaire ne contient **aucune** fiche réelle. Il y en a trois depuis le
+20 août (`donnees/phyto/fiches/`), et `HANDOVER.md` le disait déjà. Corrigé — une
+documentation périmée est pire qu'absente, parce qu'on s'y fie encore. Deux
+points de `TODO.md` sont dans le même cas et le prompt les redresse : le
+fournisseur de vision EST déjà au registre des sous-traitants ; ce qui reste,
+c'est la durée de conservation.
+
 ### Un prompt `/impeccable` pour le plan d'arrosage — et le rangement était déjà fait
 
 Sa demande : un prompt pour « passer la page arrosage automatique dans la
