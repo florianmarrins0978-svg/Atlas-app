@@ -28004,15 +28004,77 @@ aurait recopié les champs, la civilité, l'adresse et surtout la reconnaissance
 du client pendant qu'il tape — l'argument qui avait déjà fait garder UN seul
 écran pour la création et la reprise.
 
-`facture` **retire** la note vocale, les photos et la dictée des coordonnées :
-ces trois pièces nourrissent le CHIFFRAGE, et il n'y a pas de devis ici. Sa
-planche le dit d'un mot — *« on ne dicte pas une facture qu'on tape »*.
-L'adresse porte `?facture=1` : sans JavaScript ou dans un nouvel onglet, le lien
-doit mener à la fiche qui FACTURE, sinon c'est un cul-de-sac silencieux.
+`facture` **retire l'anneau de la note vocale et les photos** : ces deux pièces
+nourrissent le CHIFFRAGE, et il n'y a pas de devis ici. L'adresse porte
+`?facture=1` : sans JavaScript ou dans un nouvel onglet, le lien doit mener à la
+fiche qui FACTURE, sinon c'est un cul-de-sac silencieux.
+
+**LE PETIT MICRO, LUI, RESTE — sa correction du 11 septembre 2026 :** *« il faut
+rajouter la petite note vocale comme sur la fiche client si on veut dicter les
+infos de la facture »*. Il était tombé la veille avec les deux autres, sous une
+formule de sa planche — *« on ne dicte pas une facture qu'on tape »* — dont le
+raisonnement ne valait que pour elles. Ce micro-ci ne nourrit aucun chiffrage :
+il remplit le nom, le numéro, l'e-mail et l'adresse, les mêmes cases sur le même
+écran, qu'on aille au devis ou à la facture. Il n'avait aucune raison de tomber
+avec l'anneau, et la leçon vaut au-delà : **trois pièces retirées ensemble
+demandent trois raisons, pas une.**
 
 ---
 
-## §327 — Une police embarquée doit annoncer la longueur de son programme
+## §327 — Compléter la fiche d'un client connu : une seule fonction, pas deux
+
+**Sa demande du 11 septembre 2026**, après avoir facturé Frédéric : *« il
+n'avait pas l'info de l'adresse e-mail, donc là je l'ai rajoutée, et ce qu'il
+faut faire c'est que maintenant il a l'info et il doit la rajouter dans la
+catégorie client, comme ça la prochaine fois que je taperai Frédéric l'adresse
+e-mail pourra être ajoutée automatiquement aussi. »*
+
+### Deux chemins, deux copies, et une divergence déjà installée
+
+La règle — *ce qu'il tape complète les cases VIDES, et n'écrase jamais rien* —
+est pure depuis le 17 août (`complementsPourFiche`). Mais deux chemins mènent à
+une fiche connue, et chacun avait écrit sa propre moitié :
+
+| Le chemin | Où | Ce qu'il apprenait |
+|---|---|---|
+| le nom seul, rapproché | `trouverOuCreerClient` | numéro, e-mail, adresse, **civilité, canal** |
+| l'identifiant, tenu d'avance | `creerChantierAction` | numéro, e-mail, adresse |
+
+Le second est **celui de sa demande** : Atlas reconnaît Frédéric pendant qu'il
+tape, l'écran tient son identifiant et le passe tel quel (`reconnu?.id`). Sa
+capture porte « Mr » choisi et « SMS » souligné : ni l'un ni l'autre n'entrait
+dans sa fiche, et il les rechoisissait à chaque passage sans jamais savoir
+pourquoi.
+
+Une troisième divergence dormait dans la même copie : `data.adresseClient ??
+data.adresseChantier`. Le champ « adresse du client » est replié par défaut,
+donc vide — et `"" ?? x` vaut `""`. **L'adresse du chantier n'était jamais
+apprise sur ce chemin-là**, alors que l'écran promet le contraire sous le champ,
+et que l'autre chemin, lui, tenait la promesse avec un `||`.
+
+### Ce qui a été fait
+
+`completerLaFiche(ctx, existante, saisie)` vit dans
+`src/server/repositories/clients.ts` et porte la règle **une fois**. Les deux
+chemins l'appellent ; la copie a été supprimée de l'action, pas recouverte
+(`CLAUDE.md` §4 quater — *un défaut réparé à sa racine remplace du code*).
+
+**Ce que cela n'ouvre pas :** rien n'est jamais écrasé. Pour corriger une fiche,
+il y a l'écran des coordonnées, qui, lui, écrit ce qu'il a saisi — c'est l'écran
+fait pour ça, et le seul.
+
+### La leçon, qui n'est pas celle des trois champs
+
+Le §3 dit « jamais de règle dupliquée entre l'affichage et la vérification ». Ici
+la duplication était entre **deux écritures**, et elle a tenu trois semaines sans
+qu'aucune suite ne rougisse : les deux copies étaient justes le jour où elles ont
+été écrites. `scripts/test-rapprochement-client-db.ts` éprouve désormais les deux
+chemins côte à côte, et `test-facture-sans-devis-e2e.ts` le fait par SA porte —
+taper le nom, voir la fiche reprise, ajouter l'e-mail, faire la facture.
+
+---
+
+## §328 — Une police embarquée doit annoncer la longueur de son programme
 
 **Sa capture du 11 septembre 2026, la troisième d'affilée sur le même
 écran :** *« lorsque je télécharge la facture je ne peux toujours pas la

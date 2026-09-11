@@ -66,6 +66,69 @@ Ce qui reste vrai, et qui se dit s'il revient dessus : le correctif ne vaut que
 pour ce qui se compose APRÈS lui. Un document ancien qu'il veut lisible se
 refait en émettant la pièce à neuf, pas en retouchant l'archive.
 
+## SEIZE SUITES NAVIGATEUR SONT ROUGES SUR `main` — mesuré le 11 septembre 2026
+
+**Ce n'est pas une régression d'un lot : c'est l'état de `main`**, vérifié en
+rejouant les mêmes suites sur la version d'avant. Écrit ici pour que la
+prochaine session ne repaie pas les quarante minutes qu'il a fallu pour
+l'apprendre — et surtout, pour qu'elle ne cherche pas la cause dans son
+propre travail.
+
+| Verdict de la batterie | |
+|---|---|
+| types, lint, mémoire | ✅ |
+| suites base (`npm test`) | ✅ |
+| **suites navigateur** | **124/143** |
+| connexion derrière un proxy | ✅ |
+
+**Les seize, et ce qu'elles disent :**
+
+```
+adresse-suggestions · anneau-dictee · anneau-vers-devis
+carte-reponse-mene-au-geste · catalogue-mes-mots
+devis-client · devis-complet · devis-papier · fiche-entretien
+ia-01 · message-au-client · planning-vers-facture
+recherche-client · reprise-chantier · reprise-morceau · suivi-devis
+```
+
+**Deux sont des contrôles PÉRIMÉS, et se corrigent sans rien toucher au
+produit** (`CLAUDE.md` §5 bis — un contrôle ne doit pas réclamer ce qu'il a fait
+retirer) :
+
+- `adresse-suggestions` attend `/chantiers/<id>$`, la fiche du chantier
+  **retirée le 4 septembre** (`ARCHITECTURE.md` §254). `creerPuisFiche` laisse
+  désormais sur le devis : l'attente ne peut plus aboutir, jamais ;
+- `anneau-dictee` exige l'indice « **Poussez** » après une dictée. Le mot
+  n'existe plus dans `src/` : sur la fiche client, l'anneau ne devient jamais le
+  lecteur (`storageKey={null}`), et l'invite se tait dès qu'une note existe —
+  **sa règle du 1ᵉʳ septembre**.
+
+**Trois autres ne sont rouges QUE dans la batterie entière**, et vertes seules :
+`devis-fige-porte` et `madame-lucie` (délais dépassés sur un conteneur lent),
+`onglets-termines` (« `'2' !== '1'` » : le compte des retours non lus est pollué
+par les suites qui ont tourné avant, dans la même base).
+
+**Ce qu'il reste à trancher :** les onze autres. Chacune se rejoue seule en une
+commande — `npm run test:e2e -- --seulement <nom>` — et il faut savoir, pour
+chacune, si c'est le produit ou le contrôle qui a vieilli.
+
+---
+
+## ⚠️ CINQ NUMÉROS D'`ARCHITECTURE.md` SONT PRIS DEUX FOIS (constaté le 11 sept. 2026)
+
+Sur `main` : **§134, §135, §136, §164 et §165** désignent chacun DEUX
+paragraphes sans rapport — le §135 est à la fois « un écran atteint depuis deux
+endroits » (l. 11264) et « le diagnostic végétal » (l. 11744). C'est la
+collision que `CLAUDE.md` §6 B décrit, restée en place.
+
+**Conséquence tout de suite :** un renvoi « §135 » mène à un texte plausible et
+faux. Citer le TITRE avec le numéro, tant que ce n'est pas réglé.
+
+**Ce qui n'a PAS été fait, et pourquoi :** renuméroter détourne les renvois des
+sessions voisines, qui portent les mêmes numéros (payé trois fois le 26 août).
+Ça se fait d'un coup, par quelqu'un qui relit ensuite CHAQUE renvoi touché — pas
+en passant, au milieu d'un autre lot.
+
 ---
 
 ## ~~LA PLANCHE DE LA PORTE N'A PAS SUIVI L'AÉRATION~~ — réglé autrement, 11 septembre 2026

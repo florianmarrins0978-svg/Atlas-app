@@ -157,22 +157,74 @@ export async function trouverOuCreerClient(
   }
 
   const retrouve = existants.find((c) => c.id === verdict.id)!;
-  // **La civilité et le canal complètent aussi, sous la même règle : que du
-  // vide.** Ils ne passent pas par `complementsPourFiche` parce que ce sont des
-  // énumérations et non du texte libre — les y mêler aurait demandé un type
-  // flou pour un gain nul.
-  const aEcrire: Parameters<typeof mettreAJourClient>[2] = complementsPourFiche(retrouve, data);
-  if (data.civilite && !retrouve.civilite) aEcrire.civilite = data.civilite;
-  if (data.canalCommunication && !retrouve.canalCommunication) {
-    aEcrire.canalCommunication = data.canalCommunication;
+  return { client: await completerLaFiche(ctx, retrouve, data), reutilise: true };
+}
+
+/** Ce qu'une fiche déjà connue doit porter pour qu'on sache ce qui lui manque. */
+export type FicheDejaConnue = {
+  id: string;
+  nom: string;
+  civilite: string | null;
+  telephone: string | null;
+  email: string | null;
+  adresse: string | null;
+  canalCommunication: string | null;
+  creeLe: Date | string;
+};
+
+/**
+ * CE QU'IL VIENT DE TAPER ENTRE DANS LA FICHE — les cases VIDES, et elles
+ * seules.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa demande du 11 septembre 2026, sur la fiche qui facture :** *« il n'avait
+ * pas l'info de l'adresse e-mail, donc là je l'ai rajoutée, et ce qu'il faut
+ * faire c'est que maintenant il a l'info et il doit la rajouter dans la
+ * catégorie client, comme ça la prochaine fois que je taperai Frédéric
+ * l'adresse e-mail pourra être ajoutée automatiquement aussi. »*
+ *
+ * **POURQUOI CETTE FONCTION EXISTE, ALORS QUE LA RÈGLE ÉTAIT DÉJÀ ÉCRITE.**
+ * Elle l'était deux fois : ici, et recopiée dans `creerChantierAction` pour le
+ * client qu'on tient déjà par son identifiant — celui qu'Atlas vient de
+ * reconnaître à l'écran, donc le chemin même de sa demande. Les deux copies
+ * avaient déjà divergé : la seconde apprenait le numéro, l'e-mail et l'adresse,
+ * mais **jamais la civilité ni le canal d'envoi**. Il choisit « Mr » et « SMS »
+ * sur cet écran-là ; sa fiche ne les retenait pas, et il les rechoisissait à
+ * chaque fois sans jamais savoir pourquoi. C'est exactement ce que `CLAUDE.md`
+ * §3 refuse : deux implémentations d'une seule règle finissent par diverger.
+ *
+ * **Rien n'est jamais écrasé** (`complementsPourFiche`) : ce qu'il tape à la
+ * volée complète le vide, il n'efface pas le numéro qu'il avait pris le temps
+ * de noter. Pour corriger une fiche, il y a l'écran des coordonnées.
+ *
+ * La civilité et le canal ne passent pas par `complementsPourFiche` parce que
+ * ce sont des énumérations et non du texte libre — les y mêler aurait demandé
+ * un type flou pour un gain nul.
+ */
+export async function completerLaFiche(
+  ctx: Ctx,
+  existante: FicheDejaConnue,
+  saisie: {
+    civilite?: Civilite;
+    telephone?: string;
+    email?: string;
+    adresse?: string;
+    canalCommunication?: CanalClient;
+  }
+): Promise<typeof clients.$inferSelect> {
+  const aEcrire: Parameters<typeof mettreAJourClient>[2] = complementsPourFiche(
+    { ...existante, nom: existante.nom },
+    { ...saisie, nom: existante.nom }
+  );
+  if (saisie.civilite && !existante.civilite) aEcrire.civilite = saisie.civilite;
+  if (saisie.canalCommunication && !existante.canalCommunication) {
+    aEcrire.canalCommunication = saisie.canalCommunication;
   }
 
-  const client =
-    Object.keys(aEcrire).length > 0
-      ? ((await mettreAJourClient(ctx, verdict.id, aEcrire)) ?? (await getClient(ctx, verdict.id))!)
-      : (await getClient(ctx, verdict.id))!;
-
-  return { client, reutilise: true };
+  // Rien à compléter : on ne touche pas `updated_at` pour rien — sa fiche
+  // porterait une date de modification qu'aucune modification n'explique.
+  if (Object.keys(aEcrire).length === 0) return (await getClient(ctx, existante.id))!;
+  return (await mettreAJourClient(ctx, existante.id, aEcrire)) ?? (await getClient(ctx, existante.id))!;
 }
 
 export async function creerClient(
