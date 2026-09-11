@@ -8,6 +8,29 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LE « 1 » DES RETOURS RESTAIT ALLUMÉ APRÈS LECTURE (11 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« je viens d'aller regarder le retour d'inter mais le petit 1 est resté visible »* |
+| la migration | **aucune** |
+| les pièces | `src/app/termines/retours/actions.ts` — `revalidatePath("/termines")` et `("/termines/retours")` |
+| les suites | `scripts/test-onglets-termines-e2e.ts`, un cas de plus qui ne recharge JAMAIS |
+| le détail | `ARCHITECTURE.md` §327 |
+
+**CE QU'IL NE FAUT PAS CHERCHER AILLEURS.** Le compte était juste en base, et la
+pastille ne compte que les non-lus depuis le 9 septembre. Ce qui mentait, c'est
+la page gardée par le navigateur : la flèche d'en-tête **recule**
+(`FlecheRetour`, `router.back()`), et un retour arrière rejoue la page d'avant
+la lecture. Une écriture qui ne périme pas les écrans qu'elle change laisse
+l'ancienne image sous son doigt.
+
+**ET LES DEUX SUITES QUI COUVRAIENT LA PASTILLE ÉTAIENT VERTES**, parce qu'elles
+rechargent (`page.goto`) — ce qui contourne précisément le mécanisme en cause.
+Le cas ajouté parcourt son chemin à lui, sans un seul rechargement, et il a été
+mis au rouge contre l'ancien code avant d'être cru.
+
+---
 ## Dernier lot — GOOGLE ET APPLE SE MONTRENT AVANT D'OUVRIR (11 septembre 2026)
 
 | | |

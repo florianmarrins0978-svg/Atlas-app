@@ -8,6 +8,33 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Le « 1 » des retours d'intervention restait allumé après lecture
+
+*« Je viens d'aller regarder le retour d'inter mais le petit 1 est resté
+visible ; il doit seulement annoncer les retours pas lus. »*
+
+**Le compte était juste, c'est la page qui était vieille.** La pastille ne
+compte que les non-lus depuis le 9 septembre, et la base enregistrait bien la
+lecture. Mais la flèche de `/termines/retours` **recule** (`FlecheRetour`,
+`router.back()`), et un retour arrière rejoue la page que le navigateur avait
+mise de côté — celle d'avant la lecture. Il regardait une image d'il y a trente
+secondes.
+
+**Corrigé à la racine :** l'action qui enregistre la lecture périme désormais
+les deux écrans qu'elle change (`/termines` et `/termines/retours`), comme le
+fait déjà depuis le premier jour l'action qui POSE un retour. C'est la lecture
+qui avait été oubliée — une écriture muette, pas un écran fautif.
+
+**Pourquoi aucun contrôle ne le voyait, et c'est le vrai enseignement.** Les
+deux suites qui couvrent cette pastille rechargent la page (`page.goto`) : elles
+prouvaient la base, jamais son geste. Un contrôle qui parcourt son chemin —
+l'onglet, la carte, la flèche, sans un seul rechargement — a été ajouté ; joué
+contre l'ancien code, il rougit en disant « le 1 est resté ». C'est `CLAUDE.md`
+§5 quater, payé une seconde fois.
+
+**La pastille dorée à côté du non-lu, elle, existait déjà** et n'a pas bougé :
+9 px d'or devant la date, sur la liste des retours (capture à l'appui).
+
 ### Aérer la porte — et le premier essai lisait sa demande à l'envers
 
 *« Je les trouve trop collés en haut, aère la page et prends plus d'espace. »*

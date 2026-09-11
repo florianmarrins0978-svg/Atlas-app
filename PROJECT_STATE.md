@@ -1,7 +1,18 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-11 · branche `claude/employee-absence-mockup-ayfv45`
+**Dernière mise à jour :** 2026-09-11 · branche `claude/unread-returns-golden-badge-apti5h`
 · dernière migration `drizzle/0085_creneaux_chantier.sql`
+
+---
+
+## FAIT : LE « 1 » DES RETOURS S'ÉTEINT QUAND IL LIT — 11 septembre 2026
+
+La pastille comptait bien les non-lus ; c'est la page rejouée par le retour
+arrière qui montrait l'image d'avant la lecture. L'action qui enregistre la
+lecture périme désormais `/termines` et `/termines/retours`, comme le fait déjà
+celle qui pose un retour. Un contrôle parcourt son chemin sans recharger —
+onglet, carte, flèche — et il a été vu rouge contre l'ancien code
+(`ARCHITECTURE.md` §327).
 
 ---
 

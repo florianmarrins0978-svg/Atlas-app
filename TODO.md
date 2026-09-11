@@ -785,6 +785,29 @@ délibérément (`SANS_CLES_IA`) — `test-anneau-dictee`, `test-anneau-vers-dev
 `test-devis-doublon`, `test-carte-reponse-mene-au-geste`. Les autres n'ont pas
 été instruits un par un.
 
+### Remesuré le 11 septembre 2026 — 353/353 base, 126/143 navigateur
+
+**Deux passages du même jour, l'un sur le code du lot « pastille des retours »,
+l'autre sur le code NON MODIFIÉ**, pour savoir ce qui était à ce lot : les
+listes de rouges sont identiques à une suite près, et le lot en REND une
+(`test-onglets-termines-e2e`). Les suites base sont toutes vertes.
+
+**Les dix-sept rouges navigateur** : `test-adresse-suggestions`,
+`test-anneau-dictee`, `test-anneau-vers-devis`, `test-carte-reponse-mene-au-geste`,
+`test-catalogue-mes-mots`, `test-devis-client`, `test-devis-complet`,
+`test-devis-papier`, `test-fiche-entretien`, `test-ia-01`, `test-madame-lucie`,
+`test-message-au-client`, `test-planning-vers-facture`, `test-recherche-client`,
+`test-reprise-chantier`, `test-reprise-morceau`, `test-suivi-devis`.
+
+**ET ILS S'ENTRAÎNENT LES UNS LES AUTRES — trouvé ce jour-là.** Une suite qui
+tombe avant sa ligne de ménage laisse ses données derrière elle, et la suivante
+rougit sur un produit sain : `test-onglets-termines` lisait 2 retours au lieu
+d'un, `test-ligne-planning` mesurait une fiche à 153 px au lieu de 100 — les
+deux vertes jouées seules. **Une suite qui lit un compte d'entreprise doit
+isoler sa mesure**, comme le fait désormais `test-onglets-termines` : ce qui
+traîne est marqué lu le temps du contrôle, et les lignes posées repartent avec
+elle. C'est la première chose à faire en instruisant les dix-sept.
+
 **Ce qui reste à faire ici**, et personne ne l'a pris : **les instruire, et
 soit les réparer, soit les nommer**. Huit rouges permanents deviennent un bruit
 dans lequel un vrai défaut se cache — c'est déjà écrit plus bas dans ce fichier,
