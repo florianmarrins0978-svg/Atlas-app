@@ -8,7 +8,87 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — LES BOUTONS GOOGLE ET APPLE NE MANQUAIENT PAS, ILS SE TAISAIENT (10 septembre 2026)
+## Dernier lot — LA SORTIE RENVOYAIT SUR `localhost` (10 septembre 2026)
+
+| | |
+|---|---|
+| ce qui a changé | `deconnexionAction` ne confie plus la redirection à Auth.js : `signOut({ redirect: false })`, puis notre `redirect("/login")` |
+| la migration | **aucune** |
+| les pièces | `src/app/login/actions.ts` |
+| les suites | `scripts/test-sortie-sans-hote.ts` (3), mise au rouge contre les trois défauts |
+| le détail | `CHANGELOG.md` du 10 septembre |
+
+**LE PIÈGE À NE PAS « RÉPARER ».** `alignerHoteSurOrigine` (`src/middleware.ts`)
+réécrit `x-forwarded-host` sur l'`Origin` du navigateur — c'est ce qui rend les
+actions serveur possibles derrière le mandataire d'un espace de travail. Auth.js
+lisait cet en-tête et en faisait une adresse absolue : `http://localhost:3000/login`,
+morte sur un téléphone. **Défaire l'alignement rouvrirait « Invalid Server
+Actions request. »** et personne ne pourrait plus entrer du tout. La réponse est
+de ne rien laisser deviner : un chemin RELATIF ne porte aucun hôte.
+
+**Et ce qui n'a pas pu être éprouvé ici :** la reproduction au navigateur.
+`verifier-connexion.mjs` pose son hôte étranger sur chaque requête, ressources
+comprises — la page ne s'hydrate pas. Sur un hôte ordinaire, l'hôte deviné se
+trouve être le bon, donc rien ne rougit. Le contrôle vise le mécanisme.
+
+---
+## Dernier lot — LE CALENDRIER GARDE TROIS MOIS : LES SUITES VISENT CELUI DE L'ÉCRAN (11 septembre 2026)
+
+| | |
+|---|---|
+| ce que ça règle | 5 rouges de la nuit, tous sur un produit sain |
+| la portée | `MOIS_A_L_ECRAN` (`scripts/_calendrier-e2e.ts`) — `[data-atlas$="grille-mois"]` |
+| le geste commun | `retenirAuCalendrier`, remonté là : il **ne retouche pas** un jour déjà proposé |
+| le détail | `ARCHITECTURE.md` §324 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** Le glissement des mois monte le précédent et
+le suivant hors du cadre. Ils sont inertes pour le patron (`aria-hidden`,
+`tabindex="-1"`, `pointer-events: none`) — **pas pour un sélecteur** : une case
+cherchée dans toute la page peut être hors de l'écran, Playwright la clique quand
+même, et c'est le cadre qui reçoit le doigt. Toute recherche de `[data-jour]` au
+calendrier passe par `MOIS_A_L_ECRAN`.
+
+**Et le second piège :** un jour déjà proposé par l'écran se RETIRE au clic
+suivant. Une suite qui choisit son jour dans la base doit regarder son état avant
+d'appuyer — c'est ce que fait le geste commun.
+
+**Ce qui est POSÉ se lit dans `creneaux_chantier`**, plus dans `date_planifiee +
+durée` (§322). Une suite qui extrapole le bloc voit libre un jour où le chantier
+travaille vraiment, et son rouge accuse alors un écran qui compte juste.
+
+---
+## Lot précédent — POSER UN CLIENT SUR UN JOUR, SANS DEVIS (10 septembre 2026)
+
+| | |
+|---|---|
+| sa planche | `appli/bloquer-sans-devis.html`, essayée puis retenue |
+| le geste | « Ajouter » propose deux voies : un chantier en attente, ou **un client** écrit au clavier. Inconnu, **sa fiche se crée**. Puis matin, après-midi ou la journée |
+| la migration | **aucune** — `creerChantier` accepte seulement `dureeDemiJournees` |
+| les pièces | `chercherDesClientsAction`, `poserUnClientAction`, `AjoutDunClient` |
+| les suites | `test-poser-un-client-db.ts` (9), `test-bloquer-sans-devis-e2e.ts` (5, **son geste**) |
+| le détail | `ARCHITECTURE.md` §323 |
+
+**LES TROIS PIÈGES À NE PAS REFABRIQUER.**
+
+1. **« Journée » n'existe QUE sur cette voie.** Ailleurs, choisir un moment
+   réécrivait la durée vendue au devis (le défaut du 9 septembre). Ici le
+   chantier naît du geste : le choix EST sa durée. `creerChantier` accepte
+   `dureeDemiJournees` pour cela, et pour rien d'autre.
+2. **La recherche de clients reste au SERVEUR.** Descendre le carnet dans le
+   navigateur à chaque ouverture du planning, pour un geste qui sert deux fois
+   par mois, c'est ce que cette action évite — et elle porte la garde
+   d'écriture bien qu'elle lise, parce que ce chemin n'existe que pour poser.
+3. **Un `.then()` seul n'attrape pas un refus.** Une action serveur postée
+   depuis une page qui a survécu à son serveur REJETTE : sans `.catch()`, le
+   geste ne fait rien et ne dit rien. Trois gestes de cet écran l'ont payé le
+   11 septembre 2026, et le pire tenait la fiche d'un client inconnu fermée
+   pour toujours.
+4. **Le tiroir du bas publie sa hauteur** (`--atlas-tiroir`), et
+   `.atlas-contenu` la réserve. Y écrire un nombre en dur, c'est refaire le
+   défaut que la barre a déjà payé.
+
+---
+## Le même jour — LES BOUTONS GOOGLE ET APPLE NE MANQUAIENT PAS, ILS SE TAISAIENT (10 septembre 2026)
 
 | | |
 |---|---|
@@ -31,7 +111,8 @@ un écran qui a l'air en retard sur sa maquette. Toute clé neuve s'ajoute donc 
 `completer-env-local.sh`, pas seulement à `src/server/env.ts`.
 
 ---
-## Dernier lot — UNE DEMI-JOURNÉE SE LIBÈRE ET SE REPOSE (10 septembre 2026)
+## Lot précédent — UNE DEMI-JOURNÉE SE LIBÈRE ET SE REPOSE (10 septembre 2026)
+
 
 | | |
 |---|---|

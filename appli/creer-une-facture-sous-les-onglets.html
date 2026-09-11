@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Créer une facture, sous les onglets — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  « CRÉER UNE FACTURE » SOUS LES ONGLETS, COLLÉ À DROITE — 11 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Sa demande, mot pour mot : *« dans ce cas-là, sous retour d'intervention,
+  collé à droite, tu mets créer une facture en doré, comme tu as fait le bouton
+  vide contour doré. Fais une maquette. »*
+
+  ─── CE QUE ÇA RÈGLE, ET C'EST BEAUCOUP ────────────────────────────────────
+
+  Une seconde rangée, et le problème de largeur disparaît entièrement. Plus rien
+  à raccourcir : « Retours d'intervention » garde le nom entier qu'il avait
+  demandé le 9 septembre, et « Créer une facture » garde le sien. Les cent
+  pixels qui manquaient sur une ligne, on ne les cherche plus — on prend une
+  ligne de plus.
+
+  C'est meilleur que tout ce que j'avais dessiné, et je n'y avais pas pensé :
+  je cherchais à faire tenir quatre pastilles sur une ligne parce que la
+  question était posée ainsi. Elle ne l'était pas.
+
+  ─── POURQUOI À DROITE, ET POURQUOI EN OR ──────────────────────────────────
+
+  Les trois onglets FILTRENT la liste en dessous. Ce bouton CRÉE. Aligné à
+  gauche sous eux, il se lirait comme un quatrième filtre passé à la ligne — et
+  il chercherait pourquoi la liste ne change pas. Collé à droite et en or, il
+  se détache de la rangée qu'il ne rejoint pas.
+
+  L'or est déjà, partout dans cette application, ce qui attend un geste de lui.
+  Et le contour vide plutôt qu'un aplat : l'aplat vert dit « c'est ce que vous
+  regardez » (l'onglet actif), ce qui n'est pas ce qu'on veut dire ici.
+
+  ─── CE QUE ÇA COÛTE, ET C'EST LA SEULE RÉSERVE ────────────────────────────
+
+  Une rangée de plus pousse le mois et la liste vers le bas. La planche le
+  MESURE et l'affiche : c'est le seul prix, et il se voit.
+
+  Mesures de l'application, à la virgule (`ListeTermines.tsx`) : hauteur 44 px,
+  corps 12,5 px, rembourrage 8 px, écart 4 px, marges 26 px, et la même police.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#6f8a5f; --surPlein:#fff; --papier:#ece9e1; --vert-dit:#3f6b3f;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#B98B47; --accent:#e9e8de;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#6f8a5f; --surPlein:#101210; --papier:#232722; --vert-dit:#9ec08f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+
+.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
+  padding:12px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+body.nuit .sceau{color:var(--scene)}
+
+.reglages{max-width:740px;margin:16px auto 0;padding:0 20px}
+.rangee-choix{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-bottom:8px}
+.rangee-choix button{font:inherit;font-size:13px;padding:11px 15px;min-height:44px;border:0;
+  box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage);color:var(--encre-douce);
+  border-radius:999px;cursor:pointer}
+.rangee-choix button[aria-pressed=true]{background:var(--plein);color:var(--surPlein);
+  box-shadow:none;font-weight:600}
+.mot-cle{display:block;text-align:center;font-size:10px;font-weight:700;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--gris);margin:14px 0 8px}
+
+.verdict{max-width:740px;margin:14px auto 0;padding:0 20px;text-align:center}
+.verdict .chiffres{font-size:15px;line-height:1.6;font-variant-numeric:tabular-nums;margin:0}
+.verdict .chiffres b{color:var(--vert-dit);font-size:18px}
+.verdict .reste{display:block;margin-top:7px;font-size:13px;color:var(--gris)}
+
+.scene{display:flex;justify-content:center;padding:16px 16px 6px}
+.tel{width:var(--large,390px);max-width:100%;min-height:600px;background:var(--fond);
+  border:1px solid var(--trait);border-radius:10px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column}
+
+.ter .entete{padding:26px 26px 0}
+.ter h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:34px;
+  line-height:1.02;letter-spacing:-.018em;margin:6px 0 0}
+.carte-tva{margin:22px 26px 0;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;border-radius:4px;padding:20px 18px;background:var(--plage);
+  box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.55)}
+.carte-tva .quoi{display:block;font-size:11px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--or)}
+.carte-tva .periode{display:block;margin-top:5px;font-size:17px;font-family:ui-serif,Georgia,serif}
+.carte-tva .mt{font-size:21px;font-family:ui-serif,Georgia,serif;white-space:nowrap}
+
+/* ── LES ONGLETS — inchangés, aux mesures de l'application ──────────────── */
+.onglets{display:flex;gap:4px;margin:28px 26px 0}
+.pastille{flex:none;white-space:nowrap;border-radius:999px;border:0;cursor:pointer;
+  min-height:44px;display:flex;align-items:center;justify-content:center;
+  padding:0 8px;font-size:12.5px;font-family:inherit;
+  background:transparent;color:var(--gris);box-shadow:inset 0 0 0 1px var(--trait)}
+.pastille.actif{background:var(--plein);color:var(--surPlein);box-shadow:none}
+.pastille.tout{min-width:60px}
+
+/* ── SA RANGÉE — le bouton doré, collé à droite ─────────────────────────── */
+.rangee-geste{display:flex;justify-content:flex-end;margin:var(--ecart,10px) 26px 0}
+.bouton-facture{flex:none;white-space:nowrap;border-radius:999px;border:0;cursor:pointer;
+  min-height:44px;display:flex;align-items:center;justify-content:center;
+  padding:0 14px;font-size:12.5px;font-family:inherit;
+  background:transparent;color:var(--or);box-shadow:inset 0 0 0 1px var(--or)}
+
+.mois{display:flex;align-items:center;justify-content:space-between;margin:26px 26px 0;font-size:15px}
+.mois .feuillet{background:none;border:0;font:inherit;font-size:17px;color:var(--gris);
+  cursor:pointer;min-width:44px;min-height:44px}
+.compte{margin:14px 26px 12px;font-size:14px;font-weight:700;color:var(--encre)}
+.compte .or{color:var(--or)}
+.lignes{margin:0 26px}
+.brin{border-top:1px solid var(--trait-doux);padding:12px 0}
+.brin .nom{font-size:16px;margin:0}
+.brin .etat{font-size:12.5px;color:var(--gris);margin:2px 0 0}
+.brin .etat.or{color:var(--or)}
+
+.notes{max-width:740px;margin:0 auto;padding:12px 20px 40px}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:30px 0 10px;font-weight:400}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes .cadre{overflow-x:auto}
+.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
+.notes th,.notes td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--trait-doux);
+  color:var(--encre-douce);vertical-align:top}
+.notes th{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+.notes td b{color:var(--encre)}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">11 septembre — ce que vous avez demandé</span>
+  <h1>Créer une facture, sous les onglets</h1>
+  <p>Sous « Retours d'intervention », <b>collé à droite</b>, en or à contour
+  vide. Et le problème de largeur disparaît : <b>plus rien à raccourcir</b> —
+  « Retours d'intervention » garde son nom entier, « Créer une facture » aussi.</p>
+</div>
+
+<div class="reglages">
+  <span class="mot-cle">Sur quel téléphone</span>
+  <div class="rangee-choix" id="largeurs"></div>
+  <span class="mot-cle">Ce qu'on regarde</span>
+  <div class="rangee-choix" id="etats"></div>
+</div>
+
+<div class="verdict" id="verdict"></div>
+
+<div class="scene">
+  <div class="tel" id="tel"></div>
+</div>
+
+<div class="notes">
+
+  <h3>Ce que ça règle</h3>
+  <div class="cadre">
+  <table>
+    <tr><th></th><th>Sur une seule ligne</th><th>Sur deux lignes</th></tr>
+    <tr><td><b>« Retours d'intervention »</b></td>
+        <td>devient « Retours » à 360 px</td><td><b>garde son nom entier</b></td></tr>
+    <tr><td><b>« Créer une facture »</b></td>
+        <td>devient « Facturer »</td><td><b>garde son nom entier</b></td></tr>
+    <tr><td><b>Le dessin des onglets</b></td>
+        <td>intact, si l'on raccourcit les mots</td><td><b>intact</b></td></tr>
+    <tr><td><b>Ce que ça coûte</b></td>
+        <td>deux mots</td><td>une rangée de hauteur</td></tr>
+  </table>
+  </div>
+
+  <h3>Pourquoi à droite, et pourquoi en or</h3>
+  <p>Les trois onglets <b>filtrent</b> la liste. Ce bouton <b>crée</b>. Aligné à
+  gauche sous eux, il se lirait comme un quatrième filtre passé à la ligne, et
+  vous chercheriez pourquoi la liste ne change pas. À droite et en or, il se
+  détache de la rangée qu'il ne rejoint pas.</p>
+
+  <h3>Ce que je n'avais pas vu</h3>
+  <p>Je cherchais à faire tenir quatre pastilles sur une ligne parce que la
+  question était posée ainsi. <b>Elle ne l'était pas.</b> Une rangée de plus
+  règle tout ce que trois resserrements différents ne réglaient qu'à moitié.</p>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var pole = document.getElementById("pole");
+  pole.addEventListener("click", function(){
+    var nuit = document.body.classList.toggle("nuit");
+    pole.setAttribute("aria-pressed", String(nuit));
+    pole.textContent = nuit ? "Voir sur Arborea" : "Voir sur Nuit";
+  });
+
+  var tel      = document.getElementById("tel");
+  var verdict  = document.getElementById("verdict");
+  var elLarges = document.getElementById("largeurs");
+  var elEtats  = document.getElementById("etats");
+
+  var LARGEURS = [
+    { px:360, mot:"360 px — le petit" },
+    { px:390, mot:"390 px — le vôtre" },
+    { px:430, mot:"430 px — le grand" }
+  ];
+
+  var ETATS = [
+    { cle:"avec",  mot:"Avec le bouton",   bouton:true  },
+    { cle:"sans",  mot:"Aujourd’hui",      bouton:false }
+  ];
+
+  var large = 390;
+  var etat  = "avec";
+
+  function brins(){
+    var L = [
+      { nom:"M. Aubert",   etat:"Facturé · 1 240,00 €",                 or:false },
+      { nom:"Mme Chaix",   etat:"Pas encore facturé · 360,00 € prévus", or:true  },
+      { nom:"M. Sabatier", etat:"Facturé · 890,00 €",                   or:false }
+    ];
+    return L.map(function(c){
+      return '<div class="brin"><p class="nom">' + c.nom + '</p>'
+           + '<p class="etat' + (c.or ? ' or' : '') + '">' + c.etat + '</p></div>';
+    }).join("");
+  }
+
+  function dessiner(){
+    var avecBouton = ETATS.filter(function(e){ return e.cle === etat; })[0].bouton;
+    tel.style.setProperty("--large", large + "px");
+
+    tel.innerHTML = '<div class="ter">'
+      + '<div class="entete"><h1>Terminés</h1></div>'
+      + '<div class="carte-tva"><span><span class="quoi">Ma TVA à déclarer</span>'
+      +   '<span class="periode">3ᵉ trimestre 2026</span></span>'
+      +   '<span class="mt">412,80 €</span></div>'
+      + '<div class="onglets" id="onglets">'
+      +   '<button class="pastille tout actif" type="button">Tout</button>'
+      +   '<button class="pastille" type="button">À facturer</button>'
+      +   '<button class="pastille" type="button">Retours d’intervention</button>'
+      + '</div>'
+      + (avecBouton
+          ? '<div class="rangee-geste" id="rangee-geste">'
+            + '<button class="bouton-facture" id="bouton-facture" type="button">'
+            + 'Créer une facture</button></div>'
+          : '')
+      + '<div class="mois" id="mois"><button class="feuillet" type="button" aria-label="Mois précédent">‹</button>'
+      +   '<span>Septembre 2026</span>'
+      +   '<button class="feuillet" type="button" aria-label="Mois suivant">›</button></div>'
+      + '<p class="compte"><span class="or">1 à facturer</span> · 2 facturés</p>'
+      + '<div class="lignes">' + brins() + '</div>'
+      + '</div>';
+
+    mesurer(avecBouton);
+    marquer();
+  }
+
+  /**
+   * CE QU'ON MESURE, ET POURQUOI CES DEUX-LÀ.
+   *
+   * 1. **La rangée d'onglets ne déborde pas** — c'est ce que la seconde rangée
+   *    est censée régler, et l'affirmer sans le relever serait exactement
+   *    l'aller-retour qu'on veut arrêter.
+   * 2. **Ce que la seconde rangée POUSSE vers le bas** — c'est son seul prix,
+   *    et il doit se voir plutôt que se deviner.
+   *
+   * On refuse de conclure sur une boîte de zéro pixel : l'absence de matière à
+   * mesurer n'est pas un succès (`CLAUDE.md` §5).
+   */
+  function mesurer(avecBouton){
+    var onglets = document.getElementById("onglets");
+    var mois    = document.getElementById("mois");
+    if (!onglets || !mois) return;
+
+    var pastilles = onglets.querySelectorAll(".pastille");
+    var prise = 0;
+    for (var i = 0; i < pastilles.length; i++) prise += pastilles[i].getBoundingClientRect().width;
+    prise += 4 * (pastilles.length - 1);
+    prise = Math.round(prise);
+    var dispo = large - 2 - 26 * 2;
+
+    if (prise === 0) {
+      verdict.innerHTML = '<p class="chiffres">Rien à mesurer : la rangée fait zéro.</p>';
+      return;
+    }
+
+    var cadre = tel.getBoundingClientRect();
+    var hautDuMois = Math.round(mois.getBoundingClientRect().top - cadre.top);
+
+    if (!avecBouton) {
+      verdict.innerHTML = '<p class="chiffres">Les onglets : <b>' + prise + ' px</b> pour '
+        + dispo + ' px — le mois commence à ' + hautDuMois + ' px du haut.</p>'
+        + '<span class="reste">L’écran d’aujourd’hui, sans le bouton.</span>';
+      verdict.setAttribute("data-mois", String(hautDuMois));
+      return;
+    }
+
+    var bouton = document.getElementById("bouton-facture");
+    var largeurBouton = Math.round(bouton.getBoundingClientRect().width);
+    var avant = Number(verdict.getAttribute("data-mois") || 0);
+
+    verdict.innerHTML = '<p class="chiffres">Les onglets tiennent : <b>' + prise + ' px</b> pour '
+      + dispo + ' px — et le bouton, seul sur sa ligne, en prend <b>' + largeurBouton + '</b>.</p>'
+      + '<span class="reste">'
+      + (avant > 0
+          ? 'La liste descend de ' + (hautDuMois - avant) + ' px — comparez avec « Aujourd’hui ».'
+          : 'Touchez « Aujourd’hui » pour voir ce que la seconde rangée pousse vers le bas.')
+      + '</span>';
+  }
+
+  function marquer(){
+    Array.prototype.forEach.call(elLarges.children, function(b){
+      b.setAttribute("aria-pressed", String(Number(b.getAttribute("data-large")) === large));
+    });
+    Array.prototype.forEach.call(elEtats.children, function(b){
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-etat") === etat));
+    });
+  }
+
+  elLarges.innerHTML = LARGEURS.map(function(L){
+    return '<button type="button" data-large="' + L.px + '" aria-pressed="false">' + L.mot + '</button>';
+  }).join("");
+  Array.prototype.forEach.call(elLarges.children, function(b){
+    b.addEventListener("click", function(){
+      large = Number(b.getAttribute("data-large"));
+      dessiner();
+    });
+  });
+
+  elEtats.innerHTML = ETATS.map(function(e){
+    return '<button type="button" data-etat="' + e.cle + '" aria-pressed="false">' + e.mot + '</button>';
+  }).join("");
+  Array.prototype.forEach.call(elEtats.children, function(b){
+    b.addEventListener("click", function(){
+      etat = b.getAttribute("data-etat");
+      dessiner();
+    });
+  });
+
+  dessiner();
+})();
+</script>
+
+</body>
+</html>

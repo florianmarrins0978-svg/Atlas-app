@@ -734,9 +734,16 @@ async function main() {
 
   // ─── AJOUTER DEPUIS LA FICHE : ON TOUCHE LE NOM, C'EST POSÉ ─────────────
 
-  await essai("« Ajouter un chantier » demande QUI, et rien d'autre", async () => {
+  await essai("« Ajouter » demande D'ABORD la voie, puis QUI — et rien d'autre", async () => {
+    // **Un temps de plus depuis le 10 septembre 2026**, et c'est sa planche
+    // `appli/bloquer-sans-devis.html` : « Ajouter » propose un chantier qui
+    // attend une date, ou un client à écrire. Ce contrôle passe donc par la
+    // première voie — celle qui existait déjà — et vérifie qu'après elle, la
+    // liste des noms suffit à poser (`CLAUDE.md` §5 bis).
     await toucherLeJour(JOUR);
     await toucherAuCentre(page.locator('[data-atlas="carte-jour"] [data-atlas="ajouter"]'));
+    await page.waitForSelector('[data-atlas="voie-chantier"]', { timeout: 10_000 });
+    await toucherAuCentre(page.locator('[data-atlas="voie-chantier"]').first());
     await page.waitForSelector(`[data-qui="${chantierId}"]`, { timeout: 10_000 });
   });
 
@@ -755,6 +762,9 @@ async function main() {
     // durée vient du devis, et aucun geste du planning n'y touche
     // (`CLAUDE.md` §5 bis).
     const dureeAvant = (await enBase()).duree_demi_journees;
+    // **La liste est déjà ouverte** : le cas précédent l'a laissée là, par la
+    // voie « Un chantier en attente ». On ne rouvre donc rien — appuyer sur le
+    // « + » la refermerait, et l'on mesurerait un écran qu'il ne voit jamais.
     await toucherAuCentre(page.locator(`[data-qui="${chantierId}"]`));
     await attendre("le chantier est reposé", async () => (await enBase()).jour === JOUR);
     assert.equal(
@@ -787,7 +797,7 @@ async function main() {
   // chantiers le temps d'une mesure est le seul moyen d'atteindre le cas zéro
   // sans dépendre de ce qu'une autre suite y a laissé. Les dates retirées sont
   // relevées AVANT, et remises après, y compris si la mesure échoue.
-  await essai("aucun chantier en attente : plus de « Ajouter un chantier »", async () => {
+  await essai("aucun chantier en attente : « Ajouter » ne mène plus qu'au client", async () => {
     // ─── POURQUOI LA PORTÉE N'EST PAS « CETTE ENTREPRISE » ────────────────
     //
     // **Vérifié dans le code, pas supposé.** Une première version datait les
@@ -860,13 +870,40 @@ async function main() {
       const carte = await page.locator('[data-atlas="carte-jour"]').count();
       assert.ok(carte >= 1, "la fiche du jour ne s'est pas ouverte : il n'y a rien à mesurer");
 
+      // ─── CE CONTRÔLE A CHANGÉ DE CIBLE LE 10 SEPTEMBRE 2026 ───────────
+      //
+      // **Sa règle du 23 août reste, et c'est ELLE qui commande le changement :**
+      // *« lorsqu'aucun chantier n'attend de jour, il ne faudrait pas que le
+      // bouton apparaisse, car il peut nous induire en erreur »*. Le geste ne
+      // créait alors rien — sans chantier en attente, il ne menait qu'à un
+      // cul-de-sac.
+      //
+      // Depuis sa planche `appli/bloquer-sans-devis.html`, il CRÉE : « Un
+      // client » pose un chantier neuf sur la journée, sans devis. Un jour vide
+      // n'est plus un cul-de-sac. Exiger l'absence du bouton reviendrait à
+      // réclamer ce qu'il vient de faire ajouter (`CLAUDE.md` §5 bis).
+      //
+      // **Ce qui se mesure, c'est donc la règle elle-même** : aucune voie qui
+      // ne mène nulle part. Le geste est là, et il n'offre PAS « Un chantier en
+      // attente » quand aucun n'attend.
       const boutons = await page.locator('[data-atlas="ajouter"]').count();
-      assert.equal(
-        boutons,
-        0,
-        `${boutons} bouton(s) « Ajouter un chantier » sur un écran où rien n'attend de jour : ` +
-          "il promet un chantier de plus et ne rend qu'une phrase"
+      assert.ok(
+        boutons >= 1,
+        "« Ajouter » a disparu alors qu'il mène toujours quelque part : poser un client"
       );
+      await page.locator('[data-atlas="ajouter"]').first().click();
+      await page.waitForTimeout(400);
+      assert.equal(
+        await page.locator('[data-atlas="voie-chantier"]').count(),
+        0,
+        "« Un chantier en attente » s'offre alors qu'aucun n'attend : un cul-de-sac de plus"
+      );
+      assert.ok(
+        (await page.locator('[data-atlas="voie-client"]').count()) >= 1,
+        "« Un client » manque : le geste ne mène alors nulle part, et devrait disparaître"
+      );
+      await page.locator('[data-atlas="annuler-ajout"]').first().click();
+      await page.waitForTimeout(300);
 
       // ─── ET LA SECTION ELLE-MÊME S'EFFACE ─────────────────────────────
       //
@@ -1026,6 +1063,95 @@ async function main() {
     // sur la semaine ouverte plus haut.
     await allerAuPlanning();
     await toucherLeJour(JOUR);
+  });
+
+  // **SA CORRECTION DU 10 SEPTEMBRE 2026**, capture à l'appui : *« quand il y a
+  // plusieurs chantiers le même jour on a un problème ! Quand je clique sur sa
+  // fiche d'intervention, ça doit se coller en dessous, pas en dessous de
+  // Frédéric, ça porte à confusion. »*
+  //
+  // La fiche était rendue APRÈS la boucle des blocs : sur un jour à deux
+  // chantiers, toucher le premier ouvrait une fiche posée sous le SECOND — et
+  // elle porte le nom du client en gros, ce qui donne deux noms qui se
+  // contredisent à trois centimètres.
+  //
+  // **Le contrôle pur tient la règle** (`test-planning-jour.ts`) ; celui-ci
+  // tient le CHEMIN qu'il emprunte, lui — deux chantiers dans la même journée,
+  // et le doigt sur le nom du premier (`CLAUDE.md` §5 quater).
+  await essai("la fiche d'intervention se colle sous SON chantier", async () => {
+    // Une copie du chantier existant : elle hérite de ses colonnes quelles
+    // qu'elles soient, donc ce montage survit à la prochaine migration. **Une
+    // seule instruction** — `pg` refuse plusieurs commandes dans une requête
+    // préparée, et le montage rougissait alors sur lui-même, en accusant le
+    // produit d'un défaut qui était le sien.
+    const voisin = await pool.query<{ id: string }>(
+      `INSERT INTO chantiers
+         SELECT (jsonb_populate_record(NULL::chantiers,
+                  to_jsonb(c) || jsonb_build_object('id', gen_random_uuid()::text,
+                                                    'nom', 'M. Voisin du jour'))).*
+           FROM chantiers c WHERE c.id = $1
+       RETURNING id`,
+      [chantierId]
+    );
+    const idVoisin = voisin.rows?.[0]?.id ?? null;
+    try {
+      assert.ok(idVoisin, "le second chantier n'a pas été créé : rien à mesurer");
+      // Les deux tiennent la journée entière : la journée n'a alors AUCUNE
+      // moitié libre, et c'est le cas de sa capture.
+      await pool.query(
+        `UPDATE chantiers SET date_planifiee = $2, creneau_debut = 'matin',
+                              duree_demi_journees = 2
+          WHERE id = ANY($1::uuid[])`,
+        [[chantierId, idVoisin], JOUR]
+      );
+
+      await allerAuPlanning();
+      await toucherLeJour(JOUR);
+      const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`).first();
+      await carte.waitFor({ state: "visible", timeout: 15_000 });
+      const blocs = carte.locator('[data-atlas="bloc-chantier"]');
+      await attendre("les deux chantiers du jour sont là", async () => (await blocs.count()) === 2);
+
+      // On touche le nom du PREMIER, comme lui sur « Mr. Julien ».
+      await blocs.first().locator('[data-atlas="nom-du-jour"]').click();
+      await carte.locator('[data-atlas="feuille"]').waitFor({ state: "visible", timeout: 15_000 });
+
+      const m = await carte.evaluate((n) => {
+        const b = Array.from(n.querySelectorAll('[data-atlas="bloc-chantier"]'));
+        const f = n.querySelector('[data-atlas="feuille"]');
+        return {
+          premier: b[0] ? Math.round(b[0].getBoundingClientRect().top) : null,
+          second: b[1] ? Math.round(b[1].getBoundingClientRect().top) : null,
+          fiche: f ? Math.round(f.getBoundingClientRect().top) : null,
+          hauteur: f ? Math.round(f.getBoundingClientRect().height) : 0,
+        };
+      });
+
+      // **Un contrôle qui mesure zéro ne mesure rien** (`CLAUDE.md` §5).
+      assert.ok(m.premier !== null, "le premier chantier du jour est absent");
+      assert.ok(m.second !== null, "le second chantier du jour est absent");
+      assert.ok(m.fiche !== null, "la fiche d'intervention ne s'est pas ouverte");
+      assert.ok(m.hauteur >= 60, `la fiche est écrasée : ${m.hauteur} px`);
+
+      assert.ok(
+        m.premier! < m.fiche!,
+        `la fiche (${m.fiche}) est passée AU-DESSUS de son chantier (${m.premier})`
+      );
+      assert.ok(
+        m.fiche! < m.second!,
+        `la fiche (${m.fiche}) est retombée sous le second chantier (${m.second}) : ` +
+          "c'est le défaut du 10 septembre 2026"
+      );
+    } finally {
+      // La journée redevient ce que les contrôles suivants attendent.
+      if (idVoisin) await pool.query(`DELETE FROM chantiers WHERE id = $1`, [idVoisin]);
+      await pool.query(
+        `UPDATE chantiers SET creneau_debut = 'matin', duree_demi_journees = 2 WHERE id = $1`,
+        [chantierId]
+      );
+      await allerAuPlanning();
+      await toucherLeJour(JOUR);
+    }
   });
 
   await essai("la flèche de la semaine ne change PAS le mois", async () => {
@@ -1211,8 +1337,17 @@ async function main() {
   await essai("un samedi offre les mêmes gestes qu'un mardi", async () => {
     const samedi = new Date(`${JOUR}T12:00:00Z`);
     samedi.setUTCDate(samedi.getUTCDate() + 5);
-    await toucherLeJour(samedi.toISOString().slice(0, 10));
-    const carte = page.locator('[data-atlas="carte-jour"]').first();
+    const jourSamedi = samedi.toISOString().slice(0, 10);
+    await toucherLeJour(jourSamedi);
+    // **LE SAMEDI, PAS « LA PREMIÈRE CARTE ».** `.first()` prenait la carte la
+    // plus haute du document — celle d'une ligne des planifiés restée dépliée
+    // par un contrôle précédent, quand il y en avait une. Le contrôle rougissait
+    // alors une fois sur deux, sur du code juste, en annonçant « le samedi
+    // n'affiche pas ses deux demi-journées » : payé le 11 septembre 2026, une
+    // suite entière rejouée pour l'apprendre. Un contrôle qui rougit au hasard
+    // s'apprend à être ignoré, et l'on perd le garde-fou sans s'en apercevoir.
+    const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${jourSamedi}"]`).first();
+    await carte.waitFor({ state: "visible", timeout: 15_000 });
     const dit = await carte.innerText();
     assert.ok(!/Jamais proposé/.test(dit), `le samedi est encore un cul-de-sac : « ${dit} »`);
     assert.equal(

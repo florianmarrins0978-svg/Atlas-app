@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
+import { MOIS_A_L_ECRAN } from "./_calendrier-e2e";
 
 // FERMER UN JOUR DEPUIS LE PLANNING — sa demande du 6 septembre 2026.
 //
@@ -54,7 +55,9 @@ async function main() {
   const ouvrirLeJour = async (jour: string) => {
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
     await page.waitForTimeout(900);
-    const laCase = page.locator(`button[data-jour="${jour}"]`);
+    // **Dans le mois à l'écran** : ses deux voisins sont montés hors du cadre
+    // depuis le 11 septembre 2026, et une case prise là-bas ne se clique pas.
+    const laCase = page.locator(`${MOIS_A_L_ECRAN} button[data-jour="${jour}"]`);
     assert.ok(
       (await laCase.count()) >= 1,
       `le jour ${jour} n'est pas au calendrier : rien n'est mesuré`

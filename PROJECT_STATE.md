@@ -1,7 +1,33 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-10 · branche `claude/employee-absence-mockup-ayfv45`
+**Dernière mise à jour :** 2026-09-11 · branche `claude/employee-absence-mockup-ayfv45`
 · dernière migration `drizzle/0085_creneaux_chantier.sql`
+
+---
+
+## FAIT : LES SUITES VISENT LE MOIS QUI EST À L'ÉCRAN — 11 septembre 2026
+
+Le glissement des mois monte trois mois ; les deux voisins sont inertes pour le
+patron, pas pour un sélecteur. Cinq suites tombaient sur un produit sain. Une
+portée commune (`MOIS_A_L_ECRAN`), un geste de retenue écrit une seule fois, et
+l'occupation lue dans `creneaux_chantier` plutôt qu'extrapolée d'un bloc.
+
+**Aucun changement sous `src/`.** Détail : `ARCHITECTURE.md` §324.
+
+---
+
+## FAIT : POSER UN CLIENT SUR UN JOUR, SANS DEVIS — 10 septembre 2026
+
+Sa planche retenue (`appli/bloquer-sans-devis.html`). « Ajouter » propose deux
+voies : un chantier qui attend une date, ou **un client** qu'on écrit au
+clavier. Connu, il apparaît avec son numéro ; **inconnu, sa fiche se crée** avec
+ce qu'on saisit. Puis matin, après-midi ou la journée. « Annuler » ramène aux
+deux voies à chaque étape.
+
+**Ni prix, ni devis, ni équipe** : le temps est pris, c'est tout. Le chantier se
+chiffre ensuite, ou jamais. **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §323.
 
 ---
 

@@ -27568,3 +27568,265 @@ n'existait plus nulle part.
 | l'écran | `BasculeDemi`, `LigneLibre`, `TiroirDuBas` — `src/app/planning/PlanningClient.tsx` |
 | les contrôles | `scripts/test-creneaux-chantier.ts` (les règles), `scripts/test-liberer-une-demi-journee-e2e.ts` (**son geste**, de bout en bout) |
 
+
+
+
+## §323 — Poser un CLIENT sur un jour : la voie qui part du planning et remonte
+
+**Sa demande du 10 septembre 2026 :** *« si j'ai un chantier à rajouter ou
+quelque chose, que je puisse le faire sans devoir passer par la fiche client et
+le devis — donc en appuyant sur ajouter, il faut pouvoir bloquer une
+demi-journée ou la journée juste en écrivant ce que c'est. »* Puis, après avoir
+essayé la planche `appli/bloquer-sans-devis.html` : *« change le nom en un
+client, et si le client n'est pas reconnu il faut qu'il ajoute aussi sa fiche
+client automatiquement, comme quand on ajoute un client par la voie normale. »*
+
+### Les deux sens, et ce qui les distingue
+
+| | |
+|---|---|
+| **la voie normale** | part du **client** et descend : fiche, devis, envoi, puis une date |
+| **celle-ci** | part du **jour** et remonte : on pose, la fiche se crée au passage, le devis vient plus tard — ou jamais |
+
+Elles se rejoignent sur la reconnaissance : `trouverOuCreerClient` est la même
+fonction des deux côtés, avec sa règle du 17 août 2026. Un M. Martins déjà connu
+ne se dédouble pas ; ce qu'on saisit **complète** ce qui manque dans sa fiche et
+n'écrase jamais ce qui y est ; **un numéro différent fait une autre fiche**, et
+c'est voulu — deux Bernard d'un même village ne se mélangent pas.
+
+### « JOURNÉE » EXISTE ICI, ET NULLE PART AILLEURS
+
+Partout ailleurs, choisir un moment réécrivait la durée que le devis avait
+vendue — le défaut du 9 septembre 2026, et la raison pour laquelle le mot a
+disparu de « Poser » comme de « Déplacer » (§313).
+
+**Ici, il n'y a pas de devis** : le chantier naît de ce geste, et le choix EST
+sa durée. Il ne recouvre rien. C'est pourquoi `creerChantier` accepte désormais
+`dureeDemiJournees` — et pourquoi ce paramètre reste absent partout ailleurs :
+figer une durée avant de la connaître serait exactement le défaut d'en face.
+
+### CE QUE LE GESTE NE PROMET PAS
+
+Ni prix, ni devis, ni équipe. Le temps est pris, c'est tout. Le chantier se
+chiffre ensuite comme les autres, ou jamais — et il se voit au planning parce
+que **la date suffit à le montrer** depuis le 22 août 2026 (`ARCHITECTURE.md`,
+« un chantier qui porte une date est toujours montré »). Sans cette règle-là,
+posé ainsi, il aurait pris la place sans apparaître nulle part.
+
+### La recherche se fait au SERVEUR, et le carnet ne descend pas
+
+L'écran des clients filtre dans le navigateur : il a déjà la liste, puisqu'il
+l'affiche. Le planning ne l'a pas, et la lui envoyer ferait descendre les noms,
+numéros et adresses de tout le carnet à **chaque ouverture du planning**, pour
+un geste qui sert deux fois par mois. `chercherDesClientsAction` cherche donc
+côté serveur — avec `filtrerClientsParNom`, la règle de l'écran des clients, pas
+une seconde.
+
+**Elle porte la garde d'écriture**, bien qu'elle lise : ce chemin n'existe que
+pour poser, et poser est refusé à un salarié. Lui rendre le carnet de son patron
+par la porte de service serait le contournement que la garde ferme.
+
+**Et elle échappe à la PORTÉE, avec sa raison écrite** (`SANS_CHANTIER`, dans
+`test-salarie-planning-lecture-seule-db.ts`) : `exigerChantierDansSaPortee`
+demande l'identifiant d'un chantier, et il n'y en a pas — l'un cherche un
+client, l'autre crée le chantier. L'exiger obligerait à inventer un identifiant
+pour satisfaire un contrôle, qui cesserait alors de dire quoi que ce soit.
+
+### LE GESTE NE DISPARAÎT PLUS QUAND RIEN N'ATTEND, ET C'EST SA RÈGLE QUI LE VEUT
+
+Sa règle du 23 août 2026 : *« lorsqu'aucun chantier n'attend de jour, il ne
+faudrait pas que le bouton apparaisse, car il peut nous induire en erreur »*.
+Elle tenait parce que le geste ne créait rien : sans chantier en attente, il ne
+menait qu'à un cul-de-sac.
+
+Il crée désormais. Un jour vide n'est plus un cul-de-sac, et **c'est la même
+règle** qui commande de le montrer. Ce qui disparaît, c'est la VOIE qui ne mène
+nulle part : « Un chantier en attente » ne s'offre pas quand aucun n'attend.
+
+### LA TROISIÈME VOIE : DU TEMPS QUI N'EST PAS UN CLIENT
+
+**Sa réponse du 10 septembre 2026**, à la question que sa propre correction avait
+ouverte — un rendez-vous à la banque, une livraison, une formation prennent une
+demi-journée comme le reste, et « Un client » ne les couvrait plus.
+
+**C'est un chantier SANS client**, portant pour nom ce qu'il écrit, et non une
+nouvelle sorte d'objet. Une « occupation » à part obligerait à la compter une
+seconde fois dans la capacité, à la dessiner une seconde fois au calendrier, à
+la retirer par un second geste et à la sortir des terminés par une seconde
+règle : quatre endroits où deux vérités finiraient par diverger, pour une ligne
+qui prend une demi-journée exactement comme les autres.
+
+**Ce que ça coûte, et il faut le dire :** ce temps-là apparaît dans la liste des
+chantiers, puisque c'en est un. Sans prix, sans devis, sans client.
+
+**Un seul champ, et aucune recherche.** Chercher un homonyme à « Banque », puis
+proposer de lui créer une fiche, serait le chemin de la voie d'à côté.
+
+**L'interrupteur des trois moments est celui de l'absence** (`BasculeDuMoment`,
+`LES_TROIS_MOMENTS`) : la question est la même, et deux listes de trois mots
+dans le même écran auraient divergé au premier « Aprem ». Il porte un repère
+différent par geste — sans quoi une suite viserait l'interrupteur de l'autre,
+ouvert dans la même carte.
+
+### CE QUI ATTEND UN JOUR, CE N'EST PAS SEULEMENT « SANS DATE »
+
+**Sa panne du 11 septembre 2026, capture à l'appui :** *« j'en ai que deux […]
+ça devait être un chantier en attente et un client »*. Une demi-journée de
+M. Julien attendait sous « Sans date », et la voie qui mène aux chantiers en
+attente avait **disparu** — elle ne comptait que les chantiers sans date, et le
+sien en a une.
+
+Le tiroir du bas, lui, comptait déjà les deux ensemble (§321). C'est ici que la
+règle manquait, et elle est la même : **du travail qui attend un jour**, quelle
+que soit la forme.
+
+**Une demi-journée rendue se PREND, elle ne se pose pas d'un coup.** Le jour a
+deux moitiés ; choisir laquelle à sa place serait décider de son chantier. Elle
+se met au doigt — le geste du tiroir, écrit une fois — et les « Poser ici » de
+la journée s'allument juste au-dessus.
+
+### UN GESTE QUI PART DANS LE VIDE LE DIT
+
+**Sa panne du même soir, et elle valait pour trois gestes à la fois :** *« il ne
+se pose sur aucune demi-journée ! »*, *« quand c'est un client je ne peux pas
+remplir sa fiche »*. Les gestes marchaient ; c'est sa **page** qui avait survécu
+à son serveur — son espace venait de basculer d'une version à l'autre —, et une
+action serveur postée depuis la page d'avant n'atteint plus rien.
+
+**L'écran ne disait RIEN**, et c'est le vrai défaut : un `.then()` seul
+n'attrape pas un refus, puisque la promesse est REJETÉE. Un appui sans effet et
+sans message se lit comme une application cassée, et rien n'indique qu'un
+rechargement répare tout.
+
+**La pire des trois était muette ET durable** : la recherche de clients ne
+répondant jamais, « on cherche encore » restait vrai pour toujours, et les trois
+cases de la fiche ne s'ouvraient **plus jamais**. Elle rend désormais une liste
+vide sur un échec — il est alors traité comme inconnu, ce qui est le cas le plus
+utile, et il peut écrire.
+
+**Ce qu'on écrit est ce qu'il doit FAIRE**, pas ce qui s'est passé : *« Rien
+n'est parti. Rechargez la page. »* C'est la première question du dépôt devant un
+défaut qui ne se reproduit pas (`HANDOVER.md`, piège 0), et la seule chose qui
+répare une page vieillie.
+
+### SON BORD EST EN OR, ET LES COINS SE LÈVENT — sa version C
+
+**Sa réponse du 11 septembre 2026**, après la planche `appli/tiroir-en-or.html`
+où les quatre bords étaient posés côte à côte : *« j'aime bien la C »*.
+
+Deux pixels d'or (`colors.or`) et des angles de 14 px en haut. L'or dit « ceci
+s'ouvre » sans cerner tout le bas de l'écran ; les coins levés montrent que le
+tiroir passe **par-dessus** le calendrier, ce que le fond seul ne faisait pas.
+
+**D — le cadre doré complet — a été écartée, et la planche le dit** : joli une
+fois, lourd tous les jours, sur un tiroir présent à chaque ouverture du planning
+et jusque fermé.
+
+**Et sa disposition suit la planche, à la ligne près** (*« exactement celle de la
+maquette »*) :
+
+| | |
+|---|---|
+| un trait sépare la poignée du dedans | il vit DANS le contenu qui se replie — posé sur le cadre, il resterait visible sous la poignée fermée |
+| les deux titres passent à GAUCHE | centrés, ils ne s'alignaient sur rien : ni sur la poignée au-dessus, ni sur les noms en dessous, qui commencent tous deux à 18 px du bord |
+| la phrase sous le titre suit | une phrase centrée sous un titre à gauche fait deux marges en trois centimètres |
+
+### ET ON DOIT VOIR OÙ IL COMMENCE
+
+**Sa remarque du 11 septembre 2026, capture à l'appui :** *« il faut rendre plus
+visible la fenêtre qui s'ouvre "1 sans date" — quand elle est ouverte, on ne la
+voit pas »*.
+
+Elle portait le fond de la PAGE (`cream`). Ouverte, rien ne disait où la page
+finissait et où le tiroir commençait : ses listes semblaient flotter au bas de
+l'écran, sans cadre.
+
+| | |
+|---|---|
+| le fond | `card` — celui des cartes, y compris la fiche du jour deux centimètres plus haut. C'est ce qui, dans cet écran, dit « ceci est posé par-dessus » |
+| l'ombre | se creuse **quand il est ouvert** seulement : fermé, il n'est qu'une poignée, et une ombre soutenue en permanence salirait le bas de tous les écrans du planning |
+| le voile du dessus | suit la même couleur, sinon il redessine la coupure que le fond vient d'effacer |
+
+**Aucune couleur neuve**, et c'est la condition : sept chartes cohabitent, dont
+deux sombres où les pôles s'inversent (`CLAUDE.md` §3). `card` et `cream` sont
+définis dans chacune ; un gris écrit en clair aurait été juste cinq fois sur
+sept.
+
+### LE TIROIR DU BAS PUBLIE SA HAUTEUR (`--atlas-tiroir`)
+
+`.atlas-contenu` réservait la hauteur de la **barre** (`--atlas-barre`) et rien
+d'autre. Le tiroir du planning est `fixed` lui aussi, posé SUR la barre : il
+mangeait une cinquantaine de pixels de plus, et ce qui tombait dessous cessait
+d'être visable. Le « Poser » de ce lot atterrissait dessous dès que la fiche
+d'un inconnu s'ouvrait.
+
+Il mesure donc ce qu'il occupe et le publie, exactement comme `AtlasBottomNav`
+publie `--atlas-barre` — jamais un nombre écrit dans la feuille de style, qui
+mentirait au premier changement de la poignée. La variable n'existe que pendant
+qu'il est à l'écran ; il la retire en partant, et les autres écrans ne bougent
+pas.
+
+**Et ce que la réserve ne réglait PAS, réglé le 11 septembre 2026 :** le geste
+« + Absent ? », en TÊTE de la carte, passait sous le tiroir de deux pixels.
+Mesuré sur son écran (390 × 664) : carte ouverte à 472, geste 523 → 567, tiroir
+à 565.
+
+La réserve permet de faire défiler jusqu'au bas ; elle ne remonte pas ce qui est
+déjà à l'écran, et la carte naît au MILIEU de la page. `rendreLesPixelsDesBandes`
+rend donc exactement ce que les deux bandes prennent — jamais plus —, et ne fait
+rien quand le geste est déjà dégagé.
+
+**Il vit sur LE GESTE, pas sur la carte, et deux contrôles l'ont imposé.** Le
+`scrollIntoView` retiré le 3 septembre ramenait une fiche née hors du champ, à
+deux cents pixels de là : il déplaçait la case qu'on venait de toucher. Une
+première version de ce rattrapage vivait dans la carte, et
+`test-ligne-planning-e2e` l'a refusée dans la minute — *« le client touché a
+bougé de 956 px, il disparaît sous mes yeux »* : la MÊME carte se déplie aussi
+sous une ligne des planifiés, où la règle est que le nom touché ne bouge pas.
+Accroché à `toucherLeJour`, rien d'autre ne le déclenche.
+
+| | |
+|---|---|
+| les actions | `chercherDesClientsAction`, `poserUnClientAction`, `poserDuTempsAction` — `src/app/planning/actions.ts` |
+| l'écran | `AjoutAuJour`, `VoieDAjout`, `AjoutDunClient`, `AjoutDeTemps` — `src/app/planning/PlanningClient.tsx` |
+| la planche | `appli/bloquer-sans-devis.html`, essayée puis retenue |
+| les règles | `scripts/test-poser-un-client-db.ts` (9 cas) |
+| **son geste** | `scripts/test-bloquer-sans-devis-e2e.ts` (7 cas, de bout en bout) |
+
+---
+
+## §324 — Le calendrier garde trois mois montés : une suite doit viser celui qui est à l'écran
+
+**Une nuit de quatre rouges, sur un produit sain (11 septembre 2026).** Le
+glissement des mois (§ du même jour, `MoisCharge`) monte désormais **trois**
+mois : le précédent et le suivant vivent hors du cadre, pour suivre le doigt.
+Ils sont inertes pour le patron — `aria-hidden`, `tabindex="-1"`,
+`pointer-events: none` — et **le composant a posé la parade dès le premier
+jour** : seul le mois du milieu porte son repère `data-atlas`.
+
+**Ce qui est inerte pour un doigt ne l'est pas pour un sélecteur.** Un
+`[data-jour]` cherché dans toute la page en ramène un sur trois hors du cadre :
+Playwright le voit — il a bien une boîte —, le clique, et c'est le cadre qui
+reçoit le doigt. Quarante-cinq secondes, puis « intercepts pointer events ».
+Quatre suites sont tombées ainsi, et une cinquième s'arrêtait trop tôt dans sa
+navigation, le jour visé étant déjà monté dans le mois d'après.
+
+| | |
+|---|---|
+| la portée | `MOIS_A_L_ECRAN` — `[data-atlas$="grille-mois"]`, dans `scripts/_calendrier-e2e.ts` |
+| le suffixe | les deux écrans préfixent leur repère (`grille-mois`, `envoi-grille-mois`) ; les voisins n'en portent aucun |
+| le geste | `retenirAuCalendrier`, remonté là depuis `test-envoi-client-e2e` : deux suites le recopiaient, une troisième cliquait le **rang** d'un bouton |
+
+**Et un jour DÉJÀ retenu ne se retouche pas.** L'écran d'envoi propose de
+lui-même les premiers jours libres : le jour qu'une suite a choisi dans la base
+peut être marqué avant qu'elle y touche, et le clic l'enlève. `test-reste-equipes-e2e`
+attendait ensuite un « retenu » qui ne revenait jamais. Le geste commun regarde
+l'état avant d'appuyer.
+
+**Enfin, ce qui est POSÉ se lit dans `creneaux_chantier`, plus dans un bloc
+déduit** (§322). `test-reste-equipes-e2e` cherchait un jour libre en
+extrapolant `date_planifiee + durée` : un chantier dont une demi-journée a
+déménagé occupait pour lui des jours vides, et laissait libre le jour où il
+travaille vraiment. La suite y posait son essai, l'écran comptait juste, et le
+rouge accusait l'écran — le pire des rouges. Le repli sur le bloc reste, pour
+les chantiers qu'aucun créneau ne décrit.

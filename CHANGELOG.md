@@ -6,7 +6,280 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-11
+
+### Cinq rouges de la nuit : le calendrier gardait trois mois, les suites n'en visaient aucun
+
+Le glissement des mois monte trois mois à la fois — le précédent et le suivant
+attendent hors du cadre pour suivre le doigt. Inertes pour le patron ; pas pour
+un sélecteur. Quatre suites cliquaient une case d'août ou du mois d'après,
+Playwright la voyait, et c'est le cadre qui recevait le doigt : quarante-cinq
+secondes d'attente, puis un rouge sur un produit sain.
+
+**Le composant avait posé la parade dès le premier jour** — seul le mois du
+milieu porte son repère. Ce qui manquait était du côté des suites : une portée
+commune (`MOIS_A_L_ECRAN`), et un geste de retenue écrit **une seule fois**.
+Deux suites le recopiaient ; une troisième cliquait le RANG d'un bouton, et ce
+rang a changé de mois.
+
+**Un jour déjà proposé ne se retouche pas** : l'écran d'envoi marque de
+lui-même les premiers jours libres, et le second appui les enlève. Le geste
+commun regarde l'état avant d'appuyer.
+
+**Et ce qui est posé se lit dans les créneaux, plus dans un bloc déduit.**
+`test-reste-equipes-e2e` cherchait un jour libre en extrapolant
+`date_planifiee + durée` : un chantier dont une demi-journée a déménagé
+occupait pour lui des jours vides, et laissait libre celui où il travaille.
+C'est ce qui lui faisait lire « Plus d'équipe libre sur 2 » et accuser un écran
+qui comptait juste.
+
+**Correction d'un verdict de la veille, noir sur blanc :** `test-reste-equipes-e2e`
+avait été rangée avec les rouges du carrousel des mois. C'était faux — son
+rouge était celui-ci, et il tenait à deux causes, dont une de mon propre lot des
+créneaux. Restent attribués au lot du prix : `test-devis-papier-e2e` et
+`test-devis-complet-e2e`.
+
+Mesuré : 8 suites du calendrier et du planning au vert, dont les cinq qui
+étaient rouges (`test-envoi-client` 11/11, `test-planning` 44/44).
+
+### La case du prix portait un vrai zéro, et le curseur tombait devant le chiffre
+
+*« Quand je clique sur la case de la quantité, je veux que le petit trait qui
+clignote soit toujours à droite ; comme ça, si la quantité par défaut n'est pas
+bonne, on a juste à supprimer. Or des fois il se met à gauche. »* Et : *« pour le
+prix unitaire HT il faudrait que lorsque l'on clique il n'y ait rien de
+réellement écrit quand aucun prix n'est affiché [...] ils doivent être fictifs
+pour qu'on comprenne qu'on peut écrire dans la case, mais pas vraiment là. »*
+
+**Le second défaut se voyait sur sa capture, et il coûte de l'argent :** le champ
+portait un `0` RÉEL, venu du zéro que la base met par défaut. Il a tapé 450
+derrière, et la case a affiché **0450**. Ce coup-ci le nombre tombait juste ; un
+zéro de plus au mauvais endroit part chez le client.
+
+**Corrigé par la règle qui existait déjà**, pas par une seconde : là où le
+montant écrit « à chiffrer », le champ reste vide et c'est l'exemple en gris qui
+invite à écrire (`prixAEcrire`, à côté de `ligneAttendSonPrix`). **Un zéro voulu
+n'est pas touché** — une ligne offerte garde son zéro, sinon une gratuité décidée
+passerait pour un oubli.
+
+**Le « des fois » du curseur s'explique, et ce n'est pas un caprice du
+téléphone :** le champ est aligné à DROITE dans une case large. Le chiffre occupe
+quelques pixels au bout ; tout le reste est du vide, et c'est là que le doigt
+tombe. Le navigateur pose alors le curseur au plus près de l'appui, donc AVANT le
+chiffre — « 1 » dans 96 pixels, c'est presque à coup sûr. Le champ le remet au
+bout en deux temps, parce que le navigateur décide en second : à l'entrée, puis
+une fois à la sélection qui suit l'appui. Après quoi le curseur lui appartient.
+
+**UN TROISIÈME DÉFAUT A ÉTÉ TROUVÉ EN CHEMIN, et il était plus grave que les
+deux qu'il signalait.** En branchant le champ sur le drapeau « à chiffrer », le
+compilateur a montré que `appliquerRetouchesAction` ne le rendait PAS. Or l'écran
+se recale entièrement sur ce que cette action rend : après la moindre dictée,
+toutes les lignes perdaient leur drapeau, et « à chiffrer » devenait « 0,00 € »
+sous ses yeux — **une ligne non chiffrée présentée comme gratuite**, sur le
+document qui part chez son client. Le garde-fou de l'envoi tenait encore, lui :
+il relit la base, pas l'écran.
+
+**Éprouvé des deux côtés, et confronté à l'ancien comportement avant d'être
+cru** : quatre essais purs dont un TÉMOIN qui rejoue le « 0450 »
+(`scripts/test-case-du-prix.ts`), et deux mesures au navigateur sur exactement
+son cas — la case ouvre vide, et le curseur arrive derrière le chiffre même
+quand on appuie tout à gauche (`scripts/test-devis-refus-a-chiffrer-e2e.ts`).
+
+### Le calendrier du planning se pousse du doigt
+
+*« Ce qui serait bien c'est de pouvoir déplacer les mois du planning en slidant
+soit à droite soit à gauche »*, puis, dans la foulée : *« en plus des 2
+flèches »*.
+
+**Cette précision décide tout, et elle n'est pas un détail de politesse.**
+`PRODUCT.md` interdit qu'un geste caché porte une fonction à lui seul — *« pas
+de geste à découvrir : un glissement, un appui long, un double appui ne
+s'apprennent pas tout seuls »* —, parce que ceux qui s'en serviront ne sont pas
+à l'aise avec un téléphone. Les deux flèches restent donc à leur place, à leur
+taille : le glissement est un raccourci pour qui le connaît.
+
+**La planche d'abord** (`CLAUDE.md` §3 bis) : `appli/glisser-les-mois.html`,
+essayée du doigt, deux façons proposées. Il a retenu **A — le mois suit le
+doigt**.
+
+**Ce que le code garde de la planche, et pourquoi chaque point compte :**
+
+| | |
+|---|---|
+| le geste ne prend la main que s'il part **de côté** | un doigt qui descend fait défiler la page ; le retenir bloquerait l'écran sous celui qui voulait seulement lire plus bas |
+| un doigt qui a **glissé** n'ouvre pas la journée sous lui | sans quoi chaque glissement ouvrirait une fiche au hasard |
+| un glissement **trop court** ramène le mois en place | on ne change pas de mois pour un frôlement |
+| le **titre suit** le glissement | sinon l'on voit octobre arriver pendant que l'en-tête dit encore septembre — deux vérités à deux centimètres, sur l'écran qui sert à savoir où l'on est. Trouvé en REGARDANT la planche |
+| les mois voisins sont **hors d'atteinte** | ils se montrent, ils ne se touchent pas : ni le doigt ni le clavier ne les atteignent, sinon une case à moitié sortie de l'écran ouvrirait une journée |
+
+**La règle vit dans `src/lib/glissement.ts`** (`CLAUDE.md` §4 sexies) : de quel
+côté part le doigt, et combien de mois il fait franchir. Elle s'éprouve sans
+navigateur — `scripts/test-glissement.ts`, quatorze essais — et l'écran ne fait
+que suivre ce qu'elle répond.
+
+**Deux choses ont été RETIRÉES au passage, et c'est le signe d'une correction à
+la racine :** le passage de décembre à janvier était écrit en clair dans chacune
+des deux flèches, avec sa bascule d'année ; il tient maintenant dans
+`moisDecale` (`src/lib/mois.ts`), une fois. Et `caseDuJour` est sortie du corps
+du composant : imbriquée, elle se recréait à chaque rendu et empêchait de garder
+les trois mois en mémoire — sans quoi glisser aurait redessiné cent vingt-six
+cases par pixel parcouru, et le mois aurait traîné derrière le doigt sur un
+vieux téléphone.
+
+**Ce qui a été refusé :** un `eslint-disable` sur la liste de dépendances, qui
+aurait fait passer le contrôle sans rien régler. `test-pas-de-pansement.ts` le
+refuse, et il avait raison : la vraie cause était la fonction imbriquée.
+
+**Éprouvé en jouant le geste dans l'application**, pas seulement en la
+regardant : le glissement change de mois, le titre suit, le frôlement ne change
+rien, les deux flèches marchent toujours, toucher une journée ouvre sa fiche, et
+un glissement n'en ouvre aucune.
+
+---
+
 ## 2026-09-10
+
+### La déconnexion renvoyait sur `localhost` — donc nulle part, depuis un téléphone
+
+Sa capture : *« Safari ne peut pas ouvrir la page car la connexion au serveur
+est impossible »*, sur `localhost`, juste après s'être déconnecté depuis les
+Réglages.
+
+**La chaîne, et elle n'a rien d'évident.** `signOut({ redirectTo })` ne redirige
+pas vers ce qu'on lui donne : `createActionURL` fabrique une adresse **absolue**
+à partir de `AUTH_URL` ou, à défaut, de l'en-tête `x-forwarded-host`. Et cet
+en-tête vaut `localhost:3000` **parce qu'on l'a voulu** —
+`alignerHoteSurOrigine` le réécrit délibérément sur l'`Origin` du navigateur,
+sans quoi Next.js refuserait toute action serveur derrière le mandataire de son
+espace (« Invalid Server Actions request. », vingt échanges le 24 août). Le
+chemin était juste ; c'est l'hôte collé devant qui ne valait rien.
+
+**Corrigé en cessant de laisser deviner**, pas en défaisant l'alignement — le
+défaire rouvrirait la panne d'à côté, et plus personne ne pourrait entrer. La
+sortie fait désormais ce que font déjà les trois chemins qui ENTRENT :
+`signOut({ redirect: false })`, puis notre propre `redirect("/login")`. Un
+chemin relatif ne porte aucun hôte : le navigateur le résout contre l'adresse
+par laquelle Atlas a été ouvert, quelle qu'elle soit.
+
+**Ce que le contrôle ne peut PAS faire, et il faut le dire.** La reproduction au
+navigateur a été tentée dans `verifier-connexion.mjs` — la seule suite qui pose
+un hôte étranger — et retirée : elle le pose sur chaque requête, ressources
+comprises, donc la page ne s'hydrate pas et aucune feuille ne s'ouvre. Sur un
+hôte ordinaire, le défaut est invisible : l'hôte deviné se trouve être le bon.
+`scripts/test-sortie-sans-hote.ts` fixe donc le MÉCANISME — aucune sortie ne
+laisse Auth.js composer l'adresse d'arrivée —, et il a été mis au rouge contre
+les trois défauts qu'il défend : le code d'avant, le cookie mort sans
+redirection, et une adresse écrite en dur.
+
+**Et un rouge de plus, ramassé à la fusion et qui n'était pas de ce lot :**
+`creneaux_chantier` (migration 0085, arrivée le soir même avec le lot planning)
+ne figurait dans aucun export d'entreprise. Sans elle, un artisan qui emporte
+ses données récupérerait ses chantiers et leur durée demandée, mais plus rien ne
+dirait QUAND ils tiennent — un planning de saison à refaire à la main. Elle est
+ajoutée à `export-entreprise.ts` plutôt qu'exclue : ce sont ses données.
+### La fiche d'intervention se colle sous SON chantier
+
+*« Quand il y a plusieurs chantiers le même jour on a un problème ! Quand je
+clique sur sa fiche d'intervention, ça doit se coller en dessous, pas en dessous
+de Frédéric, ça porte à confusion. »*
+
+La fiche était rendue **après la boucle des blocs**, donc toujours au bas de la
+journée. Sur un jour à deux chantiers, toucher « Mr. Julien » ouvrait une fiche
+posée sous « Mr. Frédéric » — et la fiche porte le nom du client en gros : deux
+noms qui se contredisent à trois centimètres, sur l'écran qui dit à une équipe
+où elle va.
+
+**Corrigé à la racine, pas déplacé d'un cran :** la place se calcule dans
+`rangDeLaFiche` (`src/lib/planning-jour.ts`), à côté de `blocsDeLaJournee` qui
+ordonne déjà la journée. L'écran ne fait que la poser au rang qu'on lui rend, et
+il n'y a **qu'un seul endroit** dans l'arbre où elle se dessine.
+
+**Ce que la règle concilie**, et c'est pour cela qu'elle ne tient pas en une
+ligne : sous le **dernier** chantier du jour, la fiche repasse **après** les
+moitiés restées libres — sa correction du 22 août 2026, *« l'après-midi de libre
+doit rester en dessous du matin même s'il est libre »*. Une moitié libre
+appartient à la journée, pas au chantier. Les deux règles ne se croisent qu'en
+queue, parce que `blocsDeLaJournee` ne pose des blocs « libre » que là.
+
+**Éprouvé sans navigateur** (`scripts/test-planning-jour.ts`, cinq essais de
+plus) : le défaut ne se voyait qu'à **deux chantiers dans la même journée**, un
+cas qu'aucune capture ni aucune suite ne montrait. Les nouveaux essais ont été
+confrontés à l'ancien comportement — deux rougissent, dont celui qui porte son
+mot : « elle est passée sous Frédéric ».
+
+**Et le chemin qu'il emprunte, lui, est éprouvé à l'écran** : un essai de plus
+dans `scripts/test-planning-e2e.ts` pose DEUX chantiers sur la même journée,
+touche le nom du premier, et mesure que la fiche tombe entre les deux. La suite
+du planning rend 44 réussis, 0 échec.
+
+**Et du code mort est parti avec :** `dansLeMois` posait `mx-[18px]` sur la
+fiche pour un appelant qui n'existe pas — les deux passent `attache`. La fiche
+vit désormais DANS la carte du jour, et c'est le retrait de la carte qui
+l'aligne.
+
+**Et un contrôle qui rougissait au hasard a été rendu précis.** « Un samedi
+offre les mêmes gestes qu'un mardi » visait « la première carte du document »
+plutôt que le samedi : quand une ligne des planifiés restait dépliée plus haut,
+il mesurait la mauvaise et annonçait « le samedi n'affiche pas ses deux
+demi-journées » — sur du code juste, une fois sur deux. Il vise désormais la
+carte par son jour. Un garde-fou qui parle à tort s'apprend à être ignoré.
+
+### Poser un client sur un jour, sans passer par le devis
+
+**Sa demande, planche `appli/bloquer-sans-devis.html` retenue :** *« si j'ai un
+chantier à rajouter, que je puisse le faire sans devoir passer par la fiche
+client et le devis »*, puis *« si le client n'est pas reconnu, il faut qu'il
+ajoute aussi sa fiche client automatiquement »*.
+
+« Ajouter » propose désormais **deux voies** — un chantier qui attend une date,
+comme avant, ou **un client** qu'on écrit au clavier. Connu, il apparaît et son
+numéro est déjà là ; inconnu, **sa fiche se crée** avec ce qu'on saisit. Puis
+matin, après-midi ou la journée, et c'est posé. **« Annuler » ramène aux deux
+voies, à chaque étape.**
+
+| | |
+|---|---|
+| la reconnaissance | `trouverOuCreerClient`, celle de la voie normale — un client connu ne se dédouble pas, un autre numéro fait une autre fiche |
+| « Journée » | n'existe QUE là : le chantier naît du geste, le choix EST sa durée et ne recouvre aucun devis |
+| ce qui n'est pas promis | ni prix, ni devis, ni équipe — le temps est pris, c'est tout |
+| **une troisième voie** | *« Autre chose »* — un rendez-vous à la banque, une livraison, une formation : un chantier **sans client**, portant ce qu'on écrit |
+
+**Le geste « + Absent ? » ne passe plus sous le tiroir.** Deux pixels, mesurés
+sur son écran, et `test-pas-la-ce-jour-e2e` les refusait à juste titre. La carte
+naît au milieu de la page : la réserve du bas n'y peut rien, elle permet de
+défiler, pas de remonter. Toucher un jour rend maintenant exactement ce que les
+deux bandes fixes prennent — jamais plus, et rien du tout quand le geste est
+déjà dégagé.
+
+**Et son bord passe en or — sa version C**, choisie sur planche
+(`appli/tiroir-en-or.html`, quatre bords côte à côte) : deux pixels d'or, les
+coins levés, un trait entre la poignée et le dedans, et les titres alignés à
+gauche sur la marge du contenu. Le cadre doré complet a été écarté : joli une
+fois, lourd tous les jours.
+
+**Le tiroir du bas se voit enfin quand il est ouvert** — *« on ne la voit
+pas »* : il portait le fond de la page. Il prend celui des cartes, et son ombre
+se creuse à l'ouverture.
+
+**Deux défauts qu'il a signalés le soir même, corrigés :** la voie « Un chantier
+en attente » disparaissait quand seule une **demi-journée rendue** attendait —
+elle compte désormais comme le reste, et se prend au doigt depuis la journée. Et
+un geste qui part dans le vide — sa page avait survécu à son serveur — ne se
+taisait plus : l'écran écrit *« Rien n'est parti. Rechargez la page. »* au lieu
+de ne rien faire. La recherche de clients, elle, rendait la fiche d'un inconnu
+**définitivement** inatteignable dans ce cas.
+
+**Le geste ne disparaît plus quand rien n'attend**, et c'est sa règle du 23 août
+qui le veut : il ne menait nulle part, il mène maintenant quelque part. Ce qui
+disparaît, c'est la voie qui ne mène nulle part — « Un chantier en attente »
+quand aucun n'attend.
+
+**Un défaut de placement corrigé au passage :** le tiroir du bas est `fixed` et
+posé sur la barre, mais seul l'espace de la barre était réservé. « Poser »
+atterrissait dessous dès que la fiche d'un inconnu s'ouvrait. Le tiroir publie
+désormais sa hauteur (`--atlas-tiroir`), comme la barre publie la sienne.
+
+Détail : `ARCHITECTURE.md` §323.
 
 ### Rendre bavard le silence de Google et d'Apple, et tenir à jour le fichier de clés
 
@@ -58,6 +331,7 @@ batterie les a sortis, et ils sont réparés ici :
   25 août : deux traits autour d'un mot, pas un trait qui file d'un mot au bord.
   Le contrôle sait maintenant les distinguer — et il rougit toujours sur la
   forme solitaire, vérifié en la lui montrant.
+
 ### Une demi-journée se libère, attend en bas, et se repose ailleurs
 
 **Sa planche, essayée puis retenue** (`appli/liberer-une-demi-journee.html`) :

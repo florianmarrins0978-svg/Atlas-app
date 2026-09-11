@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ligneAttendSonPrix, lignesEnAttenteDePrix } from "@/lib/preparation-devis";
+import { ligneAttendSonPrix, lignesEnAttenteDePrix, prixAEcrire } from "@/lib/preparation-devis";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, voile } from "@/lib/design-tokens";
@@ -222,7 +222,13 @@ export default function DevisCompletClient(props: Props) {
   const [client, setClient] = useState(props.client);
   const [adresseChantier, setAdresseChantier] = useState(props.adresseChantier);
   const [lignes, setLignes] = useState<Ligne[]>(
-    props.lignesInitiales.map((l) => ({ ...l, quantite: sansZerosInutiles(l.quantite), prixUnitaire: sansZerosInutiles(l.prixUnitaire) }))
+    props.lignesInitiales.map((l) => ({
+      ...l,
+      quantite: sansZerosInutiles(l.quantite),
+      // Un prix jamais posé n'arrive PAS dans le champ : la règle est celle
+      // du montant « à chiffrer », et elle n'est écrite qu'une fois.
+      prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire), l.aChiffrer),
+    }))
   );
   const [tauxTva, setTauxTva] = useState(sansZerosInutiles(props.tauxTva));
   // Le prix accordé au client — son geste commercial, arrangement B du 16 août.
@@ -609,7 +615,7 @@ export default function DevisCompletClient(props: Props) {
       apres.lignes.map((l) => ({
         ...l,
         quantite: sansZerosInutiles(l.quantite),
-        prixUnitaire: sansZerosInutiles(l.prixUnitaire),
+        prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire), l.aChiffrer),
       }))
     );
     // **Le prix accordé se recale lui aussi**, et il ne s'en déduit pas : il ne
