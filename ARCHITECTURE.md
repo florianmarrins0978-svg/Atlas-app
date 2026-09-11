@@ -28152,7 +28152,58 @@ archives touche des pièces comptables, et cela ne se décide pas sans lui
 
 ---
 
-## §329 — La trace de réception dit UNE date, et la phrase se décide dans `lib/`
+## §329 — Une écriture qui change un AUTRE écran doit le périmer : sinon la flèche rejoue l'ancien
+
+**Payé le 11 septembre 2026**, sur la pastille des retours d'intervention :
+*« je viens d'aller regarder le retour d'inter mais le petit 1 est resté
+visible »*. Le compte des non-lus était juste en base, l'écran le calculait
+bien, et la pastille restait allumée.
+
+### Ce qui se passe vraiment
+
+Next garde de côté, dans le navigateur, la dernière version rendue de chaque
+écran visité. Un lien vers un écran dynamique la redemande ; **un retour en
+arrière la rejoue telle quelle**. Or la flèche d'en-tête d'Atlas recule pour de
+bon depuis le 9 septembre (`FlecheRetour`, `router.back()`) — c'était sa demande,
+et c'est ce qui lui rend sa place dans la liste (§ de la flèche). Elle rejoue
+donc aussi l'écran d'avant l'écriture.
+
+| | |
+|---|---|
+| ce que la base savait | le retour est lu |
+| ce que l'écran montrait | la page de trente secondes plus tôt, pastille à 1 |
+
+### La règle
+
+**Toute action serveur qui change ce qu'un AUTRE écran affiche nomme cet écran**
+(`revalidatePath`), au moment de l'écriture. Ce n'est pas une précaution de
+confort : c'est la seule chose qui vide la page gardée côté navigateur, et donc
+la seule qui survive à un retour en arrière.
+
+Le dépôt le faisait déjà là où le retour est POSÉ
+(`src/app/planning/retour-actions.ts` périme `/planning`, `/termines` et
+`/termines/retours`). C'est la LECTURE qui avait été oubliée
+(`src/app/termines/retours/actions.ts`) — une écriture muette, pas un écran
+fautif.
+
+**Les deux écrans se périment, pas seulement celui du compte.** La liste des
+retours gardée en l'état ferait revenir le point doré sur un retour ouvert : la
+même page vieille, l'autre symptôme.
+
+### Pourquoi aucune suite ne le voyait
+
+Les deux contrôles qui couvraient cette pastille rechargeaient la page
+(`page.goto`), ce qui contourne exactement le mécanisme en cause. Ils étaient
+**verts sur le défaut qu'ils portaient dans leur nom**.
+
+Le contrôle ajouté parcourt son chemin à lui — l'onglet, la carte, la flèche —
+**sans un seul rechargement**, et il sait échouer : joué contre l'ancien code il
+rougit en disant « le 1 est resté sur l'onglet ». C'est `CLAUDE.md` §5 quater,
+payé une seconde fois : *éprouver le geste du patron, pas la fonction qu'on
+vient d'écrire*.
+
+---
+## §330 — La trace de réception dit UNE date, et la phrase se décide dans `lib/`
 
 **Sa demande du 11 septembre 2026**, capture à l'appui, sur « En attente de
 paiement » : *« les phrases sont trop longues. Il faut marquer Ouverte 11/09

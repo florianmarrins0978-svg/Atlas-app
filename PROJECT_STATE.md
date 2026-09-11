@@ -23,7 +23,7 @@ Même écran : « Noter un règlement » ouvre sur deux chiffres — « Reste à
 1 476,00 € / Sur les 1 776,00 € du 11/09 » — à la place de la phrase qui
 expliquait comment fonctionne un acompte. **Aucune migration.**
 
-Détail : `ARCHITECTURE.md` §329.
+Détail : `ARCHITECTURE.md` §330.
 
 ---
 
@@ -60,6 +60,17 @@ civilité, le canal d'envoi et l'adresse du chantier, non**. Racine : la règle
 était écrite deux fois, une par chemin, et la copie de `creerChantierAction` —
 celle du client reconnu à l'écran — avait divergé. `completerLaFiche` la porte
 maintenant seule (`ARCHITECTURE.md` §327). Rien n'est jamais écrasé.
+
+## FAIT : LE « 1 » DES RETOURS S'ÉTEINT QUAND IL LIT — 11 septembre 2026
+
+La pastille comptait bien les non-lus ; c'est la page rejouée par le retour
+arrière qui montrait l'image d'avant la lecture. L'action qui enregistre la
+lecture périme désormais `/termines` et `/termines/retours`, comme le fait déjà
+celle qui pose un retour. Un contrôle parcourt son chemin sans recharger —
+onglet, carte, flèche — et il a été vu rouge contre l'ancien code
+(`ARCHITECTURE.md` §329).
+
+---
 
 ## FAIT : LES SUITES VISENT LE MOIS QUI EST À L'ÉCRAN — 11 septembre 2026
 
