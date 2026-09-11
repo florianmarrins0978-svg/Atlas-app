@@ -8,6 +8,40 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Le micro revient sur la fiche qui facture, et la fiche APPREND ce qu'il tape
+
+*« Il faut rajouter la petite note vocale comme sur la fiche client si on veut
+dicter les infos de la facture ! »* — et, dans le même message : *« il n'avait
+pas l'info de l'adresse e-mail, donc là je l'ai rajoutée, et ce qu'il faut faire
+c'est que maintenant il a l'info et il doit la rajouter dans la catégorie
+client. »*
+
+**1. Le micro.** Il était tombé la veille avec l'anneau et les photos, sous une
+formule de sa planche — *« on ne dicte pas une facture qu'on tape »*. Le
+raisonnement était juste pour les deux autres : elles nourrissent le CHIFFRAGE
+d'un devis, qui n'existe pas ici. Le petit micro, lui, ne nourrit rien — il
+remplit le nom, le numéro, l'e-mail, l'adresse, les mêmes cases sur le même
+écran. **Trois pièces retirées ensemble demandaient trois raisons, pas une.**
+L'anneau et les photos restent dehors.
+
+**2. Ce qu'il tape entre dans la fiche.** L'e-mail l'y entrait déjà — c'est la
+seule moitié de sa demande qui marchait. **La civilité, le canal d'envoi et
+l'adresse du chantier, non**, et sa capture porte les trois : « Mr » choisi,
+« SMS » souligné, l'adresse de Mantes-la-Jolie. Il les rechoisissait à chaque
+passage sans qu'aucun message ne le dise.
+
+**La racine était une règle écrite deux fois** (`ARCHITECTURE.md` §327). Deux
+chemins mènent à une fiche connue — le nom rapproché, et l'identifiant tenu
+d'avance quand Atlas vient de le reconnaître à l'écran — et chacun avait sa
+copie. Celle du second avait déjà divergé : elle ignorait la civilité et le
+canal, et son `adresseClient ?? adresseChantier` ne pouvait jamais atteindre la
+seconde, le champ replié valant `""`. Une seule fonction désormais,
+`completerLaFiche` ; la copie a été supprimée, pas recouverte.
+
+**Ce qui n'a pas bougé :** rien n'est jamais écrasé. Ce qu'il avait pris le
+temps de noter reste. Pour corriger une fiche, il y a l'écran des coordonnées.
+
+
 ### Aérer la porte — et le premier essai lisait sa demande à l'envers
 
 *« Je les trouve trop collés en haut, aère la page et prends plus d'espace. »*

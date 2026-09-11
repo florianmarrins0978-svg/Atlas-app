@@ -11,7 +11,9 @@
 //
 //   1. le cas du patron — deuxième chantier chez Martins, une seule fiche ;
 //   2. deux Martins aux numéros différents restent deux fiches ;
-//   3. les cases vides de la fiche se complètent, les autres ne bougent pas ;
+//   3. les cases vides de la fiche se complètent, les autres ne bougent pas —
+//      par le rapprochement ET par l'identifiant, qui est le chemin du client
+//      qu'Atlas vient de reconnaître à l'écran (sa demande du 11 septembre) ;
 //   4. un client EFFACÉ (RGPD) n'est jamais réutilisé — le rapprochement ne
 //      doit pas ressusciter un dossier qu'on a fait disparaître ;
 //   5. un client supprimé non plus.
@@ -20,7 +22,13 @@ import assert from "node:assert/strict";
 import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
-import { creerClient, trouverOuCreerClient, getClient } from "../src/server/repositories/clients";
+import {
+  creerClient,
+  trouverOuCreerClient,
+  completerLaFiche,
+  getClient,
+} from "../src/server/repositories/clients";
+import { clientAPreremplir } from "../src/lib/rapprochement-client";
 import { effacerClient } from "../src/server/repositories/donnees-client";
 import { withEntreprise } from "../src/server/db/with-entreprise";
 import { clients } from "../src/server/db/schema";
@@ -94,6 +102,86 @@ async function main() {
     assert.equal(fiche?.email, "martins@ex.test", "l'e-mail manquant n'a pas été ajouté");
     assert.equal(fiche?.adresse, "3 rue des Lilas", "l'adresse manquante n'a pas été ajoutée");
     assert.equal(fiche?.telephone, "05 56 00 00 12", "le téléphone déjà noté a été réécrit");
+  });
+
+  await essai("LE CLIENT TENU PAR SON IDENTIFIANT APPREND AUTANT QUE L'AUTRE", async () => {
+    // ── SA DEMANDE DU 11 SEPTEMBRE 2026 ───────────────────────────────────
+    //
+    // *« Il n'avait pas l'info de l'adresse e-mail, donc là je l'ai rajoutée,
+    // et ce qu'il faut faire c'est que maintenant il a l'info et il doit la
+    // rajouter dans la catégorie client. »*
+    //
+    // **Le chemin de sa demande n'est PAS celui du dessus.** Atlas reconnaît
+    // Frédéric pendant qu'il tape : l'écran tient alors son identifiant, et
+    // l'enregistrement passe par `completerLaFiche` sans jouer le
+    // rapprochement. Cette moitié-là était recopiée dans
+    // `creerChantierAction`, et la copie avait déjà divergé — elle apprenait
+    // le numéro, l'e-mail et l'adresse, jamais la civilité ni le canal. Il
+    // rechoisissait « Mr » et « SMS » à chaque fois.
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai rapprochement");
+    const frederic = await creerClient(ctx, { nom: "Frederic", telephone: "0679984514" });
+
+    const apres = await completerLaFiche(
+      ctx,
+      { ...frederic, creeLe: frederic.createdAt },
+      {
+        civilite: "mr",
+        telephone: "0679984514",
+        email: "flo-speed@hotmail.fr",
+        adresse: "Rue Denfert Rochereau 78200 Mantes-la-Jolie",
+        canalCommunication: "sms",
+      }
+    );
+
+    assert.equal(apres.email, "flo-speed@hotmail.fr", "l'e-mail tapé n'est pas entré dans sa fiche");
+    assert.equal(apres.civilite, "mr", "la civilité choisie n'est pas entrée dans sa fiche");
+    assert.equal(apres.canalCommunication, "sms", "le canal d'envoi n'est pas entré dans sa fiche");
+    assert.equal(
+      apres.adresse,
+      "Rue Denfert Rochereau 78200 Mantes-la-Jolie",
+      "l'adresse n'est pas entrée dans sa fiche"
+    );
+
+    // **ET IL LE RETROUVE EN TAPANT SON NOM**, ce qui est toute sa phrase :
+    // *« la prochaine fois que je taperai Frédéric l'adresse e-mail pourra être
+    // ajoutée automatiquement aussi »*. Vérifier la colonne ne prouve que
+    // l'écriture ; c'est la RELECTURE par le nom qui prouve le service rendu.
+    const lu = clientAPreremplir({ nom: "Frederic" }, [
+      { ...apres, creeLe: apres.createdAt },
+    ]);
+    assert.equal(lu?.email, "flo-speed@hotmail.fr", "son e-mail ne revient pas quand il retape son nom");
+  });
+
+  await essai("ce qu'il avait pris le temps de noter n'est JAMAIS réécrit", async () => {
+    // L'autre moitié de la règle, et elle compte autant : apprendre, oui —
+    // écraser, jamais. Un portable tapé à la volée ne doit pas effacer le fixe
+    // qu'il avait noté, et le devis partirait alors au mauvais numéro.
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai rapprochement");
+    const connu = await creerClient(ctx, {
+      nom: "Frederic",
+      civilite: "mme",
+      telephone: "0556000012",
+      email: "ancien@ex.test",
+      canalCommunication: "email",
+    });
+
+    const apres = await completerLaFiche(
+      ctx,
+      { ...connu, creeLe: connu.createdAt },
+      {
+        civilite: "mr",
+        telephone: "0679984514",
+        email: "flo-speed@hotmail.fr",
+        canalCommunication: "sms",
+      }
+    );
+
+    assert.equal(apres.email, "ancien@ex.test", "l'e-mail qu'il avait noté a été réécrit");
+    assert.equal(apres.telephone, "0556000012", "le téléphone qu'il avait noté a été réécrit");
+    assert.equal(apres.civilite, "mme", "la civilité déjà posée a été réécrite");
+    assert.equal(apres.canalCommunication, "email", "le canal déjà convenu a été réécrit");
   });
 
   await essai("UN CLIENT EFFACÉ (RGPD) N'EST JAMAIS RÉUTILISÉ", async () => {
