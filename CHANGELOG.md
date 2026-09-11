@@ -35,11 +35,15 @@ Payée. »* « Ces factures sont parties chez vos clients » redisait le titre d
 l'écran, et « pas avant » redisait « quand ». La ligne restante est en gras,
 entière.
 
-### « Noter un règlement » donne les chiffres au lieu d'expliquer l'acompte
+### « reste sur 1 776,00 € » devient « Reste à payer … / Sur les … du … »
 
-En tête du formulaire tenait une phrase qui décrivait le mécanisme — *« un
-acompte se note comme un solde… »*. À sa place, ce qu'il vient chercher :
-« Reste à payer 1 476,00 € / Sur les 1 776,00 € du 11/09 ».
+*« Lorsqu'on note un règlement la phrase était à droite, c'est là que je voulais
+reste à payer. »* La ligne d'un acompte, dans la colonne de droite, demandait de
+deviner que le gros chiffre au-dessus était le solde. Elle le nomme, et donne la
+facture entière avec son jour.
+
+Le formulaire de saisie est revenu tel qu'il était : ces deux lignes y avaient
+d'abord été posées, et ce n'est pas là qu'il les voulait.
 
 ### La facture téléchargée s'ouvrait blanche : la police n'annonçait pas sa longueur
 
