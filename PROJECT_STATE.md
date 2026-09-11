@@ -1,7 +1,25 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-11 · branche `claude/employee-absence-mockup-ayfv45`
+**Dernière mise à jour :** 2026-09-11 · branche `claude/invoice-download-readability-40dtq1`
 · dernière migration `drizzle/0085_creneaux_chantier.sql`
+
+---
+
+## FAIT (sous réserve de SA réponse) : LA POLICE DU DOCUMENT ANNONCE SA LONGUEUR — 11 septembre 2026
+
+Sa facture téléchargée s'ouvrait blanche, pour la troisième fois. Le programme
+TrueType embarqué depuis le 8 septembre ne portait pas `/Length1`, entrée que la
+norme exige et que `pdf-lib` n'écrit jamais : un lecteur strict refuse alors la
+police, et tout le texte disparaît avec elle.
+
+`src/server/pdf/polices-embarquees.ts` la pose entre la composition et le
+scellé, avec la longueur mesurée du programme décompressé. **Aucune migration.**
+
+**Sous réserve** : aucun moteur Apple ici, donc rien ne prouve que c'était SA
+panne. Deux documents témoins lui ont été envoyés ; `TODO.md` garde le point
+ouvert, et les documents déjà archivés ne sont pas repris.
+
+Détail : `ARCHITECTURE.md` §327.
 
 ---
 

@@ -9,6 +9,30 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ DEUX CHOSES RESTENT OUVERTES SUR LA FACTURE BLANCHE (11 septembre 2026)
+
+**1. Sa réponse aux deux documents témoins.** `/Length1` manquait vraiment et la
+norme l'exige : c'est mesuré. Que ce soit LA cause de sa page blanche ne l'est
+pas — aucun moteur Apple sur ce poste, et les trois moteurs disponibles
+peignaient déjà le document sans l'entrée. Deux factures identiques, un avant et
+un après, lui ont été envoyées le 11 septembre. **Tant qu'il n'a pas répondu,
+ne pas écrire que la panne est corrigée** (`AGENTS.md` : « ne pas annoncer une
+panne corrigée quand seul le silence l'a été »).
+
+Si sa réponse est « les deux sont blanches », la piste suivante n'est pas le
+fichier mais son trajet : le mandataire de son espace, ou le chiffrement
+anti-retouche (`proteger-pdf.ts`), qu'aucun lecteur d'Apple n'a jamais été vu
+ouvrir ici.
+
+**2. Les documents déjà archivés restent tels quels.** Le lien du client sert le
+fichier composé à l'arrêt (`envois-factures.ts`) — jamais un document régénéré,
+et c'est ce qui garantit que le client garde la pièce reçue. Tout ce qui a été
+composé entre le 8 et le 11 septembre est donc sans `/Length1`, sa facture
+F2026-000007 comprise : **la recomposer ne se décide pas sans lui**, ce sont des
+pièces comptables. À lui demander quand le point 1 aura tranché.
+
+---
+
 ## ~~LA PLANCHE DE LA PORTE N'A PAS SUIVI L'AÉRATION~~ — réglé autrement, 11 septembre 2026
 
 **Ce point était mal posé, et le corriger vaut mieux que de le faire.** Il
