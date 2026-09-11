@@ -223,7 +223,23 @@ export default function ListeTermines({
         </Link>
       </div>
 
-      {onglet === "attente" ? (
+      {/* ─── AUCUN CHANTIER TERMINÉ, ET LES PORTES RESTENT — 11 septembre 2026
+          Cet état vivait dans `page.tsx`, À LA PLACE de cette liste entière :
+          sans un seul chantier terminé, ni les onglets, ni « Retours
+          d'intervention », ni « Créer une facture » n'existaient. Vu à la
+          capture, sur une base neuve — c'est-à-dire chez tout artisan qui ouvre
+          Atlas pour la première fois, et dont le premier geste est justement un
+          dépannage réglé sur place, sans devis.
+
+          Un écran qui cache sa porte tant qu'on n'a jamais rien fini est un
+          cul-de-sac : c'est la règle qu'il a posée le 9 septembre pour les
+          retours (*« l'onglet doit exister même s'il n'y a aucun retour »*),
+          appliquée ici pour la même raison. La phrase, elle, ne change pas. */}
+      {lignes.length === 0 ? (
+        <p className="mt-8 px-[26px] text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
+          Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
+        </p>
+      ) : onglet === "attente" ? (
         <section className="mx-[26px] mt-8" data-atlas="tout-ce-qui-attend">
           {attente.length === 0 ? (
             <p className="text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
