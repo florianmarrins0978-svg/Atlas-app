@@ -6,6 +6,103 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-11
+
+### La case du prix portait un vrai zéro, et le curseur tombait devant le chiffre
+
+*« Quand je clique sur la case de la quantité, je veux que le petit trait qui
+clignote soit toujours à droite ; comme ça, si la quantité par défaut n'est pas
+bonne, on a juste à supprimer. Or des fois il se met à gauche. »* Et : *« pour le
+prix unitaire HT il faudrait que lorsque l'on clique il n'y ait rien de
+réellement écrit quand aucun prix n'est affiché [...] ils doivent être fictifs
+pour qu'on comprenne qu'on peut écrire dans la case, mais pas vraiment là. »*
+
+**Le second défaut se voyait sur sa capture, et il coûte de l'argent :** le champ
+portait un `0` RÉEL, venu du zéro que la base met par défaut. Il a tapé 450
+derrière, et la case a affiché **0450**. Ce coup-ci le nombre tombait juste ; un
+zéro de plus au mauvais endroit part chez le client.
+
+**Corrigé par la règle qui existait déjà**, pas par une seconde : là où le
+montant écrit « à chiffrer », le champ reste vide et c'est l'exemple en gris qui
+invite à écrire (`prixAEcrire`, à côté de `ligneAttendSonPrix`). **Un zéro voulu
+n'est pas touché** — une ligne offerte garde son zéro, sinon une gratuité décidée
+passerait pour un oubli.
+
+**Le « des fois » du curseur s'explique, et ce n'est pas un caprice du
+téléphone :** le champ est aligné à DROITE dans une case large. Le chiffre occupe
+quelques pixels au bout ; tout le reste est du vide, et c'est là que le doigt
+tombe. Le navigateur pose alors le curseur au plus près de l'appui, donc AVANT le
+chiffre — « 1 » dans 96 pixels, c'est presque à coup sûr. Le champ le remet au
+bout en deux temps, parce que le navigateur décide en second : à l'entrée, puis
+une fois à la sélection qui suit l'appui. Après quoi le curseur lui appartient.
+
+**UN TROISIÈME DÉFAUT A ÉTÉ TROUVÉ EN CHEMIN, et il était plus grave que les
+deux qu'il signalait.** En branchant le champ sur le drapeau « à chiffrer », le
+compilateur a montré que `appliquerRetouchesAction` ne le rendait PAS. Or l'écran
+se recale entièrement sur ce que cette action rend : après la moindre dictée,
+toutes les lignes perdaient leur drapeau, et « à chiffrer » devenait « 0,00 € »
+sous ses yeux — **une ligne non chiffrée présentée comme gratuite**, sur le
+document qui part chez son client. Le garde-fou de l'envoi tenait encore, lui :
+il relit la base, pas l'écran.
+
+**Éprouvé des deux côtés, et confronté à l'ancien comportement avant d'être
+cru** : quatre essais purs dont un TÉMOIN qui rejoue le « 0450 »
+(`scripts/test-case-du-prix.ts`), et deux mesures au navigateur sur exactement
+son cas — la case ouvre vide, et le curseur arrive derrière le chiffre même
+quand on appuie tout à gauche (`scripts/test-devis-refus-a-chiffrer-e2e.ts`).
+
+### Le calendrier du planning se pousse du doigt
+
+*« Ce qui serait bien c'est de pouvoir déplacer les mois du planning en slidant
+soit à droite soit à gauche »*, puis, dans la foulée : *« en plus des 2
+flèches »*.
+
+**Cette précision décide tout, et elle n'est pas un détail de politesse.**
+`PRODUCT.md` interdit qu'un geste caché porte une fonction à lui seul — *« pas
+de geste à découvrir : un glissement, un appui long, un double appui ne
+s'apprennent pas tout seuls »* —, parce que ceux qui s'en serviront ne sont pas
+à l'aise avec un téléphone. Les deux flèches restent donc à leur place, à leur
+taille : le glissement est un raccourci pour qui le connaît.
+
+**La planche d'abord** (`CLAUDE.md` §3 bis) : `appli/glisser-les-mois.html`,
+essayée du doigt, deux façons proposées. Il a retenu **A — le mois suit le
+doigt**.
+
+**Ce que le code garde de la planche, et pourquoi chaque point compte :**
+
+| | |
+|---|---|
+| le geste ne prend la main que s'il part **de côté** | un doigt qui descend fait défiler la page ; le retenir bloquerait l'écran sous celui qui voulait seulement lire plus bas |
+| un doigt qui a **glissé** n'ouvre pas la journée sous lui | sans quoi chaque glissement ouvrirait une fiche au hasard |
+| un glissement **trop court** ramène le mois en place | on ne change pas de mois pour un frôlement |
+| le **titre suit** le glissement | sinon l'on voit octobre arriver pendant que l'en-tête dit encore septembre — deux vérités à deux centimètres, sur l'écran qui sert à savoir où l'on est. Trouvé en REGARDANT la planche |
+| les mois voisins sont **hors d'atteinte** | ils se montrent, ils ne se touchent pas : ni le doigt ni le clavier ne les atteignent, sinon une case à moitié sortie de l'écran ouvrirait une journée |
+
+**La règle vit dans `src/lib/glissement.ts`** (`CLAUDE.md` §4 sexies) : de quel
+côté part le doigt, et combien de mois il fait franchir. Elle s'éprouve sans
+navigateur — `scripts/test-glissement.ts`, quatorze essais — et l'écran ne fait
+que suivre ce qu'elle répond.
+
+**Deux choses ont été RETIRÉES au passage, et c'est le signe d'une correction à
+la racine :** le passage de décembre à janvier était écrit en clair dans chacune
+des deux flèches, avec sa bascule d'année ; il tient maintenant dans
+`moisDecale` (`src/lib/mois.ts`), une fois. Et `caseDuJour` est sortie du corps
+du composant : imbriquée, elle se recréait à chaque rendu et empêchait de garder
+les trois mois en mémoire — sans quoi glisser aurait redessiné cent vingt-six
+cases par pixel parcouru, et le mois aurait traîné derrière le doigt sur un
+vieux téléphone.
+
+**Ce qui a été refusé :** un `eslint-disable` sur la liste de dépendances, qui
+aurait fait passer le contrôle sans rien régler. `test-pas-de-pansement.ts` le
+refuse, et il avait raison : la vraie cause était la fonction imbriquée.
+
+**Éprouvé en jouant le geste dans l'application**, pas seulement en la
+regardant : le glissement change de mois, le titre suit, le frôlement ne change
+rien, les deux flèches marchent toujours, toucher une journée ouvre sa fiche, et
+un glissement n'en ouvre aucune.
+
+---
+
 ## 2026-09-10
 
 ### La déconnexion renvoyait sur `localhost` — donc nulle part, depuis un téléphone
