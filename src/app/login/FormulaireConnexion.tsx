@@ -80,8 +80,26 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
         Retour
       </Link>
 
+      {/* **TROIS RESPIRATIONS QUI SE PARTAGENT LA PLACE — sa demande du
+          11 septembre 2026 : *« je les trouve trop collés en haut, aère la page
+          et prends plus d'espace »*.**
+
+          Tout tenait dans la moitié haute, et un vide de trois cents pixels
+          traînait sous le bouton. Des marges fixes ne l'auraient pas réglé :
+          elles donnent le même écart sur un petit téléphone que sur un grand,
+          donc soit ça reste collé, soit ça déborde.
+
+          Ce sont donc des **parts** — 1,2 · 1,2 · 0,9, réglées en REGARDANT la
+          capture —, et c'est le vide qui se
+          répartit, quelle que soit la hauteur. Le `min-h` est un plancher : sur
+          un écran court elles se compriment jusque-là, et
+          `test-porte-tient-en-une-page.mts` reste vert parce que rien ne
+          déborde. Le pied n'a plus de `mt-auto` : une marge automatique absorbe
+          la place AVANT les parts, donc elle les aurait toutes affamées. */}
+      <div className="min-h-[24px] flex-[1.2]" aria-hidden="true" />
+
       <h1
-        className="mb-4 mt-3 text-[30px] leading-[1.1]"
+        className="mb-7 text-[34px] leading-[1.1]"
         style={{ ...({ fontFamily: "ui-serif, Georgia, serif" } as const), letterSpacing: "-0.01em" }}
       >
         Connexion
@@ -106,7 +124,7 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
           if (champ) champ.defaultValue = adresse;
         }}
         onChange={(e) => setAdresse(e.target.value)}
-        className="atlas-champ-gelule mb-[10px]"
+        className="atlas-champ-gelule mb-[14px]"
       />
 
       <input
@@ -132,10 +150,12 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
         {etat?.erreur ?? ""}
       </p>
 
+      <div className="min-h-[16px] flex-[1.2]" aria-hidden="true" />
+
       <button
         type="submit"
         disabled={enCours}
-        className="atlas-plein w-full rounded-full py-4 text-[17px] transition-transform active:scale-[0.985] disabled:opacity-60"
+        className="atlas-plein w-full rounded-full py-[18px] text-[17px] transition-transform active:scale-[0.985] disabled:opacity-60"
         /**
          * **Le dégradé de la planche, en jetons.** Elle va du crème au doré
          * (#e9e8de → #d9cba8) ; la seconde valeur n'existe dans aucune charte,
@@ -155,7 +175,9 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
         {enCours ? "Ouverture…" : "Entrer"}
       </button>
 
-      <div className="mt-auto pt-6 text-center">
+      <div className="min-h-[18px] flex-[0.9]" aria-hidden="true" />
+
+      <div className="pb-1 text-center">
         <Link href="/creer-un-compte" className="inline-block py-[10px] text-[13.5px]" style={{ color: colors.muted }}>
           Pas de compte&nbsp;? <b style={{ color: colors.or, fontWeight: 600 }}>Créer un compte</b>
         </Link>

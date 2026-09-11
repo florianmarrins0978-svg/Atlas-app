@@ -56,7 +56,7 @@ export default function BoutonsFournisseurs({ fournisseurs }: { fournisseurs: Fo
 
   return (
     <>
-      <div className="flex gap-[10px]">
+      <div className="flex gap-[12px]">
         {fournisseurs.map((f) => (
           <button
             key={f.nom}
@@ -69,7 +69,7 @@ export default function BoutonsFournisseurs({ fournisseurs }: { fournisseurs: Fo
                 if (r?.erreur) setRefus(r.erreur);
               })
             }
-            className="flex flex-1 items-center justify-center gap-2 rounded-full px-2 py-[14px] text-[14.5px] font-medium transition-transform active:scale-[0.985] disabled:opacity-60"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full px-2 py-[16px] text-[14.5px] font-medium transition-transform active:scale-[0.985] disabled:opacity-60"
             /**
              * **Une marque non branchée se dessine PAREIL.** Elle ne se grise
              * pas : un bouton éteint sur le seul écran d'avant la connexion se
@@ -99,7 +99,7 @@ export default function BoutonsFournisseurs({ fournisseurs }: { fournisseurs: Fo
         </p>
       )}
 
-      <div className="my-[14px] flex items-center gap-3 text-[13px]" style={{ color: colors.muted }} aria-hidden="true">
+      <div className="my-[20px] flex items-center gap-3 text-[13px]" style={{ color: colors.muted }} aria-hidden="true">
         <span className="h-px flex-1" style={{ backgroundColor: colors.line }} />
         ou
         <span className="h-px flex-1" style={{ backgroundColor: colors.line }} />

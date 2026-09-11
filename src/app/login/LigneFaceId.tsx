@@ -101,7 +101,7 @@ export default function LigneFaceId() {
   if (!disponible) return null;
 
   return (
-    <div className="mb-[14px]">
+    <div className="mb-[18px]">
       <button
         type="button"
         onClick={ouvrir}
