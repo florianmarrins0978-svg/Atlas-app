@@ -1,19 +1,18 @@
 import assert from "node:assert/strict";
 import { receptionEnMots } from "../src/lib/reception-facture";
 
-// Les deux dates de la réception, MISES EN MOTS — sa demande du 9 septembre 2026.
+// La trace de réception d'une facture, MISE EN MOTS — sa demande du
+// 9 septembre 2026, raccourcie par lui le 11 septembre.
 //
-// **Pourquoi une suite pure pour une phrase.** Elle se relira le jour d'un
-// litige, et elle doit dire exactement la même chose partout où elle apparaît.
-// Une règle d'affichage écrite dans l'écran ne s'éprouve qu'en montant un
-// navigateur, et elle se recopie au deuxième écran qui en a besoin
-// (`CLAUDE.md` §3).
+// **Pourquoi une suite pure pour une phrase.** Deux écrans la montrent — les
+// impayés et le dossier du client —, et elle doit dire exactement la même chose
+// aux deux endroits. Une règle d'affichage écrite dans l'écran ne s'éprouve
+// qu'en montant un navigateur, et elle se recopie au deuxième écran qui en a
+// besoin (`CLAUDE.md` §3).
 //
-// **Le fuseau est le vrai sujet.** Une heure mise en mots par le téléphone
-// changerait selon l'appareil qui la lit : la même ouverture s'afficherait à
-// 14 h 12 chez lui et à 12 h 12 ailleurs. Une preuve qui change d'heure selon
-// qui la regarde ne prouve rien — d'où les deux contrôles qui partent d'un
-// instant UTC et attendent l'heure de l'atelier.
+// **Le fuseau reste le vrai sujet**, même sans heure affichée : une ouverture à
+// 23 h 30 UTC est déjà le lendemain chez lui, et c'est SON jour qui doit
+// s'écrire.
 
 let passed = 0;
 let failed = 0;
@@ -29,56 +28,58 @@ function test(nom: string, fn: () => void) {
   }
 }
 
-test("rien d'ouvert, rien de confirmé : les deux se taisent", () => {
+test("rien d'ouvert, rien de confirmé : la ligne le dit, et n'a pas de date", () => {
   // **Un contrôle qui mesure zéro ne mesure rien** : si ce cas rendait déjà une
-  // phrase, tous les autres seraient verts sans rien prouver. Et à l'écran,
-  // c'est ce cas-là qui doit écrire « Pas encore ouverte » — l'information
-  // qu'il cherche quand un client prétend n'avoir rien reçu.
-  const r = receptionEnMots({ ouverteLe: null, accuseLe: null });
-  assert.equal(r.ouverte, null);
-  assert.equal(r.confirmee, null);
+  // date, tous les autres seraient verts sans rien prouver. Et à l'écran, c'est
+  // ce cas-là qui doit écrire « Pas encore ouverte » — l'information qu'il
+  // cherche quand un client prétend n'avoir rien reçu.
+  const r = receptionEnMots({ ouverteLe: null, accuseLe: null }, "2026-09-11");
+  assert.equal(r.avant, "Pas encore ouverte.");
+  assert.equal(r.date, null);
 });
 
-test("l'ouverture porte le jour ET l'heure, à l'heure de l'atelier", () => {
-  // 12 h 12 UTC, un 9 septembre : l'été, Paris est à UTC+2.
-  const r = receptionEnMots({ ouverteLe: new Date("2026-09-09T12:12:00Z"), accuseLe: null });
-  assert.equal(r.ouverte, "le 9 septembre à 14 h 12");
-  assert.equal(r.confirmee, null, "une facture ouverte mais non cochée s'annonce confirmée");
+test("ouverte sans case cochée : « Ouverte 11/09 », et AUCUNE heure", () => {
+  // Sa demande du 11 septembre 2026 : *« l'heure tu supprimes »*. Elle prenait
+  // la largeur d'une ligne de téléphone pour un repère qu'il survole.
+  const r = receptionEnMots({ ouverteLe: new Date("2026-09-11T15:57:00Z"), accuseLe: null }, "2026-09-11");
+  assert.equal(r.avant, "Ouverte ");
+  assert.equal(r.date, "11/09");
+  assert.ok(!/ h /.test(r.avant + r.date), "l'heure est revenue dans la ligne");
 });
 
-test("l'heure d'HIVER n'est pas décalée de la même heure", () => {
-  // Un `+2` figé se tromperait la moitié de l'année, et l'erreur ne se voit
-  // qu'un jour sur trente. En janvier, Paris est à UTC+1.
-  const r = receptionEnMots({ ouverteLe: new Date("2026-01-15T12:12:00Z"), accuseLe: null });
-  assert.equal(r.ouverte, "le 15 janvier à 13 h 12");
+test("case cochée : la confirmation SEULE, l'ouverture disparaît", () => {
+  // *« Si il coche la case, marque seulement réception confirmée le 11/09, pas
+  // besoin d'avoir les deux infos »* — et il a raison : cocher suppose d'avoir
+  // ouvert. Les deux dates côte à côte disaient deux fois la même chose.
+  const r = receptionEnMots(
+    { ouverteLe: new Date("2026-09-10T12:12:00Z"), accuseLe: new Date("2026-09-11T09:00:00Z") },
+    "2026-09-11"
+  );
+  assert.equal(r.avant, "Réception confirmée le ");
+  assert.equal(r.date, "11/09", "c'est le jour de la CONFIRMATION qui s'écrit, pas celui de l'ouverture");
+  assert.ok(!/[Oo]uverte/.test(r.avant), "l'ouverture s'écrit encore alors qu'elle est confirmée");
 });
 
 test("le jour bascule à l'heure de l'atelier, pas à Greenwich", () => {
   // 23 h 30 UTC le 8, c'est déjà 1 h 30 le 9 chez lui. Le jour compté en UTC
-  // ferait dire « le 8 septembre » à une ouverture du 9 — le même défaut que
-  // `jourIso` a corrigé le 25 août 2026, et qu'il avait relevé lui-même.
-  const r = receptionEnMots({ ouverteLe: new Date("2026-09-08T23:30:00Z"), accuseLe: null });
-  assert.equal(r.ouverte, "le 9 septembre à 1 h 30");
+  // ferait dire « 08/09 » à une ouverture du 9 — le même défaut que `jourIso` a
+  // corrigé le 25 août 2026, et qu'il avait relevé lui-même.
+  const r = receptionEnMots({ ouverteLe: new Date("2026-09-08T23:30:00Z"), accuseLe: null }, "2026-09-09");
+  assert.equal(r.date, "09/09");
 });
 
-test("la confirmation ne porte que le jour", () => {
-  // L'heure d'ouverture situe le geste dans la journée : c'est elle qu'on
-  // oppose à « je ne l'ai jamais reçue ». La confirmation est déjà un aveu — la
-  // minute n'y ajoute rien, et deux heures côte à côte sur la même ligne se
-  // lisent comme deux événements distincts.
-  const r = receptionEnMots({
-    ouverteLe: new Date("2026-09-09T12:12:00Z"),
-    accuseLe: new Date("2026-09-09T12:14:00Z"),
-  });
-  assert.equal(r.confirmee, "le 9 septembre");
-  assert.ok(!/h/.test(r.confirmee!), "la confirmation porte une heure dont personne n'a besoin");
+test("une facture de l'an dernier porte son année", () => {
+  // « 11/09 » sur une facture de l'an dernier désignerait deux jours à un an
+  // d'écart — et c'est précisément une vieille impayée qu'on vient regarder.
+  const r = receptionEnMots({ ouverteLe: new Date("2025-11-04T10:00:00Z"), accuseLe: null }, "2026-09-11");
+  assert.equal(r.date, "04/11/2025");
 });
 
-test("le premier du mois s'écrit « 1er », comme partout ailleurs", () => {
-  // La règle vient de `jourEtMois` : elle n'est pas recopiée ici, et ce
-  // contrôle le prouve. Le jour où elle change, cette suite le dira.
-  const r = receptionEnMots({ ouverteLe: new Date("2026-09-01T08:00:00Z"), accuseLe: null });
-  assert.equal(r.ouverte, "le 1er septembre à 10 h 00");
+test("le jour et le mois gardent leur zéro : « 01/09 », jamais « 1/9 »", () => {
+  // Une date en chiffres se lit en bloc : les colonnes doivent tomber au même
+  // endroit d'une ligne à l'autre, comme sur tous les montants de l'écran.
+  const r = receptionEnMots({ ouverteLe: new Date("2026-09-01T08:00:00Z"), accuseLe: null }, "2026-09-11");
+  assert.equal(r.date, "01/09");
 });
 
 console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

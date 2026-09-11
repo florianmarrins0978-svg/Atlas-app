@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Noter un règlement — Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  NOTER UN RÈGLEMENT — la planche, 11 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  CE QU'IL A DIT, ET QUI FAIT CETTE PLANCHE :
+
+    « Lorsque l'on note un règlement on doit pouvoir rentrer la date à laquelle
+      le client a payé. »
+    « La phrase sous Enregistrer ce règlement est trop longue, synthétise-la !
+      Plus direct, plus compréhensible, on comprend rien là. »
+
+  Puis, devant la première version :
+
+    « En dessous de Payée, à droite de la date, le montant doit être 300 euros
+      dans ton exemple. »
+    « Quand on clique sur Noter un règlement, c'est là où la date doit
+      apparaître avec le montant, et ensuite ça s'inscrit comme tu l'avais
+      fait. »
+
+  Il avait raison, et c'était une incohérence de la planche : la case du montant
+  était VIDE pendant que la ligne du dessous annonçait déjà « 300,00 € le
+  11/09 ». Deux moments de la même facture dessinés en même temps.
+
+  D'OÙ LE BOUTON « JE SAISIS / UNE FOIS ENREGISTRÉ » : les deux moments se
+  regardent l'un après l'autre, comme ils arrivent.
+
+    · Je saisis            — la facture est entière (1 776,00 €), on tape 300
+                             et le jour où le client a payé ;
+    · Une fois enregistré  — « 300,00 € le 11/09 » s'inscrit, et la droite
+                             passe à « Reste à payer 1 476,00 € ».
+
+  ─────────────────────────────────────────────────────────────────────────
+  SA QUESTION, ET LA RÉPONSE EXACTE.
+
+  « La date correspond bien à la date à laquelle on a enregistré le
+   règlement ? » — NON, et c'est mieux ainsi : c'est **le jour où le client a
+  payé**. Atlas propose celui d'aujourd'hui parce que c'est le cas le plus
+  courant, et cette case se change.
+
+  Ce n'est pas un détail de confort : cette date décide de quel trimestre de TVA
+  le règlement relève. Un chèque reçu le 30 juin et noté le 2 juillet appartient
+  au trimestre d'avant — la case doit pouvoir le dire.
+
+  ─────────────────────────────────────────────────────────────────────────
+  CE QUE CHAQUE PLANCHE PROPOSE — À CHOISIR, ET À CORRIGER.
+
+    1. Deux cases nommées   · le nom au-dessus de chaque case
+    2. La phrase à trous    · une seule ligne, deux trous à remplir
+    3. Le solde à portée    · les cases nommées, plus « Tout le reste »
+
+  La phrase du bas, dans les trois : « Seule la part reçue entre au relevé. »
+  Six mots contre dix-huit.
+
+  AUCUNE LIGNE DE L'APPLICATION N'A BOUGÉ. `CLAUDE.md` §3 bis : une demande
+  d'apparence se dessine, se montre, et ne touche `src/` qu'une fois choisie.
+
+  Les couleurs viennent de `src/lib/design-tokens.ts`, au caractère près.
+*/
+:root{
+  --fond:#f5f3ee; --carte:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --plein:#7d9a6d;
+  --or:#B98B47; --trait:rgba(28,28,26,.12); --filet:rgba(28,28,26,.08);
+  --creme:#f0eee7; --scene:#e6e3dc;
+  --serif:"Playfair Display",ui-serif,Georgia,serif;
+  --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+body.nuit{
+  --fond:#101210; --carte:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --pin:#8fae86; --papier:#20241f; --plein:#8fae86;
+  --or:#c6a15b; --trait:rgba(233,232,222,.12); --filet:rgba(233,232,222,.08);
+  --creme:#20241f; --scene:#070908;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 var(--sans);color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 64px}
+
+.bandeau{background:var(--encre);color:var(--fond);padding:18px 20px;font-size:14px;line-height:1.6}
+body.nuit .bandeau{background:#000;color:var(--encre)}
+.bandeau b{color:#fff}
+body.nuit .bandeau b{color:var(--encre)}
+.bandeau .dedans{max-width:1240px;margin:0 auto}
+
+.etats{position:sticky;top:0;z-index:20;background:var(--scene);
+       border-bottom:1px solid var(--trait);padding:12px 16px 13px}
+.etats .quoi{max-width:1240px;margin:0 auto 9px;font:600 10px/1 var(--sans);
+             letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+.etats .rangee{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px}
+.etats button{border:1px solid var(--trait);background:var(--carte);color:var(--encre-douce);
+              border-radius:999px;padding:10px 14px;font:400 13px/1 var(--sans);cursor:pointer;
+              min-height:44px;-webkit-tap-highlight-color:transparent}
+.etats button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#faf9f5}
+body.nuit .etats button[aria-pressed="true"]{color:#101210}
+
+.planches{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;
+          max-width:1280px;margin:30px auto 0;padding:0 20px}
+.planche{width:390px;max-width:100%}
+.planche .nom{margin:0 0 4px;font:500 19px/1.2 var(--serif)}
+.planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--encre-douce);min-height:58px}
+.tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+     box-shadow:0 16px 44px rgba(20,18,14,.22);background:var(--fond);padding:0 0 18px}
+
+/* ── L'écran, recopié de src/app/termines/tva/EnAttenteDePaiement.tsx ── */
+.bloc{padding:22px 24px 0}
+.haut{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.haut h2{margin:0;font:400 17px/1.25 var(--serif)}
+.haut .compte{font-size:12px;color:var(--gris)}
+.chapo{margin:6px 0 0;font:700 13px/1.35 var(--sans);color:var(--encre)}
+
+.facture{margin-top:14px;padding-top:14px;border-top:1px solid var(--filet)}
+.ligne{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.cli{font-size:14.5px}
+.meta{display:block;font-size:11.5px;line-height:1.45;color:var(--gris)}
+.droite{text-align:right;flex:0 0 auto}
+.solde{font:400 15.5px/1.2 var(--serif);font-variant-numeric:tabular-nums}
+.solde .mot{font:400 11px/1 var(--sans);color:var(--gris)}
+.surles{margin:0;font-size:11px;line-height:1.45;color:var(--or)}
+.trace{margin:8px 0 0;font-size:11.5px;line-height:1.5;color:var(--gris)}
+.trace b{color:var(--encre-douce)}
+
+.gestes{display:flex;align-items:center;gap:8px;margin-top:10px}
+.payee{border:0;border-radius:999px;background:var(--plein);color:var(--carte);
+       padding:10px 20px;font:500 14px/1 var(--sans);min-height:40px;cursor:pointer}
+body.nuit .payee{color:#101210}
+.noter{border:0;background:none;color:var(--gris);font:400 14px/1 var(--sans);
+       padding:10px 8px;min-height:40px;cursor:pointer}
+.noter[aria-pressed="true"]{color:var(--encre)}
+
+/* ── La saisie : c'est CE bloc que la planche fait varier ── */
+.saisie{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.cases{display:flex;gap:10px;align-items:flex-end}
+.case{display:flex;flex-direction:column;gap:5px;min-width:0}
+.case .nom-case{font:500 10px/1 var(--sans);letter-spacing:.14em;
+                text-transform:uppercase;color:var(--gris)}
+.saisie input{border:0;border-radius:4px;background:var(--creme);color:var(--encre);
+              font:400 16px/1.2 var(--sans);padding:11px 12px;min-width:0;width:100%}
+.saisie input::placeholder{color:var(--gris)}
+.case.jour{flex:1 1 auto}
+.case.montant{flex:0 0 132px}
+.case.montant input{text-align:right}
+.euro{padding-bottom:12px;font-size:13px;color:var(--gris)}
+.enregistrer{align-self:flex-start;border:0;border-radius:999px;background:var(--plein);
+             color:var(--carte);padding:12px 22px;font:500 14px/1 var(--sans);
+             min-height:44px;cursor:pointer}
+body.nuit .enregistrer{color:#101210}
+.sous{margin:0;font-size:12px;line-height:1.35;color:var(--gris)}
+.tout{align-self:flex-start;border:1px solid var(--trait);border-radius:999px;
+      background:none;color:var(--encre-douce);padding:9px 14px;
+      font:400 12.5px/1 var(--sans);min-height:38px;cursor:pointer}
+
+/* La phrase à trous */
+.trous{margin:0;font-size:15px;line-height:2.1;color:var(--encre)}
+.trous input{display:inline-block;width:104px;text-align:right;padding:8px 10px;
+             font-size:15px;vertical-align:middle}
+.trous input.jour{width:158px;text-align:left}
+
+.regles{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.regle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gris)}
+.regle .t{flex:1}
+.regle .x{width:30px;height:30px;border:0;background:none;color:var(--gris);
+          font-size:15px;cursor:pointer}
+
+/* Les deux moments : « je saisis » et « une fois enregistré ». */
+body[data-moment="saisie"] .apres{display:none}
+body[data-moment="saisie"] .entier{display:block}
+body[data-moment="saisie"] .partiel{display:none}
+body[data-moment="apres"] .avant{display:none}
+body[data-moment="apres"] .entier{display:none}
+body[data-moment="apres"] .partiel{display:block}
+
+.note{max-width:1240px;margin:34px auto 0;padding:0 20px;font-size:13.5px;
+      line-height:1.6;color:var(--encre-douce)}
+.note .t{display:block;font:500 15px/1.3 var(--serif);color:var(--encre);margin-bottom:6px}
+.note b{color:var(--encre)}
+.note + .note{margin-top:22px}
+</style>
+</head>
+<body data-moment="saisie">
+
+<div class="bandeau"><div class="dedans">
+  <b>Trois façons de noter un règlement.</b> Tapez dedans, ce sont de vraies
+  cases. Rien ne part nulle part : l'application n'a pas bougé.
+</div></div>
+
+<div class="etats">
+  <p class="quoi">Le moment</p>
+  <div class="rangee">
+    <button type="button" data-moment="saisie" aria-pressed="true">Je saisis</button>
+    <button type="button" data-moment="apres" aria-pressed="false">Une fois enregistré</button>
+    <button type="button" id="jourNuit" aria-pressed="false">Mode nuit</button>
+  </div>
+</div>
+
+<div class="planches">
+
+  <!-- ═══ 1 ═══ -->
+  <section class="planche">
+    <p class="nom">1 · Deux cases nommées</p>
+    <p class="idee">Chaque case porte son nom au-dessus : <b>le jour où le
+      client a payé</b>, et ce qu'il a donné.</p>
+    <div class="tel">
+      <div class="bloc">
+        <div class="haut"><h2>En attente de paiement</h2><span class="compte">4 factures</span></div>
+        <p class="chapo">Elles entreront au relevé quand vous appuierez sur « Payée ».</p>
+
+        <div class="facture">
+          <div class="ligne">
+            <span><span class="cli">M. Martin</span>
+              <span class="meta">F2026-000004 · émise le 11/09</span></span>
+            <span class="droite">
+              <span class="solde entier">1 776,00 €</span>
+              <span class="solde partiel"><span class="mot">Reste à payer </span>1 476,00 €</span>
+              <p class="surles partiel">Sur les 1 776,00 €</p>
+            </span>
+          </div>
+          <p class="trace">Ouverte <b>11/09</b></p>
+          <div class="gestes">
+            <button type="button" class="payee">Payée</button>
+            <button type="button" class="noter" aria-pressed="true">Noter un règlement</button>
+          </div>
+
+          <div class="saisie avant">
+            <div class="cases">
+              <label class="case jour"><span class="nom-case">Payé le</span>
+                <input type="date" value="2026-09-11"></label>
+              <label class="case montant"><span class="nom-case">Montant reçu</span>
+                <input inputmode="decimal" value="300,00"></label>
+              <span class="euro">€</span>
+            </div>
+            <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+            <p class="sous">Seule la part reçue entre au relevé.</p>
+          </div>
+
+          <div class="regles apres">
+            <div class="regle"><span class="t">300,00 € le 11/09</span>
+              <button type="button" class="x">×</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 2 ═══ -->
+  <section class="planche">
+    <p class="nom">2 · La phrase à trous</p>
+    <p class="idee">Une seule ligne, qui se lit comme on la dirait :
+      <b>« Le client a payé 300,00 € le 11/09 »</b>. Le nom de chaque case est
+      la phrase elle-même.</p>
+    <div class="tel">
+      <div class="bloc">
+        <div class="haut"><h2>En attente de paiement</h2><span class="compte">4 factures</span></div>
+        <p class="chapo">Elles entreront au relevé quand vous appuierez sur « Payée ».</p>
+
+        <div class="facture">
+          <div class="ligne">
+            <span><span class="cli">M. Martin</span>
+              <span class="meta">F2026-000004 · émise le 11/09</span></span>
+            <span class="droite">
+              <span class="solde entier">1 776,00 €</span>
+              <span class="solde partiel"><span class="mot">Reste à payer </span>1 476,00 €</span>
+              <p class="surles partiel">Sur les 1 776,00 €</p>
+            </span>
+          </div>
+          <p class="trace">Ouverte <b>11/09</b></p>
+          <div class="gestes">
+            <button type="button" class="payee">Payée</button>
+            <button type="button" class="noter" aria-pressed="true">Noter un règlement</button>
+          </div>
+
+          <div class="saisie avant">
+            <p class="trous">Le client a payé
+              <input inputmode="decimal" value="300,00"> €<br>
+              le <input class="jour" type="date" value="2026-09-11">
+            </p>
+            <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+            <p class="sous">Seule la part reçue entre au relevé.</p>
+          </div>
+
+          <div class="regles apres">
+            <div class="regle"><span class="t">300,00 € le 11/09</span>
+              <button type="button" class="x">×</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 3 ═══ -->
+  <section class="planche">
+    <p class="nom">3 · Le solde à portée</p>
+    <p class="idee">Les deux cases nommées, et un bouton qui remplit le montant
+      avec <b>tout le reste</b> quand le client solde en une fois.</p>
+    <div class="tel">
+      <div class="bloc">
+        <div class="haut"><h2>En attente de paiement</h2><span class="compte">4 factures</span></div>
+        <p class="chapo">Elles entreront au relevé quand vous appuierez sur « Payée ».</p>
+
+        <div class="facture">
+          <div class="ligne">
+            <span><span class="cli">M. Martin</span>
+              <span class="meta">F2026-000004 · émise le 11/09</span></span>
+            <span class="droite">
+              <span class="solde entier">1 776,00 €</span>
+              <span class="solde partiel"><span class="mot">Reste à payer </span>1 476,00 €</span>
+              <p class="surles partiel">Sur les 1 776,00 €</p>
+            </span>
+          </div>
+          <p class="trace">Ouverte <b>11/09</b></p>
+          <div class="gestes">
+            <button type="button" class="payee">Payée</button>
+            <button type="button" class="noter" aria-pressed="true">Noter un règlement</button>
+          </div>
+
+          <div class="saisie avant">
+            <div class="cases">
+              <label class="case jour"><span class="nom-case">Payé le</span>
+                <input type="date" value="2026-09-11"></label>
+              <label class="case montant"><span class="nom-case">Montant reçu</span>
+                <input id="montant3" inputmode="decimal" value="300,00"></label>
+              <span class="euro">€</span>
+            </div>
+            <button type="button" class="tout" id="tout3">Tout le reste · 1 776,00 €</button>
+            <button type="button" class="enregistrer">Enregistrer ce règlement</button>
+            <p class="sous">Seule la part reçue entre au relevé.</p>
+          </div>
+
+          <div class="regles apres">
+            <div class="regle"><span class="t">300,00 € le 11/09</span>
+              <button type="button" class="x">×</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="note"><span class="t">Votre question : la date, c'est celle de quoi ?</span>
+  <b>Celle où le client a payé</b>, pas celle où vous l'enregistrez. Atlas
+  propose aujourd'hui parce que c'est le cas courant, et la case se change.
+  <br><br>
+  Ce n'est pas du confort : cette date décide du <b>trimestre de TVA</b>. Un
+  chèque reçu le 30 juin et noté le 2 juillet appartient au trimestre d'avant —
+  la case doit pouvoir le dire.
+</div>
+
+<div class="note"><span class="t">Ce qui change dans les trois</span>
+  La phrase du bas passe de dix-huit mots à six : <b>« Seule la part reçue entre
+  au relevé. »</b> Les deux cases portent enfin leur nom. Et le montant ne part
+  plus rempli du solde entier — c'est ce qui vous faisait lire un chiffre que
+  vous n'aviez pas tapé.
+  <br><br>
+  <b>Dites le numéro</b>, et ce qu'il faut y reprendre. Rien n'est codé tant que
+  vous n'avez pas choisi.
+</div>
+
+<script>
+(function(){
+  var corps = document.body;
+  var moments = document.querySelectorAll(".etats button[data-moment]");
+  moments.forEach(function(b){
+    b.addEventListener("click", function(){
+      corps.dataset.moment = b.dataset.moment;
+      moments.forEach(function(a){
+        a.setAttribute("aria-pressed", a === b ? "true" : "false");
+      });
+    });
+  });
+  var nuit = document.getElementById("jourNuit");
+  nuit.addEventListener("click", function(){
+    var sombre = corps.classList.toggle("nuit");
+    nuit.setAttribute("aria-pressed", sombre ? "true" : "false");
+    nuit.textContent = sombre ? "Mode clair" : "Mode nuit";
+  });
+  document.getElementById("tout3").addEventListener("click", function(){
+    document.getElementById("montant3").value = "1776,00";
+  });
+})();
+</script>
+
+</body>
+</html>

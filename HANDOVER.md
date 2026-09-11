@@ -17,7 +17,7 @@ sert.
 | le serveur | `majReductionDeFacture` + `majReductionFactureAction` — ils n'existaient pas |
 | la migration | **aucune** |
 | les suites | `test-remise-facture-db.ts` (5), `test-facture-sans-devis-e2e.ts` (12) |
-| le détail | `ARCHITECTURE.md` §330 |
+| le détail | `ARCHITECTURE.md` §332 |
 
 **LE PIÈGE QUE LA BASE A ARRÊTÉ.** `factures_reduction_paire_ck` exige le
 pourcentage ET le montant, ou aucun des deux. Écrire le seul pourcentage échoue
@@ -35,7 +35,7 @@ de l'erreur (la suite le fait désormais).
 | la migration | **aucune** |
 | les pièces | `TravauxSupplementairesClient.tsx`, `src/lib/reduction-devis.ts` (`tauxTvaPropose`), `DevisCompletClient.tsx` (sa liste en dur retirée) |
 | les suites | `test-facture-sans-devis-e2e.ts` (11), les deux moitiés vues rouges |
-| le détail | `ARCHITECTURE.md` §329 |
+| le détail | `ARCHITECTURE.md` §331 |
 
 **LE PIÈGE À NE PAS REFABRIQUER.** Le champ du prix se vide à
 l'INITIALISATION de l'état, jamais au rendu. Dérivé à chaque frappe, il se
@@ -49,6 +49,58 @@ montant calculé, lui, reste affiché à côté et dit la gratuité.
 **Et le « − » d'une catégorie ne retire QUE ses lignes** : `retirerLignesDeFacture`
 sans identifiant vide la facture entière. C'était sans conséquence tant qu'il
 n'y avait qu'un groupe ; avec deux taux, cela emporterait l'autre.
+
+## Dernier lot — « NOTER UN RÈGLEMENT » : LES CASES ONT UN NOM (11 septembre 2026)
+
+| | |
+|---|---|
+| son choix | la planche n° 1 de `appli/noter-un-reglement.html` — deux cases nommées |
+| ce qui change | « Payé le » / « Montant reçu » ; montant **vide** ; bouton éteint sans montant ; six mots sous le bouton |
+| la racine | `<input type="date">` se formate selon la LANGUE DU TÉLÉPHONE : le sien écrivait « 09/11/2026 » pour un 11 septembre |
+| la migration | **aucune** |
+| les pièces | `src/app/termines/tva/EnAttenteDePaiement.tsx` |
+| les suites | `scripts/test-tva-au-paiement-e2e.ts` — le motif `jj/mm/aaaa` visé dans un navigateur qui n'est PAS en français |
+| le détail | `ARCHITECTURE.md` §330 |
+
+**ET LA LIGNE ENREGISTRÉE A LA FORME DES CASES** : « Acompte payé le
+11/09/2026 » à gauche, le montant à droite, aux mêmes places — on relit ce qu'on
+a tapé là où on l'a tapé. Les règlements repris par la migration gardent
+« Supposé réglé le … » : eux n'ont jamais été constatés.
+
+**NE PAS REMETTRE LE CHAMP NATIF SEUL.** Le texte de la date est écrit par
+l'application et le champ natif est transparent par-dessus : c'est ce qui rend
+le jour lisible pareil sur tous les téléphones. Un contrôle qui lit la valeur
+(`2026-09-11`) ne verra jamais revenir ce défaut — seul le texte affiché le dit.
+
+---
+
+## Dernier lot — LA TRACE DE RÉCEPTION TIENT EN UNE DATE (11 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« les phrases sont trop longues… Ouverte 11/09, la date en gras, l'heure tu supprimes ; et s'il coche la case, seulement réception confirmée le 11/09 »* |
+| ce qui change | une seule date à l'écran, en gras, au format `11/09` — l'heure quitte l'affichage, elle reste en base (`ouverte_at`) |
+| la migration | **aucune** |
+| les pièces | `src/lib/reception-facture.ts`, `src/lib/jour.ts` (`jourCourt`), `src/lib/documents-du-client.ts`, `src/app/termines/tva/EnAttenteDePaiement.tsx`, `src/app/clients/[id]/PieceDuDossier.tsx` |
+| les suites | `scripts/test-reception-facture.ts` (6), `scripts/test-reception-facture-db.ts` |
+| la capture | `npx tsx scripts/capture-trace-reception.mts <dossier>` — quatre états, plus le formulaire ouvert |
+| le détail | `ARCHITECTURE.md` §330 |
+
+**LA PHRASE NE SE DÉCIDE PLUS DANS LES ÉCRANS.** `receptionEnMots` rend
+`{ avant, date }` — la phrase déjà choisie, plus le jour à mettre en gras. Les
+deux écrans qui la montrent ne portent aucune condition. Y remettre un `if`
+recréerait la divergence que ce lot vient de retirer.
+
+**ET LE CHAPÔ NE GARDE QU'UNE MOITIÉ DE PHRASE** — « Elles entreront au relevé
+quand vous appuierez sur « Payée ». », en gras, entière. Les deux moitiés
+retirées redisaient le titre de l'écran et le « quand ».
+
+**ON NE DÉPLACE RIEN, ON RÉÉCRIT SUR PLACE — et cela a coûté deux allers-retours
+le 11 septembre 2026 :** *« il fallait laisser les phrases où elles étaient,
+juste les modifier »*. Les deux lignes « Reste à payer 1 476,00 € / Sur les
+1 776,00 € » remplacent « reste sur … » **dans la colonne de droite**, là où
+elle vivait, et seulement quand un acompte est passé. Le formulaire de saisie et
+la ligne « émise le … » sont revenus tels qu'ils étaient.
 
 ---
 
@@ -110,6 +162,29 @@ chemins côte à côte, et le refus d'écraser) et
 `scripts/test-facture-sans-devis-e2e.ts` — celui-ci par SA porte : taper le nom,
 voir « Repris de sa fiche », ajouter l'e-mail, faire la facture, relire la fiche.
 Les deux suites ont été vues **rouges** contre la version d'avant.
+
+---
+## Dernier lot — LE « 1 » DES RETOURS RESTAIT ALLUMÉ APRÈS LECTURE (11 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« je viens d'aller regarder le retour d'inter mais le petit 1 est resté visible »* |
+| la migration | **aucune** |
+| les pièces | `src/app/termines/retours/actions.ts` — `revalidatePath("/termines")` et `("/termines/retours")` |
+| les suites | `scripts/test-onglets-termines-e2e.ts`, un cas de plus qui ne recharge JAMAIS |
+| le détail | `ARCHITECTURE.md` §329 |
+
+**CE QU'IL NE FAUT PAS CHERCHER AILLEURS.** Le compte était juste en base, et la
+pastille ne compte que les non-lus depuis le 9 septembre. Ce qui mentait, c'est
+la page gardée par le navigateur : la flèche d'en-tête **recule**
+(`FlecheRetour`, `router.back()`), et un retour arrière rejoue la page d'avant
+la lecture. Une écriture qui ne périme pas les écrans qu'elle change laisse
+l'ancienne image sous son doigt.
+
+**ET LES DEUX SUITES QUI COUVRAIENT LA PASTILLE ÉTAIENT VERTES**, parce qu'elles
+rechargent (`page.goto`) — ce qui contourne précisément le mécanisme en cause.
+Le cas ajouté parcourt son chemin à lui, sans un seul rechargement, et il a été
+mis au rouge contre l'ancien code avant d'être cru.
 
 ---
 ## Dernier lot — GOOGLE ET APPLE SE MONTRENT AVANT D'OUVRIR (11 septembre 2026)

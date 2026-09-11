@@ -67,6 +67,69 @@ moitiés ont été vues rouges contre le code d'avant. Et regardé à l'écran, 
 taux sur une même facture — 250 € à 20 %, 80 € à 10 %, 30 € à 5,5 %, total TTC
 419,65 €.
 
+### « Noter un règlement » : les cases portent leur nom, et la date se lit à la française
+
+*« Je choisis la 1. »* Les deux cases s'appellent « Payé le » et « Montant
+reçu ». Le montant part vide — le chiffre affiché est celui qu'il a tapé — et le
+bouton reste éteint tant que rien n'est posé. Sous le bouton, six mots au lieu
+de dix-huit : « Seule la part reçue entre au relevé. »
+
+La ligne d'un règlement déjà noté reprend la forme des cases et dit ce qu'elle
+est : « Acompte payé le 11/09/2026 » à gauche, le montant à droite. Elle disait
+« 300,00 € le 11/09 » — un jour et un montant qui ne racontaient rien.
+
+**Le défaut que sa capture a révélé :** le champ de date natif se formate selon
+la langue du TÉLÉPHONE, pas selon la page. Sur le sien, un 11 septembre
+s'affichait « 09/11/2026 » — il lisait novembre. Le jour est maintenant écrit
+par l'application (`jourNumerique`), le champ natif restant dessous pour ouvrir
+le rouleau (`ARCHITECTURE.md` §330).
+
+### Une planche pour « Noter un règlement », et rien de codé
+
+*« Avant de changer quoi que ce soit fais-moi des maquettes, qu'on corrige. »*
+Trois façons de remplir les deux cases — nommées, en phrase à trous, ou avec
+« Tout le reste » —, et six mots à la place de dix-huit sous le bouton.
+`appli/noter-un-reglement.html`, en attente de son choix (`TODO.md`).
+
+### La trace de réception tenait en deux lignes : une seule date, et pas d'heure
+
+*« Les phrases sont trop longues. Il faut marquer Ouverte 11/09, l'heure tu
+supprimes… et s'il coche la case, marque seulement réception confirmée le
+11/09, pas besoin d'avoir les deux infos. »*
+
+Sous chaque facture qui attend son paiement s'écrivaient les deux événements :
+« Ouverte le 11 septembre à 17 h 57 · réception confirmée le 11 septembre ».
+Deux lignes de téléphone pour dire deux fois la même chose — cocher la case
+suppose d'avoir ouvert.
+
+La ligne dit désormais **une** date, en gras : « Ouverte 11/09 », ou
+« Réception confirmée le 11/09 » dès que la case est cochée. L'heure quitte
+l'écran ; elle reste en base à la seconde (`ouverte_at`), et c'est là qu'on ira
+la chercher le jour d'un litige.
+
+Les deux écrans qui la montrent — les impayés et le dossier du client — ne
+décident plus rien : la phrase entière sort de `receptionEnMots`
+(`ARCHITECTURE.md` §330).
+
+### Le chapô des impayés tenait en deux moitiés : il n'en garde qu'une
+
+*« Garde seulement : elles entreront au relevé quand vous appuierez sur
+Payée. »* « Ces factures sont parties chez vos clients » redisait le titre de
+l'écran, et « pas avant » redisait « quand ». La ligne restante est en gras,
+entière.
+
+### « reste sur 1 776,00 € » devient « Reste à payer … / Sur les … du … »
+
+*« Lorsqu'on note un règlement la phrase était à droite, c'est là que je voulais
+reste à payer. »* La ligne d'un acompte, dans la colonne de droite, demandait de
+deviner que le gros chiffre au-dessus était le solde. Elle le nomme, et donne la
+facture entière — sans sa date : *« à droite retire la date en doré »*.
+
+Le formulaire de saisie est revenu tel qu'il était, et « émise le … » avec lui.
+Sa règle, en une phrase : *« il fallait laisser les phrases où elles étaient,
+juste les modifier »* — une demande d'affichage vaut pour le texte, pas pour la
+place.
+
 ### La facture téléchargée s'ouvrait blanche : la police n'annonçait pas sa longueur
 
 *« Lorsque je télécharge la facture je ne peux toujours pas la lire. »*
@@ -158,6 +221,33 @@ seconde, le champ replié valant `""`. Une seule fonction désormais,
 
 **Ce qui n'a pas bougé :** rien n'est jamais écrasé. Ce qu'il avait pris le
 temps de noter reste. Pour corriger une fiche, il y a l'écran des coordonnées.
+
+### Le « 1 » des retours d'intervention restait allumé après lecture
+
+*« Je viens d'aller regarder le retour d'inter mais le petit 1 est resté
+visible ; il doit seulement annoncer les retours pas lus. »*
+
+**Le compte était juste, c'est la page qui était vieille.** La pastille ne
+compte que les non-lus depuis le 9 septembre, et la base enregistrait bien la
+lecture. Mais la flèche de `/termines/retours` **recule** (`FlecheRetour`,
+`router.back()`), et un retour arrière rejoue la page que le navigateur avait
+mise de côté — celle d'avant la lecture. Il regardait une image d'il y a trente
+secondes.
+
+**Corrigé à la racine :** l'action qui enregistre la lecture périme désormais
+les deux écrans qu'elle change (`/termines` et `/termines/retours`), comme le
+fait déjà depuis le premier jour l'action qui POSE un retour. C'est la lecture
+qui avait été oubliée — une écriture muette, pas un écran fautif.
+
+**Pourquoi aucun contrôle ne le voyait, et c'est le vrai enseignement.** Les
+deux suites qui couvrent cette pastille rechargent la page (`page.goto`) : elles
+prouvaient la base, jamais son geste. Un contrôle qui parcourt son chemin —
+l'onglet, la carte, la flèche, sans un seul rechargement — a été ajouté ; joué
+contre l'ancien code, il rougit en disant « le 1 est resté ». C'est `CLAUDE.md`
+§5 quater, payé une seconde fois.
+
+**La pastille dorée à côté du non-lu, elle, existait déjà** et n'a pas bougé :
+9 px d'or devant la date, sur la liste des retours (capture à l'appui).
 
 ### Aérer la porte — et le premier essai lisait sa demande à l'envers
 

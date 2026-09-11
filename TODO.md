@@ -30,6 +30,26 @@ que le patron peut vivre.
 
 ---
 
+## ✅ CHOISIE ET CODÉE — « Noter un règlement », planche n° 1 (11 septembre 2026)
+
+*« Je choisis la 1. »* Codé le soir même dans `EnAttenteDePaiement.tsx` :
+
+| Ce qu'il a demandé | Ce qui est fait |
+|---|---|
+| les deux cases nommées | « Payé le » et « Montant reçu », au-dessus de chacune |
+| « le montant doit être le chiffre qu'on a écrit » | la case part **vide**, et le bouton reste éteint tant que rien n'est tapé |
+| « 11/09/2026 » | le jour s'écrit par `jourNumerique`, plus par le champ natif |
+| la phrase trop longue | « Seule la part reçue entre au relevé. » — six mots |
+
+**LE DÉFAUT QUE SA CAPTURE A RÉVÉLÉ, et qu'aucun contrôle ne voyait :** le champ
+`<input type="date">` se formate selon la **langue du téléphone**, pas selon la
+page. Sur le sien il rendait « 09/11/2026 » pour un 11 septembre — il lisait
+novembre. Le champ natif reste (lui seul ouvre le rouleau de l'iPhone), mais il
+est posé **transparent par-dessus notre propre texte**.
+
+La planche reste en ligne, elle montre les deux autres propositions :
+https://florianmarrins0978-svg.github.io/Atlas-app/noter-un-reglement.html
+
 ## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
 
 **Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
@@ -124,10 +144,15 @@ retirer) :
   lecteur (`storageKey={null}`), et l'invite se tait dès qu'une note existe —
   **sa règle du 1ᵉʳ septembre**.
 
-**Trois autres ne sont rouges QUE dans la batterie entière**, et vertes seules :
+**Quatre autres ne sont rouges QUE dans la batterie entière**, et vertes seules :
 `devis-fige-porte` et `madame-lucie` (délais dépassés sur un conteneur lent),
 `onglets-termines` (« `'2' !== '1'` » : le compte des retours non lus est pollué
-par les suites qui ont tourné avant, dans la même base).
+par les suites qui ont tourné avant, dans la même base), et — relevé le
+11 septembre 2026 — `ligne-planning`, dont le contrôle « le client touché ne
+remonte pas » **refuse de conclure** quand la première fiche n'est pas au-dessus
+de la seconde (153 px contre 100 px) : les chantiers laissés par les suites
+précédentes changent l'ordre de la liste. Rejouée seule :
+`npm run test:e2e -- --seulement ligne-planning` → 6/6.
 
 **Ce qu'il reste à trancher :** les onze autres. Chacune se rejoue seule en une
 commande — `npm run test:e2e -- --seulement <nom>` — et il faut savoir, pour
@@ -927,6 +952,29 @@ des ports ou relancent des serveurs, et se gênent entre eux — plus
 délibérément (`SANS_CLES_IA`) — `test-anneau-dictee`, `test-anneau-vers-devis`,
 `test-devis-doublon`, `test-carte-reponse-mene-au-geste`. Les autres n'ont pas
 été instruits un par un.
+
+### Remesuré le 11 septembre 2026 — 353/353 base, 126/143 navigateur
+
+**Deux passages du même jour, l'un sur le code du lot « pastille des retours »,
+l'autre sur le code NON MODIFIÉ**, pour savoir ce qui était à ce lot : les
+listes de rouges sont identiques à une suite près, et le lot en REND une
+(`test-onglets-termines-e2e`). Les suites base sont toutes vertes.
+
+**Les dix-sept rouges navigateur** : `test-adresse-suggestions`,
+`test-anneau-dictee`, `test-anneau-vers-devis`, `test-carte-reponse-mene-au-geste`,
+`test-catalogue-mes-mots`, `test-devis-client`, `test-devis-complet`,
+`test-devis-papier`, `test-fiche-entretien`, `test-ia-01`, `test-madame-lucie`,
+`test-message-au-client`, `test-planning-vers-facture`, `test-recherche-client`,
+`test-reprise-chantier`, `test-reprise-morceau`, `test-suivi-devis`.
+
+**ET ILS S'ENTRAÎNENT LES UNS LES AUTRES — trouvé ce jour-là.** Une suite qui
+tombe avant sa ligne de ménage laisse ses données derrière elle, et la suivante
+rougit sur un produit sain : `test-onglets-termines` lisait 2 retours au lieu
+d'un, `test-ligne-planning` mesurait une fiche à 153 px au lieu de 100 — les
+deux vertes jouées seules. **Une suite qui lit un compte d'entreprise doit
+isoler sa mesure**, comme le fait désormais `test-onglets-termines` : ce qui
+traîne est marqué lu le temps du contrôle, et les lignes posées repartent avec
+elle. C'est la première chose à faire en instruisant les dix-sept.
 
 **Ce qui reste à faire ici**, et personne ne l'a pris : **les instruire, et
 soit les réparer, soit les nommer**. Huit rouges permanents deviennent un bruit

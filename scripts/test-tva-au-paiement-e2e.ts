@@ -228,8 +228,28 @@ async function main() {
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: numero });
     await ligne.getByRole("button", { name: "Noter un règlement" }).click();
-    await ligne.getByLabel("Montant reçu, en euros").fill("600");
-    await ligne.getByRole("button", { name: "Enregistrer ce règlement" }).click();
+
+    // **LA DATE S'ÉCRIT À LA FRANÇAISE, ET C'EST NOUS QUI L'ÉCRIVONS.**
+    // Sa capture du 11 septembre 2026 montrait « 09/11/2026 » pour un
+    // 11 septembre : le champ natif se formate selon la langue du TÉLÉPHONE. Ce
+    // navigateur-ci n'est pas en français, et c'est exactement le cas qu'on
+    // veut éprouver — le jour doit se lire pareil partout.
+    const jour = await ligne.locator("span[aria-hidden]").first().innerText();
+    assert.match(
+      jour.trim(),
+      /^\d{2}\/\d{2}\/\d{4}$/,
+      `la date du paiement se lit « ${jour.trim()} » au lieu de jj/mm/aaaa`
+    );
+
+    // **La case part vide, et le bouton attend** — sa demande du même jour : le
+    // chiffre affiché doit être celui qu'il a tapé, jamais un solde proposé.
+    const caseMontant = ligne.getByLabel("Montant reçu, en euros");
+    assert.strictEqual(await caseMontant.inputValue(), "", "le montant arrive rempli d'un chiffre qu'il n'a pas tapé");
+    const bouton = ligne.getByRole("button", { name: "Enregistrer ce règlement" });
+    assert.ok(!(await bouton.isEnabled()), "on peut enregistrer un règlement sans montant");
+
+    await caseMontant.fill("600");
+    await bouton.click();
 
     // 600 € sur 1 200 € TTC : la moitié, donc 100 € de TVA sur 200.
     await page.waitForFunction(
@@ -246,7 +266,30 @@ async function main() {
     // Et elle attend toujours son solde : c'est ce qui empêche de l'oublier.
     const ecran = await page.locator("body").innerText();
     assert.ok(ecran.includes(numero), "la facture partiellement réglée a quitté l'attente");
-    assert.ok(/reste sur/.test(ecran), "rien ne dit qu'il s'agit d'un reste");
+    // **Ce qu'on vise, c'est LE CHIFFRE, pas le libellé** (`CLAUDE.md` §5 bis) :
+    // « reste sur » a été remplacé par « Reste à payer … / Sur les … du … » le
+    // 11 septembre 2026, et ce contrôle tombait sur un écran juste. Ce qui doit
+    // rester vrai quel que soit le mot choisi : le solde ET le total de la
+    // facture sont tous les deux à l'écran — sans le second, « 600 € » sur une
+    // facture de 1 200 € se lit comme une erreur de montant.
+    assert.ok(/600,00\s*€/.test(ecran), "le solde qui reste dû ne s'affiche pas");
+    assert.ok(/1\s*200,00\s*€/.test(ecran), "rien ne rattache ce solde à la facture entière");
+
+    // **Le règlement enregistré se relit COMME IL A ÉTÉ TAPÉ** — sa demande du
+    // 11 septembre 2026 : « donc : 11/09/2026, le montant qui vient d'être
+    // rentré ». La date à gauche, le montant à droite, aux mêmes places que les
+    // deux cases juste au-dessus. La ligne disait « 600,00 € le 11/09 » : les
+    // deux mêmes choses, dans l'autre sens et dans un autre format.
+    const enregistre = ligne.locator("ul li").first();
+    const parts = (await enregistre.innerText()).split("\n").map((t) => t.trim());
+    // « Acompte payé le … » depuis le 11 septembre 2026 : un jour et un montant
+    // posés seuls ne disaient pas de quoi ils parlaient.
+    assert.match(
+      parts[0] ?? "",
+      /^Acompte payé le \d{2}\/\d{2}\/\d{4}$/,
+      `la ligne dit « ${parts[0]} » au lieu de « Acompte payé le jj/mm/aaaa »`
+    );
+    assert.match(parts[1] ?? "", /600,00\s*€/, `le montant ne suit pas la date : « ${parts[1]} »`);
   });
 
   await test("UN MONTANT TROP GRAND EST REFUSÉ, et le refus lui parvient", async () => {

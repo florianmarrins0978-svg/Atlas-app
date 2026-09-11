@@ -28152,7 +28152,204 @@ archives touche des pièces comptables, et cela ne se décide pas sans lui
 
 ---
 
-## §329 — Plusieurs TVA sur une facture, et un champ de prix qui ne porte pas de zéro
+## §329 — Une écriture qui change un AUTRE écran doit le périmer : sinon la flèche rejoue l'ancien
+
+**Payé le 11 septembre 2026**, sur la pastille des retours d'intervention :
+*« je viens d'aller regarder le retour d'inter mais le petit 1 est resté
+visible »*. Le compte des non-lus était juste en base, l'écran le calculait
+bien, et la pastille restait allumée.
+
+### Ce qui se passe vraiment
+
+Next garde de côté, dans le navigateur, la dernière version rendue de chaque
+écran visité. Un lien vers un écran dynamique la redemande ; **un retour en
+arrière la rejoue telle quelle**. Or la flèche d'en-tête d'Atlas recule pour de
+bon depuis le 9 septembre (`FlecheRetour`, `router.back()`) — c'était sa demande,
+et c'est ce qui lui rend sa place dans la liste (§ de la flèche). Elle rejoue
+donc aussi l'écran d'avant l'écriture.
+
+| | |
+|---|---|
+| ce que la base savait | le retour est lu |
+| ce que l'écran montrait | la page de trente secondes plus tôt, pastille à 1 |
+
+### La règle
+
+**Toute action serveur qui change ce qu'un AUTRE écran affiche nomme cet écran**
+(`revalidatePath`), au moment de l'écriture. Ce n'est pas une précaution de
+confort : c'est la seule chose qui vide la page gardée côté navigateur, et donc
+la seule qui survive à un retour en arrière.
+
+Le dépôt le faisait déjà là où le retour est POSÉ
+(`src/app/planning/retour-actions.ts` périme `/planning`, `/termines` et
+`/termines/retours`). C'est la LECTURE qui avait été oubliée
+(`src/app/termines/retours/actions.ts`) — une écriture muette, pas un écran
+fautif.
+
+**Les deux écrans se périment, pas seulement celui du compte.** La liste des
+retours gardée en l'état ferait revenir le point doré sur un retour ouvert : la
+même page vieille, l'autre symptôme.
+
+### Pourquoi aucune suite ne le voyait
+
+Les deux contrôles qui couvraient cette pastille rechargeaient la page
+(`page.goto`), ce qui contourne exactement le mécanisme en cause. Ils étaient
+**verts sur le défaut qu'ils portaient dans leur nom**.
+
+Le contrôle ajouté parcourt son chemin à lui — l'onglet, la carte, la flèche —
+**sans un seul rechargement**, et il sait échouer : joué contre l'ancien code il
+rougit en disant « le 1 est resté sur l'onglet ». C'est `CLAUDE.md` §5 quater,
+payé une seconde fois : *éprouver le geste du patron, pas la fonction qu'on
+vient d'écrire*.
+
+---
+## §330 — La trace de réception dit UNE date, et la phrase se décide dans `lib/`
+
+**Sa demande du 11 septembre 2026**, capture à l'appui, sur « En attente de
+paiement » : *« les phrases sont trop longues. Il faut marquer Ouverte 11/09
+(la date en gras), l'heure tu supprimes lorsque le client n'a pas coché la
+case. Et s'il coche la case, marque seulement réception confirmée le 11/09 —
+pas besoin d'avoir les deux infos. »*
+
+La ligne écrivait les deux événements l'un derrière l'autre : « Ouverte le
+11 septembre à 17 h 57 · réception confirmée le 11 septembre ». Sur un
+téléphone, elle prenait deux lignes pleines — et la seconde moitié rend la
+première inutile : **un client qui coche la case a forcément ouvert**.
+
+### Ce que la minute prouvait, et pourquoi elle peut quitter l'écran
+
+Elle était arrivée le 9 septembre comme preuve contre « je n'ai jamais reçu
+cette facture », et l'argument tenait. Il tient toujours : `ouverte_at` porte
+l'instant complet en base, à la seconde, et c'est là qu'on ira le chercher le
+jour d'un litige. Ce qui change, c'est **où** cela se lit — l'écran est un
+repère qu'il survole en courant après l'argent, pas une pièce de procédure.
+
+### La phrase entière vit dans `src/lib/reception-facture.ts`
+
+Deux écrans la montrent : les impayés, et le dossier du client. Le choix
+« confirmée plutôt qu'ouverte » y aurait été écrit **deux fois**, en JSX — deux
+règles pour une seule question, ce que `CLAUDE.md` §3 refuse. `receptionEnMots`
+ne rend donc plus deux dates à assembler, mais la phrase déjà décidée :
+
+| | |
+|---|---|
+| `avant` | « Ouverte », « Réception confirmée le », ou « Pas encore ouverte. » |
+| `date` | « 11/09 », mis en gras par l'écran — `null` quand rien n'a été ouvert |
+
+Les écrans n'ont plus de condition : ils posent `avant`, puis la date en gras
+s'il y en a une. Le jour où la phrase change encore, un seul endroit bouge, et
+`test-reception-facture.ts` le dit sans monter un navigateur.
+
+**Et `documents-du-client.ts` ne recopie plus la forme** : son champ
+`reception` porte `ReceptionLisible`, plutôt qu'un jumeau écrit à la main qui
+aurait survécu à ce changement en annonçant encore deux dates.
+
+### `jourCourt` — « 11/09 », et l'année seulement si ce n'est pas la nôtre
+
+La règle vient de `jourLisible`, et pour la même raison : « 11/09 » sur une
+facture de l'an dernier désigne deux jours à un an d'écart — or c'est
+précisément une vieille impayée qu'on vient regarder. Le jour et le mois
+gardent leur zéro (« 01/09 »), pour que les colonnes tombent au même endroit
+d'une ligne à l'autre.
+
+**L'aujourd'hui se donne en JOUR, pas en instant** : celui que le serveur a
+calculé dans le fuseau de l'atelier. Le prendre de l'horloge du téléphone
+ferait dépendre l'affichage de l'appareil, le 31 décembre au soir.
+
+### Le chapô de l'écran ne garde qu'une moitié de phrase
+
+Même jour, même raison : *« garde seulement : elles entreront au relevé quand
+vous appuierez sur Payée »*, en gras. Les deux moitiés qui l'encadraient ne
+portaient rien — « ces factures sont parties chez vos clients » redit le titre
+de l'écran, et « pas avant » redit « quand ». La ligne entière passe en `ink` :
+elle est l'avertie, et non plus une phrase dont un morceau est appuyé.
+
+### « Reste à payer » se lit À DROITE, là où la ligne d'un acompte vivait déjà
+
+Sa demande du 11 septembre 2026 : *« lorsqu'on note un règlement, marque :
+Reste à payer 150 €, sur les 150 € du… »*. Ces deux lignes ont d'abord été
+posées **en tête du formulaire de saisie**, et il l'a corrigé le jour même :
+*« pourquoi tu as changé les lignes de place ? La phrase était à droite, c'est
+là que je voulais reste à payer. »*
+
+La colonne de droite portait « reste sur 1 776,00 € », qui demandait de deviner
+que le gros chiffre au-dessus était le solde. Elle porte maintenant :
+
+    Reste à payer 1 476,00 €
+    Sur les 1 776,00 €
+
+Le formulaire, lui, est **revenu tel qu'il était** — il n'avait rien demandé
+dessus.
+
+### ON NE DÉPLACE RIEN : on réécrit sur place
+
+Sa règle, dite le même jour et d'une phrase : *« il fallait laisser les phrases
+où elles étaient, juste les modifier »*. Elle a coûté deux allers-retours dans
+la même soirée — les deux lignes posées dans le formulaire au lieu de la droite,
+puis « émise le … » effacée de la ligne du numéro parce que la droite portait la
+même date.
+
+**Une demande d'affichage vaut pour le TEXTE, jamais pour la place.** Il
+reconnaît son écran par la position de ce qu'il lit ; un mot qui change se lit
+en une seconde, une ligne qui bouge se cherche. Quand une réécriture crée une
+répétition, c'est le mot en trop qui part — ici la date dorée, retirée d'un
+« à droite retire la date en doré » —, jamais la ligne entière.
+
+Le jour de la facture vit donc là où il a toujours été : sur la ligne du numéro,
+à gauche, et écrit court (`jourCourt`) comme la trace de réception juste en
+dessous — une seule façon d'écrire un jour sur cet écran.
+
+### La planche n° 1, choisie et codée — et le défaut que sa capture a révélé
+
+*« Je choisis la 1. »* Deux cases, chacune nommée au-dessus : « Payé le » et
+« Montant reçu ». Elles existaient déjà, nues — leur nom vivait dans
+`aria-label`, donc pour les lecteurs d'écran seulement, invisible à l'œil.
+
+**LE CHAMP DE DATE NATIF SE FORMATE SELON LA LANGUE DU TÉLÉPHONE, PAS SELON LA
+PAGE.** Sa capture du 11 septembre 2026 montre « 09/11/2026 » sous « Payé le »
+pour un 11 septembre : sur son appareil, `<input type="date">` rend l'ordre
+américain. Il lisait novembre sur un paiement de septembre — et aucun contrôle
+de ce dépôt ne pouvait le voir, puisque chacun lit la VALEUR (`2026-09-11`),
+jamais ce que le navigateur en dessine.
+
+Le champ reste natif : lui seul ouvre le rouleau de l'iPhone, et le remplacer
+par trois cases à taper serait un recul. Il est posé **transparent par-dessus
+notre propre texte**, qui passe par `jourNumerique` — la seule façon d'écrire
+une date dans ce dépôt. Le calendrier que le champ dessinait lui-même est
+redessiné à côté : c'est la seule chose qui dit que la case s'ouvre.
+
+La suite du relevé vise désormais le motif `jj/mm/aaaa` **dans un navigateur qui
+n'est pas en français** : c'est exactement le cas qu'il faut éprouver.
+
+**Et la case du montant part vide**, le bouton éteint tant que rien n'est tapé :
+elle arrivait remplie du solde entier, si bien qu'il lisait un chiffre qu'il
+n'avait pas posé. Solder d'un doigt reste possible — c'est « Payée », juste
+au-dessus, et c'est le geste de cinquante factures par an.
+
+### Et la ligne enregistrée reprend la forme de la saisie
+
+*« Donc : 11/09/2026, le montant qui vient d'être rentré »*, photo de la saisie
+à l'appui. La ligne d'un règlement noté s'écrivait « 300,00 € le 11/09 » : les
+deux mêmes choses que les cases juste au-dessus, dans l'autre sens et dans un
+autre format. Elle porte maintenant le jour à gauche et le montant à droite, aux
+places exactes des deux cases — on relit ce qu'on a tapé là où on l'a tapé.
+
+L'étiquette de lecture d'écran du « × » garde, elle, la date en toutes lettres :
+« 11/09 » dite à voix haute ne s'entend pas.
+
+**Et elle dit ce qu'elle est : « Acompte payé le 11/09/2026 ».** Un jour et un
+montant posés seuls ne racontent rien — c'est la seule ligne de la carte qui
+parle d'un geste passé, et elle se lisait comme une seconde date d'émission. Le
+mot est juste quoi qu'il arrive : un règlement qui solde fait sortir la facture
+de cet écran, donc ce qui reste visible est forcément une part.
+
+Sauf pour les règlements que la migration a SUPPOSÉS, qui gardent leurs mots à
+eux — « Supposé réglé le … ». Les dire « payés » ferait passer une supposition
+pour une observation.
+
+---
+
+## §331 — Plusieurs TVA sur une facture, et un champ de prix qui ne porte pas de zéro
 
 **Ses deux captures du 11 septembre 2026, dans le même message :** *« je ne peux
 pas ajouter plusieurs TVA ; lorsque j'en mets une le bouton disparaît »* et *« le
@@ -28225,7 +28422,7 @@ d'écran (`CLAUDE.md` §5 bis).
 
 ---
 
-## §330 — Le prix accordé au client sur une facture : la pièce du devis, montée deux fois
+## §332 — Le prix accordé au client sur une facture : la pièce du devis, montée deux fois
 
 **Sa demande du 11 septembre 2026 :** *« on n'a pas mis la réduction client
 cliquable comme sur le devis »*, puis, aussitôt après : *« reprends exactement

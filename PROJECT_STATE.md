@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-11 · branche `claude/invoice-download-readability-40dtq1`
+**Dernière mise à jour :** 2026-09-11 · branche `claude/dates-reglements-affichage-f1q9ah`
 · dernière migration `drizzle/0085_creneaux_chantier.sql`
 
 ---
@@ -10,6 +10,40 @@
 Le geste du devis — ligne dorée, « − », 5 % d'emblée — est désormais une pièce
 commune montée par les deux écrans, et le serveur sait poser la remise sur une
 facture en brouillon. **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §332.
+
+---
+
+## FAIT : « NOTER UN RÈGLEMENT », LA PLANCHE N° 1 — 11 septembre 2026
+
+*« Je choisis la 1. »* Deux cases nommées — « Payé le », « Montant reçu » —, le
+montant vide et le bouton éteint tant que rien n'est tapé, et six mots sous le
+bouton. **Aucune migration.**
+
+Le défaut de fond venait de sa capture : `<input type="date">` se formate selon
+la langue du téléphone, et le sien affichait « 09/11/2026 » pour un
+11 septembre. Le jour s'écrit maintenant par `jourNumerique`, le champ natif
+posé transparent dessous (`ARCHITECTURE.md` §330).
+
+---
+
+## FAIT : LA TRACE DE RÉCEPTION TIENT EN UNE DATE — 11 septembre 2026
+
+*« Les phrases sont trop longues… Ouverte 11/09, la date en gras, l'heure tu
+supprimes ; et s'il coche la case, marque seulement réception confirmée le
+11/09. »* Les deux événements s'écrivaient l'un derrière l'autre, sur deux
+lignes de téléphone, alors que cocher la case suppose d'avoir ouvert.
+
+La phrase entière sort maintenant de `receptionEnMots` — les deux écrans qui la
+montrent ne décident plus rien —, et la date s'écrit `11/09` (`jourCourt`, avec
+l'année seulement si ce n'est pas la nôtre). L'heure reste en base.
+
+Le chapô de l'écran ne garde qu'une moitié de phrase, en gras : « Elles
+entreront au relevé quand vous appuierez sur « Payée ». »
+
+Même écran, à droite : « reste sur 1 776,00 € » devient « Reste à payer
+1 476,00 € / Sur les 1 776,00 € ». **Aucune migration.**
 
 Détail : `ARCHITECTURE.md` §330.
 
@@ -24,9 +58,10 @@ ne porte plus le zéro de la base, qui se collait devant ce qu'il tapait.
 La grammaire et les fonctions sont celles du devis — `tauxTvaPropose` est
 désormais commune, et la liste en dur du devis a disparu. **Aucune migration.**
 
-Détail : `ARCHITECTURE.md` §329.
+Détail : `ARCHITECTURE.md` §331.
 
 ---
+
 
 ## FAIT (sous réserve de SA réponse) : LA POLICE DU DOCUMENT ANNONCE SA LONGUEUR — 11 septembre 2026
 
@@ -61,6 +96,17 @@ civilité, le canal d'envoi et l'adresse du chantier, non**. Racine : la règle
 était écrite deux fois, une par chemin, et la copie de `creerChantierAction` —
 celle du client reconnu à l'écran — avait divergé. `completerLaFiche` la porte
 maintenant seule (`ARCHITECTURE.md` §327). Rien n'est jamais écrasé.
+
+## FAIT : LE « 1 » DES RETOURS S'ÉTEINT QUAND IL LIT — 11 septembre 2026
+
+La pastille comptait bien les non-lus ; c'est la page rejouée par le retour
+arrière qui montrait l'image d'avant la lecture. L'action qui enregistre la
+lecture périme désormais `/termines` et `/termines/retours`, comme le fait déjà
+celle qui pose un retour. Un contrôle parcourt son chemin sans recharger —
+onglet, carte, flèche — et il a été vu rouge contre l'ancien code
+(`ARCHITECTURE.md` §329).
+
+---
 
 ## FAIT : LES SUITES VISENT LE MOIS QUI EST À L'ÉCRAN — 11 septembre 2026
 
