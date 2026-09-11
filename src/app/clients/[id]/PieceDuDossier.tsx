@@ -3,7 +3,8 @@
 import { useState } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font } from "@/lib/design-tokens";
-import { nomDuFichierDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
+import { natureDeLaPiece, nomDuFichierDeLaPiece, numeroDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
+import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 
 /**
  * Une pièce du dossier d'un client, et les trois choses qu'on peut en faire.
@@ -37,8 +38,15 @@ import { nomDuFichierDeLaPiece, type PieceDuClient } from "@/lib/documents-du-cl
  *      d'enregistrement.
  *
  * Les trois sont ici. « Ouvrir », lui, veut exactement l'inverse : pas de
- * `?telecharger=1`, et un onglet à part pour ne pas perdre la fiche.
+ * `?telecharger=1` — et, depuis le 11 septembre 2026, **plus d'onglet à part**
+ * pour un PDF : *« j'ai pas de touche retour »*. Le fichier se peint dans la
+ * visionneuse de l'application, dont la flèche ramène à cette fiche
+ * (`src/lib/visionneuse-pdf.ts`). Une pièce qui est une PAGE publique garde
+ * son onglet : c'est l'adresse du client, sans en-tête de l'application.
  */
+/** Ce que l'en-tête de la visionneuse écrit au-dessus du numéro. */
+const NATURE_LISIBLE = { facture: "Facture", devis: "Devis", "fiche-chantier": "Fiche de chantier" } as const;
+
 export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
   const [feuilleOuverte, setFeuilleOuverte] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -199,12 +207,16 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
           </a>
         )}
 
-        {/* Un onglet à part : sans lui, regarder un devis ferait perdre la fiche
-            du client, et il faudrait y revenir à la main. */}
         <a
-          href={piece.href}
-          target="_blank"
-          rel="noreferrer"
+          href={
+            estUnFichier
+              ? adresseDeLaVisionneuse(piece.href, {
+                  surtitre: NATURE_LISIBLE[natureDeLaPiece(piece.href)],
+                  titre: numeroDeLaPiece(piece.titre) ?? piece.titre,
+                })
+              : piece.href
+          }
+          {...(estUnFichier ? {} : { target: "_blank", rel: "noreferrer" })}
           onClick={() => setFeuilleOuverte(false)}
           data-atlas="piece-ouvrir"
           className={
