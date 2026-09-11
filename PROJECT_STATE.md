@@ -5,6 +5,22 @@
 
 ---
 
+## FAIT : LE MICRO REVIENT SUR LA FICHE QUI FACTURE — 11 septembre 2026
+
+*« Il faut rajouter la petite note vocale comme sur la fiche client si on veut
+dicter les infos de la facture ! »* Retiré la veille avec l'anneau et les
+photos, sous une raison qui ne valait que pour ces deux-là. `<DicterCoordonnees>`
+n'est plus conditionné à `pourLeDevis` ; l'anneau et les photos restent dehors.
+
+## FAIT : LA FICHE DU CLIENT APPREND CE QU'IL TAPE — 11 septembre 2026
+
+*« Il n'avait pas l'info de l'adresse e-mail, donc là je l'ai rajoutée […] il
+doit la rajouter dans la catégorie client. »* L'e-mail entrait déjà ; **la
+civilité, le canal d'envoi et l'adresse du chantier, non**. Racine : la règle
+était écrite deux fois, une par chemin, et la copie de `creerChantierAction` —
+celle du client reconnu à l'écran — avait divergé. `completerLaFiche` la porte
+maintenant seule (`ARCHITECTURE.md` §327). Rien n'est jamais écrasé.
+
 ## FAIT : LE « 1 » DES RETOURS S'ÉTEINT QUAND IL LIT — 11 septembre 2026
 
 La pastille comptait bien les non-lus ; c'est la page rejouée par le retour
@@ -12,7 +28,7 @@ arrière qui montrait l'image d'avant la lecture. L'action qui enregistre la
 lecture périme désormais `/termines` et `/termines/retours`, comme le fait déjà
 celle qui pose un retour. Un contrôle parcourt son chemin sans recharger —
 onglet, carte, flèche — et il a été vu rouge contre l'ancien code
-(`ARCHITECTURE.md` §327).
+(`ARCHITECTURE.md` §328).
 
 ---
 

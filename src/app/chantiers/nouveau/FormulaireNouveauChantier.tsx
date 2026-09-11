@@ -715,9 +715,19 @@ export default function FormulaireNouveauChantier({
               principale de cet écran, d'où le rond discret plutôt qu'un
               bouton.
 
-              **Absent quand on vient facturer** : *« on ne dicte pas une
-              facture qu'on tape »* (sa planche du 10 septembre 2026). */}
-          {pourLeDevis && <DicterCoordonnees onCoordonnees={appliquerDictee} />}
+              **IL EST LÀ AUSSI QUAND ON FACTURE — sa demande du 11 septembre
+              2026 :** *« il faut rajouter la petite note vocale comme sur la
+              fiche client si on veut dicter les infos de la facture »*.
+
+              Sa planche de la veille disait le contraire — *« on ne dicte pas
+              une facture qu'on tape »* —, et le raisonnement qui la suivait
+              était juste pour les DEUX AUTRES pièces : l'anneau et les photos
+              nourrissent le chiffrage d'un devis, qui n'existe pas ici. Ce
+              micro-ci ne nourrit rien : il remplit le nom, le numéro,
+              l'e-mail, l'adresse — les mêmes cases, sur le même écran, qu'on
+              aille au devis ou à la facture. Il n'avait aucune raison de
+              tomber avec les deux autres. */}
+          <DicterCoordonnees onCoordonnees={appliquerDictee} />
         </div>
 
         <form

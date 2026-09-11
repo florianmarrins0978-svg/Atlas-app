@@ -8,6 +8,68 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### La photo d'un retour s'ouvre en grand — et il n'y a qu'une visionneuse
+
+Sa demande, capture à l'appui : *« ce qui serait bien, c'est qu'on puisse
+cliquer dessus pour qu'elle apparaisse en grand »*. Deux vignettes de 132 px
+disent qu'il y a eu une photo ; elles ne disent pas si la haie est taillée
+droit — et c'est sur cette image qu'il décide de facturer.
+
+**Rien n'a été dessiné, et c'est une décision** : le geste existe déjà dans le
+produit, sur la pellicule d'un chantier. Ce qui aurait été recopié a été
+**sorti** dans `src/components/atlas/VisionneusePhoto.tsx` : le portail, le fond
+d'encre et les pôles retournés des deux chartes sombres vivent là une fois pour
+toutes, et la pellicule s'en sert comme les retours. Deux visionneuses auraient
+fini par avoir deux façons de fermer.
+
+**Sans « Retirer » sur un retour**, et c'est délibéré : un compte rendu de
+salarié ne s'efface pas depuis l'écran qui sert à le vérifier.
+
+Le geste est éprouvé par où son doigt passe (`test-onglets-termines-e2e.ts`) :
+on appuie sur la photo, la visionneuse doit couvrir l'écran, et la croix la
+referme. **Vu ROUGE** contre un appui qui n'ouvre rien — et il mesure le cadre,
+pas l'image, parce que le fichier peut manquer sur un poste d'essai : une boîte
+de zéro pixel n'est pas un vert.
+
+**La vignette reste carrée, et c'est déclaré** : `test-boutons-arrondis.ts` l'a
+dénoncée à la batterie, comme il doit le faire. C'est la quatrième photo qu'on
+touche dans ce produit, et le même arbitrage vaut — un cercle rognerait les
+quatre coins de ce qu'il regarde. L'exception est bornée à son repère : un vrai
+bouton carré écrit demain dans cet écran fera toujours rougir.
+
+### Le micro revient sur la fiche qui facture, et la fiche APPREND ce qu'il tape
+
+*« Il faut rajouter la petite note vocale comme sur la fiche client si on veut
+dicter les infos de la facture ! »* — et, dans le même message : *« il n'avait
+pas l'info de l'adresse e-mail, donc là je l'ai rajoutée, et ce qu'il faut faire
+c'est que maintenant il a l'info et il doit la rajouter dans la catégorie
+client. »*
+
+**1. Le micro.** Il était tombé la veille avec l'anneau et les photos, sous une
+formule de sa planche — *« on ne dicte pas une facture qu'on tape »*. Le
+raisonnement était juste pour les deux autres : elles nourrissent le CHIFFRAGE
+d'un devis, qui n'existe pas ici. Le petit micro, lui, ne nourrit rien — il
+remplit le nom, le numéro, l'e-mail, l'adresse, les mêmes cases sur le même
+écran. **Trois pièces retirées ensemble demandaient trois raisons, pas une.**
+L'anneau et les photos restent dehors.
+
+**2. Ce qu'il tape entre dans la fiche.** L'e-mail l'y entrait déjà — c'est la
+seule moitié de sa demande qui marchait. **La civilité, le canal d'envoi et
+l'adresse du chantier, non**, et sa capture porte les trois : « Mr » choisi,
+« SMS » souligné, l'adresse de Mantes-la-Jolie. Il les rechoisissait à chaque
+passage sans qu'aucun message ne le dise.
+
+**La racine était une règle écrite deux fois** (`ARCHITECTURE.md` §327). Deux
+chemins mènent à une fiche connue — le nom rapproché, et l'identifiant tenu
+d'avance quand Atlas vient de le reconnaître à l'écran — et chacun avait sa
+copie. Celle du second avait déjà divergé : elle ignorait la civilité et le
+canal, et son `adresseClient ?? adresseChantier` ne pouvait jamais atteindre la
+seconde, le champ replié valant `""`. Une seule fonction désormais,
+`completerLaFiche` ; la copie a été supprimée, pas recouverte.
+
+**Ce qui n'a pas bougé :** rien n'est jamais écrasé. Ce qu'il avait pris le
+temps de noter reste. Pour corriger une fiche, il y a l'écran des coordonnées.
+
 ### Le « 1 » des retours d'intervention restait allumé après lecture
 
 *« Je viens d'aller regarder le retour d'inter mais le petit 1 est resté
