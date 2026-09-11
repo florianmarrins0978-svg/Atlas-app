@@ -9,6 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ LE LANCEUR NE VOIT PAS UNE SESSION OUVERTE DEPUIS L'ÉDITEUR (11 septembre 2026)
+
+**Constaté à 18:01, dans `atlas-app-s2`** : deux sessions dans le même
+dossier, sur la même branche — l'une ouverte depuis VS Code, l'autre envoyée
+là par `npm run session`. Le patron : *« normalement c'est pas possible, vous
+avez chacun un dossier »*. Il a raison sur la règle ; c'est le lanceur qui a
+un angle mort.
+
+`scripts/ouvrir-session.mjs` ne tient un dossier pour « pris » que par le
+processus **qu'il a lui-même lancé** (son PID est le jeton). Une session
+ouverte autrement — l'extension VS Code, un `claude` tapé à la main dans le
+dossier — n'a aucun jeton : le dossier paraît libre, et la suivante y est
+envoyée. Ce que ça coûte : un `merge origin/main` sous les commits de l'autre,
+et un `git status` qui porte les fichiers de quelqu'un d'autre.
+
+**Ce qu'il faut** : que « pris » se lise aussi à ce qui tourne réellement dans
+le dossier — un processus `claude` dont le répertoire courant est ce
+worktree —, pas seulement au jeton du lanceur. `pgrep`/`Get-Process` avec le
+chemin, comme le veilleur remesure le port au lieu de le croire. Et que
+`sessions:preparer --liste` le montre.
+
+**Ce qu'il ne faut PAS** : un fichier posé dans le dossier pour dire « je suis
+là » — c'est la leçon du verrou de la batterie, un jeton que personne ne
+ramasse ment dès la deuxième soirée.
+
 ## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
 
 **Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
