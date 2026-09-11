@@ -1079,6 +1079,39 @@ calcul, pas un détour.
 **Une antenne part du RÉSEAU, pas de la nourrice.** Seul le réseau part du
 regard ; ses antennes se greffent sur un point qu'il dessert déjà.
 
+**LE Ø25 PASSE, L'ANTENNE Ø16 VA CHERCHER LA TÊTE — ET ELLE FAIT 2 M AU
+MAXIMUM.** Sa règle du 11 septembre 2026, donnée en corrigeant un plan qui
+amenait le Ø25 jusqu'à chaque tuyère d'un couloir, en deux lignes :
+
+*« Pour la tranchée, il faut faire juste un passage au mieux pour le 25, et
+ensuite ce sont des antennes en diamètre 16 rigide qui vont de part et d'autre
+pour poser les tuyères — et elles doivent être posées en quinconce. »*
+
+*« Si le couloir fait 3 m, on fait une seule tranchée au milieu et les antennes
+pour les tuyères de chaque côté — donc 1,50 m de 16 rigide, ça passe. Si le
+couloir fait 5 m, on ne peut plus faire une seule tranchée au milieu, parce que
+là ça fait des antennes de 2,50 m de chaque côté, et le max c'est 2 m de 16
+rigide. »*
+
+| | |
+|---|---|
+| la ligne Ø25 | **un seul passage**, au mieux — elle ne va pas à chaque tête |
+| l'antenne Ø16 rigide | du té de la ligne à l'arroseur, **2 m au plus** |
+| un couloir jusqu'à **4 m** de large | une tranchée au milieu, des antennes des deux côtés |
+| au-delà de 4 m | une tranchée ne suffit plus : la ligne doit repasser assez près de chaque tête |
+
+**Pourquoi 2 m et pas « environ 2 m ».** La nomenclature du 17 août comptait
+*« environ 2 m de PEBD rigide Ø16 par arroseur »* — une règle de COMPTE, qu'on
+a prise pour la seule règle. Celle-ci est une règle de POSE : au-delà, ce n'est
+plus une antenne, et la ligne doit venir plus près. Le tracé doit donc placer
+le Ø25 de sorte qu'aucune tête ne soit à plus de 2 m de lui.
+
+**Cette règle avait déjà été donnée avant le 11 septembre, et elle avait été
+perdue** avant d'être écrite — comme le quinconce du couloir (§127), mort le
+24 août quand un contrôle rouge a été réécrit au lieu d'être compris. Les deux
+vivent désormais dans `scripts/test-regles-du-patron.ts`, avec ses chiffres à
+lui : **un rouge dans cette suite ne se réécrit jamais, il lui est posé.**
+
 **Les raccords se comptent par POSITION, jamais par arroseur** — sa planche du
 17 août, écrite dans `appli/arrosage-catalogue.js` :
 
