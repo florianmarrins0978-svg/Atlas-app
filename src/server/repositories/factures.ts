@@ -24,7 +24,7 @@ import { validerEcheance } from "../../lib/echeance-facture";
 import { ALLURE_PAR_DEFAUT } from "../../lib/allure-documents";
 import { repriseDuDevis } from "../../lib/facture-face-au-devis";
 import { factureNeeSansDevis } from "../../lib/lignes-corrigeables";
-import { totauxAvecReduction } from "../../lib/reduction-devis";
+import { pourcentValide, totauxAvecReduction } from "../../lib/reduction-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
 import {
   dansLaPeriode,
@@ -972,6 +972,66 @@ export async function majEcheanceFacture(
     if (!v.ok) return v;
     await tx.update(factures).set({ dateEcheance: v.iso }).where(eq(factures.id, factureId));
     return { ok: true, dateEcheance: v.iso };
+  });
+}
+
+/**
+ * LE PRIX ACCORDÉ AU CLIENT, SUR UNE FACTURE.
+ *
+ * **Sa demande du 11 septembre 2026 :** *« on n'a pas mis la réduction client
+ * cliquable comme sur le devis »*. Le geste existait sur le devis depuis le
+ * 16 août ; la facture, elle, savait AFFICHER une remise reprise du devis mais
+ * n'avait aucun moyen d'en poser une.
+ *
+ * **Le pourcentage est relu, jamais cru sur parole** : `pourcentValide` est la
+ * même fonction qui sert au devis, à l'écran et au document. Ce qu'elle refuse
+ * — un texte, un nombre hors bornes, zéro — vaut « aucune réduction », et la
+ * colonne redevient nulle plutôt que de garder un « 0 » qui ferait imprimer une
+ * ligne vide sur la facture du client.
+ *
+ * **LES DEUX COLONNES VONT ENSEMBLE — et la base le fait respecter.** La
+ * première version de cette fonction n'écrivait que le pourcentage, en se
+ * disant que le montant se recalcule ; PostgreSQL l'a refusée sur
+ * `factures_reduction_paire_ck` (migration 0048). La contrainte a raison, et sa
+ * raison est écrite là-bas : un pourcentage sans montant laisse le document
+ * incapable de dire ce qu'il a retiré.
+ *
+ * Le montant est donc calculé sur les lignes du moment, par la même fonction
+ * que l'écran et le PDF (`totauxAvecReduction`) — jamais par une seconde
+ * arithmétique. Il est REFIGÉ à l'arrêt de la facture (`emettreFacture`), ce
+ * qui règle le cas d'une ligne corrigée après la remise : en brouillon, l'écran
+ * recalcule à chaque affichage, et la pièce qui part porte le bon chiffre.
+ */
+export async function majReductionDeFacture(
+  ctx: Ctx,
+  factureId: string,
+  pourcentBrut: string | null
+): Promise<{ ok: true; reductionPourcent: string | null } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+
+    const pourcent = pourcentValide(pourcentBrut);
+
+    const [f] = await tx
+      .select({ tauxTva: factures.tauxTva })
+      .from(factures)
+      .where(eq(factures.id, factureId))
+      .limit(1);
+    const lignes = await tx
+      .select({ montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva })
+      .from(lignesFacture)
+      .where(eq(lignesFacture.factureId, factureId));
+    const totaux = totauxAvecReduction(lignes, f?.tauxTva ?? TAUX_TVA_PAR_DEFAUT, pourcent);
+
+    await tx
+      .update(factures)
+      .set({
+        reductionPourcent: totaux.reductionPourcent,
+        reductionMontant: totaux.reductionMontant,
+      })
+      .where(eq(factures.id, factureId));
+    return { ok: true, reductionPourcent: totaux.reductionPourcent };
   });
 }
 

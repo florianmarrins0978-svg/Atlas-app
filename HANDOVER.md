@@ -8,6 +8,24 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LE PRIX ACCORDÉ AU CLIENT SUR UNE FACTURE (11 septembre 2026)
+
+| | |
+|---|---|
+| ses mots | *« la réduction client cliquable comme sur le devis »* · *« reprends exactement celle du devis — couleur, forme, mots »* |
+| la pièce commune | `src/components/atlas/PrixAccordeAuClient.tsx`, montée par le devis ET la facture |
+| le serveur | `majReductionDeFacture` + `majReductionFactureAction` — ils n'existaient pas |
+| la migration | **aucune** |
+| les suites | `test-remise-facture-db.ts` (5), `test-facture-sans-devis-e2e.ts` (12) |
+| le détail | `ARCHITECTURE.md` §330 |
+
+**LE PIÈGE QUE LA BASE A ARRÊTÉ.** `factures_reduction_paire_ck` exige le
+pourcentage ET le montant, ou aucun des deux. Écrire le seul pourcentage échoue
+— et le message de `drizzle` ne dit PAS la contrainte : il faut lire la `cause`
+de l'erreur (la suite le fait désormais).
+
+---
+
 ## Dernier lot — PLUSIEURS TVA SUR UNE FACTURE, ET LE ZÉRO DU PRIX (11 septembre 2026)
 
 | | |

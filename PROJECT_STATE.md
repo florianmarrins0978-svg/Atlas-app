@@ -5,6 +5,16 @@
 
 ---
 
+## FAIT : LE PRIX ACCORDÉ AU CLIENT SUR UNE FACTURE — 11 septembre 2026
+
+Le geste du devis — ligne dorée, « − », 5 % d'emblée — est désormais une pièce
+commune montée par les deux écrans, et le serveur sait poser la remise sur une
+facture en brouillon. **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §330.
+
+---
+
 ## FAIT : PLUSIEURS TVA SUR UNE FACTURE, ET LE PRIX SANS ZÉRO — 11 septembre 2026
 
 « Ajouter une TVA » ouvre une catégorie au lieu de repeindre toutes les lignes,

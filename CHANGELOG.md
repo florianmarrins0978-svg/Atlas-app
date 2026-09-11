@@ -8,6 +8,28 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Le prix accordé au client, enfin cliquable sur une facture
+
+*« On n'a pas mis la réduction client cliquable comme sur le devis »*, puis
+*« reprends exactement celle du devis — couleur, forme, mots »*.
+
+La facture savait afficher une remise venue du devis ; rien ne permettait d'en
+poser une, ni à l'écran ni côté serveur. « Exactement » ne se tenant pas en
+recopiant, le geste est devenu une pièce unique que les deux écrans montent
+(`PrixAccordeAuClient`) : l'or, le « − » de 26 px, les mots, les 5 % d'emblée.
+Le devis a perdu son bloc et sa constante en même temps.
+
+Côté base, la première version n'écrivait que le pourcentage ; PostgreSQL l'a
+refusée sur `factures_reduction_paire_ck`, et la contrainte avait raison — un
+pourcentage sans montant laisse le document incapable de dire ce qu'il retire.
+Les deux colonnes s'écrivent ensemble, avec la fonction qui sert déjà à l'écran
+et au PDF.
+
+Éprouvé sous `atlas_app` (5 pièces : posée, changée, retirée, « 0 » qui efface,
+facture arrêtée qui refuse, cloison entre entreprises) et par sa porte au
+navigateur (12 pièces). Regardé à l'écran : 250,00 € − 12,50 € = 237,50 €, TVA
+47,50 €, total 285,00 €.
+
 ### Plusieurs TVA sur une facture, et un champ de prix sans zéro
 
 *« Je ne peux pas ajouter plusieurs TVA ; lorsque j'en mets une le bouton

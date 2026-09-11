@@ -443,6 +443,68 @@ async function main() {
     assert.strictEqual(new Set(taux).size, taux.length, "le même taux a été proposé deux fois");
   });
 
+  // ── LE PRIX ACCORDÉ AU CLIENT, POSÉ DEPUIS L'ÉCRAN ──────────────────────
+  //
+  // **Sa demande du 11 septembre 2026 :** *« on n'a pas mis la réduction client
+  // cliquable comme sur le devis »*, puis *« reprends exactement celle du devis
+  // — couleur, forme, mots »*.
+  await test("il accorde un prix au client, et la facture le retire du total", async () => {
+    // On est encore sur l'écran de saisie, celui qui porte les totaux.
+    assert.strictEqual(
+      await page.locator('[data-atlas="poser-prix-accorde"]').count(),
+      1,
+      "aucun moyen d'accorder un prix : le geste du devis n'est pas sur la facture"
+    );
+
+    const avant = Number(
+      (await pool.query(
+        `SELECT SUM(lf.montant) AS ht FROM lignes_facture lf
+           JOIN factures f ON f.id = lf.facture_id WHERE f.chantier_id = $1`,
+        [chantierId]
+      )).rows[0].ht
+    );
+
+    await page.click('[data-atlas="poser-prix-accorde"]');
+    await page.waitForTimeout(1200);
+
+    // **Cinq pour cent d'emblée** — le chiffre que le bouton pose, écrit une
+    // seule fois (`REMISE_PAR_DEFAUT`), pour le devis comme pour la facture.
+    assert.strictEqual(
+      await page.locator('[data-atlas="taux-prix-accorde"]').inputValue(),
+      "5",
+      "le bouton ne pose pas les 5 % que le devis pose"
+    );
+
+    // **Ce que la BASE porte**, et non ce que l'écran affiche : les deux
+    // colonnes vont ensemble, la contrainte `factures_reduction_paire_ck` le
+    // fait respecter, et un pourcentage sans montant serait refusé.
+    const { rows } = await pool.query(
+      `SELECT reduction_pourcent, reduction_montant FROM factures WHERE chantier_id = $1`,
+      [chantierId]
+    );
+    assert.strictEqual(Number(rows[0].reduction_pourcent), 5, "la remise n'est pas enregistrée");
+    assert.strictEqual(
+      Number(rows[0].reduction_montant),
+      Math.round(avant * 5) / 100,
+      `le montant retiré ne correspond pas aux 5 % de ${avant} €`
+    );
+
+    // Et le « − » du devis est là, au même endroit, avec les mêmes mots.
+    assert.strictEqual(
+      await page.locator('[data-atlas="retirer-prix-accorde"]').count(),
+      1,
+      "rien ne permet de retirer le prix accordé"
+    );
+    await page.click('[data-atlas="retirer-prix-accorde"]');
+    await page.waitForTimeout(1200);
+    const apres = await pool.query(
+      `SELECT reduction_pourcent, reduction_montant FROM factures WHERE chantier_id = $1`,
+      [chantierId]
+    );
+    assert.strictEqual(apres.rows[0].reduction_pourcent, null, "la remise retirée dort en base");
+    assert.strictEqual(apres.rows[0].reduction_montant, null, "le montant retiré dort en base");
+  });
+
   await context.close();
   await navigateur.close();
 }

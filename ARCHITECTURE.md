@@ -28222,3 +28222,59 @@ vues rouges contre le code d'avant — « Ajouter une TVA a disparu après le
 premier taux », puis « le champ du prix porte un zéro ». Ce que le contrôle
 retient de la base, ce sont les **taux distincts** de la facture, pas un libellé
 d'écran (`CLAUDE.md` §5 bis).
+
+---
+
+## §330 — Le prix accordé au client sur une facture : la pièce du devis, montée deux fois
+
+**Sa demande du 11 septembre 2026 :** *« on n'a pas mis la réduction client
+cliquable comme sur le devis »*, puis, aussitôt après : *« reprends exactement
+celle du devis — couleur, forme, mots »*.
+
+La facture savait **afficher** une remise reprise du devis ; rien ne permettait
+d'en poser une — ni à l'écran, ni côté serveur.
+
+### « Exactement » ne se tient pas en recopiant
+
+Deux blocs jumeaux dans deux écrans divergent au premier ajustement. Le dépôt
+venait d'en payer deux le même jour : la grammaire des TVA et la case du prix,
+corrigées d'un seul côté (§329). Le geste vit donc dans une pièce unique,
+`src/components/atlas/PrixAccordeAuClient.tsx`, que le devis **et** la facture
+montent :
+
+| | |
+|---|---|
+| `LignePrixAccorde` | l'or, le « − » de 26 px, le libellé, le champ de 36 px, le « % », le montant en négatif |
+| `BoutonPrixAccorde` | le chemin de secours discret, sous le total |
+| `REMISE_PAR_DEFAUT` | les 5 % que le bouton pose, écrits une fois pour les deux pièces |
+
+Le devis a **perdu** son bloc et sa constante en même temps : une correction qui
+n'enlève rien serait un pansement (`CLAUDE.md` §4 quater).
+
+### Ce que la base a appris à cette fonction
+
+La première version de `majReductionDeFacture` n'écrivait que le pourcentage —
+« le montant se recalcule ». PostgreSQL l'a refusée sur
+`factures_reduction_paire_ck` (migration 0048), et la contrainte a raison : *un
+pourcentage sans montant laisse le document incapable de dire ce qu'il a
+retiré*. Les deux colonnes s'écrivent donc ensemble, le montant venant de
+`totauxAvecReduction` — la même fonction que l'écran et le PDF, jamais une
+seconde arithmétique.
+
+**Le cas de la ligne corrigée APRÈS la remise** est réglé par ce qui existait
+déjà : l'écran recalcule à chaque affichage, et `emettreFacture` refige tous les
+totaux à l'arrêt. Ce qui part chez le client porte donc le bon chiffre, même si
+la colonne a vieilli entre-temps.
+
+### Ce qui l'éprouve
+
+`scripts/test-remise-facture-db.ts` tient l'écriture sous `atlas_app` : la
+remise se pose, se change, se retire ; « 0 », une case vide ou un charabia
+l'**effacent** au lieu d'en garder une à zéro — un « 0 % » stocké ferait
+imprimer au client une ligne dorée sans montant, le défaut qu'il avait signalé
+sur le devis le 17 août 2026 ; une facture arrêtée refuse ; et une facture
+d'une autre entreprise n'existe pas.
+
+`test-facture-sans-devis-e2e.ts` entre par sa porte : il appuie sur le bouton,
+lit les 5 %, vérifie **la paire en base**, puis retire d'un « − ». Et l'écran a
+été regardé : 250,00 € − 12,50 € = 237,50 €, TVA 47,50 €, total 285,00 €.

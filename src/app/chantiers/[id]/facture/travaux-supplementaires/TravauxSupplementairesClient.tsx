@@ -27,8 +27,17 @@ import {
 import {
   ajouterLigneDeFactureAction,
   majLigneDeFactureAction,
+  majReductionFactureAction,
   retirerLignesDeFactureAction,
 } from "../actions";
+import {
+  BoutonPrixAccorde,
+  LignePrixAccorde,
+  REMISE_PAR_DEFAUT,
+} from "@/components/atlas/PrixAccordeAuClient";
+// Le formateur du dépôt, au lieu de la copie qui vivait ici : deux façons
+// d'écrire un euro finissent par s'écrire différemment (`CLAUDE.md` §3).
+import { enEuros } from "@/lib/euros";
 import { ligneSeCorrige } from "@/lib/lignes-corrigeables";
 
 /**
@@ -71,10 +80,6 @@ type LigneEcran = {
   tauxTva: string | null;
   supplement: boolean;
 };
-
-const enEuros = (v: string | number) =>
-  new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", minimumFractionDigits: 2 })
-    .format(typeof v === "number" ? v : Number(v));
 
 /** Ce que la ligne pèse — la même règle qu'au serveur, jamais une seconde. */
 const montantDe = (l: { quantite: string; prixUnitaire: string }) =>
@@ -180,9 +185,24 @@ export default function TravauxSupplementairesClient({
     [saisies, tauxTvaFacture]
   );
 
+  /**
+   * ─── LE PRIX ACCORDÉ AU CLIENT ──────────────────────────────────────────
+   *
+   * **Sa demande du 11 septembre 2026 :** *« on n'a pas mis la réduction client
+   * cliquable comme sur le devis »*, puis *« reprends exactement celle du devis
+   * — couleur, forme, mots »*.
+   *
+   * La facture savait AFFICHER une remise reprise du devis ; elle n'avait aucun
+   * moyen d'en poser une. Le geste est celui du devis, monté depuis la même
+   * pièce (`PrixAccordeAuClient`) — recopié, il aurait divergé au premier
+   * ajustement.
+   */
+  const [reduction, setReduction] = useState(reductionPourcent ?? "");
+  const [remiseOuverte, setRemiseOuverte] = useState(reductionPourcent !== null);
+
   const totaux = useMemo(
-    () => totauxAvecReduction(lignes, tauxTvaFacture, reductionPourcent),
-    [lignes, tauxTvaFacture, reductionPourcent]
+    () => totauxAvecReduction(lignes, tauxTvaFacture, remiseOuverte ? reduction : null),
+    [lignes, tauxTvaFacture, remiseOuverte, reduction]
   );
   const blocs = useMemo(() => lignesParBloc(lignes, tauxTvaFacture), [lignes, tauxTvaFacture]);
   const plusieursTaux = new Set(blocs.map((b) => b.taux)).size > 1;
@@ -244,6 +264,26 @@ export default function TravauxSupplementairesClient({
    */
   function ajouterUneTva() {
     ajouterUneLigne(tauxTvaPropose(categories.map((c) => c.taux)));
+  }
+
+  /**
+   * La remise s'enregistre, et l'écran se referme sur ce que le SERVEUR a
+   * retenu — jamais sur ce qu'il a tapé. Une case vidée, « 0 », ou une saisie
+   * illisible valent toutes « aucune réduction » (`pourcentValide`) : comparer
+   * la chaîne brute laisserait une ligne dorée « … 0 % » sans montant pendant
+   * que la base n'en porte plus aucune. C'est le défaut que le patron a signalé
+   * sur le devis le 17 août 2026.
+   */
+  function enregistrerLaRemise(valeurBrute: string = reduction) {
+    const valeur = valeurBrute.trim() || null;
+    enTransition(async () => {
+      const r = await majReductionFactureAction(factureId, valeur);
+      if (!porter(r) || !r.succes) return;
+      if (r.reductionPourcent === null) {
+        setReduction("");
+        setRemiseOuverte(false);
+      }
+    });
   }
 
   /** Les lignes d'une catégorie — celles que ce taux-là commande. */
@@ -516,10 +556,34 @@ export default function TravauxSupplementairesClient({
 
         {/* ─── LES TOTAUX — une ligne par taux, comme sur le devis ────────── */}
         <div className="mt-7 pt-4" style={{ borderTop: `1px solid ${colors.line}` }}>
+          {/* **Le prix plein d'abord, ce qui a été consenti dessous, puis le
+              net** — l'arrangement du devis, choisi le 16 août 2026 : c'est ce
+              qui permet au client de refaire le calcul. Sans remise, rien de
+              tout cela ne s'affiche : une ligne « Prix accordé au client — % »
+              sur une facture qui n'en porte pas contredirait le document. */}
           <div className="flex items-center justify-between py-1.5">
             <span className="text-[15px]">Total HT</span>
-            <span className="text-[15px]">{enEuros(totaux.totalHt)}</span>
+            <span className="text-[15px]">
+              {enEuros(remiseOuverte ? totaux.brutHt : totaux.totalHt)}
+            </span>
           </div>
+          {remiseOuverte && (
+            <>
+              <LignePrixAccorde
+                pourcent={reduction}
+                montantRetire={totaux.reductionMontant}
+                onChange={setReduction}
+                onFini={() => enregistrerLaRemise()}
+                onRetirer={() => enregistrerLaRemise("")}
+              />
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-[15px]">
+                  {totaux.reductionPourcent === null ? "Total HT" : "Total HT après remise"}
+                </span>
+                <span className="text-[15px]">{enEuros(totaux.totalHt)}</span>
+              </div>
+            </>
+          )}
           {totaux.parTaux.map((c) => (
             <div key={c.taux} className="flex items-center justify-between py-1.5">
               <span className="text-[15px]">
@@ -541,6 +605,16 @@ export default function TravauxSupplementairesClient({
               {enEuros(totaux.totalTtc)}
             </span>
           </div>
+
+          {!remiseOuverte && (
+            <BoutonPrixAccorde
+              onPoser={() => {
+                setRemiseOuverte(true);
+                setReduction(REMISE_PAR_DEFAUT);
+                enregistrerLaRemise(REMISE_PAR_DEFAUT);
+              }}
+            />
+          )}
         </div>
       </section>
 
