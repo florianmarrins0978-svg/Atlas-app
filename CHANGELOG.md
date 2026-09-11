@@ -22,8 +22,15 @@ regroupement ; un refus revient intact à l'appelant.
 
 La règle vit dans `lib` et non dans le hook : sa première version, portée par
 `useRef`, ne pouvait pas être jouée hors d'un écran. Son témoin rejoue le défaut
-avec les mêmes durées. Trois exécutions de `test-reduction-devis-e2e` sans un
-échec, là où c'était deux sur trois.
+avec les mêmes durées.
+
+**Et la file elle-même a dû être reprise.** Gardée dans un `useRef` posé pendant
+le rendu — ce que React interdit —, elle était recréée à chaque passage : deux
+écritures repartaient ensemble, et la suite tombait encore en batterie alors
+qu'elle passait seule. `useState(() => …)` l'a réglé. Ce qui l'a prouvé n'est
+pas une déduction : une sonde dans l'action serveur, et les suites navigateur
+jouées en entier — reçu « 0 » → null, puis reçu « 5 » → 5,00, 154 ms plus tard,
+et 11 pièces au vert.
 
 ### Le plan d'arrosage repris — et deux de ses règles retrouvées
 

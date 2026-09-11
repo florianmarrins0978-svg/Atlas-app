@@ -28635,6 +28635,30 @@ Monter un écran pour mesurer une mise en file aurait mesuré React
 se joue en quelques millisecondes — et son **témoin** rejoue le défaut avec les
 mêmes durées : sans file, la lente doublait la rapide.
 
+### Ce que la MESURE a fini par dire, et qui n'était pas ce qu'on croyait
+
+La file posée, la suite passait en isolé mais **tombait encore en batterie** :
+trois exécutions vertes seules, deux batteries rouges. La tentation était de
+rallonger le contrôle ; ce qui a tranché, c'est une sonde posée dans l'action
+serveur — *« reçu », « écrit »*, horodatés — et une exécution des suites
+navigateur ENTIÈRES, c'est-à-dire sous la vraie charge.
+
+Le journal a montré la séquence propre, et la suite est passée 11/11 :
+
+    …54.639  reçu « 0 »  → écrit null     (la case vidée)
+    …54.793  reçu « 5 »  → écrit 5,00     (le bouton, 154 ms plus tard)
+
+**La différence entre les deux états n'était pas la charge : c'était la file
+elle-même.** Les batteries rouges tournaient encore sur la version qui gardait
+la file dans un `useRef` posé pendant le rendu — celle que React rejoue. La
+file était donc recréée, et deux écritures repartaient ensemble : la
+sérialisation ne tenait pas. Le passage à `useState(() => …)`, fait pour le
+lint, était **aussi** la correction du comportement.
+
+La leçon est celle du dépôt, une fois de plus : le défaut a été rendu bavard
+avant d'être corrigé, et c'est la sonde — pas la déduction — qui a nommé le
+coupable.
+
 ### Ce qui reste vrai ailleurs
 
 Le dépôt porte d'autres écrans qui écrivent au fil du doigt — les lignes d'un
