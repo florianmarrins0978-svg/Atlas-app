@@ -169,7 +169,45 @@
 </ul>
 <h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><em>À compléter au verdict de <code>npm run verifier:avant-livraison</code>, après votre accord pour la lancer.</em></p>
+<p>Jouée deux fois le 11 septembre 2026, sur votre poste Windows.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Dans le dossier principal</th>
+<th>Dans le dossier 5, sur le lot seul</th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, construction</td>
+<td><strong>rouges</strong> — le travail non enregistré d'une autre session (<code>abonnements.ts</code>), pas le lot</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td>vert</td>
+<td>vert</td>
+</tr>
+<tr>
+<td>Suites base</td>
+<td>349 / 357</td>
+<td>345 / 355</td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td>non jouées (pas de construction)</td>
+<td>117 / 143</td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td>vert</td>
+<td>vert</td>
+</tr>
+</tbody></table></div>
+<p><strong>Tout ce qui touche l'arrosage est vert</strong> : <code>test-arrosage-calcul</code>, <code>test-plan-dessine</code>, <code>test-trace-arrosage</code>, <code>test-consignes-arrosage</code>, <code>test-geometrie-croquis</code>, <code>test-lecture-croquis</code>, <code>test-discussion-plan</code>, <code>test-arrosage-e2e</code> (15 sur 15 au navigateur), <code>test-regles-du-patron</code> (17 règles), <code>test-garde-regles-du-patron</code> (30), et le contrôle de la page publiée (<code>essai-arrosage-detaille</code>, 78 sur 78).</p>
+<p><strong>Les rouges, et ce qu'ils sont :</strong></p>
+<ul>
+<li>les 8 à 10 suites base rouges sont les suites d'infrastructure qui rougissent déjà sur <code>main</code> sur ce poste (verrou de batterie, port du banc, relance de construction, seed, version exécutée…) — aucune ne touche l'arrosage ;</li>
+<li>les 26 suites navigateur rouges ne touchent pas l'arrosage non plus (devis complet, anneau de dictée, suivi de devis, planning…). <strong>Témoin joué sur le commit juste avant le lot, même dossier, même machine : elles tombent exactement pareil (0 / 4 sur l'échantillon).</strong> Elles sont rouges sur <code>main</code> sur ce poste, pas à cause du lot. Ce point est ouvert plus bas.</li>
+</ul>
+<p>Journaux : <code>batterie.log</code>, <code>batterie-s5-2.log</code>, <code>e2e-temoin.log</code>, <code>e2e-temoin-main.log</code> dans le dossier de travail de la session.</p>
 <h2 id="ce-qui-reste-ouvert-et-qui-tranche">Ce qui reste ouvert, et qui tranche</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -196,6 +234,11 @@
 <td><strong>La page publiée <code>arrosage.html</code></strong> — en sursis depuis le 20 août</td>
 <td>une fois l'écran validé, elle n'a plus de raison d'être</td>
 <td><strong>vous</strong></td>
+</tr>
+<tr>
+<td><strong>26 suites navigateur rouges sur <code>main</code>, sur votre poste</strong> — devis complet, anneau, suivi de devis… — identiques avec et sans le lot</td>
+<td>à regarder par la session qui porte ces écrans : ce lot ne les touche pas</td>
+<td><strong>une autre session</strong></td>
 </tr>
 </tbody></table></div>
 </main>

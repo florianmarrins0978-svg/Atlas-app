@@ -76,8 +76,36 @@ votre couloir de 10 × 3 : une tranchée de 10 m, sept antennes de 1,50 m.
 
 ## Les chiffres de la batterie
 
-*À compléter au verdict de `npm run verifier:avant-livraison`, après votre
-accord pour la lancer.*
+Jouée deux fois le 11 septembre 2026, sur votre poste Windows.
+
+| | Dans le dossier principal | Dans le dossier 5, sur le lot seul |
+|---|---|---|
+| Types, lint, construction | **rouges** — le travail non enregistré d'une autre session (`abonnements.ts`), pas le lot | **verts** |
+| Mémoire du dépôt | vert | vert |
+| Suites base | 349 / 357 | 345 / 355 |
+| Suites navigateur | non jouées (pas de construction) | 117 / 143 |
+| Connexion derrière un proxy | vert | vert |
+
+**Tout ce qui touche l'arrosage est vert** : `test-arrosage-calcul`,
+`test-plan-dessine`, `test-trace-arrosage`, `test-consignes-arrosage`,
+`test-geometrie-croquis`, `test-lecture-croquis`, `test-discussion-plan`,
+`test-arrosage-e2e` (15 sur 15 au navigateur), `test-regles-du-patron` (17
+règles), `test-garde-regles-du-patron` (30), et le contrôle de la page publiée
+(`essai-arrosage-detaille`, 78 sur 78).
+
+**Les rouges, et ce qu'ils sont :**
+
+- les 8 à 10 suites base rouges sont les suites d'infrastructure qui rougissent
+  déjà sur `main` sur ce poste (verrou de batterie, port du banc, relance de
+  construction, seed, version exécutée…) — aucune ne touche l'arrosage ;
+- les 26 suites navigateur rouges ne touchent pas l'arrosage non plus (devis
+  complet, anneau de dictée, suivi de devis, planning…). **Témoin joué sur le
+  commit juste avant le lot, même dossier, même machine : elles tombent
+  exactement pareil (0 / 4 sur l'échantillon).** Elles sont rouges sur `main`
+  sur ce poste, pas à cause du lot. Ce point est ouvert plus bas.
+
+Journaux : `batterie.log`, `batterie-s5-2.log`, `e2e-temoin.log`,
+`e2e-temoin-main.log` dans le dossier de travail de la session.
 
 ## Ce qui reste ouvert, et qui tranche
 
@@ -87,3 +115,4 @@ accord pour la lancer.*
 | **La longueur d'amenée** — 30 m écrits sous le plan | la lire sur le croquis (la place du piquage y est obligatoire) donnerait la vraie longueur ; à éprouver sur votre espace, ce poste n'a pas de clé de vision | **vous**, puis votre espace |
 | **Les positions sur une vraie photo** | jamais éprouvées ici | **votre espace** |
 | **La page publiée `arrosage.html`** — en sursis depuis le 20 août | une fois l'écran validé, elle n'a plus de raison d'être | **vous** |
+| **26 suites navigateur rouges sur `main`, sur votre poste** — devis complet, anneau, suivi de devis… — identiques avec et sans le lot | à regarder par la session qui porte ces écrans : ce lot ne les touche pas | **une autre session** |
