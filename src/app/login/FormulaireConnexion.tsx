@@ -90,12 +90,15 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
           le vide est DESSOUS.
 
           Les écarts ci-dessous sont relevés sur sa planche (390 × 664) :
-          32 au-dessus du titre, 21 dessous — **puis 61 de plus le 11 septembre
-          au matin** : *« descends tout le bloc sans le Connexion d'un cm, juste
-          de Google à Entrer »*. Un centimètre fait 61 px sur son écran (390 px
-          pour 6,42 cm de large), et c'est le titre qui les porte : lui seul
-          reste en place, et tout ce qui le suit descend d'autant. La part
-          flexible d'en bas rend la place — le pied ne bouge pas non plus. 28 de part et d'autre du « ou »,
+          32 au-dessus du titre, 21 dessous — **puis 31 de plus le 11 septembre
+          au matin**. Il a d'abord demandé *« descends tout le bloc sans le
+          Connexion d'un cm, juste de Google à Entrer »* — un centimètre fait
+          61 px sur son écran (390 px pour 6,42 cm de large) —, puis, en
+          regardant : *« c'est trop, remonte de la moitié »*. D'où 21 + 31.
+
+          **C'est le TITRE qui porte cet écart**, et c'est ce qui le rend juste :
+          lui seul reste en place, tout ce qui le suit descend d'autant, et la
+          part flexible d'en bas rend la place — le pied ne bouge pas non plus. 28 de part et d'autre du « ou »,
           24 sous Face ID, 23 entre les champs. Rien n'est inventé.
 
           Une seule part flexible reste, **après le bouton** : c'est elle qui
@@ -104,7 +107,7 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
       <div className="h-[32px] flex-none" aria-hidden="true" />
 
       <h1
-        className="mb-[82px] text-center text-[34px] leading-[1.1]"
+        className="mb-[52px] text-center text-[34px] leading-[1.1]"
         style={{ ...({ fontFamily: "ui-serif, Georgia, serif" } as const), letterSpacing: "-0.01em" }}
       >
         Connexion
