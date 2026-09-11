@@ -232,6 +232,27 @@ const HORS_CHARTE: Array<{
     pourquoi: "vignette d'une photo du retour : un cercle rognerait l'image",
   },
   {
+    // **UNE PHOTO QU'ON OUVRE, PAS UN BOUTON** — la quatrième de cette famille,
+    // arrivée le 11 septembre 2026 avec sa demande : *« ce qui serait bien,
+    // c'est qu'on puisse cliquer dessus pour qu'elle apparaisse en grand »*.
+    //
+    // Même arbitrage que les trois autres, et il est plus fort ici : la photo
+    // fait 132 px de haut sur la moitié de l'écran, et c'est SUR ELLE qu'il
+    // décide de facturer. Un cercle rognerait les quatre coins de ce qu'il
+    // regarde. Une image n'est pas un geste — la charte donne la capsule à ce
+    // qu'on APPUIE.
+    //
+    // **Elle garde le rayon qu'elle avait quand elle n'était qu'une image** :
+    // rien n'a changé à l'écran, seul le fait qu'on puisse l'ouvrir.
+    //
+    // Le motif vise la LIGNE — son repère —, pas le fichier : un vrai bouton
+    // rectangulaire écrit demain dans cet écran serait toujours dénoncé, et
+    // « Replier » juste en dessous porte bien sa capsule.
+    motif: /^src[/\\]app[/\\]termines[/\\]retours[/\\]ListeDesRetours\.tsx$/,
+    seulement: /data-atlas="ouvrir-la-photo"/,
+    pourquoi: "photo d'un retour qu'on ouvre en grand : un cercle rognerait l'image",
+  },
+  {
     // **UNE CASE DU CALENDRIER, PAS UN BOUTON.** La charte est citée deux fois
     // plus haut : la capsule va à ce qu'on APPUIE, les 4 px à ce qu'on remplit —
     // et une case de calendrier n'est ni l'un ni l'autre. C'est une TUILE : un
