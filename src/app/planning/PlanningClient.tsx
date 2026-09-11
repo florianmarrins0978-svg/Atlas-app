@@ -840,6 +840,54 @@ export default function PlanningClient({
    * affichait « Lundi 27 juillet » sous un calendrier titré « août » : les deux
    * se contredisaient, et rien ne disait lequel croire.
    */
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * RENDRE À LA CARTE LES PIXELS QUE LES BANDES DU BAS LUI PRENNENT
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * **Le défaut, mesuré sur son écran** (390 × 664, compte de démonstration) :
+   * la carte s'ouvre à 472 px, « + Absent ? » occupe 523 → 567, et le tiroir
+   * commence à 565. **Deux pixels**, et `test-pas-la-ce-jour-e2e` refuse à
+   * juste titre un geste qu'une bande fixe recouvre — c'est ce contrôle qui
+   * avait attrapé, le 6 septembre, un geste entièrement caché dessous.
+   *
+   * **Ce n'est pas un défaut de réserve.** `.atlas-contenu` réserve déjà la
+   * barre ET le tiroir (§323) : cela permet de faire défiler jusqu'au bas,
+   * cela ne remonte pas ce qui est déjà à l'écran. La carte naît au MILIEU de
+   * la page, sous le doigt, et rien ne garantit que les cent derniers pixels
+   * soient libres à cet endroit-là.
+   *
+   * **CE QUE CE N'EST PAS, et deux contrôles l'ont prouvé dans la minute.** Le
+   * `scrollIntoView` retiré le 3 septembre 2026 ramenait une fiche née HORS du
+   * champ, à deux cents pixels de là : il déplaçait la case qu'on venait de
+   * toucher. Une première version de ce rattrapage-ci vivait dans la CARTE, et
+   * `test-ligne-planning-e2e` l'a refusée aussitôt — *« le client touché a
+   * bougé de 956 px, il disparaît sous mes yeux »* : la même carte se déplie
+   * aussi sous une ligne des planifiés, où la règle est que le nom touché ne
+   * bouge PAS.
+   *
+   * Il vit donc sur **le geste**, pas sur la carte : on touche un jour du
+   * calendrier, et rien d'autre ne le déclenche. Il rend exactement ce que les
+   * bandes prennent, jamais plus, et ne fait rien quand le geste est déjà
+   * dégagé — c'est-à-dire dans la plupart des journées.
+   */
+  function rendreLesPixelsDesBandes() {
+    // Après la peinture : la carte n'existe pas encore au moment de l'appel.
+    requestAnimationFrame(() => {
+      const carte = document.querySelector<HTMLElement>('[data-atlas="carte-jour"]');
+      const premier = carte?.querySelector<HTMLElement>("button");
+      if (!premier) return;
+      const style = getComputedStyle(document.documentElement);
+      // Les deux bandes publient leur hauteur ; les recopier ici serait
+      // s'assurer qu'un jour l'une bougera sans l'autre (`AtlasBottomNav`,
+      // `TiroirDuBas`).
+      const haut = (nom: string) => parseFloat(style.getPropertyValue(nom)) || 0;
+      const plancher = window.innerHeight - haut("--atlas-barre") - haut("--atlas-tiroir");
+      const manque = Math.round(premier.getBoundingClientRect().bottom - plancher);
+      if (manque > 0) window.scrollBy({ top: manque, behavior: "smooth" });
+    });
+  }
+
   function toucherLeJour(jour: JourIso) {
     setOuvert(null);
     setFeuille(null);
@@ -850,6 +898,7 @@ export default function PlanningClient({
     }
     setDebutFenetre(jour);
     setJourTouche((cur) => (cur === jour ? null : jour));
+    rendreLesPixelsDesBandes();
   }
 
   /**
@@ -916,6 +965,31 @@ export default function PlanningClient({
   }
 
   /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * CE QUI N'A PAS PU PARTIR, ÉCRIT À L'ÉCRAN — 11 septembre 2026
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * **Sa panne, captures à l'appui :** *« il ne se pose sur aucune demi-journée
+   * ! »*, et *« quand c'est un client je ne peux pas remplir sa fiche »*. Les
+   * deux gestes marchaient ; c'est sa PAGE qui avait survécu à son serveur —
+   * son espace venait de basculer d'une version à l'autre, et une action
+   * serveur postée depuis la page d'avant n'atteint plus rien.
+   *
+   * **Et l'écran ne disait RIEN.** Un appui, aucun effet, aucun message : le
+   * défaut muet que `AGENTS.md` interdit — *« devant un défaut muet, la
+   * première livraison n'est pas un correctif, c'est de rendre le défaut
+   * bavard »*. Le `.then()` seul n'attrape pas un refus : la promesse est
+   * REJETÉE, et rien ne s'exécute.
+   *
+   * **Ce qu'on écrit alors est ce qu'il doit FAIRE**, pas ce qui s'est passé :
+   * recharger la page. C'est la seule chose qui répare une page vieillie, et
+   * c'est la première question du dépôt devant un défaut qui ne se reproduit
+   * pas (`HANDOVER.md`, piège 0).
+   */
+  const [refus, setRefus] = useState<string | null>(null);
+  const PAGE_VIEILLIE = "Rien n'est parti. Rechargez la page.";
+
+  /**
    * LIBÉRER UNE DEMI-JOURNÉE — et repeindre avec ce que la base rend.
    *
    * **Sa demande du 10 septembre 2026**, planche retenue : la demi-journée sort
@@ -927,9 +1001,16 @@ export default function PlanningClient({
    */
   function liberer(chantierId: string, jour: JourIso, demi: Demi) {
     setOuvert(null);
+    setRefus(null);
     enTransition(async () => {
-      const r = await libererDemiJourneeAction(chantierId, jour, demi);
+      const r = await libererDemiJourneeAction(chantierId, jour, demi).catch((e) => {
+        console.error("Libération partie dans le vide", e);
+        setRefus(PAGE_VIEILLIE);
+        return null;
+      });
+      if (!r) return;
       if (!r.succes) {
+        setRefus("Cette demi-journée n'a pas pu être rendue.");
         // Un refus avalé est un défaut muet (`AGENTS.md`) : le message d'une
         // action serveur n'arrive jamais jusqu'à lui, on le journalise donc.
         console.error("Libération refusée", { chantierId, jour, demi, erreur: r.erreur });
@@ -948,9 +1029,16 @@ export default function PlanningClient({
    */
   function reposer(chantierId: string, jour: JourIso, demi: Demi) {
     setMorceauEnMain(null);
+    setRefus(null);
     enTransition(async () => {
-      const r = await reposerDemiJourneeAction(chantierId, jour, demi);
+      const r = await reposerDemiJourneeAction(chantierId, jour, demi).catch((e) => {
+        console.error("Repose partie dans le vide", e);
+        setRefus(PAGE_VIEILLIE);
+        return null;
+      });
+      if (!r) return;
       if (!r.succes) {
+        setRefus("Cette demi-journée n'a pas pu être reposée.");
         console.error("Repose refusée", { chantierId, jour, demi, erreur: r.erreur });
         return;
       }
@@ -1106,6 +1194,9 @@ export default function PlanningClient({
     retirerDuJour,
     poser,
     poserUnClient,
+    morceaux,
+    onPrendreMorceau: (id: string) => setMorceauEnMain((tenu) => (tenu === id ? null : id)),
+    refus,
     taches,
   };
 
@@ -1538,6 +1629,11 @@ export default function PlanningClient({
                 sansDate={sansDate}
                 poser={poser}
                 poserUnClient={poserUnClient}
+                morceaux={morceaux}
+                morceauEnMain={morceauEnMain}
+                onPrendreMorceau={(id) =>
+                  setMorceauEnMain((tenu) => (tenu === id ? null : id))
+                }
               />
               )}
             </div>
@@ -1658,16 +1754,29 @@ function Fleche({
 function TitreSection({
   children,
   encadre = false,
+  aGauche = false,
   ...reste
 }: {
   children: React.ReactNode;
   encadre?: boolean;
+  /**
+   * **À GAUCHE, sur la marge du contenu** — sa demande du 11 septembre 2026 :
+   * *« le sans date à gauche »*, planche `appli/tiroir-en-or.html` à l'appui.
+   *
+   * Centré, le titre du tiroir ne s'alignait sur rien : ni sur la poignée
+   * au-dessus, ni sur les noms en dessous, qui commencent tous deux à 18 px du
+   * bord. Les deux titres du tiroir le prennent — un seul des deux aurait fait
+   * deux façons de titrer dans le même panneau.
+   */
+  aGauche?: boolean;
 } & React.HTMLAttributes<HTMLParagraphElement>) {
   if (!encadre) {
     return (
       <p
         {...reste}
-        className="mx-[18px] mt-[26px] text-center text-[13px] font-bold uppercase leading-none"
+        className={`mx-[18px] mt-[26px] text-[13px] font-bold uppercase leading-none ${
+          aGauche ? "text-left" : "text-center"
+        }`}
         style={{ letterSpacing: "0.16em", color: colors.ink }}
       >
         {children}
@@ -1675,7 +1784,10 @@ function TitreSection({
     );
   }
   return (
-    <p {...reste} className="mx-[18px] mt-[26px] text-center leading-none">
+    <p
+      {...reste}
+      className={`mx-[18px] mt-[26px] leading-none ${aGauche ? "text-left" : "text-center"}`}
+    >
       <span
         data-atlas="titre-encadre"
         className="inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
@@ -1951,6 +2063,19 @@ type GestesCarte = {
    * de « Poser », qui déplace un chantier déjà là.
    */
   poserUnClient: (chantier: ChantierPlanning) => void;
+  /** Les demi-journées rendues qui attendent une place — voir le tiroir du bas. */
+  morceaux: { chantier: ChantierPlanning; combien: number }[];
+  /** Le chantier dont une demi-journée attend une place, s'il en tient une. */
+  morceauEnMain: string | null;
+  onPrendreMorceau: (chantierId: string) => void;
+  /**
+   * CE QUI N'A PAS PU PARTIR — écrit en tête de la journée, ou rien.
+   *
+   * **Un geste sans effet et sans message est un défaut muet** (`AGENTS.md`) :
+   * sa panne du 11 septembre 2026, où sa page avait survécu à son serveur et
+   * où plus rien ne répondait, en silence.
+   */
+  refus: string | null;
   nomEquipe: (rang: number) => string;
   lignesEquipes: { rang: number; nom?: string | null }[];
   occupationDe: (jour: JourIso, demi: Demi) => { pris: readonly ChantierPlanning[]; charge: number };
@@ -1960,8 +2085,6 @@ type GestesCarte = {
   liberer: (chantierId: string, jour: JourIso, demi: Demi) => void;
   /** Reposer le morceau tenu au doigt sur la demi-journée touchée. */
   reposer: (chantierId: string, jour: JourIso, demi: Demi) => void;
-  /** Le chantier dont une demi-journée attend une place, s'il en tient une. */
-  morceauEnMain: string | null;
   retirerDuJour: (chantierId: string) => void;
   poser: (chantierId: string, jour: JourIso) => void;
   taches: Record<string, FeuilleEtRetour>;
@@ -2123,12 +2246,38 @@ function AjoutAuJour({
   sansDate,
   poser,
   poserUnClient,
+  morceaux,
+  morceauEnMain,
+  onPrendreMorceau,
 }: {
   cle: string;
   jour: JourIso;
-} & Pick<GestesCarte, "ouvert" | "setOuvert" | "sansDate" | "poser" | "poserUnClient">) {
+} & Pick<
+  GestesCarte,
+  | "ouvert"
+  | "setOuvert"
+  | "sansDate"
+  | "poser"
+  | "poserUnClient"
+  | "morceaux"
+  | "morceauEnMain"
+  | "onPrendreMorceau"
+>) {
   const ici = ouvert?.cle === cle ? ouvert.quoi : null;
-  const aEnAttente = sansDate.length > 0;
+  /**
+   * **CE QUI ATTEND UN JOUR, ET PAS SEULEMENT « SANS DATE » — 11 sept. 2026.**
+   *
+   * Sa panne, capture à l'appui : *« j'en ai que deux […] ça devait être un
+   * chantier en attente et un client »*. Une demi-journée de M. Julien
+   * attendait sous « Sans date », et la voie qui mène aux chantiers en attente
+   * avait DISPARU — parce qu'elle ne comptait que les chantiers sans date, et
+   * qu'un morceau rendu n'en est pas un : son chantier, lui, a une date.
+   *
+   * Pour lui, les deux sont la même chose — du travail qui attend un jour —, et
+   * le tiroir du bas les compte déjà ensemble depuis la veille. C'est ici que
+   * la règle manquait.
+   */
+  const aEnAttente = sansDate.length > 0 || morceaux.length > 0;
 
   // ─── LE GESTE NE DISPARAÎT PLUS, PARCE QU'IL MÈNE QUELQUE PART ───────────
   //
@@ -2193,6 +2342,24 @@ function AjoutAuJour({
             {sansDate.map((s) => (
               <Petit key={s.id} data-qui={s.id} onClick={() => poser(s.id, jour)}>
                 {s.nom}
+              </Petit>
+            ))}
+            {/* **Une demi-journée rendue se prend, elle ne se pose pas d'un
+                coup** : le jour a deux moitiés, et choisir laquelle à sa place
+                serait décider de son chantier. On la met au doigt — le geste du
+                tiroir, écrit une fois — et les « Poser ici » de la journée
+                s'allument juste au-dessus. */}
+            {morceaux.map((m) => (
+              <Petit
+                key={`morceau-${m.chantier.id}`}
+                data-qui-morceau={m.chantier.id}
+                retenue={morceauEnMain === m.chantier.id}
+                onClick={() => {
+                  onPrendreMorceau(m.chantier.id);
+                  setOuvert(null);
+                }}
+              >
+                {m.chantier.nom} · ½
               </Petit>
             ))}
           </Choisir>
@@ -2326,6 +2493,7 @@ function AjoutDeTemps({
   const [quoi, setQuoi] = useState("");
   const [quand, setQuand] = useState<QuandPoser>("matin");
   const [enCours, setEnCours] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
   const pret = quoi.trim().length >= 2 && !enCours;
 
   return (
@@ -2340,6 +2508,11 @@ function AjoutDeTemps({
         style={STYLE_CHAMP}
       />
       <BasculeDuMoment retenu={quand} onChoisir={setQuand} repere="quand-poser" />
+      {refus && (
+        <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
+          {refus}
+        </p>
+      )}
       <div className="mt-2.5 flex items-center justify-between gap-2">
         <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
           Annuler
@@ -2352,13 +2525,20 @@ function AjoutDeTemps({
           onClick={() => {
             if (!pret) return;
             setEnCours(true);
-            poserDuTempsAction(jour, quand, quoi).then((r) => {
-              setEnCours(false);
-              if (r.succes) onPose(r.chantier);
-              // Un refus avalé est un défaut muet (`AGENTS.md`) : le message
-              // d'une action serveur n'arrive jamais jusqu'à lui.
-              else console.error("Temps refusé", { jour, quand, erreur: r.erreur });
-            });
+            poserDuTempsAction(jour, quand, quoi)
+              .then((r) => {
+                setEnCours(false);
+                if (r.succes) onPose(r.chantier);
+                else {
+                  console.error("Temps refusé", { jour, quand, erreur: r.erreur });
+                  setRefus(r.erreur);
+                }
+              })
+              .catch((e) => {
+                console.error("Temps parti dans le vide", e);
+                setEnCours(false);
+                setRefus("Rien n'est parti. Rechargez la page.");
+              });
           }}
         >
           {enCours ? "…" : "Poser"}
@@ -2415,6 +2595,7 @@ function AjoutDunClient({
   const [fiche, setFiche] = useState({ telephone: "", email: "", adresse: "" });
   const [quand, setQuand] = useState<QuandPoser>("matin");
   const [enCours, setEnCours] = useState(false);
+  const [refus, setRefus] = useState<string | null>(null);
 
   /**
    * **La recherche part au SERVEUR, et elle attend qu'il s'arrête d'écrire.**
@@ -2430,9 +2611,20 @@ function AjoutDunClient({
     if (mot.length < 2) return;
     let vivant = true;
     const minuteur = setTimeout(() => {
-      chercherDesClientsAction(mot).then((clients) => {
-        if (vivant) setReponse({ mot, clients });
-      });
+      chercherDesClientsAction(mot)
+        .then((clients) => {
+          if (vivant) setReponse({ mot, clients });
+        })
+        // **UNE RECHERCHE QUI TOMBE NE DOIT PAS FERMER LA FICHE.** Sans ce
+        // rattrapage, la réponse n'arrivait jamais, « on cherche encore »
+        // restait vrai pour toujours, et les trois cases de la fiche ne
+        // s'ouvraient PLUS JAMAIS — sa panne du 11 septembre 2026, sur une page
+        // qui avait survécu à son serveur. On rend alors une liste vide : il
+        // est inconnu, ce qui est le cas le plus utile, et il peut écrire.
+        .catch((e) => {
+          console.error("Recherche de client partie dans le vide", e);
+          if (vivant) setReponse({ mot, clients: [] });
+        });
     }, 250);
     return () => {
       vivant = false;
@@ -2459,13 +2651,24 @@ function AjoutDunClient({
       // reconnu, ces cases ne sont pas à l'écran : envoyer leur contenu
       // reviendrait à écrire dans sa fiche ce qu'il n'a pas relu.
       ...(inconnu ? fiche : {}),
-    }).then((r) => {
-      setEnCours(false);
-      if (r.succes) onPose(r.chantier);
-      // Un refus avalé est un défaut muet (`AGENTS.md`) : le message d'une
-      // action serveur n'arrive jamais jusqu'à lui, on le journalise donc.
-      else console.error("Pose d'un client refusée", { jour, quand, erreur: r.erreur });
-    });
+    })
+      .then((r) => {
+        setEnCours(false);
+        if (r.succes) onPose(r.chantier);
+        else {
+          console.error("Pose d'un client refusée", { jour, quand, erreur: r.erreur });
+          setRefus(r.erreur);
+        }
+      })
+      // **Un appui sans effet et sans message est un défaut muet** : c'est ce
+      // qu'il a vu le 11 septembre 2026. Le `.then()` seul n'attrape rien quand
+      // la promesse est REJETÉE — une page qui a survécu à son serveur poste
+      // dans le vide.
+      .catch((e) => {
+        console.error("Pose d'un client partie dans le vide", e);
+        setEnCours(false);
+        setRefus("Rien n'est parti. Rechargez la page.");
+      });
   }
 
 
@@ -2537,6 +2740,12 @@ function AjoutDunClient({
       {/* **Le même interrupteur que « qui n'est pas là »**, à un repère près :
           la question est la même — matin, après-midi, ou la journée. */}
       <BasculeDuMoment retenu={quand} onChoisir={setQuand} repere="quand-poser" />
+
+      {refus && (
+        <p data-atlas="refus-du-geste" className="mt-2 text-[13px]" style={{ color: colors.bordeaux }}>
+          {refus}
+        </p>
+      )}
 
       <div className="mt-2.5 flex items-center justify-between gap-2">
         <Petit data-atlas="annuler-ajout" onClick={onAnnuler}>
@@ -2938,6 +3147,9 @@ function CarteDuJour({
   retirerDuJour,
   poser,
   poserUnClient,
+  morceaux,
+  onPrendreMorceau,
+  refus,
   taches,
   absencesDuJour,
   joursAbsentsDe,
@@ -3132,6 +3344,27 @@ function CarteDuJour({
             soignait le symptôme et non la place. La carte naît sous le doigt,
             donc son HAUT est visible par construction — c'est là que le geste
             va. */}
+        {/* ─── CE QUI N'A PAS PU PARTIR — 11 septembre 2026 ────────────────
+            Sa panne : *« il ne se pose sur aucune demi-journée ! »*. Le geste
+            partait dans le vide — sa page avait survécu à son serveur — et
+            l'écran ne disait rien. Un appui qui n'a aucun effet et aucun
+            message se lit comme une application cassée, et il n'a alors aucun
+            moyen de savoir qu'un rechargement répare tout. */}
+        {refus && (
+          /* **Une phrase, pas un bouton.** Elle n'a rien à faire faire : le
+             geste suivant l'efface de lui-même (`setRefus(null)` en tête de
+             chaque). Un bouton qui ne sert qu'à effacer un message demande un
+             appui de plus pour rien — et il porterait un rayon carré, que sa
+             règle du 12 août interdit. */
+          <p
+            data-atlas="refus-du-geste"
+            className="mb-2 mt-1 rounded-[9px] px-3 py-2.5 text-[13px]"
+            style={{ background: voile(colors.bordeaux, 0.1), color: colors.bordeaux }}
+          >
+            {refus}
+          </p>
+        )}
+
         {ecriture && !seulement && (
           <PasLaCeJour
             jour={jour}
@@ -3421,6 +3654,9 @@ function CarteDuJour({
             sansDate={sansDate}
             poser={poser}
             poserUnClient={poserUnClient}
+            morceaux={morceaux}
+            morceauEnMain={morceauEnMain}
+            onPrendreMorceau={onPrendreMorceau}
           />
         )}
 
@@ -4040,9 +4276,37 @@ function TiroirDuBas({
         // (`globals.css`) : la recopier ici serait s'assurer qu'un jour l'une
         // bougera sans l'autre.
         bottom: "var(--atlas-barre)",
-        background: colors.cream,
-        borderTop: `1px solid ${colors.line}`,
-        boxShadow: `0 -10px 28px ${voile(colors.ink, 0.08)}`,
+        // ─── ON DOIT VOIR OÙ IL COMMENCE — 11 septembre 2026 ──────────────
+        //
+        // **Sa remarque, capture à l'appui :** *« il faut rendre plus visible
+        // la fenêtre qui s'ouvre "1 sans date" — quand elle est ouverte, on ne
+        // la voit pas »*. Elle portait le fond de la PAGE (`cream`) : ouverte,
+        // rien ne disait où la page finissait et où le tiroir commençait, et
+        // ses listes semblaient flotter au bas de l'écran.
+        //
+        // **Le fond des cartes** (`card`), comme la fiche d'un jour deux
+        // centimètres plus haut : c'est ce qui, dans cet écran, dit « ceci est
+        // posé par-dessus ». Aucune couleur neuve, aucun trait de plus.
+        background: colors.card,
+        // ─── SA VERSION C, CHOISIE LE 11 SEPTEMBRE 2026 ───────────────────
+        //
+        // Planche `appli/tiroir-en-or.html`, quatre bords côte à côte : *« j'aime
+        // bien la C »*. Deux pixels d'or et les angles qui se lèvent — l'or dit
+        // « ceci s'ouvre » sans cerner tout le bas de l'écran, et les coins
+        // montrent que le tiroir passe PAR-DESSUS le calendrier, ce que le fond
+        // seul ne faisait pas.
+        //
+        // **D a été écartée, et c'est écrit sur la planche** : un cadre doré
+        // complet est joli une fois et lourd tous les jours, sur un tiroir
+        // présent à chaque ouverture du planning.
+        borderTop: `2px solid ${colors.or}`,
+        borderRadius: "14px 14px 0 0",
+        // **Et l'ombre se creuse quand il est OUVERT.** Fermé, il n'est qu'une
+        // poignée : une ombre soutenue en permanence salirait le bas de tous
+        // les écrans du planning pour une liste que personne ne regarde.
+        boxShadow: ouvert
+          ? `0 -14px 34px ${voile(colors.ink, 0.18)}`
+          : `0 -10px 28px ${voile(colors.ink, 0.08)}`,
       }}
     >
       {/* Le voile : sans lui, la poignée tranche net la rangée du mois qui
@@ -4052,7 +4316,10 @@ function TiroirDuBas({
         className="pointer-events-none absolute inset-x-0 h-6"
         style={{
           top: -24,
-          background: `linear-gradient(to top, ${colors.cream}, ${voile(colors.cream, 0)})`,
+          // **Il fond la rangée du mois dans le tiroir, donc il porte SA
+          // couleur.** Resté sur le fond de page, il aurait redessiné la
+          // coupure que le nouveau fond vient d'effacer.
+          background: `linear-gradient(to top, ${colors.card}, ${voile(colors.card, 0)})`,
         }}
       />
       <button
@@ -4132,10 +4399,20 @@ function TiroirDuBas({
             mener nulle part se retire au lieu de s'annoncer. */}
         {ecriture && (sansDate.length > 0 || morceaux.length > 0) && (
           <>
-            <TitreSection encadre data-atlas="titre-sans-date">Sans date</TitreSection>
+            {/* **Le trait qui sépare la poignée du dedans** — sa demande du
+                11 septembre 2026, planche à l'appui : *« avec le trait qui
+                sépare 1 sans date de sans date »*. Il vit ICI, dans le contenu
+                qui se replie : posé sur le cadre, il resterait visible sous la
+                poignée quand le tiroir est fermé. */}
+            <div style={{ borderTop: `1px solid ${colors.line}` }} />
+            <TitreSection encadre aGauche data-atlas="titre-sans-date">
+              Sans date
+            </TitreSection>
             <p
               data-atlas="ou-poser"
-              className="mx-[18px] mt-2 text-center text-[12.5px]"
+              // **Elle suit le titre, à gauche** : une phrase centrée sous un
+              // titre aligné à gauche fait deux marges dans trois centimètres.
+              className="mx-[18px] mt-2 text-[12.5px]"
               style={{ color: colors.muted }}
             >
               {/* **Un samedi touché est un jour comme un autre** — sa règle
@@ -4263,7 +4540,7 @@ function TiroirDuBas({
         {/* ─── EN ATTENTE DU CLIENT ───────────────────────────────────────── */}
         {attenteClient.length > 0 && (
           <>
-            <TitreSection encadre data-atlas="titre-attente-client">
+            <TitreSection encadre aGauche data-atlas="titre-attente-client">
               {EN_ATTENTE_DU_CLIENT}
             </TitreSection>
             <div className="mx-[18px] mt-3">

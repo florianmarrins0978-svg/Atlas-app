@@ -84,7 +84,7 @@ export function estBranche(nom: NomFournisseur, cles: ClesFournisseurs): boolean
  *
  * **Ne pas confondre avec `fournisseursAAfficher`.** Ce sont deux questions
  * distinctes, et elles ne l'étaient devenues qu'en coïncidant — voir l'en-tête
- * de ce fichier, et `ARCHITECTURE.md` §324.
+ * de ce fichier, et `ARCHITECTURE.md` §325.
  */
 export function fournisseursDisponibles(cles: ClesFournisseurs): Fournisseur[] {
   return fournisseursAAfficher(cles).filter((f) => f.branche);

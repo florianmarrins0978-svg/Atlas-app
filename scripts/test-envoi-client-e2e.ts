@@ -3,7 +3,7 @@ import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
-import { joursAProposer } from "./_calendrier-e2e";
+import { joursAProposer, retenirAuCalendrier } from "./_calendrier-e2e";
 import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
 
 // L'envoi du devis au client, vu depuis l'écran du patron (docs/AGENT.md §2.2).
@@ -148,7 +148,13 @@ async function main() {
     // s'ouvre. Un libellé se change ; la déduction du canal, elle, est la règle
     // (`CLAUDE.md` §5 bis), et c'est aussi ce qui a mordu le 20 août quand le
     // SMS s'ouvrait à la place de l'e-mail.
-    await page.locator("button[aria-pressed]").nth(1).click();
+    //
+    // **La date se prend par le geste du patron, plus par le rang d'un bouton.**
+    // `button[aria-pressed]` nº 2 désignait une case du mois d'à côté depuis le
+    // glissement du 11 septembre 2026 : elle existe, elle est hors de l'écran,
+    // et le clic partait dans le cadre (`_calendrier-e2e.ts`).
+    const [jourCanal] = await joursAProposer(page, 1);
+    await retenirAuCalendrier(page, jourCanal);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForURL(ACCUEIL_EXACT, { timeout: 15000 });
 
@@ -180,7 +186,8 @@ async function main() {
     await page.waitForSelector('[data-atlas="invite-dates"]', {
       timeout: DELAI_ECRAN_MS,
     });
-    await page.locator('button[aria-pressed]').nth(1).click();
+    const [jourChoisi] = await joursAProposer(page, 1);
+    await retenirAuCalendrier(page, jourChoisi);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 (`ARCHITECTURE.md` §140) :
     // c'est lui, le signal. Le lien touché pour lui, LUI, vit sur `document.body`
@@ -200,31 +207,6 @@ async function main() {
       `le destinataire n'est pas celui de la fiche : ${adresse.slice(0, 80)}`
     );
   });
-
-  /**
-   * Retenir un jour au calendrier — un seul geste depuis le 25 août 2026.
-   *
-   * *« Je dois pouvoir sélectionner les jours juste en les touchant, pas besoin
-   * de cliquer sur proposer. »* Toucher la case OUVRE la fiche — il voit qui
-   * est déjà là — et engage la date du même doigt. Écrit une fois ici : deux
-   * copies de ce geste finiraient par diverger (`CLAUDE.md` §3).
-   *
-   * **On n'appuie plus une seconde fois pour refermer** : ce second appui
-   * retirerait la date qu'on vient de poser.
-   */
-  async function retenirAuCalendrier(page: Page, jour: string) {
-    await page.locator(`[data-jour="${jour}"]`).click();
-    await page
-      .locator("text=Vérification de votre planning…")
-      .waitFor({ state: "hidden", timeout: 20_000 })
-      .catch(() => undefined);
-    // La case se peint quand le serveur a dit oui : l'attendre vaut mieux qu'un
-    // délai, et rougir ici désigne le bon coupable — le jour a été refusé.
-    await page
-      .locator(`[data-jour="${jour}"][data-etat="retenu"]`)
-      .waitFor({ state: "visible", timeout: 20_000 });
-    await page.waitForTimeout(150);
-  }
 
   /**
    * Les jours qu'on peut RETENIR — au besoin en tournant la page du mois.

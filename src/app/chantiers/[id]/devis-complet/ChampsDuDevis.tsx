@@ -286,6 +286,35 @@ export function ChiffreSaisi({
   marqueLigne?: string;
 }) {
   const vide = valeur.trim() === "";
+  /**
+   * ─── LE CURSEUR ARRIVE À DROITE, DERRIÈRE LE CHIFFRE ─────────────────────
+   *
+   * **Sa correction du 11 septembre 2026 :** *« quand je clique sur la case de
+   * la quantité, je veux que le petit trait qui clignote qui indique où on est
+   * pour écrire soit toujours à droite ; comme ça, si la quantité par défaut
+   * n'est pas bonne, on a juste à supprimer. Or des fois il se met à gauche,
+   * donc faut d'abord le déplacer avant de pouvoir supprimer. »*
+   *
+   * **Et « des fois » s'explique**, ce n'est pas un caprice du téléphone : le
+   * champ est aligné à DROITE dans une case large. Le chiffre occupe quelques
+   * pixels au bout ; tout le reste est du vide, et c'est là que le doigt tombe.
+   * Le navigateur pose alors le curseur au plus près de l'appui — donc AVANT le
+   * chiffre. Plus la quantité est courte, plus la case est large, plus cela
+   * arrive : « 1 » dans 96 pixels, c'est presque à coup sûr.
+   *
+   * **Deux temps, parce que le navigateur décide en second.** L'entrée dans le
+   * champ pose le curseur au bout ; puis l'appui le replace où le doigt s'est
+   * posé, et c'est cette remise en place qu'on rattrape — une fois, à la
+   * première sélection qui suit l'entrée. Après quoi le curseur lui appartient :
+   * il peut le déplacer comme il veut, on n'y touche plus.
+   */
+  const entrant = useRef(false);
+  const auBout = (champ: HTMLInputElement) => {
+    const fin = champ.value.length;
+    if (champ.selectionStart !== fin || champ.selectionEnd !== fin) {
+      champ.setSelectionRange(fin, fin);
+    }
+  };
   return (
     <input
       value={valeur}
@@ -295,7 +324,19 @@ export function ChiffreSaisi({
       aria-label={aria}
       data-prix-ligne={marqueLigne}
       onChange={(e) => onChange(e.target.value)}
-      onBlur={(e) => onFini(e.currentTarget.value)}
+      onFocus={(e) => {
+        entrant.current = true;
+        auBout(e.currentTarget);
+      }}
+      onSelect={(e) => {
+        if (!entrant.current) return;
+        entrant.current = false;
+        auBout(e.currentTarget);
+      }}
+      onBlur={(e) => {
+        entrant.current = false;
+        onFini(e.currentTarget.value);
+      }}
       className="w-24 border-0 bg-transparent px-1 text-right outline-none focus:bg-[var(--voile-champ)] sm:w-full"
       style={{
         color: colors.ink,

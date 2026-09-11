@@ -1,7 +1,18 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-10 · branche `claude/employee-absence-mockup-ayfv45`
+**Dernière mise à jour :** 2026-09-11 · branche `claude/employee-absence-mockup-ayfv45`
 · dernière migration `drizzle/0085_creneaux_chantier.sql`
+
+---
+
+## FAIT : LES SUITES VISENT LE MOIS QUI EST À L'ÉCRAN — 11 septembre 2026
+
+Le glissement des mois monte trois mois ; les deux voisins sont inertes pour le
+patron, pas pour un sélecteur. Cinq suites tombaient sur un produit sain. Une
+portée commune (`MOIS_A_L_ECRAN`), un geste de retenue écrit une seule fois, et
+l'occupation lue dans `creneaux_chantier` plutôt qu'extrapolée d'un bloc.
+
+**Aucun changement sous `src/`.** Détail : `ARCHITECTURE.md` §324.
 
 ---
 

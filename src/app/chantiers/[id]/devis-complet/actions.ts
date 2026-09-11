@@ -322,6 +322,15 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
       quantite: l.quantite,
       prixUnitaire: l.prixUnitaire,
       montant: l.montant,
+      // **« À CHIFFRER » REPARTAIT AVEC LES LIGNES, ET IL NE PARTAIT PAS.**
+      // Trouvé le 11 septembre 2026 en branchant le champ du prix sur ce
+      // drapeau : l'écran se recale ENTIÈREMENT sur ce que rend cette action,
+      // et comme elle ne rendait pas le drapeau, toutes les lignes le
+      // perdaient après la moindre dictée. « À chiffrer » devenait alors
+      // « 0,00 € » sous ses yeux — une ligne non chiffrée présentée comme
+      // GRATUITE, sur le document qui part chez son client. Le garde-fou de
+      // l'envoi tenait encore, lui : il relit la base, pas l'écran.
+      aChiffrer: l.aChiffrer,
     })),
     reductionPourcent: devis?.reductionPourcent ?? null,
   };

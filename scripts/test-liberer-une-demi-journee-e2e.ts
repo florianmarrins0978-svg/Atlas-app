@@ -182,6 +182,10 @@ async function main() {
     await fermerLeTiroirDuPlanning(page);
     const carte = await ouvrirLeJour(jourA);
     await carte.locator('[data-atlas="ajouter"]').click();
+    // **Un temps de plus depuis le 10 septembre 2026** : « Ajouter » propose
+    // d'abord la voie — un chantier en attente, un client, ou autre chose
+    // (`appli/bloquer-sans-devis.html`). On prend celle qui existait déjà.
+    await carte.locator('[data-atlas="voie-chantier"]').click();
     await page.waitForSelector(`[data-qui="${chantierId}"]`, { timeout: 10_000 });
     await page.locator(`[data-qui="${chantierId}"]`).click();
     await page.waitForTimeout(1500);
