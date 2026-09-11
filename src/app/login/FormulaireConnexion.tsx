@@ -80,26 +80,26 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
         Retour
       </Link>
 
-      {/* **TROIS RESPIRATIONS QUI SE PARTAGENT LA PLACE — sa demande du
-          11 septembre 2026 : *« je les trouve trop collés en haut, aère la page
-          et prends plus d'espace »*.**
+      {/* **LE VIDE VA SOUS « ENTRER », PAS AU MILIEU — 11 septembre 2026.**
 
-          Tout tenait dans la moitié haute, et un vide de trois cents pixels
-          traînait sous le bouton. Des marges fixes ne l'auraient pas réglé :
-          elles donnent le même écart sur un petit téléphone que sur un grand,
-          donc soit ça reste collé, soit ça déborde.
+          Première version fausse, et c'est lui qui l'a redressé, sa maquette en
+          photo : *« c'est ça que je veux »*. J'avais lu « aère » comme « étire
+          le bloc », et posé trois parts de vide qui écartaient « Entrer » des
+          champs de cent pixels. Sur sa planche, « Entrer » est **collé sous le
+          mot de passe** — c'est le même geste, on le lit d'un trait — et tout
+          le vide est DESSOUS.
 
-          Ce sont donc des **parts** — 1,2 · 1,2 · 0,9, réglées en REGARDANT la
-          capture —, et c'est le vide qui se
-          répartit, quelle que soit la hauteur. Le `min-h` est un plancher : sur
-          un écran court elles se compriment jusque-là, et
-          `test-porte-tient-en-une-page.mts` reste vert parce que rien ne
-          déborde. Le pied n'a plus de `mt-auto` : une marge automatique absorbe
-          la place AVANT les parts, donc elle les aurait toutes affamées. */}
-      <div className="min-h-[24px] flex-[1.2]" aria-hidden="true" />
+          Les écarts ci-dessous sont relevés sur sa planche (390 × 664) :
+          32 au-dessus du titre, 21 dessous, 28 de part et d'autre du « ou »,
+          24 sous Face ID, 23 entre les champs. Rien n'est inventé.
+
+          Une seule part flexible reste, **après le bouton** : c'est elle qui
+          absorbe toute la place libre et tient le pied en bas, quelle que soit
+          la hauteur de l'écran. */}
+      <div className="h-[32px] flex-none" aria-hidden="true" />
 
       <h1
-        className="mb-7 text-[34px] leading-[1.1]"
+        className="mb-[21px] text-[34px] leading-[1.1]"
         style={{ ...({ fontFamily: "ui-serif, Georgia, serif" } as const), letterSpacing: "-0.01em" }}
       >
         Connexion
@@ -124,7 +124,7 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
           if (champ) champ.defaultValue = adresse;
         }}
         onChange={(e) => setAdresse(e.target.value)}
-        className="atlas-champ-gelule mb-[14px]"
+        className="atlas-champ-gelule mb-[23px]"
       />
 
       <input
@@ -142,15 +142,13 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
           apparaît pousse le bouton d'une ligne, et l'appui suivant tombe à
           côté. `test-porte-e2e.ts` exige au moins 15 px. */}
       <p
-        className="mb-1 mt-3 min-h-[19px] text-[13px] leading-[19px]"
+        className="mb-[6px] mt-[8px] min-h-[19px] text-[13px] leading-[19px]"
         style={{ color: colors.alert }}
         role="alert"
         aria-live="polite"
       >
         {etat?.erreur ?? ""}
       </p>
-
-      <div className="min-h-[16px] flex-[1.2]" aria-hidden="true" />
 
       <button
         type="submit"
@@ -175,9 +173,9 @@ export default function FormulaireConnexion({ fournisseurs }: { fournisseurs: Fo
         {enCours ? "Ouverture…" : "Entrer"}
       </button>
 
-      <div className="min-h-[18px] flex-[0.9]" aria-hidden="true" />
+      <div className="min-h-[24px] flex-1" aria-hidden="true" />
 
-      <div className="pb-1 text-center">
+      <div className="pb-[6px] text-center">
         <Link href="/creer-un-compte" className="inline-block py-[10px] text-[13.5px]" style={{ color: colors.muted }}>
           Pas de compte&nbsp;? <b style={{ color: colors.or, fontWeight: 600 }}>Créer un compte</b>
         </Link>

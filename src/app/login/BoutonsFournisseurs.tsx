@@ -99,7 +99,7 @@ export default function BoutonsFournisseurs({ fournisseurs }: { fournisseurs: Fo
         </p>
       )}
 
-      <div className="my-[20px] flex items-center gap-3 text-[13px]" style={{ color: colors.muted }} aria-hidden="true">
+      <div className="my-[28px] flex items-center gap-3 text-[13px]" style={{ color: colors.muted }} aria-hidden="true">
         <span className="h-px flex-1" style={{ backgroundColor: colors.line }} />
         ou
         <span className="h-px flex-1" style={{ backgroundColor: colors.line }} />

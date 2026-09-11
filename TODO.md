@@ -25,6 +25,21 @@ périmé sur une planche lui fait redemander ce qu'il a déjà donné.
 
 ---
 
+## ⏳ AUCUN CONTRÔLE NE DIT QUE LA PORTE DE L'APPLICATION TIENT EN UN ÉCRAN (11 septembre 2026)
+
+`test-porte-tient-en-une-page.mts` mesure la **planche**
+(`appli/la-porte-d-atlas.html`), pas l'écran servi. Sa contrainte du 31 août —
+*« je veux qu'elle tienne sur une seule page »* — n'est donc défendue que sur le
+dessin, alors que c'est l'application qu'il ouvre.
+
+L'aération du 11 septembre a été mesurée à la main (390 × 664, zéro
+débordement) ; rien ne le rejouera au prochain changement d'espacement.
+
+**Ce qu'il faut :** la même mesure dans une suite navigateur sur `/login`, aux
+deux hauteurs qui comptent — son iPhone, et un écran plus court. **Qui :** nous.
+
+---
+
 ## ⏳ LES CLÉS DE GOOGLE ET D'APPLE — la porte les attend (10 septembre 2026)
 
 Le code est en place et éprouvé ; **les deux boutons ne s'afficheront pas tant

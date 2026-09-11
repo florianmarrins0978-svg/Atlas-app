@@ -8,6 +8,32 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Aérer la porte — et le premier essai lisait sa demande à l'envers
+
+*« Je les trouve trop collés en haut, aère la page et prends plus d'espace. »*
+
+**Ma première version a mis le vide AU MILIEU**, en écartant « Entrer » des
+champs d'une centaine de pixels. Il l'a refusée sèchement — *« mais ça n'a rien
+à voir ! »* —, puis a renvoyé sa planche en photo : *« c'est ça que je veux »*.
+
+**Ce que la planche disait et que je n'avais pas lu :** « Entrer » est **collé
+sous le mot de passe** — c'est le même geste, on le lit d'un trait — et tout le
+vide est **dessous**, avant « Créer un compte ». Aérer voulait dire « donne de
+l'air entre les éléments », pas « étire le bloc sur toute la hauteur ».
+
+Les écarts sont maintenant **relevés sur sa planche** (390 × 664) plutôt
+qu'inventés : 32 au-dessus du titre, 21 dessous, 28 de part et d'autre du
+« ou », 24 sous Face ID, 23 entre les champs. Une seule part flexible reste,
+**après le bouton** : elle absorbe la place libre et tient le pied en bas sur
+n'importe quelle hauteur — mesuré, 121 px sous « Entrer » contre 123 sur la
+planche, et rien ne déborde.
+
+**Et le point de `TODO.md` qui demandait de repeindre la planche est corrigé
+plutôt que fait** : elle est le relevé du choix à trois du 7 septembre, pas un
+miroir de l'application. La repeindre aurait effacé les deux propositions
+écartées. Son bandeau dit désormais qu'elle est tranchée et codée — il affirmait
+encore « rien n'est codé », faux depuis trois jours.
+
 ### Montrer Google et Apple avant de pouvoir les ouvrir — sa décision
 
 *« Je veux que lorsque l'utilisateur clique sur se déconnecter qu'il arrive
