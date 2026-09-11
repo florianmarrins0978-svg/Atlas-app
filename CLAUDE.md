@@ -391,6 +391,17 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   n'explique pas son propre fonctionnement — il le montre. Une phrase qui décrit
   ce que fait le bouton d'à côté est du bruit : elle se supprime. Vaut pour les
   écrans **et** les maquettes.
+- **Une demande d'affichage change le TEXTE, jamais la PLACE.** Sa règle du
+  11 septembre 2026, après deux allers-retours dans la même soirée : *« il
+  fallait laisser les phrases où elles étaient, juste les modifier »*. Il avait
+  demandé deux lignes « Reste à payer… / Sur les… » ; elles ont été posées dans
+  le formulaire de saisie au lieu de la colonne de droite où vivait la phrase
+  qu'elles remplacent — *« pourquoi tu as changé les lignes de place ? »* —,
+  puis une ligne voisine a été effacée parce qu'elle redisait une date.
+  Il reconnaît son écran par la position de ce qu'il lit : un mot qui change se
+  lit en une seconde, une ligne qui bouge se cherche. Quand la réécriture crée
+  une répétition, c'est **le mot en trop** qui part, jamais la ligne entière.
+
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)
   ajouté à la fin d'un bouton ou d'un lien — « Régler à la main → », « Créer le

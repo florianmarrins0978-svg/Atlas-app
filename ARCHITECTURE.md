@@ -28004,13 +28004,484 @@ aurait recopié les champs, la civilité, l'adresse et surtout la reconnaissance
 du client pendant qu'il tape — l'argument qui avait déjà fait garder UN seul
 écran pour la création et la reprise.
 
+`facture` **retire l'anneau de la note vocale et les photos** : ces deux pièces
+nourrissent le CHIFFRAGE, et il n'y a pas de devis ici. L'adresse porte
+`?facture=1` : sans JavaScript ou dans un nouvel onglet, le lien doit mener à la
+fiche qui FACTURE, sinon c'est un cul-de-sac silencieux.
+
+**LE PETIT MICRO, LUI, RESTE — sa correction du 11 septembre 2026 :** *« il faut
+rajouter la petite note vocale comme sur la fiche client si on veut dicter les
+infos de la facture »*. Il était tombé la veille avec les deux autres, sous une
+formule de sa planche — *« on ne dicte pas une facture qu'on tape »* — dont le
+raisonnement ne valait que pour elles. Ce micro-ci ne nourrit aucun chiffrage :
+il remplit le nom, le numéro, l'e-mail et l'adresse, les mêmes cases sur le même
+écran, qu'on aille au devis ou à la facture. Il n'avait aucune raison de tomber
+avec l'anneau, et la leçon vaut au-delà : **trois pièces retirées ensemble
+demandent trois raisons, pas une.**
+
+---
+
+## §327 — Compléter la fiche d'un client connu : une seule fonction, pas deux
+
+**Sa demande du 11 septembre 2026**, après avoir facturé Frédéric : *« il
+n'avait pas l'info de l'adresse e-mail, donc là je l'ai rajoutée, et ce qu'il
+faut faire c'est que maintenant il a l'info et il doit la rajouter dans la
+catégorie client, comme ça la prochaine fois que je taperai Frédéric l'adresse
+e-mail pourra être ajoutée automatiquement aussi. »*
+
+### Deux chemins, deux copies, et une divergence déjà installée
+
+La règle — *ce qu'il tape complète les cases VIDES, et n'écrase jamais rien* —
+est pure depuis le 17 août (`complementsPourFiche`). Mais deux chemins mènent à
+une fiche connue, et chacun avait écrit sa propre moitié :
+
+| Le chemin | Où | Ce qu'il apprenait |
+|---|---|---|
+| le nom seul, rapproché | `trouverOuCreerClient` | numéro, e-mail, adresse, **civilité, canal** |
+| l'identifiant, tenu d'avance | `creerChantierAction` | numéro, e-mail, adresse |
+
+Le second est **celui de sa demande** : Atlas reconnaît Frédéric pendant qu'il
+tape, l'écran tient son identifiant et le passe tel quel (`reconnu?.id`). Sa
+capture porte « Mr » choisi et « SMS » souligné : ni l'un ni l'autre n'entrait
+dans sa fiche, et il les rechoisissait à chaque passage sans jamais savoir
+pourquoi.
+
+Une troisième divergence dormait dans la même copie : `data.adresseClient ??
+data.adresseChantier`. Le champ « adresse du client » est replié par défaut,
+donc vide — et `"" ?? x` vaut `""`. **L'adresse du chantier n'était jamais
+apprise sur ce chemin-là**, alors que l'écran promet le contraire sous le champ,
+et que l'autre chemin, lui, tenait la promesse avec un `||`.
+
+### Ce qui a été fait
+
+`completerLaFiche(ctx, existante, saisie)` vit dans
+`src/server/repositories/clients.ts` et porte la règle **une fois**. Les deux
+chemins l'appellent ; la copie a été supprimée de l'action, pas recouverte
+(`CLAUDE.md` §4 quater — *un défaut réparé à sa racine remplace du code*).
+
+**Ce que cela n'ouvre pas :** rien n'est jamais écrasé. Pour corriger une fiche,
+il y a l'écran des coordonnées, qui, lui, écrit ce qu'il a saisi — c'est l'écran
+fait pour ça, et le seul.
+
+### La leçon, qui n'est pas celle des trois champs
+
+Le §3 dit « jamais de règle dupliquée entre l'affichage et la vérification ». Ici
+la duplication était entre **deux écritures**, et elle a tenu trois semaines sans
+qu'aucune suite ne rougisse : les deux copies étaient justes le jour où elles ont
+été écrites. `scripts/test-rapprochement-client-db.ts` éprouve désormais les deux
+chemins côte à côte, et `test-facture-sans-devis-e2e.ts` le fait par SA porte —
+taper le nom, voir la fiche reprise, ajouter l'e-mail, faire la facture.
+
+---
+
+## §328 — Une police embarquée doit annoncer la longueur de son programme
+
+**Sa capture du 11 septembre 2026, la troisième d'affilée sur le même
+écran :** *« lorsque je télécharge la facture je ne peux toujours pas la
+lire »* — un PDF de 64 ko ouvert depuis ses téléchargements, et une page
+entièrement blanche. Aucun message.
+
+### Ce que le fichier avait, et ce qui lui manquait
+
+Les octets étaient sains, et trois moteurs indépendants l'ont dit ici :
+`pypdf` le déchiffre, `qpdf` lit ses autorisations, **PDFium — le moteur de
+Chrome — le peint entier**. Le défaut ne tient pas dans le dessin : il tient
+dans une entrée du dictionnaire.
+
+Depuis le 8 septembre, ses documents embarquent une vraie typographie
+(`src/server/pdf/polices/`). `pdf-lib` écrit le
+programme TrueType dans un flux `/FontFile2` **sans jamais poser `/Length1`** —
+aucune occurrence dans toute la bibliothèque. Or la norme l'exige : ISO 32000-1,
+tableau 127, « la longueur en octets du programme de police **non compressé** ».
+
+| Le lecteur | Ce qu'il fait de l'entrée absente |
+|---|---|
+| Chrome, Acrobat, `qpdf`, `pypdf` | il mesure le flux lui-même et charge la police |
+| **strict** | il refuse le programme, donc la police |
+
+Et comme **tout** le texte du document emploie cette police, un lecteur strict
+ne dessine plus un seul glyphe : il reste le papier. Blanc.
+
+### Pourquoi la correction vit ici et pas dans `pdf-lib`
+
+La racine est dans la bibliothèque, hors de portée d'un correctif de ce dépôt.
+`src/server/pdf/polices-embarquees.ts` **complète** donc le dictionnaire là où
+il naît — après `pdfDoc.flush()`, qui matérialise les polices dans le contexte,
+et avant le scellé. Ce n'est pas une couche posée sur une autre : il n'existait
+rien à retirer, et la valeur n'est pas estimée — le flux est décompressé pour la
+mesurer, et le contrôle vérifie qu'elle vaut **exactement** la taille du fichier
+de police sur le disque.
+
+**Une longueur fausse serait pire qu'absente** : elle ferait refuser la police
+par les lecteurs qui, eux, lisent vraiment l'entrée. Devant un filtre qu'on ne
+sait pas défaire, rien n'est posé.
+
+### Ce qui est éprouvé, et ce qui ne l'est pas
+
+`scripts/test-polices-embarquees.ts` tient la moitié mesurable : l'entrée est
+posée sur chacune des cinq typographies embarquées, elle vaut la taille du
+fichier, elle n'apparaît pas quand aucune police n'est embarquée, et elle ne
+s'invente pas. Il **sait échouer** — l'appel retiré, cinq pièces rougissent avec
+le bon coupable nommé.
+
+**Et la racine amont, elle, est dans `pdf-lib` — hors de portée.** La question
+s'est posée de la patcher : un patch de dépendance se réapplique en silence à
+chaque installation, saute à la première mise à jour, et le développeur qu'il
+paiera un jour ne le trouvera pas. La pose vit donc dans nos couches, **au seul
+goulot par lequel tout document sort** — `composerDocument`, là même où le
+scellé a été mis le 31 août pour la même raison : un document oublié ne se
+verrait pas, on l'apprendrait chez le client. Devis et facture y passent tous
+les deux, la fiche de chantier aussi.
+
+**Ce qu'aucun contrôle de ce dépôt ne peut dire :** qu'un iPhone réclame cette
+entrée. Ce poste n'a aucun moteur Apple, et les moteurs qu'il a sont justement
+ceux qui s'en passent. La déduction repose sur la chronologie — la typographie
+est arrivée le 8 septembre, la première page blanche le 10 — et sur la stricte
+conformité des lecteurs d'Apple. **C'est le patron qui la tranche**, deux
+documents identiques sous les yeux : un avant, un après.
+
+### Ce que cela ne répare PAS : les documents déjà archivés
+
+Un devis envoyé et une facture arrêtée servent le fichier **archivé**, jamais un
+document régénéré (`envois-factures.ts`) — c'est ce qui garantit que le client
+garde la pièce qu'il a reçue. Les documents composés entre le 8 et le
+11 septembre restent donc tels quels, `/Length1` manquant compris : la
+correction ne vaut que pour ce qui se compose après elle. Reprendre les
+archives touche des pièces comptables, et cela ne se décide pas sans lui
+(`TODO.md`).
+
+---
+
+## §329 — Une écriture qui change un AUTRE écran doit le périmer : sinon la flèche rejoue l'ancien
+
+**Payé le 11 septembre 2026**, sur la pastille des retours d'intervention :
+*« je viens d'aller regarder le retour d'inter mais le petit 1 est resté
+visible »*. Le compte des non-lus était juste en base, l'écran le calculait
+bien, et la pastille restait allumée.
+
+### Ce qui se passe vraiment
+
+Next garde de côté, dans le navigateur, la dernière version rendue de chaque
+écran visité. Un lien vers un écran dynamique la redemande ; **un retour en
+arrière la rejoue telle quelle**. Or la flèche d'en-tête d'Atlas recule pour de
+bon depuis le 9 septembre (`FlecheRetour`, `router.back()`) — c'était sa demande,
+et c'est ce qui lui rend sa place dans la liste (§ de la flèche). Elle rejoue
+donc aussi l'écran d'avant l'écriture.
+
+| | |
+|---|---|
+| ce que la base savait | le retour est lu |
+| ce que l'écran montrait | la page de trente secondes plus tôt, pastille à 1 |
+
+### La règle
+
+**Toute action serveur qui change ce qu'un AUTRE écran affiche nomme cet écran**
+(`revalidatePath`), au moment de l'écriture. Ce n'est pas une précaution de
+confort : c'est la seule chose qui vide la page gardée côté navigateur, et donc
+la seule qui survive à un retour en arrière.
+
+Le dépôt le faisait déjà là où le retour est POSÉ
+(`src/app/planning/retour-actions.ts` périme `/planning`, `/termines` et
+`/termines/retours`). C'est la LECTURE qui avait été oubliée
+(`src/app/termines/retours/actions.ts`) — une écriture muette, pas un écran
+fautif.
+
+**Les deux écrans se périment, pas seulement celui du compte.** La liste des
+retours gardée en l'état ferait revenir le point doré sur un retour ouvert : la
+même page vieille, l'autre symptôme.
+
+### Pourquoi aucune suite ne le voyait
+
+Les deux contrôles qui couvraient cette pastille rechargeaient la page
+(`page.goto`), ce qui contourne exactement le mécanisme en cause. Ils étaient
+**verts sur le défaut qu'ils portaient dans leur nom**.
+
+Le contrôle ajouté parcourt son chemin à lui — l'onglet, la carte, la flèche —
+**sans un seul rechargement**, et il sait échouer : joué contre l'ancien code il
+rougit en disant « le 1 est resté sur l'onglet ». C'est `CLAUDE.md` §5 quater,
+payé une seconde fois : *éprouver le geste du patron, pas la fonction qu'on
+vient d'écrire*.
+
+---
+## §330 — La trace de réception dit UNE date, et la phrase se décide dans `lib/`
+
+**Sa demande du 11 septembre 2026**, capture à l'appui, sur « En attente de
+paiement » : *« les phrases sont trop longues. Il faut marquer Ouverte 11/09
+(la date en gras), l'heure tu supprimes lorsque le client n'a pas coché la
+case. Et s'il coche la case, marque seulement réception confirmée le 11/09 —
+pas besoin d'avoir les deux infos. »*
+
+La ligne écrivait les deux événements l'un derrière l'autre : « Ouverte le
+11 septembre à 17 h 57 · réception confirmée le 11 septembre ». Sur un
+téléphone, elle prenait deux lignes pleines — et la seconde moitié rend la
+première inutile : **un client qui coche la case a forcément ouvert**.
+
+### Ce que la minute prouvait, et pourquoi elle peut quitter l'écran
+
+Elle était arrivée le 9 septembre comme preuve contre « je n'ai jamais reçu
+cette facture », et l'argument tenait. Il tient toujours : `ouverte_at` porte
+l'instant complet en base, à la seconde, et c'est là qu'on ira le chercher le
+jour d'un litige. Ce qui change, c'est **où** cela se lit — l'écran est un
+repère qu'il survole en courant après l'argent, pas une pièce de procédure.
+
+### La phrase entière vit dans `src/lib/reception-facture.ts`
+
+Deux écrans la montrent : les impayés, et le dossier du client. Le choix
+« confirmée plutôt qu'ouverte » y aurait été écrit **deux fois**, en JSX — deux
+règles pour une seule question, ce que `CLAUDE.md` §3 refuse. `receptionEnMots`
+ne rend donc plus deux dates à assembler, mais la phrase déjà décidée :
+
+| | |
+|---|---|
+| `avant` | « Ouverte », « Réception confirmée le », ou « Pas encore ouverte. » |
+| `date` | « 11/09 », mis en gras par l'écran — `null` quand rien n'a été ouvert |
+
+Les écrans n'ont plus de condition : ils posent `avant`, puis la date en gras
+s'il y en a une. Le jour où la phrase change encore, un seul endroit bouge, et
+`test-reception-facture.ts` le dit sans monter un navigateur.
+
+**Et `documents-du-client.ts` ne recopie plus la forme** : son champ
+`reception` porte `ReceptionLisible`, plutôt qu'un jumeau écrit à la main qui
+aurait survécu à ce changement en annonçant encore deux dates.
+
+### `jourCourt` — « 11/09 », et l'année seulement si ce n'est pas la nôtre
+
+La règle vient de `jourLisible`, et pour la même raison : « 11/09 » sur une
+facture de l'an dernier désigne deux jours à un an d'écart — or c'est
+précisément une vieille impayée qu'on vient regarder. Le jour et le mois
+gardent leur zéro (« 01/09 »), pour que les colonnes tombent au même endroit
+d'une ligne à l'autre.
+
+**L'aujourd'hui se donne en JOUR, pas en instant** : celui que le serveur a
+calculé dans le fuseau de l'atelier. Le prendre de l'horloge du téléphone
+ferait dépendre l'affichage de l'appareil, le 31 décembre au soir.
+
+### Le chapô de l'écran ne garde qu'une moitié de phrase
+
+Même jour, même raison : *« garde seulement : elles entreront au relevé quand
+vous appuierez sur Payée »*, en gras. Les deux moitiés qui l'encadraient ne
+portaient rien — « ces factures sont parties chez vos clients » redit le titre
+de l'écran, et « pas avant » redit « quand ». La ligne entière passe en `ink` :
+elle est l'avertie, et non plus une phrase dont un morceau est appuyé.
+
+### « Reste à payer » se lit À DROITE, là où la ligne d'un acompte vivait déjà
+
+Sa demande du 11 septembre 2026 : *« lorsqu'on note un règlement, marque :
+Reste à payer 150 €, sur les 150 € du… »*. Ces deux lignes ont d'abord été
+posées **en tête du formulaire de saisie**, et il l'a corrigé le jour même :
+*« pourquoi tu as changé les lignes de place ? La phrase était à droite, c'est
+là que je voulais reste à payer. »*
+
+La colonne de droite portait « reste sur 1 776,00 € », qui demandait de deviner
+que le gros chiffre au-dessus était le solde. Elle porte maintenant :
+
+    Reste à payer 1 476,00 €
+    Sur les 1 776,00 €
+
+Le formulaire, lui, est **revenu tel qu'il était** — il n'avait rien demandé
+dessus.
+
+### ON NE DÉPLACE RIEN : on réécrit sur place
+
+Sa règle, dite le même jour et d'une phrase : *« il fallait laisser les phrases
+où elles étaient, juste les modifier »*. Elle a coûté deux allers-retours dans
+la même soirée — les deux lignes posées dans le formulaire au lieu de la droite,
+puis « émise le … » effacée de la ligne du numéro parce que la droite portait la
+même date.
+
+**Une demande d'affichage vaut pour le TEXTE, jamais pour la place.** Il
+reconnaît son écran par la position de ce qu'il lit ; un mot qui change se lit
+en une seconde, une ligne qui bouge se cherche. Quand une réécriture crée une
+répétition, c'est le mot en trop qui part — ici la date dorée, retirée d'un
+« à droite retire la date en doré » —, jamais la ligne entière.
+
+Le jour de la facture vit donc là où il a toujours été : sur la ligne du numéro,
+à gauche, et écrit court (`jourCourt`) comme la trace de réception juste en
+dessous — une seule façon d'écrire un jour sur cet écran.
+
+### La planche n° 1, choisie et codée — et le défaut que sa capture a révélé
+
+*« Je choisis la 1. »* Deux cases, chacune nommée au-dessus : « Payé le » et
+« Montant reçu ». Elles existaient déjà, nues — leur nom vivait dans
+`aria-label`, donc pour les lecteurs d'écran seulement, invisible à l'œil.
+
+**LE CHAMP DE DATE NATIF SE FORMATE SELON LA LANGUE DU TÉLÉPHONE, PAS SELON LA
+PAGE.** Sa capture du 11 septembre 2026 montre « 09/11/2026 » sous « Payé le »
+pour un 11 septembre : sur son appareil, `<input type="date">` rend l'ordre
+américain. Il lisait novembre sur un paiement de septembre — et aucun contrôle
+de ce dépôt ne pouvait le voir, puisque chacun lit la VALEUR (`2026-09-11`),
+jamais ce que le navigateur en dessine.
+
+Le champ reste natif : lui seul ouvre le rouleau de l'iPhone, et le remplacer
+par trois cases à taper serait un recul. Il est posé **transparent par-dessus
+notre propre texte**, qui passe par `jourNumerique` — la seule façon d'écrire
+une date dans ce dépôt. Le calendrier que le champ dessinait lui-même est
+redessiné à côté : c'est la seule chose qui dit que la case s'ouvre.
+
+La suite du relevé vise désormais le motif `jj/mm/aaaa` **dans un navigateur qui
+n'est pas en français** : c'est exactement le cas qu'il faut éprouver.
+
+**Et la case du montant part vide**, le bouton éteint tant que rien n'est tapé :
+elle arrivait remplie du solde entier, si bien qu'il lisait un chiffre qu'il
+n'avait pas posé. Solder d'un doigt reste possible — c'est « Payée », juste
+au-dessus, et c'est le geste de cinquante factures par an.
+
+### Et la ligne enregistrée reprend la forme de la saisie
+
+*« Donc : 11/09/2026, le montant qui vient d'être rentré »*, photo de la saisie
+à l'appui. La ligne d'un règlement noté s'écrivait « 300,00 € le 11/09 » : les
+deux mêmes choses que les cases juste au-dessus, dans l'autre sens et dans un
+autre format. Elle porte maintenant le jour à gauche et le montant à droite, aux
+places exactes des deux cases — on relit ce qu'on a tapé là où on l'a tapé.
+
+L'étiquette de lecture d'écran du « × » garde, elle, la date en toutes lettres :
+« 11/09 » dite à voix haute ne s'entend pas.
+
+**Et elle dit ce qu'elle est : « Acompte payé le 11/09/2026 ».** Un jour et un
+montant posés seuls ne racontent rien — c'est la seule ligne de la carte qui
+parle d'un geste passé, et elle se lisait comme une seconde date d'émission. Le
+mot est juste quoi qu'il arrive : un règlement qui solde fait sortir la facture
+de cet écran, donc ce qui reste visible est forcément une part.
+
+Sauf pour les règlements que la migration a SUPPOSÉS, qui gardent leurs mots à
+eux — « Supposé réglé le … ». Les dire « payés » ferait passer une supposition
+pour une observation.
+
+---
+
+## §331 — Plusieurs TVA sur une facture, et un champ de prix qui ne porte pas de zéro
+
+**Ses deux captures du 11 septembre 2026, dans le même message :** *« je ne peux
+pas ajouter plusieurs TVA ; lorsque j'en mets une le bouton disparaît »* et *« le
+problème pour rentrer les montants n'a pas été résolu, regarde le 0 est toujours
+présent »*.
+
+Deux défauts distincts, une seule cause commune : **une règle du devis écrite une
+seconde fois pour la facture, en plus pauvre** (`CLAUDE.md` §3).
+
+### La TVA : le geste posait un taux, il n'ouvrait pas de catégorie
+
+| | Le devis (1er septembre) | La facture (avant) |
+|---|---|---|
+| « Ajouter une TVA » | ouvre une CATÉGORIE au taux suivant | posait `10.00` **sur toutes les lignes** |
+| le taux proposé | le premier des quatre usuels encore libre | `"10.00"`, en dur |
+| après le premier taux | le geste reste offert | **le bouton disparaissait** |
+
+La troisième ligne est celle qu'il a payée : le second taux n'était pas
+difficile à poser, il était **impossible**. Le bouton se cachait sur
+`tauxDesSaisies === null`, c'est-à-dire dès qu'un taux existait.
+
+L'écran reprend maintenant la grammaire du devis avec **ses fonctions** :
+`lignesParCategorie` pour les groupes, `tauxTvaPropose` pour le taux suivant —
+cette dernière sortie dans `src/lib/reduction-devis.ts`, où le devis la prend
+aussi : sa liste en dur a disparu. Le taux d'un groupe ne commande plus que ses
+lignes, et le « − » ne retire que les siennes — l'appel sans identifiant vidait
+la facture entière, ce qui ne se voyait pas tant qu'il n'y avait qu'un groupe.
+
+**Chaque taux se nomme dès qu'il y en a deux**, la première catégorie comprise :
+sans cela, les lignes restées au taux de la facture seraient les seules sans
+étiquette, et l'on lirait un montant sans savoir sous quel taux il tombe.
+
+### Le prix : « 0250 », et la règle n'avait été branchée que sur le devis
+
+`prixAEcrire` avait été écrite le matin même pour ce défaut exact — le champ
+portait le zéro de la base, et ce qu'il tapait se collait derrière. Elle ne
+servait qu'au devis. La facture emploie pourtant **les mêmes champs**
+(`ChampsDuDevis`) : c'est la moitié invisible de la duplication.
+
+**Et la règle ne connaît plus d'exception — sa décision du même soir**, après
+avoir lu la première version : *« ce que je veux, c'est que les cases pour les
+montants, il y ait marqué 0 en gris pour qu'on sache que c'est là qu'il faut
+écrire, mais que lorsqu'on clique dessus ça soit vide : on peut direct écrire le
+chiffre sans avoir à supprimer des 0 »*.
+
+`prixAEcrire` ne prend donc plus de drapeau : **une case de saisie ne porte
+jamais de zéro**, sur les trois écrans où l'on tape un montant — le devis, la
+facture, et l'écran des prix, qui affichait encore `0,00` sur toute ligne non
+marquée « à chiffrer ».
+
+| | |
+|---|---|
+| ce qui a été écarté | garder le zéro d'une ligne OFFERTE, pour qu'une gratuité décidée ne passe pas pour un oubli |
+| pourquoi c'est sans perte | le MONTANT calculé reste affiché à côté de la case : une gratuité continue de s'écrire « 0,00 € » là où elle se lit. C'est la case de saisie qui se tait, pas le document |
+| ce qui reste | « à chiffrer » sur les lignes qui le portent — il dit la même chose, et il dit en plus POURQUOI la case est vide |
+
+**Et c'est une valeur de DÉPART, jamais un affichage recalculé à chaque frappe.**
+Dérivé au rendu, le champ se viderait au premier « 0 » tapé : « 0,50 » serait
+devenu impossible à écrire. C'est pour cela que la transformation vit à
+l'initialisation de l'état — comme sur le devis.
+
+### Ce qui l'éprouve
+
+`test-facture-sans-devis-e2e.ts` entre **par sa porte** : il appuie sur le
+bouton, comme lui, au lieu de poser les taux en base. Les deux moitiés ont été
+vues rouges contre le code d'avant — « Ajouter une TVA a disparu après le
+premier taux », puis « le champ du prix porte un zéro ». Ce que le contrôle
+retient de la base, ce sont les **taux distincts** de la facture, pas un libellé
+d'écran (`CLAUDE.md` §5 bis).
+
+---
+
+## §332 — Le prix accordé au client sur une facture : la pièce du devis, montée deux fois
+
+**Sa demande du 11 septembre 2026 :** *« on n'a pas mis la réduction client
+cliquable comme sur le devis »*, puis, aussitôt après : *« reprends exactement
+celle du devis — couleur, forme, mots »*.
+
+La facture savait **afficher** une remise reprise du devis ; rien ne permettait
+d'en poser une — ni à l'écran, ni côté serveur.
+
+### « Exactement » ne se tient pas en recopiant
+
+Deux blocs jumeaux dans deux écrans divergent au premier ajustement. Le dépôt
+venait d'en payer deux le même jour : la grammaire des TVA et la case du prix,
+corrigées d'un seul côté (§329). Le geste vit donc dans une pièce unique,
+`src/components/atlas/PrixAccordeAuClient.tsx`, que le devis **et** la facture
+montent :
+
+| | |
+|---|---|
+| `LignePrixAccorde` | l'or, le « − » de 26 px, le libellé, le champ de 36 px, le « % », le montant en négatif |
+| `BoutonPrixAccorde` | le chemin de secours discret, sous le total |
+| `REMISE_PAR_DEFAUT` | les 5 % que le bouton pose, écrits une fois pour les deux pièces |
+
+Le devis a **perdu** son bloc et sa constante en même temps : une correction qui
+n'enlève rien serait un pansement (`CLAUDE.md` §4 quater).
+
+### Ce que la base a appris à cette fonction
+
+La première version de `majReductionDeFacture` n'écrivait que le pourcentage —
+« le montant se recalcule ». PostgreSQL l'a refusée sur
+`factures_reduction_paire_ck` (migration 0048), et la contrainte a raison : *un
+pourcentage sans montant laisse le document incapable de dire ce qu'il a
+retiré*. Les deux colonnes s'écrivent donc ensemble, le montant venant de
+`totauxAvecReduction` — la même fonction que l'écran et le PDF, jamais une
+seconde arithmétique.
+
+**Le cas de la ligne corrigée APRÈS la remise** est réglé par ce qui existait
+déjà : l'écran recalcule à chaque affichage, et `emettreFacture` refige tous les
+totaux à l'arrêt. Ce qui part chez le client porte donc le bon chiffre, même si
+la colonne a vieilli entre-temps.
+
+### Ce qui l'éprouve
+
+`scripts/test-remise-facture-db.ts` tient l'écriture sous `atlas_app` : la
+remise se pose, se change, se retire ; « 0 », une case vide ou un charabia
+l'**effacent** au lieu d'en garder une à zéro — un « 0 % » stocké ferait
+imprimer au client une ligne dorée sans montant, le défaut qu'il avait signalé
+sur le devis le 17 août 2026 ; une facture arrêtée refuse ; et une facture
+d'une autre entreprise n'existe pas.
+
+`test-facture-sans-devis-e2e.ts` entre par sa porte : il appuie sur le bouton,
+lit les 5 %, vérifie **la paire en base**, puis retire d'un « − ». Et l'écran a
+été regardé : 250,00 € − 12,50 € = 237,50 €, TVA 47,50 €, total 285,00 €.
 `facture` **retire** la note vocale, les photos et la dictée des coordonnées :
 ces trois pièces nourrissent le CHIFFRAGE, et il n'y a pas de devis ici. Sa
 planche le dit d'un mot — *« on ne dicte pas une facture qu'on tape »*.
 L'adresse porte `?facture=1` : sans JavaScript ou dans un nouvel onglet, le lien
 doit mener à la fiche qui FACTURE, sinon c'est un cul-de-sac silencieux.
 
-## §327 — Le plan d'arrosage repris : ses règles retrouvées, et une suite qui les tient
+## §333 — Le plan d'arrosage repris : ses règles retrouvées, et une suite qui les tient
 
 **Sa demande du 11 septembre 2026 :** *« rends impeccable le plan d'arrosage »*
 — le seul outil du pôle Paysage qui tourne, jamais repris depuis le 20 août. Et

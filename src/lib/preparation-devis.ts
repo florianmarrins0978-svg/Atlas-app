@@ -165,33 +165,48 @@ export function ligneAttendSonPrix(ligne: LignePrix): boolean {
 }
 
 /**
- * CE QUE LE CHAMP DU PRIX PORTE VRAIMENT — et ce n'est pas « 0 ».
+ * CE QU'UNE CASE DE MONTANT PORTE — et ce n'est JAMAIS « 0 ».
  *
- * **Sa correction du 11 septembre 2026, capture à l'appui :** *« pour le prix
- * unitaire HT il faudrait que lorsque l'on clique il n'y ait rien de réellement
- * écrit quand aucun prix n'est affiché, comme ça on tape notre prix direct sans
- * avoir à supprimer les 0 ; ils doivent être fictifs pour qu'on comprenne qu'on
- * peut écrire dans la case, mais pas vraiment là »*.
+ * **Sa règle, redite trois fois, la dernière le 11 septembre 2026 :** *« ce que
+ * je veux, c'est que les cases pour les montants, il y ait marqué 0 en gris
+ * pour qu'on sache que c'est là qu'il faut écrire, mais que lorsqu'on clique
+ * dessus ça soit vide : on peut direct écrire le chiffre sans avoir à supprimer
+ * des 0 »*.
  *
- * **Le défaut se voit sur sa capture, et il coûte de l'argent :** le champ
+ * **Le défaut se voit sur ses captures, et il coûte de l'argent :** la case
  * portait un `0` RÉEL, venu du zéro que la base met par défaut. Il a tapé 450
- * derrière, et la case a affiché **0450**. Ce coup-ci le nombre tombait juste ;
- * un zéro de plus au mauvais endroit part chez le client.
+ * derrière, et elle a affiché **0450** ; puis 250, et **0250**. Ces deux fois le
+ * nombre tombait juste ; un zéro de plus au mauvais endroit part chez le client.
  *
- * **La règle n'est pas neuve, elle est la même** que celle du montant juste
- * au-dessus : une ligne qui ATTEND son prix ne porte rien. Là où le montant
- * écrit « à chiffrer », le champ reste vide et c'est l'exemple en gris qui
- * invite à écrire. En écrire une seconde version ferait diverger les deux
- * (`CLAUDE.md` §3), et l'on verrait un jour « à chiffrer » à côté d'un zéro.
+ * **CE QUI A CHANGÉ LE 11 SEPTEMBRE AU SOIR, ET POURQUOI.** La première version
+ * de cette règle ne vidait la case que sur une ligne portant le drapeau « à
+ * chiffrer », pour qu'un zéro VOULU — une ligne offerte — reste écrit. C'était
+ * défendable et **il l'a tranché dans l'autre sens** : il veut taper sans jamais
+ * rien effacer, sur toutes les cases de montant.
  *
- * **Un zéro VOULU n'est pas touché** : une ligne offerte ne porte pas le
- * drapeau, son montant s'écrit « 0,00 € », et son champ garde son zéro. Vider
- * celui-là ferait passer une gratuité décidée pour un oubli.
+ * Ce que l'ancienne réserve craignait ne se perd pas : **le montant calculé, lui,
+ * reste affiché** à côté de la case — une gratuité continue de s'écrire
+ * « 0,00 € » en toutes lettres, là où elle se lit. C'est la case de SAISIE qui
+ * se tait, pas le document.
+ *
+ * **Et c'est une valeur de DÉPART, jamais un affichage recalculé à chaque
+ * frappe** : dérivée au rendu, la case se viderait au premier « 0 » tapé, et
+ * « 0,50 » deviendrait impossible à écrire.
+ *
+ * **`montantEstNul` porte la question, `prixAEcrire` la réponse**, et la
+ * séparation vient d'un défaut réel : l'écran des prix affiche ses montants
+ * FORMATÉS (« 1 120,50 »), et `prixAEcrire` appliquée à ce texte-là le lisait
+ * comme illisible, donc comme nul — elle vidait une case qui portait mille cent
+ * vingt euros. La question se pose donc sur la valeur BRUTE, et le formatage
+ * vient après (`test-prix-e2e.ts` l'a attrapé).
  */
-export function prixAEcrire(prixUnitaire: string, aChiffrer?: boolean | null): string {
-  const n = Number(String(prixUnitaire).replace(",", ".").trim());
-  const zero = !Number.isFinite(n) || n === 0;
-  return aChiffrer && zero ? "" : prixUnitaire;
+export function montantEstNul(valeur: string): boolean {
+  const n = Number(String(valeur).replace(",", ".").trim());
+  return !Number.isFinite(n) || n === 0;
+}
+
+export function prixAEcrire(prixUnitaire: string): string {
+  return montantEstNul(prixUnitaire) ? "" : prixUnitaire;
 }
 
 /**

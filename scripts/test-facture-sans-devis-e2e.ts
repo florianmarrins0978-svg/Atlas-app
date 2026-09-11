@@ -28,6 +28,9 @@ import { ADRESSE } from "./_adresse";
 
 const BASE = ADRESSE;
 
+/** L'adresse de sa capture du 11 septembre 2026, chez Frédéric. */
+const ADRESSE_CHANTIER = "Rue Denfert Rochereau 78200 Mantes-la-Jolie";
+
 let passed = 0;
 let failed = 0;
 async function test(nom: string, fn: () => Promise<void>) {
@@ -140,18 +143,107 @@ async function main() {
     );
   });
 
-  await test("la fiche qui facture ne propose PAS de dicter", async () => {
+  await test("la fiche qui facture porte le micro, et pas l'anneau du devis", async () => {
     await page.goto(`${BASE}/chantiers/nouveau?facture=1`, { waitUntil: "networkidle" });
-    // Sa planche : « on ne dicte pas une facture qu'on tape ». Ces trois pièces
-    // nourrissent le CHIFFRAGE, et il n'y a pas de devis ici.
+
+    // **LE PETIT MICRO EST LÀ — sa demande du 11 septembre 2026** : *« il faut
+    // rajouter la petite note vocale comme sur la fiche client si on veut
+    // dicter les infos de la facture »*. Il remplit le nom, le numéro,
+    // l'e-mail, l'adresse — les mêmes cases qu'au devis, sur le même écran.
+    assert.strictEqual(
+      await page.locator('button[aria-label="Dicter les informations du client"]').count(),
+      1,
+      "le micro des coordonnées manque sur la fiche qui facture"
+    );
+
+    // **L'ANNEAU, LUI, RESTE DEHORS**, et la raison n'a pas changé : il dicte
+    // le CHANTIER pour le faire chiffrer, et il n'y a pas de devis ici. Un
+    // geste qui n'aboutit à rien est le pire des ornements.
     assert.strictEqual(
       await page.locator('[data-atlas="anneau-note-vocale"]').count(),
       0,
       "l'anneau de la note vocale est resté sur la fiche qui facture"
     );
+
     const bouton = page.locator('[data-atlas="action-facture-directe"]');
     assert.strictEqual(await bouton.count(), 1, "le geste « Faire la facture » est absent");
     assert.match((await bouton.innerText()).trim(), /Faire la facture/);
+  });
+
+  await test("L'E-MAIL TAPÉ ICI EST SUR SA FICHE LA FOIS D'APRÈS", async () => {
+    // ── SA DEMANDE DU 11 SEPTEMBRE 2026 ───────────────────────────────────
+    //
+    // *« Là j'ai tapé Frédéric, il a reconnu le nom et a ajouté les infos seul,
+    // c'est très bien ! Mais il n'avait pas l'info de l'adresse e-mail, donc
+    // là je l'ai rajoutée, et ce qu'il faut faire c'est que maintenant il a
+    // l'info et il doit la rajouter dans la catégorie client, comme ça la
+    // prochaine fois que je taperai Frédéric l'adresse e-mail pourra être
+    // ajoutée automatiquement aussi. »*
+    //
+    // **Le contrôle entre par SA porte** (`CLAUDE.md` §5 quater) : rien n'est
+    // écrit en base à la main, le client naît du premier passage sur cet écran
+    // et l'e-mail est tapé au clavier sur le second. Poser le client par le
+    // dépôt aurait éprouvé `completerLaFiche`, que je viens d'écrire — jamais
+    // le chemin où l'écran tient son identifiant et le lui passe.
+    const nom = `Frederic ${Date.now()}`;
+    const mail = `flo-speed-${Date.now()}@hotmail.test`;
+
+    // 1ᵉʳ passage : il le crée SANS e-mail, comme le Frédéric de sa capture.
+    await depuisTerminesJusquALaFacture(page, nom);
+
+    // 2ᵉ passage : il retape le nom, Atlas le reconnaît, il ajoute l'e-mail.
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    await page.click('[data-atlas="creer-une-facture"]');
+    await page.waitForURL(/\/chantiers\/nouveau/, { timeout: 15000 });
+    await page.waitForLoadState("networkidle");
+    await page.fill('input[placeholder="Bernard"]', nom);
+
+    // **On attend la RECONNAISSANCE, pas un délai.** Elle part 350 ms après la
+    // frappe et revient quand elle revient : un `waitForTimeout` rendrait la
+    // suite verte ou rouge selon la charge de la machine.
+    await page.waitForSelector('[data-atlas="client-reconnu"]', { timeout: 15000 });
+    const repris = await page.inputValue('input[placeholder="06 12 34 56 78"]');
+    assert.ok(repris.replace(/\D/g, "").length > 0, "Atlas n'a pas reposé le numéro qu'il connaît");
+
+    await page.fill('input[placeholder="bernard@exemple.fr"]', mail);
+    // **TOUT CE QU'IL POSE SUR CET ÉCRAN, pas seulement l'e-mail.** Sa capture
+    // porte « Mr » choisi, une adresse de chantier et « SMS » souligné : ces
+    // trois-là n'entraient PAS dans sa fiche, et il les rechoisissait à chaque
+    // passage sans jamais savoir pourquoi (`completerLaFiche`).
+    await page.click('[data-atlas="civilite-mr"]');
+    await page.fill('input[placeholder="12 rue des Lilas, Nantes"]', ADRESSE_CHANTIER);
+    await page.click('[data-atlas="action-facture-directe"]');
+    await page.waitForURL(/\/chantiers\/[^/]+\/facture$/, { timeout: 20000 });
+    await page.waitForSelector('[data-atlas="envoyer-la-facture"]', { timeout: 20000 });
+
+    // **UNE SEULE FICHE, et elle porte l'e-mail.** Deux lignes voudraient dire
+    // qu'il a appris sur un doublon : son e-mail serait bien en base, et le
+    // Frédéric qu'il retrouve en tapant son nom ne l'aurait toujours pas.
+    const { rows } = await pool.query(
+      `SELECT id, email, telephone, civilite, adresse, canal_communication
+         FROM clients WHERE nom = $1 AND deleted_at IS NULL`,
+      [nom]
+    );
+    assert.strictEqual(rows.length, 1, `${rows.length} fiches pour un seul client`);
+    assert.strictEqual(rows[0].email, mail, "l'e-mail tapé n'est pas entré dans sa fiche client");
+    assert.strictEqual(rows[0].civilite, "mr", "la civilité choisie n'est pas entrée dans sa fiche");
+    assert.strictEqual(
+      rows[0].adresse,
+      ADRESSE_CHANTIER,
+      "l'adresse du chantier n'est pas devenue la sienne, ce que l'écran promet sous le champ"
+    );
+    assert.strictEqual(
+      rows[0].canal_communication,
+      "sms",
+      "le canal d'envoi n'est pas entré dans sa fiche"
+    );
+    // Le numéro que le premier passage a posé (`depuisTerminesJusquALaFacture`),
+    // en chiffres comme la base le garde. Apprendre, oui — écraser, jamais.
+    assert.strictEqual(
+      rows[0].telephone,
+      "0614228730",
+      "le numéro qu'il avait déjà a été réécrit au passage"
+    );
   });
 
   // ── LE PARCOURS ──────────────────────────────────────────────────────────
@@ -280,6 +372,137 @@ async function main() {
     assert.strictEqual(reponse.status(), 200, "le PDF de la facture directe ne se sert pas");
     const octets = await reponse.body();
     assert.ok(octets.length > 800, `le PDF fait ${octets.length} octets : c'est une page vide`);
+  });
+
+  // ── DEUX TVA SUR LA MÊME FACTURE, ET LE CHAMP DU PRIX VIDE ──────────────
+  //
+  // **Sa capture du 11 septembre 2026 :** *« je ne peux pas ajouter plusieurs
+  // TVA ; lorsque j'en mets une, le bouton disparaît »* — et, dans le même
+  // message : *« le problème pour rentrer les montants n'a pas été résolu,
+  // regarde le 0 est toujours présent »*.
+  //
+  // **Ce contrôle entre par SA porte** (`CLAUDE.md` §5 quater) : il appuie sur
+  // le bouton, comme lui, au lieu de poser les taux en base et de relire.
+  await test("il pose une SECONDE TVA, et le geste reste offert", async () => {
+    await page.click('[data-atlas="ajouter-travaux-supplementaires"]');
+    await page.waitForURL(/travaux-supplementaires/, { timeout: 15000 });
+    await page.waitForLoadState("networkidle");
+
+    await page.click('[data-atlas="ajouter-tva-supplement"]');
+    await page.waitForTimeout(900);
+    // **Le défaut exact qu'il a signalé** : le bouton se cachait dès le premier
+    // taux posé, et le second devenait inatteignable.
+    assert.strictEqual(
+      await page.locator('[data-atlas="ajouter-tva-supplement"]').count(),
+      1,
+      "« Ajouter une TVA » a disparu après le premier taux : le second est hors d'atteinte"
+    );
+
+    // **Le champ du prix de la ligne neuve ne porte rien** — pas le « 0 » de la
+    // base, qui se collait devant ce qu'il tape (« 0250 »).
+    const neuve = page.locator('[data-atlas="ligne-supplement"]').last();
+    assert.strictEqual(
+      await neuve.locator("input").nth(1).inputValue(),
+      "",
+      "le champ du prix porte un zéro : ce qu'il tape se colle derrière"
+    );
+    await neuve.locator("textarea").fill("Végétaux");
+    await neuve.locator("textarea").blur();
+    await neuve.locator("input").nth(1).fill("80");
+    await neuve.locator("input").nth(1).blur();
+    await page.waitForTimeout(900);
+
+    await page.click('[data-atlas="ajouter-tva-supplement"]');
+    await page.waitForTimeout(900);
+    const derniere = page.locator('[data-atlas="ligne-supplement"]').last();
+    await derniere.locator("textarea").fill("Terreau");
+    await derniere.locator("textarea").blur();
+    await derniere.locator("input").nth(1).fill("30");
+    await derniere.locator("input").nth(1).blur();
+    await page.waitForTimeout(1200);
+
+    // **Ce que la BASE porte, et non ce que l'écran affiche** : un libellé se
+    // change, trois taux distincts sur une même facture sont la règle
+    // (`CLAUDE.md` §5 bis).
+    const { rows } = await pool.query(
+      `SELECT DISTINCT lf.taux_tva
+         FROM lignes_facture lf
+         JOIN factures f ON f.id = lf.facture_id
+        WHERE f.chantier_id = $1 AND lf.taux_tva IS NOT NULL`,
+      [chantierId]
+    );
+    const taux = rows.map((r) => Number(r.taux_tva)).sort((a, b) => a - b);
+    assert.deepStrictEqual(
+      taux,
+      [5.5, 10],
+      `la facture ne porte que ${taux.length} taux propre(s) : ${taux.join(", ") || "aucun"}`
+    );
+
+    // Et le taux proposé ne se répète pas : deux catégories au même taux
+    // n'auraient rien ouvert du tout.
+    assert.strictEqual(new Set(taux).size, taux.length, "le même taux a été proposé deux fois");
+  });
+
+  // ── LE PRIX ACCORDÉ AU CLIENT, POSÉ DEPUIS L'ÉCRAN ──────────────────────
+  //
+  // **Sa demande du 11 septembre 2026 :** *« on n'a pas mis la réduction client
+  // cliquable comme sur le devis »*, puis *« reprends exactement celle du devis
+  // — couleur, forme, mots »*.
+  await test("il accorde un prix au client, et la facture le retire du total", async () => {
+    // On est encore sur l'écran de saisie, celui qui porte les totaux.
+    assert.strictEqual(
+      await page.locator('[data-atlas="poser-prix-accorde"]').count(),
+      1,
+      "aucun moyen d'accorder un prix : le geste du devis n'est pas sur la facture"
+    );
+
+    const avant = Number(
+      (await pool.query(
+        `SELECT SUM(lf.montant) AS ht FROM lignes_facture lf
+           JOIN factures f ON f.id = lf.facture_id WHERE f.chantier_id = $1`,
+        [chantierId]
+      )).rows[0].ht
+    );
+
+    await page.click('[data-atlas="poser-prix-accorde"]');
+    await page.waitForTimeout(1200);
+
+    // **Cinq pour cent d'emblée** — le chiffre que le bouton pose, écrit une
+    // seule fois (`REMISE_PAR_DEFAUT`), pour le devis comme pour la facture.
+    assert.strictEqual(
+      await page.locator('[data-atlas="taux-prix-accorde"]').inputValue(),
+      "5",
+      "le bouton ne pose pas les 5 % que le devis pose"
+    );
+
+    // **Ce que la BASE porte**, et non ce que l'écran affiche : les deux
+    // colonnes vont ensemble, la contrainte `factures_reduction_paire_ck` le
+    // fait respecter, et un pourcentage sans montant serait refusé.
+    const { rows } = await pool.query(
+      `SELECT reduction_pourcent, reduction_montant FROM factures WHERE chantier_id = $1`,
+      [chantierId]
+    );
+    assert.strictEqual(Number(rows[0].reduction_pourcent), 5, "la remise n'est pas enregistrée");
+    assert.strictEqual(
+      Number(rows[0].reduction_montant),
+      Math.round(avant * 5) / 100,
+      `le montant retiré ne correspond pas aux 5 % de ${avant} €`
+    );
+
+    // Et le « − » du devis est là, au même endroit, avec les mêmes mots.
+    assert.strictEqual(
+      await page.locator('[data-atlas="retirer-prix-accorde"]').count(),
+      1,
+      "rien ne permet de retirer le prix accordé"
+    );
+    await page.click('[data-atlas="retirer-prix-accorde"]');
+    await page.waitForTimeout(1200);
+    const apres = await pool.query(
+      `SELECT reduction_pourcent, reduction_montant FROM factures WHERE chantier_id = $1`,
+      [chantierId]
+    );
+    assert.strictEqual(apres.rows[0].reduction_pourcent, null, "la remise retirée dort en base");
+    assert.strictEqual(apres.rows[0].reduction_montant, null, "le montant retiré dort en base");
   });
 
   await context.close();

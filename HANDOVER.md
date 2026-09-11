@@ -38,9 +38,188 @@ geste de chaque session.
 **Pour reprendre :** `npx tsx scripts/test-regles-du-patron.ts` d'abord — si une
 règle est rouge, ce n'est pas elle qu'on touche. Puis
 `npx tsx scripts/capture-plan-arrosage.ts <dossier>` pour REGARDER le dessin,
-avec le cas à quatre réseaux et un couloir. Détail : `ARCHITECTURE.md` §327 ;
+avec le cas à quatre réseaux et un couloir. Détail : `ARCHITECTURE.md` §333 ;
 document de retour : `docs/lot-arrosage-impeccable.md`.
 
+## Dernier lot — LE PRIX ACCORDÉ AU CLIENT SUR UNE FACTURE (11 septembre 2026)
+
+| | |
+|---|---|
+| ses mots | *« la réduction client cliquable comme sur le devis »* · *« reprends exactement celle du devis — couleur, forme, mots »* |
+| la pièce commune | `src/components/atlas/PrixAccordeAuClient.tsx`, montée par le devis ET la facture |
+| le serveur | `majReductionDeFacture` + `majReductionFactureAction` — ils n'existaient pas |
+| la migration | **aucune** |
+| les suites | `test-remise-facture-db.ts` (5), `test-facture-sans-devis-e2e.ts` (12) |
+| le détail | `ARCHITECTURE.md` §332 |
+
+**LE PIÈGE QUE LA BASE A ARRÊTÉ.** `factures_reduction_paire_ck` exige le
+pourcentage ET le montant, ou aucun des deux. Écrire le seul pourcentage échoue
+— et le message de `drizzle` ne dit PAS la contrainte : il faut lire la `cause`
+de l'erreur (la suite le fait désormais).
+
+---
+
+## Dernier lot — PLUSIEURS TVA SUR UNE FACTURE, ET LE ZÉRO DU PRIX (11 septembre 2026)
+
+| | |
+|---|---|
+| ses mots | *« je ne peux pas ajouter plusieurs TVA »* · *« le 0 est toujours présent »* |
+| la racine | la grammaire TVA du devis réécrite en plus pauvre pour la facture, et `prixAEcrire` branchée sur un seul des deux écrans |
+| la migration | **aucune** |
+| les pièces | `TravauxSupplementairesClient.tsx`, `src/lib/reduction-devis.ts` (`tauxTvaPropose`), `DevisCompletClient.tsx` (sa liste en dur retirée) |
+| les suites | `test-facture-sans-devis-e2e.ts` (11), les deux moitiés vues rouges |
+| le détail | `ARCHITECTURE.md` §331 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** Le champ du prix se vide à
+l'INITIALISATION de l'état, jamais au rendu. Dérivé à chaque frappe, il se
+viderait au premier « 0 » tapé — et « 0,50 » deviendrait impossible à écrire.
+
+**ET LA RÈGLE N'A PLUS D'EXCEPTION — sa décision du soir :** une case de saisie
+ne porte jamais de zéro, devis, facture et écran des prix compris. `prixAEcrire`
+ne prend plus de drapeau. Ne pas rétablir le zéro d'une ligne offerte : le
+montant calculé, lui, reste affiché à côté et dit la gratuité.
+
+**Et le « − » d'une catégorie ne retire QUE ses lignes** : `retirerLignesDeFacture`
+sans identifiant vide la facture entière. C'était sans conséquence tant qu'il
+n'y avait qu'un groupe ; avec deux taux, cela emporterait l'autre.
+
+## Dernier lot — « NOTER UN RÈGLEMENT » : LES CASES ONT UN NOM (11 septembre 2026)
+
+| | |
+|---|---|
+| son choix | la planche n° 1 de `appli/noter-un-reglement.html` — deux cases nommées |
+| ce qui change | « Payé le » / « Montant reçu » ; montant **vide** ; bouton éteint sans montant ; six mots sous le bouton |
+| la racine | `<input type="date">` se formate selon la LANGUE DU TÉLÉPHONE : le sien écrivait « 09/11/2026 » pour un 11 septembre |
+| la migration | **aucune** |
+| les pièces | `src/app/termines/tva/EnAttenteDePaiement.tsx` |
+| les suites | `scripts/test-tva-au-paiement-e2e.ts` — le motif `jj/mm/aaaa` visé dans un navigateur qui n'est PAS en français |
+| le détail | `ARCHITECTURE.md` §330 |
+
+**ET LA LIGNE ENREGISTRÉE A LA FORME DES CASES** : « Acompte payé le
+11/09/2026 » à gauche, le montant à droite, aux mêmes places — on relit ce qu'on
+a tapé là où on l'a tapé. Les règlements repris par la migration gardent
+« Supposé réglé le … » : eux n'ont jamais été constatés.
+
+**NE PAS REMETTRE LE CHAMP NATIF SEUL.** Le texte de la date est écrit par
+l'application et le champ natif est transparent par-dessus : c'est ce qui rend
+le jour lisible pareil sur tous les téléphones. Un contrôle qui lit la valeur
+(`2026-09-11`) ne verra jamais revenir ce défaut — seul le texte affiché le dit.
+
+---
+
+## Dernier lot — LA TRACE DE RÉCEPTION TIENT EN UNE DATE (11 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« les phrases sont trop longues… Ouverte 11/09, la date en gras, l'heure tu supprimes ; et s'il coche la case, seulement réception confirmée le 11/09 »* |
+| ce qui change | une seule date à l'écran, en gras, au format `11/09` — l'heure quitte l'affichage, elle reste en base (`ouverte_at`) |
+| la migration | **aucune** |
+| les pièces | `src/lib/reception-facture.ts`, `src/lib/jour.ts` (`jourCourt`), `src/lib/documents-du-client.ts`, `src/app/termines/tva/EnAttenteDePaiement.tsx`, `src/app/clients/[id]/PieceDuDossier.tsx` |
+| les suites | `scripts/test-reception-facture.ts` (6), `scripts/test-reception-facture-db.ts` |
+| la capture | `npx tsx scripts/capture-trace-reception.mts <dossier>` — quatre états, plus le formulaire ouvert |
+| le détail | `ARCHITECTURE.md` §330 |
+
+**LA PHRASE NE SE DÉCIDE PLUS DANS LES ÉCRANS.** `receptionEnMots` rend
+`{ avant, date }` — la phrase déjà choisie, plus le jour à mettre en gras. Les
+deux écrans qui la montrent ne portent aucune condition. Y remettre un `if`
+recréerait la divergence que ce lot vient de retirer.
+
+**ET LE CHAPÔ NE GARDE QU'UNE MOITIÉ DE PHRASE** — « Elles entreront au relevé
+quand vous appuierez sur « Payée ». », en gras, entière. Les deux moitiés
+retirées redisaient le titre de l'écran et le « quand ».
+
+**ON NE DÉPLACE RIEN, ON RÉÉCRIT SUR PLACE — et cela a coûté deux allers-retours
+le 11 septembre 2026 :** *« il fallait laisser les phrases où elles étaient,
+juste les modifier »*. Les deux lignes « Reste à payer 1 476,00 € / Sur les
+1 776,00 € » remplacent « reste sur … » **dans la colonne de droite**, là où
+elle vivait, et seulement quand un acompte est passé. Le formulaire de saisie et
+la ligne « émise le … » sont revenus tels qu'ils étaient.
+
+---
+
+## Dernier lot — LA FACTURE TÉLÉCHARGÉE S'OUVRAIT BLANCHE (11 septembre 2026)
+
+| | |
+|---|---|
+| la plainte | *« lorsque je télécharge la facture je ne peux toujours pas la lire »* — page blanche, 3ᵉ fois |
+| la racine | `/Length1` absent du programme TrueType embarqué — requis par la norme, jamais écrit par `pdf-lib` |
+| la migration | **aucune** |
+| les pièces | `src/server/pdf/polices-embarquees.ts` (neuf), `src/server/pdf/document-commun.ts` |
+| les suites | `scripts/test-polices-embarquees.ts` (8), vue rouge contre le code d'avant |
+| le détail | `ARCHITECTURE.md` §328 |
+
+**CE QUI N'EST PAS PROUVÉ, ET QU'IL NE FAUT PAS PRÉSENTER COMME ACQUIS.** Aucun
+moteur Apple ici, et les trois moteurs disponibles — `pypdf`, `qpdf`, PDFium —
+sont justement ceux qui se passent de l'entrée : ils peignaient déjà le document
+entier AVANT la correction. Ce qui est mesuré, c'est que l'entrée manquait,
+que la norme l'exige, et qu'elle est désormais juste. Que ce soit **la** cause
+de sa page blanche est une déduction — appuyée par la chronologie (typographie
+embarquée le 8 septembre, première page blanche le 10). Deux documents témoins
+lui ont été envoyés le 11 pour trancher ; **sa réponse est à chercher avant de
+conclure**.
+
+**ET LES FACTURES DÉJÀ ARRÊTÉES NE SE TOUCHENT PAS — sa décision du
+11 septembre 2026 :** *« oui touche pas celles déjà arrêtées »*. Le lien du
+client sert le fichier composé à l'arrêt, jamais un document régénéré : sa
+F2026-000007 restera blanche chez un lecteur strict, et c'est voulu. Ne pas
+reproposer de « réparer les anciennes ».
+
+---
+
+## Dernier lot — LE MICRO SUR LA FICHE QUI FACTURE, ET LA FICHE QUI APPREND (11 septembre 2026)
+
+**Deux demandes dans un message, sur la fiche client qui mène à « Faire la
+facture ».**
+
+**1. Le petit micro est de retour.** *« Il faut rajouter la petite note vocale
+comme sur la fiche client si on veut dicter les infos de la facture ! »* Il
+était tombé la veille avec l'anneau et les photos ; seuls ces deux-là
+nourrissaient le chiffrage. Une ligne : `FormulaireNouveauChantier.tsx`, le
+`pourLeDevis &&` devant `<DicterCoordonnees>`. **L'anneau et les photos restent
+dehors** — la raison qui les écarte n'a pas changé.
+
+**2. Ce qu'il tape sur cet écran entre dans la fiche du client.** L'e-mail y
+entrait **déjà** (c'est la moitié de sa demande qui marchait). La civilité, le
+canal d'envoi et l'adresse du chantier, **non** — et sa capture porte les trois.
+
+**La racine, et c'est ce qu'il faut retenir :** la règle « compléter le vide,
+n'écraser jamais » était écrite **deux fois**, une par chemin menant à une fiche
+connue. La copie de `creerChantierAction` — le chemin du client qu'Atlas vient
+de reconnaître à l'écran, donc celui de sa demande — avait divergé en silence.
+Une seule fonction désormais : `completerLaFiche`, dans
+`src/server/repositories/clients.ts`. Détail et tableau : `ARCHITECTURE.md`
+§327.
+
+**Où c'est éprouvé :** `scripts/test-rapprochement-client-db.ts` (les deux
+chemins côte à côte, et le refus d'écraser) et
+`scripts/test-facture-sans-devis-e2e.ts` — celui-ci par SA porte : taper le nom,
+voir « Repris de sa fiche », ajouter l'e-mail, faire la facture, relire la fiche.
+Les deux suites ont été vues **rouges** contre la version d'avant.
+
+---
+## Dernier lot — LE « 1 » DES RETOURS RESTAIT ALLUMÉ APRÈS LECTURE (11 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« je viens d'aller regarder le retour d'inter mais le petit 1 est resté visible »* |
+| la migration | **aucune** |
+| les pièces | `src/app/termines/retours/actions.ts` — `revalidatePath("/termines")` et `("/termines/retours")` |
+| les suites | `scripts/test-onglets-termines-e2e.ts`, un cas de plus qui ne recharge JAMAIS |
+| le détail | `ARCHITECTURE.md` §329 |
+
+**CE QU'IL NE FAUT PAS CHERCHER AILLEURS.** Le compte était juste en base, et la
+pastille ne compte que les non-lus depuis le 9 septembre. Ce qui mentait, c'est
+la page gardée par le navigateur : la flèche d'en-tête **recule**
+(`FlecheRetour`, `router.back()`), et un retour arrière rejoue la page d'avant
+la lecture. Une écriture qui ne périme pas les écrans qu'elle change laisse
+l'ancienne image sous son doigt.
+
+**ET LES DEUX SUITES QUI COUVRAIENT LA PASTILLE ÉTAIENT VERTES**, parce qu'elles
+rechargent (`page.goto`) — ce qui contourne précisément le mécanisme en cause.
+Le cas ajouté parcourt son chemin à lui, sans un seul rechargement, et il a été
+mis au rouge contre l'ancien code avant d'être cru.
+
+---
 ## Dernier lot — GOOGLE ET APPLE SE MONTRENT AVANT D'OUVRIR (11 septembre 2026)
 
 | | |

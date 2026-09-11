@@ -9,6 +9,7 @@ import {
   terminerChantier,
   ajouterLigneDeFacture,
   majLigneDeFacture,
+  majReductionDeFacture,
   retirerLignesDeFacture,
   FactureDejaEmiseError,
   FinChantierImpossibleError,
@@ -207,6 +208,34 @@ export type ResultatLigneAjoutee =
       supplement: boolean;
     }
   | { succes: false; erreur: string };
+
+/**
+ * Le prix accordé au client, posé ou retiré depuis l'écran de saisie.
+ *
+ * **Une chaîne vide vaut RETIRER**, et c'est délibéré : le « − » et la case
+ * qu'on vide sont le même geste pour le patron, et deux chemins d'annulation
+ * finiraient par se comporter différemment (`CLAUDE.md` §3). Le dépôt relit la
+ * valeur avec `pourcentValide` — ce qui n'est pas un pourcentage utile efface
+ * la remise plutôt que d'en garder une à zéro.
+ */
+export async function majReductionFactureAction(
+  factureId: string,
+  pourcent: string | null
+): Promise<ResultatTravaux & { reductionPourcent?: string | null }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "changer le prix accordé au client");
+  try {
+    const r = await majReductionDeFacture(ctx, factureId, pourcent);
+    return r.ok
+      ? { succes: true, reductionPourcent: r.reductionPourcent }
+      : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Prix accordé au client non enregistré", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "Le prix accordé n'a pas pu être enregistré. Réessayez." };
+  }
+}
 
 export async function ajouterLigneDeFactureAction(
   factureId: string,

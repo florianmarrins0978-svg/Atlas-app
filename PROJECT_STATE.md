@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-11 · branche `claude/employee-absence-mockup-ayfv45`
+**Dernière mise à jour :** 2026-09-11 · branche `claude/dates-reglements-affichage-f1q9ah`
 · dernière migration `drizzle/0085_creneaux_chantier.sql`
 
 ---
@@ -14,10 +14,113 @@ Sept tuyères en quinconce sur son couloir (sa règle du 18 août, retrouvée), 
 sans nourrice, les réserves gardées après discussion, une carte par réseau,
 plus une couleur en clair. `test-regles-du-patron.ts` tient dix-sept de ses
 règles avec ses chiffres, et `garde-regles-du-patron.mjs` interdit de les
-réécrire. **Aucune migration.** Détail : `ARCHITECTURE.md` §327 ; retour :
+réécrire. **Aucune migration.** Détail : `ARCHITECTURE.md` §333 ; retour :
 `docs/lot-arrosage-impeccable.md`.
 
 ---
+## FAIT : LE PRIX ACCORDÉ AU CLIENT SUR UNE FACTURE — 11 septembre 2026
+
+Le geste du devis — ligne dorée, « − », 5 % d'emblée — est désormais une pièce
+commune montée par les deux écrans, et le serveur sait poser la remise sur une
+facture en brouillon. **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §332.
+
+---
+
+## FAIT : « NOTER UN RÈGLEMENT », LA PLANCHE N° 1 — 11 septembre 2026
+
+*« Je choisis la 1. »* Deux cases nommées — « Payé le », « Montant reçu » —, le
+montant vide et le bouton éteint tant que rien n'est tapé, et six mots sous le
+bouton. **Aucune migration.**
+
+Le défaut de fond venait de sa capture : `<input type="date">` se formate selon
+la langue du téléphone, et le sien affichait « 09/11/2026 » pour un
+11 septembre. Le jour s'écrit maintenant par `jourNumerique`, le champ natif
+posé transparent dessous (`ARCHITECTURE.md` §330).
+
+---
+
+## FAIT : LA TRACE DE RÉCEPTION TIENT EN UNE DATE — 11 septembre 2026
+
+*« Les phrases sont trop longues… Ouverte 11/09, la date en gras, l'heure tu
+supprimes ; et s'il coche la case, marque seulement réception confirmée le
+11/09. »* Les deux événements s'écrivaient l'un derrière l'autre, sur deux
+lignes de téléphone, alors que cocher la case suppose d'avoir ouvert.
+
+La phrase entière sort maintenant de `receptionEnMots` — les deux écrans qui la
+montrent ne décident plus rien —, et la date s'écrit `11/09` (`jourCourt`, avec
+l'année seulement si ce n'est pas la nôtre). L'heure reste en base.
+
+Le chapô de l'écran ne garde qu'une moitié de phrase, en gras : « Elles
+entreront au relevé quand vous appuierez sur « Payée ». »
+
+Même écran, à droite : « reste sur 1 776,00 € » devient « Reste à payer
+1 476,00 € / Sur les 1 776,00 € ». **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §330.
+
+---
+
+## FAIT : PLUSIEURS TVA SUR UNE FACTURE, ET LE PRIX SANS ZÉRO — 11 septembre 2026
+
+« Ajouter une TVA » ouvre une catégorie au lieu de repeindre toutes les lignes,
+et ne disparaît plus : le second taux était impossible à poser. Le champ du prix
+ne porte plus le zéro de la base, qui se collait devant ce qu'il tapait.
+
+La grammaire et les fonctions sont celles du devis — `tauxTvaPropose` est
+désormais commune, et la liste en dur du devis a disparu. **Aucune migration.**
+
+Détail : `ARCHITECTURE.md` §331.
+
+---
+
+
+## FAIT (sous réserve de SA réponse) : LA POLICE DU DOCUMENT ANNONCE SA LONGUEUR — 11 septembre 2026
+
+Sa facture téléchargée s'ouvrait blanche, pour la troisième fois. Le programme
+TrueType embarqué depuis le 8 septembre ne portait pas `/Length1`, entrée que la
+norme exige et que `pdf-lib` n'écrit jamais : un lecteur strict refuse alors la
+police, et tout le texte disparaît avec elle.
+
+`src/server/pdf/polices-embarquees.ts` la pose entre la composition et le
+scellé, avec la longueur mesurée du programme décompressé. **Aucune migration.**
+
+**Sous réserve** : aucun moteur Apple ici, donc rien ne prouve que c'était SA
+panne. Deux documents témoins lui ont été envoyés ; `TODO.md` garde le point
+ouvert, et les documents déjà archivés ne sont pas repris.
+
+Détail : `ARCHITECTURE.md` §328.
+
+---
+
+## FAIT : LE MICRO REVIENT SUR LA FICHE QUI FACTURE — 11 septembre 2026
+
+*« Il faut rajouter la petite note vocale comme sur la fiche client si on veut
+dicter les infos de la facture ! »* Retiré la veille avec l'anneau et les
+photos, sous une raison qui ne valait que pour ces deux-là. `<DicterCoordonnees>`
+n'est plus conditionné à `pourLeDevis` ; l'anneau et les photos restent dehors.
+
+## FAIT : LA FICHE DU CLIENT APPREND CE QU'IL TAPE — 11 septembre 2026
+
+*« Il n'avait pas l'info de l'adresse e-mail, donc là je l'ai rajoutée […] il
+doit la rajouter dans la catégorie client. »* L'e-mail entrait déjà ; **la
+civilité, le canal d'envoi et l'adresse du chantier, non**. Racine : la règle
+était écrite deux fois, une par chemin, et la copie de `creerChantierAction` —
+celle du client reconnu à l'écran — avait divergé. `completerLaFiche` la porte
+maintenant seule (`ARCHITECTURE.md` §327). Rien n'est jamais écrasé.
+
+## FAIT : LE « 1 » DES RETOURS S'ÉTEINT QUAND IL LIT — 11 septembre 2026
+
+La pastille comptait bien les non-lus ; c'est la page rejouée par le retour
+arrière qui montrait l'image d'avant la lecture. L'action qui enregistre la
+lecture périme désormais `/termines` et `/termines/retours`, comme le fait déjà
+celle qui pose un retour. Un contrôle parcourt son chemin sans recharger —
+onglet, carte, flèche — et il a été vu rouge contre l'ancien code
+(`ARCHITECTURE.md` §329).
+
+---
+
 ## FAIT : LES SUITES VISENT LE MOIS QUI EST À L'ÉCRAN — 11 septembre 2026
 
 Le glissement des mois monte trois mois ; les deux voisins sont inertes pour le

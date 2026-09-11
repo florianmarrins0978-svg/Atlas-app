@@ -9,6 +9,174 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ DEUX ÉCRITURES DE LA REMISE PEUVENT SE DOUBLER (11 septembre 2026)
+
+**Mesuré, pas supposé.** `test-reduction-devis-e2e.ts` a rougi deux fois sur
+trois sur la pièce « le « − » existe » : le « + Prix accordé au client » pose
+5 %, et la base rend `null`. Avec deux `console.log` de plus dans la suite —
+donc quelques millisecondes — elle passe 11/11. Ce n'est pas le contrôle qui
+est fragile, **c'est le produit** : `enregistrerRemise` lance une écriture sans
+attendre la précédente, et rien ne garantit leur ordre d'arrivée. Effacer une
+remise puis la reposer aussitôt peut donc la faire disparaître.
+
+**Le défaut est ANTÉRIEUR au lot du 11 septembre** — le même code asynchrone
+existait avant la pièce commune (vérifié : la version d'avant passe, mais elle
+joue sur les mêmes millisecondes). Ce que le lot a changé, c'est la fréquence.
+
+**Ce qu'il faut faire, et ce qu'il ne faut pas faire :** sérialiser les
+écritures (chaîner sur la promesse en cours, des deux côtés — devis et
+facture). **Ne pas** faire attendre le contrôle : ce serait masquer une course
+que le patron peut vivre.
+
+---
+
+## ✅ CHOISIE ET CODÉE — « Noter un règlement », planche n° 1 (11 septembre 2026)
+
+*« Je choisis la 1. »* Codé le soir même dans `EnAttenteDePaiement.tsx` :
+
+| Ce qu'il a demandé | Ce qui est fait |
+|---|---|
+| les deux cases nommées | « Payé le » et « Montant reçu », au-dessus de chacune |
+| « le montant doit être le chiffre qu'on a écrit » | la case part **vide**, et le bouton reste éteint tant que rien n'est tapé |
+| « 11/09/2026 » | le jour s'écrit par `jourNumerique`, plus par le champ natif |
+| la phrase trop longue | « Seule la part reçue entre au relevé. » — six mots |
+
+**LE DÉFAUT QUE SA CAPTURE A RÉVÉLÉ, et qu'aucun contrôle ne voyait :** le champ
+`<input type="date">` se formate selon la **langue du téléphone**, pas selon la
+page. Sur le sien il rendait « 09/11/2026 » pour un 11 septembre — il lisait
+novembre. Le champ natif reste (lui seul ouvre le rouleau de l'iPhone), mais il
+est posé **transparent par-dessus notre propre texte**.
+
+La planche reste en ligne, elle montre les deux autres propositions :
+https://florianmarrins0978-svg.github.io/Atlas-app/noter-un-reglement.html
+
+## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
+
+**Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
+jouée deux fois le 11 septembre, avant et après le lot des polices embarquées.
+**Les dix-huit mêmes suites tombent, à la suite près** — 125/143 les deux fois.
+Aucune n'est PDF.
+
+    adresse-suggestions · anneau-dictee · anneau-vers-devis
+    carte-reponse-mene-au-geste · catalogue-mes-mots · devis-client
+    devis-complet · devis-papier · fiche-entretien · ia-01 · madame-lucie
+    message-au-client · onglets-termines · planning-vers-facture
+    recherche-client · reprise-chantier · reprise-morceau · suivi-devis
+
+Trois familles de causes, relevées à l'échantillon :
+
+| | |
+|---|---|
+| **une clé d'IA absente** — dictée, `ia-01`, Madame Lucie | attendu sur un poste d'agent (`CLAUDE.md` §1 ter), à jouer sur SON espace |
+| **un écran qui a changé** — « aucune flèche de retour », « tout tient dans un écran » | à trancher : le contrôle est-il périmé, ou l'écran a-t-il dérivé ? |
+| **un décor accumulé** — `suivi-devis` : « 30 en attente du client », deux éléments pour un même texte | une base qui grossit d'une batterie à l'autre ; la suite vise un texte au lieu d'un repère |
+
+**Ce qui en découle, et il faut le dire :** aucun lot ne peut plus se donner
+« batterie au vert » tant que ces dix-huit-là tombent. On compare donc AVANT et
+APRÈS, et l'on dit ce qu'on a comparé — c'est ce qu'a fait le lot des polices.
+Laisser dix-huit rouges dormir finit par cacher le dix-neuvième, qui, lui, sera
+vrai.
+
+---
+
+## ⏳ DEUX CHOSES RESTENT OUVERTES SUR LA FACTURE BLANCHE (11 septembre 2026)
+
+**1. Sa réponse aux deux documents témoins.** `/Length1` manquait vraiment et la
+norme l'exige : c'est mesuré. Que ce soit LA cause de sa page blanche ne l'est
+pas — aucun moteur Apple sur ce poste, et les trois moteurs disponibles
+peignaient déjà le document sans l'entrée. Deux factures identiques, un avant et
+un après, lui ont été envoyées le 11 septembre. **Tant qu'il n'a pas répondu,
+ne pas écrire que la panne est corrigée** (`AGENTS.md` : « ne pas annoncer une
+panne corrigée quand seul le silence l'a été »).
+
+Si sa réponse est « les deux sont blanches », la piste suivante n'est pas le
+fichier mais son trajet : le mandataire de son espace, ou le chiffrement
+anti-retouche (`proteger-pdf.ts`), qu'aucun lecteur d'Apple n'a jamais été vu
+ouvrir ici.
+
+**2. ~~Les documents déjà archivés~~ — TRANCHÉ PAR LUI, 11 septembre 2026 :
+*« oui touche pas celles déjà arrêtées »*.**
+
+Une facture arrêtée garde le fichier composé à l'arrêt (`envois-factures.ts`),
+`/Length1` manquant compris — sa F2026-000007 restera blanche chez un lecteur
+strict, et c'est **sa décision**, pas un oubli. Ne pas rouvrir, ne pas proposer
+de « réparer les anciennes » : une pièce comptable ne se recompose pas pour
+faire joli.
+
+Ce qui reste vrai, et qui se dit s'il revient dessus : le correctif ne vaut que
+pour ce qui se compose APRÈS lui. Un document ancien qu'il veut lisible se
+refait en émettant la pièce à neuf, pas en retouchant l'archive.
+
+## SEIZE SUITES NAVIGATEUR SONT ROUGES SUR `main` — mesuré le 11 septembre 2026
+
+**Ce n'est pas une régression d'un lot : c'est l'état de `main`**, vérifié en
+rejouant les mêmes suites sur la version d'avant. Écrit ici pour que la
+prochaine session ne repaie pas les quarante minutes qu'il a fallu pour
+l'apprendre — et surtout, pour qu'elle ne cherche pas la cause dans son
+propre travail.
+
+| Verdict de la batterie | |
+|---|---|
+| types, lint, mémoire | ✅ |
+| suites base (`npm test`) | ✅ |
+| **suites navigateur** | **124/143** |
+| connexion derrière un proxy | ✅ |
+
+**Les seize, et ce qu'elles disent :**
+
+```
+adresse-suggestions · anneau-dictee · anneau-vers-devis
+carte-reponse-mene-au-geste · catalogue-mes-mots
+devis-client · devis-complet · devis-papier · fiche-entretien
+ia-01 · message-au-client · planning-vers-facture
+recherche-client · reprise-chantier · reprise-morceau · suivi-devis
+```
+
+**Deux sont des contrôles PÉRIMÉS, et se corrigent sans rien toucher au
+produit** (`CLAUDE.md` §5 bis — un contrôle ne doit pas réclamer ce qu'il a fait
+retirer) :
+
+- `adresse-suggestions` attend `/chantiers/<id>$`, la fiche du chantier
+  **retirée le 4 septembre** (`ARCHITECTURE.md` §254). `creerPuisFiche` laisse
+  désormais sur le devis : l'attente ne peut plus aboutir, jamais ;
+- `anneau-dictee` exige l'indice « **Poussez** » après une dictée. Le mot
+  n'existe plus dans `src/` : sur la fiche client, l'anneau ne devient jamais le
+  lecteur (`storageKey={null}`), et l'invite se tait dès qu'une note existe —
+  **sa règle du 1ᵉʳ septembre**.
+
+**Quatre autres ne sont rouges QUE dans la batterie entière**, et vertes seules :
+`devis-fige-porte` et `madame-lucie` (délais dépassés sur un conteneur lent),
+`onglets-termines` (« `'2' !== '1'` » : le compte des retours non lus est pollué
+par les suites qui ont tourné avant, dans la même base), et — relevé le
+11 septembre 2026 — `ligne-planning`, dont le contrôle « le client touché ne
+remonte pas » **refuse de conclure** quand la première fiche n'est pas au-dessus
+de la seconde (153 px contre 100 px) : les chantiers laissés par les suites
+précédentes changent l'ordre de la liste. Rejouée seule :
+`npm run test:e2e -- --seulement ligne-planning` → 6/6.
+
+**Ce qu'il reste à trancher :** les onze autres. Chacune se rejoue seule en une
+commande — `npm run test:e2e -- --seulement <nom>` — et il faut savoir, pour
+chacune, si c'est le produit ou le contrôle qui a vieilli.
+
+---
+
+## ⚠️ CINQ NUMÉROS D'`ARCHITECTURE.md` SONT PRIS DEUX FOIS (constaté le 11 sept. 2026)
+
+Sur `main` : **§134, §135, §136, §164 et §165** désignent chacun DEUX
+paragraphes sans rapport — le §135 est à la fois « un écran atteint depuis deux
+endroits » (l. 11264) et « le diagnostic végétal » (l. 11744). C'est la
+collision que `CLAUDE.md` §6 B décrit, restée en place.
+
+**Conséquence tout de suite :** un renvoi « §135 » mène à un texte plausible et
+faux. Citer le TITRE avec le numéro, tant que ce n'est pas réglé.
+
+**Ce qui n'a PAS été fait, et pourquoi :** renuméroter détourne les renvois des
+sessions voisines, qui portent les mêmes numéros (payé trois fois le 26 août).
+Ça se fait d'un coup, par quelqu'un qui relit ensuite CHAQUE renvoi touché — pas
+en passant, au milieu d'un autre lot.
+
+---
+
 ## ~~LA PLANCHE DE LA PORTE N'A PAS SUIVI L'AÉRATION~~ — réglé autrement, 11 septembre 2026
 
 **Ce point était mal posé, et le corriger vaut mieux que de le faire.** Il
@@ -784,6 +952,29 @@ des ports ou relancent des serveurs, et se gênent entre eux — plus
 délibérément (`SANS_CLES_IA`) — `test-anneau-dictee`, `test-anneau-vers-devis`,
 `test-devis-doublon`, `test-carte-reponse-mene-au-geste`. Les autres n'ont pas
 été instruits un par un.
+
+### Remesuré le 11 septembre 2026 — 353/353 base, 126/143 navigateur
+
+**Deux passages du même jour, l'un sur le code du lot « pastille des retours »,
+l'autre sur le code NON MODIFIÉ**, pour savoir ce qui était à ce lot : les
+listes de rouges sont identiques à une suite près, et le lot en REND une
+(`test-onglets-termines-e2e`). Les suites base sont toutes vertes.
+
+**Les dix-sept rouges navigateur** : `test-adresse-suggestions`,
+`test-anneau-dictee`, `test-anneau-vers-devis`, `test-carte-reponse-mene-au-geste`,
+`test-catalogue-mes-mots`, `test-devis-client`, `test-devis-complet`,
+`test-devis-papier`, `test-fiche-entretien`, `test-ia-01`, `test-madame-lucie`,
+`test-message-au-client`, `test-planning-vers-facture`, `test-recherche-client`,
+`test-reprise-chantier`, `test-reprise-morceau`, `test-suivi-devis`.
+
+**ET ILS S'ENTRAÎNENT LES UNS LES AUTRES — trouvé ce jour-là.** Une suite qui
+tombe avant sa ligne de ménage laisse ses données derrière elle, et la suivante
+rougit sur un produit sain : `test-onglets-termines` lisait 2 retours au lieu
+d'un, `test-ligne-planning` mesurait une fiche à 153 px au lieu de 100 — les
+deux vertes jouées seules. **Une suite qui lit un compte d'entreprise doit
+isoler sa mesure**, comme le fait désormais `test-onglets-termines` : ce qui
+traîne est marqué lu le temps du contrôle, et les lignes posées repartent avec
+elle. C'est la première chose à faire en instruisant les dix-sept.
 
 **Ce qui reste à faire ici**, et personne ne l'a pris : **les instruire, et
 soit les réparer, soit les nommer**. Huit rouges permanents deviennent un bruit
@@ -5368,7 +5559,7 @@ tenue.
 
 ## Arrosage : ce que le lot du 11 septembre laisse ouvert, et à qui (11 septembre 2026)
 
-Le lot (`ARCHITECTURE.md` §327) a remis deux de ses règles perdues et posé
+Le lot (`ARCHITECTURE.md` §333) a remis deux de ses règles perdues et posé
 `scripts/test-regles-du-patron.ts`, que `garde-regles-du-patron.mjs`
 interdit de réécrire. Ce qui reste se tranche par LUI, pas en codant :
 

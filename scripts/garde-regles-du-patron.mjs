@@ -45,7 +45,14 @@ export function commandeQuiTouche(commande) {
   // Ce qui est entre guillemets est un TEXTE — un message de commit qui cite la
   // règle, une chaîne de sed —, pas un chemin. Le chemin visé, lui, s'écrit nu.
   const nue = commande.replace(/"[^"]*"|'[^']*'/g, '""');
-  if (!nue.includes(FICHIER)) return false;
+  // **Chaque commande enchaînée se juge seule** — faux positif attrapé le
+  // 11 septembre 2026 : un `sed -i` sur TODO.md suivi de `&& npx tsx
+  // scripts/test-regles-du-patron.ts` était refusé, parce que le sed et le nom
+  // du fichier vivaient sur la même ligne sans se toucher.
+  return nue.split(/&&|\|\||;|\|/).some((morceau) => morceau.includes(FICHIER) && ecritDans(morceau));
+}
+
+function ecritDans(morceau) {
   return [
     /\bsed\s+(?:-[^\s]*\s+)*-i\b/,
     />>?\s*(?:"|')?[^\s|&]*test-regles-du-patron\.ts/,
@@ -53,7 +60,7 @@ export function commandeQuiTouche(commande) {
     /\b(rm|mv|cp|truncate)\s/,
     /\b(Remove-Item|Move-Item|Set-Content|Add-Content|Out-File|Copy-Item)\b/i,
     /\bgit\s+(?:(?:-[cC]\s+\S+|--[a-z-]+(?:=\S+)?|-[a-zA-Z]+)\s+)*(checkout|restore|rm|mv)\b/,
-  ].some((r) => r.test(nue));
+  ].some((r) => r.test(morceau));
 }
 
 export function phraseDuRefus(quoi) {

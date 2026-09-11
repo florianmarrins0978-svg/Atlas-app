@@ -91,6 +91,35 @@ async function main() {
      RETURNING id`,
     [entrepriseId, chantierId]
   );
+  // ═══════════════════════════════════════════════════════════════════════
+  // **LE COMPTE DES NON-LUS NE SE MESURE QUE SEUL — 11 septembre 2026.**
+  //
+  // Ces trois contrôles lisent un NOMBRE sur l'onglet, et ce nombre appartient
+  // à toute l'entreprise. Une suite voisine qui tombe avant sa ligne de ménage
+  // laisse son retour derrière elle : l'onglet affiche alors 2, et ces
+  // contrôles rougissent en accusant la pastille — sur un produit sain, et sur
+  // un défaut qui n'est pas le leur. Mesuré deux fois dans la batterie du
+  // 11 septembre, avant comme après le lot.
+  //
+  // On ne relâche pas l'assertion pour autant (ce serait un pansement, et un
+  // vrai « 2 » passerait) : on ISOLE. Tout ce qui traîne est marqué LU, donc le
+  // seul non-lu qui reste est celui que cette suite vient de poser. Les lignes
+  // ajoutées repartent avec elle.
+  //
+  // **Et notre propre retour est remis à NON LU** : le `ON CONFLICT DO UPDATE`
+  // ci-dessus réutilise la ligne d'une exécution précédente, et sa lecture
+  // aurait survécu — la suite serait alors partie d'une pastille déjà éteinte.
+  const { rows: dejaLa } = await pool.query<{ id: string }>(
+    `INSERT INTO retours_intervention_vus (entreprise_id, retour_id, utilisateur_id)
+     SELECT r.entreprise_id, r.id, u.id
+       FROM retours_intervention r, users u
+      WHERE r.entreprise_id = $1 AND r.id <> $2 AND u.email = 'demo@atlas.local'
+     ON CONFLICT DO NOTHING
+     RETURNING id`,
+    [entrepriseId, pose[0].id]
+  );
+  await pool.query(`DELETE FROM retours_intervention_vus WHERE retour_id = $1`, [pose[0].id]);
+
   // **Une faite et une PAS faite** : c’est la seconde qui compte, et le
   // dépliage doit l’écrire en toutes lettres.
   await pool.query(`DELETE FROM retours_intervention_taches WHERE retour_id = $1`, [pose[0].id]);
@@ -290,6 +319,51 @@ async function main() {
     }
   });
 
+  // ═════════════════════════════════════════════════════════════════════════
+  // SON CHEMIN À LUI, ET PAS LE NÔTRE — 11 septembre 2026
+  //
+  // **Sa plainte :** *« je viens d'aller regarder le retour d'inter mais le
+  // petit 1 est resté visible »*. Les deux contrôles voisins étaient VERTS sur
+  // ce défaut, et pour une seule raison : ils rechargent la page
+  // (`page.goto`), ce que lui ne fait jamais. Il touche l'onglet, ouvre le
+  // retour, puis appuie sur la flèche — et la flèche RECULE
+  // (`FlecheRetour.tsx`, `router.back()`), donc le navigateur rejoue la page
+  // qu'il avait mise de côté, pastille comprise.
+  //
+  // C'est exactement la leçon du 28 août (`CLAUDE.md` §5 quater) : éprouver le
+  // geste du patron, pas la fonction qu'on vient d'écrire. Ce contrôle ne
+  // recharge rien, du premier appui au dernier.
+  await cas("SANS RECHARGER : il ouvre le retour, revient, et le 1 est parti", async () => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    const pastille = page.locator("[data-atlas='compte-des-non-lus']");
+    await pastille.waitFor({ state: "visible", timeout: 20_000 });
+
+    // ── son geste, du doigt, sans jamais recharger ──
+    await page.locator("[data-atlas='onglet-retours']").click();
+    const carte = page.locator("[data-atlas='carte-de-retour']").first();
+    await carte.waitFor({ state: "visible", timeout: 20_000 });
+    await carte.click();
+    await page.locator("[data-atlas='retour-deplie']").first().waitFor({ state: "visible", timeout: 10_000 });
+
+    // La flèche de l'en-tête : celle qu'il a sous le pouce, et qui recule.
+    await page.locator('a[aria-label="Retour"], a[aria-label="Retour aux chantiers terminés"]').first().click();
+    await page.locator(RANGEE).waitFor({ state: "visible", timeout: 20_000 });
+
+    // **On laisse à la pastille le temps de REVENIR.** Conclure dans la
+    // seconde rendrait vert un écran qui se repeint mal une demi-seconde plus
+    // tard — et c'est cette demi-seconde qu'il voit, lui.
+    await page.waitForTimeout(1_500);
+    assert.equal(
+      await pastille.count(),
+      0,
+      "le 1 est resté sur l'onglet alors qu'il vient d'ouvrir le retour"
+    );
+    if (DOSSIER_CAPTURES) {
+      await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "retour-lu-de-retour-sur-termines.png") });
+    }
+  });
+
   await cas("LA CARTE S’OUVRE EN GRAND, et se replie — sa proposition A", async () => {
     await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
     const carte = page.locator("[data-atlas='carte-de-retour']").first();
@@ -328,6 +402,40 @@ async function main() {
       await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "retour-deplie.png") });
     }
 
+    // **ON APPUIE SUR LA PHOTO, ET ELLE S'OUVRE EN GRAND.** Sa demande du
+    // 11 septembre 2026. C'est le geste du patron qui est éprouvé ici, pas la
+    // fonction qu'on vient d'écrire (`CLAUDE.md` §5 quater) : on clique là où
+    // son doigt se pose, et l'on mesure ce qui couvre l'écran.
+    await page.locator("[data-atlas='ouvrir-la-photo']").first().click();
+    const enGrand = page.locator("[data-atlas='photo-en-grand']");
+    await enGrand.waitFor({ state: "visible", timeout: 10_000 });
+
+    // **Le fichier peut manquer sur ce poste** : ce qui se mesure est donc le
+    // cadre de la visionneuse, jamais l'image. Et une boîte de zéro pixel ne
+    // vaut pas un vert — c'est la leçon du 15 août.
+    if (DOSSIER_CAPTURES) {
+      await page.screenshot({ path: path.join(DOSSIER_CAPTURES, "photo-en-grand.png") });
+    }
+
+    const plein = await enGrand.boundingBox();
+    const ecran = page.viewportSize();
+    assert.ok(plein && plein.width > 0 && plein.height > 0, "boîte de zéro pixel : rien n'est mesuré");
+    assert.ok(
+      ecran && plein.width >= ecran.width - 1 && plein.height >= ecran.height - 1,
+      `la visionneuse ne couvre pas l'écran : ${Math.round(plein?.width ?? 0)} × ${Math.round(plein?.height ?? 0)}`
+    );
+
+    // **Pas de « Retirer » ici, et c'est délibéré** : un retour est le compte
+    // rendu d'un salarié, il ne s'efface pas depuis l'écran qui le vérifie.
+    assert.equal(
+      await page.locator('button[aria-label="Retirer cette photo"]').count(),
+      0,
+      "on peut retirer une photo depuis un compte rendu"
+    );
+
+    await page.locator('button[aria-label="Fermer"]').click();
+    await enGrand.waitFor({ state: "detached", timeout: 10_000 });
+
     const tourne = await carte
       .locator("svg")
       .last()
@@ -365,6 +473,13 @@ async function main() {
     assert.match(dit, /Retours d'intervention/, "l’onglet a disparu avec la pastille");
   });
 
+  // Les lectures posées pour isoler la mesure repartent : elles appartiennent
+  // aux suites voisines, pas à celle-ci.
+  if (dejaLa.length > 0) {
+    await pool.query(`DELETE FROM retours_intervention_vus WHERE id = ANY($1::uuid[])`, [
+      dejaLa.map((l) => l.id),
+    ]);
+  }
   await pool.query(`DELETE FROM retours_intervention_taches WHERE retour_id = $1`, [pose[0].id]);
   await pool.query(`DELETE FROM retours_intervention_photos WHERE retour_id = $1`, [pose[0].id]);
   await pool.query(`DELETE FROM retours_intervention WHERE chantier_id = $1`, [chantierId]);

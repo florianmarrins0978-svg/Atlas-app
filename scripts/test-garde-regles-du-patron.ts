@@ -65,6 +65,8 @@ const A_LAISSER: [string, Record<string, unknown>, string][] = [
   ["Bash", { command: `git add ${CHEMIN} && git commit -m "Ajouter une règle du patron"` }, "l'enregistrer"],
   ["Bash", { command: `sed -i 's/a/b/' scripts/test-arrosage-calcul.ts` }, "un sed sur un autre fichier"],
   ["Bash", { command: `git commit -m "on ne fait jamais sed -i sur test-regles-du-patron.ts"` }, "le nom du fichier dans un message de commit"],
+  ["Bash", { command: `sed -i '5562s/§327/§333/' TODO.md && npx tsx scripts/${FICHIER}` }, "un sed sur un AUTRE fichier, puis jouer la suite — refusé à tort le 11 septembre"],
+  ["Bash", { command: `rm -f scripts/_tmp.ts; npx tsx scripts/${FICHIER}` }, "un rm ailleurs, puis jouer la suite"],
 ];
 
 for (const [outil, entree, quoi] of A_REFUSER) {
