@@ -809,6 +809,13 @@ function pointsDeLaPose(nx, ny, ecartX, ecartY, quinconce){
    **Elle refuse de conclure sans matière** — le piège du 15 août : sans tête,
    ou sur une zone de dimension nulle, elle rend `false` plutôt qu'un vrai qui
    n'aurait rien regardé. */
+/* La plus courte distance entre deux têtes d'un damier de pas (ex, ey) : deux
+   pas sur une même rangée ou colonne, ou la diagonale d'un bord à l'autre.
+   C'est ELLE que « jamais moins que la portée » compare, pas le pas. */
+function distanceEntreTetesDuDamier(ex, ey){
+  return Math.min(2 * ex, 2 * ey, Math.sqrt(ex * ex + ey * ey));
+}
+
 function couvreTout(points, portee, L, l){
   if (!points || !points.length || !(portee > 0) || !(L > 0) || !(l > 0)) return false;
   var pas = portee / 10, p2 = portee * portee;
@@ -900,7 +907,14 @@ function poser(z, refImposee){
     // **Le compte se décide sur la grille ALIGNÉE** (sa règle du 17 août :
     // « quinconce dès qu'il y a plus de 4 arroseurs »), avant que le damier
     // n'en retire.
-    var quinconceVoulu = (nx * ny) > QUINCONCE_AU_DELA_DE;
+    //
+    // **LE DAMIER EST POUR LES TUYÈRES — sa règle du 18 août, retrouvée le
+    // 11 septembre 2026.** *« Dans les couloirs, le but c'est de poser les
+    // tuyères en quinconce. »* Ses turbines, elles, se posent alignées : c'est
+    // le carré de 12 × 12 qu'il a dessiné le 23 août, neuf têtes, et qu'il n'a
+    // pas rouvert. Tenter le damier sur les turbines aurait remplacé ses neuf
+    // par six, sans qu'il l'ait demandé.
+    var quinconceVoulu = cle === 'tuyere' && (nx * ny) > QUINCONCE_AU_DELA_DE;
     var alignes = pointsDeLaPose(nx, ny, ecartX, ecartY, false);
     var points = alignes;
     if (quinconceVoulu){
@@ -920,7 +934,16 @@ function poser(z, refImposee){
         // tenait sur UNE vanne. Le tour de vis de trop disqualifiait la bonne
         // réponse. Quand le damier ne couvre pas en respectant l'écart, on
         // garde la grille ALIGNÉE, qui couvre par construction.
-        if (ex2 < m.portee - 0.01 || ey2 < m.portee - 0.01) break;
+        //
+        // **ET LA PORTÉE SE MESURE ENTRE DEUX TÊTES, PAS SUR LE PAS DES
+        // COLONNES — corrigé le 11 septembre 2026.** Sur un damier, deux
+        // têtes voisines ne sont jamais à un pas l'une de l'autre : sur le
+        // même bord elles sont à DEUX pas, et d'un bord à l'autre en diagonale.
+        // Mesurer le pas refusait son couloir de 10 × 2 à sept tuyères
+        // (pas 1,67 m, portée 1,80 — mais 2,60 m entre deux têtes), et le
+        // renvoyait à douze alignées : sa règle du 18 août, morte le 24 août
+        // quand le contrôle rouge a été réécrit au lieu d'être compris.
+        if (distanceEntreTetesDuDamier(ex2, ey2) < m.portee - 0.01) break;
         if (couvreTout(damier, m.portee, L, l)){
           essai = { pts: damier, nx: ax, ny: ay, ecartX: ex2, ecartY: ey2 };
           break;
@@ -933,7 +956,8 @@ function poser(z, refImposee){
         ecartX = essai.ecartX; ecartY = essai.ecartY;
         r.ecart = Math.max(ecartX, ecartY);
         r.ecartX = ecartX; r.ecartY = ecartY;
-        r.tropSerre = (ecartX < m.portee - 0.01) || (ecartY < m.portee - 0.01);
+        // « Trop serré » se juge lui aussi entre deux têtes du damier.
+        r.tropSerre = distanceEntreTetesDuDamier(ecartX, ecartY) < m.portee - 0.01;
       } else {
         quinconceVoulu = false;   // le damier ne couvre pas : on reste aligné
       }

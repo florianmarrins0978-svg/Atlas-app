@@ -8,6 +8,42 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Le plan d'arrosage repris — et deux de ses règles retrouvées
+
+*« Rends impeccable le plan d'arrosage. »* Puis, en cours de route : *« à quoi
+ça sert que je donne des règles si elles deviennent obsolètes au bout d'une
+semaine sans raison ? »* Il avait raison.
+
+**Ce qui était faux, prouvé sur ses jardins :** un croquis sans nourrice rendait
+quand même la liste des pièces ; la liste ne disait pas ce que le plan dessinait
+(8 tés + 4 coudes + 2 tés égaux contre 7 + 5 + 0 sur ses deux pelouses) ; ni
+tuyau Ø25, ni amenée, ni té du compteur dans ce qu'il emportait au comptoir ;
+une amenée de 30 m entrait dans la pression sans un mot ; les réserves du calcul
+disparaissaient au premier message de la discussion ; et le dessin était aveugle
+sur Nuit et Sylve.
+
+**Ses deux règles retrouvées :** le quinconce du couloir (18 août, 7 tuyères sur
+10 × 2 — mort le 24 août parce qu'un contrôle rouge avait été réécrit : le
+plancher « jamais sous la portée » mesurait le pas des colonnes au lieu de la
+distance entre deux têtes), et l'antenne Ø16 de 2 m au plus, le Ø25 en un seul
+passage au milieu d'un couloir jusqu'à 4 m.
+
+**Ce qui change :** `distanceEntreTetesDuDamier` dans le calcul, le damier
+réservé aux tuyères (ses neuf turbines du 12 × 12 intactes) ; `pied` et
+`antennes` dans le tracé ; `pieces.ts` qui lit les raccords sur le tracé, en
+trois zones, chaque quantité recomposable ; `croquis-complet.ts` qui refuse sans
+nourrice et dit le geste ; une seule fonction pour les réserves des deux chemins ;
+une carte par réseau à l'écran, les réserves sous le dessin, les symboles côte à
+côte quand deux tombent au même point, plus une couleur en clair.
+
+**Et ce qui empêche que ça recommence :** `test-regles-du-patron.ts`, dix-sept
+règles avec ses phrases et ses chiffres, rouge sur le code d'hier ; et
+`garde-regles-du-patron.mjs`, branché sur chaque geste de chaque session, qui
+refuse de réécrire une entrée existante — on ne peut qu'ajouter, sous le repère.
+
+Maquette : `appli/arrosage-plan-et-pieces.html`. Détail : `ARCHITECTURE.md`
+§327. Document de retour : `docs/lot-arrosage-impeccable.md`.
+
 ### Aérer la porte — et le premier essai lisait sa demande à l'envers
 
 *« Je les trouve trop collés en haut, aère la page et prends plus d'espace. »*

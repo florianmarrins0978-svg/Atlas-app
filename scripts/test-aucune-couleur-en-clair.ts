@@ -36,6 +36,12 @@ const RACINE = path.join(__dirname, "..");
 
 /** Les écrans repris, et qui ne doivent plus jamais écrire une couleur. */
 const SURVEILLES = [
+  // Le plan d'arrosage, repris le 11 septembre 2026 : son dessin portait six
+  // couleurs en dur, et la nourrice se dessinait en noir sur la carte de Nuit.
+  "src/app/paysage/arrosage/ArrosageClient.tsx",
+  "src/app/paysage/arrosage/PlanDessine.tsx",
+  "src/app/paysage/arrosage/DiscuterLePlan.tsx",
+  "src/app/paysage/page.tsx",
   "src/app/chantiers/[id]/transcription/page.tsx",
   "src/app/chantiers/[id]/transcription/TexteDicte.tsx",
   "src/app/chantiers/[id]/transcription/RafraichirPendantTranscription.tsx",

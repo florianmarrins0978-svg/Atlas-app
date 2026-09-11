@@ -8,6 +8,39 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU (11 septembre 2026)
+
+**Ce qui est fait :** le calcul rend 7 tuyères en quinconce sur son couloir de
+10 × 2 (sa règle du 18 août, morte le 24) et garde ses 9 turbines sur le 12 × 12 ;
+le tracé passe le Ø25 une fois et va chercher chaque tête par une antenne Ø16 de
+2 m au plus (`trace.ts` : `pied`, `antennes` ; `plan-dessine.ts` :
+`piedDeLaTete`) ; la liste des pièces se lit sur le tracé, en trois zones
+(`pieces.ts`) ; un croquis sans nourrice est refusé avec le geste qui débloque
+(`croquis-complet.ts`) ; les réserves du calcul suivent le plan après une
+discussion (`lePlan()` dans `actions.ts`) ; l'écran porte une carte par réseau,
+les réserves sous le dessin, et plus une couleur en clair.
+
+**Ce qui tient tout ça :** `scripts/test-regles-du-patron.ts` — dix-sept règles,
+ses phrases, ses chiffres. **Un rouge ne s'y réécrit pas** : le code a tort, ou
+c'est lui qui a changé la règle (sa phrase s'ajoute sous le repère, l'ancienne
+barrée). `scripts/garde-regles-du-patron.mjs` le tient mécaniquement sur chaque
+geste de chaque session.
+
+**Ce qui reste ouvert, et à qui :**
+
+| | Qui tranche |
+|---|---|
+| Le damier pour les turbines des grandes pelouses (§127 le disait ; le 23 août il a dessiné 9 alignées) — aujourd'hui : tuyères seulement | **lui** |
+| L'amenée : lue sur le croquis (le piquage y est obligatoire) ou gardée à 30 m écrite à l'écran | **lui** — aujourd'hui 30 m, dit sous le plan |
+| Les positions sur une vraie photo — jamais éprouvées : ce poste n'a pas de clé de vision | **son banc** |
+| `appli/arrosage.html` et ses deux scripts, en sursis : le comptage par rangées de `listeMateriel` part avec eux | **lui**, après avoir vu l'écran |
+
+**Pour reprendre :** `npx tsx scripts/test-regles-du-patron.ts` d'abord — si une
+règle est rouge, ce n'est pas elle qu'on touche. Puis
+`npx tsx scripts/capture-plan-arrosage.ts <dossier>` pour REGARDER le dessin,
+avec le cas à quatre réseaux et un couloir. Détail : `ARCHITECTURE.md` §327 ;
+document de retour : `docs/lot-arrosage-impeccable.md`.
+
 ## Dernier lot — GOOGLE ET APPLE SE MONTRENT AVANT D'OUVRIR (11 septembre 2026)
 
 | | |

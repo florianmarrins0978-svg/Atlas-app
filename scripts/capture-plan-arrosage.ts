@@ -79,6 +79,8 @@ span[class*="h-[11px]"]{height:11px;width:11px;display:block}
 svg[class*="h-[15px]"]{height:15px;width:15px;flex:none}
 [class*="text-[13.5px]"]{font-size:13.5px}
 [class*="text-[12.5px]"]{font-size:12.5px}
+[class*="py-[5px]"]{padding-top:5px;padding-bottom:5px}
+[class*="mt-3"]{margin-top:12px}
 `;
 
 function page(zones: Zone[], nourrice: { x: number; y: number }) {
@@ -124,6 +126,22 @@ const CAS: { nom: string; zones: Zone[]; nourrice: { x: number; y: number } }[] 
       { id: 2, type: "gazon", nom: "Petite", x: 14, y: 0, L: 5, l: 5 },
     ],
     nourrice: { x: 0, y: 7 },
+  },
+  {
+    // **QUATRE RÉSEAUX, ET UN COULOIR — ajouté le 11 septembre 2026.** Deux
+    // défauts du 23 août ne se montraient qu'à partir de trois réseaux, et
+    // aucun cas n'en portait autant : « une règle éprouvée sur un seul cas
+    // n'est pas éprouvée ». Le couloir de 10 × 2 est celui de son croquis du
+    // 18 août : sept tuyères en quinconce, une seule tranchée au milieu, et
+    // les antennes Ø16 de part et d'autre. La nourrice entre les deux pelouses
+    // fait aussi tomber les cotes dans un passage de 2 m — vu à la capture.
+    nom: "plan-quatre-reseaux-et-un-couloir",
+    zones: [
+      { id: 1, type: "gazon", nom: "Pelouse arrière", x: 0, y: 0, L: 18, l: 12 },
+      { id: 2, type: "gazon", nom: "Pelouse avant", x: 0, y: 14, L: 12, l: 8 },
+      { id: 3, type: "gazon", nom: "Couloir", x: 18, y: 0, L: 10, l: 2 },
+    ],
+    nourrice: { x: 0, y: 13 },
   },
 ];
 

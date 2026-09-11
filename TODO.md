@@ -5366,6 +5366,20 @@ tenue.
 
 ---
 
+## Arrosage : ce que le lot du 11 septembre laisse ouvert, et à qui (11 septembre 2026)
+
+Le lot (`ARCHITECTURE.md` §327) a remis deux de ses règles perdues et posé
+`scripts/test-regles-du-patron.ts`, que `garde-regles-du-patron.mjs`
+interdit de réécrire. Ce qui reste se tranche par LUI, pas en codant :
+
+| Ce qui est ouvert | Aujourd'hui | Qui tranche |
+|---|---|---|
+| **Le damier pour les turbines** — §127 disait « pour les grands espaces, faire la même » ; le 23 août il a dessiné 9 alignées sur 12 × 12 | tuyères seulement ; avec la bonne mesure, le 12 × 12 tomberait à 6 en damier | **lui** |
+| **La longueur d'amenée** — 30 m par défaut, désormais ÉCRITS sous le plan | lire la place du piquage sur le croquis (il y est obligatoire) donnerait la vraie longueur — à éprouver sur son banc, ce poste n'a pas de clé de vision | **lui**, puis son banc |
+| **`appli/arrosage.html` et ses deux scripts** — en sursis depuis le 20 août | le comptage par rangées de `listeMateriel` (calcul.js) ne sert plus qu'à eux : il part avec eux | **lui**, après avoir vu l'écran |
+
+---
+
 ## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
 
 Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a

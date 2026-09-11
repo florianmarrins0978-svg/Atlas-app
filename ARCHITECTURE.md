@@ -28009,3 +28009,113 @@ ces trois pièces nourrissent le CHIFFRAGE, et il n'y a pas de devis ici. Sa
 planche le dit d'un mot — *« on ne dicte pas une facture qu'on tape »*.
 L'adresse porte `?facture=1` : sans JavaScript ou dans un nouvel onglet, le lien
 doit mener à la fiche qui FACTURE, sinon c'est un cul-de-sac silencieux.
+
+## §327 — Le plan d'arrosage repris : ses règles retrouvées, et une suite qui les tient
+
+**Sa demande du 11 septembre 2026 :** *« rends impeccable le plan d'arrosage »*
+— le seul outil du pôle Paysage qui tourne, jamais repris depuis le 20 août. Et
+sa colère en cours de route, qui a changé la nature du lot : *« à quoi ça sert
+que je donne des règles si elles deviennent obsolètes au bout d'une semaine sans
+raison ? »*
+
+### Ce que la lecture a trouvé avant d'écrire une ligne
+
+Trois endroits où le calcul rendait un plan faux, chacun prouvé sur ses jardins :
+
+| | Où | Ce qui se passait |
+|---|---|---|
+| **Sans nourrice, le plan sortait quand même** | `lire-croquis.ts` ne faisait qu'une réserve ; `actions.ts` rendait la liste des pièces, avec une ligne rouge sous vingt-trois lignes | Le commentaire affirmait « refusée à la lecture ». Faux. C'est le plan qu'il a refusé le 21 août |
+| **La liste des pièces ne disait pas ce que le plan dessinait** | `listeMateriel` (calcul.js) comptait tés/coudes/tés égaux sur un modèle de rangées parallèles ; `plan-dessine.ts` les comptait sur le vrai tracé | Ses deux pelouses : liste **8 + 4 + 2**, dessin **7 + 5 + 0**. Aucune suite ne les confrontait. Et une tête à trois branches perdait son té égal |
+| **Ni tuyau Ø25, ni amenée, ni té du compteur dans la liste** | la page publiée ajoutait le PE depuis une case saisie ; l'application n'a pas cette case, et personne n'a vu la zone « compteur → nourrice » disparaître | Il partait au comptoir sans tuyau. Et l'amenée de 30 m par défaut entrait dans la pression sans un mot |
+
+Et deux règles à lui, données puis **perdues** :
+
+- **le quinconce du couloir** (§127, 18 août : 10 × 2 → 7 tuyères). Mort le
+  24 août : la correction « jamais sous la portée » (§ du 23 août) mesurait le
+  **pas des colonnes** (1,67 m) au lieu de la **distance entre deux têtes** du
+  damier (2,60 m en diagonale, 3,33 m sur un même bord). Le contrôle qui la
+  tenait est devenu rouge, et il a été réécrit — *« ce contrôle a changé de
+  règle »* — au lieu d'être compris ;
+- **l'antenne Ø16 de 2 m au plus, et le Ø25 en un seul passage**. Donnée avant
+  le 11 septembre, jamais écrite. Le tracé amenait le Ø25 jusqu'à chaque tuyère,
+  deux lignes dans un couloir de 2 m.
+
+### Ce qui a été décidé
+
+**1. Le damier se mesure entre deux têtes** — `distanceEntreTetesDuDamier` dans
+`calcul.js` : `min(2·ex, 2·ey, √(ex² + ey²))`. Et **il est réservé aux
+tuyères** : ses turbines se posent alignées, c'est le carré de 12 × 12 qu'il a
+dessiné le 23 août avec neuf têtes, et qu'il n'a pas rouvert. Tenter le damier
+sur les turbines aurait remplacé ses neuf par six sans qu'il l'ait demandé — la
+question lui est posée dans le document de retour, pas tranchée à sa place.
+
+**2. Le Ø25 passe, l'antenne va chercher la tête** — `ArroseurPose.pied` dans
+`trace.ts`, posé par `piedDeLaTete` (`plan-dessine.ts`) : quand le petit côté
+d'une zone tient dans deux antennes (≤ 4 m), la ligne suit l'axe du milieu et
+chaque tête pend au bout d'un demi-côté ; au-delà, la ligne vient au pied de la
+tête, seule façon de tenir les 2 m. Le graphe du tracé relie les pieds, plus les
+têtes. Sur son couloir de 10 × 3 : une tranchée de 10 m, sept antennes de
+1,50 m. Sur 10 × 5 : la ligne repasse, aucune antenne de 2,50 m.
+
+**3. Les pièces se LISENT sur le tracé** — `pieces.ts`, la frontière entre ce que
+le calcul rend et ce que le dessin compte. Trois zones (compteur → nourrice,
+regard, jardin) ; tés, coudes et tés égaux réseau par réseau ; le tuyau Ø25
+mesuré ; le té égal 25×25×25 dès que le piquage est au compteur ; les SBE en
+deux lignes nommant leur position ; et « par réseau : 5 · 3 · 3 · 11 » sous
+chaque total — sa question du 21 août sur les vingt-deux coudes. **Pourquoi pas
+dans `calcul.js`** : c'est une copie octet pour octet de la page publiée, qui
+n'a pas de tracé. Le jour où la page disparaît (`TODO.md`), le comptage par
+rangées part avec elle.
+
+**4. Sans nourrice, aucun plan** — `croquis-complet.ts`, pure, lue par l'action
+ET par l'écran du refus : les trois éléments cochés un par un, le manquant en
+rouge, une phrase, un bouton « Reprendre la photo ». Rien d'autre en dessous.
+
+**5. Les réserves du calcul suivent le plan** — `lePlan()` dans `actions.ts`,
+une seule fonction pour la lecture du croquis et pour la discussion. Avant,
+« il ne resterait que 1,8 bar au dernier arroseur » disparaissait au premier
+message. Et l'amenée comptée pour 30 m **se dit** : un chiffre muet se croit.
+
+**6. L'écran** — sa maquette `appli/arrosage-plan-et-pieces.html` : une carte
+par réseau (la vanne, la pelouse, la buse, ce qu'elle consomme et emporte) au
+lieu de deux listes qu'il reliait au carré de couleur ; les réserves **sous le
+dessin**, pas sous les pièces ; la liste en trois zones ; plus une couleur en
+clair (`test-aucune-couleur-en-clair` surveille les quatre fichiers). Et sa
+règle du même jour : *« même au même endroit, ne superpose pas les ronds, carrés
+ou losanges — côte à côte »* (`Tete.decalage`, `ecarterLesSymboles`).
+
+**7. Une tête à trois branches porte un losange à côté d'elle** — c'est lui qui
+l'a lu sur la maquette : *« il faut un té égal à côté du premier arroseur pour
+faire la jonction »*. Le degré du pied décide ; chaque branche au-delà de deux
+est un té égal, tête ou pas.
+
+### La suite qui tient sa parole, et le garde-fou qui la protège
+
+`scripts/test-regles-du-patron.ts` : dix-sept entrées, chacune une phrase de
+lui, datée, éprouvée sur l'exemple qu'il a donné avec elle. Elle rougit sur le
+code d'hier (12 tuyères au lieu de 7 — vérifié). **Un rouge ne s'y réécrit
+jamais** : soit le code a tort, soit c'est LUI qui a changé la règle, et alors
+sa phrase s'ajoute sous le repère, l'ancienne barrée.
+
+`scripts/garde-regles-du-patron.mjs`, branché sur chaque geste de chaque session
+(`.claude/settings.json`) : le fichier ne s'écrase pas, une entrée existante ne
+se modifie pas, `sed`/`rm`/`git checkout` sur lui sont refusés. Ajouter sous le
+repère passe ; lire passe. Éprouvé dans les deux sens par
+`test-garde-regles-du-patron.ts`, qui a attrapé un faux positif avant qu'il
+gêne quelqu'un — le nom du fichier dans un message de commit.
+
+### Ce qui a été refusé, et ce que ça aurait coûté
+
+- **Refaire le calcul en TypeScript** pour y lire le tracé : deux façons de
+  calculer un plan (`CLAUDE.md` §3). Le tracé est lu à la frontière, une fois.
+- **Étendre le damier aux turbines** : six têtes au lieu de ses neuf sur le
+  12 × 12, sans son accord. Posé comme question.
+- **Lire la longueur d'amenée sur le croquis** : demande la clé de vision, que
+  ce poste n'a pas ; le 30 m est gardé en majorant **écrit à l'écran**. Ouvert.
+
+### Ce qui reste ouvert
+
+Le trajet du regard à la première tête (inchangé, dit à l'écran) · l'amenée
+lue sur le croquis · les positions sur une vraie photo (banc du patron) · la
+page publiée `appli/arrosage.html` et ses deux scripts, en sursis jusqu'à ce
+qu'il valide l'écran.

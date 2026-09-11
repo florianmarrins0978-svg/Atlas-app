@@ -1,4 +1,4 @@
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import type { Dessin } from "@/lib/arrosage/plan-dessine";
 
 /**
@@ -6,8 +6,9 @@ import type { Dessin } from "@/lib/arrosage/plan-dessine";
  *
  * *« Il manque la photo, le schéma avec les réseaux, et l'implantation des
  * arroseurs. Les différents réseaux de couleurs. »* La maquette validée est
- * `appli/arrosage-plan.html` ; ce composant en est le portage, à ceci près
- * qu'il ne dessine plus SON jardin mais celui que le croquis donne.
+ * `appli/arrosage-plan.html`, refaite le 11 septembre 2026 dans
+ * `appli/arrosage-plan-et-pieces.html` ; ce composant en est le portage, à
+ * ceci près qu'il ne dessine plus SON jardin mais celui que le croquis donne.
  *
  * **Le SVG travaille EN MÈTRES**, et c'est ce qui rend le dessin vérifiable :
  * un contrôle peut lire `points="0,4 0,0 6,0"` et retrouver les cotes, ce qui
@@ -18,23 +19,25 @@ import type { Dessin } from "@/lib/arrosage/plan-dessine";
  * un compte de pièces, ni un métré. Un récapitulatif figé sous un tableau qui
  * dit autre chose est le défaut qu'il a relevé le 21 août — « 9 tés + 4
  * coudes » sous un tableau qui en annonçait 8 et 5.
- */
-/**
- * La couleur de la tranchée — **une terre grise, et non l'ocre de la maquette.**
  *
- * *Corrigé le 23 août 2026, à la capture.* La maquette validée le 21 août
- * dessinait la tranchée en `#D8B45E` ; elle n'y portait que deux réseaux, bleu
- * et vert. Dès le troisième, le calcul sort `#D9A520` — le même jaune à un
- * cheveu près : la ligne disparaissait dans la saignée qui la porte. Une terre
- * neutre ne peut se confondre avec aucune des huit couleurs de réseau, quel que
- * soit le nombre de vannes.
+ * **AUCUNE COULEUR ÉCRITE EN CLAIR — corrigé le 11 septembre 2026.** Ce dessin
+ * portait six couleurs en dur (`#1A1A18`, `#E9ECE0`, `#7C8271`…) : sur Nuit et
+ * Sylve, la nourrice se dessinait en noir sur une carte noire, et les cotes
+ * disparaissaient. Tout suit désormais la charte — `colors.*`, et `voile()`
+ * pour ce qui se pose en transparence (`CLAUDE.md` §3). Les couleurs des
+ * RÉSEAUX viennent du calcul, et elles sont saturées à dessein : elles se
+ * lisent sur les huit fonds.
  */
-const TERRE = "#B7AC97";
+
+/** La tranchée : un voile d'encre, jamais une terre écrite en clair. Elle ne peut se confondre avec aucune couleur de réseau. */
+const TRANCHEE = voile(colors.ink, 0.22);
 
 export default function PlanDessine({ dessin }: { dessin: Dessin }) {
   const traits = {
     contour: 0.26,
     ligne: 0.26,
+    /** L'antenne Ø16 : plus fine que la ligne Ø25, comme sur le chantier. */
+    antenne: 0.13,
     tranchee: 0.95,
   };
 
@@ -67,7 +70,7 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
           {/* La pelouse, puis ce qui n'en est pas — une terrasse au milieu se
               découpe dedans, sinon le tuyau paraîtrait passer dessous. */}
           {dessin.contours.map((c, i) => (
-            <polygon key={`f${i}`} points={enPoints(c)} fill="#E9ECE0" stroke="none" />
+            <polygon key={`f${i}`} points={enPoints(c)} fill={voile(colors.plein, 0.16)} stroke="none" />
           ))}
           {dessin.trous.map((c, i) => (
             <polygon key={`t${i}`} points={enPoints(c)} fill={colors.card} stroke="none" />
@@ -83,8 +86,7 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
               y1={s.de.y}
               x2={s.a.x}
               y2={s.a.y}
-              stroke={TERRE}
-              strokeOpacity={0.62}
+              stroke={TRANCHEE}
               strokeWidth={traits.tranchee}
               strokeLinecap="round"
               data-atlas="tranchee"
@@ -92,10 +94,10 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
           ))}
 
           {dessin.contours.map((c, i) => (
-            <polygon key={`b${i}`} points={enPoints(c)} fill="none" stroke="#7C8271" strokeWidth={traits.contour} />
+            <polygon key={`b${i}`} points={enPoints(c)} fill="none" stroke={voile(colors.ink, 0.45)} strokeWidth={traits.contour} />
           ))}
           {dessin.trous.map((c, i) => (
-            <polygon key={`bt${i}`} points={enPoints(c)} fill="none" stroke="#7C8271" strokeWidth={traits.contour} />
+            <polygon key={`bt${i}`} points={enPoints(c)} fill="none" stroke={voile(colors.ink, 0.45)} strokeWidth={traits.contour} />
           ))}
 
           {/* Les cotes, mesurées sur le trait — jamais recopiées de la saisie. */}
@@ -106,8 +108,8 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
               y={c.y}
               textAnchor={c.ancre}
               fontSize={0.95}
-              fontFamily="Georgia,serif"
-              fill="#6E6A60"
+              fontFamily={font.display}
+              fill={colors.muted}
               data-atlas="cote"
             >
               {c.texte}
@@ -123,7 +125,7 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
               y1={s.de.y}
               x2={s.a.x}
               y2={s.a.y}
-              stroke="#1A1A18"
+              stroke={colors.ink}
               strokeWidth={0.2}
               strokeDasharray="0.5 0.4"
               data-atlas="liaison"
@@ -160,7 +162,24 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
                   strokeLinecap="round"
                 />
               ))}
-              {/* Le losange n'arrose rien : la ligne s'y sépare en deux. */}
+              {/* **L'antenne Ø16, du pied sur la ligne à la tête** — sa règle du
+                  11 septembre : le Ø25 passe, l'antenne va chercher l'arroseur.
+                  Plus fine que la ligne, pour qu'on voie laquelle se creuse. */}
+              {r.antennes.map((a, i) => (
+                <line
+                  key={`a${i}`}
+                  x1={arrondi(a.de.x)}
+                  y1={arrondi(a.de.y)}
+                  x2={arrondi(a.a.x)}
+                  y2={arrondi(a.a.y)}
+                  stroke={r.couleur}
+                  strokeWidth={traits.antenne}
+                  strokeLinecap="round"
+                  data-atlas="antenne"
+                />
+              ))}
+              {/* Le losange n'arrose rien : la ligne s'y sépare en deux. À côté
+                  d'un arroseur, c'est le té égal qui s'ajoute à son té taraudé. */}
               {r.jonctions.map((p, i) => (
                 <rect
                   key={`j${i}`}
@@ -175,12 +194,15 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
                   data-piece="jonction"
                 />
               ))}
+              {/* **Deux têtes au même point se dessinent côte à côte** — sa règle
+                  du 11 septembre : le point vrai est `x, y`, le symbole s'écarte
+                  de `decalage` pour qu'on voie les deux. */}
               {r.tetes.map((t, i) =>
                 t.forme === "rond" ? (
                   <circle
                     key={`h${i}`}
-                    cx={t.x}
-                    cy={t.y}
+                    cx={t.x + t.decalage.x}
+                    cy={t.y + t.decalage.y}
                     r={t.plein ? 0.5 : 0.42}
                     fill={t.plein ? r.couleur : colors.card}
                     stroke={r.couleur}
@@ -191,8 +213,8 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
                 ) : (
                   <rect
                     key={`h${i}`}
-                    x={t.x - 0.44}
-                    y={t.y - 0.44}
+                    x={t.x + t.decalage.x - 0.44}
+                    y={t.y + t.decalage.y - 0.44}
                     width={0.88}
                     height={0.88}
                     rx={0.12}
@@ -216,7 +238,7 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
               height={2.8}
               rx={0.3}
               fill={colors.card}
-              stroke="#1A1A18"
+              stroke={colors.ink}
               strokeWidth={0.22}
             />
             <text
@@ -224,8 +246,8 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
               y={dessin.etiquetteNourrice.y}
               textAnchor={dessin.etiquetteNourrice.ancre}
               fontSize={0.95}
-              fontFamily="Georgia,serif"
-              fill="#1A1A18"
+              fontFamily={font.display}
+              fill={colors.ink}
             >
               nourrice
             </text>
@@ -255,53 +277,17 @@ export default function PlanDessine({ dessin }: { dessin: Dessin }) {
           symbole={
             <rect x={-0.56} y={-0.56} width={1.12} height={1.12} transform="rotate(45)" fill={colors.card} stroke={colors.ink} strokeWidth={0.3} />
           }
-          texte={<><b>losange</b> : la ligne se sépare · té égal 25×25×25, qui n’arrose rien</>}
+          texte={<><b>losange</b> : la ligne se sépare · té égal 25×25×25</>}
         />
         <Legende
-          symbole={<line x1={-0.85} y1={0} x2={0.85} y2={0} stroke={TERRE} strokeWidth={0.9} />}
+          symbole={<line x1={-0.85} y1={0} x2={0.85} y2={0} stroke={colors.ink} strokeWidth={0.18} />}
+          texte={<><b>trait fin</b> : l’antenne Ø16 rigide, 2 m au plus</>}
+        />
+        <Legende
+          symbole={<line x1={-0.85} y1={0} x2={0.85} y2={0} stroke={TRANCHEE} strokeWidth={0.9} />}
           texte={<>la tranchée</>}
         />
       </div>
-
-      {/* Ce que chaque réseau porte — les comptes SORTENT du dessin. */}
-      {dessin.reseaux.map((r) => (
-        <div
-          key={r.numero}
-          className="mx-[22px] mt-3 rounded-[12px] px-4 py-[14px]"
-          style={{ backgroundColor: colors.card }}
-          data-atlas="carte-reseau"
-        >
-          <p className="flex items-center gap-2.5">
-            <span className="block h-[11px] w-[11px] flex-none rounded-[3px]" style={{ backgroundColor: r.couleur }} />
-            <span className="min-w-0 flex-1" style={{ fontFamily: font.display, fontSize: 17.5 }}>
-              Réseau {r.numero + 1}
-            </span>
-            <span className="flex-none text-[12.5px] tabular-nums" style={{ color: colors.muted }}>
-              {r.metresTuyau.toString().replace(".", ",")} ml
-            </span>
-          </p>
-          {/* **CE QU'ON POSE, ET AVEC QUELLE BUSE** — sa demande du 21 août :
-              « qu'il sache tout de suite quels sont les arroseurs que tu vas
-              utiliser à quel endroit ». Le modèle vient du calcul, jamais d'ici.
-
-              **Une ligne PAR modèle** : depuis le 23 août, une vanne peut en
-              porter deux, et n'en nommer qu'un ferait commander de travers. Le
-              nombre n'est écrit que lorsqu'il y en a plusieurs — sinon il
-              répéterait le compte d'arroseurs de la ligne suivante. */}
-          {r.materiels.map((m) => (
-            <p key={m.libelle} className="mt-1 text-[13px]" style={{ color: colors.inkSoft }}>
-              {r.materiels.length > 1 ? `${m.nombre}× ` : ""}
-              {m.libelle}
-              {m.portee > 0 ? ` · portée ${m.portee.toString().replace(".", ",")} m` : ""}
-            </p>
-          ))}
-          <p className="mt-1 text-[12.5px]" style={{ color: colors.muted }}>
-            {r.tetes.length} arroseur{r.tetes.length > 1 ? "s" : ""} · {r.tes} té{r.tes > 1 ? "s" : ""} +{" "}
-            {r.coudes} coude{r.coudes > 1 ? "s" : ""}
-            {r.jonctions.length > 0 ? ` + ${r.jonctions.length} jonction${r.jonctions.length > 1 ? "s" : ""}` : ""}
-          </p>
-        </div>
-      ))}
     </div>
   );
 }

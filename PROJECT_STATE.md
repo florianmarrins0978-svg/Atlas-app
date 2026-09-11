@@ -5,6 +5,19 @@
 
 ---
 
+
+## FAIT : LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU — 11 septembre 2026
+
+Sept tuyères en quinconce sur son couloir (sa règle du 18 août, retrouvée), le
+Ø25 en un seul passage avec des antennes Ø16 de 2 m au plus (sa règle du
+11 septembre), la liste des pièces lue sur le tracé en trois zones, le refus
+sans nourrice, les réserves gardées après discussion, une carte par réseau,
+plus une couleur en clair. `test-regles-du-patron.ts` tient dix-sept de ses
+règles avec ses chiffres, et `garde-regles-du-patron.mjs` interdit de les
+réécrire. **Aucune migration.** Détail : `ARCHITECTURE.md` §327 ; retour :
+`docs/lot-arrosage-impeccable.md`.
+
+---
 ## FAIT : LES SUITES VISENT LE MOIS QUI EST À L'ÉCRAN — 11 septembre 2026
 
 Le glissement des mois monte trois mois ; les deux voisins sont inertes pour le

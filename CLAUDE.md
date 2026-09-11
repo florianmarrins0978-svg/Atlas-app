@@ -1179,6 +1179,17 @@ Et chaque symbole **nomme la pièce** qu'il implique : plein → té taraudé ; 
 visser. **Toute pièce facturée se voit quelque part sur le plan** — une pièce
 commandée qu'on ne sait pas où poser ne sert à rien.
 
+**DEUX SYMBOLES AU MÊME POINT SE DESSINENT CÔTE À CÔTE, JAMAIS L'UN SUR
+L'AUTRE.** Sa règle du 11 septembre 2026 : *« même si c'est au même endroit, tu
+ne dois pas superposer les ronds, carrés ou losanges : mets-les côte à côte,
+qu'on les voie bien — l'utilisateur comprendra que c'est au même endroit »*.
+Deux pelouses qui se touchent posent chacune sa tête sur l'arête commune ; le
+dessin en montrait une, la seconde exactement dessous, et seule la réserve le
+disait. Le point vrai ne bouge pas (c'est lui qui arrose) ; le symbole s'écarte
+(`Tete.decalage`). Et le té égal d'une tête à trois branches se dessine **à côté
+d'elle**, pas dessous — *« il faut un té égal à côté du premier arroseur pour
+faire la jonction »*, sa lecture du plan le même jour.
+
 **UNE LÉGENDE SE VÉRIFIE CONTRE LE CATALOGUE ET CONTRE LA COMMANDE.** Payé le
 22 août 2026, et c'est lui qui l'a relevé : *« il m'a déjà donné 4 arroseurs en
 5004 buse 3 sur un seul réseau avec 3 bar et du Ø25 — est-ce correct ? »* Ça ne
