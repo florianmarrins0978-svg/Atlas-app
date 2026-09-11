@@ -20,6 +20,9 @@ sert.
 | les suites | `scripts/test-tva-au-paiement-e2e.ts` — le motif `jj/mm/aaaa` visé dans un navigateur qui n'est PAS en français |
 | le détail | `ARCHITECTURE.md` §330 |
 
+**ET LA LIGNE ENREGISTRÉE A LA FORME DES CASES** : le jour à gauche, le montant
+à droite, aux mêmes places — on relit ce qu'on a tapé là où on l'a tapé.
+
 **NE PAS REMETTRE LE CHAMP NATIF SEUL.** Le texte de la date est écrit par
 l'application et le champ natif est transparent par-dessus : c'est ce qui rend
 le jour lisible pareil sur tous les téléphones. Un contrôle qui lit la valeur

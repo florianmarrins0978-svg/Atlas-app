@@ -15,6 +15,10 @@ reçu ». Le montant part vide — le chiffre affiché est celui qu'il a tapé �
 bouton reste éteint tant que rien n'est posé. Sous le bouton, six mots au lieu
 de dix-huit : « Seule la part reçue entre au relevé. »
 
+La ligne d'un règlement déjà noté reprend la forme des cases : le jour à
+gauche, le montant à droite. Elle disait « 300,00 € le 11/09 » — les deux mêmes
+choses, dans l'autre sens.
+
 **Le défaut que sa capture a révélé :** le champ de date natif se formate selon
 la langue du TÉLÉPHONE, pas selon la page. Sur le sien, un 11 septembre
 s'affichait « 09/11/2026 » — il lisait novembre. Le jour est maintenant écrit
