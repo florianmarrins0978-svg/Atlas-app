@@ -269,6 +269,10 @@
       <textarea id="cgv" aria-label="Conditions générales de vente et de règlement" style="min-height:420px;font-size:14px"></textarea>
       <button class="discret" type="button" id="cgv-origine">Remettre le texte d’origine</button>
 
+      <p class="inter">Pris de la photo du menuisier</p>
+      <div class="bloc"><p class="nom">Gardé</p><p class="dit">La phrase d’adhésion en tête · les prix fermes pendant la validité, révisables au-delà · aucun escompte pour paiement anticipé · le délai indicatif, prolongé sans annulation · les travaux d’autres métiers à la charge du client · la réception faite en présence de l’entreprise, sans réclamation ensuite · la réserve de propriété et la renonciation à l’accession (art. 551-552) · la garantie légale des vices cachés.</p></div>
+      <div class="bloc"><p class="nom">Laissé, et pourquoi</p><p class="dit">Pénalités à 1,5 fois le taux légal : loi de 1992, le minimum est trois fois depuis 2009. « Le retard ne donne droit à aucune indemnité » : clause abusive face à un particulier (art. L216-1 du code de la consommation). « Seul le tribunal de Marennes » : un tribunal imposé à un particulier ne lui est pas opposable. Le camionnage et le franco : rien à transporter chez un paysagiste. La garantie de deux ans sur menuiseries : chez nous, c’est la reprise des végétaux.</p></div>
+
       <p class="inter">Ce qui s’imprime déjà</p>
       <div class="bloc"><p class="nom">Acompte à la commande <span>30 %</span></p><p class="dit">Le montant se calcule sur le total TTC du devis.</p></div>
       <div class="bloc"><p class="nom">Moyens de paiement acceptés</p><p class="dit">virement, chèque</p></div>
@@ -393,16 +397,18 @@
 
   // ─── Les conditions générales : un texte d'origine, entièrement réécrivable ─
   var ORIGINE = [
-    "1. Objet. Le présent devis, retourné daté et signé avec la mention « bon pour accord », vaut commande ferme des travaux qu’il décrit.",
-    "2. Prix et validité. Les prix sont fermes pendant la durée de validité indiquée en tête du devis. Toute prestation non prévue fait l’objet d’un devis complémentaire accepté avant exécution.",
-    "3. Règlement. Acompte à la commande selon le pourcentage indiqué, solde à réception de la facture. Tout retard entraîne de plein droit des pénalités au taux de trois fois le taux d’intérêt légal et une indemnité forfaitaire de 40 € pour frais de recouvrement (art. L441-10 du code de commerce).",
-    "4. Exécution. Le délai d’exécution est indicatif ; il est prolongé de plein droit en cas d’intempéries, de sol impraticable ou de cause indépendante de l’entreprise. Le client assure l’accès au chantier et signale les réseaux enterrés.",
-    "5. Réception. Les travaux sont réputés reçus sans réserve à leur achèvement, sauf réserves écrites formulées dans les huit jours.",
-    "6. Végétaux. Les végétaux fournis sont garantis à la plantation. Leur reprise dépend de l’arrosage et de l’entretien assurés par le client après réception.",
-    "7. Assurances. L’entreprise est titulaire d’une assurance responsabilité civile professionnelle et, pour les travaux qui y sont soumis, d’une assurance décennale : [assureur, n° de contrat, couverture géographique].",
-    "8. Rétractation. Pour un devis signé hors de l’établissement de l’entreprise, le client particulier dispose d’un délai de rétractation de 14 jours (art. L221-18 du code de la consommation). Les travaux commencés avant ce terme le sont à sa demande écrite.",
-    "9. Réserve de propriété. Les fournitures et végétaux restent la propriété de l’entreprise jusqu’au paiement intégral.",
-    "10. Médiation et litiges. En cas de litige, le client particulier peut saisir gratuitement le médiateur de la consommation : [nom et coordonnées]. À défaut d’accord, le tribunal compétent est celui du siège de l’entreprise."
+    "L’acceptation de nos devis implique l’adhésion aux conditions générales de vente et de règlement ci-après, qui prévalent sur toute autre condition, sauf dérogation écrite et expresse de notre part.",
+    "1. Commande. Le devis, retourné daté et signé avec la mention « bon pour accord », vaut commande ferme des travaux qu’il décrit. Toute prestation non prévue fait l’objet d’un devis complémentaire accepté avant exécution.",
+    "2. Prix et validité. Les prix sont établis selon les conditions économiques connues à la date du devis. Ils sont fermes pendant la durée de validité indiquée en tête ; au-delà, ils sont révisables.",
+    "3. Règlement. Acompte à la commande selon le pourcentage indiqué, solde à réception de la facture. Aucun escompte n’est accordé pour paiement anticipé. Tout retard entraîne de plein droit des pénalités au taux de trois fois le taux d’intérêt légal et une indemnité forfaitaire de 40 € pour frais de recouvrement (art. L441-10 du code de commerce).",
+    "4. Délai d’exécution. Le délai indiqué sur le devis est donné à titre indicatif ; il est prolongé de plein droit en cas d’intempéries, de sol impraticable ou de cause indépendante de l’entreprise, sans que ce report puisse justifier l’annulation de la commande.",
+    "5. Chantier. Le client assure l’accès au chantier, signale les réseaux enterrés et fait exécuter, sauf mention contraire au devis, les travaux relevant d’autres corps de métier. Les pertes de temps dues à des causes qui ne nous sont pas imputables font l’objet d’un supplément sur devis.",
+    "6. Réception. La réception des travaux est faite par le client, ou son représentant, à la fin du chantier et en présence de l’entreprise. Les réserves sont formulées par écrit à ce moment ; aucune réclamation sur l’aspect des travaux n’est admise ultérieurement.",
+    "7. Végétaux. Les végétaux fournis sont garantis à la plantation. Leur reprise dépend de l’arrosage et de l’entretien assurés par le client après réception. La garantie légale des vices cachés (art. 1641 et suivants du code civil) s’applique aux fournitures.",
+    "8. Réserve de propriété. Les fournitures et végétaux restent la propriété de l’entreprise jusqu’au paiement intégral, en principal et intérêts. Nonobstant les articles 551 et 552 du code civil, l’entreprise demeure propriétaire de l’ouvrage exécuté jusqu’à complet paiement.",
+    "9. Assurances. L’entreprise est titulaire d’une assurance responsabilité civile professionnelle et, pour les travaux qui y sont soumis, d’une assurance décennale : [assureur, n° de contrat, couverture géographique].",
+    "10. Rétractation. Pour un devis signé hors de l’établissement de l’entreprise, le client particulier dispose d’un délai de rétractation de 14 jours (art. L221-18 du code de la consommation). Les travaux commencés avant ce terme le sont à sa demande écrite.",
+    "11. Médiation et litiges. En cas de litige, le client particulier peut saisir gratuitement le médiateur de la consommation : [nom et coordonnées]. À défaut d’accord, les tribunaux compétents sont ceux désignés par le code de procédure civile."
   ].join("\n\n");
 
   function rendreCgv(){

@@ -21,8 +21,13 @@ générales de vente et de règlement »**, remplie d’un texte par défaut qu�
 peut effacer et réécrire, imprimée **après le bon pour accord**.
 
 **Planche :** `appli/devis-remise-main-d-oeuvre-conditions.html` (quatre vues :
-écran, papier, réglages, la loi). **Rien n’est codé** — il a annoncé une photo
-d’un devis de poseur de fenêtres à reprendre d’abord.
+écran, papier, réglages, la loi). **Rien n’est codé.** Sa photo — les CGV d’un
+menuisier — est lue : huit clauses reprises dans le texte d’origine (adhésion,
+prix révisables au-delà de la validité, pas d’escompte, délai indicatif, autres
+corps de métier, réception en présence de l’entreprise, réserve de propriété et
+renonciation à l’accession, vices cachés) ; quatre laissées et dites dans la vue
+Réglages (pénalités à 1,5 × périmées, « aucune indemnité » abusive face à un
+particulier, tribunal imposé, camionnage).
 
 **Ce qui existe DÉJÀ, et ne se refait pas :** l’acompte, les moyens de
 paiement, le rappel des pénalités et le texte de pied sont réglés
