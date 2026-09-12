@@ -50,7 +50,7 @@ type Identite = {
 export default function IdentiteClient({
   initial,
   aPrevenir,
-  periodicite,
+  declarations,
 }: {
   initial: Identite;
   /**
@@ -65,7 +65,8 @@ export default function IdentiteClient({
    * base — et posé ICI, sous le régime de TVA, parce que les deux moitiés
    * d'une même question se répondent ensemble ou pas du tout.
    */
-  periodicite: React.ReactNode;
+  /** Les deux déclarations faites aux impôts : le rythme, puis le moment d'exigibilité. */
+  declarations: React.ReactNode;
 }) {
   const [valeurs, setValeurs] = useState<Identite>(initial);
   /**
@@ -322,7 +323,7 @@ export default function IdentiteClient({
             aurait fait deux (`CLAUDE.md` §3). La page le passe, cet écran le
             pose au bon endroit.
             ══════════════════════════════════════════════════════════════════ */}
-        {periodicite}
+        {declarations}
       </Bloc>
 
       <Bloc>

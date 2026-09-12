@@ -6,6 +6,52 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-12
+
+### Ma TVA n'a plus qu'une logique — la planche du 12 septembre, codée trait pour trait
+
+*« Parfait ! Code exactement cette planche ! Trait pour trait ! Va corriger le
+code à la racine, je ne veux pas de code mort ! »* — sur
+`appli/ma-tva-une-seule-logique.html`, après cinq retouches dans la soirée.
+
+**Ce que l'écran dit maintenant, de haut en bas :** « Déclaration
+**mensuelle** » sous les mois, un mot qui s'appuie et dont l'autre flotte
+dessous, sans contour ; « TVA collectée », « TVA déductible », « TVA à payer »
+— ou **« Crédit de TVA »** à la place, jamais un moins ; les deux gestes
+d'achat SOUS le total ; « Factures en attente », trois d'abord et « Voir toutes
+les factures en attente (n) » pour le reste ; puis les deux preuves, où chaque
+ligne dit son TTC **et** sa TVA avec leur mot, la TVA en doré, et un total en
+noir gras sur un montant en doré gras.
+
+**Le régime encaissements / débits a quitté cet écran, il n'a pas quitté le
+produit.** Le brief (transmis de ChatGPT) demandait de « supprimer le choix
+entre un mode manuel et un mode automatique » : ce choix n'existe pas. Les deux
+« modes » sont un régime fiscal, posé le 14 août à sa demande ; le retirer
+fausserait la TVA de qui a opté pour les débits. Il rejoint donc le rythme dans
+« Mon entreprise » (`src/app/reglages/ExigibiliteTva.tsx`), avec **sa phrase d'écart
+calculée sur la période courante** — celle qui répond à « rien ne se passe »
+(26 août). Sorti de la vue, pas du produit.
+
+**Ce qui a été supprimé, et c'est le signe d'une correction à la racine :**
+`DeclarationsTva.tsx` entier (la ligne de provenance et sa feuille), la phrase
+en gras sous l'attente, la phrase « Crédit de TVA — c'est l'État qui vous
+doit » (le mot du total le dit), les icônes scan / crayon des lignes d'achat
+(la planche n'en a pas), et la seconde lecture du relevé sous l'autre régime
+sur cette page — `releveTvaCollectee` suffit. `reglerExigibiliteAction` a suivi
+son écran dans `src/app/reglages/actions.ts`.
+
+**Ce qu'une ligne EST dépend du régime, et elle le sait** (`motif`) : aux
+encaissements, « Règlement encaissé … € TTC » à la date du règlement ; aux
+débits, « Facture émise … € TTC » à sa date d'émission. Et la mention du bas
+suit : « à partir de vos règlements » ou « de vos factures émises ».
+
+**Les contrôles suivent la règle, pas l'ancien écran** (`CLAUDE.md` §5 bis) :
+ils attendent le total par son repère et non par un mot qui vient de changer ;
+la périodicité se change par le mot et l'autre mot ; le régime se change dans
+« Mon entreprise », et la phrase d'écart s'y lit, comparée au grand chiffre du
+relevé ; les gestes sont mesurés SOUS le total et avant l'attente.
+
+---
 ## 2026-09-11
 
 ### Le PDF d'une facture se regarde dans l'application, avec sa flèche

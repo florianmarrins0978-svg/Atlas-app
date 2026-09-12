@@ -6,7 +6,10 @@ import { facturesAvecAncienIban } from "@/server/repositories/factures";
 import { estProprietaire } from "@/server/autorisation";
 import IdentiteClient from "./IdentiteClient";
 import PeriodiciteTvaReglage from "../PeriodiciteTva";
-import { PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
+import ExigibiliteTva from "../ExigibiliteTva";
+import { libellePeriode, periodeCourante, PERIODICITE_TVA_PAR_DEFAUT } from "@/server/periode-tva";
+import { relevesSousLesDeuxRegimes } from "@/server/repositories/factures";
+import { enEuros } from "@/lib/euros";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +46,13 @@ export default async function IdentitePage() {
   // seule lit la base, l'écran n'affiche que ce qu'elle lui donne. Vide dans
   // l'immense majorité des cas — et rien ne s'affiche alors.
   const aPrevenir = await facturesAvecAncienIban(ctx);
+  // **Ce que le régime change sur la période COURANTE**, pour que le choix ne se
+  // fasse pas à l'aveugle — sa plainte du 26 août 2026, « rien ne se passe ».
+  // Lu ici, sur le serveur, en une seule lecture des factures : la phrase
+  // d'écart d'`ExigibiliteTva` compare les deux chiffres.
+  const periodicite = e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT;
+  const courante = periodeCourante(periodicite);
+  const releves = await relevesSousLesDeuxRegimes(ctx, courante.debut, courante.fin);
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
@@ -70,8 +80,16 @@ export default async function IdentitePage() {
           mentionsLegalesPosition: e?.mentionsLegalesPosition ?? "aucune",
         }}
         aPrevenir={aPrevenir}
-        periodicite={
-          <PeriodiciteTvaReglage initiale={e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT} />
+        declarations={
+          <>
+            <PeriodiciteTvaReglage initiale={periodicite} />
+            <ExigibiliteTva
+              actuelle={releves.retenu.regime}
+              periode={libellePeriode(courante)}
+              tvaRetenue={enEuros(Number(releves.retenu.totalTva))}
+              tvaAutre={enEuros(Number(releves.autre.totalTva))}
+            />
+          </>
         }
       />
 

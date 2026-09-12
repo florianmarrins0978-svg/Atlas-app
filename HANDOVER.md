@@ -4,8 +4,32 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-11 · `main`
+**Point de reprise :** 2026-09-12 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## Dernier lot — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« Parfait ! Code exactement cette planche ! Trait pour trait ! »* — `appli/ma-tva-une-seule-logique.html`, après cinq retouches dans la soirée |
+| ce qui a changé | l'écran `termines/tva` entier : le rythme en un mot sous les mois, trois montants qui portent leur mot entier, « Crédit de TVA » à la place d'un moins, les gestes d'achat SOUS le total, l'attente limitée à trois, deux preuves où chaque ligne dit son TTC **et** sa TVA, un total sous chacune |
+| ce qui a DÉMÉNAGÉ | le régime encaissements / débits : de la feuille du relevé vers « Mon entreprise » (`src/app/reglages/ExigibiliteTva.tsx`), avec sa phrase d'écart calculée sur la période courante. `reglerExigibiliteAction` l'a suivi dans `src/app/reglages/actions.ts` |
+| ce qui a DISPARU | `DeclarationsTva.tsx` (la ligne de provenance et sa feuille), la phrase sous l'attente, la phrase du crédit, les icônes des lignes d'achat, la seconde lecture du relevé sur cette page |
+| la migration | **aucune** |
+| les pièces | `src/app/termines/tva/page.tsx`, `RythmeTva.tsx`, `EnAttenteDePaiement.tsx`, `src/app/reglages/identite/page.tsx` + `IdentiteClient.tsx` (la fente `declarations`) |
+| les suites | adaptées à la règle et non à l'ancien écran : `test-periodicite-tva-e2e`, `test-tva-au-paiement-e2e`, `test-tva-en-tete-e2e`, `test-achat-hors-periode-e2e`, `test-boutons-pleins` |
+
+**CE QU'IL NE FAUT PAS REFAIRE.** Le brief (ChatGPT) demandait de *supprimer*
+le régime, pris pour « un mode manuel et un mode automatique ». C'est un régime
+fiscal posé le 14 août à sa demande (`docs/QUESTIONS.md`) ; le retirer
+fausserait la TVA de qui a opté pour les débits. Il est sorti de la vue, pas du
+produit — et il a été DIT au patron, deux fois.
+
+**LE PIÈGE DU RYTHME.** Le mot « mensuelle » est un bouton de 44 px, mais le
+trait doré vit sur un `<span>` intérieur : posé sur le bouton, il flotte un
+centimètre sous le mot. L'autre mot flotte en `absolute` sous le premier, au
+même bord gauche — une seule alternative, donc un seul mot.
 
 ---
 ## Dernier lot — LE PDF SE REGARDE DANS L'APPLICATION, AVEC SA FLÈCHE (11 septembre 2026)
@@ -615,7 +639,7 @@ d'essai, sur son espace (`TODO.md`, premier point).
 |---|---|
 | ce qui a changé | trois phrases de l'écran TVA, et l'état d'une facture à 0 € |
 | la migration | aucune |
-| les pièces | `src/app/termines/tva/DeclarationsTva.tsx`, `EnAttenteDePaiement.tsx`, `RegimeTva.tsx`, `src/lib/exigibilite-tva.ts` |
+| les pièces | `DeclarationsTva.tsx` et `RegimeTva.tsx` (le premier supprimé, le second devenu `src/app/reglages/ExigibiliteTva.tsx` le 12 septembre), `src/app/termines/tva/EnAttenteDePaiement.tsx`, `src/lib/exigibilite-tva.ts` |
 | les suites | `scripts/test-exigibilite-tva.ts` (+2 cas) ; le parcours reste tenu par `test-tva-au-paiement-e2e.ts` |
 | le détail | `ARCHITECTURE.md` §305 |
 
@@ -1847,7 +1871,7 @@ TVA, tu peux coder exactement ça »*. L'écran est en place —
 | | |
 |---|---|
 | l'écran est une **addition** | collectée, moins déductible, un trait, le reste — trois `LigneMontant`, alignées à droite, **toutes les trois copiables** |
-| les **deux réglages** | plus en tête d'écran : une ligne de provenance sous le total ouvre `DeclarationsTva`, qui porte `RythmeTva` et `RegimeTva` intacts |
+| les **deux réglages** | plus en tête d'écran : une ligne de provenance sous le total ouvrait une feuille (`DeclarationsTva`, supprimée le 12 septembre : le rythme est un mot sous les mois, le régime est dans « Mon entreprise ») |
 | la **facturation** | LIT la ligne de provenance, sans geste, et la feuille n'est **pas rendue** pour elle — une suite lit le texte de la page et le vérifie |
 | les **deux gestes d'achat** | dans l'addition, entre « Déductible » et le trait. La LISTE des achats est redevenue du serveur, dans `page.tsx` |
 | la **frise des périodes** | remplace les deux flèches ; l'année, collée à gauche, ouvre le calendrier |
