@@ -97,7 +97,15 @@ h2.mois{font-family:ui-serif,Georgia,"Times New Roman",serif;font-weight:400;
 .frise .actif{color:var(--encre);border-bottom:2px solid var(--or);padding-bottom:6px}
 /* Le régime reste, mais SECONDAIRE : une ligne grise, réglable ailleurs. */
 .regime{margin:10px 0 0;font-size:12px;color:var(--gris)}
-.regime u{text-decoration:none;border-bottom:1px solid var(--trait);color:var(--gris)}
+.regime .rythme{font:inherit;color:var(--encre-douce);background:none;border:0;padding:0;
+  border-bottom:1.5px solid var(--or);cursor:pointer;min-height:44px;line-height:1}
+/* La feuille du rythme : celle de l'appli, posée ici pour l'essai. */
+.feuille{margin:12px 0 0;padding:16px;border-radius:16px;background:var(--plage);
+  box-shadow:0 6px 20px rgba(28,28,26,.08);border:1px solid var(--trait-doux)}
+.feuille button{display:block;width:100%;min-height:48px;margin-top:8px;border-radius:999px;
+  border:1px solid var(--trait);background:var(--fond);font:inherit;font-size:15px;color:var(--encre);cursor:pointer}
+.feuille button[aria-pressed=true]{background:var(--accent);color:var(--fond);border-color:var(--accent)}
+.feuille .petit{margin:10px 0 0;font-size:12px;color:var(--gris);text-align:center}
 
 /* ─── LE RELEVÉ : le style de l'appli, les mots de la planche ─────────── */
 .releve{margin:22px 0 0}
@@ -214,14 +222,20 @@ td b{color:var(--encre)}
         <button type="button" class="rond" aria-label="Retour">‹</button>
         <button type="button" class="rond vert" aria-label="Assistant">○</button>
       </div>
-      <h2 class="mois">Septembre 2026</h2>
+      <h2 class="mois"><span class="m">Septembre 2026</span><span class="t" hidden>3e trimestre 2026</span></h2>
       <p class="caps">Ma TVA</p>
 
       <div class="frise">
         <span class="annee"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="1.6" aria-hidden="true"><rect x="3.2" y="5" width="17.6" height="15.4" rx="2.4"/><path d="M3.2 9.6h17.6"/><path d="M8 3.4v3.2M16 3.4v3.2" stroke-linecap="round"/></svg>2026</span>
-        <span class="mois-liste"><span>Août</span><span class="actif">Septembre</span><span>Octobre</span><span>Novembre</span></span>
+        <span class="mois-liste m"><span>Août</span><span class="actif">Septembre</span><span>Octobre</span><span>Novembre</span></span><span class="mois-liste t" hidden><span>2e trimestre</span><span class="actif">3e trimestre</span><span>4e trimestre</span></span>
       </div>
-      <p class="regime">Déclaration <u>mensuelle</u> · Réglages</p>
+      <p class="regime">Déclaration <button type="button" class="rythme" id="rythme" aria-haspopup="dialog"><span class="m">mensuelle</span><span class="t" hidden>trimestrielle</span></button></p>
+      <div class="feuille" id="feuille" hidden>
+        <p class="caps" style="text-align:center">Votre rythme de déclaration</p>
+        <button type="button" data-rythme="m" aria-pressed="true">Tous les mois</button>
+        <button type="button" data-rythme="t" aria-pressed="false">Tous les trois mois</button>
+        <p class="petit">Celui que vous avez déclaré aux impôts.</p>
+      </div>
 
       <!-- ─── LE RELEVÉ : le style de l'appli, les mots de la planche ─────── -->
       <div class="releve" aria-label="Le relevé du mois">
@@ -237,7 +251,6 @@ td b{color:var(--encre)}
           <span class="combien"><span class="apayer">931,22 €</span><span class="credit" hidden>1 021,98 €</span> <i>⧉</i></span>
         </div>
       </div>
-      <p class="sous">Calculée automatiquement à partir de vos règlements et de vos achats enregistrés.</p>
 
       <!-- ─── FACTURES EN ATTENTE — le principe de la planche précédente ─── -->
       <section class="bloc">
@@ -340,7 +353,7 @@ td b{color:var(--encre)}
       <tr><td><b>Factures en attente</b></td><td>Le principe de la planche précédente, tel quel : « Reste à payer / Sur les », « Payée » et « Noter un règlement ».</td></tr>
       <tr><td><b>TTC ou TVA</b></td><td>Chaque ligne porte les deux, avec leur mot : « Règlement encaissé … € TTC » puis « TVA collectée … € ». Pareil pour les achats.</td></tr>
       <tr><td><b>Scanner / Écrire</b></td><td>Les deux boutons restent où ils sont dans l'appli, entre la déductible et le trait. Le « + Ajouter un achat » du brief aurait fait doublon : retiré.</td></tr>
-      <tr><td><b>Le régime</b></td><td>Une ligne grise sous les mois — « Déclaration mensuelle » — lue dans Réglages, jamais écrite en dur.</td></tr>
+      <tr><td><b>Le rythme</b></td><td>« Déclaration <u>mensuelle</u> » sous les mois : le mot souligné s'appuie et ouvre le choix, tous les mois ou tous les trois mois — sur cette page, comme aujourd'hui. Le titre et la frise suivent.</td></tr>
     </tbody>
   </table>
 
@@ -375,6 +388,17 @@ td b{color:var(--encre)}
     b.addEventListener("click", function () {
       tel.setAttribute("data-largeur", b.getAttribute("data-largeur"));
       presser(".commandes [data-largeur]", b);
+    });
+  });
+  var feuille = document.getElementById("feuille");
+  document.getElementById("rythme").addEventListener("click", function () { feuille.hidden = !feuille.hidden; });
+  Array.prototype.forEach.call(feuille.querySelectorAll("[data-rythme]"), function (b) {
+    b.addEventListener("click", function () {
+      var r = b.getAttribute("data-rythme");
+      Array.prototype.forEach.call(document.querySelectorAll("#tel .m"), function (n) { n.hidden = r !== "m"; });
+      Array.prototype.forEach.call(document.querySelectorAll("#tel .t"), function (n) { n.hidden = r !== "t"; });
+      presser("#feuille [data-rythme]", b);
+      feuille.hidden = true;
     });
   });
   document.getElementById("pole").addEventListener("click", function () {
