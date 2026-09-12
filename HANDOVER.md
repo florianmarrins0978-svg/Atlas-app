@@ -4,11 +4,39 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-11 · `main`
+**Point de reprise :** 2026-09-12 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU (11 septembre 2026)
+## Dernier lot — CE QUI EST RETIRÉ NE REVIENT PLUS (12 septembre 2026)
+
+**Sa plainte :** *« lorsqu'on retire un chantier posé au planning, il réapparaît
+sur la page d'accueil ! »* Mesuré avant de corriger : c'était double — la ligne
+revenait aussi **sur le planning**, six secondes après le geste, la base ayant
+pourtant bien écrit la suppression.
+
+**Ce qui est fait :** `useRetraits` redemande la page une fois l'écriture faite
+(`router.refresh()`, qui traverse le démontage — l'écriture part souvent pendant
+qu'il change d'écran), et `PlanningClient` retire de sa liste locale le chantier
+que le serveur a effacé, comme le font déjà les six autres écrans. Le
+`router.refresh()` recopié dans `EcranChantiers` est retiré (redite de
+`Pellicule` aussi).
+
+**Ce qui a été écrit puis DÉFAIT, pour ne pas le refaire :** un masque définitif
+dans le crochet. La note vocale l'interdit — la clé du retrait y est le
+chantier, pas la note : une note effacée puis réenregistrée serait restée
+invisible.
+
+**Ce qui tient ça :** `scripts/test-retrait-ne-revient-pas-e2e.ts` — son chemin,
+le tiroir du planning puis l'onglet du bas, et la base interrogée. Jouée contre
+la version d'avant, elle rougit sur le cas du planning.
+
+**Ce qui reste ouvert :** rien de ce lot. À savoir si l'on y revient : les huit
+listes qui suppriment passent toutes par ce crochet, donc une régression ici se
+verrait partout à la fois. Détail : `ARCHITECTURE.md` §335.
+
+---
+## Lot précédent — LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU (11 septembre 2026)
 
 **Ce qui est fait :** le calcul rend 7 tuyères en quinconce sur son couloir de
 10 × 2 (sa règle du 18 août, morte le 24) et garde ses 9 turbines sur le 12 × 12 ;

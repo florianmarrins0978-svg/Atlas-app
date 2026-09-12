@@ -28687,3 +28687,66 @@ devis, les taux d'une catégorie. Ceux-là écrivent chacun leur propre donnée 
 course décrite ici demande **deux gestes sur la MÊME valeur**, et c'est ce que
 la remise rendait facile (une case et un bouton). Généraliser la file sans ce
 cas précis serait ajouter du code pour une panne imaginée.
+
+---
+
+## §335 — Ce que le serveur a effacé ne revient plus à l'écran
+
+**Sa plainte du 12 septembre 2026**, capture de l'accueil à l'appui :
+*« lorsqu'on retire un chantier posé au planning, il réapparaît sur la page
+d'accueil ! »*
+
+**Mesuré avant d'être corrigé, et c'était double.** La ligne revenait aussi
+**sur le planning lui-même**, six secondes après le geste — et la base, elle,
+avait bel et bien écrit la suppression. C'est l'écran qui mentait, dans le sens
+le plus coûteux : il retire, il voit que ce n'est pas retiré, il recommence.
+
+### La cause, en une phrase
+
+`useRetraits` masque la ligne **tant que le tiroir est ouvert**, et c'est tout.
+À sa fermeture — l'instant précis où l'écriture part —, `enAttente` se vide,
+`estRetire` redevient faux, et l'écran repeint la ligne depuis des données
+d'avant l'écriture. Deux conséquences, deux manques distincts :
+
+| Où | Ce qu'il voyait | Ce qui manquait |
+|---|---|---|
+| l'écran du geste | la ligne revient à la fermeture du tiroir | `PlanningClient` garde sa liste dans un `useState` et n'en retirait pas le chantier effacé |
+| l'écran d'à côté | l'accueil, ouvert dans la foulée, garde la liste d'avant jusqu'au rechargement | personne ne redemandait la page une fois l'écriture faite |
+
+### Le correctif, et ce qu'il retire
+
+**Le rappel vit dans le crochet** : `router.refresh()`, après l'écriture et
+seulement si l'une au moins a réussi. C'est lui qui sait quand elle est faite,
+et les huit listes qui suppriment en profitent d'un coup. Il traverse le
+démontage, et c'est nécessaire : l'écriture part au moment où il touche un
+onglet, donc c'est l'écran d'ARRIVÉE qu'il faut redemander. **La couche qui
+compensait s'en va avec** — le `router.refresh()` recopié dans `EcranChantiers`,
+qui ne tenait que l'accueil et laissait le planning sans rien
+(`CLAUDE.md` §4 quater). Celui de `Pellicule` devient une redite, et part aussi.
+
+**Et le planning tient sa propre liste à jour**, comme le font déjà les tarifs,
+les photos et les lignes de prix : `setChantiers` en retire le chantier quand
+le serveur a confirmé. C'était le seul des huit écrans à ne pas le faire.
+
+### Ce qu'on a écarté, et pourquoi
+
+Un masque **définitif** dans le crochet — « ce que le serveur a effacé reste
+masqué » — tenait les deux moitiés d'un coup, et il a été écrit puis retiré. La
+note vocale l'interdit : la clé du retrait y est **le chantier**, pas la note,
+parce qu'il n'y en a qu'une. Une note effacée puis réenregistrée sans quitter
+l'écran serait restée invisible pour toujours. Un masque qui ne sait pas qu'un
+identifiant a changé de sens n'est pas un masque, c'est un piège.
+
+`FichesEnCours` garde donc sa liste `effacees`, et ce n'est plus un emplâtre :
+sa liste arrive du serveur en propriété, et cette liste-là évite le
+clignotement entre la fermeture du tiroir et le repeint.
+
+### Ce qui le tient
+
+`scripts/test-retrait-ne-revient-pas-e2e.ts` rejoue SON chemin — le tiroir du
+planning, puis l'onglet du bas — et interroge la base : un écran muet parce que
+la suppression s'est perdue serait vert sans cela. Jouée contre la version du
+11 septembre, elle rougit sur le cas du planning, qui ne dépend d'aucune
+horloge. Le cas de l'accueil, lui, tenait à une course entre l'écriture et le
+rendu de la page d'arrivée : il rougissait chez le patron et pouvait passer ici
+selon la milliseconde — le correctif supprime la course.

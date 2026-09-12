@@ -458,7 +458,22 @@ export default function PlanningClient({
    * et le geste vit sur « Sans date » — la seule liste où l'on se débarrasse
    * d'un chantier plutôt que de le poser.
    */
-  const retraits = useRetraits({ valider: (id) => supprimerChantierAction(id) });
+  const retraits = useRetraits({
+    valider: async (id) => {
+      const resultat = await supprimerChantierAction(id);
+      // **Sa plainte du 12 septembre 2026**, et c'est cette ligne qui manquait.
+      //
+      // La liste de cet écran vit dans un `useState` : aucun rendu du serveur
+      // ne la rattrape. Le tiroir ne masquait que six secondes — à sa
+      // fermeture, la ligne revenait sous « Sans date », sur un chantier que
+      // la base venait d'effacer, et il la retirait une seconde fois.
+      //
+      // Les tarifs, les photos et les lignes de prix le font déjà : c'est
+      // l'écran qui garde une liste qui la tient à jour.
+      if (resultat.succes) setChantiers((liste) => liste.filter((c) => c.id !== id));
+      return resultat;
+    },
+  });
   const visibles = useMemo(
     () => chantiers.filter((c) => !retraits.estRetire(c.id)),
     [chantiers, retraits]

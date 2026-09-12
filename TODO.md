@@ -9,6 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~UN CHANTIER RETIRÉ REVENAIT À L'ÉCRAN~~ — CORRIGÉ le 12 septembre 2026
+
+**Sa plainte, capture à l'appui :** *« lorsqu'on retire un chantier posé au
+planning, il réapparaît sur la page d'accueil ! »* Mesuré avant de corriger, et
+c'était double : la ligne revenait aussi **sur le planning**, six secondes après
+le geste — la base ayant pourtant bien écrit la suppression.
+
+Personne ne redemandait la page après l'écriture : `useRetraits` s'en charge, et
+le planning retire de sa liste le chantier effacé, comme le font déjà les six
+autres écrans. La recopie d'`EcranChantiers` est retirée. Tenu par
+`test-retrait-ne-revient-pas-e2e.ts`, qui rougit contre la version d'avant.
+Détail : `ARCHITECTURE.md` §335.
+
+---
+
 ## ~~DEUX ÉCRITURES DE LA REMISE PEUVENT SE DOUBLER~~ — CORRIGÉ le 11 septembre 2026
 
 **Mesuré, pas supposé.** `test-reduction-devis-e2e.ts` a rougi deux fois sur

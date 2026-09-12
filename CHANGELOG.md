@@ -6,6 +6,28 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-12
+
+### Un chantier retiré ne revient plus, ni au planning ni sur l'accueil
+
+Sa plainte : « lorsqu'on retire un chantier posé au planning, il réapparaît sur
+la page d'accueil ! ». Mesuré : c'était double — la ligne revenait aussi sur le
+planning, six secondes après le geste, alors que la base avait bien écrit la
+suppression. Un écran qui montre ce qu'on vient d'effacer le fait recommencer.
+
+Personne ne redemandait la page une fois l'écriture faite : `useRetraits` s'en
+charge désormais, et les huit listes qui suppriment en profitent d'un coup — y
+compris quand l'écriture part pendant qu'on change d'écran. Le
+`router.refresh()` recopié dans `EcranChantiers`, qui ne tenait que l'accueil et
+laissait le planning sans rien, est retiré.
+
+Et le planning retire de sa propre liste le chantier que le serveur a effacé,
+comme le font déjà les tarifs, les photos et les lignes de prix : il était le
+seul des huit écrans à ne pas le faire.
+
+Détail : `ARCHITECTURE.md` §335. Tenu par `test-retrait-ne-revient-pas-e2e.ts`.
+
+---
 ## 2026-09-11
 
 ### Deux écritures de la même donnée ne partent plus ensemble
