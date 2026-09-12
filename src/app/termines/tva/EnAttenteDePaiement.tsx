@@ -40,6 +40,9 @@ export type FactureAttendue = {
  * écran est une file d'attente, pas un journal — ce qui est réglé a rejoint le
  * relevé, et il est juste au-dessus.
  */
+/** Ce que la page montre d'emblée ; le reste se déplie. */
+const QUELQUES = 3;
+
 export default function EnAttenteDePaiement({
   factures,
   aPrevenir,
@@ -70,6 +73,12 @@ export default function EnAttenteDePaiement({
   const [erreur, setErreur] = useState<string | null>(null);
   const [ouverte, setOuverte] = useState<string | null>(null);
   const [enCours, setEnCours] = useState<string | null>(null);
+  // **Quelques factures d'abord, toutes sur demande** — sa planche du
+  // 12 septembre 2026 : *« ne pas afficher énormément de factures directement
+  // sur la page ; montrer seulement quelques factures récentes, puis un
+  // lien »*. Trois, et le lien déplie le reste sur place : une autre page
+  // pour la même liste serait un écran de plus à comprendre.
+  const [toutes, setToutes] = useState(false);
   const router = useRouter();
 
   // **Aux débits, cet écran n'a pas lieu d'être** — tout est déjà déclaré à
@@ -94,34 +103,16 @@ export default function EnAttenteDePaiement({
     <div className="mt-[34px] px-6">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-[17px]" style={{ color: colors.ink, fontFamily: font.display }}>
-          En attente de paiement
+          Factures en attente
         </h2>
         <span className="text-[12px] tabular-nums" style={{ color: colors.muted }}>
           {factures.length === 0 ? "rien" : `${factures.length} facture${factures.length > 1 ? "s" : ""}`}
         </span>
       </div>
-      {/* **LA PHRASE NOMME SON GESTE, PAS L'ÉVÉNEMENT — 9 septembre 2026.**
-          Elle disait « le jour où vous serez payé » : une date que le monde
-          décide, donc une application qui saurait toute seule quand l'argent
-          arrive. Il l'a lue ainsi, et il a dû le corriger — *« ça ne doit pas
-          rentrer au compteur tout seul, il faut que l'utilisateur appuie sur
-          payer »*. Le calcul, lui, était juste depuis le 14 août : rien n'entre
-          au relevé sans un règlement noté. C'est la phrase qui promettait
-          l'inverse. */}
-      {/* **UNE SEULE PHRASE, ET TOUTE EN GRAS — sa demande du 11 septembre
-          2026 :** *« garde seulement : elles entreront au relevé quand vous
-          appuierez sur Payée »*.
-
-          Ce qui part ne manquera pas : « ces factures sont parties chez vos
-          clients » redit le titre de l'écran, et « pas avant » redit « quand ».
-          Il restait donc deux moitiés de phrase pour une seule information —
-          `CLAUDE.md` §3, le moins de mots possible.
-
-          `ink` et non `inkSoft` : la ligne entière est maintenant l'avertie, et
-          plus une phrase dont un morceau est appuyé. */}
-      <p className="mt-1.5 text-[13px] font-bold leading-snug" style={{ color: colors.ink }}>
-        Elles entreront au relevé quand vous appuierez sur « Payée ».
-      </p>
+      {/* **Plus de phrase sous le titre — sa planche du 12 septembre 2026.**
+          Elle disait « elles entreront au relevé quand vous appuierez sur
+          Payée » ; le bouton « Payée » est juste dessous et dit la même chose.
+          Un écran n'explique pas son propre fonctionnement (`CLAUDE.md` §3). */}
 
       {erreur && (
         <p role="alert" className="mt-3 text-[13px]" style={{ color: colors.alert }}>
@@ -140,7 +131,7 @@ export default function EnAttenteDePaiement({
            factures, et le montant retrouve la colonne de droite que partagent
            tous les montants de l'écran. */
         <ul className="mt-1 flex flex-col">
-          {factures.map((f) => (
+          {(toutes ? factures : factures.slice(0, QUELQUES)).map((f) => (
             <li key={f.id} className="py-3.5" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
               <div className="flex items-baseline justify-between gap-3">
                 <div className="min-w-0">
@@ -303,6 +294,17 @@ export default function EnAttenteDePaiement({
             </li>
           ))}
         </ul>
+      )}
+      {!toutes && factures.length > QUELQUES && (
+        <button
+          type="button"
+          data-atlas="voir-toutes-en-attente"
+          onClick={() => setToutes(true)}
+          className="mt-2 block min-h-[44px] py-2 text-left text-[14px]"
+          style={{ color: colors.or }}
+        >
+          Voir toutes les factures en attente ({factures.length})
+        </button>
       )}
     </div>
   );

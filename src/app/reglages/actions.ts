@@ -9,6 +9,8 @@ import { montantLu, rapprocher, type LigneImportee, type TarifExistant } from "@
 import { exigerProprietaire } from "@/server/autorisation";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import { reglerExigibilite } from "@/server/repositories/paiements-facture";
+import type { Exigibilite } from "@/lib/exigibilite-tva";
 import { nommerEquipe } from "@/server/repositories/equipes";
 import { noterAbsenceEquipe, retirerAbsenceEquipe } from "@/server/repositories/absences-equipe";
 import { phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
@@ -234,6 +236,26 @@ export async function mettreAJourPeriodiciteTvaAction(periodiciteTva: "mensuelle
   revalidatePath("/termines/tva");
   revalidatePath("/reglages/identite");
   return { periodiciteTva: e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT };
+}
+
+/**
+ * Changer le moment où la TVA devient exigible — encaissements ou débits.
+ *
+ * **Arrivée ici le 12 septembre 2026, avec son écran.** Elle vivait dans
+ * `termines/tva/actions.ts` parce que le choix se faisait sur le relevé ; sa
+ * planche « une seule logique » l'en a sorti, et le réglage a rejoint le rythme
+ * dans « Mon entreprise » — deux déclarations faites aux impôts, au même endroit.
+ *
+ * **Réservée au propriétaire**, à la différence de la saisie d'un règlement : ce
+ * choix décide de ce qui part à l'administration pour toute l'entreprise, et il
+ * se déclare aux impôts. Un salarié n'a aucune raison d'y toucher.
+ */
+export async function reglerExigibiliteAction(regime: Exigibilite): Promise<void> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "changer le moment où votre TVA devient exigible");
+  await reglerExigibilite(ctx, regime);
+  revalidatePath("/termines/tva");
+  revalidatePath("/reglages/identite");
 }
 
 export async function mettreAJourNombreEquipesAction(nombreEquipes: number) {

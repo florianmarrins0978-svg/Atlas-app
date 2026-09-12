@@ -11851,6 +11851,15 @@ ne propose plus la relance.
 **Sans ligne de confusion, pas de relance.** On refuse plutôt qu'improviser une
 consigne : une consigne inventée enverrait photographier ce qui ne tranche rien.
 
+**Et après la relance, un coude à coude REFUSE — corrigé le 11 septembre
+2026.** Jusque-là, la relance consommée et l'écart toujours sous `ECART_NET`,
+le moteur concluait « incertaine » dès que la première valait 0,5 : le seul
+chemin où un nom sortait malgré un concurrent égal. Et il s'atteignait sans
+qu'aucune photo de confusion ait été posée, puisque la relance unique peut avoir
+servi à l'essence. Sa décision : bloquer — *« en cas de doute, bloquer plutôt
+que deviner »*, et le coût n'est pas symétrique : une photo de plus d'un côté,
+un traitement appliqué pour rien de l'autre.
+
 ### 135.6 La confiance : trois mots, et trois plafonds
 
 Sa règle : *« ne pas afficher de faux pourcentages du type 93 % si le modèle
@@ -28688,9 +28697,67 @@ course décrite ici demande **deux gestes sur la MÊME valeur**, et c'est ce que
 la remise rendait facile (une case et un bouton). Généraliser la file sans ce
 cas précis serait ajouter du code pour une panne imaginée.
 
+## §335 — Un PDF se regarde DANS l'application, pas dans un onglet de Safari
+
+**Sa capture du 11 septembre 2026, prise sur son iPhone :** *« quand j'ouvre le
+pdf pour voir la facture j'ai pas de touche retour »*. L'image montre la
+facture peinte par Safari, avec « 1 sur 1 » en haut à gauche et la barre
+d'adresse en bas — et rien d'Atlas : ni en-tête, ni flèche.
+
+### La racine : le document était remis au navigateur
+
+« Voir la facture en PDF », « Aperçu du PDF » et « Ouvrir » (dossier du
+client) pointaient tous sur la route qui sert le fichier, avec
+`target="_blank"`. Le PDF s'ouvrait donc **hors de l'application** : dans un
+onglet neuf, qui n'a rien derrière lui, et où c'est le lecteur du navigateur
+qui décide de tout. `PieceDuDossier.tsx` l'écrivait comme une intention —
+*« un onglet à part pour ne pas perdre la fiche »* — et c'était juste sur un
+ordinateur, où l'onglet d'à côté reste visible. Sur son téléphone, c'est un
+écran sans retour.
+
+**Ce qui aurait été un pansement, et qui a été écarté :**
+
+| | ce qu'il aurait coûté |
+|---|---|
+| retirer seulement `target="_blank"` | la flèche du navigateur revient sur Safari ; installée sur l'écran d'accueil (`manifest.json`, `standalone`), l'application n'a AUCUNE barre : il serait bloqué sur le PDF |
+| un `<iframe>` sous un en-tête | sur iOS un PDF dans un cadre ne montre que sa première page et ne défile pas — un devis de trois pages y serait illisible |
+
+### Ce qui est fait : un écran de l'application, `/documents/pdf`
+
+`src/app/documents/pdf/page.tsx` est un écran comme les autres : `EnTeteEcran`
+avec le titre du document (« Facture F2026-000007 ») et la flèche, qui lit le
+journal de navigation (§ `journal-de-navigation.ts`) et ramène d'où il vient —
+la facture, le devis ou la fiche du client. `VisionneusePdf.tsx` demande le
+fichier à **la même route qu'avant** et le peint page par page avec pdf.js
+(`pdfjs-dist`), sur des toiles à la définition de l'écran.
+
+| | |
+|---|---|
+| `src/lib/visionneuse-pdf.ts` | l'adresse dans les deux sens : `adresseDeLaVisionneuse(fichier, titre)` pour un écran, `fichierAccepteParLaVisionneuse` pour la page |
+| ce qu'elle accepte | une adresse de CE site, qui se termine par `/pdf` — ni `https://…`, ni `//…`, ni `..` : le paramètre arrive de l'adresse, donc de n'importe qui, et une adresse étrangère ferait charger un document d'ailleurs sous l'en-tête d'Atlas |
+| le fil de travail de pdf.js | l'entrée `webpack.mjs` de `pdfjs-dist`, qui le branche par `new URL(…, import.meta.url)` — pas une copie dans `public/`, que pdf.js refuserait dès que sa version ne serait plus la sienne |
+| la bibliothèque | chargée **à l'appui** (`import()` dans l'effet), jamais avec l'écran qui porte le lien |
+| les pièces « page » du dossier client | gardent leur onglet : c'est l'adresse publique du client, qui n'a pas d'en-tête d'application |
+
+La route du fichier n'a pas bougé, et « Télécharger » non plus : les trois
+conditions du 7 août (`?telecharger=1`, `download`, pas d'onglet) restent
+celles de `PieceDuDossier.tsx`.
+
+### Ce qui est éprouvé
+
+`scripts/test-visionneuse-pdf.ts` tient ce que la page accepte.
+`scripts/test-visionneuse-pdf-e2e.ts` joue SON geste sur le gabarit de son
+téléphone : appuyer sur « Aperçu du PDF », rester dans l'application sans
+onglet neuf, lire le titre et la flèche, mesurer une page peinte **d'une
+largeur non nulle et portant de l'encre** (un contrôle qui mesure zéro ne
+mesure rien), revenir au devis par la flèche, et voir une adresse étrangère
+refusée en 404. Les suites qui suivaient l'ancien lien (`test-devis-e2e`,
+`test-enregistrer-piece-e2e`, `screenshot-devis-reel`) lisent désormais le
+fichier derrière l'adresse de la visionneuse, par `fichierDemandeALaVisionneuse`.
+
 ---
 
-## §335 — Ce que le serveur a effacé ne revient plus à l'écran
+## §336 — Ce que le serveur a effacé ne revient plus à l'écran
 
 **Sa plainte du 12 septembre 2026**, capture de l'accueil à l'appui :
 *« lorsqu'on retire un chantier posé au planning, il réapparaît sur la page

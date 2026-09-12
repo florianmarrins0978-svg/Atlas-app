@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 
 const BASE = ADRESSE;
 
@@ -44,7 +45,10 @@ async function main() {
   await page.goto(`${chantierUrl}/devis-complet`, { waitUntil: "networkidle" });
   assert.ok(await page.locator("text=Aperçu du PDF").isVisible());
 
-  const apercuHref = await page.locator("text=Aperçu du PDF").getAttribute("href");
+  // « Aperçu du PDF » mène à la visionneuse de l'application depuis le
+  // 11 septembre 2026 ; c'est le fichier qu'elle demande qu'on va chercher.
+  const apercuHref = fichierDemandeALaVisionneuse((await page.locator("text=Aperçu du PDF").getAttribute("href")) ?? "");
+  assert.ok(apercuHref, "« Aperçu du PDF » ne mène pas à la visionneuse de l'application");
   const reponseApercu = await page.request.get(`${BASE}${apercuHref}`);
   assert.equal(reponseApercu.status(), 200);
   assert.equal(reponseApercu.headers()["content-type"], "application/pdf");

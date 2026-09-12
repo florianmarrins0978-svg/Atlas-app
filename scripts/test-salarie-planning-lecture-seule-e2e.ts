@@ -310,7 +310,7 @@ async function main() {
       '[data-atlas="retirer"]',
       '[data-atlas="equipe"]',
       '[data-atlas="note-chantier"]',
-      '[data-atlas="titre-sans-date"]',
+      '[data-atlas="ou-poser"]',
       '[aria-label="Ajouter un chantier"]',
     ]) {
       assert.equal(

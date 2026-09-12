@@ -114,7 +114,10 @@ export default function Pellicule({
     router.refresh();
   }
 
-  const photoOuverte = visibles.find((p) => p.id === ouverte);
+  // La visionneuse feuillette les photos VISIBLES : une photo retirée dans le
+  // tiroir n'a pas à réapparaître au chevron suivant.
+  const rangOuvert = visibles.findIndex((p) => p.id === ouverte);
+  const photoOuverte = rangOuvert === -1 ? undefined : visibles[rangOuvert];
 
   return (
     <>
@@ -221,7 +224,15 @@ export default function Pellicule({
           Sur les six claires il vaut l'or d'Origine au caractère près — son
           doré ne bouge pas (sa consigne du 31 août). */}
       {photoOuverte && (
-        <VisionneusePhoto storageKey={photoOuverte.storageKey} onFermer={() => setOuverte(null)}>
+        <VisionneusePhoto
+          photos={visibles.map((p) => p.storageKey)}
+          rang={rangOuvert}
+          onRang={(r) => {
+            const p = visibles[r];
+            if (p) setOuverte(p.id);
+          }}
+          onFermer={() => setOuverte(null)}
+        >
           <button
             onClick={() => {
               const id = photoOuverte.id;

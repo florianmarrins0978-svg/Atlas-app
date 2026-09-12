@@ -756,15 +756,15 @@ export function arbitrer(
     return { issue: "refus", motif: "trop_proches" };
   }
 
-  // La relance a déjà eu lieu et l'écart n'a pas bougé. On tranche quand même
-  // si la première est solide en elle-même — sinon on refuse.
-  if (premier.score >= SEUIL_CONFIANCE_PROBABLE) {
-    return {
-      issue: "conclusion",
-      candidat: premier,
-      confiance: "incertaine",
-    };
-  }
+  // **La relance a déjà eu lieu et l'écart n'a pas bougé : on REFUSE.**
+  //
+  // Jusqu'au 11 septembre 2026, ce chemin concluait « quand même » sur la
+  // première hypothèse dès qu'elle valait 0,5 — le seul endroit du moteur où
+  // un nom sortait malgré un concurrent égal. Et il s'atteignait sans qu'aucune
+  // photo de confusion ait été posée : la relance unique peut avoir servi à
+  // l'ESSENCE, plus haut. Sa décision, ce jour-là : refuser. Le coût n'est pas
+  // symétrique — une photo de plus d'un côté, un traitement appliqué pour rien
+  // de l'autre —, et *« en cas de doute, bloquer plutôt que deviner »*.
   return { issue: "refus", motif: "trop_proches" };
 }
 

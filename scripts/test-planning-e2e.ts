@@ -912,17 +912,12 @@ async function main() {
       // d'où un chantier reçoit sa date —, mais VIDE elle ne rendait qu'un
       // titre et « Aucun chantier n'attend de jour », sur un écran déjà long.
       //
-      // **Le contrôle vise l'ATTRIBUT, pas le mot.** Chercher le texte « Sans
-      // date » ferait rougir cette suite le jour où il fait renommer la
-      // section — sur du code juste, et pour une demande exaucée
-      // (`CLAUDE.md` §5 bis).
-      const titre = await page.locator('[data-atlas="titre-sans-date"]').count();
-      assert.equal(
-        titre,
-        0,
-        "le titre « Sans date » reste sur un écran où rien n'attend de jour : " +
-          "il annonce une liste vide, suivie d'un refus"
-      );
+      // **Le contrôle vise l'ATTRIBUT, pas le mot.** Chercher un texte ferait
+      // rougir cette suite le jour où il fait renommer la section — sur du
+      // code juste, et pour une demande exaucée (`CLAUDE.md` §5 bis). Le titre
+      // « Sans date » est parti le 12 septembre 2026 ; la consigne « Touchez
+      // d'abord un jour » est ce qui reste de la section, et c'est elle qu'on
+      // cherche.
       const phrase = await page.locator('[data-atlas="ou-poser"]').count();
       assert.equal(
         phrase,
@@ -1406,34 +1401,19 @@ async function main() {
     );
   });
 
-  await essai("« Sans date » porte la même pastille qu'un jour", async () => {
-    // **Le décor est POSÉ, pas espéré.** Il faut les deux à l'écran en même
-    // temps : une pastille de jour (donc la liste amenée sur la semaine de
-    // `JOUR`) et un titre encadré (donc au moins un chantier sans date). Sans
-    // ce montage, le contrôle refuse de conclure — et il a raison, mais il ne
-    // prouve alors plus rien.
-    const { rows: libres } = await pool.query<{ id: string }>(
-      `UPDATE chantiers SET date_planifiee = NULL
-        WHERE id = (SELECT id FROM chantiers
-                     WHERE date_planifiee IS NOT NULL AND deleted_at IS NULL AND id <> $1
-                     ORDER BY created_at LIMIT 1)
-        RETURNING id, $2::text AS rendu`,
-      [chantierId, JOUR]
-    );
-    try {
-      await allerAuPlanning();
-      await toucherLeJour(JOUR);
-      await mesurerLesDeuxPastilles();
-    } finally {
-      // On redate EXACTEMENT ce qu'on a libéré : une suite qui abîme le décor
-      // des suivantes coûte plus cher que la mesure ne rapporte.
-      if (libres.length > 0) {
-        await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = ANY($1::uuid[])`, [
-          libres.map((r) => r.id),
-          JOUR,
-        ]);
-      }
-    }
+  await essai("« En attente du client » porte la même pastille qu'un jour", async () => {
+    // **Le titre « Sans date » n'existe plus** — sa demande du 12 septembre
+    // 2026 : la poignée le disait déjà. Le seul titre encadré du tiroir est
+    // désormais « En attente du client », qui ne se fabrique pas en libérant
+    // une date : il faut un devis parti et pas encore répondu. On mesure donc
+    // sur ce que le décor offre, et l'on refuse de conclure s'il n'offre rien
+    // — un vert sur zéro pastille ne prouverait rien (`CLAUDE.md` §5).
+    await allerAuPlanning();
+    await toucherLeJour(JOUR);
+    const ouvert = await ouvrirLeTiroirDuPlanning(page);
+    if (!ouvert) return; // pas de tiroir : rien à mesurer
+    if ((await page.locator('[data-atlas="titre-attente-client"]').count()) === 0) return; // aucune attente en cours
+    await mesurerLesDeuxPastilles();
   });
 
   async function mesurerLesDeuxPastilles() {

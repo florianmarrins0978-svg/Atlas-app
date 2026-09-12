@@ -127,7 +127,7 @@ async function poserLeDecor() {
     });
 
     // Deux chantiers facturés : l'un réglé — il entre au relevé —, l'autre non,
-    // qui reste dans « En attente de paiement ».
+    // qui reste dans « Factures en attente ».
     for (const c of [
       { nom: "Mme Levasseur", prix: "3200.00", regle: true },
       { nom: "Copropriété Les Tilleuls", prix: "3840.00", regle: false },
@@ -191,7 +191,7 @@ async function main() {
   // prouve rien (`CLAUDE.md` §5, la faute du 15 août 2026).
   const ouvrir = async (url: string) => {
     await page.goto(url, { waitUntil: "networkidle" });
-    await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
+    await page.waitForSelector('[data-atlas="montant-reste"]', { timeout: 30_000 });
     await page.waitForTimeout(400);
   };
 
@@ -205,11 +205,12 @@ async function main() {
     await tirer(`${charte}-01-haut`);
     await tirer(`${charte}-02-entier`, true);
 
-    // La feuille des deux déclarations : le rythme, le régime, et l'écart.
-    await page.click('[data-atlas="declarations"]');
-    await page.waitForTimeout(400);
-    await tirer(`${charte}-03-declarations`);
-    await page.keyboard.press("Escape");
+    // Le rythme, en un mot sous les mois — et l'autre mot qui flotte quand on
+    // l'appuie (12 septembre 2026). Le régime, lui, est dans « Mon entreprise ».
+    await page.click('[data-atlas="rythme-actuel"]');
+    await page.waitForTimeout(300);
+    await tirer(`${charte}-03-rythme`);
+    await page.click('[data-atlas="rythme-actuel"]');
 
     // Le crédit de TVA : le mois de la machine.
     await ouvrir(lien(precedente));

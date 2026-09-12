@@ -1,4 +1,4 @@
-// Regarder « En attente de paiement » AVEC la trace de réception, et la carte
+// Regarder « Factures en attente » AVEC la trace de réception, et la carte
 // de l'accueil — sa demande du 9 septembre 2026. §5 : on regarde l'écran.
 //
 //   ATLAS_BASE=http://localhost:3003 npx tsx scripts/capture-trace-reception.mts <dossier>

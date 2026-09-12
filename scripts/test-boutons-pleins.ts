@@ -175,7 +175,7 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "la pastille d'un choix en liste — une marque de 18 px, pas une capsule",
   },
   {
-    fichier: "src/app/termines/tva/RegimeTva.tsx",
+    fichier: "src/app/reglages/ExigibiliteTva.tsx",
     motif: /choisie === o\.valeur \? colors\.rust/,
     pourquoi: "la même pastille de choix en liste",
   },

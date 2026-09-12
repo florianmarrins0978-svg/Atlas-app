@@ -8,6 +8,80 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-12
 
+### Ma TVA n'a plus qu'une logique — la planche du 12 septembre, codée trait pour trait
+
+*« Parfait ! Code exactement cette planche ! Trait pour trait ! Va corriger le
+code à la racine, je ne veux pas de code mort ! »* — sur
+`appli/ma-tva-une-seule-logique.html`, après cinq retouches dans la soirée.
+
+**Ce que l'écran dit maintenant, de haut en bas :** « Déclaration
+**mensuelle** » sous les mois, un mot qui s'appuie et dont l'autre flotte
+dessous, sans contour ; « TVA collectée », « TVA déductible », « TVA à payer »
+— ou **« Crédit de TVA »** à la place, jamais un moins ; les deux gestes
+d'achat SOUS le total ; « Factures en attente », trois d'abord et « Voir toutes
+les factures en attente (n) » pour le reste ; puis les deux preuves, où chaque
+ligne dit son TTC **et** sa TVA avec leur mot, la TVA en doré, et un total en
+noir gras sur un montant en doré gras.
+
+**Le régime encaissements / débits a quitté cet écran, il n'a pas quitté le
+produit.** Le brief (transmis de ChatGPT) demandait de « supprimer le choix
+entre un mode manuel et un mode automatique » : ce choix n'existe pas. Les deux
+« modes » sont un régime fiscal, posé le 14 août à sa demande ; le retirer
+fausserait la TVA de qui a opté pour les débits. Il rejoint donc le rythme dans
+« Mon entreprise » (`src/app/reglages/ExigibiliteTva.tsx`), avec **sa phrase d'écart
+calculée sur la période courante** — celle qui répond à « rien ne se passe »
+(26 août). Sorti de la vue, pas du produit.
+
+**Ce qui a été supprimé, et c'est le signe d'une correction à la racine :**
+`DeclarationsTva.tsx` entier (la ligne de provenance et sa feuille), la phrase
+en gras sous l'attente, la phrase « Crédit de TVA — c'est l'État qui vous
+doit » (le mot du total le dit), les icônes scan / crayon des lignes d'achat
+(la planche n'en a pas), et la seconde lecture du relevé sous l'autre régime
+sur cette page — `releveTvaCollectee` suffit. `reglerExigibiliteAction` a suivi
+son écran dans `src/app/reglages/actions.ts`.
+
+**Ce qu'une ligne EST dépend du régime, et elle le sait** (`motif`) : aux
+encaissements, « Règlement encaissé … € TTC » à la date du règlement ; aux
+débits, « Facture émise … € TTC » à sa date d'émission. Et la mention du bas
+suit : « à partir de vos règlements » ou « de vos factures émises ».
+
+**Les contrôles suivent la règle, pas l'ancien écran** (`CLAUDE.md` §5 bis) :
+ils attendent le total par son repère et non par un mot qui vient de changer ;
+la périodicité se change par le mot et l'autre mot ; le régime se change dans
+« Mon entreprise », et la phrase d'écart s'y lit, comparée au grand chiffre du
+relevé ; les gestes sont mesurés SOUS le total et avant l'attente.
+
+### Le bord doré du tiroir se voit enfin — il était recouvert par son voile
+
+Sa capture du 12 septembre : *« j'avais demandé la planche avec le liseré
+doré en haut, va vérifier ! »*. Le bord était codé depuis le 10 (sa version C)
+et servi chez lui — et il ne se voyait que dans les angles arrondis. Le voile
+qui fond la rangée du mois dans le tiroir est un élément absolu, donc placé
+depuis la boîte de remplissage, **sous** le bord : ses deux derniers pixels,
+pleins et couleur de carte, recouvraient exactement les deux pixels d'or.
+
+Corrigé à la racine : une seule constante (`BORD_OR_DU_TIROIR`) donne
+l'épaisseur du bord et remonte le voile d'autant. Aucune couche ajoutée.
+
+**Ce que la même capture a changé dans le tiroir**, sur sa demande :
+
+| Avant | Après |
+|---|---|
+| « 1 sans date », gris | « 1 client sans date », noir gras |
+| pastille « SANS DATE » sous le trait | retirée — la poignée le disait déjà |
+| « Touchez d'abord un jour du calendrier », gris, sous la pastille | juste sous le trait, en noir |
+
+Les suites qui lisaient le titre ou le compte suivent
+(`test-planning-e2e`, `test-liberer-une-demi-journee-e2e`,
+`test-salarie-planning-lecture-seule-e2e`) : elles visent l'attribut, pas le
+mot, et refusent de conclure sur zéro pastille.
+
+**Et trois suites navigateur lisent enfin l'adresse de l'atelier** —
+`retour-fiche-client`, `session-perimee`, `porte` écrivaient
+`127.0.0.1:3000` en dur et tombaient en « connexion refusée » dès que la
+batterie tournait sur un autre port. Elles passent par `_adresse.ts`, comme
+les cent vingt autres depuis le 5 septembre.
+
 ### Un chantier retiré ne revient plus, ni au planning ni sur l'accueil
 
 Sa plainte : « lorsqu'on retire un chantier posé au planning, il réapparaît sur
@@ -25,10 +99,27 @@ Et le planning retire de sa propre liste le chantier que le serveur a effacé,
 comme le font déjà les tarifs, les photos et les lignes de prix : il était le
 seul des huit écrans à ne pas le faire.
 
-Détail : `ARCHITECTURE.md` §335. Tenu par `test-retrait-ne-revient-pas-e2e.ts`.
+Détail : `ARCHITECTURE.md` §336. Tenu par `test-retrait-ne-revient-pas-e2e.ts`.
 
 ---
 ## 2026-09-11
+
+### Le PDF d'une facture se regarde dans l'application, avec sa flèche
+
+Sa capture du jour, sur son iPhone : *« quand j'ouvre le pdf pour voir la
+facture j'ai pas de touche retour »*. « Voir la facture en PDF », « Aperçu du
+PDF » et « Ouvrir » (dossier du client) remettaient le fichier à Safari dans un
+onglet neuf — ni en-tête, ni flèche, et rien derrière l'onglet.
+
+Un écran neuf, `/documents/pdf`, porte l'en-tête d'Atlas avec le titre du
+document et la flèche du journal de navigation ; le fichier est demandé à la
+même route qu'avant et peint page par page par pdf.js (`pdfjs-dist`, chargé à
+l'appui). Pas d'`<iframe>` : sur iOS il ne montre que la première page. La page
+n'accepte qu'une adresse de ce site qui se termine par `/pdf`
+(`src/lib/visionneuse-pdf.ts`). Les pièces « page » du dossier client gardent
+leur onglet. Suites : `test-visionneuse-pdf.ts`, `test-visionneuse-pdf-e2e.ts`
+(le geste, sur le gabarit de son téléphone, jusqu'à l'encre sur la toile).
+Détail : `ARCHITECTURE.md` §335.
 
 ### Deux écritures de la même donnée ne partent plus ensemble
 
@@ -218,6 +309,67 @@ Le formulaire de saisie est revenu tel qu'il était, et « émise le … » avec
 Sa règle, en une phrase : *« il fallait laisser les phrases où elles étaient,
 juste les modifier »* — une demande d'affichage vaut pour le texte, pas pour la
 place.
+
+### La photo d’un retour ne prend plus l’écran : une bibliothèque
+
+Il a choisi dans l’heure, planche en main — *« Voilà je veux ça ! »*, la
+variante avec la rangée — et ajouté : *« si on touche un endroit hors de la
+photo ça ferme aussi »*.
+
+`VisionneusePhoto` reçoit désormais **la liste et le rang**, plus une seule
+clé : l’écran reste derrière un voile d’encre, la photo vient dans un cadre au
+milieu (60 % de la hauteur au plus), la croix passe **à droite**, un chevron de
+chaque côté — éteint au bout plutôt que retiré —, « 2 / 3 » dessous et la rangée
+des vignettes en bas, celle qu’on regarde cerclée d’or. Le doigt glisse, le
+voile ferme, Échap et les flèches marchent sur un ordinateur. Avec une seule
+photo : ni chevrons, ni compte, ni rangée.
+
+**Un jeton neuf, `surPhoto`** (`design-tokens.ts`) : les chevrons sont posés
+sur la photo, et une photo ne suit aucune charte — en `surPlein` ils se
+retournaient avec Nuit pendant que l’image, elle, restait la même. C’est la
+seule couleur du produit qui a le droit de ne pas suivre la charte, et elle vit
+dans les jetons pour que la règle garde son sens ailleurs.
+
+**La suite éprouve ses gestes, pas la fonction** : `test-onglets-termines-e2e`
+pose désormais DEUX fichiers réels dans le stockage local — sans fichier, une
+image mesure zéro pixel, et l’on ne saurait pas dire si elle couvre l’écran. Elle
+mesure une photo plus petite que l’écran, la croix à droite, le chevron qui
+passe à « 2 / 2 » et s’éteint au bout, la vignette de la rangée qui ramène à la
+première, et la fermeture en touchant le voile. Sa version d’avant exigeait
+l’inverse — « la visionneuse couvre l’écran » — et aurait rougi sur sa demande.
+
+### Dessiner la photo d’un retour en bibliothèque, avant d’y toucher
+
+Sa capture du soir, sur la visionneuse livrée le matin : *« c’est trop gros,
+faut pas qu’elle prenne tout l’écran. Comme sur les sites internet : des
+flèches de chaque côté pour aller voir les suivantes, et surtout une croix en
+haut à droite pour fermer. Une sorte de bibliothèque. »*
+
+`appli/photo-en-bibliotheque.html` — la fiche reste derrière un voile, la
+photo vient dans un cadre au milieu, croix à droite, un chevron de chaque côté,
+« 2 / 3 », le doigt glisse ; une variante ajoute la rangée des vignettes en
+bas. Origine et Nuit. **Rien n’est codé** : `VisionneusePhoto.tsx` ne bouge
+pas tant qu’il n’a pas choisi (`CLAUDE.md` §3 bis).
+
+Vu en la rendant : les chevrons posés en clair sur une photo claire ne se
+voyaient pas. Ils sont sur la PHOTO, pas sur le voile — leur contraste ne suit
+donc pas la charte, contrairement à la croix.
+
+
+### Le diagnostic végétal refuse aussi le coude à coude après la relance
+
+Le seul chemin du moteur où un nom sortait malgré un concurrent égal : la
+relance consommée, l'écart sous 0,15, `arbitrer` concluait « incertaine » dès
+que la première valait 0,5 — et sans qu'aucune photo de confusion ait été
+posée, la relance unique pouvant avoir servi à l'essence. **Sa décision :
+bloquer.** Le coût n'est pas symétrique — une photo de plus contre un
+traitement appliqué pour rien. `scripts/test-diagnostic-vegetal.ts` l'épingle,
+avec le témoin qui garde la conclusion sur un écart net.
+
+**Et la planche du refus est dessinée**, avant tout code d'écran
+(`appli/diagnostic-le-refus-est-l-ecran.html`) : les quatre issues en
+Aujourd'hui / Proposé, sur Origine et Nuit. Ce qu'elle corrige, et pourquoi,
+est dans `docs/diagnostic-vegetal-impeccable.md`.
 
 ### La facture téléchargée s'ouvrait blanche : la police n'annonçait pas sa longueur
 

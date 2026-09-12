@@ -7,7 +7,24 @@ import { reglerExigibiliteAction } from "./actions";
 import type { Exigibilite } from "@/lib/exigibilite-tva";
 
 /**
- * Quand la TVA devient exigible — le réglage, posé là où la question se pose.
+ * Quand la TVA devient exigible — le réglage, dans « Mon entreprise » depuis le
+ * 12 septembre 2026.
+ *
+ * ─── IL A QUITTÉ LE RELEVÉ, ET CE N'EST PAS UN RANGEMENT ─────────────────
+ *
+ * Sa planche « Ma TVA, une seule logique » (`appli/ma-tva-une-seule-logique.html`,
+ * validée le 12 septembre) ne veut plus qu'une logique sur le relevé : un
+ * règlement noté, une TVA comptée. Le brief demandait de SUPPRIMER ce choix,
+ * qu'il prenait pour « un mode manuel et un mode automatique ». Ce n'en est pas
+ * un : encaissements / débits est un régime fiscal, posé le 14 août à sa
+ * demande (`docs/QUESTIONS.md`), et le retirer fausserait la TVA de qui a opté
+ * pour les débits. Il rejoint donc le rythme ici — deux déclarations faites aux
+ * impôts, au même endroit — et ne gêne plus la lecture du relevé.
+ *
+ * **La phrase d'écart reste**, calculée sur la période COURANTE : c'est elle qui
+ * répond à « rien ne se passe » (26 août), et un choix qui ne dit pas ce qu'il
+ * change se lit comme une panne.
+ *
  *
  * **Sa question du 14 août 2026 :** *« si un client décide de ne pas me payer,
  * je vais avoir des problèmes. »* Il avait raison : pour une prestation de
@@ -49,7 +66,7 @@ import type { Exigibilite } from "@/lib/exigibilite-tva";
  * elle nomme les deux régimes plutôt que « cette ligne », sans quoi elle
  * devance le grand chiffre du dessus pendant l'aller-retour avec le serveur.
  */
-export default function RegimeTva({
+export default function ExigibiliteTva({
   actuelle,
   periode,
   tvaRetenue,

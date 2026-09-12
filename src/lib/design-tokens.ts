@@ -213,6 +213,22 @@ export const couleursDocument = {
 export const surPlein = colors.card;
 
 /**
+ * Ce qu'on pose SUR UNE PHOTO — et une photo ne suit aucune charte.
+ *
+ * Les chevrons de la visionneuse sont à cheval sur l'image. Écrits en
+ * `surPlein`, ils se retournaient avec la charte alors que la photo, elle, ne
+ * bouge pas : un disque clair sur un ciel clair, et plus rien à voir (vu sur
+ * la planche du 11 septembre 2026 avant de la livrer). C'est la seule place du
+ * produit où une couleur a le DROIT de ne pas suivre la charte, et elle vit
+ * ici plutôt que dans l'écran pour que la règle « aucune couleur en clair »
+ * garde son sens partout ailleurs.
+ */
+export const surPhoto = {
+  fond: "rgba(28,28,26,0.6)",
+  trait: "#f6f1e6",
+} as const;
+
+/**
  * Un voile d'encre qui SUIT la charte — ce que `rgba(28,28,26,…)` ne faisait
  * pas.
  *

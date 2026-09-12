@@ -4124,6 +4124,16 @@ const EN_ATTENTE_DU_CLIENT = "En attente du client";
  * moitié « En attente du client », et rien du tout si elle est vide.
  * ───────────────────────────────────────────────────────────────────────────
  */
+
+/**
+ * L'épaisseur du bord doré du tiroir — sa version C du 11 septembre 2026.
+ *
+ * **Une seule valeur, parce que deux choses en dépendent** : le bord lui-même,
+ * et le voile posé au-dessus, qui doit s'arrêter exactement où l'or commence.
+ * Écrite deux fois, elle a divergé une fois — et l'or a disparu sous le voile.
+ */
+const BORD_OR_DU_TIROIR = 2;
+
 function TiroirDuBas({
   ecriture,
   sansDate,
@@ -4268,7 +4278,13 @@ function TiroirDuBas({
         // rendue et un chantier sans date sont la même chose — du travail qui
         // attend un jour. Deux comptes côte à côte auraient demandé de choisir
         // lequel est « sans date », question qui ne se pose pas pour lui.
-        aSansDate || aMorceaux ? `${combienEnAttente} sans date` : null,
+        //
+        // **« 1 client sans date », pas « 1 sans date »** — sa demande du
+        // 12 septembre 2026. Le nombre seul ne disait pas de quoi il comptait ;
+        // c'est le client qu'il attend de poser, et c'est le mot qu'il emploie.
+        aSansDate || aMorceaux
+          ? `${combienEnAttente} client${combienEnAttente > 1 ? "s" : ""} sans date`
+          : null,
         // **Le TITRE de la liste, pas un raccourci** — son choix du 7 septembre
         // 2026 (planche « Deux mots du planning », variante B). « 1 chez le
         // client » ne disait ni ce qui est chez lui, ni ce qu'on attend : il
@@ -4314,7 +4330,7 @@ function TiroirDuBas({
         // **D a été écartée, et c'est écrit sur la planche** : un cadre doré
         // complet est joli une fois et lourd tous les jours, sur un tiroir
         // présent à chaque ouverture du planning.
-        borderTop: `2px solid ${colors.or}`,
+        borderTop: `${BORD_OR_DU_TIROIR}px solid ${colors.or}`,
         borderRadius: "14px 14px 0 0",
         // **Et l'ombre se creuse quand il est OUVERT.** Fermé, il n'est qu'une
         // poignée : une ombre soutenue en permanence salirait le bas de tous
@@ -4330,7 +4346,15 @@ function TiroirDuBas({
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 h-6"
         style={{
-          top: -24,
+          // **AU-DESSUS DU BORD DORÉ, pas dessus** — 12 septembre 2026, sa
+          // capture à l'appui : *« j'avais demandé la planche avec le liseré
+          // doré en haut, va vérifier ! »*. Le bord était bien là, et il ne se
+          // voyait que dans les angles arrondis. Un élément absolu se place
+          // depuis la boîte de REMPLISSAGE, sous le bord : à `-24`, les deux
+          // derniers pixels du voile — pleins, couleur de carte — recouvraient
+          // exactement les deux pixels d'or. On le remonte de l'épaisseur du
+          // bord, et rien d'autre : le voile finit où l'or commence.
+          top: -(24 + BORD_OR_DU_TIROIR),
           // **Il fond la rangée du mois dans le tiroir, donc il porte SA
           // couleur.** Resté sur le fond de page, il aurait redessiné la
           // coupure que le nouveau fond vient d'effacer.
@@ -4347,8 +4371,12 @@ function TiroirDuBas({
         style={{ WebkitTapHighlightColor: "transparent" }}
       >
         <span
-          className="min-w-0 flex-1 truncate text-[13px]"
-          style={{ color: aPoser ? colors.or : colors.inkSoft }}
+          // **En noir, en gras** — sa demande du 12 septembre 2026, avec le
+          // mot « client ». L'encre adoucie faisait de la poignée une note en
+          // bas de page ; c'est la seule ligne qui dit ce qui attend un jour.
+          // L'or reste à « À poser sur … » : là, c'est le geste qu'on annonce.
+          className="min-w-0 flex-1 truncate text-[13px] font-semibold"
+          style={{ color: aPoser ? colors.or : colors.ink }}
         >
           {resume}
         </span>
@@ -4420,15 +4448,17 @@ function TiroirDuBas({
                 qui se replie : posé sur le cadre, il resterait visible sous la
                 poignée quand le tiroir est fermé. */}
             <div style={{ borderTop: `1px solid ${colors.line}` }} />
-            <TitreSection encadre aGauche data-atlas="titre-sans-date">
-              Sans date
-            </TitreSection>
+            {/* **PLUS DE TITRE « SANS DATE »** — sa demande du 12 septembre
+                2026 : la poignée dit déjà « 1 client sans date » deux
+                centimètres plus haut ; la pastille le redisait en dessous.
+                Le mot en trop part, et la consigne remonte sous le trait. */}
             <p
               data-atlas="ou-poser"
-              // **Elle suit le titre, à gauche** : une phrase centrée sous un
-              // titre aligné à gauche fait deux marges dans trois centimètres.
-              className="mx-[18px] mt-2 text-[12.5px]"
-              style={{ color: colors.muted }}
+              // **Juste sous le trait, à gauche, en noir** — *« qu'on la voie
+              // bien »*. C'est la seule ligne qui dit quoi faire de la liste ;
+              // en gris, elle se lisait comme une note, et il touchait les noms.
+              className="mx-[18px] mt-3 text-[12.5px]"
+              style={{ color: colors.ink }}
             >
               {/* **Un samedi touché est un jour comme un autre** — sa règle
                   du 23 août 2026. La condition écartait le week-end : il
