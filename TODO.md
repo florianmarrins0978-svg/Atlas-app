@@ -70,6 +70,19 @@ veilleur pour rouvrir la socket. Le gain est supposé ; le risque, lui, est rée
 — une relance mal bornée refait la panne du 2 septembre (serveur mort en
 boucle). À ne coder qu'une fois la cause mesurée sur son espace.
 
+**ET CETTE PISTE EST RÉFUTÉE — mesurée le 12 septembre à 22 h 02.** Il a rejoué
+`demarrer.sh` en entier : le serveur a été tué, réinstallé, relancé — et sa
+fiche, écrite juste après, porte **le même 404 du relais**. Rouvrir la socket
+ne réenregistre donc PAS le port. Ne pas coder la relance : elle ne peut rien.
+
+Ce qui reste à essayer, dans cet ordre, et qui n'est pas mesuré non plus :
+l'onglet PORTS (retirer la ligne 3000, puis « Transférer un port » → 3000), et
+`gh codespace ports visibility 3000:public -c $CODESPACE_NAME` depuis son
+terminal. Si aucun des deux n'aboutit, c'est le conteneur qu'il faut
+reconstruire — `devcontainer.json` déclare le port public, et cette
+déclaration ne s'applique qu'à la naissance de l'espace (`ARCHITECTURE.md`
+§55).
+
 ## ⏳ UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS (12 septembre 2026)
 
 **Sa demande du 12 septembre :** « Prix accordé au client » devient **« Remise
