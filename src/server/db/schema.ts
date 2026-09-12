@@ -2702,8 +2702,27 @@ export const diagnostics = pgTable(
     moteur: text("moteur"),
     modele: text("modele"),
     versionBase: text("version_base"),
-    /** Vient d'une liste fermée du code — jamais d'un modèle. */
-    motifRefus: text("motif_refus"),
+    /**
+     * QUEL refus — la clé de `MOTIFS_REFUS`, tenue par une contrainte (0087).
+     *
+     * La clé et non la phrase : c'est elle qui permet à l'écran de dire le
+     * geste propre à ce refus-là, au lieu du même pour tous. Jamais un texte
+     * de modèle.
+     */
+    refus: text("refus", {
+      enum: [
+        "base_vide",
+        "aucune_piste",
+        "trop_faible",
+        "trop_proches",
+        "photo_illisible",
+        "diagnostic_photo_impossible",
+        "hote_incertain",
+      ],
+    }),
+    /** Ce que le fournisseur a dit quand personne n'a regardé — une trace,
+     *  pas une donnée du dépôt. Affichée en petit, pour qui dépanne. */
+    panne: text("panne"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     renduAt: timestamp("rendu_at", { withTimezone: true }),

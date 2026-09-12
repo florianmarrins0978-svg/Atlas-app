@@ -6,6 +6,35 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-12
+
+### Le diagnostic végétal : le refus dit ce qui a été vu, pourquoi, et le geste
+
+Sa réponse à la planche du 11 septembre : *« C'est bien »* — et le nom reste
+« Diagnostic végétal ». Ce qui change (`ARCHITECTURE.md` §330) :
+
+- **la base range QUEL refus** (migration 0087 : `refus`, clé de la liste
+  fermée, sous contrainte ; `panne` pour le mot du fournisseur ; `motif_refus`
+  disparaît, ses lignes converties). Jusque-là, la même dernière phrase suivait
+  les sept refus — « une photo plus proche peut suffire », y compris sous
+  « aucune autre photo ne permettrait de les départager » ;
+- **« Vu sur la photo »** sur les refus et la relance : les mots du vocabulaire
+  fermé, et l'essence de la base — jamais la prose du modèle ;
+- **« Personne n'a regardé »** offre **Réessayer** sur la photo gardée et
+  **Réglages de l'IA**, au lieu de « Nouvelle photo » sous « ce n'est pas la
+  photo qui est en cause » ;
+- **le résultat** dit « Probable · Platane » à la place de « CONFIANCE
+  PROBABLE » en capitales dorées, et porte la source avec sa date sur l'écran
+  principal ;
+- **une ligne ne reste plus `en_analyse`** quand le rangement de la photo tombe.
+
+Ce qui a été retiré : le `??` qui inventait un verdict sur une colonne nulle,
+la promesse « Réessayez dans un instant » sans geste, le libellé de confiance
+figé dans le résultat, les liserés dorés. Une suite navigateur de plus,
+`test-diagnostic-quatre-issues-e2e`, photographie les quatre issues sur Origine
+et Nuit. Document de retour : `docs/diagnostic-vegetal-impeccable.md`.
+
+---
 ## 2026-09-11
 
 ### Le PDF d'une facture se regarde dans l'application, avec sa flèche

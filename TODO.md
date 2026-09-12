@@ -9,6 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ DIAGNOSTIC VÉGÉTAL — CE QUI ATTEND SON BANC, ET LUI (12 septembre 2026)
+
+Le lot du refus est codé (`ARCHITECTURE.md` §330, `docs/diagnostic-vegetal-impeccable.md`).
+Ce qui reste ne se code pas ici :
+
+| | Qui |
+|---|---|
+| **Le premier vrai appel de vision sur une vraie photo** — jamais joué, ce poste n'a pas de clé ; `VISION_PROVIDER` retombe sur le fournisseur de rédaction, sa clé Anthropic suffit. **Lui demander une capture** du résultat, pas une commande | lui, sur son banc |
+| **Combien de photos réelles échouent à l'identification de l'essence** — « l'hôte d'abord » n'a jamais été mesuré ; sans essence, Atlas ne conclut plus du tout. La première chose à regarder le jour où la clé tourne | lui, sur son banc |
+| **La licence INRAE (Ephytia)** — le courriel est prêt depuis le 20 août (`docs/courriel-inrae.md`) ; personne ne sait ici s'il est parti. Réponse complète : `docs/QUESTIONS.md` §24 | lui |
+| **La durée de conservation des photos, et ce que le fournisseur garde** — le fournisseur de vision est **déjà** au registre (`docs/RGPD.md`, ligne « Vision (diagnostic végétal) », 20 août) : ce qui reste, c'est la durée | lui |
+| **Les seuils** (0,35 · 0,15 · plafonds) — un point de départ nommé, pas mesuré. Ne bougent pas au jugé | de vraies photos, de vraies fiches |
+
 ## ⏳ LE LANCEUR NE VOIT PAS UNE SESSION OUVERTE DEPUIS L'ÉDITEUR (11 septembre 2026)
 
 **Constaté à 18:01, dans `atlas-app-s2`** : deux sessions dans le même

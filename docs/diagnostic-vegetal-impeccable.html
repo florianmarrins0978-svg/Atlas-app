@@ -169,36 +169,72 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Le coude à coude après la relance REFUSE.</strong> <code>arbitrer</code> concluait « incertaine » sur la première dès qu'elle valait 0,5 — le seul chemin où un nom sortait malgré un concurrent égal, et sans qu'aucune photo de confusion ait été posée (la relance unique peut avoir servi à l'essence). Ses mots : <em>« en cas de doute, bloquer »</em>, et le coût n'est pas symétrique — une photo de plus contre un traitement appliqué pour rien.</p>
 <p><strong>Codé</strong> : <code>src/lib/diagnostic-vegetal.ts</code> (la branche a disparu, elle n'a pas été recouverte), <code>scripts/test-diagnostic-vegetal.ts</code> (le cas retourné, plus un témoin qui garde la conclusion sur un écart net), <code>ARCHITECTURE.md</code> §135.5.</p>
-<h2 id="la-planche">La planche</h2>
+<h2 id="la-planche-et-sa-réponse">La planche, et sa réponse</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><code>appli/diagnostic-le-refus-est-l-ecran.html</code>, liée depuis <code>appli/essais.html</code>. Les quatre issues, Aujourd'hui / Proposé, Origine / Nuit ; les sept refus un par un ; le nom de l'outil en trois options. Textes recopiés de <code>donnees/phyto/fiches/002-anthracnose-platane.json</code>, photo de la fiche (domaine public). <strong>Rien n'est codé dans <code>src/</code> pour les écrans</strong> tant qu'il n'a pas choisi.</p>
-<p>Ce qu'elle propose, et ce que ça coûte :</p>
+<p><code>appli/diagnostic-le-refus-est-l-ecran.html</code>, liée depuis <code>appli/essais.html</code> — https://florianmarrins0978-svg.github.io/Atlas-app/diagnostic-le-refus-est-l-ecran.html. Les quatre issues, Aujourd'hui / Proposé, Origine / Nuit ; les sept refus un par un ; le nom de l'outil en trois options.</p>
+<p><strong>Sa réponse, le 12 septembre 2026 :</strong> <em>« C'est bien »</em> ; la date de consultation reste (<em>« c'est ce qui vaut devant un client »</em>) ; <strong>le nom reste « Diagnostic végétal »</strong> — <em>« moi diagnostic végétal je pense »</em>, et c'est aussi mon avis : « reconnaissance des maladies » deviendrait faux le jour où l'outil reconnaît une galerie de ravageur.</p>
+<h2 id="ce-qui-est-codé-12-septembre-2026">Ce qui est codé (12 septembre 2026)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
-<th>Issue</th>
-<th>Proposé</th>
-<th>Ce que ça demande</th>
+<th>Point</th>
+<th>Verdict</th>
+<th>Le fichier qui le fonde</th>
 </tr></thead><tbody>
 <tr>
-<td>Sans conclusion</td>
-<td>vu · pourquoi · le geste, propres à chaque refus ; « Atlas connaît N problèmes » quand aucune fiche ne correspond</td>
-<td>une <strong>migration</strong> : <code>motif_refus</code> range la clé (CHECK sur la liste fermée), le texte du fournisseur va dans sa colonne, les lignes existantes sont converties ; les libellés du vocabulaire en français vivent dans <code>lib</code></td>
+<td>La base range QUEL refus, pas sa phrase</td>
+<td><strong>fait</strong> — colonne <code>refus</code> sous contrainte, <code>panne</code> pour le mot du fournisseur, <code>motif_refus</code> supprimée, lignes converties phrase par phrase</td>
+<td><code>drizzle/0087_diagnostic_refus_par_cle.sql</code>, <code>src/server/db/schema.ts</code>, <code>repositories/diagnostics.ts</code></td>
 </tr>
 <tr>
-<td>Personne n'a regardé</td>
-<td>« La photo n'a pas été regardée. Elle est gardée. » — Réessayer, Réglages de l'IA</td>
-<td>une action de reprise sur les photos rangées</td>
+<td>Le geste, propre à chaque refus</td>
+<td><strong>fait</strong> — <code>GESTE_APRES_REFUS</code>, <code>null</code> quand la phrase le porte déjà (« une observation sur place est nécessaire ») ou qu'il n'y en a pas (base vide) ; une suite refuse un geste « photo » sous un refus qui exclut la photo</td>
+<td><code>src/lib/diagnostic-vegetal.ts</code>, <code>scripts/test-diagnostic-vegetal.ts</code></td>
 </tr>
 <tr>
-<td>Résultat</td>
-<td>« Probable · sur un platane » à la place de « CONFIANCE PROBABLE » ; source et date sur l'écran principal ; plus de liseré</td>
-<td><code>LIBELLE_CONFIANCE</code> change ; le nom commun du taxon se lit dans <code>taxons</code></td>
+<td>« Atlas connaît N problèmes »</td>
+<td><strong>fait</strong> — le compte vient de la base (<code>compterFichesServables</code>), même filtre que le moteur</td>
+<td><code>repositories/fiches-phyto.ts</code></td>
 </tr>
 <tr>
-<td>Une photo de plus</td>
-<td>le titre une fois ; « Vu » au-dessus de la consigne</td>
-<td>rien de plus</td>
+<td>« Vu sur la photo »</td>
+<td><strong>fait</strong> — <code>decrireObservation</code>, quatre <code>Record</code> sur le vocabulaire fermé ; l'essence est <code>taxons.nom_commun</code>, <strong>jamais</strong> le <code>nom_commun</code> du modèle</td>
+<td><code>src/lib/diagnostic-vegetal.ts</code></td>
+</tr>
+<tr>
+<td>« Personne n'a regardé » : Réessayer + Réglages de l'IA</td>
+<td><strong>fait</strong> — <code>reprendreAnalyseAction</code>, réservé à <code>echoue</code>, sur les photos rangées, limiteur compris ; le mot du fournisseur en petit sous « Détail »</td>
+<td><code>actions.ts</code>, <code>[id]/Reessayer.tsx</code></td>
+</tr>
+<tr>
+<td>Une ligne ne reste plus <code>en_analyse</code></td>
+<td><strong>fait</strong> — <code>rangerPhoto</code> écrit la panne quand le stockage tombe</td>
+<td><code>actions.ts</code></td>
+</tr>
+<tr>
+<td>Le résultat : « Probable · Platane », source datée sur l'écran principal</td>
+<td><strong>fait</strong> — <code>LIBELLE_CONFIANCE</code> en mots courants, lu depuis la clé ; <code>confianceLibelle</code> retiré du résultat figé ; plus de liseré doré</td>
+<td><code>[id]/page.tsx</code>, <code>src/lib/mois.ts</code> (<code>dateCitee</code>)</td>
+</tr>
+<tr>
+<td>Les trois listes que 0057 promettait d'afficher</td>
+<td><strong>fait</strong> — dans les détails : ce qui le distingue, ce qui l'écarte, ce qui le favorise</td>
+<td><code>[id]/page.tsx</code></td>
+</tr>
+<tr>
+<td>Les noms bruts de colonnes à l'écran (« appuie : conduite_recommandee, … »)</td>
+<td><strong>retirés</strong></td>
+<td><code>[id]/page.tsx</code></td>
+</tr>
+<tr>
+<td>Le coude à coude après la relance</td>
+<td><strong>refuse</strong> — sa décision du 11</td>
+<td><code>src/lib/diagnostic-vegetal.ts</code></td>
 </tr>
 </tbody></table></div>
+<p><strong>Ce qui a été fait AUTREMENT que la planche, et pourquoi :</strong> l'essence s'écrit « Probable · Platane », pas « sur un platane » — le genre du nom d'essence n'est pas connu de la base, et « sur un aubépine » se serait vu.</p>
+<p><strong>Ce qui a été retiré</strong> (un défaut réparé remplace du code) : le <code>??</code> qui inventait un verdict sur une colonne nulle ; « Réessayez dans un instant » sans geste ; le libellé de confiance figé ; les liserés ; <code>LIBELLE_CONFIANCE</code> et <code>MOTIFS_REFUS</code> importés par le moteur pour rien.</p>
+<p><strong>Ce que 0057 promettait et qui reste faux :</strong> <code>informations_requises</code> « affiché quand Atlas refuse de conclure ». Sur un refus, aucune fiche n'est retenue ; le champ s'affiche avec le résultat, sous « ce qui reste à confirmer ». La migration est appliquée et n'est pas réécrite ; <code>ARCHITECTURE.md</code> §233.5 porte la correction.</p>
+<p><strong>Les suites :</strong> <code>test-diagnostic-quatre-issues-e2e</code> (nouvelle) photographie les quatre issues à 390 × 664 sur Origine et Nuit, en fixant des règles et non des libellés ; <code>test-diagnostic-ecrans-e2e</code> vise les repères <code>diagnostic-echoue</code> et <code>diagnostic-reessayer</code> ; <code>test-diagnostic-vegetal</code> et <code>test-diagnostic-base</code> suivent la clé.</p>
 <h2 id="ce-qui-reste-ouvert-et-qui-le-tranche">Ce qui reste ouvert, et qui le tranche</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>

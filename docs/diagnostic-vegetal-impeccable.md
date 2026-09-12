@@ -64,23 +64,54 @@ plus contre un traitement appliqué pour rien.
 été recouverte), `scripts/test-diagnostic-vegetal.ts` (le cas retourné, plus
 un témoin qui garde la conclusion sur un écart net), `ARCHITECTURE.md` §135.5.
 
-## La planche
+## La planche, et sa réponse
 
-`appli/diagnostic-le-refus-est-l-ecran.html`, liée depuis `appli/essais.html`.
+`appli/diagnostic-le-refus-est-l-ecran.html`, liée depuis `appli/essais.html`
+— https://florianmarrins0978-svg.github.io/Atlas-app/diagnostic-le-refus-est-l-ecran.html.
 Les quatre issues, Aujourd'hui / Proposé, Origine / Nuit ; les sept refus un
-par un ; le nom de l'outil en trois options. Textes recopiés de
-`donnees/phyto/fiches/002-anthracnose-platane.json`, photo de la fiche
-(domaine public). **Rien n'est codé dans `src/` pour les écrans** tant qu'il
-n'a pas choisi.
+par un ; le nom de l'outil en trois options.
 
-Ce qu'elle propose, et ce que ça coûte :
+**Sa réponse, le 12 septembre 2026 :** *« C'est bien »* ; la date de
+consultation reste (*« c'est ce qui vaut devant un client »*) ; **le nom reste
+« Diagnostic végétal »** — *« moi diagnostic végétal je pense »*, et c'est
+aussi mon avis : « reconnaissance des maladies » deviendrait faux le jour où
+l'outil reconnaît une galerie de ravageur.
 
-| Issue | Proposé | Ce que ça demande |
+## Ce qui est codé (12 septembre 2026)
+
+| Point | Verdict | Le fichier qui le fonde |
 |---|---|---|
-| Sans conclusion | vu · pourquoi · le geste, propres à chaque refus ; « Atlas connaît N problèmes » quand aucune fiche ne correspond | une **migration** : `motif_refus` range la clé (CHECK sur la liste fermée), le texte du fournisseur va dans sa colonne, les lignes existantes sont converties ; les libellés du vocabulaire en français vivent dans `lib` |
-| Personne n'a regardé | « La photo n'a pas été regardée. Elle est gardée. » — Réessayer, Réglages de l'IA | une action de reprise sur les photos rangées |
-| Résultat | « Probable · sur un platane » à la place de « CONFIANCE PROBABLE » ; source et date sur l'écran principal ; plus de liseré | `LIBELLE_CONFIANCE` change ; le nom commun du taxon se lit dans `taxons` |
-| Une photo de plus | le titre une fois ; « Vu » au-dessus de la consigne | rien de plus |
+| La base range QUEL refus, pas sa phrase | **fait** — colonne `refus` sous contrainte, `panne` pour le mot du fournisseur, `motif_refus` supprimée, lignes converties phrase par phrase | `drizzle/0087_diagnostic_refus_par_cle.sql`, `src/server/db/schema.ts`, `repositories/diagnostics.ts` |
+| Le geste, propre à chaque refus | **fait** — `GESTE_APRES_REFUS`, `null` quand la phrase le porte déjà (« une observation sur place est nécessaire ») ou qu'il n'y en a pas (base vide) ; une suite refuse un geste « photo » sous un refus qui exclut la photo | `src/lib/diagnostic-vegetal.ts`, `scripts/test-diagnostic-vegetal.ts` |
+| « Atlas connaît N problèmes » | **fait** — le compte vient de la base (`compterFichesServables`), même filtre que le moteur | `repositories/fiches-phyto.ts` |
+| « Vu sur la photo » | **fait** — `decrireObservation`, quatre `Record` sur le vocabulaire fermé ; l'essence est `taxons.nom_commun`, **jamais** le `nom_commun` du modèle | `src/lib/diagnostic-vegetal.ts` |
+| « Personne n'a regardé » : Réessayer + Réglages de l'IA | **fait** — `reprendreAnalyseAction`, réservé à `echoue`, sur les photos rangées, limiteur compris ; le mot du fournisseur en petit sous « Détail » | `actions.ts`, `[id]/Reessayer.tsx` |
+| Une ligne ne reste plus `en_analyse` | **fait** — `rangerPhoto` écrit la panne quand le stockage tombe | `actions.ts` |
+| Le résultat : « Probable · Platane », source datée sur l'écran principal | **fait** — `LIBELLE_CONFIANCE` en mots courants, lu depuis la clé ; `confianceLibelle` retiré du résultat figé ; plus de liseré doré | `[id]/page.tsx`, `src/lib/mois.ts` (`dateCitee`) |
+| Les trois listes que 0057 promettait d'afficher | **fait** — dans les détails : ce qui le distingue, ce qui l'écarte, ce qui le favorise | `[id]/page.tsx` |
+| Les noms bruts de colonnes à l'écran (« appuie : conduite_recommandee, … ») | **retirés** | `[id]/page.tsx` |
+| Le coude à coude après la relance | **refuse** — sa décision du 11 | `src/lib/diagnostic-vegetal.ts` |
+
+**Ce qui a été fait AUTREMENT que la planche, et pourquoi :** l'essence s'écrit
+« Probable · Platane », pas « sur un platane » — le genre du nom d'essence n'est
+pas connu de la base, et « sur un aubépine » se serait vu.
+
+**Ce qui a été retiré** (un défaut réparé remplace du code) : le `??` qui
+inventait un verdict sur une colonne nulle ; « Réessayez dans un instant » sans
+geste ; le libellé de confiance figé ; les liserés ; `LIBELLE_CONFIANCE` et
+`MOTIFS_REFUS` importés par le moteur pour rien.
+
+**Ce que 0057 promettait et qui reste faux :** `informations_requises`
+« affiché quand Atlas refuse de conclure ». Sur un refus, aucune fiche n'est
+retenue ; le champ s'affiche avec le résultat, sous « ce qui reste à
+confirmer ». La migration est appliquée et n'est pas réécrite ;
+`ARCHITECTURE.md` §330.5 porte la correction.
+
+**Les suites :** `test-diagnostic-quatre-issues-e2e` (nouvelle) photographie
+les quatre issues à 390 × 664 sur Origine et Nuit, en fixant des règles et non
+des libellés ; `test-diagnostic-ecrans-e2e` vise les repères
+`diagnostic-echoue` et `diagnostic-reessayer` ; `test-diagnostic-vegetal` et
+`test-diagnostic-base` suivent la clé.
 
 ## Ce qui reste ouvert, et qui le tranche
 

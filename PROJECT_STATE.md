@@ -1,7 +1,23 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-11 · branche `claude/invoice-download-readability-40dtq1`
-· dernière migration `drizzle/0085_creneaux_chantier.sql`
+**Dernière mise à jour :** 2026-09-12 · branche `session-2`
+· dernière migration `drizzle/0087_diagnostic_refus_par_cle.sql`
+
+---
+
+## FAIT : LE DIAGNOSTIC VÉGÉTAL — LE REFUS EST L'ÉCRAN PRINCIPAL — 12 septembre 2026
+
+Sa réponse à la planche du 11 (`appli/diagnostic-le-refus-est-l-ecran.html`) :
+*« C'est bien »*, et le nom reste « Diagnostic végétal ». Codé
+(`ARCHITECTURE.md` §330) : la base range **quel** refus (migration 0087) et
+l'écran dit **vu · pourquoi · le geste**, propres à chaque refus ; « personne
+n'a regardé » offre **Réessayer** et **Réglages de l'IA** ; le résultat dit
+« Probable · Platane » et porte sa source datée. Le moteur **refuse** le coude à
+coude après la relance (sa décision du 11). Document de retour :
+`docs/diagnostic-vegetal-impeccable.md`.
+
+**Ce qui reste, et qui le tranche :** la licence INRAE (§24 de QUESTIONS), le
+premier vrai appel de vision sur son banc, la durée de conservation des photos.
 
 ---
 
