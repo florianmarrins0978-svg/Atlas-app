@@ -522,7 +522,11 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     motsCles: ["tva", "declarer", "declaration", "collectee", "deductible", "impot", "etat", "periode", "voir", "vois", "combien"],
     geste: "Depuis « Terminés », appuyez sur « Ma TVA à déclarer ».",
     source: "src/app/termines/tva/page.tsx",
-    preuves: ["Ma TVA", "Collectée", "Déductible"],
+    // **Les mots entiers depuis le 12 septembre 2026** : l'écran écrit « TVA
+    // collectée » et « TVA déductible », plus « Collectée » seul. La fiche les
+    // suit — un mode d'emploi qui enseigne un mot disparu envoie chercher un
+    // bouton qui n'existe plus.
+    preuves: ["Ma TVA", "TVA collectée", "TVA déductible"],
   },
 
   // --- Clients --------------------------------------------------------------
