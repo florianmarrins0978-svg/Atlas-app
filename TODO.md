@@ -9,6 +9,34 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## VINGT SUITES NAVIGATEUR SONT ROUGES SUR `main` (12 septembre 2026, au soir)
+
+**Relevé, pas causé.** La batterie du 12 septembre au soir rend **126/146** aux
+suites navigateur. Le lot de ce soir ne touche **aucun fichier de `src/`**
+(`git diff --name-only origin/main...` le montre) : ces rouges vivaient déjà
+sur `main`. Types, lint, mémoire, suites base et connexion derrière un proxy
+sont **verts**.
+
+Ce n'est pas un effondrement de base — l'étape « Connexion derrière un proxy »
+passe, donc le jeu de démonstration est en place, et les messages sont tous
+différents :
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-devis-client-e2e` | « la page fait 666 px pour 664 px d'écran », avec la case de rétractation |
+| `test-devis-complet-e2e` | « Le total de la ligne (3 × 250 €) ne s'affiche pas » |
+| `test-fiche-entretien-e2e` | la rubrique fait 40 px sous les 44 px du pouce ; deux boutons « Retirer … » introuvables |
+| `test-visionneuse-pdf-e2e` | « Le document ne s'ouvre pas (`this[#ne].getOrInsertComputed is not a function`) » — sent la version de Node, pas l'écran |
+
+Les seize autres : `adresse-suggestions`, `anneau-dictee`, `anneau-vers-devis`,
+`carte-reponse-mene-au-geste`, `catalogue-mes-mots`, `devis-papier`,
+`fiche-client`, `ia-01`, `madame-lucie`, `message-au-client`,
+`planning-vers-facture`, `recherche-client`, `reprise-chantier`,
+`reprise-morceau`, `reste-equipes`, `suivi-devis`.
+
+**À reprendre en propre**, suite par suite : le journal entier est nécessaire
+(`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
+
 ## SON ESPACE DOIT ÊTRE DÉBLOQUÉ UNE FOIS À LA MAIN (12 septembre 2026)
 
 **CODÉ LE 12 SEPTEMBRE — mais il porte encore l'ancien script.** `mettre-a-jour.sh`

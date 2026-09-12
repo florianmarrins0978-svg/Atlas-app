@@ -28952,6 +28952,11 @@ pas sauvé par ce correctif, puisqu'il ne peut plus rien recevoir. Le diagnostic
 donne donc le geste, réversible — `git stash push -- <le fichier>`. C'est le
 seul cas de ce dépôt où la réparation doit passer par ses mains.
 
+> **REVENU DESSUS LE SOIR MÊME — voir le §339.** Trois heures après ce
+> paragraphe, son espace était toujours bloqué : cette « limite » était le
+> défaut. `mettre-a-jour.sh` met désormais le fichier de côté lui-même, et
+> « proteger-lock.sh » — décrit ci-dessus — **n'existe plus**.
+
 ---
 
 ## §339 — Un correctif qui ne peut pas atteindre la machine qu'il répare n'en est pas un
