@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Remise, main d’œuvre, conditions — le devis</title>
+<style>
+  /* ═══ LES JETONS, SORTIS DU CODE ══════════════════════════════════════════
+     src/lib/chartes.ts au caractère près (voir travaux-supplementaires-sur-le-devis.html). */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --voileChamp:rgba(28,28,26,0.04);
+    --surPlein:#faf9f5;
+    --hors:#e6e3dc; --horsTexte:#4a4a44; --horsFort:#1c1c1a;
+    --papier:#ffffff; --encre:#1c1c1a;
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --or:#B98B47;
+    --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07);
+    --voileChamp:rgba(233,232,222,0.06);
+    --surPlein:#1a1d19;
+    --hors:#0a0b0a; --horsTexte:#c1c2b6; --horsFort:#e9e8de;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--horsTexte);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 34px;transition:background .25s,color .25s}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:15px 18px;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .choix{position:sticky;top:0;z-index:5;background:var(--hors);padding:12px 12px 10px;
+         display:flex;gap:7px;justify-content:center;flex-wrap:wrap;
+         box-shadow:0 6px 18px -12px rgba(0,0,0,.45);transition:background .25s}
+  .choix button{min-height:44px;min-width:44px;padding:0 11px;border-radius:999px;
+                border:1px solid var(--line);background:var(--card);color:var(--ink);
+                font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.04em;cursor:pointer;
+                -webkit-tap-highlight-color:transparent;transition:background .18s,color .18s}
+  .choix button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);border-color:var(--rust)}
+
+  /* ═══ LE TÉLÉPHONE ═══════════════════════════════════════════════════════*/
+  .tel{max-width:430px;margin:16px auto 0;background:var(--cream);border-radius:26px;
+       overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22);transition:background .25s}
+  .ecran{display:none}
+  .ecran.ouvert{display:block}
+
+  .entete{padding:26px 26px 0}
+  .entete h1{margin:0;font:400 32px/1.02 ui-serif,Georgia,"Iowan Old Style",serif;
+             letter-spacing:-0.018em;color:var(--ink)}
+  .entete .sur{margin:0 0 10px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--or)}
+  .corps{padding:18px 26px 30px;color:var(--ink)}
+  .inter{margin:22px 0 8px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+         text-transform:uppercase;color:var(--muted)}
+
+  /* les lignes du devis */
+  .cat{font:600 13px/1 ui-sans-serif,sans-serif;color:var(--ink);margin:14px 0 6px}
+  .ligne{display:grid;grid-template-columns:1fr auto;gap:8px;padding:8px 0;
+         border-bottom:1px solid var(--lineSoft);font-size:15px}
+  .ligne small{display:block;color:var(--muted);font-size:12.5px}
+  .ligne .m{text-align:right;white-space:nowrap}
+  .plus{display:block;margin-top:12px;border:0;background:none;padding:0;color:var(--or);
+        font:500 14px/1.2 ui-sans-serif,sans-serif;cursor:pointer;min-height:32px}
+
+  /* les totaux — la pièce de l'application, au pixel */
+  .totaux{margin-top:26px;width:100%}
+  .t{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:15px}
+  .t.or{color:var(--or)}
+  .t .g{display:flex;align-items:center;gap:4px}
+  .t input{width:36px;border:0;background:transparent;padding:0;text-align:right;
+           font-size:16px;color:inherit;outline:none;border-radius:4px}
+  .t input.large{width:78px}
+  .t input:focus{background:var(--voileChamp)}
+  .moins{width:26px;height:26px;margin-right:4px;border-radius:999px;border:1px solid currentColor;
+         background:none;color:inherit;font-size:15px;line-height:1;cursor:pointer;flex:none}
+  .ttc{margin-top:4px;padding-top:10px;border-top:2px solid var(--ink);display:flex;
+       justify-content:space-between;align-items:center}
+  .ttc b{font-size:17px;font-weight:600}
+  .ttc .m{font:600 20px/1 ui-serif,Georgia,serif}
+
+  /* la zone de texte de l'écran */
+  textarea{width:100%;min-height:150px;border:1px solid var(--line);border-radius:12px;
+           background:var(--card);color:var(--ink);padding:12px 14px;font-family:inherit;font-size:15px;line-height:1.5;
+           resize:vertical;outline:none}
+  textarea:focus{border-color:var(--or)}
+  .discret{display:block;margin-top:8px;border:0;background:none;padding:0;color:var(--or);
+           font:500 13.5px/1.2 ui-sans-serif,sans-serif;cursor:pointer;min-height:32px}
+  .dit{margin:4px 0 0;font-size:12.5px;color:var(--muted)}
+  .bloc{background:var(--card);border-radius:14px;padding:14px 16px;margin-top:12px;
+        box-shadow:inset 0 0 0 1px var(--lineSoft)}
+  .bloc .nom{font-size:15px;font-weight:600;margin:0}
+  .bloc .nom span{float:right;color:var(--or)}
+
+  /* ═══ LE PAPIER — ce que le client reçoit ═══════════════════════════════*/
+  .papier{background:var(--papier);color:var(--encre);margin:12px 14px 26px;padding:22px 20px 26px;
+          border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.18);
+          font:10.5px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .papier .haut{display:flex;justify-content:space-between;gap:12px;padding-bottom:10px;
+                border-bottom:1.6px solid #1c1c1a}
+  .papier .nom{font-size:17px}
+  .papier .coord{color:#6b6b5c;font-size:8.5px;line-height:1.35}
+  .papier .refs{font-size:8.5px;text-align:right;min-width:120px}
+  .papier .refs div{display:flex;justify-content:space-between;gap:10px;border-bottom:.5px solid #ddd;padding:2px 0}
+  .papier .refs b{color:#6b6b5c;font-weight:600}
+  .papier h2{margin:18px 0 14px;text-align:center;font:400 14px/1 ui-serif,Georgia,serif;letter-spacing:.2em}
+  .papier .parties{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .papier .parties h3{margin:0 0 3px;font:600 7.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;color:#6b6b5c;text-transform:uppercase}
+  .papier table{width:100%;border-collapse:collapse;font-size:9.5px}
+  .papier th{text-align:left;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:#6b6b5c;
+             padding:0 4px 4px;border-bottom:1.2px solid #1c1c1a}
+  .papier th.n,.papier td.n{text-align:right;white-space:nowrap}
+  .papier td{padding:4px;border-bottom:.5px solid #e4e1d9;vertical-align:top}
+  .papier .pt{margin:12px 0 0 auto;width:210px;font-size:9.5px}
+  .papier .pt .r{display:flex;justify-content:space-between;padding:2px 0}
+  .papier .pt .r.or{color:#B98B47}
+  .papier .pt .tt{margin-top:6px;padding-top:6px;border-top:1.4px solid #1c1c1a;font:600 12px/1.3 ui-serif,Georgia,serif}
+  .papier .et{margin:18px 0 5px;font:600 7.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;color:#6b6b5c;text-transform:uppercase}
+  .papier .notes p{margin:0 0 3px}
+  .papier .notes p.g{font-weight:700}
+  .papier .mention{margin-top:14px;font-size:8.5px;color:#4a4a44;font-style:italic}
+  .papier .signature{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .papier .signature div{border:.8px solid #1c1c1a;border-radius:3px;height:58px;padding:5px 6px;font-size:7.5px;color:#6b6b5c;letter-spacing:.1em;text-transform:uppercase}
+  .papier .cgv{margin-top:16px;padding-top:10px;border-top:.6px solid #cfcbc1;font-size:7.6px;line-height:1.4;color:#3d3d37;columns:2;column-gap:12px}
+  .papier .cgv p{margin:0 0 4px;break-inside:avoid}
+  .papier .cgv p.titre{column-span:all;font-weight:600;letter-spacing:.12em;margin-bottom:6px}
+  .papier .pied{margin-top:14px;text-align:center;font-size:7.5px;color:#8a8578}
+
+  /* ═══ LA LOI ══════════════════════════════════════════════════════════════*/
+  .loi{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+  .loi td{padding:8px 6px 8px 0;border-bottom:1px solid var(--lineSoft);vertical-align:top}
+  .loi td:first-child{width:26px;font-weight:700}
+  .loi .ok{color:#2f3b2f}.loi .ko{color:#B98B47}
+  body[data-charte="nuit"] .loi .ok{color:#9fbd82}
+  .loi small{display:block;color:var(--muted);font-size:12px}
+
+  .note{max-width:430px;margin:14px auto 0;padding:0 18px;font-size:13px;line-height:1.6;color:var(--horsTexte)}
+  .note b{color:var(--horsFort)}
+  .ab{display:flex;gap:7px;margin:14px 0 14px}
+  .ab button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);
+             color:var(--ink);font:600 13px/1.2 ui-sans-serif,sans-serif;cursor:pointer;padding:6px 8px}
+  .ab button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);border-color:var(--rust)}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="bandeau">
+  <b>Votre demande du 12 septembre.</b> « Prix accordé au client » devient <b>Remise de … %</b> ; un bouton <b>+ Main d’œuvre</b> comme « + Ajouter une TVA », sa ligne sous le total HT ; le bloc <b>Notes / conditions</b> en gras avec l’acompte et le solde calculés ; et dans les réglages, une case pour <b>vos conditions générales de vente et de règlement</b>, imprimées après le bon pour accord. <b>Tout se manipule. Rien n’est codé.</b>
+</div>
+
+<div class="choix">
+  <button data-vue="ecran" aria-pressed="true">Écran</button>
+  <button data-vue="papier" aria-pressed="false">Papier</button>
+  <button data-vue="reglages" aria-pressed="false">Réglages</button>
+  <button data-vue="loi" aria-pressed="false">La loi</button>
+  <button id="nuit" aria-pressed="false">Nuit</button>
+</div>
+
+<div class="tel">
+
+  <!-- ═══ À L'ÉCRAN ═══════════════════════════════════════════════════════ -->
+  <section class="ecran ouvert" id="v-ecran">
+    <div class="entete">
+      <p class="sur">Mme Grospiron · Devis D2026-000014</p>
+      <h1>Le devis</h1>
+    </div>
+    <div class="corps">
+      <div class="cat">TVA 20 %</div>
+      <div class="ligne"><div>Terrassement et préparation du sol<small>1 forfait × 380,00 €</small></div><div class="m">380,00 €</div></div>
+      <div class="ligne"><div>Fourniture de gazon en rouleau<small>120 m² × 6,50 €</small></div><div class="m">780,00 €</div></div>
+      <div class="ligne"><div>Bordures acier corten<small>24 ml × 18,00 €</small></div><div class="m">432,00 €</div></div>
+      <button class="plus" type="button">+ Ajouter une ligne</button>
+      <button class="plus" type="button">+ Ajouter une TVA</button>
+      <button class="plus" type="button" id="b-mo">+ Main d’œuvre</button>
+
+      <div class="totaux">
+        <div class="t"><span>Total HT</span><span id="e-brut">1 592,00 €</span></div>
+        <div class="t" id="l-mo" hidden>
+          <span class="g"><button class="moins" type="button" id="mo-retirer" aria-label="Retirer la main d’œuvre">−</button><span id="e-mo-lib">Main d’œuvre HT</span></span>
+          <span class="g"><input class="large" id="mo" inputmode="decimal" value="450" aria-label="Main d’œuvre HT, en euros"> €</span>
+        </div>
+        <div class="t or" id="l-remise" hidden>
+          <span class="g"><button class="moins" type="button" id="remise-retirer" aria-label="Retirer la remise">−</button>Remise de <input id="remise" inputmode="decimal" value="5" aria-label="Remise, en pourcentage"> %</span>
+          <span id="e-remise">− 79,60 €</span>
+        </div>
+        <div class="t" id="l-net" hidden><span id="e-net-lib">Total HT après remise</span><span id="e-net">1 512,40 €</span></div>
+        <div class="t"><span>TVA (20 %)</span><span id="e-tva">318,40 €</span></div>
+        <div class="ttc"><b>Total TTC</b><span class="m" id="e-ttc">1 910,40 €</span></div>
+        <button class="discret" type="button" id="b-remise">+ Remise</button>
+      </div>
+
+      <p class="inter">Notes / conditions</p>
+      <textarea id="sien" aria-label="Notes et conditions" placeholder="Accès par le portail de gauche. Devis gratuit et sans engagement."></textarea>
+      <p class="dit">Le mode de règlement, l’acompte et le solde s’écrivent tout seuls sur le papier, sous votre texte.</p>
+    </div>
+  </section>
+
+  <!-- ═══ LE PAPIER ═══════════════════════════════════════════════════════ -->
+  <section class="ecran" id="v-papier">
+    <div class="entete">
+      <p class="sur">Ce que le client reçoit</p>
+      <h1>Le papier</h1>
+    </div>
+    <div class="papier">
+      <div class="haut">
+        <div>
+          <div class="nom">Eden Nature</div>
+          <div class="coord">12 chemin des Vignes<br>84000 Avignon<br>06 12 34 56 78<br>contact@edennature.fr<br>SIRET 912 345 678 00019</div>
+        </div>
+        <div class="refs">
+          <div><b>Devis n°</b><span>D2026-000014</span></div>
+          <div><b>Date</b><span>12/09/2026</span></div>
+          <div><b>Validité</b><span>30 jours</span></div>
+        </div>
+      </div>
+      <h2>DEVIS</h2>
+      <div class="parties">
+        <div><h3>Client</h3>Mme Grospiron<br>8 rue des Lilas<br>84000 Avignon</div>
+        <div><h3>Lieu des travaux</h3>8 rue des Lilas<br>84000 Avignon</div>
+      </div>
+      <table>
+        <thead><tr><th>Désignation</th><th class="n">Qté</th><th class="n">P.U. HT</th><th class="n">Montant HT</th></tr></thead>
+        <tbody>
+          <tr><td>Terrassement et préparation du sol</td><td class="n">1</td><td class="n">380,00 €</td><td class="n">380,00 €</td></tr>
+          <tr><td>Fourniture de gazon en rouleau</td><td class="n">120 m²</td><td class="n">6,50 €</td><td class="n">780,00 €</td></tr>
+          <tr><td>Bordures acier corten</td><td class="n">24 ml</td><td class="n">18,00 €</td><td class="n">432,00 €</td></tr>
+        </tbody>
+      </table>
+      <div class="pt">
+        <div class="r"><span>Total HT</span><span id="p-brut">1 592,00 €</span></div>
+        <div class="r" id="pl-mo" hidden><span id="p-mo-lib">Main d’œuvre HT</span><span id="p-mo">450,00 €</span></div>
+        <div class="r or" id="pl-remise" hidden><span id="p-remise-lib">Remise de 5 %</span><span id="p-remise">- 79,60 €</span></div>
+        <div class="r" id="pl-net" hidden><span id="p-net-lib">Total HT après remise</span><span id="p-net">1 512,40 €</span></div>
+        <div class="r"><span>TVA (20 %)</span><span id="p-tva">318,40 €</span></div>
+        <div class="r tt"><span>Total TTC</span><span id="p-ttc">1 910,40 €</span></div>
+      </div>
+
+      <div class="et">Notes / conditions</div>
+      <div class="notes">
+        <p id="p-sien" hidden></p>
+        <p class="g">Mode de règlement : 30 % à la commande, solde à réception de la facture.</p>
+        <p class="g">Montant à régler à la commande : <span id="p-acompte">573,12 €</span></p>
+        <p class="g">Solde restant à régler : <span id="p-solde">1 337,28 €</span></p>
+        <p class="g">Moyens de paiement acceptés : virement, chèque.</p>
+        <p class="g">En cas de retard de paiement : pénalités au taux de trois fois le taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de recouvrement.</p>
+      </div>
+
+      <p class="mention">Devis établi par Eden Nature, valable selon la durée indiquée ci-dessus. Bon pour accord précédé de la mention manuscrite, daté et signé par le client.</p>
+      <div class="signature"><div>Date</div><div>Bon pour accord, signature</div></div>
+
+      <div class="cgv" id="p-cgv"></div>
+      <div class="pied">Eden Nature · SIRET 912 345 678 00019 · Page 1/1</div>
+    </div>
+  </section>
+
+  <!-- ═══ RÉGLAGES ════════════════════════════════════════════════════════ -->
+  <section class="ecran" id="v-reglages">
+    <div class="entete">
+      <p class="sur">Devis &amp; factures</p>
+      <h1>Conditions générales</h1>
+    </div>
+    <div class="corps">
+      <p class="dit" style="margin:0 0 10px">Imprimées après le bon pour accord, sur chaque devis. Tout se réécrit.</p>
+      <textarea id="cgv" aria-label="Conditions générales de vente et de règlement" style="min-height:420px;font-size:14px"></textarea>
+      <button class="discret" type="button" id="cgv-origine">Remettre le texte d’origine</button>
+
+      <p class="inter">Ce qui s’imprime déjà</p>
+      <div class="bloc"><p class="nom">Acompte à la commande <span>30 %</span></p><p class="dit">Le montant se calcule sur le total TTC du devis.</p></div>
+      <div class="bloc"><p class="nom">Moyens de paiement acceptés</p><p class="dit">virement, chèque</p></div>
+      <div class="bloc"><p class="nom">Rappeler les pénalités sur le devis <span>Oui</span></p></div>
+    </div>
+  </section>
+
+  <!-- ═══ LA LOI ══════════════════════════════════════════════════════════ -->
+  <section class="ecran" id="v-loi">
+    <div class="entete">
+      <p class="sur">Vérifié le 12 septembre 2026</p>
+      <h1>Ce que la loi demande</h1>
+    </div>
+    <div class="corps">
+      <table class="loi">
+        <tr><td class="ok">✓</td><td>Date, nom et adresse de l’entreprise, SIRET<small>déjà imprimés</small></td></tr>
+        <tr><td class="ok">✓</td><td>Nom du client, lieu des travaux<small>déjà imprimés</small></td></tr>
+        <tr><td class="ok">✓</td><td>Décompte détaillé : quantité, prix unitaire, montant<small>déjà imprimé</small></td></tr>
+        <tr><td class="ok">✓</td><td>Total HT, taux de TVA, total TTC<small>déjà imprimés</small></td></tr>
+        <tr><td class="ok">✓</td><td>Durée de validité<small>réglable, en tête</small></td></tr>
+        <tr><td class="ok">✓</td><td>Forme juridique, capital, RCS<small>réglables (Mon entreprise)</small></td></tr>
+        <tr><td class="ok">✓</td><td>Pénalités de retard, indemnité de 40 €<small>réglable sur le devis, scellé sur la facture</small></td></tr>
+        <tr><td class="ok">✓</td><td>Bon pour accord, date, signature<small>déjà imprimé</small></td></tr>
+        <tr><td class="ko">✗</td><td>Assurance décennale et RC pro : assureur, contrat, couverture géographique<small>obligatoire dès que l’activité l’impose (loi du 6 août 2015) — nulle part dans l’appli</small></td></tr>
+        <tr><td class="ko">✗</td><td>Médiateur de la consommation : nom et adresse<small>obligatoire pour un client particulier — nulle part dans l’appli</small></td></tr>
+        <tr><td class="ko">✗</td><td>Droit de rétractation de 14 jours quand le devis est signé chez le client<small>l’appli le compte pour la date de chantier, le papier ne le dit pas</small></td></tr>
+        <tr><td class="ko">✗</td><td>Devis gratuit ou payant<small>jamais écrit</small></td></tr>
+        <tr><td class="ko">✗</td><td>Date ou délai d’exécution des travaux<small>attendu pour un particulier — jamais écrit</small></td></tr>
+        <tr><td class="ko">·</td><td>Taux horaire de main d’œuvre TTC<small>seulement pour le dépannage, la réparation et l’entretien (arrêté du 24 janvier 2017)</small></td></tr>
+      </table>
+      <p class="dit" style="margin-top:14px">Les cinq croix tiennent dans deux endroits : trois champs de plus dans « Mon entreprise » (assureur, médiateur, devis gratuit), et deux phrases dans les conditions générales. Le délai d’exécution, lui, se dit sur chaque devis.</p>
+    </div>
+  </section>
+</div>
+
+<div class="note">
+  <b>La main d’œuvre, deux lectures.</b> Vous avez dit « sous le total HT » : ci-dessus elle <b>s’ajoute</b> aux lignes (A). L’autre lecture, B, est « dont main d’œuvre » : elle est déjà dans les lignes et le papier la nomme, sans rien changer aux totaux — ce qu’un client demande pour son crédit d’impôt jardinage.
+  <div class="ab">
+    <button type="button" data-mo="A" aria-pressed="true">A · s’ajoute aux lignes</button>
+    <button type="button" data-mo="B" aria-pressed="false">B · dont main d’œuvre</button>
+  </div>
+  <b>Ce qui reste à trancher</b> : A ou B ; et les trois champs de « Mon entreprise » (assureur, médiateur, devis gratuit) — la loi les demande, vous ne les aviez pas cités.
+</div>
+
+<script>
+  // ─── Un seul calcul : la remise sur le HT, la TVA après ───────────────────
+  var LIGNES = 1592, TAUX = 20, ACOMPTE = 30;
+  var etat = { mo: null, remise: null, lecture: "A" };
+  function eur(n){ return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
+  function nombre(v){ var n = parseFloat(String(v).replace(",",".")); return isFinite(n) ? n : 0; }
+  function id(x){ return document.getElementById(x); }
+
+  function calcul(){
+    var mo = etat.mo === null ? 0 : nombre(etat.mo);
+    var base = etat.lecture === "A" ? LIGNES + mo : LIGNES;
+    var pct = etat.remise === null ? 0 : Math.min(100, Math.max(0, nombre(etat.remise)));
+    var retire = Math.round(base * pct) / 100;
+    var net = base - retire;
+    var tva = Math.round(net * TAUX) / 100;
+    var ttc = net + tva;
+    var acompte = Math.round(ttc * ACOMPTE) / 100;
+    return { mo:mo, retire:retire, net:net, tva:tva, ttc:ttc, acompte:acompte, solde: ttc - acompte, pct:pct };
+  }
+
+  function rendre(){
+    var c = calcul();
+    var avecMo = etat.mo !== null, avecRemise = etat.remise !== null;
+    var netVisible = avecRemise || (avecMo && etat.lecture === "A");
+    var netLib = avecRemise ? "Total HT après remise" : "Total HT";
+    var moLib = etat.lecture === "A" ? "Main d’œuvre HT" : "dont main d’œuvre HT";
+    var pctLisible = String(c.pct).replace(".", ",");
+
+    // l'écran
+    id("l-mo").hidden = !avecMo;
+    id("l-remise").hidden = !avecRemise;
+    id("l-net").hidden = !netVisible;
+    id("b-remise").hidden = avecRemise;
+    id("b-mo").hidden = avecMo;
+    id("e-mo-lib").textContent = moLib;
+    id("e-remise").textContent = avecRemise ? "− " + eur(c.retire) : "";
+    id("e-net-lib").textContent = netLib;
+    id("e-net").textContent = eur(c.net);
+    id("e-tva").textContent = eur(c.tva);
+    id("e-ttc").textContent = eur(c.ttc);
+
+    // le papier
+    id("pl-mo").hidden = !avecMo;
+    id("p-mo-lib").textContent = moLib;
+    id("p-mo").textContent = eur(c.mo);
+    id("pl-remise").hidden = !avecRemise;
+    id("p-remise-lib").textContent = "Remise de " + pctLisible + " %";
+    id("p-remise").textContent = "- " + eur(c.retire);
+    id("pl-net").hidden = !netVisible;
+    id("p-net-lib").textContent = netLib;
+    id("p-net").textContent = eur(c.net);
+    id("p-tva").textContent = eur(c.tva);
+    id("p-ttc").textContent = eur(c.ttc);
+    id("p-acompte").textContent = eur(c.acompte);
+    id("p-solde").textContent = eur(c.solde);
+  }
+
+  id("b-mo").onclick = function(){ etat.mo = "450"; id("mo").value = "450"; rendre(); id("mo").focus(); };
+  id("mo-retirer").onclick = function(){ etat.mo = null; rendre(); };
+  id("mo").oninput = function(){ etat.mo = this.value; rendre(); };
+  id("b-remise").onclick = function(){ etat.remise = "5"; id("remise").value = "5"; rendre(); id("remise").focus(); };
+  id("remise-retirer").onclick = function(){ etat.remise = null; rendre(); };
+  id("remise").oninput = function(){ etat.remise = this.value; rendre(); };
+  document.querySelectorAll("[data-mo]").forEach(function(b){
+    b.onclick = function(){
+      etat.lecture = b.dataset.mo;
+      document.querySelectorAll("[data-mo]").forEach(function(x){ x.setAttribute("aria-pressed", x===b ? "true":"false"); });
+      if (etat.mo === null) { etat.mo = "450"; id("mo").value = "450"; }
+      rendre();
+    };
+  });
+
+  // ses notes, en tête du bloc — puis les conditions réglées dessous
+  id("sien").oninput = function(){
+    id("p-sien").hidden = !this.value.trim();
+    id("p-sien").textContent = this.value.trim();
+  };
+
+  // ─── Les conditions générales : un texte d'origine, entièrement réécrivable ─
+  var ORIGINE = [
+    "1. Objet. Le présent devis, retourné daté et signé avec la mention « bon pour accord », vaut commande ferme des travaux qu’il décrit.",
+    "2. Prix et validité. Les prix sont fermes pendant la durée de validité indiquée en tête du devis. Toute prestation non prévue fait l’objet d’un devis complémentaire accepté avant exécution.",
+    "3. Règlement. Acompte à la commande selon le pourcentage indiqué, solde à réception de la facture. Tout retard entraîne de plein droit des pénalités au taux de trois fois le taux d’intérêt légal et une indemnité forfaitaire de 40 € pour frais de recouvrement (art. L441-10 du code de commerce).",
+    "4. Exécution. Le délai d’exécution est indicatif ; il est prolongé de plein droit en cas d’intempéries, de sol impraticable ou de cause indépendante de l’entreprise. Le client assure l’accès au chantier et signale les réseaux enterrés.",
+    "5. Réception. Les travaux sont réputés reçus sans réserve à leur achèvement, sauf réserves écrites formulées dans les huit jours.",
+    "6. Végétaux. Les végétaux fournis sont garantis à la plantation. Leur reprise dépend de l’arrosage et de l’entretien assurés par le client après réception.",
+    "7. Assurances. L’entreprise est titulaire d’une assurance responsabilité civile professionnelle et, pour les travaux qui y sont soumis, d’une assurance décennale : [assureur, n° de contrat, couverture géographique].",
+    "8. Rétractation. Pour un devis signé hors de l’établissement de l’entreprise, le client particulier dispose d’un délai de rétractation de 14 jours (art. L221-18 du code de la consommation). Les travaux commencés avant ce terme le sont à sa demande écrite.",
+    "9. Réserve de propriété. Les fournitures et végétaux restent la propriété de l’entreprise jusqu’au paiement intégral.",
+    "10. Médiation et litiges. En cas de litige, le client particulier peut saisir gratuitement le médiateur de la consommation : [nom et coordonnées]. À défaut d’accord, le tribunal compétent est celui du siège de l’entreprise."
+  ].join("\n\n");
+
+  function rendreCgv(){
+    var t = id("cgv").value.trim();
+    var boite = id("p-cgv");
+    boite.innerHTML = "";
+    if (!t) { boite.hidden = true; return; }
+    boite.hidden = false;
+    var titre = document.createElement("p");
+    titre.className = "titre";
+    titre.textContent = "CONDITIONS GÉNÉRALES DE VENTE ET DE RÈGLEMENT";
+    boite.appendChild(titre);
+    t.split(/\n\s*\n/).forEach(function(par){ var p = document.createElement("p"); p.textContent = par; boite.appendChild(p); });
+  }
+  id("cgv").value = ORIGINE;
+  id("cgv").oninput = rendreCgv;
+  id("cgv-origine").onclick = function(){ id("cgv").value = ORIGINE; rendreCgv(); };
+  rendreCgv();
+
+  // ─── Les vues, et la nuit ─────────────────────────────────────────────────
+  document.querySelectorAll("[data-vue]").forEach(function(b){
+    b.onclick = function(){
+      document.querySelectorAll("[data-vue]").forEach(function(x){ x.setAttribute("aria-pressed", x===b ? "true":"false"); });
+      document.querySelectorAll(".ecran").forEach(function(s){ s.classList.toggle("ouvert", s.id === "v-" + b.dataset.vue); });
+      window.scrollTo({ top: 0 });
+    };
+  });
+  id("nuit").onclick = function(){
+    var nuit = document.body.dataset.charte !== "nuit";
+    document.body.dataset.charte = nuit ? "nuit" : "origine";
+    this.setAttribute("aria-pressed", nuit ? "true" : "false");
+  };
+  rendre();
+</script>
+</body>
+</html>

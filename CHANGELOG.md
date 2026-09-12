@@ -8,6 +8,22 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-12
 
+### Une planche : remise, main d’œuvre, conditions et CGV sur le devis
+
+Sa demande du jour, dessinée avant tout code (`CLAUDE.md` §3 bis) :
+`appli/devis-remise-main-d-oeuvre-conditions.html`, liée depuis
+`essais.html`. Quatre vues — l’écran, le papier, les réglages, la loi. Les
+totaux, l’acompte et le solde s’y recalculent ; le texte des conditions
+générales s’y réécrit et se reporte sur le papier, après le bon pour accord.
+
+Ce qu’elle évite : coder « Remise de N % » à quatre endroits alors que le
+libellé vit en un seul (`reduction-devis.ts`), et refaire l’acompte et les
+pénalités, qui s’impriment déjà. La vérification en ligne des mentions
+obligatoires a trouvé cinq absences sur le devis d’aujourd’hui (décennale,
+médiateur, rétractation, devis gratuit, délai d’exécution) — écrites dans la
+vue « La loi » et dans `TODO.md`. Rien n’est codé : il a annoncé une photo
+de devis à reprendre d’abord.
+
 ### Le diagnostic végétal : le refus dit ce qui a été vu, pourquoi, et le geste
 
 Sa réponse à la planche du 11 septembre : *« C'est bien »* — et le nom reste

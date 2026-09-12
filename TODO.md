@@ -9,6 +9,51 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS (12 septembre 2026)
+
+**Sa demande du 12 septembre :** « Prix accordé au client » devient **« Remise
+de N % »** ; un bouton **+ Main d’œuvre** comme « + Ajouter une TVA », sa ligne
+« Main d’œuvre HT » et son prix sous le total HT ; le bloc Notes / conditions
+**en gras** — mode de règlement (30 % à la commande, solde à réception), montant
+à régler à la commande (l’acompte réglé, calculé), solde restant (TTC − acompte),
+moyens de paiement, retard ; et dans les réglages **une case « conditions
+générales de vente et de règlement »**, remplie d’un texte par défaut qu’il
+peut effacer et réécrire, imprimée **après le bon pour accord**.
+
+**Planche :** `appli/devis-remise-main-d-oeuvre-conditions.html` (quatre vues :
+écran, papier, réglages, la loi). **Rien n’est codé** — il a annoncé une photo
+d’un devis de poseur de fenêtres à reprendre d’abord.
+
+**Ce qui existe DÉJÀ, et ne se refait pas :** l’acompte, les moyens de
+paiement, le rappel des pénalités et le texte de pied sont réglés
+(`src/lib/conditions-documents.ts`) et imprimés sous ses notes
+(`devis-pdf.ts`, `blocNotes`). Le libellé de la remise vit en UN endroit :
+`LIBELLE_REDUCTION` / `libelleReduction` (`src/lib/reduction-devis.ts`) — le
+renommage se fait là et nulle part ailleurs, puis les suites qui lisent le
+texte (`grep -rn "Prix accordé" scripts/`).
+
+**Ce qu’il doit trancher :**
+
+| | |
+|---|---|
+| la main d’œuvre | **A** s’ajoute aux lignes (ce qu’il a décrit) ou **B** « dont main d’œuvre », déjà dans les lignes |
+| les trois champs de « Mon entreprise » que la loi demande et qu’il n’a pas cités | assureur décennale / RC pro, médiateur de la consommation, devis gratuit ou payant |
+
+**Ce que la vérification en ligne a donné** (service-public, code de la
+consommation, arrêté du 24 janvier 2017) — sur le devis d’aujourd’hui :
+
+| présent | absent |
+|---|---|
+| date, identité, SIRET, client, lieu, décompte, HT/TVA/TTC, validité, forme juridique, pénalités, bon pour accord | assurance décennale (assureur, contrat, couverture), médiateur de la consommation, rétractation 14 jours (devis signé chez le client), devis gratuit ou payant, date ou délai d’exécution |
+
+**Pour coder ensuite :** la CGV est une colonne texte de plus sur
+`entreprises`, recopiée sur le devis à sa création comme les six conditions
+(migration 0064) ; la main d’œuvre en lecture A est un montant HT de plus dans
+`totauxAvecReduction` — **une seule fois**, jamais dans l’écran ni dans le
+PDF séparément ; le gras des notes est une option de `document-commun.ts`
+(police `sansGras`), à ne pas confondre avec SON texte libre, qui reste en
+maigre.
+
 ## ⏳ DIAGNOSTIC VÉGÉTAL — CE QUI ATTEND SON BANC, ET LUI (12 septembre 2026)
 
 Le lot du refus est codé (`ARCHITECTURE.md` §337, `docs/diagnostic-vegetal-impeccable.md`).
