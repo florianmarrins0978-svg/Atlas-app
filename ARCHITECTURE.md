@@ -28935,7 +28935,7 @@ fige l'espace définitivement**, et le symptôme est celui que le dépôt paie
 depuis le début : *le produit paraît cassé alors qu'il est simplement vieux*.
 
 **La décision : on ne rend propre que ce qu'on a sali soi-même.**
-`proteger-lock.sh` relève l'état du fichier AVANT l'installation et ne le remet
+« proteger-lock.sh » relève l'état du fichier AVANT l'installation et ne le remet
 qu'à cette condition. Un `package-lock.json` déjà modifié avant reste intact,
 et la mise à jour continue de s'abstenir — c'est le comportement voulu, pas un
 défaut : écraser le travail de quelqu'un pour livrer un correctif serait pire
@@ -28951,3 +28951,62 @@ que la mise à jour soit prudente ; c'est que l'espace salisse son propre arbre.
 pas sauvé par ce correctif, puisqu'il ne peut plus rien recevoir. Le diagnostic
 donne donc le geste, réversible — `git stash push -- <le fichier>`. C'est le
 seul cas de ce dépôt où la réparation doit passer par ses mains.
+
+---
+
+## §339 — Un correctif qui ne peut pas atteindre la machine qu'il répare n'en est pas un
+
+**Le §338 a été écrit le 12 septembre 2026 à 17 h 27. À 20 h 36, son espace
+servait toujours le code de 3 h 38 — quatorze versions de retard**, et sa fiche
+portait encore la même ligne : `M package-lock.json`. Le correctif du §338 était
+sur `main` depuis trois heures ; il ne l'atteindrait jamais, puisqu'il faut
+recevoir du code pour recevoir le correctif qui permet de recevoir du code.
+
+Le §338 le savait — « un espace déjà bloqué ne sera pas sauvé par ce correctif »
+— et le donnait pour une limite acceptable, en renvoyant le patron à une
+commande tapée sur un téléphone. Ce n'en était pas une : c'était le défaut.
+
+**Ce que le §338 avait écarté, et qui était le bon geste.** Il refusait de faire
+une exception pour `package-lock.json` dans `mettre-a-jour.sh`, pour deux
+raisons dont une seule tenait :
+
+| L'objection du §338 | Ce qu'elle vaut |
+|---|---|
+| « cela rendrait la mise à jour capable d'écraser une vraie modification » | **vraie d'un `checkout --`, fausse d'un `git stash`** : le fichier se rend par `git stash pop`, rien ne se perd |
+| « un cas particulier posé à côté de la règle générale — le pansement du §4 quater » | c'est l'inverse : la couche ajoutée était « proteger-lock.sh », qui n'enlevait rien et laissait la panne entière pour tout espace déjà pris |
+
+**Et la racine n'était pas celle qu'il désignait.** Le §338 disait : « la racine
+n'est pas que la mise à jour soit prudente, c'est que l'espace salisse son
+propre arbre ». Mais l'espace continuera de salir son arbre — `npm install` est
+un repli légitime quand `npm ci` refuse, et le supprimer ferait pire. La racine
+tenable est l'autre : **la mise à jour prenait un fichier que la machine écrit
+elle-même pour du travail humain.**
+
+**Ce qui est fait.** `mettre-a-jour.sh` met `package-lock.json` de côté
+(`git stash push -- package-lock.json`, sous une identité posée pour ce seul
+appel) avant de se prononcer sur la propreté de l'arbre. Le reste ne bouge pas :
+un vrai fichier modifié arrête toujours tout, et l'espace n'avance qu'en ligne
+droite.
+
+**Ce qui a été SUPPRIMÉ avec, et c'est le signe qu'on a corrigé à la racine :**
+« proteger-lock.sh », ses deux appels dans `demarrer.sh` et
+sa suite « test-proteger-lock ». La couche qui compensait devient du code mort
+dès que la racine est prise (`CLAUDE.md` §4 quater et §4 quinquies) — et un
+pansement laissé en place masque la correction suivante.
+
+**La liste des fichiers concernés ne contient que celui-là**, et doit le rester :
+un nom ajouté au jugé serait du travail mis de côté sans que personne l'ait
+demandé.
+
+**Ce que cela ne répare toujours pas, et il faut le dire :** son espace, ce
+soir, porte encore l'ancien script. Le déblocage de CETTE fois-là passe par ses
+mains — une fois, la dernière.
+
+**Et la fiche cesse de cacher ce qui décide du geste.** Le même soir, elle
+annonçait « INJOIGNABLE DE L'EXTÉRIEUR » sur le port 3000 sans publier le mot
+rendu par `ouvrir-port.sh`, alors que ce mot choisit entre deux gestes opposés.
+Elle le porte désormais (`[démarrage : ouvert]`), et le cas `ouvert` a son geste
+propre : quand `gh` a RÉUSSI à rendre le port public, le rebasculer ne peut
+rien — c'est le relais qui l'a perdu, et seul un rallumage ou un
+réenregistrement le remet. Le renvoyer vers « Visibilité du port » était lui
+faire refaire les trois clics du 22 août (`scripts/_verdict-port.mjs`).

@@ -269,15 +269,37 @@ cas("le TÉLÉCHARGEMENT qu'il voit est nommé, parce que c'est ÇA qu'il a sous
 
 cas("un serveur VIVANT laisse le port suspect — on n'a pas juste déplacé l'aveuglement", () => {
   // Le cas inverse, et il doit rester intact : Atlas écoute bien sur 3000, mais
-  // le dehors ne l'atteint pas. Là, le port EST le coupable, et le geste de
-  // l'onglet PORTS est le bon.
+  // le dehors ne l'atteint pas. Là, le port EST le coupable, et un geste doit
+  // être donné — lequel dépend de ce que l'espace a déjà pu faire.
   const { souci } = verdictPort({
     etatPort: "ouvert",
     dehors: { joignable: false, statut: 502, type: "", motif: "réponse 502 AVANT Atlas" },
     serveurLocal: true,
   });
   assert.match(souci ?? "", /N'ATTEINT MÊME PAS ATLAS/, "un port fermé devant un serveur debout n'est plus signalé");
-  assert.match(souci ?? "", /« Visibilité du port »/, "le geste qui répare CE cas a disparu avec le correctif");
+  assert.match(souci ?? "", /onglet PORTS|RALLUMER L'ESPACE/, "la fiche signale le port sans dire quoi en faire");
+});
+
+cas("UN PORT QUE L'ESPACE A DÉJÀ RENDU PUBLIC NE SE REFAIT PAS BASCULER — 12 septembre", () => {
+  // **Sa fiche du soir, au mot près** : serveur debout, `gh` satisfait
+  // (« ouvert »), et un 404 du relais. Le geste rendu était celui du doute —
+  // basculer la visibilité —, c'est-à-dire ce qu'il a déjà fait trois fois pour
+  // rien (22 août : *« il est en public déjà »*). Un remède qu'on sait sans
+  // effet coûte un aller-retour à chaque fois qu'on le propose.
+  const { ligne, souci } = verdictPort({
+    etatPort: "ouvert",
+    dehors: { joignable: false, statut: 404, type: "", motif: "réponse 404 de quelque chose AVANT Atlas" },
+    serveurLocal: true,
+  });
+  assert.ok(
+    !/« Visibilité du port »/.test(souci ?? ""),
+    "on le renvoie basculer une visibilité que l'espace a DÉJÀ réglée : le geste ne peut rien"
+  );
+  assert.match(souci ?? "", /RALLUMER L'ESPACE|Transférer un port/, "aucun geste qui puisse réellement remettre le port");
+  // **La mesure d'où sort le geste se publie.** Sans elle, on relit « INJOIGNABLE »
+  // sans pouvoir dire si `gh` avait réussi ou si personne n'avait essayé — deux
+  // états qui n'appellent pas le même geste.
+  assert.match(ligne, /démarrage : ouvert/, "la fiche cache le relevé qui décide du geste");
 });
 
 cas("sans mesure du serveur local, le verdict reste celui d'avant", () => {

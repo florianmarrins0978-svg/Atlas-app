@@ -9,6 +9,39 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## SON ESPACE DOIT ÊTRE DÉBLOQUÉ UNE FOIS À LA MAIN (12 septembre 2026)
+
+**CODÉ LE 12 SEPTEMBRE — mais il porte encore l'ancien script.** `mettre-a-jour.sh`
+met désormais `package-lock.json` de côté au lieu de se figer devant lui
+(`ARCHITECTURE.md` §339). Son espace, lui, est resté sur le code de 3 h 38 :
+il ne peut pas recevoir le correctif qui lui permettrait de recevoir du code.
+
+Le déblocage de CETTE fois-là passe par ses mains, une dernière fois — dans le
+terminal de son espace :
+
+    git stash push -- package-lock.json
+
+puis rallumer l'espace. **À barrer dès qu'il confirme que sa version a avancé**
+(l'écran Réglages donne la version servie).
+
+## PISTE NON REPRODUITE — LE PORT QUE LE RELAIS PERD (12 septembre 2026)
+
+Sa fiche du 12 septembre au soir : serveur debout sur 3000, `gh` satisfait, et
+un **404 du relais** — la requête n'atteint jamais Atlas. Le verdict et son
+geste sont corrigés (`_verdict-port.mjs`, §339), mais la panne elle-même n'est
+**pas reproduite** : cet environnement n'a pas de Codespace.
+
+**Ce qu'on soupçonne, sans l'avoir mesuré :** le relais n'enregistre un port
+qu'en voyant un processus commencer à écouter (`veiller.sh` le constate au
+26 août — « le serveur démarre, le port se déclare tout seul »). Un serveur
+déjà en place au moment où le tunnel se remonte ne serait donc jamais
+redéclaré, et rien depuis l'intérieur ne le remettrait.
+
+**Ce qui n'a PAS été fait, et pourquoi :** faire relancer le serveur par le
+veilleur pour rouvrir la socket. Le gain est supposé ; le risque, lui, est réel
+— une relance mal bornée refait la panne du 2 septembre (serveur mort en
+boucle). À ne coder qu'une fois la cause mesurée sur son espace.
+
 ## ⏳ UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS (12 septembre 2026)
 
 **Sa demande du 12 septembre :** « Prix accordé au client » devient **« Remise
