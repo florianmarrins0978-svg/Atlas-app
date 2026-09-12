@@ -51,6 +51,37 @@ la périodicité se change par le mot et l'autre mot ; le régime se change dans
 « Mon entreprise », et la phrase d'écart s'y lit, comparée au grand chiffre du
 relevé ; les gestes sont mesurés SOUS le total et avant l'attente.
 
+### Le bord doré du tiroir se voit enfin — il était recouvert par son voile
+
+Sa capture du 12 septembre : *« j'avais demandé la planche avec le liseré
+doré en haut, va vérifier ! »*. Le bord était codé depuis le 10 (sa version C)
+et servi chez lui — et il ne se voyait que dans les angles arrondis. Le voile
+qui fond la rangée du mois dans le tiroir est un élément absolu, donc placé
+depuis la boîte de remplissage, **sous** le bord : ses deux derniers pixels,
+pleins et couleur de carte, recouvraient exactement les deux pixels d'or.
+
+Corrigé à la racine : une seule constante (`BORD_OR_DU_TIROIR`) donne
+l'épaisseur du bord et remonte le voile d'autant. Aucune couche ajoutée.
+
+**Ce que la même capture a changé dans le tiroir**, sur sa demande :
+
+| Avant | Après |
+|---|---|
+| « 1 sans date », gris | « 1 client sans date », noir gras |
+| pastille « SANS DATE » sous le trait | retirée — la poignée le disait déjà |
+| « Touchez d'abord un jour du calendrier », gris, sous la pastille | juste sous le trait, en noir |
+
+Les suites qui lisaient le titre ou le compte suivent
+(`test-planning-e2e`, `test-liberer-une-demi-journee-e2e`,
+`test-salarie-planning-lecture-seule-e2e`) : elles visent l'attribut, pas le
+mot, et refusent de conclure sur zéro pastille.
+
+**Et trois suites navigateur lisent enfin l'adresse de l'atelier** —
+`retour-fiche-client`, `session-perimee`, `porte` écrivaient
+`127.0.0.1:3000` en dur et tombaient en « connexion refusée » dès que la
+batterie tournait sur un autre port. Elles passent par `_adresse.ts`, comme
+les cent vingt autres depuis le 5 septembre.
+
 ---
 ## 2026-09-11
 
