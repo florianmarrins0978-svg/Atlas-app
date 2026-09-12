@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnostic végétal — le refus est l'écran — Atlas</title>
+<style>
+/*
+  ═══════════════════════════════════════════════════════════════════════════
+  DIAGNOSTIC VÉGÉTAL : LE REFUS EST L'ÉCRAN PRINCIPAL — 11 septembre 2026
+  ═══════════════════════════════════════════════════════════════════════════
+
+  Trois fiches réelles en base sur la cinquantaine visée : « je ne peux pas
+  confirmer » est ce qu'il verra le plus souvent. Aujourd'hui, TOUS les refus
+  finissent par la même phrase — « une photo plus proche peut suffire » —, y
+  compris ceux qui disent l'inverse juste au-dessus. Et « personne n'a
+  regardé » n'offre qu'un geste : reprendre une photo, alors que ce n'est pas
+  la photo qui est en cause.
+
+  La planche montre les QUATRE issues, telles qu'elles sont (« Aujourd'hui »)
+  et telles qu'elles pourraient être (« Proposé »), sur Origine et sur Nuit.
+
+  CE QUI NE BOUGE PAS, parce qu'il l'a tranché : aucun formulaire, aucun
+  pourcentage, une seule relance, tout texte sort d'une fiche ou d'une liste
+  fermée du code. Les textes de la fiche « Anthracnose du platane » sont
+  recopiés mot pour mot de donnees/phyto/fiches/002-anthracnose-platane.json ;
+  la photo de référence est celle de la fiche (domaine public).
+
+  RIEN N'EST CODÉ. Les couleurs viennent de src/lib/chartes.ts.
+*/
+:root{
+  --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+  --gris:#8a8578; --or:#B98B47; --accent:#2f3b2f; --alerte:#9c3b2e;
+  --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07); --scene:#e6e3dc;
+  --plein:#7d9a6d; --surPlein:#faf9f5; --papier:#ece9e1;
+}
+body.nuit{
+  --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+  --gris:#84887b; --or:#C9A15E; --accent:#e9e8de; --alerte:#e0857a;
+  --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07); --scene:#070908;
+  --plein:#e9e8de; --surPlein:#1a1d19; --papier:#232722;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--scene)}
+body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+     color:var(--encre);-webkit-text-size-adjust:100%;padding:0 0 60px}
+::selection{background:var(--or);color:var(--fond)}
+
+.commandes{position:sticky;top:0;z-index:20;background:var(--scene);
+  padding:10px 16px;border-bottom:1px solid var(--trait);text-align:center}
+.commandes button{font:inherit;font-size:13.5px;padding:9px 16px;margin:3px;
+  border:1px solid var(--trait);background:var(--plage);color:var(--encre);
+  border-radius:999px;cursor:pointer;min-height:44px}
+.commandes button[aria-pressed=true]{background:var(--encre);color:var(--fond);border-color:var(--encre)}
+
+.tete{max-width:740px;margin:0 auto;padding:26px 20px 4px}
+.tete h1{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:30px;line-height:1.12;margin:0 0 12px;font-weight:400}
+.tete p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--encre-douce)}
+.tete b{color:var(--encre)}
+.sceau{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fond);background:var(--accent);
+  padding:5px 11px;border-radius:3px;margin-bottom:14px}
+body.nuit .sceau{color:var(--scene)}
+
+.choix{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;max-width:740px;margin:18px auto 0;padding:0 20px}
+.choix button{font:inherit;font-size:13px;padding:11px 15px;min-height:44px;border:0;
+  box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage);color:var(--encre-douce);
+  border-radius:999px;cursor:pointer}
+.choix button[aria-pressed=true]{background:var(--plein);color:var(--surPlein);box-shadow:none;font-weight:600}
+.choix.motifs{margin-top:8px}
+.choix.motifs button{font-size:12px;padding:8px 12px;min-height:38px}
+.choix.motifs[hidden]{display:none}
+
+.scene{display:flex;justify-content:center;padding:22px 12px 0}
+.tel{width:390px;max-width:100%;height:664px;border-radius:38px;padding:10px;
+  background:var(--encre);box-shadow:0 22px 50px -18px rgba(0,0,0,.55)}
+.dedans{height:100%;border-radius:30px;overflow:auto;background:var(--fond);color:var(--encre);
+  scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+.dessous{max-width:520px;margin:14px auto 0;padding:0 20px;font-size:13.5px;line-height:1.6;color:var(--gris);text-align:center}
+.dessous b{color:var(--encre-douce)}
+
+/* ── L'écran, dans la grammaire d'Atlas ─────────────────────────────────── */
+.ecran{padding:0 26px 64px;font-size:15px}
+.retour{display:flex;align-items:center;justify-content:space-between;padding-top:28px}
+.retour .rond{width:40px;height:40px;border-radius:50%;background:var(--papier);color:var(--encre);
+  display:flex;align-items:center;justify-content:center;font-size:18px}
+.titre-ligne{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-top:20px}
+.titre-ligne h2{font-family:ui-serif,Georgia,"Times New Roman",serif;font-weight:400;
+  font-size:36px;line-height:1.02;letter-spacing:-.018em;margin:0}
+.caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--or);margin:12px 0 0}
+.caps.gris{color:var(--gris)}
+.assistant{flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;margin-top:6px}
+.assistant svg{width:18px;height:18px;stroke:var(--fond);fill:none;stroke-width:1.6}
+body.nuit .assistant svg{stroke:var(--scene)}
+
+.corps{margin-top:24px}
+.p{margin:0;line-height:1.6;color:var(--encre-douce)}
+.p.encre{color:var(--encre)}
+.p.petit{font-size:12.5px;color:var(--gris);line-height:1.55}
+.bloc{margin-top:20px;border-top:1px solid var(--trait);padding-top:14px}
+.bloc .caps{margin:0}
+.bloc .val{margin:6px 0 0;line-height:1.55;color:var(--encre)}
+.bloc.fort .val{font-size:17px;line-height:1.5}
+.bloc.pale .val{font-size:15px}
+.sous{margin:12px 0 0;font-size:14px;line-height:1.55;color:var(--encre-douce)}
+.confiance{margin:14px 0 0;font-size:17px;line-height:1.4;color:var(--encre)}
+.confiance .sep{color:var(--gris);padding:0 6px}
+.source{margin:18px 0 0;font-size:12.5px;line-height:1.55;color:var(--gris)}
+.source b{color:var(--encre-douce);font-weight:500}
+
+.carte{margin-top:20px;background:var(--plage);border-radius:4px;padding:12px 14px;
+  box-shadow:inset 0 0 0 1px var(--trait-doux)}
+.carte.tab{border-left:3px solid var(--or)}
+.carte .caps{margin:0}
+.carte .p{margin-top:6px;font-size:14px}
+
+.photos{margin-top:20px}
+.photos img{display:block;width:100%;border-radius:4px;border:1px solid var(--trait);margin-top:10px}
+.photos figcaption{margin-top:6px;font-size:11.5px;line-height:1.5;color:var(--gris)}
+.photos figcaption span{color:var(--encre-douce)}
+
+.vu{margin-top:22px}
+.vu ul{list-style:none;margin:8px 0 0;padding:0}
+.vu li{padding:9px 0;border-top:1px solid var(--trait-doux);line-height:1.5;color:var(--encre)}
+.vu li:last-child{border-bottom:1px solid var(--trait-doux)}
+.vu + .bloc{border-top:0;padding-top:6px}
+.vu li small{display:block;font-size:12.5px;color:var(--gris);margin-top:2px}
+
+.geste{margin-top:22px;font-size:17px;line-height:1.5;color:var(--encre)}
+
+.boutons{margin-top:30px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 36px;
+  border-radius:9999px;font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:17px;
+  text-decoration:none;cursor:pointer;border:0;min-height:48px;position:relative}
+.btn.plein{background:var(--plein);color:var(--surPlein)}
+.btn.plein:active{transform:scale(.975)}
+.btn.creux{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1px var(--trait)}
+.btn.eteint{opacity:.55;pointer-events:none}
+.attente{margin-top:12px;text-align:center;font-size:12.5px;color:var(--gris)}
+
+details.det{margin-top:26px}
+details.det summary{cursor:pointer;font-size:13px;color:var(--accent);list-style:none}
+details.det summary::before{content:"▸ ";color:var(--gris)}
+details.det[open] summary::before{content:"▾ "}
+details.det .ligne{margin:14px 0 0}
+details.det .ligne .caps{margin:0}
+details.det .ligne p{margin:3px 0 0;font-size:13.5px;line-height:1.55;color:var(--encre)}
+
+.notes{max-width:740px;margin:0 auto;padding:6px 20px 0}
+.notes h3{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:20px;margin:34px 0 10px;font-weight:400}
+.notes p{font-size:14px;line-height:1.7;color:var(--encre-douce);margin:0 0 10px}
+.notes b{color:var(--encre)}
+.notes .cadre{overflow-x:auto}
+.notes table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 14px}
+.notes th,.notes td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--trait-doux);color:var(--encre-douce);vertical-align:top}
+.notes th{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+.notes td b{color:var(--encre)}
+.notes .nom{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 14px}
+.notes .nom button{font:inherit;font-size:13px;padding:9px 14px;min-height:40px;border:0;
+  box-shadow:inset 0 0 0 1px var(--trait);background:var(--plage);color:var(--encre-douce);border-radius:999px;cursor:pointer}
+.notes .nom button[aria-pressed=true]{background:var(--encre);color:var(--fond);box-shadow:none}
+</style>
+</head>
+<body>
+
+<div class="commandes">
+  <button type="button" id="version" aria-pressed="true">Proposé</button>
+  <button type="button" id="pole" aria-pressed="false">Voir sur Nuit</button>
+</div>
+
+<div class="tete">
+  <span class="sceau">11 septembre — diagnostic végétal</span>
+  <h1>Le refus est l'écran principal</h1>
+  <p>Trois fiches en base sur la cinquantaine visée : le plus souvent, Atlas
+  <b>ne pourra pas confirmer</b>. Cet écran-là doit dire <b>ce qui a été vu</b>,
+  <b>pourquoi ça ne suffit pas</b>, et <b>le geste qui débloque</b> — jamais
+  ressembler à une panne. Touchez chaque issue, comparez <b>Aujourd'hui</b> et
+  <b>Proposé</b>.</p>
+</div>
+
+<div class="choix" id="issues"></div>
+<div class="choix motifs" id="motifs" hidden></div>
+
+<div class="scene"><div class="tel"><div class="dedans" id="ecran"></div></div></div>
+<p class="dessous" id="dit"></p>
+
+<div class="notes">
+  <h3>Ce qui change, écran par écran</h3>
+  <div class="cadre">
+  <table>
+    <tr><th>Issue</th><th>Aujourd'hui</th><th>Proposé</th></tr>
+    <tr><td><b>Résultat</b></td>
+        <td>« CONFIANCE PROBABLE » en capitales dorées, en première ligne. La source derrière « Voir les détails ». Deux encarts à liseré doré.</td>
+        <td><b>« Probable, sur un platane »</b> en clair sous le nom — l'essence qu'Atlas a lue, celle qui commande tout le moteur, se voit enfin. <b>La source et sa date sur l'écran principal</b>, en une ligne : c'est ce qui se montre à un client. Plus de liseré.</td></tr>
+    <tr><td><b>Une photo de plus</b></td>
+        <td>Le titre écrit deux fois. La consigne, sans dire pourquoi.</td>
+        <td>Une seule fois. <b>« Vu »</b> au-dessus de la consigne : il comprend ce qui manque avant de repartir au jardin.</td></tr>
+    <tr><td><b>Sans conclusion</b></td>
+        <td>Une phrase, puis <b>la même</b> sous tous les refus : « une photo plus proche peut suffire » — même quand Atlas vient d'écrire qu'aucune photo ne départagera.</td>
+        <td><b>Vu</b> · <b>pourquoi ça ne suffit pas</b> · <b>le geste</b>, différent pour chacun des sept refus. Et quand aucune fiche ne correspond : <b>« Atlas connaît 3 problèmes »</b> — il sait que c'est la bibliothèque qui manque, pas sa photo.</td></tr>
+    <tr><td><b>Personne n'a regardé</b></td>
+        <td>« Analyse impossible », le message technique en gros, et un seul bouton : <b>Nouvelle photo</b> — sous la phrase « ce n'est pas la photo qui est en cause ».</td>
+        <td>« La photo n'a pas été regardée. Elle est gardée. » Deux gestes qui servent : <b>Réessayer</b> avec la même photo, ou <b>Réglages de l'IA</b>. Le détail technique reste, en petit.</td></tr>
+  </table>
+  </div>
+
+  <h3>Ce qui ne bouge pas, parce que vous l'avez tranché</h3>
+  <p>Aucun formulaire, aucun pourcentage, une seule relance. Le modèle ne nomme
+  rien : tout texte vient d'une fiche ou d'une liste fermée. Les seuils ne
+  bougent pas. Et Atlas <b>refuse désormais aussi</b> quand deux fiches restent
+  au coude à coude après la relance — votre décision du 11 septembre, déjà
+  codée dans le moteur.</p>
+
+  <h3>Le nom — je ne le change pas sans vous</h3>
+  <p>Vous dites <b>« reconnaissance des maladies »</b> ; l'écran dit
+  <b>« Diagnostic végétal »</b>. Le moteur reconnaît aussi les
+  <b>ravageurs</b> (galeries, sciure, toiles) et les <b>champignons du
+  bois</b>. Touchez pour voir chaque nom en tête d'écran :</p>
+  <div class="nom" id="noms"></div>
+
+  <h3>Ce que je vous demande</h3>
+  <p><b>Proposé, oui ou non</b> — et le nom. Le reste se code ensuite, avec une
+  migration : la base rangera <b>quel</b> refus a été rendu, et non seulement
+  sa phrase — c'est ce qui permet à l'écran de dire le bon geste au lieu du
+  même pour tous.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var pole = document.getElementById("pole");
+  pole.addEventListener("click", function(){
+    var nuit = document.body.classList.toggle("nuit");
+    pole.setAttribute("aria-pressed", String(nuit));
+    pole.textContent = nuit ? "Voir sur Origine" : "Voir sur Nuit";
+  });
+
+  var propose = true;
+  var version = document.getElementById("version");
+  version.addEventListener("click", function(){
+    propose = !propose;
+    version.setAttribute("aria-pressed", String(propose));
+    version.textContent = propose ? "Proposé" : "Aujourd'hui";
+    rendre();
+  });
+
+  var NOMS = ["Diagnostic végétal", "Reconnaissance des maladies", "Maladies et parasites"];
+  var nom = 0;
+
+  // ── Ce qui est RECOPIÉ de la fiche réelle (002-anthracnose-platane.json) ──
+  var FICHE = {
+    nom: "Anthracnose du platane",
+    nomSci: "Apiognomonia veneta",
+    explication: "Maladie fongique du platane. Nécroses brunes le long des nervures des feuilles au printemps, flétrissement de pousses et chute précoce des feuilles.",
+    conduite: "Surveiller l’évolution. Le dégât est spectaculaire mais rarement grave : dès que les conditions climatiques redeviennent sèches, la maladie cesse d’évoluer et le platane reforme de nouvelles feuilles.",
+    gravite: "Faible",
+    gestion: "Le champignon hiverne dans les petites nécroses corticales des rameaux et sur les feuilles tombées au sol. Au printemps, des fructifications apparaissent dans la litière et sur les nécroses, et libèrent des spores disséminées par le vent. L’infection est favorisée par une humidité suffisante et une température relativement fraîche ; un printemps très humide peut conduire à des chutes de feuilles importantes.",
+    agent: "Apiognomonia veneta (forme sexuée) ; Discula platani (forme asexuée). Ascomycète, ordre des Diaporthales.",
+    parties: "bourgeon, feuille, rameau, branche, houppier",
+    source: { organisme: "INRAE — Ephytia (auteur : Département de la santé des forêts)", titre: "Forêts — L'anthracnose du platane (Apiognomonia veneta)", consultee: "20 août 2026", version: 1, aJour: "8 août 2024" },
+    image: { src: "diagnostic-anthracnose-platane-feuille.jpg", legende: "Nécroses le long des nervures sur une feuille de Platanus occidentalis", credit: "Clemson University — USDA Cooperative Extension Slide Series, Bugwood.org, via Wikimedia Commons", licence: "Domaine public (travail d'un employé de l'USDA)" }
+  };
+
+  // ── Les sept refus : la phrase d'aujourd'hui (MOTIFS_REFUS), et le geste proposé ──
+  var REFUS = {
+    aucune_piste: { mot: "Aucune fiche",
+      phrase: "Aucune fiche ne correspond à ce qui est visible sur cette photo.",
+      vu: [["Taches brunes, en plages", "sur des feuilles"], ["Érable", "essence probable"]],
+      complement: "Atlas connaît 3 problèmes pour l’instant.",
+      geste: "Ce problème n’est peut-être pas encore dans Atlas." },
+    trop_faible: { mot: "Trop faible",
+      phrase: "Je ne peux pas confirmer l’identification à partir de cette photo.",
+      vu: [["Dessèchement", "sur un rameau"], ["Chêne", "essence probable"]],
+      complement: "Atlas connaît 3 problèmes pour l’instant.",
+      geste: "Une photo plus proche du détail peut suffire." },
+    trop_proches: { mot: "Deux fiches",
+      phrase: "Deux problèmes différents expliquent aussi bien cette photo, et aucune autre photo ne permettrait de les départager.",
+      vu: [["Nécroses brunes", "sur des feuilles, le long des nervures"], ["Chêne", "essence probable"]],
+      complement: null,
+      geste: "À examiner sur place." },
+    photo_illisible: { mot: "Photo floue",
+      phrase: "La photo ne montre pas assez de détails pour identifier quoi que ce soit.",
+      vu: [["Rien de net", null]],
+      complement: null,
+      geste: "Rapprochez-vous, en pleine lumière, sans flou." },
+    diagnostic_photo_impossible: { mot: "Pas sur photo",
+      phrase: "Ce type de problème ne se confirme pas sur photo. Une observation sur place est nécessaire.",
+      vu: [["Pourriture du bois", "au collet"], ["Épicéa", "essence sûre"]],
+      complement: null,
+      geste: null },
+    hote_incertain: { mot: "Essence inconnue",
+      phrase: "L’essence de l’arbre n’a pas pu être identifiée avec certitude, et sans elle un diagnostic n’aurait pas de valeur.",
+      vu: [["Taches brunes", "sur des feuilles"], ["Essence non reconnue", null]],
+      complement: null,
+      geste: "Recommencez avec une feuille entière posée à plat, puis l’arbre en entier." },
+    base_vide: { mot: "Base vide",
+      phrase: "La base phytosanitaire d’Atlas ne contient encore aucune fiche validée. Aucun diagnostic n’est possible pour l’instant.",
+      vu: [["Taches brunes, en plages", "sur des feuilles"], ["Érable", "essence probable"]],
+      complement: null,
+      geste: null }
+  };
+  var ORDRE_REFUS = ["aucune_piste","trop_faible","trop_proches","photo_illisible","diagnostic_photo_impossible","hote_incertain","base_vide"];
+
+  var ISSUES = [
+    { cle:"rendu",      mot:"Résultat" },
+    { cle:"complement", mot:"Une photo de plus" },
+    { cle:"refus",      mot:"Sans conclusion" },
+    { cle:"echoue",     mot:"Personne n'a regardé" }
+  ];
+  var issue = "refus";
+  var motif = "aucune_piste";
+
+  var elIssues = document.getElementById("issues");
+  var elMotifs = document.getElementById("motifs");
+  var ecran = document.getElementById("ecran");
+  var dit = document.getElementById("dit");
+  var elNoms = document.getElementById("noms");
+
+  function e(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  function boutonsIssues(){
+    elIssues.innerHTML = ISSUES.map(function(i){
+      return '<button type="button" data-cle="'+i.cle+'" aria-pressed="'+(i.cle===issue)+'">'+e(i.mot)+'</button>';
+    }).join("");
+    elMotifs.hidden = issue !== "refus";
+    elMotifs.innerHTML = ORDRE_REFUS.map(function(m){
+      return '<button type="button" data-motif="'+m+'" aria-pressed="'+(m===motif)+'">'+e(REFUS[m].mot)+'</button>';
+    }).join("");
+    elNoms.innerHTML = NOMS.map(function(n,i){
+      return '<button type="button" data-nom="'+i+'" aria-pressed="'+(i===nom)+'">'+e(n)+'</button>';
+    }).join("");
+  }
+  elIssues.addEventListener("click", function(ev){
+    var b = ev.target.closest("button[data-cle]"); if(!b) return;
+    issue = b.getAttribute("data-cle"); rendre();
+  });
+  elMotifs.addEventListener("click", function(ev){
+    var b = ev.target.closest("button[data-motif]"); if(!b) return;
+    motif = b.getAttribute("data-motif"); rendre();
+  });
+  elNoms.addEventListener("click", function(ev){
+    var b = ev.target.closest("button[data-nom]"); if(!b) return;
+    nom = Number(b.getAttribute("data-nom")); rendre();
+  });
+
+  // ── Les pièces de l'écran ──────────────────────────────────────────────────
+  var ICONE = '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 3 6.2L4 20l1.4-3.4A8 8 0 0 1 4 12z"/></svg>';
+
+  function entete(titre, surtitre){
+    return '<div class="retour"><span class="rond">‹</span><span></span></div>' +
+      '<div class="titre-ligne"><div><h2>'+e(titre)+'</h2><p class="caps">'+e(surtitre)+'</p></div>' +
+      '<span class="assistant">'+ICONE+'</span></div>';
+  }
+  function boutonPlein(mot){ return '<span class="btn plein">'+e(mot)+'</span>'; }
+  function boutonCreux(mot){ return '<span class="btn creux">'+e(mot)+'</span>'; }
+
+  function photos(){
+    return '<div class="photos"><p class="caps gris">À quoi ça ressemble</p>' +
+      '<p class="p petit" style="margin-top:6px">Une ressemblance n’est pas une preuve : ces photos servent à comparer, pas à confirmer.</p>' +
+      '<figure style="margin:0"><img src="'+FICHE.image.src+'" alt="'+e(FICHE.image.legende)+'">' +
+      '<figcaption><span>'+e(FICHE.image.legende)+' — </span>'+e(FICHE.image.credit)+' · '+e(FICHE.image.licence)+'</figcaption></figure></div>';
+  }
+  function bloc(cle, val, fort){
+    return '<div class="bloc'+(fort?' fort':'')+'"><p class="caps gris">'+e(cle)+'</p><p class="val">'+e(val)+'</p></div>';
+  }
+  function ligne(cle, val){ return '<div class="ligne"><p class="caps gris">'+e(cle)+'</p><p>'+e(val)+'</p></div>'; }
+
+  function detailsAujourdhui(){
+    return '<details class="det"><summary>Voir les détails</summary>' +
+      ligne("Nom scientifique", FICHE.nomSci) + ligne("Catégorie", "maladie") + ligne("Agent en cause", FICHE.agent) +
+      ligne("Parties atteintes", FICHE.parties) + ligne("Gestion", FICHE.gestion) +
+      '<div class="ligne" style="border-top:1px solid var(--trait);padding-top:14px"><p class="caps gris">D’où vient cette fiche</p>' +
+      '<p style="font-size:12.5px;color:var(--encre-douce)"><b style="font-weight:600">'+e(FICHE.source.organisme)+'</b> — '+e(FICHE.source.titre)+
+      ' <span style="color:var(--gris)">(consultée le 2026-08-20)</span><span style="color:var(--gris)"> · appuie : conduite_recommandee, gravite, statut_reglementaire, symptomes, hotes, explication_courte, gestion, agent_causal, parties_atteintes</span></p>' +
+      '<p style="font-size:11.5px;color:var(--gris)">Fiche version 1 · sources à jour le 2024-08-08</p></div>' +
+      '<div class="ligne" style="border-top:1px solid var(--trait);padding-top:14px"><p class="caps gris">Chantier</p><p>Rattacher à un chantier</p></div></details>';
+  }
+  function detailsPropose(){
+    return '<details class="det"><summary>Voir les détails</summary>' +
+      ligne("Nom scientifique", FICHE.nomSci) + ligne("Agent en cause", FICHE.agent) +
+      ligne("Parties atteintes", FICHE.parties) + ligne("Comment ça évolue", FICHE.gestion) +
+      '<div class="ligne" style="border-top:1px solid var(--trait);padding-top:14px"><p class="caps gris">La fiche</p>' +
+      '<p style="font-size:12.5px;color:var(--encre-douce)">'+e(FICHE.source.organisme)+' — '+e(FICHE.source.titre)+'</p>' +
+      '<p style="font-size:12.5px;color:var(--gris)">Consultée le '+e(FICHE.source.consultee)+' · à jour au '+e(FICHE.source.aJour)+' · fiche version '+FICHE.source.version+'</p></div>' +
+      '<div class="ligne" style="border-top:1px solid var(--trait);padding-top:14px"><p class="caps gris">Chantier</p><p>Rattacher à un chantier</p></div></details>';
+  }
+
+  // ── Les quatre issues, aujourd'hui ─────────────────────────────────────────
+  function rendu(){
+    if (!propose) {
+      return entete(FICHE.nom, NOMS[nom]) + '<div class="corps">' +
+        '<p class="caps" style="margin:0">Confiance probable</p>' +
+        '<p class="p" style="margin-top:14px">'+e(FICHE.explication)+'</p>' + photos() +
+        bloc("Gravité", FICHE.gravite) + bloc("Que faire ?", FICHE.conduite) +
+        '<div class="boutons">'+boutonPlein("Nouvelle photo")+'</div>' + detailsAujourdhui() + '</div>';
+    }
+    return entete(FICHE.nom, NOMS[nom]) + '<div class="corps">' +
+      '<p class="confiance">Probable<span class="sep">·</span>sur un platane</p>' +
+      '<p class="p" style="margin-top:12px">'+e(FICHE.explication)+'</p>' + photos() +
+      bloc("Gravité", FICHE.gravite) + bloc("Que faire ?", FICHE.conduite, true) +
+      '<p class="source"><b>'+e(FICHE.source.organisme.split(" (")[0])+'</b> · consultée le '+e(FICHE.source.consultee)+'</p>' +
+      '<div class="boutons">'+boutonPlein("Nouvelle photo")+'</div>' + detailsPropose() + '</div>';
+  }
+
+  var CONSIGNE_ESSENCE = "Photographiez une feuille entière posée à plat, puis reculez pour cadrer l’arbre en entier. C’est l’essence qui manque, pas le symptôme.";
+
+  function complement(){
+    if (!propose) {
+      return entete("Une photo de plus", NOMS[nom]) + '<div class="corps">' +
+        '<p class="caps" style="margin:0">Une photo de plus</p>' +
+        '<p class="p encre" style="margin-top:14px;font-size:16px">'+e(CONSIGNE_ESSENCE)+'</p>' +
+        '<p class="p petit" style="margin-top:10px">C’est la seule chose qui manque pour trancher.</p>' +
+        '<div class="boutons">'+boutonPlein("Prendre cette photo")+boutonCreux("Recommencer")+'</div></div>';
+    }
+    return entete("Une photo de plus", NOMS[nom]) + '<div class="corps">' +
+      vu([["Taches brunes", "sur des feuilles"], ["Essence non reconnue", null]]) +
+      '<p class="geste">'+e(CONSIGNE_ESSENCE)+'</p>' +
+      '<div class="boutons">'+boutonPlein("Prendre cette photo")+boutonCreux("Recommencer")+'</div>' +
+      '<p class="attente">Une seule photo de plus, jamais deux.</p></div>';
+  }
+
+  function vu(lignes){
+    return '<div class="vu"><p class="caps gris">Vu sur la photo</p><ul>' + lignes.map(function(l){
+      return '<li>'+e(l[0])+(l[1] ? '<small>'+e(l[1])+'</small>' : '')+'</li>';
+    }).join("") + '</ul></div>';
+  }
+
+  function refus(){
+    var r = REFUS[motif];
+    if (!propose) {
+      return entete("Sans conclusion", NOMS[nom]) + '<div class="corps">' +
+        '<p class="caps gris" style="margin:0">Sans conclusion</p>' +
+        '<p class="p encre" style="margin-top:14px">'+e(r.phrase)+'</p>' +
+        '<p class="p petit" style="margin-top:12px">Une photo plus proche, ou prise sous un autre angle, peut suffire.</p>' +
+        '<div class="boutons">'+boutonPlein("Nouvelle photo")+'</div></div>';
+    }
+    return entete("Sans conclusion", NOMS[nom]) + '<div class="corps">' +
+      vu(r.vu) +
+      '<div class="bloc"><p class="caps gris">Pourquoi ça ne suffit pas</p><p class="val">'+e(r.phrase)+'</p>' +
+      (r.complement ? '<p class="sous">'+e(r.complement)+'</p>' : '') + '</div>' +
+      (r.geste ? '<p class="geste">'+e(r.geste)+'</p>' : '') +
+      '<div class="boutons">'+boutonPlein("Recommencer")+'</div></div>';
+  }
+
+  var PANNE = "ANTHROPIC_API_KEY est refusée (HTTP 401).";
+  function echoue(){
+    if (!propose) {
+      return entete("Analyse impossible", NOMS[nom]) + '<div class="corps">' +
+        '<p class="caps gris" style="margin:0">Analyse impossible</p>' +
+        '<p class="p encre" style="margin-top:14px">'+e(PANNE)+'</p>' +
+        '<p class="p petit" style="margin-top:12px">Ce n’est pas la photo qui est en cause.</p>' +
+        '<div class="boutons">'+boutonPlein("Nouvelle photo")+'</div></div>';
+    }
+    return entete("La photo n’a pas été regardée", NOMS[nom]) + '<div class="corps">' +
+      '<p class="p encre" style="font-size:17px">Votre photo est gardée. Ce n’est pas elle qui est en cause.</p>' +
+      '<div class="boutons">'+boutonPlein("Réessayer")+boutonCreux("Réglages de l’IA")+'</div>' +
+      '<div class="bloc" style="margin-top:30px"><p class="caps gris">Détail</p><p class="val" style="font-size:12.5px;color:var(--gris)">'+e(PANNE)+'</p></div></div>';
+  }
+
+  var DIT = {
+    rendu: { avant: "<b>Aujourd'hui.</b> La première ligne est du jargon en capitales ; la source est cachée dans les détails.",
+             apres: "<b>Proposé.</b> Sous le nom : le degré de sûreté en clair, et l'essence lue. La source et sa date en une ligne, avant les détails." },
+    complement: { avant: "<b>Aujourd'hui.</b> Le titre deux fois, et la consigne sans son pourquoi.",
+                  apres: "<b>Proposé.</b> « Vu » dit ce qui manque ; la consigne dit quoi photographier. Une seule relance, et l'écran le rappelle." },
+    refus: { avant: "<b>Aujourd'hui.</b> La même dernière phrase pour les sept refus — touchez « Deux fiches » ou « Pas sur photo » : elle contredit ce qu'il y a au-dessus.",
+             apres: "<b>Proposé.</b> Vu · pourquoi · le geste, propres à chaque refus. Touchez les sept." },
+    echoue: { avant: "<b>Aujourd'hui.</b> Le message technique en gros, et un seul geste — reprendre une photo qui n'est pas en cause.",
+              apres: "<b>Proposé.</b> La photo est gardée : on réessaie, ou on va voir les réglages. Le détail reste lisible pour qui dépanne." }
+  };
+
+  function rendre(){
+    boutonsIssues();
+    var html = issue === "rendu" ? rendu() : issue === "complement" ? complement() : issue === "refus" ? refus() : echoue();
+    ecran.innerHTML = '<div class="ecran">' + html + '</div>';
+    ecran.scrollTop = 0;
+    dit.innerHTML = propose ? DIT[issue].apres : DIT[issue].avant;
+  }
+  rendre();
+})();
+</script>
+</body>
+</html>

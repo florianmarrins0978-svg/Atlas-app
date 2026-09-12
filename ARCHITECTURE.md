@@ -11851,6 +11851,15 @@ ne propose plus la relance.
 **Sans ligne de confusion, pas de relance.** On refuse plutôt qu'improviser une
 consigne : une consigne inventée enverrait photographier ce qui ne tranche rien.
 
+**Et après la relance, un coude à coude REFUSE — corrigé le 11 septembre
+2026.** Jusque-là, la relance consommée et l'écart toujours sous `ECART_NET`,
+le moteur concluait « incertaine » dès que la première valait 0,5 : le seul
+chemin où un nom sortait malgré un concurrent égal. Et il s'atteignait sans
+qu'aucune photo de confusion ait été posée, puisque la relance unique peut avoir
+servi à l'essence. Sa décision : bloquer — *« en cas de doute, bloquer plutôt
+que deviner »*, et le coût n'est pas symétrique : une photo de plus d'un côté,
+un traitement appliqué pour rien de l'autre.
+
 ### 135.6 La confiance : trois mots, et trois plafonds
 
 Sa règle : *« ne pas afficher de faux pourcentages du type 93 % si le modèle

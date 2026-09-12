@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Diagnostic végétal — rendre l'outil impeccable</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="diagnostic-végétal--rendre-loutil-impeccable">Diagnostic végétal — rendre l'outil impeccable</h1>
+<p><em>Document de retour du lot ouvert le 11 septembre 2026. Il se tient à jour jusqu'à la clôture ; ce qui est écrit ici prime sur tout récapitulatif de conversation.</em></p>
+<h2 id="ce-qui-a-été-vérifié-avant-décrire-une-ligne">Ce qui a été vérifié avant d'écrire une ligne</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Verdict</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>L'écran est dans Paysage</td>
+<td><strong>Oui, déjà fait</strong> — rien redéplacé</td>
+<td><code>src/app/paysage/page.tsx:81</code>, <code>src/app/paysage/diagnostic/</code></td>
+</tr>
+<tr>
+<td>Le modèle n'a aucun champ pour nommer un problème</td>
+<td><strong>Tient</strong></td>
+<td><code>src/server/diagnostic/observation.ts:100-115</code></td>
+</tr>
+<tr>
+<td>Le vocabulaire est injecté, pas recopié</td>
+<td><strong>Tient</strong></td>
+<td><code>observation.ts:136-142</code></td>
+</tr>
+<tr>
+<td>Tout texte affiché sort d'une fiche ou d'une liste fermée</td>
+<td><strong>Trois brèches</strong>, ci-dessous</td>
+<td><code>src/app/paysage/diagnostic/[id]/page.tsx</code></td>
+</tr>
+<tr>
+<td>Une seule relance, à trois endroits</td>
+<td><strong>Tient</strong></td>
+<td><code>diagnostic-vegetal.ts:703</code>, CHECK 0056, écran</td>
+</tr>
+<tr>
+<td>Aucun pourcentage</td>
+<td><strong>Tient</strong></td>
+<td><code>LIBELLE_CONFIANCE</code>, millièmes en base</td>
+</tr>
+<tr>
+<td>EXIF retiré avant tout, fichier non nettoyé refusé</td>
+<td><strong>Tient</strong></td>
+<td><code>actions.ts:74-98</code>, <code>photo-entrante.ts</code></td>
+</tr>
+<tr>
+<td>Fixtures tenues à l'écart</td>
+<td><strong>Tient</strong> — pas touchées</td>
+<td>trois barrières, 0056</td>
+</tr>
+</tbody></table></div>
+<h2 id="les-trois-choses-les-moins-compréhensibles-pour-quelquun-qui-naime-pas-les-téléphones">Les trois choses les moins compréhensibles pour quelqu'un qui n'aime pas les téléphones</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>Tout refus finit par la même phrase</strong> — <em>« Une photo plus proche, ou prise sous un autre angle, peut suffire »</em> (<code>[id]/page.tsx:305</code>), y compris sous <em>« aucune autre photo ne permettrait de les départager »</em>. Il reprendra trois photos pour rien. Et l'écran ne dit jamais ce qui a été vu.</li>
+<li><strong>« Personne n'a regardé » n'offre qu'un geste : « Nouvelle photo »</strong> (<code>[id]/page.tsx:77</code>), juste sous <em>« ce n'est pas la photo qui est en cause »</em>. Rien vers Réglages › IA ; la photo rangée ne peut pas être réessayée.</li>
+<li><strong>Du jargon en première ligne</strong> — <em>« CONFIANCE INCERTAINE »</em> en capitales dorées (<code>[id]/page.tsx:121</code>) ; titres doublés (« Sans conclusion » deux fois, <code>:59</code> et <code>:297</code>) ; et l'essence lue — la règle la plus structurante du moteur — n'apparaît nulle part.</li>
+</ol>
+<h2 id="les-trois-endroits-où-lécran-affiche-ce-quaucune-source-ne-fonde">Les trois endroits où l'écran affiche ce qu'aucune source ne fonde</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Où</th>
+<th>Le défaut</th>
+<th>La racine</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td><code>[id]/page.tsx:305</code></td>
+<td>La phrase « une photo plus proche peut suffire », inventée par l'écran, fausse pour 4 refus sur 7</td>
+<td>La base range la <strong>phrase</strong> du refus, pas sa <strong>clé</strong> (<code>repositories/diagnostics.ts:171</code>) : l'écran ne sait pas quel refus il affiche</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>[id]/page.tsx:300</code></td>
+<td><code>phrase ?? "Je ne peux pas confirmer…"</code> — un verdict par défaut sur une colonne nulle (la ligne exacte du tableau <code>CLAUDE.md</code> §4 quater)</td>
+<td>La même</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>actions.ts:236</code></td>
+<td><em>« Réessayez dans un instant »</em> — une promesse sans geste : seul « Nouvelle photo » existe</td>
+<td>Aucune reprise sur les photos rangées</td>
+</tr>
+</tbody></table></div>
+<p>Et le commentaire de <code>schema.ts:2705</code> — <em>« vient d'une liste fermée du code »</em> — est faux pour <code>echoue</code> : c'est le texte du fournisseur.</p>
+<h2 id="ce-que-la-documentation-promettait-et-que-le-code-ne-fait-pas">Ce que la documentation promettait et que le code ne fait pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>La doc dit</th>
+<th>Le code fait</th>
+<th>Sortie</th>
+</tr></thead><tbody>
+<tr>
+<td>0057 : <code>informations_requises</code> « affiché quand Atlas refuse de conclure »</td>
+<td>affiché seulement dans le résultat rendu (<code>[id]/page.tsx:154</code>) ; sur un refus, aucune fiche n'est retenue</td>
+<td>la promesse est intenable telle quelle — à réécrire dans 0057, pas à forcer dans l'écran</td>
+</tr>
+<tr>
+<td>0057 : <code>facteurs_favorisants</code> « s'affiche »</td>
+<td>jamais rendu ; <code>criteresDiscriminants</code> et <code>criteresExclusion</code> non plus (<code>moteur.ts:223-239</code>)</td>
+<td>à afficher dans les détails, ou à retirer de <code>ResultatFige</code></td>
+</tr>
+<tr>
+<td>§135.10 : « aucune fiche réelle »</td>
+<td>trois</td>
+<td><strong>déjà redressé sur <code>origin/claude/modest-mendel-2vpvtz</code></strong> (commit <code>a0bd5205</code>) — non touché ici pour ne pas produire deux versions à la fusion</td>
+</tr>
+</tbody></table></div>
+<h2 id="tranché-par-lui-le-11-septembre-2026">Tranché par lui, le 11 septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le coude à coude après la relance REFUSE.</strong> <code>arbitrer</code> concluait « incertaine » sur la première dès qu'elle valait 0,5 — le seul chemin où un nom sortait malgré un concurrent égal, et sans qu'aucune photo de confusion ait été posée (la relance unique peut avoir servi à l'essence). Ses mots : <em>« en cas de doute, bloquer »</em>, et le coût n'est pas symétrique — une photo de plus contre un traitement appliqué pour rien.</p>
+<p><strong>Codé</strong> : <code>src/lib/diagnostic-vegetal.ts</code> (la branche a disparu, elle n'a pas été recouverte), <code>scripts/test-diagnostic-vegetal.ts</code> (le cas retourné, plus un témoin qui garde la conclusion sur un écart net), <code>ARCHITECTURE.md</code> §135.5.</p>
+<h2 id="la-planche">La planche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>appli/diagnostic-le-refus-est-l-ecran.html</code>, liée depuis <code>appli/essais.html</code>. Les quatre issues, Aujourd'hui / Proposé, Origine / Nuit ; les sept refus un par un ; le nom de l'outil en trois options. Textes recopiés de <code>donnees/phyto/fiches/002-anthracnose-platane.json</code>, photo de la fiche (domaine public). <strong>Rien n'est codé dans <code>src/</code> pour les écrans</strong> tant qu'il n'a pas choisi.</p>
+<p>Ce qu'elle propose, et ce que ça coûte :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Issue</th>
+<th>Proposé</th>
+<th>Ce que ça demande</th>
+</tr></thead><tbody>
+<tr>
+<td>Sans conclusion</td>
+<td>vu · pourquoi · le geste, propres à chaque refus ; « Atlas connaît N problèmes » quand aucune fiche ne correspond</td>
+<td>une <strong>migration</strong> : <code>motif_refus</code> range la clé (CHECK sur la liste fermée), le texte du fournisseur va dans sa colonne, les lignes existantes sont converties ; les libellés du vocabulaire en français vivent dans <code>lib</code></td>
+</tr>
+<tr>
+<td>Personne n'a regardé</td>
+<td>« La photo n'a pas été regardée. Elle est gardée. » — Réessayer, Réglages de l'IA</td>
+<td>une action de reprise sur les photos rangées</td>
+</tr>
+<tr>
+<td>Résultat</td>
+<td>« Probable · sur un platane » à la place de « CONFIANCE PROBABLE » ; source et date sur l'écran principal ; plus de liseré</td>
+<td><code>LIBELLE_CONFIANCE</code> change ; le nom commun du taxon se lit dans <code>taxons</code></td>
+</tr>
+<tr>
+<td>Une photo de plus</td>
+<td>le titre une fois ; « Vu » au-dessus de la consigne</td>
+<td>rien de plus</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-reste-ouvert-et-qui-le-tranche">Ce qui reste ouvert, et qui le tranche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>La planche : Proposé, oui ou non — et le nom</td>
+<td><strong>lui</strong></td>
+</tr>
+<tr>
+<td>La licence INRAE (Ephytia) — le courriel est prêt depuis le 20 août (<code>docs/courriel-inrae.md</code>), personne ne sait ici s'il est parti. Réponse complète : <code>docs/QUESTIONS.md</code> §24</td>
+<td><strong>lui</strong></td>
+</tr>
+<tr>
+<td>L'appel réel de vision sur une vraie photo — jamais joué ; <code>VISION_PROVIDER</code> retombe sur le fournisseur de rédaction, sa clé Anthropic suffit</td>
+<td><strong>lui</strong>, sur son banc, une capture</td>
+</tr>
+<tr>
+<td>Combien de photos réelles échouent à l'identification de l'essence — la première chose à mesurer le jour où la clé tourne</td>
+<td><strong>lui</strong>, sur son banc</td>
+</tr>
+<tr>
+<td>Les seuils (0,35 · 0,15 · plafonds) — un point de départ nommé, pas mesuré ; ne bougent pas au jugé</td>
+<td>de vraies photos, de vraies fiches</td>
+</tr>
+<tr>
+<td>La durée de conservation des photos, et ce que le fournisseur garde ; le fournisseur de vision est <strong>déjà</strong> au registre RGPD (<code>docs/RGPD.md</code>, ligne « Vision »), <code>TODO.md</code> est en retard là-dessus</td>
+<td><strong>lui</strong></td>
+</tr>
+</tbody></table></div>
+<h2 id="la-batterie">La batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Pas encore jouée sur ce lot — les chiffres viendront ici.</em></p>
+</main>
+</body>
+</html>
