@@ -63,7 +63,7 @@ async function creneauxEnBase(chantierId: string): Promise<string[]> {
 /**
  * CE QUE LA POIGNÉE DU TIROIR ANNONCE — le nombre, rien d'autre.
  *
- * **Elle ne dit « N sans date » que si aucun jour n'est touché** : un jour
+ * **Elle ne dit « N client(s) sans date » que si aucun jour n'est touché** : un jour
  * touché change la question, et le mot suit le geste. On lit donc sur un
  * planning fraîchement ouvert.
  */
@@ -73,7 +73,7 @@ async function combienAnnonce(page: Page): Promise<number> {
   const poignee = page.locator('[data-atlas="poignee-tiroir"]');
   if ((await poignee.count()) === 0) return 0;
   const dit = await poignee.innerText();
-  const n = dit.match(/(\d+)\s+sans date/);
+  const n = dit.match(/(\d+)\s+clients?\s+sans date/);
   return n ? Number(n[1]) : 0;
 }
 

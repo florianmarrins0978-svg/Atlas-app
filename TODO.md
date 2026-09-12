@@ -91,6 +91,16 @@ Trois familles de causes, relevées à l'échantillon :
 | **un écran qui a changé** — « aucune flèche de retour », « tout tient dans un écran » | à trancher : le contrôle est-il périmé, ou l'écran a-t-il dérivé ? |
 | **un décor accumulé** — `suivi-devis` : « 30 en attente du client », deux éléments pour un même texte | une base qui grossit d'une batterie à l'autre ; la suite vise un texte au lieu d'un repère |
 
+**Mesure du 12 septembre 2026, dans l'atelier n° 2 de `atlas-app-s4`, pendant que
+DEUX autres batteries tournaient sur le même PC** : 32 suites navigateur
+rouges sur 140. Aux dix-huit ci-dessus s'ajoutent :
+
+| | |
+|---|---|
+| **trois suites qui écrivaient le port 3000 en dur** — `retour-fiche-client`, `session-perimee`, `porte` | **corrigé le jour même** : elles lisent `_adresse.ts`, et passent au vert dans l'atelier |
+| **un jour de décalage** — `poser-une-date`, `liberer-une-demi-journee` : « posé le 13 au lieu du 14 » | la suite relit une colonne `DATE` par `toISOString()` sur un PC en UTC+2 : `pg` rend minuit LOCAL, l'ISO tombe la veille. Vert en CI (UTC). **À corriger dans les suites** (lire la date en texte, `to_char` ou `jour::text`), pas dans le produit |
+| **des délais dépassés** — `anneau-dictee`, `planning-vers-facture`, `reprise-morceau`… | deux batteries voisines sur la même machine ; à rejouer seule avant d'accuser quoi que ce soit |
+
 **Ce qui en découle, et il faut le dire :** aucun lot ne peut plus se donner
 « batterie au vert » tant que ces dix-huit-là tombent. On compare donc AVANT et
 APRÈS, et l'on dit ce qu'on a comparé — c'est ce qu'a fait le lot des polices.
