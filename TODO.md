@@ -1614,6 +1614,32 @@ téléphone, barre d'adresse comprise (`scripts/e2e-browser.ts`).
 
 ---
 
+## ⚠ DEUX ROUGES SUR LES MONTANTS D'UN DEVIS — relevés le 12 septembre 2026
+
+**Trouvés en élargissant la preuve d'un autre lot, et ils n'appartiennent à
+personne pour l'instant.** Ce sont les deux seuls rouges de la soirée qui
+portent sur un CHIFFRE, et un devis faux part chez un client :
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-devis-complet-e2e` | « Le total de la ligne (3 × 250 €) ne s'affiche pas » — après `blur()` et 900 ms d'attente |
+| `test-devis-papier-e2e` | « Le PDF totalise 5400,00 € au lieu de 900 € (2 × 450) » |
+
+**Ils ne viennent pas du lot du téléchargement** (12 septembre) : celui-ci ne
+touche ni la saisie, ni le calcul, ni la composition du PDF — ses fichiers sont
+les six boutons de téléchargement et `remise-de-fichier.ts`.
+
+**La première piste, et elle se vérifie avant de se croire :** le lot du
+11 septembre au soir, *« Faire se suivre les écritures d'une même donnée »*
+(`file-d-ecritures.ts`), sérialise désormais les écritures d'un même champ —
+le champ quitté puis le bouton. Un total qui n'apparaît plus après 900 ms
+ressemble à une écriture qui attend son tour. **Le 5400 ne s'explique PAS par
+là** (c'est douze fois 450, pas un retard) : les deux rouges sont peut-être
+deux défauts différents, et il faut les traiter séparément.
+
+**À reprendre par qui touchera la saisie du devis** — en commençant par
+reproduire, jamais par corriger.
+
 ## ⏳ SUR SON IPHONE : la feuille de partage range-t-elle le fichier ?
 
 **CODÉ LE 12 SEPTEMBRE 2026 — ce qui reste n'est pas un choix, c'est un essai
