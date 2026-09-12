@@ -7,6 +7,7 @@ import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { jourLisible } from "@/lib/jour";
+import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { useRetourDeMessagerie, marquerDepartMessagerie } from "@/lib/depart-messagerie";
 import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
@@ -639,15 +640,19 @@ export default function FactureClient({
             de texte teintée : rien ne disait qu'on pouvait appuyer dessus. Le
             soulignement se lit comme un lien partout, sans ajouter un signe de
             plus à l'écran. */}
-        <a
-          href={`/api/factures/${initialFacture.id}/pdf`}
-          target="_blank"
-          rel="noopener"
+        {/* **Dans l'application, pas dans un onglet de Safari** — sa capture du
+            11 septembre 2026 : *« quand j'ouvre le pdf pour voir la facture
+            j'ai pas de touche retour »*. La visionneuse porte l'en-tête et sa
+            flèche ; le fichier reste servi par la même route
+            (`src/lib/visionneuse-pdf.ts`). */}
+        <Link
+          href={adresseDeLaVisionneuse(`/api/factures/${initialFacture.id}/pdf`, { surtitre: "Facture", titre: initialFacture.numeroCommercial })}
+          data-atlas="voir-facture"
           className="mt-4 block text-center text-[14px] font-medium underline underline-offset-4"
           style={{ color: colors.rust }}
         >
           Voir la facture en PDF
-        </a>
+        </Link>
 
         {/* **Ouvrir n'est pas garder.** Le patron, le 10 août 2026 : il ne
             pouvait que regarder la facture, jamais la ranger sur son téléphone

@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-11
 
+### Le PDF d'une facture se regarde dans l'application, avec sa flèche
+
+Sa capture du jour, sur son iPhone : *« quand j'ouvre le pdf pour voir la
+facture j'ai pas de touche retour »*. « Voir la facture en PDF », « Aperçu du
+PDF » et « Ouvrir » (dossier du client) remettaient le fichier à Safari dans un
+onglet neuf — ni en-tête, ni flèche, et rien derrière l'onglet.
+
+Un écran neuf, `/documents/pdf`, porte l'en-tête d'Atlas avec le titre du
+document et la flèche du journal de navigation ; le fichier est demandé à la
+même route qu'avant et peint page par page par pdf.js (`pdfjs-dist`, chargé à
+l'appui). Pas d'`<iframe>` : sur iOS il ne montre que la première page. La page
+n'accepte qu'une adresse de ce site qui se termine par `/pdf`
+(`src/lib/visionneuse-pdf.ts`). Les pièces « page » du dossier client gardent
+leur onglet. Suites : `test-visionneuse-pdf.ts`, `test-visionneuse-pdf-e2e.ts`
+(le geste, sur le gabarit de son téléphone, jusqu'à l'encre sur la toile).
+Détail : `ARCHITECTURE.md` §335.
+
 ### Deux écritures de la même donnée ne partent plus ensemble
 
 La batterie a rendu systématique ce qui était noté comme intermittent : le
