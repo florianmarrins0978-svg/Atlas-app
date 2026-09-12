@@ -70,7 +70,40 @@ des lots voisins du jour (créneaux, « poser un client sur un jour »).
 
 ---
 
-## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
+## ⏳ LE LANCEUR NE VOIT PAS UNE SESSION OUVERTE DEPUIS L'ÉDITEUR (11 septembre 2026)
+
+**Constaté à 18:01, dans `atlas-app-s2`** : deux sessions dans le même
+dossier, sur la même branche — l'une ouverte depuis VS Code, l'autre envoyée
+là par `npm run session`. Le patron : *« normalement c'est pas possible, vous
+avez chacun un dossier »*. Il a raison sur la règle ; c'est le lanceur qui a
+un angle mort.
+
+`scripts/ouvrir-session.mjs` ne tient un dossier pour « pris » que par le
+processus **qu'il a lui-même lancé** (son PID est le jeton). Une session
+ouverte autrement — l'extension VS Code, un `claude` tapé à la main dans le
+dossier — n'a aucun jeton : le dossier paraît libre, et la suivante y est
+envoyée. Ce que ça coûte : un `merge origin/main` sous les commits de l'autre,
+et un `git status` qui porte les fichiers de quelqu'un d'autre.
+
+**Ce qu'il faut** : que « pris » se lise aussi à ce qui tourne réellement dans
+le dossier — un processus `claude` dont le répertoire courant est ce
+worktree —, pas seulement au jeton du lanceur. `pgrep`/`Get-Process` avec le
+chemin, comme le veilleur remesure le port au lieu de le croire. Et que
+`sessions:preparer --liste` le montre.
+
+**Ce qu'il ne faut PAS** : un fichier posé dans le dossier pour dire « je suis
+là » — c'est la leçon du verrou de la batterie, un jeton que personne ne
+ramasse ment dès la deuxième soirée.
+
+## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026) — 31 le 12 au matin
+
+**Relevé du 12 septembre 2026** (batterie de la bibliothèque de photos, `main`
+fusionné) : 112/143. Aux dix-huit s’ajoutent `bloquer-sans-devis`,
+`date-lointaine`, `deux-dates-calendrier`, `fin-de-chantier`, `grille-prix`,
+`ia-03`, `ia-04`, `liberer-une-demi-journee`, `ligne-du-client`, `pas-la-ce-jour`,
+`poser-une-date`, `reduction-devis`, `reste-equipes`, `tva-multiple` — et
+`onglets-termines` en est SORTI. Pas de « avant » joué ce matin-là : à départager.
+
 
 **Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
 jouée deux fois le 11 septembre, avant et après le lot des polices embarquées.
@@ -204,6 +237,34 @@ faux. Citer le TITRE avec le numéro, tant que ce n'est pas réglé.
 sessions voisines, qui portent les mêmes numéros (payé trois fois le 26 août).
 Ça se fait d'un coup, par quelqu'un qui relit ensuite CHAQUE renvoi touché — pas
 en passant, au milieu d'un autre lot.
+
+---
+
+## ~~UNE BATTERIE À JOUER — la photo en bibliothèque est codée~~ — JOUÉE ET LIVRÉE le 12 septembre 2026
+
+Rejouée dans un dossier à part (`.claude/worktrees/livraison-photos`, `main`
+fusionné avant), avec `ATLAS_BASE_SUPER` : base **350/358**, navigateur
+**112/143**, connexion derrière proxy verte.
+
+| | |
+|---|---|
+| les 8 rouges de base | les mêmes scripts d’outillage que la veille — verrou, ports, lanceur, seed — aucun ne touche les photos |
+| les 31 rouges navigateur | les dix-huit connus de `main`, plus des suites planning / devis / IA / outillage — **aucune ne cite la visionneuse, les retours ni la pellicule** (vérifié par `grep`) |
+| les suites du lot | `onglets-termines` (photo plus petite que l’écran, croix à droite, chevron, rangée, voile qui ferme), `photos-e2e`, `retrait-differe-e2e` : **vertes** — et `onglets-termines` était dans les dix-huit rouges de `main` |
+
+**Ce qui n’a PAS été comparé :** la batterie n’a été jouée qu’APRÈS le lot, pas
+avant sur ce `main`-là — les treize rouges hors des dix-huit connus restent
+donc à rejouer sur `main` nu pour savoir s’ils sont du jour (12 septembre :
+plusieurs visent une date) ou d’un lot voisin. Entrée mise à jour sous
+« DIX-HUIT SUITES NAVIGATEUR ». **Qui :** nous.
+---
+## ~~UNE PLANCHE À REGARDER — LA PHOTO EN BIBLIOTHÈQUE~~ — CHOISIE ET CODÉE LE SOIR MÊME (11 septembre 2026)
+
+Il a répondu dans l’heure, planche en main — *« Voilà je veux ça ! »*, la
+variante **avec la rangée**, plus : *« si on touche un endroit hors de la photo
+ça ferme aussi »*. Codé : `VisionneusePhoto.tsx` prend la liste et le rang, ses
+deux appelants suivent, `test-onglets-termines-e2e.ts` mesure désormais une
+photo qui ne couvre PAS l’écran, feuillette, et ferme en touchant le voile.
 
 ---
 

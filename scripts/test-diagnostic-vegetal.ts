@@ -404,15 +404,33 @@ cas("une confusion SANS photo qui tranche ne relance pas", () => {
   assert.equal(verdict.issue === "refus" && verdict.motif, "trop_proches");
 });
 
-cas("la relance a déjà eu lieu : on ne redemande PAS, on tranche ou on refuse", () => {
+cas("la relance a déjà eu lieu et l'écart n'a pas bougé : on REFUSE, même sur une première solide", () => {
+  // **Sa décision du 11 septembre 2026.** Ce cas exigeait l'inverse — une
+  // conclusion « incertaine » dès que la première valait 0,5. C'était le seul
+  // chemin où un nom sortait malgré un concurrent égal, et il s'atteignait
+  // sans qu'aucune photo de confusion ait été posée (la relance unique peut
+  // avoir servi à l'essence). Une photo de plus coûte moins qu'un traitement
+  // appliqué pour rien.
   const a: Candidat = { fiche: fiche("a"), score: 0.7, motifs: [] };
   const b: Candidat = { fiche: fiche("b"), score: 0.65, motifs: [] };
   const verdict = arbitrer([a, b], observation(), [confusion], {
     complementDejaDemande: true,
     baseVide: false,
   });
+  assert.equal(verdict.issue === "refus" && verdict.motif, "trop_proches");
+});
+
+cas("TÉMOIN — la même paire, un écart net : elle conclut encore après la relance", () => {
+  // Sans ce témoin, le cas ci-dessus serait vert même si le moteur refusait
+  // TOUT après une relance. Ce qui est refusé, c'est le coude à coude — pas la
+  // seconde analyse.
+  const a: Candidat = { fiche: fiche("a"), score: 0.7, motifs: [] };
+  const b: Candidat = { fiche: fiche("b"), score: 0.7 - ECART_NET - 0.01, motifs: [] };
+  const verdict = arbitrer([a, b], observation(), [confusion], {
+    complementDejaDemande: true,
+    baseVide: false,
+  });
   assert.equal(verdict.issue, "conclusion");
-  assert.equal(verdict.issue === "conclusion" && verdict.confiance, "incertaine");
 });
 
 cas("après relance, une première hypothèse faible se refuse quand même", () => {

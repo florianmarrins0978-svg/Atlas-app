@@ -21,6 +21,7 @@ import {
 import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
+import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
@@ -1300,17 +1301,20 @@ export default function DevisCompletClient(props: Props) {
       </footer>
 
       {/* L'aperçu reste DANS le document : ce n'est pas une action, c'est une
-          vérification. On le lit une fois, à la fin, comme le reste du papier. */}
+          vérification. On le lit une fois, à la fin, comme le reste du papier.
+
+          **Et il s'ouvre DANS l'application** — sa capture du 11 septembre 2026,
+          sur la facture : *« j'ai pas de touche retour »*. Un onglet neuf n'a
+          ni en-tête ni flèche (`src/lib/visionneuse-pdf.ts`). */}
       <div className="mt-10 flex flex-col items-center" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
-        <a
-          href={`/api/devis/${props.devisId}/pdf`}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href={adresseDeLaVisionneuse(`/api/devis/${props.devisId}/pdf`, { surtitre: "Devis", titre: props.numeroCommercial })}
+          data-atlas="apercu-pdf"
           className="pt-6 text-[14px] font-medium"
           style={{ color: colors.rust }}
         >
           Aperçu du PDF
-        </a>
+        </Link>
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════

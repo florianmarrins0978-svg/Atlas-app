@@ -41,6 +41,23 @@ les cent vingt autres depuis le 5 septembre.
 
 ## 2026-09-11
 
+### Le PDF d'une facture se regarde dans l'application, avec sa flèche
+
+Sa capture du jour, sur son iPhone : *« quand j'ouvre le pdf pour voir la
+facture j'ai pas de touche retour »*. « Voir la facture en PDF », « Aperçu du
+PDF » et « Ouvrir » (dossier du client) remettaient le fichier à Safari dans un
+onglet neuf — ni en-tête, ni flèche, et rien derrière l'onglet.
+
+Un écran neuf, `/documents/pdf`, porte l'en-tête d'Atlas avec le titre du
+document et la flèche du journal de navigation ; le fichier est demandé à la
+même route qu'avant et peint page par page par pdf.js (`pdfjs-dist`, chargé à
+l'appui). Pas d'`<iframe>` : sur iOS il ne montre que la première page. La page
+n'accepte qu'une adresse de ce site qui se termine par `/pdf`
+(`src/lib/visionneuse-pdf.ts`). Les pièces « page » du dossier client gardent
+leur onglet. Suites : `test-visionneuse-pdf.ts`, `test-visionneuse-pdf-e2e.ts`
+(le geste, sur le gabarit de son téléphone, jusqu'à l'encre sur la toile).
+Détail : `ARCHITECTURE.md` §335.
+
 ### Deux écritures de la même donnée ne partent plus ensemble
 
 La batterie a rendu systématique ce qui était noté comme intermittent : le
@@ -229,6 +246,67 @@ Le formulaire de saisie est revenu tel qu'il était, et « émise le … » avec
 Sa règle, en une phrase : *« il fallait laisser les phrases où elles étaient,
 juste les modifier »* — une demande d'affichage vaut pour le texte, pas pour la
 place.
+
+### La photo d’un retour ne prend plus l’écran : une bibliothèque
+
+Il a choisi dans l’heure, planche en main — *« Voilà je veux ça ! »*, la
+variante avec la rangée — et ajouté : *« si on touche un endroit hors de la
+photo ça ferme aussi »*.
+
+`VisionneusePhoto` reçoit désormais **la liste et le rang**, plus une seule
+clé : l’écran reste derrière un voile d’encre, la photo vient dans un cadre au
+milieu (60 % de la hauteur au plus), la croix passe **à droite**, un chevron de
+chaque côté — éteint au bout plutôt que retiré —, « 2 / 3 » dessous et la rangée
+des vignettes en bas, celle qu’on regarde cerclée d’or. Le doigt glisse, le
+voile ferme, Échap et les flèches marchent sur un ordinateur. Avec une seule
+photo : ni chevrons, ni compte, ni rangée.
+
+**Un jeton neuf, `surPhoto`** (`design-tokens.ts`) : les chevrons sont posés
+sur la photo, et une photo ne suit aucune charte — en `surPlein` ils se
+retournaient avec Nuit pendant que l’image, elle, restait la même. C’est la
+seule couleur du produit qui a le droit de ne pas suivre la charte, et elle vit
+dans les jetons pour que la règle garde son sens ailleurs.
+
+**La suite éprouve ses gestes, pas la fonction** : `test-onglets-termines-e2e`
+pose désormais DEUX fichiers réels dans le stockage local — sans fichier, une
+image mesure zéro pixel, et l’on ne saurait pas dire si elle couvre l’écran. Elle
+mesure une photo plus petite que l’écran, la croix à droite, le chevron qui
+passe à « 2 / 2 » et s’éteint au bout, la vignette de la rangée qui ramène à la
+première, et la fermeture en touchant le voile. Sa version d’avant exigeait
+l’inverse — « la visionneuse couvre l’écran » — et aurait rougi sur sa demande.
+
+### Dessiner la photo d’un retour en bibliothèque, avant d’y toucher
+
+Sa capture du soir, sur la visionneuse livrée le matin : *« c’est trop gros,
+faut pas qu’elle prenne tout l’écran. Comme sur les sites internet : des
+flèches de chaque côté pour aller voir les suivantes, et surtout une croix en
+haut à droite pour fermer. Une sorte de bibliothèque. »*
+
+`appli/photo-en-bibliotheque.html` — la fiche reste derrière un voile, la
+photo vient dans un cadre au milieu, croix à droite, un chevron de chaque côté,
+« 2 / 3 », le doigt glisse ; une variante ajoute la rangée des vignettes en
+bas. Origine et Nuit. **Rien n’est codé** : `VisionneusePhoto.tsx` ne bouge
+pas tant qu’il n’a pas choisi (`CLAUDE.md` §3 bis).
+
+Vu en la rendant : les chevrons posés en clair sur une photo claire ne se
+voyaient pas. Ils sont sur la PHOTO, pas sur le voile — leur contraste ne suit
+donc pas la charte, contrairement à la croix.
+
+
+### Le diagnostic végétal refuse aussi le coude à coude après la relance
+
+Le seul chemin du moteur où un nom sortait malgré un concurrent égal : la
+relance consommée, l'écart sous 0,15, `arbitrer` concluait « incertaine » dès
+que la première valait 0,5 — et sans qu'aucune photo de confusion ait été
+posée, la relance unique pouvant avoir servi à l'essence. **Sa décision :
+bloquer.** Le coût n'est pas symétrique — une photo de plus contre un
+traitement appliqué pour rien. `scripts/test-diagnostic-vegetal.ts` l'épingle,
+avec le témoin qui garde la conclusion sur un écart net.
+
+**Et la planche du refus est dessinée**, avant tout code d'écran
+(`appli/diagnostic-le-refus-est-l-ecran.html`) : les quatre issues en
+Aujourd'hui / Proposé, sur Origine et Nuit. Ce qu'elle corrige, et pourquoi,
+est dans `docs/diagnostic-vegetal-impeccable.md`.
 
 ### La facture téléchargée s'ouvrait blanche : la police n'annonçait pas sa longueur
 

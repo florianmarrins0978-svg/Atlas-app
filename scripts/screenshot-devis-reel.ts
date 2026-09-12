@@ -1,6 +1,7 @@
 import { chromium, devices } from "playwright";
 import { mkdirSync, writeFileSync } from "fs";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 
 const OUT = "artifacts/screenshots/step-24-devis-reel";
 mkdirSync(OUT, { recursive: true });
@@ -34,7 +35,7 @@ async function main() {
   await page.goto(`${chantierUrl}/export`, { waitUntil: "networkidle" });
   await page.screenshot({ path: `${OUT}/01-avant-envoi.png`, fullPage: true });
 
-  const apercuHref = await page.locator("text=Aperçu du PDF").getAttribute("href");
+  const apercuHref = fichierDemandeALaVisionneuse((await page.locator("text=Aperçu du PDF").getAttribute("href")) ?? "");
   const reponse = await page.request.get(`http://localhost:3000${apercuHref}`);
   writeFileSync(`${OUT}/apercu-devis.pdf`, await reponse.body());
 

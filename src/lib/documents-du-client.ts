@@ -177,19 +177,28 @@ export function jourCourt(iso: string): string {
  * le serveur SERT. Deviner « c'est un devis » à partir d'un libellé, c'est se
  * fier à un mot que la prochaine demande peut changer.
  */
-export function nomDuFichierDeLaPiece(piece: PieceDuClient): string {
-  const genre = piece.href.includes("/api/factures/")
-    ? "facture"
-    : piece.href.includes("/api/devis/")
-      ? "devis"
-      : "fiche-chantier";
+export function natureDeLaPiece(href: string): "facture" | "devis" | "fiche-chantier" {
+  return href.includes("/api/factures/") ? "facture" : href.includes("/api/devis/") ? "devis" : "fiche-chantier";
+}
 
-  // Un numéro commercial s'écrit « n° 2026-0029 » à l'écran : on garde les
-  // chiffres et le tiret, on jette le reste. Un nom de fichier qui porterait
-  // « n° » et son espace insécable se recopie mal et se cherche encore plus mal.
-  const numero = piece.titre.replace(/^n[°o]\s*/i, "").trim();
-  const ressembleAUnNumero = /^[0-9]{4}-[0-9]+$/.test(numero);
-  if (ressembleAUnNumero) return `${genre}-${numero}.pdf`;
+/**
+ * Le numéro commercial d'une pièce, ou `null` si son titre n'en porte pas.
+ *
+ * Un numéro s'écrit « n° 2026-0029 » à l'écran : on garde les chiffres et le
+ * tiret, on jette le reste. Un nom de fichier qui porterait « n° » et son
+ * espace insécable se recopie mal et se cherche encore plus mal — et sur
+ * l'en-tête de la visionneuse, en 36 px, « n° » fait passer le numéro à la
+ * ligne.
+ */
+export function numeroDeLaPiece(titre: string): string | null {
+  const numero = titre.replace(/^n[°o]\s*/i, "").trim();
+  return /^[0-9]{4}-[0-9]+$/.test(numero) ? numero : null;
+}
+
+export function nomDuFichierDeLaPiece(piece: PieceDuClient): string {
+  const genre = natureDeLaPiece(piece.href);
+  const numero = numeroDeLaPiece(piece.titre);
+  if (numero) return `${genre}-${numero}.pdf`;
 
   // Une fiche de chantier n'a pas de numéro : elle porte son JOUR, et au format
   // de tri (AAAA-MM-JJ) plutôt que « 12 août ». Rangés dans un dossier, dix
