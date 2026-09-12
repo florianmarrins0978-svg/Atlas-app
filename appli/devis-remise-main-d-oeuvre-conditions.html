@@ -269,10 +269,6 @@
       <textarea id="cgv" aria-label="Conditions générales de vente et de règlement" style="min-height:420px;font-size:14px"></textarea>
       <button class="discret" type="button" id="cgv-origine">Remettre le texte d’origine</button>
 
-      <p class="inter">Pris de la photo du menuisier</p>
-      <div class="bloc"><p class="nom">Gardé</p><p class="dit">La phrase d’adhésion en tête · les prix fermes pendant la validité, révisables au-delà · aucun escompte pour paiement anticipé · le délai indicatif, prolongé sans annulation · les travaux d’autres métiers à la charge du client · la réception faite en présence de l’entreprise, sans réclamation ensuite · la réserve de propriété et la renonciation à l’accession (art. 551-552) · la garantie légale des vices cachés.</p></div>
-      <div class="bloc"><p class="nom">Laissé, et pourquoi</p><p class="dit">Pénalités à 1,5 fois le taux légal : loi de 1992, le minimum est trois fois depuis 2009. « Le retard ne donne droit à aucune indemnité » : clause abusive face à un particulier (art. L216-1 du code de la consommation). « Seul le tribunal de Marennes » : un tribunal imposé à un particulier ne lui est pas opposable. Le camionnage et le franco : rien à transporter chez un paysagiste. La garantie de deux ans sur menuiseries : chez nous, c’est la reprise des végétaux.</p></div>
-
       <p class="inter">Ce qui s’imprime déjà</p>
       <div class="bloc"><p class="nom">Acompte à la commande <span>30 %</span></p><p class="dit">Le montant se calcule sur le total TTC du devis.</p></div>
       <div class="bloc"><p class="nom">Moyens de paiement acceptés</p><p class="dit">virement, chèque</p></div>
@@ -311,16 +307,20 @@
 <div class="note">
   <b>La main d’œuvre, deux lectures.</b> Vous avez dit « sous le total HT » : ci-dessus elle <b>s’ajoute</b> aux lignes (A). L’autre lecture, B, est « dont main d’œuvre » : elle est déjà dans les lignes et le papier la nomme, sans rien changer aux totaux — ce qu’un client demande pour son crédit d’impôt jardinage.
   <div class="ab">
-    <button type="button" data-mo="A" aria-pressed="true">A · s’ajoute aux lignes</button>
-    <button type="button" data-mo="B" aria-pressed="false">B · dont main d’œuvre</button>
+    <button type="button" data-mo="A" aria-pressed="false">A · s’ajoute aux lignes</button>
+    <button type="button" data-mo="B" aria-pressed="true">B · dont main d’œuvre</button>
   </div>
-  <b>Ce qui reste à trancher</b> : A ou B ; et les trois champs de « Mon entreprise » (assureur, médiateur, devis gratuit) — la loi les demande, vous ne les aviez pas cités.
+  <b>Votre réponse du 12 septembre : B</b>, et le « − » la retire. Le bandeau du haut dit encore « sous le total HT » : c’est là qu’elle est, sans rien changer aux totaux.
+      <p class="inter" style="margin-top:18px">Pris de la photo du menuisier — pour vous, pas dans l’appli</p>
+      <div class="bloc"><p class="nom">Gardé</p><p class="dit">La phrase d’adhésion en tête · les prix fermes pendant la validité, révisables au-delà · aucun escompte pour paiement anticipé · le délai indicatif, prolongé sans annulation · les travaux d’autres métiers à la charge du client · la réception faite en présence de l’entreprise, sans réclamation ensuite · la réserve de propriété et la renonciation à l’accession (art. 551-552) · la garantie légale des vices cachés.</p></div>
+      <div class="bloc"><p class="nom">Laissé, et pourquoi</p><p class="dit">Pénalités à 1,5 fois le taux légal : loi de 1992, le minimum est trois fois depuis 2009. « Le retard ne donne droit à aucune indemnité » : clause abusive face à un particulier (art. L216-1 du code de la consommation). « Seul le tribunal de Marennes » : un tribunal imposé à un particulier ne lui est pas opposable. Le camionnage et le franco : rien à transporter chez un paysagiste. La garantie de deux ans sur menuiseries : chez nous, c’est la reprise des végétaux.</p></div>
+
 </div>
 
 <script>
   // ─── Un seul calcul : la remise sur le HT, la TVA après ───────────────────
   var LIGNES = 1592, TAUX = 20, ACOMPTE = 30;
-  var etat = { mo: null, remise: null, lecture: "A" };
+  var etat = { mo: null, remise: null, lecture: "B" };
   function eur(n){ return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
   function nombre(v){ var n = parseFloat(String(v).replace(",",".")); return isFinite(n) ? n : 0; }
   function id(x){ return document.getElementById(x); }

@@ -37,12 +37,22 @@ paiement, le rappel des pénalités et le texte de pied sont réglés
 renommage se fait là et nulle part ailleurs, puis les suites qui lisent le
 texte (`grep -rn "Prix accordé" scripts/`).
 
-**Ce qu’il doit trancher :**
+**Ses réponses du 12 septembre 2026 :**
 
 | | |
 |---|---|
-| la main d’œuvre | **A** s’ajoute aux lignes (ce qu’il a décrit) ou **B** « dont main d’œuvre », déjà dans les lignes |
-| les trois champs de « Mon entreprise » que la loi demande et qu’il n’a pas cités | assureur décennale / RC pro, médiateur de la consommation, devis gratuit ou payant |
+| la main d’œuvre | **B** — « dont main d’œuvre HT », déjà dans les lignes, les totaux ne bougent pas ; **facultative**, et le « − » la retire comme la remise |
+| le bloc « pris de la photo du menuisier » | **pour lui seulement**, jamais dans l’application — il vit sous le téléphone de la planche |
+| **NE RIEN CODER** | *« j’ai une session qui retravaille le devis ; une fois qu’elle aura fini tu iras voir pour mettre à jour cette maquette »* — regarder `git branch -r --sort=-committerdate` et le devis sur `main` AVANT de reprendre la planche, puis la reprendre sur l’écran tel qu’il sera |
+
+**Les mentions manquantes, comment (proposé, pas tranché) :**
+
+| | où |
+|---|---|
+| assureur décennale / RC pro, médiateur, devis gratuit ou payant | trois champs de « Mon entreprise » (colonnes sur `entreprises`), imprimés au pied du devis et de la facture comme le SIRET |
+| rétractation 14 jours | une phrase dans le texte d’origine des CGV (déjà) + une ligne sous le bon pour accord quand le devis est signé chez le client |
+| date ou délai d’exécution | une ligne en tête du devis à côté de « Validité », prise du planning quand le chantier est daté, sinon saisie |
+| taux horaire de main d’œuvre TTC | un réglage des tarifs, imprimé seulement s’il l’allume — dépannage et entretien seulement |
 
 **Ce que la vérification en ligne a donné** (service-public, code de la
 consommation, arrêté du 24 janvier 2017) — sur le devis d’aujourd’hui :
