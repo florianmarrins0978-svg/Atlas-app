@@ -342,7 +342,16 @@ if (sale) {
   soucis.push(
     "Des modifications non enregistrées sont présentes. **La mise à jour les\n" +
       "     respecte et s'abstient** — elle refusera tant qu'elles sont là :\n" +
-      `       ${lignes}`
+      `       ${lignes}\n` +
+      // **Sans ce geste, un espace déjà bloqué le reste pour toujours.** Le
+      // 12 septembre 2026, `package-lock.json` réécrit par un `npm install` de
+      // repli a figé le sien une journée : l'installation ne tourne qu'après
+      // une mise à jour réussie, donc plus rien ne remettait le fichier en
+      // état. `proteger-lock.sh` empêche désormais que cela recommence — mais
+      // il ne peut rien pour un espace déjà pris, qui ne recevra jamais le
+      // correctif. Le geste se dit donc ici, et il est réversible.
+      "     Si ce n'est pas votre travail, mettez-le de côté depuis l'espace :\n" +
+      "       git stash push -- <le fichier>   (« git stash pop » le rend)"
   );
 }
 

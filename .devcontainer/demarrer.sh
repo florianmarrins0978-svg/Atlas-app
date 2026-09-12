@@ -252,6 +252,15 @@ if [ "$MISE_A_JOUR" = "faite" ]; then
   # reproduirait exactement ce qu'on vient d'éviter.
   sleep 2
 
+  # **Le repli `npm install` RÉÉCRIT `package-lock.json`, et cela a figé son
+  # espace une journée entière — 12 septembre 2026.** L'arbre devenu sale,
+  # `mettre-a-jour.sh` s'abstient ; et comme l'installation ne tourne qu'après
+  # une mise à jour réussie (le `if` qui ouvre ce bloc), plus rien ne remet le
+  # fichier en état. Un seul démarrage malheureux et l'espace ne reçoit plus
+  # jamais de code. On relève donc l'état AVANT, pour ne rendre propre que ce
+  # qu'on aura sali soi-même — le pourquoi entier est dans `proteger-lock.sh`.
+  LOCK_AVANT="$(bash "$(dirname "$0")/proteger-lock.sh" etat "$CD")"
+
   # **L'échec de l'installation NE S'AVALE PLUS.** Le `|| true` d'avant le
   # taisait : le code neuf arrivait sur des dépendances vieilles ou amputées, et
   # rien ne le disait — la même faute que les migrations du 9 août.
@@ -263,6 +272,9 @@ if [ "$MISE_A_JOUR" = "faite" ]; then
     DEPENDANCES="échec"
   fi
   echo "dépendances : $DEPENDANCES" >> "$JOURNAL"
+
+  LOCK_APRES="$(bash "$(dirname "$0")/proteger-lock.sh" remettre "$CD" "$LOCK_AVANT")"
+  echo "package-lock.json : $LOCK_APRES" >> "$JOURNAL"
 
   # **Les migrations passent par leur propre script, sous le rôle
   # PROPRIÉTAIRE.** Lancées ici avec la variable ambiante, elles tournaient sous

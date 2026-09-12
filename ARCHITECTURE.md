@@ -28754,3 +28754,42 @@ mesure rien), revenir au devis par la flèche, et voir une adresse étrangère
 refusée en 404. Les suites qui suivaient l'ancien lien (`test-devis-e2e`,
 `test-enregistrer-piece-e2e`, `screenshot-devis-reel`) lisent désormais le
 fichier derrière l'adresse de la visionneuse, par `fichierDemandeALaVisionneuse`.
+
+## §336 — Un espace qui se salit lui-même ne reçoit plus jamais de code
+
+**Payé le 12 septembre 2026, et la boucle est le sujet.** Son espace tournait,
+servait, répondait — et exécutait le code de 3 h 38 quand `main` était trois
+versions plus loin. Aucune panne : `mettre-a-jour.sh` refusait, parce que
+`package-lock.json` était modifié. Personne ne l'avait touché.
+
+C'est `demarrer.sh` qui l'avait réécrit, par son repli `npm install` quand
+`npm ci` échoue. Et la séquence du démarrage referme le piège :
+
+| Ordre au démarrage | Conséquence une fois l'arbre sali |
+|---|---|
+| 1. `mettre-a-jour.sh` | refuse — « des modifications non enregistrées » |
+| 2. `npm ci` / `npm install` | **ne tourne pas** : il est sous `if [ "$MISE_A_JOUR" = "faite" ]` |
+| 3. migrations, banc | tournent sur le code d'avant, sans rien dire |
+
+L'installation est donc la seule chose qui pourrait remettre le fichier en
+état, et elle est la première à ne plus tourner. **Un seul démarrage malheureux
+fige l'espace définitivement**, et le symptôme est celui que le dépôt paie
+depuis le début : *le produit paraît cassé alors qu'il est simplement vieux*.
+
+**La décision : on ne rend propre que ce qu'on a sali soi-même.**
+`proteger-lock.sh` relève l'état du fichier AVANT l'installation et ne le remet
+qu'à cette condition. Un `package-lock.json` déjà modifié avant reste intact,
+et la mise à jour continue de s'abstenir — c'est le comportement voulu, pas un
+défaut : écraser le travail de quelqu'un pour livrer un correctif serait pire
+que le mal (même règle que `mettre-a-jour.sh`).
+
+**Ce qui a été écarté, et pourquoi :** faire ignorer `package-lock.json` à
+`mettre-a-jour.sh`. C'eût été un cas particulier posé à côté de la règle
+générale — le pansement du `CLAUDE.md` §4 quater — et il aurait rendu la mise à
+jour capable d'écraser une vraie modification de ce fichier. La racine n'est pas
+que la mise à jour soit prudente ; c'est que l'espace salisse son propre arbre.
+
+**La limite, et elle est écrite noir sur blanc :** un espace déjà bloqué ne sera
+pas sauvé par ce correctif, puisqu'il ne peut plus rien recevoir. Le diagnostic
+donne donc le geste, réversible — `git stash push -- <le fichier>`. C'est le
+seul cas de ce dépôt où la réparation doit passer par ses mains.

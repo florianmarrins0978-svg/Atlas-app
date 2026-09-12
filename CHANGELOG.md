@@ -8,6 +8,40 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-12
 
+### L'espace ne se bloque plus lui-même sur `package-lock.json`
+
+*« Je ne vois pas les modifications »*, alors que son espace tournait, servait
+et répondait. Il exécutait le code de **3 h 38** quand `main` était à **4 h 00**
+— trois versions plus loin, dont le correctif du chantier supprimé qui
+revenait.
+
+**La cause, et personne ne l'avait touché :** le repli `npm install` de
+`.devcontainer/demarrer.sh` (quand `npm ci` refuse) réécrit
+`package-lock.json`. `mettre-a-jour.sh` s'abstient devant un arbre sale, à
+raison — il ne peut pas savoir que ce fichier-là n'est le travail de personne.
+
+**Et le piège se referme sur lui-même :** l'installation ne tourne qu'APRÈS une
+mise à jour réussie. Une fois l'arbre sali, plus aucune mise à jour ne passe,
+donc plus aucune installation ne tourne, donc **rien ne remet le fichier en
+état**. Un seul démarrage malheureux fige l'espace pour toujours, sans un mot —
+la seule trace étant une ligne dans une fiche qu'il n'a aucune raison de lire.
+
+`.devcontainer/proteger-lock.sh` encadre désormais l'installation : il relève
+l'état du fichier avant, et ne rend propre **que ce que l'installation a sali
+elle-même**. Un `package-lock.json` déjà modifié avant reste intact — il peut
+être le travail de quelqu'un, et l'effacer pour livrer une mise à jour serait
+pire que le défaut.
+
+**Ce que le correctif ne peut PAS faire :** débloquer un espace déjà pris. Il
+ne recevra jamais le correctif, puisque c'est justement la réception qui est
+bloquée. Le diagnostic dit donc maintenant le geste, et il est réversible :
+`git stash push -- <le fichier>`.
+
+`scripts/test-proteger-lock.ts` monte de vrais dépôts et rejoue la panne de
+bout en bout : un espace en retard, sali par sa propre installation, dont la
+mise à jour repasse après la remise en état. Confronté à un script qui ne remet
+rien, il rougit sur deux cas.
+
 ### Ma TVA n'a plus qu'une logique — la planche du 12 septembre, codée trait pour trait
 
 *« Parfait ! Code exactement cette planche ! Trait pour trait ! Va corriger le
