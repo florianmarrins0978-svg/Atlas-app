@@ -28951,3 +28951,64 @@ que la mise à jour soit prudente ; c'est que l'espace salisse son propre arbre.
 pas sauvé par ce correctif, puisqu'il ne peut plus rien recevoir. Le diagnostic
 donne donc le geste, réversible — `git stash push -- <le fichier>`. C'est le
 seul cas de ce dépôt où la réparation doit passer par ses mains.
+
+---
+
+## §339 — « Télécharger » : la page va chercher le fichier, elle ne le confie plus au navigateur
+
+**Sa capture du 12 septembre 2026 :** *« Je peux plus télécharger en cliquant
+sur télécharger »*, sous une facture. **Troisième fois sur le même bouton**, et
+les deux corrections précédentes tournaient autour d'un point aveugle :
+
+| | Ce qui a été fait | Ce que ça a donné |
+|---|---|---|
+| 7 sept. | mentir sur le TYPE (`application/octet-stream`) pour forcer l'enregistrement | le fichier descend — et se rouvre **blanc**, le mensonge collant au fichier enregistré |
+| 10 sept. | défaire le mensonge, servir `application/pdf` + `attachment` | le PDF redevient lisible, et **Safari le peint au lieu de le ranger** |
+
+**Les deux constats sont vrais en même temps, et c'est ce qui fermait la
+boucle.** Tant que c'est un LIEN qui remet le fichier au navigateur, on ne
+choisit qu'entre un document illisible et un document qui ne descend pas. Aucun
+en-tête ne tranche : sur iOS, un PDF est un document que le système sait ouvrir,
+et l'ouvrir est ce qu'il fait.
+
+**Ce qui range un fichier sur un iPhone, c'est la feuille de partage** — le
+« Enregistrer dans Fichiers » du système. `TODO.md` la nommait déjà comme la
+seule voie restante ; elle est la seule, aussi, à garder au document son vrai
+type. Elle demande un `File`, donc **la page doit tenir le fichier**, pas une
+adresse.
+
+`src/components/atlas/BoutonTelechargerDocument.tsx` récupère le document, puis
+le remet — feuille de partage quand le navigateur sait partager un fichier ;
+sinon un lien d'objet local, qui range sans repasser par le réseau.
+
+**LA MOITIÉ QUI MANQUAIT : le refus a maintenant une phrase.** Un lien ne
+rapporte rien. Quand la route refusait — session expirée, archivé absent —, le
+navigateur recevait un `404` en JSON et l'écran ne bougeait pas : « rien ne se
+passe » se lit comme un bouton cassé, et c'est la moitié du problème qui a coûté
+trois soirées. `messageDeTelechargementRate` nomme le statut, et le message
+s'affiche sous le geste (`AGENTS.md` — rendre le défaut bavard AVANT de
+corriger).
+
+**Ce qui a été RETIRÉ, et c'est le signe que la racine est touchée** (§4 quater
+de `CLAUDE.md`, « une correction qui n'enlève rien ») : les six `<a href
+download>` des écrans, les `?telecharger=1` écrits à la main, l'attribut
+`download` sur lequel reposait le nom du fichier, et les commentaires qui
+décrivaient les « trois conditions » du 7 août. Le nom vient désormais du
+serveur seul (`nomAnnonceParLeServeur`, l'inverse exact de `nomDansLEnTete`) :
+l'écran ne le recopie plus, donc les deux ne peuvent plus diverger.
+
+**Ce que le serveur garde, et pourquoi :** `Content-Disposition: attachment` et
+le vrai type restent. L'adresse s'ouvre encore à la main, et la norme n'a pas
+changé de camp — c'est seulement qu'elle ne suffit pas sur un téléphone.
+
+**CE QUI N'EST PAS ÉPROUVÉ ICI, ET QUI S'ÉCRIT COMME TEL.** Aucun WebKit n'est
+installable dans l'environnement de l'agent : la voie de la feuille de partage
+se juge sur SON téléphone. Ce qui est prouvé, dans un vrai navigateur
+(`scripts/test-telecharger-document-e2e.ts`, qui sait rougir) : l'appui fait
+descendre un PDF non vide sous le nom de la facture, le bouton ne reste pas sur
+« Un instant… », et un refus de la route s'affiche à l'écran.
+
+**Ce qui n'a pas été touché :** « Télécharger mes données » (`/api/mes-donnees`)
+reste un lien. Ce qu'il sert est un `.zip` — un fichier sans lecteur, qui
+descend de toute façon —, et son appui porte une vérification d'identité que ce
+lot n'avait aucune raison de déplacer.

@@ -5,6 +5,7 @@ import BottomSheet from "@/components/atlas/BottomSheet";
 import { colors, font } from "@/lib/design-tokens";
 import { natureDeLaPiece, nomDuFichierDeLaPiece, numeroDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 
 /**
  * Une pièce du dossier d'un client, et les trois choses qu'on peut en faire.
@@ -24,20 +25,16 @@ import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
  * d'œil. La question lui a été posée telle quelle — *vient-il regarder, ou
  * garder ?* — et sa réponse est celle qui ne tranche pas pour lui.
  *
- * ── LES TROIS CONDITIONS DE « ENREGISTRER », ET AUCUNE NE SUFFIT SEULE ──────
+ * ── « ENREGISTRER » NE PASSE PLUS PAR UN LIEN ──────────────────────────────
  *
  * Le défaut du 7 août 2026 — *« quand je clique sur télécharger le PDF, ça me
- * propose pas de l'enregistrer, ça ouvre juste une page de plus »* — a coûté
- * une matinée, et son remède tient à trois choses réunies :
+ * propose pas de l'enregistrer, ça ouvre juste une page de plus »* — revenait
+ * le 12 septembre sur la facture, et pour de bon : un lien remet le fichier au
+ * navigateur, et iOS PEINT un PDF au lieu de le ranger. La page récupère donc
+ * le document et le remet à la feuille de partage, qui, elle, sait
+ * l'enregistrer (`BoutonTelechargerDocument`, et ses raisons).
  *
- *   1. `?telecharger=1`, qui fait poser `attachment` par le serveur ; sans lui
- *      Chrome affiche le document ;
- *   2. l'attribut `download`, qui donne son NOM au fichier ; sans lui Safari le
- *      nomme d'après la page, sans extension ;
- *   3. **pas de `target="_blank"`** ; l'onglet neuf prive Safari de sa demande
- *      d'enregistrement.
- *
- * Les trois sont ici. « Ouvrir », lui, veut exactement l'inverse : pas de
+ * « Ouvrir » veut exactement l'inverse : pas de
  * `?telecharger=1` — et, depuis le 11 septembre 2026, **plus d'onglet à part**
  * pour un PDF : *« j'ai pas de touche retour »*. Le fichier se peint dans la
  * visionneuse de l'application, dont la flèche ramène à cette fiche
@@ -185,23 +182,23 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
         </p>
 
         {/* **« Enregistrer » en tête, et c'est le geste qu'il est venu chercher.**
-            Les trois conditions du 7 août sont réunies ici, et le pavé au-dessus
-            dit pourquoi aucune ne se retire.
+            La feuille de l'application ne se referme qu'une fois le document
+            parti : refermée à l'appui, elle emportait le message d'un refus.
 
             **Sauf pour une fiche d'entretien**, qui n'est pas un fichier : elle
             n'a rien à enregistrer, et « Ouvrir » devient alors le geste
             principal. */}
         {estUnFichier && (
-          <a
-            href={`${piece.href}?telecharger=1`}
-            download={nomFichier}
-            onClick={() => setFeuilleOuverte(false)}
-            data-atlas="piece-enregistrer"
-            className="atlas-plein mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
+          <BoutonTelechargerDocument
+            fichier={piece.href}
+            nom={nomFichier}
+            onFini={() => setFeuilleOuverte(false)}
+            dataAtlas="piece-enregistrer"
+            className="atlas-plein mt-4 block w-full rounded-full py-4 text-center text-[16px] font-medium"
             style={{ backgroundColor: colors.plein, color: colors.cream }}
           >
             Enregistrer
-          </a>
+          </BoutonTelechargerDocument>
         )}
 
         <a

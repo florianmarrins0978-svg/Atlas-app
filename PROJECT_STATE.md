@@ -5,6 +5,20 @@
 
 ---
 
+## FAIT : « TÉLÉCHARGER » N'EST PLUS UN LIEN — 12 septembre 2026
+
+*« Je peux plus télécharger en cliquant sur télécharger. »* Troisième capture du
+même bouton. La page va désormais chercher le document et le remet à la feuille
+de partage d'iOS — seule voie qui range un PDF sur un iPhone —, avec un repli
+par lien d'objet local ailleurs. **Et un refus de la route s'affiche à
+l'écran** : le silence qui faisait passer le bouton pour cassé est mort.
+**Aucune migration.** Détail : `ARCHITECTURE.md` §339.
+
+**Ce qui reste, et que lui seul peut trancher :** la feuille de partage ne
+s'éprouve pas ici (aucun WebKit dans l'environnement de l'agent).
+
+---
+
 ## FAIT : LE DIAGNOSTIC VÉGÉTAL — LE REFUS EST L'ÉCRAN PRINCIPAL — 12 septembre 2026
 
 Sa réponse à la planche du 11 (`appli/diagnostic-le-refus-est-l-ecran.html`) :

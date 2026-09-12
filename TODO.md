@@ -1614,33 +1614,38 @@ téléphone, barre d'adresse comprise (`scripts/e2e-browser.ts`).
 
 ---
 
-## ⏳ SUR SON IPHONE : « Télécharger » range-t-il le fichier ?
+## ⏳ SUR SON IPHONE : la feuille de partage range-t-elle le fichier ?
 
-**Rouverte le 10 septembre 2026, et la question n'est plus la même.** Le
-correctif du 7 septembre — annoncer un type que le navigateur ne sait pas
-peindre — **a été défait** : il rendait les documents illisibles une fois
-enregistrés (*« page blanche »*, sur la facture puis sur le devis). Le type
-annoncé colle au fichier enregistré, et `nosniff` interdit ensuite d'y
-reconnaître un PDF (`ARCHITECTURE.md` §275).
+**CODÉ LE 12 SEPTEMBRE 2026 — ce qui reste n'est pas un choix, c'est un essai
+sur son téléphone.** Sa capture du jour, la troisième sur le même bouton :
+*« Je peux plus télécharger en cliquant sur télécharger »*.
 
-Le serveur sert donc de nouveau `application/pdf`, avec
-`Content-Disposition: attachment` — la norme, et rien d'autre.
+**La racine, enfin nommée :** tant qu'un LIEN remet le fichier au navigateur,
+il n'y a que deux issues, et les deux sont mauvaises — mentir sur le type fait
+descendre un document illisible (7 septembre), dire la vérité laisse Safari le
+peindre (10 septembre). La page va donc chercher le fichier et le remet à la
+feuille de partage, seule voie qui range un PDF sur un iPhone en lui gardant
+son type (`ARCHITECTURE.md` §339).
 
-**Ce qui est prouvé ici :** un appui réel fait descendre le fichier (Chromium,
-`test-facture-au-client-e2e.ts`), le fichier reste un PDF valide, l'aperçu n'a
-pas bougé.
+**Ce qui est prouvé ici**, dans un vrai navigateur
+(`test-telecharger-document-e2e.ts`, confronté au silence qu'il refuse) :
+l'appui fait descendre un PDF non vide sous le nom de la facture, le bouton
+revient à son libellé, et **un refus de la route s'affiche à l'écran** — le
+silence d'avant est mort.
 
 **Ce qui ne se prouve pas ici, et ne le sera jamais :** aucun WebKit n'est
-installable dans l'environnement de l'agent. Il n'y a donc pas de Safari.
+installable dans l'environnement de l'agent. Chromium prend la seconde voie, le
+lien d'objet local.
 
-**S'il redit que ça ne télécharge pas** — une seule question, et elle tranche :
-*que se passe-t-il quand tu appuies ?*
+**S'il redit que ça ne télécharge pas** — la question qui tranche a changé,
+parce que l'écran parle maintenant :
 
-| Sa réponse | Ce que ça veut dire |
+| Ce qu'il voit | Ce que ça veut dire |
 |---|---|
-| le devis s'ouvre dans le lecteur | iOS ignore `attachment` pour un PDF. **Ne PAS remettre le type générique** : il rend le fichier illisible. La voie qui reste est un partage explicite depuis la page |
-| une feuille demande de confirmer | c'est iOS, et c'est le geste normal — rien à corriger |
-| rien du tout | la requête n'aboutit pas, et **l'écran ne dit rien** : rendre ce refus bavard d'abord, deviner ensuite |
+| une feuille « Enregistrer dans Fichiers » | c'est le geste normal d'iOS : le fichier se range là où il choisit |
+| un message rouge sous le bouton | la route a refusé, et le message dit lequel — session, document absent, réseau |
+| le PDF s'ouvre quand même dans le lecteur | iOS a refusé le partage (geste jugé trop vieux) et le repli s'est appliqué : à reprendre en préparant le fichier AVANT l'appui, jamais en remettant un type générique |
+| rien du tout, pas même un message | le bouton n'a pas reçu l'appui : viser l'élément, pas la ligne |
 
 ## ✅ ~~Comment retirer une note vocale déjà partie ?~~ — **2, le 7 septembre 2026**
 

@@ -32,7 +32,32 @@ centimètre sous le mot. L'autre mot flotte en `absolute` sous le premier, au
 même bord gauche — une seule alternative, donc un seul mot.
 
 ---
-## Dernier lot — LE PDF SE REGARDE DANS L'APPLICATION, AVEC SA FLÈCHE (11 septembre 2026)
+## Dernier lot — « TÉLÉCHARGER » N'EST PLUS UN LIEN (12 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« Je peux plus télécharger en cliquant sur télécharger »* — capture iPhone, sous une facture, **la troisième sur ce bouton** |
+| la racine | un LIEN remet le fichier au navigateur : iOS PEINT un PDF au lieu de le ranger, et n'en rapporte jamais le refus. Les deux correctifs d'avant s'annulaient (7 sept. : mentir sur le type → fichier illisible ; 10 sept. : vérité rétablie → ne descend plus) |
+| la migration | **aucune** |
+| les pièces | `src/components/atlas/BoutonTelechargerDocument.tsx`, et dans `src/lib/remise-de-fichier.ts` : `adresseDeTelechargement`, `messageDeTelechargementRate`, `nomAnnonceParLeServeur` |
+| remplacé | les six `<a href download>` — facture, devis (écran et page du client), pièce du dossier, page publique de la facture |
+| les suites | `test-telecharger-document-e2e.ts` (neuve, confrontée au silence qu'elle refuse), `test-remise-de-fichier.ts` (+5), et trois suites adaptées à la règle plutôt qu'à la balise |
+| le détail | `ARCHITECTURE.md` §339 |
+
+**LE PIÈGE, et il décide de tout :** ne JAMAIS revenir à un type générique pour
+forcer l'enregistrement. Le type annoncé colle au fichier enregistré, et
+`nosniff` interdit ensuite d'y reconnaître un PDF — c'est la page blanche du
+10 septembre, sur un document intact.
+
+**CE QUI N'EST PAS ÉPROUVÉ ICI :** aucun WebKit dans l'environnement de
+l'agent, donc la feuille de partage d'iOS se juge sur SON téléphone. Chromium
+prend la seconde voie (lien d'objet local), et c'est elle qui est verte.
+
+**CE QUI RESTE UN LIEN, à dessein :** « Télécharger mes données » — un `.zip`
+descend de toute façon, et son appui porte une vérification d'identité.
+
+---
+## Lot précédent — LE PDF SE REGARDE DANS L'APPLICATION, AVEC SA FLÈCHE (11 septembre 2026)
 
 | | |
 |---|---|
@@ -50,7 +75,7 @@ copie ne suit pas le paquet. Et les pièces « page » du dossier client gardent
 leur onglet — c'est l'adresse publique du client, sans en-tête d'application.
 
 ---
-## Lot précédent — CE QUI EST RETIRÉ NE REVIENT PLUS (12 septembre 2026)
+## Encore avant — CE QUI EST RETIRÉ NE REVIENT PLUS (12 septembre 2026)
 
 **Sa plainte :** *« lorsqu'on retire un chantier posé au planning, il réapparaît
 sur la page d'accueil ! »* Mesuré avant de corriger : c'était double — la ligne

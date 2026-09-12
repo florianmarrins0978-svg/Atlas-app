@@ -102,3 +102,66 @@ function nomDansLEnTete(nom: string): string {
   const ascii = propre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x20-\x7e]/g, "");
   return `filename="${ascii || "fichier"}"; filename*=UTF-8''${encodeURIComponent(propre)}`;
 }
+
+/**
+ * L'adresse qui demande le fichier plutôt que son affichage.
+ *
+ * Écrite six fois à la main dans les écrans — `?telecharger=1` collé au bout
+ * d'une adresse qui porte parfois déjà une requête. Une règle écrite six fois
+ * se corrige une fois sur six (`CLAUDE.md` §3).
+ */
+export function adresseDeTelechargement(fichier: string): string {
+  return `${fichier}${fichier.includes("?") ? "&" : "?"}telecharger=1`;
+}
+
+/**
+ * Ce que l'écran dit quand le fichier n'est pas descendu.
+ *
+ * ─── POURQUOI CE MESSAGE EXISTE ─────────────────────────────────────────────
+ *
+ * Un lien ne rapporte rien. Quand la route refusait — session expirée, facture
+ * d'une autre entreprise, fichier archivé absent —, le navigateur recevait un
+ * `404` en JSON et n'affichait rien du tout : le patron appuyait, il ne se
+ * passait rien, et **aucun écran ne pouvait le lui dire**. C'est le défaut muet
+ * que `AGENTS.md` demande de rendre bavard avant toute autre chose.
+ *
+ * Le statut est nommé : « Réessayez » sur un refus d'identité envoie se
+ * reconnecter, ce qu'un « une erreur est survenue » ne dit jamais.
+ */
+export function messageDeTelechargementRate(statut: number): string {
+  if (statut === 401 || statut === 403) return "Votre session a expiré. Reconnectez-vous.";
+  if (statut === 404) return "Ce document n'est plus disponible.";
+  return `Le document n'est pas arrivé (erreur ${statut}).`;
+}
+
+/**
+ * Le nom que le serveur a annoncé, ou `null`.
+ *
+ * **L'inverse exact de `nomDansLEnTete`, et c'est pour cela qu'il vit ici.** La
+ * page qui récupère un document doit le ranger sous le nom que la route a
+ * décidé — le devis du client, par exemple, porte un nom que seul le serveur
+ * connaît. Le recopier dans l'écran créerait la divergence que `CLAUDE.md` §3
+ * interdit : deux noms pour un fichier, et celui qui descend n'est pas celui
+ * qu'on annonce.
+ *
+ * `filename*` d'abord : c'est lui qui porte les accents. `filename` est sa
+ * version dégradée.
+ */
+export function nomAnnonceParLeServeur(enTete: string | null): string | null {
+  if (!enTete) return null;
+  const etoile = /filename\*=UTF-8''([^;]+)/i.exec(enTete);
+  // Un encodage abîmé ne coûte pas le téléchargement : `filename` prend le
+  // relais, puisqu'il est de l'ASCII et se lit toujours.
+  const accentue = etoile ? decoder(etoile[1].trim()) : null;
+  if (accentue) return accentue;
+  const simple = /filename="([^"]*)"/i.exec(enTete);
+  return simple?.[1].trim() || null;
+}
+
+function decoder(valeur: string): string | null {
+  try {
+    return decodeURIComponent(valeur) || null;
+  } catch {
+    return null;
+  }
+}

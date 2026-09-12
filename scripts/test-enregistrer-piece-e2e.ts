@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { devices } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
@@ -17,14 +18,14 @@ import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
  * **CE QUE CETTE SUITE TIENT, ET QU'AUCUNE AUTRE NE VOIT.**
  *
  * Le défaut du 7 août 2026 — *« quand je clique sur télécharger le PDF, ça me
- * propose pas de l'enregistrer, ça ouvre juste une page de plus »* — tient à
- * TROIS conditions réunies, et aucune ne suffit seule. Elles sont éprouvées sur
- * la facture (`test-facture-au-client-e2e.ts`) ; il n'existait rien pour la
- * fiche du client, où vivent pourtant tous ses documents rangés.
+ * propose pas de l'enregistrer, ça ouvre juste une page de plus »* — est revenu
+ * le 12 septembre sur la facture, et pour de bon : un lien remet le fichier au
+ * navigateur, qui sur un iPhone le PEINT au lieu de le ranger. Ce qui est
+ * éprouvé ici est donc le RÉSULTAT — un fichier qui descend, non vide, sous un
+ * nom qui se retrouve —, jamais les attributs d'un lien qui n'existe plus.
  *
  * Une suite qui se contenterait de compter les boutons resterait verte le jour
- * où l'une des trois saute — et c'est lui qui le découvrirait, un fichier sans
- * nom dans son dossier.
+ * où le geste cesse d'aboutir — et c'est lui qui le découvrirait.
  */
 
 const BASE = ADRESSE;
@@ -81,33 +82,6 @@ async function main() {
     assert.equal(page.url(), avant, "l'appui a quitté la fiche du client");
   });
 
-  await cas("LES TROIS CONDITIONS de « Enregistrer », réunies", async () => {
-    const lien = page.locator('[data-atlas="piece-enregistrer"]');
-
-    // 1 — le serveur doit poser `attachment`, sinon Chrome affiche.
-    const href = (await lien.getAttribute("href")) ?? "";
-    assert.match(
-      href,
-      /telecharger=1/,
-      `le lien sert le PDF en aperçu (« ${href} ») : le navigateur l'affichera au lieu de l'enregistrer`
-    );
-
-    // 2 — le NOM, sinon Safari nomme le fichier d'après la page, sans extension.
-    const nom = (await lien.getAttribute("download")) ?? "";
-    assert.match(
-      nom,
-      /^(devis|facture|fiche-chantier)-.+\.pdf$/,
-      `le lien n'annonce aucun nom de fichier utilisable (« ${nom} »)`
-    );
-
-    // 3 — pas d'onglet neuf, sinon Safari affiche au lieu de proposer.
-    assert.equal(
-      await lien.getAttribute("target"),
-      null,
-      "le lien ouvre un onglet : Safari y affichera le PDF au lieu de proposer de l'enregistrer"
-    );
-  });
-
   await cas("« Ouvrir » fait l'INVERSE, et c'est ce qui le distingue", async () => {
     // Si les deux gestes servaient la même adresse, l'un des deux mentirait.
     const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
@@ -147,6 +121,35 @@ async function main() {
       "la fiche du client n'est pas revenue"
     );
   });
+
+  // La feuille vient d'être refermée : on la rouvre pour le seul geste qui
+  // l'emporte pour de bon.
+  await page.locator('[data-atlas="piece"]').first().click();
+  await page.waitForSelector('[data-atlas="piece-enregistrer"]', { timeout: 20_000 });
+
+  // **EN DERNIER, PARCE QU'IL REFERME LA FEUILLE.** Le geste emporte l'écran
+  // qu'éprouvent les cas ci-dessus.
+  await cas("« Enregistrer » fait DESCENDRE le fichier, sous un nom qui se retrouve", async () => {
+    // **On n'interroge plus le lien : il n'y en a plus** — 12 septembre 2026,
+    // *« je peux plus télécharger en cliquant sur télécharger »*. Un lien remet
+    // le fichier au navigateur, qui sur iPhone le peint au lieu de le ranger.
+    // Ce qui se vérifie ici est ce qu'il vient chercher : un fichier dans son
+    // dossier (`CLAUDE.md` §5 bis — la règle, pas la forme du bouton).
+    const fichierQuiDescend = page.waitForEvent("download", { timeout: 30_000 });
+    await page.locator('[data-atlas="piece-enregistrer"]').click();
+    const descendu = await fichierQuiDescend.catch(() => null);
+    assert.ok(descendu, "l'appui sur « Enregistrer » n'a fait descendre aucun fichier");
+    assert.match(
+      descendu.suggestedFilename(),
+      /^(devis|facture|fiche-chantier)-.+\.pdf$/,
+      `le fichier descend sous « ${descendu.suggestedFilename()} » : il ne se retrouve pas dans son dossier`
+    );
+    // Un fichier vide descend aussi bien qu'un autre : sans cette ligne, le
+    // contrôle resterait vert sur un document que rien n'ouvre.
+    const taille = readFileSync(await descendu.path()).length;
+    assert.ok(taille > 0, "le fichier descendu est vide");
+  });
+
 
   await contexte.close();
   await navigateur.close();

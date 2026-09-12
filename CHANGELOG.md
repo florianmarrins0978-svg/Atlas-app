@@ -8,6 +8,33 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-12
 
+### « Télécharger » cesse d'être un lien : la page va chercher le fichier
+
+*« Je peux plus télécharger en cliquant sur télécharger. »* Troisième capture
+du même bouton, et les deux corrections d'avant s'annulaient l'une l'autre : le
+7 septembre, mentir sur le type faisait descendre un fichier illisible ; le
+10, la vérité rétablie rendait le PDF lisible — et Safari s'est remis à le
+PEINDRE au lieu de le ranger. Tant qu'un lien remet le fichier au navigateur,
+il n'y a pas de troisième choix.
+
+Ce qui range un fichier sur un iPhone est la feuille de partage, et elle
+réclame le fichier lui-même. `BoutonTelechargerDocument` le récupère, puis le
+remet : à la feuille de partage quand le navigateur sait partager un fichier, à
+un lien d'objet local sinon. **Et quand la route refuse, l'écran le dit** — un
+lien ne rapportait rien, si bien qu'une session expirée se lisait comme un
+bouton cassé.
+
+Retiré : les six `<a href download>` des écrans, les `?telecharger=1` écrits à
+la main, et le nom de fichier recopié dans l'écran — il vient du serveur, seul
+endroit qui le décide. Le serveur, lui, ne change pas : `attachment` et le vrai
+type restent (`ARCHITECTURE.md` §339).
+
+**Non éprouvé ici, et il faut le savoir :** aucun WebKit dans l'environnement
+de l'agent, donc la feuille de partage se juge sur son téléphone. Ce qui est
+prouvé dans un vrai navigateur (`test-telecharger-document-e2e`, qui sait
+rougir) : le fichier descend, non vide, sous le nom de la facture, et un refus
+s'affiche.
+
 ### Une planche : remise, main d’œuvre, conditions et CGV sur le devis
 
 Sa demande du jour, dessinée avant tout code (`CLAUDE.md` §3 bis) :
