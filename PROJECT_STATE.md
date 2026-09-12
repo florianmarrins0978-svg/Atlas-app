@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-11 · branche `claude/dates-reglements-affichage-f1q9ah`
+**Dernière mise à jour :** 2026-09-12 · branche `claude/chantier-reappears-after-delete-nirobq`
 · dernière migration `drizzle/0085_creneaux_chantier.sql`
 
 ---
@@ -12,6 +12,19 @@ liens vers un PDF (facture, devis, dossier du client) ouvrent désormais
 `/documents/pdf`, un écran d'Atlas avec en-tête et flèche, qui peint le
 fichier page par page (pdf.js). **Aucune migration.** Détail :
 `ARCHITECTURE.md` §335.
+
+---
+
+## FAIT : CE QUI EST RETIRÉ NE REVIENT PLUS — 12 septembre 2026
+
+Un chantier retiré au planning réapparaissait sur l'accueil, et revenait sur le
+planning lui-même six secondes plus tard — alors que la base l'avait effacé.
+`useRetraits` redemande désormais la page après l'écriture, et le planning
+retire de sa liste le chantier effacé — comme le font déjà les six autres
+écrans. La recopie qui compensait dans `EcranChantiers` est retirée. **Aucune
+migration.**
+
+Détail : `ARCHITECTURE.md` §336.
 
 ---
 

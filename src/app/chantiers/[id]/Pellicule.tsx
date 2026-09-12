@@ -79,10 +79,9 @@ export default function Pellicule({
       try {
         await supprimerPhotoAction(id);
         setPhotos((p) => p.filter((ph) => ph.id !== id));
-        // La fiche compte les photos pour dire où en est le chantier : sans ce
-        // rafraîchissement, le résumé du tiroir annoncerait encore une étape
-        // franchie qui ne l'est plus.
-        router.refresh();
+        // La fiche compte les photos pour dire où en est le chantier ; elle se
+        // redemande d'elle-même une fois l'écriture faite (`useRetraits`), ici
+        // comme partout ailleurs où l'on retire.
       } catch {
         // Déjà répercutée visuellement ; une resynchronisation complète en cas
         // d'échec réseau est laissée à un lot ultérieur.
