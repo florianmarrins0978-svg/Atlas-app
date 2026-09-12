@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { ADRESSE } from "./_adresse";
 import { lancerNavigateur, DELAI_PAR_DEFAUT_MS } from "./e2e-browser";
 import type { Page } from "playwright";
 
@@ -18,7 +19,10 @@ import type { Page } from "playwright";
 // Elle tient aussi sans que la page s'anime : la flèche est un vrai lien, et le
 // navigateur le suit — c'est précisément ce qu'on veut d'une sortie de secours.
 
-const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3000";
+// **L'adresse vient de l'atelier, jamais d'un port écrit ici** : jouée dans un
+// atelier autre que 3000, cette suite tombait en « connexion refusée » sur un
+// serveur qui n'était pas le sien (batterie du 12 septembre 2026).
+const BASE = ADRESSE;
 
 let echecs = 0;
 async function cas(nom: string, f: () => Promise<void>) {

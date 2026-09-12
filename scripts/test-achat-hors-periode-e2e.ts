@@ -107,7 +107,7 @@ async function main() {
   const page = await seConnecter(context);
 
   await page.goto(`${BASE}/termines/tva`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
+  await page.waitForSelector('[data-atlas="montant-reste"]', { timeout: 30_000 });
 
   const titreDepart = (await page.locator("h1").first().textContent())?.trim() ?? "";
   assert.equal(
@@ -182,7 +182,7 @@ async function main() {
     await page.goto(`${BASE}/termines/tva?annee=${courante.annee}&t=${courante.numero}`, {
       waitUntil: "domcontentloaded",
     });
-    await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
+    await page.waitForSelector('[data-atlas="montant-reste"]', { timeout: 30_000 });
     assert.equal(
       await page.locator('[data-atlas="ligne-achat"]').filter({ hasText: FOURNISSEUR }).count(),
       0,

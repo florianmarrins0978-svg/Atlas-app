@@ -1,4 +1,4 @@
-// Regarder « En attente de paiement » AVEC la trace de réception, et la carte
+// Regarder « Factures en attente » AVEC la trace de réception, et la carte
 // de l'accueil — sa demande du 9 septembre 2026. §5 : on regarde l'écran.
 //
 //   ATLAS_BASE=http://localhost:3003 npx tsx scripts/capture-trace-reception.mts <dossier>
@@ -25,6 +25,8 @@ import {
   creerEnvoiFacture,
   noterOuvertureDeLaFacture,
 } from "../src/server/repositories/envois-factures";
+import { noterPaiement } from "../src/server/repositories/paiements-facture";
+import { jourIso } from "../src/lib/jour";
 import { pool } from "../src/server/db/client";
 import { fermerLimiteur } from "../src/server/rate-limit";
 
@@ -95,7 +97,13 @@ const ctx = await contexteDeDemo();
 await facturePartie(ctx, "Mme Durand", "confirmee");
 await facturePartie(ctx, "M. Leroy", "ouverte");
 await facturePartie(ctx, "Mme Bonnet", "rien");
-console.log("trois factures posées : confirmée, ouverte, jamais ouverte");
+// **Et une quatrième, déjà entamée** : sa demande du 11 septembre 2026 met deux
+// chiffres en tête du formulaire de règlement, et ils ne se distinguent que
+// lorsqu'un acompte est passé. Trois factures neuves les auraient montrés
+// égaux — un contrôle qui ne peut pas voir la différence ne prouve rien.
+const entamee = await facturePartie(ctx, "M. Martin", "ouverte");
+await noterPaiement(ctx, entamee.id, { date: jourIso(new Date()), montant: "300.00" });
+console.log("quatre factures posées : confirmée, ouverte, jamais ouverte, entamée");
 
 const navigateur = await lancerNavigateur();
 const contexte = await navigateur.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
@@ -115,7 +123,7 @@ await page.screenshot({ path: `${dossier}/accueil.png`, fullPage: true });
 // « Terminés › TVA », où la trace se range.
 await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
 await page.waitForTimeout(800);
-const lignes = await page.locator("text=/Ouverte le|Pas encore ouverte/").allTextContents();
+const lignes = await page.locator("text=/Ouverte \\d|Réception confirmée le|Pas encore ouverte/").allTextContents();
 console.log("lignes de trace lues :", lignes);
 // Un contrôle qui mesure zéro ne mesure rien : sans ces trois lignes, la
 // capture ne montrerait rien de ce qu'on vient de coder.
@@ -125,6 +133,16 @@ console.log(
   await page.evaluate(() => document.documentElement.scrollWidth > 390)
 );
 await page.screenshot({ path: `${dossier}/impayes.png`, fullPage: true });
+
+// **LE FORMULAIRE OUVERT, et il ne se voit pas autrement.** Les deux chiffres
+// qu'il a demandés le 11 septembre 2026 n'existent que là : une capture de
+// l'écran au repos ne montrerait pas ce qu'on vient d'écrire.
+const noter = page.locator("text=Noter un règlement").first();
+await noter.click();
+await page.waitForTimeout(500);
+const reste = await page.locator("text=/Reste à payer/").first().textContent();
+console.log("en tête du formulaire :", reste?.trim());
+await page.screenshot({ path: `${dossier}/noter-un-reglement.png`, fullPage: true });
 
 console.log("erreurs de page :", erreurs.length ? erreurs : "aucune");
 await navigateur.close();

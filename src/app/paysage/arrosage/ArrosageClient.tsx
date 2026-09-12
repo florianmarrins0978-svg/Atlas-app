@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { lireLeCroquis, type EtatPlan, type EtatDiscussion } from "./actions";
 // Module JavaScript repris tel quel de `appli/` — la même fonction sert à la
 // page publiée : deux façons d'écrire une quantité finiraient par diverger.
 import { quantiteEcrite } from "@/lib/arrosage/calcul.js";
+import { TITRES_DES_ZONES } from "@/lib/arrosage/pieces";
 import PlanDessine from "./PlanDessine";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import DiscuterLePlan from "./DiscuterLePlan";
@@ -303,7 +304,38 @@ export default function ArrosageClient({
         </p>
       )}
 
-      {etat.etat === "refus" && (
+      {etat.etat === "refus" && etat.croquis ? (
+        /* **LE REFUS COMPTE AUTANT QUE LE PLAN** — sa consigne du 11 septembre
+           2026, et la maquette `appli/arrosage-plan-et-pieces.html`. Un croquis
+           incomplet ne donne AUCUN plan (`CLAUDE.md` §4 bis) : l'écran coche ce
+           qui a été lu, barre ce qui manque, et ne propose qu'un geste. */
+        <div
+          data-atlas="refus-croquis"
+          className="mx-[22px] mt-5 rounded-[14px] px-4 pb-4 pt-[18px]"
+          style={{ backgroundColor: colors.card }}
+        >
+          <h3 style={{ fontFamily: font.display, fontWeight: 400, fontSize: 22, lineHeight: 1.2 }}>{etat.raison}</h3>
+          <ul className="mt-[14px] list-none p-0">
+            <Element
+              ok={etat.croquis.lu.zonesMesurees > 0}
+              quoi="Les métrés"
+              lu={etat.croquis.lu.zonesMesurees > 0 ? `${etat.croquis.lu.zonesMesurees} zone${etat.croquis.lu.zonesMesurees > 1 ? "s" : ""} lue${etat.croquis.lu.zonesMesurees > 1 ? "s" : ""}` : null}
+            />
+            <Element ok={etat.croquis.lu.piquage} quoi="Le piquage" lu={etat.croquis.lu.piquage ? (etat.croquis.lu.branchement === "compteur" ? "au compteur" : "au robinet") : null} />
+            <Element ok={etat.croquis.lu.nourrice} quoi="La nourrice" lu={null} />
+          </ul>
+          <p className="mt-4 text-[15px] leading-[1.5]" style={{ color: colors.inkSoft }}>
+            {etat.geste}
+          </p>
+          <label
+            htmlFor="croquis"
+            className="atlas-plein mt-[14px] flex min-h-[56px] cursor-pointer items-center justify-center rounded-[12px] text-[15px] font-semibold"
+            style={{ backgroundColor: colors.plein, color: surPlein }}
+          >
+            Reprendre la photo
+          </label>
+        </div>
+      ) : etat.etat === "refus" ? (
         <p
           data-atlas="alerte"
           className="mx-[22px] mt-4 text-[13px] leading-relaxed"
@@ -311,7 +343,7 @@ export default function ArrosageClient({
         >
           {etat.raison}
         </p>
-      )}
+      ) : null}
 
       {/* **La `key` repart de zéro à chaque croquis lu.** Garder la discussion
           d'un jardin sur le plan d'un autre ferait répondre Atlas à côté. */}
@@ -321,11 +353,41 @@ export default function ArrosageClient({
 }
 
 /** Deux décimales, virgule française — un chiffre à l'anglaise se relit mal. */
-function virgule(x: number) {
-  return x.toFixed(2).replace(".", ",");
+function virgule(x: number, d = 2) {
+  return x.toFixed(d).replace(".", ",");
 }
 
-/** Le plan, une fois le croquis lu : le dessin, les réseaux, puis les pièces. */
+/** Une ligne du refus : coché quand c'est lu, barré quand ça manque. */
+function Element({ ok, quoi, lu }: { ok: boolean; quoi: string; lu: string | null }) {
+  return (
+    <li className="flex items-center gap-3 py-[9px] text-[15px]" style={{ borderTop: `1px solid ${colors.line}` }}>
+      <span
+        aria-hidden="true"
+        className="flex h-[22px] w-[22px] flex-none items-center justify-center rounded-full"
+        style={{ backgroundColor: ok ? colors.rustTint : colors.alert }}
+      >
+        {ok ? (
+          <span
+            className="mt-[-3px] h-[10px] w-[6px] rotate-45"
+            style={{ borderRight: `2px solid ${colors.ink}`, borderBottom: `2px solid ${colors.ink}` }}
+          />
+        ) : (
+          <span className="h-[2px] w-[9px]" style={{ backgroundColor: surPlein }} />
+        )}
+      </span>
+      <span className="flex-1" style={ok ? undefined : { color: colors.alert, fontWeight: 600 }}>
+        {quoi}
+        {lu && (
+          <span className="text-[13px]" style={{ color: colors.muted }}>
+            {" "}· {lu}
+          </span>
+        )}
+      </span>
+    </li>
+  );
+}
+
+/** Le plan, une fois le croquis lu : le dessin, ses réserves, les réseaux, puis les pièces. */
 function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
   /**
    * **LE PLAN DE L'ÉCRAN PEUT VENIR DE DEUX ENDROITS** — la lecture du croquis,
@@ -334,62 +396,107 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
    * prochain croquis photographié.
    *
    * **Et il repart de zéro quand un nouveau croquis arrive** (`key` sur l'appel,
-   * plus bas) : garder la discussion d'un jardin sur le plan d'un autre ferait
+   * plus haut) : garder la discussion d'un jardin sur le plan d'un autre ferait
    * répondre Atlas à côté.
    */
   const [refait, setRefait] = useState<Extract<EtatDiscussion, { etat: "repondu" }> | null>(null);
   const plan = refait?.plan ?? etat.plan;
   const dessin = refait?.dessin ?? etat.dessin;
   const parametres = refait?.parametres ?? etat.parametres;
-  const reserves = refait?.reserves ?? etat.reserves;
+  // Les réserves du croquis ne bougent pas ; celles du calcul suivent le plan.
+  const reserves = [...plan.reserves, ...etat.reserves];
+  const auCompteur = parametres.compteur === "oui";
 
   return (
     <div data-atlas="plan-arrosage">
       {/* **LE DESSIN D'ABORD.** C'est ce qu'il regarde ; la liste de pièces,
-          c'est ce qu'il emporte chez le fournisseur ensuite. L'ordre inverse
-          l'obligeait à faire défiler tout un tableau pour voir son jardin. */}
-      {/* **Le dessin peut manquer sans que le plan tombe** — sa correction du
-          23 août 2026. Un croquis qui porte ses métrés, son piquage et sa
-          nourrice donne un plan juste même si l'agencement n'a pas pu être
-          reconstitué ; la réserve, plus bas, dit alors pourquoi. */}
+          c'est ce qu'il emporte chez le fournisseur ensuite. */}
       {dessin && <PlanDessine dessin={dessin} />}
+
+      {/* **CE QUI N'EST PAS CALCULÉ SE DIT SOUS LE PLAN, LÀ OÙ IL LE LIT**
+          (`CLAUDE.md` §4 ter) — et non sous vingt-trois lignes de pièces, où
+          « trop peu de pression » se lisait en dernier, ou jamais. */}
+      {reserves.length > 0 && (
+        <ul className="mx-[22px] mt-3 list-none p-0" data-atlas="reserves">
+          {reserves.map((r, i) => (
+            <li key={i} className="flex gap-2.5 py-1.5 text-[14px] leading-[1.5]" style={{ color: colors.ink }}>
+              <span
+                aria-hidden="true"
+                className="mt-[8px] h-[7px] w-[7px] flex-none rounded-full"
+                style={{ backgroundColor: colors.alert }}
+              />
+              <span className="min-w-0 flex-1">{r}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <p className={`mx-[22px] mt-7 ${libelleCaps}`} style={{ color: colors.muted }}>
         {plan.secteurs.length} réseau{plan.secteurs.length > 1 ? "x" : ""}
-        {plan.debitDisponible > 0 ? ` · ${plan.debitDisponible.toFixed(2).replace(".", ",")} m³/h` : ""}
+        {plan.debitDisponible > 0 ? ` · ${virgule(plan.debitDisponible)} m³/h${auCompteur ? " au compteur" : ""}` : ""}
       </p>
 
-      {plan.secteurs.map((s, i) => (
-        <div
-          key={`${s.nom}-${i}`}
-          className="mx-[22px] mt-3 rounded-[12px] px-4 py-[14px]"
-          style={{ backgroundColor: colors.card }}
-        >
-          <p className="flex items-center gap-2.5">
-            <span
-              className="block h-[11px] w-[11px] flex-none rounded-[3px]"
-              style={{ backgroundColor: plan.couleurs[i] ?? colors.rust }}
-            />
-            <span className="min-w-0 flex-1 truncate" style={{ fontFamily: font.display, fontSize: 17.5 }}>
-              {s.nom}
-            </span>
-            <span className="flex-none text-[12.5px] tabular-nums" style={{ color: colors.muted }}>
-              {s.debit.toFixed(2).replace(".", ",")} m³/h
-            </span>
-          </p>
-          {s.part && (
-            <p className="mt-1 text-[12.5px]" style={{ color: colors.muted }}>
-              {s.part}
+      {/* **UNE CARTE PAR RÉSEAU — sa maquette du 11 septembre.** L'écran en
+          montrait deux listes pour les mêmes vannes : l'une nommait la pelouse,
+          l'autre la buse, et il les reliait au carré de couleur. La vanne, la
+          pelouse qu'elle sert, la buse, ce qu'elle consomme, ce qu'elle
+          emporte : tout sur une carte, et les comptes SORTENT du dessin. */}
+      {plan.secteurs.map((s, i) => {
+        const r = dessin?.reseaux.find((x) => x.numero === i) ?? null;
+        return (
+          <div
+            key={`${s.nom}-${i}`}
+            className="mx-[22px] mt-3 rounded-[12px] px-4 py-[14px]"
+            style={{ backgroundColor: colors.card }}
+            data-atlas="carte-reseau"
+          >
+            <p className="flex items-center gap-2.5">
+              <span
+                className="block h-[11px] w-[11px] flex-none rounded-[3px]"
+                style={{ backgroundColor: plan.couleurs[i] ?? colors.rust }}
+              />
+              <span className="min-w-0 flex-1" style={{ fontFamily: font.display, fontSize: 17.5 }}>
+                Réseau {i + 1}
+              </span>
+              <span className="flex-none text-[12.5px] tabular-nums" style={{ color: colors.muted }}>
+                {virgule(s.debit)} m³/h
+              </span>
             </p>
-          )}
-        </div>
-      ))}
+            <p className="mt-1.5 text-[15px]">
+              {s.nom}
+              {s.part && (
+                <span className="text-[12.5px]" style={{ color: colors.muted }}>
+                  {" "}
+                  {s.part}
+                </span>
+              )}
+            </p>
+            {/* **CE QU'ON POSE, ET AVEC QUELLE BUSE** — sa demande du 21 août.
+                Une ligne PAR modèle : depuis le 23 août, une vanne peut en
+                porter deux, et n'en nommer qu'un ferait commander de travers. */}
+            {r?.materiels.map((m) => (
+              <p key={m.libelle} className="mt-1 text-[13px]" style={{ color: colors.inkSoft }}>
+                {m.nombre}× {m.libelle}
+                {m.portee > 0 ? ` · portée ${virgule(m.portee)} m` : ""}
+              </p>
+            ))}
+            {r && (
+              <p className="mt-1.5 text-[12.5px]" style={{ color: colors.muted }}>
+                {r.tetes.length} arroseur{r.tetes.length > 1 ? "s" : ""} · {r.tes} té{r.tes > 1 ? "s" : ""} ·{" "}
+                {r.coudes} coude{r.coudes > 1 ? "s" : ""}
+                {r.tesEgaux > 0 ? ` · ${r.tesEgaux} té${r.tesEgaux > 1 ? "s" : ""} égal${r.tesEgaux > 1 ? "aux" : ""}` : ""}
+                {" "}· {virgule(r.metresTuyau, 0)} ml Ø25
+                {r.metresAntennes > 0 ? ` · ${virgule(r.metresAntennes, 0)} ml Ø16` : ""}
+              </p>
+            )}
+          </div>
+        );
+      })}
 
       {/* **LE SEUIL DU Ø32 — sa demande du 22 août 2026.** Ses fournisseurs
           savent lui dire à partir de combien de mètres le Ø25 ne tient plus ;
           l'outil le dit maintenant aussi, et il le dit AVANT la tranchée.
-
-          **Une ligne, pas un paragraphe** (`CLAUDE.md` §3 ter) : le mètre
-          ruban est dans sa poche, le raisonnement est dans le dépôt. */}
+          Une ligne, pas un paragraphe (`CLAUDE.md` §3 ter). */}
       {plan.tuyau.debit > 0 && (
         <p
           className="mx-[22px] mt-3 text-[13px] leading-relaxed"
@@ -407,53 +514,61 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
         </p>
       )}
 
+      {/* **LA LISTE EN TROIS ZONES, JAMAIS MÉLANGÉES** (`CLAUDE.md` §4 bis) :
+          du compteur à la nourrice, dans le regard, au jardin. Chaque quantité
+          dit d'où elle sort — c'est sa question du 21 août sur les vingt-deux
+          coudes SBE, qui étaient justes et qu'il ne pouvait pas recomposer. */}
       <p className={`mx-[22px] mt-7 ${libelleCaps}`} style={{ color: colors.muted }}>
         Le détail des pièces
       </p>
-      <div className="mx-[22px] mt-2 rounded-[12px] px-4 py-1" style={{ backgroundColor: colors.card }}>
-        {plan.materiel.map((m, i) => (
-          <p
-            key={`${m.nom}-${i}`}
-            className="flex items-baseline gap-3 py-[9px] text-[14.5px]"
-            style={i === 0 ? undefined : { borderTop: `1px solid ${colors.line}` }}
-          >
-            {/* **« 13x », pas « 13 u » — sa demande du 23 août 2026.** L'unité
-                reste dans les données : elle distingue une pièce qu'on compte
-                d'un tuyau qu'on mesure, et « 80x de PE Ø25 » ne se commande
-                pas. Seul le mot affiché change, et il change des deux côtés à
-                la fois (`quantiteEcrite`). */}
-            <span className="w-[42px] flex-none text-[13.5px] font-semibold tabular-nums" style={{ color: colors.or }}>
-              {quantiteEcrite(m.q, m.u)}
-            </span>
-            <span className="min-w-0 flex-1">{m.nom}</span>
-            {/* **La référence, quand elle a été RELEVÉE — jamais la clé interne.**
-                Corrigé le 22 août 2026 sur sa consigne : *« tu ne dois surtout
-                pas inventer de prix ni de référence !!!!!!! »*. Cette colonne
-                affichait `te-taraude-25-34-25` et `electrovanne-100dv`, qui
-                sont des noms de variables. On ne commande pas avec ça, et
-                l'essayer coûte une matinée. Le nom de la pièce, lui, suffit au
-                comptoir. */}
-            {m.reference && (
-              <span className="flex-none text-[11.5px]" style={{ color: colors.muted }}>
-                {m.reference}
-              </span>
-            )}
-          </p>
-        ))}
-      </div>
-
-      {/* **Ce que la lecture n'a pas su lire se DIT.** Un plan qui tait ses
-          trous fait acheter de travers, et c'est le paysagiste qui revient
-          poser les pièces manquantes (`CLAUDE.md` §4). */}
-      {reserves.length > 0 && (
-        <ul className="mx-[22px] mt-5 list-none p-0">
-          {reserves.map((r, i) => (
-            <li key={i} className="mt-1.5 text-[13px] leading-relaxed" style={{ color: colors.alert }}>
-              {r}
-            </li>
-          ))}
-        </ul>
-      )}
+      {(["amenee", "regard", "jardin"] as const).map((zone) => {
+        const lignes = plan.pieces.filter((p) => p.ou === zone);
+        if (lignes.length === 0) return null;
+        return (
+          <div key={zone} data-atlas={`pieces-${zone}`}>
+            <h3
+              className="mx-[22px] mt-5"
+              style={{ fontFamily: font.display, fontWeight: 400, fontSize: 19, lineHeight: 1.2 }}
+            >
+              {TITRES_DES_ZONES[zone]}
+            </h3>
+            <div className="mx-[22px] mt-2 rounded-[12px] px-4 py-1" style={{ backgroundColor: colors.card }}>
+              {lignes.map((m, i) => (
+                <p
+                  key={`${m.nom}-${m.detail ?? ""}-${i}`}
+                  className="flex items-baseline gap-3 py-[9px] text-[14.5px]"
+                  style={i === 0 ? undefined : { borderTop: `1px solid ${colors.line}` }}
+                >
+                  {/* **« 13x », pas « 13 u » — sa demande du 23 août 2026.** Et
+                      « à mesurer » quand le croquis ne donne pas la longueur :
+                      un chiffre inventé se croit (`CLAUDE.md` §4). */}
+                  <span
+                    className="w-[64px] flex-none text-[13.5px] font-semibold tabular-nums"
+                    style={{ color: colors.orTexte }}
+                  >
+                    {m.q === null ? "à mesurer" : quantiteEcrite(m.q, m.u)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    {m.nom}
+                    {m.detail && (
+                      <span className="block text-[12px]" style={{ color: colors.muted }}>
+                        {m.detail}
+                      </span>
+                    )}
+                  </span>
+                  {/* **La référence, quand elle a été RELEVÉE — jamais la clé
+                      interne** (sa consigne du 22 août 2026). */}
+                  {m.reference && (
+                    <span className="flex-none text-[11.5px]" style={{ color: colors.muted }}>
+                      {m.reference}
+                    </span>
+                  )}
+                </p>
+              ))}
+            </div>
+          </div>
+        );
+      })}
 
       {/* **La discussion se pose APRÈS le plan**, et seulement avec lui : sa
           borne du 21 août — *« la discussion ne doit jamais créer un plan »*.

@@ -105,7 +105,7 @@ geste ; le libellé de confiance figé ; les liserés ; `LIBELLE_CONFIANCE` et
 « affiché quand Atlas refuse de conclure ». Sur un refus, aucune fiche n'est
 retenue ; le champ s'affiche avec le résultat, sous « ce qui reste à
 confirmer ». La migration est appliquée et n'est pas réécrite ;
-`ARCHITECTURE.md` §330.5 porte la correction.
+`ARCHITECTURE.md` §337.5 porte la correction.
 
 **Les suites :** `test-diagnostic-quatre-issues-e2e` (nouvelle) photographie
 les quatre issues à 390 × 664 sur Origine et Nuit, en fixant des règles et non

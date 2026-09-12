@@ -46,8 +46,6 @@ type Outil = {
   dit: string;
   /** `null` = pas encore fait. Alors AUCUN lien, et l'écran l'annonce. */
   href: string | null;
-  /** Hors de l'application : l'écran le dit, et le lien s'ouvre à côté. */
-  dehors?: boolean;
 };
 
 const OUTILS: Outil[] = [
@@ -59,8 +57,6 @@ const OUTILS: Outil[] = [
     href: "/paysage/arrosage",
   },
   {
-    // **Le premier outil qui vit DANS Atlas.** L'arrosage est une page publiée
-    // à part ; celui-ci s'ouvre ici, avec ses clients et son modèle de fiche.
     // Sa demande du 17 août : *« la ranger comme étant un outil dans la case
     // paysage à côté de arrosage automatique et terrasse bois »*.
     nom: "Fiche de chantier",
@@ -132,13 +128,6 @@ function LigneOutil({ outil, derniere }: { outil: Outil; derniere: boolean }) {
         <span className={libelleCaps} style={{ color: colors.or, opacity: 0.9, flex: "none" }}>
           Bientôt
         </span>
-      ) : outil.dehors ? (
-        // **« À l'essai » plutôt qu'un chevron.** Le chevron dit « ça s'ouvre
-        // ici » ; cette page-là s'ouvre AILLEURS, et elle n'est pas encore un
-        // écran d'Atlas. Le mot vaut mieux qu'un signe qui mentirait.
-        <span className={libelleCaps} style={{ color: colors.or, opacity: 0.9, flex: "none" }}>
-          À l&apos;essai
-        </span>
       ) : (
         <span
           aria-hidden="true"
@@ -165,20 +154,6 @@ function LigneOutil({ outil, derniere }: { outil: Outil; derniere: boolean }) {
       <div className={classe} style={style}>
         {contenu}
       </div>
-    );
-  }
-
-  if (outil.dehors) {
-    return (
-      <a
-        href={outil.href!}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={classe}
-        style={style}
-      >
-        {contenu}
-      </a>
     );
   }
 

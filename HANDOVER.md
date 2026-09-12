@@ -4,8 +4,32 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-11 · `main`
+**Point de reprise :** 2026-09-12 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## Dernier lot — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« Parfait ! Code exactement cette planche ! Trait pour trait ! »* — `appli/ma-tva-une-seule-logique.html`, après cinq retouches dans la soirée |
+| ce qui a changé | l'écran `termines/tva` entier : le rythme en un mot sous les mois, trois montants qui portent leur mot entier, « Crédit de TVA » à la place d'un moins, les gestes d'achat SOUS le total, l'attente limitée à trois, deux preuves où chaque ligne dit son TTC **et** sa TVA, un total sous chacune |
+| ce qui a DÉMÉNAGÉ | le régime encaissements / débits : de la feuille du relevé vers « Mon entreprise » (`src/app/reglages/ExigibiliteTva.tsx`), avec sa phrase d'écart calculée sur la période courante. `reglerExigibiliteAction` l'a suivi dans `src/app/reglages/actions.ts` |
+| ce qui a DISPARU | `DeclarationsTva.tsx` (la ligne de provenance et sa feuille), la phrase sous l'attente, la phrase du crédit, les icônes des lignes d'achat, la seconde lecture du relevé sur cette page |
+| la migration | **aucune** |
+| les pièces | `src/app/termines/tva/page.tsx`, `RythmeTva.tsx`, `EnAttenteDePaiement.tsx`, `src/app/reglages/identite/page.tsx` + `IdentiteClient.tsx` (la fente `declarations`) |
+| les suites | adaptées à la règle et non à l'ancien écran : `test-periodicite-tva-e2e`, `test-tva-au-paiement-e2e`, `test-tva-en-tete-e2e`, `test-achat-hors-periode-e2e`, `test-boutons-pleins` |
+
+**CE QU'IL NE FAUT PAS REFAIRE.** Le brief (ChatGPT) demandait de *supprimer*
+le régime, pris pour « un mode manuel et un mode automatique ». C'est un régime
+fiscal posé le 14 août à sa demande (`docs/QUESTIONS.md`) ; le retirer
+fausserait la TVA de qui a opté pour les débits. Il est sorti de la vue, pas du
+produit — et il a été DIT au patron, deux fois.
+
+**LE PIÈGE DU RYTHME.** Le mot « mensuelle » est un bouton de 44 px, mais le
+trait doré vit sur un `<span>` intérieur : posé sur le bouton, il flotte un
+centimètre sous le mot. L'autre mot flotte en `absolute` sous le premier, au
+même bord gauche — une seule alternative, donc un seul mot.
 
 ---
 ## Dernier lot — LE PDF SE REGARDE DANS L'APPLICATION, AVEC SA FLÈCHE (11 septembre 2026)
@@ -17,7 +41,7 @@ sert.
 | la migration | **aucune** ; une dépendance neuve, `pdfjs-dist` |
 | les pièces | `src/app/documents/pdf/` (page + `VisionneusePdf.tsx`), `src/lib/visionneuse-pdf.ts`, `src/types/pdfjs-dist-webpack.d.ts` |
 | les suites | `test-visionneuse-pdf.ts` (7), `test-visionneuse-pdf-e2e.ts` (son geste, gabarit iPhone, encre mesurée sur la toile) |
-| le détail | `ARCHITECTURE.md` §329 |
+| le détail | `ARCHITECTURE.md` §335 |
 
 **LE PIÈGE.** Le fil de travail de pdf.js vient de l'entrée `webpack.mjs` de `pdfjs-dist`
 (`new URL(…, import.meta.url)`). Ne pas le remplacer par une copie dans
@@ -26,7 +50,184 @@ copie ne suit pas le paquet. Et les pièces « page » du dossier client gardent
 leur onglet — c'est l'adresse publique du client, sans en-tête d'application.
 
 ---
-## Lot précédent — LA PHOTO D'UN RETOUR EN BIBLIOTHÈQUE (11 septembre 2026)
+## Lot précédent — CE QUI EST RETIRÉ NE REVIENT PLUS (12 septembre 2026)
+
+**Sa plainte :** *« lorsqu'on retire un chantier posé au planning, il réapparaît
+sur la page d'accueil ! »* Mesuré avant de corriger : c'était double — la ligne
+revenait aussi **sur le planning**, six secondes après le geste, la base ayant
+pourtant bien écrit la suppression.
+
+**Ce qui est fait :** `useRetraits` redemande la page une fois l'écriture faite
+(`router.refresh()`, qui traverse le démontage — l'écriture part souvent pendant
+qu'il change d'écran), et `PlanningClient` retire de sa liste locale le chantier
+que le serveur a effacé, comme le font déjà les six autres écrans. Le
+`router.refresh()` recopié dans `EcranChantiers` est retiré (redite de
+`Pellicule` aussi).
+
+**Ce qui a été écrit puis DÉFAIT, pour ne pas le refaire :** un masque définitif
+dans le crochet. La note vocale l'interdit — la clé du retrait y est le
+chantier, pas la note : une note effacée puis réenregistrée serait restée
+invisible.
+
+**Ce qui tient ça :** `scripts/test-retrait-ne-revient-pas-e2e.ts` — son chemin,
+le tiroir du planning puis l'onglet du bas, et la base interrogée. Jouée contre
+la version d'avant, elle rougit sur le cas du planning.
+
+**Ce qui reste ouvert :** rien de ce lot. À savoir si l'on y revient : les huit
+listes qui suppriment passent toutes par ce crochet, donc une régression ici se
+verrait partout à la fois. Détail : `ARCHITECTURE.md` §336.
+
+---
+## Lot précédent — LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU (11 septembre 2026)
+
+**Ce qui est fait :** le calcul rend 7 tuyères en quinconce sur son couloir de
+10 × 2 (sa règle du 18 août, morte le 24) et garde ses 9 turbines sur le 12 × 12 ;
+le tracé passe le Ø25 une fois et va chercher chaque tête par une antenne Ø16 de
+2 m au plus (`trace.ts` : `pied`, `antennes` ; `plan-dessine.ts` :
+`piedDeLaTete`) ; la liste des pièces se lit sur le tracé, en trois zones
+(`pieces.ts`) ; un croquis sans nourrice est refusé avec le geste qui débloque
+(`croquis-complet.ts`) ; les réserves du calcul suivent le plan après une
+discussion (`lePlan()` dans `actions.ts`) ; l'écran porte une carte par réseau,
+les réserves sous le dessin, et plus une couleur en clair.
+
+**Ce qui tient tout ça :** `scripts/test-regles-du-patron.ts` — dix-sept règles,
+ses phrases, ses chiffres. **Un rouge ne s'y réécrit pas** : le code a tort, ou
+c'est lui qui a changé la règle (sa phrase s'ajoute sous le repère, l'ancienne
+barrée). `scripts/garde-regles-du-patron.mjs` le tient mécaniquement sur chaque
+geste de chaque session.
+
+**Ce qui reste ouvert, et à qui :**
+
+| | Qui tranche |
+|---|---|
+| Le damier pour les turbines des grandes pelouses (§127 le disait ; le 23 août il a dessiné 9 alignées) — aujourd'hui : tuyères seulement | **lui** |
+| L'amenée : lue sur le croquis (le piquage y est obligatoire) ou gardée à 30 m écrite à l'écran | **lui** — aujourd'hui 30 m, dit sous le plan |
+| Les positions sur une vraie photo — jamais éprouvées : ce poste n'a pas de clé de vision | **son banc** |
+| `appli/arrosage.html` et ses deux scripts, en sursis : le comptage par rangées de `listeMateriel` part avec eux | **lui**, après avoir vu l'écran |
+
+**Pour reprendre :** `npx tsx scripts/test-regles-du-patron.ts` d'abord — si une
+règle est rouge, ce n'est pas elle qu'on touche. Puis
+`npx tsx scripts/capture-plan-arrosage.ts <dossier>` pour REGARDER le dessin,
+avec le cas à quatre réseaux et un couloir. Détail : `ARCHITECTURE.md` §333 ;
+document de retour : `docs/lot-arrosage-impeccable.md`.
+
+## Dernier lot — LES ÉCRITURES D'UNE MÊME DONNÉE SE SUIVENT (11 septembre 2026)
+
+| | |
+|---|---|
+| le défaut | poser une remise juste après l'avoir effacée la laissait à `null` — deux écritures, un ordre d'arrivée choisi par le réseau |
+| la pièce | `src/lib/file-d-ecritures.ts` (pure), `src/components/atlas/useEcrituresALaSuite.ts` (le support) |
+| la migration | **aucune** |
+| les suites | `scripts/test-ecritures-a-la-suite.ts` (4, témoin compris) |
+| le détail | `ARCHITECTURE.md` §334 |
+
+**LE PIÈGE DE LA PREMIÈRE VERSION, deux fois.** La règle vivait dans le hook :
+`useRef` hors d'un rendu lève « Cannot read properties of null », et rien ne
+pouvait l'éprouver sans monter un écran. Descendue dans `lib`, elle se joue en
+millisecondes. Puis le hook a gardé la file dans un `useRef` posé **pendant le
+rendu** — ce que React interdit, et que le lint du dépôt a refusé. C'est
+`useState(() => …)` qu'il faut : joué une fois, jamais rejoué.
+
+---
+
+## Dernier lot — LE PRIX ACCORDÉ AU CLIENT SUR UNE FACTURE (11 septembre 2026)
+
+| | |
+|---|---|
+| ses mots | *« la réduction client cliquable comme sur le devis »* · *« reprends exactement celle du devis — couleur, forme, mots »* |
+| la pièce commune | `src/components/atlas/PrixAccordeAuClient.tsx`, montée par le devis ET la facture |
+| le serveur | `majReductionDeFacture` + `majReductionFactureAction` — ils n'existaient pas |
+| la migration | **aucune** |
+| les suites | `test-remise-facture-db.ts` (5), `test-facture-sans-devis-e2e.ts` (12) |
+| le détail | `ARCHITECTURE.md` §332 |
+
+**LE PIÈGE QUE LA BASE A ARRÊTÉ.** `factures_reduction_paire_ck` exige le
+pourcentage ET le montant, ou aucun des deux. Écrire le seul pourcentage échoue
+— et le message de `drizzle` ne dit PAS la contrainte : il faut lire la `cause`
+de l'erreur (la suite le fait désormais).
+
+---
+
+## Dernier lot — PLUSIEURS TVA SUR UNE FACTURE, ET LE ZÉRO DU PRIX (11 septembre 2026)
+
+| | |
+|---|---|
+| ses mots | *« je ne peux pas ajouter plusieurs TVA »* · *« le 0 est toujours présent »* |
+| la racine | la grammaire TVA du devis réécrite en plus pauvre pour la facture, et `prixAEcrire` branchée sur un seul des deux écrans |
+| la migration | **aucune** |
+| les pièces | `TravauxSupplementairesClient.tsx`, `src/lib/reduction-devis.ts` (`tauxTvaPropose`), `DevisCompletClient.tsx` (sa liste en dur retirée) |
+| les suites | `test-facture-sans-devis-e2e.ts` (11), les deux moitiés vues rouges |
+| le détail | `ARCHITECTURE.md` §331 |
+
+**LE PIÈGE À NE PAS REFABRIQUER.** Le champ du prix se vide à
+l'INITIALISATION de l'état, jamais au rendu. Dérivé à chaque frappe, il se
+viderait au premier « 0 » tapé — et « 0,50 » deviendrait impossible à écrire.
+
+**ET LA RÈGLE N'A PLUS D'EXCEPTION — sa décision du soir :** une case de saisie
+ne porte jamais de zéro, devis, facture et écran des prix compris. `prixAEcrire`
+ne prend plus de drapeau. Ne pas rétablir le zéro d'une ligne offerte : le
+montant calculé, lui, reste affiché à côté et dit la gratuité.
+
+**Et le « − » d'une catégorie ne retire QUE ses lignes** : `retirerLignesDeFacture`
+sans identifiant vide la facture entière. C'était sans conséquence tant qu'il
+n'y avait qu'un groupe ; avec deux taux, cela emporterait l'autre.
+
+## Dernier lot — « NOTER UN RÈGLEMENT » : LES CASES ONT UN NOM (11 septembre 2026)
+
+| | |
+|---|---|
+| son choix | la planche n° 1 de `appli/noter-un-reglement.html` — deux cases nommées |
+| ce qui change | « Payé le » / « Montant reçu » ; montant **vide** ; bouton éteint sans montant ; six mots sous le bouton |
+| la racine | `<input type="date">` se formate selon la LANGUE DU TÉLÉPHONE : le sien écrivait « 09/11/2026 » pour un 11 septembre |
+| la migration | **aucune** |
+| les pièces | `src/app/termines/tva/EnAttenteDePaiement.tsx` |
+| les suites | `scripts/test-tva-au-paiement-e2e.ts` — le motif `jj/mm/aaaa` visé dans un navigateur qui n'est PAS en français |
+| le détail | `ARCHITECTURE.md` §330 |
+
+**ET LA LIGNE ENREGISTRÉE A LA FORME DES CASES** : « Acompte payé le
+11/09/2026 » à gauche, le montant à droite, aux mêmes places — on relit ce qu'on
+a tapé là où on l'a tapé. Les règlements repris par la migration gardent
+« Supposé réglé le … » : eux n'ont jamais été constatés.
+
+**NE PAS REMETTRE LE CHAMP NATIF SEUL.** Le texte de la date est écrit par
+l'application et le champ natif est transparent par-dessus : c'est ce qui rend
+le jour lisible pareil sur tous les téléphones. Un contrôle qui lit la valeur
+(`2026-09-11`) ne verra jamais revenir ce défaut — seul le texte affiché le dit.
+
+---
+
+## Dernier lot — LA TRACE DE RÉCEPTION TIENT EN UNE DATE (11 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« les phrases sont trop longues… Ouverte 11/09, la date en gras, l'heure tu supprimes ; et s'il coche la case, seulement réception confirmée le 11/09 »* |
+| ce qui change | une seule date à l'écran, en gras, au format `11/09` — l'heure quitte l'affichage, elle reste en base (`ouverte_at`) |
+| la migration | **aucune** |
+| les pièces | `src/lib/reception-facture.ts`, `src/lib/jour.ts` (`jourCourt`), `src/lib/documents-du-client.ts`, `src/app/termines/tva/EnAttenteDePaiement.tsx`, `src/app/clients/[id]/PieceDuDossier.tsx` |
+| les suites | `scripts/test-reception-facture.ts` (6), `scripts/test-reception-facture-db.ts` |
+| la capture | `npx tsx scripts/capture-trace-reception.mts <dossier>` — quatre états, plus le formulaire ouvert |
+| le détail | `ARCHITECTURE.md` §330 |
+
+**LA PHRASE NE SE DÉCIDE PLUS DANS LES ÉCRANS.** `receptionEnMots` rend
+`{ avant, date }` — la phrase déjà choisie, plus le jour à mettre en gras. Les
+deux écrans qui la montrent ne portent aucune condition. Y remettre un `if`
+recréerait la divergence que ce lot vient de retirer.
+
+**ET LE CHAPÔ NE GARDE QU'UNE MOITIÉ DE PHRASE** — « Elles entreront au relevé
+quand vous appuierez sur « Payée ». », en gras, entière. Les deux moitiés
+retirées redisaient le titre de l'écran et le « quand ».
+
+**ON NE DÉPLACE RIEN, ON RÉÉCRIT SUR PLACE — et cela a coûté deux allers-retours
+le 11 septembre 2026 :** *« il fallait laisser les phrases où elles étaient,
+juste les modifier »*. Les deux lignes « Reste à payer 1 476,00 € / Sur les
+1 776,00 € » remplacent « reste sur … » **dans la colonne de droite**, là où
+elle vivait, et seulement quand un acompte est passé. Le formulaire de saisie et
+la ligne « émise le … » sont revenus tels qu'ils étaient.
+
+---
+
+
+## Dernier lot — LA PHOTO D'UN RETOUR EN BIBLIOTHÈQUE (11 septembre 2026)
 
 | | |
 |---|---|
@@ -100,6 +301,29 @@ chemins côte à côte, et le refus d'écraser) et
 `scripts/test-facture-sans-devis-e2e.ts` — celui-ci par SA porte : taper le nom,
 voir « Repris de sa fiche », ajouter l'e-mail, faire la facture, relire la fiche.
 Les deux suites ont été vues **rouges** contre la version d'avant.
+
+---
+## Dernier lot — LE « 1 » DES RETOURS RESTAIT ALLUMÉ APRÈS LECTURE (11 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« je viens d'aller regarder le retour d'inter mais le petit 1 est resté visible »* |
+| la migration | **aucune** |
+| les pièces | `src/app/termines/retours/actions.ts` — `revalidatePath("/termines")` et `("/termines/retours")` |
+| les suites | `scripts/test-onglets-termines-e2e.ts`, un cas de plus qui ne recharge JAMAIS |
+| le détail | `ARCHITECTURE.md` §329 |
+
+**CE QU'IL NE FAUT PAS CHERCHER AILLEURS.** Le compte était juste en base, et la
+pastille ne compte que les non-lus depuis le 9 septembre. Ce qui mentait, c'est
+la page gardée par le navigateur : la flèche d'en-tête **recule**
+(`FlecheRetour`, `router.back()`), et un retour arrière rejoue la page d'avant
+la lecture. Une écriture qui ne périme pas les écrans qu'elle change laisse
+l'ancienne image sous son doigt.
+
+**ET LES DEUX SUITES QUI COUVRAIENT LA PASTILLE ÉTAIENT VERTES**, parce qu'elles
+rechargent (`page.goto`) — ce qui contourne précisément le mécanisme en cause.
+Le cas ajouté parcourt son chemin à lui, sans un seul rechargement, et il a été
+mis au rouge contre l'ancien code avant d'être cru.
 
 ---
 ## Dernier lot — GOOGLE ET APPLE SE MONTRENT AVANT D'OUVRIR (11 septembre 2026)
@@ -443,7 +667,7 @@ d'essai, sur son espace (`TODO.md`, premier point).
 |---|---|
 | ce qui a changé | trois phrases de l'écran TVA, et l'état d'une facture à 0 € |
 | la migration | aucune |
-| les pièces | `src/app/termines/tva/DeclarationsTva.tsx`, `EnAttenteDePaiement.tsx`, `RegimeTva.tsx`, `src/lib/exigibilite-tva.ts` |
+| les pièces | `DeclarationsTva.tsx` et `RegimeTva.tsx` (le premier supprimé, le second devenu `src/app/reglages/ExigibiliteTva.tsx` le 12 septembre), `src/app/termines/tva/EnAttenteDePaiement.tsx`, `src/lib/exigibilite-tva.ts` |
 | les suites | `scripts/test-exigibilite-tva.ts` (+2 cas) ; le parcours reste tenu par `test-tva-au-paiement-e2e.ts` |
 | le détail | `ARCHITECTURE.md` §305 |
 
@@ -1675,7 +1899,7 @@ TVA, tu peux coder exactement ça »*. L'écran est en place —
 | | |
 |---|---|
 | l'écran est une **addition** | collectée, moins déductible, un trait, le reste — trois `LigneMontant`, alignées à droite, **toutes les trois copiables** |
-| les **deux réglages** | plus en tête d'écran : une ligne de provenance sous le total ouvre `DeclarationsTva`, qui porte `RythmeTva` et `RegimeTva` intacts |
+| les **deux réglages** | plus en tête d'écran : une ligne de provenance sous le total ouvrait une feuille (`DeclarationsTva`, supprimée le 12 septembre : le rythme est un mot sous les mois, le régime est dans « Mon entreprise ») |
 | la **facturation** | LIT la ligne de provenance, sans geste, et la feuille n'est **pas rendue** pour elle — une suite lit le texte de la page et le vérifie |
 | les **deux gestes d'achat** | dans l'addition, entre « Déductible » et le trait. La LISTE des achats est redevenue du serveur, dans `page.tsx` |
 | la **frise des périodes** | remplace les deux flèches ; l'année, collée à gauche, ouvre le calendrier |
@@ -4247,7 +4471,7 @@ l'adresse, donc de n'importe qui.
 ## Diagnostic végétal : ce qu'il faut savoir avant d'y toucher (20 août 2026, repris le 12 septembre)
 
 **Depuis le 12 septembre 2026, le refus est l'écran principal** (`ARCHITECTURE.md`
-§330) : la base range la CLÉ du refus (`diagnostics.refus`, migration 0087) et
+§337) : la base range la CLÉ du refus (`diagnostics.refus`, migration 0087) et
 l'écran compose phrase et geste depuis les listes fermées de
 `src/lib/diagnostic-vegetal.ts` — `MOTIFS_REFUS`, `GESTE_APRES_REFUS`. Ajouter
 un refus, c'est donc trois gestes : la clé et sa phrase, son geste (ou `null`,

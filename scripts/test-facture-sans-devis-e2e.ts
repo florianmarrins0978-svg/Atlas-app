@@ -374,6 +374,137 @@ async function main() {
     assert.ok(octets.length > 800, `le PDF fait ${octets.length} octets : c'est une page vide`);
   });
 
+  // ── DEUX TVA SUR LA MÊME FACTURE, ET LE CHAMP DU PRIX VIDE ──────────────
+  //
+  // **Sa capture du 11 septembre 2026 :** *« je ne peux pas ajouter plusieurs
+  // TVA ; lorsque j'en mets une, le bouton disparaît »* — et, dans le même
+  // message : *« le problème pour rentrer les montants n'a pas été résolu,
+  // regarde le 0 est toujours présent »*.
+  //
+  // **Ce contrôle entre par SA porte** (`CLAUDE.md` §5 quater) : il appuie sur
+  // le bouton, comme lui, au lieu de poser les taux en base et de relire.
+  await test("il pose une SECONDE TVA, et le geste reste offert", async () => {
+    await page.click('[data-atlas="ajouter-travaux-supplementaires"]');
+    await page.waitForURL(/travaux-supplementaires/, { timeout: 15000 });
+    await page.waitForLoadState("networkidle");
+
+    await page.click('[data-atlas="ajouter-tva-supplement"]');
+    await page.waitForTimeout(900);
+    // **Le défaut exact qu'il a signalé** : le bouton se cachait dès le premier
+    // taux posé, et le second devenait inatteignable.
+    assert.strictEqual(
+      await page.locator('[data-atlas="ajouter-tva-supplement"]').count(),
+      1,
+      "« Ajouter une TVA » a disparu après le premier taux : le second est hors d'atteinte"
+    );
+
+    // **Le champ du prix de la ligne neuve ne porte rien** — pas le « 0 » de la
+    // base, qui se collait devant ce qu'il tape (« 0250 »).
+    const neuve = page.locator('[data-atlas="ligne-supplement"]').last();
+    assert.strictEqual(
+      await neuve.locator("input").nth(1).inputValue(),
+      "",
+      "le champ du prix porte un zéro : ce qu'il tape se colle derrière"
+    );
+    await neuve.locator("textarea").fill("Végétaux");
+    await neuve.locator("textarea").blur();
+    await neuve.locator("input").nth(1).fill("80");
+    await neuve.locator("input").nth(1).blur();
+    await page.waitForTimeout(900);
+
+    await page.click('[data-atlas="ajouter-tva-supplement"]');
+    await page.waitForTimeout(900);
+    const derniere = page.locator('[data-atlas="ligne-supplement"]').last();
+    await derniere.locator("textarea").fill("Terreau");
+    await derniere.locator("textarea").blur();
+    await derniere.locator("input").nth(1).fill("30");
+    await derniere.locator("input").nth(1).blur();
+    await page.waitForTimeout(1200);
+
+    // **Ce que la BASE porte, et non ce que l'écran affiche** : un libellé se
+    // change, trois taux distincts sur une même facture sont la règle
+    // (`CLAUDE.md` §5 bis).
+    const { rows } = await pool.query(
+      `SELECT DISTINCT lf.taux_tva
+         FROM lignes_facture lf
+         JOIN factures f ON f.id = lf.facture_id
+        WHERE f.chantier_id = $1 AND lf.taux_tva IS NOT NULL`,
+      [chantierId]
+    );
+    const taux = rows.map((r) => Number(r.taux_tva)).sort((a, b) => a - b);
+    assert.deepStrictEqual(
+      taux,
+      [5.5, 10],
+      `la facture ne porte que ${taux.length} taux propre(s) : ${taux.join(", ") || "aucun"}`
+    );
+
+    // Et le taux proposé ne se répète pas : deux catégories au même taux
+    // n'auraient rien ouvert du tout.
+    assert.strictEqual(new Set(taux).size, taux.length, "le même taux a été proposé deux fois");
+  });
+
+  // ── LE PRIX ACCORDÉ AU CLIENT, POSÉ DEPUIS L'ÉCRAN ──────────────────────
+  //
+  // **Sa demande du 11 septembre 2026 :** *« on n'a pas mis la réduction client
+  // cliquable comme sur le devis »*, puis *« reprends exactement celle du devis
+  // — couleur, forme, mots »*.
+  await test("il accorde un prix au client, et la facture le retire du total", async () => {
+    // On est encore sur l'écran de saisie, celui qui porte les totaux.
+    assert.strictEqual(
+      await page.locator('[data-atlas="poser-prix-accorde"]').count(),
+      1,
+      "aucun moyen d'accorder un prix : le geste du devis n'est pas sur la facture"
+    );
+
+    const avant = Number(
+      (await pool.query(
+        `SELECT SUM(lf.montant) AS ht FROM lignes_facture lf
+           JOIN factures f ON f.id = lf.facture_id WHERE f.chantier_id = $1`,
+        [chantierId]
+      )).rows[0].ht
+    );
+
+    await page.click('[data-atlas="poser-prix-accorde"]');
+    await page.waitForTimeout(1200);
+
+    // **Cinq pour cent d'emblée** — le chiffre que le bouton pose, écrit une
+    // seule fois (`REMISE_PAR_DEFAUT`), pour le devis comme pour la facture.
+    assert.strictEqual(
+      await page.locator('[data-atlas="taux-prix-accorde"]').inputValue(),
+      "5",
+      "le bouton ne pose pas les 5 % que le devis pose"
+    );
+
+    // **Ce que la BASE porte**, et non ce que l'écran affiche : les deux
+    // colonnes vont ensemble, la contrainte `factures_reduction_paire_ck` le
+    // fait respecter, et un pourcentage sans montant serait refusé.
+    const { rows } = await pool.query(
+      `SELECT reduction_pourcent, reduction_montant FROM factures WHERE chantier_id = $1`,
+      [chantierId]
+    );
+    assert.strictEqual(Number(rows[0].reduction_pourcent), 5, "la remise n'est pas enregistrée");
+    assert.strictEqual(
+      Number(rows[0].reduction_montant),
+      Math.round(avant * 5) / 100,
+      `le montant retiré ne correspond pas aux 5 % de ${avant} €`
+    );
+
+    // Et le « − » du devis est là, au même endroit, avec les mêmes mots.
+    assert.strictEqual(
+      await page.locator('[data-atlas="retirer-prix-accorde"]').count(),
+      1,
+      "rien ne permet de retirer le prix accordé"
+    );
+    await page.click('[data-atlas="retirer-prix-accorde"]');
+    await page.waitForTimeout(1200);
+    const apres = await pool.query(
+      `SELECT reduction_pourcent, reduction_montant FROM factures WHERE chantier_id = $1`,
+      [chantierId]
+    );
+    assert.strictEqual(apres.rows[0].reduction_pourcent, null, "la remise retirée dort en base");
+    assert.strictEqual(apres.rows[0].reduction_montant, null, "le montant retiré dort en base");
+  });
+
   await context.close();
   await navigateur.close();
 }

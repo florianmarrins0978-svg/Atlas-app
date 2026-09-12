@@ -391,6 +391,17 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   n'explique pas son propre fonctionnement — il le montre. Une phrase qui décrit
   ce que fait le bouton d'à côté est du bruit : elle se supprime. Vaut pour les
   écrans **et** les maquettes.
+- **Une demande d'affichage change le TEXTE, jamais la PLACE.** Sa règle du
+  11 septembre 2026, après deux allers-retours dans la même soirée : *« il
+  fallait laisser les phrases où elles étaient, juste les modifier »*. Il avait
+  demandé deux lignes « Reste à payer… / Sur les… » ; elles ont été posées dans
+  le formulaire de saisie au lieu de la colonne de droite où vivait la phrase
+  qu'elles remplacent — *« pourquoi tu as changé les lignes de place ? »* —,
+  puis une ligne voisine a été effacée parce qu'elle redisait une date.
+  Il reconnaît son écran par la position de ce qu'il lit : un mot qui change se
+  lit en une seconde, une ligne qui bouge se cherche. Quand la réécriture crée
+  une répétition, c'est **le mot en trop** qui part, jamais la ligne entière.
+
 - **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
   2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)
   ajouté à la fin d'un bouton ou d'un lien — « Régler à la main → », « Créer le
@@ -796,6 +807,17 @@ programmateur, sa tranchée et son créneau d'arrosage.
 **Et le quinconce ne se resserre JAMAIS sous la portée** — sa règle du 17 août.
 Quand le damier ne couvre pas à cet écart-là, on garde la grille alignée. Le
 resserrement sans plancher disqualifiait la seule pose qui tenait sur une vanne.
+**La portée se mesure ENTRE DEUX TÊTES, pas sur le pas des colonnes** (corrigé
+le 11 septembre 2026) : sur un damier, deux têtes voisines sont à deux pas sur
+un même bord, ou en diagonale — mesurer le pas refusait son couloir de 10 × 2 à
+sept tuyères (§127), et c'est ainsi que sa règle du 18 août était morte.
+
+**LE DAMIER EST POUR LES TUYÈRES DES COULOIRS ; LES TURBINES SE POSENT
+ALIGNÉES — « la A », sa réponse du 11 septembre 2026** devant la planche
+`appli/arrosage-a-trancher.html` qui lui montrait les deux poses calculées sur
+son 12 × 12 : neuf turbines alignées, ou six en damier (où le recouvrement
+entre deux têtes voisines tombe à 72 %). Il a gardé ses neuf. Ne pas rouvrir :
+`test-regles-du-patron.ts` tient les deux.
 
 **UN CROQUIS À MAIN LEVÉE SE LIT QUAND MÊME — sa correction du 23 août 2026 :**
 *« les utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à
@@ -1079,6 +1101,51 @@ calcul, pas un détour.
 **Une antenne part du RÉSEAU, pas de la nourrice.** Seul le réseau part du
 regard ; ses antennes se greffent sur un point qu'il dessert déjà.
 
+**LE Ø25 PASSE, L'ANTENNE Ø16 VA CHERCHER LA TÊTE — ET ELLE FAIT 2 M AU
+MAXIMUM.** Sa règle du 11 septembre 2026, donnée en corrigeant un plan qui
+amenait le Ø25 jusqu'à chaque tuyère d'un couloir, en deux lignes :
+
+*« Pour la tranchée, il faut faire juste un passage au mieux pour le 25, et
+ensuite ce sont des antennes en diamètre 16 rigide qui vont de part et d'autre
+pour poser les tuyères — et elles doivent être posées en quinconce. »*
+
+*« Si le couloir fait 3 m, on fait une seule tranchée au milieu et les antennes
+pour les tuyères de chaque côté — donc 1,50 m de 16 rigide, ça passe. Si le
+couloir fait 5 m, on ne peut plus faire une seule tranchée au milieu, parce que
+là ça fait des antennes de 2,50 m de chaque côté, et le max c'est 2 m de 16
+rigide. »*
+
+| | |
+|---|---|
+| la ligne Ø25 | **un seul passage**, au mieux — elle ne va pas à chaque tête |
+| l'antenne Ø16 rigide | du té de la ligne à l'arroseur, **2 m au plus** |
+| un couloir jusqu'à **4 m** de large | une tranchée au milieu, des antennes des deux côtés |
+| au-delà de 4 m | une tranchée ne suffit plus : la ligne doit repasser assez près de chaque tête |
+
+**L'AMENÉE SE CALCULE — « NI LUE, NI SUPPOSÉE ».** Sa règle du 11 septembre
+2026, devant une planche qui lui proposait de la « lire » ou de garder 30 m :
+*« pour la 2, elle doit être calculée, ni lue ni supposée »*. Le croquis porte
+le piquage et la nourrice — deux des trois éléments obligatoires —, les cotes
+donnent l'échelle : la longueur du compteur à la nourrice se calcule entre les
+deux places, en Manhattan, comme le trajet du regard
+(`longueurDeLAmenee`, `geometrie-croquis.ts`). Le modèle ne rend jamais des
+mètres ; il rend des places. Et **sans piquage dessiné, aucun plan** — c'est le
+troisième élément, et il se lit désormais sur le croquis, pas seulement dans le
+déroulant (qui, lui, ne commande que le débit). Quand l'échelle ne se déduit
+pas, l'amenée n'est pas comptée et l'écran le dit — jamais 30 m tus.
+
+**Pourquoi 2 m et pas « environ 2 m ».** La nomenclature du 17 août comptait
+*« environ 2 m de PEBD rigide Ø16 par arroseur »* — une règle de COMPTE, qu'on
+a prise pour la seule règle. Celle-ci est une règle de POSE : au-delà, ce n'est
+plus une antenne, et la ligne doit venir plus près. Le tracé doit donc placer
+le Ø25 de sorte qu'aucune tête ne soit à plus de 2 m de lui.
+
+**Cette règle avait déjà été donnée avant le 11 septembre, et elle avait été
+perdue** avant d'être écrite — comme le quinconce du couloir (§127), mort le
+24 août quand un contrôle rouge a été réécrit au lieu d'être compris. Les deux
+vivent désormais dans `scripts/test-regles-du-patron.ts`, avec ses chiffres à
+lui : **un rouge dans cette suite ne se réécrit jamais, il lui est posé.**
+
 **Les raccords se comptent par POSITION, jamais par arroseur** — sa planche du
 17 août, écrite dans `appli/arrosage-catalogue.js` :
 
@@ -1145,6 +1212,17 @@ Et chaque symbole **nomme la pièce** qu'il implique : plein → té taraudé ; 
 → coude taraudé ; losange → té égal. Sans cela on lit le plan sans savoir quoi
 visser. **Toute pièce facturée se voit quelque part sur le plan** — une pièce
 commandée qu'on ne sait pas où poser ne sert à rien.
+
+**DEUX SYMBOLES AU MÊME POINT SE DESSINENT CÔTE À CÔTE, JAMAIS L'UN SUR
+L'AUTRE.** Sa règle du 11 septembre 2026 : *« même si c'est au même endroit, tu
+ne dois pas superposer les ronds, carrés ou losanges : mets-les côte à côte,
+qu'on les voie bien — l'utilisateur comprendra que c'est au même endroit »*.
+Deux pelouses qui se touchent posent chacune sa tête sur l'arête commune ; le
+dessin en montrait une, la seconde exactement dessous, et seule la réserve le
+disait. Le point vrai ne bouge pas (c'est lui qui arrose) ; le symbole s'écarte
+(`Tete.decalage`). Et le té égal d'une tête à trois branches se dessine **à côté
+d'elle**, pas dessous — *« il faut un té égal à côté du premier arroseur pour
+faire la jonction »*, sa lecture du plan le même jour.
 
 **UNE LÉGENDE SE VÉRIFIE CONTRE LE CATALOGUE ET CONTRE LA COMMANDE.** Payé le
 22 août 2026, et c'est lui qui l'a relevé : *« il m'a déjà donné 4 arroseurs en

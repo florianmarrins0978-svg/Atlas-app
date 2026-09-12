@@ -121,6 +121,28 @@ async function collectee(page: Page): Promise<number> {
   return Number(m[1].replace(/[\s   ]/g, "").replace(",", "."));
 }
 
+/**
+ * Changer de régime, là où il vit depuis le 12 septembre 2026 : dans « Mon
+ * entreprise », à côté du rythme. Sa planche « une seule logique » l'a sorti du
+ * relevé ; on rejoue donc le geste du patron tel qu'il est — l'autre écran, puis
+ * le choix —, et l'on attend que la case soit cochée AVANT de repartir lire le
+ * relevé, sinon on lirait l'ancien régime.
+ */
+async function choisirLeRegime(page: Page, libelle: RegExp) {
+  await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
+  const choix = page.getByRole("radio", { name: libelle });
+  await choix.waitFor({ state: "visible", timeout: 30_000 });
+  await choix.click();
+  await page.waitForFunction(
+    (l) => {
+      const r = [...document.querySelectorAll('[role="radio"]')].find((x) => new RegExp(l, "i").test(x.textContent ?? ""));
+      return r?.getAttribute("aria-checked") === "true";
+    },
+    libelle.source,
+    { timeout: 15_000 }
+  );
+}
+
 async function main() {
   const navigateur = await lancerNavigateur();
   // Son écran : c'est sur un téléphone qu'il note ses règlements.
@@ -178,7 +200,7 @@ async function main() {
     assert.strictEqual(await collectee(page), avant, "la facture impayée est entrée au relevé");
 
     // Et elle est visible dans l'endroit en attente, avec son nom.
-    const attente = page.getByRole("heading", { name: "En attente de paiement" });
+    const attente = page.getByRole("heading", { name: "Factures en attente" });
     await attente.waitFor({ state: "visible", timeout: 10_000 });
     const ecran = await page.locator("body").innerText();
     assert.ok(ecran.includes(numero), `la facture ${numero} n'apparaît pas en attente`);
@@ -228,8 +250,28 @@ async function main() {
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const ligne = page.locator("li").filter({ hasText: numero });
     await ligne.getByRole("button", { name: "Noter un règlement" }).click();
-    await ligne.getByLabel("Montant reçu, en euros").fill("600");
-    await ligne.getByRole("button", { name: "Enregistrer ce règlement" }).click();
+
+    // **LA DATE S'ÉCRIT À LA FRANÇAISE, ET C'EST NOUS QUI L'ÉCRIVONS.**
+    // Sa capture du 11 septembre 2026 montrait « 09/11/2026 » pour un
+    // 11 septembre : le champ natif se formate selon la langue du TÉLÉPHONE. Ce
+    // navigateur-ci n'est pas en français, et c'est exactement le cas qu'on
+    // veut éprouver — le jour doit se lire pareil partout.
+    const jour = await ligne.locator("span[aria-hidden]").first().innerText();
+    assert.match(
+      jour.trim(),
+      /^\d{2}\/\d{2}\/\d{4}$/,
+      `la date du paiement se lit « ${jour.trim()} » au lieu de jj/mm/aaaa`
+    );
+
+    // **La case part vide, et le bouton attend** — sa demande du même jour : le
+    // chiffre affiché doit être celui qu'il a tapé, jamais un solde proposé.
+    const caseMontant = ligne.getByLabel("Montant reçu, en euros");
+    assert.strictEqual(await caseMontant.inputValue(), "", "le montant arrive rempli d'un chiffre qu'il n'a pas tapé");
+    const bouton = ligne.getByRole("button", { name: "Enregistrer ce règlement" });
+    assert.ok(!(await bouton.isEnabled()), "on peut enregistrer un règlement sans montant");
+
+    await caseMontant.fill("600");
+    await bouton.click();
 
     // 600 € sur 1 200 € TTC : la moitié, donc 100 € de TVA sur 200.
     await page.waitForFunction(
@@ -246,7 +288,30 @@ async function main() {
     // Et elle attend toujours son solde : c'est ce qui empêche de l'oublier.
     const ecran = await page.locator("body").innerText();
     assert.ok(ecran.includes(numero), "la facture partiellement réglée a quitté l'attente");
-    assert.ok(/reste sur/.test(ecran), "rien ne dit qu'il s'agit d'un reste");
+    // **Ce qu'on vise, c'est LE CHIFFRE, pas le libellé** (`CLAUDE.md` §5 bis) :
+    // « reste sur » a été remplacé par « Reste à payer … / Sur les … du … » le
+    // 11 septembre 2026, et ce contrôle tombait sur un écran juste. Ce qui doit
+    // rester vrai quel que soit le mot choisi : le solde ET le total de la
+    // facture sont tous les deux à l'écran — sans le second, « 600 € » sur une
+    // facture de 1 200 € se lit comme une erreur de montant.
+    assert.ok(/600,00\s*€/.test(ecran), "le solde qui reste dû ne s'affiche pas");
+    assert.ok(/1\s*200,00\s*€/.test(ecran), "rien ne rattache ce solde à la facture entière");
+
+    // **Le règlement enregistré se relit COMME IL A ÉTÉ TAPÉ** — sa demande du
+    // 11 septembre 2026 : « donc : 11/09/2026, le montant qui vient d'être
+    // rentré ». La date à gauche, le montant à droite, aux mêmes places que les
+    // deux cases juste au-dessus. La ligne disait « 600,00 € le 11/09 » : les
+    // deux mêmes choses, dans l'autre sens et dans un autre format.
+    const enregistre = ligne.locator("ul li").first();
+    const parts = (await enregistre.innerText()).split("\n").map((t) => t.trim());
+    // « Acompte payé le … » depuis le 11 septembre 2026 : un jour et un montant
+    // posés seuls ne disaient pas de quoi ils parlaient.
+    assert.match(
+      parts[0] ?? "",
+      /^Acompte payé le \d{2}\/\d{2}\/\d{4}$/,
+      `la ligne dit « ${parts[0]} » au lieu de « Acompte payé le jj/mm/aaaa »`
+    );
+    assert.match(parts[1] ?? "", /600,00\s*€/, `le montant ne suit pas la date : « ${parts[1]} »`);
   });
 
   await test("UN MONTANT TROP GRAND EST REFUSÉ, et le refus lui parvient", async () => {
@@ -272,26 +337,14 @@ async function main() {
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const avant = await collectee(page);
 
-    // **Le régime vit dans une feuille depuis le 3 septembre 2026** : il
-    // ouvrait l'écran, avant le titre et le premier chiffre. On rejoue donc le
-    // geste du patron — la ligne de provenance, puis le choix. La feuille reste
-    // ensuite ouverte, `RegimeTva` ne faisant que rafraîchir.
-    await page.click('[data-atlas="declarations"]');
-    await page.getByRole("radio", { name: /Le mois où j'envoie la facture/ }).click();
-    await page.waitForFunction(
-      (a) => {
-        const m = document.body.innerText.match(/COLLECTÉE\s*\n?\s*([\d\s   ,.]+)\s*€/i);
-        return m ? Number(m[1].replace(/[\s   ]/g, "").replace(",", ".")) !== a : false;
-      },
-      avant,
-      { timeout: 15_000 }
-    );
+    await choisirLeRegime(page, /Le mois où j'envoie la facture/);
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const apres = await collectee(page);
     assert.ok(apres > avant, `aux débits, la facture impayée devrait entrer au relevé (${avant} → ${apres})`);
 
     // Et l'endroit en attente disparaît : plus rien à faire, tout est déclaré.
     const ecran = await page.locator("body").innerText();
-    assert.ok(!ecran.includes("En attente de paiement"), "l'attente subsiste alors que tout est déclaré");
+    assert.ok(!ecran.includes("Factures en attente"), "l'attente subsiste alors que tout est déclaré");
     // **Le numéro du relevé porte des espaces et des retours à la ligne.**
     // `NumeroDeDocument` le coupe en blocs pour qu'iOS cesse d'y voir un numéro
     // de téléphone (`ARCHITECTURE.md`, 13 août) : le comparer tel quel fait
@@ -303,8 +356,7 @@ async function main() {
     );
 
     // On repose le régime : les suites suivantes partent d'un état connu.
-    await page.getByRole("radio", { name: /Le mois où mon client me paie/ }).click();
-    await page.waitForTimeout(1500);
+    await choisirLeRegime(page, /Le mois où mon client me paie/);
   });
 
   // ─── SA PLAINTE DU 26 AOÛT 2026 : « rien ne se passe » ───────────────────
@@ -324,11 +376,14 @@ async function main() {
     const { chantierId } = await chantierRealise(page, "ecart");
     await emettre(page, chantierId); // émise, et jamais payée
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
-    // La phrase accompagne le choix, et le choix est dans la feuille : c'est
-    // là qu'on se demande ce qu'il change, et nulle part ailleurs.
-    await page.click('[data-atlas="declarations"]');
+    const grandChiffre = await collectee(page);
 
+    // La phrase accompagne le choix, et le choix est dans « Mon entreprise »
+    // depuis le 12 septembre 2026 : c'est là qu'on se demande ce qu'il change.
+    // Elle parle de la période COURANTE — celle que le relevé ouvre par défaut.
+    await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
     const phrase = page.locator('[data-atlas="ecart-des-regimes"]');
+    await phrase.waitFor({ state: "visible", timeout: 30_000 });
     assert.equal(await phrase.count(), 1, "la phrase qui dit ce que le choix change a disparu");
 
     const nombre = (x: string) => Number(x.replace(/[\s   ]/g, "").replace(",", "."));
@@ -354,8 +409,8 @@ async function main() {
     assert.equal(avant.lus.length, 2, `deux montants attendus, lu « ${avant.dit} »`);
     assert.equal(
       avant.lus[0],
-      await collectee(page),
-      "le montant cité n'est pas celui du bloc au-dessus : la phrase a dérivé"
+      grandChiffre,
+      "le montant cité n'est pas celui du relevé : la phrase a dérivé"
     );
     assert.ok(avant.lus[1] > avant.lus[0], "aux débits, la facture impayée doit ajouter sa TVA");
 
@@ -368,17 +423,10 @@ async function main() {
     // Elle nomme donc les deux régimes, dans un ordre qui ne bouge pas — et
     // c'est ce que ce contrôle fixe : après la bascule, ce sont les MÊMES deux
     // montants, et c'est « Collectée » qui passe de l'un à l'autre.
-    await page.getByRole("radio", { name: /Le mois où j'envoie la facture/ }).click();
-    await page.waitForFunction(
-      (a) => {
-        const m = document.body.innerText.match(/COLLECTÉE\s*\n?\s*([\d \s   ,.]+)\s*€/i);
-        return m ? Number(m[1].replace(/[\s   ]/g, "").replace(",", ".")) !== a : false;
-      },
-      avant.lus[0],
-      { timeout: 15_000 }
-    );
+    await choisirLeRegime(page, /Le mois où j'envoie la facture/);
     const apres = await montants();
     assert.deepEqual(apres.lus, avant.lus, `la phrase a changé d'ordre : « ${apres.dit} »`);
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     assert.equal(
       await collectee(page),
       avant.lus[1],
@@ -386,8 +434,7 @@ async function main() {
     );
 
     // On repose le régime : les suites suivantes partent d'un état connu.
-    await page.getByRole("radio", { name: /Le mois où mon client me paie/ }).click();
-    await page.waitForTimeout(1500);
+    await choisirLeRegime(page, /Le mois où mon client me paie/);
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

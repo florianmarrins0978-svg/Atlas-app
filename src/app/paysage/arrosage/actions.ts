@@ -5,9 +5,11 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCroquis } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
 import { calculerPlan } from "@/lib/arrosage/calcul.js";
-import { trajetLePlusLong, poserSurLeTerrain } from "@/lib/arrosage/geometrie-croquis";
+import { trajetLePlusLong, poserSurLeTerrain, longueurDeLAmenee } from "@/lib/arrosage/geometrie-croquis";
 import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 import { dessinerPlan, type Dessin, type ZoneDessinee } from "@/lib/arrosage/plan-dessine";
+import { piecesDuPlan, type Piece } from "@/lib/arrosage/pieces";
+import { etatDuCroquis, LIBELLES, type EtatDuCroquis } from "@/lib/arrosage/croquis-complet";
 import { appliquer, cotesDuPlanTiennentDebout, type ParametresPlan } from "@/lib/arrosage/consignes";
 import { discuterLePlan, etatDuPlanEnClair, type Tour } from "@/server/ai/services/discuter-plan";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
@@ -31,89 +33,84 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 
 export type EtatPlan =
   | { etat: "vide" }
-  | { etat: "refus"; raison: string }
+  | {
+      etat: "refus";
+      raison: string;
+      /**
+       * **Le refus d'un croquis incomplet dit ce qui a été lu et ce qui manque,
+       * un par un, et le geste qui débloque** — `CLAUDE.md` §4 bis, et sa
+       * consigne du 11 septembre 2026 sur l'écran. Absent pour les autres
+       * refus (photo trop lourde, cadence, lecture impossible).
+       */
+      croquis?: EtatDuCroquis;
+      geste?: string;
+    }
   | {
       etat: "lu";
       zones: { type: string; nom: string | null; L: number | null; l: number | null; ml: number | null }[];
+      /**
+       * Les réserves qui ne bougent pas avec les paramètres : ce que la lecture
+       * n'a pas su lire, ce que la mesure suppose, le trajet du regard. Celles
+       * du CALCUL (pression, portée) vivent dans `plan.reserves` et se refont à
+       * chaque modification — sinon elles disparaissaient au premier message
+       * de la discussion, et un plan qui ne se lève pas devenait muet.
+       */
       reserves: string[];
       /**
        * LE PLAN DESSINÉ — le contour du jardin, la tranchée, les réseaux.
        *
        * *Sa demande du 21 août 2026 : « il manque la photo, le schéma avec les
-       * réseaux, et l'implantation des arroseurs ».* Il ne peut exister que si
-       * le croquis porte les trois éléments obligatoires ; sinon l'écran
-       * n'arrive jamais ici, il refuse (`CLAUDE.md` §4 bis).
+       * réseaux, et l'implantation des arroseurs ».* `null` quand le croquis
+       * ne permet pas de reconstituer l'AGENCEMENT — le plan, lui, existe :
+       * ses trois éléments obligatoires sont les métrés, le piquage et la
+       * nourrice, pas le dessin (sa correction du 23 août).
        */
-      /** `null` quand le croquis ne permet pas de reconstituer l'agencement. */
       dessin: Dessin | null;
       /** De quoi refaire le plan quand il demande une modification. */
       parametres: ParametresPlan;
-      plan: {
-        debitDisponible: number;
-        secteurs: { nom: string; debit: number; famille: string; part: string | null }[];
-        voies: number;
-        couleurs: string[];
-        /**
-         * `ref` est FACULTATIVE, et c'est le typage qui l'a appris : certaines
-         * lignes du calcul n'en portent pas — un assemblage de nourrice, une
-         * longueur de tuyau à mesurer. Les forcer à en avoir une aurait obligé
-         * à en inventer, ce que ce dépôt interdit.
-         */
-        /**
-         * **`reference` est la SEULE qu'on montre.**
-         *
-         * `ref` est une clé interne du catalogue (`te-taraude-25-34-25`) : elle
-         * sert à identifier une ligne, elle ne se commande pas. `reference` ne
-         * vaut que quand elle a été relevée sur un document du patron
-         * (« Aqua Plus 2026, p. 11 ») — sinon `null`, et l'écran n'affiche
-         * rien. Sa consigne du 22 août 2026 : *« tu ne dois surtout pas
-         * inventer de prix ni de référence »*.
-         */
-        materiel: { ref?: string; reference?: string | null; nom: string; q: number; u: string }[];
-        /**
-         * **À PARTIR DE COMBIEN DE MÈTRES IL FAUT DU Ø32** — sa demande du
-         * 22 août 2026 : *« passé un certain nombre de mètres linéaires, il
-         * faut passer du PEHD Ø25 au Ø32 ; j'aimerais que mon outil fasse la
-         * même chose »*.
-         *
-         * **Ce sont des SEUILS, pas un verdict**, et c'est délibéré. Le calcul
-         * sait aussi trancher sur une longueur donnée — mais cet écran ne
-         * demande pas la longueur de l'amenée, et le calcul en prendrait une
-         * par défaut. Un « il vous faut du Ø32 » tiré d'une longueur que
-         * personne n'a saisie serait un chiffre inventé (`CLAUDE.md` §4). Le
-         * seuil, lui, ne dépend d'aucune saisie : il se compare au mètre ruban
-         * sur place.
-         */
-        tuyau: {
-          /** Mètres de Ø25 admissibles. **Zéro quand le débit l'interdit** — l'eau y filerait trop vite, quelle que soit la longueur. */
-          seuil25: number;
-          seuil32: number;
-          /** Le débit du réseau le plus gourmand : c'est lui qui dimensionne. */
-          debit: number;
-          /** Au-delà, même le Ø32 est en surrégime : Ø40, ou un réseau de plus. */
-          insuffisantMemeEn32: boolean;
-          /**
-           * Qui plafonne un réseau : la source (le seau) ou le tuyau (Ø25).
-           *
-           * **Il faut le dire quand c'est le tuyau**, sinon un artisan qui a
-           * mesuré 3 m³/h voit ses réseaux coupés plus tôt qu'il ne s'y attend
-           * et croit à un défaut de calcul. C'est son Ø25, et il le lira.
-           */
-          limitePar: "source" | "tuyau";
-          /** Ce qu'un réseau en Ø25 peut porter, en m³/h. */
-          plafond: number;
-        };
-        /**
-         * Ce qui arrive au pied du DERNIER arroseur, en bar.
-         *
-         * **C'est lui qui décide de la portée**, pas le compteur : entre les
-         * deux se perdent l'amenée, l'électrovanne, la ligne, ses raccords et
-         * l'antenne Ø16. Le trajet du regard à la première tête n'est PAS
-         * compté — il dépend de l'endroit où la nourrice est posée.
-         */
-        pressionAuxArroseurs: number;
-      };
+      plan: LePlan;
     };
+
+export type LePlan = {
+  debitDisponible: number;
+  secteurs: { nom: string; debit: number; famille: string; part: string | null }[];
+  voies: number;
+  couleurs: string[];
+  /**
+   * **La liste qu'il emporte au comptoir — lue sur le tracé quand il existe.**
+   *
+   * Trois zones, les tés et coudes de chaque réseau tels que le plan les
+   * dessine, le tuyau Ø25 mesuré, le té égal du compteur : `pieces.ts`, où
+   * l'on explique pourquoi le calcul seul ne suffisait pas. `reference` ne
+   * vaut que quand elle a été RELEVÉE sur un document du patron — sinon
+   * `null`, et l'écran n'affiche rien (*« tu ne dois surtout pas inventer de
+   * prix ni de référence »*, 22 août 2026).
+   */
+  pieces: Piece[];
+  /**
+   * **À PARTIR DE COMBIEN DE MÈTRES IL FAUT DU Ø32** — sa demande du
+   * 22 août 2026. Le seuil se compare au mètre ruban sur place ; et depuis
+   * le 11 septembre, l'amenée elle-même est calculée sur le croquis, du
+   * piquage à la nourrice — la ligne de pièces dit alors Ø25 ou Ø32.
+   */
+  tuyau: {
+    /** Mètres de Ø25 admissibles. **Zéro quand le débit l'interdit.** */
+    seuil25: number;
+    seuil32: number;
+    /** Le débit du réseau le plus gourmand : c'est lui qui dimensionne. */
+    debit: number;
+    /** Au-delà, même le Ø32 est en surrégime : Ø40, ou un réseau de plus. */
+    insuffisantMemeEn32: boolean;
+    /** Qui plafonne un réseau : la source (le seau) ou le tuyau (Ø25). */
+    limitePar: "source" | "tuyau";
+    /** Ce qu'un réseau en Ø25 peut porter, en m³/h. */
+    plafond: number;
+  };
+  /** Ce qui arrive au pied du DERNIER arroseur, en bar. */
+  pressionAuxArroseurs: number;
+  /** Ce que le calcul dit de lui-même : la pression, la portée, l'amenée calculée. */
+  reserves: string[];
+};
 
 export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData): Promise<EtatPlan> {
   // La session est exigée avant tout : cet écran fait travailler l'IA, et
@@ -157,11 +154,35 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   const mesurees = lu.croquis.zones.filter((z) =>
     z.type === "haie" || z.type === "massif" ? z.ml !== null : z.L !== null && z.l !== null
   );
+  const piquage = String(formulaire.get("piquage") ?? "compteur");
+
+  // ── SANS CROQUIS COMPLET, AUCUN PLAN — `CLAUDE.md` §4 bis ────────────────
+  //
+  // *« L'outil doit fonctionner avec un plan avec toutes les métrées,
+  // l'emplacement du piquage et l'endroit définitif de la nourrice — sans ça il
+  // ne doit rien proposer. »* Ce n'est pas le DESSIN qu'on retire, c'est le
+  // plan entier : une liste de pièces sans tracé se commande quand même, et
+  // c'est ce qu'il a refusé le 21 août (« il n'est pas valable avec cette
+  // nouvelle règle »).
+  //
+  // **Jusqu'au 11 septembre 2026, ce refus n'existait pas** : le commentaire
+  // le promettait « à la lecture », et la lecture ne faisait qu'une réserve.
+  // La règle vit désormais dans `croquis-complet.ts`, et l'écran du refus dit
+  // ce qui a été lu, ce qui manque, et le geste qui débloque.
+  const croquis = etatDuCroquis({
+    zonesMesurees: mesurees.length,
+    nourrice: lu.croquis.nourrice !== null,
+    piquage: lu.croquis.piquage !== null,
+    branchement: piquage,
+  });
+  if (!croquis.complet) {
+    const premier = LIBELLES[croquis.manque[0]];
+    return { etat: "refus", raison: premier.titre, geste: premier.geste, croquis };
+  }
 
   // **D'où vient le débit, et ce qu'on en sait** — `src/lib/arrosage/mesure-debit.ts`.
   // La pression NE DONNE PAS le débit : la règle refuse plutôt que d'inventer,
   // et toute estimation porte sa réserve jusque sous le plan.
-  const piquage = String(formulaire.get("piquage") ?? "compteur");
   const nombre = (cle: string) => {
     const brut = formulaire.get(cle);
     if (brut === null || String(brut).trim() === "") return null;
@@ -207,6 +228,11 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   }));
   const trajet = trajetLePlusLong(lu.croquis.nourrice, places);
   const terrain = poserSurLeTerrain(lu.croquis.nourrice, places);
+  // **L'AMENÉE SE CALCULE, NI LUE NI SUPPOSÉE** — sa règle du 11 septembre
+  // 2026. Du piquage à la nourrice, à l'échelle des cotes. Quand l'échelle ne
+  // se déduit pas, elle n'est pas comptée — et l'écran le dit, comme pour le
+  // trajet du regard : un zéro annoncé vaut mieux que 30 m tus.
+  const amenee = longueurDeLAmenee(lu.croquis.piquage, lu.croquis.nourrice, places);
 
   // **LES PARAMÈTRES SONT UNE VALEUR, ET ILS REPARTENT VERS L'ÉCRAN.**
   //
@@ -218,6 +244,7 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // bord.
   const parametres: ParametresPlan = {
     regardVersZone: trajet.ok ? trajet.metres : 0,
+    amenee: amenee.ok ? amenee.metres : 0,
     // Le calcul raisonne en seau et temps : on lui rend le débit retenu sous
     // cette forme, sans repasser par la saisie — une seule source du débit.
     seau: SEAU_LITRES,
@@ -244,63 +271,19 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     })),
     nourrice: terrain.ok ? terrain.terrain.nourrice : null,
   };
-  const plan = calculerPlan(parametres as never);
 
+  // **Ce qui ne bouge plus une fois le croquis lu** : la lecture, la mesure, le
+  // trajet. Les réserves du calcul, elles, vivent avec le plan (`lePlan`).
   const reserves = [...lu.croquis.reserves];
   if (mesure.reserve) reserves.push(mesure.reserve);
   if (!trajet.ok) {
-    reserves.push(
-      `${trajet.raison} : le trajet du regard jusqu'au premier arroseur n'est pas compté`
-    );
+    reserves.push(`${trajet.raison} : le trajet du regard jusqu'au premier arroseur n'est pas compté`);
   }
-  // **Une portée réduite est une ESTIMATION, et elle se dit.** Le débit des
-  // buses est ramené à la pression du chantier par la loi de l'orifice — de la
-  // physique. La portée, elle, suit un exposant tiré des tables des
-  // constructeurs et non de ses catalogues à lui : la taire ferait passer pour
-  // acquis un chiffre qui ne l'est pas (`CLAUDE.md` §4).
-  // **CE QUI ARRIVE AU DERNIER ARROSEUR, ET CE QUI N'EST PAS COMPTÉ.**
-  //
-  // Le calcul retire maintenant l'amenée, l'électrovanne, la ligne, ses
-  // raccords et l'antenne Ø16 — mais PAS le trajet du regard jusqu'à la
-  // première tête, qui dépend de l'endroit où la nourrice est posée et
-  // qu'aucune saisie ne donne. La pression annoncée est donc un plafond, et le
-  // dire vaut mieux qu'un chiffre qu'on croit exact (`CLAUDE.md` §4 ter).
-  if (plan.pressionTropBasse) {
-    reserves.push(
-      `Il ne resterait que ${plan.pressionAuxArroseurs.toFixed(1).replace(".", ",")} bar au dernier ` +
-        "arroseur : trop peu pour qu'il se lève correctement. Raccourcissez les lignes, " +
-        "ajoutez une vanne, ou piquez plus en amont."
-    );
-  } else if (plan.pressionRaffinee) {
-    reserves.push(
-      `${plan.pressionAuxArroseurs.toFixed(1).replace(".", ",")} bar au dernier arroseur ` +
-        `(${plan.perteReseau.toFixed(2).replace(".", ",")} bar perdus dans le réseau, ` +
-        `${plan.perteAmenee.toFixed(2).replace(".", ",")} dans l'amenée` +
-        (trajet.ok ? `, trajet du regard ${trajet.metres.toFixed(0)} m lu sur le croquis` : "") +
-        ")"
-    );
+  if (!amenee.ok) {
+    reserves.push(`${amenee.raison} : l'amenée du piquage à la nourrice n'est pas comptée`);
   }
-  if (plan.porteeEstimee) {
-    reserves.push(
-      `${mesure.pression.toString().replace(".", ",")} bar : les portées sont réduites par rapport au ` +
-        "catalogue, donné à plus forte pression — estimation, à confirmer sur place"
-    );
-  }
-  if (mesurees.length === 0) {
-    return {
-      etat: "refus",
-      raison: "Aucune zone du croquis n’a de mesure lisible : le plan ne peut pas se calculer.",
-    };
-  }
+  if (terrain.ok && terrain.terrain.reserve) reserves.push(terrain.terrain.reserve);
 
-  // ── SANS CROQUIS COMPLET, AUCUN PLAN — `CLAUDE.md` §4 bis ────────────────
-  //
-  // *« L'outil doit fonctionner avec un plan avec toutes les métrées,
-  // l'emplacement du piquage et l'endroit définitif de la nourrice — sans ça il
-  // ne doit rien proposer. »* Ce n'est pas le DESSIN qu'on retire, c'est le
-  // plan entier : une liste de pièces sans tracé se commande quand même, et
-  // c'est ce qu'il a refusé le 21 août (« il n'est pas valable avec cette
-  // nouvelle règle »). On dit lequel des trois manque, et l'on s'arrête.
   // **LE DESSIN PEUT MANQUER SANS QUE LE PLAN TOMBE** — sa correction du
   // 23 août 2026. Ses trois éléments obligatoires sont les métrés, le piquage
   // et l'endroit de la nourrice ; l'AGENCEMENT n'en fait pas partie. Un croquis
@@ -309,55 +292,103 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   //
   // Refuser tout dans ce cas, c'est ce qu'il a vu : *« il n'arrive pas à me
   // lire mon croquis... là, il y a tous les métrés »*. Il avait raison.
-  if (!terrain.ok) {
-    reserves.push(`${terrain.raison} : le plan est calculé, mais il n’est pas dessiné`);
-    return { etat: "lu", zones: lu.croquis.zones, reserves, dessin: null, parametres, plan: leCalcul(plan) };
-  }
-  if (terrain.terrain.reserve) reserves.push(terrain.terrain.reserve);
-  const dessine = dessinerPlan(
-    plan.dessin as ZoneDessinee[],
-    // **La nourrice EN MÈTRES**, sur le même repère que les zones. Lui passer
-    // la fraction lue dessinerait un jardin d'un mètre de large : le défaut
-    // aurait été muet, puisque tout resterait cohérent entre soi.
-    parametres.nourrice,
-    plan.couleurs as string[]
-  );
-  // Idem si le tracé lui-même n'aboutit pas : c'est le dessin qui manque, pas
-  // le plan. Seule l'absence de nourrice retire tout (`CLAUDE.md` §4 bis), et
-  // elle est refusée plus haut, à la lecture.
-  if (!dessine.ok) {
-    reserves.push(`${dessine.raison} Le plan est calculé, mais il n’est pas dessiné.`);
-    return { etat: "lu", zones: lu.croquis.zones, reserves, dessin: null, parametres, plan: leCalcul(plan) };
-  }
-  reserves.push(...dessine.reserves);
+  const calcule = calculerEtDessiner(parametres, terrain.ok ? null : `${terrain.raison} : le plan est calculé, mais il n’est pas dessiné`);
+  return { etat: "lu", zones: lu.croquis.zones, reserves, ...calcule };
+}
 
-  return {
-    etat: "lu",
-    zones: lu.croquis.zones,
-    reserves,
-    dessin: dessine.dessin,
-    parametres,
-    plan: leCalcul(plan),
-  };
+/**
+ * Le calcul, son dessin, et ce que le calcul dit de lui-même — la MÊME
+ * fonction pour la lecture du croquis et pour la discussion.
+ *
+ * **Sortie en fonction le 11 septembre 2026**, parce que la discussion ne
+ * gardait que les réserves du dessin : « il ne resterait que 1,8 bar au
+ * dernier arroseur » disparaissait au premier message, et un plan qui ne se
+ * lève pas devenait muet (`CLAUDE.md` §4 ter). Deux chemins, une seule règle.
+ */
+function calculerEtDessiner(parametres: ParametresPlan, sansDessin: string | null) {
+  const plan = calculerPlan(parametres as never);
+  let dessin: Dessin | null = null;
+  const reservesDuDessin: string[] = [];
+  if (sansDessin) {
+    reservesDuDessin.push(sansDessin);
+  } else {
+    const dessine = dessinerPlan(
+      plan.dessin as ZoneDessinee[],
+      // **La nourrice EN MÈTRES**, sur le même repère que les zones. Lui passer
+      // la fraction lue dessinerait un jardin d'un mètre de large : le défaut
+      // aurait été muet, puisque tout resterait cohérent entre soi.
+      parametres.nourrice,
+      plan.couleurs as string[]
+    );
+    // Si le tracé lui-même n'aboutit pas, c'est le dessin qui manque, pas le
+    // plan. Seule l'absence de nourrice retire tout (`croquis-complet.ts`).
+    if (dessine.ok) {
+      dessin = dessine.dessin;
+      reservesDuDessin.push(...dessine.reserves);
+    } else {
+      reservesDuDessin.push(`${dessine.raison} Le plan est calculé, mais il n’est pas dessiné.`);
+    }
+  }
+  return { dessin, parametres, plan: lePlan(plan, dessin, parametres, reservesDuDessin) };
 }
 
 /**
  * Ce que le calcul rend à l'écran — la même forme, que le plan soit dessiné ou
- * non.
- *
- * **Sortie en fonction le 23 août 2026**, quand le dessin est devenu facultatif :
- * trois sorties le construisaient, et trois copies d'une même mise en forme
- * finissent toujours par diverger (`CLAUDE.md` §3). Ici, le risque était
- * concret : un croquis non dessinable aurait rendu un plan aux champs
- * légèrement différents de celui d'un croquis dessinable.
+ * non, et pour les deux chemins qui y mènent.
  */
-function leCalcul(plan: ReturnType<typeof calculerPlan>) {
+function lePlan(
+  plan: ReturnType<typeof calculerPlan>,
+  dessin: Dessin | null,
+  parametres: ParametresPlan,
+  reservesDuDessin: string[]
+): LePlan {
+  const reserves: string[] = [];
+  const bar = (x: number, d = 1) => x.toFixed(d).replace(".", ",");
+  // **CE QUI ARRIVE AU DERNIER ARROSEUR, ET CE QUI N'EST PAS COMPTÉ.** Le
+  // calcul retire l'amenée, l'électrovanne, la ligne, ses raccords et l'antenne
+  // Ø16 — mais PAS le trajet du regard jusqu'à la première tête quand le
+  // croquis ne l'a pas donné. La pression annoncée est alors un plafond.
+  if (plan.pressionTropBasse) {
+    reserves.push(
+      `Il ne resterait que ${bar(plan.pressionAuxArroseurs)} bar au dernier arroseur : trop peu pour ` +
+        "qu'il se lève correctement. Raccourcissez les lignes, ajoutez une vanne, ou piquez plus en amont."
+    );
+  } else if (plan.pressionRaffinee) {
+    reserves.push(
+      `${bar(plan.pressionAuxArroseurs)} bar au dernier arroseur — ${bar(plan.perteReseau, 2)} bar perdus ` +
+        `dans le réseau, ${bar(plan.perteAmenee, 2)} dans l’amenée` +
+        (parametres.regardVersZone > 0 ? `, trajet du regard ${parametres.regardVersZone.toFixed(0)} m lu sur le croquis` : "") +
+        "."
+    );
+  }
+  // **L'amenée est CALCULÉE sur le croquis** (sa règle du 11 septembre 2026),
+  // et son chiffre s'écrit à côté de la perte qu'elle coûte. Zéro quand elle
+  // n'a pas pu l'être — la réserve du croquis le dit alors, plus haut.
+  if ((plan.pressionRaffinee || plan.pressionTropBasse) && parametres.amenee > 0) {
+    reserves.push(`Amenée de ${bar(parametres.amenee, 1)} m, du piquage à la nourrice, calculée sur le croquis.`);
+  }
+  // **Une portée réduite est une ESTIMATION, et elle se dit.** Le débit des
+  // buses est ramené à la pression du chantier par la loi de l'orifice — de la
+  // physique. La portée, elle, suit un exposant tiré des tables des
+  // constructeurs et non de ses catalogues à lui (`CLAUDE.md` §4).
+  if (plan.porteeEstimee) {
+    reserves.push(
+      `${String(plan.pression).replace(".", ",")} bar : les portées sont réduites par rapport au ` +
+        "catalogue, donné à plus forte pression — estimation, à confirmer sur place."
+    );
+  }
+  reserves.push(...reservesDuDessin);
+
   return {
     debitDisponible: plan.debitDisponible,
     secteurs: plan.secteurs,
     voies: plan.voies,
     couleurs: plan.couleurs,
-    materiel: plan.materiel,
+    pieces: piecesDuPlan(plan.materiel, dessin, {
+      compteur: parametres.compteur === "oui",
+      seuil25: plan.amenee.longueurMax25,
+      amenee: parametres.amenee > 0 ? parametres.amenee : null,
+    }),
     tuyau: {
       seuil25: plan.amenee.longueurMax25,
       seuil32: plan.amenee.longueurMax32,
@@ -371,6 +402,7 @@ function leCalcul(plan: ReturnType<typeof calculerPlan>) {
       plafond: plan.limiteDuTuyau,
     },
     pressionAuxArroseurs: plan.pressionAuxArroseurs,
+    reserves,
   };
 }
 
@@ -402,8 +434,7 @@ export type EtatDiscussion =
       modifie: boolean;
       parametres: ParametresPlan;
       dessin: Dessin | null;
-      plan: ReturnType<typeof leCalcul>;
-      reserves: string[];
+      plan: LePlan;
     };
 
 export async function discuterDuPlan(
@@ -450,26 +481,13 @@ export async function discuterDuPlan(
 
   // Sans consigne, il n'a fait qu'expliquer : le plan à l'écran ne bouge pas.
   const suivants = lu.reponse.consigne ? appliquer(parametres, lu.reponse.consigne) : parametres;
-  const plan = lu.reponse.consigne ? calculerPlan(suivants as never) : avant;
-
-  const reserves: string[] = [];
-  const dessine = dessinerPlan(
-    plan.dessin as ZoneDessinee[],
-    suivants.nourrice,
-    plan.couleurs as string[]
-  );
-  if (dessine.ok) reserves.push(...dessine.reserves);
-  else reserves.push(`${dessine.raison} Le plan est calculé, mais il n’est pas dessiné.`);
+  const refait = calculerEtDessiner(suivants, null);
 
   return {
     etat: "repondu",
     texte: lu.reponse.texte,
     chiffres: lu.reponse.chiffres,
     modifie: lu.reponse.consigne !== null,
-    parametres: suivants,
-    dessin: dessine.ok ? dessine.dessin : null,
-    plan: leCalcul(plan),
-    reserves,
+    ...refait,
   };
 }
-

@@ -34,9 +34,16 @@ import {
   pourcentValide,
   tauxDeLaLigne,
   tauxLisible,
+  tauxTvaPropose,
   tauxTvaValide,
   totauxAvecReduction,
 } from "@/lib/reduction-devis";
+import {
+  BoutonPrixAccorde,
+  LignePrixAccorde,
+  REMISE_PAR_DEFAUT,
+} from "@/components/atlas/PrixAccordeAuClient";
+import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import FlecheRetour from "@/components/atlas/FlecheRetour";
@@ -107,16 +114,6 @@ type Ligne = {
  */
 const CLE_REDUCTION = "prix-accorde-au-client";
 
-/**
- * Le pourcentage que « + Prix accordé au client » pose d'emblée.
- *
- * **Écrit ICI et nulle part ailleurs.** Il vivait en double dans le bouton —
- * une fois pour l'écran (`setReduction("5")`), une fois pour le serveur
- * (`majEnTeteDevisAction(… "5")`) — et deux chiffres censés dire la même chose
- * finissent toujours par diverger : le jour où l'un passe à 10, l'écran et le
- * devis ne s'accordent plus, et c'est le client qui voit l'écart.
- */
-const REMISE_PAR_DEFAUT = "5";
 
 type Props = {
   chantierId: string;
@@ -228,7 +225,7 @@ export default function DevisCompletClient(props: Props) {
       quantite: sansZerosInutiles(l.quantite),
       // Un prix jamais posé n'arrive PAS dans le champ : la règle est celle
       // du montant « à chiffrer », et elle n'est écrite qu'une fois.
-      prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire), l.aChiffrer),
+      prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
     }))
   );
   const [tauxTva, setTauxTva] = useState(sansZerosInutiles(props.tauxTva));
@@ -249,6 +246,8 @@ export default function DevisCompletClient(props: Props) {
    * referme qu'une fois le retrait enregistré.
    */
   const [remiseOuverte, setRemiseOuverte] = useState(props.reductionPourcent !== null);
+  /** Les écritures de la remise se suivent : voir `enregistrerRemise`. */
+  const aLaSuite = useEcrituresALaSuite();
 
   /**
    * **L'UNIQUE écriture du prix accordé.** Elle prend la valeur en argument
@@ -261,7 +260,11 @@ export default function DevisCompletClient(props: Props) {
    */
   async function enregistrerRemise(valeurBrute: string = reduction) {
     const valeur = valeurBrute.trim() || null;
-    await majEnTeteDevisAction(props.devisId, { reductionPourcent: valeur });
+    // **À LA SUITE, jamais en même temps** — mesuré le 11 septembre 2026 :
+    // effacer la remise puis la reposer aussitôt laissait la base à `null`, une
+    // fois sur trois. Le champ quitté et le bouton lançaient deux écritures
+    // dont l'ordre d'arrivée n'était pas garanti (`useEcrituresALaSuite`).
+    await aLaSuite(() => majEnTeteDevisAction(props.devisId, { reductionPourcent: valeur }));
     // **On se referme sur ce que le serveur a RETENU, pas sur ce qu'il a tapé.**
     // La case vide n'est pas le seul moyen d'annuler : « 0 », « 0,00 », ou une
     // saisie illisible valent tous « aucune réduction » (`reduction-devis.ts`).
@@ -410,8 +413,7 @@ export default function DevisCompletClient(props: Props) {
    * TVA » et la feuille de déplacement doivent proposer LE MÊME, sinon le même
    * geste ouvre deux catégories différentes selon la porte empruntée.
    */
-  const tauxNeuf =
-    ["10.00", "5.50", "20.00", "0.00"].find((t) => !categories.some((c) => c.taux === t)) ?? "10.00";
+  const tauxNeuf = tauxTvaPropose(categories.map((c) => c.taux));
 
   function majLigneLocale(id: string, champ: keyof Ligne, valeur: string) {
     setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, [champ]: valeur } : l)));
@@ -616,7 +618,7 @@ export default function DevisCompletClient(props: Props) {
       apres.lignes.map((l) => ({
         ...l,
         quantite: sansZerosInutiles(l.quantite),
-        prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire), l.aChiffrer),
+        prixUnitaire: prixAEcrire(sansZerosInutiles(l.prixUnitaire)),
       }))
     );
     // **Le prix accordé se recale lui aussi**, et il ne s'en déduit pas : il ne
@@ -1169,43 +1171,20 @@ export default function DevisCompletClient(props: Props) {
                 <span className="text-[15px]">Total HT</span>
                 <span className="text-[15px]">{enEuros(brutHt)}</span>
               </div>
-              <div className="flex items-center justify-between py-1.5" style={{ color: colors.or }}>
-                <span className="flex items-center gap-1 text-[15px]">
-                  {/* **Le « − », sa proposition B, retenue le 17 août 2026.**
-                      26 px : en dessous de 24, on le rate au doigt, et c'est sur
-                      un téléphone qu'il s'en sert. Il ne paraît pas sur un devis
-                      parti — cet écran ne se modifie plus. */}
-                  {!fige && (
-                    <button
-                      type="button"
-                      aria-label={`Retirer le ${LIBELLE_REDUCTION.toLowerCase()}`}
-                      onClick={() => retraits.retirer(CLE_REDUCTION, `le ${LIBELLE_REDUCTION.toLowerCase()}`)}
-                      className="mr-1 flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
-                      style={{ border: `1px solid ${colors.or}`, color: colors.or }}
-                    >
-                      −
-                    </button>
-                  )}
-                  {LIBELLE_REDUCTION}
-                  <input
-                    value={reduction}
-                    readOnly={fige}
-                    inputMode="decimal"
-                    aria-label="Prix accordé au client, en pourcentage"
-                    onChange={(e) => setReduction(e.target.value)}
-                    // Enveloppé, et ce n'est pas du style : passé nu, `onBlur`
-                    // donnerait son ÉVÉNEMENT comme pourcentage. Ici c'est
-                    // l'état du champ qui fait foi, comme avant.
-                    onBlur={() => enregistrerRemise()}
-                    className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[var(--voile-champ)]"
-                    style={{ color: colors.or, fontSize: "16px" }}
-                  />
-                  %
-                </span>
-                <span className="text-[15px]">
-                  {totaux.reductionMontant === null ? "" : `− ${enEuros(Number(totaux.reductionMontant))}`}
-                </span>
-              </div>
+              {/* **La même pièce que la facture, et ce n'est pas un partage de
+                  confort** : « reprends exactement celle du devis — couleur,
+                  forme, mots » (11 septembre 2026). Recopiée, elle aurait
+                  divergé au premier ajustement. */}
+              <LignePrixAccorde
+                pourcent={reduction}
+                montantRetire={totaux.reductionMontant}
+                fige={fige}
+                onChange={setReduction}
+                onFini={() => void enregistrerRemise()}
+                onRetirer={() =>
+                  retraits.retirer(CLE_REDUCTION, `le ${LIBELLE_REDUCTION.toLowerCase()}`)
+                }
+              />
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-[15px]">
                   {totaux.reductionPourcent === null ? "Total HT" : "Total HT après remise"}
@@ -1266,20 +1245,15 @@ export default function DevisCompletClient(props: Props) {
           {/* Discret, et seulement quand il n'y en a pas : un devis qui porte
               déjà sa remise n'a pas besoin qu'on lui propose d'en poser une. */}
           {!fige && !remiseOuverte && (
-            <button
-              type="button"
-              onClick={() => {
+            <BoutonPrixAccorde
+              onPoser={() => {
                 setRemiseOuverte(true);
                 setReduction(REMISE_PAR_DEFAUT);
                 // Le même écrivain que la saisie et que le retrait : une remise
                 // n'a qu'une façon d'arriver en base.
                 void enregistrerRemise(REMISE_PAR_DEFAUT);
               }}
-              className="mt-2.5 text-[13.5px]"
-              style={{ color: colors.or }}
-            >
-              + {LIBELLE_REDUCTION}
-            </button>
+            />
           )}
         </div>
       </section>

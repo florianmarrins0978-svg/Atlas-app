@@ -11,7 +11,7 @@ langage, et rien n'y entre sans son accord.
 
 ## ⏳ DIAGNOSTIC VÉGÉTAL — CE QUI ATTEND SON BANC, ET LUI (12 septembre 2026)
 
-Le lot du refus est codé (`ARCHITECTURE.md` §330, `docs/diagnostic-vegetal-impeccable.md`).
+Le lot du refus est codé (`ARCHITECTURE.md` §337, `docs/diagnostic-vegetal-impeccable.md`).
 Ce qui reste ne se code pas ici :
 
 | | Qui |
@@ -21,6 +21,82 @@ Ce qui reste ne se code pas ici :
 | **La licence INRAE (Ephytia)** — le courriel est prêt depuis le 20 août (`docs/courriel-inrae.md`) ; personne ne sait ici s'il est parti. Réponse complète : `docs/QUESTIONS.md` §24 | lui |
 | **La durée de conservation des photos, et ce que le fournisseur garde** — le fournisseur de vision est **déjà** au registre (`docs/RGPD.md`, ligne « Vision (diagnostic végétal) », 20 août) : ce qui reste, c'est la durée | lui |
 | **Les seuils** (0,35 · 0,15 · plafonds) — un point de départ nommé, pas mesuré. Ne bougent pas au jugé | de vraies photos, de vraies fiches |
+
+## ~~UN CHANTIER RETIRÉ REVENAIT À L'ÉCRAN~~ — CORRIGÉ le 12 septembre 2026
+
+**Sa plainte, capture à l'appui :** *« lorsqu'on retire un chantier posé au
+planning, il réapparaît sur la page d'accueil ! »* Mesuré avant de corriger, et
+c'était double : la ligne revenait aussi **sur le planning**, six secondes après
+le geste — la base ayant pourtant bien écrit la suppression.
+
+Personne ne redemandait la page après l'écriture : `useRetraits` s'en charge, et
+le planning retire de sa liste le chantier effacé, comme le font déjà les six
+autres écrans. La recopie d'`EcranChantiers` est retirée. Tenu par
+`test-retrait-ne-revient-pas-e2e.ts`, qui rougit contre la version d'avant.
+Détail : `ARCHITECTURE.md` §336.
+
+---
+
+## ~~DEUX ÉCRITURES DE LA REMISE PEUVENT SE DOUBLER~~ — CORRIGÉ le 11 septembre 2026
+
+**Mesuré, pas supposé.** `test-reduction-devis-e2e.ts` a rougi deux fois sur
+trois sur la pièce « le « − » existe » : le « + Prix accordé au client » pose
+5 %, et la base rend `null`. Avec deux `console.log` de plus dans la suite —
+donc quelques millisecondes — elle passe 11/11. Ce n'est pas le contrôle qui
+est fragile, **c'est le produit** : `enregistrerRemise` lance une écriture sans
+attendre la précédente, et rien ne garantit leur ordre d'arrivée. Effacer une
+remise puis la reposer aussitôt peut donc la faire disparaître.
+
+**Le défaut est ANTÉRIEUR au lot du 11 septembre** — le même code asynchrone
+existait avant la pièce commune (vérifié : la version d'avant passe, mais elle
+joue sur les mêmes millisecondes). Ce que le lot a changé, c'est la fréquence.
+
+**Fait le soir même**, après que la batterie l'a rendue systématique :
+`src/lib/file-d-ecritures.ts` fait attendre chaque écriture que la précédente
+soit finie, et les deux écrans l'emploient. Le contrôle n'a PAS été rallongé —
+c'était la course qu'il fallait retirer, pas le rouge qu'il fallait taire.
+Trois exécutions d'affilée sans un échec, là où c'était deux sur trois.
+Détail : `ARCHITECTURE.md` §334.
+
+---
+
+## ✅ CHOISIE ET CODÉE — « Noter un règlement », planche n° 1 (11 septembre 2026)
+
+*« Je choisis la 1. »* Codé le soir même dans `EnAttenteDePaiement.tsx` :
+
+| Ce qu'il a demandé | Ce qui est fait |
+|---|---|
+| les deux cases nommées | « Payé le » et « Montant reçu », au-dessus de chacune |
+| « le montant doit être le chiffre qu'on a écrit » | la case part **vide**, et le bouton reste éteint tant que rien n'est tapé |
+| « 11/09/2026 » | le jour s'écrit par `jourNumerique`, plus par le champ natif |
+| la phrase trop longue | « Seule la part reçue entre au relevé. » — six mots |
+
+**LE DÉFAUT QUE SA CAPTURE A RÉVÉLÉ, et qu'aucun contrôle ne voyait :** le champ
+`<input type="date">` se formate selon la **langue du téléphone**, pas selon la
+page. Sur le sien il rendait « 09/11/2026 » pour un 11 septembre — il lisait
+novembre. Le champ natif reste (lui seul ouvre le rouleau de l'iPhone), mais il
+est posé **transparent par-dessus notre propre texte**.
+
+La planche reste en ligne, elle montre les deux autres propositions :
+https://florianmarrins0978-svg.github.io/Atlas-app/noter-un-reglement.html
+
+## ⏳ « CE QUI RESTE D'ÉQUIPES » REND UNE PHRASE QUE LA RÈGLE NE DIT PAS (11 septembre 2026)
+
+`test-reste-equipes-e2e.ts`, relevé le 11 septembre au soir :
+
+    attendu : « Reste 1 équipe sur 2 »
+    lu      : « Plus d'équipe libre sur 2 »
+
+Sur un jour à moitié pris, l'écran annonce qu'il ne reste plus rien. **Soit la
+règle est juste et l'écran la réécrit à sa façon, soit c'est la règle qui
+compte mal** — dans les deux cas, c'est une phrase que le patron lit avant de
+poser un chantier.
+
+**Ce n'est pas le lot des factures du 11 septembre** : il ne touche ni le
+planning, ni les équipes, ni les créneaux. Le rouge est apparu après la fusion
+des lots voisins du jour (créneaux, « poser un client sur un jour »).
+
+---
 
 ## ⏳ LE LANCEUR NE VOIT PAS UNE SESSION OUVERTE DEPUIS L'ÉDITEUR (11 septembre 2026)
 
@@ -47,7 +123,15 @@ chemin, comme le veilleur remesure le port au lieu de le croire. Et que
 là » — c'est la leçon du verrou de la batterie, un jeton que personne ne
 ramasse ment dès la deuxième soirée.
 
-## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026)
+## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026) — 31 le 12 au matin
+
+**Relevé du 12 septembre 2026** (batterie de la bibliothèque de photos, `main`
+fusionné) : 112/143. Aux dix-huit s’ajoutent `bloquer-sans-devis`,
+`date-lointaine`, `deux-dates-calendrier`, `fin-de-chantier`, `grille-prix`,
+`ia-03`, `ia-04`, `liberer-une-demi-journee`, `ligne-du-client`, `pas-la-ce-jour`,
+`poser-une-date`, `reduction-devis`, `reste-equipes`, `tva-multiple` — et
+`onglets-termines` en est SORTI. Pas de « avant » joué ce matin-là : à départager.
+
 
 **Ce n'est pas un lot qui les a cassées, et c'est mesuré :** la batterie a été
 jouée deux fois le 11 septembre, avant et après le lot des polices embarquées.
@@ -67,6 +151,16 @@ Trois familles de causes, relevées à l'échantillon :
 | **une clé d'IA absente** — dictée, `ia-01`, Madame Lucie | attendu sur un poste d'agent (`CLAUDE.md` §1 ter), à jouer sur SON espace |
 | **un écran qui a changé** — « aucune flèche de retour », « tout tient dans un écran » | à trancher : le contrôle est-il périmé, ou l'écran a-t-il dérivé ? |
 | **un décor accumulé** — `suivi-devis` : « 30 en attente du client », deux éléments pour un même texte | une base qui grossit d'une batterie à l'autre ; la suite vise un texte au lieu d'un repère |
+
+**Mesure du 12 septembre 2026, dans l'atelier n° 2 de `atlas-app-s4`, pendant que
+DEUX autres batteries tournaient sur le même PC** : 32 suites navigateur
+rouges sur 140. Aux dix-huit ci-dessus s'ajoutent :
+
+| | |
+|---|---|
+| **trois suites qui écrivaient le port 3000 en dur** — `retour-fiche-client`, `session-perimee`, `porte` | **corrigé le jour même** : elles lisent `_adresse.ts`, et passent au vert dans l'atelier |
+| **un jour de décalage** — `poser-une-date`, `liberer-une-demi-journee` : « posé le 13 au lieu du 14 » | la suite relit une colonne `DATE` par `toISOString()` sur un PC en UTC+2 : `pg` rend minuit LOCAL, l'ISO tombe la veille. Vert en CI (UTC). **À corriger dans les suites** (lire la date en texte, `to_char` ou `jour::text`), pas dans le produit |
+| **des délais dépassés** — `anneau-dictee`, `planning-vers-facture`, `reprise-morceau`… | deux batteries voisines sur la même machine ; à rejouer seule avant d'accuser quoi que ce soit |
 
 **Ce qui en découle, et il faut le dire :** aucun lot ne peut plus se donner
 « batterie au vert » tant que ces dix-huit-là tombent. On compare donc AVANT et
@@ -141,10 +235,15 @@ retirer) :
   lecteur (`storageKey={null}`), et l'invite se tait dès qu'une note existe —
   **sa règle du 1ᵉʳ septembre**.
 
-**Trois autres ne sont rouges QUE dans la batterie entière**, et vertes seules :
+**Quatre autres ne sont rouges QUE dans la batterie entière**, et vertes seules :
 `devis-fige-porte` et `madame-lucie` (délais dépassés sur un conteneur lent),
 `onglets-termines` (« `'2' !== '1'` » : le compte des retours non lus est pollué
-par les suites qui ont tourné avant, dans la même base).
+par les suites qui ont tourné avant, dans la même base), et — relevé le
+11 septembre 2026 — `ligne-planning`, dont le contrôle « le client touché ne
+remonte pas » **refuse de conclure** quand la première fiche n'est pas au-dessus
+de la seconde (153 px contre 100 px) : les chantiers laissés par les suites
+précédentes changent l'ordre de la liste. Rejouée seule :
+`npm run test:e2e -- --seulement ligne-planning` → 6/6.
 
 **Ce qu'il reste à trancher :** les onze autres. Chacune se rejoue seule en une
 commande — `npm run test:e2e -- --seulement <nom>` — et il faut savoir, pour
@@ -169,17 +268,23 @@ en passant, au milieu d'un autre lot.
 
 ---
 
-## ⏳ UNE BATTERIE À JOUER — la photo en bibliothèque est codée (11 septembre 2026)
+## ~~UNE BATTERIE À JOUER — la photo en bibliothèque est codée~~ — JOUÉE ET LIVRÉE le 12 septembre 2026
 
-`39a1dc68` sur `session-2`, pas encore sur `main`. La batterie a été coupée par un
-redémarrage de session : base **346/354** (les 8 rouges sont des scripts
-d’outillage — verrou, ports, lanceur —, aucun ne touche les photos), suites
-navigateur **sans verdict**. Elle n’a pas été rejouée : une autre session
-écrivait dans `atlas-app-s2` (visionneuse PDF), et il a dit *« ne lance pas de
-batterie pour l’instant »*. **À faire :** la rejouer dans un dossier où personne
-n’écrit, avec `ATLAS_BASE_SUPER` de `HANDOVER.md`, puis fusionner sur `main`
-avec son accord. **Qui :** nous, quand il le dit.
+Rejouée dans un dossier à part (`.claude/worktrees/livraison-photos`, `main`
+fusionné avant), avec `ATLAS_BASE_SUPER` : base **350/358**, navigateur
+**112/143**, connexion derrière proxy verte.
 
+| | |
+|---|---|
+| les 8 rouges de base | les mêmes scripts d’outillage que la veille — verrou, ports, lanceur, seed — aucun ne touche les photos |
+| les 31 rouges navigateur | les dix-huit connus de `main`, plus des suites planning / devis / IA / outillage — **aucune ne cite la visionneuse, les retours ni la pellicule** (vérifié par `grep`) |
+| les suites du lot | `onglets-termines` (photo plus petite que l’écran, croix à droite, chevron, rangée, voile qui ferme), `photos-e2e`, `retrait-differe-e2e` : **vertes** — et `onglets-termines` était dans les dix-huit rouges de `main` |
+
+**Ce qui n’a PAS été comparé :** la batterie n’a été jouée qu’APRÈS le lot, pas
+avant sur ce `main`-là — les treize rouges hors des dix-huit connus restent
+donc à rejouer sur `main` nu pour savoir s’ils sont du jour (12 septembre :
+plusieurs visent une date) ou d’un lot voisin. Entrée mise à jour sous
+« DIX-HUIT SUITES NAVIGATEUR ». **Qui :** nous.
 ---
 ## ~~UNE PLANCHE À REGARDER — LA PHOTO EN BIBLIOTHÈQUE~~ — CHOISIE ET CODÉE LE SOIR MÊME (11 septembre 2026)
 
@@ -966,6 +1071,29 @@ des ports ou relancent des serveurs, et se gênent entre eux — plus
 délibérément (`SANS_CLES_IA`) — `test-anneau-dictee`, `test-anneau-vers-devis`,
 `test-devis-doublon`, `test-carte-reponse-mene-au-geste`. Les autres n'ont pas
 été instruits un par un.
+
+### Remesuré le 11 septembre 2026 — 353/353 base, 126/143 navigateur
+
+**Deux passages du même jour, l'un sur le code du lot « pastille des retours »,
+l'autre sur le code NON MODIFIÉ**, pour savoir ce qui était à ce lot : les
+listes de rouges sont identiques à une suite près, et le lot en REND une
+(`test-onglets-termines-e2e`). Les suites base sont toutes vertes.
+
+**Les dix-sept rouges navigateur** : `test-adresse-suggestions`,
+`test-anneau-dictee`, `test-anneau-vers-devis`, `test-carte-reponse-mene-au-geste`,
+`test-catalogue-mes-mots`, `test-devis-client`, `test-devis-complet`,
+`test-devis-papier`, `test-fiche-entretien`, `test-ia-01`, `test-madame-lucie`,
+`test-message-au-client`, `test-planning-vers-facture`, `test-recherche-client`,
+`test-reprise-chantier`, `test-reprise-morceau`, `test-suivi-devis`.
+
+**ET ILS S'ENTRAÎNENT LES UNS LES AUTRES — trouvé ce jour-là.** Une suite qui
+tombe avant sa ligne de ménage laisse ses données derrière elle, et la suivante
+rougit sur un produit sain : `test-onglets-termines` lisait 2 retours au lieu
+d'un, `test-ligne-planning` mesurait une fiche à 153 px au lieu de 100 — les
+deux vertes jouées seules. **Une suite qui lit un compte d'entreprise doit
+isoler sa mesure**, comme le fait désormais `test-onglets-termines` : ce qui
+traîne est marqué lu le temps du contrôle, et les lignes posées repartent avec
+elle. C'est la première chose à faire en instruisant les dix-sept.
 
 **Ce qui reste à faire ici**, et personne ne l'a pris : **les instruire, et
 soit les réparer, soit les nommer**. Huit rouges permanents deviennent un bruit
@@ -5545,6 +5673,20 @@ facture, fiche d'entretien, documents légaux. Un devis ne part pas en noir chez
 le client parce que l'artisan a choisi « Nuit » (`design-tokens.ts`,
 `couleursDocument`). Ce n'est pas un manque, c'est une décision, et elle est
 tenue.
+
+---
+
+## Arrosage : ce que le lot du 11 septembre laisse ouvert, et à qui (11 septembre 2026)
+
+Le lot (`ARCHITECTURE.md` §333) a remis deux de ses règles perdues et posé
+`scripts/test-regles-du-patron.ts`, que `garde-regles-du-patron.mjs`
+interdit de réécrire. Ce qui reste se tranche par LUI, pas en codant :
+
+| Ce qui est ouvert | Aujourd'hui | Qui tranche |
+|---|---|---|
+| ~~**Le damier pour les turbines**~~ — **tranché le 11 septembre 2026 : « la A »**, alignées ; le damier reste aux tuyères | tenu par `test-regles-du-patron.ts` | — |
+| ~~**La longueur d'amenée**~~ — **tranché le 11 septembre 2026 : calculée** du piquage à la nourrice (`longueurDeLAmenee`) ; sans piquage dessiné, pas de plan | la lecture de la place du piquage reste à éprouver sur son banc (`verifier-croquis-arrosage.mts` la réclame) | **son banc** |
+| **`appli/arrosage.html` et ses deux scripts** — en sursis depuis le 20 août | le comptage par rangées de `listeMateriel` (calcul.js) ne sert plus qu'à eux : il part avec eux | **lui**, après avoir vu l'écran |
 
 ---
 

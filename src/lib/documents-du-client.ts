@@ -1,3 +1,5 @@
+import type { ReceptionLisible } from "./reception-facture";
+
 /**
  * Les pièces d'un client, rangées — la règle, sans base.
  *
@@ -40,8 +42,13 @@ export type PieceDuClient = {
    * l'accueil. Absente aussi sur une facture jamais envoyée : sans lien, il n'y
    * a rien à ouvrir, et « pas encore ouverte » accuserait le client d'un envoi
    * qui n'a pas eu lieu.
+   *
+   * **La FORME de la phrase n'est pas recopiée ici** : elle vient de
+   * `ReceptionLisible`, sans quoi le jour où elle change — le 11 septembre
+   * 2026, quand l'heure a disparu — l'un des deux types dirait encore l'autre
+   * chose (`CLAUDE.md` §3).
    */
-  reception?: { ouverte: string | null; confirmee: string | null };
+  reception?: ReceptionLisible;
   /**
    * Ce que l'adresse ouvre — un PDF, ou une page.
    *

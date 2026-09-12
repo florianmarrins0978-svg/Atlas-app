@@ -128,14 +128,28 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // d'une seule zone et d'un 3,6 écrit en dur. La version en dur a rougi le
   // jour où le jardin d'exemple a changé de buse — elle ne gardait pas la
   // règle, elle gardait un jardin.
+  //
+  // **« Jamais moins que la portée » se mesure ENTRE DEUX TÊTES — corrigé le
+  // 11 septembre 2026.** Ce contrôle comparait le pas des colonnes à la portée.
+  // Sur un damier, deux têtes voisines ne sont jamais à un pas l'une de l'autre
+  // (deux pas sur un même bord, la diagonale d'un bord à l'autre) : mesurer le
+  // pas refusait son couloir de 10 × 2 à sept tuyères — sa règle du 18 août —,
+  // et c'est ce contrôle-là, rouge le 24 août, qui avait été réécrit au lieu
+  // d'être compris. Le plafond (1,2 × la portée), lui, reste sur le pas : c'est
+  // lui qui garantit la couverture.
   const poses = await page.evaluate(() => etat.zones
     .filter(z => TYPES[z.type].forme === 'surface')
     .map(z => { const p = poser(z);
-      return p.m ? { zone: z.nom, portee: p.m.portee, ex: p.ecartX, ey: p.ecartY, serre: p.tropSerre } : null; })
+      if (!p.m) return null;
+      const entreTetes = p.quinconce
+        ? Math.min(2 * p.ecartX, 2 * p.ecartY, Math.hypot(p.ecartX, p.ecartY))
+        : Math.min(p.ecartX, p.ecartY);
+      return { zone: z.nom, portee: p.m.portee, ex: p.ecartX, ey: p.ecartY, entreTetes, quinconce: p.quinconce, serre: p.tropSerre }; })
     .filter(Boolean));
   cas('des poses à éprouver, sur plusieurs zones', poses.length >= 2, JSON.stringify(poses));
+  cas('le couloir est en quinconce — sa règle du 18 août, tenue', poses.some(p => p.quinconce), JSON.stringify(poses));
   const horsRegle = poses.filter(p => !p.serre &&
-    (p.ex < p.portee - 0.01 || p.ey < p.portee - 0.01 ||
+    (p.entreTetes < p.portee - 0.01 ||
      p.ex > p.portee * 1.2 + 0.01 || p.ey > p.portee * 1.2 + 0.01));
   cas('sur CHAQUE zone, l\'écart tient entre la portée et 1,2 × la portée',
       horsRegle.length === 0, JSON.stringify(horsRegle));

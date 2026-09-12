@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan d’arrosage — deux choses à trancher</title>
+<!--
+  MAQUETTE — TRANCHÉE. Deux questions posées par le lot du 11 septembre 2026
+  (docs/lot-arrosage-impeccable.md), et ses deux réponses le soir même : les
+  turbines alignées (« la A »), l'amenée calculée. La page reste pour mémoire
+  de ce qui a été écarté ; le paramètre damierTurbines qui a servi à dessiner
+  la B a été retiré du calcul une fois la réponse donnée.
+  Aucun JavaScript : les onglets sont des boutons radio et du CSS.
+
+  TOUT EST CALCULÉ par l'application — calculerPlan + dessinerPlan + le composant
+  du plan —, rien n'est dessiné à la main (CLAUDE.md §4 bis). Le damier des
+  turbines est obtenu par le paramètre `damierTurbines` du calcul, posé à faux
+  tant qu'il n'a pas tranché ; l'amenée « lue » est un EXEMPLE à 14 m, la vraie
+  valeur viendrait de la place du piquage sur le croquis.
+-->
+<style>
+  :root{--creme:#f5f3ee;--carte:#faf9f5;--encre:#1c1c1a;--encre2:#4a4a44;--gris:#8a8578;--or:#B98B47;--orTexte:#8b6835;--ligne:rgba(28,28,26,0.12);--alerte:#9C3B2E;--plein:#7d9a6d;--surPlein:#faf9f5;--teinte:#ece9e1}
+  *{box-sizing:border-box}
+  html{background:#e8e5dd}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;max-width:390px;margin-inline:auto;background:var(--creme);color:var(--encre);padding-bottom:60px}
+  input[type=radio]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  h1{margin:28px 22px 0;font:400 30px/1.05 Georgia,"Times New Roman",serif;letter-spacing:-.018em}
+  .surtitre{margin:12px 22px 0;font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .question{margin:34px 22px 0;font:400 22px/1.2 Georgia,"Times New Roman",serif}
+  .contexte{margin:8px 22px 0;font-size:14px;line-height:1.5;color:var(--encre2)}
+  .choix{display:flex;gap:6px;margin:14px 22px 0}
+  .choix label{flex:1;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;background:var(--carte);color:var(--gris);border:1px solid var(--ligne);cursor:pointer;padding:8px 6px;text-align:center}
+  .choix label b{font-weight:600;color:var(--encre);font-size:15px}
+  .choix label span{font-size:12px;margin-top:2px}
+  #d9:checked ~ .choix label[for=d9], #d6:checked ~ .choix label[for=d6]{background:var(--encre);border-color:var(--encre)}
+  #d9:checked ~ .choix label[for=d9] *, #d6:checked ~ .choix label[for=d6] *{color:var(--surPlein)}
+  section{position:relative}
+  #d9:checked ~ .vue-d6, #d6:checked ~ .vue-d9{display:none}
+  .caps{font-size:11px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--gris);margin:22px 22px 0}
+  .plan{margin:8px 22px 0;background:var(--carte);border-radius:12px;padding:12px}
+  .plan svg{display:block;width:100%;height:auto}
+  .carte{background:var(--carte);border-radius:12px;margin:12px 22px 0;padding:14px 16px}
+  .reseau .tete{display:flex;align-items:center;gap:10px;margin:0}
+  .pastille{flex:none;width:11px;height:11px;border-radius:3px}
+  .reseau .nom{flex:1;font:400 17.5px/1.2 Georgia,"Times New Roman",serif}
+  .reseau .debit{font-size:12.5px;color:var(--gris)}
+  .reseau .ou{margin:6px 0 0;font-size:15px}
+  .reseau .mat{margin:4px 0 0;font-size:13px;color:var(--encre2)}
+  .reseau .compte{margin:6px 0 0;font-size:12.5px;color:var(--gris)}
+  .cout{margin:12px 22px 0;padding:0;list-style:none}
+  .cout li{display:flex;gap:10px;padding:5px 0;font-size:14px;line-height:1.5}
+  .cout li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--or);margin-top:8px}
+  .reserves{margin:12px 22px 0;padding:0;list-style:none}
+  .reserves li{display:flex;gap:10px;padding:6px 0;font-size:14px;line-height:1.5}
+  .reserves li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--alerte);margin-top:8px}
+  .zone{margin:22px 22px 0;font:400 19px/1.2 Georgia,"Times New Roman",serif}
+  .liste{padding:2px 16px}
+  .piece{display:flex;align-items:baseline;gap:12px;margin:0;padding:9px 0;border-top:1px solid var(--ligne);font-size:14.5px}
+  .piece:first-child{border-top:0}
+  .piece .q{flex:none;width:64px;font-size:13.5px;font-weight:600;color:var(--orTexte)}
+  .piece .n{flex:1}
+  .piece .d{display:block;font-size:12px;color:var(--gris);margin-top:2px}
+  .croquis{margin:12px 22px 0;background:var(--carte);border-radius:12px;padding:12px}
+  .croquis svg{display:block;width:100%;height:auto}
+</style>
+
+<h1>Tranché</h1>
+<p class="surtitre">Plan d’arrosage</p>
+
+<!-- ══ 1. Le damier sur les turbines ═══════════════════════════════════════ -->
+<section>
+  <h2 class="question">1. Les turbines des grandes pelouses : alignées — votre réponse du 11 septembre, « la A ».</h2>
+  <p class="contexte">Le damier reste aux tuyères des couloirs. Les deux options restent visibles ici, pour mémoire de ce qui a été écarté :</p>
+  <input type="radio" name="damier" id="d9" checked>
+  <input type="radio" name="damier" id="d6">
+  <div class="choix">
+    <label for="d9"><b>A · alignées</b><span>9 turbines — retenue</span></label>
+    <label for="d6"><b>B · en damier</b><span>6 turbines — écartée</span></label>
+  </div>
+  
+  <div class="vue-d9">
+    <p class="caps">Le plan · 48 ml de tranchée</p>
+    <div class="plan"><svg viewBox="-3.2 -3.2 18.4 18.4" class="block w-full" role="img" aria-label="Plan du jardin : la nourrice, la tranchée et les réseaux"><defs><clipPath id="pelouse-plan"><polygon points="12,0 12,12 0,12 0,0"></polygon></clipPath></defs><polygon points="12,0 12,12 0,12 0,0" fill="color-mix(in srgb, var(--plein) 16%, transparent)" stroke="none"></polygon><line x1="0" y1="4" x2="0" y2="6" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="4" x2="0" y2="0" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="0" x2="6" y2="0" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="6" y1="0" x2="12" y2="0" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="12" y1="0" x2="12" y2="4" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="12" y1="4" x2="12" y2="6" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="6" x2="0" y2="12" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="12" x2="6" y2="12" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="12" y1="6" x2="12" y2="12" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="6" x2="6" y2="6" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><polygon points="12,0 12,12 0,12 0,0" fill="none" stroke="color-mix(in srgb, var(--encre) 45%, transparent)" stroke-width="0.26"></polygon><text x="13.35" y="6.3" text-anchor="start" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">12 m</text><text x="6" y="13.65" text-anchor="middle" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">12 m</text><text x="-1.35" y="6.3" text-anchor="end" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">12 m</text><text x="6" y="-1.05" text-anchor="middle" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">12 m</text><circle cx="0" cy="6" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="0" cy="0" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="6" cy="0" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="12" cy="0" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="12" cy="6" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="0" cy="12" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="6" cy="12" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="12" cy="12" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="6" cy="6" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><g data-atlas="reseau" data-reseau="0"><line x1="0" y1="4" x2="0" y2="6" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="4" x2="0" y2="0" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="0" x2="6" y2="0" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="6" y1="0" x2="12" y2="0" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="12" y1="0" x2="12" y2="4" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="12" y1="4" x2="12" y2="6" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="6" x2="0" y2="12" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="12" x2="6" y2="12" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="12" y1="6" x2="12" y2="12" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="6" x2="6" y2="6" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><rect x="0.7200000000000001" y="5.62" width="0.76" height="0.76" transform="rotate(45 1.1 6)" fill="var(--carte)" stroke="#2F6FB5" stroke-width="0.26" data-piece="jonction"></rect><circle cx="0" cy="6" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="0" cy="0" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="6" cy="0" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="12" cy="0" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="12" cy="6" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="0" cy="12" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="6" cy="12" r="0.42" fill="var(--carte)" stroke="#2F6FB5" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle><circle cx="12" cy="12" r="0.42" fill="var(--carte)" stroke="#2F6FB5" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle><circle cx="6" cy="6" r="0.42" fill="var(--carte)" stroke="#2F6FB5" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle></g><g data-atlas="nourrice"><rect x="-0.75" y="2.6" width="1.5" height="2.8" rx="0.3" fill="var(--carte)" stroke="var(--encre)" stroke-width="0.22"></rect><text x="1.4230249470757705" y="4.824341649025256" text-anchor="start" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--encre)">nourrice</text></g></svg></div>
+    
+<div class="carte reseau">
+  <p class="tete"><span class="pastille" style="background:#2F6FB5"></span><span class="nom">Réseau 1</span><span class="debit">1,48 m³/h</span></p>
+  <p class="ou">Pelouse</p>
+  <p class="mat">9× Turbine 3504 · buse 0,75 · portée 5,20 m</p>
+  <p class="compte">9 arroseurs · 6 tés · 3 coudes · 1 té égal · 48 ml Ø25</p>
+</div>
+    <ul class="cout">
+      <li>9 turbines, 1,48 m³/h sur la vanne, 2,2 bar au dernier arroseur.</li>
+      <li>Chaque coin porte sa tête ; les rangées se lisent d’un coup d’œil sur le terrain. C’est ce que vous avez dessiné.</li>
+    </ul>
+  </div>
+  <div class="vue-d6">
+    <p class="caps">Le plan · 42 ml de tranchée</p>
+    <div class="plan"><svg viewBox="-3.2 -3.2 18.4 18.4" class="block w-full" role="img" aria-label="Plan du jardin : la nourrice, la tranchée et les réseaux"><defs><clipPath id="pelouse-plan"><polygon points="12,0 12,12 0,12 0,0"></polygon></clipPath></defs><polygon points="12,0 12,12 0,12 0,0" fill="color-mix(in srgb, var(--plein) 16%, transparent)" stroke="none"></polygon><line x1="0" y1="4" x2="0" y2="0" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="0" x2="4" y2="0" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="4" y1="0" x2="8" y2="0" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="4" x2="0" y2="6" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="6" x2="0" y2="12" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="6" x2="4" y2="6" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="0" y1="12" x2="4" y2="12" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="4" y1="12" x2="8" y2="12" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="8" y1="12" x2="12" y2="12" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><line x1="12" y1="12" x2="12" y2="6" stroke="color-mix(in srgb, var(--encre) 22%, transparent)" stroke-width="0.95" stroke-linecap="round" data-atlas="tranchee"></line><polygon points="12,0 12,12 0,12 0,0" fill="none" stroke="color-mix(in srgb, var(--encre) 45%, transparent)" stroke-width="0.26"></polygon><text x="13.35" y="6.3" text-anchor="start" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">12 m</text><text x="6" y="13.65" text-anchor="middle" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">12 m</text><text x="-1.35" y="6.3" text-anchor="end" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">12 m</text><text x="6" y="-1.05" text-anchor="middle" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--gris)" data-atlas="cote">12 m</text><circle cx="0" cy="0" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="8" cy="0" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="0" cy="12" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="4" cy="6" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="8" cy="12" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><circle cx="12" cy="6" r="5.2" fill="#2F6FB5" fill-opacity="0.13" clip-path="url(#pelouse-plan)"></circle><g data-atlas="reseau" data-reseau="0"><line x1="0" y1="4" x2="0" y2="0" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="0" x2="4" y2="0" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="4" y1="0" x2="8" y2="0" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="4" x2="0" y2="6" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="6" x2="0" y2="12" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="6" x2="4" y2="6" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="0" y1="12" x2="4" y2="12" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="4" y1="12" x2="8" y2="12" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="8" y1="12" x2="12" y2="12" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><line x1="12" y1="12" x2="12" y2="6" stroke="#2F6FB5" stroke-width="0.26" stroke-linecap="round"></line><rect x="-0.38" y="5.62" width="0.76" height="0.76" transform="rotate(45 0 6)" fill="var(--carte)" stroke="#2F6FB5" stroke-width="0.26" data-piece="jonction"></rect><circle cx="0" cy="0" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="8" cy="0" r="0.42" fill="var(--carte)" stroke="#2F6FB5" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle><circle cx="0" cy="12" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="4" cy="6" r="0.42" fill="var(--carte)" stroke="#2F6FB5" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle><circle cx="8" cy="12" r="0.5" fill="#2F6FB5" stroke="#2F6FB5" stroke-width="0.2" data-famille="turbine" data-piece="te"></circle><circle cx="12" cy="6" r="0.42" fill="var(--carte)" stroke="#2F6FB5" stroke-width="0.34" data-famille="turbine" data-piece="coude"></circle></g><g data-atlas="nourrice"><rect x="-0.75" y="2.6" width="1.5" height="2.8" rx="0.3" fill="var(--carte)" stroke="var(--encre)" stroke-width="0.22"></rect><text x="1.4230249470757705" y="4.824341649025256" text-anchor="start" font-size="0.95" font-family="Georgia,'Times New Roman',serif" fill="var(--encre)">nourrice</text></g></svg></div>
+    
+<div class="carte reseau">
+  <p class="tete"><span class="pastille" style="background:#2F6FB5"></span><span class="nom">Réseau 1</span><span class="debit">0,97 m³/h</span></p>
+  <p class="ou">Pelouse</p>
+  <p class="mat">6× Turbine 3504 · buse 0,75 · portée 5,20 m</p>
+  <p class="compte">6 arroseurs · 3 tés · 3 coudes · 1 té égal · 42 ml Ø25</p>
+</div>
+    <ul class="cout">
+      <li>6 turbines, 0,97 m³/h sur la vanne, 2,6 bar au dernier arroseur.</li>
+      <li>Trois turbines, trois corps, trois raccords de moins — et 6 ml de Ø25 en moins. Les portées se recouvrent en diagonale : couverture vérifiée par le calcul, mais deux coins n’ont pas de tête dessus.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══ 2. L'amenée — TRANCHÉE le 11 septembre : calculée ═════════════════ -->
+<section>
+  <h2 class="question">2. L’amenée : tranchée — calculée.</h2>
+  <p class="contexte">Votre réponse : « ni lue, ni supposée ». Le croquis porte le piquage et la nourrice, les cotes donnent l’échelle : la longueur se calcule entre les deux, comme le trajet du regard. Sans piquage dessiné, pas de plan.</p>
+  
+    <ul class="reserves">
+      <li>2,5 bar au dernier arroseur — 0,41 bar perdus dans le réseau, 0,13 dans l’amenée.</li>
+      <li>Amenée de 14 m, du piquage à la nourrice, calculée sur le croquis.</li>
+    </ul>
+    <p class="zone">Du compteur à la nourrice</p>
+    <div class="carte liste">
+      <p class="piece"><span class="q">14 ml</span><span class="n">PEHD Ø25<span class="d">du piquage à la nourrice, calculé sur le croquis · Ø25 jusqu’à 55 m, Ø32 au-delà</span></span></p>
+      <p class="piece"><span class="q">1x</span><span class="n">Dura Té 90° 25×25×25<span class="d">coupe la ligne au compteur</span></span></p>
+    </div>
+    <ul class="cout">
+      <li>Exemple à 14 m. Codé le 11 septembre ; la lecture de la place du piquage se vérifie sur votre espace, comme celle de la nourrice.</li>
+    </ul>
+</section>
+</html>

@@ -28159,7 +28159,545 @@ correction ne vaut que pour ce qui se compose après elle. Reprendre les
 archives touche des pièces comptables, et cela ne se décide pas sans lui
 (`TODO.md`).
 
-## §329 — Un PDF se regarde DANS l'application, pas dans un onglet de Safari
+---
+
+## §329 — Une écriture qui change un AUTRE écran doit le périmer : sinon la flèche rejoue l'ancien
+
+**Payé le 11 septembre 2026**, sur la pastille des retours d'intervention :
+*« je viens d'aller regarder le retour d'inter mais le petit 1 est resté
+visible »*. Le compte des non-lus était juste en base, l'écran le calculait
+bien, et la pastille restait allumée.
+
+### Ce qui se passe vraiment
+
+Next garde de côté, dans le navigateur, la dernière version rendue de chaque
+écran visité. Un lien vers un écran dynamique la redemande ; **un retour en
+arrière la rejoue telle quelle**. Or la flèche d'en-tête d'Atlas recule pour de
+bon depuis le 9 septembre (`FlecheRetour`, `router.back()`) — c'était sa demande,
+et c'est ce qui lui rend sa place dans la liste (§ de la flèche). Elle rejoue
+donc aussi l'écran d'avant l'écriture.
+
+| | |
+|---|---|
+| ce que la base savait | le retour est lu |
+| ce que l'écran montrait | la page de trente secondes plus tôt, pastille à 1 |
+
+### La règle
+
+**Toute action serveur qui change ce qu'un AUTRE écran affiche nomme cet écran**
+(`revalidatePath`), au moment de l'écriture. Ce n'est pas une précaution de
+confort : c'est la seule chose qui vide la page gardée côté navigateur, et donc
+la seule qui survive à un retour en arrière.
+
+Le dépôt le faisait déjà là où le retour est POSÉ
+(`src/app/planning/retour-actions.ts` périme `/planning`, `/termines` et
+`/termines/retours`). C'est la LECTURE qui avait été oubliée
+(`src/app/termines/retours/actions.ts`) — une écriture muette, pas un écran
+fautif.
+
+**Les deux écrans se périment, pas seulement celui du compte.** La liste des
+retours gardée en l'état ferait revenir le point doré sur un retour ouvert : la
+même page vieille, l'autre symptôme.
+
+### Pourquoi aucune suite ne le voyait
+
+Les deux contrôles qui couvraient cette pastille rechargeaient la page
+(`page.goto`), ce qui contourne exactement le mécanisme en cause. Ils étaient
+**verts sur le défaut qu'ils portaient dans leur nom**.
+
+Le contrôle ajouté parcourt son chemin à lui — l'onglet, la carte, la flèche —
+**sans un seul rechargement**, et il sait échouer : joué contre l'ancien code il
+rougit en disant « le 1 est resté sur l'onglet ». C'est `CLAUDE.md` §5 quater,
+payé une seconde fois : *éprouver le geste du patron, pas la fonction qu'on
+vient d'écrire*.
+
+---
+## §330 — La trace de réception dit UNE date, et la phrase se décide dans `lib/`
+
+**Sa demande du 11 septembre 2026**, capture à l'appui, sur « En attente de
+paiement » : *« les phrases sont trop longues. Il faut marquer Ouverte 11/09
+(la date en gras), l'heure tu supprimes lorsque le client n'a pas coché la
+case. Et s'il coche la case, marque seulement réception confirmée le 11/09 —
+pas besoin d'avoir les deux infos. »*
+
+La ligne écrivait les deux événements l'un derrière l'autre : « Ouverte le
+11 septembre à 17 h 57 · réception confirmée le 11 septembre ». Sur un
+téléphone, elle prenait deux lignes pleines — et la seconde moitié rend la
+première inutile : **un client qui coche la case a forcément ouvert**.
+
+### Ce que la minute prouvait, et pourquoi elle peut quitter l'écran
+
+Elle était arrivée le 9 septembre comme preuve contre « je n'ai jamais reçu
+cette facture », et l'argument tenait. Il tient toujours : `ouverte_at` porte
+l'instant complet en base, à la seconde, et c'est là qu'on ira le chercher le
+jour d'un litige. Ce qui change, c'est **où** cela se lit — l'écran est un
+repère qu'il survole en courant après l'argent, pas une pièce de procédure.
+
+### La phrase entière vit dans `src/lib/reception-facture.ts`
+
+Deux écrans la montrent : les impayés, et le dossier du client. Le choix
+« confirmée plutôt qu'ouverte » y aurait été écrit **deux fois**, en JSX — deux
+règles pour une seule question, ce que `CLAUDE.md` §3 refuse. `receptionEnMots`
+ne rend donc plus deux dates à assembler, mais la phrase déjà décidée :
+
+| | |
+|---|---|
+| `avant` | « Ouverte », « Réception confirmée le », ou « Pas encore ouverte. » |
+| `date` | « 11/09 », mis en gras par l'écran — `null` quand rien n'a été ouvert |
+
+Les écrans n'ont plus de condition : ils posent `avant`, puis la date en gras
+s'il y en a une. Le jour où la phrase change encore, un seul endroit bouge, et
+`test-reception-facture.ts` le dit sans monter un navigateur.
+
+**Et `documents-du-client.ts` ne recopie plus la forme** : son champ
+`reception` porte `ReceptionLisible`, plutôt qu'un jumeau écrit à la main qui
+aurait survécu à ce changement en annonçant encore deux dates.
+
+### `jourCourt` — « 11/09 », et l'année seulement si ce n'est pas la nôtre
+
+La règle vient de `jourLisible`, et pour la même raison : « 11/09 » sur une
+facture de l'an dernier désigne deux jours à un an d'écart — or c'est
+précisément une vieille impayée qu'on vient regarder. Le jour et le mois
+gardent leur zéro (« 01/09 »), pour que les colonnes tombent au même endroit
+d'une ligne à l'autre.
+
+**L'aujourd'hui se donne en JOUR, pas en instant** : celui que le serveur a
+calculé dans le fuseau de l'atelier. Le prendre de l'horloge du téléphone
+ferait dépendre l'affichage de l'appareil, le 31 décembre au soir.
+
+### Le chapô de l'écran ne garde qu'une moitié de phrase
+
+Même jour, même raison : *« garde seulement : elles entreront au relevé quand
+vous appuierez sur Payée »*, en gras. Les deux moitiés qui l'encadraient ne
+portaient rien — « ces factures sont parties chez vos clients » redit le titre
+de l'écran, et « pas avant » redit « quand ». La ligne entière passe en `ink` :
+elle est l'avertie, et non plus une phrase dont un morceau est appuyé.
+
+### « Reste à payer » se lit À DROITE, là où la ligne d'un acompte vivait déjà
+
+Sa demande du 11 septembre 2026 : *« lorsqu'on note un règlement, marque :
+Reste à payer 150 €, sur les 150 € du… »*. Ces deux lignes ont d'abord été
+posées **en tête du formulaire de saisie**, et il l'a corrigé le jour même :
+*« pourquoi tu as changé les lignes de place ? La phrase était à droite, c'est
+là que je voulais reste à payer. »*
+
+La colonne de droite portait « reste sur 1 776,00 € », qui demandait de deviner
+que le gros chiffre au-dessus était le solde. Elle porte maintenant :
+
+    Reste à payer 1 476,00 €
+    Sur les 1 776,00 €
+
+Le formulaire, lui, est **revenu tel qu'il était** — il n'avait rien demandé
+dessus.
+
+### ON NE DÉPLACE RIEN : on réécrit sur place
+
+Sa règle, dite le même jour et d'une phrase : *« il fallait laisser les phrases
+où elles étaient, juste les modifier »*. Elle a coûté deux allers-retours dans
+la même soirée — les deux lignes posées dans le formulaire au lieu de la droite,
+puis « émise le … » effacée de la ligne du numéro parce que la droite portait la
+même date.
+
+**Une demande d'affichage vaut pour le TEXTE, jamais pour la place.** Il
+reconnaît son écran par la position de ce qu'il lit ; un mot qui change se lit
+en une seconde, une ligne qui bouge se cherche. Quand une réécriture crée une
+répétition, c'est le mot en trop qui part — ici la date dorée, retirée d'un
+« à droite retire la date en doré » —, jamais la ligne entière.
+
+Le jour de la facture vit donc là où il a toujours été : sur la ligne du numéro,
+à gauche, et écrit court (`jourCourt`) comme la trace de réception juste en
+dessous — une seule façon d'écrire un jour sur cet écran.
+
+### La planche n° 1, choisie et codée — et le défaut que sa capture a révélé
+
+*« Je choisis la 1. »* Deux cases, chacune nommée au-dessus : « Payé le » et
+« Montant reçu ». Elles existaient déjà, nues — leur nom vivait dans
+`aria-label`, donc pour les lecteurs d'écran seulement, invisible à l'œil.
+
+**LE CHAMP DE DATE NATIF SE FORMATE SELON LA LANGUE DU TÉLÉPHONE, PAS SELON LA
+PAGE.** Sa capture du 11 septembre 2026 montre « 09/11/2026 » sous « Payé le »
+pour un 11 septembre : sur son appareil, `<input type="date">` rend l'ordre
+américain. Il lisait novembre sur un paiement de septembre — et aucun contrôle
+de ce dépôt ne pouvait le voir, puisque chacun lit la VALEUR (`2026-09-11`),
+jamais ce que le navigateur en dessine.
+
+Le champ reste natif : lui seul ouvre le rouleau de l'iPhone, et le remplacer
+par trois cases à taper serait un recul. Il est posé **transparent par-dessus
+notre propre texte**, qui passe par `jourNumerique` — la seule façon d'écrire
+une date dans ce dépôt. Le calendrier que le champ dessinait lui-même est
+redessiné à côté : c'est la seule chose qui dit que la case s'ouvre.
+
+La suite du relevé vise désormais le motif `jj/mm/aaaa` **dans un navigateur qui
+n'est pas en français** : c'est exactement le cas qu'il faut éprouver.
+
+**Et la case du montant part vide**, le bouton éteint tant que rien n'est tapé :
+elle arrivait remplie du solde entier, si bien qu'il lisait un chiffre qu'il
+n'avait pas posé. Solder d'un doigt reste possible — c'est « Payée », juste
+au-dessus, et c'est le geste de cinquante factures par an.
+
+### Et la ligne enregistrée reprend la forme de la saisie
+
+*« Donc : 11/09/2026, le montant qui vient d'être rentré »*, photo de la saisie
+à l'appui. La ligne d'un règlement noté s'écrivait « 300,00 € le 11/09 » : les
+deux mêmes choses que les cases juste au-dessus, dans l'autre sens et dans un
+autre format. Elle porte maintenant le jour à gauche et le montant à droite, aux
+places exactes des deux cases — on relit ce qu'on a tapé là où on l'a tapé.
+
+L'étiquette de lecture d'écran du « × » garde, elle, la date en toutes lettres :
+« 11/09 » dite à voix haute ne s'entend pas.
+
+**Et elle dit ce qu'elle est : « Acompte payé le 11/09/2026 ».** Un jour et un
+montant posés seuls ne racontent rien — c'est la seule ligne de la carte qui
+parle d'un geste passé, et elle se lisait comme une seconde date d'émission. Le
+mot est juste quoi qu'il arrive : un règlement qui solde fait sortir la facture
+de cet écran, donc ce qui reste visible est forcément une part.
+
+Sauf pour les règlements que la migration a SUPPOSÉS, qui gardent leurs mots à
+eux — « Supposé réglé le … ». Les dire « payés » ferait passer une supposition
+pour une observation.
+
+---
+
+## §331 — Plusieurs TVA sur une facture, et un champ de prix qui ne porte pas de zéro
+
+**Ses deux captures du 11 septembre 2026, dans le même message :** *« je ne peux
+pas ajouter plusieurs TVA ; lorsque j'en mets une le bouton disparaît »* et *« le
+problème pour rentrer les montants n'a pas été résolu, regarde le 0 est toujours
+présent »*.
+
+Deux défauts distincts, une seule cause commune : **une règle du devis écrite une
+seconde fois pour la facture, en plus pauvre** (`CLAUDE.md` §3).
+
+### La TVA : le geste posait un taux, il n'ouvrait pas de catégorie
+
+| | Le devis (1er septembre) | La facture (avant) |
+|---|---|---|
+| « Ajouter une TVA » | ouvre une CATÉGORIE au taux suivant | posait `10.00` **sur toutes les lignes** |
+| le taux proposé | le premier des quatre usuels encore libre | `"10.00"`, en dur |
+| après le premier taux | le geste reste offert | **le bouton disparaissait** |
+
+La troisième ligne est celle qu'il a payée : le second taux n'était pas
+difficile à poser, il était **impossible**. Le bouton se cachait sur
+`tauxDesSaisies === null`, c'est-à-dire dès qu'un taux existait.
+
+L'écran reprend maintenant la grammaire du devis avec **ses fonctions** :
+`lignesParCategorie` pour les groupes, `tauxTvaPropose` pour le taux suivant —
+cette dernière sortie dans `src/lib/reduction-devis.ts`, où le devis la prend
+aussi : sa liste en dur a disparu. Le taux d'un groupe ne commande plus que ses
+lignes, et le « − » ne retire que les siennes — l'appel sans identifiant vidait
+la facture entière, ce qui ne se voyait pas tant qu'il n'y avait qu'un groupe.
+
+**Chaque taux se nomme dès qu'il y en a deux**, la première catégorie comprise :
+sans cela, les lignes restées au taux de la facture seraient les seules sans
+étiquette, et l'on lirait un montant sans savoir sous quel taux il tombe.
+
+### Le prix : « 0250 », et la règle n'avait été branchée que sur le devis
+
+`prixAEcrire` avait été écrite le matin même pour ce défaut exact — le champ
+portait le zéro de la base, et ce qu'il tapait se collait derrière. Elle ne
+servait qu'au devis. La facture emploie pourtant **les mêmes champs**
+(`ChampsDuDevis`) : c'est la moitié invisible de la duplication.
+
+**Et la règle ne connaît plus d'exception — sa décision du même soir**, après
+avoir lu la première version : *« ce que je veux, c'est que les cases pour les
+montants, il y ait marqué 0 en gris pour qu'on sache que c'est là qu'il faut
+écrire, mais que lorsqu'on clique dessus ça soit vide : on peut direct écrire le
+chiffre sans avoir à supprimer des 0 »*.
+
+`prixAEcrire` ne prend donc plus de drapeau : **une case de saisie ne porte
+jamais de zéro**, sur les trois écrans où l'on tape un montant — le devis, la
+facture, et l'écran des prix, qui affichait encore `0,00` sur toute ligne non
+marquée « à chiffrer ».
+
+| | |
+|---|---|
+| ce qui a été écarté | garder le zéro d'une ligne OFFERTE, pour qu'une gratuité décidée ne passe pas pour un oubli |
+| pourquoi c'est sans perte | le MONTANT calculé reste affiché à côté de la case : une gratuité continue de s'écrire « 0,00 € » là où elle se lit. C'est la case de saisie qui se tait, pas le document |
+| ce qui reste | « à chiffrer » sur les lignes qui le portent — il dit la même chose, et il dit en plus POURQUOI la case est vide |
+
+**Et c'est une valeur de DÉPART, jamais un affichage recalculé à chaque frappe.**
+Dérivé au rendu, le champ se viderait au premier « 0 » tapé : « 0,50 » serait
+devenu impossible à écrire. C'est pour cela que la transformation vit à
+l'initialisation de l'état — comme sur le devis.
+
+### Ce qui l'éprouve
+
+`test-facture-sans-devis-e2e.ts` entre **par sa porte** : il appuie sur le
+bouton, comme lui, au lieu de poser les taux en base. Les deux moitiés ont été
+vues rouges contre le code d'avant — « Ajouter une TVA a disparu après le
+premier taux », puis « le champ du prix porte un zéro ». Ce que le contrôle
+retient de la base, ce sont les **taux distincts** de la facture, pas un libellé
+d'écran (`CLAUDE.md` §5 bis).
+
+---
+
+## §332 — Le prix accordé au client sur une facture : la pièce du devis, montée deux fois
+
+**Sa demande du 11 septembre 2026 :** *« on n'a pas mis la réduction client
+cliquable comme sur le devis »*, puis, aussitôt après : *« reprends exactement
+celle du devis — couleur, forme, mots »*.
+
+La facture savait **afficher** une remise reprise du devis ; rien ne permettait
+d'en poser une — ni à l'écran, ni côté serveur.
+
+### « Exactement » ne se tient pas en recopiant
+
+Deux blocs jumeaux dans deux écrans divergent au premier ajustement. Le dépôt
+venait d'en payer deux le même jour : la grammaire des TVA et la case du prix,
+corrigées d'un seul côté (§329). Le geste vit donc dans une pièce unique,
+`src/components/atlas/PrixAccordeAuClient.tsx`, que le devis **et** la facture
+montent :
+
+| | |
+|---|---|
+| `LignePrixAccorde` | l'or, le « − » de 26 px, le libellé, le champ de 36 px, le « % », le montant en négatif |
+| `BoutonPrixAccorde` | le chemin de secours discret, sous le total |
+| `REMISE_PAR_DEFAUT` | les 5 % que le bouton pose, écrits une fois pour les deux pièces |
+
+Le devis a **perdu** son bloc et sa constante en même temps : une correction qui
+n'enlève rien serait un pansement (`CLAUDE.md` §4 quater).
+
+### Ce que la base a appris à cette fonction
+
+La première version de `majReductionDeFacture` n'écrivait que le pourcentage —
+« le montant se recalcule ». PostgreSQL l'a refusée sur
+`factures_reduction_paire_ck` (migration 0048), et la contrainte a raison : *un
+pourcentage sans montant laisse le document incapable de dire ce qu'il a
+retiré*. Les deux colonnes s'écrivent donc ensemble, le montant venant de
+`totauxAvecReduction` — la même fonction que l'écran et le PDF, jamais une
+seconde arithmétique.
+
+**Le cas de la ligne corrigée APRÈS la remise** est réglé par ce qui existait
+déjà : l'écran recalcule à chaque affichage, et `emettreFacture` refige tous les
+totaux à l'arrêt. Ce qui part chez le client porte donc le bon chiffre, même si
+la colonne a vieilli entre-temps.
+
+### Ce qui l'éprouve
+
+`scripts/test-remise-facture-db.ts` tient l'écriture sous `atlas_app` : la
+remise se pose, se change, se retire ; « 0 », une case vide ou un charabia
+l'**effacent** au lieu d'en garder une à zéro — un « 0 % » stocké ferait
+imprimer au client une ligne dorée sans montant, le défaut qu'il avait signalé
+sur le devis le 17 août 2026 ; une facture arrêtée refuse ; et une facture
+d'une autre entreprise n'existe pas.
+
+`test-facture-sans-devis-e2e.ts` entre par sa porte : il appuie sur le bouton,
+lit les 5 %, vérifie **la paire en base**, puis retire d'un « − ». Et l'écran a
+été regardé : 250,00 € − 12,50 € = 237,50 €, TVA 47,50 €, total 285,00 €.
+`facture` **retire** la note vocale, les photos et la dictée des coordonnées :
+ces trois pièces nourrissent le CHIFFRAGE, et il n'y a pas de devis ici. Sa
+planche le dit d'un mot — *« on ne dicte pas une facture qu'on tape »*.
+L'adresse porte `?facture=1` : sans JavaScript ou dans un nouvel onglet, le lien
+doit mener à la fiche qui FACTURE, sinon c'est un cul-de-sac silencieux.
+
+## §333 — Le plan d'arrosage repris : ses règles retrouvées, et une suite qui les tient
+
+**Sa demande du 11 septembre 2026 :** *« rends impeccable le plan d'arrosage »*
+— le seul outil du pôle Paysage qui tourne, jamais repris depuis le 20 août. Et
+sa colère en cours de route, qui a changé la nature du lot : *« à quoi ça sert
+que je donne des règles si elles deviennent obsolètes au bout d'une semaine sans
+raison ? »*
+
+### Ce que la lecture a trouvé avant d'écrire une ligne
+
+Trois endroits où le calcul rendait un plan faux, chacun prouvé sur ses jardins :
+
+| | Où | Ce qui se passait |
+|---|---|---|
+| **Sans nourrice, le plan sortait quand même** | `lire-croquis.ts` ne faisait qu'une réserve ; `actions.ts` rendait la liste des pièces, avec une ligne rouge sous vingt-trois lignes | Le commentaire affirmait « refusée à la lecture ». Faux. C'est le plan qu'il a refusé le 21 août |
+| **La liste des pièces ne disait pas ce que le plan dessinait** | `listeMateriel` (calcul.js) comptait tés/coudes/tés égaux sur un modèle de rangées parallèles ; `plan-dessine.ts` les comptait sur le vrai tracé | Ses deux pelouses : liste **8 + 4 + 2**, dessin **7 + 5 + 0**. Aucune suite ne les confrontait. Et une tête à trois branches perdait son té égal |
+| **Ni tuyau Ø25, ni amenée, ni té du compteur dans la liste** | la page publiée ajoutait le PE depuis une case saisie ; l'application n'a pas cette case, et personne n'a vu la zone « compteur → nourrice » disparaître | Il partait au comptoir sans tuyau. Et l'amenée de 30 m par défaut entrait dans la pression sans un mot |
+
+Et deux règles à lui, données puis **perdues** :
+
+- **le quinconce du couloir** (§127, 18 août : 10 × 2 → 7 tuyères). Mort le
+  24 août : la correction « jamais sous la portée » (§ du 23 août) mesurait le
+  **pas des colonnes** (1,67 m) au lieu de la **distance entre deux têtes** du
+  damier (2,60 m en diagonale, 3,33 m sur un même bord). Le contrôle qui la
+  tenait est devenu rouge, et il a été réécrit — *« ce contrôle a changé de
+  règle »* — au lieu d'être compris ;
+- **l'antenne Ø16 de 2 m au plus, et le Ø25 en un seul passage**. Donnée avant
+  le 11 septembre, jamais écrite. Le tracé amenait le Ø25 jusqu'à chaque tuyère,
+  deux lignes dans un couloir de 2 m.
+
+### Ce qui a été décidé
+
+**1. Le damier se mesure entre deux têtes** — `distanceEntreTetesDuDamier` dans
+`calcul.js` : `min(2·ex, 2·ey, √(ex² + ey²))`. Et **il est réservé aux
+tuyères** : ses turbines se posent alignées, c'est le carré de 12 × 12 qu'il a
+dessiné le 23 août avec neuf têtes, et qu'il n'a pas rouvert. Tenter le damier
+sur les turbines aurait remplacé ses neuf par six sans qu'il l'ait demandé — la
+question lui est posée dans le document de retour, pas tranchée à sa place.
+
+**2. Le Ø25 passe, l'antenne va chercher la tête** — `ArroseurPose.pied` dans
+`trace.ts`, posé par `piedDeLaTete` (`plan-dessine.ts`) : quand le petit côté
+d'une zone tient dans deux antennes (≤ 4 m), la ligne suit l'axe du milieu et
+chaque tête pend au bout d'un demi-côté ; au-delà, la ligne vient au pied de la
+tête, seule façon de tenir les 2 m. Le graphe du tracé relie les pieds, plus les
+têtes. Sur son couloir de 10 × 3 : une tranchée de 10 m, sept antennes de
+1,50 m. Sur 10 × 5 : la ligne repasse, aucune antenne de 2,50 m.
+
+**3. Les pièces se LISENT sur le tracé** — `pieces.ts`, la frontière entre ce que
+le calcul rend et ce que le dessin compte. Trois zones (compteur → nourrice,
+regard, jardin) ; tés, coudes et tés égaux réseau par réseau ; le tuyau Ø25
+mesuré ; le té égal 25×25×25 dès que le piquage est au compteur ; les SBE en
+deux lignes nommant leur position ; et « par réseau : 5 · 3 · 3 · 11 » sous
+chaque total — sa question du 21 août sur les vingt-deux coudes. **Pourquoi pas
+dans `calcul.js`** : c'est une copie octet pour octet de la page publiée, qui
+n'a pas de tracé. Le jour où la page disparaît (`TODO.md`), le comptage par
+rangées part avec elle.
+
+**4. Sans nourrice, aucun plan** — `croquis-complet.ts`, pure, lue par l'action
+ET par l'écran du refus : les trois éléments cochés un par un, le manquant en
+rouge, une phrase, un bouton « Reprendre la photo ». Rien d'autre en dessous.
+
+**5. Les réserves du calcul suivent le plan** — `lePlan()` dans `actions.ts`,
+une seule fonction pour la lecture du croquis et pour la discussion. Avant,
+« il ne resterait que 1,8 bar au dernier arroseur » disparaissait au premier
+message. Et l'amenée comptée pour 30 m **se dit** : un chiffre muet se croit.
+
+**6. L'écran** — sa maquette `appli/arrosage-plan-et-pieces.html` : une carte
+par réseau (la vanne, la pelouse, la buse, ce qu'elle consomme et emporte) au
+lieu de deux listes qu'il reliait au carré de couleur ; les réserves **sous le
+dessin**, pas sous les pièces ; la liste en trois zones ; plus une couleur en
+clair (`test-aucune-couleur-en-clair` surveille les quatre fichiers). Et sa
+règle du même jour : *« même au même endroit, ne superpose pas les ronds, carrés
+ou losanges — côte à côte »* (`Tete.decalage`, `ecarterLesSymboles`).
+
+**7. Une tête à trois branches porte un losange à côté d'elle** — c'est lui qui
+l'a lu sur la maquette : *« il faut un té égal à côté du premier arroseur pour
+faire la jonction »*. Le degré du pied décide ; chaque branche au-delà de deux
+est un té égal, tête ou pas.
+
+### La suite qui tient sa parole, et le garde-fou qui la protège
+
+`scripts/test-regles-du-patron.ts` : dix-sept entrées, chacune une phrase de
+lui, datée, éprouvée sur l'exemple qu'il a donné avec elle. Elle rougit sur le
+code d'hier (12 tuyères au lieu de 7 — vérifié). **Un rouge ne s'y réécrit
+jamais** : soit le code a tort, soit c'est LUI qui a changé la règle, et alors
+sa phrase s'ajoute sous le repère, l'ancienne barrée.
+
+`scripts/garde-regles-du-patron.mjs`, branché sur chaque geste de chaque session
+(`.claude/settings.json`) : le fichier ne s'écrase pas, une entrée existante ne
+se modifie pas, `sed`/`rm`/`git checkout` sur lui sont refusés. Ajouter sous le
+repère passe ; lire passe. Éprouvé dans les deux sens par
+`test-garde-regles-du-patron.ts`, qui a attrapé un faux positif avant qu'il
+gêne quelqu'un — le nom du fichier dans un message de commit.
+
+### Ce qui a été refusé, et ce que ça aurait coûté
+
+- **Refaire le calcul en TypeScript** pour y lire le tracé : deux façons de
+  calculer un plan (`CLAUDE.md` §3). Le tracé est lu à la frontière, une fois.
+- **Étendre le damier aux turbines** : six têtes au lieu de ses neuf sur le
+  12 × 12, sans son accord. Posé comme question.
+- **Lire la longueur d'amenée sur le croquis** : demande la clé de vision, que
+  ce poste n'a pas ; le 30 m est gardé en majorant **écrit à l'écran**. Ouvert.
+
+### L'amenée, tranchée le soir même : « calculée, ni lue ni supposée »
+
+Devant la planche qui lui proposait de « lire » l'amenée sur le croquis ou de
+garder 30 m écrits, sa réponse a été plus juste que les deux : *« elle doit
+être calculée, ni lue ni supposée »*. Le modèle ne rend jamais des mètres — il
+rend la PLACE du piquage, en fraction, comme celle de la nourrice ; les cotes
+donnent l'échelle ; `longueurDeLAmenee` (`geometrie-croquis.ts`) fait la
+distance en Manhattan, à l'échelle sévère du trajet du regard puisque le
+résultat entre dans la même pression. Le piquage devient le troisième élément
+lu sur le croquis (`croquis-complet.ts`) : sans lui, aucun plan. Quand
+l'échelle ne se déduit pas, l'amenée n'est pas comptée et l'écran le dit —
+plus jamais 30 m tus. La ligne de pièces porte le chiffre calculé, arrondi au
+mètre supérieur, et dit Ø25 ou Ø32 selon le seuil.
+
+### Le damier des turbines, tranché aussi : « la A »
+
+La planche `appli/arrosage-a-trancher.html` lui a montré les deux poses
+calculées par le même code — neuf turbines alignées, six en damier — avec ce
+que la seconde coûte (72 % de recouvrement entre deux têtes voisines). Il a
+gardé les neuf. Le paramètre `damierTurbines` qui a servi à dessiner la B a
+été retiré du calcul le soir même : un paramètre qui ne sert plus qu'à une
+planche est du code mort (`CLAUDE.md` §4 quinquies). La page reste, pour
+mémoire de ce qui a été écarté.
+
+### Ce qui reste ouvert
+
+Le trajet du regard à la première tête (inchangé, dit à l'écran) · les
+positions sur une vraie photo, piquage compris (banc du patron) · la page publiée `appli/arrosage.html` et ses deux scripts, en sursis
+jusqu'à ce qu'il valide l'écran.
+
+## §334 — Deux écritures de la même donnée ne partent pas ensemble
+
+**Mesuré le 11 septembre 2026, et d'abord consigné sans être corrigé.**
+`test-reduction-devis-e2e.ts` rougissait deux fois sur trois : le
+« + Prix accordé au client » posait 5 %, et la base rendait `null`.
+
+Ce n'était pas le contrôle qui était fragile. Le champ quitté lançait son
+écriture — « aucune remise » —, le bouton lançait la sienne dans la foulée, et
+**rien ne garantissait leur ordre d'arrivée**. Effacer une remise puis la
+reposer dans la seconde pouvait donc la faire disparaître, chez le patron comme
+en batterie ; le résultat dépendait du réseau.
+
+### La correction, et ce qu'elle refuse de faire
+
+`src/lib/file-d-ecritures.ts` retient l'écriture en cours et fait attendre la
+suivante : les appels partent dans l'ordre où le doigt les a déclenchés, et
+**le dernier geste a le dernier mot**. Rien d'autre — ni annulation, ni
+regroupement, ni rejeu : une écriture refusée ne bloque pas les suivantes, et
+son refus revient intact à l'appelant, qui seul sait quoi en dire au patron.
+
+Les deux écrans de la remise l'emploient, par le hook
+`useEcrituresALaSuite`. **Il tient la file dans un `useState(() => …)`, et ni
+dans un `useRef` ni dans un `useMemo`** — les trois « marchent » à l'essai, et
+deux sont des pièges :
+
+| | |
+|---|---|
+| `useRef` posé pendant le rendu | React l'interdit — *« Cannot access refs during render »*, refusé par le lint du dépôt, et c'est ce que la première version faisait |
+| `useMemo` | React a le droit de le rejouer : une file recréée en cours de route laisse repartir deux écritures ensemble, soit le défaut visé |
+| `useState(() => …)` | l'initialisation n'est jouée qu'une fois, et la valeur ne bouge plus |
+
+### Pourquoi la règle vit dans `lib` et non dans le hook
+
+**Sa première version portait la règle dans le hook, et ne pouvait pas être
+éprouvée** : `useRef` hors d'un rendu lève « Cannot read properties of null » —
+et, DANS un rendu, écrire cette même ref est ce que React interdit. Deux
+symptômes, une seule cause : la règle n'avait rien à faire dans un hook.
+Monter un écran pour mesurer une mise en file aurait mesuré React
+(`CLAUDE.md` §4 sexies : les règles pures descendent). Sortie dans `lib`, elle
+se joue en quelques millisecondes — et son **témoin** rejoue le défaut avec les
+mêmes durées : sans file, la lente doublait la rapide.
+
+### Ce que la MESURE a fini par dire, et qui n'était pas ce qu'on croyait
+
+La file posée, la suite passait en isolé mais **tombait encore en batterie** :
+trois exécutions vertes seules, deux batteries rouges. La tentation était de
+rallonger le contrôle ; ce qui a tranché, c'est une sonde posée dans l'action
+serveur — *« reçu », « écrit »*, horodatés — et une exécution des suites
+navigateur ENTIÈRES, c'est-à-dire sous la vraie charge.
+
+Le journal a montré la séquence propre, et la suite est passée 11/11 :
+
+    …54.639  reçu « 0 »  → écrit null     (la case vidée)
+    …54.793  reçu « 5 »  → écrit 5,00     (le bouton, 154 ms plus tard)
+
+**La différence entre les deux états n'était pas la charge : c'était la file
+elle-même.** Les batteries rouges tournaient encore sur la version qui gardait
+la file dans un `useRef` posé pendant le rendu — celle que React rejoue. La
+file était donc recréée, et deux écritures repartaient ensemble : la
+sérialisation ne tenait pas. Le passage à `useState(() => …)`, fait pour le
+lint, était **aussi** la correction du comportement.
+
+La leçon est celle du dépôt, une fois de plus : le défaut a été rendu bavard
+avant d'être corrigé, et c'est la sonde — pas la déduction — qui a nommé le
+coupable.
+
+### Ce qui reste vrai ailleurs
+
+Le dépôt porte d'autres écrans qui écrivent au fil du doigt — les lignes d'un
+devis, les taux d'une catégorie. Ceux-là écrivent chacun leur propre donnée : la
+course décrite ici demande **deux gestes sur la MÊME valeur**, et c'est ce que
+la remise rendait facile (une case et un bouton). Généraliser la file sans ce
+cas précis serait ajouter du code pour une panne imaginée.
+
+## §335 — Un PDF se regarde DANS l'application, pas dans un onglet de Safari
 
 **Sa capture du 11 septembre 2026, prise sur son iPhone :** *« quand j'ouvre le
 pdf pour voir la facture j'ai pas de touche retour »*. L'image montre la
@@ -28219,7 +28757,70 @@ fichier derrière l'adresse de la visionneuse, par `fichierDemandeALaVisionneuse
 
 ---
 
-## §330 — Le diagnostic végétal : le refus est l'écran principal
+## §336 — Ce que le serveur a effacé ne revient plus à l'écran
+
+**Sa plainte du 12 septembre 2026**, capture de l'accueil à l'appui :
+*« lorsqu'on retire un chantier posé au planning, il réapparaît sur la page
+d'accueil ! »*
+
+**Mesuré avant d'être corrigé, et c'était double.** La ligne revenait aussi
+**sur le planning lui-même**, six secondes après le geste — et la base, elle,
+avait bel et bien écrit la suppression. C'est l'écran qui mentait, dans le sens
+le plus coûteux : il retire, il voit que ce n'est pas retiré, il recommence.
+
+### La cause, en une phrase
+
+`useRetraits` masque la ligne **tant que le tiroir est ouvert**, et c'est tout.
+À sa fermeture — l'instant précis où l'écriture part —, `enAttente` se vide,
+`estRetire` redevient faux, et l'écran repeint la ligne depuis des données
+d'avant l'écriture. Deux conséquences, deux manques distincts :
+
+| Où | Ce qu'il voyait | Ce qui manquait |
+|---|---|---|
+| l'écran du geste | la ligne revient à la fermeture du tiroir | `PlanningClient` garde sa liste dans un `useState` et n'en retirait pas le chantier effacé |
+| l'écran d'à côté | l'accueil, ouvert dans la foulée, garde la liste d'avant jusqu'au rechargement | personne ne redemandait la page une fois l'écriture faite |
+
+### Le correctif, et ce qu'il retire
+
+**Le rappel vit dans le crochet** : `router.refresh()`, après l'écriture et
+seulement si l'une au moins a réussi. C'est lui qui sait quand elle est faite,
+et les huit listes qui suppriment en profitent d'un coup. Il traverse le
+démontage, et c'est nécessaire : l'écriture part au moment où il touche un
+onglet, donc c'est l'écran d'ARRIVÉE qu'il faut redemander. **La couche qui
+compensait s'en va avec** — le `router.refresh()` recopié dans `EcranChantiers`,
+qui ne tenait que l'accueil et laissait le planning sans rien
+(`CLAUDE.md` §4 quater). Celui de `Pellicule` devient une redite, et part aussi.
+
+**Et le planning tient sa propre liste à jour**, comme le font déjà les tarifs,
+les photos et les lignes de prix : `setChantiers` en retire le chantier quand
+le serveur a confirmé. C'était le seul des huit écrans à ne pas le faire.
+
+### Ce qu'on a écarté, et pourquoi
+
+Un masque **définitif** dans le crochet — « ce que le serveur a effacé reste
+masqué » — tenait les deux moitiés d'un coup, et il a été écrit puis retiré. La
+note vocale l'interdit : la clé du retrait y est **le chantier**, pas la note,
+parce qu'il n'y en a qu'une. Une note effacée puis réenregistrée sans quitter
+l'écran serait restée invisible pour toujours. Un masque qui ne sait pas qu'un
+identifiant a changé de sens n'est pas un masque, c'est un piège.
+
+`FichesEnCours` garde donc sa liste `effacees`, et ce n'est plus un emplâtre :
+sa liste arrive du serveur en propriété, et cette liste-là évite le
+clignotement entre la fermeture du tiroir et le repeint.
+
+### Ce qui le tient
+
+`scripts/test-retrait-ne-revient-pas-e2e.ts` rejoue SON chemin — le tiroir du
+planning, puis l'onglet du bas — et interroge la base : un écran muet parce que
+la suppression s'est perdue serait vert sans cela. Jouée contre la version du
+11 septembre, elle rougit sur le cas du planning, qui ne dépend d'aucune
+horloge. Le cas de l'accueil, lui, tenait à une course entre l'écriture et le
+rendu de la page d'arrivée : il rougissait chez le patron et pouvait passer ici
+selon la milliseconde — le correctif supprime la course.
+
+---
+
+## §337 — Le diagnostic végétal : le refus est l'écran principal
 
 **Le lot du 11-12 septembre 2026**, ouvert par `/impeccable` sur
 `/paysage/diagnostic`. Trois fiches réelles en base sur la cinquantaine visée :
@@ -28228,7 +28829,7 @@ c'est celui qui avait été le moins regardé. Sa planche :
 `appli/diagnostic-le-refus-est-l-ecran.html` ; sa réponse : *« C'est bien »*,
 et le nom reste **Diagnostic végétal** — *« moi diagnostic végétal je pense »*.
 
-### 330.1 La racine : la base rangeait la phrase du refus, pas sa clé
+### 337.1 La racine : la base rangeait la phrase du refus, pas sa clé
 
 Sous chacun des sept refus, l'écran écrivait la même dernière phrase — *« une
 photo plus proche, ou prise sous un autre angle, peut suffire »* —, y compris
@@ -28252,7 +28853,7 @@ bibliothèque (`phraseFichesConnues`, lu dans la base — jamais une constante).
 colonne nulle, la ligne exacte du tableau `CLAUDE.md` §4 quater), et *« Réessayez
 dans un instant »* dans `actions.ts` — une promesse sans geste.
 
-### 330.2 « Vu sur la photo » : le vocabulaire fermé, en mots de paysagiste
+### 337.2 « Vu sur la photo » : le vocabulaire fermé, en mots de paysagiste
 
 Un refus qui ne dit pas ce qui a été vu se lit comme une panne. L'observation
 était rangée (`diagnostics.observation`) et jamais montrée.
@@ -28266,7 +28867,7 @@ signature de `decrireObservation` ne prend que le nom rendu par la base, et une
 suite le rappelle. Sans taxon reconnu : « Essence non reconnue », qui est
 exactement ce que le moteur a conclu.
 
-### 330.3 « Personne n'a regardé » offre le geste qui répare
+### 337.3 « Personne n'a regardé » offre le geste qui répare
 
 L'écran n'offrait que « Nouvelle photo », juste sous *« ce n'est pas la photo
 qui est en cause »*. Il offre **Réessayer** — `reprendreAnalyseAction`, sur les
@@ -28278,7 +28879,7 @@ et **Réglages de l'IA**. Le mot du fournisseur reste, en petit, sous « Détail
 **Et une ligne ne reste plus `en_analyse`.** Un stockage qui levait laissait le
 diagnostic sans issue ; `rangerPhoto` écrit la panne là où elle se produit.
 
-### 330.4 Le résultat : la sûreté et l'essence en clair, la source sur l'écran
+### 337.4 Le résultat : la sûreté et l'essence en clair, la source sur l'écran
 
 « CONFIANCE PROBABLE » en capitales dorées, en première ligne, est parti : il
 lit « Probable · Platane » — `LIBELLE_CONFIANCE` en un mot courant, lu depuis
@@ -28291,7 +28892,7 @@ quand une page d'organisme bouge sans changer d'adresse. Les trois listes que
 d'exclusion, facteurs favorisants — sont dans les détails. Les noms bruts de
 colonnes (« appuie : conduite_recommandee, … ») ne s'affichent plus.
 
-### 330.5 Ce que 0057 promettait et qui reste faux
+### 337.5 Ce que 0057 promettait et qui reste faux
 
 Son en-tête dit d'`informations_requises` : *« affiché tel quel quand Atlas
 refuse de conclure »*. Sur un refus, aucune fiche n'est retenue — il n'y a rien à
@@ -28299,7 +28900,7 @@ recopier. Le champ s'affiche avec le résultat, sous « ce qui reste à
 confirmer ». La migration n'est pas réécrite (elle est appliquée) ; c'est ici
 que la promesse est corrigée.
 
-### 330.6 Les suites
+### 337.6 Les suites
 
 `test-diagnostic-quatre-issues-e2e` photographie les quatre issues à 390 × 664,
 sur Origine ET sur Nuit, en les écrivant par `conclureDiagnostic` — le chemin

@@ -263,13 +263,30 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   },
   {
     id: "devis-remise",
-    ecran: "Devis",
-    ou: "sous le total du devis",
+    // **Sur la facture AUSSI, depuis le 11 septembre 2026** — sa demande :
+    // *« on n'a pas mis la réduction client cliquable comme sur le devis »*. La
+    // fiche qui ne nommerait que le devis l'enverrait chercher là où il n'a
+    // pas besoin d'aller.
+    ecran: "Devis et facture",
+    ou: "sous le total",
     intitule: "Faire une remise au client",
-    motsCles: ["remise", "reduction", "geste", "pourcentage", "rabais", "prix", "accorde"],
-    geste: "Renseignez le pourcentage dans « Prix accordé au client, en pourcentage ».",
-    source: "src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx",
-    preuves: ["Prix accordé au client, en pourcentage"],
+    motsCles: [
+      "remise",
+      "reduction",
+      "geste",
+      "pourcentage",
+      "rabais",
+      "prix",
+      "accorde",
+      "facture",
+    ],
+    geste: "Appuyez sur « + Prix accordé au client », puis renseignez le pourcentage.",
+    // **La pièce commune, et non plus l'écran du devis** : le geste est monté
+    // par les deux écrans depuis qu'il l'a demandé sur la facture. Ancrée sur
+    // un seul des deux, cette fiche rougirait au premier déménagement — c'est
+    // ce qui vient d'arriver.
+    source: "src/components/atlas/PrixAccordeAuClient.tsx",
+    preuves: ["Prix accordé au client, en pourcentage", "+ {LIBELLE_REDUCTION}"],
   },
   {
     id: "devis-tva",
@@ -505,7 +522,11 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     motsCles: ["tva", "declarer", "declaration", "collectee", "deductible", "impot", "etat", "periode", "voir", "vois", "combien"],
     geste: "Depuis « Terminés », appuyez sur « Ma TVA à déclarer ».",
     source: "src/app/termines/tva/page.tsx",
-    preuves: ["Ma TVA", "Collectée", "Déductible"],
+    // **Les mots entiers depuis le 12 septembre 2026** : l'écran écrit « TVA
+    // collectée » et « TVA déductible », plus « Collectée » seul. La fiche les
+    // suit — un mode d'emploi qui enseigne un mot disparu envoie chercher un
+    // bouton qui n'existe plus.
+    preuves: ["Ma TVA", "TVA collectée", "TVA déductible"],
   },
 
   // --- Clients --------------------------------------------------------------

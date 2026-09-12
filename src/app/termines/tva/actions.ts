@@ -10,13 +10,10 @@ import { lireTicket, type TicketLu } from "@/server/ai/services/lire-ticket";
 import { revalidatePath } from "next/cache";
 import {
   noterPaiement,
-  reglerExigibilite,
   retirerPaiement,
   soldera,
   type ResultatPaiement,
 } from "@/server/repositories/paiements-facture";
-import { exigerProprietaire } from "@/server/autorisation";
-import type { Exigibilite } from "@/lib/exigibilite-tva";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 
 /**
@@ -218,19 +215,5 @@ export async function retirerPaiementAction(paiementId: string): Promise<void> {
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "retirer un paiement");
   await retirerPaiement(ctx, paiementId);
-  revalidatePath("/termines/tva");
-}
-
-/**
- * Changer de régime.
- *
- * **Réservé au propriétaire**, à la différence de la saisie d'un règlement :
- * ce choix décide de ce qui part à l'administration pour toute l'entreprise, et
- * il se déclare aux impôts. Un salarié n'a aucune raison d'y toucher.
- */
-export async function reglerExigibiliteAction(regime: Exigibilite): Promise<void> {
-  const ctx = await getCurrentCtx();
-  await exigerProprietaire(ctx, "changer le moment où votre TVA devient exigible");
-  await reglerExigibilite(ctx, regime);
   revalidatePath("/termines/tva");
 }
