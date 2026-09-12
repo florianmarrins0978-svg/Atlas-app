@@ -124,6 +124,39 @@ des libellés ; `test-diagnostic-ecrans-e2e` vise les repères
 | Les seuils (0,35 · 0,15 · plafonds) — un point de départ nommé, pas mesuré ; ne bougent pas au jugé | de vraies photos, de vraies fiches |
 | La durée de conservation des photos, et ce que le fournisseur garde ; le fournisseur de vision est **déjà** au registre RGPD (`docs/RGPD.md`, ligne « Vision »), `TODO.md` est en retard là-dessus | **lui** |
 
-## La batterie
+## La batterie — sur son poste Windows, deux fois
 
-*Pas encore jouée sur ce lot — les chiffres viendront ici.*
+`TODO.md` le dit depuis le 11 septembre : dix-huit suites navigateur tombent
+sur `main` sur cette machine, et aucun lot ne peut plus se donner « batterie au
+vert » sans comparer AVANT et APRÈS. C'est ce qui a été fait — même machine,
+même atelier (rang 0, port 3000), la veille sur `main` et le lendemain sur le
+lot.
+
+| | Avant (main, 11 sept. soir) | Après (le lot, 12 sept.) |
+|---|---|---|
+| Types, lint, atelier, construction, mémoire, fournisseurs | vert | vert |
+| Suites base de données | 345 / 355 | **347 / 355** |
+| Suites navigateur | 111 / 145 | **112 / 145** |
+| Connexion derrière un proxy | rouge (le serveur ne répond pas en dix minutes, port 3000) | rouge, même cause |
+
+**Les huit suites du diagnostic, toutes vertes après :** `test-diagnostic-vegetal`,
+`test-diagnostic-base`, `test-observation-diagnostic`, `test-import-fiches-phyto`,
+`test-exif-diagnostic`, `test-diagnostic-sans-secret`, `test-diagnostic-ecrans-e2e`,
+`test-diagnostic-quatre-issues-e2e` (nouvelle ; rouge « avant » pour une raison
+à elle — elle lisait `membres_entreprise` sous un rôle soumis à la RLS, le piège
+2 de `HANDOVER.md`, corrigé dans la suite).
+
+**Ce qui bouge entre les deux et qui n'est PAS ce lot :** six suites rouges
+« après » seulement (`bouton-nouveau-chantier`, `connexion-limite`,
+`envoyer-la-facture`, `feuille-envoi-lisible`, `reste-equipes`,
+`tva-multiple`) — toutes des dépassements de délai ou une animation mesurée,
+sur des écrans que ce lot ne touche pas ; neuf suites rouges « avant » repassées
+au vert sans qu'on les ait touchées. Ce mouvement d'une batterie à l'autre est
+ce que `TODO.md` décrit ; il ne se corrige pas depuis ce lot. Les huit rouges de
+base sont les mêmes des deux côtés, tous d'outillage (`ps -o` absent sur Git
+Bash, ports, verrous) — aucun ne touche au diagnostic.
+
+**Une chose à savoir avant de rejouer chez lui :** la migration 0087 doit être
+appliquée à la base que les suites navigateur emploient. Jouée avant, la suite
+d'écrans tombait sur `column "refus" does not exist` — l'étape « Atelier » de la
+batterie l'applique d'elle-même ; le lanceur des suites seul ne le fait pas.

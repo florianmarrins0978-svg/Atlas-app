@@ -233,7 +233,7 @@
 </tbody></table></div>
 <p><strong>Ce qui a été fait AUTREMENT que la planche, et pourquoi :</strong> l'essence s'écrit « Probable · Platane », pas « sur un platane » — le genre du nom d'essence n'est pas connu de la base, et « sur un aubépine » se serait vu.</p>
 <p><strong>Ce qui a été retiré</strong> (un défaut réparé remplace du code) : le <code>??</code> qui inventait un verdict sur une colonne nulle ; « Réessayez dans un instant » sans geste ; le libellé de confiance figé ; les liserés ; <code>LIBELLE_CONFIANCE</code> et <code>MOTIFS_REFUS</code> importés par le moteur pour rien.</p>
-<p><strong>Ce que 0057 promettait et qui reste faux :</strong> <code>informations_requises</code> « affiché quand Atlas refuse de conclure ». Sur un refus, aucune fiche n'est retenue ; le champ s'affiche avec le résultat, sous « ce qui reste à confirmer ». La migration est appliquée et n'est pas réécrite ; <code>ARCHITECTURE.md</code> §233.5 porte la correction.</p>
+<p><strong>Ce que 0057 promettait et qui reste faux :</strong> <code>informations_requises</code> « affiché quand Atlas refuse de conclure ». Sur un refus, aucune fiche n'est retenue ; le champ s'affiche avec le résultat, sous « ce qui reste à confirmer ». La migration est appliquée et n'est pas réécrite ; <code>ARCHITECTURE.md</code> §330.5 porte la correction.</p>
 <p><strong>Les suites :</strong> <code>test-diagnostic-quatre-issues-e2e</code> (nouvelle) photographie les quatre issues à 390 × 664 sur Origine et Nuit, en fixant des règles et non des libellés ; <code>test-diagnostic-ecrans-e2e</code> vise les repères <code>diagnostic-echoue</code> et <code>diagnostic-reessayer</code> ; <code>test-diagnostic-vegetal</code> et <code>test-diagnostic-base</code> suivent la clé.</p>
 <h2 id="ce-qui-reste-ouvert-et-qui-le-tranche">Ce qui reste ouvert, et qui le tranche</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -266,9 +266,38 @@
 <td><strong>lui</strong></td>
 </tr>
 </tbody></table></div>
-<h2 id="la-batterie">La batterie</h2>
+<h2 id="la-batterie--sur-son-poste-windows-deux-fois">La batterie — sur son poste Windows, deux fois</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><em>Pas encore jouée sur ce lot — les chiffres viendront ici.</em></p>
+<p><code>TODO.md</code> le dit depuis le 11 septembre : dix-huit suites navigateur tombent sur <code>main</code> sur cette machine, et aucun lot ne peut plus se donner « batterie au vert » sans comparer AVANT et APRÈS. C'est ce qui a été fait — même machine, même atelier (rang 0, port 3000), la veille sur <code>main</code> et le lendemain sur le lot.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Avant (main, 11 sept. soir)</th>
+<th>Après (le lot, 12 sept.)</th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, atelier, construction, mémoire, fournisseurs</td>
+<td>vert</td>
+<td>vert</td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td>345 / 355</td>
+<td><strong>347 / 355</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td>111 / 145</td>
+<td><strong>112 / 145</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td>rouge (le serveur ne répond pas en dix minutes, port 3000)</td>
+<td>rouge, même cause</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les huit suites du diagnostic, toutes vertes après :</strong> <code>test-diagnostic-vegetal</code>, <code>test-diagnostic-base</code>, <code>test-observation-diagnostic</code>, <code>test-import-fiches-phyto</code>, <code>test-exif-diagnostic</code>, <code>test-diagnostic-sans-secret</code>, <code>test-diagnostic-ecrans-e2e</code>, <code>test-diagnostic-quatre-issues-e2e</code> (nouvelle ; rouge « avant » pour une raison à elle — elle lisait <code>membres_entreprise</code> sous un rôle soumis à la RLS, le piège 2 de <code>HANDOVER.md</code>, corrigé dans la suite).</p>
+<p><strong>Ce qui bouge entre les deux et qui n'est PAS ce lot :</strong> six suites rouges « après » seulement (<code>bouton-nouveau-chantier</code>, <code>connexion-limite</code>, <code>envoyer-la-facture</code>, <code>feuille-envoi-lisible</code>, <code>reste-equipes</code>, <code>tva-multiple</code>) — toutes des dépassements de délai ou une animation mesurée, sur des écrans que ce lot ne touche pas ; neuf suites rouges « avant » repassées au vert sans qu'on les ait touchées. Ce mouvement d'une batterie à l'autre est ce que <code>TODO.md</code> décrit ; il ne se corrige pas depuis ce lot. Les huit rouges de base sont les mêmes des deux côtés, tous d'outillage (<code>ps -o</code> absent sur Git Bash, ports, verrous) — aucun ne touche au diagnostic.</p>
+<p><strong>Une chose à savoir avant de rejouer chez lui :</strong> la migration 0087 doit être appliquée à la base que les suites navigateur emploient. Jouée avant, la suite d'écrans tombait sur <code>column "refus" does not exist</code> — l'étape « Atelier » de la batterie l'applique d'elle-même ; le lanceur des suites seul ne le fait pas.</p>
 </main>
 </body>
 </html>
