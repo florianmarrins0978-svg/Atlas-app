@@ -91,8 +91,8 @@ h2.mois{font-family:ui-serif,Georgia,"Times New Roman",serif;font-weight:400;
 .frise{display:flex;align-items:center;margin:18px 0 0;overflow:hidden;
   font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
 .frise .annee{display:flex;align-items:center;gap:8px;padding-right:12px;
-  border-right:1px solid var(--trait);color:var(--encre);text-transform:none;
-  letter-spacing:0;font-size:15px;font-weight:400;flex:none}
+  border-right:1px solid var(--trait);color:var(--encre-douce);text-transform:none;
+  letter-spacing:0;font-size:14px;font-weight:400;flex:none;font-family:ui-serif,Georgia,serif}
 .frise .mois-liste{display:flex;gap:22px;padding-left:14px;white-space:nowrap}
 .frise .actif{color:var(--encre);border-bottom:2px solid var(--or);padding-bottom:6px}
 /* Le régime reste, mais SECONDAIRE : une ligne grise, réglable ailleurs. */
@@ -136,7 +136,17 @@ ul.liste li{padding:13px 0;border-top:1px solid var(--trait-doux)}
 .paire .v{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .paire.forte .k{color:var(--encre)}
 .paire.forte .v{font-size:18px}
-.paire.tva .v{color:var(--encre)}
+/* La ligne de TVA se lit en DORÉ, le mot et le chiffre — sa demande du 12 septembre. */
+.paire.tva .k,.paire.tva .v{color:var(--or)}
+.sous-titre{margin:10px 0 0}
+/* L'attente garde le principe de la planche précédente. */
+ul.liste.attente .droite{text-align:right;flex:none}
+ul.liste.attente .reste{font-size:12px;color:var(--gris)}
+ul.liste.attente .reste b{font-family:ui-serif,Georgia,serif;font-weight:400;font-size:18px;color:var(--encre)}
+ul.liste.attente .sur{font-size:12.5px;color:var(--or);margin-top:2px}
+.gestes{display:flex;align-items:center;gap:16px;margin-top:10px}
+.gestes .payee{background:var(--plein);color:var(--surPlein);border:0;border-radius:999px;padding:12px 22px;font:inherit;font-size:15px}
+.gestes .noter{color:var(--gris);font-size:15px}
 .geste{margin-top:10px}
 .geste button{font:inherit;font-size:14.5px;min-height:44px;padding:0 18px;border-radius:999px;
   border:0;background:var(--plein);color:var(--surPlein);cursor:pointer}
@@ -146,8 +156,9 @@ ul.liste li{padding:13px 0;border-top:1px solid var(--trait-doux)}
 
 ul.liste li.total-ligne{display:flex;justify-content:flex-end;align-items:baseline;gap:14px;
   padding:12px 0 0;border-top:1px solid var(--trait)}
-ul.liste li.total-ligne .quoi{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
-ul.liste li.total-ligne .v{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:18px;font-variant-numeric:tabular-nums}
+/* Le total : le mot en noir gras, le chiffre en doré gras — sa demande du 12 septembre. */
+ul.liste li.total-ligne .quoi{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--encre)}
+ul.liste li.total-ligne .v{font-family:ui-serif,Georgia,"Times New Roman",serif;font-size:18px;font-variant-numeric:tabular-nums;font-weight:700;color:var(--or)}
 
 /* ─── + Ajouter un achat : un seul bouton, puis deux voies ──────────────── */
 .ajouter{margin-top:14px}
@@ -221,7 +232,7 @@ td b{color:var(--encre)}
       <p class="caps">Ma TVA</p>
 
       <div class="frise">
-        <span class="annee">📅 2026</span>
+        <span class="annee"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="1.6" aria-hidden="true"><rect x="3.2" y="5" width="17.6" height="15.4" rx="2.4"/><path d="M3.2 9.6h17.6"/><path d="M8 3.4v3.2M16 3.4v3.2" stroke-linecap="round"/></svg>2026</span>
         <span class="mois-liste"><span>Août</span><span class="actif">Septembre</span><span>Octobre</span><span>Novembre</span></span>
       </div>
       <p class="regime">Déclaration <u>mensuelle</u> · Réglages</p>
@@ -237,19 +248,37 @@ td b{color:var(--encre)}
       </div>
       <p class="sous">Calculée automatiquement à partir de vos règlements et de vos achats enregistrés.</p>
 
-      <!-- ─── FACTURES EN ATTENTE ────────────────────────────────────────── -->
+      <!-- ─── FACTURES EN ATTENTE — le principe de la planche précédente ─── -->
       <section class="bloc">
         <div class="entete"><h3>Factures en attente</h3><span class="compte">3 factures</span></div>
-        <ul class="liste">
+        <ul class="liste attente">
           <li>
-            <div class="fiche"><div style="min-width:0"><p class="nom">Frédéric Dupont</p><p class="num">Facture n° F2026-000008 · émise le 11/09</p></div></div>
-            <div class="paire forte"><span class="k">Reste à encaisser</span><span class="v">150,00 €</span></div>
-            <div class="geste"><button type="button">Noter un règlement</button></div>
+            <div class="fiche">
+              <div style="min-width:0">
+                <p class="nom">Frédéric</p>
+                <p class="num">F2026-000008 · émise le 11/09</p>
+                <p class="num" style="margin-top:6px;color:var(--encre)">Ouverte <b>11/09</b></p>
+              </div>
+              <div class="droite">
+                <div class="reste">Reste à payer <b>150,00 €</b></div>
+                <div class="sur">Sur les 300,00 €</div>
+              </div>
+            </div>
+            <div class="gestes"><button type="button" class="payee">Payée</button><span class="noter">Noter un règlement</span></div>
           </li>
           <li>
-            <div class="fiche"><div style="min-width:0"><p class="nom">Frédéric Dupont</p><p class="num">Facture n° F2026-000007 · émise le 11/09</p></div></div>
-            <div class="paire forte"><span class="k">Reste à encaisser</span><span class="v">210,00 €</span></div>
-            <div class="geste"><button type="button">Noter un règlement</button></div>
+            <div class="fiche">
+              <div style="min-width:0">
+                <p class="nom">Frédéric</p>
+                <p class="num">F2026-000007 · émise le 11/09</p>
+                <p class="num" style="margin-top:6px;color:var(--encre)">Réception confirmée le <b>11/09</b></p>
+              </div>
+              <div class="droite">
+                <div class="reste">Reste à payer <b>210,00 €</b></div>
+                <div class="sur">Sur les 300,00 €</div>
+              </div>
+            </div>
+            <div class="gestes"><button type="button" class="payee">Payée</button><span class="noter">Noter un règlement</span></div>
           </li>
         </ul>
         <button type="button" class="lien">Voir toutes les factures en attente <b>(3)</b></button>
@@ -258,6 +287,7 @@ td b{color:var(--encre)}
       <!-- ─── TVA COLLECTÉE : les règlements déjà comptés ────────────────── -->
       <section class="bloc">
         <div class="entete"><h3>TVA collectée</h3><span class="compte">3 règlements</span></div>
+        <p class="caps gris sous-titre">Vos factures</p>
         <ul class="liste">
           <li>
             <div class="fiche"><div style="min-width:0"><p class="nom">Martins</p><p class="num">Facture n° F2026-000006 · réglée le 9/09</p></div></div>
@@ -281,6 +311,7 @@ td b{color:var(--encre)}
       <!-- ─── TVA DÉDUCTIBLE : les achats ────────────────────────────────── -->
       <section class="bloc">
         <div class="entete"><h3>TVA déductible</h3><span class="compte"><span class="ded-apayer">2 achats</span><span class="ded-credit" hidden>3 achats</span></span></div>
+        <p class="caps gris sous-titre">Vos achats</p>
         <ul class="liste">
           <li>
             <div class="fiche"><div style="min-width:0"><p class="nom">Carburant — TotalEnergies</p><p class="num">4 sept.</p></div></div>
@@ -322,7 +353,7 @@ td b{color:var(--encre)}
     <tbody>
       <tr><td><b>Une seule logique</b></td><td>Un règlement noté, une TVA comptée. Le choix encaissements / débits <b>sort de la page</b> : il reste dans Réglages, avec le rythme, parce que c'est un régime fiscal qu'on a posé le 14 août à ta demande.</td></tr>
       <tr><td><b>Le résumé</b></td><td>Trois montants, la soustraction se lit d'un coup. Les chiffres du haut sont <b>exactement</b> les totaux des deux listes du bas. En crédit, on écrit « Crédit de TVA », jamais un moins.</td></tr>
-      <tr><td><b>« Noter un règlement »</b></td><td>Un seul bouton par facture, avec le reste à encaisser pré-rempli : payer en entier reste à deux appuis.</td></tr>
+      <tr><td><b>Factures en attente</b></td><td>Le principe de la planche précédente, tel quel : « Reste à payer / Sur les », « Payée » et « Noter un règlement ».</td></tr>
       <tr><td><b>TTC ou TVA</b></td><td>Chaque ligne porte les deux, avec leur mot : « Règlement encaissé … € TTC » puis « TVA collectée … € ». Pareil pour les achats.</td></tr>
       <tr><td><b>Ajouter un achat</b></td><td>Un bouton, puis deux voies. C'est un appui de plus qu'aujourd'hui pour scanner un ticket.</td></tr>
       <tr><td><b>Le régime</b></td><td>Une ligne grise sous les mois — « Déclaration mensuelle » — lue dans Réglages, jamais écrite en dur.</td></tr>
