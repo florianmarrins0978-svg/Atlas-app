@@ -17,6 +17,12 @@ import {
   type Observation,
   type SymptomeFiche,
   CONSIGNE_IDENTIFIER_ESSENCE,
+  decrireObservation,
+  GESTE_APRES_REFUS,
+  MOTIFS_REFUS,
+  phraseFichesConnues,
+  REFUS_PAR_LA_BIBLIOTHEQUE,
+  type MotifRefus,
 } from "../src/lib/diagnostic-vegetal";
 
 /**
@@ -607,6 +613,67 @@ cas("les quatre risques restent DISTINCTS et cumulables", () => {
     referenceReglementaire: "texte de référence",
   });
   assert.deepEqual(mentions.map((m) => m.type), ["mecanique", "risque_humain", "reglementaire"]);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Le refus dit ce qui a été vu, et son geste — sa planche du 11 septembre 2026
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log("\n=== « Vu sur la photo » : le vocabulaire fermé, jamais la prose du modèle ===");
+
+cas("un signe se décrit avec les mots du dépôt, la partie, l'endroit et la couleur", () => {
+  const lignes = decrireObservation(
+    { qualitePhoto: "bonne", signes: [{ partie: "feuille", motif: "necrose", couleurs: ["brun", "noir"], localisation: "nervure" }] },
+    { nom: "Platane", certitude: "probable" }
+  );
+  assert.deepEqual(lignes, [
+    { titre: "Nécroses", detail: "feuille, le long des nervures · brun, noir" },
+    { titre: "Platane", detail: "essence probable" },
+  ]);
+});
+
+cas("l'essence affichée est celle de la BASE : sans taxon reconnu, « non reconnue » — jamais le mot du modèle", () => {
+  // `decrireObservation` n'a même pas accès à `nom_commun` : la signature ne
+  // prend que le nom que la base a rendu. Un appelant qui y passerait la prose
+  // du modèle ferait ce que la barrière 3 interdit — et ce cas le rappelle.
+  const lignes = decrireObservation({ qualitePhoto: "bonne", signes: [] }, { nom: null, certitude: "incertaine" });
+  assert.deepEqual(lignes.map((l) => l.titre), ["Aucun signe reconnu", "Essence non reconnue"]);
+});
+
+cas("une photo floue sans signe dit « Rien de net », pas « aucun signe »", () => {
+  const lignes = decrireObservation({ qualitePhoto: "mauvaise", signes: [] }, null);
+  assert.equal(lignes[0].titre, "Rien de net");
+});
+
+console.log("\n=== Le geste par refus : propre à chacun, et jamais en contradiction ===");
+
+cas("les refus qui disent qu'aucune photo ne servira n'ont PAS de geste photo", () => {
+  // C'était le défaut de l'écran : « une photo plus proche peut suffire » sous
+  // « aucune autre photo ne permettrait de les départager ».
+  for (const motif of ["trop_proches", "diagnostic_photo_impossible", "base_vide"] as MotifRefus[]) {
+    const geste = GESTE_APRES_REFUS[motif];
+    assert.ok(geste === null || !/photo/i.test(geste), `${motif} : « ${geste} » promet une photo que la phrase du refus exclut`);
+  }
+});
+
+cas("les refus qui tiennent à la photo proposent bien une photo", () => {
+  for (const motif of ["trop_faible", "photo_illisible", "hote_incertain"] as MotifRefus[]) {
+    const geste = GESTE_APRES_REFUS[motif];
+    assert.ok(geste && /photo|rapprochez|recommencez/i.test(geste), `${motif} : aucun geste`);
+  }
+});
+
+cas("chaque clé de refus a sa phrase ET son entrée de geste", () => {
+  for (const motif of Object.keys(MOTIFS_REFUS) as MotifRefus[]) {
+    assert.ok(MOTIFS_REFUS[motif].length > 0);
+    assert.ok(motif in GESTE_APRES_REFUS, `${motif} sans geste décidé`);
+  }
+});
+
+cas("le compte des fiches s'écrit au singulier comme au pluriel", () => {
+  assert.equal(phraseFichesConnues(1), "Atlas connaît 1 problème pour l’instant.");
+  assert.equal(phraseFichesConnues(3), "Atlas connaît 3 problèmes pour l’instant.");
+  assert.ok(REFUS_PAR_LA_BIBLIOTHEQUE.includes("aucune_piste"));
 });
 
 console.log(

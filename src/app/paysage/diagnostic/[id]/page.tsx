@@ -1,37 +1,53 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireDiagnostic } from "@/server/repositories/diagnostics";
-import { lireImagesFiche } from "@/server/repositories/fiches-phyto";
+import { compterFichesServables, lireImagesFiche, lireNomTaxon } from "@/server/repositories/fiches-phyto";
 import { listerChantiers } from "@/server/repositories/chantiers";
-import type { Mention, ResultatFige } from "@/lib/diagnostic-vegetal";
+import {
+  decrireObservation,
+  GESTE_APRES_REFUS,
+  LIBELLE_CONFIANCE,
+  MOTIFS_REFUS,
+  phraseFichesConnues,
+  REFUS_PAR_LA_BIBLIOTHEQUE,
+  type LigneVue,
+  type Mention,
+  type MotifRefus,
+  type Observation,
+  type ResultatFige,
+} from "@/lib/diagnostic-vegetal";
+import { dateCitee } from "@/lib/mois";
 import PrendreUnePhoto from "../PrendreUnePhoto";
 import RattacherAUnChantier from "./RattacherAUnChantier";
+import Reessayer from "./Reessayer";
 
 /**
- * L'écran de résultat — **quatre états, et pas un de plus**.
+ * L'écran de résultat — **quatre issues, et pas une de plus**.
  *
- *   `rendu`               le problème, la confiance, la gravité, la conduite
- *   `complement_demande`  UNE photo de plus, et l'écran dit laquelle
- *   `inconclusif`         « je ne peux pas confirmer » — une réponse, pas une panne
- *   `echoue`              personne n'a regardé (fournisseur absent ou en panne)
+ *   `rendu`               le problème, la sûreté et l'essence, la gravité, la conduite
+ *   `complement_demande`  UNE photo de plus, et l'écran dit laquelle — et pourquoi
+ *   `inconclusif`         « je ne peux pas confirmer » — vu · pourquoi · le geste
+ *   `echoue`              personne n'a regardé — réessayer, ou les réglages
  *
- * **Les deux derniers s'affichent aussi proprement que le premier**, et c'est
- * le cœur de ce que le patron a demandé : *« si le diagnostic reste
- * insuffisamment fiable, Atlas doit afficher clairement qu'il ne peut pas
- * confirmer l'identification »*. Un écran qui traiterait le refus comme une
- * erreur technique lui ferait croire à un défaut de l'application là où il n'y
- * a qu'une photo qui ne suffit pas.
+ * **Le refus est l'écran principal, pas un cas d'erreur.** Trois fiches réelles
+ * en base sur la cinquantaine visée : c'est celui-là qu'il verra le plus
+ * souvent. Il dit ce qui a été vu, pourquoi ça ne suffit pas, et le geste qui
+ * débloque — un geste PROPRE à chaque refus. Jusqu'au 12 septembre 2026, une
+ * seule phrase suivait les sept refus (« une photo plus proche peut suffire »),
+ * y compris sous celle qui dit qu'aucune photo ne départagera : l'écran ne
+ * savait pas quel refus il affichait, parce que la base rangeait la phrase et
+ * non la clé (migration 0087).
  *
  * **Et `inconclusif` n'est PAS `echoue`.** Le premier dit « la base ne sait
  * pas », le second « personne n'a regardé ». Les confondre enverrait chercher
  * un défaut dans les fiches alors qu'il est dans la configuration.
  *
- * **Ce que l'écran principal montre, et rien d'autre :** le nom, la confiance,
- * une phrase, la gravité, la conduite. Tout le reste — catégorie, agent causal,
- * prévention, traitement, sources — est derrière « Voir les détails ».
+ * **Tout ce qui s'affiche sort d'une fiche, d'un taxon de la base, ou d'une
+ * liste fermée de `diagnostic-vegetal.ts`.** Ce que le modèle a écrit en texte
+ * libre — le nom qu'il donne à l'essence, ses réserves — ne monte jamais ici.
  */
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Diagnostic — Atlas" };
@@ -43,6 +59,11 @@ export default async function ResultatPage({ params }: { params: Promise<{ id: s
   if (!diagnostic) notFound();
 
   const resultat = diagnostic.resultat as ResultatFige | null;
+  const observation = diagnostic.observation as Observation | null;
+  const essenceNom = diagnostic.taxonId ? await lireNomTaxon(diagnostic.taxonId) : null;
+  const essence = observation?.essence
+    ? { nom: essenceNom, certitude: observation.essence.certitude }
+    : null;
 
   return (
     <div
@@ -62,24 +83,34 @@ export default async function ResultatPage({ params }: { params: Promise<{ id: s
 
         <section className="mx-[26px] mt-[24px]">
           {diagnostic.statut === "rendu" && resultat ? (
-            <Rendu resultat={resultat} ficheId={diagnostic.ficheId} />
+            <Rendu resultat={resultat} ficheId={diagnostic.ficheId} essenceNom={essenceNom} />
           ) : diagnostic.statut === "complement_demande" ? (
-            <Complement consigne={diagnostic.complementConsigne} diagnosticId={id} />
-          ) : (
-            <SansConclusion
-              phrase={diagnostic.motifRefus}
-              technique={diagnostic.statut === "echoue"}
+            <Complement
+              consigne={diagnostic.complementConsigne}
+              diagnosticId={id}
+              vu={observation ? decrireObservation(observation, essence) : []}
             />
+          ) : diagnostic.statut === "inconclusif" ? (
+            <SansConclusion
+              refus={diagnostic.refus}
+              phraseAncienne={diagnostic.panne}
+              vu={observation ? decrireObservation(observation, essence) : []}
+              fichesConnues={await compterFichesServables()}
+            />
+          ) : diagnostic.statut === "echoue" ? (
+            <PersonneNaRegarde panne={diagnostic.panne} diagnosticId={id} />
+          ) : (
+            <EnAnalyse />
           )}
 
-          {diagnostic.statut !== "complement_demande" && (
+          {(diagnostic.statut === "rendu" || diagnostic.statut === "inconclusif") && (
             <div className="mt-[30px]">
-              <Bouton href="/paysage/diagnostic">Nouvelle photo</Bouton>
+              <Bouton href="/paysage/diagnostic">{diagnostic.statut === "rendu" ? "Nouvelle photo" : "Recommencer"}</Bouton>
             </div>
           )}
 
-          {diagnostic.statut === "rendu" && (
-            <Details resultat={resultat!} diagnosticId={id} chantierId={diagnostic.chantierId} ctx={ctx} />
+          {diagnostic.statut === "rendu" && resultat && (
+            <Details resultat={resultat} diagnosticId={id} chantierId={diagnostic.chantierId} ctx={ctx} />
           )}
         </section>
       </div>
@@ -88,24 +119,32 @@ export default async function ResultatPage({ params }: { params: Promise<{ id: s
 }
 
 /**
- * Le titre suit l'état — **et les deux refus ne portent pas le même**.
+ * Le titre suit l'issue — **et les deux refus ne portent pas le même**.
  *
  * « Sans conclusion » sur une panne de fournisseur laisserait croire que la
  * photo n'a rien donné, alors que personne ne l'a regardée : il chercherait une
- * meilleure photo au lieu de sa configuration. C'est le travers que
- * `AGENTS.md` nomme — une erreur qui accuse à tort coûte plus cher que pas
- * d'erreur du tout.
+ * meilleure photo au lieu de sa configuration (`AGENTS.md` — une erreur qui
+ * accuse à tort coûte plus cher que pas d'erreur du tout).
  */
 function titrePour(statut: string, resultat: ResultatFige | null): string {
   if (statut === "rendu" && resultat) return resultat.nom;
-  if (statut === "echoue") return "Analyse impossible";
+  if (statut === "echoue") return "La photo n’a pas été regardée";
   if (statut === "complement_demande") return "Une photo de plus";
-  return "Sans conclusion";
+  if (statut === "inconclusif") return "Sans conclusion";
+  return "Analyse en cours";
 }
 
-// ── L'état principal : le résultat ──────────────────────────────────────────
+// ── L'issue principale : le résultat ────────────────────────────────────────
 
-async function Rendu({ resultat, ficheId }: { resultat: ResultatFige; ficheId: string | null }) {
+async function Rendu({
+  resultat,
+  ficheId,
+  essenceNom,
+}: {
+  resultat: ResultatFige;
+  ficheId: string | null;
+  essenceNom: string | null;
+}) {
   // **Les images sont lues EN DIRECT, pas figées dans le résultat.** Le
   // diagnostic est figé — le nom, la gravité, la conduite, c'est-à-dire ce sur
   // quoi il a agi. La photo de référence, elle, est une aide à l'œil : la geler
@@ -113,16 +152,27 @@ async function Rendu({ resultat, ficheId }: { resultat: ResultatFige; ficheId: s
   // sont remplacées, donc renumérotées), et une image morte est pire qu'une
   // image un peu différente.
   const images = ficheId ? await lireImagesFiche(ficheId) : [];
+  const source = resultat.details.sources[0] ?? null;
 
   return (
     <div data-atlas="diagnostic-rendu">
-      {/* La confiance en TROIS MOTS, jamais un pourcentage — aucun modèle
-          employé ici ne fournit de probabilité calibrée. */}
-      <p className={libelleCaps} style={{ color: colors.or }} data-atlas="diagnostic-confiance">
-        {resultat.confianceLibelle}
+      {/* **La sûreté et l'essence, ensemble, en clair — sa planche du
+          11 septembre 2026.** « Probable · Platane » à la place de « CONFIANCE
+          PROBABLE » en capitales dorées : le premier mot dit ce qu'Atlas pense,
+          le second sur quoi — l'essence est la règle la plus structurante du
+          moteur, et elle n'apparaissait nulle part. Jamais un pourcentage :
+          aucun modèle employé ici ne fournit de probabilité calibrée. */}
+      <p className="text-[17px] leading-[1.4]" style={{ color: colors.ink }} data-atlas="diagnostic-confiance">
+        {LIBELLE_CONFIANCE[resultat.confiance]}
+        {essenceNom && (
+          <>
+            <span style={{ color: colors.muted }}> · </span>
+            {essenceNom}
+          </>
+        )}
       </p>
 
-      <p className="mt-[14px] text-[15px] leading-[1.6]" style={{ color: colors.inkSoft }}>
+      <p className="mt-[12px] text-[15px] leading-[1.6]" style={{ color: colors.inkSoft }}>
         {resultat.explication}
       </p>
 
@@ -142,7 +192,7 @@ async function Rendu({ resultat, ficheId }: { resultat: ResultatFige; ficheId: s
       {resultat.methodeConfirmation && (
         <div
           className="mt-[20px] rounded-[4px] px-[14px] py-[12px]"
-          style={{ background: colors.card, borderLeft: `3px solid ${colors.or}` }}
+          style={{ background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
           data-atlas="diagnostic-confirmation"
         >
           <p className={libelleCaps} style={{ color: colors.muted }}>
@@ -165,9 +215,21 @@ async function Rendu({ resultat, ficheId }: { resultat: ResultatFige; ficheId: s
         {resultat.graviteLibelle}
       </Bloc>
 
-      <Bloc cle="Que faire ?" repere="diagnostic-conduite">
+      <Bloc cle="Que faire ?" repere="diagnostic-conduite" fort>
         {resultat.conduite}
       </Bloc>
+
+      {/* **La source et sa date, sur l'écran principal.** Un conseil
+          phytosanitaire sans sa source ne vaut rien devant un client — et c'est
+          ce qui distingue Atlas d'un moteur de recherche. Une page d'organisme
+          bouge sans changer d'adresse : la date dit ce qui avait été lu. */}
+      {source && (
+        <p className="mt-[18px] text-[12.5px] leading-[1.55]" style={{ color: colors.muted }} data-atlas="diagnostic-source">
+          <span style={{ color: colors.inkSoft }}>{source.organisme}</span>
+          {" · consultée le "}
+          {dateCitee(source.consulteeLe)}
+        </p>
+      )}
 
       {/* Les mentions de sécurité viennent du CODE, jamais de la fiche : une
           règle générale ne doit pas pouvoir manquer parce qu'une fiche est mal
@@ -236,7 +298,7 @@ function MentionAffichee({ mention }: { mention: Mention }) {
   return (
     <div
       className="mt-[16px] rounded-[4px] px-4 py-3"
-      style={{ backgroundColor: colors.card, borderLeft: `2px solid ${colors.or}` }}
+      style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
       data-atlas={`diagnostic-mention-${mention.type}`}
     >
       <p className="text-[13px] leading-[1.55]" style={{ color: colors.ink }}>
@@ -256,25 +318,56 @@ function MentionAffichee({ mention }: { mention: Mention }) {
   );
 }
 
-// ── L'état « une photo de plus » ────────────────────────────────────────────
+// ── Ce qui a été vu — commun aux refus et à la relance ──────────────────────
+
+/**
+ * « Vu sur la photo » : les mots du vocabulaire fermé, et l'essence de la BASE.
+ *
+ * C'est ce qui rend un refus lisible — il sait si Atlas a regardé la bonne
+ * chose — et c'est ce qui le distingue d'une panne. Rien ici ne vient d'une
+ * phrase de modèle (`decrireObservation`).
+ */
+function Vu({ lignes }: { lignes: LigneVue[] }) {
+  if (lignes.length === 0) return null;
+  return (
+    <div data-atlas="diagnostic-vu">
+      <p className={libelleCaps} style={{ color: colors.muted }}>
+        Vu sur la photo
+      </p>
+      <ul className="mt-[8px] list-none p-0">
+        {lignes.map((ligne, i) => (
+          <li
+            key={i}
+            className="py-[9px] text-[15px] leading-[1.5]"
+            style={{ borderTop: `1px solid ${colors.line}`, color: colors.ink }}
+          >
+            {ligne.titre}
+            {ligne.detail && (
+              <span className="mt-[2px] block text-[12.5px]" style={{ color: colors.muted }}>
+                {ligne.detail}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// ── L'issue « une photo de plus » ───────────────────────────────────────────
 
 /**
  * **La consigne est RECOPIÉE de la base**, jamais composée ici ni par un
  * modèle : elle vient de la ligne de `confusions_phyto` qui relie les deux
- * fiches au coude à coude. Une consigne inventée enverrait photographier ce qui
- * ne tranche rien.
+ * fiches au coude à coude, ou de la constante qui demande l'essence. Une
+ * consigne inventée enverrait photographier ce qui ne tranche rien.
  */
-function Complement({ consigne, diagnosticId }: { consigne: string | null; diagnosticId: string }) {
+function Complement({ consigne, diagnosticId, vu }: { consigne: string | null; diagnosticId: string; vu: LigneVue[] }) {
   return (
     <div data-atlas="diagnostic-complement">
-      <p className={libelleCaps} style={{ color: colors.or }}>
-        Une photo de plus
-      </p>
-      <p className="mt-[14px] text-[16px] leading-[1.5]" style={{ color: colors.ink }}>
+      <Vu lignes={vu} />
+      <p className="mt-[22px] text-[17px] leading-[1.5]" style={{ color: colors.ink }}>
         {consigne}
-      </p>
-      <p className="mt-[10px] text-[12.5px] leading-[1.55]" style={{ color: colors.muted }}>
-        C’est la seule chose qui manque pour trancher.
       </p>
       <div className="mt-[24px]">
         <PrendreUnePhoto diagnosticId={diagnosticId} libelle="Prendre cette photo" />
@@ -284,27 +377,98 @@ function Complement({ consigne, diagnosticId }: { consigne: string | null; diagn
           Recommencer
         </Bouton>
       </div>
+      {/* L'invariant « une seule relance » (§135.5), dit là où il s'applique. */}
+      <p className="mt-[12px] text-center text-[12.5px]" style={{ color: colors.muted }}>
+        Une seule photo de plus, jamais deux.
+      </p>
     </div>
   );
 }
 
-// ── L'état « je ne peux pas confirmer » ─────────────────────────────────────
+// ── L'issue « je ne peux pas confirmer » ────────────────────────────────────
 
-function SansConclusion({ phrase, technique }: { phrase: string | null; technique: boolean }) {
+/**
+ * Vu · pourquoi ça ne suffit pas · le geste — **propres à chaque refus**.
+ *
+ * `refus` est la clé (migration 0087) : la phrase et le geste sont lus dans les
+ * listes fermées de `diagnostic-vegetal.ts`. Quand le refus tient à la
+ * bibliothèque, le compte des fiches situe le manque — dans la base, pas dans
+ * sa photo. `phraseAncienne` porte la phrase d'une ligne d'avant la migration
+ * dont aucune clé n'a été reconnue : elle se montre telle quelle, sans geste.
+ */
+function SansConclusion({
+  refus,
+  phraseAncienne,
+  vu,
+  fichesConnues,
+}: {
+  refus: MotifRefus | null;
+  phraseAncienne: string | null;
+  vu: LigneVue[];
+  fichesConnues: number;
+}) {
+  const geste = refus ? GESTE_APRES_REFUS[refus] : null;
   return (
     <div data-atlas="diagnostic-sans-conclusion">
-      <p className={libelleCaps} style={{ color: colors.muted }}>
-        {technique ? "Analyse impossible" : "Sans conclusion"}
-      </p>
-      <p className="mt-[14px] text-[15px] leading-[1.6]" style={{ color: colors.ink }}>
-        {phrase ?? "Je ne peux pas confirmer l’identification à partir de cette photo."}
-      </p>
-      <p className="mt-[12px] text-[12.5px] leading-[1.55]" style={{ color: colors.muted }}>
-        {technique
-          ? "Ce n’est pas la photo qui est en cause."
-          : "Une photo plus proche, ou prise sous un autre angle, peut suffire."}
-      </p>
+      <Vu lignes={vu} />
+      <div className={vu.length > 0 ? "mt-[6px] pt-[14px]" : ""} style={vu.length > 0 ? { borderTop: `1px solid ${colors.line}` } : undefined}>
+        <p className={libelleCaps} style={{ color: colors.muted }}>
+          Pourquoi ça ne suffit pas
+        </p>
+        <p className="mt-[6px] text-[15px] leading-[1.55]" style={{ color: colors.ink }} data-atlas="diagnostic-refus">
+          {refus ? MOTIFS_REFUS[refus] : phraseAncienne}
+        </p>
+        {refus && REFUS_PAR_LA_BIBLIOTHEQUE.includes(refus) && (
+          <p className="mt-[12px] text-[14px] leading-[1.55]" style={{ color: colors.inkSoft }} data-atlas="diagnostic-fiches-connues">
+            {phraseFichesConnues(fichesConnues)}
+          </p>
+        )}
+      </div>
+      {geste && (
+        <p className="mt-[22px] text-[17px] leading-[1.5]" style={{ color: colors.ink }} data-atlas="diagnostic-geste">
+          {geste}
+        </p>
+      )}
     </div>
+  );
+}
+
+// ── L'issue « personne n'a regardé » ────────────────────────────────────────
+
+/**
+ * Ce n'est pas un verdict sur la plante : c'est la configuration, ou le
+ * fournisseur. La photo est gardée — on réessaie avec elle, ou l'on va voir
+ * Réglages. Le mot du fournisseur reste, en petit, pour qui dépanne.
+ */
+function PersonneNaRegarde({ panne, diagnosticId }: { panne: string | null; diagnosticId: string }) {
+  return (
+    <div data-atlas="diagnostic-echoue">
+      <p className="text-[17px] leading-[1.5]" style={{ color: colors.ink }}>
+        Votre photo est gardée. Ce n’est pas elle qui est en cause.
+      </p>
+      <div className="mt-[30px]">
+        <Reessayer diagnosticId={diagnosticId} />
+      </div>
+      {panne && (
+        <div className="mt-[30px] border-t pt-[14px]" style={{ borderColor: colors.line }}>
+          <p className={libelleCaps} style={{ color: colors.muted }}>
+            Détail
+          </p>
+          <p className="mt-[6px] text-[12.5px] leading-[1.55]" style={{ color: colors.muted }} data-atlas="diagnostic-panne">
+            {panne}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Une ligne encore ouverte : l'analyse est en cours, rien n'est à lire. */
+function EnAnalyse() {
+  return (
+    <p className="text-[15px] leading-[1.6]" style={{ color: colors.inkSoft }} data-atlas="diagnostic-en-analyse">
+      La photo est en cours d’analyse.
+    </p>
   );
 }
 
@@ -331,14 +495,18 @@ async function Details({
 
       <div className="mt-[16px]">
         <Ligne cle="Nom scientifique" valeur={resultat.nomScientifique} />
-        <Ligne cle="Catégorie" valeur={resultat.details.categorie.replace(/_/g, " ")} />
         <Ligne cle="Agent en cause" valeur={resultat.details.agentCausal} />
         <Ligne
           cle="Parties atteintes"
           valeur={resultat.details.partiesAtteintes.map((p) => p.replace(/_/g, " ")).join(", ") || null}
         />
+        {/* Les trois listes de la migration 0057 — elle promettait de les
+            afficher, et rien ne les rendait. Recopiées de la source. */}
+        <Liste cle="Ce qui le distingue" valeurs={resultat.criteresDiscriminants} />
+        <Liste cle="Ce qui l’écarte" valeurs={resultat.details.criteresExclusion} />
+        <Liste cle="Ce qui le favorise" valeurs={resultat.details.facteursFavorisants} />
         <Ligne cle="Prévention" valeur={resultat.details.prevention} />
-        <Ligne cle="Gestion" valeur={resultat.details.gestion} />
+        <Ligne cle="Comment ça évolue" valeur={resultat.details.gestion} />
         {/* Le traitement ne s'affiche QUE ici, et toujours avec ses sources :
             recommander un produit phytosanitaire engage l'artisan. */}
         <Ligne cle="Traitement" valeur={resultat.details.traitement} />
@@ -349,7 +517,7 @@ async function Details({
           data-atlas="diagnostic-sources"
         >
           <p className={libelleCaps} style={{ color: colors.muted }}>
-            D’où vient cette fiche
+            La fiche
           </p>
           {resultat.details.sources.length === 0 ? (
             <p className="mt-[8px] text-[12.5px]" style={{ color: colors.muted }}>
@@ -359,18 +527,15 @@ async function Details({
             <ul className="mt-[8px]">
               {resultat.details.sources.map((s, i) => (
                 <li key={i} className="mb-[8px] text-[12.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
-                  <b style={{ fontWeight: 600 }}>{s.organisme}</b> — {s.titre}
-                  <span style={{ color: colors.muted }}> (consultée le {s.consulteeLe})</span>
-                  {s.champs.length > 0 && (
-                    <span style={{ color: colors.muted }}> · appuie : {s.champs.join(", ")}</span>
-                  )}
+                  {s.organisme} — {s.titre}
+                  <span style={{ color: colors.muted }}> · consultée le {dateCitee(s.consulteeLe)}</span>
                 </li>
               ))}
             </ul>
           )}
           <p className="mt-[6px] text-[11.5px]" style={{ color: colors.muted }}>
             Fiche version {resultat.details.versionFiche}
-            {resultat.details.sourcesAJourLe ? ` · sources à jour le ${resultat.details.sourcesAJourLe}` : ""}
+            {resultat.details.sourcesAJourLe ? ` · à jour au ${dateCitee(resultat.details.sourcesAJourLe)}` : ""}
           </p>
         </div>
 
@@ -388,13 +553,13 @@ async function Details({
 
 // ── Petites pièces ──────────────────────────────────────────────────────────
 
-function Bloc({ cle, children, repere }: { cle: string; children: React.ReactNode; repere: string }) {
+function Bloc({ cle, children, repere, fort }: { cle: string; children: React.ReactNode; repere: string; fort?: boolean }) {
   return (
     <div className="mt-[20px] border-t pt-[14px]" style={{ borderColor: colors.line }}>
       <p className={libelleCaps} style={{ color: colors.muted }}>
         {cle}
       </p>
-      <p className="mt-[6px] text-[15px] leading-[1.55]" style={{ color: colors.ink }} data-atlas={repere}>
+      <p className={`mt-[6px] ${fort ? "text-[17px] leading-[1.5]" : "text-[15px] leading-[1.55]"}`} style={{ color: colors.ink }} data-atlas={repere}>
         {children}
       </p>
     </div>
@@ -412,6 +577,23 @@ function Ligne({ cle, valeur }: { cle: string; valeur: string | null }) {
       <p className="mt-[3px] text-[13.5px] leading-[1.55]" style={{ color: colors.ink }}>
         {valeur}
       </p>
+    </div>
+  );
+}
+
+/** Une liste vide ne s'affiche pas davantage. */
+function Liste({ cle, valeurs }: { cle: string; valeurs: string[] }) {
+  if (valeurs.length === 0) return null;
+  return (
+    <div className="mb-[12px]">
+      <p className={libelleCaps} style={{ color: colors.muted }}>
+        {cle}
+      </p>
+      <ul className="mt-[3px] list-disc pl-[18px] text-[13.5px] leading-[1.55]" style={{ color: colors.ink }}>
+        {valeurs.map((v, i) => (
+          <li key={i}>{v}</li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -434,7 +616,7 @@ function Bouton({ href, children, creux }: { href: string; children: React.React
           borderRadius: 9999,
           fontFamily: font.display,
           backgroundColor: creux ? "transparent" : colors.plein,
-          color: creux ? colors.rust : colors.card,
+          color: creux ? colors.rust : surPlein,
           border: creux ? `1px solid ${colors.line}` : undefined,
         }}
       >

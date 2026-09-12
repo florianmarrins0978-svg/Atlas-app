@@ -563,6 +563,45 @@ export const CONSIGNE_IDENTIFIER_ESSENCE =
   "Photographiez une feuille entière posée à plat, puis reculez pour cadrer l’arbre en entier. C’est l’essence qui manque, pas le symptôme.";
 export type MotifRefus = keyof typeof MOTIFS_REFUS;
 
+/**
+ * Le GESTE qui débloque, propre à chaque refus — ou rien.
+ *
+ * **Posé le 12 septembre 2026, après sa planche.** L'écran écrivait sous les
+ * sept refus la même dernière phrase — « une photo plus proche peut suffire » —,
+ * y compris sous celle qui dit qu'aucune photo ne départagera. Un refus qui
+ * contredit sa propre consigne fait reprendre trois photos pour rien, et
+ * s'apprend à être ignoré.
+ *
+ * `null` quand la phrase du refus porte déjà le geste (« une observation sur
+ * place est nécessaire ») ou qu'il n'y en a aucun (la base est vide). On ne
+ * redit pas, et l'on n'invente pas de geste là où il n'y en a pas.
+ */
+export const GESTE_APRES_REFUS: Record<MotifRefus, string | null> = {
+  base_vide: null,
+  aucune_piste: "Ce problème n’est peut-être pas encore dans Atlas.",
+  trop_faible: "Une photo plus proche du détail peut suffire.",
+  trop_proches: "À examiner sur place.",
+  photo_illisible: "Rapprochez-vous, en pleine lumière, sans flou.",
+  diagnostic_photo_impossible: null,
+  hote_incertain: "Recommencez avec une feuille entière posée à plat, puis l’arbre en entier.",
+};
+
+/**
+ * Quand le refus tient à la BIBLIOTHÈQUE, le dire avec le compte.
+ *
+ * Trois fiches réelles sur la cinquantaine visée : « aucune fiche ne
+ * correspond » est vrai, mais lu seul il accuse la photo. Le compte dit où est
+ * le manque — et il vient de la base, jamais d'une constante.
+ */
+export function phraseFichesConnues(nombre: number): string {
+  return nombre === 1
+    ? "Atlas connaît 1 problème pour l’instant."
+    : `Atlas connaît ${nombre} problèmes pour l’instant.`;
+}
+
+/** Les refus qui tiennent à ce que la base SAIT, et non à la photo. */
+export const REFUS_PAR_LA_BIBLIOTHEQUE: readonly MotifRefus[] = ["aucune_piste", "trop_faible"];
+
 export type Confusion = {
   ficheId: string;
   ficheConfondueId: string;
@@ -884,10 +923,23 @@ export function mentionsDeSecurite(champs: ChampsSecurite): Mention[] {
 // 8. LE RÉSULTAT FIGÉ
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * La confiance, en UN mot de la langue courante.
+ *
+ * **« Confiance probable » est parti le 12 septembre 2026**, sur sa planche :
+ * c'était du jargon en capitales dorées, en PREMIÈRE ligne sous le nom de la
+ * maladie. Ce qu'il lit désormais : « Probable · Platane » — le degré de
+ * sûreté et l'essence reconnue, ensemble, en clair. Toujours des mots, jamais
+ * un pourcentage.
+ *
+ * **Lu depuis la CLÉ au moment d'afficher**, plus figé dans le résultat : le
+ * libellé est de la présentation, la clé est la substance. Un résultat rendu
+ * hier garde sa clé et prend le mot d'aujourd'hui.
+ */
 export const LIBELLE_CONFIANCE: Record<Confiance, string> = {
-  elevee: "Confiance élevée",
-  probable: "Confiance probable",
-  incertaine: "Confiance incertaine",
+  elevee: "Très probable",
+  probable: "Probable",
+  incertaine: "Incertain",
 };
 
 export const LIBELLE_GRAVITE: Record<Gravite, string> = {
@@ -909,7 +961,6 @@ export type ResultatFige = {
   nom: string;
   nomScientifique: string | null;
   confiance: Confiance;
-  confianceLibelle: string;
   explication: string;
   gravite: Gravite;
   graviteLibelle: string;
@@ -946,7 +997,140 @@ export type ResultatFige = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 9. LE CONTRÔLE DU VOCABULAIRE
+// 9. CE QUI A ÉTÉ VU — le vocabulaire fermé, en mots de paysagiste
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// **Posé le 12 septembre 2026.** Un refus qui ne dit pas ce qui a été vu se lit
+// comme une panne : il ne sait pas si Atlas a regardé la bonne chose. Les
+// lignes ci-dessous ne sortent QUE du vocabulaire fermé — jamais d'une phrase
+// de modèle — et c'est ce qui permet de les afficher : « feutrage_blanc » est
+// un mot du dépôt, « oïdium » n'y est pas.
+//
+// `Record<…>` sur chaque liste : un mot ajouté au vocabulaire sans son libellé
+// ne compile pas. C'est la même garde que `verifierVocabulaire`, à l'autre
+// bout.
+
+export const LIBELLE_MOTIF: Record<Motif, string> = {
+  tache: "Taches",
+  pustule: "Pustules",
+  feutrage_blanc: "Feutrage blanc",
+  poudre_blanche: "Poudre blanche",
+  chancre: "Chancre",
+  necrose: "Nécroses",
+  ecoulement: "Écoulement",
+  gomme: "Gomme",
+  carpophore: "Champignon",
+  pourriture_bois: "Pourriture du bois",
+  cavite: "Cavité",
+  fente: "Fente",
+  exfoliation_ecorce: "Écorce qui se détache",
+  galerie: "Galeries",
+  perforation: "Perforations",
+  sciure: "Sciure",
+  amas_insectes: "Amas d’insectes",
+  toile: "Toile",
+  deformation: "Déformation",
+  gale: "Gale",
+  dessechement: "Dessèchement",
+  decoloration: "Décoloration",
+  defoliation: "Chute des feuilles",
+  momification: "Fruits momifiés",
+  mousse_lichen: "Mousse ou lichen",
+};
+
+export const LIBELLE_PARTIE: Record<Partie, string> = {
+  feuille: "feuille",
+  aiguille: "aiguille",
+  rameau: "rameau",
+  branche: "branche",
+  tronc: "tronc",
+  ecorce: "écorce",
+  collet: "collet",
+  racine: "racine",
+  fruit: "fruit",
+  fleur: "fleur",
+  bourgeon: "bourgeon",
+  champignon_sur_bois: "champignon sur bois",
+  houppier: "houppier",
+  ensemble: "arbre entier",
+};
+
+export const LIBELLE_LOCALISATION: Record<Localisation, string> = {
+  face_superieure: "dessus",
+  face_inferieure: "dessous",
+  bord: "au bord",
+  nervure: "le long des nervures",
+  base: "à la base",
+  sommet: "au sommet",
+  toute_la_surface: "partout",
+  eparse: "par endroits",
+  en_plages: "en plages",
+  le_long_du_tronc: "le long du tronc",
+  au_collet: "au collet",
+  insertion_branche: "à l’insertion de la branche",
+};
+
+export const LIBELLE_COULEUR: Record<Couleur, string> = {
+  blanc: "blanc",
+  jaune: "jaune",
+  orange: "orange",
+  brun: "brun",
+  rouge: "rouge",
+  noir: "noir",
+  gris: "gris",
+  vert_anormal: "vert anormal",
+  violet: "violet",
+  rose: "rose",
+};
+
+export const LIBELLE_CERTITUDE_ESSENCE = {
+  sure: "essence sûre",
+  probable: "essence probable",
+  incertaine: "essence incertaine",
+} as const;
+
+export type LigneVue = { titre: string; detail: string | null };
+
+/**
+ * Ce que l'écran liste sous « Vu sur la photo ».
+ *
+ * **L'essence affichée est celle de la BASE** — le nom commun du taxon que
+ * `trouverTaxon` a reconnu —, jamais ce que le modèle a écrit dans
+ * `nom_commun` : ce champ-là est du texte libre, et la barrière 3 (aucune
+ * chaîne de modèle à l'écran) vaut ici comme partout. Sans taxon reconnu, la
+ * ligne dit « essence non reconnue », qui est exactement ce que le moteur a
+ * conclu.
+ */
+export function decrireObservation(
+  observation: Pick<Observation, "signes" | "qualitePhoto">,
+  essence: { nom: string | null; certitude: keyof typeof LIBELLE_CERTITUDE_ESSENCE | null } | null
+): LigneVue[] {
+  const lignes: LigneVue[] = [];
+
+  if (observation.signes.length === 0) {
+    lignes.push({ titre: observation.qualitePhoto === "mauvaise" ? "Rien de net" : "Aucun signe reconnu", detail: null });
+  }
+  for (const signe of observation.signes) {
+    const ou = [LIBELLE_PARTIE[signe.partie], signe.localisation ? LIBELLE_LOCALISATION[signe.localisation] : null]
+      .filter((x): x is string => x !== null)
+      .join(", ");
+    const couleurs = signe.couleurs.map((c) => LIBELLE_COULEUR[c]).join(", ");
+    lignes.push({
+      titre: LIBELLE_MOTIF[signe.motif],
+      detail: [ou, couleurs].filter((x) => x.length > 0).join(" · ") || null,
+    });
+  }
+
+  if (essence && essence.nom) {
+    lignes.push({ titre: essence.nom, detail: essence.certitude ? LIBELLE_CERTITUDE_ESSENCE[essence.certitude] : null });
+  } else {
+    lignes.push({ titre: "Essence non reconnue", detail: null });
+  }
+  return lignes;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 10. LE CONTRÔLE DU VOCABULAIRE
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**

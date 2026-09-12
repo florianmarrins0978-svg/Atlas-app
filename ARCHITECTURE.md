@@ -28820,7 +28820,100 @@ selon la milliseconde — le correctif supprime la course.
 
 ---
 
-## §337 — Un espace qui se salit lui-même ne reçoit plus jamais de code
+## §337 — Le diagnostic végétal : le refus est l'écran principal
+
+**Le lot du 11-12 septembre 2026**, ouvert par `/impeccable` sur
+`/paysage/diagnostic`. Trois fiches réelles en base sur la cinquantaine visée :
+« je ne peux pas confirmer » est l'écran que le patron verra le plus souvent, et
+c'est celui qui avait été le moins regardé. Sa planche :
+`appli/diagnostic-le-refus-est-l-ecran.html` ; sa réponse : *« C'est bien »*,
+et le nom reste **Diagnostic végétal** — *« moi diagnostic végétal je pense »*.
+
+### 337.1 La racine : la base rangeait la phrase du refus, pas sa clé
+
+Sous chacun des sept refus, l'écran écrivait la même dernière phrase — *« une
+photo plus proche, ou prise sous un autre angle, peut suffire »* —, y compris
+sous *« aucune autre photo ne permettrait de les départager »*. Il ne pouvait
+pas faire autrement : `motif_refus` portait la PHRASE (`diagnostics.ts:171`),
+et l'écran ne savait donc pas quel refus il affichait. Pire, la même colonne
+portait, pour `echoue`, le texte du fournisseur — le commentaire « vient d'une
+liste fermée du code » était faux une fois sur deux.
+
+**Migration 0087** : `refus` porte la clé de `MOTIFS_REFUS`, tenue par une
+contrainte ; `panne` porte ce que le fournisseur a dit ; `motif_refus`
+disparaît, ses lignes converties phrase par phrase (les sept phrases n'ont
+jamais changé depuis le 20 août — vérifié dans l'historique). L'écran compose
+désormais depuis la clé : la phrase (`MOTIFS_REFUS`), **le geste**
+(`GESTE_APRES_REFUS`, propre à chaque refus, `null` quand la phrase le porte
+déjà ou qu'il n'y en a pas), et le compte des fiches quand le refus tient à la
+bibliothèque (`phraseFichesConnues`, lu dans la base — jamais une constante).
+
+**Ce qui a disparu avec la racine** — un défaut réparé remplace du code :
+`phrase ?? "Je ne peux pas confirmer…"` à l'écran (un verdict par défaut sur une
+colonne nulle, la ligne exacte du tableau `CLAUDE.md` §4 quater), et *« Réessayez
+dans un instant »* dans `actions.ts` — une promesse sans geste.
+
+### 337.2 « Vu sur la photo » : le vocabulaire fermé, en mots de paysagiste
+
+Un refus qui ne dit pas ce qui a été vu se lit comme une panne. L'observation
+était rangée (`diagnostics.observation`) et jamais montrée.
+`decrireObservation` (`lib`) la traduit avec quatre tables `Record<…>` sur le
+vocabulaire fermé — un mot ajouté sans libellé ne compile pas, la même garde que
+`verifierVocabulaire` à l'autre bout.
+
+**L'essence affichée est celle de la BASE**, `taxons.nom_commun` par
+`lireNomTaxon`, jamais le `nom_commun` que le modèle écrit en texte libre : la
+signature de `decrireObservation` ne prend que le nom rendu par la base, et une
+suite le rappelle. Sans taxon reconnu : « Essence non reconnue », qui est
+exactement ce que le moteur a conclu.
+
+### 337.3 « Personne n'a regardé » offre le geste qui répare
+
+L'écran n'offrait que « Nouvelle photo », juste sous *« ce n'est pas la photo
+qui est en cause »*. Il offre **Réessayer** — `reprendreAnalyseAction`, sur les
+photos déjà rangées (elles le sont dès l'arrivée précisément pour qu'une panne
+du fournisseur ne coûte pas le geste), réservé à `echoue` : un refus de la base
+ne se rejoue pas, la même photo devant les mêmes fiches rend la même réponse —
+et **Réglages de l'IA**. Le mot du fournisseur reste, en petit, sous « Détail ».
+
+**Et une ligne ne reste plus `en_analyse`.** Un stockage qui levait laissait le
+diagnostic sans issue ; `rangerPhoto` écrit la panne là où elle se produit.
+
+### 337.4 Le résultat : la sûreté et l'essence en clair, la source sur l'écran
+
+« CONFIANCE PROBABLE » en capitales dorées, en première ligne, est parti : il
+lit « Probable · Platane » — `LIBELLE_CONFIANCE` en un mot courant, lu depuis
+la clé au moment d'afficher (le libellé figé `confianceLibelle` a été retiré de
+`ResultatFige` : la clé est la substance, le libellé est de la présentation).
+La source et sa date de consultation sont sur l'écran principal — *« c'est ce
+qui se montre à un client »*, et la date est ce qui dit ce qui avait été lu
+quand une page d'organisme bouge sans changer d'adresse. Les trois listes que
+0057 promettait d'afficher et que rien ne rendait — critères discriminants,
+d'exclusion, facteurs favorisants — sont dans les détails. Les noms bruts de
+colonnes (« appuie : conduite_recommandee, … ») ne s'affichent plus.
+
+### 337.5 Ce que 0057 promettait et qui reste faux
+
+Son en-tête dit d'`informations_requises` : *« affiché tel quel quand Atlas
+refuse de conclure »*. Sur un refus, aucune fiche n'est retenue — il n'y a rien à
+recopier. Le champ s'affiche avec le résultat, sous « ce qui reste à
+confirmer ». La migration n'est pas réécrite (elle est appliquée) ; c'est ici
+que la promesse est corrigée.
+
+### 337.6 Les suites
+
+`test-diagnostic-quatre-issues-e2e` photographie les quatre issues à 390 × 664,
+sur Origine ET sur Nuit, en les écrivant par `conclureDiagnostic` — le chemin
+du produit à partir du retour de l'analyse. Elle fixe des règles, pas des
+libellés : deux refus aux titres différents, une entrée de fichier sur la
+relance, une conduite sur le résultat, un fond sombre et un titre clair mesurés
+sur Nuit. `test-diagnostic-ecrans-e2e` vise désormais les repères
+`diagnostic-echoue` et `diagnostic-reessayer` au lieu de « Analyse impossible »
+et « Nouvelle photo » (`CLAUDE.md` §5 bis).
+
+---
+
+## §338 — Un espace qui se salit lui-même ne reçoit plus jamais de code
 
 **Payé le 12 septembre 2026, et la boucle est le sujet.** Son espace tournait,
 servait, répondait — et exécutait le code de 3 h 38 quand `main` était trois

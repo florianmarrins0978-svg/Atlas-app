@@ -4468,7 +4468,18 @@ deux endroits, et un retour fixe se trompe pour l'un des deux
 (`ARCHITECTURE.md` §135). Et **ne pas retirer le filtre** : la valeur vient de
 l'adresse, donc de n'importe qui.
 
-## Diagnostic végétal : ce qu'il faut savoir avant d'y toucher (20 août 2026)
+## Diagnostic végétal : ce qu'il faut savoir avant d'y toucher (20 août 2026, repris le 12 septembre)
+
+**Depuis le 12 septembre 2026, le refus est l'écran principal** (`ARCHITECTURE.md`
+§337) : la base range la CLÉ du refus (`diagnostics.refus`, migration 0087) et
+l'écran compose phrase et geste depuis les listes fermées de
+`src/lib/diagnostic-vegetal.ts` — `MOTIFS_REFUS`, `GESTE_APRES_REFUS`. Ajouter
+un refus, c'est donc trois gestes : la clé et sa phrase, son geste (ou `null`,
+décidé), et la contrainte `diagnostics_refus_ck` de la base. Le mot du
+fournisseur vit dans `panne`, jamais dans `refus`. « Vu sur la photo » vient de
+`decrireObservation` : quatre `Record` sur le vocabulaire — un mot sans libellé
+ne compile pas — et l'essence est `taxons.nom_commun`, jamais le `nom_commun`
+du modèle. « Réessayer » (`reprendreAnalyseAction`) ne vaut que pour `echoue`.
 
 **Le module est complet ; sa base est presque vide, et c'est le bon état.**
 Trois fiches réelles au 20 août 2026 (fomès des résineux, les deux anthracnoses)
