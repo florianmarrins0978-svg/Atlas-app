@@ -47,6 +47,29 @@ planche la pose entre Qté et P.U. HT, avec les unités usuelles (u, ml, m², m�
 kg, h, forfait) sous la ligne quand le champ prend le doigt. Même planche,
 même adresse.
 
+## HUIT SUITES DE PLUS ROUGISSENT SUR SON PC — l'heure de Paris, pas le produit (13 septembre 2026, après-midi)
+
+**Relevé depuis `atlas-app-oeil`, sur Windows, fuseau Europe/Paris**, en
+rejouant les rouges de la batterie du lot de l'œil (121/147, puis 8/31 sur
+les rouges seuls). Aux dix-huit ci-dessous s'ajoutent **huit suites qui ne
+touchent aucun fichier du lot**, et dont le message désigne l'environnement :
+
+| | |
+|---|---|
+| `date-lointaine`, `deux-dates-calendrier`, `poser-une-date`, `liberer-une-demi-journee` | **un jour de décalage** — « posé le 2026-09-13 au lieu du 2026-09-14 ». La suite relit une colonne `date` par `rows[0].jour.toISOString().slice(0, 10)` : `pg` rend un `Date` à minuit LOCAL, et minuit à Paris est 22 h la veille en UTC. Vert en UTC (la CI, son espace), rouge partout ailleurs. **À regarder aussi dans `PlanningClient.tsx` (lignes ~195 et ~211), qui fait la même conversion dans le navigateur** — chez lui, le navigateur est à Paris |
+| `bandeau-banc` | `spawn npx ENOENT` — sur Windows, `npx` est `npx.cmd` ; la suite ne peut pas tourner ici |
+| `ia-03`, `ia-04` | le bouton « Ouvrir l'assistant » n'apparaît pas en 45 s |
+| `ligne-du-client` | « l'adresse longue ne déborde pas : ce contrôle ne mesure alors plus rien » |
+
+**Et une neuvième était mienne, réparée** : `test-onglets-termines-e2e` prenait
+le dernier chantier du jeu, déjà facturé quand les suites qui facturent sont
+passées avant — l'œil n'avait rien à montrer. Elle prend un chantier sans
+facture émise.
+
+**Pour trancher les quatre dates** : jouer une seule d'entre elles dans un
+atelier à Paris ET en UTC (`TZ=UTC npm run test:e2e -- --seulement
+poser-une-date`). Si l'écart tient au fuseau, corriger la LECTURE (comparer
+des `date` en texte, `to_char(jour, 'YYYY-MM-DD')`), pas l'écriture.
 ## DIX-HUIT SUITES NAVIGATEUR ROUGES SUR `main` (13 septembre 2026, relevé)
 
 **Batterie complète jouée dans un atelier à un seul occupant** — dossier, port,

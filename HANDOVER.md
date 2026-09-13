@@ -17,6 +17,7 @@ sert.
 | ce qui est fait | `ListeTermines.tsx` : la rangée `portes-termines` (deux liens), `NavigationMois` centrée avec `enVeille`, la phrase de comptes à 17 px qui porte l'`Oeil` (`oeil-a-facturer`) |
 | la règle gardée | **l'œil ouvert ignore le mois** — c'était celle de l'onglet « À facturer » (22 août, retard de facturation). Le mois se met en veille, il ne bouge pas |
 | ce qui a DISPARU | `Onglet`, `Compte`, la section « Rien n'attend. Vous êtes à jour. » |
+| le défaut attrapé après coup | sur un mois vide, la phrase et l'œil partaient avec la liste — un chantier d'août à facturer devenait invisible le 1ᵉʳ septembre. Trouvé par la suite jouée SEULE (la batterie remplit septembre avant elle) ; la phrase vit au-dessus de « Rien en … » |
 | la migration | **aucune** |
 | les suites | `test-onglets-termines-e2e` (+1 cas : l'œil dans les deux sens, et il refuse de conclure sans chantier à facturer) ; trois suites passent par l'œil au lieu de l'onglet |
 | le détail | `ARCHITECTURE.md` §350 |

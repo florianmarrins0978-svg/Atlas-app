@@ -249,81 +249,86 @@ export default function ListeTermines({
             enVeille={montrerCeQuiAttend}
             surMois={setCle}
           />
+          {/* **Sa phrase, ici — 23 août 2026 —, réduite à ses DEUX
+              COMPTES le soir même** : *« là où il y a écrit trois à
+              facturer et huit facturés, supprime les montants qu'il y a
+              avec »*.
+
+              **Elle compte TOUS les mois**, pas seulement celui qu'on
+              regarde : c'est ainsi qu'elle a été demandée. Ses montants
+              disaient donc des sommes que la liste en dessous ne montrait
+              pas — trois chiffres d'origines différentes sur deux lignes.
+
+              **ET DEPUIS LE 13 SEPTEMBRE 2026, C'EST ELLE QUI FILTRE.** Sa
+              demande, planche `appli/termines-l-oeil.html` : *« laisser
+              14 facturés en gras et 3 à facturer en gras doré, mais à côté
+              tu mets le signe œil barré ; on clique dessus, ça montre les
+              à facturer ; on reclique, il disparaît, on revient sur le mode
+              tout par défaut »*. L'onglet « À facturer » disait la même
+              chose que « 3 à facturer », à trois centimètres d'écart — il
+              est parti, et le geste vit sur le chiffre lui-même.
+
+              **17 px au lieu de 14 — « mets-les en plus gros », le même
+              soir.** Et la phrase ne se montre que s'il y a quelque chose
+              à compter : *« quand il n'y a rien à facturer ou de facturé,
+              supprime la phrase »*. Sans rien qui attend, l'œil part avec
+              son compte — il n'aurait rien à montrer.
+
+              **Le trait sous elle était la démarcation qu'il a demandée**
+              le 23 août — *« essaye de laisser un peu d'espace entre cette
+              phrase-là et le premier client, histoire qu'on fasse bien la
+              démarcation »*. **Il est parti le 26** : *« tous les traits
+              supprimés entre chaque ligne »*.
+
+              **C'est l'espace qui le remplace, et c'est ce qu'il avait
+              demandé au départ** — le trait avait été préféré parce que de
+              l'espace seul se mange au premier ajout de contenu. La
+              démarcation tient donc maintenant sur les 22 px de la première
+              ligne, et c'est à surveiller : une ligne qui reviendrait à 19
+              la ferait disparaître sans que rien ne rougisse.
+
+              **ET ELLE SE MONTRE MÊME SUR UN MOIS VIDE.** Elle compte tous les
+              mois ; la poser sous « Rien en septembre » l'aurait fait taire —
+              et l'œil avec — précisément quand un chantier d'août attend encore
+              sa facture : c'est le retard de facturation de sa règle du
+              22 août, et un mois neuf l'aurait caché. Trouvé par la suite
+              jouée seule, sur un septembre sans chantier (13 septembre 2026). */}
+          {(attente.length > 0 || faites.length > 0) && (
+            <p
+              className="mb-3 mt-3.5 flex items-center gap-1.5 text-[17px] font-bold leading-[1.5]"
+              style={{ color: colors.ink }}
+              data-atlas="compte-du-mois"
+            >
+              {attente.length > 0 && (
+                <>
+                  {/* **« À facturer » en or — sa correction du 23 août au
+                      soir.** L'or porte ici ce qui attend un geste de lui.
+                      Deux comptes du même noir se lisaient comme un seul
+                      chiffre coupé en deux. */}
+                  <span style={{ color: colors.or }}>{attente.length} à facturer</span>
+                  <Oeil ouvert={montrerCeQuiAttend} onClick={() => setOeilOuvert((o) => !o)} />
+                </>
+              )}
+              {attente.length > 0 && faites.length > 0 && <span aria-hidden="true">·</span>}
+              {/* Les facturés s'éteignent quand l'œil est ouvert : ils ne
+                  sont plus dans la liste, mais le chiffre reste à sa place
+                  pour dire qu'ils existent. `muted` plutôt qu'une opacité :
+                  c'est le jeton du retrait, lisible sur les huit chartes. */}
+              {faites.length > 0 && (
+                <span style={{ color: montrerCeQuiAttend ? colors.muted : colors.ink }}>
+                  {faites.length} facturé{faites.length > 1 ? "s" : ""}
+                </span>
+              )}
+            </p>
+          )}
           {!montrerCeQuiAttend && mois.lignes.length === 0 ? (
             <p className="mt-4 text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
               Rien en {nomDuMois(cle).toLowerCase()}.
             </p>
           ) : (
-            <>
-              {/* **Sa phrase, ici — 23 août 2026 —, réduite à ses DEUX
-                  COMPTES le soir même** : *« là où il y a écrit trois à
-                  facturer et huit facturés, supprime les montants qu'il y a
-                  avec »*.
-
-                  **Elle compte TOUS les mois**, pas seulement celui qu'on
-                  regarde : c'est ainsi qu'elle a été demandée. Ses montants
-                  disaient donc des sommes que la liste en dessous ne montrait
-                  pas — trois chiffres d'origines différentes sur deux lignes.
-
-                  **ET DEPUIS LE 13 SEPTEMBRE 2026, C'EST ELLE QUI FILTRE.** Sa
-                  demande, planche `appli/termines-l-oeil.html` : *« laisser
-                  14 facturés en gras et 3 à facturer en gras doré, mais à côté
-                  tu mets le signe œil barré ; on clique dessus, ça montre les
-                  à facturer ; on reclique, il disparaît, on revient sur le mode
-                  tout par défaut »*. L'onglet « À facturer » disait la même
-                  chose que « 3 à facturer », à trois centimètres d'écart — il
-                  est parti, et le geste vit sur le chiffre lui-même.
-
-                  **17 px au lieu de 14 — « mets-les en plus gros », le même
-                  soir.** Et la phrase ne se montre que s'il y a quelque chose
-                  à compter : *« quand il n'y a rien à facturer ou de facturé,
-                  supprime la phrase »*. Sans rien qui attend, l'œil part avec
-                  son compte — il n'aurait rien à montrer.
-
-                  **Le trait sous elle était la démarcation qu'il a demandée**
-                  le 23 août — *« essaye de laisser un peu d'espace entre cette
-                  phrase-là et le premier client, histoire qu'on fasse bien la
-                  démarcation »*. **Il est parti le 26** : *« tous les traits
-                  supprimés entre chaque ligne »*.
-
-                  **C'est l'espace qui le remplace, et c'est ce qu'il avait
-                  demandé au départ** — le trait avait été préféré parce que de
-                  l'espace seul se mange au premier ajout de contenu. La
-                  démarcation tient donc maintenant sur les 22 px de la première
-                  ligne, et c'est à surveiller : une ligne qui reviendrait à 19
-                  la ferait disparaître sans que rien ne rougisse. */}
-              {(attente.length > 0 || faites.length > 0) && (
-                <p
-                  className="mb-3 mt-3.5 flex items-center gap-1.5 text-[17px] font-bold leading-[1.5]"
-                  style={{ color: colors.ink }}
-                  data-atlas="compte-du-mois"
-                >
-                  {attente.length > 0 && (
-                    <>
-                      {/* **« À facturer » en or — sa correction du 23 août au
-                          soir.** L'or porte ici ce qui attend un geste de lui.
-                          Deux comptes du même noir se lisaient comme un seul
-                          chiffre coupé en deux. */}
-                      <span style={{ color: colors.or }}>{attente.length} à facturer</span>
-                      <Oeil ouvert={montrerCeQuiAttend} onClick={() => setOeilOuvert((o) => !o)} />
-                    </>
-                  )}
-                  {attente.length > 0 && faites.length > 0 && <span aria-hidden="true">·</span>}
-                  {/* Les facturés s'éteignent quand l'œil est ouvert : ils ne
-                      sont plus dans la liste, mais le chiffre reste à sa place
-                      pour dire qu'ils existent. `muted` plutôt qu'une opacité :
-                      c'est le jeton du retrait, lisible sur les huit chartes. */}
-                  {faites.length > 0 && (
-                    <span style={{ color: montrerCeQuiAttend ? colors.muted : colors.ink }}>
-                      {faites.length} facturé{faites.length > 1 ? "s" : ""}
-                    </span>
-                  )}
-                </p>
-              )}
-              {(montrerCeQuiAttend ? attente : mois.lignes).map((l) => (
-                <Ligne key={l.id} ligne={l} annee={annee} />
-              ))}
-            </>
+            (montrerCeQuiAttend ? attente : mois.lignes).map((l) => (
+              <Ligne key={l.id} ligne={l} annee={annee} />
+            ))
           )}
         </section>
       )}

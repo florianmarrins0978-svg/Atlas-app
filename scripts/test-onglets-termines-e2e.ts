@@ -76,14 +76,20 @@ async function main() {
   // **La suite pose ce dont elle a besoin, et le retire après.** S'appuyer sur
   // ce que le jeu de démonstration contient, c'est rougir le jour où il change
   // — et il change (`CLAUDE.md` §5 bis).
+  //
+  // **Et ce chantier n'a PAS de facture émise** : l'œil ne se montre que s'il
+  // y a quelque chose à facturer. Jouée seule après les suites qui facturent,
+  // la suite prenait le dernier chantier du jeu — déjà facturé — et refusait
+  // de conclure sur un écran sans œil (13 septembre 2026).
   const { rows } = await pool.query<{ id: string; entreprise_id: string }>(
     `SELECT c.id, c.entreprise_id FROM chantiers c
        JOIN membres_entreprise me ON me.entreprise_id = c.entreprise_id
        JOIN users u ON u.id = me.utilisateur_id AND u.email = 'demo@atlas.local'
       WHERE c.deleted_at IS NULL
+        AND NOT EXISTS (SELECT 1 FROM factures f WHERE f.chantier_id = c.id AND f.statut = 'emise')
       ORDER BY c.created_at DESC LIMIT 1`
   );
-  assert.ok(rows.length === 1, "aucun chantier dans le jeu de démonstration");
+  assert.ok(rows.length === 1, "aucun chantier sans facture dans le jeu de démonstration");
   const { id: chantierId, entreprise_id: entrepriseId } = rows[0];
 
   // **Et l'écran des Terminés ne montre ses onglets que s'il a quelque chose
@@ -340,7 +346,14 @@ async function main() {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
     const oeil = page.locator("[data-atlas='oeil-a-facturer']");
-    assert.equal(await oeil.count(), 1, "aucun chantier à facturer : l'œil n'a rien à montrer, rien n'est mesurable");
+    // **Un refus qui dit ce que l'écran montrait** : sans cela, « 0 !== 1 »
+    // envoie chercher dans le composant quand c'est le jeu de données qui manque.
+    const contenu = page.locator("[data-atlas='contenu-termines']");
+    assert.equal(
+      await oeil.count(),
+      1,
+      `aucun chantier à facturer : l'œil n'a rien à montrer, rien n'est mesurable. Ce que montrait l'écran : ${(await contenu.innerText().catch(() => "(pas de contenu)")).replace(/s+/g, " ").slice(0, 300)}`
+    );
     const boite = await oeil.boundingBox();
     assert.ok(
       boite && boite.width >= 44 && boite.height >= 44,
@@ -353,8 +366,12 @@ async function main() {
     assert.ok(attendus > 0, `la phrase ne dit pas combien attendent : « ${await compte.innerText()} »`);
     const lignes = "[data-atlas='ligne-terminee']";
     const capsules = "[data-atlas='capsule-a-facturer']";
+    // **Le mois affiché peut être VIDE, et c'est un cas qui compte** : jouée
+    // seule, la suite arrive sur un septembre sans chantier, et l'œil doit
+    // quand même faire remonter ce qui attend ailleurs (13 septembre 2026).
+    // Zéro rangée avant n'est donc pas une mesure impossible — c'est le
+    // retard de facturation que l'œil existe pour montrer.
     const avant = await page.locator(lignes).count();
-    assert.ok(avant > 0, "aucune rangée dans le mois affiché : rien n'est mesurable");
 
     await oeil.click();
     await page.waitForSelector("[data-atlas='tout-ce-qui-attend']", { timeout: 5000 });

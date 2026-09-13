@@ -29707,3 +29707,14 @@ une facture », qui n'existait que parce que trois pastilles prenaient la
 première. Les suites suivent le geste, jamais le mot : `oeil-a-facturer` et
 `portes-termines` sont des repères, et `tout-ce-qui-attend` reste le nom de
 la section quand elle montre tout ce qui attend.
+
+**Le mois vide ne fait pas taire la phrase — 13 septembre 2026, l'après-midi.**
+Première version : la phrase « 3 à facturer » et son œil vivaient dans la
+branche « le mois a des lignes », sous « Rien en septembre » sinon. Or elle
+compte TOUS les mois : un chantier d'août non facturé restait compté, mais
+plus affiché ni filtrable dès qu'un mois neuf commençait — l'onglet qu'elle
+remplace, lui, ignorait le mois. La batterie complète ne l'a pas vu : les
+suites qui précèdent celle-ci remplissent septembre. C'est la suite jouée
+seule, sur une base fraîche, qui a montré l'écran muet. Depuis, la phrase se
+rend au-dessus du message de mois vide, et la suite accepte zéro rangée avant
+d'ouvrir l'œil — c'est le cas qui compte.

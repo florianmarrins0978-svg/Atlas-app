@@ -31,6 +31,14 @@ rognant.
 section « Rien n'attend. Vous êtes à jour. » — la phrase de comptes le dit
 déjà en ne portant pas l'œil. Détail : `ARCHITECTURE.md` §350.
 
+**Et un défaut du lot, attrapé par sa suite jouée SEULE** (l'après-midi) : sur
+un mois sans chantier — « Rien en septembre » —, la phrase et l'œil
+disparaissaient avec la liste. Un chantier d'août qui attend sa facture devenait
+donc invisible dès le 1ᵉʳ du mois : exactement le retard de facturation que
+l'onglet « À facturer » montrait depuis le 22 août. La phrase vit désormais
+au-dessus du message de mois vide. En batterie complète, la suite passait —
+d'autres suites avaient rempli septembre avant elle.
+
 ### Six photos ne font plus six chantiers
 
 *« J'ai ajouté six photos, j'ai fait retour, il m'en a créé six avec une photo
