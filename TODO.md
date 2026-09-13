@@ -96,6 +96,17 @@ puis rallumer l'espace. **À barrer dès qu'il confirme que sa version a avancé
 
 ## LE PORT QUE LE RELAIS PERD — UNE HYPOTHÈSE À TRANCHER À LA RÉCIDIVE (13 septembre 2026)
 
+**MESURÉ LE 13 SEPTEMBRE À 10 h 16 (08:16 UTC) — le rallumage a remis le port.**
+Sa fiche : *« Port 3000 : ouvert — Atlas répond bien à l'adresse publique
+(vérifié) »*, et lui : *« ça fonctionne »*. C'est le comportement attendu, et
+**cela ne tranche rien** : le rallumage a toujours remis le port. Ce qui
+tranchera, c'est la durée — plusieurs nuits sans perte.
+
+**ET SON ESPACE NE PORTE PAS ENCORE CE LOT :** il sert `07f6f0d`, cinq versions
+avant. Tant qu'il n'a pas repris `main`, une perte de port lui vaudra encore un
+journal qui se félicite d'un port mort. Le geste doux est dans l'application :
+Réglages → « Chercher les dernières corrections ».
+
 **Ce qui est CORRIGÉ (§345) :** le veilleur ne croit plus `gh` sur parole. Il
 mesure après le remède, cesse de rejouer un geste sans effet, et son journal ne
 se félicite plus d'un port mort. La fiche donne les deux gestes.
