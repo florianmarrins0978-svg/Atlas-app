@@ -28,7 +28,7 @@ migration échouée n'était jamais retentée, et l'allumage suivant répondait
 
 Désormais : migrations à chaque allumage et à chaque appui (rejeu gratuit,
 `_migrations` saute ce qui est appliqué), et le compte rattrapé remonte jusqu'à
-l'écran. `ARCHITECTURE.md` §351, `scripts/test-migrations-banc.ts` (éprouvé
+l'écran. `ARCHITECTURE.md` §355, `scripts/test-migrations-banc.ts` (éprouvé
 rouge contre la version d'avant).
 
 ## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
@@ -82,6 +82,29 @@ en cours doit relire vit dans une référence, jamais dans un état
 médiateur — que l'écran compte tant qu'ils y sont. Les mentions légales
 manquantes (décennale, médiateur, délai d'exécution) restent proposées dans
 `TODO.md`, pas tranchées.
+## Lot précédent — LES CALCULS, ET LES DEUX CHIFFRES QUI SE PERDAIENT (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« Il faut vérifier tous les calculs, corrige le problème à la racine ! Pas de code mort »* — et, la veille : *« si les lignes ne s'additionnent pas ou mal, c'est hyper grave et ça ne doit jamais arriver »* |
+| ce qui était JUSTE | l'addition, les totaux, la TVA, la remise. Le devis à 5 400 € venait de la SAISIE, pas du calcul |
+| **trois vrais défauts** | la multiplication d'une ligne écrite **trois fois** ; `onBlur` rangeant la valeur **d'avant** sur vingt-cinq champs ; le prix accordé **qui revenait tout seul**, une écriture perdue entre deux chemins du serveur — **le verrou qui la corrige vient du lot de la planche B**, trouvé le même soir des deux côtés |
+| la migration | **aucune** (celle de la planche B, 0090, vient d'un autre lot) |
+| les pièces | `src/lib/montant-de-ligne.ts` (neuf), `PrixAccordeAuClient`, `ChampsDuDevis`, `BrouillonSection`, `IdentiteClient`, `ChampTelephone`, `PlanningClient`, `CompteClient` |
+| les suites | `test-montant-de-ligne.ts`, `test-valeur-du-champ.ts`, `test-remise-qui-revient-db.ts` — les trois neuves, les trois confrontées à leur défaut |
+| le détail | `ARCHITECTURE.md` §351, §352, §353 |
+
+**LE PIÈGE, ET IL SE REPRODUIRA :** un rouge intermittent qu'on met sur le
+compte d'un « contrôle capricieux ». `test-reduction-devis-e2e` tombait une fois
+sur deux depuis des jours ; c'était le produit qui perdait une écriture, et un
+devis pouvait partir chez le client plus cher que promis. **Rendre le produit
+bavard AVANT de conclure** (`AGENTS.md`).
+
+**CE QUI RESTE À LUI :** sur la case « Qté », poser le doigt et taper « 2 » sur
+une case qui affiche « 1 » donne **12**. C'est sa règle du 11 septembre ; à lui
+de dire s'il la garde ou si l'entrée dans la case sélectionne tout.
+
+---
 ## Dernier lot — JETER SA DICTÉE, ET LE LECTEUR MORT (13 septembre 2026)
 
 | | |

@@ -13,7 +13,7 @@ Sa panne : *« Plus rien ne fonctionne ! »*, « Planning » et « Terminés » 
 migrent ne le faisaient que le jour où le code bougeait : un échec n'était jamais
 retenté, et plus aucun geste ne rattrapait la base. Migrations à chaque allumage
 et à chaque appui du bouton, le compte rattrapé rendu à l'écran.
-`ARCHITECTURE.md` §351 · `scripts/test-migrations-banc.ts`.
+`ARCHITECTURE.md` §355 · `scripts/test-migrations-banc.ts`.
 
 ## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026
 
@@ -65,6 +65,21 @@ et le montant, à l'écran et sur le PDF ; le « − » retire la ligne, la phra
 du réglage reste dans les notes. Colonne **Unité** après Qté. Au passage, le
 PDF envoyé porte enfin la validité et les conditions (il ne les portait pas —
 seul l'aperçu). **Migration 0088.** Détail : `ARCHITECTURE.md` §343.
+
+---
+
+## FAIT : LES CALCULS, VÉRIFIÉS ET CORRIGÉS À LA RACINE — 13 septembre 2026
+
+*« Il faut vérifier tous les calculs, corrige le problème à la racine. »*
+**L'addition n'était pas en cause** — le devis à 5 400 € venait de la saisie.
+Trois vrais défauts en revanche : la multiplication d'une ligne était écrite
+**trois fois** (deux sous un commentaire affirmant le contraire) ; `onBlur`
+rangeait la valeur **du rendu précédent** sur vingt-cinq champs — nom, adresse,
+SIRET, IBAN, prix accordé ; et **le prix accordé retiré revenait tout seul**,
+une écriture perdue entre deux chemins du serveur dont un seul prenait le
+verrou — **le verrou qui la corrige vient du lot de la planche B**, trouvé le
+même soir des deux côtés. **Aucune migration.** Trois contrôles neufs, les trois
+confrontés à leur défaut. Détail : `ARCHITECTURE.md` §351, §352, §353.
 
 ---
 

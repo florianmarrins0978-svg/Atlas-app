@@ -27,8 +27,21 @@ désormais à chaque allumage et à chaque appui, le rejeu ne coûtant rien
 et l'écran le rend : « La base avait N version(s) de retard : c'est réparé. »
 
 Tenu par `scripts/test-migrations-banc.ts`, éprouvé rouge contre la version
-d'avant. Détail : `ARCHITECTURE.md` §351.
+d'avant. Détail : `ARCHITECTURE.md` §355.
 
+### Entrer dans la case sélectionne tout : un appui remplace — « fais le B »
+
+Sur une case qui affiche « 1 », poser le doigt et taper « 2 » donnait **12** :
+le curseur arrivait derrière le chiffre et la frappe s'y ajoutait. Sur un prix
+de 450 €, c'est un devis à 5 400 € au lieu de 900, parti chez son client, sans
+rien à l'écran pour le dire. Il a tranché entre garder et remplacer : c'est
+remplacer.
+
+Sa demande du 11 septembre tient toujours — *« on a juste à supprimer »* : tout
+étant sélectionné, une seule touche efface. Vaut pour la quantité comme pour le
+prix. Et les deux suites qui sélectionnaient tout à la main pour contourner
+l'ancien comportement font maintenant son geste : sans ça, elles seraient
+restées vertes le jour où le B saute (`ARCHITECTURE.md` §354).
 
 ### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
 
@@ -110,6 +123,56 @@ attend l'autre. Et le texte d'origine des CGV ne se pose plus que sur le
 **réglage** de l'entreprise, jamais sur l'instantané d'un devis : un devis
 d'avant la migration sortait sinon avec des CGV au dos qu'il n'avait jamais
 portées (`test-conditions-sur-le-devis`).
+### Sa remise retirée revenait toute seule — une fois sur deux
+
+Le champ du prix accordé vidé, le serveur enregistrait bien le retrait — et la
+base repassait à 15 % dans la seconde. Deux chemins écrivaient la même ligne de
+devis : celui qui régénère l'écran, et celui qui enregistre l'en-tête. **Le
+premier prenait un verrou, le second non** — donc aucun. La régénération avait
+lu les 15 % avant l'effacement et les réécrivait après.
+
+Pour lui : un devis parti chez le client **plus cher que ce qu'il lui avait
+promis**, sans rien à l'écran pour le dire.
+
+Les deux prennent maintenant le même verrou, et la ligne est relue dessous —
+**le lot de la planche B a buté sur la même course le même soir et posé le
+même correctif** ; c'est le sien qui vit sur `main`.
+`test-remise-qui-revient-db.ts` joue la course elle-même, dix fois, dans les
+deux sens — sans navigateur, donc sans hasard : retirer le verrou le fait
+rougir au premier essai. La suite navigateur, elle, ne l'attrapait qu'une fois
+sur deux, et trois sessions l'avaient mise sur le compte d'un contrôle
+capricieux (`ARCHITECTURE.md` §353).
+
+### Ce qui est tapé est ce qui se range — quatre pièces le perdaient encore
+
+`onBlur` n'emportait pas la valeur du champ : l'écran lisait alors son état
+React, celui du **dernier rendu**. Sous charge, le serveur recevait la valeur
+d'avant pendant que l'écran affichait la neuve. C'est le défaut du 30 août sur
+les prix de ligne, resté sur quatre pièces : le prix accordé au client, les
+champs nus du devis (nom, adresse, SIRET, IBAN — émetteur ET client), ceux des
+Réglages, et le brouillon de la dictée.
+
+Vingt-cinq endroits corrigés. `test-valeur-du-champ.ts`, joué par la batterie,
+refuse désormais les trois formes : la leçon vivait dans un commentaire depuis
+treize jours (`ARCHITECTURE.md` §352).
+
+### Une seule règle multiplie une ligne — elle était écrite trois fois
+
+*« Vérifie tous les calculs. »* Les totaux passaient déjà par une seule
+fonction ; la multiplication d'une ligne, non : **trois écritures**, dont deux
+sous un commentaire qui affirmait appeler l'autre. Et c'est un contrôle, pas
+une relecture, qui a trouvé la troisième.
+
+`src/lib/montant-de-ligne.ts` la porte désormais seule. Le contrôle tient les
+trois moitiés : le calcul (décimales exactes, un seul arrondi, rien qui lève),
+**l'unicité** (toute nouvelle multiplication quantité × prix fait rougir le
+lot), et **l'addition sur mille devis tirés** — le total HT tombe au centime
+sur la somme des lignes. Confronté à un arrondi posé trop tôt, il rougit.
+
+Rappel de ce qui n'était pas en cause : le devis à 5 400 € venait de la saisie,
+pas du calcul (`ARCHITECTURE.md` §351).
+
+
 ### Les deux « chiffres faux » du devis : l'addition était juste, la suite tapait mal
 
 *« Si c'est un problème de calculer les lignes qui ne s'additionnent pas ou mal,

@@ -163,7 +163,7 @@ export default function IdentiteClient({
           etiquette="Nom de l'entreprise"
           valeur={valeurs.nom}
           onChange={(v) => ecrire("nom", v)}
-          onFini={() => enregistrer({ nom: valeurs.nom })}
+          onFini={(duChamp) => enregistrer({ nom: duChamp })}
           manquant={valeurs.nom.trim() === ""}
           empeche="Sans nom, vos documents n'ont pas d'émetteur."
         />
@@ -185,14 +185,14 @@ export default function IdentiteClient({
               valeur={valeurs.capitalSocial}
               placeholder="1 000"
               onChange={(v) => ecrire("capitalSocial", v)}
-              onFini={() => enregistrer({ capitalSocial: valeurs.capitalSocial })}
+              onFini={(duChamp) => enregistrer({ capitalSocial: duChamp })}
             />
             <Champ
               etiquette="Ville du RCS"
               valeur={valeurs.villeRcs}
               placeholder="Versailles"
               onChange={(v) => ecrire("villeRcs", v)}
-              onFini={() => enregistrer({ villeRcs: valeurs.villeRcs })}
+              onFini={(duChamp) => enregistrer({ villeRcs: duChamp })}
             />
           </>
         )}
@@ -229,7 +229,7 @@ export default function IdentiteClient({
           valeur={valeurs.siret}
           placeholder="14 chiffres"
           onChange={(v) => ecrire("siret", v)}
-          onFini={() => enregistrer({ siret: valeurs.siret })}
+          onFini={(duChamp) => enregistrer({ siret: duChamp })}
           manquant={valeurs.siret.trim() === ""}
           empeche="Vos factures ne sont pas conformes sans lui."
           /* Le SIREN se MONTRE, il ne se demande pas. */
@@ -294,7 +294,7 @@ export default function IdentiteClient({
             valeur={valeurs.numeroTva}
             placeholder="FR…"
             onChange={(v) => ecrire("numeroTva", v)}
-            onFini={() => enregistrer({ numeroTva: valeurs.numeroTva })}
+            onFini={(duChamp) => enregistrer({ numeroTva: duChamp })}
           />
         )}
 
@@ -330,13 +330,13 @@ export default function IdentiteClient({
         <ChampTelephone
           valeur={valeurs.telephone}
           onChange={(v) => ecrire("telephone", v)}
-          onFini={() => enregistrer({ telephone: valeurs.telephone })}
+          onFini={(duChamp) => enregistrer({ telephone: duChamp })}
         />
         <Champ
           etiquette="Adresse e-mail"
           valeur={valeurs.email}
           onChange={(v) => ecrire("email", v)}
-          onFini={() => enregistrer({ email: valeurs.email })}
+          onFini={(duChamp) => enregistrer({ email: duChamp })}
         />
       </Bloc>
 
@@ -345,7 +345,7 @@ export default function IdentiteClient({
           etiquette="IBAN"
           valeur={valeurs.iban}
           onChange={(v) => ecrire("iban", v)}
-          onFini={() => enregistrer({ iban: valeurs.iban })}
+          onFini={(duChamp) => enregistrer({ iban: duChamp })}
           manquant={valeurs.iban.trim() === ""}
           empeche="Sans lui, votre client reçoit un devis qu'il ne peut pas payer."
         />
@@ -354,7 +354,7 @@ export default function IdentiteClient({
           valeur={valeurs.titulaireCompte}
           placeholder={valeurs.nom || "Le nom qui figure sur le compte"}
           onChange={(v) => ecrire("titulaireCompte", v)}
-          onFini={() => enregistrer({ titulaireCompte: valeurs.titulaireCompte })}
+          onFini={(duChamp) => enregistrer({ titulaireCompte: duChamp })}
         />
 
         {/* **Sous le champ, et non ailleurs** : il voit la conséquence à
@@ -472,7 +472,13 @@ function Champ({
   etiquette: string;
   valeur: string;
   onChange: (v: string) => void;
-  onFini: () => void;
+  /**
+   * À la sortie du champ, **avec ce que le champ porte** — jamais l'état React,
+   * qui est celui du dernier rendu (leçon du 30 août 2026, `ChampsDuDevis`).
+   * Ce sont le SIRET, le numéro de TVA et l'IBAN qui passent ici : une valeur
+   * en retard d'une frappe part sur toutes ses factures.
+   */
+  onFini: (valeurDuChamp: string) => void;
   placeholder?: string;
   long?: boolean;
   manquant?: boolean;
@@ -485,7 +491,7 @@ function Champ({
     value: valeur,
     placeholder,
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value),
-    onBlur: onFini,
+    onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => onFini(e.currentTarget.value),
     "aria-label": etiquette,
     className: "block w-full border-0 bg-transparent p-0 outline-none",
     // 16 px au moins : en dessous, iOS agrandit la page à la mise au point et le

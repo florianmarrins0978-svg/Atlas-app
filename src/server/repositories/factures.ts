@@ -25,6 +25,7 @@ import { ALLURE_PAR_DEFAUT } from "../../lib/allure-documents";
 import { repriseDuDevis } from "../../lib/facture-face-au-devis";
 import { factureNeeSansDevis } from "../../lib/lignes-corrigeables";
 import { pourcentValide, totauxAvecReduction } from "../../lib/reduction-devis";
+import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
 import {
   dansLaPeriode,
@@ -802,11 +803,6 @@ async function factureEncoreEnBrouillon(
  */
 function seulesLesLignesCorrigeables(facture: { devisId: string | null }) {
   return factureNeeSansDevis(facture) ? [] : [eq(lignesFacture.supplement, true)];
-}
-
-/** Ce que la ligne pèse — la même règle que le devis, appelée et non réécrite. */
-function montantDeLaLigne(quantite: string, prixUnitaire: string): string {
-  return new Decimal(quantite || "0").times(prixUnitaire || "0").toFixed(2);
 }
 
 /**

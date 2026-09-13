@@ -8,6 +8,7 @@ import type { Ctx } from "./context";
 import { membresDuLibelle } from "../../lib/lignes-vendables";
 import { reprendreLesLignes, type LigneReprise } from "../../lib/reprise-des-prix";
 import { listerTarifs } from "./tarifs";
+import { montantDeLaLigne } from "../../lib/montant-de-ligne";
 
 export async function listerLignesPrix(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
@@ -103,9 +104,11 @@ export async function modifierLignePrix(
     } else if (data.montant === undefined && (data.prixUnitaire !== undefined || data.quantite !== undefined)) {
       const [avant] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, id)).limit(1);
       if (avant) {
-        const q = new Decimal(patch.quantite ?? avant.quantite);
-        const pu = new Decimal(patch.prixUnitaire ?? avant.prixUnitaire);
-        patch.montant = q.times(pu).toFixed(2);
+        // **La multiplication vit dans `src/lib/montant-de-ligne.ts`, et nulle
+        // part ailleurs — 13 septembre 2026.** Elle était écrite ici ET dans le
+        // dépôt des factures, dont le commentaire affirmait pourtant l'appeler.
+        // Deux écritures d'une règle qui décide de ce que le client paie.
+        patch.montant = montantDeLaLigne(patch.quantite ?? avant.quantite, patch.prixUnitaire ?? avant.prixUnitaire);
       }
     }
 

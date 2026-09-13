@@ -26,14 +26,18 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const BASE = ADRESSE;
 
 /**
- * Remplacer le contenu d'une case de chiffre, comme lui : on entre, on
- * sélectionne tout, on tape. Le champ pose volontairement le curseur À DROITE
- * du chiffre existant (sa règle du 11 septembre 2026), donc taper sans
- * sélectionner AJOUTE — et c'est voulu, pour n'avoir qu'à effacer.
+ * Taper dans une case de chiffre **comme lui** : on entre, on tape.
+ *
+ * **Plus de sélection à la main depuis sa décision du 13 septembre 2026 (« fais
+ * le B »)** : entrer dans la case sélectionne tout, et un appui remplace. Le
+ * `ControlOrMeta+a` qui était ici compensait le comportement d'avant — le
+ * curseur posé derrière le chiffre, qui faisait « 12 » d'un « 2 » tapé sur
+ * « 1 ». Le garder masquerait le jour où le B saute : la suite resterait verte
+ * pendant qu'il enverrait un devis à 5 400 € au lieu de 900 (`CLAUDE.md`
+ * §4 quater — on retire la couche qui compensait).
  */
 async function remplacer(champ: import("playwright").Locator, valeur: string) {
   await champ.click();
-  await champ.press("ControlOrMeta+a");
   await champ.type(valeur);
 }
 

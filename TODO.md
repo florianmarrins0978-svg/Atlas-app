@@ -11,7 +11,7 @@ langage, et rien n'y entre sans son accord.
 
 ## À FAIRE — `getEntreprise` lit TOUTES les colonnes, et fait tomber deux écrans
 
-Né de sa panne du 13 septembre 2026 (`ARCHITECTURE.md` §351). `getEntreprise`
+Né de sa panne du 13 septembre 2026 (`ARCHITECTURE.md` §355). `getEntreprise`
 fait `tx.select()` sans projection : Drizzle nomme alors chaque colonne du
 schéma, y compris celles que l'écran n'emploie pas. Une colonne ajoutée par une
 migration que la base n'a pas encore reçue couche donc « Planning » ET
@@ -85,6 +85,24 @@ facture émise.
 atelier à Paris ET en UTC (`TZ=UTC npm run test:e2e -- --seulement
 poser-une-date`). Si l'écart tient au fuseau, corriger la LECTURE (comparer
 des `date` en texte, `to_char(jour, 'YYYY-MM-DD')`), pas l'écriture.
+## ~~UN ROUGE « CAPRICIEUX » ÉTAIT UNE ÉCRITURE PERDUE~~ — TROUVÉ ET CORRIGÉ (13 septembre 2026)
+
+`test-reduction-devis-e2e` tombait une fois sur deux depuis des jours, et trois
+sessions l'avaient mise sur le compte d'un contrôle fragile. **Ce n'en était
+pas un.** À la sonde : le prix accordé au client, retiré, **revenait tout seul**
+— deux chemins du serveur écrivaient la même ligne de devis, et un seul prenait
+le verrou. Un devis parti chez le client plus cher que ce qui lui avait été
+promis, sans un mot à l'écran (`ARCHITECTURE.md` §353).
+
+**La leçon, pour la prochaine fois :** un rouge intermittent qu'on apprend à
+ignorer est pire qu'un contrôle absent. Avant d'écrire « suite capricieuse »
+dans ce fichier, rendre le produit bavard et REGARDER (`AGENTS.md`).
+
+`test-remise-qui-revient-db.ts` joue désormais la course sans navigateur : elle
+rougit au premier essai si le verrou saute.
+
+---
+
 ## DIX-HUIT SUITES NAVIGATEUR ROUGES SUR `main` (13 septembre 2026, relevé)
 
 **Batterie complète jouée dans un atelier à un seul occupant** — dossier, port,
@@ -118,20 +136,26 @@ pas** — `fill()` insère sans effacer, là où le champ pose volontairement le
 curseur À DROITE du chiffre (sa règle du 11 septembre). Les deux suites font
 désormais son geste — entrer, tout sélectionner, taper — et elles sont vertes.
 
-**CE QUI RESTE, ET QUI EST POUR LUI** — le coût de sa règle du 11 septembre,
-mesuré :
+**~~CE QUI RESTAIT POUR LUI~~ — TRANCHÉ LE 13 SEPTEMBRE 2026 : « fais le B ».**
+Entrer dans la case sélectionne désormais tout, et un appui remplace. Sa demande
+du 11 septembre tient — une seule touche efface (`ARCHITECTURE.md` §354). Le
+tableau ci-dessous est ce qu'il a arbitré :
 
 | Son geste sur la case « Qté » | Ce qui se passe |
 |---|---|
 | poser le doigt, taper « 2 » sur une case qui affiche « 1 » | **12** — le chiffre s'AJOUTE |
 | sélectionner d'abord, puis taper « 2 » | 2 |
 
-C'est exactement ce qu'il a demandé le 11 septembre — *« si la quantité par
-défaut n'est pas bonne, on a juste à supprimer »* — et c'est aussi de quoi
-envoyer un devis à 5 400 € au lieu de 900 sur une faute de frappe. **Deux voies,
-et c'est lui qui tranche :** garder (il efface d'abord), ou tout sélectionner
-à l'entrée dans la case (un appui remplace, et il perd le « on a juste à
-supprimer »).
+**Il a choisi la seconde**, et le « on a juste à supprimer » n'est pas perdu :
+tout étant sélectionné, une seule touche efface — c'est moins de gestes qu'avant.
+Retiré avec : le `ControlOrMeta+a` que deux suites employaient pour contourner
+l'ancien comportement, et qui les aurait laissées vertes le jour où le B saute.
+
+**RELEVÉ DU 13 SEPTEMBRE AU SOIR, après le lot des calculs et le B : 136/151**,
+et **aucun rouge nouveau** — les quinze restants sont tous dans la liste
+ci-dessus. Trois sont passées au vert (`anneau-dictee`, `devis-complet`,
+`devis-papier`) ; `reduction-devis` a rejoint la liste un moment — c'est elle
+qui a livré l'écriture perdue plus haut, et elle est verte depuis.
 
 **À reprendre en propre**, suite par suite : le journal entier est nécessaire
 (`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
