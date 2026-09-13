@@ -296,7 +296,7 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
    * veux juste que ça slide. »*
    *
    * Ce n'était pas un désaccord de goût, c'était un oubli : les trois autres
-   * zones qui défilent — `.atlas-glisse`, `.atlas-glisseur`, `.atlas-pellicule`
+   * zones qui défilent — `.atlas-glisse`, `.atlas-pellicule`
    * — la masquent depuis toujours. Celle-ci, **la plus vue de l'application**,
    * avait été sautée, et rien ne pouvait le dire : chaque zone porte la règle
    * chez elle, et personne ne comptait les zones.
@@ -570,84 +570,20 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   }
 }
 
-/* ═══ La fiche chantier : l'anneau de la note vocale ══════════════════════
+/* ═══ La dictée : le micro, son onde et ses deux gestes ═══════════════════
  *
- * Retenu par le patron le 10 août 2026 sur maquette
- * (`maquettes/atlas-note-vocale.html`, `docs/INTEGRER-ORIGINE.md` §6 bis).
+ * **CE QUI VIVAIT ICI A ÉTÉ RETIRÉ LE 13 SEPTEMBRE 2026.** L'anneau-LECTEUR —
+ * son glisseur « Retirer », sa fosse, ses ailes, son chrono de lecture —
+ * n'était monté par AUCUN écran : `grep -rn "storageKey=" src/app` n'en
+ * trouvait qu'un seul usage, et il valait `null`. Deux cent quarante lignes de
+ * composant et quarante règles de style que le patron ne pouvait atteindre
+ * nulle part (`CLAUDE.md` §4 quinquies).
  *
- * Un anneau muet, seul et centré, entre le pavé de bas de fiche et le tiroir.
- * Aucun libellé visible — mais un nom accessible : une icône muette pour l'œil
- * ne doit pas l'être pour qui n'a pas l'usage de ses yeux.
- *
- * **Tout est en pause au repos.** Une onde qui bat quand rien ne joue fait
- * croire qu'un son sort du téléphone. Rien ne tourne tant que
- * `[data-lit="oui"]` n'est pas posé sur le lecteur.
+ * Le retrait de la note vit désormais là où il le voulait : sur l'écran où il
+ * dicte, avec les pièces communes — `LigneRetirable` et `useRetraits`. Rien
+ * n'est réinventé sur place.
  */
 
-.atlas-lecteur {
-  align-self: center;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  /* L'ampleur mesurée sur le son réellement enregistré. Au repos elle vaut 1 :
-   * les barreaux gardent leur dessin, ils ne bougent simplement pas. */
-  --atlas-ampleur: 1;
-}
-
-/* Les ailes ne prennent JAMAIS le doigt : un barreau qui passe sous le pouce
- * volerait l'appui destiné à l'anneau. */
-.atlas-aile {
-  position: absolute;
-  top: 0;
-  height: 76px;
-  width: 104px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  pointer-events: none;
-  /* C'est ICI que le volume entre : la mise à l'échelle verticale du conteneur
-   * change la hauteur des barreaux sans toucher à leur course horizontale.
-   * Les redimensionner un par un, soixante fois par seconde, coûterait une
-   * remise en page à chaque image. */
-  transform: scaleY(var(--atlas-ampleur));
-  transition: transform 90ms linear, opacity 0.22s;
-}
-.atlas-aile-g {
-  right: calc(50% + 40px);
-  justify-content: flex-end;
-}
-.atlas-aile-d {
-  left: calc(50% + 40px);
-  justify-content: flex-start;
-}
-.atlas-aile i {
-  position: absolute;
-  display: block;
-  width: 2px;
-  border-radius: 2px;
-  opacity: 0;
-}
-/* **`animation-play-state` se déclare APRÈS le raccourci, dans la même règle.**
- * Le raccourci `animation:` remet cette propriété à sa valeur initiale —
- * « running ». Posée dans une règle antérieure, la mise en pause était donc
- * effacée en silence, et l'onde battait au repos : exactement ce que le patron
- * refuse, un écran qui a l'air de faire du bruit. Ni les types ni le lint ne
- * voient cela ; seul l'écran le dit. */
-.atlas-aile-g i {
-  right: 0;
-  animation: atlas-partir-g 1.9s linear infinite;
-  animation-play-state: paused;
-}
-.atlas-aile-d i {
-  left: 0;
-  animation: atlas-partir-d 1.9s linear infinite;
-  animation-play-state: paused;
-}
-[data-lit="oui"] .atlas-aile i {
-  animation-play-state: running;
-}
 @keyframes atlas-partir-g {
   0% { transform: translateX(0) scaleY(0.15); opacity: 0; }
   16% { opacity: 0.95; }
@@ -660,205 +596,11 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   72% { opacity: 0.7; }
   100% { transform: translateX(98px) scaleY(1); opacity: 0; }
 }
-/* Hauteurs inégales et départs décalés : une onde régulière ressemble à un
- * décor, pas à une voix. */
-.atlas-aile i:nth-child(1) { height: 9px;  animation-delay: -0s; }
-.atlas-aile i:nth-child(2) { height: 20px; animation-delay: -0.24s; }
-.atlas-aile i:nth-child(3) { height: 13px; animation-delay: -0.48s; }
-.atlas-aile i:nth-child(4) { height: 27px; animation-delay: -0.72s; }
-.atlas-aile i:nth-child(5) { height: 11px; animation-delay: -0.96s; }
-.atlas-aile i:nth-child(6) { height: 22px; animation-delay: -1.2s; }
-.atlas-aile i:nth-child(7) { height: 8px;  animation-delay: -1.44s; }
-.atlas-aile i:nth-child(8) { height: 17px; animation-delay: -1.68s; }
-
-/* La prise fait 76 px quand le trait n'en dessine que 56. Une icône fine qu'on
- * rate deux fois sur trois n'est pas élégante, elle est ratée. */
-.atlas-anneaux {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 76px;
-  min-height: 76px;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s;
-}
-.atlas-anneaux:active { transform: scale(0.95); }
-.atlas-anneaux span[data-cercle] {
-  position: absolute;
-  border-radius: 99px;
-  pointer-events: none;
-}
-
-.atlas-traits {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  z-index: 2;
-}
-.atlas-traits i {
-  display: block;
-  width: 2px;
-  border-radius: 2px;
-  transform-origin: center;
-  animation: atlas-battre 1.15s ease-in-out infinite;
-  animation-play-state: paused;
-}
-.atlas-traits i:nth-child(1) { height: 12px; animation-delay: -0.1s; }
-.atlas-traits i:nth-child(2) { height: 24px; animation-delay: -0.45s; }
-.atlas-traits i:nth-child(3) { height: 12px; animation-delay: -0.8s; }
 @keyframes atlas-battre {
   0%, 100% { transform: scaleY(0.42); }
   50% { transform: scaleY(1); }
 }
-[data-lit="oui"] .atlas-traits i { animation-play-state: running; }
-
-/* Le compteur n'apparaît qu'à la lecture, et il suit la lecture RÉELLE. */
-.atlas-chrono {
-  margin-top: 14px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  line-height: 16px;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.32s 0.1s, transform 0.32s 0.1s;
-  font-variant-numeric: tabular-nums;
-}
-[data-lit="oui"] .atlas-chrono { opacity: 1; transform: none; }
-
-/* Le retrait — on fait MONTER l'anneau.
- *
- * Un défilement natif, et non un suivi du doigt en JavaScript : il suit le
- * doigt et finit sa course avec l'élan de la plateforme, ce que la maquette ne
- * savait pas faire. `overscroll-behavior: contain` empêche le geste de
- * continuer sur la page — sans lui, le doigt emporterait tout l'écran. */
-/* **LE GESTE VA VERS LA GAUCHE — sa réponse du 7 septembre 2026.**
- *
- * Il glissait vers le HAUT depuis le 30 août, et il ne l'a jamais trouvé :
- * *« je veux la déplacer vers la gauche pour laisser apparaître le
- * supprimer »*. La liste des chantiers, elle, se glisse vers la gauche
- * depuis le 10 août (`.atlas-glisse`). **Deux sens pour le même geste dans
- * la même application** : il cherchait celui qu'il connaît.
- *
- * Planche `appli/retirer-la-note-vocale.html`, trois onglets ; il a
- * répondu 2.
- *
- * Le `flex` et le `100%` des volets vont ensemble : sans eux, deux blocs de
- * la largeur de l'écran se rangeraient l'un SOUS l'autre, et le glissement
- * horizontal n'aurait rien à découvrir. */
-.atlas-glisseur {
-  height: 78px;
-  width: 100%;
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  overscroll-behavior: contain;
-  transition: opacity 0.26s;
-}
-.atlas-glisseur::-webkit-scrollbar { display: none; }
-.atlas-volet-anneau,
-.atlas-fosse {
-  height: 78px;
-  /* **`width: 100%` est indispensable ici, et il ne l'était pas sur la
-   * maquette.** Elle posait un `<label>` — un `display: flex` suffit à
-   * l'étirer. L'application pose un vrai `<button>`, et un contrôle de
-   * formulaire garde une largeur au contenu même déclaré `flex` : « Retirer »
-   * se retrouvait collé au bord gauche de l'écran, son R à moitié dehors,
-   * pendant que l'anneau restait centré. Vu en capture, jamais autrement — le
-   * bouton existait, il était touchable, et tous les contrôles passaient. */
-  /* `flex: 0 0 100%` et non `width` seul : dans un rail horizontal, un
-   * volet se laisserait comprimer par son voisin et les deux tiendraient
-   * sur un écran — le glissement n'aurait plus rien à révéler. */
-  flex: 0 0 100%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  scroll-snap-align: start;
-}
-.atlas-fosse { -webkit-tap-highlight-color: transparent; }
 .atlas-indice { transition: opacity 0.26s; }
-
-/* **Tout le déclencheur s'efface avec la note**, pas seulement l'anneau : le
- * libellé « Retirer » restait allumé et s'imprimait par-dessus « Annuler ».
- * Le contrôle qui aurait dû le voir lisait l'opacité de l'élément seul, pas
- * celle héritée de son parent. */
-[data-retiree="oui"] .atlas-glisseur,
-[data-retiree="oui"] .atlas-indice {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* **Sans note, le glisseur ne réserve plus la place de « Retirer ».**
- *
- * La course du glissement mesure deux volets — l'anneau, puis la fosse. Sur un
- * chantier neuf il n'y a rien à retirer : cette seconde hauteur restait
- * pourtant réservée, et poussait tout ce qui suit de 78 px. Vu en capture, le
- * 11 août 2026 : la bulle de l'assistant recouvrait « ou rédiger le devis à la
- * main ». Aucun contrôle ne l'aurait dit — le lien existait, il était
- * touchable, et il était illisible.
- *
- * Le défilement est coupé aussi : un glissement qui ne mène nulle part se lit
- * comme un geste qui a raté. */
-[data-vide="oui"] .atlas-glisseur {
-  overflow: hidden;
-  scroll-snap-type: none;
-}
-
-/* **Sans note, on n'affiche pas ce qui n'existe pas.** Le compteur marquerait
- * « 0:00 » avant qu'on ait dit un mot. Avec le tiroir « Note vocale retirée »,
- * qui réservait lui aussi sa place, cela poussait le bas de l'écran de près de
- * cinquante pixels — assez pour que la bulle de l'assistant vienne recouvrir
- * « ou rédiger le devis à la main ». Vu en capture le 11 août 2026, jamais
- * autrement : le lien existait, il était touchable, et il était illisible.
- *
- * Le tiroir, lui, ne se masque plus : il est **absent du document**. Le masquer
- * laissait dans la page un bouton « Annuler » que le texte trouvait encore —
- * une suite de l'assistant a cliqué dessus au lieu du sien. */
-[data-vide="oui"][data-enregistre="non"] .atlas-chrono {
-  display: none;
-}
-[data-retiree="oui"] .atlas-aile { opacity: 0; }
-[data-retiree="oui"] .atlas-chrono { opacity: 0; transform: translateY(-4px); }
-/* L'anneau se contracte et part. */
-[data-retiree="oui"] .atlas-anneaux {
-  transform: scale(0.14);
-  opacity: 0;
-  transition: transform 0.44s cubic-bezier(0.5, 0, 0.75, 0), opacity 0.3s 0.06s;
-}
-/* Les barreaux rentrent dans l'anneau avant qu'il ne parte : la voix se
- * ramasse au lieu de s'évaporer. */
-[data-retiree="oui"] .atlas-traits i {
-  animation: none;
-  transform: scaleY(0.08);
-  transition: transform 0.3s cubic-bezier(0.5, 0, 0.75, 0);
-}
-
-.atlas-note-retiree {
-  position: absolute;
-  top: 22px;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(6px);
-  transition: opacity 0.34s, transform 0.34s, visibility 0s 0.34s;
-}
-[data-retiree="oui"] .atlas-note-retiree {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-  transition: opacity 0.34s 0.28s, transform 0.34s 0.28s, visibility 0s 0.28s;
-}
 
 /* ═══ La fiche chantier : le tiroir et la pellicule ═══════════════════════ */
 
@@ -1108,10 +850,6 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .atlas-aile i,
-  .atlas-traits i {
-    animation: none;
-  }
   /* Qui demande moins de mouvement n'a droit ni au battement ni à la gerbe — et
    * la feuille s'ouvre alors TOUT DE SUITE (voir `EcranChantiers.tsx`).
    * Attendre une demi-seconde une animation qui ne joue pas ferait passer un
@@ -1123,10 +861,6 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
   }
   .atlas-rond .atlas-gerbe { display: none; }
   .atlas-rond { transition: none; }
-  .atlas-anneaux,
-  .atlas-aile,
-  .atlas-chrono,
-  .atlas-note-retiree,
   .atlas-vue,
   .atlas-ajouter,
   .atlas-scene-fiche {
@@ -1330,7 +1064,7 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
  * de l'arrêt.
  *
  * **L'ANCIEN ANNEAU RESTE, et ce n'est pas un oubli** : il sert de LECTEUR sur
- * la fiche d'un chantier qui porte déjà une note (`.atlas-lecteur` plus haut).
+ * la fiche d'un chantier qui porte déjà une note.
  * Ce bloc-ci ne concerne que le moment où l'on DICTE.
  */
 
@@ -1598,7 +1332,7 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
  * **Ce qu'il faut garder de ce qui était écrit là**, et qui vaut pour le
  * prochain dessin posé dans ce fichier : `atlas-frange` avait été baptisée
  * ainsi parce que `atlas-souffle` (les trois points de l'attente) et
- * `atlas-aile` (les barreaux du lecteur) étaient DÉJÀ PRIS — et les avoir
+ * `atlas-aile` (les barreaux du lecteur, retiré depuis) étaient alors PRIS — et les avoir
  * repris écrasait silencieusement deux écrans qu'aucun test ne rapprochait.
  * Avant de baptiser une classe ici, vérifier qu'elle est libre ;
  * `scripts/test-classes-atlas-uniques.ts` le tient désormais. */

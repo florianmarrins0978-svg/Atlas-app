@@ -25,6 +25,18 @@ import { ADRESSE } from "./_adresse";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const BASE = ADRESSE;
 
+/**
+ * Remplacer le contenu d'une case de chiffre, comme lui : on entre, on
+ * sélectionne tout, on tape. Le champ pose volontairement le curseur À DROITE
+ * du chiffre existant (sa règle du 11 septembre 2026), donc taper sans
+ * sélectionner AJOUTE — et c'est voulu, pour n'avoir qu'à effacer.
+ */
+async function remplacer(champ: import("playwright").Locator, valeur: string) {
+  await champ.click();
+  await champ.press("ControlOrMeta+a");
+  await champ.type(valeur);
+}
+
 async function main() {
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext();
@@ -106,8 +118,15 @@ async function main() {
   console.log("  ✓ le champ du prix a la taille d'un doigt et se voit");
 
   await page.getByLabel("Description 1").fill("Élagage d'un tilleul");
-  await prix.fill("450");
-  await page.getByLabel("Quantité 1").fill("2");
+  // **SON GESTE, PAS `fill()` — 13 septembre 2026.** La case porte déjà un
+  // chiffre, et le curseur s'y pose À DROITE, derrière lui : sa règle du
+  // 11 septembre, *« si la quantité par défaut n'est pas bonne, on a juste à
+  // supprimer »*. `fill()` insère sans effacer — il écrivait donc « 12 » sur
+  // une case qui valait « 1 », et la suite accusait le calcul d'un total de
+  // 5 400 € qui était juste. On sélectionne, puis on tape : c'est ce que fait
+  // quelqu'un qui remplace une quantité.
+  await remplacer(prix, "450");
+  await remplacer(page.getByLabel("Quantité 1"), "2");
   await page.getByLabel("Description 1").click();
   await page.waitForTimeout(1200);
 

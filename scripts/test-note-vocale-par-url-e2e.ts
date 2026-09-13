@@ -83,7 +83,8 @@ async function main() {
 
   // **Le micro plein, puis l'AVION** — 30 août 2026. La dictée a son propre
   // dessin depuis qu'il a choisi le repos B : ce n'est plus l'anneau du lecteur
-  // (`.atlas-lecteur`), et le second appui ne fait plus partir la note — il
+  // (retiré le 13 septembre 2026, il n'était monté nulle part), et le second
+  // appui ne fait plus partir la note — il
   // suspend. C'est l'avion qui envoie, et c'est LUI que cette suite doit
   // presser, puisque ce qu'elle éprouve est le CHEMIN de l'envoi.
   const micro = page.locator('[data-atlas="anneau-note-vocale"] .atlas-micro');

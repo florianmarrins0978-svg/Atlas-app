@@ -437,8 +437,23 @@ function QuestionsChiffrage({
       // devis, jamais oublié en silence.
       if (r.statut === "prepare") return onPrepare();
       onEchec("statut" in r && r.statut === "echec" ? r.erreur : "La préparation n'a pas abouti. Réessayez.");
-    } catch {
+    } catch (panne) {
+      // **LE REFUS SE JOURNALISE AVANT DE SE DIRE — 13 septembre 2026.** Ce
+      // `catch` avalait la panne : l'écran disait « Réessayez » et personne,
+      // jamais, ne pouvait savoir POURQUOI. C'est le défaut muet que
+      // `AGENTS.md` demande de rendre bavard avant de corriger quoi que ce
+      // soit — et un message d'action serveur n'arrive pas jusqu'à lui, il
+      // faut donc l'écrire ici.
+      console.error("[chiffrage] les réponses n'ont pas pu être enregistrées", panne);
       onEchec("Vos réponses n'ont pas pu être enregistrées. Réessayez.");
+    } finally {
+      // **ET LE BOUTON SE REND — c'est sa panne du 13 septembre 2026 :**
+      // *« ça n'a pas fonctionné et impossible de recommencer »*. Le drapeau
+      // était posé à l'entrée et rendu nulle part : après un échec, le seul
+      // geste de l'écran restait éteint POUR TOUJOURS, sous un message qui
+      // disait « Réessayez ». Un écran qui invite à refaire et qui l'empêche
+      // est pire qu'un écran muet.
+      setEnvoi(false);
     }
   }
 

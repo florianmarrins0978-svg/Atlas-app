@@ -25,6 +25,15 @@ s'imprime, remplies d'office, imprimées après le bon pour accord sur une page
 
 ---
 
+## FAIT : JETER SA DICTÉE DEPUIS L'ÉCRAN OÙ IL LA FAIT — 13 septembre 2026
+
+*« C'est sur cet écran que je le voulais. »* Le geste vit sous le micro
+(glisser → Retirer → « Annuler » six secondes), avec les pièces communes. Le
+lecteur de l'anneau, que **personne ne montait**, est parti : 244 lignes et
+40 règles de style. **Aucune migration.** Détail : `ARCHITECTURE.md` §342.
+
+---
+
 ## FAIT : L'ESSAI DE QUINZE JOURS, ET CE QUI SE FERME — 13 septembre 2026
 
 Un compte créé par la porte reçoit quinze jours d'essai sans carte ; le ruban
