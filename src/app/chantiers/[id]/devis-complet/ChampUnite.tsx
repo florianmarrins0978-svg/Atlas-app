@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { colors, surPlein } from "@/lib/design-tokens";
+import { colors } from "@/lib/design-tokens";
 
 /**
  * ─── L'UNITÉ D'UNE LIGNE, APRÈS LA QUANTITÉ ─────────────────────────────────
@@ -73,9 +73,9 @@ export default function ChampUnite({
               aria-pressed={valeur === u}
               className="min-h-[32px] rounded-full px-3 text-[13px] font-medium"
               style={{
-                border: `1px solid ${valeur === u ? colors.rust : colors.line}`,
-                backgroundColor: valeur === u ? colors.rust : colors.cream,
-                color: valeur === u ? surPlein : colors.ink,
+                border: `1px solid ${valeur === u ? colors.plein : colors.line}`,
+                backgroundColor: valeur === u ? colors.plein : colors.cream,
+                color: valeur === u ? colors.card : colors.ink,
               }}
             >
               {u}

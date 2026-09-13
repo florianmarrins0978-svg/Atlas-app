@@ -181,12 +181,12 @@ export function phraseDeLaFermeture(fonction: FonctionReservee): { titre: string
   switch (fonction) {
     case "absences":
       return {
-        titre: "Les absences sont dans « Entreprise »",
+        titre: "Les absences sont dans « Entreprise »",
         detail: "Noter qui n’est pas là, et voir vos équipes se réorganiser toutes seules.",
       };
     case "retours":
       return {
-        titre: "Les retours sont dans « Entreprise »",
+        titre: "Les retours sont dans « Entreprise »",
         detail: "Ce que vos gars ont constaté en fin de chantier : ce qui est fait, ce qui ne l’est pas, et leurs photos.",
       };
   }

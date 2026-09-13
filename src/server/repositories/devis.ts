@@ -213,6 +213,15 @@ export async function chargerDevisPourEcran(ctx: Ctx, chantierId: string) {
 // dernière version existante a déjà été envoyée.
 export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Un seul « get ou crée » à la fois par chantier.** Deux rendus qui se
+    // chevauchent — l'écran du devis redemandé pendant que le premier rendu
+    // crée encore le brouillon — lisaient tous deux « aucun devis » et
+    // inséraient chacun la version 1 : le second tombait sur
+    // `devis_chantier_version_uk`, et l'écran restait blanc (13 septembre 2026,
+    // sous la suite des acomptes). Le verrou est lié à la transaction : le
+    // second attend, puis TROUVE le brouillon du premier. Hors transaction il
+    // ne survit pas, et il ne bloque rien d'autre que ce même chantier.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${chantierId}))`);
     const [chantier] = await tx.select().from(chantiers).where(eq(chantiers.id, chantierId)).limit(1);
     if (!chantier) throw new Error("Chantier introuvable");
 

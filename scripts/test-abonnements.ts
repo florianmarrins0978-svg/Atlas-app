@@ -328,7 +328,8 @@ cas("ce que la carte de la formule PROMET est ce que le code OUVRE — les deux 
 cas("la phrase de la fermeture nomme la formule qui ouvre, pour les deux fonctions", () => {
   for (const f of ["absences", "retours"] as const) {
     const { titre, detail } = phraseDeLaFermeture(f);
-    assert.match(titre, /« Entreprise »/);
+    // L'espace est INSÉCABLE dans le titre : le « » ne doit jamais partir seul à la ligne.
+    assert.match(titre, /« Entreprise »/);
     assert.ok(detail.length > 20);
   }
 });

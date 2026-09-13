@@ -78,6 +78,15 @@ portait `validiteJours` et `conditionsReglees` — le client téléchargeait par
 son lien un document sans « Validité » ni « Acompte de 30 % ». Une seule
 fonction désormais (`donneesPdfDuDevis`), pour les trois sorties.
 
+**Ce que la batterie a attrapé le 13, avant la livraison.** `acomptes_devis`
+manquait à l'export « Mes données » (`test-export-entreprise` l'a réclamé) ;
+la pastille d'unité peignait le vert pin au lieu de `colors.plein`
+(`test-boutons-pleins`). Et une course plus ancienne : deux rendus de l'écran
+du devis qui se chevauchent créaient chacun la version 1 du brouillon, et le
+second tombait sur `devis_chantier_version_uk` — écran blanc.
+`getOuCreerDevisBrouillon` prend désormais un verrou consultatif par chantier,
+lié à la transaction : le second attend, puis trouve le brouillon du premier.
+
 **Migration 0088** : `acomptes_devis` (rang, taux cumulé), RLS, immuable dès
 que le devis est envoyé. `devis.acompte_pourcent` reste : c'est le réglage
 recopié, la phrase des notes. Règle pure : `src/lib/acomptes-devis.ts`.

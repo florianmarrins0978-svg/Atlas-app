@@ -49,7 +49,7 @@ async function main() {
   // **Le réglage d'abord** : c'est lui que le devis recopie à sa naissance. Posé
   // en base plutôt que par l'écran des Réglages — cette suite éprouve le devis.
   const { rows: demo } = await pool.query(
-    `SELECT entreprise_id FROM utilisateurs WHERE email = 'demo@atlas.local' LIMIT 1`
+    `SELECT m.entreprise_id FROM membres_entreprise m JOIN users u ON u.id = m.utilisateur_id WHERE u.email = 'demo@atlas.local' LIMIT 1`
   );
   assert.ok(demo[0]?.entreprise_id, "le compte de démonstration est absent : la base n'est pas amorcée");
   const entrepriseId: string = demo[0].entreprise_id;
@@ -60,6 +60,10 @@ async function main() {
   await page.fill('input[placeholder="Bernard"]', `M. Chausson ${Date.now()}`);
   const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
   const chantierId = url.split("/").pop()!;
+  // La création atterrit DÉJÀ sur le devis, dont le rendu crée le brouillon. Le
+  // redemander avant la fin de ce rendu lance deux `getOuCreerDevisBrouillon`
+  // de front, et le second tombe sur `devis_chantier_version_uk` (TODO.md).
+  await page.waitForLoadState("networkidle");
 
   await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
   const lignesVoulues: [string, string, string, string][] = [
@@ -75,16 +79,29 @@ async function main() {
       await page.waitForTimeout(essai * 300);
     }
     await zones.nth(rang).fill(libelle);
-    await page.locator('input[aria-label*="Quantité"]').nth(rang).fill(qte);
-    if (unite) await page.locator('input[aria-label*="Unité"]').nth(rang).fill(unite);
-    await page.locator('input[aria-label*="Prix unitaire"]').nth(rang).fill(prix);
+    // **Un clic AVANT de remplir.** Le champ remet le curseur au bout à la
+    // première sélection qui suit l'entrée (ChampsDuDevis.tsx, « auBout ») :
+    // le tout-sélectionner de fill() est défait, et « 1 » devient « 11 ».
+    // Le clic consomme cette première sélection ; fill() a ensuite le champ.
+    const saisir = async (etiquette: string, valeur: string) => {
+      const champ = page.locator(`input[aria-label*="${etiquette}"]`).nth(rang);
+      await champ.click();
+      await champ.fill(valeur);
+    };
+    await saisir("Quantité", qte);
+    if (unite) await saisir("Unité", unite);
+    await saisir("Prix unitaire", prix);
     await page.keyboard.press("Tab");
     await page.waitForTimeout(400);
   }
 
+  // Les montants s'écrivent avec l'espace fine insécable du français (« 1 990,80 ») :
+  // on lit l'écran en espaces ordinaires pour comparer ce qu'un œil compare.
+  const lisible = (t: string) => t.replace(/[  ]/g, " ");
+
   for (const essai of [1, 2, 3, 4]) {
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
-    if ((await page.locator("body").innerText()).includes("2 844,00")) break;
+    if (lisible(await page.locator("body").innerText()).includes("2 844,00")) break;
     await page.waitForTimeout(essai * 500);
   }
 
@@ -109,7 +126,7 @@ async function main() {
   }
 
   await cas("le devis naît avec l'acompte des Réglages, d'office, et son montant", async () => {
-    const texte = await totaux().innerText();
+    const texte = lisible(await totaux().innerText());
     assert.ok(texte.includes("Acompte"), `aucune ligne d'acompte sur un devis dont le réglage en porte un :\n${texte}`);
     assert.ok(texte.includes("853,20"), `30 % de 2 844,00 € font 853,20 € :\n${texte}`);
     assert.ok(texte.includes("Reste à régler après acompte"), "le reste à régler n'est pas nommé");
@@ -133,7 +150,7 @@ async function main() {
     await bouton.click();
     await page.waitForTimeout(900);
 
-    const texte = await totaux().innerText();
+    const texte = lisible(await totaux().innerText());
     for (const attendu of ["à mi-parcours", "568,80", "à l'avancement", "711,00", "Reste à régler après acomptes"]) {
       assert.ok(texte.includes(attendu), `« ${attendu} » manque à l'écran :\n${texte}`);
     }
@@ -146,7 +163,7 @@ async function main() {
     await champs.nth(2).fill("40");
     await page.keyboard.press("Tab");
     await page.waitForTimeout(900);
-    const texte = await totaux().innerText();
+    const texte = lisible(await totaux().innerText());
     // Un signe devant un chiffre — pas le trait d'union de « mi-parcours ».
     assert.ok(!/[-−]\s?\d/.test(texte), `un montant négatif à l'écran :\n${texte}`);
     assert.deepEqual(await quandLaBasePorte(["30.00", "50.00", "50.00"]), ["30.00", "50.00", "50.00"]);
@@ -160,11 +177,11 @@ async function main() {
     }
     await page.reload({ waitUntil: "networkidle" });
     await page.waitForTimeout(600);
-    const texte = await totaux().innerText();
+    const texte = lisible(await totaux().innerText());
     assert.ok(!texte.includes("Reste à régler"), `la ligne survit à son retrait :\n${texte}`);
     assert.deepEqual(await quandLaBasePorte([]), [], "la base garde un acompte que l'écran dit retiré");
     // La condition, elle, reste écrite sous les notes — comme le PDF l'écrira.
-    const notes = await page.locator('[data-atlas="conditions-imprimees"]').innerText();
+    const notes = lisible(await page.locator('[data-atlas="conditions-imprimees"]').innerText());
     assert.ok(notes.includes("Acompte de 30 % à la commande"), `la phrase du réglage a disparu des notes :
 ${notes}`);
   });

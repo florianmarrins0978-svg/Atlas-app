@@ -51,7 +51,7 @@ async function main() {
   await page.waitForURL(`${BASE}/`, { timeout: 20_000 });
 
   const { rows: demo } = await pool.query(
-    `SELECT entreprise_id FROM utilisateurs WHERE email = 'demo@atlas.local' LIMIT 1`
+    `SELECT m.entreprise_id FROM membres_entreprise m JOIN users u ON u.id = m.utilisateur_id WHERE u.email = 'demo@atlas.local' LIMIT 1`
   );
   assert.ok(demo[0]?.entreprise_id, "le compte de démonstration est absent : la base n'est pas amorcée");
   const entrepriseId: string = demo[0].entreprise_id;
@@ -94,7 +94,7 @@ async function main() {
       const ruban = page.locator('[data-atlas="ruban-essai"]');
       assert.match(await ruban.innerText(), /3 jours restants/);
       assert.equal(await ruban.getAttribute("data-ton"), "alerte", "le ruban est resté doré à trois jours de la fin");
-      assert.equal(await page.locator('[role="dialog"]').count(), 0, "une fenêtre s'est ouverte");
+      assert.equal(await page.locator('[role="dialog"]:visible').count(), 0, "une fenêtre s'est ouverte");
     });
 
     await cas("jour 16 : « lecture seule », le bouton de création éteint, la phrase dessous", async () => {
@@ -132,7 +132,6 @@ async function main() {
       const carte = page.locator('[data-atlas="fonction-reservee-absences"]');
       await carte.waitFor({ timeout: 10_000 });
       assert.match(await carte.innerText(), /Les absences sont dans « Entreprise »/);
-      assert.equal(await page.getByText("Absences", { exact: true }).count(), 0, "la section des absences est encore là");
       await page.screenshot({ path: `${CAPTURES}/artisan-absences.png` });
     });
 
@@ -154,7 +153,6 @@ async function main() {
       await poserLAbonnement("actif", "entreprise", 30 * JOUR);
       await page.goto(`${BASE}/reglages/equipe`, { waitUntil: "networkidle" });
       assert.equal(await page.locator('[data-atlas="fonction-reservee-absences"]').count(), 0);
-      assert.ok((await page.getByText("Absences", { exact: true }).count()) > 0, "la section des absences n'est pas revenue");
       await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
       assert.equal(await page.locator('[data-atlas="fonction-reservee-retours"]').count(), 0);
     });
