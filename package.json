@@ -42,7 +42,8 @@
     "session:preparer": "node scripts/preparer-sessions.mjs",
     "diagnostiquer:espace": "node scripts/diagnostiquer-espace.mjs",
     "rapporter:espace": "node scripts/rapporter-espace.mjs",
-    "mesurer:poids-planning": "node scripts/mesurer-poids-planning.mjs"
+    "mesurer:poids-planning": "node scripts/mesurer-poids-planning.mjs",
+    "verifier:avant-fusion": "tsx scripts/verifier-avant-fusion.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1097.0",

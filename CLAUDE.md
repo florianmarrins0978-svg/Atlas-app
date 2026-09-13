@@ -5,6 +5,44 @@ ou dans les documents qu'il désigne — n'existe pas : aucune décision ne doit
 reposer sur le souvenir d'un échange précédent.
 
 @AGENTS.md
+@.claude/rules/testing.md
+@.claude/rules/migrations.md
+@.claude/rules/deployment-safety.md
+
+---
+
+## 0. LES INVARIANTS — vrais dans toutes les sessions, sans exception
+
+*Le détail vit dans les trois fichiers importés ci-dessus : `testing.md`,
+`migrations.md`, `deployment-safety.md`. Ici, seulement ce qui ne se discute
+jamais.*
+
+1. **Compiler n'est pas fonctionner.** Rien n'est terminé parce que `tsc` est
+   vert : le parcours du patron se joue.
+2. **Une régression donne un test, dans cet ordre** : reproduire → **test
+   rouge** → correction minimale → test vert → **le test reste pour toujours**.
+   Un correctif sans rouge préalable est une supposition.
+3. **Le niveau d'épreuve se choisit sur le RISQUE** — 1 : suites ciblées ·
+   2 : `npm run verifier:avant-fusion` · 3 : `npm run verifier:avant-livraison`.
+   Le doute tranche vers le haut. **Pas de batterie complète pour une virgule ;
+   jamais rien de moins qu'elle quand `src/` ou `drizzle/` bouge.**
+4. **Avant fusion, les parcours concernés se regardent** — pas seulement des
+   tests verts.
+5. **Rien hors périmètre.** Aucun refactoring, nettoyage ou « amélioration »
+   qui n'a pas été demandé.
+6. **Une migration de données s'éprouve sur une base HABITÉE** dès que des
+   lignes existantes peuvent changer son résultat.
+7. **Une migration qui écrit sur une table sous FORCE RLS doit PROUVER qu'elle
+   voit les lignes.** `atlas_owner` n'a pas `BYPASSRLS` : sans contexte, zéro
+   ligne touchée, **aucune erreur**. C'est la panne du 13 septembre 2026.
+8. **Un code n'est compatible que si le schéma qu'il suppose est là.** Servir du
+   code neuf sur une base ancienne fait TOMBER des écrans.
+9. **Un changement de schéma incompatible se fait en deux temps**
+   (expand/contract) : étendre, déployer, transiter, contracter **plus tard**.
+
+**Ce qui ne dépend pas de la bonne volonté** : `scripts/garde-fusion-main.mjs`
+calcule le niveau de risque sur le diff et refuse une poussée vers `main` dont
+le contrôle n'a pas été joué au vert sur cet état de l'arbre.
 
 ---
 
