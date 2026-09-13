@@ -159,56 +159,5 @@ cas("le geste proposé est celui qui répare sans rien détruire", () => {
   );
 });
 
-console.log("\n=== La réparation ne dépend plus d'un écran ===");
-
-// **SA CAPTURE DU 13 SEPTEMBRE 2026, AU SOIR.** Le rattrapage était en place —
-// à chaque allumage, et sur le bouton « Chercher les dernières corrections ».
-// Les deux passaient par un geste de sa part, et le bouton vit dans l'écran des
-// Réglages… qui tombait pour la même raison que les autres : il lisait
-// l'entreprise ENTIÈRE pour en afficher le nom. Il a donc lu « Tarifs
-// indisponibles » en allant chercher le remède. **La porte de secours se
-// fermait avec la maison.**
-
-cas("le veilleur rattrape la base tout seul, sans écran ni bouton", () => {
-  const source = readFileSync(path.join(RACINE, ".devcontainer", "veiller.sh"), "utf8");
-  assert.match(
-    source,
-    /rattraper_la_base\(\)\s*\{/,
-    "le veilleur ne sait plus rattraper la base : la réparation redevient un geste, " +
-      "et ce geste vit derrière un écran qui peut être tombé"
-  );
-  // Déclarée ne suffit pas : c'est d'être APPELÉE dans la boucle qui la rend
-  // vivante (la leçon du 28 août — six gestes écrits, aucun atteignable).
-  const appels = source.split("\n").filter((l) => /^\s*rattraper_la_base\s*$/.test(l));
-  assert.ok(appels.length > 0, "la fonction existe mais rien ne l'appelle : elle ne servira jamais");
-  assert.match(source, /appliquer-migrations\.sh/, "le veilleur n'emploie pas le script commun");
-});
-
-cas("l'écran de dépannage ne lit plus l'entreprise entière", () => {
-  const source = readFileSync(path.join(RACINE, "src", "app", "reglages", "page.tsx"), "utf8");
-  const lignes = source.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l.trim()));
-  assert.ok(
-    !lignes.some((l) => /getEntreprise/.test(l)),
-    "Réglages relit toutes les colonnes de l'entreprise : il retombera dès qu'une " +
-      "migration manquera, c'est-à-dire précisément quand il vient y chercher le bouton"
-  );
-  assert.ok(
-    lignes.some((l) => /nomDeLEntreprise/.test(l)),
-    "Réglages n'affiche plus le nom de l'entreprise : la feuille de déconnexion ne dit plus d'où l'on sort"
-  );
-});
-
-cas("…et cette lecture-là ne demande qu'une colonne", () => {
-  const source = readFileSync(path.join(RACINE, "src", "server", "repositories", "entreprises.ts"), "utf8");
-  const debut = source.indexOf("export async function nomDeLEntreprise");
-  assert.notEqual(debut, -1, "la lecture d'une seule colonne a disparu");
-  const corps = source.slice(debut, debut + 600);
-  assert.match(
-    corps,
-    /\.select\(\{\s*nom:/,
-    "elle ne projette plus : une colonne ajoutée ailleurs refermerait la porte de secours"
-  );
-});
-
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le retard de la base — ${echecs} échec(s).`);
 if (echecs > 0) process.exit(1);

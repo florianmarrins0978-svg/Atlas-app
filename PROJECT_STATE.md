@@ -24,9 +24,7 @@ migrent ne le faisaient que le jour où le code bougeait : un échec n'était ja
 retenté, et plus aucun geste ne rattrapait la base. Migrations à chaque allumage
 et à chaque appui du bouton ; et l'écart se MESURE désormais — une ligne « Base »
 sur la fiche de son espace, qui nomme les migrations manquantes, et le même
-constat dans les Réglages. Et la réparation ne dépend plus d'un écran : le
-veilleur rattrape seul, et l'écran de dépannage ne lit plus qu'une colonne.
-`ARCHITECTURE.md` §356 ·
+constat dans les Réglages. `ARCHITECTURE.md` §356 ·
 `scripts/test-migrations-banc.ts` · `scripts/test-retard-de-la-base.ts`.
 
 ## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026

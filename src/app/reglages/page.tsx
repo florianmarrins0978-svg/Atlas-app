@@ -11,7 +11,7 @@ import BoutonMiseAJour from "./BoutonMiseAJour";
 import SeDeconnecter from "./SeDeconnecter";
 import Sommaire from "./Sommaire";
 import { derniereIssueMiseAJour } from "./actions";
-import { nomDeLEntreprise } from "@/server/repositories/entreprises";
+import { getEntreprise } from "@/server/repositories/entreprises";
 import { estBancDEssai } from "@/profil-banc";
 
 export const dynamic = "force-dynamic";
@@ -45,16 +45,10 @@ export default async function ReglagesPage() {
   // n'interroge pas la base, il affiche ce qu'on lui donne (`CLAUDE.md` §4
   // sexies), et cette lecture-ci part avec les deux autres au lieu d'ajouter un
   // aller-retour.
-  //
-  // **Le NOM, et pas l'entreprise entière — sa capture du 13 septembre 2026 au
-  // soir.** Cet écran lisait toutes les colonnes pour en afficher une : il
-  // tombait donc dès qu'une migration manquait, c'est-à-dire exactement quand
-  // il vient y chercher le bouton qui répare. Il a lu « Tarifs indisponibles »
-  // à la place. Un écran de dépannage doit être le dernier debout.
-  const [role, etatVersion, nomEntreprise] = await Promise.all([
+  const [role, etatVersion, entreprise] = await Promise.all([
     getRole(ctx),
     versionEtRetard(),
-    nomDeLEntreprise(ctx),
+    getEntreprise(ctx),
   ]);
   const version = etatVersion.ligne;
 
@@ -117,7 +111,7 @@ export default async function ReglagesPage() {
             **Aucune garde de rôle**, et ce n'en est pas un oubli : sortir de
             son propre compte n'appartient pas à l'entreprise. Un salarié doit
             pouvoir fermer sa session sur le téléphone qu'il rend le soir. */}
-        <SeDeconnecter nomEntreprise={nomEntreprise} />
+        <SeDeconnecter nomEntreprise={entreprise?.nom ?? null} />
 
         {/* La version exécutée, en bas et discrète.
             Elle existe pour une raison précise : le patron a réessayé, un jour

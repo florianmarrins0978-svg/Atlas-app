@@ -30061,32 +30061,6 @@ amorçage ou une suppression. `test-verdict-port.ts` tenait cette promesse pour 
 verdict du port ; celui de la base n'était couvert par personne, et
 `scripts/test-retard-de-la-base.ts` s'en charge.
 
-### Moitié III — la porte de secours ne se ferme plus avec la maison
-
-**Sa capture du même soir, 21 h 14 : « Tarifs indisponibles ».** Les deux
-moitiés ci-dessus étaient livrées, et il était toujours bloqué — parce qu'elles
-passaient l'une et l'autre par **un geste de sa part**, et que le geste vit dans
-l'écran des Réglages. Or cet écran lisait `getEntreprise` pour afficher le nom de
-l'entreprise sous « Se déconnecter » : il tombait donc exactement comme Planning
-et Terminés. **Le seul remède était derrière la porte qu'il fermait.**
-
-Deux corrections, et la première suffit à elle seule :
-
-| | |
-|---|---|
-| **le veilleur rattrape** | il tourne déjà tous les quarts d'heure. Il mesure, et n'applique que s'il y a un écart : la panne se referme seule, sans écran, sans bouton, sans qu'on lui demande rien |
-| **l'écran de dépannage tient** | il ne lit plus qu'une colonne — `nomDeLEntreprise`, projetée, présente depuis la première migration. Un écran de dépannage doit être le dernier debout |
-
-**Ce n'est PAS une invitation à projeter partout.** `getEntreprise` garde son
-`select()` complet, et c'est juste : nommer les colonnes chez ses vingt-huit
-appelants recopierait le schéma autant de fois, et les copies divergeraient
-(§3). Ce qui justifie l'exception, c'est la FONCTION de l'écran, pas la peur de
-la panne.
-
-**Et le rattrapage automatique ne détruit rien** (`CLAUDE.md` §4 septies) :
-`run-migrations.ts` ajoute ce qui manque et saute le reste. Aucun amorçage,
-aucune reconstruction — les deux gestes qu'il a interdits.
-
 ### Ce qui tient la correction
 
 `scripts/test-migrations-banc.ts` — trois contrôles qui lisent la STRUCTURE des
@@ -30099,7 +30073,5 @@ conclure sans mesure, le fait que le constat soit **atteignable** (monté dans l
 fiche ET dans l'écran, la leçon du 28 août), et l'interdit des gestes
 destructeurs. Éprouvé rouge lui aussi, en cassant chacune des deux moitiés.
 
-Et le chemin complet a été joué à la main, deux fois : contre une base dont
-`_migrations` s'arrête à 0087, la ligne rendue est `EN RETARD DE 3 — 0088, 0089,
-0090` ; et la routine du veilleur, jouée sur une base à laquelle il manquait une
-migration, l'a ramenée à « à jour » en écrivant son geste au journal.
+Et le chemin complet a été joué à la main, contre une base dont `_migrations`
+s'arrête à 0087 : la ligne rendue est `EN RETARD DE 3 — 0088, 0089, 0090`.

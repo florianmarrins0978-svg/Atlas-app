@@ -61,14 +61,6 @@ de conditions générales. Nommer les colonnes recopierait le schéma à vingt-h
 endroits, et ne protégerait que cette fonction — le prochain écart tomberait
 ailleurs, tout aussi muet.
 
-**Et la réparation ne dépend plus d'un écran.** Les deux corrections ci-dessus
-passaient par un geste de sa part, et ce geste vit dans les Réglages — un écran
-qui tombait pour la même raison que les autres : il lisait l'entreprise entière
-pour en afficher le nom. Il a donc reçu « Tarifs indisponibles » en allant
-chercher le remède. Le veilleur rattrape désormais la base tout seul, tous les
-quarts d'heure, et l'écran de dépannage ne lit plus qu'une colonne : il doit
-être le dernier debout.
-
 Tenu par `scripts/test-migrations-banc.ts` et `scripts/test-retard-de-la-base.ts`,
 tous deux éprouvés rouges en cassant ce qu'ils gardent. Détail :
 `ARCHITECTURE.md` §356.
