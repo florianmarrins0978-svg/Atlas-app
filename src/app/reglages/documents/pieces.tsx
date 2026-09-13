@@ -136,12 +136,18 @@ export function Libre({
   valeur,
   exemple,
   long,
+  lignes = 2,
+  aria,
   onEcrire,
   onFini,
 }: {
   valeur: string;
   exemple: string;
   long?: boolean;
+  /** Hauteur du champ long, en lignes. Deux pour un texte de pied ; bien plus pour des conditions générales. */
+  lignes?: number;
+  /** Le nom du champ pour qui ne le voit pas. Sans lui, celui du réglage historique. */
+  aria?: string;
   onEcrire: (t: string) => void;
   onFini: (t: string) => void;
 }) {
@@ -154,9 +160,9 @@ export function Libre({
     style: { backgroundColor: colors.card, color: colors.ink, fontSize: 16, lineHeight: 1.5 },
   } as const;
   return long ? (
-    <textarea {...commun} rows={2} aria-label="Texte ajouté en bas de chaque document" className={`${commun.className} resize-none`} />
+    <textarea {...commun} rows={lignes} aria-label={aria ?? "Texte ajouté en bas de chaque document"} className={`${commun.className} resize-none`} />
   ) : (
-    <input {...commun} type="text" aria-label="Moyens de paiement acceptés" autoComplete="off" />
+    <input {...commun} type="text" aria-label={aria ?? "Moyens de paiement acceptés"} autoComplete="off" />
   );
 }
 

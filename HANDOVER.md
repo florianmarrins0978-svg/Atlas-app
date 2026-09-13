@@ -8,7 +8,40 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — L'ESSAI DE QUINZE JOURS, ET CE QUI SE FERME (13 septembre 2026)
+## Dernier lot — SIX PHOTOS NE FONT PLUS SIX CHANTIERS (13 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« j'ai ajouté six photos, j'ai fait retour, il m'en a créé six avec une photo à chaque fois »* |
+| la racine | `assurerChantier` (`FormulaireNouveauChantier.tsx`) lisait le chantier créé dans un état React — invisible pour la boucle d'envoi de `Pellicule`, qui garde la fonction d'avant la première photo — et effaçait la promesse dès qu'elle aboutissait |
+| la correction | la promesse vit dans `chantierDeCetEcran` (une `useRef`), gardée jusqu'au bout ; l'état ne sert qu'au rendu ; « Je rédige à la main » lit la même référence ; elle ne s'efface que sur un échec |
+| la suite | `test-photos-avant-le-chantier-e2e.ts` — six photos, compte en base ; rougit sur l'ancien code |
+
+**LE PIÈGE, pour tout écran qui crée au premier geste :** ce qu'un geste déjà
+en cours doit relire vit dans une référence, jamais dans un état
+(`ARCHITECTURE.md` §346).
+
+---
+## Lot précédent — LA PLANCHE B DU DEVIS (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« code la planche la B »* — `appli/devis-remise-main-d-oeuvre-conditions.html`, ses réponses du 12 septembre |
+| ce qui a changé | « Prix accordé au client » → **« Remise de N % »** (`LIBELLE_REDUCTION`, pièce renommée `Remise.tsx`) ; **« dont main d'œuvre HT »** sous le total HT (`main-doeuvre-devis.ts`, `LigneMainDoeuvre.tsx`, `devis.main_doeuvre_ht`) — nommée, jamais comptée, bornée au brut, champ vide à l'ouverture ; conditions réglées **en gras** sur le PDF (`notesEnGras`, `gras` dans la trace) ; **conditions générales** dans Réglages → Ce qui s'imprime (`conditions-generales.ts`, `entreprises.conditions_generales`, snapshot `devis.conditions_generales`), imprimées en annexe après le bon pour accord |
+| la migration | **0090** |
+| les suites | `test-planche-b-devis` (règle + trace), `test-planche-b-devis-db`, `test-planche-b-devis-e2e` ; les suites de la remise ont suivi le mot |
+
+**LE PIÈGE : l'encodage des CGV est INVERSÉ.** `null` = texte d'origine
+(la case arrive remplie, sa demande), `""` = effacé, texte = le sien. Ne pas le
+« corriger » sur le modèle du texte de pied.
+
+**CE QUI RESTE À LUI.** Deux crochets dans le texte d'origine — assureur,
+médiateur — que l'écran compte tant qu'ils y sont. Les mentions légales
+manquantes (décennale, médiateur, délai d'exécution) restent proposées dans
+`TODO.md`, pas tranchées.
+
+---
+## Lot précédent — L'ESSAI DE QUINZE JOURS, ET CE QUI SE FERME (13 septembre 2026)
 
 | | |
 |---|---|
@@ -248,7 +281,7 @@ rendu** — ce que React interdit, et que le lint du dépôt a refusé. C'est
 | | |
 |---|---|
 | ses mots | *« la réduction client cliquable comme sur le devis »* · *« reprends exactement celle du devis — couleur, forme, mots »* |
-| la pièce commune | `src/components/atlas/PrixAccordeAuClient.tsx`, montée par le devis ET la facture |
+| la pièce commune | `src/components/atlas/Remise.tsx` (née `PrixAccordeAuClient.tsx`, renommée le 13 septembre), montée par le devis ET la facture |
 | le serveur | `majReductionDeFacture` + `majReductionFactureAction` — ils n'existaient pas |
 | la migration | **aucune** |
 | les suites | `test-remise-facture-db.ts` (5), `test-facture-sans-devis-e2e.ts` (12) |

@@ -4,6 +4,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
+import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
 import {
@@ -257,6 +258,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       moyensPaiement: conditions.moyensPaiement,
       rappelerPenalites: conditions.rappelerPenalites,
       textePied: conditions.textePied,
+      // Figées comme les autres (migration 0090) : le texte résolu — le sien, le
+      // texte d'origine, ou vide s'il l'a effacé.
+      conditionsGenerales: conditions.conditionsGenerales,
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
@@ -294,9 +298,16 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       // Régénération : remplace les lignes et recalcule les totaux, ne change
       // ni le numéro commercial ni le numéro de version.
       await tx.delete(lignesDevis).where(eq(lignesDevis.devisId, dernier.id));
+      // **La main d'œuvre survit aussi, mais reste « dont »** : si les lignes ont
+      // fondu sous elle, on la ramène au nouveau brut plutôt que d'imprimer
+      // « dont 450 € » sous un total de 380 €.
+      const mainDoeuvreHt = montantMainDoeuvreValide(
+        dernier.mainDoeuvreHt,
+        totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt
+      );
       const [d] = await tx
         .update(devis)
-        .set({ ...snapshotEnTete, ...totaux })
+        .set({ ...snapshotEnTete, ...totaux, mainDoeuvreHt })
         .where(eq(devis.id, dernier.id))
         .returning();
       if (lignesPrixActuelles.length > 0) {
@@ -534,7 +545,10 @@ function donneesPdfDuDevis(
       moyensPaiement: d.moyensPaiement,
       rappelerPenalites: d.rappelerPenalites,
       textePied: d.textePied,
+      conditionsGenerales: d.conditionsGenerales,
     },
+    // « dont main d'œuvre HT » (migration 0090) : nommée sous le total, jamais comptée.
+    mainDoeuvreHt: d.mainDoeuvreHt,
     // Les lignes des totaux, cumulées (migration 0088) : le PDF en tire ce qui
     // tombe à chaque acompte et le reste à régler, par la règle commune.
     acomptes: [...acomptes],
@@ -655,7 +669,13 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
 export async function mettreAJourEnTeteDevis(
   ctx: Ctx,
   devisId: string,
-  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }
+  data: {
+    tauxTva?: string;
+    conditionsPaiement?: string;
+    reductionPourcent?: string | null;
+    /** « dont main d'œuvre HT » ; `null` retire la ligne. Bornée au brut HT. */
+    mainDoeuvreHt?: string | null;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [avant] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
@@ -665,6 +685,7 @@ export async function mettreAJourEnTeteDevis(
       tauxTva?: string;
       conditionsPaiement?: string;
       reductionPourcent?: string | null;
+      mainDoeuvreHt?: string | null;
       updatedAt: Date;
     } = { updatedAt: new Date() };
     if (data.tauxTva !== undefined) {
@@ -691,6 +712,12 @@ export async function mettreAJourEnTeteDevis(
       valeurs.tauxTva ?? avant.tauxTva,
       data.reductionPourcent !== undefined ? valeurs.reductionPourcent : avant.reductionPourcent
     );
+    // **La main d'œuvre passe par la MÊME borne que l'écran** (`montantMainDoeuvreValide`),
+    // et le plafond est le brut HT du moment : « dont » ne dépasse pas le tout.
+    if (data.mainDoeuvreHt !== undefined) {
+      const brutHt = totauxAvecReduction(lignes, valeurs.tauxTva ?? avant.tauxTva, null).brutHt;
+      valeurs.mainDoeuvreHt = montantMainDoeuvreValide(data.mainDoeuvreHt, brutHt);
+    }
 
     const [row] = await tx
       .update(devis)

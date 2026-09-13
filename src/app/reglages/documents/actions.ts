@@ -56,6 +56,7 @@ export async function majConditionsAction(
         moyensPaiement: c.moyensPaiement,
         rappelerPenalites: c.rappelerPenalites,
         textePied: c.textePied,
+        conditionsGenerales: c.conditionsGenerales,
       },
     };
   } catch (err) {

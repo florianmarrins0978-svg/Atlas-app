@@ -121,7 +121,13 @@ reconstruire — `devcontainer.json` déclare le port public, et cette
 déclaration ne s'applique qu'à la naissance de l'espace (`ARCHITECTURE.md`
 §55).
 
-## ⏳ UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS (12 septembre 2026)
+## ~~UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS~~ — CODÉE LE 13 SEPTEMBRE 2026 (« code la planche la B »)
+
+**Codé :** « Remise de N % », « dont main d’œuvre HT » (la B), les conditions
+réglées en gras, les conditions générales dans Réglages → Ce qui s’imprime et en
+annexe du devis. Migration 0090, `ARCHITECTURE.md` §345. **Ce qui reste à lui :**
+les deux crochets du texte d’origine (assureur, médiateur), et les mentions
+légales proposées plus bas — toujours pas tranchées.
 
 **Sa demande du 12 septembre :** « Prix accordé au client » devient **« Remise
 de N % »** ; un bouton **+ Main d’œuvre** comme « + Ajouter une TVA », sa ligne
@@ -133,7 +139,7 @@ générales de vente et de règlement »**, remplie d’un texte par défaut qu�
 peut effacer et réécrire, imprimée **après le bon pour accord**.
 
 **Planche :** `appli/devis-remise-main-d-oeuvre-conditions.html` (quatre vues :
-écran, papier, réglages, la loi). **Rien n’est codé.** Sa photo — les CGV d’un
+écran, papier, réglages, la loi). Sa photo — les CGV d’un
 menuisier — est lue : huit clauses reprises dans le texte d’origine (adhésion,
 prix révisables au-delà de la validité, pas d’escompte, délai indicatif, autres
 corps de métier, réception en présence de l’entreprise, réserve de propriété et

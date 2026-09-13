@@ -162,16 +162,16 @@ cas("un devis vide ne fabrique pas de réduction", () => {
 
 // ── Le mot, celui qu'il a désigné ───────────────────────────────────────────
 
-cas("le document dit « Prix accordé au client », pas « Réduction »", () => {
+cas("le document dit « Remise de N % » — son mot du 12 septembre 2026", () => {
   // Son choix du 16 août, contre l'autre mot qu'il proposait lui-même.
-  assert.equal(libelleReduction("15"), "Prix accordé au client 15 %");
+  assert.equal(libelleReduction("15"), "Remise de 15 %");
   assert.doesNotMatch(libelleReduction("15")!, /[Rr]éduction/);
 });
 
 cas("un pourcentage rond ne traîne pas ses décimales", () => {
-  assert.equal(libelleReduction("5"), "Prix accordé au client 5 %");
-  assert.equal(libelleReduction("5.00"), "Prix accordé au client 5 %");
-  assert.equal(libelleReduction("7.5"), "Prix accordé au client 7,5 %");
+  assert.equal(libelleReduction("5"), "Remise de 5 %");
+  assert.equal(libelleReduction("5.00"), "Remise de 5 %");
+  assert.equal(libelleReduction("7.5"), "Remise de 7,5 %");
 });
 
 cas("sans réduction, il n'y a pas de phrase — donc rien à imprimer", () => {

@@ -8,6 +8,45 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### Six photos ne font plus six chantiers
+
+*« J'ai ajouté six photos, j'ai fait retour, il m'en a créé six avec une photo
+à chaque fois. »* La fiche client crée le chantier à la première photo ; les
+suivantes, envoyées dans la même boucle, ne le retrouvaient pas — la mémoire du
+chantier créé vivait dans un état React que cette boucle ne voyait pas, et la
+promesse de création s'effaçait dès qu'elle aboutissait.
+
+**Corrigé à la racine** : la promesse vit dans une référence, gardée jusqu'au
+bout ; l'état ne sert plus qu'au rendu, et le bouton d'enregistrement lit la
+même référence. Elle ne s'efface que sur un échec — « Réessayez » réessaie
+désormais pour de bon. `ARCHITECTURE.md` §346 ;
+`test-photos-avant-le-chantier-e2e.ts` rougit sur l'ancien code.
+### La planche B du devis : « Remise », « dont main d'œuvre », les conditions en gras, les CGV au dos
+
+*« Code la planche la B. »* Sa planche du 12 septembre
+(`appli/devis-remise-main-d-oeuvre-conditions.html`), ses réponses du jour même.
+
+**Ce qui change.** « Prix accordé au client » s'appelle **« Remise de N % »**
+partout — un seul mot, dans `reduction-devis.ts`. Sous les lignes, **« + Main
+d'œuvre »** ouvre « dont main d'œuvre HT » sous le total HT : la lecture B, déjà
+comprise dans les lignes, nommée pour le crédit d'impôt du client, jamais
+comptée ; le champ s'ouvre vide, bornée au total HT, le « − » la retire. Sur le
+PDF, **ses notes en maigre, les conditions réglées en gras**. Et dans Réglages →
+Ce qui s'imprime, une case **conditions générales de vente et de règlement**,
+remplie d'office du texte pris de la photo du menuisier (huit clauses gardées,
+quatre laissées, trois ajoutées pour la loi), qu'il efface ou réécrit — imprimée
+**après le bon pour accord**, sur une page à elle. L'écran compte les crochets
+qu'il lui reste à remplir (assureur, médiateur).
+
+**Ce qui a été fait autrement que la planche.** Elle écrivait le mode de
+règlement et le montant de l'acompte dans les notes ; son lot des acomptes
+(la veille) les a mis dans les totaux : on ne les a pas doublés. Le bloc en
+gras porte les phrases qui existent déjà.
+
+**Migration 0090** (`main_doeuvre_ht`, `conditions_generales` sur l'entreprise
+et le devis). `gras` ajouté à la trace du PDF : sans lui, « en gras » ne se
+mesurait pas. Détail : `ARCHITECTURE.md` §345.
+
 ### L'essai de quinze jours, et ce qui se ferme — sa planche du 10 septembre, codée
 
 *« Essai gratuit 15 jours »* · *« la B, mais il ne doit plus rien pouvoir faire

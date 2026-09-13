@@ -28445,7 +28445,7 @@ d'en poser une — ni à l'écran, ni côté serveur.
 Deux blocs jumeaux dans deux écrans divergent au premier ajustement. Le dépôt
 venait d'en payer deux le même jour : la grammaire des TVA et la case du prix,
 corrigées d'un seul côté (§329). Le geste vit donc dans une pièce unique,
-`src/components/atlas/PrixAccordeAuClient.tsx`, que le devis **et** la facture
+`src/components/atlas/Remise.tsx` (alors `PrixAccordeAuClient.tsx`, renommée le 13 septembre — §345), que le devis **et** la facture
 montent :
 
 | | |
@@ -29265,3 +29265,93 @@ les quinze autres cases seront remplies.
 Suites : `test-abonnements.ts` (la règle), `test-essai-lecture-seule-db.ts`
 (la transaction, sous `atlas_app`), `test-essai-e2e.ts` (son geste, écran par
 écran).
+
+## §345 — La planche B du devis : « Remise », « dont main d'œuvre », les conditions en gras, et ses conditions générales au dos
+
+**Sa planche du 12 septembre 2026**, `appli/devis-remise-main-d-oeuvre-conditions.html`,
+et ses réponses le jour même ; codée le 13 sur sa demande : *« code la planche
+la B »*.
+
+| Ce qu'il a demandé | Ce que ça fait |
+|---|---|
+| « Prix accordé au client » devient **« Remise de N % »** | un seul mot à changer : `LIBELLE_REDUCTION` / `libelleReduction` (`src/lib/reduction-devis.ts`) — écran du devis, facture, travaux supplémentaires, PDF et mode d'emploi suivent. La pièce d'écran s'appelle désormais `Remise.tsx` ; les repères de suite `…-prix-accorde` gardent l'ancien nom, délibérément |
+| un bouton **+ Main d'œuvre**, sa ligne sous le total HT — **la B : « dont main d'œuvre HT »** | `devis.main_doeuvre_ht` (migration 0090). Nommée sous le premier « Total HT » écrit, **jamais comptée** : aucun total ne bouge. Facultative, le « − » la retire |
+| le bloc **Notes / conditions en gras** | ses notes en maigre, les conditions réglées en gras — `notesEnGras` dans `composerDocument`, et `gras` ajouté à la trace du PDF pour qu'un contrôle sache le voir |
+| une case **conditions générales de vente et de règlement** dans les réglages, remplie d'un texte par défaut, imprimée **après le bon pour accord** | `entreprises.conditions_generales` et `devis.conditions_generales` (0090), le texte d'origine dans `src/lib/conditions-generales.ts`, l'annexe sur une page neuve après la signature |
+
+**« Dont », pas « plus » — et donc bornée.** La lecture A ajoutait la main
+d'œuvre aux lignes ; il a choisi la B : elle est déjà dedans, le papier la nomme
+(ce qu'un client demande pour son crédit d'impôt). Une part ne dépasse pas le
+tout : `montantMainDoeuvreValide` la ramène au brut HT, à l'écriture comme à la
+régénération d'un brouillon dont les lignes ont fondu. **Le champ s'ouvre
+VIDE** : un montant de main d'œuvre n'a pas de valeur plausible, et un chiffre
+d'office s'imprimerait chez un client (`docs/AGENT.md` §3). Sur la feuille de
+chantier, rien : pas un prix chez le salarié.
+
+**Les conditions générales : l'encodage est INVERSÉ, et c'est sa demande.** Le
+texte de pied (0064) est éteint par défaut (`null`) ; lui a demandé une case
+*« remplie d'un texte par défaut qu'il peut effacer et réécrire »*. Donc :
+`null` = le texte d'origine, `""` = il a tout effacé (rien ne s'imprime, pas
+même le titre), du texte = le sien. Aucune ligne existante n'a été réécrite —
+`null` suffit. Le texte descend sur le devis comme les cinq autres conditions :
+un brouillon rouvert reprend le réglage du jour, un devis envoyé est figé.
+
+**D'où vient le texte d'origine, et ce qu'il n'est pas.** De la photo des CGV
+d'un menuisier qu'il a envoyée, lue clause par clause sur la planche : huit
+reprises, quatre laissées (pénalités à 1,5 × périmées, « aucune indemnité »
+abusive face à un particulier, tribunal imposé, camionnage), trois ajoutées que
+la loi attend d'un devis à un particulier (assurances, rétractation de
+quatorze jours, médiation). **Ce n'est pas un texte juridique validé** — c'est
+son point de départ. Deux crochets restent à lui, l'assureur et le médiateur :
+l'écran des réglages le dit tant qu'ils y sont (`crochetsRestants`), parce
+qu'un « [assureur, n° de contrat] » chez un client ne se voit qu'une fois le
+devis parti. Rien ne s'invente à leur place.
+
+**L'annexe ouvre toujours une page neuve.** Le client signe la dernière page du
+devis et lit les conditions derrière — comme au dos d'un devis papier. En
+petit, replié par `place`, paginé avec le reste.
+
+**Ce qui a été décidé sans lui, et se dit ici.** La planche écrivait « Mode de
+règlement : 30 % à la commande, solde à réception » et « Montant à régler à la
+commande » dans les notes ; depuis, son lot des acomptes (12 septembre au soir,
+§343) a posé l'acompte et le reste à régler **dans les totaux**, avec les
+phrases des acomptes dans les notes. On ne les a pas doublées : le bloc en gras
+porte les phrases qui existent (acomptes, délai, moyens de paiement, pénalités,
+texte de pied), et l'échéancier reste sous le total TTC. Une même somme écrite
+deux fois sur la même page, c'est celle qu'on cesse de croire (`CLAUDE.md`
+§4 bis).
+
+Suites : `test-planche-b-devis.ts` (la règle et la trace du papier),
+`test-planche-b-devis-db.ts` (le dépôt, sous `atlas_app`),
+`test-planche-b-devis-e2e.ts` (son geste). Les suites de la remise ont suivi le
+mot.
+
+## §346 — Le chantier né d'un geste vit dans une RÉFÉRENCE, jamais dans un état
+
+**Payé le 13 septembre 2026.** Six photos choisies d'un coup sur la fiche client,
+puis retour : six chantiers « Mr. Julien », une photo chacun.
+
+**D'où ça partait.** La pellicule (`Pellicule.tsx`) envoie les fichiers un à un
+dans une seule boucle, et cette boucle garde la fonction `assurerChantier` telle
+qu'elle était **avant la première photo** — un rendu React ne remplace pas une
+fonction déjà en cours d'exécution. Or `assurerChantier` lisait la mémoire du
+chantier créé dans un état (`chantierCree`), vide pour cette boucle jusqu'à la
+fin, et **effaçait la promesse de création dès qu'elle aboutissait**. La
+deuxième photo ne trouvait donc plus rien, et recréait ; la troisième aussi.
+
+**La règle, et elle vaut pour tout écran qui crée au premier geste :** ce qui
+doit être lu par un geste déjà en cours vit dans une `useRef`, qui ne vieillit
+pas avec le rendu. `chantierDeCetEcran` garde la promesse **jusqu'au bout** ;
+chaque tour de boucle y lit la même, résolue ou non, et obtient le même
+identifiant. L'état `chantierCree` ne sert plus qu'au rendu (les enfants ont
+besoin de l'identifiant en prop), et le bouton d'enregistrement lit la
+référence lui aussi — une photo encore en route a déjà lancé la création, et
+l'état ne le sait pas encore.
+
+**Elle ne s'efface que sur un échec** : une tentative ratée n'est pas un
+chantier, et « Réessayez » doit pouvoir réessayer. Avant, la promesse rejetée
+restait en place et chaque nouvel essai la rendait telle quelle.
+
+Suite : `test-photos-avant-le-chantier-e2e.ts` — six photos comme lui, et le
+compte se fait en base, pas à l'écran (`CLAUDE.md` §5 bis). Elle rougit sur
+l'ancien code (« 6 chantiers pour un seul client »).

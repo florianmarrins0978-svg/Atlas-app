@@ -280,13 +280,13 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
       "accorde",
       "facture",
     ],
-    geste: "Appuyez sur « + Prix accordé au client », puis renseignez le pourcentage.",
+    geste: "Appuyez sur « + Remise », puis renseignez le pourcentage.",
     // **La pièce commune, et non plus l'écran du devis** : le geste est monté
     // par les deux écrans depuis qu'il l'a demandé sur la facture. Ancrée sur
     // un seul des deux, cette fiche rougirait au premier déménagement — c'est
     // ce qui vient d'arriver.
-    source: "src/components/atlas/PrixAccordeAuClient.tsx",
-    preuves: ["Prix accordé au client, en pourcentage", "+ {LIBELLE_REDUCTION}"],
+    source: "src/components/atlas/Remise.tsx",
+    preuves: ["Remise, en pourcentage", "+ {LIBELLE_REDUCTION}"],
   },
   {
     id: "devis-tva",

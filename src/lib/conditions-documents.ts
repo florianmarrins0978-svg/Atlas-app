@@ -1,3 +1,5 @@
+import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "./conditions-generales";
+
 /**
  * Les conditions qui s'impriment sur un devis, réglées au lieu d'être en dur.
  *
@@ -39,6 +41,13 @@ export type ConditionsLues = {
   moyensPaiement?: string | null;
   rappelerPenalites?: boolean | null;
   textePied?: string | null;
+  /**
+   * Les conditions générales de vente et de règlement (migration 0090).
+   * **Ici l'encodage est INVERSÉ par rapport au texte de pied**, et c'est sa
+   * demande : la case arrive REMPLIE. `null` / absent = le texte d'origine
+   * d'Atlas ; `""` = il a tout effacé, rien ne s'imprime ; du texte = le sien.
+   */
+  conditionsGenerales?: string | null;
 };
 
 /**
@@ -71,6 +80,8 @@ export type Conditions = {
   rappelerPenalites: boolean;
   /** Ajouté tel quel en bas de chaque document. */
   textePied: string | null;
+  /** Imprimées après le bon pour accord. Vide : rien, pas même le titre. */
+  conditionsGenerales: string;
 };
 
 function nombre(valeur: unknown, bornes: { min: number; max: number }): number | null {
@@ -132,6 +143,12 @@ export function lireConditions(brut: ConditionsLues | null | undefined): Conditi
     moyensPaiement: texte(brut?.moyensPaiement),
     rappelerPenalites: brut?.rappelerPenalites === true,
     textePied: texte(brut?.textePied),
+    // Jamais réglé → le texte d'origine : c'est ce qu'il a demandé, « remplie
+    // d'un texte par défaut ». Effacé → vide, et le devis ne l'imprime pas.
+    conditionsGenerales:
+      brut?.conditionsGenerales === null || brut?.conditionsGenerales === undefined
+        ? TEXTE_ORIGINE_CONDITIONS_GENERALES
+        : brut.conditionsGenerales.trim(),
   };
 }
 
@@ -143,6 +160,7 @@ export function normaliserConditions(saisie: ConditionsLues): {
   moyensPaiement: string | null;
   rappelerPenalites: boolean;
   textePied: string | null;
+  conditionsGenerales: string;
 } {
   const c = lireConditions({ ...saisie, validiteJours: saisie.validiteJours ?? null });
   return {
@@ -152,6 +170,7 @@ export function normaliserConditions(saisie: ConditionsLues): {
     moyensPaiement: c.moyensPaiement,
     rappelerPenalites: c.rappelerPenalites,
     textePied: c.textePied,
+    conditionsGenerales: c.conditionsGenerales,
   };
 }
 
@@ -243,6 +262,7 @@ export function conditionsDepuisEntreprise(
         moyensPaiement?: string | null;
         rappelerPenalitesDevis?: boolean | null;
         textePiedDocuments?: string | null;
+        conditionsGenerales?: string | null;
       }
     | null
     | undefined
@@ -254,5 +274,6 @@ export function conditionsDepuisEntreprise(
     moyensPaiement: ligne?.moyensPaiement,
     rappelerPenalites: ligne?.rappelerPenalitesDevis,
     textePied: ligne?.textePiedDocuments,
+    conditionsGenerales: ligne?.conditionsGenerales,
   });
 }

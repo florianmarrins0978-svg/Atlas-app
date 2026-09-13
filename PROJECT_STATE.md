@@ -1,7 +1,27 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-13 · `main`
-· dernière migration `drizzle/0089_essai_gratuit.sql`
+· dernière migration `drizzle/0090_remise_main_doeuvre_conditions_generales.sql`
+
+---
+
+## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026
+
+Sur la fiche client, plusieurs photos choisies d'un coup recréaient un
+chantier par photo : la mémoire du chantier créé au premier geste vit désormais
+dans une référence (`chantierDeCetEcran`), gardée jusqu'au bout, effacée
+seulement sur un échec. Suite `test-photos-avant-le-chantier-e2e.ts`. Détail :
+`ARCHITECTURE.md` §346.
+
+---
+
+## FAIT : LA PLANCHE B DU DEVIS — 13 septembre 2026
+
+« Remise de N % » partout ; « + Main d'œuvre » ouvre « dont main d'œuvre HT »
+sous le total HT — nommée, jamais comptée, bornée au brut ; les conditions
+réglées en gras sur le PDF ; ses conditions générales dans Réglages → Ce qui
+s'imprime, remplies d'office, imprimées après le bon pour accord sur une page
+à elles. **Migration 0090.** Détail : `ARCHITECTURE.md` §345.
 
 ---
 
