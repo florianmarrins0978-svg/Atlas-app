@@ -29908,3 +29908,17 @@ font désormais son geste : on entre, on tape.
 `scripts/test-case-du-prix.ts` tient les deux moitiés — que la sélection aille
 bien de 0 à la fin, et que l'ancienne règle ne soit plus là. Confronté au A, il
 rougit sur les deux.
+
+**ET LE GESTE LUI-MÊME SE JOUE AU NAVIGATEUR**, dans
+`test-devis-refus-a-chiffrer-e2e` : on appuie **dans le vide à gauche du
+chiffre** — là où le doigt tombe, et là où le navigateur défait la sélection —,
+on vérifie que « 1 » est bien sélectionné de bout en bout, **puis on tape
+« 2 » et l'on exige « 2 »**. Sans cette seconde moitié, le contrôle dirait que
+la sélection est là sans jamais vérifier ce qu'elle fait. Remis au A, il rougit
+sur « « 1 » n'est pas sélectionné (1→1) ».
+
+**Ce bloc éprouvait le A jusqu'au 13 septembre** : c'est lui qui a rougi à la
+batterie quand le B est arrivé, et il a été réorienté sur la nouvelle règle
+plutôt que contourné (`CLAUDE.md` §5 bis — quand une suite rougit après un
+changement qu'il a demandé, on adapte le contrôle, on ne remet pas l'ancien
+comportement).
