@@ -34,9 +34,50 @@ l'enregistrement de l'abonnement, sans quoi il paierait sans pouvoir rentrer.
 **Son Atlas à lui ne bouge pas** : sans ligne d'abonnement, ni essai, ni
 lecture seule, ni fermeture. **Migration 0089** (le statut `essai`). Ce qui
 reste à lui : le « 15 » dans l'article 14.2 des conditions, avec la version 3.
-Détail : `ARCHITECTURE.md` §342.
+Détail : `ARCHITECTURE.md` §344.
 
 ---
+
+### Tout le circuit PDF repris : deux portes, et la visionneuse qui ne peignait rien
+
+*« Va vérifier à tous les endroits où on peut télécharger ou regarder le pdf —
+je veux plus que ça se reproduise. »* Dix points d'accès recensés, et trois
+défauts réels trouvés (`ARCHITECTURE.md` §341) :
+
+- **la visionneuse ne peignait AUCUN document** depuis sa livraison du
+  11 septembre. `pdfjs-dist` 6.3 appelle une méthode arrivée dans les
+  navigateurs en 2025 ; là où elle manque, l'écran rend « Le document ne
+  s'ouvre pas ». La version est épinglée à 5.4.624, la dernière qui ne
+  l'appelle pas — et **ce n'est pas l'atelier qui décide : la page du devis est
+  ouverte par ses clients**, avec le téléphone qu'ils ont. La visionneuse peint
+  de nouveau, 18 077 pixels d'encre mesurés ;
+- **« Ouvrir le PDF sans les prix » du planning** ouvrait encore un onglet de
+  Safari, sans flèche de retour : oublié par le lot de la veille ;
+- **la route de la feuille de chantier** écrivait ses deux en-têtes à la main,
+  seule des six. Elle passe par `remise-de-fichier.ts` comme les autres.
+
+`test-tous-les-pdf.ts` tient la règle pour la suite : aucun écran ne remet un
+PDF au navigateur, il n'y a que deux portes. Il a trouvé l'écart de la feuille
+au premier essai, et il sait rougir.
+
+
+### La CI ne jouait plus rien : un module qui s'ouvrait une session en étant lu
+
+Sa CI est rouge depuis le 10 septembre, et pas pour la raison qu'on croyait.
+`ouvrir-session.mjs` appelait `main()` au niveau du module ; `test-ouvrir-session`
+en importe `cheminDuJeton`, si bien que **charger la suite ouvrait une vraie
+session** dans le dépôt courant. Sur la machine d'intégration, où « claude »
+n'est pas installé, elle mourait sur « spawn claude ENOENT ».
+
+Le coût était invisible et total : `npm test` rouge y fait SAUTER la
+construction, les suites navigateur et la connexion derrière un proxy. La CI
+rendait donc un rouge sans avoir rien éprouvé — et c'est exactement ce qu'on
+lui demande de faire à notre place (`AGENTS.md`).
+
+`main()` ne part plus qu'en appel direct. `test-ouvrir-session` porte un
+contrôle de plus, qui tient l'import lui-même et **sait rougir** : remis en
+l'état d'avant, il retrouve le défaut et le nomme.
+
 ## 2026-09-12
 
 ### L'acompte sur le devis — la B, codée le soir même
@@ -91,7 +132,7 @@ lié à la transaction : le second attend, puis trouve le brouillon du premier.
 que le devis est envoyé. `devis.acompte_pourcent` reste : c'est le réglage
 recopié, la phrase des notes. Règle pure : `src/lib/acomptes-devis.ts`.
 Suites : `test-acomptes-devis` (18), `test-acomptes-pdf` (6),
-`test-acomptes-devis-e2e` (son geste). Détail : `ARCHITECTURE.md` §341.
+`test-acomptes-devis-e2e` (son geste). Détail : `ARCHITECTURE.md` §343.
 
 **Le 13 au matin, sa correction :** *« pour le client sur le devis il faut
 seulement écrire acompte à l'avancement 75 %, enlève les parenthèses ; pareil

@@ -13,7 +13,7 @@ en tête de l'accueil compte, rougit à trois jours de la fin ; au 16ᵉ jour,
 fermeture vit dans `withEntreprise` (transaction `READ ONLY`), à un seul
 endroit. À « Artisan », les absences et les retours s'ouvrent sur « c'est dans
 Entreprise ». Son Atlas à lui, sans ligne d'abonnement, ne bouge pas.
-**Migration 0089.** Détail : `ARCHITECTURE.md` §342.
+**Migration 0089.** Détail : `ARCHITECTURE.md` §344.
 
 ---
 
@@ -25,7 +25,22 @@ Réglages ; « + Ajouter un acompte » pour un 2ᵉ à mi-parcours (50 %) et un 
 et le montant, à l'écran et sur le PDF ; le « − » retire la ligne, la phrase
 du réglage reste dans les notes. Colonne **Unité** après Qté. Au passage, le
 PDF envoyé porte enfin la validité et les conditions (il ne les portait pas —
-seul l'aperçu). **Migration 0088.** Détail : `ARCHITECTURE.md` §341.
+seul l'aperçu). **Migration 0088.** Détail : `ARCHITECTURE.md` §343.
+
+---
+
+## FAIT : TOUT LE CIRCUIT PDF — 13 septembre 2026
+
+*« Va vérifier à tous les endroits où on peut télécharger ou regarder le pdf. »*
+Dix points recensés, trois défauts réels : **la visionneuse ne peignait aucun
+document** depuis le 11 (pdf.js exigeait une méthode d'un an — épinglé à
+5.4.624), le planning ouvrait encore un onglet de Safari, et la route de la
+feuille écrivait ses en-têtes à la main. `test-tous-les-pdf.ts` tient la règle :
+deux portes, et rien d'autre. **Aucune migration.** Détail :
+`ARCHITECTURE.md` §341.
+
+**Ce qui reste à lui :** dire si la feuille de partage d'iOS range le fichier —
+aucun WebKit ici.
 
 ---
 

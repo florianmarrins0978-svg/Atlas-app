@@ -13,7 +13,7 @@ langage, et rien n'y entre sans son accord.
 
 **Codé** (*« Parfait code la B »*) : migration 0088, `src/lib/acomptes-devis.ts`,
 l'écran, le PDF, la colonne Unité, trois suites. Détail : `ARCHITECTURE.md`
-§341, `CHANGELOG.md` du 12 septembre. **Reste à lui : la facture d'acompte.**
+§343, `CHANGELOG.md` du 12 septembre. **Reste à lui : la facture d'acompte.**
 
 **Sa demande :** *« rajouter un acompte automatisé sur le devis, un peu comme
 on fait pour rajouter une TVA »*. Planche `appli/l-acompte-sur-le-devis.html`,
@@ -981,13 +981,13 @@ absences (Réglages → Équipe) et les retours d'intervention s'ouvrent, à
 « Artisan », sur « c'est dans Entreprise » (`FonctionReservee`) ; la garde
 `exigerFonction` tient les actions ; la pastille des retours s'éteint ; les
 salariés d'un « Artisan » ne se voient plus réclamer un retour. Sans
-abonnement, tout reste ouvert. `ARCHITECTURE.md` §342.
+abonnement, tout reste ouvert. `ARCHITECTURE.md` §344.
 
 ### ~~3. La durée de l'essai gratuit n'est pas décidée~~ — DÉCIDÉE ET CODÉE (10 → 13 septembre 2026)
 
 *« Essai gratuit 15 jours »*. Migration 0089, `JOURS_ESSAI`, la ligne posée par
 la porte, le ruban, la lecture seule au 16ᵉ jour dans `withEntreprise`.
-`ARCHITECTURE.md` §342.
+`ARCHITECTURE.md` §344.
 
 **Ce qui reste à LUI :** l'article 14.2 des conditions publiées dit encore
 « [À COMPLÉTER — 14 ou 30 jours] ». Une version publiée ne se modifie jamais :
@@ -1728,29 +1728,17 @@ téléphone, barre d'adresse comprise (`scripts/e2e-browser.ts`).
 
 ---
 
-## ⏳ LA VISIONNEUSE PDF EXIGE UNE API TRÈS RÉCENTE — à lui faire essayer
+## ✅ ~~La visionneuse PDF exige une API très récente~~ — **CORRIGÉ le 13 septembre 2026**
 
-**Relevé le 12 septembre 2026**, en jouant `test-visionneuse-pdf-e2e` :
-la visionneuse livrée la veille affiche **« Le document ne s'ouvre pas
-(this[#ne].getOrInsertComputed is not a function) »**.
+**C'était un vrai défaut, et il était total :** la visionneuse livrée le
+11 septembre ne peignait AUCUN document — « Le document ne s'ouvre pas
+(getOrInsertComputed is not a function) ». `pdfjs-dist` est épinglé à 5.4.624,
+la dernière version qui n'appelle pas cette méthode ; la visionneuse peint de
+nouveau (18 077 pixels d'encre mesurés). `test-visionneuse-pdf.ts` tient
+l'épingle (`ARCHITECTURE.md` §341).
 
-`pdfjs-dist` 6.3 appelle `Map.prototype.getOrInsertComputed`, une méthode
-d'un an à peine. **Le Chromium de ce poste (141) ne l'a pas** — le build
-`legacy` de pdf.js ne change rien, il l'appelle aussi (22 fois).
-
-| | |
-|---|---|
-| ce qui est SÛR | sur un navigateur sans cette méthode, « Voir la facture en PDF » rend un refus, jamais le document |
-| ce qui n'est PAS su | si le Safari de SON iPhone l'a. WebKit l'a implémentée, mais la version compte |
-
-**Ce qui tranche en dix secondes, et il n'y a que lui qui peut le faire :**
-ouvrir une facture, appuyer sur « Voir la facture en PDF », et dire si le
-document s'affiche ou si un refus paraît.
-
-**Si ça refuse chez lui, la racine est la VERSION de pdf.js**, pas un
-rattrapage à poser autour (ce serait le pansement du §4 quater) : il faut
-descendre `pdfjs-dist` à une version qui n'exige pas cette méthode, et
-l'épingler avec la raison.
+**Ce qui reste à lui, et à lui seul :** dire si la feuille de partage d'iOS
+range bien le fichier. Aucun WebKit ici.
 
 ## ⚠ DEUX ROUGES SUR LES MONTANTS D'UN DEVIS — relevés le 12 septembre 2026
 

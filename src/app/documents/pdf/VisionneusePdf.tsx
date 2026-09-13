@@ -16,6 +16,25 @@ import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
  * dans `public/` : pdf.js refuse un fil dont la version n'est pas la sienne,
  * et une copie faite à la main ne suit pas les mises à jour du paquet.
  *
+ * ─── LA VERSION EST ÉPINGLÉE, ET CE N'EST PAS DE LA PRUDENCE DE PRINCIPE ───
+ *
+ * **`pdfjs-dist` est figé à 5.4.624 dans `package.json`, sans accent
+ * circonflexe.** À partir de la 5.5, pdf.js appelle
+ * `Map.prototype.getOrInsertComputed` — une méthode arrivée dans les
+ * navigateurs en 2025. Là où elle manque, l'écran ne rend pas une page moins
+ * jolie : il rend **« Le document ne s'ouvre pas »**, et le devis reste
+ * invisible.
+ *
+ * Mesuré le 13 septembre 2026 : avec la 6.3, la visionneuse refusait déjà sur
+ * le Chromium de l'atelier (141). Et ce n'est pas l'atelier qui décide — **la
+ * page publique du devis est ouverte par SES CLIENTS**, sur le téléphone
+ * qu'ils ont. Faire dépendre la lecture d'un devis d'une méthode d'un an,
+ * c'est perdre le client qui n'a pas mis son téléphone à jour.
+ *
+ * Remonter cette version se fait donc en le vérifiant, jamais par habitude :
+ * `grep -c getOrInsertComputed node_modules/pdfjs-dist/build/pdf.mjs` doit
+ * rendre 0, et `test-visionneuse-pdf.ts` le tient désormais.
+ *
  * **Chargé à l'appui, jamais au départ.** La bibliothèque pèse plus que tout
  * le reste de l'écran ; elle n'est demandée que quand cet écran s'ouvre.
  */
