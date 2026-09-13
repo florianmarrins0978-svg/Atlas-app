@@ -47,7 +47,38 @@ planche la pose entre Qté et P.U. HT, avec les unités usuelles (u, ml, m², m�
 kg, h, forfait) sous la ligne quand le champ prend le doigt. Même planche,
 même adresse.
 
-## VINGT SUITES NAVIGATEUR SONT ROUGES SUR `main` (12 septembre 2026, au soir)
+## DIX-HUIT SUITES NAVIGATEUR ROUGES SUR `main` (13 septembre 2026, relevé)
+
+**Batterie complète jouée dans un atelier à un seul occupant** — dossier, port,
+base et verrou vérifiés libres avant de lancer : **131/150** aux suites
+navigateur. Types, lint, mémoire, **365/365 suites base** et connexion derrière
+un proxy sont verts.
+
+**Ce qui a changé depuis le relevé de la veille :**
+
+| | |
+|---|---|
+| `test-visionneuse-pdf-e2e` | **corrigé** — pdf.js exigeait une méthode d'un an ; version épinglée (`ARCHITECTURE.md` §341) |
+| `test-reste-equipes-e2e` | passé au vert de lui-même |
+| `test-planning-e2e` | **rouge du jour, et il était mien** : la feuille passe par la visionneuse, le contrôle lisait encore l'adresse directe. Adapté à la règle |
+| `test-anneau-dictee-e2e` | **idem** : il réclamait le lecteur retiré. Vise désormais la note jetable (§5 bis) |
+
+**Les dix-huit qui restent vivaient déjà sur `main` avant ces lots** :
+`adresse-suggestions`, `anneau-vers-devis`, `carte-reponse-mene-au-geste`,
+`catalogue-mes-mots`, `devis-client` (666 px pour 664), `devis-complet` (le
+total d'une ligne ne s'affiche pas), `devis-papier` (5 400 € au lieu de 900),
+`fiche-client`, `fiche-entretien`, `ia-01`, `madame-lucie`,
+`message-au-client`, `planning-vers-facture`, `recherche-client`,
+`reprise-chantier`, `reprise-morceau`, `suivi-devis`, `anneau-dictee` (le reste
+de la suite, qui demande une transcription — pas de clé sur ce poste).
+
+**Les deux qui comptent le plus, et qui portent sur un CHIFFRE :**
+`devis-complet` et `devis-papier`. Un devis faux part chez un client.
+
+**À reprendre en propre**, suite par suite : le journal entier est nécessaire
+(`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
+
+## ~~Vingt suites navigateur rouges~~ — relevé de la veille (12 septembre 2026)
 
 **Relevé, pas causé.** La batterie du 12 septembre au soir rend **126/146** aux
 suites navigateur. Le lot de ce soir ne touche **aucun fichier de `src/`**
