@@ -136,8 +136,8 @@ tout étant sélectionné, une seule touche efface — c'est moins de gestes qu'
 Retiré avec : le `ControlOrMeta+a` que deux suites employaient pour contourner
 l'ancien comportement, et qui les aurait laissées vertes le jour où le B saute.
 
-**RELEVÉ DU 13 SEPTEMBRE AU SOIR, après le lot des calculs : 135/150**, et
-**aucun rouge nouveau** — les quinze restants sont tous dans la liste
+**RELEVÉ DU 13 SEPTEMBRE AU SOIR, après le lot des calculs et le B : 136/151**,
+et **aucun rouge nouveau** — les quinze restants sont tous dans la liste
 ci-dessus. Trois sont passées au vert (`anneau-dictee`, `devis-complet`,
 `devis-papier`) ; `reduction-devis` a rejoint la liste un moment — c'est elle
 qui a livré l'écriture perdue plus haut, et elle est verte depuis.
