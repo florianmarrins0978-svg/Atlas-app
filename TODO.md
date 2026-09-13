@@ -9,6 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## À FAIRE — `getEntreprise` lit TOUTES les colonnes, et fait tomber deux écrans
+
+Né de sa panne du 13 septembre 2026 (`ARCHITECTURE.md` §351). `getEntreprise`
+fait `tx.select()` sans projection : Drizzle nomme alors chaque colonne du
+schéma, y compris celles que l'écran n'emploie pas. Une colonne ajoutée par une
+migration que la base n'a pas encore reçue couche donc « Planning » ET
+« Terminés » d'un coup — sur du code juste.
+
+Le rattrapage automatique des migrations retire la cause courante ; il ne retire
+pas cette fragilité. **Ce qu'il faut :** nommer les colonnes dont chaque
+appelant a besoin, ou n'exposer qu'une projection. À faire quand un lot touche
+déjà ce dépôt — pas d'un seul geste sur les vingt-huit appelants.
+
+---
+
 ## ~~CHOISIE, À CODER — L'ACOMPTE SUR LE DEVIS, la B~~ — CODÉE LE SOIR MÊME (12 septembre 2026)
 
 **Codé** (*« Parfait code la B »*) : migration 0088, `src/lib/acomptes-devis.ts`,

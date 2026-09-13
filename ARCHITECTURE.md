@@ -29718,3 +29718,73 @@ suites qui précèdent celle-ci remplissent septembre. C'est la suite jouée
 seule, sur une base fraîche, qui a montré l'écran muet. Depuis, la phrase se
 rend au-dessus du message de mois vide, et la suite accepte zéro rangée avant
 d'ouvrir l'œil — c'est le cas qui compte.
+
+## §351 — La base se rattrape à CHAQUE allumage, pas le jour où le code bouge
+
+**Sa panne du 13 septembre 2026 :** *« Plus rien ne fonctionne ! »* — capture à
+l'appui, « Planning » et « Terminés » tombés ensemble, « Chantiers » debout.
+
+**Ce partage-là nomme la cause à lui seul.** Ces deux écrans lisent l'entreprise
+ENTIÈRE : `contextePlanning` appelle `getEntreprise`, et `tvaDeLaPeriodeCourante`
+aussi. Or `getEntreprise` fait un `select()` sans projection — Drizzle nomme
+alors **toutes** les colonnes du schéma. La liste des chantiers, elle, ne lit
+jamais l'entreprise. Une seule colonne manquante suffit donc à coucher ces deux
+écrans-là et aucun autre.
+
+Reproduit, contre une base arrêtée à la migration 0087 sous le code de `main` :
+
+```
+column "conditions_generales" does not exist
+```
+
+C'est la colonne de la migration **0090** (12-13 septembre). Sa base servait du
+code qui la suppose, et ne l'avait pas.
+
+### Pourquoi aucun geste ne pouvait plus la rattraper
+
+Les deux chemins qui migrent — `.devcontainer/demarrer.sh` et le bouton
+« Chercher les dernières corrections » — le faisaient **sous condition que le
+code vienne de bouger** :
+
+```sh
+if [ "$MISE_A_JOUR" = "faite" ]; then … appliquer-migrations.sh … fi
+```
+
+Cette condition prétend dire *« la base est en retard »*. Elle dit autre chose,
+et l'écart se paie deux fois :
+
+| | |
+|---|---|
+| une migration **échoue** (base pas encore levée, `node_modules` amputé) | elle n'est **jamais retentée** : l'allumage suivant lit « déjà à jour » et ne migre pas. La base reste en arrière **pour toujours** |
+| le code arrive **par l'autre chemin** (le bouton, une reconstruction qui clone déjà à jour) | ce démarrage-ci lit « à jour » et ne migre pas, alors que la base, elle, est bien en retard |
+
+C'est la même famille que le défaut du 9 août 2026 (§ du rôle propriétaire) :
+là, les migrations tournaient sous `atlas_app` et l'échec était avalé ; ici,
+elles ne tournent pas du tout, et rien ne le dit. **Le rôle avait été corrigé,
+la condition était restée.**
+
+### Ce qui a changé
+
+- **Les migrations tournent à chaque allumage**, hors du bloc « code neuf » —
+  après `npm ci` (sinon `tsx` peut manquer), avant de relever le veilleur. Le
+  rejeu ne coûte rien et ne détruit rien : `run-migrations.ts` tient la table
+  `_migrations` et saute ce qui est déjà appliqué.
+- **Le bouton migre avant de regarder si le code a bougé.** Devant un écran
+  tombé sur une base en retard, il est désormais le geste qui répare — il ne
+  l'était plus.
+- **Le script dit COMBIEN il a rattrapé** (`faites : N migration(s)
+  rattrapée(s)`). Une fois le rejeu systématique, « faites » nu ne distingue plus
+  une base déjà à niveau d'une base remise d'aplomb — et c'est exactement la
+  différence qu'il a besoin de lire. `lireIssueMigrations`
+  (`src/lib/issue-mise-a-jour.ts`) en tire la phrase : *« La base avait N
+  version(s) de retard : c'est réparé. Rechargez la page. »*
+
+**Ce qui tient la correction :** `scripts/test-migrations-banc.ts`, trois
+contrôles neufs qui lisent la STRUCTURE des deux appelants — l'appel hors du
+bloc conditionnel côté démarrage, l'appel avant la branche côté bouton. Ils ont
+été confrontés à la version d'avant : **tous deux rougissent**.
+
+**Ce qui reste un jugement, et qu'aucun script ne tiendra :** un `select()` sans
+projection fait dépendre un écran de TOUTES les colonnes de sa table, y compris
+celles qu'il n'emploie pas. C'est ce qui a transformé une migration en retard en
+deux écrans par terre. Inscrit dans `TODO.md`.

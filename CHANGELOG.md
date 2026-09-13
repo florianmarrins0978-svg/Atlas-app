@@ -8,6 +8,28 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### « Plus rien ne fonctionne » : la base était restée en arrière du code
+
+« Planning » et « Terminés » tombés ensemble, « Chantiers » debout. Ces deux
+écrans-là lisent l'entreprise entière (`getEntreprise`, un `select()` sans
+projection) : une seule colonne manquante suffit à les coucher tous les deux et
+aucun autre. Reproduit contre une base arrêtée à la migration 0087 sous le code
+de `main` : `column "conditions_generales" does not exist` — la colonne de la
+migration 0090.
+
+**La racine n'était pas la migration, c'était sa CONDITION.** Les deux chemins
+qui l'appliquent — le démarrage de l'espace et le bouton « Chercher les
+dernières corrections » — ne migraient que lorsque le code venait de bouger. Une
+migration échouée n'était donc jamais retentée, et l'allumage suivant répondait
+« déjà à jour » : plus aucun geste ne rattrapait la base. Elles tournent
+désormais à chaque allumage et à chaque appui, le rejeu ne coûtant rien
+(`_migrations` saute ce qui est appliqué). Le script dit combien il a rattrapé,
+et l'écran le rend : « La base avait N version(s) de retard : c'est réparé. »
+
+Tenu par `scripts/test-migrations-banc.ts`, éprouvé rouge contre la version
+d'avant. Détail : `ARCHITECTURE.md` §351.
+
+
 ### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
 
 Sa capture et ses quatre demandes du jour, dessinées d'abord

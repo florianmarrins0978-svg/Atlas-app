@@ -5,6 +5,16 @@
 
 ---
 
+## FAIT : LA BASE SE RATTRAPE À CHAQUE ALLUMAGE — 13 septembre 2026
+
+Sa panne : *« Plus rien ne fonctionne ! »*, « Planning » et « Terminés » tombés,
+« Chantiers » debout. Sa base était restée en 0087 sous le code de `main` —
+`column "conditions_generales" does not exist` (0090). Les deux chemins qui
+migrent ne le faisaient que le jour où le code bougeait : un échec n'était jamais
+retenté, et plus aucun geste ne rattrapait la base. Migrations à chaque allumage
+et à chaque appui du bouton, le compte rattrapé rendu à l'écran.
+`ARCHITECTURE.md` §351 · `scripts/test-migrations-banc.ts`.
+
 ## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026
 
 Sur la fiche client, plusieurs photos choisies d'un coup recréaient un

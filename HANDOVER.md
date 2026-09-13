@@ -8,6 +8,29 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — LA BASE SE RATTRAPE À CHAQUE ALLUMAGE (13 septembre 2026)
+
+**Sa panne :** *« Plus rien ne fonctionne ! »* — « Planning » et « Terminés »
+tombés ensemble, « Chantiers » debout.
+
+**À retenir pour la prochaine panne de cette forme :** ce partage nomme la
+cause. Planning et Terminés lisent l'entreprise ENTIÈRE (`getEntreprise`, un
+`select()` sans projection, donc toutes les colonnes du schéma) ; la liste des
+chantiers non. **Deux écrans par terre et un debout = une colonne manquante,
+donc une migration non appliquée.** Reproduit contre une base arrêtée en 0087
+sous le code de `main` : `column "conditions_generales" does not exist` (0090).
+
+**La racine n'était pas la migration, c'était sa CONDITION** : les deux chemins
+qui migrent — `.devcontainer/demarrer.sh` et le bouton « Chercher les dernières
+corrections » — ne le faisaient que lorsque le code venait de bouger. Une
+migration échouée n'était jamais retentée, et l'allumage suivant répondait
+« déjà à jour ». Plus aucun geste ne rattrapait sa base.
+
+Désormais : migrations à chaque allumage et à chaque appui (rejeu gratuit,
+`_migrations` saute ce qui est appliqué), et le compte rattrapé remonte jusqu'à
+l'écran. `ARCHITECTURE.md` §351, `scripts/test-migrations-banc.ts` (éprouvé
+rouge contre la version d'avant).
+
 ## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
 
 | | |

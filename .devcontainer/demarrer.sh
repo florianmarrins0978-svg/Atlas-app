@@ -264,15 +264,44 @@ if [ "$MISE_A_JOUR" = "faite" ]; then
   fi
   echo "dépendances : $DEPENDANCES" >> "$JOURNAL"
 
-  # **Les migrations passent par leur propre script, sous le rôle
-  # PROPRIÉTAIRE.** Lancées ici avec la variable ambiante, elles tournaient sous
-  # `atlas_app` — qui n'a aucun droit de créer une table — et le `|| true`
-  # avalait l'échec. Le code neuf arrivait sur une base vieille, et l'écran qui
-  # touchait une table absente tombait sans que rien ne l'ait annoncé.
-  MIGRATIONS="$(bash "$(dirname "$0")/appliquer-migrations.sh" "$CD")"
-  echo "migrations : $MIGRATIONS" >> "$JOURNAL"
+  CODE_NEUF=1
+fi
 
-  # Le banc repart, sur le code neuf et des dépendances entières.
+# ─────────────────────────────────────────────────────────────────────────────
+# **LES MIGRATIONS TOURNENT À CHAQUE ALLUMAGE — 13 septembre 2026, et c'est la
+# racine de sa panne du soir.**
+#
+# Elles vivaient DANS le `if` ci-dessus : on ne migrait que le jour où le code
+# bougeait. Cette condition prétend dire « la base est en retard » ; elle dit
+# autre chose, et l'écart se paie deux fois :
+#
+#   1. **une migration qui échoue n'est jamais retentée.** Base pas encore
+#      levée, `node_modules` amputé, un `tsx` qui manque : l'échec est écrit
+#      dans le journal, et l'allumage suivant répond « déjà à jour » — donc ne
+#      migre pas. La base reste en arrière POUR TOUJOURS, et aucun bouton ne la
+#      rattrape ;
+#   2. **le code peut arriver par un autre chemin** — le bouton « Chercher les
+#      dernières corrections », une reconstruction qui clone déjà à jour. Ce
+#      démarrage-ci lit « à jour » et ne migre pas, alors que la base, elle, est
+#      bien en retard sur ce qu'il sert.
+#
+# Ce qu'il a vu le 13 septembre 2026 : « Planning » et « Terminés » tombés
+# ensemble, « Chantiers » debout. Les deux premiers lisent l'entreprise ENTIÈRE
+# (`getEntreprise`, donc toutes ses colonnes) ; la troisième non. Une colonne
+# ajoutée par une migration jamais appliquée (0090) suffit à ce partage exact.
+#
+# **Le rejeu ne coûte rien et ne détruit rien** : `run-migrations.ts` tient la
+# table `_migrations` et saute ce qui est déjà appliqué. Ce qui coûtait, c'était
+# de ne pas le faire.
+#
+# **Les migrations passent par leur propre script, sous le rôle PROPRIÉTAIRE.**
+# Lancées ici avec la variable ambiante, elles tournaient sous `atlas_app` — qui
+# n'a aucun droit de créer une table — et le `|| true` avalait l'échec.
+MIGRATIONS="$(bash "$(dirname "$0")/appliquer-migrations.sh" "$CD")"
+echo "migrations : $MIGRATIONS" >> "$JOURNAL"
+
+# Le banc repart, sur le code neuf et des dépendances entières.
+if [ -n "${CODE_NEUF:-}" ]; then
   lancer_veilleur
 fi
 

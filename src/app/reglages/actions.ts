@@ -16,7 +16,7 @@ import { nommerEquipe } from "@/server/repositories/equipes";
 import { noterAbsenceEquipe, retirerAbsenceEquipe } from "@/server/repositories/absences-equipe";
 import { phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { versionExecutee } from "@/server/version-executee";
-import { issueApresMiseAJour } from "@/lib/issue-mise-a-jour";
+import { issueApresMiseAJour, lireIssueMigrations } from "@/lib/issue-mise-a-jour";
 import { estBancDEssai } from "@/profil-banc";
 import { revalidatePath } from "next/cache";
 
@@ -431,37 +431,51 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
     const etat = stdout.trim().split("\n").pop() ?? "";
     await noterIssue(etat);
 
-    if (etat === "faite") {
-      // **Le code neuf attend une base neuve, et l'échec ne s'avale plus.**
-      //
-      // Cet appel lançait `npm run db:migrate` avec la variable ambiante — donc
-      // sous `atlas_app`, le rôle applicatif, qui n'a délibérément aucun droit
-      // de créer une table. Il échouait sur « permission denied for schema
-      // public », et le `.catch(() => undefined)` faisait disparaître l'échec :
-      // le patron lisait « Mise à jour récupérée », puis un écran tombait sur
-      // une table absente sans que rien ne relie les deux (9 août 2026).
-      //
-      // Le script choisit maintenant le rôle propriétaire et rend son verdict.
-      const migrations = await executer(
-        "bash",
-        [`${racine}/.devcontainer/appliquer-migrations.sh`, racine],
-        { timeout: 180_000 }
-      )
+    if (etat.startsWith("impossible")) {
+      return { succes: false, erreur: `Mise à jour ${etat}` };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // **LA BASE SE RATTRAPE MÊME QUAND LE CODE N'A PAS BOUGÉ — 13 septembre
+    // 2026, et c'est la racine de sa panne du soir.**
+    //
+    // Ce rattrapage vivait sous un `if (etat === "faite")` : on ne migrait que
+    // l'appui qui ramenait du code neuf. Cette condition prétend dire « la base
+    // est en retard » ; elle dit autre chose, et l'écart l'a laissé sans issue :
+    // une migration qui échoue (base pas encore levée, `node_modules` amputé)
+    // n'était JAMAIS retentée — l'appui suivant lisait « déjà à jour » et ne
+    // migrait pas. Plus aucun bouton ne rattrapait sa base ; « Planning » et
+    // « Terminés » restaient tombés, pendant que « Chantiers » tenait debout.
+    //
+    // **Le rejeu ne coûte rien et ne détruit rien** : `run-migrations.ts` tient
+    // la table `_migrations` et saute ce qui est déjà appliqué.
+    //
+    // **Et il passe par le rôle PROPRIÉTAIRE, avec son échec dit.** Lancé avec
+    // la variable ambiante, il tournait sous `atlas_app` — qui n'a aucun droit
+    // de créer une table —, et le `.catch(() => undefined)` faisait disparaître
+    // l'échec : le patron lisait « Mise à jour récupérée », puis un écran
+    // tombait sur une table absente sans que rien ne relie les deux (9 août).
+    const migrations = lireIssueMigrations(
+      await executer("bash", [`${racine}/.devcontainer/appliquer-migrations.sh`, racine], {
+        timeout: 180_000,
+      })
         .then((r) => r.stdout.trim().split("\n").pop() ?? "")
-        .catch((e) => `échec : ${e instanceof Error ? e.message : String(e)}`);
+        .catch((e) => `échec : ${e instanceof Error ? e.message : String(e)}`)
+    );
 
-      if (migrations.startsWith("échec")) {
-        // Succès de la récupération, échec de la base : le dire tel quel. Une
-        // demi-vérité sur cet écran envoie chercher la panne au mauvais endroit.
-        return {
-          succes: true,
-          etat,
-          message:
-            `Code récupéré${await suffixeVersion()}, mais LA BASE N'A PAS SUIVI — ${migrations}. ` +
-            `Les écrans qui touchent une table neuve vont tomber : c'est ça, et rien d'autre.`,
-        };
-      }
+    if (!migrations.faites) {
+      // Échec de la base : le dire tel quel. Une demi-vérité sur cet écran
+      // envoie chercher la panne au mauvais endroit.
+      return {
+        succes: true,
+        etat,
+        message:
+          `LA BASE N'A PAS SUIVI — ${migrations.raison}. ` +
+          `Les écrans qui touchent une table neuve vont tomber : c'est ça, et rien d'autre.`,
+      };
+    }
 
+    if (etat === "faite") {
       // **La version RAPIDE ne se recompile jamais**, et ce message le
       // promettait. La règle — quoi dire, et s'il faut couper le serveur pour
       // que le code neuf soit servi — vit dans `src/lib/issue-mise-a-jour.ts`,
@@ -477,9 +491,19 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
       if (issue.couperLeServeur) programmerReconstruction();
       return { succes: true, etat, message: issue.message };
     }
-    if (etat.startsWith("impossible")) {
-      return { succes: false, erreur: `Mise à jour ${etat}` };
+
+    // **Le code était à jour, la base non.** C'est exactement sa panne du
+    // 13 septembre : rien à récupérer, et pourtant deux écrans par terre. Lui
+    // rendre « Vous étiez déjà à jour » ici serait lui cacher la réparation
+    // qu'il vient de déclencher — il repartirait chercher ailleurs.
+    if (migrations.rattrapees > 0) {
+      return {
+        succes: true,
+        etat,
+        message: `La base avait ${migrations.rattrapees} version(s) de retard : c'est réparé. Rechargez la page.`,
+      };
     }
+
     return { succes: true, etat, message: `Vous étiez déjà à jour${await suffixeVersion()}.` };
   } catch (e) {
     const raison = e instanceof Error ? e.message.slice(0, 200) : "la mise à jour a échoué";
