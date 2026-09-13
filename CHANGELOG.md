@@ -8,6 +8,28 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### « Impossible de recommencer » : le geste restait éteint après un refus
+
+*« J'ai fait une dictée, ça n'a pas fonctionné, et impossible de
+recommencer. »* Sous un message qui disait « Réessayez ».
+
+`DevisDepuisDictee.valider()` éteignait son bouton à l'entrée et ne le rendait
+que sur le chemin qui réussit. Un appel qui tombe laissait donc l'unique geste
+de l'écran **éteint pour toujours** : il invitait à refaire ce qu'il
+empêchait, et il ne restait qu'à recharger — ce que personne ne devine.
+
+Le drapeau se rend maintenant dans un `finally`. Et le `catch` ne mange plus la
+panne : elle est journalisée avant que l'écran parle, sans quoi personne ne
+saurait jamais POURQUOI la dictée a échoué (`AGENTS.md` — rendre le défaut
+bavard avant de corriger).
+
+`test-geste-jamais-bloque.ts` lit tous les écrans et refuse la forme : un
+drapeau posé avant un appel et rendu nulle part. Sa première version accusait
+`InformationsClient`, qui rend pourtant le sien dans son `catch` — corrigée
+avant d'être livrée, parce qu'un contrôle qui parle à tort s'apprend à être
+ignoré.
+
+
 ### Tout le circuit PDF repris : deux portes, et la visionneuse qui ne peignait rien
 
 *« Va vérifier à tous les endroits où on peut télécharger ou regarder le pdf —
