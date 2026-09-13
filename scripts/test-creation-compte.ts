@@ -181,6 +181,16 @@ test("un capital illisible se refuse à la question, pas en silence", () => {
   assert.ok(refusDe(q("capital"), { capital: "mille euros" }), "un capital en lettres est accepté");
 });
 
+test("UN CAPITAL PLUS GRAND QUE LA COLONNE SE REFUSE ICI — 13 septembre 2026", () => {
+  // Trouvé en balayant toutes les façons de remplir la porte : quinze chiffres
+  // passaient la règle sans un mot, et PostgreSQL refusait la ligne (22003) —
+  // donc la création du compte ENTIÈRE, pour une case facultative. La colonne
+  // est `numeric(12,2)`, et c'est elle qui commande.
+  assert.ok(refusDe(q("capital"), { capital: "999999999999999" }), "un capital que la base ne peut pas porter passe encore");
+  assert.equal(refusDe(q("capital"), { capital: "9999999999,99" }), null, "le plus grand capital possible est refusé à tort");
+  assert.equal(refusDe(q("capital"), { capital: "10 000 000" }), null, "dix millions ne sont pas un montant extravagant");
+});
+
 test("ce qu'on propose d'office est ce qui part en base", () => {
   const vues = reponsesProposees({ email: "anne@exemple.fr", entreprise: "Amiot Paysage" });
   assert.equal(vues.emailPro, "anne@exemple.fr");

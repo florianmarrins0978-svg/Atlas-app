@@ -72,11 +72,40 @@ portera ce que la base a refusé, et il n'y aura plus à chercher.
 
 ---
 
+## « Arrête le rafistolage, va à la racine »
+
+Vous avez raison, et c'est ce qui a été fait ensuite. Ce qui précède rendait la
+panne **visible** ; ça ne la réparait pas.
+
+**1. Le seul chemin éprouvé était le plus lisse.** Le parcours joué pour
+reproduire votre panne remplissait toutes les cases avec des valeurs propres.
+En essayant les autres façons de remplir — trente-sept —, un vrai défaut est
+sorti : **un capital trop grand faisait tomber la création du compte entière**,
+pour une case facultative. La limite de ce que la base peut porter vit
+maintenant dans la règle elle-même, celle qui décide pour l'écran comme pour
+l'enregistrement.
+
+**2. Votre machine savait, et ne le disait à personne.** Votre fiche d'état
+publiait la version du code, jamais l'état de votre base — or les deux sont
+indépendants : « tout concorde » peut être vrai pendant qu'il manque deux
+migrations, et c'est alors l'enregistrement qui tombe. Elle porte désormais
+une ligne **Base** :
+
+> Base : à jour (105 migrations)
+> Base : EN RETARD sur le code — 2 migration(s) non appliquée(s) : …
+
+Et quand c'est en retard, elle le met en tête de ce qu'il faut conclure, avec
+le seul geste utile : rallumer l'espace — qui ne touche à aucune de vos
+données.
+
+---
+
 ## Ce qui reste ouvert
 
 | Ce qui manque | Qui |
 |---|---|
-| **rien ne compare votre base au code servi.** L'échec des migrations au démarrage n'est publié nulle part : une base restée en arrière ne se voit ni de votre côté ni du nôtre | nous, au prochain lot qui touche l'espace |
+| ~~rien ne compare votre base au code servi~~ | **fait** — votre fiche le dit maintenant |
+| la RAISON d'un échec de migration reste dans un journal non publié : on voit le résultat, pas la cause | nous, au prochain lot qui touche l'espace |
 | **les autres écrans tombent encore sur « Une erreur »** quand la base refuse. Seule la création de compte parle aujourd'hui | nous, au fil de ce qu'on touche |
 | **quinze vérifications sont rouges sur la version en ligne**, sans rapport avec ce lot (fiche client, fiche d'entretien, dictée). Vérifié : elles l'étaient déjà avant | à traiter, lot à part |
 

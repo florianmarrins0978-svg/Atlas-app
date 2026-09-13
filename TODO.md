@@ -9,7 +9,7 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## RIEN NE COMPARE LA BASE AU CODE — le trou qui a rendu sa panne invisible
+## SA FICHE DIT L'ÉTAT DE SA BASE (fait) — LE RESTE DE L'APPLICATION, NON
 
 **Né de sa plainte du 13 septembre 2026** (« je peux toujours pas créer de
 compte », `ARCHITECTURE.md` §356). Le code servi peut être en avance sur la
@@ -19,11 +19,11 @@ avec un message qui n'accuse jamais la vraie cause.
 Depuis ce lot, **la création de compte** le dit quand la base la refuse. Le
 reste de l'application, non — et personne ne peut le savoir de l'extérieur :
 
-| Ce qui manque | Ce que ça coûte |
+| Ce qui manquait | Où ça en est |
 |---|---|
-| `.devcontainer/appliquer-migrations.sh` **dit** son échec au journal de démarrage, et ce journal n'est publié nulle part | une base restée en arrière ne se voit pas, ni pour lui ni pour nous |
-| la fiche de son espace ne porte pas l'état de la base | `scripts/rapporter-espace.mjs` publie le commit récupéré et le commit servi, jamais les migrations : **ajouter « base : à jour / N en retard »** (`public._migrations` face au dossier `drizzle/`, que le rôle applicatif sait lire) |
-| aucun contrôle de santé ne compare les deux | `/api/health/ready` regarde que PostgreSQL répond, pas qu'il porte les tables que ce code attend |
+| ~~la fiche de son espace ne porte pas l'état de la base~~ | **FAIT le 13 septembre 2026** : `scripts/_etat-de-la-base.mjs` compare `public._migrations` au dossier `drizzle/`, la fiche porte la ligne **Base**, et le verdict passe avant le retard de code (`ARCHITECTURE.md` §356) |
+| `.devcontainer/appliquer-migrations.sh` **dit** son échec au journal de démarrage, et ce journal n'est publié nulle part | **reste ouvert**, et c'est moins grave depuis que la fiche mesure la base elle-même : on voit le RÉSULTAT, pas encore la raison |
+| aucun contrôle de santé ne compare les deux | **reste ouvert** : `/api/health/ready` regarde que PostgreSQL répond, pas qu'il porte les tables que ce code attend. Une application déployée n'a pas de fiche |
 
 **Qui :** nous, au prochain lot qui touche le banc.
 

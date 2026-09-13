@@ -102,6 +102,14 @@
 <p>La cause la plus probable reste une <strong>base en retard sur le code servi</strong> : votre espace annonçait six versions de retard au moment de votre capture. Il a redémarré depuis, et il sert maintenant la dernière version.</p>
 <p><strong>Donc : réessayez.</strong> Si l'écran d'erreur revient, envoyez la capture — elle portera ce que la base a refusé, et il n'y aura plus à chercher.</p>
 <hr>
+<h2 id="-arrête-le-rafistolage-va-à-la-racine-">« Arrête le rafistolage, va à la racine »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Vous avez raison, et c'est ce qui a été fait ensuite. Ce qui précède rendait la panne <strong>visible</strong> ; ça ne la réparait pas.</p>
+<p><strong>1. Le seul chemin éprouvé était le plus lisse.</strong> Le parcours joué pour reproduire votre panne remplissait toutes les cases avec des valeurs propres. En essayant les autres façons de remplir — trente-sept —, un vrai défaut est sorti : <strong>un capital trop grand faisait tomber la création du compte entière</strong>, pour une case facultative. La limite de ce que la base peut porter vit maintenant dans la règle elle-même, celle qui décide pour l'écran comme pour l'enregistrement.</p>
+<p><strong>2. Votre machine savait, et ne le disait à personne.</strong> Votre fiche d'état publiait la version du code, jamais l'état de votre base — or les deux sont indépendants : « tout concorde » peut être vrai pendant qu'il manque deux migrations, et c'est alors l'enregistrement qui tombe. Elle porte désormais une ligne <strong>Base</strong> :</p>
+<blockquote>Base : à jour (105 migrations) Base : EN RETARD sur le code — 2 migration(s) non appliquée(s) : …</blockquote>
+<p>Et quand c'est en retard, elle le met en tête de ce qu'il faut conclure, avec le seul geste utile : rallumer l'espace — qui ne touche à aucune de vos données.</p>
+<hr>
 <h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -109,7 +117,11 @@
 <th>Qui</th>
 </tr></thead><tbody>
 <tr>
-<td><strong>rien ne compare votre base au code servi.</strong> L'échec des migrations au démarrage n'est publié nulle part : une base restée en arrière ne se voit ni de votre côté ni du nôtre</td>
+<td>~~rien ne compare votre base au code servi~~</td>
+<td><strong>fait</strong> — votre fiche le dit maintenant</td>
+</tr>
+<tr>
+<td>la RAISON d'un échec de migration reste dans un journal non publié : on voit le résultat, pas la cause</td>
 <td>nous, au prochain lot qui touche l'espace</td>
 </tr>
 <tr>

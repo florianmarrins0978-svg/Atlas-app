@@ -39,6 +39,15 @@ la couche qui vient d'être retirée.
 | la migration | **aucune** |
 | le détail | `ARCHITECTURE.md` §356 |
 
+**PUIS SA REMARQUE DU SOIR, ET ELLE A CHANGÉ LE LOT :** *« arrête de faire du
+rafistolage, va corriger le problème à la racine »*. Rendre la panne bavarde
+était le préalable, pas la réparation. Deux racines ont suivi :
+
+| | |
+|---|---|
+| le chemin LISSE était le seul éprouvé | trente-sept façons de remplir la porte, balayées (`test-porte-aucune-saisie-ne-tombe-db.ts`) : un capital de quinze chiffres faisait tomber la création entière. Borné dans `capitalEnBase`, là où la règle vit |
+| sa machine savait, sans le dire | sa fiche publiait le code servi, jamais l'état de sa base. Ligne **Base** ajoutée (`scripts/_etat-de-la-base.mjs`), verdict avant le retard de code, geste sûr (rallumer) |
+
 **CE QUI N'A PAS PU ÊTRE VÉRIFIÉ, et ne doit pas être présenté comme acquis :**
 ce qui tombe sur SA machine. Le journal de son espace n'est publié nulle part,
 et sa fiche (fiche GitHub n° 47) n'avait pas été réécrite depuis 08:31 alors

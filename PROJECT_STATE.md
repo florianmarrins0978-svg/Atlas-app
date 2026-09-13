@@ -23,7 +23,12 @@ disent « la base n'est pas celle que ce code attend » et donne le geste **sûr
 — rallumer l'espace, jamais reconstruire. Suite manquante écrite :
 `test-creer-son-compte-e2e.ts`, qui entre par la porte et rougit sur le code
 d'avant. **Ce qui tombe sur SA machine n'a pas pu être lu** — voir `TODO.md`,
-« rien ne compare la base au code ». Détail : `ARCHITECTURE.md` §356.
+« rien ne compare la base au code ». **Puis, sur sa remarque « pas de
+rafistolage, va à la racine » :** un capital hors bornes de la colonne faisait
+tomber la création entière — borné dans `capitalEnBase` —, et sa fiche publie
+désormais l'état de sa base (ligne **Base**, `scripts/_etat-de-la-base.mjs`).
+Trente-sept façons de remplir la porte sont éprouvées
+(`test-porte-aucune-saisie-ne-tombe-db.ts`). Détail : `ARCHITECTURE.md` §356.
 
 
 ---

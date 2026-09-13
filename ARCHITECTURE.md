@@ -30034,3 +30034,42 @@ la première question, pas un silence qui ne viendra pas.
 `ratelimit:creation-compte:*`) : deux essais par batterie s'additionnent, et la
 cinquième suite qui créerait un compte tomberait sur « Trop d'essais depuis cet
 appareil » en accusant le produit. C'est le piège déjà payé sur `connexion:`.
+
+---
+
+**CE QUI PRÉCÈDE NE RÉPARAIT RIEN — sa remarque du 13 septembre au soir :**
+*« arrête de faire du rafistolage, va corriger le problème à la racine »*. Il a
+raison : rendre la panne bavarde était le préalable, pas la réparation. Deux
+racines ont été cherchées ensuite, et trouvées.
+
+**RACINE 1 — le chemin LISSE était le seul éprouvé.** Le parcours joué pour
+reproduire sa panne remplissait toutes les cases avec des valeurs propres. En
+balayant les autres façons de remplir (`test-porte-aucune-saisie-ne-tombe-db.ts`,
+trente-sept), un vrai défaut est sorti : **un capital de quinze chiffres**
+passait `capitalEnBase` sans un mot, et PostgreSQL refusait la ligne — `22003`,
+hors bornes de `numeric(12,2)` —, donc la création du compte ENTIÈRE pour une
+case facultative. Exactement ce que le commentaire de cette fonction promettait
+d'éviter, et dont elle ne tenait que la moitié « texte illisible ».
+
+Corrigé **là où la règle vit** : la borne de la colonne entre dans
+`capitalEnBase`, qui décide pour l'écran comme pour l'écriture (`CLAUDE.md`
+§3 — jamais deux bornes pour une même question). L'écran refusait déjà
+« Un montant, en chiffres. » : rien à ajouter de ce côté.
+
+**RACINE 2 — sa machine savait, et ne le disait à personne.** Sa fiche publiait
+le commit récupéré et le commit SERVI, jamais l'état de sa base. Or les deux
+sont indépendants : « tout concorde » peut être vrai pendant qu'il manque deux
+migrations, et c'est alors l'écriture qui tombe. Les migrations s'appliquent à
+chaque allumage et **disent** leur échec — au journal de démarrage, que ce dépôt
+public ne publie pas. Une base en arrière était donc invisible des deux côtés.
+
+`scripts/_etat-de-la-base.mjs` compare `public._migrations` au dossier
+`drizzle/` ; la fiche porte désormais une ligne **Base**, et un verdict qui
+passe avant le retard de code — un écran qui TOMBE ne se compare pas à un écran
+qui n'a pas la dernière retouche. Le geste proposé reste le rallumage, qui ne
+touche à aucune donnée (§4 septies). Une base injoignable rend « inconnu », **pas
+« à jour »** : un contrôle qui ne peut pas mesurer ne conclut pas.
+
+**Ce qui reste vrai, et qu'il faut redire :** rien de tout cela ne prouve ce qui
+est tombé sur SA machine ce soir-là. Sa fiche le dira au prochain allumage, et
+le refus à l'écran porte maintenant le code que la base a rendu.

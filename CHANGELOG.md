@@ -27,7 +27,9 @@ Ce que cela évite : une suite qui accuse le produit d'une date fausse qu'il
 n'a pas écrite, et un artisan qui cherche son mois le soir du 31.
 
 **Suite :** `test-date-est-un-jour-db.ts`, qui rougit sur l'ancien pilote
-dans n'importe quel fuseau. Détail : `ARCHITECTURE.md` §355.
+dans n'importe quel fuseau.
+
+Détail : `ARCHITECTURE.md` §355.
 
 ### Entrer dans la case sélectionne tout : un appui remplace — « fais le B »
 
@@ -75,11 +77,23 @@ refus lisible. Elle rougit sur le code d'avant.
 **Non reproduit ici, et il faut le dire :** ce qui tombe sur SA machine n'a pas
 pu être lu — le journal de son espace n'est pas publié, et sa fiche n'a pas été
 réécrite depuis 08:31. La cause la plus probable reste une base en retard sur le
-code servi ; le refus ci-dessus la nommera dès qu'il retentera. `TODO.md` porte
-le trou qui l'a rendue invisible : rien ne compare les migrations appliquées au
-code, ni à l'écran ni sur la fiche.
+code servi ; le refus ci-dessus la nommera dès qu'il retentera.
 
-Détail : `ARCHITECTURE.md` §355.
+**Et la panne bavarde ne réparait rien — « arrête le rafistolage, va à la
+racine ».** Il a raison. Deux racines ont été cherchées ensuite :
+
+- **le chemin lisse était le seul éprouvé.** En balayant trente-sept façons de
+  remplir la porte, un vrai défaut est sorti : un capital de quinze chiffres
+  passait la règle sans un mot et la base refusait la ligne — donc la création
+  du compte entière, pour une case facultative. La borne de la colonne vit
+  désormais dans la règle, qui décide pour l'écran comme pour l'écriture ;
+- **sa machine savait, et ne le disait à personne.** Sa fiche publiait le code
+  servi, jamais l'état de sa base. Elle porte maintenant une ligne **Base** —
+  à jour, en retard (avec les migrations qui manquent), ou inconnu — et un
+  verdict qui passe avant le retard de code. Une base injoignable ne se lit
+  plus « à jour ».
+
+Détail : `ARCHITECTURE.md` §356.
 
 
 ### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
