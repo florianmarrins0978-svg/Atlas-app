@@ -28,6 +28,19 @@ règle du 22 août, et la planche a été réalignée. À lui de dire si le mois
 veille lui va.
 
 ---
+## Lot précédent — LA BATTERIE REFUSE DE REPARTIR POUR RIEN (13 septembre 2026)
+
+| | |
+|---|---|
+| sa question | *« tu faisais tourner une batterie pour pousser quoi ? »* (10 septembre) — trois batteries complètes pour trois fichiers de suites |
+| ce qui est fait | `verifier-avant-livraison` note son verdict (`_dernier-verdict.ts`, `.atlas-dernier-verdict.json` ignoré par git) ; `_portee-batterie.ts` refuse « rien n'a bougé » et « seules des suites ont bougé » (elle donne les `npx tsx`) ; tout le reste vaut batterie complète ; **seul un vert retient** ; `-- --forcer` passe outre |
+| les suites | `test-portee-batterie`, `test-dernier-verdict` |
+| le détail | `ARCHITECTURE.md` §351 |
+
+**Livré avec :** le code du lot « six photos » ci-dessous, dont la doc était sur
+`main` depuis le matin sans lui.
+
+---
 ## Lot précédent — SIX PHOTOS NE FONT PLUS SIX CHANTIERS (13 septembre 2026)
 
 | | |

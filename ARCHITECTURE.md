@@ -29718,3 +29718,36 @@ suites qui précèdent celle-ci remplissent septembre. C'est la suite jouée
 seule, sur une base fraîche, qui a montré l'écran muet. Depuis, la phrase se
 rend au-dessus du message de mois vide, et la suite accepte zéro rangée avant
 d'ouvrir l'œil — c'est le cas qui compte.
+
+## §351 — La batterie sait quand elle n'a rien à mesurer
+
+**Sa question du 10 septembre 2026, à la fin d'une heure perdue :** *« mais là
+tu faisais tourner une batterie pour pousser quoi ? »* Cinq batteries, dont
+quatre n'ont rien mesuré : d'un tour à l'autre, seuls deux ou trois
+`scripts/test-*.ts` avaient changé. La règle existait (`CLAUDE.md` §6, « rejouer
+SEULEMENT si le code arrivé touche ») — en prose, donc oubliée au bout de trois
+heures, exactement quand on relance une batterie de trop (§1 bis, même piège).
+
+**La décision : la batterie se souvient de son dernier verdict, et compare.**
+
+| | |
+|---|---|
+| `scripts/_dernier-verdict.ts` | à la fin d'une mesure, `verifier-avant-livraison` note l'instant, la ligne du verdict, s'il était vert, et l'empreinte de l'arbre — dans `.atlas-dernier-verdict.json`, **jamais versionné** : il décrit UNE machine à UN instant, et le committer ferait refuser une batterie à celui qui arrive |
+| `scripts/_portee-batterie.ts` | fonction pure : ce qui a bougé depuis (par `fichiersRemues`, la même comparaison que le contrôle d'empreinte) décide de la portée |
+
+**Deux refus, et pas un de plus.** *Rien n'a bougé* : la mesure rendrait le
+même résultat. *Seules des suites ont bougé* : elle donne les `npx tsx` à
+jouer, et rien d'autre. Une ligne de `src/`, une migration, un fichier
+inconnu : batterie complète. Le doute tranche toujours vers la mesure — un
+garde-fou qui parle à tort s'apprend à être ignoré.
+
+**Seul un verdict VERT retient.** Ajouté à la livraison, le 13 septembre : la
+première version refusait aussi après un rouge sur un arbre inchangé. Or ici un
+rouge accuse souvent la machine — Postgres arrêté, un port pris, une suite
+voisine qui vidait la base — et le rejouer est le seul moyen de le savoir.
+Une trace d'avant ce champ se lit comme un rouge.
+
+**Ce qui ne bloque jamais à lui seul :** une trace absente, illisible, ou d'une
+version d'avant rend `null`, et la batterie part. Un garde-fou qui tombe en
+panne tombe du côté de la mesure. `npm run verifier:avant-livraison -- --forcer`
+la rejoue quoi qu'il arrive.

@@ -1770,6 +1770,13 @@ Trois règles qui en découlent, et qui ne se négocient pas :
 qu'on vient de faire.** Sa décision du 13 août 2026 : *« seulement quand le code
 touche »*.
 
+**Et depuis le 13 septembre 2026, la batterie le tient elle-même** pour les
+deux cas qui ne se discutent pas : rien n'a bougé depuis son dernier vert, ou
+seules des suites ont bougé — elle refuse et donne les `npx tsx` à jouer
+(`scripts/_portee-batterie.ts`, `ARCHITECTURE.md` §351). Le tableau ci-dessous
+reste le jugement pour tout le reste ; `-- --forcer` la rejoue quoi qu'il
+arrive.
+
 #### LE TRAVAIL NON ENREGISTRÉ NE SE JETTE PLUS — un garde-fou, pas une consigne
 
 **Payé le 4 septembre 2026.** Trois sessions travaillaient dans le même dossier.

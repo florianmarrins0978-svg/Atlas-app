@@ -8,6 +8,31 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### La batterie refuse de repartir quand rien n'a bougé
+
+Sa question du 10 septembre, après une heure perdue : *« tu faisais tourner
+une batterie pour pousser quoi ? »* — trois batteries complètes rejouées alors
+que, d'un tour à l'autre, seuls deux ou trois `scripts/test-*.ts` avaient
+changé. La règle du §6 de `CLAUDE.md` existait, en prose, donc s'oubliait.
+
+Elle vit désormais dans la batterie elle-même : `verifier-avant-livraison`
+note son verdict et l'empreinte de l'arbre (`.atlas-dernier-verdict.json`,
+jamais versionné) ; au tour suivant, `_portee-batterie.ts` compare. Deux refus
+seulement — **rien n'a bougé**, ou **seules des suites ont bougé** (elle donne
+alors les `npx tsx` à jouer) —, et tout le reste vaut batterie complète.
+**Seul un verdict vert retient** : un rouge sur un arbre inchangé accuse
+souvent la machine, et le rejouer est le seul moyen de le savoir.
+`-- --forcer` la rejoue quoi qu'il arrive.
+
+Ce que cela évite : vingt minutes payées pour mesurer deux fois la même chose,
+pendant que `main` bouge.
+
+### Six photos ne font plus six chantiers
+
+Le correctif décrit au §349 (`chantierDeCetEcran`) était documenté sur `main`
+depuis le matin **sans son code** — il est livré avec ce lot, et sa suite
+`test-photos-avant-le-chantier-e2e` avec lui.
+
 ### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
 
 Sa capture et ses quatre demandes du jour, dessinées d'abord

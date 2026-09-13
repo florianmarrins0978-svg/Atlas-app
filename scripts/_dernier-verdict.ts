@@ -24,6 +24,14 @@ export type DernierVerdict = {
   quand: number;
   /** La ligne exacte qu'elle a écrite — relue telle quelle, jamais résumée. */
   verdict: string;
+  /**
+   * Vert ou non. **Seul un vert peut faire refuser la batterie suivante** :
+   * un rouge sur un arbre inchangé accuse souvent la machine — Postgres
+   * arrêté, un port pris, une suite voisine qui vidait la base —, et le
+   * rejouer est alors le seul moyen de le savoir. Une trace d'avant ce champ
+   * se lit comme un rouge : on mesure.
+   */
+  vert: boolean;
   /** L'arbre sur lequel elle a mesuré. */
   empreinte: Empreinte;
 };
@@ -41,6 +49,7 @@ export function lireDernierVerdict(racine: string): DernierVerdict | null {
     const brut = JSON.parse(readFileSync(chemin, "utf8")) as {
       quand?: unknown;
       verdict?: unknown;
+      vert?: unknown;
       empreinte?: unknown;
     };
     if (typeof brut.quand !== "number" || typeof brut.verdict !== "string") return null;
@@ -48,6 +57,7 @@ export function lireDernierVerdict(racine: string): DernierVerdict | null {
     return {
       quand: brut.quand,
       verdict: brut.verdict,
+      vert: brut.vert === true,
       empreinte: new Map(brut.empreinte as [string, { date: number; empreinte: string }][]),
     };
   } catch {
@@ -61,7 +71,7 @@ export function ecrireDernierVerdict(racine: string, v: DernierVerdict): void {
   try {
     writeFileSync(
       cheminDuVerdict(racine),
-      JSON.stringify({ quand: v.quand, verdict: v.verdict, empreinte: [...v.empreinte] })
+      JSON.stringify({ quand: v.quand, verdict: v.verdict, vert: v.vert, empreinte: [...v.empreinte] })
     );
   } catch {
     // Ne pas pouvoir noter le verdict ne doit pas faire échouer une batterie

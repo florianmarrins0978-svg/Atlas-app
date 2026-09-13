@@ -352,7 +352,9 @@ const empreinteAvant = empreinteDesSources(RACINE);
 const forcer = process.argv.includes("--forcer") || process.argv.includes("--complet");
 const precedent = lireDernierVerdict(RACINE);
 
-if (!forcer && precedent) {
+// Un verdict ROUGE ne retient jamais : sur un arbre inchangé, il accuse
+// souvent la machine, et le rejouer est le seul moyen de le savoir.
+if (!forcer && precedent?.vert) {
   const portee = porteeDuLot(fichiersRemues(precedent.empreinte, empreinteAvant));
   if (portee.quoi !== "complete") {
     console.error(phraseDuRefusDePortee(portee, precedent.verdict, ilYA(precedent.quand)));
@@ -417,6 +419,7 @@ if (remues.length > 0) {
 // verdict, et le retenir ferait refuser la batterie qui devait le remplacer.
 ecrireDernierVerdict(RACINE, {
   quand: Date.now(),
+  vert: echecs.length === 0,
   verdict:
     echecs.length === 0
       ? "✅ Batterie complète au vert."
