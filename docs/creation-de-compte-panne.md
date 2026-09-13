@@ -88,15 +88,14 @@ l'enregistrement.
 **2. Votre machine savait, et ne le disait à personne.** Votre fiche d'état
 publiait la version du code, jamais l'état de votre base — or les deux sont
 indépendants : « tout concorde » peut être vrai pendant qu'il manque deux
-migrations, et c'est alors l'enregistrement qui tombe. Elle porte désormais
-une ligne **Base** :
+migrations, et c'est alors l'enregistrement qui tombe.
 
-> Base : à jour (105 migrations)
-> Base : EN RETARD sur le code — 2 migration(s) non appliquée(s) : …
-
-Et quand c'est en retard, elle le met en tête de ce qu'il faut conclure, avec
-le seul geste utile : rallumer l'espace — qui ne touche à aucune de vos
-données.
+**C'est réglé, et pas par nous :** une autre session y travaillait en même
+temps et l'a livré le même soir, plus loin que la fiche — jusqu'à l'écran des
+**Réglages**, là où vous allez demander « est-ce que j'ai les corrections ? ».
+Votre base s'y rattrape aussi à chaque allumage. Ce qui avait été écrit ici en
+parallèle a été **jeté** : deux façons de lire une même chose finissent
+toujours par se contredire.
 
 ---
 
@@ -104,7 +103,7 @@ données.
 
 | Ce qui manque | Qui |
 |---|---|
-| ~~rien ne compare votre base au code servi~~ | **fait** — votre fiche le dit maintenant |
+| ~~rien ne compare votre base au code servi~~ | **fait** — par le lot voisin du même soir : fiche, écran Réglages, et rattrapage à l'allumage |
 | la RAISON d'un échec de migration reste dans un journal non publié : on voit le résultat, pas la cause | nous, au prochain lot qui touche l'espace |
 | **les autres écrans tombent encore sur « Une erreur »** quand la base refuse. Seule la création de compte parle aujourd'hui | nous, au fil de ce qu'on touche |
 | **quinze vérifications sont rouges sur la version en ligne**, sans rapport avec ce lot (fiche client, fiche d'entretien, dictée). Vérifié : elles l'étaient déjà avant | à traiter, lot à part |

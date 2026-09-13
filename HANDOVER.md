@@ -25,9 +25,39 @@ jamais un `Date`. Ne pas remettre un `instanceof Date` « au cas où » : c'est
 la couche qui vient d'être retirée.
 
 ---
-## Lot précédent — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
+## Lot du même soir — LA BASE SE RATTRAPE À CHAQUE ALLUMAGE (13 septembre 2026)
 
-## Dernier lot — « JE PEUX TOUJOURS PAS CRÉER DE COMPTE » (13 septembre 2026, le soir)
+**Sa panne :** *« Plus rien ne fonctionne ! »* — « Planning » et « Terminés »
+tombés ensemble, « Chantiers » debout.
+
+**À retenir pour la prochaine panne de cette forme :** ce partage nomme la
+cause. Planning et Terminés lisent l'entreprise ENTIÈRE (`getEntreprise`, un
+`select()` sans projection, donc toutes les colonnes du schéma) ; la liste des
+chantiers non. **Deux écrans par terre et un debout = une colonne manquante,
+donc une migration non appliquée.** Reproduit contre une base arrêtée en 0087
+sous le code de `main` : `column "conditions_generales" does not exist` (0090).
+
+**La racine n'était pas la migration, c'était sa CONDITION** : les deux chemins
+qui migrent — `.devcontainer/demarrer.sh` et le bouton « Chercher les dernières
+corrections » — ne le faisaient que lorsque le code venait de bouger. Une
+migration échouée n'était jamais retentée, et l'allumage suivant répondait
+« déjà à jour ». Plus aucun geste ne rattrapait sa base.
+
+Deux moitiés, et il fallait les deux : **la base se rattrape** à chaque allumage
+et à chaque appui (rejeu gratuit, `_migrations` saute ce qui est appliqué), et
+**l'écart se mesure** — la fiche de son espace porte une ligne « Base » qui nomme
+les migrations manquantes, l'écran des Réglages le dit aussi, et le geste rendu
+n'efface rien.
+
+**Ce qui a été refusé :** toucher au `select()` sans projection de
+`getEntreprise`. Ce serait le pansement — le schéma recopié à vingt-huit
+endroits, et le prochain écart muet ailleurs.
+
+`ARCHITECTURE.md` §356 · `scripts/test-migrations-banc.ts` ·
+`scripts/test-retard-de-la-base.ts` (les deux éprouvés rouges).
+
+---
+## Lot du même soir — « JE PEUX TOUJOURS PAS CRÉER DE COMPTE » (13 septembre 2026, le soir)
 
 | | |
 |---|---|
@@ -37,7 +67,7 @@ la couche qui vient d'être retirée.
 | la correction | `creerSonCompte` journalise l'erreur avec son `SQLSTATE` et rend un refus ; `src/lib/panne-de-base.ts` dit si le refus veut dire « base en retard », et donne le geste **sûr** (rallumer l'espace) |
 | la suite qui manquait | `test-creer-son-compte-e2e.ts` — les seize questions dans un vrai navigateur, les trois lignes en base, puis la migration réellement retirée. Rougit sur le code d'avant |
 | la migration | **aucune** |
-| le détail | `ARCHITECTURE.md` §356 |
+| le détail | `ARCHITECTURE.md` §357 |
 
 **PUIS SA REMARQUE DU SOIR, ET ELLE A CHANGÉ LE LOT :** *« arrête de faire du
 rafistolage, va corriger le problème à la racine »*. Rendre la panne bavarde
@@ -46,7 +76,7 @@ rafistolage, va corriger le problème à la racine »*. Rendre la panne bavarde
 | | |
 |---|---|
 | le chemin LISSE était le seul éprouvé | trente-sept façons de remplir la porte, balayées (`test-porte-aucune-saisie-ne-tombe-db.ts`) : un capital de quinze chiffres faisait tomber la création entière. Borné dans `capitalEnBase`, là où la règle vit |
-| sa machine savait, sans le dire | sa fiche publiait le code servi, jamais l'état de sa base. Ligne **Base** ajoutée (`scripts/_etat-de-la-base.mjs`), verdict avant le retard de code, geste sûr (rallumer) |
+| sa machine savait, sans le dire | traité par le lot ci-dessus, livré le même soir (§356). Une lecture écrite ici en parallèle a été **jetée** : deux façons de lire un même état divergent toujours |
 
 **CE QUI N'A PAS PU ÊTRE VÉRIFIÉ, et ne doit pas être présenté comme acquis :**
 ce qui tombe sur SA machine. Le journal de son espace n'est publié nulle part,
@@ -62,8 +92,7 @@ jamais sur un banc servi en mode développement : le bandeau de construction
 interroge le serveur toutes les cinq secondes.
 
 ---
-## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
-
+## Lot précédent — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
 
 | | |
 |---|---|
@@ -137,7 +166,7 @@ une case qui affiche « 1 » donne **12**. C'est sa règle du 11 septembre ; à 
 de dire s'il la garde ou si l'entrée dans la case sélectionne tout.
 
 ---
-## Dernier lot — JETER SA DICTÉE, ET LE LECTEUR MORT (13 septembre 2026)
+## Lot précédent — JETER SA DICTÉE, ET LE LECTEUR MORT (13 septembre 2026)
 
 | | |
 |---|---|

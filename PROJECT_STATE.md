@@ -23,15 +23,27 @@ disent « la base n'est pas celle que ce code attend » et donne le geste **sûr
 — rallumer l'espace, jamais reconstruire. Suite manquante écrite :
 `test-creer-son-compte-e2e.ts`, qui entre par la porte et rougit sur le code
 d'avant. **Ce qui tombe sur SA machine n'a pas pu être lu** — voir `TODO.md`,
-« rien ne compare la base au code ». **Puis, sur sa remarque « pas de
-rafistolage, va à la racine » :** un capital hors bornes de la colonne faisait
-tomber la création entière — borné dans `capitalEnBase` —, et sa fiche publie
-désormais l'état de sa base (ligne **Base**, `scripts/_etat-de-la-base.mjs`).
-Trente-sept façons de remplir la porte sont éprouvées
-(`test-porte-aucune-saisie-ne-tombe-db.ts`). Détail : `ARCHITECTURE.md` §356.
+**Puis, sur sa remarque « pas de rafistolage, va à la racine » :** un capital
+hors bornes de la colonne faisait tomber la création entière — borné dans
+`capitalEnBase`, là où la règle vit —, et trente-sept façons de remplir la porte
+sont désormais éprouvées (`test-porte-aucune-saisie-ne-tombe-db.ts`). L'état de
+sa base, lui, est publié par le lot voisin du même soir (§356). Détail :
+`ARCHITECTURE.md` §357.
 
 
 ---
+
+## FAIT : LA BASE SE RATTRAPE À CHAQUE ALLUMAGE — 13 septembre 2026
+
+Sa panne : *« Plus rien ne fonctionne ! »*, « Planning » et « Terminés » tombés,
+« Chantiers » debout. Sa base était restée en 0087 sous le code de `main` —
+`column "conditions_generales" does not exist` (0090). Les deux chemins qui
+migrent ne le faisaient que le jour où le code bougeait : un échec n'était jamais
+retenté, et plus aucun geste ne rattrapait la base. Migrations à chaque allumage
+et à chaque appui du bouton ; et l'écart se MESURE désormais — une ligne « Base »
+sur la fiche de son espace, qui nomme les migrations manquantes, et le même
+constat dans les Réglages. `ARCHITECTURE.md` §356 ·
+`scripts/test-migrations-banc.ts` · `scripts/test-retard-de-la-base.ts`.
 
 ## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026
 

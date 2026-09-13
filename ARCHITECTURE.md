@@ -29968,7 +29968,119 @@ même que §177 avait fermée pour les jours. Il passe par `jourIso`.
 
 ---
 
-## §356 — Une panne de base ne jette plus le patron sur l'écran d'erreur
+## §356 — Le code et la base ne peuvent plus diverger en silence
+
+**Sa panne du 13 septembre 2026 :** *« Plus rien ne fonctionne ! »* — capture à
+l'appui, « Planning » et « Terminés » tombés ensemble, « Chantiers » debout.
+
+**Ce partage-là nomme la cause à lui seul.** Ces deux écrans lisent l'entreprise
+ENTIÈRE : `contextePlanning` appelle `getEntreprise`, et `tvaDeLaPeriodeCourante`
+aussi. La liste des chantiers, elle, ne lit jamais l'entreprise. Une seule
+colonne manquante suffit donc à coucher ces deux écrans-là et aucun autre.
+
+Reproduit, contre une base arrêtée à la migration 0087 sous le code de `main` :
+
+```
+column "conditions_generales" does not exist
+```
+
+C'est la colonne de la migration **0090** (13 septembre). Sa base servait du
+code qui la suppose, et ne l'avait pas.
+
+### La racine, et ce qui n'en est pas une
+
+Il serait tentant de s'en prendre au `select()` sans projection de
+`getEntreprise` : c'est lui qui fait dépendre le Planning d'une colonne de
+conditions générales dont il n'a rien à faire. **Ce serait le pansement**, et il
+coûterait deux fois : nommer les colonnes à la main recopie le schéma à
+vingt-huit endroits — la divergence que §3 refuse —, et cela ne protégerait que
+cette fonction-là. Une table entière absente, un type changé : le prochain écart
+tomberait ailleurs, tout aussi muet.
+
+La racine est au-dessus : **rien ne garantissait que la base suive le code, et
+rien ne disait qu'elle ne le suivait pas.** Deux moitiés, et il fallait les deux.
+
+### Moitié I — la base se rattrape, à chaque allumage
+
+Les deux chemins qui migrent — `.devcontainer/demarrer.sh` et le bouton
+« Chercher les dernières corrections » — le faisaient **sous condition que le
+code vienne de bouger** :
+
+```sh
+if [ "$MISE_A_JOUR" = "faite" ]; then … appliquer-migrations.sh … fi
+```
+
+Cette condition prétend dire *« la base est en retard »*. Elle dit autre chose,
+et l'écart se paie deux fois :
+
+| | |
+|---|---|
+| une migration **échoue** (base pas encore levée, `node_modules` amputé) | elle n'est **jamais retentée** : l'allumage suivant lit « déjà à jour » et ne migre pas. La base reste en arrière **pour toujours** |
+| le code arrive **par l'autre chemin** (le bouton, une reconstruction qui clone déjà à jour) | ce démarrage-ci lit « à jour » et ne migre pas, alors que la base, elle, est bien en retard |
+
+La condition a été **supprimée** des deux côtés — le rejeu ne coûte rien et ne
+détruit rien : `run-migrations.ts` tient la table `_migrations` et saute ce qui
+est déjà appliqué. Avec elle est parti le repli `MIGRATIONS=""` du démarrage,
+qui n'avait de sens que tant qu'un chemin pouvait ne rien affecter.
+
+C'est la même famille que le défaut du 9 août 2026 : là, les migrations
+tournaient sous `atlas_app` et l'échec était avalé. **Le rôle avait été corrigé,
+la condition était restée.**
+
+### Moitié II — l'écart se MESURE et se DIT
+
+Le rattrapage retire la cause courante ; il ne peut pas promettre qu'elle ne
+reviendra jamais (base éteinte au mauvais moment, réseau, disque plein). Ce qui
+manquait vraiment, c'est de **savoir** : l'écart se découvrait par un écran mort,
+au hasard de la colonne touchée, derrière un identifiant de six chiffres.
+
+Une règle, une lecture, deux endroits où elle se lit :
+
+| | |
+|---|---|
+| `src/lib/retard-de-la-base.ts` | la règle pure : ce que le code attend (les fichiers de `drizzle/`) face à ce que la base déclare (`_migrations`). Rend les migrations **nommées**, dans les deux sens |
+| `src/server/retard-de-la-base.ts` | la lecture. Rend `null` quand la mesure est impossible — **jamais un « à jour » de consolation** |
+| `scripts/etat-de-la-base.ts` | la même chose en une ligne, pour la fiche que son espace publie (`diagnostiquer-espace.mjs` est du JavaScript, hors d'atteinte du TypeScript) |
+| l'écran **Réglages** | là où il vient demander « est-ce que j'ai les corrections ? ». Rien ne s'affiche quand tout concorde |
+
+La fiche porte désormais, sous « Code SERVI » :
+
+```
+Base             : EN RETARD DE 3 — 0088, 0089, 0090
+```
+
+et en tête de ses conclusions, avant la lenteur et avant le retard de version —
+une base en retard ne rend pas l'application vieille, elle en fait **tomber** des
+écrans, et tout autre diagnostic envoie alors chercher au mauvais endroit.
+
+**Le NUMÉRO, pas le compte.** « EN RETARD DE 3 » aurait encore demandé d'aller
+chercher lesquelles ; ce sont les numéros qui disent quelle colonne manque, donc
+quel écran tombe.
+
+**Et le geste rendu n'efface rien** — `CLAUDE.md` §4 septies, qu'il a dû poser
+deux fois : « Chercher les dernières corrections », jamais une reconstruction, un
+amorçage ou une suppression. `test-verdict-port.ts` tenait cette promesse pour le
+verdict du port ; celui de la base n'était couvert par personne, et
+`scripts/test-retard-de-la-base.ts` s'en charge.
+
+### Ce qui tient la correction
+
+`scripts/test-migrations-banc.ts` — trois contrôles qui lisent la STRUCTURE des
+deux appelants (l'appel hors du bloc conditionnel côté démarrage, l'appel avant
+la branche côté bouton). Confrontés à la version d'avant : **tous deux
+rougissent**.
+
+`scripts/test-retard-de-la-base.ts` — la règle dans les deux sens, le refus de
+conclure sans mesure, le fait que le constat soit **atteignable** (monté dans la
+fiche ET dans l'écran, la leçon du 28 août), et l'interdit des gestes
+destructeurs. Éprouvé rouge lui aussi, en cassant chacune des deux moitiés.
+
+Et le chemin complet a été joué à la main, contre une base dont `_migrations`
+s'arrête à 0087 : la ligne rendue est `EN RETARD DE 3 — 0088, 0089, 0090`.
+
+---
+
+## §357 — Une panne de base ne jette plus le patron sur l'écran d'erreur
 
 **Sa plainte du 13 septembre 2026 :** *« Je peux toujours pas créer de
 compte ! »* — et, en capture, « Une erreur · Cette page n'a pas pu s'afficher ·
@@ -30056,19 +30168,11 @@ Corrigé **là où la règle vit** : la borne de la colonne entre dans
 §3 — jamais deux bornes pour une même question). L'écran refusait déjà
 « Un montant, en chiffres. » : rien à ajouter de ce côté.
 
-**RACINE 2 — sa machine savait, et ne le disait à personne.** Sa fiche publiait
-le commit récupéré et le commit SERVI, jamais l'état de sa base. Or les deux
-sont indépendants : « tout concorde » peut être vrai pendant qu'il manque deux
-migrations, et c'est alors l'écriture qui tombe. Les migrations s'appliquent à
-chaque allumage et **disent** leur échec — au journal de démarrage, que ce dépôt
-public ne publie pas. Une base en arrière était donc invisible des deux côtés.
-
-`scripts/_etat-de-la-base.mjs` compare `public._migrations` au dossier
-`drizzle/` ; la fiche porte désormais une ligne **Base**, et un verdict qui
-passe avant le retard de code — un écran qui TOMBE ne se compare pas à un écran
-qui n'a pas la dernière retouche. Le geste proposé reste le rallumage, qui ne
-touche à aucune donnée (§4 septies). Une base injoignable rend « inconnu », **pas
-« à jour »** : un contrôle qui ne peut pas mesurer ne conclut pas.
+**RACINE 2 — sa machine savait, et ne le disait à personne.** Traitée par la
+session voisine dans le **§356 ci-dessus**, livrée le même soir : la fiche porte
+l'état de la base, et l'écran des Réglages aussi. Une lecture écrite ici en même
+temps a été **jetée** plutôt que gardée à côté — deux façons de lire un même
+état divergent toujours (`CLAUDE.md` §3), et la sienne va plus loin.
 
 **Ce qui reste vrai, et qu'il faut redire :** rien de tout cela ne prouve ce qui
 est tombé sur SA machine ce soir-là. Sa fiche le dira au prochain allumage, et

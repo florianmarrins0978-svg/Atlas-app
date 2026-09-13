@@ -9,31 +9,13 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## SA FICHE DIT L'ÉTAT DE SA BASE (fait) — LE RESTE DE L'APPLICATION, NON
-
-**Né de sa plainte du 13 septembre 2026** (« je peux toujours pas créer de
-compte », `ARCHITECTURE.md` §356). Le code servi peut être en avance sur la
-base : une migration qui n'est pas passée, et l'écran tombe — n'importe où,
-avec un message qui n'accuse jamais la vraie cause.
-
-Depuis ce lot, **la création de compte** le dit quand la base la refuse. Le
-reste de l'application, non — et personne ne peut le savoir de l'extérieur :
-
-| Ce qui manquait | Où ça en est |
-|---|---|
-| ~~la fiche de son espace ne porte pas l'état de la base~~ | **FAIT le 13 septembre 2026** : `scripts/_etat-de-la-base.mjs` compare `public._migrations` au dossier `drizzle/`, la fiche porte la ligne **Base**, et le verdict passe avant le retard de code (`ARCHITECTURE.md` §356) |
-| `.devcontainer/appliquer-migrations.sh` **dit** son échec au journal de démarrage, et ce journal n'est publié nulle part | **reste ouvert**, et c'est moins grave depuis que la fiche mesure la base elle-même : on voit le RÉSULTAT, pas encore la raison |
-| aucun contrôle de santé ne compare les deux | **reste ouvert** : `/api/health/ready` regarde que PostgreSQL répond, pas qu'il porte les tables que ce code attend. Une application déployée n'a pas de fiche |
-
-**Qui :** nous, au prochain lot qui touche le banc.
-
 ## LES AUTRES ACTIONS SERVEUR TOMBENT ENCORE SUR L'ÉCRAN MUET
 
 Même lot, même racine. Une exception qui sort d'une action serveur est
 remplacée par un numéro opaque (`src/app/error.tsx`) : le patron voit « Une
 erreur », et le journal reste muet si personne n'a écrit de `catch`.
 `src/lib/panne-de-base.ts` sait désormais nommer les refus de la base — il ne
-sert qu'à la création de compte. **À poser là où une panne coûte le plus** : la
+sert qu'à la création de compte (`ARCHITECTURE.md` §357). **À poser là où une panne coûte le plus** : la
 connexion, l'enregistrement d'un devis, celui d'une facture.
 
 **Qui :** nous. Pas de lot dédié — au fil de ce qu'on touche.

@@ -31,6 +31,42 @@ dans n'importe quel fuseau.
 
 Détail : `ARCHITECTURE.md` §355.
 
+### « Plus rien ne fonctionne » : la base était restée en arrière du code
+
+« Planning » et « Terminés » tombés ensemble, « Chantiers » debout. Ces deux
+écrans-là lisent l'entreprise entière (`getEntreprise`, un `select()` sans
+projection) : une seule colonne manquante suffit à les coucher tous les deux et
+aucun autre. Reproduit contre une base arrêtée à la migration 0087 sous le code
+de `main` : `column "conditions_generales" does not exist` — la colonne de la
+migration 0090.
+
+**La racine n'était pas la migration, c'était sa CONDITION.** Les deux chemins
+qui l'appliquent — le démarrage de l'espace et le bouton « Chercher les
+dernières corrections » — ne migraient que lorsque le code venait de bouger. Une
+migration échouée n'était donc jamais retentée, et l'allumage suivant répondait
+« déjà à jour » : plus aucun geste ne rattrapait la base. Elles tournent
+désormais à chaque allumage et à chaque appui, le rejeu ne coûtant rien
+(`_migrations` saute ce qui est appliqué). Le script dit combien il a rattrapé,
+et l'écran le rend : « La base avait N version(s) de retard : c'est réparé. »
+
+**Et l'écart se MESURE, au lieu de se découvrir par un écran mort.** Le
+rattrapage retire la cause courante ; il ne peut pas promettre qu'elle ne
+reviendra jamais. La fiche que son espace publie porte désormais, sous « Code
+SERVI », `Base : EN RETARD DE 3 — 0088, 0089, 0090` — les numéros, pas un
+compte —, et le dit en tête de ses conclusions, avant la lenteur et avant le
+retard de version. L'écran des Réglages le dit aussi, et ne montre rien quand
+tout concorde. Le geste rendu n'efface rien, jamais.
+
+**Ce qui a été refusé, et pourquoi c'est écrit :** s'en prendre au `select()`
+sans projection de `getEntreprise`, qui fait dépendre le Planning d'une colonne
+de conditions générales. Nommer les colonnes recopierait le schéma à vingt-huit
+endroits, et ne protégerait que cette fonction — le prochain écart tomberait
+ailleurs, tout aussi muet.
+
+Tenu par `scripts/test-migrations-banc.ts` et `scripts/test-retard-de-la-base.ts`,
+tous deux éprouvés rouges en cassant ce qu'ils gardent. Détail :
+`ARCHITECTURE.md` §356.
+
 ### Entrer dans la case sélectionne tout : un appui remplace — « fais le B »
 
 Sur une case qui affiche « 1 », poser le doigt et taper « 2 » donnait **12** :
@@ -88,12 +124,12 @@ racine ».** Il a raison. Deux racines ont été cherchées ensuite :
   du compte entière, pour une case facultative. La borne de la colonne vit
   désormais dans la règle, qui décide pour l'écran comme pour l'écriture ;
 - **sa machine savait, et ne le disait à personne.** Sa fiche publiait le code
-  servi, jamais l'état de sa base. Elle porte maintenant une ligne **Base** —
-  à jour, en retard (avec les migrations qui manquent), ou inconnu — et un
-  verdict qui passe avant le retard de code. Une base injoignable ne se lit
-  plus « à jour ».
+  servi, jamais l'état de sa base. **Une session voisine l'a livré le même
+  soir**, et plus loin que la fiche — jusqu'à l'écran des Réglages : la lecture
+  écrite ici en parallèle a été jetée plutôt que gardée à côté, deux façons de
+  lire un même état finissant toujours par diverger.
 
-Détail : `ARCHITECTURE.md` §356.
+Détail : `ARCHITECTURE.md` §357.
 
 
 ### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
