@@ -8,7 +8,29 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
+## Dernier lot — TOUT LE CIRCUIT PDF (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« va vérifier à tous les endroits où on peut télécharger ou regarder le pdf — je veux plus que ça se reproduise »* |
+| trouvé | **la visionneuse ne peignait AUCUN document** depuis le 11 ; le planning ouvrait encore un onglet de Safari ; la route de la feuille écrivait ses en-têtes à la main |
+| la racine | `pdfjs-dist` ≥ 5.5 appelle `Map.prototype.getOrInsertComputed`, absente des navigateurs d'avant 2025 |
+| la migration | **aucune** |
+| les pièces | `package.json` (pdfjs-dist **épinglé** 5.4.624), `PlanningClient.tsx`, `src/app/api/chantiers/[chantierId]/feuille/pdf/route.ts` |
+| les suites | `test-tous-les-pdf.ts` (neuve : les deux portes), `test-visionneuse-pdf.ts` (+1 : l'épingle) |
+| le détail | `ARCHITECTURE.md` §341 |
+
+**LE PIÈGE, et il coûte tout l'écran :** ne PAS remonter `pdfjs-dist` sans
+vérifier. `grep -c getOrInsertComputed node_modules/pdfjs-dist/build/pdf.mjs`
+doit rendre 0 — sinon la visionneuse refuse tout document, chez lui comme chez
+ses clients. Le build `legacy` ne sauve rien : il appelle la même méthode.
+
+**LA RÈGLE À TENIR :** un écran ne remet jamais un PDF au navigateur. Deux
+portes — `BoutonTelechargerDocument` pour garder, `adresseDeLaVisionneuse` pour
+regarder.
+
+---
+## Lot précédent — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
 
 | | |
 |---|---|
@@ -34,7 +56,7 @@ puis rallumer, une dernière fois) ; et le **404 du relais sur le port 3000 n'es
 pas reproduit** — le verdict et son geste sont corrigés, la cause ne l'est pas.
 
 ---
-## Lot précédent — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)
+## Le même soir — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)
 
 | | |
 |---|---|

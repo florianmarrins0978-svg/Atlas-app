@@ -5,6 +5,21 @@
 
 ---
 
+## FAIT : TOUT LE CIRCUIT PDF — 13 septembre 2026
+
+*« Va vérifier à tous les endroits où on peut télécharger ou regarder le pdf. »*
+Dix points recensés, trois défauts réels : **la visionneuse ne peignait aucun
+document** depuis le 11 (pdf.js exigeait une méthode d'un an — épinglé à
+5.4.624), le planning ouvrait encore un onglet de Safari, et la route de la
+feuille écrivait ses en-têtes à la main. `test-tous-les-pdf.ts` tient la règle :
+deux portes, et rien d'autre. **Aucune migration.** Détail :
+`ARCHITECTURE.md` §341.
+
+**Ce qui reste à lui :** dire si la feuille de partage d'iOS range le fichier —
+aucun WebKit ici.
+
+---
+
 ## FAIT : SON ESPACE SE DÉBLAIE LUI-MÊME — 12 septembre 2026, au soir
 
 *« L'appli ne répond plus. »* Sa fiche : serveur debout, **quatorze versions de

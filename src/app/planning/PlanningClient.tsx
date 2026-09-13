@@ -16,6 +16,7 @@ import { estAuCalendrier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
+import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
 import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
@@ -4021,16 +4022,22 @@ function FeuilleChantier({
           se présenter (le planning ne liste que des chantiers dont le devis est
           PARTI), mais « ne devrait pas » n'est pas « ne peut pas ». */}
       {feuille?.avecDevis && (
-        <a
+        /* **Dans l'application, pas dans un onglet de Safari — 13 septembre
+           2026.** Ce lien-ci avait été oublié par le lot de la visionneuse
+           (11 septembre) : il remettait encore la feuille au navigateur, donc
+           sans en-tête ni flèche — *« j'ai pas de touche retour »*, sur le
+           seul écran qu'il ouvre au milieu d'un chantier. */
+        <Link
           data-atlas="pdf-sans-prix"
-          href={`/api/chantiers/${chantier.id}/feuille/pdf`}
-          target="_blank"
-          rel="noreferrer"
+          href={adresseDeLaVisionneuse(`/api/chantiers/${chantier.id}/feuille/pdf`, {
+            surtitre: "Feuille de chantier",
+            titre: chantier.nom,
+          })}
           className="mx-auto mt-3 block w-max rounded-full px-5 py-2.5 text-[13px]"
           style={{ background: colors.plein, color: surPlein }}
         >
           Ouvrir le PDF sans les prix
-        </a>
+        </Link>
       )}
     </div>
   );

@@ -29075,3 +29075,54 @@ descendre un PDF non vide sous le nom de la facture, le bouton ne reste pas sur
 reste un lien. Ce qu'il sert est un `.zip` — un fichier sans lecteur, qui
 descend de toute façon —, et son appui porte une vérification d'identité que ce
 lot n'avait aucune raison de déplacer.
+
+---
+
+## §341 — Deux portes vers un PDF, et rien d'autre
+
+**Sa demande du 13 septembre 2026 :** *« va vérifier sur chaque devis et
+facture, à tous les endroits où on peut télécharger ou regarder le pdf, si ça
+fonctionne bien — je veux plus que ça se reproduise »*.
+
+**Ce que le recensement a trouvé, et qu'aucun lot n'avait vu :** dix points
+d'accès, et trois lots successifs qui n'en avaient corrigé qu'une partie
+chacun.
+
+| Le défaut | Ce qu'il restait |
+|---|---|
+| le type mensonger (10 sept.) | corrigé partout |
+| l'onglet de Safari (11 sept.) | **« Ouvrir le PDF sans les prix » du planning l'ouvrait encore** — deux jours sans flèche de retour |
+| le lien de téléchargement (12 sept.) | six liens remplacés, **et rien n'empêchait le septième** |
+| la règle de remise en un seul endroit | **la route de la feuille écrivait encore ses deux en-têtes à la main** |
+
+**La règle, désormais tenue par un contrôle :** un écran ne remet JAMAIS un PDF
+au navigateur. Il y a deux portes, et deux seulement — `BoutonTelechargerDocument`
+pour garder le document, `adresseDeLaVisionneuse(…)` pour le regarder.
+`scripts/test-tous-les-pdf.ts` lit le code des écrans et refuse tout `href` qui
+vise une route `/pdf` en dehors d'elles. Il a trouvé l'écart de la feuille au
+premier essai, et il sait rougir : remis le lien du planning, il le nomme.
+
+### pdf.js exigeait une méthode que les téléphones n'ont pas tous
+
+**La visionneuse livrée le 11 septembre ne peignait RIEN.** Mesuré le 13 :
+« Le document ne s'ouvre pas (getOrInsertComputed is not a function) ». À partir
+de `pdfjs-dist` 5.5, pdf.js appelle `Map.prototype.getOrInsertComputed`, arrivée
+dans les navigateurs en 2025 — absente du Chromium de l'atelier (141).
+
+**Et ce n'est pas l'atelier qui décide : la page publique du devis est ouverte
+par SES CLIENTS**, avec le téléphone qu'ils ont. Faire dépendre la lecture d'un
+devis d'une méthode d'un an, c'est perdre celui qui n'a pas mis son téléphone à
+jour — et il ne le dira jamais, il rappellera pour demander le devis.
+
+La version est donc **épinglée à 5.4.624**, sans accent circonflexe : la
+dernière qui ne l'appelle pas. `test-visionneuse-pdf.ts` tient l'épingle en
+lisant le paquet installé — une montée de version qui ramènerait la méthode
+fait rougir le lot, au lieu de se découvrir chez un client.
+
+**Ce qui a été écarté :** le build `legacy` de pdf.js, qui semblait fait pour
+ça. Il appelle la même méthode, vingt-deux fois — vérifié avant de s'y fier.
+
+**Ce que cela ne prouve pas :** que la feuille de partage d'iOS range bien le
+fichier. Aucun WebKit n'est installable dans l'environnement de l'agent ; c'est
+son téléphone qui tranche, et lui seul.
+

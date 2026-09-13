@@ -8,6 +8,29 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### Tout le circuit PDF repris : deux portes, et la visionneuse qui ne peignait rien
+
+*« Va vérifier à tous les endroits où on peut télécharger ou regarder le pdf —
+je veux plus que ça se reproduise. »* Dix points d'accès recensés, et trois
+défauts réels trouvés (`ARCHITECTURE.md` §341) :
+
+- **la visionneuse ne peignait AUCUN document** depuis sa livraison du
+  11 septembre. `pdfjs-dist` 6.3 appelle une méthode arrivée dans les
+  navigateurs en 2025 ; là où elle manque, l'écran rend « Le document ne
+  s'ouvre pas ». La version est épinglée à 5.4.624, la dernière qui ne
+  l'appelle pas — et **ce n'est pas l'atelier qui décide : la page du devis est
+  ouverte par ses clients**, avec le téléphone qu'ils ont. La visionneuse peint
+  de nouveau, 18 077 pixels d'encre mesurés ;
+- **« Ouvrir le PDF sans les prix » du planning** ouvrait encore un onglet de
+  Safari, sans flèche de retour : oublié par le lot de la veille ;
+- **la route de la feuille de chantier** écrivait ses deux en-têtes à la main,
+  seule des six. Elle passe par `remise-de-fichier.ts` comme les autres.
+
+`test-tous-les-pdf.ts` tient la règle pour la suite : aucun écran ne remet un
+PDF au navigateur, il n'y a que deux portes. Il a trouvé l'écart de la feuille
+au premier essai, et il sait rougir.
+
+
 ### La CI ne jouait plus rien : un module qui s'ouvrait une session en étant lu
 
 Sa CI est rouge depuis le 10 septembre, et pas pour la raison qu'on croyait.
