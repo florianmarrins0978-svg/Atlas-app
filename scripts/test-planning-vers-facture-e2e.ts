@@ -147,9 +147,11 @@ async function ongletsOuIlFigure(page: Page, nom: string): Promise<string[]> {
     // chantier tombe —, pas de calendrier : un chantier terminé la semaine
     // dernière peut appartenir au mois précédent selon le jour où la batterie
     // tourne, et le chercher dans le seul mois affiché ferait rougir un écran
-    // juste. L'onglet « À facturer », lui, montre tout, tous mois confondus.
+    // juste. L'œil ouvert (« 3 à facturer », sous le mois), lui, montre tout ce
+    // qui attend, tous mois confondus — l'onglet « À facturer » qu'il remplace
+    // depuis le 13 septembre 2026 faisait de même.
     if (!vu && onglet === "termines") {
-      const attente = page.getByRole("button", { name: "À facturer" });
+      const attente = page.locator('[data-atlas="oeil-a-facturer"]');
       if ((await attente.count()) > 0) {
         await attente.click();
         await page.waitForSelector('[data-atlas="tout-ce-qui-attend"]', { timeout: 5000 });
@@ -345,21 +347,23 @@ async function main() {
     // chantiers terminés, viser la première clôturerait celle du voisin sans que
     // le contrôle s'en aperçoive.
     //
-    // **On passe par l'onglet « À facturer », et c'est le geste du patron.**
+    // **On passe par l'ŒIL — « 3 à facturer », sous le mois —, et c'est le
+    // geste du patron.** Il remplace l'onglet « À facturer » depuis le
+    // 13 septembre 2026 (planche `appli/termines-l-oeil.html`).
     // L'écran refait le 22 août 2026 (planche 90, proposition B) s'ouvre sur le
     // mois le plus récent : un chantier terminé il y a six jours peut tomber
     // dans le mois d'avant selon la date du jour, et le contrôle chercherait
     // alors dans un mois qui ne le porte pas — en accusant un écran juste.
-    // Cet onglet, lui, montre tout ce qui attend TOUS MOIS CONFONDUS : c'est
+    // L'œil ouvert, lui, montre tout ce qui attend TOUS MOIS CONFONDUS : c'est
     // exactement ce qu'il a demandé pour le retard de facturation, et c'est ce
     // qui rend ce contrôle indifférent au calendrier.
     //
     // **Il n'y a plus de volet à déplier** : le travail qui reste ne se cache
     // plus. Réclamer ici le pli que le patron a fait retirer rendrait son écran
     // impossible à changer (`CLAUDE.md` §5 bis).
-    const ongletAttente = page.getByRole("button", { name: "À facturer" });
-    await ongletAttente.waitFor({ state: "visible", timeout: 15000 });
-    await ongletAttente.click();
+    const oeil = page.locator('[data-atlas="oeil-a-facturer"]');
+    await oeil.waitFor({ state: "visible", timeout: 15000 });
+    await oeil.click();
     await page.waitForSelector('[data-atlas="tout-ce-qui-attend"]', { timeout: 5000 });
 
     // **La rangée EST le lien**, depuis l'écran refait : toute la ligne mène à

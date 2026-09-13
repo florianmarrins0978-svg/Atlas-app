@@ -6,6 +6,32 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-13
+
+### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
+
+Sa capture et ses quatre demandes du jour, dessinées d'abord
+(`appli/termines-l-oeil.html`, retenue le soir même) : sous la TVA, il ne
+reste que « Retours d'intervention » et « Créer une facture », sur une seule
+rangée ; « Septembre 2026 » est centré ; les onglets « Tout » et « À facturer »
+sont partis — tout se voit par défaut — et **l'œil barré à côté de « 3 à
+facturer »** filtre : ouvert, la liste ne garde que ce qui attend ; rappuyé,
+tout revient. Les deux comptes passent à 17 px, et la phrase ne s'affiche que
+s'il y a quelque chose à compter.
+
+**L'œil ouvert ignore le mois, comme l'onglet qu'il remplace** — sa règle du
+22 août pour le retard de facturation. Le mois se met alors en veille (en
+retrait, flèches fermées) sans bouger de place.
+
+Ce que cela évite : un onglet et une phrase qui disaient la même chose à trois
+centimètres d'écart, et une rangée de trois pastilles qui ne tenait qu'en
+rognant.
+
+**Supprimés avec :** `Onglet` et `Compte` dans `ListeTermines.tsx`, la
+section « Rien n'attend. Vous êtes à jour. » — la phrase de comptes le dit
+déjà en ne portant pas l'œil. Détail : `ARCHITECTURE.md` §341.
+
+---
 ## 2026-09-12
 
 ### L'espace se déblaie lui-même : un lock sali ne le fige plus à vie

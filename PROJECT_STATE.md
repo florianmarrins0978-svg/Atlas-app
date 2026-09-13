@@ -1,7 +1,23 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-12 · branche `session-2`
+**Dernière mise à jour :** 2026-09-13 · branche `main`
 · dernière migration `drizzle/0087_diagnostic_refus_par_cle.sql`
+
+---
+
+## FAIT : TERMINÉS — DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL — 13 septembre 2026
+
+Ses quatre demandes du jour, d'après sa capture, dessinées puis codées le soir
+même (`appli/termines-l-oeil.html` → `src/app/termines/ListeTermines.tsx`).
+
+| | |
+|---|---|
+| la rangée | deux portes seulement — « Retours d'intervention », « Créer une facture » —, `data-atlas="portes-termines"` |
+| le mois | centré ; **en veille** (retrait, flèches fermées) quand l'œil est ouvert |
+| l'œil | `data-atlas="oeil-a-facturer"`, 44 × 44, à côté de « 3 à facturer » ; fermé on voit le mois, ouvert on voit **tout ce qui attend, tous mois confondus** (règle du 22 août) |
+| la phrase | 17 px ; absente s'il n'y a rien à compter ; sans rien qui attend, l'œil part avec son compte |
+| les suites | `test-onglets-termines-e2e` (deux portes, plus d'onglet, l'œil dans les deux sens), `test-planning-vers-facture-e2e`, `test-tva-en-tete-e2e`, `test-facture-sans-devis-e2e` passent par l'œil ou la rangée des portes |
+| le détail | `ARCHITECTURE.md` §341 |
 
 ---
 

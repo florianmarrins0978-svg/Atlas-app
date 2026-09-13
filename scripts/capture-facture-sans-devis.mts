@@ -65,16 +65,18 @@ await poser("1-termines-avec-le-bouton");
 // est : le bouton est-il VRAIMENT collé à droite, et fait-il ses 44 px ?
 const porte = await page.evaluate(() => {
   const b = document.querySelector<HTMLElement>('[data-atlas="creer-une-facture"]');
-  const onglets = document.querySelector<HTMLElement>('[data-atlas="onglets-termines"]');
-  if (!b || !onglets) return null;
+  const portes = document.querySelector<HTMLElement>('[data-atlas="portes-termines"]');
+  if (!b || !portes) return null;
   const r = b.getBoundingClientRect();
-  const o = onglets.getBoundingClientRect();
+  const o = portes.getBoundingClientRect();
   return {
     hauteur: Math.round(r.height),
     // La marge à droite, mesurée depuis le bord de l'écran.
     aDroite: Math.round(document.documentElement.clientWidth - r.right),
-    // L'écart vertical entre le bas des onglets et le haut du bouton.
-    sousLesOnglets: Math.round(r.top - o.bottom),
+    // Le bouton vit DANS la rangée depuis le 13 septembre 2026 : ce qu'on
+    // relève, c'est s'il est sur la même ligne que « Retours d'intervention »
+    // (0) ou passé dessous (la hauteur d'une porte, à 360 px).
+    sousLesOnglets: Math.round(r.top - o.top),
     rogne: b.scrollWidth > b.clientWidth + 1,
     mot: b.innerText.trim(),
   };
@@ -83,7 +85,7 @@ if (!porte) reserves.push("le bouton « Créer une facture » est introuvable su
 else {
   console.log(
     `  → bouton « ${porte.mot} » : ${porte.hauteur} px de haut, ` +
-      `${porte.aDroite} px du bord droit, ${porte.sousLesOnglets} px sous les onglets`
+      `${porte.aDroite} px du bord droit, ${porte.sousLesOnglets} px sous le haut de la rangée`
   );
   if (porte.hauteur < 44) reserves.push(`le bouton fait ${porte.hauteur} px : sous les 44 px du pouce`);
   if (porte.aDroite !== 26) reserves.push(`le bouton est à ${porte.aDroite} px du bord, pas 26`);

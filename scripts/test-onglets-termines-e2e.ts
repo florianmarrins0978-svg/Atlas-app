@@ -1,7 +1,16 @@
-// Les trois onglets de Terminés tiennent sur UNE ligne — mesuré, pas supposé.
+// Les deux portes de Terminés tiennent dans l'écran, et l'œil filtre — mesuré,
+// pas supposé.
 //
 // ═══════════════════════════════════════════════════════════════════════════
-// **Sa demande du 9 septembre 2026 :** *« comment est-ce possible que "retours
+// **Depuis le 13 septembre 2026, la rangée ne porte plus d'onglet.** Sa
+// demande, planche `appli/termines-l-oeil.html` : *« sous la TVA, garde que
+// deux boutons : Retours d'intervention et Créer une facture ; supprime le
+// bouton Tout, que ça soit le mode par défaut ; à côté de "3 à facturer", le
+// signe œil barré — on clique dessus, ça montre les à facturer, on reclique,
+// on revient sur le mode tout »*. Ce que la rangée tenait à trois, elle le
+// tient à deux ; ce que l'onglet « À facturer » filtrait, l'œil le filtre.
+//
+// **Sa demande du 9 septembre 2026, qui a fait naître ce contrôle :** *« comment est-ce possible que "retours
 // d'intervention" déborde, il y a beaucoup de place ? Tu te débrouilles comme
 // tu veux mais tu fais tenir les 3 sur la même ligne, donc rétrécis-les un peu
 // tous les 3 s'il faut. »*
@@ -41,7 +50,7 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
  * où la barre du bas se vérifie à cette largeur). 430 est le grand format.
  */
 const LARGEURS = [360, 375, 390, 430] as const;
-const RANGEE = "[data-atlas='onglets-termines']";
+const RANGEE = "[data-atlas='portes-termines']";
 /** **On la REGARDE aussi.** Une rangée peut tenir au pixel et rester laide :
  *  quatre défauts réels de ce dépôt sont sortis d’une image, d’aucun test. */
 const DOSSIER_CAPTURES = process.env.ATLAS_CAPTURES ?? null;
@@ -58,7 +67,7 @@ async function cas(nom: string, fn: () => Promise<void>) {
 }
 
 async function main() {
-  console.log("=== Les onglets de Terminés, à la largeur de son téléphone ===\n");
+  console.log("=== Les portes et l’œil de Terminés, à la largeur de son téléphone ===\n");
 
   // **L'onglet des retours ne s'affiche QUE s'il y en a**, et c'est voulu : un
   // onglet qui ouvre une liste vide s'apprend à ne plus être touché. Il faut
@@ -185,11 +194,14 @@ async function main() {
     });
   }
 
-  await cas("les trois onglets sont là, celui des retours portant son nom entier", async () => {
+  await cas("LES DEUX PORTES SONT LÀ, ET AUCUN ONGLET — sa demande du 13 septembre", async () => {
     const dit = (await page.locator(RANGEE).innerText()).replace(/\n/g, " · ");
-    assert.match(dit, /Tout/);
-    assert.match(dit, /facturer/i);
     assert.match(dit, /Retours d'intervention/, `la rangée dit « ${dit} »`);
+    assert.match(dit, /Créer une facture/, `la rangée dit « ${dit} »`);
+    // « Tout » et « À facturer » sont partis : un onglet qui reviendrait ici
+    // referait la rangée à trois qu'il a fait défaire.
+    assert.doesNotMatch(dit, /\bTout\b/, `« Tout » est revenu : « ${dit} »`);
+    assert.equal(await page.locator(`${RANGEE} > *`).count(), 2, "la rangée ne porte pas deux portes");
   });
 
   for (const large of LARGEURS) {
@@ -256,7 +268,7 @@ async function main() {
       });
       assert.ok(
         pris <= dispo,
-        `les onglets débordent de ${pris - dispo} px à ${large} (${pris} pour ${dispo} disponibles)`
+        `les portes débordent de ${pris - dispo} px à ${large} (${pris} pour ${dispo} disponibles)`
       );
       // **À 360 px, la capture montrait « À / facturer » sur deux lignes — et
       // tous les contrôles au vert**, parce que deux lignes de 12,5 px tiennent
@@ -271,7 +283,7 @@ async function main() {
         Array.from(r.children).map((e) => Math.round(e.getBoundingClientRect().height))
       );
       for (const h of hauts) {
-        assert.ok(h <= 48, `un onglet fait ${h} px de haut à ${large} px : son libellé s’est replié`);
+        assert.ok(h <= 48, `une porte fait ${h} px de haut à ${large} px : son libellé s’est replié`);
       }
       for (const x of serres) {
         assert.ok(x.voulu > 0, `« ${x.mot} » ne mesure rien : la mise en page n’est pas faite`);
@@ -288,7 +300,7 @@ async function main() {
     });
   }
 
-  await cas("AUCUN ONGLET N’EST ROND — son coup d’œil du 9 septembre", async () => {
+  await cas("AUCUNE PORTE N’EST RONDE — son coup d’œil du 9 septembre", async () => {
     // *« Le bouton Tout, on dirait qu’il est rond et pas ovale comme les
     // autres »* : un mot court dans un rembourrage resserré rend une pastille
     // aussi haute que large. On mesure donc le RAPPORT, pas seulement la
@@ -300,23 +312,64 @@ async function main() {
       })
     );
     for (const f of formes) {
-      assert.ok(f.l > 0 && f.h > 0, "un onglet sans dimension : rien n’est mesuré");
+      assert.ok(f.l > 0 && f.h > 0, "une porte sans dimension : rien n’est mesuré");
       // **Le seuil vient de l’image, pas d’une intuition.** Ce qu’il a vu était
       // une pastille aussi haute que large — un rapport proche de 1. À 1,36
       // (60 × 44) elle se lit ovale, vérifié à la capture ; le garde-fou est
       // donc posé à 1,25, où il attrape un vrai rond sans refuser ce qui va.
-      assert.ok(f.l >= f.h * 1.25, `un onglet est presque rond : ${f.l} × ${f.h} px`);
+      assert.ok(f.l >= f.h * 1.25, `une porte est presque ronde : ${f.l} × ${f.h} px`);
     }
   });
 
-  await cas("aucun onglet ne descend sous 44 px — le pouce, avec des gants", async () => {
+  await cas("aucune porte ne descend sous 44 px — le pouce, avec des gants", async () => {
     const hauteurs = await page.locator(`${RANGEE} > *`).evaluateAll((els) =>
       els.map((e) => Math.round(e.getBoundingClientRect().height))
     );
-    assert.ok(hauteurs.length === 3, `${hauteurs.length} onglets au lieu de trois`);
+    assert.ok(hauteurs.length === 2, `${hauteurs.length} portes au lieu de deux`);
     for (const h of hauteurs) {
-      assert.ok(h >= 44, `un onglet ne fait que ${h} px de haut`);
+      assert.ok(h >= 44, `une porte ne fait que ${h} px de haut`);
     }
+  });
+
+  await cas("L’ŒIL : fermé on voit tout, ouvert seulement ce qui attend, refermé tout revient", async () => {
+    // **C'est le chemin du patron, pas la fonction qu'on vient d'écrire**
+    // (`CLAUDE.md` §5 quater) : on lit le chiffre, on appuie sur l'œil à côté,
+    // on regarde ce qui reste. Le chantier terminé plus haut n'a pas de
+    // facture : il attend, donc l'œil a quelque chose à montrer — et sans lui
+    // on refuse de conclure, un écran sans rien à filtrer ne prouvant rien.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
+    const oeil = page.locator("[data-atlas='oeil-a-facturer']");
+    assert.equal(await oeil.count(), 1, "aucun chantier à facturer : l'œil n'a rien à montrer, rien n'est mesurable");
+    const boite = await oeil.boundingBox();
+    assert.ok(
+      boite && boite.width >= 44 && boite.height >= 44,
+      `l'œil fait ${boite?.width} × ${boite?.height} : sous les 44 px du pouce`
+    );
+    assert.equal(await oeil.getAttribute("aria-pressed"), "false", "l'œil n'est pas fermé en arrivant : on doit tout voir par défaut");
+
+    const compte = page.locator("[data-atlas='compte-du-mois']");
+    const attendus = Number(/(\d+) à facturer/.exec(await compte.innerText())?.[1]);
+    assert.ok(attendus > 0, `la phrase ne dit pas combien attendent : « ${await compte.innerText()} »`);
+    const lignes = "[data-atlas='ligne-terminee']";
+    const capsules = "[data-atlas='capsule-a-facturer']";
+    const avant = await page.locator(lignes).count();
+    assert.ok(avant > 0, "aucune rangée dans le mois affiché : rien n'est mesurable");
+
+    await oeil.click();
+    await page.waitForSelector("[data-atlas='tout-ce-qui-attend']", { timeout: 5000 });
+    assert.equal(await oeil.getAttribute("aria-pressed"), "true");
+    assert.equal(await page.locator(lignes).count(), attendus, "ouvert, l'œil ne montre pas ce que le chiffre annonce");
+    assert.equal(await page.locator(capsules).count(), attendus, "une rangée sans capsule s'est glissée parmi ce qui attend");
+    // Le mois se met en veille : ce qu'on voit l'ignore, ses flèches se ferment.
+    for (const f of ["mois-precedent", "mois-suivant"]) {
+      assert.ok(await page.locator(`[data-atlas='${f}']`).isDisabled(), `${f} reste ouvert alors que la liste ignore le mois`);
+    }
+
+    await oeil.click();
+    await page.waitForSelector("[data-atlas='le-mois']", { timeout: 5000 });
+    assert.equal(await oeil.getAttribute("aria-pressed"), "false");
+    assert.equal(await page.locator(lignes).count(), avant, "refermé, l'œil ne rend pas la liste d'avant");
   });
 
   // On rend le jeu de démonstration tel qu'on l'a pris : les suites voisines
@@ -542,7 +595,7 @@ async function main() {
   ]);
   await pool.end();
   await navigateur.close();
-  console.log(`\n${echecs === 0 ? "✅" : "❌"} Les onglets de Terminés — ${echecs} échec(s).`);
+  console.log(`\n${echecs === 0 ? "✅" : "❌"} Les portes et l’œil de Terminés — ${echecs} échec(s).`);
   process.exit(echecs === 0 ? 0 : 1);
 }
 

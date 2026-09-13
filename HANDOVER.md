@@ -4,11 +4,30 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-12 · `main`
+**Point de reprise :** 2026-09-13 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
+## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | sa capture, et quatre lignes : deux boutons sous la TVA, le mois centré, plus de « Tout » ni « À facturer », l'œil barré à côté de « 3 à facturer » |
+| la planche | `appli/termines-l-oeil.html`, retenue le soir même : *« très bien, et par défaut on doit tout voir et on clique pour voir seulement les à facturer »* |
+| ce qui est fait | `ListeTermines.tsx` : la rangée `portes-termines` (deux liens), `NavigationMois` centrée avec `enVeille`, la phrase de comptes à 17 px qui porte l'`Oeil` (`oeil-a-facturer`) |
+| la règle gardée | **l'œil ouvert ignore le mois** — c'était celle de l'onglet « À facturer » (22 août, retard de facturation). Le mois se met en veille, il ne bouge pas |
+| ce qui a DISPARU | `Onglet`, `Compte`, la section « Rien n'attend. Vous êtes à jour. » |
+| la migration | **aucune** |
+| les suites | `test-onglets-termines-e2e` (+1 cas : l'œil dans les deux sens, et il refuse de conclure sans chantier à facturer) ; trois suites passent par l'œil au lieu de l'onglet |
+| le détail | `ARCHITECTURE.md` §341 |
+
+**Ce que la planche disait et que le code ne fait pas :** la planche d'abord
+filtrait **le mois affiché** ; codé « tous mois confondus » parce que c'est sa
+règle du 22 août, et la planche a été réalignée. À lui de dire si le mois en
+veille lui va.
+
+---
+## Lot précédent — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
 
 | | |
 |---|---|
@@ -4258,7 +4277,8 @@ et ses perles pleines ou creuses, la pastille dorée, le **volet replié** qui
 cachait les chantiers à facturer, « Facturé, tous mois confondus », le surtitre
 et le cheveu. Une suite qui réclamerait l'un d'eux rendrait l'écran impossible à
 changer (`CLAUDE.md` §5 bis) — c'est déjà arrivé, et `test-planning-vers-facture-e2e.ts`
-a été adapté : il passe désormais par l'onglet **« À facturer »**.
+a été adapté : il passe par ce qui montre tout ce qui attend — l'onglet
+« À facturer » jusqu'au 13 septembre 2026, **l'œil** (`oeil-a-facturer`) depuis.
 
 **Deux choses gouvernent le nouvel écran, et elles se paient si on les ignore :**
 
@@ -4268,9 +4288,9 @@ a été adapté : il passe désormais par l'onglet **« À facturer »**.
    le mois le plus récent.
 2. **CE QUI RESTE À FACTURER NE SUIT PAS LE MOIS.** Sa demande : *« il faut
    pouvoir revenir dans le passé si jamais on a du retard sur la facturation »*.
-   L'onglet « À facturer » ignore le mois affiché — un chantier de juillet jamais
-   facturé se voit encore en août. `aFacturerPartout` porte cette règle, et la
-   suite pure la fixe.
+   L'œil ouvert (l'onglet « À facturer », jusqu'au 13 septembre 2026) ignore le
+   mois affiché — un chantier de juillet jamais facturé se voit encore en août.
+   `aFacturerPartout` porte cette règle, et la suite pure la fixe.
 
 **Le piège qui a coûté deux suites rouges** : un chantier **clôturé avant sa
 date** reste dans « Terminés » avec une date **à venir**. Ouvrir sur « le mois

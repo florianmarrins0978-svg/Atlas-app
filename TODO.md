@@ -2861,7 +2861,11 @@ par un choix de `stdio`. **À faire valider par le patron avant d'y toucher.**
 
 ## EN ATTENTE DE SA RÉPONSE : le compte « tous mois » sous un mois précis (2 sept. 2026)
 
-Sur « Terminés », onglet « Tout », la phrase « 3 à facturer · 10 facturés »
+*13 septembre 2026 : la phrase porte désormais l'œil (§341). Ouvert, la liste
+compte comme elle — tous mois — et le mois se met en veille ; fermé, la
+question ci-dessous reste entière.*
+
+Sur « Terminés », la phrase « 3 à facturer · 10 facturés »
 compte **tous les mois** — c'est ainsi qu'il l'a demandée le 23 août. Mais elle
 est posée juste sous le nom d'un mois, et **elle ne bouge pas quand on recule** :
 en juillet, elle affiche encore les chiffres d'août.

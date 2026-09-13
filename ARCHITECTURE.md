@@ -29075,3 +29075,56 @@ descendre un PDF non vide sous le nom de la facture, le bouton ne reste pas sur
 reste un lien. Ce qu'il sert est un `.zip` — un fichier sans lecteur, qui
 descend de toute façon —, et son appui porte une vérification d'identité que ce
 lot n'avait aucune raison de déplacer.
+
+---
+
+## §341 — Terminés : l'œil remplace les onglets, et il garde leur règle
+
+**Ses quatre demandes du 13 septembre 2026, d'après sa capture :** *« sous la
+TVA garde que deux boutons, Retours d'intervention et Créer une facture ;
+Septembre 2026, centre-le ; supprime le bouton Tout, que ça soit le mode par
+défaut, et garde que le bouton À facturer — pour que ça soit plus joli, laisse
+14 facturés en gras et 3 à facturer en gras doré, mais à côté tu mets le signe
+œil barré : on clique dessus, ça montre les à facturer, on reclique, il
+disparaît, on revient sur le mode tout par défaut »*. Dessiné d'abord
+(`appli/termines-l-oeil.html`), trois retours le soir même — l'or de
+l'application, pas de rond derrière l'œil, les comptes plus gros, la phrase
+absente quand il n'y a rien —, puis : *« très bien, tu peux coder ça »*.
+
+**Ce que l'écran disait deux fois.** L'onglet « À facturer » et, trois
+centimètres plus bas, « 3 à facturer » : le même état, un filtre et un compte.
+La planche du 8 septembre (`termines-et-les-retours.html`, proposition 4)
+l'avait déjà relevé. Le geste vit désormais **sur le chiffre lui-même** : l'œil
+est un bouton de 44 × 44 posé sur la ligne de 17 px, ses marges négatives
+l'absorbent, et rien ne s'ajoute à l'écran — il en manque.
+
+**LA RÈGLE DE L'ONGLET EST GARDÉE, ET C'EST LE POINT QUI SE DISCUTAIT.** Sa
+demande du 22 août — *« il faut pouvoir revenir dans le passé si jamais on a du
+retard sur la facturation »* — faisait ignorer le mois à l'onglet. La planche
+retenue filtrait d'abord **le mois affiché** : plus simple à dessiner, et faux
+pour un chantier de juillet jamais facturé, qu'il faudrait déjà savoir exister
+pour aller le chercher. Codé « tous mois confondus », comme la phrase compte
+déjà depuis le 23 août : l'œil ouvert montre exactement ce que « 3 à facturer »
+annonce, et les deux chiffres ne peuvent plus se contredire. La planche a été
+réalignée sur le code — c'est elle qu'il ouvre.
+
+**Le mois se met en VEILLE, il ne part pas.** Une liste qui ignore le mois sous
+des flèches qui le feuillettent ferait croire l'écran cassé ; une navigation
+qui disparaît ferait bouger la phrase — et l'œil avec, sous le doigt qui vient
+de l'appuyer (`CLAUDE.md` §3, « une ligne qui bouge se cherche »). Le nom du
+mois passe donc à `muted`, ses flèches se ferment, et rien ne change de place.
+Même idiome pour « 14 facturés », qui s'éteint : ils existent, ils sont rangés.
+
+**Un œil ouvert sur rien n'existe pas.** `montrerCeQuiAttend = oeilOuvert &&
+attente.length > 0` : dès que la dernière facture part, on revient à tout sans
+qu'un état orphelin reste posé sur un bouton disparu. Et la phrase ne se rend
+que s'il y a quelque chose à compter — sa règle du soir : *« quand il n'y a
+rien à facturer ou de facturé, supprime la phrase »*.
+
+**Ce qui a disparu, et ne revient pas :** `Onglet` et `Compte`
+(`ListeTermines.tsx`), la section « Rien n'attend. Vous êtes à jour. » — un
+chiffre absent le dit mieux qu'une phrase —, et la seconde rangée de « Créer
+une facture », qui n'existait que parce que trois pastilles prenaient la
+première. Les suites suivent le geste, jamais le mot : `oeil-a-facturer` et
+`portes-termines` sont des repères, et `tout-ce-qui-attend` reste le nom de
+la section quand elle montre tout ce qui attend.
