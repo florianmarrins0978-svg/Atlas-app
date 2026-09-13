@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terminés — l'œil sur ce qui attend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    TERMINÉS — L'ŒIL SUR CE QUI ATTEND — 13 septembre 2026.
+
+    Sa demande, d'après sa capture du 13 septembre :
+      · sous la TVA, ne garder que DEUX boutons : « Retours d'intervention »
+        et « Créer une facture » ;
+      · « Septembre 2026 » centré ;
+      · supprimer l'onglet « Tout » — c'est le mode par défaut — et
+        l'onglet « À facturer » ;
+      · à la place : « 14 facturés » en gras, « 3 à facturer » en gras doré,
+        et À CÔTÉ un œil barré. On l'appuie : la liste ne montre que ce qui
+        attend. On le rappuie : on revient à tout.
+
+    Tout le reste est repris du code (`src/app/termines/ListeTermines.tsx`),
+    pas de mémoire : la carte de TVA à contour doré, le mois en serif 26,
+    les flèches en or, les lignes à 24 px sans trait, la capsule verte.
+
+    MESURÉ POUR SON TÉLÉPHONE : 390 × 664. RIEN N'EST CODÉ dans `src/`.
+  */
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835; --etabli-pin:#2f3b2f;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
+    --or:#B98B47; --orTexte:#8b6835; --orVoile:rgba(185,139,71,.55);
+    --plein:#7d9a6d; --surplein:#faf9f5;
+    --trait:rgba(28,28,26,.12);
+  }
+  body.nuit{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
+    --or:#B98B47; --orTexte:#b98b47; --orVoile:rgba(185,139,71,.6);
+    --plein:#e9e8de; --surplein:#1a1d19;
+    --trait:rgba(233,232,222,.12);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;background:var(--etabli)}
+  body{font:16px/1.5 var(--sans);color:var(--etabli-encre);
+       -webkit-text-size-adjust:100%;padding:0 0 70px}
+  ::selection{background:rgba(138,101,40,.22)}
+  :focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px;border-radius:4px}
+  button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:18px 20px;font-size:14px;line-height:1.6}
+  .bandeau b{color:#fff}
+  .mot{max-width:560px;margin:30px auto 0;padding:17px 20px;background:var(--etabli-carte);
+       border-radius:13px;box-shadow:inset 0 0 0 1px var(--etabli-trait);
+       font-size:14px;line-height:1.62;color:var(--etabli-doux)}
+  .mot b{color:var(--etabli-encre)}
+  .mot + .mot{margin-top:11px}
+
+  .etats{position:sticky;top:0;z-index:20;background:var(--etabli);
+         border-bottom:1px solid var(--etabli-trait);padding:12px 16px 13px}
+  .etats .rangee{max-width:1000px;margin:0 auto;display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .etats button{border:1px solid var(--etabli-trait);background:var(--etabli-carte);
+                color:var(--etabli-doux);border-radius:999px;padding:10px 15px;
+                font:400 13px/1 var(--sans);cursor:pointer}
+  .etats button[aria-pressed="true"]{background:var(--etabli-pin);border-color:var(--etabli-pin);color:#faf9f5}
+
+  .planches{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;
+            max-width:1360px;margin:34px auto 0;padding:0 20px}
+  .planche{width:390px;max-width:100%}
+  .planche .nom{margin:0 0 4px;font:500 19px/1.25 var(--serif)}
+  .planche .idee{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--etabli-doux);min-height:42px}
+  .tel{width:390px;max-width:100%;height:664px;border-radius:26px;overflow:hidden;position:relative;
+       background:var(--fond);color:var(--encre);box-shadow:0 16px 44px rgba(20,18,14,.22)}
+  .ecran{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;
+         scrollbar-width:thin;scrollbar-color:var(--trait) transparent}
+  .ecran::-webkit-scrollbar{width:6px}
+  .ecran::-webkit-scrollbar-thumb{background:var(--trait);border-radius:999px}
+
+  /* ── L'écran Terminés, repris du code ────────────────────────────── */
+  .enTete{display:flex;align-items:center;justify-content:space-between;padding:26px 26px 0}
+  .enTete h1{margin:0;font:400 36px/1.02 var(--serif)}
+  .enTete .assistant{width:40px;height:40px;border-radius:999px;display:grid;place-items:center;
+                     background:var(--plein);color:var(--surplein)}
+  .carteTva{margin:24px 26px 0;border-radius:4px;padding:20px 18px;background:var(--plage);
+            box-shadow:inset 0 0 0 1.5px var(--orVoile);display:flex;align-items:center;
+            justify-content:space-between;gap:12px;text-decoration:none;color:inherit}
+  .carteTva .quoi{font:700 10.5px/1.35 var(--sans);letter-spacing:.16em;
+                  text-transform:uppercase;color:var(--or)}
+  .carteTva .quand{display:block;margin-top:5px;font:400 17px/1.2 var(--serif);color:var(--encre)}
+  .carteTva .combien{font:400 21px/1 var(--serif);color:var(--accent);font-variant-numeric:tabular-nums}
+
+  /* Les DEUX boutons, sur une rangée : « Tout » et « À facturer » partis, la
+     place est là. À 360 px la rangée se replie, et « Créer une facture »
+     passe dessous, toujours à droite. */
+  .portes{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;margin:28px 26px 0}
+  .porte{min-height:44px;display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;
+         padding:0 12px;font:400 12.5px/1 var(--sans);white-space:nowrap;cursor:pointer;
+         background:var(--plage);color:var(--doux);box-shadow:inset 0 0 0 1px var(--trait)}
+  .porte .compte{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:999px;
+                 background:var(--or);color:var(--fond);font:700 11px/1 var(--sans);padding:0 6px}
+  .porte.creer{margin-left:auto;background:transparent;color:var(--or);
+               box-shadow:inset 0 0 0 1px var(--or);padding:0 14px}
+
+  /* Le mois, centré — sa demande. Les flèches gardent 44 × 34, en or. */
+  .navMois{display:flex;align-items:center;justify-content:center;gap:2px;margin:32px 26px 0}
+  .navMois button{width:34px;height:44px;border:0;background:transparent;cursor:pointer;
+                  font:400 22px/1 var(--serif);color:var(--or)}
+  .navMois button:disabled{color:var(--trait);cursor:default}
+  .navMois .quand{font:400 26px/1.2 var(--serif);white-space:nowrap;margin:0 2px}
+
+  /* La phrase des comptes DEVIENT le filtre. L'œil est un vrai bouton de
+     44 px, posé sur la ligne sans la grandir : ses marges négatives
+     l'absorbent, et le doigt a quand même sa mesure. */
+  .comptes{display:flex;align-items:center;gap:6px;margin:14px 26px 12px;
+           font:700 14px/1.6 var(--sans);color:var(--encre);min-height:24px}
+  .comptes .aFacturer{color:var(--orTexte)}
+  .comptes .oeil{position:relative;width:44px;height:44px;margin:-10px -4px -10px -8px;border:0;border-radius:999px;
+                 background:transparent;display:grid;place-items:center;color:var(--orTexte);cursor:pointer;
+                 }
+  .comptes .oeil svg{display:block}
+  .comptes .oeil .ouvert{display:none}
+  .comptes .point,.comptes .factures{transition:opacity .18s cubic-bezier(.2,.7,.2,1)}
+  /* En mode « ce qui attend » : l'œil s'ouvre sur un fond de tuile, et les
+     facturés — qui ne sont plus dans la liste — s'éteignent sans partir. */
+  .comptes .oeil::before{content:"";position:absolute;inset:7px;border-radius:999px;background:var(--tuile);opacity:0;transition:opacity .18s cubic-bezier(.2,.7,.2,1)}
+  .comptes .oeil svg{position:relative}
+  .ecran[data-mode="attente"] .oeil::before{opacity:1}
+  .ecran[data-mode="attente"] .oeil .barre{display:none}
+  .ecran[data-mode="attente"] .oeil .ouvert{display:block}
+  .ecran[data-mode="attente"] .point,.ecran[data-mode="attente"] .factures{opacity:.38}
+  .ecran[data-mode="attente"] .rangee[data-facturee]{display:none}
+
+  .liste{margin:0 26px}
+  .rangee{display:flex;gap:14px;align-items:center;padding:24px 0;text-decoration:none;color:inherit}
+  .rangee[data-facturee]{align-items:baseline}
+  .rangee:first-child,.ecran[data-mode="attente"] .rangee:not([data-facturee]):first-of-type{padding-top:22px}
+  .rangee .qui{min-width:0;flex:1}
+  .rangee .nomC{display:block;font:400 17px/1.2 var(--serif);color:var(--encre);
+                white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rangee .etat{display:block;margin-top:5px;font:400 13px/1.5 var(--sans);color:var(--doux);
+                font-variant-numeric:tabular-nums}
+  .rangee .montant{flex:0 0 auto;font:400 16px/1.2 var(--serif);white-space:nowrap;
+                   font-variant-numeric:tabular-nums;color:var(--encre)}
+  .capsule{flex:0 0 auto;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;
+           padding:0 17px;font:600 12.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+           background:var(--plein);color:var(--surplein)}
+
+  .barre{display:flex;align-items:center;justify-content:space-around;height:60px;padding:0 6px;
+         background:var(--plage);box-shadow:inset 0 1px 0 var(--trait);margin-top:auto;flex:0 0 auto}
+  .barre i{position:relative;padding:8px 6px;font:500 9.5px/1 var(--sans);font-style:normal;
+           letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+  .barre i.actif{color:var(--encre)}
+  .barre i.actif::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1.5px;background:var(--or)}
+
+  /* Sur un téléphone, le cadre prend toute la largeur : à 390 px, c'est SON écran. */
+  @media (max-width:900px){ .planches{padding:0;gap:0} .planche{width:100%} .tel{width:100%;border-radius:0;box-shadow:none} }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Votre page, avec vos quatre demandes du 13 septembre.</b> Deux boutons
+  sous la TVA, le mois centré, plus d'onglet « Tout » ni « À facturer » — et
+  l'œil à côté de « 3 à facturer ». <b>Appuyez dessus.</b>
+</div>
+
+<div class="mot">
+  <b>L'œil fait ce que faisait l'onglet « À facturer », sans prendre une
+  rangée.</b> Barré, la liste montre tout : c'est le mode d'origine. Ouvert,
+  elle ne garde que ce qui attend, et « 14 facturés » s'éteint pour dire qu'ils
+  sont là mais rangés. On rappuie, tout revient. <b>Changez de mois</b> avec
+  les flèches : l'œil suit le mois qu'on regarde.
+</div>
+
+<div class="etats" role="group" aria-label="Ce qu'on peut jouer">
+  <div class="rangee">
+    <button type="button" id="charte" aria-pressed="false">Nuit</button>
+    <button type="button" id="recommencer">Recommencer</button>
+  </div>
+</div>
+
+<div class="planches">
+  <div class="planche">
+    <p class="nom">Terminés, et l'œil sur ce qui attend</p>
+    <p class="idee">Rien de plus sur l'écran qu'aujourd'hui : il en manque. Trois
+      objets partis, un œil arrivé.</p>
+    <div class="tel"><div class="ecran" id="ecran" data-mode="tout">
+      <div class="enTete">
+        <h1>Terminés</h1>
+        <span class="assistant" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3.2c-4 0-7 2.6-7 5.9 0 1.7.8 3.2 2.1 4.3L4.4 16.8l3.4-1.5c.7.2 1.4.3 2.2.3 4 0 7-2.6 7-5.9s-3-6.5-7-6.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+      </div>
+
+      <a class="carteTva" href="#tva">
+        <span><span class="quoi">Ma TVA à déclarer</span>
+          <span class="quand">Septembre 2026</span></span>
+        <span class="combien">919,69 €</span>
+      </a>
+
+      <div class="portes">
+        <button type="button" class="porte">Retours d'intervention <span class="compte">1</span></button>
+        <button type="button" class="porte creer">Créer une facture</button>
+      </div>
+
+      <div class="navMois">
+        <button type="button" id="passe" aria-label="Mois précédent">‹</button>
+        <span class="quand" id="mois">Septembre 2026</span>
+        <button type="button" id="futur" aria-label="Mois suivant" disabled>›</button>
+      </div>
+
+      <p class="comptes" id="comptes">
+        <span class="aFacturer" id="nAttente">3 à facturer</span>
+        <button type="button" class="oeil" id="oeil" aria-pressed="false" aria-label="Ne montrer que ce qui attend">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path class="barre" d="M2.2 10s2.8-5 7.8-5 7.8 5 7.8 5-2.8 5-7.8 5-7.8-5-7.8-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <circle class="barre" cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"/>
+            <path class="barre" d="M3.6 16.4 16.4 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path class="ouvert" d="M2.2 10s2.8-5 7.8-5 7.8 5 7.8 5-2.8 5-7.8 5-7.8-5-7.8-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <circle class="ouvert" cx="10" cy="10" r="2.4" fill="currentColor"/>
+          </svg>
+        </button>
+        <span class="point" aria-hidden="true">·</span>
+        <span class="factures" id="nFaites">14 facturés</span>
+      </p>
+
+      <div class="liste" id="liste"></div>
+
+      <div class="barre" aria-hidden="true">
+        <i>Chantiers</i><i>Planning</i><i class="actif">Terminés</i><i>Paysage</i><i>Réglages</i>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<script>
+  // Deux mois joués, rien de plus : ce qu'il faut pour voir l'œil tenir quand
+  // on change de mois, et le cas où rien n'attend.
+  const MOIS = [
+    { nom: "Septembre 2026", lignes: [
+      { nom: "M. Rialland",        etat: "12 septembre · 1 240,00 € prévus", attend: true },
+      { nom: "Mme Claudette",      etat: "9 septembre · Facturé le 10 septembre · Facture n° 6", montant: "5 340,00 €" },
+      { nom: "Résidence des Ormes",etat: "8 septembre · 860,00 € prévus", attend: true },
+      { nom: "Mr. Alicanter",      etat: "8 septembre · Facturé le 9 septembre · Facture n° 3", montant: "428,69 €" },
+      { nom: "Mme Costa",          etat: "5 septembre · Facturé le 5 septembre · Facture n° 2", montant: "1 120,00 €" },
+      { nom: "M. Bellier",         etat: "3 septembre · 2 400,00 € prévus", attend: true },
+      { nom: "Copropriété Le Clos",etat: "2 septembre · Facturé le 4 septembre · Facture n° 1", montant: "3 980,00 €" },
+      { nom: "M. Ferrand",         etat: "1er septembre · Facturé le 2 septembre", montant: "540,00 €" },
+      { nom: "Mme Perrot",         etat: "1er septembre · Facturé le 1er septembre", montant: "310,00 €" },
+      { nom: "M. et Mme Dufour",   etat: "4 septembre · Facturé le 4 septembre · Facture n° 4", montant: "2 150,00 €" },
+      { nom: "Mairie de Saint-Loup",etat: "4 septembre · Facturé le 6 septembre · Facture n° 5", montant: "8 400,00 €" },
+      { nom: "Mme Aubry",          etat: "3 septembre · Facturé le 3 septembre", montant: "620,00 €" },
+      { nom: "M. Lacroix",         etat: "3 septembre · Facturé le 4 septembre", montant: "1 480,00 €" },
+      { nom: "Résidence Bel Air",  etat: "2 septembre · Facturé le 3 septembre", montant: "4 020,00 €" },
+      { nom: "Mme Toussaint",      etat: "2 septembre · Facturé le 2 septembre", montant: "390,00 €" },
+      { nom: "M. Vidal",           etat: "1er septembre · Facturé le 2 septembre", montant: "975,00 €" },
+      { nom: "Camping des Pins",   etat: "1er septembre · Facturé le 1er septembre", montant: "5 600,00 €" },
+    ]},
+    { nom: "Août 2026", lignes: [
+      { nom: "Mme Lenoir",         etat: "28 août · Facturé le 29 août", montant: "760,00 €" },
+      { nom: "M. Gauthier",        etat: "21 août · Facturé le 22 août", montant: "1 980,00 €" },
+      { nom: "Les Jardins du Parc",etat: "14 août · Facturé le 18 août", montant: "6 210,00 €" },
+    ]},
+  ];
+  // Les comptes du code sont « tous mois confondus » ; ici, ceux du mois
+  // affiché, pour que l'écran et la liste disent la même chose sous le doigt.
+  const ecran = document.getElementById("ecran");
+  const liste = document.getElementById("liste");
+  const oeil = document.getElementById("oeil");
+  const nAttente = document.getElementById("nAttente");
+  const nFaites = document.getElementById("nFaites");
+  let rang = 0, mode = "tout";
+
+  function pluriel(n, mot){ return n + " " + mot + (n > 1 ? "s" : ""); }
+  function rendre(){
+    const m = MOIS[rang];
+    document.getElementById("mois").textContent = m.nom;
+    document.getElementById("passe").disabled = rang === MOIS.length - 1;
+    document.getElementById("futur").disabled = rang === 0;
+    const attend = m.lignes.filter(l => l.attend).length;
+    const faites = m.lignes.length - attend;
+    // Sans rien à facturer, l'œil n'a rien à montrer : il part avec le point —
+    // sauf s'il est ouvert, pour qu'on puisse toujours le refermer.
+    const rienAMontrer = attend === 0 && mode === "tout";
+    nAttente.textContent = attend > 0 ? attend + " à facturer" : "Rien n'attend";
+    nAttente.hidden = rienAMontrer;
+    oeil.hidden = rienAMontrer;
+    document.querySelector(".comptes .point").hidden = rienAMontrer;
+    nFaites.textContent = pluriel(faites, "facturé");
+    liste.innerHTML = m.lignes.map(l => l.attend
+      ? `<a class="rangee" href="#f"><span class="qui"><span class="nomC">${l.nom}</span><span class="etat">${l.etat}</span></span><span class="capsule">À facturer</span></a>`
+      : `<a class="rangee" data-facturee href="#f"><span class="qui"><span class="nomC">${l.nom}</span><span class="etat">${l.etat}</span></span><span class="montant">${l.montant}</span></a>`
+    ).join("");
+    ecran.dataset.mode = mode;
+    oeil.setAttribute("aria-pressed", String(mode === "attente"));
+    oeil.setAttribute("aria-label", mode === "attente" ? "Tout montrer" : "Ne montrer que ce qui attend");
+  }
+  oeil.addEventListener("click", () => { mode = mode === "tout" ? "attente" : "tout"; rendre(); });
+  document.getElementById("passe").addEventListener("click", () => { rang = Math.min(rang + 1, MOIS.length - 1); rendre(); });
+  document.getElementById("futur").addEventListener("click", () => { rang = Math.max(rang - 1, 0); rendre(); });
+  document.getElementById("recommencer").addEventListener("click", () => { rang = 0; mode = "tout"; rendre(); ecran.scrollTop = 0; });
+  document.getElementById("charte").addEventListener("click", (e) => {
+    const nuit = document.body.classList.toggle("nuit");
+    e.currentTarget.setAttribute("aria-pressed", String(nuit));
+  });
+  rendre();
+</script>
+</body>
+</html>
