@@ -36,14 +36,14 @@
 
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --doux:#4a4a44;
     --gris:#8a8578; --accent:#2f3b2f; --tuile:#ece9e1;
-    --or:#B98B47; --orTexte:#8b6835; --orVoile:rgba(185,139,71,.55);
+    --or:#B98B47; --orVoile:rgba(185,139,71,.55);
     --plein:#7d9a6d; --surplein:#faf9f5;
     --trait:rgba(28,28,26,.12);
   }
   body.nuit{
     --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --doux:#c1c2b6;
     --gris:#84887b; --accent:#e9e8de; --tuile:#1f211e;
-    --or:#B98B47; --orTexte:#b98b47; --orVoile:rgba(185,139,71,.6);
+    --or:#B98B47; --orVoile:rgba(185,139,71,.6);
     --plein:#e9e8de; --surplein:#1a1d19;
     --trait:rgba(233,232,222,.12);
   }
@@ -121,18 +121,16 @@
      l'absorbent, et le doigt a quand même sa mesure. */
   .comptes{display:flex;align-items:center;gap:6px;margin:14px 26px 12px;
            font:700 14px/1.6 var(--sans);color:var(--encre);min-height:24px}
-  .comptes .aFacturer{color:var(--orTexte)}
-  .comptes .oeil{position:relative;width:44px;height:44px;margin:-10px -4px -10px -8px;border:0;border-radius:999px;
-                 background:transparent;display:grid;place-items:center;color:var(--orTexte);cursor:pointer;
-                 }
+  /* Le même or que l'application (`colors.or`), pas l'or de texte des
+     planches : c'est lui qu'il reconnaît sur « 3 à facturer ». */
+  .comptes .aFacturer{color:var(--or)}
+  .comptes .oeil{width:44px;height:44px;margin:-10px -4px -10px -8px;border:0;border-radius:999px;
+                 background:transparent;display:grid;place-items:center;color:var(--or);cursor:pointer}
   .comptes .oeil svg{display:block}
   .comptes .oeil .ouvert{display:none}
   .comptes .point,.comptes .factures{transition:opacity .18s cubic-bezier(.2,.7,.2,1)}
-  /* En mode « ce qui attend » : l'œil s'ouvre sur un fond de tuile, et les
+  /* En mode « ce qui attend » : l'œil s'ouvre — rien autour, sa demande — et les
      facturés — qui ne sont plus dans la liste — s'éteignent sans partir. */
-  .comptes .oeil::before{content:"";position:absolute;inset:7px;border-radius:999px;background:var(--tuile);opacity:0;transition:opacity .18s cubic-bezier(.2,.7,.2,1)}
-  .comptes .oeil svg{position:relative}
-  .ecran[data-mode="attente"] .oeil::before{opacity:1}
   .ecran[data-mode="attente"] .oeil .barre{display:none}
   .ecran[data-mode="attente"] .oeil .ouvert{display:block}
   .ecran[data-mode="attente"] .point,.ecran[data-mode="attente"] .factures{opacity:.38}
