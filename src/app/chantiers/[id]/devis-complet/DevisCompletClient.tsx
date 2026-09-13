@@ -865,7 +865,7 @@ export default function DevisCompletClient(props: Props) {
             aria="Nom de l'entreprise"
             grand
             onChange={(v) => setEmetteur({ ...emetteur, nom: v })}
-            onFini={() => majEmetteurAction({ nom: emetteur.nom })}
+            onFini={(duChamp) => majEmetteurAction({ nom: duChamp })}
           />
           {/* **Toute son identité ICI, et une seule fois** (25 août 2026). Sa
               question : *« pourquoi il y a deux fois l'émetteur sur l'aperçu ? »*
@@ -875,16 +875,16 @@ export default function DevisCompletClient(props: Props) {
               SIRET, **une ligne par information**. */}
           <ChampNu long valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, adresse: v })}
-            onFini={() => majEmetteurAction({ adresse: emetteur.adresse })} />
+            onFini={(duChamp) => majEmetteurAction({ adresse: duChamp })} />
           <ChampNu valeur={emetteur.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, telephone: v })}
-            onFini={() => majEmetteurAction({ telephone: emetteur.telephone })} />
+            onFini={(duChamp) => majEmetteurAction({ telephone: duChamp })} />
           <ChampNu valeur={emetteur.email} fige={fige} placeholder="E-mail" aria="E-mail de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, email: v })}
-            onFini={() => majEmetteurAction({ email: emetteur.email })} />
+            onFini={(duChamp) => majEmetteurAction({ email: duChamp })} />
           <ChampNu valeur={emetteur.siret} fige={fige} placeholder="N° SIREN / SIRET" aria="SIREN / SIRET"
             onChange={(v) => setEmetteur({ ...emetteur, siret: v })}
-            onFini={() => majEmetteurAction({ siret: emetteur.siret })} />
+            onFini={(duChamp) => majEmetteurAction({ siret: duChamp })} />
         </div>
 
         <div className="w-full sm:w-[280px] sm:shrink-0">
@@ -941,7 +941,7 @@ export default function DevisCompletClient(props: Props) {
                 aria="Nom du client"
                 prefixe={client.civilite ? CIVILITES[client.civilite] : ""}
                 onChange={(v) => setClient({ ...client, nom: v })}
-                onFini={() => majClientDuDevisAction(props.clientId!, { nom: client.nom })} />
+                onFini={(duChamp) => majClientDuDevisAction(props.clientId!, { nom: duChamp })} />
               {/* **L'ordre est celui d'une lettre, et le patron l'a demandé
                   ainsi le 6 août 2026 : « le numéro de téléphone devrait être
                   en dernier ».** C'est aussi l'ordre du modèle d'Arborea — on
@@ -949,13 +949,13 @@ export default function DevisCompletClient(props: Props) {
                   joindre vient après. */}
               <ChampNu long valeur={client.adresse} fige={fige} placeholder="Adresse" aria="Adresse du client"
                 onChange={(v) => setClient({ ...client, adresse: v })}
-                onFini={() => majClientDuDevisAction(props.clientId!, { adresse: client.adresse })} />
+                onFini={(duChamp) => majClientDuDevisAction(props.clientId!, { adresse: duChamp })} />
               <ChampNu valeur={client.email} fige={fige} placeholder="E-mail" aria="E-mail du client"
                 onChange={(v) => setClient({ ...client, email: v })}
-                onFini={() => majClientDuDevisAction(props.clientId!, { email: client.email })} />
+                onFini={(duChamp) => majClientDuDevisAction(props.clientId!, { email: duChamp })} />
               <ChampNu valeur={client.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone du client"
                 onChange={(v) => setClient({ ...client, telephone: v })}
-                onFini={() => majClientDuDevisAction(props.clientId!, { telephone: client.telephone })} />
+                onFini={(duChamp) => majClientDuDevisAction(props.clientId!, { telephone: duChamp })} />
             </>
           ) : (
             <>
@@ -994,7 +994,7 @@ export default function DevisCompletClient(props: Props) {
               <Intertitre>Chantier</Intertitre>
               <ChampNu long valeur={adresseChantier} fige={fige} placeholder="Adresse des travaux" aria="Adresse du chantier"
                 onChange={setAdresseChantier}
-                onFini={() => majAdresseChantierAction(props.chantierId, adresseChantier)} />
+                onFini={(duChamp) => majAdresseChantierAction(props.chantierId, duChamp)} />
             </div>
           )}
         </div>
@@ -1304,7 +1304,7 @@ export default function DevisCompletClient(props: Props) {
                 montantRetire={totaux.reductionMontant}
                 fige={fige}
                 onChange={setReduction}
-                onFini={() => void enregistrerRemise()}
+                onFini={(duChamp) => void enregistrerRemise(duChamp)}
                 onRetirer={() =>
                   retraits.retirer(CLE_REDUCTION, `le ${LIBELLE_REDUCTION.toLowerCase()}`)
                 }
@@ -1443,7 +1443,7 @@ export default function DevisCompletClient(props: Props) {
           // fait apparaître deux fois sur le devis du client.
           placeholder="Accès par le portail de gauche, cour à dégager la veille. Devis gratuit et sans engagement."
           onChange={setConditions}
-          onFini={() => majEnTeteDevisAction(props.devisId, { conditionsPaiement: conditions })}
+          onFini={(duChamp) => majEnTeteDevisAction(props.devisId, { conditionsPaiement: duChamp })}
           className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
           style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.5 }}
         />
@@ -1466,7 +1466,7 @@ export default function DevisCompletClient(props: Props) {
           placeholder="IBAN : FR76 …"
           aria="IBAN"
           onChange={(v) => setEmetteur({ ...emetteur, iban: v })}
-          onFini={() => majEmetteurAction({ iban: emetteur.iban })}
+          onFini={(duChamp) => majEmetteurAction({ iban: duChamp })}
         />
       </section>
 

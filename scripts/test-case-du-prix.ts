@@ -300,22 +300,43 @@ essai("TÉMOIN — l'ancienne case gardait le zéro, et 450 tapé derrière fais
   assert.equal(prixAEcrire("0") + "450", "450");
 });
 
-// **LE CURSEUR ARRIVE AU BOUT DU CHIFFRE.** Sa seconde correction du même
-// message : *« je veux que le petit trait qui clignote [...] soit toujours à
-// droite [...] or des fois il se met à gauche »*. La raison n'est pas un
-// caprice du téléphone : le champ est aligné à droite dans une case large, et
-// le doigt tombe dans le vide qui précède le chiffre.
+// ═══════════════════════════════════════════════════════════════════════════
+// **ENTRER DANS LA CASE SÉLECTIONNE TOUT — sa décision du 13 septembre 2026,
+// « fais le B ».**
+//
+// Elle REMPLACE sa correction du 11 septembre (le curseur posé au bout). Le
+// pourquoi tient en une ligne : la quantité par défaut est « 1 », le curseur
+// arrivait derrière, et taper « 2 » donnait **12**. Sur un prix de 450 €,
+// c'est un devis à 5 400 € au lieu de 900, parti chez son client — et rien à
+// l'écran ne dit que le chiffre s'est collé au précédent.
+//
+// Sa demande du 11 reste tenue : *« on a juste à supprimer »*. Tout étant
+// sélectionné, une seule touche efface.
 //
 // Le geste lui-même ne s'éprouve qu'au navigateur ; ce qu'on tient ici, c'est
-// que le champ le TENTE — et qu'on ne l'a pas retiré par mégarde.
-essai("le champ remet le curseur au bout quand on y entre", () => {
+// que le champ sélectionne bien **du début à la fin**, et qu'il rattrape
+// l'appui qui défait la sélection. Un `setSelectionRange` quelconque ne suffit
+// pas : l'ancienne règle en posait un aussi, au même endroit.
+// ═══════════════════════════════════════════════════════════════════════════
+essai("entrer dans la case sélectionne TOUT le chiffre — le B", () => {
   assert.ok(
-    /setSelectionRange/.test(CHAMPS),
-    "le champ ne replace plus le curseur : il retombera devant le chiffre"
+    /setSelectionRange\(0,\s*fin\)/.test(CHAMPS),
+    "le champ ne sélectionne plus tout : taper par-dessus AJOUTERA au chiffre au lieu de le remplacer"
   );
   assert.ok(
-    /onSelect/.test(CHAMPS),
-    "sans rattrapage après l'appui, le navigateur repose le curseur où le doigt s'est posé"
+    /onFocus/.test(CHAMPS) && /onSelect/.test(CHAMPS),
+    "sans rattrapage après l'appui, le navigateur défait la sélection et repose le curseur où le doigt s'est posé"
+  );
+});
+
+// **TÉMOIN — l'ancienne règle ne doit plus être là.** Un contrôle qui n'a
+// jamais échoué ne prouve rien (`AGENTS.md`), et deux règles pour une seule
+// question, c'est ce que `CLAUDE.md` §3 refuse. Si quelqu'un remet le curseur
+// au bout, cette ligne le dira — plutôt que de laisser les deux cohabiter.
+essai("TÉMOIN — le curseur n'est plus posé au bout, la règle a été REMPLACÉE", () => {
+  assert.ok(
+    !/setSelectionRange\(fin,\s*fin\)/.test(CHAMPS),
+    "le champ repose le curseur au bout : c'est le A, et il rend « 12 » quand il tape « 2 » sur « 1 »"
   );
 });
 

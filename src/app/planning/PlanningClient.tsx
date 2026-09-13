@@ -3726,7 +3726,14 @@ function NoteDuChantier({
   const [etat, setEtat] = useState<"repos" | "ecrit" | "enregistre" | "perdu">("repos");
   const [, enTransition] = useTransition();
 
-  function enregistrer() {
+  /**
+   * **Ce que le cadre porte, pas ce que le rendu en gardait.** Sans la valeur,
+   * on écrivait `texte` — l'état du DERNIER RENDU — et la dernière touche tapée
+   * avant de ranger son téléphone pouvait n'y être pas encore. Une note perdue
+   * en silence, c'est le broyeur oublié (`test-valeur-du-champ.ts`).
+   */
+  function enregistrer(duCadre: string) {
+    const texte = duCadre.slice(0, NOTE_MAX);
     if (texte === (chantier.note ?? "")) return;
     enTransition(async () => {
       const r = await ecrireNoteChantierAction(chantier.id, texte);
@@ -3780,7 +3787,7 @@ function NoteDuChantier({
         }}
         // **Enregistré en SORTANT du cadre, jamais par un bouton.** Il range
         // son téléphone et démarre : un bouton non touché perdrait la note.
-        onBlur={enregistrer}
+        onBlur={(e) => enregistrer(e.currentTarget.value)}
         placeholder="Penser à prendre le broyeur. Client dispo à partir de 9 h."
         rows={3}
         className="w-full resize-none rounded-[9px] px-3 py-2.5"

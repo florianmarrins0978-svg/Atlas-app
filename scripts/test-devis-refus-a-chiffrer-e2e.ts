@@ -144,17 +144,21 @@ async function main() {
   );
   console.log("  ✓ une ligne qui attend son prix ouvre une case VIDE, pas un zéro");
 
-  // --- 2 ter. LE CURSEUR ARRIVE AU BOUT DU CHIFFRE ------------------------
+  // --- 2 ter. ENTRER DANS LA CASE SÉLECTIONNE TOUT — « fais le B » --------
   //
-  // **Sa seconde correction du même message :** *« quand je clique sur la case
-  // de la quantité, je veux que le petit trait qui clignote [...] soit toujours
-  // à droite ; comme ça, si la quantité par défaut n'est pas bonne, on a juste à
-  // supprimer. Or des fois il se met à gauche. »*
+  // **Sa décision du 13 septembre 2026.** Elle REMPLACE sa correction du
+  // 11 septembre, que ce bloc éprouvait jusqu'ici (le curseur posé au bout).
+  // Le A rendait **12** quand il tapait « 2 » sur une case affichant « 1 » : sur
+  // un prix de 450 €, un devis à 5 400 € au lieu de 900, parti chez son client.
   //
-  // **Le « des fois » s'explique, et c'est ce qu'on reproduit :** le champ est
-  // aligné à DROITE dans une case large. On appuie donc volontairement dans le
-  // VIDE qui précède le chiffre — là où le doigt tombe le plus souvent —, et
-  // c'est exactement l'appui qui posait le curseur devant.
+  // **Sa demande du 11 reste tenue** — *« on a juste à supprimer »* : tout étant
+  // sélectionné, une seule touche efface.
+  //
+  // **On appuie volontairement dans le VIDE à gauche du chiffre** — le champ est
+  // aligné à droite dans une case large, et c'est là que le doigt tombe le plus
+  // souvent. C'est précisément l'appui qui défait la sélection que l'entrée
+  // vient de poser, donc celui qu'il faut mesurer : un contrôle qui appuierait
+  // sur le chiffre ne verrait jamais le rattrapage travailler.
   const qte = page.getByLabel("Quantité 1");
   const boite = await qte.boundingBox();
   assert.ok(boite && boite.width > 20, "la case de la quantité est introuvable : rien à mesurer");
@@ -162,15 +166,32 @@ async function main() {
   await page.waitForTimeout(250);
   const ou = await qte.evaluate((n) => {
     const champ = n as HTMLInputElement;
-    return { curseur: champ.selectionStart, longueur: champ.value.length, valeur: champ.value };
+    return {
+      debut: champ.selectionStart,
+      fin: champ.selectionEnd,
+      longueur: champ.value.length,
+      valeur: champ.value,
+    };
   });
-  assert.ok(ou.longueur > 0, "la quantité est vide : le curseur n'a nulle part où se tromper");
+  assert.ok(ou.longueur > 0, "la quantité est vide : il n'y a rien à sélectionner, la mesure est impossible");
   assert.equal(
-    ou.curseur,
-    ou.longueur,
-    `le curseur est retombé en ${ou.curseur} devant « ${ou.valeur} » : il faut le déplacer avant de pouvoir effacer`
+    `${ou.debut}-${ou.fin}`,
+    `0-${ou.longueur}`,
+    `« ${ou.valeur} » n'est pas sélectionné (${ou.debut}→${ou.fin}) : ce qu'il tapera S'AJOUTERA au chiffre`
   );
-  console.log("  ✓ le curseur de la quantité arrive DERRIÈRE le chiffre, même si l'on appuie à gauche");
+  console.log("  ✓ entrer dans la case sélectionne TOUT le chiffre, même en appuyant à gauche");
+
+  // **ET SON GESTE, JOUÉ EN ENTIER.** La sélection ne vaut que par ce qu'elle
+  // permet : taper par-dessus doit REMPLACER. Sans cette moitié, le contrôle
+  // dirait que la sélection est là sans jamais vérifier ce qu'elle fait.
+  await qte.type("2");
+  const apresLaFrappe = await qte.inputValue();
+  assert.equal(
+    apresLaFrappe,
+    "2",
+    `taper « 2 » a donné « ${apresLaFrappe} » : le chiffre s'est AJOUTÉ, et c'est ainsi qu'un devis part à 5 400 € au lieu de 900`
+  );
+  console.log("  ✓ et taper par-dessus REMPLACE — « 2 » sur « 1 » donne 2, pas 12");
 
   // --- 3. Le prix posé, le bouton revient de lui-même ---------------------
   await page.getByLabel("Prix unitaire 1").fill("480");
