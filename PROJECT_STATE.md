@@ -11,7 +11,7 @@ Sur la fiche client, plusieurs photos choisies d'un coup recréaient un
 chantier par photo : la mémoire du chantier créé au premier geste vit désormais
 dans une référence (`chantierDeCetEcran`), gardée jusqu'au bout, effacée
 seulement sur un échec. Suite `test-photos-avant-le-chantier-e2e.ts`. Détail :
-`ARCHITECTURE.md` §346.
+`ARCHITECTURE.md` §349.
 
 ---
 
@@ -21,7 +21,16 @@ seulement sur un échec. Suite `test-photos-avant-le-chantier-e2e.ts`. Détail :
 sous le total HT — nommée, jamais comptée, bornée au brut ; les conditions
 réglées en gras sur le PDF ; ses conditions générales dans Réglages → Ce qui
 s'imprime, remplies d'office, imprimées après le bon pour accord sur une page
-à elles. **Migration 0090.** Détail : `ARCHITECTURE.md` §345.
+à elles. **Migration 0090.** Détail : `ARCHITECTURE.md` §348.
+
+---
+
+## FAIT : JETER SA DICTÉE DEPUIS L'ÉCRAN OÙ IL LA FAIT — 13 septembre 2026
+
+*« C'est sur cet écran que je le voulais. »* Le geste vit sous le micro
+(glisser → Retirer → « Annuler » six secondes), avec les pièces communes. Le
+lecteur de l'anneau, que **personne ne montait**, est parti : 244 lignes et
+40 règles de style. **Aucune migration.** Détail : `ARCHITECTURE.md` §342.
 
 ---
 
@@ -61,6 +70,22 @@ deux portes, et rien d'autre. **Aucune migration.** Détail :
 
 **Ce qui reste à lui :** dire si la feuille de partage d'iOS range le fichier —
 aucun WebKit ici.
+
+---
+
+## FAIT : TERMINÉS — DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL — 13 septembre 2026
+
+Ses quatre demandes du jour, d'après sa capture, dessinées puis codées le soir
+même (`appli/termines-l-oeil.html` → `src/app/termines/ListeTermines.tsx`).
+
+| | |
+|---|---|
+| la rangée | deux portes seulement — « Retours d'intervention », « Créer une facture » —, `data-atlas="portes-termines"` |
+| le mois | centré ; **en veille** (retrait, flèches fermées) quand l'œil est ouvert |
+| l'œil | `data-atlas="oeil-a-facturer"`, 44 × 44, à côté de « 3 à facturer » ; fermé on voit le mois, ouvert on voit **tout ce qui attend, tous mois confondus** (règle du 22 août) |
+| la phrase | 17 px ; absente s'il n'y a rien à compter ; sans rien qui attend, l'œil part avec son compte |
+| les suites | `test-onglets-termines-e2e` (deux portes, plus d'onglet, l'œil dans les deux sens), `test-planning-vers-facture-e2e`, `test-tva-en-tete-e2e`, `test-facture-sans-devis-e2e` passent par l'œil ou la rangée des portes |
+| le détail | `ARCHITECTURE.md` §350 |
 
 ---
 

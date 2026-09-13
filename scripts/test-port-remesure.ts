@@ -83,7 +83,14 @@ copyFileSync(VEILLEUR, veilleurCopie);
 // nuit du 31 août : `gh` a bien réglé le port, et le relais ne servait pourtant
 // rien. Un `hors-codespace` ne conviendrait pas — il ne se retente jamais, à
 // dessein.
-writeFileSync(path.join(dossier, ".devcontainer", "ouvrir-port.sh"), "echo ouvert\n");
+const TRACE_DEMANDES = path.join(dossier, "demandes.txt");
+// **La demande d'ouverture laisse une TRACE, elle ne se lit plus au journal.**
+// Chercher une phrase du journal éprouvait la formulation ; compter les appels
+// éprouve la règle — et survivra au prochain remaniement (`CLAUDE.md` §5 bis).
+writeFileSync(
+  path.join(dossier, ".devcontainer", "ouvrir-port.sh"),
+  `echo x >> ${TRACE_DEMANDES}\necho ouvert\n`
+);
 
 // **On attend que la santé réponde AVANT de lancer le veilleur.** Sans cette
 // attente, son premier tour tombe sur un port encore muet : il conclut « serveur
@@ -131,22 +138,45 @@ const journal = () => (existsSync(JOURNAL) ? readFileSync(JOURNAL, "utf8") : "")
 // On sort dès que c'est vu : l'échéance n'est là que pour ne pas attendre sans
 // fin (`test-fiche-pendant-relance.ts`, même raison).
 const ECHEANCE = Date.now() + 30_000;
-while (!/n'est plus joignable/.test(journal()) && Date.now() < ECHEANCE) dormir(500);
+while (!/on cesse de redemander/.test(journal()) && Date.now() < ECHEANCE) dormir(500);
 
-verifier("un port perdu en cours de session est REMARQUÉ, et redemandé", () => {
-  assert.match(
-    journal(),
-    /n'est plus joignable de l'extérieur/,
-    "le veilleur n'a jamais défait son verrou : c'est la nuit du 31 août, où son espace " +
-      "tournait, Atlas répondait, et le relais ne servait rien"
+const demandes = () => (existsSync(TRACE_DEMANDES) ? readFileSync(TRACE_DEMANDES, "utf8").trim().split("\n").length : 0);
+
+verifier("il redemande vraiment l'ouverture, il ne se contente pas de le dire", () => {
+  assert.ok(
+    demandes() >= 1,
+    "aucune nouvelle demande d'ouverture après la mesure : le port resterait perdu jusqu'au prochain allumage"
   );
 });
 
-verifier("il redemande vraiment l'ouverture, il ne se contente pas de le dire", () => {
+// **LE DÉFAUT DE SA NUIT DU 13 SEPTEMBRE, ET C'EST CELUI-CI.** Le journal
+// portait une ligne de SUCCÈS — « port 3000 ouvert au public » — toutes les
+// cinq minutes, sur un port que son téléphone ne pouvait pas atteindre. Un
+// journal qui affirme le contraire de ce qu'il voit ne sert plus à chercher :
+// c'est une panne muette de plus (`AGENTS.md`).
+verifier("le journal n'annonce JAMAIS un port ouvert que la mesure refuse", () => {
+  const lignes = journal()
+    .split("\n")
+    .filter((l) => /ouvert au public/.test(l) && !/VÉRIFIÉ/.test(l));
+  assert.equal(
+    lignes.length,
+    0,
+    `le veilleur se félicite d'un port mort ${lignes.length} fois :\n   ${lignes.slice(0, 3).join("\n   ")}`
+  );
+});
+
+// **Un remède mesuré sans effet ne se rejoue pas indéfiniment.** Sinon `gh` est
+// rappelé toutes les cinq minutes pour rien, et surtout : rien n'apprend jamais
+// que ce geste-là ne peut pas réparer cette panne-là.
+verifier("un remède sans effet CESSE de se rejouer, et le dit", () => {
   assert.match(
     journal(),
-    /ouvert au public|pas encore public/,
-    "aucune nouvelle demande d'ouverture après la mesure : le port resterait perdu"
+    /on cesse de redemander/,
+    "le veilleur rejouerait toute la nuit un geste dont il vient de mesurer qu'il ne change rien"
+  );
+  assert.ok(
+    demandes() <= 4,
+    `le remède a été rejoué ${demandes()} fois malgré l'abandon annoncé`
   );
 });
 

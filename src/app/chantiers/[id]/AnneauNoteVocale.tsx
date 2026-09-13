@@ -1,10 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, libelleCaps } from "@/lib/design-tokens";
-import { useRetraits } from "@/components/atlas/useRetraits";
-import { supprimerNoteVocaleAction } from "./note-vocale/actions";
+import { colors } from "@/lib/design-tokens";
 import { useMagnetophone, formulaireDeNote } from "./magnetophone";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import { envoyerNoteVocale } from "@/lib/envoi-note-vocale";
@@ -153,8 +151,6 @@ export default function AnneauNoteVocale({
   onDicte,
   onDictee,
   preparationEnCours = false,
-  storageKey,
-  dureeSecondes,
 }: {
   /**
    * Le chantier, s'il existe déjà. **`null` sur la fiche client** : il n'est
@@ -199,36 +195,14 @@ export default function AnneauNoteVocale({
    * devis… (96 s) » — l'écran l'invitait à recommencer ce qu'il faisait déjà.
    */
   preparationEnCours?: boolean;
-  /** Absent, l'audio a été purgé après transcription : il n'y a rien à écouter. */
-  storageKey: string | null;
-  dureeSecondes: number | null;
 }) {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const lecteurRef = useRef<HTMLDivElement>(null);
-  const glisseurRef = useRef<HTMLDivElement>(null);
-  const [lit, setLit] = useState(false);
-  const [seconde, setSeconde] = useState(0);
-  const [duree, setDuree] = useState(dureeSecondes ?? 0);
 
   // **Rien à écouter : l'anneau devient un micro.** Le même objet, jamais un
   // second bouton — la fiche n'a qu'un centre.
   const router = useRouter();
   const magnetophone = useMagnetophone();
   const [envoi, setEnvoi] = useState(false);
-  const enregistreur = !storageKey;
 
-  // Le retrait obéit au vocabulaire commun (`ARCHITECTURE.md` §48) : la note
-  // n'est que masquée, et **rien n'est effacé tant qu'« Annuler » est à
-  // l'écran**. Le fichier ne part en file de purge qu'à la fermeture — une
-  // annulation qui ne rendrait que le texte serait pire que pas d'annulation.
-  const retraits = useRetraits({
-    valider: async () => {
-      // Sans chantier, il n'y a pas de note à retirer : le tiroir de retrait
-      // n'apparaît pas non plus (`enregistreur` plus bas).
-      if (chantierId) await supprimerNoteVocaleAction(chantierId);
-    },
-  });
-  const retiree = chantierId !== null && retraits.estRetire(chantierId);
 
   // ─── Le volume réellement enregistré ──────────────────────────────────
   //
@@ -241,102 +215,6 @@ export default function AnneauNoteVocale({
   // Si le navigateur refuse — pas de Web Audio, source déjà branchée —, on
   // garde une ampleur de 1 : l'onde bat sans suivre le volume, ce qui vaut
   // mieux qu'un écran mort.
-  const analyseur = useRef<AnalyserNode | null>(null);
-  const contexteRef = useRef<AudioContext | null>(null);
-  const image = useRef<number | null>(null);
-
-  const brancherAnalyse = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    // **Réveiller le contexte à CHAQUE appui, pas seulement au premier.** Un
-    // contexte audio naît suspendu, et il se rendort quand l'onglet passe en
-    // arrière-plan. Suspendu, il ne laisse rien passer : la lecture avançait,
-    // le compteur courait, et l'onde mesurait un silence — que nous avions
-    // nous-mêmes créé en intercalant l'analyseur. Mesuré, pas supposé :
-    // l'ampleur restait collée à son plancher.
-    if (contexteRef.current) {
-      void contexteRef.current.resume();
-      return;
-    }
-    try {
-      const Contexte = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Contexte) return;
-      const contexte = new Contexte();
-      const source = contexte.createMediaElementSource(audio);
-      const noeud = contexte.createAnalyser();
-      noeud.fftSize = 256;
-      source.connect(noeud);
-      // **Rebrancher vers la sortie, sinon le son se tait.** Un analyseur
-      // intercale un nœud dans le graphe : sans cette ligne, on mesurerait un
-      // silence qu'on aurait soi-même créé.
-      noeud.connect(contexte.destination);
-      analyseur.current = noeud;
-      contexteRef.current = contexte;
-      void contexte.resume();
-    } catch {
-      analyseur.current = null;
-      contexteRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!lit) {
-      if (image.current !== null) cancelAnimationFrame(image.current);
-      image.current = null;
-      lecteurRef.current?.style.setProperty("--atlas-ampleur", "1");
-      return;
-    }
-    const noeud = analyseur.current;
-    const tampon = noeud ? new Uint8Array(noeud.fftSize) : null;
-    const mesurer = () => {
-      const audio = audioRef.current;
-      if (audio) {
-        setSeconde(audio.currentTime);
-        if (Number.isFinite(audio.duration) && audio.duration > 0) setDuree(audio.duration);
-      }
-      if (noeud && tampon) {
-        noeud.getByteTimeDomainData(tampon);
-        // L'écart quadratique moyen autour du zéro : c'est le volume perçu,
-        // et non le pic, qui ferait sauter l'onde sur un simple claquement.
-        let somme = 0;
-        for (const v of tampon) {
-          const ecart = (v - 128) / 128;
-          somme += ecart * ecart;
-        }
-        const moyenne = Math.sqrt(somme / tampon.length);
-        // Un plancher de 0,38 : sans lui, un blanc dans la dictée écrase l'onde
-        // à quelques pixels, et l'écran a l'air arrêté alors qu'il lit. Le
-        // plafond, lui, empêche un éclat de voix de faire sortir les barreaux
-        // de leur fenêtre.
-        const ampleur = Math.min(1.5, 0.38 + moyenne * 3.2);
-        lecteurRef.current?.style.setProperty("--atlas-ampleur", ampleur.toFixed(3));
-      }
-      image.current = requestAnimationFrame(mesurer);
-    };
-    image.current = requestAnimationFrame(mesurer);
-    return () => {
-      if (image.current !== null) cancelAnimationFrame(image.current);
-      image.current = null;
-    };
-  }, [lit]);
-
-  async function basculerLecture() {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (lit) {
-      audio.pause();
-      setLit(false);
-      return;
-    }
-    brancherAnalyse();
-    try {
-      await audio.play();
-      setLit(true);
-    } catch {
-      // Le navigateur a refusé la lecture : ne pas prétendre qu'elle a lieu.
-      setLit(false);
-    }
-  }
 
   /**
    * **CE QUI VIVAIT ICI JUSQU'AU 30 AOÛT 2026 : `basculerDictee`.**
@@ -428,16 +306,8 @@ export default function AnneauNoteVocale({
     }
   }
 
-  function retirer() {
-    audioRef.current?.pause();
-    setLit(false);
-    if (!chantierId) return;
-    retraits.retirer(chantierId, "cette note vocale");
-    // Le glisseur revient à sa place : rouvert par « Annuler », l'anneau doit
-    // se retrouver là où on l'a laissé, pas déjà poussé vers le haut.
-    glisseurRef.current?.scrollTo({ left: 0, behavior: "instant" as ScrollBehavior });
-  }
 
+  /** Le chrono de la dictée : « 1:07 ». */
   const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
   // ─── L'onde de la dictée : elle se déroule au volume réel ───────────────
@@ -472,7 +342,6 @@ export default function AnneauNoteVocale({
   // deux moments, pas deux états d'un même objet. Le lecteur garde son anneau
   // creux et son glisseur « Retirer » ; la dictée a le sien.
   // ═══════════════════════════════════════════════════════════════════════
-  if (enregistreur) {
     // **Pendant l'envoi, l'objet s'efface.** Sa planche le fait — le trio part,
     // « Transcription… » prend sa place. Laisser un micro à l'écran, fût-il
     // éteint, c'est laisser une cible : on l'appuie, rien ne répond, et l'on
@@ -641,117 +510,4 @@ export default function AnneauNoteVocale({
         )}
       </div>
     );
-  }
-
-  return (
-    <div
-      ref={lecteurRef}
-      className="atlas-lecteur"
-      // `data-lit` pilote l'onde : elle bat quand on écoute ET quand on dicte.
-      // Un micro immobile pendant qu'on parle se lit comme un micro en panne.
-      data-lit={lit ? "oui" : "non"}
-      data-vide="non"
-      data-retiree={retiree ? "oui" : "non"}
-      data-atlas="anneau-note-vocale"
-    >
-      {storageKey && (
-        <audio
-          ref={audioRef}
-          src={`/api/fichiers/${storageKey}`}
-          preload="metadata"
-          onEnded={() => setLit(false)}
-          onLoadedMetadata={(e) => {
-            const d = e.currentTarget.duration;
-            if (Number.isFinite(d) && d > 0) setDuree(d);
-          }}
-        />
-      )}
-
-      {/* Les ailes : huit barreaux de chaque côté, qui partent du centre et
-          s'effacent au bout. Elles ne prennent jamais le doigt. */}
-      {(["g", "d"] as const).map((cote) => (
-        <span key={cote} className={`atlas-aile atlas-aile-${cote}`} aria-hidden="true">
-          {Array.from({ length: 8 }, (_, i) => (
-            <i key={i} style={{ backgroundColor: colors.or }} />
-          ))}
-        </span>
-      ))}
-
-      <div ref={glisseurRef} className="atlas-glisseur">
-        <div className="atlas-volet-anneau">
-          <button
-            type="button"
-            onClick={basculerLecture}
-            // Le seul texte de tout l'anneau, et il ne s'affiche pas. **Il ne
-            // parle plus que de LECTURE** : depuis le 30 août 2026, la dictée a
-            // son propre dessin (plus haut), et ce rendu-ci n'est atteint qu'avec
-            // une note à écouter.
-            aria-label={lit ? "Mettre en pause la note vocale" : "Écouter la note vocale"}
-            aria-pressed={lit}
-            className="atlas-anneaux"
-          >
-            <span data-cercle style={{ width: 74, height: 74, border: `1.5px solid ${colors.rust}` }} />
-            <span data-cercle style={{ width: 56, height: 56, border: `1px solid ${colors.or}` }} />
-            {/* **Les trois traits, dans TOUS les états au repos.**
-                Une première version posait un point plein quand il n'y avait
-                rien à écouter — le symbole des magnétophones. Le patron l'a
-                rejeté en une phrase : « ça ressemble toujours pas à la
-                maquette ». Il avait raison, et c'est plus qu'un détail de
-                dessin : l'anneau est UN objet, il ne doit pas changer de visage
-                selon ce qu'il contient. Seule la dictée EN COURS mérite un
-                signe distinct — le carré, qui ne veut dire qu'une chose :
-                arrêter. */}
-            <span className="atlas-traits" aria-hidden="true">
-              <i style={{ backgroundColor: colors.or }} />
-              <i style={{ backgroundColor: colors.or }} />
-              <i style={{ backgroundColor: colors.or }} />
-            </span>
-          </button>
-        </div>
-        <button type="button" onClick={retirer} className={`atlas-fosse ${libelleCaps}`} style={{ color: colors.or, letterSpacing: "0.24em" }}>
-          Retirer
-        </button>
-      </div>
-
-      {/* **La consigne dit le geste RÉEL, et celui de CET état.** Une première
-          version annonçait « faites descendre » alors que le doigt fait monter :
-          une consigne fausse coûte plus cher qu'aucune consigne. De même,
-          proposer « poussez vers le haut » sans note à retirer enverrait
-          chercher un geste sans effet — et un anneau muet sur un chantier neuf
-          ne dirait pas qu'il attend la voix. */}
-      <p className="atlas-indice mt-2 text-[11px]" style={{ color: colors.muted }}>
-        Glissez l&apos;anneau vers la gauche
-      </p>
-
-      <p className="atlas-chrono" style={{ color: colors.or }} aria-hidden={!lit}>
-        {mmss(seconde)}
-        <span className="ml-[7px]" style={{ color: colors.muted }}>
-          / {mmss(duree)}
-        </span>
-      </p>
-
-      {/* **Absent du document, pas seulement invisible.** Depuis que l'anneau
-          est rendu même sans note (11 août 2026), ce tiroir « Note vocale
-          retirée » traînait dans la page de tout chantier neuf — avec son
-          bouton « Annuler ». Une suite de l'assistant a alors trouvé DEUX
-          « Annuler » et cliqué sur le mauvais : celui-ci, invisible et hors du
-          parcours au clavier. Un bouton qu'on ne peut ni voir ni atteindre ne
-          doit pas non plus exister pour qui cherche par le texte. */}
-      <div className="atlas-note-retiree">
-        <span className="text-[13px]" style={{ color: colors.muted }}>
-          Note vocale retirée
-        </span>
-        <button
-          type="button"
-          onClick={retraits.annuler}
-          aria-label="Annuler le retrait de la note vocale"
-          tabIndex={retiree ? 0 : -1}
-          className={`px-1 py-2 ${libelleCaps}`}
-          style={{ color: colors.or, letterSpacing: "0.24em" }}
-        >
-          Annuler
-        </button>
-      </div>
-    </div>
-  );
 }

@@ -28445,7 +28445,7 @@ d'en poser une — ni à l'écran, ni côté serveur.
 Deux blocs jumeaux dans deux écrans divergent au premier ajustement. Le dépôt
 venait d'en payer deux le même jour : la grammaire des TVA et la case du prix,
 corrigées d'un seul côté (§329). Le geste vit donc dans une pièce unique,
-`src/components/atlas/Remise.tsx` (alors `PrixAccordeAuClient.tsx`, renommée le 13 septembre — §345), que le devis **et** la facture
+`src/components/atlas/Remise.tsx` (alors `PrixAccordeAuClient.tsx`, renommée le 13 septembre — §348), que le devis **et** la facture
 montent :
 
 | | |
@@ -29266,7 +29266,293 @@ Suites : `test-abonnements.ts` (la règle), `test-essai-lecture-seule-db.ts`
 (la transaction, sous `atlas_app`), `test-essai-e2e.ts` (son geste, écran par
 écran).
 
-## §345 — La planche B du devis : « Remise », « dont main d'œuvre », les conditions en gras, et ses conditions générales au dos
+## §345 — Un remède qui réussit n'est pas un remède qui répare
+
+**Sa capture du 13 septembre 2026, à 1 h 58 :** Safari sur `about:blank`,
+proposant d'enregistrer un fichier nommé comme son espace. *« L'appli ne
+fonctionne toujours pas ! »* C'est la quatrième nuit de la même panne — 22 et
+31 août, 12 puis 13 septembre.
+
+Sa fiche, écrite **à la même minute** (23 h 59 UTC, soit 1 h 59 chez lui :
+elle n'était pas périmée, elle était vivante), disait tout :
+
+    Serveur    : répond sur le port 3000
+    Veilleur   : en place
+    Port 3000  : INJOIGNABLE DE L'EXTÉRIEUR — 404 de quelque chose AVANT Atlas
+                 [démarrage : ouvert]
+
+Le code n'y est pour rien, et la fiche le disait déjà. **Ce qu'elle ne disait
+pas, c'est ce que le veilleur faisait pendant ce temps.**
+
+### La racine : le veilleur reposait le verrou que sa propre mesure venait de lever
+
+Son journal portait, toutes les cinq minutes de la nuit, une ligne de **succès** :
+
+    — port 3000 ouvert au public, une fois le serveur debout
+
+sur un port que son téléphone ne pouvait pas atteindre. La boucle se refermait
+sur elle-même :
+
+| | |
+|---|---|
+| la mesure du dehors (`port-joignable.mjs`) | 404 → `PORT_OUVERT=non` |
+| le remède (`ouvrir-port.sh` → `gh … visibility`) | réussit → rend « ouvert » |
+| **le veilleur** | **`PORT_OUVERT=oui`**, sur la seule foi de ce mot |
+| cinq minutes plus tard | la mesure rend 404, et tout recommence |
+
+La remesure du dehors avait été posée le 31 août précisément contre ce défaut ;
+le `PORT_OUVERT=oui` du remède l'annulait au tour suivant. **C'est la troisième
+fois que ce dépôt retient un RÉGLAGE là où il faut une MESURE** — 22 août
+(`_verdict-port.mjs`), 31 août (`port-joignable.mjs`), 13 septembre ici — et la
+troisième fois à quelques lignes du même endroit.
+
+Ce que cela coûtait, et ce n'est pas du bruit : un appel réseau pour rien toutes
+les cinq minutes ; un journal qui affirme le contraire de ce que voit son
+téléphone, donc inutilisable pour chercher ; et surtout **rien qui apprenne
+jamais que ce remède-là ne peut pas réparer cette panne-là**. Un geste mesuré
+sans effet et rejoué indéfiniment n'est pas une tentative, c'est une panne muette
+de plus (`AGENTS.md`).
+
+### Ce qui est fait : la mesure décide, et elle seule
+
+`veiller.sh` fait suivre le remède de la question qu'il prétend régler. Trois
+états, au lieu d'un mot cru sur parole :
+
+| | |
+|---|---|
+| mesuré joignable | `PORT_OUVERT=oui`, et le journal l'écrit **« et VÉRIFIÉ joignable »** |
+| mesuré refusé | rien n'est retenu, et le journal dit que le remède n'a rien changé |
+| trois fois sans effet | on **cesse de le rejouer** (`REMEDE_ABANDONNE`) et on le dit |
+
+**Ce qui a été RETIRÉ, et c'est le signe qu'on a pris la racine :** le mot
+`ouvert` sort de la liste `ouvert|hors-codespace|sans-gh` qui posait le verrou
+sans rien vérifier, et la ligne de succès qui l'accompagnait. Un correctif qui
+n'enlève rien recouvre (`CLAUDE.md` §4 quater).
+
+**L'abandon ne ferme aucune porte** : la remesure du dehors, elle, continue de
+tourner toutes les cinq minutes. Un relais qui revient remet `REMEDE_ABANDONNE`
+à `non` et le port est repris tout seul. On cesse de rejouer un geste, jamais de
+regarder.
+
+### Le geste rendu au patron : celui de ce soir, ET celui qui tient
+
+Rallumer l'espace remet le port — et le port se reperd la nuit suivante. Quatre
+fois. Un remède qu'on rejoue chaque nuit n'en est pas un.
+
+L'explication la mieux étayée, et elle est **écrite comme une hypothèse, pas
+comme une mesure** : le port 3000 de son espace est *détecté* — quelqu'un a vu
+quelque chose écouter — au lieu d'être *déclaré*. `forwardPorts: [3000]` et
+`visibility: public` sont dans `devcontainer.json` depuis le 6 août ; son espace
+est plus ancien qu'eux, et une déclaration ne répare pas un espace déjà né
+(c'est le piège du §55, pour la cinquième fois). Un port détecté vit le temps de
+la session qui l'a détecté ; un port déclaré revient à chaque démarrage du
+conteneur.
+
+`gestePort` rend donc les deux, dans cet ordre : **rallumer** pour ce soir,
+**« Rebuild Container »** pour que cela cesse — le seul geste qui applique la
+déclaration. Ce qui tranchera cette hypothèse est la récidive suivante, et elle
+est inscrite dans `TODO.md`.
+
+### Et le geste doit être FAISABLE — sa question, une heure plus tard
+
+*« C'est où dans l'éditeur ? »*. Le geste était écrit **« ⌘⇧P → Rebuild
+Container »**. Il lit cette fiche sur un iPhone : **il n'y a pas de ⌘⇧P**. Le
+remède venait d'être trouvé, écrit, éprouvé — et il était inatteignable.
+
+C'est la faute de toujours sous un autre habit : *« lui faire viser un panneau
+minuscule sur un écran de six pouces »* (`ouvrir-port.sh`, 23 août). Un geste
+qu'il ne peut pas faire ne vaut pas mieux qu'une fiche muette.
+
+`RECONSTRUIRE` porte désormais le chemin tactile — ☰ → Affichage → Palette de
+commandes… → « rebuild » —, **écrit une seule fois** et employé aux deux
+endroits qui le proposent : deux copies finiraient par diverger (§3).
+
+**Et ce n'est plus au jugé.** `test-verdict-port.ts` refuse tout raccourci
+clavier (`⌘`, `⇧`, `Ctrl+`, `Cmd+`, `F1`) dans un geste rendu au patron, quel
+que soit l'état du port, et toute ligne qui déborde de son écran. Le premier
+rougit contre la version de la veille.
+
+### Ce qui le tient
+
+`scripts/test-port-remesure.ts` fait tourner un **vrai** veilleur sur un port
+libre, avec une sonde du dehors qui refuse toujours et un `ouvrir-port.sh` qui
+rend toujours « ouvert » — l'état exact de sa nuit. Confrontée au veilleur
+d'avant, elle compte **29 lignes de succès sur un port mort** et rougit ; contre
+le neuf, aucune. La demande d'ouverture se prouve désormais par une **trace
+laissée par le script appelé**, plus par une phrase du journal : compter les
+appels éprouve la règle, chercher une tournure éprouvait la formulation
+(`CLAUDE.md` §5 bis). `test-ouvrir-port.ts` tient la condition dans le texte du
+script, et `test-verdict-port.ts` que la fiche donne les deux gestes.
+
+
+---
+
+## §346 — Un espace qui se répare ne coûte pas les chantiers qu'il porte
+
+**Sa question du 13 septembre 2026 :** *« Ça va pas supprimer toutes mes
+données ? »* — posée devant le « Rebuild Container » que le §341 venait de lui
+conseiller pour remettre son port.
+
+**La réponse était OUI, et c'est lui qui l'a vue.**
+
+### C'était la deuxième fois
+
+Le 10 août 2026, je lui conseillais de supprimer son espace pour repartir sur un
+disque sain. Il avait répondu : *« ça va effacer tout ce qu'il y a en
+mémoire »*. `scripts/sauvegarder-banc.sh` est né de cette correction-là, et son
+en-tête porte la phrase. Un mois plus tard, le même conseil repartait sous un
+autre nom — et cette fois il était **écrit dans le code**, rendu par la fiche
+que son espace publie tout seul.
+
+### La racine : un script de création qui suppose une base vierge
+
+| | |
+|---|---|
+| `preparer.sh` | est le `postCreateCommand` : il tourne à chaque **création** de conteneur, donc à chaque reconstruction |
+| le seed | **vide** la base (`TRUNCATE … CASCADE`, `src/server/db/seed.ts`) — c'est son contrat, et les suites en dépendent |
+| la base | **survit** à la reconstruction : elle vit sur le volume nommé `atlas-pgdata` (`docker-compose.yml`) |
+
+Le script appelait donc le seed sans rien demander, devant une base qui n'était
+pas vierge. **Ce n'est pas le seed qui est en cause, c'est qui décide de
+l'appeler** — corriger le seed aurait cassé les suites qui s'appuient dessus.
+
+### Ce qui est fait
+
+`scripts/base-habitee.mjs` pose la question avant, et rend trois réponses :
+**habitée** (0), **vierge** (1), **indéterminé** (2). `preparer.sh` n'amorce que
+sur 1.
+
+**Le doute ne vide pas.** Se tromper en n'amorçant pas coûte une commande
+(`npm run db:seed`, que le message affiche) ; se tromper en amorçant coûte ses
+chantiers, et rien ne les rend.
+
+**ET LE ZÉRO D'UN RÔLE AVEUGLÉ NE VAUT PAS « VIERGE ».** `atlas_app` ne traverse
+pas la RLS : sur une base pleine, il compte **zéro**. Une sonde qui conclurait de
+ce zéro-là ferait vider la base au prochain rebuild. C'est la leçon de
+`sauvegarder-banc.mjs` — *« une sauvegarde faite sous lui serait vide de la
+moitié des lignes »* — mais le prix n'est plus une copie ratée : c'est
+l'original. La sonde **mesure** donc auprès de la base si le rôle courant la
+traverse (`is_superuser`, `rolbypassrls`), et s'abstient sinon. Mesuré, jamais
+déduit du nom dans l'adresse : un rôle renommé ferait mentir la déduction en
+silence.
+
+**`set -e` ne tue plus la préparation** sur le code de sortie de la sonde : 1 et
+2 sont des verdicts, pas des pannes. Sans cette garde, un espace neuf s'arrêtait
+avant d'avoir ses données de démonstration.
+
+### Ce qui le tient
+
+`scripts/test-base-habitee.ts` joue la sonde **pour de bon**, contre une vraie
+base, dans les cinq états : sans adresse, base injoignable, rôle aveuglé par la
+RLS, base réelle, et la lecture de `preparer.sh` — le seed doit vivre sous le
+seul cas qui l'autorise, et le doute ne doit jamais l'atteindre. Éprouvée en
+vidant puis en restaurant une vraie base (18 entreprises, rendues intactes), et
+rouge contre le `preparer.sh` de la veille.
+
+**Ce qui reste vrai, et qu'il faut dire :** une reconstruction reste un geste
+qui touche la machine. Avant, `npm run sauvegarder:banc` écrit une copie
+emportable — il existe depuis le 10 août, précisément pour cela.
+
+
+---
+
+## §347 — Un geste dangereux ne se propose pas : il se rend sûr, ou il n'existe pas
+
+**Sa règle du 13 septembre 2026, posée en colère :** *« faut jamais qu'on me
+propose de faire ça, c'est hyper dangereux ce que tu viens de faire ! »* — après
+s'être vu conseiller « Rebuild Container » pour remettre son port, et avoir dû
+demander **deux fois** *« ça va pas supprimer toutes mes données ? »*.
+
+Elle vit dans `CLAUDE.md` §4 septies. Ce paragraphe dit ce qu'elle a changé dans
+le code.
+
+### Ce qui rendait la faute inévitable
+
+Le §341 avait trouvé un vrai remède et l'avait écrit dans `gestePort` — donc
+dans la fiche que son espace publie **tout seul, tous les quarts d'heure**. Ce
+n'était plus un conseil de conversation qu'on peut rattraper au message suivant :
+c'était une consigne permanente, servie à froid, à quelqu'un qui n'a aucun moyen
+de savoir ce qu'elle détruit.
+
+**Et le §342 ne suffisait pas.** Il a rendu la reconstruction inoffensive — mais
+seulement pour un espace qui a REÇU le correctif. Le sien ne l'avait pas, et
+c'est exactement la boucle du §339 : *il faut recevoir du code pour recevoir le
+correctif qui permet d'en recevoir*. Proposer un geste sûr « une fois que le
+correctif sera arrivé » revient à le lui proposer alors qu'il ne l'est pas.
+
+### Ce qui est fait
+
+`gestePort` ne rend plus que des gestes qui ne détruisent rien : le rallumage,
+et le réenregistrement du port dans l'onglet PORTS. La constante `RECONSTRUIRE`,
+écrite une heure plus tôt, **a disparu** — ce qu'on ne propose plus n'a plus à
+être écrit (§4 quinquies).
+
+Et le cas `ouvert` dit désormais que le fond **est notre travail**, pas un geste
+à lui demander. C'est la seule formulation honnête : le remède existe, il est
+connu, et il n'est pas en état de lui être confié.
+
+### Ce qui le tient
+
+`test-verdict-port.ts` parcourt **tous** les états du port croisés avec toutes
+les mesures possibles, et refuse dans la ligne comme dans le souci : `Rebuild`,
+« reconstruire le conteneur », « supprime ton espace », `db:seed`, `TRUNCATE`,
+`DROP`, `db:push`, « repartir de zéro ». Il rougit contre la fiche écrite une
+heure avant — celle qui le lui proposait.
+
+**Un rouge dans ce contrôle ne se réécrit jamais.** Il veut dire qu'on
+s'apprêtait à lui reproposer ce qu'il a interdit deux fois — le 10 août, puis le
+13 septembre.
+
+---
+
+## §342 — Jeter sa dictée là où il la fait, et le lecteur que personne ne montait
+
+**Sa décision du 13 septembre 2026 :** *« C'est sur cet écran que je le
+voulais ! Car en cas de problème on peut supprimer la dictée comme ça. »*
+
+**Ce qui manquait n'était pas le geste.** Le glissement « Retirer » existait
+depuis le 7 septembre — sur l'écran **Note vocale**, où il ne va pas quand sa
+dictée vient de rater. Il l'essayait sur la fiche où il dicte, et il n'y avait
+rien à saisir.
+
+**Et le code qui aurait dû le porter était mort.** `AnneauNoteVocale` avait deux
+rendus : un micro (l'enregistreur) et un lecteur — anneau creux, chrono,
+glisseur « Retirer », fosse. Le second n'était monté **par aucun écran** :
+
+```bash
+grep -rn "storageKey=" src/app --include=*.tsx   # un seul usage, et il vaut null
+```
+
+C'est la faute du 28 août (`CLAUDE.md` §1) retournée : du code écrit, éprouvé,
+et que le patron ne pouvait atteindre nulle part. **244 lignes de composant et
+40 règles de style** sont parties avec lui (§4 quinquies) — y compris trois
+animations que plus rien ne jouait, et deux règles d'accessibilité qui visaient
+des classes disparues.
+
+**Ce qui le remplace est ce qui existe déjà partout ailleurs** : `LigneRetirable`
+pour le glissement, `useRetraits` pour le tiroir « Annuler ». Rien n'est
+réinventé sur place — c'est cette dispersion qui avait ramené trois mécaniques
+de suppression dans l'application, et que sa règle du 10 août a fait
+disparaître.
+
+**Deux pièges, tous deux trouvés par la suite avant lui :**
+
+| | |
+|---|---|
+| le tiroir vivait DANS la condition qu'il annule | il disparaissait avec la ligne au moment du retrait : « Annuler » existait dans la page et n'était plus atteignable — le geste devenait irréversible sans le dire |
+| deux tiroirs sur le même écran | la pellicule des photos porte le sien, avec le même « Annuler ». Le repère `tiroir-de-la-dictee` les distingue ; sans lui, un contrôle vise le premier venu |
+
+**Et le retrait interrompt le suivi de la préparation** : sans cela, l'écran
+continuerait d'annoncer « Atlas prépare votre devis… » à partir d'une note
+qu'il vient de jeter, et l'emmènerait sur un devis qu'il n'a plus demandé.
+
+**Ce qui n'est pas couvert ici, et qui s'écrit comme tel :** le chemin
+destructeur — laisser le tiroir se fermer — n'est éprouvé que sur l'écran Note
+vocale, qui emploie la même action et le même crochet. L'éprouver aussi ici
+détruirait la note du jeu de démonstration dont les suites voisines ont besoin.
+
+
+## §348 — La planche B du devis : « Remise », « dont main d'œuvre », les conditions en gras, et ses conditions générales au dos
 
 **Sa planche du 12 septembre 2026**, `appli/devis-remise-main-d-oeuvre-conditions.html`,
 et ses réponses le jour même ; codée le 13 sur sa demande : *« code la planche
@@ -29341,7 +29627,7 @@ Suites : `test-planche-b-devis.ts` (la règle et la trace du papier),
 `test-planche-b-devis-e2e.ts` (son geste). Les suites de la remise ont suivi le
 mot.
 
-## §346 — Le chantier né d'un geste vit dans une RÉFÉRENCE, jamais dans un état
+## §349 — Le chantier né d'un geste vit dans une RÉFÉRENCE, jamais dans un état
 
 **Payé le 13 septembre 2026.** Six photos choisies d'un coup sur la fiche client,
 puis retour : six chantiers « Mr. Julien », une photo chacun.
@@ -29370,3 +29656,65 @@ restait en place et chaque nouvel essai la rendait telle quelle.
 Suite : `test-photos-avant-le-chantier-e2e.ts` — six photos comme lui, et le
 compte se fait en base, pas à l'écran (`CLAUDE.md` §5 bis). Elle rougit sur
 l'ancien code (« 6 chantiers pour un seul client »).
+
+## §350 — Terminés : l'œil remplace les onglets, et il garde leur règle
+
+**Ses quatre demandes du 13 septembre 2026, d'après sa capture :** *« sous la
+TVA garde que deux boutons, Retours d'intervention et Créer une facture ;
+Septembre 2026, centre-le ; supprime le bouton Tout, que ça soit le mode par
+défaut, et garde que le bouton À facturer — pour que ça soit plus joli, laisse
+14 facturés en gras et 3 à facturer en gras doré, mais à côté tu mets le signe
+œil barré : on clique dessus, ça montre les à facturer, on reclique, il
+disparaît, on revient sur le mode tout par défaut »*. Dessiné d'abord
+(`appli/termines-l-oeil.html`), trois retours le soir même — l'or de
+l'application, pas de rond derrière l'œil, les comptes plus gros, la phrase
+absente quand il n'y a rien —, puis : *« très bien, tu peux coder ça »*.
+
+**Ce que l'écran disait deux fois.** L'onglet « À facturer » et, trois
+centimètres plus bas, « 3 à facturer » : le même état, un filtre et un compte.
+La planche du 8 septembre (`termines-et-les-retours.html`, proposition 4)
+l'avait déjà relevé. Le geste vit désormais **sur le chiffre lui-même** : l'œil
+est un bouton de 44 × 44 posé sur la ligne de 17 px, ses marges négatives
+l'absorbent, et rien ne s'ajoute à l'écran — il en manque.
+
+**LA RÈGLE DE L'ONGLET EST GARDÉE, ET C'EST LE POINT QUI SE DISCUTAIT.** Sa
+demande du 22 août — *« il faut pouvoir revenir dans le passé si jamais on a du
+retard sur la facturation »* — faisait ignorer le mois à l'onglet. La planche
+retenue filtrait d'abord **le mois affiché** : plus simple à dessiner, et faux
+pour un chantier de juillet jamais facturé, qu'il faudrait déjà savoir exister
+pour aller le chercher. Codé « tous mois confondus », comme la phrase compte
+déjà depuis le 23 août : l'œil ouvert montre exactement ce que « 3 à facturer »
+annonce, et les deux chiffres ne peuvent plus se contredire. La planche a été
+réalignée sur le code — c'est elle qu'il ouvre.
+
+**Le mois se met en VEILLE, il ne part pas.** Une liste qui ignore le mois sous
+des flèches qui le feuillettent ferait croire l'écran cassé ; une navigation
+qui disparaît ferait bouger la phrase — et l'œil avec, sous le doigt qui vient
+de l'appuyer (`CLAUDE.md` §3, « une ligne qui bouge se cherche »). Le nom du
+mois passe donc à `muted`, ses flèches se ferment, et rien ne change de place.
+Même idiome pour « 14 facturés », qui s'éteint : ils existent, ils sont rangés.
+
+**Un œil ouvert sur rien n'existe pas.** `montrerCeQuiAttend = oeilOuvert &&
+attente.length > 0` : dès que la dernière facture part, on revient à tout sans
+qu'un état orphelin reste posé sur un bouton disparu. Et la phrase ne se rend
+que s'il y a quelque chose à compter — sa règle du soir : *« quand il n'y a
+rien à facturer ou de facturé, supprime la phrase »*.
+
+**Ce qui a disparu, et ne revient pas :** `Onglet` et `Compte`
+(`ListeTermines.tsx`), la section « Rien n'attend. Vous êtes à jour. » — un
+chiffre absent le dit mieux qu'une phrase —, et la seconde rangée de « Créer
+une facture », qui n'existait que parce que trois pastilles prenaient la
+première. Les suites suivent le geste, jamais le mot : `oeil-a-facturer` et
+`portes-termines` sont des repères, et `tout-ce-qui-attend` reste le nom de
+la section quand elle montre tout ce qui attend.
+
+**Le mois vide ne fait pas taire la phrase — 13 septembre 2026, l'après-midi.**
+Première version : la phrase « 3 à facturer » et son œil vivaient dans la
+branche « le mois a des lignes », sous « Rien en septembre » sinon. Or elle
+compte TOUS les mois : un chantier d'août non facturé restait compté, mais
+plus affiché ni filtrable dès qu'un mois neuf commençait — l'onglet qu'elle
+remplace, lui, ignorait le mois. La batterie complète ne l'a pas vu : les
+suites qui précèdent celle-ci remplissent septembre. C'est la suite jouée
+seule, sur une base fraîche, qui a montré l'écran muet. Depuis, la phrase se
+rend au-dessus du message de mois vide, et la suite accepte zéro rangée avant
+d'ouvrir l'œil — c'est le cas qui compte.

@@ -8,6 +8,37 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
+
+Sa capture et ses quatre demandes du jour, dessinées d'abord
+(`appli/termines-l-oeil.html`, retenue le soir même) : sous la TVA, il ne
+reste que « Retours d'intervention » et « Créer une facture », sur une seule
+rangée ; « Septembre 2026 » est centré ; les onglets « Tout » et « À facturer »
+sont partis — tout se voit par défaut — et **l'œil barré à côté de « 3 à
+facturer »** filtre : ouvert, la liste ne garde que ce qui attend ; rappuyé,
+tout revient. Les deux comptes passent à 17 px, et la phrase ne s'affiche que
+s'il y a quelque chose à compter.
+
+**L'œil ouvert ignore le mois, comme l'onglet qu'il remplace** — sa règle du
+22 août pour le retard de facturation. Le mois se met alors en veille (en
+retrait, flèches fermées) sans bouger de place.
+
+Ce que cela évite : un onglet et une phrase qui disaient la même chose à trois
+centimètres d'écart, et une rangée de trois pastilles qui ne tenait qu'en
+rognant.
+
+**Supprimés avec :** `Onglet` et `Compte` dans `ListeTermines.tsx`, la
+section « Rien n'attend. Vous êtes à jour. » — la phrase de comptes le dit
+déjà en ne portant pas l'œil. Détail : `ARCHITECTURE.md` §350.
+
+**Et un défaut du lot, attrapé par sa suite jouée SEULE** (l'après-midi) : sur
+un mois sans chantier — « Rien en septembre » —, la phrase et l'œil
+disparaissaient avec la liste. Un chantier d'août qui attend sa facture devenait
+donc invisible dès le 1ᵉʳ du mois : exactement le retard de facturation que
+l'onglet « À facturer » montrait depuis le 22 août. La phrase vit désormais
+au-dessus du message de mois vide. En batterie complète, la suite passait —
+d'autres suites avaient rempli septembre avant elle.
+
 ### Six photos ne font plus six chantiers
 
 *« J'ai ajouté six photos, j'ai fait retour, il m'en a créé six avec une photo
@@ -19,7 +50,7 @@ promesse de création s'effaçait dès qu'elle aboutissait.
 **Corrigé à la racine** : la promesse vit dans une référence, gardée jusqu'au
 bout ; l'état ne sert plus qu'au rendu, et le bouton d'enregistrement lit la
 même référence. Elle ne s'efface que sur un échec — « Réessayez » réessaie
-désormais pour de bon. `ARCHITECTURE.md` §346 ;
+désormais pour de bon. `ARCHITECTURE.md` §349 ;
 `test-photos-avant-le-chantier-e2e.ts` rougit sur l'ancien code.
 ### La planche B du devis : « Remise », « dont main d'œuvre », les conditions en gras, les CGV au dos
 
@@ -45,7 +76,7 @@ gras porte les phrases qui existent déjà.
 
 **Migration 0090** (`main_doeuvre_ht`, `conditions_generales` sur l'entreprise
 et le devis). `gras` ajouté à la trace du PDF : sans lui, « en gras » ne se
-mesurait pas. Détail : `ARCHITECTURE.md` §345.
+mesurait pas. Détail : `ARCHITECTURE.md` §348.
 
 **Ce que la batterie a montré, et qui est corrigé à la racine.** Le « − » de la
 main d'œuvre écrivait `null` pendant qu'un rendu du brouillon, parti une
@@ -57,6 +88,48 @@ attend l'autre. Et le texte d'origine des CGV ne se pose plus que sur le
 **réglage** de l'entreprise, jamais sur l'instantané d'un devis : un devis
 d'avant la migration sortait sinon avec des CGV au dos qu'il n'avait jamais
 portées (`test-conditions-sur-le-devis`).
+### Les deux « chiffres faux » du devis : l'addition était juste, la suite tapait mal
+
+*« Si c'est un problème de calculer les lignes qui ne s'additionnent pas ou mal,
+là c'est hyper grave et ça ne doit jamais arriver. »*
+
+Mesuré, pas supposé : la base portait `quantite = 12.00` pour un prix unitaire
+de `450.00`. 12 × 450 = 5 400 — **le calcul n'a jamais été en cause**. Ce sont
+les deux suites qui écrivaient « 12 » en croyant écrire « 2 » : `fill()` insère
+sans effacer, là où le champ pose volontairement le curseur À DROITE du chiffre
+existant (sa règle du 11 septembre). Elles font désormais son geste — entrer,
+tout sélectionner, taper — et les deux sont vertes.
+
+Une garde avait d'abord été ajoutée au champ pour respecter une sélection. Deux
+mesures, dans les deux sens, ont montré qu'elle ne changeait rien : elle a été
+retirée. Une correction qui ne corrige rien est une couche de plus.
+
+**Ce qui reste, et c'est à lui :** sur la case « Qté », poser le doigt et taper
+« 2 » sur une case qui affiche « 1 » donne bien **12**. C'est sa règle, et c'est
+aussi de quoi envoyer un devis à 5 400 € sur une faute de frappe (`TODO.md`).
+
+
+### Jeter sa dictée depuis l'écran où il la fait — et 280 lignes de code mort en moins
+
+*« C'est sur cet écran que je le voulais ! Car en cas de problème on peut
+supprimer la dictée comme ça. »*
+
+Le glissement « Retirer » existait depuis le 7 septembre, mais sur l'écran Note
+vocale — pas là où il dicte. Et le rendu qui aurait dû le porter dans l'anneau
+n'était monté **par aucun écran** : du code écrit, éprouvé, inatteignable. Il
+est parti — 244 lignes de composant, 40 règles de style, trois animations que
+plus rien ne jouait (`ARCHITECTURE.md` §342).
+
+Le geste vit maintenant sous le micro, avec les pièces communes
+(`LigneRetirable`, `useRetraits`) : il glisse, « Retirer » se découvre,
+« Annuler » retient six secondes, et la note revient intacte — vérifié en base,
+pas seulement à l'écran. Le retrait rend aussi le micro à son invite, et arrête
+de suivre une préparation dont la dictée vient d'être jetée.
+
+Deux pièges trouvés par la suite avant lui : le tiroir « Annuler » vivait dans
+la condition qu'il annule (donc disparaissait au moment du retrait), et la
+pellicule des photos porte un second tiroir sur le même écran.
+
 
 ### L'essai de quinze jours, et ce qui se ferme — sa planche du 10 septembre, codée
 
@@ -87,6 +160,37 @@ reste à lui : le « 15 » dans l'article 14.2 des conditions, avec la version 3
 Détail : `ARCHITECTURE.md` §344.
 
 ---
+
+### Le contrôle de la base habitée réclamait à la sonde le contraire de sa garantie
+
+Arrivé avec le lot du jour, `test-base-habitee` rougissait dans l'atelier et
+aurait rougi en CI : il comptait les entreprises sous `atlas_owner` et exigeait
+un verdict, alors que la sonde s'ABSTIENT sous un rôle qui ne traverse pas la
+RLS — sa garantie principale, et le cas juste au-dessus l'exige. Le contrôle
+demande désormais d'abord ce que le rôle a le droit de voir. La sonde, elle,
+n'a pas bougé : elle avait raison.
+
+### « Impossible de recommencer » : le geste restait éteint après un refus
+
+*« J'ai fait une dictée, ça n'a pas fonctionné, et impossible de
+recommencer. »* Sous un message qui disait « Réessayez ».
+
+`DevisDepuisDictee.valider()` éteignait son bouton à l'entrée et ne le rendait
+que sur le chemin qui réussit. Un appel qui tombe laissait donc l'unique geste
+de l'écran **éteint pour toujours** : il invitait à refaire ce qu'il
+empêchait, et il ne restait qu'à recharger — ce que personne ne devine.
+
+Le drapeau se rend maintenant dans un `finally`. Et le `catch` ne mange plus la
+panne : elle est journalisée avant que l'écran parle, sans quoi personne ne
+saurait jamais POURQUOI la dictée a échoué (`AGENTS.md` — rendre le défaut
+bavard avant de corriger).
+
+`test-geste-jamais-bloque.ts` lit tous les écrans et refuse la forme : un
+drapeau posé avant un appel et rendu nulle part. Sa première version accusait
+`InformationsClient`, qui rend pourtant le sien dans son `catch` — corrigée
+avant d'être livrée, parce qu'un contrôle qui parle à tort s'apprend à être
+ignoré.
+
 
 ### Tout le circuit PDF repris : deux portes, et la visionneuse qui ne peignait rien
 
@@ -128,6 +232,72 @@ lui demande de faire à notre place (`AGENTS.md`).
 contrôle de plus, qui tient l'import lui-même et **sait rougir** : remis en
 l'état d'avant, il retrouve le défaut et le nomme.
 
+### La fiche ne lui propose plus aucun geste qui peut effacer ses données
+
+*« Faut jamais qu'on me propose de faire ça, c'est hyper dangereux ce que tu
+viens de faire ! »* — après s'être vu conseiller de reconstruire son conteneur,
+et avoir dû demander **deux fois** si cela supprimerait ses données.
+
+Le remède du port était écrit dans la fiche que son espace publie tout seul,
+tous les quarts d'heure : une consigne permanente servie à froid, à quelqu'un
+qui n'a aucun moyen de savoir ce qu'elle détruit.
+
+La fiche ne rend plus que des gestes inoffensifs — rallumer, réenregistrer le
+port —, et dit que le fond est **notre** travail. Un contrôle parcourt tous les
+états du port et refuse `Rebuild`, « reconstruire le conteneur », « supprime ton
+espace », `db:seed`, `TRUNCATE`, `DROP`, `db:push`.
+
+Sa règle : `CLAUDE.md` §4 septies. Le détail : `ARCHITECTURE.md` §347.
+
+
+### Reconstruire l'espace n'efface plus ses chantiers
+
+*« Ça va pas supprimer toutes mes données ? »*, devant la reconstruction
+conseillée juste avant pour réparer son port. **La réponse était oui, et c'est
+lui qui l'a vue — pour la deuxième fois** (10 août : *« ça va effacer tout ce
+qu'il y a en mémoire »*).
+
+`preparer.sh` tourne à chaque création de conteneur, donc à chaque
+reconstruction, et il appelait le seed sans rien demander. Le seed vide la base ;
+la base, elle, survit sur son volume. Il ne l'amorce désormais que si elle est
+**vierge**, et le doute ne vide pas. Le zéro d'un rôle aveuglé par la RLS ne
+compte pas comme « vierge » — il vaudrait la base entière.
+
+Détail : `ARCHITECTURE.md` §346. Avant toute reconstruction :
+`npm run sauvegarder:banc`.
+
+
+### Le veilleur croyait une commande au lieu de mesurer : le port mourait toute la nuit
+
+*« L'appli ne fonctionne toujours pas ! »*, capture de 1 h 58 : un
+téléchargement proposé à la place d'Atlas. Quatrième nuit de la même panne.
+
+Sa fiche, écrite à la même minute, disait déjà que le code n'y était pour rien.
+Ce qu'elle ne disait pas : **son journal portait une ligne de succès — « port
+3000 ouvert au public » — toutes les cinq minutes, sur un port mort.** Le
+veilleur mesurait bien le refus du dehors, puis reposait son verrou sur la seule
+foi de `gh` : la boucle tournait sans rien apprendre.
+
+`veiller.sh` fait désormais suivre le remède de la question qu'il prétend
+régler. Un remède mesuré sans effet trois fois **cesse de se rejouer** et le dit
+— la mesure, elle, continue, et un relais qui revient est repris tout seul. Le
+mot `ouvert` sort de la liste qui posait le verrou sans rien vérifier, et la
+ligne de succès part avec lui.
+
+**Ce que la fiche rend en plus :** le geste qui TIENT, à côté de celui qui
+dépanne. Rallumer l'espace remet le port et le port se reperd ; « Rebuild
+Container » applique la déclaration permanente de `devcontainer.json`, que son
+espace n'a jamais reçue — écrit comme l'hypothèse la mieux étayée, pas comme une
+mesure.
+
+**Et le geste est devenu faisable.** Il l'a demandé une heure plus tard :
+*« c'est où dans l'éditeur ? »*. La fiche donnait « ⌘⇧P » à quelqu'un qui la lit
+sur un iPhone. Elle donne le chemin tactile, et un contrôle refuse désormais
+tout raccourci clavier dans un geste qu'on lui demande.
+
+Détail et preuves : `ARCHITECTURE.md` §345.
+
+---
 ## 2026-09-12
 
 ### L'acompte sur le devis — la B, codée le soir même

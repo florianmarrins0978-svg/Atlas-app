@@ -241,10 +241,10 @@ async function main() {
     if (!(await page.locator('[data-atlas="liste-termines"]').count())) {
       return "aucun chantier terminé dans le jeu de démonstration : l'écran n'affiche ni onglets ni rangées";
     }
-    // « Tout » ne montre que le mois courant, qui peut être vide selon le jour
-    // où la suite tourne. « À facturer » ignore le mois — et c'est l'onglet de
-    // sa capture.
-    await page.click('[data-atlas="onglet-attente"]');
+    // Fermé, l'œil ne montre que le mois courant, qui peut être vide selon le
+    // jour où la suite tourne. Ouvert, il ignore le mois — c'est l'ancien onglet
+    // « À facturer » de sa capture, devenu l'œil le 13 septembre 2026.
+    await page.click('[data-atlas="oeil-a-facturer"]');
     await page.waitForTimeout(300);
     const combien = await page.locator('[data-atlas="ligne-terminee"]').count();
     return combien >= 2 ? null : `${combien} rangée(s) à facturer : rien n'est mesurable`;

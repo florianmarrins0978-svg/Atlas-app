@@ -35,9 +35,10 @@ import {
  *
  * **CE QUI RESTE À FACTURER NE SUIT PAS LE MOIS.** Sa demande du 22 août :
  * *« il faut pouvoir revenir dans le passé si jamais on a du retard sur la
- * facturation »*. L'onglet « À facturer » ignore donc le mois affiché — un
- * chantier de juillet jamais facturé se voit encore en août, sinon il faudrait
- * déjà savoir qu'il existe pour aller le chercher.
+ * facturation »*. L'œil ouvert ignore donc le mois affiché — un chantier de
+ * juillet jamais facturé se voit encore en août, sinon il faudrait déjà savoir
+ * qu'il existe pour aller le chercher. C'était la règle de l'onglet
+ * « À facturer » ; l'onglet est parti le 13 septembre 2026, la règle reste.
  */
 export default function ListeTermines({
   lignes,
@@ -71,7 +72,12 @@ export default function ListeTermines({
    */
   moisCourant: string;
 }) {
-  const [onglet, setOnglet] = useState<"tout" | "attente">("tout");
+  /**
+   * L'œil : fermé (barré), on voit tout — c'est le mode d'origine ; ouvert, on
+   * ne voit que ce qui attend. Sa demande du 13 septembre 2026 : *« par défaut
+   * on doit tout voir et on clique pour voir seulement les à facturer »*.
+   */
+  const [oeilOuvert, setOeilOuvert] = useState(false);
 
   /**
    * L'année du jour, tirée du mois que le SERVEUR a décidé.
@@ -95,41 +101,38 @@ export default function ListeTermines({
   const [cle, setCle] = useState(entree);
   const plancher = decalerMois(entree, RECUL_MAX);
   const mois = useMemo(() => resumeDuMois(lignes, cle), [lignes, cle]);
+  // Un œil ouvert sur rien ne montre rien : dès que la dernière facture part,
+  // on revient à tout — sans quoi l'écran resterait vide sous un bouton parti.
+  const montrerCeQuiAttend = oeilOuvert && attente.length > 0;
 
   return (
     <div data-atlas="liste-termines">
-      {/* **La phrase des deux chiffres a QUITTÉ cette place le 23 août 2026**,
-          à sa demande : *« supprime ce qui est marqué sous le mois d'août et à
-          la place tu écris la phrase qui est marquée sous Terminés. Et tu
-          enlèves la phrase qui est marquée sous Terminés. »*
+      {/* ─── DEUX PORTES, ET PLUS AUCUN ONGLET — sa demande du 13 septembre 2026
+          *« Sous la TVA, garde que deux boutons : Retours d'intervention et
+          Créer une facture. Je voudrais qu'on supprime le bouton Tout, que ça
+          soit le mode par défaut, et qu'on garde que le bouton À facturer. »*
+          Planche `appli/termines-l-oeil.html`, retenue le soir même :
+          *« Très bien, et par défaut on doit tout voir et on clique pour voir
+          seulement les à facturer. »*
 
-          Elle vit maintenant sous le mois, où elle remplace un décompte qui
-          disait la même chose en d'autres mots. Deux phrases pour un seul état,
-          à trois centimètres l'une de l'autre, faisaient hésiter — est-ce le
-          même chiffre ? */}
-      {/* **28 px au lieu de 22, et 44 px de haut au lieu de 40 — « le calme »,
-          sa proposition A du 2 septembre 2026** (`appli/termines-elegance.html`).
-          Les 44 px ne sont pas un goût : c'est la mesure que tout le reste de
-          l'application tient déjà pour un pouce, sur un chantier, parfois avec
-          des gants. Ces onglets étaient les seuls à 40. */}
-      <div className="mx-[26px] mt-7 flex gap-1" data-atlas="onglets-termines">
-        <Onglet repere="tout" actif={onglet === "tout"} onClick={() => setOnglet("tout")}>
-          Tout
-        </Onglet>
-        <Onglet repere="attente" actif={onglet === "attente"} onClick={() => setOnglet("attente")}>
-          À facturer
-        </Onglet>
+          **« Tout » et « À facturer » ont quitté cette rangée**, et le filtre
+          vit désormais dans la phrase de comptes, sous le mois : c'est l'ŒIL,
+          plus bas. Il ne reste ici que ce qui OUVRE une page — les deux
+          portes —, et elles tiennent sur une seule rangée : 44 px de haut, le
+          bord droit sur la marge de 26 px, comme le 11 septembre. À 360 px la
+          rangée se replie, et « Créer une facture » passe dessous, à droite.
+
+          **28 px sous la carte — « le calme », sa proposition A du 2 septembre
+          2026** (`appli/termines-elegance.html`). */}
+      <div
+        className="mx-[26px] mt-7 flex flex-wrap justify-between gap-2"
+        data-atlas="portes-termines"
+      >
         {/* ─── LES RETOURS D'INTERVENTION — sa décision du 8 septembre 2026 ───
             *« Dans la catégorie terminé il faut rajouter une sous-catégorie,
             comme tu as fait, à côté de "à facturer" : mettre la sous-catégorie
             retour d'intervention. On clique dessus et on arrive sur une page
             où seront listés tous les retours par client. »*
-
-            **Ce n'est PAS un onglet comme les deux autres, et c'est voulu** :
-            ceux-là filtrent la liste en dessous, celui-ci ouvre une page. Il en
-            a la forme parce que c'est là qu'il le cherche ; il en diffère par
-            le geste, et le chevron d'une page ne se dessine pas ici — la page
-            porte déjà son retour.
 
             **IL EST TOUJOURS LÀ, même quand il n'y a aucun retour — sa
             correction du 9 septembre 2026 :** *« l'onglet retour
@@ -142,77 +145,63 @@ export default function ListeTermines({
             se cherche, et le premier retour de son salarié arriverait dans un
             endroit dont il ignore l'existence. **La page vide, elle, dit ce
             qui l'attend** — c'est ce que fait `ListeDesRetours`. */}
-        {(
-          <Link
-            href="/termines/retours"
-            data-atlas="onglet-retours"
-            className="flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 text-[12.5px] no-underline"
-            style={{
-              backgroundColor: colors.card,
-              color: colors.inkSoft,
-              boxShadow: `inset 0 0 0 1px ${colors.line}`,
-              WebkitTapHighlightColor: "transparent",
-            }}
-          >
-            Retours d&apos;intervention
-            {/* **La pastille ne compte QUE ce qu’il n’a pas lu, et disparaît
-                quand il a tout vu** — sa correction du 9 septembre 2026. Un
-                nombre qui reste allumé pour toujours ne dit plus rien : le
-                jour où un retour compte vraiment, il ressemble à la veille.
+        <Link
+          href="/termines/retours"
+          data-atlas="onglet-retours"
+          className="flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[12.5px] no-underline"
+          style={{
+            backgroundColor: colors.card,
+            color: colors.inkSoft,
+            boxShadow: `inset 0 0 0 1px ${colors.line}`,
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          Retours d&apos;intervention
+          {/* **La pastille ne compte QUE ce qu’il n’a pas lu, et disparaît
+              quand il a tout vu** — sa correction du 9 septembre 2026. Un
+              nombre qui reste allumé pour toujours ne dit plus rien : le
+              jour où un retour compte vraiment, il ressemble à la veille.
 
-                **L’onglet, lui, reste** tant qu’il existe des retours : sans
-                quoi la page devient inatteignable le soir où il a tout lu. */}
-            {retoursNonLus > 0 && (
-              <span
-                data-atlas="compte-des-non-lus"
-                className="grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold"
-                style={{ backgroundColor: colors.or, color: colors.cream }}
-              >
-                {retoursNonLus}
-              </span>
-            )}
-          </Link>
-        )}
-      </div>
+              **L’onglet, lui, reste** tant qu’il existe des retours : sans
+              quoi la page devient inatteignable le soir où il a tout lu. */}
+          {retoursNonLus > 0 && (
+            <span
+              data-atlas="compte-des-non-lus"
+              className="grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold"
+              style={{ backgroundColor: colors.or, color: colors.cream }}
+            >
+              {retoursNonLus}
+            </span>
+          )}
+        </Link>
 
-      {/* ─── CRÉER UNE FACTURE SANS DEVIS — sa demande du 11 septembre 2026 ──
-          *« Sous retour d'intervention, collé à droite, tu mets créer une
-          facture en doré, comme tu as fait le bouton vide contour doré. »*
+        {/* ─── CRÉER UNE FACTURE SANS DEVIS — sa demande du 11 septembre 2026 ──
+            *« Sous retour d'intervention, collé à droite, tu mets créer une
+            facture en doré, comme tu as fait le bouton vide contour doré. »*
 
-          **Pourquoi ici, et pas sur l'accueil.** Il l'avait d'abord posée sur
-          l'écran des chantiers, puis s'est ravisé le lendemain : *« est-ce que
-          c'est pas plus logique de mettre la porte dans la catégorie
-          Terminés ? »* — et il a raison. Un dépannage réglé sur place est du
-          travail FINI ; « Vos chantiers » liste ce qui est en cours, et le
-          chantier créé par ce bouton part de toute façon droit dans Terminés.
+            **Pourquoi ici, et pas sur l'accueil.** Il l'avait d'abord posée sur
+            l'écran des chantiers, puis s'est ravisé le lendemain : *« est-ce que
+            c'est pas plus logique de mettre la porte dans la catégorie
+            Terminés ? »* — et il a raison. Un dépannage réglé sur place est du
+            travail FINI ; « Vos chantiers » liste ce qui est en cours, et le
+            chantier créé par ce bouton part de toute façon droit dans Terminés.
 
-          **POURQUOI UNE SECONDE RANGÉE, ET NON UNE QUATRIÈME PASTILLE.** C'est
-          ce qu'il voulait au départ, et c'était impossible : la rangée
-          au-dessus prend déjà 300 px sur les 306 d'un écran de 360 — il l'avait
-          lui-même fait resserrer le 9 septembre pour que les trois y tiennent.
-          Cinq resserrements ont été mesurés (`appli/faire-rentrer-les-quatre.html`)
-          et tous achetaient la place en coupant un mot. Une ligne de plus ne
-          coûte rien à personne : les deux noms restent entiers.
+            **Sur la même rangée depuis le 13 septembre 2026.** Elle vivait sur
+            une seconde rangée parce que les trois onglets prenaient 300 px sur
+            les 306 d'un écran de 360 ; deux d'entre eux partis, la place est
+            là — et `ml-auto` la garde à droite même quand la rangée se replie.
 
-          **À DROITE ET EN OR, et ce n'est pas de l'ornement.** Les trois
-          onglets FILTRENT la liste en dessous ; celui-ci CRÉE. Aligné à gauche
-          sous eux, il se lirait comme un quatrième filtre passé à la ligne, et
-          il chercherait pourquoi la liste ne change pas. Le contour vide plutôt
-          qu'un aplat : le vert plein dit « c'est ce que vous regardez »
-          (l'onglet actif), ce qui n'est pas ce qu'on veut dire ici.
+            **À DROITE ET EN OR, et ce n'est pas de l'ornement.** Le contour
+            vide plutôt qu'un aplat : le vert plein dit « c'est ce que vous
+            regardez », ce qui n'est pas ce qu'on veut dire ici.
 
-          **C'est un LIEN, comme « Vos clients ».** Il mène à la fiche client,
-          qui prépare la facture au lieu du devis — le même écran, le même
-          geste, `?facture=1` en décidant (`chantiers/nouveau/page.tsx`).
-
-          Les mesures viennent de `appli/creer-une-facture-sous-les-onglets.html`,
-          où elles sont relevées aux trois largeurs : 44 px de haut comme tout ce
-          qu'on appuie ici, et le bord droit sur la marge de 26 px. */}
-      <div className="mx-[26px] mt-2.5 flex justify-end">
+            **C'est un LIEN, comme « Vos clients ».** Il mène à la fiche client,
+            qui prépare la facture au lieu du devis — le même écran, le même
+            geste, `?facture=1` en décidant (`chantiers/nouveau/page.tsx`). */}
         <Link
           href="/chantiers/nouveau?facture=1"
           data-atlas="creer-une-facture"
-          className="flex min-h-11 flex-none items-center justify-center whitespace-nowrap rounded-full px-3.5 text-[12.5px] no-underline"
+          className="ml-auto flex min-h-11 flex-none items-center justify-center whitespace-nowrap rounded-full px-3.5 text-[12.5px] no-underline"
           style={{
             color: colors.or,
             boxShadow: `inset 0 0 0 1px ${colors.or}`,
@@ -239,87 +228,107 @@ export default function ListeTermines({
         <p className="mt-8 px-[26px] text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
           Vos chantiers apparaîtront ici une fois leur date d&apos;intervention passée.
         </p>
-      ) : onglet === "attente" ? (
-        <section className="mx-[26px] mt-8" data-atlas="tout-ce-qui-attend">
-          {attente.length === 0 ? (
-            <p className="text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
-              Rien n&apos;attend. Vous êtes à jour.
-            </p>
-          ) : (
-            <>
-              <Compte>
-                {attente.length} chantier{attente.length > 1 ? "s" : ""} à facturer, tous mois
-                confondus.
-              </Compte>
-              {attente.map((l) => (
-                <Ligne key={l.id} ligne={l} annee={annee} />
-              ))}
-            </>
-          )}
-        </section>
       ) : (
-        <section className="mx-[26px] mt-8" data-atlas="le-mois">
+        <section
+          className="mx-[26px] mt-8"
+          // Le repère change avec ce que la section MONTRE : les suites qui
+          // attendent « tout ce qui attend » le trouvent au même endroit que du
+          // temps de l'onglet, sans dépendre d'un libellé (`CLAUDE.md` §5 bis).
+          data-atlas={montrerCeQuiAttend ? "tout-ce-qui-attend" : "le-mois"}
+        >
+          {/* **Le mois est CENTRÉ — sa demande du 13 septembre 2026.** Et il se
+              met EN VEILLE quand l'œil est ouvert : ce qu'on voit alors ignore
+              le mois (règle du 22 août, en tête de fichier), et des flèches qui
+              feuilletteraient une liste qui ne bouge pas feraient croire
+              l'écran cassé. Le nom reste à sa place, en retrait : une ligne qui
+              disparaît se cherche, une ligne qui s'éteint se comprend. */}
           <NavigationMois
             cle={cle}
             peutReculer={cle > plancher}
             peutAvancer={cle < borne}
+            enVeille={montrerCeQuiAttend}
             surMois={setCle}
           />
-          {mois.lignes.length === 0 ? (
+          {/* **Sa phrase, ici — 23 août 2026 —, réduite à ses DEUX
+              COMPTES le soir même** : *« là où il y a écrit trois à
+              facturer et huit facturés, supprime les montants qu'il y a
+              avec »*.
+
+              **Elle compte TOUS les mois**, pas seulement celui qu'on
+              regarde : c'est ainsi qu'elle a été demandée. Ses montants
+              disaient donc des sommes que la liste en dessous ne montrait
+              pas — trois chiffres d'origines différentes sur deux lignes.
+
+              **ET DEPUIS LE 13 SEPTEMBRE 2026, C'EST ELLE QUI FILTRE.** Sa
+              demande, planche `appli/termines-l-oeil.html` : *« laisser
+              14 facturés en gras et 3 à facturer en gras doré, mais à côté
+              tu mets le signe œil barré ; on clique dessus, ça montre les
+              à facturer ; on reclique, il disparaît, on revient sur le mode
+              tout par défaut »*. L'onglet « À facturer » disait la même
+              chose que « 3 à facturer », à trois centimètres d'écart — il
+              est parti, et le geste vit sur le chiffre lui-même.
+
+              **17 px au lieu de 14 — « mets-les en plus gros », le même
+              soir.** Et la phrase ne se montre que s'il y a quelque chose
+              à compter : *« quand il n'y a rien à facturer ou de facturé,
+              supprime la phrase »*. Sans rien qui attend, l'œil part avec
+              son compte — il n'aurait rien à montrer.
+
+              **Le trait sous elle était la démarcation qu'il a demandée**
+              le 23 août — *« essaye de laisser un peu d'espace entre cette
+              phrase-là et le premier client, histoire qu'on fasse bien la
+              démarcation »*. **Il est parti le 26** : *« tous les traits
+              supprimés entre chaque ligne »*.
+
+              **C'est l'espace qui le remplace, et c'est ce qu'il avait
+              demandé au départ** — le trait avait été préféré parce que de
+              l'espace seul se mange au premier ajout de contenu. La
+              démarcation tient donc maintenant sur les 22 px de la première
+              ligne, et c'est à surveiller : une ligne qui reviendrait à 19
+              la ferait disparaître sans que rien ne rougisse.
+
+              **ET ELLE SE MONTRE MÊME SUR UN MOIS VIDE.** Elle compte tous les
+              mois ; la poser sous « Rien en septembre » l'aurait fait taire —
+              et l'œil avec — précisément quand un chantier d'août attend encore
+              sa facture : c'est le retard de facturation de sa règle du
+              22 août, et un mois neuf l'aurait caché. Trouvé par la suite
+              jouée seule, sur un septembre sans chantier (13 septembre 2026). */}
+          {(attente.length > 0 || faites.length > 0) && (
+            <p
+              className="mb-3 mt-3.5 flex items-center gap-1.5 text-[17px] font-bold leading-[1.5]"
+              style={{ color: colors.ink }}
+              data-atlas="compte-du-mois"
+            >
+              {attente.length > 0 && (
+                <>
+                  {/* **« À facturer » en or — sa correction du 23 août au
+                      soir.** L'or porte ici ce qui attend un geste de lui.
+                      Deux comptes du même noir se lisaient comme un seul
+                      chiffre coupé en deux. */}
+                  <span style={{ color: colors.or }}>{attente.length} à facturer</span>
+                  <Oeil ouvert={montrerCeQuiAttend} onClick={() => setOeilOuvert((o) => !o)} />
+                </>
+              )}
+              {attente.length > 0 && faites.length > 0 && <span aria-hidden="true">·</span>}
+              {/* Les facturés s'éteignent quand l'œil est ouvert : ils ne
+                  sont plus dans la liste, mais le chiffre reste à sa place
+                  pour dire qu'ils existent. `muted` plutôt qu'une opacité :
+                  c'est le jeton du retrait, lisible sur les huit chartes. */}
+              {faites.length > 0 && (
+                <span style={{ color: montrerCeQuiAttend ? colors.muted : colors.ink }}>
+                  {faites.length} facturé{faites.length > 1 ? "s" : ""}
+                </span>
+              )}
+            </p>
+          )}
+          {!montrerCeQuiAttend && mois.lignes.length === 0 ? (
             <p className="mt-4 text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
               Rien en {nomDuMois(cle).toLowerCase()}.
             </p>
           ) : (
-            <>
-              {/* **Sa phrase, ici — 23 août 2026 —, réduite à ses DEUX
-                  COMPTES le soir même** : *« là où il y a écrit trois à
-                  facturer et huit facturés, supprime les montants qu'il y a
-                  avec »*.
-
-                  **Elle compte TOUS les mois**, pas seulement celui qu'on
-                  regarde : c'est ainsi qu'elle a été demandée. Ses montants
-                  disaient donc des sommes que la liste en dessous ne montrait
-                  pas — trois chiffres d'origines différentes sur deux lignes.
-
-                  **Le trait sous elle était la démarcation qu'il a demandée**
-                  le 23 août — *« essaye de laisser un peu d'espace entre cette
-                  phrase-là et le premier client, histoire qu'on fasse bien la
-                  démarcation »*. **Il est parti le 26** : *« tous les traits
-                  supprimés entre chaque ligne »*.
-
-                  **C'est l'espace qui le remplace, et c'est ce qu'il avait
-                  demandé au départ** — le trait avait été préféré parce que de
-                  l'espace seul se mange au premier ajout de contenu. La
-                  démarcation tient donc maintenant sur les 22 px de la première
-                  ligne, et c'est à surveiller : une ligne qui reviendrait à 19
-                  la ferait disparaître sans que rien ne rougisse.
-
-                  **Toute la phrase est en noir gras** — c'était déjà sa demande
-                  du 22 août pour le compte des factures, et les montants partis,
-                  il ne reste plus rien à mettre en retrait : deux graisses pour
-                  deux mots feraient une hiérarchie sans objet. */}
-              <p
-                className="mb-3 mt-3.5 text-[14px] font-bold leading-[1.6]"
-                style={{ color: colors.ink }}
-                data-atlas="compte-du-mois"
-              >
-                {attente.length > 0 && (
-                  <>
-                    {/* **« À facturer » en or — sa correction du 23 août au
-                        soir.** L'or porte ici ce qu'il porte déjà sur les lignes
-                        en dessous (« Pas encore facturé · 360,00 € prévus ») :
-                        ce qui attend un geste de lui. Deux comptes du même noir
-                        se lisaient comme un seul chiffre coupé en deux. */}
-                    <span style={{ color: colors.or }}>{attente.length} à facturer</span>
-                    {" · "}
-                  </>
-                )}
-                {faites.length} facturé{faites.length > 1 ? "s" : ""}
-              </p>
-              {mois.lignes.map((l) => (
-                <Ligne key={l.id} ligne={l} annee={annee} />
-              ))}
-            </>
+            (montrerCeQuiAttend ? attente : mois.lignes).map((l) => (
+              <Ligne key={l.id} ligne={l} annee={annee} />
+            ))
           )}
         </section>
       )}
@@ -351,18 +360,22 @@ function NavigationMois({
   cle,
   peutReculer,
   peutAvancer,
+  enVeille,
   surMois,
 }: {
   cle: string;
   peutReculer: boolean;
   peutAvancer: boolean;
+  /** L'œil est ouvert : la liste ignore le mois, les flèches se ferment. */
+  enVeille: boolean;
   surMois: (cle: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-0.5" data-atlas="navigation-mois">
+    // Centré — sa demande du 13 septembre 2026 : *« Septembre 2026, centre-le »*.
+    <div className="flex items-center justify-center gap-0.5" data-atlas="navigation-mois">
       <Fleche
         sens="passe"
-        desactivee={!peutReculer}
+        desactivee={enVeille || !peutReculer}
         onClick={() => surMois(decalerMois(cle, 1))}
       />
       {/* **26 px au lieu de 21 — « le calme », sa proposition A du 2 septembre
@@ -378,11 +391,16 @@ function NavigationMois({
           lineHeight: 1.2,
           whiteSpace: "nowrap",
           marginInline: 2,
+          color: enVeille ? colors.muted : colors.ink,
         }}
       >
         {nomDuMois(cle)}
       </span>
-      <Fleche sens="futur" desactivee={!peutAvancer} onClick={() => surMois(decalerMois(cle, -1))} />
+      <Fleche
+        sens="futur"
+        desactivee={enVeille || !peutAvancer}
+        onClick={() => surMois(decalerMois(cle, -1))}
+      />
     </div>
   );
 }
@@ -407,7 +425,6 @@ function Fleche({
       style={{
         fontFamily: font.display,
         color: desactivee ? colors.line : colors.or,
-        marginLeft: sens === "passe" ? -9 : 0,
         WebkitTapHighlightColor: "transparent",
       }}
     >
@@ -417,92 +434,49 @@ function Fleche({
 }
 
 /**
- * Le compte des factures — **en noir gras**, sa demande du 22 août 2026 :
- * *« cinq factures envoyées et tant qui attendent leur facturation, ça tu peux
- * le mettre en noir gras »*. C'est ce qu'il vient chercher ; ce n'était pas une
- * note de bas de page.
+ * L'œil à côté de « 3 à facturer » — sa demande du 13 septembre 2026.
+ *
+ * **Barré, on voit tout ; ouvert, on ne voit que ce qui attend.** C'est le
+ * sens qu'il a donné : *« on clique dessus, ça montre les à facturer ; on
+ * reclique, il disparaît, on revient sur le mode tout par défaut »*.
+ *
+ * **44 × 44 posés sur une ligne de 17 px, sans la grandir** : les marges
+ * négatives absorbent le bouton, et le doigt garde sa mesure — la même que
+ * tout ce qu'on appuie ici. Le dessin fait 22 px, en or comme le chiffre
+ * qu'il accompagne.
+ *
+ * **Rien autour de lui, ni ouvert ni fermé** — sa correction du même soir
+ * devant la planche : *« quand on clique sur l'œil il y a une sorte de fond
+ * qui se met autour en forme de rond, supprime ça, garde vraiment que
+ * l'œil »*. L'état se lit au dessin seul : la barre, ou la pupille pleine.
  */
-function Compte({ children }: { children: React.ReactNode }) {
-  return (
-    <p
-      className="mb-3 mt-0.5 text-[13px] font-bold leading-[1.55]"
-      style={{ color: colors.ink }}
-      data-atlas="compte-du-mois"
-    >
-      {children}
-    </p>
-  );
-}
-
-function Onglet({
-  repere,
-  actif,
-  onClick,
-  children,
-}: {
-  /**
-   * Ce que vise un contrôle, plutôt que le libellé.
-   *
-   * **Posé le 26 août 2026.** Une suite cherchait l'onglet par son texte —
-   * « À facturer » — et le jour où il le fera changer, elle rougira sur du code
-   * juste (`CLAUDE.md` §5 bis). Un repère survit au mot.
-   */
-  repere: "tout" | "attente" | "retours";
-  actif: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function Oeil({ ouvert, onClick }: { ouvert: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      data-atlas={`onglet-${repere}`}
-      aria-pressed={actif}
-      // **L'onglet actif prend l'aplat des boutons — sa décision du
-      // 4 septembre 2026.** Il portait le galet depuis le 2 (*« code l'idée du
-      // galet aussi pour le bouton Tout et À facturer »*) ; en rouvrant cet
-      // écran deux jours plus tard, il a relevé qu'il n'avait pas suivi le vert
-      // clair, et tranché : **« oui, vert clair partout »**. Il n'y a plus
-      // qu'une matière pour ce qu'on appuie (`globals.css`, la pierre tombale
-      // du galet).
-      //
-      // **Seul l'ACTIF est plein, et c'est ce qui garde l'écran lisible.** Deux
-      // aplats côte à côte ne diraient plus lequel des deux on regarde : un
-      // onglet ne se distingue que de son voisin. L'éteint garde son cheveu et
-      // son gris.
-      // **Resserré le 9 septembre 2026 pour que les TROIS tiennent sur une
-      // ligne**, le troisième portant désormais son nom entier. Sa demande :
-      // *« tu fais tenir les 3 sur la même ligne, donc rétrécis-les un peu tous
-      // les 3 s’il faut »*.
-      //
-      // **Ce qui a rétréci est le REMBOURRAGE, jamais la hauteur.** Les 44 px
-      // sont la mesure d’un pouce sur un chantier, parfois avec des gants, et
-      // c’est ce que tout le reste de l’application tient déjà. Mesuré :
-      // 440 px avant, 377 sur les 390 de son téléphone après
-      // (`test-onglets-termines-e2e.ts`).
-      // **Une largeur MINIMALE, sinon « Tout » devient un rond** — il l’a vu
-      // le 9 septembre : *« le bouton Tout, on dirait qu’il est rond et pas
-      // ovale comme les autres »*. Un mot court dans un rembourrage resserré
-      // rend une pastille aussi haute que large, et elle ne ressemble plus à
-      // ses voisines. Les 72 px la gardent ovale sans rien coûter à la rangée,
-      // qui tient à 300 px sur les 308 disponibles d’un écran de 360 —
-      className={`min-h-11 min-w-[60px] shrink-0 whitespace-nowrap rounded-full px-2 text-[12.5px] ${actif ? "atlas-plein" : ""}`}
-      style={
-        actif
-          ? {
-              backgroundColor: colors.plein,
-              color: surPlein,
-              WebkitTapHighlightColor: "transparent",
-            }
-          : {
-              backgroundColor: "transparent",
-              color: colors.muted,
-              boxShadow: `inset 0 0 0 1px ${colors.line}`,
-              WebkitTapHighlightColor: "transparent",
-            }
-      }
+      aria-pressed={ouvert}
+      aria-label={ouvert ? "Tout montrer" : "Ne montrer que ce qui attend"}
+      data-atlas="oeil-a-facturer"
+      className="-my-[10px] -ml-1 -mr-1 grid h-11 w-11 place-items-center rounded-full"
+      style={{ color: colors.or, WebkitTapHighlightColor: "transparent" }}
     >
-      {children}
+      <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path
+          d="M2.2 10s2.8-5 7.8-5 7.8 5 7.8 5-2.8 5-7.8 5-7.8-5-7.8-5Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        {ouvert ? (
+          <circle cx="10" cy="10" r="2.4" fill="currentColor" />
+        ) : (
+          <>
+            <circle cx="10" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.6" />
+            <path d="M3.6 16.4 16.4 3.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </>
+        )}
+      </svg>
     </button>
   );
 }

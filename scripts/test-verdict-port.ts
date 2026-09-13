@@ -75,7 +75,10 @@ cas("« sans-gh » DIT que personne n'a réglé ce port depuis l'allumage", () =
     dehors: { joignable: false, statut: 404, type: null, motif: "404 sans type" },
   });
   assert.match(souci ?? "", /N'A PAS PU L'OUVRIR LUI-MÊME/, "rien ne dit que l'espace n'a rien pu faire");
-  assert.match(souci ?? "", /Rebuild Container/, "le remède de fond — un espace qui naît avec la déclaration — n'est pas donné");
+  // **Ce cas exigeait « Rebuild Container » jusqu'au 13 septembre 2026**, et sa
+  // règle l'a renversé : ce remède rejoue le seed, donc efface ses chantiers.
+  // On adapte le contrôle, on ne remet pas ce qu'il a fait retirer (§5 bis).
+  assert.match(souci ?? "", /onglet PORTS|RALLUMER L'ESPACE/, "aucun geste sûr n'est donné");
 });
 
 cas("sans mesure, « non-declare » se dit tel quel et ne passe pas pour « inconnu »", () => {
@@ -300,6 +303,109 @@ cas("UN PORT QUE L'ESPACE A DÉJÀ RENDU PUBLIC NE SE REFAIT PAS BASCULER — 12
   // sans pouvoir dire si `gh` avait réussi ou si personne n'avait essayé — deux
   // états qui n'appellent pas le même geste.
   assert.match(ligne, /démarrage : ouvert/, "la fiche cache le relevé qui décide du geste");
+});
+
+cas("le geste qui TIENT est donné avec celui qui dépanne — 13 septembre", () => {
+  // **Quatre fois en trois semaines**, toujours de nuit : 22 et 31 août, 12 et
+  // 13 septembre. Le rallumage remet le port, et le port se reperd — donc le
+  // rallumage seul n'est pas un remède, c'est un pansement qu'il rejoue.
+  // La fiche doit porter les deux : ce soir, et pour que ça cesse.
+  const { souci } = verdictPort({
+    etatPort: "ouvert",
+    dehors: { joignable: false, statut: 404, type: "", motif: "réponse 404 de quelque chose AVANT Atlas" },
+    serveurLocal: true,
+  });
+  assert.match(souci ?? "", /RALLUMER L'ESPACE/, "rien pour ce soir");
+  // **Et le fond ne lui est plus confié — 13 septembre 2026.** Le seul remède
+  // connu reconstruit le conteneur, donc efface ses données : la fiche doit dire
+  // que c'est NOTRE travail, pas lui proposer de le porter.
+  assert.match(
+    souci ?? "",
+    /NOTRE travail/,
+    "la fiche laisse croire qu'il n'y a rien à faire de plus, ou pire : lui remet le geste"
+  );
+});
+
+// ─── AUCUN RACCOURCI CLAVIER DANS UN GESTE QU'IL DOIT FAIRE AU DOIGT ───────
+//
+// **Payé le 13 septembre 2026 :** *« c'est où dans l'éditeur ? »*. La fiche
+// donnait « ⌘⇧P → Rebuild Container ». Il la lit sur un iPhone : il n'y a pas
+// de ⌘⇧P, donc le geste était inatteignable — et il a fallu qu'il redemande.
+//
+// C'est la faute de toujours, sous un autre habit : lui faire viser un panneau
+// minuscule sur un écran de six pouces (`ouvrir-port.sh`). Un geste qu'il ne
+// peut pas faire ne vaut pas mieux qu'une fiche muette.
+cas("aucun geste de la fiche ne suppose un clavier", () => {
+  const etats = ["ouvert", "non-declare", "sans-gh", "échec:jeton expiré", null];
+  for (const etatPort of etats) {
+    const { souci } = verdictPort({
+      etatPort,
+      dehors: { joignable: false, statut: 404, type: "", motif: "réponse 404 de quelque chose AVANT Atlas" },
+      serveurLocal: true,
+    });
+    assert.ok(
+      !/[⌘⇧⌥⎇]|Ctrl\+|Cmd\+|F1\b/.test(souci ?? ""),
+      `le geste de « ${etatPort} » suppose un clavier — il lit cette fiche sur un téléphone`
+    );
+  }
+});
+
+// **Une fiche se lit sur un écran de six pouces.** Une ligne qui déborde s'y
+// replie n'importe où, et le geste devient illisible au milieu d'un pavé.
+cas("aucune ligne de geste ne déborde de son téléphone", () => {
+  const { souci } = verdictPort({
+    etatPort: "sans-gh",
+    dehors: { joignable: false, statut: 404, type: "", motif: "réponse 404 de quelque chose AVANT Atlas" },
+    serveurLocal: true,
+  });
+  const trop = (souci ?? "").split("\n").filter((l) => l.length > 85);
+  assert.equal(trop.length, 0, `ligne(s) trop longue(s) pour son écran :\n   ${trop.join("\n   ")}`);
+});
+
+// ─── SA RÈGLE DU 13 SEPTEMBRE 2026 : AUCUN GESTE QUI PEUT EFFACER SES DONNÉES ──
+//
+// *« Faut jamais qu'on me propose de faire ça, c'est hyper dangereux ce que tu
+// viens de faire ! »* — après s'être vu conseiller « Rebuild Container » pour
+// remettre son port, et avoir dû demander DEUX FOIS « ça va pas supprimer toutes
+// mes données ? ».
+//
+// **C'était la deuxième fois** : le 10 août, devant « supprime ton espace », il
+// répondait déjà « ça va effacer tout ce qu'il y a en mémoire ».
+//
+// Un rouge ici ne se réécrit pas : il veut dire qu'on s'apprêtait à lui
+// reproposer ce qu'il a interdit deux fois (`CLAUDE.md` §4 septies).
+cas("AUCUN geste de la fiche ne peut effacer ses données", () => {
+  const DESTRUCTEURS = [
+    /[Rr]ebuild/,
+    /econstruire le conteneur/i,
+    /supprime[rz]? (ton|l'|votre) espace/i,
+    /db:seed|seed\.ts/,
+    /TRUNCATE|DROP (TABLE|DATABASE)/i,
+    /db:push/,
+    /repart(ir|ez) de zéro/i,
+  ];
+  const etats = ["ouvert", "non-declare", "sans-gh", "échec:jeton expiré", "hors-codespace", null];
+  const mesures = [
+    { joignable: false, statut: 404, type: "", motif: "404 de quelque chose AVANT Atlas" },
+    { joignable: false, statut: 502, type: "", motif: "502 AVANT Atlas" },
+    { joignable: false, statut: 302, type: "text/html", motif: "renvoi vers github.com" },
+    null,
+  ];
+  for (const etatPort of etats) {
+    for (const dehors of mesures) {
+      for (const serveurLocal of [true, false, null]) {
+        const { ligne, souci } = verdictPort({ etatPort, dehors, serveurLocal });
+        const texte = `${ligne}\n${souci ?? ""}`;
+        for (const interdit of DESTRUCTEURS) {
+          assert.ok(
+            !interdit.test(texte),
+            `la fiche propose « ${texte.match(interdit)?.[0]} » sur « ${etatPort} » — ` +
+              `c'est le geste qu'il a interdit deux fois, et il efface ses chantiers`
+          );
+        }
+      }
+    }
+  }
 });
 
 cas("sans mesure du serveur local, le verdict reste celui d'avant", () => {

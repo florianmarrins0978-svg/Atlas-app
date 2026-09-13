@@ -8,7 +8,27 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — SIX PHOTOS NE FONT PLUS SIX CHANTIERS (13 septembre 2026)
+## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | sa capture, et quatre lignes : deux boutons sous la TVA, le mois centré, plus de « Tout » ni « À facturer », l'œil barré à côté de « 3 à facturer » |
+| la planche | `appli/termines-l-oeil.html`, retenue le soir même : *« très bien, et par défaut on doit tout voir et on clique pour voir seulement les à facturer »* |
+| ce qui est fait | `ListeTermines.tsx` : la rangée `portes-termines` (deux liens), `NavigationMois` centrée avec `enVeille`, la phrase de comptes à 17 px qui porte l'`Oeil` (`oeil-a-facturer`) |
+| la règle gardée | **l'œil ouvert ignore le mois** — c'était celle de l'onglet « À facturer » (22 août, retard de facturation). Le mois se met en veille, il ne bouge pas |
+| ce qui a DISPARU | `Onglet`, `Compte`, la section « Rien n'attend. Vous êtes à jour. » |
+| le défaut attrapé après coup | sur un mois vide, la phrase et l'œil partaient avec la liste — un chantier d'août à facturer devenait invisible le 1ᵉʳ septembre. Trouvé par la suite jouée SEULE (la batterie remplit septembre avant elle) ; la phrase vit au-dessus de « Rien en … » |
+| la migration | **aucune** |
+| les suites | `test-onglets-termines-e2e` (+1 cas : l'œil dans les deux sens, et il refuse de conclure sans chantier à facturer) ; trois suites passent par l'œil au lieu de l'onglet |
+| le détail | `ARCHITECTURE.md` §350 |
+
+**Ce que la planche disait et que le code ne fait pas :** la planche d'abord
+filtrait **le mois affiché** ; codé « tous mois confondus » parce que c'est sa
+règle du 22 août, et la planche a été réalignée. À lui de dire si le mois en
+veille lui va.
+
+---
+## Lot précédent — SIX PHOTOS NE FONT PLUS SIX CHANTIERS (13 septembre 2026)
 
 | | |
 |---|---|
@@ -19,7 +39,7 @@ sert.
 
 **LE PIÈGE, pour tout écran qui crée au premier geste :** ce qu'un geste déjà
 en cours doit relire vit dans une référence, jamais dans un état
-(`ARCHITECTURE.md` §346).
+(`ARCHITECTURE.md` §349).
 
 ---
 ## Lot précédent — LA PLANCHE B DU DEVIS (13 septembre 2026)
@@ -39,6 +59,26 @@ en cours doit relire vit dans une référence, jamais dans un état
 médiateur — que l'écran compte tant qu'ils y sont. Les mentions légales
 manquantes (décennale, médiateur, délai d'exécution) restent proposées dans
 `TODO.md`, pas tranchées.
+## Dernier lot — JETER SA DICTÉE, ET LE LECTEUR MORT (13 septembre 2026)
+
+| | |
+|---|---|
+| sa décision | *« C'est sur cet écran que je le voulais ! Car en cas de problème on peut supprimer la dictée comme ça »* |
+| la racine | le glissement existait — sur l'écran Note vocale. Et le rendu « lecteur » d'`AnneauNoteVocale`, qui le portait, **n'était monté par aucun écran** |
+| retiré | 244 lignes de composant, 40 règles de style, 3 animations que plus rien ne jouait |
+| la migration | **aucune** |
+| les pièces | `FormulaireNouveauChantier` (le geste), `AnneauNoteVocale` (757 → 513 lignes), `globals.css` (1812 → 1541) |
+| les suites | `test-retirer-sa-dictee-e2e.ts` (neuve, jusqu'à la base), `test-geste-jamais-bloque.ts` |
+| le détail | `ARCHITECTURE.md` §342 |
+
+**LES DEUX PIÈGES, et ils se reproduiront ailleurs :** un tiroir « Annuler »
+posé DANS la condition qu'il annule disparaît au moment du retrait — le geste
+devient irréversible sans le dire. Et la pellicule des photos porte un second
+tiroir sur ce même écran : sans repère, un contrôle vise le premier venu.
+
+**CE QUI RESTE À LUI :** dire si la feuille de partage d'iOS range le fichier
+(lot du PDF), et ce qui a fait échouer sa dictée de ce matin — la panne est
+désormais journalisée, elle ne sera plus muette.
 
 ---
 ## Lot précédent — L'ESSAI DE QUINZE JOURS, ET CE QUI SE FERME (13 septembre 2026)
@@ -104,6 +144,54 @@ regarder.
 
 ---
 ## Lot précédent — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
+
+## Dernier lot — RECONSTRUIRE L'ESPACE N'EFFACE PLUS SES CHANTIERS (13 septembre 2026)
+
+| | |
+|---|---|
+| sa question | *« Ça va pas supprimer toutes mes données ? »* — devant le « Rebuild Container » que le lot précédent venait de lui conseiller |
+| la réponse | **OUI**, en l'état. Et c'est lui qui l'a vue — **pour la deuxième fois** (10 août : *« ça va effacer tout ce qu'il y a en mémoire »*) |
+| la racine | `preparer.sh` est le `postCreateCommand` : il tourne à chaque reconstruction et appelait le seed sans rien demander. Le seed VIDE la base ; la base, elle, SURVIT sur le volume nommé `atlas-pgdata` |
+| ce qui est fait | `scripts/base-habitee.mjs` — habitée (0), vierge (1), indéterminé (2). `preparer.sh` n'amorce que sur 1, et **le doute ne vide pas** |
+| le piège fermé | le zéro d'un rôle qui ne traverse pas la RLS ne vaut pas « vierge » : il vaudrait la base entière. Mesuré auprès de la base, jamais déduit du nom du rôle |
+| la migration | **aucune** |
+| les suites | `test-base-habitee.ts` (neuve, jouée contre une vraie base dans cinq états, rouge contre l'ancien `preparer.sh`) |
+| le détail | `ARCHITECTURE.md` §346 |
+
+**LE SEED N'A PAS CHANGÉ, ET NE DOIT PAS CHANGER.** Vider puis reconstruire est
+son contrat, et les suites en dépendent. Ce qui a changé, c'est **qui décide de
+l'appeler**.
+
+**Avant toute reconstruction, chez lui :** `npm run sauvegarder:banc`.
+
+---
+## Dernier lot — UN REMÈDE QUI RÉUSSIT N'EST PAS UN REMÈDE QUI RÉPARE (13 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« L'appli ne fonctionne toujours pas ! Je vais me coucher, répare ça ! »* — capture iPhone de 1 h 58 : un TÉLÉCHARGEMENT proposé à la place d'Atlas. **Quatrième nuit** de la même panne |
+| ce que sa fiche disait | serveur debout sur 3000, veilleur en place, **404 du relais** — `[démarrage : ouvert]`. Datée 23 h 59 **UTC**, soit 1 h 59 chez lui : elle était VIVANTE, pas périmée |
+| la racine | `veiller.sh` reposait `PORT_OUVERT=oui` sur la seule foi du mot rendu par `gh`, annulant au tour suivant la remesure posée le 31 août contre ce défaut exact. Son journal écrivait *« port 3000 ouvert au public »* toutes les cinq minutes **sur un port mort** |
+| ce qui est fait | le remède est suivi de la mesure ; sans effet trois fois, il **cesse de se rejouer** et le dit. La remesure, elle, continue — un relais qui revient est repris seul |
+| ce qui a DISPARU | le mot `ouvert` de la liste `ouvert\|hors-codespace\|sans-gh`, et la ligne de succès qui l'accompagnait |
+| la migration | **aucune** |
+| les pièces | `.devcontainer/veiller.sh`, `scripts/_verdict-port.mjs` (le geste du cas `ouvert`) |
+| les suites | `test-port-remesure.ts` (réécrite sur la règle : elle compte **29 lignes de succès sur un port mort** contre l'ancien veilleur), `test-ouvrir-port.ts` (+1), `test-verdict-port.ts` (+1) |
+| le détail | `ARCHITECTURE.md` §345 |
+
+**AUCUN FICHIER DE `src/` N'EST TOUCHÉ.** Cette panne n'est pas dans le produit :
+la requête n'atteint jamais Atlas. Ne pas chercher dans les écrans.
+
+**CE QUI RESTE OUVERT, et c'est la vraie question.** La perte du port n'est
+toujours **pas reproduite** — cet environnement n'a pas de Codespace. L'hypothèse
+la mieux étayée est écrite dans `TODO.md` avec le geste qui la tranche :
+son port 3000 serait *détecté* au lieu d'être *déclaré*, et « Rebuild Container »
+appliquerait la déclaration que son espace n'a jamais reçue (piège du §55, pour
+la cinquième fois). **Ne pas coder de remède automatique avant ce verdict** : une
+reconstruction lancée seule rejoue `preparer.sh` chez lui, sans personne devant.
+
+---
+## Dernier lot — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
 
 | | |
 |---|---|
@@ -4353,7 +4441,8 @@ et ses perles pleines ou creuses, la pastille dorée, le **volet replié** qui
 cachait les chantiers à facturer, « Facturé, tous mois confondus », le surtitre
 et le cheveu. Une suite qui réclamerait l'un d'eux rendrait l'écran impossible à
 changer (`CLAUDE.md` §5 bis) — c'est déjà arrivé, et `test-planning-vers-facture-e2e.ts`
-a été adapté : il passe désormais par l'onglet **« À facturer »**.
+a été adapté : il passe par ce qui montre tout ce qui attend — l'onglet
+« À facturer » jusqu'au 13 septembre 2026, **l'œil** (`oeil-a-facturer`) depuis.
 
 **Deux choses gouvernent le nouvel écran, et elles se paient si on les ignore :**
 
@@ -4363,9 +4452,9 @@ a été adapté : il passe désormais par l'onglet **« À facturer »**.
    le mois le plus récent.
 2. **CE QUI RESTE À FACTURER NE SUIT PAS LE MOIS.** Sa demande : *« il faut
    pouvoir revenir dans le passé si jamais on a du retard sur la facturation »*.
-   L'onglet « À facturer » ignore le mois affiché — un chantier de juillet jamais
-   facturé se voit encore en août. `aFacturerPartout` porte cette règle, et la
-   suite pure la fixe.
+   L'œil ouvert (l'onglet « À facturer », jusqu'au 13 septembre 2026) ignore le
+   mois affiché — un chantier de juillet jamais facturé se voit encore en août.
+   `aFacturerPartout` porte cette règle, et la suite pure la fixe.
 
 **Le piège qui a coûté deux suites rouges** : un chantier **clôturé avant sa
 date** reste dans « Terminés » avec une date **à venir**. Ouvrir sur « le mois

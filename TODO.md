@@ -47,7 +47,81 @@ planche la pose entre Qté et P.U. HT, avec les unités usuelles (u, ml, m², m�
 kg, h, forfait) sous la ligne quand le champ prend le doigt. Même planche,
 même adresse.
 
-## VINGT SUITES NAVIGATEUR SONT ROUGES SUR `main` (12 septembre 2026, au soir)
+## HUIT SUITES DE PLUS ROUGISSENT SUR SON PC — l'heure de Paris, pas le produit (13 septembre 2026, après-midi)
+
+**Relevé depuis `atlas-app-oeil`, sur Windows, fuseau Europe/Paris**, en
+rejouant les rouges de la batterie du lot de l'œil (121/147, puis 8/31 sur
+les rouges seuls). Aux dix-huit ci-dessous s'ajoutent **huit suites qui ne
+touchent aucun fichier du lot**, et dont le message désigne l'environnement :
+
+| | |
+|---|---|
+| `date-lointaine`, `deux-dates-calendrier`, `poser-une-date`, `liberer-une-demi-journee` | **un jour de décalage** — « posé le 2026-09-13 au lieu du 2026-09-14 ». La suite relit une colonne `date` par `rows[0].jour.toISOString().slice(0, 10)` : `pg` rend un `Date` à minuit LOCAL, et minuit à Paris est 22 h la veille en UTC. Vert en UTC (la CI, son espace), rouge partout ailleurs. **À regarder aussi dans `PlanningClient.tsx` (lignes ~195 et ~211), qui fait la même conversion dans le navigateur** — chez lui, le navigateur est à Paris |
+| `bandeau-banc` | `spawn npx ENOENT` — sur Windows, `npx` est `npx.cmd` ; la suite ne peut pas tourner ici |
+| `ia-03`, `ia-04` | le bouton « Ouvrir l'assistant » n'apparaît pas en 45 s |
+| `ligne-du-client` | « l'adresse longue ne déborde pas : ce contrôle ne mesure alors plus rien » |
+
+**Et une neuvième était mienne, réparée** : `test-onglets-termines-e2e` prenait
+le dernier chantier du jeu, déjà facturé quand les suites qui facturent sont
+passées avant — l'œil n'avait rien à montrer. Elle prend un chantier sans
+facture émise.
+
+**Pour trancher les quatre dates** : jouer une seule d'entre elles dans un
+atelier à Paris ET en UTC (`TZ=UTC npm run test:e2e -- --seulement
+poser-une-date`). Si l'écart tient au fuseau, corriger la LECTURE (comparer
+des `date` en texte, `to_char(jour, 'YYYY-MM-DD')`), pas l'écriture.
+## DIX-HUIT SUITES NAVIGATEUR ROUGES SUR `main` (13 septembre 2026, relevé)
+
+**Batterie complète jouée dans un atelier à un seul occupant** — dossier, port,
+base et verrou vérifiés libres avant de lancer : **131/150** aux suites
+navigateur. Types, lint, mémoire, **365/365 suites base** et connexion derrière
+un proxy sont verts.
+
+**Ce qui a changé depuis le relevé de la veille :**
+
+| | |
+|---|---|
+| `test-visionneuse-pdf-e2e` | **corrigé** — pdf.js exigeait une méthode d'un an ; version épinglée (`ARCHITECTURE.md` §341) |
+| `test-reste-equipes-e2e` | passé au vert de lui-même |
+| `test-planning-e2e` | **rouge du jour, et il était mien** : la feuille passe par la visionneuse, le contrôle lisait encore l'adresse directe. Adapté à la règle |
+| `test-anneau-dictee-e2e` | **idem** : il réclamait le lecteur retiré. Vise désormais la note jetable (§5 bis) |
+
+**Les dix-huit qui restent vivaient déjà sur `main` avant ces lots** :
+`adresse-suggestions`, `anneau-vers-devis`, `carte-reponse-mene-au-geste`,
+`catalogue-mes-mots`, `devis-client` (666 px pour 664), `devis-complet` (le
+total d'une ligne ne s'affiche pas), `devis-papier` (5 400 € au lieu de 900),
+`fiche-client`, `fiche-entretien`, `ia-01`, `madame-lucie`,
+`message-au-client`, `planning-vers-facture`, `recherche-client`,
+`reprise-chantier`, `reprise-morceau`, `suivi-devis`, `anneau-dictee` (le reste
+de la suite, qui demande une transcription — pas de clé sur ce poste).
+
+**~~Les deux qui portent sur un CHIFFRE~~ — TRANCHÉS le 13 septembre 2026, et
+l'addition n'y était pour rien.** Mesuré au lieu d'être supposé : la base
+portait `quantite = 12.00` pour un prix unitaire de `450.00`, et 12 × 450 fait
+bien 5 400. **Le calcul était juste ; c'est la SAISIE de la suite qui ne l'était
+pas** — `fill()` insère sans effacer, là où le champ pose volontairement le
+curseur À DROITE du chiffre (sa règle du 11 septembre). Les deux suites font
+désormais son geste — entrer, tout sélectionner, taper — et elles sont vertes.
+
+**CE QUI RESTE, ET QUI EST POUR LUI** — le coût de sa règle du 11 septembre,
+mesuré :
+
+| Son geste sur la case « Qté » | Ce qui se passe |
+|---|---|
+| poser le doigt, taper « 2 » sur une case qui affiche « 1 » | **12** — le chiffre s'AJOUTE |
+| sélectionner d'abord, puis taper « 2 » | 2 |
+
+C'est exactement ce qu'il a demandé le 11 septembre — *« si la quantité par
+défaut n'est pas bonne, on a juste à supprimer »* — et c'est aussi de quoi
+envoyer un devis à 5 400 € au lieu de 900 sur une faute de frappe. **Deux voies,
+et c'est lui qui tranche :** garder (il efface d'abord), ou tout sélectionner
+à l'entrée dans la case (un appui remplace, et il perd le « on a juste à
+supprimer »).
+
+**À reprendre en propre**, suite par suite : le journal entier est nécessaire
+(`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
+
+## ~~Vingt suites navigateur rouges~~ — relevé de la veille (12 septembre 2026)
 
 **Relevé, pas causé.** La batterie du 12 septembre au soir rend **126/146** aux
 suites navigateur. Le lot de ce soir ne touche **aucun fichier de `src/`**
@@ -75,9 +149,13 @@ Les seize autres : `adresse-suggestions`, `anneau-dictee`, `anneau-vers-devis`,
 **À reprendre en propre**, suite par suite : le journal entier est nécessaire
 (`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
 
-## SON ESPACE DOIT ÊTRE DÉBLOQUÉ UNE FOIS À LA MAIN (12 septembre 2026)
+## ~~SON ESPACE DOIT ÊTRE DÉBLOQUÉ UNE FOIS À LA MAIN~~ — FAIT (13 septembre 2026)
 
-**CODÉ LE 12 SEPTEMBRE — mais il porte encore l'ancien script.** `mettre-a-jour.sh`
+**RÉGLÉ.** Sa fiche du 13 septembre à 1 h 59 porte « Code récupéré : dadc9d2 »
+et « Code SERVI : dadc9d2 », sans modification non enregistrée : son espace a
+rattrapé `main` et reçoit de nouveau du code. Gardé pour mémoire.
+
+**CODÉ LE 12 SEPTEMBRE — il portait encore l'ancien script.** `mettre-a-jour.sh`
 met désormais `package-lock.json` de côté au lieu de se figer devant lui
 (`ARCHITECTURE.md` §339). Son espace, lui, est resté sur le code de 3 h 38 :
 il ne peut pas recevoir le correctif qui lui permettrait de recevoir du code.
@@ -90,42 +168,66 @@ terminal de son espace :
 puis rallumer l'espace. **À barrer dès qu'il confirme que sa version a avancé**
 (l'écran Réglages donne la version servie).
 
-## PISTE NON REPRODUITE — LE PORT QUE LE RELAIS PERD (12 septembre 2026)
+## LE PORT QUE LE RELAIS PERD — UNE HYPOTHÈSE À TRANCHER À LA RÉCIDIVE (13 septembre 2026)
 
-Sa fiche du 12 septembre au soir : serveur debout sur 3000, `gh` satisfait, et
-un **404 du relais** — la requête n'atteint jamais Atlas. Le verdict et son
-geste sont corrigés (`_verdict-port.mjs`, §339), mais la panne elle-même n'est
-**pas reproduite** : cet environnement n'a pas de Codespace.
+**MESURÉ LE 13 SEPTEMBRE À 10 h 16 (08:16 UTC) — le rallumage a remis le port.**
+Sa fiche : *« Port 3000 : ouvert — Atlas répond bien à l'adresse publique
+(vérifié) »*, et lui : *« ça fonctionne »*. C'est le comportement attendu, et
+**cela ne tranche rien** : le rallumage a toujours remis le port. Ce qui
+tranchera, c'est la durée — plusieurs nuits sans perte.
 
-**Ce qu'on soupçonne, sans l'avoir mesuré :** le relais n'enregistre un port
-qu'en voyant un processus commencer à écouter (`veiller.sh` le constate au
-26 août — « le serveur démarre, le port se déclare tout seul »). Un serveur
-déjà en place au moment où le tunnel se remonte ne serait donc jamais
-redéclaré, et rien depuis l'intérieur ne le remettrait.
+**ET SON ESPACE NE PORTE PAS ENCORE CE LOT :** il sert `07f6f0d`, cinq versions
+avant. Tant qu'il n'a pas repris `main`, une perte de port lui vaudra encore un
+journal qui se félicite d'un port mort. Le geste doux est dans l'application :
+Réglages → « Chercher les dernières corrections ».
 
-**Ce qui n'a PAS été fait, et pourquoi :** faire relancer le serveur par le
-veilleur pour rouvrir la socket. Le gain est supposé ; le risque, lui, est réel
-— une relance mal bornée refait la panne du 2 septembre (serveur mort en
-boucle). À ne coder qu'une fois la cause mesurée sur son espace.
+**Ce qui est CORRIGÉ (§345) :** le veilleur ne croit plus `gh` sur parole. Il
+mesure après le remède, cesse de rejouer un geste sans effet, et son journal ne
+se félicite plus d'un port mort. La fiche donne les deux gestes.
 
-**ET CETTE PISTE EST RÉFUTÉE — mesurée le 12 septembre à 22 h 02.** Il a rejoué
-`demarrer.sh` en entier : le serveur a été tué, réinstallé, relancé — et sa
-fiche, écrite juste après, porte **le même 404 du relais**. Rouvrir la socket
-ne réenregistre donc PAS le port. Ne pas coder la relance : elle ne peut rien.
+**Ce qui n'est TOUJOURS PAS reproduit :** la perte elle-même. Cet environnement
+n'a pas de Codespace, et la panne ne se voit que chez lui.
 
-Ce qui reste à essayer, dans cet ordre, et qui n'est pas mesuré non plus :
-l'onglet PORTS (retirer la ligne 3000, puis « Transférer un port » → 3000), et
-`gh codespace ports visibility 3000:public -c $CODESPACE_NAME` depuis son
-terminal. Si aucun des deux n'aboutit, c'est le conteneur qu'il faut
-reconstruire — `devcontainer.json` déclare le port public, et cette
-déclaration ne s'applique qu'à la naissance de l'espace (`ARCHITECTURE.md`
-§55).
+**L'hypothèse à trancher, et comment.** Le port 3000 de son espace serait
+*détecté* au lieu d'être *déclaré* : `forwardPorts: [3000]` + `visibility:
+public` sont dans `devcontainer.json` depuis le 6 août, son espace est plus
+ancien, et une déclaration ne répare pas un espace déjà né (§55). Un port
+détecté meurt avec la session qui l'a détecté.
+
+**CE GESTE NE SE PROPOSE PLUS — sa règle du 13 septembre (`CLAUDE.md`
+§4 septies).** « Reconstruire le conteneur » rejoue `postCreateCommand`, donc le
+seed : sur un espace qui n'a pas encore reçu le §346, cela efface ses chantiers.
+Il l'a interdit après avoir dû demander deux fois.
+
+**Ce qui reste à faire, et c'est NOTRE travail, pas le sien :** rendre ce remède
+sûr ET automatique, de sorte qu'il n'ait jamais à le porter. Deux voies, à
+départager :
+
+| | |
+|---|---|
+| une fois le §346 chez lui | la reconstruction ne détruit plus rien — mais elle reste un geste, donc elle ne se propose toujours pas : il faudrait qu'elle se déclenche seule, et cela se demande à LUI |
+| un port DÉCLARÉ sans reconstruire | si `forwardPorts` s'applique aussi au démarrage du conteneur — à vérifier —, un simple rallumage suffirait, et il ne détruit rien |
+
+**La seconde voie d'abord** : elle n'a aucun coût pour lui. Elle se vérifie chez
+lui, en regardant si le port tient après un rallumage une fois le §346 reçu.
+
+**Si cette hypothèse tombe :**
+
+| Ce qu'on observe ensuite | Ce que ça prouve |
+|---|---|
+| plus aucune perte de port pendant plusieurs nuits | l'hypothèse tient — à écrire en dur dans `ARCHITECTURE.md` §345 |
+| une nouvelle perte malgré la reconstruction | elle tombe : chercher ailleurs, et le journal du veilleur porte désormais de quoi le faire (il compte les remèdes sans effet) |
+
+**Ne pas coder de remède automatique avant ce verdict.** Une reconstruction
+lancée toute seule sur son espace rejoue `preparer.sh` — dépendances, migrations,
+jeu de démonstration — sans personne devant : c'est irréversible et hors du code,
+donc cela se demande à LUI (`CLAUDE.md` §2 bis).
 
 ## ~~UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS~~ — CODÉE LE 13 SEPTEMBRE 2026 (« code la planche la B »)
 
 **Codé :** « Remise de N % », « dont main d’œuvre HT » (la B), les conditions
 réglées en gras, les conditions générales dans Réglages → Ce qui s’imprime et en
-annexe du devis. Migration 0090, `ARCHITECTURE.md` §345. **Ce qui reste à lui :**
+annexe du devis. Migration 0090, `ARCHITECTURE.md` §348. **Ce qui reste à lui :**
 les deux crochets du texte d’origine (assureur, médiateur), et les mentions
 légales proposées plus bas — toujours pas tranchées.
 
@@ -1734,6 +1836,22 @@ téléphone, barre d'adresse comprise (`scripts/e2e-browser.ts`).
 
 ---
 
+## ✅ ~~Retirer sa dictée là où il la fait~~ — **A, CODÉ le 13 septembre 2026**
+
+**Sa réponse :** *« C'est sur cet écran que je le voulais ! Car en cas de
+problème on peut supprimer la dictée comme ça. »*
+
+Codé sous le micro, avec les pièces communes (`LigneRetirable`, `useRetraits`)
+— il glisse, « Retirer » se découvre, « Annuler » retient six secondes
+(`ARCHITECTURE.md` §342, `test-retirer-sa-dictee-e2e.ts`). Le lecteur mort de
+l'anneau est parti avec : 244 lignes et 40 règles de style que personne ne
+pouvait atteindre.
+
+**Ce qui reste ouvert, et c'est écrit pour ne pas se croire couvert :** le
+chemin destructeur — laisser le tiroir se fermer — n'est éprouvé que sur
+l'écran Note vocale. Même action, même crochet ; l'éprouver ici détruirait la
+note du jeu de démonstration dont les suites voisines ont besoin.
+
 ## ✅ ~~La visionneuse PDF exige une API très récente~~ — **CORRIGÉ le 13 septembre 2026**
 
 **C'était un vrai défaut, et il était total :** la visionneuse livrée le
@@ -2895,7 +3013,11 @@ par un choix de `stdio`. **À faire valider par le patron avant d'y toucher.**
 
 ## EN ATTENTE DE SA RÉPONSE : le compte « tous mois » sous un mois précis (2 sept. 2026)
 
-Sur « Terminés », onglet « Tout », la phrase « 3 à facturer · 10 facturés »
+*13 septembre 2026 : la phrase porte désormais l'œil (§350). Ouvert, la liste
+compte comme elle — tous mois — et le mois se met en veille ; fermé, la
+question ci-dessous reste entière.*
+
+Sur « Terminés », la phrase « 3 à facturer · 10 facturés »
 compte **tous les mois** — c'est ainsi qu'il l'a demandée le 23 août. Mais elle
 est posée juste sous le nom d'un mois, et **elle ne bouge pas quand on recule** :
 en juillet, elle affiche encore les chiffres d'août.

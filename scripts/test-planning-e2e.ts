@@ -23,6 +23,7 @@ import assert from "node:assert";
 import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 
 const BASE = ADRESSE;
 // DATABASE_URL, jamais une base codée en dur : la suite doit viser la même base
@@ -700,11 +701,25 @@ async function main() {
     );
   });
 
-  await essai("le PDF de la feuille répond, et ne porte aucun prix", async () => {
+  await essai("le PDF de la feuille s'ouvre DANS l'application, et ne porte aucun prix", async () => {
     const lien = page.locator('[data-atlas="pdf-sans-prix"]');
-    const href = await lien.getAttribute("href");
-    assert.equal(href, `/api/chantiers/${chantierId}/feuille/pdf`);
-    const reponse = await page.request.get(`${BASE}${href}`);
+    const href = (await lien.getAttribute("href")) ?? "";
+    // **Plus d'onglet de Safari — 13 septembre 2026.** Ce geste remettait
+    // encore la feuille au navigateur : ni en-tête, ni flèche de retour, sur
+    // le seul écran qu'il ouvre au milieu d'un chantier. Il passe désormais par
+    // la visionneuse, comme les trois autres PDF (`ARCHITECTURE.md` §341).
+    //
+    // Le contrôle vise donc la RÈGLE — le document se sert, et c'est bien le
+    // sien — plutôt que la forme de l'adresse : c'est `visionneuse-pdf.ts` qui
+    // sait la relire, et une seconde lecture ici finirait par diverger.
+    const fichier = fichierDemandeALaVisionneuse(href);
+    assert.equal(
+      fichier,
+      `/api/chantiers/${chantierId}/feuille/pdf`,
+      `« Ouvrir le PDF sans les prix » ne mène pas à la visionneuse de l'application : ${href}`
+    );
+    assert.equal(await lien.getAttribute("target"), null, "la feuille repart dans un onglet : pas de flèche de retour");
+    const reponse = await page.request.get(`${BASE}${fichier}`);
     assert.equal(reponse.status(), 200, `le PDF répond ${reponse.status()}`);
     const octets = Buffer.from(await reponse.body());
     assert.ok(octets.length > 500, `le PDF ne fait que ${octets.length} octets`);

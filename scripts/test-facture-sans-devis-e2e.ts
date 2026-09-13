@@ -119,27 +119,29 @@ async function main() {
     await page.waitForURL(/\/chantiers\/nouveau/, { timeout: 15000 });
   });
 
-  await test("la rangée d'onglets ne déborde toujours pas de son écran", async () => {
-    // C'est ce que la seconde rangée achète (`appli/creer-une-facture-sous-les-onglets.html`) :
-    // les trois onglets gardent leur nom entier. Un jour où quelqu'un les
-    // rallongerait, c'est ici qu'on l'apprendrait — pas sur son téléphone.
+  await test("la rangée des deux portes ne déborde toujours pas de son écran", async () => {
+    // Depuis le 13 septembre 2026, « Créer une facture » partage la rangée de
+    // « Retours d'intervention » — les onglets partis, la place est là. Un jour
+    // où quelqu'un rallongerait un des deux noms, c'est ici qu'on l'apprendrait
+    // — pas sur son téléphone. La rangée peut se replier à 360 : ce qu'on
+    // refuse, c'est qu'elle déborde de côté.
     await page.goto(`${BASE}/termines`, { waitUntil: "networkidle" });
     const mesure = await page.evaluate(() => {
-      const r = document.querySelector<HTMLElement>('[data-atlas="onglets-termines"]');
+      const r = document.querySelector<HTMLElement>('[data-atlas="portes-termines"]');
       if (!r) return null;
       const pastilles = Array.from(r.children) as HTMLElement[];
       const largeurs = pastilles.map((p) => p.getBoundingClientRect().width);
       return {
         zero: largeurs.some((x) => x === 0),
-        prise: Math.round(largeurs.reduce((s, x) => s + x, 0) + 4 * (largeurs.length - 1)),
+        prise: Math.round(Math.max(...largeurs)),
         dispo: Math.round(r.getBoundingClientRect().width),
       };
     });
-    assert.ok(mesure, "la rangée d'onglets est introuvable");
-    assert.ok(!mesure.zero && mesure.prise > 0, "un onglet fait zéro : la mesure est impossible");
+    assert.ok(mesure, "la rangée des deux portes est introuvable");
+    assert.ok(!mesure.zero && mesure.prise > 0, "une porte fait zéro : la mesure est impossible");
     assert.ok(
       mesure.prise <= mesure.dispo,
-      `les onglets débordent : ${mesure.prise} px pour ${mesure.dispo}`
+      `une porte déborde : ${mesure.prise} px pour ${mesure.dispo}`
     );
   });
 

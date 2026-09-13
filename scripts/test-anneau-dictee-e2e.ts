@@ -166,17 +166,31 @@ async function main() {
     ]);
   });
 
-  await cas("l'anneau est redevenu le lecteur, au même endroit", async () => {
+  await cas("la note dictée se voit, et elle se JETTE depuis cet écran", async () => {
+    /**
+     * **CE CAS RÉCLAMAIT LE LECTEUR — retiré le 13 septembre 2026.**
+     *
+     * Il exigeait que l'anneau « redevienne le lecteur » et que la fosse
+     * `.atlas-fosse` soit là. Or ce rendu n'était monté par AUCUN écran : le
+     * contrôle défendait du code que le patron ne pouvait pas atteindre
+     * (`CLAUDE.md` §5 bis — on adapte le contrôle, on ne remet pas ce qu'il a
+     * fait enlever).
+     *
+     * Ce qui compte n'a jamais été la forme de l'anneau : c'est qu'une note
+     * dictée se VOIE, et qu'il puisse la jeter sans quitter l'écran — sa
+     * décision du 13 septembre, *« en cas de problème on peut supprimer la
+     * dictée comme ça »*.
+     */
     await page.goto(fiche, { waitUntil: "networkidle" });
-    assert.equal(await anneau.count(), 1, "l'anneau a disparu après la dictée");
-    assert.match(
-      (await consigne.textContent())?.trim() ?? "",
-      /Poussez/,
-      "l'anneau propose encore de dicter alors qu'une note existe : la précédente serait écrasée"
+    assert.equal(await anneau.count(), 1, "le micro a disparu après la dictée : il ne peut plus redicter");
+    assert.equal(
+      await page.getByText("Votre dictée").count(),
+      1,
+      "rien ne dit qu'une note est là : il ne sait ni ce qu'il a envoyé, ni quoi jeter"
     );
     assert.ok(
-      await page.locator(".atlas-fosse").count(),
-      "le retrait a disparu : une note qu'on ne peut plus enlever"
+      await page.locator(".atlas-glisse").count(),
+      "la note ne glisse pas : c'est une note qu'on ne peut plus enlever"
     );
   });
 
