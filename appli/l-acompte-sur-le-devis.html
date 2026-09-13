@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L'acompte sur le devis</title>
+<style>
+  /* ═══ LES JETONS, SORTIS DU CODE ══════════════════════════════════════════
+     `src/lib/chartes.ts` au caractère près, comme la planche des travaux
+     supplémentaires (9 septembre 2026). Rien n'est approché à l'œil. */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1;
+    --or:#B98B47;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --voileChamp:rgba(28,28,26,0.04);
+    --surPlein:#faf9f5;
+    --hors:#e6e3dc; --horsTexte:#4a4a44; --horsFort:#1c1c1a;
+    --papier:#ffffff; --papierEncre:#1c1c1a; --papierGris:#6b6860;
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e;
+    --or:#B98B47;
+    --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07);
+    --voileChamp:rgba(233,232,222,0.06);
+    --surPlein:#1a1d19;
+    --hors:#0a0b0a; --horsTexte:#c1c2b6; --horsFort:#e9e8de;
+  }
+  [hidden]{display:none !important}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--horsTexte);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 34px;transition:background .25s,color .25s}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:15px 18px;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .choix{position:sticky;top:0;z-index:5;background:var(--hors);padding:12px 12px 10px;
+         display:flex;gap:7px;justify-content:center;flex-wrap:wrap;
+         box-shadow:0 6px 18px -12px rgba(0,0,0,.45);transition:background .25s}
+  .choix button{min-height:46px;min-width:46px;padding:0 14px;border-radius:999px;
+                border:1px solid var(--line);background:var(--card);color:var(--ink);
+                font:600 13px/1 ui-sans-serif,sans-serif;letter-spacing:.06em;cursor:pointer;
+                -webkit-tap-highlight-color:transparent;transition:background .18s,color .18s}
+  .choix button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);border-color:var(--rust)}
+  .choix button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .consigne{max-width:430px;margin:12px auto 0;padding:0 22px;font-size:13px;line-height:1.5;color:var(--horsTexte)}
+  .consigne b{color:var(--horsFort)}
+
+  /* ═══ L'ÉCRAN ═════════════════════════════════════════════════════════════*/
+  .tel{max-width:430px;margin:14px auto 0;background:var(--cream);border-radius:26px;
+       overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22);transition:background .25s}
+
+  .entete{padding:26px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .entete h1{margin:0;font:400 34px/1.02 ui-serif,Georgia,"Iowan Old Style",serif;
+             letter-spacing:-0.018em;color:var(--ink)}
+  .entete .sur{margin:10px 0 0;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--or)}
+  .retour{flex:none;width:36px;height:36px;border-radius:999px;border:1px solid var(--line);
+          background:var(--card);color:var(--ink);font-size:18px;line-height:1}
+
+  .feuille{margin:18px 14px 0;background:var(--card);border-radius:10px;padding:20px 18px 24px}
+
+  .colonnes{display:grid;grid-template-columns:1fr 34px 44px 62px 74px;gap:6px;padding-bottom:6px}
+  .colonnes span{font:600 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+                 text-transform:uppercase;color:var(--muted)}
+  .colonnes span:not(:first-child){text-align:right}
+  .l{display:grid;grid-template-columns:1fr 34px 44px 62px 74px;gap:6px;padding:10px 0;
+     border-bottom:1px solid var(--lineSoft);align-items:start;font-size:15px;color:var(--ink)}
+  .l span:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+  /* L'unité se tape, ou se prend dans la rangée qui s'ouvre sous la ligne. */
+  .l .unite{width:100%;border:0;background:transparent;padding:0;outline:none;color:var(--ink);
+            font:inherit;text-align:left}
+  .l .unite:focus{background:var(--voileChamp)}
+  .l .unite::placeholder{color:var(--muted)}
+  .unites{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:6px;padding-top:4px}
+  .unites button{min-height:32px;padding:0 11px;border-radius:999px;border:1px solid var(--line);
+                 background:var(--cream);color:var(--ink);font:500 13px/1 ui-sans-serif,sans-serif;
+                 cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .unites button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);border-color:var(--rust)}
+  .ajout{margin-top:14px;background:none;border:0;padding:0;cursor:pointer;
+         font:500 14px/1 ui-sans-serif,sans-serif;color:var(--rust);
+         -webkit-tap-highlight-color:transparent}
+  .ajout.or{color:var(--or)}
+  .ajout:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:3px}
+
+  /* ─── Les totaux, à droite comme sur le papier ─────────────────────────── */
+  .totaux{margin:22px 0 0 auto;width:100%;max-width:300px}
+  .t{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;
+     font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .ttc{margin-top:4px;padding-top:10px;border-top:2px solid var(--ink);
+       display:flex;align-items:center;justify-content:space-between}
+  .ttc b{font:600 17px/1 ui-sans-serif,sans-serif;color:var(--ink)}
+  .ttc .valeur{font:600 20px/1 ui-serif,Georgia,serif;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  /* La ligne dorée : même pièce que « Prix accordé au client »
+     (`src/components/atlas/PrixAccordeAuClient.tsx`) — l'or, le « − » cerclé
+     de 26 px, le champ de 36 px collé au libellé. Seul le MOT change. */
+  .acompte{color:var(--or);align-items:flex-start}
+  .acompte .g{display:flex;align-items:center;flex-wrap:wrap;gap:4px;font-size:14px}
+  .acompte .montant{flex:none;padding-top:5px}
+  .moins{width:26px;height:26px;flex:none;border-radius:999px;background:none;margin-right:4px;
+         border:1px solid var(--or);color:var(--or);font-size:15px;line-height:1;cursor:pointer;
+         -webkit-tap-highlight-color:transparent}
+  .moins:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+  .acompte input{width:36px;border:0;background:transparent;padding:0;text-align:right;outline:none;
+                 color:var(--or);font-size:16px;font-variant-numeric:tabular-nums}
+  .acompte input:focus{background:var(--voileChamp)}
+  .acompte .taux{white-space:nowrap}
+  .reste{color:var(--ink)}
+  .reste b{font-weight:600}
+  .gestes{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:10px}
+  .gestes .ajout{margin:0;font-size:13.5px}
+
+  .intertitre{margin:26px 0 6px;font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+              text-transform:uppercase;color:var(--muted)}
+  .notes{font-size:15px;line-height:1.5;color:var(--ink);margin:0;min-height:44px}
+  /* Ce qui vient des Réglages se distingue de ce qu'il a tapé : il ne l'efface pas. */
+  .notes .reglee{color:var(--inkSoft)}
+
+  .nav{margin-top:24px;border-top:1px solid var(--line);background:var(--cream);position:relative;
+       display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:18px 14px 8px}
+  .nav span{padding-bottom:8px;text-align:center;font:500 8.5px/1 ui-sans-serif,sans-serif;
+            letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .nav span.actif{color:var(--ink);transform:translateY(-2px)}
+  .nav i{position:absolute;bottom:8px;left:14px;width:calc((100% - 28px) / 5);height:1px;
+         background:var(--or)}
+
+  /* ─── Ce que le PDF imprimera — le papier ne suit pas la charte ─────────── */
+  .papier-cadre{max-width:430px;margin:18px auto 0;padding:0 14px}
+  .papier-cadre .cle{margin:0 8px 8px;font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+                     text-transform:uppercase;color:var(--horsTexte)}
+  .papier{background:var(--papier);color:var(--papierEncre);border-radius:4px;padding:16px 18px;
+          box-shadow:0 2px 10px rgba(0,0,0,.14);font:13px/1.5 ui-sans-serif,sans-serif}
+  .papier .ptot{margin-left:auto;max-width:270px;font-variant-numeric:tabular-nums}
+  .papier .pl{display:grid;grid-template-columns:1fr 52px 62px 70px;gap:6px;padding:3px 0;
+              border-bottom:1px solid #eceae4;font-variant-numeric:tabular-nums}
+  .papier .pl span:not(:first-child){text-align:right}
+  .papier .pl.en-tete span{font:600 8.5px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+                           text-transform:uppercase;color:var(--papierGris)}
+  .papier .pt{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+  .papier .pttc{border-top:1.5px solid var(--papierEncre);margin-top:4px;padding-top:6px;font-weight:700}
+  .papier .preste{font-weight:700}
+  .papier .pnotes{margin:14px 0 0;padding-top:10px;border-top:1px solid #d9d6cf;color:var(--papierGris);font-size:12px}
+  .papier .pnotes b{display:block;font:600 9px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+                    text-transform:uppercase;color:var(--papierGris);margin-bottom:5px}
+
+  .pied{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:12.5px;line-height:1.6}
+  .pied h2{font:700 12px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;
+           color:var(--horsFort);margin:20px 0 8px}
+  .pied b{color:var(--horsFort)}
+  .pied table{border-collapse:collapse;width:100%;font-size:12.5px}
+  .pied td,.pied th{padding:7px 8px 7px 0;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+  .pied th{font-weight:700;color:var(--horsFort);white-space:nowrap}
+  .pied .retenu{padding:14px 16px;border-left:3px solid var(--or);background:var(--card);
+                border-radius:0 10px 10px 0;color:var(--inkSoft)}
+  .pied .retenu b{color:var(--ink)}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="bandeau">
+  <b>L'acompte sur le devis — la B, comme vous l'avez choisie le 12 septembre.</b><br>
+  Posé <b>d'office</b> avec le taux de vos Réglages. Le <b>−</b> le retire des
+  totaux — il reste écrit dans les notes et conditions, quoi qu'il arrive.
+  <b>+ Ajouter un acompte</b> en pose un deuxième, à mi-parcours. Chez le
+  client : <b>« Reste à régler après acompte »</b> et le montant.<br>
+  <b>Tout est réel ici</b> : changez un taux, retirez, rajoutez — le papier en dessous suit.
+  <b>Corrigé le 12 au soir</b> : plus de reste négatif, le 3ᵉ acompte renommé, le tiret retiré des notes,
+  et la colonne <b>Unité</b> après Qté. <b>Puis</b> : taux <b>cumulés</b>, 50 et 75 d'office pour le 2ᵉ et le 3ᵉ. <b>Le 13</b> : « Acompte à l'avancement 75 % », sans parenthèses.
+</div>
+
+<div class="choix" role="group" aria-label="Proposition">
+  <button type="button" data-p="0" aria-pressed="true">Aujourd'hui</button>
+  <button type="button" data-p="B" aria-pressed="false">La B, choisie</button>
+  <button type="button" id="bascule-nuit" aria-pressed="false">Nuit</button>
+</div>
+
+<p class="consigne" id="consigne"></p>
+
+<div class="tel">
+  <section>
+    <div class="entete">
+      <button class="retour" type="button" aria-label="Revenir au chantier">‹</button>
+      <div style="flex:1"><h1>Devis</h1><p class="sur">D2026-000017 · M. Chausson</p></div>
+    </div>
+
+    <div class="feuille">
+      <p style="margin:0 0 2px;font-size:13px;color:var(--muted)">Chantier</p>
+      <p style="margin:0 0 18px;font-size:15px;color:var(--ink)">
+        Élagage et abattage — 6 rue des Mureaux
+      </p>
+
+      <div class="colonnes">
+        <span>Description</span><span>Qté</span><span>Unité</span><span>P.U. HT</span><span>Montant</span>
+      </div>
+      <!-- ─── L'UNITÉ, APRÈS LA QUANTITÉ — sa demande du 12 septembre au soir ──
+           La colonne existe en base et sur le PDF (migration 0070) ; l'écran
+           ne la montrait pas. Touchez le champ : les unités usuelles viennent. -->
+      <div id="lignes"></div>
+      <button type="button" class="ajout">+ Ajouter une ligne</button><br>
+      <button type="button" class="ajout or" style="margin-top:18px">+ Ajouter une TVA</button>
+
+      <div class="totaux">
+        <div class="t"><span>Total HT</span><span id="e-ht"></span></div>
+        <div class="t"><span>TVA (20 %)</span><span id="e-tva"></span></div>
+        <div class="ttc"><b>Total TTC</b><span class="valeur" id="e-ttc"></span></div>
+
+        <!-- ─── LES ACOMPTES ──────────────────────────────────────────────
+             Sous le TTC, parce qu'ils en découlent : une part de ce total,
+             pas une réduction. Dorés comme le prix accordé : ce qui est
+             convenu, pas ce qui est facturé. Une ligne par acompte. -->
+        <div id="bloc-acompte" hidden>
+          <div id="lignes-acomptes"></div>
+          <div class="t reste"><span id="e-reste-lib">Reste à régler après acompte</span><b id="e-reste"></b></div>
+        </div>
+
+        <div class="gestes">
+          <button type="button" class="ajout or" id="poser" hidden>+ Ajouter un acompte</button>
+          <button type="button" class="ajout or">+ Prix accordé au client</button>
+        </div>
+      </div>
+
+      <p class="intertitre">Notes / conditions</p>
+      <p class="notes" id="notes">Accès par le portail de gauche, cour à dégager la veille.<span class="reglee" id="e-phrases"></span></p>
+    </div>
+
+    <div class="nav">
+      <span class="actif">Chantiers</span><span>Planning</span><span>Terminés</span>
+      <span>Paysage</span><span>Réglages</span><i></i>
+    </div>
+  </section>
+</div>
+
+<!-- ─── LE PAPIER — ce que le client reçoit ──────────────────────────────── -->
+<div class="papier-cadre">
+  <p class="cle">Sur le PDF, chez le client</p>
+  <div class="papier">
+    <div id="p-lignes-devis" style="margin-bottom:10px"></div>
+    <div class="ptot">
+      <div class="pt"><span>Total HT</span><span id="p-ht"></span></div>
+      <div class="pt"><span>TVA 20 %</span><span id="p-tva"></span></div>
+      <div class="pt pttc"><span>Total TTC</span><span id="p-ttc"></span></div>
+      <div id="p-bloc" hidden>
+        <div id="p-lignes"></div>
+        <div class="pt preste"><span id="p-reste-lib">Reste à régler après acompte</span><span id="p-reste"></span></div>
+      </div>
+    </div>
+    <p class="pnotes"><b>Notes / conditions</b>
+      Accès par le portail de gauche, cour à dégager la veille.<span id="p-phrase"></span>
+      <br>Devis valable 30 jours.
+    </p>
+  </div>
+</div>
+
+<div class="pied">
+  <h2>Ce que la B fait, avec vos trois retours</h2>
+  <table>
+    <tr><th>D'office</th><td>Le taux de Réglages → Documents est déjà sur la ligne de chaque nouveau devis. Vous le corrigez sur ce devis seulement.</td></tr>
+    <tr><th>Le −</th><td>Retire la ligne des totaux. La phrase reste dans « Notes / conditions », à l'écran comme sur le PDF.</td></tr>
+    <tr><th>2ᵉ acompte</th><td>« + Ajouter un acompte » en pose un autre, <b>à mi-parcours, 50 % d'office</b> ; un troisième, <b>à l'avancement, 75 %</b>. La fin du chantier n'est pas un acompte : c'est le reste à régler.</td></tr>
+    <tr><th>Cumulés</th><td>Votre choix : « 50 % » à mi-parcours veut dire que la <b>moitié du devis est réglée</b> à ce moment-là. Ce qui tombe ce jour-là, c'est la différence avec l'acompte d'avant : 30 → 50 → 75 fait 853,20 €, puis 568,80 €, puis 711,00 €, et il reste 25 %. Un taux ne descend pas sous le précédent, ni au-dessus de 100.</td></tr>
+    <tr><th>Chez le client</th><td>Dans les totaux : chaque acompte avec son montant, puis <b>« Reste à régler après acompte »</b> et le montant. Dans les notes : la phrase de chaque acompte.</td></tr>
+  </table>
+
+  <h2>Et la colonne Unité</h2>
+  <p>Après Qté : <b>u, ml, m², m³, kg, h, forfait</b> — ou ce que vous tapez.
+  Elle existe déjà en base et sur le PDF (« 4 m³ »), il ne manquait que
+  l'écran. Les unités usuelles viennent sous la ligne quand vous touchez le
+  champ, pour ne pas les taper au doigt.</p>
+
+  <h2>Ce que ça coûte</h2>
+  <p>La colonne <code>acompte_pourcent</code> existe déjà sur le devis, remplie
+  à la création. Il manque le deuxième acompte : une petite table (taux, moment)
+  plutôt qu'une deuxième colonne, pour qu'un troisième ne demande rien de plus.
+  Une ligne à l'écran, deux au PDF.</p>
+
+  <div class="retenu">
+    <b>Un point à confirmer :</b> quand le − retire la ligne, les notes gardent la
+    phrase des Réglages (« Acompte de 30 % à la commande »). C'est ce que je
+    comprends de « quoi qu'il arrive ». <b>Rien n'est codé.</b>
+  </div>
+</div>
+
+<script>
+  // ─── Les chiffres viennent d'un seul calcul ──────────────────────────────
+  const TAUX_TVA = 20, REGLAGE_ACOMPTE = 30;
+  const UNITES = ['u', 'ml', 'm²', 'm³', 'kg', 'h', 'forfait'];
+  const LIGNES = [
+    { libelle: 'Élagage du platane, taille douce', qte: 1, unite: 'u', pu: 850 },
+    { libelle: 'Abattage du cerisier mort et dessouchage', qte: 1, unite: 'forfait', pu: 1200 },
+    { libelle: 'Évacuation des déchets verts', qte: 4, unite: 'm³', pu: 80 },
+  ];
+  const HT = LIGNES.reduce((t, l) => t + l.qte * l.pu, 0);
+  const nb = n => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  function dessinerLignes() {
+    const conteneur = document.getElementById('lignes');
+    conteneur.replaceChildren(...LIGNES.map((l, i) => {
+      const d = document.createElement('div'); d.className = 'l';
+      const lib = document.createElement('span'); lib.textContent = l.libelle;
+      const qte = document.createElement('span'); qte.textContent = String(l.qte);
+      const unite = document.createElement('input');
+      unite.className = 'unite'; unite.value = l.unite; unite.placeholder = 'u';
+      unite.setAttribute('aria-label', 'Unité de la ligne ' + (i + 1));
+      const pu = document.createElement('span'); pu.textContent = nb(l.pu);
+      const montant = document.createElement('span'); montant.textContent = nb(l.qte * l.pu) + ' €';
+      const rangee = document.createElement('div'); rangee.className = 'unites'; rangee.hidden = true;
+      const peindre = () => rangee.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.textContent === unite.value)));
+      UNITES.forEach(u => {
+        const b = document.createElement('button'); b.type = 'button'; b.textContent = u;
+        // mousedown : avant que le champ perde le focus, sinon la rangée se ferme sous le doigt.
+        b.addEventListener('mousedown', e => e.preventDefault());
+        b.addEventListener('click', () => { unite.value = u; l.unite = u; peindre(); dessinerPapier(); unite.blur(); });
+        rangee.append(b);
+      });
+      unite.addEventListener('focus', () => { rangee.hidden = false; peindre(); });
+      unite.addEventListener('blur', () => { rangee.hidden = true; });
+      unite.addEventListener('input', () => { l.unite = unite.value; peindre(); dessinerPapier(); });
+      d.append(lib, qte, unite, pu, montant, rangee);
+      return d;
+    }));
+  }
+
+  function dessinerPapier() {
+    const c = document.getElementById('p-lignes-devis');
+    const tete = document.createElement('div'); tete.className = 'pl en-tete';
+    ['Description', 'Qté', 'P.U. HT', 'Montant'].forEach(t => { const s = document.createElement('span'); s.textContent = t; tete.append(s); });
+    c.replaceChildren(tete, ...LIGNES.map(l => {
+      const d = document.createElement('div'); d.className = 'pl';
+      // Sur le papier, comme aujourd'hui (document-commun.ts) : « 4 m³ » dans la colonne Qté.
+      [l.libelle, l.unite ? l.qte + ' ' + l.unite : String(l.qte), nb(l.pu), nb(l.qte * l.pu) + ' €']
+        .forEach(t => { const s = document.createElement('span'); s.textContent = t; d.append(s); });
+      return d;
+    }));
+  }
+  // Le moment de chaque acompte, dans l'ordre où ils tombent.
+  // La fin du chantier n'est pas un acompte : c'est le reste à régler.
+  const MOMENTS = ['à la signature', 'à mi-parcours', "à l'avancement"];
+  // Ses valeurs d'office : le 1er vient des Réglages, puis 50 et 75 — CUMULÉS.
+  // « 50 % » à mi-parcours veut dire : à ce moment-là, la moitié du devis est
+  // réglée. Ce qui tombe ce jour-là, c'est la différence avec l'acompte d'avant.
+  const DEFAUTS = [REGLAGE_ACOMPTE, 50, 75];
+
+  // Le taux cumulé d'un acompte, BORNÉ : jamais sous celui d'avant, jamais
+  // au-dessus de 100. Une seule règle, lue par le calcul comme par la borne
+  // du champ — deux versions finiraient par diverger.
+  function cumul(i) {
+    const avant = i > 0 ? cumul(i - 1) : 0;
+    return Math.min(100, Math.max(avant, nombre(acomptes[i].taux)));
+  }
+  const eur = n => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  const nombre = s => { const n = Number(String(s).replace(',', '.').trim()); return Number.isFinite(n) ? n : 0; };
+  const lisible = n => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+  const $ = id => document.getElementById(id);
+
+  let proposition = '0';
+  // Ce que porte le devis : un taux par acompte.
+  let acomptes = [];
+
+  const consignes = {
+    '0': "Aujourd'hui : un acompte de 30 % est réglé dans Réglages → Documents. Regardez l'écran, puis le papier.",
+    'B': "La ligne est <b>déjà là</b>. Touchez <b>+ Ajouter un acompte</b> deux fois : 50 puis 75 viennent d'office, et chaque montant est ce qui tombe ce jour-là.",
+  };
+
+  function ligneAcompte(a, i) {
+    const d = document.createElement('div');
+    d.className = 't acompte';
+    const g = document.createElement('span'); g.className = 'g';
+    const moins = document.createElement('button');
+    moins.type = 'button'; moins.className = 'moins'; moins.textContent = '−';
+    moins.setAttribute('aria-label', 'Retirer l\'acompte ' + MOMENTS[i]);
+    moins.addEventListener('click', () => { acomptes.splice(i, 1); rendre(); });
+    const champ = document.createElement('input');
+    champ.inputMode = 'decimal'; champ.value = a.taux;
+    champ.setAttribute('aria-label', 'Acompte ' + MOMENTS[i] + ', en pourcentage');
+    champ.addEventListener('input', () => { a.taux = champ.value; rendre(false); });
+    // La borne s'applique quand le doigt QUITTE le champ, pas à chaque touche :
+    // taper « 75 » commence par « 7 », qu'une borne à la frappe ferait sauter à 50.
+    // Et les acomptes SUIVANTS se réalignent aussi : un 2ᵉ monté à 100 emporte le 3ᵉ.
+    champ.addEventListener('change', () => {
+      acomptes.forEach((x, j) => { x.taux = lisible(cumul(j)); });
+      rendre();
+    });
+    // Le champ et son « % » restent ensemble : « à mi-parcours » fait passer à la ligne.
+    const taux = document.createElement('span'); taux.className = 'taux'; taux.append(champ, ' %');
+    g.append(moins, 'Acompte ' + MOMENTS[i], taux);
+    const montant = document.createElement('span'); montant.className = 'montant';
+    d.append(g, montant);
+    return d;
+  }
+
+  function rendre(reconstruire = true) {
+    const tva = HT * TAUX_TVA / 100, ttc = HT + tva;
+    // Ce qui tombe à chaque acompte : la part cumulée, moins ce qui a déjà été versé.
+    const cumuls = acomptes.map((_, i) => cumul(i));
+    const montants = cumuls.map((c, i) => ttc * (c - (i > 0 ? cumuls[i - 1] : 0)) / 100);
+    const dernier = cumuls.length ? cumuls[cumuls.length - 1] : 0;
+    const reste = ttc * (100 - dernier) / 100;
+    const pluriel = acomptes.length > 1 ? 's' : '';
+
+    $('e-ht').textContent = eur(HT); $('e-tva').textContent = eur(tva); $('e-ttc').textContent = eur(ttc);
+    $('p-ht').textContent = eur(HT); $('p-tva').textContent = eur(tva); $('p-ttc').textContent = eur(ttc);
+
+    const enB = proposition === 'B';
+    const visible = enB && acomptes.length > 0;
+    $('bloc-acompte').hidden = !visible;
+    // Un troisième moment existe ; au-delà, on n'invente pas de mot.
+    $('poser').hidden = !enB || acomptes.length >= MOMENTS.length || dernier >= 100;
+
+    if (reconstruire) $('lignes-acomptes').replaceChildren(...acomptes.map(ligneAcompte));
+    document.querySelectorAll('#lignes-acomptes .montant').forEach((el, i) => { el.textContent = eur(montants[i]); });
+    $('e-reste-lib').textContent = 'Reste à régler après acompte' + pluriel;
+    $('e-reste').textContent = eur(reste);
+
+    // ─── Les notes : la phrase de l'acompte y est TOUJOURS ────────────────
+    // Sa consigne : « reste visible dans les notes et conditions quoi qu'il
+    // arrive ». Sans ligne dans les totaux, c'est la phrase des Réglages.
+    const phrases = (acomptes.length
+      ? acomptes.map((a, i) => i === 0
+          ? 'Acompte de ' + lisible(cumuls[i]) + ' % ' + MOMENTS[i] + ', soit ' + eur(montants[i]) + '.'
+          : 'Acompte ' + MOMENTS[i] + ' ' + lisible(cumuls[i]) + ' %, soit ' + eur(montants[i]) + '.')
+      : ['Acompte de ' + REGLAGE_ACOMPTE + ' % à la commande, soit ' + eur(ttc * REGLAGE_ACOMPTE / 100) + '.']
+    ).join(' ');
+    $('e-phrases').textContent = enB ? ' ' + phrases : '';
+    $('p-phrase').textContent = ' ' + phrases;
+
+    // ─── Le papier ─────────────────────────────────────────────────────────
+    $('p-bloc').hidden = !visible;
+    $('p-lignes').replaceChildren(...acomptes.map((a, i) => {
+      const d = document.createElement('div'); d.className = 'pt';
+      const lib = document.createElement('span');
+      lib.textContent = i === 0
+        ? 'Acompte ' + lisible(cumuls[i]) + ' % ' + MOMENTS[i]
+        : 'Acompte ' + MOMENTS[i] + ' ' + lisible(cumuls[i]) + ' %';
+      const val = document.createElement('span'); val.textContent = eur(montants[i]);
+      d.append(lib, val);
+      return d;
+    }));
+    $('p-reste-lib').textContent = 'Reste à régler après acompte' + pluriel;
+    $('p-reste').textContent = eur(reste);
+  }
+
+  function choisir(p) {
+    proposition = p;
+    // La B : le réglage est déjà posé sur le devis, avant tout geste.
+    acomptes = p === 'B' ? [{ taux: String(REGLAGE_ACOMPTE) }] : [];
+    $('consigne').innerHTML = consignes[p];
+    document.querySelectorAll('.choix [data-p]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.p === p)));
+    rendre();
+  }
+
+  document.querySelectorAll('.choix [data-p]').forEach(b => b.addEventListener('click', () => choisir(b.dataset.p)));
+  $('poser').addEventListener('click', () => {
+    const precedent = acomptes.length ? nombre(acomptes[acomptes.length - 1].taux) : 0;
+    acomptes.push({ taux: String(Math.min(100, Math.max(DEFAUTS[acomptes.length], precedent))) });
+    rendre();
+    const champs = document.querySelectorAll('#lignes-acomptes input');
+    champs[champs.length - 1].focus();
+  });
+  $('bascule-nuit').addEventListener('click', () => {
+    const nuit = document.body.dataset.charte !== 'nuit';
+    document.body.dataset.charte = nuit ? 'nuit' : 'origine';
+    $('bascule-nuit').setAttribute('aria-pressed', String(nuit));
+  });
+
+  dessinerLignes();
+  dessinerPapier();
+  choisir('0');
+</script>
+</body>
+</html>

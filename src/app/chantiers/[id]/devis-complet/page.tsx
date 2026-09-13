@@ -8,7 +8,7 @@ import { getClient } from "@/server/repositories/clients";
 import { canalPourJoindre } from "@/lib/message-client";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerLignesPrix } from "@/server/repositories/lignes-prix";
-import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/repositories/devis";
+import { getOuCreerDevisBrouillon, chargerDevisPourEcran, getAcomptesDevis } from "@/server/repositories/devis";
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
 import { devisAPreparer } from "@/lib/devis-a-preparer";
@@ -64,12 +64,13 @@ export default async function DevisCompletPage({
   // lecture seule — le consulter ne doit jamais ouvrir une nouvelle version.
   const devisRow = (await chargerDevisPourEcran(ctx, id)) ?? (await getOuCreerDevisBrouillon(ctx, id));
 
-  const [entreprise, client, lignes, brouillon, note] = await Promise.all([
+  const [entreprise, client, lignes, brouillon, note, acomptes] = await Promise.all([
     getEntreprise(ctx),
     chantier.clientId ? getClient(ctx, chantier.clientId) : Promise.resolve(null),
     listerLignesPrix(ctx, id),
     getBrouillon(ctx, id),
     getNoteVocale(ctx, id),
+    getAcomptesDevis(ctx, devisRow.id),
   ]);
 
   // **Une dictée sans devis se traite ICI, à l'arrivée** — sa panne du 21 août
@@ -187,6 +188,15 @@ export default async function DevisCompletPage({
         }))}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}
+        acomptesInitiaux={acomptes}
+        acompteReglage={devisRow.acomptePourcent}
+        conditionsReglees={{
+          acomptePourcent: devisRow.acomptePourcent,
+          delaiPaiementJours: devisRow.delaiPaiementJours,
+          moyensPaiement: devisRow.moyensPaiement,
+          rappelerPenalites: devisRow.rappelerPenalites,
+          textePied: devisRow.textePied,
+        }}
         conditionsPaiement={devisRow.conditionsPaiement ?? ""}
         /* La dictée a-t-elle été comprise, ou seulement recopiée ? L'avis vivait
            sur le compte rendu, qui a disparu du parcours : il se dit désormais

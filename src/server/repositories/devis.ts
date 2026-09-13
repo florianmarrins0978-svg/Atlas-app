@@ -5,9 +5,16 @@ import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
-import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from "../db/schema";
+import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
+import {
+  acompteDOffice,
+  acompteSuivantPropose,
+  tauxCumuleValide,
+  tauxCumulesBornes,
+  type AcompteDevis,
+} from "@/lib/acomptes-devis";
 import type { Ctx } from "./context";
-import { genererPdfDevis } from "../pdf/devis-pdf";
+import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesEnAttenteDePrix } from "@/lib/preparation-devis";
@@ -351,12 +358,196 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       );
     }
 
+    // **L'acompte des Réglages est POSÉ D'OFFICE sur la ligne des totaux** —
+    // sa décision du 12 septembre 2026 (*« il doit être marqué d'office »*).
+    // Seulement à la naissance d'une version : un brouillon régénéré garde ce
+    // qu'il porte, y compris le retrait qu'il a fait du doigt. Un devis parti
+    // avec un acompte n'en donne pas à la version suivante : elle repart des
+    // Réglages, comme le taux de TVA et la remise juste au-dessus.
+    const dOffice = acompteDOffice(conditions.acomptePourcent);
+    if (dOffice) await ecrireAcomptes(tx, ctx.entrepriseId, d.id, [dOffice]);
+
     if (!chantier.devisGenereAt) {
       await tx.update(chantiers).set({ devisGenereAt: new Date() }).where(eq(chantiers.id, chantierId));
     }
 
     return d;
   });
+}
+
+// ─── Les acomptes d'un devis ───────────────────────────────────────────────
+
+async function lireAcomptes(tx: DbOrTx, devisId: string): Promise<AcompteDevis[]> {
+  const rows = await tx
+    .select({ rang: acomptesDevis.rang, tauxCumule: acomptesDevis.tauxCumule })
+    .from(acomptesDevis)
+    .where(eq(acomptesDevis.devisId, devisId))
+    .orderBy(asc(acomptesDevis.rang));
+  return rows.map((r) => ({ rang: r.rang, tauxCumule: r.tauxCumule }));
+}
+
+/**
+ * Réécrit l'échéancier ENTIER d'un devis : rangs 1..n dans l'ordre donné, taux
+ * bornés par la règle commune.
+ *
+ * **Tout réécrire plutôt que corriger une ligne**, et ce n'est pas de la
+ * paresse : retirer l'acompte du milieu fait remonter les suivants d'un rang
+ * (le 3ᵉ devient « à mi-parcours »), et monter le 2ᵉ à 100 emporte le 3ᵉ. Une
+ * écriture par ligne aurait dû rejouer ces deux règles ici — elles vivent dans
+ * `tauxCumulesBornes`, et n'ont qu'à y rester.
+ */
+async function ecrireAcomptes(
+  tx: DbOrTx,
+  entrepriseId: string,
+  devisId: string,
+  acomptes: readonly AcompteDevis[]
+): Promise<AcompteDevis[]> {
+  const bornes = tauxCumulesBornes(acomptes);
+  const propres = bornes.map((tauxCumule, i) => ({ rang: i + 1, tauxCumule }));
+  await tx.delete(acomptesDevis).where(eq(acomptesDevis.devisId, devisId));
+  if (propres.length > 0) {
+    await tx.insert(acomptesDevis).values(
+      propres.map((a) => ({ entrepriseId, devisId, rang: a.rang, tauxCumule: a.tauxCumule }))
+    );
+  }
+  return propres;
+}
+
+export async function getAcomptesDevis(ctx: Ctx, devisId: string): Promise<AcompteDevis[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => lireAcomptes(tx, devisId));
+}
+
+/**
+ * « + Ajouter un acompte » : le rang suivant, à sa valeur d'office (les
+ * Réglages, puis 50, puis 75 — cumulés). `null` : plus rien à poser — un devis
+ * envoyé, trois acomptes déjà, ou un devis déjà réglé à 100 %.
+ */
+export async function poserAcompteSuivant(ctx: Ctx, devisId: string): Promise<AcompteDevis[] | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d || d.statut === "envoye") return null;
+    const actuels = await lireAcomptes(tx, devisId);
+    const suivant = acompteSuivantPropose(actuels, d.acomptePourcent);
+    if (!suivant) return null;
+    return ecrireAcomptes(tx, ctx.entrepriseId, devisId, [...actuels, suivant]);
+  });
+}
+
+/**
+ * Le taux cumulé d'un acompte, tel qu'il l'a tapé — borné par la même règle
+ * que l'écran (`tauxCumulesBornes`) : une seule règle sert à construire
+ * l'écran et à revalider ce qu'il renvoie (`CLAUDE.md` §3).
+ */
+export async function changerTauxAcompte(
+  ctx: Ctx,
+  devisId: string,
+  rang: number,
+  taux: string
+): Promise<AcompteDevis[] | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d || d.statut === "envoye") return null;
+    const propre = tauxCumuleValide(taux);
+    if (propre === null) return null;
+    const actuels = await lireAcomptes(tx, devisId);
+    if (!actuels.some((a) => a.rang === rang)) return null;
+    return ecrireAcomptes(
+      tx,
+      ctx.entrepriseId,
+      devisId,
+      actuels.map((a) => (a.rang === rang ? { ...a, tauxCumule: propre } : a))
+    );
+  });
+}
+
+/**
+ * Le « − » d'un acompte : la ligne quitte les totaux, les suivantes remontent
+ * d'un rang. **La condition des Réglages, elle, reste imprimée** dans les notes
+ * (`devis.acomptePourcent`) — *« quoi qu'il arrive »*.
+ */
+export async function retirerAcompte(ctx: Ctx, devisId: string, rang: number): Promise<AcompteDevis[] | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d || d.statut === "envoye") return null;
+    const actuels = await lireAcomptes(tx, devisId);
+    return ecrireAcomptes(tx, ctx.entrepriseId, devisId, actuels.filter((a) => a.rang !== rang));
+  });
+}
+
+/**
+ * ─── CE QUE LE PDF REÇOIT — UNE SEULE FOIS, POUR LES TROIS SORTIES ──────────
+ *
+ * L'aperçu, l'envoi et la feuille sans prix composaient chacun leur propre
+ * copie de ce bloc, et elles avaient divergé : **le PDF ENVOYÉ — celui que le
+ * client télécharge par son lien — partait sans la validité ni les conditions
+ * réglées** ; seul l'aperçu les portait. Trouvé le 12 septembre 2026 en
+ * branchant les acomptes, qui auraient fait une quatrième divergence.
+ *
+ * Une seule fonction : ce que l'artisan voit dans l'aperçu est ce que le client
+ * reçoit, à l'octet près (`CLAUDE.md` §3).
+ */
+function donneesPdfDuDevis(
+  d: typeof devis.$inferSelect,
+  lignes: (typeof lignesDevis.$inferSelect)[],
+  acomptes: readonly AcompteDevis[],
+  statut: "brouillon" | "envoye"
+): DevisPdfData {
+  return {
+    numeroCommercial: d.numeroCommercial,
+    numeroVersion: d.numeroVersion,
+    statut,
+    dateEmission: d.dateEmission,
+    entrepriseNom: d.entrepriseNom,
+    entrepriseAdresse: d.entrepriseAdresse,
+    entrepriseSiret: d.entrepriseSiret,
+    entrepriseTelephone: d.entrepriseTelephone,
+    entrepriseEmail: d.entrepriseEmail,
+    // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN, le
+    // client reçoit un devis qu'il ne peut pas payer. (`sansChiffrage` l'ignore.)
+    entrepriseIban: d.entrepriseIban,
+    entrepriseFormeJuridique: d.entrepriseFormeJuridique,
+    entrepriseCapitalSocial: d.entrepriseCapitalSocial,
+    entrepriseVilleRcs: d.entrepriseVilleRcs,
+    entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
+    clientNom: d.clientNom,
+    clientCivilite: d.clientCivilite,
+    clientAdresse: d.clientAdresse,
+    clientTelephone: d.clientTelephone,
+    adresseChantier: d.adresseChantier,
+    conditionsPaiement: d.conditionsPaiement,
+    validiteJours: d.validiteJours,
+    // Les cinq conditions figées à la création (migration 0064). C'est le PDF
+    // qui les met en phrases, parce que le total y est connu — le montant de
+    // l'acompte en dépend.
+    conditionsReglees: {
+      acomptePourcent: d.acomptePourcent,
+      delaiPaiementJours: d.delaiPaiementJours,
+      moyensPaiement: d.moyensPaiement,
+      rappelerPenalites: d.rappelerPenalites,
+      textePied: d.textePied,
+    },
+    // Les lignes des totaux, cumulées (migration 0088) : le PDF en tire ce qui
+    // tombe à chaque acompte et le reste à régler, par la règle commune.
+    acomptes: [...acomptes],
+    devise: d.devise,
+    tauxTva: d.tauxTva,
+    totalHt: d.totalHt,
+    totalTva: d.totalTva,
+    totalTtc: d.totalTtc,
+    reductionPourcent: d.reductionPourcent,
+    reductionMontant: d.reductionMontant,
+    lignes: lignes.map((l) => ({
+      libelle: l.libelle,
+      quantite: l.quantite,
+      prixUnitaire: l.prixUnitaire,
+      montant: l.montant,
+      unite: l.unite,
+      aChiffrer: l.aChiffrer,
+      // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
+      // ventilerait tout sur le taux du document (migration 0073).
+      tauxTva: l.tauxTva,
+    })),
+  };
 }
 
 // Génère le PDF pour un devis (brouillon ou envoyé) sans jamais persister la
@@ -368,59 +559,10 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
     if (!d) throw new Error("Devis introuvable");
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
-    return genererPdfDevis({
-      numeroCommercial: d.numeroCommercial,
-      numeroVersion: d.numeroVersion,
-      statut: d.statut as "brouillon" | "envoye",
-      dateEmission: d.dateEmission,
-      entrepriseNom: d.entrepriseNom,
-      entrepriseAdresse: d.entrepriseAdresse,
-      entrepriseSiret: d.entrepriseSiret,
-      entrepriseTelephone: d.entrepriseTelephone,
-      entrepriseEmail: d.entrepriseEmail,
-      // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN,
-      // le client reçoit un devis qu'il ne peut pas payer.
-      entrepriseIban: d.entrepriseIban,
-      entrepriseFormeJuridique: d.entrepriseFormeJuridique,
-      entrepriseCapitalSocial: d.entrepriseCapitalSocial,
-      entrepriseVilleRcs: d.entrepriseVilleRcs,
-      entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
-      clientNom: d.clientNom,
-      clientCivilite: d.clientCivilite,
-      clientAdresse: d.clientAdresse,
-      clientTelephone: d.clientTelephone,
-      adresseChantier: d.adresseChantier,
-      conditionsPaiement: d.conditionsPaiement,
-      validiteJours: d.validiteJours,
-      // Les cinq conditions figées à la création (migration 0064). C'est le PDF
-      // qui les met en phrases, parce que le total y est connu — le montant de
-      // l'acompte en dépend.
-      conditionsReglees: {
-        acomptePourcent: d.acomptePourcent,
-        delaiPaiementJours: d.delaiPaiementJours,
-        moyensPaiement: d.moyensPaiement,
-        rappelerPenalites: d.rappelerPenalites,
-        textePied: d.textePied,
-      },
-      devise: d.devise,
-      tauxTva: d.tauxTva,
-      totalHt: d.totalHt,
-      totalTva: d.totalTva,
-      totalTtc: d.totalTtc,
-      reductionPourcent: d.reductionPourcent,
-      reductionMontant: d.reductionMontant,
-      lignes: lignes.map((l) => ({
-        libelle: l.libelle,
-        quantite: l.quantite,
-        prixUnitaire: l.prixUnitaire,
-        montant: l.montant,
-        unite: l.unite,
-        aChiffrer: l.aChiffrer,
-        // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
-        // ventilerait tout sur le taux du document (migration 0073).
-        tauxTva: l.tauxTva,
-      })),
-    }, habillage);
+    return genererPdfDevis(
+      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, devisId), d.statut as "brouillon" | "envoye"),
+      habillage
+    );
   });
 }
 
@@ -458,46 +600,10 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       );
     }
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
-    const pdfBytes = await genererPdfDevis({
-      numeroCommercial: avant.numeroCommercial,
-      numeroVersion: avant.numeroVersion,
-      statut: "envoye",
-      dateEmission: avant.dateEmission,
-      entrepriseNom: avant.entrepriseNom,
-      entrepriseAdresse: avant.entrepriseAdresse,
-      entrepriseSiret: avant.entrepriseSiret,
-      entrepriseTelephone: avant.entrepriseTelephone,
-      entrepriseEmail: avant.entrepriseEmail,
-      entrepriseIban: avant.entrepriseIban,
-      entrepriseFormeJuridique: avant.entrepriseFormeJuridique,
-      entrepriseCapitalSocial: avant.entrepriseCapitalSocial,
-      entrepriseVilleRcs: avant.entrepriseVilleRcs,
-      entrepriseMentionsLegalesPosition: avant.entrepriseMentionsLegalesPosition,
-      clientNom: avant.clientNom,
-      clientCivilite: avant.clientCivilite,
-      clientAdresse: avant.clientAdresse,
-      clientTelephone: avant.clientTelephone,
-      adresseChantier: avant.adresseChantier,
-      conditionsPaiement: avant.conditionsPaiement,
-      devise: avant.devise,
-      tauxTva: avant.tauxTva,
-      totalHt: avant.totalHt,
-      totalTva: avant.totalTva,
-      totalTtc: avant.totalTtc,
-      reductionPourcent: avant.reductionPourcent,
-      reductionMontant: avant.reductionMontant,
-      lignes: lignes.map((l) => ({
-        libelle: l.libelle,
-        quantite: l.quantite,
-        prixUnitaire: l.prixUnitaire,
-        montant: l.montant,
-        unite: l.unite,
-        aChiffrer: l.aChiffrer,
-        // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
-        // ventilerait tout sur le taux du document (migration 0073).
-        tauxTva: l.tauxTva,
-      })),
-    }, habillage);
+    const pdfBytes = await genererPdfDevis(
+      donneesPdfDuDevis(avant, lignes, await lireAcomptes(tx, devisId), "envoye"),
+      habillage
+    );
 
     const objet = await enregistrerObjet(
       `chantiers/${avant.chantierId}/devis`,
@@ -615,41 +721,11 @@ export async function genererDevisSansPrix(
     if (!d) return null;
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, d.id));
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    // Les mêmes données que le devis chiffré : c'est `sansChiffrage` qui
+    // décide de ce qui ne s'imprime pas (prix, totaux, acomptes, IBAN,
+    // conditions), pas une copie amputée de ce bloc.
     return genererPdfDevis(
-      {
-        numeroCommercial: d.numeroCommercial,
-        numeroVersion: d.numeroVersion,
-        statut: d.statut as "brouillon" | "envoye",
-        dateEmission: d.dateEmission,
-        entrepriseNom: d.entrepriseNom,
-        entrepriseAdresse: d.entrepriseAdresse,
-        entrepriseSiret: d.entrepriseSiret,
-        entrepriseTelephone: d.entrepriseTelephone,
-        entrepriseEmail: d.entrepriseEmail,
-        // `sansChiffrage` ignore l'IBAN : il n'a rien à faire sur une feuille
-        // de chantier, et le passer ne l'imprime pas.
-        entrepriseIban: d.entrepriseIban,
-        clientNom: d.clientNom,
-        clientCivilite: d.clientCivilite,
-        clientAdresse: d.clientAdresse,
-        clientTelephone: d.clientTelephone,
-        adresseChantier: d.adresseChantier,
-        conditionsPaiement: d.conditionsPaiement,
-        validiteJours: d.validiteJours,
-        devise: d.devise,
-        tauxTva: d.tauxTva,
-        totalHt: d.totalHt,
-        totalTva: d.totalTva,
-        totalTtc: d.totalTtc,
-        reductionPourcent: d.reductionPourcent,
-        reductionMontant: d.reductionMontant,
-        lignes: lignes.map((l) => ({
-          libelle: l.libelle,
-          quantite: l.quantite,
-          prixUnitaire: l.prixUnitaire,
-          montant: l.montant,
-        })),
-      },
+      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, d.id), d.statut as "brouillon" | "envoye"),
       { sansChiffrage: true, ...habillage }
     );
   });

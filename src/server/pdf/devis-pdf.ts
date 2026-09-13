@@ -14,6 +14,12 @@ import {
   type ConditionsLues,
 } from "@/lib/conditions-documents";
 import type { Allure } from "@/lib/allure-documents";
+import {
+  echeancierDevis,
+  libelleLigneAcompte,
+  phrasesAcomptes,
+  type AcompteDevis,
+} from "@/lib/acomptes-devis";
 
 // Le devis, à l'image du modèle d'Arborea (`appli/devis-modele.html`).
 //
@@ -48,6 +54,17 @@ export type DevisPdfData = DonneesDocument & {
    * s'imprime, et ces documents-là sortent identiques à eux-mêmes.
    */
   conditionsReglees?: ConditionsLues | null;
+  /**
+   * Les acomptes posés sur le devis, en taux CUMULÉS (migration 0088).
+   *
+   * Le papier en tire deux choses par la règle commune : les lignes sous le
+   * total — chaque acompte avec ce qui tombe ce jour-là, puis « Reste à régler
+   * après acompte » et le montant, *« chez le client il faut marquer reste à
+   * régler après acompte et le montant »* — et les phrases des notes.
+   * Absents ou vides : la feuille sort comme avant, et la phrase du réglage
+   * reste dans les notes.
+   */
+  acomptes?: readonly AcompteDevis[] | null;
 };
 
 /**
@@ -129,10 +146,26 @@ function blocNotes(data: DevisPdfData, sansPrix: boolean): string | null {
 
   const lignes = lignesConditionsDevis(
     lireConditions(data.conditionsReglees),
-    Number(data.totalTtc)
+    Number(data.totalTtc),
+    // Les acomptes posés remplacent la phrase du réglage ; sans eux, elle reste.
+    phrasesAcomptes(echeancierDevis(data.acomptes ?? [], data.totalTtc))
   );
   if (!lignes.length) return sien;
   return [sien, ...lignes].filter(Boolean).join("\n");
+}
+
+/**
+ * Les lignes SOUS le total TTC : chaque acompte avec ce qui tombe ce jour-là,
+ * puis le reste à régler. Rien quand le devis n'en porte aucun — la feuille
+ * d'avant sort à l'identique.
+ */
+function lignesApresTotal(data: DevisPdfData): { libelle: string; montant: string; fort?: boolean }[] {
+  const echeancier = echeancierDevis(data.acomptes ?? [], data.totalTtc);
+  if (!echeancier.lignes.length) return [];
+  return [
+    ...echeancier.lignes.map((l) => ({ libelle: libelleLigneAcompte(l), montant: l.montant })),
+    { libelle: echeancier.libelleReste, montant: echeancier.reste, fort: true },
+  ];
 }
 
 export async function composerDevisPdf(
@@ -142,6 +175,8 @@ export async function composerDevisPdf(
   const sansPrix = Boolean(options.sansChiffrage);
   return composerDocument({ ...data, conditionsPaiement: blocNotes(data, sansPrix) }, {
     sansChiffrage: options.sansChiffrage,
+    // L'échéancier sous le total ; `sansChiffrage` le saute avec les totaux.
+    apresTotal: lignesApresTotal(data),
     // **Sa décision du 23 août : le devis et la facture SEULEMENT.** La feuille
     // de chantier sort de la même fabrique, avec `sansChiffrage` — sans ce
     // filtre, elle aurait pris l'allure réglée pour les documents du client

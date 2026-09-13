@@ -18,7 +18,13 @@ import {
 import { noterRetenu } from "@/server/repositories/termes-metier";
 import { apprendrePrixGrille } from "@/server/services/apprendre-grille";
 import { mettreAJourAdresseChantier } from "@/server/repositories/chantiers";
-import { mettreAJourEnTeteDevis, getDevisPourChantier } from "@/server/repositories/devis";
+import {
+  mettreAJourEnTeteDevis,
+  getDevisPourChantier,
+  poserAcompteSuivant,
+  changerTauxAcompte,
+  retirerAcompte,
+} from "@/server/repositories/devis";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
@@ -64,7 +70,14 @@ export async function majAdresseChantierAction(chantierId: string, adresse: stri
 
 export async function majLigneAction(
   id: string,
-  data: { libelle?: string; quantite?: string; prixUnitaire?: string; tauxTva?: string | null }
+  data: {
+    libelle?: string;
+    quantite?: string;
+    prixUnitaire?: string;
+    /** L'unité de la quantité — ml, m², m³, kg… (migration 0070). Vide : aucune. */
+    unite?: string | null;
+    tauxTva?: string | null;
+  }
 ) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "modifier une ligne du devis");
@@ -343,6 +356,30 @@ function montantDeLaLigne(quantite: string, prixUnitaire: string): string {
 
 // Le taux de TVA et les conditions vivent sur le devis lui-même : ce ne sont
 // pas des caractéristiques de l'entreprise ni du chantier, mais de CE document.
+// ─── Les acomptes du devis (migration 0088) ────────────────────────────────
+//
+// Trois gestes, un seul écrivain : le dépôt réécrit l'échéancier entier par la
+// règle commune (`tauxCumulesBornes`), et rend ce qu'il a écrit — c'est ce que
+// l'écran affiche, jamais ce qu'il a supposé.
+
+export async function ajouterAcompteAction(devisId: string) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "ajouter un acompte au devis");
+  return poserAcompteSuivant(ctx, devisId);
+}
+
+export async function changerTauxAcompteAction(devisId: string, rang: number, taux: string) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "changer un acompte du devis");
+  return changerTauxAcompte(ctx, devisId, rang, taux);
+}
+
+export async function retirerAcompteAction(devisId: string, rang: number) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "retirer un acompte du devis");
+  return retirerAcompte(ctx, devisId, rang);
+}
+
 export async function majEnTeteDevisAction(
   devisId: string,
   data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }

@@ -659,6 +659,16 @@ export type OptionsDocument = {
   /** Sur une facture, le rappel du devis d'origine. */
   rappel?: string | null;
   /**
+   * Des lignes SOUS le « Total TTC » — libellé et montant, la dernière en gras.
+   *
+   * **Pour l'échéancier du devis** (12 septembre 2026) : chaque acompte avec ce
+   * qui tombe ce jour-là, puis « Reste à régler après acompte » et le montant.
+   * C'est le devis qui les compose (`devis-pdf.ts`) par la règle commune ; ce
+   * module ne calcule rien, il écrit. Absentes, ou sans chiffrage : rien, et la
+   * feuille sort comme avant.
+   */
+  apresTotal?: { libelle: string; montant: string; fort?: boolean }[];
+  /**
    * Le document ne porte AUCUN chiffre : ni colonnes de prix, ni totaux, ni TVA.
    *
    * **Pour la fiche de chantier**, demandée par le patron le 20 août 2026. Elle
@@ -1028,7 +1038,10 @@ export async function composerDocument(
   // Deux lignes de plus quand une remise est accordée, et une par catégorie
   // au-delà de la première : la place se réserve AVANT le saut de page, sinon
   // « Total TTC » se retrouve seul en haut de la page suivante.
-  place((avecRemise ? 74 + 32 : 74) + (parTaux.length - 1) * 16);
+  // Et une ligne de 16 par ligne d'échéancier sous le total : réservée ici
+  // aussi, pour la même raison.
+  const apresTotal = options.apresTotal ?? [];
+  place((avecRemise ? 74 + 32 : 74) + (parTaux.length - 1) * 16 + apresTotal.length * 16);
   y -= 6;
   const gaucheTotaux = DROITE - 220;
 
@@ -1079,7 +1092,21 @@ export async function composerDocument(
     taille: 14,
     police: ctx.serifGras,
   });
-  y -= 34;
+
+  // L'échéancier, sous le total dont il découle : les acomptes, puis le reste à
+  // régler en gras — c'est le chiffre que le client cherche.
+  if (apresTotal.length) {
+    y -= 20;
+    for (const ligne of apresTotal) {
+      const style: Style = ligne.fort ? { taille: 9.5, police: ctx.sansGras } : { taille: 9.5 };
+      ecrire(ctx, ligne.libelle, gaucheTotaux, y, style);
+      ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), DROITE, y, style);
+      y -= 16;
+    }
+    y -= 18;
+  } else {
+    y -= 34;
+  }
   }
 
   // ─── Conditions et modalités de paiement ────────────────────────────────
