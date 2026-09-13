@@ -119,8 +119,10 @@
   /* La phrase des comptes DEVIENT le filtre. L'œil est un vrai bouton de
      44 px, posé sur la ligne sans la grandir : ses marges négatives
      l'absorbent, et le doigt a quand même sa mesure. */
+  /* 17 px au lieu de 14 — « mets-les en plus gros », 13 septembre. */
   .comptes{display:flex;align-items:center;gap:6px;margin:14px 26px 12px;
-           font:700 14px/1.6 var(--sans);color:var(--encre);min-height:24px}
+           font:700 17px/1.5 var(--sans);color:var(--encre);min-height:26px}
+  .rien{margin:16px 26px 0;font:400 13.5px/1.65 var(--sans);color:var(--gris)}
   /* Le même or que l'application (`colors.or`), pas l'or de texte des
      planches : c'est lui qu'il reconnaît sur « 3 à facturer ». */
   .comptes .aFacturer{color:var(--or)}
@@ -175,7 +177,8 @@
   rangée.</b> Barré, la liste montre tout : c'est le mode d'origine. Ouvert,
   elle ne garde que ce qui attend, et « 14 facturés » s'éteint pour dire qu'ils
   sont là mais rangés. On rappuie, tout revient. <b>Changez de mois</b> avec
-  les flèches : l'œil suit le mois qu'on regarde.
+  les flèches : en août rien n'attend et l'œil part ; en juillet il n'y a rien,
+  et la phrase part avec.
 </div>
 
 <div class="etats" role="group" aria-label="Ce qu'on peut jouer">
@@ -216,7 +219,7 @@
       <p class="comptes" id="comptes">
         <span class="aFacturer" id="nAttente">3 à facturer</span>
         <button type="button" class="oeil" id="oeil" aria-pressed="false" aria-label="Ne montrer que ce qui attend">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path class="barre" d="M2.2 10s2.8-5 7.8-5 7.8 5 7.8 5-2.8 5-7.8 5-7.8-5-7.8-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
             <circle class="barre" cx="10" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"/>
             <path class="barre" d="M3.6 16.4 16.4 3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -229,6 +232,7 @@
       </p>
 
       <div class="liste" id="liste"></div>
+      <p class="rien" id="rien" hidden></p>
 
       <div class="barre" aria-hidden="true">
         <i>Chantiers</i><i>Planning</i><i class="actif">Terminés</i><i>Paysage</i><i>Réglages</i>
@@ -265,6 +269,7 @@
       { nom: "M. Gauthier",        etat: "21 août · Facturé le 22 août", montant: "1 980,00 €" },
       { nom: "Les Jardins du Parc",etat: "14 août · Facturé le 18 août", montant: "6 210,00 €" },
     ]},
+    { nom: "Juillet 2026", lignes: [] },
   ];
   // Les comptes du code sont « tous mois confondus » ; ici, ceux du mois
   // affiché, pour que l'écran et la liste disent la même chose sous le doigt.
@@ -273,6 +278,7 @@
   const oeil = document.getElementById("oeil");
   const nAttente = document.getElementById("nAttente");
   const nFaites = document.getElementById("nFaites");
+  const rien = document.getElementById("rien");
   let rang = 0, mode = "tout";
 
   function pluriel(n, mot){ return n + " " + mot + (n > 1 ? "s" : ""); }
@@ -283,14 +289,20 @@
     document.getElementById("futur").disabled = rang === 0;
     const attend = m.lignes.filter(l => l.attend).length;
     const faites = m.lignes.length - attend;
-    // Sans rien à facturer, l'œil n'a rien à montrer : il part avec le point —
-    // sauf s'il est ouvert, pour qu'on puisse toujours le refermer.
-    const rienAMontrer = attend === 0 && mode === "tout";
-    nAttente.textContent = attend > 0 ? attend + " à facturer" : "Rien n'attend";
-    nAttente.hidden = rienAMontrer;
-    oeil.hidden = rienAMontrer;
-    document.querySelector(".comptes .point").hidden = rienAMontrer;
+    // Sans rien à facturer, l'œil n'a rien à filtrer : il part avec son compte
+    // et le point, et la liste montre tout. Sans rien du tout, la phrase part
+    // entière — sa règle du 13 septembre : elle n'apparaît que s'il y a des
+    // chantiers à facturer ou des factures déjà faites.
+    if (attend === 0) mode = "tout";
+    nAttente.textContent = attend + " à facturer";
+    nAttente.hidden = attend === 0;
+    oeil.hidden = attend === 0;
+    document.querySelector(".comptes .point").hidden = attend === 0 || faites === 0;
     nFaites.textContent = pluriel(faites, "facturé");
+    nFaites.hidden = faites === 0;
+    document.getElementById("comptes").hidden = m.lignes.length === 0;
+    rien.hidden = m.lignes.length > 0;
+    rien.textContent = "Rien en " + m.nom.split(" ")[0].toLowerCase() + ".";
     liste.innerHTML = m.lignes.map(l => l.attend
       ? `<a class="rangee" href="#f"><span class="qui"><span class="nomC">${l.nom}</span><span class="etat">${l.etat}</span></span><span class="capsule">À facturer</span></a>`
       : `<a class="rangee" data-facturee href="#f"><span class="qui"><span class="nomC">${l.nom}</span><span class="etat">${l.etat}</span></span><span class="montant">${l.montant}</span></a>`
