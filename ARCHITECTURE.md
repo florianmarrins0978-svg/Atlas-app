@@ -29195,3 +29195,72 @@ laissée par le script appelé**, plus par une phrase du journal : compter les
 appels éprouve la règle, chercher une tournure éprouvait la formulation
 (`CLAUDE.md` §5 bis). `test-ouvrir-port.ts` tient la condition dans le texte du
 script, et `test-verdict-port.ts` que la fiche donne les deux gestes.
+
+
+---
+
+## §342 — Un espace qui se répare ne coûte pas les chantiers qu'il porte
+
+**Sa question du 13 septembre 2026 :** *« Ça va pas supprimer toutes mes
+données ? »* — posée devant le « Rebuild Container » que le §341 venait de lui
+conseiller pour remettre son port.
+
+**La réponse était OUI, et c'est lui qui l'a vue.**
+
+### C'était la deuxième fois
+
+Le 10 août 2026, je lui conseillais de supprimer son espace pour repartir sur un
+disque sain. Il avait répondu : *« ça va effacer tout ce qu'il y a en
+mémoire »*. `scripts/sauvegarder-banc.sh` est né de cette correction-là, et son
+en-tête porte la phrase. Un mois plus tard, le même conseil repartait sous un
+autre nom — et cette fois il était **écrit dans le code**, rendu par la fiche
+que son espace publie tout seul.
+
+### La racine : un script de création qui suppose une base vierge
+
+| | |
+|---|---|
+| `preparer.sh` | est le `postCreateCommand` : il tourne à chaque **création** de conteneur, donc à chaque reconstruction |
+| le seed | **vide** la base (`TRUNCATE … CASCADE`, `src/server/db/seed.ts`) — c'est son contrat, et les suites en dépendent |
+| la base | **survit** à la reconstruction : elle vit sur le volume nommé `atlas-pgdata` (`docker-compose.yml`) |
+
+Le script appelait donc le seed sans rien demander, devant une base qui n'était
+pas vierge. **Ce n'est pas le seed qui est en cause, c'est qui décide de
+l'appeler** — corriger le seed aurait cassé les suites qui s'appuient dessus.
+
+### Ce qui est fait
+
+`scripts/base-habitee.mjs` pose la question avant, et rend trois réponses :
+**habitée** (0), **vierge** (1), **indéterminé** (2). `preparer.sh` n'amorce que
+sur 1.
+
+**Le doute ne vide pas.** Se tromper en n'amorçant pas coûte une commande
+(`npm run db:seed`, que le message affiche) ; se tromper en amorçant coûte ses
+chantiers, et rien ne les rend.
+
+**ET LE ZÉRO D'UN RÔLE AVEUGLÉ NE VAUT PAS « VIERGE ».** `atlas_app` ne traverse
+pas la RLS : sur une base pleine, il compte **zéro**. Une sonde qui conclurait de
+ce zéro-là ferait vider la base au prochain rebuild. C'est la leçon de
+`sauvegarder-banc.mjs` — *« une sauvegarde faite sous lui serait vide de la
+moitié des lignes »* — mais le prix n'est plus une copie ratée : c'est
+l'original. La sonde **mesure** donc auprès de la base si le rôle courant la
+traverse (`is_superuser`, `rolbypassrls`), et s'abstient sinon. Mesuré, jamais
+déduit du nom dans l'adresse : un rôle renommé ferait mentir la déduction en
+silence.
+
+**`set -e` ne tue plus la préparation** sur le code de sortie de la sonde : 1 et
+2 sont des verdicts, pas des pannes. Sans cette garde, un espace neuf s'arrêtait
+avant d'avoir ses données de démonstration.
+
+### Ce qui le tient
+
+`scripts/test-base-habitee.ts` joue la sonde **pour de bon**, contre une vraie
+base, dans les cinq états : sans adresse, base injoignable, rôle aveuglé par la
+RLS, base réelle, et la lecture de `preparer.sh` — le seed doit vivre sous le
+seul cas qui l'autorise, et le doute ne doit jamais l'atteindre. Éprouvée en
+vidant puis en restaurant une vraie base (18 entreprises, rendues intactes), et
+rouge contre le `preparer.sh` de la veille.
+
+**Ce qui reste vrai, et qu'il faut dire :** une reconstruction reste un geste
+qui touche la machine. Avant, `npm run sauvegarder:banc` écrit une copie
+emportable — il existe depuis le 10 août, précisément pour cela.

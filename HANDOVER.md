@@ -8,6 +8,26 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — RECONSTRUIRE L'ESPACE N'EFFACE PLUS SES CHANTIERS (13 septembre 2026)
+
+| | |
+|---|---|
+| sa question | *« Ça va pas supprimer toutes mes données ? »* — devant le « Rebuild Container » que le lot précédent venait de lui conseiller |
+| la réponse | **OUI**, en l'état. Et c'est lui qui l'a vue — **pour la deuxième fois** (10 août : *« ça va effacer tout ce qu'il y a en mémoire »*) |
+| la racine | `preparer.sh` est le `postCreateCommand` : il tourne à chaque reconstruction et appelait le seed sans rien demander. Le seed VIDE la base ; la base, elle, SURVIT sur le volume nommé `atlas-pgdata` |
+| ce qui est fait | `scripts/base-habitee.mjs` — habitée (0), vierge (1), indéterminé (2). `preparer.sh` n'amorce que sur 1, et **le doute ne vide pas** |
+| le piège fermé | le zéro d'un rôle qui ne traverse pas la RLS ne vaut pas « vierge » : il vaudrait la base entière. Mesuré auprès de la base, jamais déduit du nom du rôle |
+| la migration | **aucune** |
+| les suites | `test-base-habitee.ts` (neuve, jouée contre une vraie base dans cinq états, rouge contre l'ancien `preparer.sh`) |
+| le détail | `ARCHITECTURE.md` §342 |
+
+**LE SEED N'A PAS CHANGÉ, ET NE DOIT PAS CHANGER.** Vider puis reconstruire est
+son contrat, et les suites en dépendent. Ce qui a changé, c'est **qui décide de
+l'appeler**.
+
+**Avant toute reconstruction, chez lui :** `npm run sauvegarder:banc`.
+
+---
 ## Dernier lot — UN REMÈDE QUI RÉUSSIT N'EST PAS UN REMÈDE QUI RÉPARE (13 septembre 2026)
 
 | | |

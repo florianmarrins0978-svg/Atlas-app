@@ -8,6 +8,23 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### Reconstruire l'espace n'efface plus ses chantiers
+
+*« Ça va pas supprimer toutes mes données ? »*, devant la reconstruction
+conseillée juste avant pour réparer son port. **La réponse était oui, et c'est
+lui qui l'a vue — pour la deuxième fois** (10 août : *« ça va effacer tout ce
+qu'il y a en mémoire »*).
+
+`preparer.sh` tourne à chaque création de conteneur, donc à chaque
+reconstruction, et il appelait le seed sans rien demander. Le seed vide la base ;
+la base, elle, survit sur son volume. Il ne l'amorce désormais que si elle est
+**vierge**, et le doute ne vide pas. Le zéro d'un rôle aveuglé par la RLS ne
+compte pas comme « vierge » — il vaudrait la base entière.
+
+Détail : `ARCHITECTURE.md` §342. Avant toute reconstruction :
+`npm run sauvegarder:banc`.
+
+
 ### Le veilleur croyait une commande au lieu de mesurer : le port mourait toute la nuit
 
 *« L'appli ne fonctionne toujours pas ! »*, capture de 1 h 58 : un
