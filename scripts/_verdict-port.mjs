@@ -37,6 +37,23 @@
  *
  * Le mot rendu par `ouvrir-port.sh` tranche, et il n'était pas lu ici.
  */
+/**
+ * **AUCUN GESTE RENDU ICI NE DOIT POUVOIR EFFACER SES DONNÉES — 13 septembre 2026.**
+ *
+ * Sa règle, posée en colère et après l'avoir demandé deux fois : *« faut jamais
+ * qu'on me propose de faire ça, c'est hyper dangereux ce que tu viens de
+ * faire ! »*. Ce fichier lui proposait « Rebuild Container » pour remettre son
+ * port — un geste qui rejoue `postCreateCommand`, donc le seed, donc un
+ * `TRUNCATE … CASCADE` sur ses chantiers.
+ *
+ * **C'était la deuxième fois** : le 10 août, devant « supprime ton espace », il
+ * répondait déjà *« ça va effacer tout ce qu'il y a en mémoire »*. La règle vit
+ * désormais dans `CLAUDE.md` §4 septies, et `test-verdict-port.ts` la tient.
+ *
+ * **Ce qui reste ici : le rallumage, et lui seul.** Il ne détruit rien, et il
+ * remet le port. Le remède de fond — que ce port cesse de se perdre — n'est pas
+ * un geste à lui confier : c'est du travail à faire, inscrit dans `TODO.md`.
+ */
 function gestePort(etatPort) {
   const mot = String(etatPort ?? "");
 
@@ -45,9 +62,8 @@ function gestePort(etatPort) {
       "     LE RELAIS NE CONNAÎT MÊME PAS LE PORT 3000 — vérifié auprès de GitHub.\n" +
       "     Le rendre « public » ne peut donc rien : il n'y a rien à basculer.\n" +
       "     Il faut le RÉENREGISTRER : onglet PORTS → retirer la ligne 3000, puis\n" +
-      "     « Transférer un port » → 3000. S'il ne revient pas, reconstruire le\n" +
-      "     conteneur (⌘⇧P → « Rebuild Container ») : la déclaration publique de\n" +
-      "     `devcontainer.json` ne s'applique qu'à ce moment-là."
+      "     « Transférer un port » → 3000.\n" +
+      "     S'il ne revient pas : RALLUMER L'ESPACE (github.com/codespaces)."
     );
   }
 
@@ -57,8 +73,7 @@ function gestePort(etatPort) {
       "     personne n'a donc réglé ce port depuis son allumage.\n" +
       "     onglet PORTS → clic droit sur 3000 → « Visibilité du port » → « Public ».\n" +
       "     S'il n'y a PAS de ligne 3000, c'est qu'il n'est pas déclaré : le\n" +
-      "     transférer, ou reconstruire le conteneur (« Rebuild Container »), qui\n" +
-      "     applique la déclaration publique de `devcontainer.json`."
+      "     transférer depuis ce même onglet, ou RALLUMER L'ESPACE."
     );
   }
 
@@ -83,14 +98,31 @@ function gestePort(etatPort) {
   // le relais a PERDU le port depuis (serveur remplacé par la version bâtie,
   // reprise après veille — `veiller.sh` le décrit au 26 août). Le seul geste
   // qui le remet est de le redéclarer.
+  //
+  // **ET LE GESTE QUI TIENT N'EST PAS CELUI QUI DÉPANNE — 13 septembre 2026.**
+  // Rallumer l'espace remet le port ; il se reperd. Quatre fois en trois
+  // semaines (22 et 31 août, 12 et 13 septembre), toujours de nuit, toujours
+  // depuis son téléphone. Le port 3000 de son espace est *détecté* — quelqu'un
+  // a vu quelque chose écouter — au lieu d'être *déclaré* : `forwardPorts` et
+  // `visibility: public` sont dans `devcontainer.json` depuis le 6 août, et son
+  // espace est plus ancien qu'eux (c'est le piège du §55, pour la cinquième
+  // fois). Un port détecté vit le temps de la session qui l'a détecté ; un port
+  // déclaré revient à chaque démarrage du conteneur.
+  //
+  // **ET CE N'EST PAS À LUI DE LE RÉPARER — sa règle du 13 septembre 2026.**
+  // Le seul geste connu qui applique cette déclaration reconstruit le
+  // conteneur, donc rejoue le seed, donc efface ses chantiers : il ne se
+  // propose pas (`CLAUDE.md` §4 septies). Tant que le dépôt n'a pas rendu ce
+  // remède sûr ET automatique, la fiche ne donne que le rallumage — qui ne
+  // détruit rien —, et le fond reste du travail à faire (`TODO.md`).
   if (mot === "ouvert") {
     return (
       "     LE PORT A BIEN ÉTÉ RENDU PUBLIC PAR L'ESPACE, et il refuse quand même :\n" +
       "     le relais l'a perdu depuis. Le rebasculer en « Public » ne peut rien.\n" +
-      "     Le plus court est de RALLUMER L'ESPACE (github.com/codespaces) : le\n" +
-      "     relais redéclare ses ports au démarrage.\n" +
-      "     Sans rallumer : onglet PORTS → retirer la ligne 3000, puis\n" +
-      "     « Transférer un port » → 3000."
+      "     RALLUMER L'ESPACE (github.com/codespaces) : c'est le seul geste qui le\n" +
+      "     remet, et il ne touche à rien.\n" +
+      "     Qu'il cesse de se perdre est NOTRE travail, pas un geste à lui\n" +
+      "     demander (`CLAUDE.md` §4 septies, `TODO.md`)."
     );
   }
 

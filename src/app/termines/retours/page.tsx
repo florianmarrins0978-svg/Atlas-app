@@ -1,6 +1,10 @@
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerLesRetours } from "@/server/repositories/retours-intervention";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { fonctionOuverte } from "@/lib/abonnements";
+import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import FonctionReservee from "@/components/atlas/FonctionReservee";
 import ListeDesRetours from "./ListeDesRetours";
 
 /**
@@ -26,6 +30,18 @@ export const dynamic = "force-dynamic";
 
 export default async function PageDesRetours() {
   const ctx = await getCurrentCtx();
+  // Un plus d'« Entreprise » (10 septembre 2026) : l'écran reste atteignable,
+  // même en-tête, même retour — ce qui change, c'est ce qu'il y a dedans. Et
+  // RIEN n'est lu avant d'avoir vérifié la formule.
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  if (!fonctionOuverte(abonnement?.formule, "retours")) {
+    return (
+      <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
+        <EnTeteEcran titre="Retours d'intervention" retour={{ href: "/termines", libelle: "Retour aux chantiers terminés" }} allure="commune" />
+        <FonctionReservee fonction="retours" />
+      </div>
+    );
+  }
   const retours = await listerLesRetours(ctx);
 
   return (

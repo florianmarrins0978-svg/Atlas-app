@@ -168,15 +168,29 @@ export function libelleValidite(c: Conditions): string | null {
  * montre exactement ces phrases : deux rédactions finiraient par diverger, et
  * c'est le client qui lirait la mauvaise (`CLAUDE.md` §3).
  */
-export function lignesConditionsDevis(c: Conditions, totalTtc?: number): string[] {
+export function lignesConditionsDevis(
+  c: Conditions,
+  totalTtc?: number,
+  /**
+   * Les phrases des acomptes POSÉS sur le devis (`src/lib/acomptes-devis.ts`),
+   * quand il y en a : elles remplacent la phrase du réglage, sinon l'acompte
+   * s'imprimerait deux fois. Vide ou absente, la phrase du réglage reste —
+   * *« il reste visible dans les notes et conditions quoi qu'il arrive »*
+   * (12 septembre 2026), même quand la ligne des totaux a été retirée.
+   */
+  phrasesAcomptes?: readonly string[]
+): string[] {
   const lignes: string[] = [];
 
-  if (c.acomptePourcent !== null) {
+  if (phrasesAcomptes && phrasesAcomptes.length > 0) {
+    lignes.push(...phrasesAcomptes);
+  } else if (c.acomptePourcent !== null) {
     // Le montant n'est écrit QUE s'il est connu. Sur l'aperçu des réglages il
     // ne l'est pas — et un chiffre inventé à cet endroit finirait imprimé.
+    // *« Retire les — avant soit »* : une virgule, comme les phrases des acomptes.
     const montant =
       totalTtc !== undefined && Number.isFinite(totalTtc)
-        ? ` — soit ${((totalTtc * c.acomptePourcent) / 100).toFixed(2).replace(".", ",")} €`
+        ? `, soit ${((totalTtc * c.acomptePourcent) / 100).toFixed(2).replace(".", ",")} €`
         : "";
     lignes.push(`Acompte de ${c.acomptePourcent} % à la commande${montant}.`);
   }

@@ -6,7 +6,7 @@ import { estProprietaire } from "@/server/autorisation";
 import { abonnementDeLEntreprise, enregistrerLAbonnement } from "@/server/repositories/abonnements";
 import { lireLaSessionDePaiement, paiementConfigure } from "@/server/paiement/stripe";
 import { retourConfigure } from "@/server/paiement/retour";
-import { etatAffiche } from "@/lib/abonnements";
+import { etatAffiche, formuleChoisie } from "@/lib/abonnements";
 import { logger } from "@/server/logger";
 import AbonnementClient from "./AbonnementClient";
 
@@ -21,6 +21,10 @@ export const dynamic = "force-dynamic";
  * aucun plafond ne s'applique (`src/lib/abonnements.ts`, `placePourUnFabricant`).
  * Couper l'application de ceux qui s'en servent déjà, le jour où l'offre naît,
  * serait la pire façon de la lancer — et ce n'est pas une décision de code.
+ *
+ * Ce qui se ferme, c'est l'ESSAI terminé (lecture seule, `withEntreprise`) et,
+ * à « Artisan », les absences et les retours (`fonctionOuverte`) — deux
+ * décisions de lui, du 10 septembre 2026.
  *
  * **Réservé au propriétaire** : ce qui engage l'entreprise ne s'ouvre pas à un
  * commercial (`docs/QUESTIONS.md` §10).
@@ -101,9 +105,11 @@ export default async function AbonnementPage({
         )}
       </section>
 
+      {/* Pendant l'essai, aucune formule n'est « actuelle » : il S'ABONNE, il ne
+          change pas — il n'y a pas d'abonnement Stripe à faire évoluer au prorata. */}
       <AbonnementClient
-        formuleActuelle={abonnement && abonnement.statut !== "resilie" ? abonnement.formule : null}
-        periodiciteActuelle={abonnement && abonnement.statut !== "resilie" ? abonnement.periodicite : null}
+        formuleActuelle={formuleChoisie(abonnement)}
+        periodiciteActuelle={formuleChoisie(abonnement) ? abonnement!.periodicite : null}
         paiementBranche={paiementConfigure() && retourConfigure()}
       />
 

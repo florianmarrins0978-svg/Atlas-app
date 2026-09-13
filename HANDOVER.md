@@ -4,11 +4,51 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-12 · `main`
+**Point de reprise :** 2026-09-13 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — TOUT LE CIRCUIT PDF (13 septembre 2026)
+## Dernier lot — L'ESSAI DE QUINZE JOURS, ET CE QUI SE FERME (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | la planche `appli/l-essai-et-ce-qui-est-ferme.html` (10 septembre) : *« essai gratuit 15 jours »*, lecture seule au 16ᵉ jour, absences et retours réservés à « Entreprise ». Le code avait été commencé dans le dossier et laissé sans compiler ; il a dit *« finis déjà ça »* |
+| ce qui a changé | la porte pose une ligne `abonnements` en `essai` (formule « on essaie tout », `FORMULE_DE_LESSAI`) ; `RubanEssai` en tête de l'accueil ; **`withEntreprise` passe la transaction en `READ ONLY`** quand l'essai est fini — Postgres refuse, `EssaiTermineError` ; bouton « Créer un devis » éteint + phrase, `EcranLectureSeule` sur `/chantiers/nouveau` ; `FonctionReservee` à la place des absences (Équipe) et des retours, pastille éteinte, `exigerFonction` sur les actions, `reglesDuRetour` au planning |
+| la migration | **0089** — le statut `essai` entre dans la contrainte |
+| la règle | `src/lib/abonnements.ts` : `etatDeLEssai`, `enLectureSeule`, `fonctionOuverte`, `formuleChoisie`, `texteDuRuban` |
+| les suites | `test-abonnements` (règle), `test-essai-lecture-seule-db` (la transaction, sous `atlas_app`), `test-essai-e2e` (son geste) |
+
+**LE PIÈGE : la seule porte.** `enregistrerLAbonnement` écrit avec
+`{ pourSortirDeLEssai: true }`. Une écriture de plus qui devrait passer en
+lecture seule se DÉCLARE là, elle ne contourne pas `withEntreprise`.
+
+**Son Atlas à lui n'a pas de ligne d'abonnement** : rien de tout cela ne le
+touche. Ne pas lui en créer une « pour voir ».
+
+**CE QUI RESTE À LUI.** Le « 15 » dans l'article 14.2 des conditions générales
+(version 3 — une version publiée ne se modifie jamais).
+
+---
+## Lot précédent — L'ACOMPTE SUR LE DEVIS, LA B (12 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« rajouter un acompte automatisé sur le devis, un peu comme on fait pour rajouter une TVA »* — planche `appli/l-acompte-sur-le-devis.html`, la B, six retours dans la soirée, puis *« Parfait code la B »* |
+| ce qui a changé | sous « Total TTC » : une ligne dorée par acompte (taux **cumulé**, montant = ce qui tombe ce jour-là), « Reste à régler après acompte(s) », « + Ajouter un acompte » ; la phrase des conditions écrite sous les notes ; la colonne **Unité** après Qté ; le PDF porte l'échéancier sous le total et les phrases dans les notes |
+| la migration | **0088** — `acomptes_devis` (rang 1..3, taux cumulé), RLS, trigger d'immuabilité comme `lignes_devis` |
+| la règle | `src/lib/acomptes-devis.ts` — une seule fonction pour l'écran, le dépôt (`ecrireAcomptes` réécrit tout, borné, réaligné) et le PDF |
+| corrigé en chemin | le PDF **envoyé** partait sans validité ni conditions réglées ; `donneesPdfDuDevis` sert désormais l'aperçu, l'envoi et la feuille sans prix |
+| les suites | `test-acomptes-devis` (pur), `test-acomptes-pdf` (trace), `test-acomptes-devis-e2e` (son geste, gabarit iPhone) |
+
+**LE PIÈGE DES TAUX.** Ils sont CUMULÉS, et c'est sa décision : « 50 » au rang
+2 n'est pas « la moitié ce jour-là ». Le libellé le dit dès le deuxième
+(« Acompte à mi-parcours 50 % » — sans parenthèses ni « réglés », sa correction du 13 septembre). La borne s'applique quand le doigt
+QUITTE le champ — à la frappe, « 75 » commence par « 7 » et sauterait à 50.
+
+**CE QUI RESTE À LUI.** Une « facture d'acompte » une fois le devis accepté —
+posé dans la planche, sans réponse. Le devis DIT l'acompte, il ne le facture pas.
+
+## Lot précédent — TOUT LE CIRCUIT PDF (13 septembre 2026)
 
 | | |
 |---|---|
@@ -31,6 +71,54 @@ regarder.
 
 ---
 ## Lot précédent — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
+
+## Dernier lot — RECONSTRUIRE L'ESPACE N'EFFACE PLUS SES CHANTIERS (13 septembre 2026)
+
+| | |
+|---|---|
+| sa question | *« Ça va pas supprimer toutes mes données ? »* — devant le « Rebuild Container » que le lot précédent venait de lui conseiller |
+| la réponse | **OUI**, en l'état. Et c'est lui qui l'a vue — **pour la deuxième fois** (10 août : *« ça va effacer tout ce qu'il y a en mémoire »*) |
+| la racine | `preparer.sh` est le `postCreateCommand` : il tourne à chaque reconstruction et appelait le seed sans rien demander. Le seed VIDE la base ; la base, elle, SURVIT sur le volume nommé `atlas-pgdata` |
+| ce qui est fait | `scripts/base-habitee.mjs` — habitée (0), vierge (1), indéterminé (2). `preparer.sh` n'amorce que sur 1, et **le doute ne vide pas** |
+| le piège fermé | le zéro d'un rôle qui ne traverse pas la RLS ne vaut pas « vierge » : il vaudrait la base entière. Mesuré auprès de la base, jamais déduit du nom du rôle |
+| la migration | **aucune** |
+| les suites | `test-base-habitee.ts` (neuve, jouée contre une vraie base dans cinq états, rouge contre l'ancien `preparer.sh`) |
+| le détail | `ARCHITECTURE.md` §346 |
+
+**LE SEED N'A PAS CHANGÉ, ET NE DOIT PAS CHANGER.** Vider puis reconstruire est
+son contrat, et les suites en dépendent. Ce qui a changé, c'est **qui décide de
+l'appeler**.
+
+**Avant toute reconstruction, chez lui :** `npm run sauvegarder:banc`.
+
+---
+## Dernier lot — UN REMÈDE QUI RÉUSSIT N'EST PAS UN REMÈDE QUI RÉPARE (13 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« L'appli ne fonctionne toujours pas ! Je vais me coucher, répare ça ! »* — capture iPhone de 1 h 58 : un TÉLÉCHARGEMENT proposé à la place d'Atlas. **Quatrième nuit** de la même panne |
+| ce que sa fiche disait | serveur debout sur 3000, veilleur en place, **404 du relais** — `[démarrage : ouvert]`. Datée 23 h 59 **UTC**, soit 1 h 59 chez lui : elle était VIVANTE, pas périmée |
+| la racine | `veiller.sh` reposait `PORT_OUVERT=oui` sur la seule foi du mot rendu par `gh`, annulant au tour suivant la remesure posée le 31 août contre ce défaut exact. Son journal écrivait *« port 3000 ouvert au public »* toutes les cinq minutes **sur un port mort** |
+| ce qui est fait | le remède est suivi de la mesure ; sans effet trois fois, il **cesse de se rejouer** et le dit. La remesure, elle, continue — un relais qui revient est repris seul |
+| ce qui a DISPARU | le mot `ouvert` de la liste `ouvert\|hors-codespace\|sans-gh`, et la ligne de succès qui l'accompagnait |
+| la migration | **aucune** |
+| les pièces | `.devcontainer/veiller.sh`, `scripts/_verdict-port.mjs` (le geste du cas `ouvert`) |
+| les suites | `test-port-remesure.ts` (réécrite sur la règle : elle compte **29 lignes de succès sur un port mort** contre l'ancien veilleur), `test-ouvrir-port.ts` (+1), `test-verdict-port.ts` (+1) |
+| le détail | `ARCHITECTURE.md` §345 |
+
+**AUCUN FICHIER DE `src/` N'EST TOUCHÉ.** Cette panne n'est pas dans le produit :
+la requête n'atteint jamais Atlas. Ne pas chercher dans les écrans.
+
+**CE QUI RESTE OUVERT, et c'est la vraie question.** La perte du port n'est
+toujours **pas reproduite** — cet environnement n'a pas de Codespace. L'hypothèse
+la mieux étayée est écrite dans `TODO.md` avec le geste qui la tranche :
+son port 3000 serait *détecté* au lieu d'être *déclaré*, et « Rebuild Container »
+appliquerait la déclaration que son espace n'a jamais reçue (piège du §55, pour
+la cinquième fois). **Ne pas coder de remède automatique avant ce verdict** : une
+reconstruction lancée seule rejoue `preparer.sh` chez lui, sans personne devant.
+
+---
+## Dernier lot — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
 
 | | |
 |---|---|

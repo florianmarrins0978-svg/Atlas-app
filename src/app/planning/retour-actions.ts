@@ -6,6 +6,8 @@ import { getRole } from "@/server/autorisation";
 import { exigerEcran, exigerChantierDansSaPortee } from "@/server/garde-action";
 import { peutPoserUnRetour } from "@/lib/acces-roles";
 import { getEntreprise } from "@/server/repositories/entreprises";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { fonctionOuverte } from "@/lib/abonnements";
 import { listerPhotos, ajouterPhoto } from "@/server/repositories/photos";
 import { poserLeRetour, retourDuChantier } from "@/server/repositories/retours-intervention";
 import { tachesDuChantier } from "@/server/repositories/devis";
@@ -57,6 +59,25 @@ async function garder(chantierId: string, action: string) {
 }
 
 /**
+ * CE QUE LE PATRON EXIGE EN FIN DE CHANTIER — lu à UN endroit pour les deux
+ * gestes, et tenu par la formule.
+ *
+ * Les retours sont un plus d'« Entreprise » (sa décision du 10 septembre 2026).
+ * Un « Artisan » qui avait coché « retour demandé » avant de choisir sa formule
+ * ne doit pas continuer à le faire réclamer à ses gars : ce qu'il ne peut plus
+ * lire, on ne le leur demande pas. La règle vit dans `fonctionOuverte` ; ici on
+ * la lit, on ne la réécrit pas.
+ */
+async function reglesDuRetour(ctx: Awaited<ReturnType<typeof garder>>) {
+  const [entreprise, abonnement] = await Promise.all([getEntreprise(ctx), abonnementDeLEntreprise(ctx)]);
+  const ouvert = fonctionOuverte(abonnement?.formule, "retours");
+  return {
+    demande: ouvert && (entreprise?.retourDemande ?? false),
+    photoExigee: ouvert && (entreprise?.retourPhotoExigee ?? false),
+  };
+}
+
+/**
  * Ce que l'écran a besoin de savoir en ouvrant la fiche : ce qu'il y a à faire,
  * ce que le patron exige, et le retour s'il existe déjà.
  *
@@ -67,18 +88,15 @@ async function garder(chantierId: string, action: string) {
 export async function etatDuRetourAction(chantierId: string) {
   const ctx = await garder(chantierId, "lire le retour d'intervention");
 
-  const [entreprise, feuille, retour, sesPhotos] = await Promise.all([
-    getEntreprise(ctx),
+  const [regles, feuille, retour, sesPhotos] = await Promise.all([
+    reglesDuRetour(ctx),
     tachesDuChantier(ctx, chantierId),
     retourDuChantier(ctx, chantierId),
     listerPhotos(ctx, chantierId),
   ]);
 
   return {
-    regles: {
-      demande: entreprise?.retourDemande ?? false,
-      photoExigee: entreprise?.retourPhotoExigee ?? false,
-    },
+    regles,
     // Ce qu'il y a à faire vient du DEVIS, sans un prix — c'est déjà ce que la
     // feuille de chantier affiche, et une seconde source divergerait.
     aFaire: feuille?.taches ?? [],
@@ -102,11 +120,7 @@ export async function poserLeRetourAction(
 ): Promise<{ ok: true } | Refus> {
   const ctx = await garder(chantierId, "poser un retour d'intervention");
 
-  const entreprise = await getEntreprise(ctx);
-  const regles = {
-    demande: entreprise?.retourDemande ?? false,
-    photoExigee: entreprise?.retourPhotoExigee ?? false,
-  };
+  const regles = await reglesDuRetour(ctx);
   const pose = { taches: quoi.taches, photos: quoi.photoIds.length };
   if (!peutPoserLeRetour(pose, regles)) {
     return { ok: false, raison: phraseDeCeQuiManque(pose, regles) };
