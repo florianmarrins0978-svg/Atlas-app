@@ -131,7 +131,7 @@ async function main() {
       await page.goto(`${BASE}/reglages/equipe`, { waitUntil: "networkidle" });
       const carte = page.locator('[data-atlas="fonction-reservee-absences"]');
       await carte.waitFor({ timeout: 10_000 });
-      assert.match(await carte.innerText(), /Les absences sont dans « Entreprise »/);
+      assert.match(await carte.innerText(), /Les absences sont dans «[  ]Entreprise[  ]»/);
       await page.screenshot({ path: `${CAPTURES}/artisan-absences.png` });
     });
 
@@ -139,7 +139,7 @@ async function main() {
       await page.goto(`${BASE}/termines/retours`, { waitUntil: "networkidle" });
       const carte = page.locator('[data-atlas="fonction-reservee-retours"]');
       await carte.waitFor({ timeout: 10_000 });
-      assert.match(await carte.innerText(), /Les retours sont dans « Entreprise »/);
+      assert.match(await carte.innerText(), /Les retours sont dans «[  ]Entreprise[  ]»/);
       await page.screenshot({ path: `${CAPTURES}/artisan-retours.png` });
     });
 
