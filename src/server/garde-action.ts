@@ -5,7 +5,9 @@ import {
   peutModifierLePlanning,
   peutVoirLesMontants,
 } from "@/lib/acces-roles";
+import { fonctionOuverte, type FonctionReservee } from "@/lib/abonnements";
 import { accesDeLaPersonne, getRole } from "./autorisation";
+import { abonnementDeLEntreprise } from "./repositories/abonnements";
 import { chantiersDeLEquipe } from "./repositories/chantiers";
 import type { Ctx } from "./repositories/context";
 
@@ -296,6 +298,25 @@ export async function exigerGestionDevis(ctx: Ctx, action: string): Promise<void
 export async function exigerFacturation(ctx: Ctx, action: string): Promise<void> {
   const role = await getRole(ctx);
   if (!role || !peutFacturer(role)) {
+    throw new ActionRefuseeError(action);
+  }
+}
+
+/**
+ * **LA FORMULE DE L'ENTREPRISE OUVRE-T-ELLE CETTE FONCTION ?**
+ *
+ * Sa décision du 10 septembre 2026 — *« oui bloqué pour l'abonnement artisan »* :
+ * les absences d'équipe et les retours d'intervention sont un plus
+ * d'« Entreprise ». L'écran le montre (`FonctionReservee`) ; cette garde le
+ * TIENT, parce qu'un écran fermé ne ferme pas l'action — c'est tout l'en-tête
+ * de ce fichier.
+ *
+ * La règle n'est pas ici : `fonctionOuverte` décide, et une entreprise sans
+ * abonnement passe — une fermeture est la conséquence d'une formule choisie.
+ */
+export async function exigerFonction(ctx: Ctx, fonction: FonctionReservee, action: string): Promise<void> {
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  if (!fonctionOuverte(abonnement?.formule, fonction)) {
     throw new ActionRefuseeError(action);
   }
 }

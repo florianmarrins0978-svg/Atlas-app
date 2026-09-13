@@ -8,6 +8,70 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — L'ESSAI DE QUINZE JOURS, ET CE QUI SE FERME (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | la planche `appli/l-essai-et-ce-qui-est-ferme.html` (10 septembre) : *« essai gratuit 15 jours »*, lecture seule au 16ᵉ jour, absences et retours réservés à « Entreprise ». Le code avait été commencé dans le dossier et laissé sans compiler ; il a dit *« finis déjà ça »* |
+| ce qui a changé | la porte pose une ligne `abonnements` en `essai` (formule « on essaie tout », `FORMULE_DE_LESSAI`) ; `RubanEssai` en tête de l'accueil ; **`withEntreprise` passe la transaction en `READ ONLY`** quand l'essai est fini — Postgres refuse, `EssaiTermineError` ; bouton « Créer un devis » éteint + phrase, `EcranLectureSeule` sur `/chantiers/nouveau` ; `FonctionReservee` à la place des absences (Équipe) et des retours, pastille éteinte, `exigerFonction` sur les actions, `reglesDuRetour` au planning |
+| la migration | **0089** — le statut `essai` entre dans la contrainte |
+| la règle | `src/lib/abonnements.ts` : `etatDeLEssai`, `enLectureSeule`, `fonctionOuverte`, `formuleChoisie`, `texteDuRuban` |
+| les suites | `test-abonnements` (règle), `test-essai-lecture-seule-db` (la transaction, sous `atlas_app`), `test-essai-e2e` (son geste) |
+
+**LE PIÈGE : la seule porte.** `enregistrerLAbonnement` écrit avec
+`{ pourSortirDeLEssai: true }`. Une écriture de plus qui devrait passer en
+lecture seule se DÉCLARE là, elle ne contourne pas `withEntreprise`.
+
+**Son Atlas à lui n'a pas de ligne d'abonnement** : rien de tout cela ne le
+touche. Ne pas lui en créer une « pour voir ».
+
+**CE QUI RESTE À LUI.** Le « 15 » dans l'article 14.2 des conditions générales
+(version 3 — une version publiée ne se modifie jamais).
+
+---
+## Lot précédent — L'ACOMPTE SUR LE DEVIS, LA B (12 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« rajouter un acompte automatisé sur le devis, un peu comme on fait pour rajouter une TVA »* — planche `appli/l-acompte-sur-le-devis.html`, la B, six retours dans la soirée, puis *« Parfait code la B »* |
+| ce qui a changé | sous « Total TTC » : une ligne dorée par acompte (taux **cumulé**, montant = ce qui tombe ce jour-là), « Reste à régler après acompte(s) », « + Ajouter un acompte » ; la phrase des conditions écrite sous les notes ; la colonne **Unité** après Qté ; le PDF porte l'échéancier sous le total et les phrases dans les notes |
+| la migration | **0088** — `acomptes_devis` (rang 1..3, taux cumulé), RLS, trigger d'immuabilité comme `lignes_devis` |
+| la règle | `src/lib/acomptes-devis.ts` — une seule fonction pour l'écran, le dépôt (`ecrireAcomptes` réécrit tout, borné, réaligné) et le PDF |
+| corrigé en chemin | le PDF **envoyé** partait sans validité ni conditions réglées ; `donneesPdfDuDevis` sert désormais l'aperçu, l'envoi et la feuille sans prix |
+| les suites | `test-acomptes-devis` (pur), `test-acomptes-pdf` (trace), `test-acomptes-devis-e2e` (son geste, gabarit iPhone) |
+
+**LE PIÈGE DES TAUX.** Ils sont CUMULÉS, et c'est sa décision : « 50 » au rang
+2 n'est pas « la moitié ce jour-là ». Le libellé le dit dès le deuxième
+(« Acompte à mi-parcours 50 % » — sans parenthèses ni « réglés », sa correction du 13 septembre). La borne s'applique quand le doigt
+QUITTE le champ — à la frappe, « 75 » commence par « 7 » et sauterait à 50.
+
+**CE QUI RESTE À LUI.** Une « facture d'acompte » une fois le devis accepté —
+posé dans la planche, sans réponse. Le devis DIT l'acompte, il ne le facture pas.
+
+## Lot précédent — TOUT LE CIRCUIT PDF (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« va vérifier à tous les endroits où on peut télécharger ou regarder le pdf — je veux plus que ça se reproduise »* |
+| trouvé | **la visionneuse ne peignait AUCUN document** depuis le 11 ; le planning ouvrait encore un onglet de Safari ; la route de la feuille écrivait ses en-têtes à la main |
+| la racine | `pdfjs-dist` ≥ 5.5 appelle `Map.prototype.getOrInsertComputed`, absente des navigateurs d'avant 2025 |
+| la migration | **aucune** |
+| les pièces | `package.json` (pdfjs-dist **épinglé** 5.4.624), `PlanningClient.tsx`, `src/app/api/chantiers/[chantierId]/feuille/pdf/route.ts` |
+| les suites | `test-tous-les-pdf.ts` (neuve : les deux portes), `test-visionneuse-pdf.ts` (+1 : l'épingle) |
+| le détail | `ARCHITECTURE.md` §341 |
+
+**LE PIÈGE, et il coûte tout l'écran :** ne PAS remonter `pdfjs-dist` sans
+vérifier. `grep -c getOrInsertComputed node_modules/pdfjs-dist/build/pdf.mjs`
+doit rendre 0 — sinon la visionneuse refuse tout document, chez lui comme chez
+ses clients. Le build `legacy` ne sauve rien : il appelle la même méthode.
+
+**LA RÈGLE À TENIR :** un écran ne remet jamais un PDF au navigateur. Deux
+portes — `BoutonTelechargerDocument` pour garder, `adresseDeLaVisionneuse` pour
+regarder.
+
+---
+## Lot précédent — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
+
 ## Dernier lot — RECONSTRUIRE L'ESPACE N'EFFACE PLUS SES CHANTIERS (13 septembre 2026)
 
 | | |
@@ -19,7 +83,7 @@ sert.
 | le piège fermé | le zéro d'un rôle qui ne traverse pas la RLS ne vaut pas « vierge » : il vaudrait la base entière. Mesuré auprès de la base, jamais déduit du nom du rôle |
 | la migration | **aucune** |
 | les suites | `test-base-habitee.ts` (neuve, jouée contre une vraie base dans cinq états, rouge contre l'ancien `preparer.sh`) |
-| le détail | `ARCHITECTURE.md` §342 |
+| le détail | `ARCHITECTURE.md` §346 |
 
 **LE SEED N'A PAS CHANGÉ, ET NE DOIT PAS CHANGER.** Vider puis reconstruire est
 son contrat, et les suites en dépendent. Ce qui a changé, c'est **qui décide de
@@ -40,7 +104,7 @@ l'appeler**.
 | la migration | **aucune** |
 | les pièces | `.devcontainer/veiller.sh`, `scripts/_verdict-port.mjs` (le geste du cas `ouvert`) |
 | les suites | `test-port-remesure.ts` (réécrite sur la règle : elle compte **29 lignes de succès sur un port mort** contre l'ancien veilleur), `test-ouvrir-port.ts` (+1), `test-verdict-port.ts` (+1) |
-| le détail | `ARCHITECTURE.md` §341 |
+| le détail | `ARCHITECTURE.md` §345 |
 
 **AUCUN FICHIER DE `src/` N'EST TOUCHÉ.** Cette panne n'est pas dans le produit :
 la requête n'atteint jamais Atlas. Ne pas chercher dans les écrans.
@@ -80,7 +144,7 @@ puis rallumer, une dernière fois) ; et le **404 du relais sur le port 3000 n'es
 pas reproduit** — le verdict et son geste sont corrigés, la cause ne l'est pas.
 
 ---
-## Lot précédent — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)
+## Le même soir — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)
 
 | | |
 |---|---|

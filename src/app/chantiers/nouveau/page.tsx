@@ -1,6 +1,9 @@
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getClient } from "@/server/repositories/clients";
 import { photosDesAutresChantiers } from "@/server/repositories/photos";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { enLectureSeule } from "@/lib/abonnements";
+import EcranLectureSeule from "@/components/atlas/EcranLectureSeule";
 import FormulaireNouveauChantier, { type ClientDeDepart } from "./FormulaireNouveauChantier";
 
 // La route reste, et c'est délibéré : les suites de bout en bout y vont
@@ -29,6 +32,13 @@ export default async function NouveauChantierPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const parametres = await searchParams;
+  // Essai terminé : cet écran est la porte que l'accueil vient d'éteindre. Un
+  // formulaire qu'on remplit en entier pour un refus au bout serait une panne
+  // déguisée ; on le dit ici, avant la première case.
+  const ctx = await getCurrentCtx();
+  if (enLectureSeule(await abonnementDeLEntreprise(ctx), new Date())) {
+    return <EcranLectureSeule titre="Nouveau chantier" />;
+  }
   const brut = parametres.client;
   const clientId = Array.isArray(brut) ? brut[0] : brut;
 
@@ -42,7 +52,6 @@ export default async function NouveauChantierPage({
 
   let depuisClient: ClientDeDepart | undefined;
   if (clientId) {
-    const ctx = await getCurrentCtx();
     const client = await getClient(ctx, clientId);
     // Un client effacé — ou d'une autre entreprise, ce que la RLS rend
     // indiscernable — ouvre simplement l'écran vierge. Pas de 404 : il voulait

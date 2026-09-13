@@ -8,6 +8,76 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### L'essai de quinze jours, et ce qui se ferme — sa planche du 10 septembre, codée
+
+*« Essai gratuit 15 jours »* · *« la B, mais il ne doit plus rien pouvoir faire
+à part enregistrer ses documents, ses clients »* · *« oui bloqué pour
+l'abonnement artisan »*. La planche `appli/l-essai-et-ce-qui-est-ferme.html`
+était sur `main` depuis le 10 ; le code s'était arrêté à mi-chemin dans le
+dossier, et ne compilait pas.
+
+**Ce qui change.** Un compte créé par la porte reçoit un essai de quinze jours,
+sans carte (ligne `abonnements` en statut `essai`, formule « on essaie tout »).
+Le ruban en tête de l'accueil compte les jours, passe au rouge à trois jours de
+la fin. Au 16ᵉ jour : **lecture seule** — tout se relit, rien ne se crée ; le
+bouton « Créer un devis » s'éteint et la phrase dit pourquoi ; s'abonner rouvre
+tout. À « Artisan », les absences et les retours d'intervention s'ouvrent sur
+« c'est dans Entreprise », la pastille des retours s'éteint, et les salariés ne
+se voient plus réclamer un retour.
+
+**Ce que ça évite, et comment.** La fermeture vit à UN endroit — `withEntreprise`
+déclare la transaction `READ ONLY`, et c'est Postgres qui refuse la première
+écriture, quel que soit le chemin. Cent soixante-seize gestes écrivent ; les
+fermer un par un aurait laissé une porte. Une seule reste, délibérément :
+l'enregistrement de l'abonnement, sans quoi il paierait sans pouvoir rentrer.
+
+**Son Atlas à lui ne bouge pas** : sans ligne d'abonnement, ni essai, ni
+lecture seule, ni fermeture. **Migration 0089** (le statut `essai`). Ce qui
+reste à lui : le « 15 » dans l'article 14.2 des conditions, avec la version 3.
+Détail : `ARCHITECTURE.md` §344.
+
+---
+
+### Tout le circuit PDF repris : deux portes, et la visionneuse qui ne peignait rien
+
+*« Va vérifier à tous les endroits où on peut télécharger ou regarder le pdf —
+je veux plus que ça se reproduise. »* Dix points d'accès recensés, et trois
+défauts réels trouvés (`ARCHITECTURE.md` §341) :
+
+- **la visionneuse ne peignait AUCUN document** depuis sa livraison du
+  11 septembre. `pdfjs-dist` 6.3 appelle une méthode arrivée dans les
+  navigateurs en 2025 ; là où elle manque, l'écran rend « Le document ne
+  s'ouvre pas ». La version est épinglée à 5.4.624, la dernière qui ne
+  l'appelle pas — et **ce n'est pas l'atelier qui décide : la page du devis est
+  ouverte par ses clients**, avec le téléphone qu'ils ont. La visionneuse peint
+  de nouveau, 18 077 pixels d'encre mesurés ;
+- **« Ouvrir le PDF sans les prix » du planning** ouvrait encore un onglet de
+  Safari, sans flèche de retour : oublié par le lot de la veille ;
+- **la route de la feuille de chantier** écrivait ses deux en-têtes à la main,
+  seule des six. Elle passe par `remise-de-fichier.ts` comme les autres.
+
+`test-tous-les-pdf.ts` tient la règle pour la suite : aucun écran ne remet un
+PDF au navigateur, il n'y a que deux portes. Il a trouvé l'écart de la feuille
+au premier essai, et il sait rougir.
+
+
+### La CI ne jouait plus rien : un module qui s'ouvrait une session en étant lu
+
+Sa CI est rouge depuis le 10 septembre, et pas pour la raison qu'on croyait.
+`ouvrir-session.mjs` appelait `main()` au niveau du module ; `test-ouvrir-session`
+en importe `cheminDuJeton`, si bien que **charger la suite ouvrait une vraie
+session** dans le dépôt courant. Sur la machine d'intégration, où « claude »
+n'est pas installé, elle mourait sur « spawn claude ENOENT ».
+
+Le coût était invisible et total : `npm test` rouge y fait SAUTER la
+construction, les suites navigateur et la connexion derrière un proxy. La CI
+rendait donc un rouge sans avoir rien éprouvé — et c'est exactement ce qu'on
+lui demande de faire à notre place (`AGENTS.md`).
+
+`main()` ne part plus qu'en appel direct. `test-ouvrir-session` porte un
+contrôle de plus, qui tient l'import lui-même et **sait rougir** : remis en
+l'état d'avant, il retrouve le défaut et le nomme.
+
 ### La fiche ne lui propose plus aucun geste qui peut effacer ses données
 
 *« Faut jamais qu'on me propose de faire ça, c'est hyper dangereux ce que tu
@@ -23,7 +93,7 @@ port —, et dit que le fond est **notre** travail. Un contrôle parcourt tous l
 états du port et refuse `Rebuild`, « reconstruire le conteneur », « supprime ton
 espace », `db:seed`, `TRUNCATE`, `DROP`, `db:push`.
 
-Sa règle : `CLAUDE.md` §4 septies. Le détail : `ARCHITECTURE.md` §343.
+Sa règle : `CLAUDE.md` §4 septies. Le détail : `ARCHITECTURE.md` §347.
 
 
 ### Reconstruire l'espace n'efface plus ses chantiers
@@ -39,7 +109,7 @@ la base, elle, survit sur son volume. Il ne l'amorce désormais que si elle est
 **vierge**, et le doute ne vide pas. Le zéro d'un rôle aveuglé par la RLS ne
 compte pas comme « vierge » — il vaudrait la base entière.
 
-Détail : `ARCHITECTURE.md` §342. Avant toute reconstruction :
+Détail : `ARCHITECTURE.md` §346. Avant toute reconstruction :
 `npm run sauvegarder:banc`.
 
 
@@ -71,10 +141,70 @@ mesure.
 sur un iPhone. Elle donne le chemin tactile, et un contrôle refuse désormais
 tout raccourci clavier dans un geste qu'on lui demande.
 
-Détail et preuves : `ARCHITECTURE.md` §341.
+Détail et preuves : `ARCHITECTURE.md` §345.
 
 ---
 ## 2026-09-12
+
+### L'acompte sur le devis — la B, codée le soir même
+
+*« Rajouter la possibilité de rajouter un acompte automatisé sur le devis, un
+peu comme on fait pour rajouter une TVA »*, puis sur la planche
+(`appli/l-acompte-sur-le-devis.html`) : *« il faut la B »*, *« il doit être
+marqué d'office »*, *« si on clique sur le moins il disparaît mais reste
+visible dans les notes et conditions quoi qu'il arrive »*, *« un deuxième
+acompte à mi-parcours »*, *« oui je veux des taux cumulés ; d'office 50 % pour
+le 2ᵉ et 75 pour le 3ᵉ »*, *« chez le client il faut marquer reste à régler
+après acompte et le montant »*. Et : *« Parfait code la B »*.
+
+**Ce que le devis fait maintenant.** Sous « Total TTC », une ligne dorée par
+acompte — le taux des Réglages **posé d'office** à la naissance du devis, puis
+« + Ajouter un acompte » pour un deuxième à mi-parcours (50 %) et un troisième
+à l'avancement (75 %). **Les taux sont cumulés** : « 50 % » à mi-parcours veut
+dire la moitié du devis réglée à ce moment-là, et le montant de la ligne est
+ce qui tombe ce jour-là. Puis **« Reste à régler après acompte(s) »** et le
+montant — à l'écran, et sur le PDF que le client garde. Le « − » retire la
+ligne ; la phrase du réglage reste dans les notes et conditions, écrite sous
+son texte à l'écran comme sur le papier.
+
+**Ce que ça évite.** Son premier essai — 30, 50, 75 lus comme des parts —
+rendait un reste à régler de **−1 564,20 €** sur un devis qui partait chez un
+client. Un taux cumulé ne descend jamais sous le précédent ni au-dessus de
+100, borné quand le doigt quitte le champ (pas à la frappe : « 75 » commence
+par « 7 »), et un 2ᵉ monté à 100 emporte le 3ᵉ. Le reste n'est jamais
+négatif, et les acomptes plus le reste font le TTC au centime.
+
+**Et la colonne Unité, après Qté** — *« pour les ml, kg, m³ etc. »*. Elle
+existait en base et sur le PDF (« 4 m³ », migration 0070) sans que l'écran la
+saisisse. Les unités usuelles viennent sous le champ quand il prend le doigt.
+
+**Un défaut trouvé en chemin, et corrigé à la racine : le PDF ENVOYÉ partait
+sans la validité ni les conditions réglées.** L'aperçu, l'envoi et la feuille
+sans prix composaient chacun leur copie des données du PDF, et seul l'aperçu
+portait `validiteJours` et `conditionsReglees` — le client téléchargeait par
+son lien un document sans « Validité » ni « Acompte de 30 % ». Une seule
+fonction désormais (`donneesPdfDuDevis`), pour les trois sorties.
+
+**Ce que la batterie a attrapé le 13, avant la livraison.** `acomptes_devis`
+manquait à l'export « Mes données » (`test-export-entreprise` l'a réclamé) ;
+la pastille d'unité peignait le vert pin au lieu de `colors.plein`
+(`test-boutons-pleins`). Et une course plus ancienne : deux rendus de l'écran
+du devis qui se chevauchent créaient chacun la version 1 du brouillon, et le
+second tombait sur `devis_chantier_version_uk` — écran blanc.
+`getOuCreerDevisBrouillon` prend désormais un verrou consultatif par chantier,
+lié à la transaction : le second attend, puis trouve le brouillon du premier.
+
+**Migration 0088** : `acomptes_devis` (rang, taux cumulé), RLS, immuable dès
+que le devis est envoyé. `devis.acompte_pourcent` reste : c'est le réglage
+recopié, la phrase des notes. Règle pure : `src/lib/acomptes-devis.ts`.
+Suites : `test-acomptes-devis` (18), `test-acomptes-pdf` (6),
+`test-acomptes-devis-e2e` (son geste). Détail : `ARCHITECTURE.md` §343.
+
+**Le 13 au matin, sa correction :** *« pour le client sur le devis il faut
+seulement écrire acompte à l'avancement 75 %, enlève les parenthèses ; pareil
+pour 50 % »*. Le « (50 % réglés) » qui expliquait le cumul est parti — ligne
+des totaux, phrase des notes, écran et PDF — dans la seule fonction qui
+l'écrit (`libelleLigneAcompte`, `phrasesAcomptes`).
 
 ### L'espace se déblaie lui-même : un lock sali ne le fige plus à vie
 

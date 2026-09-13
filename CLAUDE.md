@@ -602,7 +602,7 @@ fiche que son espace publie tout seul, à chaque quart d'heure.
    reconstruire, si. Entre deux remèdes, celui qui ne touche pas aux données
    passe toujours en premier, même s'il est moins définitif.
 2. **Si seul un geste destructeur peut réparer, ce n'est pas à LUI de le
-   porter.** C'est au dépôt de le rendre sûr — c'est ce qu'a fait le §342, en
+   porter.** C'est au dépôt de le rendre sûr — c'est ce qu'a fait le §346, en
    refusant d'amorcer une base habitée. Tant que ce n'est pas fait, le geste ne
    se propose pas : il s'inscrit dans `TODO.md` comme du travail à faire.
 3. **Vérifier DANS LE CODE ce qu'un geste détruit, jamais le supposer.** Les

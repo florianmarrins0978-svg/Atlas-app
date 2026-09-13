@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { RACINE, SOUS_WINDOWS, worktreesExistants } from "./preparer-sessions.mjs";
 
 /**
@@ -180,4 +181,20 @@ function main() {
   });
 }
 
-main();
+/**
+ * **`main()` ne part QUE si ce fichier est lancé directement — 13 septembre 2026.**
+ *
+ * Il s'exécutait à l'import, et `test-ouvrir-session.ts` importe `cheminDuJeton`
+ * d'ici : le seul fait de charger la suite OUVRAIT une vraie session dans le
+ * dépôt courant. Sur la machine d'intégration, où « claude » n'est pas
+ * installé, elle mourait sur « spawn claude ENOENT » — et comme `npm test`
+ * rougissait, la construction, les suites navigateur et la connexion derrière
+ * un proxy étaient toutes SAUTÉES. Une CI qui ne joue plus rien ne dit plus
+ * rien, et c'est ce qui durait depuis le 10 septembre.
+ *
+ * Un module qui agit en étant lu ne peut pas être éprouvé : c'est l'effet de
+ * bord qu'on retire, pas le symptôme qu'on rattrape (`CLAUDE.md` §4 quater).
+ */
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}

@@ -29078,7 +29078,195 @@ lot n'avait aucune raison de déplacer.
 
 ---
 
-## §341 — Un remède qui réussit n'est pas un remède qui répare
+## §341 — Deux portes vers un PDF, et rien d'autre
+
+**Sa demande du 13 septembre 2026 :** *« va vérifier sur chaque devis et
+facture, à tous les endroits où on peut télécharger ou regarder le pdf, si ça
+fonctionne bien — je veux plus que ça se reproduise »*.
+
+**Ce que le recensement a trouvé, et qu'aucun lot n'avait vu :** dix points
+d'accès, et trois lots successifs qui n'en avaient corrigé qu'une partie
+chacun.
+
+| Le défaut | Ce qu'il restait |
+|---|---|
+| le type mensonger (10 sept.) | corrigé partout |
+| l'onglet de Safari (11 sept.) | **« Ouvrir le PDF sans les prix » du planning l'ouvrait encore** — deux jours sans flèche de retour |
+| le lien de téléchargement (12 sept.) | six liens remplacés, **et rien n'empêchait le septième** |
+| la règle de remise en un seul endroit | **la route de la feuille écrivait encore ses deux en-têtes à la main** |
+
+**La règle, désormais tenue par un contrôle :** un écran ne remet JAMAIS un PDF
+au navigateur. Il y a deux portes, et deux seulement — `BoutonTelechargerDocument`
+pour garder le document, `adresseDeLaVisionneuse(…)` pour le regarder.
+`scripts/test-tous-les-pdf.ts` lit le code des écrans et refuse tout `href` qui
+vise une route `/pdf` en dehors d'elles. Il a trouvé l'écart de la feuille au
+premier essai, et il sait rougir : remis le lien du planning, il le nomme.
+
+### pdf.js exigeait une méthode que les téléphones n'ont pas tous
+
+**La visionneuse livrée le 11 septembre ne peignait RIEN.** Mesuré le 13 :
+« Le document ne s'ouvre pas (getOrInsertComputed is not a function) ». À partir
+de `pdfjs-dist` 5.5, pdf.js appelle `Map.prototype.getOrInsertComputed`, arrivée
+dans les navigateurs en 2025 — absente du Chromium de l'atelier (141).
+
+**Et ce n'est pas l'atelier qui décide : la page publique du devis est ouverte
+par SES CLIENTS**, avec le téléphone qu'ils ont. Faire dépendre la lecture d'un
+devis d'une méthode d'un an, c'est perdre celui qui n'a pas mis son téléphone à
+jour — et il ne le dira jamais, il rappellera pour demander le devis.
+
+La version est donc **épinglée à 5.4.624**, sans accent circonflexe : la
+dernière qui ne l'appelle pas. `test-visionneuse-pdf.ts` tient l'épingle en
+lisant le paquet installé — une montée de version qui ramènerait la méthode
+fait rougir le lot, au lieu de se découvrir chez un client.
+
+**Ce qui a été écarté :** le build `legacy` de pdf.js, qui semblait fait pour
+ça. Il appelle la même méthode, vingt-deux fois — vérifié avant de s'y fier.
+
+**Ce que cela ne prouve pas :** que la feuille de partage d'iOS range bien le
+fichier. Aucun WebKit n'est installable dans l'environnement de l'agent ; c'est
+son téléphone qui tranche, et lui seul.
+
+## §343 — Les acomptes d'un devis sont des lignes CUMULÉES sous le total, et la condition reste dans les notes
+
+**Sa demande du 12 septembre 2026, et ses six retours sur la planche
+`appli/l-acompte-sur-le-devis.html`** (la B) : posé d'office, retirable des
+totaux mais toujours écrit dans les notes, un deuxième acompte à mi-parcours,
+des taux cumulés (Réglages, puis 50, puis 75 d'office), le tiret retiré des
+phrases, et chez le client « Reste à régler après acompte » avec le montant.
+
+### Deux choses qui portent le même mot, et qui ne sont pas la même
+
+| | Où | Ce que c'est |
+|---|---|---|
+| `devis.acompte_pourcent` | migration 0064 | le RÉGLAGE recopié à la création — une condition, une phrase des notes |
+| `acomptes_devis` | migration 0088 | les LIGNES des totaux — ce qu'il pose et retire devis par devis |
+
+Les fondre en une seule aurait cassé sa règle du « − » : *« il disparaît mais
+reste visible dans les notes et conditions quoi qu'il arrive »*. Retirer la
+ligne ne retire pas la condition. Quand des lignes existent, leurs phrases
+remplacent celle du réglage dans les notes (`lignesConditionsDevis`, troisième
+argument) — sinon l'acompte s'imprimerait deux fois.
+
+### Cumulés, et bornés par une seule règle
+
+« 50 » au rang 2 veut dire : à mi-parcours, la moitié du devis est réglée. Ce
+qui tombe ce jour-là est la différence avec le cumul d'avant — calculé sur le
+cumul en euros puis soustrait, pour que les centimes résiduels tombent sur le
+dernier acompte et que la somme des acomptes plus le reste vaille EXACTEMENT
+le TTC (`echeancierDevis`).
+
+Son premier essai (30, 50, 75 lus comme des parts) rendait −1 564,20 €. D'où
+`tauxCumulesBornes` : jamais sous le précédent, jamais au-dessus de 100. Elle
+sert à trois endroits, et à aucun autre — l'écran pendant la frappe (le montant
+affiché est toujours borné), le dépôt qui réécrit l'échéancier entier
+(`ecrireAcomptes` : retirer le 2ᵉ fait remonter le 3ᵉ d'un rang, monter le 2ᵉ
+à 100 emporte le 3ᵉ), et le PDF. **La borne s'applique quand le doigt quitte
+le champ** : à la frappe, « 75 » commence par « 7 », qu'une borne immédiate
+ferait sauter à 50.
+
+Le moment se lit du rang — signature, mi-parcours, avancement — et **la fin du
+chantier n'en est pas un** : *« le 3ᵉ acompte n'est pas en fin de chantier,
+c'est le solde »*. Ce qui reste après le dernier acompte est le reste à régler.
+
+### Le PDF envoyé ne portait ni la validité ni les conditions
+
+L'aperçu, l'envoi et la feuille sans prix composaient chacun leur copie des
+données du PDF (`devis.ts`), et elles avaient divergé : `envoyerDevis` ne
+passait ni `validiteJours` ni `conditionsReglees`. Le client téléchargeait par
+son lien (`pdfDevisParJeton`, qui sert le fichier figé à l'envoi) un devis
+sans « Validité » ni « Acompte de 30 % » — pendant que l'aperçu les montrait à
+l'artisan. Trouvé en branchant les acomptes, qui auraient fait une quatrième
+copie. `donneesPdfDuDevis` est désormais la seule ; `sansChiffrage` décide
+seul de ce que la feuille de chantier ne montre pas.
+
+### La colonne Unité
+
+`lignes_prix.unite` et `lignes_devis.unite` existaient (migration 0070) et le
+PDF imprimait « 4 m³ » ; l'écran du devis lisait la colonne dans son type et
+n'en faisait rien. `ChampUnite` la pose après Qté, avec les unités usuelles
+sous le champ quand il prend le doigt ; vide, `majLigneAction` écrit `null`.
+
+## §344 — L'essai de quinze jours se referme en LECTURE SEULE, à un seul endroit : la transaction
+
+**Ses trois décisions du 10 septembre 2026**, sur la planche
+`appli/l-essai-et-ce-qui-est-ferme.html`, codées le 13 :
+
+| Ce qu'il a dit | Ce que ça fait |
+|---|---|
+| *« essai gratuit 15 jours »* | la porte (`creation-compte.ts`) pose une ligne `abonnements` en statut `essai`, sans carte, avec sa fin — `JOURS_ESSAI` vit dans `src/lib/abonnements.ts`, nulle part ailleurs |
+| *« la B, mais il ne doit plus rien pouvoir faire à part enregistrer ses documents, ses clients »* | au 16ᵉ jour, **tout se lit, rien ne s'écrit** ; il emporte une copie (Réglages, Mes données) |
+| *« oui bloqué pour l'abonnement artisan »* | les absences d'équipe et les retours d'intervention sont un plus d'« Entreprise » (`fonctionOuverte`) |
+
+**Ce que porte une ligne d'essai, et pourquoi « Illimité ».** L'essai n'est pas
+un abonnement : rien n'est payé, Stripe ne le connaît pas — il réclame une carte
+d'avance, et l'article 14.2 des conditions promet « sans saisie de moyen de
+paiement ». C'est Atlas qui compte. La ligne porte pourtant une formule, et
+c'est celle qui **n'enlève rien** (`FORMULE_DE_LESSAI`) : un essai qui
+fermerait les absences ferait essayer « Artisan » à quelqu'un qui hésite. On
+essaie tout ; on choisit après. Pendant l'essai, `formuleChoisie` rend `null` :
+l'écran d'abonnement propose de **s'abonner**, pas de changer au prorata un
+abonnement Stripe qui n'existe pas.
+
+**La lecture seule vit dans `withEntreprise`, et c'est Postgres qui refuse.**
+L'application compte 176 gestes qui écrivent. Une garde par action — le modèle
+de `garde-action.ts` pour les rôles — aurait fini par en oublier un, et il
+suffit d'un oubli pour que la fermeture soit un décor. Toutes les écritures
+d'une session passent par une seule fonction : elle joint l'abonnement à la
+vérification d'adhésion (une requête, pas deux — cette fonction ouvre chaque
+transaction de l'application) et, si l'essai est terminé, déclare la
+transaction **`READ ONLY`**. La première écriture, quel que soit son chemin,
+tombe sur l'erreur 25006 ; `withEntreprise` la traduit en `EssaiTermineError`
+et la journalise — un refus muet enverrait chercher ailleurs.
+
+Passer en lecture seule est permis à tout moment d'une transaction ; c'est le
+sens inverse que Postgres refuse après la première requête. Et les chemins sans
+session — rétention, exécuteur d'agenda, crochet de paiement — posent leur
+contexte eux-mêmes : ils ne passent pas ici, et purger un audio au bout de
+trente jours reste dû, essai fini ou non.
+
+**Une seule porte reste ouverte : s'abonner.** `enregistrerLAbonnement` passe
+`{ pourSortirDeLEssai: true }`. Sans elle, l'enregistrement du paiement serait
+lui-même refusé, et il paierait sans pouvoir rentrer. `sabonnerAction` ne fait
+que lire avant d'envoyer chez Stripe ; l'acceptation des documents légaux ne
+passe pas par `withEntreprise`. Rien d'autre n'a besoin de la porte.
+
+**Ce que l'écran en montre**, et pourquoi si peu : le ruban en tête de l'accueil
+(`RubanEssai`, or puis rouge à trois jours de la fin — `JOURS_AVANT_ALERTE`,
+trois et pas dix : un avertissement qui parle trop tôt s'apprend à être ignoré),
+le bouton « Créer un devis » **éteint avec la phrase dessous**
+(`PHRASE_LECTURE_SEULE`), et l'écran de création qui le dit avant la première
+case (`EcranLectureSeule`). Ailleurs, un geste d'écriture tombe sur le refus du
+serveur et sur le message de repli de l'écran — le message d'une exception
+d'action serveur n'arrive jamais tel quel (piège 0 ter). C'est assumé : la
+fermeture est TENUE partout, elle est DITE là où il crée.
+
+**« Artisan » : l'écran reste, le dedans change.** Une rubrique qui disparaît
+se cherche — il l'a vue hier, il ne la trouve plus, il appelle. La section des
+absences (Réglages → Équipe) et l'écran des retours s'ouvrent sur la même carte
+(`FonctionReservee`) : cadenas, « c'est dans Entreprise », le bouton vers la
+formule. L'onglet des retours reste dans Terminés, sa pastille s'éteint (un
+point rouge sur un écran qu'on ne peut pas ouvrir est une agression). Et la
+garde tient ce que l'écran montre : `exigerFonction` sur noter/retirer une
+absence et ouvrir un retour ; `reglesDuRetour` (planning) cesse de réclamer un
+retour aux salariés d'un « Artisan » — ce qu'il ne peut plus lire, on ne le leur
+demande pas. Ses absences déjà saisies ne s'effacent pas : elles reparaissent
+s'il monte de formule.
+
+**Ce que ça ne touche pas.** Une entreprise **sans ligne d'abonnement** — la
+sienne, et celles d'avant l'offre — n'a ni essai, ni lecture seule, ni
+fermeture : `etatDeLEssai` rend `null`, `fonctionOuverte` rend vrai. Une
+fermeture est la conséquence d'une formule choisie, jamais un état par défaut.
+
+**Ce qui reste à lui.** L'article 14.2 des conditions publiées dit encore
+« [À COMPLÉTER — 14 ou 30 jours] », et une version publiée ne se modifie jamais
+(`src/server/documents-legaux/versions.ts`) : le chiffre entrera avec la version 3, quand
+les quinze autres cases seront remplies.
+
+Suites : `test-abonnements.ts` (la règle), `test-essai-lecture-seule-db.ts`
+(la transaction, sous `atlas_app`), `test-essai-e2e.ts` (son geste, écran par
+écran).
+
+## §345 — Un remède qui réussit n'est pas un remède qui répare
 
 **Sa capture du 13 septembre 2026, à 1 h 58 :** Safari sur `about:blank`,
 proposant d'enregistrer un fichier nommé comme son espace. *« L'appli ne
@@ -29199,7 +29387,7 @@ script, et `test-verdict-port.ts` que la fiche donne les deux gestes.
 
 ---
 
-## §342 — Un espace qui se répare ne coûte pas les chantiers qu'il porte
+## §346 — Un espace qui se répare ne coûte pas les chantiers qu'il porte
 
 **Sa question du 13 septembre 2026 :** *« Ça va pas supprimer toutes mes
 données ? »* — posée devant le « Rebuild Container » que le §341 venait de lui
@@ -29268,7 +29456,7 @@ emportable — il existe depuis le 10 août, précisément pour cela.
 
 ---
 
-## §343 — Un geste dangereux ne se propose pas : il se rend sûr, ou il n'existe pas
+## §347 — Un geste dangereux ne se propose pas : il se rend sûr, ou il n'existe pas
 
 **Sa règle du 13 septembre 2026, posée en colère :** *« faut jamais qu'on me
 propose de faire ça, c'est hyper dangereux ce que tu viens de faire ! »* — après

@@ -45,7 +45,7 @@ INTERVALLE_RAPPORT="${ATLAS_INTERVALLE_RAPPORT:-900}"
 INTERVALLE_CONTROLE_PORT="${ATLAS_INTERVALLE_CONTROLE_PORT:-300}"
 # Combien de fois on rejoue un remède avant d'admettre qu'il ne répare pas.
 # Trois : assez pour absorber un relais qui met quelques secondes, trop peu pour
-# passer une nuit à se féliciter d'un port mort (§341).
+# passer une nuit à se féliciter d'un port mort (§345).
 REMEDES_AVANT_DE_RENONCER="${ATLAS_REMEDES_PORT:-3}"
 
 # ─────────────────────────────────────────────────────────────────────────────
