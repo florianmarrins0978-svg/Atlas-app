@@ -38,6 +38,15 @@ Détail : `ARCHITECTURE.md` §344.
 
 ---
 
+### Le contrôle de la base habitée réclamait à la sonde le contraire de sa garantie
+
+Arrivé avec le lot du jour, `test-base-habitee` rougissait dans l'atelier et
+aurait rougi en CI : il comptait les entreprises sous `atlas_owner` et exigeait
+un verdict, alors que la sonde s'ABSTIENT sous un rôle qui ne traverse pas la
+RLS — sa garantie principale, et le cas juste au-dessus l'exige. Le contrôle
+demande désormais d'abord ce que le rôle a le droit de voir. La sonde, elle,
+n'a pas bougé : elle avait raison.
+
 ### « Impossible de recommencer » : le geste restait éteint après un refus
 
 *« J'ai fait une dictée, ça n'a pas fonctionné, et impossible de

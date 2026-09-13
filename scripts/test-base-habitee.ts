@@ -71,15 +71,29 @@ cas("SA BASE, telle qu'elle est : habitée se dit habitée", async () => {
   }
   const client = new pg.Client({ connectionString: URL });
   await client.connect();
+  // **On demande d'ABORD ce que ce rôle a le droit de voir — 13 septembre 2026.**
+  //
+  // Ce cas comptait les entreprises et exigeait un verdict. Sous un rôle qui ne
+  // traverse pas la RLS — `atlas_owner`, celui de la CI et des ateliers —, la
+  // sonde s'ABSTIENT, et elle a raison : c'est sa garantie principale, celle du
+  // cas juste au-dessus. Le contrôle réclamait donc à la sonde le contraire de
+  // ce qu'on lui demande, et rougissait sur du code juste.
+  const { rows: qui } = await client.query(
+    "SELECT current_setting('is_superuser') = 'on' AS super, " +
+      "COALESCE((SELECT rolbypassrls FROM pg_roles WHERE rolname = current_user), false) AS passe"
+  );
+  const voitTout = qui[0].super || qui[0].passe;
   const { rows } = await client.query("SELECT count(*)::int AS n FROM entreprises");
   await client.end();
-  const attendu = rows[0].n > 0 ? 0 : 1;
+  const attendu = voitTout ? (rows[0].n > 0 ? 0 : 1) : 2;
   assert.equal(
     interroger({ ...process.env, DATABASE_SUPER_URL: URL }),
     attendu,
-    rows[0].n > 0
-      ? "une base qui porte des entreprises est annoncée vierge : le seed l'effacerait"
-      : "une base vide est annoncée habitée : un espace neuf n'aurait pas de quoi se connecter"
+    voitTout
+      ? rows[0].n > 0
+        ? "une base qui porte des entreprises est annoncée vierge : le seed l'effacerait"
+        : "une base vide est annoncée habitée : un espace neuf n'aurait pas de quoi se connecter"
+      : "un rôle aveuglé par la RLS doit faire ABSTENIR la sonde, jamais conclure"
   );
 });
 
