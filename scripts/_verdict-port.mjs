@@ -38,26 +38,22 @@
  * Le mot rendu par `ouvrir-port.sh` tranche, et il n'était pas lu ici.
  */
 /**
- * LA RECONSTRUCTION DU CONTENEUR, ÉCRITE POUR UN TÉLÉPHONE.
+ * **AUCUN GESTE RENDU ICI NE DOIT POUVOIR EFFACER SES DONNÉES — 13 septembre 2026.**
  *
- * **Payé le 13 septembre 2026, et il a fallu qu'il le demande :** *« c'est où
- * dans l'éditeur ? »*. Ce geste était donné sous la forme « ⌘⇧P → Rebuild
- * Container ». Il lit cette fiche sur un iPhone : **il n'y a pas de ⌘⇧P**, et
- * un raccourci clavier y est un geste inatteignable.
+ * Sa règle, posée en colère et après l'avoir demandé deux fois : *« faut jamais
+ * qu'on me propose de faire ça, c'est hyper dangereux ce que tu viens de
+ * faire ! »*. Ce fichier lui proposait « Rebuild Container » pour remettre son
+ * port — un geste qui rejoue `postCreateCommand`, donc le seed, donc un
+ * `TRUNCATE … CASCADE` sur ses chantiers.
  *
- * C'est la faute que ce dépôt paie depuis le premier jour, sous un autre
- * habit — « lui faire viser un panneau minuscule sur un écran de six pouces »
- * (`ouvrir-port.sh`). Une fiche qui donne un geste qu'il ne peut pas faire ne
- * vaut pas mieux qu'une fiche muette : il la lit, il ne peut rien, et il
- * redemande.
+ * **C'était la deuxième fois** : le 10 août, devant « supprime ton espace », il
+ * répondait déjà *« ça va effacer tout ce qu'il y a en mémoire »*. La règle vit
+ * désormais dans `CLAUDE.md` §4 septies, et `test-verdict-port.ts` la tient.
  *
- * Écrit une seule fois, employé aux deux endroits qui le proposent — deux
- * copies finiraient par diverger (`CLAUDE.md` §3).
+ * **Ce qui reste ici : le rallumage, et lui seul.** Il ne détruit rien, et il
+ * remet le port. Le remède de fond — que ce port cesse de se perdre — n'est pas
+ * un geste à lui confier : c'est du travail à faire, inscrit dans `TODO.md`.
  */
-const RECONSTRUIRE =
-  "☰ (en haut à gauche) → Affichage → Palette de commandes… →\n" +
-  "     taper « rebuild » → « Codespaces : Reconstruire le conteneur ».";
-
 function gestePort(etatPort) {
   const mot = String(etatPort ?? "");
 
@@ -66,9 +62,8 @@ function gestePort(etatPort) {
       "     LE RELAIS NE CONNAÎT MÊME PAS LE PORT 3000 — vérifié auprès de GitHub.\n" +
       "     Le rendre « public » ne peut donc rien : il n'y a rien à basculer.\n" +
       "     Il faut le RÉENREGISTRER : onglet PORTS → retirer la ligne 3000, puis\n" +
-      "     « Transférer un port » → 3000. S'il ne revient pas, reconstruire le\n" +
-      "     conteneur — la déclaration publique de `devcontainer.json` ne\n" +
-      "     s'applique qu'à ce moment-là :\n     " + RECONSTRUIRE
+      "     « Transférer un port » → 3000.\n" +
+      "     S'il ne revient pas : RALLUMER L'ESPACE (github.com/codespaces)."
     );
   }
 
@@ -78,8 +73,7 @@ function gestePort(etatPort) {
       "     personne n'a donc réglé ce port depuis son allumage.\n" +
       "     onglet PORTS → clic droit sur 3000 → « Visibilité du port » → « Public ».\n" +
       "     S'il n'y a PAS de ligne 3000, c'est qu'il n'est pas déclaré : le\n" +
-      "     transférer, ou RECONSTRUIRE LE CONTENEUR, qui applique la déclaration\n" +
-      "     publique de `devcontainer.json` :\n     " + RECONSTRUIRE
+      "     transférer depuis ce même onglet, ou RALLUMER L'ESPACE."
     );
   }
 
@@ -115,20 +109,20 @@ function gestePort(etatPort) {
   // fois). Un port détecté vit le temps de la session qui l'a détecté ; un port
   // déclaré revient à chaque démarrage du conteneur.
   //
-  // **« Rebuild Container » est le seul geste qui applique cette déclaration**,
-  // et c'est le même que le cas `non-declare` donne déjà plus haut. Il est donné
-  // ici comme ce qu'il est — l'explication la mieux étayée de la récidive, pas
-  // une certitude : elle ne se mesure que chez lui, et elle se tranche à la
-  // récidive suivante (`TODO.md`).
+  // **ET CE N'EST PAS À LUI DE LE RÉPARER — sa règle du 13 septembre 2026.**
+  // Le seul geste connu qui applique cette déclaration reconstruit le
+  // conteneur, donc rejoue le seed, donc efface ses chantiers : il ne se
+  // propose pas (`CLAUDE.md` §4 septies). Tant que le dépôt n'a pas rendu ce
+  // remède sûr ET automatique, la fiche ne donne que le rallumage — qui ne
+  // détruit rien —, et le fond reste du travail à faire (`TODO.md`).
   if (mot === "ouvert") {
     return (
       "     LE PORT A BIEN ÉTÉ RENDU PUBLIC PAR L'ESPACE, et il refuse quand même :\n" +
       "     le relais l'a perdu depuis. Le rebasculer en « Public » ne peut rien.\n" +
-      "     TOUT DE SUITE : RALLUMER L'ESPACE (github.com/codespaces).\n" +
-      "     POUR QUE ÇA NE REVIENNE PAS, reconstruire le conteneur :\n     " +
-      RECONSTRUIRE +
-      "\n     Le port 3000 de cet espace est seulement DÉTECTÉ, donc il se reperd à\n" +
-      "     chaque session ; la reconstruction applique sa déclaration permanente."
+      "     RALLUMER L'ESPACE (github.com/codespaces) : c'est le seul geste qui le\n" +
+      "     remet, et il ne touche à rien.\n" +
+      "     Qu'il cesse de se perdre est NOTRE travail, pas un geste à lui\n" +
+      "     demander (`CLAUDE.md` §4 septies, `TODO.md`)."
     );
   }
 

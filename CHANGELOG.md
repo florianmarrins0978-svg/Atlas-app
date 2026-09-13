@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### La fiche ne lui propose plus aucun geste qui peut effacer ses données
+
+*« Faut jamais qu'on me propose de faire ça, c'est hyper dangereux ce que tu
+viens de faire ! »* — après s'être vu conseiller de reconstruire son conteneur,
+et avoir dû demander **deux fois** si cela supprimerait ses données.
+
+Le remède du port était écrit dans la fiche que son espace publie tout seul,
+tous les quarts d'heure : une consigne permanente servie à froid, à quelqu'un
+qui n'a aucun moyen de savoir ce qu'elle détruit.
+
+La fiche ne rend plus que des gestes inoffensifs — rallumer, réenregistrer le
+port —, et dit que le fond est **notre** travail. Un contrôle parcourt tous les
+états du port et refuse `Rebuild`, « reconstruire le conteneur », « supprime ton
+espace », `db:seed`, `TRUNCATE`, `DROP`, `db:push`.
+
+Sa règle : `CLAUDE.md` §4 septies. Le détail : `ARCHITECTURE.md` §343.
+
+
 ### Reconstruire l'espace n'efface plus ses chantiers
 
 *« Ça va pas supprimer toutes mes données ? »*, devant la reconstruction

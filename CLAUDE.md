@@ -571,6 +571,53 @@ Concrètement, pour toute planche dont on attend un choix :
 - **Laisser du code qui ne sert plus.** Voir §4 quinquies.
 - **Faire remonter un lien d'une couche à l'autre.** Voir §4 sexies.
 
+## 4 septies. RÈGLE D'OR — ON NE LUI PROPOSE JAMAIS UN GESTE QUI PEUT EFFACER SES DONNÉES
+
+**Posée le 13 septembre 2026, et il a fallu qu'il le dise lui-même :** *« faut
+jamais qu'on me propose de faire ça, c'est hyper dangereux ce que tu viens de
+faire ! »* — après s'être vu conseiller « Rebuild Container » pour réparer son
+port, et avoir dû demander deux fois *« ça va pas supprimer toutes mes
+données ? »*.
+
+**C'ÉTAIT LA DEUXIÈME FOIS.** Le 10 août 2026, devant « supprime ton espace et
+repars sur un disque sain », il répondait déjà : *« ça va effacer tout ce qu'il
+y a en mémoire »*. `scripts/sauvegarder-banc.sh` est né de cette correction-là,
+et son en-tête porte la phrase. Un mois plus tard, le même conseil repartait
+sous un autre nom — et cette fois il était **écrit dans le code**, rendu par la
+fiche que son espace publie tout seul, à chaque quart d'heure.
+
+**Ce que la règle interdit, et elle ne se négocie pas :**
+
+| Le geste | Pourquoi il ne se propose pas |
+|---|---|
+| « reconstruis le conteneur » | rejoue `postCreateCommand`, donc tout ce qu'il fait |
+| « supprime ton espace », « repars de zéro » | emporte la base, donc ses chantiers et ses clients |
+| « rejoue le seed », `db:seed`, `db:push --force` | le seed **vide** avant de reconstruire |
+| « vide la base », « TRUNCATE », « DROP » | il ne les tapera pas en sachant ce qu'ils font |
+| n'importe quel geste dont **on n'a pas vérifié** ce qu'il détruit | c'est exactement la faute des deux fois |
+
+**Ce qu'on fait à la place, et l'ordre compte :**
+
+1. **Chercher le geste sûr d'abord.** Rallumer un espace ne détruit rien ;
+   reconstruire, si. Entre deux remèdes, celui qui ne touche pas aux données
+   passe toujours en premier, même s'il est moins définitif.
+2. **Si seul un geste destructeur peut réparer, ce n'est pas à LUI de le
+   porter.** C'est au dépôt de le rendre sûr — c'est ce qu'a fait le §342, en
+   refusant d'amorcer une base habitée. Tant que ce n'est pas fait, le geste ne
+   se propose pas : il s'inscrit dans `TODO.md` comme du travail à faire.
+3. **Vérifier DANS LE CODE ce qu'un geste détruit, jamais le supposer.** Les
+   deux fois, la réponse était dans le dépôt : `preparer.sh` appelle le seed, et
+   le seed fait `TRUNCATE … CASCADE`. Trente secondes de lecture.
+4. **Et la sauvegarde n'est pas une permission.** `npm run sauvegarder:banc`
+   existe depuis le 10 août ; l'écrire à côté d'un geste dangereux ne le rend
+   pas acceptable, cela déplace seulement le risque sur lui.
+
+**Ce qui tient cette règle**, parce qu'une consigne en prose s'oublie au bout de
+trois heures (§1 bis) : `scripts/test-verdict-port.ts` refuse qu'un geste rendu
+au patron par la fiche de son espace contienne une reconstruction, une
+suppression ou un amorçage. Un rouge dans ce contrôle ne se réécrit pas — il
+veut dire qu'on s'apprêtait à lui reproposer ce qu'il a interdit deux fois.
+
 ## 4 quater. RÈGLE D'OR — PAS DE PANSEMENT, ON CORRIGE À LA RACINE
 
 **Posée le 7 septembre 2026 :** *« lorsque tu fais une correction, je ne veux

@@ -29264,3 +29264,53 @@ rouge contre le `preparer.sh` de la veille.
 **Ce qui reste vrai, et qu'il faut dire :** une reconstruction reste un geste
 qui touche la machine. Avant, `npm run sauvegarder:banc` écrit une copie
 emportable — il existe depuis le 10 août, précisément pour cela.
+
+
+---
+
+## §343 — Un geste dangereux ne se propose pas : il se rend sûr, ou il n'existe pas
+
+**Sa règle du 13 septembre 2026, posée en colère :** *« faut jamais qu'on me
+propose de faire ça, c'est hyper dangereux ce que tu viens de faire ! »* — après
+s'être vu conseiller « Rebuild Container » pour remettre son port, et avoir dû
+demander **deux fois** *« ça va pas supprimer toutes mes données ? »*.
+
+Elle vit dans `CLAUDE.md` §4 septies. Ce paragraphe dit ce qu'elle a changé dans
+le code.
+
+### Ce qui rendait la faute inévitable
+
+Le §341 avait trouvé un vrai remède et l'avait écrit dans `gestePort` — donc
+dans la fiche que son espace publie **tout seul, tous les quarts d'heure**. Ce
+n'était plus un conseil de conversation qu'on peut rattraper au message suivant :
+c'était une consigne permanente, servie à froid, à quelqu'un qui n'a aucun moyen
+de savoir ce qu'elle détruit.
+
+**Et le §342 ne suffisait pas.** Il a rendu la reconstruction inoffensive — mais
+seulement pour un espace qui a REÇU le correctif. Le sien ne l'avait pas, et
+c'est exactement la boucle du §339 : *il faut recevoir du code pour recevoir le
+correctif qui permet d'en recevoir*. Proposer un geste sûr « une fois que le
+correctif sera arrivé » revient à le lui proposer alors qu'il ne l'est pas.
+
+### Ce qui est fait
+
+`gestePort` ne rend plus que des gestes qui ne détruisent rien : le rallumage,
+et le réenregistrement du port dans l'onglet PORTS. La constante `RECONSTRUIRE`,
+écrite une heure plus tôt, **a disparu** — ce qu'on ne propose plus n'a plus à
+être écrit (§4 quinquies).
+
+Et le cas `ouvert` dit désormais que le fond **est notre travail**, pas un geste
+à lui demander. C'est la seule formulation honnête : le remède existe, il est
+connu, et il n'est pas en état de lui être confié.
+
+### Ce qui le tient
+
+`test-verdict-port.ts` parcourt **tous** les états du port croisés avec toutes
+les mesures possibles, et refuse dans la ligne comme dans le souci : `Rebuild`,
+« reconstruire le conteneur », « supprime ton espace », `db:seed`, `TRUNCATE`,
+`DROP`, `db:push`, « repartir de zéro ». Il rougit contre la fiche écrite une
+heure avant — celle qui le lui proposait.
+
+**Un rouge dans ce contrôle ne se réécrit jamais.** Il veut dire qu'on
+s'apprêtait à lui reproposer ce qu'il a interdit deux fois — le 10 août, puis le
+13 septembre.

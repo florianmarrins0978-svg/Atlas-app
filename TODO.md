@@ -71,8 +71,24 @@ public` sont dans `devcontainer.json` depuis le 6 août, son espace est plus
 ancien, et une déclaration ne répare pas un espace déjà né (§55). Un port
 détecté meurt avec la session qui l'a détecté.
 
-**Le geste qui tranche, et il ne coûte qu'une fois :** qu'il fasse
-« Rebuild Container » (⌘⇧P). Puis :
+**CE GESTE NE SE PROPOSE PLUS — sa règle du 13 septembre (`CLAUDE.md`
+§4 septies).** « Reconstruire le conteneur » rejoue `postCreateCommand`, donc le
+seed : sur un espace qui n'a pas encore reçu le §342, cela efface ses chantiers.
+Il l'a interdit après avoir dû demander deux fois.
+
+**Ce qui reste à faire, et c'est NOTRE travail, pas le sien :** rendre ce remède
+sûr ET automatique, de sorte qu'il n'ait jamais à le porter. Deux voies, à
+départager :
+
+| | |
+|---|---|
+| une fois le §342 chez lui | la reconstruction ne détruit plus rien — mais elle reste un geste, donc elle ne se propose toujours pas : il faudrait qu'elle se déclenche seule, et cela se demande à LUI |
+| un port DÉCLARÉ sans reconstruire | si `forwardPorts` s'applique aussi au démarrage du conteneur — à vérifier —, un simple rallumage suffirait, et il ne détruit rien |
+
+**La seconde voie d'abord** : elle n'a aucun coût pour lui. Elle se vérifie chez
+lui, en regardant si le port tient après un rallumage une fois le §342 reçu.
+
+**Si cette hypothèse tombe :**
 
 | Ce qu'on observe ensuite | Ce que ça prouve |
 |---|---|
