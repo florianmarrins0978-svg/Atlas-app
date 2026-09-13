@@ -107,7 +107,9 @@
     ".next-voir/types/**/*.ts",
     ".next-voir/dev/types/**/*.ts",
     ".next-voir2/types/**/*.ts",
-    ".next-voir2/dev/types/**/*.ts"
+    ".next-voir2/dev/types/**/*.ts",
+    ".next-sonde/types/**/*.ts",
+    ".next-sonde/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

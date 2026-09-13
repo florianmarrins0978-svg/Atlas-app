@@ -17,6 +17,8 @@ import {
   suffixeDeLAtelier,
 } from "./_atelier";
 import { prendreLeVerrou } from "./verrou-batterie.mjs";
+import { porteeDuLot, phraseDuRefusDePortee } from "./_portee-batterie";
+import { lireDernierVerdict, ecrireDernierVerdict, ilYA } from "./_dernier-verdict";
 
 // La batterie complète, à jouer AVANT de demander au patron d'essayer quoi que
 // ce soit.
@@ -329,12 +331,37 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
  * hors de Claude — un enregistrement dans l'éditeur — échappe au verrou, et
  * c'est alors l'empreinte qui parle.
  */
+/**
+ * ─── ET AVANT TOUT : Y A-T-IL SEULEMENT QUELQUE CHOSE À MESURER ? ──────────
+ *
+ * **Sa question du 10 septembre 2026, à la fin d'une heure perdue :** *« mais
+ * là tu faisais tourner une batterie pour pousser quoi ? »* Trois batteries de
+ * vingt minutes avaient été rejouées **en entier** alors que, d'un tour à
+ * l'autre, seuls deux ou trois `scripts/test-*.ts` avaient bougé.
+ *
+ * La règle existait — `CLAUDE.md` §6, un tableau à dérouler à la main. C'est
+ * précisément ce que ce dépôt sait ne pas tenir : une consigne en prose se lit
+ * au début d'une conversation et s'oublie au bout de trois heures, or c'est au
+ * bout de trois heures qu'on relance une batterie de trop.
+ *
+ * Elle vit donc ici, en fonction pure éprouvable (`_portee-batterie.ts`), et
+ * **le doute tranche toujours vers la batterie complète** : seuls « rien n'a
+ * bougé » et « seules des suites ont bougé » sont refusés.
+ */
+const empreinteAvant = empreinteDesSources(RACINE);
+const forcer = process.argv.includes("--forcer") || process.argv.includes("--complet");
+const precedent = lireDernierVerdict(RACINE);
+
+if (!forcer && precedent) {
+  const portee = porteeDuLot(fichiersRemues(precedent.empreinte, empreinteAvant));
+  if (portee.quoi !== "complete") {
+    console.error(phraseDuRefusDePortee(portee, precedent.verdict, ilYA(precedent.quand)));
+    process.exit(2);
+  }
+}
+
 const verrou = prendreLeVerrou("npm run verifier:avant-livraison");
 process.on("exit", verrou.rendre);
-
-// L'état des sources AVANT de mesurer. Comparé à la fin : un verdict rendu sur
-// un arbre qui a bougé pendant la mesure ne porte sur rien.
-const empreinteAvant = empreinteDesSources(RACINE);
 
 rmSync(DIST_VERIFICATION, { recursive: true, force: true });
 
@@ -384,6 +411,18 @@ if (remues.length > 0) {
   console.error("─────────────────────────────────────────────────────────────");
   process.exit(1);
 }
+
+// **Le verdict se NOTE, sinon le refus du prochain tour n'a rien à comparer.**
+// Écrit ici, après le contrôle d'empreinte : un verdict caduc n'est pas un
+// verdict, et le retenir ferait refuser la batterie qui devait le remplacer.
+ecrireDernierVerdict(RACINE, {
+  quand: Date.now(),
+  verdict:
+    echecs.length === 0
+      ? "✅ Batterie complète au vert."
+      : `❌ ${echecs.length} étape(s) en échec : ${echecs.map((e) => e.nom).join(", ")}`,
+  empreinte: empreinteAvant,
+});
 
 if (echecs.length === 0) {
   console.log("✅ Batterie complète au vert.");
