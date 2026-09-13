@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
-import { Pool } from "pg";
-import { versJourIso } from "../src/lib/disponibilites";
+import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { joursAProposer } from "./_calendrier-e2e";
 import { ADRESSE } from "./_adresse";
@@ -39,7 +38,6 @@ async function main() {
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
@@ -191,11 +189,9 @@ async function main() {
     [chantierId]
   );
   assert.ok(rows[0], "Aucun envoi enregistré : le devis n'est pas parti.");
-  // `pg` rend les colonnes `date[]` en objets Date : on compare des jours, pas
-  // des instants — sinon le fuseau du lecteur décalerait d'une case.
-  const envoyees = (rows[0].dates_proposees as (string | Date)[])
-    .map((d) => (d instanceof Date ? versJourIso(d) : String(d).slice(0, 10)))
-    .sort();
+  // Le pool du produit rend une `date[]` en jours « AAAA-MM-JJ », jamais en
+  // instants (`src/server/db/client.ts`) : le fuseau du PC ne décale aucune case.
+  const envoyees = (rows[0].dates_proposees as string[]).slice().sort();
   assert.deepEqual(
     envoyees,
     [premier, troisieme].sort(),

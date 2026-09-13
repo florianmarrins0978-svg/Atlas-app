@@ -8,6 +8,27 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### Une colonne `date` est un jour, pas un instant — réglé au pilote
+
+Quatre suites navigateur rougissaient d'un jour sur un PC à l'heure de Paris
+(« posé le 2026-09-13 au lieu du 2026-09-14 ») et restaient vertes en UTC, où
+tournent la CI et son espace. Le pilote `pg` rend une `date` en objet `Date`
+à minuit local ; relue par `toISOString()`, minuit à Paris est 22 h la veille.
+Drizzle se protégeait déjà pour ses requêtes ; le `pool` brut du produit, non.
+`src/server/db/client.ts` rend désormais `date` et `date[]` en texte, une
+fois pour tout le dépôt, et les quatre suites n'ont plus rien à compenser.
+
+Dans le même sens, l'écran Terminés comptait le mois du jour en UTC : le 1ᵉʳ du
+mois entre minuit et deux heures, il ouvrait sur le mois d'avant — la fenêtre
+même que sa remarque du 25 août avait fermée pour les jours. Il passe par
+`jourIso`.
+
+Ce que cela évite : une suite qui accuse le produit d'une date fausse qu'il
+n'a pas écrite, et un artisan qui cherche son mois le soir du 31.
+
+**Suite :** `test-date-est-un-jour-db.ts`, qui rougit sur l'ancien pilote
+dans n'importe quel fuseau. Détail : `ARCHITECTURE.md` §351.
+
 ### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
 
 Sa capture et ses quatre demandes du jour, dessinées d'abord

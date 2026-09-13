@@ -7,6 +7,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersTermines } from "@/server/repositories/factures";
 import { preparer } from "@/lib/termines-par-mois";
+import { jourIso } from "@/lib/jour";
 import ListeTermines from "./ListeTermines";
 import { tvaDeLaPeriodeCourante } from "@/server/tva-courante";
 
@@ -53,7 +54,10 @@ export default async function TerminesPage() {
   // **Le mois du jour se décide ICI, sur le serveur.** Calculé dans le
   // navigateur, il pourrait différer de celui du rendu serveur pour qui n'est
   // pas au même fuseau : React refuse alors l'hydratation, et l'écran fige.
-  const moisCourant = new Date().toISOString().slice(0, 7);
+  // Et il se compte à l'heure de son atelier, comme tout jour du dépôt
+  // (`jourIso`) : en UTC, le 1ᵉʳ du mois entre minuit et deux heures ouvrait
+  // encore sur le mois d'avant.
+  const moisCourant = jourIso(new Date()).slice(0, 7);
 
   // **Ce qu'il reste à payer de TVA, pour la carte en tête — sa demande du
   // 23 août 2026.** Composé une seule fois, dans `src/server/tva-courante.ts` :

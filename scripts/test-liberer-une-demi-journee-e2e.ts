@@ -55,8 +55,7 @@ async function creneauxEnBase(chantierId: string): Promise<string[]> {
     [chantierId]
   );
   return rows.map((r) => {
-    const jour = r.jour instanceof Date ? r.jour.toISOString().slice(0, 10) : String(r.jour);
-    return `${jour} ${r.demi}`;
+    return `${r.jour} ${r.demi}`;
   });
 }
 

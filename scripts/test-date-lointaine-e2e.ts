@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
-import { Pool } from "pg";
+import { pool } from "../src/server/db/client";
 import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS } from "../src/lib/disponibilites";
 import { MOIS_A_L_ECRAN } from "./_calendrier-e2e";
 import { jourLisible } from "../src/lib/jour";
@@ -26,7 +26,6 @@ async function main() {
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page.fill('input[name="email"]', "demo@atlas.local");
@@ -189,12 +188,10 @@ async function main() {
     [chantierId]
   );
   assert.ok(rows[0], "Aucun envoi enregistré : le devis n'est pas parti.");
-  // `pg` rend les colonnes `date[]` en objets Date : on compare des jours, pas
-  // des instants — sinon le fuseau du lecteur décalerait la comparaison d'une
-  // case, ce qui est exactement le piège que `versJourIso` existe pour éviter.
-  const enregistrees = (rows[0].dates_proposees as (string | Date)[]).map((d) =>
-    d instanceof Date ? versJourIso(d) : String(d).slice(0, 10)
-  );
+  // Le pool du produit rend une `date[]` en jours « AAAA-MM-JJ », jamais en
+  // instants : c'est ce qui permet de comparer des cases sans que le fuseau du
+  // PC en décale une (`src/server/db/client.ts`).
+  const enregistrees = rows[0].dates_proposees as string[];
   assert.ok(
     enregistrees.includes(dansSixMois),
     `La date à six mois ne figure pas dans l'envoi : ${JSON.stringify(enregistrees)}`

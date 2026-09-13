@@ -5,6 +5,16 @@
 
 ---
 
+## FAIT : UNE `date` EST UN JOUR, PAS UN INSTANT — 13 septembre 2026
+
+Le `pool` du produit rend `date` et `date[]` en « AAAA-MM-JJ » quel que soit
+le fuseau du PC : quatre suites qui rougissaient d'un jour à l'heure de Paris
+sont vertes sans rien compenser, et l'écran Terminés compte son mois à l'heure
+de l'atelier. **Aucune migration.** Suite `test-date-est-un-jour-db.ts`.
+Détail : `ARCHITECTURE.md` §351.
+
+---
+
 ## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026
 
 Sur la fiche client, plusieurs photos choisies d'un coup recréaient un
