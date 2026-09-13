@@ -25,8 +25,6 @@ import { existsSync, readFileSync } from "node:fs";
 import { verdictPort, regarderDuDehors } from "./_verdict-port.mjs";
 import { portLibre } from "./port-libre.mjs";
 import { lireEchecConstruction, phraseEchec } from "./lire-echec-construction.mjs";
-import { lireEtatDeLaBase, ligneEtatBase } from "./_etat-de-la-base.mjs";
-import { readdirSync } from "node:fs";
 
 const DIST = ".next-batie";
 // **Détournable pour l'éprouver, comme le témoin d'échec plus bas — et ce
@@ -218,30 +216,6 @@ const vivant = await serveurRepond();
  */
 const portTenu = vivant ? true : !(await portLibre(PORT));
 
-/**
- * **LA BASE, ET PAS SEULEMENT LE CODE — 13 septembre 2026.**
- *
- * Sa plainte : « je peux toujours pas créer de compte ». La fiche disait
- * pourtant « tout concorde » — ce qui était vrai du CODE, et ne disait rien de
- * la base. Or le code servi peut demander une table, une colonne ou une valeur
- * qu'une migration non appliquée n'a pas encore posées : l'écriture tombe, et
- * l'écran n'a plus qu'un numéro à montrer.
- *
- * Sa machine le savait déjà : `appliquer-migrations.sh` dit son échec au
- * journal de démarrage, que ce dépôt public ne publie pas. Deux lignes de plus
- * ici, et l'on n'a plus à le deviner.
- */
-const etatBase = await lireEtatDeLaBase({
-  url: process.env.DATABASE_URL || process.env.DATABASE_ADMIN_URL,
-  fichiers: (() => {
-    try {
-      return readdirSync("drizzle").filter((f) => f.endsWith(".sql"));
-    } catch {
-      return [];
-    }
-  })(),
-});
-
 console.log("\n── Votre espace de travail ────────────────────────\n");
 // **« HEAD » n'est pas un nom de branche, c'est l'aveu qu'il n'y en a pas.**
 // Git le rend sur une tête détachée, et l'afficher tel quel demanderait au
@@ -261,7 +235,6 @@ console.log(
         : `ABSENT — plus rien n'écoute sur le port ${PORT}`
   }`
 );
-console.log(`  Base             : ${ligneEtatBase(etatBase)}`);
 console.log(`  Veilleur         : ${veilleurVivant() ? "en place" : "absent"}`);
 // **Le port, et ce n'est pas un détail d'installation.** Un port privé fait
 // répondre GitHub à la place d'Atlas : depuis un téléphone non connecté, on ne
@@ -299,20 +272,6 @@ if (derniereIssue) console.log(`  Dernière m.à.j.  : ${derniereIssue}`);
 console.log("\n── Ce qu'il faut en conclure ──────────────────────\n");
 
 const soucis = [];
-
-// **Une base en retard passe AVANT le retard de code**, et pour la même raison
-// que la lenteur passe avant : un écran qui TOMBE ne se compare pas à un écran
-// qui n'a pas la dernière retouche. C'est la panne du 13 septembre.
-if (etatBase.statut === "en-retard") {
-  soucis.push(
-    "VOTRE BASE EST EN RETARD SUR LE CODE : " +
-      `${etatBase.manquantes.length} migration(s) ne sont pas appliquées.\n` +
-      "     Un écran qui écrit dans la base peut tomber sans rien dire d'utile —\n" +
-      "     c'est ce qui a empêché de créer un compte le 13 septembre.\n" +
-      "     Rallumez l'espace : les migrations se rejouent à l'allumage, et\n" +
-      "     aucune de vos données n'est touchée."
-  );
-}
 
 // **La lenteur passe AVANT le retard de version.** Un banc qui compile chaque
 // écran à l'ouverture est inutilisable ; savoir qu'il a deux commits de retard
