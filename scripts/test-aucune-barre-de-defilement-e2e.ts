@@ -10,8 +10,9 @@ import { ADRESSE } from "./_adresse";
 // slide. »*
 //
 // Ce n'était pas un désaccord de goût, c'était un oubli. Trois zones qui
-// défilent la masquaient déjà — `.atlas-glisse`, `.atlas-glisseur`,
-// `.atlas-pellicule` — et la quatrième, **la plus vue de l'application**, avait
+// défilent la masquaient déjà — `.atlas-glisse`, `.atlas-pellicule` (une
+// troisième, `.atlas-glisseur`, est partie avec le lecteur de l'anneau le
+// 13 septembre 2026) — et la dernière, **la plus vue de l'application**, avait
 // été sautée. Rien ne pouvait le dire : chaque zone porte la règle chez elle,
 // et personne ne compte les zones.
 //

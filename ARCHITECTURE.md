@@ -29502,3 +29502,52 @@ heure avant — celle qui le lui proposait.
 **Un rouge dans ce contrôle ne se réécrit jamais.** Il veut dire qu'on
 s'apprêtait à lui reproposer ce qu'il a interdit deux fois — le 10 août, puis le
 13 septembre.
+
+---
+
+## §342 — Jeter sa dictée là où il la fait, et le lecteur que personne ne montait
+
+**Sa décision du 13 septembre 2026 :** *« C'est sur cet écran que je le
+voulais ! Car en cas de problème on peut supprimer la dictée comme ça. »*
+
+**Ce qui manquait n'était pas le geste.** Le glissement « Retirer » existait
+depuis le 7 septembre — sur l'écran **Note vocale**, où il ne va pas quand sa
+dictée vient de rater. Il l'essayait sur la fiche où il dicte, et il n'y avait
+rien à saisir.
+
+**Et le code qui aurait dû le porter était mort.** `AnneauNoteVocale` avait deux
+rendus : un micro (l'enregistreur) et un lecteur — anneau creux, chrono,
+glisseur « Retirer », fosse. Le second n'était monté **par aucun écran** :
+
+```bash
+grep -rn "storageKey=" src/app --include=*.tsx   # un seul usage, et il vaut null
+```
+
+C'est la faute du 28 août (`CLAUDE.md` §1) retournée : du code écrit, éprouvé,
+et que le patron ne pouvait atteindre nulle part. **244 lignes de composant et
+40 règles de style** sont parties avec lui (§4 quinquies) — y compris trois
+animations que plus rien ne jouait, et deux règles d'accessibilité qui visaient
+des classes disparues.
+
+**Ce qui le remplace est ce qui existe déjà partout ailleurs** : `LigneRetirable`
+pour le glissement, `useRetraits` pour le tiroir « Annuler ». Rien n'est
+réinventé sur place — c'est cette dispersion qui avait ramené trois mécaniques
+de suppression dans l'application, et que sa règle du 10 août a fait
+disparaître.
+
+**Deux pièges, tous deux trouvés par la suite avant lui :**
+
+| | |
+|---|---|
+| le tiroir vivait DANS la condition qu'il annule | il disparaissait avec la ligne au moment du retrait : « Annuler » existait dans la page et n'était plus atteignable — le geste devenait irréversible sans le dire |
+| deux tiroirs sur le même écran | la pellicule des photos porte le sien, avec le même « Annuler ». Le repère `tiroir-de-la-dictee` les distingue ; sans lui, un contrôle vise le premier venu |
+
+**Et le retrait interrompt le suivi de la préparation** : sans cela, l'écran
+continuerait d'annoncer « Atlas prépare votre devis… » à partir d'une note
+qu'il vient de jeter, et l'emmènerait sur un devis qu'il n'a plus demandé.
+
+**Ce qui n'est pas couvert ici, et qui s'écrit comme tel :** le chemin
+destructeur — laisser le tiroir se fermer — n'est éprouvé que sur l'écran Note
+vocale, qui emploie la même action et le même crochet. L'éprouver aussi ici
+détruirait la note du jeu de démonstration dont les suites voisines ont besoin.
+

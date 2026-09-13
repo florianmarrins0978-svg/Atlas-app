@@ -8,7 +8,29 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — L'ESSAI DE QUINZE JOURS, ET CE QUI SE FERME (13 septembre 2026)
+## Dernier lot — JETER SA DICTÉE, ET LE LECTEUR MORT (13 septembre 2026)
+
+| | |
+|---|---|
+| sa décision | *« C'est sur cet écran que je le voulais ! Car en cas de problème on peut supprimer la dictée comme ça »* |
+| la racine | le glissement existait — sur l'écran Note vocale. Et le rendu « lecteur » d'`AnneauNoteVocale`, qui le portait, **n'était monté par aucun écran** |
+| retiré | 244 lignes de composant, 40 règles de style, 3 animations que plus rien ne jouait |
+| la migration | **aucune** |
+| les pièces | `FormulaireNouveauChantier` (le geste), `AnneauNoteVocale` (757 → 513 lignes), `globals.css` (1812 → 1541) |
+| les suites | `test-retirer-sa-dictee-e2e.ts` (neuve, jusqu'à la base), `test-geste-jamais-bloque.ts` |
+| le détail | `ARCHITECTURE.md` §342 |
+
+**LES DEUX PIÈGES, et ils se reproduiront ailleurs :** un tiroir « Annuler »
+posé DANS la condition qu'il annule disparaît au moment du retrait — le geste
+devient irréversible sans le dire. Et la pellicule des photos porte un second
+tiroir sur ce même écran : sans repère, un contrôle vise le premier venu.
+
+**CE QUI RESTE À LUI :** dire si la feuille de partage d'iOS range le fichier
+(lot du PDF), et ce qui a fait échouer sa dictée de ce matin — la panne est
+désormais journalisée, elle ne sera plus muette.
+
+---
+## Lot précédent — L'ESSAI DE QUINZE JOURS, ET CE QUI SE FERME (13 septembre 2026)
 
 | | |
 |---|---|

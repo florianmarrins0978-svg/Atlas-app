@@ -1756,41 +1756,21 @@ téléphone, barre d'adresse comprise (`scripts/e2e-browser.ts`).
 
 ---
 
-## ⏳ RETIRER SA DICTÉE LÀ OÙ IL LA FAIT — et un lecteur que personne ne monte
+## ✅ ~~Retirer sa dictée là où il la fait~~ — **A, CODÉ le 13 septembre 2026**
 
-**Sa plainte du 13 septembre 2026 :** *« on avait bossé sur le fait de pouvoir
-supprimer la dictée en glissant de droite à gauche, ça ne fonctionne pas »* —
-capture de la fiche de création, avec le micro.
+**Sa réponse :** *« C'est sur cet écran que je le voulais ! Car en cas de
+problème on peut supprimer la dictée comme ça. »*
 
-**Ce que le code dit, et il faut le dire avant de coder quoi que ce soit :**
+Codé sous le micro, avec les pièces communes (`LigneRetirable`, `useRetraits`)
+— il glisse, « Retirer » se découvre, « Annuler » retient six secondes
+(`ARCHITECTURE.md` §342, `test-retirer-sa-dictee-e2e.ts`). Le lecteur mort de
+l'anneau est parti avec : 244 lignes et 40 règles de style que personne ne
+pouvait atteindre.
 
-| | |
-|---|---|
-| le geste EXISTE | écran **Note vocale** (`/chantiers/[id]/note-vocale`), par `LigneRetirable` — le glissement commun |
-| sur SON écran | il n'y a pas de lecteur : l'anneau y est monté en ENREGISTREUR (`storageKey={null}`), décision du 5 septembre — *« ici, on dicte »* |
-| et surtout | **le rendu « lecteur » d'`AnneauNoteVocale` n'est monté PAR AUCUN ÉCRAN** : son glisseur, sa fosse « Retirer », son chrono ne sont atteignables nulle part |
-
-**Ce dernier point est la leçon du 28 août (`CLAUDE.md` §1), retournée :** du
-code écrit, éprouvé, et que le patron ne peut pas atteindre. Le `grep` qui le
-montre en dix secondes :
-
-```bash
-grep -rn "storageKey=" src/app --include=*.tsx   # un seul, et il vaut null
-```
-
-**Deux directions, et c'est LUI qui tranche** (elles s'excluent) :
-
-1. **amener le retrait sur l'écran où il dicte** — ce qu'il demande depuis le
-   7 septembre. Cela touche la chaîne de préparation : retirer la note pendant
-   qu'Atlas prépare le devis doit INTERROMPRE la préparation, sinon le devis
-   sort d'une dictée qu'il vient de jeter. **Une planche d'abord**
-   (`CLAUDE.md` §3 bis) ;
-2. **supprimer le lecteur mort** d'`AnneauNoteVocale` et sa CSS, et assumer que
-   le retrait ne vit que sur l'écran Note vocale.
-
-**Ne pas trancher à sa place**, mais ne pas laisser dormir non plus : tant que
-rien n'est décidé, un lecteur inatteignable reste dans le fichier que la
-prochaine session lira en croyant qu'il sert (§4 quinquies).
+**Ce qui reste ouvert, et c'est écrit pour ne pas se croire couvert :** le
+chemin destructeur — laisser le tiroir se fermer — n'est éprouvé que sur
+l'écran Note vocale. Même action, même crochet ; l'éprouver ici détruirait la
+note du jeu de démonstration dont les suites voisines ont besoin.
 
 ## ✅ ~~La visionneuse PDF exige une API très récente~~ — **CORRIGÉ le 13 septembre 2026**
 

@@ -8,6 +8,28 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### Jeter sa dictée depuis l'écran où il la fait — et 280 lignes de code mort en moins
+
+*« C'est sur cet écran que je le voulais ! Car en cas de problème on peut
+supprimer la dictée comme ça. »*
+
+Le glissement « Retirer » existait depuis le 7 septembre, mais sur l'écran Note
+vocale — pas là où il dicte. Et le rendu qui aurait dû le porter dans l'anneau
+n'était monté **par aucun écran** : du code écrit, éprouvé, inatteignable. Il
+est parti — 244 lignes de composant, 40 règles de style, trois animations que
+plus rien ne jouait (`ARCHITECTURE.md` §342).
+
+Le geste vit maintenant sous le micro, avec les pièces communes
+(`LigneRetirable`, `useRetraits`) : il glisse, « Retirer » se découvre,
+« Annuler » retient six secondes, et la note revient intacte — vérifié en base,
+pas seulement à l'écran. Le retrait rend aussi le micro à son invite, et arrête
+de suivre une préparation dont la dictée vient d'être jetée.
+
+Deux pièges trouvés par la suite avant lui : le tiroir « Annuler » vivait dans
+la condition qu'il annule (donc disparaissait au moment du retrait), et la
+pellicule des photos porte un second tiroir sur le même écran.
+
+
 ### L'essai de quinze jours, et ce qui se ferme — sa planche du 10 septembre, codée
 
 *« Essai gratuit 15 jours »* · *« la B, mais il ne doit plus rien pouvoir faire
