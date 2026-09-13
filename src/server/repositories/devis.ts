@@ -301,13 +301,23 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       // **La main d'œuvre survit aussi, mais reste « dont »** : si les lignes ont
       // fondu sous elle, on la ramène au nouveau brut plutôt que d'imprimer
       // « dont 450 € » sous un total de 380 €.
-      const mainDoeuvreHt = montantMainDoeuvreValide(
-        dernier.mainDoeuvreHt,
-        totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt
-      );
+      //
+      // **Calculée par Postgres sur la valeur du MOMENT, jamais recopiée d'une
+      // lecture.** Ce rendu se joue en même temps que le geste du patron : le
+      // « − » de la main d'œuvre écrivait `null` pendant qu'un rendu, parti une
+      // seconde avant, réécrivait le 1 160 qu'il avait lu — et la ligne
+      // revenait sous ses yeux (13 septembre 2026, `test-planche-b-devis-e2e`).
+      const brutHt = totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt;
       const [d] = await tx
         .update(devis)
-        .set({ ...snapshotEnTete, ...totaux, mainDoeuvreHt })
+        .set({
+          ...snapshotEnTete,
+          ...totaux,
+          mainDoeuvreHt: sql`CASE
+            WHEN ${brutHt}::numeric <= 0 THEN NULL
+            WHEN ${devis.mainDoeuvreHt} > ${brutHt}::numeric THEN ${brutHt}::numeric
+            ELSE ${devis.mainDoeuvreHt} END`,
+        })
         .where(eq(devis.id, dernier.id))
         .returning();
       if (lignesPrixActuelles.length > 0) {

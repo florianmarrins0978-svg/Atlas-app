@@ -138,7 +138,12 @@ async function main() {
 
     await cas("le « − » la retire, à l'écran et en base ; le bouton revient", async () => {
       await page.click('[data-atlas="retirer-main-doeuvre"]');
-      assert.equal(await quandLaBasePorte(chantierId, null), null);
+      const lu = await quandLaBasePorte(chantierId, null);
+      assert.equal(
+        lu,
+        null,
+        `la base porte encore ${lu} ; à l'écran : champ ${await page.locator('[data-atlas="montant-main-doeuvre"]').count()}, bouton ${await page.locator('[data-atlas="poser-main-doeuvre"]').count()}, actif ${await page.evaluate(() => document.activeElement?.getAttribute("data-atlas") ?? document.activeElement?.tagName)}`
+      );
       await page.waitForTimeout(300);
       assert.equal(await page.locator('[data-atlas="montant-main-doeuvre"]').count(), 0);
       assert.equal(await page.locator('[data-atlas="poser-main-doeuvre"]').count(), 1);
