@@ -9,6 +9,80 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## VINGT SUITES NAVIGATEUR SONT ROUGES SUR `main` (12 septembre 2026, au soir)
+
+**Relevé, pas causé.** La batterie du 12 septembre au soir rend **126/146** aux
+suites navigateur. Le lot de ce soir ne touche **aucun fichier de `src/`**
+(`git diff --name-only origin/main...` le montre) : ces rouges vivaient déjà
+sur `main`. Types, lint, mémoire, suites base et connexion derrière un proxy
+sont **verts**.
+
+Ce n'est pas un effondrement de base — l'étape « Connexion derrière un proxy »
+passe, donc le jeu de démonstration est en place, et les messages sont tous
+différents :
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-devis-client-e2e` | « la page fait 666 px pour 664 px d'écran », avec la case de rétractation |
+| `test-devis-complet-e2e` | « Le total de la ligne (3 × 250 €) ne s'affiche pas » |
+| `test-fiche-entretien-e2e` | la rubrique fait 40 px sous les 44 px du pouce ; deux boutons « Retirer … » introuvables |
+| `test-visionneuse-pdf-e2e` | « Le document ne s'ouvre pas (`this[#ne].getOrInsertComputed is not a function`) » — sent la version de Node, pas l'écran |
+
+Les seize autres : `adresse-suggestions`, `anneau-dictee`, `anneau-vers-devis`,
+`carte-reponse-mene-au-geste`, `catalogue-mes-mots`, `devis-papier`,
+`fiche-client`, `ia-01`, `madame-lucie`, `message-au-client`,
+`planning-vers-facture`, `recherche-client`, `reprise-chantier`,
+`reprise-morceau`, `reste-equipes`, `suivi-devis`.
+
+**À reprendre en propre**, suite par suite : le journal entier est nécessaire
+(`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
+
+## SON ESPACE DOIT ÊTRE DÉBLOQUÉ UNE FOIS À LA MAIN (12 septembre 2026)
+
+**CODÉ LE 12 SEPTEMBRE — mais il porte encore l'ancien script.** `mettre-a-jour.sh`
+met désormais `package-lock.json` de côté au lieu de se figer devant lui
+(`ARCHITECTURE.md` §339). Son espace, lui, est resté sur le code de 3 h 38 :
+il ne peut pas recevoir le correctif qui lui permettrait de recevoir du code.
+
+Le déblocage de CETTE fois-là passe par ses mains, une dernière fois — dans le
+terminal de son espace :
+
+    git stash push -- package-lock.json
+
+puis rallumer l'espace. **À barrer dès qu'il confirme que sa version a avancé**
+(l'écran Réglages donne la version servie).
+
+## PISTE NON REPRODUITE — LE PORT QUE LE RELAIS PERD (12 septembre 2026)
+
+Sa fiche du 12 septembre au soir : serveur debout sur 3000, `gh` satisfait, et
+un **404 du relais** — la requête n'atteint jamais Atlas. Le verdict et son
+geste sont corrigés (`_verdict-port.mjs`, §339), mais la panne elle-même n'est
+**pas reproduite** : cet environnement n'a pas de Codespace.
+
+**Ce qu'on soupçonne, sans l'avoir mesuré :** le relais n'enregistre un port
+qu'en voyant un processus commencer à écouter (`veiller.sh` le constate au
+26 août — « le serveur démarre, le port se déclare tout seul »). Un serveur
+déjà en place au moment où le tunnel se remonte ne serait donc jamais
+redéclaré, et rien depuis l'intérieur ne le remettrait.
+
+**Ce qui n'a PAS été fait, et pourquoi :** faire relancer le serveur par le
+veilleur pour rouvrir la socket. Le gain est supposé ; le risque, lui, est réel
+— une relance mal bornée refait la panne du 2 septembre (serveur mort en
+boucle). À ne coder qu'une fois la cause mesurée sur son espace.
+
+**ET CETTE PISTE EST RÉFUTÉE — mesurée le 12 septembre à 22 h 02.** Il a rejoué
+`demarrer.sh` en entier : le serveur a été tué, réinstallé, relancé — et sa
+fiche, écrite juste après, porte **le même 404 du relais**. Rouvrir la socket
+ne réenregistre donc PAS le port. Ne pas coder la relance : elle ne peut rien.
+
+Ce qui reste à essayer, dans cet ordre, et qui n'est pas mesuré non plus :
+l'onglet PORTS (retirer la ligne 3000, puis « Transférer un port » → 3000), et
+`gh codespace ports visibility 3000:public -c $CODESPACE_NAME` depuis son
+terminal. Si aucun des deux n'aboutit, c'est le conteneur qu'il faut
+reconstruire — `devcontainer.json` déclare le port public, et cette
+déclaration ne s'applique qu'à la naissance de l'espace (`ARCHITECTURE.md`
+§55).
+
 ## ⏳ UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS (12 septembre 2026)
 
 **Sa demande du 12 septembre :** « Prix accordé au client » devient **« Remise
@@ -1675,7 +1749,7 @@ il n'y a que deux issues, et les deux sont mauvaises — mentir sur le type fait
 descendre un document illisible (7 septembre), dire la vérité laisse Safari le
 peindre (10 septembre). La page va donc chercher le fichier et le remet à la
 feuille de partage, seule voie qui range un PDF sur un iPhone en lui gardant
-son type (`ARCHITECTURE.md` §339).
+son type (`ARCHITECTURE.md` §340).
 
 **Ce qui est prouvé ici**, dans un vrai navigateur
 (`test-telecharger-document-e2e.ts`, confronté au silence qu'il refuse) :

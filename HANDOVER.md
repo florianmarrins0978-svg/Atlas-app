@@ -8,7 +8,33 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)
+## Dernier lot — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
+
+| | |
+|---|---|
+| sa plainte | *« L'appli ne répond plus corrige ça »* |
+| ce que sa fiche disait | serveur debout sur 3000, **404 du relais** à l'adresse publique, et **quatorze versions de retard** — `M package-lock.json` |
+| la racine | `mettre-a-jour.sh` prenait un fichier que la machine écrit elle-même pour du travail humain, et s'abstenait à vie. Le correctif du matin (« proteger-lock.sh ») ne pouvait pas l'atteindre : il faut recevoir du code pour recevoir ce correctif-là |
+| ce qui est fait | `mettre-a-jour.sh` met `package-lock.json` de côté (`git stash push --`, récupérable) avant de juger l'arbre. Un vrai fichier modifié arrête toujours tout |
+| ce qui a DISPARU | « proteger-lock.sh », ses deux appels dans `demarrer.sh`, et sa suite « test-proteger-lock » |
+| la migration | **aucune** |
+| les suites | `test-mise-a-jour-espace.ts` (+2 cas, rouges contre l'ancien script), `test-verdict-port.ts` (+1) |
+| le détail | `ARCHITECTURE.md` §339, qui **corrige le §338 noir sur blanc** |
+
+**LE PIÈGE À NE PAS REFAIRE.** Le §338, écrit trois heures plus tôt, avait
+explicitement écarté cette correction — « un cas particulier posé à côté de la
+règle générale ». L'objection valait contre un `git checkout --`, qui jette ;
+elle ne vaut pas contre un `git stash`, qui rend. Et la couche ajoutée, c'était
+l'autre : « proteger-lock.sh » n'enlevait rien et laissait la panne entière pour
+tout espace déjà pris.
+
+**CE QUI RESTE OUVERT.** Deux choses, dans `TODO.md` :
+son espace porte encore l'ancien script (`git stash push -- package-lock.json`
+puis rallumer, une dernière fois) ; et le **404 du relais sur le port 3000 n'est
+pas reproduit** — le verdict et son geste sont corrigés, la cause ne l'est pas.
+
+---
+## Lot précédent — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)
 
 | | |
 |---|---|
@@ -32,7 +58,7 @@ centimètre sous le mot. L'autre mot flotte en `absolute` sous le premier, au
 même bord gauche — une seule alternative, donc un seul mot.
 
 ---
-## Dernier lot — « TÉLÉCHARGER » N'EST PLUS UN LIEN (12 septembre 2026)
+## Le même jour — « TÉLÉCHARGER » N'EST PLUS UN LIEN (12 septembre 2026)
 
 | | |
 |---|---|
@@ -42,7 +68,7 @@ même bord gauche — une seule alternative, donc un seul mot.
 | les pièces | `src/components/atlas/BoutonTelechargerDocument.tsx`, et dans `src/lib/remise-de-fichier.ts` : `adresseDeTelechargement`, `messageDeTelechargementRate`, `nomAnnonceParLeServeur` |
 | remplacé | les six `<a href download>` — facture, devis (écran et page du client), pièce du dossier, page publique de la facture |
 | les suites | `test-telecharger-document-e2e.ts` (neuve, confrontée au silence qu'elle refuse), `test-remise-de-fichier.ts` (+5), et trois suites adaptées à la règle plutôt qu'à la balise |
-| le détail | `ARCHITECTURE.md` §339 |
+| le détail | `ARCHITECTURE.md` §340 |
 
 **LE PIÈGE, et il décide de tout :** ne JAMAIS revenir à un type générique pour
 forcer l'enregistrement. Le type annoncé colle au fichier enregistré, et
@@ -57,7 +83,7 @@ prend la seconde voie (lien d'objet local), et c'est elle qui est verte.
 descend de toute façon, et son appui porte une vérification d'identité.
 
 ---
-## Lot précédent — LE PDF SE REGARDE DANS L'APPLICATION, AVEC SA FLÈCHE (11 septembre 2026)
+## Encore avant — LE PDF SE REGARDE DANS L'APPLICATION, AVEC SA FLÈCHE (11 septembre 2026)
 
 | | |
 |---|---|

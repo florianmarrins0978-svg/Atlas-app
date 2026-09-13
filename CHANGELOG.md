@@ -8,6 +8,48 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-12
 
+### L'espace se déblaie lui-même : un lock sali ne le fige plus à vie
+
+*« L'appli ne répond plus. »* Sa fiche, à 20 h 36 : serveur debout, et
+**quatorze versions de retard** — bloqué depuis le matin par un
+`package-lock.json` que `npm install` avait réécrit. Le correctif du jour
+(« proteger-lock.sh », §338) était sur `main` depuis trois heures et ne pouvait
+pas l'atteindre : il faut recevoir du code pour recevoir le correctif qui
+permet d'en recevoir.
+
+`.devcontainer/mettre-a-jour.sh` met désormais ce fichier de côté
+(`git stash push --`, donc récupérable par `git stash pop`) avant de juger
+l'arbre propre ou sale. Un vrai fichier modifié arrête toujours tout, et rien
+n'est jamais écrasé.
+
+**Supprimés avec :** « proteger-lock.sh », ses deux appels dans
+`demarrer.sh`, et sa suite « test-proteger-lock ». La couche qui compensait
+n'avait plus d'objet, et un pansement laissé en place masque la correction
+suivante (`CLAUDE.md` §4 quater, §4 quinquies).
+
+Ce que cela évite : un unique démarrage malheureux qui fige l'espace pour
+toujours, pendant qu'il essaie une version d'avant en croyant essayer la
+nouvelle. `ARCHITECTURE.md` §339 corrige le §338 noir sur blanc.
+
+**Ce que cela ne répare pas :** son espace, ce soir, porte encore l'ancien
+script — le déblocage de cette fois-là passe par ses mains, une dernière fois.
+
+### La fiche cesse de cacher le relevé qui décide du geste sur le port
+
+Même fiche, même soir : « Port 3000 : INJOIGNABLE DE L'EXTÉRIEUR », et le geste
+proposé était celui du doute — basculer la visibilité —, c'est-à-dire les trois
+clics qu'il a déjà faits pour rien le 22 août. Le mot rendu par `ouvrir-port.sh`
+tranche entre deux gestes opposés, et la fiche ne le publiait nulle part.
+
+Elle le porte maintenant (`[démarrage : ouvert]`), et le cas `ouvert` a son
+geste propre : quand `gh` a **réussi** à rendre le port public, le rebasculer ne
+peut rien — le relais l'a perdu depuis, et seul un rallumage de l'espace ou un
+réenregistrement du port le remet (`scripts/_verdict-port.mjs`).
+
+**Non reproduit ici** : cet environnement n'a pas de Codespace. Ce qui est
+éprouvé est le verdict lui-même, sur les mesures de sa fiche
+(`scripts/test-verdict-port.ts`).
+
 ### « Télécharger » cesse d'être un lien : la page va chercher le fichier
 
 *« Je peux plus télécharger en cliquant sur télécharger. »* Troisième capture
@@ -27,13 +69,14 @@ bouton cassé.
 Retiré : les six `<a href download>` des écrans, les `?telecharger=1` écrits à
 la main, et le nom de fichier recopié dans l'écran — il vient du serveur, seul
 endroit qui le décide. Le serveur, lui, ne change pas : `attachment` et le vrai
-type restent (`ARCHITECTURE.md` §339).
+type restent (`ARCHITECTURE.md` §340).
 
 **Non éprouvé ici, et il faut le savoir :** aucun WebKit dans l'environnement
 de l'agent, donc la feuille de partage se juge sur son téléphone. Ce qui est
 prouvé dans un vrai navigateur (`test-telecharger-document-e2e`, qui sait
 rougir) : le fichier descend, non vide, sous le nom de la facture, et un refus
 s'affiche.
+
 
 ### Une planche : remise, main d’œuvre, conditions et CGV sur le devis
 
@@ -95,7 +138,7 @@ donc plus aucune installation ne tourne, donc **rien ne remet le fichier en
 état**. Un seul démarrage malheureux fige l'espace pour toujours, sans un mot —
 la seule trace étant une ligne dans une fiche qu'il n'a aucune raison de lire.
 
-`.devcontainer/proteger-lock.sh` encadre désormais l'installation : il relève
+« proteger-lock.sh » encadre désormais l'installation : il relève
 l'état du fichier avant, et ne rend propre **que ce que l'installation a sali
 elle-même**. Un `package-lock.json` déjà modifié avant reste intact — il peut
 être le travail de quelqu'un, et l'effacer pour livrer une mise à jour serait
@@ -106,10 +149,16 @@ ne recevra jamais le correctif, puisque c'est justement la réception qui est
 bloquée. Le diagnostic dit donc maintenant le geste, et il est réversible :
 `git stash push -- <le fichier>`.
 
-`scripts/test-proteger-lock.ts` monte de vrais dépôts et rejoue la panne de
+sa suite « test-proteger-lock » monte de vrais dépôts et rejoue la panne de
 bout en bout : un espace en retard, sali par sa propre installation, dont la
 mise à jour repasse après la remise en état. Confronté à un script qui ne remet
 rien, il rougit sur deux cas.
+
+> **REVENU DESSUS LE SOIR MÊME, et les trois fichiers ci-dessus sont
+> supprimés.** À 20 h 36, son espace était toujours bloqué — quatorze versions
+> de retard — et ce correctif ne pouvait rien pour lui : ce qu'il annonce comme
+> une limite était le défaut. C'est `mettre-a-jour.sh` qui met désormais le
+> fichier de côté. Voir l'entrée du haut et `ARCHITECTURE.md` §339.
 
 ### Ma TVA n'a plus qu'une logique — la planche du 12 septembre, codée trait pour trait
 
