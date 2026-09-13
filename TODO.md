@@ -204,7 +204,7 @@ donc cela se demande à LUI (`CLAUDE.md` §2 bis).
 
 **Codé :** « Remise de N % », « dont main d’œuvre HT » (la B), les conditions
 réglées en gras, les conditions générales dans Réglages → Ce qui s’imprime et en
-annexe du devis. Migration 0090, `ARCHITECTURE.md` §345. **Ce qui reste à lui :**
+annexe du devis. Migration 0090, `ARCHITECTURE.md` §348. **Ce qui reste à lui :**
 les deux crochets du texte d’origine (assureur, médiateur), et les mentions
 légales proposées plus bas — toujours pas tranchées.
 

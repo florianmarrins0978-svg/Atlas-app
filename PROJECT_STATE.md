@@ -11,7 +11,7 @@ Sur la fiche client, plusieurs photos choisies d'un coup recréaient un
 chantier par photo : la mémoire du chantier créé au premier geste vit désormais
 dans une référence (`chantierDeCetEcran`), gardée jusqu'au bout, effacée
 seulement sur un échec. Suite `test-photos-avant-le-chantier-e2e.ts`. Détail :
-`ARCHITECTURE.md` §346.
+`ARCHITECTURE.md` §349.
 
 ---
 
@@ -21,7 +21,7 @@ seulement sur un échec. Suite `test-photos-avant-le-chantier-e2e.ts`. Détail :
 sous le total HT — nommée, jamais comptée, bornée au brut ; les conditions
 réglées en gras sur le PDF ; ses conditions générales dans Réglages → Ce qui
 s'imprime, remplies d'office, imprimées après le bon pour accord sur une page
-à elles. **Migration 0090.** Détail : `ARCHITECTURE.md` §345.
+à elles. **Migration 0090.** Détail : `ARCHITECTURE.md` §348.
 
 ---
 
