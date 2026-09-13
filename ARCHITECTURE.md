@@ -29865,3 +29865,46 @@ que ça coûte.
 écritures d'UN onglet. Ici les deux écritures venaient de deux endroits
 différents du serveur. Une file côté navigateur ne remplace pas un verrou côté
 base.
+
+---
+
+## §354 — Entrer dans la case sélectionne tout : un appui remplace
+
+**Sa décision du 13 septembre 2026 — « fais le B ».** Elle REMPLACE sa
+correction du 11 septembre (le curseur posé au bout du chiffre), et c'est lui
+qui a tranché, les deux coûts sous les yeux.
+
+| Son geste sur une case qui affiche « 1 » | Le A (11 sept.) | **Le B (13 sept.)** |
+|---|---|---|
+| poser le doigt, taper « 2 » | **12** | **2** |
+| poser le doigt, effacer | 1 → vide | vide d'un coup |
+
+**Ce que le A coûtait.** La quantité par défaut est « 1 », le curseur arrivait
+DERRIÈRE, et taper le bon chiffre l'ajoutait au lieu de le remplacer. Un « 2 »
+tapé sur un prix de 450 € fait un devis à **5 400 € au lieu de 900** — et rien
+à l'écran ne dit que le chiffre s'est collé au précédent. C'est exactement ce
+qui a été mesuré la veille, en croyant d'abord à une faute de calcul (§351).
+
+**Sa demande du 11 septembre est TENUE, pas abandonnée** — *« si la quantité par
+défaut n'est pas bonne, on a juste à supprimer »*. Tout étant sélectionné, une
+seule touche efface : c'est moins de gestes qu'avant, pas plus.
+
+**Le mécanisme n'a pas bougé, seule la borne a changé** : `setSelectionRange(0,
+fin)` au lieu de `(fin, fin)`. Les deux temps restent nécessaires — l'entrée
+dans le champ pose la sélection, puis l'appui la défait pour placer le curseur
+où le doigt s'est posé, et c'est cette remise en place qu'on rattrape une fois.
+Après quoi le champ lui appartient.
+
+**Vaut pour la quantité COMME pour le prix** : les deux cases sont le même
+composant (`ChiffreSaisi`), et le chiffre s'y collait de la même façon.
+
+**CE QUI A ÉTÉ RETIRÉ AVEC, et c'est la moitié qui compte** (`CLAUDE.md`
+§4 quater, « une correction qui n'enlève rien recouvre au lieu de réparer») :
+les deux suites navigateur sélectionnaient tout à la main — `ControlOrMeta+a` —
+pour contourner le A. Gardé, cet échafaudage aurait laissé les suites VERTES le
+jour où le B saute, pendant qu'un devis à 5 400 € part chez son client. Elles
+font désormais son geste : on entre, on tape.
+
+`scripts/test-case-du-prix.ts` tient les deux moitiés — que la sélection aille
+bien de 0 à la fin, et que l'ancienne règle ne soit plus là. Confronté au A, il
+rougit sur les deux.

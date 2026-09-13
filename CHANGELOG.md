@@ -8,6 +8,20 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### Entrer dans la case sélectionne tout : un appui remplace — « fais le B »
+
+Sur une case qui affiche « 1 », poser le doigt et taper « 2 » donnait **12** :
+le curseur arrivait derrière le chiffre et la frappe s'y ajoutait. Sur un prix
+de 450 €, c'est un devis à 5 400 € au lieu de 900, parti chez son client, sans
+rien à l'écran pour le dire. Il a tranché entre garder et remplacer : c'est
+remplacer.
+
+Sa demande du 11 septembre tient toujours — *« on a juste à supprimer »* : tout
+étant sélectionné, une seule touche efface. Vaut pour la quantité comme pour le
+prix. Et les deux suites qui sélectionnaient tout à la main pour contourner
+l'ancien comportement font maintenant son geste : sans ça, elles seraient
+restées vertes le jour où le B saute (`ARCHITECTURE.md` §354).
+
 ### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
 
 Sa capture et ses quatre demandes du jour, dessinées d'abord

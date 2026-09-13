@@ -121,20 +121,20 @@ pas** — `fill()` insère sans effacer, là où le champ pose volontairement le
 curseur À DROITE du chiffre (sa règle du 11 septembre). Les deux suites font
 désormais son geste — entrer, tout sélectionner, taper — et elles sont vertes.
 
-**CE QUI RESTE, ET QUI EST POUR LUI** — le coût de sa règle du 11 septembre,
-mesuré :
+**~~CE QUI RESTAIT POUR LUI~~ — TRANCHÉ LE 13 SEPTEMBRE 2026 : « fais le B ».**
+Entrer dans la case sélectionne désormais tout, et un appui remplace. Sa demande
+du 11 septembre tient — une seule touche efface (`ARCHITECTURE.md` §354). Le
+tableau ci-dessous est ce qu'il a arbitré :
 
 | Son geste sur la case « Qté » | Ce qui se passe |
 |---|---|
 | poser le doigt, taper « 2 » sur une case qui affiche « 1 » | **12** — le chiffre s'AJOUTE |
 | sélectionner d'abord, puis taper « 2 » | 2 |
 
-C'est exactement ce qu'il a demandé le 11 septembre — *« si la quantité par
-défaut n'est pas bonne, on a juste à supprimer »* — et c'est aussi de quoi
-envoyer un devis à 5 400 € au lieu de 900 sur une faute de frappe. **Deux voies,
-et c'est lui qui tranche :** garder (il efface d'abord), ou tout sélectionner
-à l'entrée dans la case (un appui remplace, et il perd le « on a juste à
-supprimer »).
+**Il a choisi la seconde**, et le « on a juste à supprimer » n'est pas perdu :
+tout étant sélectionné, une seule touche efface — c'est moins de gestes qu'avant.
+Retiré avec : le `ControlOrMeta+a` que deux suites employaient pour contourner
+l'ancien comportement, et qui les aurait laissées vertes le jour où le B saute.
 
 **RELEVÉ DU 13 SEPTEMBRE AU SOIR, après le lot des calculs : 135/150**, et
 **aucun rouge nouveau** — les quinze restants sont tous dans la liste
