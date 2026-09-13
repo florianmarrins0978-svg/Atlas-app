@@ -8,6 +8,31 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### La migration 0087 ne voyait pas les lignes qu'elle convertit
+
+Cause réelle des trois écrans tombés : `diagnostics` vit sous FORCE RLS, et le
+rôle qui migre n'a pas le droit de la traverser. Ses trois `UPDATE` de
+conversion ne touchaient donc **rien**, en silence — quand la contrainte qui
+suit, elle, est vérifiée sur toutes les lignes. 0087 échouait, et 0088 à 0090
+restaient derrière elle : le code servi lisait une colonne que la base n'avait
+pas.
+
+La migration lève `FORCE` le temps de sa conversion et le rend à la fin (le
+propriétaire seul voit sa table ; `atlas_app` reste soumis à la politique), et
+une ligne `inconclusif` sans phrase reçoit `Motif non enregistré.` plutôt
+qu'une clé inventée. La contrainte n'a pas bougé.
+
+**Le trou :** aucune migration n'était éprouvée sur une base HABITÉE — toutes
+sur une base vide, où rien ne peut violer une contrainte et où la RLS ne cache
+rien. `scripts/test-migration-0087-base-habitee.ts` comble cela, sous RLS ;
+sans elle, il passait au vert sur une correction qui ne réparait rien.
+
+Et la fiche de l'espace dit maintenant ce que la base refuse, sans recopier un
+seul mot du journal : elle reconnaît la forme de l'échec et n'en publie que des
+noms de contraintes (`scripts/_raison-migration.mjs`). Détail :
+`ARCHITECTURE.md` §357.
+
+
 ### Une colonne `date` est un jour, pas un instant — réglé au pilote
 
 Quatre suites navigateur rougissaient d'un jour sur un PC à l'heure de Paris

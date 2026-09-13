@@ -23,6 +23,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { verdictPort, regarderDuDehors } from "./_verdict-port.mjs";
+import { raisonDeLaMigration } from "./_raison-migration.mjs";
 import { portLibre } from "./port-libre.mjs";
 import { lireEchecConstruction, phraseEchec } from "./lire-echec-construction.mjs";
 
@@ -44,6 +45,9 @@ const TEMOIN_ECHEC =
   // dans /tmp sans marcher sur le banc réel de la machine qui la joue.
   process.env.ATLAS_TEMOIN_ECHEC || "/tmp/atlas-construction-echouee.txt";
 const FICHIER_ISSUE = "/tmp/atlas-mise-a-jour.txt";
+// Le journal qu'écrit `.devcontainer/demarrer.sh`. Il n'est jamais publié tel
+// quel : seule la FORME de son échec de migration en ressort (`_raison-migration.mjs`).
+const JOURNAL_DEMARRAGE = "/tmp/essai.log";
 /**
  * Le témoin qu'une construction tourne à cet instant (`scripts/banc.mjs`).
  *
@@ -261,7 +265,16 @@ console.log(`  Branche suivie   : ${brancheLisible}`);
 console.log(`  Code récupéré    : ${court(tete)}`);
 console.log(`  Code SERVI       : ${ligneCodeServi()}`);
 const base = etatDeLaBase();
+// **POURQUOI la base n'a pas suivi, et pas seulement QU'elle n'a pas suivi.**
+// Sa demande du 13 septembre 2026 : la raison vit dans le journal de démarrage,
+// que cette fiche ne publie pas (dépôt public). `raisonDeLaMigration` ne
+// recopie rien de ce journal : elle reconnaît la FORME de l'échec et écrit sa
+// propre phrase, où ne passent que des noms de contraintes et de tables.
+const raisonMigration = raisonDeLaMigration(
+  existsSync(JOURNAL_DEMARRAGE) ? readFileSync(JOURNAL_DEMARRAGE, "utf8") : null
+);
 console.log(`  Base             : ${base}`);
+if (raisonMigration) console.log(`  La base refuse   : ${raisonMigration}`);
 console.log(
   `  Serveur          : ${
     vivant
@@ -330,6 +343,7 @@ const soucis = [];
 if (base.startsWith("EN RETARD")) {
   soucis.push(
     `LA BASE N'A PAS SUIVI LE CODE — ${base}.\n` +
+      (raisonMigration ? `     Ce que la base refuse : ${raisonMigration}.\n` : "") +
       "     Des écrans vont TOMBER, et pas tous : seulement ceux qui touchent ce\n" +
       "     qui manque. Ce n'est pas l'application qui est cassée.\n" +
       "     Le geste : Réglages → « Chercher les dernières corrections ». Il\n" +

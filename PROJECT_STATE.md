@@ -5,6 +5,14 @@
 
 ---
 
+## FAIT : 0087 NE VOYAIT PAS SES PROPRES LIGNES — 13 septembre 2026
+
+Cause réelle des trois écrans tombés. Une migration qui écrit des données sous
+FORCE RLS ne touche rien : les conversions de 0087 étaient inopérantes, sa
+contrainte échouait, et 0088 à 0090 restaient derrière. Corrigé par un
+`NO FORCE`/`FORCE` autour de la conversion et une ligne pour les refus sans
+phrase. Éprouvé sur une base habitée, sous RLS. `ARCHITECTURE.md` §357.
+
 ## FAIT : UNE `date` EST UN JOUR, PAS UN INSTANT — 13 septembre 2026
 
 Le `pool` du produit rend `date` et `date[]` en « AAAA-MM-JJ » quel que soit

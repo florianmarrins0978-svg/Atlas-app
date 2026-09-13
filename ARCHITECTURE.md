@@ -30075,3 +30075,71 @@ destructeurs. Éprouvé rouge lui aussi, en cassant chacune des deux moitiés.
 
 Et le chemin complet a été joué à la main, contre une base dont `_migrations`
 s'arrête à 0087 : la ligne rendue est `EN RETARD DE 3 — 0088, 0089, 0090`.
+
+---
+
+## §357 — Une migration qui écrit des DONNÉES ne voit rien sous FORCE RLS
+
+**Sa panne du 13 septembre 2026**, et c'est la cause réelle, trouvée en
+reproduisant : la migration **0087** refusait de s'appliquer sur sa base, ce qui
+laissait 0088, 0089 et 0090 derrière elle — le script annule le fichier entier
+et s'arrête au premier échec. Son espace servait alors un code qui lit
+`entreprises.conditions_generales` (0090) sur une base restée en 0086 :
+« Planning », « Terminés » et « Réglages » sont tombés ensemble, les cinq autres
+écrans sont restés debout.
+
+```
+échec : check constraint "diagnostics_refus_complet_ck"
+        of relation "diagnostics" is violated by some row
+```
+
+### Deux défauts, emboîtés
+
+**1. La migration ne voyait pas les lignes qu'elle convertit.** `diagnostics`
+vit sous `FORCE ROW LEVEL SECURITY`, et le rôle qui migre (`atlas_owner`) n'a
+pas `BYPASSRLS` — c'est délibéré, la CI le vérifie. Sans contexte d'entreprise,
+il ne voit **aucune** ligne : les trois `UPDATE` de conversion ne touchaient
+rien, en silence, zéro ligne mise à jour et aucune erreur. La contrainte, elle,
+est vérifiée par PostgreSQL sur **toutes** les lignes, RLS ou pas.
+
+> **Cela dépasse 0087.** Toute migration de ce dépôt qui met à jour des DONNÉES
+> sur une table sous FORCE RLS est inopérante de la même façon. 0087 est la
+> première à l'avoir payé parce qu'elle vérifie son propre travail avec une
+> contrainte ; les autres échouent sans le dire.
+
+**2. Une ligne que la conversion ne peut pas traduire.** Un `inconclusif` dont
+la phrase n'a jamais été rangée n'obtient ni clé ni trace. Le commentaire de la
+migration l'écrivait : *« il n'en existe pas »* — une supposition, jamais
+confrontée à une vraie base. Sur la sienne, il en existait.
+
+### La correction, minimale
+
+| | |
+|---|---|
+| `NO FORCE` / `FORCE` autour de la conversion | le PROPRIÉTAIRE — et lui seul — voit sa table le temps du travail. `atlas_app` reste soumis à la politique : **l'isolation entre entreprises n'est pas touchée une seconde**. Un échec entre les deux annule la transaction, donc rend le `FORCE` |
+| un `UPDATE` de plus | la ligne sans phrase reçoit `panne = 'Motif non enregistré.'` — ce qui est vrai. **Aucune clé n'est inventée** : on ne sait pas laquelle c'était, et un refus faux vaut moins qu'un refus muet (`docs/AGENT.md` §3) |
+
+La contrainte n'a pas été touchée, ni affaiblie, ni retirée.
+
+### Le trou qu'elle a révélé
+
+**Aucune migration de ce dépôt n'était éprouvée sur une base HABITÉE.** Elles
+tournent toutes sur une base vide, où une contrainte ne peut par construction
+être violée par aucune ligne, et où la RLS ne cache rien puisqu'il n'y a rien à
+cacher. 0087 était donc verte partout — en CI, dans la batterie — et
+infranchissable sur la seule base qui compte.
+
+`scripts/test-migration-0087-base-habitee.ts` joue le VRAI fichier sur une table
+peuplée, **sous FORCE RLS**. Sa première version ne portait pas la RLS : elle
+est passée au vert sur une correction qui ne réparait rien. Une suite qui
+n'éprouve pas la RLS n'éprouve pas ce dépôt.
+
+### Et la fiche dit désormais POURQUOI
+
+La fiche annonçait que la base était en retard, sans dire ce qu'elle refusait —
+la raison vivait dans le journal de démarrage, que ce dépôt public ne publie
+pas. `scripts/_raison-migration.mjs` ne recopie rien de ce journal : il
+**reconnaît la forme** de l'échec et écrit sa propre phrase, où ne passent que
+des noms de contraintes et de tables. Une forme inconnue ne publie rien du
+message — un motif oublié coûte une ligne vague, un motif trop large coûte une
+donnée de son client sur une page publique.

@@ -8,6 +8,24 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — 0087 NE VOYAIT PAS SES PROPRES LIGNES (13 septembre 2026)
+
+**À retenir avant tout :** une migration qui met à jour des DONNÉES sur une
+table sous `FORCE ROW LEVEL SECURITY` ne touche **rien** — le rôle qui migre n'a
+pas `BYPASSRLS`, et sans contexte d'entreprise il ne voit aucune ligne. Aucune
+erreur, zéro ligne mise à jour. 0087 ne s'en est aperçue que parce qu'elle
+vérifie son travail par une contrainte ; les autres migrations de ce genre
+échouent sans le dire. **À vérifier avant d'écrire un `UPDATE` dans une
+migration.**
+
+Le reste en découle : 0087 bloquée → 0088 à 0090 jamais tentées → le code lisait
+`entreprises.conditions_generales` sur une base qui ne l'avait pas → Planning,
+Terminés et Réglages tombaient, les cinq autres écrans tenaient.
+
+`ARCHITECTURE.md` §357 · `scripts/test-migration-0087-base-habitee.ts` (rouge
+avant, vert après, et sa première version mentait faute de porter la RLS).
+
+---
 ## Dernier lot — UNE `date` EST UN JOUR, PAS UN INSTANT (13 septembre 2026, soir)
 
 | | |
