@@ -1,7 +1,27 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-13 · `main`
-· dernière migration `drizzle/0089_essai_gratuit.sql`
+· dernière migration `drizzle/0090_remise_main_doeuvre_conditions_generales.sql`
+
+---
+
+## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026
+
+Sur la fiche client, plusieurs photos choisies d'un coup recréaient un
+chantier par photo : la mémoire du chantier créé au premier geste vit désormais
+dans une référence (`chantierDeCetEcran`), gardée jusqu'au bout, effacée
+seulement sur un échec. Suite `test-photos-avant-le-chantier-e2e.ts`. Détail :
+`ARCHITECTURE.md` §349.
+
+---
+
+## FAIT : LA PLANCHE B DU DEVIS — 13 septembre 2026
+
+« Remise de N % » partout ; « + Main d'œuvre » ouvre « dont main d'œuvre HT »
+sous le total HT — nommée, jamais comptée, bornée au brut ; les conditions
+réglées en gras sur le PDF ; ses conditions générales dans Réglages → Ce qui
+s'imprime, remplies d'office, imprimées après le bon pour accord sur une page
+à elles. **Migration 0090.** Détail : `ARCHITECTURE.md` §348.
 
 ---
 
@@ -47,8 +67,9 @@ Trois vrais défauts en revanche : la multiplication d'une ligne était écrite
 rangeait la valeur **du rendu précédent** sur vingt-cinq champs — nom, adresse,
 SIRET, IBAN, prix accordé ; et **le prix accordé retiré revenait tout seul**,
 une écriture perdue entre deux chemins du serveur dont un seul prenait le
-verrou. **Aucune migration.** Trois contrôles neufs, les trois confrontés à leur
-défaut. Détail : `ARCHITECTURE.md` §348, §349, §350.
+verrou — **le verrou qui la corrige vient du lot de la planche B**, trouvé le
+même soir des deux côtés. **Aucune migration.** Trois contrôles neufs, les trois
+confrontés à leur défaut. Détail : `ARCHITECTURE.md` §351, §352, §353.
 
 ---
 
@@ -64,6 +85,22 @@ deux portes, et rien d'autre. **Aucune migration.** Détail :
 
 **Ce qui reste à lui :** dire si la feuille de partage d'iOS range le fichier —
 aucun WebKit ici.
+
+---
+
+## FAIT : TERMINÉS — DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL — 13 septembre 2026
+
+Ses quatre demandes du jour, d'après sa capture, dessinées puis codées le soir
+même (`appli/termines-l-oeil.html` → `src/app/termines/ListeTermines.tsx`).
+
+| | |
+|---|---|
+| la rangée | deux portes seulement — « Retours d'intervention », « Créer une facture » —, `data-atlas="portes-termines"` |
+| le mois | centré ; **en veille** (retrait, flèches fermées) quand l'œil est ouvert |
+| l'œil | `data-atlas="oeil-a-facturer"`, 44 × 44, à côté de « 3 à facturer » ; fermé on voit le mois, ouvert on voit **tout ce qui attend, tous mois confondus** (règle du 22 août) |
+| la phrase | 17 px ; absente s'il n'y a rien à compter ; sans rien qui attend, l'œil part avec son compte |
+| les suites | `test-onglets-termines-e2e` (deux portes, plus d'onglet, l'œil dans les deux sens), `test-planning-vers-facture-e2e`, `test-tva-en-tete-e2e`, `test-facture-sans-devis-e2e` passent par l'œil ou la rangée des portes |
+| le détail | `ARCHITECTURE.md` §350 |
 
 ---
 

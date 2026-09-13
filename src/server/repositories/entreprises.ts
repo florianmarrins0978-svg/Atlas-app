@@ -248,6 +248,7 @@ export async function mettreAJourEntreprise(
       valeurs.moyensPaiement = c.moyensPaiement;
       valeurs.rappelerPenalitesDevis = c.rappelerPenalites;
       valeurs.textePiedDocuments = c.textePied;
+      valeurs.conditionsGenerales = c.conditionsGenerales;
     }
 
     // **Le message est REFUSÉ ici aussi, pas seulement à l'écran.** La même

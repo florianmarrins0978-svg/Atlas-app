@@ -5,7 +5,14 @@ import { enEuros } from "@/lib/euros";
 import { LIBELLE_REDUCTION } from "@/lib/reduction-devis";
 
 /**
- * ─── LE PRIX ACCORDÉ AU CLIENT — UNE SEULE FOIS, POUR LES DEUX PIÈCES ──────
+ * ─── LA REMISE — UNE SEULE FOIS, POUR LES DEUX PIÈCES ─────────────────────
+ *
+ * **« Remise de N % » depuis le 13 septembre 2026** — sa planche du 12
+ * (`appli/devis-remise-main-d-oeuvre-conditions.html`) : le mot a changé, le
+ * geste non. Le fichier s'appelait `PrixAccordeAuClient` ; les repères de
+ * suite (`data-atlas="…-prix-accorde"`) gardent l'ancien nom, délibérément —
+ * ils ne sont lus par aucun écran, et les changer casserait dix suites pour
+ * un mot que personne ne voit.
  *
  * **Sa demande du 11 septembre 2026 :** *« on n'a pas mis la réduction client
  * cliquable comme sur le devis »*, puis, dans la foulée : *« reprends
@@ -24,7 +31,7 @@ import { LIBELLE_REDUCTION } from "@/lib/reduction-devis";
  */
 
 /**
- * Le pourcentage que « + Prix accordé au client » pose d'emblée.
+ * Le pourcentage que « + Remise » pose d'emblée.
  *
  * **Écrit ICI et nulle part ailleurs.** Il vivait en double dans le bouton du
  * devis — une fois pour l'écran, une fois pour le serveur — et deux chiffres
@@ -38,7 +45,7 @@ export const REMISE_PAR_DEFAUT = "5";
  * `onRetirer` absent — document figé — retire le « − » et rend le champ
  * illisible : une pièce partie ne se corrige plus.
  */
-export function LignePrixAccorde({
+export function LigneRemise({
   pourcent,
   montantRetire,
   fige = false,
@@ -83,7 +90,7 @@ export function LignePrixAccorde({
         {!fige && onRetirer && (
           <button
             type="button"
-            aria-label={`Retirer le ${LIBELLE_REDUCTION.toLowerCase()}`}
+            aria-label={`Retirer la ${LIBELLE_REDUCTION.toLowerCase()}`}
             data-atlas="retirer-prix-accorde"
             onClick={onRetirer}
             className="mr-1 flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
@@ -92,12 +99,12 @@ export function LignePrixAccorde({
             −
           </button>
         )}
-        {LIBELLE_REDUCTION}
+        {LIBELLE_REDUCTION} de
         <input
           value={pourcent}
           readOnly={fige}
           inputMode="decimal"
-          aria-label="Prix accordé au client, en pourcentage"
+          aria-label="Remise, en pourcentage"
           data-atlas="taux-prix-accorde"
           onChange={(e) => onChange(e.target.value)}
           // **Ce que le champ porte À CET INSTANT**, et non ce que l'appelant
@@ -123,7 +130,7 @@ export function LignePrixAccorde({
  * remise n'a pas besoin qu'on lui propose d'en poser une. Il l'a d'abord
  * demandé à la VOIX ; ceci est ce qui reste quand on n'a pas envie de parler.
  */
-export function BoutonPrixAccorde({ onPoser }: { onPoser: () => void }) {
+export function BoutonRemise({ onPoser }: { onPoser: () => void }) {
   return (
     <button
       type="button"

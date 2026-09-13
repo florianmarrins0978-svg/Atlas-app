@@ -47,6 +47,29 @@ planche la pose entre Qté et P.U. HT, avec les unités usuelles (u, ml, m², m�
 kg, h, forfait) sous la ligne quand le champ prend le doigt. Même planche,
 même adresse.
 
+## HUIT SUITES DE PLUS ROUGISSENT SUR SON PC — l'heure de Paris, pas le produit (13 septembre 2026, après-midi)
+
+**Relevé depuis `atlas-app-oeil`, sur Windows, fuseau Europe/Paris**, en
+rejouant les rouges de la batterie du lot de l'œil (121/147, puis 8/31 sur
+les rouges seuls). Aux dix-huit ci-dessous s'ajoutent **huit suites qui ne
+touchent aucun fichier du lot**, et dont le message désigne l'environnement :
+
+| | |
+|---|---|
+| `date-lointaine`, `deux-dates-calendrier`, `poser-une-date`, `liberer-une-demi-journee` | **un jour de décalage** — « posé le 2026-09-13 au lieu du 2026-09-14 ». La suite relit une colonne `date` par `rows[0].jour.toISOString().slice(0, 10)` : `pg` rend un `Date` à minuit LOCAL, et minuit à Paris est 22 h la veille en UTC. Vert en UTC (la CI, son espace), rouge partout ailleurs. **À regarder aussi dans `PlanningClient.tsx` (lignes ~195 et ~211), qui fait la même conversion dans le navigateur** — chez lui, le navigateur est à Paris |
+| `bandeau-banc` | `spawn npx ENOENT` — sur Windows, `npx` est `npx.cmd` ; la suite ne peut pas tourner ici |
+| `ia-03`, `ia-04` | le bouton « Ouvrir l'assistant » n'apparaît pas en 45 s |
+| `ligne-du-client` | « l'adresse longue ne déborde pas : ce contrôle ne mesure alors plus rien » |
+
+**Et une neuvième était mienne, réparée** : `test-onglets-termines-e2e` prenait
+le dernier chantier du jeu, déjà facturé quand les suites qui facturent sont
+passées avant — l'œil n'avait rien à montrer. Elle prend un chantier sans
+facture émise.
+
+**Pour trancher les quatre dates** : jouer une seule d'entre elles dans un
+atelier à Paris ET en UTC (`TZ=UTC npm run test:e2e -- --seulement
+poser-une-date`). Si l'écart tient au fuseau, corriger la LECTURE (comparer
+des `date` en texte, `to_char(jour, 'YYYY-MM-DD')`), pas l'écriture.
 ## ~~UN ROUGE « CAPRICIEUX » ÉTAIT UNE ÉCRITURE PERDUE~~ — TROUVÉ ET CORRIGÉ (13 septembre 2026)
 
 `test-reduction-devis-e2e` tombait une fois sur deux depuis des jours, et trois
@@ -54,7 +77,7 @@ sessions l'avaient mise sur le compte d'un contrôle fragile. **Ce n'en était
 pas un.** À la sonde : le prix accordé au client, retiré, **revenait tout seul**
 — deux chemins du serveur écrivaient la même ligne de devis, et un seul prenait
 le verrou. Un devis parti chez le client plus cher que ce qui lui avait été
-promis, sans un mot à l'écran (`ARCHITECTURE.md` §350).
+promis, sans un mot à l'écran (`ARCHITECTURE.md` §353).
 
 **La leçon, pour la prochaine fois :** un rouge intermittent qu'on apprend à
 ignorer est pire qu'un contrôle absent. Avant d'écrire « suite capricieuse »
@@ -224,7 +247,13 @@ lancée toute seule sur son espace rejoue `preparer.sh` — dépendances, migrat
 jeu de démonstration — sans personne devant : c'est irréversible et hors du code,
 donc cela se demande à LUI (`CLAUDE.md` §2 bis).
 
-## ⏳ UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS (12 septembre 2026)
+## ~~UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS~~ — CODÉE LE 13 SEPTEMBRE 2026 (« code la planche la B »)
+
+**Codé :** « Remise de N % », « dont main d’œuvre HT » (la B), les conditions
+réglées en gras, les conditions générales dans Réglages → Ce qui s’imprime et en
+annexe du devis. Migration 0090, `ARCHITECTURE.md` §348. **Ce qui reste à lui :**
+les deux crochets du texte d’origine (assureur, médiateur), et les mentions
+légales proposées plus bas — toujours pas tranchées.
 
 **Sa demande du 12 septembre :** « Prix accordé au client » devient **« Remise
 de N % »** ; un bouton **+ Main d’œuvre** comme « + Ajouter une TVA », sa ligne
@@ -236,7 +265,7 @@ générales de vente et de règlement »**, remplie d’un texte par défaut qu�
 peut effacer et réécrire, imprimée **après le bon pour accord**.
 
 **Planche :** `appli/devis-remise-main-d-oeuvre-conditions.html` (quatre vues :
-écran, papier, réglages, la loi). **Rien n’est codé.** Sa photo — les CGV d’un
+écran, papier, réglages, la loi). Sa photo — les CGV d’un
 menuisier — est lue : huit clauses reprises dans le texte d’origine (adhésion,
 prix révisables au-delà de la validité, pas d’escompte, délai indicatif, autres
 corps de métier, réception en présence de l’entreprise, réserve de propriété et
@@ -3008,7 +3037,11 @@ par un choix de `stdio`. **À faire valider par le patron avant d'y toucher.**
 
 ## EN ATTENTE DE SA RÉPONSE : le compte « tous mois » sous un mois précis (2 sept. 2026)
 
-Sur « Terminés », onglet « Tout », la phrase « 3 à facturer · 10 facturés »
+*13 septembre 2026 : la phrase porte désormais l'œil (§350). Ouvert, la liste
+compte comme elle — tous mois — et le mois se met en veille ; fermé, la
+question ci-dessous reste entière.*
+
+Sur « Terminés », la phrase « 3 à facturer · 10 facturés »
 compte **tous les mois** — c'est ainsi qu'il l'a demandée le 23 août. Mais elle
 est posée juste sous le nom d'un mois, et **elle ne bouge pas quand on recule** :
 en juillet, elle affiche encore les chiffres d'août.

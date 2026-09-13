@@ -4,6 +4,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
+import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
 import {
@@ -257,6 +258,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       moyensPaiement: conditions.moyensPaiement,
       rappelerPenalites: conditions.rappelerPenalites,
       textePied: conditions.textePied,
+      // Figées comme les autres (migration 0090) : le texte résolu — le sien, le
+      // texte d'origine, ou vide s'il l'a effacé.
+      conditionsGenerales: conditions.conditionsGenerales,
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
@@ -294,9 +298,26 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       // Régénération : remplace les lignes et recalcule les totaux, ne change
       // ni le numéro commercial ni le numéro de version.
       await tx.delete(lignesDevis).where(eq(lignesDevis.devisId, dernier.id));
+      // **La main d'œuvre survit aussi, mais reste « dont »** : si les lignes ont
+      // fondu sous elle, on la ramène au nouveau brut plutôt que d'imprimer
+      // « dont 450 € » sous un total de 380 €.
+      //
+      // **Calculée par Postgres sur la valeur du MOMENT, jamais recopiée d'une
+      // lecture.** Ce rendu se joue en même temps que le geste du patron : le
+      // « − » de la main d'œuvre écrivait `null` pendant qu'un rendu, parti une
+      // seconde avant, réécrivait le 1 160 qu'il avait lu — et la ligne
+      // revenait sous ses yeux (13 septembre 2026, `test-planche-b-devis-e2e`).
+      const brutHt = totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt;
       const [d] = await tx
         .update(devis)
-        .set({ ...snapshotEnTete, ...totaux })
+        .set({
+          ...snapshotEnTete,
+          ...totaux,
+          mainDoeuvreHt: sql`CASE
+            WHEN ${brutHt}::numeric <= 0 THEN NULL
+            WHEN ${devis.mainDoeuvreHt} > ${brutHt}::numeric THEN ${brutHt}::numeric
+            ELSE ${devis.mainDoeuvreHt} END`,
+        })
         .where(eq(devis.id, dernier.id))
         .returning();
       if (lignesPrixActuelles.length > 0) {
@@ -534,7 +555,10 @@ function donneesPdfDuDevis(
       moyensPaiement: d.moyensPaiement,
       rappelerPenalites: d.rappelerPenalites,
       textePied: d.textePied,
+      conditionsGenerales: d.conditionsGenerales,
     },
+    // « dont main d'œuvre HT » (migration 0090) : nommée sous le total, jamais comptée.
+    mainDoeuvreHt: d.mainDoeuvreHt,
     // Les lignes des totaux, cumulées (migration 0088) : le PDF en tire ce qui
     // tombe à chaque acompte et le reste à régler, par la règle commune.
     acomptes: [...acomptes],
@@ -655,42 +679,29 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
 export async function mettreAJourEnTeteDevis(
   ctx: Ctx,
   devisId: string,
-  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }
+  data: {
+    tauxTva?: string;
+    conditionsPaiement?: string;
+    reductionPourcent?: string | null;
+    /** « dont main d'œuvre HT » ; `null` retire la ligne. Bornée au brut HT. */
+    mainDoeuvreHt?: string | null;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    /**
-     * ═══════════════════════════════════════════════════════════════════════
-     * **LE MÊME VERROU QUE LA RÉGÉNÉRATION — et il n'en avait qu'une moitié.**
-     *
-     * `getOuCreerDevisBrouillon` prend `pg_advisory_xact_lock(chantier)` avant
-     * de relire le devis et d'y réécrire ses totaux — **réduction comprise**
-     * (`calculerTotaux` la rend, et le `.set({ ...totaux })` l'écrit). Cette
-     * fonction-ci, elle, ne le prenait pas : les deux lisaient donc la même
-     * ligne, la modifiaient chacune de son côté, et la dernière à écrire
-     * gagnait. Un verrou qu'un seul des deux prend ne protège rien.
-     *
-     * **Mesuré le 13 septembre 2026, à la sonde**, une fois sur deux : le champ
-     * du prix accordé vidé, le serveur rendait bien la ligne à `reduction:
-     * null` — et la base repassait à `15.00` dans la seconde, sans un mot. La
-     * régénération, déclenchée par le rafraîchissement de l'écran, avait lu les
-     * 15 % AVANT l'effacement et les réécrivait APRÈS.
-     *
-     * Pour le patron : **une remise retirée revenait toute seule**, et il ne
-     * l'apprenait qu'en rouvrant son devis — ou sur celui parti chez le client.
-     *
-     * La clé est le CHANTIER, pas le devis : c'est celle que prend la
-     * régénération, et deux clés différentes ne s'excluent pas.
-     * ═══════════════════════════════════════════════════════════════════════
-     */
-    const [pourLaCle] = await tx
+    // **Le même verrou que le rendu du brouillon** (`getOuCreerDevisBrouillon`),
+    // pris AVANT de lire. Le rendu recopie le taux de TVA, la remise et les
+    // totaux depuis ce qu'il a lu ; joué en même temps que ce geste-ci, il
+    // réécrivait la valeur d'avant par-dessus la sienne — les 5 % du « + Remise »
+    // n'arrivaient pas en base, la main d'œuvre retirée revenait (13 septembre
+    // 2026, `test-reduction-devis-e2e`, `test-planche-b-devis-e2e`). Sous le
+    // verrou, l'un attend l'autre et lit ce qu'il a écrit.
+    const [cible] = await tx
       .select({ chantierId: devis.chantierId })
       .from(devis)
       .where(eq(devis.id, devisId))
       .limit(1);
-    if (!pourLaCle) return null;
-    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${pourLaCle.chantierId}))`);
-
-    // Relu SOUS le verrou : ce qu'on avait vu avant de l'attendre a pu changer.
+    if (!cible) return null;
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${cible.chantierId}))`);
     const [avant] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!avant || avant.statut === "envoye") return null;
 
@@ -698,6 +709,7 @@ export async function mettreAJourEnTeteDevis(
       tauxTva?: string;
       conditionsPaiement?: string;
       reductionPourcent?: string | null;
+      mainDoeuvreHt?: string | null;
       updatedAt: Date;
     } = { updatedAt: new Date() };
     if (data.tauxTva !== undefined) {
@@ -724,6 +736,12 @@ export async function mettreAJourEnTeteDevis(
       valeurs.tauxTva ?? avant.tauxTva,
       data.reductionPourcent !== undefined ? valeurs.reductionPourcent : avant.reductionPourcent
     );
+    // **La main d'œuvre passe par la MÊME borne que l'écran** (`montantMainDoeuvreValide`),
+    // et le plafond est le brut HT du moment : « dont » ne dépasse pas le tout.
+    if (data.mainDoeuvreHt !== undefined) {
+      const brutHt = totauxAvecReduction(lignes, valeurs.tauxTva ?? avant.tauxTva, null).brutHt;
+      valeurs.mainDoeuvreHt = montantMainDoeuvreValide(data.mainDoeuvreHt, brutHt);
+    }
 
     const [row] = await tx
       .update(devis)

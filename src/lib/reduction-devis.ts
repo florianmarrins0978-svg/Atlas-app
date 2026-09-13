@@ -135,7 +135,7 @@ export function tauxDeLaLigne(
  * qui a glissé, et un écran qui refuse sans rien dire fait recommencer.
  *
  * **Zéro vaut « aucune réduction »**, pas « une réduction de zéro » : une ligne
- * « Prix accordé au client 0 % — 0,00 € » sur un devis n'apprend rien à
+ * « Remise de 0 % — 0,00 € » sur un devis n'apprend rien à
  * personne et fait douter du reste.
  */
 export function pourcentValide(valeur: unknown): string | null {
@@ -404,16 +404,18 @@ export function lignesParCategorie<T extends { tauxTva?: string | null }>(
  * Quatre rédactions du même prix accordé finiraient par se contredire, et c'est
  * le client qui verrait la différence.
  *
- * **« Prix accordé au client », et pas « Réduction ».** C'est le mot qu'il a
- * désigné le 16 août, contre l'autre qu'il proposait lui-même.
+ * **« Remise », depuis le 13 septembre 2026.** Le 16 août il avait désigné
+ * « Prix accordé au client » contre « Réduction » ; le 12 septembre, sur la
+ * planche `appli/devis-remise-main-d-oeuvre-conditions.html`, il a tranché pour
+ * « Remise de N % » — le mot que son client lit sur tous les autres devis.
  */
-export const LIBELLE_REDUCTION = "Prix accordé au client";
+export const LIBELLE_REDUCTION = "Remise";
 
-/** « Prix accordé au client 15 % », ou `null` s'il n'y en a pas. */
+/** « Remise de 15 % », ou `null` s'il n'y en a pas. */
 export function libelleReduction(pourcent: string | null): string | null {
   if (pourcent === null) return null;
   // « 15 » plutôt que « 15.00 » : personne n'écrit deux décimales sur un
   // pourcentage rond, et le document est celui que son client lit.
   const lisible = new Decimal(pourcent).toDecimalPlaces(2).toString().replace(".", ",");
-  return `${LIBELLE_REDUCTION} ${lisible} %`;
+  return `${LIBELLE_REDUCTION} de ${lisible} %`;
 }

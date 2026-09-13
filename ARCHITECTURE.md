@@ -28445,7 +28445,7 @@ d'en poser une — ni à l'écran, ni côté serveur.
 Deux blocs jumeaux dans deux écrans divergent au premier ajustement. Le dépôt
 venait d'en payer deux le même jour : la grammaire des TVA et la case du prix,
 corrigées d'un seul côté (§329). Le geste vit donc dans une pièce unique,
-`src/components/atlas/PrixAccordeAuClient.tsx`, que le devis **et** la facture
+`src/components/atlas/Remise.tsx` (alors `PrixAccordeAuClient.tsx`, renommée le 13 septembre — §348), que le devis **et** la facture
 montent :
 
 | | |
@@ -29551,9 +29551,176 @@ destructeur — laisser le tiroir se fermer — n'est éprouvé que sur l'écran
 vocale, qui emploie la même action et le même crochet. L'éprouver aussi ici
 détruirait la note du jeu de démonstration dont les suites voisines ont besoin.
 
+
+## §348 — La planche B du devis : « Remise », « dont main d'œuvre », les conditions en gras, et ses conditions générales au dos
+
+**Sa planche du 12 septembre 2026**, `appli/devis-remise-main-d-oeuvre-conditions.html`,
+et ses réponses le jour même ; codée le 13 sur sa demande : *« code la planche
+la B »*.
+
+| Ce qu'il a demandé | Ce que ça fait |
+|---|---|
+| « Prix accordé au client » devient **« Remise de N % »** | un seul mot à changer : `LIBELLE_REDUCTION` / `libelleReduction` (`src/lib/reduction-devis.ts`) — écran du devis, facture, travaux supplémentaires, PDF et mode d'emploi suivent. La pièce d'écran s'appelle désormais `Remise.tsx` ; les repères de suite `…-prix-accorde` gardent l'ancien nom, délibérément |
+| un bouton **+ Main d'œuvre**, sa ligne sous le total HT — **la B : « dont main d'œuvre HT »** | `devis.main_doeuvre_ht` (migration 0090). Nommée sous le premier « Total HT » écrit, **jamais comptée** : aucun total ne bouge. Facultative, le « − » la retire |
+| le bloc **Notes / conditions en gras** | ses notes en maigre, les conditions réglées en gras — `notesEnGras` dans `composerDocument`, et `gras` ajouté à la trace du PDF pour qu'un contrôle sache le voir |
+| une case **conditions générales de vente et de règlement** dans les réglages, remplie d'un texte par défaut, imprimée **après le bon pour accord** | `entreprises.conditions_generales` et `devis.conditions_generales` (0090), le texte d'origine dans `src/lib/conditions-generales.ts`, l'annexe sur une page neuve après la signature |
+
+**« Dont », pas « plus » — et donc bornée.** La lecture A ajoutait la main
+d'œuvre aux lignes ; il a choisi la B : elle est déjà dedans, le papier la nomme
+(ce qu'un client demande pour son crédit d'impôt). Une part ne dépasse pas le
+tout : `montantMainDoeuvreValide` la ramène au brut HT, à l'écriture comme à la
+régénération d'un brouillon dont les lignes ont fondu. **Le champ s'ouvre
+VIDE** : un montant de main d'œuvre n'a pas de valeur plausible, et un chiffre
+d'office s'imprimerait chez un client (`docs/AGENT.md` §3). Sur la feuille de
+chantier, rien : pas un prix chez le salarié.
+
+**Les conditions générales : l'encodage est INVERSÉ, et c'est sa demande.** Le
+texte de pied (0064) est éteint par défaut (`null`) ; lui a demandé une case
+*« remplie d'un texte par défaut qu'il peut effacer et réécrire »*. Donc :
+`null` = le texte d'origine, `""` = il a tout effacé (rien ne s'imprime, pas
+même le titre), du texte = le sien. Aucune ligne existante n'a été réécrite —
+`null` suffit. Le texte descend sur le devis comme les cinq autres conditions :
+un brouillon rouvert reprend le réglage du jour, un devis envoyé est figé.
+
+**Et ce `null` ne se lit qu'au RÉGLAGE** (`conditionsDepuisEntreprise`), jamais
+dans `lireConditions`, par où passe aussi l'instantané d'un devis : un devis
+d'avant 0090 n'a pas de texte, et il doit sortir sans CGV — identique à
+lui-même. La première version posait le défaut dans `lireConditions`, et
+`test-conditions-sur-le-devis` l'a vu : « Acompte » s'imprimait, réglage éteint.
+
+**Le geste et le rendu prennent le même verrou.** `mettreAJourEnTeteDevis`
+prend `pg_advisory_xact_lock(hashtext(chantierId))` — celui de
+`getOuCreerDevisBrouillon` — AVANT de lire. Le rendu recopie le taux de TVA, la
+remise et les totaux depuis ce qu'il a lu ; joué en même temps que le « − » ou
+le « + Remise », il réécrivait la valeur d'avant par-dessus la sienne. C'est la
+race que `test-reduction-devis-e2e` montrait depuis trois batteries sans qu'on
+la lise, et que `test-planche-b-devis-e2e` a rendue lisible. La main d'œuvre
+est de plus bornée par Postgres (`CASE`) sur la valeur du moment, pas recopiée.
+
+**D'où vient le texte d'origine, et ce qu'il n'est pas.** De la photo des CGV
+d'un menuisier qu'il a envoyée, lue clause par clause sur la planche : huit
+reprises, quatre laissées (pénalités à 1,5 × périmées, « aucune indemnité »
+abusive face à un particulier, tribunal imposé, camionnage), trois ajoutées que
+la loi attend d'un devis à un particulier (assurances, rétractation de
+quatorze jours, médiation). **Ce n'est pas un texte juridique validé** — c'est
+son point de départ. Deux crochets restent à lui, l'assureur et le médiateur :
+l'écran des réglages le dit tant qu'ils y sont (`crochetsRestants`), parce
+qu'un « [assureur, n° de contrat] » chez un client ne se voit qu'une fois le
+devis parti. Rien ne s'invente à leur place.
+
+**L'annexe ouvre toujours une page neuve.** Le client signe la dernière page du
+devis et lit les conditions derrière — comme au dos d'un devis papier. En
+petit, replié par `place`, paginé avec le reste.
+
+**Ce qui a été décidé sans lui, et se dit ici.** La planche écrivait « Mode de
+règlement : 30 % à la commande, solde à réception » et « Montant à régler à la
+commande » dans les notes ; depuis, son lot des acomptes (12 septembre au soir,
+§343) a posé l'acompte et le reste à régler **dans les totaux**, avec les
+phrases des acomptes dans les notes. On ne les a pas doublées : le bloc en gras
+porte les phrases qui existent (acomptes, délai, moyens de paiement, pénalités,
+texte de pied), et l'échéancier reste sous le total TTC. Une même somme écrite
+deux fois sur la même page, c'est celle qu'on cesse de croire (`CLAUDE.md`
+§4 bis).
+
+Suites : `test-planche-b-devis.ts` (la règle et la trace du papier),
+`test-planche-b-devis-db.ts` (le dépôt, sous `atlas_app`),
+`test-planche-b-devis-e2e.ts` (son geste). Les suites de la remise ont suivi le
+mot.
+
+## §349 — Le chantier né d'un geste vit dans une RÉFÉRENCE, jamais dans un état
+
+**Payé le 13 septembre 2026.** Six photos choisies d'un coup sur la fiche client,
+puis retour : six chantiers « Mr. Julien », une photo chacun.
+
+**D'où ça partait.** La pellicule (`Pellicule.tsx`) envoie les fichiers un à un
+dans une seule boucle, et cette boucle garde la fonction `assurerChantier` telle
+qu'elle était **avant la première photo** — un rendu React ne remplace pas une
+fonction déjà en cours d'exécution. Or `assurerChantier` lisait la mémoire du
+chantier créé dans un état (`chantierCree`), vide pour cette boucle jusqu'à la
+fin, et **effaçait la promesse de création dès qu'elle aboutissait**. La
+deuxième photo ne trouvait donc plus rien, et recréait ; la troisième aussi.
+
+**La règle, et elle vaut pour tout écran qui crée au premier geste :** ce qui
+doit être lu par un geste déjà en cours vit dans une `useRef`, qui ne vieillit
+pas avec le rendu. `chantierDeCetEcran` garde la promesse **jusqu'au bout** ;
+chaque tour de boucle y lit la même, résolue ou non, et obtient le même
+identifiant. L'état `chantierCree` ne sert plus qu'au rendu (les enfants ont
+besoin de l'identifiant en prop), et le bouton d'enregistrement lit la
+référence lui aussi — une photo encore en route a déjà lancé la création, et
+l'état ne le sait pas encore.
+
+**Elle ne s'efface que sur un échec** : une tentative ratée n'est pas un
+chantier, et « Réessayez » doit pouvoir réessayer. Avant, la promesse rejetée
+restait en place et chaque nouvel essai la rendait telle quelle.
+
+Suite : `test-photos-avant-le-chantier-e2e.ts` — six photos comme lui, et le
+compte se fait en base, pas à l'écran (`CLAUDE.md` §5 bis). Elle rougit sur
+l'ancien code (« 6 chantiers pour un seul client »).
+
+## §350 — Terminés : l'œil remplace les onglets, et il garde leur règle
+
+**Ses quatre demandes du 13 septembre 2026, d'après sa capture :** *« sous la
+TVA garde que deux boutons, Retours d'intervention et Créer une facture ;
+Septembre 2026, centre-le ; supprime le bouton Tout, que ça soit le mode par
+défaut, et garde que le bouton À facturer — pour que ça soit plus joli, laisse
+14 facturés en gras et 3 à facturer en gras doré, mais à côté tu mets le signe
+œil barré : on clique dessus, ça montre les à facturer, on reclique, il
+disparaît, on revient sur le mode tout par défaut »*. Dessiné d'abord
+(`appli/termines-l-oeil.html`), trois retours le soir même — l'or de
+l'application, pas de rond derrière l'œil, les comptes plus gros, la phrase
+absente quand il n'y a rien —, puis : *« très bien, tu peux coder ça »*.
+
+**Ce que l'écran disait deux fois.** L'onglet « À facturer » et, trois
+centimètres plus bas, « 3 à facturer » : le même état, un filtre et un compte.
+La planche du 8 septembre (`termines-et-les-retours.html`, proposition 4)
+l'avait déjà relevé. Le geste vit désormais **sur le chiffre lui-même** : l'œil
+est un bouton de 44 × 44 posé sur la ligne de 17 px, ses marges négatives
+l'absorbent, et rien ne s'ajoute à l'écran — il en manque.
+
+**LA RÈGLE DE L'ONGLET EST GARDÉE, ET C'EST LE POINT QUI SE DISCUTAIT.** Sa
+demande du 22 août — *« il faut pouvoir revenir dans le passé si jamais on a du
+retard sur la facturation »* — faisait ignorer le mois à l'onglet. La planche
+retenue filtrait d'abord **le mois affiché** : plus simple à dessiner, et faux
+pour un chantier de juillet jamais facturé, qu'il faudrait déjà savoir exister
+pour aller le chercher. Codé « tous mois confondus », comme la phrase compte
+déjà depuis le 23 août : l'œil ouvert montre exactement ce que « 3 à facturer »
+annonce, et les deux chiffres ne peuvent plus se contredire. La planche a été
+réalignée sur le code — c'est elle qu'il ouvre.
+
+**Le mois se met en VEILLE, il ne part pas.** Une liste qui ignore le mois sous
+des flèches qui le feuillettent ferait croire l'écran cassé ; une navigation
+qui disparaît ferait bouger la phrase — et l'œil avec, sous le doigt qui vient
+de l'appuyer (`CLAUDE.md` §3, « une ligne qui bouge se cherche »). Le nom du
+mois passe donc à `muted`, ses flèches se ferment, et rien ne change de place.
+Même idiome pour « 14 facturés », qui s'éteint : ils existent, ils sont rangés.
+
+**Un œil ouvert sur rien n'existe pas.** `montrerCeQuiAttend = oeilOuvert &&
+attente.length > 0` : dès que la dernière facture part, on revient à tout sans
+qu'un état orphelin reste posé sur un bouton disparu. Et la phrase ne se rend
+que s'il y a quelque chose à compter — sa règle du soir : *« quand il n'y a
+rien à facturer ou de facturé, supprime la phrase »*.
+
+**Ce qui a disparu, et ne revient pas :** `Onglet` et `Compte`
+(`ListeTermines.tsx`), la section « Rien n'attend. Vous êtes à jour. » — un
+chiffre absent le dit mieux qu'une phrase —, et la seconde rangée de « Créer
+une facture », qui n'existait que parce que trois pastilles prenaient la
+première. Les suites suivent le geste, jamais le mot : `oeil-a-facturer` et
+`portes-termines` sont des repères, et `tout-ce-qui-attend` reste le nom de
+la section quand elle montre tout ce qui attend.
+
+**Le mois vide ne fait pas taire la phrase — 13 septembre 2026, l'après-midi.**
+Première version : la phrase « 3 à facturer » et son œil vivaient dans la
+branche « le mois a des lignes », sous « Rien en septembre » sinon. Or elle
+compte TOUS les mois : un chantier d'août non facturé restait compté, mais
+plus affiché ni filtrable dès qu'un mois neuf commençait — l'onglet qu'elle
+remplace, lui, ignorait le mois. La batterie complète ne l'a pas vu : les
+suites qui précèdent celle-ci remplissent septembre. C'est la suite jouée
+seule, sur une base fraîche, qui a montré l'écran muet. Depuis, la phrase se
+rend au-dessus du message de mois vide, et la suite accepte zéro rangée avant
+d'ouvrir l'œil — c'est le cas qui compte.
 ---
 
-## §348 — Ce qu'une ligne pèse : une seule règle, et personne d'autre ne multiplie
+## §351 — Ce qu'une ligne pèse : une seule règle, et personne d'autre ne multiplie
 
 **Sa demande du 13 septembre 2026 :** *« vérifie tous les calculs ; si les
 lignes ne s'additionnent pas ou mal, c'est hyper grave et ça ne doit jamais
@@ -29605,7 +29772,7 @@ entrer, tout sélectionner, taper.
 
 ---
 
-## §349 — Un champ quitté rend SA valeur, jamais celle du dernier rendu
+## §352 — Un champ quitté rend SA valeur, jamais celle du dernier rendu
 
 **Le même défaut, quatre fois, sur quatre pièces différentes.** Il a été
 diagnostiqué le 30 août 2026 sur les prix de ligne du devis — *« un prix tapé
@@ -29649,7 +29816,7 @@ bout de trois heures (`CLAUDE.md` §1 bis) — celle-ci avait tenu treize jours.
 
 ---
 
-## §350 — Un verrou qu'un seul des deux prend ne protège rien
+## §353 — Un verrou qu'un seul des deux prend ne protège rien
 
 **Sa remise retirée revenait toute seule, une fois sur deux.** Mesuré à la
 sonde le 13 septembre 2026 : le champ du prix accordé vidé, le serveur rendait
@@ -29672,6 +29839,16 @@ décide de ce que le client paie.
 **La clé est le CHANTIER, pas le devis** : c'est celle que prend la
 régénération, et deux clés différentes ne s'excluent pas. La ligne est relue
 SOUS le verrou — ce qu'on avait vu avant de l'attendre a pu changer.
+
+**DEUX SESSIONS L'ONT TROUVÉ LE MÊME SOIR, ET C'EST LE CORRECTIF DE `main` QUI
+VIT ICI.** Le lot de la planche B a buté sur la même course par l'autre bout —
+*« les 5 % du + Remise n'arrivaient pas en base, la main d'œuvre retirée
+revenait »* — et a posé le même verrou, sur la même clé, avec la même relecture.
+Les deux versions étaient équivalentes ; à la fusion, celle qui était déjà sur
+`main` a été gardée et la mienne jetée (`CLAUDE.md` §B). C'est exactement le
+gaspillage que §A cherche à éviter : **regarder les autres branches avant
+d'ouvrir un lot**. Ce qui reste de mon côté, et qui manquait au leur, c'est le
+contrôle déterministe ci-dessous.
 
 **Pourquoi personne ne l'avait vu.** `test-reduction-devis-e2e` l'attrapait une
 fois sur deux, et son rouge dépend du moment où l'écran se rafraîchit : trois

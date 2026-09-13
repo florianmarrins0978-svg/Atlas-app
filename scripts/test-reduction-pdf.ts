@@ -68,7 +68,7 @@ async function main() {
     assert.ok(tout.includes("Total HT"), "le total HT a disparu");
     assert.ok(tout.includes("Total TTC"), "le total TTC a disparu");
     // Les milliers de devis déjà émis ne doivent pas gagner une ligne.
-    assert.ok(!tout.includes("Prix accordé"), "une remise s'imprime alors qu'il n'y en a aucune");
+    assert.ok(!tout.includes("Remise de"), "une remise s'imprime alors qu'il n'y en a aucune");
     assert.ok(!tout.includes("après remise"), "« après remise » s'imprime sans remise");
   });
 
@@ -80,7 +80,7 @@ async function main() {
       reductionPourcent: "15.00",
       reductionMontant: "130.50",
     });
-    assert.ok(tout.includes("Prix accordé au client 15 %"), `phrase absente :\n${tout}`);
+    assert.ok(tout.includes("Remise de 15 %"), `phrase absente :\n${tout}`);
     assert.ok(tout.includes("Total HT après remise"), "le net n'est pas nommé");
 
     // **L'ordre, mesuré en pixels** : le prix plein AU-DESSUS de la remise, la
@@ -92,11 +92,11 @@ async function main() {
       return t!.y;
     };
     assert.ok(
-      y("Total HT") > y("Prix accordé au client 15 %"),
+      y("Total HT") > y("Remise de 15 %"),
       "le prix plein doit être AU-DESSUS de la remise"
     );
     assert.ok(
-      y("Prix accordé au client 15 %") > y("Total HT après remise"),
+      y("Remise de 15 %") > y("Total HT après remise"),
       "la remise doit être AU-DESSUS du net"
     );
     assert.ok(y("Total HT après remise") > y("Total TTC"), "le net doit être au-dessus du TTC");
@@ -149,7 +149,7 @@ async function main() {
       reductionPourcent: "100.00",
       reductionMontant: "870.00",
     });
-    assert.ok(tout.includes("Prix accordé au client 100 %"));
+    assert.ok(tout.includes("Remise de 100 %"));
     assert.ok(/0,00/.test(tout), "un chantier offert doit afficher zéro, pas un blanc");
   });
 

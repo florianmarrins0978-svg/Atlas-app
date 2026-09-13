@@ -187,25 +187,31 @@ if (fleches.length === 2 &&
 if ((etat.lignes as number) === 0 && !/Rien en /i.test(await page.locator("[data-atlas='ecran-termines']").innerText()))
   echecs.push("un mois vide ne dit pas qu'il est vide.");
 
-// ─── 3. L'onglet « À facturer » ─────────────────────────────────────────────
-const ongletAttente = page.getByRole("button", { name: "À facturer" });
-if ((await ongletAttente.count()) === 0) {
-  echecs.push("l'onglet « À facturer » n'existe pas.");
+// ─── 3. L'œil — l'ancien onglet « À facturer », depuis le 13 septembre 2026 ──
+// Il n'existe que s'il y a quelque chose à montrer : sans rien qui attend, la
+// phrase ne porte ni le compte ni l'œil, et c'est voulu.
+const oeil = page.locator("[data-atlas='oeil-a-facturer']");
+if ((await oeil.count()) === 0) {
+  console.log("  (rien n'attend : l'œil n'a rien à montrer, il n'est pas rendu)");
 } else {
-  const hauteurOnglet = Math.round((await ongletAttente.boundingBox())?.height ?? 0);
-  if (hauteurOnglet < 40) echecs.push(`l'onglet fait ${hauteurOnglet} px de haut : trop petit pour un pouce.`);
-  await ongletAttente.click();
+  const boite = await oeil.boundingBox();
+  if (!boite || boite.height < 44 || boite.width < 44)
+    echecs.push(`l'œil fait ${boite?.width} × ${boite?.height} px : trop petit pour un pouce.`);
+  await oeil.click();
   await page.waitForTimeout(400);
-  etat = await sonder("onglet « À facturer »");
+  etat = await sonder("œil ouvert");
   await page.screenshot({ path: `${dossier}/termines-3-a-facturer.png`, fullPage: true });
 
-  // **Il ne se feuillette PAS** : il montre tout ce qui attend, tous mois
-  // confondus. C'est ce que le patron a demandé pour le retard de facturation.
-  if ((etat.fleches as unknown[]).length !== 0)
-    echecs.push("l'onglet « À facturer » porte des flèches de mois : il ne doit pas se feuilleter.");
-  const texte = await page.locator("[data-atlas='ecran-termines']").innerText();
-  if ((etat.lignes as number) === 0 && !/Rien n['’]attend/i.test(texte))
-    echecs.push("rien n'attend, et l'écran ne le dit pas — il a l'air amputé plutôt que calme.");
+  // **Le mois se met en veille** : l'œil ouvert montre tout ce qui attend, tous
+  // mois confondus — ce que le patron a demandé pour le retard de facturation —,
+  // et des flèches qui feuilletteraient une liste immobile feraient croire
+  // l'écran cassé.
+  const fermees = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLButtonElement>("[data-atlas='mois-precedent'], [data-atlas='mois-suivant']")].every((b) => b.disabled)
+  );
+  if (!fermees) echecs.push("l'œil est ouvert et les flèches de mois restent ouvertes : la liste ignore le mois.");
+  if ((etat.lignes as number) === 0)
+    echecs.push("l'œil est ouvert sur rien : il n'aurait pas dû être rendu.");
   // **Ce que porte une rangée en attente, c'est sa CAPSULE.** Ce contrôle
   // exigeait « Pas encore facturé » quelque part dans l'écran — un texte que le
   // patron a fait retirer le 31 août 2026, et qui prouvait de toute façon peu :

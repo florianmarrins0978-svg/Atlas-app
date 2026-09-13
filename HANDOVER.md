@@ -8,17 +8,68 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — LES CALCULS, ET LES DEUX CHIFFRES QUI SE PERDAIENT (13 septembre 2026)
+## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | sa capture, et quatre lignes : deux boutons sous la TVA, le mois centré, plus de « Tout » ni « À facturer », l'œil barré à côté de « 3 à facturer » |
+| la planche | `appli/termines-l-oeil.html`, retenue le soir même : *« très bien, et par défaut on doit tout voir et on clique pour voir seulement les à facturer »* |
+| ce qui est fait | `ListeTermines.tsx` : la rangée `portes-termines` (deux liens), `NavigationMois` centrée avec `enVeille`, la phrase de comptes à 17 px qui porte l'`Oeil` (`oeil-a-facturer`) |
+| la règle gardée | **l'œil ouvert ignore le mois** — c'était celle de l'onglet « À facturer » (22 août, retard de facturation). Le mois se met en veille, il ne bouge pas |
+| ce qui a DISPARU | `Onglet`, `Compte`, la section « Rien n'attend. Vous êtes à jour. » |
+| le défaut attrapé après coup | sur un mois vide, la phrase et l'œil partaient avec la liste — un chantier d'août à facturer devenait invisible le 1ᵉʳ septembre. Trouvé par la suite jouée SEULE (la batterie remplit septembre avant elle) ; la phrase vit au-dessus de « Rien en … » |
+| la migration | **aucune** |
+| les suites | `test-onglets-termines-e2e` (+1 cas : l'œil dans les deux sens, et il refuse de conclure sans chantier à facturer) ; trois suites passent par l'œil au lieu de l'onglet |
+| le détail | `ARCHITECTURE.md` §350 |
+
+**Ce que la planche disait et que le code ne fait pas :** la planche d'abord
+filtrait **le mois affiché** ; codé « tous mois confondus » parce que c'est sa
+règle du 22 août, et la planche a été réalignée. À lui de dire si le mois en
+veille lui va.
+
+---
+## Lot précédent — SIX PHOTOS NE FONT PLUS SIX CHANTIERS (13 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« j'ai ajouté six photos, j'ai fait retour, il m'en a créé six avec une photo à chaque fois »* |
+| la racine | `assurerChantier` (`FormulaireNouveauChantier.tsx`) lisait le chantier créé dans un état React — invisible pour la boucle d'envoi de `Pellicule`, qui garde la fonction d'avant la première photo — et effaçait la promesse dès qu'elle aboutissait |
+| la correction | la promesse vit dans `chantierDeCetEcran` (une `useRef`), gardée jusqu'au bout ; l'état ne sert qu'au rendu ; « Je rédige à la main » lit la même référence ; elle ne s'efface que sur un échec |
+| la suite | `test-photos-avant-le-chantier-e2e.ts` — six photos, compte en base ; rougit sur l'ancien code |
+
+**LE PIÈGE, pour tout écran qui crée au premier geste :** ce qu'un geste déjà
+en cours doit relire vit dans une référence, jamais dans un état
+(`ARCHITECTURE.md` §349).
+
+---
+## Lot précédent — LA PLANCHE B DU DEVIS (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« code la planche la B »* — `appli/devis-remise-main-d-oeuvre-conditions.html`, ses réponses du 12 septembre |
+| ce qui a changé | « Prix accordé au client » → **« Remise de N % »** (`LIBELLE_REDUCTION`, pièce renommée `Remise.tsx`) ; **« dont main d'œuvre HT »** sous le total HT (`main-doeuvre-devis.ts`, `LigneMainDoeuvre.tsx`, `devis.main_doeuvre_ht`) — nommée, jamais comptée, bornée au brut, champ vide à l'ouverture ; conditions réglées **en gras** sur le PDF (`notesEnGras`, `gras` dans la trace) ; **conditions générales** dans Réglages → Ce qui s'imprime (`conditions-generales.ts`, `entreprises.conditions_generales`, snapshot `devis.conditions_generales`), imprimées en annexe après le bon pour accord |
+| la migration | **0090** |
+| les suites | `test-planche-b-devis` (règle + trace), `test-planche-b-devis-db`, `test-planche-b-devis-e2e` ; les suites de la remise ont suivi le mot |
+
+**LE PIÈGE : l'encodage des CGV est INVERSÉ.** `null` = texte d'origine
+(la case arrive remplie, sa demande), `""` = effacé, texte = le sien. Ne pas le
+« corriger » sur le modèle du texte de pied.
+
+**CE QUI RESTE À LUI.** Deux crochets dans le texte d'origine — assureur,
+médiateur — que l'écran compte tant qu'ils y sont. Les mentions légales
+manquantes (décennale, médiateur, délai d'exécution) restent proposées dans
+`TODO.md`, pas tranchées.
+## Lot précédent — LES CALCULS, ET LES DEUX CHIFFRES QUI SE PERDAIENT (13 septembre 2026)
 
 | | |
 |---|---|
 | sa demande | *« Il faut vérifier tous les calculs, corrige le problème à la racine ! Pas de code mort »* — et, la veille : *« si les lignes ne s'additionnent pas ou mal, c'est hyper grave et ça ne doit jamais arriver »* |
 | ce qui était JUSTE | l'addition, les totaux, la TVA, la remise. Le devis à 5 400 € venait de la SAISIE, pas du calcul |
-| **trois vrais défauts** | la multiplication d'une ligne écrite **trois fois** ; `onBlur` rangeant la valeur **d'avant** sur vingt-cinq champs ; le prix accordé **qui revenait tout seul**, une écriture perdue entre deux chemins du serveur |
-| la migration | **aucune** |
-| les pièces | `src/lib/montant-de-ligne.ts` (neuf), `PrixAccordeAuClient`, `ChampsDuDevis`, `BrouillonSection`, `IdentiteClient`, `ChampTelephone`, `PlanningClient`, `CompteClient`, `devis.ts` (le verrou) |
+| **trois vrais défauts** | la multiplication d'une ligne écrite **trois fois** ; `onBlur` rangeant la valeur **d'avant** sur vingt-cinq champs ; le prix accordé **qui revenait tout seul**, une écriture perdue entre deux chemins du serveur — **le verrou qui la corrige vient du lot de la planche B**, trouvé le même soir des deux côtés |
+| la migration | **aucune** (celle de la planche B, 0090, vient d'un autre lot) |
+| les pièces | `src/lib/montant-de-ligne.ts` (neuf), `PrixAccordeAuClient`, `ChampsDuDevis`, `BrouillonSection`, `IdentiteClient`, `ChampTelephone`, `PlanningClient`, `CompteClient` |
 | les suites | `test-montant-de-ligne.ts`, `test-valeur-du-champ.ts`, `test-remise-qui-revient-db.ts` — les trois neuves, les trois confrontées à leur défaut |
-| le détail | `ARCHITECTURE.md` §348, §349, §350 |
+| le détail | `ARCHITECTURE.md` §351, §352, §353 |
 
 **LE PIÈGE, ET IL SE REPRODUIRA :** un rouge intermittent qu'on met sur le
 compte d'un « contrôle capricieux ». `test-reduction-devis-e2e` tombait une fois
@@ -341,7 +392,7 @@ rendu** — ce que React interdit, et que le lint du dépôt a refusé. C'est
 | | |
 |---|---|
 | ses mots | *« la réduction client cliquable comme sur le devis »* · *« reprends exactement celle du devis — couleur, forme, mots »* |
-| la pièce commune | `src/components/atlas/PrixAccordeAuClient.tsx`, montée par le devis ET la facture |
+| la pièce commune | `src/components/atlas/Remise.tsx` (née `PrixAccordeAuClient.tsx`, renommée le 13 septembre), montée par le devis ET la facture |
 | le serveur | `majReductionDeFacture` + `majReductionFactureAction` — ils n'existaient pas |
 | la migration | **aucune** |
 | les suites | `test-remise-facture-db.ts` (5), `test-facture-sans-devis-e2e.ts` (12) |
@@ -4413,7 +4464,8 @@ et ses perles pleines ou creuses, la pastille dorée, le **volet replié** qui
 cachait les chantiers à facturer, « Facturé, tous mois confondus », le surtitre
 et le cheveu. Une suite qui réclamerait l'un d'eux rendrait l'écran impossible à
 changer (`CLAUDE.md` §5 bis) — c'est déjà arrivé, et `test-planning-vers-facture-e2e.ts`
-a été adapté : il passe désormais par l'onglet **« À facturer »**.
+a été adapté : il passe par ce qui montre tout ce qui attend — l'onglet
+« À facturer » jusqu'au 13 septembre 2026, **l'œil** (`oeil-a-facturer`) depuis.
 
 **Deux choses gouvernent le nouvel écran, et elles se paient si on les ignore :**
 
@@ -4423,9 +4475,9 @@ a été adapté : il passe désormais par l'onglet **« À facturer »**.
    le mois le plus récent.
 2. **CE QUI RESTE À FACTURER NE SUIT PAS LE MOIS.** Sa demande : *« il faut
    pouvoir revenir dans le passé si jamais on a du retard sur la facturation »*.
-   L'onglet « À facturer » ignore le mois affiché — un chantier de juillet jamais
-   facturé se voit encore en août. `aFacturerPartout` porte cette règle, et la
-   suite pure la fixe.
+   L'œil ouvert (l'onglet « À facturer », jusqu'au 13 septembre 2026) ignore le
+   mois affiché — un chantier de juillet jamais facturé se voit encore en août.
+   `aFacturerPartout` porte cette règle, et la suite pure la fixe.
 
 **Le piège qui a coûté deux suites rouges** : un chantier **clôturé avant sa
 date** reste dans « Terminés » avec une date **à venir**. Ouvrir sur « le mois

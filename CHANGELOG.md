@@ -8,6 +8,86 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
+
+Sa capture et ses quatre demandes du jour, dessinées d'abord
+(`appli/termines-l-oeil.html`, retenue le soir même) : sous la TVA, il ne
+reste que « Retours d'intervention » et « Créer une facture », sur une seule
+rangée ; « Septembre 2026 » est centré ; les onglets « Tout » et « À facturer »
+sont partis — tout se voit par défaut — et **l'œil barré à côté de « 3 à
+facturer »** filtre : ouvert, la liste ne garde que ce qui attend ; rappuyé,
+tout revient. Les deux comptes passent à 17 px, et la phrase ne s'affiche que
+s'il y a quelque chose à compter.
+
+**L'œil ouvert ignore le mois, comme l'onglet qu'il remplace** — sa règle du
+22 août pour le retard de facturation. Le mois se met alors en veille (en
+retrait, flèches fermées) sans bouger de place.
+
+Ce que cela évite : un onglet et une phrase qui disaient la même chose à trois
+centimètres d'écart, et une rangée de trois pastilles qui ne tenait qu'en
+rognant.
+
+**Supprimés avec :** `Onglet` et `Compte` dans `ListeTermines.tsx`, la
+section « Rien n'attend. Vous êtes à jour. » — la phrase de comptes le dit
+déjà en ne portant pas l'œil. Détail : `ARCHITECTURE.md` §350.
+
+**Et un défaut du lot, attrapé par sa suite jouée SEULE** (l'après-midi) : sur
+un mois sans chantier — « Rien en septembre » —, la phrase et l'œil
+disparaissaient avec la liste. Un chantier d'août qui attend sa facture devenait
+donc invisible dès le 1ᵉʳ du mois : exactement le retard de facturation que
+l'onglet « À facturer » montrait depuis le 22 août. La phrase vit désormais
+au-dessus du message de mois vide. En batterie complète, la suite passait —
+d'autres suites avaient rempli septembre avant elle.
+
+### Six photos ne font plus six chantiers
+
+*« J'ai ajouté six photos, j'ai fait retour, il m'en a créé six avec une photo
+à chaque fois. »* La fiche client crée le chantier à la première photo ; les
+suivantes, envoyées dans la même boucle, ne le retrouvaient pas — la mémoire du
+chantier créé vivait dans un état React que cette boucle ne voyait pas, et la
+promesse de création s'effaçait dès qu'elle aboutissait.
+
+**Corrigé à la racine** : la promesse vit dans une référence, gardée jusqu'au
+bout ; l'état ne sert plus qu'au rendu, et le bouton d'enregistrement lit la
+même référence. Elle ne s'efface que sur un échec — « Réessayez » réessaie
+désormais pour de bon. `ARCHITECTURE.md` §349 ;
+`test-photos-avant-le-chantier-e2e.ts` rougit sur l'ancien code.
+### La planche B du devis : « Remise », « dont main d'œuvre », les conditions en gras, les CGV au dos
+
+*« Code la planche la B. »* Sa planche du 12 septembre
+(`appli/devis-remise-main-d-oeuvre-conditions.html`), ses réponses du jour même.
+
+**Ce qui change.** « Prix accordé au client » s'appelle **« Remise de N % »**
+partout — un seul mot, dans `reduction-devis.ts`. Sous les lignes, **« + Main
+d'œuvre »** ouvre « dont main d'œuvre HT » sous le total HT : la lecture B, déjà
+comprise dans les lignes, nommée pour le crédit d'impôt du client, jamais
+comptée ; le champ s'ouvre vide, bornée au total HT, le « − » la retire. Sur le
+PDF, **ses notes en maigre, les conditions réglées en gras**. Et dans Réglages →
+Ce qui s'imprime, une case **conditions générales de vente et de règlement**,
+remplie d'office du texte pris de la photo du menuisier (huit clauses gardées,
+quatre laissées, trois ajoutées pour la loi), qu'il efface ou réécrit — imprimée
+**après le bon pour accord**, sur une page à elle. L'écran compte les crochets
+qu'il lui reste à remplir (assureur, médiateur).
+
+**Ce qui a été fait autrement que la planche.** Elle écrivait le mode de
+règlement et le montant de l'acompte dans les notes ; son lot des acomptes
+(la veille) les a mis dans les totaux : on ne les a pas doublés. Le bloc en
+gras porte les phrases qui existent déjà.
+
+**Migration 0090** (`main_doeuvre_ht`, `conditions_generales` sur l'entreprise
+et le devis). `gras` ajouté à la trace du PDF : sans lui, « en gras » ne se
+mesurait pas. Détail : `ARCHITECTURE.md` §348.
+
+**Ce que la batterie a montré, et qui est corrigé à la racine.** Le « − » de la
+main d'œuvre écrivait `null` pendant qu'un rendu du brouillon, parti une
+seconde avant, réécrivait le montant qu'il avait lu — et les 5 % du « + Remise »
+subissaient la même course depuis la veille (`test-reduction-devis-e2e`, rouge
+sur trois batteries). La mise à jour d'en-tête prend désormais **le même verrou
+de chantier que le rendu** (`pg_advisory_xact_lock`), avant de lire : l'un
+attend l'autre. Et le texte d'origine des CGV ne se pose plus que sur le
+**réglage** de l'entreprise, jamais sur l'instantané d'un devis : un devis
+d'avant la migration sortait sinon avec des CGV au dos qu'il n'avait jamais
+portées (`test-conditions-sur-le-devis`).
 ### Sa remise retirée revenait toute seule — une fois sur deux
 
 Le champ du prix accordé vidé, le serveur enregistrait bien le retrait — et la
@@ -19,12 +99,14 @@ lu les 15 % avant l'effacement et les réécrivait après.
 Pour lui : un devis parti chez le client **plus cher que ce qu'il lui avait
 promis**, sans rien à l'écran pour le dire.
 
-Les deux prennent maintenant le même verrou, et la ligne est relue dessous.
+Les deux prennent maintenant le même verrou, et la ligne est relue dessous —
+**le lot de la planche B a buté sur la même course le même soir et posé le
+même correctif** ; c'est le sien qui vit sur `main`.
 `test-remise-qui-revient-db.ts` joue la course elle-même, dix fois, dans les
 deux sens — sans navigateur, donc sans hasard : retirer le verrou le fait
 rougir au premier essai. La suite navigateur, elle, ne l'attrapait qu'une fois
 sur deux, et trois sessions l'avaient mise sur le compte d'un contrôle
-capricieux (`ARCHITECTURE.md` §350).
+capricieux (`ARCHITECTURE.md` §353).
 
 ### Ce qui est tapé est ce qui se range — quatre pièces le perdaient encore
 
@@ -37,7 +119,7 @@ Réglages, et le brouillon de la dictée.
 
 Vingt-cinq endroits corrigés. `test-valeur-du-champ.ts`, joué par la batterie,
 refuse désormais les trois formes : la leçon vivait dans un commentaire depuis
-treize jours (`ARCHITECTURE.md` §349).
+treize jours (`ARCHITECTURE.md` §352).
 
 ### Une seule règle multiplie une ligne — elle était écrite trois fois
 
@@ -53,7 +135,7 @@ lot), et **l'addition sur mille devis tirés** — le total HT tombe au centime
 sur la somme des lignes. Confronté à un arrondi posé trop tôt, il rougit.
 
 Rappel de ce qui n'était pas en cause : le devis à 5 400 € venait de la saisie,
-pas du calcul (`ARCHITECTURE.md` §348).
+pas du calcul (`ARCHITECTURE.md` §351).
 
 
 ### Les deux « chiffres faux » du devis : l'addition était juste, la suite tapait mal

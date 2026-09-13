@@ -7,7 +7,7 @@ import type { LigneAcompte as LigneCalculee } from "@/lib/acomptes-devis";
 /**
  * ─── LA LIGNE D'UN ACOMPTE, SOUS LE TOTAL TTC ────────────────────────────────
  *
- * La même pièce que le prix accordé au client (`PrixAccordeAuClient.tsx`) :
+ * La même pièce que la remise (`Remise.tsx`) :
  * l'or, le « − » cerclé de 26 px (sa proposition B du 17 août 2026 — en dessous
  * de 24 px on le rate au doigt), le champ de 36 px collé au libellé, le
  * montant à droite. Seuls les MOTS changent — et le montant s'écrit en positif :

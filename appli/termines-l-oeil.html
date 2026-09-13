@@ -25,7 +25,9 @@
     pas de mémoire : la carte de TVA à contour doré, le mois en serif 26,
     les flèches en or, les lignes à 24 px sans trait, la capsule verte.
 
-    MESURÉ POUR SON TÉLÉPHONE : 390 × 664. RIEN N'EST CODÉ dans `src/`.
+    MESURÉ POUR SON TÉLÉPHONE : 390 × 664. CODÉ le 13 septembre 2026 au soir
+    (`src/app/termines/ListeTermines.tsx`) — cette planche reste la référence
+    de l'écran, comme les précédentes.
   */
   :root{
     --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
@@ -115,6 +117,8 @@
                   font:400 22px/1 var(--serif);color:var(--or)}
   .navMois button:disabled{color:var(--trait);cursor:default}
   .navMois .quand{font:400 26px/1.2 var(--serif);white-space:nowrap;margin:0 2px}
+  /* L'œil ouvert : la liste ignore le mois, qui se met en veille sans bouger. */
+  .navMois .quand.veille{color:var(--gris)}
 
   /* La phrase des comptes DEVIENT le filtre. L'œil est un vrai bouton de
      44 px, posé sur la ligne sans la grandir : ses marges négatives
@@ -136,7 +140,6 @@
   .ecran[data-mode="attente"] .oeil .barre{display:none}
   .ecran[data-mode="attente"] .oeil .ouvert{display:block}
   .ecran[data-mode="attente"] .point,.ecran[data-mode="attente"] .factures{opacity:.38}
-  .ecran[data-mode="attente"] .rangee[data-facturee]{display:none}
 
   .liste{margin:0 26px}
   .rangee{display:flex;gap:14px;align-items:center;padding:24px 0;text-decoration:none;color:inherit}
@@ -174,11 +177,12 @@
 
 <div class="mot">
   <b>L'œil fait ce que faisait l'onglet « À facturer », sans prendre une
-  rangée.</b> Barré, la liste montre tout : c'est le mode d'origine. Ouvert,
-  elle ne garde que ce qui attend, et « 14 facturés » s'éteint pour dire qu'ils
-  sont là mais rangés. On rappuie, tout revient. <b>Changez de mois</b> avec
-  les flèches : en août rien n'attend et l'œil part ; en juillet il n'y a rien,
-  et la phrase part avec.
+  rangée.</b> Barré, la liste montre le mois : c'est le mode d'origine. Ouvert,
+  elle ne garde que ce qui attend — <b>tous mois confondus</b>, votre règle du
+  22 août pour le retard de facturation : M. Gauthier, d'août, remonte —, le
+  mois se met en veille et « 14 facturés » s'éteint. On rappuie, tout revient.
+  <b>Changez de mois</b> avec les flèches : en juillet il n'y a rien, la phrase
+  part. <b>Codé dans l'application le 13 septembre au soir.</b>
 </div>
 
 <div class="etats" role="group" aria-label="Ce qu'on peut jouer">
@@ -251,7 +255,6 @@
       { nom: "Résidence des Ormes",etat: "8 septembre · 860,00 € prévus", attend: true },
       { nom: "Mr. Alicanter",      etat: "8 septembre · Facturé le 9 septembre · Facture n° 3", montant: "428,69 €" },
       { nom: "Mme Costa",          etat: "5 septembre · Facturé le 5 septembre · Facture n° 2", montant: "1 120,00 €" },
-      { nom: "M. Bellier",         etat: "3 septembre · 2 400,00 € prévus", attend: true },
       { nom: "Copropriété Le Clos",etat: "2 septembre · Facturé le 4 septembre · Facture n° 1", montant: "3 980,00 €" },
       { nom: "M. Ferrand",         etat: "1er septembre · Facturé le 2 septembre", montant: "540,00 €" },
       { nom: "Mme Perrot",         etat: "1er septembre · Facturé le 1er septembre", montant: "310,00 €" },
@@ -261,18 +264,19 @@
       { nom: "M. Lacroix",         etat: "3 septembre · Facturé le 4 septembre", montant: "1 480,00 €" },
       { nom: "Résidence Bel Air",  etat: "2 septembre · Facturé le 3 septembre", montant: "4 020,00 €" },
       { nom: "Mme Toussaint",      etat: "2 septembre · Facturé le 2 septembre", montant: "390,00 €" },
-      { nom: "M. Vidal",           etat: "1er septembre · Facturé le 2 septembre", montant: "975,00 €" },
-      { nom: "Camping des Pins",   etat: "1er septembre · Facturé le 1er septembre", montant: "5 600,00 €" },
     ]},
     { nom: "Août 2026", lignes: [
       { nom: "Mme Lenoir",         etat: "28 août · Facturé le 29 août", montant: "760,00 €" },
-      { nom: "M. Gauthier",        etat: "21 août · Facturé le 22 août", montant: "1 980,00 €" },
+      { nom: "M. Gauthier",        etat: "21 août · 1 980,00 € prévus", attend: true },
       { nom: "Les Jardins du Parc",etat: "14 août · Facturé le 18 août", montant: "6 210,00 €" },
     ]},
     { nom: "Juillet 2026", lignes: [] },
   ];
-  // Les comptes du code sont « tous mois confondus » ; ici, ceux du mois
-  // affiché, pour que l'écran et la liste disent la même chose sous le doigt.
+  // Les comptes sont « tous mois confondus », comme dans le code depuis le
+  // 23 août — et l'œil ouvert aussi : un chantier d'août jamais facturé se
+  // voit en septembre, c'est sa règle du 22 août pour le retard de
+  // facturation. Le mois se met alors en veille, il ne commande plus la liste.
+  const TOUTES = MOIS.flatMap(m => m.lignes);
   const ecran = document.getElementById("ecran");
   const liste = document.getElementById("liste");
   const oeil = document.getElementById("oeil");
@@ -285,25 +289,28 @@
   function rendre(){
     const m = MOIS[rang];
     document.getElementById("mois").textContent = m.nom;
-    document.getElementById("passe").disabled = rang === MOIS.length - 1;
-    document.getElementById("futur").disabled = rang === 0;
-    const attend = m.lignes.filter(l => l.attend).length;
-    const faites = m.lignes.length - attend;
+    const attend = TOUTES.filter(l => l.attend).length;
+    const faites = TOUTES.length - attend;
     // Sans rien à facturer, l'œil n'a rien à filtrer : il part avec son compte
-    // et le point, et la liste montre tout. Sans rien du tout, la phrase part
-    // entière — sa règle du 13 septembre : elle n'apparaît que s'il y a des
-    // chantiers à facturer ou des factures déjà faites.
+    // et le point. Sans rien du tout, la phrase part entière — sa règle du
+    // 13 septembre : elle n'apparaît que s'il y a des chantiers à facturer ou
+    // des factures déjà faites.
     if (attend === 0) mode = "tout";
+    const enVeille = mode === "attente";
+    document.getElementById("passe").disabled = enVeille || rang === MOIS.length - 1;
+    document.getElementById("futur").disabled = enVeille || rang === 0;
+    document.getElementById("mois").classList.toggle("veille", enVeille);
     nAttente.textContent = attend + " à facturer";
     nAttente.hidden = attend === 0;
     oeil.hidden = attend === 0;
     document.querySelector(".comptes .point").hidden = attend === 0 || faites === 0;
     nFaites.textContent = pluriel(faites, "facturé");
     nFaites.hidden = faites === 0;
-    document.getElementById("comptes").hidden = m.lignes.length === 0;
-    rien.hidden = m.lignes.length > 0;
+    const moisVide = !enVeille && m.lignes.length === 0;
+    document.getElementById("comptes").hidden = moisVide || TOUTES.length === 0;
+    rien.hidden = !moisVide;
     rien.textContent = "Rien en " + m.nom.split(" ")[0].toLowerCase() + ".";
-    liste.innerHTML = m.lignes.map(l => l.attend
+    liste.innerHTML = (enVeille ? TOUTES.filter(l => l.attend) : m.lignes).map(l => l.attend
       ? `<a class="rangee" href="#f"><span class="qui"><span class="nomC">${l.nom}</span><span class="etat">${l.etat}</span></span><span class="capsule">À facturer</span></a>`
       : `<a class="rangee" data-facturee href="#f"><span class="qui"><span class="nomC">${l.nom}</span><span class="etat">${l.etat}</span></span><span class="montant">${l.montant}</span></a>`
     ).join("");

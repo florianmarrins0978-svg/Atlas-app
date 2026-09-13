@@ -163,6 +163,14 @@ export const entreprises = pgTable("entreprises", {
   moyensPaiement: text("moyens_paiement"),
   rappelerPenalitesDevis: boolean("rappeler_penalites_devis").notNull().default(false),
   textePiedDocuments: text("texte_pied_documents"),
+  /**
+   * Ses conditions générales de vente et de règlement (migration 0090),
+   * imprimées après le bon pour accord. **Encodage inversé** par rapport au
+   * texte de pied, parce que la case arrive REMPLIE : `null` = le texte
+   * d'origine d'Atlas, `""` = tout effacé, du texte = le sien
+   * (`src/lib/conditions-documents.ts`).
+   */
+  conditionsGenerales: text("conditions_generales"),
 
   /**
    * Le message qui part au client avec le devis, la facture ou le rapport
@@ -1175,7 +1183,15 @@ export const devis = pgTable(
     moyensPaiement: text("moyens_paiement"),
     rappelerPenalites: boolean("rappeler_penalites").notNull().default(false),
     textePied: text("texte_pied"),
+    /** Figées à la création comme les cinq autres (migration 0090) ; `null` = le texte d'origine. */
+    conditionsGenerales: text("conditions_generales"),
     conditionsPaiement: text("conditions_paiement"),
+    /**
+     * « dont main d'œuvre HT » — la lecture B du 12 septembre 2026 (migration
+     * 0090). Déjà comprise dans les lignes : elle se NOMME sous le total HT,
+     * elle ne change aucun total. `null` = pas de ligne.
+     */
+    mainDoeuvreHt: numeric("main_doeuvre_ht", { precision: 12, scale: 2 }),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
     // TVA — correction v2.1 §4

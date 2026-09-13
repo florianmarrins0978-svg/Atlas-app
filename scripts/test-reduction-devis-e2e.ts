@@ -142,21 +142,21 @@ async function main() {
     );
     // La ligne vide du premier essai : elle contredisait le PDF, qui n'imprime rien.
     assert.equal(
-      await page.locator('input[aria-label="Prix accordé au client, en pourcentage"]').count(),
+      await page.locator('input[aria-label="Remise, en pourcentage"]').count(),
       0,
       "un champ de remise vide traîne sur un devis qui n'en a pas — l'écran ment sur le document"
     );
   });
 
   await cas("le chemin pour en poser une existe, et il est discret", async () => {
-    const bouton = page.getByRole("button", { name: /Prix accordé au client/ });
+    const bouton = page.getByRole("button", { name: /^\+ Remise$/ });
     assert.equal(await bouton.count(), 1, "aucun moyen d'accorder un prix sans dicter");
     await bouton.click();
     await page.waitForTimeout(900);
   });
 
   await cas("15 % : les trois lignes de B, dans l'ordre et aux bons montants", async () => {
-    const champ = page.locator('input[aria-label="Prix accordé au client, en pourcentage"]');
+    const champ = page.locator('input[aria-label="Remise, en pourcentage"]');
     await champ.fill("15");
     await page.keyboard.press("Tab");
     await page.waitForTimeout(900);
@@ -176,7 +176,7 @@ async function main() {
       return b!.y;
     };
     const yPlein = await y("Total HT870,00");
-    const yRemise = await y("Prix accordé au client");
+    const yRemise = await y("Remise de");
     const yNet = await y("Total HT après remise");
     assert.ok(yPlein < yRemise, `le prix plein doit être au-dessus (${yPlein} contre ${yRemise})`);
     assert.ok(yRemise < yNet, `la remise doit être au-dessus du net (${yRemise} contre ${yNet})`);
@@ -218,7 +218,7 @@ async function main() {
   });
 
   await cas("elle se retire, et le devis revient à son prix plein", async () => {
-    const champ = page.locator('input[aria-label="Prix accordé au client, en pourcentage"]');
+    const champ = page.locator('input[aria-label="Remise, en pourcentage"]');
     await champ.fill("");
     await page.keyboard.press("Tab");
     // **ON ATTEND LA TRACE, JAMAIS UN DÉLAI — et c'est la troisième fois dans
@@ -258,10 +258,10 @@ async function main() {
   // pendant que la base, elle, n'en portait plus aucune. L'écran affirmait donc
   // une remise que le PDF n'imprimait pas.
   await cas("écrire 0 % la retire pour de bon, à l'écran comme en base", async () => {
-    await page.getByRole("button", { name: /Prix accordé au client/ }).click();
+    await page.getByRole("button", { name: /^\+ Remise$/ }).click();
     await page.waitForTimeout(900);
 
-    const champ = page.locator('input[aria-label="Prix accordé au client, en pourcentage"]');
+    const champ = page.locator('input[aria-label="Remise, en pourcentage"]');
     await champ.fill("0");
     await page.keyboard.press("Tab");
     // **On attend la TRACE, jamais un délai.** Une seconde suffisait à vide et
@@ -281,7 +281,7 @@ async function main() {
     // libellé accuserait donc ce bouton d'être la ligne morte.
     const texte = await totaux().innerText();
     assert.equal(
-      await page.locator('input[aria-label="Prix accordé au client, en pourcentage"]').count(),
+      await page.locator('input[aria-label="Remise, en pourcentage"]').count(),
       0,
       `la ligne or survit à un zéro pour cent :\n${texte}`
     );
@@ -302,10 +302,10 @@ async function main() {
   // *« Tout comme on ajoute une ligne avec un petit plus, il faudrait qu'on ait
   // un petit moins pour supprimer la ligne de la réduction. »*
   // `docs/maquettes/68-retirer-le-prix-accorde.html`.
-  const moins = () => page.getByRole("button", { name: /Retirer le prix accordé/i });
+  const moins = () => page.getByRole("button", { name: /Retirer la remise/i });
 
   await cas("le « − » existe, et se touche : 26 px", async () => {
-    await page.getByRole("button", { name: /^\+ Prix accordé au client/ }).click();
+    await page.getByRole("button", { name: /^\+ Remise$/ }).click();
     // **On attend la TRACE, jamais un délai** — et c'est le cas SUIVANT qui
     // paie quand on l'oublie : il lit la base juste après le « − » et exige d'y
     // trouver les 5 % que ce bouton vient de poser. Sous la charge de la CI,
@@ -363,7 +363,7 @@ async function main() {
 
     const texte = await totaux().innerText();
     assert.equal(
-      await page.locator('input[aria-label="Prix accordé au client, en pourcentage"]').count(),
+      await page.locator('input[aria-label="Remise, en pourcentage"]').count(),
       0,
       `la ligne or survit à son propre retrait :\n${texte}`
     );

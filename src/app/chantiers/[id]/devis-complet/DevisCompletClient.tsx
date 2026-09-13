@@ -39,13 +39,14 @@ import {
   totauxAvecReduction,
 } from "@/lib/reduction-devis";
 import {
-  BoutonPrixAccorde,
-  LignePrixAccorde,
+  BoutonRemise,
+  LigneRemise,
   REMISE_PAR_DEFAUT,
-} from "@/components/atlas/PrixAccordeAuClient";
+} from "@/components/atlas/Remise";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import LigneAcompte from "./LigneAcompte";
+import LigneMainDoeuvre from "./LigneMainDoeuvre";
 import ChampUnite from "./ChampUnite";
 import { acompteSuivantPropose, echeancierDevis, phrasesAcomptes, type AcompteDevis } from "@/lib/acomptes-devis";
 import { lignesConditionsDevis, lireConditions, type ConditionsLues } from "@/lib/conditions-documents";
@@ -170,8 +171,10 @@ type Props = {
   adresseChantier: string;
   lignesInitiales: Ligne[];
   tauxTva: string;
-  /** Le prix accordé au client, en pourcentage. `null` : aucun. */
+  /** La remise, en pourcentage. `null` : aucune. */
   reductionPourcent: string | null;
+  /** « dont main d'œuvre HT » (migration 0090). `null` : pas de ligne. */
+  mainDoeuvreHt: string | null;
   /** Les acomptes posés sur ce devis, taux cumulés (migration 0088). */
   acomptesInitiaux: AcompteDevis[];
   /** Le réglage recopié à la création — ce que « + Ajouter un acompte » propose d'abord. */
@@ -294,6 +297,30 @@ export default function DevisCompletClient(props: Props) {
   const [conditions, setConditions] = useState(props.conditionsPaiement);
 
   /**
+   * ─── « DONT MAIN D'ŒUVRE HT » — la lecture B du 12 septembre 2026 ────────
+   *
+   * Nommée, jamais comptée : les totaux ne bougent pas. Le champ porte ce
+   * qu'il tape ; la borne (jamais plus que le brut HT) se pose quand le doigt
+   * quitte le champ, et l'on se referme sur ce que le serveur a RETENU — comme
+   * la remise. `null` rendu par le serveur veut dire « rien à nommer », et la
+   * ligne se retire d'elle-même.
+   */
+  const [mainDoeuvre, setMainDoeuvre] = useState(props.mainDoeuvreHt ?? "");
+  const [mainDoeuvreOuverte, setMainDoeuvreOuverte] = useState(props.mainDoeuvreHt !== null);
+
+  async function enregistrerMainDoeuvre(valeurBrute: string) {
+    const valeur = valeurBrute.trim() || null;
+    const retenu = await aLaSuite(() => majEnTeteDevisAction(props.devisId, { mainDoeuvreHt: valeur }));
+    const montant = retenu?.mainDoeuvreHt ?? null;
+    if (montant === null) {
+      setMainDoeuvre("");
+      setMainDoeuvreOuverte(false);
+    } else {
+      setMainDoeuvre(sansZerosInutiles(montant));
+    }
+  }
+
+  /**
    * ─── LES ACOMPTES — sa demande du 12 septembre 2026 ─────────────────────
    *
    * Ce que porte l'écran, c'est ce que le champ porte : le taux tel qu'il l'a
@@ -364,6 +391,18 @@ export default function DevisCompletClient(props: Props) {
   // porterait sur un total qui n'a pas bougé — et le geste semblerait sans
   // effet, ce qui est précisément la plainte du 17 août.
   const remiseVisible = remiseOuverte && !retraits.estRetire(CLE_REDUCTION);
+  // La ligne « dont main d'œuvre HT » se pose sous le PREMIER « Total HT »
+  // écrit — brut avec une remise, net sans —, d'où une seule définition pour
+  // les deux branches du rendu.
+  const ligneMainDoeuvre = mainDoeuvreOuverte ? (
+    <LigneMainDoeuvre
+      montant={mainDoeuvre}
+      fige={fige}
+      onChange={setMainDoeuvre}
+      onFini={(v) => void enregistrerMainDoeuvre(v)}
+      onRetirer={() => void enregistrerMainDoeuvre("")}
+    />
+  ) : null;
 
   // Les totaux se recalculent sous ses yeux, à chaque frappe : un devis dont le
   // total n'apparaît qu'après enregistrement se relit deux fois.
@@ -1202,6 +1241,20 @@ export default function DevisCompletClient(props: Props) {
             + Ajouter une TVA
           </button>
         )}
+        {/* **« + Main d'œuvre », comme « + Ajouter une TVA »** — sa demande du
+            12 septembre 2026. Il ouvre la ligne « dont main d'œuvre HT » sous le
+            total HT, vide : le chiffre est à lui, pas à nous. */}
+        {!fige && !mainDoeuvreOuverte && (
+          <button
+            type="button"
+            data-atlas="poser-main-doeuvre"
+            onClick={() => setMainDoeuvreOuverte(true)}
+            className="mt-2.5 block text-[14px] font-medium"
+            style={{ color: colors.or }}
+          >
+            + Main d’œuvre
+          </button>
+        )}
 
         <TiroirDesRetires
           dernier={retraits.dernier}
@@ -1241,11 +1294,12 @@ export default function DevisCompletClient(props: Props) {
                 <span className="text-[15px]">Total HT</span>
                 <span className="text-[15px]">{enEuros(brutHt)}</span>
               </div>
+              {ligneMainDoeuvre}
               {/* **La même pièce que la facture, et ce n'est pas un partage de
                   confort** : « reprends exactement celle du devis — couleur,
                   forme, mots » (11 septembre 2026). Recopiée, elle aurait
                   divergé au premier ajustement. */}
-              <LignePrixAccorde
+              <LigneRemise
                 pourcent={reduction}
                 montantRetire={totaux.reductionMontant}
                 fige={fige}
@@ -1263,10 +1317,13 @@ export default function DevisCompletClient(props: Props) {
               </div>
             </>
           ) : (
-            <div className="flex items-center justify-between py-1.5">
-              <span className="text-[15px]">Total HT</span>
-              <span className="text-[15px]">{enEuros(totalHt)}</span>
-            </div>
+            <>
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-[15px]">Total HT</span>
+                <span className="text-[15px]">{enEuros(totalHt)}</span>
+              </div>
+              {ligneMainDoeuvre}
+            </>
           )}
           {/* **UNE LIGNE PAR CATÉGORIE — sa demande du 1er septembre 2026.**
 
@@ -1361,7 +1418,7 @@ export default function DevisCompletClient(props: Props) {
           {/* Discret, et seulement quand il n'y en a pas : un devis qui porte
               déjà sa remise n'a pas besoin qu'on lui propose d'en poser une. */}
           {!fige && !remiseOuverte && (
-            <BoutonPrixAccorde
+            <BoutonRemise
               onPoser={() => {
                 setRemiseOuverte(true);
                 setReduction(REMISE_PAR_DEFAUT);
