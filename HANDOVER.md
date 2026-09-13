@@ -26,10 +26,18 @@ corrections » — ne le faisaient que lorsque le code venait de bouger. Une
 migration échouée n'était jamais retentée, et l'allumage suivant répondait
 « déjà à jour ». Plus aucun geste ne rattrapait sa base.
 
-Désormais : migrations à chaque allumage et à chaque appui (rejeu gratuit,
-`_migrations` saute ce qui est appliqué), et le compte rattrapé remonte jusqu'à
-l'écran. `ARCHITECTURE.md` §355, `scripts/test-migrations-banc.ts` (éprouvé
-rouge contre la version d'avant).
+Deux moitiés, et il fallait les deux : **la base se rattrape** à chaque allumage
+et à chaque appui (rejeu gratuit, `_migrations` saute ce qui est appliqué), et
+**l'écart se mesure** — la fiche de son espace porte une ligne « Base » qui nomme
+les migrations manquantes, l'écran des Réglages le dit aussi, et le geste rendu
+n'efface rien.
+
+**Ce qui a été refusé :** toucher au `select()` sans projection de
+`getEntreprise`. Ce serait le pansement — le schéma recopié à vingt-huit
+endroits, et le prochain écart muet ailleurs.
+
+`ARCHITECTURE.md` §355 · `scripts/test-migrations-banc.ts` ·
+`scripts/test-retard-de-la-base.ts` (les deux éprouvés rouges).
 
 ## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
 

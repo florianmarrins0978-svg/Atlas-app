@@ -200,7 +200,6 @@ lancer_veilleur
 # `scripts/test-mise-a-jour-espace.ts` : enfouie ici, elle n'aurait jamais été
 # vue échouer.
 MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD" 2>> "$JOURNAL")"
-MIGRATIONS=""
 
 # Le code a peut-être changé sous nos pieds : on relit la version AVANT que le
 # veilleur ne soit relancé plus bas, sinon le serveur neuf hériterait de la
@@ -463,7 +462,7 @@ case "${DEPENDANCES:-}" in
     echo "      rm -rf node_modules && npm ci"
     ;;
 esac
-case "${MIGRATIONS:-}" in
+case "$MIGRATIONS" in
   échec*)
     echo
     echo "  ⚠ LA BASE N'A PAS SUIVI LE CODE — $MIGRATIONS"

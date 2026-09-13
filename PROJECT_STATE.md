@@ -12,8 +12,10 @@ Sa panne : *« Plus rien ne fonctionne ! »*, « Planning » et « Terminés » 
 `column "conditions_generales" does not exist` (0090). Les deux chemins qui
 migrent ne le faisaient que le jour où le code bougeait : un échec n'était jamais
 retenté, et plus aucun geste ne rattrapait la base. Migrations à chaque allumage
-et à chaque appui du bouton, le compte rattrapé rendu à l'écran.
-`ARCHITECTURE.md` §355 · `scripts/test-migrations-banc.ts`.
+et à chaque appui du bouton ; et l'écart se MESURE désormais — une ligne « Base »
+sur la fiche de son espace, qui nomme les migrations manquantes, et le même
+constat dans les Réglages. `ARCHITECTURE.md` §355 ·
+`scripts/test-migrations-banc.ts` · `scripts/test-retard-de-la-base.ts`.
 
 ## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026
 

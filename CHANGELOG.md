@@ -26,8 +26,23 @@ désormais à chaque allumage et à chaque appui, le rejeu ne coûtant rien
 (`_migrations` saute ce qui est appliqué). Le script dit combien il a rattrapé,
 et l'écran le rend : « La base avait N version(s) de retard : c'est réparé. »
 
-Tenu par `scripts/test-migrations-banc.ts`, éprouvé rouge contre la version
-d'avant. Détail : `ARCHITECTURE.md` §355.
+**Et l'écart se MESURE, au lieu de se découvrir par un écran mort.** Le
+rattrapage retire la cause courante ; il ne peut pas promettre qu'elle ne
+reviendra jamais. La fiche que son espace publie porte désormais, sous « Code
+SERVI », `Base : EN RETARD DE 3 — 0088, 0089, 0090` — les numéros, pas un
+compte —, et le dit en tête de ses conclusions, avant la lenteur et avant le
+retard de version. L'écran des Réglages le dit aussi, et ne montre rien quand
+tout concorde. Le geste rendu n'efface rien, jamais.
+
+**Ce qui a été refusé, et pourquoi c'est écrit :** s'en prendre au `select()`
+sans projection de `getEntreprise`, qui fait dépendre le Planning d'une colonne
+de conditions générales. Nommer les colonnes recopierait le schéma à vingt-huit
+endroits, et ne protégerait que cette fonction — le prochain écart tomberait
+ailleurs, tout aussi muet.
+
+Tenu par `scripts/test-migrations-banc.ts` et `scripts/test-retard-de-la-base.ts`,
+tous deux éprouvés rouges en cassant ce qu'ils gardent. Détail :
+`ARCHITECTURE.md` §355.
 
 ### Entrer dans la case sélectionne tout : un appui remplace — « fais le B »
 
