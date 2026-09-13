@@ -51,9 +51,14 @@ et à chaque appui (rejeu gratuit, `_migrations` saute ce qui est appliqué), et
 les migrations manquantes, l'écran des Réglages le dit aussi, et le geste rendu
 n'efface rien.
 
+**Et la réparation ne passe plus par un écran** (sa capture de 21 h 14, « Tarifs
+indisponibles ») : le veilleur rattrape la base tous les quarts d'heure, et
+l'écran des Réglages — celui qui porte le bouton — ne lit plus qu'une colonne au
+lieu de l'entreprise entière. Un écran de dépannage doit être le dernier debout.
+
 **Ce qui a été refusé :** toucher au `select()` sans projection de
-`getEntreprise`. Ce serait le pansement — le schéma recopié à vingt-huit
-endroits, et le prochain écart muet ailleurs.
+`getEntreprise` partout ailleurs. Ce serait le pansement — le schéma recopié à
+vingt-huit endroits, et le prochain écart muet ailleurs.
 
 `ARCHITECTURE.md` §356 · `scripts/test-migrations-banc.ts` ·
 `scripts/test-retard-de-la-base.ts` (les deux éprouvés rouges).

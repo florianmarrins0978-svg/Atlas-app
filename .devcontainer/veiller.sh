@@ -143,10 +143,49 @@ cd "$DEPOT" || exit 0
 # laisserait deux publieurs, et la fiche serait réécrite deux fois par quart
 # d'heure sans que personne ne comprenne pourquoi.
 VEILLEUR=$$
+
+# ─────────────────────────────────────────────────────────────────────────────
+# **LA BASE SE RATTRAPE TOUTE SEULE — 13 septembre 2026, au soir, et c'est ce
+# qui manquait pour que sa panne soit VRAIMENT réparée.**
+#
+# Le matin même, le rattrapage avait été sorti de « seulement quand le code
+# bouge » : il tourne à chaque allumage, et le bouton « Chercher les dernières
+# corrections » le déclenche aussi. **Les deux passent par un geste de sa part.**
+#
+# Or le bouton vit dans l'écran des RÉGLAGES — et cet écran tombe pour la même
+# raison que les autres quand la base est en retard : il lit l'entreprise. Il a
+# donc reçu « Tarifs indisponibles » en allant chercher le geste qui répare.
+# **Le seul remède était derrière la porte qu'il fermait.**
+#
+# Le veilleur, lui, tourne quoi qu'il arrive, et il est déjà là tous les quarts
+# d'heure. Il mesure, et il n'agit que s'il y a un écart : la panne se referme
+# donc seule, sans écran, sans bouton et sans qu'on lui demande rien.
+#
+# **Ce geste ne détruit rien** (`CLAUDE.md` §4 septies) : `run-migrations.ts`
+# ajoute ce qui manque et saute ce qui est déjà appliqué. Aucun amorçage, aucune
+# reconstruction — ce sont précisément les deux choses qu'il a interdites.
+#
+# **Il MESURE avant d'agir, et ce n'est pas de la frilosité** : appliquer sans
+# regarder ferait tourner un `npm run db:migrate` toutes les quinze minutes,
+# pour rien, sur une machine qui construit déjà l'application à côté.
+rattraper_la_base() {
+  local etat
+  etat="$(cd "$DEPOT" && npx tsx scripts/etat-de-la-base.ts 2>/dev/null | tail -1)"
+  case "$etat" in
+    "EN RETARD"*)
+      echo "$(date '+%d/%m %H:%M:%S') — base en retard ($etat) : rattrapage" >> "$JOURNAL"
+      bash "$DEPOT/.devcontainer/appliquer-migrations.sh" "$DEPOT" >> "$JOURNAL" 2>&1
+      ;;
+  esac
+}
+
 (
   while true; do
     sleep "$INTERVALLE_RAPPORT"
     kill -0 "$VEILLEUR" 2>/dev/null || exit 0
+    # **Avant de publier, pas après.** La fiche dirait sinon un retard déjà
+    # réparé, et il partirait faire un geste devenu inutile.
+    rattraper_la_base
     ( cd "$DEPOT" && ATLAS_MOMENT=veille node scripts/rapporter-espace.mjs >> "$JOURNAL" 2>&1 )
   done
 ) &

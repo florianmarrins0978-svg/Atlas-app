@@ -89,6 +89,41 @@ export async function getEntreprise(ctx: Ctx) {
 }
 
 /**
+ * SON NOM, et rien d'autre.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Ce que sa capture du 13 septembre 2026 au soir a montré.** La base de son
+ * espace était restée en arrière du code servi ; il est allé dans Réglages
+ * chercher « Chercher les dernières corrections », le seul geste qui répare —
+ * et il a lu « Tarifs indisponibles ». **L'écran de dépannage tombait de la
+ * panne qu'il sert à diagnostiquer**, parce qu'il lisait l'entreprise ENTIÈRE
+ * (`getEntreprise`, un `select()` sans projection) pour en afficher le NOM sous
+ * « Se déconnecter. » Une colonne ajoutée par une migration non appliquée
+ * suffisait à fermer la porte de secours.
+ *
+ * D'où cette lecture : une colonne, nommée, présente depuis la première
+ * migration. L'écran de dépannage ne dépend plus que d'elle.
+ *
+ * **Ce n'est PAS une invitation à projeter partout.** `getEntreprise` garde son
+ * `select()` complet, et c'est juste : nommer les colonnes chez ses vingt-huit
+ * appelants recopierait le schéma autant de fois, et les copies divergeraient
+ * (`CLAUDE.md` §3). Ce qui justifie l'exception ici, c'est la fonction de
+ * l'écran — **il doit être le dernier debout**, sinon le remède est derrière la
+ * porte qu'il ferme.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+export async function nomDeLEntreprise(ctx: Ctx): Promise<string | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [e] = await tx
+      .select({ nom: entreprises.nom })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+    return e?.nom ?? null;
+  });
+}
+
+/**
  * Met à jour les réglages de l'entreprise.
  *
  * Le nombre d'équipes est borné ici en plus de la contrainte de base (migration
