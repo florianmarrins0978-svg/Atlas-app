@@ -36,7 +36,13 @@ export default function ChampTelephone({
   valeur: string;
   /** Reçoit la valeur PRÊTE À RANGER, jamais la frappe brute. */
   onChange: (v: string) => void;
-  onFini: () => void;
+  /**
+   * À la sortie du champ, avec le numéro **prêt à ranger** — composé ici, et
+   * non lu dans l'état de l'appelant, qui est celui du dernier rendu (leçon du
+   * 30 août 2026). Ce qui s'affiche (« 06 79 98 45 14 ») n'est pas ce qui se
+   * range (« +33679984514 ») : le champ est le seul à savoir faire le pas.
+   */
+  onFini: (valeurPreteARanger: string) => void;
 }) {
   const lu = afficherTelephone(valeur);
   const [pays, setPays] = useState<PaysTelephone>(lu.pays);
@@ -58,7 +64,7 @@ export default function ChampTelephone({
     // Le numéro déjà tapé se réécrit à la découpe du nouveau pays. Le laisser
     // tel quel afficherait un espacement français sur un numéro belge.
     ecrire(saisi, p);
-    onFini();
+    onFini(composerTelephone(p, saisi));
   }
 
   return (
@@ -96,7 +102,7 @@ export default function ChampTelephone({
           aria-label="Numéro de téléphone"
           value={saisi}
           onChange={(e) => ecrire(e.target.value)}
-          onBlur={onFini}
+          onBlur={(e) => onFini(composerTelephone(pays, e.currentTarget.value))}
           className="min-w-0 flex-1 border-0 bg-transparent p-0 outline-none"
           // 17 px : en dessous de 16, iOS agrandit la page à la mise au point et
           // le patron se retrouve avec un écran zoomé à rétablir à la main.

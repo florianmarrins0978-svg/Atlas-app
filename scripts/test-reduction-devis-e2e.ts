@@ -112,7 +112,7 @@ async function main() {
    * saisie et les 5 % du bouton « + ». Deux boucles recopiées auraient divergé
    * au premier ajustement (`CLAUDE.md` §3).
    */
-  async function quandLaBasePorte(pourcent: string): Promise<Record<string, string>[]> {
+  async function quandLaBasePorte(pourcent: string | null): Promise<Record<string, string>[]> {
     let rows: Record<string, string>[] = [];
     for (const essai of [0, 1, 2, 3, 4, 5]) {
       if (essai > 0) await page.waitForTimeout(essai * 700);
@@ -221,9 +221,18 @@ async function main() {
     const champ = page.locator('input[aria-label="Remise, en pourcentage"]');
     await champ.fill("");
     await page.keyboard.press("Tab");
-    await page.waitForTimeout(1_000);
+    // **ON ATTEND LA TRACE, JAMAIS UN DÉLAI — et c'est la troisième fois dans
+    // CETTE suite (13 septembre 2026).** Les deux autres endroits l'avaient
+    // déjà appris ; celui-ci gardait une seconde choisie au doigt mouillé,
+    // suivie d'un rechargement. Sous cent cinquante suites, le vidage n'était
+    // pas retombé : la page rechargée redonnait les 15 %, et les quatre cas
+    // suivants s'écroulaient derrière — le contrôle accusait alors le produit
+    // de garder une remise retirée, ce qui est le rouge le plus coûteux qui
+    // soit (`AGENTS.md`). Jouée seule, elle passait.
+    //
+    // Le rechargement reste : ce cas-ci mesure ce que le SERVEUR a retenu.
+    await quandLaBasePorte(null);
     await page.reload({ waitUntil: "networkidle" });
-    await page.waitForTimeout(600);
 
     const texte = await totaux().innerText();
     assert.match(texte.replace(/\s/g, " "), /1 044,00/, `le devis n'est pas revenu au prix plein :\n${texte}`);

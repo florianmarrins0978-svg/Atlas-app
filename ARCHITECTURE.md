@@ -29718,10 +29718,214 @@ suites qui précèdent celle-ci remplissent septembre. C'est la suite jouée
 seule, sur une base fraîche, qui a montré l'écran muet. Depuis, la phrase se
 rend au-dessus du message de mois vide, et la suite accepte zéro rangée avant
 d'ouvrir l'œil — c'est le cas qui compte.
+---
+
+## §351 — Ce qu'une ligne pèse : une seule règle, et personne d'autre ne multiplie
+
+**Sa demande du 13 septembre 2026 :** *« vérifie tous les calculs ; si les
+lignes ne s'additionnent pas ou mal, c'est hyper grave et ça ne doit jamais
+arriver »*.
+
+**Ce que la vérification a trouvé — et ce n'était pas l'addition.** Les totaux
+passaient déjà tous par `totauxAvecReduction` (`src/lib/reduction-devis.ts`),
+appelée par l'écran, les dépôts et le PDF. En revanche, **la multiplication
+d'une ligne — quantité × prix unitaire — était écrite TROIS fois** :
+
+| Où | Ce que son commentaire affirmait |
+|---|---|
+| `src/server/repositories/lignes-prix.ts` | (rien) |
+| `src/server/repositories/factures.ts` | *« la même règle que le devis, appelée et non réécrite »* — elle l'était |
+| `TravauxSupplementairesClient.tsx` (l'écran des travaux supplémentaires) | *« la même règle qu'au serveur, jamais une seconde »* — c'était la troisième |
+
+**Deux commentaires disaient le contraire du code.** Et c'est un contrôle, pas
+une relecture, qui a trouvé la troisième : elle n'était pas dans l'inventaire
+fait à la main.
+
+`src/lib/montant-de-ligne.ts` porte désormais la règle, et les trois appellent.
+Elle est dans `lib/` parce qu'elle est pure : ni base, ni écran, et le lien
+descend (`CLAUDE.md` §4 sexies).
+
+**Ce que le contrôle tient**, et qui répond à sa question *« est-ce que ça peut
+se reproduire ? »* :
+
+1. **le calcul** — décimales exactes (jamais la virgule flottante), arrondi une
+   seule fois à la fin, une valeur vide ou illisible qui vaut zéro sans jamais
+   lever, un négatif qui reste négatif ;
+2. **l'unicité** — le contrôle relit tout `src/` et refuse toute nouvelle
+   multiplication quantité × prix hors de la règle. Une quatrième copie fait
+   rougir le lot, au lieu de dormir sous un commentaire qui prétend le
+   contraire ;
+3. **l'addition, sur mille devis tirés** (graine fixe, donc reproductible) : le
+   total HT tombe au centime sur la somme des lignes, et le net égale le brut
+   sans remise.
+
+Confronté à un calcul faux — arrondi avant la multiplication —, il rougit sur
+les deux bons cas.
+
+**CE QUI N'ÉTAIT PAS UN DÉFAUT DE CALCUL, et qu'il faut savoir avant d'y
+revenir :** le devis à 5 400 € au lieu de 900 venait de la SAISIE. La base
+portait `quantite = 12.00` pour un prix de 450, et 12 × 450 fait bien 5 400. Le
+champ pose volontairement le curseur à DROITE du chiffre existant (sa règle du
+11 septembre 2026, 2 h 28) : taper sans effacer ajoute. Les deux suites qui
+« accusaient » le calcul tapaient ainsi. Elles font maintenant son geste —
+entrer, tout sélectionner, taper.
 
 ---
 
-## §351 — Une panne de base ne jette plus le patron sur l'écran d'erreur
+## §352 — Un champ quitté rend SA valeur, jamais celle du dernier rendu
+
+**Le même défaut, quatre fois, sur quatre pièces différentes.** Il a été
+diagnostiqué le 30 août 2026 sur les prix de ligne du devis — *« un prix tapé
+puis quitté partait à zéro »*, six enquêtes — et la leçon est restée dans un
+commentaire. Trois autres pièces l'ont refait.
+
+| Quand | La pièce | Ce qui partait chez le client |
+|---|---|---|
+| 30 août | les prix de ligne du devis | un prix remplacé par le précédent |
+| 13 septembre | `PrixAccordeAuClient` | la remise retirée **revenait**, à son ancien pourcentage |
+| 13 septembre | `ChampNu` | le nom, l'adresse, le SIRET, l'IBAN — de l'émetteur ET du client |
+| 13 septembre | `Champ` des Réglages, `ChampTelephone` | le SIRET, le numéro de TVA, l'IBAN, le téléphone |
+
+**Le mécanisme n'a rien d'exotique.** `onBlur` se déclenche à la perte du
+focus. Si le gestionnaire n'emporte rien, l'appelant lit son propre état React
+— celui du DERNIER RENDU. Or React ne rend pas à la frappe, il le programme :
+entre la dernière touche et la sortie du champ, rien ne garantit que l'état
+porte ce qui vient d'être tapé.
+
+Sur une machine reposée, le rendu arrive à temps. Sous charge, non — et
+**l'écran continue d'afficher la valeur neuve** pendant que le serveur range
+l'ancienne. Rien ne le dit : on l'apprend au rechargement, ou sur la pièce
+partie chez le client.
+
+**La règle, et elle vaut partout :** un `onBlur` qui appelle un rappel lui
+passe `e.currentTarget.value` — ou la valeur composée à partir de lui quand ce
+qui s'affiche n'est pas ce qui se range (`ChampTelephone` : « 06 79 98 45 14 »
+à l'écran, « +33679984514 » en base). `onBlur={onFini}` donnerait l'ÉVÉNEMENT
+comme valeur ; `onBlur={() => onFini()}` ne donne rien.
+
+**Quand ce n'est pas un champ mais un objet** — le brouillon de la dictée, dont
+chaque case modifie une partie —, la frappe et la sortie construisent le même
+objet par la **même fonction**, à partir de la valeur du champ
+(`BrouillonSection`, `avecChamp` / `avecLigne`). Deux constructions auraient
+divergé (`CLAUDE.md` §3).
+
+**Ce qui empêche la cinquième fois :** `scripts/test-valeur-du-champ.ts`, joué
+par `npm test`, donc par la batterie. Il lit tout `src/` et refuse les trois
+formes. Une consigne en prose se lit au début d'une conversation et s'oublie au
+bout de trois heures (`CLAUDE.md` §1 bis) — celle-ci avait tenu treize jours.
+
+---
+
+## §353 — Un verrou qu'un seul des deux prend ne protège rien
+
+**Sa remise retirée revenait toute seule, une fois sur deux.** Mesuré à la
+sonde le 13 septembre 2026 : le champ du prix accordé vidé, le serveur rendait
+bien la ligne à `reduction: null` — et la base repassait à `15.00` dans la
+seconde qui suit, sans un mot.
+
+**Deux chemins écrivent la même ligne de devis, et un seul prenait le verrou :**
+
+| | |
+|---|---|
+| `getOuCreerDevisBrouillon` | régénère le devis à l'ouverture de l'écran et réécrit ses totaux — **réduction comprise** : `calculerTotaux` la rend, et le `.set({ ...totaux })` l'écrit. Prenait `pg_advisory_xact_lock(hashtext(chantierId))` |
+| `mettreAJourEnTeteDevis` | enregistre le taux de TVA, les conditions, le prix accordé. **Ne prenait aucun verrou** |
+
+Les deux lisaient la ligne, la modifiaient chacune de son côté, et la dernière
+à écrire gagnait. La régénération — déclenchée par le rafraîchissement que
+provoque `revalidatePath` — avait lu les 15 % AVANT l'effacement, et les
+réécrivait APRÈS. C'est la perte de mise à jour d'école, sur un chiffre qui
+décide de ce que le client paie.
+
+**La clé est le CHANTIER, pas le devis** : c'est celle que prend la
+régénération, et deux clés différentes ne s'excluent pas. La ligne est relue
+SOUS le verrou — ce qu'on avait vu avant de l'attendre a pu changer.
+
+**DEUX SESSIONS L'ONT TROUVÉ LE MÊME SOIR, ET C'EST LE CORRECTIF DE `main` QUI
+VIT ICI.** Le lot de la planche B a buté sur la même course par l'autre bout —
+*« les 5 % du + Remise n'arrivaient pas en base, la main d'œuvre retirée
+revenait »* — et a posé le même verrou, sur la même clé, avec la même relecture.
+Les deux versions étaient équivalentes ; à la fusion, celle qui était déjà sur
+`main` a été gardée et la mienne jetée (`CLAUDE.md` §B). C'est exactement le
+gaspillage que §A cherche à éviter : **regarder les autres branches avant
+d'ouvrir un lot**. Ce qui reste de mon côté, et qui manquait au leur, c'est le
+contrôle déterministe ci-dessous.
+
+**Pourquoi personne ne l'avait vu.** `test-reduction-devis-e2e` l'attrapait une
+fois sur deux, et son rouge dépend du moment où l'écran se rafraîchit : trois
+sessions ont conclu « cette suite est capricieuse » plutôt que « le produit perd
+une écriture ». Un rouge intermittent qu'on apprend à ignorer est pire qu'un
+contrôle absent.
+
+`scripts/test-remise-qui-revient-db.ts` joue la course elle-même — les deux
+chemins partis ensemble, dix fois, dans les deux sens — sans navigateur et sans
+hasard. Retirer le verrou le fait rougir dès le premier essai, en nommant ce
+que ça coûte.
+
+**Et `useEcrituresALaSuite` ne pouvait rien y faire** : elle sérialise les
+écritures d'UN onglet. Ici les deux écritures venaient de deux endroits
+différents du serveur. Une file côté navigateur ne remplace pas un verrou côté
+base.
+
+---
+
+## §354 — Entrer dans la case sélectionne tout : un appui remplace
+
+**Sa décision du 13 septembre 2026 — « fais le B ».** Elle REMPLACE sa
+correction du 11 septembre (le curseur posé au bout du chiffre), et c'est lui
+qui a tranché, les deux coûts sous les yeux.
+
+| Son geste sur une case qui affiche « 1 » | Le A (11 sept.) | **Le B (13 sept.)** |
+|---|---|---|
+| poser le doigt, taper « 2 » | **12** | **2** |
+| poser le doigt, effacer | 1 → vide | vide d'un coup |
+
+**Ce que le A coûtait.** La quantité par défaut est « 1 », le curseur arrivait
+DERRIÈRE, et taper le bon chiffre l'ajoutait au lieu de le remplacer. Un « 2 »
+tapé sur un prix de 450 € fait un devis à **5 400 € au lieu de 900** — et rien
+à l'écran ne dit que le chiffre s'est collé au précédent. C'est exactement ce
+qui a été mesuré la veille, en croyant d'abord à une faute de calcul (§351).
+
+**Sa demande du 11 septembre est TENUE, pas abandonnée** — *« si la quantité par
+défaut n'est pas bonne, on a juste à supprimer »*. Tout étant sélectionné, une
+seule touche efface : c'est moins de gestes qu'avant, pas plus.
+
+**Le mécanisme n'a pas bougé, seule la borne a changé** : `setSelectionRange(0,
+fin)` au lieu de `(fin, fin)`. Les deux temps restent nécessaires — l'entrée
+dans le champ pose la sélection, puis l'appui la défait pour placer le curseur
+où le doigt s'est posé, et c'est cette remise en place qu'on rattrape une fois.
+Après quoi le champ lui appartient.
+
+**Vaut pour la quantité COMME pour le prix** : les deux cases sont le même
+composant (`ChiffreSaisi`), et le chiffre s'y collait de la même façon.
+
+**CE QUI A ÉTÉ RETIRÉ AVEC, et c'est la moitié qui compte** (`CLAUDE.md`
+§4 quater, « une correction qui n'enlève rien recouvre au lieu de réparer») :
+les deux suites navigateur sélectionnaient tout à la main — `ControlOrMeta+a` —
+pour contourner le A. Gardé, cet échafaudage aurait laissé les suites VERTES le
+jour où le B saute, pendant qu'un devis à 5 400 € part chez son client. Elles
+font désormais son geste : on entre, on tape.
+
+`scripts/test-case-du-prix.ts` tient les deux moitiés — que la sélection aille
+bien de 0 à la fin, et que l'ancienne règle ne soit plus là. Confronté au A, il
+rougit sur les deux.
+
+**ET LE GESTE LUI-MÊME SE JOUE AU NAVIGATEUR**, dans
+`test-devis-refus-a-chiffrer-e2e` : on appuie **dans le vide à gauche du
+chiffre** — là où le doigt tombe, et là où le navigateur défait la sélection —,
+on vérifie que « 1 » est bien sélectionné de bout en bout, **puis on tape
+« 2 » et l'on exige « 2 »**. Sans cette seconde moitié, le contrôle dirait que
+la sélection est là sans jamais vérifier ce qu'elle fait. Remis au A, il rougit
+sur « « 1 » n'est pas sélectionné (1→1) ».
+
+**Ce bloc éprouvait le A jusqu'au 13 septembre** : c'est lui qui a rougi à la
+batterie quand le B est arrivé, et il a été réorienté sur la nouvelle règle
+plutôt que contourné (`CLAUDE.md` §5 bis — quand une suite rougit après un
+changement qu'il a demandé, on adapte le contrôle, on ne remet pas l'ancien
+comportement).
+
+---
+
+## §355 — Une panne de base ne jette plus le patron sur l'écran d'erreur
 
 **Sa plainte du 13 septembre 2026 :** *« Je peux toujours pas créer de
 compte ! »* — et, en capture, « Une erreur · Cette page n'a pas pu s'afficher ·

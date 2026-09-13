@@ -1452,6 +1452,37 @@ posant délibérément une origine étrangère.
 posée après ces vingt échanges : *« tu essayes, tu fais des batteries de tests
 avant de me demander de le faire »*.
 
+**ON NE REJOUE PAS TOUTE LA BATTERIE POUR VÉRIFIER DES ROUGES CONNUS — sa
+consigne du 13 septembre 2026 :** *« tu vas pas rejouer toute la batterie,
+rejoue seulement les rouges !! »*
+
+Il l'a dite après avoir vu trois batteries complètes de cinquante minutes
+enchaînées dans la même soirée. Il a raison, et le calcul est net :
+
+| Ce qu'on veut savoir | Ce qu'on lance | Le temps |
+|---|---|---|
+| **un lot est-il livrable** | la batterie entière | ~50 min, et elle reste obligatoire |
+| **un rouge connu est-il réparé** | les suites concernées, et elles seules | ~20 min pour quinze |
+
+```bash
+npm run test:e2e -- --seulement "adresse-suggestions,fiche-client,ia-01"
+```
+
+Les motifs se séparent par des VIRGULES, et chacun se cherche dans le nom du
+fichier (`run-e2e-tests.ts`). Le script annonce alors combien de suites il a
+retenues — **et ce chiffre se lit** : un motif trop court en attrape une
+voisine, et l'on croit mesurer ce qu'on ne mesure pas.
+
+**Ce que cela ne relâche PAS**, et la limite ne bouge pas : la batterie entière
+reste ce qui autorise une livraison (§5 ci-dessus, et §6 pour `main`). Rejouer
+les rouges sert à SAVOIR, pas à livrer. Le script le dit lui-même à chaque
+filtre : *« Ce n'est PAS la batterie »*.
+
+**Et un rouge connu qui redevient vert ne se croit pas sur parole :** il se
+rejoue deux fois. Trois sessions ont classé `test-reduction-devis-e2e`
+« capricieuse » parce qu'elle tombait une fois sur deux, alors que le produit
+perdait une écriture (`ARCHITECTURE.md` §353).
+
 Les étapes séparées restent disponibles pour un diagnostic rapide :
 
 ```bash
