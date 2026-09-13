@@ -658,6 +658,39 @@ export async function mettreAJourEnTeteDevis(
   data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     * **LE MÊME VERROU QUE LA RÉGÉNÉRATION — et il n'en avait qu'une moitié.**
+     *
+     * `getOuCreerDevisBrouillon` prend `pg_advisory_xact_lock(chantier)` avant
+     * de relire le devis et d'y réécrire ses totaux — **réduction comprise**
+     * (`calculerTotaux` la rend, et le `.set({ ...totaux })` l'écrit). Cette
+     * fonction-ci, elle, ne le prenait pas : les deux lisaient donc la même
+     * ligne, la modifiaient chacune de son côté, et la dernière à écrire
+     * gagnait. Un verrou qu'un seul des deux prend ne protège rien.
+     *
+     * **Mesuré le 13 septembre 2026, à la sonde**, une fois sur deux : le champ
+     * du prix accordé vidé, le serveur rendait bien la ligne à `reduction:
+     * null` — et la base repassait à `15.00` dans la seconde, sans un mot. La
+     * régénération, déclenchée par le rafraîchissement de l'écran, avait lu les
+     * 15 % AVANT l'effacement et les réécrivait APRÈS.
+     *
+     * Pour le patron : **une remise retirée revenait toute seule**, et il ne
+     * l'apprenait qu'en rouvrant son devis — ou sur celui parti chez le client.
+     *
+     * La clé est le CHANTIER, pas le devis : c'est celle que prend la
+     * régénération, et deux clés différentes ne s'excluent pas.
+     * ═══════════════════════════════════════════════════════════════════════
+     */
+    const [pourLaCle] = await tx
+      .select({ chantierId: devis.chantierId })
+      .from(devis)
+      .where(eq(devis.id, devisId))
+      .limit(1);
+    if (!pourLaCle) return null;
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${pourLaCle.chantierId}))`);
+
+    // Relu SOUS le verrou : ce qu'on avait vu avant de l'attendre a pu changer.
     const [avant] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!avant || avant.statut === "envoye") return null;
 

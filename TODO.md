@@ -47,6 +47,24 @@ planche la pose entre Qté et P.U. HT, avec les unités usuelles (u, ml, m², m�
 kg, h, forfait) sous la ligne quand le champ prend le doigt. Même planche,
 même adresse.
 
+## ~~UN ROUGE « CAPRICIEUX » ÉTAIT UNE ÉCRITURE PERDUE~~ — TROUVÉ ET CORRIGÉ (13 septembre 2026)
+
+`test-reduction-devis-e2e` tombait une fois sur deux depuis des jours, et trois
+sessions l'avaient mise sur le compte d'un contrôle fragile. **Ce n'en était
+pas un.** À la sonde : le prix accordé au client, retiré, **revenait tout seul**
+— deux chemins du serveur écrivaient la même ligne de devis, et un seul prenait
+le verrou. Un devis parti chez le client plus cher que ce qui lui avait été
+promis, sans un mot à l'écran (`ARCHITECTURE.md` §350).
+
+**La leçon, pour la prochaine fois :** un rouge intermittent qu'on apprend à
+ignorer est pire qu'un contrôle absent. Avant d'écrire « suite capricieuse »
+dans ce fichier, rendre le produit bavard et REGARDER (`AGENTS.md`).
+
+`test-remise-qui-revient-db.ts` joue désormais la course sans navigateur : elle
+rougit au premier essai si le verrou saute.
+
+---
+
 ## DIX-HUIT SUITES NAVIGATEUR ROUGES SUR `main` (13 septembre 2026, relevé)
 
 **Batterie complète jouée dans un atelier à un seul occupant** — dossier, port,
@@ -94,6 +112,12 @@ envoyer un devis à 5 400 € au lieu de 900 sur une faute de frappe. **Deux voi
 et c'est lui qui tranche :** garder (il efface d'abord), ou tout sélectionner
 à l'entrée dans la case (un appui remplace, et il perd le « on a juste à
 supprimer »).
+
+**RELEVÉ DU 13 SEPTEMBRE AU SOIR, après le lot des calculs : 135/150**, et
+**aucun rouge nouveau** — les quinze restants sont tous dans la liste
+ci-dessus. Trois sont passées au vert (`anneau-dictee`, `devis-complet`,
+`devis-papier`) ; `reduction-devis` a rejoint la liste un moment — c'est elle
+qui a livré l'écriture perdue plus haut, et elle est verte depuis.
 
 **À reprendre en propre**, suite par suite : le journal entier est nécessaire
 (`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).

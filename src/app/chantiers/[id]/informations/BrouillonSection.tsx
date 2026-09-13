@@ -141,10 +141,42 @@ export function useBrouillon({
     }
   }
 
-  function majLigne(liste: "prestations" | "materiel", index: number, champ: keyof LigneExtraite, valeur: string) {
-    if (!contenu) return;
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * **LA FRAPPE ET LA SORTIE DE CHAMP CONSTRUISENT LE MÊME BROUILLON.**
+   *
+   * La sortie de champ persistait `contenu` — l'état du DERNIER RENDU. Or
+   * React ne rend pas à la frappe, il le programme : la dernière touche tapée
+   * avant de toucher ailleurs pouvait n'y être pas encore, et c'est **l'ancien
+   * brouillon** qui partait au serveur pendant que l'écran montrait le neuf.
+   * C'est le défaut du 30 août 2026, celui des prix de ligne
+   * (`scripts/test-valeur-du-champ.ts`).
+   *
+   * Le champ rend donc sa valeur, et le brouillon se construit à partir
+   * d'elle. Une seule fonction par geste, employée aux deux endroits : deux
+   * constructions du même objet auraient divergé (`CLAUDE.md` §3).
+   * ═══════════════════════════════════════════════════════════════════════
+   */
+  function avecLigne(liste: "prestations" | "materiel", index: number, champ: keyof LigneExtraite, valeur: string) {
+    if (!contenu) return null;
     const lignes = contenu[liste].map((l, i) => (i === index ? { ...l, [champ]: valeur || null } : l));
-    setContenu({ ...contenu, [liste]: lignes });
+    return { ...contenu, [liste]: lignes };
+  }
+
+  function avecChamp(champ: "dureePrevue" | "tailleEquipe" | "gestionDechets" | "contraintesAcces" | "remarques", valeur: string) {
+    if (!contenu) return null;
+    return { ...contenu, [champ]: valeur || null };
+  }
+
+  function majLigne(liste: "prestations" | "materiel", index: number, champ: keyof LigneExtraite, valeur: string) {
+    const nouveau = avecLigne(liste, index, champ, valeur);
+    if (nouveau) setContenu(nouveau);
+  }
+
+  /** La sortie du champ : ce qu'il porte, pas ce que le rendu en gardait. */
+  function persisterLigne(liste: "prestations" | "materiel", index: number, champ: keyof LigneExtraite, valeur: string) {
+    const nouveau = avecLigne(liste, index, champ, valeur);
+    if (nouveau) void persister(nouveau);
   }
 
   function retirerLigne(liste: "prestations" | "materiel", index: number) {
@@ -153,8 +185,13 @@ export function useBrouillon({
   }
 
   function majChamp(champ: "dureePrevue" | "tailleEquipe" | "gestionDechets" | "contraintesAcces" | "remarques", valeur: string) {
-    if (!contenu) return;
-    setContenu({ ...contenu, [champ]: valeur || null });
+    const nouveau = avecChamp(champ, valeur);
+    if (nouveau) setContenu(nouveau);
+  }
+
+  function persisterChamp(champ: "dureePrevue" | "tailleEquipe" | "gestionDechets" | "contraintesAcces" | "remarques", valeur: string) {
+    const nouveau = avecChamp(champ, valeur);
+    if (nouveau) void persister(nouveau);
   }
 
   return {
@@ -172,8 +209,10 @@ export function useBrouillon({
     persister,
     confirmer,
     majLigne,
+    persisterLigne,
     retirerLigne,
     majChamp,
+    persisterChamp,
   };
 }
 
@@ -193,7 +232,7 @@ export default function BrouillonSection({
   dicteeNonTranscrite: boolean;
 }) {
   const { contenu, statut, lecture, enCours, erreur, conflit, setConflit, enAttente, fraicheur } = brouillon;
-  const { generer, persister, majLigne, retirerLigne, majChamp } = brouillon;
+  const { generer, persister, majLigne, persisterLigne, retirerLigne, majChamp, persisterChamp } = brouillon;
 
   if (!transcriptionDisponible && !contenu) {
     // Renvoyer vers la note vocale quand elle a DÉJÀ été enregistrée et
@@ -324,7 +363,7 @@ export default function BrouillonSection({
                 lignes={contenu.prestations}
                 lectureSeule={false}
                 onChange={(i, champ, v) => majLigne("prestations", i, champ, v)}
-                onCommit={() => persister(contenu)}
+                onCommit={(i, champ, v) => persisterLigne("prestations", i, champ, v)}
                 onRetirer={(i) => retirerLigne("prestations", i)}
               />
 
@@ -334,14 +373,14 @@ export default function BrouillonSection({
                   value={contenu.dureePrevue ?? ""}
                   lectureSeule={false}
                   onChange={(v) => majChamp("dureePrevue", v)}
-                  onCommit={() => persister(contenu)}
+                  onCommit={(v) => persisterChamp("dureePrevue", v)}
                 />
                 <ChampBrouillon
                   label="Équipe"
                   value={contenu.tailleEquipe ?? ""}
                   lectureSeule={false}
                   onChange={(v) => majChamp("tailleEquipe", v)}
-                  onCommit={() => persister(contenu)}
+                  onCommit={(v) => persisterChamp("tailleEquipe", v)}
                 />
               </div>
 
@@ -350,7 +389,7 @@ export default function BrouillonSection({
                 lignes={contenu.materiel}
                 lectureSeule={false}
                 onChange={(i, champ, v) => majLigne("materiel", i, champ, v)}
-                onCommit={() => persister(contenu)}
+                onCommit={(i, champ, v) => persisterLigne("materiel", i, champ, v)}
                 onRetirer={(i) => retirerLigne("materiel", i)}
               />
             </>
@@ -443,7 +482,7 @@ export default function BrouillonSection({
  * qu'elles disparaîtraient avec lui.
  */
 export function NotesDuBrouillon({ brouillon }: { brouillon: Brouillon }) {
-  const { contenu, majChamp, persister } = brouillon;
+  const { contenu, majChamp, persisterChamp } = brouillon;
   if (!contenu) return null;
   return (
     <div className="flex flex-col gap-6">
@@ -453,7 +492,7 @@ export function NotesDuBrouillon({ brouillon }: { brouillon: Brouillon }) {
         lectureSeule={false}
         surLaPage
         onChange={(v) => majChamp("gestionDechets", v)}
-        onCommit={() => persister(contenu)}
+        onCommit={(v) => persisterChamp("gestionDechets", v)}
       />
       <ChampBrouillon
         label="Contraintes d'accès"
@@ -461,7 +500,7 @@ export function NotesDuBrouillon({ brouillon }: { brouillon: Brouillon }) {
         lectureSeule={false}
         surLaPage
         onChange={(v) => majChamp("contraintesAcces", v)}
-        onCommit={() => persister(contenu)}
+        onCommit={(v) => persisterChamp("contraintesAcces", v)}
       />
       <ChampBrouillon
         label="Remarques"
@@ -469,7 +508,7 @@ export function NotesDuBrouillon({ brouillon }: { brouillon: Brouillon }) {
         lectureSeule={false}
         surLaPage
         onChange={(v) => majChamp("remarques", v)}
-        onCommit={() => persister(contenu)}
+        onCommit={(v) => persisterChamp("remarques", v)}
       />
     </div>
   );
@@ -600,7 +639,8 @@ function ChampBrouillon({
    */
   surLaPage?: boolean;
   onChange: (v: string) => void;
-  onCommit: () => void;
+  /** À la sortie du champ, **avec ce qu'il porte** — voir `avecChamp`. */
+  onCommit: (valeurDuChamp: string) => void;
 }) {
   return (
     <label className="flex flex-col gap-2">
@@ -616,7 +656,7 @@ function ChampBrouillon({
         // être confondus, ni par un lecteur d'écran, ni par un test.
         aria-label={`${label} (brouillon)`}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={onCommit}
+        onBlur={(e) => onCommit(e.currentTarget.value)}
         className="border-0 px-[15px] py-3 outline-none"
         style={{
           backgroundColor: surLaPage ? colors.card : colors.cream,
@@ -641,7 +681,8 @@ function ListeLignes({
   lignes: LigneExtraite[];
   lectureSeule: boolean;
   onChange: (index: number, champ: keyof LigneExtraite, valeur: string) => void;
-  onCommit: () => void;
+  /** À la sortie d'une case, **avec ce qu'elle porte** — voir `avecLigne`. */
+  onCommit: (index: number, champ: keyof LigneExtraite, valeur: string) => void;
   onRetirer: (index: number) => void;
 }) {
   return (
@@ -668,7 +709,7 @@ function ListeLignes({
               readOnly={lectureSeule}
               aria-label={`${titre} ${i + 1}`}
               onChange={(e) => onChange(i, "libelle", e.target.value)}
-              onBlur={onCommit}
+              onBlur={(e) => onCommit(i, "libelle", e.currentTarget.value)}
               className="min-w-0 flex-1 border-0 px-3 py-2 outline-none"
               style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px", borderRadius: 4 }}
             />
@@ -698,7 +739,7 @@ function ListeLignes({
               placeholder="Quantité"
               aria-label={`Quantité ${titre} ${i + 1}`}
               onChange={(e) => onChange(i, "quantite", e.target.value)}
-              onBlur={onCommit}
+              onBlur={(e) => onCommit(i, "quantite", e.currentTarget.value)}
               className="min-w-0 border-0 px-3 py-2 outline-none"
               style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px", borderRadius: 4 }}
             />
@@ -708,7 +749,7 @@ function ListeLignes({
               placeholder="Unité"
               aria-label={`Unité ${titre} ${i + 1}`}
               onChange={(e) => onChange(i, "unite", e.target.value)}
-              onBlur={onCommit}
+              onBlur={(e) => onCommit(i, "unite", e.currentTarget.value)}
               className="min-w-0 border-0 px-3 py-2 outline-none"
               style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px", borderRadius: 4 }}
             />
@@ -719,7 +760,7 @@ function ListeLignes({
             placeholder="Description (facultative)"
             aria-label={`Description ${titre} ${i + 1}`}
             onChange={(e) => onChange(i, "description", e.target.value)}
-            onBlur={onCommit}
+            onBlur={(e) => onCommit(i, "description", e.currentTarget.value)}
             className="border-0 px-3 py-2 outline-none"
             style={{ backgroundColor: colors.card, color: colors.ink, fontSize: "16px", borderRadius: 4 }}
           />

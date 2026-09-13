@@ -205,7 +205,7 @@ export default function InformationsClient({
           label="Équipe"
           value={equipe}
           onChange={setEquipe}
-          onBlurCommit={() => mettreAJourDureeEquipeAction(chantierId, { tailleEquipe: equipe })}
+          onBlurCommit={(duChamp) => mettreAJourDureeEquipeAction(chantierId, { tailleEquipe: duChamp })}
         />
         )}
 
@@ -344,7 +344,8 @@ function Field({
   label: string;
   value: string;
   onChange: (v: string) => void;
-  onBlurCommit: () => void;
+  /** À la sortie du champ, **avec ce qu'il porte** (`test-valeur-du-champ.ts`). */
+  onBlurCommit: (valeurDuChamp: string) => void;
 }) {
   return (
     <label className="flex flex-col gap-2">
@@ -354,7 +355,7 @@ function Field({
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlurCommit}
+        onBlur={(e) => onBlurCommit(e.currentTarget.value)}
         className={`w-full ${champPlage}`}
         style={styleChampPlage}
       />

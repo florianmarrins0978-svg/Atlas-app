@@ -146,7 +146,21 @@ export function ChampNu({
 }: {
   valeur: string;
   onChange: (v: string) => void;
-  onFini: () => void;
+  /**
+   * Appelé à la sortie du champ, **avec ce que le champ porte à cet instant**.
+   *
+   * **C'est la leçon du 30 août 2026, appliquée ici le 13 septembre.** Sans la
+   * valeur, l'appelant lit son propre état React — celui du DERNIER RENDU. Or
+   * React ne rend pas à la frappe, il le programme : entre la dernière touche
+   * et la sortie du champ, rien ne garantit que l'état porte ce qui vient
+   * d'être tapé. Le serveur reçoit alors l'ANCIENNE valeur pendant que l'écran
+   * affiche la nouvelle — et c'est au rechargement, ou sur le devis parti chez
+   * le client, qu'on l'apprend.
+   *
+   * `ChampNu` porte le nom de l'entreprise, celui du client, leurs adresses et
+   * l'IBAN : ce sont les lignes qu'on lit en premier sur une pièce comptable.
+   */
+  onFini: (valeurDuChamp: string) => void;
   placeholder: string;
   aria: string;
   fige: boolean;
@@ -189,7 +203,7 @@ export function ChampNu({
       placeholder={placeholder}
       aria-label={aria}
       onChange={(e) => onChange(e.target.value)}
-      onBlur={onFini}
+      onBlur={(e) => onFini(e.currentTarget.value)}
       className="block w-full border-0 bg-transparent p-0 py-0.5 outline-none focus:bg-[var(--voile-champ)]"
       style={{
         color: colors.ink,

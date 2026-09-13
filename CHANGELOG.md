@@ -8,6 +8,54 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### Sa remise retirée revenait toute seule — une fois sur deux
+
+Le champ du prix accordé vidé, le serveur enregistrait bien le retrait — et la
+base repassait à 15 % dans la seconde. Deux chemins écrivaient la même ligne de
+devis : celui qui régénère l'écran, et celui qui enregistre l'en-tête. **Le
+premier prenait un verrou, le second non** — donc aucun. La régénération avait
+lu les 15 % avant l'effacement et les réécrivait après.
+
+Pour lui : un devis parti chez le client **plus cher que ce qu'il lui avait
+promis**, sans rien à l'écran pour le dire.
+
+Les deux prennent maintenant le même verrou, et la ligne est relue dessous.
+`test-remise-qui-revient-db.ts` joue la course elle-même, dix fois, dans les
+deux sens — sans navigateur, donc sans hasard : retirer le verrou le fait
+rougir au premier essai. La suite navigateur, elle, ne l'attrapait qu'une fois
+sur deux, et trois sessions l'avaient mise sur le compte d'un contrôle
+capricieux (`ARCHITECTURE.md` §350).
+
+### Ce qui est tapé est ce qui se range — quatre pièces le perdaient encore
+
+`onBlur` n'emportait pas la valeur du champ : l'écran lisait alors son état
+React, celui du **dernier rendu**. Sous charge, le serveur recevait la valeur
+d'avant pendant que l'écran affichait la neuve. C'est le défaut du 30 août sur
+les prix de ligne, resté sur quatre pièces : le prix accordé au client, les
+champs nus du devis (nom, adresse, SIRET, IBAN — émetteur ET client), ceux des
+Réglages, et le brouillon de la dictée.
+
+Vingt-cinq endroits corrigés. `test-valeur-du-champ.ts`, joué par la batterie,
+refuse désormais les trois formes : la leçon vivait dans un commentaire depuis
+treize jours (`ARCHITECTURE.md` §349).
+
+### Une seule règle multiplie une ligne — elle était écrite trois fois
+
+*« Vérifie tous les calculs. »* Les totaux passaient déjà par une seule
+fonction ; la multiplication d'une ligne, non : **trois écritures**, dont deux
+sous un commentaire qui affirmait appeler l'autre. Et c'est un contrôle, pas
+une relecture, qui a trouvé la troisième.
+
+`src/lib/montant-de-ligne.ts` la porte désormais seule. Le contrôle tient les
+trois moitiés : le calcul (décimales exactes, un seul arrondi, rien qui lève),
+**l'unicité** (toute nouvelle multiplication quantité × prix fait rougir le
+lot), et **l'addition sur mille devis tirés** — le total HT tombe au centime
+sur la somme des lignes. Confronté à un arrondi posé trop tôt, il rougit.
+
+Rappel de ce qui n'était pas en cause : le devis à 5 400 € venait de la saisie,
+pas du calcul (`ARCHITECTURE.md` §348).
+
+
 ### Les deux « chiffres faux » du devis : l'addition était juste, la suite tapait mal
 
 *« Si c'est un problème de calculer les lignes qui ne s'additionnent pas ou mal,

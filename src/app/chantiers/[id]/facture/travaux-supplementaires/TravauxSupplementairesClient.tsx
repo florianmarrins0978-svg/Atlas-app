@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Decimal from "decimal.js";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
@@ -36,6 +35,7 @@ import {
   REMISE_PAR_DEFAUT,
 } from "@/components/atlas/PrixAccordeAuClient";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
+import { montantDeLaLigne } from "@/lib/montant-de-ligne";
 // Le formateur du dépôt, au lieu de la copie qui vivait ici : deux façons
 // d'écrire un euro finissent par s'écrire différemment (`CLAUDE.md` §3).
 import { enEuros } from "@/lib/euros";
@@ -82,9 +82,16 @@ type LigneEcran = {
   supplement: boolean;
 };
 
-/** Ce que la ligne pèse — la même règle qu'au serveur, jamais une seconde. */
+/**
+ * Ce que la ligne pèse — **la règle du serveur, appelée pour de bon**.
+ *
+ * Elle était recopiée ici, sous un commentaire qui affirmait le contraire :
+ * *« la même règle qu'au serveur, jamais une seconde »*. C'était la troisième
+ * écriture de la même multiplication (13 septembre 2026), et c'est un contrôle
+ * qui l'a trouvée, pas une relecture.
+ */
 const montantDe = (l: { quantite: string; prixUnitaire: string }) =>
-  new Decimal(l.quantite || "0").times(l.prixUnitaire || "0").toFixed(2);
+  montantDeLaLigne(l.quantite, l.prixUnitaire);
 
 export default function TravauxSupplementairesClient({
   chantierId,
@@ -579,7 +586,7 @@ export default function TravauxSupplementairesClient({
                 pourcent={reduction}
                 montantRetire={totaux.reductionMontant}
                 onChange={setReduction}
-                onFini={() => enregistrerLaRemise()}
+                onFini={(duChamp) => enregistrerLaRemise(duChamp)}
                 onRetirer={() => enregistrerLaRemise("")}
               />
               <div className="flex items-center justify-between py-1.5">
