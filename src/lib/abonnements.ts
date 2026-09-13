@@ -23,16 +23,15 @@
  * facturation.
  *
  * ═══════════════════════════════════════════════════════════════════════════
- * **CE QUE CE FICHIER NE FAIT PAS, ET C'EST DÉLIBÉRÉ.**
+ * **CE QUI MORD, ET DEPUIS QUAND.** Le plafond de fabricants, demandé mot pour
+ * mot le 9 septembre 2026. Puis, tranché le 10 — *« oui bloqué pour
+ * l'abonnement artisan »* — les absences et les retours d'intervention, qui
+ * sont un plus d'« Entreprise » (`fonctionOuverte`). Et l'essai de quinze
+ * jours, qui se referme en lecture seule (`enLectureSeule`).
  *
- * Il ne ferme aucune fonction de l'application. La planche annonce « les
- * absences » et « les retours d'intervention » comme un plus d'« Entreprise » :
- * cette distinction-là n'est PAS appliquée, et il faut qu'il la tranche avant
- * qu'elle le soit — la poser en silence retirerait à un artisan des écrans
- * dont il se sert déjà aujourd'hui. Écrit dans `TODO.md`.
- *
- * La seule règle qui mord est le plafond de fabricants, parce qu'il l'a
- * demandée mot pour mot.
+ * **Une entreprise SANS ligne d'abonnement n'est touchée par aucune des
+ * trois** : c'est son Atlas à lui, et celui de ceux qui s'en servaient avant
+ * l'offre. Une fermeture est la conséquence d'une formule choisie.
  */
 import type { Role } from "./acces-roles";
 
@@ -44,14 +43,154 @@ export type Periodicite = "mensuelle" | "annuelle";
 /**
  * Où en est l'abonnement d'une entreprise.
  *
- * **Il n'y a pas d'état « essai », et ce n'est pas un oubli.** La durée de
- * l'essai gratuit est l'une des seize cases `[À COMPLÉTER]` des conditions
- * générales : elle n'est pas arrêtée. Poser ici « 14 jours » en aurait fait un
- * engagement contractuel décidé par le code — ce que `docs/AGENT.md` §3
- * interdit pour un prix, et à plus forte raison pour une durée qui figure dans
- * un contrat. L'état viendra le jour où il donnera le chiffre.
+ * **`essai` est arrivé le 10 septembre 2026**, quand il a donné le chiffre :
+ * *« essai gratuit 15 jours »*. Jusque-là l'état n'existait pas, et c'était
+ * délibéré — une durée qui figure dans un contrat ne se décide pas dans un
+ * fichier.
  */
-export type StatutAbonnement = "actif" | "impaye" | "resilie";
+export type StatutAbonnement = "essai" | "actif" | "impaye" | "resilie";
+
+/**
+ * LA DURÉE DE L'ESSAI — sa décision du 10 septembre 2026.
+ *
+ * **Elle vit ici et nulle part ailleurs.** Les conditions générales publiées
+ * (version 2, article 14.2) disent encore « [À COMPLÉTER — 14 ou 30 jours] »,
+ * et **une version publiée ne se modifie jamais** (`documents-legaux/versions.ts`) :
+ * le chiffre y entrera avec la version 3, qu'il publiera quand les quinze
+ * autres cases seront remplies. `scripts/test-abonnements.ts` refusera alors
+ * que les deux divergent — un contrat qui promet une durée et une application
+ * qui en compte une autre, c'est l'écart qu'on découvre au premier litige.
+ */
+export const JOURS_ESSAI = 15;
+
+/**
+ * À partir de combien de jours restants le compteur passe au rouge.
+ *
+ * **Trois, pas dix.** Un avertissement qui parle trop tôt s'apprend à être
+ * ignoré, et l'on perd le garde-fou sans s'en apercevoir (`CLAUDE.md` §4 ter).
+ */
+export const JOURS_AVANT_ALERTE = 3;
+
+const UN_JOUR_MS = 24 * 60 * 60 * 1000;
+
+/** Quand l'essai commencé à `debut` se termine. Un jour plein, jamais « à peu près ». */
+export function finDeLEssai(debut: Date): Date {
+  return new Date(debut.getTime() + JOURS_ESSAI * UN_JOUR_MS);
+}
+
+/**
+ * CE QUE LA FORMULE DE L'ESSAI VAUT — « Illimité », et c'est délibéré.
+ *
+ * L'essai n'est pas un abonnement : rien n'est payé, Stripe ne le connaît pas
+ * (il réclame une carte d'avance, et l'article 14.2 promet « sans saisie de
+ * moyen de paiement »). Mais la ligne en base porte une formule, et ce doit
+ * être celle qui **n'enlève rien** : un essai qui fermerait les absences ou
+ * plafonnerait l'équipe ferait essayer « Artisan » à quelqu'un qui hésite
+ * entre les trois. On essaie tout ; on choisit après.
+ */
+export const FORMULE_DE_LESSAI: FormuleCode = "illimite";
+
+export type EtatEssai =
+  | { statut: "en-cours"; joursRestants: number; alerte: boolean; fin: Date }
+  | { statut: "termine"; fin: Date };
+
+type AbonnementLu = { statut: StatutAbonnement; periodeFin: Date | null } | null | undefined;
+
+/**
+ * OÙ EN EST L'ESSAI — `null` quand il n'y en a pas.
+ *
+ * Une entreprise sans ligne d'abonnement n'est pas « en essai » : c'est son
+ * Atlas à lui, et celui de tous ceux qui s'en servaient avant l'offre. L'essai
+ * ne vaut que pour les comptes créés depuis (`creation-compte.ts`).
+ *
+ * **Les jours restants se comptent en jours ENTAMÉS**, jamais arrondis vers le
+ * bas : à 14 h le dernier jour, il reste « 1 jour », pas « 0 ». Le compteur
+ * dit ce qu'il peut encore faire aujourd'hui.
+ */
+export function etatDeLEssai(abonnement: AbonnementLu, maintenant: Date): EtatEssai | null {
+  if (!abonnement || abonnement.statut !== "essai" || !abonnement.periodeFin) return null;
+  const fin = abonnement.periodeFin;
+  if (maintenant.getTime() >= fin.getTime()) return { statut: "termine", fin };
+  const joursRestants = Math.ceil((fin.getTime() - maintenant.getTime()) / UN_JOUR_MS);
+  return { statut: "en-cours", joursRestants, alerte: joursRestants <= JOURS_AVANT_ALERTE, fin };
+}
+
+/**
+ * LA LECTURE SEULE — son choix du 10 septembre 2026, au 16ᵉ jour : *« la B,
+ * mais il ne doit plus rien pouvoir faire à part enregistrer ses documents,
+ * ses clients »*. Tout se lit, rien ne s'écrit ; il emporte une copie.
+ *
+ * Une seule question, posée à un seul endroit (`withEntreprise`), pour les
+ * 176 gestes qui écrivent : les fermer un par un finirait par en oublier un.
+ */
+export function enLectureSeule(abonnement: AbonnementLu, maintenant: Date): boolean {
+  return etatDeLEssai(abonnement, maintenant)?.statut === "termine";
+}
+
+/** Ce que dit l'écran quand il appuie quand même sur un bouton qui écrit. */
+export const PHRASE_LECTURE_SEULE = "Votre essai est terminé. Choisissez une formule pour créer de nouveau.";
+
+/** Le ruban en tête de l'accueil — le seul écran qu'il ouvre tous les matins. */
+export function texteDuRuban(etat: EtatEssai): string {
+  if (etat.statut === "termine") return "Essai terminé — lecture seule";
+  return etat.joursRestants > 1
+    ? `Essai gratuit — ${etat.joursRestants} jours restants`
+    : "Essai gratuit — dernier jour";
+}
+
+/**
+ * La formule qu'il a CHOISIE — `null` pendant l'essai et après résiliation.
+ *
+ * L'écran d'abonnement en dépend : avec une formule « actuelle », il propose
+ * de CHANGER (au prorata, sur un abonnement Stripe qui n'existe pas) ; sans,
+ * il propose de S'ABONNER, et c'est le bon chemin pour sortir de l'essai.
+ */
+export function formuleChoisie(
+  abonnement: { formule: FormuleCode; statut: StatutAbonnement } | null
+): FormuleCode | null {
+  if (!abonnement || abonnement.statut === "essai" || abonnement.statut === "resilie") return null;
+  return abonnement.formule;
+}
+
+/**
+ * CE QUI SE FERME À « ARTISAN » — sa décision du 10 septembre 2026 : *« oui
+ * bloqué pour l'abonnement artisan »*. Les absences d'équipe et les retours
+ * d'intervention sont un plus d'« Entreprise ».
+ *
+ * La liste est FERMÉE, et chaque formule dit ce qu'elle ouvre (`fonctions`
+ * ci-dessous) : une fonction réservée qui n'y figurerait pas ferait rougir la
+ * compilation, pas un client.
+ */
+export type FonctionReservee = "absences" | "retours";
+
+/**
+ * Cette formule ouvre-t-elle cette fonction ?
+ *
+ * `code` vaut `null` sans abonnement — et **tout est ouvert**, pour la même
+ * raison que le plafond (`placePourUnFabricant`) : une fermeture est la
+ * conséquence d'une formule choisie, jamais un état par défaut. Son Atlas à
+ * lui n'a pas de ligne d'abonnement, et il se sert des absences.
+ */
+export function fonctionOuverte(code: string | null | undefined, fonction: FonctionReservee): boolean {
+  const f = formule(code);
+  return !f || f.fonctions.includes(fonction);
+}
+
+/** Ce que lit un abonné « Artisan » à la place de la fonction — même dessin, même bouton. */
+export function phraseDeLaFermeture(fonction: FonctionReservee): { titre: string; detail: string } {
+  switch (fonction) {
+    case "absences":
+      return {
+        titre: "Les absences sont dans « Entreprise »",
+        detail: "Noter qui n’est pas là, et voir vos équipes se réorganiser toutes seules.",
+      };
+    case "retours":
+      return {
+        titre: "Les retours sont dans « Entreprise »",
+        detail: "Ce que vos gars ont constaté en fin de chantier : ce qui est fait, ce qui ne l’est pas, et leurs photos.",
+      };
+  }
+}
 
 export type LigneComprise = {
   texte: string;
@@ -72,6 +211,8 @@ export type Formule = {
    * `null` = autant qu'on veut.
    */
   plafondFabricants: number | null;
+  /** Les fonctions réservées que cette formule ouvre (`fonctionOuverte`). */
+  fonctions: readonly FonctionReservee[];
   compris: LigneComprise[];
 };
 
@@ -96,6 +237,7 @@ export const FORMULES: readonly Formule[] = [
     prixMensuel: 29,
     prixAnnuel: 290,
     plafondFabricants: 1,
+    fonctions: [],
     compris: COMMUN,
   },
   {
@@ -105,6 +247,7 @@ export const FORMULES: readonly Formule[] = [
     prixMensuel: 59,
     prixAnnuel: 590,
     plafondFabricants: 5,
+    fonctions: ["absences", "retours"],
     compris: [
       ...COMMUN,
       { texte: "Jusqu’à 5 personnes qui font des devis ou des factures", neuf: true },
@@ -119,6 +262,7 @@ export const FORMULES: readonly Formule[] = [
     prixMensuel: 120,
     prixAnnuel: 1200,
     plafondFabricants: null,
+    fonctions: ["absences", "retours"],
     compris: [
       ...COMMUN,
       { texte: "Les absences de vos équipes" },
@@ -236,6 +380,21 @@ export function etatAffiche(
   const prix = f ? `${montantDu(f, abonnement.periodicite)} € HT ${rythme}` : null;
 
   switch (abonnement.statut) {
+    case "essai": {
+      const essai = etatDeLEssai(abonnement, maintenant);
+      if (!essai || essai.statut === "termine") {
+        return {
+          titre: "Essai terminé",
+          detail: "Tout se relit, rien ne se crée. Choisissez une formule pour continuer.",
+          ton: "attention",
+        };
+      }
+      return {
+        titre: texteDuRuban(essai).replace(" — ", " · "),
+        detail: `Jusqu’au ${jourEnLettres(essai.fin)}. Aucune carte n’a été demandée.`,
+        ton: essai.alerte ? "attention" : "calme",
+      };
+    }
     case "impaye":
       return {
         titre: "Paiement en attente",

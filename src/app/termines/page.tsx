@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import { compterLesRetours } from "@/server/repositories/retours-intervention";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { fonctionOuverte } from "@/lib/abonnements";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersTermines } from "@/server/repositories/factures";
@@ -63,7 +65,12 @@ export default async function TerminesPage() {
   // 2026 : « il faut pouvoir les garder longtemps ». Le limiter au mois affiché
   // aurait fait disparaître l’onglet un 1er du mois, avec toute l’histoire
   // derrière lui.
-  const retours = await compterLesRetours(ctx);
+  //
+  // **Et ZÉRO quand la formule ne les ouvre pas** (« Artisan », 10 septembre
+  // 2026) : un point rouge sur un écran qu'on ne peut pas ouvrir est une
+  // agression, pas une information. L'onglet, lui, reste (`ListeTermines`).
+  const abonnement = await abonnementDeLEntreprise(ctx);
+  const retours = fonctionOuverte(abonnement?.formule, "retours") ? await compterLesRetours(ctx) : 0;
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>

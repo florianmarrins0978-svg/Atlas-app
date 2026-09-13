@@ -3,13 +3,23 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import {
   FORMULES,
+  FORMULE_DE_LESSAI,
+  JOURS_AVANT_ALERTE,
+  JOURS_ESSAI,
   centimes,
+  enLectureSeule,
   etatAffiche,
+  etatDeLEssai,
+  finDeLEssai,
+  fonctionOuverte,
   formule,
+  formuleChoisie,
   jourEnLettres,
   montantDu,
+  phraseDeLaFermeture,
   placePourUnFabricant,
   roleFabrique,
+  texteDuRuban,
 } from "../src/lib/abonnements";
 import { ROLES } from "../src/lib/acces-roles";
 
@@ -196,6 +206,131 @@ cas("résilié : on peut reprendre, et l'écran ne dramatise pas", () => {
 cas("la date s'écrit en français, sans dépendre du fuseau de la machine", () => {
   assert.equal(jourEnLettres(new Date("2026-01-01T23:30:00Z")), "1 janvier 2026");
   assert.equal(jourEnLettres(new Date("2026-12-31T00:00:00Z")), "31 décembre 2026");
+});
+
+console.log("\n=== L'essai de quinze jours — ses trois décisions du 10 septembre 2026 ===\n");
+
+const DEBUT = new Date("2026-09-13T09:00:00Z");
+const FIN = finDeLEssai(DEBUT);
+const ESSAI = {
+  formule: FORMULE_DE_LESSAI,
+  periodicite: "mensuelle" as const,
+  statut: "essai" as const,
+  periodeFin: FIN,
+  annulationDemandee: false,
+};
+const apres = (jours: number, heures = 0) => new Date(DEBUT.getTime() + (jours * 24 + heures) * 3600 * 1000);
+
+cas("« essai gratuit 15 jours » — la durée est la sienne, et la fin tombe quinze jours pleins plus tard", () => {
+  assert.equal(JOURS_ESSAI, 15);
+  assert.equal((FIN.getTime() - DEBUT.getTime()) / 86_400_000, 15);
+});
+
+cas("pendant l'essai, on essaie TOUT : la formule est « Illimité », rien n'est fermé ni plafonné", () => {
+  assert.equal(FORMULE_DE_LESSAI, "illimite");
+  assert.ok(fonctionOuverte(FORMULE_DE_LESSAI, "absences"));
+  assert.ok(fonctionOuverte(FORMULE_DE_LESSAI, "retours"));
+  assert.deepEqual(placePourUnFabricant(FORMULE_DE_LESSAI, 100), { ok: true });
+});
+
+cas("jour 1 : quinze jours restants, ruban calme", () => {
+  const e = etatDeLEssai(ESSAI, apres(0, 1));
+  assert.ok(e && e.statut === "en-cours");
+  assert.equal(e.joursRestants, 15);
+  assert.equal(e.alerte, false);
+  assert.equal(texteDuRuban(e), "Essai gratuit — 15 jours restants");
+});
+
+cas("les jours se comptent ENTAMÉS : à 14 h le dernier jour, il reste « dernier jour », pas zéro", () => {
+  const e = etatDeLEssai(ESSAI, apres(14, 5));
+  assert.ok(e && e.statut === "en-cours");
+  assert.equal(e.joursRestants, 1);
+  assert.equal(texteDuRuban(e), "Essai gratuit — dernier jour");
+});
+
+cas("à trois jours de la fin, le ruban passe au rouge — pas avant", () => {
+  assert.equal(JOURS_AVANT_ALERTE, 3);
+  const calme = etatDeLEssai(ESSAI, apres(11, 1));
+  const chaud = etatDeLEssai(ESSAI, apres(12, 1));
+  assert.ok(calme && calme.statut === "en-cours" && calme.joursRestants === 4 && !calme.alerte);
+  assert.ok(chaud && chaud.statut === "en-cours" && chaud.joursRestants === 3 && chaud.alerte);
+});
+
+cas("jour 16 : terminé, lecture seule — et pas une minute avant", () => {
+  const avant = etatDeLEssai(ESSAI, new Date(FIN.getTime() - 1));
+  const apresLaFin = etatDeLEssai(ESSAI, FIN);
+  assert.ok(avant && avant.statut === "en-cours");
+  assert.ok(apresLaFin && apresLaFin.statut === "termine");
+  assert.equal(enLectureSeule(ESSAI, new Date(FIN.getTime() - 1)), false);
+  assert.equal(enLectureSeule(ESSAI, FIN), true);
+  assert.equal(texteDuRuban(apresLaFin), "Essai terminé — lecture seule");
+});
+
+cas("SON Atlas à lui n'est pas en essai : sans ligne d'abonnement, ni ruban ni lecture seule", () => {
+  assert.equal(etatDeLEssai(null, apres(40)), null);
+  assert.equal(enLectureSeule(null, apres(40)), false);
+  assert.equal(enLectureSeule(undefined, apres(40)), false);
+});
+
+cas("un abonnement payé n'est jamais en lecture seule, même périmé — c'est « impayé » qui parle", () => {
+  const actif = { ...ESSAI, statut: "actif" as const, formule: "artisan" as const, periodeFin: apres(-10) };
+  assert.equal(etatDeLEssai(actif, apres(0)), null);
+  assert.equal(enLectureSeule(actif, apres(0)), false);
+  assert.equal(enLectureSeule({ ...actif, statut: "impaye" }, apres(0)), false);
+});
+
+cas("un essai sans date de fin ne referme rien — on ne devine pas une date", () => {
+  assert.equal(enLectureSeule({ statut: "essai", periodeFin: null }, apres(40)), false);
+});
+
+cas("l'écran d'abonnement : pendant l'essai, aucune formule n'est « actuelle » — il s'abonne, il ne change pas", () => {
+  assert.equal(formuleChoisie(ESSAI), null);
+  assert.equal(formuleChoisie({ formule: "artisan", statut: "actif" }), "artisan");
+  assert.equal(formuleChoisie({ formule: "artisan", statut: "resilie" }), null);
+});
+
+cas("l'écran dit l'essai : les jours, la date, aucune carte ; puis « terminé » en alerte", () => {
+  const enCours = etatAffiche(ESSAI, apres(0, 1));
+  assert.equal(enCours.titre, "Essai gratuit · 15 jours restants");
+  assert.match(enCours.detail ?? "", /28 septembre 2026/);
+  assert.match(enCours.detail ?? "", /Aucune carte/);
+  assert.equal(enCours.ton, "calme");
+  assert.equal(etatAffiche(ESSAI, apres(13)).ton, "attention");
+  const fini = etatAffiche(ESSAI, apres(20));
+  assert.equal(fini.titre, "Essai terminé");
+  assert.equal(fini.ton, "attention");
+});
+
+console.log("\n=== Ce qui se ferme à « Artisan » — « oui bloqué pour l'abonnement artisan » ===\n");
+
+cas("Artisan n'ouvre ni les absences ni les retours ; Entreprise et Illimité ouvrent les deux", () => {
+  for (const f of ["absences", "retours"] as const) {
+    assert.equal(fonctionOuverte("artisan", f), false, `Artisan ouvre ${f}`);
+    assert.equal(fonctionOuverte("entreprise", f), true, `Entreprise ferme ${f}`);
+    assert.equal(fonctionOuverte("illimite", f), true, `Illimité ferme ${f}`);
+  }
+});
+
+cas("SANS ABONNEMENT, tout est ouvert — une fermeture est la conséquence d'une formule choisie", () => {
+  assert.equal(fonctionOuverte(null, "absences"), true);
+  assert.equal(fonctionOuverte(undefined, "retours"), true);
+  assert.equal(fonctionOuverte("inconnue", "retours"), true);
+});
+
+cas("ce que la carte de la formule PROMET est ce que le code OUVRE — les deux listes ne divergent pas", () => {
+  for (const f of FORMULES) {
+    const promet = (mot: string) => f.compris.some((l) => l.texte.toLowerCase().includes(mot));
+    assert.equal(f.fonctions.includes("absences"), promet("absences"), `${f.nom} : les absences`);
+    assert.equal(f.fonctions.includes("retours"), promet("retours"), `${f.nom} : les retours`);
+  }
+});
+
+cas("la phrase de la fermeture nomme la formule qui ouvre, pour les deux fonctions", () => {
+  for (const f of ["absences", "retours"] as const) {
+    const { titre, detail } = phraseDeLaFermeture(f);
+    assert.match(titre, /« Entreprise »/);
+    assert.ok(detail.length > 20);
+  }
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} ${echecs} échec(s)\n`);

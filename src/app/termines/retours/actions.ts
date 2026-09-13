@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { exigerEcran } from "@/server/garde-action";
+import { exigerEcran, exigerFonction } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { marquerLeRetourVu } from "@/server/repositories/retours-intervention";
 
@@ -48,6 +48,8 @@ import { marquerLeRetourVu } from "@/server/repositories/retours-intervention";
 export async function marquerLeRetourVuAction(retourId: string): Promise<void> {
   const ctx = await getCurrentCtx();
   await exigerEcran(ctx, "/termines", "ouvrir un retour d'intervention");
+  // Un plus d'« Entreprise » (10 septembre 2026) : l'écran le montre, la garde le tient.
+  await exigerFonction(ctx, "retours", "ouvrir un retour d'intervention");
   const marque = await marquerLeRetourVu(ctx, retourId);
   // Rien à périmer si le retour n'était pas le sien : la RLS l'a refusé, et
   // aucun des deux écrans n'a changé d'un pixel.

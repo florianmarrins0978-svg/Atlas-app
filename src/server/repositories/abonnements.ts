@@ -30,7 +30,12 @@ export type Abonnement = {
   abonnementPrestataire: string | null;
 };
 
-/** L'abonnement de l'entreprise, ou `null` — jamais un abonnement inventé. */
+/**
+ * L'abonnement de l'entreprise, ou `null` — jamais un abonnement inventé.
+ *
+ * Une ligne `essai` en est un : celle que la porte pose à la création du
+ * compte, sans carte, avec sa date de fin (`creation-compte.ts`).
+ */
 export async function abonnementDeLEntreprise(ctx: Ctx): Promise<Abonnement | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [ligne] = await tx
@@ -125,12 +130,19 @@ function versLaLigne(etat: EtatVenuDuPrestataire) {
  * le second appui est sans effet (le même abonnement écrase le même état).
  */
 export async function enregistrerLAbonnement(ctx: Ctx, etat: EtatVenuDuPrestataire): Promise<void> {
-  await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
-    await tx
-      .insert(abonnements)
-      .values({ entrepriseId: ctx.entrepriseId, ...versLaLigne(etat) })
-      .onConflictDoUpdate({ target: abonnements.entrepriseId, set: versLaLigne(etat) });
-  });
+  await withEntreprise(
+    ctx.utilisateurId,
+    ctx.entrepriseId,
+    async (tx) => {
+      await tx
+        .insert(abonnements)
+        .values({ entrepriseId: ctx.entrepriseId, ...versLaLigne(etat) })
+        .onConflictDoUpdate({ target: abonnements.entrepriseId, set: versLaLigne(etat) });
+    },
+    // **La seule écriture permise en lecture seule.** C'est elle qui met fin à
+    // l'essai terminé : sans cette porte, il paierait sans pouvoir rentrer.
+    { pourSortirDeLEssai: true }
+  );
 }
 
 /**

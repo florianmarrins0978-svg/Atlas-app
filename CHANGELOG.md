@@ -6,7 +6,89 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-13
+
+### L'essai de quinze jours, et ce qui se ferme — sa planche du 10 septembre, codée
+
+*« Essai gratuit 15 jours »* · *« la B, mais il ne doit plus rien pouvoir faire
+à part enregistrer ses documents, ses clients »* · *« oui bloqué pour
+l'abonnement artisan »*. La planche `appli/l-essai-et-ce-qui-est-ferme.html`
+était sur `main` depuis le 10 ; le code s'était arrêté à mi-chemin dans le
+dossier, et ne compilait pas.
+
+**Ce qui change.** Un compte créé par la porte reçoit un essai de quinze jours,
+sans carte (ligne `abonnements` en statut `essai`, formule « on essaie tout »).
+Le ruban en tête de l'accueil compte les jours, passe au rouge à trois jours de
+la fin. Au 16ᵉ jour : **lecture seule** — tout se relit, rien ne se crée ; le
+bouton « Créer un devis » s'éteint et la phrase dit pourquoi ; s'abonner rouvre
+tout. À « Artisan », les absences et les retours d'intervention s'ouvrent sur
+« c'est dans Entreprise », la pastille des retours s'éteint, et les salariés ne
+se voient plus réclamer un retour.
+
+**Ce que ça évite, et comment.** La fermeture vit à UN endroit — `withEntreprise`
+déclare la transaction `READ ONLY`, et c'est Postgres qui refuse la première
+écriture, quel que soit le chemin. Cent soixante-seize gestes écrivent ; les
+fermer un par un aurait laissé une porte. Une seule reste, délibérément :
+l'enregistrement de l'abonnement, sans quoi il paierait sans pouvoir rentrer.
+
+**Son Atlas à lui ne bouge pas** : sans ligne d'abonnement, ni essai, ni
+lecture seule, ni fermeture. **Migration 0089** (le statut `essai`). Ce qui
+reste à lui : le « 15 » dans l'article 14.2 des conditions, avec la version 3.
+Détail : `ARCHITECTURE.md` §342.
+
+---
 ## 2026-09-12
+
+### L'acompte sur le devis — la B, codée le soir même
+
+*« Rajouter la possibilité de rajouter un acompte automatisé sur le devis, un
+peu comme on fait pour rajouter une TVA »*, puis sur la planche
+(`appli/l-acompte-sur-le-devis.html`) : *« il faut la B »*, *« il doit être
+marqué d'office »*, *« si on clique sur le moins il disparaît mais reste
+visible dans les notes et conditions quoi qu'il arrive »*, *« un deuxième
+acompte à mi-parcours »*, *« oui je veux des taux cumulés ; d'office 50 % pour
+le 2ᵉ et 75 pour le 3ᵉ »*, *« chez le client il faut marquer reste à régler
+après acompte et le montant »*. Et : *« Parfait code la B »*.
+
+**Ce que le devis fait maintenant.** Sous « Total TTC », une ligne dorée par
+acompte — le taux des Réglages **posé d'office** à la naissance du devis, puis
+« + Ajouter un acompte » pour un deuxième à mi-parcours (50 %) et un troisième
+à l'avancement (75 %). **Les taux sont cumulés** : « 50 % » à mi-parcours veut
+dire la moitié du devis réglée à ce moment-là, et le montant de la ligne est
+ce qui tombe ce jour-là. Puis **« Reste à régler après acompte(s) »** et le
+montant — à l'écran, et sur le PDF que le client garde. Le « − » retire la
+ligne ; la phrase du réglage reste dans les notes et conditions, écrite sous
+son texte à l'écran comme sur le papier.
+
+**Ce que ça évite.** Son premier essai — 30, 50, 75 lus comme des parts —
+rendait un reste à régler de **−1 564,20 €** sur un devis qui partait chez un
+client. Un taux cumulé ne descend jamais sous le précédent ni au-dessus de
+100, borné quand le doigt quitte le champ (pas à la frappe : « 75 » commence
+par « 7 »), et un 2ᵉ monté à 100 emporte le 3ᵉ. Le reste n'est jamais
+négatif, et les acomptes plus le reste font le TTC au centime.
+
+**Et la colonne Unité, après Qté** — *« pour les ml, kg, m³ etc. »*. Elle
+existait en base et sur le PDF (« 4 m³ », migration 0070) sans que l'écran la
+saisisse. Les unités usuelles viennent sous le champ quand il prend le doigt.
+
+**Un défaut trouvé en chemin, et corrigé à la racine : le PDF ENVOYÉ partait
+sans la validité ni les conditions réglées.** L'aperçu, l'envoi et la feuille
+sans prix composaient chacun leur copie des données du PDF, et seul l'aperçu
+portait `validiteJours` et `conditionsReglees` — le client téléchargeait par
+son lien un document sans « Validité » ni « Acompte de 30 % ». Une seule
+fonction désormais (`donneesPdfDuDevis`), pour les trois sorties.
+
+**Migration 0088** : `acomptes_devis` (rang, taux cumulé), RLS, immuable dès
+que le devis est envoyé. `devis.acompte_pourcent` reste : c'est le réglage
+recopié, la phrase des notes. Règle pure : `src/lib/acomptes-devis.ts`.
+Suites : `test-acomptes-devis` (18), `test-acomptes-pdf` (6),
+`test-acomptes-devis-e2e` (son geste). Détail : `ARCHITECTURE.md` §341.
+
+**Le 13 au matin, sa correction :** *« pour le client sur le devis il faut
+seulement écrire acompte à l'avancement 75 %, enlève les parenthèses ; pareil
+pour 50 % »*. Le « (50 % réglés) » qui expliquait le cumul est parti — ligne
+des totaux, phrase des notes, écran et PDF — dans la seule fonction qui
+l'écrit (`libelleLigneAcompte`, `phrasesAcomptes`).
 
 ### Ma TVA n'a plus qu'une logique — la planche du 12 septembre, codée trait pour trait
 

@@ -1,7 +1,31 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-11 · branche `claude/dates-reglements-affichage-f1q9ah`
-· dernière migration `drizzle/0085_creneaux_chantier.sql`
+**Dernière mise à jour :** 2026-09-13 · `main`
+· dernière migration `drizzle/0089_essai_gratuit.sql`
+
+---
+
+## FAIT : L'ESSAI DE QUINZE JOURS, ET CE QUI SE FERME — 13 septembre 2026
+
+Un compte créé par la porte reçoit quinze jours d'essai sans carte ; le ruban
+en tête de l'accueil compte, rougit à trois jours de la fin ; au 16ᵉ jour,
+**lecture seule** — tout se relit, rien ne se crée, s'abonner rouvre tout. La
+fermeture vit dans `withEntreprise` (transaction `READ ONLY`), à un seul
+endroit. À « Artisan », les absences et les retours s'ouvrent sur « c'est dans
+Entreprise ». Son Atlas à lui, sans ligne d'abonnement, ne bouge pas.
+**Migration 0089.** Détail : `ARCHITECTURE.md` §342.
+
+---
+
+## FAIT : L'ACOMPTE SUR LE DEVIS, LA B — 12 septembre 2026
+
+Une ligne dorée par acompte sous « Total TTC », posée d'office depuis les
+Réglages ; « + Ajouter un acompte » pour un 2ᵉ à mi-parcours (50 %) et un 3ᵉ
+à l'avancement (75 %), **taux cumulés** ; « Reste à régler après acompte(s) »
+et le montant, à l'écran et sur le PDF ; le « − » retire la ligne, la phrase
+du réglage reste dans les notes. Colonne **Unité** après Qté. Au passage, le
+PDF envoyé porte enfin la validité et les conditions (il ne les portait pas —
+seul l'aperçu). **Migration 0088.** Détail : `ARCHITECTURE.md` §341.
 
 ---
 

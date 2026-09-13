@@ -9,6 +9,46 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~CHOISIE, À CODER — L'ACOMPTE SUR LE DEVIS, la B~~ — CODÉE LE SOIR MÊME (12 septembre 2026)
+
+**Codé** (*« Parfait code la B »*) : migration 0088, `src/lib/acomptes-devis.ts`,
+l'écran, le PDF, la colonne Unité, trois suites. Détail : `ARCHITECTURE.md`
+§341, `CHANGELOG.md` du 12 septembre. **Reste à lui : la facture d'acompte.**
+
+**Sa demande :** *« rajouter un acompte automatisé sur le devis, un peu comme
+on fait pour rajouter une TVA »*. Planche `appli/l-acompte-sur-le-devis.html`,
+**choisie le soir même : la B**, avec trois précisions de sa main :
+
+| Ce qu'il a dit | Ce que ça fait |
+|---|---|
+| *« il doit être marqué d'office »* | le taux de Réglages → Documents est déjà sur la ligne des totaux de chaque nouveau devis, modifiable devis par devis |
+| *« si on clique sur le moins il disparaît mais reste visible dans les notes et conditions quoi qu'il arrive »* | le − retire la LIGNE des totaux ; la phrase de l'acompte reste dans « Notes / conditions », écran et PDF |
+| *« sur les gros devis, un deuxième acompte à mi-parcours »* | « + Ajouter un acompte » en pose un autre (à mi-parcours, puis à l'avancement — *« le 3ᵉ n'est pas en fin de chantier, c'est le solde »*) ; chacun son − |
+| *« oui je veux des taux cumulés ; d'office 50 % pour le 2ᵉ et 75 pour le 3ᵉ »* (12 sept. au soir) | **les taux sont CUMULÉS** : « 50 % » à mi-parcours = la moitié du devis réglée à ce moment-là ; ce qui tombe ce jour-là est la différence avec l'acompte d'avant (30 → 50 → 75 sur 2 844 € : 853,20 · 568,80 · 711,00, reste 711,00). Valeurs d'office : Réglages, puis 50, puis 75. Un taux ne descend jamais sous le précédent ni au-dessus de 100 — borné quand le doigt quitte le champ, pas à la frappe ; un 2ᵉ monté à 100 emporte le 3ᵉ. Le reste à régler n'est jamais négatif (son essai du soir : 30/50/75 donnait −1 564 €) |
+| *« dans notes et conditions, retire les — avant soit »* | « Acompte de 30 % à la signature, soit 853,20 €. » |
+| *« chez le client, marquer reste à régler après acompte et le montant »* | dans les totaux du PDF : chaque acompte avec son montant, puis « Reste à régler après acompte(s) » et le montant |
+
+**Ce qui existe déjà, vérifié :** `acompte_pourcent` sur le devis (migration
+0064), rempli à la création depuis les Réglages ; `lignesConditionsDevis` écrit
+la phrase dans le bloc notes du PDF. **Ce qui manque :** la ligne à l'écran
+(même pièce que `LignePrixAccorde`), le deuxième acompte — une petite table
+(taux, moment) plutôt qu'une seconde colonne —, et le bloc des totaux du PDF.
+
+**Un point à lui confirmer, posé dans la planche :** ligne retirée, les notes
+gardent la phrase des Réglages (30 %). C'est ma lecture de « quoi qu'il
+arrive ».
+
+**ET UNE COLONNE « UNITÉ » APRÈS QTÉ — même soirée :** *« il faut rajouter une
+colonne unité (pour les ml, kg, m³ etc.) »*. Vérifié : `lignes_devis.unite`
+existe (migration 0070) et `document-commun.ts` imprime déjà « 4 m³ » dans la
+colonne Qté du PDF — **l'écran du devis ne la montre ni ne la saisit**
+(`DevisCompletClient.tsx` lit `unite` dans son type et n'en fait rien). La
+planche la pose entre Qté et P.U. HT, avec les unités usuelles (u, ml, m², m³,
+kg, h, forfait) sous la ligne quand le champ prend le doigt. Même planche,
+même adresse.
+
+---
+
 ## ~~DEUX ÉCRITURES DE LA REMISE PEUVENT SE DOUBLER~~ — CORRIGÉ le 11 septembre 2026
 
 **Mesuré, pas supposé.** `test-reduction-devis-e2e.ts` a rougi deux fois sur
@@ -774,24 +814,26 @@ les paramètres qu'Atlas envoie : ici, seul un faux prestataire local répond
 (`scripts/test-paiement-stripe.ts`). Ne pas présenter ce chemin comme éprouvé
 avant.
 
-### 2. LES FONCTIONS NE SONT PAS CLOISONNÉES PAR FORMULE — à trancher par lui
+### ~~2. LES FONCTIONS NE SONT PAS CLOISONNÉES PAR FORMULE — à trancher par lui~~ — TRANCHÉ ET CODÉ (10 → 13 septembre 2026)
 
-La planche annonce « les absences de vos équipes » et « les retours
-d'intervention » comme un plus d'« Entreprise ». **Ce n'est PAS appliqué**, et
-c'est délibéré : le poser en silence retirerait à un artisan des écrans dont il
-se sert déjà aujourd'hui.
+*« Oui bloqué pour l'abonnement artisan »* (10 septembre). Codé le 13 : les
+absences (Réglages → Équipe) et les retours d'intervention s'ouvrent, à
+« Artisan », sur « c'est dans Entreprise » (`FonctionReservee`) ; la garde
+`exigerFonction` tient les actions ; la pastille des retours s'éteint ; les
+salariés d'un « Artisan » ne se voient plus réclamer un retour. Sans
+abonnement, tout reste ouvert. `ARCHITECTURE.md` §342.
 
-Seul le plafond de personnes mord. La question à lui poser : *veut-il vraiment
-fermer les absences et les retours à un abonné « Artisan » ?* Tant qu'il n'a pas
-répondu, la carte promet un peu moins que ce que l'application donne — dans son
-sens à lui, jamais l'inverse.
+### ~~3. La durée de l'essai gratuit n'est pas décidée~~ — DÉCIDÉE ET CODÉE (10 → 13 septembre 2026)
 
-### 3. La durée de l'essai gratuit n'est pas décidée
+*« Essai gratuit 15 jours »*. Migration 0089, `JOURS_ESSAI`, la ligne posée par
+la porte, le ruban, la lecture seule au 16ᵉ jour dans `withEntreprise`.
+`ARCHITECTURE.md` §342.
 
-Il n'y a donc **pas d'état « essai »** : ni en base (la contrainte `CHECK` de la
-migration 0084 le refuse), ni dans `src/lib/abonnements.ts`. C'est l'une des
-seize cases `[À COMPLÉTER]` des conditions générales. Le jour où il donne le
-chiffre, une migration ajoute l'état — ne pas l'inventer d'ici là.
+**Ce qui reste à LUI :** l'article 14.2 des conditions publiées dit encore
+« [À COMPLÉTER — 14 ou 30 jours] ». Une version publiée ne se modifie jamais :
+le « quinze (15) jours » entrera avec la **version 3**, quand il remplira les
+quinze autres cases — et `test-abonnements` refusera alors que le texte et
+`JOURS_ESSAI` divergent.
 
 ### 4. Le portail ne sait pas changer de formule, et c'est Atlas qui le fait
 

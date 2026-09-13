@@ -1,7 +1,8 @@
 import { hash } from "bcryptjs";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { entreprises, membresEntreprise, users } from "@/server/db/schema";
+import { abonnements, entreprises, membresEntreprise, users } from "@/server/db/schema";
+import { FORMULE_DE_LESSAI, finDeLEssai } from "@/lib/abonnements";
 import { adresseNormalisee } from "@/lib/donner-un-acces";
 import { formeADuCapital } from "@/lib/formes-juridiques";
 import { capitalEnBase } from "@/lib/mentions-legales";
@@ -138,6 +139,19 @@ export async function creerSonCompte(saisie: SaisieCompte): Promise<ResultatCrea
       entrepriseId: entreprise.id,
       utilisateurId: compte.id,
       role: "proprietaire",
+    });
+
+    // **L'essai commence ICI, et seulement ici** — sa décision du 10 septembre
+    // 2026 : « essai gratuit 15 jours ». Un compte créé par la porte est le
+    // seul qui en reçoive un ; les entreprises déjà en place n'ont pas de
+    // ligne d'abonnement, et l'on ne leur en invente pas. Aucune carte n'est
+    // demandée : Stripe ne connaît pas cette ligne, c'est Atlas qui compte.
+    await tx.insert(abonnements).values({
+      entrepriseId: entreprise.id,
+      formule: FORMULE_DE_LESSAI,
+      periodicite: "mensuelle",
+      statut: "essai",
+      periodeFin: finDeLEssai(new Date()),
     });
 
     logger.info("Compte créé depuis la porte", {

@@ -4,8 +4,49 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-12 · `main`
+**Point de reprise :** 2026-09-13 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## Dernier lot — L'ESSAI DE QUINZE JOURS, ET CE QUI SE FERME (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | la planche `appli/l-essai-et-ce-qui-est-ferme.html` (10 septembre) : *« essai gratuit 15 jours »*, lecture seule au 16ᵉ jour, absences et retours réservés à « Entreprise ». Le code avait été commencé dans le dossier et laissé sans compiler ; il a dit *« finis déjà ça »* |
+| ce qui a changé | la porte pose une ligne `abonnements` en `essai` (formule « on essaie tout », `FORMULE_DE_LESSAI`) ; `RubanEssai` en tête de l'accueil ; **`withEntreprise` passe la transaction en `READ ONLY`** quand l'essai est fini — Postgres refuse, `EssaiTermineError` ; bouton « Créer un devis » éteint + phrase, `EcranLectureSeule` sur `/chantiers/nouveau` ; `FonctionReservee` à la place des absences (Équipe) et des retours, pastille éteinte, `exigerFonction` sur les actions, `reglesDuRetour` au planning |
+| la migration | **0089** — le statut `essai` entre dans la contrainte |
+| la règle | `src/lib/abonnements.ts` : `etatDeLEssai`, `enLectureSeule`, `fonctionOuverte`, `formuleChoisie`, `texteDuRuban` |
+| les suites | `test-abonnements` (règle), `test-essai-lecture-seule-db` (la transaction, sous `atlas_app`), `test-essai-e2e` (son geste) |
+
+**LE PIÈGE : la seule porte.** `enregistrerLAbonnement` écrit avec
+`{ pourSortirDeLEssai: true }`. Une écriture de plus qui devrait passer en
+lecture seule se DÉCLARE là, elle ne contourne pas `withEntreprise`.
+
+**Son Atlas à lui n'a pas de ligne d'abonnement** : rien de tout cela ne le
+touche. Ne pas lui en créer une « pour voir ».
+
+**CE QUI RESTE À LUI.** Le « 15 » dans l'article 14.2 des conditions générales
+(version 3 — une version publiée ne se modifie jamais).
+
+---
+## Lot précédent — L'ACOMPTE SUR LE DEVIS, LA B (12 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« rajouter un acompte automatisé sur le devis, un peu comme on fait pour rajouter une TVA »* — planche `appli/l-acompte-sur-le-devis.html`, la B, six retours dans la soirée, puis *« Parfait code la B »* |
+| ce qui a changé | sous « Total TTC » : une ligne dorée par acompte (taux **cumulé**, montant = ce qui tombe ce jour-là), « Reste à régler après acompte(s) », « + Ajouter un acompte » ; la phrase des conditions écrite sous les notes ; la colonne **Unité** après Qté ; le PDF porte l'échéancier sous le total et les phrases dans les notes |
+| la migration | **0088** — `acomptes_devis` (rang 1..3, taux cumulé), RLS, trigger d'immuabilité comme `lignes_devis` |
+| la règle | `src/lib/acomptes-devis.ts` — une seule fonction pour l'écran, le dépôt (`ecrireAcomptes` réécrit tout, borné, réaligné) et le PDF |
+| corrigé en chemin | le PDF **envoyé** partait sans validité ni conditions réglées ; `donneesPdfDuDevis` sert désormais l'aperçu, l'envoi et la feuille sans prix |
+| les suites | `test-acomptes-devis` (pur), `test-acomptes-pdf` (trace), `test-acomptes-devis-e2e` (son geste, gabarit iPhone) |
+
+**LE PIÈGE DES TAUX.** Ils sont CUMULÉS, et c'est sa décision : « 50 » au rang
+2 n'est pas « la moitié ce jour-là ». Le libellé le dit dès le deuxième
+(« Acompte à mi-parcours 50 % » — sans parenthèses ni « réglés », sa correction du 13 septembre). La borne s'applique quand le doigt
+QUITTE le champ — à la frappe, « 75 » commence par « 7 » et sauterait à 50.
+
+**CE QUI RESTE À LUI.** Une « facture d'acompte » une fois le devis accepté —
+posé dans la planche, sans réponse. Le devis DIT l'acompte, il ne le facture pas.
 
 ---
 ## Dernier lot — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)

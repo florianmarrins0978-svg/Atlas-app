@@ -7,6 +7,7 @@ import { creerTarif, listerTarifs, modifierTarif, supprimerTarif } from "@/serve
 import { lireFichierTarifs } from "@/server/import/lire-fichier-tarifs";
 import { montantLu, rapprocher, type LigneImportee, type TarifExistant } from "@/lib/import-tarifs";
 import { exigerProprietaire } from "@/server/autorisation";
+import { exigerFonction } from "@/server/garde-action";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { reglerExigibilite } from "@/server/repositories/paiements-facture";
@@ -326,6 +327,8 @@ export async function noterAbsenceAction(formData: FormData): Promise<ResultatAb
 
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "noter l'absence d'une équipe");
+  // Un plus d'« Entreprise » (10 septembre 2026) : l'écran le montre, la garde le tient.
+  await exigerFonction(ctx, "absences", "noter l'absence d'une équipe");
 
   // **Les bornes de demi-journée, son choix D2 du 8 septembre 2026.** Absentes
   // de la requête, elles valent la journée entière : le geste courant n'a rien
@@ -361,6 +364,7 @@ export async function noterAbsenceAction(formData: FormData): Promise<ResultatAb
 export async function retirerAbsenceAction(id: string): Promise<{ ok: boolean }> {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "retirer l'absence d'une équipe");
+  await exigerFonction(ctx, "absences", "retirer l'absence d'une équipe");
   const ligne = await retirerAbsenceEquipe(ctx, id);
   return { ok: Boolean(ligne) };
 }

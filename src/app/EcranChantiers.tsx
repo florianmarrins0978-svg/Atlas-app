@@ -67,10 +67,21 @@ const GRAINS = [
 export default function EcranChantiers({
   chantiers,
   bandeaux,
+  ruban = null,
+  lectureSeule = null,
 }: {
   chantiers: BrinChantier[];
   /** Notifications et annonces, rendues par le serveur et posées sous le titre. */
   bandeaux: ReactNode;
+  /** Le ruban de l'essai, tout en haut — `null` pour une entreprise sans essai. */
+  ruban?: ReactNode;
+  /**
+   * La phrase à dire sous le bouton ÉTEINT quand l'essai est terminé, `null`
+   * sinon. Le serveur refuse de toute façon (`withEntreprise`) ; ici on le dit
+   * AVANT le geste, parce qu'un bouton gris sans explication se lit comme une
+   * panne — il rappuierait, puis il appellerait.
+   */
+  lectureSeule?: string | null;
 }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(false);
@@ -197,6 +208,7 @@ export default function EcranChantiers({
         aria-hidden={ouvert || undefined}
         inert={ouvert || undefined}
       >
+        {ruban}
         {/* **« ATLAS » A ÉTÉ RETIRÉ LE 6 SEPTEMBRE 2026**, sur la planche
             `appli/l-accueil-a-bout-de-bras.html`, qu'il a retenue.
 
@@ -373,12 +385,20 @@ export default function EcranChantiers({
             nouvel onglet, elle mène à l'écran entier. Le clic ordinaire est
             détourné pour jouer le geste puis faire monter la feuille — la route
             ne disparaît pas, elle change de porte. */}
-        <div className="flex justify-center px-[26px] pb-0.5 pt-[22px]">
+        <div className="flex flex-col items-center px-[26px] pb-0.5 pt-[22px]">
           <Link
             href="/chantiers/nouveau"
             data-atlas="nouveau-chantier"
             data-geste={anime ? "part" : undefined}
+            aria-disabled={lectureSeule ? true : undefined}
+            // Éteint, pas retiré : il voit encore par où l'on crée, et la phrase
+            // en dessous dit pourquoi ça ne répond pas.
+            style={lectureSeule ? { opacity: 0.4, pointerEvents: "none" } : undefined}
             onClick={(e) => {
+              if (lectureSeule) {
+                e.preventDefault();
+                return;
+              }
               if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
               e.preventDefault();
               // **Sa demande du 31 août : un seul bouton pour essayer.** Le
@@ -424,6 +444,11 @@ export default function EcranChantiers({
               </svg>
             </span>
           </Link>
+          {lectureSeule && (
+            <p data-atlas="lecture-seule" className="mt-2 text-center text-[13px] leading-[1.5]" style={{ color: colors.muted }}>
+              {lectureSeule}
+            </p>
+          )}
         </div>
 
         {/* **Le mot, puis le chiffre — et plus rien à droite.** Sa demande du

@@ -15,6 +15,9 @@ import VosSalaries from "../VosSalaries";
 import QuiAAcces from "./QuiAAcces";
 import FinDeChantierReglage from "./FinDeChantierReglage";
 import AbsencesEquipe from "../AbsencesEquipe";
+import FonctionReservee from "@/components/atlas/FonctionReservee";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { fonctionOuverte } from "@/lib/abonnements";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +60,7 @@ export default async function EquipePage() {
   const aujourdHui = jourIso(new Date());
   // Seulement ce qui n'est pas fini : une liste qui accumulerait deux ans de
   // déplacements passés ne se relirait plus.
-  const [entreprise, equipes, absences, acces, equipesRattachables, google, apple] =
+  const [entreprise, equipes, absences, acces, equipesRattachables, google, apple, abonnement] =
     await Promise.all([
       getEntreprise(ctx),
       listerEquipes(ctx),
@@ -72,7 +75,12 @@ export default async function EquipePage() {
       // leurs sosies (`CLAUDE.md` §3).
       etatAgenda(ctx),
       etatAgendaApple(ctx),
+      abonnementDeLEntreprise(ctx),
     ]);
+  // Les absences et les retours sont un plus d'« Entreprise » (10 septembre
+  // 2026). La règle est dans `fonctionOuverte` ; sans abonnement, tout est ouvert.
+  const absencesOuvertes = fonctionOuverte(abonnement?.formule, "absences");
+  const retoursOuverts = fonctionOuverte(abonnement?.formule, "retours");
 
   const agendaRelie = (google.relie && google.actif) || (apple.relie && apple.actif);
 
@@ -100,10 +108,15 @@ export default async function EquipePage() {
             Il vit ICI, sous « Qui a accès » : c’est le même écran que celui où
             il décide de ce que ses gens peuvent faire, et cette exigence-là en
             est une. */}
-        <FinDeChantierReglage
-          initialDemande={entreprise?.retourDemande ?? false}
-          initialPhotoExigee={entreprise?.retourPhotoExigee ?? false}
-        />
+        {/* Sans les retours, ce réglage ne commande plus rien : ce qu'il ne
+            peut plus lire, on ne le fait pas réclamer à ses gars
+            (`retour-actions.ts`, `reglesDuRetour`). */}
+        {retoursOuverts && (
+          <FinDeChantierReglage
+            initialDemande={entreprise?.retourDemande ?? false}
+            initialPhotoExigee={entreprise?.retourPhotoExigee ?? false}
+          />
+        )}
 
         <VosEquipes initialNombreEquipes={entreprise?.nombreEquipes ?? 1} />
 
@@ -120,20 +133,27 @@ export default async function EquipePage() {
         {/* **Sous les noms, comme il l'a retenu** (`docs/maquettes/55`,
             proposition A) : c'est là que vivent les équipes, et c'est là qu'on
             va quand on prépare la semaine. */}
-        <AbsencesEquipe
-          nombreSalaries={entreprise?.nombreSalaries ?? 0}
-          noms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
-          initialAbsences={absences.map((a) => ({
-            id: a.id,
-            rang: a.rang,
-            nom: a.nom,
-            premierJour: a.premierJour,
-            dernierJour: a.dernierJour,
-            motif: a.motif,
-          }))}
-          aujourdHui={aujourdHui}
-          agendaRelie={agendaRelie}
-        />
+        {/* À sa place, jamais retirée : une rubrique qui disparaît se cherche.
+            Ses absences déjà saisies ne s'effacent pas — elles reparaissent
+            s'il monte de formule. */}
+        {absencesOuvertes ? (
+          <AbsencesEquipe
+            nombreSalaries={entreprise?.nombreSalaries ?? 0}
+            noms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
+            initialAbsences={absences.map((a) => ({
+              id: a.id,
+              rang: a.rang,
+              nom: a.nom,
+              premierJour: a.premierJour,
+              dernierJour: a.dernierJour,
+              motif: a.motif,
+            }))}
+            aujourdHui={aujourdHui}
+            agendaRelie={agendaRelie}
+          />
+        ) : (
+          <FonctionReservee fonction="absences" />
+        )}
 
         {/* **RETIRÉ le 26 août 2026 : la phrase qui expliquait pourquoi le
             planning n'écrivait rien à une seule équipe.** Elle disait vrai tant
