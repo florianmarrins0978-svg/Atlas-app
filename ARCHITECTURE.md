@@ -29296,6 +29296,21 @@ même le titre), du texte = le sien. Aucune ligne existante n'a été réécrite
 `null` suffit. Le texte descend sur le devis comme les cinq autres conditions :
 un brouillon rouvert reprend le réglage du jour, un devis envoyé est figé.
 
+**Et ce `null` ne se lit qu'au RÉGLAGE** (`conditionsDepuisEntreprise`), jamais
+dans `lireConditions`, par où passe aussi l'instantané d'un devis : un devis
+d'avant 0090 n'a pas de texte, et il doit sortir sans CGV — identique à
+lui-même. La première version posait le défaut dans `lireConditions`, et
+`test-conditions-sur-le-devis` l'a vu : « Acompte » s'imprimait, réglage éteint.
+
+**Le geste et le rendu prennent le même verrou.** `mettreAJourEnTeteDevis`
+prend `pg_advisory_xact_lock(hashtext(chantierId))` — celui de
+`getOuCreerDevisBrouillon` — AVANT de lire. Le rendu recopie le taux de TVA, la
+remise et les totaux depuis ce qu'il a lu ; joué en même temps que le « − » ou
+le « + Remise », il réécrivait la valeur d'avant par-dessus la sienne. C'est la
+race que `test-reduction-devis-e2e` montrait depuis trois batteries sans qu'on
+la lise, et que `test-planche-b-devis-e2e` a rendue lisible. La main d'œuvre
+est de plus bornée par Postgres (`CASE`) sur la valeur du moment, pas recopiée.
+
 **D'où vient le texte d'origine, et ce qu'il n'est pas.** De la photo des CGV
 d'un menuisier qu'il a envoyée, lue clause par clause sur la planche : huit
 reprises, quatre laissées (pénalités à 1,5 × périmées, « aucune indemnité »

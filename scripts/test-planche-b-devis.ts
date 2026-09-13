@@ -7,7 +7,7 @@ import {
   crochetsRestants,
   paragraphesConditionsGenerales,
 } from "../src/lib/conditions-generales";
-import { lireConditions, normaliserConditions } from "../src/lib/conditions-documents";
+import { conditionsDepuisEntreprise, lireConditions, normaliserConditions } from "../src/lib/conditions-documents";
 import { composerDevisPdf } from "../src/server/pdf/devis-pdf";
 
 /**
@@ -181,8 +181,14 @@ async function main() {
   });
 
   await cas("jamais réglé → le texte d'origine ; effacé → vide ; le sien → le sien", () => {
-    assert.equal(lireConditions({}).conditionsGenerales, TEXTE_ORIGINE_CONDITIONS_GENERALES);
-    assert.equal(lireConditions({ conditionsGenerales: null }).conditionsGenerales, TEXTE_ORIGINE_CONDITIONS_GENERALES);
+    // Le texte d'origine se pose sur le RÉGLAGE de l'entreprise, jamais sur
+    // l'instantané d'un devis : un devis d'avant la migration 0090 n'a pas de
+    // texte, et il doit sortir sans CGV — identique à lui-même.
+    assert.equal(conditionsDepuisEntreprise({}).conditionsGenerales, TEXTE_ORIGINE_CONDITIONS_GENERALES);
+    assert.equal(conditionsDepuisEntreprise({ conditionsGenerales: null }).conditionsGenerales, TEXTE_ORIGINE_CONDITIONS_GENERALES);
+    assert.equal(conditionsDepuisEntreprise({ conditionsGenerales: "" }).conditionsGenerales, "");
+    assert.equal(lireConditions({}).conditionsGenerales, "");
+    assert.equal(lireConditions({ conditionsGenerales: null }).conditionsGenerales, "");
     assert.equal(lireConditions({ conditionsGenerales: "" }).conditionsGenerales, "");
     assert.equal(lireConditions({ conditionsGenerales: "  \n " }).conditionsGenerales, "");
     assert.equal(lireConditions({ conditionsGenerales: "Mes conditions." }).conditionsGenerales, "Mes conditions.");

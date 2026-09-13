@@ -688,6 +688,20 @@ export async function mettreAJourEnTeteDevis(
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Le même verrou que le rendu du brouillon** (`getOuCreerDevisBrouillon`),
+    // pris AVANT de lire. Le rendu recopie le taux de TVA, la remise et les
+    // totaux depuis ce qu'il a lu ; joué en même temps que ce geste-ci, il
+    // réécrivait la valeur d'avant par-dessus la sienne — les 5 % du « + Remise »
+    // n'arrivaient pas en base, la main d'œuvre retirée revenait (13 septembre
+    // 2026, `test-reduction-devis-e2e`, `test-planche-b-devis-e2e`). Sous le
+    // verrou, l'un attend l'autre et lit ce qu'il a écrit.
+    const [cible] = await tx
+      .select({ chantierId: devis.chantierId })
+      .from(devis)
+      .where(eq(devis.id, devisId))
+      .limit(1);
+    if (!cible) return null;
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${cible.chantierId}))`);
     const [avant] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!avant || avant.statut === "envoye") return null;
 

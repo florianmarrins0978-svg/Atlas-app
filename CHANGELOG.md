@@ -47,6 +47,17 @@ gras porte les phrases qui existent déjà.
 et le devis). `gras` ajouté à la trace du PDF : sans lui, « en gras » ne se
 mesurait pas. Détail : `ARCHITECTURE.md` §345.
 
+**Ce que la batterie a montré, et qui est corrigé à la racine.** Le « − » de la
+main d'œuvre écrivait `null` pendant qu'un rendu du brouillon, parti une
+seconde avant, réécrivait le montant qu'il avait lu — et les 5 % du « + Remise »
+subissaient la même course depuis la veille (`test-reduction-devis-e2e`, rouge
+sur trois batteries). La mise à jour d'en-tête prend désormais **le même verrou
+de chantier que le rendu** (`pg_advisory_xact_lock`), avant de lire : l'un
+attend l'autre. Et le texte d'origine des CGV ne se pose plus que sur le
+**réglage** de l'entreprise, jamais sur l'instantané d'un devis : un devis
+d'avant la migration sortait sinon avec des CGV au dos qu'il n'avait jamais
+portées (`test-conditions-sur-le-devis`).
+
 ### L'essai de quinze jours, et ce qui se ferme — sa planche du 10 septembre, codée
 
 *« Essai gratuit 15 jours »* · *« la B, mais il ne doit plus rien pouvoir faire

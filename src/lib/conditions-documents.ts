@@ -143,12 +143,11 @@ export function lireConditions(brut: ConditionsLues | null | undefined): Conditi
     moyensPaiement: texte(brut?.moyensPaiement),
     rappelerPenalites: brut?.rappelerPenalites === true,
     textePied: texte(brut?.textePied),
-    // Jamais réglé → le texte d'origine : c'est ce qu'il a demandé, « remplie
-    // d'un texte par défaut ». Effacé → vide, et le devis ne l'imprime pas.
-    conditionsGenerales:
-      brut?.conditionsGenerales === null || brut?.conditionsGenerales === undefined
-        ? TEXTE_ORIGINE_CONDITIONS_GENERALES
-        : brut.conditionsGenerales.trim(),
+    // Absent → rien. Le texte d'origine ne se pose QUE dans
+    // `conditionsDepuisEntreprise` : ici passe aussi l'instantané d'un devis, et
+    // un devis d'avant la migration 0090 sortirait sinon avec des CGV au dos
+    // qu'il n'a jamais portées (`test-conditions-sur-le-devis`, 13 sept. 2026).
+    conditionsGenerales: texte(brut?.conditionsGenerales) ?? "",
   };
 }
 
@@ -274,6 +273,11 @@ export function conditionsDepuisEntreprise(
     moyensPaiement: ligne?.moyensPaiement,
     rappelerPenalites: ligne?.rappelerPenalitesDevis,
     textePied: ligne?.textePiedDocuments,
-    conditionsGenerales: ligne?.conditionsGenerales,
+    // Jamais réglé → le texte d'origine : c'est ce qu'il a demandé, « remplie
+    // d'un texte par défaut ». Effacé (chaîne vide) → vide, rien ne s'imprime.
+    conditionsGenerales:
+      ligne?.conditionsGenerales === null || ligne?.conditionsGenerales === undefined
+        ? TEXTE_ORIGINE_CONDITIONS_GENERALES
+        : ligne.conditionsGenerales,
   });
 }
