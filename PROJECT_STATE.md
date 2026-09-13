@@ -5,6 +5,16 @@
 
 ---
 
+## FAIT : UNE `date` EST UN JOUR, PAS UN INSTANT — 13 septembre 2026
+
+Le `pool` du produit rend `date` et `date[]` en « AAAA-MM-JJ » quel que soit
+le fuseau du PC : quatre suites qui rougissaient d'un jour à l'heure de Paris
+sont vertes sans rien compenser, et l'écran Terminés compte son mois à l'heure
+de l'atelier. **Aucune migration.** Suite `test-date-est-un-jour-db.ts`.
+Détail : `ARCHITECTURE.md` §355.
+
+---
+
 ## FAIT : LA BASE SE RATTRAPE À CHAQUE ALLUMAGE — 13 septembre 2026
 
 Sa panne : *« Plus rien ne fonctionne ! »*, « Planning » et « Terminés » tombés,
@@ -14,7 +24,7 @@ migrent ne le faisaient que le jour où le code bougeait : un échec n'était ja
 retenté, et plus aucun geste ne rattrapait la base. Migrations à chaque allumage
 et à chaque appui du bouton ; et l'écart se MESURE désormais — une ligne « Base »
 sur la fiche de son espace, qui nomme les migrations manquantes, et le même
-constat dans les Réglages. `ARCHITECTURE.md` §355 ·
+constat dans les Réglages. `ARCHITECTURE.md` §356 ·
 `scripts/test-migrations-banc.ts` · `scripts/test-retard-de-la-base.ts`.
 
 ## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026
