@@ -11,7 +11,7 @@ Cause réelle des trois écrans tombés. Une migration qui écrit des données s
 FORCE RLS ne touche rien : les conversions de 0087 étaient inopérantes, sa
 contrainte échouait, et 0088 à 0090 restaient derrière. Corrigé par un
 `NO FORCE`/`FORCE` autour de la conversion et une ligne pour les refus sans
-phrase. Éprouvé sur une base habitée, sous RLS. `ARCHITECTURE.md` §357.
+phrase. Éprouvé sur une base habitée, sous RLS. `ARCHITECTURE.md` §358.
 
 ## FAIT : UNE `date` EST UN JOUR, PAS UN INSTANT — 13 septembre 2026
 
@@ -20,6 +20,24 @@ le fuseau du PC : quatre suites qui rougissaient d'un jour à l'heure de Paris
 sont vertes sans rien compenser, et l'écran Terminés compte son mois à l'heure
 de l'atelier. **Aucune migration.** Suite `test-date-est-un-jour-db.ts`.
 Détail : `ARCHITECTURE.md` §355.
+
+## FAIT : LA PANNE DE BASE SE DIT, AU LIEU DE L'ÉCRAN D'ERREUR — 13 septembre 2026
+
+*« Je peux toujours pas crée de compte ! »* : une exception de la base sortait
+de l'action et Next.js la remplaçait par un numéro opaque, sans une ligne de
+journal. `creerSonCompte` journalise désormais l'erreur avec son `SQLSTATE` et
+rend un refus lisible ; `src/lib/panne-de-base.ts` distingue les refus qui
+disent « la base n'est pas celle que ce code attend » et donne le geste **sûr**
+— rallumer l'espace, jamais reconstruire. Suite manquante écrite :
+`test-creer-son-compte-e2e.ts`, qui entre par la porte et rougit sur le code
+d'avant. **Ce qui tombe sur SA machine n'a pas pu être lu** — voir `TODO.md`,
+**Puis, sur sa remarque « pas de rafistolage, va à la racine » :** un capital
+hors bornes de la colonne faisait tomber la création entière — borné dans
+`capitalEnBase`, là où la règle vit —, et trente-sept façons de remplir la porte
+sont désormais éprouvées (`test-porte-aucune-saisie-ne-tombe-db.ts`). L'état de
+sa base, lui, est publié par le lot voisin du même soir (§356). Détail :
+`ARCHITECTURE.md` §357.
+
 
 ---
 

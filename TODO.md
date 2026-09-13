@@ -9,6 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LES AUTRES ACTIONS SERVEUR TOMBENT ENCORE SUR L'ÉCRAN MUET
+
+Même lot, même racine. Une exception qui sort d'une action serveur est
+remplacée par un numéro opaque (`src/app/error.tsx`) : le patron voit « Une
+erreur », et le journal reste muet si personne n'a écrit de `catch`.
+`src/lib/panne-de-base.ts` sait désormais nommer les refus de la base — il ne
+sert qu'à la création de compte (`ARCHITECTURE.md` §357). **À poser là où une panne coûte le plus** : la
+connexion, l'enregistrement d'un devis, celui d'une facture.
+
+**Qui :** nous. Pas de lot dédié — au fil de ce qu'on touche.
+
+---
+
 ## ~~CHOISIE, À CODER — L'ACOMPTE SUR LE DEVIS, la B~~ — CODÉE LE SOIR MÊME (12 septembre 2026)
 
 **Codé** (*« Parfait code la B »*) : migration 0088, `src/lib/acomptes-devis.ts`,

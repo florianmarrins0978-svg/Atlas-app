@@ -22,7 +22,7 @@ Le reste en découle : 0087 bloquée → 0088 à 0090 jamais tentées → le cod
 `entreprises.conditions_generales` sur une base qui ne l'avait pas → Planning,
 Terminés et Réglages tombaient, les cinq autres écrans tenaient.
 
-`ARCHITECTURE.md` §357 · `scripts/test-migration-0087-base-habitee.ts` (rouge
+`ARCHITECTURE.md` §358 · `scripts/test-migration-0087-base-habitee.ts` (rouge
 avant, vert après, et sa première version mentait faute de porter la RLS).
 
 ---
@@ -43,9 +43,7 @@ jamais un `Date`. Ne pas remettre un `instanceof Date` « au cas où » : c'est
 la couche qui vient d'être retirée.
 
 ---
-## Lot précédent — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
-
-## Dernier lot — LA BASE SE RATTRAPE À CHAQUE ALLUMAGE (13 septembre 2026)
+## Lot du même soir — LA BASE SE RATTRAPE À CHAQUE ALLUMAGE (13 septembre 2026)
 
 **Sa panne :** *« Plus rien ne fonctionne ! »* — « Planning » et « Terminés »
 tombés ensemble, « Chantiers » debout.
@@ -76,7 +74,43 @@ endroits, et le prochain écart muet ailleurs.
 `ARCHITECTURE.md` §356 · `scripts/test-migrations-banc.ts` ·
 `scripts/test-retard-de-la-base.ts` (les deux éprouvés rouges).
 
-## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
+---
+## Lot du même soir — « JE PEUX TOUJOURS PAS CRÉER DE COMPTE » (13 septembre 2026, le soir)
+
+| | |
+|---|---|
+| sa plainte | *« Je peux toujours pas crée de compte ! »*, capture à l'appui : « Une erreur · Cette page n'a pas pu s'afficher · Référence : 3285538552 » |
+| reproduit | le parcours entier joué au navigateur sur une base privée de la migration 0089 rend **exactement** cet écran |
+| la racine | une exception de la base sortait de l'action serveur : Next.js la remplace par un numéro, et rien n'était journalisé — le défaut muet qu'`AGENTS.md` interdit |
+| la correction | `creerSonCompte` journalise l'erreur avec son `SQLSTATE` et rend un refus ; `src/lib/panne-de-base.ts` dit si le refus veut dire « base en retard », et donne le geste **sûr** (rallumer l'espace) |
+| la suite qui manquait | `test-creer-son-compte-e2e.ts` — les seize questions dans un vrai navigateur, les trois lignes en base, puis la migration réellement retirée. Rougit sur le code d'avant |
+| la migration | **aucune** |
+| le détail | `ARCHITECTURE.md` §357 |
+
+**PUIS SA REMARQUE DU SOIR, ET ELLE A CHANGÉ LE LOT :** *« arrête de faire du
+rafistolage, va corriger le problème à la racine »*. Rendre la panne bavarde
+était le préalable, pas la réparation. Deux racines ont suivi :
+
+| | |
+|---|---|
+| le chemin LISSE était le seul éprouvé | trente-sept façons de remplir la porte, balayées (`test-porte-aucune-saisie-ne-tombe-db.ts`) : un capital de quinze chiffres faisait tomber la création entière. Borné dans `capitalEnBase`, là où la règle vit |
+| sa machine savait, sans le dire | traité par le lot ci-dessus, livré le même soir (§356). Une lecture écrite ici en parallèle a été **jetée** : deux façons de lire un même état divergent toujours |
+
+**CE QUI N'A PAS PU ÊTRE VÉRIFIÉ, et ne doit pas être présenté comme acquis :**
+ce qui tombe sur SA machine. Le journal de son espace n'est publié nulle part,
+et sa fiche (fiche GitHub n° 47) n'avait pas été réécrite depuis 08:31 alors
+qu'il l'utilisait à 17:43 — donc son veilleur ne publiait plus. La cause la plus
+probable reste une base en retard sur le code servi (son espace annonçait déjà
+six versions de retard), et le refus neuf la nommera dès qu'il retentera.
+
+**LE PIÈGE, pour toute suite qui entre par la porte :** la création de compte
+**ouvre la session elle-même** — un second parcours part en « Avant de
+commencer » tant qu'on n'a pas effacé les cookies. Et `networkidle` n'arrive
+jamais sur un banc servi en mode développement : le bandeau de construction
+interroge le serveur toutes les cinq secondes.
+
+---
+## Lot précédent — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
 
 | | |
 |---|---|
@@ -150,7 +184,7 @@ une case qui affiche « 1 » donne **12**. C'est sa règle du 11 septembre ; à 
 de dire s'il la garde ou si l'entrée dans la case sélectionne tout.
 
 ---
-## Dernier lot — JETER SA DICTÉE, ET LE LECTEUR MORT (13 septembre 2026)
+## Lot précédent — JETER SA DICTÉE, ET LE LECTEUR MORT (13 septembre 2026)
 
 | | |
 |---|---|

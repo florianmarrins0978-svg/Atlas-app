@@ -7,6 +7,8 @@ import { adresseNormalisee } from "@/lib/donner-un-acces";
 import { formeADuCapital } from "@/lib/formes-juridiques";
 import { capitalEnBase } from "@/lib/mentions-legales";
 import { messageRefus, verifierNouveauMotDePasse } from "@/lib/mot-de-passe";
+import { causeDeLaPanne, codeSqlDe, messageSansLesValeurs, phraseDeLaPanne } from "@/lib/panne-de-base";
+import { estBancDEssai } from "@/profil-banc";
 import { logger } from "@/server/logger";
 
 /**
@@ -65,7 +67,42 @@ export type ResultatCreation =
 const vide = (v: string | undefined) => !v || !v.trim();
 const propre = (v: string | undefined) => (vide(v) ? undefined : v!.trim());
 
+/**
+ * CRÉER LE COMPTE — **et ne jamais laisser une panne de base sortir d'ici.**
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **Ce que cette enveloppe répare, le 13 septembre 2026.** Sa capture : « Une
+ * erreur · Cette page n'a pas pu s'afficher · Référence : 3285538552 », après
+ * seize questions remplies. Une exception levée par la base traversait l'action
+ * serveur, et Next.js la remplaçait par ce numéro — sans un mot pour lui, sans
+ * une ligne dans le journal pour nous. Reproduit à l'identique en retirant une
+ * migration (`scripts/test-creer-son-compte-e2e.ts`).
+ *
+ * **Ce n'est pas un `catch` qui avale** (`CLAUDE.md` §4 quater) : l'erreur est
+ * journalisée entière, avec son code `SQLSTATE`, et ce qui sort à l'écran NOMME
+ * la cause quand elle est connaissable. Ce qui disparaît, c'est le chemin muet.
+ *
+ * **Et la saisie ne repart jamais dans le journal.** Drizzle recopie dans son
+ * message TOUT ce qui partait en base — adresse, SIRET, IBAN, condensat du mot
+ * de passe. `messageSansLesValeurs` coupe à la ligne des valeurs : il ne reste
+ * que la requête, qui dit ce qui a échoué et ne contient aucune donnée.
+ */
 export async function creerSonCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
+  try {
+    return await ecrireLeCompte(saisie);
+  } catch (erreur) {
+    const cause = causeDeLaPanne(erreur);
+    const codeSql = codeSqlDe(erreur);
+    logger.error("Création de compte : la base a refusé", {
+      cause,
+      codeSql,
+      erreur: messageSansLesValeurs(erreur instanceof Error ? erreur.message : String(erreur)),
+    });
+    return { ok: false, refus: phraseDeLaPanne(cause, estBancDEssai(), codeSql) };
+  }
+}
+
+async function ecrireLeCompte(saisie: SaisieCompte): Promise<ResultatCreation> {
   const email = adresseNormalisee(saisie.email);
 
   const [existant] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);

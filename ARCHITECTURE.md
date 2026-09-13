@@ -29923,6 +29923,8 @@ plutôt que contourné (`CLAUDE.md` §5 bis — quand une suite rougit après un
 changement qu'il a demandé, on adapte le contrôle, on ne remet pas l'ancien
 comportement).
 
+---
+
 ## §355 — Une colonne `date` arrive en jour, jamais en instant : la règle vit au pilote
 
 **Le défaut, mesuré le 13 septembre 2026.** Quatre suites navigateur —
@@ -30078,7 +30080,107 @@ s'arrête à 0087 : la ligne rendue est `EN RETARD DE 3 — 0088, 0089, 0090`.
 
 ---
 
-## §357 — Une migration qui écrit des DONNÉES ne voit rien sous FORCE RLS
+## §357 — Une panne de base ne jette plus le patron sur l'écran d'erreur
+
+**Sa plainte du 13 septembre 2026 :** *« Je peux toujours pas créer de
+compte ! »* — et, en capture, « Une erreur · Cette page n'a pas pu s'afficher ·
+Référence : 3285538552 », après avoir répondu aux seize questions.
+
+**Reproduit, et c'est la seule chose qui a fait avancer le diagnostic.** Le
+parcours entier joué dans un navigateur sur une base à laquelle on retire la
+migration 0089 rend **exactement** cet écran : l'insertion de la ligne d'essai
+lève, l'action serveur meurt avec, et Next.js remplace la cause par un digest.
+En version bâtie — celle que son banc sert — la cause n'est même pas affichée.
+
+**Ce qui était en cause n'était pas la création de compte, c'était le SILENCE.**
+Rien n'était journalisé, rien n'était dit à l'écran, et le numéro affiché ne
+mène à rien : ni lui ni la session suivante ne pouvaient savoir pourquoi. C'est
+le défaut muet qu'`AGENTS.md` interdit de laisser vivre — *« la première
+livraison n'est pas un correctif, c'est de rendre le défaut bavard »*.
+
+**La correction, à la racine :** `creerSonCompte` ne laisse plus sortir
+d'exception. Elle journalise l'erreur entière avec son code `SQLSTATE`, et rend
+un refus — le même chemin que « Cette adresse a déjà un compte », celui que
+l'écran sait déjà afficher. **Ce n'est pas un `catch` qui avale** (`CLAUDE.md`
+§4 quater) : rien n'est perdu, et ce qui sort NOMME la cause.
+
+**Le code d'erreur, jamais le message.** PostgreSQL numérote ses refus, et ces
+numéros ne changent ni de langue ni de version ; le message, lui, est traduit.
+`src/lib/panne-de-base.ts` (règle pure) distingue les refus qui veulent dire
+« la base n'est pas celle que ce code attend » — table, colonne, fonction,
+schéma ou droit manquants, contrainte `CHECK` ou `NOT NULL` qu'une migration
+devait élargir, type incompatible — de tout le reste. Le code est cherché sous
+l'enveloppe de Drizzle (`cause`), sans quoi tout refus se lirait « inconnue ».
+
+**Et le geste proposé dépend de l'endroit d'où l'on parle.** Sur son banc, la
+base se remet à jour en **rallumant l'espace** — un geste qui ne touche à
+aucune de ses données (`CLAUDE.md` §4 septies : jamais reconstruire, jamais
+supprimer, jamais amorcer ; `test-panne-de-base.ts` refuse ces mots). Ailleurs,
+personne ne peut rien faire depuis un écran : on dit ce qui se passe, sans
+envoyer chercher un remède qui n'existe pas de ce côté-là.
+
+**ET LE CODE DE LA BASE PARAÎT SUR LE BANC, entre parenthèses, à la fin du
+refus** — « (base : 23514) ». Ce n'est pas le numéro de l'écran d'erreur, qui
+ne menait à rien : celui-là NOMME ce que la base a refusé, et il tient sur la
+capture qu'il envoie. C'est ce qui manquait le 13 septembre : le journal est sur
+SA machine, il n'est publié nulle part, et personne n'ira l'y lire. Hors du
+banc, rien de tout cela ne sort — un client n'a que faire d'un `SQLSTATE`.
+
+**Ce qui manquait vraiment, et qui a permis de ne rien voir venir :** aucune
+suite n'entrait par la porte. La règle était éprouvée (`test-creation-compte`),
+l'écriture aussi (`test-compte-db`) — mais personne n'avait jamais répondu aux
+seize questions puis appuyé sur « Créer mon compte ». C'est la faute du 28 août
+(`CLAUDE.md` §5 quater), à l'identique. `test-creer-son-compte-e2e.ts` joue
+désormais ce geste-là, et son second cas retire réellement la migration pour
+exiger un refus lisible plutôt que l'écran d'erreur. Il rougit sur le code
+d'avant.
+
+**Deux pièges payés en l'écrivant, et ils valent pour toute suite de ce genre :**
+la création de compte **ouvre la session elle-même**, si bien qu'un second
+parcours part en « Avant de commencer » tant qu'on n'a pas effacé les cookies ;
+et `networkidle` n'arrive jamais sur un banc servi en mode développement, où le
+bandeau de construction interroge le serveur toutes les cinq secondes. On attend
+la première question, pas un silence qui ne viendra pas.
+
+**Le seau du limiteur a rejoint le nettoyage entre suites** (`run-e2e-tests.ts`,
+`ratelimit:creation-compte:*`) : deux essais par batterie s'additionnent, et la
+cinquième suite qui créerait un compte tomberait sur « Trop d'essais depuis cet
+appareil » en accusant le produit. C'est le piège déjà payé sur `connexion:`.
+
+---
+
+**CE QUI PRÉCÈDE NE RÉPARAIT RIEN — sa remarque du 13 septembre au soir :**
+*« arrête de faire du rafistolage, va corriger le problème à la racine »*. Il a
+raison : rendre la panne bavarde était le préalable, pas la réparation. Deux
+racines ont été cherchées ensuite, et trouvées.
+
+**RACINE 1 — le chemin LISSE était le seul éprouvé.** Le parcours joué pour
+reproduire sa panne remplissait toutes les cases avec des valeurs propres. En
+balayant les autres façons de remplir (`test-porte-aucune-saisie-ne-tombe-db.ts`,
+trente-sept), un vrai défaut est sorti : **un capital de quinze chiffres**
+passait `capitalEnBase` sans un mot, et PostgreSQL refusait la ligne — `22003`,
+hors bornes de `numeric(12,2)` —, donc la création du compte ENTIÈRE pour une
+case facultative. Exactement ce que le commentaire de cette fonction promettait
+d'éviter, et dont elle ne tenait que la moitié « texte illisible ».
+
+Corrigé **là où la règle vit** : la borne de la colonne entre dans
+`capitalEnBase`, qui décide pour l'écran comme pour l'écriture (`CLAUDE.md`
+§3 — jamais deux bornes pour une même question). L'écran refusait déjà
+« Un montant, en chiffres. » : rien à ajouter de ce côté.
+
+**RACINE 2 — sa machine savait, et ne le disait à personne.** Traitée par la
+session voisine dans le **§356 ci-dessus**, livrée le même soir : la fiche porte
+l'état de la base, et l'écran des Réglages aussi. Une lecture écrite ici en même
+temps a été **jetée** plutôt que gardée à côté — deux façons de lire un même
+état divergent toujours (`CLAUDE.md` §3), et la sienne va plus loin.
+
+**Ce qui reste vrai, et qu'il faut redire :** rien de tout cela ne prouve ce qui
+est tombé sur SA machine ce soir-là. Sa fiche le dira au prochain allumage, et
+le refus à l'écran porte maintenant le code que la base a rendu.
+
+---
+
+## §358 — Une migration qui écrit des DONNÉES ne voit rien sous FORCE RLS
 
 **Sa panne du 13 septembre 2026**, et c'est la cause réelle, trouvée en
 reproduisant : la migration **0087** refusait de s'appliquer sur sa base, ce qui
