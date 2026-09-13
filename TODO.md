@@ -9,7 +9,96 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## VINGT SUITES NAVIGATEUR SONT ROUGES SUR `main` (12 septembre 2026, au soir)
+## ~~CHOISIE, À CODER — L'ACOMPTE SUR LE DEVIS, la B~~ — CODÉE LE SOIR MÊME (12 septembre 2026)
+
+**Codé** (*« Parfait code la B »*) : migration 0088, `src/lib/acomptes-devis.ts`,
+l'écran, le PDF, la colonne Unité, trois suites. Détail : `ARCHITECTURE.md`
+§343, `CHANGELOG.md` du 12 septembre. **Reste à lui : la facture d'acompte.**
+
+**Sa demande :** *« rajouter un acompte automatisé sur le devis, un peu comme
+on fait pour rajouter une TVA »*. Planche `appli/l-acompte-sur-le-devis.html`,
+**choisie le soir même : la B**, avec trois précisions de sa main :
+
+| Ce qu'il a dit | Ce que ça fait |
+|---|---|
+| *« il doit être marqué d'office »* | le taux de Réglages → Documents est déjà sur la ligne des totaux de chaque nouveau devis, modifiable devis par devis |
+| *« si on clique sur le moins il disparaît mais reste visible dans les notes et conditions quoi qu'il arrive »* | le − retire la LIGNE des totaux ; la phrase de l'acompte reste dans « Notes / conditions », écran et PDF |
+| *« sur les gros devis, un deuxième acompte à mi-parcours »* | « + Ajouter un acompte » en pose un autre (à mi-parcours, puis à l'avancement — *« le 3ᵉ n'est pas en fin de chantier, c'est le solde »*) ; chacun son − |
+| *« oui je veux des taux cumulés ; d'office 50 % pour le 2ᵉ et 75 pour le 3ᵉ »* (12 sept. au soir) | **les taux sont CUMULÉS** : « 50 % » à mi-parcours = la moitié du devis réglée à ce moment-là ; ce qui tombe ce jour-là est la différence avec l'acompte d'avant (30 → 50 → 75 sur 2 844 € : 853,20 · 568,80 · 711,00, reste 711,00). Valeurs d'office : Réglages, puis 50, puis 75. Un taux ne descend jamais sous le précédent ni au-dessus de 100 — borné quand le doigt quitte le champ, pas à la frappe ; un 2ᵉ monté à 100 emporte le 3ᵉ. Le reste à régler n'est jamais négatif (son essai du soir : 30/50/75 donnait −1 564 €) |
+| *« dans notes et conditions, retire les — avant soit »* | « Acompte de 30 % à la signature, soit 853,20 €. » |
+| *« chez le client, marquer reste à régler après acompte et le montant »* | dans les totaux du PDF : chaque acompte avec son montant, puis « Reste à régler après acompte(s) » et le montant |
+
+**Ce qui existe déjà, vérifié :** `acompte_pourcent` sur le devis (migration
+0064), rempli à la création depuis les Réglages ; `lignesConditionsDevis` écrit
+la phrase dans le bloc notes du PDF. **Ce qui manque :** la ligne à l'écran
+(même pièce que `LignePrixAccorde`), le deuxième acompte — une petite table
+(taux, moment) plutôt qu'une seconde colonne —, et le bloc des totaux du PDF.
+
+**Un point à lui confirmer, posé dans la planche :** ligne retirée, les notes
+gardent la phrase des Réglages (30 %). C'est ma lecture de « quoi qu'il
+arrive ».
+
+**ET UNE COLONNE « UNITÉ » APRÈS QTÉ — même soirée :** *« il faut rajouter une
+colonne unité (pour les ml, kg, m³ etc.) »*. Vérifié : `lignes_devis.unite`
+existe (migration 0070) et `document-commun.ts` imprime déjà « 4 m³ » dans la
+colonne Qté du PDF — **l'écran du devis ne la montre ni ne la saisit**
+(`DevisCompletClient.tsx` lit `unite` dans son type et n'en fait rien). La
+planche la pose entre Qté et P.U. HT, avec les unités usuelles (u, ml, m², m³,
+kg, h, forfait) sous la ligne quand le champ prend le doigt. Même planche,
+même adresse.
+
+## DIX-HUIT SUITES NAVIGATEUR ROUGES SUR `main` (13 septembre 2026, relevé)
+
+**Batterie complète jouée dans un atelier à un seul occupant** — dossier, port,
+base et verrou vérifiés libres avant de lancer : **131/150** aux suites
+navigateur. Types, lint, mémoire, **365/365 suites base** et connexion derrière
+un proxy sont verts.
+
+**Ce qui a changé depuis le relevé de la veille :**
+
+| | |
+|---|---|
+| `test-visionneuse-pdf-e2e` | **corrigé** — pdf.js exigeait une méthode d'un an ; version épinglée (`ARCHITECTURE.md` §341) |
+| `test-reste-equipes-e2e` | passé au vert de lui-même |
+| `test-planning-e2e` | **rouge du jour, et il était mien** : la feuille passe par la visionneuse, le contrôle lisait encore l'adresse directe. Adapté à la règle |
+| `test-anneau-dictee-e2e` | **idem** : il réclamait le lecteur retiré. Vise désormais la note jetable (§5 bis) |
+
+**Les dix-huit qui restent vivaient déjà sur `main` avant ces lots** :
+`adresse-suggestions`, `anneau-vers-devis`, `carte-reponse-mene-au-geste`,
+`catalogue-mes-mots`, `devis-client` (666 px pour 664), `devis-complet` (le
+total d'une ligne ne s'affiche pas), `devis-papier` (5 400 € au lieu de 900),
+`fiche-client`, `fiche-entretien`, `ia-01`, `madame-lucie`,
+`message-au-client`, `planning-vers-facture`, `recherche-client`,
+`reprise-chantier`, `reprise-morceau`, `suivi-devis`, `anneau-dictee` (le reste
+de la suite, qui demande une transcription — pas de clé sur ce poste).
+
+**~~Les deux qui portent sur un CHIFFRE~~ — TRANCHÉS le 13 septembre 2026, et
+l'addition n'y était pour rien.** Mesuré au lieu d'être supposé : la base
+portait `quantite = 12.00` pour un prix unitaire de `450.00`, et 12 × 450 fait
+bien 5 400. **Le calcul était juste ; c'est la SAISIE de la suite qui ne l'était
+pas** — `fill()` insère sans effacer, là où le champ pose volontairement le
+curseur À DROITE du chiffre (sa règle du 11 septembre). Les deux suites font
+désormais son geste — entrer, tout sélectionner, taper — et elles sont vertes.
+
+**CE QUI RESTE, ET QUI EST POUR LUI** — le coût de sa règle du 11 septembre,
+mesuré :
+
+| Son geste sur la case « Qté » | Ce qui se passe |
+|---|---|
+| poser le doigt, taper « 2 » sur une case qui affiche « 1 » | **12** — le chiffre s'AJOUTE |
+| sélectionner d'abord, puis taper « 2 » | 2 |
+
+C'est exactement ce qu'il a demandé le 11 septembre — *« si la quantité par
+défaut n'est pas bonne, on a juste à supprimer »* — et c'est aussi de quoi
+envoyer un devis à 5 400 € au lieu de 900 sur une faute de frappe. **Deux voies,
+et c'est lui qui tranche :** garder (il efface d'abord), ou tout sélectionner
+à l'entrée dans la case (un appui remplace, et il perd le « on a juste à
+supprimer »).
+
+**À reprendre en propre**, suite par suite : le journal entier est nécessaire
+(`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
+
+## ~~Vingt suites navigateur rouges~~ — relevé de la veille (12 septembre 2026)
 
 **Relevé, pas causé.** La batterie du 12 septembre au soir rend **126/146** aux
 suites navigateur. Le lot de ce soir ne touche **aucun fichier de `src/`**
@@ -37,9 +126,13 @@ Les seize autres : `adresse-suggestions`, `anneau-dictee`, `anneau-vers-devis`,
 **À reprendre en propre**, suite par suite : le journal entier est nécessaire
 (`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
 
-## SON ESPACE DOIT ÊTRE DÉBLOQUÉ UNE FOIS À LA MAIN (12 septembre 2026)
+## ~~SON ESPACE DOIT ÊTRE DÉBLOQUÉ UNE FOIS À LA MAIN~~ — FAIT (13 septembre 2026)
 
-**CODÉ LE 12 SEPTEMBRE — mais il porte encore l'ancien script.** `mettre-a-jour.sh`
+**RÉGLÉ.** Sa fiche du 13 septembre à 1 h 59 porte « Code récupéré : dadc9d2 »
+et « Code SERVI : dadc9d2 », sans modification non enregistrée : son espace a
+rattrapé `main` et reçoit de nouveau du code. Gardé pour mémoire.
+
+**CODÉ LE 12 SEPTEMBRE — il portait encore l'ancien script.** `mettre-a-jour.sh`
 met désormais `package-lock.json` de côté au lieu de se figer devant lui
 (`ARCHITECTURE.md` §339). Son espace, lui, est resté sur le code de 3 h 38 :
 il ne peut pas recevoir le correctif qui lui permettrait de recevoir du code.
@@ -52,38 +145,68 @@ terminal de son espace :
 puis rallumer l'espace. **À barrer dès qu'il confirme que sa version a avancé**
 (l'écran Réglages donne la version servie).
 
-## PISTE NON REPRODUITE — LE PORT QUE LE RELAIS PERD (12 septembre 2026)
+## LE PORT QUE LE RELAIS PERD — UNE HYPOTHÈSE À TRANCHER À LA RÉCIDIVE (13 septembre 2026)
 
-Sa fiche du 12 septembre au soir : serveur debout sur 3000, `gh` satisfait, et
-un **404 du relais** — la requête n'atteint jamais Atlas. Le verdict et son
-geste sont corrigés (`_verdict-port.mjs`, §339), mais la panne elle-même n'est
-**pas reproduite** : cet environnement n'a pas de Codespace.
+**MESURÉ LE 13 SEPTEMBRE À 10 h 16 (08:16 UTC) — le rallumage a remis le port.**
+Sa fiche : *« Port 3000 : ouvert — Atlas répond bien à l'adresse publique
+(vérifié) »*, et lui : *« ça fonctionne »*. C'est le comportement attendu, et
+**cela ne tranche rien** : le rallumage a toujours remis le port. Ce qui
+tranchera, c'est la durée — plusieurs nuits sans perte.
 
-**Ce qu'on soupçonne, sans l'avoir mesuré :** le relais n'enregistre un port
-qu'en voyant un processus commencer à écouter (`veiller.sh` le constate au
-26 août — « le serveur démarre, le port se déclare tout seul »). Un serveur
-déjà en place au moment où le tunnel se remonte ne serait donc jamais
-redéclaré, et rien depuis l'intérieur ne le remettrait.
+**ET SON ESPACE NE PORTE PAS ENCORE CE LOT :** il sert `07f6f0d`, cinq versions
+avant. Tant qu'il n'a pas repris `main`, une perte de port lui vaudra encore un
+journal qui se félicite d'un port mort. Le geste doux est dans l'application :
+Réglages → « Chercher les dernières corrections ».
 
-**Ce qui n'a PAS été fait, et pourquoi :** faire relancer le serveur par le
-veilleur pour rouvrir la socket. Le gain est supposé ; le risque, lui, est réel
-— une relance mal bornée refait la panne du 2 septembre (serveur mort en
-boucle). À ne coder qu'une fois la cause mesurée sur son espace.
+**Ce qui est CORRIGÉ (§345) :** le veilleur ne croit plus `gh` sur parole. Il
+mesure après le remède, cesse de rejouer un geste sans effet, et son journal ne
+se félicite plus d'un port mort. La fiche donne les deux gestes.
 
-**ET CETTE PISTE EST RÉFUTÉE — mesurée le 12 septembre à 22 h 02.** Il a rejoué
-`demarrer.sh` en entier : le serveur a été tué, réinstallé, relancé — et sa
-fiche, écrite juste après, porte **le même 404 du relais**. Rouvrir la socket
-ne réenregistre donc PAS le port. Ne pas coder la relance : elle ne peut rien.
+**Ce qui n'est TOUJOURS PAS reproduit :** la perte elle-même. Cet environnement
+n'a pas de Codespace, et la panne ne se voit que chez lui.
 
-Ce qui reste à essayer, dans cet ordre, et qui n'est pas mesuré non plus :
-l'onglet PORTS (retirer la ligne 3000, puis « Transférer un port » → 3000), et
-`gh codespace ports visibility 3000:public -c $CODESPACE_NAME` depuis son
-terminal. Si aucun des deux n'aboutit, c'est le conteneur qu'il faut
-reconstruire — `devcontainer.json` déclare le port public, et cette
-déclaration ne s'applique qu'à la naissance de l'espace (`ARCHITECTURE.md`
-§55).
+**L'hypothèse à trancher, et comment.** Le port 3000 de son espace serait
+*détecté* au lieu d'être *déclaré* : `forwardPorts: [3000]` + `visibility:
+public` sont dans `devcontainer.json` depuis le 6 août, son espace est plus
+ancien, et une déclaration ne répare pas un espace déjà né (§55). Un port
+détecté meurt avec la session qui l'a détecté.
 
-## ⏳ UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS (12 septembre 2026)
+**CE GESTE NE SE PROPOSE PLUS — sa règle du 13 septembre (`CLAUDE.md`
+§4 septies).** « Reconstruire le conteneur » rejoue `postCreateCommand`, donc le
+seed : sur un espace qui n'a pas encore reçu le §346, cela efface ses chantiers.
+Il l'a interdit après avoir dû demander deux fois.
+
+**Ce qui reste à faire, et c'est NOTRE travail, pas le sien :** rendre ce remède
+sûr ET automatique, de sorte qu'il n'ait jamais à le porter. Deux voies, à
+départager :
+
+| | |
+|---|---|
+| une fois le §346 chez lui | la reconstruction ne détruit plus rien — mais elle reste un geste, donc elle ne se propose toujours pas : il faudrait qu'elle se déclenche seule, et cela se demande à LUI |
+| un port DÉCLARÉ sans reconstruire | si `forwardPorts` s'applique aussi au démarrage du conteneur — à vérifier —, un simple rallumage suffirait, et il ne détruit rien |
+
+**La seconde voie d'abord** : elle n'a aucun coût pour lui. Elle se vérifie chez
+lui, en regardant si le port tient après un rallumage une fois le §346 reçu.
+
+**Si cette hypothèse tombe :**
+
+| Ce qu'on observe ensuite | Ce que ça prouve |
+|---|---|
+| plus aucune perte de port pendant plusieurs nuits | l'hypothèse tient — à écrire en dur dans `ARCHITECTURE.md` §345 |
+| une nouvelle perte malgré la reconstruction | elle tombe : chercher ailleurs, et le journal du veilleur porte désormais de quoi le faire (il compte les remèdes sans effet) |
+
+**Ne pas coder de remède automatique avant ce verdict.** Une reconstruction
+lancée toute seule sur son espace rejoue `preparer.sh` — dépendances, migrations,
+jeu de démonstration — sans personne devant : c'est irréversible et hors du code,
+donc cela se demande à LUI (`CLAUDE.md` §2 bis).
+
+## ~~UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS~~ — CODÉE LE 13 SEPTEMBRE 2026 (« code la planche la B »)
+
+**Codé :** « Remise de N % », « dont main d’œuvre HT » (la B), les conditions
+réglées en gras, les conditions générales dans Réglages → Ce qui s’imprime et en
+annexe du devis. Migration 0090, `ARCHITECTURE.md` §348. **Ce qui reste à lui :**
+les deux crochets du texte d’origine (assureur, médiateur), et les mentions
+légales proposées plus bas — toujours pas tranchées.
 
 **Sa demande du 12 septembre :** « Prix accordé au client » devient **« Remise
 de N % »** ; un bouton **+ Main d’œuvre** comme « + Ajouter une TVA », sa ligne
@@ -95,7 +218,7 @@ générales de vente et de règlement »**, remplie d’un texte par défaut qu�
 peut effacer et réécrire, imprimée **après le bon pour accord**.
 
 **Planche :** `appli/devis-remise-main-d-oeuvre-conditions.html` (quatre vues :
-écran, papier, réglages, la loi). **Rien n’est codé.** Sa photo — les CGV d’un
+écran, papier, réglages, la loi). Sa photo — les CGV d’un
 menuisier — est lue : huit clauses reprises dans le texte d’origine (adhésion,
 prix révisables au-delà de la validité, pas d’escompte, délai indicatif, autres
 corps de métier, réception en présence de l’entreprise, réserve de propriété et
@@ -936,24 +1059,26 @@ les paramètres qu'Atlas envoie : ici, seul un faux prestataire local répond
 (`scripts/test-paiement-stripe.ts`). Ne pas présenter ce chemin comme éprouvé
 avant.
 
-### 2. LES FONCTIONS NE SONT PAS CLOISONNÉES PAR FORMULE — à trancher par lui
+### ~~2. LES FONCTIONS NE SONT PAS CLOISONNÉES PAR FORMULE — à trancher par lui~~ — TRANCHÉ ET CODÉ (10 → 13 septembre 2026)
 
-La planche annonce « les absences de vos équipes » et « les retours
-d'intervention » comme un plus d'« Entreprise ». **Ce n'est PAS appliqué**, et
-c'est délibéré : le poser en silence retirerait à un artisan des écrans dont il
-se sert déjà aujourd'hui.
+*« Oui bloqué pour l'abonnement artisan »* (10 septembre). Codé le 13 : les
+absences (Réglages → Équipe) et les retours d'intervention s'ouvrent, à
+« Artisan », sur « c'est dans Entreprise » (`FonctionReservee`) ; la garde
+`exigerFonction` tient les actions ; la pastille des retours s'éteint ; les
+salariés d'un « Artisan » ne se voient plus réclamer un retour. Sans
+abonnement, tout reste ouvert. `ARCHITECTURE.md` §344.
 
-Seul le plafond de personnes mord. La question à lui poser : *veut-il vraiment
-fermer les absences et les retours à un abonné « Artisan » ?* Tant qu'il n'a pas
-répondu, la carte promet un peu moins que ce que l'application donne — dans son
-sens à lui, jamais l'inverse.
+### ~~3. La durée de l'essai gratuit n'est pas décidée~~ — DÉCIDÉE ET CODÉE (10 → 13 septembre 2026)
 
-### 3. La durée de l'essai gratuit n'est pas décidée
+*« Essai gratuit 15 jours »*. Migration 0089, `JOURS_ESSAI`, la ligne posée par
+la porte, le ruban, la lecture seule au 16ᵉ jour dans `withEntreprise`.
+`ARCHITECTURE.md` §344.
 
-Il n'y a donc **pas d'état « essai »** : ni en base (la contrainte `CHECK` de la
-migration 0084 le refuse), ni dans `src/lib/abonnements.ts`. C'est l'une des
-seize cases `[À COMPLÉTER]` des conditions générales. Le jour où il donne le
-chiffre, une migration ajoute l'état — ne pas l'inventer d'ici là.
+**Ce qui reste à LUI :** l'article 14.2 des conditions publiées dit encore
+« [À COMPLÉTER — 14 ou 30 jours] ». Une version publiée ne se modifie jamais :
+le « quinze (15) jours » entrera avec la **version 3**, quand il remplira les
+quinze autres cases — et `test-abonnements` refusera alors que le texte et
+`JOURS_ESSAI` divergent.
 
 ### 4. Le portail ne sait pas changer de formule, et c'est Atlas qui le fait
 
@@ -1688,29 +1813,33 @@ téléphone, barre d'adresse comprise (`scripts/e2e-browser.ts`).
 
 ---
 
-## ⏳ LA VISIONNEUSE PDF EXIGE UNE API TRÈS RÉCENTE — à lui faire essayer
+## ✅ ~~Retirer sa dictée là où il la fait~~ — **A, CODÉ le 13 septembre 2026**
 
-**Relevé le 12 septembre 2026**, en jouant `test-visionneuse-pdf-e2e` :
-la visionneuse livrée la veille affiche **« Le document ne s'ouvre pas
-(this[#ne].getOrInsertComputed is not a function) »**.
+**Sa réponse :** *« C'est sur cet écran que je le voulais ! Car en cas de
+problème on peut supprimer la dictée comme ça. »*
 
-`pdfjs-dist` 6.3 appelle `Map.prototype.getOrInsertComputed`, une méthode
-d'un an à peine. **Le Chromium de ce poste (141) ne l'a pas** — le build
-`legacy` de pdf.js ne change rien, il l'appelle aussi (22 fois).
+Codé sous le micro, avec les pièces communes (`LigneRetirable`, `useRetraits`)
+— il glisse, « Retirer » se découvre, « Annuler » retient six secondes
+(`ARCHITECTURE.md` §342, `test-retirer-sa-dictee-e2e.ts`). Le lecteur mort de
+l'anneau est parti avec : 244 lignes et 40 règles de style que personne ne
+pouvait atteindre.
 
-| | |
-|---|---|
-| ce qui est SÛR | sur un navigateur sans cette méthode, « Voir la facture en PDF » rend un refus, jamais le document |
-| ce qui n'est PAS su | si le Safari de SON iPhone l'a. WebKit l'a implémentée, mais la version compte |
+**Ce qui reste ouvert, et c'est écrit pour ne pas se croire couvert :** le
+chemin destructeur — laisser le tiroir se fermer — n'est éprouvé que sur
+l'écran Note vocale. Même action, même crochet ; l'éprouver ici détruirait la
+note du jeu de démonstration dont les suites voisines ont besoin.
 
-**Ce qui tranche en dix secondes, et il n'y a que lui qui peut le faire :**
-ouvrir une facture, appuyer sur « Voir la facture en PDF », et dire si le
-document s'affiche ou si un refus paraît.
+## ✅ ~~La visionneuse PDF exige une API très récente~~ — **CORRIGÉ le 13 septembre 2026**
 
-**Si ça refuse chez lui, la racine est la VERSION de pdf.js**, pas un
-rattrapage à poser autour (ce serait le pansement du §4 quater) : il faut
-descendre `pdfjs-dist` à une version qui n'exige pas cette méthode, et
-l'épingler avec la raison.
+**C'était un vrai défaut, et il était total :** la visionneuse livrée le
+11 septembre ne peignait AUCUN document — « Le document ne s'ouvre pas
+(getOrInsertComputed is not a function) ». `pdfjs-dist` est épinglé à 5.4.624,
+la dernière version qui n'appelle pas cette méthode ; la visionneuse peint de
+nouveau (18 077 pixels d'encre mesurés). `test-visionneuse-pdf.ts` tient
+l'épingle (`ARCHITECTURE.md` §341).
+
+**Ce qui reste à lui, et à lui seul :** dire si la feuille de partage d'iOS
+range bien le fichier. Aucun WebKit ici.
 
 ## ⚠ DEUX ROUGES SUR LES MONTANTS D'UN DEVIS — relevés le 12 septembre 2026
 
@@ -2861,7 +2990,7 @@ par un choix de `stdio`. **À faire valider par le patron avant d'y toucher.**
 
 ## EN ATTENTE DE SA RÉPONSE : le compte « tous mois » sous un mois précis (2 sept. 2026)
 
-*13 septembre 2026 : la phrase porte désormais l'œil (§341). Ouvert, la liste
+*13 septembre 2026 : la phrase porte désormais l'œil (§350). Ouvert, la liste
 compte comme elle — tous mois — et le mois se met en veille ; fermé, la
 question ci-dessous reste entière.*
 

@@ -29,10 +29,328 @@ rognant.
 
 **Supprimés avec :** `Onglet` et `Compte` dans `ListeTermines.tsx`, la
 section « Rien n'attend. Vous êtes à jour. » — la phrase de comptes le dit
-déjà en ne portant pas l'œil. Détail : `ARCHITECTURE.md` §341.
+déjà en ne portant pas l'œil. Détail : `ARCHITECTURE.md` §350.
+
+### Six photos ne font plus six chantiers
+
+*« J'ai ajouté six photos, j'ai fait retour, il m'en a créé six avec une photo
+à chaque fois. »* La fiche client crée le chantier à la première photo ; les
+suivantes, envoyées dans la même boucle, ne le retrouvaient pas — la mémoire du
+chantier créé vivait dans un état React que cette boucle ne voyait pas, et la
+promesse de création s'effaçait dès qu'elle aboutissait.
+
+**Corrigé à la racine** : la promesse vit dans une référence, gardée jusqu'au
+bout ; l'état ne sert plus qu'au rendu, et le bouton d'enregistrement lit la
+même référence. Elle ne s'efface que sur un échec — « Réessayez » réessaie
+désormais pour de bon. `ARCHITECTURE.md` §349 ;
+`test-photos-avant-le-chantier-e2e.ts` rougit sur l'ancien code.
+### La planche B du devis : « Remise », « dont main d'œuvre », les conditions en gras, les CGV au dos
+
+*« Code la planche la B. »* Sa planche du 12 septembre
+(`appli/devis-remise-main-d-oeuvre-conditions.html`), ses réponses du jour même.
+
+**Ce qui change.** « Prix accordé au client » s'appelle **« Remise de N % »**
+partout — un seul mot, dans `reduction-devis.ts`. Sous les lignes, **« + Main
+d'œuvre »** ouvre « dont main d'œuvre HT » sous le total HT : la lecture B, déjà
+comprise dans les lignes, nommée pour le crédit d'impôt du client, jamais
+comptée ; le champ s'ouvre vide, bornée au total HT, le « − » la retire. Sur le
+PDF, **ses notes en maigre, les conditions réglées en gras**. Et dans Réglages →
+Ce qui s'imprime, une case **conditions générales de vente et de règlement**,
+remplie d'office du texte pris de la photo du menuisier (huit clauses gardées,
+quatre laissées, trois ajoutées pour la loi), qu'il efface ou réécrit — imprimée
+**après le bon pour accord**, sur une page à elle. L'écran compte les crochets
+qu'il lui reste à remplir (assureur, médiateur).
+
+**Ce qui a été fait autrement que la planche.** Elle écrivait le mode de
+règlement et le montant de l'acompte dans les notes ; son lot des acomptes
+(la veille) les a mis dans les totaux : on ne les a pas doublés. Le bloc en
+gras porte les phrases qui existent déjà.
+
+**Migration 0090** (`main_doeuvre_ht`, `conditions_generales` sur l'entreprise
+et le devis). `gras` ajouté à la trace du PDF : sans lui, « en gras » ne se
+mesurait pas. Détail : `ARCHITECTURE.md` §348.
+
+**Ce que la batterie a montré, et qui est corrigé à la racine.** Le « − » de la
+main d'œuvre écrivait `null` pendant qu'un rendu du brouillon, parti une
+seconde avant, réécrivait le montant qu'il avait lu — et les 5 % du « + Remise »
+subissaient la même course depuis la veille (`test-reduction-devis-e2e`, rouge
+sur trois batteries). La mise à jour d'en-tête prend désormais **le même verrou
+de chantier que le rendu** (`pg_advisory_xact_lock`), avant de lire : l'un
+attend l'autre. Et le texte d'origine des CGV ne se pose plus que sur le
+**réglage** de l'entreprise, jamais sur l'instantané d'un devis : un devis
+d'avant la migration sortait sinon avec des CGV au dos qu'il n'avait jamais
+portées (`test-conditions-sur-le-devis`).
+### Les deux « chiffres faux » du devis : l'addition était juste, la suite tapait mal
+
+*« Si c'est un problème de calculer les lignes qui ne s'additionnent pas ou mal,
+là c'est hyper grave et ça ne doit jamais arriver. »*
+
+Mesuré, pas supposé : la base portait `quantite = 12.00` pour un prix unitaire
+de `450.00`. 12 × 450 = 5 400 — **le calcul n'a jamais été en cause**. Ce sont
+les deux suites qui écrivaient « 12 » en croyant écrire « 2 » : `fill()` insère
+sans effacer, là où le champ pose volontairement le curseur À DROITE du chiffre
+existant (sa règle du 11 septembre). Elles font désormais son geste — entrer,
+tout sélectionner, taper — et les deux sont vertes.
+
+Une garde avait d'abord été ajoutée au champ pour respecter une sélection. Deux
+mesures, dans les deux sens, ont montré qu'elle ne changeait rien : elle a été
+retirée. Une correction qui ne corrige rien est une couche de plus.
+
+**Ce qui reste, et c'est à lui :** sur la case « Qté », poser le doigt et taper
+« 2 » sur une case qui affiche « 1 » donne bien **12**. C'est sa règle, et c'est
+aussi de quoi envoyer un devis à 5 400 € sur une faute de frappe (`TODO.md`).
+
+
+### Jeter sa dictée depuis l'écran où il la fait — et 280 lignes de code mort en moins
+
+*« C'est sur cet écran que je le voulais ! Car en cas de problème on peut
+supprimer la dictée comme ça. »*
+
+Le glissement « Retirer » existait depuis le 7 septembre, mais sur l'écran Note
+vocale — pas là où il dicte. Et le rendu qui aurait dû le porter dans l'anneau
+n'était monté **par aucun écran** : du code écrit, éprouvé, inatteignable. Il
+est parti — 244 lignes de composant, 40 règles de style, trois animations que
+plus rien ne jouait (`ARCHITECTURE.md` §342).
+
+Le geste vit maintenant sous le micro, avec les pièces communes
+(`LigneRetirable`, `useRetraits`) : il glisse, « Retirer » se découvre,
+« Annuler » retient six secondes, et la note revient intacte — vérifié en base,
+pas seulement à l'écran. Le retrait rend aussi le micro à son invite, et arrête
+de suivre une préparation dont la dictée vient d'être jetée.
+
+Deux pièges trouvés par la suite avant lui : le tiroir « Annuler » vivait dans
+la condition qu'il annule (donc disparaissait au moment du retrait), et la
+pellicule des photos porte un second tiroir sur le même écran.
+
+
+### L'essai de quinze jours, et ce qui se ferme — sa planche du 10 septembre, codée
+
+*« Essai gratuit 15 jours »* · *« la B, mais il ne doit plus rien pouvoir faire
+à part enregistrer ses documents, ses clients »* · *« oui bloqué pour
+l'abonnement artisan »*. La planche `appli/l-essai-et-ce-qui-est-ferme.html`
+était sur `main` depuis le 10 ; le code s'était arrêté à mi-chemin dans le
+dossier, et ne compilait pas.
+
+**Ce qui change.** Un compte créé par la porte reçoit un essai de quinze jours,
+sans carte (ligne `abonnements` en statut `essai`, formule « on essaie tout »).
+Le ruban en tête de l'accueil compte les jours, passe au rouge à trois jours de
+la fin. Au 16ᵉ jour : **lecture seule** — tout se relit, rien ne se crée ; le
+bouton « Créer un devis » s'éteint et la phrase dit pourquoi ; s'abonner rouvre
+tout. À « Artisan », les absences et les retours d'intervention s'ouvrent sur
+« c'est dans Entreprise », la pastille des retours s'éteint, et les salariés ne
+se voient plus réclamer un retour.
+
+**Ce que ça évite, et comment.** La fermeture vit à UN endroit — `withEntreprise`
+déclare la transaction `READ ONLY`, et c'est Postgres qui refuse la première
+écriture, quel que soit le chemin. Cent soixante-seize gestes écrivent ; les
+fermer un par un aurait laissé une porte. Une seule reste, délibérément :
+l'enregistrement de l'abonnement, sans quoi il paierait sans pouvoir rentrer.
+
+**Son Atlas à lui ne bouge pas** : sans ligne d'abonnement, ni essai, ni
+lecture seule, ni fermeture. **Migration 0089** (le statut `essai`). Ce qui
+reste à lui : le « 15 » dans l'article 14.2 des conditions, avec la version 3.
+Détail : `ARCHITECTURE.md` §344.
+
+---
+
+### Le contrôle de la base habitée réclamait à la sonde le contraire de sa garantie
+
+Arrivé avec le lot du jour, `test-base-habitee` rougissait dans l'atelier et
+aurait rougi en CI : il comptait les entreprises sous `atlas_owner` et exigeait
+un verdict, alors que la sonde s'ABSTIENT sous un rôle qui ne traverse pas la
+RLS — sa garantie principale, et le cas juste au-dessus l'exige. Le contrôle
+demande désormais d'abord ce que le rôle a le droit de voir. La sonde, elle,
+n'a pas bougé : elle avait raison.
+
+### « Impossible de recommencer » : le geste restait éteint après un refus
+
+*« J'ai fait une dictée, ça n'a pas fonctionné, et impossible de
+recommencer. »* Sous un message qui disait « Réessayez ».
+
+`DevisDepuisDictee.valider()` éteignait son bouton à l'entrée et ne le rendait
+que sur le chemin qui réussit. Un appel qui tombe laissait donc l'unique geste
+de l'écran **éteint pour toujours** : il invitait à refaire ce qu'il
+empêchait, et il ne restait qu'à recharger — ce que personne ne devine.
+
+Le drapeau se rend maintenant dans un `finally`. Et le `catch` ne mange plus la
+panne : elle est journalisée avant que l'écran parle, sans quoi personne ne
+saurait jamais POURQUOI la dictée a échoué (`AGENTS.md` — rendre le défaut
+bavard avant de corriger).
+
+`test-geste-jamais-bloque.ts` lit tous les écrans et refuse la forme : un
+drapeau posé avant un appel et rendu nulle part. Sa première version accusait
+`InformationsClient`, qui rend pourtant le sien dans son `catch` — corrigée
+avant d'être livrée, parce qu'un contrôle qui parle à tort s'apprend à être
+ignoré.
+
+
+### Tout le circuit PDF repris : deux portes, et la visionneuse qui ne peignait rien
+
+*« Va vérifier à tous les endroits où on peut télécharger ou regarder le pdf —
+je veux plus que ça se reproduise. »* Dix points d'accès recensés, et trois
+défauts réels trouvés (`ARCHITECTURE.md` §341) :
+
+- **la visionneuse ne peignait AUCUN document** depuis sa livraison du
+  11 septembre. `pdfjs-dist` 6.3 appelle une méthode arrivée dans les
+  navigateurs en 2025 ; là où elle manque, l'écran rend « Le document ne
+  s'ouvre pas ». La version est épinglée à 5.4.624, la dernière qui ne
+  l'appelle pas — et **ce n'est pas l'atelier qui décide : la page du devis est
+  ouverte par ses clients**, avec le téléphone qu'ils ont. La visionneuse peint
+  de nouveau, 18 077 pixels d'encre mesurés ;
+- **« Ouvrir le PDF sans les prix » du planning** ouvrait encore un onglet de
+  Safari, sans flèche de retour : oublié par le lot de la veille ;
+- **la route de la feuille de chantier** écrivait ses deux en-têtes à la main,
+  seule des six. Elle passe par `remise-de-fichier.ts` comme les autres.
+
+`test-tous-les-pdf.ts` tient la règle pour la suite : aucun écran ne remet un
+PDF au navigateur, il n'y a que deux portes. Il a trouvé l'écart de la feuille
+au premier essai, et il sait rougir.
+
+
+### La CI ne jouait plus rien : un module qui s'ouvrait une session en étant lu
+
+Sa CI est rouge depuis le 10 septembre, et pas pour la raison qu'on croyait.
+`ouvrir-session.mjs` appelait `main()` au niveau du module ; `test-ouvrir-session`
+en importe `cheminDuJeton`, si bien que **charger la suite ouvrait une vraie
+session** dans le dépôt courant. Sur la machine d'intégration, où « claude »
+n'est pas installé, elle mourait sur « spawn claude ENOENT ».
+
+Le coût était invisible et total : `npm test` rouge y fait SAUTER la
+construction, les suites navigateur et la connexion derrière un proxy. La CI
+rendait donc un rouge sans avoir rien éprouvé — et c'est exactement ce qu'on
+lui demande de faire à notre place (`AGENTS.md`).
+
+`main()` ne part plus qu'en appel direct. `test-ouvrir-session` porte un
+contrôle de plus, qui tient l'import lui-même et **sait rougir** : remis en
+l'état d'avant, il retrouve le défaut et le nomme.
+
+### La fiche ne lui propose plus aucun geste qui peut effacer ses données
+
+*« Faut jamais qu'on me propose de faire ça, c'est hyper dangereux ce que tu
+viens de faire ! »* — après s'être vu conseiller de reconstruire son conteneur,
+et avoir dû demander **deux fois** si cela supprimerait ses données.
+
+Le remède du port était écrit dans la fiche que son espace publie tout seul,
+tous les quarts d'heure : une consigne permanente servie à froid, à quelqu'un
+qui n'a aucun moyen de savoir ce qu'elle détruit.
+
+La fiche ne rend plus que des gestes inoffensifs — rallumer, réenregistrer le
+port —, et dit que le fond est **notre** travail. Un contrôle parcourt tous les
+états du port et refuse `Rebuild`, « reconstruire le conteneur », « supprime ton
+espace », `db:seed`, `TRUNCATE`, `DROP`, `db:push`.
+
+Sa règle : `CLAUDE.md` §4 septies. Le détail : `ARCHITECTURE.md` §347.
+
+
+### Reconstruire l'espace n'efface plus ses chantiers
+
+*« Ça va pas supprimer toutes mes données ? »*, devant la reconstruction
+conseillée juste avant pour réparer son port. **La réponse était oui, et c'est
+lui qui l'a vue — pour la deuxième fois** (10 août : *« ça va effacer tout ce
+qu'il y a en mémoire »*).
+
+`preparer.sh` tourne à chaque création de conteneur, donc à chaque
+reconstruction, et il appelait le seed sans rien demander. Le seed vide la base ;
+la base, elle, survit sur son volume. Il ne l'amorce désormais que si elle est
+**vierge**, et le doute ne vide pas. Le zéro d'un rôle aveuglé par la RLS ne
+compte pas comme « vierge » — il vaudrait la base entière.
+
+Détail : `ARCHITECTURE.md` §346. Avant toute reconstruction :
+`npm run sauvegarder:banc`.
+
+
+### Le veilleur croyait une commande au lieu de mesurer : le port mourait toute la nuit
+
+*« L'appli ne fonctionne toujours pas ! »*, capture de 1 h 58 : un
+téléchargement proposé à la place d'Atlas. Quatrième nuit de la même panne.
+
+Sa fiche, écrite à la même minute, disait déjà que le code n'y était pour rien.
+Ce qu'elle ne disait pas : **son journal portait une ligne de succès — « port
+3000 ouvert au public » — toutes les cinq minutes, sur un port mort.** Le
+veilleur mesurait bien le refus du dehors, puis reposait son verrou sur la seule
+foi de `gh` : la boucle tournait sans rien apprendre.
+
+`veiller.sh` fait désormais suivre le remède de la question qu'il prétend
+régler. Un remède mesuré sans effet trois fois **cesse de se rejouer** et le dit
+— la mesure, elle, continue, et un relais qui revient est repris tout seul. Le
+mot `ouvert` sort de la liste qui posait le verrou sans rien vérifier, et la
+ligne de succès part avec lui.
+
+**Ce que la fiche rend en plus :** le geste qui TIENT, à côté de celui qui
+dépanne. Rallumer l'espace remet le port et le port se reperd ; « Rebuild
+Container » applique la déclaration permanente de `devcontainer.json`, que son
+espace n'a jamais reçue — écrit comme l'hypothèse la mieux étayée, pas comme une
+mesure.
+
+**Et le geste est devenu faisable.** Il l'a demandé une heure plus tard :
+*« c'est où dans l'éditeur ? »*. La fiche donnait « ⌘⇧P » à quelqu'un qui la lit
+sur un iPhone. Elle donne le chemin tactile, et un contrôle refuse désormais
+tout raccourci clavier dans un geste qu'on lui demande.
+
+Détail et preuves : `ARCHITECTURE.md` §345.
 
 ---
 ## 2026-09-12
+
+### L'acompte sur le devis — la B, codée le soir même
+
+*« Rajouter la possibilité de rajouter un acompte automatisé sur le devis, un
+peu comme on fait pour rajouter une TVA »*, puis sur la planche
+(`appli/l-acompte-sur-le-devis.html`) : *« il faut la B »*, *« il doit être
+marqué d'office »*, *« si on clique sur le moins il disparaît mais reste
+visible dans les notes et conditions quoi qu'il arrive »*, *« un deuxième
+acompte à mi-parcours »*, *« oui je veux des taux cumulés ; d'office 50 % pour
+le 2ᵉ et 75 pour le 3ᵉ »*, *« chez le client il faut marquer reste à régler
+après acompte et le montant »*. Et : *« Parfait code la B »*.
+
+**Ce que le devis fait maintenant.** Sous « Total TTC », une ligne dorée par
+acompte — le taux des Réglages **posé d'office** à la naissance du devis, puis
+« + Ajouter un acompte » pour un deuxième à mi-parcours (50 %) et un troisième
+à l'avancement (75 %). **Les taux sont cumulés** : « 50 % » à mi-parcours veut
+dire la moitié du devis réglée à ce moment-là, et le montant de la ligne est
+ce qui tombe ce jour-là. Puis **« Reste à régler après acompte(s) »** et le
+montant — à l'écran, et sur le PDF que le client garde. Le « − » retire la
+ligne ; la phrase du réglage reste dans les notes et conditions, écrite sous
+son texte à l'écran comme sur le papier.
+
+**Ce que ça évite.** Son premier essai — 30, 50, 75 lus comme des parts —
+rendait un reste à régler de **−1 564,20 €** sur un devis qui partait chez un
+client. Un taux cumulé ne descend jamais sous le précédent ni au-dessus de
+100, borné quand le doigt quitte le champ (pas à la frappe : « 75 » commence
+par « 7 »), et un 2ᵉ monté à 100 emporte le 3ᵉ. Le reste n'est jamais
+négatif, et les acomptes plus le reste font le TTC au centime.
+
+**Et la colonne Unité, après Qté** — *« pour les ml, kg, m³ etc. »*. Elle
+existait en base et sur le PDF (« 4 m³ », migration 0070) sans que l'écran la
+saisisse. Les unités usuelles viennent sous le champ quand il prend le doigt.
+
+**Un défaut trouvé en chemin, et corrigé à la racine : le PDF ENVOYÉ partait
+sans la validité ni les conditions réglées.** L'aperçu, l'envoi et la feuille
+sans prix composaient chacun leur copie des données du PDF, et seul l'aperçu
+portait `validiteJours` et `conditionsReglees` — le client téléchargeait par
+son lien un document sans « Validité » ni « Acompte de 30 % ». Une seule
+fonction désormais (`donneesPdfDuDevis`), pour les trois sorties.
+
+**Ce que la batterie a attrapé le 13, avant la livraison.** `acomptes_devis`
+manquait à l'export « Mes données » (`test-export-entreprise` l'a réclamé) ;
+la pastille d'unité peignait le vert pin au lieu de `colors.plein`
+(`test-boutons-pleins`). Et une course plus ancienne : deux rendus de l'écran
+du devis qui se chevauchent créaient chacun la version 1 du brouillon, et le
+second tombait sur `devis_chantier_version_uk` — écran blanc.
+`getOuCreerDevisBrouillon` prend désormais un verrou consultatif par chantier,
+lié à la transaction : le second attend, puis trouve le brouillon du premier.
+
+**Migration 0088** : `acomptes_devis` (rang, taux cumulé), RLS, immuable dès
+que le devis est envoyé. `devis.acompte_pourcent` reste : c'est le réglage
+recopié, la phrase des notes. Règle pure : `src/lib/acomptes-devis.ts`.
+Suites : `test-acomptes-devis` (18), `test-acomptes-pdf` (6),
+`test-acomptes-devis-e2e` (son geste). Détail : `ARCHITECTURE.md` §343.
+
+**Le 13 au matin, sa correction :** *« pour le client sur le devis il faut
+seulement écrire acompte à l'avancement 75 %, enlève les parenthèses ; pareil
+pour 50 % »*. Le « (50 % réglés) » qui expliquait le cumul est parti — ligne
+des totaux, phrase des notes, écran et PDF — dans la seule fonction qui
+l'écrit (`libelleLigneAcompte`, `phrasesAcomptes`).
 
 ### L'espace se déblaie lui-même : un lock sali ne le fige plus à vie
 

@@ -53,6 +53,18 @@ async function attendreEnBase<T>(
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const BASE = ADRESSE;
 
+/**
+ * Remplacer le contenu d'une case de chiffre, comme lui : on entre, on
+ * sélectionne tout, on tape. Le champ pose volontairement le curseur À DROITE
+ * du chiffre existant (sa règle du 11 septembre 2026), donc taper sans
+ * sélectionner AJOUTE — et c'est voulu, pour n'avoir qu'à effacer.
+ */
+async function remplacer(champ: import("playwright").Locator, valeur: string) {
+  await champ.click();
+  await champ.press("ControlOrMeta+a");
+  await champ.type(valeur);
+}
+
 async function main() {
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext();
@@ -178,9 +190,12 @@ async function main() {
   await page.waitForTimeout(600);
   await page.getByLabel("Description 1").fill("Élagage d'un tilleul — taille architecturée");
   await page.getByLabel("Description 1").blur();
-  await page.getByLabel("Quantité 1").fill("3");
+  // **SON GESTE, PAS `fill()`** : la case porte déjà un chiffre et le curseur
+  // se pose derrière lui (sa règle du 11 septembre). `fill()` insérait sans
+  // effacer — « 13 » au lieu de « 3 ».
+  await remplacer(page.getByLabel("Quantité 1"), "3");
   await page.getByLabel("Quantité 1").blur();
-  await page.getByLabel("Prix unitaire 1").fill("250");
+  await remplacer(page.getByLabel("Prix unitaire 1"), "250");
   await page.getByLabel("Prix unitaire 1").blur();
   await page.waitForTimeout(900);
 

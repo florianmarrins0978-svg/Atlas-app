@@ -1,3 +1,5 @@
+import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "./conditions-generales";
+
 /**
  * Les conditions qui s'impriment sur un devis, réglées au lieu d'être en dur.
  *
@@ -39,6 +41,13 @@ export type ConditionsLues = {
   moyensPaiement?: string | null;
   rappelerPenalites?: boolean | null;
   textePied?: string | null;
+  /**
+   * Les conditions générales de vente et de règlement (migration 0090).
+   * **Ici l'encodage est INVERSÉ par rapport au texte de pied**, et c'est sa
+   * demande : la case arrive REMPLIE. `null` / absent = le texte d'origine
+   * d'Atlas ; `""` = il a tout effacé, rien ne s'imprime ; du texte = le sien.
+   */
+  conditionsGenerales?: string | null;
 };
 
 /**
@@ -71,6 +80,8 @@ export type Conditions = {
   rappelerPenalites: boolean;
   /** Ajouté tel quel en bas de chaque document. */
   textePied: string | null;
+  /** Imprimées après le bon pour accord. Vide : rien, pas même le titre. */
+  conditionsGenerales: string;
 };
 
 function nombre(valeur: unknown, bornes: { min: number; max: number }): number | null {
@@ -132,6 +143,11 @@ export function lireConditions(brut: ConditionsLues | null | undefined): Conditi
     moyensPaiement: texte(brut?.moyensPaiement),
     rappelerPenalites: brut?.rappelerPenalites === true,
     textePied: texte(brut?.textePied),
+    // Absent → rien. Le texte d'origine ne se pose QUE dans
+    // `conditionsDepuisEntreprise` : ici passe aussi l'instantané d'un devis, et
+    // un devis d'avant la migration 0090 sortirait sinon avec des CGV au dos
+    // qu'il n'a jamais portées (`test-conditions-sur-le-devis`, 13 sept. 2026).
+    conditionsGenerales: texte(brut?.conditionsGenerales) ?? "",
   };
 }
 
@@ -143,6 +159,7 @@ export function normaliserConditions(saisie: ConditionsLues): {
   moyensPaiement: string | null;
   rappelerPenalites: boolean;
   textePied: string | null;
+  conditionsGenerales: string;
 } {
   const c = lireConditions({ ...saisie, validiteJours: saisie.validiteJours ?? null });
   return {
@@ -152,6 +169,7 @@ export function normaliserConditions(saisie: ConditionsLues): {
     moyensPaiement: c.moyensPaiement,
     rappelerPenalites: c.rappelerPenalites,
     textePied: c.textePied,
+    conditionsGenerales: c.conditionsGenerales,
   };
 }
 
@@ -168,15 +186,29 @@ export function libelleValidite(c: Conditions): string | null {
  * montre exactement ces phrases : deux rédactions finiraient par diverger, et
  * c'est le client qui lirait la mauvaise (`CLAUDE.md` §3).
  */
-export function lignesConditionsDevis(c: Conditions, totalTtc?: number): string[] {
+export function lignesConditionsDevis(
+  c: Conditions,
+  totalTtc?: number,
+  /**
+   * Les phrases des acomptes POSÉS sur le devis (`src/lib/acomptes-devis.ts`),
+   * quand il y en a : elles remplacent la phrase du réglage, sinon l'acompte
+   * s'imprimerait deux fois. Vide ou absente, la phrase du réglage reste —
+   * *« il reste visible dans les notes et conditions quoi qu'il arrive »*
+   * (12 septembre 2026), même quand la ligne des totaux a été retirée.
+   */
+  phrasesAcomptes?: readonly string[]
+): string[] {
   const lignes: string[] = [];
 
-  if (c.acomptePourcent !== null) {
+  if (phrasesAcomptes && phrasesAcomptes.length > 0) {
+    lignes.push(...phrasesAcomptes);
+  } else if (c.acomptePourcent !== null) {
     // Le montant n'est écrit QUE s'il est connu. Sur l'aperçu des réglages il
     // ne l'est pas — et un chiffre inventé à cet endroit finirait imprimé.
+    // *« Retire les — avant soit »* : une virgule, comme les phrases des acomptes.
     const montant =
       totalTtc !== undefined && Number.isFinite(totalTtc)
-        ? ` — soit ${((totalTtc * c.acomptePourcent) / 100).toFixed(2).replace(".", ",")} €`
+        ? `, soit ${((totalTtc * c.acomptePourcent) / 100).toFixed(2).replace(".", ",")} €`
         : "";
     lignes.push(`Acompte de ${c.acomptePourcent} % à la commande${montant}.`);
   }
@@ -229,6 +261,7 @@ export function conditionsDepuisEntreprise(
         moyensPaiement?: string | null;
         rappelerPenalitesDevis?: boolean | null;
         textePiedDocuments?: string | null;
+        conditionsGenerales?: string | null;
       }
     | null
     | undefined
@@ -240,5 +273,11 @@ export function conditionsDepuisEntreprise(
     moyensPaiement: ligne?.moyensPaiement,
     rappelerPenalites: ligne?.rappelerPenalitesDevis,
     textePied: ligne?.textePiedDocuments,
+    // Jamais réglé → le texte d'origine : c'est ce qu'il a demandé, « remplie
+    // d'un texte par défaut ». Effacé (chaîne vide) → vide, rien ne s'imprime.
+    conditionsGenerales:
+      ligne?.conditionsGenerales === null || ligne?.conditionsGenerales === undefined
+        ? TEXTE_ORIGINE_CONDITIONS_GENERALES
+        : ligne.conditionsGenerales,
   });
 }

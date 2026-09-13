@@ -233,6 +233,12 @@ export type TexteTrace = {
   page: number;
   /** En hexadécimal, pour qu'un contrôle puisse constater une teinte qui dérive. */
   couleur: string;
+  /**
+   * Vrai quand le texte est écrit en gras (13 septembre 2026). Sans ce témoin,
+   * un contrôle qui prétendrait vérifier « les conditions en gras » mesurerait
+   * zéro (`CLAUDE.md` §5) : la trace ne disait rien de la police.
+   */
+  gras: boolean;
 };
 export type TraitTrace = { y: number; de: number; a: number; epaisseur: number; page: number };
 export type CadreTrace = { x: number; y: number; largeur: number; hauteur: number; page: number };
@@ -294,6 +300,7 @@ function ecrire(ctx: Contexte, contenu: string, x: number, y: number, style: Sty
     taille: style.taille ?? 9.5,
     page: ctx.numeroPage,
     couleur: enHexa(style.couleur ?? ctx.teintes.encre),
+    gras: style.police === ctx.sansGras || style.police === ctx.serifGras,
   });
 }
 
@@ -354,6 +361,7 @@ function ecrireEspace(
     taille,
     page: ctx.numeroPage,
     couleur: enHexa(style.couleur ?? ctx.teintes.encre),
+    gras: police === ctx.sansGras || police === ctx.serifGras,
   });
 }
 
@@ -658,6 +666,36 @@ export type OptionsDocument = {
   cadreSignature: boolean;
   /** Sur une facture, le rappel du devis d'origine. */
   rappel?: string | null;
+  /**
+   * Des lignes SOUS le « Total TTC » — libellé et montant, la dernière en gras.
+   *
+   * **Pour l'échéancier du devis** (12 septembre 2026) : chaque acompte avec ce
+   * qui tombe ce jour-là, puis « Reste à régler après acompte » et le montant.
+   * C'est le devis qui les compose (`devis-pdf.ts`) par la règle commune ; ce
+   * module ne calcule rien, il écrit. Absentes, ou sans chiffrage : rien, et la
+   * feuille sort comme avant.
+   */
+  apresTotal?: { libelle: string; montant: string; fort?: boolean }[];
+  /**
+   * Des lignes juste SOUS le « Total HT » — libellé et montant — qui ne
+   * changent rien aux totaux : « dont main d'œuvre HT » (13 septembre 2026,
+   * migration 0090). Nommer, pas compter. Absentes ou sans chiffrage : rien.
+   */
+  sousLeTotalHt?: { libelle: string; montant: string }[];
+  /**
+   * Les conditions réglées, écrites EN GRAS sous les notes qu'il a tapées —
+   * sa demande du 12 septembre 2026. Son texte (`conditionsPaiement`) reste en
+   * maigre ; ce qui engage et se calcule est en gras. Le bloc s'ouvre dès que
+   * l'un des deux existe.
+   */
+  notesEnGras?: string[];
+  /**
+   * Une annexe après le bon pour accord — ses conditions générales de vente
+   * et de règlement (13 septembre 2026). Elle ouvre TOUJOURS une page neuve :
+   * le devis se lit et se signe sur ses pages ; les conditions se lisent
+   * derrière, comme au dos d'un devis papier. `null` : rien.
+   */
+  annexe?: { titre: string; paragraphes: string[] } | null;
   /**
    * Le document ne porte AUCUN chiffre : ni colonnes de prix, ni totaux, ni TVA.
    *
@@ -1028,9 +1066,23 @@ export async function composerDocument(
   // Deux lignes de plus quand une remise est accordée, et une par catégorie
   // au-delà de la première : la place se réserve AVANT le saut de page, sinon
   // « Total TTC » se retrouve seul en haut de la page suivante.
-  place((avecRemise ? 74 + 32 : 74) + (parTaux.length - 1) * 16);
+  // Et une ligne de 16 par ligne d'échéancier sous le total : réservée ici
+  // aussi, pour la même raison.
+  const apresTotal = options.apresTotal ?? [];
+  const sousLeTotalHt = options.sousLeTotalHt ?? [];
+  place((avecRemise ? 74 + 32 : 74) + (parTaux.length - 1) * 16 + apresTotal.length * 16 + sousLeTotalHt.length * 16);
   y -= 6;
   const gaucheTotaux = DROITE - 220;
+
+  // « dont main d'œuvre HT », sous le total HT — brut ou net, c'est le premier
+  // total écrit. En maigre : il nomme une part, il n'ajoute rien.
+  const ecrireSousLeTotalHt = () => {
+    for (const ligne of sousLeTotalHt) {
+      ecrire(ctx, ligne.libelle, gaucheTotaux, y, { taille: 9, couleur: ctx.teintes.etiquette });
+      ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), DROITE, y, { taille: 9, couleur: ctx.teintes.etiquette });
+      y -= 16;
+    }
+  };
 
   if (avecRemise) {
     // **Le prix plein d'abord**, puis ce qui a été consenti, puis le net : c'est
@@ -1041,6 +1093,7 @@ export async function composerDocument(
     ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
     ecrireADroite(ctx, formatMontant(brut, data.devise), DROITE, y, { taille: 9.5 });
     y -= 16;
+    ecrireSousLeTotalHt();
 
     ecrire(ctx, libelleRemise!, gaucheTotaux, y, { taille: 9.5 });
     // **Le trait d'union, jamais le « moins » typographique (U+2212).** Les
@@ -1059,6 +1112,7 @@ export async function composerDocument(
     ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
     ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
     y -= 16;
+    ecrireSousLeTotalHt();
   }
 
   // **Une ligne par catégorie, et l'ordre est celui de son tableau.** Un seul
@@ -1079,7 +1133,21 @@ export async function composerDocument(
     taille: 14,
     police: ctx.serifGras,
   });
-  y -= 34;
+
+  // L'échéancier, sous le total dont il découle : les acomptes, puis le reste à
+  // régler en gras — c'est le chiffre que le client cherche.
+  if (apresTotal.length) {
+    y -= 20;
+    for (const ligne of apresTotal) {
+      const style: Style = ligne.fort ? { taille: 9.5, police: ctx.sansGras } : { taille: 9.5 };
+      ecrire(ctx, ligne.libelle, gaucheTotaux, y, style);
+      ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), DROITE, y, style);
+      y -= 16;
+    }
+    y -= 18;
+  } else {
+    y -= 34;
+  }
   }
 
   // ─── Conditions et modalités de paiement ────────────────────────────────
@@ -1099,13 +1167,22 @@ export async function composerDocument(
     y -= 12;
   }
 
-  if (data.conditionsPaiement) {
-    const lignesNotes = enLignes(data.conditionsPaiement, ctx.sans, 9, DROITE - MARGE);
-    place(14 + lignesNotes.length * 12);
+  // Ses notes en maigre, puis les conditions réglées en gras (13 septembre
+  // 2026) : deux voix, un seul bloc. Le gras est replié avec SA police, sinon
+  // une ligne mesurée en maigre déborde une fois écrite en gras.
+  const notesEnGras = options.notesEnGras ?? [];
+  if (data.conditionsPaiement || notesEnGras.length) {
+    const lignesNotes = data.conditionsPaiement ? enLignes(data.conditionsPaiement, ctx.sans, 9, DROITE - MARGE) : [];
+    const lignesGras = notesEnGras.flatMap((phrase) => enLignes(phrase, ctx.sansGras, 9, DROITE - MARGE));
+    place(14 + (lignesNotes.length + lignesGras.length) * 12);
     ecrireEspace(ctx, options.titreNotes, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
     y -= 14;
     for (const l of lignesNotes) {
       ecrire(ctx, l, MARGE, y, { taille: 9 });
+      y -= 12;
+    }
+    for (const l of lignesGras) {
+      ecrire(ctx, l, MARGE, y, { taille: 9, police: ctx.sansGras });
       y -= 12;
     }
     y -= 12;
@@ -1198,6 +1275,25 @@ export async function composerDocument(
     );
   }
 
+  // ─── L'annexe : ses conditions générales, après le bon pour accord ─────────
+  // Toujours une page neuve, même s'il restait de la place : le client signe la
+  // dernière page du devis, et lit les conditions derrière — comme le dos d'un
+  // devis papier. En petit, comme ce genre de texte, et replié par `place` :
+  // onze articles font une page, parfois deux.
+  if (options.annexe) {
+    y = pageSuivante(ctx);
+    ecrireEspace(ctx, options.annexe.titre, MARGE, y, APPROCHE_ETIQUETTE, etiquetteBloc);
+    y -= 18;
+    for (const paragraphe of options.annexe.paragraphes) {
+      for (const l of enLignes(paragraphe, ctx.sans, 8.5, DROITE - MARGE)) {
+        place(11);
+        ecrire(ctx, l, MARGE, y, { taille: 8.5 });
+        y -= 11;
+      }
+      y -= 7;
+    }
+  }
+
   // ─── Pagination, seulement s'il y a plusieurs pages ──────────────────────
   // Le modèle n'en porte pas — il tient sur un écran. Un devis papier de deux
   // feuilles, lui, peut en perdre une sans que personne ne s'en aperçoive.
@@ -1220,6 +1316,7 @@ export async function composerDocument(
         taille: 7.5,
         page: i + 1,
         couleur: PALETTE.legal,
+        gras: false,
       });
     });
   }

@@ -14,6 +14,14 @@ import {
   type ConditionsLues,
 } from "@/lib/conditions-documents";
 import type { Allure } from "@/lib/allure-documents";
+import { LIBELLE_MAIN_DOEUVRE } from "@/lib/main-doeuvre-devis";
+import { TITRE_CONDITIONS_GENERALES, paragraphesConditionsGenerales } from "@/lib/conditions-generales";
+import {
+  echeancierDevis,
+  libelleLigneAcompte,
+  phrasesAcomptes,
+  type AcompteDevis,
+} from "@/lib/acomptes-devis";
 
 // Le devis, à l'image du modèle d'Arborea (`appli/devis-modele.html`).
 //
@@ -48,6 +56,23 @@ export type DevisPdfData = DonneesDocument & {
    * s'imprime, et ces documents-là sortent identiques à eux-mêmes.
    */
   conditionsReglees?: ConditionsLues | null;
+  /**
+   * Les acomptes posés sur le devis, en taux CUMULÉS (migration 0088).
+   *
+   * Le papier en tire deux choses par la règle commune : les lignes sous le
+   * total — chaque acompte avec ce qui tombe ce jour-là, puis « Reste à régler
+   * après acompte » et le montant, *« chez le client il faut marquer reste à
+   * régler après acompte et le montant »* — et les phrases des notes.
+   * Absents ou vides : la feuille sort comme avant, et la phrase du réglage
+   * reste dans les notes.
+   */
+  acomptes?: readonly AcompteDevis[] | null;
+  /**
+   * « dont main d'œuvre HT » (migration 0090) — la lecture B du 12 septembre
+   * 2026 : nommée sous le total HT, jamais comptée, les totaux ne bougent pas.
+   * Absente ou nulle : pas de ligne.
+   */
+  mainDoeuvreHt?: string | null;
 };
 
 /**
@@ -120,19 +145,54 @@ export type OptionsDevisPdf = {
  * plutôt que d'inventer un chiffre — un montant supposé à cet endroit finirait
  * imprimé chez un client (`CLAUDE.md` §4).
  */
-function blocNotes(data: DevisPdfData, sansPrix: boolean): string | null {
+/**
+ * Deux voix dans le même bloc : SON texte, en maigre, puis les conditions
+ * réglées, **en gras** — sa demande du 12 septembre 2026 : *« le bloc Notes /
+ * conditions en gras : mode de règlement, acompte, solde, moyens de paiement,
+ * retard »*. Le gras porte sur ce qui engage et se calcule ; ce qu'il a tapé
+ * à la main reste ce qu'il est, une note.
+ */
+function blocNotes(data: DevisPdfData, sansPrix: boolean): { sien: string | null; reglees: string[] } {
   const sien = data.conditionsPaiement?.trim() || null;
   // **Aucune condition sur la feuille de chantier.** Elle part chez un salarié,
   // sans un prix : « acompte de 30 % » y serait un montant, et le document
   // cesserait d'être ce qu'il annonce. C'est la règle que suit déjà l'IBAN.
-  if (sansPrix) return sien;
+  if (sansPrix) return { sien, reglees: [] };
 
-  const lignes = lignesConditionsDevis(
+  const reglees = lignesConditionsDevis(
     lireConditions(data.conditionsReglees),
-    Number(data.totalTtc)
+    Number(data.totalTtc),
+    // Les acomptes posés remplacent la phrase du réglage ; sans eux, elle reste.
+    phrasesAcomptes(echeancierDevis(data.acomptes ?? [], data.totalTtc))
   );
-  if (!lignes.length) return sien;
-  return [sien, ...lignes].filter(Boolean).join("\n");
+  return { sien, reglees };
+}
+
+/**
+ * Les conditions générales, après le bon pour accord — sa demande du
+ * 12 septembre 2026. Sur une feuille de chantier, rien : elle ne s'accepte pas.
+ * Vides (il a tout effacé), rien non plus, pas même le titre.
+ */
+function annexeConditionsGenerales(data: DevisPdfData, sansPrix: boolean) {
+  // Un devis d'avant la 0064 n'a pas de conditions figées du tout : il sort
+  // identique à lui-même, sans annexe — la règle de `conditionsReglees`.
+  if (sansPrix || !data.conditionsReglees) return null;
+  const paragraphes = paragraphesConditionsGenerales(lireConditions(data.conditionsReglees).conditionsGenerales);
+  return paragraphes.length ? { titre: TITRE_CONDITIONS_GENERALES, paragraphes } : null;
+}
+
+/**
+ * Les lignes SOUS le total TTC : chaque acompte avec ce qui tombe ce jour-là,
+ * puis le reste à régler. Rien quand le devis n'en porte aucun — la feuille
+ * d'avant sort à l'identique.
+ */
+function lignesApresTotal(data: DevisPdfData): { libelle: string; montant: string; fort?: boolean }[] {
+  const echeancier = echeancierDevis(data.acomptes ?? [], data.totalTtc);
+  if (!echeancier.lignes.length) return [];
+  return [
+    ...echeancier.lignes.map((l) => ({ libelle: libelleLigneAcompte(l), montant: l.montant })),
+    { libelle: echeancier.libelleReste, montant: echeancier.reste, fort: true },
+  ];
 }
 
 export async function composerDevisPdf(
@@ -140,8 +200,19 @@ export async function composerDevisPdf(
   options: OptionsDevisPdf = {}
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
   const sansPrix = Boolean(options.sansChiffrage);
-  return composerDocument({ ...data, conditionsPaiement: blocNotes(data, sansPrix) }, {
+  const notes = blocNotes(data, sansPrix);
+  return composerDocument({ ...data, conditionsPaiement: notes.sien }, {
     sansChiffrage: options.sansChiffrage,
+    // Les conditions réglées, en gras, sous ses notes.
+    notesEnGras: notes.reglees,
+    // « dont main d'œuvre HT », sous le total HT, sans rien changer aux totaux.
+    sousLeTotalHt: data.mainDoeuvreHt
+      ? [{ libelle: LIBELLE_MAIN_DOEUVRE, montant: data.mainDoeuvreHt }]
+      : [],
+    // L'échéancier sous le total ; `sansChiffrage` le saute avec les totaux.
+    apresTotal: lignesApresTotal(data),
+    // Ses conditions générales, après le bon pour accord.
+    annexe: annexeConditionsGenerales(data, sansPrix),
     // **Sa décision du 23 août : le devis et la facture SEULEMENT.** La feuille
     // de chantier sort de la même fabrique, avec `sansChiffrage` — sans ce
     // filtre, elle aurait pris l'allure réglée pour les documents du client

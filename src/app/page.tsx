@@ -15,6 +15,9 @@ import { depuisCombien, joursEcoules } from "@/lib/rappels";
 import { enEuros } from "@/lib/euros";
 import Notifications from "./Notifications";
 import { receptionsASignaler } from "@/server/repositories/envois-factures";
+import { abonnementDeLEntreprise } from "@/server/repositories/abonnements";
+import { PHRASE_LECTURE_SEULE, etatDeLEssai } from "@/lib/abonnements";
+import RubanEssai from "@/components/atlas/RubanEssai";
 import AnnonceTransmission from "@/components/atlas/AnnonceTransmission";
 import EcranChantiers from "./EcranChantiers";
 import type { BrinChantier } from "./ListeChantiers";
@@ -53,7 +56,7 @@ export default async function ChantiersPage() {
   // pour n'en rien faire coûterait un aller-retour à chaque ouverture de son
   // écran d'accueil, et laisserait croire à la prochaine lecture que la session
   // sert encore à quelque chose ici.
-  const [chantiers, notifications, caducs, rappels, receptions] = await Promise.all([
+  const [chantiers, notifications, caducs, rappels, receptions, abonnement] = await Promise.all([
     listerChantiersPourAffichage(ctx),
     notificationsPatron(ctx),
     envoisCaducs(ctx),
@@ -62,7 +65,13 @@ export default async function ChantiersPage() {
     // demande du 9 septembre 2026. Vide presque toujours, et rien ne s'affiche
     // alors.
     receptionsASignaler(ctx),
+    // L'essai de quinze jours, s'il y en a un : `null` pour son Atlas à lui.
+    abonnementDeLEntreprise(ctx),
   ]);
+
+  // Le ruban et le bouton éteint se décident ICI, sur le même instant que les
+  // rappels — la règle vit dans `abonnements.ts`, l'écran n'en recalcule rien.
+  const essai = etatDeLEssai(abonnement, maintenant);
 
   // **Cette liste ne montre que ce qui reste à préparer.** Un chantier passé au
   // planning vit au planning ; facturé, terminé, ou dont la date est dépassée,
@@ -122,6 +131,8 @@ export default async function ChantiersPage() {
   return (
     <EcranChantiers
       chantiers={brins}
+      ruban={essai ? <RubanEssai etat={essai} /> : null}
+      lectureSeule={essai?.statut === "termine" ? PHRASE_LECTURE_SEULE : null}
       bandeaux={
         <>
           {/* Le mot qui accueille le patron au retour de sa messagerie. Placé

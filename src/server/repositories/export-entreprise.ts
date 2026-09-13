@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import {
   absencesEquipe,
+  acomptesDevis,
   audiosAPurger,
   brouillonsInformations,
   chantiers,
@@ -131,6 +132,7 @@ export async function exporterEntreprise(
       lesLiaisonsPrestations,
       lesDevis,
       lesLignesDevis,
+      lesAcomptesDevis,
       lHistorique,
       lesLecons,
       lesParametres,
@@ -197,6 +199,9 @@ export async function exporterEntreprise(
       tx.select().from(lignesPrixPrestations).where(eq(lignesPrixPrestations.entrepriseId, e)),
       tx.select().from(devis).where(eq(devis.entrepriseId, e)),
       tx.select().from(lignesDevis).where(eq(lignesDevis.entrepriseId, e)),
+      // L'échéancier d'acomptes de chaque devis (migration 0088) : sans lui, un
+      // devis sauvegardé perdrait ce qui a été convenu sur le règlement.
+      tx.select().from(acomptesDevis).where(eq(acomptesDevis.entrepriseId, e)),
       tx.select().from(historiquePrix).where(eq(historiquePrix.entrepriseId, e)),
       tx.select().from(leconsPrix).where(eq(leconsPrix.entrepriseId, e)),
       tx.select().from(parametresChiffrage).where(eq(parametresChiffrage.entrepriseId, e)),
@@ -368,6 +373,7 @@ export async function exporterEntreprise(
       lignes_prix_prestations: lesLiaisonsPrestations,
       devis: lesDevis,
       lignes_devis: lesLignesDevis,
+      acomptes_devis: lesAcomptesDevis,
       historique_prix: lHistorique,
       // La mémoire des corrections du patron. C'est ce qu'Atlas a appris de lui
       // — la perdre lui ferait recommencer son apprentissage à zéro.

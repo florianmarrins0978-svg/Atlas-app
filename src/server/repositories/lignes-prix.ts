@@ -73,7 +73,8 @@ export async function modifierLignePrix(
     montant?: string;
     quantite?: string;
     prixUnitaire?: string;
-    unite?: string;
+    /** `null` retire l'unité — une chaîne vide en base se lirait « 4  » sur le papier. */
+    unite?: string | null;
     aChiffrer?: boolean;
     /**
      * Déplacer la ligne d'une catégorie de TVA à l'autre (migration 0073).

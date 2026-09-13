@@ -15,6 +15,7 @@ import {
   timestamp,
   date,
   integer,
+  smallint,
   numeric,
   unique,
   index,
@@ -162,6 +163,14 @@ export const entreprises = pgTable("entreprises", {
   moyensPaiement: text("moyens_paiement"),
   rappelerPenalitesDevis: boolean("rappeler_penalites_devis").notNull().default(false),
   textePiedDocuments: text("texte_pied_documents"),
+  /**
+   * Ses conditions générales de vente et de règlement (migration 0090),
+   * imprimées après le bon pour accord. **Encodage inversé** par rapport au
+   * texte de pied, parce que la case arrive REMPLIE : `null` = le texte
+   * d'origine d'Atlas, `""` = tout effacé, du texte = le sien
+   * (`src/lib/conditions-documents.ts`).
+   */
+  conditionsGenerales: text("conditions_generales"),
 
   /**
    * Le message qui part au client avec le devis, la facture ou le rapport
@@ -1174,7 +1183,15 @@ export const devis = pgTable(
     moyensPaiement: text("moyens_paiement"),
     rappelerPenalites: boolean("rappeler_penalites").notNull().default(false),
     textePied: text("texte_pied"),
+    /** Figées à la création comme les cinq autres (migration 0090) ; `null` = le texte d'origine. */
+    conditionsGenerales: text("conditions_generales"),
     conditionsPaiement: text("conditions_paiement"),
+    /**
+     * « dont main d'œuvre HT » — la lecture B du 12 septembre 2026 (migration
+     * 0090). Déjà comprise dans les lignes : elle se NOMME sous le total HT,
+     * elle ne change aucun total. `null` = pas de ligne.
+     */
+    mainDoeuvreHt: numeric("main_doeuvre_ht", { precision: 12, scale: 2 }),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
     // TVA — correction v2.1 §4
@@ -1257,6 +1274,37 @@ export const lignesDevis = pgTable(
       name: "lignes_devis_devis_entreprise_fk",
     }).onDelete("cascade"),
   ]
+);
+
+/**
+ * Les acomptes d'un devis — une ligne des totaux par acompte (migration 0088).
+ *
+ * Sa demande du 12 septembre 2026, planche `appli/l-acompte-sur-le-devis.html`
+ * (la B) : posé d'office avec le taux des Réglages, un deuxième à mi-parcours,
+ * un troisième à l'avancement. **Le taux est CUMULÉ** — « 50 » au rang 2 veut
+ * dire qu'à mi-parcours la moitié du devis est réglée ; ce qui tombe ce jour-là
+ * se calcule (`src/lib/acomptes-devis.ts`), jamais stocké.
+ *
+ * **`devis.acomptePourcent` reste à côté, et ce n'est pas un doublon :** c'est
+ * le réglage recopié, la phrase des notes et conditions — qui reste imprimée
+ * quand la ligne des totaux est retirée (*« quoi qu'il arrive »*).
+ */
+export const acomptesDevis = pgTable(
+  "acomptes_devis",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    devisId: uuid("devis_id")
+      .notNull()
+      .references(() => devis.id, { onDelete: "cascade" }),
+    /** 1 à la signature, 2 à mi-parcours, 3 à l'avancement. */
+    rang: smallint("rang").notNull(),
+    tauxCumule: numeric("taux_cumule", { precision: 5, scale: 2 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("acomptes_devis_unique").on(t.devisId, t.rang)]
 );
 
 // --- Catalogue intelligent (lot IA-05) ---------------------------------
@@ -3098,7 +3146,8 @@ export const abonnements = pgTable(
       .references(() => entreprises.id, { onDelete: "cascade" }),
     formule: text("formule", { enum: ["artisan", "entreprise", "illimite"] }).notNull(),
     periodicite: text("periodicite", { enum: ["mensuelle", "annuelle"] }).notNull(),
-    statut: text("statut", { enum: ["actif", "impaye", "resilie"] }).notNull(),
+    // « essai » depuis la migration 0089 — quinze jours sans carte, puis lecture seule.
+    statut: text("statut", { enum: ["essai", "actif", "impaye", "resilie"] }).notNull(),
     periodeFin: timestamp("periode_fin", { withTimezone: true }),
     annulationDemandee: boolean("annulation_demandee").notNull().default(false),
     clientPrestataire: text("client_prestataire"),

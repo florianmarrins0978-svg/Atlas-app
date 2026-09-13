@@ -4,10 +4,18 @@ import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
+import { montantMainDoeuvreValide } from "@/lib/main-doeuvre-devis";
 import type { DbOrTx } from "../db/client";
-import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from "../db/schema";
+import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises, acomptesDevis } from "../db/schema";
+import {
+  acompteDOffice,
+  acompteSuivantPropose,
+  tauxCumuleValide,
+  tauxCumulesBornes,
+  type AcompteDevis,
+} from "@/lib/acomptes-devis";
 import type { Ctx } from "./context";
-import { genererPdfDevis } from "../pdf/devis-pdf";
+import { genererPdfDevis, type DevisPdfData } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import { lignesEnAttenteDePrix } from "@/lib/preparation-devis";
@@ -206,6 +214,15 @@ export async function chargerDevisPourEcran(ctx: Ctx, chantierId: string) {
 // dernière version existante a déjà été envoyée.
 export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Un seul « get ou crée » à la fois par chantier.** Deux rendus qui se
+    // chevauchent — l'écran du devis redemandé pendant que le premier rendu
+    // crée encore le brouillon — lisaient tous deux « aucun devis » et
+    // inséraient chacun la version 1 : le second tombait sur
+    // `devis_chantier_version_uk`, et l'écran restait blanc (13 septembre 2026,
+    // sous la suite des acomptes). Le verrou est lié à la transaction : le
+    // second attend, puis TROUVE le brouillon du premier. Hors transaction il
+    // ne survit pas, et il ne bloque rien d'autre que ce même chantier.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${chantierId}))`);
     const [chantier] = await tx.select().from(chantiers).where(eq(chantiers.id, chantierId)).limit(1);
     if (!chantier) throw new Error("Chantier introuvable");
 
@@ -241,6 +258,9 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       moyensPaiement: conditions.moyensPaiement,
       rappelerPenalites: conditions.rappelerPenalites,
       textePied: conditions.textePied,
+      // Figées comme les autres (migration 0090) : le texte résolu — le sien, le
+      // texte d'origine, ou vide s'il l'a effacé.
+      conditionsGenerales: conditions.conditionsGenerales,
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
@@ -278,9 +298,26 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       // Régénération : remplace les lignes et recalcule les totaux, ne change
       // ni le numéro commercial ni le numéro de version.
       await tx.delete(lignesDevis).where(eq(lignesDevis.devisId, dernier.id));
+      // **La main d'œuvre survit aussi, mais reste « dont »** : si les lignes ont
+      // fondu sous elle, on la ramène au nouveau brut plutôt que d'imprimer
+      // « dont 450 € » sous un total de 380 €.
+      //
+      // **Calculée par Postgres sur la valeur du MOMENT, jamais recopiée d'une
+      // lecture.** Ce rendu se joue en même temps que le geste du patron : le
+      // « − » de la main d'œuvre écrivait `null` pendant qu'un rendu, parti une
+      // seconde avant, réécrivait le 1 160 qu'il avait lu — et la ligne
+      // revenait sous ses yeux (13 septembre 2026, `test-planche-b-devis-e2e`).
+      const brutHt = totauxAvecReduction(lignesPrixActuelles, taux, null).brutHt;
       const [d] = await tx
         .update(devis)
-        .set({ ...snapshotEnTete, ...totaux })
+        .set({
+          ...snapshotEnTete,
+          ...totaux,
+          mainDoeuvreHt: sql`CASE
+            WHEN ${brutHt}::numeric <= 0 THEN NULL
+            WHEN ${devis.mainDoeuvreHt} > ${brutHt}::numeric THEN ${brutHt}::numeric
+            ELSE ${devis.mainDoeuvreHt} END`,
+        })
         .where(eq(devis.id, dernier.id))
         .returning();
       if (lignesPrixActuelles.length > 0) {
@@ -351,12 +388,199 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       );
     }
 
+    // **L'acompte des Réglages est POSÉ D'OFFICE sur la ligne des totaux** —
+    // sa décision du 12 septembre 2026 (*« il doit être marqué d'office »*).
+    // Seulement à la naissance d'une version : un brouillon régénéré garde ce
+    // qu'il porte, y compris le retrait qu'il a fait du doigt. Un devis parti
+    // avec un acompte n'en donne pas à la version suivante : elle repart des
+    // Réglages, comme le taux de TVA et la remise juste au-dessus.
+    const dOffice = acompteDOffice(conditions.acomptePourcent);
+    if (dOffice) await ecrireAcomptes(tx, ctx.entrepriseId, d.id, [dOffice]);
+
     if (!chantier.devisGenereAt) {
       await tx.update(chantiers).set({ devisGenereAt: new Date() }).where(eq(chantiers.id, chantierId));
     }
 
     return d;
   });
+}
+
+// ─── Les acomptes d'un devis ───────────────────────────────────────────────
+
+async function lireAcomptes(tx: DbOrTx, devisId: string): Promise<AcompteDevis[]> {
+  const rows = await tx
+    .select({ rang: acomptesDevis.rang, tauxCumule: acomptesDevis.tauxCumule })
+    .from(acomptesDevis)
+    .where(eq(acomptesDevis.devisId, devisId))
+    .orderBy(asc(acomptesDevis.rang));
+  return rows.map((r) => ({ rang: r.rang, tauxCumule: r.tauxCumule }));
+}
+
+/**
+ * Réécrit l'échéancier ENTIER d'un devis : rangs 1..n dans l'ordre donné, taux
+ * bornés par la règle commune.
+ *
+ * **Tout réécrire plutôt que corriger une ligne**, et ce n'est pas de la
+ * paresse : retirer l'acompte du milieu fait remonter les suivants d'un rang
+ * (le 3ᵉ devient « à mi-parcours »), et monter le 2ᵉ à 100 emporte le 3ᵉ. Une
+ * écriture par ligne aurait dû rejouer ces deux règles ici — elles vivent dans
+ * `tauxCumulesBornes`, et n'ont qu'à y rester.
+ */
+async function ecrireAcomptes(
+  tx: DbOrTx,
+  entrepriseId: string,
+  devisId: string,
+  acomptes: readonly AcompteDevis[]
+): Promise<AcompteDevis[]> {
+  const bornes = tauxCumulesBornes(acomptes);
+  const propres = bornes.map((tauxCumule, i) => ({ rang: i + 1, tauxCumule }));
+  await tx.delete(acomptesDevis).where(eq(acomptesDevis.devisId, devisId));
+  if (propres.length > 0) {
+    await tx.insert(acomptesDevis).values(
+      propres.map((a) => ({ entrepriseId, devisId, rang: a.rang, tauxCumule: a.tauxCumule }))
+    );
+  }
+  return propres;
+}
+
+export async function getAcomptesDevis(ctx: Ctx, devisId: string): Promise<AcompteDevis[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => lireAcomptes(tx, devisId));
+}
+
+/**
+ * « + Ajouter un acompte » : le rang suivant, à sa valeur d'office (les
+ * Réglages, puis 50, puis 75 — cumulés). `null` : plus rien à poser — un devis
+ * envoyé, trois acomptes déjà, ou un devis déjà réglé à 100 %.
+ */
+export async function poserAcompteSuivant(ctx: Ctx, devisId: string): Promise<AcompteDevis[] | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d || d.statut === "envoye") return null;
+    const actuels = await lireAcomptes(tx, devisId);
+    const suivant = acompteSuivantPropose(actuels, d.acomptePourcent);
+    if (!suivant) return null;
+    return ecrireAcomptes(tx, ctx.entrepriseId, devisId, [...actuels, suivant]);
+  });
+}
+
+/**
+ * Le taux cumulé d'un acompte, tel qu'il l'a tapé — borné par la même règle
+ * que l'écran (`tauxCumulesBornes`) : une seule règle sert à construire
+ * l'écran et à revalider ce qu'il renvoie (`CLAUDE.md` §3).
+ */
+export async function changerTauxAcompte(
+  ctx: Ctx,
+  devisId: string,
+  rang: number,
+  taux: string
+): Promise<AcompteDevis[] | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d || d.statut === "envoye") return null;
+    const propre = tauxCumuleValide(taux);
+    if (propre === null) return null;
+    const actuels = await lireAcomptes(tx, devisId);
+    if (!actuels.some((a) => a.rang === rang)) return null;
+    return ecrireAcomptes(
+      tx,
+      ctx.entrepriseId,
+      devisId,
+      actuels.map((a) => (a.rang === rang ? { ...a, tauxCumule: propre } : a))
+    );
+  });
+}
+
+/**
+ * Le « − » d'un acompte : la ligne quitte les totaux, les suivantes remontent
+ * d'un rang. **La condition des Réglages, elle, reste imprimée** dans les notes
+ * (`devis.acomptePourcent`) — *« quoi qu'il arrive »*.
+ */
+export async function retirerAcompte(ctx: Ctx, devisId: string, rang: number): Promise<AcompteDevis[] | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
+    if (!d || d.statut === "envoye") return null;
+    const actuels = await lireAcomptes(tx, devisId);
+    return ecrireAcomptes(tx, ctx.entrepriseId, devisId, actuels.filter((a) => a.rang !== rang));
+  });
+}
+
+/**
+ * ─── CE QUE LE PDF REÇOIT — UNE SEULE FOIS, POUR LES TROIS SORTIES ──────────
+ *
+ * L'aperçu, l'envoi et la feuille sans prix composaient chacun leur propre
+ * copie de ce bloc, et elles avaient divergé : **le PDF ENVOYÉ — celui que le
+ * client télécharge par son lien — partait sans la validité ni les conditions
+ * réglées** ; seul l'aperçu les portait. Trouvé le 12 septembre 2026 en
+ * branchant les acomptes, qui auraient fait une quatrième divergence.
+ *
+ * Une seule fonction : ce que l'artisan voit dans l'aperçu est ce que le client
+ * reçoit, à l'octet près (`CLAUDE.md` §3).
+ */
+function donneesPdfDuDevis(
+  d: typeof devis.$inferSelect,
+  lignes: (typeof lignesDevis.$inferSelect)[],
+  acomptes: readonly AcompteDevis[],
+  statut: "brouillon" | "envoye"
+): DevisPdfData {
+  return {
+    numeroCommercial: d.numeroCommercial,
+    numeroVersion: d.numeroVersion,
+    statut,
+    dateEmission: d.dateEmission,
+    entrepriseNom: d.entrepriseNom,
+    entrepriseAdresse: d.entrepriseAdresse,
+    entrepriseSiret: d.entrepriseSiret,
+    entrepriseTelephone: d.entrepriseTelephone,
+    entrepriseEmail: d.entrepriseEmail,
+    // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN, le
+    // client reçoit un devis qu'il ne peut pas payer. (`sansChiffrage` l'ignore.)
+    entrepriseIban: d.entrepriseIban,
+    entrepriseFormeJuridique: d.entrepriseFormeJuridique,
+    entrepriseCapitalSocial: d.entrepriseCapitalSocial,
+    entrepriseVilleRcs: d.entrepriseVilleRcs,
+    entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
+    clientNom: d.clientNom,
+    clientCivilite: d.clientCivilite,
+    clientAdresse: d.clientAdresse,
+    clientTelephone: d.clientTelephone,
+    adresseChantier: d.adresseChantier,
+    conditionsPaiement: d.conditionsPaiement,
+    validiteJours: d.validiteJours,
+    // Les cinq conditions figées à la création (migration 0064). C'est le PDF
+    // qui les met en phrases, parce que le total y est connu — le montant de
+    // l'acompte en dépend.
+    conditionsReglees: {
+      acomptePourcent: d.acomptePourcent,
+      delaiPaiementJours: d.delaiPaiementJours,
+      moyensPaiement: d.moyensPaiement,
+      rappelerPenalites: d.rappelerPenalites,
+      textePied: d.textePied,
+      conditionsGenerales: d.conditionsGenerales,
+    },
+    // « dont main d'œuvre HT » (migration 0090) : nommée sous le total, jamais comptée.
+    mainDoeuvreHt: d.mainDoeuvreHt,
+    // Les lignes des totaux, cumulées (migration 0088) : le PDF en tire ce qui
+    // tombe à chaque acompte et le reste à régler, par la règle commune.
+    acomptes: [...acomptes],
+    devise: d.devise,
+    tauxTva: d.tauxTva,
+    totalHt: d.totalHt,
+    totalTva: d.totalTva,
+    totalTtc: d.totalTtc,
+    reductionPourcent: d.reductionPourcent,
+    reductionMontant: d.reductionMontant,
+    lignes: lignes.map((l) => ({
+      libelle: l.libelle,
+      quantite: l.quantite,
+      prixUnitaire: l.prixUnitaire,
+      montant: l.montant,
+      unite: l.unite,
+      aChiffrer: l.aChiffrer,
+      // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
+      // ventilerait tout sur le taux du document (migration 0073).
+      tauxTva: l.tauxTva,
+    })),
+  };
 }
 
 // Génère le PDF pour un devis (brouillon ou envoyé) sans jamais persister la
@@ -368,59 +592,10 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
     if (!d) throw new Error("Devis introuvable");
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
-    return genererPdfDevis({
-      numeroCommercial: d.numeroCommercial,
-      numeroVersion: d.numeroVersion,
-      statut: d.statut as "brouillon" | "envoye",
-      dateEmission: d.dateEmission,
-      entrepriseNom: d.entrepriseNom,
-      entrepriseAdresse: d.entrepriseAdresse,
-      entrepriseSiret: d.entrepriseSiret,
-      entrepriseTelephone: d.entrepriseTelephone,
-      entrepriseEmail: d.entrepriseEmail,
-      // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN,
-      // le client reçoit un devis qu'il ne peut pas payer.
-      entrepriseIban: d.entrepriseIban,
-      entrepriseFormeJuridique: d.entrepriseFormeJuridique,
-      entrepriseCapitalSocial: d.entrepriseCapitalSocial,
-      entrepriseVilleRcs: d.entrepriseVilleRcs,
-      entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
-      clientNom: d.clientNom,
-      clientCivilite: d.clientCivilite,
-      clientAdresse: d.clientAdresse,
-      clientTelephone: d.clientTelephone,
-      adresseChantier: d.adresseChantier,
-      conditionsPaiement: d.conditionsPaiement,
-      validiteJours: d.validiteJours,
-      // Les cinq conditions figées à la création (migration 0064). C'est le PDF
-      // qui les met en phrases, parce que le total y est connu — le montant de
-      // l'acompte en dépend.
-      conditionsReglees: {
-        acomptePourcent: d.acomptePourcent,
-        delaiPaiementJours: d.delaiPaiementJours,
-        moyensPaiement: d.moyensPaiement,
-        rappelerPenalites: d.rappelerPenalites,
-        textePied: d.textePied,
-      },
-      devise: d.devise,
-      tauxTva: d.tauxTva,
-      totalHt: d.totalHt,
-      totalTva: d.totalTva,
-      totalTtc: d.totalTtc,
-      reductionPourcent: d.reductionPourcent,
-      reductionMontant: d.reductionMontant,
-      lignes: lignes.map((l) => ({
-        libelle: l.libelle,
-        quantite: l.quantite,
-        prixUnitaire: l.prixUnitaire,
-        montant: l.montant,
-        unite: l.unite,
-        aChiffrer: l.aChiffrer,
-        // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
-        // ventilerait tout sur le taux du document (migration 0073).
-        tauxTva: l.tauxTva,
-      })),
-    }, habillage);
+    return genererPdfDevis(
+      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, devisId), d.statut as "brouillon" | "envoye"),
+      habillage
+    );
   });
 }
 
@@ -458,46 +633,10 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       );
     }
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
-    const pdfBytes = await genererPdfDevis({
-      numeroCommercial: avant.numeroCommercial,
-      numeroVersion: avant.numeroVersion,
-      statut: "envoye",
-      dateEmission: avant.dateEmission,
-      entrepriseNom: avant.entrepriseNom,
-      entrepriseAdresse: avant.entrepriseAdresse,
-      entrepriseSiret: avant.entrepriseSiret,
-      entrepriseTelephone: avant.entrepriseTelephone,
-      entrepriseEmail: avant.entrepriseEmail,
-      entrepriseIban: avant.entrepriseIban,
-      entrepriseFormeJuridique: avant.entrepriseFormeJuridique,
-      entrepriseCapitalSocial: avant.entrepriseCapitalSocial,
-      entrepriseVilleRcs: avant.entrepriseVilleRcs,
-      entrepriseMentionsLegalesPosition: avant.entrepriseMentionsLegalesPosition,
-      clientNom: avant.clientNom,
-      clientCivilite: avant.clientCivilite,
-      clientAdresse: avant.clientAdresse,
-      clientTelephone: avant.clientTelephone,
-      adresseChantier: avant.adresseChantier,
-      conditionsPaiement: avant.conditionsPaiement,
-      devise: avant.devise,
-      tauxTva: avant.tauxTva,
-      totalHt: avant.totalHt,
-      totalTva: avant.totalTva,
-      totalTtc: avant.totalTtc,
-      reductionPourcent: avant.reductionPourcent,
-      reductionMontant: avant.reductionMontant,
-      lignes: lignes.map((l) => ({
-        libelle: l.libelle,
-        quantite: l.quantite,
-        prixUnitaire: l.prixUnitaire,
-        montant: l.montant,
-        unite: l.unite,
-        aChiffrer: l.aChiffrer,
-        // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
-        // ventilerait tout sur le taux du document (migration 0073).
-        tauxTva: l.tauxTva,
-      })),
-    }, habillage);
+    const pdfBytes = await genererPdfDevis(
+      donneesPdfDuDevis(avant, lignes, await lireAcomptes(tx, devisId), "envoye"),
+      habillage
+    );
 
     const objet = await enregistrerObjet(
       `chantiers/${avant.chantierId}/devis`,
@@ -540,9 +679,29 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
 export async function mettreAJourEnTeteDevis(
   ctx: Ctx,
   devisId: string,
-  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }
+  data: {
+    tauxTva?: string;
+    conditionsPaiement?: string;
+    reductionPourcent?: string | null;
+    /** « dont main d'œuvre HT » ; `null` retire la ligne. Bornée au brut HT. */
+    mainDoeuvreHt?: string | null;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **Le même verrou que le rendu du brouillon** (`getOuCreerDevisBrouillon`),
+    // pris AVANT de lire. Le rendu recopie le taux de TVA, la remise et les
+    // totaux depuis ce qu'il a lu ; joué en même temps que ce geste-ci, il
+    // réécrivait la valeur d'avant par-dessus la sienne — les 5 % du « + Remise »
+    // n'arrivaient pas en base, la main d'œuvre retirée revenait (13 septembre
+    // 2026, `test-reduction-devis-e2e`, `test-planche-b-devis-e2e`). Sous le
+    // verrou, l'un attend l'autre et lit ce qu'il a écrit.
+    const [cible] = await tx
+      .select({ chantierId: devis.chantierId })
+      .from(devis)
+      .where(eq(devis.id, devisId))
+      .limit(1);
+    if (!cible) return null;
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${cible.chantierId}))`);
     const [avant] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!avant || avant.statut === "envoye") return null;
 
@@ -550,6 +709,7 @@ export async function mettreAJourEnTeteDevis(
       tauxTva?: string;
       conditionsPaiement?: string;
       reductionPourcent?: string | null;
+      mainDoeuvreHt?: string | null;
       updatedAt: Date;
     } = { updatedAt: new Date() };
     if (data.tauxTva !== undefined) {
@@ -576,6 +736,12 @@ export async function mettreAJourEnTeteDevis(
       valeurs.tauxTva ?? avant.tauxTva,
       data.reductionPourcent !== undefined ? valeurs.reductionPourcent : avant.reductionPourcent
     );
+    // **La main d'œuvre passe par la MÊME borne que l'écran** (`montantMainDoeuvreValide`),
+    // et le plafond est le brut HT du moment : « dont » ne dépasse pas le tout.
+    if (data.mainDoeuvreHt !== undefined) {
+      const brutHt = totauxAvecReduction(lignes, valeurs.tauxTva ?? avant.tauxTva, null).brutHt;
+      valeurs.mainDoeuvreHt = montantMainDoeuvreValide(data.mainDoeuvreHt, brutHt);
+    }
 
     const [row] = await tx
       .update(devis)
@@ -615,41 +781,11 @@ export async function genererDevisSansPrix(
     if (!d) return null;
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, d.id));
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    // Les mêmes données que le devis chiffré : c'est `sansChiffrage` qui
+    // décide de ce qui ne s'imprime pas (prix, totaux, acomptes, IBAN,
+    // conditions), pas une copie amputée de ce bloc.
     return genererPdfDevis(
-      {
-        numeroCommercial: d.numeroCommercial,
-        numeroVersion: d.numeroVersion,
-        statut: d.statut as "brouillon" | "envoye",
-        dateEmission: d.dateEmission,
-        entrepriseNom: d.entrepriseNom,
-        entrepriseAdresse: d.entrepriseAdresse,
-        entrepriseSiret: d.entrepriseSiret,
-        entrepriseTelephone: d.entrepriseTelephone,
-        entrepriseEmail: d.entrepriseEmail,
-        // `sansChiffrage` ignore l'IBAN : il n'a rien à faire sur une feuille
-        // de chantier, et le passer ne l'imprime pas.
-        entrepriseIban: d.entrepriseIban,
-        clientNom: d.clientNom,
-        clientCivilite: d.clientCivilite,
-        clientAdresse: d.clientAdresse,
-        clientTelephone: d.clientTelephone,
-        adresseChantier: d.adresseChantier,
-        conditionsPaiement: d.conditionsPaiement,
-        validiteJours: d.validiteJours,
-        devise: d.devise,
-        tauxTva: d.tauxTva,
-        totalHt: d.totalHt,
-        totalTva: d.totalTva,
-        totalTtc: d.totalTtc,
-        reductionPourcent: d.reductionPourcent,
-        reductionMontant: d.reductionMontant,
-        lignes: lignes.map((l) => ({
-          libelle: l.libelle,
-          quantite: l.quantite,
-          prixUnitaire: l.prixUnitaire,
-          montant: l.montant,
-        })),
-      },
+      donneesPdfDuDevis(d, lignes, await lireAcomptes(tx, d.id), d.statut as "brouillon" | "envoye"),
       { sansChiffrage: true, ...habillage }
     );
   });

@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import {
   CHEMIN_VISIONNEUSE,
   adresseDeLaVisionneuse,
@@ -73,6 +75,34 @@ cas("rien, ou vide, ne se peint", () => {
 cas("une adresse qui n'est pas celle de la visionneuse ne se relit pas", () => {
   assert.equal(fichierDemandeALaVisionneuse(FACTURE), null);
   assert.equal(fichierDemandeALaVisionneuse(`${CHEMIN_VISIONNEUSE}?titre=x`), null);
+});
+
+// ─── CE QUE pdf.js EXIGE DU NAVIGATEUR DU CLIENT ───────────────────────────
+
+cas("pdf.js n'appelle aucune méthode que les téléphones n'ont pas encore", () => {
+  // **Ce contrôle vaut un écran blanc chez son client — 13 septembre 2026.**
+  // Avec `pdfjs-dist` 6.3, la visionneuse rendait « Le document ne s'ouvre
+  // pas » sur le Chromium de l'atelier : à partir de la 5.5, pdf.js appelle
+  // `Map.prototype.getOrInsertComputed`, arrivée dans les navigateurs en 2025.
+  //
+  // Et ce n'est pas l'atelier qui décide : la page publique du devis est
+  // ouverte par SES CLIENTS, avec le téléphone qu'ils ont. La version est donc
+  // épinglée dans `package.json`, et ce contrôle tient l'épingle — une montée
+  // de version qui ramènerait la méthode fait rougir le lot, au lieu de se
+  // découvrir chez un client qui ne voit pas son devis.
+  const paquet = path.join(__dirname, "..", "node_modules", "pdfjs-dist", "build", "pdf.mjs");
+  if (!existsSync(paquet)) {
+    // Refuser de conclure plutôt que de rendre un vert sans rien mesurer
+    // (`CLAUDE.md` §5, payé le 15 août 2026).
+    throw new Error("pdfjs-dist n'est pas installé : ce contrôle ne peut rien mesurer");
+  }
+  const code = readFileSync(paquet, "utf8");
+  for (const recente of ["getOrInsertComputed", "getOrInsert("]) {
+    assert.ok(
+      !code.includes(recente),
+      `pdf.js appelle « ${recente} » : les navigateurs qui ne l'ont pas n'ouvriront AUCUN document`
+    );
+  }
 });
 
 console.log(echecs ? `\n${echecs} échec(s)` : "\nTout est vert.");

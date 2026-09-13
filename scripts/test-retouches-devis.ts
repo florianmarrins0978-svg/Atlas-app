@@ -330,7 +330,7 @@ cas("« fais cinq pour cent » ne vise aucune ligne, et le dit", () => {
   assert.equal(r.ligne, null, "la réduction porte sur le devis entier, pas sur une ligne");
   const dit = direRetouche(r);
   assert.equal(dit.verbe, "Accorder");
-  assert.match(dit.quoi, /Prix accordé au client 5 %/);
+  assert.match(dit.quoi, /Remise de 5 %/);
   assert.doesNotMatch(dit.quoi, /[Rr]éduction/, "c'est le mot qu'il a écarté le 16 août");
 });
 

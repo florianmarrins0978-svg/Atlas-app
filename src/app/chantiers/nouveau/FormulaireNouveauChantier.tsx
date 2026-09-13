@@ -7,6 +7,10 @@ import { colors, font, libelleCaps, smallCaps, surPlein } from "@/lib/design-tok
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
+import LigneRetirable from "@/components/atlas/LigneRetirable";
+import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
+import { useRetraits } from "@/components/atlas/useRetraits";
+import { supprimerNoteVocaleAction } from "../[id]/note-vocale/actions";
 import DicterCoordonnees from "./DicterCoordonnees";
 import { champsARemplir, type CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import {
@@ -397,6 +401,35 @@ export default function FormulaireNouveauChantier({
    */
   const [chantierCree, setChantierCree] = useState<string | null>(null);
   const [dicteeFaite, setDicteeFaite] = useState(false);
+
+  /**
+   * LA DICTÉE SE JETTE DEPUIS CET ÉCRAN — sa décision du 13 septembre 2026.
+   *
+   * **Le chantier porte la note** : sur une fiche neuve il n'existe qu'à partir
+   * du moment où la dictée part (`assurerChantier`), d'où ces deux sources.
+   *
+   * **Ce qui est retiré n'est pas encore détruit** : `useRetraits` garde la
+   * note six secondes derrière « Annuler », et c'est la fermeture du tiroir qui
+   * la supprime pour de bon — avec son enregistrement, mis en file de purge
+   * dans la même transaction (`supprimerNoteVocale`). Une annulation qui ne
+   * rendrait que le texte serait pire que pas d'annulation.
+   */
+  const chantierDeLaNote = reprise?.id ?? chantierCree;
+  const retraitDeLaNote = useRetraits({
+    valider: async () => {
+      if (chantierDeLaNote) await supprimerNoteVocaleAction(chantierDeLaNote);
+    },
+  });
+  const noteRetiree = chantierDeLaNote ? retraitDeLaNote.estRetire(chantierDeLaNote) : false;
+  /**
+   * Y a-t-il une dictée à jeter ?
+   *
+   * **Le même booléen tait l'invite du micro**, et ce n'est pas un raccourci :
+   * ce sont deux faces d'une seule question — *cet écran porte-t-il déjà une
+   * note ?* Les séparer, c'est la réponse qui finit par diverger (`CLAUDE.md`
+   * §3) : l'invite se tairait sur une note qu'il vient de jeter.
+   */
+  const noteAretirer = Boolean(chantierDeLaNote) && (dicteeFaite || (reprise?.aUneNote ?? false)) && !noteRetiree;
   /**
    * Une dictée est-elle en cours ?
    *
@@ -1164,10 +1197,61 @@ export default function FormulaireNouveauChantier({
               // au même endroit pour la même raison. L'objet, lui, ne bouge
               // pas : il reste appuyable, et une seconde dictée remplace la
               // première, en le disant (`DevisDepuisDictee`, cas « conflit »).
-              preparationEnCours={dicteeFaite || (reprise?.aUneNote ?? false)}
-              storageKey={null}
-              dureeSecondes={null}
+              preparationEnCours={noteAretirer}
             />
+
+            {/* ─── RETIRER LA DICTÉE, ICI — sa décision du 13 septembre 2026 ──
+                *« C'est sur cet écran que je le voulais ! Car en cas de
+                problème on peut supprimer la dictée comme ça. »*
+
+                **Ce qui manquait n'était pas le geste, c'était l'objet.** Le
+                glissement existait depuis le 7 septembre — sur l'écran Note
+                vocale, où il ne va pas quand sa dictée vient de rater. Ici, il
+                a le micro sous les yeux : c'est ici qu'il jette pour redicter.
+
+                **Les pièces sont celles de partout** : `useRetraits` pour le
+                tiroir « Annuler », `LigneRetirable` pour le glissement. Rien
+                n'est réinventé sur place — c'est ce qui avait ramené trois
+                mécaniques de suppression dans l'application, et ce que sa règle
+                du 10 août 2026 a fait disparaître.
+
+                **Et le retrait rend le micro à l'invite** : sans cela, l'écran
+                resterait muet après un jet, et il ne saurait pas qu'il peut
+                recommencer — ce qui est tout l'objet de sa demande. */}
+            {noteAretirer && (
+              <div className="mt-4">
+                <LigneRetirable
+                  libelle="cette note vocale"
+                  retiree={noteRetiree}
+                  onRetirer={() => retraitDeLaNote.retirer(chantierDeLaNote!, "cette note vocale")}
+                  hauteurMax={80}
+                  plage={{ fond: colors.card }}
+                  className="flex w-full items-center py-4 pl-5 pr-5"
+                >
+                  <p className="text-[14px]" style={{ color: colors.ink }}>
+                    Votre dictée
+                  </p>
+                </LigneRetirable>
+              </div>
+            )}
+
+            {/* **LE TIROIR VIT HORS DE LA CONDITION QU'IL ANNULE.** Placé
+                avec la ligne, il disparaissait avec elle au moment même du
+                retrait : « Annuler » existait dans la page, mais plus personne
+                ne pouvait l'atteindre — le geste devenait irréversible sans
+                que rien ne le dise. Trouvé par la suite, avant lui. */}
+            {/* **Un repère À LUI** : la pellicule des photos porte son propre
+                tiroir sur ce même écran, avec le même « Annuler ». Sans de quoi
+                les distinguer, un contrôle vise le premier venu — et c'est
+                exactement ce qui est arrivé en écrivant sa suite. */}
+            <div data-atlas="tiroir-de-la-dictee">
+              <TiroirDesRetires
+                dernier={retraitDeLaNote.dernier}
+                nombre={retraitDeLaNote.nombre}
+                onAnnuler={retraitDeLaNote.annuler}
+                className="mt-3 !mx-0"
+              />
+            </div>
           </div>
           )}
 
@@ -1181,7 +1265,13 @@ export default function FormulaireNouveauChantier({
               se fait (`surLeDevis={false}`). Ce composant ne rend plus alors que
               ce qui se PASSE — le travail en cours, l'arrêt d'avant-chiffrage,
               ou ce qui a échoué. */}
-          {dicteeFaite && (reprise?.id ?? chantierCree) && (
+          {/* **La préparation cesse d'être suivie dès que la dictée est jetée
+              — 13 septembre 2026.** Sans ce `noteRetiree`, l'écran continuerait
+              d'annoncer « Atlas prépare votre devis… » à partir d'une note
+              qu'il vient de retirer, et l'emmènerait sur un devis qu'il n'a
+              plus demandé. Le geste de jeter n'aurait alors rien jeté à ses
+              yeux. */}
+          {dicteeFaite && !noteRetiree && (reprise?.id ?? chantierCree) && (
             <div>
               <DevisDepuisDictee
                 chantierId={(reprise?.id ?? chantierCree)!}

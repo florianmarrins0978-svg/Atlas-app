@@ -31,10 +31,10 @@ import {
   retirerLignesDeFactureAction,
 } from "../actions";
 import {
-  BoutonPrixAccorde,
-  LignePrixAccorde,
+  BoutonRemise,
+  LigneRemise,
   REMISE_PAR_DEFAUT,
-} from "@/components/atlas/PrixAccordeAuClient";
+} from "@/components/atlas/Remise";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 // Le formateur du dépôt, au lieu de la copie qui vivait ici : deux façons
 // d'écrire un euro finissent par s'écrire différemment (`CLAUDE.md` §3).
@@ -195,7 +195,7 @@ export default function TravauxSupplementairesClient({
    *
    * La facture savait AFFICHER une remise reprise du devis ; elle n'avait aucun
    * moyen d'en poser une. Le geste est celui du devis, monté depuis la même
-   * pièce (`PrixAccordeAuClient`) — recopié, il aurait divergé au premier
+   * pièce (`Remise`) — recopié, il aurait divergé au premier
    * ajustement.
    */
   const [reduction, setReduction] = useState(reductionPourcent ?? "");
@@ -575,7 +575,7 @@ export default function TravauxSupplementairesClient({
           </div>
           {remiseOuverte && (
             <>
-              <LignePrixAccorde
+              <LigneRemise
                 pourcent={reduction}
                 montantRetire={totaux.reductionMontant}
                 onChange={setReduction}
@@ -613,7 +613,7 @@ export default function TravauxSupplementairesClient({
           </div>
 
           {!remiseOuverte && (
-            <BoutonPrixAccorde
+            <BoutonRemise
               onPoser={() => {
                 setRemiseOuverte(true);
                 setReduction(REMISE_PAR_DEFAUT);

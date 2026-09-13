@@ -9,6 +9,7 @@ import {
   type Conditions,
 } from "@/lib/conditions-documents";
 import { majConditionsAction } from "../actions";
+import { TEXTE_ORIGINE_CONDITIONS_GENERALES, crochetsRestants } from "@/lib/conditions-generales";
 import BarreEnregistrer from "@/components/atlas/BarreEnregistrer";
 import { Bloc, Chiffre, Libre, Reglage } from "../pieces";
 
@@ -56,6 +57,7 @@ export default function ConditionsClient({ initial }: { initial: Conditions }) {
         moyensPaiement: prochain.moyensPaiement,
         rappelerPenalites: prochain.rappelerPenalites,
         textePied: prochain.textePied,
+        conditionsGenerales: prochain.conditionsGenerales,
       });
       setRefus(r.ok ? null : r.raison);
       // **On affiche ce que la base porte, jamais ce qu'on a demandé.** Un refus
@@ -170,6 +172,32 @@ export default function ConditionsClient({ initial }: { initial: Conditions }) {
             onEcrire={(t) => poser({ textePied: t })}
             onFini={(t) => enregistrer({ textePied: t })}
           />
+        </Reglage>
+
+        {/* **Ses conditions générales — sa demande du 12 septembre 2026** : la
+            case arrive REMPLIE du texte d'origine, il l'efface ou la réécrit.
+            Éteindre vide ; rallumer remet le texte d'origine. Imprimées après
+            le bon pour accord (`devis-pdf.ts`, annexe). */}
+        <Reglage
+          nom="Conditions générales de vente et de règlement"
+          dit="Imprimées après le bon pour accord"
+          allume={c.conditionsGenerales !== ""}
+          onBascule={(v) => enregistrer({ conditionsGenerales: v ? TEXTE_ORIGINE_CONDITIONS_GENERALES : "" })}
+        >
+          <Libre
+            valeur={c.conditionsGenerales}
+            exemple=""
+            long
+            lignes={14}
+            aria="Conditions générales de vente et de règlement"
+            onEcrire={(t) => poser({ conditionsGenerales: t })}
+            onFini={(t) => enregistrer({ conditionsGenerales: t })}
+          />
+          {crochetsRestants(c.conditionsGenerales) > 0 && (
+            <p className={`mt-2 ${texteSituation}`} style={{ color: colors.alert }} data-atlas="crochets-a-remplir">
+              {crochetsRestants(c.conditionsGenerales)} crochet{crochetsRestants(c.conditionsGenerales) > 1 ? "s" : ""} à remplir avant d’envoyer un devis.
+            </p>
+          )}
         </Reglage>
       </Bloc>
 
