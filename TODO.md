@@ -64,6 +64,14 @@ comptait le mois du jour en UTC, contre la règle du 25 août (§177) : le 1ᵉ�
 mois entre minuit et deux heures, l'écran ouvrait sur le mois d'avant. Il
 passe par `jourIso`.
 
+**Batterie rejouée sur son PC après la correction** (atelier 0, Docker rallumé,
+`ATLAS_BASE_SUPER` posé au mot de passe local) : les quatre suites de date
+**vertes** ; navigateur **133/151**, et les dix-huit rouges sont toutes déjà
+nommées ici (les quinze de `main`, `bandeau-banc`, `ia-03`, `ligne-du-client`)
+plus `bloquer-sans-devis`, connue depuis le 11 ; base **358/368**, les dix
+rouges étant l’outillage qui veut `bash`, `ps -o` ou `gh` — introuvables sur
+Windows — et `seed-conserve-identifiants`, qui réclame `DATABASE_SUPER_URL`.
+
 **Restent les quatre autres**, qui ne tiennent pas au fuseau :
 
 **Relevé depuis `atlas-app-oeil`, sur Windows, fuseau Europe/Paris**, en
