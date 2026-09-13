@@ -8,6 +8,25 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — UNE `date` EST UN JOUR, PAS UN INSTANT (13 septembre 2026, soir)
+
+| | |
+|---|---|
+| le défaut | quatre suites (`poser-une-date`, `liberer-une-demi-journee`, `date-lointaine`, `deux-dates-calendrier`) rougissaient d'un jour sur un PC à Paris, vertes en UTC |
+| la racine | le pilote `pg` rend une `date` en `Date` à minuit LOCAL ; `toISOString()` recule d'un jour à l'est de Greenwich. Drizzle se protégeait ; le `pool` brut, non |
+| la correction | `src/server/db/client.ts` : `date` et `date[]` en texte au pilote, une fois. Les `instanceof Date ? toISOString()` des quatre suites sont partis |
+| en chemin | `src/app/termines/page.tsx` comptait le mois en UTC — passe par `jourIso` (§177) |
+| la migration | **aucune** |
+| la suite | `test-date-est-un-jour-db.ts` — rougit sur l'ancien pilote dans n'importe quel fuseau |
+| le détail | `ARCHITECTURE.md` §355 |
+
+**LE PIÈGE :** une `date` relue par `pool.query` est désormais une **chaîne**,
+jamais un `Date`. Ne pas remettre un `instanceof Date` « au cas où » : c'est
+la couche qui vient d'être retirée.
+
+---
+## Lot précédent — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
+
 ## Dernier lot — « JE PEUX TOUJOURS PAS CRÉER DE COMPTE » (13 septembre 2026, le soir)
 
 | | |
@@ -18,7 +37,7 @@ sert.
 | la correction | `creerSonCompte` journalise l'erreur avec son `SQLSTATE` et rend un refus ; `src/lib/panne-de-base.ts` dit si le refus veut dire « base en retard », et donne le geste **sûr** (rallumer l'espace) |
 | la suite qui manquait | `test-creer-son-compte-e2e.ts` — les seize questions dans un vrai navigateur, les trois lignes en base, puis la migration réellement retirée. Rougit sur le code d'avant |
 | la migration | **aucune** |
-| le détail | `ARCHITECTURE.md` §355 |
+| le détail | `ARCHITECTURE.md` §356 |
 
 **CE QUI N'A PAS PU ÊTRE VÉRIFIÉ, et ne doit pas être présenté comme acquis :**
 ce qui tombe sur SA machine. Le journal de son espace n'est publié nulle part,
@@ -35,6 +54,7 @@ interroge le serveur toutes les cinq secondes.
 
 ---
 ## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
+
 
 | | |
 |---|---|

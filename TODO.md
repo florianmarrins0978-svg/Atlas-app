@@ -12,7 +12,7 @@ langage, et rien n'y entre sans son accord.
 ## RIEN NE COMPARE LA BASE AU CODE — le trou qui a rendu sa panne invisible
 
 **Né de sa plainte du 13 septembre 2026** (« je peux toujours pas créer de
-compte », `ARCHITECTURE.md` §355). Le code servi peut être en avance sur la
+compte », `ARCHITECTURE.md` §356). Le code servi peut être en avance sur la
 base : une migration qui n'est pas passée, et l'écran tombe — n'importe où,
 avec un message qui n'accuse jamais la vraie cause.
 
@@ -78,7 +78,32 @@ planche la pose entre Qté et P.U. HT, avec les unités usuelles (u, ml, m², m�
 kg, h, forfait) sous la ligne quand le champ prend le doigt. Même planche,
 même adresse.
 
-## HUIT SUITES DE PLUS ROUGISSENT SUR SON PC — l'heure de Paris, pas le produit (13 septembre 2026, après-midi)
+## ~~HUIT~~ QUATRE SUITES DE PLUS ROUGISSENT SUR SON PC — les quatre dates sont CORRIGÉES (13 septembre 2026, soir)
+
+**Les quatre suites de date sont réparées à la racine** — au pilote, pas dans
+les suites : `src/server/db/client.ts` rend désormais `date` et `date[]` en
+« AAAA-MM-JJ » sur le `pool` brut, comme Drizzle le faisait déjà pour ses
+propres requêtes. Le `instanceof Date ? toISOString()` des quatre suites est
+parti avec. `scripts/test-date-est-un-jour-db.ts` sait rougir sur l'ancien
+pilote, dans n'importe quel fuseau. Détail : `ARCHITECTURE.md` §355.
+
+**Et ce que ce relevé disait de `PlanningClient.tsx` était FAUX** : ses deux
+fonctions ancrent la date à `T12:00:00Z` et n'emploient que des méthodes UTC —
+aucun décalage possible, quel que soit le fuseau du navigateur. Vérifié dans le
+code avant d'y toucher ; rien à corriger là. En revanche `src/app/termines/page.tsx`
+comptait le mois du jour en UTC, contre la règle du 25 août (§177) : le 1ᵉʳ du
+mois entre minuit et deux heures, l'écran ouvrait sur le mois d'avant. Il
+passe par `jourIso`.
+
+**Batterie rejouée sur son PC après la correction** (atelier 0, Docker rallumé,
+`ATLAS_BASE_SUPER` posé au mot de passe local) : les quatre suites de date
+**vertes** ; navigateur **133/151**, et les dix-huit rouges sont toutes déjà
+nommées ici (les quinze de `main`, `bandeau-banc`, `ia-03`, `ligne-du-client`)
+plus `bloquer-sans-devis`, connue depuis le 11 ; base **358/368**, les dix
+rouges étant l’outillage qui veut `bash`, `ps -o` ou `gh` — introuvables sur
+Windows — et `seed-conserve-identifiants`, qui réclame `DATABASE_SUPER_URL`.
+
+**Restent les quatre autres**, qui ne tiennent pas au fuseau :
 
 **Relevé depuis `atlas-app-oeil`, sur Windows, fuseau Europe/Paris**, en
 rejouant les rouges de la batterie du lot de l'œil (121/147, puis 8/31 sur
@@ -87,7 +112,7 @@ touchent aucun fichier du lot**, et dont le message désigne l'environnement :
 
 | | |
 |---|---|
-| `date-lointaine`, `deux-dates-calendrier`, `poser-une-date`, `liberer-une-demi-journee` | **un jour de décalage** — « posé le 2026-09-13 au lieu du 2026-09-14 ». La suite relit une colonne `date` par `rows[0].jour.toISOString().slice(0, 10)` : `pg` rend un `Date` à minuit LOCAL, et minuit à Paris est 22 h la veille en UTC. Vert en UTC (la CI, son espace), rouge partout ailleurs. **À regarder aussi dans `PlanningClient.tsx` (lignes ~195 et ~211), qui fait la même conversion dans le navigateur** — chez lui, le navigateur est à Paris |
+| ~~`date-lointaine`, `deux-dates-calendrier`, `poser-une-date`, `liberer-une-demi-journee`~~ | **corrigées le soir même** — voir ci-dessus. Le défaut : `pg` rendait un `Date` à minuit LOCAL, et minuit à Paris est 22 h la veille en UTC |
 | `bandeau-banc` | `spawn npx ENOENT` — sur Windows, `npx` est `npx.cmd` ; la suite ne peut pas tourner ici |
 | `ia-03`, `ia-04` | le bouton « Ouvrir l'assistant » n'apparaît pas en 45 s |
 | `ligne-du-client` | « l'adresse longue ne déborde pas : ce contrôle ne mesure alors plus rien » |
@@ -97,10 +122,10 @@ le dernier chantier du jeu, déjà facturé quand les suites qui facturent sont
 passées avant — l'œil n'avait rien à montrer. Elle prend un chantier sans
 facture émise.
 
-**Pour trancher les quatre dates** : jouer une seule d'entre elles dans un
-atelier à Paris ET en UTC (`TZ=UTC npm run test:e2e -- --seulement
-poser-une-date`). Si l'écart tient au fuseau, corriger la LECTURE (comparer
-des `date` en texte, `to_char(jour, 'YYYY-MM-DD')`), pas l'écriture.
+**Deux suites lisaient déjà juste** — `absence-equipe` par `to_char`,
+`reste-equipes` par `::text` : c'est la règle recopiée deux fois, et une
+troisième fois oubliée. Elle vit désormais au pilote ; ces deux contournements
+peuvent tomber au prochain passage sur ces suites.
 ## ~~UN ROUGE « CAPRICIEUX » ÉTAIT UNE ÉCRITURE PERDUE~~ — TROUVÉ ET CORRIGÉ (13 septembre 2026)
 
 `test-reduction-devis-e2e` tombait une fois sur deux depuis des jours, et trois

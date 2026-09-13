@@ -29925,7 +29925,50 @@ comportement).
 
 ---
 
-## §355 — Une panne de base ne jette plus le patron sur l'écran d'erreur
+## §355 — Une colonne `date` arrive en jour, jamais en instant : la règle vit au pilote
+
+**Le défaut, mesuré le 13 septembre 2026.** Quatre suites navigateur —
+`poser-une-date`, `liberer-une-demi-journee`, `date-lointaine`,
+`deux-dates-calendrier` — rougissaient d'un jour sur un PC réglé à l'heure de
+Paris, et restaient vertes en UTC, où tournent la CI et son espace. Le message
+disait « posé le 2026-09-13 au lieu du 2026-09-14 » ; la base, elle, portait
+bien le 14.
+
+**La racine.** Le pilote `pg` analyse une colonne `date` en objet `Date` posé
+à **minuit dans le fuseau du processus**. Relue par `toISOString()`, minuit à
+Paris devient 22 h la veille en UTC — et le jour recule d'un. Drizzle le sait :
+pour ses propres requêtes, il force `date`, `timestamp` et `date[]` en texte.
+Le `pool` que `client.ts` exporte, lui, gardait le comportement du pilote, et
+c'est par lui que les suites relisent la base.
+
+**Où la règle vit, et pourquoi là.** Dans `src/server/db/client.ts`, au
+chargement : `types.setTypeParser(DATE, v => v)`, et `date[]` lu par
+l'analyseur de `text[]` — même syntaxe, aucune dépendance de plus. Une seule
+définition, pour le produit comme pour les suites : `src/lib/jour.ts` disait
+déjà qu'une date de ce format désigne un jour, pas un instant, et refusait
+`new Date(iso)` pour cette raison. Le pilote rendait l'inverse. Deux suites
+avaient contourné à la main (`to_char`, `::text`) ; quatre autres avaient
+recopié un `instanceof Date ? toISOString()` — la règle existait en trois
+exemplaires, et un seul était faux. Les quatre compensations sont parties.
+
+**Ce qui n'est pas touché, et ne doit pas l'être :** `timestamptz`. Un
+horodatage est un instant, et il a une heure qui compte — le lire en texte
+se tromperait dans l'autre sens. `test-date-est-un-jour-db.ts` tient les
+deux : la `date` arrive en « 2026-09-14 », l'horodatage reste un `Date`. Elle
+sait rougir sur l'ancien pilote **dans n'importe quel fuseau** — un contrôle
+qui ne rougirait qu'à Paris serait vert sur la CI, donc invisible.
+
+**Ce que le relevé affirmait et qui était faux.** `TODO.md` désignait
+`PlanningClient.tsx` comme faisant « la même conversion dans le navigateur ».
+Non : ses fonctions ancrent la date à `T12:00:00Z` et n'emploient que des
+méthodes UTC. Il a été lu avant d'être touché, et il ne l'a pas été. En
+revanche `src/app/termines/page.tsx` comptait le mois courant en UTC — le 1ᵉʳ du mois
+entre minuit et deux heures, l'écran ouvrait sur le mois d'avant, la fenêtre
+même que §177 avait fermée pour les jours. Il passe par `jourIso`.
+
+---
+
+## §356 — Une panne de base ne jette plus le patron sur l'écran d'erreur
 
 **Sa plainte du 13 septembre 2026 :** *« Je peux toujours pas créer de
 compte ! »* — et, en capture, « Une erreur · Cette page n'a pas pu s'afficher ·

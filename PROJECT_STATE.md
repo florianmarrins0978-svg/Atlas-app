@@ -5,6 +5,14 @@
 
 ---
 
+## FAIT : UNE `date` EST UN JOUR, PAS UN INSTANT — 13 septembre 2026
+
+Le `pool` du produit rend `date` et `date[]` en « AAAA-MM-JJ » quel que soit
+le fuseau du PC : quatre suites qui rougissaient d'un jour à l'heure de Paris
+sont vertes sans rien compenser, et l'écran Terminés compte son mois à l'heure
+de l'atelier. **Aucune migration.** Suite `test-date-est-un-jour-db.ts`.
+Détail : `ARCHITECTURE.md` §355.
+
 ## FAIT : LA PANNE DE BASE SE DIT, AU LIEU DE L'ÉCRAN D'ERREUR — 13 septembre 2026
 
 *« Je peux toujours pas crée de compte ! »* : une exception de la base sortait
@@ -15,7 +23,8 @@ disent « la base n'est pas celle que ce code attend » et donne le geste **sûr
 — rallumer l'espace, jamais reconstruire. Suite manquante écrite :
 `test-creer-son-compte-e2e.ts`, qui entre par la porte et rougit sur le code
 d'avant. **Ce qui tombe sur SA machine n'a pas pu être lu** — voir `TODO.md`,
-« rien ne compare la base au code ». Détail : `ARCHITECTURE.md` §355.
+« rien ne compare la base au code ». Détail : `ARCHITECTURE.md` §356.
+
 
 ---
 

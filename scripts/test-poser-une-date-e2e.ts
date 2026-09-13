@@ -228,8 +228,7 @@ async function main() {
       [chantierId]
     );
     if (!rows[0]?.jour) throw new Error("aucune date en base : la pose n'a rien enregistré");
-    const pose =
-      rows[0].jour instanceof Date ? rows[0].jour.toISOString().slice(0, 10) : String(rows[0].jour);
+    const pose = String(rows[0].jour);
     if (pose !== libre.jour) throw new Error(`posé le ${pose} au lieu du ${libre.jour}`);
   });
 
@@ -286,8 +285,7 @@ async function main() {
          FROM chantiers WHERE id = $1`,
       [chantierId]
     );
-    const pose =
-      rows[0].jour instanceof Date ? rows[0].jour.toISOString().slice(0, 10) : String(rows[0].jour);
+    const pose = String(rows[0].jour);
     if (pose !== libre.jour) throw new Error(`posé le ${pose} au lieu du ${libre.jour}`);
     if (rows[0].moment !== "matin") throw new Error(`posé sur « ${rows[0].moment} » et non le matin`);
     if (rows[0].duree !== 1) {
