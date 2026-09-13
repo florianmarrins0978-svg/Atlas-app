@@ -8,6 +8,27 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### Les deux « chiffres faux » du devis : l'addition était juste, la suite tapait mal
+
+*« Si c'est un problème de calculer les lignes qui ne s'additionnent pas ou mal,
+là c'est hyper grave et ça ne doit jamais arriver. »*
+
+Mesuré, pas supposé : la base portait `quantite = 12.00` pour un prix unitaire
+de `450.00`. 12 × 450 = 5 400 — **le calcul n'a jamais été en cause**. Ce sont
+les deux suites qui écrivaient « 12 » en croyant écrire « 2 » : `fill()` insère
+sans effacer, là où le champ pose volontairement le curseur À DROITE du chiffre
+existant (sa règle du 11 septembre). Elles font désormais son geste — entrer,
+tout sélectionner, taper — et les deux sont vertes.
+
+Une garde avait d'abord été ajoutée au champ pour respecter une sélection. Deux
+mesures, dans les deux sens, ont montré qu'elle ne changeait rien : elle a été
+retirée. Une correction qui ne corrige rien est une couche de plus.
+
+**Ce qui reste, et c'est à lui :** sur la case « Qté », poser le doigt et taper
+« 2 » sur une case qui affiche « 1 » donne bien **12**. C'est sa règle, et c'est
+aussi de quoi envoyer un devis à 5 400 € sur une faute de frappe (`TODO.md`).
+
+
 ### Jeter sa dictée depuis l'écran où il la fait — et 280 lignes de code mort en moins
 
 *« C'est sur cet écran que je le voulais ! Car en cas de problème on peut

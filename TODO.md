@@ -72,8 +72,28 @@ total d'une ligne ne s'affiche pas), `devis-papier` (5 400 € au lieu de 900),
 `reprise-chantier`, `reprise-morceau`, `suivi-devis`, `anneau-dictee` (le reste
 de la suite, qui demande une transcription — pas de clé sur ce poste).
 
-**Les deux qui comptent le plus, et qui portent sur un CHIFFRE :**
-`devis-complet` et `devis-papier`. Un devis faux part chez un client.
+**~~Les deux qui portent sur un CHIFFRE~~ — TRANCHÉS le 13 septembre 2026, et
+l'addition n'y était pour rien.** Mesuré au lieu d'être supposé : la base
+portait `quantite = 12.00` pour un prix unitaire de `450.00`, et 12 × 450 fait
+bien 5 400. **Le calcul était juste ; c'est la SAISIE de la suite qui ne l'était
+pas** — `fill()` insère sans effacer, là où le champ pose volontairement le
+curseur À DROITE du chiffre (sa règle du 11 septembre). Les deux suites font
+désormais son geste — entrer, tout sélectionner, taper — et elles sont vertes.
+
+**CE QUI RESTE, ET QUI EST POUR LUI** — le coût de sa règle du 11 septembre,
+mesuré :
+
+| Son geste sur la case « Qté » | Ce qui se passe |
+|---|---|
+| poser le doigt, taper « 2 » sur une case qui affiche « 1 » | **12** — le chiffre s'AJOUTE |
+| sélectionner d'abord, puis taper « 2 » | 2 |
+
+C'est exactement ce qu'il a demandé le 11 septembre — *« si la quantité par
+défaut n'est pas bonne, on a juste à supprimer »* — et c'est aussi de quoi
+envoyer un devis à 5 400 € au lieu de 900 sur une faute de frappe. **Deux voies,
+et c'est lui qui tranche :** garder (il efface d'abord), ou tout sélectionner
+à l'entrée dans la case (un appui remplace, et il perd le « on a juste à
+supprimer »).
 
 **À reprendre en propre**, suite par suite : le journal entier est nécessaire
 (`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
