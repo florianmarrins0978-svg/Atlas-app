@@ -6,6 +6,25 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-13
+
+### La CI ne jouait plus rien : un module qui s'ouvrait une session en étant lu
+
+Sa CI est rouge depuis le 10 septembre, et pas pour la raison qu'on croyait.
+`ouvrir-session.mjs` appelait `main()` au niveau du module ; `test-ouvrir-session`
+en importe `cheminDuJeton`, si bien que **charger la suite ouvrait une vraie
+session** dans le dépôt courant. Sur la machine d'intégration, où « claude »
+n'est pas installé, elle mourait sur « spawn claude ENOENT ».
+
+Le coût était invisible et total : `npm test` rouge y fait SAUTER la
+construction, les suites navigateur et la connexion derrière un proxy. La CI
+rendait donc un rouge sans avoir rien éprouvé — et c'est exactement ce qu'on
+lui demande de faire à notre place (`AGENTS.md`).
+
+`main()` ne part plus qu'en appel direct. `test-ouvrir-session` porte un
+contrôle de plus, qui tient l'import lui-même et **sait rougir** : remis en
+l'état d'avant, il retrouve le défaut et le nomme.
+
 ## 2026-09-12
 
 ### L'espace se déblaie lui-même : un lock sali ne le fige plus à vie

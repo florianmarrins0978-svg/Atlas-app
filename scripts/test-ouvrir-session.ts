@@ -18,6 +18,21 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { cheminDuJeton, JETONS } from "./ouvrir-session.mjs";
 
+/**
+ * **CHARGER CE FICHIER NE DOIT RIEN OUVRIR — 13 septembre 2026.**
+ *
+ * `ouvrir-session.mjs` appelait `main()` au niveau du module : importer
+ * `cheminDuJeton` ouvrait donc une VRAIE session dans le dépôt courant. Sur la
+ * machine d'intégration, où « claude » n'est pas installé, cette suite mourait
+ * sur « spawn claude ENOENT » — et `npm test` rouge y faisait SAUTER la
+ * construction, les suites navigateur et la connexion derrière un proxy. La CI
+ * ne jouait donc plus rien depuis le 10 septembre, sans que personne le voie.
+ *
+ * Ce contrôle-ci tient l'import lui-même : si le jeton du dossier courant
+ * existe alors qu'on n'a lancé personne, c'est que le module a agi en étant lu.
+ */
+
+
 const RACINE = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const LANCEUR = path.join(RACINE, "scripts", "ouvrir-session.mjs");
 
@@ -77,6 +92,15 @@ function lancer(racine: string, binaire: string, ...args: string[]): Promise<num
 // suites de ce dépôt en CommonJS, qui refuse un `await` de premier niveau.
 async function main() {
 console.log("=== La session choisit son dossier ===\n");
+
+// **Avant tout décor** : rien n'a été lancé, donc rien ne doit être pris.
+cas("charger le lanceur n'ouvre AUCUNE session", () => {
+  assert.ok(
+    !existsSync(cheminDuJeton(RACINE)),
+    "l'import a pris le dossier courant : le module agit en étant lu, et la CI en meurt"
+  );
+});
+
 
 const d = decor();
 try {
