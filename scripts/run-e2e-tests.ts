@@ -58,9 +58,17 @@ async function reinitialiserSeuilRedis() {
     // nettoyage, la batterie finirait par se bloquer elle-même, et le refus
     // arriverait sur la trentième suite plutôt que sur celle qui l'a causé.
     // C'est exactement le piège déjà payé sur `connexion:`.
+    //
+    // **`creation-compte:*` a rejoint la liste le 13 septembre 2026**, avec la
+    // suite qui entre par la porte. Elle appuie deux fois sur « Créer mon
+    // compte » — une fois pour le parcours, une fois pour la base en retard —
+    // et ces deux essais s'additionnent, dans le même seau que toute autre
+    // suite qui créerait un compte. Sans ce nettoyage, la cinquième tombe sur
+    // « Trop d'essais depuis cet appareil » et accuse le produit.
     const cles = [
       ...(await redis.keys("ratelimit:connexion:*")),
       ...(await redis.keys("ratelimit:reponse-devis:*")),
+      ...(await redis.keys("ratelimit:creation-compte:*")),
     ];
     if (cles.length > 0) await redis.del(...cles);
   } catch (err) {

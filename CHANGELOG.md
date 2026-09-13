@@ -8,6 +8,45 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-13
 
+### « Je peux toujours pas créer de compte » — la panne se dit, au lieu de l'écran d'erreur
+
+Sa capture : « Une erreur · Cette page n'a pas pu s'afficher · Référence :
+3285538552 », après avoir répondu aux seize questions de la porte.
+
+**Reproduit** en retirant la migration 0089 d'une base d'essai : le parcours
+rend exactement cet écran-là. L'insertion de la ligne d'essai lève, l'action
+serveur meurt avec, Next.js remplace la cause par un numéro — et sur son banc,
+servi en version bâtie, même la cause n'est pas affichée. Rien dans le journal :
+ni lui ni la session suivante ne pouvaient savoir pourquoi.
+
+**Ce qui change.** `creerSonCompte` ne laisse plus sortir d'exception : elle
+journalise l'erreur entière avec son code `SQLSTATE`, et rend un refus que
+l'écran affiche là où il affiche déjà « Cette adresse a déjà un compte ». Quand
+le code d'erreur dit que la base n'est pas celle que ce code attend — table,
+colonne, droit manquants, contrainte qu'une migration devait élargir —, le refus
+le NOMME et donne le geste sûr : *« Votre espace n'est pas à jour avec sa base.
+Rallumez-le depuis github.com/codespaces. »* Jamais reconstruire, jamais
+supprimer, jamais amorcer (`CLAUDE.md` §4 septies). **Sur le banc — et nulle
+part ailleurs — le refus porte aussi le code de la base**, « (base : 23514) » :
+une capture suffit alors à savoir ce qui a été refusé, sans avoir à lire un
+journal qui reste sur sa machine.
+
+**Ce qui manquait, et qui explique qu'on ne l'ait pas vu venir :** aucune suite
+n'entrait par la porte. `scripts/test-creer-son-compte-e2e.ts` répond désormais
+aux seize questions dans un vrai navigateur, vérifie les trois lignes en base et
+l'essai de quinze jours, puis retire réellement la migration pour exiger un
+refus lisible. Elle rougit sur le code d'avant.
+
+**Non reproduit ici, et il faut le dire :** ce qui tombe sur SA machine n'a pas
+pu être lu — le journal de son espace n'est pas publié, et sa fiche n'a pas été
+réécrite depuis 08:31. La cause la plus probable reste une base en retard sur le
+code servi ; le refus ci-dessus la nommera dès qu'il retentera. `TODO.md` porte
+le trou qui l'a rendue invisible : rien ne compare les migrations appliquées au
+code, ni à l'écran ni sur la fiche.
+
+Détail : `ARCHITECTURE.md` §351.
+
+
 ### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
 
 Sa capture et ses quatre demandes du jour, dessinées d'abord

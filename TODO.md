@@ -9,6 +9,37 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## RIEN NE COMPARE LA BASE AU CODE — le trou qui a rendu sa panne invisible
+
+**Né de sa plainte du 13 septembre 2026** (« je peux toujours pas créer de
+compte », `ARCHITECTURE.md` §351). Le code servi peut être en avance sur la
+base : une migration qui n'est pas passée, et l'écran tombe — n'importe où,
+avec un message qui n'accuse jamais la vraie cause.
+
+Depuis ce lot, **la création de compte** le dit quand la base la refuse. Le
+reste de l'application, non — et personne ne peut le savoir de l'extérieur :
+
+| Ce qui manque | Ce que ça coûte |
+|---|---|
+| `.devcontainer/appliquer-migrations.sh` **dit** son échec au journal de démarrage, et ce journal n'est publié nulle part | une base restée en arrière ne se voit pas, ni pour lui ni pour nous |
+| la fiche de son espace ne porte pas l'état de la base | `scripts/rapporter-espace.mjs` publie le commit récupéré et le commit servi, jamais les migrations : **ajouter « base : à jour / N en retard »** (`public._migrations` face au dossier `drizzle/`, que le rôle applicatif sait lire) |
+| aucun contrôle de santé ne compare les deux | `/api/health/ready` regarde que PostgreSQL répond, pas qu'il porte les tables que ce code attend |
+
+**Qui :** nous, au prochain lot qui touche le banc.
+
+## LES AUTRES ACTIONS SERVEUR TOMBENT ENCORE SUR L'ÉCRAN MUET
+
+Même lot, même racine. Une exception qui sort d'une action serveur est
+remplacée par un numéro opaque (`src/app/error.tsx`) : le patron voit « Une
+erreur », et le journal reste muet si personne n'a écrit de `catch`.
+`src/lib/panne-de-base.ts` sait désormais nommer les refus de la base — il ne
+sert qu'à la création de compte. **À poser là où une panne coûte le plus** : la
+connexion, l'enregistrement d'un devis, celui d'une facture.
+
+**Qui :** nous. Pas de lot dédié — au fil de ce qu'on touche.
+
+---
+
 ## ~~CHOISIE, À CODER — L'ACOMPTE SUR LE DEVIS, la B~~ — CODÉE LE SOIR MÊME (12 septembre 2026)
 
 **Codé** (*« Parfait code la B »*) : migration 0088, `src/lib/acomptes-devis.ts`,

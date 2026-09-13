@@ -8,6 +8,32 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Dernier lot — « JE PEUX TOUJOURS PAS CRÉER DE COMPTE » (13 septembre 2026, le soir)
+
+| | |
+|---|---|
+| sa plainte | *« Je peux toujours pas crée de compte ! »*, capture à l'appui : « Une erreur · Cette page n'a pas pu s'afficher · Référence : 3285538552 » |
+| reproduit | le parcours entier joué au navigateur sur une base privée de la migration 0089 rend **exactement** cet écran |
+| la racine | une exception de la base sortait de l'action serveur : Next.js la remplace par un numéro, et rien n'était journalisé — le défaut muet qu'`AGENTS.md` interdit |
+| la correction | `creerSonCompte` journalise l'erreur avec son `SQLSTATE` et rend un refus ; `src/lib/panne-de-base.ts` dit si le refus veut dire « base en retard », et donne le geste **sûr** (rallumer l'espace) |
+| la suite qui manquait | `test-creer-son-compte-e2e.ts` — les seize questions dans un vrai navigateur, les trois lignes en base, puis la migration réellement retirée. Rougit sur le code d'avant |
+| la migration | **aucune** |
+| le détail | `ARCHITECTURE.md` §351 |
+
+**CE QUI N'A PAS PU ÊTRE VÉRIFIÉ, et ne doit pas être présenté comme acquis :**
+ce qui tombe sur SA machine. Le journal de son espace n'est publié nulle part,
+et sa fiche (fiche GitHub n° 47) n'avait pas été réécrite depuis 08:31 alors
+qu'il l'utilisait à 17:43 — donc son veilleur ne publiait plus. La cause la plus
+probable reste une base en retard sur le code servi (son espace annonçait déjà
+six versions de retard), et le refus neuf la nommera dès qu'il retentera.
+
+**LE PIÈGE, pour toute suite qui entre par la porte :** la création de compte
+**ouvre la session elle-même** — un second parcours part en « Avant de
+commencer » tant qu'on n'a pas effacé les cookies. Et `networkidle` n'arrive
+jamais sur un banc servi en mode développement : le bandeau de construction
+interroge le serveur toutes les cinq secondes.
+
+---
 ## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
 
 | | |

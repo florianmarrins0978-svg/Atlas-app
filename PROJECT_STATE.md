@@ -5,6 +5,20 @@
 
 ---
 
+## FAIT : LA PANNE DE BASE SE DIT, AU LIEU DE L'ÉCRAN D'ERREUR — 13 septembre 2026
+
+*« Je peux toujours pas crée de compte ! »* : une exception de la base sortait
+de l'action et Next.js la remplaçait par un numéro opaque, sans une ligne de
+journal. `creerSonCompte` journalise désormais l'erreur avec son `SQLSTATE` et
+rend un refus lisible ; `src/lib/panne-de-base.ts` distingue les refus qui
+disent « la base n'est pas celle que ce code attend » et donne le geste **sûr**
+— rallumer l'espace, jamais reconstruire. Suite manquante écrite :
+`test-creer-son-compte-e2e.ts`, qui entre par la porte et rougit sur le code
+d'avant. **Ce qui tombe sur SA machine n'a pas pu être lu** — voir `TODO.md`,
+« rien ne compare la base au code ». Détail : `ARCHITECTURE.md` §351.
+
+---
+
 ## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026
 
 Sur la fiche client, plusieurs photos choisies d'un coup recréaient un
