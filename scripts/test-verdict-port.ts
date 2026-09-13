@@ -302,6 +302,24 @@ cas("UN PORT QUE L'ESPACE A DÉJÀ RENDU PUBLIC NE SE REFAIT PAS BASCULER — 12
   assert.match(ligne, /démarrage : ouvert/, "la fiche cache le relevé qui décide du geste");
 });
 
+cas("le geste qui TIENT est donné avec celui qui dépanne — 13 septembre", () => {
+  // **Quatre fois en trois semaines**, toujours de nuit : 22 et 31 août, 12 et
+  // 13 septembre. Le rallumage remet le port, et le port se reperd — donc le
+  // rallumage seul n'est pas un remède, c'est un pansement qu'il rejoue.
+  // La fiche doit porter les deux : ce soir, et pour que ça cesse.
+  const { souci } = verdictPort({
+    etatPort: "ouvert",
+    dehors: { joignable: false, statut: 404, type: "", motif: "réponse 404 de quelque chose AVANT Atlas" },
+    serveurLocal: true,
+  });
+  assert.match(souci ?? "", /RALLUMER L'ESPACE/, "rien pour ce soir");
+  assert.match(
+    souci ?? "",
+    /Rebuild Container/,
+    "la fiche ne donne que le dépannage : il le refera la nuit prochaine, et la suivante"
+  );
+});
+
 cas("sans mesure du serveur local, le verdict reste celui d'avant", () => {
   // **On ne conclut que sur ce qu'on a mesuré.** `serveurLocal` absent veut dire
   // « personne n'a regardé » — pas « il est mort ». Conclure ici enverrait le

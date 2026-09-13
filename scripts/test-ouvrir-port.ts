@@ -328,6 +328,57 @@ cas("le veilleur REMESURE le port du dehors, au lieu de croire « ouvert » pour
   );
 });
 
+// ─── « OUVERT » NE REPOSE PLUS LE VERROU QUE LA MESURE VIENT DE LEVER ───────
+//
+// **Sa nuit du 12 au 13 septembre 2026.** Capture à 1 h 58 : un téléchargement
+// proposé à la place d'Atlas. Sa fiche, à la même minute : serveur debout,
+// `[démarrage : ouvert]`, 404 du relais. Et son journal, toutes les cinq
+// minutes de la nuit : *« port 3000 ouvert au public »* — une ligne de succès
+// écrite sur un port mort.
+//
+// La remesure du dehors existait déjà (31 août) et faisait son travail :
+// `PORT_OUVERT=non`. Mais le remède qui suivait reposait `PORT_OUVERT=oui` sur
+// la seule foi de `gh`, et la boucle se refermait — pour la troisième fois, le
+// dépôt retenait un RÉGLAGE là où il faut une MESURE.
+//
+// Ce cas rougit contre le veilleur d'avant le 13 septembre.
+cas("le remède du port se MESURE : « ouvert » ne repose plus le verrou tout seul", () => {
+  const veilleur = readFileSync(path.join(__dirname, "..", ".devcontainer", "veiller.sh"), "utf8")
+    .split("\n")
+    .filter((l) => !l.trimStart().startsWith("#"))
+    .join("\n");
+
+  // Le mot `ouvert` ne doit plus figurer dans la liste des mots qui posent le
+  // verrou sans rien vérifier — c'est exactement la ligne qui a tenu la nuit.
+  assert.ok(
+    !/ouvert\|hors-codespace\|sans-gh\)/.test(veilleur),
+    "« ouvert » repose PORT_OUVERT=oui sans mesurer : la remesure d'au-dessus est annulée au tour suivant"
+  );
+
+  // Et le remède doit être suivi de la question qu'il prétend régler.
+  const brancheOuverte = veilleur.slice(veilleur.indexOf("      ouvert)"));
+  assert.match(
+    brancheOuverte.slice(0, 600),
+    /port-joignable\.mjs/,
+    "rien ne vérifie que le remède a eu un effet : un geste sans effet se rejoue indéfiniment en silence"
+  );
+
+  // **Un remède mesuré sans effet cesse de se rejouer, et le DIT.** Sans cela,
+  // `gh` est rappelé toutes les cinq minutes pour rien et le journal reste
+  // inutilisable pour chercher.
+  assert.match(
+    veilleur,
+    /REMEDE_ABANDONNE=oui/,
+    "le veilleur rejoue indéfiniment un remède dont il a mesuré qu'il ne change rien"
+  );
+  // …mais il ne cesse JAMAIS de regarder : un relais qui revient est repris.
+  assert.match(
+    veilleur,
+    /REMEDE_ABANDONNE=non/,
+    "l'abandon est définitif : un port qui redevient joignable ne serait jamais repris"
+  );
+});
+
 cas("hors Codespace, la mesure du port s'abstient (code 2) au lieu d'accuser", () => {
   // Joué pour de bon : un contrôle qui n'a jamais été exécuté ne prouve rien.
   const sans = { ...process.env };

@@ -37,9 +37,13 @@ Les seize autres : `adresse-suggestions`, `anneau-dictee`, `anneau-vers-devis`,
 **À reprendre en propre**, suite par suite : le journal entier est nécessaire
 (`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
 
-## SON ESPACE DOIT ÊTRE DÉBLOQUÉ UNE FOIS À LA MAIN (12 septembre 2026)
+## ~~SON ESPACE DOIT ÊTRE DÉBLOQUÉ UNE FOIS À LA MAIN~~ — FAIT (13 septembre 2026)
 
-**CODÉ LE 12 SEPTEMBRE — mais il porte encore l'ancien script.** `mettre-a-jour.sh`
+**RÉGLÉ.** Sa fiche du 13 septembre à 1 h 59 porte « Code récupéré : dadc9d2 »
+et « Code SERVI : dadc9d2 », sans modification non enregistrée : son espace a
+rattrapé `main` et reçoit de nouveau du code. Gardé pour mémoire.
+
+**CODÉ LE 12 SEPTEMBRE — il portait encore l'ancien script.** `mettre-a-jour.sh`
 met désormais `package-lock.json` de côté au lieu de se figer devant lui
 (`ARCHITECTURE.md` §339). Son espace, lui, est resté sur le code de 3 h 38 :
 il ne peut pas recevoir le correctif qui lui permettrait de recevoir du code.
@@ -52,36 +56,33 @@ terminal de son espace :
 puis rallumer l'espace. **À barrer dès qu'il confirme que sa version a avancé**
 (l'écran Réglages donne la version servie).
 
-## PISTE NON REPRODUITE — LE PORT QUE LE RELAIS PERD (12 septembre 2026)
+## LE PORT QUE LE RELAIS PERD — UNE HYPOTHÈSE À TRANCHER À LA RÉCIDIVE (13 septembre 2026)
 
-Sa fiche du 12 septembre au soir : serveur debout sur 3000, `gh` satisfait, et
-un **404 du relais** — la requête n'atteint jamais Atlas. Le verdict et son
-geste sont corrigés (`_verdict-port.mjs`, §339), mais la panne elle-même n'est
-**pas reproduite** : cet environnement n'a pas de Codespace.
+**Ce qui est CORRIGÉ (§341) :** le veilleur ne croit plus `gh` sur parole. Il
+mesure après le remède, cesse de rejouer un geste sans effet, et son journal ne
+se félicite plus d'un port mort. La fiche donne les deux gestes.
 
-**Ce qu'on soupçonne, sans l'avoir mesuré :** le relais n'enregistre un port
-qu'en voyant un processus commencer à écouter (`veiller.sh` le constate au
-26 août — « le serveur démarre, le port se déclare tout seul »). Un serveur
-déjà en place au moment où le tunnel se remonte ne serait donc jamais
-redéclaré, et rien depuis l'intérieur ne le remettrait.
+**Ce qui n'est TOUJOURS PAS reproduit :** la perte elle-même. Cet environnement
+n'a pas de Codespace, et la panne ne se voit que chez lui.
 
-**Ce qui n'a PAS été fait, et pourquoi :** faire relancer le serveur par le
-veilleur pour rouvrir la socket. Le gain est supposé ; le risque, lui, est réel
-— une relance mal bornée refait la panne du 2 septembre (serveur mort en
-boucle). À ne coder qu'une fois la cause mesurée sur son espace.
+**L'hypothèse à trancher, et comment.** Le port 3000 de son espace serait
+*détecté* au lieu d'être *déclaré* : `forwardPorts: [3000]` + `visibility:
+public` sont dans `devcontainer.json` depuis le 6 août, son espace est plus
+ancien, et une déclaration ne répare pas un espace déjà né (§55). Un port
+détecté meurt avec la session qui l'a détecté.
 
-**ET CETTE PISTE EST RÉFUTÉE — mesurée le 12 septembre à 22 h 02.** Il a rejoué
-`demarrer.sh` en entier : le serveur a été tué, réinstallé, relancé — et sa
-fiche, écrite juste après, porte **le même 404 du relais**. Rouvrir la socket
-ne réenregistre donc PAS le port. Ne pas coder la relance : elle ne peut rien.
+**Le geste qui tranche, et il ne coûte qu'une fois :** qu'il fasse
+« Rebuild Container » (⌘⇧P). Puis :
 
-Ce qui reste à essayer, dans cet ordre, et qui n'est pas mesuré non plus :
-l'onglet PORTS (retirer la ligne 3000, puis « Transférer un port » → 3000), et
-`gh codespace ports visibility 3000:public -c $CODESPACE_NAME` depuis son
-terminal. Si aucun des deux n'aboutit, c'est le conteneur qu'il faut
-reconstruire — `devcontainer.json` déclare le port public, et cette
-déclaration ne s'applique qu'à la naissance de l'espace (`ARCHITECTURE.md`
-§55).
+| Ce qu'on observe ensuite | Ce que ça prouve |
+|---|---|
+| plus aucune perte de port pendant plusieurs nuits | l'hypothèse tient — à écrire en dur dans `ARCHITECTURE.md` §341 |
+| une nouvelle perte malgré la reconstruction | elle tombe : chercher ailleurs, et le journal du veilleur porte désormais de quoi le faire (il compte les remèdes sans effet) |
+
+**Ne pas coder de remède automatique avant ce verdict.** Une reconstruction
+lancée toute seule sur son espace rejoue `preparer.sh` — dépendances, migrations,
+jeu de démonstration — sans personne devant : c'est irréversible et hors du code,
+donc cela se demande à LUI (`CLAUDE.md` §2 bis).
 
 ## ⏳ UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS (12 septembre 2026)
 

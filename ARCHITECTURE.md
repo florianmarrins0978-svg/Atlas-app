@@ -29075,3 +29075,104 @@ descendre un PDF non vide sous le nom de la facture, le bouton ne reste pas sur
 reste un lien. Ce qu'il sert est un `.zip` — un fichier sans lecteur, qui
 descend de toute façon —, et son appui porte une vérification d'identité que ce
 lot n'avait aucune raison de déplacer.
+
+---
+
+## §341 — Un remède qui réussit n'est pas un remède qui répare
+
+**Sa capture du 13 septembre 2026, à 1 h 58 :** Safari sur `about:blank`,
+proposant d'enregistrer un fichier nommé comme son espace. *« L'appli ne
+fonctionne toujours pas ! »* C'est la quatrième nuit de la même panne — 22 et
+31 août, 12 puis 13 septembre.
+
+Sa fiche, écrite **à la même minute** (23 h 59 UTC, soit 1 h 59 chez lui :
+elle n'était pas périmée, elle était vivante), disait tout :
+
+    Serveur    : répond sur le port 3000
+    Veilleur   : en place
+    Port 3000  : INJOIGNABLE DE L'EXTÉRIEUR — 404 de quelque chose AVANT Atlas
+                 [démarrage : ouvert]
+
+Le code n'y est pour rien, et la fiche le disait déjà. **Ce qu'elle ne disait
+pas, c'est ce que le veilleur faisait pendant ce temps.**
+
+### La racine : le veilleur reposait le verrou que sa propre mesure venait de lever
+
+Son journal portait, toutes les cinq minutes de la nuit, une ligne de **succès** :
+
+    — port 3000 ouvert au public, une fois le serveur debout
+
+sur un port que son téléphone ne pouvait pas atteindre. La boucle se refermait
+sur elle-même :
+
+| | |
+|---|---|
+| la mesure du dehors (`port-joignable.mjs`) | 404 → `PORT_OUVERT=non` |
+| le remède (`ouvrir-port.sh` → `gh … visibility`) | réussit → rend « ouvert » |
+| **le veilleur** | **`PORT_OUVERT=oui`**, sur la seule foi de ce mot |
+| cinq minutes plus tard | la mesure rend 404, et tout recommence |
+
+La remesure du dehors avait été posée le 31 août précisément contre ce défaut ;
+le `PORT_OUVERT=oui` du remède l'annulait au tour suivant. **C'est la troisième
+fois que ce dépôt retient un RÉGLAGE là où il faut une MESURE** — 22 août
+(`_verdict-port.mjs`), 31 août (`port-joignable.mjs`), 13 septembre ici — et la
+troisième fois à quelques lignes du même endroit.
+
+Ce que cela coûtait, et ce n'est pas du bruit : un appel réseau pour rien toutes
+les cinq minutes ; un journal qui affirme le contraire de ce que voit son
+téléphone, donc inutilisable pour chercher ; et surtout **rien qui apprenne
+jamais que ce remède-là ne peut pas réparer cette panne-là**. Un geste mesuré
+sans effet et rejoué indéfiniment n'est pas une tentative, c'est une panne muette
+de plus (`AGENTS.md`).
+
+### Ce qui est fait : la mesure décide, et elle seule
+
+`veiller.sh` fait suivre le remède de la question qu'il prétend régler. Trois
+états, au lieu d'un mot cru sur parole :
+
+| | |
+|---|---|
+| mesuré joignable | `PORT_OUVERT=oui`, et le journal l'écrit **« et VÉRIFIÉ joignable »** |
+| mesuré refusé | rien n'est retenu, et le journal dit que le remède n'a rien changé |
+| trois fois sans effet | on **cesse de le rejouer** (`REMEDE_ABANDONNE`) et on le dit |
+
+**Ce qui a été RETIRÉ, et c'est le signe qu'on a pris la racine :** le mot
+`ouvert` sort de la liste `ouvert|hors-codespace|sans-gh` qui posait le verrou
+sans rien vérifier, et la ligne de succès qui l'accompagnait. Un correctif qui
+n'enlève rien recouvre (`CLAUDE.md` §4 quater).
+
+**L'abandon ne ferme aucune porte** : la remesure du dehors, elle, continue de
+tourner toutes les cinq minutes. Un relais qui revient remet `REMEDE_ABANDONNE`
+à `non` et le port est repris tout seul. On cesse de rejouer un geste, jamais de
+regarder.
+
+### Le geste rendu au patron : celui de ce soir, ET celui qui tient
+
+Rallumer l'espace remet le port — et le port se reperd la nuit suivante. Quatre
+fois. Un remède qu'on rejoue chaque nuit n'en est pas un.
+
+L'explication la mieux étayée, et elle est **écrite comme une hypothèse, pas
+comme une mesure** : le port 3000 de son espace est *détecté* — quelqu'un a vu
+quelque chose écouter — au lieu d'être *déclaré*. `forwardPorts: [3000]` et
+`visibility: public` sont dans `devcontainer.json` depuis le 6 août ; son espace
+est plus ancien qu'eux, et une déclaration ne répare pas un espace déjà né
+(c'est le piège du §55, pour la cinquième fois). Un port détecté vit le temps de
+la session qui l'a détecté ; un port déclaré revient à chaque démarrage du
+conteneur.
+
+`gestePort` rend donc les deux, dans cet ordre : **rallumer** pour ce soir,
+**« Rebuild Container »** pour que cela cesse — le seul geste qui applique la
+déclaration. Ce qui tranchera cette hypothèse est la récidive suivante, et elle
+est inscrite dans `TODO.md`.
+
+### Ce qui le tient
+
+`scripts/test-port-remesure.ts` fait tourner un **vrai** veilleur sur un port
+libre, avec une sonde du dehors qui refuse toujours et un `ouvrir-port.sh` qui
+rend toujours « ouvert » — l'état exact de sa nuit. Confrontée au veilleur
+d'avant, elle compte **29 lignes de succès sur un port mort** et rougit ; contre
+le neuf, aucune. La demande d'ouverture se prouve désormais par une **trace
+laissée par le script appelé**, plus par une phrase du journal : compter les
+appels éprouve la règle, chercher une tournure éprouvait la formulation
+(`CLAUDE.md` §5 bis). `test-ouvrir-port.ts` tient la condition dans le texte du
+script, et `test-verdict-port.ts` que la fiche donne les deux gestes.

@@ -83,14 +83,30 @@ function gestePort(etatPort) {
   // le relais a PERDU le port depuis (serveur remplacé par la version bâtie,
   // reprise après veille — `veiller.sh` le décrit au 26 août). Le seul geste
   // qui le remet est de le redéclarer.
+  //
+  // **ET LE GESTE QUI TIENT N'EST PAS CELUI QUI DÉPANNE — 13 septembre 2026.**
+  // Rallumer l'espace remet le port ; il se reperd. Quatre fois en trois
+  // semaines (22 et 31 août, 12 et 13 septembre), toujours de nuit, toujours
+  // depuis son téléphone. Le port 3000 de son espace est *détecté* — quelqu'un
+  // a vu quelque chose écouter — au lieu d'être *déclaré* : `forwardPorts` et
+  // `visibility: public` sont dans `devcontainer.json` depuis le 6 août, et son
+  // espace est plus ancien qu'eux (c'est le piège du §55, pour la cinquième
+  // fois). Un port détecté vit le temps de la session qui l'a détecté ; un port
+  // déclaré revient à chaque démarrage du conteneur.
+  //
+  // **« Rebuild Container » est le seul geste qui applique cette déclaration**,
+  // et c'est le même que le cas `non-declare` donne déjà plus haut. Il est donné
+  // ici comme ce qu'il est — l'explication la mieux étayée de la récidive, pas
+  // une certitude : elle ne se mesure que chez lui, et elle se tranche à la
+  // récidive suivante (`TODO.md`).
   if (mot === "ouvert") {
     return (
       "     LE PORT A BIEN ÉTÉ RENDU PUBLIC PAR L'ESPACE, et il refuse quand même :\n" +
       "     le relais l'a perdu depuis. Le rebasculer en « Public » ne peut rien.\n" +
-      "     Le plus court est de RALLUMER L'ESPACE (github.com/codespaces) : le\n" +
-      "     relais redéclare ses ports au démarrage.\n" +
-      "     Sans rallumer : onglet PORTS → retirer la ligne 3000, puis\n" +
-      "     « Transférer un port » → 3000."
+      "     TOUT DE SUITE : RALLUMER L'ESPACE (github.com/codespaces).\n" +
+      "     POUR QUE ÇA NE REVIENNE PAS : ⌘⇧P → « Rebuild Container ». Le port\n" +
+      "     3000 de cet espace est seulement DÉTECTÉ, donc il se reperd à chaque\n" +
+      "     session ; la reconstruction applique sa déclaration permanente."
     );
   }
 

@@ -6,6 +6,34 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-13
+
+### Le veilleur croyait une commande au lieu de mesurer : le port mourait toute la nuit
+
+*« L'appli ne fonctionne toujours pas ! »*, capture de 1 h 58 : un
+téléchargement proposé à la place d'Atlas. Quatrième nuit de la même panne.
+
+Sa fiche, écrite à la même minute, disait déjà que le code n'y était pour rien.
+Ce qu'elle ne disait pas : **son journal portait une ligne de succès — « port
+3000 ouvert au public » — toutes les cinq minutes, sur un port mort.** Le
+veilleur mesurait bien le refus du dehors, puis reposait son verrou sur la seule
+foi de `gh` : la boucle tournait sans rien apprendre.
+
+`veiller.sh` fait désormais suivre le remède de la question qu'il prétend
+régler. Un remède mesuré sans effet trois fois **cesse de se rejouer** et le dit
+— la mesure, elle, continue, et un relais qui revient est repris tout seul. Le
+mot `ouvert` sort de la liste qui posait le verrou sans rien vérifier, et la
+ligne de succès part avec lui.
+
+**Ce que la fiche rend en plus :** le geste qui TIENT, à côté de celui qui
+dépanne. Rallumer l'espace remet le port et le port se reperd ; « Rebuild
+Container » applique la déclaration permanente de `devcontainer.json`, que son
+espace n'a jamais reçue — écrit comme l'hypothèse la mieux étayée, pas comme une
+mesure.
+
+Détail et preuves : `ARCHITECTURE.md` §341.
+
+---
 ## 2026-09-12
 
 ### L'espace se déblaie lui-même : un lock sali ne le fige plus à vie
