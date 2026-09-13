@@ -29165,6 +29165,25 @@ conteneur.
 déclaration. Ce qui tranchera cette hypothèse est la récidive suivante, et elle
 est inscrite dans `TODO.md`.
 
+### Et le geste doit être FAISABLE — sa question, une heure plus tard
+
+*« C'est où dans l'éditeur ? »*. Le geste était écrit **« ⌘⇧P → Rebuild
+Container »**. Il lit cette fiche sur un iPhone : **il n'y a pas de ⌘⇧P**. Le
+remède venait d'être trouvé, écrit, éprouvé — et il était inatteignable.
+
+C'est la faute de toujours sous un autre habit : *« lui faire viser un panneau
+minuscule sur un écran de six pouces »* (`ouvrir-port.sh`, 23 août). Un geste
+qu'il ne peut pas faire ne vaut pas mieux qu'une fiche muette.
+
+`RECONSTRUIRE` porte désormais le chemin tactile — ☰ → Affichage → Palette de
+commandes… → « rebuild » —, **écrit une seule fois** et employé aux deux
+endroits qui le proposent : deux copies finiraient par diverger (§3).
+
+**Et ce n'est plus au jugé.** `test-verdict-port.ts` refuse tout raccourci
+clavier (`⌘`, `⇧`, `Ctrl+`, `Cmd+`, `F1`) dans un geste rendu au patron, quel
+que soit l'état du port, et toute ligne qui déborde de son écran. Le premier
+rougit contre la version de la veille.
+
 ### Ce qui le tient
 
 `scripts/test-port-remesure.ts` fait tourner un **vrai** veilleur sur un port

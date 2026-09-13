@@ -75,7 +75,11 @@ cas("« sans-gh » DIT que personne n'a réglé ce port depuis l'allumage", () =
     dehors: { joignable: false, statut: 404, type: null, motif: "404 sans type" },
   });
   assert.match(souci ?? "", /N'A PAS PU L'OUVRIR LUI-MÊME/, "rien ne dit que l'espace n'a rien pu faire");
-  assert.match(souci ?? "", /Rebuild Container/, "le remède de fond — un espace qui naît avec la déclaration — n'est pas donné");
+  assert.match(
+    souci ?? "",
+    /econstruire le conteneur/i,
+    "le remède de fond — un espace qui naît avec la déclaration — n'est pas donné"
+  );
 });
 
 cas("sans mesure, « non-declare » se dit tel quel et ne passe pas pour « inconnu »", () => {
@@ -315,9 +319,45 @@ cas("le geste qui TIENT est donné avec celui qui dépanne — 13 septembre", ()
   assert.match(souci ?? "", /RALLUMER L'ESPACE/, "rien pour ce soir");
   assert.match(
     souci ?? "",
-    /Rebuild Container/,
+    /econstruire le conteneur/i,
     "la fiche ne donne que le dépannage : il le refera la nuit prochaine, et la suivante"
   );
+});
+
+// ─── AUCUN RACCOURCI CLAVIER DANS UN GESTE QU'IL DOIT FAIRE AU DOIGT ───────
+//
+// **Payé le 13 septembre 2026 :** *« c'est où dans l'éditeur ? »*. La fiche
+// donnait « ⌘⇧P → Rebuild Container ». Il la lit sur un iPhone : il n'y a pas
+// de ⌘⇧P, donc le geste était inatteignable — et il a fallu qu'il redemande.
+//
+// C'est la faute de toujours, sous un autre habit : lui faire viser un panneau
+// minuscule sur un écran de six pouces (`ouvrir-port.sh`). Un geste qu'il ne
+// peut pas faire ne vaut pas mieux qu'une fiche muette.
+cas("aucun geste de la fiche ne suppose un clavier", () => {
+  const etats = ["ouvert", "non-declare", "sans-gh", "échec:jeton expiré", null];
+  for (const etatPort of etats) {
+    const { souci } = verdictPort({
+      etatPort,
+      dehors: { joignable: false, statut: 404, type: "", motif: "réponse 404 de quelque chose AVANT Atlas" },
+      serveurLocal: true,
+    });
+    assert.ok(
+      !/[⌘⇧⌥⎇]|Ctrl\+|Cmd\+|F1\b/.test(souci ?? ""),
+      `le geste de « ${etatPort} » suppose un clavier — il lit cette fiche sur un téléphone`
+    );
+  }
+});
+
+// **Une fiche se lit sur un écran de six pouces.** Une ligne qui déborde s'y
+// replie n'importe où, et le geste devient illisible au milieu d'un pavé.
+cas("aucune ligne de geste ne déborde de son téléphone", () => {
+  const { souci } = verdictPort({
+    etatPort: "sans-gh",
+    dehors: { joignable: false, statut: 404, type: "", motif: "réponse 404 de quelque chose AVANT Atlas" },
+    serveurLocal: true,
+  });
+  const trop = (souci ?? "").split("\n").filter((l) => l.length > 85);
+  assert.equal(trop.length, 0, `ligne(s) trop longue(s) pour son écran :\n   ${trop.join("\n   ")}`);
 });
 
 cas("sans mesure du serveur local, le verdict reste celui d'avant", () => {

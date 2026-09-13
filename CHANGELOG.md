@@ -31,6 +31,11 @@ Container » applique la déclaration permanente de `devcontainer.json`, que son
 espace n'a jamais reçue — écrit comme l'hypothèse la mieux étayée, pas comme une
 mesure.
 
+**Et le geste est devenu faisable.** Il l'a demandé une heure plus tard :
+*« c'est où dans l'éditeur ? »*. La fiche donnait « ⌘⇧P » à quelqu'un qui la lit
+sur un iPhone. Elle donne le chemin tactile, et un contrôle refuse désormais
+tout raccourci clavier dans un geste qu'on lui demande.
+
 Détail et preuves : `ARCHITECTURE.md` §341.
 
 ---

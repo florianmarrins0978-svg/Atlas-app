@@ -37,6 +37,27 @@
  *
  * Le mot rendu par `ouvrir-port.sh` tranche, et il n'était pas lu ici.
  */
+/**
+ * LA RECONSTRUCTION DU CONTENEUR, ÉCRITE POUR UN TÉLÉPHONE.
+ *
+ * **Payé le 13 septembre 2026, et il a fallu qu'il le demande :** *« c'est où
+ * dans l'éditeur ? »*. Ce geste était donné sous la forme « ⌘⇧P → Rebuild
+ * Container ». Il lit cette fiche sur un iPhone : **il n'y a pas de ⌘⇧P**, et
+ * un raccourci clavier y est un geste inatteignable.
+ *
+ * C'est la faute que ce dépôt paie depuis le premier jour, sous un autre
+ * habit — « lui faire viser un panneau minuscule sur un écran de six pouces »
+ * (`ouvrir-port.sh`). Une fiche qui donne un geste qu'il ne peut pas faire ne
+ * vaut pas mieux qu'une fiche muette : il la lit, il ne peut rien, et il
+ * redemande.
+ *
+ * Écrit une seule fois, employé aux deux endroits qui le proposent — deux
+ * copies finiraient par diverger (`CLAUDE.md` §3).
+ */
+const RECONSTRUIRE =
+  "☰ (en haut à gauche) → Affichage → Palette de commandes… →\n" +
+  "     taper « rebuild » → « Codespaces : Reconstruire le conteneur ».";
+
 function gestePort(etatPort) {
   const mot = String(etatPort ?? "");
 
@@ -46,8 +67,8 @@ function gestePort(etatPort) {
       "     Le rendre « public » ne peut donc rien : il n'y a rien à basculer.\n" +
       "     Il faut le RÉENREGISTRER : onglet PORTS → retirer la ligne 3000, puis\n" +
       "     « Transférer un port » → 3000. S'il ne revient pas, reconstruire le\n" +
-      "     conteneur (⌘⇧P → « Rebuild Container ») : la déclaration publique de\n" +
-      "     `devcontainer.json` ne s'applique qu'à ce moment-là."
+      "     conteneur — la déclaration publique de `devcontainer.json` ne\n" +
+      "     s'applique qu'à ce moment-là :\n     " + RECONSTRUIRE
     );
   }
 
@@ -57,8 +78,8 @@ function gestePort(etatPort) {
       "     personne n'a donc réglé ce port depuis son allumage.\n" +
       "     onglet PORTS → clic droit sur 3000 → « Visibilité du port » → « Public ».\n" +
       "     S'il n'y a PAS de ligne 3000, c'est qu'il n'est pas déclaré : le\n" +
-      "     transférer, ou reconstruire le conteneur (« Rebuild Container »), qui\n" +
-      "     applique la déclaration publique de `devcontainer.json`."
+      "     transférer, ou RECONSTRUIRE LE CONTENEUR, qui applique la déclaration\n" +
+      "     publique de `devcontainer.json` :\n     " + RECONSTRUIRE
     );
   }
 
@@ -104,9 +125,10 @@ function gestePort(etatPort) {
       "     LE PORT A BIEN ÉTÉ RENDU PUBLIC PAR L'ESPACE, et il refuse quand même :\n" +
       "     le relais l'a perdu depuis. Le rebasculer en « Public » ne peut rien.\n" +
       "     TOUT DE SUITE : RALLUMER L'ESPACE (github.com/codespaces).\n" +
-      "     POUR QUE ÇA NE REVIENNE PAS : ⌘⇧P → « Rebuild Container ». Le port\n" +
-      "     3000 de cet espace est seulement DÉTECTÉ, donc il se reperd à chaque\n" +
-      "     session ; la reconstruction applique sa déclaration permanente."
+      "     POUR QUE ÇA NE REVIENNE PAS, reconstruire le conteneur :\n     " +
+      RECONSTRUIRE +
+      "\n     Le port 3000 de cet espace est seulement DÉTECTÉ, donc il se reperd à\n" +
+      "     chaque session ; la reconstruction applique sa déclaration permanente."
     );
   }
 
