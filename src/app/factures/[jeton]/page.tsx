@@ -1,5 +1,6 @@
 import { factureParJeton } from "@/server/repositories/envois-factures";
 import { jourLisible } from "@/lib/jour";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import { LIBELLE_AVANT, LIBELLE_APRES, phraseDuCheque } from "@/lib/modalites-paiement";
@@ -48,8 +49,10 @@ import AccuseDeReception from "./AccuseDeReception";
  * ─────────────────────────────────────────────────────────────────────────────
  * **UN SEUL BOUTON.** « Voir en PDF » et « Télécharger » se disputaient le
  * geste, pour deux chemins qui mènent au même fichier. Il ne reste que celui qui
- * met la facture dans le téléphone du client ; l'en-tête `attachment` du
- * `?telecharger=1` décide, l'attribut `download` ne suffit pas sur iOS.
+ * met la facture dans le téléphone du client — et ce n'est plus un lien depuis
+ * le 12 septembre 2026 : la page va chercher le document et le remet à la
+ * feuille de partage, seule voie qui range un PDF sur un iPhone
+ * (`BoutonTelechargerDocument`).
  */
 
 // La page que voit le client quand il touche le lien de sa facture.
@@ -139,14 +142,14 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
           </p>
         )}
 
-        <a
-          href={`/factures/${encodeURIComponent(jeton)}/pdf?telecharger=1`}
-          download
-          className="atlas-plein mt-5 block rounded-full px-5 py-[15px] text-[17px]"
+        <BoutonTelechargerDocument
+          fichier={`/factures/${encodeURIComponent(jeton)}/pdf`}
+          nom={`${facture.numeroCommercial}.pdf`}
+          className="atlas-plein mt-5 block w-full rounded-full px-5 py-[15px] text-[17px]"
           style={{ backgroundColor: colors.plein, color: surPlein, fontFamily: font.display }}
         >
           Télécharger ma facture
-        </a>
+        </BoutonTelechargerDocument>
 
         {/* **« Pour régler » est séparé par un FILET, jamais par une seconde
             carte.** Deux cadres emboîtés font lire deux documents là où il n'y

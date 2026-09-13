@@ -28755,6 +28755,327 @@ refusée en 404. Les suites qui suivaient l'ancien lien (`test-devis-e2e`,
 `test-enregistrer-piece-e2e`, `screenshot-devis-reel`) lisent désormais le
 fichier derrière l'adresse de la visionneuse, par `fichierDemandeALaVisionneuse`.
 
+---
+
+## §336 — Ce que le serveur a effacé ne revient plus à l'écran
+
+**Sa plainte du 12 septembre 2026**, capture de l'accueil à l'appui :
+*« lorsqu'on retire un chantier posé au planning, il réapparaît sur la page
+d'accueil ! »*
+
+**Mesuré avant d'être corrigé, et c'était double.** La ligne revenait aussi
+**sur le planning lui-même**, six secondes après le geste — et la base, elle,
+avait bel et bien écrit la suppression. C'est l'écran qui mentait, dans le sens
+le plus coûteux : il retire, il voit que ce n'est pas retiré, il recommence.
+
+### La cause, en une phrase
+
+`useRetraits` masque la ligne **tant que le tiroir est ouvert**, et c'est tout.
+À sa fermeture — l'instant précis où l'écriture part —, `enAttente` se vide,
+`estRetire` redevient faux, et l'écran repeint la ligne depuis des données
+d'avant l'écriture. Deux conséquences, deux manques distincts :
+
+| Où | Ce qu'il voyait | Ce qui manquait |
+|---|---|---|
+| l'écran du geste | la ligne revient à la fermeture du tiroir | `PlanningClient` garde sa liste dans un `useState` et n'en retirait pas le chantier effacé |
+| l'écran d'à côté | l'accueil, ouvert dans la foulée, garde la liste d'avant jusqu'au rechargement | personne ne redemandait la page une fois l'écriture faite |
+
+### Le correctif, et ce qu'il retire
+
+**Le rappel vit dans le crochet** : `router.refresh()`, après l'écriture et
+seulement si l'une au moins a réussi. C'est lui qui sait quand elle est faite,
+et les huit listes qui suppriment en profitent d'un coup. Il traverse le
+démontage, et c'est nécessaire : l'écriture part au moment où il touche un
+onglet, donc c'est l'écran d'ARRIVÉE qu'il faut redemander. **La couche qui
+compensait s'en va avec** — le `router.refresh()` recopié dans `EcranChantiers`,
+qui ne tenait que l'accueil et laissait le planning sans rien
+(`CLAUDE.md` §4 quater). Celui de `Pellicule` devient une redite, et part aussi.
+
+**Et le planning tient sa propre liste à jour**, comme le font déjà les tarifs,
+les photos et les lignes de prix : `setChantiers` en retire le chantier quand
+le serveur a confirmé. C'était le seul des huit écrans à ne pas le faire.
+
+### Ce qu'on a écarté, et pourquoi
+
+Un masque **définitif** dans le crochet — « ce que le serveur a effacé reste
+masqué » — tenait les deux moitiés d'un coup, et il a été écrit puis retiré. La
+note vocale l'interdit : la clé du retrait y est **le chantier**, pas la note,
+parce qu'il n'y en a qu'une. Une note effacée puis réenregistrée sans quitter
+l'écran serait restée invisible pour toujours. Un masque qui ne sait pas qu'un
+identifiant a changé de sens n'est pas un masque, c'est un piège.
+
+`FichesEnCours` garde donc sa liste `effacees`, et ce n'est plus un emplâtre :
+sa liste arrive du serveur en propriété, et cette liste-là évite le
+clignotement entre la fermeture du tiroir et le repeint.
+
+### Ce qui le tient
+
+`scripts/test-retrait-ne-revient-pas-e2e.ts` rejoue SON chemin — le tiroir du
+planning, puis l'onglet du bas — et interroge la base : un écran muet parce que
+la suppression s'est perdue serait vert sans cela. Jouée contre la version du
+11 septembre, elle rougit sur le cas du planning, qui ne dépend d'aucune
+horloge. Le cas de l'accueil, lui, tenait à une course entre l'écriture et le
+rendu de la page d'arrivée : il rougissait chez le patron et pouvait passer ici
+selon la milliseconde — le correctif supprime la course.
+
+---
+
+## §337 — Le diagnostic végétal : le refus est l'écran principal
+
+**Le lot du 11-12 septembre 2026**, ouvert par `/impeccable` sur
+`/paysage/diagnostic`. Trois fiches réelles en base sur la cinquantaine visée :
+« je ne peux pas confirmer » est l'écran que le patron verra le plus souvent, et
+c'est celui qui avait été le moins regardé. Sa planche :
+`appli/diagnostic-le-refus-est-l-ecran.html` ; sa réponse : *« C'est bien »*,
+et le nom reste **Diagnostic végétal** — *« moi diagnostic végétal je pense »*.
+
+### 337.1 La racine : la base rangeait la phrase du refus, pas sa clé
+
+Sous chacun des sept refus, l'écran écrivait la même dernière phrase — *« une
+photo plus proche, ou prise sous un autre angle, peut suffire »* —, y compris
+sous *« aucune autre photo ne permettrait de les départager »*. Il ne pouvait
+pas faire autrement : `motif_refus` portait la PHRASE (`diagnostics.ts:171`),
+et l'écran ne savait donc pas quel refus il affichait. Pire, la même colonne
+portait, pour `echoue`, le texte du fournisseur — le commentaire « vient d'une
+liste fermée du code » était faux une fois sur deux.
+
+**Migration 0087** : `refus` porte la clé de `MOTIFS_REFUS`, tenue par une
+contrainte ; `panne` porte ce que le fournisseur a dit ; `motif_refus`
+disparaît, ses lignes converties phrase par phrase (les sept phrases n'ont
+jamais changé depuis le 20 août — vérifié dans l'historique). L'écran compose
+désormais depuis la clé : la phrase (`MOTIFS_REFUS`), **le geste**
+(`GESTE_APRES_REFUS`, propre à chaque refus, `null` quand la phrase le porte
+déjà ou qu'il n'y en a pas), et le compte des fiches quand le refus tient à la
+bibliothèque (`phraseFichesConnues`, lu dans la base — jamais une constante).
+
+**Ce qui a disparu avec la racine** — un défaut réparé remplace du code :
+`phrase ?? "Je ne peux pas confirmer…"` à l'écran (un verdict par défaut sur une
+colonne nulle, la ligne exacte du tableau `CLAUDE.md` §4 quater), et *« Réessayez
+dans un instant »* dans `actions.ts` — une promesse sans geste.
+
+### 337.2 « Vu sur la photo » : le vocabulaire fermé, en mots de paysagiste
+
+Un refus qui ne dit pas ce qui a été vu se lit comme une panne. L'observation
+était rangée (`diagnostics.observation`) et jamais montrée.
+`decrireObservation` (`lib`) la traduit avec quatre tables `Record<…>` sur le
+vocabulaire fermé — un mot ajouté sans libellé ne compile pas, la même garde que
+`verifierVocabulaire` à l'autre bout.
+
+**L'essence affichée est celle de la BASE**, `taxons.nom_commun` par
+`lireNomTaxon`, jamais le `nom_commun` que le modèle écrit en texte libre : la
+signature de `decrireObservation` ne prend que le nom rendu par la base, et une
+suite le rappelle. Sans taxon reconnu : « Essence non reconnue », qui est
+exactement ce que le moteur a conclu.
+
+### 337.3 « Personne n'a regardé » offre le geste qui répare
+
+L'écran n'offrait que « Nouvelle photo », juste sous *« ce n'est pas la photo
+qui est en cause »*. Il offre **Réessayer** — `reprendreAnalyseAction`, sur les
+photos déjà rangées (elles le sont dès l'arrivée précisément pour qu'une panne
+du fournisseur ne coûte pas le geste), réservé à `echoue` : un refus de la base
+ne se rejoue pas, la même photo devant les mêmes fiches rend la même réponse —
+et **Réglages de l'IA**. Le mot du fournisseur reste, en petit, sous « Détail ».
+
+**Et une ligne ne reste plus `en_analyse`.** Un stockage qui levait laissait le
+diagnostic sans issue ; `rangerPhoto` écrit la panne là où elle se produit.
+
+### 337.4 Le résultat : la sûreté et l'essence en clair, la source sur l'écran
+
+« CONFIANCE PROBABLE » en capitales dorées, en première ligne, est parti : il
+lit « Probable · Platane » — `LIBELLE_CONFIANCE` en un mot courant, lu depuis
+la clé au moment d'afficher (le libellé figé `confianceLibelle` a été retiré de
+`ResultatFige` : la clé est la substance, le libellé est de la présentation).
+La source et sa date de consultation sont sur l'écran principal — *« c'est ce
+qui se montre à un client »*, et la date est ce qui dit ce qui avait été lu
+quand une page d'organisme bouge sans changer d'adresse. Les trois listes que
+0057 promettait d'afficher et que rien ne rendait — critères discriminants,
+d'exclusion, facteurs favorisants — sont dans les détails. Les noms bruts de
+colonnes (« appuie : conduite_recommandee, … ») ne s'affichent plus.
+
+### 337.5 Ce que 0057 promettait et qui reste faux
+
+Son en-tête dit d'`informations_requises` : *« affiché tel quel quand Atlas
+refuse de conclure »*. Sur un refus, aucune fiche n'est retenue — il n'y a rien à
+recopier. Le champ s'affiche avec le résultat, sous « ce qui reste à
+confirmer ». La migration n'est pas réécrite (elle est appliquée) ; c'est ici
+que la promesse est corrigée.
+
+### 337.6 Les suites
+
+`test-diagnostic-quatre-issues-e2e` photographie les quatre issues à 390 × 664,
+sur Origine ET sur Nuit, en les écrivant par `conclureDiagnostic` — le chemin
+du produit à partir du retour de l'analyse. Elle fixe des règles, pas des
+libellés : deux refus aux titres différents, une entrée de fichier sur la
+relance, une conduite sur le résultat, un fond sombre et un titre clair mesurés
+sur Nuit. `test-diagnostic-ecrans-e2e` vise désormais les repères
+`diagnostic-echoue` et `diagnostic-reessayer` au lieu de « Analyse impossible »
+et « Nouvelle photo » (`CLAUDE.md` §5 bis).
+
+---
+
+## §338 — Un espace qui se salit lui-même ne reçoit plus jamais de code
+
+**Payé le 12 septembre 2026, et la boucle est le sujet.** Son espace tournait,
+servait, répondait — et exécutait le code de 3 h 38 quand `main` était trois
+versions plus loin. Aucune panne : `mettre-a-jour.sh` refusait, parce que
+`package-lock.json` était modifié. Personne ne l'avait touché.
+
+C'est `demarrer.sh` qui l'avait réécrit, par son repli `npm install` quand
+`npm ci` échoue. Et la séquence du démarrage referme le piège :
+
+| Ordre au démarrage | Conséquence une fois l'arbre sali |
+|---|---|
+| 1. `mettre-a-jour.sh` | refuse — « des modifications non enregistrées » |
+| 2. `npm ci` / `npm install` | **ne tourne pas** : il est sous `if [ "$MISE_A_JOUR" = "faite" ]` |
+| 3. migrations, banc | tournent sur le code d'avant, sans rien dire |
+
+L'installation est donc la seule chose qui pourrait remettre le fichier en
+état, et elle est la première à ne plus tourner. **Un seul démarrage malheureux
+fige l'espace définitivement**, et le symptôme est celui que le dépôt paie
+depuis le début : *le produit paraît cassé alors qu'il est simplement vieux*.
+
+**La décision : on ne rend propre que ce qu'on a sali soi-même.**
+« proteger-lock.sh » relève l'état du fichier AVANT l'installation et ne le remet
+qu'à cette condition. Un `package-lock.json` déjà modifié avant reste intact,
+et la mise à jour continue de s'abstenir — c'est le comportement voulu, pas un
+défaut : écraser le travail de quelqu'un pour livrer un correctif serait pire
+que le mal (même règle que `mettre-a-jour.sh`).
+
+**Ce qui a été écarté, et pourquoi :** faire ignorer `package-lock.json` à
+`mettre-a-jour.sh`. C'eût été un cas particulier posé à côté de la règle
+générale — le pansement du `CLAUDE.md` §4 quater — et il aurait rendu la mise à
+jour capable d'écraser une vraie modification de ce fichier. La racine n'est pas
+que la mise à jour soit prudente ; c'est que l'espace salisse son propre arbre.
+
+**La limite, et elle est écrite noir sur blanc :** un espace déjà bloqué ne sera
+pas sauvé par ce correctif, puisqu'il ne peut plus rien recevoir. Le diagnostic
+donne donc le geste, réversible — `git stash push -- <le fichier>`. C'est le
+seul cas de ce dépôt où la réparation doit passer par ses mains.
+
+> **REVENU DESSUS LE SOIR MÊME — voir le §339.** Trois heures après ce
+> paragraphe, son espace était toujours bloqué : cette « limite » était le
+> défaut. `mettre-a-jour.sh` met désormais le fichier de côté lui-même, et
+> « proteger-lock.sh » — décrit ci-dessus — **n'existe plus**.
+
+---
+
+## §339 — Un correctif qui ne peut pas atteindre la machine qu'il répare n'en est pas un
+
+**Le §338 a été écrit le 12 septembre 2026 à 17 h 27. À 20 h 36, son espace
+servait toujours le code de 3 h 38 — quatorze versions de retard**, et sa fiche
+portait encore la même ligne : `M package-lock.json`. Le correctif du §338 était
+sur `main` depuis trois heures ; il ne l'atteindrait jamais, puisqu'il faut
+recevoir du code pour recevoir le correctif qui permet de recevoir du code.
+
+Le §338 le savait — « un espace déjà bloqué ne sera pas sauvé par ce correctif »
+— et le donnait pour une limite acceptable, en renvoyant le patron à une
+commande tapée sur un téléphone. Ce n'en était pas une : c'était le défaut.
+
+**Ce que le §338 avait écarté, et qui était le bon geste.** Il refusait de faire
+une exception pour `package-lock.json` dans `mettre-a-jour.sh`, pour deux
+raisons dont une seule tenait :
+
+| L'objection du §338 | Ce qu'elle vaut |
+|---|---|
+| « cela rendrait la mise à jour capable d'écraser une vraie modification » | **vraie d'un `checkout --`, fausse d'un `git stash`** : le fichier se rend par `git stash pop`, rien ne se perd |
+| « un cas particulier posé à côté de la règle générale — le pansement du §4 quater » | c'est l'inverse : la couche ajoutée était « proteger-lock.sh », qui n'enlevait rien et laissait la panne entière pour tout espace déjà pris |
+
+**Et la racine n'était pas celle qu'il désignait.** Le §338 disait : « la racine
+n'est pas que la mise à jour soit prudente, c'est que l'espace salisse son
+propre arbre ». Mais l'espace continuera de salir son arbre — `npm install` est
+un repli légitime quand `npm ci` refuse, et le supprimer ferait pire. La racine
+tenable est l'autre : **la mise à jour prenait un fichier que la machine écrit
+elle-même pour du travail humain.**
+
+**Ce qui est fait.** `mettre-a-jour.sh` met `package-lock.json` de côté
+(`git stash push -- package-lock.json`, sous une identité posée pour ce seul
+appel) avant de se prononcer sur la propreté de l'arbre. Le reste ne bouge pas :
+un vrai fichier modifié arrête toujours tout, et l'espace n'avance qu'en ligne
+droite.
+
+**Ce qui a été SUPPRIMÉ avec, et c'est le signe qu'on a corrigé à la racine :**
+« proteger-lock.sh », ses deux appels dans `demarrer.sh` et
+sa suite « test-proteger-lock ». La couche qui compensait devient du code mort
+dès que la racine est prise (`CLAUDE.md` §4 quater et §4 quinquies) — et un
+pansement laissé en place masque la correction suivante.
+
+**La liste des fichiers concernés ne contient que celui-là**, et doit le rester :
+un nom ajouté au jugé serait du travail mis de côté sans que personne l'ait
+demandé.
+
+**Ce que cela ne répare toujours pas, et il faut le dire :** son espace, ce
+soir, porte encore l'ancien script. Le déblocage de CETTE fois-là passe par ses
+mains — une fois, la dernière.
+
+**Et la fiche cesse de cacher ce qui décide du geste.** Le même soir, elle
+annonçait « INJOIGNABLE DE L'EXTÉRIEUR » sur le port 3000 sans publier le mot
+rendu par `ouvrir-port.sh`, alors que ce mot choisit entre deux gestes opposés.
+Elle le porte désormais (`[démarrage : ouvert]`), et le cas `ouvert` a son geste
+propre : quand `gh` a RÉUSSI à rendre le port public, le rebasculer ne peut
+rien — c'est le relais qui l'a perdu, et seul un rallumage ou un
+réenregistrement le remet. Le renvoyer vers « Visibilité du port » était lui
+faire refaire les trois clics du 22 août (`scripts/_verdict-port.mjs`).
+---
+
+## §340 — « Télécharger » : la page va chercher le fichier, elle ne le confie plus au navigateur
+
+**Sa capture du 12 septembre 2026 :** *« Je peux plus télécharger en cliquant
+sur télécharger »*, sous une facture. **Troisième fois sur le même bouton**, et
+les deux corrections précédentes tournaient autour d'un point aveugle :
+
+| | Ce qui a été fait | Ce que ça a donné |
+|---|---|---|
+| 7 sept. | mentir sur le TYPE (`application/octet-stream`) pour forcer l'enregistrement | le fichier descend — et se rouvre **blanc**, le mensonge collant au fichier enregistré |
+| 10 sept. | défaire le mensonge, servir `application/pdf` + `attachment` | le PDF redevient lisible, et **Safari le peint au lieu de le ranger** |
+
+**Les deux constats sont vrais en même temps, et c'est ce qui fermait la
+boucle.** Tant que c'est un LIEN qui remet le fichier au navigateur, on ne
+choisit qu'entre un document illisible et un document qui ne descend pas. Aucun
+en-tête ne tranche : sur iOS, un PDF est un document que le système sait ouvrir,
+et l'ouvrir est ce qu'il fait.
+
+**Ce qui range un fichier sur un iPhone, c'est la feuille de partage** — le
+« Enregistrer dans Fichiers » du système. `TODO.md` la nommait déjà comme la
+seule voie restante ; elle est la seule, aussi, à garder au document son vrai
+type. Elle demande un `File`, donc **la page doit tenir le fichier**, pas une
+adresse.
+
+`src/components/atlas/BoutonTelechargerDocument.tsx` récupère le document, puis
+le remet — feuille de partage quand le navigateur sait partager un fichier ;
+sinon un lien d'objet local, qui range sans repasser par le réseau.
+
+**LA MOITIÉ QUI MANQUAIT : le refus a maintenant une phrase.** Un lien ne
+rapporte rien. Quand la route refusait — session expirée, archivé absent —, le
+navigateur recevait un `404` en JSON et l'écran ne bougeait pas : « rien ne se
+passe » se lit comme un bouton cassé, et c'est la moitié du problème qui a coûté
+trois soirées. `messageDeTelechargementRate` nomme le statut, et le message
+s'affiche sous le geste (`AGENTS.md` — rendre le défaut bavard AVANT de
+corriger).
+
+**Ce qui a été RETIRÉ, et c'est le signe que la racine est touchée** (§4 quater
+de `CLAUDE.md`, « une correction qui n'enlève rien ») : les six `<a href
+download>` des écrans, les `?telecharger=1` écrits à la main, l'attribut
+`download` sur lequel reposait le nom du fichier, et les commentaires qui
+décrivaient les « trois conditions » du 7 août. Le nom vient désormais du
+serveur seul (`nomAnnonceParLeServeur`, l'inverse exact de `nomDansLEnTete`) :
+l'écran ne le recopie plus, donc les deux ne peuvent plus diverger.
+
+**Ce que le serveur garde, et pourquoi :** `Content-Disposition: attachment` et
+le vrai type restent. L'adresse s'ouvre encore à la main, et la norme n'a pas
+changé de camp — c'est seulement qu'elle ne suffit pas sur un téléphone.
+
+**CE QUI N'EST PAS ÉPROUVÉ ICI, ET QUI S'ÉCRIT COMME TEL.** Aucun WebKit n'est
+installable dans l'environnement de l'agent : la voie de la feuille de partage
+se juge sur SON téléphone. Ce qui est prouvé, dans un vrai navigateur
+(`scripts/test-telecharger-document-e2e.ts`, qui sait rougir) : l'appui fait
+descendre un PDF non vide sous le nom de la facture, le bouton ne reste pas sur
+« Un instant… », et un refus de la route s'affiche à l'écran.
+
+**Ce qui n'a pas été touché :** « Télécharger mes données » (`/api/mes-donnees`)
+reste un lien. Ce qu'il sert est un `.zip` — un fichier sans lecteur, qui
+descend de toute façon —, et son appui porte une vérification d'identité que ce
+lot n'avait aucune raison de déplacer.
+
 ## §341 — Les acomptes d'un devis sont des lignes CUMULÉES sous le total, et la condition reste dans les notes
 
 **Sa demande du 12 septembre 2026, et ses six retours sur la planche

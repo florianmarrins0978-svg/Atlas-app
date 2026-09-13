@@ -342,7 +342,18 @@ if (sale) {
   soucis.push(
     "Des modifications non enregistrées sont présentes. **La mise à jour les\n" +
       "     respecte et s'abstient** — elle refusera tant qu'elles sont là :\n" +
-      `       ${lignes}`
+      `       ${lignes}\n` +
+      // **`package-lock.json` N'APPARAÎT PLUS ICI, et c'est voulu.** Le
+      // 12 septembre 2026, réécrit par un `npm install` de repli, il a figé
+      // son espace deux fois : l'installation ne tourne qu'après une mise à
+      // jour réussie, donc plus rien ne le remettait en état. La mise à jour
+      // le met désormais de côté elle-même (`mettre-a-jour.sh`) — demander ce
+      // geste au patron était lui faire réparer la machine à la main.
+      //
+      // Ce qui reste listé ici est donc du VRAI travail, et il ne se met de
+      // côté que si c'est bien son choix.
+      "     Si ce n'est pas votre travail, mettez-le de côté depuis l'espace :\n" +
+      "       git stash push -- <le fichier>   (« git stash pop » le rend)"
   );
 }
 

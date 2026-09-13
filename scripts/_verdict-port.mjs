@@ -70,8 +70,32 @@ function gestePort(etatPort) {
     );
   }
 
-  // « ouvert », « hors-codespace », ou rien : on ne sait pas mieux, et on garde
-  // les deux gestes dans l'ordre où ils coûtent le moins cher.
+  // **« OUVERT » N'EST PAS « ON NE SAIT PAS » — 12 septembre 2026.**
+  //
+  // Sa fiche du soir : serveur debout, `gh` satisfait, et un 404 du relais. On
+  // lui rendait pourtant le geste du doute — « rendez-le public, et s'il l'est
+  // déjà, réenregistrez-le » —, c'est-à-dire la liste qu'il a déjà parcourue
+  // trois fois pour rien (22 août : *« il est en public déjà »*).
+  //
+  // Or ce mot dit quelque chose de précis : `gh codespace ports visibility` a
+  // RÉUSSI, donc le relais connaissait ce port et l'a réglé public. Un refus
+  // venu après cela ne se répare pas en rebasculant une visibilité déjà bonne :
+  // le relais a PERDU le port depuis (serveur remplacé par la version bâtie,
+  // reprise après veille — `veiller.sh` le décrit au 26 août). Le seul geste
+  // qui le remet est de le redéclarer.
+  if (mot === "ouvert") {
+    return (
+      "     LE PORT A BIEN ÉTÉ RENDU PUBLIC PAR L'ESPACE, et il refuse quand même :\n" +
+      "     le relais l'a perdu depuis. Le rebasculer en « Public » ne peut rien.\n" +
+      "     Le plus court est de RALLUMER L'ESPACE (github.com/codespaces) : le\n" +
+      "     relais redéclare ses ports au démarrage.\n" +
+      "     Sans rallumer : onglet PORTS → retirer la ligne 3000, puis\n" +
+      "     « Transférer un port » → 3000."
+    );
+  }
+
+  // « hors-codespace », ou rien : on ne sait pas mieux, et on garde les deux
+  // gestes dans l'ordre où ils coûtent le moins cher.
   return (
     "     C'est le port qui n'est pas joignable de l'extérieur :\n" +
     "     onglet PORTS → clic droit sur 3000 → « Visibilité du port » → « Public ».\n" +
@@ -159,8 +183,16 @@ export function verdictPort({ etatPort, dehors, serveurLocal = null }) {
       };
     }
 
+    // **CE QUE L'ESPACE A PU FAIRE SE PUBLIE, pas seulement sa conclusion.**
+    // Le 12 septembre 2026, la fiche disait « INJOIGNABLE » et le geste qui
+    // suivait dépendait entièrement de ce mot-ci — qu'elle ne montrait nulle
+    // part. Impossible, en la relisant, de savoir si `gh` avait réussi ou si
+    // personne n'avait jamais essayé : deux états qui n'appellent pas le même
+    // geste. Une fiche existe pour voir sa machine, pas pour la deviner.
+    const releve = etatPort ? ` [démarrage : ${etatPort}]` : " [démarrage : pas de relevé]";
+
     return {
-      ligne: `INJOIGNABLE DE L'EXTÉRIEUR — ${detail}`,
+      ligne: `INJOIGNABLE DE L'EXTÉRIEUR — ${detail}${atteintAtlas ? "" : releve}`,
       souci: atteintAtlas
         ? "L'ADRESSE PUBLIQUE ATTEINT ATLAS, ET C'EST ATLAS QUI REFUSE.\n" +
           `     Ce que voit son téléphone : ${detail}.\n` +

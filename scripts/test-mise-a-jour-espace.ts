@@ -60,6 +60,10 @@ function monterEspace(): { distant: string; espace: string; racine: string } {
 
   execFileSync("git", ["init", "--quiet", "-b", "principale", source]);
   writeFileSync(path.join(source, "fichier.txt"), "version 1\n");
+  // **`package-lock.json` est SUIVI dans le vrai dépôt**, et cela change tout :
+  // `git stash push -- <chemin>` ignore un fichier non suivi. Un montage qui
+  // l'oublierait éprouverait un cas qui n'existe pas chez le patron.
+  writeFileSync(path.join(source, "package-lock.json"), '{"lock":"version 1"}\n');
   git(source, "add", ".");
   git(source, "commit", "--quiet", "-m", "version 1");
   execFileSync("git", ["clone", "--quiet", "--bare", source, distant]);
@@ -121,6 +125,53 @@ cas("du travail non enregistré arrête tout, et le dit", () => {
     execFileSync("cat", [path.join(espace, "fichier.txt")], { encoding: "utf8" }),
     "ce que le patron était en train d'écrire\n",
     "Le travail non enregistré du patron a été écrasé par la mise à jour."
+  );
+});
+
+cas("UN « package-lock.json » SALI NE FIGE PLUS L'ESPACE — sa panne du 12 septembre", () => {
+  const { espace, racine } = monterEspace();
+  aNettoyer.push(racine);
+  livrer(racine, "version 2\n");
+
+  // Ce que fait `npm install`, le repli de `demarrer.sh` quand `npm ci` refuse.
+  // Personne ne l'a écrit à la main, et personne ne le relira jamais.
+  writeFileSync(path.join(espace, "package-lock.json"), '{"lock":"réécrit par npm install"}\n');
+
+  const issue = lancer(espace);
+  assert.equal(
+    issue,
+    "faite",
+    `L'espace est resté en arrière à cause d'un fichier que personne n'a écrit : ` +
+      `il servira le code d'hier indéfiniment (reçu « ${issue} »).`
+  );
+  assert.equal(
+    execFileSync("cat", [path.join(espace, "fichier.txt")], { encoding: "utf8" }),
+    "version 2\n",
+    "Le script a dit « faite » sans que le code neuf arrive."
+  );
+  // **Mis de côté, jamais jeté.** C'est ce qui distingue cette exception d'un
+  // « git checkout -- » : le fichier se rend par « git stash pop ».
+  assert.match(
+    git(espace, "stash", "list"),
+    /package-lock\.json/,
+    "Le fichier a disparu sans laisser de quoi le récupérer."
+  );
+});
+
+cas("le VRAI travail reste refusé, même quand le lock est sali en même temps", () => {
+  const { espace, racine } = monterEspace();
+  aNettoyer.push(racine);
+  livrer(racine, "version 2\n");
+
+  writeFileSync(path.join(espace, "package-lock.json"), '{"lock":"réécrit"}\n');
+  writeFileSync(path.join(espace, "fichier.txt"), "ce que le patron était en train d'écrire\n");
+
+  const issue = lancer(espace);
+  assert.ok(issue.startsWith("impossible"), `Attendu un refus, reçu « ${issue} ».`);
+  assert.equal(
+    execFileSync("cat", [path.join(espace, "fichier.txt")], { encoding: "utf8" }),
+    "ce que le patron était en train d'écrire\n",
+    "L'exception du lock a emporté le travail du patron avec elle."
   );
 });
 

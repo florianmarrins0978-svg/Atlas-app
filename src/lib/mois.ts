@@ -101,6 +101,17 @@ export function jourLisibleCourt(jour: JourIso): string {
   return texte.charAt(0).toUpperCase() + texte.slice(1);
 }
 
+/**
+ * « 20 août 2026 » — une date qui se cite, avec son année.
+ *
+ * Pour ce qui se montre à un client : la date de consultation d'une source
+ * phytosanitaire, par exemple. « 2026-08-20 » se lit comme un code.
+ */
+export function dateCitee(jour: JourIso): string {
+  const d = new Date(`${jour}T12:00:00Z`);
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+}
+
 /** Un samedi ou un dimanche — jamais proposé (`disponibilites.ts`). */
 export function estWeekEndIso(jour: JourIso): boolean {
   const j = new Date(`${jour}T12:00:00Z`).getUTCDay();

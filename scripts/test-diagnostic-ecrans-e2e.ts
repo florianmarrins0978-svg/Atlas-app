@@ -159,7 +159,15 @@ async function main() {
     // **Une PHRASE en français, jamais une pile d'appels ni un identifiant
     // opaque.** C'est le piège 0 ter du dépôt : le message d'une exception
     // levée par une action serveur n'arrive jamais jusqu'au patron.
-    assert.match(texte, /Analyse impossible|Sans conclusion/);
+    //
+    // Un REPÈRE, pas un libellé (`CLAUDE.md` §5 bis) : « Analyse impossible »
+    // est devenu « La photo n'a pas été regardée » le 12 septembre 2026, et
+    // ce contrôle n'a pas à rougir chaque fois qu'il fait changer un mot.
+    assert.equal(
+      await ecran.locator('[data-atlas="diagnostic-echoue"]').count(),
+      1,
+      "l'issue « personne n'a regardé » n'est pas rendue"
+    );
     assert.doesNotMatch(texte, /Error|undefined|\[object/i);
 
     // Une boîte de zéro pixel ne prouve rien (`CLAUDE.md` §5, le défaut du
@@ -170,9 +178,14 @@ async function main() {
     await page.screenshot({ path: `${CAPTURES}/diagnostic-sans-fournisseur.png`, fullPage: true });
   });
 
-  await cas("« Nouvelle photo » ramène à l'écran d'entrée", async () => {
-    await page.click('text=Nouvelle photo');
-    await page.waitForURL(`${BASE}/paysage/diagnostic`, { timeout: 10000 });
+  // **Le geste offert est celui qui peut réparer.** Jusqu'au 12 septembre
+  // 2026, ce refus n'offrait que « Nouvelle photo » — sous la phrase « ce n'est
+  // pas la photo qui est en cause ». Il mène désormais aux réglages de l'IA,
+  // et « Réessayer » repart avec la photo déjà rangée.
+  await cas("« personne n'a regardé » offre Réessayer, et mène aux réglages de l'IA", async () => {
+    assert.equal(await page.locator('[data-atlas="diagnostic-reessayer"]').count(), 1, "« Réessayer » est absent");
+    await page.click('a[href="/reglages/ia"]');
+    await page.waitForURL(`${BASE}/reglages/ia`, { timeout: 10000 });
   });
 
   console.log("\n=== La photo de référence : sa DEMANDE du 20 août ===");

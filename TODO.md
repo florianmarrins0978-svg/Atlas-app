@@ -47,6 +47,166 @@ planche la pose entre Qté et P.U. HT, avec les unités usuelles (u, ml, m², m�
 kg, h, forfait) sous la ligne quand le champ prend le doigt. Même planche,
 même adresse.
 
+## VINGT SUITES NAVIGATEUR SONT ROUGES SUR `main` (12 septembre 2026, au soir)
+
+**Relevé, pas causé.** La batterie du 12 septembre au soir rend **126/146** aux
+suites navigateur. Le lot de ce soir ne touche **aucun fichier de `src/`**
+(`git diff --name-only origin/main...` le montre) : ces rouges vivaient déjà
+sur `main`. Types, lint, mémoire, suites base et connexion derrière un proxy
+sont **verts**.
+
+Ce n'est pas un effondrement de base — l'étape « Connexion derrière un proxy »
+passe, donc le jeu de démonstration est en place, et les messages sont tous
+différents :
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-devis-client-e2e` | « la page fait 666 px pour 664 px d'écran », avec la case de rétractation |
+| `test-devis-complet-e2e` | « Le total de la ligne (3 × 250 €) ne s'affiche pas » |
+| `test-fiche-entretien-e2e` | la rubrique fait 40 px sous les 44 px du pouce ; deux boutons « Retirer … » introuvables |
+| `test-visionneuse-pdf-e2e` | « Le document ne s'ouvre pas (`this[#ne].getOrInsertComputed is not a function`) » — sent la version de Node, pas l'écran |
+
+Les seize autres : `adresse-suggestions`, `anneau-dictee`, `anneau-vers-devis`,
+`carte-reponse-mene-au-geste`, `catalogue-mes-mots`, `devis-papier`,
+`fiche-client`, `ia-01`, `madame-lucie`, `message-au-client`,
+`planning-vers-facture`, `recherche-client`, `reprise-chantier`,
+`reprise-morceau`, `reste-equipes`, `suivi-devis`.
+
+**À reprendre en propre**, suite par suite : le journal entier est nécessaire
+(`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
+
+## SON ESPACE DOIT ÊTRE DÉBLOQUÉ UNE FOIS À LA MAIN (12 septembre 2026)
+
+**CODÉ LE 12 SEPTEMBRE — mais il porte encore l'ancien script.** `mettre-a-jour.sh`
+met désormais `package-lock.json` de côté au lieu de se figer devant lui
+(`ARCHITECTURE.md` §339). Son espace, lui, est resté sur le code de 3 h 38 :
+il ne peut pas recevoir le correctif qui lui permettrait de recevoir du code.
+
+Le déblocage de CETTE fois-là passe par ses mains, une dernière fois — dans le
+terminal de son espace :
+
+    git stash push -- package-lock.json
+
+puis rallumer l'espace. **À barrer dès qu'il confirme que sa version a avancé**
+(l'écran Réglages donne la version servie).
+
+## PISTE NON REPRODUITE — LE PORT QUE LE RELAIS PERD (12 septembre 2026)
+
+Sa fiche du 12 septembre au soir : serveur debout sur 3000, `gh` satisfait, et
+un **404 du relais** — la requête n'atteint jamais Atlas. Le verdict et son
+geste sont corrigés (`_verdict-port.mjs`, §339), mais la panne elle-même n'est
+**pas reproduite** : cet environnement n'a pas de Codespace.
+
+**Ce qu'on soupçonne, sans l'avoir mesuré :** le relais n'enregistre un port
+qu'en voyant un processus commencer à écouter (`veiller.sh` le constate au
+26 août — « le serveur démarre, le port se déclare tout seul »). Un serveur
+déjà en place au moment où le tunnel se remonte ne serait donc jamais
+redéclaré, et rien depuis l'intérieur ne le remettrait.
+
+**Ce qui n'a PAS été fait, et pourquoi :** faire relancer le serveur par le
+veilleur pour rouvrir la socket. Le gain est supposé ; le risque, lui, est réel
+— une relance mal bornée refait la panne du 2 septembre (serveur mort en
+boucle). À ne coder qu'une fois la cause mesurée sur son espace.
+
+**ET CETTE PISTE EST RÉFUTÉE — mesurée le 12 septembre à 22 h 02.** Il a rejoué
+`demarrer.sh` en entier : le serveur a été tué, réinstallé, relancé — et sa
+fiche, écrite juste après, porte **le même 404 du relais**. Rouvrir la socket
+ne réenregistre donc PAS le port. Ne pas coder la relance : elle ne peut rien.
+
+Ce qui reste à essayer, dans cet ordre, et qui n'est pas mesuré non plus :
+l'onglet PORTS (retirer la ligne 3000, puis « Transférer un port » → 3000), et
+`gh codespace ports visibility 3000:public -c $CODESPACE_NAME` depuis son
+terminal. Si aucun des deux n'aboutit, c'est le conteneur qu'il faut
+reconstruire — `devcontainer.json` déclare le port public, et cette
+déclaration ne s'applique qu'à la naissance de l'espace (`ARCHITECTURE.md`
+§55).
+
+## ⏳ UNE PLANCHE À REGARDER — REMISE, MAIN D’ŒUVRE, CONDITIONS DU DEVIS (12 septembre 2026)
+
+**Sa demande du 12 septembre :** « Prix accordé au client » devient **« Remise
+de N % »** ; un bouton **+ Main d’œuvre** comme « + Ajouter une TVA », sa ligne
+« Main d’œuvre HT » et son prix sous le total HT ; le bloc Notes / conditions
+**en gras** — mode de règlement (30 % à la commande, solde à réception), montant
+à régler à la commande (l’acompte réglé, calculé), solde restant (TTC − acompte),
+moyens de paiement, retard ; et dans les réglages **une case « conditions
+générales de vente et de règlement »**, remplie d’un texte par défaut qu’il
+peut effacer et réécrire, imprimée **après le bon pour accord**.
+
+**Planche :** `appli/devis-remise-main-d-oeuvre-conditions.html` (quatre vues :
+écran, papier, réglages, la loi). **Rien n’est codé.** Sa photo — les CGV d’un
+menuisier — est lue : huit clauses reprises dans le texte d’origine (adhésion,
+prix révisables au-delà de la validité, pas d’escompte, délai indicatif, autres
+corps de métier, réception en présence de l’entreprise, réserve de propriété et
+renonciation à l’accession, vices cachés) ; quatre laissées et dites dans la vue
+Réglages (pénalités à 1,5 × périmées, « aucune indemnité » abusive face à un
+particulier, tribunal imposé, camionnage).
+
+**Ce qui existe DÉJÀ, et ne se refait pas :** l’acompte, les moyens de
+paiement, le rappel des pénalités et le texte de pied sont réglés
+(`src/lib/conditions-documents.ts`) et imprimés sous ses notes
+(`devis-pdf.ts`, `blocNotes`). Le libellé de la remise vit en UN endroit :
+`LIBELLE_REDUCTION` / `libelleReduction` (`src/lib/reduction-devis.ts`) — le
+renommage se fait là et nulle part ailleurs, puis les suites qui lisent le
+texte (`grep -rn "Prix accordé" scripts/`).
+
+**Ses réponses du 12 septembre 2026 :**
+
+| | |
+|---|---|
+| la main d’œuvre | **B** — « dont main d’œuvre HT », déjà dans les lignes, les totaux ne bougent pas ; **facultative**, et le « − » la retire comme la remise |
+| le bloc « pris de la photo du menuisier » | **pour lui seulement**, jamais dans l’application — il vit sous le téléphone de la planche |
+| **NE RIEN CODER** | *« j’ai une session qui retravaille le devis ; une fois qu’elle aura fini tu iras voir pour mettre à jour cette maquette »* — regarder `git branch -r --sort=-committerdate` et le devis sur `main` AVANT de reprendre la planche, puis la reprendre sur l’écran tel qu’il sera |
+
+**Les mentions manquantes, comment (proposé, pas tranché) :**
+
+| | où |
+|---|---|
+| assureur décennale / RC pro, médiateur, devis gratuit ou payant | trois champs de « Mon entreprise » (colonnes sur `entreprises`), imprimés au pied du devis et de la facture comme le SIRET |
+| rétractation 14 jours | une phrase dans le texte d’origine des CGV (déjà) + une ligne sous le bon pour accord quand le devis est signé chez le client |
+| date ou délai d’exécution | une ligne en tête du devis à côté de « Validité », prise du planning quand le chantier est daté, sinon saisie |
+| taux horaire de main d’œuvre TTC | un réglage des tarifs, imprimé seulement s’il l’allume — dépannage et entretien seulement |
+
+**Ce que la vérification en ligne a donné** (service-public, code de la
+consommation, arrêté du 24 janvier 2017) — sur le devis d’aujourd’hui :
+
+| présent | absent |
+|---|---|
+| date, identité, SIRET, client, lieu, décompte, HT/TVA/TTC, validité, forme juridique, pénalités, bon pour accord | assurance décennale (assureur, contrat, couverture), médiateur de la consommation, rétractation 14 jours (devis signé chez le client), devis gratuit ou payant, date ou délai d’exécution |
+
+**Pour coder ensuite :** la CGV est une colonne texte de plus sur
+`entreprises`, recopiée sur le devis à sa création comme les six conditions
+(migration 0064) ; la main d’œuvre en lecture A est un montant HT de plus dans
+`totauxAvecReduction` — **une seule fois**, jamais dans l’écran ni dans le
+PDF séparément ; le gras des notes est une option de `document-commun.ts`
+(police `sansGras`), à ne pas confondre avec SON texte libre, qui reste en
+maigre.
+
+## ⏳ DIAGNOSTIC VÉGÉTAL — CE QUI ATTEND SON BANC, ET LUI (12 septembre 2026)
+
+Le lot du refus est codé (`ARCHITECTURE.md` §337, `docs/diagnostic-vegetal-impeccable.md`).
+Ce qui reste ne se code pas ici :
+
+| | Qui |
+|---|---|
+| **Le premier vrai appel de vision sur une vraie photo** — jamais joué, ce poste n'a pas de clé ; `VISION_PROVIDER` retombe sur le fournisseur de rédaction, sa clé Anthropic suffit. **Lui demander une capture** du résultat, pas une commande | lui, sur son banc |
+| **Combien de photos réelles échouent à l'identification de l'essence** — « l'hôte d'abord » n'a jamais été mesuré ; sans essence, Atlas ne conclut plus du tout. La première chose à regarder le jour où la clé tourne | lui, sur son banc |
+| **La licence INRAE (Ephytia)** — le courriel est prêt depuis le 20 août (`docs/courriel-inrae.md`) ; personne ne sait ici s'il est parti. Réponse complète : `docs/QUESTIONS.md` §24 | lui |
+| **La durée de conservation des photos, et ce que le fournisseur garde** — le fournisseur de vision est **déjà** au registre (`docs/RGPD.md`, ligne « Vision (diagnostic végétal) », 20 août) : ce qui reste, c'est la durée | lui |
+| **Les seuils** (0,35 · 0,15 · plafonds) — un point de départ nommé, pas mesuré. Ne bougent pas au jugé | de vraies photos, de vraies fiches |
+
+## ~~UN CHANTIER RETIRÉ REVENAIT À L'ÉCRAN~~ — CORRIGÉ le 12 septembre 2026
+
+**Sa plainte, capture à l'appui :** *« lorsqu'on retire un chantier posé au
+planning, il réapparaît sur la page d'accueil ! »* Mesuré avant de corriger, et
+c'était double : la ligne revenait aussi **sur le planning**, six secondes après
+le geste — la base ayant pourtant bien écrit la suppression.
+
+Personne ne redemandait la page après l'écriture : `useRetraits` s'en charge, et
+le planning retire de sa liste le chantier effacé, comme le font déjà les six
+autres écrans. La recopie d'`EcranChantiers` est retirée. Tenu par
+`test-retrait-ne-revient-pas-e2e.ts`, qui rougit contre la version d'avant.
+Détail : `ARCHITECTURE.md` §336.
+
 ---
 
 ## ~~DEUX ÉCRITURES DE LA REMISE PEUVENT SE DOUBLER~~ — CORRIGÉ le 11 septembre 2026
@@ -1568,33 +1728,88 @@ téléphone, barre d'adresse comprise (`scripts/e2e-browser.ts`).
 
 ---
 
-## ⏳ SUR SON IPHONE : « Télécharger » range-t-il le fichier ?
+## ⏳ LA VISIONNEUSE PDF EXIGE UNE API TRÈS RÉCENTE — à lui faire essayer
 
-**Rouverte le 10 septembre 2026, et la question n'est plus la même.** Le
-correctif du 7 septembre — annoncer un type que le navigateur ne sait pas
-peindre — **a été défait** : il rendait les documents illisibles une fois
-enregistrés (*« page blanche »*, sur la facture puis sur le devis). Le type
-annoncé colle au fichier enregistré, et `nosniff` interdit ensuite d'y
-reconnaître un PDF (`ARCHITECTURE.md` §275).
+**Relevé le 12 septembre 2026**, en jouant `test-visionneuse-pdf-e2e` :
+la visionneuse livrée la veille affiche **« Le document ne s'ouvre pas
+(this[#ne].getOrInsertComputed is not a function) »**.
 
-Le serveur sert donc de nouveau `application/pdf`, avec
-`Content-Disposition: attachment` — la norme, et rien d'autre.
+`pdfjs-dist` 6.3 appelle `Map.prototype.getOrInsertComputed`, une méthode
+d'un an à peine. **Le Chromium de ce poste (141) ne l'a pas** — le build
+`legacy` de pdf.js ne change rien, il l'appelle aussi (22 fois).
 
-**Ce qui est prouvé ici :** un appui réel fait descendre le fichier (Chromium,
-`test-facture-au-client-e2e.ts`), le fichier reste un PDF valide, l'aperçu n'a
-pas bougé.
+| | |
+|---|---|
+| ce qui est SÛR | sur un navigateur sans cette méthode, « Voir la facture en PDF » rend un refus, jamais le document |
+| ce qui n'est PAS su | si le Safari de SON iPhone l'a. WebKit l'a implémentée, mais la version compte |
+
+**Ce qui tranche en dix secondes, et il n'y a que lui qui peut le faire :**
+ouvrir une facture, appuyer sur « Voir la facture en PDF », et dire si le
+document s'affiche ou si un refus paraît.
+
+**Si ça refuse chez lui, la racine est la VERSION de pdf.js**, pas un
+rattrapage à poser autour (ce serait le pansement du §4 quater) : il faut
+descendre `pdfjs-dist` à une version qui n'exige pas cette méthode, et
+l'épingler avec la raison.
+
+## ⚠ DEUX ROUGES SUR LES MONTANTS D'UN DEVIS — relevés le 12 septembre 2026
+
+**Trouvés en élargissant la preuve d'un autre lot, et ils n'appartiennent à
+personne pour l'instant.** Ce sont les deux seuls rouges de la soirée qui
+portent sur un CHIFFRE, et un devis faux part chez un client :
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-devis-complet-e2e` | « Le total de la ligne (3 × 250 €) ne s'affiche pas » — après `blur()` et 900 ms d'attente |
+| `test-devis-papier-e2e` | « Le PDF totalise 5400,00 € au lieu de 900 € (2 × 450) » |
+
+**Ils ne viennent pas du lot du téléchargement** (12 septembre) : celui-ci ne
+touche ni la saisie, ni le calcul, ni la composition du PDF — ses fichiers sont
+les six boutons de téléchargement et `remise-de-fichier.ts`.
+
+**La première piste, et elle se vérifie avant de se croire :** le lot du
+11 septembre au soir, *« Faire se suivre les écritures d'une même donnée »*
+(`file-d-ecritures.ts`), sérialise désormais les écritures d'un même champ —
+le champ quitté puis le bouton. Un total qui n'apparaît plus après 900 ms
+ressemble à une écriture qui attend son tour. **Le 5400 ne s'explique PAS par
+là** (c'est douze fois 450, pas un retard) : les deux rouges sont peut-être
+deux défauts différents, et il faut les traiter séparément.
+
+**À reprendre par qui touchera la saisie du devis** — en commençant par
+reproduire, jamais par corriger.
+
+## ⏳ SUR SON IPHONE : la feuille de partage range-t-elle le fichier ?
+
+**CODÉ LE 12 SEPTEMBRE 2026 — ce qui reste n'est pas un choix, c'est un essai
+sur son téléphone.** Sa capture du jour, la troisième sur le même bouton :
+*« Je peux plus télécharger en cliquant sur télécharger »*.
+
+**La racine, enfin nommée :** tant qu'un LIEN remet le fichier au navigateur,
+il n'y a que deux issues, et les deux sont mauvaises — mentir sur le type fait
+descendre un document illisible (7 septembre), dire la vérité laisse Safari le
+peindre (10 septembre). La page va donc chercher le fichier et le remet à la
+feuille de partage, seule voie qui range un PDF sur un iPhone en lui gardant
+son type (`ARCHITECTURE.md` §340).
+
+**Ce qui est prouvé ici**, dans un vrai navigateur
+(`test-telecharger-document-e2e.ts`, confronté au silence qu'il refuse) :
+l'appui fait descendre un PDF non vide sous le nom de la facture, le bouton
+revient à son libellé, et **un refus de la route s'affiche à l'écran** — le
+silence d'avant est mort.
 
 **Ce qui ne se prouve pas ici, et ne le sera jamais :** aucun WebKit n'est
-installable dans l'environnement de l'agent. Il n'y a donc pas de Safari.
+installable dans l'environnement de l'agent. Chromium prend la seconde voie, le
+lien d'objet local.
 
-**S'il redit que ça ne télécharge pas** — une seule question, et elle tranche :
-*que se passe-t-il quand tu appuies ?*
+**S'il redit que ça ne télécharge pas** — la question qui tranche a changé,
+parce que l'écran parle maintenant :
 
-| Sa réponse | Ce que ça veut dire |
+| Ce qu'il voit | Ce que ça veut dire |
 |---|---|
-| le devis s'ouvre dans le lecteur | iOS ignore `attachment` pour un PDF. **Ne PAS remettre le type générique** : il rend le fichier illisible. La voie qui reste est un partage explicite depuis la page |
-| une feuille demande de confirmer | c'est iOS, et c'est le geste normal — rien à corriger |
-| rien du tout | la requête n'aboutit pas, et **l'écran ne dit rien** : rendre ce refus bavard d'abord, deviner ensuite |
+| une feuille « Enregistrer dans Fichiers » | c'est le geste normal d'iOS : le fichier se range là où il choisit |
+| un message rouge sous le bouton | la route a refusé, et le message dit lequel — session, document absent, réseau |
+| le PDF s'ouvre quand même dans le lecteur | iOS a refusé le partage (geste jugé trop vieux) et le repli s'est appliqué : à reprendre en préparant le fichier AVANT l'appui, jamais en remettant un type générique |
+| rien du tout, pas même un message | le bouton n'a pas reçu l'appui : viser l'élément, pas la ligne |
 
 ## ✅ ~~Comment retirer une note vocale déjà partie ?~~ — **2, le 7 septembre 2026**
 

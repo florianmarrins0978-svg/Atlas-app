@@ -49,7 +49,33 @@ QUITTE le champ — à la frappe, « 75 » commence par « 7 » et sauterait à 
 posé dans la planche, sans réponse. Le devis DIT l'acompte, il ne le facture pas.
 
 ---
-## Dernier lot — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)
+## Lot précédent — SON ESPACE SE DÉBLAIE LUI-MÊME (12 septembre 2026, au soir)
+
+| | |
+|---|---|
+| sa plainte | *« L'appli ne répond plus corrige ça »* |
+| ce que sa fiche disait | serveur debout sur 3000, **404 du relais** à l'adresse publique, et **quatorze versions de retard** — `M package-lock.json` |
+| la racine | `mettre-a-jour.sh` prenait un fichier que la machine écrit elle-même pour du travail humain, et s'abstenait à vie. Le correctif du matin (« proteger-lock.sh ») ne pouvait pas l'atteindre : il faut recevoir du code pour recevoir ce correctif-là |
+| ce qui est fait | `mettre-a-jour.sh` met `package-lock.json` de côté (`git stash push --`, récupérable) avant de juger l'arbre. Un vrai fichier modifié arrête toujours tout |
+| ce qui a DISPARU | « proteger-lock.sh », ses deux appels dans `demarrer.sh`, et sa suite « test-proteger-lock » |
+| la migration | **aucune** |
+| les suites | `test-mise-a-jour-espace.ts` (+2 cas, rouges contre l'ancien script), `test-verdict-port.ts` (+1) |
+| le détail | `ARCHITECTURE.md` §339, qui **corrige le §338 noir sur blanc** |
+
+**LE PIÈGE À NE PAS REFAIRE.** Le §338, écrit trois heures plus tôt, avait
+explicitement écarté cette correction — « un cas particulier posé à côté de la
+règle générale ». L'objection valait contre un `git checkout --`, qui jette ;
+elle ne vaut pas contre un `git stash`, qui rend. Et la couche ajoutée, c'était
+l'autre : « proteger-lock.sh » n'enlevait rien et laissait la panne entière pour
+tout espace déjà pris.
+
+**CE QUI RESTE OUVERT.** Deux choses, dans `TODO.md` :
+son espace porte encore l'ancien script (`git stash push -- package-lock.json`
+puis rallumer, une dernière fois) ; et le **404 du relais sur le port 3000 n'est
+pas reproduit** — le verdict et son geste sont corrigés, la cause ne l'est pas.
+
+---
+## Lot précédent — MA TVA N'A PLUS QU'UNE LOGIQUE (12 septembre 2026)
 
 | | |
 |---|---|
@@ -73,7 +99,32 @@ centimètre sous le mot. L'autre mot flotte en `absolute` sous le premier, au
 même bord gauche — une seule alternative, donc un seul mot.
 
 ---
-## Dernier lot — LE PDF SE REGARDE DANS L'APPLICATION, AVEC SA FLÈCHE (11 septembre 2026)
+## Le même jour — « TÉLÉCHARGER » N'EST PLUS UN LIEN (12 septembre 2026)
+
+| | |
+|---|---|
+| sa plainte | *« Je peux plus télécharger en cliquant sur télécharger »* — capture iPhone, sous une facture, **la troisième sur ce bouton** |
+| la racine | un LIEN remet le fichier au navigateur : iOS PEINT un PDF au lieu de le ranger, et n'en rapporte jamais le refus. Les deux correctifs d'avant s'annulaient (7 sept. : mentir sur le type → fichier illisible ; 10 sept. : vérité rétablie → ne descend plus) |
+| la migration | **aucune** |
+| les pièces | `src/components/atlas/BoutonTelechargerDocument.tsx`, et dans `src/lib/remise-de-fichier.ts` : `adresseDeTelechargement`, `messageDeTelechargementRate`, `nomAnnonceParLeServeur` |
+| remplacé | les six `<a href download>` — facture, devis (écran et page du client), pièce du dossier, page publique de la facture |
+| les suites | `test-telecharger-document-e2e.ts` (neuve, confrontée au silence qu'elle refuse), `test-remise-de-fichier.ts` (+5), et trois suites adaptées à la règle plutôt qu'à la balise |
+| le détail | `ARCHITECTURE.md` §340 |
+
+**LE PIÈGE, et il décide de tout :** ne JAMAIS revenir à un type générique pour
+forcer l'enregistrement. Le type annoncé colle au fichier enregistré, et
+`nosniff` interdit ensuite d'y reconnaître un PDF — c'est la page blanche du
+10 septembre, sur un document intact.
+
+**CE QUI N'EST PAS ÉPROUVÉ ICI :** aucun WebKit dans l'environnement de
+l'agent, donc la feuille de partage d'iOS se juge sur SON téléphone. Chromium
+prend la seconde voie (lien d'objet local), et c'est elle qui est verte.
+
+**CE QUI RESTE UN LIEN, à dessein :** « Télécharger mes données » — un `.zip`
+descend de toute façon, et son appui porte une vérification d'identité.
+
+---
+## Encore avant — LE PDF SE REGARDE DANS L'APPLICATION, AVEC SA FLÈCHE (11 septembre 2026)
 
 | | |
 |---|---|
@@ -91,7 +142,35 @@ copie ne suit pas le paquet. Et les pièces « page » du dossier client gardent
 leur onglet — c'est l'adresse publique du client, sans en-tête d'application.
 
 ---
-## Dernier lot — LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU (11 septembre 2026)
+## Encore avant — CE QUI EST RETIRÉ NE REVIENT PLUS (12 septembre 2026)
+
+**Sa plainte :** *« lorsqu'on retire un chantier posé au planning, il réapparaît
+sur la page d'accueil ! »* Mesuré avant de corriger : c'était double — la ligne
+revenait aussi **sur le planning**, six secondes après le geste, la base ayant
+pourtant bien écrit la suppression.
+
+**Ce qui est fait :** `useRetraits` redemande la page une fois l'écriture faite
+(`router.refresh()`, qui traverse le démontage — l'écriture part souvent pendant
+qu'il change d'écran), et `PlanningClient` retire de sa liste locale le chantier
+que le serveur a effacé, comme le font déjà les six autres écrans. Le
+`router.refresh()` recopié dans `EcranChantiers` est retiré (redite de
+`Pellicule` aussi).
+
+**Ce qui a été écrit puis DÉFAIT, pour ne pas le refaire :** un masque définitif
+dans le crochet. La note vocale l'interdit — la clé du retrait y est le
+chantier, pas la note : une note effacée puis réenregistrée serait restée
+invisible.
+
+**Ce qui tient ça :** `scripts/test-retrait-ne-revient-pas-e2e.ts` — son chemin,
+le tiroir du planning puis l'onglet du bas, et la base interrogée. Jouée contre
+la version d'avant, elle rougit sur le cas du planning.
+
+**Ce qui reste ouvert :** rien de ce lot. À savoir si l'on y revient : les huit
+listes qui suppriment passent toutes par ce crochet, donc une régression ici se
+verrait partout à la fois. Détail : `ARCHITECTURE.md` §336.
+
+---
+## Lot précédent — LE PLAN D'ARROSAGE REPRIS, ET SES RÈGLES SOUS VERROU (11 septembre 2026)
 
 **Ce qui est fait :** le calcul rend 7 tuyères en quinconce sur son couloir de
 10 × 2 (sa règle du 18 août, morte le 24) et garde ses 9 turbines sur le 12 × 12 ;
@@ -4481,7 +4560,18 @@ deux endroits, et un retour fixe se trompe pour l'un des deux
 (`ARCHITECTURE.md` §135). Et **ne pas retirer le filtre** : la valeur vient de
 l'adresse, donc de n'importe qui.
 
-## Diagnostic végétal : ce qu'il faut savoir avant d'y toucher (20 août 2026)
+## Diagnostic végétal : ce qu'il faut savoir avant d'y toucher (20 août 2026, repris le 12 septembre)
+
+**Depuis le 12 septembre 2026, le refus est l'écran principal** (`ARCHITECTURE.md`
+§337) : la base range la CLÉ du refus (`diagnostics.refus`, migration 0087) et
+l'écran compose phrase et geste depuis les listes fermées de
+`src/lib/diagnostic-vegetal.ts` — `MOTIFS_REFUS`, `GESTE_APRES_REFUS`. Ajouter
+un refus, c'est donc trois gestes : la clé et sa phrase, son geste (ou `null`,
+décidé), et la contrainte `diagnostics_refus_ck` de la base. Le mot du
+fournisseur vit dans `panne`, jamais dans `refus`. « Vu sur la photo » vient de
+`decrireObservation` : quatre `Record` sur le vocabulaire — un mot sans libellé
+ne compile pas — et l'essence est `taxons.nom_commun`, jamais le `nom_commun`
+du modèle. « Réessayer » (`reprendreAnalyseAction`) ne vaut que pour `echoue`.
 
 **Le module est complet ; sa base est presque vide, et c'est le bon état.**
 Trois fiches réelles au 20 août 2026 (fomès des résineux, les deux anthracnoses)

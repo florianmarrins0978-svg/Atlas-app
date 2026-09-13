@@ -199,7 +199,7 @@ lancer_veilleur
 # vit dans `mettre-a-jour.sh`, qui est éprouvé par
 # `scripts/test-mise-a-jour-espace.ts` : enfouie ici, elle n'aurait jamais été
 # vue échouer.
-MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD")"
+MISE_A_JOUR="$(bash "$(dirname "$0")/mettre-a-jour.sh" "$CD" 2>> "$JOURNAL")"
 MIGRATIONS=""
 
 # Le code a peut-être changé sous nos pieds : on relit la version AVANT que le

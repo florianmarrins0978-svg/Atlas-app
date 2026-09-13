@@ -90,6 +90,158 @@ pour 50 % »*. Le « (50 % réglés) » qui expliquait le cumul est parti — li
 des totaux, phrase des notes, écran et PDF — dans la seule fonction qui
 l'écrit (`libelleLigneAcompte`, `phrasesAcomptes`).
 
+### L'espace se déblaie lui-même : un lock sali ne le fige plus à vie
+
+*« L'appli ne répond plus. »* Sa fiche, à 20 h 36 : serveur debout, et
+**quatorze versions de retard** — bloqué depuis le matin par un
+`package-lock.json` que `npm install` avait réécrit. Le correctif du jour
+(« proteger-lock.sh », §338) était sur `main` depuis trois heures et ne pouvait
+pas l'atteindre : il faut recevoir du code pour recevoir le correctif qui
+permet d'en recevoir.
+
+`.devcontainer/mettre-a-jour.sh` met désormais ce fichier de côté
+(`git stash push --`, donc récupérable par `git stash pop`) avant de juger
+l'arbre propre ou sale. Un vrai fichier modifié arrête toujours tout, et rien
+n'est jamais écrasé.
+
+**Supprimés avec :** « proteger-lock.sh », ses deux appels dans
+`demarrer.sh`, et sa suite « test-proteger-lock ». La couche qui compensait
+n'avait plus d'objet, et un pansement laissé en place masque la correction
+suivante (`CLAUDE.md` §4 quater, §4 quinquies).
+
+Ce que cela évite : un unique démarrage malheureux qui fige l'espace pour
+toujours, pendant qu'il essaie une version d'avant en croyant essayer la
+nouvelle. `ARCHITECTURE.md` §339 corrige le §338 noir sur blanc.
+
+**Ce que cela ne répare pas :** son espace, ce soir, porte encore l'ancien
+script — le déblocage de cette fois-là passe par ses mains, une dernière fois.
+
+### La fiche cesse de cacher le relevé qui décide du geste sur le port
+
+Même fiche, même soir : « Port 3000 : INJOIGNABLE DE L'EXTÉRIEUR », et le geste
+proposé était celui du doute — basculer la visibilité —, c'est-à-dire les trois
+clics qu'il a déjà faits pour rien le 22 août. Le mot rendu par `ouvrir-port.sh`
+tranche entre deux gestes opposés, et la fiche ne le publiait nulle part.
+
+Elle le porte maintenant (`[démarrage : ouvert]`), et le cas `ouvert` a son
+geste propre : quand `gh` a **réussi** à rendre le port public, le rebasculer ne
+peut rien — le relais l'a perdu depuis, et seul un rallumage de l'espace ou un
+réenregistrement du port le remet (`scripts/_verdict-port.mjs`).
+
+**Non reproduit ici** : cet environnement n'a pas de Codespace. Ce qui est
+éprouvé est le verdict lui-même, sur les mesures de sa fiche
+(`scripts/test-verdict-port.ts`).
+
+### « Télécharger » cesse d'être un lien : la page va chercher le fichier
+
+*« Je peux plus télécharger en cliquant sur télécharger. »* Troisième capture
+du même bouton, et les deux corrections d'avant s'annulaient l'une l'autre : le
+7 septembre, mentir sur le type faisait descendre un fichier illisible ; le
+10, la vérité rétablie rendait le PDF lisible — et Safari s'est remis à le
+PEINDRE au lieu de le ranger. Tant qu'un lien remet le fichier au navigateur,
+il n'y a pas de troisième choix.
+
+Ce qui range un fichier sur un iPhone est la feuille de partage, et elle
+réclame le fichier lui-même. `BoutonTelechargerDocument` le récupère, puis le
+remet : à la feuille de partage quand le navigateur sait partager un fichier, à
+un lien d'objet local sinon. **Et quand la route refuse, l'écran le dit** — un
+lien ne rapportait rien, si bien qu'une session expirée se lisait comme un
+bouton cassé.
+
+Retiré : les six `<a href download>` des écrans, les `?telecharger=1` écrits à
+la main, et le nom de fichier recopié dans l'écran — il vient du serveur, seul
+endroit qui le décide. Le serveur, lui, ne change pas : `attachment` et le vrai
+type restent (`ARCHITECTURE.md` §340).
+
+**Non éprouvé ici, et il faut le savoir :** aucun WebKit dans l'environnement
+de l'agent, donc la feuille de partage se juge sur son téléphone. Ce qui est
+prouvé dans un vrai navigateur (`test-telecharger-document-e2e`, qui sait
+rougir) : le fichier descend, non vide, sous le nom de la facture, et un refus
+s'affiche.
+
+
+### Une planche : remise, main d’œuvre, conditions et CGV sur le devis
+
+Sa demande du jour, dessinée avant tout code (`CLAUDE.md` §3 bis) :
+`appli/devis-remise-main-d-oeuvre-conditions.html`, liée depuis
+`essais.html`. Quatre vues — l’écran, le papier, les réglages, la loi. Les
+totaux, l’acompte et le solde s’y recalculent ; le texte des conditions
+générales s’y réécrit et se reporte sur le papier, après le bon pour accord.
+
+Ce qu’elle évite : coder « Remise de N % » à quatre endroits alors que le
+libellé vit en un seul (`reduction-devis.ts`), et refaire l’acompte et les
+pénalités, qui s’impriment déjà. La vérification en ligne des mentions
+obligatoires a trouvé cinq absences sur le devis d’aujourd’hui (décennale,
+médiateur, rétractation, devis gratuit, délai d’exécution) — écrites dans la
+vue « La loi » et dans `TODO.md`. Rien n’est codé : il a annoncé une photo
+de devis à reprendre d’abord.
+
+### Le diagnostic végétal : le refus dit ce qui a été vu, pourquoi, et le geste
+
+Sa réponse à la planche du 11 septembre : *« C'est bien »* — et le nom reste
+« Diagnostic végétal ». Ce qui change (`ARCHITECTURE.md` §337) :
+
+- **la base range QUEL refus** (migration 0087 : `refus`, clé de la liste
+  fermée, sous contrainte ; `panne` pour le mot du fournisseur ; `motif_refus`
+  disparaît, ses lignes converties). Jusque-là, la même dernière phrase suivait
+  les sept refus — « une photo plus proche peut suffire », y compris sous
+  « aucune autre photo ne permettrait de les départager » ;
+- **« Vu sur la photo »** sur les refus et la relance : les mots du vocabulaire
+  fermé, et l'essence de la base — jamais la prose du modèle ;
+- **« Personne n'a regardé »** offre **Réessayer** sur la photo gardée et
+  **Réglages de l'IA**, au lieu de « Nouvelle photo » sous « ce n'est pas la
+  photo qui est en cause » ;
+- **le résultat** dit « Probable · Platane » à la place de « CONFIANCE
+  PROBABLE » en capitales dorées, et porte la source avec sa date sur l'écran
+  principal ;
+- **une ligne ne reste plus `en_analyse`** quand le rangement de la photo tombe.
+
+Ce qui a été retiré : le `??` qui inventait un verdict sur une colonne nulle,
+la promesse « Réessayez dans un instant » sans geste, le libellé de confiance
+figé dans le résultat, les liserés dorés. Une suite navigateur de plus,
+`test-diagnostic-quatre-issues-e2e`, photographie les quatre issues sur Origine
+et Nuit. Document de retour : `docs/diagnostic-vegetal-impeccable.md`.
+
+### L'espace ne se bloque plus lui-même sur `package-lock.json`
+
+*« Je ne vois pas les modifications »*, alors que son espace tournait, servait
+et répondait. Il exécutait le code de **3 h 38** quand `main` était à **4 h 00**
+— trois versions plus loin, dont le correctif du chantier supprimé qui
+revenait.
+
+**La cause, et personne ne l'avait touché :** le repli `npm install` de
+`.devcontainer/demarrer.sh` (quand `npm ci` refuse) réécrit
+`package-lock.json`. `mettre-a-jour.sh` s'abstient devant un arbre sale, à
+raison — il ne peut pas savoir que ce fichier-là n'est le travail de personne.
+
+**Et le piège se referme sur lui-même :** l'installation ne tourne qu'APRÈS une
+mise à jour réussie. Une fois l'arbre sali, plus aucune mise à jour ne passe,
+donc plus aucune installation ne tourne, donc **rien ne remet le fichier en
+état**. Un seul démarrage malheureux fige l'espace pour toujours, sans un mot —
+la seule trace étant une ligne dans une fiche qu'il n'a aucune raison de lire.
+
+« proteger-lock.sh » encadre désormais l'installation : il relève
+l'état du fichier avant, et ne rend propre **que ce que l'installation a sali
+elle-même**. Un `package-lock.json` déjà modifié avant reste intact — il peut
+être le travail de quelqu'un, et l'effacer pour livrer une mise à jour serait
+pire que le défaut.
+
+**Ce que le correctif ne peut PAS faire :** débloquer un espace déjà pris. Il
+ne recevra jamais le correctif, puisque c'est justement la réception qui est
+bloquée. Le diagnostic dit donc maintenant le geste, et il est réversible :
+`git stash push -- <le fichier>`.
+
+sa suite « test-proteger-lock » monte de vrais dépôts et rejoue la panne de
+bout en bout : un espace en retard, sali par sa propre installation, dont la
+mise à jour repasse après la remise en état. Confronté à un script qui ne remet
+rien, il rougit sur deux cas.
+
+> **REVENU DESSUS LE SOIR MÊME, et les trois fichiers ci-dessus sont
+> supprimés.** À 20 h 36, son espace était toujours bloqué — quatorze versions
+> de retard — et ce correctif ne pouvait rien pour lui : ce qu'il annonce comme
+> une limite était le défaut. C'est `mettre-a-jour.sh` qui met désormais le
+> fichier de côté. Voir l'entrée du haut et `ARCHITECTURE.md` §339.
+
 ### Ma TVA n'a plus qu'une logique — la planche du 12 septembre, codée trait pour trait
 
 *« Parfait ! Code exactement cette planche ! Trait pour trait ! Va corriger le
@@ -163,6 +315,25 @@ mot, et refusent de conclure sur zéro pastille.
 `127.0.0.1:3000` en dur et tombaient en « connexion refusée » dès que la
 batterie tournait sur un autre port. Elles passent par `_adresse.ts`, comme
 les cent vingt autres depuis le 5 septembre.
+
+### Un chantier retiré ne revient plus, ni au planning ni sur l'accueil
+
+Sa plainte : « lorsqu'on retire un chantier posé au planning, il réapparaît sur
+la page d'accueil ! ». Mesuré : c'était double — la ligne revenait aussi sur le
+planning, six secondes après le geste, alors que la base avait bien écrit la
+suppression. Un écran qui montre ce qu'on vient d'effacer le fait recommencer.
+
+Personne ne redemandait la page une fois l'écriture faite : `useRetraits` s'en
+charge désormais, et les huit listes qui suppriment en profitent d'un coup — y
+compris quand l'écriture part pendant qu'on change d'écran. Le
+`router.refresh()` recopié dans `EcranChantiers`, qui ne tenait que l'accueil et
+laissait le planning sans rien, est retiré.
+
+Et le planning retire de sa propre liste le chantier que le serveur a effacé,
+comme le font déjà les tarifs, les photos et les lignes de prix : il était le
+seul des huit écrans à ne pas le faire.
+
+Détail : `ARCHITECTURE.md` §336. Tenu par `test-retrait-ne-revient-pas-e2e.ts`.
 
 ---
 ## 2026-09-11

@@ -32,7 +32,6 @@ import type { Partie } from "@/lib/diagnostic-vegetal";
  */
 export type Resultat = { ok: true; id: string } | { ok: false; phrase: string };
 
-
 /** La politique de conservation, lue à chaque geste — jamais gravée. */
 function politique() {
   const env = getEnv();
@@ -115,29 +114,59 @@ export async function analyserPhotoAction(formData: FormData): Promise<Resultat>
   if (!limite.autorise) return { ok: false, phrase: limite.message };
 
   const diagnosticId = await ouvrirDiagnostic(ctx);
-  const objet = await enregistrerObjet(
-    `entreprises/${ctx.entrepriseId}/diagnostics`,
-    prete.photo.octets,
-    prete.photo.extension
-  );
-  await ajouterPhoto(
-    ctx,
-    diagnosticId,
-    {
-      storageKey: objet.storageKey,
-      mimeType: prete.photo.mimeType,
-      tailleOctets: objet.tailleOctets,
-      checksum: prete.photo.checksum,
-      role: "initiale",
-      partieDemandee: null,
-      exifRetire: prete.photo.exifRetire,
-    },
-    politique()
-  );
-
-  await executerAnalyse(ctx, diagnosticId, [{ base64: prete.photo.base64, mimeType: prete.photo.mimeType }], false);
+  const rangee = await rangerPhoto(ctx, diagnosticId, prete.photo, "initiale", null);
+  if (rangee) {
+    await executerAnalyse(ctx, diagnosticId, [{ base64: prete.photo.base64, mimeType: prete.photo.mimeType }], false);
+  }
   revalidatePath(`/paysage/diagnostic/${diagnosticId}`);
   return { ok: true, id: diagnosticId };
+}
+
+/**
+ * Ranger une photo — et si le rangement tombe, le DIRE sur le diagnostic.
+ *
+ * **Une ligne ne reste jamais `en_analyse`.** Jusqu'au 12 septembre 2026, un
+ * stockage qui levait ici laissait le diagnostic ouvert sans issue : l'écran
+ * n'avait rien à afficher, et comblait avec une phrase par défaut — un verdict
+ * inventé (`CLAUDE.md` §4 quater). La panne est désormais écrite là où elle
+ * s'est produite, et l'écran la montre comme ce qu'elle est.
+ */
+async function rangerPhoto(
+  ctx: { utilisateurId: string; entrepriseId: string },
+  diagnosticId: string,
+  photo: PhotoPrete,
+  role: "initiale" | "complement",
+  partieDemandee: Partie | null
+): Promise<boolean> {
+  try {
+    const objet = await enregistrerObjet(`entreprises/${ctx.entrepriseId}/diagnostics`, photo.octets, photo.extension);
+    await ajouterPhoto(
+      ctx,
+      diagnosticId,
+      {
+        storageKey: objet.storageKey,
+        mimeType: photo.mimeType,
+        tailleOctets: objet.tailleOctets,
+        checksum: photo.checksum,
+        role,
+        partieDemandee,
+        exifRetire: photo.exifRetire,
+      },
+      politique()
+    );
+    return true;
+  } catch (err) {
+    logger.error("Diagnostic végétal : photo impossible à ranger", { diagnosticId, erreur: err });
+    await conclureDiagnostic(
+      ctx,
+      diagnosticId,
+      { type: "echoue", panne: "La photo n’a pas pu être rangée." },
+      null,
+      { moteur: "aucun", modele: "aucun", versionBase: "non lue" },
+      { taxonId: null, certitude: null }
+    );
+    return false;
+  }
 }
 
 /**
@@ -163,39 +192,61 @@ export async function ajouterComplementAction(diagnosticId: string, formData: Fo
   const limite = await verifierLimite(`diagnostic:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
   if (!limite.autorise) return { ok: false, phrase: limite.message };
 
-  const objet = await enregistrerObjet(
-    `entreprises/${ctx.entrepriseId}/diagnostics`,
-    prete.photo.octets,
-    prete.photo.extension
-  );
-  await ajouterPhoto(
-    ctx,
-    diagnosticId,
-    {
-      storageKey: objet.storageKey,
-      mimeType: prete.photo.mimeType,
-      tailleOctets: objet.tailleOctets,
-      checksum: prete.photo.checksum,
-      role: "complement",
-      partieDemandee: (diagnostic.complementPartie as Partie | null) ?? null,
-      exifRetire: prete.photo.exifRetire,
-    },
-    politique()
-  );
+  const rangee = await rangerPhoto(ctx, diagnosticId, prete.photo, "complement", (diagnostic.complementPartie as Partie | null) ?? null);
+  if (rangee) {
+    // **Les deux photos repartent ENSEMBLE.** Séparée, la seconde perdrait le
+    // contexte de la première — et c'est justement leur rapprochement qui
+    // départage les deux hypothèses.
+    await executerAnalyse(ctx, diagnosticId, await relirePhotos(ctx, diagnosticId), true);
+  }
+  revalidatePath(`/paysage/diagnostic/${diagnosticId}`);
+  return { ok: true, id: diagnosticId };
+}
 
-  // **Les deux photos repartent ENSEMBLE.** Séparée, la seconde perdrait le
-  // contexte de la première — et c'est justement leur rapprochement qui
-  // départage les deux hypothèses.
+/**
+ * Réessayer — **sur la photo déjà prise**, quand personne ne l'a regardée.
+ *
+ * Sa planche du 11 septembre 2026 : l'écran « personne n'a regardé » n'offrait
+ * que « Nouvelle photo », juste sous *« ce n'est pas la photo qui est en
+ * cause »* — et promettait *« réessayez dans un instant »* sans aucun geste
+ * pour le faire. La photo est rangée dès l'arrivée, précisément pour qu'une
+ * panne du fournisseur ne coûte pas le geste du patron : voici le geste.
+ *
+ * Réservé à `echoue`. Un refus de la base (`inconclusif`) ne se rejoue pas :
+ * la même photo devant les mêmes fiches rend la même réponse, et « réessayer »
+ * y serait un questionnaire déguisé.
+ */
+export async function reprendreAnalyseAction(diagnosticId: string): Promise<Resultat> {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/paysage", "réessayer un diagnostic");
+  const diagnostic = await lireDiagnostic(ctx, diagnosticId);
+  if (!diagnostic) return { ok: false, phrase: "Ce diagnostic n’existe plus." };
+  if (diagnostic.statut !== "echoue") return { ok: false, phrase: "Ce diagnostic a déjà été regardé." };
+
+  const limite = await verifierLimite(`diagnostic:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
+  if (!limite.autorise) return { ok: false, phrase: limite.message };
+
+  const images = await relirePhotos(ctx, diagnosticId);
+  if (images.length === 0) return { ok: false, phrase: "La photo n’est plus conservée. Reprenez-en une." };
+
+  // La relance compte depuis la BASE : une seule, même après une panne.
+  await executerAnalyse(ctx, diagnosticId, images, diagnostic.complementsDemandes > 0);
+  revalidatePath(`/paysage/diagnostic/${diagnosticId}`);
+  return { ok: true, id: diagnosticId };
+}
+
+/** Les photos rangées d'un diagnostic, prêtes à repartir — celles qui restent. */
+async function relirePhotos(
+  ctx: { utilisateurId: string; entrepriseId: string },
+  diagnosticId: string
+): Promise<{ base64: string; mimeType: string }[]> {
   const photos = await lirePhotos(ctx, diagnosticId);
   const images = await Promise.all(
     photos
       .filter((p) => p.storageKey)
       .map(async (p) => ({ base64: await relireBase64(p.storageKey!), mimeType: p.mimeType }))
   );
-
-  await executerAnalyse(ctx, diagnosticId, images.filter((i) => i.base64 !== null) as { base64: string; mimeType: string }[], true);
-  revalidatePath(`/paysage/diagnostic/${diagnosticId}`);
-  return { ok: true, id: diagnosticId };
+  return images.filter((i): i is { base64: string; mimeType: string } => i.base64 !== null);
 }
 
 async function relireBase64(storageKey: string): Promise<string | null> {
@@ -233,7 +284,7 @@ async function executerAnalyse(
     await conclureDiagnostic(
       ctx,
       diagnosticId,
-      { type: "echoue", phrase: "L’analyse n’a pas abouti. Réessayez dans un instant." },
+      { type: "echoue", panne: "L’analyse n’a pas abouti." },
       null,
       { moteur: "inconnu", modele: "inconnu", versionBase: "non lue" },
       { taxonId: null, certitude: null }

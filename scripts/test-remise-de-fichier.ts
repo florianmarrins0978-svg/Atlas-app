@@ -13,7 +13,13 @@
 // Ni base, ni réseau, ni navigateur.
 
 import assert from "node:assert/strict";
-import { enTetesDeRemise, veutTelecharger } from "../src/lib/remise-de-fichier";
+import {
+  adresseDeTelechargement,
+  enTetesDeRemise,
+  messageDeTelechargementRate,
+  nomAnnonceParLeServeur,
+  veutTelecharger,
+} from "../src/lib/remise-de-fichier";
 
 let echecs = 0;
 function essai(nom: string, fn: () => void) {
@@ -119,6 +125,58 @@ essai("`?telecharger=1` range, et rien d'autre ne range", () => {
   // La forme nue n'était acceptée que par la route du devis du client, et par
   // elle seule : aucun écran ne l'écrit.
   assert.equal(veutTelecharger("https://x/devis/abc/pdf?telecharger"), false);
+});
+
+// ─── L'ADRESSE, COMPOSÉE UNE SEULE FOIS ────────────────────────────────────
+
+essai("le paramètre se colle à une adresse nue comme à une adresse qui a déjà une requête", () => {
+  assert.equal(adresseDeTelechargement("/api/factures/1/pdf"), "/api/factures/1/pdf?telecharger=1");
+  // Écrit à la main, `?telecharger=1` sur une adresse qui portait déjà `?` en
+  // faisait deux requêtes — et le serveur n'en lisait qu'une.
+  assert.equal(adresseDeTelechargement("/api/factures/1/pdf?v=2"), "/api/factures/1/pdf?v=2&telecharger=1");
+  // Et ce qui est composé ici doit se relire là-bas : les deux bouts de la
+  // même règle, dans le même fichier.
+  assert.equal(veutTelecharger(`https://x${adresseDeTelechargement("/api/factures/1/pdf")}`), true);
+});
+
+// ─── LE NOM ANNONCÉ PAR LE SERVEUR ─────────────────────────────────────────
+
+essai("le nom du serveur se relit, accents compris", () => {
+  const entete = enTetesDeRemise({
+    telecharger: true,
+    nom: "Devis André & Fils.pdf",
+    type: "application/pdf",
+  })["Content-Disposition"];
+  assert.equal(nomAnnonceParLeServeur(entete), "Devis André & Fils.pdf");
+});
+
+essai("sans `filename*`, la version ASCII fait foi ; sans en-tête, personne ne décide", () => {
+  assert.equal(nomAnnonceParLeServeur('attachment; filename="F2026-0001.pdf"'), "F2026-0001.pdf");
+  assert.equal(nomAnnonceParLeServeur(null), null);
+  assert.equal(nomAnnonceParLeServeur("attachment"), null);
+});
+
+essai("un `filename*` abîmé ne coûte pas le nom : `filename` prend le relais", () => {
+  // `%E9` seul n'est pas de l'UTF-8 valide : `decodeURIComponent` lève. Sans
+  // repli, le fichier descendait sous un nom inventé par l'écran.
+  assert.equal(
+    nomAnnonceParLeServeur(`attachment; filename="devis.pdf"; filename*=UTF-8''%E9`),
+    "devis.pdf"
+  );
+});
+
+// ─── CE QUE L'ÉCRAN DIT QUAND LE DOCUMENT N'ARRIVE PAS ─────────────────────
+
+essai("chaque refus dit ce qu'il faut faire, et jamais la même chose", () => {
+  // C'est tout l'objet du lot du 12 septembre : un lien ne rapporte rien, et
+  // « rien ne se passe » se lit comme un bouton cassé.
+  assert.match(messageDeTelechargementRate(401), /[Rr]econnect/);
+  assert.match(messageDeTelechargementRate(403), /[Rr]econnect/);
+  assert.match(messageDeTelechargementRate(404), /plus disponible/);
+  // Le statut se lit dans le message : sans lui, on ne sait pas quoi chercher.
+  assert.match(messageDeTelechargementRate(500), /500/);
+  const tous = [401, 404, 500].map(messageDeTelechargementRate);
+  assert.equal(new Set(tous).size, 3, "deux refus disent la même chose");
 });
 
 console.log(echecs === 0 ? "\n✅ Tout est vert." : `\n❌ ${echecs} échec(s).`);

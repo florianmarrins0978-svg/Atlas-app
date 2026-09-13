@@ -122,14 +122,11 @@ export default function EcranChantiers({
   // Le retrait, et le tiroir qui le retient. L'écriture n'a lieu qu'à la
   // fermeture du tiroir : d'ici là la ligne n'est que masquée, et « Annuler »
   // la rend vraiment — elle n'a jamais quitté l'état de l'écran.
-  const retraits = useRetraits({
-    valider: async (id) => {
-      const resultat = await supprimerChantierAction(id);
-      // La liste a changé : on la redemande au serveur plutôt que de deviner.
-      if (resultat.succes) router.refresh();
-      return resultat;
-    },
-  });
+  // **La page se redemande toute seule** : `useRetraits` la rappelle une fois
+  // l'écriture faite, ici comme sur les sept autres listes qui suppriment. La
+  // recopie qui vivait ici ne tenait que cet écran-ci — et le planning, lui,
+  // ne l'avait pas (12 septembre 2026).
+  const retraits = useRetraits({ valider: (id) => supprimerChantierAction(id) });
 
   // **Le décompte suit ce qui reste, sans attendre le serveur.** Un « 8 »
   // au-dessus de sept lignes ferait douter que le retrait ait eu lieu.

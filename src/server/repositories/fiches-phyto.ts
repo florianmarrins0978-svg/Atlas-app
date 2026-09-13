@@ -282,3 +282,31 @@ export async function versionBase(): Promise<string> {
     .where(filtreServable());
   return `${ligne?.nombre ?? 0} fiches · ${ligne?.maj ?? "sans date"}`;
 }
+
+/**
+ * Le nom commun d'un taxon reconnu — ce que l'écran écrit à côté du résultat.
+ *
+ * **C'est le seul nom d'essence qui a le droit d'atteindre l'écran.** Le
+ * modèle écrit aussi un `nom_commun`, en texte libre : celui-là reste dans
+ * l'observation rangée, jamais affiché (barrière 3, `ARCHITECTURE.md` §135.1).
+ */
+export async function lireNomTaxon(taxonId: string): Promise<string | null> {
+  const [ligne] = await db.select({ nom: taxons.nomCommun }).from(taxons).where(eq(taxons.id, taxonId)).limit(1);
+  return ligne?.nom ?? null;
+}
+
+/**
+ * Combien de problèmes Atlas SAIT reconnaître aujourd'hui.
+ *
+ * Dit à l'écran quand aucune fiche ne correspond : « Atlas connaît 3
+ * problèmes » situe le manque dans la bibliothèque, pas dans sa photo. Le même
+ * filtre que le moteur — fixtures comprises quand la lecture les autorise —,
+ * sans quoi l'écran annoncerait un compte que le moteur n'a pas vu.
+ */
+export async function compterFichesServables(): Promise<number> {
+  const [ligne] = await db
+    .select({ nombre: sql<number>`count(*)::int` })
+    .from(fichesPhyto)
+    .where(filtreServable());
+  return ligne?.nombre ?? 0;
+}

@@ -5,6 +5,7 @@ import { Pool } from "pg";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
 import { joursAProposer, retenirAuCalendrier } from "./_calendrier-e2e";
+import { adresseDeTelechargement, nomAnnonceParLeServeur } from "../src/lib/remise-de-fichier";
 
 // **« La facture s'affiche partie, mais le client ne la reçoit pas. »**
 //
@@ -225,13 +226,14 @@ async function main() {
   console.log(`  ✓ le message tout prêt porte la capsule (rayon ${rayon} px, ${Math.round(hauteur)} px de haut)`);
 
   const envoi = await pool.query(
-    `SELECT ef.jeton, f.numero_commercial FROM envois_factures ef
+    `SELECT ef.jeton, f.id AS facture_id, f.numero_commercial FROM envois_factures ef
        JOIN factures f ON f.id = ef.facture_id
       WHERE f.chantier_id = $1`,
     [chantierId]
   );
   assert.equal(envoi.rows.length, 1, "Aucun lien de facture n'a été enregistré.");
   const jeton = envoi.rows[0].jeton;
+  const factureId = envoi.rows[0].facture_id;
   assert.ok(adresse.includes(encodeURIComponent(jeton)) || adresse.includes(jeton), "Le message ne porte pas le lien.");
 
   // --- 2 bis. « Impossible d'enregistrer la facture » ----------------------
@@ -242,15 +244,19 @@ async function main() {
   // décide. Le nom doit porter le numéro — il en aura des centaines.
   const telechargement = page.locator("[data-atlas='telecharger-facture']");
   assert.equal(await telechargement.count(), 1, "Rien ne permet de télécharger la facture.");
-  const cheminPdf = (await telechargement.getAttribute("href")) ?? "";
-  const nomPropose = (await telechargement.getAttribute("download")) ?? "";
+
+  // **L'adresse ne se lit plus sur le bouton — 12 septembre 2026.** Ce n'est
+  // plus un lien : *« je peux plus télécharger en cliquant sur télécharger »*.
+  // Un lien remet le fichier au navigateur, qui sur iPhone le PEINT au lieu de
+  // le ranger, et n'en rapporte jamais le refus. La page va chercher le
+  // document et le remet à la feuille de partage
+  // (`BoutonTelechargerDocument`). Ce contrôle vise donc la RÈGLE — le fichier
+  // descend, sous le nom de la facture —, jamais la forme du bouton
+  // (`CLAUDE.md` §5 bis).
+  const cheminPdf = adresseDeTelechargement(`/api/factures/${factureId}/pdf`);
   const range = await page.request.get(`${BASE}${cheminPdf}`);
   const remise = range.headers()["content-disposition"] ?? "";
   assert.ok(remise.startsWith("attachment"), `Le PDF s'ouvre au lieu de se ranger : « ${remise} »`);
-  assert.ok(
-    remise.includes(`filename="${nomPropose}"`),
-    `L'écran propose « ${nomPropose} » et le serveur range « ${remise} ».`
-  );
   // **Le nom se compare au numéro RÉEL de la facture, pas à une forme.** Ce
   // contrôle exigeait `F\d{4}-\d{4}` : le 26 août 2026, le patron a choisi
   // « six chiffres » et la suite a rougi sur du code juste, pour un réglage
@@ -258,9 +264,9 @@ async function main() {
   // chiffres — c'est qu'il retrouve SA facture dans son dossier de
   // téléchargements, donc que le nom porte le numéro qu'elle porte.
   assert.equal(
-    nomPropose,
+    nomAnnonceParLeServeur(remise),
     `${envoi.rows[0].numero_commercial}.pdf`,
-    `Nom de fichier inexploitable : « ${nomPropose} » pour la facture ${envoi.rows[0].numero_commercial}`
+    `Nom de fichier inexploitable : « ${remise} » pour la facture ${envoi.rows[0].numero_commercial}`
   );
   // **LA FACTURE RANGÉE RESTE UNE FACTURE — 10 septembre 2026.**
   //
@@ -287,10 +293,15 @@ async function main() {
   assert.ok(descendu, "L'appui sur « Télécharger » n'a fait descendre aucun fichier.");
   const octets = readFileSync(await descendu.path()).length;
   assert.ok(octets > 0, "Le fichier téléchargé est vide.");
+  assert.equal(
+    descendu.suggestedFilename(),
+    `${envoi.rows[0].numero_commercial}.pdf`,
+    `Le fichier descend sous « ${descendu.suggestedFilename()} » : il ne se retrouve pas dans son dossier.`
+  );
   console.log(`  ✓ l'appui fait descendre ${descendu.suggestedFilename()} (${octets} octets)`);
 
   // Et l'aperçu continue de s'ouvrir : la nouveauté s'ajoute, elle ne remplace pas.
-  const apercu = await page.request.get(`${BASE}${cheminPdf.replace("?telecharger=1", "")}`);
+  const apercu = await page.request.get(`${BASE}/api/factures/${factureId}/pdf`);
   assert.ok(
     (apercu.headers()["content-disposition"] ?? "").startsWith("inline"),
     "« Voir la facture en PDF » ne s'ouvre plus dans un onglet."

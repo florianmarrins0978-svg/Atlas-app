@@ -29,6 +29,54 @@ seul l'aperçu). **Migration 0088.** Détail : `ARCHITECTURE.md` §341.
 
 ---
 
+## FAIT : SON ESPACE SE DÉBLAIE LUI-MÊME — 12 septembre 2026, au soir
+
+*« L'appli ne répond plus. »* Sa fiche : serveur debout, **quatorze versions de
+retard**, bloqué par un `package-lock.json` que `npm install` avait réécrit.
+`mettre-a-jour.sh` le met désormais **de côté** (`git stash`, récupérable) au
+lieu de s'abstenir à vie ; `proteger-lock.sh` et son test sont **supprimés**,
+la couche n'ayant plus d'objet. **Aucune migration.** Détail :
+`ARCHITECTURE.md` §339, qui corrige le §338 du matin.
+
+**Ce qui reste :** son espace porte encore l'ancien script — un
+`git stash push -- package-lock.json` puis un rallumage, une dernière fois
+(`TODO.md`). Et le **404 du relais sur le port 3000 n'est pas reproduit** : la
+fiche publie maintenant le relevé qui décide du geste, la cause reste ouverte.
+
+---
+
+## FAIT : « TÉLÉCHARGER » N'EST PLUS UN LIEN — 12 septembre 2026
+
+*« Je peux plus télécharger en cliquant sur télécharger. »* Troisième capture du
+même bouton. La page va désormais chercher le document et le remet à la feuille
+de partage d'iOS — seule voie qui range un PDF sur un iPhone —, avec un repli
+par lien d'objet local ailleurs. **Et un refus de la route s'affiche à
+l'écran** : le silence qui faisait passer le bouton pour cassé est mort.
+**Aucune migration.** Détail : `ARCHITECTURE.md` §340.
+
+**Ce qui reste, et que lui seul peut trancher :** la feuille de partage ne
+s'éprouve pas ici (aucun WebKit dans l'environnement de l'agent).
+
+
+---
+
+## FAIT : LE DIAGNOSTIC VÉGÉTAL — LE REFUS EST L'ÉCRAN PRINCIPAL — 12 septembre 2026
+
+Sa réponse à la planche du 11 (`appli/diagnostic-le-refus-est-l-ecran.html`) :
+*« C'est bien »*, et le nom reste « Diagnostic végétal ». Codé
+(`ARCHITECTURE.md` §337) : la base range **quel** refus (migration 0087) et
+l'écran dit **vu · pourquoi · le geste**, propres à chaque refus ; « personne
+n'a regardé » offre **Réessayer** et **Réglages de l'IA** ; le résultat dit
+« Probable · Platane » et porte sa source datée. Le moteur **refuse** le coude à
+coude après la relance (sa décision du 11). Document de retour :
+`docs/diagnostic-vegetal-impeccable.md`.
+
+**Ce qui reste, et qui le tranche :** la licence INRAE (§24 de QUESTIONS), le
+premier vrai appel de vision sur son banc, la durée de conservation des photos.
+
+
+---
+
 ## FAIT : LE PDF SE REGARDE DANS L'APPLICATION, AVEC SA FLÈCHE — 11 septembre 2026
 
 *« Quand j'ouvre le pdf pour voir la facture j'ai pas de touche retour. »* Les
@@ -36,6 +84,19 @@ liens vers un PDF (facture, devis, dossier du client) ouvrent désormais
 `/documents/pdf`, un écran d'Atlas avec en-tête et flèche, qui peint le
 fichier page par page (pdf.js). **Aucune migration.** Détail :
 `ARCHITECTURE.md` §335.
+
+---
+
+## FAIT : CE QUI EST RETIRÉ NE REVIENT PLUS — 12 septembre 2026
+
+Un chantier retiré au planning réapparaissait sur l'accueil, et revenait sur le
+planning lui-même six secondes plus tard — alors que la base l'avait effacé.
+`useRetraits` redemande désormais la page après l'écriture, et le planning
+retire de sa liste le chantier effacé — comme le font déjà les six autres
+écrans. La recopie qui compensait dans `EcranChantiers` est retirée. **Aucune
+migration.**
+
+Détail : `ARCHITECTURE.md` §336.
 
 ---
 

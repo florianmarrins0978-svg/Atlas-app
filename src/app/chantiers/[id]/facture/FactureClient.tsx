@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import { jourLisible } from "@/lib/jour";
 import { adresseDeLaVisionneuse } from "@/lib/visionneuse-pdf";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
@@ -659,18 +660,22 @@ export default function FactureClient({
             ou son ordinateur (`TODO.md` §8). Le nom du fichier porte le numéro
             — « F2026-0001.pdf », pas « facture.pdf » : il en aura des centaines
             dans le même dossier, et « facture (17).pdf » ne se retrouve pas.
-            L'attribut `download` ne suffit pas seul (iOS l'ignore selon les
-            versions) : la route répond `Content-Disposition: attachment` sur
-            `?telecharger=1`, et c'est elle qui fait foi. */}
-        <a
-          href={`/api/factures/${initialFacture.id}/pdf?telecharger=1`}
-          download={nomDuFichier(initialFacture, emise)}
-          data-atlas="telecharger-facture"
-          className="mt-2 block text-center text-[13px] underline underline-offset-4"
+
+            **Ce n'était plus un lien depuis le 12 septembre 2026** — *« je peux
+            plus télécharger en cliquant sur télécharger »*. Un lien remet le
+            fichier au navigateur, qui sur iPhone le PEINT au lieu de le ranger ;
+            et quand la route refuse, il n'en rapporte rien. Le document est
+            désormais récupéré par la page, puis remis à la feuille de partage
+            (`BoutonTelechargerDocument`). */}
+        <BoutonTelechargerDocument
+          fichier={`/api/factures/${initialFacture.id}/pdf`}
+          nom={nomDuFichier(initialFacture, emise)}
+          dataAtlas="telecharger-facture"
+          className="mt-2 block w-full text-center text-[13px] underline underline-offset-4"
           style={{ color: colors.ink }}
         >
           Télécharger ({nomDuFichier(initialFacture, emise)})
-        </a>
+        </BoutonTelechargerDocument>
       </div>
 
       {erreur && (

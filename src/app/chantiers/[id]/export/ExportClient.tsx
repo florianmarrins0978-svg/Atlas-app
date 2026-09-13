@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 import TransmettreAuClient from "./TransmettreAuClient";
 import { etatEnvoiExplication, etatEnvoiLabel, type EtatEnvoi } from "@/lib/etat-envoi";
 import { reprendreDevisAction } from "./actions";
@@ -196,7 +197,7 @@ export default function ExportClient({
           numeroDevis={numeroDevis}
           totalTtc={totalTtc}
           onModifier={peutReprendre ? null : () => setAvertissementVisible(true)}
-          lienPdf={`/api/devis/${devisId}/pdf?telecharger=1`}
+          lienPdf={`/api/devis/${devisId}/pdf`}
           nomFichierPdf={nomFichierDevis}
           transmission={
             lienAMontrer ? (
@@ -458,14 +459,14 @@ function EcranDevisParti({
             n'y a rien à transmettre, mais le PDF reste utile : le patron le garde
             pour ses archives, ou le renvoie à la main. */}
         {!transmission && (
-          <a
-            href={lienPdf}
-            download={nomFichierPdf}
-            className="block text-center text-[13px] font-medium"
+          <BoutonTelechargerDocument
+            fichier={lienPdf}
+            nom={nomFichierPdf}
+            className="block w-full text-center text-[13px] font-medium"
             style={{ color: colors.ink }}
           >
             Télécharger le PDF
-          </a>
+          </BoutonTelechargerDocument>
         )}
         {reprise}
       </div>

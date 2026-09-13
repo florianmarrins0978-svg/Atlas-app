@@ -6,6 +6,7 @@ import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { avecCivilite } from "@/lib/civilite";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import BoutonTelechargerDevis from "./BoutonTelechargerDevis";
+import BoutonTelechargerDocument from "@/components/atlas/BoutonTelechargerDocument";
 
 // Seule page publique du produit avec celle de la facture : consultée sans
 // compte, depuis un lien reçu par SMS ou e-mail (docs/AGENT.md §2.2 bis).
@@ -234,24 +235,26 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
               téléchargement cesse d'être invisible.
 
               **Le mot reste le sien** — « Télécharger », choisi le 31 août
-              précisément pour que le libellé dise ce qui se passe : le lien
-              EMPORTE le fichier (`?telecharger`), il ne l'ouvre pas. Seul
-              « (PDF) » tombe, le format n'intéressant personne.
+              précisément pour que le libellé dise ce qui se passe : le geste
+              EMPORTE le fichier, il ne l'ouvre pas. Seul « (PDF) » tombe, le
+              format n'intéressant personne.
 
               Le détail des prestations vit dans ce fichier, et nulle part
               ailleurs : sans lui, le client accepterait un total sans pouvoir
               consulter ce qu'il paie. Le patron le croyait joint au mail — il
               ne l'est pas, un `mailto:` ne porte aucune pièce. */}
-          <a
-            href={`/devis/${envoi.jeton}/pdf?telecharger=1`}
+          <BoutonTelechargerDocument
+            fichier={`/devis/${envoi.jeton}/pdf`}
+            nom="devis.pdf"
+            dataAtlas="telecharger-devis"
             /* **En PLEIN depuis le 9 septembre 2026, à sa demande** : c’est le
                seul geste de cet écran avant de répondre, et le creux le mettait
                au même rang que le texte qui l’entoure. */
-            className="mt-1.5 block rounded-full py-2.5 text-center text-[14.5px] font-medium"
+            className="mt-1.5 block w-full rounded-full py-2.5 text-center text-[14.5px] font-medium"
             style={{ backgroundColor: colors.plein, color: surPlein }}
           >
             Télécharger mon devis
-          </a>
+          </BoutonTelechargerDocument>
         </header>
 
         <FormulaireReponse envoi={envoi} aujourdHui={aujourdHuiIso()} />

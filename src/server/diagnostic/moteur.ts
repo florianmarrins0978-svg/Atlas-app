@@ -23,9 +23,7 @@ import {
   arbitrer,
   classeurDeterministe,
   mentionsDeSecurite,
-  LIBELLE_CONFIANCE,
   LIBELLE_GRAVITE,
-  MOTIFS_REFUS,
   rapprocher,
   type Candidat,
   type ClasseurCandidats,
@@ -85,7 +83,7 @@ export async function analyser(
       // « la base ne sait pas », le premier dit « personne n'a regardé ». Les
       // confondre enverrait chercher un défaut dans les fiches alors qu'il est
       // dans la configuration (`AGENTS.md`).
-      issue: { type: "echoue", phrase: vue.raison },
+      issue: { type: "echoue", panne: vue.raison },
       observation: { partie: null, signes: [], essence: null, qualitePhoto: "moyenne", reserves: [] },
       traces: { moteur: "aucun", modele: "aucun", versionBase: "non lue" },
       essence: { taxonId: null, certitude: null },
@@ -144,7 +142,7 @@ export async function analyser(
 
   if (verdict.issue === "refus") {
     return {
-      issue: { type: "inconclusif", motif: verdict.motif, phrase: MOTIFS_REFUS[verdict.motif] },
+      issue: { type: "inconclusif", motif: verdict.motif },
       observation: brute,
       traces,
       essence,
@@ -168,7 +166,7 @@ export async function analyser(
     // La fiche a disparu entre le rapprochement et la lecture. Improbable, mais
     // afficher un titre vide serait pire que de le dire.
     return {
-      issue: { type: "inconclusif", motif: "aucune_piste", phrase: MOTIFS_REFUS.aucune_piste },
+      issue: { type: "inconclusif", motif: "aucune_piste" },
       observation: brute,
       traces,
       essence,
@@ -211,7 +209,6 @@ export async function composerResultat(candidat: Candidat, confiance: Confiance)
     nom: fiche.nomCommun,
     nomScientifique: fiche.nomScientifique,
     confiance,
-    confianceLibelle: LIBELLE_CONFIANCE[confiance],
     explication: fiche.explicationCourte,
     gravite: fiche.gravite,
     graviteLibelle: LIBELLE_GRAVITE[fiche.gravite],

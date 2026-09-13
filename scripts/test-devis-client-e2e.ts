@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { readFile } from "node:fs/promises";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
@@ -9,6 +10,7 @@ import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi, lireParJeton, genererJeton } from "../src/server/repositories/envois-devis";
 import { fenetreProposition, versJourIso, ajouterJours } from "../src/lib/disponibilites";
 import { ADRESSE } from "./_adresse";
+import { adresseDeTelechargement } from "../src/lib/remise-de-fichier";
 
 // Parcours réel de la page publique de réponse au devis (docs/AGENT.md §2.2 bis).
 // Exercée dans un navigateur, SANS session : c'est tout l'intérêt de cette page,
@@ -623,7 +625,13 @@ async function main() {
     // vivre : deux boutons identiques à deux centimètres l'un de l'autre font
     // hésiter, est-ce le même fichier ? Un contrôle qui accepte les deux ne
     // défend rien.
-    const geste = 'a:has-text("Télécharger mon devis")';
+    // **Le repère, pas la balise — 12 septembre 2026.** Ce contrôle visait
+    // `a:has-text(…)` : le geste n'est plus un lien, parce qu'un lien remet le
+    // fichier au navigateur, qui sur un iPhone le peint au lieu de le ranger
+    // (`BoutonTelechargerDocument`). Ce qui compte n'a jamais été la balise —
+    // c'est qu'il n'y ait qu'UN geste, et qu'il emporte le devis
+    // (`CLAUDE.md` §5 bis).
+    const geste = '[data-atlas="telecharger-devis"]';
     assert.strictEqual(
       await page.locator(geste).count(),
       1,
@@ -647,7 +655,7 @@ async function main() {
     const surLaPageDuChoix = await context.newPage();
     const autre = await preparerEnvoi("entete", [6], true);
     await surLaPageDuChoix.goto(`${BASE}/devis/${autre.envoi.jeton}`, { waitUntil: "networkidle" });
-    const lienEnTete = surLaPageDuChoix.locator("header a");
+    const lienEnTete = surLaPageDuChoix.locator(`header ${geste}`);
     assert.strictEqual(await lienEnTete.count(), 1, "l'en-tête ne porte plus de lien vers le devis");
     const libelle = await lienEnTete.innerText();
     assert.ok(/télécharger/i.test(libelle), `l'en-tête dit « ${libelle} » au lieu de télécharger`);
@@ -683,22 +691,32 @@ async function main() {
       `le geste ne fait que ${allure.hauteur} px de haut : on ne le vise pas avec un doigt`
     );
     assert.ok(allure.cercle, "le geste ne se distingue pas du texte : ni cadre, ni fond");
-    const fichier = await surLaPageDuChoix.request.get(
-      new URL((await lienEnTete.getAttribute("href"))!, BASE).toString()
-    );
-    assert.strictEqual(fichier.status(), 200, `le devis ne se télécharge pas (${fichier.status()})`);
+    // **L'appui, pas l'adresse écrite sur le bouton — 12 septembre 2026.** Le
+    // geste n'est plus un lien : un lien remet le fichier au navigateur, qui
+    // sur un iPhone le PEINT au lieu de le ranger, et n'en rapporte jamais le
+    // refus. La page va chercher le document et le remet à la feuille de
+    // partage (`BoutonTelechargerDocument`). Ce qui se vérifie ici est donc ce
+    // que le client obtient : un fichier, pas un onglet.
+    const devisQuiDescend = surLaPageDuChoix.waitForEvent("download", { timeout: 30_000 });
+    await lienEnTete.click();
+    const emporte = await devisQuiDescend.catch(() => null);
+    assert.ok(emporte, "le geste de l'en-tête n'emporte aucun fichier : le client n'a rien gardé");
     assert.ok(
-      (fichier.headers()["content-disposition"] ?? "").startsWith("attachment"),
-      `le lien de l'en-tête ouvre au lieu d'emporter : ${fichier.headers()["content-disposition"]}`
+      (await readFile(await emporte.path())).subarray(0, 5).toString("ascii") === "%PDF-",
+      "ce qui descend de l'en-tête n'est pas un PDF"
     );
     await surLaPageDuChoix.close();
 
     // Le geste doit RENDRE le fichier, pas seulement exister. Et le rendre à
     // enregistrer : ouvert dans le lecteur du téléphone, le client croit
     // l'avoir gardé alors qu'il n'a fait que le regarder.
-    const adresse = await page.locator(geste).getAttribute("href");
-    assert.ok(adresse, "le geste ne mène nulle part");
-    const reponse = await page.request.get(new URL(adresse!, BASE).toString());
+    //
+    // **L'adresse se COMPOSE par la règle**, elle ne se lit plus sur le bouton :
+    // les deux bouts vivent dans `src/lib/remise-de-fichier.ts`, et un contrôle
+    // qui recopierait `?telecharger=1` serait une troisième écriture de la même
+    // chose (`CLAUDE.md` §3).
+    const adresse = adresseDeTelechargement(`/devis/${envoi.jeton}/pdf`);
+    const reponse = await page.request.get(new URL(adresse, BASE).toString());
     assert.strictEqual(reponse.status(), 200, `le devis ne se télécharge pas (${reponse.status()})`);
     // **Le fichier rangé garde son VRAI type** — 10 septembre 2026. Cette ligne
     // exigeait `application/octet-stream` : le type annoncé colle au fichier
