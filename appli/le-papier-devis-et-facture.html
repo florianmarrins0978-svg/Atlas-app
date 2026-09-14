@@ -87,6 +87,13 @@
   .feuille .tva .r span:nth-child(n+2){text-align:right}
   .feuille .totaux{font-size:9px}
   .feuille .totaux .r{display:flex;justify-content:space-between;gap:8px;padding:2.5px 0}
+  .feuille .totaux .r span:last-child{white-space:nowrap}
+  .feuille .sous{margin:6px 0 0;font:italic 400 10px/1.3 ui-serif,Georgia,"Times New Roman",serif;color:var(--encreDouce)}
+  .champ-titre{margin:14px 26px 0;display:flex;align-items:center;gap:10px}
+  .champ-titre input{flex:1;min-width:0;border:0;border-bottom:1px solid var(--line);background:transparent;padding:8px 0;
+                     font:16px/1.3 ui-sans-serif,sans-serif;color:var(--ink);outline:none}
+  .champ-titre input::placeholder{color:var(--muted)}
+  .champ-titre input:focus{border-bottom-color:var(--or)}
   .feuille .totaux .r.or{color:var(--or)}
   .feuille .totaux .r.doux{color:var(--encreDouce);font-size:8.2px}
   .feuille .totaux .r.ttc{margin-top:6px;padding-top:7px;border-top:1.2px solid var(--encre);font:400 13px/1.2 ui-serif,Georgia,serif}
@@ -132,6 +139,8 @@
     <h1 id="h1">Le devis</h1>
   </div>
 
+  <div class="champ-titre"><input id="titre-libre" placeholder="Un titre, si vous voulez" aria-label="Titre du document"></div>
+
   <div class="feuille" id="feuille">
     <div class="haut">
       <div class="emetteur">
@@ -145,6 +154,7 @@
       <h2 id="titre">Devis</h2>
       <span class="no" id="numero"></span>
     </div>
+    <p class="sous" id="sous-titre" hidden></p>
 
     <div class="parties">
       <div><h3>Client</h3><p>Mme Grospiron<br>8 rue des Lilas<br>84000 Avignon<br>06 98 76 54 32</p></div>
@@ -185,6 +195,7 @@
     <tr><td>Le taux de TVA sur la ligne</td><td>plus de tableau coupé en « TVA 20 % / TVA 10 % » avec un sous-total chacun : le taux se lit sur chaque ligne, et les bases par taux sont dessous, comme chez les pros.</td></tr>
     <tr><td>Le Total TTC par ligne</td><td>ce que le client compare à son relevé.</td></tr>
     <tr><td>Les libellés</td><td>« TVA 20 % » sans parenthèses, « P.U. HT », « Rem. % ». Les mêmes sur les deux papiers.</td></tr>
+    <tr><td>Un titre, si vous voulez</td><td>un champ au-dessus du papier, vide d’office : « Aménagement du jardin », « Chantier Machin ». Rempli, il s’écrit sous DEVIS ou FACTURE ; vide, rien.</td></tr>
     <tr><td>L’or</td><td>ne porte que ce qu’on lit : Client, Lieu des travaux, Notes, le tampon « Facture acquittée ». Jamais un montant.</td></tr>
   </table>
 </div>
@@ -246,8 +257,8 @@
       t.push('<div class="r doux"><span>Acompte 30 % à la signature</span><span>'+eur(c.acompte)+'</span></div>');
       t.push('<div class="r reste"><span>Reste à régler après acompte</span><span>'+eur(c.reste)+'</span></div>');
     } else {
-      t.push('<div class="r doux"><span>Acompte 30 % à la signature, reçu</span><span>− '+eur(c.acompte)+'</span></div>');
-      if (acquittee) t.push('<div class="r doux"><span>Virement du 21/09/2026, reçu</span><span>− '+eur(c.reste)+'</span></div>');
+      t.push('<div class="r doux"><span>Acompte 30 %, reçu</span><span>− '+eur(c.acompte)+'</span></div>');
+      if (acquittee) t.push('<div class="r doux"><span>Virement du 21/09, reçu</span><span>− '+eur(c.reste)+'</span></div>');
       t.push('<div class="r net"><span>Net à payer</span><span>'+eur(acquittee ? 0 : c.reste)+'</span></div>');
       if (acquittee) t.push('<span class="tampon">Acquittée le 21/09/2026</span>');
     }
@@ -275,6 +286,12 @@
       window.scrollTo({top:0});
     };
   });
+  // Le titre : ce qu'il tape s'écrit sous « DEVIS » ; vide, rien ne s'affiche.
+  id("titre-libre").oninput = function(e){
+    var t = e.target.value.trim();
+    id("sous-titre").hidden = !t;
+    id("sous-titre").textContent = t;
+  };
   rendre("devis");
 </script>
 </body>
