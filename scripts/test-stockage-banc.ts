@@ -117,6 +117,15 @@ async function main() {
       ANTHROPIC_API_KEY: "sk-essai-jamais-appelee",
       TRANSCRIPTION_PROVIDER: "openai",
       OPENAI_API_KEY: "sk-essai-jamais-appelee",
+      // **Le courriel aussi, depuis le 14 septembre 2026.** Le code de
+      // vérification d'adresse (`ARCHITECTURE.md` §361) a ajouté un
+      // fournisseur obligatoire en production : sans lui, c'est LUI qui
+      // refusait en premier, et ce cas croyait éprouver le stockage en
+      // éprouvant le courriel. C'est le piège que son commentaire ci-dessus
+      // annonce, arrivé par une porte neuve.
+      COURRIEL_PROVIDER: "brevo",
+      BREVO_API_KEY: "xkeysib-essai-jamais-appelee",
+      COURRIEL_EXPEDITEUR: "essai@exemple.fr",
     },
     (m) => {
       const refus = tenter(m);

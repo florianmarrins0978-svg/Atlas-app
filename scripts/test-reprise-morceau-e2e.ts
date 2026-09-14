@@ -133,7 +133,20 @@ async function main() {
 
     // Et l'écran revient pour de bon : le titre du planning, rendu par un code
     // qui a bel et bien été rechargé.
-    await page.waitForSelector('h1:has-text("Planning")', { timeout: 60_000 });
+    //
+    // **Deux minutes, et non une.** Ce rechargement est un chargement de page
+    // ENTIER : le serveur rend le planning lui-même, sans l'esquisse qui
+    // couvre les navigations côté client. Sous la batterie complète — cent
+    // cinquante suites derrière soi, sur la même machine — une minute ne
+    // suffisait pas, et ce cas rougissait alors qu'il passe seul. Le délai
+    // n'est pas une rustine : c'est la mesure du geste qu'on éprouve, et son
+    // échec dit maintenant ce qu'il y avait à l'écran.
+    await page
+      .waitForSelector('h1:has-text("Planning")', { timeout: 120_000 })
+      .catch(async () => {
+        const vu = (await page.locator("body").innerText()).replace(/\s+/g, " ").slice(0, 200);
+        throw new Error(`le planning n'est pas revenu après le rechargement. À l'écran : « ${vu} »`);
+      });
     const texte = await page.locator("body").innerText();
     assert.doesNotMatch(
       texte,

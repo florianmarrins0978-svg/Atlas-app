@@ -242,7 +242,29 @@ async function main() {
       "le devis n'a aucune ligne : il retomberait sur la feuille vide qu'il dénonce"
     );
     const tout = rows.map((r) => String(r.libelle).toLowerCase()).join(" | ");
-    assert.match(tout, /haie|laurier|tonte|pelouse/, `ses prestations dictées sont absentes : « ${tout} »`);
+    // **CONTRE LA TRANSCRIPTION RÉELLEMENT POSÉE, et non contre nos mots.**
+    //
+    // Ce cas exigeait « haie | laurier | tonte | pelouse » — les mots de la
+    // dictée qu'il écrit en base plus haut. Depuis le 9 septembre 2026, le
+    // fournisseur des suites rend un texte utilisable tout seul
+    // (`transcription/essai.ts`) : la chaîne part à l'instant où la dictée est
+    // envoyée, donc AVANT cette écriture, et le devis porte les prestations du
+    // texte rendu. La règle que ce cas défend n'a pas bougé d'un pouce — sa
+    // dictée devient des lignes de devis — mais elle se lit contre la
+    // transcription que la chaîne a vraiment lue.
+    const { rows: note } = await pool.query(
+      "select transcription from notes_vocales where chantier_id = $1",
+      [chantierId]
+    );
+    const mots = String(note[0]?.transcription ?? "")
+      .toLowerCase()
+      .split(/[^a-zà-ÿ]+/)
+      .filter((m) => m.length >= 5);
+    assert.ok(mots.length > 0, "la note n'a aucune transcription : il n'y a rien dont les lignes puissent venir");
+    assert.ok(
+      mots.some((mot) => tout.includes(mot)),
+      `ses prestations dictées sont absentes : « ${tout} » ne reprend rien de « ${mots.slice(0, 6).join(", ")} »`
+    );
   });
 
   await cas("rien n'est parti chez la cliente", async () => {

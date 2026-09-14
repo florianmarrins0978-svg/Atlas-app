@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
+### Quatre contrôles remis d'aplomb après la fusion
+
+La batterie a rendu 149 sur 153. Aucun des quatre rouges ne venait du
+resserrement : la recherche comparait la frappe BRUTE au nom, là où le produit
+découpe en mots et normalise ; la séquence de Madame Lucie exigeait les mots de
+la dictée qu'elle pose en base, alors que la chaîne part désormais avec le texte
+que le fournisseur rend ; la scène de production du stockage ne posait pas le
+fournisseur de courriel arrivé avec le code de vérification, si bien que c'est
+LUI qui refusait en premier ; et le rechargement d'un morceau manquant se
+mesurait en une minute là où il en faut deux sous la batterie entière.
+
 ### Deux écrans resserrés, et les petits téléphones défilent
 
 La fiche client débordait de 17 px sur un petit iPhone, la page du client de

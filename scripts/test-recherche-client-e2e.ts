@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { normaliserPourRecherche } from "../src/lib/recherche-client";
 import { lancerNavigateur, DELAI_PAR_DEFAUT_MS } from "./e2e-browser";
 import type { Page } from "playwright";
 
@@ -184,8 +185,20 @@ async function principal() {
       `la liste n'a pas été réduite (${apres.length} sur ${avant.length}) : la frappe n'arrive pas jusqu'à elle`
     );
     for (const n of apres) {
+      // **LA RÈGLE DU PRODUIT, PAS UNE SECONDE — 14 septembre 2026.**
+      //
+      // Ce contrôle comparait la frappe BRUTE au nom brut. Or la recherche
+      // découpe en mots et normalise (`recherche-client.ts`) : « m. p » y vaut
+      // « m » et « p », que « Mme Costa empile » contient tous les deux — à
+      // juste titre. Sous une batterie entière, où d'autres suites ont créé des
+      // clients, ce cas de figure finit toujours par sortir, et la suite
+      // accusait la recherche d'un défaut qu'elle n'avait pas.
+      //
+      // On interroge donc la fonction qui décide (`CLAUDE.md` §3).
+      const nom = normaliserPourRecherche(n);
+      const attendus = normaliserPourRecherche(morceau).split(" ").filter(Boolean);
       assert.ok(
-        n.toLowerCase().includes(morceau),
+        attendus.every((mot) => nom.includes(mot)),
         `« ${n} » ne contient pas « ${morceau} » : la recherche rend n'importe quoi`
       );
     }
