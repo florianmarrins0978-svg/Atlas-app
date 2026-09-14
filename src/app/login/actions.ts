@@ -348,9 +348,22 @@ function identifiantDeLaCle(reponse: string): string {
  * L'entourer d'un `catch` avalerait la redirection : le cookie serait effacé et
  * l'écran resterait là, chaque geste ensuite refusé — exactement le piège du
  * cookie mort payé une soirée le 10 août 2026.
+ *
+ * ─── OÙ L'ON ARRIVE : « Se connecter », OU LA PORTE D'ENTRÉE ──────────────
+ *
+ * Depuis Réglages, celui qui se déconnecte sait qu'il reviendra : `/login`.
+ * Depuis l'écran du code (14 septembre 2026), celui qui n'a jamais reçu son
+ * code veut repartir du début — recréer un compte avec la bonne adresse, ou
+ * entrer autrement : `/bienvenue`, la porte principale. **La destination
+ * est bornée à ces deux-là** : une action serveur reçoit ce que le navigateur
+ * lui envoie, et un chemin libre en ferait une redirection ouverte.
  */
-export async function deconnexionAction() {
+export async function deconnexionAction(vers: "connexion" | "entree" = "connexion") {
   await signOut({ redirect: false });
+  // Deux `redirect` écrits en toutes lettres, pas un chemin calculé :
+  // `test-sortie-sans-hote` lit cette fonction et exige un chemin RELATIF
+  // littéral — c'est ce qui garantit qu'aucun hôte n'y revient un jour.
+  if (vers === "entree") redirect("/bienvenue");
   redirect("/login");
 }
 

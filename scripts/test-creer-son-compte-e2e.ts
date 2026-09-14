@@ -251,6 +251,34 @@ async function main() {
     await page.waitForURL(/\/verifier-email(?:\?|$)/, { timeout: 30_000 });
   });
 
+  await cas("« Retour » sur l'écran du code rend la porte d'entrée — on n'y reste pas enfermé", async () => {
+    // Sa remarque du 14 septembre 2026 au soir : *« je suis bloqué à cette
+    // page, il n'existe pas de touche retour si on ne reçoit pas l'email »*.
+    await page.goto(`${BASE}/verifier-email`, { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: "Retour", exact: true }).click();
+    await page.waitForURL(/\/bienvenue(?:\?|$)/, { timeout: 30_000 });
+    // La session est bien fermée : l'accueil ne renvoie plus au code, il
+    // renvoie à la porte.
+    await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
+    await page.waitForURL(/\/bienvenue(?:\?|$)/, { timeout: 30_000 });
+    // Et le compte, lui, attend toujours son code — rien n'a été perdu.
+    const [ligne] = await surLaBase(async (c) => {
+      const { rows } = await c.query(
+        "SELECT count(*)::int AS attente FROM codes_verification_email v JOIN users u ON u.id = v.utilisateur_id WHERE u.email = $1",
+        [email]
+      );
+      return rows;
+    });
+    assert.equal(ligne.attente, 1, "la déconnexion a emporté la ligne d'attente");
+    // On se reconnecte pour la suite : la connexion d'un compte en attente
+    // mène au code, c'est la règle d'`accueilPourEmail`.
+    await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+    await page.fill('input[name="email"]', email);
+    await page.fill('input[name="password"]', MOT_DE_PASSE);
+    await page.click('button[type="submit"]');
+    await page.waitForURL(/\/verifier-email(?:\?|$)/, { timeout: 30_000 });
+  });
+
   await cas("un mauvais code est refusé, le bon mène aux documents légaux", async () => {
     await forgerLeCode(email, "004213");
     await page.goto(`${BASE}/verifier-email`, { waitUntil: "domcontentloaded" });
