@@ -11,8 +11,8 @@ import { logger } from "@/server/logger";
  * n'existe pas ! […] il faut mettre une sécurité avec un numéro envoyé par
  * email à rentrer pour pouvoir valider son compte »*.
  *
- * Même place et même forme que `GardeDocumentsLegaux`, juste au-dessus dans
- * `template.tsx`, et **avant elle** : un compte dont l'adresse n'est pas prouvée n'a
+ * Même place et même forme que `GardeDocumentsLegaux`, juste au-dessus dans le
+ * layout, et **avant elle** : un compte dont l'adresse n'est pas prouvée n'a
  * pas à lire les conditions générales — on ne sait même pas qui les lit.
  *
  * **Ce qui décide, c'est une ligne dans `codes_verification_email`**, pas la

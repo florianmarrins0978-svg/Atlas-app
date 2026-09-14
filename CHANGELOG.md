@@ -78,16 +78,6 @@ Unité absente du devis, le libellé d’un règlement, un chiffre touché
 sélectionné, le libellé du crédit d’impôt. `appli/le-papier-devis-et-facture.html`
 (trois vues) et la planche de la facture retouchée. Rien dans `src/`.
 
-### Les gardes se rejouent à chaque déplacement — plus un seul chemin ne passe à côté
-
-Le matin, « Entrer dans Atlas » avait été redirigé vers les conditions
-générales ; c'était boucher un chemin. La cause était ailleurs : les gardes
-(adresse prouvée, conditions acceptées, rôle) vivaient dans la mise en page,
-que Next.js ne rejoue pas quand on se déplace dans l'application. Elles vivent
-dans `src/app/template.tsx`, refait à chaque navigation ; les liens redisent
-où ils vont, et les gardes font le reste. `test-acces-routes-gardees` refuse
-qu'elles reviennent dans le layout. `ARCHITECTURE.md` §365.
-
 ### L'écran du code a une sortie : « Retour » rend la porte d'entrée
 
 Sa remarque le soir même : *« je suis bloqué à cette page, il n'existe pas de

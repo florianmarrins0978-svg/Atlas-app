@@ -16,15 +16,15 @@ export const dynamic = "force-dynamic";
  * pièce, `SaisieDuCode`.
  *
  * Plus rien à vérifier : cette page n'a aucune raison de rester atteignable,
- * et l'on rentre chez soi — les gardes de `template.tsx` font le reste
- * (les conditions, s'il en reste).
+ * et elle passe le relais aux documents légaux, qui savent renvoyer sur
+ * l'accueil quand ils sont acceptés.
  */
 export default async function VerifierEmailPage() {
   const session = await auth();
   const utilisateurId = session?.user?.id;
   if (!utilisateurId) redirect("/login");
 
-  if (!(await verificationEnAttente(utilisateurId))) redirect("/");
+  if (!(await verificationEnAttente(utilisateurId))) redirect("/documents-legaux");
   const email = await adresseDuCompte(utilisateurId);
   if (!email) redirect("/api/session-perimee");
 

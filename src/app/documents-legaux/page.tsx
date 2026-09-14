@@ -10,7 +10,7 @@ export default async function DocumentsLegauxPage() {
   const utilisateurId = session?.user?.id;
   if (!utilisateurId) redirect("/login");
 
-  // Le compte disparu est traité par `GardeDocumentsLegaux`, dans le template racine,
+  // Le compte disparu est traité par `GardeDocumentsLegaux`, dans le layout,
   // et non ici : une redirection lancée depuis une page passe sous la
   // frontière de `loading.tsx`, où l'enveloppe est déjà partie — elle ne peut
   // alors plus être un 307. Le contrôle a bel et bien été écrit ici d'abord,

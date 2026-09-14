@@ -1,7 +1,7 @@
 // AUCUNE ROUTE D'API NE DOIT OUBLIER SA GARDE DE RÔLE.
 //
 // **Pourquoi cette suite existe, et pourquoi elle n'a pas d'équivalent pour les
-// écrans.** Un écran traverse `template.tsx`, donc `GardeAcces` : il ne peut pas
+// écrans.** Un écran traverse `layout.tsx`, donc `GardeAcces` : il ne peut pas
 // oublier. Une route d'API ne traverse aucune mise en page — elle doit appeler
 // `exigerOuverture()` elle-même, et un oubli ne se VOIT PAS : la route marche,
 // elle marche même trop bien. C'est exactement par là qu'un PDF de devis sort du
@@ -126,19 +126,11 @@ essai("la garde passe AVANT la lecture", () => {
   }
 });
 
-essai("la garde des écrans est bien montée dans le template racine — refait à chaque déplacement", () => {
-  // Elle n'est appelée nulle part ailleurs : si quelqu'un la retire, TOUS
-  // les écrans s'ouvrent d'un coup, et rien à l'écran ne le montre.
-  //
-  // **Le template, pas le layout — 14 septembre 2026.** Une mise en page ne
-  // se rejoue pas quand on se déplace à l'intérieur de l'application ; un
-  // template, si. Remise dans `layout.tsx`, la garde ne tiendrait plus qu'au
-  // premier chargement — c'est ainsi que les conditions générales ont été
-  // contournées une heure durant, le jour même.
-  const template = readFileSync(path.join(__dirname, "..", "src", "app", "template.tsx"), "utf8");
-  assert.ok(template.includes("<GardeAcces />"), "GardeAcces n'est plus rendue dans template.tsx");
+essai("la garde des écrans est bien montée dans la mise en page racine", () => {
+  // Elle n'est appelée nulle part ailleurs : si quelqu'un la retire du layout,
+  // TOUS les écrans s'ouvrent d'un coup, et rien à l'écran ne le montre.
   const layout = readFileSync(path.join(__dirname, "..", "src", "app", "layout.tsx"), "utf8");
-  assert.ok(!layout.includes("<GardeAcces />"), "GardeAcces est revenue dans layout.tsx, où elle ne se rejoue pas au déplacement");
+  assert.ok(layout.includes("<GardeAcces />"), "GardeAcces n'est plus rendue dans layout.tsx");
 });
 
 console.log("");
