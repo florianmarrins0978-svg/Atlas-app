@@ -12,6 +12,12 @@ et unité sur la facture, numéro de chèque et solde sur les règlements. Un se
 composeur pour les deux papiers, les colonnes des pros, les acomptes reçus et
 le net à payer, « Facture acquittée ». Suites pures, base et navigateur du lot
 vertes ; le papier regardé en grand contre la planche. `ARCHITECTURE.md` §364.
+## FAIT : UN CLIENT SE MODIFIE DEPUIS SA FICHE — 14 septembre 2026
+
+« Modifier ses coordonnées » sous son nom : civilité, nom, téléphone, e-mail,
+adresse. Rien du chantier. Avant, un client sans chantier en cours n'était
+modifiable nulle part. `ARCHITECTURE.md` §364.
+
 ## FAIT : LES DOUZE SUITES ROUGES SONT VERTES, ET DEUX ÉCRANS RESSERRÉS — 14 septembre 2026
 
 La batterie rend **153/153**. Dix des douze rouges étaient des contrôles

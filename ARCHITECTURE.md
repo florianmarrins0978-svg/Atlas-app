@@ -30555,3 +30555,41 @@ Suites : `test-papier-devis-facture.ts` (les règles et les deux traces),
 `test-papier-facture-e2e.ts` (son chemin, du devis à la facture, et le PDF
 capturé dans la visionneuse). Adaptées à la planche : `test-devis-pdf`,
 `test-facture-pdf`, `test-acomptes-pdf`, `test-planche-b-devis`.
+
+## §364 — Un client se corrige depuis SA fiche, sans passer par un chantier
+
+**Sa demande du 14 septembre 2026 :** *« je veux pouvoir modifier un client si
+par exemple il change d'adresse ou de numéro »*.
+
+**Ce qui existait déjà, et le trou qu'il laissait.** `mettreAJourClient` est là
+depuis longtemps, et la fiche client d'un CHANTIER
+(`/chantiers/[id]/coordonnees`) l'appelle. Mais elle ne s'atteint que par un
+chantier : **un client sans chantier en cours n'était modifiable nulle part**,
+et sa propre fiche (`/clients/[id]`) n'offrait aucune porte — seulement
+« + Autre chantier » et « Supprimer ce client ».
+
+**Trois places lui ont été posées** (`appli/modifier-un-client.html`), et il a
+répondu **« la A »** : une ligne sous ses coordonnées, là où l'on s'aperçoit
+qu'un numéro est faux. Les deux autres coûtaient quelque chose — un crayon en
+tête délogeait le bouton de l'assistant, et rendre les coordonnées appuyables
+ne disait pas qu'elles l'étaient.
+
+**POURQUOI UN SECOND ÉCRAN, alors que le dépôt refuse deux écrans pour une même
+saisie** (`CLAUDE.md` §3) : parce qu'ils n'écrivent pas la même chose. Celui du
+chantier porte l'adresse des TRAVAUX, les photos et le micro ; et le client y
+reprend l'adresse du chantier quand il n'en a pas à lui — un confort à la
+création qui devient un piège quand on vient corriger, puisque changer l'une
+changeait l'autre sans le dire. `/clients/[id]/coordonnees` n'écrit QUE le
+client, et sa suite l'éprouve : l'adresse du chantier ne bouge pas.
+
+**Ce qui reste commun est commun** : les pastilles de civilité
+(`ChoixCivilite`), la case d'adresse et ses suggestions (`ChampAdresse`), et la
+seule fonction qui écrit (`mettreAJourClient`).
+
+**La voix de la porte se juge à l'œil, pas au jeton.** Écrite en `rust` — le
+vert pin de la charte, la voix de ce qu'on FAIT — elle se lisait comme un
+TITRE de section sous le nom. Elle porte l'or, celui de « + Autre chantier »
+juste dessous : la voix de ce qui MÈNE. Et surtout pas l'alerte de « Supprimer
+ce client » : le rouge est réservé à ce qui ne se défait pas. Vu à la capture,
+jamais par un contrôle.
+

@@ -8,6 +8,16 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
+### Un client se corrige depuis sa fiche
+
+« Modifier ses coordonnées », sous son nom et son numéro — sa réponse « la A »
+devant les trois places proposées. L'écran qui s'ouvre porte SES coordonnées :
+civilité, nom, téléphone, e-mail, adresse. Rien du chantier, et c'est le point :
+l'autre porte confondait l'adresse du client et celle des travaux.
+
+Avant, un client sans chantier en cours n'était modifiable nulle part.
+`ARCHITECTURE.md` §364.
+
 ### Le papier, le même pour le devis et la facture — sa planche, codée
 
 *« PARFAIT ! Code exactement cette planche, du devis à la facture. »*

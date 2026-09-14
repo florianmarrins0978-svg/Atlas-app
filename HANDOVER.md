@@ -42,6 +42,19 @@ pas à l'accueil — la garde du layout ne se rejoue pas sur une navigation côt
 client, et il avait travaillé une heure sans les avoir acceptés.
 
 ---
+## Lot du 14 septembre 2026 — MODIFIER UN CLIENT DEPUIS SA FICHE
+
+**À retenir :** `/clients/[id]/coordonnees` écrit SEULEMENT le client. L'autre
+porte (`/chantiers/[id]/coordonnees`) reste, et reste utile — mais elle porte
+l'adresse des travaux, et le client y reprend celle-ci quand il n'en a pas à
+lui. Ne pas les fusionner : c'est cette confusion qui justifie le second écran
+(`ARCHITECTURE.md` §364).
+
+La porte est une ligne sous ses coordonnées, en OR (sa réponse « la A »). Elle
+s'éprouve par `scripts/test-modifier-client-e2e.ts`, qui entre par la fiche —
+pas par l'action — et vérifie en base que l'adresse du CHANTIER n'a pas bougé.
+
+---
 ## Lot du 14 septembre 2026 — LES DOUZE SUITES ROUGES, ET DEUX ÉCRANS RESSERRÉS
 
 **À retenir : la batterie rend 153/153.** Les douze suites navigateur rouges qui
