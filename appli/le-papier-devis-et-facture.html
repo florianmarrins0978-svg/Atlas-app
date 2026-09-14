@@ -100,6 +100,14 @@
   .regls .inter{margin:0 0 4px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
   .regl{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--lineSoft);color:var(--ink)}
   .regl .quoi{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .regl .ligne1{display:flex;align-items:center;gap:8px;min-width:0}
+  .regl select{border:0;background:transparent;padding:0;font-size:15px;color:var(--ink);outline:none;border-radius:4px;
+               -webkit-appearance:none;appearance:none;padding-right:14px;
+               background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+               background-position:right 4px top 55%,right 0 top 55%;background-size:4px 4px,4px 4px;background-repeat:no-repeat}
+  .regl select:focus-visible{outline:2px solid var(--or);outline-offset:3px}
+  .regl input.numero{flex:1;min-width:0;font-size:15px}
+  .regl input.numero[hidden]{display:none}
   .regl input{border:0;background:transparent;padding:0;font-size:15px;color:var(--ink);outline:none;border-radius:4px;width:100%}
   .regl input.date{font-size:12.5px;color:var(--muted);width:96px}
   .regl input::placeholder{color:var(--muted)}
@@ -228,8 +236,8 @@
     <tr><td>Le taux de TVA sur la ligne</td><td>plus de tableau coupé en « TVA 20 % / TVA 10 % » avec un sous-total chacun : le taux se lit sur chaque ligne, et les bases par taux sont dessous, comme chez les pros.</td></tr>
     <tr><td>Le Total TTC par ligne</td><td>ce que le client compare à son relevé.</td></tr>
     <tr><td>Les libellés</td><td>« TVA 20 % » sans parenthèses, « P.U. HT », « Rem. % ». Les mêmes sur les deux papiers.</td></tr>
-    <tr><td>Les règlements reçus</td><td>sur la facture, au-dessus du papier : l’acompte du devis d’office, « + Règlement reçu » pour un chèque ou un virement de plus, avec son libellé, sa date, son montant. Le papier suit : la ligne sous le Total TTC, le net à payer, « Montants versés », et le tampon « Acquittée » quand le net tombe à zéro.</td></tr>
-    <tr><td>Plusieurs règlements</td><td>sous le Total TTC, une seule ligne « Acomptes » avec le total ; le détail, chèque par chèque, reste dans « Montants versés » sous les notes.</td></tr>
+    <tr><td>Les règlements reçus</td><td>sur la facture, au-dessus du papier : l’acompte du devis d’office, « + Règlement reçu » pour un de plus. « Chèque » est déjà écrit ; touchez-le pour choisir virement, espèces, carte. Un chèque a sa case pour le numéro, un virement non. La date dessous, le montant à côté. Le papier suit : la ligne sous le Total TTC, le net à payer, « Montants versés », et le tampon « Acquittée » quand le net tombe à zéro.</td></tr>
+    <tr><td>Un ou plusieurs</td><td>un seul règlement reçu : « Acompte 30 % » (le taux du devis) sous le Total TTC. Deux ou plus : une seule ligne « Acomptes » avec le total. Le détail, chèque par chèque, reste dans « Montants versés » sous les notes, sous la forme actuelle.</td></tr>
     <tr><td>Facture acquittée</td><td>un interrupteur sous les règlements. Allumé, le solde est compté reçu à la date du jour, le net tombe à zéro et le tampon s’imprime ; il s’allume seul quand les règlements couvrent tout. Éteint, le solde repart.</td></tr>
     <tr><td>Un titre, si vous voulez</td><td>un champ au-dessus du papier, vide d’office : « Aménagement du jardin », « Chantier Machin ». Rempli, il s’écrit sous DEVIS ou FACTURE ; vide, rien.</td></tr>
     <tr><td>L’or</td><td>ne porte que ce qu’on lit : Client, Lieu des travaux, Notes, le tampon « Facture acquittée ». Jamais un montant.</td></tr>
@@ -245,7 +253,10 @@
   ];
   var REMISE = 5, MO = 450, ACOMPTE = 30;
   var VUE = "devis";
-  var REGLS = [ { lib: "Acompte 30 %, chèque n° 1806028", date: "02/09/2026", montant: null } ];
+  var MOYENS = ["chèque", "virement", "espèces", "carte"];
+  // Le premier est l'acompte du devis : son montant se calcule (montant null).
+  var REGLS = [ { acompte: true, moyen: "chèque", numero: "1806028", date: "02/09/2026", montant: null } ];
+  function libelle(g){ return g.moyen + (g.moyen === "chèque" && g.numero ? " n° " + g.numero : ""); }
   function nombre(v){ var n = parseFloat(String(v).replace(",",".")); return isFinite(n) ? n : 0; }
   function id(x){ return document.getElementById(x); }
   function eur(n){ return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
@@ -280,10 +291,14 @@
     var boite = id("regls-lignes"); if (!sansListe) boite.innerHTML = "";
     if (!sansListe) REGLS.forEach(function(g){
       var d = document.createElement("div"); d.className = "regl";
-      d.innerHTML = '<span class="quoi"><input value="'+g.lib+'" placeholder="Chèque n°…" aria-label="Libellé du règlement"><input class="date" value="'+g.date+'" aria-label="Date"></span>' +
+      d.innerHTML = '<span class="quoi"><span class="ligne1"><select aria-label="Moyen de paiement">' +
+                      MOYENS.map(function(m){ return '<option value="'+m+'"'+(m===g.moyen?' selected':'')+'>'+(g.acompte ? 'Acompte 30 %, ' : '')+m.charAt(0).toUpperCase()+m.slice(1)+'</option>'; }).join('') +
+                    '</select><input class="numero" value="'+g.numero+'" placeholder="n°" inputmode="numeric" aria-label="Numéro du chèque"'+(g.moyen==="chèque"?'':' hidden')+'></span>' +
+                    '<input class="date" value="'+g.date+'" aria-label="Date"></span>' +
                     '<span class="m"><input value="'+String(g.m).replace(".",",")+'" inputmode="decimal" aria-label="Montant reçu"> €</span>';
-      var ch = d.querySelectorAll("input");
-      ch[0].onchange = function(e){ g.lib = e.target.value; rendre(VUE, true); };
+      var sel = d.querySelector("select"), num = d.querySelector(".numero"), ch = d.querySelectorAll("input");
+      sel.onchange = function(e){ g.moyen = e.target.value; num.hidden = g.moyen !== "chèque"; if (num.hidden) g.numero = ""; rendre(VUE, true); };
+      num.onchange = function(e){ g.numero = e.target.value.trim(); rendre(VUE, true); };
       ch[1].onchange = function(e){ g.date = e.target.value; rendre(VUE, true); };
       ch[2].onchange = function(e){ g.montant = nombre(e.target.value); rendre(VUE, true); };
       boite.appendChild(d);
@@ -317,7 +332,7 @@
     } else {
       // Un seul règlement : sa ligne. Plusieurs : une ligne « Acomptes », totalisée —
       // le détail, chèque par chèque, est dans « Montants versés » sous les notes.
-      if (REGLS.length === 1) t.push('<div class="r doux"><span>'+(REGLS[0].lib.split(",")[0] || "Règlement")+'</span><span>− '+eur(REGLS[0].m)+'</span></div>');
+      if (REGLS.length === 1) t.push('<div class="r doux"><span>Acompte '+ACOMPTE+' %</span><span>− '+eur(REGLS[0].m)+'</span></div>');
       else if (REGLS.length > 1) t.push('<div class="r doux"><span>Acomptes</span><span>− '+eur(c.verses)+'</span></div>');
       t.push('<div class="r net"><span>Net à payer</span><span>'+eur(c.net)+'</span></div>');
       if (acquittee) t.push('<span class="tampon">Acquittée le '+(REGLS[REGLS.length-1].date)+'</span>');
@@ -327,7 +342,7 @@
     var n = ['<p>Accès par le portail de gauche, cour à dégager la veille.</p>',
              '<p class="g">Mode de règlement : 30 % à la signature, solde à réception de la facture.</p>'];
     if (!facture) { n.push('<p class="g">Montant à régler à la signature : '+eur(c.acompte)+'</p>'); n.push('<p class="g">Solde restant à régler : '+eur(c.reste)+'</p>'); }
-    else { n.push('<p class="g">Montants versés : '+REGLS.map(function(g){ return (g.lib || "règlement")+' du '+g.date+', '+eur(g.m); }).join(" ; ")+'.</p>'); }
+    else { n.push('<p class="g">Montants versés : '+REGLS.map(function(g){ return (g.acompte ? 'acompte '+ACOMPTE+' %, ' : '')+libelle(g)+' du '+g.date+', '+eur(g.m); }).join(" ; ")+'.</p>'); }
     n.push('<p class="g">Moyens de paiement acceptés : virement, chèque.</p>');
     n.push('<p class="g">En cas de retard de paiement : pénalités au taux de trois fois le taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de recouvrement.</p>');
     id("notes").innerHTML = n.join("");
@@ -344,21 +359,21 @@
       b.setAttribute("aria-pressed","true");
       // « Facture acquittée » : la même facture, avec le solde reçu par virement.
       REGLS = REGLS.slice(0, 1);
-      if (b.dataset.vue === "acquittee") REGLS.push({ lib: "Virement Mme Grospiron", date: "21/09/2026", montant: calcul().reste });
+      if (b.dataset.vue === "acquittee") REGLS.push({ solde: true, moyen: "virement", numero: "", date: "21/09/2026", montant: calcul().reste });
       rendre(b.dataset.vue);
       window.scrollTo({top:0});
     };
   });
   id("acquittee").onclick = function(){
     var c = calcul();
-    if (c.net > 0) REGLS.push({ lib: "Solde", date: "14/09/2026", montant: c.net });
-    else REGLS = REGLS.filter(function(g){ return g.lib !== "Solde"; });
+    if (c.net > 0) REGLS.push({ solde: true, moyen: "virement", numero: "", date: "14/09/2026", montant: c.net });
+    else REGLS = REGLS.filter(function(g){ return !g.solde; });
     rendre(VUE);
   };
   id("regl-plus").onclick = function(){
-    REGLS.push({ lib: "", date: "14/09/2026", montant: 0 });
+    REGLS.push({ moyen: "chèque", numero: "", date: "14/09/2026", montant: 0 });
     rendre(VUE);
-    var ch = id("regls-lignes").querySelectorAll("input"); ch[ch.length-3].focus();
+    var ch = id("regls-lignes").querySelectorAll("input.numero"); ch[ch.length-1].focus();
   };
   // Un chiffre touché est sélectionné en entier : on tape, l'ancien part.
   document.addEventListener("focusin", function(e){

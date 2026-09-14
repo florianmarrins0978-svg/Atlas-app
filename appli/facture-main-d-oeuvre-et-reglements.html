@@ -89,6 +89,12 @@
   .net .m{font:600 20px/1 ui-serif,Georgia,serif}
   .regl{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:7px 0;font-size:14px;color:var(--ink);border-bottom:1px solid var(--lineSoft)}
   .regl .quoi{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .regl .ligne1{display:flex;align-items:center;gap:8px;min-width:0}
+  .regl select{border:0;background:transparent;padding:0 14px 0 0;font-size:14px;color:var(--ink);outline:none;border-radius:4px;-webkit-appearance:none;appearance:none;
+               background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+               background-position:right 4px top 55%,right 0 top 55%;background-size:4px 4px,4px 4px;background-repeat:no-repeat}
+  .regl input.numero{flex:1;min-width:0}
+  .regl input.numero[hidden]{display:none}
   .regl .quoi input{border:0;background:transparent;padding:0;font-size:14px;color:var(--ink);outline:none;border-radius:4px;width:100%}
   .regl .quoi input.date{font-size:12.5px;color:var(--muted);width:96px}
   .regl .quoi input::placeholder{color:var(--muted)}
@@ -122,7 +128,7 @@
 <body data-charte="origine">
 
 <div class="bandeau">
-  <b>Votre demande du 14 septembre, et vos quatre retours.</b> La facture ne savait ni nommer la <b>main d’œuvre</b> ni déduire les <b>acomptes</b>. Ici : « dont main d’œuvre HT », les <b>règlements reçus</b>, chacun avec son <b>libellé</b> (le numéro du chèque s’écrit là), sa date et son montant, le <b>net à payer</b>, « Facture acquittée » à zéro. Un chiffre touché est <b>sélectionné</b> : on tape, il part. Le papier, le même pour le devis et la facture, est sur l’onglet « Papier ». Rien n’est codé.
+  <b>Votre demande du 14 septembre, et vos quatre retours.</b> La facture ne savait ni nommer la <b>main d’œuvre</b> ni déduire les <b>acomptes</b>. Ici : « dont main d’œuvre HT », les <b>règlements reçus</b>, chacun avec son <b>moyen</b> (chèque, virement…) et le numéro du chèque, sa date et son montant, le <b>net à payer</b>, « Facture acquittée » à zéro. Un chiffre touché est <b>sélectionné</b> : on tape, il part. Le papier, le même pour le devis et la facture, est sur l’onglet « Papier ». Rien n’est codé.
 </div>
 
 <div class="choix">
@@ -212,7 +218,7 @@
     <tr><td>Net à payer</td><td>TTC moins les règlements.</td></tr>
     <tr><td>Facture acquittée</td><td>un interrupteur sous les règlements, pour le client qui a tout payé avant l’envoi. Allumé, le solde est compté reçu, le net tombe à zéro, le tampon s’imprime. Il s’allume seul quand les règlements couvrent tout.</td></tr>
     <tr><td>Le papier</td><td>les colonnes des pros, la TVA par taux, « Montants versés » sous le mode de règlement, la main d’œuvre TTC pour information.</td></tr>
-    <tr><td>Le libellé d’un règlement</td><td>« Chèque n° 1806028 », « Virement Mme Grospiron » : le numéro du chèque s’écrit là, et c’est ce mot qui s’imprime dans « Montants versés ».</td></tr>
+    <tr><td>Le moyen d’un règlement</td><td>« Chèque » est déjà écrit ; touchez-le pour choisir virement, espèces, carte. Un chèque a sa case pour le numéro, un virement non. C’est ce qui s’imprime dans « Montants versés » : « chèque n° 1806028 du 02/09/2026, 522,23 € ».</td></tr>
     <tr><td>Un chiffre touché</td><td>est sélectionné en entier : on tape le nouveau, l’ancien part. Vaut pour la main d’œuvre, la remise, les montants reçus.</td></tr>
     <tr><td>Crédit d’impôt — où</td><td>sur la facture, sous les règlements ; son libellé se change ici. Le texte de la mention imprimée vit dans Réglages → Documents → « Ce qui s’imprime », comme les conditions générales. À vous de dire si ces travaux méritent une facture à part, comme chez le paysagiste.</td></tr>
   </table>
@@ -230,8 +236,9 @@
     remise: 5,
     credit: false,
     // L'acompte du devis : 30 % du TTC, calculé — jamais tapé (montant null).
-    regls: [ { lib: "Acompte 30 %, chèque n° 1806028", date: "02/09/2026", montant: null, recu: true } ]
+    regls: [ { acompte: true, moyen: "chèque", numero: "1806028", date: "02/09/2026", montant: null, recu: true } ]
   };
+  var MOYENS = ["chèque", "virement", "espèces", "carte"];
   function id(x){ return document.getElementById(x); }
   function eur(n){ return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
   function r2(n){ return Math.round(n*100)/100; }
@@ -276,11 +283,15 @@
       var d = document.createElement("div"); d.className = "regl";
       d.innerHTML =
         '<button class="coche" type="button" aria-pressed="'+g.recu+'" aria-label="Reçu">'+(g.recu?"✓":"")+'</button>' +
-        '<span class="quoi"><input value="'+g.lib+'" placeholder="Chèque n°…" aria-label="Libellé du règlement"><input class="date" value="'+g.date+'" aria-label="Date"></span>' +
+        '<span class="quoi"><span class="ligne1"><select aria-label="Moyen de paiement">' +
+          MOYENS.map(function(m){ return '<option value="'+m+'"'+(m===g.moyen?' selected':'')+'>'+(g.acompte ? 'Acompte 30 %, ' : '')+m.charAt(0).toUpperCase()+m.slice(1)+'</option>'; }).join('') +
+        '</select><input class="numero" value="'+g.numero+'" placeholder="n°" inputmode="numeric" aria-label="Numéro du chèque"'+(g.moyen==="chèque"?'':' hidden')+'></span>' +
+        '<input class="date" value="'+g.date+'" aria-label="Date"></span>' +
         '<span class="m"><input value="'+String(g.m).replace(".",",")+'" inputmode="decimal" aria-label="Montant reçu"> €</span>';
       d.querySelector(".coche").onclick = function(){ g.recu = !g.recu; rendre(); };
-      var champs = d.querySelectorAll("input");
-      champs[0].onchange = function(e){ g.lib = e.target.value; };
+      var sel = d.querySelector("select"), num = d.querySelector(".numero"), champs = d.querySelectorAll("input");
+      sel.onchange = function(e){ g.moyen = e.target.value; num.hidden = g.moyen !== "chèque"; if (num.hidden) g.numero = ""; };
+      num.onchange = function(e){ g.numero = e.target.value.trim(); };
       champs[1].onchange = function(e){ g.date = e.target.value; };
       champs[2].onchange = function(e){ g.montant = nombre(e.target.value); rendre(); };
       boite.appendChild(d);
@@ -298,16 +309,16 @@
   id("e-mo-champ").onblur = function(e){ etat.mo = e.target.value.trim()==="" ? null : nombre(e.target.value); rendre(); };
   id("e-remise").oninput = function(e){ etat.remise = Math.min(100, Math.max(0, nombre(e.target.value))); rendre(); };
   id("e-regl-plus").onclick = function(){
-    etat.regls.push({ lib: "", date: "14/09/2026", montant: 0, recu: true });
+    etat.regls.push({ moyen: "chèque", numero: "", date: "14/09/2026", montant: 0, recu: true });
     rendre();
-    var champs = id("e-regls").querySelectorAll(".quoi input"); champs[champs.length-2].focus();
+    var champs = id("e-regls").querySelectorAll("input.numero"); champs[champs.length-1].focus();
   };
   id("e-credit").onclick = function(){ etat.credit = !etat.credit; rendre(); };
   // Allumé : le solde est compté reçu à la date du jour ; éteint, il repart.
   id("e-acquittee").onclick = function(){
     var c = calcul();
-    if (c.net > 0) etat.regls.push({ lib: "Solde", date: "14/09/2026", montant: c.net, recu: true });
-    else etat.regls = etat.regls.filter(function(g){ return g.lib !== "Solde"; });
+    if (c.net > 0) etat.regls.push({ solde: true, moyen: "virement", numero: "", date: "14/09/2026", montant: c.net, recu: true });
+    else etat.regls = etat.regls.filter(function(g){ return !g.solde; });
     rendre();
   };
   // Un chiffre touché est sélectionné en entier — sa demande du 14 septembre :
