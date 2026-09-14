@@ -22,6 +22,7 @@
 // il aurait retrouvé un bouton vert sur un chantier déjà rendu.
 
 import assert from "node:assert/strict";
+import { jourDuPatron } from "./_jour-e2e";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
@@ -59,7 +60,20 @@ async function main() {
   );
   assert.ok(rows.length === 1, "aucun chantier avec un devis envoyé dans le jeu de démonstration");
   const chantierId = rows[0].id;
-  await pool.query(`UPDATE chantiers SET date_planifiee = CURRENT_DATE WHERE id = $1`, [chantierId]);
+  // **LE JOUR DU PATRON, PAS CELUI DE POSTGRESQL — 15 septembre 2026.**
+  //
+  // `CURRENT_DATE` est le jour de la base, qui tourne en UTC. Entre minuit et
+  // deux heures chez lui, elle est encore la veille : le chantier était donc
+  // posé HIER, l'écran le rangeait dans Terminés, et le planning n'avait plus
+  // aucune ligne à montrer. La suite s'arrêtait sur « ligne-planifiee
+  // introuvable » et accusait la fin de chantier, qui n'y était pour rien.
+  //
+  // `jourDuPatron` existe depuis le 25 août pour exactement ce piège
+  // (`_jour-e2e.ts`) : cette suite ne l'avait pas repris.
+  await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = $1`, [
+    chantierId,
+    jourDuPatron(),
+  ]);
   await pool.query(`DELETE FROM retours_intervention WHERE chantier_id = $1`, [chantierId]);
   // **Ce qu’il a photographié en créant la fiche** : elles n’apparaissaient
   // nulle part avant le 9 septembre 2026, sinon dans le tiroir des preuves.

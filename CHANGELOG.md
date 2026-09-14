@@ -8,7 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
-### Une suite comptait les jours en UTC, et rougissait deux heures par nuit
+### Deux suites comptaient les jours en UTC, et rougissaient deux heures par nuit
 
 `test-suivi-devis-e2e` comparait la date affichée à `new Date().toISOString()` :
 entre 22 h et minuit UTC — chaque nuit entre minuit et deux heures chez lui —
@@ -18,6 +18,14 @@ raison : l'application compte les jours dans SON fuseau.
 Le garde-fou qui interdit ce geste existait depuis le 25 août, mais il ne
 parcourait que `src/`. Il parcourt aussi `scripts/` — confronté au geste qu'il
 refuse avant d'être cru.
+
+**Et le même piège en SQL, la batterie suivante :** `test-fin-de-chantier-e2e`
+posait son chantier à `CURRENT_DATE`, le jour de PostgreSQL, qui tourne en UTC.
+Le chantier était donc d'hier pour l'écran, le planning n'avait plus de ligne à
+montrer, et la suite accusait la fin de chantier. `jourDuPatron` existe depuis
+le 25 août pour exactement cela ; cette suite ne l'avait pas repris. Les autres
+`CURRENT_DATE` des suites visent des jours à trois jours de distance ou plus :
+ils ne basculent pas.
 
 ### Un client se corrige depuis sa fiche
 
