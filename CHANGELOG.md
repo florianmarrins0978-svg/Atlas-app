@@ -23,9 +23,12 @@ d'un devis renvoyait les réglages relus sans la clef des conditions générales
 l'entreprise pour se protéger. Au rechargement, la main d'œuvre s'écrit « 450 »,
 plus « 450.00 ».
 
+**Et le bloc « Notes / conditions » dit la B, tranchée par lui** : « Mode de
+règlement : 30 % à la signature, 50 % à mi-parcours, solde à réception de la
+facture. », un « Montant à régler … » par acompte, « Solde restant à régler ».
+Ses deux planches écrivaient deux choses ; le §348 avait choisi sans lui.
+
 `ARCHITECTURE.md` §360 · `docs/devis-main-doeuvre-et-conditions-verdict.md`.
-Reste à lui : les phrases du bloc « Notes / conditions », que ses deux planches
-écrivent différemment (`TODO.md`).
 
 ---
 ## 2026-09-13

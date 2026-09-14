@@ -30329,16 +30329,31 @@ lisait plus depuis le découpage du 7 septembre, part avec.
 **3. « 450.00 » au rechargement.** Le champ lisait la base telle quelle ; il
 passe par `sansZerosInutiles`, comme après une saisie.
 
-**Ce qui reste à lui, et se dit dans `TODO.md`.** Le bloc « Notes /
-conditions » écrit les phrases de sa planche des acomptes (12 septembre au
-soir : « Acompte de 30 % à la signature, soit 853,20 €. ») ; la planche B, elle,
-écrit « Mode de règlement : 30 % à la commande, solde à réception » puis
-« Montant à régler à la commande » et « Solde restant à régler ». Les deux sont
-de lui, à un jour d'écart, et le §348 avait retenu la plus récente sans le lui
-dire. « Pas les bonnes » peut désigner celles-là : c'est à lui de trancher, pas
-à une session de deviner une troisième rédaction.
+**4. Les phrases du bloc « Notes / conditions » : la B, tranchée par lui.**
+Le bloc écrivait les phrases de sa planche des acomptes (12 septembre au soir :
+« Acompte de 30 % à la signature, soit 853,20 €. ») ; la planche B, elle,
+écrivait « Mode de règlement : 30 % à la commande, solde à réception » puis
+« Montant à régler à la commande » et « Solde restant à régler ». Les deux
+étaient de lui, à un jour d'écart, et le §348 avait retenu la plus récente sans
+le lui dire — *« les conditions sous le devis ne sont pas les bonnes »*. Posé
+en A/B, sa réponse : **« B »**. Une seule rédaction, dans `phrasesAcomptes`
+pour les acomptes posés et dans `lignesConditionsDevis` pour le réglage seul :
+
+| | |
+|---|---|
+| acomptes posés (30, 50, 75 cumulés sur 2 844 €) | « Mode de règlement : 30 % à la signature, 50 % à mi-parcours, 75 % à l'avancement, solde à réception de la facture. » · « Montant à régler à la signature : 853,20 € » · « … à mi-parcours : 568,80 € » · « … à l'avancement : 711,00 € » · « Solde restant à régler : 711,00 € » |
+| réglage seul (ligne retirée, ou devis d'avant) | « Mode de règlement : 30 % à la commande, solde à réception de la facture. » puis le montant et le solde quand le total est connu — jamais sur l'aperçu des Réglages |
+| réglé à 100 % | ni « solde à réception », ni ligne de solde |
+
+Les taux restent **cumulés**, comme sur la ligne des totaux (§343) ; ce qui
+s'écrit en euros est ce qui tombe ce jour-là. Le reste à régler s'écrit donc
+deux fois sur le papier — sous le total TTC et dans les notes — et c'est son
+choix, devant les deux ; le §4 bis de `CLAUDE.md` (« une même somme écrite deux
+fois ») cède devant une réponse donnée sur planche.
 
 Suites : `test-planche-b-devis.ts`, `test-planche-b-devis-db.ts`,
 `test-conditions-documents.ts` (une clef absente ne s'écrit pas — rouge sur
-l'ancienne règle), `test-agent-gestes.ts` (régler l'acompte garde la validité,
-sans relecture), `test-planche-b-devis-e2e.ts`.
+l'ancienne règle ; les lignes de la B), `test-acomptes-devis.ts`,
+`test-acomptes-pdf.ts`, `test-conditions-sur-le-devis.ts`,
+`test-agent-gestes.ts` (régler l'acompte garde la validité, sans relecture),
+`test-planche-b-devis-e2e.ts`, `test-acomptes-devis-e2e.ts`.

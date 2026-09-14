@@ -11,7 +11,8 @@ Sa plainte à minuit : *« je mets le prix, elle s'efface toute seule »* — su
 devis sans ligne, un total nul était pris pour un plafond. Elle se garde ; la
 borne arrive avec la première ligne. Et `normaliserConditions` n'écrit plus
 une clef absente : la photo d'un devis remettait ses conditions générales à
-« effacé ». Reste à lui : les phrases du bloc « Notes / conditions » (`TODO.md`).
+« effacé ». Et le bloc « Notes / conditions » dit la B qu'il a choisie : mode
+de règlement, montant à régler par acompte, solde restant.
 `ARCHITECTURE.md` §360 · `docs/devis-main-doeuvre-et-conditions-verdict.md`.
 
 ## FAIT : 0087 NE VOYAIT PAS SES PROPRES LIGNES — 13 septembre 2026

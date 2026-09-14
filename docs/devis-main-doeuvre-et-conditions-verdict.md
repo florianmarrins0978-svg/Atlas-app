@@ -9,8 +9,8 @@ conditions ». Un verdict par point, ce qui a été corrigé, ce qui reste à vo
 
 **La main d'œuvre s'effaçait sur un devis sans ligne — corrigé.** Les
 conditions générales pouvaient être vidées par une photo de devis — corrigé
-aussi. Pour les phrases sous le devis, vos deux planches disent deux choses
-différentes : c'est à vous de trancher.
+aussi. Les phrases sous le devis : vos deux planches disaient deux choses,
+vous avez choisi la B — codée.
 
 ---
 
@@ -42,9 +42,18 @@ Vos deux planches écrivent le bloc « Notes / conditions » différemment :
 | **l'acompte** (12 septembre au soir, vos trois retours) — **c'est ce que l'appli fait** | « Acompte de 30 % à la signature, soit 853,20 €. » — et « Reste à régler après acompte » dans les totaux |
 | **Remise, main d'œuvre, conditions** (12 septembre, codée le 13) | « Mode de règlement : 30 % à la commande, solde à réception de la facture. » · « Montant à régler à la commande : 573,12 € » · « Solde restant à régler : 1 337,28 € » |
 
-La première avait été retenue sans vous le dire. **Laquelle voulez-vous ?** —
-ou, si « pas les bonnes » désigne autre chose, une capture du bas de votre
-devis.
+La première avait été retenue sans vous le dire. **Vous avez répondu « B »**,
+et c'est codé. Sur un devis à 2 844 € TTC avec vos trois acomptes :
+
+    Mode de règlement : 30 % à la signature, 50 % à mi-parcours, 75 % à l'avancement, solde à réception de la facture.
+    Montant à régler à la signature : 853,20 €
+    Montant à régler à mi-parcours : 568,80 €
+    Montant à régler à l'avancement : 711,00 €
+    Solde restant à régler : 711,00 €
+
+Ligne d'acompte retirée : « Mode de règlement : 30 % à la commande, solde à
+réception de la facture. », le montant et le solde. Réglé à 100 % : pas de
+solde. Les taux restent cumulés, comme sur la ligne des totaux.
 
 ---
 
@@ -52,8 +61,9 @@ devis.
 
 | | |
 |---|---|
-| suites pures et base | `test-planche-b-devis`, `test-planche-b-devis-db`, `test-conditions-documents`, `test-conditions-sur-le-devis`, `test-lecture-allure-devis`, `test-agent-gestes` — vertes, et les cas neufs rougissent sur l'ancien code |
-| suites navigateur | planche B, acompte, remise — 3/3 vertes, sur un atelier à part |
+| suites pures et base | `test-planche-b-devis`, `test-planche-b-devis-db`, `test-conditions-documents`, `test-conditions-sur-le-devis`, `test-acomptes-devis`, `test-acomptes-pdf`, `test-lecture-allure-devis`, `test-agent-gestes` — vertes, et les cas neufs rougissent sur l'ancien code |
+| suites navigateur | planche B, acompte, remise, devis complet, devis papier — vertes, sur un atelier à part |
+| batterie complète | 367/378 en base, 135/153 navigateur : les 29 rouges sont ceux déjà relevés sur `main` et sur votre PC, aucun ne touche le devis |
 | à la main | vos gestes rejoués dans un navigateur à la largeur d'un téléphone : devis vide, devis chiffré, rechargement, PDF, Réglages |
 | types, lint | verts |
 

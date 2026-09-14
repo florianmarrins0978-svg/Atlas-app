@@ -22,7 +22,11 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 
 ---
 
-## ⏳ LES PHRASES DU BLOC « NOTES / CONDITIONS » — ses deux planches disent deux choses (14 septembre 2026)
+## ~~LES PHRASES DU BLOC « NOTES / CONDITIONS » — ses deux planches disent deux choses~~ — TRANCHÉ « B », CODÉ LE 14 SEPTEMBRE 2026
+
+**Sa réponse, dans l'heure : « B ».** Codé : `phrasesAcomptes` et
+`lignesConditionsDevis` écrivent le mode de règlement, un montant par acompte,
+le solde (`ARCHITECTURE.md` §360, point 4).
 
 **Sa plainte, à minuit :** *« les conditions sous le devis ne sont pas les
 bonnes »*, devant `appli/devis-remise-main-d-oeuvre-conditions.html` rouverte.

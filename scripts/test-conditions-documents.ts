@@ -147,7 +147,11 @@ async function main() {
       }),
       3480
     );
-    assert.ok(lignes.some((l) => l.includes("30 %") && l.includes("1044,00 €")), lignes.join(" | "));
+    // La B du 14 septembre 2026 : le mode en une ligne, le montant sur la suivante,
+    // écrit par `enEuros` — l'espace des milliers est la sienne.
+    assert.ok(lignes.some((l) => l.startsWith("Mode de règlement : 30 %")), lignes.join(" | "));
+    assert.ok(lignes.some((l) => l.startsWith("Montant à régler à la commande") && l.includes("044,00")), lignes.join(" | "));
+    assert.ok(lignes.some((l) => l.startsWith("Solde restant à régler") && l.includes("436,00")), lignes.join(" | "));
     assert.ok(lignes.some((l) => l.includes("45 jours")));
     assert.ok(lignes.some((l) => l.includes("virement, chèque")));
     assert.ok(lignes.some((l) => /40 €/.test(l)));

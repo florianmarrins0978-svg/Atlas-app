@@ -16,8 +16,9 @@ protéger les autres, et ne peut plus oublier la dernière colonne née (c'est c
 qui vidait les conditions générales à chaque photo de devis). Et un total HT
 nul ne borne pas la main d'œuvre : elle se garde jusqu'à la première ligne.
 
-**Reste à lui :** les phrases du bloc « Notes / conditions », que ses deux
-planches écrivent différemment (`TODO.md`, en tête). Son retour :
+Et le bloc « Notes / conditions » écrit la B qu'il a choisie dans l'heure :
+« Mode de règlement : … », « Montant à régler … », « Solde restant à régler ».
+Son retour :
 `docs/devis-main-doeuvre-et-conditions-verdict.md`. `ARCHITECTURE.md` §360.
 
 ---

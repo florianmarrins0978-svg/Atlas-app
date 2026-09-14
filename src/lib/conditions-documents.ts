@@ -1,4 +1,5 @@
 import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "./conditions-generales";
+import { enEuros } from "./euros";
 
 /**
  * Les conditions qui s'impriment sur un devis, réglées au lieu d'être en dur.
@@ -218,14 +219,16 @@ export function lignesConditionsDevis(
   if (phrasesAcomptes && phrasesAcomptes.length > 0) {
     lignes.push(...phrasesAcomptes);
   } else if (c.acomptePourcent !== null) {
-    // Le montant n'est écrit QUE s'il est connu. Sur l'aperçu des réglages il
-    // ne l'est pas — et un chiffre inventé à cet endroit finirait imprimé.
-    // *« Retire les — avant soit »* : une virgule, comme les phrases des acomptes.
-    const montant =
-      totalTtc !== undefined && Number.isFinite(totalTtc)
-        ? `, soit ${((totalTtc * c.acomptePourcent) / 100).toFixed(2).replace(".", ",")} €`
-        : "";
-    lignes.push(`Acompte de ${c.acomptePourcent} % à la commande${montant}.`);
+    // **La B de sa planche, choisie le 14 septembre 2026** — la même rédaction
+    // que `phrasesAcomptes`, pour le réglage seul : le mode, puis les montants
+    // QUAND le total est connu. Sur l'aperçu des réglages il ne l'est pas — et
+    // un chiffre inventé à cet endroit finirait imprimé.
+    lignes.push(`Mode de règlement : ${c.acomptePourcent} % à la commande, solde à réception de la facture.`);
+    if (totalTtc !== undefined && Number.isFinite(totalTtc)) {
+      const acompte = Math.round(totalTtc * c.acomptePourcent) / 100;
+      lignes.push(`Montant à régler à la commande : ${enEuros(acompte)}`);
+      lignes.push(`Solde restant à régler : ${enEuros(Math.round((totalTtc - acompte) * 100) / 100)}`);
+    }
   }
 
   if (c.delaiPaiementJours !== null) {

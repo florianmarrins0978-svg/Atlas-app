@@ -154,7 +154,7 @@ async function main() {
       conditionsReglees: { acomptePourcent: "30", moyensPaiement: "virement, chèque", rappelerPenalites: true, conditionsGenerales: "" },
     });
     const sien = trace.textes.find((t) => t.contenu.startsWith("Accès par le portail"));
-    const acompte = trace.textes.find((t) => t.contenu.startsWith("Acompte de 30 %"));
+    const acompte = trace.textes.find((t) => t.contenu.startsWith("Mode de règlement : 30 %"));
     const moyens = trace.textes.find((t) => t.contenu.startsWith("Moyens de paiement"));
     assert.ok(sien && acompte && moyens, "une des trois lignes manque");
     assert.equal(sien.gras, false, "son texte est passé en gras");
@@ -166,7 +166,7 @@ async function main() {
   await cas("le bloc s'ouvre même sans une note de sa main, dès qu'une condition est réglée", async () => {
     const trace = await composer({ conditionsReglees: { acomptePourcent: "30", conditionsGenerales: "" } });
     assert.ok(trace.textes.some((t) => t.contenu === "NOTES / CONDITIONS"));
-    assert.ok(trace.textes.some((t) => t.contenu.startsWith("Acompte de 30 %") && t.gras));
+    assert.ok(trace.textes.some((t) => t.contenu.startsWith("Mode de règlement : 30 %") && t.gras));
   });
 
   console.log("\n=== Ses conditions générales, après le bon pour accord ===\n");

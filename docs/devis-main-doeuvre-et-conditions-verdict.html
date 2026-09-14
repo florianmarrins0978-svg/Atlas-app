@@ -62,7 +62,7 @@
 <hr>
 <h2 id="en-une-phrase">En une phrase</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>La main d'œuvre s'effaçait sur un devis sans ligne — corrigé.</strong> Les conditions générales pouvaient être vidées par une photo de devis — corrigé aussi. Pour les phrases sous le devis, vos deux planches disent deux choses différentes : c'est à vous de trancher.</p>
+<p><strong>La main d'œuvre s'effaçait sur un devis sans ligne — corrigé.</strong> Les conditions générales pouvaient être vidées par une photo de devis — corrigé aussi. Les phrases sous le devis : vos deux planches disaient deux choses, vous avez choisi la B — codée.</p>
 <hr>
 <h2 id="1--je-mets-le-prix-elle-sefface-toute-seule-">1. « Je mets le prix, elle s'efface toute seule »</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -130,7 +130,9 @@
 <td>« Mode de règlement : 30 % à la commande, solde à réception de la facture. » · « Montant à régler à la commande : 573,12 € » · « Solde restant à régler : 1 337,28 € »</td>
 </tr>
 </tbody></table></div>
-<p>La première avait été retenue sans vous le dire. <strong>Laquelle voulez-vous ?</strong> — ou, si « pas les bonnes » désigne autre chose, une capture du bas de votre devis.</p>
+<p>La première avait été retenue sans vous le dire. <strong>Vous avez répondu « B »</strong>, et c'est codé. Sur un devis à 2 844 € TTC avec vos trois acomptes :</p>
+<p>Mode de règlement : 30 % à la signature, 50 % à mi-parcours, 75 % à l'avancement, solde à réception de la facture. Montant à régler à la signature : 853,20 € Montant à régler à mi-parcours : 568,80 € Montant à régler à l'avancement : 711,00 € Solde restant à régler : 711,00 €</p>
+<p>Ligne d'acompte retirée : « Mode de règlement : 30 % à la commande, solde à réception de la facture. », le montant et le solde. Réglé à 100 % : pas de solde. Les taux restent cumulés, comme sur la ligne des totaux.</p>
 <hr>
 <h2 id="ce-qui-a-été-vérifié">Ce qui a été vérifié</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -140,11 +142,15 @@
 </tr></thead><tbody>
 <tr>
 <td>suites pures et base</td>
-<td><code>test-planche-b-devis</code>, <code>test-planche-b-devis-db</code>, <code>test-conditions-documents</code>, <code>test-conditions-sur-le-devis</code>, <code>test-lecture-allure-devis</code>, <code>test-agent-gestes</code> — vertes, et les cas neufs rougissent sur l'ancien code</td>
+<td><code>test-planche-b-devis</code>, <code>test-planche-b-devis-db</code>, <code>test-conditions-documents</code>, <code>test-conditions-sur-le-devis</code>, <code>test-acomptes-devis</code>, <code>test-acomptes-pdf</code>, <code>test-lecture-allure-devis</code>, <code>test-agent-gestes</code> — vertes, et les cas neufs rougissent sur l'ancien code</td>
 </tr>
 <tr>
 <td>suites navigateur</td>
-<td>planche B, acompte, remise — 3/3 vertes, sur un atelier à part</td>
+<td>planche B, acompte, remise, devis complet, devis papier — vertes, sur un atelier à part</td>
+</tr>
+<tr>
+<td>batterie complète</td>
+<td>367/378 en base, 135/153 navigateur : les 29 rouges sont ceux déjà relevés sur <code>main</code> et sur votre PC, aucun ne touche le devis</td>
 </tr>
 <tr>
 <td>à la main</td>
