@@ -98,21 +98,25 @@
   .champ-titre input:focus{border-bottom-color:var(--or)}
   .regls{margin:12px 26px 0}
   .regls .inter{margin:0 0 4px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
-  .regl{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--lineSoft);color:var(--ink)}
+  .regl{display:grid;grid-template-columns:104px 1fr 1fr 76px;gap:4px;align-items:center;padding:8px 0;border-bottom:1px solid var(--lineSoft);color:var(--ink);text-align:center}
+  .regl .acompte{font-size:14px;line-height:1.2;white-space:nowrap}
+  .regl .acompte small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .regl .entete{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:0 0 4px}
+  .regl.titres{border-bottom:1px solid var(--line);padding:0 0 2px}
   .regl .quoi{display:flex;flex-direction:column;gap:1px;min-width:0}
   .regl .ligne1{display:flex;align-items:center;gap:8px;min-width:0}
   .regl select{border:0;background:transparent;padding:0;font-size:15px;color:var(--ink);outline:none;border-radius:4px;
                -webkit-appearance:none;appearance:none;padding-right:14px;
                background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
-               background-position:right 4px top 55%,right 0 top 55%;background-size:4px 4px,4px 4px;background-repeat:no-repeat}
+               background-position:right 4px top 55%,right 0 top 55%;background-size:4px 4px,4px 4px;background-repeat:no-repeat;text-align:center;text-align-last:center;width:100%}
   .regl select:focus-visible{outline:2px solid var(--or);outline-offset:3px}
   .regl input.numero{flex:1;min-width:0;font-size:15px}
-  .regl input.numero[hidden]{display:none}
-  .regl input{border:0;background:transparent;padding:0;font-size:15px;color:var(--ink);outline:none;border-radius:4px;width:100%}
+  .regl input.numero[hidden]{visibility:hidden;display:block}
+  .regl input{border:0;background:transparent;padding:0;font-size:15px;color:var(--ink);outline:none;border-radius:4px;width:100%;text-align:center}
   .regl input.date{font-size:12.5px;color:var(--muted);width:96px}
   .regl input::placeholder{color:var(--muted)}
   .regl .m{white-space:nowrap}
-  .regl .m input{width:64px;text-align:right;font-size:16px}
+  .regl .m input{width:60px;text-align:right;font-size:16px}
   .regl input:focus{background:rgba(28,28,26,.04)}
   .plus:focus-visible,.regl input:focus-visible,.champ-titre input:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:6px}
   .plus{display:block;margin-top:8px;border:0;background:none;padding:0;color:var(--or);font:500 14px/1.2 ui-sans-serif,sans-serif;cursor:pointer;min-height:32px}
@@ -237,7 +241,7 @@
     <tr><td>Le Total TTC par ligne</td><td>ce que le client compare à son relevé.</td></tr>
     <tr><td>Les libellés</td><td>« TVA 20 % » sans parenthèses, « P.U. HT », « Rem. % ». Les mêmes sur les deux papiers.</td></tr>
     <tr><td>Les règlements reçus</td><td>sur la facture, au-dessus du papier : l’acompte du devis d’office, « + Règlement reçu » pour un de plus. « Chèque » est déjà écrit ; touchez-le pour choisir virement, espèces, carte. Un chèque a sa case pour le numéro, un virement non. La date dessous, le montant à côté. Le papier suit : la ligne sous le Total TTC, le net à payer, « Montants versés », et le tampon « Acquittée » quand le net tombe à zéro.</td></tr>
-    <tr><td>Un ou plusieurs</td><td>un seul règlement reçu : « Acompte 30 % » (le taux du devis) sous le Total TTC. Deux ou plus : une seule ligne « Acomptes » avec le total. Le détail, chèque par chèque, reste dans « Montants versés » sous les notes, sous la forme actuelle.</td></tr>
+    <tr><td>Chaque montant reçu est un acompte</td><td>« Acompte 30 % », puis « Acompte 50 % » si le devis le prévoyait — proposé d’office avec ce qui tombe ce jour-là —, puis « Acompte » tout court. Sous le Total TTC, chaque acompte a sa ligne (− 522,23 €, − 348,16 €) ; leur somme, qui ne s’écrit pas, se déduit du net à payer. Dans « Montants versés » : le moyen, le numéro, la date, le montant.</td></tr>
     <tr><td>Facture acquittée</td><td>un interrupteur sous les règlements. Allumé, le solde est compté reçu à la date du jour, le net tombe à zéro et le tampon s’imprime ; il s’allume seul quand les règlements couvrent tout. Éteint, le solde repart.</td></tr>
     <tr><td>Un titre, si vous voulez</td><td>un champ au-dessus du papier, vide d’office : « Aménagement du jardin », « Chantier Machin ». Rempli, il s’écrit sous DEVIS ou FACTURE ; vide, rien.</td></tr>
     <tr><td>L’or</td><td>ne porte que ce qu’on lit : Client, Lieu des travaux, Notes, le tampon « Facture acquittée ». Jamais un montant.</td></tr>
@@ -255,8 +259,14 @@
   var VUE = "devis";
   var MOYENS = ["chèque", "virement", "espèces", "carte"];
   // Le premier est l'acompte du devis : son montant se calcule (montant null).
-  var REGLS = [ { acompte: true, moyen: "chèque", numero: "1806028", date: "02/09/2026", montant: null } ];
+  // Les taux CUMULÉS du devis (§343) : 30 % à la signature, 50 % à mi-parcours.
+  var TAUX_DEVIS = ["30", "50"];
+  var REGLS = [ { moyen: "chèque", numero: "1806028", date: "02/09/2026", montant: null } ];
   function libelle(g){ return g.moyen + (g.moyen === "chèque" && g.numero ? " n° " + g.numero : ""); }
+  // Le rang dit le taux : « Acompte 30 % », « Acompte 50 % », puis « Acompte » tout court.
+  function nomAcompte(i){ var g = REGLS[i]; return "Acompte" + (!g.solde && TAUX_DEVIS[i] ? " " + TAUX_DEVIS[i] + " %" : ""); }
+  // Ce qui tombe au rang i d'après le devis : la différence des cumuls, sur le TTC.
+  function montantDevis(i, ttc){ var t = Number(TAUX_DEVIS[i] || 0), p = Number(TAUX_DEVIS[i-1] || 0); return r2(ttc * (t - p) / 100); }
   function nombre(v){ var n = parseFloat(String(v).replace(",",".")); return isFinite(n) ? n : 0; }
   function id(x){ return document.getElementById(x); }
   function eur(n){ return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
@@ -276,7 +286,7 @@
     netHt = r2(netHt); tvaT = r2(tvaT);
     var ttc = r2(netHt+tvaT), acompte = r2(ttc*ACOMPTE/100);
     var verses = 0;
-    REGLS.forEach(function(g){ g.m = g.montant === null ? acompte : nombre(g.montant); verses += g.m; });
+    REGLS.forEach(function(g, i){ g.m = g.montant === null ? montantDevis(i, ttc) : nombre(g.montant); verses += g.m; });
     return { brut:r2(brut), remise:r2(brut-netHt), netHt:netHt, taux:taux, tvaT:tvaT, ttc:ttc, acompte:acompte, reste:r2(ttc-acompte), verses:r2(verses), net:Math.max(0, r2(ttc-verses)) };
   }
 
@@ -289,18 +299,20 @@
     // La liste ne se redessine pas sous un doigt qui passe d'un champ à l'autre :
     // un libellé validé ne doit pas faire perdre le champ du montant.
     var boite = id("regls-lignes"); if (!sansListe) boite.innerHTML = "";
-    if (!sansListe) REGLS.forEach(function(g){
+    if (!sansListe && facture) { var th = document.createElement("div"); th.className = "regl titres"; th.innerHTML = '<span class="entete"></span><span class="entete">Moyen</span><span class="entete">N°</span><span class="entete">Montant</span>'; boite.appendChild(th); }
+    if (!sansListe) REGLS.forEach(function(g, i){
       var d = document.createElement("div"); d.className = "regl";
-      d.innerHTML = '<span class="quoi"><span class="ligne1"><select aria-label="Moyen de paiement">' +
-                      MOYENS.map(function(m){ return '<option value="'+m+'"'+(m===g.moyen?' selected':'')+'>'+(g.acompte ? 'Acompte 30 %, ' : '')+m.charAt(0).toUpperCase()+m.slice(1)+'</option>'; }).join('') +
-                    '</select><input class="numero" value="'+g.numero+'" placeholder="n°" inputmode="numeric" aria-label="Numéro du chèque"'+(g.moyen==="chèque"?'':' hidden')+'></span>' +
-                    '<input class="date" value="'+g.date+'" aria-label="Date"></span>' +
+      d.innerHTML = '<span class="acompte">'+nomAcompte(i)+'<small><input class="date" value="'+g.date+'" aria-label="Date"></small></span>' +
+                    '<select aria-label="Moyen de paiement">' +
+                      MOYENS.map(function(m){ return '<option value="'+m+'"'+(m===g.moyen?' selected':'')+'>'+m.charAt(0).toUpperCase()+m.slice(1)+'</option>'; }).join('') +
+                    '</select>' +
+                    '<input class="numero" value="'+g.numero+'" placeholder="n°" inputmode="numeric" aria-label="Numéro du chèque"'+(g.moyen==="chèque"?'':' hidden')+'>' +
                     '<span class="m"><input value="'+String(g.m).replace(".",",")+'" inputmode="decimal" aria-label="Montant reçu"> €</span>';
-      var sel = d.querySelector("select"), num = d.querySelector(".numero"), ch = d.querySelectorAll("input");
+      var sel = d.querySelector("select"), num = d.querySelector(".numero");
       sel.onchange = function(e){ g.moyen = e.target.value; num.hidden = g.moyen !== "chèque"; if (num.hidden) g.numero = ""; rendre(VUE, true); };
       num.onchange = function(e){ g.numero = e.target.value.trim(); rendre(VUE, true); };
-      ch[1].onchange = function(e){ g.date = e.target.value; rendre(VUE, true); };
-      ch[2].onchange = function(e){ g.montant = nombre(e.target.value); rendre(VUE, true); };
+      d.querySelector(".date").onchange = function(e){ g.date = e.target.value; rendre(VUE, true); };
+      d.querySelector(".m input").onchange = function(e){ g.montant = nombre(e.target.value); rendre(VUE, true); };
       boite.appendChild(d);
     });
     id("h1").textContent = facture ? "La facture" : "Le devis";
@@ -332,8 +344,7 @@
     } else {
       // Un seul règlement : sa ligne. Plusieurs : une ligne « Acomptes », totalisée —
       // le détail, chèque par chèque, est dans « Montants versés » sous les notes.
-      if (REGLS.length === 1) t.push('<div class="r doux"><span>Acompte '+ACOMPTE+' %</span><span>− '+eur(REGLS[0].m)+'</span></div>');
-      else if (REGLS.length > 1) t.push('<div class="r doux"><span>Acomptes</span><span>− '+eur(c.verses)+'</span></div>');
+      REGLS.forEach(function(g, i){ t.push('<div class="r doux"><span>'+nomAcompte(i)+'</span><span>− '+eur(g.m)+'</span></div>'); });
       t.push('<div class="r net"><span>Net à payer</span><span>'+eur(c.net)+'</span></div>');
       if (acquittee) t.push('<span class="tampon">Acquittée le '+(REGLS[REGLS.length-1].date)+'</span>');
     }
@@ -342,7 +353,7 @@
     var n = ['<p>Accès par le portail de gauche, cour à dégager la veille.</p>',
              '<p class="g">Mode de règlement : 30 % à la signature, solde à réception de la facture.</p>'];
     if (!facture) { n.push('<p class="g">Montant à régler à la signature : '+eur(c.acompte)+'</p>'); n.push('<p class="g">Solde restant à régler : '+eur(c.reste)+'</p>'); }
-    else { n.push('<p class="g">Montants versés : '+REGLS.map(function(g){ return (g.acompte ? 'acompte '+ACOMPTE+' %, ' : '')+libelle(g)+' du '+g.date+', '+eur(g.m); }).join(" ; ")+'.</p>'); }
+    else { n.push('<p class="g">Montants versés : '+REGLS.map(function(g){ return libelle(g)+' du '+g.date+', '+eur(g.m); }).join(" ; ")+'.</p>'); }
     n.push('<p class="g">Moyens de paiement acceptés : virement, chèque.</p>');
     n.push('<p class="g">En cas de retard de paiement : pénalités au taux de trois fois le taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de recouvrement.</p>');
     id("notes").innerHTML = n.join("");
@@ -359,7 +370,7 @@
       b.setAttribute("aria-pressed","true");
       // « Facture acquittée » : la même facture, avec le solde reçu par virement.
       REGLS = REGLS.slice(0, 1);
-      if (b.dataset.vue === "acquittee") REGLS.push({ solde: true, moyen: "virement", numero: "", date: "21/09/2026", montant: calcul().reste });
+      if (b.dataset.vue === "acquittee") REGLS.push({ solde: true, moyen: "virement", numero: "", date: "21/09/2026", montant: r2(calcul().ttc - REGLS[0].m) });
       rendre(b.dataset.vue);
       window.scrollTo({top:0});
     };
@@ -367,11 +378,13 @@
   id("acquittee").onclick = function(){
     var c = calcul();
     if (c.net > 0) REGLS.push({ solde: true, moyen: "virement", numero: "", date: "14/09/2026", montant: c.net });
+    // un solde n'est pas un rang du devis : il s'écrit « Acompte » tout court
     else REGLS = REGLS.filter(function(g){ return !g.solde; });
     rendre(VUE);
   };
   id("regl-plus").onclick = function(){
-    REGLS.push({ moyen: "chèque", numero: "", date: "14/09/2026", montant: 0 });
+    var i = REGLS.length;
+    REGLS.push({ moyen: "chèque", numero: "", date: "14/09/2026", montant: TAUX_DEVIS[i] ? null : 0 });
     rendre(VUE);
     var ch = id("regls-lignes").querySelectorAll("input.numero"); ch[ch.length-1].focus();
   };
