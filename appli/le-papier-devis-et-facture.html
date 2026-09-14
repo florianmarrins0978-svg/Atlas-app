@@ -71,9 +71,11 @@
   .feuille th:first-child{width:31%}
   .feuille th:nth-child(2){width:7%}
   .feuille th:nth-child(3){width:9%}
-  .feuille th{text-align:left;font-size:6.6px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gris);
+  .feuille th{text-align:left;font-size:6.3px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);
               padding:0 2px 5px;border-bottom:1px solid var(--encre);white-space:nowrap}
   .feuille th.n,.feuille td.n{text-align:right}
+  .feuille th.c,.feuille td.c{text-align:center}
+  .feuille th.g,.feuille td.g{font-weight:700;color:var(--encre)}
   .feuille td{padding:5px 2px;border-bottom:.6px solid var(--filetDoux);vertical-align:top}
   .feuille td.n{white-space:nowrap}
   .feuille td.total{font-weight:600}
@@ -98,8 +100,11 @@
   .feuille .totaux .r.doux{color:var(--encreDouce);font-size:8.2px}
   .feuille .totaux .r.ttc{margin-top:6px;padding-top:7px;border-top:1.2px solid var(--encre);font:400 13px/1.2 ui-serif,Georgia,serif}
   .feuille .totaux .r.ttc span:last-child{font-weight:700}
-  .feuille .totaux .r.net{margin-top:5px;padding-top:6px;border-top:.6px solid var(--filet);font-weight:700;font-size:10px}
-  .feuille .totaux .r.reste{font-weight:700}
+  .feuille .totaux .r.net{margin-top:5px;padding-top:6px;border-top:.6px solid var(--filet);font:400 13px/1.2 ui-serif,Georgia,serif}
+  .feuille .totaux .r.net span:last-child{font-weight:700}
+  .feuille .totaux .r.reste{font:400 13px/1.2 ui-serif,Georgia,serif;padding-top:5px}
+  .feuille .totaux .r.reste span:last-child{font-weight:700}
+  .feuille .totaux .r.gras{font-weight:700}
   .feuille .tampon{display:inline-block;margin-top:10px;padding:5px 10px 4px;border:1px solid var(--or);border-radius:2px;
                    color:var(--or);font:600 7.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap}
 
@@ -139,7 +144,7 @@
     <h1 id="h1">Le devis</h1>
   </div>
 
-  <div class="champ-titre"><input id="titre-libre" placeholder="Un titre, si vous voulez" aria-label="Titre du document"></div>
+  <div class="champ-titre"><input id="titre-libre" placeholder="Titre (optionnel)" aria-label="Titre du document"></div>
 
   <div class="feuille" id="feuille">
     <div class="haut">
@@ -162,7 +167,7 @@
     </div>
 
     <table>
-      <thead><tr><th>Désignation</th><th class="n">Qté</th><th>Unité</th><th class="n">P.U. HT</th><th class="n">Rem. %</th><th class="n">Total HT</th><th class="n">TVA %</th><th class="n">Total TTC</th></tr></thead>
+      <thead><tr><th>Désignation</th><th class="n">Qté</th><th>Unité</th><th class="n">P.U. HT</th><th class="c">Rem. %</th><th class="n">Total HT</th><th class="c">TVA %</th><th class="n g">Total TTC</th></tr></thead>
       <tbody id="lignes"></tbody>
     </table>
 
@@ -240,25 +245,25 @@
     var tb = id("lignes"); tb.innerHTML = "";
     LIGNES.forEach(function(l){
       var tr = document.createElement("tr");
-      tr.innerHTML = '<td>'+l.lib+(l.detail?'<div class="d">'+l.detail+'</div>':'')+'</td><td class="n">'+qte(l.q)+'</td><td>'+l.u+'</td><td class="n">'+eur(l.pu)+'</td><td class="n">'+(REMISE||"")+'</td><td class="n total">'+eur(l.net)+'</td><td class="n">'+l.tva+'</td><td class="n">'+eur(l.ttc)+'</td>';
+      tr.innerHTML = '<td>'+l.lib+(l.detail?'<div class="d">'+l.detail+'</div>':'')+'</td><td class="n">'+qte(l.q)+'</td><td>'+l.u+'</td><td class="n">'+eur(l.pu)+'</td><td class="c">'+(REMISE||"")+'</td><td class="n">'+eur(l.net)+'</td><td class="c">'+l.tva+'</td><td class="n g">'+eur(l.ttc)+'</td>';
       tb.appendChild(tr);
     });
     id("bases").innerHTML = c.taux.map(function(x){ return '<div class="r"><span>'+eur(x.base)+'</span><span>'+x.t+' %</span><span>'+eur(x.tva)+'</span></div>'; }).join("");
 
     var t = [
-      '<div class="r"><span>Total HT</span><span>'+eur(c.brut)+'</span></div>',
+      '<div class="r gras"><span>Total HT</span><span>'+eur(c.brut)+'</span></div>',
       '<div class="r doux"><span>dont main d’œuvre HT</span><span>'+eur(MO)+'</span></div>',
       '<div class="r or"><span>Remise de '+REMISE+' %</span><span>− '+eur(c.remise)+'</span></div>',
-      '<div class="r"><span>Total HT après remise</span><span>'+eur(c.netHt)+'</span></div>'
+      '<div class="r gras"><span>Total HT après remise</span><span>'+eur(c.netHt)+'</span></div>'
     ];
     c.taux.forEach(function(x){ t.push('<div class="r"><span>TVA '+x.t+' %</span><span>'+eur(x.tva)+'</span></div>'); });
     t.push('<div class="r ttc"><span>Total TTC</span><span>'+eur(c.ttc)+'</span></div>');
     if (!facture) {
       t.push('<div class="r doux"><span>Acompte 30 % à la signature</span><span>'+eur(c.acompte)+'</span></div>');
-      t.push('<div class="r reste"><span>Reste à régler après acompte</span><span>'+eur(c.reste)+'</span></div>');
+      t.push('<div class="r reste"><span>Reste à régler</span><span>'+eur(c.reste)+'</span></div>');
     } else {
-      t.push('<div class="r doux"><span>Acompte 30 %, reçu</span><span>− '+eur(c.acompte)+'</span></div>');
-      if (acquittee) t.push('<div class="r doux"><span>Virement du 21/09, reçu</span><span>− '+eur(c.reste)+'</span></div>');
+      t.push('<div class="r doux"><span>Acompte 30 %</span><span>− '+eur(c.acompte)+'</span></div>');
+      if (acquittee) t.push('<div class="r doux"><span>Virement du 21/09</span><span>− '+eur(c.reste)+'</span></div>');
       t.push('<div class="r net"><span>Net à payer</span><span>'+eur(acquittee ? 0 : c.reste)+'</span></div>');
       if (acquittee) t.push('<span class="tampon">Acquittée le 21/09/2026</span>');
     }
