@@ -9,6 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LES DEUX GARDE-FOUS NE CONNAISSENT PAS LES DOSSIERS DE SESSION — 14 septembre 2026
+
+Payé ce soir. Une batterie tenait le dossier principal ; il a demandé *« prend
+un autre dossier et un autre port ! »*. Depuis une session ouverte dans le
+dossier principal, `atlas-app-s2` était libre — et pourtant :
+
+| | |
+|---|---|
+| `garde-batterie.mjs` | lit le verrou de `CLAUDE_PROJECT_DIR`, donc refuse d'écrire **dans `s2`** pendant qu'une batterie mesure **dans le principal** |
+| `garde-fusion-main.mjs` | calcule le niveau et lit le verdict de `CLAUDE_PROJECT_DIR` : une planche de niveau 1 poussée depuis `s2` a été refusée au nom du lot de niveau 3 **d'une autre session**, non commité dans le principal |
+
+Joué sur `s2` lui-même (`CLAUDE_PROJECT_DIR=…-s2`), le second rend 0 : le lot
+est bien de niveau 1. La planche est donc restée sur sa branche, et c'est lui
+qui a dû pousser — un garde-fou qui refuse à tort s'apprend à être contourné.
+
+**À faire :** quand la commande porte un `-C <dossier>` ou un `cd <dossier>`
+qui est un `git worktree` du même dépôt, mesurer CE dossier-là — son verrou,
+son diff, son verdict. Tant que ce n'est pas fait, la seule voie propre est
+d'ouvrir la session DANS le dossier (`npm run session 2`), jamais d'y aller
+depuis le principal.
+
 ## ⏳ UNE PLANCHE À REGARDER — LE PDF SANS LES PRIX AU PLANNING
 
 **Sa question du 14 septembre 2026, capture à l'appui :** *« maintenant qu'on a les
