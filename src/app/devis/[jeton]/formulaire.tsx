@@ -140,8 +140,13 @@ export default function FormulaireReponse({
     );
   }
 
+  // **4 px entre les blocs, et non 6 — 14 septembre 2026.** Cette page n'a plus
+  // un pixel de marge depuis qu'il a fait reprendre les espacements le
+  // 4 septembre : au pire cas — une date dans les quatorze jours, donc la case
+  // de rétractation dépliée — elle repassait au-dessus de l'écran. Deux pixels
+  // par couture, et rien d'autre ne bouge.
   return (
-    <form action={action} className="flex flex-col gap-1.5">
+    <form action={action} className="flex flex-col gap-1">
       <input type="hidden" name="jeton" value={envoi.jeton} />
 
       <section className="rounded-2xl p-2.5"

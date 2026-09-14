@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import type { Page, Locator } from "playwright";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
+import { TEXTE_DE_LESSAI } from "../src/server/ai/providers/transcription/essai";
 
 const BASE = ADRESSE;
 
@@ -65,41 +66,40 @@ async function main() {
   await page.click("text=Lancer la transcription");
   await page.waitForSelector("text=Transcription disponible", { timeout: 10000 });
 
-  // --- Non-régression : un texte de remplacement n'est JAMAIS présenté comme
-  //     une transcription ---
+  // --- SES MOTS SONT LÀ, ET L'ÉCRAN LES MONTRE ---
   //
-  // Cette suite exigeait auparavant l'inverse : elle vérifiait que le brouillon
-  // reprenait bien le texte « simulée ». Elle consacrait donc le défaut — le
-  // devis du patron s'est rempli de deux prestations qu'il n'avait jamais
-  // dictées, et tous les voyants étaient au vert.
+  // ═══════════════════════════════════════════════════════════════════════
+  // **CETTE SUITE RÉCLAMAIT « n'a pas été transcrite » — et elle rougissait
+  // depuis le 9 septembre 2026 sur du code juste.**
+  //
+  // Ce jour-là, le fournisseur des suites est passé de `dev` — qui MARQUE son
+  // texte de remplacement — à `essai`, qui rend un texte ordinaire
+  // (`providers/transcription/essai.ts`). C'était le but : avec `dev`, la
+  // chaîne dictée → devis s'arrêtait chez toutes les suites sur « aucun
+  // prestataire n'est raccordé », et quatorze d'entre elles rougissaient.
+  //
+  // **La règle que ces trois assertions défendaient n'est pas perdue** — elle
+  // est tenue là où elle ne dépend d'aucun fournisseur :
+  // `test-etat-transcription.ts` exige `non_transcrite` sur un texte marqué.
+  // La redemander ICI revenait à réclamer le fournisseur qu'on a remplacé
+  // (`CLAUDE.md` §5 bis).
+  //
+  // Ce que cette suite éprouve désormais est ce qu'elle seule peut éprouver :
+  // la CHAÎNE ENTIÈRE, du micro aux prestations en base.
+  // ═══════════════════════════════════════════════════════════════════════
   await page.goto(`${chantierUrl}/transcription`, { waitUntil: "networkidle" });
   assert.ok(
-    await page.locator("text=/n'a pas été transcrite/").first().isVisible(),
-    "L'écran doit dire que la dictée n'a pas été transcrite, jamais afficher le texte de remplacement comme une transcription"
+    await page.locator(`text=${TEXTE_DE_LESSAI.slice(0, 40)}`).first().isVisible(),
+    "L'écran de transcription ne montre pas les mots rendus par le fournisseur"
   );
 
-  // --- L'écran des informations ne propose RIEN, et dit pourquoi ---
+  // --- Le patron corrige ce qu'il a dit : tout le reste s'enchaîne ---
   //
-  // Il renvoyait auparavant vers « Aller à la note vocale » — c'est-à-dire
-  // refaire ce que le patron venait de faire, en lui laissant croire qu'il s'y
-  // était mal pris. C'est la transcription qui manque, pas la dictée.
-  await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
-  assert.ok(
-    await page.locator("text=/n'a pas été transcrite/").first().isVisible(),
-    "L'écran doit expliquer que la dictée n'a pas été transcrite"
-  );
-  assert.equal(
-    await page.locator('button:has-text("Confirmer et ajouter au chantier")').count(),
-    0,
-    "Aucun brouillon ne doit être proposé à partir d'un texte de remplacement"
-  );
-  assert.ok(
-    await page.locator("text=Écrire ce que vous avez dit").isVisible(),
-    "L'écran doit proposer la seule action utile : écrire ce qui a été dit"
-  );
-
-  // --- Le patron écrit ce qu'il a dit : tout le reste s'enchaîne ---
-  await page.goto(`${chantierUrl}/transcription`, { waitUntil: "networkidle" });
+  // **Le geste passe par la porte fermée**, celle qu'il voit lui : une
+  // transcription lue se corrige derrière « Corriger le texte à la main ».
+  // Remplir le champ sans l'ouvrir éprouverait un écran que personne n'a
+  // (`CLAUDE.md` §5 quater).
+  await page.getByRole("button", { name: "Corriger le texte à la main" }).click();
   await page.fill("#texte-dicte", DICTEE_ECRITE);
   await page.click('button:has-text("Enregistrer le texte")');
   await page.waitForSelector("text=Texte enregistré", { timeout: 10000 });
@@ -113,6 +113,16 @@ async function main() {
     await page.getByLabel("Prestations 1", { exact: true }).inputValue(),
     /[Éé]lagage/,
     "Le brouillon doit reprendre ce que le patron a réellement écrit"
+  );
+  // **ET IL NE DOIT RIEN GARDER DU TEXTE D'AVANT.** L'assertion du dessus
+  // passerait toute seule : le fournisseur d'essai parle lui aussi d'élagage.
+  // « Thuyas » n'est dit que par lui — le trouver ici voudrait dire que la
+  // correction du patron n'a pas pris, et que son devis se remplit de ce
+  // qu'il n'a jamais dicté.
+  assert.doesNotMatch(
+    await page.locator("body").innerText(),
+    /thuyas/i,
+    "le brouillon parle encore du texte transcrit, alors que le patron l'a corrigé"
   );
 
   assert.equal(

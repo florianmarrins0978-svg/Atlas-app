@@ -64,11 +64,20 @@ export default function PortesDuChantier({
         {chantier.nom}
       </p>
 
+      {/* **UNE PORTE NE REFERME PAS LA FEUILLE — 14 septembre 2026.** Elle
+          portait un `onClick={onFermer}` : partir vers le devis retirait donc
+          `?chantier=` de l'adresse une fraction de seconde AVANT de naviguer,
+          et l'entrée d'historique laissée derrière ne portait plus la feuille.
+          La flèche du devis ramenait alors sur le mois courant — sa panne du
+          7 septembre, refabriquée par l'autre bout.
+
+          Il n'y avait rien à refermer : suivre la porte quitte l'écran, et la
+          feuille s'en va avec lui. `onFermer` reste ce qu'il est — le geste de
+          la poignée et du fond, qui eux restent sur le planning. */}
       {portes.map((porte) => (
         <Link
           key={porte.cle}
           href={porte.href}
-          onClick={onFermer}
           data-atlas={`porte-${porte.cle}`}
           className={
             porte.geste

@@ -165,7 +165,17 @@ async function main() {
       "la ligne ramène à la fiche : il devra refaire les étapes une à une"
     );
 
-    await lien.click();
+    // **ON APPUIE SUR LE NOM, comme lui.** Un appui au centre de la ligne
+    // tombait sur « Adresse non renseignée » — une cible de 44 px posée DANS
+    // l'ancre, qui mène à la fiche client depuis sa demande du 17 août 2026
+    // (*« lorsque s'affiche Adresse non renseignée, je puisse cliquer
+    // dessus »*), agrandie le 6 septembre. Ce chantier d'essai n'a pas
+    // d'adresse : la mention est donc là, et le contrôle appuyait dessus sans
+    // le savoir — puis accusait la reprise de mener ailleurs.
+    //
+    // Le geste du patron qui reprend son chantier, c'est le NOM
+    // (`CLAUDE.md` §5 quater).
+    await lien.locator("h2").click();
     await page.waitForURL(new RegExp(`/chantiers/${id}/devis-complet`), { timeout: 20000 });
   });
 

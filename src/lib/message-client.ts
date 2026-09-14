@@ -222,10 +222,15 @@ export function refusDuMessage(modele: string): string | null {
  * (`MESSAGES_PAR_DEFAUT`), où elle se modifie. Ne reste que ce qui ne peut pas
  * être écrit d'avance parce qu'il change d'un envoi à l'autre.
  *
- * **« compte rendu », et pas « fiche client ».** C'est le nom que le dépôt
- * emploie partout (`composerMessageEntretien`, l'écran de la fiche). Le patron
- * l'appelle « fiche client » ; renommer se décide et se fait d'un bloc, ça ne
- * se glisse pas dans un mot rendu au client.
+ * **« retour d'intervention », et c'est SON mot.** C'est celui du produit
+ * entier — l'écran des Terminés, le planning, la fiche : *« ils se retrouveront
+ * dans la catégorie retour d'intervention »*. Le mot rendu au client est donc
+ * celui qu'il emploie lui-même, et renommer se déciderait d'un bloc plutôt que
+ * de se glisser ici.
+ *
+ * *(Ce commentaire annonçait « compte rendu » alors que la ligne rend autre
+ * chose depuis le 9 septembre 2026. Une documentation qui contredit son code
+ * est pire qu'absente : on s'y fie encore — `CLAUDE.md` §1.)*
  */
 export function motDuDocument(genre: GenreDocument): string {
   if (genre === "devis") return "devis";

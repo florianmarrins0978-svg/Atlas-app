@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { normaliserPourRecherche } from "../src/lib/recherche-client";
 import { lancerNavigateur, DELAI_PAR_DEFAUT_MS } from "./e2e-browser";
 import type { Page } from "playwright";
 
@@ -184,8 +185,20 @@ async function principal() {
       `la liste n'a pas été réduite (${apres.length} sur ${avant.length}) : la frappe n'arrive pas jusqu'à elle`
     );
     for (const n of apres) {
+      // **LA RÈGLE DU PRODUIT, PAS UNE SECONDE — 14 septembre 2026.**
+      //
+      // Ce contrôle comparait la frappe BRUTE au nom brut. Or la recherche
+      // découpe en mots et normalise (`recherche-client.ts`) : « m. p » y vaut
+      // « m » et « p », que « Mme Costa empile » contient tous les deux — à
+      // juste titre. Sous une batterie entière, où d'autres suites ont créé des
+      // clients, ce cas de figure finit toujours par sortir, et la suite
+      // accusait la recherche d'un défaut qu'elle n'avait pas.
+      //
+      // On interroge donc la fonction qui décide (`CLAUDE.md` §3).
+      const nom = normaliserPourRecherche(n);
+      const attendus = normaliserPourRecherche(morceau).split(" ").filter(Boolean);
       assert.ok(
-        n.toLowerCase().includes(morceau),
+        attendus.every((mot) => nom.includes(mot)),
         `« ${n} » ne contient pas « ${morceau} » : la recherche rend n'importe quoi`
       );
     }
@@ -258,12 +271,27 @@ async function principal() {
     await taperEtAttendre(page, "");
     const situations = page.locator('[data-atlas="situation-client"]');
     const combien = await situations.count();
-    assert.equal(
-      combien,
-      (await nomsAffiches(page)).length,
-      `${combien} lignes de situation pour ${(await nomsAffiches(page)).length} noms : ` +
-        "un client sans rien sous son nom est indistinguable de son homonyme"
+    const noms = (await nomsAffiches(page)).length;
+    // **UNE LIGNE PAR CLIENT QUI A QUELQUE CHOSE À DIRE — pas une par nom.**
+    //
+    // Ce cas exigeait autant de lignes que de noms, et il rougissait sur un
+    // retrait DEMANDÉ : un client sans adresse et sans document laissait sous
+    // son nom une seconde ligne VIDE — dix-huit pixels de trou, vus à la
+    // capture le 9 septembre 2026. La ligne ne se rend donc plus quand elle
+    // n'aurait rien à porter (`ListeClients`), et réclamer l'inverse ici
+    // rendrait cet écran impossible à corriger (`CLAUDE.md` §5 bis).
+    //
+    // Ce qui reste vrai, et c'est tout le sujet : **il y en a**, elles se
+    // lisent, et aucune n'est vide — sans quoi quatre Martins se ressemblent.
+    assert.ok(
+      combien > 0 && combien <= noms,
+      `${combien} lignes de situation pour ${noms} noms : un client sans rien sous son nom ` +
+        "est indistinguable de son homonyme"
     );
+    const vides = await situations.evaluateAll(
+      (l) => l.filter((e) => ((e as HTMLElement).innerText ?? "").trim() === "").length
+    );
+    assert.equal(vides, 0, `${vides} lignes de situation sont VIDES : c'est le trou de dix-huit pixels`);
     // **Refuser de conclure sur une boîte de zéro pixel** (`CLAUDE.md` §5) :
     // une feuille de style non appliquée rendrait 0, et le vert ne prouverait
     // rien.

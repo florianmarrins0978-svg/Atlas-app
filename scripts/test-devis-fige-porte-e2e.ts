@@ -114,7 +114,13 @@ async function main() {
 
     // ── Et la porte s'ouvre pour de bon ──────────────────────────────────
     await porte.click();
-    await page.waitForURL(`${BASE}/chantiers/${chantierId}/devis-complet`, { timeout: 30_000 });
+    // **La porte mène à `/export`, et le contrôle l'affirmait douze lignes plus
+    // haut — corrigé le 14 septembre 2026.** Il attendait ensuite l'arrivée sur
+    // `/devis-complet` : il se contredisait lui-même, et attendait trente
+    // secondes une adresse où le lien qu'il venait de vérifier ne mène pas.
+    // Pour un devis PARTI, l'écran est `/export` ; `/devis-complet` est celui
+    // d'avant l'envoi (`CHANGELOG.md`, « /export une fois parti »).
+    await page.waitForURL(`${BASE}/chantiers/${chantierId}/export`, { timeout: 30_000 });
     console.log("  ✓ elle s'ouvre : on arrive sur l'écran Devis");
 
     // ── Le devis PAS ENCORE parti : rien de tout cela ────────────────────

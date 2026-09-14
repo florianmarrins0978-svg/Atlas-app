@@ -123,7 +123,15 @@ async function main() {
   // le contrôle qui mesure zéro ne mesure rien).
   await cas("la rubrique est SOUS LE TITRE, avant le jour du passage", async () => {
     await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
-    const rubrique = page.locator('a[href="/paysage/fiche/composer"]').first();
+    // **SON REPÈRE, PAS SON ADRESSE — 14 septembre 2026.**
+    //
+    // `a[href="/paysage/fiche/composer"]` attrapait la FLÈCHE DE RETOUR : elle
+    // mène là où l'on vient, et l'on vient du composeur (le cas d'avant y pose
+    // le modèle). Depuis que la flèche lit le journal de navigation
+    // (9 septembre), cette adresse n'appartient plus à la carte. Le contrôle
+    // mesurait donc un rond de 40 px et accusait la carte de ne pas tenir sous
+    // le pouce — alors qu'elle porte `min-h-[44px]` et les tient.
+    const rubrique = page.locator('[data-atlas="carte-composer-ma-fiche"]');
     await rubrique.waitFor({ timeout: 20_000 });
 
     const boite = await rubrique.boundingBox();
@@ -148,14 +156,21 @@ async function main() {
     mkdirSync(CAPTURES, { recursive: true });
     await page.screenshot({ path: `${CAPTURES}/fiche-chantier-rubrique-en-tete.png` });
 
-    // On revient d'où l'on vient : les cas suivants composent la fiche, et
-    // laisser la suite sur un autre écran les ferait tous rougir à la file —
-    // sept faux coupables pour un seul oubli de navigation.
-    await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
-    await page.waitForSelector("[data-prestation]", { timeout: 30_000 });
   });
 
+  // **CHAQUE CAS OUVRE L'ÉCRAN DONT IL A BESOIN, et c'est payé.** Ce retour au
+  // composeur vivait à la FIN du cas précédent — donc après ses assertions.
+  // L'une d'elles est tombée, et les sept cas suivants ont rougi sur un écran
+  // où ils n'avaient rien à chercher : sept faux coupables, exactement ce que
+  // le commentaire d'alors disait vouloir éviter. Un montage ne se place pas
+  // derrière une assertion qui peut ne jamais l'atteindre.
+  async function ouvrirLeComposeur() {
+    await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
+    await page.waitForSelector("[data-prestation]", { timeout: 30_000 });
+  }
+
   await cas("LE RETRAIT SE DÉFAIT — et rien n'est écrit tant qu'on peut annuler", async () => {
+    await ouvrirLeComposeur();
     // **Le point le plus coûteux de cet écran.** Une croix nue sur une liste
     // composée à la main est le geste qu'il regretterait le plus.
     const avant = await page.locator("[data-prestation]").count();

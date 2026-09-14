@@ -34,6 +34,20 @@ export type DernierVerdict = {
   vert: boolean;
   /** L'arbre sur lequel elle a mesuré. */
   empreinte: Empreinte;
+  /**
+   * QUEL contrôle a rendu ce verdict — 3 la batterie complète, 2
+   * `verifier:avant-fusion`.
+   *
+   * **Ajouté le 14 septembre 2026, pour `garde-fusion-main.mjs`.** Il refuse
+   * une poussée vers `main` dont le contrôle n'atteint pas le niveau que le lot
+   * exige (`.claude/rules/testing.md`) : sans ce champ, il lui faudrait deviner
+   * d'après la phrase du verdict, ou tenir un second témoin à côté — c'est-à-dire
+   * deux façons de dire la même chose (`CLAUDE.md` §3).
+   *
+   * Absent sur une trace d'avant ce champ : le garde-fou la lit alors comme un
+   * niveau 0, donc insuffisante. On remesure, ce qui est le repli sûr.
+   */
+  niveau?: 2 | 3;
 };
 
 const NOM = ".atlas-dernier-verdict.json";
@@ -50,6 +64,7 @@ export function lireDernierVerdict(racine: string): DernierVerdict | null {
       quand?: unknown;
       verdict?: unknown;
       vert?: unknown;
+      niveau?: unknown;
       empreinte?: unknown;
     };
     if (typeof brut.quand !== "number" || typeof brut.verdict !== "string") return null;
@@ -58,6 +73,7 @@ export function lireDernierVerdict(racine: string): DernierVerdict | null {
       quand: brut.quand,
       verdict: brut.verdict,
       vert: brut.vert === true,
+      niveau: brut.niveau === 3 ? 3 : brut.niveau === 2 ? 2 : undefined,
       empreinte: new Map(brut.empreinte as [string, { date: number; empreinte: string }][]),
     };
   } catch {
@@ -71,7 +87,7 @@ export function ecrireDernierVerdict(racine: string, v: DernierVerdict): void {
   try {
     writeFileSync(
       cheminDuVerdict(racine),
-      JSON.stringify({ quand: v.quand, verdict: v.verdict, vert: v.vert, empreinte: [...v.empreinte] })
+      JSON.stringify({ quand: v.quand, verdict: v.verdict, vert: v.vert, niveau: v.niveau, empreinte: [...v.empreinte] })
     );
   } catch {
     // Ne pas pouvoir noter le verdict ne doit pas faire échouer une batterie

@@ -124,20 +124,26 @@ async function main() {
 
   // Et le chantier se crée quand même, avec une adresse que la base ignore —
   // un chemin, un lieu-dit, « derrière la scierie ». C'est là qu'il travaille.
-  await creerPuisFiche(page);
-  // **Généreux, et pour une raison précise.** Cette suite passe la PREMIÈRE de
-  // la batterie (ordre alphabétique) : elle paie donc la toute première
-  // compilation de la fiche de chantier, sur un serveur de développement qui
-  // n'a encore rien en cache. Quinze secondes suffisaient seule et pas en
-  // batterie — l'échec accusait alors l'adresse, qui n'y était pour rien.
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 60_000 });
-  // La fiche affiche « CHARGEMENT… » le temps de se composer : lire l'écran à
-  // cet instant reviendrait à accuser le produit d'avoir perdu l'adresse.
+  // **UN CHANTIER NEUF VA AU DEVIS, et c'est l'écran des coordonnées qui porte
+  // l'adresse — corrigé le 14 septembre 2026.**
+  //
+  // Ce contrôle attendait `/chantiers/<id>` tout court, puis lisait l'adresse
+  // sur cette fiche. Or elle a été RETIRÉE le 4 septembre (`ARCHITECTURE.md`
+  // §254) : depuis, la création mène toujours au devis. Le contrôle attendait
+  // donc un écran que le patron a fait enlever, et rougissait sur du code juste
+  // — exactement ce que `CLAUDE.md` §5 bis interdit. `creerPuisFiche` avait
+  // déjà été adapté ; cette suite refaisait l'ancienne attente à la main.
+  //
+  // **Ce qu'on éprouve n'a pas changé d'un pouce** : l'adresse libre tapée à la
+  // création est-elle conservée ? On la relit là où elle se saisit et se
+  // modifie, plutôt que sur un écran qui la citait en passant — une assertion
+  // qui vise la donnée survit au prochain remaniement d'écran.
+  const idCree = await creerPuisFiche(page);
+  await page.goto(`${BASE}/chantiers/${idCree}/coordonnees`, { waitUntil: "networkidle" });
   await page.waitForFunction(() => !document.body.innerText.includes("CHARGEMENT"), null, { timeout: 40_000 });
 
-  const fiche = await page.locator("body").innerText();
   assert.match(
-    fiche,
+    await page.getByRole("combobox").first().inputValue(),
     /Scierie/i,
     "L'adresse libre n'a pas été conservée : la liste aurait alors enfermé le patron dans ce que la base connaît."
   );
@@ -160,18 +166,13 @@ async function main() {
   // On rouvre la fiche d'un chantier qui porte déjà une adresse — le chemin du
   // retour depuis le devis (`src/lib/retour-du-devis.ts`).
   //
-  // **L'identifiant se reconnaît à sa FORME, pas à sa place dans la liste.**
-  // Le premier lien vers `/chantiers/` de l'accueil est « nouveau chantier » :
-  // le prendre menait à `/chantiers/nouveau/coordonnees`, une adresse qui
-  // n'existe pas — et le contrôle accusait alors le champ d'avoir disparu.
-  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
-  const liens = await page.locator('a[href^="/chantiers/"]').evaluateAll((l) =>
-    l.map((a) => a.getAttribute("href") ?? "")
-  );
-  const UUID = /^\/chantiers\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
-  const id = liens.map((h) => h.match(UUID)?.[1]).find(Boolean);
-  assert.ok(id, "aucun chantier sur l'accueil : la reprise n'a rien à rouvrir");
-  await page.goto(`${BASE}/chantiers/${id}/coordonnees`, { waitUntil: "networkidle" });
+  // **C'est le chantier qu'on vient de créer, et non un lien cherché sur
+  // l'accueil — corrigé le 14 septembre 2026.** Le contrôle y cherchait une
+  // adresse de la forme `/chantiers/<uuid>` : celle de la fiche RETIRÉE le
+  // 4 septembre. Il n'en trouvait donc plus aucune et accusait la reprise de
+  // n'avoir rien à rouvrir, sur du code juste. Le chantier créé douze lignes
+  // plus haut porte exactement l'adresse qu'il faut : il n'y a rien à chercher.
+  await page.goto(`${BASE}/chantiers/${idCree}/coordonnees`, { waitUntil: "networkidle" });
   await page.waitForTimeout(900);
 
   const champReprise = page.getByRole("combobox").first();
