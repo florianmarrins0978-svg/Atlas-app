@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resserrer deux écrans</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --trait:rgba(28,28,26,.12); --or:#B98B47; --alerte:#8f3a2e;
+  }
+  body.nuit{
+    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
+    --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b;
+    --etabli-or:#b98b47;
+    --plage:#1a1d19; --encre:#e9e8de; --gris:#84887b;
+    --trait:rgba(233,232,222,.12); --alerte:#d98b7d;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  .page{max-width:1000px;margin:0 auto;padding:30px 20px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
+            color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:640px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 4px}
+  h2{font:600 22px/1.25 var(--serif);margin:44px 0 4px}
+  .dit{color:var(--etabli-gris);font-size:13.5px;line-height:1.6;margin:0 0 18px;max-width:640px}
+  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+           letter-spacing:.02em;padding:11px 17px;border-radius:999px;margin:18px 0 0;
+           background:var(--etabli-carte);color:var(--etabli-doux);
+           box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+  .col{flex:0 0 auto;max-width:100%}
+  /* **Le téléphone se met À L'ÉCHELLE, il ne se rétrécit pas.** Les blocs sont
+     posés au pixel près : réduire la largeur sans réduire la hauteur mentirait
+     sur la seule chose que cette planche montre — ce qui passe sous le pli. */
+  .cadre{overflow:hidden}
+  /* `max-width:100%` clamperait la largeur AVANT la mise à l'échelle, et le
+     cadre se règle sur elle : le téléphone garde donc sa largeur vraie. */
+  .cadre > .tel{transform-origin:top left;max-width:none}
+  .nom{font:600 15px/1.3 var(--sans);margin:0 0 3px;display:flex;align-items:center;gap:9px}
+  .etiq{font:700 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+        padding:4px 7px;border-radius:999px;background:var(--etabli-or);color:var(--etabli-carte)}
+  .etiq.rouge{background:var(--alerte)}
+  .mesure{color:var(--etabli-gris);font-size:12.5px;margin:0 0 11px}
+
+  /* Le téléphone, à l'échelle 1 : 375 px de large, 667 de haut. */
+  .tel{position:relative;width:375px;max-width:100%;border-radius:26px;overflow:hidden;
+       background:var(--plage);box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .tel.large{width:390px}
+  .ecran{position:relative;overflow:hidden}
+  .bloc{background:var(--etabli-carte);box-shadow:inset 0 0 0 1px var(--trait);
+        display:flex;align-items:center;padding:0 12px;
+        font:500 12px/1.2 var(--sans);color:var(--etabli-doux);border-radius:4px}
+  .bloc.titre{font:600 19px/1 var(--serif);color:var(--etabli-encre);background:transparent;box-shadow:none}
+  .barrebas{position:absolute;left:0;right:0;height:48px;display:flex;align-items:center;
+            justify-content:center;font:700 9.5px/1 var(--sans);letter-spacing:.1em;
+            text-transform:uppercase;color:var(--etabli-gris);
+            background:var(--plage);box-shadow:inset 0 1px 0 var(--trait)}
+  .pli{position:absolute;left:0;right:0;height:0;border-top:2px dashed var(--alerte)}
+  .pli span{position:absolute;right:6px;top:3px;font:700 9.5px/1 var(--sans);
+            letter-spacing:.08em;text-transform:uppercase;color:var(--alerte)}
+  .deborde{background:rgba(143,58,46,.14)}
+
+  table{border-collapse:collapse;margin:16px 0 0;font-size:13.5px}
+  th,td{text-align:left;padding:7px 16px 7px 0;border-bottom:1px solid var(--etabli-trait)}
+  th{font:700 10px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--etabli-gris)}
+  .note{margin:34px 0 0;padding:15px 17px;border-radius:4px;background:var(--etabli-carte);
+        box-shadow:inset 0 0 0 1px var(--etabli-trait);max-width:640px;
+        font-size:13.5px;line-height:1.65;color:var(--etabli-doux)}
+  .note .t{display:block;font:700 10px/1 var(--sans);letter-spacing:.1em;
+           text-transform:uppercase;color:var(--etabli-or);margin:0 0 7px}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">Ce que je changerais</p>
+  <h1>Resserrer deux écrans</h1>
+  <p class="chapeau">
+    Deux écrans dépassent du téléphone. Aucun mot ne part, aucune ligne ne bouge :
+    seul l’espace <b>entre</b> les blocs se resserre de 2 px.
+  </p>
+  <button class="bascule" id="jourNuit" aria-pressed="false">Voir en mode nuit</button>
+
+  <h2>Votre fiche client</h2>
+  <p class="dit">Sur un petit iPhone (4,7 pouces), elle dépasse de 17 px : il faut faire défiler.
+     Sur le vôtre, elle tient déjà.</p>
+  <div class="rangee" id="fiche"></div>
+
+  <h2>La page de votre client</h2>
+  <p class="dit">Au pire cas — quand la date qu’il choisit tombe dans les 14 jours —
+     elle dépasse de 2 px.</p>
+  <div class="rangee" id="client"></div>
+
+  <table id="chiffres">
+    <tr><th>Écran</th><th>Aujourd’hui</th><th>Resserré</th><th>Place</th></tr>
+  </table>
+
+  <div class="note"><span class="t">D’où viennent ces chiffres</span>
+    Ils sont <b>mesurés</b> dans l’application, pas estimés : chaque bloc dessiné
+    ci-dessus a la hauteur qu’il a chez vous. Les blocs sont rendus en gris —
+    c’est leur <b>place</b> qui se juge ici, pas leur contenu.
+  </div>
+</div>
+<script>
+  document.getElementById("jourNuit").addEventListener("click", (e) => {
+    const on = document.body.classList.toggle("nuit");
+    e.currentTarget.setAttribute("aria-pressed", String(on));
+    e.currentTarget.textContent = on ? "Voir en plein jour" : "Voir en mode nuit";
+  });
+
+  // Les hauteurs relevées dans l'application, bloc par bloc.
+  const FICHE = {
+    nom: "Fiche client", largeur: 375, hauteur: 667, barre: 48, titre: 44, haut: 7, bas: 8,
+    ecartAvantLePremier: true,
+    blocs: [
+      [38, "Mr / Mme"], [15, "Nom, téléphone"], [46, "Téléphone"], [67, "E-mail"],
+      [67, "Chantier · + Client"], [43, "Envoi — SMS / E-mail"], [96, "Photos"],
+      [117, "Le micro"], [52, "Je rédige à la main"],
+    ],
+  };
+  const CLIENT = {
+    nom: "Page du client", largeur: 390, hauteur: 664, barre: 0, titre: 242, haut: 0, bas: 0,
+    ecartAvantLePremier: false,
+    blocs: [[159, "Quelle date vous arrange ?"], [109, "Délai de rétractation"], [144, "Vos trois réponses"]],
+  };
+
+  /** La place qui reste, une fois la barre du bas retirée. */
+  const placeDe = (ecran) => ecran.hauteur - ecran.barre;
+
+  /**
+   * La hauteur du contenu à cet écartement — UNE seule fois, pour le dessin
+   * comme pour le tableau. Deux calculs finiraient par se contredire, et c'est
+   * le chiffre du tableau qu'on recopierait.
+   */
+  function hauteurDe(ecran, ecart) {
+    const gaps = ecran.blocs.length - (ecran.ecartAvantLePremier ? 0 : 1);
+    return ecran.titre + ecran.haut + ecran.bas
+      + ecran.blocs.reduce((s, [h]) => s + h, 0) + ecart * gaps;
+  }
+
+  function dessiner(ou, ecran, ecart, etiquette, rouge) {
+    const place = placeDe(ecran);
+    const total = hauteurDe(ecran, ecart);
+
+    const col = document.createElement("div");
+    col.className = "col";
+    col.innerHTML =
+      '<p class="nom">' + etiquette +
+      (rouge ? ' <span class="etiq rouge">dépasse de ' + (total - place) + ' px</span>'
+             : ' <span class="etiq">tient</span>') + '</p>' +
+      '<p class="mesure">' + total + ' px de contenu pour ' + place + ' px de place</p>';
+
+    const tel = document.createElement("div");
+    tel.className = "tel" + (ecran.largeur === 390 ? " large" : "");
+    tel.style.height = ecran.hauteur + "px";
+
+    const ec = document.createElement("div");
+    ec.className = "ecran";
+    ec.style.height = ecran.hauteur + "px";
+    ec.style.padding = "0 18px";
+
+    let y = ecran.haut;
+    const poser = (h, texte, classe) => {
+      const d = document.createElement("div");
+      d.className = "bloc " + (classe || "");
+      d.style.position = "absolute";
+      d.style.left = "18px";
+      d.style.right = "18px";
+      d.style.top = y + "px";
+      d.style.height = h + "px";
+      d.textContent = texte;
+      if (y + h > place) d.classList.add("deborde");
+      ec.appendChild(d);
+      y += h + ecart;
+    };
+    poser(ecran.titre, ecran.nom === "Page du client" ? "Votre devis, son prix, les conditions" : "Fiche client", "titre");
+    if (!ecran.ecartAvantLePremier) y -= ecart;
+    ecran.blocs.forEach(([h, t]) => poser(h, t));
+
+    const pli = document.createElement("div");
+    pli.className = "pli";
+    pli.style.top = (place - 2) + "px";
+    pli.innerHTML = "<span>bas de l’écran</span>";
+    ec.appendChild(pli);
+
+    if (ecran.barre) {
+      const b = document.createElement("div");
+      b.className = "barrebas";
+      b.style.top = place + "px";
+      b.textContent = "Chantiers · Planning · Terminés";
+      ec.appendChild(b);
+    }
+
+    tel.appendChild(ec);
+    const cadre = document.createElement("div");
+    cadre.className = "cadre";
+    cadre.dataset.largeur = String(ecran.largeur);
+    cadre.dataset.hauteur = String(ecran.hauteur);
+    cadre.appendChild(tel);
+    col.appendChild(cadre);
+    ou.appendChild(col);
+  }
+
+  const CAS = [
+    { ou: "fiche", ecran: FICHE, avant: 4, apres: 2 },
+    { ou: "client", ecran: CLIENT, avant: 6, apres: 4 },
+  ];
+  for (const c of CAS) {
+    dessiner(document.getElementById(c.ou), c.ecran, c.avant, "Aujourd’hui", true);
+    dessiner(document.getElementById(c.ou), c.ecran, c.apres, "Resserré", false);
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      "<td>" + c.ecran.nom + " (" + c.ecran.largeur + " × " + c.ecran.hauteur + ")</td>" +
+      "<td>" + hauteurDe(c.ecran, c.avant) + " px</td>" +
+      "<td>" + hauteurDe(c.ecran, c.apres) + " px</td>" +
+      "<td>" + placeDe(c.ecran) + " px</td>";
+    document.getElementById("chiffres").appendChild(tr);
+  }
+
+  /** Rien ne déborde sur la largeur de son téléphone — sa règle, mesurée ici. */
+  function ajuster() {
+    // La rangée, et non la page : `clientWidth` d'un élément COMPREND ses
+    // marges intérieures — la page en a 20 de chaque côté, et l'on croyait
+    // avoir quarante pixels qu'on n'avait pas.
+    const rangee = document.querySelector(".rangee");
+    const dispo = rangee ? rangee.clientWidth : document.documentElement.clientWidth;
+    for (const cadre of document.querySelectorAll(".cadre")) {
+      const l = Number(cadre.dataset.largeur), h = Number(cadre.dataset.hauteur);
+      const ech = Math.min(1, dispo / l);
+      cadre.firstElementChild.style.transform = "scale(" + ech + ")";
+      cadre.style.height = Math.round(h * ech) + "px";
+      cadre.style.width = Math.round(l * ech) + "px";
+    }
+  }
+  ajuster();
+  window.addEventListener("resize", ajuster);
+</script>
+</body>
+</html>
