@@ -88,10 +88,16 @@
   .net b{font-size:17px;font-weight:600}
   .net .m{font:600 20px/1 ui-serif,Georgia,serif}
   .regl{display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:7px 0;font-size:14px;color:var(--ink);border-bottom:1px solid var(--lineSoft)}
-  .regl small{display:block;color:var(--muted);font-size:12px}
+  .regl .quoi{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .regl .quoi input{border:0;background:transparent;padding:0;font-size:14px;color:var(--ink);outline:none;border-radius:4px;width:100%}
+  .regl .quoi input.date{font-size:12.5px;color:var(--muted);width:96px}
+  .regl .quoi input::placeholder{color:var(--muted)}
   .regl .m{text-align:right;white-space:nowrap}
-  .regl .m input{width:70px;border:0;background:transparent;text-align:right;font-size:16px;color:var(--ink);outline:none;border-radius:4px}
-  .regl .m input:focus{background:var(--voileChamp)}
+  .regl .m input{width:64px;border:0;background:transparent;text-align:right;font-size:16px;color:var(--ink);outline:none;border-radius:4px}
+  .regl input:focus{background:var(--voileChamp)}
+  .interrupteur input{border:0;background:transparent;padding:0;font-size:15px;color:var(--ink);outline:none;border-radius:4px;width:100%}
+  .interrupteur input:focus{background:var(--voileChamp)}
+  .interrupteur .lib{min-width:0;flex:1}
   .coche{width:26px;height:26px;border-radius:999px;border:1px solid var(--inkSoft);background:none;color:var(--surPlein);
          font-size:14px;line-height:1;cursor:pointer;flex:none}
   .coche[aria-pressed="true"]{background:var(--rust);border-color:var(--rust)}
@@ -105,45 +111,6 @@
         font:600 14px/1.2 ui-sans-serif,sans-serif;cursor:pointer;min-height:32px}
   .acquittee{margin:12px 0 0;text-align:center;font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--rust)}
 
-  /* ═══ LE PAPIER — ce que le client reçoit ═══════════════════════════════*/
-  .papier{background:var(--papier);color:var(--encre);margin:12px 14px 26px;padding:22px 20px 26px;
-          border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.18);
-          font:10.5px/1.45 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
-  .papier .haut{display:flex;justify-content:space-between;gap:12px;padding-bottom:10px;
-                border-bottom:1.6px solid #1c1c1a}
-  .papier .nom{font-size:17px}
-  .papier .coord{color:#6b6b5c;font-size:8.5px;line-height:1.35}
-  .papier .refs{font-size:8.5px;text-align:right;min-width:130px}
-  .papier .refs div{display:flex;justify-content:space-between;gap:10px;border-bottom:.5px solid #ddd;padding:2px 0}
-  .papier .refs b{color:#6b6b5c;font-weight:600}
-  .papier h2{margin:18px 0 14px;text-align:center;font:400 14px/1 ui-serif,Georgia,serif;letter-spacing:.2em}
-  .papier .parties{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-  .papier .parties h3{margin:0 0 3px;font:600 7.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;color:#6b6b5c;text-transform:uppercase}
-  .papier table{width:100%;border-collapse:collapse;font-size:8.6px}
-  .papier th{text-align:left;font-size:6.8px;letter-spacing:.06em;text-transform:uppercase;color:#6b6b5c;
-             padding:0 3px 4px;border-bottom:1.2px solid #1c1c1a}
-  .papier th.n,.papier td.n{text-align:right;white-space:nowrap}
-  .papier td{padding:4px 3px;border-bottom:.5px solid #e4e1d9;vertical-align:top}
-  .papier .deux{display:grid;grid-template-columns:1fr 190px;gap:14px;margin-top:12px;align-items:start}
-  .papier .tva{font-size:8.5px}
-  .papier .tva .r{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:2px 0;border-bottom:.5px solid #e4e1d9}
-  .papier .tva .r.h{color:#6b6b5c;font-size:6.8px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #1c1c1a}
-  .papier .tva .r span:nth-child(n+2){text-align:right}
-  .papier .pt{font-size:9.5px}
-  .papier .pt .r{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
-  .papier .pt .r.or{color:#B98B47}
-  .papier .pt .r.doux{color:#6b6b5c;font-size:8.6px}
-  .papier .pt .tt{margin-top:6px;padding-top:6px;border-top:1.4px solid #1c1c1a;font:600 12px/1.3 ui-serif,Georgia,serif}
-  .papier .pt .np{margin-top:6px;padding-top:6px;border-top:.6px solid #1c1c1a;font:700 10.5px/1.3 ui-sans-serif,sans-serif}
-  .papier .tampon{display:inline-block;margin-top:10px;padding:4px 10px;border:1.4px solid #2f3b2f;border-radius:3px;
-                  color:#2f3b2f;font:700 9px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;transform:rotate(-2deg)}
-  .papier .et{margin:16px 0 5px;font:600 7.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;color:#6b6b5c;text-transform:uppercase}
-  .papier .notes p{margin:0 0 3px}
-  .papier .notes p.g{font-weight:700}
-  .papier .mention{margin-top:12px;font-size:8px;color:#4a4a44;line-height:1.4}
-  .papier .mention p{margin:0 0 4px}
-  .papier .pied{margin-top:14px;text-align:center;font-size:7.5px;color:#8a8578}
-
   .note{max-width:430px;margin:14px auto 0;padding:0 18px;font-size:13px;line-height:1.6;color:var(--horsTexte)}
   .note b{color:var(--horsFort)}
   .note h3{font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin:22px 0 8px;color:var(--horsFort)}
@@ -155,12 +122,12 @@
 <body data-charte="origine">
 
 <div class="bandeau">
-  <b>Votre demande du 14 septembre.</b> La facture ne savait ni nommer la <b>main d’œuvre</b> ni déduire les <b>acomptes</b>. Dessinée d’après vos trois factures de pros : « dont main d’œuvre HT », les <b>règlements reçus</b> déduits, le <b>net à payer</b>, la TVA par taux, « Facture acquittée » quand tout est réglé. Rien n’est codé.
+  <b>Votre demande du 14 septembre, et vos quatre retours.</b> La facture ne savait ni nommer la <b>main d’œuvre</b> ni déduire les <b>acomptes</b>. Ici : « dont main d’œuvre HT », les <b>règlements reçus</b>, chacun avec son <b>libellé</b> (le numéro du chèque s’écrit là), sa date et son montant, le <b>net à payer</b>, « Facture acquittée » à zéro. Un chiffre touché est <b>sélectionné</b> : on tape, il part. Le papier, le même pour le devis et la facture, est sur l’onglet « Papier ». Rien n’est codé.
 </div>
 
 <div class="choix">
   <button data-vue="ecran" aria-pressed="true">Écran</button>
-  <button data-vue="papier" aria-pressed="false">Papier</button>
+  <a href="le-papier-devis-et-facture.html" style="display:inline-flex;align-items:center;min-height:44px;padding:0 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.04em;text-decoration:none">Papier</a>
   <button data-vue="pris" aria-pressed="false">Ce qui vient des pros</button>
   <button id="nuit" aria-pressed="false">Nuit</button>
 </div>
@@ -205,76 +172,12 @@
 
       <div class="carte">
         <div class="interrupteur">
-          <span>Petits travaux de jardinage<small>Crédit d’impôt 50 % : la mention s’imprime</small></span>
+          <span class="lib"><input id="e-credit-lib" value="Petits travaux de jardinage" aria-label="Libellé du crédit d’impôt"><small>Crédit d’impôt 50 % : la mention s’imprime avec ce libellé</small></span>
           <button class="bascule" type="button" id="e-credit" aria-pressed="false" aria-label="Crédit d’impôt"></button>
         </div>
       </div>
 
       <button class="lien" type="button">Aperçu du PDF</button>
-    </div>
-  </section>
-
-  <!-- ═══ LE PAPIER ═══════════════════════════════════════════════════════ -->
-  <section class="ecran" id="v-papier">
-    <div class="entete">
-      <p class="sur">Ce que le client reçoit</p>
-      <h1>Le papier</h1>
-    </div>
-    <div class="papier">
-      <div class="haut">
-        <div>
-          <div class="nom">Eden Nature</div>
-          <div class="coord">12 chemin des Vignes 84000 Avignon<br>06 12 34 56 78 · contact@edennature.fr<br>SIRET 912 345 678 00019</div>
-        </div>
-        <div class="refs">
-          <div><b>Facture n°</b><span>F2026-000021</span></div>
-          <div><b>Date</b><span>14/09/2026</span></div>
-          <div><b>Devis n°</b><span>D2026-000014 du 02/09/2026</span></div>
-          <div><b>Échéance</b><span>à réception</span></div>
-        </div>
-      </div>
-      <h2>FACTURE</h2>
-      <div class="parties">
-        <div><h3>Client</h3>Mme Grospiron<br>8 rue des Lilas<br>84000 Avignon</div>
-        <div><h3>Adresse du chantier</h3>8 rue des Lilas<br>84000 Avignon</div>
-      </div>
-      <table>
-        <thead><tr><th>Désignation</th><th class="n">Qté</th><th>Unité</th><th class="n">P.U. HT</th><th class="n">Rem. %</th><th class="n">Total HT</th><th class="n">TVA %</th><th class="n">Total TTC</th></tr></thead>
-        <tbody id="p-lignes"></tbody>
-      </table>
-      <div class="deux">
-        <div class="tva">
-          <div class="r h"><span>Base HT</span><span>Taux</span><span>TVA</span></div>
-          <div id="p-tva"></div>
-        </div>
-        <div class="pt">
-          <div class="r"><span>Total HT</span><span id="p-brut"></span></div>
-          <div class="r doux" id="p-mo" hidden><span>dont main d’œuvre HT</span><span id="p-mo-m"></span></div>
-          <div class="r or" id="p-remise"><span>Remise de <span id="p-remise-t"></span> %</span><span id="p-remise-m"></span></div>
-          <div class="r"><span>Total HT après remise</span><span id="p-net-ht"></span></div>
-          <div class="r"><span>Total TVA</span><span id="p-tva-t"></span></div>
-          <div class="r tt"><span>Total TTC</span><span id="p-ttc"></span></div>
-          <div id="p-regls"></div>
-          <div class="r np"><span>Net à payer</span><span id="p-net"></span></div>
-          <div id="p-tampon" hidden><span class="tampon">Facture acquittée</span></div>
-        </div>
-      </div>
-
-      <p class="et">Notes / conditions</p>
-      <div class="notes">
-        <p>Accès par le portail de gauche.</p>
-        <p class="g">Mode de règlement : 30 % à la signature, solde à réception de la facture.</p>
-        <div id="p-verses"></div>
-        <p class="g">Moyens de paiement acceptés : virement, chèque.</p>
-        <p class="g">En cas de retard de paiement : pénalités au taux de trois fois le taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de recouvrement.</p>
-      </div>
-
-      <div class="mention">
-        <p id="p-mo-info" hidden>Pour information, montant de la main d’œuvre TTC : <span id="p-mo-ttc"></span>.</p>
-        <p id="p-credit" hidden>Petits travaux de jardinage : 50 % de crédit d’impôt sur les sommes dépensées (article 199 sexdecies du code général des impôts, case 7DB de la déclaration 2042). Agrément n° [numéro].</p>
-        <p>Assurance décennale : [assureur, n° de contrat, couverture géographique]. Médiateur de la consommation : [nom et coordonnées].</p>
-      </div>
-      <div class="pied">Eden Nature · SIRET 912 345 678 00019 · IBAN FR76 3000 1000 0000 0000 0000 000 · Page 1/1</div>
     </div>
   </section>
 
@@ -305,7 +208,9 @@
     <tr><td>Règlements reçus</td><td>les acomptes du devis arrivent d’office, à cocher « reçu » ; « + Règlement reçu » pour un chèque ou un virement de plus. Chacun : moyen, date, montant.</td></tr>
     <tr><td>Net à payer</td><td>TTC moins les règlements. À zéro : « Facture acquittée », à l’écran et sur le papier.</td></tr>
     <tr><td>Le papier</td><td>les colonnes des pros, la TVA par taux, « Montants versés » sous le mode de règlement, la main d’œuvre TTC pour information.</td></tr>
-    <tr><td>Crédit d’impôt</td><td>une case : la mention s’imprime. À vous de dire si ces travaux méritent une facture à part, comme chez le paysagiste.</td></tr>
+    <tr><td>Le libellé d’un règlement</td><td>« Chèque n° 1806028 », « Virement Mme Grospiron » : le numéro du chèque s’écrit là, et c’est ce mot qui s’imprime dans « Montants versés ».</td></tr>
+    <tr><td>Un chiffre touché</td><td>est sélectionné en entier : on tape le nouveau, l’ancien part. Vaut pour la main d’œuvre, la remise, les montants reçus.</td></tr>
+    <tr><td>Crédit d’impôt — où</td><td>sur la facture, sous les règlements ; son libellé se change ici. Le texte de la mention imprimée vit dans Réglages → Documents → « Ce qui s’imprime », comme les conditions générales. À vous de dire si ces travaux méritent une facture à part, comme chez le paysagiste.</td></tr>
   </table>
 </div>
 
@@ -321,7 +226,7 @@
     remise: 5,
     credit: false,
     // L'acompte du devis : 30 % du TTC, calculé — jamais tapé (montant null).
-    regls: [ { lib: "Acompte 30 % à la signature", moyen: "chèque n° 1806028", date: "02/09/2026", montant: null, recu: true } ]
+    regls: [ { lib: "Acompte 30 %, chèque n° 1806028", date: "02/09/2026", montant: null, recu: true } ]
   };
   function id(x){ return document.getElementById(x); }
   function eur(n){ return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
@@ -367,41 +272,19 @@
       var d = document.createElement("div"); d.className = "regl";
       d.innerHTML =
         '<button class="coche" type="button" aria-pressed="'+g.recu+'" aria-label="Reçu">'+(g.recu?"✓":"")+'</button>' +
-        '<span>'+g.lib+'<small>'+g.moyen+' · '+g.date+'</small></span>' +
+        '<span class="quoi"><input value="'+g.lib+'" placeholder="Chèque n°…" aria-label="Libellé du règlement"><input class="date" value="'+g.date+'" aria-label="Date"></span>' +
         '<span class="m"><input value="'+String(g.m).replace(".",",")+'" inputmode="decimal" aria-label="Montant reçu"> €</span>';
       d.querySelector(".coche").onclick = function(){ g.recu = !g.recu; rendre(); };
-      d.querySelector("input").onchange = function(e){ g.montant = nombre(e.target.value); rendre(); };
+      var champs = d.querySelectorAll("input");
+      champs[0].onchange = function(e){ g.lib = e.target.value; };
+      champs[1].onchange = function(e){ g.date = e.target.value; };
+      champs[2].onchange = function(e){ g.montant = nombre(e.target.value); rendre(); };
       boite.appendChild(d);
     });
     id("e-net").textContent = eur(c.net);
     id("e-acquittee").hidden = c.net > 0;
     id("e-credit").setAttribute("aria-pressed", String(etat.credit));
 
-    // ─ papier
-    var tb = id("p-lignes"); tb.innerHTML = "";
-    LIGNES.forEach(function(l){
-      var tr = document.createElement("tr");
-      tr.innerHTML = '<td>'+l.lib+'</td><td class="n">'+l.q+'</td><td>'+l.u+'</td><td class="n">'+eur(l.pu)+'</td><td class="n">'+(etat.remise?etat.remise:"")+'</td><td class="n">'+eur(l.net)+'</td><td class="n">'+l.tva+'</td><td class="n">'+eur(l.ttc)+'</td>';
-      tb.appendChild(tr);
-    });
-    var tv = id("p-tva"); tv.innerHTML = "";
-    c.taux.forEach(function(x){ var d = document.createElement("div"); d.className="r"; d.innerHTML='<span>'+eur(x.base)+'</span><span>'+x.t+' %</span><span>'+eur(x.tva)+'</span>'; tv.appendChild(d); });
-    id("p-brut").textContent = eur(c.brut);
-    id("p-mo").hidden = c.mo === null; if (c.mo !== null) id("p-mo-m").textContent = eur(c.mo);
-    id("p-remise").hidden = !etat.remise; id("p-remise-t").textContent = etat.remise; id("p-remise-m").textContent = "− " + eur(c.remise);
-    id("p-net-ht").textContent = eur(c.netHt);
-    id("p-tva-t").textContent = eur(c.tvaT);
-    id("p-ttc").textContent = eur(c.ttc);
-    var pr = id("p-regls"); pr.innerHTML = "";
-    etat.regls.filter(function(g){return g.recu}).forEach(function(g){ var d=document.createElement("div"); d.className="r doux"; d.innerHTML='<span>'+g.lib+', reçu</span><span>− '+eur(g.m)+'</span>'; pr.appendChild(d); });
-    id("p-net").textContent = eur(c.net);
-    id("p-tampon").hidden = c.net > 0;
-    var pv = id("p-verses"); pv.innerHTML = "";
-    var recus = etat.regls.filter(function(g){return g.recu});
-    if (recus.length){ var p=document.createElement("p"); p.className="g"; p.textContent = "Montants versés : " + recus.map(function(g){ return g.moyen + " du " + g.date + ", " + eur(g.m); }).join(" ; ") + "."; pv.appendChild(p); }
-    id("p-mo-info").hidden = c.mo === null;
-    if (c.mo !== null) id("p-mo-ttc").textContent = eur(r2(c.mo*(1-etat.remise/100)*1.2));
-    id("p-credit").hidden = !etat.credit;
   }
 
   // ─── les gestes ──────────────────────────────────────────────────────────
@@ -411,11 +294,16 @@
   id("e-mo-champ").onblur = function(e){ etat.mo = e.target.value.trim()==="" ? null : nombre(e.target.value); rendre(); };
   id("e-remise").oninput = function(e){ etat.remise = Math.min(100, Math.max(0, nombre(e.target.value))); rendre(); };
   id("e-regl-plus").onclick = function(){
-    etat.regls.push({ lib: "Règlement", moyen: "virement", date: "14/09/2026", montant: 0, recu: true });
+    etat.regls.push({ lib: "", date: "14/09/2026", montant: 0, recu: true });
     rendre();
-    var champs = id("e-regls").querySelectorAll("input"); champs[champs.length-1].focus();
+    var champs = id("e-regls").querySelectorAll(".quoi input"); champs[champs.length-2].focus();
   };
   id("e-credit").onclick = function(){ etat.credit = !etat.credit; rendre(); };
+  // Un chiffre touché est sélectionné en entier — sa demande du 14 septembre :
+  // on tape le nouveau, l'ancien part, sans avoir à l'effacer.
+  document.addEventListener("focusin", function(e){
+    if (e.target.tagName === "INPUT" && e.target.getAttribute("inputmode") === "decimal") e.target.select();
+  });
 
   document.querySelectorAll(".choix [data-vue]").forEach(function(b){
     b.onclick = function(){

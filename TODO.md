@@ -48,6 +48,18 @@ catégories de TVA sur la facture. **Ce qui manque :** `factures.main_doeuvre_ht
 règlement à cocher reçu, le net à payer et « acquittée » sur l’écran et le PDF,
 la mention du crédit d’impôt (un réglage ou une case par facture — à lui).
 
+**Ses quatre retours du soir même, tous dessinés :** le libellé d'un règlement
+(le numéro du chèque s'écrit là, et c'est lui qui s'imprime dans « Montants
+versés ») ; un chiffre touché est sélectionné en entier ; le libellé du crédit
+d'impôt se change sur la facture, la mention vit dans Réglages → Documents ;
+et **le papier est le même pour le devis et la facture** :
+`appli/le-papier-devis-et-facture.html`, avec la colonne Unité (elle existe en
+base et sur le PDF sans avoir sa colonne, « 3.00 ml » collé dans la quantité),
+les quantités sans « ,00 », le taux de TVA sur la ligne au lieu du tableau
+coupé par taux. Sa consigne : *« utilise le skill impeccable pour rendre la
+facture et le devis élégants, on est sur une appli luxe »* : deux polices comme
+le PDF, l'or seulement pour ce qui se lit, chiffres tabulaires.
+
 **Trois questions posées sur la planche :** cocher « reçu » écrit-il un
 paiement (donc le relevé de TVA suit) — je propose oui ; le crédit d’impôt
 mérite-t-il une facture à part comme chez le paysagiste, ou une case ; le

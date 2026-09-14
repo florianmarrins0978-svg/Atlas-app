@@ -8,6 +8,13 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
+### Le papier, le même pour le devis et la facture, et les retours sur la planche de la facture
+
+Ses retours du 14 septembre au soir : uniformiser devis et facture, la colonne
+Unité absente du devis, le libellé d’un règlement, un chiffre touché
+sélectionné, le libellé du crédit d’impôt. `appli/le-papier-devis-et-facture.html`
+(trois vues) et la planche de la facture retouchée. Rien dans `src/`.
+
 ### Une planche pour la facture : main d’œuvre et règlements reçus
 
 Sa demande du 14 septembre, trois factures de pros à l’appui : la facture ne
