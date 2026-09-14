@@ -5,6 +5,14 @@
 
 ---
 
+## FAIT : LES DOUZE SUITES ROUGES SONT VERTES, ET DEUX ÉCRANS RESSERRÉS — 14 septembre 2026
+
+La batterie rend **153/153**. Dix des douze rouges étaient des contrôles
+périmés — ils réclamaient ce qu'il avait fait changer ; deux étaient de vraies
+pannes : la flèche du devis perdait sa feuille du planning, et deux écrans
+débordaient du téléphone. Sa décision : les petits écrans défileront plutôt que
+de voir le texte rapetisser. `ARCHITECTURE.md` §362 et §363.
+
 ## FAIT : L'ADRESSE D'UN COMPTE NEUF SE PROUVE PAR UN CODE — 14 septembre 2026
 
 Il avait créé un compte avec une adresse inventée, et il était entré. Après
