@@ -8,6 +8,7 @@ reposer sur le souvenir d'un échange précédent.
 @.claude/rules/testing.md
 @.claude/rules/migrations.md
 @.claude/rules/deployment-safety.md
+@.claude/rules/regarder-l-ecran.md
 
 ---
 
@@ -39,6 +40,12 @@ jamais.*
    code neuf sur une base ancienne fait TOMBER des écrans.
 9. **Un changement de schéma incompatible se fait en deux temps**
    (expand/contract) : étendre, déployer, transiter, contracter **plus tard**.
+10. **On REGARDE l'écran avant d'affirmer quoi que ce soit dessus** —
+    `npm run voir -- /planning`. Un `grep` ne prouve RIEN de ce qu'il voit : les
+    repères se composent, un composant peut être monté ailleurs, et une
+    recherche vide n'est pas une absence. C'est ainsi qu'on lui a annoncé à tort
+    la disparition de la porte du devis (14 septembre 2026). Si l'écran ne peut
+    pas s'ouvrir ici, on dit « pas vérifiable ICI » — jamais une affirmation.
 
 **Ce qui ne dépend pas de la bonne volonté** : `scripts/garde-fusion-main.mjs`
 calcule le niveau de risque sur le diff et refuse une poussée vers `main` dont
