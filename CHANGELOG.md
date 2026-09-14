@@ -26,6 +26,60 @@ courant. Elle s'écrit désormais dans l'adresse (`?chantier=<id>`), la porte ne
 l'efface plus en partant, et l'écran la relit au retour (`ARCHITECTURE.md`
 §362). `test-planning-vers-facture-e2e` le tenait déjà, et rougissait.
 
+### Le papier, le même pour le devis et la facture, et les retours sur la planche de la facture
+
+Ses retours du 14 septembre au soir : uniformiser devis et facture, la colonne
+Unité absente du devis, le libellé d’un règlement, un chiffre touché
+sélectionné, le libellé du crédit d’impôt. `appli/le-papier-devis-et-facture.html`
+(trois vues) et la planche de la facture retouchée. Rien dans `src/`.
+
+### L'adresse d'un compte neuf se prouve par un code, avant d'entrer
+
+Sa demande : *« j'ai réussi à me connecter avec une adresse fausse qui
+n'existe pas ! »* Après « Créer mon compte », une dix-septième question — le
+code à six chiffres reçu à l'adresse —, et rien ne s'ouvre avant : ni
+l'accueil, ni les documents légaux, ni la connexion suivante. Cinq essais, un
+quart d'heure, « Renvoyer » borné à trois par quart d'heure. Les comptes déjà
+là, les salariés, Google et Apple ne changent pas : seul un compte créé par la
+porte attend un code.
+
+**Atlas envoie son premier e-mail** : `src/server/courriel/`, Brevo (son
+choix) ou `dev`. Migration 0091. Suites : `test-code-verification` (règles),
+`test-verification-email-db` (base, RLS), et `test-creer-son-compte-e2e`
+étendue (le code sur la porte, la garde, le mauvais code, le retour par
+`/verifier-email`).
+
+**Reste à lui :** le compte Brevo et ses deux variables dans l'espace
+(`BREVO_API_KEY`, `COURRIEL_EXPEDITEUR`). Détail : `ARCHITECTURE.md` §361.
+
+### Un compte neuf passe par les documents légaux avant l'accueil
+
+Sa capture : il a créé son compte, est entré, a travaillé — et les conditions
+ne lui sont parvenues qu'en rechargeant la page. La garde qui les exige
+(`GardeDocumentsLegaux`) vit dans la mise en page racine, que Next.js ne
+rejoue pas sur une navigation côté client : « Entrer dans Atlas » menait sur
+`/` sans passer devant elle. Le bouton mène désormais sur `/documents-legaux`,
+qui se rend à chaque visite, demande ce qui reste à accepter et renvoie sur
+l'accueil quand il n'y a rien. `test-creer-son-compte-e2e` clique ce bouton et
+exige la page d'acceptation.
+
+Ce que cela évite : un patron qui travaille une heure sur des conditions qu'il
+n'a pas acceptées, et une acceptation datée d'après ses premiers devis.
+
+### Six photos ne font plus six chantiers — LIVRÉ, cette fois
+
+Le correctif du 13 septembre n'avait jamais quitté le dossier principal : son
+espace servait `a3a40a6`, sans lui. Fusion des 25 commits d'`origin/main`,
+poussée `7ee68e1b`, suite `test-photos-avant-le-chantier-e2e` rejouée au vert
+sur l'arbre fusionné, version bâtie, Postgres et Redis dans Docker.
+
+### Une planche pour la facture : main d’œuvre et règlements reçus
+
+Sa demande du 14 septembre, trois factures de pros à l’appui : la facture ne
+savait ni nommer la main d’œuvre ni déduire les acomptes.
+`appli/facture-main-d-oeuvre-et-reglements.html` — écran, papier, et ce qui a
+été pris ou laissé de chaque facture. Rien dans `src/` ; `TODO.md` porte ce
+qui existe déjà et les trois questions qui restent.
 ### La main d'œuvre ne s'efface plus sur un devis sans ligne ; une photo de devis ne vide plus les conditions générales
 
 **Ses plaintes du 14 septembre 2026, à minuit.** Ouverte sur un devis encore

@@ -184,6 +184,8 @@ const OUVERT_AU_SALARIE = [
   "/planning",
   "/reglages",
   "/documents-legaux",
+  // Le code de vérification d'une adresse : une porte, avant tout rôle.
+  "/verifier-email",
   // Les polices du rendu et les sondes de santé : aucune donnée d'entreprise.
   "/api/polices",
   "/api/health",
@@ -240,6 +242,7 @@ const OUVERT_A_LA_FACTURATION = [
   "/termines",
   "/reglages",
   "/documents-legaux",
+  "/verifier-email",
   // Les documents et pièces jointes du cycle. Le PDF du devis ET celui de la
   // facture : elle envoie les deux.
   "/api/chantiers",

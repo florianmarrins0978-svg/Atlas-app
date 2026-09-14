@@ -9,6 +9,48 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~À TRANCHER PAR LUI — VÉRIFIER L'ADRESSE E-MAIL À LA CRÉATION DU COMPTE~~ — CODÉ LE JOUR MÊME (14 septembre 2026, Brevo)
+
+**Codé** (*« Brevo »*) : migration 0091, `src/server/courriel/`,
+`src/lib/code-verification.ts`, `SaisieDuCode`, `GardeVerificationEmail`,
+`/verifier-email`, trois suites. Détail : `ARCHITECTURE.md` §361.
+**Reste à lui : le compte Brevo et ses deux variables dans l'espace.**
+
+**Sa demande du 14 septembre 2026 :** *« j'ai réussi à me connecter avec une
+adresse fausse qui n'existe pas ! […] il faut mettre une sécurité avec un
+numéro envoyé par email à rentrer pour pouvoir valider son compte »*.
+
+**Ce que l'application fait aujourd'hui :** la porte crée le compte et ouvre la
+session dans la foulée (`src/app/creer-un-compte/actions.ts`), sans rien vérifier de
+l'adresse. La colonne `users.email_verified` existe (Auth.js) et n'est posée
+que par Google/Apple (`fournisseurs-connexion.ts`). **Aucun canal d'envoi
+n'existe** : l'application n'envoie aucun e-mail — tout passe par `mailto:`
+(`docs/QUESTIONS.md` §2, `docs/A-FAIRE.md`). Le 13 août, l'e-mail du compte
+avait été rendu non modifiable pour cette raison, « à rouvrir le jour où un
+parcours d'inscription existera » — c'est ce jour.
+
+**Ce que le lot demande, et qui n'est pas du code :** un service d'envoi, donc
+un compte et une clé chez lui (Codespace). Proposé : **Brevo** (français,
+serveurs en UE, 300 e-mails/jour gratuits, un expéditeur vérifié suffit sans
+nom de domaine). Resend et Postmark exigent un domaine, qu'il n'a pas encore.
+
+**Le lot, une fois tranché :**
+
+| | |
+|---|---|
+| migration | table `codes_verification_email` (utilisateur, empreinte du code, expire à, essais) — jamais le code en clair |
+| `src/server/courriel/` | `EMAIL_PROVIDER` = `brevo` | `dev` sur le modèle de `LLM_PROVIDER` ; `dev` journalise le code au lieu d'envoyer, pour la batterie |
+| la porte | après « Créer mon compte » : une question de plus, dans le même style — « Le code reçu à <adresse> », six chiffres, « Renvoyer » limité |
+| la garde | un compte dont `email_verified` est vide est renvoyé sur l'écran du code, comme `GardeDocumentsLegaux` renvoie sur les documents |
+| limites | 5 essais par code, 3 envois par quart d'heure et par adresse, code valable 15 min |
+| Google/Apple | déjà vérifiés par le fournisseur : rien ne change |
+| comptes existants | tenus pour vérifiés à la migration — ce sont les siens ; seuls les comptes NEUFS passent par le code |
+| suites | base (empreinte, expiration, essais) + navigateur (le parcours entier, code lu en base sous `EMAIL_PROVIDER=dev`) |
+
+**Qui :** lui pour le service et la clé ; nous pour tout le reste.
+
+---
+
 ## LES AUTRES ACTIONS SERVEUR TOMBENT ENCORE SUR L'ÉCRAN MUET
 
 Même lot, même racine. Une exception qui sort d'une action serveur est
@@ -20,6 +62,65 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 
 **Qui :** nous. Pas de lot dédié — au fil de ce qu'on touche.
 
+---
+
+## ⏳ UNE PLANCHE À REGARDER — MAIN D’ŒUVRE ET RÈGLEMENTS SUR LA FACTURE (14 septembre 2026)
+
+**Sa demande :** *« la page du devis diffère de la page facture : quand on crée
+une facture on ne peut pas rajouter la main d’œuvre et les acomptes. Je vais
+t’envoyer 3 vraies factures de pro, inspire-toi et fais-moi une maquette »*.
+
+**Planche :** `appli/facture-main-d-oeuvre-et-reglements.html` — écran, papier,
+et « Ce qui vient des pros ». Rien dans `src/`.
+
+| Ce que la planche propose | D’où ça vient |
+|---|---|
+| « dont main d’œuvre HT » sous le total, reprise du devis | la B du devis ; Solabaie « Main d’œuvre HT » |
+| **Règlements reçus** : l’acompte du devis d’office, à cocher ; « + Règlement reçu » (moyen, date, montant) | Solabaie « Montants versés : chèque n°… du … de … » |
+| **Net à payer** = TTC − règlements ; « Facture acquittée » à zéro | Îlot Fleurs « Règlement(s) / Net à payer » ; Solabaie « Facture acquittée » |
+| papier : Qté / Unité / P.U. HT / Rem. % / Total HT / TVA % / Total TTC, bases par taux | Îlot Fleurs |
+| « Pour information, montant de la main d’œuvre TTC » | Solabaie |
+| une case **crédit d’impôt 50 %** (petits travaux de jardinage, art. 199 sexdecies, case 7DB) | la facture annexe de l’Îlot Fleurs |
+
+**Ce qui existe déjà, et ne se refait pas :** les règlements notés sur une
+facture émise (`paiements_facture`, « Noter un règlement », le relevé de TVA au
+paiement) ; les acomptes du devis (`acomptes_devis`, §343) ; la remise et les
+catégories de TVA sur la facture. **Ce qui manque :** `factures.main_doeuvre_ht`
+(recopiée du devis à la création), l’acompte du devis présenté comme un
+règlement à cocher reçu, le net à payer et « acquittée » sur l’écran et le PDF,
+la mention du crédit d’impôt (un réglage ou une case par facture — à lui).
+
+**Ses quatre retours du soir même, tous dessinés :** le libellé d'un règlement
+(le numéro du chèque s'écrit là, et c'est lui qui s'imprime dans « Montants
+versés ») ; un chiffre touché est sélectionné en entier ; le libellé du crédit
+d'impôt se change sur la facture, la mention vit dans Réglages → Documents ;
+et **le papier est le même pour le devis et la facture** :
+`appli/le-papier-devis-et-facture.html`, avec la colonne Unité (elle existe en
+base et sur le PDF sans avoir sa colonne, « 3.00 ml » collé dans la quantité),
+les quantités sans « ,00 », le taux de TVA sur la ligne au lieu du tableau
+coupé par taux. Sa consigne : *« utilise le skill impeccable pour rendre la
+facture et le devis élégants, on est sur une appli luxe »* : deux polices comme
+le PDF, l'or seulement pour ce qui se lit, chiffres tabulaires.
+
+**Ses retours suivants, le soir même, tous dessinés :** « Titre (optionnel) »
+au-dessus du papier, rien d'office ; Rem. %, TVA % et Unité centrés ; Total HT,
+Total HT après remise et la colonne Total TTC en gras ; « Reste à régler » et
+« Net à payer » dans la fonte du Total TTC ; plus de « reçu » sur l'acompte ;
+les règlements se saisissent au-dessus du papier et le papier suit ; et
+**« Facture acquittée » est un interrupteur** sous les règlements, pour le
+client qui a tout payé avant l'envoi — allumé, le solde est compté reçu à la
+date du jour, le net tombe à zéro, le tampon s'imprime (sa consigne :
+*« une option quand il va pour envoyer la facture, ou un bouton on/off sur la
+page facture, comme tu veux »*). **La décennale et le médiateur** : son
+accord pour deux blocs dans Mon entreprise, dessinés dans
+`appli/decennale-et-mediateur.html` — imprimés en bas des documents, repris
+dans les articles 9 et 11 des conditions générales à la place des crochets.
+
+**Trois questions posées sur la planche :** cocher « reçu » écrit-il un
+paiement (donc le relevé de TVA suit) — je propose oui ; le crédit d’impôt
+mérite-t-il une facture à part comme chez le paysagiste, ou une case ; le
+tampon « Facture acquittée » s’imprime-t-il seul, ou avec la date du dernier
+règlement.
 ---
 
 ## ~~LES PHRASES DU BLOC « NOTES / CONDITIONS » — ses deux planches disent deux choses~~ — TRANCHÉ « B », CODÉ LE 14 SEPTEMBRE 2026
@@ -993,6 +1094,13 @@ jamais quitté ce poste. **À la session qui a livré ce lot.**
 
 ## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
 
+**ET IL IGNORE AUSSI LES DOSSIERS DE SESSION — 14 septembre 2026.** Une
+batterie lancée dans le dossier principal a fermé `atlas-app-s3` : le garde
+(`scripts/garde-batterie.mjs`) lit le verrou depuis le dossier de la session,
+et refuse `Write`/`Edit` quel que soit le fichier visé — même dans un worktree
+que personne ne mesure. Sa consigne, le soir même : *« prends un dossier et un
+port libre ! »*. Le garde doit comparer le dossier VISÉ par l'écriture à celui
+qui porte le verrou, et ne fermer que celui-là.
 **Sa correction :** *« chaque session peut prendre un port différent, plusieurs
 sessions tournent en même temps, n'effacez pas les batteries des autres ! »*
 

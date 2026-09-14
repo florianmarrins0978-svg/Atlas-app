@@ -1692,6 +1692,24 @@ export const acceptationsDocuments = pgTable(
   ]
 );
 
+// --- Vérification de l'adresse e-mail d'un compte créé par la porte ---
+
+// **Une ligne = un compte en attente.** C'est sa présence qui ferme la porte,
+// pas `users.emailVerified` vide : les comptes déjà là n'en ont pas, et rien ne
+// change pour eux. Elle s'efface quand le code est entré (migration 0091).
+export const codesVerificationEmail = pgTable("codes_verification_email", {
+  utilisateurId: uuid("utilisateur_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  // HMAC du code, jamais le code : voir `src/lib/code-verification.ts`.
+  empreinte: text("empreinte").notNull(),
+  expireLe: timestamp("expire_le", { withTimezone: true }).notNull(),
+  essais: integer("essais").notNull().default(0),
+  envois: integer("envois").notNull().default(1),
+  dernierEnvoi: timestamp("dernier_envoi", { withTimezone: true }).notNull().defaultNow(),
+  creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Envoi du devis au client et réponse (voir docs/AGENT.md §2.1 à §2.3) ---
 
 // Une ligne par ENVOI, jamais par devis : un devis refusé puis corrigé et

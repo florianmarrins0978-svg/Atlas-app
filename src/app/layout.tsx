@@ -12,6 +12,7 @@ import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
 import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
+import GardeVerificationEmail from "@/components/atlas/GardeVerificationEmail";
 import GardeAcces from "@/components/atlas/GardeAcces";
 import JournalDeNavigation from "@/components/atlas/JournalDeNavigation";
 import BandeauBanc from "@/components/atlas/BandeauBanc";
@@ -205,6 +206,10 @@ export default async function RootLayout({
         {/* Redirige vers l'écran d'acceptation tant qu'un document requis n'a
             pas été accepté. Rendu avant le contenu : la redirection intervient
             donc avant que quoi que ce soit d'utilisable soit affiché. */}
+        {/* **L'adresse d'abord, les conditions ensuite.** Un compte créé par
+            la porte n'entre nulle part tant que le code reçu à son adresse
+            n'a pas été entré — sa demande du 14 septembre 2026. */}
+        <GardeVerificationEmail />
         <GardeDocumentsLegaux />
         {/* **Le rôle referme ce que le sommaire ne montre plus.** Un bouton
             retiré n'a jamais fermé une adresse : cette garde refuse au SERVEUR,

@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le papier — devis et facture</title>
+<style>
+  /* ═══ LES JETONS, SORTIS DU CODE ══════════════════════════════════════════
+     src/lib/design-tokens.ts : l'or des documents (#B98B47), l'encre, le crème.
+     Le papier ne suit PAS la charte : il part chez le client (PRODUCT.md). */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44; --muted:#8a8578;
+    --rust:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --hors:#e6e3dc; --horsTexte:#4a4a44; --horsFort:#1c1c1a;
+    --papier:#ffffff; --encre:#1c1c1a; --encreDouce:#5a5a52; --gris:#8a8578; --filet:#d9d5cc; --filetDoux:#ebe8e1;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--horsTexte);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 34px}
+  ::selection{background:rgba(185,139,71,.28)}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:15px 18px;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .choix{position:sticky;top:0;z-index:5;background:var(--hors);padding:12px 12px 10px;
+         display:flex;gap:7px;justify-content:center;flex-wrap:wrap;
+         box-shadow:0 6px 18px -12px rgba(0,0,0,.45)}
+  .choix button{min-height:44px;min-width:44px;padding:0 13px;border-radius:999px;
+                border:1px solid var(--line);background:var(--card);color:var(--ink);
+                font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.04em;cursor:pointer;
+                -webkit-tap-highlight-color:transparent;transition:background .18s,color .18s}
+  .choix button[aria-pressed="true"]{background:var(--rust);color:#faf9f5;border-color:var(--rust)}
+  .choix button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  /* ═══ LE TÉLÉPHONE, comme l'aperçu du PDF dans l'application ═════════════*/
+  .tel{max-width:430px;margin:16px auto 0;background:var(--cream);border-radius:26px;
+       overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22)}
+  .entete{padding:26px 26px 0}
+  .entete h1{margin:0;font:400 32px/1.02 ui-serif,Georgia,"Times New Roman",serif;letter-spacing:-0.018em;color:var(--ink)}
+  .entete .sur{margin:0 0 10px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+
+  /* ═══ LA FEUILLE ══════════════════════════════════════════════════════════
+     Deux polices, comme le PDF (Helvetica, Times). L'or ne porte que ce qu'on
+     LIT : les intitulés. Les chiffres sont tabulaires — une colonne de montants
+     se lit à la verticale ou ne se lit pas. */
+  .feuille{background:var(--papier);color:var(--encre);margin:14px 14px 22px;padding:26px 22px 24px;
+           border-radius:4px;box-shadow:0 10px 30px -8px rgba(20,18,14,.28),0 1px 2px rgba(20,18,14,.08);
+           font:9.6px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,sans-serif;
+           font-variant-numeric:tabular-nums;position:relative}
+  .feuille .haut{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+  .feuille .emetteur .nom{font:400 17px/1.15 ui-serif,Georgia,"Times New Roman",serif;letter-spacing:-.01em;color:var(--encre)}
+  .feuille .emetteur .coord{margin-top:4px;color:var(--encreDouce);font-size:8.2px;line-height:1.45}
+  .feuille .refs{font-size:8.4px;min-width:132px}
+  .feuille .refs div{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:.6px solid var(--filetDoux)}
+  .feuille .refs div:last-child{border-bottom:0}
+  .feuille .refs b{font-weight:600;color:var(--gris);font-size:7px;letter-spacing:.14em;text-transform:uppercase;align-self:center}
+
+  .feuille .titre{margin:20px 0 0;padding:12px 0 11px;border-top:1.2px solid var(--encre);border-bottom:.6px solid var(--filet);
+                  display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .feuille .titre h2{margin:0;font:400 19px/1 ui-serif,Georgia,"Times New Roman",serif;letter-spacing:.22em;text-transform:uppercase}
+  .feuille .titre .no{font:400 12px/1 ui-serif,Georgia,serif;color:var(--encreDouce);letter-spacing:.02em}
+  .feuille .titre .brouillon{font:600 7px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;color:var(--gris);text-transform:uppercase;margin-left:8px}
+
+  .feuille .parties{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0 16px}
+  .feuille h3{margin:0 0 4px;font:600 7px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;color:var(--or);text-transform:uppercase}
+  .feuille .parties p{margin:0;line-height:1.45}
+
+  .feuille table{width:100%;border-collapse:collapse;font-size:8.2px;table-layout:fixed}
+  .feuille th:first-child{width:31%}
+  .feuille th:nth-child(2){width:7%}
+  .feuille th:nth-child(3){width:9%}
+  .feuille th{text-align:left;font-size:6.3px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);
+              padding:0 2px 5px;border-bottom:1px solid var(--encre);white-space:nowrap}
+  .feuille th.n,.feuille td.n{text-align:right}
+  .feuille th.c,.feuille td.c{text-align:center}
+  .feuille th.g,.feuille td.g{font-weight:700;color:var(--encre)}
+  .feuille td{padding:5px 2px;border-bottom:.6px solid var(--filetDoux);vertical-align:top}
+  .feuille td.n{white-space:nowrap}
+  .feuille td.total{font-weight:600}
+  .feuille td.d{color:var(--encreDouce);font-size:7.8px;padding-top:0}
+  .feuille tr.sous td{color:var(--encreDouce);font-size:7.8px;padding:2px 3px 6px;border-bottom:0}
+
+  .feuille .bas{display:grid;grid-template-columns:1fr 176px;gap:16px;margin-top:14px;align-items:start}
+  .feuille .tva{font-size:8.2px}
+  .feuille .tva .r{display:grid;grid-template-columns:1.2fr .8fr 1fr;gap:6px;padding:3px 0;border-bottom:.6px solid var(--filetDoux)}
+  .feuille .tva .r.h{color:var(--gris);font-size:6.6px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;border-bottom:.8px solid var(--encre)}
+  .feuille .tva .r span:nth-child(n+2){text-align:right}
+  .feuille .totaux{font-size:9px}
+  .feuille .totaux .r{display:flex;justify-content:space-between;gap:8px;padding:2.5px 0}
+  .feuille .totaux .r span:last-child{white-space:nowrap}
+  .feuille .sous{margin:6px 0 0;font:italic 400 10px/1.3 ui-serif,Georgia,"Times New Roman",serif;color:var(--encreDouce)}
+  .champ-titre{margin:14px 26px 0;display:flex;align-items:center;gap:10px}
+  .champ-titre input{flex:1;min-width:0;border:0;border-bottom:1px solid var(--line);background:transparent;padding:8px 0;
+                     font:16px/1.3 ui-sans-serif,sans-serif;color:var(--ink);outline:none}
+  .champ-titre input::placeholder{color:var(--muted)}
+  .champ-titre input:focus{border-bottom-color:var(--or)}
+  .regls{margin:12px 26px 0}
+  .regls .inter{margin:0 0 4px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .regl{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--lineSoft);color:var(--ink)}
+  .regl .quoi{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .regl input{border:0;background:transparent;padding:0;font-size:15px;color:var(--ink);outline:none;border-radius:4px;width:100%}
+  .regl input.date{font-size:12.5px;color:var(--muted);width:96px}
+  .regl input::placeholder{color:var(--muted)}
+  .regl .m{white-space:nowrap}
+  .regl .m input{width:64px;text-align:right;font-size:16px}
+  .regl input:focus{background:rgba(28,28,26,.04)}
+  .plus:focus-visible,.regl input:focus-visible,.champ-titre input:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:6px}
+  .plus{display:block;margin-top:8px;border:0;background:none;padding:0;color:var(--or);font:500 14px/1.2 ui-sans-serif,sans-serif;cursor:pointer;min-height:32px}
+  .interrupteur{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0 4px;margin-top:6px;border-top:1px solid var(--lineSoft);font-size:15px;color:var(--ink)}
+  .interrupteur small{display:block;color:var(--muted);font-size:12.5px}
+  .bascule{width:46px;height:28px;border-radius:999px;border:0;background:var(--line);position:relative;cursor:pointer;flex:none}
+  .bascule::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--card);transition:left .18s}
+  .bascule[aria-pressed="true"]{background:var(--rust)}
+  .bascule[aria-pressed="true"]::after{left:21px}
+  .bascule:focus-visible{outline:2px solid var(--or);outline-offset:3px}
+  .feuille .totaux .r.or{color:var(--or)}
+  .feuille .totaux .r.doux{color:var(--encreDouce);font-size:8.2px}
+  .feuille .totaux .r.ttc{margin-top:6px;padding-top:7px;border-top:1.2px solid var(--encre);font:400 13px/1.2 ui-serif,Georgia,serif}
+  .feuille .totaux .r.ttc span:last-child{font-weight:700}
+  .feuille .totaux .r.net{margin-top:5px;padding-top:6px;border-top:.6px solid var(--filet);font:400 13px/1.2 ui-serif,Georgia,serif}
+  .feuille .totaux .r.net span:last-child{font-weight:700}
+  .feuille .totaux .r.reste{font:400 13px/1.2 ui-serif,Georgia,serif;padding-top:5px}
+  .feuille .totaux .r.reste span:last-child{font-weight:700}
+  .feuille .totaux .r.gras{font-weight:700}
+  .feuille .tampon{display:inline-block;margin-top:10px;padding:5px 10px 4px;border:1px solid var(--or);border-radius:2px;
+                   color:var(--or);font:600 7.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap}
+
+  .feuille .et{margin:18px 0 5px;font:600 7px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;color:var(--or);text-transform:uppercase}
+  .feuille .notes p{margin:0 0 3px;line-height:1.45}
+  .feuille .notes p.g{font-weight:600}
+  .feuille .signature{margin-top:14px;display:grid;grid-template-columns:1fr 1.4fr;gap:12px}
+  .feuille .signature div{border:.6px solid var(--filet);border-radius:2px;height:56px;padding:5px 6px;font-size:6.6px;color:var(--gris);letter-spacing:.14em;text-transform:uppercase}
+  .feuille .mention{margin-top:12px;font-size:7.6px;color:var(--encreDouce);line-height:1.45}
+  .feuille .mention p{margin:0 0 3px}
+  .feuille .pied{margin-top:16px;padding-top:8px;border-top:.6px solid var(--filetDoux);display:flex;justify-content:space-between;gap:8px;font-size:6.8px;color:var(--gris);letter-spacing:.04em}
+  .feuille .signature[hidden],[hidden]{display:none}
+
+  .note{max-width:430px;margin:14px auto 0;padding:0 18px;font-size:13px;line-height:1.6;color:var(--horsTexte)}
+  .note b{color:var(--horsFort)}
+  .note h3{font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin:22px 0 8px;color:var(--horsFort)}
+  .note table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .note td{padding:6px 6px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  .note td:first-child{width:38%;color:var(--horsFort);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Votre demande du 14 septembre.</b> Le devis et la facture sont <b>le même papier</b> : seul le titre change, et ce que la facture ajoute — les règlements reçus, le net à payer. Colonne <b>Unité</b>, quantités sans « ,00 », le taux de TVA <b>sur la ligne</b> et les bases par taux dessous. Deux polices, comme le PDF ; l’or pour ce qui se lit. Rien n’est codé.
+</div>
+
+<div class="choix">
+  <button data-vue="devis" aria-pressed="true">Devis</button>
+  <button data-vue="facture" aria-pressed="false">Facture</button>
+  <button data-vue="acquittee" aria-pressed="false">Facture acquittée</button>
+</div>
+
+<div class="tel">
+  <div class="entete">
+    <p class="sur" id="sur">Ce que le client reçoit</p>
+    <h1 id="h1">Le devis</h1>
+  </div>
+
+  <div class="champ-titre"><input id="titre-libre" placeholder="Titre (optionnel)" aria-label="Titre du document"></div>
+  <div class="regls" id="regls" hidden>
+    <p class="inter">Règlements reçus</p>
+    <div id="regls-lignes"></div>
+    <button class="plus" type="button" id="regl-plus">+ Règlement reçu</button>
+    <div class="interrupteur">
+      <span>Facture acquittée<small>Tout est réglé avant l’envoi</small></span>
+      <button class="bascule" type="button" id="acquittee" aria-pressed="false" aria-label="Facture acquittée"></button>
+    </div>
+  </div>
+
+  <div class="feuille" id="feuille">
+    <div class="haut">
+      <div class="emetteur">
+        <div class="nom">Eden Nature</div>
+        <div class="coord">SAS au capital de 1 500,00 € · RCS Avignon 912 345 678<br>12 chemin des Vignes, 84000 Avignon<br>06 12 34 56 78 · contact@edennature.fr<br>SIRET 912 345 678 00019</div>
+      </div>
+      <div class="refs" id="refs"></div>
+    </div>
+
+    <div class="titre">
+      <h2 id="titre">Devis</h2>
+      <span class="no" id="numero"></span>
+    </div>
+    <p class="sous" id="sous-titre" hidden></p>
+
+    <div class="parties">
+      <div><h3>Client</h3><p>Mme Grospiron<br>8 rue des Lilas<br>84000 Avignon<br>06 98 76 54 32</p></div>
+      <div><h3>Lieu des travaux</h3><p>8 rue des Lilas<br>84000 Avignon</p></div>
+    </div>
+
+    <table>
+      <thead><tr><th>Désignation</th><th class="n">Qté</th><th class="c">Unité</th><th class="n">P.U. HT</th><th class="c">Rem. %</th><th class="n">Total HT</th><th class="c">TVA %</th><th class="n g">Total TTC</th></tr></thead>
+      <tbody id="lignes"></tbody>
+    </table>
+
+    <div class="bas">
+      <div class="tva">
+        <div class="r h"><span>Base HT</span><span>Taux</span><span>TVA</span></div>
+        <div id="bases"></div>
+      </div>
+      <div class="totaux" id="totaux"></div>
+    </div>
+
+    <p class="et">Notes / conditions</p>
+    <div class="notes" id="notes"></div>
+
+    <div class="signature" id="signature">
+      <div>Date</div>
+      <div>Bon pour accord, signature</div>
+    </div>
+
+    <div class="mention" id="mention"></div>
+    <div class="pied"><span>Eden Nature · SIRET 912 345 678 00019 · IBAN FR76 3000 1000 0000 0000 0000 000</span><span>Page 1/1</span></div>
+  </div>
+</div>
+
+<div class="note">
+  <h3>Ce qui change par rapport à aujourd’hui</h3>
+  <table>
+    <tr><td>Un seul papier</td><td>le devis et la facture partagent l’en-tête, le tableau, les totaux, les notes. La facture ajoute les règlements reçus et le net à payer ; le devis garde la validité et le bon pour accord.</td></tr>
+    <tr><td>La colonne Unité</td><td>elle existait sur le devis sans s’imprimer : « 3.00 ml » collé dans la quantité. Elle a sa colonne, et la quantité s’écrit « 3 », jamais « 3.00 ».</td></tr>
+    <tr><td>Le taux de TVA sur la ligne</td><td>plus de tableau coupé en « TVA 20 % / TVA 10 % » avec un sous-total chacun : le taux se lit sur chaque ligne, et les bases par taux sont dessous, comme chez les pros.</td></tr>
+    <tr><td>Le Total TTC par ligne</td><td>ce que le client compare à son relevé.</td></tr>
+    <tr><td>Les libellés</td><td>« TVA 20 % » sans parenthèses, « P.U. HT », « Rem. % ». Les mêmes sur les deux papiers.</td></tr>
+    <tr><td>Les règlements reçus</td><td>sur la facture, au-dessus du papier : l’acompte du devis d’office, « + Règlement reçu » pour un chèque ou un virement de plus, avec son libellé, sa date, son montant. Le papier suit : la ligne sous le Total TTC, le net à payer, « Montants versés », et le tampon « Acquittée » quand le net tombe à zéro.</td></tr>
+    <tr><td>Plusieurs règlements</td><td>sous le Total TTC, une seule ligne « Acomptes » avec le total ; le détail, chèque par chèque, reste dans « Montants versés » sous les notes.</td></tr>
+    <tr><td>Facture acquittée</td><td>un interrupteur sous les règlements. Allumé, le solde est compté reçu à la date du jour, le net tombe à zéro et le tampon s’imprime ; il s’allume seul quand les règlements couvrent tout. Éteint, le solde repart.</td></tr>
+    <tr><td>Un titre, si vous voulez</td><td>un champ au-dessus du papier, vide d’office : « Aménagement du jardin », « Chantier Machin ». Rempli, il s’écrit sous DEVIS ou FACTURE ; vide, rien.</td></tr>
+    <tr><td>L’or</td><td>ne porte que ce qu’on lit : Client, Lieu des travaux, Notes, le tampon « Facture acquittée ». Jamais un montant.</td></tr>
+  </table>
+</div>
+
+<script>
+  // ─── Un seul document, un seul calcul ────────────────────────────────────
+  var LIGNES = [
+    { lib: "Terrassement et préparation du sol", detail: "Décapage, nivellement, évacuation des déblais", q: 1, u: "forfait", pu: 380, tva: 20 },
+    { lib: "Fourniture de gazon en rouleau", detail: "", q: 120, u: "m²", pu: 6.5, tva: 10 },
+    { lib: "Bordures acier corten", detail: "Hauteur 15 cm, épaisseur 3 mm, pose comprise", q: 24, u: "ml", pu: 18, tva: 20 }
+  ];
+  var REMISE = 5, MO = 450, ACOMPTE = 30;
+  var VUE = "devis";
+  var REGLS = [ { lib: "Acompte 30 %, chèque n° 1806028", date: "02/09/2026", montant: null } ];
+  function nombre(v){ var n = parseFloat(String(v).replace(",",".")); return isFinite(n) ? n : 0; }
+  function id(x){ return document.getElementById(x); }
+  function eur(n){ return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
+  function qte(n){ return n.toLocaleString("fr-FR",{maximumFractionDigits:2}); }
+  function r2(n){ return Math.round(n*100)/100; }
+
+  function calcul(){
+    var brut = 0, parTaux = {};
+    LIGNES.forEach(function(l){
+      l.ht = r2(l.q*l.pu); l.net = r2(l.ht*(1-REMISE/100)); l.ttc = r2(l.net*(1+l.tva/100));
+      brut += l.ht; parTaux[l.tva] = r2((parTaux[l.tva]||0)+l.net);
+    });
+    var netHt = 0, tvaT = 0, taux = [];
+    Object.keys(parTaux).sort(function(a,b){return b-a}).forEach(function(t){
+      var tva = r2(parTaux[t]*t/100); netHt += parTaux[t]; tvaT += tva; taux.push({t:t, base:parTaux[t], tva:tva});
+    });
+    netHt = r2(netHt); tvaT = r2(tvaT);
+    var ttc = r2(netHt+tvaT), acompte = r2(ttc*ACOMPTE/100);
+    var verses = 0;
+    REGLS.forEach(function(g){ g.m = g.montant === null ? acompte : nombre(g.montant); verses += g.m; });
+    return { brut:r2(brut), remise:r2(brut-netHt), netHt:netHt, taux:taux, tvaT:tvaT, ttc:ttc, acompte:acompte, reste:r2(ttc-acompte), verses:r2(verses), net:Math.max(0, r2(ttc-verses)) };
+  }
+
+  function rendre(vue, sansListe){
+    VUE = vue;
+    var c = calcul(), facture = vue !== "devis", acquittee = facture && c.net === 0;
+    // la saisie des règlements, au-dessus du papier, seulement sur la facture
+    id("regls").hidden = !facture;
+    id("acquittee").setAttribute("aria-pressed", String(acquittee));
+    // La liste ne se redessine pas sous un doigt qui passe d'un champ à l'autre :
+    // un libellé validé ne doit pas faire perdre le champ du montant.
+    var boite = id("regls-lignes"); if (!sansListe) boite.innerHTML = "";
+    if (!sansListe) REGLS.forEach(function(g){
+      var d = document.createElement("div"); d.className = "regl";
+      d.innerHTML = '<span class="quoi"><input value="'+g.lib+'" placeholder="Chèque n°…" aria-label="Libellé du règlement"><input class="date" value="'+g.date+'" aria-label="Date"></span>' +
+                    '<span class="m"><input value="'+String(g.m).replace(".",",")+'" inputmode="decimal" aria-label="Montant reçu"> €</span>';
+      var ch = d.querySelectorAll("input");
+      ch[0].onchange = function(e){ g.lib = e.target.value; rendre(VUE, true); };
+      ch[1].onchange = function(e){ g.date = e.target.value; rendre(VUE, true); };
+      ch[2].onchange = function(e){ g.montant = nombre(e.target.value); rendre(VUE, true); };
+      boite.appendChild(d);
+    });
+    id("h1").textContent = facture ? "La facture" : "Le devis";
+    id("titre").textContent = facture ? "Facture" : "Devis";
+    id("numero").textContent = facture ? "n° F2026-000021" : "n° D2026-000014";
+    id("refs").innerHTML = facture
+      ? '<div><b>Date</b><span>14/09/2026</span></div><div><b>Échéance</b><span>à réception</span></div><div><b>Devis</b><span>D2026-000014 du 02/09/2026</span></div>'
+      : '<div><b>Date</b><span>02/09/2026</span></div><div><b>Validité</b><span>30 jours</span></div>';
+
+    var tb = id("lignes"); tb.innerHTML = "";
+    LIGNES.forEach(function(l){
+      var tr = document.createElement("tr");
+      tr.innerHTML = '<td>'+l.lib+(l.detail?'<div class="d">'+l.detail+'</div>':'')+'</td><td class="n">'+qte(l.q)+'</td><td class="c">'+l.u+'</td><td class="n">'+eur(l.pu)+'</td><td class="c">'+(REMISE||"")+'</td><td class="n">'+eur(l.net)+'</td><td class="c">'+l.tva+'</td><td class="n g">'+eur(l.ttc)+'</td>';
+      tb.appendChild(tr);
+    });
+    id("bases").innerHTML = c.taux.map(function(x){ return '<div class="r"><span>'+eur(x.base)+'</span><span>'+x.t+' %</span><span>'+eur(x.tva)+'</span></div>'; }).join("");
+
+    var t = [
+      '<div class="r gras"><span>Total HT</span><span>'+eur(c.brut)+'</span></div>',
+      '<div class="r doux"><span>dont main d’œuvre HT</span><span>'+eur(MO)+'</span></div>',
+      '<div class="r or"><span>Remise de '+REMISE+' %</span><span>− '+eur(c.remise)+'</span></div>',
+      '<div class="r gras"><span>Total HT après remise</span><span>'+eur(c.netHt)+'</span></div>'
+    ];
+    c.taux.forEach(function(x){ t.push('<div class="r"><span>TVA '+x.t+' %</span><span>'+eur(x.tva)+'</span></div>'); });
+    t.push('<div class="r ttc"><span>Total TTC</span><span>'+eur(c.ttc)+'</span></div>');
+    if (!facture) {
+      t.push('<div class="r doux"><span>Acompte 30 % à la signature</span><span>'+eur(c.acompte)+'</span></div>');
+      t.push('<div class="r reste"><span>Reste à régler</span><span>'+eur(c.reste)+'</span></div>');
+    } else {
+      // Un seul règlement : sa ligne. Plusieurs : une ligne « Acomptes », totalisée —
+      // le détail, chèque par chèque, est dans « Montants versés » sous les notes.
+      if (REGLS.length === 1) t.push('<div class="r doux"><span>'+(REGLS[0].lib.split(",")[0] || "Règlement")+'</span><span>− '+eur(REGLS[0].m)+'</span></div>');
+      else if (REGLS.length > 1) t.push('<div class="r doux"><span>Acomptes</span><span>− '+eur(c.verses)+'</span></div>');
+      t.push('<div class="r net"><span>Net à payer</span><span>'+eur(c.net)+'</span></div>');
+      if (acquittee) t.push('<span class="tampon">Acquittée le '+(REGLS[REGLS.length-1].date)+'</span>');
+    }
+    id("totaux").innerHTML = t.join("");
+
+    var n = ['<p>Accès par le portail de gauche, cour à dégager la veille.</p>',
+             '<p class="g">Mode de règlement : 30 % à la signature, solde à réception de la facture.</p>'];
+    if (!facture) { n.push('<p class="g">Montant à régler à la signature : '+eur(c.acompte)+'</p>'); n.push('<p class="g">Solde restant à régler : '+eur(c.reste)+'</p>'); }
+    else { n.push('<p class="g">Montants versés : '+REGLS.map(function(g){ return (g.lib || "règlement")+' du '+g.date+', '+eur(g.m); }).join(" ; ")+'.</p>'); }
+    n.push('<p class="g">Moyens de paiement acceptés : virement, chèque.</p>');
+    n.push('<p class="g">En cas de retard de paiement : pénalités au taux de trois fois le taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de recouvrement.</p>');
+    id("notes").innerHTML = n.join("");
+
+    id("signature").hidden = facture;
+    id("mention").innerHTML = (facture ? '<p>Pour information, montant de la main d’œuvre TTC : '+eur(r2(MO*(1-REMISE/100)*1.2))+'.</p>' : '')
+      + '<p>Assurance décennale : [assureur, n° de contrat, couverture géographique]. Médiateur de la consommation : [nom et coordonnées].</p>'
+      + (facture ? '' : '<p>Devis établi par Eden Nature, valable selon la durée indiquée ci-dessus. Bon pour accord précédé de la mention manuscrite, daté et signé par le client.</p>');
+  }
+
+  document.querySelectorAll(".choix [data-vue]").forEach(function(b){
+    b.onclick = function(){
+      document.querySelectorAll(".choix [data-vue]").forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+      b.setAttribute("aria-pressed","true");
+      // « Facture acquittée » : la même facture, avec le solde reçu par virement.
+      REGLS = REGLS.slice(0, 1);
+      if (b.dataset.vue === "acquittee") REGLS.push({ lib: "Virement Mme Grospiron", date: "21/09/2026", montant: calcul().reste });
+      rendre(b.dataset.vue);
+      window.scrollTo({top:0});
+    };
+  });
+  id("acquittee").onclick = function(){
+    var c = calcul();
+    if (c.net > 0) REGLS.push({ lib: "Solde", date: "14/09/2026", montant: c.net });
+    else REGLS = REGLS.filter(function(g){ return g.lib !== "Solde"; });
+    rendre(VUE);
+  };
+  id("regl-plus").onclick = function(){
+    REGLS.push({ lib: "", date: "14/09/2026", montant: 0 });
+    rendre(VUE);
+    var ch = id("regls-lignes").querySelectorAll("input"); ch[ch.length-3].focus();
+  };
+  // Un chiffre touché est sélectionné en entier : on tape, l'ancien part.
+  document.addEventListener("focusin", function(e){
+    if (e.target.tagName === "INPUT" && e.target.getAttribute("inputmode") === "decimal") e.target.select();
+  });
+  // Le titre : ce qu'il tape s'écrit sous « DEVIS » ; vide, rien ne s'affiche.
+  id("titre-libre").oninput = function(e){
+    var t = e.target.value.trim();
+    id("sous-titre").hidden = !t;
+    id("sous-titre").textContent = t;
+  };
+  rendre("devis");
+</script>
+</body>
+</html>

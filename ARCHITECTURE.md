@@ -30358,6 +30358,76 @@ l'ancienne règle ; les lignes de la B), `test-acomptes-devis.ts`,
 `test-agent-gestes.ts` (régler l'acompte garde la validité, sans relecture),
 `test-planche-b-devis-e2e.ts`, `test-acomptes-devis-e2e.ts`.
 
+---
+
+---
+
+## §361 — Une adresse se prouve avant d'entrer : le code de vérification
+
+**Sa demande du 14 septembre 2026 :** *« j'ai réussi à me connecter avec une
+adresse fausse qui n'existe pas ! Base-toi sur la réalité, comment font les
+applis pour autoriser les utilisateurs à créer des comptes ? Il faut mettre une
+sécurité avec un numéro envoyé par email à rentrer pour pouvoir valider son
+compte. »*
+
+**Ce que font les applications, et ce qu'on fait donc :** la création est
+libre, mais rien ne s'ouvre tant que l'adresse n'a pas répondu — six chiffres
+envoyés à l'adresse, valables un quart d'heure, cinq essais, « Renvoyer »
+borné. Sa proposition était le standard ; il n'y avait rien à inventer.
+
+**Ce qui manquait à Atlas, et c'est le vrai coût du lot : elle n'envoyait
+aucun e-mail.** Tout partait par l'application Mail du téléphone
+(`docs/QUESTIONS.md` §2), et c'était un choix — le 13 août, l'e-mail du
+compte avait été rendu non modifiable faute de canal, « à rouvrir le jour où
+un parcours d'inscription existera ». Ce jour est venu. **Il a choisi Brevo**
+(français, serveurs en France, 300 e-mails/jour gratuits, un expéditeur
+vérifié suffit sans nom de domaine — Resend et Postmark exigent un domaine
+qu'il n'a pas encore).
+
+| | |
+|---|---|
+| `src/server/courriel/` | un seul point d'entrée, `envoyerCourriel` ; `brevo.ts` (POST `/v3/smtp/email`, clé en en-tête) ou `dev.ts`, qui n'envoie rien et écrit le texte entier au journal en `warn` |
+| `env.ts` | `COURRIEL_PROVIDER` = `brevo` \| `dev`, sur le modèle de `LLM_PROVIDER` : la clé `BREVO_API_KEY` branche, la variable explicite l'emporte, `dev` est refusé en production, et une clé sans `COURRIEL_EXPEDITEUR` est refusée (Brevo n'envoie rien sans expéditeur vérifié) |
+| migration 0091 | `codes_verification_email` : une ligne par compte EN ATTENTE — empreinte HMAC du code (jamais le code), expiration, essais, envois. RLS sur `app.utilisateur_id`, comme les acceptations des documents légaux |
+| `src/lib/code-verification.ts` | les règles pures : durée, essais, renvois, comparaison en temps constant — éprouvées sans base (`test-code-verification`). **Aucun import `node:`** : la case du code les lit dans le navigateur |
+| `src/server/empreinte-du-code.ts` | tirage (`randomInt`) et HMAC-SHA256 avec `AUTH_SECRET` et l'identifiant du compte |
+| `src/server/repositories/verification-email.ts` | ouvre l'attente à la création, compte les essais dans la même transaction que la lecture (`FOR UPDATE`), efface la ligne et date `users.email_verified` sur le bon code |
+| `GardeVerificationEmail` | dans le layout, AVANT `GardeDocumentsLegaux` : un compte en attente est renvoyé sur `/verifier-email`, quel que soit l'écran demandé |
+| `accueilPourEmail` | la connexion d'un compte en attente mène au code, pas au rôle — la garde du layout ne se rejoue pas après une action serveur |
+| `SaisieDuCode` | UNE pièce, deux écrans : la dix-septième question de la porte, et `/verifier-email` où revient un compte qui a fermé l'application à mi-chemin |
+
+**Ce qui décide, c'est la LIGNE, pas la colonne.** Fermer la porte sur
+`users.email_verified IS NULL` aurait enfermé dehors tous les comptes
+existants — les siens, ses salariés (créés par lui, adresse tapée par lui),
+Google et Apple (déjà vérifiés par le fournisseur) — et la migration aurait
+dû mentir en les datant tous. Avec la ligne, **seul un compte créé par la
+porte** attend un code ; rien ne change pour les autres, et `email_verified`
+ne prend une date que quand elle est vraie.
+
+**Le code n'existe nulle part en clair.** La base porte
+`HMAC(secret, id:code)` ; une base lue ne rend pas les codes en cours, et
+deux comptes qui tirent le même code n'ont pas la même empreinte. Six
+chiffres se devinent en un million d'essais : cinq sont laissés, puis le code
+est mort et le refus le dit — sans jamais dire combien d'essais il restait.
+La comparaison parcourt toute l'empreinte, toujours (`empreintesEgales`).
+
+**Comment la batterie « reçoit » l'e-mail sans service d'envoi.** Elle ne
+lit rien : elle POSE un code connu en écrivant son empreinte avec le même
+secret que le serveur (`AUTH_SECRET`), puis l'écran doit le taper — et un
+mauvais code doit être refusé d'abord. Rien n'est contourné, et aucune porte
+de service n'existe dans le produit pour les suites.
+
+**L'ordre des gardes, et pourquoi il ne s'inverse pas.** Le code d'abord, les
+conditions ensuite : on ne fait pas lire un contrat à quelqu'un dont on ne
+sait pas s'il existe. Chaque garde exempte l'écran de l'autre
+(`/verifier-email`, `/documents-legaux`), sans quoi elles se renverraient
+l'une à l'autre sans fin.
+
+**Ce qui reste à lui :** créer le compte Brevo, vérifier l'adresse
+expéditrice, et poser `BREVO_API_KEY` et `COURRIEL_EXPEDITEUR` dans son
+espace. Sans elles, son banc tourne en `dev` : le code s'écrit dans le
+journal du serveur, et personne ne reçoit d'e-mail.
+
 ## §362 — La feuille du planning vit dans l'adresse, sinon le retour la perd
 
 **Sa panne du 7 septembre 2026, refabriquée par l'autre bout.** *« Lorsque je

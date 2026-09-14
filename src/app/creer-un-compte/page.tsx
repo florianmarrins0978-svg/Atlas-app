@@ -16,6 +16,7 @@ import {
   type Question,
 } from "@/lib/creation-compte";
 import PorteDeNuit, { CHAMP, NUIT, SERIF } from "@/components/atlas/PorteDeNuit";
+import SaisieDuCode from "@/components/atlas/SaisieDuCode";
 import OeilMotDePasse from "@/components/atlas/OeilMotDePasse";
 import { creerLeCompteAction } from "./actions";
 import type { SaisieCompte } from "@/server/repositories/creation-compte";
@@ -58,6 +59,17 @@ export default function CreerUnComptePage() {
   const [rang, setRang] = useState(0);
   const [refus, setRefus] = useState<string | null>(null);
   const [fini, setFini] = useState(false);
+  /**
+   * LA DIX-SEPTIÈME QUESTION : le code reçu à son adresse — 14 septembre 2026.
+   *
+   * Le compte existe et la session est ouverte dès « Créer mon compte » ; mais
+   * la porte ne s'ouvre qu'une fois le code entré (`GardeVerificationEmail`).
+   * Il a créé le sien avec une adresse inventée et il est entré : c'est ce
+   * que cette étape ferme. Elle est dessinée par la même pièce que
+   * `/verifier-email`, où revient un compte qui aurait fermé l'application
+   * ici — un seul visage pour un seul geste.
+   */
+  const [codeEnvoyeA, setCodeEnvoyeA] = useState<{ email: string; avertissement?: string } | null>(null);
   const [deroulantOuvert, setDeroulantOuvert] = useState(false);
   const [mdpVisible, setMdpVisible] = useState<Record<string, boolean>>({});
   const [enCours, demarrer] = useTransition();
@@ -126,19 +138,33 @@ export default function CreerUnComptePage() {
         moyens: completes.moyens,
       };
       const etat = await creerLeCompteAction(saisie);
-      if (etat?.refus) {
+      if (etat?.refus !== undefined) {
         setRefus(etat.refus);
         return;
       }
-      setFini(true);
+      if (etat) setCodeEnvoyeA({ email: etat.codeEnvoyeA, avertissement: etat.avertissement });
+      else setFini(true);
     });
   }
 
   const manque = fini ? phraseDeCeQuiManque(resteAFaire(reponses)) : null;
+  const etapeDuCode = codeEnvoyeA !== null && !fini;
 
   return (
     <PorteDeNuit className="atlas-bas-sans-barre flex min-h-[100dvh] flex-col px-[22px]">
-      {!fini && question && (
+      {etapeDuCode && (
+        <div className="flex flex-1 flex-col pt-[18px]">
+          {/* Pas de « Retour » ici : le compte est créé, les seize réponses
+              sont en base. Revenir en arrière n'aurait rien à défaire. */}
+          <SaisieDuCode
+            email={codeEnvoyeA.email}
+            avertissement={codeEnvoyeA.avertissement}
+            onVerifie={() => setFini(true)}
+          />
+        </div>
+      )}
+
+      {!fini && !etapeDuCode && question && (
         <>
           <button
             type="button"
@@ -406,8 +432,21 @@ export default function CreerUnComptePage() {
               <>Vos réglages sont remplis. Votre premier devis peut partir.</>
             )}
           </p>
+          {/* **VERS LES DOCUMENTS LÉGAUX, PAS VERS L'ACCUEIL — 14 septembre 2026.**
+              Sa capture : il est entré, a travaillé, et les conditions ne lui
+              sont parvenues qu'en RECHARGEANT la page. *« Il faut les signer
+              avant d'entrer dans l'appli. »*
+
+              La garde qui les exige vit dans la mise en page racine
+              (`GardeDocumentsLegaux`) — un composant serveur que Next.js ne
+              rejoue PAS sur une navigation côté client : `href="/"` entrait
+              donc sans passer devant elle, et seul un rechargement la
+              réveillait. La page des documents, elle, se rend à chaque visite :
+              elle demande ce qui reste à accepter, et renvoie sur l'accueil
+              quand il n'y a rien (`documents-legaux/page.tsx`). C'est donc
+              elle, la porte d'entrée d'un compte neuf — et pas l'accueil. */}
           <Link
-            href="/"
+            href="/documents-legaux"
             className="block w-full rounded-full py-4 text-center text-[17px] leading-none"
             style={{ background: NUIT.rust, color: NUIT.cream, ...SERIF }}
           >

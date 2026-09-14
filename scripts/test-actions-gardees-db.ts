@@ -228,6 +228,13 @@ const EXEMPTIONS: Record<string, string> = {
     "L'écran du devis s'ouvre par un jeton, sans compte : le client de l'artisan n'a pas de rôle. Le jeton EST la garde (chemins-publics.ts).",
   "src/app/documents-legaux/actions.ts#accepterDocumentsAction":
     "Accepter les documents légaux est la porte d'entrée : la fermer par rôle enfermerait dehors le salarié qui n'a pas encore accepté.",
+  "src/app/verifier-email/actions.ts#verifierLeCodeAction":
+    "Entrer le code reçu à son adresse précède tout rôle : le compte vient de naître, " +
+    "et la porte ne s'ouvre qu'après. Ce qui la borne, c'est le code lui-même — cinq " +
+    "essais, un quart d'heure — et la session : l'action ne prend aucun identifiant.",
+  "src/app/verifier-email/actions.ts#renvoyerLeCodeAction":
+    "Même porte : le renvoi est borné en base (trois par quart d'heure, trente secondes " +
+    "entre deux), et l'adresse est lue en base, jamais reçue du navigateur.",
   "src/app/factures/[jeton]/actions.ts#noterOuvertureAction":
     "Même porte que la réponse au devis : la page de la facture s'ouvre par un jeton, " +
     "sans compte. Le jeton EST la garde — 256 bits tirés au sort, une politique RLS " +

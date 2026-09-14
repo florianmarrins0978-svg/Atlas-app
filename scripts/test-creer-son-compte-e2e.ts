@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Client } from "pg";
 import { ADRESSE } from "./_adresse";
+import { empreinteDuCode } from "../src/server/empreinte-du-code";
 
 /**
  * « CRÉER UN COMPTE » — le parcours entier, dans un vrai navigateur.
@@ -96,7 +97,9 @@ async function repondreATout(
 
   for (let etape = 0; etape < 30; etape += 1) {
     const titre = ((await page.locator("h1, h2").first().textContent()) ?? "").trim();
-    if (/Une erreur|Tout est prêt|C’est fait/.test(titre)) {
+    // « Le code reçu à … » : la dix-septième question, celle du code envoyé
+    // à l'adresse. Le parcours s'arrête là ; `entrerLeCode` prend la suite.
+    if (/Une erreur|Tout est prêt|C’est fait|Le code reçu à/.test(titre)) {
       const refus = ((await page.locator("[role=alert]").first().textContent()) ?? "").trim();
       return { titre, refus };
     }
@@ -180,6 +183,34 @@ async function surLaBase<T>(fn: (client: Client) => Promise<T>): Promise<T> {
   }
 }
 
+/**
+ * « Recevoir » le code sans service d'envoi.
+ *
+ * Le code n'existe nulle part en clair — la base ne porte que son empreinte
+ * HMAC. La suite fait donc ce que ferait la boîte mail : elle POSE un code
+ * connu, en écrivant l'empreinte avec le même secret que le serveur
+ * (`AUTH_SECRET`, que la batterie lui donne). Rien n'est contourné : l'écran
+ * doit ensuite taper ce code, et un mauvais code doit être refusé.
+ */
+async function forgerLeCode(email: string, code: string) {
+  const secret = process.env.AUTH_SECRET;
+  assert.ok(secret, "AUTH_SECRET absent : impossible de forger un code");
+  await surLaBase(async (c) => {
+    const { rows } = await c.query("SELECT id FROM users WHERE email = $1", [email.toLowerCase()]);
+    assert.equal(rows.length, 1, "le compte n'est pas en base");
+    const { rowCount } = await c.query(
+      "UPDATE codes_verification_email SET empreinte = $2 WHERE utilisateur_id = $1",
+      [rows[0].id, empreinteDuCode(code, rows[0].id, secret)]
+    );
+    assert.equal(rowCount, 1, "aucune ligne d'attente : le compte est entré sans code");
+  });
+}
+
+async function entrerLeCode(page: import("playwright").Page, code: string) {
+  await page.getByRole("textbox", { name: "Le code reçu par e-mail" }).fill(code);
+  await page.getByRole("button", { name: "Continuer" }).click();
+}
+
 async function main() {
   console.log("=== Créer un compte, par la porte ===\n");
 
@@ -187,10 +218,11 @@ async function main() {
   const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
 
-  await cas("les seize questions mènent à « Tout est prêt »", async () => {
-    const email = `porte-${Date.now()}@exemple.fr`;
+  const email = `porte-${Date.now()}@exemple.fr`;
+
+  await cas("les seize questions mènent au code, et le compte attend son code", async () => {
     const { titre } = await repondreATout(page, email);
-    assert.equal(titre, "Tout est prêt.", `le parcours a fini sur « ${titre} »`);
+    assert.equal(titre, `Le code reçu à ${email}`, `le parcours a fini sur « ${titre} »`);
 
     const lignes = await surLaBase(async (c) => {
       const { rows } = await c.query(
@@ -206,6 +238,64 @@ async function main() {
     // `creation-compte.ts`, et c'est ici qu'on le vérifie pour de bon.
     assert.equal(lignes.length, 1, "le compte, l'adhésion et l'abonnement ne sont pas tous les trois là");
     assert.equal(lignes[0].statut, "essai", "l'essai de quinze jours n'a pas été ouvert");
+  });
+
+  await cas("tant que le code n'est pas entré, l'accueil renvoie sur le code", async () => {
+    // Le geste du patron : il ferme la porte à mi-chemin et rouvre
+    // l'application. La session est là ; la garde doit le ramener au code.
+    await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
+    await page.waitForURL(/\/verifier-email(?:\?|$)/, { timeout: 30_000 });
+    await page.getByRole("heading", { name: `Le code reçu à ${email}` }).waitFor({ timeout: 30_000 });
+    // Et les documents légaux non plus ne se lisent pas avant le code.
+    await page.goto(`${BASE}/documents-legaux`, { waitUntil: "domcontentloaded" });
+    await page.waitForURL(/\/verifier-email(?:\?|$)/, { timeout: 30_000 });
+  });
+
+  await cas("un mauvais code est refusé, le bon mène aux documents légaux", async () => {
+    await forgerLeCode(email, "004213");
+    await page.goto(`${BASE}/verifier-email`, { waitUntil: "domcontentloaded" });
+    await entrerLeCode(page, "000000");
+    await page.locator("[role=alert]").filter({ hasText: "Code incorrect." }).first().waitFor({ timeout: 30_000 });
+
+    await entrerLeCode(page, "004213");
+    await page.waitForURL(/\/documents-legaux(?:\?|$)/, { timeout: 30_000 });
+    await page.getByRole("heading", { name: "Avant de commencer" }).waitFor({ timeout: 30_000 });
+
+    const [ligne] = await surLaBase(async (c) => {
+      const { rows } = await c.query(
+        `SELECT u.email_verified,
+                (SELECT count(*)::int FROM codes_verification_email v WHERE v.utilisateur_id = u.id) AS attente
+           FROM users u WHERE u.email = $1`,
+        [email]
+      );
+      return rows;
+    });
+    assert.ok(ligne.email_verified, "email_verified n'est pas daté après le bon code");
+    assert.equal(ligne.attente, 0, "la ligne d'attente n'a pas été effacée");
+  });
+
+  await cas("« Entrer dans Atlas » passe par les documents légaux AVANT l'accueil", async () => {
+    // **Le geste du patron, pas la route.** Sa capture du 14 septembre 2026 :
+    // entré par ce bouton, il a travaillé, et les conditions ne lui sont
+    // parvenues qu'en rechargeant. La garde du layout ne se rejoue pas sur
+    // une navigation côté client — c'est donc CE clic qu'on éprouve, et l'on
+    // exige la page d'acceptation, pas seulement « pas l'accueil ».
+    //
+    // Un second compte, dont le code se tape SUR LA PORTE cette fois : c'est
+    // le chemin ordinaire, et c'est lui qui montre l'écran de fin.
+    const second = `porte-fin-${Date.now()}@exemple.fr`;
+    const { titre } = await repondreATout(page, second);
+    assert.equal(titre, `Le code reçu à ${second}`, `le parcours a fini sur « ${titre} »`);
+    await forgerLeCode(second, "004213");
+    await entrerLeCode(page, "004213");
+    await page.getByRole("heading", { name: /Tout est prêt|C’est fait/ }).waitFor({ timeout: 30_000 });
+    await page.getByRole("link", { name: "Entrer dans Atlas" }).click();
+    await page.waitForURL(/\/documents-legaux(?:\?|$)/, { timeout: 30_000 });
+    await page.getByRole("heading", { name: "Avant de commencer" }).waitFor({ timeout: 30_000 });
+    assert.ok(
+      (await page.getByRole("checkbox").count()) > 0,
+      "la page des documents ne propose rien à accepter : un compte neuf devrait avoir les deux textes en attente"
+    );
   });
 
   await cas("UNE BASE EN RETARD SE DIT — elle ne jette plus sur « Une erreur »", async () => {

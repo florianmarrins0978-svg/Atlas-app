@@ -17,8 +17,10 @@
 // `localhost`, jamais `127.0.0.1` : Next refuse ses ressources de développement
 // à une origine étrangère, et la page n'arrive alors jamais hydratée.
 import { mkdirSync } from "node:fs";
+import { Client } from "pg";
 import { lancerNavigateur, ECRAN_DU_PATRON } from "./e2e-browser";
 import { ADRESSE } from "./_adresse";
+import { empreinteDuCode } from "../src/server/empreinte-du-code";
 
 const dossier = process.argv[2];
 if (!dossier) {
@@ -61,7 +63,8 @@ await page.click("text=Continuer");
 // **Une adresse neuve à chaque passage** : le compte est réellement créé, et
 // la seconde exécution tomberait sinon sur « cette adresse a déjà un compte »
 // — un refus juste, mais qui n'est pas ce qu'on veut photographier.
-await page.fill('input[name="email"]', `anne-${Date.now()}@exemple.fr`);
+const email = `anne-${Date.now()}@exemple.fr`;
+await page.fill('input[name="email"]', email);
 await page.click("text=Continuer");
 await prendre("mot-de-passe");
 
@@ -103,6 +106,34 @@ for (const _ of ["numTva", "iban", "titulaire"]) {
 await prendre("derniere-question");
 
 await page.click("text=Créer mon compte");
+
+// La dix-septième question : le code reçu à l'adresse (14 septembre 2026).
+// Le code n'existe pas en clair : on pose son empreinte en base, comme la
+// suite navigateur, puis on le tape — un mauvais d'abord, pour voir le refus.
+await page.getByRole("textbox", { name: "Le code reçu par e-mail" }).waitFor({ timeout: 60_000 });
+await prendre("code");
+await page.getByRole("textbox", { name: "Le code reçu par e-mail" }).fill("000000");
+await page.click("text=Continuer");
+await page.locator("[role=alert]").filter({ hasText: "Code incorrect." }).first().waitFor({ timeout: 30_000 });
+await prendre("code-refus");
+{
+  const secret = process.env.AUTH_SECRET;
+  const url = process.env.DATABASE_URL;
+  if (!secret || !url) throw new Error("AUTH_SECRET et DATABASE_URL sont nécessaires pour poser le code");
+  const client = new Client({ connectionString: url });
+  await client.connect();
+  try {
+    const { rows } = await client.query("SELECT id FROM users WHERE email = $1", [email.toLowerCase()]);
+    await client.query("UPDATE codes_verification_email SET empreinte = $2 WHERE utilisateur_id = $1", [
+      rows[0].id,
+      empreinteDuCode("004213", rows[0].id, secret),
+    ]);
+  } finally {
+    await client.end();
+  }
+}
+await page.getByRole("textbox", { name: "Le code reçu par e-mail" }).fill("004213");
+await page.click("text=Continuer");
 await page.waitForSelector("text=Entrer dans Atlas", { timeout: 60_000 });
 await prendre("fin");
 

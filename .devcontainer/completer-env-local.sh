@@ -50,6 +50,10 @@ ajouter() {
 
 ajouter OPENAI_API_KEY      "Pour que votre voix devienne du texte :"
 ajouter ANTHROPIC_API_KEY   "Pour que ce texte devienne un devis structuré :"
+# Le code de vérification d'une adresse part par Brevo (14 septembre 2026).
+# Les DEUX lignes sont nécessaires : sans expéditeur vérifié, Brevo refuse.
+ajouter BREVO_API_KEY       "Pour que le code de vérification parte par e-mail (Brevo, clé API) :"
+ajouter COURRIEL_EXPEDITEUR "L'adresse expéditrice vérifiée dans Brevo (Expéditeurs) :"
 # Le bouton n'apparaît que si les DEUX lignes de la marque sont remplies :
 # un identifiant sans son secret ne mène qu'à une page d'erreur.
 ajouter AUTH_GOOGLE_ID      "Pour entrer avec Google (voir docs/entrer-avec-google.md) :"
