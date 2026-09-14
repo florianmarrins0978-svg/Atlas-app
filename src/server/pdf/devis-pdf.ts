@@ -73,6 +73,8 @@ export type DevisPdfData = DonneesDocument & {
    * Absente ou nulle : pas de ligne.
    */
   mainDoeuvreHt?: string | null;
+  /** Son titre, s'il en a donné un (migration 0092). Vide : rien ne s'imprime. */
+  titre?: string | null;
 };
 
 /**
@@ -186,12 +188,16 @@ function annexeConditionsGenerales(data: DevisPdfData, sansPrix: boolean) {
  * puis le reste à régler. Rien quand le devis n'en porte aucun — la feuille
  * d'avant sort à l'identique.
  */
-function lignesApresTotal(data: DevisPdfData): { libelle: string; montant: string; fort?: boolean }[] {
+/**
+ * Sous le Total TTC : chaque acompte en gris, puis « Reste à régler » dans la
+ * fonte du total — sa planche du 14 septembre 2026.
+ */
+function lignesApresTotal(data: DevisPdfData): { libelle: string; montant: string; style?: "doux" | "grand" }[] {
   const echeancier = echeancierDevis(data.acomptes ?? [], data.totalTtc);
   if (!echeancier.lignes.length) return [];
   return [
-    ...echeancier.lignes.map((l) => ({ libelle: libelleLigneAcompte(l), montant: l.montant })),
-    { libelle: echeancier.libelleReste, montant: echeancier.reste, fort: true },
+    ...echeancier.lignes.map((l) => ({ libelle: libelleLigneAcompte(l), montant: l.montant, style: "doux" as const })),
+    { libelle: "Reste à régler", montant: echeancier.reste, style: "grand" as const },
   ];
 }
 
@@ -234,11 +240,10 @@ export async function composerDevisPdf(
       : data.statut === "brouillon"
         ? "DEVIS (BROUILLON)"
         : "DEVIS",
+    // Le numéro à droite du titre, plus dans les références (sa planche).
+    numero: data.numeroCommercial + (data.numeroVersion > 1 ? ` — v${data.numeroVersion}` : ""),
+    titreLibre: sansPrix ? null : data.titre,
     references: [
-      [
-        "Devis n°",
-        data.numeroCommercial + (data.numeroVersion > 1 ? ` — v${data.numeroVersion}` : ""),
-      ],
       // Jour/mois/année : personne, en France, ne lit « 2026-08-04 » sur un
       // devis. Le format ISO reste celui de la base, jamais celui du papier.
       ["Date", jourNumerique(data.dateEmission)],

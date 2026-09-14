@@ -125,6 +125,11 @@ const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = 
     pourquoi: "un interrupteur : il dit un état, on ne le presse pas pour agir",
   },
   {
+    fichier: "src/app/chantiers/[id]/facture/ReglementsRecus.tsx",
+    motif: /acquittee \? colors\.rust/,
+    pourquoi: "l'interrupteur « Facture acquittée » (sa planche du 14 septembre 2026) : un état, pas un bouton",
+  },
+  {
     fichier: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
     motif: /animate-pulse/,
     pourquoi: "la pastille qui bat pendant l'enregistrement — un témoin, pas un bouton",

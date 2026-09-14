@@ -25,6 +25,7 @@ import {
   TITRE_TRAVAUX_SUPPLEMENTAIRES,
 } from "@/lib/reduction-devis";
 import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
+import { lignesDuPapier, quantiteLisible, tauxCourt } from "@/lib/lignes-du-papier";
 import { protegerContreModification } from "./proteger-pdf";
 import { annoncerLaLongueurDesPolices } from "./polices-embarquees";
 import { pourLePapier } from "@/lib/texte-pdf";
@@ -267,6 +268,8 @@ type Contexte = {
   sansGras: PDFFont;
   serif: PDFFont;
   serifGras: PDFFont;
+  /** Le titre qu'il donne au document, en italique — la serif quand sa typographie n'en a pas. */
+  serifItalique: PDFFont;
   /** Les couleurs de CE document — son allure, ou celle d'avant. */
   teintes: Teintes;
   trace: TraceDocument;
@@ -563,7 +566,7 @@ async function imageDuLogo(
 async function policesDu(
   pdfDoc: PDFDocument,
   allure: Allure | null | undefined
-): Promise<{ sans: PDFFont; sansGras: PDFFont; serif: PDFFont; serifGras: PDFFont }> {
+): Promise<{ sans: PDFFont; sansGras: PDFFont; serif: PDFFont; serifGras: PDFFont; serifItalique: PDFFont }> {
   // Même prudence que pour les teintes : une clef écrite par une version d'avant
   // ne doit pas empêcher le document de sortir.
   const choisie = allure ? typographieDe(normaliserAllure(allure).typographie) : null;
@@ -573,6 +576,7 @@ async function policesDu(
       sansGras: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
       serif: await pdfDoc.embedFont(StandardFonts.TimesRoman),
       serifGras: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
+      serifItalique: await pdfDoc.embedFont(StandardFonts.TimesRomanItalic),
     };
   }
 
@@ -588,7 +592,7 @@ async function policesDu(
       pdfDoc.embedFont(normal, { subset: false }),
       pdfDoc.embedFont(gras, { subset: false }),
     ]);
-    return { sans: police, sansGras: policeGrasse, serif: police, serifGras: policeGrasse };
+    return { sans: police, sansGras: policeGrasse, serif: police, serifGras: policeGrasse, serifItalique: police };
   } catch (err) {
     // **Un fichier manquant ne doit pas empêcher son devis de sortir.** Il
     // partirait sans document chez son client, pour un choix d'apparence. On
@@ -604,6 +608,7 @@ async function policesDu(
       sansGras: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
       serif: await pdfDoc.embedFont(StandardFonts.TimesRoman),
       serifGras: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
+      serifItalique: await pdfDoc.embedFont(StandardFonts.TimesRomanItalic),
     };
   }
 }
@@ -664,8 +669,6 @@ export type OptionsDocument = {
   mentionLegale: (data: DonneesDocument) => string;
   /** Le devis se signe, la facture se règle. */
   cadreSignature: boolean;
-  /** Sur une facture, le rappel du devis d'origine. */
-  rappel?: string | null;
   /**
    * Des lignes SOUS le « Total TTC » — libellé et montant, la dernière en gras.
    *
@@ -675,7 +678,24 @@ export type OptionsDocument = {
    * module ne calcule rien, il écrit. Absentes, ou sans chiffrage : rien, et la
    * feuille sort comme avant.
    */
-  apresTotal?: { libelle: string; montant: string; fort?: boolean }[];
+
+  /**
+   * Le numéro du document, écrit à droite du titre : « n° D2026-000014 » — sa
+   * planche du 14 septembre 2026. Les références du haut, elles, ne le portent
+   * plus.
+   */
+  numero?: string | null;
+  /** Le titre qu'il a donné, en italique sous DEVIS ou FACTURE. Vide : rien. */
+  titreLibre?: string | null;
+  /**
+   * Sous le Total TTC. `doux` : l'acompte, en gris ; `grand` : le reste à
+   * régler ou le net à payer, dans la fonte du Total TTC, montant en gras.
+   */
+  apresTotal?: { libelle: string; montant: string; style?: "doux" | "grand" }[];
+  /** « Acquittée le 21/09/2026 » — encadré d'or sous le net, quand tout est reçu. */
+  tampon?: string | null;
+  /** Des lignes d'information sous les notes, en petit : la main d'œuvre TTC. */
+  informations?: string[];
   /**
    * Des lignes juste SOUS le « Total HT » — libellé et montant — qui ne
    * changent rien aux totaux : « dont main d'œuvre HT » (13 septembre 2026,
@@ -820,27 +840,23 @@ export async function composerDocument(
   trait(ctx, y, 1.6, ctx.teintes.encre);
   y -= 30;
 
-  // ─── Titre centré ───────────────────────────────────────────────────────
+  // ─── Titre à gauche, numéro à droite — sa planche du 14 septembre 2026 ──
   // Le brouillon le dit : une pièce non émise qui ne le signale pas peut être
   // transmise par erreur, alors qu'elle n'engage rien.
   const titre = options.titre;
-  ecrireEspace(
-    ctx,
-    titre,
-    (LARGEUR - largeurEspacee(titre, ctx.serif, 17, APPROCHE_TITRE)) / 2,
-    y,
-    APPROCHE_TITRE,
-    { taille: 17, police: ctx.serif }
-  );
-  y -= 32;
-
-  // Une facture rappelle le devis dont elle naît : sans ce lien, le client
-  // reçoit deux pièces qu'il doit rapprocher lui-même. Elle consomme sa propre
-  // hauteur : posée sans descendre, elle venait toucher « ÉMETTEUR ».
-  if (options.rappel) {
-    ecrire(ctx, options.rappel, MARGE, y, { taille: 8.5, couleur: ctx.teintes.etiquette });
-    y -= 20;
+  ecrireEspace(ctx, titre, MARGE, y, APPROCHE_TITRE, { taille: 17, police: ctx.serif });
+  if (options.numero) {
+    ecrireADroite(ctx, `n° ${options.numero}`, DROITE, y, { taille: 11, police: ctx.serif, couleur: ctx.teintes.coordonnees });
   }
+  y -= 12;
+  trait(ctx, y, 0.6, ctx.teintes.traitClair);
+  y -= 18;
+  // Son titre — « Aménagement du jardin » —, s'il en a donné un. Jamais d'office.
+  if (options.titreLibre?.trim()) {
+    ecrire(ctx, options.titreLibre.trim(), MARGE, y, { taille: 10.5, police: ctx.serifItalique, couleur: ctx.teintes.coordonnees });
+    y -= 18;
+  }
+
 
   // ─── Le client, seul ────────────────────────────────────────────────────
   // Le client occupe la moitié gauche : au-delà, une adresse longue viendrait
@@ -863,42 +879,74 @@ export async function composerDocument(
   // **Le client passe donc à gauche**, seul de sa rangée : une colonne
   // « CLIENT » restée à droite avec un vide en face se serait lue comme un
   // bloc oublié à l'impression.
-  const etiquettePartie: Style = { taille: 8.5, police: ctx.serif, couleur: ctx.teintes.titrePartie };
+  // **Deux colonnes, comme sur sa planche** : le client, et le lieu des
+  // travaux — celui du chantier, ou l'adresse du client quand c'est chez lui.
+  // Les étiquettes sont en linéale, en or : c'est ce qu'on LIT.
+  const etiquettePartie: Style = { taille: 7.5, police: ctx.sansGras, couleur: ctx.teintes.titrePartie };
+  const xLieu = MARGE + largeurColonne + 20;
   ecrireEspace(ctx, "CLIENT", MARGE, y, APPROCHE_ETIQUETTE, etiquettePartie);
+  ecrireEspace(ctx, "LIEU DES TRAVAUX", xLieu, y, APPROCHE_ETIQUETTE, etiquettePartie);
   y -= 15;
 
+  const adresses = adressesDuDocument(data);
   const client = [
     // **Le papier nomme le client comme l'écran et le message.** Une seule
     // règle (`src/lib/civilite.ts`) : recopiée ici, elle aurait fini par dire
     // « Mme Roux » à l'écran et « Mr. Roux » sur le PDF qu'elle garde.
     avecCivilite(data.clientNom, data.clientCivilite),
-    // L'adresse du client — ou, à défaut, celle du chantier, sans étiquette.
-    // La ligne « Chantier : … » ne subsiste que si les travaux ont lieu
-    // ailleurs. Même fonction qu'à l'écran (`src/lib/adresses.ts`) : deux
-    // règles recopiées auraient fini par diverger, et c'est le papier — ce que
-    // le client garde — qui serait resté faux.
-    adressesDuDocument(data).adresseClient,
+    adresses.adresseClient,
     data.clientTelephone,
-    adressesDuDocument(data).chantierSepare ? `Chantier : ${adressesDuDocument(data).chantierSepare}` : null,
   ]
+    .filter((l): l is string => !!l)
+    .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
+  const lieu = [data.adresseChantier?.trim() || adresses.adresseClient]
     .filter((l): l is string => !!l)
     .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
 
   client.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 12, { taille: 9 }));
-  y -= client.length * 12 + 22;
+  lieu.forEach((l, i) => ecrire(ctx, l, xLieu, y - i * 12, { taille: 9 }));
+  y -= Math.max(client.length, lieu.length) * 12 + 22;
 
-  // ─── Tableau des lignes ─────────────────────────────────────────────────
-  const xQte = DROITE - 240;
-  const xPrix = DROITE - 140;
-  const xMontant = DROITE;
+  // ─── Tableau des lignes — Désignation · Qté · Unité · P.U. HT · Rem. % ·
+  //     Total HT · TVA % · Total TTC, sa planche du 14 septembre 2026 ───────
+  //
+  // **Le taux se lit SUR la ligne, et les bases par taux se lisent dessous.**
+  // Le tableau coupé en « TVA 20 % / TVA 10 % » avec un sous-total chacun
+  // (migration 0073) a vécu : c'est ce qu'il a fait retirer. Ce qui reste
+  // groupé, c'est le bloc des TRAVAUX SUPPLÉMENTAIRES (9 septembre 2026) — une
+  // facture en deux blocs, ce qu'il avait accepté puis ce qui s'est ajouté.
+  const xTtc = DROITE;
+  const xTaux = DROITE - 74; // centre de « TVA % »
+  const xNet = DROITE - 92;
+  const xRem = DROITE - 150; // centre de « Rem. % »
+  const xPrix = DROITE - 170;
+  const xUnite = DROITE - 226; // centre de « Unité »
+  const xQte = DROITE - 254;
+  const largeurLibelleChiffree = xQte - MARGE - 34;
 
-  const enTeteColonne: Style = { taille: 7.5, police: ctx.sansGras, couleur: ctx.teintes.etiquette };
+  const ecrireCentre = (contenu: string, centre: number, yy: number, style: Style) => {
+    const police = style.police ?? ctx.sans;
+    const largeur = police.widthOfTextAtSize(contenu, style.taille ?? 9);
+    ecrire(ctx, contenu, centre - largeur / 2, yy, style);
+  };
+  const ecrireEspaceCentre = (contenu: string, centre: number, yy: number, style: Style) => {
+    const largeur = largeurEspacee(contenu, style.police ?? ctx.sans, style.taille ?? 7.5, APPROCHE_ETIQUETTE);
+    ecrireEspace(ctx, contenu, centre - largeur / 2, yy, APPROCHE_ETIQUETTE, style);
+  };
+
+  const enTeteColonne: Style = { taille: 7, police: ctx.sansGras, couleur: ctx.teintes.etiquette };
+  // « Total TTC » en tête comme dans sa colonne : en gras, en encre.
+  const enTeteForte: Style = { taille: 7, police: ctx.sansGras, couleur: ctx.teintes.encre };
   const enTeteTableau = () => {
-    ecrireEspace(ctx, options.enTeteLignes ?? "DESCRIPTION", MARGE, y, APPROCHE_ETIQUETTE, enTeteColonne);
+    ecrireEspace(ctx, options.enTeteLignes ?? "DÉSIGNATION", MARGE, y, APPROCHE_ETIQUETTE, enTeteColonne);
     if (!options.sansChiffrage) {
       ecrireEspaceADroite(ctx, "QTÉ", xQte, y, APPROCHE_ETIQUETTE, enTeteColonne);
-      ecrireEspaceADroite(ctx, "PRIX UNITAIRE HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
-      ecrireEspaceADroite(ctx, "MONTANT HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      ecrireEspaceCentre("UNITÉ", xUnite, y, enTeteColonne);
+      ecrireEspaceADroite(ctx, "P.U. HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      ecrireEspaceCentre("REM. %", xRem, y, enTeteColonne);
+      ecrireEspaceADroite(ctx, "TOTAL HT", xNet, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      ecrireEspaceCentre("TVA %", xTaux, y, enTeteColonne);
+      ecrireEspaceADroite(ctx, "TOTAL TTC", xTtc, y, APPROCHE_ETIQUETTE, enTeteForte);
     }
     y -= 9;
     trait(ctx, y, 1.2, ctx.teintes.encre);
@@ -914,124 +962,75 @@ export async function composerDocument(
     y -= 12;
   }
 
-  // **LES CATÉGORIES DE TVA, quand il y en a plus d'une** (migration 0073).
-  //
-  // Un seul taux — tous les documents d'avant, et la plupart des siens — ne
-  // dessine AUCUN titre : la feuille sort exactement comme elle sortait. Le
-  // groupement ne se voit que là où il apprend quelque chose.
-  // **DEPUIS LE 9 SEPTEMBRE 2026, LE GROUPEMENT PORTE AUSSI LE SUPPLÉMENT.**
-  // Sa décision : une seule facture, en deux blocs — ce qu'il avait accepté,
-  // puis les travaux ajoutés. Sans ce second bloc, le client lit un total plus
-  // haut que son devis sans rien pour l'expliquer, et c'est là que la
-  // discussion commence.
-  const categories = lignesParBloc(data.lignes, data.tauxTva);
-  const montrerCategories = categories.length > 1 && !options.sansChiffrage;
-  /**
-   * Le taux ne s'écrit QUE s'il y en a plusieurs.
-   *
-   * Une facture à 20 % avec un supplément à 20 % n'a rien à apprendre en
-   * écrivant « TVA 20 % » deux fois ; ce qu'elle doit dire, c'est où finit le
-   * devis et où commence le reste.
-   */
-  const plusieursTaux = new Set(categories.map((c) => c.taux)).size > 1;
+  // Le net et le TTC de chaque ligne viennent de la règle commune : les
+  // centimes tombent juste, la colonne fait exactement la base du taux.
+  const papier = lignesDuPapier(data.lignes, data.tauxTva, data.reductionPourcent ?? null);
+  const remiseCourte = data.reductionPourcent && new Decimal(data.reductionPourcent).greaterThan(0)
+    ? tauxCourt(data.reductionPourcent)
+    : "";
+  const blocs = [
+    { supplement: false, lignes: papier.lignes.filter((p) => !p.ligne.supplement) },
+    { supplement: true, lignes: papier.lignes.filter((p) => Boolean(p.ligne.supplement)) },
+  ].filter((b) => b.lignes.length > 0);
+  const montrerBlocs = blocs.length > 1 && !options.sansChiffrage;
 
-  for (const categorie of categories) {
-  /**
-   * Le titre de la catégorie — et il se REDESSINE à chaque nouvelle page.
-   *
-   * **Trouvé en regardant la capture, pas en lisant le code.** Une catégorie
-   * qui débordait sur la page suivante y laissait ses dernières lignes et son
-   * sous-total SANS titre : le client lisait « Sous-total HT 1 200,00 € » sans
-   * savoir de quelle TVA il s'agissait. Sur une pièce qu'il garde, un sous-
-   * total orphelin est pire qu'absent — il se recopie sur une comptabilité.
-   */
-  const titreCategorie = (suite: boolean) => {
-    if (!montrerCategories) return;
-    ecrireEspace(
-      ctx,
-      `${categorie.supplement ? TITRE_TRAVAUX_SUPPLEMENTAIRES : ""}${
-        categorie.supplement && plusieursTaux ? " — " : ""
-      }${
-        !categorie.supplement || plusieursTaux ? `TVA ${tauxLisible(categorie.taux)} %` : ""
-      }${suite ? " (suite)" : ""}`,
-      MARGE,
-      y,
-      APPROCHE_ETIQUETTE,
-      { taille: 7.5, police: ctx.sansGras, couleur: ctx.teintes.titrePartie }
-    );
-    y -= 15;
-  };
-
-  if (montrerCategories) {
-    // Le titre ne se sépare jamais de sa première ligne : seul en bas de page,
-    // il annoncerait une catégorie vide.
-    if (y - 34 < PLANCHER) {
-      y = pageSuivante(ctx);
-      enTeteTableau();
-    }
-    titreCategorie(false);
-  }
-
-  for (const ligne of categorie.lignes) {
-    // Sans colonnes de prix, le libellé dispose de toute la feuille : garder la
-    // largeur du devis couperait « Démontage de trois chênes en tête de chat »
-    // en deux pour laisser la place à des colonnes qui n'existent pas.
-    const largeurLibelle = options.sansChiffrage ? DROITE - MARGE : xQte - MARGE - 50;
-    const lignesLibelle = enLignes(ligne.libelle, ctx.sans, 9, largeurLibelle);
-    const hauteurLigne = Math.max(lignesLibelle.length, 1) * 11 + 19;
-    // Une ligne ne se coupe jamais en deux : elle passe entière à la page
-    // suivante, en-tête de colonnes redessiné pour qu'on sache encore ce
-    // qu'on lit.
-    if (y - hauteurLigne < PLANCHER) {
-      y = pageSuivante(ctx);
-      enTeteTableau();
-      // La catégorie se rappelle sur la page qu'elle continue, sans quoi ses
-      // dernières lignes et son sous-total y seraient orphelins.
-      titreCategorie(true);
-    }
-    lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
-    if (!options.sansChiffrage) {
-      // **L'unité à côté de la quantité** : « 800 ml », plus « 800 » tout court.
-      // Le client lisait « 800 × 17,50 € » sans savoir 800 de quoi.
-      ecrireADroite(ctx, ligne.unite ? `${ligne.quantite} ${ligne.unite}` : ligne.quantite, xQte, y, {
-        taille: 9,
+  for (const bloc of blocs) {
+    // Le titre du bloc des suppléments se REDESSINE à chaque nouvelle page :
+    // ses dernières lignes ne doivent jamais se retrouver orphelines.
+    const titreBloc = (suite: boolean) => {
+      if (!montrerBlocs || !bloc.supplement) return;
+      ecrireEspace(ctx, `${TITRE_TRAVAUX_SUPPLEMENTAIRES}${suite ? " (suite)" : ""}`, MARGE, y, APPROCHE_ETIQUETTE, {
+        taille: 7.5,
+        police: ctx.sansGras,
+        couleur: ctx.teintes.titrePartie,
       });
-      // **« À chiffrer » ne se lit plus sur le seul drapeau** — sa capture du
-      // 31 août 2026. Le tableau portait « à chiffrer » en face de deux lignes
-      // qui pesaient 1 720 €, et le Total HT, lui, les comptait : 2 280,00 €
-      // sous 560,00 € de montants visibles. Un client qui additionne n'y
-      // arrive pas, et cesse de croire le reste du document.
-      //
-      // L'invariant vit dans `ligneAttendSonPrix` — un montant posé répond à
-      // la question, quel que soit le drapeau — et il est partagé avec l'écran
-      // et avec le contrôle d'envoi. Ce qui est imprimé fait donc toujours le
-      // total imprimé.
-      if (ligneAttendSonPrix({ libelle: ligne.libelle, montant: ligne.montant, aChiffrer: ligne.aChiffrer })) {
-        // Ni prix unitaire, ni montant : il n'y en a pas. Écrire « 0,00 € »
-        // serait annoncer un travail gratuit (26 août 2026).
-        ecrireADroite(ctx, "à chiffrer", xMontant, y, { taille: 9, police: ctx.sansGras });
-      } else {
-        ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
-        ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), xMontant, y, {
-          taille: 9,
-          police: ctx.sansGras,
-        });
+      y -= 15;
+    };
+    if (montrerBlocs && bloc.supplement) {
+      if (y - 34 < PLANCHER) {
+        y = pageSuivante(ctx);
+        enTeteTableau();
       }
+      titreBloc(false);
     }
-    y -= Math.max(lignesLibelle.length, 1) * 11 + 7;
-    trait(ctx, y, 0.7, ctx.teintes.traitClair);
-    y -= 12;
-  }
 
-  // **Le sous-total permet au client de refaire le calcul de SA TVA.** Sans
-  // lui, la ligne « TVA (10 %) — 109,68 € » des totaux ne se vérifie qu'en
-  // additionnant soi-même les montants de la catégorie.
-  if (montrerCategories) {
-    const brut = categorie.lignes.reduce((acc, l) => acc.plus(new Decimal(l.montant)), new Decimal(0));
-    ecrire(ctx, "Sous-total HT", xPrix - 80, y + 4, { taille: 8, couleur: ctx.teintes.etiquette });
-    ecrireADroite(ctx, formatMontant(brut.toFixed(2), data.devise), xMontant, y + 4, { taille: 8 });
-    y -= 14;
-  }
+    for (const p of bloc.lignes) {
+      const ligne = p.ligne;
+      // Sans colonnes de prix, le libellé dispose de toute la feuille.
+      const largeurLibelle = options.sansChiffrage ? DROITE - MARGE : largeurLibelleChiffree;
+      const lignesLibelle = enLignes(ligne.libelle, ctx.sans, 9, largeurLibelle);
+      const hauteurLigne = Math.max(lignesLibelle.length, 1) * 11 + 19;
+      // Une ligne ne se coupe jamais en deux : elle passe entière à la page
+      // suivante, en-tête de colonnes redessiné pour qu'on sache encore ce
+      // qu'on lit.
+      if (y - hauteurLigne < PLANCHER) {
+        y = pageSuivante(ctx);
+        enTeteTableau();
+        titreBloc(true);
+      }
+      lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
+      if (!options.sansChiffrage) {
+        // « 3 », jamais « 3.00 » ; l'unité dans SA colonne, centrée.
+        ecrireADroite(ctx, quantiteLisible(ligne.quantite), xQte, y, { taille: 9 });
+        if (ligne.unite) ecrireCentre(ligne.unite, xUnite, y, { taille: 9 });
+        // **« À chiffrer » ne se lit plus sur le seul drapeau** — sa capture du
+        // 31 août 2026 : ce qui est imprimé fait toujours le total imprimé.
+        if (ligneAttendSonPrix({ libelle: ligne.libelle, montant: ligne.montant, aChiffrer: ligne.aChiffrer })) {
+          // Ni prix, ni total : il n'y en a pas. Écrire « 0,00 € » serait
+          // annoncer un travail gratuit (26 août 2026).
+          ecrireADroite(ctx, "à chiffrer", xNet, y, { taille: 9, police: ctx.sansGras });
+        } else {
+          ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
+          if (remiseCourte) ecrireCentre(remiseCourte, xRem, y, { taille: 9 });
+          ecrireADroite(ctx, formatMontant(p.net, data.devise), xNet, y, { taille: 9 });
+          ecrireCentre(tauxCourt(p.taux), xTaux, y, { taille: 9 });
+          ecrireADroite(ctx, formatMontant(p.ttc, data.devise), xTtc, y, { taille: 9, police: ctx.sansGras });
+        }
+      }
+      y -= Math.max(lignesLibelle.length, 1) * 11 + 7;
+      trait(ctx, y, 0.7, ctx.teintes.traitClair);
+      y -= 12;
+    }
   }
 
   // ─── Totaux, calés à droite ─────────────────────────────────────────────
@@ -1046,36 +1045,27 @@ export async function composerDocument(
   const libelleRemise = libelleReduction(data.reductionPourcent ?? null);
   const avecRemise = libelleRemise !== null && data.reductionMontant != null;
 
-  // **UNE LIGNE DE TVA PAR CATÉGORIE — sa demande du 1er septembre 2026.**
-  //
-  // La ventilation se DEMANDE à la règle commune plutôt que de se refaire ici :
-  // c'est elle qui répartit le prix accordé au prorata et qui place le centime
-  // résiduel. La recalculer sur le papier aurait donné une seconde
-  // implémentation, donc un jour deux résultats — sur la seule pièce que le
-  // client garde (`CLAUDE.md` §3).
-  //
-  // Les totaux, eux, restent ceux du document : ils ont été figés à l'émission
-  // et font foi. Sur un document à un seul taux — tous ceux d'avant — la
-  // ventilation ne rend qu'une catégorie, et la feuille sort à l'identique.
-  const parTaux = totauxAvecReduction(
-    data.lignes,
-    data.tauxTva,
-    data.reductionPourcent ?? null
-  ).parTaux;
+  // **UNE LIGNE DE TVA PAR TAUX, ET LES BASES DESSOUS À GAUCHE** — sa demande
+  // du 1er septembre, puis sa planche du 14. La ventilation se DEMANDE à la
+  // règle commune : c'est elle qui répartit la remise au prorata et place le
+  // centime résiduel (`CLAUDE.md` §3).
+  const parTaux = papier.parTaux;
 
-  // Deux lignes de plus quand une remise est accordée, et une par catégorie
-  // au-delà de la première : la place se réserve AVANT le saut de page, sinon
-  // « Total TTC » se retrouve seul en haut de la page suivante.
-  // Et une ligne de 16 par ligne d'échéancier sous le total : réservée ici
-  // aussi, pour la même raison.
   const apresTotal = options.apresTotal ?? [];
   const sousLeTotalHt = options.sousLeTotalHt ?? [];
-  place((avecRemise ? 74 + 32 : 74) + (parTaux.length - 1) * 16 + apresTotal.length * 16 + sousLeTotalHt.length * 16);
+  const hauteurBloc =
+    (avecRemise ? 74 + 32 : 74) +
+    (parTaux.length - 1) * 16 +
+    sousLeTotalHt.length * 16 +
+    apresTotal.reduce((acc, l) => acc + (l.style === "grand" ? 22 : 16), 0) +
+    (options.tampon ? 26 : 0);
+  place(hauteurBloc);
   y -= 6;
   const gaucheTotaux = DROITE - 220;
+  const yHautTotaux = y;
 
-  // « dont main d'œuvre HT », sous le total HT — brut ou net, c'est le premier
-  // total écrit. En maigre : il nomme une part, il n'ajoute rien.
+  // La ligne « Total HT », brute ou nette : c'est le premier total écrit, en
+  // gras — sa planche.
   const ecrireSousLeTotalHt = () => {
     for (const ligne of sousLeTotalHt) {
       ecrire(ctx, ligne.libelle, gaucheTotaux, y, { taille: 9, couleur: ctx.teintes.etiquette });
@@ -1085,41 +1075,33 @@ export async function composerDocument(
   };
 
   if (avecRemise) {
-    // **Le prix plein d'abord**, puis ce qui a été consenti, puis le net : c'est
-    // la présentation qu'il a choisie, et c'est celle qui permet au client de
-    // refaire le calcul. Le brut vaut net + retiré, jamais une troisième
-    // colonne qui pourrait les contredire.
+    // **Le prix plein d'abord**, puis ce qui a été consenti, puis le net.
     const brut = new Decimal(data.totalHt).plus(new Decimal(data.reductionMontant!)).toFixed(2);
-    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
-    ecrireADroite(ctx, formatMontant(brut, data.devise), DROITE, y, { taille: 9.5 });
+    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5, police: ctx.sansGras });
+    ecrireADroite(ctx, formatMontant(brut, data.devise), DROITE, y, { taille: 9.5, police: ctx.sansGras });
     y -= 16;
     ecrireSousLeTotalHt();
 
-    ecrire(ctx, libelleRemise!, gaucheTotaux, y, { taille: 9.5 });
-    // **Le trait d'union, jamais le « moins » typographique (U+2212).** Les
-    // polices standard du PDF sont encodées en WinAnsi, qui ne le connaît pas :
-    // `pdf-lib` lève « WinAnsi cannot encode "−" », et c'est TOUT le devis qui
-    // ne se génère plus. Trouvé par `test-reduction-parcours-db.ts`, pas par le
-    // typage — l'écran, lui, l'affiche très bien, ce qui rendait le défaut
-    // invisible partout ailleurs.
-    ecrireADroite(ctx, `- ${formatMontant(data.reductionMontant!, data.devise)}`, DROITE, y, { taille: 9.5 });
+    // La remise en or : ce qui est consenti se LIT.
+    ecrire(ctx, libelleRemise!, gaucheTotaux, y, { taille: 9.5, couleur: ctx.teintes.titrePartie });
+    // **Le trait d'union, jamais le « moins » typographique (U+2212)** : WinAnsi
+    // ne le connaît pas, et c'est TOUT le devis qui ne se générerait plus.
+    ecrireADroite(ctx, `- ${formatMontant(data.reductionMontant!, data.devise)}`, DROITE, y, { taille: 9.5, couleur: ctx.teintes.titrePartie });
     y -= 16;
 
-    ecrire(ctx, "Total HT après remise", gaucheTotaux, y, { taille: 9.5 });
-    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
+    ecrire(ctx, "Total HT après remise", gaucheTotaux, y, { taille: 9.5, police: ctx.sansGras });
+    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5, police: ctx.sansGras });
     y -= 16;
   } else {
-    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5 });
-    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5 });
+    ecrire(ctx, "Total HT", gaucheTotaux, y, { taille: 9.5, police: ctx.sansGras });
+    ecrireADroite(ctx, formatMontant(data.totalHt, data.devise), DROITE, y, { taille: 9.5, police: ctx.sansGras });
     y -= 16;
     ecrireSousLeTotalHt();
   }
 
-  // **Une ligne par catégorie, et l'ordre est celui de son tableau.** Un seul
-  // taux : c'est exactement la ligne d'avant, au pixel près.
+  // « TVA 20 % », sans parenthèses — sa planche.
   for (const categorie of parTaux) {
-    const lisible = new Decimal(categorie.taux).toFixed(2).replace(/[.]00$/, "").replace(".", ",");
-    ecrire(ctx, `TVA (${lisible} %)`, gaucheTotaux, y, { taille: 9.5 });
+    ecrire(ctx, `TVA ${tauxCourt(categorie.taux)} %`, gaucheTotaux, y, { taille: 9.5 });
     ecrireADroite(ctx, formatMontant(categorie.tva, data.devise), DROITE, y, { taille: 9.5 });
     y -= 16;
   }
@@ -1134,20 +1116,68 @@ export async function composerDocument(
     police: ctx.serifGras,
   });
 
-  // L'échéancier, sous le total dont il découle : les acomptes, puis le reste à
-  // régler en gras — c'est le chiffre que le client cherche.
+  // Sous le total : les acomptes en gris, puis le reste à régler ou le net à
+  // payer dans la fonte du Total TTC — sa planche du 14 septembre 2026.
   if (apresTotal.length) {
     y -= 20;
     for (const ligne of apresTotal) {
-      const style: Style = ligne.fort ? { taille: 9.5, police: ctx.sansGras } : { taille: 9.5 };
-      ecrire(ctx, ligne.libelle, gaucheTotaux, y, style);
-      ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), DROITE, y, style);
-      y -= 16;
+      if (ligne.style === "grand") {
+        y -= 4;
+        ecrire(ctx, ligne.libelle, gaucheTotaux, y, { taille: 13, police: ctx.serif });
+        ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), DROITE, y, { taille: 13, police: ctx.serifGras });
+        y -= 18;
+      } else {
+        const style: Style = { taille: 9, couleur: ctx.teintes.etiquette };
+        ecrire(ctx, ligne.libelle, gaucheTotaux, y, style);
+        ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), DROITE, y, style);
+        y -= 16;
+      }
     }
-    y -= 18;
+    y -= 6;
   } else {
-    y -= 34;
+    y -= 22;
   }
+
+  // Le tampon : « Acquittée le … », encadré d'or, comme un tampon posé.
+  if (options.tampon) {
+    const texte = options.tampon.toUpperCase();
+    const largeur = largeurEspacee(texte, ctx.sansGras, 7.5, 0.16) + 20;
+    ctx.page.drawRectangle({
+      x: DROITE - largeur,
+      y: y - 6,
+      width: largeur,
+      height: 18,
+      borderColor: ctx.teintes.titrePartie,
+      borderWidth: 1,
+    });
+    ctx.trace.cadres.push({ x: DROITE - largeur, y: y - 6, largeur, hauteur: 18, page: ctx.numeroPage });
+    ecrireEspace(ctx, texte, DROITE - largeur + 10, y, 0.16, { taille: 7.5, police: ctx.sansGras, couleur: ctx.teintes.titrePartie });
+    y -= 26;
+  }
+  const yBasTotaux = y;
+
+  // ─── Les bases par taux, à gauche du bloc — BASE HT · TAUX · TVA ────────
+  // Le client refait le calcul de SA TVA sans additionner les lignes lui-même.
+  {
+    const droiteBases = MARGE + 170;
+    const enTeteBase: Style = { taille: 7, police: ctx.sansGras, couleur: ctx.teintes.etiquette };
+    let yb = yHautTotaux;
+    ecrireEspace(ctx, "BASE HT", MARGE, yb, APPROCHE_ETIQUETTE, enTeteBase);
+    ecrireEspaceCentre("TAUX", MARGE + 100, yb, enTeteBase);
+    ecrireEspaceADroite(ctx, "TVA", droiteBases, yb, APPROCHE_ETIQUETTE, enTeteBase);
+    yb -= 6;
+    trait(ctx, yb, 0.8, ctx.teintes.encre, MARGE, droiteBases);
+    yb -= 13;
+    for (const categorie of parTaux) {
+      ecrire(ctx, formatMontant(categorie.baseHt, data.devise), MARGE, yb, { taille: 8.5 });
+      ecrireCentre(`${tauxCourt(categorie.taux)} %`, MARGE + 100, yb, { taille: 8.5 });
+      ecrireADroite(ctx, formatMontant(categorie.tva, data.devise), droiteBases, yb, { taille: 8.5 });
+      yb -= 5;
+      trait(ctx, yb, 0.5, ctx.teintes.traitClair, MARGE, droiteBases);
+      yb -= 12;
+    }
+  }
+  y = yBasTotaux;
   }
 
   // ─── Conditions et modalités de paiement ────────────────────────────────
@@ -1186,6 +1216,19 @@ export async function composerDocument(
       y -= 12;
     }
     y -= 12;
+  }
+
+  // Les informations — « Pour information, montant de la main d'œuvre TTC :
+  // 513,00 € » — en petit, sous les notes : elles renseignent, elles
+  // n'engagent pas.
+  for (const info of options.informations ?? []) {
+    const lignesInfo = enLignes(info, ctx.sans, 8, DROITE - MARGE);
+    place(lignesInfo.length * 11 + 4);
+    for (const l of lignesInfo) {
+      ecrire(ctx, l, MARGE, y, { taille: 8, couleur: ctx.teintes.coordonnees });
+      y -= 11;
+    }
+    y -= 4;
   }
 
   // Les modalités de paiement suivent le chiffrage : sur une fiche de chantier,

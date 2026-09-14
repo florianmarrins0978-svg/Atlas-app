@@ -11,6 +11,8 @@ import {
   type FacturePourTva,
   type Paiement,
 } from "../../lib/exigibilite-tva";
+import { netAPayer, refusDuReglementRecu, type MoyenDePaiement, type ReglementRecu } from "../../lib/acomptes-facture";
+import type { DbOrTx } from "../db/client";
 
 /**
  * Les règlements reçus, et le régime de TVA de l'entreprise.
@@ -272,5 +274,168 @@ export async function compterPaiements(ctx: Ctx, factureId: string): Promise<num
       .from(paiementsFacture)
       .where(and(eq(paiementsFacture.factureId, factureId)));
     return r?.n ?? 0;
+  });
+}
+
+// ─── LES ACOMPTES REÇUS, SUR LA FACTURE EN BROUILLON — sa planche du
+// 14 septembre 2026 ─────────────────────────────────────────────────────────
+//
+// *« Chaque montant perçu avant la fin du chantier est un acompte. »* Ils se
+// saisissent sur la facture avant qu'elle parte, et le papier les déduit :
+// « Acompte 30 % − 522,23 € », puis « Net à payer ». Ce sont les mêmes lignes
+// que « Noter un règlement » sur une facture émise — la même table, donc le
+// même relevé de TVA à la date où l'argent est tombé —, avec deux choses de
+// plus : le numéro du chèque, et la marque du solde posé par l'interrupteur
+// « Facture acquittée ».
+//
+// **Un acompte reçu AVANT la date de la facture est normal ici.** C'est
+// l'acompte à la signature. La règle « un règlement ne précède pas sa
+// facture » (`refusDuPaiement`) vaut pour une facture ÉMISE, dont la date
+// fait foi ; un brouillon n'en a pas encore. La règle des brouillons vit dans
+// `refusDuReglementRecu` (`src/lib/acomptes-facture.ts`).
+
+export type ReglementEnregistre = ReglementRecu & { id: string };
+
+async function factureEnBrouillon(tx: DbOrTx, factureId: string) {
+  const [f] = await tx
+    .select({ id: factures.id, statut: factures.statut, totalTtc: factures.totalTtc })
+    .from(factures)
+    .where(eq(factures.id, factureId))
+    .limit(1);
+  if (!f) return { ok: false as const, raison: "Cette facture est introuvable." };
+  if (f.statut !== "brouillon") {
+    return { ok: false as const, raison: "La facture est déjà arrêtée : ses règlements se notent depuis Terminés." };
+  }
+  return { ok: true as const, facture: f };
+}
+
+async function lireReglements(tx: DbOrTx, factureId: string): Promise<ReglementEnregistre[]> {
+  const rows = await tx
+    .select()
+    .from(paiementsFacture)
+    .where(eq(paiementsFacture.factureId, factureId))
+    .orderBy(asc(paiementsFacture.datePaiement), asc(paiementsFacture.createdAt));
+  return rows.map((p) => ({ id: p.id, date: p.datePaiement, montant: p.montant, moyen: p.moyen, numero: p.numero, solde: p.solde }));
+}
+
+/** Les règlements reçus d'une facture, dans l'ordre où ils sont tombés. */
+export async function reglementsRecus(ctx: Ctx, factureId: string): Promise<ReglementEnregistre[]> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) => lireReglements(tx, factureId));
+}
+
+export type SaisieReglement = {
+  date: string;
+  montant: string;
+  moyen: MoyenDePaiement | null;
+  numero: string | null;
+};
+
+function montantPropre(montant: string): string {
+  return String(montant ?? "").replace(/[\s  ]/g, "").replace("€", "").replace(",", ".");
+}
+
+/** Pose un acompte reçu sur une facture en brouillon. Le refus revient en valeur, avec ses mots. */
+export async function poserReglementRecu(
+  ctx: Ctx,
+  factureId: string,
+  saisie: SaisieReglement
+): Promise<{ ok: true; reglements: ReglementEnregistre[] } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+    const deja = await lireReglements(tx, factureId);
+    const montant = montantPropre(saisie.montant);
+    const refus = refusDuReglementRecu(garde.facture.totalTtc, deja, { date: saisie.date, montant });
+    if (refus) return { ok: false as const, raison: refus };
+    await tx.insert(paiementsFacture).values({
+      entrepriseId: ctx.entrepriseId,
+      factureId,
+      datePaiement: saisie.date,
+      montant: Number(montant).toFixed(2),
+      moyen: saisie.moyen,
+      numero: saisie.moyen === "cheque" ? saisie.numero?.trim() || null : null,
+      origine: "saisi",
+    });
+    return { ok: true as const, reglements: await lireReglements(tx, factureId) };
+  });
+}
+
+/** Corrige un acompte reçu — sa date, son moyen, son numéro, son montant. */
+export async function majReglementRecu(
+  ctx: Ctx,
+  reglementId: string,
+  saisie: SaisieReglement
+): Promise<{ ok: true; reglements: ReglementEnregistre[] } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [p] = await tx.select().from(paiementsFacture).where(eq(paiementsFacture.id, reglementId)).limit(1);
+    if (!p) return { ok: false as const, raison: "Ce règlement est introuvable." };
+    const garde = await factureEnBrouillon(tx, p.factureId);
+    if (!garde.ok) return garde;
+    const autres = (await lireReglements(tx, p.factureId)).filter((g) => g.id !== reglementId);
+    const montant = montantPropre(saisie.montant);
+    const refus = refusDuReglementRecu(garde.facture.totalTtc, autres, { date: saisie.date, montant });
+    if (refus) return { ok: false as const, raison: refus };
+    await tx
+      .update(paiementsFacture)
+      .set({
+        datePaiement: saisie.date,
+        montant: Number(montant).toFixed(2),
+        moyen: saisie.moyen,
+        numero: saisie.moyen === "cheque" ? saisie.numero?.trim() || null : null,
+      })
+      .where(eq(paiementsFacture.id, reglementId));
+    return { ok: true as const, reglements: await lireReglements(tx, p.factureId) };
+  });
+}
+
+/** Retire un acompte reçu d'une facture en brouillon. */
+export async function retirerReglementRecu(
+  ctx: Ctx,
+  reglementId: string
+): Promise<{ ok: true; reglements: ReglementEnregistre[] } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [p] = await tx.select().from(paiementsFacture).where(eq(paiementsFacture.id, reglementId)).limit(1);
+    if (!p) return { ok: false as const, raison: "Ce règlement est introuvable." };
+    const garde = await factureEnBrouillon(tx, p.factureId);
+    if (!garde.ok) return garde;
+    await tx.delete(paiementsFacture).where(eq(paiementsFacture.id, reglementId));
+    return { ok: true as const, reglements: await lireReglements(tx, p.factureId) };
+  });
+}
+
+/**
+ * « Facture acquittée » : allumé, le solde est compté reçu à la date du jour ;
+ * éteint, ce solde-là repart. Les acomptes saisis à la main ne bougent pas.
+ * Un solde n'est posé que s'il reste quelque chose à recevoir.
+ */
+export async function basculerAcquittee(
+  ctx: Ctx,
+  factureId: string,
+  allumee: boolean,
+  aujourdHui: string
+): Promise<{ ok: true; reglements: ReglementEnregistre[] } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+    if (!allumee) {
+      await tx
+        .delete(paiementsFacture)
+        .where(and(eq(paiementsFacture.factureId, factureId), eq(paiementsFacture.solde, true)));
+      return { ok: true as const, reglements: await lireReglements(tx, factureId) };
+    }
+    const deja = await lireReglements(tx, factureId);
+    const reste = netAPayer(garde.facture.totalTtc, deja);
+    if (Number(reste) > 0 && !deja.some((g) => g.solde)) {
+      await tx.insert(paiementsFacture).values({
+        entrepriseId: ctx.entrepriseId,
+        factureId,
+        datePaiement: aujourdHui,
+        montant: reste,
+        moyen: "virement",
+        solde: true,
+        origine: "saisi",
+      });
+    }
+    return { ok: true as const, reglements: await lireReglements(tx, factureId) };
   });
 }

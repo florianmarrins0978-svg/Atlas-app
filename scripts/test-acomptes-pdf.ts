@@ -79,7 +79,7 @@ async function main() {
       "568,80",
       "Acompte à l'avancement 75 %",
       "711,00",
-      "Reste à régler après acomptes",
+      "Reste à régler",
     ]) {
       assert.ok(lu.includes(attendu), `« ${attendu} » n'est pas sur le devis. Lu : ${lu.slice(-700)}`);
     }

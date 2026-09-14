@@ -1192,6 +1192,11 @@ export const devis = pgTable(
      * elle ne change aucun total. `null` = pas de ligne.
      */
     mainDoeuvreHt: numeric("main_doeuvre_ht", { precision: 12, scale: 2 }),
+    /**
+     * Un titre, s'il en veut un (migration 0092) : « Aménagement du jardin ».
+     * Jamais d'office ; vide, rien ne s'imprime. Recopié sur la facture.
+     */
+    titre: text("titre"),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 
     // TVA — correction v2.1 §4
@@ -1930,6 +1935,13 @@ export const factures = pgTable(
      */
     reductionPourcent: numeric("reduction_pourcent", { precision: 5, scale: 2 }),
     reductionMontant: numeric("reduction_montant", { precision: 10, scale: 2 }),
+    /**
+     * « dont main d'œuvre HT », recopiée du devis à la création (migration
+     * 0092) et retouchable en brouillon. Nommée, jamais comptée.
+     */
+    mainDoeuvreHt: numeric("main_doeuvre_ht", { precision: 12, scale: 2 }),
+    /** Le titre du devis, recopié — c'est le même papier (migration 0092). */
+    titre: text("titre"),
 
     pdfStorageKey: text("pdf_storage_key"),
     pdfChecksum: text("pdf_checksum"),
@@ -2009,6 +2021,14 @@ export const paiementsFacture = pgTable(
     montant: numeric("montant", { precision: 12, scale: 2 }).notNull(),
     moyen: text("moyen", { enum: ["virement", "cheque", "especes", "carte", "autre"] }),
     note: text("note"),
+    /** Le numéro du chèque (migration 0092) — « chèque n° 1806028 » sur la facture. */
+    numero: text("numero"),
+    /**
+     * Posé par l'interrupteur « Facture acquittée » (migration 0092) : le
+     * solde, compté reçu. Il se retire quand on éteint, et s'écrit « Acompte »
+     * tout court — jamais avec un taux du devis.
+     */
+    solde: boolean("solde").notNull().default(false),
     origine: text("origine", { enum: ["saisi", "reprise", "banque"] }).notNull().default("saisi"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -2035,6 +2055,8 @@ export const lignesFacture = pgTable(
      * seul taux** — et l'écart partirait dans une déclaration trimestrielle.
      */
     tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
+    /** Recopiée du devis (migration 0092) : « 3 ml », pas « 3 ». */
+    unite: text("unite"),
     ordre: integer("ordre").notNull().default(0),
     /**
      * D'où vient cette ligne — du devis accepté, ou du travail ajouté après

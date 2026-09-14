@@ -64,7 +64,21 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 
 ---
 
-## ⏳ UNE PLANCHE À REGARDER — MAIN D’ŒUVRE ET RÈGLEMENTS SUR LA FACTURE (14 septembre 2026)
+## ~~UNE PLANCHE À REGARDER — MAIN D’ŒUVRE ET RÈGLEMENTS SUR LA FACTURE~~ — CODÉE LE 14 SEPTEMBRE 2026 (« PARFAIT ! Code exactement cette planche »)
+
+**Codé :** migration 0092, `src/lib/lignes-du-papier.ts`,
+`src/lib/acomptes-facture.ts`, le composeur commun, l'écran de la facture
+(`ReglementsRecus.tsx`), le titre sur le devis. `ARCHITECTURE.md` §364,
+`docs/le-papier-devis-et-facture-verdict.md`.
+
+**Ce qui reste, et à qui :**
+
+| | |
+|---|---|
+| **la case « crédit d'impôt 50 % »** (planche de l'écran) | à lui : une case sur la facture, ou une facture à part comme chez le paysagiste. Pas codée |
+| **la décennale et le médiateur dans Mon entreprise** | `appli/decennale-et-mediateur.html`, dessinée sur son accord — à coder dès son « code » |
+| **la batterie complète** | suites pures, base et navigateur du lot vertes (14 septembre au soir, après redémarrage de la machine — la construction mourait faute de mémoire, 58 Go engagés sur 61). Reste la batterie entière avant `main` |
+
 
 **Sa demande :** *« la page du devis diffère de la page facture : quand on crée
 une facture on ne peut pas rajouter la main d’œuvre et les acomptes. Je vais

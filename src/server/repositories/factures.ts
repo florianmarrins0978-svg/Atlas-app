@@ -13,7 +13,12 @@ import {
   lignesDevis,
   lignesFacture,
   parametresChiffrage,
+  acomptesDevis,
+  paiementsFacture,
 } from "../db/schema";
+import { conditionsDepuisEntreprise, type ConditionsLues } from "../../lib/conditions-documents";
+import type { AcompteDevis } from "../../lib/acomptes-devis";
+import type { ReglementRecu } from "../../lib/acomptes-facture";
 import type { Ctx } from "./context";
 import { lireDevisQuiFaitFoi } from "./devis";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
@@ -26,6 +31,7 @@ import { repriseDuDevis } from "../../lib/facture-face-au-devis";
 import { factureNeeSansDevis } from "../../lib/lignes-corrigeables";
 import { pourcentValide, totauxAvecReduction } from "../../lib/reduction-devis";
 import { montantDeLaLigne } from "../../lib/montant-de-ligne";
+import { montantMainDoeuvreValide } from "../../lib/main-doeuvre-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
 import {
   dansLaPeriode,
@@ -160,6 +166,8 @@ type OrigineDeLaFacture = Pick<
   | "devise"
   | "reductionPourcent"
   | "reductionMontant"
+  | "mainDoeuvreHt"
+  | "titre"
 >;
 
 function instantaneDuDevis(d: typeof devis.$inferSelect): OrigineDeLaFacture {
@@ -183,6 +191,10 @@ function instantaneDuDevis(d: typeof devis.$inferSelect): OrigineDeLaFacture {
     // c'est lui qui s'en apercevrait.
     reductionPourcent: d.reductionPourcent,
     reductionMontant: d.reductionMontant,
+    // Le même papier (migration 0092) : la main d'œuvre nommée et le titre
+    // suivent le devis sur la facture.
+    mainDoeuvreHt: d.mainDoeuvreHt,
+    titre: d.titre,
   };
 }
 
@@ -274,6 +286,8 @@ function lignesRecopiees(
     // seul taux** — et l'écart partait dans une déclaration trimestrielle, là
     // où il coûte à l'artisan (migration 0073).
     tauxTva: l.tauxTva,
+    // « 3 ml », pas « 3 » : l'unité suivait le devis et s'arrêtait ici (0092).
+    unite: l.unite,
     ordre: l.ordre,
   }));
 }
@@ -1031,6 +1045,46 @@ export async function majReductionDeFacture(
   });
 }
 
+/**
+ * « dont main d'œuvre HT » sur la facture, tant qu'elle est en brouillon —
+ * la même borne que le devis (`montantMainDoeuvreValide`) : une part ne
+ * dépasse pas le tout. `null` retire la ligne.
+ */
+export async function majMainDoeuvreDeFacture(
+  ctx: Ctx,
+  factureId: string,
+  valeur: string | null
+): Promise<{ ok: true; mainDoeuvreHt: string | null } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+    const [f] = await tx.select({ tauxTva: factures.tauxTva }).from(factures).where(eq(factures.id, factureId)).limit(1);
+    const lignes = await tx
+      .select({ montant: lignesFacture.montant, tauxTva: lignesFacture.tauxTva })
+      .from(lignesFacture)
+      .where(eq(lignesFacture.factureId, factureId));
+    const brutHt = totauxAvecReduction(lignes, f?.tauxTva ?? TAUX_TVA_PAR_DEFAUT, null).brutHt;
+    const mainDoeuvreHt = montantMainDoeuvreValide(valeur, brutHt);
+    await tx.update(factures).set({ mainDoeuvreHt }).where(eq(factures.id, factureId));
+    return { ok: true, mainDoeuvreHt };
+  });
+}
+
+/** Son titre sur la facture (migration 0092). Vide : aucun. */
+export async function majTitreDeFacture(
+  ctx: Ctx,
+  factureId: string,
+  titre: string | null
+): Promise<{ ok: true; titre: string | null } | Refus> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const garde = await factureEncoreEnBrouillon(tx, factureId);
+    if (!garde.ok) return garde;
+    const propre = titre?.trim() || null;
+    await tx.update(factures).set({ titre: propre }).where(eq(factures.id, factureId));
+    return { ok: true, titre: propre };
+  });
+}
+
 export class FactureDejaEmiseError extends Error {
   constructor() {
     super("Cette facture a déjà été émise.");
@@ -1080,10 +1134,84 @@ export class FactureDejaEmiseError extends Error {
  * rend exactement ce que ses colonnes portent. Et son PDF, lui, est figé à
  * l'émission et jamais régénéré.
  */
+/**
+ * Ce que le papier de la facture lit AUTOUR de la ligne : le numéro et les
+ * acomptes du devis d'origine, les conditions figées sur ce devis (ou celles
+ * des Réglages pour une facture née sans devis), et les règlements reçus dans
+ * l'ordre où ils sont tombés.
+ *
+ * **Le devis est figé, donc ces lectures le sont aussi** : une facture ne naît
+ * que d'un devis envoyé (`lireDevisQuiFaitFoi`), qu'aucun geste ne modifie
+ * plus. Lire au moment de composer ne fait donc pas changer la pièce.
+ */
+export type ComplementsDeLaFacture = {
+  numeroDevis: string | null;
+  acomptesDuDevis: AcompteDevis[];
+  conditionsReglees: ConditionsLues;
+  reglements: ReglementRecu[];
+};
+
+export async function complementsDeLaFacture(
+  tx: DbOrTx,
+  entrepriseId: string,
+  f: Pick<typeof factures.$inferSelect, "id" | "devisId">
+): Promise<ComplementsDeLaFacture> {
+  const [d] = f.devisId
+    ? await tx.select().from(devis).where(eq(devis.id, f.devisId)).limit(1)
+    : [];
+  const acomptes = f.devisId
+    ? await tx
+        .select({ rang: acomptesDevis.rang, tauxCumule: acomptesDevis.tauxCumule })
+        .from(acomptesDevis)
+        .where(eq(acomptesDevis.devisId, f.devisId))
+        .orderBy(asc(acomptesDevis.rang))
+    : [];
+  let conditionsReglees: ConditionsLues;
+  if (d) {
+    conditionsReglees = {
+      acomptePourcent: d.acomptePourcent,
+      delaiPaiementJours: d.delaiPaiementJours,
+      moyensPaiement: d.moyensPaiement,
+      rappelerPenalites: d.rappelerPenalites,
+      textePied: d.textePied,
+      conditionsGenerales: d.conditionsGenerales,
+    };
+  } else {
+    const [e] = await tx.select().from(entreprises).where(eq(entreprises.id, entrepriseId)).limit(1);
+    const c = conditionsDepuisEntreprise(e);
+    conditionsReglees = {
+      acomptePourcent: c.acomptePourcent,
+      delaiPaiementJours: c.delaiPaiementJours,
+      moyensPaiement: c.moyensPaiement,
+      rappelerPenalites: c.rappelerPenalites,
+      textePied: c.textePied,
+      conditionsGenerales: c.conditionsGenerales,
+    };
+  }
+  const paiements = await tx
+    .select()
+    .from(paiementsFacture)
+    .where(eq(paiementsFacture.factureId, f.id))
+    .orderBy(asc(paiementsFacture.datePaiement), asc(paiementsFacture.createdAt));
+  return {
+    numeroDevis: d?.numeroCommercial ?? null,
+    acomptesDuDevis: acomptes,
+    conditionsReglees,
+    reglements: paiements.map((p) => ({
+      id: p.id,
+      date: p.datePaiement,
+      montant: p.montant,
+      moyen: p.moyen,
+      numero: p.numero,
+      solde: p.solde,
+    })),
+  };
+}
+
 function donneesFacture(
   f: typeof factures.$inferSelect,
   lignes: (typeof lignesFacture.$inferSelect)[],
-  numeroDevis: string | null
+  complements: ComplementsDeLaFacture
 ): FacturePdfData {
   const modalites = modalitesDeLaFacture(f);
   const totaux = totauxAvecReduction(lignes, f.tauxTva, f.reductionPourcent);
@@ -1092,7 +1220,13 @@ function donneesFacture(
     statut: f.statut as "brouillon" | "emise",
     dateEmission: f.dateEmission,
     dateEcheance: f.dateEcheance,
-    numeroDevis,
+    numeroDevis: complements.numeroDevis,
+    // Le même papier que le devis (migration 0092).
+    mainDoeuvreHt: f.mainDoeuvreHt,
+    titre: f.titre,
+    acomptesDuDevis: complements.acomptesDuDevis,
+    reglements: complements.reglements,
+    conditionsReglees: complements.conditionsReglees,
     entrepriseNom: f.entrepriseNom,
     regimeTva: f.entrepriseRegimeTva,
     entrepriseAdresse: f.entrepriseAdresse,
@@ -1138,6 +1272,7 @@ function donneesFacture(
         // Le taux de sa catégorie voyage jusqu'au papier : sans lui, la facture
         // ventilerait tout sur le taux du document (migration 0073).
         tauxTva: l.tauxTva,
+        unite: l.unite,
         // **Et son bloc avec lui (migration 0082).** Sans cette ligne, le titre
         // « TRAVAUX SUPPLÉMENTAIRES » du PDF ne s'affichait JAMAIS : les lignes
         // arrivaient sans la colonne, et tout retombait dans le bloc du devis.
@@ -1161,18 +1296,8 @@ export async function genererPdfFacturePourApercu(ctx: Ctx, factureId: string): 
       .select()
       .from(lignesFacture)
       .where(eq(lignesFacture.factureId, factureId));
-    // Nul sur une facture directe (migration 0086) : le PDF sait déjà se taire
-    // — la mention « Établie à partir du devis n° … » n'est écrite que s'il y a
-    // un numéro à écrire (`facture-pdf.ts`).
-    const [d] = f.devisId
-      ? await tx
-          .select({ numero: devis.numeroCommercial })
-          .from(devis)
-          .where(eq(devis.id, f.devisId))
-          .limit(1)
-      : [];
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
-    return genererPdfFacture(donneesFacture(f, lignes, d?.numero ?? null), habillage);
+    return genererPdfFacture(donneesFacture(f, lignes, await complementsDeLaFacture(tx, ctx.entrepriseId, f)), habillage);
   });
 }
 
@@ -1199,13 +1324,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // La pièce est figée au moment de l'émission, jamais régénérée ensuite :
     // une facture émise est immuable (trigger PostgreSQL), et un PDF reconstruit
     // depuis les données du jour ne serait plus celui que le client a reçu.
-    const [d] = avant.devisId
-      ? await tx
-          .select({ numero: devis.numeroCommercial })
-          .from(devis)
-          .where(eq(devis.id, avant.devisId))
-          .limit(1)
-      : [];
+    const complements = await complementsDeLaFacture(tx, ctx.entrepriseId, avant);
 
     const habillage2 = await allureDesDocuments(tx, ctx.entrepriseId);
     // **Les quatre totaux ne se repassent plus ici — 10 septembre 2026.**
@@ -1215,7 +1334,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // une facture aux totaux faux. Seul le STATUT reste forcé : la pièce
     // archivée doit dire « émise » alors que la ligne ne le sera qu'après.
     const pdfBytes = await genererPdfFacture(
-      donneesFacture({ ...avant, statut: "emise" }, lignes, d?.numero ?? null),
+      donneesFacture({ ...avant, statut: "emise" }, lignes, complements),
       habillage2
     );
 

@@ -115,7 +115,7 @@ async function main() {
     const tout = trace.textes.map((t) => t.contenu);
     assert.ok(tout.includes("dont main d’œuvre HT"), "la ligne manque");
     assert.ok(y(trace, "Total HT") > y(trace, "dont main d’œuvre HT"), "elle n'est pas sous le total HT");
-    assert.ok(y(trace, "dont main d’œuvre HT") > y(trace, "TVA (20"), "elle n'est pas au-dessus de la TVA");
+    assert.ok(y(trace, "dont main d’œuvre HT") > y(trace, "TVA 20 %"), "elle n'est pas au-dessus de la TVA");
     // Le papier sépare les milliers d'une insécable (U+00A0) : on lit comme lui.
     const sansInsecable = tout.map((t) => t.replace(/ /g, " "));
     assert.ok(sansInsecable.includes("1 592,00 €") && sansInsecable.includes("1 910,40 €"), "un total a bougé");

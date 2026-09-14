@@ -4,8 +4,25 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-14 · `main`
+**Point de reprise :** 2026-09-14 (soir) · `claude/devis-main-doeuvre-cgv`, à fusionner sur `main` après la batterie
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## Dernier lot — LE PAPIER, LE MÊME POUR LE DEVIS ET LA FACTURE (14 septembre 2026, soir)
+
+**À retenir :** un seul composeur dessine les deux pièces ; ce qui distingue
+la facture passe par ses options (`apresTotal`, `tampon`, `informations`).
+Les centimes des colonnes tombent juste par `lignesDuPapier` — ne jamais
+recalculer un net de ligne ailleurs. Les acomptes reçus sont des
+`paiements_facture` posés sur le brouillon, datés d'avant l'émission si c'est
+la signature : c'est voulu, et `refusDuReglementRecu` en porte la règle.
+
+**Ce que la suite navigateur a appris :** après « Créer la facture », l'écran
+se relit (`router.refresh()`) mais React garde l'instance et ses `useState`
+— titre vide, main d'œuvre absente. `FactureClient` est monté avec
+`key={facture.id}` : une facture, un montage. **Reste la batterie complète
+avant `main`.**
+`ARCHITECTURE.md` §364 · `docs/le-papier-devis-et-facture-verdict.md`.
 
 ---
 ## Dernier lot — L'ADRESSE SE PROUVE PAR UN CODE (14 septembre 2026)

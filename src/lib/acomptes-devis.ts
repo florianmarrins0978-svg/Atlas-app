@@ -176,12 +176,18 @@ export function libelleLigneAcompte(ligne: LigneAcompte): string {
  * en a pas. Sans acompte posé, rien — la phrase du réglage vit dans
  * `lignesConditionsDevis`, avec la même rédaction.
  */
+export function modeDeReglement(echeancier: EcheancierDevis): string | null {
+  if (echeancier.lignes.length === 0) return null;
+  const solde = new Decimal(echeancier.reste).greaterThan(0);
+  const etapes = echeancier.lignes.map((l) => `${l.tauxCumule} % ${l.moment}`);
+  return `Mode de règlement : ${etapes.join(", ")}${solde ? ", solde à réception de la facture" : ""}.`;
+}
+
 export function phrasesAcomptes(echeancier: EcheancierDevis): string[] {
   if (echeancier.lignes.length === 0) return [];
   const solde = new Decimal(echeancier.reste).greaterThan(0);
-  const etapes = echeancier.lignes.map((l) => `${l.tauxCumule} % ${l.moment}`);
   return [
-    `Mode de règlement : ${etapes.join(", ")}${solde ? ", solde à réception de la facture" : ""}.`,
+    modeDeReglement(echeancier) as string,
     ...echeancier.lignes.map((l) => `Montant à régler ${l.moment} : ${enEuros(l.montant)}`),
     ...(solde ? [`Solde restant à régler : ${enEuros(echeancier.reste)}`] : []),
   ];

@@ -150,8 +150,10 @@ async function main() {
     // (`CLAUDE.md` §5 bis).
     await page.waitForSelector('[data-atlas="ajouter-travaux-supplementaires"]', { timeout: 15000 });
 
+    // `.first()` : depuis sa planche du 14 septembre 2026, le montant se lit
+    // deux fois — Total TTC, puis « Net à payer » tant que rien n'est reçu.
     assert.ok(
-      await page.locator("text=/1\\s?200,00\\s?€/").isVisible(),
+      await page.locator("text=/1\\s?200,00\\s?€/").first().isVisible(),
       "le total du devis n'est pas repris (1 200,00 €)"
     );
 

@@ -8,6 +8,32 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
+### Le papier, le même pour le devis et la facture — sa planche, codée
+
+*« PARFAIT ! Code exactement cette planche, du devis à la facture. »*
+Migration 0092. Le devis et la facture partagent désormais la feuille : les
+colonnes des pros (Désignation · Qté · Unité · P.U. HT · Rem. % · Total HT ·
+TVA % · Total TTC), le taux SUR la ligne et les bases par taux dessous, « 3 »
+jamais « 3.00 », le numéro à droite du titre, un titre optionnel, Total HT en
+gras, la remise en or, « TVA 20 % ». La facture ajoute les acomptes reçus —
+« Acompte 30 % », « Acompte 50 % », « Acompte » — chacun sa ligne sous le TTC,
+« Net à payer », « Montants versés : chèque n° … du …, … € », le tampon
+« Acquittée le … », et la main d'œuvre TTC pour information. Sur l'écran de la
+facture : le titre, « + Main d'œuvre », les règlements reçus (moyen, numéro du
+chèque, date, montant), « + Règlement reçu » qui propose le rang suivant du
+devis, l'interrupteur « Facture acquittée ».
+
+**Attrapé par la suite navigateur, le soir même :** après « Créer la facture »,
+l'écran gardait le titre vide et la main d'œuvre absente jusqu'au rechargement
+(`router.refresh()` relit la page, React garde l'instance et ses `useState`).
+`FactureClient` est désormais monté avec `key={facture.id}`. Et la flèche
+native du choix du moyen mangeait « Virement » sur un téléphone, et cinq
+colonnes ne tenaient pas dans la carte : mesurées au plus long qu'elles
+portent, regardées à 390 px.
+
+**Décision dite :** un acompte reçu AVANT la facture se pose sur le brouillon —
+c'est celui de la signature. `ARCHITECTURE.md` §364 ·
+`docs/le-papier-devis-et-facture-verdict.md`.
 ### Six contrôles remis d'aplomb après la fusion
 
 La batterie a rendu 149 sur 153. Aucun des quatre rouges ne venait du

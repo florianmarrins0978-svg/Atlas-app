@@ -561,6 +561,8 @@ function donneesPdfDuDevis(
     },
     // « dont main d'œuvre HT » (migration 0090) : nommée sous le total, jamais comptée.
     mainDoeuvreHt: d.mainDoeuvreHt,
+    // Son titre, s'il en a donné un (migration 0092).
+    titre: d.titre,
     // Les lignes des totaux, cumulées (migration 0088) : le PDF en tire ce qui
     // tombe à chaque acompte et le reste à régler, par la règle commune.
     acomptes: [...acomptes],
@@ -687,6 +689,8 @@ export async function mettreAJourEnTeteDevis(
     reductionPourcent?: string | null;
     /** « dont main d'œuvre HT » ; `null` retire la ligne. Bornée au brut HT. */
     mainDoeuvreHt?: string | null;
+    /** Son titre (migration 0092). Vide ou `null` : aucun. */
+    titre?: string | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -712,8 +716,11 @@ export async function mettreAJourEnTeteDevis(
       conditionsPaiement?: string;
       reductionPourcent?: string | null;
       mainDoeuvreHt?: string | null;
+      titre?: string | null;
       updatedAt: Date;
     } = { updatedAt: new Date() };
+    // Un titre vide est un titre absent : rien ne s'imprime, rien ne se garde.
+    if (data.titre !== undefined) valeurs.titre = data.titre?.trim() || null;
     if (data.tauxTva !== undefined) {
       // **La même règle que les catégories, appelée et non réécrite.** Elle
       // vivait ici en `Math.min(100, Math.max(0, …))` ; depuis que l'écran des

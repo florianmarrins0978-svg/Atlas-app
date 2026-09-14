@@ -261,6 +261,32 @@ export function lignesConditionsDevis(
 }
 
 /**
+ * Les lignes de conditions à imprimer sur la FACTURE — le même papier que le
+ * devis (sa planche du 14 septembre 2026), sans ce qui n'a plus de sens une
+ * fois le chantier fait : le montant à régler à la signature et le solde
+ * restant sont remplacés par « Montants versés », et les pénalités ne se
+ * répètent pas — la facture les porte déjà, scellées, au pied.
+ *
+ * `modeDeReglement` vient des acomptes du devis (`modeDeReglement` dans
+ * `acomptes-devis.ts`) ; sans devis, la phrase du réglage.
+ */
+export function lignesConditionsFacture(
+  c: Conditions,
+  modeDeReglement: string | null,
+  montantsVerses: string | null
+): string[] {
+  const lignes: string[] = [];
+  if (modeDeReglement) lignes.push(modeDeReglement);
+  else if (c.acomptePourcent !== null) {
+    lignes.push(`Mode de règlement : ${c.acomptePourcent} % à la commande, solde à réception de la facture.`);
+  }
+  if (montantsVerses) lignes.push(montantsVerses);
+  if (c.moyensPaiement) lignes.push(`Moyens de paiement acceptés : ${c.moyensPaiement}.`);
+  if (c.textePied) lignes.push(c.textePied);
+  return lignes;
+}
+
+/**
  * Traduit une ligne de `entreprises` en conditions.
  *
  * **Cette fonction existe parce que les noms diffèrent**, et c'est délibéré : la
