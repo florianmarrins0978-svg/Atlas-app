@@ -96,6 +96,18 @@
                      font:16px/1.3 ui-sans-serif,sans-serif;color:var(--ink);outline:none}
   .champ-titre input::placeholder{color:var(--muted)}
   .champ-titre input:focus{border-bottom-color:var(--or)}
+  .regls{margin:12px 26px 0}
+  .regls .inter{margin:0 0 4px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .regl{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--lineSoft);color:var(--ink)}
+  .regl .quoi{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .regl input{border:0;background:transparent;padding:0;font-size:15px;color:var(--ink);outline:none;border-radius:4px;width:100%}
+  .regl input.date{font-size:12.5px;color:var(--muted);width:96px}
+  .regl input::placeholder{color:var(--muted)}
+  .regl .m{white-space:nowrap}
+  .regl .m input{width:64px;text-align:right;font-size:16px}
+  .regl input:focus{background:rgba(28,28,26,.04)}
+  .plus:focus-visible,.regl input:focus-visible,.champ-titre input:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:6px}
+  .plus{display:block;margin-top:8px;border:0;background:none;padding:0;color:var(--or);font:500 14px/1.2 ui-sans-serif,sans-serif;cursor:pointer;min-height:32px}
   .feuille .totaux .r.or{color:var(--or)}
   .feuille .totaux .r.doux{color:var(--encreDouce);font-size:8.2px}
   .feuille .totaux .r.ttc{margin-top:6px;padding-top:7px;border-top:1.2px solid var(--encre);font:400 13px/1.2 ui-serif,Georgia,serif}
@@ -145,6 +157,11 @@
   </div>
 
   <div class="champ-titre"><input id="titre-libre" placeholder="Titre (optionnel)" aria-label="Titre du document"></div>
+  <div class="regls" id="regls" hidden>
+    <p class="inter">Règlements reçus</p>
+    <div id="regls-lignes"></div>
+    <button class="plus" type="button" id="regl-plus">+ Règlement reçu</button>
+  </div>
 
   <div class="feuille" id="feuille">
     <div class="haut">
@@ -167,7 +184,7 @@
     </div>
 
     <table>
-      <thead><tr><th>Désignation</th><th class="n">Qté</th><th>Unité</th><th class="n">P.U. HT</th><th class="c">Rem. %</th><th class="n">Total HT</th><th class="c">TVA %</th><th class="n g">Total TTC</th></tr></thead>
+      <thead><tr><th>Désignation</th><th class="n">Qté</th><th class="c">Unité</th><th class="n">P.U. HT</th><th class="c">Rem. %</th><th class="n">Total HT</th><th class="c">TVA %</th><th class="n g">Total TTC</th></tr></thead>
       <tbody id="lignes"></tbody>
     </table>
 
@@ -200,6 +217,7 @@
     <tr><td>Le taux de TVA sur la ligne</td><td>plus de tableau coupé en « TVA 20 % / TVA 10 % » avec un sous-total chacun : le taux se lit sur chaque ligne, et les bases par taux sont dessous, comme chez les pros.</td></tr>
     <tr><td>Le Total TTC par ligne</td><td>ce que le client compare à son relevé.</td></tr>
     <tr><td>Les libellés</td><td>« TVA 20 % » sans parenthèses, « P.U. HT », « Rem. % ». Les mêmes sur les deux papiers.</td></tr>
+    <tr><td>Les règlements reçus</td><td>sur la facture, au-dessus du papier : l’acompte du devis d’office, « + Règlement reçu » pour un chèque ou un virement de plus, avec son libellé, sa date, son montant. Le papier suit : la ligne sous le Total TTC, le net à payer, « Montants versés », et le tampon « Acquittée » quand le net tombe à zéro.</td></tr>
     <tr><td>Un titre, si vous voulez</td><td>un champ au-dessus du papier, vide d’office : « Aménagement du jardin », « Chantier Machin ». Rempli, il s’écrit sous DEVIS ou FACTURE ; vide, rien.</td></tr>
     <tr><td>L’or</td><td>ne porte que ce qu’on lit : Client, Lieu des travaux, Notes, le tampon « Facture acquittée ». Jamais un montant.</td></tr>
   </table>
@@ -213,6 +231,9 @@
     { lib: "Bordures acier corten", detail: "Hauteur 15 cm, épaisseur 3 mm, pose comprise", q: 24, u: "ml", pu: 18, tva: 20 }
   ];
   var REMISE = 5, MO = 450, ACOMPTE = 30;
+  var VUE = "devis";
+  var REGLS = [ { lib: "Acompte 30 %, chèque n° 1806028", date: "02/09/2026", montant: null } ];
+  function nombre(v){ var n = parseFloat(String(v).replace(",",".")); return isFinite(n) ? n : 0; }
   function id(x){ return document.getElementById(x); }
   function eur(n){ return n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
   function qte(n){ return n.toLocaleString("fr-FR",{maximumFractionDigits:2}); }
@@ -230,11 +251,27 @@
     });
     netHt = r2(netHt); tvaT = r2(tvaT);
     var ttc = r2(netHt+tvaT), acompte = r2(ttc*ACOMPTE/100);
-    return { brut:r2(brut), remise:r2(brut-netHt), netHt:netHt, taux:taux, tvaT:tvaT, ttc:ttc, acompte:acompte, reste:r2(ttc-acompte) };
+    var verses = 0;
+    REGLS.forEach(function(g){ g.m = g.montant === null ? acompte : nombre(g.montant); verses += g.m; });
+    return { brut:r2(brut), remise:r2(brut-netHt), netHt:netHt, taux:taux, tvaT:tvaT, ttc:ttc, acompte:acompte, reste:r2(ttc-acompte), verses:r2(verses), net:Math.max(0, r2(ttc-verses)) };
   }
 
   function rendre(vue){
-    var c = calcul(), facture = vue !== "devis", acquittee = vue === "acquittee";
+    VUE = vue;
+    var c = calcul(), facture = vue !== "devis", acquittee = facture && c.net === 0;
+    // la saisie des règlements, au-dessus du papier, seulement sur la facture
+    id("regls").hidden = !facture;
+    var boite = id("regls-lignes"); boite.innerHTML = "";
+    REGLS.forEach(function(g){
+      var d = document.createElement("div"); d.className = "regl";
+      d.innerHTML = '<span class="quoi"><input value="'+g.lib+'" placeholder="Chèque n°…" aria-label="Libellé du règlement"><input class="date" value="'+g.date+'" aria-label="Date"></span>' +
+                    '<span class="m"><input value="'+String(g.m).replace(".",",")+'" inputmode="decimal" aria-label="Montant reçu"> €</span>';
+      var ch = d.querySelectorAll("input");
+      ch[0].onchange = function(e){ g.lib = e.target.value; rendre(VUE); };
+      ch[1].onchange = function(e){ g.date = e.target.value; rendre(VUE); };
+      ch[2].onchange = function(e){ g.montant = nombre(e.target.value); rendre(VUE); };
+      boite.appendChild(d);
+    });
     id("h1").textContent = facture ? "La facture" : "Le devis";
     id("titre").textContent = facture ? "Facture" : "Devis";
     id("numero").textContent = facture ? "n° F2026-000021" : "n° D2026-000014";
@@ -245,7 +282,7 @@
     var tb = id("lignes"); tb.innerHTML = "";
     LIGNES.forEach(function(l){
       var tr = document.createElement("tr");
-      tr.innerHTML = '<td>'+l.lib+(l.detail?'<div class="d">'+l.detail+'</div>':'')+'</td><td class="n">'+qte(l.q)+'</td><td>'+l.u+'</td><td class="n">'+eur(l.pu)+'</td><td class="c">'+(REMISE||"")+'</td><td class="n">'+eur(l.net)+'</td><td class="c">'+l.tva+'</td><td class="n g">'+eur(l.ttc)+'</td>';
+      tr.innerHTML = '<td>'+l.lib+(l.detail?'<div class="d">'+l.detail+'</div>':'')+'</td><td class="n">'+qte(l.q)+'</td><td class="c">'+l.u+'</td><td class="n">'+eur(l.pu)+'</td><td class="c">'+(REMISE||"")+'</td><td class="n">'+eur(l.net)+'</td><td class="c">'+l.tva+'</td><td class="n g">'+eur(l.ttc)+'</td>';
       tb.appendChild(tr);
     });
     id("bases").innerHTML = c.taux.map(function(x){ return '<div class="r"><span>'+eur(x.base)+'</span><span>'+x.t+' %</span><span>'+eur(x.tva)+'</span></div>'; }).join("");
@@ -262,17 +299,16 @@
       t.push('<div class="r doux"><span>Acompte 30 % à la signature</span><span>'+eur(c.acompte)+'</span></div>');
       t.push('<div class="r reste"><span>Reste à régler</span><span>'+eur(c.reste)+'</span></div>');
     } else {
-      t.push('<div class="r doux"><span>Acompte 30 %</span><span>− '+eur(c.acompte)+'</span></div>');
-      if (acquittee) t.push('<div class="r doux"><span>Virement du 21/09</span><span>− '+eur(c.reste)+'</span></div>');
-      t.push('<div class="r net"><span>Net à payer</span><span>'+eur(acquittee ? 0 : c.reste)+'</span></div>');
-      if (acquittee) t.push('<span class="tampon">Acquittée le 21/09/2026</span>');
+      REGLS.forEach(function(g){ t.push('<div class="r doux"><span>'+(g.lib.split(",")[0] || "Règlement")+'</span><span>− '+eur(g.m)+'</span></div>'); });
+      t.push('<div class="r net"><span>Net à payer</span><span>'+eur(c.net)+'</span></div>');
+      if (acquittee) t.push('<span class="tampon">Acquittée le '+(REGLS[REGLS.length-1].date)+'</span>');
     }
     id("totaux").innerHTML = t.join("");
 
     var n = ['<p>Accès par le portail de gauche, cour à dégager la veille.</p>',
              '<p class="g">Mode de règlement : 30 % à la signature, solde à réception de la facture.</p>'];
     if (!facture) { n.push('<p class="g">Montant à régler à la signature : '+eur(c.acompte)+'</p>'); n.push('<p class="g">Solde restant à régler : '+eur(c.reste)+'</p>'); }
-    else { n.push('<p class="g">Montants versés : chèque n° 1806028 du 02/09/2026, '+eur(c.acompte)+(acquittee ? ' ; virement du 21/09/2026, '+eur(c.reste) : '')+'.</p>'); }
+    else { n.push('<p class="g">Montants versés : '+REGLS.map(function(g){ return (g.lib || "règlement")+' du '+g.date+', '+eur(g.m); }).join(" ; ")+'.</p>'); }
     n.push('<p class="g">Moyens de paiement acceptés : virement, chèque.</p>');
     n.push('<p class="g">En cas de retard de paiement : pénalités au taux de trois fois le taux d’intérêt légal, et indemnité forfaitaire de 40 € pour frais de recouvrement.</p>');
     id("notes").innerHTML = n.join("");
@@ -287,9 +323,21 @@
     b.onclick = function(){
       document.querySelectorAll(".choix [data-vue]").forEach(function(x){ x.setAttribute("aria-pressed","false"); });
       b.setAttribute("aria-pressed","true");
+      // « Facture acquittée » : la même facture, avec le solde reçu par virement.
+      REGLS = REGLS.slice(0, 1);
+      if (b.dataset.vue === "acquittee") REGLS.push({ lib: "Virement Mme Grospiron", date: "21/09/2026", montant: calcul().reste });
       rendre(b.dataset.vue);
       window.scrollTo({top:0});
     };
+  });
+  id("regl-plus").onclick = function(){
+    REGLS.push({ lib: "", date: "14/09/2026", montant: 0 });
+    rendre(VUE);
+    var ch = id("regls-lignes").querySelectorAll("input"); ch[ch.length-3].focus();
+  };
+  // Un chiffre touché est sélectionné en entier : on tape, l'ancien part.
+  document.addEventListener("focusin", function(e){
+    if (e.target.tagName === "INPUT" && e.target.getAttribute("inputmode") === "decimal") e.target.select();
   });
   // Le titre : ce qu'il tape s'écrit sous « DEVIS » ; vide, rien ne s'affiche.
   id("titre-libre").oninput = function(e){
