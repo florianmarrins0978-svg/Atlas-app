@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resserrer deux écrans</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578;
+    --trait:rgba(28,28,26,.12); --or:#B98B47; --alerte:#8f3a2e;
+  }
+  body.nuit{
+    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
+    --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b;
+    --etabli-or:#b98b47;
+    --plage:#1a1d19; --encre:#e9e8de; --gris:#84887b;
+    --trait:rgba(233,232,222,.12); --alerte:#d98b7d;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  .page{max-width:1000px;margin:0 auto;padding:30px 20px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
+            color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:640px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 4px}
+  h2{font:600 22px/1.25 var(--serif);margin:44px 0 4px}
+  .dit{color:var(--etabli-gris);font-size:13.5px;line-height:1.6;margin:0 0 18px;max-width:640px}
+  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+           letter-spacing:.02em;padding:11px 17px;border-radius:999px;margin:18px 0 30px;
+           background:var(--etabli-carte);color:var(--etabli-doux);
+           box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+  .col{flex:0 0 auto;max-width:100%}
+  /* **Le téléphone se met À L'ÉCHELLE, il ne se rétrécit pas.** Les blocs sont
+     posés au pixel près : réduire la largeur sans réduire la hauteur mentirait
+     sur la seule chose que cette planche montre — ce qui passe sous le pli. */
+  .cadre{overflow:hidden}
+  /* `max-width:100%` clamperait la largeur AVANT la mise à l'échelle, et le
+     cadre se règle sur elle : le téléphone garde donc sa largeur vraie. */
+  .cadre > .tel{transform-origin:top left;max-width:none}
+  .nom{font:600 15px/1.3 var(--sans);margin:0 0 3px;display:flex;align-items:center;gap:9px}
+  .etiq{font:700 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+        padding:4px 7px;border-radius:999px;background:var(--etabli-or);color:var(--etabli-carte)}
+  .etiq.rouge{background:var(--alerte)}
+  .mesure{color:var(--etabli-gris);font-size:12.5px;margin:0 0 11px}
+
+  .ecranvrai{display:block;width:375px;max-width:100%;height:auto;border-radius:20px;
+             box-shadow:0 2px 16px rgba(20,18,14,.14),inset 0 0 0 1px var(--etabli-trait)}
+  /* Le téléphone, à l'échelle 1 : 375 px de large, 667 de haut. */
+  .tel{position:relative;width:375px;max-width:100%;border-radius:26px;overflow:hidden;
+       background:var(--plage);box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .tel.large{width:390px}
+  .ecran{position:relative;overflow:hidden}
+  .bloc{background:var(--etabli-carte);box-shadow:inset 0 0 0 1px var(--trait);
+        display:flex;align-items:center;padding:0 12px;
+        font:500 12px/1.2 var(--sans);color:var(--etabli-doux);border-radius:4px}
+  .bloc.titre{font:600 19px/1 var(--serif);color:var(--etabli-encre);background:transparent;box-shadow:none}
+  .barrebas{position:absolute;left:0;right:0;height:48px;display:flex;align-items:center;
+            justify-content:center;font:700 9.5px/1 var(--sans);letter-spacing:.1em;
+            text-transform:uppercase;color:var(--etabli-gris);
+            background:var(--plage);box-shadow:inset 0 1px 0 var(--trait)}
+  .pli{position:absolute;left:0;right:0;height:0;border-top:2px dashed var(--alerte)}
+  .pli span{position:absolute;right:6px;top:3px;font:700 9.5px/1 var(--sans);
+            letter-spacing:.08em;text-transform:uppercase;color:var(--alerte)}
+  .deborde{background:rgba(143,58,46,.14)}
+
+  table{border-collapse:collapse;margin:16px 0 0;font-size:13.5px}
+  th,td{text-align:left;padding:7px 16px 7px 0;border-bottom:1px solid var(--etabli-trait)}
+  th{font:700 10px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--etabli-gris)}
+  .note{margin:34px 0 0;padding:15px 17px;border-radius:4px;background:var(--etabli-carte);
+        box-shadow:inset 0 0 0 1px var(--etabli-trait);max-width:640px;
+        font-size:13.5px;line-height:1.65;color:var(--etabli-doux)}
+  .note .t{display:block;font:700 10px/1 var(--sans);letter-spacing:.1em;
+           text-transform:uppercase;color:var(--etabli-or);margin:0 0 7px}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">Ce que je changerais</p>
+  <h1>Resserrer votre fiche client</h1>
+  <p class="chapeau">
+    Sur un petit iPhone, elle dépasse de 17 px : le bas se dérobe sous la barre.
+    Voici l’écran tel qu’il est, et tel qu’il serait. <b>Aucun mot retiré,
+    aucune ligne déplacée.</b>
+  </p>
+  <button class="bascule" id="jourNuit" aria-pressed="false">Voir en mode nuit</button>
+
+  <div class="rangee">
+    <div class="col">
+      <p class="nom">Aujourd’hui <span class="etiq rouge">684 px pour 667</span></p>
+      <p class="mesure">« Je rédige à la main » passe sous la barre du bas.</p>
+      <img class="ecranvrai" src="images/fiche-client-aujourdhui.png" alt="La fiche client aujourd’hui, sur un iPhone de 4,7 pouces">
+    </div>
+    <div class="col">
+      <p class="nom">Resserré <span class="etiq">667 px, tout tient</span></p>
+      <p class="mesure">2 px de moins entre les blocs, 20 px de réserve en moins autour du micro.</p>
+      <img class="ecranvrai" src="images/fiche-client-resserree.png" alt="La fiche client resserrée, sur le même téléphone">
+    </div>
+  </div>
+
+  <h2>La page de votre client</h2>
+  <p class="dit">Elle tient sur ce devis-ci. Elle dépasse de 2 px quand le nom du
+     client est plus long — c’est le seul cas, mesuré dans la batterie. Le même
+     geste la couvre : 2 px de moins entre les blocs.</p>
+  <div class="rangee">
+    <div class="col">
+      <p class="nom">Telle qu’il la reçoit <span class="etiq">664 px</span></p>
+      <p class="mesure">Au pire cas : la date choisie tombe dans les 14 jours.</p>
+      <img class="ecranvrai" src="images/page-client-aujourdhui.png" alt="La page que reçoit le client, avec la case de rétractation">
+    </div>
+  </div>
+
+  <div class="note"><span class="t">Ce que vous regardez</span>
+    Ce sont des <b>photographies de l’application</b>, prises sur la version
+    bâtie — celle que sert votre espace. Le resserrement a été appliqué le temps
+    de la photo : rien n’est encore changé dans le code.
+  </div>
+</div>
+<script>
+  document.getElementById("jourNuit").addEventListener("click", (e) => {
+    const on = document.body.classList.toggle("nuit");
+    e.currentTarget.setAttribute("aria-pressed", String(on));
+    e.currentTarget.textContent = on ? "Voir en plein jour" : "Voir en mode nuit";
+  });
+</script>
+</body>
+</html>
