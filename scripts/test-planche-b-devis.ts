@@ -97,9 +97,17 @@ async function main() {
     assert.equal(montantMainDoeuvreValide(null, "1592.00"), null);
   });
 
-  await cas("« dont » ne dépasse jamais le tout : borné au brut HT, et rien sur un devis sans ligne", () => {
+  await cas("« dont » ne dépasse jamais le tout : borné au brut HT", () => {
     assert.equal(montantMainDoeuvreValide("4500", "1592.00"), "1592.00");
-    assert.equal(montantMainDoeuvreValide("450", "0.00"), null);
+  });
+
+  // Sa plainte du 14 septembre 2026 : *« je mets le prix, elle s'efface toute
+  // seule »* — sur un devis encore vide. Cette suite exigeait alors `null` sur
+  // un brut nul, et c'est ce qu'il a payé : un total de zéro n'est pas un
+  // plafond, c'est l'absence de plafond.
+  await cas("sans ligne chiffrée, le montant tapé se GARDE — rien à borner encore", () => {
+    assert.equal(montantMainDoeuvreValide("450", "0.00"), "450.00");
+    assert.equal(montantMainDoeuvreValide("450", 0), "450.00");
   });
 
   await cas("sur le papier : sous le total HT, au-dessus de la TVA, et les totaux n'ont pas bougé", async () => {

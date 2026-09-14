@@ -6,6 +6,28 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-14
+
+### La main d'œuvre ne s'efface plus sur un devis sans ligne ; une photo de devis ne vide plus les conditions générales
+
+**Ses plaintes du 14 septembre 2026, à minuit.** Ouverte sur un devis encore
+vide, la ligne « dont main d'œuvre HT » perdait le montant tapé dès le premier
+enregistrement — un total nul était pris pour un plafond. Elle se garde ; la
+borne se pose avec la première ligne (`montantMainDoeuvreValide`, et la
+régénération du brouillon).
+
+**Et une clef absente n'écrit plus rien** (`normaliserConditions`) : la photo
+d'un devis renvoyait les réglages relus sans la clef des conditions générales
+(0090), et les remettait à « effacé » — plus rien après le bon pour accord, case
+éteinte dans les Réglages. Le geste `regler_documents` n'a plus à relire
+l'entreprise pour se protéger. Au rechargement, la main d'œuvre s'écrit « 450 »,
+plus « 450.00 ».
+
+`ARCHITECTURE.md` §360 · `docs/devis-main-doeuvre-et-conditions-verdict.md`.
+Reste à lui : les phrases du bloc « Notes / conditions », que ses deux planches
+écrivent différemment (`TODO.md`).
+
+---
 ## 2026-09-13
 
 ### La batterie refuse de repartir quand rien n'a bougé

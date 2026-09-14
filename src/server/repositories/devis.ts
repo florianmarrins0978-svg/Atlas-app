@@ -300,7 +300,10 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       await tx.delete(lignesDevis).where(eq(lignesDevis.devisId, dernier.id));
       // **La main d'œuvre survit aussi, mais reste « dont »** : si les lignes ont
       // fondu sous elle, on la ramène au nouveau brut plutôt que d'imprimer
-      // « dont 450 € » sous un total de 380 €.
+      // « dont 450 € » sous un total de 380 €. **Un brut nul ne borne rien**
+      // (14 septembre 2026) : sur un devis pas encore chiffré elle se garde —
+      // la première version l'effaçait au rechargement, comme
+      // `montantMainDoeuvreValide` l'effaçait à la saisie.
       //
       // **Calculée par Postgres sur la valeur du MOMENT, jamais recopiée d'une
       // lecture.** Ce rendu se joue en même temps que le geste du patron : le
@@ -314,8 +317,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
           ...snapshotEnTete,
           ...totaux,
           mainDoeuvreHt: sql`CASE
-            WHEN ${brutHt}::numeric <= 0 THEN NULL
-            WHEN ${devis.mainDoeuvreHt} > ${brutHt}::numeric THEN ${brutHt}::numeric
+            WHEN ${brutHt}::numeric > 0 AND ${devis.mainDoeuvreHt} > ${brutHt}::numeric THEN ${brutHt}::numeric
             ELSE ${devis.mainDoeuvreHt} END`,
         })
         .where(eq(devis.id, dernier.id))

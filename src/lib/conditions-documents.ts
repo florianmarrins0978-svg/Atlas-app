@@ -151,25 +151,40 @@ export function lireConditions(brut: ConditionsLues | null | undefined): Conditi
   };
 }
 
-/** Ce qui part en base après une saisie. Même fonction que pour l'affichage. */
+/**
+ * Ce qui part en base après une saisie. Même fonction que pour l'affichage.
+ *
+ * **UNE CLEF ABSENTE NE S'ÉCRIT PAS — 14 septembre 2026.** Elle valait
+ * « éteint » : un geste qui ne portait qu'un réglage effaçait tous les autres.
+ * Deux appelants s'en étaient protégés en relisant la base pour tout renvoyer
+ * (le geste `regler_documents` de l'assistant, la photo d'un devis) — et le
+ * second avait oublié la clef née le 13 (migration 0090) : ses conditions
+ * générales repartaient à `""`, c'est-à-dire « il a tout effacé », et plus rien
+ * ne s'imprimait après le bon pour accord. Un troisième appelant aurait refait
+ * la même faute. La règle vit donc ici : ce qui n'est pas dit ne bouge pas.
+ * `null` reste « éteint », `""` reste « allumé, rien écrit ».
+ */
 export function normaliserConditions(saisie: ConditionsLues): {
-  validiteJours: number | null;
-  acomptePourcent: string | null;
-  delaiPaiementJours: number | null;
-  moyensPaiement: string | null;
-  rappelerPenalites: boolean;
-  textePied: string | null;
-  conditionsGenerales: string;
+  validiteJours?: number | null;
+  acomptePourcent?: string | null;
+  delaiPaiementJours?: number | null;
+  moyensPaiement?: string | null;
+  rappelerPenalites?: boolean;
+  textePied?: string | null;
+  conditionsGenerales?: string;
 } {
   const c = lireConditions({ ...saisie, validiteJours: saisie.validiteJours ?? null });
+  const dite = (clef: keyof ConditionsLues) => saisie[clef] !== undefined;
   return {
-    validiteJours: c.validiteJours,
-    acomptePourcent: c.acomptePourcent === null ? null : String(c.acomptePourcent),
-    delaiPaiementJours: c.delaiPaiementJours,
-    moyensPaiement: c.moyensPaiement,
-    rappelerPenalites: c.rappelerPenalites,
-    textePied: c.textePied,
-    conditionsGenerales: c.conditionsGenerales,
+    ...(dite("validiteJours") ? { validiteJours: c.validiteJours } : {}),
+    ...(dite("acomptePourcent")
+      ? { acomptePourcent: c.acomptePourcent === null ? null : String(c.acomptePourcent) }
+      : {}),
+    ...(dite("delaiPaiementJours") ? { delaiPaiementJours: c.delaiPaiementJours } : {}),
+    ...(dite("moyensPaiement") ? { moyensPaiement: c.moyensPaiement } : {}),
+    ...(dite("rappelerPenalites") ? { rappelerPenalites: c.rappelerPenalites } : {}),
+    ...(dite("textePied") ? { textePied: c.textePied } : {}),
+    ...(dite("conditionsGenerales") ? { conditionsGenerales: c.conditionsGenerales } : {}),
   };
 }
 

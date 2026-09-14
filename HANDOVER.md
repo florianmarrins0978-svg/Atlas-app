@@ -4,8 +4,21 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-13 · `main`
+**Point de reprise :** 2026-09-14 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## Dernier lot — LA MAIN D'ŒUVRE SUR UN DEVIS VIDE, ET LA CLEF ABSENTE (14 septembre 2026)
+
+**À retenir :** `normaliserConditions` n'écrit plus une clef absente — un
+appelant qui ne règle qu'une chose n'a plus à relire l'entreprise pour
+protéger les autres, et ne peut plus oublier la dernière colonne née (c'est ce
+qui vidait les conditions générales à chaque photo de devis). Et un total HT
+nul ne borne pas la main d'œuvre : elle se garde jusqu'à la première ligne.
+
+**Reste à lui :** les phrases du bloc « Notes / conditions », que ses deux
+planches écrivent différemment (`TODO.md`, en tête). Son retour :
+`docs/devis-main-doeuvre-et-conditions-verdict.md`. `ARCHITECTURE.md` §360.
 
 ---
 ## Dernier lot — 0087 NE VOYAIT PAS SES PROPRES LIGNES (13 septembre 2026)

@@ -90,6 +90,18 @@ async function main() {
     assert.equal(c.conditionsGenerales, "", "le devis porterait des conditions qu'il a effacées");
   });
 
+  await essai("un geste qui ne règle que l'acompte ne touche pas aux conditions générales", async () => {
+    // Le 14 septembre 2026 : la photo d'un devis renvoyait les six réglages
+    // relus SANS cette clef, et `normaliserConditions` lisait l'absence comme
+    // « effacé » — plus rien ne s'imprimait après le bon pour accord.
+    await mettreAJourEntreprise(ctx, { conditions: { conditionsGenerales: "Mes conditions à moi." } });
+    await mettreAJourEntreprise(ctx, { conditions: { acomptePourcent: "40" } });
+    const c = conditionsDepuisEntreprise(await getEntreprise(ctx));
+    assert.equal(c.acomptePourcent, 40);
+    assert.equal(c.conditionsGenerales, "Mes conditions à moi.", "régler l'acompte a effacé les conditions générales");
+    await mettreAJourEntreprise(ctx, { conditions: { conditionsGenerales: "" } });
+  });
+
   console.log("\n=== « dont main d'œuvre HT », par le dépôt ===\n");
 
   await essai("elle s'écrit, à deux décimales, et les totaux ne bougent pas", async () => {
@@ -112,6 +124,21 @@ async function main() {
     const d = await getOuCreerDevisBrouillon(ctx, devisA.chantierId);
     assert.equal(d.totalHt, "380.00");
     assert.equal(d.mainDoeuvreHt, "380.00", `« dont ${d.mainDoeuvreHt} » sous un total de 380`);
+  });
+
+  await essai("sur un devis sans ligne chiffrée, elle se garde — à la saisie ET au brouillon rouvert", async () => {
+    // Sa plainte du 14 septembre 2026 : ouverte sur un devis encore vide, la
+    // ligne partait au premier enregistrement, puis au rechargement.
+    const chantier = await creerChantier(ctx, { nom: "Gazon — vide" });
+    const d0 = await getOuCreerDevisBrouillon(ctx, chantier.id);
+    const d1 = await mettreAJourEnTeteDevis(ctx, d0.id, { mainDoeuvreHt: "450" });
+    assert.equal(d1?.mainDoeuvreHt, "450.00", "effacée à la saisie sur un devis vide");
+    const d2 = await getOuCreerDevisBrouillon(ctx, chantier.id);
+    assert.equal(d2.mainDoeuvreHt, "450.00", "effacée au rechargement sur un devis vide");
+    // Et la borne se pose dès qu'une ligne existe.
+    await ajouterLignePrix(ctx, chantier.id, "Bordures", "380.00");
+    const d3 = await getOuCreerDevisBrouillon(ctx, chantier.id);
+    assert.equal(d3.mainDoeuvreHt, "380.00", `« dont ${d3.mainDoeuvreHt} » sous un total de 380`);
   });
 
   await essai("vide ou nul la retire ; les autres champs de l'en-tête ne bougent pas", async () => {
