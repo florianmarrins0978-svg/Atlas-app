@@ -108,14 +108,32 @@ async function main() {
 
     await allerAuPlanning(page);
 
-    // On attend que la page se retrouve d'aplomb : le titre du planning, rendu
-    // par un code qui a bel et bien été rechargé.
-    await page.waitForSelector('h1:has-text("Planning")', { timeout: 60_000 });
-
+    // ═══════════════════════════════════════════════════════════════════
+    // **ON ATTEND LE RECHARGEMENT, PAS LE TITRE — et c'est ce qui manquait.**
+    //
+    // Ce cas attendait `h1:has-text("Planning")`, puis vérifiait qu'un document
+    // avait été redemandé. Or ce titre arrive AVANT la panne : la navigation
+    // côté client pose d'abord l'esquisse du planning (`loading.tsx`, qui porte
+    // le même `h1`). L'attente était donc satisfaite à l'instant du clic, et le
+    // compte des documents lu pendant que le morceau manquant n'avait pas
+    // encore fait tomber l'écran — zéro, forcément. Le contrôle accusait un
+    // correctif qui, lui, faisait son travail : la trace du rechargement est
+    // bien là quelques secondes plus tard.
+    //
+    // On attend donc CE QU'ON PRÉTEND PROUVER — la page redemandée —, et le
+    // titre ensuite. Ce n'est pas un délai posé au hasard : la boucle s'arrête
+    // sur l'événement, et son échec garde la phrase qui désigne le coupable.
+    // ═══════════════════════════════════════════════════════════════════
+    const finAttente = Date.now() + 60_000;
+    while (documents.length === 0 && Date.now() < finAttente) await page.waitForTimeout(200);
     assert.ok(
       documents.length > 0,
       "aucun document redemandé : la page n'a pas rechargé, elle s'en est donc sortie autrement"
     );
+
+    // Et l'écran revient pour de bon : le titre du planning, rendu par un code
+    // qui a bel et bien été rechargé.
+    await page.waitForSelector('h1:has-text("Planning")', { timeout: 60_000 });
     const texte = await page.locator("body").innerText();
     assert.doesNotMatch(
       texte,
