@@ -35,8 +35,8 @@ import { filtrerClientsParNom } from "@/lib/recherche-client";
 import { creerTarif, modifierTarif, supprimerTarif } from "@/server/repositories/tarifs";
 import { supprimerChantier, SuppressionChantierRefusee } from "@/server/repositories/chantiers";
 import { noterAbsenceEquipe } from "@/server/repositories/absences-equipe";
-import { mettreAJourEntreprise, getEntreprise } from "@/server/repositories/entreprises";
-import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
+import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
+import type { ConditionsLues } from "@/lib/conditions-documents";
 import {
   ajouterPrestation as ajouterPrestationEntretien,
   retirerPrestation as retirerPrestationEntretien,
@@ -865,16 +865,19 @@ export async function appliquerPropositionsAction(
         /**
          * RÉGLER LES DOCUMENTS — validité, acompte, délai, moyens, pénalités.
          *
-         * **Ce qui n'est pas donné n'est pas touché.** Un réglage absent de la
-         * proposition doit rester tel quel : envoyer l'objet entier remettrait
-         * à zéro ce qu'il a réglé à la main, et cela s'imprimerait sur des
-         * documents que ses clients gardent.
+         * **Ce qui n'est pas donné n'est pas touché**, et c'est le dépôt qui
+         * le tient (`normaliserConditions`, 14 septembre 2026) : une clef
+         * absente ne s'écrit pas. Ce geste relisait l'entreprise pour renvoyer
+         * les six réglages autour du seul qu'il portait — et cette relecture
+         * avait été recopiée sur la photo d'un devis en oubliant la clef née le
+         * 13, ce qui vidait ses conditions générales. La règle vit à un seul
+         * endroit désormais, et l'on ne renvoie que ce que la proposition dit.
          *
          * **Les bornes restent au serveur** (`normaliserConditions`) : un
          * acompte de 400 % ne s'imprime pas parce qu'un modèle l'a proposé.
          */
         case "regler_documents": {
-          const conditions: Record<string, unknown> = {};
+          const conditions: ConditionsLues = {};
           if (donnees.validiteJours !== undefined) conditions.validiteJours = Number(donnees.validiteJours);
           if (donnees.acomptePourcent !== undefined) conditions.acomptePourcent = String(donnees.acomptePourcent);
           if (donnees.delaiPaiementJours !== undefined) conditions.delaiPaiementJours = Number(donnees.delaiPaiementJours);
@@ -885,32 +888,7 @@ export async function appliquerPropositionsAction(
             resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Rien à régler." });
             break;
           }
-          /**
-           * **ON RELIT CE QUI EST DÉJÀ RÉGLÉ, ET ON FUSIONNE.**
-           *
-           * `mettreAJourEntreprise` REMPLACE le bloc des conditions : c'est
-           * juste pour l'écran des réglages, qui renvoie le formulaire entier.
-           * Ici, la proposition ne porte qu'un réglage — et écrire ce seul
-           * réglage effaçait tous les autres. Vu rouge par
-           * `test-agent-gestes.ts` : régler l'acompte perdait la validité.
-           *
-           * Ce n'est pas une régression de plus : **cela s'imprime sur des
-           * documents que ses clients gardent**, et il ne le verrait qu'au
-           * devis suivant.
-           */
-          const entrepriseActuelle = await getEntreprise(ctx);
-          const dejaLa = conditionsDepuisEntreprise(entrepriseActuelle);
-          await mettreAJourEntreprise(ctx, {
-            conditions: {
-              validiteJours: dejaLa.validiteJours,
-              acomptePourcent: dejaLa.acomptePourcent,
-              delaiPaiementJours: dejaLa.delaiPaiementJours,
-              moyensPaiement: dejaLa.moyensPaiement,
-              rappelerPenalites: dejaLa.rappelerPenalites,
-              textePied: dejaLa.textePied,
-              ...conditions,
-            },
-          });
+          await mettreAJourEntreprise(ctx, { conditions });
           resultats.push({ ...base, statut: "appliquee" });
           break;
         }

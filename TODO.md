@@ -22,6 +22,25 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 
 ---
 
+## ~~LES PHRASES DU BLOC « NOTES / CONDITIONS » — ses deux planches disent deux choses~~ — TRANCHÉ « B », CODÉ LE 14 SEPTEMBRE 2026
+
+**Sa réponse, dans l'heure : « B ».** Codé : `phrasesAcomptes` et
+`lignesConditionsDevis` écrivent le mode de règlement, un montant par acompte,
+le solde (`ARCHITECTURE.md` §360, point 4).
+
+**Sa plainte, à minuit :** *« les conditions sous le devis ne sont pas les
+bonnes »*, devant `appli/devis-remise-main-d-oeuvre-conditions.html` rouverte.
+
+| La planche | Ce qu'elle écrit dans les notes |
+|---|---|
+| **acompte** (12 sept. au soir, ses trois retours) — **ce que l'appli fait** | « Acompte de 30 % à la signature, soit 853,20 €. » ; le reste à régler dans les totaux |
+| **B** (12 sept., codée le 13) | « Mode de règlement : 30 % à la commande, solde à réception de la facture. » · « Montant à régler à la commande : 573,12 € » · « Solde restant à régler : 1 337,28 € » |
+
+Le §348 a retenu la première sans le lui dire. **À lui de dire laquelle** — ou
+si « pas les bonnes » désigne autre chose (une capture tranche). Ne pas coder
+une troisième rédaction. Les deux autres plaintes de la même minute sont
+réglées : `ARCHITECTURE.md` §360.
+
 ## ~~CHOISIE, À CODER — L'ACOMPTE SUR LE DEVIS, la B~~ — CODÉE LE SOIR MÊME (12 septembre 2026)
 
 **Codé** (*« Parfait code la B »*) : migration 0088, `src/lib/acomptes-devis.ts`,

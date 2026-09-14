@@ -158,17 +158,33 @@ export function libelleLigneAcompte(ligne: LigneAcompte): string {
 }
 
 /**
- * Les phrases des notes et conditions, une par acompte.
+ * Les phrases des notes et conditions — **la B de sa planche « Remise, main
+ * d'œuvre, conditions », choisie le 14 septembre 2026** : le mode de règlement
+ * en une phrase, un montant à régler par acompte, le solde restant.
  *
- * *« Dans notes et conditions, retire les — avant soit »* : une virgule. Et
- * pas de parenthèses (13 septembre 2026), comme sur la ligne des totaux.
+ *     Mode de règlement : 30 % à la signature, 50 % à mi-parcours, solde à réception de la facture.
+ *     Montant à régler à la signature : 853,20 €
+ *     Montant à régler à mi-parcours : 568,80 €
+ *     Solde restant à régler : 1 422,00 €
+ *
+ * Elles écrivaient « Acompte de 30 % à la signature, soit 853,20 €. » — la
+ * rédaction de sa planche des acomptes (12 septembre au soir), retenue au §348
+ * sans le lui dire ; devant les deux, il a tranché : *« les conditions sous le
+ * devis ne sont pas les bonnes »*, puis « B ». Les taux restent CUMULÉS, comme
+ * sur la ligne des totaux ; ce qui s'écrit en euros est ce qui tombe ce
+ * jour-là. Réglé à 100 %, ni « solde à réception » ni ligne de solde : il n'y
+ * en a pas. Sans acompte posé, rien — la phrase du réglage vit dans
+ * `lignesConditionsDevis`, avec la même rédaction.
  */
 export function phrasesAcomptes(echeancier: EcheancierDevis): string[] {
-  return echeancier.lignes.map((l) =>
-    l.rang === 1
-      ? `Acompte de ${l.tauxCumule} % ${l.moment}, soit ${enEuros(l.montant)}.`
-      : `Acompte ${l.moment} ${l.tauxCumule} %, soit ${enEuros(l.montant)}.`
-  );
+  if (echeancier.lignes.length === 0) return [];
+  const solde = new Decimal(echeancier.reste).greaterThan(0);
+  const etapes = echeancier.lignes.map((l) => `${l.tauxCumule} % ${l.moment}`);
+  return [
+    `Mode de règlement : ${etapes.join(", ")}${solde ? ", solde à réception de la facture" : ""}.`,
+    ...echeancier.lignes.map((l) => `Montant à régler ${l.moment} : ${enEuros(l.montant)}`),
+    ...(solde ? [`Solde restant à régler : ${enEuros(echeancier.reste)}`] : []),
+  ];
 }
 
 /**

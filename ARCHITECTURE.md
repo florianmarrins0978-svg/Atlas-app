@@ -30245,3 +30245,115 @@ pas. `scripts/_raison-migration.mjs` ne recopie rien de ce journal : il
 des noms de contraintes et de tables. Une forme inconnue ne publie rien du
 message — un motif oublié coûte une ligne vague, un motif trop large coûte une
 donnée de son client sur une page publique.
+
+---
+
+## §359 — La batterie sait quand elle n'a rien à mesurer
+
+**Sa question du 10 septembre 2026, à la fin d'une heure perdue :** *« mais là
+tu faisais tourner une batterie pour pousser quoi ? »* Cinq batteries, dont
+quatre n'ont rien mesuré : d'un tour à l'autre, seuls deux ou trois
+`scripts/test-*.ts` avaient changé. La règle existait (`CLAUDE.md` §6, « rejouer
+SEULEMENT si le code arrivé touche ») — en prose, donc oubliée au bout de trois
+heures, exactement quand on relance une batterie de trop (§1 bis, même piège).
+
+**La décision : la batterie se souvient de son dernier verdict, et compare.**
+
+| | |
+|---|---|
+| `scripts/_dernier-verdict.ts` | à la fin d'une mesure, `verifier-avant-livraison` note l'instant, la ligne du verdict, s'il était vert, et l'empreinte de l'arbre — dans `.atlas-dernier-verdict.json`, **jamais versionné** : il décrit UNE machine à UN instant, et le committer ferait refuser une batterie à celui qui arrive |
+| `scripts/_portee-batterie.ts` | fonction pure : ce qui a bougé depuis (par `fichiersRemues`, la même comparaison que le contrôle d'empreinte) décide de la portée |
+
+**Deux refus, et pas un de plus.** *Rien n'a bougé* : la mesure rendrait le
+même résultat. *Seules des suites ont bougé* : elle donne les `npx tsx` à
+jouer, et rien d'autre. Une ligne de `src/`, une migration, un fichier
+inconnu : batterie complète. Le doute tranche toujours vers la mesure — un
+garde-fou qui parle à tort s'apprend à être ignoré.
+
+**Seul un verdict VERT retient.** Ajouté à la livraison, le 13 septembre : la
+première version refusait aussi après un rouge sur un arbre inchangé. Or ici un
+rouge accuse souvent la machine — Postgres arrêté, un port pris, une suite
+voisine qui vidait la base — et le rejouer est le seul moyen de le savoir.
+Une trace d'avant ce champ se lit comme un rouge.
+
+**Ce qui ne bloque jamais à lui seul :** une trace absente, illisible, ou d'une
+version d'avant rend `null`, et la batterie part. Un garde-fou qui tombe en
+panne tombe du côté de la mesure. `npm run verifier:avant-livraison -- --forcer`
+la rejoue quoi qu'il arrive.
+
+## §360 — La main d'œuvre ne s'efface plus sur un devis vide, et une clef absente n'écrit rien
+
+**Ses trois plaintes du 14 septembre 2026, à minuit**, devant la planche B qu'il
+venait de rouvrir : *« la touche main d'œuvre fonctionne pas, je mets le prix,
+elle s'efface toute seule ; il manque la partie que le client doit voir, ce qui
+doit s'inscrire dans la partie réglage modifiable en entier par l'utilisateur ;
+et les conditions sous le devis ne sont pas les bonnes »*.
+
+**Ce qui a été reproduit, et ce qui ne l'a pas été.** Sur `main`, dans un
+navigateur à la largeur de son téléphone, sur un devis qui a des lignes : la
+main d'œuvre tient, le rechargement la garde, le PDF porte les conditions
+générales en page 2, et l'écran des Réglages montre la case remplie. Sur un
+devis **sans ligne chiffrée** — c'est ainsi qu'on essaie un bouton neuf —, le
+450 tapé partait au premier enregistrement, sans un mot. C'est la plainte 1,
+et elle est corrigée à la racine. Les plaintes 2 et 3 n'ont pas été
+reproduites ici ; un défaut qui peut produire la 2 a été trouvé en lisant, et
+corrigé (ci-dessous). Ce qu'il voit, lui, se confirme sur une capture.
+
+**1. Un brut nul n'est pas un plafond.** `montantMainDoeuvreValide` rendait
+`null` quand le total HT des lignes valait zéro — « dont » ne dépasse pas le
+tout, donc rien à nommer dans rien. Et la régénération du brouillon faisait de
+même en SQL (`CASE WHEN brut <= 0 THEN NULL`) : la ligne serait repartie au
+rechargement même si la saisie l'avait gardée. Les deux disent désormais la
+même chose : sans ligne, le montant se garde tel quel ; dès qu'une ligne
+existe, la borne se pose. `test-planche-b-devis.ts` exigeait l'ancien
+comportement — adapté (`CLAUDE.md` §5 bis, la réciproque) ; le cas base
+`test-planche-b-devis-db.ts` joue la saisie, le rechargement, puis la borne
+qui arrive avec la première ligne.
+
+**2. `normaliserConditions` : ce qui n'est pas dit ne bouge pas.** Une clef
+absente de la saisie valait « éteint » — `null` pour les cinq conditions, et
+`""` (« il a tout effacé ») pour les conditions générales. L'écran des
+Réglages envoie le formulaire entier, donc ne le voyait pas ; les deux
+appelants partiels s'en protégeaient en relisant l'entreprise pour renvoyer
+tous les réglages autour du seul qu'ils portaient. Le geste `regler_documents`
+de l'assistant le faisait ; **la photo d'un devis le recopiait sans la clef née
+le 13** (0090) — et chaque photo lue remettait les conditions générales à vide :
+plus rien après le bon pour accord, et la case des Réglages éteinte. Un
+troisième appelant aurait refait la faute. La règle vit donc dans la fonction
+pure : une clef absente ne rend rien, et `mettreAJourEntreprise` n'écrit que
+ce qui est rendu. La relecture de `regler_documents` est retirée (c'était la
+couche qui compensait, `CLAUDE.md` §4 quater) ; la photo n'envoie plus que ce
+qu'elle a lu ; et le retour `conditions` de l'action photo, que l'écran ne
+lisait plus depuis le découpage du 7 septembre, part avec.
+
+**3. « 450.00 » au rechargement.** Le champ lisait la base telle quelle ; il
+passe par `sansZerosInutiles`, comme après une saisie.
+
+**4. Les phrases du bloc « Notes / conditions » : la B, tranchée par lui.**
+Le bloc écrivait les phrases de sa planche des acomptes (12 septembre au soir :
+« Acompte de 30 % à la signature, soit 853,20 €. ») ; la planche B, elle,
+écrivait « Mode de règlement : 30 % à la commande, solde à réception » puis
+« Montant à régler à la commande » et « Solde restant à régler ». Les deux
+étaient de lui, à un jour d'écart, et le §348 avait retenu la plus récente sans
+le lui dire — *« les conditions sous le devis ne sont pas les bonnes »*. Posé
+en A/B, sa réponse : **« B »**. Une seule rédaction, dans `phrasesAcomptes`
+pour les acomptes posés et dans `lignesConditionsDevis` pour le réglage seul :
+
+| | |
+|---|---|
+| acomptes posés (30, 50, 75 cumulés sur 2 844 €) | « Mode de règlement : 30 % à la signature, 50 % à mi-parcours, 75 % à l'avancement, solde à réception de la facture. » · « Montant à régler à la signature : 853,20 € » · « … à mi-parcours : 568,80 € » · « … à l'avancement : 711,00 € » · « Solde restant à régler : 711,00 € » |
+| réglage seul (ligne retirée, ou devis d'avant) | « Mode de règlement : 30 % à la commande, solde à réception de la facture. » puis le montant et le solde quand le total est connu — jamais sur l'aperçu des Réglages |
+| réglé à 100 % | ni « solde à réception », ni ligne de solde |
+
+Les taux restent **cumulés**, comme sur la ligne des totaux (§343) ; ce qui
+s'écrit en euros est ce qui tombe ce jour-là. Le reste à régler s'écrit donc
+deux fois sur le papier — sous le total TTC et dans les notes — et c'est son
+choix, devant les deux ; le §4 bis de `CLAUDE.md` (« une même somme écrite deux
+fois ») cède devant une réponse donnée sur planche.
+
+Suites : `test-planche-b-devis.ts`, `test-planche-b-devis-db.ts`,
+`test-conditions-documents.ts` (une clef absente ne s'écrit pas — rouge sur
+l'ancienne règle ; les lignes de la B), `test-acomptes-devis.ts`,
+`test-acomptes-pdf.ts`, `test-conditions-sur-le-devis.ts`,
+`test-agent-gestes.ts` (régler l'acompte garde la validité, sans relecture),
+`test-planche-b-devis-e2e.ts`, `test-acomptes-devis-e2e.ts`.

@@ -158,26 +158,42 @@ cas("les libellés des totaux disent le cumul dès le deuxième", () => {
   assert.equal(libelleLigneAcompte(e.lignes[1]), "Acompte à mi-parcours 50 %");
 });
 
-cas("les phrases des notes : « , soit », jamais « — soit » (sa demande)", () => {
+// La B de sa planche « Remise, main d'œuvre, conditions », choisie le
+// 14 septembre 2026 : le mode en une phrase, un montant par acompte, le solde.
+cas("les phrases des notes : mode de règlement, montants à régler, solde — la B", () => {
   const e = echeancierDevis([{ rang: 1, tauxCumule: "30" }, { rang: 2, tauxCumule: "50" }], TTC);
   const phrases = phrasesAcomptes(e);
   // Les euros s'écrivent par `enEuros` — l'espace avant « € » est la sienne.
-  assert.equal(phrases[0], `Acompte de 30 % à la signature, soit ${enEuros("853.20")}.`);
-  assert.equal(phrases[1], `Acompte à mi-parcours 50 %, soit ${enEuros("568.80")}.`);
+  assert.deepEqual(phrases, [
+    "Mode de règlement : 30 % à la signature, 50 % à mi-parcours, solde à réception de la facture.",
+    `Montant à régler à la signature : ${enEuros("853.20")}`,
+    `Montant à régler à mi-parcours : ${enEuros("568.80")}`,
+    `Solde restant à régler : ${enEuros("1422.00")}`,
+  ]);
   for (const p of phrases) assert.ok(!p.includes("—"), `un tiret dans « ${p} »`);
+});
+
+cas("réglé à 100 % : ni « solde à réception », ni ligne de solde", () => {
+  const e = echeancierDevis([{ rang: 1, tauxCumule: "100" }], TTC);
+  assert.deepEqual(phrasesAcomptes(e), [
+    "Mode de règlement : 100 % à la signature.",
+    `Montant à régler à la signature : ${enEuros("2844.00")}`,
+  ]);
 });
 
 cas("les acomptes posés remplacent la phrase du réglage dans les notes", () => {
   const c = lireConditions({ acomptePourcent: "30" });
-  const lignes = lignesConditionsDevis(c, 2844, ["Acompte de 40 % à la signature, soit 1 137,60 €."]);
-  assert.equal(lignes.filter((l) => l.startsWith("Acompte")).length, 1);
+  const lignes = lignesConditionsDevis(c, 2844, ["Mode de règlement : 40 % à la signature, solde à réception de la facture."]);
+  assert.equal(lignes.filter((l) => l.startsWith("Mode de règlement")).length, 1);
   assert.ok(lignes[0].includes("40 %"), "c'est l'acompte POSÉ qui s'imprime, pas le réglage");
 });
 
 cas("ligne retirée : la phrase du réglage reste — « quoi qu'il arrive »", () => {
   const c = lireConditions({ acomptePourcent: "30" });
   const lignes = lignesConditionsDevis(c, 2844, []);
-  assert.equal(lignes[0], "Acompte de 30 % à la commande, soit 853,20 €.");
+  assert.equal(lignes[0], "Mode de règlement : 30 % à la commande, solde à réception de la facture.");
+  assert.equal(lignes[1], `Montant à régler à la commande : ${enEuros("853.20")}`);
+  assert.equal(lignes[2], `Solde restant à régler : ${enEuros("1990.80")}`);
 });
 
 console.log("");

@@ -6,7 +6,57 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-14
+
+### La main d'œuvre ne s'efface plus sur un devis sans ligne ; une photo de devis ne vide plus les conditions générales
+
+**Ses plaintes du 14 septembre 2026, à minuit.** Ouverte sur un devis encore
+vide, la ligne « dont main d'œuvre HT » perdait le montant tapé dès le premier
+enregistrement — un total nul était pris pour un plafond. Elle se garde ; la
+borne se pose avec la première ligne (`montantMainDoeuvreValide`, et la
+régénération du brouillon).
+
+**Et une clef absente n'écrit plus rien** (`normaliserConditions`) : la photo
+d'un devis renvoyait les réglages relus sans la clef des conditions générales
+(0090), et les remettait à « effacé » — plus rien après le bon pour accord, case
+éteinte dans les Réglages. Le geste `regler_documents` n'a plus à relire
+l'entreprise pour se protéger. Au rechargement, la main d'œuvre s'écrit « 450 »,
+plus « 450.00 ».
+
+**Et le bloc « Notes / conditions » dit la B, tranchée par lui** : « Mode de
+règlement : 30 % à la signature, 50 % à mi-parcours, solde à réception de la
+facture. », un « Montant à régler … » par acompte, « Solde restant à régler ».
+Ses deux planches écrivaient deux choses ; le §348 avait choisi sans lui.
+
+`ARCHITECTURE.md` §360 · `docs/devis-main-doeuvre-et-conditions-verdict.md`.
+
+---
 ## 2026-09-13
+
+### La batterie refuse de repartir quand rien n'a bougé
+
+Sa question du 10 septembre, après une heure perdue : *« tu faisais tourner
+une batterie pour pousser quoi ? »* — trois batteries complètes rejouées alors
+que, d'un tour à l'autre, seuls deux ou trois `scripts/test-*.ts` avaient
+changé. La règle du §6 de `CLAUDE.md` existait, en prose, donc s'oubliait.
+
+Elle vit désormais dans la batterie elle-même : `verifier-avant-livraison`
+note son verdict et l'empreinte de l'arbre (`.atlas-dernier-verdict.json`,
+jamais versionné) ; au tour suivant, `_portee-batterie.ts` compare. Deux refus
+seulement — **rien n'a bougé**, ou **seules des suites ont bougé** (elle donne
+alors les `npx tsx` à jouer) —, et tout le reste vaut batterie complète.
+**Seul un verdict vert retient** : un rouge sur un arbre inchangé accuse
+souvent la machine, et le rejouer est le seul moyen de le savoir.
+`-- --forcer` la rejoue quoi qu'il arrive.
+
+Ce que cela évite : vingt minutes payées pour mesurer deux fois la même chose,
+pendant que `main` bouge.
+
+### Six photos ne font plus six chantiers
+
+Le correctif décrit au §349 (`chantierDeCetEcran`) était documenté sur `main`
+depuis le matin **sans son code** — il est livré avec ce lot, et sa suite
+`test-photos-avant-le-chantier-e2e` avec lui.
 
 ### La migration 0087 ne voyait pas les lignes qu'elle convertit
 

@@ -305,7 +305,10 @@ export default function DevisCompletClient(props: Props) {
    * la remise. `null` rendu par le serveur veut dire « rien à nommer », et la
    * ligne se retire d'elle-même.
    */
-  const [mainDoeuvre, setMainDoeuvre] = useState(props.mainDoeuvreHt ?? "");
+  // Lue comme elle se réécrit après une saisie (`sansZerosInutiles`) : la base
+  // porte « 450.00 », et un point sous un total écrit « 1 160,00 » se voyait au
+  // rechargement (14 septembre 2026).
+  const [mainDoeuvre, setMainDoeuvre] = useState(sansZerosInutiles(props.mainDoeuvreHt ?? ""));
   const [mainDoeuvreOuverte, setMainDoeuvreOuverte] = useState(props.mainDoeuvreHt !== null);
 
   async function enregistrerMainDoeuvre(valeurBrute: string) {

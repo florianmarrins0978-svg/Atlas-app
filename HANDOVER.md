@@ -4,8 +4,22 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-13 · `main`
+**Point de reprise :** 2026-09-14 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+## Dernier lot — LA MAIN D'ŒUVRE SUR UN DEVIS VIDE, ET LA CLEF ABSENTE (14 septembre 2026)
+
+**À retenir :** `normaliserConditions` n'écrit plus une clef absente — un
+appelant qui ne règle qu'une chose n'a plus à relire l'entreprise pour
+protéger les autres, et ne peut plus oublier la dernière colonne née (c'est ce
+qui vidait les conditions générales à chaque photo de devis). Et un total HT
+nul ne borne pas la main d'œuvre : elle se garde jusqu'à la première ligne.
+
+Et le bloc « Notes / conditions » écrit la B qu'il a choisie dans l'heure :
+« Mode de règlement : … », « Montant à régler … », « Solde restant à régler ».
+Son retour :
+`docs/devis-main-doeuvre-et-conditions-verdict.md`. `ARCHITECTURE.md` §360.
 
 ---
 ## Dernier lot — 0087 NE VOYAIT PAS SES PROPRES LIGNES (13 septembre 2026)
@@ -128,6 +142,19 @@ interroge le serveur toutes les cinq secondes.
 filtrait **le mois affiché** ; codé « tous mois confondus » parce que c'est sa
 règle du 22 août, et la planche a été réalignée. À lui de dire si le mois en
 veille lui va.
+
+---
+## Lot précédent — LA BATTERIE REFUSE DE REPARTIR POUR RIEN (13 septembre 2026)
+
+| | |
+|---|---|
+| sa question | *« tu faisais tourner une batterie pour pousser quoi ? »* (10 septembre) — trois batteries complètes pour trois fichiers de suites |
+| ce qui est fait | `verifier-avant-livraison` note son verdict (`_dernier-verdict.ts`, `.atlas-dernier-verdict.json` ignoré par git) ; `_portee-batterie.ts` refuse « rien n'a bougé » et « seules des suites ont bougé » (elle donne les `npx tsx`) ; tout le reste vaut batterie complète ; **seul un vert retient** ; `-- --forcer` passe outre |
+| les suites | `test-portee-batterie`, `test-dernier-verdict` |
+| le détail | `ARCHITECTURE.md` §359 |
+
+**Livré avec :** le code du lot « six photos » ci-dessous, dont la doc était sur
+`main` depuis le matin sans lui.
 
 ---
 ## Lot précédent — SIX PHOTOS NE FONT PLUS SIX CHANTIERS (13 septembre 2026)

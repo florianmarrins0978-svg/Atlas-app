@@ -113,6 +113,19 @@ async function main() {
     assert.equal(c.textePied, null);
   });
 
+  // 14 septembre 2026 : une clef absente valait « éteint », et chaque appelant
+  // qui ne portait qu'un réglage devait relire la base pour renvoyer les autres.
+  // La photo d'un devis avait oublié les conditions générales dans cette
+  // relecture : elles repartaient à « effacé ». Ce qui n'est pas dit ne bouge pas.
+  await essai("une clef ABSENTE ne s'écrit pas — seule la clef dite part en base", () => {
+    const c = normaliserConditions({ acomptePourcent: "40" });
+    assert.deepEqual(c, { acomptePourcent: "40" });
+    assert.equal("conditionsGenerales" in c, false, "l'absence a été écrite comme « effacé »");
+    // Dire null, lui, éteint bien ; dire "" garde « allumé, rien écrit ».
+    assert.deepEqual(normaliserConditions({ textePied: null }), { textePied: null });
+    assert.deepEqual(normaliserConditions({ conditionsGenerales: "" }), { conditionsGenerales: "" });
+  });
+
   await essai("un pourcentage vide éteint bien l'acompte", () => {
     // Celui-ci n'a pas d'interrupteur : un acompte sans chiffre n'existe pas.
     assert.equal(normaliserConditions({ acomptePourcent: "" }).acomptePourcent, null);
@@ -134,7 +147,11 @@ async function main() {
       }),
       3480
     );
-    assert.ok(lignes.some((l) => l.includes("30 %") && l.includes("1044,00 €")), lignes.join(" | "));
+    // La B du 14 septembre 2026 : le mode en une ligne, le montant sur la suivante,
+    // écrit par `enEuros` — l'espace des milliers est la sienne.
+    assert.ok(lignes.some((l) => l.startsWith("Mode de règlement : 30 %")), lignes.join(" | "));
+    assert.ok(lignes.some((l) => l.startsWith("Montant à régler à la commande") && l.includes("044,00")), lignes.join(" | "));
+    assert.ok(lignes.some((l) => l.startsWith("Solde restant à régler") && l.includes("436,00")), lignes.join(" | "));
     assert.ok(lignes.some((l) => l.includes("45 jours")));
     assert.ok(lignes.some((l) => l.includes("virement, chèque")));
     assert.ok(lignes.some((l) => /40 €/.test(l)));

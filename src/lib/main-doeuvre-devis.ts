@@ -24,6 +24,13 @@ export const LIBELLE_MAIN_DOEUVRE = "dont main d’œuvre HT";
  * doigt qui tape 4 500 pour 450 se voit ramené au brut plutôt que refusé sans
  * un mot — le même choix que la remise (`pourcentValide`). Zéro ou négatif
  * vaut « aucune » : une ligne « dont main d'œuvre 0,00 € » n'apprend rien.
+ *
+ * **SANS LIGNE CHIFFRÉE, LE MONTANT SE GARDE TEL QUEL — 14 septembre 2026.**
+ * La première version rendait `null` dès que le brut était nul : *« je mets le
+ * prix, elle s'efface toute seule »* — il avait ouvert la ligne sur un devis
+ * encore vide, et son chiffre partait sans un mot. Un total de zéro n'est pas
+ * un plafond, c'est l'absence de plafond : rien à borner encore. La borne se
+ * pose dès que des lignes existent, ici comme à la régénération du brouillon.
  */
 export function montantMainDoeuvreValide(valeur: unknown, brutHt: string | number): string | null {
   if (valeur === null || valeur === undefined || valeur === "") return null;
@@ -32,6 +39,6 @@ export function montantMainDoeuvreValide(valeur: unknown, brutHt: string | numbe
   const n = new Decimal(brut);
   if (n.lessThanOrEqualTo(0)) return null;
   const plafond = new Decimal(String(brutHt));
-  if (plafond.lessThanOrEqualTo(0)) return null;
+  if (plafond.lessThanOrEqualTo(0)) return n.toDecimalPlaces(2).toFixed(2);
   return (n.greaterThan(plafond) ? plafond : n).toDecimalPlaces(2).toFixed(2);
 }

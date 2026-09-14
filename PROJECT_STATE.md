@@ -1,9 +1,19 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-13 · `main`
+**Dernière mise à jour :** 2026-09-14 · `main`
 · dernière migration `drizzle/0090_remise_main_doeuvre_conditions_generales.sql`
 
 ---
+
+## FAIT : LA MAIN D'ŒUVRE SUR UN DEVIS VIDE, ET LA CLEF ABSENTE — 14 septembre 2026
+
+Sa plainte à minuit : *« je mets le prix, elle s'efface toute seule »* — sur un
+devis sans ligne, un total nul était pris pour un plafond. Elle se garde ; la
+borne arrive avec la première ligne. Et `normaliserConditions` n'écrit plus
+une clef absente : la photo d'un devis remettait ses conditions générales à
+« effacé ». Et le bloc « Notes / conditions » dit la B qu'il a choisie : mode
+de règlement, montant à régler par acompte, solde restant.
+`ARCHITECTURE.md` §360 · `docs/devis-main-doeuvre-et-conditions-verdict.md`.
 
 ## FAIT : 0087 NE VOYAIT PAS SES PROPRES LIGNES — 13 septembre 2026
 

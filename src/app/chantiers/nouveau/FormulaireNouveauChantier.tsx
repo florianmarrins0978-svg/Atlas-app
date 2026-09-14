@@ -395,9 +395,10 @@ export default function FormulaireNouveauChantier({
   /**
    * Le chantier créé par un geste de l'écran — photo ou dictée — s'il l'a été.
    *
-   * **Il ne peut y en avoir qu'un.** Trois photos et une dictée, c'est un seul
-   * chantier : la promesse en cours est gardée pour que deux gestes simultanés
-   * n'en fabriquent pas deux (`creationEnCours`).
+   * **Ce n'est qu'un reflet pour le RENDU** : la mémoire qui compte est
+   * `chantierDeCetEcran`, plus bas. Un état ne peut pas tenir ce rôle, et
+   * c'est ce qui a fabriqué six chantiers pour six photos le 13 septembre
+   * 2026 — voir là-bas.
    */
   const [chantierCree, setChantierCree] = useState<string | null>(null);
   const [dicteeFaite, setDicteeFaite] = useState(false);
@@ -440,7 +441,23 @@ export default function FormulaireNouveauChantier({
    * tromper ; il n'en reste qu'une pendant qu'on parle.
    */
   const [dicteeEnCours, setDicteeEnCours] = useState(false);
-  const creationEnCours = useRef<Promise<string> | null>(null);
+  /**
+   * LE chantier de cet écran — la promesse de sa création, gardée jusqu'au bout.
+   *
+   * **Il ne peut y en avoir qu'un, et c'est CETTE référence qui le garantit.**
+   * Six photos choisies d'un coup, le 13 septembre 2026, ont fait six
+   * chantiers d'une photo chacun. La pellicule les envoie une à une dans une
+   * seule boucle, avec la fonction `assurerChantier` telle qu'elle était
+   * AVANT la première photo : pour cette boucle, l'état `chantierCree` reste
+   * vide jusqu'à la fin. Et la promesse, elle, était effacée dès qu'elle
+   * aboutissait — la deuxième photo ne trouvait donc plus rien, et recréait.
+   *
+   * Une référence ne vieillit pas avec le rendu : la boucle y lit la même
+   * promesse à chaque tour, résolue ou non, et obtient le même identifiant.
+   * **Elle ne s'efface que sur un échec** — une tentative ratée n'est pas un
+   * chantier, et « Réessayez » doit pouvoir réessayer.
+   */
+  const chantierDeCetEcran = useRef<Promise<string> | null>(null);
 
   /**
    * Fait exister le chantier, maintenant, avec ce qui est saisi.
@@ -455,10 +472,9 @@ export default function FormulaireNouveauChantier({
    */
   async function assurerChantier(): Promise<string> {
     if (reprise) return reprise.id;
-    if (chantierCree) return chantierCree;
-    if (creationEnCours.current) return creationEnCours.current;
+    if (chantierDeCetEcran.current) return chantierDeCetEcran.current;
 
-    const promesse = creerChantierAction({
+    chantierDeCetEcran.current = creerChantierAction({
       // **Connu, donc pas cherché.** Venant de sa fiche, on tient
       // l'identifiant : aucun rapprochement n'est joué, et le chantier ne peut
       // pas atterrir chez un homonyme parce qu'un nom aurait été retouché.
@@ -475,13 +491,17 @@ export default function FormulaireNouveauChantier({
       adresseChantier,
       adresseClient,
       refuseLeRapprochement: refuse,
-    }).then(({ id }) => {
-      setChantierCree(id);
-      creationEnCours.current = null;
-      return id;
-    });
-    creationEnCours.current = promesse;
-    return promesse;
+    }).then(
+      ({ id }) => {
+        setChantierCree(id);
+        return id;
+      },
+      (erreur) => {
+        chantierDeCetEcran.current = null;
+        throw erreur;
+      }
+    );
+    return chantierDeCetEcran.current;
   }
 
   /**
@@ -556,8 +576,10 @@ export default function FormulaireNouveauChantier({
       // **Un chantier déjà né d'une photo ou d'une dictée n'est pas recréé** —
       // sinon la moitié de ce qu'il vient de faire resterait sur un chantier
       // fantôme, et il verrait deux lignes à l'accueil pour un seul client.
-      const id = chantierCree
-        ? await enregistrerSurLeChantier(chantierCree)
+      // Lu dans la référence, pas dans l'état : une photo encore en route a
+      // déjà lancé la création, et l'état ne le sait pas encore.
+      const id = chantierDeCetEcran.current
+        ? await enregistrerSurLeChantier(await chantierDeCetEcran.current)
         : await assurerChantier();
 
       // **Les photos cochées rejoignent le dossier À L'ENREGISTREMENT**, pas au

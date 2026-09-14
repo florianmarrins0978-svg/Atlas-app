@@ -106,3 +106,9 @@ sauvegarde-atlas-*.json
 
 # Le verrou de la batterie : il vit le temps d une mesure, jamais dans git.
 .atlas-batterie-en-cours.json
+
+# Le dernier verdict de la batterie : il decrit l'etat d'UNE machine a UN
+# instant. Le committer ferait refuser une batterie chez quelqu'un qui ne l'a
+# jamais jouee — le pire des faux positifs, puisqu'il frapperait celui qui
+# arrive (voir scripts/_dernier-verdict.ts).
+.atlas-dernier-verdict.json
