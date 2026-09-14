@@ -8,6 +8,17 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
+### Une suite comptait les jours en UTC, et rougissait deux heures par nuit
+
+`test-suivi-devis-e2e` comparait la date affichée à `new Date().toISOString()` :
+entre 22 h et minuit UTC — chaque nuit entre minuit et deux heures chez lui —
+l'écran disait « mardi 15 » et la suite exigeait « lundi 14 ». L'écran avait
+raison : l'application compte les jours dans SON fuseau.
+
+Le garde-fou qui interdit ce geste existait depuis le 25 août, mais il ne
+parcourait que `src/`. Il parcourt aussi `scripts/` — confronté au geste qu'il
+refuse avant d'être cru.
+
 ### Un client se corrige depuis sa fiche
 
 « Modifier ses coordonnées », sous son nom et son numéro — sa réponse « la A »
