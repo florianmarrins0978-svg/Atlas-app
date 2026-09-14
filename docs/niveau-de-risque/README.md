@@ -14,6 +14,7 @@ bougé. Ce dossier porte l'analyse et attend l'arbitrage.
 
 | | |
 |---|---|
+| [`POUR-CHATGPT.md`](POUR-CHATGPT.md) | **le dossier entier en un seul document, autonome** — c'est celui qui se transmet |
 | [`1-lecture-du-brief.md`](1-lecture-du-brief.md) | la lecture de la proposition reçue : ce qui est juste, ce qui est refusé, et pourquoi |
 | [`2-revue-d-architecture.md`](2-revue-d-architecture.md) | la revue des trois réserves, les angles morts, et **la règle finale proposée** |
 | [`3-mesures.md`](3-mesures.md) | tous les chiffres cités, et comment les rejouer |
