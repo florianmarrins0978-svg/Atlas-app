@@ -13,7 +13,7 @@ langage, et rien n'y entre sans son accord.
 
 **Codé** (*« Brevo »*) : migration 0091, `src/server/courriel/`,
 `src/lib/code-verification.ts`, `SaisieDuCode`, `GardeVerificationEmail`,
-`/verifier-email`, trois suites. Détail : `ARCHITECTURE.md` §360.
+`/verifier-email`, trois suites. Détail : `ARCHITECTURE.md` §361.
 **Reste à lui : le compte Brevo et ses deux variables dans l'espace.**
 
 **Sa demande du 14 septembre 2026 :** *« j'ai réussi à me connecter avec une
@@ -63,6 +63,58 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 **Qui :** nous. Pas de lot dédié — au fil de ce qu'on touche.
 
 ---
+
+## ⏳ UNE PLANCHE À REGARDER — MAIN D’ŒUVRE ET RÈGLEMENTS SUR LA FACTURE (14 septembre 2026)
+
+**Sa demande :** *« la page du devis diffère de la page facture : quand on crée
+une facture on ne peut pas rajouter la main d’œuvre et les acomptes. Je vais
+t’envoyer 3 vraies factures de pro, inspire-toi et fais-moi une maquette »*.
+
+**Planche :** `appli/facture-main-d-oeuvre-et-reglements.html` — écran, papier,
+et « Ce qui vient des pros ». Rien dans `src/`.
+
+| Ce que la planche propose | D’où ça vient |
+|---|---|
+| « dont main d’œuvre HT » sous le total, reprise du devis | la B du devis ; Solabaie « Main d’œuvre HT » |
+| **Règlements reçus** : l’acompte du devis d’office, à cocher ; « + Règlement reçu » (moyen, date, montant) | Solabaie « Montants versés : chèque n°… du … de … » |
+| **Net à payer** = TTC − règlements ; « Facture acquittée » à zéro | Îlot Fleurs « Règlement(s) / Net à payer » ; Solabaie « Facture acquittée » |
+| papier : Qté / Unité / P.U. HT / Rem. % / Total HT / TVA % / Total TTC, bases par taux | Îlot Fleurs |
+| « Pour information, montant de la main d’œuvre TTC » | Solabaie |
+| une case **crédit d’impôt 50 %** (petits travaux de jardinage, art. 199 sexdecies, case 7DB) | la facture annexe de l’Îlot Fleurs |
+
+**Ce qui existe déjà, et ne se refait pas :** les règlements notés sur une
+facture émise (`paiements_facture`, « Noter un règlement », le relevé de TVA au
+paiement) ; les acomptes du devis (`acomptes_devis`, §343) ; la remise et les
+catégories de TVA sur la facture. **Ce qui manque :** `factures.main_doeuvre_ht`
+(recopiée du devis à la création), l’acompte du devis présenté comme un
+règlement à cocher reçu, le net à payer et « acquittée » sur l’écran et le PDF,
+la mention du crédit d’impôt (un réglage ou une case par facture — à lui).
+
+**Trois questions posées sur la planche :** cocher « reçu » écrit-il un
+paiement (donc le relevé de TVA suit) — je propose oui ; le crédit d’impôt
+mérite-t-il une facture à part comme chez le paysagiste, ou une case ; le
+tampon « Facture acquittée » s’imprime-t-il seul, ou avec la date du dernier
+règlement.
+---
+
+## ~~LES PHRASES DU BLOC « NOTES / CONDITIONS » — ses deux planches disent deux choses~~ — TRANCHÉ « B », CODÉ LE 14 SEPTEMBRE 2026
+
+**Sa réponse, dans l'heure : « B ».** Codé : `phrasesAcomptes` et
+`lignesConditionsDevis` écrivent le mode de règlement, un montant par acompte,
+le solde (`ARCHITECTURE.md` §360, point 4).
+
+**Sa plainte, à minuit :** *« les conditions sous le devis ne sont pas les
+bonnes »*, devant `appli/devis-remise-main-d-oeuvre-conditions.html` rouverte.
+
+| La planche | Ce qu'elle écrit dans les notes |
+|---|---|
+| **acompte** (12 sept. au soir, ses trois retours) — **ce que l'appli fait** | « Acompte de 30 % à la signature, soit 853,20 €. » ; le reste à régler dans les totaux |
+| **B** (12 sept., codée le 13) | « Mode de règlement : 30 % à la commande, solde à réception de la facture. » · « Montant à régler à la commande : 573,12 € » · « Solde restant à régler : 1 337,28 € » |
+
+Le §348 a retenu la première sans le lui dire. **À lui de dire laquelle** — ou
+si « pas les bonnes » désigne autre chose (une capture tranche). Ne pas coder
+une troisième rédaction. Les deux autres plaintes de la même minute sont
+réglées : `ARCHITECTURE.md` §360.
 
 ## ~~CHOISIE, À CODER — L'ACOMPTE SUR LE DEVIS, la B~~ — CODÉE LE SOIR MÊME (12 septembre 2026)
 
@@ -1016,6 +1068,13 @@ jamais quitté ce poste. **À la session qui a livré ce lot.**
 
 ## ⏳ LE VERROU DE LA BATTERIE IGNORE LES ATELIERS (9 septembre 2026)
 
+**ET IL IGNORE AUSSI LES DOSSIERS DE SESSION — 14 septembre 2026.** Une
+batterie lancée dans le dossier principal a fermé `atlas-app-s3` : le garde
+(`scripts/garde-batterie.mjs`) lit le verrou depuis le dossier de la session,
+et refuse `Write`/`Edit` quel que soit le fichier visé — même dans un worktree
+que personne ne mesure. Sa consigne, le soir même : *« prends un dossier et un
+port libre ! »*. Le garde doit comparer le dossier VISÉ par l'écriture à celui
+qui porte le verrou, et ne fermer que celui-là.
 **Sa correction :** *« chaque session peut prendre un port différent, plusieurs
 sessions tournent en même temps, n'effacez pas les batteries des autres ! »*
 

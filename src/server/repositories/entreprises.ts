@@ -241,14 +241,17 @@ export async function mettreAJourEntreprise(
       if (lu !== undefined) valeurs.capitalSocial = lu;
     }
     if (data.conditions !== undefined) {
+      // **Seules les clefs DITES s'écrivent** (`normaliserConditions`, 14
+      // septembre 2026) : un geste qui ne règle que l'acompte ne remet plus
+      // les six autres réglages — et ne vide plus ses conditions générales.
       const c = normaliserConditions(data.conditions);
-      valeurs.validiteDevisJours = c.validiteJours;
-      valeurs.acomptePourcent = c.acomptePourcent;
-      valeurs.delaiPaiementJours = c.delaiPaiementJours;
-      valeurs.moyensPaiement = c.moyensPaiement;
-      valeurs.rappelerPenalitesDevis = c.rappelerPenalites;
-      valeurs.textePiedDocuments = c.textePied;
-      valeurs.conditionsGenerales = c.conditionsGenerales;
+      if (c.validiteJours !== undefined) valeurs.validiteDevisJours = c.validiteJours;
+      if (c.acomptePourcent !== undefined) valeurs.acomptePourcent = c.acomptePourcent;
+      if (c.delaiPaiementJours !== undefined) valeurs.delaiPaiementJours = c.delaiPaiementJours;
+      if (c.moyensPaiement !== undefined) valeurs.moyensPaiement = c.moyensPaiement;
+      if (c.rappelerPenalites !== undefined) valeurs.rappelerPenalitesDevis = c.rappelerPenalites;
+      if (c.textePied !== undefined) valeurs.textePiedDocuments = c.textePied;
+      if (c.conditionsGenerales !== undefined) valeurs.conditionsGenerales = c.conditionsGenerales;
     }
 
     // **Le message est REFUSÉ ici aussi, pas seulement à l'écran.** La même

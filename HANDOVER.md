@@ -18,11 +18,25 @@ sert.
 | la migration | **0091** — à appliquer avant de rejouer les suites |
 | les suites | `test-code-verification`, `test-verification-email-db`, `test-creer-son-compte-e2e` (étendue), `test-env` (Brevo refusé absent en production) |
 | **reste à lui** | créer le compte Brevo, vérifier l'adresse expéditrice, poser `BREVO_API_KEY` et `COURRIEL_EXPEDITEUR` dans son espace — sans elles, le banc tourne en `dev` et le code s'écrit dans le journal du serveur |
-| le détail | `ARCHITECTURE.md` §360 |
+| le détail | `ARCHITECTURE.md` §361 |
 
 **Livré avec, le même jour :** « Entrer dans Atlas » mène aux documents légaux,
 pas à l'accueil — la garde du layout ne se rejoue pas sur une navigation côté
 client, et il avait travaillé une heure sans les avoir acceptés.
+
+---
+## Lot du même jour — LA MAIN D'ŒUVRE SUR UN DEVIS VIDE, ET LA CLEF ABSENTE (14 septembre 2026)
+
+**À retenir :** `normaliserConditions` n'écrit plus une clef absente — un
+appelant qui ne règle qu'une chose n'a plus à relire l'entreprise pour
+protéger les autres, et ne peut plus oublier la dernière colonne née (c'est ce
+qui vidait les conditions générales à chaque photo de devis). Et un total HT
+nul ne borne pas la main d'œuvre : elle se garde jusqu'à la première ligne.
+
+Et le bloc « Notes / conditions » écrit la B qu'il a choisie dans l'heure :
+« Mode de règlement : … », « Montant à régler … », « Solde restant à régler ».
+Son retour :
+`docs/devis-main-doeuvre-et-conditions-verdict.md`. `ARCHITECTURE.md` §360.
 
 ---
 ## Lot d'avant — 0087 NE VOYAIT PAS SES PROPRES LIGNES (13 septembre 2026)

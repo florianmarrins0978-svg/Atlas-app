@@ -88,20 +88,24 @@ async function main() {
     assert.ok(lu.indexOf("Acompte à l'avancement") < lu.indexOf("Reste à régler"), "le reste précède un acompte");
   });
 
-  await essai("les notes disent chaque acompte, en cumul clair, sans tiret", async () => {
+  await essai("les notes disent le mode de règlement, un montant par acompte, le solde — la B du 14 septembre", async () => {
     const lu = await papier({ ...BASE, acomptes: TROIS });
-    assert.ok(lu.includes("Acompte de 30 % à la signature, soit"), "la phrase du premier acompte manque");
-    assert.ok(lu.includes("Acompte à mi-parcours 50 %, soit"), "le cumul du deuxième n'est pas dit");
-    assert.ok(!lu.includes("réglés)"), "les parenthèses sont revenues — retirées le 13 septembre 2026");
+    assert.ok(
+      lu.includes("Mode de règlement : 30 % à la signature, 50 % à mi-parcours, 75 % à l'avancement, solde à réception de la facture."),
+      "le mode de règlement ne dit pas les trois acomptes en cumul"
+    );
+    assert.ok(lu.includes("Montant à régler à mi-parcours : 568,80"), "le montant du deuxième manque");
+    assert.ok(lu.includes("Solde restant à régler : 711,00"), "le solde manque");
     assert.ok(!lu.includes("— soit"), "le tiret qu'il a fait retirer est revenu");
-    // Un seul acompte de 30 % dans les notes : celui POSÉ, pas le réglage en plus.
-    assert.equal((lu.match(/Acompte de 30 %/g) ?? []).length, 1, "l'acompte s'imprime deux fois dans les notes");
+    // Un seul mode de règlement dans les notes : celui des acomptes POSÉS, pas le réglage en plus.
+    assert.equal((lu.match(/Mode de règlement/g) ?? []).length, 1, "le réglage s'imprime en plus des acomptes posés");
   });
 
   await essai("ligne retirée : rien sous le total, mais la phrase du réglage reste — « quoi qu'il arrive »", async () => {
     const lu = await papier({ ...BASE, acomptes: [] });
     assert.ok(!lu.includes("Reste à régler"), "un reste à régler sans acompte");
-    assert.ok(lu.includes("Acompte de 30 % à la commande, soit 853,20"), "la phrase des Réglages a disparu des notes");
+    assert.ok(lu.includes("Mode de règlement : 30 % à la commande"), "la phrase des Réglages a disparu des notes");
+    assert.ok(lu.includes("Montant à régler à la commande : 853,20"), "le montant du réglage a disparu des notes");
   });
 
   await essai("un devis d'avant (sans la colonne) sort identique à lui-même", async () => {

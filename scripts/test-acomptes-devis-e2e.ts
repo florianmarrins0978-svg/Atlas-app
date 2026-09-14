@@ -182,7 +182,7 @@ async function main() {
     assert.deepEqual(await quandLaBasePorte([]), [], "la base garde un acompte que l'écran dit retiré");
     // La condition, elle, reste écrite sous les notes — comme le PDF l'écrira.
     const notes = lisible(await page.locator('[data-atlas="conditions-imprimees"]').innerText());
-    assert.ok(notes.includes("Acompte de 30 % à la commande"), `la phrase du réglage a disparu des notes :
+    assert.ok(notes.includes("Mode de règlement : 30 % à la commande"), `la phrase du réglage a disparu des notes :
 ${notes}`);
   });
 

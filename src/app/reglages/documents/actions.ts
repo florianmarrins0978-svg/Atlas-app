@@ -285,7 +285,7 @@ export async function poserLogoAction(
 export async function reprendreAllurePhotoAction(
   formData: FormData
 ): Promise<
-  | { ok: true; repris: string[]; reserve: string | null; allure: Allure; conditions: ConditionsLues }
+  | { ok: true; repris: string[]; reserve: string | null; allure: Allure }
   | { ok: false; raison: string }
 > {
   const ctx = await getCurrentCtx();
@@ -321,15 +321,20 @@ export async function reprendreAllurePhotoAction(
       accent: lu.allure.accent ?? actuelle.accent,
     };
 
-    const actuelles = conditionsDepuisEntreprise(e);
+    // **Ce que la photo n'a pas lu (`null`) ne s'ENVOIE pas**, et c'est le dépôt
+    // qui garde le reste tel quel (`normaliserConditions`, 14 septembre 2026).
+    // Cette action renvoyait les six réglages relus autour de ceux de la
+    // photo — et n'avait pas appris la clef née le 13 (0090) : ses conditions
+    // générales repartaient à « effacé », plus rien ne s'imprimait au dos du
+    // devis. Une relecture ici ne peut que retomber dans cet oubli.
     const cl = lu.allure.conditions;
     const conditions: ConditionsLues = {
-      validiteJours: cl.validiteJours ?? actuelles.validiteJours,
-      acomptePourcent: cl.acomptePourcent ?? actuelles.acomptePourcent,
-      delaiPaiementJours: cl.delaiPaiementJours ?? actuelles.delaiPaiementJours,
-      moyensPaiement: cl.moyensPaiement ?? actuelles.moyensPaiement,
-      rappelerPenalites: cl.rappelerPenalites ?? actuelles.rappelerPenalites,
-      textePied: cl.textePied ?? actuelles.textePied,
+      ...(cl.validiteJours !== null ? { validiteJours: cl.validiteJours } : {}),
+      ...(cl.acomptePourcent !== null ? { acomptePourcent: cl.acomptePourcent } : {}),
+      ...(cl.delaiPaiementJours !== null ? { delaiPaiementJours: cl.delaiPaiementJours } : {}),
+      ...(cl.moyensPaiement !== null ? { moyensPaiement: cl.moyensPaiement } : {}),
+      ...(cl.rappelerPenalites !== null ? { rappelerPenalites: cl.rappelerPenalites } : {}),
+      ...(cl.textePied !== null ? { textePied: cl.textePied } : {}),
     };
 
     await mettreAJourEntreprise(ctx, { allure, conditions });
@@ -343,16 +348,6 @@ export async function reprendreAllurePhotoAction(
       fond: apres?.docFond ?? undefined,
       accent: apres?.docAccent ?? undefined,
     });
-    const cRelues = conditionsDepuisEntreprise(apres);
-    const conditionsRelues: ConditionsLues = {
-      validiteJours: cRelues.validiteJours,
-      acomptePourcent: cRelues.acomptePourcent,
-      delaiPaiementJours: cRelues.delaiPaiementJours,
-      moyensPaiement: cRelues.moyensPaiement,
-      rappelerPenalites: cRelues.rappelerPenalites,
-      textePied: cRelues.textePied,
-    };
-
     // Ce qui a réellement été repris — pour que l'écran le montre, et ne
     // laisse pas croire qu'il a pris ce que la photo n'a pas vu.
     const repris: string[] = [];
@@ -367,7 +362,11 @@ export async function reprendreAllurePhotoAction(
       cl.textePied !== null;
     if (aDesConditions) repris.push("vos mentions");
 
-    return { ok: true, repris, reserve: lu.allure.reserve, allure: allureRelue, conditions: conditionsRelues };
+    // Les mentions relues ne repartent pas vers l'écran : celui de l'allure ne
+    // les montre plus depuis le découpage du 7 septembre, et un retour que
+    // personne ne lit finit par mentir — celui-ci ignorait déjà les conditions
+    // générales.
+    return { ok: true, repris, reserve: lu.allure.reserve, allure: allureRelue };
   } catch (err) {
     logger.error("Reprise de l'allure depuis une photo impossible", {
       erreur: err instanceof Error ? err.message : String(err),

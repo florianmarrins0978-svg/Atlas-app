@@ -25,7 +25,7 @@ choix) ou `dev`. Migration 0091. Suites : `test-code-verification` (règles),
 `/verifier-email`).
 
 **Reste à lui :** le compte Brevo et ses deux variables dans l'espace
-(`BREVO_API_KEY`, `COURRIEL_EXPEDITEUR`). Détail : `ARCHITECTURE.md` §360.
+(`BREVO_API_KEY`, `COURRIEL_EXPEDITEUR`). Détail : `ARCHITECTURE.md` §361.
 
 ### Un compte neuf passe par les documents légaux avant l'accueil
 
@@ -47,6 +47,35 @@ Le correctif du 13 septembre n'avait jamais quitté le dossier principal : son
 espace servait `a3a40a6`, sans lui. Fusion des 25 commits d'`origin/main`,
 poussée `7ee68e1b`, suite `test-photos-avant-le-chantier-e2e` rejouée au vert
 sur l'arbre fusionné, version bâtie, Postgres et Redis dans Docker.
+
+### Une planche pour la facture : main d’œuvre et règlements reçus
+
+Sa demande du 14 septembre, trois factures de pros à l’appui : la facture ne
+savait ni nommer la main d’œuvre ni déduire les acomptes.
+`appli/facture-main-d-oeuvre-et-reglements.html` — écran, papier, et ce qui a
+été pris ou laissé de chaque facture. Rien dans `src/` ; `TODO.md` porte ce
+qui existe déjà et les trois questions qui restent.
+### La main d'œuvre ne s'efface plus sur un devis sans ligne ; une photo de devis ne vide plus les conditions générales
+
+**Ses plaintes du 14 septembre 2026, à minuit.** Ouverte sur un devis encore
+vide, la ligne « dont main d'œuvre HT » perdait le montant tapé dès le premier
+enregistrement — un total nul était pris pour un plafond. Elle se garde ; la
+borne se pose avec la première ligne (`montantMainDoeuvreValide`, et la
+régénération du brouillon).
+
+**Et une clef absente n'écrit plus rien** (`normaliserConditions`) : la photo
+d'un devis renvoyait les réglages relus sans la clef des conditions générales
+(0090), et les remettait à « effacé » — plus rien après le bon pour accord, case
+éteinte dans les Réglages. Le geste `regler_documents` n'a plus à relire
+l'entreprise pour se protéger. Au rechargement, la main d'œuvre s'écrit « 450 »,
+plus « 450.00 ».
+
+**Et le bloc « Notes / conditions » dit la B, tranchée par lui** : « Mode de
+règlement : 30 % à la signature, 50 % à mi-parcours, solde à réception de la
+facture. », un « Montant à régler … » par acompte, « Solde restant à régler ».
+Ses deux planches écrivaient deux choses ; le §348 avait choisi sans lui.
+
+`ARCHITECTURE.md` §360 · `docs/devis-main-doeuvre-et-conditions-verdict.md`.
 
 ---
 ## 2026-09-13

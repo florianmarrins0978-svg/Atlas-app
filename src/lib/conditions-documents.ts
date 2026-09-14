@@ -1,4 +1,5 @@
 import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "./conditions-generales";
+import { enEuros } from "./euros";
 
 /**
  * Les conditions qui s'impriment sur un devis, réglées au lieu d'être en dur.
@@ -151,25 +152,40 @@ export function lireConditions(brut: ConditionsLues | null | undefined): Conditi
   };
 }
 
-/** Ce qui part en base après une saisie. Même fonction que pour l'affichage. */
+/**
+ * Ce qui part en base après une saisie. Même fonction que pour l'affichage.
+ *
+ * **UNE CLEF ABSENTE NE S'ÉCRIT PAS — 14 septembre 2026.** Elle valait
+ * « éteint » : un geste qui ne portait qu'un réglage effaçait tous les autres.
+ * Deux appelants s'en étaient protégés en relisant la base pour tout renvoyer
+ * (le geste `regler_documents` de l'assistant, la photo d'un devis) — et le
+ * second avait oublié la clef née le 13 (migration 0090) : ses conditions
+ * générales repartaient à `""`, c'est-à-dire « il a tout effacé », et plus rien
+ * ne s'imprimait après le bon pour accord. Un troisième appelant aurait refait
+ * la même faute. La règle vit donc ici : ce qui n'est pas dit ne bouge pas.
+ * `null` reste « éteint », `""` reste « allumé, rien écrit ».
+ */
 export function normaliserConditions(saisie: ConditionsLues): {
-  validiteJours: number | null;
-  acomptePourcent: string | null;
-  delaiPaiementJours: number | null;
-  moyensPaiement: string | null;
-  rappelerPenalites: boolean;
-  textePied: string | null;
-  conditionsGenerales: string;
+  validiteJours?: number | null;
+  acomptePourcent?: string | null;
+  delaiPaiementJours?: number | null;
+  moyensPaiement?: string | null;
+  rappelerPenalites?: boolean;
+  textePied?: string | null;
+  conditionsGenerales?: string;
 } {
   const c = lireConditions({ ...saisie, validiteJours: saisie.validiteJours ?? null });
+  const dite = (clef: keyof ConditionsLues) => saisie[clef] !== undefined;
   return {
-    validiteJours: c.validiteJours,
-    acomptePourcent: c.acomptePourcent === null ? null : String(c.acomptePourcent),
-    delaiPaiementJours: c.delaiPaiementJours,
-    moyensPaiement: c.moyensPaiement,
-    rappelerPenalites: c.rappelerPenalites,
-    textePied: c.textePied,
-    conditionsGenerales: c.conditionsGenerales,
+    ...(dite("validiteJours") ? { validiteJours: c.validiteJours } : {}),
+    ...(dite("acomptePourcent")
+      ? { acomptePourcent: c.acomptePourcent === null ? null : String(c.acomptePourcent) }
+      : {}),
+    ...(dite("delaiPaiementJours") ? { delaiPaiementJours: c.delaiPaiementJours } : {}),
+    ...(dite("moyensPaiement") ? { moyensPaiement: c.moyensPaiement } : {}),
+    ...(dite("rappelerPenalites") ? { rappelerPenalites: c.rappelerPenalites } : {}),
+    ...(dite("textePied") ? { textePied: c.textePied } : {}),
+    ...(dite("conditionsGenerales") ? { conditionsGenerales: c.conditionsGenerales } : {}),
   };
 }
 
@@ -203,14 +219,16 @@ export function lignesConditionsDevis(
   if (phrasesAcomptes && phrasesAcomptes.length > 0) {
     lignes.push(...phrasesAcomptes);
   } else if (c.acomptePourcent !== null) {
-    // Le montant n'est écrit QUE s'il est connu. Sur l'aperçu des réglages il
-    // ne l'est pas — et un chiffre inventé à cet endroit finirait imprimé.
-    // *« Retire les — avant soit »* : une virgule, comme les phrases des acomptes.
-    const montant =
-      totalTtc !== undefined && Number.isFinite(totalTtc)
-        ? `, soit ${((totalTtc * c.acomptePourcent) / 100).toFixed(2).replace(".", ",")} €`
-        : "";
-    lignes.push(`Acompte de ${c.acomptePourcent} % à la commande${montant}.`);
+    // **La B de sa planche, choisie le 14 septembre 2026** — la même rédaction
+    // que `phrasesAcomptes`, pour le réglage seul : le mode, puis les montants
+    // QUAND le total est connu. Sur l'aperçu des réglages il ne l'est pas — et
+    // un chiffre inventé à cet endroit finirait imprimé.
+    lignes.push(`Mode de règlement : ${c.acomptePourcent} % à la commande, solde à réception de la facture.`);
+    if (totalTtc !== undefined && Number.isFinite(totalTtc)) {
+      const acompte = Math.round(totalTtc * c.acomptePourcent) / 100;
+      lignes.push(`Montant à régler à la commande : ${enEuros(acompte)}`);
+      lignes.push(`Solde restant à régler : ${enEuros(Math.round((totalTtc - acompte) * 100) / 100)}`);
+    }
   }
 
   if (c.delaiPaiementJours !== null) {

@@ -13,10 +13,22 @@ s'ouvre avant (`GardeVerificationEmail`, `accueilPourEmail`,
 `/verifier-email`). Atlas envoie son premier e-mail — Brevo, son choix, ou
 `dev`. Migration 0091. Seul un compte créé par la porte attend un code : les
 comptes existants ne changent pas. **Reste à lui : le compte Brevo et ses deux
-variables dans l'espace.** `ARCHITECTURE.md` §360.
+variables dans l'espace.** `ARCHITECTURE.md` §361.
 
 Le même jour : « Entrer dans Atlas » mène aux documents légaux, pas à
 l'accueil — il avait travaillé une heure sans les avoir acceptés.
+
+---
+
+## FAIT : LA MAIN D'ŒUVRE SUR UN DEVIS VIDE, ET LA CLEF ABSENTE — 14 septembre 2026
+
+Sa plainte à minuit : *« je mets le prix, elle s'efface toute seule »* — sur un
+devis sans ligne, un total nul était pris pour un plafond. Elle se garde ; la
+borne arrive avec la première ligne. Et `normaliserConditions` n'écrit plus
+une clef absente : la photo d'un devis remettait ses conditions générales à
+« effacé ». Et le bloc « Notes / conditions » dit la B qu'il a choisie : mode
+de règlement, montant à régler par acompte, solde restant.
+`ARCHITECTURE.md` §360 · `docs/devis-main-doeuvre-et-conditions-verdict.md`.
 
 ## FAIT : 0087 NE VOYAIT PAS SES PROPRES LIGNES — 13 septembre 2026
 
