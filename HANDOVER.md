@@ -22,7 +22,7 @@ se relit (`router.refresh()`) mais React garde l'instance et ses `useState`
 — titre vide, main d'œuvre absente. `FactureClient` est monté avec
 `key={facture.id}` : une facture, un montage. **Reste la batterie complète
 avant `main`.**
-`ARCHITECTURE.md` §362 · `docs/le-papier-devis-et-facture-verdict.md`.
+`ARCHITECTURE.md` §364 · `docs/le-papier-devis-et-facture-verdict.md`.
 
 ---
 ## Dernier lot — L'ADRESSE SE PROUVE PAR UN CODE (14 septembre 2026)
@@ -40,6 +40,34 @@ avant `main`.**
 **Livré avec, le même jour :** « Entrer dans Atlas » mène aux documents légaux,
 pas à l'accueil — la garde du layout ne se rejoue pas sur une navigation côté
 client, et il avait travaillé une heure sans les avoir acceptés.
+
+---
+## Lot du 14 septembre 2026 — LES DOUZE SUITES ROUGES, ET DEUX ÉCRANS RESSERRÉS
+
+**À retenir : la batterie rend 153/153.** Les douze suites navigateur rouges qui
+vivaient sur `main` depuis le 11 septembre sont reprises une par une
+(`TODO.md`, relevé du 13, barré).
+
+| | |
+|---|---|
+| **dix étaient des contrôles périmés** | ils réclamaient un libellé retiré, une adresse d'avant la visionneuse, ou le décor du fournisseur de dictée remplacé le 9 septembre |
+| **deux étaient de vraies pannes** | la flèche du devis ne ramenait plus à la feuille du planning (`ARCHITECTURE.md` §362) ; la fiche client et la page du client débordaient du téléphone (§363) |
+
+**Sa décision à retenir, elle ne se rediscute pas :** *« on aura ce problème
+sur beaucoup d'écrans, on pourra pas satisfaire tout le monde ; faut pas que
+les caractères soient trop petits sinon c'est illisible, donc ils
+défileront. »* La règle « une seule page » vaut sur SON téléphone ; en dessous,
+l'écran défile — et le seul contrôle qui reste est que rien ne finisse sous la
+barre d'onglets.
+
+**Ce que ces reprises apprennent, et qui resservira :** un contrôle qui vise un
+MOT, une ADRESSE ou un CENTRE DE LIGNE rougira le jour où le patron fait
+changer l'écran. On vise la section, le fichier demandé, la fonction qui
+décide, et le geste qu'il fait lui — le nom du chantier, pas le milieu de sa
+ligne (`CLAUDE.md` §5 bis et §5 quater).
+
+**La planche qu'il a regardée avant :**
+`appli/resserrer-deux-ecrans.html` — ses écrans photographiés, avant et après.
 
 ---
 ## Lot du même jour — LA MAIN D'ŒUVRE SUR UN DEVIS VIDE, ET LA CLEF ABSENTE (14 septembre 2026)

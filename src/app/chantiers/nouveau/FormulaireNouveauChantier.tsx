@@ -790,7 +790,21 @@ export default function FormulaireNouveauChantier({
           // capture) : la barre d'onglets est FIXÉE au bas de l'écran, et sans
           // lui elle coupait l'anneau en deux — le geste principal de l'écran,
           // à moitié sous une barre. Ni les types ni les suites ne voient cela.
-          className={`flex flex-col gap-[4px] px-6 pt-1.5 pb-2`}
+          //
+          // **2 px entre les blocs, et non 4 — 14 septembre 2026.** Sur un
+          // petit iPhone (4,7 pouces) cet écran débordait de 17 px : le bas se
+          // dérobait sous la barre. Les deux pixels rendus ici, plus vingt pris
+          // à la réserve du micro (`globals.css`, `.atlas-dictee`), le font
+          // rentrer — sans qu'un mot parte ni qu'une ligne bouge.
+          //
+          // **Ce que cela ne règle PAS, et il l'a tranché lui-même** : ajoutez
+          // l'adresse du client et l'écran redéborde de 66 px, resserré ou non.
+          // *« On aura ce problème sur beaucoup d'écrans, on pourra pas
+          // satisfaire tout le monde ; faut pas que les caractères soient trop
+          // petits sinon c'est illisible, donc ils défileront. »* La règle
+          // « une seule page » vaut donc sur SON téléphone ; en dessous, l'écran
+          // défile, et c'est un choix, pas un défaut.
+          className={`flex flex-col gap-[2px] px-6 pt-1.5 pb-2`}
           onSubmit={(e) => {
             e.preventDefault();
             // « Entrée » fait ce que fait le bouton, et il n'y en a qu'un —

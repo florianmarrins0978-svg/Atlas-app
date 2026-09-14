@@ -31,6 +31,15 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/scripts/garde-fusion-main.mjs\""
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -45,6 +54,10 @@
             "type": "command",
             "command": "node \"${CLAUDE_PROJECT_DIR:-.}/scripts/rappel-racine.mjs\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/scripts/rappel-regarder-l-ecran.mjs\""
           }
         ]
       }

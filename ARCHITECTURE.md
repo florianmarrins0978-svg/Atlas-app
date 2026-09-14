@@ -30428,7 +30428,78 @@ expéditrice, et poser `BREVO_API_KEY` et `COURRIEL_EXPEDITEUR` dans son
 espace. Sans elles, son banc tourne en `dev` : le code s'écrit dans le
 journal du serveur, et personne ne reçoit d'e-mail.
 
-## §362 — Le papier, le même pour le devis et la facture : les colonnes des pros, les acomptes reçus, le net à payer
+## §362 — La feuille du planning vit dans l'adresse, sinon le retour la perd
+
+**Sa panne du 7 septembre 2026, refabriquée par l'autre bout.** *« Lorsque je
+fais retour j'arrive sur la page d'accueil, or je devrais arriver d'où je suis
+parti. »* Corrigée alors par un `?de=`, puis par le journal de navigation le
+9 septembre (§ `journal-de-navigation.ts`) — qui note l'adresse COMPLÈTE, et
+dont le commentaire nomme lui-même le cas `/planning?chantier=…`.
+
+Le chevron du planning, lui, ne posait ce paramètre nulle part : la feuille
+levée ne vivait que dans un état React. Le journal enregistrait donc
+`/planning` tout court, et la flèche du devis le ramenait sur le mois courant,
+feuille refermée.
+
+**Trois moitiés manquaient, et la correction les pose toutes les trois :**
+
+| | |
+|---|---|
+| le chevron | écrit `?chantier=<id>` par `history.replaceState` — l'adresse que `lienVersLeChantierAuPlanning` définit déjà |
+| la porte | ne referme plus la feuille en partant : son `onClick={onFermer}` retirait le paramètre une fraction de seconde AVANT de naviguer |
+| l'écran | relit l'adresse au premier rendu ET sur `popstate` — revenir par `router.back()` restitue un rendu serveur d'avant, où le paramètre n'était pas |
+
+**`replaceState` et non `pushState` :** lever une feuille n'est pas changer
+d'écran. Une entrée d'historique par chevron obligerait à reculer autant de
+fois qu'il en a touché avant de quitter le planning.
+
+**`popstate` et non `useSearchParams`**, et ce n'est pas un détail de style :
+ce crochet fait suspendre l'écran, le planning entier arrive après coup, et
+`test-ligne-planning-e2e` a rougi là-dessus — la page n'avait plus la même
+hauteur au moment où il mesure. Trouvé en jouant les suites voisines, pas en
+relisant le code.
+
+## §363 — « Une seule page » vaut sur SON téléphone ; les plus petits défilent
+
+**Sa décision du 14 septembre 2026**, après avoir vu les mesures : *« on aura
+ce problème sur beaucoup d'écrans, on pourra pas satisfaire tout le monde ;
+faut pas que les caractères soient trop petits sinon c'est illisible, donc ils
+défileront. »*
+
+Sa règle du 1ᵉʳ septembre — *« une seule page, centrée »* — était éprouvée sur
+deux téléphones, et elle rougissait sur le petit : la fiche client faisait
+684 px pour 667 de place.
+
+**Ce que le resserrement achète, et ce qu'il n'achète pas.** Mesuré sur la
+version bâtie, à 375 × 667 :
+
+| | |
+|---|---|
+| aujourd'hui | déborde de 17 px |
+| resserré | 667 px — **zéro marge** |
+| resserré + l'adresse du client | **déborde de 66 px** |
+| resserré + gros caractères | déborde de 14 px |
+
+Sur son iPhone (390 × 844), les trois cas tiennent.
+
+**La racine, et pourquoi on ne la corrige pas** : cet écran GRANDIT avec ce
+qu'on y met. Aucune valeur d'espacement ne peut tenir la page unique pour tous
+les contenus sur un petit écran — sauf à rapetisser le texte, ce qu'il refuse,
+et il a raison : un écran qu'on ne lit pas ne sert à rien.
+
+**Ce qui est donc tenu, et par quoi :**
+
+| | |
+|---|---|
+| sur son téléphone | la page unique — `test-fiche-client-e2e`, inchangé |
+| plus petit | le défilement est permis, mais **rien ne finit sous la barre d'onglets** : elle est fixée, et ce qui passe dessous est invisible quel que soit le défilement |
+
+**Ce qui a quand même été resserré**, parce que cela ne coûte rien nulle part :
+2 px entre les blocs du formulaire, 20 px de réserve autour du micro, et 2 px
+entre les blocs de la page du client — qui, elle, n'avait plus un pixel depuis
+le 4 septembre.
+
+## §364 — Le papier, le même pour le devis et la facture : les colonnes des pros, les acomptes reçus, le net à payer
 
 **Sa planche du 14 septembre 2026** (`appli/le-papier-devis-et-facture.html`),
 retouchée dix fois dans la soirée sur ses retours, puis : *« PARFAIT ! Code

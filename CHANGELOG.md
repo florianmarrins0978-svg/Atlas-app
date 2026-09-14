@@ -32,8 +32,44 @@ colonnes ne tenaient pas dans la carte : mesurées au plus long qu'elles
 portent, regardées à 390 px.
 
 **Décision dite :** un acompte reçu AVANT la facture se pose sur le brouillon —
-c'est celui de la signature. `ARCHITECTURE.md` §362 ·
+c'est celui de la signature. `ARCHITECTURE.md` §364 ·
 `docs/le-papier-devis-et-facture-verdict.md`.
+### Six contrôles remis d'aplomb après la fusion
+
+La batterie a rendu 149 sur 153. Aucun des quatre rouges ne venait du
+resserrement : la recherche comparait la frappe BRUTE au nom, là où le produit
+découpe en mots et normalise ; la séquence de Madame Lucie exigeait les mots de
+la dictée qu'elle pose en base, alors que la chaîne part désormais avec le texte
+que le fournisseur rend ; la scène de production du stockage ne posait pas le
+fournisseur de courriel arrivé avec le code de vérification, si bien que c'est
+LUI qui refusait en premier ; et le rechargement d'un morceau manquant se
+mesurait en une minute là où il en faut deux sous la batterie entière.
+
+Deux ont demandé un second tour, et leurs messages rendus bavards ont dit
+pourquoi. Madame Lucie écrivait sa dictée en base APRÈS que la chaîne soit
+partie : l'écriture ne servait plus qu'à contredire le devis, elle part. Et le
+morceau manquant ne ramène pas forcément au planning — la navigation n'ayant
+jamais abouti, l'écran rechargé est celui où l'on se trouvait, ce qui est
+exactement ce qu'il faut. Ce qui se défend est qu'Atlas se relève seul, sans
+bouton sans issue.
+
+### Deux écrans resserrés, et les petits téléphones défilent
+
+La fiche client débordait de 17 px sur un petit iPhone, la page du client de
+2 px au pire cas. Les espacements sont resserrés de 2 px — aucun mot retiré,
+aucune ligne déplacée — et la réserve autour du micro passe de 104 à 84 px.
+
+**Cela ne suffit pas, et c'est assumé** : l'adresse du client ajoutée fait
+redéborder de 66 px. Sa décision, mesures en main : les petits écrans
+défileront plutôt que de voir le texte rapetisser (`ARCHITECTURE.md` §363).
+
+### Depuis le planning, la flèche du devis ramène à la feuille qu'on a quittée
+
+Le chevron n'écrivait la feuille levée nulle part : le journal de navigation
+notait `/planning` tout court, et la flèche du devis déposait sur le mois
+courant. Elle s'écrit désormais dans l'adresse (`?chantier=<id>`), la porte ne
+l'efface plus en partant, et l'écran la relit au retour (`ARCHITECTURE.md`
+§362). `test-planning-vers-facture-e2e` le tenait déjà, et rougissait.
 
 ### Le papier, le même pour le devis et la facture, et les retours sur la planche de la facture
 

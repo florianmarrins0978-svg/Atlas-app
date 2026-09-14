@@ -70,7 +70,7 @@ const dire = (bon: boolean, quoi: string) => {
 // cette planche »* : le devis et la facture sortent du même papier, avec les
 // colonnes des pros (Désignation · Qté · Unité · P.U. HT · Rem. % · Total HT ·
 // TVA % · Total TTC), le taux SUR la ligne et les bases par taux dessous, le
-// numéro à droite du titre (`ARCHITECTURE.md` §362). Ce qui a autorisé ce
+// numéro à droite du titre (`ARCHITECTURE.md` §364). Ce qui a autorisé ce
 // relevé : les deux PDF rendus dans la visionneuse de l'application et
 // regardés en grand, contre la planche — colonnes, gras et fontes.
 const EMPREINTE_FACTURE = "569e6b65640cbdc04b96d883d6f880c54fb4103c2514543fa9b93940692f34b8";

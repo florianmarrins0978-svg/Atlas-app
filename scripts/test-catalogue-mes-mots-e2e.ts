@@ -231,8 +231,22 @@ async function main() {
   }
 
   // --- 6. La flèche de retour, le défaut du 14 août --------------------------
+  //
+  // **ON Y ARRIVE COMME LUI — corrigé le 14 septembre 2026.** Ce contrôle
+  // sautait sur `/catalogue` par une adresse directe, puis cherchait une flèche
+  // nommée « Retour aux tarifs ». Depuis le 9 septembre, la flèche ramène à la
+  // page d'où l'on vient et s'annonce alors « Retour » : elle connaît l'adresse,
+  // pas le nom de l'écran (`FlecheRetour.tsx`, et c'est SA demande — *« un vrai
+  // bouton marche arrière »*). Le contrôle réclamait donc un libellé que le
+  // patron a fait changer, sur du code juste (`CLAUDE.md` §5 bis).
+  //
+  // Ce qu'il éprouve ne bouge pas : **on repart du catalogue sans la barre du
+  // bas, et l'on retombe sur les tarifs.** C'est vrai des deux mécanismes — le
+  // journal quand on vient des tarifs, le repli déclaré quand on arrive à
+  // froid —, et le parcours joué ici est celui qu'il fait vraiment.
+  await page.goto(`${RACINE}/reglages/tarifs`, { waitUntil: "networkidle" });
   await page.goto(`${RACINE}/catalogue`, { waitUntil: "networkidle" });
-  const retour = page.getByRole("link", { name: "Retour aux tarifs" });
+  const retour = page.getByRole("link", { name: /^Retour/ });
   assert.equal(
     await retour.count(),
     1,

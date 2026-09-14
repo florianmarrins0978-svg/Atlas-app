@@ -214,6 +214,14 @@ async function main() {
   await page.locator(`[data-jour="${jourLibre}"]`).click();
   // La case se peint quand le choix est pris : l'attendre vaut mieux qu'un délai.
   await page.locator(`[data-jour="${jourLibre}"][data-etat="retenu"]`).waitFor({ timeout: 20_000 });
+  // **ON REFERME LA FEUILLE, comme le client.** Le calendrier monte du bas
+  // depuis le 4 septembre 2026 — sa réponse A, pour que la page tienne d'un
+  // seul tenant. Toucher un jour le RETIENT ; c'est « Retenir cette date » qui
+  // referme la feuille. Sans ce geste, la feuille reste posée par-dessus, et
+  // « J'accepte ce devis » se laissait chercher pendant quarante-cinq secondes
+  // sous un bouton de calendrier — un faux coupable pour une étape sautée.
+  await page.getByRole("button", { name: "Retenir cette date" }).click();
+  await page.locator('[data-jour]').first().waitFor({ state: "hidden", timeout: 20_000 });
   await page.click('button:has-text("J\'accepte ce devis")');
   await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 20_000 });
 

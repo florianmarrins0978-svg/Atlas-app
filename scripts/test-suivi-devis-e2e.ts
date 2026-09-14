@@ -173,8 +173,17 @@ async function main() {
       0,
       "le chantier est proposé à la planification alors que le client choisit"
     );
+    // **L'ENCADRÉ, PAS LE TEXTE NU — 14 septembre 2026.** La poignée du tiroir
+    // compte désormais ce qu'elle ouvre (« 6 clients sans date · 14 en attente
+    // du client ») : `text=En attente du client` trouvait donc deux éléments,
+    // et Playwright refusait de choisir. Ce n'est pas l'écran qui a tort — il
+    // dit MIEUX ce qu'il porte —, c'est le contrôle qui visait une phrase là où
+    // il parle d'une section (`CLAUDE.md` §5 bis).
     assert.ok(
-      await page.locator("text=En attente du client").isVisible(),
+      await page
+        .locator('[data-atlas="titre-encadre"]', { hasText: "En attente du client" })
+        .first()
+        .isVisible(),
       "le chantier disparaît du planning au lieu d'y être annoncé en attente"
     );
   });

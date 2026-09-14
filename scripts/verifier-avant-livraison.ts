@@ -425,6 +425,7 @@ ecrireDernierVerdict(RACINE, {
       ? "✅ Batterie complète au vert."
       : `❌ ${echecs.length} étape(s) en échec : ${echecs.map((e) => e.nom).join(", ")}`,
   empreinte: empreinteAvant,
+  niveau: 3,
 });
 
 if (echecs.length === 0) {

@@ -1075,9 +1075,17 @@ COURRIEL_EXPEDITEUR=votre@adresse.fr
 - Ce qui part chez Brevo : l'adresse du compte, un objet, six chiffres. Jamais
   une donnée de vos clients. Brevo est un sous-traitant de plus à faire figurer
   au point 2 — pour une seule donnée, l'adresse e-mail du titulaire du compte.
-- Un nom de domaine à vous (point 8, il vous en faut un de toute façon)
-  améliorera plus tard la délivrabilité ; il n'est pas nécessaire pour
-  commencer.
+- **Un nom de domaine à vous est NÉCESSAIRE — constaté le 14 septembre 2026,
+  le soir même.** Le compte Brevo a été créé, l'adresse laposte.net vérifiée,
+  la clé posée : Atlas a envoyé le code, Brevo l'a transmis, et iCloud l'a
+  refusé — *« 554 5.7.1 rejected due to laposte.net's DMARC policy »*. La
+  Poste interdit à tout autre serveur d'envoyer en son nom, et les grandes
+  messageries appliquent la règle ; il en ira de même avec gmail, icloud ou
+  orange en expéditeur. Il faut donc un domaine (~10 €/an, `.fr`), déclaré
+  dans Brevo (*Domaines* → trois lignes à copier chez le vendeur), puis une
+  adresse `contact@votre-domaine.fr` en expéditeur et dans
+  `COURRIEL_EXPEDITEUR`. Rien à changer dans l'application. Ce domaine
+  servira aussi au point 8.
 
 Le détail de ce qui a été fait : [`verification-email.md`](verification-email.md).
 

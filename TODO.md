@@ -68,7 +68,7 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 
 **Codé :** migration 0092, `src/lib/lignes-du-papier.ts`,
 `src/lib/acomptes-facture.ts`, le composeur commun, l'écran de la facture
-(`ReglementsRecus.tsx`), le titre sur le devis. `ARCHITECTURE.md` §362,
+(`ReglementsRecus.tsx`), le titre sur le devis. `ARCHITECTURE.md` §364,
 `docs/le-papier-devis-et-facture-verdict.md`.
 
 **Ce qui reste, et à qui :**
@@ -260,7 +260,29 @@ rougit au premier essai si le verrou saute.
 
 ---
 
-## DIX-HUIT SUITES NAVIGATEUR ROUGES SUR `main` (13 septembre 2026, relevé)
+## ~~DIX-HUIT SUITES NAVIGATEUR ROUGES SUR `main`~~ — ÉTEINTES, BATTERIE 153/153 (14 septembre 2026)
+
+**REPRISES UNE PAR UNE LE 14 SEPTEMBRE 2026, et la batterie rend 153/153.**
+
+**Dix sur douze étaient des CONTRÔLES PÉRIMÉS**, pas des défauts : ils
+réclamaient ce que le patron avait fait changer, ou le décor d'un mécanisme
+remplacé. Les causes, par ordre de fréquence :
+
+| | |
+|---|---|
+| le fournisseur de dictée `essai` (9 sept.) | `ia-01`, `anneau-vers-devis`, `madame-lucie` : la chaîne part seule, donc avant les écritures que ces suites posaient à la main |
+| un libellé ou une adresse écrits en dur | `suivi-devis`, `fiche-client`, `message-au-client`, `recherche-client` : ils visent désormais la SECTION, le FICHIER, la FONCTION qui décide |
+| un clic au centre d'une ligne | `reprise-chantier`, `madame-lucie` : le centre, c'est « Adresse non renseignée » — on appuie sur le NOM, comme lui |
+| un montage derrière une assertion qui tombe | `fiche-entretien` : sept faux coupables pour un seul retour d'écran manqué |
+
+**Deux étaient de VRAIES pannes, et elles sont corrigées :** la flèche du devis
+ne ramenait plus à la feuille du planning (`ARCHITECTURE.md` §362), et deux
+écrans débordaient du téléphone (§363, sa décision : les petits défilent).
+
+**Ce qui reste vrai, et qu'il ne faut pas croire éteint :** ces reprises ont été
+faites une par une, chacune vérifiée seule puis en batterie. Un rouge qui
+reviendrait n'est pas « capricieux » — il se regarde (`ARCHITECTURE.md` §353).
+
 
 **Batterie complète jouée dans un atelier à un seul occupant** — dossier, port,
 base et verrou vérifiés libres avant de lancer : **131/150** aux suites
@@ -317,7 +339,7 @@ qui a livré l'écriture perdue plus haut, et elle est verte depuis.
 **À reprendre en propre**, suite par suite : le journal entier est nécessaire
 (`npm run verifier:avant-livraison > /tmp/batterie.log 2>&1`, jamais par `tail`).
 
-## ~~Vingt suites navigateur rouges~~ — relevé de la veille (12 septembre 2026)
+## ~~Vingt suites navigateur rouges~~ — ÉTEINTES le 14 septembre 2026
 
 **Relevé, pas causé.** La batterie du 12 septembre au soir rend **126/146** aux
 suites navigateur. Le lot de ce soir ne touche **aucun fichier de `src/`**
@@ -599,7 +621,7 @@ chemin, comme le veilleur remesure le port au lieu de le croire. Et que
 là » — c'est la leçon du verrou de la batterie, un jeton que personne ne
 ramasse ment dès la deuxième soirée.
 
-## ⏳ DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main` (11 septembre 2026) — 31 le 12 au matin
+## ~~DIX-HUIT SUITES NAVIGATEUR SONT ROUGES SUR `main`~~ — ÉTEINTES le 14 septembre 2026
 
 **Relevé du 12 septembre 2026** (batterie de la bibliothèque de photos, `main`
 fusionné) : 112/143. Aux dix-huit s’ajoutent `bloquer-sans-devis`,
@@ -674,7 +696,7 @@ Ce qui reste vrai, et qui se dit s'il revient dessus : le correctif ne vaut que
 pour ce qui se compose APRÈS lui. Un document ancien qu'il veut lisible se
 refait en émettant la pièce à neuf, pas en retouchant l'archive.
 
-## SEIZE SUITES NAVIGATEUR SONT ROUGES SUR `main` — mesuré le 11 septembre 2026
+## ~~SEIZE SUITES NAVIGATEUR SONT ROUGES SUR `main`~~ — ÉTEINTES le 14 septembre 2026
 
 **Ce n'est pas une régression d'un lot : c'est l'état de `main`**, vérifié en
 rejouant les mêmes suites sur la version d'avant. Écrit ici pour que la
