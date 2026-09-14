@@ -30428,3 +30428,59 @@ expéditrice, et poser `BREVO_API_KEY` et `COURRIEL_EXPEDITEUR` dans son
 espace. Sans elles, son banc tourne en `dev` : le code s'écrit dans le
 journal du serveur, et personne ne reçoit d'e-mail.
 
+## §362 — Le papier, le même pour le devis et la facture : les colonnes des pros, les acomptes reçus, le net à payer
+
+**Sa planche du 14 septembre 2026** (`appli/le-papier-devis-et-facture.html`),
+retouchée dix fois dans la soirée sur ses retours, puis : *« PARFAIT ! Code
+exactement cette planche, du devis à la facture. »* Migration 0092.
+
+**Ce que la planche décide, et où ça vit :**
+
+| Ce qu'il a validé | Où |
+|---|---|
+| un seul papier, seul le titre change ; la facture ajoute ce qu'elle seule porte | `document-commun.ts` dessine tout ; `devis-pdf.ts` et `facture-pdf.ts` ne passent que leurs options |
+| Désignation · Qté · Unité · P.U. HT · Rem. % · Total HT · TVA % · Total TTC ; Rem., TVA et Unité centrés ; Total TTC en gras, en-tête comprise | le tableau de `composerDocument` |
+| « 3 », jamais « 3.00 » ; l'unité dans SA colonne — elle existait en base et sur le devis, la recopie vers la facture l'oubliait | `quantiteLisible`, `lignes_facture.unite` (0092) |
+| le taux de TVA SUR la ligne, les bases par taux dessous — plus de tableau coupé « TVA 20 % / TVA 10 % » avec un sous-total chacun | `lignesDuPapier` (`src/lib/lignes-du-papier.ts`) |
+| le numéro à droite du titre (« n° D2026-000014 »), CLIENT et LIEU DES TRAVAUX côte à côte, un titre optionnel en italique dessous | `OptionsDocument.numero`, `titreLibre` ; `devis.titre`, `factures.titre` |
+| Total HT et Total HT après remise en gras, la remise en or, « TVA 20 % » sans parenthèses, Reste à régler / Net à payer dans la fonte du Total TTC | le bloc des totaux ; `apresTotal[].style` (`doux`, `grand`) |
+| chaque montant reçu est un acompte : « Acompte 30 % », « Acompte 50 % » (le rang du devis), puis « Acompte » ; chacun sa ligne sous le TTC, la somme se déduit sans s'écrire | `src/lib/acomptes-facture.ts` — `nomAcompte`, `netAPayer` |
+| « Montants versés : chèque n° 1806028 du 02/09/2026, 522,23 € ; virement du 14/09/2026, 25,00 €. » — sans le mot acompte | `phraseMontantsVerses`, `paiements_facture.numero` (0092) |
+| « Facture acquittée » : un interrupteur sur la facture ; allumé, le solde est compté reçu à la date du jour, tampon « Acquittée le … » | `basculerAcquittee`, `paiements_facture.solde` (0092), `tamponAcquittee` |
+| « Pour information, montant de la main d'œuvre TTC » ; la main d'œuvre recopiée du devis, retouchable en brouillon | `factures.main_doeuvre_ht` (0092), `OptionsDocument.informations` |
+
+**Les centimes tombent juste, et c'est une règle.** Une remise s'accorde sur le
+tout ; le papier l'écrit sur chaque ligne, dont le « Total HT » est donc net.
+Un client additionne la colonne : `lignesDuPapier` donne à chaque ligne sa part
+arrondie et pose le centime résiduel de chaque taux sur la dernière ligne de ce
+taux — la colonne fait exactement la base HT rendue par `totauxAvecReduction`,
+et la colonne TTC exactement base + TVA. Une seule règle pour les totaux, et
+les lignes se plient à elle (`CLAUDE.md` §3).
+
+**Un acompte reçu AVANT la facture est normal.** `refusDuPaiement` refuse un
+règlement antérieur à l'émission — juste pour une facture ÉMISE, dont la date
+fait foi. Sur un brouillon, l'acompte à la signature est daté d'avant par
+construction : `refusDuReglementRecu` porte la règle des brouillons (montant
+positif, date, pas plus que le reste), et les gestes vivent dans
+`paiements-facture.ts` (`poserReglementRecu`, `majReglementRecu`,
+`retirerReglementRecu`, `basculerAcquittee`) — la MÊME table que « Noter un
+règlement » sur une facture émise, donc le même relevé de TVA, à la date où
+l'argent est tombé. Décision prise sans lui, et dite.
+
+**Les conditions de la facture** viennent du devis d'origine (figé) — ou des
+Réglages pour une facture née sans devis (`complementsDeLaFacture`) :
+« Mode de règlement », « Montants versés », les moyens, le texte de pied.
+Les pénalités ne s'y répètent pas : la facture les porte déjà, scellées, au
+pied. La feuille de chantier (`sansChiffrage`) ne change pas.
+
+**Ce qui n'est PAS codé, et pourquoi.** La case « crédit d'impôt 50 % » de la
+planche de l'écran (`facture-main-d-oeuvre-et-reglements.html`) : elle était
+« à trancher », et sa planche du papier ne la porte pas. La décennale et le
+médiateur dans Mon entreprise (`decennale-et-mediateur.html`) : dessinés, en
+attente de sa réponse. Les deux restent dans `TODO.md`.
+
+Suites : `test-papier-devis-facture.ts` (les règles et les deux traces),
+`test-papier-facture-db.ts` (le dépôt, sous `atlas_app`),
+`test-papier-facture-e2e.ts` (son chemin, du devis à la facture, et le PDF
+capturé dans la visionneuse). Adaptées à la planche : `test-devis-pdf`,
+`test-facture-pdf`, `test-acomptes-pdf`, `test-planche-b-devis`.

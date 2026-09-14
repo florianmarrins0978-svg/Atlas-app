@@ -175,6 +175,8 @@ type Props = {
   reductionPourcent: string | null;
   /** « dont main d'œuvre HT » (migration 0090). `null` : pas de ligne. */
   mainDoeuvreHt: string | null;
+  /** Son titre, s'il en a donné un (migration 0092). */
+  titre: string | null;
   /** Les acomptes posés sur ce devis, taux cumulés (migration 0088). */
   acomptesInitiaux: AcompteDevis[];
   /** Le réglage recopié à la création — ce que « + Ajouter un acompte » propose d'abord. */
@@ -309,6 +311,9 @@ export default function DevisCompletClient(props: Props) {
   // porte « 450.00 », et un point sous un total écrit « 1 160,00 » se voyait au
   // rechargement (14 septembre 2026).
   const [mainDoeuvre, setMainDoeuvre] = useState(sansZerosInutiles(props.mainDoeuvreHt ?? ""));
+  // Son titre — « Aménagement du jardin ». Jamais d'office ; vide, rien ne
+  // s'imprime (sa demande du 14 septembre 2026).
+  const [titre, setTitre] = useState(props.titre ?? "");
   const [mainDoeuvreOuverte, setMainDoeuvreOuverte] = useState(props.mainDoeuvreHt !== null);
 
   async function enregistrerMainDoeuvre(valeurBrute: string) {
@@ -899,9 +904,26 @@ export default function DevisCompletClient(props: Props) {
 
       <div className="my-6" style={{ borderTop: `2px solid ${colors.ink}` }} />
 
-      <h1 className="mb-8 text-center text-[26px] tracking-[0.14em] sm:text-[30px]" style={{ fontFamily: font.display }}>
+      <h1 className="mb-3 text-center text-[26px] tracking-[0.14em] sm:text-[30px]" style={{ fontFamily: font.display }}>
         DEVIS
       </h1>
+      {/* Le titre qu'il donne au devis, sous DEVIS comme sur le papier — en
+          italique, et rien tant qu'il n'a rien écrit. */}
+      {(!fige || titre) && (
+        <div className="mb-8 text-center">
+          <input
+            value={titre}
+            readOnly={fige}
+            placeholder="Titre (optionnel)"
+            aria-label="Titre du devis"
+            data-atlas="titre-devis"
+            onChange={(e) => setTitre(e.target.value)}
+            onBlur={(e) => void majEnTeteDevisAction(props.devisId, { titre: e.currentTarget.value })}
+            className="w-full max-w-[420px] border-0 bg-transparent p-0 text-center italic outline-none focus:bg-[var(--voile-champ)]"
+            style={{ color: colors.inkSoft, fontFamily: font.display, fontSize: "17px" }}
+          />
+        </div>
+      )}
 
       {/* --- Le client, seul : l'émetteur est déjà en haut ------------------
           Sa question du 25 août 2026 : *« est-ce que c'est normal qu'il y ait

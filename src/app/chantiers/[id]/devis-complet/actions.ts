@@ -382,7 +382,7 @@ export async function retirerAcompteAction(devisId: string, rang: number) {
 
 export async function majEnTeteDevisAction(
   devisId: string,
-  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null; mainDoeuvreHt?: string | null }
+  data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null; mainDoeuvreHt?: string | null; titre?: string | null }
 ) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "modifier l'en-tête du devis");

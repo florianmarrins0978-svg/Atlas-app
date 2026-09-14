@@ -11,9 +11,20 @@ import {
   majLigneDeFacture,
   majReductionDeFacture,
   retirerLignesDeFacture,
+  majTitreDeFacture,
+  majMainDoeuvreDeFacture,
   FactureDejaEmiseError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
+import {
+  poserReglementRecu,
+  majReglementRecu,
+  retirerReglementRecu,
+  basculerAcquittee,
+  type ReglementEnregistre,
+  type SaisieReglement,
+} from "@/server/repositories/paiements-facture";
+import { jourIso } from "@/lib/jour";
 import { logger } from "@/server/logger";
 import {
   creerEnvoiFacture,
@@ -289,4 +300,80 @@ export async function retirerLignesDeFactureAction(
     });
     return { succes: false, erreur: "Le retrait n'a pas pu être enregistré. Réessayez." };
   }
+}
+
+// ─── LE MÊME PAPIER QUE LE DEVIS — sa planche du 14 septembre 2026 ─────────
+// Le titre, la main d'œuvre nommée, et les acomptes reçus sur la facture en
+// brouillon. Chaque refus revient en VALEUR avec ses mots : une exception
+// levée par une action serveur n'arrive jamais jusqu'à lui (`AGENTS.md`).
+
+export async function majTitreFactureAction(
+  factureId: string,
+  titre: string | null
+): Promise<ResultatTravaux & { titre?: string | null }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "donner un titre à la facture");
+  try {
+    const r = await majTitreDeFacture(ctx, factureId, titre);
+    return r.ok ? { succes: true, titre: r.titre } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Titre de la facture non enregistré", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Le titre n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+export async function majMainDoeuvreFactureAction(
+  factureId: string,
+  valeur: string | null
+): Promise<ResultatTravaux & { mainDoeuvreHt?: string | null }> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "nommer la main d'œuvre sur la facture");
+  try {
+    const r = await majMainDoeuvreDeFacture(ctx, factureId, valeur);
+    return r.ok ? { succes: true, mainDoeuvreHt: r.mainDoeuvreHt } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Main d'œuvre de la facture non enregistrée", { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "La main d'œuvre n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+export type ResultatReglements =
+  | { succes: true; reglements: ReglementEnregistre[] }
+  | { succes: false; erreur: string };
+
+async function enReglements(
+  geste: string,
+  fn: () => Promise<{ ok: true; reglements: ReglementEnregistre[] } | { ok: false; raison: string }>
+): Promise<ResultatReglements> {
+  try {
+    const r = await fn();
+    return r.ok ? { succes: true, reglements: r.reglements } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error(`${geste} : impossible`, { erreur: err instanceof Error ? err.message : String(err) });
+    return { succes: false, erreur: "Ce règlement n'a pas pu être enregistré. Réessayez." };
+  }
+}
+
+export async function poserReglementRecuAction(factureId: string, saisie: SaisieReglement): Promise<ResultatReglements> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "noter un acompte reçu");
+  return enReglements("Acompte reçu", () => poserReglementRecu(ctx, factureId, saisie));
+}
+
+export async function majReglementRecuAction(reglementId: string, saisie: SaisieReglement): Promise<ResultatReglements> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "corriger un acompte reçu");
+  return enReglements("Acompte corrigé", () => majReglementRecu(ctx, reglementId, saisie));
+}
+
+export async function retirerReglementRecuAction(reglementId: string): Promise<ResultatReglements> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "retirer un acompte reçu");
+  return enReglements("Acompte retiré", () => retirerReglementRecu(ctx, reglementId));
+}
+
+export async function basculerAcquitteeAction(factureId: string, allumee: boolean): Promise<ResultatReglements> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "marquer la facture acquittée");
+  return enReglements("Facture acquittée", () => basculerAcquittee(ctx, factureId, allumee, jourIso(new Date())));
 }

@@ -8,6 +8,25 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
+### Le papier, le même pour le devis et la facture — sa planche, codée
+
+*« PARFAIT ! Code exactement cette planche, du devis à la facture. »*
+Migration 0092. Le devis et la facture partagent désormais la feuille : les
+colonnes des pros (Désignation · Qté · Unité · P.U. HT · Rem. % · Total HT ·
+TVA % · Total TTC), le taux SUR la ligne et les bases par taux dessous, « 3 »
+jamais « 3.00 », le numéro à droite du titre, un titre optionnel, Total HT en
+gras, la remise en or, « TVA 20 % ». La facture ajoute les acomptes reçus —
+« Acompte 30 % », « Acompte 50 % », « Acompte » — chacun sa ligne sous le TTC,
+« Net à payer », « Montants versés : chèque n° … du …, … € », le tampon
+« Acquittée le … », et la main d'œuvre TTC pour information. Sur l'écran de la
+facture : le titre, « + Main d'œuvre », les règlements reçus (moyen, numéro du
+chèque, date, montant), « + Règlement reçu » qui propose le rang suivant du
+devis, l'interrupteur « Facture acquittée ».
+
+**Décision dite :** un acompte reçu AVANT la facture se pose sur le brouillon —
+c'est celui de la signature. `ARCHITECTURE.md` §362 ·
+`docs/le-papier-devis-et-facture-verdict.md`.
+
 ### Le papier, le même pour le devis et la facture, et les retours sur la planche de la facture
 
 Ses retours du 14 septembre au soir : uniformiser devis et facture, la colonne

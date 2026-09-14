@@ -100,21 +100,25 @@ async function main() {
     const textes = contenus(trace);
     // Les intertitres du modèle, un par un. Un seul qui manque et le patron ne
     // reconnaît plus son document.
+    // **Les colonnes des pros — sa planche du 14 septembre 2026.** Le numéro
+    // ne vit plus dans les références : il est à droite du titre, « n° … ».
+    // L'en-tête de colonne « TOTAL HT » et le récapitulatif « Total HT » ne
+    // s'écrivent pas pareil, et c'est voulu (30 août 2026) : il les confondait.
     for (const attendu of [
-      "Devis n°",
       "Date",
       "Validité",
       "DEVIS",
       "CLIENT",
-      "DESCRIPTION",
+      "LIEU DES TRAVAUX",
+      "DÉSIGNATION",
       "QTÉ",
-      "PRIX UNITAIRE HT",
-      // **L'en-tête de COLONNE et le récapitulatif du bas ne disent plus la
-      // même chose, et c'est voulu.** Sa demande du 30 août 2026 : la colonne
-      // de chaque ligne s'appelle « MONTANT HT », le total général reste
-      // « Total HT ». Les deux se ressemblaient assez pour qu'il les confonde
-      // en lisant son devis — c'est exactement ce qu'il a signalé.
-      "MONTANT HT",
+      "UNITÉ",
+      "P.U. HT",
+      "REM. %",
+      "TOTAL HT",
+      "TVA %",
+      "TOTAL TTC",
+      "BASE HT",
       "Total HT",
       "Total TTC",
       "NOTES / CONDITIONS",
@@ -126,7 +130,7 @@ async function main() {
 
     const rang = (t: string) => textes.indexOf(t);
     assert.ok(rang("DEVIS") < rang("CLIENT"), "Le titre doit précéder les parties.");
-    assert.ok(rang("CLIENT") < rang("DESCRIPTION"), "Les parties précèdent le tableau.");
+    assert.ok(rang("CLIENT") < rang("DÉSIGNATION"), "Les parties précèdent le tableau.");
 
     // **L'ÉMETTEUR N'APPARAÎT QU'UNE FOIS**, et c'est sa question du 18 août
     // 2026 : *« pourquoi il y a deux fois l'émetteur ? »*. L'en-tête le porte
@@ -136,7 +140,7 @@ async function main() {
     assert.ok(!textes.includes("ÉMETTEUR"), "le bloc « ÉMETTEUR » est revenu : il double l'en-tête");
     const foisLeNom = textes.filter((t) => t === DEVIS.entrepriseNom).length;
     assert.equal(foisLeNom, 1, `le nom de l'entreprise est écrit ${foisLeNom} fois sur le devis`);
-    assert.ok(rang("DESCRIPTION") < rang("Total TTC"), "Le tableau précède les totaux.");
+    assert.ok(rang("DÉSIGNATION") < rang("Total TTC"), "Le tableau précède les totaux.");
     assert.ok(rang("Total TTC") < rang("NOTES / CONDITIONS"), "Les totaux précèdent les notes.");
   });
 
@@ -386,7 +390,7 @@ async function main() {
     );
     assert.ok(pagesAvecLignes.size > 1, "Les lignes devraient s'étaler sur plusieurs pages.");
     const pagesAvecEnTete = new Set(
-      trace.textes.filter((t) => t.contenu === "DESCRIPTION").map((t) => t.page)
+      trace.textes.filter((t) => t.contenu === "DÉSIGNATION").map((t) => t.page)
     );
     for (const page of pagesAvecLignes) {
       assert.ok(

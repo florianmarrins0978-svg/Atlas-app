@@ -6,6 +6,8 @@ import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getFacturePourChantier } from "@/server/repositories/factures";
+import { getAcomptesDevis } from "@/server/repositories/devis";
+import { reglementsRecus } from "@/server/repositories/paiements-facture";
 import { devisQuiFaitFoi } from "@/server/repositories/devis";
 import { repriseDuDevis } from "@/lib/facture-face-au-devis";
 import { getClient } from "@/server/repositories/clients";
@@ -62,6 +64,14 @@ export default async function FacturePage({
   // le jour où sa messagerie refuse de s'ouvrir — précisément le jour où cet
   // écran doit le rattraper.
   const envoiDejaFait = existante ? await dernierEnvoiFacture(ctx, existante.facture.id) : null;
+  // Le même papier que le devis (migration 0092) : les acomptes du devis
+  // nomment le rang de chaque règlement reçu.
+  const [acomptesDuDevis, reglements] = existante
+    ? await Promise.all([
+        existante.facture.devisId ? getAcomptesDevis(ctx, existante.facture.devisId) : Promise.resolve([]),
+        reglementsRecus(ctx, existante.facture.id),
+      ])
+    : [[], []];
 
   // **LE DEVIS QUI FAIT FOI, CONFRONTÉ À CELUI QUE LA FACTURE REPREND.**
   //
@@ -137,6 +147,10 @@ export default async function FacturePage({
                   // HT affiché, et rien ne disait pourquoi — au second arrêt,
                   // sur le montant qu'il défend devant son client.
                   reductionPourcent: existante.facture.reductionPourcent,
+                  mainDoeuvreHt: existante.facture.mainDoeuvreHt,
+                  titre: existante.facture.titre,
+                  acomptesDuDevis,
+                  reglements,
                   lignes: existante.lignes.map((l) => ({
                     id: l.id,
                     libelle: l.libelle,

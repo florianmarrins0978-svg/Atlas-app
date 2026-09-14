@@ -189,6 +189,7 @@ export default async function DevisCompletPage({
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}
         mainDoeuvreHt={devisRow.mainDoeuvreHt}
+        titre={devisRow.titre}
         acomptesInitiaux={acomptes}
         acompteReglage={devisRow.acomptePourcent}
         conditionsReglees={{

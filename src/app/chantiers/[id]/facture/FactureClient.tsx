@@ -15,6 +15,12 @@ import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
 import { adressePourLeClient, ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import TransmettreLaFacture from "./TransmettreLaFacture";
+import ReglementsRecus from "./ReglementsRecus";
+import { majMainDoeuvreFactureAction, majTitreFactureAction } from "./actions";
+import LigneMainDoeuvre from "../devis-complet/LigneMainDoeuvre";
+import { sansZerosInutiles } from "../devis-complet/ChampsDuDevis";
+import type { AcompteDevis } from "@/lib/acomptes-devis";
+import type { ReglementEnregistre } from "@/server/repositories/paiements-facture";
 import {
   terminerChantierAction,
   emettreFactureAction,
@@ -72,6 +78,12 @@ export type FacturePourEcran = {
   tauxTva: string;
   /** Le prix accordé au client, recopié du devis. `null` : aucun. */
   reductionPourcent: string | null;
+  /** Le même papier que le devis (migration 0092) : la main d'œuvre nommée, le titre. */
+  mainDoeuvreHt: string | null;
+  titre: string | null;
+  /** Les acomptes du devis, qui nomment le rang de chaque règlement reçu. */
+  acomptesDuDevis: AcompteDevis[];
+  reglements: ReglementEnregistre[];
   /**
    * **Les totaux ne sont PLUS transmis, et c'est délibéré.**
    *
@@ -183,6 +195,29 @@ export default function FactureClient({
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [emise, setEmise] = useState(initialFacture?.statut === "emise");
+
+  // Le même papier que le devis (sa planche du 14 septembre 2026) : le titre
+  // qu'il donne, et la main d'œuvre nommée sous le total. Les deux arrivent
+  // recopiés du devis, et se retouchent tant que la facture n'est pas arrêtée.
+  const [titre, setTitre] = useState(initialFacture?.titre ?? "");
+  const [mainDoeuvre, setMainDoeuvre] = useState(sansZerosInutiles(initialFacture?.mainDoeuvreHt ?? ""));
+  const [mainDoeuvreOuverte, setMainDoeuvreOuverte] = useState((initialFacture?.mainDoeuvreHt ?? null) !== null);
+
+  async function enregistrerMainDoeuvre(valeurBrute: string) {
+    if (!initialFacture) return;
+    const r = await majMainDoeuvreFactureAction(initialFacture.id, valeurBrute.trim() || null);
+    if (!r.succes) {
+      setErreur(r.erreur);
+      return;
+    }
+    const montant = r.mainDoeuvreHt ?? null;
+    if (montant === null) {
+      setMainDoeuvre("");
+      setMainDoeuvreOuverte(false);
+    } else {
+      setMainDoeuvre(sansZerosInutiles(montant));
+    }
+  }
 
   // L'échéance — proposée par défaut à la création (son délai de paiement, ou
   // 30 jours), et modifiable ICI tant que la facture n'est pas arrêtée. Sa
@@ -401,6 +436,15 @@ export default function FactureClient({
     initialFacture.reductionPourcent
   );
   const libelleRemise = libelleReduction(totaux.reductionPourcent);
+  const ligneMainDoeuvre = mainDoeuvreOuverte ? (
+    <LigneMainDoeuvre
+      montant={mainDoeuvre}
+      fige={emise}
+      onChange={setMainDoeuvre}
+      onFini={(v) => void enregistrerMainDoeuvre(v)}
+      onRetirer={() => void enregistrerMainDoeuvre("")}
+    />
+  ) : null;
 
   /**
    * Cette facture a-t-elle de quoi partir ?
@@ -428,6 +472,21 @@ export default function FactureClient({
           <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> —{" "}
           {avecCivilite(initialFacture.clientNom, initialFacture.clientCivilite) || "Client non renseigné"}
         </p>
+        {/* Son titre — « Aménagement du jardin » —, en italique comme sur le
+            papier. Jamais d'office : vide, rien ne s'imprime. */}
+        {(!emise || titre) && (
+          <input
+            value={titre}
+            readOnly={emise}
+            placeholder="Titre (optionnel)"
+            aria-label="Titre de la facture"
+            data-atlas="titre-facture"
+            onChange={(e) => setTitre(e.target.value)}
+            onBlur={(e) => void majTitreFactureAction(initialFacture.id, e.currentTarget.value)}
+            className="mt-1.5 block w-full border-0 bg-transparent p-0 italic outline-none focus:bg-[var(--voile-champ)]"
+            style={{ color: colors.inkSoft, fontFamily: font.display, fontSize: "17px" }}
+          />
+        )}
         {/* L'ÉCHÉANCE — proposée, et modifiable tant que la facture n'est pas
             arrêtée (sa demande du 25 août). Émise, elle est partie chez le
             client et inscrite au relevé : on la fige. */}
@@ -596,14 +655,20 @@ export default function FactureClient({
             libellés et l'ordre sont ceux du papier (`document-commun.ts`), tirés
             de la même fonction : deux rédactions du même prix accordé finiraient
             par se contredire. */}
+        {/* « dont main d'œuvre HT » sous le PREMIER Total HT écrit — brut avec
+            une remise, net sans —, la même pièce que le devis. */}
         {libelleRemise ? (
           <>
             <Ligne label="Total HT" valeur={totaux.brutHt} />
+            {ligneMainDoeuvre}
             <Ligne label={libelleRemise} valeur={totaux.reductionMontant ?? "0"} retire />
             <Ligne label="Total HT après remise" valeur={totaux.totalHt} />
           </>
         ) : (
-          <Ligne label="Total HT" valeur={totaux.totalHt} />
+          <>
+            <Ligne label="Total HT" valeur={totaux.totalHt} />
+            {ligneMainDoeuvre}
+          </>
         )}
         {totaux.parTaux.map((categorie) => (
           <Ligne
@@ -629,6 +694,19 @@ export default function FactureClient({
             {formatEuros.format(Number(totaux.totalTtc))}
           </p>
         </div>
+        {/* **« + Main d'œuvre », comme sur le devis** — sa planche du
+            14 septembre 2026. Il ouvre la ligne, vide : le chiffre est à lui. */}
+        {!emise && !mainDoeuvreOuverte && (
+          <button
+            type="button"
+            data-atlas="poser-main-doeuvre"
+            onClick={() => setMainDoeuvreOuverte(true)}
+            className="mt-3 block text-[14px] font-medium"
+            style={{ color: colors.or }}
+          >
+            + Main d’œuvre
+          </button>
+        )}
 
         {/* Sans ce lien, la facture existe sans que personne puisse la
             regarder : le patron valide un montant sans avoir vu la pièce que
@@ -677,6 +755,16 @@ export default function FactureClient({
           Télécharger ({nomDuFichier(initialFacture, emise)})
         </BoutonTelechargerDocument>
       </div>
+
+      {/* Les acomptes reçus, le net à payer, « Facture acquittée » — le même
+          bloc que le papier déduit sous le Total TTC (sa planche). */}
+      <ReglementsRecus
+        factureId={initialFacture.id}
+        totalTtc={totaux.totalTtc}
+        acomptesDuDevis={initialFacture.acomptesDuDevis}
+        initiaux={initialFacture.reglements}
+        fige={emise}
+      />
 
       {erreur && (
         <p role="alert" className="text-center text-[13px]" style={{ color: colors.alert }}>
