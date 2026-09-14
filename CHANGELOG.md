@@ -8,6 +8,14 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
+### Depuis le planning, la flèche du devis ramène à la feuille qu'on a quittée
+
+Le chevron n'écrivait la feuille levée nulle part : le journal de navigation
+notait `/planning` tout court, et la flèche du devis déposait sur le mois
+courant. Elle s'écrit désormais dans l'adresse (`?chantier=<id>`), la porte ne
+l'efface plus en partant, et l'écran la relit au retour (`ARCHITECTURE.md`
+§361). `test-planning-vers-facture-e2e` le tenait déjà, et rougissait.
+
 ### La main d'œuvre ne s'efface plus sur un devis sans ligne ; une photo de devis ne vide plus les conditions générales
 
 **Ses plaintes du 14 septembre 2026, à minuit.** Ouverte sur un devis encore

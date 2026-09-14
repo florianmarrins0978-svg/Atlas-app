@@ -25,12 +25,20 @@
  * : ce module-ci n'importe rien, donc il ne peut en fermer aucun.
  */
 
-/** Le nom du paramètre, écrit une seule fois. */
-const PARAM = "chantier";
+/**
+ * Le nom du paramètre, écrit une seule fois.
+ *
+ * **Exporté depuis le 14 septembre 2026** : l'écran du planning le POSE
+ * lui-même quand le chevron lève une feuille, pour que la flèche de retour
+ * retrouve cette feuille (`PlanningClient.tsx`, `montrerLesPortes`). Le
+ * recopier là-bas aurait fait deux noms pour le même paramètre — et celui qui
+ * pose aurait fini par ne plus dire ce que celui qui lit attend.
+ */
+export const PARAM_CHANTIER_PLANNING = "chantier";
 
 /** L'adresse qui ouvre le planning sur la journée d'un chantier, portes levées. */
 export function lienVersLeChantierAuPlanning(chantierId: string): string {
-  return `/planning?${PARAM}=${encodeURIComponent(chantierId)}`;
+  return `/planning?${PARAM_CHANTIER_PLANNING}=${encodeURIComponent(chantierId)}`;
 }
 
 /**

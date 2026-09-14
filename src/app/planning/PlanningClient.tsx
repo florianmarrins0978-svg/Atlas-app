@@ -67,6 +67,7 @@ import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equip
 import FinDeChantier from "./FinDeChantier";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import PortesDuChantier from "./PortesDuChantier";
+import { chantierDemandeAuPlanning, PARAM_CHANTIER_PLANNING } from "@/lib/lien-planning";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { lienAppel, liensItineraire } from "@/lib/itineraire";
@@ -816,19 +817,103 @@ export default function PlanningClient({
   /** La carte d'un jour dépliée sous une ligne des planifiés. */
   const [carteListe, setCarteListe] = useState<{ apres: string; jour: JourIso } | null>(null);
   /**
-   * Le chantier dont le chevron vient d'ouvrir ses portes — son allure C.
+   * ─── LA FEUILLE LEVÉE VIT DANS L'ADRESSE, ET NULLE PART AILLEURS ──────────
    *
-   * On garde le chantier ENTIER, et non son identifiant : la liste est
-   * repeinte à chaque enregistrement de note, et un identifiant seul obligerait
-   * à la reparcourir pour retrouver ce que le doigt désigne déjà.
+   * Le chantier dont le chevron a ouvert les portes — son allure C, levées
+   * d'emblée quand on arrive par `?chantier=<id>` (sa réponse du 4 septembre
+   * 2026). Le mois, lui, est calé sur sa journée par `viseDemande`, tout en
+   * haut : refermer la feuille laisse donc le patron devant SA date, et non
+   * devant le mois courant.
+   *
+   * **Sa panne du 7 septembre 2026, revenue par l'autre bout :** *« lorsque je
+   * fais retour j'arrive sur la page d'accueil, or je devrais arriver d'où je
+   * suis parti. »* Depuis le 9 septembre, la flèche ne devine plus : elle lit
+   * le journal des écrans traversés (`journal-de-navigation.ts`), qui note
+   * **l'adresse complète**, paramètres compris — et son commentaire nomme
+   * précisément ce cas-ci, `/planning?chantier=…`.
+   *
+   * Or le chevron ne posait ce paramètre nulle part : la feuille ne vivait que
+   * dans un état React. Le journal enregistrait donc `/planning` tout court, et
+   * la flèche du devis le ramenait sur le mois courant, feuille refermée — la
+   * panne exacte qu'il avait fait corriger, à un mécanisme près.
+   *
+   * **On ne répare pas la flèche, on rend la feuille VISIBLE dans l'adresse**
+   * (`CLAUDE.md` §4 quater) : c'est l'adresse que `lienVersLeChantierAuPlanning`
+   * définit déjà, celle que `viseDemande` relit au montage, et celle que le
+   * `?de=` employait avant le journal. Aucun second mécanisme, aucune seconde
+   * vérité — la moitié qui manquait.
+   *
+   * **`replaceState` et non `pushState`** : lever une feuille n'est pas
+   * changer d'écran. Une entrée d'historique par chevron obligerait à reculer
+   * autant de fois qu'il en a touché avant de quitter le planning. Next.js
+   * accorde son routeur sur ce geste (guide « Shallow routing on the client »),
+   * donc le journal le voit.
+   *
+   * Les autres paramètres sont conservés : l'adresse se retouche, elle ne se
+   * réécrit pas.
+   *
+   * **ET LA FEUILLE SE LIT DANS L'ADRESSE, ELLE N'EST PLUS GARDÉE À CÔTÉ.**
+   * Un état React en parallèle aurait été une seconde vérité (`CLAUDE.md` §3) :
+   * au retour, c'est l'adresse qui est juste — l'état, lui, revient tel qu'il
+   * était en partant, c'est-à-dire refermé. Le chevron écrit donc, et l'écran
+   * relit ; il n'y a qu'un seul endroit qui sait quelle feuille est levée.
    */
   /**
-   * **Levées d'emblée quand on arrive par `?chantier=<id>`** — sa réponse du
-   * 4 septembre 2026. Le mois, lui, est déjà calé sur sa journée : voir
-   * `viseDemande`, tout en haut. Refermer la feuille laisse donc le patron
-   * devant SA date, et non devant le mois courant.
+   * **L'ADRESSE D'ABORD, LE SERVEUR EN REPLI.** Revenir par la flèche remonte
+   * l'écran sur une entrée d'historique dont le rendu serveur, lui, date de
+   * l'arrivée — `chantierDemande` y vaut donc `null` alors que l'adresse porte
+   * bien la feuille. Lire l'adresse au premier rendu les accorde ; au tout
+   * premier chargement les deux disent la même chose, il n'y a rien à
+   * réconcilier.
    */
-  const [portes, setPortes] = useState<ChantierPlanning | null>(viseDemande);
+  const [chantierLeve, setChantierLeve] = useState<string | null>(() =>
+    typeof window === "undefined"
+      ? chantierDemande
+      : chantierDemandeAuPlanning(
+          new URLSearchParams(window.location.search).get(PARAM_CHANTIER_PLANNING)
+        )
+  );
+
+  const montrerLesPortes = useCallback((c: ChantierPlanning | null) => {
+    const question = new URLSearchParams(window.location.search);
+    if (c) question.set(PARAM_CHANTIER_PLANNING, c.id);
+    else question.delete(PARAM_CHANTIER_PLANNING);
+    const ecrit = question.toString();
+    window.history.replaceState(null, "", ecrit ? `?${ecrit}` : window.location.pathname);
+    setChantierLeve(c ? c.id : null);
+  }, []);
+
+  /**
+   * **ET ON RELIT L'ADRESSE QUAND ELLE RECULE.** La flèche du devis revient par
+   * `router.back()` : l'écran n'est pas remonté, et l'état qu'il retrouve est
+   * celui d'avant — feuille refermée. L'adresse, elle, est juste. C'est le même
+   * geste que `JournalDeNavigation` fait déjà sur `popstate`, pour la même
+   * raison.
+   *
+   * **`popstate` plutôt que `useSearchParams`**, et ce n'est pas un détail de
+   * style : ce crochet fait suspendre l'écran jusqu'au rendu du navigateur, et
+   * le planning entier arrivait alors après coup — `test-ligne-planning-e2e`
+   * l'a attrapé, la page n'ayant plus la même hauteur au moment où il mesure.
+   */
+  useEffect(() => {
+    const relire = () =>
+      setChantierLeve(
+        chantierDemandeAuPlanning(
+          new URLSearchParams(window.location.search).get(PARAM_CHANTIER_PLANNING)
+        )
+      );
+    window.addEventListener("popstate", relire);
+    return () => window.removeEventListener("popstate", relire);
+  }, []);
+
+  // Cherché dans la liste VIVANTE : `sansDate` et « en attente » en sont des
+  // vues (`useMemo` plus bas), donc un chantier touché dans le tiroir du bas
+  // s'y trouve aussi. Et un identifiant qui ne désigne plus rien ne lève
+  // simplement aucune feuille — voir `chantierDemandeAuPlanning`.
+  const portes = useMemo(
+    () => (chantierLeve ? (chantiers.find((c) => c.id === chantierLeve) ?? null) : null),
+    [chantierLeve, chantiers]
+  );
 
   /** Ce que porte la feuille de chaque chantier — chargé une fois, jamais deux. */
   const [taches, setTaches] = useState<Record<string, FeuilleEtRetour>>({});
@@ -1608,7 +1693,7 @@ export default function PlanningClient({
                           Le NOM, lui, garde son geste : il déplie la journée. Un
                           chevron promet qu'on part quelque part, un nom qu'il
                           s'ouvre : les deux se distinguent toujours. */}
-                      {ouvertes.fiche && <ChevronDesPortes chantier={c} onPortes={setPortes} />}
+                      {ouvertes.fiche && <ChevronDesPortes chantier={c} onPortes={montrerLesPortes} />}
                     </div>
                     {deplie && (
                       <CarteDuJour
@@ -1669,7 +1754,7 @@ export default function PlanningClient({
           poser={poser}
           retraits={retraits}
           portesOuvertes={ouvertes.fiche}
-          onPortes={setPortes}
+          onPortes={montrerLesPortes}
         />
       </div>
 
@@ -1679,7 +1764,7 @@ export default function PlanningClient({
       <PortesDuChantier
         chantier={portes}
         aujourdHui={aujourdHui}
-        onFermer={() => setPortes(null)}
+        onFermer={() => montrerLesPortes(null)}
       />
     </div>
   );

@@ -30357,3 +30357,35 @@ l'ancienne règle ; les lignes de la B), `test-acomptes-devis.ts`,
 `test-acomptes-pdf.ts`, `test-conditions-sur-le-devis.ts`,
 `test-agent-gestes.ts` (régler l'acompte garde la validité, sans relecture),
 `test-planche-b-devis-e2e.ts`, `test-acomptes-devis-e2e.ts`.
+
+## §361 — La feuille du planning vit dans l'adresse, sinon le retour la perd
+
+**Sa panne du 7 septembre 2026, refabriquée par l'autre bout.** *« Lorsque je
+fais retour j'arrive sur la page d'accueil, or je devrais arriver d'où je suis
+parti. »* Corrigée alors par un `?de=`, puis par le journal de navigation le
+9 septembre (§ `journal-de-navigation.ts`) — qui note l'adresse COMPLÈTE, et
+dont le commentaire nomme lui-même le cas `/planning?chantier=…`.
+
+Le chevron du planning, lui, ne posait ce paramètre nulle part : la feuille
+levée ne vivait que dans un état React. Le journal enregistrait donc
+`/planning` tout court, et la flèche du devis le ramenait sur le mois courant,
+feuille refermée.
+
+**Trois moitiés manquaient, et la correction les pose toutes les trois :**
+
+| | |
+|---|---|
+| le chevron | écrit `?chantier=<id>` par `history.replaceState` — l'adresse que `lienVersLeChantierAuPlanning` définit déjà |
+| la porte | ne referme plus la feuille en partant : son `onClick={onFermer}` retirait le paramètre une fraction de seconde AVANT de naviguer |
+| l'écran | relit l'adresse au premier rendu ET sur `popstate` — revenir par `router.back()` restitue un rendu serveur d'avant, où le paramètre n'était pas |
+
+**`replaceState` et non `pushState` :** lever une feuille n'est pas changer
+d'écran. Une entrée d'historique par chevron obligerait à reculer autant de
+fois qu'il en a touché avant de quitter le planning.
+
+**`popstate` et non `useSearchParams`**, et ce n'est pas un détail de style :
+ce crochet fait suspendre l'écran, le planning entier arrive après coup, et
+`test-ligne-planning-e2e` a rougi là-dessus — la page n'avait plus la même
+hauteur au moment où il mesure. Trouvé en jouant les suites voisines, pas en
+relisant le code.
+
