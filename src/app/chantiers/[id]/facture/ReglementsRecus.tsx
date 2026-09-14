@@ -40,6 +40,13 @@ import {
  *
  * **Un chiffre touché est sélectionné en entier** : on tape, l'ancien part.
  */
+// La carte fait 310 px sur un téléphone de 390 : cinq colonnes n'y tiennent
+// qu'en débordant de 8 px sur chaque marge de la carte (`-mx-2`) et en
+// mesurant chaque cellule au plus long qu'elle porte — « Acompte 30 % »,
+// « Virement », sept chiffres de chèque, « 1 337,28 ». L'en-tête suit la
+// même grille.
+const COLONNES = "22px 92px 1.3fr 1fr 74px";
+
 export default function ReglementsRecus({
   factureId,
   totalTtc,
@@ -100,7 +107,7 @@ export default function ReglementsRecus({
       </p>
 
       {reglements.length > 0 && (
-        <div className="grid items-center gap-x-1 text-center" style={{ gridTemplateColumns: "26px 96px 1fr 1fr 72px" }}>
+        <div className="-mx-2 grid items-center gap-x-1 text-center" style={{ gridTemplateColumns: COLONNES }}>
           <span />
           <span />
           <span style={entete}>Moyen</span>
@@ -113,8 +120,8 @@ export default function ReglementsRecus({
         <div
           key={g.id}
           data-atlas="reglement-recu"
-          className="grid items-center gap-x-1 py-2 text-center text-[14px]"
-          style={{ gridTemplateColumns: "26px 96px 1fr 1fr 72px", borderBottom: `1px solid ${colors.lineSoft}`, color: colors.ink }}
+          className="-mx-2 grid items-center gap-x-1 py-2 text-center text-[14px]"
+          style={{ gridTemplateColumns: COLONNES, borderBottom: `1px solid ${colors.lineSoft}`, color: colors.ink }}
         >
           {fige ? (
             <span />
@@ -125,7 +132,7 @@ export default function ReglementsRecus({
               data-atlas="retirer-reglement"
               disabled={enCours}
               onClick={() => void appliquer(retirerReglementRecuAction(g.id))}
-              className="flex h-[26px] w-[26px] items-center justify-center rounded-full text-[15px] leading-none"
+              className="flex h-[22px] w-[22px] items-center justify-center rounded-full text-[14px] leading-none"
               style={{ border: `1px solid ${colors.inkSoft}`, color: colors.inkSoft }}
             >
               −
@@ -158,8 +165,18 @@ export default function ReglementsRecus({
                 const moyen = e.target.value as MoyenDePaiement;
                 corriger(g, { moyen, numero: moyen === "cheque" ? g.numero : null });
               }}
-              className="w-full border-0 bg-transparent p-0 text-center text-[14px] outline-none"
-              style={{ color: colors.ink, fontFamily: font.body }}
+              // La flèche native du navigateur mange « Virement » sur un téléphone
+              // (390 px) : la planche dessine la sienne, 4 px, comme ici.
+              className="w-full appearance-none border-0 bg-transparent p-0 pr-[12px] text-center text-[13px] outline-none"
+              style={{
+                color: colors.ink,
+                fontFamily: font.body,
+                textAlignLast: "center",
+                backgroundImage: `linear-gradient(45deg, transparent 50%, ${colors.muted} 50%), linear-gradient(135deg, ${colors.muted} 50%, transparent 50%)`,
+                backgroundPosition: "right 4px top 55%, right 0 top 55%",
+                backgroundSize: "4px 4px, 4px 4px",
+                backgroundRepeat: "no-repeat",
+              }}
             >
               {MOYENS_PROPOSES.map((m) => (
                 <option key={m} value={m}>
@@ -181,7 +198,7 @@ export default function ReglementsRecus({
                 onBlur={(e) => {
                   if ((e.currentTarget.value.trim() || null) !== (g.numero ?? null)) corriger(g, { numero: e.currentTarget.value });
                 }}
-                className="w-full border-0 bg-transparent p-0 text-center text-[15px] outline-none focus:bg-[var(--voile-champ)]"
+                className="w-full border-0 bg-transparent p-0 text-center text-[13px] outline-none focus:bg-[var(--voile-champ)]"
                 style={{ color: colors.ink }}
               />
             )
@@ -204,7 +221,7 @@ export default function ReglementsRecus({
                     const v = e.currentTarget.value.trim();
                     if (v !== "" && v !== sansZeros(g.montant)) corriger(g, { montant: v });
                   }}
-                  className="w-[52px] border-0 bg-transparent p-0 text-right text-[16px] outline-none focus:bg-[var(--voile-champ)]"
+                  className="w-[58px] border-0 bg-transparent p-0 text-right text-[15px] outline-none focus:bg-[var(--voile-champ)]"
                   style={{ color: colors.ink }}
                 />{" "}
                 €

@@ -106,6 +106,13 @@ export default async function FacturePage({
         />
 
         <FactureClient
+          // **Une facture = un montage.** Après « Créer la facture », l'écran
+          // se relit (`router.refresh()`) mais React garde l'instance — et
+          // ses `useState` gardent la valeur d'AVANT : titre vide, main
+          // d'œuvre absente, alors que la base les tient (14 septembre 2026,
+          // suite `test-papier-facture-e2e`). La clé fait repartir l'écran
+          // de la facture réelle, sans recopier ses champs un à un.
+          key={existante?.facture.id ?? "sans-facture"}
           chantierId={id}
           regimeTva={regimeTva}
           reprise={reprise}

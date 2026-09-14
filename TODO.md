@@ -77,7 +77,7 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 |---|---|
 | **la case « crédit d'impôt 50 % »** (planche de l'écran) | à lui : une case sur la facture, ou une facture à part comme chez le paysagiste. Pas codée |
 | **la décennale et le médiateur dans Mon entreprise** | `appli/decennale-et-mediateur.html`, dessinée sur son accord — à coder dès son « code » |
-| **la batterie complète** | jouée en base et en pur ; les suites navigateur n'ont pas pu se bâtir le 14 septembre au soir — la machine n'avait plus 200 Mo de libre (58 Go engagés sur 61, 4 Go de pool noyau). À rejouer dès qu'elle respire : `npm run test:e2e -- --seulement papier-facture` puis la batterie |
+| **la batterie complète** | suites pures, base et navigateur du lot vertes (14 septembre au soir, après redémarrage de la machine — la construction mourait faute de mémoire, 58 Go engagés sur 61). Reste la batterie entière avant `main` |
 
 
 **Sa demande :** *« la page du devis diffère de la page facture : quand on crée

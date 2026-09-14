@@ -23,6 +23,14 @@ facture : le titre, « + Main d'œuvre », les règlements reçus (moyen, numér
 chèque, date, montant), « + Règlement reçu » qui propose le rang suivant du
 devis, l'interrupteur « Facture acquittée ».
 
+**Attrapé par la suite navigateur, le soir même :** après « Créer la facture »,
+l'écran gardait le titre vide et la main d'œuvre absente jusqu'au rechargement
+(`router.refresh()` relit la page, React garde l'instance et ses `useState`).
+`FactureClient` est désormais monté avec `key={facture.id}`. Et la flèche
+native du choix du moyen mangeait « Virement » sur un téléphone, et cinq
+colonnes ne tenaient pas dans la carte : mesurées au plus long qu'elles
+portent, regardées à 390 px.
+
 **Décision dite :** un acompte reçu AVANT la facture se pose sur le brouillon —
 c'est celui de la signature. `ARCHITECTURE.md` §362 ·
 `docs/le-papier-devis-et-facture-verdict.md`.

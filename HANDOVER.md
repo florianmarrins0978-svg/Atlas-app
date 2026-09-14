@@ -17,8 +17,11 @@ recalculer un net de ligne ailleurs. Les acomptes reçus sont des
 `paiements_facture` posés sur le brouillon, datés d'avant l'émission si c'est
 la signature : c'est voulu, et `refusDuReglementRecu` en porte la règle.
 
-**Ce qui n'a pas été joué :** les suites navigateur et la batterie complète —
-la machine n'avait plus de mémoire pour bâtir. `TODO.md`, en tête.
+**Ce que la suite navigateur a appris :** après « Créer la facture », l'écran
+se relit (`router.refresh()`) mais React garde l'instance et ses `useState`
+— titre vide, main d'œuvre absente. `FactureClient` est monté avec
+`key={facture.id}` : une facture, un montage. **Reste la batterie complète
+avant `main`.**
 `ARCHITECTURE.md` §362 · `docs/le-papier-devis-et-facture-verdict.md`.
 
 ---

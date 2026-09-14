@@ -10,8 +10,9 @@ a été décidé sans vous et dit, ce qui reste.*
 
 **Le devis et la facture sortent du même papier**, avec les colonnes des pros,
 les acomptes reçus déduits et le net à payer ; l'écran de la facture a tous les
-boutons de la planche. **Une chose n'a pas pu être jouée ce soir : la batterie
-navigateur** — la machine n'avait plus de mémoire pour bâtir l'application.
+boutons de la planche. Votre chemin, du devis à la facture, a été joué dans un
+navigateur, et le PDF regardé en grand contre la planche : les colonnes, les
+gras et les fontes y sont.
 
 ---
 
@@ -62,7 +63,16 @@ facture : elle les porte déjà, scellées, au pied — c'est la loi.
 | base, sous la RLS | `test-papier-facture-db` : la facture recopie titre, main d'œuvre, unité ; l'acompte de la signature se pose, se corrige, se refuse au-delà du reste ; acquittée pose et reprend le solde ; le PDF dit tout ; une facture arrêtée ne bouge plus — vert |
 | suites adaptées à la planche | `test-devis-pdf`, `test-facture-pdf`, `test-acomptes-pdf`, `test-planche-b-devis` — vertes |
 | types, lint, couches, code mort, chartes, flèches | verts |
-| **suites navigateur** (`test-papier-facture-e2e`, votre chemin du devis à la facture, et le PDF capturé) | **pas jouées** : la construction de l'application meurt faute de mémoire — 160 Mo disponibles, 58 Go engagés sur 61. À rejouer dès que la machine respire, puis la batterie |
+| **suites navigateur** — `test-papier-facture-e2e` (votre chemin : le devis avec tous ses boutons, le titre, la main d'œuvre, la facture, « + Règlement reçu », le chèque et son numéro, « Facture acquittée », le PDF dans la visionneuse), `planche-b-devis`, `acomptes-devis`, `reduction-devis` | **vertes**, jouées le 14 septembre au soir une fois la machine redémarrée |
+| **le papier, regardé** | le PDF du devis et celui de la facture, capturés en grand : mêmes colonnes, mêmes gras, seul le titre et le bloc sous le TTC changent — comme la planche |
 
-**Non éprouvé :** ce que votre espace affiche à vous, et la capture du PDF —
-elle vient avec la suite navigateur.
+**Ce que la suite navigateur a attrapé, que rien d'autre ne voyait :** après
+« Créer la facture », l'écran gardait un titre vide et pas de main d'œuvre
+alors que la base les tenait — il fallait recharger. Corrigé à la racine (une
+facture = un montage de l'écran, `page.tsx`). Et sur un téléphone, la flèche
+native du choix du moyen mangeait « Virement », et cinq colonnes ne tenaient
+pas dans la carte d'un téléphone : chaque colonne est mesurée au plus long
+qu'elle porte, et regardée à 390 px.
+
+**Non éprouvé :** ce que votre espace affiche à vous. La batterie complète
+se joue avant la fusion sur `main`.

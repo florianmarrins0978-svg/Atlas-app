@@ -35,7 +35,8 @@ async function cas(nom: string, fn: () => Promise<void>) {
   }
 }
 
-const lisible = (t: string) => t.replace(/[  ]/g, " ");
+// Les montants portent une espace fine (U+202F) et une insécable (U+00A0) : on les ramène à l'espace.
+const lisible = (t: string) => t.replace(/[  ]/g, " ");
 
 async function main() {
   const navigateur = await lancerNavigateur();
@@ -65,20 +66,28 @@ async function main() {
     const url = `${BASE}/chantiers/${await creerPuisFiche(page)}`;
     const chantierId = url.split("/").pop()!;
 
-    // Trois lignes, avec leur unité, par la fiche des prix.
-    await page.goto(`${url}/prix`, { waitUntil: "networkidle" });
-    for (const [libelle, montant] of [
-      ["Terrassement et préparation du sol", "380.00"],
-      ["Fourniture de gazon en rouleau", "780.00"],
-      ["Bordures acier corten", "432.00"],
-    ]) {
-      await page.click("text=+ Ajouter une ligne");
-      await page.waitForTimeout(300);
-      const champs = page.locator("form input");
-      await champs.nth(0).fill(libelle);
-      await champs.nth(1).fill(montant);
-      await champs.nth(1).blur();
-      await page.waitForTimeout(500);
+    // Trois lignes par l'écran du devis — comme lui —, puis leur quantité et
+    // leur unité posées en base : le devis se régénère depuis les prix.
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    for (const [rang, [libelle, prix]] of [
+      ["Terrassement et préparation du sol", "380"],
+      ["Fourniture de gazon en rouleau", "780"],
+      ["Bordures acier corten", "432"],
+    ].entries()) {
+      await page.click('button:has-text("Ajouter une ligne")');
+      const zones = page.locator('textarea[aria-label*="escription"]');
+      for (const essai of [1, 2, 3, 4, 5]) {
+        if ((await zones.count()) > rang) break;
+        await page.waitForTimeout(essai * 300);
+      }
+      await zones.nth(rang).fill(libelle);
+      // Un clic AVANT de remplir : le champ replace le curseur au bout et défait
+      // le tout-sélectionner de fill() (`ChampsDuDevis.tsx`, « auBout »).
+      const champPrix = page.locator('input[aria-label*="Prix unitaire"]').nth(rang);
+      await champPrix.click();
+      await champPrix.fill(prix);
+      await page.keyboard.press("Tab");
+      await page.waitForTimeout(400);
     }
     await pool.query(
       `UPDATE lignes_prix SET quantite = CASE libelle WHEN 'Fourniture de gazon en rouleau' THEN 120 WHEN 'Bordures acier corten' THEN 24 ELSE 1 END,
@@ -169,7 +178,7 @@ async function main() {
     await cas("« Facture acquittée » met le net à zéro, et l'éteindre le rend", async () => {
       await page.click('[data-atlas="facture-acquittee"]');
       await page.waitForTimeout(800);
-      assert.equal(lisible(await page.locator('[data-atlas="net-a-payer"]').innerText()), "0,00 €");
+      assert.equal(lisible(await page.locator('[data-atlas="net-a-payer"]').innerText()), lisible("0,00 €"));
       assert.equal(await page.locator('[data-atlas="acquittee"]').count(), 1);
       assert.equal(await page.locator('[data-atlas="nom-acompte"]').nth(1).innerText(), "Acompte");
       await page.click('[data-atlas="facture-acquittee"]');
