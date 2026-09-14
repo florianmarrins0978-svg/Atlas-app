@@ -11,7 +11,7 @@ import { logger } from "@/server/logger";
 // facultative ne vaut rien : elle ne prouve pas que l'artisan a pris
 // connaissance du contrat, seulement qu'il aurait pu.
 //
-// Placée dans le layout racine plutôt que dans un middleware : la vérification
+// Placée dans `template.tsx` (racine) plutôt que dans un middleware : la vérification
 // interroge la base, ce que le middleware (exécuté en amont, sur un runtime
 // restreint) ne doit pas faire.
 
@@ -71,10 +71,10 @@ export default async function GardeDocumentsLegaux() {
   // toute écriture. Il a vu « aucune adhésion d'entreprise », puis un `insert`
   // en échec sur une clé étrangère, sans que rien ne relie ces messages.
   //
-  // Ce contrôle vit ici, dans le layout, et non dans la page : une page rend
+  // Ce contrôle vit ici, dans le template racine, et non dans la page : une page rend
   // sous la frontière de `loading.tsx`, où l'enveloppe est DÉJÀ partie. Sa
   // redirection ne peut alors plus être un 307 — elle devient un renvoi joué
-  // par le navigateur, donc suspendu à JavaScript. Le layout, lui, précède le
+  // par le navigateur, donc suspendu à JavaScript. Le template, lui, précède le
   // premier octet : le renvoi est un vrai 307. Éprouvé, et pas supposé : la
   // page rendait 200 pendant que le contrôle passait au vert.
   //

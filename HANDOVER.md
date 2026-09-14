@@ -36,6 +36,7 @@ avant `main`.**
 | les suites | `test-code-verification`, `test-verification-email-db`, `test-creer-son-compte-e2e` (étendue), `test-env` (Brevo refusé absent en production) |
 | **reste à lui** | créer le compte Brevo, vérifier l'adresse expéditrice, poser `BREVO_API_KEY` et `COURRIEL_EXPEDITEUR` dans son espace — sans elles, le banc tourne en `dev` et le code s'écrit dans le journal du serveur |
 | le soir | « Retour » sur l'écran du code (session fermée, retour à `/bienvenue`) — il s'y était retrouvé enfermé sans code reçu |
+| **le soir, à la racine** | les trois gardes vivent dans `src/app/template.tsx` (refait à chaque déplacement), plus dans `layout.tsx` ; le bouchon « Entrer dans Atlas → documents » est défait. `ARCHITECTURE.md` §365 |
 | le détail | `ARCHITECTURE.md` §361 |
 
 **Livré avec, le même jour :** « Entrer dans Atlas » mène aux documents légaux,

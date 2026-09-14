@@ -58,8 +58,10 @@ async function accueilPourUtilisateur(utilisateurId: string | undefined): Promis
   if (!utilisateurId) return "/";
   // **Le code avant tout rôle** — 14 septembre 2026. Un compte créé par la
   // porte qui revient se connecter sans avoir entré son code repart à la case
-  // du code. La garde du layout ne se rejoue pas sur la navigation qui suit
-  // une action serveur : c'est ici, à la destination, que ça se décide.
+  // du code. Les gardes de `template.tsx` le feraient aussi — mais un second
+  // renvoi enchaîné dans la réponse d'une action serveur rend un écran blanc
+  // (voir plus haut, 25 août 2026) : c'est ici, à la destination, que ça se
+  // décide, et le template ne fait que confirmer.
   if (await verificationEnAttente(utilisateurId)) return "/verifier-email";
 
   return db.transaction(async (tx) => {

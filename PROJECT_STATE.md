@@ -30,8 +30,11 @@ s'ouvre avant (`GardeVerificationEmail`, `accueilPourEmail`,
 comptes existants ne changent pas. **Reste à lui : le compte Brevo et ses deux
 variables dans l'espace.** `ARCHITECTURE.md` §361.
 
-Le même jour : « Entrer dans Atlas » mène aux documents légaux, pas à
-l'accueil — il avait travaillé une heure sans les avoir acceptés.
+Le même jour : les trois gardes (adresse, conditions, rôle) vivent dans
+`src/app/template.tsx`, refait à chaque déplacement — il avait travaillé une
+heure sans avoir accepté les conditions, parce que la mise en page ne se rejoue
+pas quand on navigue dans l'appli. Et « Retour » sur l'écran du code.
+`ARCHITECTURE.md` §361, §365.
 
 ---
 

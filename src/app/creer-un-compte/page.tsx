@@ -432,21 +432,15 @@ export default function CreerUnComptePage() {
               <>Vos réglages sont remplis. Votre premier devis peut partir.</>
             )}
           </p>
-          {/* **VERS LES DOCUMENTS LÉGAUX, PAS VERS L'ACCUEIL — 14 septembre 2026.**
-              Sa capture : il est entré, a travaillé, et les conditions ne lui
-              sont parvenues qu'en RECHARGEANT la page. *« Il faut les signer
-              avant d'entrer dans l'appli. »*
-
-              La garde qui les exige vit dans la mise en page racine
-              (`GardeDocumentsLegaux`) — un composant serveur que Next.js ne
-              rejoue PAS sur une navigation côté client : `href="/"` entrait
-              donc sans passer devant elle, et seul un rechargement la
-              réveillait. La page des documents, elle, se rend à chaque visite :
-              elle demande ce qui reste à accepter, et renvoie sur l'accueil
-              quand il n'y a rien (`documents-legaux/page.tsx`). C'est donc
-              elle, la porte d'entrée d'un compte neuf — et pas l'accueil. */}
+          {/* **Vers l'accueil, et les gardes font le reste** — 14 septembre
+              2026. Sa capture du jour : entré par ce bouton, il avait travaillé
+              une heure sans que les conditions lui soient parvenues. La
+              première correction faisait pointer ce lien vers l'écran des
+              conditions ; la vraie est dans `src/app/template.tsx` — les
+              gardes se rejouent à chaque déplacement, celui-ci compris. Le
+              lien redit donc simplement où il va : chez lui. */}
           <Link
-            href="/documents-legaux"
+            href="/"
             className="block w-full rounded-full py-4 text-center text-[17px] leading-none"
             style={{ background: NUIT.rust, color: NUIT.cream, ...SERIF }}
           >

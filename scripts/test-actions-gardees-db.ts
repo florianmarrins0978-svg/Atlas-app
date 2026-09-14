@@ -4,7 +4,7 @@
 // **LE DÉFAUT QUE CETTE SUITE FERME** — audit final, 29 août 2026, trouvé
 // **deux fois indépendamment**, ce qui est la meilleure raison de le croire.
 //
-// `GardeAcces` est un composant de `layout.tsx` : il ne s'exécute qu'au RENDU
+// `GardeAcces` est un composant de `template.tsx` : il ne s'exécute qu'au RENDU
 // d'un écran. Une action serveur, elle, s'exécute AVANT tout rendu. Et le
 // middleware ne vérifie que la session, jamais le rôle.
 //
