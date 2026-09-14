@@ -4,11 +4,28 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-13 · `main`
+**Point de reprise :** 2026-09-14 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — 0087 NE VOYAIT PAS SES PROPRES LIGNES (13 septembre 2026)
+## Dernier lot — L'ADRESSE SE PROUVE PAR UN CODE (14 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« j'ai réussi à me connecter avec une adresse fausse qui n'existe pas ! […] un numéro envoyé par email à rentrer pour pouvoir valider son compte »* |
+| ce qui est fait | après « Créer mon compte », le code reçu à l'adresse ; `GardeVerificationEmail` (layout) et `accueilPourEmail` ferment tout tant qu'il n'est pas entré ; `/verifier-email` pour un compte qui revient ; Brevo ou `dev` (`src/server/courriel/`) |
+| ce qui décide | **une ligne dans `codes_verification_email`**, pas `email_verified` vide — les comptes existants, les salariés, Google et Apple n'ont pas de ligne et ne changent pas |
+| la migration | **0091** — à appliquer avant de rejouer les suites |
+| les suites | `test-code-verification`, `test-verification-email-db`, `test-creer-son-compte-e2e` (étendue), `test-env` (Brevo refusé absent en production) |
+| **reste à lui** | créer le compte Brevo, vérifier l'adresse expéditrice, poser `BREVO_API_KEY` et `COURRIEL_EXPEDITEUR` dans son espace — sans elles, le banc tourne en `dev` et le code s'écrit dans le journal du serveur |
+| le détail | `ARCHITECTURE.md` §360 |
+
+**Livré avec, le même jour :** « Entrer dans Atlas » mène aux documents légaux,
+pas à l'accueil — la garde du layout ne se rejoue pas sur une navigation côté
+client, et il avait travaillé une heure sans les avoir acceptés.
+
+---
+## Lot d'avant — 0087 NE VOYAIT PAS SES PROPRES LIGNES (13 septembre 2026)
 
 **À retenir avant tout :** une migration qui met à jour des DONNÉES sur une
 table sous `FORCE ROW LEVEL SECURITY` ne touche **rien** — le rôle qui migre n'a

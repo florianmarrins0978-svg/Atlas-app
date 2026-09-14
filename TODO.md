@@ -9,6 +9,48 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~À TRANCHER PAR LUI — VÉRIFIER L'ADRESSE E-MAIL À LA CRÉATION DU COMPTE~~ — CODÉ LE JOUR MÊME (14 septembre 2026, Brevo)
+
+**Codé** (*« Brevo »*) : migration 0091, `src/server/courriel/`,
+`src/lib/code-verification.ts`, `SaisieDuCode`, `GardeVerificationEmail`,
+`/verifier-email`, trois suites. Détail : `ARCHITECTURE.md` §360.
+**Reste à lui : le compte Brevo et ses deux variables dans l'espace.**
+
+**Sa demande du 14 septembre 2026 :** *« j'ai réussi à me connecter avec une
+adresse fausse qui n'existe pas ! […] il faut mettre une sécurité avec un
+numéro envoyé par email à rentrer pour pouvoir valider son compte »*.
+
+**Ce que l'application fait aujourd'hui :** la porte crée le compte et ouvre la
+session dans la foulée (`src/app/creer-un-compte/actions.ts`), sans rien vérifier de
+l'adresse. La colonne `users.email_verified` existe (Auth.js) et n'est posée
+que par Google/Apple (`fournisseurs-connexion.ts`). **Aucun canal d'envoi
+n'existe** : l'application n'envoie aucun e-mail — tout passe par `mailto:`
+(`docs/QUESTIONS.md` §2, `docs/A-FAIRE.md`). Le 13 août, l'e-mail du compte
+avait été rendu non modifiable pour cette raison, « à rouvrir le jour où un
+parcours d'inscription existera » — c'est ce jour.
+
+**Ce que le lot demande, et qui n'est pas du code :** un service d'envoi, donc
+un compte et une clé chez lui (Codespace). Proposé : **Brevo** (français,
+serveurs en UE, 300 e-mails/jour gratuits, un expéditeur vérifié suffit sans
+nom de domaine). Resend et Postmark exigent un domaine, qu'il n'a pas encore.
+
+**Le lot, une fois tranché :**
+
+| | |
+|---|---|
+| migration | table `codes_verification_email` (utilisateur, empreinte du code, expire à, essais) — jamais le code en clair |
+| `src/server/courriel/` | `EMAIL_PROVIDER` = `brevo` | `dev` sur le modèle de `LLM_PROVIDER` ; `dev` journalise le code au lieu d'envoyer, pour la batterie |
+| la porte | après « Créer mon compte » : une question de plus, dans le même style — « Le code reçu à <adresse> », six chiffres, « Renvoyer » limité |
+| la garde | un compte dont `email_verified` est vide est renvoyé sur l'écran du code, comme `GardeDocumentsLegaux` renvoie sur les documents |
+| limites | 5 essais par code, 3 envois par quart d'heure et par adresse, code valable 15 min |
+| Google/Apple | déjà vérifiés par le fournisseur : rien ne change |
+| comptes existants | tenus pour vérifiés à la migration — ce sont les siens ; seuls les comptes NEUFS passent par le code |
+| suites | base (empreinte, expiration, essais) + navigateur (le parcours entier, code lu en base sous `EMAIL_PROVIDER=dev`) |
+
+**Qui :** lui pour le service et la clé ; nous pour tout le reste.
+
+---
+
 ## LES AUTRES ACTIONS SERVEUR TOMBENT ENCORE SUR L'ÉCRAN MUET
 
 Même lot, même racine. Une exception qui sort d'une action serveur est

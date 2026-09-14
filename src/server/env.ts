@@ -90,6 +90,17 @@ export type Env = {
   redisUrl?: string;
   cronSecret?: string;
 
+  /**
+   * QUI ENVOIE LES E-MAILS — le code de vérification d'une adresse, pour
+   * l'instant (14 septembre 2026). `brevo` avec sa clé, ou `dev`, qui n'envoie
+   * rien et écrit le code dans le journal du serveur. Même modèle que
+   * `llmProvider` : la clé décide, la variable explicite l'emporte.
+   */
+  courrielProvider: "brevo" | "dev";
+  brevoApiKey?: string;
+  /** L'adresse expéditrice, vérifiée chez Brevo — sans elle, Brevo refuse l'envoi. */
+  courrielExpediteur?: string;
+
   // ── Le paiement de l'abonnement (9 septembre 2026) ───────────────────────
   //
   // **Les trois sont OPTIONNELLES, et c'est délibéré.** Le compte Stripe
@@ -420,6 +431,42 @@ function construireEnv(): Env {
     }
   }
 
+  /**
+   * **QUI ENVOIE LES E-MAILS.** Brevo est le service qu'il a choisi le
+   * 14 septembre 2026 (français, serveurs en France, gratuit jusqu'à 300 par
+   * jour, un expéditeur vérifié suffit sans nom de domaine).
+   *
+   * Même règle que l'IA : la clé posée suffit à brancher le service, et
+   * `COURRIEL_PROVIDER=dev` le coupe sans retirer la clé. En `dev`, aucun
+   * e-mail ne part — le code est écrit dans le journal du serveur, ce qui est
+   * ce qu'il faut pour la batterie et pour un poste sans clé, et ce qu'il ne
+   * faut jamais devant de vrais comptes : d'où le refus en production, plus bas.
+   */
+  const brevoApiKey = optionnel("BREVO_API_KEY");
+  const courrielProviderBrut = optionnel("COURRIEL_PROVIDER")?.toLowerCase() ?? (brevoApiKey ? "brevo" : "dev");
+  if (courrielProviderBrut !== "brevo" && courrielProviderBrut !== "dev") {
+    throw new ErreurConfiguration(
+      `COURRIEL_PROVIDER="${courrielProviderBrut}" n'est pas un service reconnu. Valeurs acceptées : brevo, dev.`
+    );
+  }
+  const courrielProvider: "brevo" | "dev" = courrielProviderBrut;
+  const courrielExpediteur = optionnel("COURRIEL_EXPEDITEUR");
+  if (courrielProvider === "brevo" && !brevoApiKey) {
+    throw new ErreurConfiguration("COURRIEL_PROVIDER=brevo exige BREVO_API_KEY, qui est absente.");
+  }
+  if (courrielProvider === "brevo" && !courrielExpediteur) {
+    throw new ErreurConfiguration(
+      "BREVO_API_KEY est posée mais COURRIEL_EXPEDITEUR ne l'est pas : Brevo refuse tout envoi sans expéditeur vérifié. " +
+        "Poser l'adresse validée dans Brevo (Expéditeurs), par exemple contact@votre-domaine.fr."
+    );
+  }
+  if (exigencesDeDeploiement && courrielProvider === "dev") {
+    throw new ErreurConfiguration(
+      "COURRIEL_PROVIDER vaut « dev » en production : aucun code de vérification ne partirait, et personne ne pourrait " +
+        "créer un compte. Poser BREVO_API_KEY et COURRIEL_EXPEDITEUR."
+    );
+  }
+
   // Le stockage local ne doit JAMAIS être utilisé en production (fichiers
   // éphémères / non partagés entre instances) — échec explicite au démarrage.
   const stockageProviderBrut = process.env.STORAGE_PROVIDER ?? "local";
@@ -629,6 +676,9 @@ function construireEnv(): Env {
     appleClientSecret: optionnel("AUTH_APPLE_SECRET"),
     redisUrl: optionnel("REDIS_URL"),
     cronSecret,
+    courrielProvider,
+    brevoApiKey,
+    courrielExpediteur,
     paiementCleSecrete: optionnel("ATLAS_PAIEMENT_CLE"),
     paiementSecretCrochet: optionnel("ATLAS_PAIEMENT_SECRET_CROCHET"),
     // La barre oblique finale se retire ici, une fois : ailleurs, chaque

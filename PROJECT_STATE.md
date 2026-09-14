@@ -1,9 +1,22 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-13 · `main`
-· dernière migration `drizzle/0090_remise_main_doeuvre_conditions_generales.sql`
+**Dernière mise à jour :** 2026-09-14 · `main`
+· dernière migration `drizzle/0091_codes_verification_email.sql`
 
 ---
+
+## FAIT : L'ADRESSE D'UN COMPTE NEUF SE PROUVE PAR UN CODE — 14 septembre 2026
+
+Il avait créé un compte avec une adresse inventée, et il était entré. Après
+« Créer mon compte », le code à six chiffres reçu à l'adresse ; rien ne
+s'ouvre avant (`GardeVerificationEmail`, `accueilPourEmail`,
+`/verifier-email`). Atlas envoie son premier e-mail — Brevo, son choix, ou
+`dev`. Migration 0091. Seul un compte créé par la porte attend un code : les
+comptes existants ne changent pas. **Reste à lui : le compte Brevo et ses deux
+variables dans l'espace.** `ARCHITECTURE.md` §360.
+
+Le même jour : « Entrer dans Atlas » mène aux documents légaux, pas à
+l'accueil — il avait travaillé une heure sans les avoir acceptés.
 
 ## FAIT : 0087 NE VOYAIT PAS SES PROPRES LIGNES — 13 septembre 2026
 

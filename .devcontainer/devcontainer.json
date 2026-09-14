@@ -27,7 +27,10 @@
     "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
     "GEMINI_API_KEY": "${localEnv:GEMINI_API_KEY}",
     "DEEPGRAM_API_KEY": "${localEnv:DEEPGRAM_API_KEY}",
-    "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}"
+    "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
+    "BREVO_API_KEY": "${localEnv:BREVO_API_KEY}",
+    "COURRIEL_EXPEDITEUR": "${localEnv:COURRIEL_EXPEDITEUR}",
+    "COURRIEL_PROVIDER": "${localEnv:COURRIEL_PROVIDER}"
   },
 
   // **`gh` n'est PAS dans l'image de ce conteneur** — constaté le 10 août 2026,
