@@ -74,5 +74,14 @@ native du choix du moyen mangeait « Virement », et cinq colonnes ne tenaient
 pas dans la carte d'un téléphone : chaque colonne est mesurée au plus long
 qu'elle porte, et regardée à 390 px.
 
-**Non éprouvé :** ce que votre espace affiche à vous. La batterie complète
-se joue avant la fusion sur `main`.
+## 5. La batterie complète — 14 septembre au soir, dans un dossier à part
+
+| Étape | |
+|---|---|
+| Types, lint, atelier, construction, mémoire du dépôt, fournisseurs d'IA | **verts** |
+| Suites base | **364/378**. Les 14 rouges : 12 sont l'outillage du banc qui veut `bash`, `ps`, `gh` ou des chemins en `/` — introuvables sur Windows, déjà relevés dans `TODO.md` ; 2 étaient au lot et attendus — le relevé au pixel du papier (il a changé, c'est le but ; relevé après l'avoir regardé) et l'interrupteur « Facture acquittée » à déclarer comme un état. **Rejouées seules : vertes** |
+| Données de démonstration | **vert** |
+| Suites navigateur | **133/154**. 19 rouges sont ceux déjà nommés dans `TODO.md` sur ce PC (`adresse-suggestions`, `bandeau-banc`, `ia-01/03/04`, `madame-lucie`, `message-au-client`…), aucun ne touche un fichier du lot. 2 nouveaux : `facture` — le montant TTC se lit désormais deux fois (Total TTC, Net à payer) et la suite le cherchait une seule fois : adaptée ; `pages-publiques` — **verte** (0 échec), puis Node plante en sortant (`UV_HANDLE_CLOSING`, Windows) — l'environnement, pas le produit |
+| Connexion derrière un proxy | **vert** |
+
+**Non éprouvé :** ce que votre espace affiche à vous.

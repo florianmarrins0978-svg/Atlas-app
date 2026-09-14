@@ -64,8 +64,17 @@ const dire = (bon: boolean, quoi: string) => {
 // Le seul risque d'un en-tête rallongé — cogner la colonne d'à côté — a été
 // mesuré : « PRIX UNITAIRE HT » finit à x = 424,28 et « MONTANT HT » commence
 // à 509,10, soit 85 points d'écart.
-const EMPREINTE_FACTURE = "be97fce1bdbb8159e0829b7220bbc4175401c33c00239dd993fbefa6a35bb5a9";
-const EMPREINTE_DEVIS = "a9a5f58c66c9492b40df7a4793497c529a9a6a3b0e9a6dfad02422dcf4458b36";
+//
+// **RELEVÉES DE NOUVEAU LE 14 SEPTEMBRE 2026**, après sa planche
+// `appli/le-papier-devis-et-facture.html` — *« PARFAIT ! Code exactement
+// cette planche »* : le devis et la facture sortent du même papier, avec les
+// colonnes des pros (Désignation · Qté · Unité · P.U. HT · Rem. % · Total HT ·
+// TVA % · Total TTC), le taux SUR la ligne et les bases par taux dessous, le
+// numéro à droite du titre (`ARCHITECTURE.md` §362). Ce qui a autorisé ce
+// relevé : les deux PDF rendus dans la visionneuse de l'application et
+// regardés en grand, contre la planche — colonnes, gras et fontes.
+const EMPREINTE_FACTURE = "569e6b65640cbdc04b96d883d6f880c54fb4103c2514543fa9b93940692f34b8";
+const EMPREINTE_DEVIS = "deb3e8d494bda299f8b67ada338f1abbb9c8a3b9c350021a1303d62719c06871";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",
