@@ -87,6 +87,7 @@ const ADRESSES = adressesDuDepot();
 const OUVERT_AU_SALARIE = [
   "/planning",
   "/documents-legaux",
+  "/verifier-email",
   "/reglages",
   "/reglages/compte",
   "/reglages/notifications",

@@ -42,6 +42,7 @@ qui ne se résoudra pas en codant.
 12. [Demander à votre comptable : TVA sur les encaissements ou sur les débits ?](#12-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-)
 13. [Choisir le prestataire qui lit vos virements](#13-choisir-le-prestataire-qui-lit-vos-virements)
 14. [Demander à votre comptable : ce que vaut l’accusé de réception d’une facture](#14-demander-à-votre-comptable--ce-que-vaut-laccusé-de-réception-dune-facture)
+15. [Créer le compte Brevo, pour que le code de vérification parte](#15-créer-le-compte-brevo-pour-que-le-code-de-vérification-parte)
 
 ---
 
@@ -457,6 +458,10 @@ Le jour où l'application s'installera vraiment depuis l'App Store, le composeur
 du téléphone acceptera destinataire **et** pièce jointe : on l'ajoutera alors, en
 gardant le lien dans le message. Cela suppose le compte développeur Apple —
 [`QUESTIONS.md`](QUESTIONS.md) question 1.
+
+**Une exception depuis le 14 septembre 2026, et elle ne rouvre pas ce choix :**
+le code qui prouve l'adresse d'un compte neuf part par Brevo — voir le point 15.
+Les devis et les factures, eux, partent toujours de votre messagerie.
 
 ---
 
@@ -1030,3 +1035,49 @@ et là il ne l’a vraiment pas reçue.
 
 **Si votre comptable dit que ça ne suffit pas**, il n’y a rien à recoder : la
 trace reste utile, et c’est le recommandé qui s’ajoute à côté.
+
+---
+
+## 15. Créer le compte Brevo, pour que le code de vérification parte
+
+**Depuis le 14 septembre 2026, un compte neuf ne peut pas entrer sans avoir
+recopié le code reçu à son adresse** — c'est ce que vous avez demandé après
+être entré avec une adresse inventée. Ce code part par **Brevo**, que vous avez
+choisi : français, serveurs en France, gratuit jusqu'à 300 e-mails par jour,
+et une adresse vérifiée suffit — pas de nom de domaine nécessaire.
+
+### Pourquoi c'est bloquant
+
+Tant que le compte Brevo n'est pas branché, **personne ne peut créer de
+compte** : le code ne part pas, et la porte reste fermée. Vos comptes actuels
+ne sont pas concernés — ils entrent comme avant.
+
+### Ce que vous faites, une seule fois (un quart d'heure)
+
+1. Créer le compte sur brevo.com.
+2. Dans **Expéditeurs**, ajouter l'adresse qui enverra les codes — la vôtre
+   suffit pour commencer — et la **vérifier** (Brevo vous envoie un e-mail).
+3. Dans **Clés API**, créer une clé, et la coller dans le fichier `.env.local`
+   de votre espace, aux deux lignes qui l'attendent :
+
+```
+BREVO_API_KEY=xkeysib-…
+COURRIEL_EXPEDITEUR=votre@adresse.fr
+```
+
+4. Rallumer l'espace. Rien d'autre : dès que les deux lignes sont remplies,
+   tout fonctionne.
+
+### Ce qu'il faut savoir
+
+- **Les deux lignes sont nécessaires.** Une clé sans expéditeur vérifié :
+  Brevo refuse chaque envoi, et Atlas refuse de démarrer en le disant.
+- Ce qui part chez Brevo : l'adresse du compte, un objet, six chiffres. Jamais
+  une donnée de vos clients. Brevo est un sous-traitant de plus à faire figurer
+  au point 2 — pour une seule donnée, l'adresse e-mail du titulaire du compte.
+- Un nom de domaine à vous (point 8, il vous en faut un de toute façon)
+  améliorera plus tard la délivrabilité ; il n'est pas nécessaire pour
+  commencer.
+
+Le détail de ce qui a été fait : [`verification-email.md`](verification-email.md).
+

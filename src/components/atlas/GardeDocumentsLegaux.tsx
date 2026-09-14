@@ -20,7 +20,9 @@ import { logger } from "@/server/logger";
 // `/devis` est la page de réponse du client : il n'a pas de compte, et n'a
 // évidemment aucun document à accepter. L'y renvoyer le laisserait devant un
 // écran qui ne le concerne pas.
-const CHEMINS_EXEMPTS = ["/login", "/documents-legaux", "/api", "/devis"];
+// `/verifier-email` : le code d'abord, les conditions ensuite — sans cette
+// exemption, les deux gardes se renverraient l'une à l'autre sans fin.
+const CHEMINS_EXEMPTS = ["/login", "/documents-legaux", "/verifier-email", "/api", "/devis"];
 
 // Chemins que le contrôle du compte laisse passer, et eux seuls.
 //

@@ -49,7 +49,7 @@ import { estCheminPublic } from "@/lib/chemins-publics";
  *   plus dans l'en-tête n'en fait pas un écran d'application, contrairement à
  *   une barre d'onglets entière.
  */
-export const ECRANS_DU_PATRON_SANS_NAVIGATION = ["/documents-legaux"];
+export const ECRANS_DU_PATRON_SANS_NAVIGATION = ["/documents-legaux", "/verifier-email"];
 
 export function estEcranSansNavigation(chemin: string | null): boolean {
   if (!chemin) return false;

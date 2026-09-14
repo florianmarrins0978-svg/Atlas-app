@@ -83,6 +83,7 @@
 <li><a href="#12-demander-à-votre-comptable--tva-sur-les-encaissements-ou-sur-les-débits-">Demander à votre comptable : TVA sur les encaissements ou sur les débits ?</a></li>
 <li><a href="#13-choisir-le-prestataire-qui-lit-vos-virements">Choisir le prestataire qui lit vos virements</a></li>
 <li><a href="#14-demander-à-votre-comptable--ce-que-vaut-laccusé-de-réception-dune-facture">Demander à votre comptable : ce que vaut l’accusé de réception d’une facture</a></li>
+<li><a href="#15-créer-le-compte-brevo-pour-que-le-code-de-vérification-parte">Créer le compte Brevo, pour que le code de vérification parte</a></li>
 </ol>
 <hr>
 <h2 id="1-choisir-les-fournisseurs-dia-définitifs">1. Choisir les fournisseurs d'IA définitifs</h2>
@@ -380,6 +381,7 @@
 <p><strong>Joindre le PDF au message, automatiquement.</strong> Un message préparé par un site web ne peut pas porter de pièce jointe — c'est le format qui n'en a pas, aucun développement n'y changera rien.</p>
 <p>Ce n'est pas une perte : <strong>le PDF est au bout du lien</strong>. Et l'y joindre serait même nuisible — votre client lirait la pièce jointe et vous répondrait « c'est bon » par SMS, sans jamais ouvrir la page. Donc sans date choisie, et sans la trace qui vous protège en cas de litige. Vous ressaisiriez tout à la main.</p>
 <p>Le jour où l'application s'installera vraiment depuis l'App Store, le composeur du téléphone acceptera destinataire <strong>et</strong> pièce jointe : on l'ajoutera alors, en gardant le lien dans le message. Cela suppose le compte développeur Apple — <a href="QUESTIONS.md" target="_blank" rel="noopener"><code>QUESTIONS.md</code></a> question 1.</p>
+<p><strong>Une exception depuis le 14 septembre 2026, et elle ne rouvre pas ce choix :</strong> le code qui prouve l'adresse d'un compte neuf part par Brevo — voir le point 15. Les devis et les factures, eux, partent toujours de votre messagerie.</p>
 <hr>
 <h2 id="6-choisir-loutil-qui-émet-les-factures">6. Choisir l'outil qui émet les factures</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -729,6 +731,29 @@
 <h3 id="ce-qui-a-déjà-été-écarté-et-par-vous">Ce qui a déjà été écarté, et par vous</h3>
 <p>Obliger le client à cocher <strong>pour pouvoir télécharger sa facture</strong>. Vous l’avez proposé puis écarté le même jour, et vous aviez raison : une facture se donne, et la retenir se retourne contre vous — s’il ne coche pas, il ne télécharge pas, et là il ne l’a vraiment pas reçue.</p>
 <p><strong>Si votre comptable dit que ça ne suffit pas</strong>, il n’y a rien à recoder : la trace reste utile, et c’est le recommandé qui s’ajoute à côté.</p>
+<hr>
+<h2 id="15-créer-le-compte-brevo-pour-que-le-code-de-vérification-parte">15. Créer le compte Brevo, pour que le code de vérification parte</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Depuis le 14 septembre 2026, un compte neuf ne peut pas entrer sans avoir recopié le code reçu à son adresse</strong> — c'est ce que vous avez demandé après être entré avec une adresse inventée. Ce code part par <strong>Brevo</strong>, que vous avez choisi : français, serveurs en France, gratuit jusqu'à 300 e-mails par jour, et une adresse vérifiée suffit — pas de nom de domaine nécessaire.</p>
+<h3 id="pourquoi-cest-bloquant">Pourquoi c'est bloquant</h3>
+<p>Tant que le compte Brevo n'est pas branché, <strong>personne ne peut créer de compte</strong> : le code ne part pas, et la porte reste fermée. Vos comptes actuels ne sont pas concernés — ils entrent comme avant.</p>
+<h3 id="ce-que-vous-faites-une-seule-fois-un-quart-dheure">Ce que vous faites, une seule fois (un quart d'heure)</h3>
+<ol>
+<li>Créer le compte sur brevo.com.</li>
+<li>Dans <strong>Expéditeurs</strong>, ajouter l'adresse qui enverra les codes — la vôtre suffit pour commencer — et la <strong>vérifier</strong> (Brevo vous envoie un e-mail).</li>
+<li>Dans <strong>Clés API</strong>, créer une clé, et la coller dans le fichier <code>.env.local</code> de votre espace, aux deux lignes qui l'attendent :</li>
+</ol>
+<p>``<code> BREVO_API_KEY=xkeysib-… COURRIEL_EXPEDITEUR=votre@adresse.fr </code>``</p>
+<ol>
+<li>Rallumer l'espace. Rien d'autre : dès que les deux lignes sont remplies, tout fonctionne.</li>
+</ol>
+<h3 id="ce-quil-faut-savoir">Ce qu'il faut savoir</h3>
+<ul>
+<li><strong>Les deux lignes sont nécessaires.</strong> Une clé sans expéditeur vérifié : Brevo refuse chaque envoi, et Atlas refuse de démarrer en le disant.</li>
+<li>Ce qui part chez Brevo : l'adresse du compte, un objet, six chiffres. Jamais une donnée de vos clients. Brevo est un sous-traitant de plus à faire figurer au point 2 — pour une seule donnée, l'adresse e-mail du titulaire du compte.</li>
+<li>Un nom de domaine à vous (point 8, il vous en faut un de toute façon) améliorera plus tard la délivrabilité ; il n'est pas nécessaire pour commencer.</li>
+</ul>
+<p>Le détail de ce qui a été fait : <a href="verification-email.md" target="_blank" rel="noopener"><code>verification-email.md</code></a>.</p>
 </main>
 </body>
 </html>
