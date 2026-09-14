@@ -18,6 +18,7 @@
 //
 // Usage : npm run test:e2e -- --seulement message-au-client
 import assert from "node:assert/strict";
+import { motDuDocument } from "../src/lib/message-client";
 import { Pool } from "pg";
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
@@ -225,12 +226,25 @@ async function main() {
     assert.ok(devis.includes("Salut "), `le message du devis n'est pas le sien : ${devis.slice(0, 60)}`);
 
     // Et chacun nomme son document, sans jamais nommer les autres.
+    // **LE MOT VIENT DE LA FONCTION QUI L'ÉCRIT, plus d'une copie ici.**
+    // Ce cas exigeait « compte rendu » ; le produit dit « retour
+    // d'intervention » depuis le 9 septembre 2026 — le mot du patron, celui
+    // des Terminés et du planning. Le recopier ici en faisait une seconde
+    // vérité, et c'est elle qui a rougi (`CLAUDE.md` §3, §5 bis).
+    const motPassage = motDuDocument("passage");
     assert.match(devis, /devis/i, "le message du devis ne se nomme pas");
-    assert.doesNotMatch(devis, /facture|compte rendu/i, "le message du devis parle d'un autre document");
+    assert.doesNotMatch(
+      devis,
+      new RegExp(`facture|${motPassage}`, "i"),
+      "le message du devis parle d'un autre document"
+    );
     assert.match(facture, /facture/i, "le message de la facture ne se nomme pas");
     assert.doesNotMatch(facture, /votre devis/i, "le message de la facture parle d'un devis");
     assert.match(facture, /à régler avant le/i, "l'échéance manque au message de la facture");
-    assert.match(passage, /compte rendu/i, "le compte rendu ne se nomme pas");
+    assert.ok(
+      passage.toLowerCase().includes(motPassage.toLowerCase()),
+      `le retour d'intervention ne se nomme pas : ${passage.slice(0, 80)}`
+    );
   });
 
   // ── 4. LE FIL ENTIER : ce qu'il a écrit arrive au TÉLÉPHONE du client

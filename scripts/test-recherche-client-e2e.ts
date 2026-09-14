@@ -258,12 +258,27 @@ async function principal() {
     await taperEtAttendre(page, "");
     const situations = page.locator('[data-atlas="situation-client"]');
     const combien = await situations.count();
-    assert.equal(
-      combien,
-      (await nomsAffiches(page)).length,
-      `${combien} lignes de situation pour ${(await nomsAffiches(page)).length} noms : ` +
-        "un client sans rien sous son nom est indistinguable de son homonyme"
+    const noms = (await nomsAffiches(page)).length;
+    // **UNE LIGNE PAR CLIENT QUI A QUELQUE CHOSE À DIRE — pas une par nom.**
+    //
+    // Ce cas exigeait autant de lignes que de noms, et il rougissait sur un
+    // retrait DEMANDÉ : un client sans adresse et sans document laissait sous
+    // son nom une seconde ligne VIDE — dix-huit pixels de trou, vus à la
+    // capture le 9 septembre 2026. La ligne ne se rend donc plus quand elle
+    // n'aurait rien à porter (`ListeClients`), et réclamer l'inverse ici
+    // rendrait cet écran impossible à corriger (`CLAUDE.md` §5 bis).
+    //
+    // Ce qui reste vrai, et c'est tout le sujet : **il y en a**, elles se
+    // lisent, et aucune n'est vide — sans quoi quatre Martins se ressemblent.
+    assert.ok(
+      combien > 0 && combien <= noms,
+      `${combien} lignes de situation pour ${noms} noms : un client sans rien sous son nom ` +
+        "est indistinguable de son homonyme"
     );
+    const vides = await situations.evaluateAll(
+      (l) => l.filter((e) => ((e as HTMLElement).innerText ?? "").trim() === "").length
+    );
+    assert.equal(vides, 0, `${vides} lignes de situation sont VIDES : c'est le trou de dix-huit pixels`);
     // **Refuser de conclure sur une boîte de zéro pixel** (`CLAUDE.md` §5) :
     // une feuille de style non appliquée rendrait 0, et le vert ne prouverait
     // rien.
