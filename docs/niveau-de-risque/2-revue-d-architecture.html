@@ -199,39 +199,70 @@
 <p>Il se retient comme valeur de départ, <strong>mais il pèse moins qu'il n'y paraît une fois la gravité dans la règle.</strong> Ce qui est proposé à sa place, à terme :</p>
 <blockquote>le niveau 2 joue les suites des points d'entrée atteints ; <strong>quand ce paquet dépasse la moitié de la batterie, on joue la batterie</strong> — c'est moins cher que la comptabilité.</blockquote>
 <p>Le seuil devient alors un repli, pas une vérité.</p>
-<p><strong>C'est faisable</strong> : les 151 suites navigateur citent toutes leur route en clair — <code>"/clients"</code> apparaît dans 16 d'entre elles. La correspondance point d'entrée → suite se <strong>dérive</strong>, elle ne s'écrit pas à la main.</p>
+<p><strong>C'est faisable</strong> : les 151 suites navigateur citent toutes leur route en clair — <strong>7</strong> d'entre elles citent <code>"/clients"</code>. La correspondance point d'entrée → suite se <strong>dérive</strong>, elle ne s'écrit pas à la main.</p>
 <p><strong>Réserve, et elle n'est pas levée :</strong> une suite qui navigue au clic plutôt qu'à l'URL échappe à ce repérage. À mesurer avant d'y compter.</p>
 <hr>
-<h2 id="5-le-lot-client-classé">5. Le lot client, classé</h2>
+<h2 id="5-le-lot-client-classé-pour-de-bon">5. Le lot client, classé POUR DE BON</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Il ne peut pas l'être ici : son diff vit sur une autre branche.</strong> Et c'est précisément le point de la règle — <strong>elle classe un diff, pas une intention.</strong></p>
+<p><strong>Branche trouvée :</strong> <code>claude/modifications-breaking-elsewhere-fp0x04</code>, commit <code>d0fc128c</code> — <em>« Ouvrir une porte "Modifier" sur la fiche du client »</em>.</p>
+<p>Son diff entier, mesuré :</p>
 <div class="tablewrap"><table><thead><tr>
-<th>Si le lot touche…</th>
+<th>Fichier</th>
 <th>Rayon</th>
-<th>Niveau</th>
+<th>Ce qu'il exige</th>
 </tr></thead><tbody>
 <tr>
-<td>seulement <code>src/app/clients/[id]/coordonnees/*</code></td>
+<td><code>src/app/clients/[id]/coordonnees/page.tsx</code> <em>(neuf)</em></td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/app/clients/[id]/coordonnees/actions.ts</code> <em>(neuf)</em></td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/app/clients/[id]/coordonnees/SesCoordonnees.tsx</code> <em>(neuf)</em></td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/app/clients/[id]/page.tsx</code> <em>(modifié)</em></td>
 <td><strong>1</strong></td>
-<td><strong>2</strong></td>
+<td>2</td>
 </tr>
 <tr>
-<td>et <code>repositories/clients.ts</code></td>
-<td><strong>13</strong></td>
-<td><strong>3</strong></td>
-</tr>
-<tr>
-<td>et <code>repositories/chantiers.ts</code></td>
-<td><strong>28</strong></td>
-<td><strong>3</strong></td>
-</tr>
-<tr>
-<td>quoi que ce soit de la facturation</td>
+<td><code>scripts/test-modifier-client-e2e.ts</code> <em>(neuf)</em></td>
 <td>—</td>
-<td><strong>3</strong> par gravité</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>ARCHITECTURE.md</code>, <code>CHANGELOG.md</code>, <code>HANDOVER.md</code>, <code>PROJECT_STATE.md</code></td>
+<td>—</td>
+<td>1</td>
 </tr>
 </tbody></table></div>
-<p>Ajouter une fonction dans <code>repositories/clients.ts</code> pour enregistrer les coordonnées est le geste le plus naturel du monde, et il fait basculer le lot en niveau 3. <strong>Ni le brief ni la première analyse ne le voyaient</strong> : c'est ce que le calcul apporte.</p>
+<p><strong>Aucun plancher touché</strong> : ni <code>drizzle/</code>, ni authentification, ni RLS, ni <code>middleware</code>, ni <code>layout.tsx</code> racine. <strong>Aucune gravité</strong> : ni facturation, ni TVA, ni règlements.</p>
+<p>Et surtout : le lot <strong>appelle</strong> <code>mettreAJourClient</code> et <code>exigerEcran</code>, il ne les <strong>modifie pas</strong>. C'est la distinction qui décide — appeler une fonction déjà éprouvée ne change son comportement pour personne.</p>
+<h3 id="verdict--niveau-2">Verdict : NIVEAU 2</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>règle actuelle</strong></td>
+<td>niveau 3, batterie complète, ~50 min</td>
+</tr>
+<tr>
+<td><strong>règle proposée</strong></td>
+<td>niveau 2 ciblé</td>
+</tr>
+</tbody></table></div>
+<p>``<code>bash npm run verifier:avant-fusion        # types, lint, mémoire, suites base npm run test:e2e -- --seulement "modifier-client,fiche-client,retour-fiche-client,\ acces-salarie,roles-facturation,retour-garde-la-place,retour-page-davant,mode-sombre-lisible" npm run voir -- /clients/&lt;id&gt;/coordonnees </code>``</p>
+<p>Huit suites au lieu de cent cinquante et une.</p>
+<p><strong>Ce qui rend ce niveau 2 acceptable, et qui manquait au brief :</strong> le lot introduit une <strong>action serveur neuve</strong> — exactement la famille de « Invalid Server Actions request. ». Sans passage navigateur réel, un niveau 2 le laisserait filer. Le lot porte déjà sa suite (<code>test-modifier-client-e2e.ts</code>), et c'est elle qui l'autorise.</p>
+<h3 id="une-limite-du-calcul-quil-faut-nommer">Une limite du calcul, qu'il faut nommer</h3>
+<p><strong>Un fichier neuf a toujours un rayon de 1</strong>, puisque personne ne l'importe encore. Le rayon ne peut donc pas, à lui seul, juger un ajout : ce sont les fichiers <strong>modifiés</strong> qui portent le risque de régression, et ici le seul — <code>clients/[id]/page.tsx</code> — est à 1.</p>
 </main>
 </body>
 </html>

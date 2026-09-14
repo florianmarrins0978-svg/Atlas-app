@@ -116,7 +116,7 @@ une fois la gravité dans la règle.** Ce qui est proposé à sa place, à terme
 Le seuil devient alors un repli, pas une vérité.
 
 **C'est faisable** : les 151 suites navigateur citent toutes leur route en
-clair — `"/clients"` apparaît dans 16 d'entre elles. La correspondance point
+clair — **7** d'entre elles citent `"/clients"`. La correspondance point
 d'entrée → suite se **dérive**, elle ne s'écrit pas à la main.
 
 **Réserve, et elle n'est pas levée :** une suite qui navigue au clic plutôt
@@ -124,19 +124,55 @@ qu'à l'URL échappe à ce repérage. À mesurer avant d'y compter.
 
 ---
 
-## 5. Le lot client, classé
+## 5. Le lot client, classé POUR DE BON
 
-**Il ne peut pas l'être ici : son diff vit sur une autre branche.** Et c'est
-précisément le point de la règle — **elle classe un diff, pas une intention.**
+**Branche trouvée :** `claude/modifications-breaking-elsewhere-fp0x04`, commit
+`d0fc128c` — *« Ouvrir une porte "Modifier" sur la fiche du client »*.
 
-| Si le lot touche… | Rayon | Niveau |
+Son diff entier, mesuré :
+
+| Fichier | Rayon | Ce qu'il exige |
 |---|---|---|
-| seulement `src/app/clients/[id]/coordonnees/*` | **1** | **2** |
-| et `repositories/clients.ts` | **13** | **3** |
-| et `repositories/chantiers.ts` | **28** | **3** |
-| quoi que ce soit de la facturation | — | **3** par gravité |
+| `src/app/clients/[id]/coordonnees/page.tsx` *(neuf)* | 1 | 2 |
+| `src/app/clients/[id]/coordonnees/actions.ts` *(neuf)* | 1 | 2 |
+| `src/app/clients/[id]/coordonnees/SesCoordonnees.tsx` *(neuf)* | 1 | 2 |
+| `src/app/clients/[id]/page.tsx` *(modifié)* | **1** | 2 |
+| `scripts/test-modifier-client-e2e.ts` *(neuf)* | — | 2 |
+| `ARCHITECTURE.md`, `CHANGELOG.md`, `HANDOVER.md`, `PROJECT_STATE.md` | — | 1 |
 
-Ajouter une fonction dans `repositories/clients.ts` pour enregistrer les
-coordonnées est le geste le plus naturel du monde, et il fait basculer le lot
-en niveau 3. **Ni le brief ni la première analyse ne le voyaient** : c'est ce
-que le calcul apporte.
+**Aucun plancher touché** : ni `drizzle/`, ni authentification, ni RLS, ni
+`middleware`, ni `layout.tsx` racine. **Aucune gravité** : ni facturation, ni
+TVA, ni règlements.
+
+Et surtout : le lot **appelle** `mettreAJourClient` et `exigerEcran`, il ne les
+**modifie pas**. C'est la distinction qui décide — appeler une fonction déjà
+éprouvée ne change son comportement pour personne.
+
+### Verdict : NIVEAU 2
+
+| | |
+|---|---|
+| **règle actuelle** | niveau 3, batterie complète, ~50 min |
+| **règle proposée** | niveau 2 ciblé |
+
+```bash
+npm run verifier:avant-fusion        # types, lint, mémoire, suites base
+npm run test:e2e -- --seulement "modifier-client,fiche-client,retour-fiche-client,\
+acces-salarie,roles-facturation,retour-garde-la-place,retour-page-davant,mode-sombre-lisible"
+npm run voir -- /clients/<id>/coordonnees
+```
+
+Huit suites au lieu de cent cinquante et une.
+
+**Ce qui rend ce niveau 2 acceptable, et qui manquait au brief :** le lot
+introduit une **action serveur neuve** — exactement la famille de « Invalid
+Server Actions request. ». Sans passage navigateur réel, un niveau 2 le
+laisserait filer. Le lot porte déjà sa suite (`test-modifier-client-e2e.ts`),
+et c'est elle qui l'autorise.
+
+### Une limite du calcul, qu'il faut nommer
+
+**Un fichier neuf a toujours un rayon de 1**, puisque personne ne l'importe
+encore. Le rayon ne peut donc pas, à lui seul, juger un ajout : ce sont les
+fichiers **modifiés** qui portent le risque de régression, et ici le seul —
+`clients/[id]/page.tsx` — est à 1.

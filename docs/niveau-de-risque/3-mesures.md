@@ -76,8 +76,8 @@ que se joue le niveau du lot :
 | | |
 |---|---|
 | suites `scripts/test-*-e2e.ts` | **151** |
-| suites citant `"/clients"` | 16 |
-| suites citant `"/reglages"` | 53 |
+| suites citant `"/clients"` | **7** (16 occurrences) |
+| suites citant `"/reglages"` | 27 (53 occurrences) |
 
 ## Ce qui n'est PAS mesuré, et reste une estimation
 
