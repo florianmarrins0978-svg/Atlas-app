@@ -8,6 +8,13 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
+### Une planche pour la facture : main d’œuvre et règlements reçus
+
+Sa demande du 14 septembre, trois factures de pros à l’appui : la facture ne
+savait ni nommer la main d’œuvre ni déduire les acomptes.
+`appli/facture-main-d-oeuvre-et-reglements.html` — écran, papier, et ce qui a
+été pris ou laissé de chaque facture. Rien dans `src/` ; `TODO.md` porte ce
+qui existe déjà et les trois questions qui restent.
 ### La main d'œuvre ne s'efface plus sur un devis sans ligne ; une photo de devis ne vide plus les conditions générales
 
 **Ses plaintes du 14 septembre 2026, à minuit.** Ouverte sur un devis encore
