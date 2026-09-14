@@ -8,7 +8,7 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
-### Quatre contrôles remis d'aplomb après la fusion
+### Six contrôles remis d'aplomb après la fusion
 
 La batterie a rendu 149 sur 153. Aucun des quatre rouges ne venait du
 resserrement : la recherche comparait la frappe BRUTE au nom, là où le produit
@@ -18,6 +18,14 @@ que le fournisseur rend ; la scène de production du stockage ne posait pas le
 fournisseur de courriel arrivé avec le code de vérification, si bien que c'est
 LUI qui refusait en premier ; et le rechargement d'un morceau manquant se
 mesurait en une minute là où il en faut deux sous la batterie entière.
+
+Deux ont demandé un second tour, et leurs messages rendus bavards ont dit
+pourquoi. Madame Lucie écrivait sa dictée en base APRÈS que la chaîne soit
+partie : l'écriture ne servait plus qu'à contredire le devis, elle part. Et le
+morceau manquant ne ramène pas forcément au planning — la navigation n'ayant
+jamais abouti, l'écran rechargé est celui où l'on se trouvait, ce qui est
+exactement ce qu'il faut. Ce qui se défend est qu'Atlas se relève seul, sans
+bouton sans issue.
 
 ### Deux écrans resserrés, et les petits téléphones défilent
 

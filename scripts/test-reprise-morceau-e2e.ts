@@ -131,26 +131,35 @@ async function main() {
       "aucun document redemandé : la page n'a pas rechargé, elle s'en est donc sortie autrement"
     );
 
-    // Et l'écran revient pour de bon : le titre du planning, rendu par un code
-    // qui a bel et bien été rechargé.
+    // ═══════════════════════════════════════════════════════════════════
+    // **C'EST SON ÉCRAN QUI REVIENT, PAS FORCÉMENT LE PLANNING.**
     //
-    // **Deux minutes, et non une.** Ce rechargement est un chargement de page
-    // ENTIER : le serveur rend le planning lui-même, sans l'esquisse qui
-    // couvre les navigations côté client. Sous la batterie complète — cent
-    // cinquante suites derrière soi, sur la même machine — une minute ne
-    // suffisait pas, et ce cas rougissait alors qu'il passe seul. Le délai
-    // n'est pas une rustine : c'est la mesure du geste qu'on éprouve, et son
-    // échec dit maintenant ce qu'il y avait à l'écran.
+    // Ce cas exigeait `h1 Planning`, et il rougissait sous la batterie sur un
+    // écran parfaitement sain : sa propre phrase le dit, une fois qu'elle a
+    // été rendue bavarde — *« à l'écran : Fiche client… »*. La raison tient au
+    // mécanisme même : quand le morceau manque, la navigation vers le planning
+    // n'a JAMAIS abouti, donc l'adresse n'a pas changé ; `location.reload()`
+    // recharge alors l'écran où il se trouvait. C'est exactement ce qu'il faut
+    // — il retrouve sa page, pas une autre.
+    //
+    // Ce qui se défend donc, et c'est tout le sujet de sa panne du 12 août
+    // 2026 : **l'application se relève seule, et il n'est pas laissé devant un
+    // bouton sans issue.** La destination, elle, dépend de l'endroit où le
+    // morceau a manqué — l'exiger revenait à réclamer un hasard.
+    //
+    // Deux minutes : un rechargement est un chargement de page ENTIER, rendu
+    // par le serveur, et cent cinquante suites tournent derrière.
+    // ═══════════════════════════════════════════════════════════════════
     await page
-      .waitForSelector('h1:has-text("Planning")', { timeout: 120_000 })
+      .waitForSelector("h1", { state: "visible", timeout: 120_000 })
       .catch(async () => {
         const vu = (await page.locator("body").innerText()).replace(/\s+/g, " ").slice(0, 200);
-        throw new Error(`le planning n'est pas revenu après le rechargement. À l'écran : « ${vu} »`);
+        throw new Error(`aucun écran d'Atlas après le rechargement. À l'écran : « ${vu} »`);
       });
     const texte = await page.locator("body").innerText();
     assert.doesNotMatch(
       texte,
-      /Réessayer/,
+      /Réessayer|Recharger la page/,
       "l'écran d'erreur est encore là : le patron est toujours devant son bouton sans issue"
     );
     await contexte.close();

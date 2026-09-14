@@ -48,15 +48,6 @@ async function cas(nom: string, verifier: () => Promise<void>) {
   }
 }
 
-// Ce qu'il a dicté chez sa cliente, dans sa langue à lui. On l'écrit en base
-// avant le retour : le fournisseur de simulation de cet environnement pose un
-// préfixe que l'application refuse de lire, et ce refus est éprouvé ailleurs
-// (`test-anneau-vers-devis-e2e`). Ici on éprouve l'AUTRE moitié — celle que
-// cette machine ne sait pas produire, faute de clé (`AGENTS.md`).
-const DICTEE =
-  "Taille de la haie de laurier sur 20 mètres linéaires. Tonte de la pelouse. " +
-  "J'estime le temps de travaux à 1 jour, 2 hommes.";
-
 async function main() {
   console.log("=== La séquence de Madame Lucie ===\n");
 
@@ -127,15 +118,32 @@ async function main() {
   }
   assert.ok(noteId, "la note vocale n'est jamais arrivée en base : l'avion n'a rien envoyé");
 
-  // La transcription qu'un vrai service aurait rendue — voir DICTEE ci-dessus.
-  const ecrite = await pool.query(
-    "update notes_vocales set transcription = $1 where chantier_id = $2",
-    [DICTEE, chantierId]
+  // ═══════════════════════════════════════════════════════════════════════
+  // **ON N'ÉCRIT PLUS LA TRANSCRIPTION À LA MAIN — 14 septembre 2026.**
+  //
+  // Cette suite posait sa dictée en base ici. C'était nécessaire tant que le
+  // fournisseur des suites MARQUAIT son texte, que l'application refuse de
+  // lire. Depuis `transcription/essai.ts` (9 septembre), le texte rendu est
+  // ordinaire : la chaîne part à l'envoi de la dictée, donc AVANT cette
+  // écriture, et le devis se remplit du texte transcrit.
+  //
+  // L'écriture arrivait donc après coup, et ne servait plus qu'à contredire
+  // ce que le devis portait — c'est ce qui faisait rougir le cas plus bas :
+  // « élagage » (le texte rendu) « ne reprend rien de taille, laurier… » (le
+  // nôtre). Elle part, et la preuve se lit contre la transcription que la
+  // chaîne a vraiment lue.
+  // ═══════════════════════════════════════════════════════════════════════
+  const posee = await pool.query(
+    "select transcription from notes_vocales where chantier_id = $1",
+    [chantierId]
   );
-  // **Une écriture qui ne touche rien n'est pas un succès** (`CLAUDE.md` §5) :
+  // **Une note sans transcription n'est pas un succès** (`CLAUDE.md` §5) :
   // sans ce contrôle, la suite continuerait sur un devis qui n'avait aucune
   // chance d'être rempli.
-  assert.equal(ecrite.rowCount, 1, "la transcription n'a été posée sur aucune note");
+  assert.ok(
+    String(posee.rows[0]?.transcription ?? "").trim().length > 0,
+    "la note n'a aucune transcription : la chaîne n'a rien à reprendre"
+  );
 
   // ─── 3. « J'ai quitté l'application » ────────────────────────────────────
   //
