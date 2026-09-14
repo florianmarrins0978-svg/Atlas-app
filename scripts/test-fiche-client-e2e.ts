@@ -1,4 +1,5 @@
 import { lancerNavigateur } from "./e2e-browser";
+import { fichierDemandeALaVisionneuse } from "../src/lib/visionneuse-pdf";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
@@ -565,7 +566,16 @@ async function main() {
       const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
       await ouvrir.waitFor({ state: "visible", timeout: 20_000 });
       const href = (await ouvrir.getAttribute("href")) ?? "";
-      assert.match(href, motif, `« ${titre} » pointe sur ${href}, qui n'est pas son PDF`);
+      // **UN PDF PASSE DÉSORMAIS PAR LA VISIONNEUSE — 11 septembre 2026.**
+      // *« Quand j'ouvre le pdf pour voir la facture j'ai pas de touche
+      // retour »* : « Ouvrir » mène à un écran d'Atlas qui peint le document,
+      // et l'adresse du fichier voyage dedans (`visionneuse-pdf.ts`). Ce
+      // contrôle exigeait l'ancienne adresse nue et rougissait donc sur un
+      // écran qu'il a lui-même demandé (`CLAUDE.md` §5 bis). On lit le fichier
+      // DERRIÈRE la visionneuse, avec la fonction du dépôt — recopier la forme
+      // de l'adresse ici en ferait une seconde vérité (`CLAUDE.md` §3).
+      const vise = fichierDemandeALaVisionneuse(href) ?? href;
+      assert.match(vise, motif, `« ${titre} » pointe sur ${href}, qui n'est pas son PDF`);
       await page.getByRole("button", { name: "Annuler" }).click();
       await ouvrir.waitFor({ state: "hidden", timeout: 15_000 });
     }
