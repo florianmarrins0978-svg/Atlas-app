@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Modifier un client</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578; --doux:#4a4a44;
+    --tuile:#ece9e1; --plein:#7d9a6d; --surplein:#faf9f5; --orTexte:#8b6835;
+    --trait:rgba(28,28,26,.12); --or:#B98B47; --alerte:#8f3a2e;
+  }
+  body.nuit{
+    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
+    --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b;
+    --etabli-or:#b98b47;
+    --plage:#1a1d19; --encre:#e9e8de; --gris:#84887b; --doux:#c1c2b6;
+    --tuile:#1f211e; --plein:#e9e8de; --surplein:#1a1d19; --orTexte:#b98b47;
+    --trait:rgba(233,232,222,.12); --alerte:#d98b7d;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  .page{max-width:1000px;margin:0 auto;padding:30px 20px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
+            color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:640px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 4px}
+  h2{font:600 22px/1.25 var(--serif);margin:44px 0 4px}
+  .dit{color:var(--etabli-gris);font-size:13.5px;line-height:1.6;margin:0 0 18px;max-width:640px}
+
+  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+           letter-spacing:.02em;padding:11px 17px;border-radius:999px;margin:18px 0 26px;
+           background:var(--etabli-carte);color:var(--etabli-doux);
+           box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+  .col{flex:0 0 auto;max-width:100%}
+  .nom{font:600 15px/1.3 var(--sans);margin:0 0 3px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .etiq{font:700 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+        padding:4px 7px;border-radius:999px;background:var(--etabli-or);color:var(--etabli-carte)}
+  .idee{color:var(--etabli-gris);font-size:13px;line-height:1.55;margin:0 0 12px;max-width:360px;min-height:54px}
+
+  /* L'écran, à sa largeur : 390 px. Les mots et les places sont ceux de l'appli. */
+  .tel{width:390px;max-width:100%;border-radius:22px;overflow:hidden;background:var(--plage);
+       box-shadow:0 2px 16px rgba(20,18,14,.13),inset 0 0 0 1px var(--etabli-trait);
+       display:flex;flex-direction:column;min-height:560px}
+  .corps{flex:1;padding:18px 26px 0}
+  .fleche{width:40px;height:40px;border-radius:999px;display:flex;align-items:center;
+          justify-content:center;box-shadow:inset 0 0 0 1px var(--trait);color:var(--doux);font-size:17px}
+  .caps{font:600 11px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--orTexte)}
+  .titrecli{font:500 38px/1.05 var(--serif);margin:14px 0 0;letter-spacing:-.02em;color:var(--encre)}
+  .coord{color:var(--doux);font-size:14.5px;line-height:1.5;margin:10px 0 0}
+  .capsule{display:block;text-align:center;border-radius:999px;padding:15px;margin:18px 0 0;
+           box-shadow:inset 0 0 0 1px var(--orTexte);color:var(--orTexte);font-size:16px}
+  .onglets{display:flex;gap:26px;margin:26px 0 0;font:600 11px/1 var(--sans);
+           letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+  .onglets b{color:var(--encre);padding-bottom:9px;box-shadow:0 1px 0 var(--orTexte)}
+  .vide{color:var(--gris);font-size:14.5px;margin:22px 0 0}
+  .retirer{font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
+           color:var(--alerte);margin:34px 0 0}
+  .barre{display:flex;justify-content:space-between;padding:14px 20px;margin-top:22px;
+         font:600 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+         color:var(--gris);box-shadow:inset 0 1px 0 var(--trait)}
+  .barre b{color:var(--encre)}
+
+  /* La porte proposée — c'est ELLE qu'on regarde, donc elle se voit. */
+  .porte{color:var(--orTexte);cursor:pointer}
+  .neuf{position:relative;background:rgba(185,139,71,.14);border-radius:8px;
+        padding:7px 9px;margin-left:-9px;margin-right:-9px}
+  .neuf::after{content:"NOUVEAU";position:absolute;top:-9px;right:6px;
+               font:700 8.5px/1 var(--sans);letter-spacing:.12em;
+               background:var(--orTexte);color:var(--plage);padding:3px 6px;border-radius:999px}
+  .crayon.neuf{margin:0;padding:0;width:40px;height:40px;background:rgba(185,139,71,.18)}
+  .ligneporte{display:flex;align-items:center;justify-content:space-between;
+              font:600 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;
+              color:var(--orTexte);margin:16px 0 0}
+  .crayon{width:40px;height:40px;border-radius:999px;display:flex;align-items:center;
+          justify-content:center;box-shadow:inset 0 0 0 1px var(--orTexte);color:var(--orTexte);font-size:15px}
+  .hautligne{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+
+  /* L'écran que la porte ouvre */
+  .champ{margin:14px 0 0}
+  .etiqchamp{font:600 10.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+  .case{margin:7px 0 0;border-radius:12px;background:var(--tuile);padding:14px 15px;color:var(--encre);font-size:15.5px}
+  .civ{display:flex;gap:11px;margin:4px 0 0}
+  .civ span{border-radius:999px;padding:11px 26px;font-size:15px;box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre)}
+  .civ span.pris{background:var(--plage);box-shadow:0 1px 4px rgba(20,18,14,.12)}
+  .plein{display:block;text-align:center;border-radius:999px;padding:15px;margin:24px 0 0;
+         background:var(--plein);color:var(--surplein);font:500 17px/1 var(--serif)}
+  .note{margin:34px 0 0;padding:15px 17px;border-radius:4px;background:var(--etabli-carte);
+        box-shadow:inset 0 0 0 1px var(--etabli-trait);max-width:640px;
+        font-size:13.5px;line-height:1.65;color:var(--etabli-doux)}
+  .note .t{display:block;font:700 10px/1 var(--sans);letter-spacing:.1em;
+           text-transform:uppercase;color:var(--etabli-or);margin:0 0 7px}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">À choisir</p>
+  <h1>Modifier un client</h1>
+  <p class="chapeau">
+    Aujourd’hui, changer l’adresse ou le numéro d’un client passe par un de ses
+    chantiers. S’il n’en a aucun en cours, c’est impossible. Voici trois places
+    pour la porte, sur sa fiche — et l’écran qu’elle ouvre.
+  </p>
+  <button class="bascule" id="jourNuit" aria-pressed="false">Voir en mode nuit</button>
+
+  <div class="rangee" id="places"></div>
+
+  <h2>Ce que la porte ouvre</h2>
+  <p class="dit">Ses coordonnées à LUI : rien du chantier, ni photos, ni micro.
+     C’est ce qui manque à l’écran d’aujourd’hui, où l’adresse du chantier et
+     celle du client se confondent.</p>
+  <div class="rangee" id="ouvre"></div>
+
+  <div class="note"><span class="t">Ce qui ne change pas</span>
+    Le chemin d’aujourd’hui reste : depuis un chantier, la fiche client s’ouvre
+    et s’enregistre comme avant. Cette porte en ajoute un second, là où vous
+    allez naturellement.
+  </div>
+</div>
+<script>
+  document.getElementById("jourNuit").addEventListener("click", (e) => {
+    const on = document.body.classList.toggle("nuit");
+    e.currentTarget.setAttribute("aria-pressed", String(on));
+    e.currentTarget.textContent = on ? "Voir en plein jour" : "Voir en mode nuit";
+  });
+
+  /** La fiche du client, telle qu'elle est — la porte se pose selon `place`. */
+  function fiche(place) {
+    const crayon = place === "entete"
+      ? '<span class="crayon neuf">\u270e</span>'
+      : '<span class="fleche" style="box-shadow:none;background:#7d9a6d;color:#faf9f5">\u25cf</span>';
+    const sousCoord = place === "sous"
+      ? '<div class="ligneporte neuf"><span>Modifier ses coordonnées</span></div>'
+      : "";
+    const coord = place === "coord"
+      ? '<p class="coord porte neuf">12 rue des Lilas, Nantes<br>06 12 34 56 78</p>'
+      : '<p class="coord">12 rue des Lilas, Nantes<br>06 12 34 56 78</p>';
+    return `
+      <div class="tel">
+        <div class="corps">
+          <div class="fleche">\u2039</div>
+          <div class="hautligne" style="margin-top:14px">
+            <div style="min-width:0">
+              <div class="caps">Client</div>
+              <div class="titrecli">M. Bernard</div>
+            </div>
+            ${crayon}
+          </div>
+          ${coord}
+          ${sousCoord}
+          <div class="capsule">+ Autre chantier</div>
+          <div class="onglets"><b>Devis</b><span>Factures</span><span>Fiches</span></div>
+          <p class="vide">Aucun devis parti</p>
+          <p class="retirer">Supprimer ce client</p>
+        </div>
+        <div class="barre"><b>Chantiers</b><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+      </div>`;
+  }
+
+  const PLACES = [
+    { cle: "sous", nom: "A — sous ses coordonnées",
+      idee: "Une ligne, là où on vient de lire l\u2019adresse et le numéro. C\u2019est l\u2019endroit où l\u2019on s\u2019aperçoit qu\u2019ils sont faux." },
+    { cle: "entete", nom: "B — un crayon en haut",
+      idee: "À la place du bouton de l\u2019assistant, à droite du nom. Il se voit tout de suite, mais il pousse l\u2019assistant ailleurs." },
+    { cle: "coord", nom: "C — les coordonnées elles-mêmes",
+      idee: "On appuie sur l\u2019adresse ou le numéro pour le corriger. Rien n\u2019est ajouté à l\u2019écran — mais rien ne dit qu\u2019on peut appuyer." },
+  ];
+
+  document.getElementById("places").innerHTML = PLACES.map((p) => `
+    <div class="col">
+      <p class="nom">${p.nom}</p>
+      <p class="idee">${p.idee}</p>
+      ${fiche(p.cle)}
+    </div>`).join("");
+
+  document.getElementById("ouvre").innerHTML = `
+    <div class="col">
+      <p class="nom">Ses coordonnées <span class="etiq">le même écran pour les trois</span></p>
+      <p class="idee">Les mêmes champs qu\u2019aujourd\u2019hui, sans ce qui appartient au chantier.</p>
+      <div class="tel">
+        <div class="corps">
+          <div class="hautligne">
+            <div class="fleche">\u2039</div>
+            <div style="flex:1;text-align:center;font:500 22px/1 var(--serif);color:var(--encre)">Ses coordonnées</div>
+            <div style="width:40px"></div>
+          </div>
+          <div class="civ" style="margin-top:20px"><span class="pris">Mr</span><span>Mme</span></div>
+          <div class="champ"><div class="etiqchamp">Nom du client</div><div class="case">M. Bernard</div></div>
+          <div class="champ"><div class="etiqchamp">Téléphone</div><div class="case">06 12 34 56 78</div></div>
+          <div class="champ"><div class="etiqchamp">E-mail</div><div class="case">bernard@exemple.fr</div></div>
+          <div class="champ"><div class="etiqchamp">Son adresse</div><div class="case">12 rue des Lilas, Nantes</div></div>
+          <div class="plein">Enregistrer</div>
+        </div>
+        <div class="barre"><b>Chantiers</b><span>Planning</span><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+      </div>
+    </div>`;
+</script>
+</body>
+</html>
