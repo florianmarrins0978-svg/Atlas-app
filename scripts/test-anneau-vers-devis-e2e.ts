@@ -5,6 +5,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE } from "./_adresse";
+import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
+import { creerEnvoi } from "../src/server/repositories/envois-devis";
+import type { JourIso } from "../src/lib/disponibilites";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
@@ -167,22 +170,26 @@ async function main() {
   // *« Si je clique dessus, j'arrive directement à la page du devis et je ne
   // passe pas par une page intermédiaire ? »*
   //
-  // Pour y répondre il faut une dictée que l'application accepte de lire — le
-  // refus ci-dessus se déclenche sur le PRÉFIXE que pose le fournisseur de
-  // simulation (`estTranscriptionSimulee`). On écrit donc en base la dictée
-  // qu'un vrai service aurait rendue. Ce n'est pas contourner le contrôle
-  // précédent : c'est éprouver l'autre moitié du parcours, celle que cet
-  // environnement ne peut pas produire lui-même (`AGENTS.md`).
-  const DICTEE =
-    "Taille de haie de laurier, 20 mètres linéaires. Chêne mort à démonter. " +
-    "Couper le bois en 50, le laisser sur place. J'estime le temps de travaux à " +
-    "2 jours, 2 hommes, un camion à broyeur et une fendeuse.";
-
+  // ═══════════════════════════════════════════════════════════════════════
+  // **CE CAS ÉCRIVAIT UNE DICTÉE EN BASE PUIS RECHARGEAIT LA FICHE — et il
+  // ne pouvait plus aboutir depuis le 9 septembre 2026.**
+  //
+  // Il le faisait parce que le fournisseur des suites était `dev`, dont le
+  // texte est MARQUÉ : la chaîne s'arrêtait dessus, et il fallait donc poser
+  // à la main une dictée lisible pour éprouver la suite. Depuis
+  // `transcription/essai.ts`, le texte rendu est ordinaire — la chaîne PART
+  // TOUTE SEULE dès que la dictée est envoyée, deux cas plus haut.
+  //
+  // Or le départ automatique ne survit pas à un rechargement : il est gardé
+  // par `dicteeFaite`, qui dit « une dictée vient d'être envoyée DANS CET
+  // ÉCRAN » (`FormulaireNouveauChantier`). Recharger la fiche attendait donc
+  // une chaîne que plus rien ne pouvait lancer — 120 secondes, deux fois.
+  //
+  // **On ne recharge plus, et on n'écrit plus rien en base :** on reste sur
+  // l'écran où le patron est, et l'on regarde ce qui s'y passe. C'est
+  // exactement sa question, et c'est son parcours (`CLAUDE.md` §5 quater).
+  // ═══════════════════════════════════════════════════════════════════════
   await cas("avec une dictée lisible, un appui mène AU DEVIS, sans écran intermédiaire", async () => {
-    await pool.query("update notes_vocales set transcription = $1 where chantier_id = $2", [
-      DICTEE,
-      chantierId,
-    ]);
     // **PLUS AUCUN APPUI, ET C'EST LE PROGRÈS — sa demande du 30 août 2026.**
     //
     // Il fallait toucher « Mon devis » sous l'anneau, sur la fiche du chantier.
@@ -194,8 +201,7 @@ async function main() {
     // page du devis et je ne passe pas par une page intermédiaire ? »* —, et
     // c'est exactement ce que la suite de ce cas éprouve. Un déclencheur de
     // moins entre lui et son devis.
-    const avant = fiche;
-    await page.goto(fiche, { waitUntil: "networkidle" });
+    const avant = page.url();
 
     // **L'arrêt d'avant-chiffrage, franchi SANS quitter la fiche.**
     //
@@ -266,10 +272,53 @@ async function main() {
   // **Le contrôle suit donc SON chemin, pas une porte de service**
   // (`CLAUDE.md` §5 quater) : le signet qu'il a gardé sur l'ancienne fiche.
   await cas("un devis parti reste joignable, par le planning", async () => {
-    await pool.query(
-      "update chantiers set devis_genere_at = now(), devis_envoye_at = now() where id = $1",
+    // **LE DEVIS PART POUR DE BON, il ne se DÉCLARE plus parti.**
+    //
+    // Ce cas posait `devis_envoye_at` sur le chantier — et le planning, lui,
+    // ne lit pas cette colonne : la porte mène à `/export` quand un ENVOI
+    // existe (`portes-du-planning.ts`, `envoiEnvoyeAt`), sinon au devis. Le
+    // montage fabriquait donc un état qui n'existe chez personne, et la suite
+    // rougissait en attendant une adresse que le produit avait raison de ne
+    // pas poser.
+    //
+    // On emprunte le chemin réel (`envoyerDevis`), comme `test-fiche-client`.
+    const { rows: ctxRows } = await pool.query(
+      `SELECT me.utilisateur_id AS u, me.entreprise_id AS e
+         FROM membres_entreprise me
+         JOIN chantiers c ON c.entreprise_id = me.entreprise_id
+        WHERE c.id = $1
+        ORDER BY me.role = 'proprietaire' DESC
+        LIMIT 1`,
       [chantierId]
     );
+    const ctx = { utilisateurId: ctxRows[0].u as string, entrepriseId: ctxRows[0].e as string };
+    const brouillon = await getOuCreerDevisBrouillon(ctx, chantierId);
+    // **Et il porte ses prix**, parce qu'un devis dont une ligne attend son
+    // montant ne part pas — sa règle du 27 août 2026, et elle est juste. La
+    // chaîne s'est arrêtée avant de chiffrer : la dictée d'essai ne dit ni
+    // longueur ni diamètre. On pose donc les montants ici, ce qu'il ferait
+    // lui-même sur l'écran du devis, et l'envoi suit son chemin normal.
+    const poses = await pool.query(
+      "update lignes_devis set montant = '120.00' where devis_id = $1 and (montant is null or montant::numeric <= 0)",
+      [brouillon.id]
+    );
+    assert.ok(
+      (poses.rowCount ?? 0) >= 0,
+      "impossible de poser les montants : l'envoi refusera, et le rouge accusera le planning"
+    );
+    await envoyerDevis(ctx, brouillon.id);
+    // **L'ENVOI AU CLIENT, qui est ce que le planning lit.** Figer le devis ne
+    // suffit pas : la porte mène à `/export` quand un ENVOI existe, et c'est
+    // cet envoi qui porte le lien du client. Deux gestes, deux tables — les
+    // confondre était tout le défaut de ce cas.
+    const demain = new Date(Date.now() + 3 * 86400_000).toISOString().slice(0, 10);
+    await creerEnvoi(ctx, {
+      chantierId,
+      devisId: brouillon.id,
+      canal: "sms",
+      datesProposees: [demain as JourIso],
+      contenuDevis: "Devis de l'essai — anneau vers devis.",
+    });
 
     // Son signet d'hier sur la fiche retirée : il ne rend pas un 404, il mène
     // là où le travail en est — le planning, où ce chantier attend sa date.
