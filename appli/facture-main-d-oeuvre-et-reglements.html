@@ -166,8 +166,11 @@
         <p class="inter" style="margin-top:0">Règlements reçus</p>
         <div id="e-regls"></div>
         <button class="plus" type="button" id="e-regl-plus">+ Règlement reçu</button>
+        <div class="interrupteur" style="padding:12px 0 4px;margin-top:6px;border-top:1px solid var(--lineSoft)">
+          <span>Facture acquittée<small>Tout est réglé avant l’envoi</small></span>
+          <button class="bascule" type="button" id="e-acquittee" aria-pressed="false" aria-label="Facture acquittée"></button>
+        </div>
         <div class="net"><b>Net à payer</b><span class="m" id="e-net"></span></div>
-        <p class="acquittee" id="e-acquittee" hidden>Facture acquittée</p>
       </div>
 
       <div class="carte">
@@ -206,7 +209,8 @@
   <table>
     <tr><td>+ Main d’œuvre</td><td>comme sur le devis : « dont main d’œuvre HT », rien ne bouge aux totaux. Reprise du devis quand il en portait une.</td></tr>
     <tr><td>Règlements reçus</td><td>les acomptes du devis arrivent d’office, à cocher « reçu » ; « + Règlement reçu » pour un chèque ou un virement de plus. Chacun : moyen, date, montant.</td></tr>
-    <tr><td>Net à payer</td><td>TTC moins les règlements. À zéro : « Facture acquittée », à l’écran et sur le papier.</td></tr>
+    <tr><td>Net à payer</td><td>TTC moins les règlements.</td></tr>
+    <tr><td>Facture acquittée</td><td>un interrupteur sous les règlements, pour le client qui a tout payé avant l’envoi. Allumé, le solde est compté reçu, le net tombe à zéro, le tampon s’imprime. Il s’allume seul quand les règlements couvrent tout.</td></tr>
     <tr><td>Le papier</td><td>les colonnes des pros, la TVA par taux, « Montants versés » sous le mode de règlement, la main d’œuvre TTC pour information.</td></tr>
     <tr><td>Le libellé d’un règlement</td><td>« Chèque n° 1806028 », « Virement Mme Grospiron » : le numéro du chèque s’écrit là, et c’est ce mot qui s’imprime dans « Montants versés ».</td></tr>
     <tr><td>Un chiffre touché</td><td>est sélectionné en entier : on tape le nouveau, l’ancien part. Vaut pour la main d’œuvre, la remise, les montants reçus.</td></tr>
@@ -282,7 +286,7 @@
       boite.appendChild(d);
     });
     id("e-net").textContent = eur(c.net);
-    id("e-acquittee").hidden = c.net > 0;
+    id("e-acquittee").setAttribute("aria-pressed", String(c.net === 0));
     id("e-credit").setAttribute("aria-pressed", String(etat.credit));
 
   }
@@ -299,6 +303,13 @@
     var champs = id("e-regls").querySelectorAll(".quoi input"); champs[champs.length-2].focus();
   };
   id("e-credit").onclick = function(){ etat.credit = !etat.credit; rendre(); };
+  // Allumé : le solde est compté reçu à la date du jour ; éteint, il repart.
+  id("e-acquittee").onclick = function(){
+    var c = calcul();
+    if (c.net > 0) etat.regls.push({ lib: "Solde", date: "14/09/2026", montant: c.net, recu: true });
+    else etat.regls = etat.regls.filter(function(g){ return g.lib !== "Solde"; });
+    rendre();
+  };
   // Un chiffre touché est sélectionné en entier — sa demande du 14 septembre :
   // on tape le nouveau, l'ancien part, sans avoir à l'effacer.
   document.addEventListener("focusin", function(e){

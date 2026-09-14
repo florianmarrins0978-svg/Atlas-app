@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Décennale et médiateur — Mon entreprise</title>
+<style>
+  /* ═══ LES JETONS, SORTIS DU CODE (src/lib/chartes.ts) ═══════════════════*/
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44; --muted:#8a8578;
+    --rust:#2f3b2f; --or:#B98B47; --alert:#8a4b2a;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07); --voileChamp:rgba(28,28,26,0.04);
+    --surPlein:#faf9f5; --hors:#e6e3dc; --horsTexte:#4a4a44; --horsFort:#1c1c1a;
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6; --muted:#84887b;
+    --rust:#e9e8de; --alert:#d9a37a;
+    --line:rgba(233,232,222,0.12); --lineSoft:rgba(233,232,222,0.07); --voileChamp:rgba(233,232,222,0.06);
+    --surPlein:#1a1d19; --hors:#0a0b0a; --horsTexte:#c1c2b6; --horsFort:#e9e8de;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--horsTexte);font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 34px;transition:background .25s,color .25s}
+  ::selection{background:rgba(185,139,71,.28)}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:15px 18px;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+  .choix{position:sticky;top:0;z-index:5;background:var(--hors);padding:12px 12px 10px;display:flex;gap:7px;justify-content:center;flex-wrap:wrap;
+         box-shadow:0 6px 18px -12px rgba(0,0,0,.45)}
+  .choix button{min-height:44px;min-width:44px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+                font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.04em;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .choix button[aria-pressed="true"]{background:var(--rust);color:var(--surPlein);border-color:var(--rust)}
+  .choix button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .tel{max-width:430px;margin:16px auto 0;background:var(--cream);border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22)}
+  .entete{padding:26px 26px 0}
+  .entete h1{margin:0;font:400 32px/1.02 ui-serif,Georgia,serif;letter-spacing:-0.018em;color:var(--ink)}
+  .entete .sur{margin:0 0 10px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .corps{padding:18px 26px 30px;color:var(--ink)}
+  .inter{margin:22px 0 8px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .bloc{background:var(--card);border-radius:4px;padding:6px 18px;margin-top:12px}
+  .bloc .titre{margin:10px 0 2px;font:600 16px/1.3 ui-serif,Georgia,serif;color:var(--ink)}
+  .champ{padding:12px 0;border-bottom:1px solid var(--lineSoft)}
+  .champ:last-child{border-bottom:0}
+  .champ label{display:block;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .champ input{width:100%;border:0;background:transparent;padding:0;font-size:16px;color:var(--ink);outline:none;border-radius:4px}
+  .champ input::placeholder{color:var(--muted)}
+  .champ input:focus{background:var(--voileChamp)}
+  .champ input:focus-visible{outline:2px solid var(--or);outline-offset:3px}
+  .champ small{display:block;margin-top:4px;font-size:12.5px;color:var(--muted)}
+  .champ small.alerte{color:var(--alert)}
+  .apercu{margin-top:14px;padding:14px 16px;background:var(--card);border-radius:4px;font-size:13.5px;line-height:1.5;color:var(--inkSoft)}
+  .apercu .lib{margin:0 0 6px;font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+  .apercu p{margin:0}
+  .apercu .vide{color:var(--muted);font-style:italic}
+
+  .note{max-width:430px;margin:14px auto 0;padding:0 18px;font-size:13px;line-height:1.6;color:var(--horsTexte)}
+  .note b{color:var(--horsFort)}
+  .note h3{font:600 12px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;margin:22px 0 8px;color:var(--horsFort)}
+  .note table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .note td{padding:6px 6px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  .note td:first-child{width:36%;color:var(--horsFort);font-weight:600}
+</style>
+</head>
+<body data-charte="origine">
+
+<div class="bandeau">
+  <b>Votre accord du 14 septembre.</b> L’assurance décennale et le médiateur ne se cherchent plus dans le texte des conditions générales : <b>deux blocs dans Mon entreprise</b>, remplis une fois, imprimés en bas du devis et de la facture comme le SIRET — et repris dans les conditions générales à la place des crochets. Vide : rien ne s’imprime, et l’écran le dit. Rien n’est codé.
+</div>
+
+<div class="choix">
+  <button data-vue="rempli" aria-pressed="true">Rempli</button>
+  <button data-vue="vide" aria-pressed="false">Vide</button>
+  <button id="nuit" aria-pressed="false">Nuit</button>
+</div>
+
+<div class="tel">
+  <div class="entete">
+    <p class="sur">Réglages</p>
+    <h1>Mon entreprise</h1>
+  </div>
+  <div class="corps">
+    <p class="inter" style="margin-top:0">Après « Pour être payé »</p>
+
+    <div class="bloc">
+      <p class="titre">Assurance décennale</p>
+      <div class="champ"><label for="assureur">Assureur</label><input id="assureur" placeholder="AXA, Groupama, MMA…"><small id="assureur-dit"></small></div>
+      <div class="champ"><label for="contrat">N° de contrat</label><input id="contrat" placeholder="Sur votre attestation"></div>
+      <div class="champ"><label for="zone">Couverture géographique</label><input id="zone" placeholder="France métropolitaine"></div>
+    </div>
+
+    <div class="bloc">
+      <p class="titre">Médiateur de la consommation</p>
+      <div class="champ"><label for="mediateur">Nom</label><input id="mediateur" placeholder="Celui auquel vous adhérez"><small id="mediateur-dit"></small></div>
+      <div class="champ"><label for="mediateur-coord">Adresse ou site</label><input id="mediateur-coord" placeholder="49 rue de Ponthieu, 75008 Paris · cm2c.net"></div>
+    </div>
+
+    <div class="apercu">
+      <p class="lib">Ce que le devis et la facture diront, en bas</p>
+      <p id="apercu-decennale"></p>
+      <p id="apercu-mediateur" style="margin-top:6px"></p>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <h3>Ce que ça change</h3>
+  <table>
+    <tr><td>Deux blocs, une fois</td><td>dans Mon entreprise, après « Pour être payé ». Comme le SIRET et l’IBAN : remplis une fois, imprimés partout.</td></tr>
+    <tr><td>En bas du papier</td><td>« Assurance décennale : AXA, contrat n° …, France métropolitaine. Médiateur de la consommation : CM2C, 49 rue de Ponthieu, 75008 Paris. » Sur le devis comme sur la facture.</td></tr>
+    <tr><td>Les crochets des conditions générales</td><td>disparaissent : les articles 9 et 11 se remplissent tout seuls avec ces champs. Une seule source, plus rien à recopier.</td></tr>
+    <tr><td>Vide</td><td>rien ne s’imprime, et l’écran le dit sous le champ : la loi les attend pour un particulier. Rien n’est inventé.</td></tr>
+  </table>
+</div>
+
+<script>
+  function id(x){ return document.getElementById(x); }
+  var CHAMPS = ["assureur","contrat","zone","mediateur","mediateur-coord"];
+  var REMPLI = { assureur:"AXA", contrat:"0000020872696404", zone:"France métropolitaine", mediateur:"CM2C", "mediateur-coord":"49 rue de Ponthieu, 75008 Paris · cm2c.net" };
+  function v(x){ return id(x).value.trim(); }
+  function rendre(){
+    var d = [v("assureur"), v("contrat") ? "contrat n° "+v("contrat") : "", v("zone")].filter(Boolean).join(", ");
+    var m = [v("mediateur"), v("mediateur-coord")].filter(Boolean).join(", ");
+    id("apercu-decennale").innerHTML = d ? "Assurance décennale : "+d+"." : '<span class="vide">Assurance décennale : rien tant que l’assureur manque.</span>';
+    id("apercu-mediateur").innerHTML = m ? "Médiateur de la consommation : "+m+"." : '<span class="vide">Médiateur de la consommation : rien tant que le nom manque.</span>';
+    id("assureur-dit").textContent = v("assureur") ? "" : "Obligatoire dès que l’activité l’impose (loi du 6 août 2015).";
+    id("assureur-dit").className = v("assureur") ? "" : "alerte";
+    id("mediateur-dit").textContent = v("mediateur") ? "" : "Obligatoire pour un client particulier.";
+    id("mediateur-dit").className = v("mediateur") ? "" : "alerte";
+  }
+  CHAMPS.forEach(function(c){ id(c).oninput = rendre; });
+  document.querySelectorAll(".choix [data-vue]").forEach(function(b){
+    b.onclick = function(){
+      document.querySelectorAll(".choix [data-vue]").forEach(function(x){ x.setAttribute("aria-pressed","false"); });
+      b.setAttribute("aria-pressed","true");
+      CHAMPS.forEach(function(c){ id(c).value = b.dataset.vue === "rempli" ? REMPLI[c] : ""; });
+      rendre();
+    };
+  });
+  id("nuit").onclick = function(){
+    var n = document.body.dataset.charte === "nuit";
+    document.body.dataset.charte = n ? "origine" : "nuit";
+    id("nuit").setAttribute("aria-pressed", String(!n));
+  };
+  CHAMPS.forEach(function(c){ id(c).value = REMPLI[c]; });
+  rendre();
+</script>
+</body>
+</html>

@@ -108,6 +108,13 @@
   .regl input:focus{background:rgba(28,28,26,.04)}
   .plus:focus-visible,.regl input:focus-visible,.champ-titre input:focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:6px}
   .plus{display:block;margin-top:8px;border:0;background:none;padding:0;color:var(--or);font:500 14px/1.2 ui-sans-serif,sans-serif;cursor:pointer;min-height:32px}
+  .interrupteur{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0 4px;margin-top:6px;border-top:1px solid var(--lineSoft);font-size:15px;color:var(--ink)}
+  .interrupteur small{display:block;color:var(--muted);font-size:12.5px}
+  .bascule{width:46px;height:28px;border-radius:999px;border:0;background:var(--line);position:relative;cursor:pointer;flex:none}
+  .bascule::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--card);transition:left .18s}
+  .bascule[aria-pressed="true"]{background:var(--rust)}
+  .bascule[aria-pressed="true"]::after{left:21px}
+  .bascule:focus-visible{outline:2px solid var(--or);outline-offset:3px}
   .feuille .totaux .r.or{color:var(--or)}
   .feuille .totaux .r.doux{color:var(--encreDouce);font-size:8.2px}
   .feuille .totaux .r.ttc{margin-top:6px;padding-top:7px;border-top:1.2px solid var(--encre);font:400 13px/1.2 ui-serif,Georgia,serif}
@@ -161,6 +168,10 @@
     <p class="inter">Règlements reçus</p>
     <div id="regls-lignes"></div>
     <button class="plus" type="button" id="regl-plus">+ Règlement reçu</button>
+    <div class="interrupteur">
+      <span>Facture acquittée<small>Tout est réglé avant l’envoi</small></span>
+      <button class="bascule" type="button" id="acquittee" aria-pressed="false" aria-label="Facture acquittée"></button>
+    </div>
   </div>
 
   <div class="feuille" id="feuille">
@@ -218,6 +229,7 @@
     <tr><td>Le Total TTC par ligne</td><td>ce que le client compare à son relevé.</td></tr>
     <tr><td>Les libellés</td><td>« TVA 20 % » sans parenthèses, « P.U. HT », « Rem. % ». Les mêmes sur les deux papiers.</td></tr>
     <tr><td>Les règlements reçus</td><td>sur la facture, au-dessus du papier : l’acompte du devis d’office, « + Règlement reçu » pour un chèque ou un virement de plus, avec son libellé, sa date, son montant. Le papier suit : la ligne sous le Total TTC, le net à payer, « Montants versés », et le tampon « Acquittée » quand le net tombe à zéro.</td></tr>
+    <tr><td>Facture acquittée</td><td>un interrupteur sous les règlements. Allumé, le solde est compté reçu à la date du jour, le net tombe à zéro et le tampon s’imprime ; il s’allume seul quand les règlements couvrent tout. Éteint, le solde repart.</td></tr>
     <tr><td>Un titre, si vous voulez</td><td>un champ au-dessus du papier, vide d’office : « Aménagement du jardin », « Chantier Machin ». Rempli, il s’écrit sous DEVIS ou FACTURE ; vide, rien.</td></tr>
     <tr><td>L’or</td><td>ne porte que ce qu’on lit : Client, Lieu des travaux, Notes, le tampon « Facture acquittée ». Jamais un montant.</td></tr>
   </table>
@@ -261,6 +273,7 @@
     var c = calcul(), facture = vue !== "devis", acquittee = facture && c.net === 0;
     // la saisie des règlements, au-dessus du papier, seulement sur la facture
     id("regls").hidden = !facture;
+    id("acquittee").setAttribute("aria-pressed", String(acquittee));
     var boite = id("regls-lignes"); boite.innerHTML = "";
     REGLS.forEach(function(g){
       var d = document.createElement("div"); d.className = "regl";
@@ -330,6 +343,12 @@
       window.scrollTo({top:0});
     };
   });
+  id("acquittee").onclick = function(){
+    var c = calcul();
+    if (c.net > 0) REGLS.push({ lib: "Solde", date: "14/09/2026", montant: c.net });
+    else REGLS = REGLS.filter(function(g){ return g.lib !== "Solde"; });
+    rendre(VUE);
+  };
   id("regl-plus").onclick = function(){
     REGLS.push({ lib: "", date: "14/09/2026", montant: 0 });
     rendre(VUE);

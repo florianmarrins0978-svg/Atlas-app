@@ -102,6 +102,20 @@ coupé par taux. Sa consigne : *« utilise le skill impeccable pour rendre la
 facture et le devis élégants, on est sur une appli luxe »* : deux polices comme
 le PDF, l'or seulement pour ce qui se lit, chiffres tabulaires.
 
+**Ses retours suivants, le soir même, tous dessinés :** « Titre (optionnel) »
+au-dessus du papier, rien d'office ; Rem. %, TVA % et Unité centrés ; Total HT,
+Total HT après remise et la colonne Total TTC en gras ; « Reste à régler » et
+« Net à payer » dans la fonte du Total TTC ; plus de « reçu » sur l'acompte ;
+les règlements se saisissent au-dessus du papier et le papier suit ; et
+**« Facture acquittée » est un interrupteur** sous les règlements, pour le
+client qui a tout payé avant l'envoi — allumé, le solde est compté reçu à la
+date du jour, le net tombe à zéro, le tampon s'imprime (sa consigne :
+*« une option quand il va pour envoyer la facture, ou un bouton on/off sur la
+page facture, comme tu veux »*). **La décennale et le médiateur** : son
+accord pour deux blocs dans Mon entreprise, dessinés dans
+`appli/decennale-et-mediateur.html` — imprimés en bas des documents, repris
+dans les articles 9 et 11 des conditions générales à la place des crochets.
+
 **Trois questions posées sur la planche :** cocher « reçu » écrit-il un
 paiement (donc le relevé de TVA suit) — je propose oui ; le crédit d’impôt
 mérite-t-il une facture à part comme chez le paysagiste, ou une case ; le
