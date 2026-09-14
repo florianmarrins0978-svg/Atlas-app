@@ -1,7 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { rmSync, writeFileSync } from "node:fs";
-import { FICHIER_VERDICT } from "./_niveau-de-risque.mjs";
-import { verdictAEcrire } from "./_empreinte-de-l-arbre.mjs";
+import { rmSync } from "node:fs";
 import path from "node:path";
 import {
   empreinteDesSources,
@@ -427,13 +425,10 @@ ecrireDernierVerdict(RACINE, {
       ? "✅ Batterie complète au vert."
       : `❌ ${echecs.length} étape(s) en échec : ${echecs.map((e) => e.nom).join(", ")}`,
   empreinte: empreinteAvant,
+  niveau: 3,
 });
 
 if (echecs.length === 0) {
-  // **Le témoin que `garde-fusion-main.mjs` relira.** Sans lui, la poussée vers
-  // `main` d'un lot qui touche `src/` ou `drizzle/` est refusée : la règle ne
-  // dépend plus de ce dont on se souvient à minuit (`.claude/rules/testing.md`).
-  writeFileSync(FICHIER_VERDICT, JSON.stringify(verdictAEcrire(RACINE, 3), null, 2));
   console.log("✅ Batterie complète au vert.");
   console.log("   La connexion a été faite pour de vrai, dans un navigateur,");
   console.log("   derrière une origine étrangère. On peut livrer.");

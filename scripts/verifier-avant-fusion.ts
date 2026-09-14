@@ -1,8 +1,7 @@
 import { spawnSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
 import path from "node:path";
-import { FICHIER_VERDICT } from "./_niveau-de-risque.mjs";
-import { verdictAEcrire } from "./_empreinte-de-l-arbre.mjs";
+import { empreinteDesSources } from "./_batterie-solitaire";
+import { ecrireDernierVerdict } from "./_dernier-verdict";
 
 /**
  * NIVEAU 2 — ce qu'on joue avant de fusionner un lot d'OUTILLAGE.
@@ -60,6 +59,16 @@ if (echecs.length > 0) {
   process.exit(1);
 }
 
-writeFileSync(FICHIER_VERDICT, JSON.stringify(verdictAEcrire(RACINE, 2), null, 2));
+// **Le MÊME témoin que la batterie**, avec son niveau — jamais un second
+// fichier à côté. Deux façons de dire « voilà ce qui a été mesuré, et sur quel
+// arbre » finiraient par se contredire (`CLAUDE.md` §3), et c'est le garde-fou
+// de la fusion qui lirait alors la mauvaise.
+ecrireDernierVerdict(RACINE, {
+  quand: Date.now(),
+  vert: true,
+  verdict: "✅ Niveau 2 au vert (types, lint, mémoire, suites du dépôt).",
+  empreinte: empreinteDesSources(RACINE),
+  niveau: 2,
+});
 console.log("✅ Niveau 2 au vert — la fusion d'un lot d'outillage est ouverte.");
 console.log("   (Un lot qui touche src/ ou drizzle/ exige la batterie complète.)");

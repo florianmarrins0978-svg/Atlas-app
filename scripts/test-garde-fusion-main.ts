@@ -3,7 +3,6 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { FICHIER_VERDICT, commandeDuNiveau, niveauExige, poussseVersMain, verdictSuffit } from "./_niveau-de-risque.mjs";
-import { empreinteDeLArbre } from "./_empreinte-de-l-arbre.mjs";
 
 /**
  * **LE GARDE-FOU QUI NE DÉPEND PAS DE LA MÉMOIRE DE LA SESSION.**
@@ -96,40 +95,56 @@ cas("et tout le reste passe : lire, commiter, fusionner en local", () => {
   }
 });
 
-console.log("\n=== Le verdict doit être CELUI DE CET ARBRE ===");
+console.log("\n=== Le verdict doit être VERT, au bon niveau, sur CET arbre ===");
+
+const VERT_3 = { quand: 2_000, vert: true, niveau: 3 };
 
 cas("aucune vérification jouée : refus", () => {
-  const { suffit, raison } = verdictSuffit(null, { niveau: 3, empreinte: "abc" });
+  const { suffit, raison } = verdictSuffit(null, { niveau: 3, derniereEcriture: 1_000 });
   assert.equal(suffit, false);
   assert.match(raison, /aucune vérification/);
 });
 
-cas("une vérification jouée sur un AUTRE arbre : refus", () => {
-  const { suffit, raison } = verdictSuffit({ niveau: 3, empreinte: "avant" }, { niveau: 3, empreinte: "après" });
+cas("une vérification ROUGE ne vaut pas une vérification", () => {
+  // Un rouge qu'on laisse derrière soi ne doit pas ouvrir la fusion : c'est
+  // exactement ce que le patron a demandé le 13 septembre.
+  const { suffit, raison } = verdictSuffit({ ...VERT_3, vert: false }, { niveau: 3, derniereEcriture: 1_000 });
+  assert.equal(suffit, false);
+  assert.match(raison, /ROUGE/);
+});
+
+cas("un fichier touché APRÈS le verdict : refus", () => {
+  const { suffit, raison } = verdictSuffit(VERT_3, { niveau: 3, derniereEcriture: 9_000 });
   assert.equal(suffit, false);
   assert.match(raison, /l'arbre a changé/);
 });
 
 cas("un niveau 2 ne suffit pas pour un lot de niveau 3", () => {
-  const { suffit, raison } = verdictSuffit({ niveau: 2, empreinte: "x" }, { niveau: 3, empreinte: "x" });
+  const { suffit, raison } = verdictSuffit({ ...VERT_3, niveau: 2 }, { niveau: 3, derniereEcriture: 1_000 });
   assert.equal(suffit, false);
   assert.match(raison, /niveau 2/);
 });
 
-cas("le bon niveau sur le bon arbre passe", () => {
-  assert.equal(verdictSuffit({ niveau: 3, empreinte: "x" }, { niveau: 3, empreinte: "x" }).suffit, true);
-  assert.equal(verdictSuffit({ niveau: 3, empreinte: "x" }, { niveau: 2, empreinte: "x" }).suffit, true);
+cas("une trace d'AVANT le champ « niveau » ne suffit pas non plus", () => {
+  const { suffit } = verdictSuffit({ quand: 2_000, vert: true }, { niveau: 2, derniereEcriture: 1_000 });
+  assert.equal(suffit, false, "un verdict sans niveau a été pris pour suffisant");
+});
+
+cas("le bon niveau sur un arbre inchangé passe", () => {
+  assert.equal(verdictSuffit(VERT_3, { niveau: 3, derniereEcriture: 1_000 }).suffit, true);
+  assert.equal(verdictSuffit(VERT_3, { niveau: 2, derniereEcriture: 1_000 }).suffit, true);
 });
 
 console.log("\n=== Le hook, joué pour de vrai ===");
 
-const SAUVEGARDE = `${FICHIER_VERDICT}.epreuve`;
-const avaitUnVerdict = existsSync(FICHIER_VERDICT);
-if (avaitUnVerdict) renameSync(FICHIER_VERDICT, SAUVEGARDE);
+const TEMOIN = path.join(RACINE, FICHIER_VERDICT);
+const SAUVEGARDE = `${TEMOIN}.epreuve`;
+const avaitUnVerdict = existsSync(TEMOIN);
+if (avaitUnVerdict) renameSync(TEMOIN, SAUVEGARDE);
 
 try {
   cas("sans verdict, une poussée sur main est REFUSÉE, et le refus dit quoi faire", () => {
-    rmSync(FICHIER_VERDICT, { force: true });
+    rmSync(TEMOIN, { force: true });
     const { refuse, message } = jouer("git push origin claude/mon-lot:main");
     assert.ok(refuse, "le hook a laissé passer une fusion non éprouvée");
     assert.match(message, /verifier:avant-(fusion|livraison)/, "le refus ne dit pas la commande à jouer");
@@ -137,23 +152,19 @@ try {
   });
 
   cas("une poussée sur la branche de session passe, même sans verdict", () => {
-    rmSync(FICHIER_VERDICT, { force: true });
+    rmSync(TEMOIN, { force: true });
     assert.equal(jouer("git push -u origin claude/mon-lot").refuse, false);
   });
 
   cas("avec le verdict de CET arbre au bon niveau, la fusion passe", () => {
-    writeFileSync(
-      FICHIER_VERDICT,
-      JSON.stringify({ niveau: 3, empreinte: empreinteDeLArbre(RACINE), quand: new Date().toISOString() })
-    );
+    // Un verdict vert de niveau 3, postérieur à tout ce que l'arbre porte.
+    writeFileSync(TEMOIN, JSON.stringify({ quand: Date.now() + 60_000, vert: true, niveau: 3, empreinte: [] }));
     assert.equal(jouer("git push origin claude/mon-lot:main").refuse, false);
   });
 
   cas("un verdict d'un autre arbre ne suffit plus", () => {
-    writeFileSync(
-      FICHIER_VERDICT,
-      JSON.stringify({ niveau: 3, empreinte: "un-arbre-d-avant", quand: new Date().toISOString() })
-    );
+    // Le même, mais rendu AVANT le dernier fichier écrit : l'arbre a bougé.
+    writeFileSync(TEMOIN, JSON.stringify({ quand: 1_000, vert: true, niveau: 3, empreinte: [] }));
     const { refuse, message } = jouer("git push origin claude/mon-lot:main");
     assert.ok(refuse, "un verdict périmé a été accepté");
     assert.match(message, /l'arbre a changé/);
@@ -163,12 +174,17 @@ try {
     // Ce qui n'est pas MONTÉ ne sert à rien (la leçon du 28 août).
     for (const fichier of ["verifier-avant-livraison.ts", "verifier-avant-fusion.ts"]) {
       const source = readFileSync(path.join(__dirname, fichier), "utf8");
-      assert.match(source, /FICHIER_VERDICT/, `${fichier} ne dépose aucun témoin : le garde-fou refusera toujours`);
+      assert.match(
+        source,
+        /ecrireDernierVerdict\(/,
+        `${fichier} ne dépose aucun témoin : le garde-fou refusera toujours`
+      );
+      assert.match(source, /niveau: [23]/, `${fichier} ne dit pas à quel niveau il a mesuré`);
     }
   });
 } finally {
-  rmSync(FICHIER_VERDICT, { force: true });
-  if (avaitUnVerdict) renameSync(SAUVEGARDE, FICHIER_VERDICT);
+  rmSync(TEMOIN, { force: true });
+  if (avaitUnVerdict) renameSync(SAUVEGARDE, TEMOIN);
 }
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le garde-fou de la fusion — ${echecs} échec(s).`);

@@ -14,8 +14,16 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-/** Le témoin qu'une vérification laisse derrière elle. Hors du dépôt : il ne se commite pas. */
-export const FICHIER_VERDICT = "/tmp/atlas-verdict-verification.json";
+/**
+ * Le témoin que les deux vérifications laissent — celui du dépôt, pas un second.
+ *
+ * **Écrit par `_dernier-verdict.ts`**, arrivé sur `main` le 14 septembre 2026 :
+ * la batterie y note son verdict, son niveau et l'arbre mesuré. Ce garde-fou le
+ * RELIT, il n'en tient aucun à côté — deux façons de dire « voilà ce qui a été
+ * mesuré » finiraient par se contredire (`CLAUDE.md` §3), et c'est justement
+ * cette duplication qui avait été écrite ici avant la fusion.
+ */
+export const FICHIER_VERDICT = ".atlas-dernier-verdict.json";
 
 /**
  * Le niveau exigé par un lot, d'après les chemins qu'il touche.
@@ -69,13 +77,20 @@ export function poussseVersMain(commande, brancheCourante) {
  * d'avant ne dit rien de celui d'après. C'est la leçon de l'empreinte de la
  * batterie — « le verrou EMPÊCHE, l'empreinte DIT » (`CLAUDE.md` §5).
  */
-export function verdictSuffit(verdict, { niveau, empreinte }) {
+export function verdictSuffit(verdict, { niveau, derniereEcriture }) {
   if (!verdict) return { suffit: false, raison: "aucune vérification n'a été jouée" };
-  if (verdict.empreinte !== empreinte) {
-    return { suffit: false, raison: "l'arbre a changé depuis la dernière vérification" };
-  }
+  if (verdict.vert !== true) return { suffit: false, raison: "la dernière vérification était ROUGE" };
   if ((verdict.niveau ?? 0) < niveau) {
     return { suffit: false, raison: `la vérification jouée était de niveau ${verdict.niveau ?? "?"}` };
+  }
+  // **L'arbre a-t-il bougé depuis ?** On compare l'instant du verdict au fichier
+  // surveillé le plus récemment écrit. Recalculer une empreinte complète serait
+  // plus fin — et ce serait une SECONDE façon de dire « ce fichier a changé »,
+  // à côté de `empreinteDesSources` : exactement ce que `CLAUDE.md` §3 refuse.
+  // Une date suffit à ce que ce garde-fou doit trancher, et elle coûte
+  // quelques millisecondes dans un hook qui doit rendre la main tout de suite.
+  if (derniereEcriture > verdict.quand) {
+    return { suffit: false, raison: "l'arbre a changé depuis la dernière vérification" };
   }
   return { suffit: true, raison: "" };
 }

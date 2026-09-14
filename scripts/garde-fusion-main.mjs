@@ -29,9 +29,8 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
-import { empreinteDeLArbre } from "./_empreinte-de-l-arbre.mjs";
 import {
   FICHIER_VERDICT,
   commandeDuNiveau,
@@ -62,13 +61,44 @@ export function cheminsDuLot() {
 }
 
 function lireVerdict() {
-  if (!existsSync(FICHIER_VERDICT)) return null;
+  const chemin = path.join(RACINE, FICHIER_VERDICT);
+  if (!existsSync(chemin)) return null;
   try {
-    return JSON.parse(readFileSync(FICHIER_VERDICT, "utf8"));
+    return JSON.parse(readFileSync(chemin, "utf8"));
   } catch {
     // Un témoin illisible vaut un témoin absent : on ne parie pas dessus.
     return null;
   }
+}
+
+/**
+ * L'instant du fichier surveillé le plus récemment écrit.
+ *
+ * C'est ce qui dit « l'arbre a bougé depuis le verdict », sans recalculer une
+ * empreinte : un hook doit rendre la main tout de suite, et une seconde façon
+ * de comparer des fichiers finirait par diverger de `empreinteDesSources`.
+ */
+function derniereEcriture() {
+  let plusRecent = 0;
+  const parcourir = (dossier) => {
+    let entrees;
+    try {
+      entrees = readdirSync(dossier, { withFileTypes: true });
+    } catch {
+      return; // un dépôt peut vivre sans `.devcontainer`
+    }
+    for (const entree of entrees) {
+      if (["node_modules", ".git", ".next", "dist", "coverage"].includes(entree.name)) continue;
+      const chemin = path.join(dossier, entree.name);
+      if (entree.isDirectory()) {
+        parcourir(chemin);
+      } else if (/\.(ts|tsx|js|mjs|mts|sql|css|json|md)$/.test(entree.name)) {
+        plusRecent = Math.max(plusRecent, statSync(chemin).mtimeMs);
+      }
+    }
+  };
+  for (const d of ["src", "scripts", "drizzle", ".claude", ".devcontainer"]) parcourir(path.join(RACINE, d));
+  return plusRecent;
 }
 
 let entree = "";
@@ -90,7 +120,7 @@ process.stdin.on("end", () => {
 
   const { suffit, raison } = verdictSuffit(lireVerdict(), {
     niveau,
-    empreinte: empreinteDeLArbre(RACINE),
+    derniereEcriture: derniereEcriture(),
   });
   if (suffit) process.exit(0);
 
