@@ -1081,7 +1081,12 @@ body:not(:has(.atlas-nav-basse)) .atlas-contenu {
    * à l'instant où l'on appuie — c'est-à-dire au moment où l'écran doit être le
    * plus stable. Le chiffre reste celui du repos, qui est le plus haut des
    * deux. */
-  min-height: 104px;
+  /* **84 px, et non 104 — 14 septembre 2026.** Vingt pixels de réserve pure :
+   * la fiche client débordait de 17 px sur un petit iPhone, et c'est ici
+   * qu'elle respirait le plus. Le chiffre reste au-dessus des deux états — le
+   * micro au repos et la ligne de dictée (58 px) — donc rien ne remonte à
+   * l'instant où l'on appuie, ce que la réserve existe pour empêcher. */
+  min-height: 84px;
   /* **Les ondes ne doivent JAMAIS élargir la page.** Elles sont posées en
    * absolu de part et d'autre du disque — 1,5 cm plus 9 px, soit 66 px de
    * chaque côté — et un élément absolu compte quand même dans le débordement

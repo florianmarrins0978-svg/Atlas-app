@@ -237,9 +237,29 @@ async function main() {
     //
     // **Le contrôle mesure, il ne regarde pas un nom de classe** : une marge
     // écrite autrement le laisserait passer, et c'est la hauteur qui compte.
-    for (const [nom, largeur, hauteur] of [
-      ["iPhone SE", 375, 667],
-      ["iPhone 13", 390, 844],
+    // ═══════════════════════════════════════════════════════════════════
+    // **« UNE SEULE PAGE » VAUT SUR SON TÉLÉPHONE, ET LES PLUS PETITS
+    // DÉFILENT — sa décision du 14 septembre 2026.**
+    //
+    // Ce cas exigeait la page unique sur les DEUX téléphones, et il rougissait
+    // sur le petit : 684 px pour 667. Resserrer les espacements le fait rentrer
+    // au pixel près — et rien de plus : ajoutez l'adresse du client et il
+    // redéborde de 66 px, resserré ou non. Mesuré, pas supposé.
+    //
+    // Posé devant lui, il a tranché : *« on aura ce problème sur beaucoup
+    // d'écrans, on pourra pas satisfaire tout le monde ; faut pas que les
+    // caractères soient trop petits sinon c'est illisible, donc ils
+    // défileront. »*
+    //
+    // Ce qui est donc exigé, et ce qui ne l'est plus :
+    //
+    // | son téléphone | la page unique, comme le 1ᵉʳ septembre |
+    // | plus petit | **le défilement est permis** — mais rien ne doit finir
+    //   SOUS la barre d'onglets, qui est fixée et masquerait le dernier geste |
+    // ═══════════════════════════════════════════════════════════════════
+    for (const [nom, largeur, hauteur, unePage] of [
+      ["iPhone SE", 375, 667, false],
+      ["iPhone 13", 390, 844, true],
     ] as const) {
       await page.setViewportSize({ width: largeur, height: hauteur });
       await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
@@ -259,12 +279,30 @@ async function main() {
       })()`)) as { fenetre: number; document: number; hautCentre: number; margeHaut: number };
 
       assert.ok(m.fenetre > 0 && m.hautCentre > 0, `${nom} : rien de mesurable, la page n'est pas rendue`);
-      // Huit pixels de tolérance : l'arrondi des marges de sécurité, pas un
-      // écran de plus à faire défiler.
-      assert.ok(
-        m.document - m.fenetre <= 8,
-        `${nom} : la fiche déborde de ${m.document - m.fenetre} px — elle ne tient pas sur une page`
-      );
+      if (unePage) {
+        // Huit pixels de tolérance : l'arrondi des marges de sécurité, pas un
+        // écran de plus à faire défiler.
+        assert.ok(
+          m.document - m.fenetre <= 8,
+          `${nom} : la fiche déborde de ${m.document - m.fenetre} px — elle ne tient pas sur une page`
+        );
+      } else {
+        // **La barre d'onglets est FIXÉE au bas de l'écran** : ce qui finit
+        // dessous est invisible quel que soit le défilement. C'est la réserve
+        // du bas qui l'empêche (`atlas-contenu`), et c'est elle qu'on éprouve
+        // ici — le dernier geste de l'écran doit rester atteignable.
+        const dernier = (await page.evaluate(`(() => {
+          const b = document.querySelector('[data-atlas="ecrire-a-la-main"], form button:last-of-type');
+          if (!b) return null;
+          const r = b.getBoundingClientRect();
+          return { bas: Math.round(r.bottom + window.scrollY), haut: Math.round(r.height) };
+        })()`)) as { bas: number; haut: number } | null;
+        assert.ok(dernier && dernier.haut > 0, `${nom} : le dernier geste ne se mesure pas`);
+        assert.ok(
+          dernier!.bas <= m.document,
+          `${nom} : le dernier geste finit à ${dernier!.bas} px, au-delà de la page (${m.document})`
+        );
+      }
       // Là où il reste de la place, elle se partage en haut ET en bas : c'est
       // la définition de « centré ». Là où il n'y en a pas, la marge vaut zéro
       // et l'écran se lit depuis le haut — jamais coupé.
