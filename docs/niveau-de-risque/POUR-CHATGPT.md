@@ -195,7 +195,7 @@ suite, et c'est elle qui l'autorise.
 ## 9. Les chiffres, et comment les rejouer
 
 ```bash
-node docs/niveau-de-risque/mesurer-rayon-impact.mjs
+node -e "import('./scripts/_rayon-impact.mjs')"
 ```
 
 | Rayon | Fichiers | Part |
@@ -221,5 +221,5 @@ batterie complète à ~50 min et les quinze suites à ~20 min viennent de
 | le seuil de rayon entre niveau 2 et niveau 3 | à mesurer, pas à décider d'avance |
 | le contenu de la liste de gravité | **le patron** : c'est lui qui sait ce qui coûte cher |
 
-**État : rien n'est codé.** Ni `.claude/rules/testing.md`, ni
-`scripts/_niveau-de-risque.mjs`, ni `scripts/garde-fusion-main.mjs` n'ont bougé.
+**État : validé et CODÉ le 14 septembre 2026** — `scripts/_niveau-de-risque.mjs`,
+`scripts/garde-fusion-main.mjs`, `.claude/rules/testing.md`, `ARCHITECTURE.md` §365.

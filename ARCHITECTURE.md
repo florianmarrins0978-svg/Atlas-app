@@ -30555,3 +30555,76 @@ Suites : `test-papier-devis-facture.ts` (les règles et les deux traces),
 `test-papier-facture-e2e.ts` (son chemin, du devis à la facture, et le PDF
 capturé dans la visionneuse). Adaptées à la planche : `test-devis-pdf`,
 `test-facture-pdf`, `test-acomptes-pdf`, `test-planche-b-devis`.
+
+## §365 — Le niveau d'épreuve se CALCULE sur le diff : MAX(plancher, rayon, gravité)
+
+**Sa décision du 14 septembre 2026**, après une revue en trois échanges : la
+règle « tout ce qui touche `src/` vaut la batterie entière » est remplacée par
+un calcul.
+
+```
+niveau = MAX( plancher , rayon d'impact , gravité )
+```
+
+**Ce que l'ancienne règle coûtait.** Un mot changé dans un écran valait
+cinquante minutes. Et elle se trompait **dans les deux sens** : 339 fichiers de
+`src/` sur 697 n'atteignent qu'un seul point d'entrée — tandis que
+`src/lib/civilite.ts` en atteint 64 sans figurer sur aucune liste de « fichiers
+centraux ». **Le chemin est un indice du risque, jamais la décision.**
+
+### Un point d'entrée n'est pas une catégorie : c'est un fichier que personne n'importe
+
+C'est la pièce qui évite une seconde liste. Une énumération — pages, routes
+API, Server Actions, génération de documents, cron — aurait vieilli au premier
+ajout, et son oubli aurait été muet. La définition par le graphe accueille
+toute seule ce qui arrive demain.
+
+Mesuré sur `main` : **122 points d'entrée** — 88 écrans, 24 routes d'API,
+`middleware.ts`, trois entrées serveur, six divers (`scripts/_rayon-impact.mjs`).
+
+### Les deux listes ne jouent pas le même rôle
+
+| | |
+|---|---|
+| une liste qui **ABAISSE** le niveau — « ces fichiers-là sont centraux » | **refusée** : le jour où elle oublie un fichier, du danger part et rien ne le dit |
+| une liste qui **REMONTE** le niveau — plancher, gravité | acceptée : le jour où elle se trompe, on joue une batterie de trop |
+
+Ce qui abaisse n'est donc jamais une liste : c'est le rayon, calculé. **Une
+session ne peut pas se l'accorder** — c'est la condition qu'il a posée.
+
+**Et la gravité ne se déduit d'aucun graphe** : `src/server/repositories/lignes-prix.ts`
+n'atteint que 11 points d'entrée quand un formateur de date en atteint 39. Le
+rayon mesure la portée, pas ce que coûte l'erreur.
+
+### Ce que le graphe ne voit pas, et qui remonte donc à 3
+
+- un `fetch("/api/…")` : aucun lien d'import ne relie une route à ses
+  appelants — toute route d'API vaut donc 3 ;
+- un `import()` dynamique dont le chemin est une variable ;
+- un fichier de `src/` qui n'est ni `.ts` ni `.tsx` ;
+- un fichier effacé ou renommé : on ne mesure rien sur ce qui n'est plus là ;
+- **un écran qu'aucune suite navigateur n'ouvre** : le niveau 2 ne tient que
+  parce qu'une suite le regarde.
+
+### Ce qui rend le niveau 2 acceptable sur du produit
+
+`verifier:avant-fusion` joue désormais **les suites navigateur des écrans
+atteints**, dérivées de l'adresse qu'elles ouvrent (`_suites-ciblees.mjs`).
+Sans elles, un niveau 2 ne prouverait rien de ce que le patron parcourt — c'est
+exactement ce qui a laissé passer « Invalid Server Actions request. », vingt
+allers-retours avec les voyants au vert.
+
+### Les pièces
+
+| | |
+|---|---|
+| `scripts/_rayon-impact.mjs` | le graphe d'imports inversé, les points d'entrée, l'adresse d'un écran |
+| `scripts/_suites-ciblees.mjs` | quelles suites ouvrent quel écran — dérivé, jamais écrit à la main |
+| `scripts/_niveau-de-risque.mjs` | le MAX, et la lecture du diff (une seule, partagée) |
+| `scripts/garde-fusion-main.mjs` | refuse la fusion, et **annonce** risque / niveau / raison / contrôles |
+| `scripts/dire-le-niveau.mjs` | `npm run niveau` — la même réponse, sans pousser |
+| `scripts/test-garde-fusion-main.ts` | 27 cas, dont les six qu'il a exigés |
+
+Le seuil de dix points d'entrée est une **valeur de départ**
+(`RAYON_MAXIMAL_DU_NIVEAU_2`) : à ce niveau, 189 fichiers sur 697 valent la
+batterie entière. Il se règle sur des mesures, jamais lot par lot.

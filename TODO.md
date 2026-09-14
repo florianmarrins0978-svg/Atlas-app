@@ -9,6 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ Le seuil de rayon se règle sur des mesures, pas sur une intuition
+
+`RAYON_MAXIMAL_DU_NIVEAU_2 = 10` (`scripts/_niveau-de-risque.mjs`) est une
+valeur de départ arbitrée le 14 septembre 2026 : à ce seuil, 189 fichiers sur
+697 valent la batterie entière. Ce qui manque pour la régler : le temps réel
+d'un niveau 2 ciblé, jamais chronométré — seulement extrapolé.
+
+## ⏳ Les écrans qu'aucune suite navigateur n'ouvre
+
+Dix-neuf adresses sur cinquante-six n'ont aucune suite qui les ouvre, dont
+`/reglages/notifications`, `/reglages/abonnement`, `/termines/retours` et
+`/verifier-email` (le reste est `/design/*`). Depuis le 14 septembre, un lot qui
+les atteint remonte en niveau 3 faute de quoi que ce soit qui les regarde : leur
+donner une suite les rend fusionnables au niveau 2.
+
 ## ~~À TRANCHER PAR LUI — VÉRIFIER L'ADRESSE E-MAIL À LA CRÉATION DU COMPTE~~ — CODÉ LE JOUR MÊME (14 septembre 2026, Brevo)
 
 **Codé** (*« Brevo »*) : migration 0091, `src/server/courriel/`,

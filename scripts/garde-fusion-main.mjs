@@ -16,7 +16,7 @@
  * **Ce qu'il fait, et rien de plus.** Devant une poussée vers `main` :
  *
  *   1. il calcule le niveau EXIGÉ par le lot, sur les chemins qui diffèrent de
- *      `main` (`_niveau-de-risque.mjs`) ;
+ *      `main` — MAX(plancher, rayon, gravité), `_niveau-de-risque.mjs` ;
  *   2. il lit le témoin laissé par la dernière vérification verte ;
  *   3. il refuse si ce témoin manque, s'il est d'un niveau trop bas, ou s'il
  *      décrit un arbre qui n'est plus celui-ci.
@@ -33,11 +33,13 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import {
   FICHIER_VERDICT,
+  cheminsDuLot,
   commandeDuNiveau,
-  niveauExige,
+  evaluerLeLot,
   poussseVersMain,
   verdictSuffit,
 } from "./_niveau-de-risque.mjs";
+import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 
 const RACINE = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
@@ -47,17 +49,6 @@ function git(...args) {
   } catch {
     return null;
   }
-}
-
-/** Les chemins que ce lot ajoute à `main` — commités ET pas encore commités. */
-export function cheminsDuLot() {
-  const base = git("merge-base", "origin/main", "HEAD") ?? "origin/main";
-  const commites = git("diff", "--name-only", `${base}...HEAD`) ?? "";
-  const enCours = git("status", "--porcelain") ?? "";
-  return [
-    ...commites.split("\n"),
-    ...enCours.split("\n").map((l) => l.slice(3)),
-  ].filter(Boolean);
 }
 
 function lireVerdict() {
@@ -114,29 +105,51 @@ process.stdin.on("end", () => {
   const branche = git("rev-parse", "--abbrev-ref", "HEAD");
   if (!poussseVersMain(commande, branche)) process.exit(0);
 
-  const chemins = cheminsDuLot();
-  const niveau = niveauExige(chemins);
-  if (niveau === 1) process.exit(0); // documents seuls : rien à éprouver.
+  const lot = evaluerLeLot(cheminsDuLot(RACINE), { racine: RACINE });
+  if (lot.niveau === 1) process.exit(0); // documents seuls : rien à éprouver.
 
   const { suffit, raison } = verdictSuffit(lireVerdict(), {
-    niveau,
+    niveau: lot.niveau,
     derniereEcriture: derniereEcriture(),
   });
   if (suffit) process.exit(0);
 
-  const touches = chemins.filter((c) => /^(src|drizzle)\//.test(c)).slice(0, 3);
+  // **LA LIGNE QU'IL DEMANDE AVANT CHAQUE FUSION — 14 septembre 2026.** Elle
+  // est ÉCRITE ICI, à partir du diff, et non recopiée par la session : une
+  // annonce rédigée à la main redeviendrait un niveau déclaré.
+  const annonce = [
+    `Risque : ${lot.risque}`,
+    `Niveau requis : ${lot.niveau}`,
+    `Raison : ${lot.raison}`,
+  ];
+  if (lot.niveau === 2) {
+    const suites = suitesDesRoutes(RACINE, lot.routes);
+    annonce.push(
+      `Contrôles exigés : ${commandeDuNiveau(2)}` +
+        (suites.length ? `, dont les suites ${suites.join(", ")}` : "") +
+        (lot.routes.length ? ` et les écrans ${lot.routes.join(", ")}` : "")
+    );
+  } else {
+    annonce.push(`Contrôles exigés : ${commandeDuNiveau(lot.niveau)} (la batterie entière)`);
+  }
+
+  const décisifs = lot.motifs.filter((m) => m.niveau === lot.niveau).slice(0, 3);
   console.error(
     [
       `Poussée sur « main » refusée : ${raison}.`,
       "",
-      `Ce lot est de NIVEAU ${niveau}${touches.length ? ` — il touche ${touches.join(", ")}${chemins.length > 3 ? "…" : ""}` : ""}.`,
+      ...annonce,
+      "",
+      "Ce qui a décidé du niveau :",
+      ...décisifs.map((m) => `    • ${m.chemin} — ${m.pourquoi}`),
+      "",
       `Ce qu'il faut jouer, et qui doit être VERT :`,
       "",
-      `    ${commandeDuNiveau(niveau)}`,
+      `    ${commandeDuNiveau(lot.niveau)}`,
       "",
-      "Le niveau se calcule sur ce que le lot touche, jamais sur ce qu'on en pense",
-      "(.claude/rules/testing.md). Pousser sur la branche de session reste libre :",
-      "c'est la fusion vers « main » qui attend d'être éprouvée.",
+      "Le niveau se CALCULE sur le diff — plancher, rayon d'impact, gravité —,",
+      "jamais sur ce qu'on en pense (.claude/rules/testing.md). Pousser sur la",
+      "branche de session reste libre : c'est la fusion vers « main » qui attend.",
     ].join("\n")
   );
   process.exit(2);

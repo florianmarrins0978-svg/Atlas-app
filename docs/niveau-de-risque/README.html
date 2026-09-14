@@ -59,7 +59,7 @@
 <main>
 <h1 id="niveau-de-test-calculé-sur-le-risque--le-dossier">Niveau de test calculé sur le risque — le dossier</h1>
 <p><strong>Ouvert le 14 septembre 2026.</strong> Objet : remplacer la règle « tout changement dans <code>src/</code> = batterie complète » par un niveau <strong>calculé</strong> sur l'impact réel du lot.</p>
-<p><strong>État : rien n'est codé.</strong> Ni <code>.claude/rules/testing.md</code>, ni <code>scripts/_niveau-de-risque.mjs</code>, ni <code>scripts/garde-fusion-main.mjs</code> n'ont bougé. Ce dossier porte l'analyse et attend l'arbitrage.</p>
+<p><strong>État : validé et CODÉ le 14 septembre 2026.</strong> La règle vit dans <code>scripts/_niveau-de-risque.mjs</code>, le garde-fou l'impose, <code>npm run niveau</code> la dit. Ce dossier porte l'analyse qui y a mené ; la règle active, elle, est dans <code>.claude/rules/testing.md</code> et <code>ARCHITECTURE.md</code> §365.</p>
 <hr>
 <h2 id="ce-que-chaque-pièce-porte">Ce que chaque pièce porte</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -85,7 +85,7 @@
 </tr>
 <tr>
 <td><code>mesurer-rayon-impact.mjs</code></td>
-<td>le calcul qui les produit — <code>node docs/niveau-de-risque/mesurer-rayon-impact.mjs</code></td>
+<td>le calcul qui les produit — <code>node -e "import('./scripts/_rayon-impact.mjs')"</code></td>
 </tr>
 </tbody></table></div>
 <h2 id="la-règle-proposée-en-une-ligne">La règle proposée, en une ligne</h2>

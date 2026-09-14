@@ -23,10 +23,16 @@ jamais.*
 2. **Une régression donne un test, dans cet ordre** : reproduire → **test
    rouge** → correction minimale → test vert → **le test reste pour toujours**.
    Un correctif sans rouge préalable est une supposition.
-3. **Le niveau d'épreuve se choisit sur le RISQUE** — 1 : suites ciblées ·
-   2 : `npm run verifier:avant-fusion` · 3 : `npm run verifier:avant-livraison`.
-   Le doute tranche vers le haut. **Pas de batterie complète pour une virgule ;
-   jamais rien de moins qu'elle quand `src/` ou `drizzle/` bouge.**
+3. **Le niveau d'épreuve se CALCULE sur le diff, il ne se déclare pas** —
+   `niveau = MAX(plancher, rayon d'impact, gravité)`. 1 : ce qui ne s'exécute
+   pas · 2 : `npm run verifier:avant-fusion` · 3 :
+   `npm run verifier:avant-livraison`. **Un chemin dans `src/` ne suffit plus à
+   exiger la batterie entière** (14 septembre 2026) : ce qui l'exige, c'est un
+   plancher — `drizzle/`, middleware, gabarit racine, accès à la base —, la
+   gravité — authentification, isolation, argent — ou un rayon de **dix points
+   d'entrée ou plus**. Le doute tranche vers le haut, et ce qui ne se mesure
+   pas vaut 3. Le détail est dans `.claude/rules/testing.md` ; `npm run niveau`
+   le dit pour le lot en cours.
 4. **Avant fusion, les parcours concernés se regardent** — pas seulement des
    tests verts.
 5. **Rien hors périmètre.** Aucun refactoring, nettoyage ou « amélioration »

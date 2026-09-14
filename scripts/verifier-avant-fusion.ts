@@ -2,34 +2,77 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { empreinteDesSources } from "./_batterie-solitaire";
 import { ecrireDernierVerdict } from "./_dernier-verdict";
+import { cheminsDuLot, evaluerLeLot } from "./_niveau-de-risque.mjs";
+import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 
 /**
- * NIVEAU 2 — ce qu'on joue avant de fusionner un lot d'OUTILLAGE.
+ * NIVEAU 2 — ce qu'on joue avant de fusionner un lot à impact BORNÉ.
  *
  * ═══════════════════════════════════════════════════════════════════════════
- * Sa règle du 13 septembre 2026 : *« ne pas lancer inutilement toute la
- * batterie lourde après une petite modification »*, et pourtant *« avant
- * fusion, vérifier les parcours critiques concernés »*. Entre les deux, il
- * manquait une marche : soit dix minutes, soit rien.
+ * **Sa décision du 14 septembre 2026.** Jusque-là, le moindre mot changé dans
+ * `src/` valait la batterie entière — cinquante minutes. Le niveau se calcule
+ * désormais sur le diff : MAX(plancher, rayon d'impact, gravité). Quand il
+ * rend 2, c'est CE contrôle-ci qui ouvre la fusion.
  *
- * Celle-ci prend les contrôles qui parlent de l'état du dépôt lui-même — les
- * types, le style, la cohérence de la mémoire — et les suites qui n'ont pas
- * besoin d'un navigateur. Elle ne remplace JAMAIS la batterie complète dès que
- * `src/` ou `drizzle/` bouge : `scripts/garde-fusion-main.mjs` calcule le
- * niveau sur le diff, et refuse celle-ci quand il faut l'autre.
+ * **Ce qu'il porte, et pourquoi chaque morceau est là :**
  *
- * Au vert, elle dépose le témoin que le garde-fou relit.
+ *   · types, style, mémoire du dépôt, suites du dépôt — ce qui parle de l'état
+ *     du dépôt lui-même ;
+ *   · **les suites navigateur des écrans que le lot atteint, et elles seules.**
+ *     C'est ce qui rend un niveau 2 acceptable sur du produit : types et lint
+ *     ne parcourent rien, et c'est exactement ce qui a laissé passer « Invalid
+ *     Server Actions request. » — vingt allers-retours, tous les voyants au
+ *     vert. Un écran touché s'ouvre dans un vrai navigateur.
+ *
+ * **Il REFUSE de rendre un vert sur un lot de niveau 3** : mieux vaut le dire
+ * ici que laisser le garde-fou de la fusion le découvrir dix minutes plus tard.
+ *
+ * Au vert, il dépose le témoin que le garde-fou relit.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
 const RACINE = path.join(__dirname, "..");
 
-const ETAPES: { titre: string; quoi: string; commande: string[] }[] = [
+const lot = evaluerLeLot(cheminsDuLot(RACINE), { racine: RACINE });
+
+console.log(`\x1b[1mRisque : ${lot.risque}\x1b[0m`);
+console.log(`Niveau requis : ${lot.niveau}`);
+console.log(`Raison : ${lot.raison}`);
+
+if (lot.niveau >= 3) {
+  console.log("\n❌ Ce lot exige la batterie entière — ce contrôle ne peut pas l'ouvrir.\n");
+  for (const m of lot.motifs.filter((x) => x.niveau === 3).slice(0, 3)) {
+    console.log(`   • ${m.chemin}\n     ${m.pourquoi}`);
+  }
+  console.log("\n    npm run verifier:avant-livraison\n");
+  process.exit(1);
+}
+
+const suitesCiblees = suitesDesRoutes(RACINE, lot.routes);
+
+type Etape = { titre: string; quoi: string; commande: string[] };
+
+const ETAPES: Etape[] = [
   { titre: "Types", quoi: "un appel qui ne correspond plus à sa signature", commande: ["npm", "run", "typecheck"] },
   { titre: "Lint", quoi: "les pièges connus de React et de Next", commande: ["npm", "run", "lint"] },
   { titre: "Mémoire du dépôt", quoi: "une documentation qui décrit une version disparue", commande: ["npm", "run", "verifier:memoire"] },
   { titre: "Suites du dépôt", quoi: "les règles métier, l'isolation, et les garde-fous", commande: ["npm", "test"] },
 ];
+
+// **Les écrans atteints, regardés pour de bon.** Sans cette étape, un niveau 2
+// sur du produit ne prouverait rien de ce que le patron parcourt.
+if (suitesCiblees.length) {
+  ETAPES.push({
+    titre: `Écrans atteints (${lot.routes.join(", ")})`,
+    quoi: "un écran qui ne s'ouvre plus, une action serveur refusée",
+    commande: ["npm", "run", "test:e2e", "--", "--seulement", suitesCiblees.join(",")],
+  });
+}
+
+console.log(
+  `Contrôles exécutés : ${ETAPES.map((e) => e.titre.replace(/ \(.*/, "")).join(", ")}` +
+    (suitesCiblees.length ? ` — ${suitesCiblees.length} suite(s) navigateur : ${suitesCiblees.join(", ")}` : "")
+);
 
 const echecs: string[] = [];
 
@@ -61,14 +104,13 @@ if (echecs.length > 0) {
 
 // **Le MÊME témoin que la batterie**, avec son niveau — jamais un second
 // fichier à côté. Deux façons de dire « voilà ce qui a été mesuré, et sur quel
-// arbre » finiraient par se contredire (`CLAUDE.md` §3), et c'est le garde-fou
-// de la fusion qui lirait alors la mauvaise.
+// arbre » finiraient par se contredire (`CLAUDE.md` §3).
 ecrireDernierVerdict(RACINE, {
   quand: Date.now(),
   vert: true,
-  verdict: "✅ Niveau 2 au vert (types, lint, mémoire, suites du dépôt).",
+  verdict: `✅ Niveau 2 au vert (types, lint, mémoire, suites du dépôt${suitesCiblees.length ? `, ${suitesCiblees.length} suite(s) navigateur` : ""}).`,
   empreinte: empreinteDesSources(RACINE),
   niveau: 2,
 });
-console.log("✅ Niveau 2 au vert — la fusion d'un lot d'outillage est ouverte.");
-console.log("   (Un lot qui touche src/ ou drizzle/ exige la batterie complète.)");
+console.log("✅ Niveau 2 au vert — la fusion de ce lot est ouverte.");
+console.log("   (Le niveau se recalcule à chaque poussée : un fichier de plus peut le changer.)");

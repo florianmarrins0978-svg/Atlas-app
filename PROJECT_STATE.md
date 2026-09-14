@@ -5,6 +5,14 @@
 
 ---
 
+## Le niveau d'épreuve, calculé (14 septembre 2026)
+
+`niveau = MAX(plancher, rayon d'impact, gravité)` — `scripts/_niveau-de-risque.mjs`.
+Un chemin dans `src/` n'exige plus la batterie entière : ce qui l'exige est un
+plancher (`drizzle/`, middleware, gabarit racine, accès base), la gravité
+(authentification, isolation, argent) ou un rayon de dix points d'entrée.
+`npm run niveau` le dit pour le lot en cours ; `garde-fusion-main.mjs` l'impose.
+
 ## FAIT : LE PAPIER, LE MÊME POUR LE DEVIS ET LA FACTURE — 14 septembre 2026, soir
 
 Sa planche, codée sur son « PARFAIT ! ». Migration 0092 : titre, main d'œuvre

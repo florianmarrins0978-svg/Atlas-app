@@ -4,9 +4,10 @@
 dans `src/` = batterie complète » par un niveau **calculé** sur l'impact réel
 du lot.
 
-**État : rien n'est codé.** Ni `.claude/rules/testing.md`, ni
-`scripts/_niveau-de-risque.mjs`, ni `scripts/garde-fusion-main.mjs` n'ont
-bougé. Ce dossier porte l'analyse et attend l'arbitrage.
+**État : validé et CODÉ le 14 septembre 2026.** La règle vit dans
+`scripts/_niveau-de-risque.mjs`, le garde-fou l'impose, `npm run niveau` la
+dit. Ce dossier porte l'analyse qui y a mené ; la règle active, elle, est dans
+`.claude/rules/testing.md` et `ARCHITECTURE.md` §365.
 
 ---
 
@@ -18,7 +19,7 @@ bougé. Ce dossier porte l'analyse et attend l'arbitrage.
 | [`1-lecture-du-brief.md`](1-lecture-du-brief.md) | la lecture de la proposition reçue : ce qui est juste, ce qui est refusé, et pourquoi |
 | [`2-revue-d-architecture.md`](2-revue-d-architecture.md) | la revue des trois réserves, les angles morts, et **la règle finale proposée** |
 | [`3-mesures.md`](3-mesures.md) | tous les chiffres cités, et comment les rejouer |
-| `mesurer-rayon-impact.mjs` | le calcul qui les produit — `node docs/niveau-de-risque/mesurer-rayon-impact.mjs` |
+| `mesurer-rayon-impact.mjs` | le calcul qui les produit — `node -e "import('./scripts/_rayon-impact.mjs')"` |
 
 ## La règle proposée, en une ligne
 

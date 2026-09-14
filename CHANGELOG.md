@@ -8,6 +8,24 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
+### Le niveau d'épreuve se calcule sur le diff, il ne se déclare plus
+
+Un mot changé dans un écran valait cinquante minutes de batterie. Le niveau est
+désormais `MAX(plancher, rayon d'impact, gravité)`, calculé par
+`scripts/_niveau-de-risque.mjs` : un fichier qui n'atteint qu'un point d'entrée
+vaut `verifier:avant-fusion` ; une migration, l'authentification, l'argent, un
+rayon de dix points d'entrée ou un impact qu'on ne sait pas mesurer valent la
+batterie entière.
+
+**Ce que ça évite dans les deux sens.** L'ancienne règle lisait `^src/` : elle
+imposait cinquante minutes à une virgule, et elle ne voyait pas que
+`src/lib/civilite.ts` touche 64 écrans. Une liste de « fichiers centraux » aurait
+eu le même angle mort en silence — d'où le calcul.
+
+`verifier:avant-fusion` joue maintenant les suites navigateur des écrans
+atteints, et un écran qu'aucune suite n'ouvre fait remonter le lot en niveau 3.
+`npm run niveau` dit le niveau d'un lot sans avoir à pousser pour l'apprendre.
+
 ### Le papier, le même pour le devis et la facture — sa planche, codée
 
 *« PARFAIT ! Code exactement cette planche, du devis à la facture. »*

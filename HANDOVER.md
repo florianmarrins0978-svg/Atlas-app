@@ -8,6 +8,13 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
+## Avant de pousser : `npm run niveau`
+
+Depuis le 14 septembre 2026, le niveau d'épreuve se calcule sur le diff —
+`MAX(plancher, rayon d'impact, gravité)`. La commande le dit sans qu'on pousse
+pour l'apprendre, et nomme les suites navigateur à jouer quand il rend 2. Le
+détail : `.claude/rules/testing.md`, et `ARCHITECTURE.md` §365.
+
 ## Dernier lot — LE PAPIER, LE MÊME POUR LE DEVIS ET LA FACTURE (14 septembre 2026, soir)
 
 **À retenir :** un seul composeur dessine les deux pièces ; ce qui distingue

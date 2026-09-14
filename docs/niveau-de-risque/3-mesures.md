@@ -4,8 +4,8 @@ Tous les chiffres de ce dossier sortent d'une seule commande. Aucun n'est
 estimé, sauf ceux qui le disent.
 
 ```bash
-node docs/niveau-de-risque/mesurer-rayon-impact.mjs
-node docs/niveau-de-risque/mesurer-rayon-impact.mjs "src/app/clients/[id]/actions.ts"
+node -e "import('./scripts/_rayon-impact.mjs')"
+node -e "import('./scripts/_rayon-impact.mjs')" "src/app/clients/[id]/actions.ts"
 ```
 
 **Relevé le 14 septembre 2026**, sur `main` à `524a90e`.
