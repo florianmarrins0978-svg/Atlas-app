@@ -29718,8 +29718,537 @@ suites qui précèdent celle-ci remplissent septembre. C'est la suite jouée
 seule, sur une base fraîche, qui a montré l'écran muet. Depuis, la phrase se
 rend au-dessus du message de mois vide, et la suite accepte zéro rangée avant
 d'ouvrir l'œil — c'est le cas qui compte.
+---
 
-## §351 — La batterie sait quand elle n'a rien à mesurer
+## §351 — Ce qu'une ligne pèse : une seule règle, et personne d'autre ne multiplie
+
+**Sa demande du 13 septembre 2026 :** *« vérifie tous les calculs ; si les
+lignes ne s'additionnent pas ou mal, c'est hyper grave et ça ne doit jamais
+arriver »*.
+
+**Ce que la vérification a trouvé — et ce n'était pas l'addition.** Les totaux
+passaient déjà tous par `totauxAvecReduction` (`src/lib/reduction-devis.ts`),
+appelée par l'écran, les dépôts et le PDF. En revanche, **la multiplication
+d'une ligne — quantité × prix unitaire — était écrite TROIS fois** :
+
+| Où | Ce que son commentaire affirmait |
+|---|---|
+| `src/server/repositories/lignes-prix.ts` | (rien) |
+| `src/server/repositories/factures.ts` | *« la même règle que le devis, appelée et non réécrite »* — elle l'était |
+| `TravauxSupplementairesClient.tsx` (l'écran des travaux supplémentaires) | *« la même règle qu'au serveur, jamais une seconde »* — c'était la troisième |
+
+**Deux commentaires disaient le contraire du code.** Et c'est un contrôle, pas
+une relecture, qui a trouvé la troisième : elle n'était pas dans l'inventaire
+fait à la main.
+
+`src/lib/montant-de-ligne.ts` porte désormais la règle, et les trois appellent.
+Elle est dans `lib/` parce qu'elle est pure : ni base, ni écran, et le lien
+descend (`CLAUDE.md` §4 sexies).
+
+**Ce que le contrôle tient**, et qui répond à sa question *« est-ce que ça peut
+se reproduire ? »* :
+
+1. **le calcul** — décimales exactes (jamais la virgule flottante), arrondi une
+   seule fois à la fin, une valeur vide ou illisible qui vaut zéro sans jamais
+   lever, un négatif qui reste négatif ;
+2. **l'unicité** — le contrôle relit tout `src/` et refuse toute nouvelle
+   multiplication quantité × prix hors de la règle. Une quatrième copie fait
+   rougir le lot, au lieu de dormir sous un commentaire qui prétend le
+   contraire ;
+3. **l'addition, sur mille devis tirés** (graine fixe, donc reproductible) : le
+   total HT tombe au centime sur la somme des lignes, et le net égale le brut
+   sans remise.
+
+Confronté à un calcul faux — arrondi avant la multiplication —, il rougit sur
+les deux bons cas.
+
+**CE QUI N'ÉTAIT PAS UN DÉFAUT DE CALCUL, et qu'il faut savoir avant d'y
+revenir :** le devis à 5 400 € au lieu de 900 venait de la SAISIE. La base
+portait `quantite = 12.00` pour un prix de 450, et 12 × 450 fait bien 5 400. Le
+champ pose volontairement le curseur à DROITE du chiffre existant (sa règle du
+11 septembre 2026, 2 h 28) : taper sans effacer ajoute. Les deux suites qui
+« accusaient » le calcul tapaient ainsi. Elles font maintenant son geste —
+entrer, tout sélectionner, taper.
+
+---
+
+## §352 — Un champ quitté rend SA valeur, jamais celle du dernier rendu
+
+**Le même défaut, quatre fois, sur quatre pièces différentes.** Il a été
+diagnostiqué le 30 août 2026 sur les prix de ligne du devis — *« un prix tapé
+puis quitté partait à zéro »*, six enquêtes — et la leçon est restée dans un
+commentaire. Trois autres pièces l'ont refait.
+
+| Quand | La pièce | Ce qui partait chez le client |
+|---|---|---|
+| 30 août | les prix de ligne du devis | un prix remplacé par le précédent |
+| 13 septembre | `PrixAccordeAuClient` | la remise retirée **revenait**, à son ancien pourcentage |
+| 13 septembre | `ChampNu` | le nom, l'adresse, le SIRET, l'IBAN — de l'émetteur ET du client |
+| 13 septembre | `Champ` des Réglages, `ChampTelephone` | le SIRET, le numéro de TVA, l'IBAN, le téléphone |
+
+**Le mécanisme n'a rien d'exotique.** `onBlur` se déclenche à la perte du
+focus. Si le gestionnaire n'emporte rien, l'appelant lit son propre état React
+— celui du DERNIER RENDU. Or React ne rend pas à la frappe, il le programme :
+entre la dernière touche et la sortie du champ, rien ne garantit que l'état
+porte ce qui vient d'être tapé.
+
+Sur une machine reposée, le rendu arrive à temps. Sous charge, non — et
+**l'écran continue d'afficher la valeur neuve** pendant que le serveur range
+l'ancienne. Rien ne le dit : on l'apprend au rechargement, ou sur la pièce
+partie chez le client.
+
+**La règle, et elle vaut partout :** un `onBlur` qui appelle un rappel lui
+passe `e.currentTarget.value` — ou la valeur composée à partir de lui quand ce
+qui s'affiche n'est pas ce qui se range (`ChampTelephone` : « 06 79 98 45 14 »
+à l'écran, « +33679984514 » en base). `onBlur={onFini}` donnerait l'ÉVÉNEMENT
+comme valeur ; `onBlur={() => onFini()}` ne donne rien.
+
+**Quand ce n'est pas un champ mais un objet** — le brouillon de la dictée, dont
+chaque case modifie une partie —, la frappe et la sortie construisent le même
+objet par la **même fonction**, à partir de la valeur du champ
+(`BrouillonSection`, `avecChamp` / `avecLigne`). Deux constructions auraient
+divergé (`CLAUDE.md` §3).
+
+**Ce qui empêche la cinquième fois :** `scripts/test-valeur-du-champ.ts`, joué
+par `npm test`, donc par la batterie. Il lit tout `src/` et refuse les trois
+formes. Une consigne en prose se lit au début d'une conversation et s'oublie au
+bout de trois heures (`CLAUDE.md` §1 bis) — celle-ci avait tenu treize jours.
+
+---
+
+## §353 — Un verrou qu'un seul des deux prend ne protège rien
+
+**Sa remise retirée revenait toute seule, une fois sur deux.** Mesuré à la
+sonde le 13 septembre 2026 : le champ du prix accordé vidé, le serveur rendait
+bien la ligne à `reduction: null` — et la base repassait à `15.00` dans la
+seconde qui suit, sans un mot.
+
+**Deux chemins écrivent la même ligne de devis, et un seul prenait le verrou :**
+
+| | |
+|---|---|
+| `getOuCreerDevisBrouillon` | régénère le devis à l'ouverture de l'écran et réécrit ses totaux — **réduction comprise** : `calculerTotaux` la rend, et le `.set({ ...totaux })` l'écrit. Prenait `pg_advisory_xact_lock(hashtext(chantierId))` |
+| `mettreAJourEnTeteDevis` | enregistre le taux de TVA, les conditions, le prix accordé. **Ne prenait aucun verrou** |
+
+Les deux lisaient la ligne, la modifiaient chacune de son côté, et la dernière
+à écrire gagnait. La régénération — déclenchée par le rafraîchissement que
+provoque `revalidatePath` — avait lu les 15 % AVANT l'effacement, et les
+réécrivait APRÈS. C'est la perte de mise à jour d'école, sur un chiffre qui
+décide de ce que le client paie.
+
+**La clé est le CHANTIER, pas le devis** : c'est celle que prend la
+régénération, et deux clés différentes ne s'excluent pas. La ligne est relue
+SOUS le verrou — ce qu'on avait vu avant de l'attendre a pu changer.
+
+**DEUX SESSIONS L'ONT TROUVÉ LE MÊME SOIR, ET C'EST LE CORRECTIF DE `main` QUI
+VIT ICI.** Le lot de la planche B a buté sur la même course par l'autre bout —
+*« les 5 % du + Remise n'arrivaient pas en base, la main d'œuvre retirée
+revenait »* — et a posé le même verrou, sur la même clé, avec la même relecture.
+Les deux versions étaient équivalentes ; à la fusion, celle qui était déjà sur
+`main` a été gardée et la mienne jetée (`CLAUDE.md` §B). C'est exactement le
+gaspillage que §A cherche à éviter : **regarder les autres branches avant
+d'ouvrir un lot**. Ce qui reste de mon côté, et qui manquait au leur, c'est le
+contrôle déterministe ci-dessous.
+
+**Pourquoi personne ne l'avait vu.** `test-reduction-devis-e2e` l'attrapait une
+fois sur deux, et son rouge dépend du moment où l'écran se rafraîchit : trois
+sessions ont conclu « cette suite est capricieuse » plutôt que « le produit perd
+une écriture ». Un rouge intermittent qu'on apprend à ignorer est pire qu'un
+contrôle absent.
+
+`scripts/test-remise-qui-revient-db.ts` joue la course elle-même — les deux
+chemins partis ensemble, dix fois, dans les deux sens — sans navigateur et sans
+hasard. Retirer le verrou le fait rougir dès le premier essai, en nommant ce
+que ça coûte.
+
+**Et `useEcrituresALaSuite` ne pouvait rien y faire** : elle sérialise les
+écritures d'UN onglet. Ici les deux écritures venaient de deux endroits
+différents du serveur. Une file côté navigateur ne remplace pas un verrou côté
+base.
+
+---
+
+## §354 — Entrer dans la case sélectionne tout : un appui remplace
+
+**Sa décision du 13 septembre 2026 — « fais le B ».** Elle REMPLACE sa
+correction du 11 septembre (le curseur posé au bout du chiffre), et c'est lui
+qui a tranché, les deux coûts sous les yeux.
+
+| Son geste sur une case qui affiche « 1 » | Le A (11 sept.) | **Le B (13 sept.)** |
+|---|---|---|
+| poser le doigt, taper « 2 » | **12** | **2** |
+| poser le doigt, effacer | 1 → vide | vide d'un coup |
+
+**Ce que le A coûtait.** La quantité par défaut est « 1 », le curseur arrivait
+DERRIÈRE, et taper le bon chiffre l'ajoutait au lieu de le remplacer. Un « 2 »
+tapé sur un prix de 450 € fait un devis à **5 400 € au lieu de 900** — et rien
+à l'écran ne dit que le chiffre s'est collé au précédent. C'est exactement ce
+qui a été mesuré la veille, en croyant d'abord à une faute de calcul (§351).
+
+**Sa demande du 11 septembre est TENUE, pas abandonnée** — *« si la quantité par
+défaut n'est pas bonne, on a juste à supprimer »*. Tout étant sélectionné, une
+seule touche efface : c'est moins de gestes qu'avant, pas plus.
+
+**Le mécanisme n'a pas bougé, seule la borne a changé** : `setSelectionRange(0,
+fin)` au lieu de `(fin, fin)`. Les deux temps restent nécessaires — l'entrée
+dans le champ pose la sélection, puis l'appui la défait pour placer le curseur
+où le doigt s'est posé, et c'est cette remise en place qu'on rattrape une fois.
+Après quoi le champ lui appartient.
+
+**Vaut pour la quantité COMME pour le prix** : les deux cases sont le même
+composant (`ChiffreSaisi`), et le chiffre s'y collait de la même façon.
+
+**CE QUI A ÉTÉ RETIRÉ AVEC, et c'est la moitié qui compte** (`CLAUDE.md`
+§4 quater, « une correction qui n'enlève rien recouvre au lieu de réparer») :
+les deux suites navigateur sélectionnaient tout à la main — `ControlOrMeta+a` —
+pour contourner le A. Gardé, cet échafaudage aurait laissé les suites VERTES le
+jour où le B saute, pendant qu'un devis à 5 400 € part chez son client. Elles
+font désormais son geste : on entre, on tape.
+
+`scripts/test-case-du-prix.ts` tient les deux moitiés — que la sélection aille
+bien de 0 à la fin, et que l'ancienne règle ne soit plus là. Confronté au A, il
+rougit sur les deux.
+
+**ET LE GESTE LUI-MÊME SE JOUE AU NAVIGATEUR**, dans
+`test-devis-refus-a-chiffrer-e2e` : on appuie **dans le vide à gauche du
+chiffre** — là où le doigt tombe, et là où le navigateur défait la sélection —,
+on vérifie que « 1 » est bien sélectionné de bout en bout, **puis on tape
+« 2 » et l'on exige « 2 »**. Sans cette seconde moitié, le contrôle dirait que
+la sélection est là sans jamais vérifier ce qu'elle fait. Remis au A, il rougit
+sur « « 1 » n'est pas sélectionné (1→1) ».
+
+**Ce bloc éprouvait le A jusqu'au 13 septembre** : c'est lui qui a rougi à la
+batterie quand le B est arrivé, et il a été réorienté sur la nouvelle règle
+plutôt que contourné (`CLAUDE.md` §5 bis — quand une suite rougit après un
+changement qu'il a demandé, on adapte le contrôle, on ne remet pas l'ancien
+comportement).
+
+---
+
+## §355 — Une colonne `date` arrive en jour, jamais en instant : la règle vit au pilote
+
+**Le défaut, mesuré le 13 septembre 2026.** Quatre suites navigateur —
+`poser-une-date`, `liberer-une-demi-journee`, `date-lointaine`,
+`deux-dates-calendrier` — rougissaient d'un jour sur un PC réglé à l'heure de
+Paris, et restaient vertes en UTC, où tournent la CI et son espace. Le message
+disait « posé le 2026-09-13 au lieu du 2026-09-14 » ; la base, elle, portait
+bien le 14.
+
+**La racine.** Le pilote `pg` analyse une colonne `date` en objet `Date` posé
+à **minuit dans le fuseau du processus**. Relue par `toISOString()`, minuit à
+Paris devient 22 h la veille en UTC — et le jour recule d'un. Drizzle le sait :
+pour ses propres requêtes, il force `date`, `timestamp` et `date[]` en texte.
+Le `pool` que `client.ts` exporte, lui, gardait le comportement du pilote, et
+c'est par lui que les suites relisent la base.
+
+**Où la règle vit, et pourquoi là.** Dans `src/server/db/client.ts`, au
+chargement : `types.setTypeParser(DATE, v => v)`, et `date[]` lu par
+l'analyseur de `text[]` — même syntaxe, aucune dépendance de plus. Une seule
+définition, pour le produit comme pour les suites : `src/lib/jour.ts` disait
+déjà qu'une date de ce format désigne un jour, pas un instant, et refusait
+`new Date(iso)` pour cette raison. Le pilote rendait l'inverse. Deux suites
+avaient contourné à la main (`to_char`, `::text`) ; quatre autres avaient
+recopié un `instanceof Date ? toISOString()` — la règle existait en trois
+exemplaires, et un seul était faux. Les quatre compensations sont parties.
+
+**Ce qui n'est pas touché, et ne doit pas l'être :** `timestamptz`. Un
+horodatage est un instant, et il a une heure qui compte — le lire en texte
+se tromperait dans l'autre sens. `test-date-est-un-jour-db.ts` tient les
+deux : la `date` arrive en « 2026-09-14 », l'horodatage reste un `Date`. Elle
+sait rougir sur l'ancien pilote **dans n'importe quel fuseau** — un contrôle
+qui ne rougirait qu'à Paris serait vert sur la CI, donc invisible.
+
+**Ce que le relevé affirmait et qui était faux.** `TODO.md` désignait
+`PlanningClient.tsx` comme faisant « la même conversion dans le navigateur ».
+Non : ses fonctions ancrent la date à `T12:00:00Z` et n'emploient que des
+méthodes UTC. Il a été lu avant d'être touché, et il ne l'a pas été. En
+revanche `src/app/termines/page.tsx` comptait le mois courant en UTC — le 1ᵉʳ du mois
+entre minuit et deux heures, l'écran ouvrait sur le mois d'avant, la fenêtre
+même que §177 avait fermée pour les jours. Il passe par `jourIso`.
+
+---
+
+## §356 — Le code et la base ne peuvent plus diverger en silence
+
+**Sa panne du 13 septembre 2026 :** *« Plus rien ne fonctionne ! »* — capture à
+l'appui, « Planning » et « Terminés » tombés ensemble, « Chantiers » debout.
+
+**Ce partage-là nomme la cause à lui seul.** Ces deux écrans lisent l'entreprise
+ENTIÈRE : `contextePlanning` appelle `getEntreprise`, et `tvaDeLaPeriodeCourante`
+aussi. La liste des chantiers, elle, ne lit jamais l'entreprise. Une seule
+colonne manquante suffit donc à coucher ces deux écrans-là et aucun autre.
+
+Reproduit, contre une base arrêtée à la migration 0087 sous le code de `main` :
+
+```
+column "conditions_generales" does not exist
+```
+
+C'est la colonne de la migration **0090** (13 septembre). Sa base servait du
+code qui la suppose, et ne l'avait pas.
+
+### La racine, et ce qui n'en est pas une
+
+Il serait tentant de s'en prendre au `select()` sans projection de
+`getEntreprise` : c'est lui qui fait dépendre le Planning d'une colonne de
+conditions générales dont il n'a rien à faire. **Ce serait le pansement**, et il
+coûterait deux fois : nommer les colonnes à la main recopie le schéma à
+vingt-huit endroits — la divergence que §3 refuse —, et cela ne protégerait que
+cette fonction-là. Une table entière absente, un type changé : le prochain écart
+tomberait ailleurs, tout aussi muet.
+
+La racine est au-dessus : **rien ne garantissait que la base suive le code, et
+rien ne disait qu'elle ne le suivait pas.** Deux moitiés, et il fallait les deux.
+
+### Moitié I — la base se rattrape, à chaque allumage
+
+Les deux chemins qui migrent — `.devcontainer/demarrer.sh` et le bouton
+« Chercher les dernières corrections » — le faisaient **sous condition que le
+code vienne de bouger** :
+
+```sh
+if [ "$MISE_A_JOUR" = "faite" ]; then … appliquer-migrations.sh … fi
+```
+
+Cette condition prétend dire *« la base est en retard »*. Elle dit autre chose,
+et l'écart se paie deux fois :
+
+| | |
+|---|---|
+| une migration **échoue** (base pas encore levée, `node_modules` amputé) | elle n'est **jamais retentée** : l'allumage suivant lit « déjà à jour » et ne migre pas. La base reste en arrière **pour toujours** |
+| le code arrive **par l'autre chemin** (le bouton, une reconstruction qui clone déjà à jour) | ce démarrage-ci lit « à jour » et ne migre pas, alors que la base, elle, est bien en retard |
+
+La condition a été **supprimée** des deux côtés — le rejeu ne coûte rien et ne
+détruit rien : `run-migrations.ts` tient la table `_migrations` et saute ce qui
+est déjà appliqué. Avec elle est parti le repli `MIGRATIONS=""` du démarrage,
+qui n'avait de sens que tant qu'un chemin pouvait ne rien affecter.
+
+C'est la même famille que le défaut du 9 août 2026 : là, les migrations
+tournaient sous `atlas_app` et l'échec était avalé. **Le rôle avait été corrigé,
+la condition était restée.**
+
+### Moitié II — l'écart se MESURE et se DIT
+
+Le rattrapage retire la cause courante ; il ne peut pas promettre qu'elle ne
+reviendra jamais (base éteinte au mauvais moment, réseau, disque plein). Ce qui
+manquait vraiment, c'est de **savoir** : l'écart se découvrait par un écran mort,
+au hasard de la colonne touchée, derrière un identifiant de six chiffres.
+
+Une règle, une lecture, deux endroits où elle se lit :
+
+| | |
+|---|---|
+| `src/lib/retard-de-la-base.ts` | la règle pure : ce que le code attend (les fichiers de `drizzle/`) face à ce que la base déclare (`_migrations`). Rend les migrations **nommées**, dans les deux sens |
+| `src/server/retard-de-la-base.ts` | la lecture. Rend `null` quand la mesure est impossible — **jamais un « à jour » de consolation** |
+| `scripts/etat-de-la-base.ts` | la même chose en une ligne, pour la fiche que son espace publie (`diagnostiquer-espace.mjs` est du JavaScript, hors d'atteinte du TypeScript) |
+| l'écran **Réglages** | là où il vient demander « est-ce que j'ai les corrections ? ». Rien ne s'affiche quand tout concorde |
+
+La fiche porte désormais, sous « Code SERVI » :
+
+```
+Base             : EN RETARD DE 3 — 0088, 0089, 0090
+```
+
+et en tête de ses conclusions, avant la lenteur et avant le retard de version —
+une base en retard ne rend pas l'application vieille, elle en fait **tomber** des
+écrans, et tout autre diagnostic envoie alors chercher au mauvais endroit.
+
+**Le NUMÉRO, pas le compte.** « EN RETARD DE 3 » aurait encore demandé d'aller
+chercher lesquelles ; ce sont les numéros qui disent quelle colonne manque, donc
+quel écran tombe.
+
+**Et le geste rendu n'efface rien** — `CLAUDE.md` §4 septies, qu'il a dû poser
+deux fois : « Chercher les dernières corrections », jamais une reconstruction, un
+amorçage ou une suppression. `test-verdict-port.ts` tenait cette promesse pour le
+verdict du port ; celui de la base n'était couvert par personne, et
+`scripts/test-retard-de-la-base.ts` s'en charge.
+
+### Ce qui tient la correction
+
+`scripts/test-migrations-banc.ts` — trois contrôles qui lisent la STRUCTURE des
+deux appelants (l'appel hors du bloc conditionnel côté démarrage, l'appel avant
+la branche côté bouton). Confrontés à la version d'avant : **tous deux
+rougissent**.
+
+`scripts/test-retard-de-la-base.ts` — la règle dans les deux sens, le refus de
+conclure sans mesure, le fait que le constat soit **atteignable** (monté dans la
+fiche ET dans l'écran, la leçon du 28 août), et l'interdit des gestes
+destructeurs. Éprouvé rouge lui aussi, en cassant chacune des deux moitiés.
+
+Et le chemin complet a été joué à la main, contre une base dont `_migrations`
+s'arrête à 0087 : la ligne rendue est `EN RETARD DE 3 — 0088, 0089, 0090`.
+
+---
+
+## §357 — Une panne de base ne jette plus le patron sur l'écran d'erreur
+
+**Sa plainte du 13 septembre 2026 :** *« Je peux toujours pas créer de
+compte ! »* — et, en capture, « Une erreur · Cette page n'a pas pu s'afficher ·
+Référence : 3285538552 », après avoir répondu aux seize questions.
+
+**Reproduit, et c'est la seule chose qui a fait avancer le diagnostic.** Le
+parcours entier joué dans un navigateur sur une base à laquelle on retire la
+migration 0089 rend **exactement** cet écran : l'insertion de la ligne d'essai
+lève, l'action serveur meurt avec, et Next.js remplace la cause par un digest.
+En version bâtie — celle que son banc sert — la cause n'est même pas affichée.
+
+**Ce qui était en cause n'était pas la création de compte, c'était le SILENCE.**
+Rien n'était journalisé, rien n'était dit à l'écran, et le numéro affiché ne
+mène à rien : ni lui ni la session suivante ne pouvaient savoir pourquoi. C'est
+le défaut muet qu'`AGENTS.md` interdit de laisser vivre — *« la première
+livraison n'est pas un correctif, c'est de rendre le défaut bavard »*.
+
+**La correction, à la racine :** `creerSonCompte` ne laisse plus sortir
+d'exception. Elle journalise l'erreur entière avec son code `SQLSTATE`, et rend
+un refus — le même chemin que « Cette adresse a déjà un compte », celui que
+l'écran sait déjà afficher. **Ce n'est pas un `catch` qui avale** (`CLAUDE.md`
+§4 quater) : rien n'est perdu, et ce qui sort NOMME la cause.
+
+**Le code d'erreur, jamais le message.** PostgreSQL numérote ses refus, et ces
+numéros ne changent ni de langue ni de version ; le message, lui, est traduit.
+`src/lib/panne-de-base.ts` (règle pure) distingue les refus qui veulent dire
+« la base n'est pas celle que ce code attend » — table, colonne, fonction,
+schéma ou droit manquants, contrainte `CHECK` ou `NOT NULL` qu'une migration
+devait élargir, type incompatible — de tout le reste. Le code est cherché sous
+l'enveloppe de Drizzle (`cause`), sans quoi tout refus se lirait « inconnue ».
+
+**Et le geste proposé dépend de l'endroit d'où l'on parle.** Sur son banc, la
+base se remet à jour en **rallumant l'espace** — un geste qui ne touche à
+aucune de ses données (`CLAUDE.md` §4 septies : jamais reconstruire, jamais
+supprimer, jamais amorcer ; `test-panne-de-base.ts` refuse ces mots). Ailleurs,
+personne ne peut rien faire depuis un écran : on dit ce qui se passe, sans
+envoyer chercher un remède qui n'existe pas de ce côté-là.
+
+**ET LE CODE DE LA BASE PARAÎT SUR LE BANC, entre parenthèses, à la fin du
+refus** — « (base : 23514) ». Ce n'est pas le numéro de l'écran d'erreur, qui
+ne menait à rien : celui-là NOMME ce que la base a refusé, et il tient sur la
+capture qu'il envoie. C'est ce qui manquait le 13 septembre : le journal est sur
+SA machine, il n'est publié nulle part, et personne n'ira l'y lire. Hors du
+banc, rien de tout cela ne sort — un client n'a que faire d'un `SQLSTATE`.
+
+**Ce qui manquait vraiment, et qui a permis de ne rien voir venir :** aucune
+suite n'entrait par la porte. La règle était éprouvée (`test-creation-compte`),
+l'écriture aussi (`test-compte-db`) — mais personne n'avait jamais répondu aux
+seize questions puis appuyé sur « Créer mon compte ». C'est la faute du 28 août
+(`CLAUDE.md` §5 quater), à l'identique. `test-creer-son-compte-e2e.ts` joue
+désormais ce geste-là, et son second cas retire réellement la migration pour
+exiger un refus lisible plutôt que l'écran d'erreur. Il rougit sur le code
+d'avant.
+
+**Deux pièges payés en l'écrivant, et ils valent pour toute suite de ce genre :**
+la création de compte **ouvre la session elle-même**, si bien qu'un second
+parcours part en « Avant de commencer » tant qu'on n'a pas effacé les cookies ;
+et `networkidle` n'arrive jamais sur un banc servi en mode développement, où le
+bandeau de construction interroge le serveur toutes les cinq secondes. On attend
+la première question, pas un silence qui ne viendra pas.
+
+**Le seau du limiteur a rejoint le nettoyage entre suites** (`run-e2e-tests.ts`,
+`ratelimit:creation-compte:*`) : deux essais par batterie s'additionnent, et la
+cinquième suite qui créerait un compte tomberait sur « Trop d'essais depuis cet
+appareil » en accusant le produit. C'est le piège déjà payé sur `connexion:`.
+
+---
+
+**CE QUI PRÉCÈDE NE RÉPARAIT RIEN — sa remarque du 13 septembre au soir :**
+*« arrête de faire du rafistolage, va corriger le problème à la racine »*. Il a
+raison : rendre la panne bavarde était le préalable, pas la réparation. Deux
+racines ont été cherchées ensuite, et trouvées.
+
+**RACINE 1 — le chemin LISSE était le seul éprouvé.** Le parcours joué pour
+reproduire sa panne remplissait toutes les cases avec des valeurs propres. En
+balayant les autres façons de remplir (`test-porte-aucune-saisie-ne-tombe-db.ts`,
+trente-sept), un vrai défaut est sorti : **un capital de quinze chiffres**
+passait `capitalEnBase` sans un mot, et PostgreSQL refusait la ligne — `22003`,
+hors bornes de `numeric(12,2)` —, donc la création du compte ENTIÈRE pour une
+case facultative. Exactement ce que le commentaire de cette fonction promettait
+d'éviter, et dont elle ne tenait que la moitié « texte illisible ».
+
+Corrigé **là où la règle vit** : la borne de la colonne entre dans
+`capitalEnBase`, qui décide pour l'écran comme pour l'écriture (`CLAUDE.md`
+§3 — jamais deux bornes pour une même question). L'écran refusait déjà
+« Un montant, en chiffres. » : rien à ajouter de ce côté.
+
+**RACINE 2 — sa machine savait, et ne le disait à personne.** Traitée par la
+session voisine dans le **§356 ci-dessus**, livrée le même soir : la fiche porte
+l'état de la base, et l'écran des Réglages aussi. Une lecture écrite ici en même
+temps a été **jetée** plutôt que gardée à côté — deux façons de lire un même
+état divergent toujours (`CLAUDE.md` §3), et la sienne va plus loin.
+
+**Ce qui reste vrai, et qu'il faut redire :** rien de tout cela ne prouve ce qui
+est tombé sur SA machine ce soir-là. Sa fiche le dira au prochain allumage, et
+le refus à l'écran porte maintenant le code que la base a rendu.
+
+---
+
+## §358 — Une migration qui écrit des DONNÉES ne voit rien sous FORCE RLS
+
+**Sa panne du 13 septembre 2026**, et c'est la cause réelle, trouvée en
+reproduisant : la migration **0087** refusait de s'appliquer sur sa base, ce qui
+laissait 0088, 0089 et 0090 derrière elle — le script annule le fichier entier
+et s'arrête au premier échec. Son espace servait alors un code qui lit
+`entreprises.conditions_generales` (0090) sur une base restée en 0086 :
+« Planning », « Terminés » et « Réglages » sont tombés ensemble, les cinq autres
+écrans sont restés debout.
+
+```
+échec : check constraint "diagnostics_refus_complet_ck"
+        of relation "diagnostics" is violated by some row
+```
+
+### Deux défauts, emboîtés
+
+**1. La migration ne voyait pas les lignes qu'elle convertit.** `diagnostics`
+vit sous `FORCE ROW LEVEL SECURITY`, et le rôle qui migre (`atlas_owner`) n'a
+pas `BYPASSRLS` — c'est délibéré, la CI le vérifie. Sans contexte d'entreprise,
+il ne voit **aucune** ligne : les trois `UPDATE` de conversion ne touchaient
+rien, en silence, zéro ligne mise à jour et aucune erreur. La contrainte, elle,
+est vérifiée par PostgreSQL sur **toutes** les lignes, RLS ou pas.
+
+> **Cela dépasse 0087.** Toute migration de ce dépôt qui met à jour des DONNÉES
+> sur une table sous FORCE RLS est inopérante de la même façon. 0087 est la
+> première à l'avoir payé parce qu'elle vérifie son propre travail avec une
+> contrainte ; les autres échouent sans le dire.
+
+**2. Une ligne que la conversion ne peut pas traduire.** Un `inconclusif` dont
+la phrase n'a jamais été rangée n'obtient ni clé ni trace. Le commentaire de la
+migration l'écrivait : *« il n'en existe pas »* — une supposition, jamais
+confrontée à une vraie base. Sur la sienne, il en existait.
+
+### La correction, minimale
+
+| | |
+|---|---|
+| `NO FORCE` / `FORCE` autour de la conversion | le PROPRIÉTAIRE — et lui seul — voit sa table le temps du travail. `atlas_app` reste soumis à la politique : **l'isolation entre entreprises n'est pas touchée une seconde**. Un échec entre les deux annule la transaction, donc rend le `FORCE` |
+| un `UPDATE` de plus | la ligne sans phrase reçoit `panne = 'Motif non enregistré.'` — ce qui est vrai. **Aucune clé n'est inventée** : on ne sait pas laquelle c'était, et un refus faux vaut moins qu'un refus muet (`docs/AGENT.md` §3) |
+
+La contrainte n'a pas été touchée, ni affaiblie, ni retirée.
+
+### Le trou qu'elle a révélé
+
+**Aucune migration de ce dépôt n'était éprouvée sur une base HABITÉE.** Elles
+tournent toutes sur une base vide, où une contrainte ne peut par construction
+être violée par aucune ligne, et où la RLS ne cache rien puisqu'il n'y a rien à
+cacher. 0087 était donc verte partout — en CI, dans la batterie — et
+infranchissable sur la seule base qui compte.
+
+`scripts/test-migration-0087-base-habitee.ts` joue le VRAI fichier sur une table
+peuplée, **sous FORCE RLS**. Sa première version ne portait pas la RLS : elle
+est passée au vert sur une correction qui ne réparait rien. Une suite qui
+n'éprouve pas la RLS n'éprouve pas ce dépôt.
+
+### Et la fiche dit désormais POURQUOI
+
+La fiche annonçait que la base était en retard, sans dire ce qu'elle refusait —
+la raison vivait dans le journal de démarrage, que ce dépôt public ne publie
+pas. `scripts/_raison-migration.mjs` ne recopie rien de ce journal : il
+**reconnaît la forme** de l'échec et écrit sa propre phrase, où ne passent que
+des noms de contraintes et de tables. Une forme inconnue ne publie rien du
+message — un motif oublié coûte une ligne vague, un motif trop large coûte une
+donnée de son client sur une page publique.
+
+---
+
+## §359 — La batterie sait quand elle n'a rien à mesurer
 
 **Sa question du 10 septembre 2026, à la fin d'une heure perdue :** *« mais là
 tu faisais tourner une batterie pour pousser quoi ? »* Cinq batteries, dont

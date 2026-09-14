@@ -23,6 +23,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { verdictPort, regarderDuDehors } from "./_verdict-port.mjs";
+import { raisonDeLaMigration } from "./_raison-migration.mjs";
 import { portLibre } from "./port-libre.mjs";
 import { lireEchecConstruction, phraseEchec } from "./lire-echec-construction.mjs";
 
@@ -44,6 +45,9 @@ const TEMOIN_ECHEC =
   // dans /tmp sans marcher sur le banc réel de la machine qui la joue.
   process.env.ATLAS_TEMOIN_ECHEC || "/tmp/atlas-construction-echouee.txt";
 const FICHIER_ISSUE = "/tmp/atlas-mise-a-jour.txt";
+// Le journal qu'écrit `.devcontainer/demarrer.sh`. Il n'est jamais publié tel
+// quel : seule la FORME de son échec de migration en ressort (`_raison-migration.mjs`).
+const JOURNAL_DEMARRAGE = "/tmp/essai.log";
 /**
  * Le témoin qu'une construction tourne à cet instant (`scripts/banc.mjs`).
  *
@@ -104,6 +108,40 @@ function mesureSysteme(commande, args) {
       .join(" | ");
   } catch {
     return "inconnu";
+  }
+}
+
+/**
+ * L'état de la base : porte-t-elle le schéma que le code servi attend ?
+ *
+ * **SA PANNE DU 13 SEPTEMBRE 2026, et c'est cette ligne qui manquait.** Sa base
+ * s'était arrêtée à la migration 0087 sous le code de `main` ; « Planning » et
+ * « Terminés » tombaient, « Chantiers » tenait. Cette fiche portait le commit
+ * récupéré, le commit servi, le port, la mémoire — tout sauf la seule chose qui
+ * expliquait l'écran mort. On a donc cherché dans le produit, où il n'y avait
+ * rien.
+ *
+ * **Le calcul n'est pas ici.** Ce fichier est du JavaScript, hors d'atteinte du
+ * TypeScript où vivent la règle (`src/lib/retard-de-la-base.ts`) et la lecture
+ * (`src/server/retard-de-la-base.ts`) — les mêmes que l'écran des Réglages. On
+ * appelle donc le script qui les emploie, plutôt que d'écrire ici un second
+ * calcul qui finirait par contredire l'écran (`CLAUDE.md` §3).
+ */
+function etatDeLaBase() {
+  try {
+    return execFileSync("npx", ["tsx", "scripts/etat-de-la-base.ts"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 60_000,
+    })
+      .trim()
+      .split("\n")
+      .pop();
+  } catch {
+    // Ni tsx, ni dépendances, ni base : on le dit. Un « à jour » de consolation
+    // enverrait chercher la panne ailleurs, et c'est exactement ce qui a coûté
+    // la soirée du 13 septembre.
+    return "état inconnu — la mesure n'a pas pu être faite";
   }
 }
 
@@ -226,6 +264,17 @@ const brancheLisible =
 console.log(`  Branche suivie   : ${brancheLisible}`);
 console.log(`  Code récupéré    : ${court(tete)}`);
 console.log(`  Code SERVI       : ${ligneCodeServi()}`);
+const base = etatDeLaBase();
+// **POURQUOI la base n'a pas suivi, et pas seulement QU'elle n'a pas suivi.**
+// Sa demande du 13 septembre 2026 : la raison vit dans le journal de démarrage,
+// que cette fiche ne publie pas (dépôt public). `raisonDeLaMigration` ne
+// recopie rien de ce journal : elle reconnaît la FORME de l'échec et écrit sa
+// propre phrase, où ne passent que des noms de contraintes et de tables.
+const raisonMigration = raisonDeLaMigration(
+  existsSync(JOURNAL_DEMARRAGE) ? readFileSync(JOURNAL_DEMARRAGE, "utf8") : null
+);
+console.log(`  Base             : ${base}`);
+if (raisonMigration) console.log(`  La base refuse   : ${raisonMigration}`);
 console.log(
   `  Serveur          : ${
     vivant
@@ -272,6 +321,47 @@ if (derniereIssue) console.log(`  Dernière m.à.j.  : ${derniereIssue}`);
 console.log("\n── Ce qu'il faut en conclure ──────────────────────\n");
 
 const soucis = [];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// **LA BASE PASSE AVANT TOUT LE RESTE — sa panne du 13 septembre 2026.**
+//
+// *« Plus rien ne fonctionne ! »* : « Planning » et « Terminés » par terre,
+// « Chantiers » debout. Sa base s'était arrêtée à la migration 0087 sous le code
+// de `main`, et le serveur répondait `column "conditions_generales" does not
+// exist`. Aucune ligne de cette fiche ne le disait — on a donc cherché dans le
+// produit, qui n'avait rien.
+//
+// Ce verdict est en tête parce qu'une base en retard ne rend pas l'application
+// lente ou vieille : elle en fait TOMBER des écrans, au hasard de la colonne
+// qu'ils touchent. Tant qu'il n'est pas levé, tout autre diagnostic envoie
+// chercher au mauvais endroit.
+//
+// **Le geste rendu ne détruit RIEN, et ce n'est pas négociable** (`CLAUDE.md`
+// §4 septies) : « Chercher les dernières corrections » applique les migrations
+// qui manquent et ne touche à aucune donnée. Ni reconstruction, ni suppression,
+// ni amorçage — il a dû l'interdire deux fois.
+if (base.startsWith("EN RETARD")) {
+  soucis.push(
+    `LA BASE N'A PAS SUIVI LE CODE — ${base}.\n` +
+      (raisonMigration ? `     Ce que la base refuse : ${raisonMigration}.\n` : "") +
+      "     Des écrans vont TOMBER, et pas tous : seulement ceux qui touchent ce\n" +
+      "     qui manque. Ce n'est pas l'application qui est cassée.\n" +
+      "     Le geste : Réglages → « Chercher les dernières corrections ». Il\n" +
+      "     remet la base d'aplomb et n'efface aucune donnée."
+  );
+} else if (base.startsWith("le CODE est en retard")) {
+  soucis.push(
+    `LA BASE EST EN AVANCE SUR LE CODE — ${base}.\n` +
+      "     L'espace sert une version antérieure à celle qui a migré la base.\n" +
+      "     Le geste : Réglages → « Chercher les dernières corrections »."
+  );
+} else if (base.startsWith("état inconnu")) {
+  soucis.push(
+    "L'ÉTAT DE LA BASE N'A PAS PU ÊTRE MESURÉ. Ce n'est pas « tout va bien » :\n" +
+      "     si des écrans tombent sans raison apparente, c'est le premier endroit\n" +
+      "     où regarder."
+  );
+}
 
 // **La lenteur passe AVANT le retard de version.** Un banc qui compile chaque
 // écran à l'ouverture est inutilisable ; savoir qu'il a deux commits de retard

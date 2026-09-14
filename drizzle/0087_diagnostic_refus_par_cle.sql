@@ -27,13 +27,64 @@
 -- **Les lignes existantes sont CONVERTIES, pas devinées.** Les sept phrases
 -- n'ont jamais changé depuis le 20 août 2026 (vérifié dans l'historique du
 -- fichier) : chaque phrase rangée retrouve sa clé, exactement. Une ligne
--- `inconclusif` qui n'en porterait aucune — il n'en existe pas, mais une
--- migration ne le suppose pas — garde sa phrase dans `panne`, et l'écran la
--- montre telle quelle, sans y ajouter de geste.
+-- `inconclusif` qui n'en porterait aucune garde sa phrase dans `panne`, et
+-- l'écran la montre telle quelle, sans y ajouter de geste.
+--
+-- ═══════════════════════════════════════════════════════════════════════════
+-- CORRIGÉ LE 13 SEPTEMBRE 2026, AU SOIR — CE COMMENTAIRE DISAIT UNE CHOSE
+-- FAUSSE, ET ELLE A COÛTÉ UNE SOIRÉE.
+--
+-- Il affirmait, d'une ligne `inconclusif` sans aucune phrase rangée : « il n'en
+-- existe pas ». C'était une SUPPOSITION, jamais confrontée à une vraie base.
+-- Sur celle du patron, il en existait.
+--
+-- Ce qui se passe alors : cette ligne n'obtient ni clé (le CASE ne reconnaît
+-- rien) ni trace (l'UPDATE d'après exige `motif_refus IS NOT NULL`). La
+-- contrainte du bas la refuse, l'ajout échoue, et le script de migration —
+-- qui annule le fichier entier et s'arrête au premier échec — laisse 0088,
+-- 0089 et 0090 derrière elle.
+--
+-- Le 13 septembre, son espace servait un code qui lit `entreprises.
+-- conditions_generales` (0090) sur une base restée en 0086 : « Planning »,
+-- « Terminés » et « Réglages » sont tombés ensemble, les cinq autres écrans
+-- sont restés debout. Quatre migrations de retard, une seule ligne de données.
+--
+-- Une ligne a été ajoutée plus bas — « CE QU'AUCUNE PHRASE NE PEUT DIRE » —
+-- avant la contrainte. Rien d'autre n'a bougé : ni la contrainte, ni les
+-- conversions, ni le comportement de l'écran.
+--
+-- `scripts/test-migration-0087-base-habitee.ts` joue désormais ce fichier sur
+-- une table peuplée comme la sienne. C'est le trou qu'il a révélé : AUCUNE
+-- migration de ce dépôt n'était éprouvée sur une base habitée — toutes sur une
+-- base vide, où une contrainte ne peut être violée par aucune ligne.
+-- ═══════════════════════════════════════════════════════════════════════════
 
 ALTER TABLE "diagnostics"
   ADD COLUMN IF NOT EXISTS "refus" text,
   ADD COLUMN IF NOT EXISTS "panne" text;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- LA MIGRATION DOIT VOIR LES LIGNES QU'ELLE CONVERTIT
+-- ═══════════════════════════════════════════════════════════════════════════
+--
+-- `diagnostics` vit sous FORCE ROW LEVEL SECURITY, et le rôle qui applique les
+-- migrations (`atlas_owner`) n'a PAS le droit de la traverser — c'est délibéré,
+-- et la CI le vérifie. Sans contexte d'entreprise posé, il ne voit donc
+-- AUCUNE ligne.
+--
+-- **Les trois UPDATE ci-dessous ne touchaient rien**, en silence : zéro ligne
+-- mise à jour, aucune erreur. La contrainte du bas, elle, est vérifiée par
+-- PostgreSQL sur TOUTES les lignes de la table, RLS ou pas. Elle trouvait donc
+-- les lignes non converties, et refusait.
+--
+-- `NO FORCE` rend au PROPRIÉTAIRE — et à lui seul — l'accès à sa table, le
+-- temps de la conversion. Les autres rôles, `atlas_app` en tête, restent
+-- soumis à la politique : l'isolation entre entreprises n'est pas touchée une
+-- seconde (`CLAUDE.md` §4 : jamais d'affaiblissement de la RLS).
+--
+-- Et c'est rendu à la fin du fichier. Un échec entre les deux annule la
+-- transaction entière — donc le `FORCE` revient de lui-même.
+ALTER TABLE "diagnostics" NO FORCE ROW LEVEL SECURITY;
 
 -- ── Ce que le fournisseur a dit va dans sa colonne ─────────────────────────
 UPDATE "diagnostics"
@@ -59,6 +110,16 @@ UPDATE "diagnostics"
    SET "panne" = "motif_refus"
  WHERE "statut" = 'inconclusif' AND "refus" IS NULL AND "motif_refus" IS NOT NULL AND "panne" IS NULL;
 
+-- ── CE QU'AUCUNE PHRASE NE PEUT DIRE ──────────────────────────────────────
+-- Une ligne `inconclusif` qui n'a JAMAIS porté de phrase n'a reçu ni clé ni
+-- trace : la contrainte du bas la refuserait, et le fichier entier serait
+-- annulé. On ne lui invente pas de clé — on ne sait pas laquelle c'était, et un
+-- refus faux vaut moins que pas de refus (`docs/AGENT.md` §3). Elle reçoit donc
+-- ce qui est vrai : rien n'a été enregistré.
+UPDATE "diagnostics"
+   SET "panne" = 'Motif non enregistré.'
+ WHERE "statut" = 'inconclusif' AND "refus" IS NULL AND "panne" IS NULL;
+
 -- ── L'ancienne colonne disparaît : deux sources pour une même vérité divergent ──
 ALTER TABLE "diagnostics" DROP COLUMN IF EXISTS "motif_refus";
 
@@ -77,3 +138,6 @@ ALTER TABLE "diagnostics"
   ADD CONSTRAINT "diagnostics_refus_complet_ck" CHECK (
     "statut" <> 'inconclusif' OR "refus" IS NOT NULL OR "panne" IS NOT NULL
   );
+
+-- ── La table retrouve sa garde, et le propriétaire y est de nouveau soumis ──
+ALTER TABLE "diagnostics" FORCE ROW LEVEL SECURITY;

@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { getRole } from "@/server/autorisation";
 import { rubriquesReglages, surtitreReglages } from "@/lib/rubriques-reglages";
 import { versionEtRetard } from "@/server/version-executee";
+import { etatDeLaBase } from "@/server/retard-de-la-base";
 import { etatVersionLente } from "@/server/etat-banc";
 import { panneauVersionLente } from "@/lib/version-lente";
 import BoutonMiseAJour from "./BoutonMiseAJour";
@@ -50,6 +51,17 @@ export default async function ReglagesPage() {
     getEntreprise(ctx),
   ]);
   const version = etatVersion.ligne;
+
+  // **LA BASE PORTE-T-ELLE LE SCHÉMA QUE CE CODE ATTEND ? — sa panne du
+  // 13 septembre 2026.** *« Plus rien ne fonctionne ! »* : « Planning » et
+  // « Terminés » par terre, « Chantiers » debout, et cet écran-ci — celui où il
+  // vient demander « est-ce que j'ai les corrections ? » — répondait « à jour »
+  // sans rien savoir de sa base, restée trois migrations en arrière.
+  //
+  // Chargé en séquence plutôt qu'avec les trois autres : la mesure n'a de sens
+  // que sur le banc, et un `Promise.all` l'aurait faite partout
+  // (`src/server/retard-de-la-base.ts` dit pourquoi elle s'arrête là).
+  const base = estBancDEssai() ? await etatDeLaBase() : null;
 
   // Le rôle décide de ce que le SERVEUR rend, pas de ce que la feuille de style
   // cache : ce qu'un membre n'a pas le droit de voir ne sort pas d'ici
@@ -141,6 +153,34 @@ export default async function ReglagesPage() {
               <p className="mt-1 text-[12px]" style={{ color: colors.muted }}>
                 En attente : {etatVersion.enAttente}. Arrêtez puis rouvrez l&apos;espace de
                 travail — il se reconstruira au démarrage.
+              </p>
+            </div>
+          )}
+
+          {/* **LA BASE, quand elle n'a pas suivi — sa panne du 13 septembre
+              2026.** Une base en retard ne rend pas l'application vieille : elle
+              en fait TOMBER des écrans, au hasard de la colonne qu'ils touchent.
+              Ce soir-là il a lu « Impossible de charger le planning » et un
+              numéro de six chiffres, et il a conclu — légitimement — que
+              l'application était cassée.
+
+              **Rien ne s'affiche quand tout concorde.** Une ligne « base à
+              jour » de plus sur cet écran serait du bruit les 364 autres jours
+              (`CLAUDE.md` §3, le moins de mots possible) ; elle n'apparaît que
+              lorsqu'il y a un geste à faire.
+
+              En or, comme tout ce qui attend un geste de lui — et le geste est
+              juste en dessous, le même bouton. Il n'efface aucune donnée
+              (`CLAUDE.md` §4 septies). */}
+          {base && !base.accordee && (
+            <div className="mt-3 py-1 pl-[15px]" style={{ borderLeft: `1px solid ${colors.or}` }}>
+              <p className="text-[13px]" style={{ color: colors.ink }}>
+                {base.manquantes.length > 0
+                  ? `La base a ${base.manquantes.length} version(s) de retard sur l'application : certains écrans ne s'afficheront pas.`
+                  : `La base est en avance sur l'application : certains écrans ne s'afficheront pas.`}
+              </p>
+              <p className="mt-1 text-[12px]" style={{ color: colors.muted }}>
+                Touchez « Chercher les dernières corrections » : rien ne sera effacé.
               </p>
             </div>
           )}

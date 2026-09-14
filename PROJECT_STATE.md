@@ -5,6 +5,54 @@
 
 ---
 
+## FAIT : 0087 NE VOYAIT PAS SES PROPRES LIGNES — 13 septembre 2026
+
+Cause réelle des trois écrans tombés. Une migration qui écrit des données sous
+FORCE RLS ne touche rien : les conversions de 0087 étaient inopérantes, sa
+contrainte échouait, et 0088 à 0090 restaient derrière. Corrigé par un
+`NO FORCE`/`FORCE` autour de la conversion et une ligne pour les refus sans
+phrase. Éprouvé sur une base habitée, sous RLS. `ARCHITECTURE.md` §358.
+
+## FAIT : UNE `date` EST UN JOUR, PAS UN INSTANT — 13 septembre 2026
+
+Le `pool` du produit rend `date` et `date[]` en « AAAA-MM-JJ » quel que soit
+le fuseau du PC : quatre suites qui rougissaient d'un jour à l'heure de Paris
+sont vertes sans rien compenser, et l'écran Terminés compte son mois à l'heure
+de l'atelier. **Aucune migration.** Suite `test-date-est-un-jour-db.ts`.
+Détail : `ARCHITECTURE.md` §355.
+
+## FAIT : LA PANNE DE BASE SE DIT, AU LIEU DE L'ÉCRAN D'ERREUR — 13 septembre 2026
+
+*« Je peux toujours pas crée de compte ! »* : une exception de la base sortait
+de l'action et Next.js la remplaçait par un numéro opaque, sans une ligne de
+journal. `creerSonCompte` journalise désormais l'erreur avec son `SQLSTATE` et
+rend un refus lisible ; `src/lib/panne-de-base.ts` distingue les refus qui
+disent « la base n'est pas celle que ce code attend » et donne le geste **sûr**
+— rallumer l'espace, jamais reconstruire. Suite manquante écrite :
+`test-creer-son-compte-e2e.ts`, qui entre par la porte et rougit sur le code
+d'avant. **Ce qui tombe sur SA machine n'a pas pu être lu** — voir `TODO.md`,
+**Puis, sur sa remarque « pas de rafistolage, va à la racine » :** un capital
+hors bornes de la colonne faisait tomber la création entière — borné dans
+`capitalEnBase`, là où la règle vit —, et trente-sept façons de remplir la porte
+sont désormais éprouvées (`test-porte-aucune-saisie-ne-tombe-db.ts`). L'état de
+sa base, lui, est publié par le lot voisin du même soir (§356). Détail :
+`ARCHITECTURE.md` §357.
+
+
+---
+
+## FAIT : LA BASE SE RATTRAPE À CHAQUE ALLUMAGE — 13 septembre 2026
+
+Sa panne : *« Plus rien ne fonctionne ! »*, « Planning » et « Terminés » tombés,
+« Chantiers » debout. Sa base était restée en 0087 sous le code de `main` —
+`column "conditions_generales" does not exist` (0090). Les deux chemins qui
+migrent ne le faisaient que le jour où le code bougeait : un échec n'était jamais
+retenté, et plus aucun geste ne rattrapait la base. Migrations à chaque allumage
+et à chaque appui du bouton ; et l'écart se MESURE désormais — une ligne « Base »
+sur la fiche de son espace, qui nomme les migrations manquantes, et le même
+constat dans les Réglages. `ARCHITECTURE.md` §356 ·
+`scripts/test-migrations-banc.ts` · `scripts/test-retard-de-la-base.ts`.
+
 ## FAIT : SIX PHOTOS NE FONT PLUS SIX CHANTIERS — 13 septembre 2026
 
 Sur la fiche client, plusieurs photos choisies d'un coup recréaient un
@@ -55,6 +103,21 @@ et le montant, à l'écran et sur le PDF ; le « − » retire la ligne, la phra
 du réglage reste dans les notes. Colonne **Unité** après Qté. Au passage, le
 PDF envoyé porte enfin la validité et les conditions (il ne les portait pas —
 seul l'aperçu). **Migration 0088.** Détail : `ARCHITECTURE.md` §343.
+
+---
+
+## FAIT : LES CALCULS, VÉRIFIÉS ET CORRIGÉS À LA RACINE — 13 septembre 2026
+
+*« Il faut vérifier tous les calculs, corrige le problème à la racine. »*
+**L'addition n'était pas en cause** — le devis à 5 400 € venait de la saisie.
+Trois vrais défauts en revanche : la multiplication d'une ligne était écrite
+**trois fois** (deux sous un commentaire affirmant le contraire) ; `onBlur`
+rangeait la valeur **du rendu précédent** sur vingt-cinq champs — nom, adresse,
+SIRET, IBAN, prix accordé ; et **le prix accordé retiré revenait tout seul**,
+une écriture perdue entre deux chemins du serveur dont un seul prenait le
+verrou — **le verrou qui la corrige vient du lot de la planche B**, trouvé le
+même soir des deux côtés. **Aucune migration.** Trois contrôles neufs, les trois
+confrontés à leur défaut. Détail : `ARCHITECTURE.md` §351, §352, §353.
 
 ---
 

@@ -26,7 +26,7 @@
 # l'une des deux serait restée sur le mauvais rôle.
 #
 # Écrit sur la sortie standard une seule ligne :
-#   faites | échec : <ce que la base a répondu>
+#   faites | faites : N migration(s) rattrapée(s) | échec : <ce que la base a répondu>
 set -uo pipefail
 
 DEPOT="${1:-$(pwd)}"
@@ -67,4 +67,19 @@ if [ "$CODE" -ne 0 ]; then
   exit 0
 fi
 
-echo "faites"
+# **COMBIEN ONT ÉTÉ RATTRAPÉES, et pas seulement « ça a marché » — 13 septembre
+# 2026.** Depuis que les migrations tournent à CHAQUE allumage, le cas courant
+# est « rien à faire » : un « faites » nu ne distingue plus une base déjà à
+# niveau d'une base qui vient d'être remise d'aplomb. Or c'est exactement la
+# différence que le patron a besoin de lire quand il appuie sur « Chercher les
+# dernières corrections » devant un écran tombé — sans elle, il lit « vous étiez
+# déjà à jour » et ne sait pas que sa panne vient d'être réparée.
+#
+# Le runner écrit « N migration(s) appliquée(s) (M déjà à jour). » : on lui prend
+# son chiffre plutôt que d'en tenir un second, qui divergerait (`CLAUDE.md` §3).
+RATTRAPEES="$(printf '%s\n' "$SORTIE" | grep -oE '^[0-9]+ migration\(s\) appliquée' | grep -oE '^[0-9]+' | head -1)"
+if [ -n "${RATTRAPEES:-}" ] && [ "$RATTRAPEES" -gt 0 ] 2>/dev/null; then
+  echo "faites : $RATTRAPEES migration(s) rattrapée(s)"
+else
+  echo "faites"
+fi

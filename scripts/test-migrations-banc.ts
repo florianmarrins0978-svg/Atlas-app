@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { lireIssueMigrations } from "../src/lib/issue-mise-a-jour";
 
 // **Le défaut du 9 août 2026 : une base restée en arrière, en silence.**
 //
@@ -164,6 +165,90 @@ cas("le bouton de mise à jour ne dit plus « récupérée » quand la base a é
     /LA BASE N'A PAS SUIVI/,
     "l'écran annonce un succès alors que la base est restée en arrière"
   );
+});
+
+console.log("\n=== Une base en retard se rattrape, même quand le code n'a pas bougé ===");
+
+// **SA PANNE DU 13 SEPTEMBRE 2026.** « Planning » et « Terminés » tombés
+// ensemble, « Chantiers » debout — le partage exact de ce que produit UNE
+// colonne manquante : les deux premiers lisent l'entreprise entière
+// (`getEntreprise`), la troisième non. Sa base était restée en arrière du code
+// qu'elle servait, et rien ne pouvait plus la rattraper.
+//
+// La cause n'était pas le rôle (corrigé le 9 août) mais la CONDITION : les deux
+// appelants ne migraient que lorsque le code venait de bouger. Une migration
+// échouée — base pas encore levée, `node_modules` amputé — n'était donc jamais
+// retentée : l'allumage suivant répondait « déjà à jour », et ne migrait pas.
+//
+// Ces deux contrôles se lisent dans la source, et c'est délibéré : éprouver la
+// condition « pour de vrai » demanderait un espace Codespaces, une base vieille
+// et un redémarrage. C'est la structure qui a menti ; c'est elle qu'on tient.
+
+cas("le démarrage migre à CHAQUE allumage, pas seulement quand le code a bougé", () => {
+  const source = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8");
+  const depart = source.indexOf('if [ "$MISE_A_JOUR" = "faite" ]; then');
+  assert.notEqual(depart, -1, "le bloc « code neuf » a disparu du démarrage : ce contrôle ne mesure plus rien");
+  const finDuBloc = source.indexOf("\nfi\n", depart);
+  assert.notEqual(finDuBloc, -1, "le bloc « code neuf » ne se referme pas : ce contrôle ne mesure plus rien");
+  const bloc = source.slice(depart, finDuBloc);
+  assert.ok(
+    !bloc.includes("appliquer-migrations.sh"),
+    "les migrations sont de nouveau enfermées dans « le code vient de bouger » : " +
+      "une migration échouée ne sera jamais retentée, et la base restera en arrière pour toujours"
+  );
+  assert.ok(
+    source.includes("appliquer-migrations.sh"),
+    "le démarrage ne migre plus du tout"
+  );
+});
+
+cas("le bouton migre avant de regarder si le code a bougé", () => {
+  const source = readFileSync(path.join(RACINE, "src", "app", "reglages", "actions.ts"), "utf8");
+  // **On mesure des lignes de CODE, jamais le texte entier.** Le premier jet
+  // cherchait les deux motifs dans la source brute : le pavé qui RACONTE la
+  // panne cite `if (etat === "faite")` en toutes lettres, et le contrôle a
+  // rougi sur son propre commentaire. Un contrôle qui accuse à tort coûte plus
+  // cher que pas de contrôle (`AGENTS.md`).
+  const estCommentaire = (l: string) => /^\s*(\/\/|\*|\/\*)/.test(l);
+  const lignes = source.split("\n");
+  const rang = (motif: RegExp) => lignes.findIndex((l) => motif.test(l) && !estCommentaire(l));
+
+  const appel = rang(/appliquer-migrations\.sh/);
+  const branche = rang(/if \(etat === "faite"\)/);
+  assert.notEqual(appel, -1, "le bouton n'applique plus les migrations");
+  assert.notEqual(branche, -1, "la branche « code neuf » a disparu : ce contrôle ne mesure plus rien");
+  assert.ok(
+    appel < branche,
+    "le bouton ne rattrape la base que lorsqu'il a ramené du code neuf : devant un " +
+      "écran tombé sur une base en retard, plus aucun geste ne la répare"
+  );
+});
+
+cas("le script dit COMBIEN il a rattrapé, pour que la réparation se voie", () => {
+  const source = readFileSync(SCRIPT, "utf8");
+  assert.match(
+    source,
+    /rattrapée\(s\)/,
+    "le script ne distingue plus « rien à faire » de « la base vient d'être remise " +
+      "d'aplomb » : le patron lira « vous étiez déjà à jour » devant sa panne réparée"
+  );
+});
+
+console.log("\n=== La lecture de son verdict ===");
+
+cas("« faites » nu = rien à rattraper", () => {
+  const issue = lireIssueMigrations("faites");
+  assert.deepEqual(issue, { faites: true, rattrapees: 0 });
+});
+
+cas("« faites : 3 migration(s) rattrapée(s) » rend son compte", () => {
+  const issue = lireIssueMigrations("faites : 3 migration(s) rattrapée(s)");
+  assert.deepEqual(issue, { faites: true, rattrapees: 3 });
+});
+
+cas("un échec reste un échec, et garde sa raison", () => {
+  const issue = lireIssueMigrations("échec : permission denied for schema public");
+  assert.deepEqual(issue, { faites: false, raison: "permission denied for schema public" });
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Migrations du banc — ${echecs} échec(s).`);

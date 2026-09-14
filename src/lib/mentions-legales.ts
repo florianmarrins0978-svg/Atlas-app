@@ -82,6 +82,23 @@ export function lignesMentionsLegales(d: DonneesMentionsLegales): string[] {
  * 8 septembre 2026 écrit le même champ, et deux lectures d'un même chiffre
  * finissent par diverger (`CLAUDE.md` §3).
  */
+/**
+ * **CE QUE LA COLONNE PEUT PORTER, ET RIEN DE PLUS** — `numeric(12,2)`, soit
+ * douze chiffres dont deux après la virgule.
+ *
+ * Trouvé le 13 septembre 2026 en balayant toutes les façons de remplir la
+ * porte : un capital de quinze chiffres passait cette fonction sans un mot,
+ * et PostgreSQL refusait la ligne (`22003`) — donc la création du compte
+ * ENTIÈRE, pour une case facultative. Exactement ce que le commentaire
+ * ci-dessus promettait d'éviter, et que seule la moitié « texte illisible »
+ * tenait.
+ *
+ * La borne vit ici plutôt que dans un contrôle de l'écran : c'est la même
+ * fonction qui décide pour l'écran et pour l'écriture, et deux bornes
+ * finiraient par diverger (`CLAUDE.md` §3).
+ */
+const CAPITAL_MAX = 9_999_999_999.99;
+
 export function capitalEnBase(brut: string | null | undefined): string | null | undefined {
   const net = (brut ?? "").trim();
   if (net === "") return null;
@@ -89,6 +106,6 @@ export function capitalEnBase(brut: string | null | undefined): string | null | 
   // presse-papiers : les deux se retirent, sans quoi `Number` rend NaN sur une
   // saisie parfaitement lisible.
   const nombre = Number(net.replace(/[\s\u00a0\u202f]/g, "").replace(",", "."));
-  if (!Number.isFinite(nombre) || nombre < 0) return undefined;
+  if (!Number.isFinite(nombre) || nombre < 0 || nombre > CAPITAL_MAX) return undefined;
   return nombre.toFixed(2);
 }

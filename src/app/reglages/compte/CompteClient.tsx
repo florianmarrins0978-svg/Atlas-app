@@ -30,9 +30,14 @@ export default function CompteClient({ initial }: { initial: Initial }) {
   /** Ce qui n'est pas encore écrit — le bouton du bas DIT cet état (§99). */
   const [aEcrire, setAEcrire] = useState(false);
 
-  function enregistrer() {
+  /**
+   * **Ce que le champ porte prime sur l'état**, qui est celui du dernier rendu :
+   * la dernière lettre tapée avant de toucher ailleurs pouvait n'y être pas
+   * encore, et c'est l'ancien prénom qui partait (`test-valeur-du-champ.ts`).
+   */
+  function enregistrer(frais: { prenom?: string; nom?: string } = {}) {
     demarrer(async () => {
-      const r = await ecrireIdentiteAction({ civilite, prenom, nom });
+      const r = await ecrireIdentiteAction({ civilite, prenom: frais.prenom ?? prenom, nom: frais.nom ?? nom });
       setRefus(r.ok ? null : r.raison);
       if (r.ok) setAEcrire(false);
     });
@@ -137,7 +142,7 @@ export default function CompteClient({ initial }: { initial: Initial }) {
               setPrenom(e.target.value);
               setAEcrire(true);
             }}
-            onBlur={enregistrer}
+            onBlur={(e) => enregistrer({ prenom: e.currentTarget.value })}
             className="block w-full border-0 bg-transparent p-0 outline-none"
             // 16 px au moins : en dessous, iOS agrandit la page à la mise au
             // point et il se retrouve avec un écran zoomé à rétablir à la main.
@@ -163,7 +168,7 @@ export default function CompteClient({ initial }: { initial: Initial }) {
               setNom(e.target.value);
               setAEcrire(true);
             }}
-            onBlur={enregistrer}
+            onBlur={(e) => enregistrer({ nom: e.currentTarget.value })}
             className="block w-full border-0 bg-transparent p-0 outline-none"
             style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.35, color: colors.ink }}
           />

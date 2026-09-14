@@ -59,8 +59,29 @@ export function LigneRemise({
   montantRetire: string | number | null;
   fige?: boolean;
   onChange: (valeur: string) => void;
-  /** Appelé quand le doigt quitte le champ : c'est l'ÉTAT qui fait foi. */
-  onFini: () => void;
+  /**
+   * Appelé quand le doigt quitte le champ, **avec ce que le CHAMP porte**.
+   *
+   * ═════════════════════════════════════════════════════════════════════════
+   * **IL NE LE DONNAIT PAS, ET LA REMISE REVENAIT — 13 septembre 2026.**
+   *
+   * Il ne passait rien : l'appelant lisait alors son propre état React, celui
+   * du DERNIER RENDU. Or React ne rend pas à la frappe, il le programme —
+   * entre la dernière touche et la sortie du champ, rien ne garantit que
+   * l'état porte ce qui vient d'être tapé.
+   *
+   * Vider la case puis toucher ailleurs réécrivait donc **l'ancien
+   * pourcentage** : la remise retirée reparaissait, et l'écran, lui, ne disait
+   * rien. Mesuré à la sonde — la base repassait de `15.00` à `15.00` là où
+   * elle devait tomber à `null`, une fois sur deux.
+   *
+   * **C'est le défaut du 30 août, celui des prix de ligne** (`DevisCompletClient`,
+   * « un prix tapé puis quitté partait à zéro »), resté sur cette pièce-ci
+   * quand les autres l'ont appris. Le bouton « + », lui, passait déjà sa
+   * valeur — d'où deux chemins dont un seul tenait.
+   * ═════════════════════════════════════════════════════════════════════════
+   */
+  onFini: (valeur: string) => void;
   onRetirer?: () => void;
 }) {
   return (
@@ -86,9 +107,10 @@ export function LigneRemise({
           aria-label="Remise, en pourcentage"
           data-atlas="taux-prix-accorde"
           onChange={(e) => onChange(e.target.value)}
-          // Enveloppé, et ce n'est pas du style : passé nu, `onBlur` donnerait
-          // son ÉVÉNEMENT comme pourcentage.
-          onBlur={() => onFini()}
+          // **Ce que le champ porte À CET INSTANT**, et non ce que l'appelant
+          // croit qu'il porte : voir `onFini` ci-dessus. Passé nu, `onBlur`
+          // donnerait son ÉVÉNEMENT comme pourcentage — d'où l'enveloppe.
+          onBlur={(e) => onFini(e.currentTarget.value)}
           className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[var(--voile-champ)]"
           style={{ color: colors.or, fontSize: "16px" }}
         />

@@ -33,6 +33,155 @@ Le correctif décrit au §349 (`chantierDeCetEcran`) était documenté sur `main
 depuis le matin **sans son code** — il est livré avec ce lot, et sa suite
 `test-photos-avant-le-chantier-e2e` avec lui.
 
+### La migration 0087 ne voyait pas les lignes qu'elle convertit
+
+Cause réelle des trois écrans tombés : `diagnostics` vit sous FORCE RLS, et le
+rôle qui migre n'a pas le droit de la traverser. Ses trois `UPDATE` de
+conversion ne touchaient donc **rien**, en silence — quand la contrainte qui
+suit, elle, est vérifiée sur toutes les lignes. 0087 échouait, et 0088 à 0090
+restaient derrière elle : le code servi lisait une colonne que la base n'avait
+pas.
+
+La migration lève `FORCE` le temps de sa conversion et le rend à la fin (le
+propriétaire seul voit sa table ; `atlas_app` reste soumis à la politique), et
+une ligne `inconclusif` sans phrase reçoit `Motif non enregistré.` plutôt
+qu'une clé inventée. La contrainte n'a pas bougé.
+
+**Le trou :** aucune migration n'était éprouvée sur une base HABITÉE — toutes
+sur une base vide, où rien ne peut violer une contrainte et où la RLS ne cache
+rien. `scripts/test-migration-0087-base-habitee.ts` comble cela, sous RLS ;
+sans elle, il passait au vert sur une correction qui ne réparait rien.
+
+Et la fiche de l'espace dit maintenant ce que la base refuse, sans recopier un
+seul mot du journal : elle reconnaît la forme de l'échec et n'en publie que des
+noms de contraintes (`scripts/_raison-migration.mjs`). Détail :
+`ARCHITECTURE.md` §358.
+
+
+### Une colonne `date` est un jour, pas un instant — réglé au pilote
+
+Quatre suites navigateur rougissaient d'un jour sur un PC à l'heure de Paris
+(« posé le 2026-09-13 au lieu du 2026-09-14 ») et restaient vertes en UTC, où
+tournent la CI et son espace. Le pilote `pg` rend une `date` en objet `Date`
+à minuit local ; relue par `toISOString()`, minuit à Paris est 22 h la veille.
+Drizzle se protégeait déjà pour ses requêtes ; le `pool` brut du produit, non.
+`src/server/db/client.ts` rend désormais `date` et `date[]` en texte, une
+fois pour tout le dépôt, et les quatre suites n'ont plus rien à compenser.
+
+Dans le même sens, l'écran Terminés comptait le mois du jour en UTC : le 1ᵉʳ du
+mois entre minuit et deux heures, il ouvrait sur le mois d'avant — la fenêtre
+même que sa remarque du 25 août avait fermée pour les jours. Il passe par
+`jourIso`.
+
+Ce que cela évite : une suite qui accuse le produit d'une date fausse qu'il
+n'a pas écrite, et un artisan qui cherche son mois le soir du 31.
+
+**Suite :** `test-date-est-un-jour-db.ts`, qui rougit sur l'ancien pilote
+dans n'importe quel fuseau.
+
+Détail : `ARCHITECTURE.md` §355.
+
+### « Plus rien ne fonctionne » : la base était restée en arrière du code
+
+« Planning » et « Terminés » tombés ensemble, « Chantiers » debout. Ces deux
+écrans-là lisent l'entreprise entière (`getEntreprise`, un `select()` sans
+projection) : une seule colonne manquante suffit à les coucher tous les deux et
+aucun autre. Reproduit contre une base arrêtée à la migration 0087 sous le code
+de `main` : `column "conditions_generales" does not exist` — la colonne de la
+migration 0090.
+
+**La racine n'était pas la migration, c'était sa CONDITION.** Les deux chemins
+qui l'appliquent — le démarrage de l'espace et le bouton « Chercher les
+dernières corrections » — ne migraient que lorsque le code venait de bouger. Une
+migration échouée n'était donc jamais retentée, et l'allumage suivant répondait
+« déjà à jour » : plus aucun geste ne rattrapait la base. Elles tournent
+désormais à chaque allumage et à chaque appui, le rejeu ne coûtant rien
+(`_migrations` saute ce qui est appliqué). Le script dit combien il a rattrapé,
+et l'écran le rend : « La base avait N version(s) de retard : c'est réparé. »
+
+**Et l'écart se MESURE, au lieu de se découvrir par un écran mort.** Le
+rattrapage retire la cause courante ; il ne peut pas promettre qu'elle ne
+reviendra jamais. La fiche que son espace publie porte désormais, sous « Code
+SERVI », `Base : EN RETARD DE 3 — 0088, 0089, 0090` — les numéros, pas un
+compte —, et le dit en tête de ses conclusions, avant la lenteur et avant le
+retard de version. L'écran des Réglages le dit aussi, et ne montre rien quand
+tout concorde. Le geste rendu n'efface rien, jamais.
+
+**Ce qui a été refusé, et pourquoi c'est écrit :** s'en prendre au `select()`
+sans projection de `getEntreprise`, qui fait dépendre le Planning d'une colonne
+de conditions générales. Nommer les colonnes recopierait le schéma à vingt-huit
+endroits, et ne protégerait que cette fonction — le prochain écart tomberait
+ailleurs, tout aussi muet.
+
+Tenu par `scripts/test-migrations-banc.ts` et `scripts/test-retard-de-la-base.ts`,
+tous deux éprouvés rouges en cassant ce qu'ils gardent. Détail :
+`ARCHITECTURE.md` §356.
+
+### Entrer dans la case sélectionne tout : un appui remplace — « fais le B »
+
+Sur une case qui affiche « 1 », poser le doigt et taper « 2 » donnait **12** :
+le curseur arrivait derrière le chiffre et la frappe s'y ajoutait. Sur un prix
+de 450 €, c'est un devis à 5 400 € au lieu de 900, parti chez son client, sans
+rien à l'écran pour le dire. Il a tranché entre garder et remplacer : c'est
+remplacer.
+
+Sa demande du 11 septembre tient toujours — *« on a juste à supprimer »* : tout
+étant sélectionné, une seule touche efface. Vaut pour la quantité comme pour le
+prix. Et les deux suites qui sélectionnaient tout à la main pour contourner
+l'ancien comportement font maintenant son geste : sans ça, elles seraient
+restées vertes le jour où le B saute (`ARCHITECTURE.md` §354).
+
+### « Je peux toujours pas créer de compte » — la panne se dit, au lieu de l'écran d'erreur
+
+Sa capture : « Une erreur · Cette page n'a pas pu s'afficher · Référence :
+3285538552 », après avoir répondu aux seize questions de la porte.
+
+**Reproduit** en retirant la migration 0089 d'une base d'essai : le parcours
+rend exactement cet écran-là. L'insertion de la ligne d'essai lève, l'action
+serveur meurt avec, Next.js remplace la cause par un numéro — et sur son banc,
+servi en version bâtie, même la cause n'est pas affichée. Rien dans le journal :
+ni lui ni la session suivante ne pouvaient savoir pourquoi.
+
+**Ce qui change.** `creerSonCompte` ne laisse plus sortir d'exception : elle
+journalise l'erreur entière avec son code `SQLSTATE`, et rend un refus que
+l'écran affiche là où il affiche déjà « Cette adresse a déjà un compte ». Quand
+le code d'erreur dit que la base n'est pas celle que ce code attend — table,
+colonne, droit manquants, contrainte qu'une migration devait élargir —, le refus
+le NOMME et donne le geste sûr : *« Votre espace n'est pas à jour avec sa base.
+Rallumez-le depuis github.com/codespaces. »* Jamais reconstruire, jamais
+supprimer, jamais amorcer (`CLAUDE.md` §4 septies). **Sur le banc — et nulle
+part ailleurs — le refus porte aussi le code de la base**, « (base : 23514) » :
+une capture suffit alors à savoir ce qui a été refusé, sans avoir à lire un
+journal qui reste sur sa machine.
+
+**Ce qui manquait, et qui explique qu'on ne l'ait pas vu venir :** aucune suite
+n'entrait par la porte. `scripts/test-creer-son-compte-e2e.ts` répond désormais
+aux seize questions dans un vrai navigateur, vérifie les trois lignes en base et
+l'essai de quinze jours, puis retire réellement la migration pour exiger un
+refus lisible. Elle rougit sur le code d'avant.
+
+**Non reproduit ici, et il faut le dire :** ce qui tombe sur SA machine n'a pas
+pu être lu — le journal de son espace n'est pas publié, et sa fiche n'a pas été
+réécrite depuis 08:31. La cause la plus probable reste une base en retard sur le
+code servi ; le refus ci-dessus la nommera dès qu'il retentera.
+
+**Et la panne bavarde ne réparait rien — « arrête le rafistolage, va à la
+racine ».** Il a raison. Deux racines ont été cherchées ensuite :
+
+- **le chemin lisse était le seul éprouvé.** En balayant trente-sept façons de
+  remplir la porte, un vrai défaut est sorti : un capital de quinze chiffres
+  passait la règle sans un mot et la base refusait la ligne — donc la création
+  du compte entière, pour une case facultative. La borne de la colonne vit
+  désormais dans la règle, qui décide pour l'écran comme pour l'écriture ;
+- **sa machine savait, et ne le disait à personne.** Sa fiche publiait le code
+  servi, jamais l'état de sa base. **Une session voisine l'a livré le même
+  soir**, et plus loin que la fiche — jusqu'à l'écran des Réglages : la lecture
+  écrite ici en parallèle a été jetée plutôt que gardée à côté, deux façons de
+  lire un même état finissant toujours par diverger.
+
+Détail : `ARCHITECTURE.md` §357.
+
+
 ### Terminés : deux portes, le mois centré, et l'œil à la place des onglets
 
 Sa capture et ses quatre demandes du jour, dessinées d'abord
@@ -113,6 +262,56 @@ attend l'autre. Et le texte d'origine des CGV ne se pose plus que sur le
 **réglage** de l'entreprise, jamais sur l'instantané d'un devis : un devis
 d'avant la migration sortait sinon avec des CGV au dos qu'il n'avait jamais
 portées (`test-conditions-sur-le-devis`).
+### Sa remise retirée revenait toute seule — une fois sur deux
+
+Le champ du prix accordé vidé, le serveur enregistrait bien le retrait — et la
+base repassait à 15 % dans la seconde. Deux chemins écrivaient la même ligne de
+devis : celui qui régénère l'écran, et celui qui enregistre l'en-tête. **Le
+premier prenait un verrou, le second non** — donc aucun. La régénération avait
+lu les 15 % avant l'effacement et les réécrivait après.
+
+Pour lui : un devis parti chez le client **plus cher que ce qu'il lui avait
+promis**, sans rien à l'écran pour le dire.
+
+Les deux prennent maintenant le même verrou, et la ligne est relue dessous —
+**le lot de la planche B a buté sur la même course le même soir et posé le
+même correctif** ; c'est le sien qui vit sur `main`.
+`test-remise-qui-revient-db.ts` joue la course elle-même, dix fois, dans les
+deux sens — sans navigateur, donc sans hasard : retirer le verrou le fait
+rougir au premier essai. La suite navigateur, elle, ne l'attrapait qu'une fois
+sur deux, et trois sessions l'avaient mise sur le compte d'un contrôle
+capricieux (`ARCHITECTURE.md` §353).
+
+### Ce qui est tapé est ce qui se range — quatre pièces le perdaient encore
+
+`onBlur` n'emportait pas la valeur du champ : l'écran lisait alors son état
+React, celui du **dernier rendu**. Sous charge, le serveur recevait la valeur
+d'avant pendant que l'écran affichait la neuve. C'est le défaut du 30 août sur
+les prix de ligne, resté sur quatre pièces : le prix accordé au client, les
+champs nus du devis (nom, adresse, SIRET, IBAN — émetteur ET client), ceux des
+Réglages, et le brouillon de la dictée.
+
+Vingt-cinq endroits corrigés. `test-valeur-du-champ.ts`, joué par la batterie,
+refuse désormais les trois formes : la leçon vivait dans un commentaire depuis
+treize jours (`ARCHITECTURE.md` §352).
+
+### Une seule règle multiplie une ligne — elle était écrite trois fois
+
+*« Vérifie tous les calculs. »* Les totaux passaient déjà par une seule
+fonction ; la multiplication d'une ligne, non : **trois écritures**, dont deux
+sous un commentaire qui affirmait appeler l'autre. Et c'est un contrôle, pas
+une relecture, qui a trouvé la troisième.
+
+`src/lib/montant-de-ligne.ts` la porte désormais seule. Le contrôle tient les
+trois moitiés : le calcul (décimales exactes, un seul arrondi, rien qui lève),
+**l'unicité** (toute nouvelle multiplication quantité × prix fait rougir le
+lot), et **l'addition sur mille devis tirés** — le total HT tombe au centime
+sur la somme des lignes. Confronté à un arrondi posé trop tôt, il rougit.
+
+Rappel de ce qui n'était pas en cause : le devis à 5 400 € venait de la saisie,
+pas du calcul (`ARCHITECTURE.md` §351).
+
+
 ### Les deux « chiffres faux » du devis : l'addition était juste, la suite tapait mal
 
 *« Si c'est un problème de calculer les lignes qui ne s'additionnent pas ou mal,

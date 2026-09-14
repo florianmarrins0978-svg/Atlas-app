@@ -146,7 +146,21 @@ export function ChampNu({
 }: {
   valeur: string;
   onChange: (v: string) => void;
-  onFini: () => void;
+  /**
+   * Appelé à la sortie du champ, **avec ce que le champ porte à cet instant**.
+   *
+   * **C'est la leçon du 30 août 2026, appliquée ici le 13 septembre.** Sans la
+   * valeur, l'appelant lit son propre état React — celui du DERNIER RENDU. Or
+   * React ne rend pas à la frappe, il le programme : entre la dernière touche
+   * et la sortie du champ, rien ne garantit que l'état porte ce qui vient
+   * d'être tapé. Le serveur reçoit alors l'ANCIENNE valeur pendant que l'écran
+   * affiche la nouvelle — et c'est au rechargement, ou sur le devis parti chez
+   * le client, qu'on l'apprend.
+   *
+   * `ChampNu` porte le nom de l'entreprise, celui du client, leurs adresses et
+   * l'IBAN : ce sont les lignes qu'on lit en premier sur une pièce comptable.
+   */
+  onFini: (valeurDuChamp: string) => void;
   placeholder: string;
   aria: string;
   fige: boolean;
@@ -189,7 +203,7 @@ export function ChampNu({
       placeholder={placeholder}
       aria-label={aria}
       onChange={(e) => onChange(e.target.value)}
-      onBlur={onFini}
+      onBlur={(e) => onFini(e.currentTarget.value)}
       className="block w-full border-0 bg-transparent p-0 py-0.5 outline-none focus:bg-[var(--voile-champ)]"
       style={{
         color: colors.ink,
@@ -287,32 +301,43 @@ export function ChiffreSaisi({
 }) {
   const vide = valeur.trim() === "";
   /**
-   * ─── LE CURSEUR ARRIVE À DROITE, DERRIÈRE LE CHIFFRE ─────────────────────
+   * ─── ENTRER DANS LA CASE SÉLECTIONNE TOUT : UN APPUI REMPLACE ────────────
    *
-   * **Sa correction du 11 septembre 2026 :** *« quand je clique sur la case de
-   * la quantité, je veux que le petit trait qui clignote qui indique où on est
-   * pour écrire soit toujours à droite ; comme ça, si la quantité par défaut
-   * n'est pas bonne, on a juste à supprimer. Or des fois il se met à gauche,
-   * donc faut d'abord le déplacer avant de pouvoir supprimer. »*
+   * **Sa décision du 13 septembre 2026 — « fais le B ».** Il a tranché entre
+   * deux voies, chiffres en main :
    *
-   * **Et « des fois » s'explique**, ce n'est pas un caprice du téléphone : le
-   * champ est aligné à DROITE dans une case large. Le chiffre occupe quelques
-   * pixels au bout ; tout le reste est du vide, et c'est là que le doigt tombe.
-   * Le navigateur pose alors le curseur au plus près de l'appui — donc AVANT le
-   * chiffre. Plus la quantité est courte, plus la case est large, plus cela
-   * arrive : « 1 » dans 96 pixels, c'est presque à coup sûr.
+   * | Son geste sur une case qui affiche « 1 » | Avant (le A) | Maintenant (le B) |
+   * |---|---|---|
+   * | poser le doigt, taper « 2 » | **12** | **2** |
+   * | poser le doigt, effacer | 1 → vide | vide d'un coup |
+   *
+   * **Ce que le A coûtait, et c'est pour ça qu'il l'a changé :** la quantité
+   * par défaut est « 1 », le curseur arrivait DERRIÈRE, et taper le bon chiffre
+   * l'ajoutait au lieu de le remplacer. Un « 2 » tapé sur un prix de 450 € fait
+   * un devis à 5 400 € au lieu de 900 — et rien à l'écran ne dit que le chiffre
+   * s'est collé au précédent. C'est exactement ce qui a été mesuré le
+   * 13 septembre, en croyant d'abord à une faute de calcul.
+   *
+   * **Sa demande du 11 septembre est TENUE, pas abandonnée :** *« si la
+   * quantité par défaut n'est pas bonne, on a juste à supprimer »*. Tout étant
+   * sélectionné, une seule touche efface — c'est moins de gestes qu'avant, pas
+   * plus.
    *
    * **Deux temps, parce que le navigateur décide en second.** L'entrée dans le
-   * champ pose le curseur au bout ; puis l'appui le replace où le doigt s'est
-   * posé, et c'est cette remise en place qu'on rattrape — une fois, à la
-   * première sélection qui suit l'entrée. Après quoi le curseur lui appartient :
-   * il peut le déplacer comme il veut, on n'y touche plus.
+   * champ pose la sélection ; puis l'appui la défait pour poser le curseur où
+   * le doigt s'est posé, et c'est cette remise en place qu'on rattrape — une
+   * fois, à la première sélection qui suit l'entrée. Après quoi le champ lui
+   * appartient : il peut placer son curseur où il veut, on n'y touche plus.
+   *
+   * **Et cela vaut pour la quantité COMME pour le prix** : les deux cases sont
+   * ce même champ, et le chiffre s'y collait de la même façon.
    */
   const entrant = useRef(false);
-  const auBout = (champ: HTMLInputElement) => {
+  const toutSelectionner = (champ: HTMLInputElement) => {
     const fin = champ.value.length;
-    if (champ.selectionStart !== fin || champ.selectionEnd !== fin) {
-      champ.setSelectionRange(fin, fin);
+    if (fin === 0) return;
+    if (champ.selectionStart !== 0 || champ.selectionEnd !== fin) {
+      champ.setSelectionRange(0, fin);
     }
   };
   return (
@@ -326,12 +351,12 @@ export function ChiffreSaisi({
       onChange={(e) => onChange(e.target.value)}
       onFocus={(e) => {
         entrant.current = true;
-        auBout(e.currentTarget);
+        toutSelectionner(e.currentTarget);
       }}
       onSelect={(e) => {
         if (!entrant.current) return;
         entrant.current = false;
-        auBout(e.currentTarget);
+        toutSelectionner(e.currentTarget);
       }}
       onBlur={(e) => {
         entrant.current = false;

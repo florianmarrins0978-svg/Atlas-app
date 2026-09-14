@@ -8,7 +8,109 @@ sert.
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
-## Dernier lot — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
+## Dernier lot — 0087 NE VOYAIT PAS SES PROPRES LIGNES (13 septembre 2026)
+
+**À retenir avant tout :** une migration qui met à jour des DONNÉES sur une
+table sous `FORCE ROW LEVEL SECURITY` ne touche **rien** — le rôle qui migre n'a
+pas `BYPASSRLS`, et sans contexte d'entreprise il ne voit aucune ligne. Aucune
+erreur, zéro ligne mise à jour. 0087 ne s'en est aperçue que parce qu'elle
+vérifie son travail par une contrainte ; les autres migrations de ce genre
+échouent sans le dire. **À vérifier avant d'écrire un `UPDATE` dans une
+migration.**
+
+Le reste en découle : 0087 bloquée → 0088 à 0090 jamais tentées → le code lisait
+`entreprises.conditions_generales` sur une base qui ne l'avait pas → Planning,
+Terminés et Réglages tombaient, les cinq autres écrans tenaient.
+
+`ARCHITECTURE.md` §358 · `scripts/test-migration-0087-base-habitee.ts` (rouge
+avant, vert après, et sa première version mentait faute de porter la RLS).
+
+---
+## Dernier lot — UNE `date` EST UN JOUR, PAS UN INSTANT (13 septembre 2026, soir)
+
+| | |
+|---|---|
+| le défaut | quatre suites (`poser-une-date`, `liberer-une-demi-journee`, `date-lointaine`, `deux-dates-calendrier`) rougissaient d'un jour sur un PC à Paris, vertes en UTC |
+| la racine | le pilote `pg` rend une `date` en `Date` à minuit LOCAL ; `toISOString()` recule d'un jour à l'est de Greenwich. Drizzle se protégeait ; le `pool` brut, non |
+| la correction | `src/server/db/client.ts` : `date` et `date[]` en texte au pilote, une fois. Les `instanceof Date ? toISOString()` des quatre suites sont partis |
+| en chemin | `src/app/termines/page.tsx` comptait le mois en UTC — passe par `jourIso` (§177) |
+| la migration | **aucune** |
+| la suite | `test-date-est-un-jour-db.ts` — rougit sur l'ancien pilote dans n'importe quel fuseau |
+| le détail | `ARCHITECTURE.md` §355 |
+
+**LE PIÈGE :** une `date` relue par `pool.query` est désormais une **chaîne**,
+jamais un `Date`. Ne pas remettre un `instanceof Date` « au cas où » : c'est
+la couche qui vient d'être retirée.
+
+---
+## Lot du même soir — LA BASE SE RATTRAPE À CHAQUE ALLUMAGE (13 septembre 2026)
+
+**Sa panne :** *« Plus rien ne fonctionne ! »* — « Planning » et « Terminés »
+tombés ensemble, « Chantiers » debout.
+
+**À retenir pour la prochaine panne de cette forme :** ce partage nomme la
+cause. Planning et Terminés lisent l'entreprise ENTIÈRE (`getEntreprise`, un
+`select()` sans projection, donc toutes les colonnes du schéma) ; la liste des
+chantiers non. **Deux écrans par terre et un debout = une colonne manquante,
+donc une migration non appliquée.** Reproduit contre une base arrêtée en 0087
+sous le code de `main` : `column "conditions_generales" does not exist` (0090).
+
+**La racine n'était pas la migration, c'était sa CONDITION** : les deux chemins
+qui migrent — `.devcontainer/demarrer.sh` et le bouton « Chercher les dernières
+corrections » — ne le faisaient que lorsque le code venait de bouger. Une
+migration échouée n'était jamais retentée, et l'allumage suivant répondait
+« déjà à jour ». Plus aucun geste ne rattrapait sa base.
+
+Deux moitiés, et il fallait les deux : **la base se rattrape** à chaque allumage
+et à chaque appui (rejeu gratuit, `_migrations` saute ce qui est appliqué), et
+**l'écart se mesure** — la fiche de son espace porte une ligne « Base » qui nomme
+les migrations manquantes, l'écran des Réglages le dit aussi, et le geste rendu
+n'efface rien.
+
+**Ce qui a été refusé :** toucher au `select()` sans projection de
+`getEntreprise`. Ce serait le pansement — le schéma recopié à vingt-huit
+endroits, et le prochain écart muet ailleurs.
+
+`ARCHITECTURE.md` §356 · `scripts/test-migrations-banc.ts` ·
+`scripts/test-retard-de-la-base.ts` (les deux éprouvés rouges).
+
+---
+## Lot du même soir — « JE PEUX TOUJOURS PAS CRÉER DE COMPTE » (13 septembre 2026, le soir)
+
+| | |
+|---|---|
+| sa plainte | *« Je peux toujours pas crée de compte ! »*, capture à l'appui : « Une erreur · Cette page n'a pas pu s'afficher · Référence : 3285538552 » |
+| reproduit | le parcours entier joué au navigateur sur une base privée de la migration 0089 rend **exactement** cet écran |
+| la racine | une exception de la base sortait de l'action serveur : Next.js la remplace par un numéro, et rien n'était journalisé — le défaut muet qu'`AGENTS.md` interdit |
+| la correction | `creerSonCompte` journalise l'erreur avec son `SQLSTATE` et rend un refus ; `src/lib/panne-de-base.ts` dit si le refus veut dire « base en retard », et donne le geste **sûr** (rallumer l'espace) |
+| la suite qui manquait | `test-creer-son-compte-e2e.ts` — les seize questions dans un vrai navigateur, les trois lignes en base, puis la migration réellement retirée. Rougit sur le code d'avant |
+| la migration | **aucune** |
+| le détail | `ARCHITECTURE.md` §357 |
+
+**PUIS SA REMARQUE DU SOIR, ET ELLE A CHANGÉ LE LOT :** *« arrête de faire du
+rafistolage, va corriger le problème à la racine »*. Rendre la panne bavarde
+était le préalable, pas la réparation. Deux racines ont suivi :
+
+| | |
+|---|---|
+| le chemin LISSE était le seul éprouvé | trente-sept façons de remplir la porte, balayées (`test-porte-aucune-saisie-ne-tombe-db.ts`) : un capital de quinze chiffres faisait tomber la création entière. Borné dans `capitalEnBase`, là où la règle vit |
+| sa machine savait, sans le dire | traité par le lot ci-dessus, livré le même soir (§356). Une lecture écrite ici en parallèle a été **jetée** : deux façons de lire un même état divergent toujours |
+
+**CE QUI N'A PAS PU ÊTRE VÉRIFIÉ, et ne doit pas être présenté comme acquis :**
+ce qui tombe sur SA machine. Le journal de son espace n'est publié nulle part,
+et sa fiche (fiche GitHub n° 47) n'avait pas été réécrite depuis 08:31 alors
+qu'il l'utilisait à 17:43 — donc son veilleur ne publiait plus. La cause la plus
+probable reste une base en retard sur le code servi (son espace annonçait déjà
+six versions de retard), et le refus neuf la nommera dès qu'il retentera.
+
+**LE PIÈGE, pour toute suite qui entre par la porte :** la création de compte
+**ouvre la session elle-même** — un second parcours part en « Avant de
+commencer » tant qu'on n'a pas effacé les cookies. Et `networkidle` n'arrive
+jamais sur un banc servi en mode développement : le bandeau de construction
+interroge le serveur toutes les cinq secondes.
+
+---
+## Lot précédent — TERMINÉS : DEUX PORTES, LE MOIS CENTRÉ, ET L'ŒIL (13 septembre 2026)
 
 | | |
 |---|---|
@@ -35,7 +137,7 @@ veille lui va.
 | sa question | *« tu faisais tourner une batterie pour pousser quoi ? »* (10 septembre) — trois batteries complètes pour trois fichiers de suites |
 | ce qui est fait | `verifier-avant-livraison` note son verdict (`_dernier-verdict.ts`, `.atlas-dernier-verdict.json` ignoré par git) ; `_portee-batterie.ts` refuse « rien n'a bougé » et « seules des suites ont bougé » (elle donne les `npx tsx`) ; tout le reste vaut batterie complète ; **seul un vert retient** ; `-- --forcer` passe outre |
 | les suites | `test-portee-batterie`, `test-dernier-verdict` |
-| le détail | `ARCHITECTURE.md` §351 |
+| le détail | `ARCHITECTURE.md` §359 |
 
 **Livré avec :** le code du lot « six photos » ci-dessous, dont la doc était sur
 `main` depuis le matin sans lui.
@@ -72,7 +174,30 @@ en cours doit relire vit dans une référence, jamais dans un état
 médiateur — que l'écran compte tant qu'ils y sont. Les mentions légales
 manquantes (décennale, médiateur, délai d'exécution) restent proposées dans
 `TODO.md`, pas tranchées.
-## Dernier lot — JETER SA DICTÉE, ET LE LECTEUR MORT (13 septembre 2026)
+## Lot précédent — LES CALCULS, ET LES DEUX CHIFFRES QUI SE PERDAIENT (13 septembre 2026)
+
+| | |
+|---|---|
+| sa demande | *« Il faut vérifier tous les calculs, corrige le problème à la racine ! Pas de code mort »* — et, la veille : *« si les lignes ne s'additionnent pas ou mal, c'est hyper grave et ça ne doit jamais arriver »* |
+| ce qui était JUSTE | l'addition, les totaux, la TVA, la remise. Le devis à 5 400 € venait de la SAISIE, pas du calcul |
+| **trois vrais défauts** | la multiplication d'une ligne écrite **trois fois** ; `onBlur` rangeant la valeur **d'avant** sur vingt-cinq champs ; le prix accordé **qui revenait tout seul**, une écriture perdue entre deux chemins du serveur — **le verrou qui la corrige vient du lot de la planche B**, trouvé le même soir des deux côtés |
+| la migration | **aucune** (celle de la planche B, 0090, vient d'un autre lot) |
+| les pièces | `src/lib/montant-de-ligne.ts` (neuf), `PrixAccordeAuClient`, `ChampsDuDevis`, `BrouillonSection`, `IdentiteClient`, `ChampTelephone`, `PlanningClient`, `CompteClient` |
+| les suites | `test-montant-de-ligne.ts`, `test-valeur-du-champ.ts`, `test-remise-qui-revient-db.ts` — les trois neuves, les trois confrontées à leur défaut |
+| le détail | `ARCHITECTURE.md` §351, §352, §353 |
+
+**LE PIÈGE, ET IL SE REPRODUIRA :** un rouge intermittent qu'on met sur le
+compte d'un « contrôle capricieux ». `test-reduction-devis-e2e` tombait une fois
+sur deux depuis des jours ; c'était le produit qui perdait une écriture, et un
+devis pouvait partir chez le client plus cher que promis. **Rendre le produit
+bavard AVANT de conclure** (`AGENTS.md`).
+
+**CE QUI RESTE À LUI :** sur la case « Qté », poser le doigt et taper « 2 » sur
+une case qui affiche « 1 » donne **12**. C'est sa règle du 11 septembre ; à lui
+de dire s'il la garde ou si l'entrée dans la case sélectionne tout.
+
+---
+## Lot précédent — JETER SA DICTÉE, ET LE LECTEUR MORT (13 septembre 2026)
 
 | | |
 |---|---|
