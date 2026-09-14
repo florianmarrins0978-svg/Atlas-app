@@ -229,6 +229,7 @@
     <tr><td>Le Total TTC par ligne</td><td>ce que le client compare à son relevé.</td></tr>
     <tr><td>Les libellés</td><td>« TVA 20 % » sans parenthèses, « P.U. HT », « Rem. % ». Les mêmes sur les deux papiers.</td></tr>
     <tr><td>Les règlements reçus</td><td>sur la facture, au-dessus du papier : l’acompte du devis d’office, « + Règlement reçu » pour un chèque ou un virement de plus, avec son libellé, sa date, son montant. Le papier suit : la ligne sous le Total TTC, le net à payer, « Montants versés », et le tampon « Acquittée » quand le net tombe à zéro.</td></tr>
+    <tr><td>Plusieurs règlements</td><td>sous le Total TTC, une seule ligne « Acomptes » avec le total ; le détail, chèque par chèque, reste dans « Montants versés » sous les notes.</td></tr>
     <tr><td>Facture acquittée</td><td>un interrupteur sous les règlements. Allumé, le solde est compté reçu à la date du jour, le net tombe à zéro et le tampon s’imprime ; il s’allume seul quand les règlements couvrent tout. Éteint, le solde repart.</td></tr>
     <tr><td>Un titre, si vous voulez</td><td>un champ au-dessus du papier, vide d’office : « Aménagement du jardin », « Chantier Machin ». Rempli, il s’écrit sous DEVIS ou FACTURE ; vide, rien.</td></tr>
     <tr><td>L’or</td><td>ne porte que ce qu’on lit : Client, Lieu des travaux, Notes, le tampon « Facture acquittée ». Jamais un montant.</td></tr>
@@ -268,21 +269,23 @@
     return { brut:r2(brut), remise:r2(brut-netHt), netHt:netHt, taux:taux, tvaT:tvaT, ttc:ttc, acompte:acompte, reste:r2(ttc-acompte), verses:r2(verses), net:Math.max(0, r2(ttc-verses)) };
   }
 
-  function rendre(vue){
+  function rendre(vue, sansListe){
     VUE = vue;
     var c = calcul(), facture = vue !== "devis", acquittee = facture && c.net === 0;
     // la saisie des règlements, au-dessus du papier, seulement sur la facture
     id("regls").hidden = !facture;
     id("acquittee").setAttribute("aria-pressed", String(acquittee));
-    var boite = id("regls-lignes"); boite.innerHTML = "";
-    REGLS.forEach(function(g){
+    // La liste ne se redessine pas sous un doigt qui passe d'un champ à l'autre :
+    // un libellé validé ne doit pas faire perdre le champ du montant.
+    var boite = id("regls-lignes"); if (!sansListe) boite.innerHTML = "";
+    if (!sansListe) REGLS.forEach(function(g){
       var d = document.createElement("div"); d.className = "regl";
       d.innerHTML = '<span class="quoi"><input value="'+g.lib+'" placeholder="Chèque n°…" aria-label="Libellé du règlement"><input class="date" value="'+g.date+'" aria-label="Date"></span>' +
                     '<span class="m"><input value="'+String(g.m).replace(".",",")+'" inputmode="decimal" aria-label="Montant reçu"> €</span>';
       var ch = d.querySelectorAll("input");
-      ch[0].onchange = function(e){ g.lib = e.target.value; rendre(VUE); };
-      ch[1].onchange = function(e){ g.date = e.target.value; rendre(VUE); };
-      ch[2].onchange = function(e){ g.montant = nombre(e.target.value); rendre(VUE); };
+      ch[0].onchange = function(e){ g.lib = e.target.value; rendre(VUE, true); };
+      ch[1].onchange = function(e){ g.date = e.target.value; rendre(VUE, true); };
+      ch[2].onchange = function(e){ g.montant = nombre(e.target.value); rendre(VUE, true); };
       boite.appendChild(d);
     });
     id("h1").textContent = facture ? "La facture" : "Le devis";
@@ -312,7 +315,10 @@
       t.push('<div class="r doux"><span>Acompte 30 % à la signature</span><span>'+eur(c.acompte)+'</span></div>');
       t.push('<div class="r reste"><span>Reste à régler</span><span>'+eur(c.reste)+'</span></div>');
     } else {
-      REGLS.forEach(function(g){ t.push('<div class="r doux"><span>'+(g.lib.split(",")[0] || "Règlement")+'</span><span>− '+eur(g.m)+'</span></div>'); });
+      // Un seul règlement : sa ligne. Plusieurs : une ligne « Acomptes », totalisée —
+      // le détail, chèque par chèque, est dans « Montants versés » sous les notes.
+      if (REGLS.length === 1) t.push('<div class="r doux"><span>'+(REGLS[0].lib.split(",")[0] || "Règlement")+'</span><span>− '+eur(REGLS[0].m)+'</span></div>');
+      else if (REGLS.length > 1) t.push('<div class="r doux"><span>Acomptes</span><span>− '+eur(c.verses)+'</span></div>');
       t.push('<div class="r net"><span>Net à payer</span><span>'+eur(c.net)+'</span></div>');
       if (acquittee) t.push('<span class="tampon">Acquittée le '+(REGLS[REGLS.length-1].date)+'</span>');
     }
