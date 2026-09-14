@@ -64,6 +64,17 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 
 ---
 
+## ⏳ UNE PLANCHE À REGARDER — LA NOTE VOCALE À PLAT, SUR LA FICHE CLIENT (14 septembre 2026, soir)
+
+Sa demande : *« le gros bouton de la note vocale sans ses contours, de la même
+couleur que les boutons verts, le signe au milieu blanc ; et quand on appuie,
+la touche d’envoi à droite »*. `appli/note-vocale-a-plat.html` — la fiche
+client telle qu’elle est, au repos et en dictée, puis aujourd’hui / proposé
+côte à côte. À coder sur son « code » : `.atlas-micro` et `.atlas-envoyer`
+dans `globals.css` (le fond devient `--atlas-plein`, les ombres et le reflet
+tournant partent), et `test-boutons-pleins` à relire — le micro y est nommé
+comme l’objet qui garde sa matière.
+
 ## ~~UNE PLANCHE À REGARDER — MAIN D’ŒUVRE ET RÈGLEMENTS SUR LA FACTURE~~ — CODÉE LE 14 SEPTEMBRE 2026 (« PARFAIT ! Code exactement cette planche »)
 
 **Codé :** migration 0092, `src/lib/lignes-du-papier.ts`,
