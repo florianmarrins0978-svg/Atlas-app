@@ -396,8 +396,10 @@ async function main() {
 
     const { rows } = await inspecter("SELECT statut FROM factures WHERE chantier_id = $1", [chantierId], 1);
     assert.strictEqual(rows[0].statut, "brouillon", "la facture est partie sans confirmation");
+    // `.first()` : depuis sa planche du 14 septembre 2026, le montant se lit
+    // deux fois — Total TTC, puis « Net à payer » tant que rien n'est reçu.
     assert.ok(
-      await page.locator("text=/1\\s?200,00\\s?€/").isVisible(),
+      await page.locator("text=/1\\s?200,00\\s?€/").first().isVisible(),
       "le total du devis n'est pas repris (1 200,00 €)"
     );
   });
