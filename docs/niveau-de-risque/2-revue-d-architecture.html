@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — 2 — Revue d'architecture : les trois réserves</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="2--revue-darchitecture--les-trois-réserves">2 — Revue d'architecture : les trois réserves</h1>
+<p><strong>14 septembre 2026.</strong> Trois réserves ont été opposées à la proposition du graphe d'impact. Les trois sont fondées, et deux d'entre elles changent la règle.</p>
+<hr>
+<h2 id="réserve-1---compter-les-écrans-ne-suffit-pas-">Réserve 1 — « compter les écrans ne suffit pas »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Exacte.</strong> Le premier calcul ne comptait que les écrans. Il manquait <strong>24 routes API</strong>, <code>middleware.ts</code>, et trois entrées serveur (<code>seed</code>, <code>appariement</code>, <code>trimestre</code>).</p>
+<p><strong>Mais la réponse n'est pas d'énumérer les catégories</strong> — traitements serveur, génération de documents, Server Actions, « autres entrypoints pertinents ». Ce serait une liste de plus, et elle pourrirait comme la première.</p>
+<p><strong>Un point d'entrée est une propriété du graphe : un fichier que personne n'importe.</strong> Il est donc appelé de l'extérieur du code — par le routeur Next, un cron, un script. Rien à tenir à jour : le jour où un générateur PDF ou un cron est ajouté, il devient un point d'entrée tout seul.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>La surface d'Atlas, mesurée</th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>points d'entrée</strong></td>
+<td><strong>122</strong></td>
+</tr>
+<tr>
+<td>écrans (page, gabarit)</td>
+<td>88</td>
+</tr>
+<tr>
+<td>routes API</td>
+<td>24</td>
+</tr>
+<tr>
+<td><code>middleware.ts</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td>entrées serveur (amorçage, appariement, trimestre)</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>lib/</code> que personne n'importe</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>robots.ts</code>, déclarations de types</td>
+<td>3</td>
+</tr>
+</tbody></table></div>
+<p><em>Les trois <code>lib/</code> non importées sont soit du code mort, soit appelées depuis <code>scripts/</code> — le calcul ne parcourt que <code>src/</code>. À vérifier, pas à affirmer.</em></p>
+<h2 id="réserve-2---le-cas-de-référence-portait-sur-un-fichier-chantier-">Réserve 2 — « le cas de référence portait sur un fichier chantier »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Exacte, et c'était une erreur de mesure, pas de rédaction.</strong> Elle est racontée en entier au §4 de <code>1-lecture-du-brief.md</code>.</p>
+<p>Le lot réel : les huit fichiers de <code>src/app/clients/</code> sont tous à un rayon de <strong>1</strong>.</p>
+<h2 id="réserve-3---la-nature-compte-pas-seulement-le-nombre-">Réserve 3 — « la nature compte, pas seulement le nombre »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>C'est la réserve la plus forte, et elle casse le seuil employé seul.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Fichier</th>
+<th>Rayon</th>
+<th>Ce qu'il porte</th>
+</tr></thead><tbody>
+<tr>
+<td><code>src/lib/civilite.ts</code></td>
+<td>64</td>
+<td>« M. » ou « Mme »</td>
+</tr>
+<tr>
+<td><code>src/lib/jour.ts</code></td>
+<td>39</td>
+<td>une date formatée</td>
+</tr>
+<tr>
+<td><code>src/server/repositories/lignes-prix.ts</code></td>
+<td><strong>11</strong></td>
+<td><strong>les prix</strong></td>
+</tr>
+</tbody></table></div>
+<p>Un seuil sur le seul nombre classerait <code>jour.ts</code> <strong>plus dangereux</strong> que les prix. C'est inversé. <strong>Le rayon mesure la portée ; il ne dit rien de la gravité.</strong> Les deux sont indépendantes.</p>
+<p><strong>Et la gravité n'est pas calculable</strong> : aucune propriété du graphe ne dit qu'un nombre est une TVA. Il faut une liste — ce qui semble contredire le refus de la réserve 1. La ligne exacte est celle-ci :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>une liste qui <strong>ABAISSE</strong> le niveau (« fichiers centraux connus »)</td>
+<td><strong>refusée</strong> — sa panne est silencieuse : du danger part sans que rien ne le dise</td>
+</tr>
+<tr>
+<td>une liste qui <strong>REMONTE</strong> le niveau (facturation, auth, isolation)</td>
+<td><strong>acceptée</strong> — sa panne coûte des minutes de batterie, jamais une régression</td>
+</tr>
+</tbody></table></div>
+<p>C'est l'asymétrie qui tient partout ailleurs dans ce dépôt : le doute tranche vers le haut.</p>
+<hr>
+<h2 id="3-les-angles-morts-et-ce-quon-en-fait">3. Les angles morts, et ce qu'on en fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le graphe mesure le <strong>couplage de code</strong>. Il ne voit pas le couplage d'exécution.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Angle mort</th>
+<th>Le cas concret</th>
+</tr></thead><tbody>
+<tr>
+<td><code>fetch("/api/…")</code></td>
+<td>aucun lien d'import. Toucher <code>api/adresses/route.ts</code> affiche <strong>rayon 1</strong>, alors que chaque écran qui l'appelle peut tomber</td>
+</tr>
+<tr>
+<td><code>import()</code> dynamique dont le chemin est une variable</td>
+<td>invisible</td>
+</tr>
+<tr>
+<td>RLS, schéma, migrations</td>
+<td>l'impact vit dans les <strong>données</strong>, pas dans le code</td>
+</tr>
+<tr>
+<td>feuille de style globale</td>
+<td><code>globals.css</code> n'est importé par presque personne</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui les couvre :</strong> ce que le calcul ne sait pas résoudre remonte à 3, et les routes API se relient par leur <strong>chemin d'URL</strong> cherché dans le code, pas par leurs imports. <em>Une mesure impossible n'est jamais un vert</em> (<code>CLAUDE.md</code> §5).</p>
+<hr>
+<h2 id="4-la-règle-proposée">4. La règle proposée</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>``<code> niveau = MAX( plancher , rayon , gravité ) </code>``</p>
+<p>Jamais un minimum, jamais une moyenne.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Composante</th>
+<th>Règle</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Plancher</strong> — liste, remonte seulement</td>
+<td><code>drizzle/</code>, authentification, RLS, <code>withEntreprise</code>, <code>middleware</code>, <code>layout.tsx</code> racine, <code>package.json</code>, <code>next.config</code> → <strong>3</strong></td>
+</tr>
+<tr>
+<td><strong>Gravité</strong> — liste, remonte seulement</td>
+<td>facturation, TVA, devis, règlements, rôles, isolation → <strong>3</strong>, quel que soit le rayon</td>
+</tr>
+<tr>
+<td><strong>Rayon</strong> — calculé, aucune liste</td>
+<td>1 point d'entrée → <strong>2</strong> · 2 à 9 → <strong>2</strong> + les suites des points atteints · <strong>10 et plus</strong> → <strong>3</strong></td>
+</tr>
+<tr>
+<td><strong>Inconnu</strong></td>
+<td>import non résolu, <code>fetch</code> vers une route touchée, import dynamique → <strong>3</strong></td>
+</tr>
+</tbody></table></div>
+<h3 id="sur-le-seuil-de-10">Sur le seuil de 10</h3>
+<p>Il se retient comme valeur de départ, <strong>mais il pèse moins qu'il n'y paraît une fois la gravité dans la règle.</strong> Ce qui est proposé à sa place, à terme :</p>
+<blockquote>le niveau 2 joue les suites des points d'entrée atteints ; <strong>quand ce paquet dépasse la moitié de la batterie, on joue la batterie</strong> — c'est moins cher que la comptabilité.</blockquote>
+<p>Le seuil devient alors un repli, pas une vérité.</p>
+<p><strong>C'est faisable</strong> : les 151 suites navigateur citent toutes leur route en clair — <strong>7</strong> d'entre elles citent <code>"/clients"</code>. La correspondance point d'entrée → suite se <strong>dérive</strong>, elle ne s'écrit pas à la main.</p>
+<p><strong>Réserve, et elle n'est pas levée :</strong> une suite qui navigue au clic plutôt qu'à l'URL échappe à ce repérage. À mesurer avant d'y compter.</p>
+<hr>
+<h2 id="5-le-lot-client-classé-pour-de-bon">5. Le lot client, classé POUR DE BON</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Branche trouvée :</strong> <code>claude/modifications-breaking-elsewhere-fp0x04</code>, commit <code>d0fc128c</code> — <em>« Ouvrir une porte "Modifier" sur la fiche du client »</em>.</p>
+<p>Son diff entier, mesuré :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Fichier</th>
+<th>Rayon</th>
+<th>Ce qu'il exige</th>
+</tr></thead><tbody>
+<tr>
+<td><code>src/app/clients/[id]/coordonnees/page.tsx</code> <em>(neuf)</em></td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/app/clients/[id]/coordonnees/actions.ts</code> <em>(neuf)</em></td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/app/clients/[id]/coordonnees/SesCoordonnees.tsx</code> <em>(neuf)</em></td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>src/app/clients/[id]/page.tsx</code> <em>(modifié)</em></td>
+<td><strong>1</strong></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>scripts/test-modifier-client-e2e.ts</code> <em>(neuf)</em></td>
+<td>—</td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>ARCHITECTURE.md</code>, <code>CHANGELOG.md</code>, <code>HANDOVER.md</code>, <code>PROJECT_STATE.md</code></td>
+<td>—</td>
+<td>1</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun plancher touché</strong> : ni <code>drizzle/</code>, ni authentification, ni RLS, ni <code>middleware</code>, ni <code>layout.tsx</code> racine. <strong>Aucune gravité</strong> : ni facturation, ni TVA, ni règlements.</p>
+<p>Et surtout : le lot <strong>appelle</strong> <code>mettreAJourClient</code> et <code>exigerEcran</code>, il ne les <strong>modifie pas</strong>. C'est la distinction qui décide — appeler une fonction déjà éprouvée ne change son comportement pour personne.</p>
+<h3 id="verdict--niveau-2">Verdict : NIVEAU 2</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>règle actuelle</strong></td>
+<td>niveau 3, batterie complète, ~50 min</td>
+</tr>
+<tr>
+<td><strong>règle proposée</strong></td>
+<td>niveau 2 ciblé</td>
+</tr>
+</tbody></table></div>
+<p>``<code>bash npm run verifier:avant-fusion        # types, lint, mémoire, suites base npm run test:e2e -- --seulement "modifier-client,fiche-client,retour-fiche-client,\ acces-salarie,roles-facturation,retour-garde-la-place,retour-page-davant,mode-sombre-lisible" npm run voir -- /clients/&lt;id&gt;/coordonnees </code>``</p>
+<p>Huit suites au lieu de cent cinquante et une.</p>
+<p><strong>Ce qui rend ce niveau 2 acceptable, et qui manquait au brief :</strong> le lot introduit une <strong>action serveur neuve</strong> — exactement la famille de « Invalid Server Actions request. ». Sans passage navigateur réel, un niveau 2 le laisserait filer. Le lot porte déjà sa suite (<code>test-modifier-client-e2e.ts</code>), et c'est elle qui l'autorise.</p>
+<h3 id="une-limite-du-calcul-quil-faut-nommer">Une limite du calcul, qu'il faut nommer</h3>
+<p><strong>Un fichier neuf a toujours un rayon de 1</strong>, puisque personne ne l'importe encore. Le rayon ne peut donc pas, à lui seul, juger un ajout : ce sont les fichiers <strong>modifiés</strong> qui portent le risque de régression, et ici le seul — <code>clients/[id]/page.tsx</code> — est à 1.</p>
+</main>
+</body>
+</html>

@@ -48,6 +48,21 @@ et trois suites le tiennent — `test-planning-e2e`, `test-note-hors-documents-e
 `test-tous-les-pdf`. Pour la C, elles s'adaptent (§5 bis), et le mode d'emploi
 (`mode-emploi.ts`, « Donner la feuille de chantier à l'équipe ») change aussi.
 
+## ⏳ Le seuil de rayon se règle sur des mesures, pas sur une intuition
+
+`RAYON_MAXIMAL_DU_NIVEAU_2 = 10` (`scripts/_niveau-de-risque.mjs`) est une
+valeur de départ arbitrée le 14 septembre 2026 : à ce seuil, 189 fichiers sur
+697 valent la batterie entière. Ce qui manque pour la régler : le temps réel
+d'un niveau 2 ciblé, jamais chronométré — seulement extrapolé.
+
+## ⏳ Les écrans qu'aucune suite navigateur n'ouvre
+
+Dix-neuf adresses sur cinquante-six n'ont aucune suite qui les ouvre, dont
+`/reglages/notifications`, `/reglages/abonnement`, `/termines/retours` et
+`/verifier-email` (le reste est `/design/*`). Depuis le 14 septembre, un lot qui
+les atteint remonte en niveau 3 faute de quoi que ce soit qui les regarde : leur
+donner une suite les rend fusionnables au niveau 2.
+
 ## ~~À TRANCHER PAR LUI — VÉRIFIER L'ADRESSE E-MAIL À LA CRÉATION DU COMPTE~~ — CODÉ LE JOUR MÊME (14 septembre 2026, Brevo)
 
 **Codé** (*« Brevo »*) : migration 0091, `src/server/courriel/`,
@@ -88,6 +103,69 @@ nom de domaine). Resend et Postmark exigent un domaine, qu'il n'a pas encore.
 
 **Qui :** lui pour le service et la clé ; nous pour tout le reste.
 
+---
+
+## ~~`test-fin-de-chantier-e2e` ROUGIT ENTRE MINUIT ET DEUX HEURES~~ — CORRIGÉ le 15 septembre 2026
+
+**Fait, et deux fois plutôt qu'une.** La suite pose sa date avec `jourDuPatron()`
+(`_jour-e2e.ts`, qui existait depuis le 25 août et qu'elle n'avait pas repris) ;
+rejouée à 00 h 30, l'heure même où elle tombait : 7 cas, 0 échec.
+
+**Et le même piège vivait ailleurs, en JavaScript :** `test-suivi-devis-e2e`
+comparait la date affichée à `new Date().toISOString()`. Le garde-fou qui
+interdit ce geste (`test-jour-du-patron.ts`) ne parcourait que `src/` — il
+parcourt aussi `scripts/` désormais, confronté au geste qu'il refuse avant
+d'être cru.
+
+**Ce qui RESTE, et qui ne bascule pas :** les autres `CURRENT_DATE` des suites
+posent des jours à trois jours de distance ou plus. Ils sont sans danger, et ils
+restent — les convertir sans raison ferait du bruit dans un diff.
+
+*(Relevé d'origine, gardé pour la trace.)*
+
+**Vu le 15 septembre 2026 à 00:30 et 01:40**, deux fois rouge, verte à midi sur
+le même planning. La suite pose `date_planifiee = CURRENT_DATE` — la date du
+serveur Postgres, en UTC dans Docker — puis attend la ligne du jour sur le
+planning, qui compte en heure de Paris. Entre 00:00 et 02:00 (heure d'été), les
+deux jours diffèrent : le chantier est planifié « hier », et la ligne n'existe
+pas. C'est la famille du §355 (une date est un jour, pas un instant), côté
+suites. `test-ligne-planning-e2e` mesure aussi faux jouée seule (ordre des
+suites, déjà noté plus haut) — ne pas confondre les deux.
+
+~~**À faire :** poser la date du jour calculée côté Node (`jourIso`, §177) au
+lieu de `CURRENT_DATE`, dans cette suite et dans toute suite qui écrit
+`CURRENT_DATE` pour dire « aujourd'hui ».~~ **Fait le 15 septembre 2026.**
+---
+
+## LES GARDES NE SE REJOUENT PAS QUAND ON SE DÉPLACE DANS L'APPLI — et le template ne suffit pas
+
+**Le défaut, vu par lui le 14 septembre 2026 :** compte créé, « Entrer dans
+Atlas », une heure de travail, et les conditions générales ne lui sont parvenues
+qu'en rechargeant la page. `GardeVerificationEmail`, `GardeDocumentsLegaux` et
+`GardeAcces` vivent dans `layout.tsx`, que Next.js ne rejoue pas sur une
+navigation côté client : elles ne s'exécutent qu'au premier chargement.
+
+**Ce qui tient aujourd'hui, et c'est un bouchon avoué :** les deux chemins
+connus visent `/documents-legaux` explicitement (« Entrer dans Atlas » sur la
+porte, `router.push` après le bon code), et `accueilPourEmail` choisit la
+destination à la connexion. Un écran ou un lien neuf qui mènerait à `/` par
+navigation interne repasserait à côté des gardes.
+
+**Ce qui a été ESSAYÉ et qui ne marche pas — 15 septembre 2026, revert `e0e7e7fc` :**
+un `template.tsx` à la racine de `src/app/` portant les trois gardes. Sur les deux cas
+écrits pour le prouver (`test-creer-son-compte-e2e`), personne n'a été renvoyé :
+soit le template n'est pas rejoué côté serveur sur une navigation interne, soit
+son `redirect()` n'est pas suivi par le routeur. Ne pas repartir de cette idée.
+
+**Pistes qui restent, à éprouver avec les deux mêmes cas rouges d'abord :**
+
+| | |
+|---|---|
+| le `middleware` | il voit CHAQUE navigation (les requêtes RSC comprises) ; il n'a pas la base, mais il pourrait lire un **cookie posé à la connexion** (« conditions en attente », « code en attente ») et renvoyer lui-même — le cookie se met à jour quand l'acceptation ou le code passe |
+| une garde dans chaque page | juste mais fragile : le prochain écran l'oubliera |
+| un composant client dans le layout | qui interroge une route `/api/garde` à chaque changement d'adresse (`usePathname`) et pousse la redirection — une requête par déplacement, mais rien à oublier |
+
+**Qui :** nous. Lot à part, batterie complète (il touche tous les écrans).
 ---
 
 ## LES AUTRES ACTIONS SERVEUR TOMBENT ENCORE SUR L'ÉCRAN MUET

@@ -10,49 +10,98 @@ Chargé dans **toutes** les sessions Atlas (importé par `CLAUDE.md`).
 compilait et que le patron ne pouvait pas utiliser. **Rien n'est terminé tant
 que le parcours qu'il fait, lui, n'a pas été joué.**
 
-## Le niveau se choisit sur le RISQUE, pas par habitude
+## Le niveau se CALCULE sur le risque — il ne se déclare pas
 
-Rejouer soixante suites pour une virgule coûte dix minutes et n'apprend rien ;
-n'en jouer aucune sur une migration coûte une soirée. Ce qui décide, c'est **ce
-que le lot touche**.
+Rejouer soixante suites pour une virgule coûte cinquante minutes et n'apprend
+rien ; n'en jouer aucune sur une migration coûte une soirée. Ce qui décide,
+c'est **l'impact réel du lot** — et il se calcule sur le diff.
 
-| Ce que le lot touche | Niveau | Ce qu'on joue |
+```
+niveau = MAX( plancher , rayon , gravité )
+```
+
+Jamais un minimum, jamais une moyenne. Trois façons d'être dangereux ; il
+suffit d'une.
+
+| Composante | Ce qui la déclenche | Niveau |
 |---|---|---|
-| `docs/`, `appli/`, un `.md` | **1** | rien — relire le rendu suffit |
-| `scripts/`, `.claude/`, `.devcontainer/` | **2** | `npm run verifier:avant-fusion` |
-| `src/`, `drizzle/`, une pièce partagée | **3** | `npm run verifier:avant-livraison` |
+| **Plancher** | `drizzle/`, `middleware.ts`, `layout.tsx` racine, `globals.css`, `src/server/db/`, `env`/`logger`/`request-context`, `package.json`, `next.config`, `tsconfig` | **3** |
+| **Gravité — sécurité** | authentification, sessions, RLS, `withEntreprise`, isolation, rôles, permissions | **3** |
+| **Gravité — argent** | facturation, TVA, devis, règlements, paiements, acomptes, prix, remises, avoirs | **3** |
+| **Rayon** | le fichier atteint **10 points d'entrée ou plus** | **3** |
+| **Rayon** | 1 à 9 points d'entrée | **2** |
+| **Indéterminable** | route d'API (`fetch` n'est pas un import), fichier non `.ts`/`.tsx`, fichier effacé ou renommé, écran qu'aucune suite n'ouvre | **3** |
+| **Outillage** | `scripts/`, `.claude/`, `.devcontainer/`, `.github/`, `maquettes/` | **2** |
+| **Ce qui ne s'exécute pas** | `docs/`, `appli/`, un `.md` | **1** |
 
-Le doute tranche **vers le haut**. Une pièce partagée — `design-tokens.ts`,
-`EnTeteEcran`, `globals.css`, `layout.tsx`, `middleware.ts` — touche tous les
-écrans : niveau 3, toujours.
+**Un point d'entrée n'est pas une catégorie à énumérer : c'est un fichier que
+personne n'importe** — le routeur Next, un cron ou un script l'appelle depuis
+l'extérieur du code. Une liste d'« entrypoints » aurait vieilli ; cette
+définition accueille toute seule la route ou le cron ajouté demain.
+
+**Le chemin est un INDICE, jamais la décision.** La règle d'avant lisait
+`^src/` et rendait 3 : elle se trompait dans les deux sens — 339 fichiers sur
+697 n'atteignent qu'un seul point d'entrée, et `src/lib/civilite.ts` en atteint
+64 sans figurer sur aucune liste.
+
+**LES DEUX LISTES NE JOUENT PAS LE MÊME RÔLE, et c'est tout le principe :**
+
+| | |
+|---|---|
+| une liste qui **ABAISSE** le niveau | **refusée** — le jour où elle oublie un fichier, du danger part et rien ne le dit |
+| une liste qui **REMONTE** le niveau (plancher, gravité) | acceptée — le jour où elle se trompe, on joue une batterie de trop |
+
+Ce qui abaisse n'est donc jamais une liste : c'est le **rayon**, calculé sur le
+graphe d'imports. **Une session ne peut pas se l'accorder.**
 
 **Le niveau n'est pas déclaratif** : `scripts/garde-fusion-main.mjs` le calcule
-sur le diff et refuse la fusion si le contrôle correspondant n'a pas été joué au
-vert sur CET état de l'arbre.
+sur le diff et refuse la fusion si le contrôle correspondant n'a pas été joué
+au vert sur CET état de l'arbre. Il annonce alors, de lui-même :
 
-## Niveau 1 — pendant qu'on écrit
+```
+Risque : moyen
+Niveau requis : 2
+Raison : rayon de 1 point(s) d'entrée
+Contrôles exigés : npm run verifier:avant-fusion, dont les suites …
+```
 
-Les suites du domaine touché, à la main. `npx tsx scripts/test-<la-suite>.ts`.
-Un contrôle joué en boucle sur ce qu'on vient d'écrire vaut mieux qu'une
-batterie jouée une fois à la fin.
+Pour voir le niveau d'un lot sans pousser : `npm run niveau`.
 
-## Niveau 2 — avant de fusionner
+## Niveau 1 — ce qui ne s'exécute pas
+
+`docs/`, `appli/`, un `.md` : relire le rendu suffit.
+
+**Pendant qu'on écrit**, quel que soit le niveau : les suites du domaine
+touché, à la main — `npx tsx scripts/test-<la-suite>.ts`. Un contrôle joué en
+boucle sur ce qu'on vient d'écrire vaut mieux qu'une batterie jouée une fois à
+la fin.
+
+## Niveau 2 — un lot à impact BORNÉ
 
 ```bash
 npm run verifier:avant-fusion
 ```
 
-Types, lint, mémoire du dépôt, et les suites que le lot met en cause. C'est le
-minimum avant que quoi que ce soit parte vers `main`.
+Types, style, mémoire du dépôt, suites du dépôt — **et les suites navigateur
+des écrans que le lot atteint, dérivées de l'adresse qu'elles ouvrent.**
 
-## Niveau 3 — quand le risque le justifie
+Cette dernière étape n'est pas un supplément : types et lint ne parcourent
+rien, et c'est exactement ce qui a laissé passer « Invalid Server Actions
+request. » — vingt allers-retours, tous les voyants au vert. Un écran touché
+s'ouvre dans un vrai navigateur, et **un écran qu'aucune suite n'ouvre fait
+passer le lot en niveau 3** : il n'y aurait rien à jouer qui le regarde.
+
+Ce contrôle **refuse** de rendre un vert sur un lot de niveau 3.
+
+## Niveau 3 — transversal ou dangereux
 
 ```bash
 npm run verifier:avant-livraison
 ```
 
-Obligatoire dès que le lot touche `src/` ou `drizzle/`. **Le prévenir avant de
-la lancer** — ses sessions partagent son dossier (`CLAUDE.md` §5).
+La batterie entière, inchangée. Obligatoire dès que le plancher, la gravité ou
+un rayon de dix points d'entrée est atteint. **Le prévenir avant de la
+lancer** — ses sessions partagent son dossier (`CLAUDE.md` §5).
 
 ## Une régression découverte donne TOUJOURS un test
 

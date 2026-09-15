@@ -5,6 +5,14 @@
 
 ---
 
+## Le niveau d'épreuve, calculé (14 septembre 2026)
+
+`niveau = MAX(plancher, rayon d'impact, gravité)` — `scripts/_niveau-de-risque.mjs`.
+Un chemin dans `src/` n'exige plus la batterie entière : ce qui l'exige est un
+plancher (`drizzle/`, middleware, gabarit racine, accès base), la gravité
+(authentification, isolation, argent) ou un rayon de dix points d'entrée.
+`npm run niveau` le dit pour le lot en cours ; `garde-fusion-main.mjs` l'impose.
+
 ## FAIT : LE PAPIER, LE MÊME POUR LE DEVIS ET LA FACTURE — 14 septembre 2026, soir
 
 Sa planche, codée sur son « PARFAIT ! ». Migration 0092 : titre, main d'œuvre
@@ -12,6 +20,12 @@ et unité sur la facture, numéro de chèque et solde sur les règlements. Un se
 composeur pour les deux papiers, les colonnes des pros, les acomptes reçus et
 le net à payer, « Facture acquittée ». Suites pures, base et navigateur du lot
 vertes ; le papier regardé en grand contre la planche. `ARCHITECTURE.md` §364.
+## FAIT : UN CLIENT SE MODIFIE DEPUIS SA FICHE — 14 septembre 2026
+
+« Modifier ses coordonnées » sous son nom : civilité, nom, téléphone, e-mail,
+adresse. Rien du chantier. Avant, un client sans chantier en cours n'était
+modifiable nulle part. `ARCHITECTURE.md` §364.
+
 ## FAIT : LES DOUZE SUITES ROUGES SONT VERTES, ET DEUX ÉCRANS RESSERRÉS — 14 septembre 2026
 
 La batterie rend **153/153**. Dix des douze rouges étaient des contrôles

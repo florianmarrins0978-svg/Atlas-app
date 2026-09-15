@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — 1 — Lecture du brief reçu</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="1--lecture-du-brief-reçu">1 — Lecture du brief reçu</h1>
+<p><strong>14 septembre 2026.</strong> Proposition reçue : remplacer « tout changement dans <code>src/</code> = Niveau 3 » par un niveau choisi sur le risque réel.</p>
+<hr>
+<h2 id="1-le-constat-est-exact">1. Le constat est exact</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La règle actuelle vit dans <code>scripts/_niveau-de-risque.mjs</code> :</p>
+<p>``<code>js if (/^(src|drizzle)\//.test(c) || c === "package.json" || c === "next.config.ts") return 3; </code>``</p>
+<p>Un mot changé dans un écran déclenche donc la batterie complète (~50 min).</p>
+<p><strong>Et la moitié de <code>src/</code> est réellement locale</strong> : 339 fichiers sur 697 n'atteignent qu'un seul point d'entrée de l'application (<code>3-mesures.md</code>). Le grief est fondé.</p>
+<h2 id="2-ce-qui-est-refusé-dans-le-brief-et-pourquoi">2. Ce qui est refusé dans le brief, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="21-la--liste-de-fichiers-centraux-connus---refusée">2.1 La « liste de fichiers centraux connus » — refusée</h3>
+<p>Une liste tenue à la main pourrit, et sa panne est <strong>silencieuse</strong> : elle laisse partir du danger sans rien dire.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Fichier</th>
+<th>Points d'entrée atteints</th>
+<th>Sur une liste ?</th>
+</tr></thead><tbody>
+<tr>
+<td><code>src/lib/design-tokens.ts</code></td>
+<td>88</td>
+<td>oui</td>
+</tr>
+<tr>
+<td><code>src/lib/acces-roles.ts</code></td>
+<td>67</td>
+<td>non</td>
+</tr>
+<tr>
+<td><code>src/lib/civilite.ts</code></td>
+<td>64</td>
+<td><strong>non</strong></td>
+</tr>
+</tbody></table></div>
+<p><code>civilite.ts</code> touche 64 points d'entrée sur 122 et ne figure dans aucune liste du dépôt. Une règle fondée sur une liste classerait ce changement « local ».</p>
+<h3 id="22-niveau-1-pour-du--visuel-local--dans-src--refusé">2.2 Niveau 1 pour du « visuel local » dans <code>src/</code> — refusé</h3>
+<p><code>typecheck</code>, <code>lint</code>, <code>test-aucune-fleche</code>, <code>test-chartes-lisibles</code>, <code>test-pas-de-pansement</code>, <code>test-couches</code>, <code>test-pas-de-code-mort</code> coûtent des <strong>secondes</strong>. Les sauter ne fait gagner aucun temps mesurable, et rouvre des défauts déjà payés — le mode nuit illisible du 22 août 2026.</p>
+<p>Le niveau 1 reste ce qu'il est : <code>docs/</code>, <code>appli/</code>, un <code>.md</code>.</p>
+<h3 id="23-niveau-2--types--lint--suites-ciblées--insuffisant">2.3 Niveau 2 = types + lint + suites ciblées — insuffisant</h3>
+<p>C'est exactement ce qui a coûté vingt allers-retours sur « Invalid Server Actions request. » : tous les voyants verts, et aucun contrôle ne parcourait ce que l'utilisateur parcourt.</p>
+<p>Une action serveur neuve sans <strong>aucun passage navigateur réel</strong> n'est pas éprouvée. Le niveau 2 appliqué au produit doit donc porter en plus les suites des points d'entrée atteints, et ces écrans regardés.</p>
+<h3 id="24--claude-annonce-risque--niveau--raison---refusé-comme-mécanisme">2.4 « Claude annonce Risque / Niveau / Raison » — refusé comme mécanisme</h3>
+<p>Si c'est la session qui écrit la ligne, le niveau redevient <strong>déclaratif</strong> — précisément ce que le brief dit vouloir éviter. La ligne doit être <strong>calculée et imprimée par le garde-fou</strong> à partir du diff : une sortie, jamais une entrée.</p>
+<h2 id="3-ce-qui-est-proposé-à-la-place">3. Ce qui est proposé à la place</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le rayon d'impact se <strong>calcule</strong> sur le graphe d'imports inverse. La règle complète — avec les deux corrections apportées par la revue — est au §4 de <code>2-revue-d-architecture.md</code>.</p>
+<h2 id="4-une-erreur-de-ce-document-corrigée">4. Une erreur de ce document, corrigée</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La première version citait comme cas de référence mesuré :</strong></p>
+<p>``<code> src/app/chantiers/[id]/coordonnees/actions.ts  →  3 points d'entrée </code>``</p>
+<p><strong>C'était le mauvais fichier.</strong> Le lot en cours porte sur les coordonnées <strong>client</strong>, pas chantier. La mesure était réelle, mais elle ne portait pas sur le lot dont il était question.</p>
+<p>La cause : <code>src/app</code> avait été listé avec un <code>| head -40</code>, la sortie était <strong>tronquée</strong>, et l'absence de <code>src/app/clients</code> en avait été conclue. C'est la faute que ce dépôt a déjà payée le 14 septembre — <em>une recherche vide n'est pas une absence</em> (<code>.claude/rules/regarder-l-ecran.md</code>).</p>
+<p><strong>Le lot réel, mesuré :</strong> les huit fichiers de <code>src/app/clients/</code> sont tous à un rayon de <strong>1</strong>. La conclusion ne change pas ; sa fondation, si.</p>
+</main>
+</body>
+</html>

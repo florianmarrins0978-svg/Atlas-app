@@ -7,7 +7,7 @@ import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 // Recopié ici, ce contrôle est passé au rouge le 13 août 2026, le jour où le
 // patron a fait retirer ce mot.
 import { avecCivilite } from "../src/lib/civilite";
-import { jourLisible } from "../src/lib/jour";
+import { jourIso, jourLisible } from "../src/lib/jour";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { ADRESSE, ACCUEIL_EXACT } from "./_adresse";
@@ -150,7 +150,22 @@ async function main() {
       "la liste ne dit pas QUAND le devis est parti : aucune ligne de précision sous l'état"
     );
     const jourEcrit = ((await precision.first().textContent()) ?? "").trim();
-    const attendu = jourLisible(new Date().toISOString().slice(0, 10));
+    // ═══════════════════════════════════════════════════════════════════
+    // **LE JOUR SE LIT DANS SON FUSEAU, PAS EN UTC — 15 septembre 2026,
+    // à minuit dix-sept.**
+    //
+    // Ce contrôle prenait `new Date().toISOString()` : entre 22 h et minuit
+    // UTC, c'est-à-dire chaque soir entre minuit et deux heures chez lui,
+    // l'écran affichait « mardi 15 » et le contrôle attendait « lundi 14 ».
+    // L'écran avait raison — l'application compte les jours dans le fuseau du
+    // patron (`jourIso`, `FUSEAU_DU_PATRON`), parce que c'est son calendrier
+    // qui décide de ce qu'est « aujourd'hui ».
+    //
+    // On emploie donc la MÊME fonction que le produit (`CLAUDE.md` §3) : deux
+    // façons de dire quel jour on est finissent toujours par se contredire, et
+    // celle-ci se contredisait deux heures par nuit.
+    // ═══════════════════════════════════════════════════════════════════
+    const attendu = jourLisible(jourIso(new Date()));
     assert.equal(
       jourEcrit.toLowerCase(),
       attendu.toLowerCase(),
