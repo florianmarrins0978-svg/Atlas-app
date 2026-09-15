@@ -666,6 +666,39 @@ async function main() {
     }
   });
 
+  await test("UN DEVIS REFUSÉ PUIS RENVOYÉ GARDE SES HUIT JOURS — sa plainte du 15 septembre 2026", async () => {
+    // *« Lors du premier envoi j'ai sélectionné 8 jours et quand je le reprends
+    // pour le renvoyer, il n'a pas gardé en mémoire les 8 jours de chantier. »*
+    // Le premier envoi écrit la durée sur le chantier ; la préparation du
+    // second doit la relire — pas repartir de la dictée, ni d'une journée.
+    const ctx = await contexte(`huit-jours-${Date.now()}@t.test`);
+    const client = await clientsRepo.creerClient(ctx, { nom: "Mr Julien", telephone: "0611223344" });
+    await clientsRepo.mettreAJourClient(ctx, client.id, { canalCommunication: "sms" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Terrasse", clientId: client.id });
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Terrasse bois", "8000.00");
+    const brouillon = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    const HUIT_JOURS = 16;
+
+    const envoi = await creerEnvoi(
+      ctx,
+      {
+        chantierId: chantier.id,
+        devisId: brouillon.id,
+        canal: "sms",
+        datesProposees: [dans(10)],
+        contenuDevis: "Terrasse bois",
+        dureeDemiJournees: HUIT_JOURS,
+      },
+      LUNDI
+    );
+    const refus = await enregistrerReponse(envoi.jeton, { decision: "refuse" }, LUNDI);
+    assert.ok(refus.succes, "le refus du client n'a pas été enregistré");
+
+    const p = await preparerEnvoi(ctx, chantier.id, LUNDI);
+    assert.strictEqual(p.dureeDemiJournees, HUIT_JOURS, "la durée du premier envoi n'est pas relue au renvoi");
+    assert.strictEqual(p.dureeDeduiteDeLaDictee, false, "une durée choisie par le patron n'est pas « déduite de la dictée »");
+  });
+
   console.log(`\n${passed} réussis, ${failed} échoués`);
   await pool.end();
   if (failed > 0) process.exit(1);

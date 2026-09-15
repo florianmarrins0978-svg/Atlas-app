@@ -254,11 +254,19 @@ export async function preparerEnvoi(
       nombreEquipes
     );
 
-    // La durée retenue, dans l'ordre : ce que le patron a corrigé, sinon ce que
-    // sa dictée disait, sinon une journée. Jamais un chiffre inventé sans le
-    // dire — `dureeDeduiteDeLaDictee` porte l'aveu jusqu'à l'écran.
+    // La durée retenue, dans l'ordre : ce que le patron corrige à l'écran, sinon
+    // **ce que le chantier porte déjà** — la durée choisie au premier envoi —,
+    // sinon ce que sa dictée disait, sinon une journée. Jamais un chiffre
+    // inventé sans le dire — `dureeDeduiteDeLaDictee` porte l'aveu jusqu'à l'écran.
+    //
+    // **Le deuxième maillon manquait — sa plainte du 15 septembre 2026 :** *« lors
+    // du premier envoi j'ai sélectionné 8 jours et quand je le reprends pour le
+    // renvoyer, il n'a pas gardé en mémoire les 8 jours »*. Le premier envoi
+    // écrit bien la durée sur le chantier (`creerEnvoi`) ; la préparation du
+    // renvoi, elle, repartait de la dictée, et retombait sur une journée.
     const deduite = dureeEnDemiJournees(chantier?.dureePrevue ?? null);
-    const dureeDemiJournees = dureeImposee ?? deduite ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
+    const dureeDemiJournees =
+      dureeImposee ?? chantier?.dureeDemiJournees ?? deduite ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
 
     const canal = client?.canalCommunication ?? null;
     const destinataire = canal === "sms" ? client?.telephone ?? null : client?.email ?? null;
@@ -306,7 +314,7 @@ export async function preparerEnvoi(
       ),
       fenetre,
       dureeDemiJournees,
-      dureeDeduiteDeLaDictee: dureeImposee === undefined && deduite !== null,
+      dureeDeduiteDeLaDictee: dureeImposee === undefined && chantier?.dureeDemiJournees == null && deduite !== null,
       blocage,
     };
   });

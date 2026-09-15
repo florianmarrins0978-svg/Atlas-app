@@ -291,12 +291,16 @@ export async function creerEnvoi(
     // La durée que ce chantier réservera. Le patron a pu la corriger à l'écran ;
     // sinon elle se déduit de sa dictée, et à défaut vaut une journée.
     const [chantier] = await tx
-      .select({ dureePrevue: chantiers.dureePrevue })
+      .select({ duree: chantiers.dureeDemiJournees, dureePrevue: chantiers.dureePrevue })
       .from(chantiers)
       .where(and(eq(chantiers.id, creation.chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
       .limit(1);
+    // Le même ordre que `preparerEnvoi` : ce que l'écran envoie, sinon ce que
+    // le chantier porte déjà (le premier envoi), sinon la dictée, sinon une
+    // journée. Deux ordres différents finiraient par se contredire (§3).
     const duree =
       creation.dureeDemiJournees ??
+      chantier?.duree ??
       dureeEnDemiJournees(chantier?.dureePrevue ?? null) ??
       DUREE_PAR_DEFAUT_DEMI_JOURNEES;
 

@@ -6,6 +6,20 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-15
+
+### Un devis refusé puis renvoyé garde ses huit jours
+
+Sa plainte : *« lors du premier envoi j'ai sélectionné 8 jours et quand je le
+reprends pour le renvoyer, il n'a pas gardé en mémoire les 8 jours »*. Le
+premier envoi écrivait bien la durée sur le chantier ; la préparation du
+renvoi repartait de la dictée, puis d'une journée. `preparerEnvoi` et
+`creerEnvoi` relisent désormais ce que le chantier porte, dans le même ordre :
+ce que l'écran corrige, sinon la durée déjà choisie, sinon la dictée, sinon une
+journée. `test-preparation-envoi` joue sa séquence — envoi à 8 jours, refus du
+client, nouvelle préparation.
+
+---
 ## 2026-09-14
 
 ### Deux suites comptaient les jours en UTC, et rougissaient deux heures par nuit
