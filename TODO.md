@@ -51,7 +51,23 @@ nom de domaine). Resend et Postmark exigent un domaine, qu'il n'a pas encore.
 
 ---
 
-## `test-fin-de-chantier-e2e` ROUGIT ENTRE MINUIT ET DEUX HEURES — `CURRENT_DATE` est en UTC
+## ~~`test-fin-de-chantier-e2e` ROUGIT ENTRE MINUIT ET DEUX HEURES~~ — CORRIGÉ le 15 septembre 2026
+
+**Fait, et deux fois plutôt qu'une.** La suite pose sa date avec `jourDuPatron()`
+(`_jour-e2e.ts`, qui existait depuis le 25 août et qu'elle n'avait pas repris) ;
+rejouée à 00 h 30, l'heure même où elle tombait : 7 cas, 0 échec.
+
+**Et le même piège vivait ailleurs, en JavaScript :** `test-suivi-devis-e2e`
+comparait la date affichée à `new Date().toISOString()`. Le garde-fou qui
+interdit ce geste (`test-jour-du-patron.ts`) ne parcourait que `src/` — il
+parcourt aussi `scripts/` désormais, confronté au geste qu'il refuse avant
+d'être cru.
+
+**Ce qui RESTE, et qui ne bascule pas :** les autres `CURRENT_DATE` des suites
+posent des jours à trois jours de distance ou plus. Ils sont sans danger, et ils
+restent — les convertir sans raison ferait du bruit dans un diff.
+
+*(Relevé d'origine, gardé pour la trace.)*
 
 **Vu le 15 septembre 2026 à 00:30 et 01:40**, deux fois rouge, verte à midi sur
 le même planning. La suite pose `date_planifiee = CURRENT_DATE` — la date du
@@ -62,9 +78,9 @@ pas. C'est la famille du §355 (une date est un jour, pas un instant), côté
 suites. `test-ligne-planning-e2e` mesure aussi faux jouée seule (ordre des
 suites, déjà noté plus haut) — ne pas confondre les deux.
 
-**À faire :** poser la date du jour calculée côté Node (`jourIso`, §177) au lieu
-de `CURRENT_DATE`, dans cette suite et dans toute suite qui écrit
-`CURRENT_DATE` pour dire « aujourd'hui ». **Qui :** nous, lot outillage.
+~~**À faire :** poser la date du jour calculée côté Node (`jourIso`, §177) au
+lieu de `CURRENT_DATE`, dans cette suite et dans toute suite qui écrit
+`CURRENT_DATE` pour dire « aujourd'hui ».~~ **Fait le 15 septembre 2026.**
 ---
 
 ## LES GARDES NE SE REJOUENT PAS QUAND ON SE DÉPLACE DANS L'APPLI — et le template ne suffit pas
