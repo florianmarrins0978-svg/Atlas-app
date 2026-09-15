@@ -30,7 +30,14 @@ son diff, son verdict. Tant que ce n'est pas fait, la seule voie propre est
 d'ouvrir la session DANS le dossier (`npm run session 2`), jamais d'y aller
 depuis le principal.
 
-## ⏳ UNE PLANCHE À REGARDER — LE PDF SANS LES PRIX AU PLANNING
+## ~~UNE PLANCHE À REGARDER — LE PDF SANS LES PRIX AU PLANNING~~ — CHOISIE ET CODÉE LE 15 SEPTEMBRE 2026 (« la A, mais on garde la phrase existante, en gras doré »)
+
+**Codé :** le lien `pdf-sans-prix` de `FeuilleChantier` (`PlanningClient.tsx`)
+garde sa phrase et sa place, perd son fond vert : gras, `colors.or`. Rien
+d'autre ne bouge. **Ce qui reste avant `main` :** la batterie (niveau 3), qui
+n'a pas pu tourner — la construction meurt faute de mémoire (58 Go engagés sur
+61, comme le 14 septembre au soir) ; à rejouer après redémarrage de la machine.
+Et l'écran, à regarder alors : « pas vérifiable ICI » tant que rien ne se bâtit.
 
 **Sa question du 14 septembre 2026, capture à l'appui :** *« maintenant qu'on a les
 infos du devis qui s'affichent sous la fiche d'intervention, est-ce qu'on a besoin

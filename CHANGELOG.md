@@ -6,6 +6,20 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-15
+
+### Le PDF sans les prix n'est plus un second bouton vert sous « Fin de chantier »
+
+Depuis que les lignes du devis s'affichent sur la fiche d'intervention, le PDF
+sans les prix n'est plus le seul document de l'équipe : c'est le papier de
+secours — et il se disputait la place avec « Fin de chantier », qui est LE geste
+de cet écran. Sa réponse à la planche `appli/le-pdf-sans-les-prix.html` : *« la
+A, mais on garde la phrase existante et tu mets en gras doré le doré de
+l'appli »*. Même phrase, même place ; un mot en gras, en `colors.or` — l'or du
+surtitre et des puces juste au-dessus, jamais `orTexte` (sa correction du
+9 septembre). Ce que ça évite : deux gestes de même allure l'un sous l'autre,
+dont un seul compte.
+
 ## 2026-09-14
 
 ### Deux suites comptaient les jours en UTC, et rougissaient deux heures par nuit
