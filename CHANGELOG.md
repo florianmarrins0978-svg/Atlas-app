@@ -107,6 +107,15 @@ Unité absente du devis, le libellé d’un règlement, un chiffre touché
 sélectionné, le libellé du crédit d’impôt. `appli/le-papier-devis-et-facture.html`
 (trois vues) et la planche de la facture retouchée. Rien dans `src/`.
 
+### L'écran du code a une sortie : « Retour » rend la porte d'entrée
+
+Sa remarque le soir même : *« je suis bloqué à cette page, il n'existe pas de
+touche retour si on ne reçoit pas l'email »*. Un code qui n'arrive jamais
+enfermait dans l'écran — la garde y renvoie depuis partout. « Retour », sous
+« Renvoyer le code », ferme la session et rend `/bienvenue` (la déconnexion de
+Réglages, avec une destination bornée à deux chemins). Le compte reste en
+attente. `test-creer-son-compte-e2e` le joue.
+
 ### L'adresse d'un compte neuf se prouve par un code, avant d'entrer
 
 Sa demande : *« j'ai réussi à me connecter avec une adresse fausse qui

@@ -51,6 +51,53 @@ nom de domaine). Resend et Postmark exigent un domaine, qu'il n'a pas encore.
 
 ---
 
+## `test-fin-de-chantier-e2e` ROUGIT ENTRE MINUIT ET DEUX HEURES — `CURRENT_DATE` est en UTC
+
+**Vu le 15 septembre 2026 à 00:30 et 01:40**, deux fois rouge, verte à midi sur
+le même planning. La suite pose `date_planifiee = CURRENT_DATE` — la date du
+serveur Postgres, en UTC dans Docker — puis attend la ligne du jour sur le
+planning, qui compte en heure de Paris. Entre 00:00 et 02:00 (heure d'été), les
+deux jours diffèrent : le chantier est planifié « hier », et la ligne n'existe
+pas. C'est la famille du §355 (une date est un jour, pas un instant), côté
+suites. `test-ligne-planning-e2e` mesure aussi faux jouée seule (ordre des
+suites, déjà noté plus haut) — ne pas confondre les deux.
+
+**À faire :** poser la date du jour calculée côté Node (`jourIso`, §177) au lieu
+de `CURRENT_DATE`, dans cette suite et dans toute suite qui écrit
+`CURRENT_DATE` pour dire « aujourd'hui ». **Qui :** nous, lot outillage.
+---
+
+## LES GARDES NE SE REJOUENT PAS QUAND ON SE DÉPLACE DANS L'APPLI — et le template ne suffit pas
+
+**Le défaut, vu par lui le 14 septembre 2026 :** compte créé, « Entrer dans
+Atlas », une heure de travail, et les conditions générales ne lui sont parvenues
+qu'en rechargeant la page. `GardeVerificationEmail`, `GardeDocumentsLegaux` et
+`GardeAcces` vivent dans `layout.tsx`, que Next.js ne rejoue pas sur une
+navigation côté client : elles ne s'exécutent qu'au premier chargement.
+
+**Ce qui tient aujourd'hui, et c'est un bouchon avoué :** les deux chemins
+connus visent `/documents-legaux` explicitement (« Entrer dans Atlas » sur la
+porte, `router.push` après le bon code), et `accueilPourEmail` choisit la
+destination à la connexion. Un écran ou un lien neuf qui mènerait à `/` par
+navigation interne repasserait à côté des gardes.
+
+**Ce qui a été ESSAYÉ et qui ne marche pas — 15 septembre 2026, revert `e0e7e7fc` :**
+un `template.tsx` à la racine de `src/app/` portant les trois gardes. Sur les deux cas
+écrits pour le prouver (`test-creer-son-compte-e2e`), personne n'a été renvoyé :
+soit le template n'est pas rejoué côté serveur sur une navigation interne, soit
+son `redirect()` n'est pas suivi par le routeur. Ne pas repartir de cette idée.
+
+**Pistes qui restent, à éprouver avec les deux mêmes cas rouges d'abord :**
+
+| | |
+|---|---|
+| le `middleware` | il voit CHAQUE navigation (les requêtes RSC comprises) ; il n'a pas la base, mais il pourrait lire un **cookie posé à la connexion** (« conditions en attente », « code en attente ») et renvoyer lui-même — le cookie se met à jour quand l'acceptation ou le code passe |
+| une garde dans chaque page | juste mais fragile : le prochain écran l'oubliera |
+| un composant client dans le layout | qui interroge une route `/api/garde` à chaque changement d'adresse (`usePathname`) et pousse la redirection — une requête par déplacement, mais rien à oublier |
+
+**Qui :** nous. Lot à part, batterie complète (il touche tous les écrans).
+---
+
 ## LES AUTRES ACTIONS SERVEUR TOMBENT ENCORE SUR L'ÉCRAN MUET
 
 Même lot, même racine. Une exception qui sort d'une action serveur est
