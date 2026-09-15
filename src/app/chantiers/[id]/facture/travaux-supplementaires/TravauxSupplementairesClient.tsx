@@ -37,6 +37,7 @@ import {
 } from "@/components/atlas/Remise";
 import { useEcrituresALaSuite } from "@/components/atlas/useEcrituresALaSuite";
 import { montantDeLaLigne } from "@/lib/montant-de-ligne";
+import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
 // Le formateur du dépôt, au lieu de la copie qui vivait ici : deux façons
 // d'écrire un euro finissent par s'écrire différemment (`CLAUDE.md` §3).
 import { enEuros } from "@/lib/euros";
@@ -398,7 +399,7 @@ export default function TravauxSupplementairesClient({
               <span className="text-[16px]">{l.quantite}</span>
             </Cellule>
             <Cellule libelle="Unité">
-              <span className="text-[16px]">{l.unite ?? ""}</span>
+              <span className="text-[16px]">{uniteDeLaLigne(l.unite)}</span>
             </Cellule>
             <Cellule libelle="Prix unitaire HT">
               <span className="text-[16px]">{enEuros(l.prixUnitaire)}</span>

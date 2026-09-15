@@ -82,8 +82,14 @@ const dire = (bon: boolean, quoi: string) => {
 // dans un navigateur, regardés — sans remise (la colonne absente, le tableau
 // serré) et avec une remise de 5 % (la colonne revenue, la mise en page du
 // 14 septembre intacte).
-const EMPREINTE_FACTURE = "0519bce6469f8fb59b66390623bbaec4ccc8442c4d802c580c9d48859fa7cb6f";
-const EMPREINTE_DEVIS = "0b2292c15f5f53dc36cb47d225731c4b4f6f81e48d3beb13d282205275a6d957";
+//
+// **ET LE MÊME JOUR, une seconde fois :** *« que l'u soit mise sur le devis ou
+// facture par défaut : si on ne touche à rien, elle se pose, on la voit »*.
+// Les trois lignes de ce document n'ont aucune unité : elles s'impriment
+// désormais « u » (`unite-de-ligne.ts`). Rendu regardé — « u » sur les deux
+// lignes sans unité, « ml » gardé sur celle qui en a une.
+const EMPREINTE_FACTURE = "ffb15b461f9cbeadded3efb26f0b37e5f8d6af6044172168655fbad244eb25b8";
+const EMPREINTE_DEVIS = "9ec45be6610b699304039dafc8c3a519c0151833b15bdab28d807f96dc8759c9";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",

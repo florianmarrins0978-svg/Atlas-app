@@ -26,6 +26,7 @@ import {
 } from "@/lib/reduction-devis";
 import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
 import { lignesDuPapier, quantiteLisible, tauxCourt } from "@/lib/lignes-du-papier";
+import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
 import { protegerContreModification } from "./proteger-pdf";
 import { annoncerLaLongueurDesPolices } from "./polices-embarquees";
 import { pourLePapier } from "@/lib/texte-pdf";
@@ -1018,9 +1019,10 @@ export async function composerDocument(
       }
       lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
       if (!options.sansChiffrage) {
-        // « 3 », jamais « 3.00 » ; l'unité dans SA colonne, centrée.
+        // « 3 », jamais « 3.00 » ; l'unité dans SA colonne, centrée — et « u »
+        // quand il n'en a posé aucune (sa demande du 15 septembre 2026).
         ecrireADroite(ctx, quantiteLisible(ligne.quantite), xQte, y, { taille: 9 });
-        if (ligne.unite) ecrireCentre(ligne.unite, xUnite, y, { taille: 9 });
+        ecrireCentre(uniteDeLaLigne(ligne.unite), xUnite, y, { taille: 9 });
         // **« À chiffrer » ne se lit plus sur le seul drapeau** — sa capture du
         // 31 août 2026 : ce qui est imprimé fait toujours le total imprimé.
         if (ligneAttendSonPrix({ libelle: ligne.libelle, montant: ligne.montant, aChiffrer: ligne.aChiffrer })) {

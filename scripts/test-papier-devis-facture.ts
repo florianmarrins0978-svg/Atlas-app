@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import Decimal from "decimal.js";
 import { lignesDuPapier, quantiteLisible, tauxCourt } from "../src/lib/lignes-du-papier";
+import { uniteDeLaLigne } from "../src/lib/unite-de-ligne";
 import {
   estAcquittee,
   libelleReglement,
@@ -214,6 +215,26 @@ async function main() {
     // Un titre vide ne s'imprime pas.
     const { trace: sansTitre } = await composerDevisPdf({ ...BASE, titre: "   " });
     assert.ok(!sansTitre.textes.some((t) => t.contenu === "Aménagement du jardin"));
+  });
+
+  await cas("une ligne sans unité s'imprime « u » — sur le devis comme sur la facture", async () => {
+    // **Sa demande du 15 septembre 2026 :** *« que l'u soit mise sur le devis
+    // ou facture par défaut : si on ne touche à rien, elle se pose, on la
+    // voit »*. Il voyait « u » en gris clair dans le champ, croyait l'unité
+    // posée, et le papier sortait sans. La base garde NULL ; c'est la lecture
+    // qui dit « u » (`unite-de-ligne.ts`), la même pour l'écran et le papier.
+    assert.equal(uniteDeLaLigne(null), "u");
+    assert.equal(uniteDeLaLigne("  "), "u");
+    assert.equal(uniteDeLaLigne(" ml "), "ml");
+    const sansUnite = [{ ...LIGNES[0], unite: null }, ...LIGNES.slice(1)];
+    for (const [nom, trace] of [
+      ["devis", (await composerDevisPdf({ ...BASE, lignes: sansUnite })).trace],
+      ["facture", (await composerFacturePdf({ ...FACTURE, lignes: sansUnite })).trace],
+    ] as const) {
+      const textes = trace.textes.map((t) => t.contenu);
+      assert.ok(textes.includes("u"), `la ligne sans unité ne s'imprime pas « u » sur le ${nom}`);
+      assert.ok(textes.includes("m²") && textes.includes("ml"), `les unités posées ne sont plus sur le ${nom}`);
+    }
   });
 
   await cas("sans remise, la colonne « Rem. % » n'existe pas — sur le devis comme sur la facture", async () => {

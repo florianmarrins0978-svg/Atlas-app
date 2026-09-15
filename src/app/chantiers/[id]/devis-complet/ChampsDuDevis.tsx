@@ -279,6 +279,19 @@ export function Colonne({ children, droite }: { children: React.ReactNode; droit
  * disparaît dès qu'un chiffre est écrit — sur le papier, un devis rempli n'a
  * pas de cases.
  */
+/**
+ * Tout sélectionner dans une case — le geste « B » du 13 septembre 2026 (voir
+ * `ChiffreSaisi`), partagé avec `ChampUnite` : un appui remplace, il n'ajoute
+ * pas au chiffre ou à l'unité déjà là.
+ */
+export function toutSelectionner(champ: HTMLInputElement) {
+  const fin = champ.value.length;
+  if (fin === 0) return;
+  if (champ.selectionStart !== 0 || champ.selectionEnd !== fin) {
+    champ.setSelectionRange(0, fin);
+  }
+}
+
 export function ChiffreSaisi({
   valeur,
   onChange,
@@ -339,13 +352,6 @@ export function ChiffreSaisi({
    * ce même champ, et le chiffre s'y collait de la même façon.
    */
   const entrant = useRef(false);
-  const toutSelectionner = (champ: HTMLInputElement) => {
-    const fin = champ.value.length;
-    if (fin === 0) return;
-    if (champ.selectionStart !== 0 || champ.selectionEnd !== fin) {
-      champ.setSelectionRange(0, fin);
-    }
-  };
   return (
     <input
       value={valeur}
