@@ -324,9 +324,12 @@ async function main() {
     const description = page.locator('[data-atlas="ligne-supplement"] textarea').first();
     await description.fill("Dépannage arrosage — remplacement électrovanne");
     await description.blur();
-    const chiffres = page.locator('[data-atlas="ligne-supplement"] input');
-    await chiffres.nth(1).fill("145");
-    await chiffres.nth(1).blur();
+    // **Le prix se cherche par son NOM, jamais par son rang** : la colonne Unité
+    // s'est glissée entre Qté et Prix (15 septembre 2026), et le second champ
+    // de la ligne est devenu « u ». Un rang fixe casse à chaque colonne ajoutée.
+    const prix = page.locator('[data-atlas="ligne-supplement"] input[aria-label^="Prix unitaire"]');
+    await prix.first().fill("145");
+    await prix.first().blur();
     await page.waitForTimeout(800);
 
     await page.click('[data-atlas="revenir-a-la-facture"]');
@@ -404,14 +407,14 @@ async function main() {
     // base, qui se collait devant ce qu'il tape (« 0250 »).
     const neuve = page.locator('[data-atlas="ligne-supplement"]').last();
     assert.strictEqual(
-      await neuve.locator("input").nth(1).inputValue(),
+      await neuve.locator('input[aria-label^="Prix unitaire"]').inputValue(),
       "",
       "le champ du prix porte un zéro : ce qu'il tape se colle derrière"
     );
     await neuve.locator("textarea").fill("Végétaux");
     await neuve.locator("textarea").blur();
-    await neuve.locator("input").nth(1).fill("80");
-    await neuve.locator("input").nth(1).blur();
+    await neuve.locator('input[aria-label^="Prix unitaire"]').fill("80");
+    await neuve.locator('input[aria-label^="Prix unitaire"]').blur();
     await page.waitForTimeout(900);
 
     await page.click('[data-atlas="ajouter-tva-supplement"]');
@@ -419,8 +422,8 @@ async function main() {
     const derniere = page.locator('[data-atlas="ligne-supplement"]').last();
     await derniere.locator("textarea").fill("Terreau");
     await derniere.locator("textarea").blur();
-    await derniere.locator("input").nth(1).fill("30");
-    await derniere.locator("input").nth(1).blur();
+    await derniere.locator('input[aria-label^="Prix unitaire"]').fill("30");
+    await derniere.locator('input[aria-label^="Prix unitaire"]').blur();
     await page.waitForTimeout(1200);
 
     // **Ce que la BASE porte, et non ce que l'écran affiche** : un libellé se
@@ -458,13 +461,26 @@ async function main() {
       "aucun moyen d'accorder un prix : le geste du devis n'est pas sur la facture"
     );
 
-    const avant = Number(
-      (await pool.query(
-        `SELECT SUM(lf.montant) AS ht FROM lignes_facture lf
-           JOIN factures f ON f.id = lf.facture_id WHERE f.chantier_id = $1`,
-        [chantierId]
-      )).rows[0].ht
-    );
+    // **Attendre ce qu'on affirme, jamais une durée** (`test-prix-e2e.ts`). Le
+    // « 30 » de la dernière ligne part au serveur en quittant le champ ; lu trop
+    // tôt, le total vaut 225 pendant que la remise, posée juste après, se
+    // calcule sur 255 — et le contrôle accuse la remise d'un écart de 1,50 €
+    // qui n'est qu'une écriture encore en vol (15 septembre 2026).
+    const sommeEnBase = async () =>
+      Number(
+        (await pool.query(
+          `SELECT SUM(lf.montant) AS ht FROM lignes_facture lf
+             JOIN factures f ON f.id = lf.facture_id WHERE f.chantier_id = $1`,
+          [chantierId]
+        )).rows[0].ht
+      );
+    let avant = await sommeEnBase();
+    for (const essai of [1, 2, 3, 4, 5]) {
+      if (avant === 145 + 80 + 30) break;
+      await page.waitForTimeout(essai * 400);
+      avant = await sommeEnBase();
+    }
+    assert.strictEqual(avant, 255, `les trois lignes ne sont pas toutes en base : ${avant} €`);
 
     await page.click('[data-atlas="poser-prix-accorde"]');
     await page.waitForTimeout(1200);
