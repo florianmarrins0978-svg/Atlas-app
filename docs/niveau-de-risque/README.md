@@ -4,10 +4,13 @@
 dans `src/` = batterie complète » par un niveau **calculé** sur l'impact réel
 du lot.
 
-**État : validé et CODÉ le 14 septembre 2026.** La règle vit dans
-`scripts/_niveau-de-risque.mjs`, le garde-fou l'impose, `npm run niveau` la
-dit. Ce dossier porte l'analyse qui y a mené ; la règle active, elle, est dans
-`.claude/rules/testing.md` et `ARCHITECTURE.md` §365.
+**État : SUR `main` depuis le 15 septembre 2026** (`de5ea363`). La règle vit
+dans `scripts/_niveau-de-risque.mjs`, le garde-fou l'impose, `npm run niveau`
+la dit. Ce dossier porte l'analyse qui y a mené ; la règle active, elle, est
+dans `.claude/rules/testing.md` et `ARCHITECTURE.md` §365.
+
+**Durées chronométrées :** niveau 3 **46 min 37 s** · niveau 2 ciblé
+**13 min 50 s**.
 
 ---
 

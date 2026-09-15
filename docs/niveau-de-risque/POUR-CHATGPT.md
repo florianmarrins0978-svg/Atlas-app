@@ -209,17 +209,38 @@ node -e "import('./scripts/_rayon-impact.mjs')"
 
 Avec un seuil à 10 : **189 fichiers en niveau 3**, 508 en niveau 2.
 
-**Ce qui reste une estimation, et n'a jamais été chronométré ici :** la
-batterie complète à ~50 min et les quinze suites à ~20 min viennent de
-`CLAUDE.md` §5 ; le gain d'un niveau 2 ciblé (~10 à 15 min) en est extrapolé.
+### Les durées, CHRONOMÉTRÉES le 15 septembre 2026
+
+Ce paragraphe annonçait des estimations ; elles ont été mesurées depuis, sur
+l'arbre fusionné.
+
+| | Durée réelle |
+|---|---|
+| **niveau 3** — batterie entière (384 suites base + 155 navigateur + construction + connexion derrière proxy) | **46 min 37 s** |
+| **niveau 2** — lot client (types, lint, mémoire, 384 suites base, 8 suites navigateur ciblées) | **13 min 50 s** |
+
+Soit un facteur **3,4**. L'estimation d'origine (~50 min contre ~10 à 15) était
+juste ; elle n'est plus une estimation.
+
+Le détail du niveau 2 : typecheck 40 s · lint 52 s · mémoire 1 s · suites base
+8 min 41 s · suites navigateur ciblées 3 min 36 s.
 
 ## 10. Ce qui reste à trancher, et par qui
 
-| | Qui |
+| | Tranché |
 |---|---|
-| l'invariant `CLAUDE.md` §0.3 — *« jamais rien de moins que la batterie quand `src/` bouge »* | **le patron** : c'est sa règle |
-| le seuil de rayon entre niveau 2 et niveau 3 | à mesurer, pas à décider d'avance |
-| le contenu de la liste de gravité | **le patron** : c'est lui qui sait ce qui coûte cher |
+| l'invariant `CLAUDE.md` §0.3 — *« jamais rien de moins que la batterie quand `src/` bouge »* | **modifié par le patron le 14 septembre** : un chemin dans `src/` ne suffit plus |
+| le seuil de rayon entre niveau 2 et niveau 3 | **10 points d'entrée**, valeur de départ retenue ; `TODO.md` porte son réglage sur mesures |
+| le contenu de la liste de gravité | posé : facturation, TVA, devis, règlements, paiements, prix, remises, avoirs |
 
-**État : validé et CODÉ le 14 septembre 2026** — `scripts/_niveau-de-risque.mjs`,
-`scripts/garde-fusion-main.mjs`, `.claude/rules/testing.md`, `ARCHITECTURE.md` §365.
+**Ce qui reste ouvert**, et c'est dans `TODO.md` : dix-neuf adresses sur
+cinquante-six n'ont aucune suite navigateur qui les ouvre. Un lot qui les
+atteint remonte en niveau 3 faute de quoi que ce soit qui les regarde.
+
+**État : SUR `main` depuis le 15 septembre 2026** (`de5ea363`), batterie
+complète au vert sur l'arbre fusionné — 384/384 suites base, 155/155 suites
+navigateur, connexion derrière un proxy. Les pièces :
+`scripts/_rayon-impact.mjs`, `scripts/_suites-ciblees.mjs`,
+`scripts/_niveau-de-risque.mjs`, `scripts/garde-fusion-main.mjs`,
+`scripts/dire-le-niveau.mjs`, `scripts/test-garde-fusion-main.ts` (27 cas),
+`.claude/rules/testing.md`, `CLAUDE.md` §0.3, `ARCHITECTURE.md` §365.
