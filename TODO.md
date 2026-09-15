@@ -9,6 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ Deux suites navigateur ne peuvent pas être vertes entre 22 h et minuit UTC
+
+`test-suivi-devis-e2e` et `test-fin-de-chantier-e2e` calculent le jour attendu
+sur l'horloge de la machine, alors que l'application affiche `Europe/Paris`
+(`FUSEAU_DU_PATRON`, `src/lib/jour.ts`). Entre 22 h et minuit UTC, Paris est
+déjà au lendemain : les deux rougissent sur du code juste — « Mardi 15
+septembre » au lieu de « lundi 14 septembre ».
+
+Relevé le 14 septembre 2026 à 23 h 54 UTC, pendant une batterie. Rejouées à
+00 h 07, elles sont vertes deux fois de suite. Ce qui reste à faire : leur
+faire lire le jour dans `FUSEAU_DU_PATRON` plutôt que dans l'horloge locale —
+sans quoi une batterie jouée le soir accusera toujours le produit à tort.
+
 ## ⏳ Le seuil de rayon se règle sur des mesures, pas sur une intuition
 
 `RAYON_MAXIMAL_DU_NIVEAU_2 = 10` (`scripts/_niveau-de-risque.mjs`) est une
