@@ -23,6 +23,7 @@ import {
   sansZerosInutiles,
   ZoneQuiGrandit,
 } from "../../devis-complet/ChampsDuDevis";
+import ChampUnite from "../../devis-complet/ChampUnite";
 import {
   ajouterLigneDeFactureAction,
   majLigneDeFactureAction,
@@ -76,6 +77,8 @@ type LigneEcran = {
   id: string;
   libelle: string;
   quantite: string;
+  /** Après Qté, comme sur le devis et sur le papier (0092) — « ml », « m³ »… */
+  unite: string | null;
   prixUnitaire: string;
   montant: string;
   tauxTva: string | null;
@@ -234,6 +237,7 @@ export default function TravauxSupplementairesClient({
           id: r.ligneId,
           libelle: "",
           quantite: "1",
+          unite: null,
           // Vide, et non « 0 » : c'est ce que le doigt trouve en arrivant dans
           // la case. La base, elle, garde son zéro — la colonne l'exige.
           prixUnitaire: "",
@@ -252,7 +256,7 @@ export default function TravauxSupplementairesClient({
   }
 
   /** La saisie vit à l'écran, la base se met à jour quand le doigt quitte. */
-  function majLocale(id: string, champ: "libelle" | "quantite" | "prixUnitaire", valeur: string) {
+  function majLocale(id: string, champ: "libelle" | "quantite" | "unite" | "prixUnitaire", valeur: string) {
     setLignes((liste) =>
       liste.map((l) => {
         if (l.id !== id) return l;
@@ -365,11 +369,16 @@ export default function TravauxSupplementairesClient({
         </p>
 
         <div
-          className="mt-7 hidden pb-2 sm:grid sm:grid-cols-[1fr_70px_130px_130px] sm:gap-3"
+          className="mt-7 hidden pb-2 sm:grid sm:grid-cols-[1fr_70px_84px_130px_130px] sm:gap-3"
           style={{ borderBottom: `1px solid ${colors.line}` }}
         >
           <Colonne>Description</Colonne>
           <Colonne droite>Qté</Colonne>
+          {/* **Après Qté, comme sur le devis** — sa capture du 15 septembre
+              2026 : *« unité n'apparaît pas lorsque je crée une facture »*.
+              La colonne suivait le devis jusqu'au papier (0092), mais cet
+              écran ne la montrait ni ne la saisissait. */}
+          <Colonne droite>Unité</Colonne>
           <Colonne droite>Prix unitaire HT</Colonne>
           <Colonne droite>Montant HT</Colonne>
         </div>
@@ -379,7 +388,7 @@ export default function TravauxSupplementairesClient({
           <div
             key={l.id}
             data-atlas="ligne-du-devis"
-            className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_130px_130px] sm:items-start sm:gap-3"
+            className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_84px_130px_130px] sm:items-start sm:gap-3"
             style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
           >
             <span className="text-[16px] leading-[1.45]" style={{ color: colors.ink }}>
@@ -387,6 +396,9 @@ export default function TravauxSupplementairesClient({
             </span>
             <Cellule libelle="Qté">
               <span className="text-[16px]">{l.quantite}</span>
+            </Cellule>
+            <Cellule libelle="Unité">
+              <span className="text-[16px]">{l.unite ?? ""}</span>
             </Cellule>
             <Cellule libelle="Prix unitaire HT">
               <span className="text-[16px]">{enEuros(l.prixUnitaire)}</span>
@@ -478,7 +490,7 @@ export default function TravauxSupplementairesClient({
                 <div
                   key={l.id}
                   data-atlas="ligne-supplement"
-                  className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_130px_130px] sm:items-start sm:gap-3"
+                  className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_84px_130px_130px] sm:items-start sm:gap-3"
                   style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
                 >
                   <ZoneQuiGrandit
@@ -499,6 +511,15 @@ export default function TravauxSupplementairesClient({
                       placeholder="1"
                       onChange={(v) => majLocale(l.id, "quantite", v)}
                       onFini={(fraiche) => persister(l.id, { quantite: fraiche })}
+                    />
+                  </Cellule>
+                  <Cellule libelle="Unité">
+                    <ChampUnite
+                      valeur={l.unite ?? ""}
+                      fige={false}
+                      aria={`${sansDevis ? "Unité de la ligne" : "Unité du travail supplémentaire"} ${i + 1}`}
+                      onChange={(v) => majLocale(l.id, "unite", v)}
+                      onFini={(fraiche) => persister(l.id, { unite: fraiche })}
                     />
                   </Cellule>
                   <Cellule libelle="Prix unitaire HT">

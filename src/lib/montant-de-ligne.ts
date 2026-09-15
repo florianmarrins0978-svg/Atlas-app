@@ -1,4 +1,5 @@
 import { Decimal } from "decimal.js";
+import { chiffreCanonique } from "./chiffre-saisi";
 
 /**
  * CE QU'UNE LIGNE PÈSE : sa quantité fois son prix unitaire.
@@ -26,26 +27,12 @@ import { Decimal } from "decimal.js";
  * pèse 0 € et le dit ; c'est l'écran qui la marque « à chiffrer », et l'envoi
  * qui la refuse (`lignes-prix.ts`).
  *
+ * **Et « 2,50 » se lit 2,50** — la virgule du clavier français passe par la
+ * même lecture que le dépôt (`chiffre-saisi.ts`, 15 septembre 2026) : ce que
+ * l'écran affiche en tapant est ce que la base enregistrera.
+ *
  * Éprouvée sans base ni réseau — `scripts/test-montant-de-ligne.ts`.
  */
 export function montantDeLaLigne(quantite: string | null | undefined, prixUnitaire: string | null | undefined): string {
-  return new Decimal(nombreOuZero(quantite)).times(nombreOuZero(prixUnitaire)).toFixed(2);
-}
-
-/**
- * Ce que le champ rend quand il est vide — ou quand il porte autre chose qu'un
- * nombre.
- *
- * **Refuser plutôt que de laisser `Decimal` lever.** Une exception ici
- * remonterait jusqu'à l'écran sous forme d'identifiant opaque (`AGENTS.md`),
- * et le patron verrait « une erreur est survenue » en écrivant son devis.
- */
-function nombreOuZero(valeur: string | null | undefined): string {
-  const propre = (valeur ?? "").trim();
-  if (propre === "") return "0";
-  try {
-    return new Decimal(propre).toString();
-  } catch {
-    return "0";
-  }
+  return new Decimal(chiffreCanonique(quantite) ?? "0").times(chiffreCanonique(prixUnitaire) ?? "0").toFixed(2);
 }

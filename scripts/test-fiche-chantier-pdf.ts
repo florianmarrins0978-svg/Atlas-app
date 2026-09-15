@@ -73,8 +73,17 @@ const dire = (bon: boolean, quoi: string) => {
 // numéro à droite du titre (`ARCHITECTURE.md` §364). Ce qui a autorisé ce
 // relevé : les deux PDF rendus dans la visionneuse de l'application et
 // regardés en grand, contre la planche — colonnes, gras et fontes.
-const EMPREINTE_FACTURE = "569e6b65640cbdc04b96d883d6f880c54fb4103c2514543fa9b93940692f34b8";
-const EMPREINTE_DEVIS = "deb3e8d494bda299f8b67ada338f1abbb9c8a3b9c350021a1303d62719c06871";
+//
+// **RELEVÉES DE NOUVEAU LE 15 SEPTEMBRE 2026**, après sa capture d'une facture
+// sans remise sous une colonne « REM. % » vide : *« si il n'y a pas de remise,
+// la case rem % ne doit pas apparaître »*. Ces deux documents n'en ont pas :
+// la colonne disparaît et Qté · Unité · P.U. HT se resserrent de 24 points
+// vers la droite. Ce qui a autorisé ce relevé : les deux PDF rendus par pdf.js
+// dans un navigateur, regardés — sans remise (la colonne absente, le tableau
+// serré) et avec une remise de 5 % (la colonne revenue, la mise en page du
+// 14 septembre intacte).
+const EMPREINTE_FACTURE = "0519bce6469f8fb59b66390623bbaec4ccc8442c4d802c580c9d48859fa7cb6f";
+const EMPREINTE_DEVIS = "0b2292c15f5f53dc36cb47d225731c4b4f6f81e48d3beb13d282205275a6d957";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",

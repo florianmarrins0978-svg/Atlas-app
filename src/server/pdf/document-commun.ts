@@ -915,13 +915,24 @@ export async function composerDocument(
   // (migration 0073) a vécu : c'est ce qu'il a fait retirer. Ce qui reste
   // groupé, c'est le bloc des TRAVAUX SUPPLÉMENTAIRES (9 septembre 2026) — une
   // facture en deux blocs, ce qu'il avait accepté puis ce qui s'est ajouté.
+  //
+  // **« Rem. % » n'existe que lorsqu'il accorde une remise** — sa capture du
+  // 15 septembre 2026, une facture sans remise sous une colonne vide : *« elle
+  // apparaît seulement lorsque l'utilisateur choisit de faire une remise »*.
+  // Sans elle, les colonnes de gauche se resserrent d'autant vers la droite :
+  // une colonne vide n'est pas neutre, le client y cherche ce qu'on lui aurait
+  // retiré.
+  const remiseCourte = data.reductionPourcent && new Decimal(data.reductionPourcent).greaterThan(0)
+    ? tauxCourt(data.reductionPourcent)
+    : "";
+  const placeDeLaRemise = remiseCourte ? 0 : 24;
   const xTtc = DROITE;
   const xTaux = DROITE - 74; // centre de « TVA % »
   const xNet = DROITE - 92;
   const xRem = DROITE - 150; // centre de « Rem. % »
-  const xPrix = DROITE - 170;
-  const xUnite = DROITE - 226; // centre de « Unité »
-  const xQte = DROITE - 254;
+  const xPrix = DROITE - 170 + placeDeLaRemise;
+  const xUnite = DROITE - 226 + placeDeLaRemise; // centre de « Unité »
+  const xQte = DROITE - 254 + placeDeLaRemise;
   const largeurLibelleChiffree = xQte - MARGE - 34;
 
   const ecrireCentre = (contenu: string, centre: number, yy: number, style: Style) => {
@@ -943,7 +954,7 @@ export async function composerDocument(
       ecrireEspaceADroite(ctx, "QTÉ", xQte, y, APPROCHE_ETIQUETTE, enTeteColonne);
       ecrireEspaceCentre("UNITÉ", xUnite, y, enTeteColonne);
       ecrireEspaceADroite(ctx, "P.U. HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
-      ecrireEspaceCentre("REM. %", xRem, y, enTeteColonne);
+      if (remiseCourte) ecrireEspaceCentre("REM. %", xRem, y, enTeteColonne);
       ecrireEspaceADroite(ctx, "TOTAL HT", xNet, y, APPROCHE_ETIQUETTE, enTeteColonne);
       ecrireEspaceCentre("TVA %", xTaux, y, enTeteColonne);
       ecrireEspaceADroite(ctx, "TOTAL TTC", xTtc, y, APPROCHE_ETIQUETTE, enTeteForte);
@@ -965,9 +976,6 @@ export async function composerDocument(
   // Le net et le TTC de chaque ligne viennent de la règle commune : les
   // centimes tombent juste, la colonne fait exactement la base du taux.
   const papier = lignesDuPapier(data.lignes, data.tauxTva, data.reductionPourcent ?? null);
-  const remiseCourte = data.reductionPourcent && new Decimal(data.reductionPourcent).greaterThan(0)
-    ? tauxCourt(data.reductionPourcent)
-    : "";
   const blocs = [
     { supplement: false, lignes: papier.lignes.filter((p) => !p.ligne.supplement) },
     { supplement: true, lignes: papier.lignes.filter((p) => Boolean(p.ligne.supplement)) },

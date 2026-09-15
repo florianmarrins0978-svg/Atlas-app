@@ -56,11 +56,16 @@ cas("l'arrondi tombe UNE fois, à la fin", () => {
   assert.equal(montantDeLaLigne("0.333", "3"), "1.00");
 });
 
-cas("une virgule décimale ne passe PAS pour un nombre — elle vaut zéro, elle n'invente rien", () => {
+cas("une virgule décimale se lit comme il l'a tapée — « 2,5 » vaut 2,5, jamais 25 ni zéro", () => {
   // Le champ est en `inputMode="decimal"` : sur un clavier français, le doigt
-  // tombe sur la virgule. `Decimal` ne la lit pas, et un devis qui compterait
-  // « 2,5 » comme 25 serait pire que muet.
-  assert.equal(montantDeLaLigne("2,5", "100"), "0.00");
+  // tombe sur la virgule. Ce cas disait le contraire jusqu'au 15 septembre
+  // 2026 — « elle vaut zéro » — en supposant que l'écran normalisait avant ;
+  // celui de la facture ne le faisait pas, et sa ligne « Érigerons » à 2,50 €
+  // pesait 0,00 €. Lire la virgule n'invente rien : c'est son chiffre.
+  assert.equal(montantDeLaLigne("2,5", "100"), "250.00");
+  assert.equal(montantDeLaLigne("12", "2,50"), "30.00");
+  // Deux virgules, ou une virgule des milliers : illisible, donc zéro.
+  assert.equal(montantDeLaLigne("1,000,5", "10"), "0.00");
 });
 
 cas("ce qui est vide ou absent pèse zéro, et ne lève jamais", () => {

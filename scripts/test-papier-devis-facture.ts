@@ -216,6 +216,30 @@ async function main() {
     assert.ok(!sansTitre.textes.some((t) => t.contenu === "Aménagement du jardin"));
   });
 
+  await cas("sans remise, la colonne « Rem. % » n'existe pas — sur le devis comme sur la facture", async () => {
+    // **Sa capture du 15 septembre 2026 :** une facture sans la moindre remise
+    // portait « REM. % » en tête d'une colonne vide. *« Si il n'y a pas de
+    // remise, la case rem % ne doit pas apparaître : elle apparaît seulement
+    // lorsque l'utilisateur choisit de faire une remise. »* Une colonne vide
+    // n'est pas neutre : le client y cherche ce qu'on lui aurait retiré.
+    const sansRemise = { reductionPourcent: null, reductionMontant: null };
+    for (const [nom, trace] of [
+      ["devis", (await composerDevisPdf({ ...BASE, ...sansRemise })).trace],
+      ["facture", (await composerFacturePdf({ ...FACTURE, ...sansRemise })).trace],
+    ] as const) {
+      const textes = trace.textes.map((t) => t.contenu);
+      assert.ok(!textes.includes("REM. %"), `« REM. % » est en tête du ${nom} sans remise`);
+      assert.ok(!textes.some((t) => t.startsWith("Total HT après remise")), `le ${nom} annonce une remise qu'il n'a pas`);
+      // Et les colonnes sont toujours là, chacune : la place se referme, rien ne se perd.
+      for (const attendu of ["QTÉ", "UNITÉ", "P.U. HT", "TOTAL HT", "TVA %", "TOTAL TTC"]) {
+        assert.ok(textes.includes(attendu), `« ${attendu} » manque au ${nom} sans remise`);
+      }
+    }
+    // Avec une remise, elle revient — c'est ce que le cas précédent tient.
+    const { trace } = await composerDevisPdf(BASE);
+    assert.ok(trace.textes.some((t) => t.contenu === "REM. %"), "« REM. % » manque au devis remisé");
+  });
+
   await cas("la facture : le même papier, plus les acomptes reçus, le net à payer, les montants versés", async () => {
     const { trace } = await composerFacturePdf(FACTURE);
     const textes = trace.textes.map((t) => t.contenu);

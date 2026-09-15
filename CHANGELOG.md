@@ -8,6 +8,42 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-15
 
+### « 2,50 » tapé sur une ligne de facture s'enregistre — la virgule se lit UNE fois, côté dépôt
+
+Sa capture : une ligne « Érigerons », 12 × 2,50, « Montant HT 0,00 € », et
+*« La correction n'a pas pu être enregistrée. Réessayez. »* — *« une ligne
+érigeron est bloquée, je peux pas écrire »*. Le champ est en
+`inputMode="decimal"` : sur un clavier français, le doigt tombe sur la
+virgule, et PostgreSQL refuse « 2,50 » dans une colonne numérique. L'écran du
+devis normalisait avant d'envoyer ; celui de la facture envoyait ce que le
+champ portait, et l'exception devenait cette phrase.
+
+La lecture d'un chiffre saisi vit désormais dans une seule règle
+(`src/lib/chiffre-saisi.ts`), appelée par le dépôt des factures, par
+`montantDeLaLigne` et par l'écran du devis. Une case vidée vaut « 1 » et « 0 »
+comme sur le devis ; ce qui n'est pas un nombre se refuse avec ses mots
+(*« douze » n'est pas un prix*), jamais par « Réessayez ». Ce que ça évite :
+le prochain écran qui refait le même défaut, et un montant à 0,00 € sous un
+prix qu'il a pourtant tapé. `test-montant-de-ligne` disait jusque-là que
+« 2,5 » valait zéro ; il dit maintenant 2,5.
+
+### L'unité se saisit aussi sur une ligne de facture
+
+*« Unité n'apparaît pas lorsque je crée une facture »* : la colonne suivait le
+devis jusqu'au papier (0092), mais l'écran de la facture ne la montrait ni ne
+la saisissait — une facture directe partait donc sans « ml », « m³ »… Le même
+champ que sur le devis, après Qté, avec ses unités usuelles ; le dépôt
+l'enregistre et le papier l'imprime.
+
+### « Rem. % » n'apparaît sur le papier que lorsqu'une remise est accordée
+
+*« Si il n'y a pas de remise, la case rem % ne doit pas apparaître »*. Sans
+remise, la colonne disparaît du devis comme de la facture, et Qté · Unité ·
+P.U. HT se resserrent vers la droite. Ce que ça évite : une colonne vide où le
+client cherche ce qu'on lui aurait retiré. Les empreintes au pixel de
+`test-fiche-chantier-pdf` ont été relevées après avoir regardé les deux rendus,
+avec et sans remise.
+
 ### Le PDF sans les prix n'est plus un second bouton vert sous « Fin de chantier »
 
 Depuis que les lignes du devis s'affichent sur la fiche d'intervention, le PDF

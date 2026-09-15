@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef } from "react";
 import { colors, font } from "@/lib/design-tokens";
+import { nombreSaisi } from "@/lib/chiffre-saisi";
 
 // **Les pièces de la feuille, sorties de l'écran qui les assemble.**
 //
@@ -43,10 +44,15 @@ export function sansZerosInutiles(valeur: string): string {
   return String(n).replace(".", ",");
 }
 
-/** Lit un nombre saisi à la française (« 1,5 ») comme à l'anglaise (« 1.5 »). */
+/**
+ * Lit un nombre saisi à la française (« 1,5 ») comme à l'anglaise (« 1.5 »).
+ *
+ * **La même lecture que le dépôt** (`chiffre-saisi.ts`, 15 septembre 2026) :
+ * une seconde écriture ici finirait par diverger de ce que la base accepte —
+ * c'est ce qui bloquait « 2,50 » sur la facture.
+ */
 export function nombre(valeur: string): number {
-  const n = Number(String(valeur).replace(",", ".").trim());
-  return Number.isFinite(n) ? n : 0;
+  return nombreSaisi(valeur);
 }
 
 /** Une valeur vide vaut le défaut, jamais `NaN` en base. */

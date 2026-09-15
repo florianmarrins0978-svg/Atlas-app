@@ -9,6 +9,28 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ LA FACTURE : « 2,50 », L'UNITÉ, « REM. % » — CODÉ LE 15 SEPTEMBRE 2026, RESTE À ÉPROUVER AU NAVIGATEUR
+
+**Ses trois captures du 15 septembre :** *« Unité n'apparaît pas lorsque je crée
+une facture, ni sur le devis en PDF » · « une ligne érigeron est bloquée, je
+peux pas écrire » · « si il n'y a pas de remise, la case rem % ne doit pas
+apparaître »*.
+
+**Codé** (`ARCHITECTURE.md` §366, `CHANGELOG.md`) : `src/lib/chiffre-saisi.ts`
+lu par le dépôt des factures, `montantDeLaLigne` et l'écran du devis ; le
+champ Unité sur les lignes de facture (même `ChampUnite` que le devis) ;
+« Rem. % » seulement avec une remise. Suites : `test-montant-de-ligne`,
+`test-papier-devis-facture`, `test-devis-pdf`, `test-fiche-chantier-pdf`
+(empreintes relevées, rendus regardés), `test-travaux-supplementaires-db`
+(vue rouge sur la requête exacte de sa capture, puis verte).
+
+**Ce qui reste, et pourquoi :**
+
+| | |
+|---|---|
+| **la batterie, et l'écran de la facture regardé** | la construction meurt faute de mémoire sur sa machine (60 Go engagés sur 61) : rien ne se bâtit tant qu'elle n'a pas redémarré. Une suite navigateur qui tape « 2,50 » et « ml » sur une ligne de facture reste à écrire — et à voir rouge d'abord |
+| **« ni sur le devis en PDF »** | pas reproduit : le devis porte le champ Unité après Qté depuis le 12 septembre, et le PDF l'imprime quand il est rempli (`test-papier-devis-facture` le tient). À lui demander une capture de l'écran du devis avec l'unité remplie, si son PDF reste vide |
+
 ## LES DEUX GARDE-FOUS NE CONNAISSENT PAS LES DOSSIERS DE SESSION — 14 septembre 2026
 
 Payé ce soir. Une batterie tenait le dossier principal ; il a demandé *« prend
