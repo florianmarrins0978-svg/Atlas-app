@@ -9,27 +9,38 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ LA FACTURE : « 2,50 », L'UNITÉ, « REM. % » — CODÉ LE 15 SEPTEMBRE 2026, RESTE À ÉPROUVER AU NAVIGATEUR
+## ~~LA FACTURE : « 2,50 », L'UNITÉ, « REM. % », « u » PAR DÉFAUT~~ — CODÉ ET ÉPROUVÉ LE 15 SEPTEMBRE 2026
 
-**Ses trois captures du 15 septembre :** *« Unité n'apparaît pas lorsque je crée
+**Ses captures du 15 septembre :** *« Unité n'apparaît pas lorsque je crée
 une facture, ni sur le devis en PDF » · « une ligne érigeron est bloquée, je
 peux pas écrire » · « si il n'y a pas de remise, la case rem % ne doit pas
-apparaître »*.
+apparaître » · « que l'u soit mise par défaut : si on ne touche à rien, elle
+se pose, on la voit »*.
 
 **Codé** (`ARCHITECTURE.md` §366, `CHANGELOG.md`) : `src/lib/chiffre-saisi.ts`
 lu par le dépôt des factures, `montantDeLaLigne` et l'écran du devis ; le
-champ Unité sur les lignes de facture (même `ChampUnite` que le devis) ;
-« Rem. % » seulement avec une remise. Suites : `test-montant-de-ligne`,
-`test-papier-devis-facture`, `test-devis-pdf`, `test-fiche-chantier-pdf`
-(empreintes relevées, rendus regardés), `test-travaux-supplementaires-db`
-(vue rouge sur la requête exacte de sa capture, puis verte).
+champ Unité sur les lignes de facture (même `ChampUnite` que le devis), qui
+montre « u » en encre quand rien n'est posé (`src/lib/unite-de-ligne.ts`, la
+même lecture pour le papier) ; « Rem. % » seulement avec une remise.
 
-**Ce qui reste, et pourquoi :**
+**Éprouvé, sur l'atelier 1 depuis `atlas-app-s2`** : suites pures et PDF
+(empreintes relevées, rendus regardés avec et sans remise, avec « u »),
+`test-travaux-supplementaires-db` (vue rouge sur la requête exacte de sa
+capture), les sept suites navigateur du lot vertes seules, puis la batterie :
+base 358/368 et navigateur 147/155. **Aucun rouge n'est du lot** — l'outillage
+qui veut `bash`/`ps -o`/`gh` sur Windows, les six rouges connus de `main`, et
+deux nouveaux compris : `coupure-sessions` coupait la session dans
+`atlas_test` en dur pendant que le serveur lisait `atlas_test_a1` (corrigé
+dans la suite : la base du serveur, jamais un nom en dur) ; `chartes-e2e`
+attend une durée fixe (1,5 s) après le retour à « Origine » et rougit sous
+charge — **verte seule**, à passer à « attendre ce qu'on affirme » un jour.
+
+**Ce qui reste :**
 
 | | |
 |---|---|
-| **la batterie, et l'écran de la facture regardé** | la construction meurt faute de mémoire sur sa machine (60 Go engagés sur 61) : rien ne se bâtit tant qu'elle n'a pas redémarré. Une suite navigateur qui tape « 2,50 » et « ml » sur une ligne de facture reste à écrire — et à voir rouge d'abord |
-| **« ni sur le devis en PDF »** | pas reproduit : le devis porte le champ Unité après Qté depuis le 12 septembre, et le PDF l'imprime quand il est rempli (`test-papier-devis-facture` le tient). À lui demander une capture de l'écran du devis avec l'unité remplie, si son PDF reste vide |
+| **« ni sur le devis en PDF »** | pas reproduit : le devis porte le champ Unité après Qté depuis le 12 septembre, et le PDF l'imprime — désormais « u » quand rien n'est posé. S'il voit encore un vide, une capture de l'écran du devis |
+| **une suite navigateur qui tape « 2,50 » et « ml » sur une ligne de facture** | à écrire, et à voir rouge d'abord (`test-facture-sans-devis-e2e` cherche déjà le prix par son nom et attend l'écriture en base) |
 
 ## LES DEUX GARDE-FOUS NE CONNAISSENT PAS LES DOSSIERS DE SESSION — 14 septembre 2026
 
