@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { CHAMP, NUIT, SERIF } from "@/components/atlas/PorteDeNuit";
 import { renvoyerLeCodeAction, verifierLeCodeAction } from "@/app/verifier-email/actions";
+import { deconnexionAction } from "@/app/login/actions";
 import { LONGUEUR_CODE, codeNormalise } from "@/lib/code-verification";
 
 /**
@@ -19,6 +20,17 @@ import { LONGUEUR_CODE, codeNormalise } from "@/lib/code-verification";
  * **`autoComplete="one-time-code"`** : l'iPhone lit le code dans Mail et le
  * propose au-dessus du clavier. C'est le geste attendu — il n'a pas à
  * recopier six chiffres depuis une autre application.
+ *
+ * **ET UNE SORTIE — sa remarque du 14 septembre 2026, le soir même :** *« je
+ * suis bloqué à cette page, il n'existe pas de touche retour si on ne reçoit
+ * pas l'email »*. Un code qui n'arrive jamais (adresse mal tapée, boîte
+ * pleine, expéditeur refusé) enfermait dans cet écran : la garde renvoie ici
+ * depuis partout, et rien n'en sortait. « Retour » ferme la session et rend
+ * la porte d'entrée principale — la même action que « Se déconnecter » dans
+ * Réglages, pas une seconde ; c'est lui qui a choisi le mot, le soir même :
+ * *« ou simplement une touche retour, qui ramènerait à la porte d'entrée
+ * principale »*. Le compte reste en attente en base ; il n'est ni ouvert,
+ * ni perdu.
  */
 export default function SaisieDuCode({
   email,
@@ -54,6 +66,14 @@ export default function SaisieDuCode({
       setRefus(etat.refus);
       // Un code mort ne se retape pas : la case se vide, « Renvoyer » reste.
       if (etat.codeMort) setCode("");
+    });
+  }
+
+  function sortir() {
+    // Pas de `catch` : l'action se termine par une redirection qui remonte
+    // jusqu'au routeur ; l'avaler laisserait l'écran en place, cookie effacé.
+    demarrer(async () => {
+      await deconnexionAction("entree");
     });
   }
 
@@ -126,6 +146,15 @@ export default function SaisieDuCode({
           style={{ color: NUIT.muted }}
         >
           Renvoyer le code
+        </button>
+        <button
+          type="button"
+          onClick={sortir}
+          disabled={enCours}
+          className="w-full bg-transparent pb-1 pt-[6px] text-[14.5px] disabled:opacity-60"
+          style={{ color: NUIT.muted }}
+        >
+          Retour
         </button>
       </div>
     </>

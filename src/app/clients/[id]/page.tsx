@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -123,6 +124,38 @@ export default async function FicheClientPage({
         // en bas de casse. Le détail et son pourquoi vivent dans `EnTeteEcran`.
         allure="ample"
       />
+
+      {/* ─── MODIFIER SES COORDONNÉES — sa réponse « la A », 14 septembre 2026
+          ────────────────────────────────────────────────────────────────────
+          **Sa demande :** *« je veux pouvoir modifier un client si par exemple
+          il change d'adresse ou de numéro »*. Ça se faisait déjà — mais
+          seulement par la fiche client d'un CHANTIER : sans chantier en cours,
+          rien n'était modifiable, et cette fiche-ci n'offrait aucune porte.
+
+          **Sous les coordonnées, et pas ailleurs.** Trois places lui ont été
+          posées (`appli/modifier-un-client.html`) : un crayon en tête aurait
+          délogé le bouton de l'assistant, et rendre les coordonnées appuyables
+          ne disait pas qu'elles l'étaient. Celle-ci est à l'endroit exact où
+          l'on s'aperçoit qu'un numéro est faux — juste en dessous.
+
+          **L'OR, ET NON L'ENCRE — vu à la capture.** Écrite en `rust`, elle se
+          lisait comme un TITRE : ce jeton est le vert pin de la charte, la voix
+          de ce qu'on FAIT, et posée en capitales sous le nom elle nommait la
+          section au lieu de l'ouvrir. L'or est la voix de ce qu'on LIT et de ce
+          qui MÈNE — c'est celui de « + Autre chantier », juste dessous.
+
+          Et surtout pas l'alerte de « Supprimer ce client » : le rouge est
+          réservé à ce qui ne se défait pas. */}
+      <div className="px-[26px] pt-5">
+        <Link
+          href={`/clients/${fiche.client.id}/coordonnees`}
+          data-atlas="modifier-le-client"
+          className={`inline-flex min-h-[44px] items-center ${libelleCaps}`}
+          style={{ color: colors.orTexte }}
+        >
+          Modifier ses coordonnées
+        </Link>
+      </div>
 
       {/* ─── La dernière prestation ─────────────────────────────────────────
           C'est la première chose qu'il cherche en ouvrant la fiche d'un client

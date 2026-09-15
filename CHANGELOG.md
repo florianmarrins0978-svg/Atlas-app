@@ -8,6 +8,35 @@ Format : le plus récent en tête.
 ---
 ## 2026-09-14
 
+### Deux suites comptaient les jours en UTC, et rougissaient deux heures par nuit
+
+`test-suivi-devis-e2e` comparait la date affichée à `new Date().toISOString()` :
+entre 22 h et minuit UTC — chaque nuit entre minuit et deux heures chez lui —
+l'écran disait « mardi 15 » et la suite exigeait « lundi 14 ». L'écran avait
+raison : l'application compte les jours dans SON fuseau.
+
+Le garde-fou qui interdit ce geste existait depuis le 25 août, mais il ne
+parcourait que `src/`. Il parcourt aussi `scripts/` — confronté au geste qu'il
+refuse avant d'être cru.
+
+**Et le même piège en SQL, la batterie suivante :** `test-fin-de-chantier-e2e`
+posait son chantier à `CURRENT_DATE`, le jour de PostgreSQL, qui tourne en UTC.
+Le chantier était donc d'hier pour l'écran, le planning n'avait plus de ligne à
+montrer, et la suite accusait la fin de chantier. `jourDuPatron` existe depuis
+le 25 août pour exactement cela ; cette suite ne l'avait pas repris. Les autres
+`CURRENT_DATE` des suites visent des jours à trois jours de distance ou plus :
+ils ne basculent pas.
+
+### Un client se corrige depuis sa fiche
+
+« Modifier ses coordonnées », sous son nom et son numéro — sa réponse « la A »
+devant les trois places proposées. L'écran qui s'ouvre porte SES coordonnées :
+civilité, nom, téléphone, e-mail, adresse. Rien du chantier, et c'est le point :
+l'autre porte confondait l'adresse du client et celle des travaux.
+
+Avant, un client sans chantier en cours n'était modifiable nulle part.
+`ARCHITECTURE.md` §364.
+
 ### Le niveau d'épreuve se calcule sur le diff, il ne se déclare plus
 
 Un mot changé dans un écran valait cinquante minutes de batterie. Le niveau est
@@ -95,6 +124,15 @@ Ses retours du 14 septembre au soir : uniformiser devis et facture, la colonne
 Unité absente du devis, le libellé d’un règlement, un chiffre touché
 sélectionné, le libellé du crédit d’impôt. `appli/le-papier-devis-et-facture.html`
 (trois vues) et la planche de la facture retouchée. Rien dans `src/`.
+
+### L'écran du code a une sortie : « Retour » rend la porte d'entrée
+
+Sa remarque le soir même : *« je suis bloqué à cette page, il n'existe pas de
+touche retour si on ne reçoit pas l'email »*. Un code qui n'arrive jamais
+enfermait dans l'écran — la garde y renvoie depuis partout. « Retour », sous
+« Renvoyer le code », ferme la session et rend `/bienvenue` (la déconnexion de
+Réglages, avec une destination bornée à deux chemins). Le compte reste en
+attente. `test-creer-son-compte-e2e` le joue.
 
 ### L'adresse d'un compte neuf se prouve par un code, avant d'entrer
 
