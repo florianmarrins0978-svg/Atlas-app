@@ -3,6 +3,7 @@ import type { DbOrTx } from "../db/client";
 import { chantiers, creneauxChantier, equipesDuChantier } from "../db/schema";
 import {
   DUREE_PAR_DEFAUT_DEMI_JOURNEES,
+  type ChantierPlanifie,
   type Creneau,
   type JourIso,
   type Moment,
@@ -54,26 +55,67 @@ export function encoreEnCoursDepuis(debut: JourIso) {
  * (`CLAUDE.md` §3). Si l'un fermait la journée pendant que l'autre l'offrait au
  * client, on n'aurait fait que déplacer le défaut du 22 août 2026.
  *
- * **Les affectations ne portent pas de jour**, seulement une demi-journée : un
- * chantier de trois jours emmène la même équipe le matin de chacun de ses
- * jours. C'est le modèle posé par la migration 0058, et il suffit — on ne
- * change pas d'équipe au milieu d'un chantier.
+ * **Une affectation porte une demi-journée, et depuis la migration 0093 un
+ * jour facultatif** (sa plainte du 15 septembre 2026 : « Julien à partir du
+ * 4e jour »). Sans jour, elle vaut chaque jour du chantier — le modèle de la
+ * migration 0058, intact. Avec, ce jour-là seulement. Les deux comptes sont
+ * rendus séparément, et **une personne n'est comptée qu'une fois** : cochée
+ * chaque jour ET datée le même jour, elle ne pèse pas deux.
  */
+export type EquipesPosees = Pick<ChantierPlanifie, "equipesParDemi" | "equipesParJour">;
+
 export async function equipesParChantier(
   tx: DbOrTx,
   entrepriseId: string
-): Promise<Map<string, Partial<Record<Moment, number>>>> {
+): Promise<Map<string, EquipesPosees>> {
   const lignes = await tx
-    .select({ chantierId: equipesDuChantier.chantierId, demi: equipesDuChantier.demi })
+    .select({
+      chantierId: equipesDuChantier.chantierId,
+      jour: equipesDuChantier.jour,
+      demi: equipesDuChantier.demi,
+      equipeId: equipesDuChantier.equipeId,
+    })
     .from(equipesDuChantier)
     .where(eq(equipesDuChantier.entrepriseId, entrepriseId));
 
-  const par = new Map<string, Partial<Record<Moment, number>>>();
+  // Par chantier, par demi-journée : qui vient chaque jour, et qui vient quel jour.
+  const brut = new Map<
+    string,
+    Record<Moment, { chaqueJour: Set<string>; parJour: Map<JourIso, Set<string>> }>
+  >();
   for (const l of lignes) {
     if (l.demi !== "matin" && l.demi !== "apres_midi") continue;
-    const siennes = par.get(l.chantierId) ?? {};
-    siennes[l.demi] = (siennes[l.demi] ?? 0) + 1;
-    par.set(l.chantierId, siennes);
+    const sien =
+      brut.get(l.chantierId) ??
+      ({
+        matin: { chaqueJour: new Set(), parJour: new Map() },
+        apres_midi: { chaqueJour: new Set(), parJour: new Map() },
+      } as Record<Moment, { chaqueJour: Set<string>; parJour: Map<JourIso, Set<string>> }>);
+    if (l.jour === null) sien[l.demi].chaqueJour.add(l.equipeId);
+    else {
+      const ceJour = sien[l.demi].parJour.get(l.jour) ?? new Set<string>();
+      ceJour.add(l.equipeId);
+      sien[l.demi].parJour.set(l.jour, ceJour);
+    }
+    brut.set(l.chantierId, sien);
+  }
+
+  const par = new Map<string, EquipesPosees>();
+  for (const [chantierId, sien] of brut) {
+    const equipesParDemi: Partial<Record<Moment, number>> = {};
+    const equipesParJour: Record<JourIso, Partial<Record<Moment, number>>> = {};
+    for (const demi of ["matin", "apres_midi"] as const) {
+      if (sien[demi].chaqueJour.size > 0) equipesParDemi[demi] = sien[demi].chaqueJour.size;
+      for (const [jour, qui] of sien[demi].parJour) {
+        const enPlus = [...qui].filter((e) => !sien[demi].chaqueJour.has(e)).length;
+        if (enPlus === 0) continue;
+        equipesParJour[jour] = { ...(equipesParJour[jour] ?? {}), [demi]: enPlus };
+      }
+    }
+    par.set(chantierId, {
+      equipesParDemi,
+      equipesParJour: Object.keys(equipesParJour).length > 0 ? equipesParJour : null,
+    });
   }
   return par;
 }

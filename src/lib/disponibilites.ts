@@ -370,6 +370,14 @@ export type ChantierPlanifie = {
    */
   equipesParDemi?: Partial<Record<Moment, number>> | null;
   /**
+   * ET CEUX QUI NE VIENNENT QUE CERTAINS JOURS — migration 0093, sa plainte du
+   * 15 septembre 2026 (« Julien à partir du 4e jour »). Par jour, par
+   * demi-journée, **en plus** de `equipesParDemi` : une personne n'est jamais
+   * comptée dans les deux (`equipesParChantier` y veille). Absent = personne
+   * de daté, comme avant.
+   */
+  equipesParJour?: Record<JourIso, Partial<Record<Moment, number>>> | null;
+  /**
    * LES DEMI-JOURNÉES RÉELLEMENT POSÉES, quand le chantier n'est plus d'un seul
    * tenant (migration 0085, sa demande du 10 septembre 2026).
    *
@@ -412,10 +420,14 @@ export function creneauxPoses(p: {
  * portent donc aucune. Les compter zéro viderait le planning d'un coup.
  */
 export function salariesDuDemi(
-  p: Pick<ChantierPlanifie, "equipesParDemi">,
-  moment: Moment
+  p: Pick<ChantierPlanifie, "equipesParDemi" | "equipesParJour">,
+  creneau: Creneau
 ): number {
-  return Math.max(1, Math.trunc(p.equipesParDemi?.[moment] ?? 1));
+  // **Sans aucune affectation, une** — le plancher d'avant. Avec : ceux de
+  // chaque jour, plus ceux de ce jour-là (0093), jamais moins d'une.
+  const chaqueJour = p.equipesParDemi?.[creneau.moment] ?? 0;
+  const ceJour = p.equipesParJour?.[creneau.jour]?.[creneau.moment] ?? 0;
+  return Math.max(1, Math.trunc(chaqueJour + ceJour));
 }
 
 /**
@@ -457,7 +469,7 @@ export function compterOccupation(
       // ici et aux écrans — deux implémentations divergeraient (`CLAUDE.md` §3).
       compte.set(
         cle,
-        (compte.get(cle) ?? 0) + equipesMobilisees(salariesDuDemi(p, c.moment), nombreEquipes)
+        (compte.get(cle) ?? 0) + equipesMobilisees(salariesDuDemi(p, c), nombreEquipes)
       );
     }
   }

@@ -16,6 +16,8 @@ import {
   creneauxDunChantier,
 } from "@/server/repositories/chantiers";
 import type { JourIso, Moment } from "@/lib/disponibilites";
+import type { EquipesDuChantier } from "@/lib/equipes-par-jour";
+import { estUnJourValide } from "@/lib/planning-jour";
 // (le départ se dit avec le vocabulaire de la base : `Moment`)
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
@@ -125,19 +127,26 @@ export async function planifierChantierAction(
  * Paul l'après-midi : il faut que tout soit indépendant ».*
  *
  * **Rien n'est refusé** — voir `basculerEquipeDuChantier`. Rend l'état COMPLET
- * des deux demi-journées, et non un simple succès : l'écran repeint sa pastille
+ * des équipes du chantier, et non un simple succès : l'écran repeint sa pastille
  * avec ce que la base dit, jamais avec ce qu'il a supposé. Deux appuis rapides
  * sur la même pastille se croiseraient sinon, et le dernier arrivé gagnerait.
+ *
+ * **`jour` : le jour de la carte où il appuie** — sa plainte du 15 septembre
+ * 2026. Ajouter vaut ce jour et les suivants ; retirer, ce jour seulement
+ * (`src/lib/equipes-par-jour.ts`). Sans jour, tout le chantier, comme avant.
  */
 export async function basculerEquipeAction(
   chantierId: string,
   demi: Moment,
-  rangEquipe: number
-): Promise<{ matin: number[]; apres_midi: number[] } | null> {
+  rangEquipe: number,
+  jour?: string
+): Promise<EquipesDuChantier | null> {
   const ctx = await getCurrentCtx();
   await exigerEcritureSurLePlanning(ctx, "cocher une équipe sur ce chantier");
   await exigerChantierDansSaPortee(ctx, chantierId, "cocher une équipe sur ce chantier");
-  const etat = await basculerEquipeDuChantier(ctx, chantierId, demi, rangEquipe);
+  // Un jour mal formé ne vaut pas « tout le chantier » : il ne vaut rien.
+  if (jour !== undefined && !estUnJourValide(jour)) return null;
+  const etat = await basculerEquipeDuChantier(ctx, chantierId, demi, rangEquipe, jour as JourIso | undefined);
   // L'agenda extérieur porte le nom de l'équipe dans l'intitulé : sans ce
   // report, son téléphone garderait l'ancienne.
   if (etat) await porterChantierDansAgenda(ctx, chantierId);

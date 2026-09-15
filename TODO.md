@@ -17,7 +17,7 @@ peux pas écrire » · « si il n'y a pas de remise, la case rem % ne doit pas
 apparaître » · « que l'u soit mise par défaut : si on ne touche à rien, elle
 se pose, on la voit »*.
 
-**Codé** (`ARCHITECTURE.md` §366, `CHANGELOG.md`) : `src/lib/chiffre-saisi.ts`
+**Codé** (`ARCHITECTURE.md` §367, `CHANGELOG.md`) : `src/lib/chiffre-saisi.ts`
 lu par le dépôt des factures, `montantDeLaLigne` et l'écran du devis ; le
 champ Unité sur les lignes de facture (même `ChampUnite` que le devis), qui
 montre « u » en encre quand rien n'est posé (`src/lib/unite-de-ligne.ts`, la

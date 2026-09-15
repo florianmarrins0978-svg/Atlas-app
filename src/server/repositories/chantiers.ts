@@ -5,7 +5,7 @@ import { creneauxParChantier, equipesParChantier } from "./occupation-chantiers"
 // **Le seul écrivain de « où le chantier est posé »**, partagé avec
 // `envois-devis.ts` depuis le 10 septembre 2026 : deux rédactions de cette
 // écriture ont déjà divergé une fois (`ARCHITECTURE.md` §322).
-import { ecrireLesCreneaux } from "./creneaux-poses";
+import { ecrireLesCreneaux, reporterLesEquipes } from "./creneaux-poses";
 import {
   chantiers,
   clients,
@@ -27,7 +27,13 @@ import {
 } from "@/lib/disponibilites";
 import { absencesEquipe, equipes } from "../db/schema";
 import { fusionnerAbsences } from "../../lib/absences-equipe";
-import { cocheRefusee } from "../../lib/equipe-absente";
+import { absenteCeCreneau, cocheRefusee } from "../../lib/equipe-absente";
+import {
+  basculerCeJour,
+  rangerEquipes,
+  type EquipesDuChantier,
+  type LigneEquipe,
+} from "../../lib/equipes-par-jour";
 import { seuilMemoireCalendrier } from "../../lib/onglet-chantier";
 import {
   avecLaDemi,
@@ -390,13 +396,22 @@ export type ChoixDePose = { demi: Moment };
  * date garde ses limites (`jourRetenable`, `premiersJoursLibres`). Un client
  * n'a pas à savoir qu'une journée peut être forcée, et surtout pas à la forcer.
  * ─────────────────────────────────────────────────────────────────────────
+ *
+ * ─── JOUR PAR JOUR — sa plainte du 15 septembre 2026 ────────────────────
+ * *« Si le 4e jour je décide de ne pas mettre Julien, ça l'enlève partout et
+ * ça faut pas ! »* Avec `jour`, la bascule porte sur CE jour : **ajouter → ce
+ * jour et les suivants ; retirer → ce jour seulement** (règle dans
+ * `src/lib/equipes-par-jour.ts`, migration 0093). Sans `jour` — ou sur un
+ * chantier qui n'est pas posé — elle fait ce qu'elle a toujours fait : tout
+ * le chantier, par une ligne sans jour.
  */
 export async function basculerEquipeDuChantier(
   ctx: Ctx,
   chantierId: string,
   demi: Moment,
-  rangEquipe: number
-) {
+  rangEquipe: number,
+  jour?: JourIso
+): Promise<EquipesDuChantier | null> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     // Le chantier doit exister DANS cette entreprise. Sans ce contrôle, la
     // seule barrière serait la FK composite — qui protège, mais rendrait une
@@ -422,8 +437,8 @@ export async function basculerEquipeDuChantier(
     const equipeId = await idEquipeDeRang(tx, ctx.entrepriseId, rangEquipe);
     if (!equipeId) return null;
 
-    const [deja] = await tx
-      .select({ id: equipesDuChantier.id })
+    const siennes = await tx
+      .select({ id: equipesDuChantier.id, jour: equipesDuChantier.jour })
       .from(equipesDuChantier)
       .where(
         and(
@@ -432,8 +447,44 @@ export async function basculerEquipeDuChantier(
           eq(equipesDuChantier.demi, demi),
           eq(equipesDuChantier.equipeId, equipeId)
         )
-      )
-      .limit(1);
+      );
+
+    // ─── SUR UN JOUR : la règle du 15 septembre ─────────────────────────
+    if (jour !== undefined && le.datePlanifiee) {
+      const creneaux = creneauxOccupes(
+        { jour: le.datePlanifiee, moment: le.creneauDebut, dureeDemiJournees: le.dureeDemiJournees },
+        await lireLesCreneaux(tx, chantierId)
+      );
+      const lignes: LigneEquipe<string>[] = siennes.map((l) => ({ jour: l.jour, demi, equipe: equipeId }));
+      const bascule = basculerCeJour(lignes, creneaux, jour, demi, equipeId);
+
+      if (!bascule.cochee) {
+        // **Personne n'est envoyé là où il n'est pas** — même règle que plus
+        // bas, ramenée aux jours qu'on ajoute : on refuse seulement s'il n'est
+        // là AUCUN d'eux (sa proposition C, §293).
+        const absences = await absencesDeLEquipe(tx, ctx.entrepriseId, equipeId);
+        const present = bascule.ajouter.some(
+          (l) => !absenteCeCreneau(rangEquipe, l.jour as JourIso, demi, absences)
+        );
+        if (bascule.ajouter.length > 0 && !present) {
+          return lireEquipesDuChantier(tx, ctx.entrepriseId, chantierId);
+        }
+      }
+
+      for (const l of bascule.retirer) {
+        const cible = siennes.find((x) => x.jour === l.jour);
+        if (cible) await tx.delete(equipesDuChantier).where(eq(equipesDuChantier.id, cible.id));
+      }
+      if (bascule.ajouter.length > 0) {
+        await tx.insert(equipesDuChantier).values(
+          bascule.ajouter.map((l) => ({ entrepriseId: ctx.entrepriseId, chantierId, demi, jour: l.jour, equipeId }))
+        );
+      }
+      return lireEquipesDuChantier(tx, ctx.entrepriseId, chantierId);
+    }
+
+    // ─── SANS JOUR : tout le chantier, comme avant ──────────────────────
+    const deja = siennes.length > 0 ? siennes : null;
 
     // ─── ON N'ENVOIE PAS QUELQU'UN QUI N'EST PAS LÀ ───────────────────────
     // **Son signalement du 7 septembre 2026.** Le refus vit ICI, et pas
@@ -446,23 +497,7 @@ export async function basculerEquipeDuChantier(
     // c'est la seule façon de réparer une coche antérieure au congé, qui est
     // exactement l'état qu'il a photographié.
     if (!deja) {
-      const absences = await tx
-        .select({
-          rang: equipes.rang,
-          premierJour: absencesEquipe.premierJour,
-          dernierJour: absencesEquipe.dernierJour,
-          premierDemi: absencesEquipe.premierDemi,
-          dernierDemi: absencesEquipe.dernierDemi,
-        })
-        .from(absencesEquipe)
-        .innerJoin(equipes, eq(absencesEquipe.equipeId, equipes.id))
-        .where(
-          and(
-            eq(absencesEquipe.entrepriseId, ctx.entrepriseId),
-            eq(absencesEquipe.equipeId, equipeId),
-            isNull(absencesEquipe.deletedAt)
-          )
-        );
+      const absences = await absencesDeLEquipe(tx, ctx.entrepriseId, equipeId);
       if (cocheRefusee(rangEquipe, le, absences, false)) {
         // **On rend l'état INCHANGÉ, jamais `null` et jamais une exception.**
         // `null` veut déjà dire « ce chantier n'est pas à vous » ; le message
@@ -474,7 +509,8 @@ export async function basculerEquipeDuChantier(
     }
 
     if (deja) {
-      await tx.delete(equipesDuChantier).where(eq(equipesDuChantier.id, deja.id));
+      // Cochée quelque part — sans jour, ou sur des jours : on retire tout.
+      for (const l of deja) await tx.delete(equipesDuChantier).where(eq(equipesDuChantier.id, l.id));
     } else {
       await tx
         .insert(equipesDuChantier)
@@ -491,15 +527,15 @@ export async function basculerEquipeDuChantier(
  * et l'ordre d'affichage, et un écran n'a rien à faire d'une clé étrangère
  * (`ARCHITECTURE.md` §51).
  */
-export type EquipesParDemi = { matin: number[]; apres_midi: number[] };
+export type { EquipesDuChantier };
 
 async function lireEquipesDuChantier(
   tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
   entrepriseId: string,
   chantierId: string
-): Promise<EquipesParDemi> {
+): Promise<EquipesDuChantier> {
   const lignes = await tx
-    .select({ demi: equipesDuChantier.demi, rang: equipes.rang })
+    .select({ jour: equipesDuChantier.jour, demi: equipesDuChantier.demi, rang: equipes.rang })
     .from(equipesDuChantier)
     .innerJoin(equipes, eq(equipesDuChantier.equipeId, equipes.id))
     .where(
@@ -512,24 +548,47 @@ async function lireEquipesDuChantier(
 }
 
 /**
- * Ranger des lignes plates en deux listes de rangs, TRIÉES.
+ * Ranger des lignes plates en ce que le planning lit — rangs TRIÉS.
  *
  * Le tri n'est pas cosmétique : sans lui, « Julien, Paul » deviendrait « Paul,
  * Julien » au prochain rechargement, selon l'ordre où les lignes sont revenues.
  * Un écran qui change tout seul entre deux visites fait douter d'un geste qu'on
- * n'a pas fait.
+ * n'a pas fait. La règle vit dans `rangerEquipes` ; ici on ne fait que
+ * traduire ce que la base rend (`demi` est un `string` en base).
  */
 export function rangerParDemi(
-  lignes: readonly { demi: string; rang: number }[]
-): EquipesParDemi {
-  const par: EquipesParDemi = { matin: [], apres_midi: [] };
-  for (const l of lignes) {
-    if (l.demi === "matin") par.matin.push(l.rang);
-    else if (l.demi === "apres_midi") par.apres_midi.push(l.rang);
-  }
-  par.matin.sort((a, b) => a - b);
-  par.apres_midi.sort((a, b) => a - b);
-  return par;
+  lignes: readonly { jour: string | null; demi: string; rang: number }[]
+): EquipesDuChantier {
+  return rangerEquipes(
+    lignes
+      .filter((l) => l.demi === "matin" || l.demi === "apres_midi")
+      .map((l) => ({ jour: l.jour, demi: l.demi as Moment, equipe: l.rang }))
+  );
+}
+
+/** Les congés d'UNE personne, tels que `equipe-absente.ts` les lit. */
+async function absencesDeLEquipe(
+  tx: Parameters<Parameters<typeof withEntreprise>[2]>[0],
+  entrepriseId: string,
+  equipeId: string
+) {
+  return tx
+    .select({
+      rang: equipes.rang,
+      premierJour: absencesEquipe.premierJour,
+      dernierJour: absencesEquipe.dernierJour,
+      premierDemi: absencesEquipe.premierDemi,
+      dernierDemi: absencesEquipe.dernierDemi,
+    })
+    .from(absencesEquipe)
+    .innerJoin(equipes, eq(absencesEquipe.equipeId, equipes.id))
+    .where(
+      and(
+        eq(absencesEquipe.entrepriseId, entrepriseId),
+        eq(absencesEquipe.equipeId, equipeId),
+        isNull(absencesEquipe.deletedAt)
+      )
+    );
 }
 
 /**
@@ -795,7 +854,7 @@ export async function planifierChantier(
             jour: a.jour as string,
             moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
             dureeDemiJournees: a.duree,
-            equipesParDemi: equipesPosees.get(a.id) ?? null,
+            ...(equipesPosees.get(a.id) ?? {}),
             creneaux: creneauxPoses.get(a.id) ?? null,
           })),
         nombreEquipes
@@ -827,6 +886,22 @@ export async function planifierChantier(
     // ═══════════════════════════════════════════════════════════════════
     const creneauDebut: Moment = choix ? choix.demi : automatique;
 
+    // **Poser écrit désormais OÙ l'on pose** (migration 0085). Un chantier posé
+    // depuis ce lot porte donc ses demi-journées ; les anciens n'en ont pas, et
+    // valent leur bloc calculé — c'est le repli de `creneauxPoses`, et il est
+    // ce qui empêche de libérer d'un coup tout ce qui est déjà pris.
+    //
+    // **AVANT d'écrire la date sur le chantier** : c'est en lisant ses colonnes
+    // que `ecrireLesCreneaux` sait où il ÉTAIT, pour que ses équipes datées
+    // suivent (0093). Écrire la date d'abord lui ferait croire qu'il n'a pas
+    // bougé.
+    await ecrireLesCreneaux(
+      tx,
+      ctx,
+      chantierId,
+      creneauxDuChantier({ jour: datePlanifiee, moment: creneauDebut }, duree)
+    );
+
     const [row] = await tx
       .update(chantiers)
       .set({
@@ -838,17 +913,6 @@ export async function planifierChantier(
       })
       .where(eq(chantiers.id, chantierId))
       .returning();
-
-    // **Poser écrit désormais OÙ l'on pose** (migration 0085). Un chantier posé
-    // depuis ce lot porte donc ses demi-journées ; les anciens n'en ont pas, et
-    // valent leur bloc calculé — c'est le repli de `creneauxPoses`, et il est
-    // ce qui empêche de libérer d'un coup tout ce qui est déjà pris.
-    await ecrireLesCreneaux(
-      tx,
-      ctx,
-      chantierId,
-      creneauxDuChantier({ jour: datePlanifiee, moment: creneauDebut }, duree)
-    );
     return row;
   });
 }
@@ -861,6 +925,9 @@ export async function deplanifierChantier(ctx: Ctx, chantierId: string) {
     // créneaux derrière lui, c'est garder des demi-journées prises par un
     // chantier qui n'est plus posé — et un jour qui ne partirait jamais chez
     // le client.
+    // Et ses équipes datées se replient en lignes sans jour : personne n'est
+    // perdu quand il sera reposé (`reporterEquipes`).
+    await reporterLesEquipes(tx, ctx.entrepriseId, chantierId, [], []);
     await tx.delete(creneauxChantier).where(eq(creneauxChantier.chantierId, chantierId));
     const [row] = await tx
       .update(chantiers)
@@ -968,6 +1035,7 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
     const attributions = await tx
       .select({
         chantierId: equipesDuChantier.chantierId,
+        jour: equipesDuChantier.jour,
         demi: equipesDuChantier.demi,
         rang: equipes.rang,
       })
@@ -975,10 +1043,10 @@ export async function listerChantiersPourPlanning(ctx: Ctx) {
       .innerJoin(equipes, eq(equipesDuChantier.equipeId, equipes.id))
       .where(eq(equipesDuChantier.entrepriseId, ctx.entrepriseId));
 
-    const parChantier = new Map<string, { demi: string; rang: number }[]>();
+    const parChantier = new Map<string, { jour: string | null; demi: string; rang: number }[]>();
     for (const a of attributions) {
       const siennes = parChantier.get(a.chantierId) ?? [];
-      siennes.push({ demi: a.demi, rang: a.rang });
+      siennes.push({ jour: a.jour, demi: a.demi, rang: a.rang });
       parChantier.set(a.chantierId, siennes);
     }
 

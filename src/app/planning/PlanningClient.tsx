@@ -132,7 +132,7 @@ import {
  * (`CLAUDE.md` §3). Cet écran affiche ce qu'il rend.
  */
 
-type EquipesParDemi = { matin: number[]; apres_midi: number[] };
+import { equipesDuJour, type EquipesDuChantier } from "@/lib/equipes-par-jour";
 
 /**
  * Un chantier tel que le planning le lit — la forme rendue par
@@ -160,8 +160,13 @@ export type ChantierPlanning = {
    */
   creneaux?: readonly { jour: string; moment: "matin" | "apres_midi" }[] | null;
   dureePrevue?: string | null;
-  /** Les rangs d'équipe cochés, demi-journée par demi-journée (migration 0058). */
-  equipes: EquipesParDemi;
+  /**
+   * Les rangs d'équipe cochés, demi-journée par demi-journée (migration 0058)
+   * — et JOUR PAR JOUR depuis la migration 0093 (sa plainte du 15 septembre
+   * 2026). **Pour un jour donné, on lit `equipesDuJour(c.equipes, jour)`** ;
+   * `matin` / `apres_midi` disent qui vient au moins un jour.
+   */
+  equipes: EquipesDuChantier;
   /** L'adresse du chantier, telle qu'elle est en base — jamais devinée. */
   adresseChantier?: string | null;
   /**
@@ -720,6 +725,7 @@ export default function PlanningClient({
                   equipes: {
                     matin: c.equipes.matin.filter((x) => x !== rang),
                     apres_midi: c.equipes.apres_midi.filter((x) => x !== rang),
+                    lignes: c.equipes.lignes.filter((l) => l.equipe !== rang),
                   },
                 }
               : c
@@ -760,11 +766,10 @@ export default function PlanningClient({
         // **Plafonné à la capacité depuis le 26 août** : on coche désormais des
         // SALARIÉS, et trois gars sur un même chantier ne doivent pas fermer une
         // journée qui accepte deux chantiers (`equipesMobilisees`).
-        (c) =>
-          equipesMobilisees(
-            (demi === "matin" ? c.equipes.matin : c.equipes.apres_midi).length,
-            nombreEquipes
-          )
+        // **Ceux de CE jour** — depuis le 15 septembre 2026 la coche peut ne
+        // valoir qu'à partir du 4e jour, et compter « au moins un jour »
+        // fermerait le lundi pour un gars qui ne vient que le jeudi.
+        (c) => equipesMobilisees(equipesDuJour(c.equipes, jour)[demi].length, nombreEquipes)
       );
     },
     [parCreneau, absentesParCreneau, nombreEquipes]
@@ -1027,9 +1032,11 @@ export default function PlanningClient({
    * supposé : deux appuis rapprochés sur la même pastille se croiseraient
    * sinon, et le dernier arrivé gagnerait sur l'autre.
    */
-  function basculerEquipe(chantierId: string, demi: Demi, rang: number) {
+  function basculerEquipe(chantierId: string, jour: JourIso, demi: Demi, rang: number) {
     enTransition(async () => {
-      const etat = await basculerEquipeAction(chantierId, demi, rang);
+      // **Le jour de la carte part avec le geste** — sa plainte du 15 septembre
+      // 2026 : décocher Julien le jeudi ne doit décocher que le jeudi.
+      const etat = await basculerEquipeAction(chantierId, demi, rang, jour);
       if (!etat) return;
       setChantiers((liste) =>
         liste.map((c) => (c.id === chantierId ? { ...c, equipes: etat } : c))
@@ -1576,7 +1583,10 @@ export default function PlanningClient({
                 </span>
               </p>
               {chantiersDuJour(jour).map((c) => {
-                const toutes = [...new Set([...c.equipes.matin, ...c.equipes.apres_midi])].sort(
+                // **Ceux de CE jour** (migration 0093) : la ligne est celle d'une
+                // journée, et Julien « à partir du 4e jour » ne se lit pas le 1er.
+                const duJour = equipesDuJour(c.equipes, jour);
+                const toutes = [...new Set([...duJour.matin, ...duJour.apres_midi])].sort(
                   (a, b) => a - b
                 );
                 const deplie = carteListe?.apres === c.id;
@@ -2181,7 +2191,7 @@ type GestesCarte = {
   lignesEquipes: { rang: number; nom?: string | null }[];
   occupationDe: (jour: JourIso, demi: Demi) => { pris: readonly ChantierPlanning[]; charge: number };
   chantiersDuJour: (jour: JourIso) => ChantierPlanning[];
-  basculerEquipe: (chantierId: string, demi: Demi, rang: number) => void;
+  basculerEquipe: (chantierId: string, jour: JourIso, demi: Demi, rang: number) => void;
   /** Rendre une demi-journée que ce chantier occupait (10 septembre 2026). */
   liberer: (chantierId: string, jour: JourIso, demi: Demi) => void;
   /** Reposer le morceau tenu au doigt sur la demi-journée touchée. */
@@ -3515,6 +3525,7 @@ function CarteDuJour({
             <Fragment key={c.id}>
             <div
               data-atlas="bloc-chantier"
+              data-chantier={c.id}
               style={{ marginTop: rang === 0 ? 0 : 16 }}
             >
               {/* **Le compte « 1 chantier · complet » a disparu.** Sa
@@ -3571,11 +3582,13 @@ function CarteDuJour({
 
               {bloc.demis.map((demi) => {
                 const o = occupationDe(jour, demi);
-                const rangs = demi === "matin" ? c.equipes.matin : c.equipes.apres_midi;
-                // **Qui part VRAIMENT ce jour-là** — la coche vaut pour tout le
-                // chantier, la carte montre un seul jour (sa proposition C du
-                // 8 septembre 2026). Un absent nommé sur la journée où il ne
-                // vient pas, c'est le défaut qu'il a photographié le 7.
+                // **Ceux de CE jour** (migration 0093) : la coche peut ne valoir
+                // qu'à partir du 4e jour, et la carte montre un seul jour.
+                const rangs = equipesDuJour(c.equipes, jour)[demi];
+                // **Qui part VRAIMENT ce jour-là** — un congé se déduit, il ne
+                // s'écrit pas (sa proposition C du 8 septembre 2026). Un absent
+                // nommé sur la journée où il ne vient pas, c'est le défaut qu'il
+                // a photographié le 7.
                 const rangsPresents = rangs.filter(
                   (r) => !absencesDuJour(jour).some((a) => a.rang === r)
                 );
@@ -3647,7 +3660,7 @@ function CarteDuJour({
                               retenue={cochee && jours === ""}
                               partielle={cochee && jours !== ""}
                               absente={absente}
-                              onClick={() => basculerEquipe(c.id, demi, e.rang)}
+                              onClick={() => basculerEquipe(c.id, jour, demi, e.rang)}
                             >
                               {cochee ? "✓ " : ""}
                               {nomEquipe(e.rang)}

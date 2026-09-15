@@ -56,6 +56,32 @@ surtitre et des puces juste au-dessus, jamais `orTexte` (sa correction du
 9 septembre). Ce que ça évite : deux gestes de même allure l'un sous l'autre,
 dont un seul compte.
 
+### Les équipes se cochent jour par jour — retirer Julien le jeudi ne le retire plus partout
+
+Sa plainte, sur un chantier de huit jours : *« si le 4e jour je décide de ne
+pas mettre Julien, ça l'enlève partout et ça faut pas ! »*. Une affectation ne
+portait qu'une demi-journée, valable pour tout le chantier. La migration 0093
+lui ajoute un jour, facultatif : sans jour, la ligne vaut chaque jour comme
+avant (rien n'est converti) ; avec, ce jour-là. Sa règle : **ajouter quelqu'un
+un jour le met ce jour-là et tous les suivants ; le retirer ne retire que ce
+jour-là.** La carte du jour, la ligne des planifiés, la charge du calendrier et
+la journée regardée depuis la feuille lisent tous `equipesDuJour`
+(`src/lib/equipes-par-jour.ts`). Un chantier reposé ailleurs emmène ses
+jours ; rendu à « Sans date », personne n'est perdu. Trois suites : la règle,
+la base, son geste dans le navigateur (`ARCHITECTURE.md` §366).
+
+### Un devis refusé puis renvoyé garde ses huit jours
+
+Sa plainte : *« lors du premier envoi j'ai sélectionné 8 jours et quand je le
+reprends pour le renvoyer, il n'a pas gardé en mémoire les 8 jours »*. Le
+premier envoi écrivait bien la durée sur le chantier ; la préparation du
+renvoi repartait de la dictée, puis d'une journée. `preparerEnvoi` et
+`creerEnvoi` relisent désormais ce que le chantier porte, dans le même ordre :
+ce que l'écran corrige, sinon la durée déjà choisie, sinon la dictée, sinon une
+journée. `test-preparation-envoi` joue sa séquence — envoi à 8 jours, refus du
+client, nouvelle préparation.
+
+---
 ## 2026-09-14
 
 ### Deux suites comptaient les jours en UTC, et rougissaient deux heures par nuit
