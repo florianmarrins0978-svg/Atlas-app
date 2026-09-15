@@ -34,6 +34,10 @@ deux nouveaux compris : `coupure-sessions` coupait la session dans
 dans la suite : la base du serveur, jamais un nom en dur) ; `chartes-e2e`
 attend une durée fixe (1,5 s) après le retour à « Origine » et rougit sous
 charge — **verte seule**, à passer à « attendre ce qu'on affirme » un jour.
+**Rejouée après la fusion de `main` (migration 0093, planning)** : base 374/386,
+navigateur 149/156 — un rouge de plus, `tva-en-tete` (« Factures en attente »
+absent en 45 s), **vert deux fois seul** ; et « connexion derrière un proxy »
+sans serveur en dix minutes sous charge, **verte rejouée seule**.
 
 **Ce qui reste :**
 
