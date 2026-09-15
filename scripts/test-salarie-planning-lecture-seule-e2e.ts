@@ -338,8 +338,12 @@ async function main() {
       lignes > 0,
       "le salarié ne voit plus aucun chantier planifié : la lecture a été fermée avec l'écriture"
     );
+    // **SA LIGNE, pas tout ce qui porte son identifiant** : depuis le
+    // 15 septembre 2026 le bloc de la carte du jour porte aussi
+    // `data-chantier`, et la carte est ouverte ici. Compter large accusait
+    // le produit d'une ligne en double qu'il n'a pas.
     assert.equal(
-      await pageS.locator(`[data-chantier="${chantier.id}"]`).count(),
+      await pageS.locator(`[data-atlas="ligne-planifiee"][data-chantier="${chantier.id}"]`).count(),
       1,
       "le chantier posé pour cet essai n'apparaît pas chez le salarié"
     );
