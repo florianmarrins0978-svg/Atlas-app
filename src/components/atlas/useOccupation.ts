@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from "react";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
 import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
+import { equipesDuJour } from "@/lib/equipes-par-jour";
 import { occupationDemi, type Demi } from "@/lib/planning-jour";
 import {
   cleCreneau,
@@ -98,11 +99,9 @@ export function useOccupation({
         parCreneau.get(cle) ?? [],
         nombreEquipes,
         absentesParCreneau.get(cle) ?? 0,
-        (c) =>
-          equipesMobilisees(
-            (demi === "matin" ? c.equipes.matin : c.equipes.apres_midi).length,
-            nombreEquipes
-          )
+        // **Ceux de CE jour** — la coche peut ne valoir qu'à partir du 4e jour
+        // (migration 0093), et la règle vit dans `equipes-par-jour.ts`.
+        (c) => equipesMobilisees(equipesDuJour(c.equipes, jour)[demi].length, nombreEquipes)
       );
     },
     [parCreneau, absentesParCreneau, nombreEquipes]

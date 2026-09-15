@@ -147,7 +147,7 @@ async function contrainteDuPlanning(
       jour: l.jour as JourIso,
       moment: l.moment === "matin" || l.moment === "apres_midi" ? l.moment : null,
       dureeDemiJournees: l.duree,
-      equipesParDemi: equipes.get(l.id) ?? null,
+      ...(equipes.get(l.id) ?? {}),
       creneaux: creneauxPoses.get(l.id) ?? null,
     }));
 

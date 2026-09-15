@@ -202,7 +202,7 @@ export async function preparerEnvoi(
         jour: r.jour as JourIso,
         moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
         dureeDemiJournees: r.duree,
-        equipesParDemi: equipesPosees.get(r.id) ?? null,
+        ...(equipesPosees.get(r.id) ?? {}),
         creneaux: creneauxPoses.get(r.id) ?? null,
       }));
     const [entreprise] = await tx
@@ -611,7 +611,7 @@ async function contrainteSurHorizon(
           jour: r.jour as JourIso,
           moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
           dureeDemiJournees: r.duree,
-          equipesParDemi: equipesPosees.get(r.id) ?? null,
+          ...(equipesPosees.get(r.id) ?? {}),
           creneaux: creneauxPoses.get(r.id) ?? null,
         })),
       nombreEquipes

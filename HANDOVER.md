@@ -15,7 +15,25 @@ Depuis le 14 septembre 2026, le niveau d'épreuve se calcule sur le diff —
 pour l'apprendre, et nomme les suites navigateur à jouer quand il rend 2. Le
 détail : `.claude/rules/testing.md`, et `ARCHITECTURE.md` §365.
 
-## Dernier lot — LE PAPIER, LE MÊME POUR LE DEVIS ET LA FACTURE (14 septembre 2026, soir)
+## Dernier lot — LES ÉQUIPES JOUR PAR JOUR, ET LA DURÉE AU RENVOI (15 septembre 2026)
+
+Deux plaintes du matin. **La durée** : un devis refusé puis renvoyé repartait
+de la dictée — `preparerEnvoi`/`creerEnvoi` relisent d'abord ce que le chantier
+porte. **Les équipes** : décocher Julien le 4ᵉ jour le décochait partout.
+Migration 0093 (`jour` nullable sur `equipes_du_chantier`, NULL = chaque jour,
+rien converti) ; règle unique `src/lib/equipes-par-jour.ts` — ajouter → ce jour
+et les suivants, retirer → ce jour seul ; `basculerEquipeDuChantier` prend un
+`jour?` ; `ecrireLesCreneaux` fait suivre les lignes datées quand le chantier
+bouge (`reporterLesEquipes`), et `planifierChantier` écrit les créneaux AVANT
+la date du chantier pour cette raison. **Ce qui a changé de sens** :
+`equipes.matin` / `apres_midi` = « au moins un jour » ; pour un jour, toujours
+`equipesDuJour`. `ARCHITECTURE.md` §366.
+
+**Piège vu en route** : `docs/verification-email.md` avait été écrasé par une
+page HTML au commit `eb775d53` (une commande `md-en-page` mal visée) ; restauré
+ici avec le constat DMARC qui devait s'y ajouter.
+
+## Lot d'avant — LE PAPIER, LE MÊME POUR LE DEVIS ET LA FACTURE (14 septembre 2026, soir)
 
 **À retenir :** un seul composeur dessine les deux pièces ; ce qui distingue
 la facture passe par ses options (`apresTotal`, `tampon`, `informations`).

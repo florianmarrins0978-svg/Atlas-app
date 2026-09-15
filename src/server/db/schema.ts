@@ -471,6 +471,14 @@ export const equipes = pgTable(
  *
  * Une ligne absente n'est pas « personne y va » au sens d'un choix : c'est
  * « reste à décider ». C'est ce que le planning peint en hachuré.
+ *
+ * **ET DEPUIS LE 15 SEPTEMBRE 2026, UNE LIGNE PORTE SON JOUR** (migration
+ * 0093) — sa plainte sur un chantier de huit jours : *« si le 4ᵉ jour je
+ * décide de ne pas mettre Julien, ça l'enlève partout, et ça faut pas »*.
+ * `jour` NULL est la ligne d'avant, et garde son sens : elle vaut pour
+ * chaque jour posé. Une seule fonction la lit ainsi — `deplierEquipes`,
+ * `src/lib/equipes-par-jour.ts` — et le premier geste sur le chantier la
+ * remplace par des lignes datées.
  */
 export const equipesDuChantier = pgTable(
   "equipes_du_chantier",
@@ -482,13 +490,16 @@ export const equipesDuChantier = pgTable(
     chantierId: uuid("chantier_id").notNull(),
     /** `matin` ou `apres_midi` — le même vocabulaire que `creneauDebut`. */
     demi: text("demi").notNull(),
+    /** Le jour, ou NULL = tous les jours posés (les lignes d'avant 0093). */
+    jour: date("jour"),
     equipeId: uuid("equipe_id")
       .notNull()
       .references(() => equipes.id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    unique("equipes_du_chantier_uk").on(t.chantierId, t.demi, t.equipeId),
+    // NULLS NOT DISTINCT en base (0093) : deux lignes sans jour restent un doublon.
+    unique("equipes_du_chantier_uk").on(t.chantierId, t.jour, t.demi, t.equipeId),
     index("equipes_du_chantier_idx").on(t.entrepriseId, t.chantierId),
     foreignKey({
       columns: [t.chantierId, t.entrepriseId],
