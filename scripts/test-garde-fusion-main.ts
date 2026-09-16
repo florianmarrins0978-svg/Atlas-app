@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   FICHIER_VERDICT,
   cheminsDuDiff,
   cheminsDuStatut,
   commandeDuNiveau,
+  dossierDeLaCommande,
   evaluerLeLot,
   poussseVersMain,
   rougesToleres,
@@ -286,6 +288,28 @@ cas("et tout le reste passe : lire, commiter, fusionner en local", () => {
   }
 });
 
+console.log("\n=== Le garde-fou mesure le dossier que la commande VISE ===");
+// Sa règle du 17 septembre 2026 : « le garde-fou lui-même doit fonctionner
+// sur le LOT À FUSIONNER, pas sur l'historique cumulé d'une branche de travail ».
+
+cas("une poussée vers main faite avec -C est VUE comme telle", () => {
+  // Sans cela, `git -C <session> push origin HEAD:main` passait sous le
+  // garde-fou : « git push » n'était pas trouvé, à cause du dossier entre les deux.
+  assert.equal(poussseVersMain('git -C "C:/x/y" push origin HEAD:main', "HEAD"), true);
+  assert.equal(poussseVersMain("git -C ../s2 push origin main", "HEAD"), true);
+  assert.equal(poussseVersMain("git -C ../s2 push -u origin claude/mon-lot", "HEAD"), false);
+});
+
+cas("sans -C, le dossier reste celui de la session", () => {
+  assert.equal(dossierDeLaCommande("git push origin main", RACINE), RACINE);
+});
+
+cas("git -C <dossier> désigne CE dossier — relatif, absolu, ou entre guillemets", () => {
+  assert.equal(dossierDeLaCommande("git -C ../atlas-app-s2 push origin HEAD:main", RACINE), path.resolve(RACINE, "../atlas-app-s2"));
+  assert.equal(dossierDeLaCommande('git -C "C:/Users/x/Temp/atlas batterie" push origin main', RACINE), path.resolve("C:/Users/x/Temp/atlas batterie"));
+  assert.equal(dossierDeLaCommande("cd /tmp && git -C '/tmp/lot a' push origin main", RACINE), path.resolve("/tmp/lot a"));
+});
+
 console.log("\n=== Le verdict doit être VERT, au bon niveau, sur CET arbre ===");
 
 const VERT_3 = { quand: 2_000, vert: true, niveau: 3 };
@@ -473,6 +497,26 @@ try {
     const { refuse, message } = jouer("git push origin claude/mon-lot:main");
     assert.ok(refuse, "un rouge nouveau a ouvert la fusion");
     assert.match(message, /test-facture-e2e\.ts/);
+  });
+
+  cas("joué avec -C sur un dossier de session, le hook lit LE VERDICT DE CE DOSSIER, pas celui d'ici", () => {
+    // Deux dossiers : ici (sans verdict) et un dossier de session avec un
+    // verdict vert. La même poussée passe depuis là-bas et, sans son verdict,
+    // y est refusée — sans que le dossier d'ici n'y soit pour rien.
+    const session = mkdtempSync(path.join(tmpdir(), "atlas-session-"));
+    try {
+      execFileSync("git", ["-C", RACINE, "worktree", "add", "-q", "--detach", session]);
+      rmSync(TEMOIN, { force: true });
+      // Un lot de niveau 2 là-bas — un fichier d'outillage en attente —, pour
+      // que le hook ait quelque chose à juger.
+      writeFileSync(path.join(session, "scripts", "_epreuve-garde-fusion-session.mjs"), "// éphémère\n");
+      writeFileSync(path.join(session, FICHIER_VERDICT), JSON.stringify({ quand: Date.now() + 60_000, vert: true, niveau: 3, empreinte: [] }));
+      assert.equal(jouer(`git -C "${session}" push origin HEAD:main`).refuse, false, "le verdict vert du dossier visé n'a pas été lu");
+      rmSync(path.join(session, FICHIER_VERDICT), { force: true });
+      assert.equal(jouer(`git -C "${session}" push origin HEAD:main`).refuse, true, "sans verdict là-bas, la poussée devait être refusée");
+    } finally {
+      execFileSync("git", ["-C", RACINE, "worktree", "remove", "--force", session]);
+    }
   });
 
   cas("un verdict d'un autre arbre ne suffit plus", () => {

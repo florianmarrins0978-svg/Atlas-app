@@ -103,6 +103,16 @@ La batterie entière, inchangée. Obligatoire dès que le plancher, la gravité 
 un rayon de dix points d'entrée est atteint. **Le prévenir avant de la
 lancer** — ses sessions partagent son dossier (`CLAUDE.md` §5).
 
+## Une tâche = un lot isolé, mesuré sur SON diff
+
+**Sa règle du 17 septembre 2026**, après douze commits de quatre sujets
+retenus par un seul rouge : chaque tâche se prépare à part depuis
+`origin/main` propre, son niveau se calcule sur son seul diff, ses contrôles se
+jouent dans son dossier, et elle se pousse de là (`git -C <dossier> push origin
+HEAD:main`). Le garde-fou mesure **le dossier que la commande vise**
+(`dossierDeLaCommande`) — un lot de niveau 2 n'attend jamais un lot de
+niveau 3 voisin. Le détail est dans `CLAUDE.md` §6.
+
 ## Un rouge déjà rouge sur `main` ne ferme pas la porte — un rouge NOUVEAU, si
 
 **Sa règle du 16 septembre 2026 :** *« état de référence connu + nouveau lot →

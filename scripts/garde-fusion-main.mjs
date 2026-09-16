@@ -43,6 +43,7 @@ import {
   FICHIER_VERDICT,
   cheminsDuLot,
   commandeDuNiveau,
+  dossierDeLaCommande,
   evaluerLeLot,
   poussseVersMain,
   verdictSuffit,
@@ -50,7 +51,11 @@ import {
 import { suitesDesRoutes } from "./_suites-ciblees.mjs";
 import { estAncetre, lireReference } from "./_reference-batterie.mjs";
 
-const RACINE = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+// **Le dossier se décide par la commande, pas par la session** (sa règle du
+// 17 septembre 2026, `dossierDeLaCommande`) : `git -C <dossier> push …` fait
+// mesurer CE dossier-là — son diff, son verdict, son niveau. Posé quand la
+// commande est lue, plus bas.
+let RACINE = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
 function git(...args) {
   try {
@@ -111,6 +116,7 @@ process.stdin.on("end", () => {
     process.exit(0); // Rien de lisible : on ne gêne personne.
   }
 
+  RACINE = dossierDeLaCommande(commande, RACINE);
   const branche = git("rev-parse", "--abbrev-ref", "HEAD");
   if (!poussseVersMain(commande, branche)) process.exit(0);
 

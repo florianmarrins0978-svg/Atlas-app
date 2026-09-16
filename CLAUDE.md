@@ -1796,6 +1796,28 @@ C'est la même faute que la planche 56, dans l'autre sens : celle-là décrivait
 - Ne jamais pousser sur une autre branche sans accord explicite.
 - Ne jamais ouvrir de *pull request* sans demande explicite.
 
+### UNE TÂCHE FONCTIONNELLE = UN LOT ISOLÉ — sa règle du 17 septembre 2026
+
+**Ce qu'elle a coûté :** douze commits de quatre sujets sans rapport — un
+bouton, le garde-fou, deux planches, un micro — empilés sur une seule branche,
+et un seul rouge de batterie qui retenait tout. *« C'est exactement ce que le
+nouveau système devait éviter. »*
+
+| | |
+|---|---|
+| **une tâche** | **un lot**, préparé à part, qui part de `origin/main` propre |
+| **son niveau** | calculé sur SON diff, et rien d'autre (`npm run niveau`) |
+| **ses contrôles** | ceux de son niveau, joués dans SON dossier |
+| **sa poussée** | depuis ce dossier : `git -C <dossier> push origin HEAD:main` — le garde-fou mesure le dossier que la commande vise, pas celui de la session |
+| **la tâche suivante** | repart de `main` à jour — jamais par-dessus le lot qui attend |
+
+**Un lot de niveau 2 ne doit jamais attendre un lot de niveau 3 voisin.** Deux
+sujets sur la même branche, c'est deux batteries pour le prix d'une, et un
+rouge qui bloque un travail qui n'y est pour rien. Le dossier de batterie
+(`npm run sessions:preparer --liste`) sert à ça : `git checkout --detach
+origin/main`, `git cherry-pick` des seuls commits du lot, ses contrôles, sa
+poussée.
+
 ### Rien n'est livré tant que ce n'est pas sur `main`
 
 **Payé deux fois, la seconde le 11 août 2026.** Un lot complet — code, suites,

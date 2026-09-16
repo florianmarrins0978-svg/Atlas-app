@@ -6,6 +6,17 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+### Le garde-fou mesure le dossier que `git -C` vise — et une tâche = un lot isolé
+
+**Sa règle du 17 septembre 2026 :** *« le garde-fou lui-même doit fonctionner
+sur le LOT À FUSIONNER, pas sur l'historique cumulé d'une branche de travail
+qui contient plusieurs sujets sans rapport »*, après douze commits de quatre
+sujets retenus par un seul rouge. `garde-fusion-main.mjs` lit désormais le
+dossier désigné par `git -C` (`dossierDeLaCommande`) : son diff, son verdict,
+son niveau ; et `poussseVersMain` reconnaît une poussée faite avec `-C`, qui
+passait sous lui. La règle « une tâche fonctionnelle = un lot isolé, qui repart
+de `main` » est dans `CLAUDE.md` §6.
+
 ### Le garde-fou de `main` compare au `main` mesuré : un rouge nouveau bloque, un rouge déjà là ne bloque plus
 
 **Sa règle :** *« état de référence connu + nouveau lot → aucun nouveau rouge

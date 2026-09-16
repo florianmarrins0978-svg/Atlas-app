@@ -30,6 +30,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import { execFileSync } from "node:child_process";
+import path from "node:path";
 import { construireLeGraphe, routeDeLEcran } from "./_rayon-impact.mjs";
 import { routesSansSuite } from "./_suites-ciblees.mjs";
 
@@ -251,7 +252,10 @@ export function commandeDuNiveau(niveau) {
  * un garde-fou qui parle à tort s'apprend à être ignoré (`CLAUDE.md` §1 bis).
  */
 export function poussseVersMain(commande, brancheCourante) {
-  const c = String(commande ?? "");
+  // `git -C <dossier> push …` vise `main` exactement comme `git push …` : le
+  // dossier est retiré avant de lire le geste (17 septembre 2026 — sans cela,
+  // une poussée depuis un dossier de session passait sous le garde-fou).
+  const c = String(commande ?? "").replace(/\bgit\s+-C\s+(?:"[^"]*"|'[^']*'|\S+)\s+/g, "git ");
   if (!/\bgit\s+push\b/.test(c)) return false;
   if (/:main(\s|$)/.test(c)) return true;
   if (/\bpush\s+(-\S+\s+)*origin\s+main(\s|$)/.test(c)) return true;
@@ -259,6 +263,27 @@ export function poussseVersMain(commande, brancheCourante) {
     return /\bgit\s+push\s*(-\S+\s*)*(origin\s*)?$/.test(c.trim());
   }
   return false;
+}
+
+/**
+ * LE DOSSIER QUE LA COMMANDE VISE — sa règle du 17 septembre 2026 : *« le
+ * garde-fou lui-même doit fonctionner sur le LOT À FUSIONNER, pas sur
+ * l'historique cumulé d'une branche de travail »*.
+ *
+ * Un lot isolé se prépare dans un dossier de session (`git worktree`) et se
+ * pousse de là : `git -C <dossier> push origin HEAD:main`. Le garde-fou lisait
+ * toujours le dossier principal (`CLAUDE_PROJECT_DIR`) — donc le diff, le
+ * verdict et le niveau d'un AUTRE lot que celui qu'on pousse. C'est ainsi
+ * qu'une planche de niveau 1 a été refusée au nom d'un lot d'argent voisin
+ * (`TODO.md`, 14 septembre), et que douze commits se sont empilés derrière une
+ * seule batterie le 16.
+ *
+ * Sans `-C`, rien ne change : le dossier par défaut reste celui d'avant.
+ */
+export function dossierDeLaCommande(commande, defaut) {
+  const m = String(commande ?? "").match(/\bgit\s+-C\s+(?:"([^"]+)"|'([^']+)'|(\S+))/);
+  const dossier = m && (m[1] ?? m[2] ?? m[3]);
+  return dossier ? path.resolve(defaut, dossier) : defaut;
 }
 
 /**
