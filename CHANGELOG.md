@@ -6,6 +6,8 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-16
+
 ### Le garde-fou mesure le dossier que `git -C` vise — et une tâche = un lot isolé
 
 **Sa règle du 17 septembre 2026 :** *« le garde-fou lui-même doit fonctionner
@@ -63,6 +65,51 @@ veux plutôt avoir cliqué sur payer : Amélie 1392 est rentrée au relevé »*.
 Une ligne « Amelie · 1 392,00 € est rentrée au relevé. » reste sous le titre
 tant que la page est ouverte ; avant, la facture disparaissait sans un mot, et
 rien ne disait si elle avait été soldée ou perdue.
+
+### Le calcul du niveau perdait une lettre, et se trompait vers le BAS
+
+`git status --porcelain` rend « ␣M src/… » : deux caractères d'état, une
+espace, le chemin. La sortie entière était nettoyée d'un `trim`, ce qui mangeait
+l'espace de la première ligne — et le découpage qui suit emportait alors la
+première lettre du chemin : « rc/app/… ». Ce fichier-là n'était plus reconnu.
+
+**Ce que ça coûtait :** un lot qui touche un écran s'annonçait niveau 1, « rien
+qui s'exécute ». Un garde-fou qui se trompe vers le bas ne retient plus rien, et
+rien ne le dit. Vu en direct en mesurant un lot d'une seule ligne.
+
+Le découpage est désormais une fonction pure, éprouvée sur les quatre états du
+statut et sur un renommage — celui-ci rend le NOUVEAU chemin, l'ancien n'existe
+plus dans l'arbre qu'on mesure.
+
+### Un exemple de médiateur qui se recopiait
+
+Le champ « Adresse ou site » du médiateur portait en gris l'adresse réelle d'un
+organisme de médiation. En gris, un exemple se lit comme une valeur déjà posée :
+un artisan qui n'adhère à personne l'aurait imprimée sur un devis que son client
+garde — une mention fausse promet un recours qui n'existe pas. L'exemple est
+devenu générique, et la phrase sous le champ dit quoi faire : si vous n'adhérez
+à aucun médiateur, il faut le faire.
+
+### La décennale et le médiateur : deux champs, plus deux crochets
+
+Il a demandé de colorer en rouge les crochets des conditions générales pour les
+retrouver. Impossible — la case est un champ de saisie, elle n'affiche que du
+texte nu — et surtout, cela aurait traité le symptôme : une information
+d'entreprise se retapait dans un texte, donc se recopiait, donc divergeait au
+premier changement d'assureur.
+
+**Deux blocs dans Mon entreprise**, après « Pour être payé » : assureur, n° de
+contrat, couverture ; nom et adresse du médiateur. Remplis une fois comme le
+SIRET. Les articles 9 et 11 se remplissent tout seuls, et les deux mentions
+s'impriment en bas du devis **et** de la facture.
+
+**Ce que ça évite.** Un devis parti sans la mention d'assurance que la loi y
+attend, et un numéro de contrat périmé recopié de devis en devis. Les valeurs
+sont figées sur chaque document : changer d'assureur ne réécrit pas une pièce
+déjà partie — c'est elle qui prouve la couverture au moment du chantier.
+
+Un crochet dont la valeur manque reste un crochet : mieux vaut un manque
+visible qu'une phrase qui s'achève sur un deux-points. Migration 0093.
 
 ## 2026-09-15
 
@@ -141,52 +188,6 @@ client, nouvelle préparation.
 
 ---
 
-## 2026-09-16
-
-### Le calcul du niveau perdait une lettre, et se trompait vers le BAS
-
-`git status --porcelain` rend « ␣M src/… » : deux caractères d'état, une
-espace, le chemin. La sortie entière était nettoyée d'un `trim`, ce qui mangeait
-l'espace de la première ligne — et le découpage qui suit emportait alors la
-première lettre du chemin : « rc/app/… ». Ce fichier-là n'était plus reconnu.
-
-**Ce que ça coûtait :** un lot qui touche un écran s'annonçait niveau 1, « rien
-qui s'exécute ». Un garde-fou qui se trompe vers le bas ne retient plus rien, et
-rien ne le dit. Vu en direct en mesurant un lot d'une seule ligne.
-
-Le découpage est désormais une fonction pure, éprouvée sur les quatre états du
-statut et sur un renommage — celui-ci rend le NOUVEAU chemin, l'ancien n'existe
-plus dans l'arbre qu'on mesure.
-
-### Un exemple de médiateur qui se recopiait
-
-Le champ « Adresse ou site » du médiateur portait en gris l'adresse réelle d'un
-organisme de médiation. En gris, un exemple se lit comme une valeur déjà posée :
-un artisan qui n'adhère à personne l'aurait imprimée sur un devis que son client
-garde — une mention fausse promet un recours qui n'existe pas. L'exemple est
-devenu générique, et la phrase sous le champ dit quoi faire : si vous n'adhérez
-à aucun médiateur, il faut le faire.
-
-### La décennale et le médiateur : deux champs, plus deux crochets
-
-Il a demandé de colorer en rouge les crochets des conditions générales pour les
-retrouver. Impossible — la case est un champ de saisie, elle n'affiche que du
-texte nu — et surtout, cela aurait traité le symptôme : une information
-d'entreprise se retapait dans un texte, donc se recopiait, donc divergeait au
-premier changement d'assureur.
-
-**Deux blocs dans Mon entreprise**, après « Pour être payé » : assureur, n° de
-contrat, couverture ; nom et adresse du médiateur. Remplis une fois comme le
-SIRET. Les articles 9 et 11 se remplissent tout seuls, et les deux mentions
-s'impriment en bas du devis **et** de la facture.
-
-**Ce que ça évite.** Un devis parti sans la mention d'assurance que la loi y
-attend, et un numéro de contrat périmé recopié de devis en devis. Les valeurs
-sont figées sur chaque document : changer d'assureur ne réécrit pas une pièce
-déjà partie — c'est elle qui prouve la couverture au moment du chantier.
-
-Un crochet dont la valeur manque reste un crochet : mieux vaut un manque
-visible qu'une phrase qui s'achève sur un deux-points. Migration 0093.
 ## 2026-09-14
 
 ### Deux suites comptaient les jours en UTC, et rougissaient deux heures par nuit
