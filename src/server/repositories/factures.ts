@@ -31,6 +31,7 @@ import { repriseDuDevis } from "../../lib/facture-face-au-devis";
 import { factureNeeSansDevis } from "../../lib/lignes-corrigeables";
 import { pourcentValide, totauxAvecReduction } from "../../lib/reduction-devis";
 import { montantDeLaLigne } from "../../lib/montant-de-ligne";
+import { chiffreCanonique } from "../../lib/chiffre-saisi";
 import { montantMainDoeuvreValide } from "../../lib/main-doeuvre-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
 import {
@@ -882,7 +883,14 @@ export async function majLigneDeFacture(
   ctx: Ctx,
   factureId: string,
   ligneId: string,
-  champs: { libelle?: string; quantite?: string; prixUnitaire?: string; tauxTva?: string | null }
+  champs: {
+    libelle?: string;
+    quantite?: string;
+    prixUnitaire?: string;
+    /** « ml », « m³ »… — vide : aucune. Même colonne que le devis (0092). */
+    unite?: string | null;
+    tauxTva?: string | null;
+  }
 ): Promise<{ ok: true; montant: string } | Refus> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const garde = await factureEncoreEnBrouillon(tx, factureId);
@@ -906,17 +914,35 @@ export async function majLigneDeFacture(
       };
     }
 
-    const quantite = champs.quantite ?? avant.quantite;
-    const prixUnitaire = champs.prixUnitaire ?? avant.prixUnitaire;
-    const montant = montantDeLaLigne(quantite, prixUnitaire);
+    // **Ce que le champ porte se LIT ici, pas à l'écran** — sa capture du
+    // 15 septembre 2026 : « 2,50 » tapé au clavier français, PostgreSQL refuse
+    // la virgule, et la ligne « Érigerons » ne s'enregistrait plus. L'écran du
+    // devis normalisait avant d'envoyer ; celui de la facture non — et le
+    // prochain écran aurait refait le même défaut (`CLAUDE.md` §4 quater). Une
+    // case vidée vaut « 1 » et « 0 », comme sur le devis ; ce qui n'est pas un
+    // nombre se refuse avec ses mots, jamais par « Réessayez ».
+    const lire = (saisi: string | undefined, enBase: string, defaut: string, quoi: string) => {
+      if (saisi === undefined) return { ok: true as const, valeur: enBase };
+      if (saisi.trim() === "") return { ok: true as const, valeur: defaut };
+      const canon = chiffreCanonique(saisi);
+      return canon === null
+        ? { ok: false as const, raison: `« ${saisi.trim()} » n'est pas ${quoi}.` }
+        : { ok: true as const, valeur: canon };
+    };
+    const quantite = lire(champs.quantite, avant.quantite, "1", "une quantité");
+    if (!quantite.ok) return quantite;
+    const prixUnitaire = lire(champs.prixUnitaire, avant.prixUnitaire, "0", "un prix");
+    if (!prixUnitaire.ok) return prixUnitaire;
+    const montant = montantDeLaLigne(quantite.valeur, prixUnitaire.valeur);
 
     await tx
       .update(lignesFacture)
       .set({
         libelle: champs.libelle ?? avant.libelle,
-        quantite,
-        prixUnitaire,
+        quantite: quantite.valeur,
+        prixUnitaire: prixUnitaire.valeur,
         montant,
+        ...(champs.unite !== undefined ? { unite: champs.unite?.trim() || null } : {}),
         // `undefined` : on ne touche pas au taux. `null` : on le RETIRE, et la
         // ligne retombe sur celui de la facture. Les confondre effacerait le
         // taux à chaque correction de libellé.

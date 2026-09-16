@@ -30755,3 +30755,38 @@ suit : dépliage, jours suivants, jour seul, congés, reposé, sans date),
 `test-equipes-par-jour-e2e` (son geste sur le vrai écran : décocher Julien sur
 la carte du 4ᵉ jour, le 1ᵉʳ l'annonce encore, le 4ᵉ ne l'annonce plus, le
 recocher ne doublonne rien).
+
+## §367 — Un chiffre tapé au doigt se lit UNE fois, côté dépôt : « 2,50 » est 2,50
+
+**Ce qui a été trouvé, le 15 septembre 2026.** Sa capture : une ligne de
+facture « Érigerons », 12 × 2,50, « Montant HT 0,00 € », et *« La correction
+n’a pas pu être enregistrée. Réessayez. »*. Le champ est en
+`inputMode="decimal"` ; sur un clavier français le doigt tombe sur la virgule,
+et PostgreSQL refuse « 2,50 » dans une colonne numérique. L’écran du devis
+normalisait avant d’envoyer (`normaliser`, `ChampsDuDevis.tsx`) ; celui de la
+facture envoyait ce que le champ portait. Deux écrans, deux comportements, pour
+la même case.
+
+**La décision : la lecture vit dans `src/lib/chiffre-saisi.ts`, et c’est le
+dépôt qui l’appelle.** `majLigneDeFacture` lit la quantité et le prix par
+`chiffreCanonique` avant d’écrire ; `montantDeLaLigne` lit par la même
+fonction ; le `nombre` de l’écran du devis aussi. Corriger l’écran de la
+facture aurait été la correction dans l’appelant que `CLAUDE.md` §4 quater
+refuse : le prochain écran aurait refait le défaut. Une case vidée vaut « 1 »
+pour la quantité et « 0 » pour le prix, comme sur le devis ; ce qui n’est pas
+un nombre se refuse **avec ses mots** — *« douze » n’est pas un prix* —,
+jamais par l’exception qui devenait « Réessayez ».
+
+**Ce que cela a changé dans un contrôle.** `test-montant-de-ligne` affirmait
+la veille que « 2,5 » valait zéro, *« elle n’invente rien »* — en supposant
+que l’écran normalisait avant. Lire une virgule décimale n’invente rien :
+c’est son chiffre. Le cas dit désormais 2,5, et refuse toujours « 1,000,5 ».
+
+**Deux autres choses du même lot, plus petites.** L’unité se saisit sur une
+ligne de facture avec le même `ChampUnite` que le devis (la colonne suivait
+le devis jusqu’au papier depuis 0092, mais l’écran de la facture ne la
+montrait pas) ; et « Rem. % » ne se dessine sur le papier que lorsqu’une
+remise est accordée — sans elle, Qté · Unité · P.U. HT se resserrent de
+24 points vers la droite (`document-commun.ts`, `placeDeLaRemise`). Les
+empreintes de `test-fiche-chantier-pdf` ont été relevées après avoir regardé
+les deux rendus, avec et sans remise.

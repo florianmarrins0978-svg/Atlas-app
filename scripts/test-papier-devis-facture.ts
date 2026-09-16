@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import Decimal from "decimal.js";
 import { lignesDuPapier, quantiteLisible, tauxCourt } from "../src/lib/lignes-du-papier";
+import { uniteDeLaLigne } from "../src/lib/unite-de-ligne";
 import {
   estAcquittee,
   libelleReglement,
@@ -214,6 +215,50 @@ async function main() {
     // Un titre vide ne s'imprime pas.
     const { trace: sansTitre } = await composerDevisPdf({ ...BASE, titre: "   " });
     assert.ok(!sansTitre.textes.some((t) => t.contenu === "Aménagement du jardin"));
+  });
+
+  await cas("une ligne sans unité s'imprime « u » — sur le devis comme sur la facture", async () => {
+    // **Sa demande du 15 septembre 2026 :** *« que l'u soit mise sur le devis
+    // ou facture par défaut : si on ne touche à rien, elle se pose, on la
+    // voit »*. Il voyait « u » en gris clair dans le champ, croyait l'unité
+    // posée, et le papier sortait sans. La base garde NULL ; c'est la lecture
+    // qui dit « u » (`unite-de-ligne.ts`), la même pour l'écran et le papier.
+    assert.equal(uniteDeLaLigne(null), "u");
+    assert.equal(uniteDeLaLigne("  "), "u");
+    assert.equal(uniteDeLaLigne(" ml "), "ml");
+    const sansUnite = [{ ...LIGNES[0], unite: null }, ...LIGNES.slice(1)];
+    for (const [nom, trace] of [
+      ["devis", (await composerDevisPdf({ ...BASE, lignes: sansUnite })).trace],
+      ["facture", (await composerFacturePdf({ ...FACTURE, lignes: sansUnite })).trace],
+    ] as const) {
+      const textes = trace.textes.map((t) => t.contenu);
+      assert.ok(textes.includes("u"), `la ligne sans unité ne s'imprime pas « u » sur le ${nom}`);
+      assert.ok(textes.includes("m²") && textes.includes("ml"), `les unités posées ne sont plus sur le ${nom}`);
+    }
+  });
+
+  await cas("sans remise, la colonne « Rem. % » n'existe pas — sur le devis comme sur la facture", async () => {
+    // **Sa capture du 15 septembre 2026 :** une facture sans la moindre remise
+    // portait « REM. % » en tête d'une colonne vide. *« Si il n'y a pas de
+    // remise, la case rem % ne doit pas apparaître : elle apparaît seulement
+    // lorsque l'utilisateur choisit de faire une remise. »* Une colonne vide
+    // n'est pas neutre : le client y cherche ce qu'on lui aurait retiré.
+    const sansRemise = { reductionPourcent: null, reductionMontant: null };
+    for (const [nom, trace] of [
+      ["devis", (await composerDevisPdf({ ...BASE, ...sansRemise })).trace],
+      ["facture", (await composerFacturePdf({ ...FACTURE, ...sansRemise })).trace],
+    ] as const) {
+      const textes = trace.textes.map((t) => t.contenu);
+      assert.ok(!textes.includes("REM. %"), `« REM. % » est en tête du ${nom} sans remise`);
+      assert.ok(!textes.some((t) => t.startsWith("Total HT après remise")), `le ${nom} annonce une remise qu'il n'a pas`);
+      // Et les colonnes sont toujours là, chacune : la place se referme, rien ne se perd.
+      for (const attendu of ["QTÉ", "UNITÉ", "P.U. HT", "TOTAL HT", "TVA %", "TOTAL TTC"]) {
+        assert.ok(textes.includes(attendu), `« ${attendu} » manque au ${nom} sans remise`);
+      }
+    }
+    // Avec une remise, elle revient — c'est ce que le cas précédent tient.
+    const { trace } = await composerDevisPdf(BASE);
+    assert.ok(trace.textes.some((t) => t.contenu === "REM. %"), "« REM. % » manque au devis remisé");
   });
 
   await cas("la facture : le même papier, plus les acomptes reçus, le net à payer, les montants versés", async () => {

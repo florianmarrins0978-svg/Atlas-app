@@ -64,6 +64,7 @@ export default async function TravauxSupplementairesPage({
         id: l.id,
         libelle: l.libelle,
         quantite: l.quantite,
+        unite: l.unite,
         prixUnitaire: l.prixUnitaire,
         montant: l.montant,
         tauxTva: l.tauxTva,

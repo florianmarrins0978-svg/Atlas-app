@@ -4131,15 +4131,25 @@ function FeuilleChantier({
            2026.** Ce lien-ci avait été oublié par le lot de la visionneuse
            (11 septembre) : il remettait encore la feuille au navigateur, donc
            sans en-tête ni flèche — *« j'ai pas de touche retour »*, sur le
-           seul écran qu'il ouvre au milieu d'un chantier. */
+           seul écran qu'il ouvre au milieu d'un chantier.
+
+           **Un mot en or, plus un second bouton vert — sa réponse du
+           15 septembre 2026** à `appli/le-pdf-sans-les-prix.html` : *« la A,
+           mais on garde la phrase existante et tu mets en gras doré le doré
+           de l'appli »*. Depuis que les lignes du devis sont sur la fiche, le
+           PDF n'est plus le seul document de l'équipe : c'est le papier de
+           secours, et il se disputait la place avec « Fin de chantier », qui
+           est LE geste de cet écran. Même place, même phrase — seule l'allure
+           change. Et `or`, pas `orTexte` : c'est celui du surtitre et des
+           puces trois lignes plus haut (sa correction du 9 septembre). */
         <Link
           data-atlas="pdf-sans-prix"
           href={adresseDeLaVisionneuse(`/api/chantiers/${chantier.id}/feuille/pdf`, {
             surtitre: "Feuille de chantier",
             titre: chantier.nom,
           })}
-          className="mx-auto mt-3 block w-max rounded-full px-5 py-2.5 text-[13px]"
-          style={{ background: colors.plein, color: surPlein }}
+          className="mx-auto mt-4 block w-max px-3 py-2 text-[14px] font-bold"
+          style={{ color: colors.or }}
         >
           Ouvrir le PDF sans les prix
         </Link>

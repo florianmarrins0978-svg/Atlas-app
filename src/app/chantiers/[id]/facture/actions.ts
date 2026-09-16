@@ -270,7 +270,7 @@ export async function ajouterLigneDeFactureAction(
 export async function majLigneDeFactureAction(
   factureId: string,
   ligneId: string,
-  champs: { libelle?: string; quantite?: string; prixUnitaire?: string; tauxTva?: string | null }
+  champs: { libelle?: string; quantite?: string; prixUnitaire?: string; unite?: string | null; tauxTva?: string | null }
 ): Promise<ResultatTravaux> {
   const ctx = await getCurrentCtx();
   await exigerFacturation(ctx, "corriger une ligne de facture");

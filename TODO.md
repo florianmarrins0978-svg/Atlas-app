@@ -9,6 +9,43 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~LA FACTURE : « 2,50 », L'UNITÉ, « REM. % », « u » PAR DÉFAUT~~ — CODÉ ET ÉPROUVÉ LE 15 SEPTEMBRE 2026
+
+**Ses captures du 15 septembre :** *« Unité n'apparaît pas lorsque je crée
+une facture, ni sur le devis en PDF » · « une ligne érigeron est bloquée, je
+peux pas écrire » · « si il n'y a pas de remise, la case rem % ne doit pas
+apparaître » · « que l'u soit mise par défaut : si on ne touche à rien, elle
+se pose, on la voit »*.
+
+**Codé** (`ARCHITECTURE.md` §367, `CHANGELOG.md`) : `src/lib/chiffre-saisi.ts`
+lu par le dépôt des factures, `montantDeLaLigne` et l'écran du devis ; le
+champ Unité sur les lignes de facture (même `ChampUnite` que le devis), qui
+montre « u » en encre quand rien n'est posé (`src/lib/unite-de-ligne.ts`, la
+même lecture pour le papier) ; « Rem. % » seulement avec une remise.
+
+**Éprouvé, sur l'atelier 1 depuis `atlas-app-s2`** : suites pures et PDF
+(empreintes relevées, rendus regardés avec et sans remise, avec « u »),
+`test-travaux-supplementaires-db` (vue rouge sur la requête exacte de sa
+capture), les sept suites navigateur du lot vertes seules, puis la batterie :
+base 358/368 et navigateur 147/155. **Aucun rouge n'est du lot** — l'outillage
+qui veut `bash`/`ps -o`/`gh` sur Windows, les six rouges connus de `main`, et
+deux nouveaux compris : `coupure-sessions` coupait la session dans
+`atlas_test` en dur pendant que le serveur lisait `atlas_test_a1` (corrigé
+dans la suite : la base du serveur, jamais un nom en dur) ; `chartes-e2e`
+attend une durée fixe (1,5 s) après le retour à « Origine » et rougit sous
+charge — **verte seule**, à passer à « attendre ce qu'on affirme » un jour.
+**Rejouée après la fusion de `main` (migration 0093, planning)** : base 374/386,
+navigateur 149/156 — un rouge de plus, `tva-en-tete` (« Factures en attente »
+absent en 45 s), **vert deux fois seul** ; et « connexion derrière un proxy »
+sans serveur en dix minutes sous charge, **verte rejouée seule**.
+
+**Ce qui reste :**
+
+| | |
+|---|---|
+| **« ni sur le devis en PDF »** | pas reproduit : le devis porte le champ Unité après Qté depuis le 12 septembre, et le PDF l'imprime — désormais « u » quand rien n'est posé. S'il voit encore un vide, une capture de l'écran du devis |
+| **une suite navigateur qui tape « 2,50 » et « ml » sur une ligne de facture** | à écrire, et à voir rouge d'abord (`test-facture-sans-devis-e2e` cherche déjà le prix par son nom et attend l'écriture en base) |
+
 ## LES DEUX GARDE-FOUS NE CONNAISSENT PAS LES DOSSIERS DE SESSION — 14 septembre 2026
 
 Payé ce soir. Une batterie tenait le dossier principal ; il a demandé *« prend
@@ -57,7 +94,15 @@ du client `receptionEnMots` avec sa suite `test-reception-facture`. La planche 2
 tient sur une ligne à 390 px de large, de justesse (328 px sur 342) : à
 remesurer sur l'écran, pas seulement dans la planche.
 
-## ⏳ UNE PLANCHE À REGARDER — LE PDF SANS LES PRIX AU PLANNING
+
+## ~~UNE PLANCHE À REGARDER — LE PDF SANS LES PRIX AU PLANNING~~ — CHOISIE ET CODÉE LE 15 SEPTEMBRE 2026 (« la A, mais on garde la phrase existante, en gras doré »)
+
+**Codé :** le lien `pdf-sans-prix` de `FeuilleChantier` (`PlanningClient.tsx`)
+garde sa phrase et sa place, perd son fond vert : gras, `colors.or`. Rien
+d'autre ne bouge. **Ce qui reste avant `main` :** la batterie (niveau 3), qui
+n'a pas pu tourner — la construction meurt faute de mémoire (58 Go engagés sur
+61, comme le 14 septembre au soir) ; à rejouer après redémarrage de la machine.
+Et l'écran, à regarder alors : « pas vérifiable ICI » tant que rien ne se bâtit.
 
 **Sa question du 14 septembre 2026, capture à l'appui :** *« maintenant qu'on a les
 infos du devis qui s'affichent sous la fiche d'intervention, est-ce qu'on a besoin

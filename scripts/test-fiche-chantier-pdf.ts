@@ -73,8 +73,23 @@ const dire = (bon: boolean, quoi: string) => {
 // numéro à droite du titre (`ARCHITECTURE.md` §364). Ce qui a autorisé ce
 // relevé : les deux PDF rendus dans la visionneuse de l'application et
 // regardés en grand, contre la planche — colonnes, gras et fontes.
-const EMPREINTE_FACTURE = "569e6b65640cbdc04b96d883d6f880c54fb4103c2514543fa9b93940692f34b8";
-const EMPREINTE_DEVIS = "deb3e8d494bda299f8b67ada338f1abbb9c8a3b9c350021a1303d62719c06871";
+//
+// **RELEVÉES DE NOUVEAU LE 15 SEPTEMBRE 2026**, après sa capture d'une facture
+// sans remise sous une colonne « REM. % » vide : *« si il n'y a pas de remise,
+// la case rem % ne doit pas apparaître »*. Ces deux documents n'en ont pas :
+// la colonne disparaît et Qté · Unité · P.U. HT se resserrent de 24 points
+// vers la droite. Ce qui a autorisé ce relevé : les deux PDF rendus par pdf.js
+// dans un navigateur, regardés — sans remise (la colonne absente, le tableau
+// serré) et avec une remise de 5 % (la colonne revenue, la mise en page du
+// 14 septembre intacte).
+//
+// **ET LE MÊME JOUR, une seconde fois :** *« que l'u soit mise sur le devis ou
+// facture par défaut : si on ne touche à rien, elle se pose, on la voit »*.
+// Les trois lignes de ce document n'ont aucune unité : elles s'impriment
+// désormais « u » (`unite-de-ligne.ts`). Rendu regardé — « u » sur les deux
+// lignes sans unité, « ml » gardé sur celle qui en a une.
+const EMPREINTE_FACTURE = "ffb15b461f9cbeadded3efb26f0b37e5f8d6af6044172168655fbad244eb25b8";
+const EMPREINTE_DEVIS = "9ec45be6610b699304039dafc8c3a519c0151833b15bdab28d807f96dc8759c9";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",
