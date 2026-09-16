@@ -361,6 +361,21 @@ try {
     assert.match(message, /l'arbre a changé/);
   });
 
+  cas("un verdict de NIVEAU 2 ne retient pas la batterie complète", () => {
+    // Trouvé le 16 septembre 2026 : `_portee-batterie` ne regardait que « des
+    // fichiers ont-ils bougé ». Après un niveau 2, plus rien n'avait bougé —
+    // et la batterie refusait donc de jouer la construction, les suites
+    // navigateur et la connexion derrière un proxy, c'est-à-dire tout ce qui
+    // lui manquait encore. Le raccourci n'a de sens qu'entre deux batteries
+    // COMPLÈTES.
+    const source = readFileSync(path.join(__dirname, "verifier-avant-livraison.ts"), "utf8");
+    assert.match(
+      source,
+      /niveau === 3/,
+      "la batterie retient son raccourci sur un verdict de niveau 2 : elle refusera de jouer ce qui manque"
+    );
+  });
+
   cas("les deux commandes de vérification déposent bien ce témoin", () => {
     // Ce qui n'est pas MONTÉ ne sert à rien (la leçon du 28 août).
     for (const fichier of ["verifier-avant-livraison.ts", "verifier-avant-fusion.ts"]) {

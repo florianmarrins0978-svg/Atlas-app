@@ -319,10 +319,18 @@ const precedent = lireDernierVerdict(RACINE);
 
 // Un verdict ROUGE ne retient jamais : sur un arbre inchangé, il accuse
 // souvent la machine, et le rejouer est le seul moyen de le savoir.
-if (!forcer && precedent?.vert) {
-  const portee = porteeDuLot(fichiersRemues(precedent.empreinte, empreinteAvant));
+//
+// **Et un verdict de NIVEAU 2 ne retient pas non plus** — trouvé le
+// 16 septembre 2026, en voulant éprouver un lot d'outillage. Le niveau 2 ne
+// joue ni la construction, ni les cent cinquante suites navigateur, ni la
+// connexion derrière un proxy : dire « rien n'a bougé depuis » après lui, c'est
+// refuser la seule mesure qui manquait. Ce raccourci n'a de sens qu'entre deux
+// batteries complètes.
+const precedentComplet = precedent?.niveau === 3 ? precedent : null;
+if (!forcer && precedentComplet?.vert) {
+  const portee = porteeDuLot(fichiersRemues(precedentComplet.empreinte, empreinteAvant));
   if (portee.quoi !== "complete") {
-    console.error(phraseDuRefusDePortee(portee, precedent.verdict, ilYA(precedent.quand)));
+    console.error(phraseDuRefusDePortee(portee, precedentComplet.verdict, ilYA(precedentComplet.quand)));
     process.exit(2);
   }
 }
