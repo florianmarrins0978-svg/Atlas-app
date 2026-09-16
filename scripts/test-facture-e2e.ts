@@ -195,6 +195,11 @@ async function main() {
     // doit donc porter cette facture dès que son règlement est noté — sans
     // qu'aucune écriture ne l'ait mise dans un relevé.
     await enAttente.locator('[data-atlas="solder-la-facture"]').click();
+    // **Et l'écran dit où elle est partie — sa demande du 16 septembre 2026 :**
+    // « Amélie 1392 est rentrée au relevé ». Sans cette ligne, une facture qui
+    // disparaît à l'appui ne dit pas si elle a été soldée ou perdue.
+    await page.locator('[data-atlas="rentree-au-releve"]').filter({ hasText: "est rentrée au relevé" })
+      .waitFor({ state: "visible", timeout: 15000 });
     await page.waitForFunction(
       (numero) => !document.body.innerText.includes(numero),
       rows[0].numero_commercial as string,
