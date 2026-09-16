@@ -6,6 +6,83 @@ ajustements de test ne figurent pas ici : `git log` les porte déjà.
 Format : le plus récent en tête.
 
 ---
+## 2026-09-15
+
+### « 2,50 » tapé sur une ligne de facture s'enregistre — la virgule se lit UNE fois, côté dépôt
+
+Sa capture : une ligne « Érigerons », 12 × 2,50, « Montant HT 0,00 € », et
+*« La correction n'a pas pu être enregistrée. Réessayez. »* — *« une ligne
+érigeron est bloquée, je peux pas écrire »*. Le champ est en
+`inputMode="decimal"` : sur un clavier français, le doigt tombe sur la
+virgule, et PostgreSQL refuse « 2,50 » dans une colonne numérique. L'écran du
+devis normalisait avant d'envoyer ; celui de la facture envoyait ce que le
+champ portait, et l'exception devenait cette phrase.
+
+La lecture d'un chiffre saisi vit désormais dans une seule règle
+(`src/lib/chiffre-saisi.ts`), appelée par le dépôt des factures, par
+`montantDeLaLigne` et par l'écran du devis. Une case vidée vaut « 1 » et « 0 »
+comme sur le devis ; ce qui n'est pas un nombre se refuse avec ses mots
+(*« douze » n'est pas un prix*), jamais par « Réessayez ». Ce que ça évite :
+le prochain écran qui refait le même défaut, et un montant à 0,00 € sous un
+prix qu'il a pourtant tapé. `test-montant-de-ligne` disait jusque-là que
+« 2,5 » valait zéro ; il dit maintenant 2,5.
+
+### L'unité se saisit aussi sur une ligne de facture
+
+*« Unité n'apparaît pas lorsque je crée une facture »* : la colonne suivait le
+devis jusqu'au papier (0092), mais l'écran de la facture ne la montrait ni ne
+la saisissait — une facture directe partait donc sans « ml », « m³ »… Le même
+champ que sur le devis, après Qté, avec ses unités usuelles ; le dépôt
+l'enregistre et le papier l'imprime.
+
+### « Rem. % » n'apparaît sur le papier que lorsqu'une remise est accordée
+
+*« Si il n'y a pas de remise, la case rem % ne doit pas apparaître »*. Sans
+remise, la colonne disparaît du devis comme de la facture, et Qté · Unité ·
+P.U. HT se resserrent vers la droite. Ce que ça évite : une colonne vide où le
+client cherche ce qu'on lui aurait retiré. Les empreintes au pixel de
+`test-fiche-chantier-pdf` ont été relevées après avoir regardé les deux rendus,
+avec et sans remise.
+
+### Le PDF sans les prix n'est plus un second bouton vert sous « Fin de chantier »
+
+Depuis que les lignes du devis s'affichent sur la fiche d'intervention, le PDF
+sans les prix n'est plus le seul document de l'équipe : c'est le papier de
+secours — et il se disputait la place avec « Fin de chantier », qui est LE geste
+de cet écran. Sa réponse à la planche `appli/le-pdf-sans-les-prix.html` : *« la
+A, mais on garde la phrase existante et tu mets en gras doré le doré de
+l'appli »*. Même phrase, même place ; un mot en gras, en `colors.or` — l'or du
+surtitre et des puces juste au-dessus, jamais `orTexte` (sa correction du
+9 septembre). Ce que ça évite : deux gestes de même allure l'un sous l'autre,
+dont un seul compte.
+
+### Les équipes se cochent jour par jour — retirer Julien le jeudi ne le retire plus partout
+
+Sa plainte, sur un chantier de huit jours : *« si le 4e jour je décide de ne
+pas mettre Julien, ça l'enlève partout et ça faut pas ! »*. Une affectation ne
+portait qu'une demi-journée, valable pour tout le chantier. La migration 0093
+lui ajoute un jour, facultatif : sans jour, la ligne vaut chaque jour comme
+avant (rien n'est converti) ; avec, ce jour-là. Sa règle : **ajouter quelqu'un
+un jour le met ce jour-là et tous les suivants ; le retirer ne retire que ce
+jour-là.** La carte du jour, la ligne des planifiés, la charge du calendrier et
+la journée regardée depuis la feuille lisent tous `equipesDuJour`
+(`src/lib/equipes-par-jour.ts`). Un chantier reposé ailleurs emmène ses
+jours ; rendu à « Sans date », personne n'est perdu. Trois suites : la règle,
+la base, son geste dans le navigateur (`ARCHITECTURE.md` §366).
+
+### Un devis refusé puis renvoyé garde ses huit jours
+
+Sa plainte : *« lors du premier envoi j'ai sélectionné 8 jours et quand je le
+reprends pour le renvoyer, il n'a pas gardé en mémoire les 8 jours »*. Le
+premier envoi écrivait bien la durée sur le chantier ; la préparation du
+renvoi repartait de la dictée, puis d'une journée. `preparerEnvoi` et
+`creerEnvoi` relisent désormais ce que le chantier porte, dans le même ordre :
+ce que l'écran corrige, sinon la durée déjà choisie, sinon la dictée, sinon une
+journée. `test-preparation-envoi` joue sa séquence — envoi à 8 jours, refus du
+client, nouvelle préparation.
+
+---
+
 ## 2026-09-16
 
 ### La décennale et le médiateur : deux champs, plus deux crochets
@@ -28,7 +105,6 @@ déjà partie — c'est elle qui prouve la couverture au moment du chantier.
 
 Un crochet dont la valeur manque reste un crochet : mieux vaut un manque
 visible qu'une phrase qui s'achève sur un deux-points. Migration 0093.
-
 ## 2026-09-14
 
 ### Deux suites comptaient les jours en UTC, et rougissaient deux heures par nuit

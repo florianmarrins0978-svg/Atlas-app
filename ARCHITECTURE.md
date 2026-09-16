@@ -30666,7 +30666,132 @@ Le seuil de dix points d'entrée est une **valeur de départ**
 (`RAYON_MAXIMAL_DU_NIVEAU_2`) : à ce niveau, 189 fichiers sur 697 valent la
 batterie entière. Il se règle sur des mesures, jamais lot par lot.
 
-## §366 — La décennale et le médiateur : deux champs, plus deux crochets
+## §366 — Les équipes se cochent JOUR PAR JOUR : ajouter vaut la suite du chantier, retirer vaut le jour
+
+**Sa plainte du 15 septembre 2026**, sur un chantier de huit jours : *« si je
+mets Antoine et Julien le premier jour ça les met automatiquement sur les
+8 jours, ça c'est bien ; mais si le 4ᵉ jour je décide de ne pas mettre Julien,
+ça l'enlève partout et ça faut pas ! Ce sera pas forcément les mêmes équipes
+tous les jours. »* Et sa règle, confirmée le jour même (« oui ces deux
+points-là ») :
+
+| geste, sur la carte d'UN jour | ce qu'il écrit |
+|---|---|
+| **ajouter** quelqu'un | ce jour-là **et tous les jours suivants** du chantier |
+| **retirer** quelqu'un | **ce jour-là seulement** |
+
+Coché le premier jour, c'est donc tout le chantier — ce qu'il faisait déjà et
+qu'il trouve bien.
+
+### Ce que le modèle ne savait pas dire
+
+`equipes_du_chantier` ne portait qu'une demi-journée (migration 0058) :
+« Julien le matin » valait le matin de CHAQUE jour. Le §293 l'avait déjà
+contourné pour les congés — *« le modèle ne savait pas dire Julien vendredi
+mais pas jeudi »*, d'où la proposition C, où l'exception se DÉDUIT des
+absences. Ici, il n'y a rien à déduire : c'est le patron qui décide, et le
+modèle doit l'écrire.
+
+### La migration 0093 — étendre, ne rien convertir
+
+Une colonne `jour date`, **nullable**, et l'unicité qui la porte
+(`UNIQUE NULLS NOT DISTINCT (chantier_id, jour, demi, equipe_id)` — sans cette
+clause, deux lignes sans jour ne seraient plus un doublon).
+
+**NULL garde exactement son sens d'avant : « vient chaque jour posé ».** Rien
+n'est recopié, pour deux raisons qui se rejoignent :
+
+- déplier une ligne demande de savoir quels jours le chantier occupe — un bloc
+  qui saute les week-ends, ou ses créneaux morcelés (§322). Cette règle vit en
+  TypeScript (`creneauxPoses`) ; la recopier en SQL serait une seconde règle ;
+- une table sous FORCE RLS ne se réécrit pas à l'aveugle
+  (`.claude/rules/migrations.md`).
+
+La ligne sans jour se déplie donc **au premier geste qui l'exige** : retirer
+Julien le jeudi d'une coche « chaque jour » efface cette ligne et en écrit une
+par autre jour posé. Antoine, à côté, n'est pas déplié pour rien. Le code
+d'avant, qui écrit sans jour, reste juste pendant la bascule
+(deployment-safety : expand, jamais un seul déploiement).
+
+### Une seule écriture de la règle — `src/lib/equipes-par-jour.ts`
+
+| | |
+|---|---|
+| `equipesDuJour(c, jour)` | qui vient ce jour-là : les lignes sans jour, plus celles de ce jour |
+| `basculerCeJour(lignes, creneaux, jour, demi, equipe)` | ce qu'il faut retirer et ajouter — la règle du tableau ci-dessus, et le dépliage |
+| `reporterEquipes(lignes, avant, apres)` | quand le chantier bouge : mêmes jours → rien ; d'autres jours → le 4ᵉ reste le 4ᵉ ; plus de jours → repli en lignes sans jour |
+| `rangerEquipes(lignes)` | ce que le planning reçoit : `matin` / `apres_midi` = qui vient **au moins un jour**, et `lignes` pour lire un jour |
+
+Le serveur décide avec elle (`basculerEquipeDuChantier(ctx, chantierId, demi,
+rang, jour?)`, `reporterLesEquipes` appelé par le seul écrivain des créneaux),
+et l'écran lit avec elle — la carte du jour, la ligne des planifiés, la charge
+du calendrier (`useOccupation`), la journée regardée depuis la feuille du
+chantier. **Ce que `matin` / `apres_midi` disent a changé de sens** : « au
+moins un jour », plus « chaque jour ». Les contrôles d'avant ne s'en aperçoivent
+pas — ils ne posaient que des lignes sans jour, où les deux lectures sont la
+même — et tout ce qui regarde UN jour passe par `equipesDuJour`.
+
+### Ce qui suit, et ce qui ne bouge pas
+
+- **L'occupation compte par jour** : `salariesDuDemi(p, creneau)` additionne
+  ceux de chaque jour et ceux de ce jour-là — jamais deux fois la même
+  personne (`equipesParChantier` retranche l'intersection). Sans cela, Julien
+  « à partir du jeudi » aurait fermé le lundi.
+- **Les congés** : ajouter refuse seulement si la personne n'est là aucun des
+  jours qu'on ajoute (`absenteCeCreneau`, la même règle que le §293, ramenée aux
+  jours concernés). Retirer reste toujours possible.
+- **Un chantier reposé une autre semaine** emmène ses lignes datées par rang de
+  jour ; rendu à « Sans date », elles se replient en lignes sans jour pour que
+  personne ne soit perdu. `planifierChantier` écrit les créneaux AVANT la date
+  du chantier : c'est en lisant ses colonnes que l'écrivain sait où il était.
+- **Sans jour, la bascule fait ce qu'elle a toujours fait** (tout le chantier)
+  — les suites d'avant, l'agenda, la fiche PDF (qui nomme qui vient au moins un
+  jour) et l'export n'ont pas changé.
+
+### Éprouvé
+
+`test-equipes-par-jour` (la règle, 17 cas), `test-equipes-par-jour-db` (la base
+suit : dépliage, jours suivants, jour seul, congés, reposé, sans date),
+`test-equipes-par-jour-e2e` (son geste sur le vrai écran : décocher Julien sur
+la carte du 4ᵉ jour, le 1ᵉʳ l'annonce encore, le 4ᵉ ne l'annonce plus, le
+recocher ne doublonne rien).
+
+## §367 — Un chiffre tapé au doigt se lit UNE fois, côté dépôt : « 2,50 » est 2,50
+
+**Ce qui a été trouvé, le 15 septembre 2026.** Sa capture : une ligne de
+facture « Érigerons », 12 × 2,50, « Montant HT 0,00 € », et *« La correction
+n’a pas pu être enregistrée. Réessayez. »*. Le champ est en
+`inputMode="decimal"` ; sur un clavier français le doigt tombe sur la virgule,
+et PostgreSQL refuse « 2,50 » dans une colonne numérique. L’écran du devis
+normalisait avant d’envoyer (`normaliser`, `ChampsDuDevis.tsx`) ; celui de la
+facture envoyait ce que le champ portait. Deux écrans, deux comportements, pour
+la même case.
+
+**La décision : la lecture vit dans `src/lib/chiffre-saisi.ts`, et c’est le
+dépôt qui l’appelle.** `majLigneDeFacture` lit la quantité et le prix par
+`chiffreCanonique` avant d’écrire ; `montantDeLaLigne` lit par la même
+fonction ; le `nombre` de l’écran du devis aussi. Corriger l’écran de la
+facture aurait été la correction dans l’appelant que `CLAUDE.md` §4 quater
+refuse : le prochain écran aurait refait le défaut. Une case vidée vaut « 1 »
+pour la quantité et « 0 » pour le prix, comme sur le devis ; ce qui n’est pas
+un nombre se refuse **avec ses mots** — *« douze » n’est pas un prix* —,
+jamais par l’exception qui devenait « Réessayez ».
+
+**Ce que cela a changé dans un contrôle.** `test-montant-de-ligne` affirmait
+la veille que « 2,5 » valait zéro, *« elle n’invente rien »* — en supposant
+que l’écran normalisait avant. Lire une virgule décimale n’invente rien :
+c’est son chiffre. Le cas dit désormais 2,5, et refuse toujours « 1,000,5 ».
+
+**Deux autres choses du même lot, plus petites.** L’unité se saisit sur une
+ligne de facture avec le même `ChampUnite` que le devis (la colonne suivait
+le devis jusqu’au papier depuis 0092, mais l’écran de la facture ne la
+montrait pas) ; et « Rem. % » ne se dessine sur le papier que lorsqu’une
+remise est accordée — sans elle, Qté · Unité · P.U. HT se resserrent de
+24 points vers la droite (`document-commun.ts`, `placeDeLaRemise`). Les
+empreintes de `test-fiche-chantier-pdf` ont été relevées après avoir regardé
+les deux rendus, avec et sans remise.
+
+## §368 — La décennale et le médiateur : deux champs, plus deux crochets
 
 **Son accord du 14 septembre 2026** (`appli/decennale-et-mediateur.html`), codé
 le 16 sur son « oui ».
@@ -30713,7 +30838,7 @@ vers Mon entreprise plutôt que vers le texte.
 |---|---|
 | `src/lib/mentions-obligatoires.ts` | les deux phrases, et ce qui remplace chaque crochet |
 | `src/lib/conditions-generales.ts` | les crochets écrits **une seule fois**, et la substitution |
-| `drizzle/0093_decennale_et_mediateur.sql` | cinq colonnes × trois tables, toutes *nullable* (expand seul) |
+| `drizzle/0094_decennale_et_mediateur.sql` | cinq colonnes × trois tables, toutes *nullable* (expand seul) |
 | `src/server/pdf/document-commun.ts` | le pied, **partagé** par le devis et la facture |
 | `src/app/reglages/identite/IdentiteClient.tsx` | les deux blocs |
 | `scripts/test-mentions-obligatoires.ts` | la règle pure |

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Le PDF sans les prix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --etabli:#e6e3dc; --etabli-carte:#faf9f5; --etabli-trait:rgba(28,28,26,.12);
+    --etabli-encre:#1c1c1a; --etabli-doux:#4a4a44; --etabli-gris:#77726a;
+    --etabli-or:#8b6835;
+    --serif:"Playfair Display",ui-serif,Georgia,serif;
+    --sans:"Inter",ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --plage:#faf9f5; --encre:#1c1c1a; --gris:#8a8578; --doux:#4a4a44;
+    --carte:#ece9e1; --tuile:#faf9f5; --plein:#7d9a6d; --surplein:#faf9f5; --orTexte:#8b6835;
+    --trait:rgba(28,28,26,.12); --or:#B98B47;
+  }
+  body.nuit{
+    --etabli:#0a0b0a; --etabli-carte:#1a1d19; --etabli-trait:rgba(233,232,222,.14);
+    --etabli-encre:#e9e8de; --etabli-doux:#c1c2b6; --etabli-gris:#84887b;
+    --etabli-or:#b98b47;
+    --plage:#1a1d19; --encre:#e9e8de; --gris:#84887b; --doux:#c1c2b6;
+    --carte:#1f211e; --tuile:#262924; --plein:#e9e8de; --surplein:#1a1d19; --orTexte:#b98b47;
+    --trait:rgba(233,232,222,.12); --or:#b98b47;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--etabli)}
+  body{font-family:var(--sans);color:var(--etabli-encre);-webkit-font-smoothing:antialiased}
+  ::selection{background:rgba(185,139,71,.28)}
+  .page{max-width:1240px;margin:0 auto;padding:30px 20px 90px}
+  .surtitre{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;
+            color:var(--etabli-or);margin:0 0 10px}
+  h1{font:600 30px/1.15 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+  .chapeau{max-width:640px;color:var(--etabli-doux);font-size:15.5px;line-height:1.6;margin:0 0 4px}
+
+  .bascule{appearance:none;border:0;cursor:pointer;font:600 12.5px/1 var(--sans);
+           letter-spacing:.02em;padding:11px 17px;border-radius:999px;margin:18px 0 26px;
+           background:var(--etabli-carte);color:var(--etabli-doux);
+           box-shadow:inset 0 0 0 1px var(--etabli-trait)}
+  .bascule:focus-visible{outline:2px solid var(--etabli-or);outline-offset:2px}
+  .rangee{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+  .col{flex:0 0 auto;max-width:100%}
+  .nom{font:600 15px/1.3 var(--sans);margin:0 0 3px}
+  .idee{color:var(--etabli-gris);font-size:13px;line-height:1.55;margin:0 0 12px;max-width:360px;min-height:72px}
+
+  /* L'écran, à sa largeur : 390 px. Les mots et les places sont ceux de l'appli. */
+  .tel{width:390px;max-width:100%;border-radius:22px;overflow:hidden;background:var(--plage);
+       box-shadow:0 2px 16px rgba(20,18,14,.13),inset 0 0 0 1px var(--etabli-trait);
+       display:flex;flex-direction:column}
+  .corps{flex:1;padding:14px 12px 0}
+  .hautgestes{display:flex;justify-content:flex-end;gap:8px;margin:0 0 12px}
+  .hautgestes span{border-radius:999px;padding:11px 18px;font-size:14px;color:var(--encre);
+                   box-shadow:inset 0 0 0 1px var(--trait)}
+
+  /* La fiche d'intervention, telle qu'elle est. */
+  .fiche{border-radius:10px;background:var(--carte);box-shadow:inset 0 0 0 1px var(--trait);
+         padding:16px 14px 18px}
+  .caps{font:700 10.5px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;
+        color:var(--or);text-align:center;margin:0}
+  .client{font:500 22px/1.15 var(--serif);text-align:center;margin:10px 0 0;color:var(--encre)}
+  .gestes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 0}
+  .gestes span{display:block;text-align:center;border-radius:10px;padding:14px 8px;font-size:14.5px;
+               background:var(--tuile);color:var(--encre);box-shadow:inset 0 0 0 1px var(--trait)}
+  .gestes span.large{grid-column:1 / -1}
+  .sep{height:1px;background:var(--trait);margin:14px 0}
+  .etiq{font:600 10.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gris);margin:0 0 10px}
+  .note{border-radius:10px;background:var(--tuile);box-shadow:inset 0 0 0 1px var(--trait);
+        padding:14px;font-size:14.5px;line-height:1.5;color:var(--gris);min-height:80px}
+  .photo{width:64px;height:64px;border-radius:6px;background:var(--tuile);
+         box-shadow:inset 0 0 0 1px var(--trait);position:relative;overflow:hidden}
+  .photo::before{content:"";position:absolute;inset:8px;border-radius:2px;
+                 background:repeating-linear-gradient(180deg,var(--trait) 0 1px,transparent 1px 9px)}
+  .tache{position:relative;margin:0 0 9px;padding-left:14px;font-size:14.5px;line-height:1.45;color:var(--encre)}
+  .tache::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:999px;background:var(--or)}
+  .fin{display:flex;align-items:center;justify-content:center;gap:10px;border-radius:999px;
+       padding:15px;margin:14px 0 0;background:var(--plein);color:var(--surplein);
+       font:500 17px/1 var(--serif)}
+  .fin svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .pdf-plein{display:block;width:max-content;margin:12px auto 0;border-radius:999px;padding:10px 20px;
+             background:var(--plein);color:var(--surplein);font-size:13px}
+  .pdf-texte{display:block;width:max-content;margin:16px auto 0;padding:4px 6px;font-size:13.5px;color:var(--orTexte)}
+  .barre{display:flex;justify-content:space-between;padding:14px 20px;margin-top:18px;
+         font:600 9.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+         color:var(--gris);box-shadow:inset 0 1px 0 var(--trait)}
+  .barre b{color:var(--encre);padding-bottom:9px;box-shadow:0 1px 0 var(--orTexte)}
+
+  /* Ce qu'on regarde se voit. */
+  .neuf{position:relative}
+  .neuf::after{content:"ICI";position:absolute;top:-9px;right:-4px;
+               font:700 8.5px/1 var(--sans);letter-spacing:.12em;
+               background:var(--orTexte);color:var(--plage);padding:3px 6px;border-radius:999px}
+  .parti{position:relative;text-align:center;margin:12px 0 0;font-size:13px;color:var(--gris);
+         text-decoration:line-through;text-decoration-color:var(--orTexte)}
+
+  .encart{margin:34px 0 0;padding:15px 17px;border-radius:4px;background:var(--etabli-carte);
+          box-shadow:inset 0 0 0 1px var(--etabli-trait);max-width:640px;
+          font-size:13.5px;line-height:1.65;color:var(--etabli-doux)}
+  .encart .t{display:block;font:700 10px/1 var(--sans);letter-spacing:.1em;
+             text-transform:uppercase;color:var(--etabli-or);margin:0 0 7px}
+  .encart table{border-collapse:collapse;margin:6px 0 0;width:100%}
+  .encart td{padding:6px 10px 6px 0;vertical-align:top;border-top:1px solid var(--etabli-trait)}
+  .encart td:first-child{white-space:nowrap;color:var(--etabli-encre);font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="surtitre">À choisir</p>
+  <h1>Le PDF sans les prix</h1>
+  <p class="chapeau">
+    Les lignes du devis sont maintenant sous la fiche d’intervention. Le bouton
+    « Ouvrir le PDF sans les prix » reste, en gros, sous « Fin de chantier ».
+    Trois façons de le ranger.
+  </p>
+  <button class="bascule" id="jourNuit" aria-pressed="false">Voir en mode nuit</button>
+
+  <div class="rangee" id="places"></div>
+
+  <div class="encart"><span class="t">Ce que chacune coûte</span>
+    <table>
+      <tr><td>A</td><td>Rien à apprendre : même place, un mot au lieu d’un bouton. Il se voit moins — c’est voulu, c’est le document de secours.</td></tr>
+      <tr><td>B</td><td>Le PDF rejoint les outils du chantier, en haut. Cinq cases au lieu de quatre, et il remonte avant les tâches.</td></tr>
+      <tr><td>C</td><td>Plus de papier pour l’équipe : la liste à l’écran est la seule feuille. Vous, vous imprimez le devis avec les prix depuis le chantier.</td></tr>
+    </table>
+  </div>
+
+  <div class="encart"><span class="t">Ce qui ne change pas</span>
+    Les lignes du devis, la note, les quatre gestes, « Fin de chantier ». Et le
+    PDF lui-même : même feuille, sans un prix.
+  </div>
+</div>
+<script>
+  document.getElementById("jourNuit").addEventListener("click", (e) => {
+    const on = document.body.classList.toggle("nuit");
+    e.currentTarget.setAttribute("aria-pressed", String(on));
+    e.currentTarget.textContent = on ? "Voir en plein jour" : "Voir en mode nuit";
+  });
+
+  const COCHE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+
+  /** La fiche d'intervention, telle qu'elle est — le PDF se range selon `place`. */
+  function fiche(place) {
+    const cinquieme = place === "B"
+      ? '<span class="large neuf">Feuille de chantier (PDF)</span>' : "";
+    const bas = place === "A"
+      ? '<span class="pdf-texte neuf">Feuille de chantier (PDF)</span>'
+      : place === "C"
+        ? '<p class="parti">Ouvrir le PDF sans les prix</p>'
+        : '<span class="pdf-plein">Ouvrir le PDF sans les prix</span>';
+    return `
+      <div class="tel">
+        <div class="corps">
+          <div class="hautgestes"><span>Déplacer</span><span>Retirer</span></div>
+          <div class="fiche">
+            <p class="caps">Fiche d\u2019intervention</p>
+            <p class="client">Frédéric</p>
+            <div class="gestes">
+              <span>Maps</span><span>Waze</span>
+              <span>Copier l\u2019adresse</span><span>Appeler le client</span>
+              ${cinquieme}
+            </div>
+            <div class="sep"></div>
+            <p class="etiq">Ma note</p>
+            <div class="note">Penser à prendre le broyeur. Client dispo à partir de 9 h.</div>
+            <div class="sep"></div>
+            <div class="photo"></div>
+            <div class="sep"></div>
+            <p class="tache">Taille de haie de laurier</p>
+            <p class="tache">Démontage d\u2019un chêne mort</p>
+            <div class="fin">${COCHE} Fin de chantier</div>
+            ${bas}
+          </div>
+        </div>
+        <div class="barre"><span>Chantiers</span><b>Planning</b><span>Terminés</span><span>Paysage</span><span>Réglages</span></div>
+      </div>`;
+  }
+
+  const PLACES = [
+    { cle: "aujourdhui", nom: "Aujourd\u2019hui",
+      idee: "Deux boutons verts l\u2019un sous l\u2019autre. Le second a la même allure que le geste principal." },
+    { cle: "A", nom: "A — un mot, à la même place",
+      idee: "Le bouton devient une ligne de texte, là où il était. On sait qu\u2019il est là, il ne se dispute plus la place avec « Fin de chantier »." },
+    { cle: "B", nom: "B — avec Maps, Waze, Copier, Appeler",
+      idee: "Une cinquième case, dans les outils du chantier. Tout ce qu\u2019on ouvre est au même endroit, en haut." },
+    { cle: "C", nom: "C — il disparaît",
+      idee: "La liste à l\u2019écran suffit. Plus de PDF depuis le planning." },
+  ];
+
+  document.getElementById("places").innerHTML = PLACES.map((p) => `
+    <div class="col">
+      <p class="nom">${p.nom}</p>
+      <p class="idee">${p.idee}</p>
+      ${fiche(p.cle)}
+    </div>`).join("");
+</script>
+</body>
+</html>

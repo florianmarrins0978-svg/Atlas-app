@@ -18,7 +18,7 @@ async function ligneDuDevis(ctx: { utilisateurId: string; entrepriseId: string }
 }
 
 /**
- * LA DÉCENNALE ET LE MÉDIATEUR SE FIGENT SUR LE DOCUMENT — migration 0093.
+ * LA DÉCENNALE ET LE MÉDIATEUR SE FIGENT SUR LE DOCUMENT — migration 0094.
  *
  * **Pourquoi cette suite-ci existe, à côté de celle du PDF.** Celle du PDF
  * injecte les cinq champs à la main et prouve qu'ils s'impriment : elle serait

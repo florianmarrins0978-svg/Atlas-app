@@ -183,7 +183,7 @@ function annexeConditionsGenerales(data: DevisPdfData, sansPrix: boolean) {
   // Un devis d'avant la 0064 n'a pas de conditions figées du tout : il sort
   // identique à lui-même, sans annexe — la règle de `conditionsReglees`.
   if (sansPrix || !data.conditionsReglees) return null;
-  // **Les articles 9 et 11 se remplissent ici** (migration 0093) : l'assureur et
+  // **Les articles 9 et 11 se remplissent ici** (migration 0094) : l'assureur et
   // le médiateur sont saisis une fois dans Mon entreprise, et ce sont ceux
   // FIGÉS sur ce devis — pas ceux d'aujourd'hui. Un crochet dont la valeur
   // manque reste un crochet : il vaut mieux qu'il se voie sur le papier plutôt

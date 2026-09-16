@@ -46,7 +46,7 @@ export default function ConditionsClient({
 }: {
   initial: Conditions;
   /**
-   * Ce que « Mon entreprise » sait déjà (migration 0093). Les articles 9 et 11
+   * Ce que « Mon entreprise » sait déjà (migration 0094). Les articles 9 et 11
    * s'en remplissent à l'impression : un crochet couvert par ces champs n'est
    * plus un crochet à remplir, et l'annoncer serait envoyer le patron chercher
    * un travail qu'il a déjà fait.
@@ -55,7 +55,7 @@ export default function ConditionsClient({
 }) {
   const [c, setC] = useState<Conditions>(initial);
   // **Ce qui RESTE après remplissage**, jamais ce que le texte porte : depuis
-  // la migration 0093, l'assureur et le médiateur viennent de Mon entreprise.
+  // la migration 0094, l'assureur et le médiateur viennent de Mon entreprise.
   // Compter les crochets bruts annoncerait du travail déjà fait.
   const restants = crochetsRestants(conditionsGeneralesRemplies(c.conditionsGenerales, mentions));
   const [refus, setRefus] = useState<string | null>(null);

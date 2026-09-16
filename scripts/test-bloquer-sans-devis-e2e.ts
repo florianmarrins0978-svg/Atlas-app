@@ -205,8 +205,12 @@ async function main() {
       );
       return rows[0];
     };
+    // **On attend le chantier POSÉ, pas seulement créé.** Le geste crée le
+    // chantier puis le pose en deux transactions : lire entre les deux voyait
+    // une date vide et accusait le produit d'un défaut qu'il n'a pas (vu le
+    // 15 septembre 2026, quand poser s'est mis à faire suivre les équipes).
     let ligne = await lu();
-    for (let i = 0; i < 40 && !ligne; i++) {
+    for (let i = 0; i < 40 && !ligne?.jour; i++) {
       await page.waitForTimeout(250);
       ligne = await lu();
     }
@@ -364,8 +368,12 @@ async function main() {
       );
       return rows[0];
     };
+    // **On attend le chantier POSÉ, pas seulement créé.** Le geste crée le
+    // chantier puis le pose en deux transactions : lire entre les deux voyait
+    // une date vide et accusait le produit d'un défaut qu'il n'a pas (vu le
+    // 15 septembre 2026, quand poser s'est mis à faire suivre les équipes).
     let ligne = await lu();
-    for (let i = 0; i < 40 && !ligne; i++) {
+    for (let i = 0; i < 40 && !ligne?.jour; i++) {
       await page.waitForTimeout(250);
       ligne = await lu();
     }

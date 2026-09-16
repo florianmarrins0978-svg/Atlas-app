@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef } from "react";
 import { colors, font } from "@/lib/design-tokens";
+import { nombreSaisi } from "@/lib/chiffre-saisi";
 
 // **Les pièces de la feuille, sorties de l'écran qui les assemble.**
 //
@@ -43,10 +44,15 @@ export function sansZerosInutiles(valeur: string): string {
   return String(n).replace(".", ",");
 }
 
-/** Lit un nombre saisi à la française (« 1,5 ») comme à l'anglaise (« 1.5 »). */
+/**
+ * Lit un nombre saisi à la française (« 1,5 ») comme à l'anglaise (« 1.5 »).
+ *
+ * **La même lecture que le dépôt** (`chiffre-saisi.ts`, 15 septembre 2026) :
+ * une seconde écriture ici finirait par diverger de ce que la base accepte —
+ * c'est ce qui bloquait « 2,50 » sur la facture.
+ */
 export function nombre(valeur: string): number {
-  const n = Number(String(valeur).replace(",", ".").trim());
-  return Number.isFinite(n) ? n : 0;
+  return nombreSaisi(valeur);
 }
 
 /** Une valeur vide vaut le défaut, jamais `NaN` en base. */
@@ -273,6 +279,19 @@ export function Colonne({ children, droite }: { children: React.ReactNode; droit
  * disparaît dès qu'un chiffre est écrit — sur le papier, un devis rempli n'a
  * pas de cases.
  */
+/**
+ * Tout sélectionner dans une case — le geste « B » du 13 septembre 2026 (voir
+ * `ChiffreSaisi`), partagé avec `ChampUnite` : un appui remplace, il n'ajoute
+ * pas au chiffre ou à l'unité déjà là.
+ */
+export function toutSelectionner(champ: HTMLInputElement) {
+  const fin = champ.value.length;
+  if (fin === 0) return;
+  if (champ.selectionStart !== 0 || champ.selectionEnd !== fin) {
+    champ.setSelectionRange(0, fin);
+  }
+}
+
 export function ChiffreSaisi({
   valeur,
   onChange,
@@ -333,13 +352,6 @@ export function ChiffreSaisi({
    * ce même champ, et le chiffre s'y collait de la même façon.
    */
   const entrant = useRef(false);
-  const toutSelectionner = (champ: HTMLInputElement) => {
-    const fin = champ.value.length;
-    if (fin === 0) return;
-    if (champ.selectionStart !== 0 || champ.selectionEnd !== fin) {
-      champ.setSelectionRange(0, fin);
-    }
-  };
   return (
     <input
       value={valeur}

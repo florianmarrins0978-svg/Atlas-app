@@ -172,7 +172,7 @@ export async function mettreAJourEntreprise(
     capitalSocial?: string | null;
     villeRcs?: string | null;
     /**
-     * La décennale et le médiateur (migration 0093) — saisis une fois, comme le
+     * La décennale et le médiateur (migration 0094) — saisis une fois, comme le
      * SIRET. Ils remplissent les articles 9 et 11 des conditions générales et
      * s'impriment en bas des documents (`src/lib/mentions-obligatoires.ts`).
      */

@@ -27,6 +27,7 @@ import {
 import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
 import { lignesMentionsObligatoires } from "@/lib/mentions-obligatoires";
 import { lignesDuPapier, quantiteLisible, tauxCourt } from "@/lib/lignes-du-papier";
+import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
 import { protegerContreModification } from "./proteger-pdf";
 import { annoncerLaLongueurDesPolices } from "./polices-embarquees";
 import { pourLePapier } from "@/lib/texte-pdf";
@@ -481,7 +482,7 @@ export type DonneesDocument = {
   entrepriseCapitalSocial?: string | null;
   entrepriseVilleRcs?: string | null;
   /**
-   * LA DÉCENNALE ET LE MÉDIATEUR (migration 0093), figés sur le document.
+   * LA DÉCENNALE ET LE MÉDIATEUR (migration 0094), figés sur le document.
    *
    * Écrits sous la mention légale, au pied — sur le devis comme sur la facture,
    * par une SEULE fonction : deux façons de composer le même engagement
@@ -929,13 +930,24 @@ export async function composerDocument(
   // (migration 0073) a vécu : c'est ce qu'il a fait retirer. Ce qui reste
   // groupé, c'est le bloc des TRAVAUX SUPPLÉMENTAIRES (9 septembre 2026) — une
   // facture en deux blocs, ce qu'il avait accepté puis ce qui s'est ajouté.
+  //
+  // **« Rem. % » n'existe que lorsqu'il accorde une remise** — sa capture du
+  // 15 septembre 2026, une facture sans remise sous une colonne vide : *« elle
+  // apparaît seulement lorsque l'utilisateur choisit de faire une remise »*.
+  // Sans elle, les colonnes de gauche se resserrent d'autant vers la droite :
+  // une colonne vide n'est pas neutre, le client y cherche ce qu'on lui aurait
+  // retiré.
+  const remiseCourte = data.reductionPourcent && new Decimal(data.reductionPourcent).greaterThan(0)
+    ? tauxCourt(data.reductionPourcent)
+    : "";
+  const placeDeLaRemise = remiseCourte ? 0 : 24;
   const xTtc = DROITE;
   const xTaux = DROITE - 74; // centre de « TVA % »
   const xNet = DROITE - 92;
   const xRem = DROITE - 150; // centre de « Rem. % »
-  const xPrix = DROITE - 170;
-  const xUnite = DROITE - 226; // centre de « Unité »
-  const xQte = DROITE - 254;
+  const xPrix = DROITE - 170 + placeDeLaRemise;
+  const xUnite = DROITE - 226 + placeDeLaRemise; // centre de « Unité »
+  const xQte = DROITE - 254 + placeDeLaRemise;
   const largeurLibelleChiffree = xQte - MARGE - 34;
 
   const ecrireCentre = (contenu: string, centre: number, yy: number, style: Style) => {
@@ -957,7 +969,7 @@ export async function composerDocument(
       ecrireEspaceADroite(ctx, "QTÉ", xQte, y, APPROCHE_ETIQUETTE, enTeteColonne);
       ecrireEspaceCentre("UNITÉ", xUnite, y, enTeteColonne);
       ecrireEspaceADroite(ctx, "P.U. HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
-      ecrireEspaceCentre("REM. %", xRem, y, enTeteColonne);
+      if (remiseCourte) ecrireEspaceCentre("REM. %", xRem, y, enTeteColonne);
       ecrireEspaceADroite(ctx, "TOTAL HT", xNet, y, APPROCHE_ETIQUETTE, enTeteColonne);
       ecrireEspaceCentre("TVA %", xTaux, y, enTeteColonne);
       ecrireEspaceADroite(ctx, "TOTAL TTC", xTtc, y, APPROCHE_ETIQUETTE, enTeteForte);
@@ -979,9 +991,6 @@ export async function composerDocument(
   // Le net et le TTC de chaque ligne viennent de la règle commune : les
   // centimes tombent juste, la colonne fait exactement la base du taux.
   const papier = lignesDuPapier(data.lignes, data.tauxTva, data.reductionPourcent ?? null);
-  const remiseCourte = data.reductionPourcent && new Decimal(data.reductionPourcent).greaterThan(0)
-    ? tauxCourt(data.reductionPourcent)
-    : "";
   const blocs = [
     { supplement: false, lignes: papier.lignes.filter((p) => !p.ligne.supplement) },
     { supplement: true, lignes: papier.lignes.filter((p) => Boolean(p.ligne.supplement)) },
@@ -1024,9 +1033,10 @@ export async function composerDocument(
       }
       lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
       if (!options.sansChiffrage) {
-        // « 3 », jamais « 3.00 » ; l'unité dans SA colonne, centrée.
+        // « 3 », jamais « 3.00 » ; l'unité dans SA colonne, centrée — et « u »
+        // quand il n'en a posé aucune (sa demande du 15 septembre 2026).
         ecrireADroite(ctx, quantiteLisible(ligne.quantite), xQte, y, { taille: 9 });
-        if (ligne.unite) ecrireCentre(ligne.unite, xUnite, y, { taille: 9 });
+        ecrireCentre(uniteDeLaLigne(ligne.unite), xUnite, y, { taille: 9 });
         // **« À chiffrer » ne se lit plus sur le seul drapeau** — sa capture du
         // 31 août 2026 : ce qui est imprimé fait toujours le total imprimé.
         if (ligneAttendSonPrix({ libelle: ligne.libelle, montant: ligne.montant, aChiffrer: ligne.aChiffrer })) {
@@ -1296,7 +1306,7 @@ export async function composerDocument(
   // Mot pour mot la mention du modèle du patron : c'est celle qu'il a déjà
   // envoyée à ses clients, et Atlas ne doit pas en dire autre chose.
   // **La décennale et le médiateur s'ajoutent ICI, et nulle part ailleurs**
-  // (migration 0093) : le devis et la facture traversent tous deux ce pied, et
+  // (migration 0094) : le devis et la facture traversent tous deux ce pied, et
   // les composer chacun de son côté aurait fini par en donner deux versions.
   // Chaque mention prend sa propre ligne : collées à la phrase des pénalités,
   // elles s'y perdraient — or elles se cherchent du regard.

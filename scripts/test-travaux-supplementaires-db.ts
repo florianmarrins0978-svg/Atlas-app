@@ -99,6 +99,9 @@ async function lignesDe(ctx: Ctx, factureId: string) {
         taux: lignesFacture.tauxTva,
         supplement: lignesFacture.supplement,
         ordre: lignesFacture.ordre,
+        quantite: lignesFacture.quantite,
+        prixUnitaire: lignesFacture.prixUnitaire,
+        unite: lignesFacture.unite,
       })
       .from(lignesFacture)
       .where(eq(lignesFacture.factureId, factureId))
@@ -152,6 +155,47 @@ async function main() {
       sup.ordre > lignes.find((l) => !l.supplement)!.ordre,
       "le supplément se range avant le devis"
     );
+  });
+
+  await test("« 2,50 » tapé au clavier français s'enregistre — et l'unité avec", async () => {
+    // **Sa capture du 15 septembre 2026 :** une ligne « Érigerons », 12 × 2,50,
+    // « Montant HT 0,00 € » et *« La correction n'a pas pu être enregistrée.
+    // Réessayez. »* — *« une ligne érigeron est bloquée, je peux pas écrire »*.
+    // Le champ est en `inputMode="decimal"` : sur un clavier français, le
+    // doigt tombe sur la virgule, et PostgreSQL refuse « 2,50 » dans une colonne
+    // numérique. L'écran du devis normalisait avant d'envoyer ; celui de la
+    // facture envoyait ce que le champ portait, et l'exception devenait cette
+    // phrase. La lecture d'un chiffre saisi vit désormais dans UNE règle,
+    // côté dépôt : aucun écran n'a plus à y penser.
+    const { facture } = await factureEnBrouillon(ctx);
+    const r = await ajouterLigneDeFacture(ctx, facture.id);
+    assert.ok(r.ok, `l'ajout est refusé : ${r.ok ? "" : r.raison}`);
+    const maj = await majLigneDeFacture(ctx, facture.id, r.ligne.id, {
+      libelle: "Érigerons",
+      quantite: "12",
+      prixUnitaire: "2,50",
+      unite: "u",
+    });
+    assert.ok(maj.ok, `la correction est refusée : ${maj.ok ? "" : maj.raison}`);
+    assert.equal(maj.montant, "30.00", "12 × 2,50 ne font pas 30,00");
+    const sup = (await lignesDe(ctx, facture.id)).find((l) => l.supplement);
+    assert.ok(sup, "la ligne ajoutée a disparu");
+    assert.equal(Number(sup.prixUnitaire), 2.5, `le prix en base vaut « ${sup.prixUnitaire} »`);
+    assert.equal(sup.unite, "u", "l'unité ne s'enregistre pas sur une ligne de facture");
+
+    // Une unité effacée se retire ; une case vide vaut « 1 » pour la quantité
+    // et « 0 » pour le prix, comme sur le devis — jamais une exception.
+    const vide = await majLigneDeFacture(ctx, facture.id, r.ligne.id, { unite: "  ", quantite: "", prixUnitaire: " " });
+    assert.ok(vide.ok, `la case vidée est refusée : ${vide.ok ? "" : vide.raison}`);
+    assert.equal(vide.montant, "0.00");
+    const apres = (await lignesDe(ctx, facture.id)).find((l) => l.supplement)!;
+    assert.equal(apres.unite, null, "une unité effacée reste en base");
+    assert.equal(Number(apres.quantite), 1);
+
+    // Et ce qui n'est pas un nombre se refuse AVEC SES MOTS — pas « Réessayez ».
+    const illisible = await majLigneDeFacture(ctx, facture.id, r.ligne.id, { prixUnitaire: "douze" });
+    assert.ok(!illisible.ok, "« douze » est passé pour un prix");
+    assert.match(illisible.ok ? "" : illisible.raison, /douze/, "le refus ne cite pas ce qui a été tapé");
   });
 
   await test("REPRENDRE LE DEVIS N'EMPORTE PAS LE SUPPLÉMENT — le défaut de la 0082", async () => {

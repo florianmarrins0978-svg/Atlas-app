@@ -9,6 +9,116 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~LA FACTURE : « 2,50 », L'UNITÉ, « REM. % », « u » PAR DÉFAUT~~ — CODÉ ET ÉPROUVÉ LE 15 SEPTEMBRE 2026
+
+**Ses captures du 15 septembre :** *« Unité n'apparaît pas lorsque je crée
+une facture, ni sur le devis en PDF » · « une ligne érigeron est bloquée, je
+peux pas écrire » · « si il n'y a pas de remise, la case rem % ne doit pas
+apparaître » · « que l'u soit mise par défaut : si on ne touche à rien, elle
+se pose, on la voit »*.
+
+**Codé** (`ARCHITECTURE.md` §367, `CHANGELOG.md`) : `src/lib/chiffre-saisi.ts`
+lu par le dépôt des factures, `montantDeLaLigne` et l'écran du devis ; le
+champ Unité sur les lignes de facture (même `ChampUnite` que le devis), qui
+montre « u » en encre quand rien n'est posé (`src/lib/unite-de-ligne.ts`, la
+même lecture pour le papier) ; « Rem. % » seulement avec une remise.
+
+**Éprouvé, sur l'atelier 1 depuis `atlas-app-s2`** : suites pures et PDF
+(empreintes relevées, rendus regardés avec et sans remise, avec « u »),
+`test-travaux-supplementaires-db` (vue rouge sur la requête exacte de sa
+capture), les sept suites navigateur du lot vertes seules, puis la batterie :
+base 358/368 et navigateur 147/155. **Aucun rouge n'est du lot** — l'outillage
+qui veut `bash`/`ps -o`/`gh` sur Windows, les six rouges connus de `main`, et
+deux nouveaux compris : `coupure-sessions` coupait la session dans
+`atlas_test` en dur pendant que le serveur lisait `atlas_test_a1` (corrigé
+dans la suite : la base du serveur, jamais un nom en dur) ; `chartes-e2e`
+attend une durée fixe (1,5 s) après le retour à « Origine » et rougit sous
+charge — **verte seule**, à passer à « attendre ce qu'on affirme » un jour.
+**Rejouée après la fusion de `main` (migration 0093, planning)** : base 374/386,
+navigateur 149/156 — un rouge de plus, `tva-en-tete` (« Factures en attente »
+absent en 45 s), **vert deux fois seul** ; et « connexion derrière un proxy »
+sans serveur en dix minutes sous charge, **verte rejouée seule**.
+
+**Ce qui reste :**
+
+| | |
+|---|---|
+| **« ni sur le devis en PDF »** | pas reproduit : le devis porte le champ Unité après Qté depuis le 12 septembre, et le PDF l'imprime — désormais « u » quand rien n'est posé. S'il voit encore un vide, une capture de l'écran du devis |
+| **une suite navigateur qui tape « 2,50 » et « ml » sur une ligne de facture** | à écrire, et à voir rouge d'abord (`test-facture-sans-devis-e2e` cherche déjà le prix par son nom et attend l'écriture en base) |
+
+## LES DEUX GARDE-FOUS NE CONNAISSENT PAS LES DOSSIERS DE SESSION — 14 septembre 2026
+
+Payé ce soir. Une batterie tenait le dossier principal ; il a demandé *« prend
+un autre dossier et un autre port ! »*. Depuis une session ouverte dans le
+dossier principal, `atlas-app-s2` était libre — et pourtant :
+
+| | |
+|---|---|
+| `garde-batterie.mjs` | lit le verrou de `CLAUDE_PROJECT_DIR`, donc refuse d'écrire **dans `s2`** pendant qu'une batterie mesure **dans le principal** |
+| `garde-fusion-main.mjs` | calcule le niveau et lit le verdict de `CLAUDE_PROJECT_DIR` : une planche de niveau 1 poussée depuis `s2` a été refusée au nom du lot de niveau 3 **d'une autre session**, non commité dans le principal |
+
+Joué sur `s2` lui-même (`CLAUDE_PROJECT_DIR=…-s2`), le second rend 0 : le lot
+est bien de niveau 1. La planche est donc restée sur sa branche, et c'est lui
+qui a dû pousser — un garde-fou qui refuse à tort s'apprend à être contourné.
+
+**À faire :** quand la commande porte un `-C <dossier>` ou un `cd <dossier>`
+qui est un `git worktree` du même dépôt, mesurer CE dossier-là — son verrou,
+son diff, son verdict. Tant que ce n'est pas fait, la seule voie propre est
+d'ouvrir la session DANS le dossier (`npm run session 2`), jamais d'y aller
+depuis le principal.
+
+## ⏳ UNE PLANCHE À REGARDER — LE BOUTON « PAYÉE » DES FACTURES EN ATTENTE
+
+**Sa demande du 16 septembre 2026, capture de « Terminés › Factures en attente »
+à l'appui :** *« Il faut rendre cette page plus compréhensible pour les
+utilisateurs. Il trouve que le bouton Payée les induit en erreur. »*
+
+**Ce qui trompe :** « Payée » est un adjectif dans une pastille verte pleine —
+la forme d'une étiquette d'état. On lit « cette facture est payée », pas
+« appuyez ici quand elle l'est ». Et « Ouverte 14/09 » juste au-dessus (le
+client a ouvert l'e-mail) se lit « facture ouverte », donc impayée : deux états
+contradictoires sur la même ligne.
+
+**Planche :** `appli/le-bouton-payee.html` — mêmes places, seuls les mots
+changent (sa règle du 11 septembre). 1 : « Marquer payée » (le mot déjà employé
+par le rappel « Facture impayée », `Notifications.tsx`) ; 2 : « J'ai reçu le
+paiement » / « J'ai reçu une partie » (sa phrase du 14 août, première
+personne) ; 3 : « Confirmer le paiement ». Interrupteur à part : « Ouverte
+14/09 » ou « Le client l'a ouverte le 14/09 » — cette phrase vit dans
+`src/lib/reception-facture.ts` et sert aussi au dossier du client.
+Mon avis, donné : la 2, et la ligne du client en toutes lettres.
+
+**Rien dans `src/` tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Le jour où
+il choisit : `EnAttenteDePaiement.tsx` (les deux `<button>`), et pour la ligne
+du client `receptionEnMots` avec sa suite `test-reception-facture`. La planche 2
+tient sur une ligne à 390 px de large, de justesse (328 px sur 342) : à
+remesurer sur l'écran, pas seulement dans la planche.
+
+## ~~UNE PLANCHE À REGARDER — LE PDF SANS LES PRIX AU PLANNING~~ — CHOISIE ET CODÉE LE 15 SEPTEMBRE 2026 (« la A, mais on garde la phrase existante, en gras doré »)
+
+**Codé :** le lien `pdf-sans-prix` de `FeuilleChantier` (`PlanningClient.tsx`)
+garde sa phrase et sa place, perd son fond vert : gras, `colors.or`. Rien
+d'autre ne bouge. **Ce qui reste avant `main` :** la batterie (niveau 3), qui
+n'a pas pu tourner — la construction meurt faute de mémoire (58 Go engagés sur
+61, comme le 14 septembre au soir) ; à rejouer après redémarrage de la machine.
+Et l'écran, à regarder alors : « pas vérifiable ICI » tant que rien ne se bâtit.
+
+**Sa question du 14 septembre 2026, capture à l'appui :** *« maintenant qu'on a les
+infos du devis qui s'affichent sous la fiche d'intervention, est-ce qu'on a besoin
+d'avoir le PDF sans les prix aussi ? Ou est-ce qu'on organiserait pas ça mieux que
+d'avoir deux gros boutons l'un sous l'autre »*.
+
+**Planche :** `appli/le-pdf-sans-les-prix.html` — A : un mot à la même place ;
+B : cinquième case avec Maps / Waze / Copier / Appeler ; C : il disparaît.
+Mon avis, donné : garder le PDF (le seul papier de l'équipe, et il porte les
+unités), mais lui retirer l'allure d'un second geste principal — la A.
+
+**Rien dans `src/` tant qu'il n'a pas choisi** (`CLAUDE.md` §3 bis). Le jour où
+il choisit : `FeuilleChantier` dans `PlanningClient.tsx` (`data-atlas="pdf-sans-prix"`),
+et trois suites le tiennent — `test-planning-e2e`, `test-note-hors-documents-e2e`,
+`test-tous-les-pdf`. Pour la C, elles s'adaptent (§5 bis), et le mode d'emploi
+(`mode-emploi.ts`, « Donner la feuille de chantier à l'équipe ») change aussi.
+
 ## ⏳ Le seuil de rayon se règle sur des mesures, pas sur une intuition
 
 `RAYON_MAXIMAL_DU_NIVEAU_2 = 10` (`scripts/_niveau-de-risque.mjs`) est une
@@ -154,7 +264,7 @@ connexion, l'enregistrement d'un devis, celui d'une facture.
 | | |
 |---|---|
 | **la case « crédit d'impôt 50 % »** (planche de l'écran) | à lui : une case sur la facture, ou une facture à part comme chez le paysagiste. Pas codée |
-| ~~**la décennale et le médiateur dans Mon entreprise**~~ | ~~`appli/decennale-et-mediateur.html`~~ — **CODÉ le 16 septembre 2026** (migration 0093, `ARCHITECTURE.md` §366) |
+| ~~**la décennale et le médiateur dans Mon entreprise**~~ | ~~`appli/decennale-et-mediateur.html`~~ — **CODÉ le 16 septembre 2026** (migration 0094, `ARCHITECTURE.md` §368) |
 | **la batterie complète** | suites pures, base et navigateur du lot vertes (14 septembre au soir, après redémarrage de la machine — la construction mourait faute de mémoire, 58 Go engagés sur 61). Reste la batterie entière avant `main` |
 
 

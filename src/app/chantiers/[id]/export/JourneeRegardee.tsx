@@ -12,6 +12,7 @@ import {
 import { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import type { ChantierPlanning } from "@/app/planning/PlanningClient";
 import type { JourIso } from "@/lib/disponibilites";
+import { equipesDuJour } from "@/lib/equipes-par-jour";
 
 /**
  * LA FICHE DU JOUR REGARDÉ, sous le calendrier de l'écran d'envoi.
@@ -100,7 +101,8 @@ export default function JourneeRegardee({
    * et il ne peut pas se tromper sur un tiret qu'on lui aurait passé.
    */
   const equipeDe = (c: ChantierPlanning, demi: Demi): string | null => {
-    const rangs = demi === "matin" ? c.equipes.matin : c.equipes.apres_midi;
+    // **Ceux de CE jour** (migration 0093) — la fiche regarde une journée.
+    const rangs = equipesDuJour(c.equipes, jour)[demi];
     if (rangs.length === 0) return null;
     return rangs.map((r) => nomEquipe(r)).join(" · ");
   };

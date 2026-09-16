@@ -114,7 +114,6 @@ async function main() {
       "QTÉ",
       "UNITÉ",
       "P.U. HT",
-      "REM. %",
       "TOTAL HT",
       "TVA %",
       "TOTAL TTC",
@@ -127,6 +126,10 @@ async function main() {
     ]) {
       assert.ok(textes.includes(attendu), `« ${attendu} » manque au devis.`);
     }
+    // Ce devis n'a aucune remise : la colonne « Rem. % » ne s'y dessine pas
+    // (15 septembre 2026). Elle n'apparaît que lorsqu'il en accorde une —
+    // `test-papier-devis-facture.ts` tient les deux cas.
+    assert.ok(!textes.includes("REM. %"), "« REM. % » s'écrit en tête d'un devis sans remise.");
 
     const rang = (t: string) => textes.indexOf(t);
     assert.ok(rang("DEVIS") < rang("CLIENT"), "Le titre doit précéder les parties.");

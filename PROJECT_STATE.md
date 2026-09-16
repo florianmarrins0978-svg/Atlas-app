@@ -1,16 +1,16 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-14 · `main`
-· dernière migration `drizzle/0092_papier_devis_facture_acomptes_recus.sql`
+**Dernière mise à jour :** 2026-09-15 · `main`
+· dernière migration `drizzle/0093_equipes_par_jour.sql`
 
 ---
 
 ## La décennale et le médiateur (16 septembre 2026)
 
-Cinq champs dans « Mon entreprise » (migration 0093), figés sur chaque devis et
+Cinq champs dans « Mon entreprise » (migration 0094), figés sur chaque devis et
 chaque facture, imprimés en bas des deux, et qui remplissent les articles 9 et
 11 des conditions générales. Les deux crochets du texte d'origine disparaissent
-dès que Mon entreprise est rempli. Détail : `ARCHITECTURE.md` §366.
+dès que Mon entreprise est rempli. Détail : `ARCHITECTURE.md` §368.
 
 ## Le niveau d'épreuve, calculé (14 septembre 2026)
 
@@ -19,6 +19,19 @@ Un chemin dans `src/` n'exige plus la batterie entière : ce qui l'exige est un
 plancher (`drizzle/`, middleware, gabarit racine, accès base), la gravité
 (authentification, isolation, argent) ou un rayon de dix points d'entrée.
 `npm run niveau` le dit pour le lot en cours ; `garde-fusion-main.mjs` l'impose.
+
+## FAIT : LES ÉQUIPES SE COCHENT JOUR PAR JOUR — 15 septembre 2026
+
+Migration 0093 : `equipes_du_chantier.jour`, nullable — NULL vaut chaque jour,
+comme avant, rien n'est converti. Sa règle : ajouter → ce jour et les suivants ;
+retirer → ce jour seul. Règle unique dans `src/lib/equipes-par-jour.ts`, lue
+par le serveur et par tous les écrans qui regardent un jour. Un chantier reposé
+emmène ses jours. `ARCHITECTURE.md` §366, `docs/equipes-par-jour.md`.
+
+## FAIT : UN DEVIS REFUSÉ PUIS RENVOYÉ GARDE SA DURÉE — 15 septembre 2026
+
+`preparerEnvoi` et `creerEnvoi` relisent la durée que le chantier porte avant
+de repartir de la dictée (`CHANGELOG.md`).
 
 ## FAIT : LE PAPIER, LE MÊME POUR LE DEVIS ET LA FACTURE — 14 septembre 2026, soir
 

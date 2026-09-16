@@ -44,7 +44,7 @@ type Identite = {
   /** Migration 0071 — n'a de sens que pour une société (`formeADuCapital`). */
   capitalSocial: string;
   villeRcs: string;
-  /** La décennale et le médiateur (migration 0093) — voir `src/lib/mentions-obligatoires.ts`. */
+  /** La décennale et le médiateur (migration 0094) — voir `src/lib/mentions-obligatoires.ts`. */
   assureurDecennale: string;
   contratDecennale: string;
   couvertureDecennale: string;

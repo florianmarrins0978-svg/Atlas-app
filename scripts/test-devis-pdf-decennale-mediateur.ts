@@ -5,7 +5,7 @@ import { TEXTE_ORIGINE_CONDITIONS_GENERALES } from "../src/lib/conditions-genera
 import type { TraceDocument } from "../src/server/pdf/document-commun";
 
 /**
- * LA DÉCENNALE ET LE MÉDIATEUR, DESSINÉS POUR DE VRAI — migration 0093.
+ * LA DÉCENNALE ET LE MÉDIATEUR, DESSINÉS POUR DE VRAI — migration 0094.
  *
  * `test-mentions-obligatoires.ts` couvre le calcul pur. Celle-ci vérifie le
  * CHEMIN : que les deux mentions arrivent sur le papier, sur le devis COMME sur

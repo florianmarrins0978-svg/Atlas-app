@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { colors } from "@/lib/design-tokens";
+import { uniteDeLaLigne } from "@/lib/unite-de-ligne";
+import { toutSelectionner } from "./ChampsDuDevis";
 
 /**
  * ─── L'UNITÉ D'UNE LIGNE, APRÈS LA QUANTITÉ ─────────────────────────────────
@@ -34,18 +36,41 @@ export default function ChampUnite({
   onFini: (valeur: string) => void;
 }) {
   const [ouvert, setOuvert] = useState(false);
+  /**
+   * **« u » EST POSÉ, il ne s'attend plus — sa demande du 15 septembre 2026 :**
+   * *« si on ne touche à rien, elle se pose, on la voit. J'ai voulu valider,
+   * j'avais pas mis u, sauf que je le voyais en gris clair : je pensais qu'il
+   * était posé par défaut »*. Le texte d'attente gris est parti : la case
+   * montre l'unité que le papier imprimera (`uniteDeLaLigne`), en encre. Elle
+   * ne se vide que le temps de la saisie — sous le doigt, une case vide reste
+   * vide, sinon un « u » réapparaîtrait devant chaque lettre tapée.
+   *
+   * Et entrer dans la case sélectionne tout, comme dans une case de chiffre
+   * (le « B » du 13 septembre) : taper « ml » remplace « u », il ne le suit pas.
+   */
+  const entrant = useRef(false);
+  const affichee = ouvert && valeur.trim() === "" ? "" : uniteDeLaLigne(valeur);
   return (
     <div className="flex flex-col items-end sm:items-stretch">
       <input
-        value={valeur}
+        value={affichee}
         readOnly={fige}
-        placeholder="u"
         aria-label={aria}
         data-atlas="unite-ligne"
         onChange={(e) => onChange(e.target.value)}
-        onFocus={() => setOuvert(true)}
+        onFocus={(e) => {
+          setOuvert(true);
+          entrant.current = true;
+          toutSelectionner(e.currentTarget);
+        }}
+        onSelect={(e) => {
+          if (!entrant.current) return;
+          entrant.current = false;
+          toutSelectionner(e.currentTarget);
+        }}
         onBlur={(e) => {
           setOuvert(false);
+          entrant.current = false;
           onFini(e.currentTarget.value);
         }}
         className="w-16 border-0 bg-transparent px-1 text-right outline-none focus:bg-[var(--voile-champ)] sm:w-full"
@@ -53,7 +78,6 @@ export default function ChampUnite({
           color: colors.ink,
           fontSize: "16px",
           minHeight: 44,
-          borderBottom: valeur.trim() === "" && !fige ? `1px solid ${colors.lineSoft}` : "1px solid transparent",
         }}
       />
       {ouvert && !fige && (
@@ -70,12 +94,12 @@ export default function ChampUnite({
                 onFini(u);
                 setOuvert(false);
               }}
-              aria-pressed={valeur === u}
+              aria-pressed={uniteDeLaLigne(valeur) === u}
               className="min-h-[32px] rounded-full px-3 text-[13px] font-medium"
               style={{
-                border: `1px solid ${valeur === u ? colors.plein : colors.line}`,
-                backgroundColor: valeur === u ? colors.plein : colors.cream,
-                color: valeur === u ? colors.card : colors.ink,
+                border: `1px solid ${uniteDeLaLigne(valeur) === u ? colors.plein : colors.line}`,
+                backgroundColor: uniteDeLaLigne(valeur) === u ? colors.plein : colors.cream,
+                color: uniteDeLaLigne(valeur) === u ? colors.card : colors.ink,
               }}
             >
               {u}

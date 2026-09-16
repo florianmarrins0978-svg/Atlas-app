@@ -42,7 +42,7 @@ export default async function ConditionsPage() {
         titre="Ce qui s'imprime"
         retour={{ href: "/reglages/documents", libelle: "Retour à Devis & factures" }}
       />
-      {/* Les cinq champs de « Mon entreprise » (migration 0093) : ce sont eux
+      {/* Les cinq champs de « Mon entreprise » (migration 0094) : ce sont eux
           qui remplissent les articles 9 et 11, donc eux qui décident s'il reste
           un crochet à voir. */}
       <ConditionsClient

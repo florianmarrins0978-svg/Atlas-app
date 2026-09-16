@@ -51,7 +51,7 @@ export async function majIdentiteAction(data: {
   capitalSocial?: string;
   villeRcs?: string;
   mentionsLegalesPosition?: "sous_nom" | "bas" | "aucune";
-  /** Migration 0093 — voir `src/lib/mentions-obligatoires.ts`. */
+  /** Migration 0094 — voir `src/lib/mentions-obligatoires.ts`. */
   assureurDecennale?: string;
   contratDecennale?: string;
   couvertureDecennale?: string;

@@ -1,7 +1,8 @@
-import { eq } from "drizzle-orm";
-import { chantiers, creneauxChantier } from "../db/schema";
-import { resumeDesCreneaux } from "../../lib/creneaux-chantier";
-import type { Creneau } from "../../lib/disponibilites";
+import { and, eq, isNotNull } from "drizzle-orm";
+import { chantiers, creneauxChantier, equipesDuChantier } from "../db/schema";
+import { creneauxOccupes, resumeDesCreneaux } from "../../lib/creneaux-chantier";
+import { reporterEquipes, type LigneEquipe } from "../../lib/equipes-par-jour";
+import type { Creneau, Moment } from "../../lib/disponibilites";
 import type { withEntreprise } from "../db/with-entreprise";
 
 type Tx = Parameters<Parameters<typeof withEntreprise>[2]>[0];
@@ -37,6 +38,29 @@ export async function ecrireLesCreneaux(
   chantierId: string,
   poses: readonly Creneau[]
 ) {
+  // **Où il était AVANT** — pour que ses équipes datées le suivent (0093).
+  // Un chantier jamais morcelé n'a aucune ligne et vaut son bloc : c'est le
+  // repli de `creneauxOccupes`, le même que partout ailleurs.
+  const [pose] = await tx
+    .select({
+      jour: chantiers.datePlanifiee,
+      moment: chantiers.creneauDebut,
+      dureeDemiJournees: chantiers.dureeDemiJournees,
+    })
+    .from(chantiers)
+    .where(eq(chantiers.id, chantierId))
+    .limit(1);
+  const anciens = await tx
+    .select({ jour: creneauxChantier.jour, demi: creneauxChantier.demi })
+    .from(creneauxChantier)
+    .where(eq(creneauxChantier.chantierId, chantierId));
+  const avant = pose
+    ? creneauxOccupes(
+        pose,
+        anciens.map((l) => ({ jour: l.jour, moment: l.demi }) as Creneau)
+      )
+    : [];
+
   await tx.delete(creneauxChantier).where(eq(creneauxChantier.chantierId, chantierId));
   if (poses.length > 0) {
     await tx.insert(creneauxChantier).values(
@@ -61,4 +85,67 @@ export async function ecrireLesCreneaux(
       updatedAt: new Date(),
     })
     .where(eq(chantiers.id, chantierId));
+
+  await reporterLesEquipes(tx, qui.entrepriseId, chantierId, avant, poses);
+}
+
+/**
+ * QUAND LE CHANTIER BOUGE, SES ÉQUIPES DATÉES LE SUIVENT — migration 0093.
+ *
+ * Depuis le 15 septembre 2026 une affectation peut porter un jour (« Julien à
+ * partir du 4e jour »). Un chantier reposé une autre semaine emmènerait sinon
+ * des lignes datées de la semaine d'avant : personne dessus au planning, et
+ * Julien annoncé sur des jours où le chantier n'est plus. La règle — mêmes
+ * jours : rien ; d'autres jours : le 4e reste le 4e ; plus de jours : repli en
+ * lignes sans jour — vit dans `reporterEquipes`, pas ici.
+ *
+ * **Appelée par le seul écrivain des créneaux**, et par `deplanifierChantier`
+ * qui les efface sans passer par lui.
+ */
+export async function reporterLesEquipes(
+  tx: Tx,
+  entrepriseId: string,
+  chantierId: string,
+  avant: readonly Creneau[],
+  apres: readonly Creneau[]
+) {
+  const lignes = await tx
+    .select({
+      id: equipesDuChantier.id,
+      jour: equipesDuChantier.jour,
+      demi: equipesDuChantier.demi,
+      equipeId: equipesDuChantier.equipeId,
+    })
+    .from(equipesDuChantier)
+    .where(
+      and(eq(equipesDuChantier.entrepriseId, entrepriseId), eq(equipesDuChantier.chantierId, chantierId))
+    );
+  const plates: LigneEquipe<string>[] = lignes.map((l) => ({
+    jour: l.jour,
+    demi: l.demi as Moment,
+    equipe: l.equipeId,
+  }));
+  const reportees = reporterEquipes(plates, avant, apres);
+  if (reportees === null) return;
+
+  await tx
+    .delete(equipesDuChantier)
+    .where(
+      and(
+        eq(equipesDuChantier.entrepriseId, entrepriseId),
+        eq(equipesDuChantier.chantierId, chantierId),
+        isNotNull(equipesDuChantier.jour)
+      )
+    );
+  if (reportees.length > 0) {
+    await tx.insert(equipesDuChantier).values(
+      reportees.map((l) => ({
+        entrepriseId,
+        chantierId,
+        jour: l.jour,
+        demi: l.demi,
+        equipeId: l.equipe,
+      }))
+    );
+  }
 }
