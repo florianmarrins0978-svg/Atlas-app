@@ -125,6 +125,31 @@ client, nouvelle préparation.
 
 ## 2026-09-16
 
+### « En cours 19 » reste à l'écran quand il descend dans ses chantiers
+
+**Sa demande, capture à l'appui :** *« quand je descends, le "en cours"
+disparaît ; il doit rester visible tant qu'il y a des chantiers »*.
+
+La rubrique vit dans le fil qui défile depuis le 6 septembre — collée à ce
+qu'elle compte —, et elle partait donc par le haut au premier geste : passé
+trois chantiers, il ne restait qu'une suite de dates sans dire combien il en a.
+Elle est désormais clouée au haut du fil (`sticky`), fond crème, jusqu'au
+dernier chantier.
+
+**Ce que la capture a montré et qu'aucune mesure n'aurait dit** : les 10 px de
+marge intérieure du cadre qui défile rétrécissent la zone où `sticky` peut
+clouer. La rubrique se collait 10 px sous le bord, et les chantiers défilaient
+dans la bande laissée libre au-dessus d'elle. L'air est passé du cadre au
+contenu — c'est déjà la règle de la marge du bas (`.atlas-tige`).
+
+La position au repos ne bouge pas d'un pixel : mesurée avant et après, 312,5 px
+du bord du fil, 25 px entre la rubrique et le premier chantier.
+
+`scripts/test-accueil-en-cours-colle-e2e.ts` mesure les trois choses après
+défilement — encore dans le cadre, sous le fondu de 18 px donc lisible, et
+devant les chantiers qui passent dessous —, et refuse de conclure si le fil ne
+défile pas.
+
 ### Le calcul du niveau perdait une lettre, et se trompait vers le BAS
 
 `git status --porcelain` rend « ␣M src/… » : deux caractères d'état, une
